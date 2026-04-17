@@ -8,7 +8,7 @@
 # <<~ ahu #iam-ha "structure" >>
 name = "loci"
 file_path = "ha.ka.ba/loci/loci.loci.md"
-description = "Routing kānāwai (law) for resolving lar: URIs to repository file paths. Declares the derivation algorithm, meme-type prefix table, carrier coherence predicates, address stability criteria, canon promotion rules, and the MCP-resolution research roadmap for all memes in this system."
+description = "Loci kānāwai (law) for resolving `lar:` URI memes into explicit routing evidence and current `mana`, `manao`, and `manaoio` posture. Declares the derivation algorithm, the convention surfaces that make routing explicit, the conditions for high-mana `loci` memes, the promotion path from noise to data to meme to loci meme to canon loci meme, and the MCP-resolution research roadmap."
 version = "0.1-draft"
 tulen = 0.76
 confidence = 0.74
@@ -22,15 +22,15 @@ structure = "OODA-HA * ha.ka.ba"
 # <<~/ahu >>
 # <<~ ahu #iam-ka "detail" >>
 enacts = true
-role = "routing kānāwai (law), carrier coherence authority, address stability authority, canon promotion rule, and MCP-resolution roadmap"
-function = "resolve lar: URIs to file paths by local derivation where possible, surface current resolution tension where derivation misses, and govern carrier coherence, address stability, canon promotion, and MCP-resolution research"
+role = "loci-rating kānāwai (law), routing convention authority, address stability authority, canon promotion rule, and MCP-resolution roadmap"
+function = "resolve a `lar:` URI meme into routing evidence and present `mana`, `manao`, and `manaoio` posture, while governing explicit convention, address stability, canon promotion, and MCP-resolution research"
 install_root = "lares/"
 path_root = "ha.ka.ba/"
 mcp_resolution_status = "research-roadmap"
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
-input = "lar: URI|routing query|meme_type|file_path|?"
-output = "routing-envelope(high manaoio^)|partial-routing-envelope(mid manaoio-)|degraded-routing-envelope(low manaoio_)|?(~manaoio?)"
+input = "lar: URI|routing query|meme_type|rating query|?"
+output = "loci-rating-envelope(high manaoio^)|partial-loci-rating-envelope(mid manaoio-)|degraded-loci-rating-envelope(low manaoio_)|?(~manaoio?)"
 depends_on = [
   "lar:///ha.ka.ba/pono/memetic-wikitext",
   "lar:///ha.ka.ba/meme"
@@ -44,28 +44,46 @@ depends_on = [
 
 <<~ ala lar:///ha.ka.ba/loci >>
 
-A self-describing routing authority for all `loci` class `lar:` URI memes in this system.
+A self-describing loci authority for `lar:` URI memes in this system.
 
-Loci declares the ha.ka.ba an agent uses to resolve a `lar:` URI meme to a set of mana, manao, and manaoio ratings, the ha.ka.ba which makes the convention explicit, the conditions that make a high mana `loci` class meme, the canon promotion stages a meme passes through from noise to meme to loci, and the current research roadmap toward live MCP-backed resolution.
+Loci declares the ha.ka.ba an agent uses to resolve a `lar:` URI meme into a present set of `mana`, `manao`, and `manaoio` ratings, the ha.ka.ba which makes the convention explicit, the conditions that make a high-mana `loci` class meme, the canon promotion stages a meme passes through from noise to data to meme to loci meme to canon loci meme, and the current research roadmap toward live MCP-backed resolution.
+# Promotion Path: The Five Buckets
 
-This meme does not govern parse recognition, render lowering, or conformance verification. Those belong to their own kānāwai (law). Loci governs only routing — the traversal from a `lar:` URI to a real file in the repository.
+The lifecycle of a meme in this system follows five distinct buckets, each representing a stage of increasing structure, meaning, and authority:
 
-This file is itself a candidate-stable path-directory example of a `loci` meme_type meme. Its own migration from flat-file siting to `ha.ka.ba/loci/loci.loci.md` is part of the law it describes.
+1. **Noise**: Raw, unstructured, or chaotic signals—no inherent meaning or pattern.
+2. **Data**: Structured information; patterns or language that can be parsed and used by AI or systems, but not yet carrying memetic (cultural, symbolic) meaning.
+3. **Meme**: Data that has acquired memetic structure—recognizable, repeatable, and meaningful within a context; it can be transmitted and interpreted as a unit of meaning.
+4. **Loci Meme**: A meme that has achieved explicit routing, rating, and convention surfaces—recognized as a stable, high-mana address in the system, with clear evidence and authority.
+5. **Canon Loci Meme**: A loci meme that is promoted to canonical status—fully ratified, stable, and authoritative within the system’s law and routing conventions.
+
+**Transition Criteria:**
+- *Noise → Data*: Structure or pattern is detected, making the signal machine-usable.
+- *Data → Meme*: The data is recognized as meaningful and repeatable within a cultural or system context.
+- *Meme → Loci Meme*: The meme gains explicit routing, rating, and convention surfaces, becoming a stable address.
+- *Loci Meme → Canon Loci Meme*: The loci meme is ratified as canonical, achieving the highest authority and stability.
+
+This five-bucket model replaces the previous three-stage path, providing a more granular and actionable framework for meme lifecycle and promotion in the system.
+
+This meme does not govern parse recognition, render lowering, conformance verification, or raw `file_path` capture. Those belong to their own kānāwai (law). Detailed siting capture and agreement live at `lar:///ha.ka.ba/loci/iam/file_path`. Loci governs the routing-and-rating convention above those surfaces.
+
+This file is itself a path-directory-sited `loci` meme and therefore a live specimen of the law it names: stable address, explicit convention, high-mana aspiration, and still-open MCP resolver backlog.
 
 ## Supported Queries
 
 <<~&#x0005; ui meme? -> lar:///ha.ka.ba/loci#iam >>
-<<~&#x0005; ui roadmap? -> lar:///ha.ka.ba/loci#mcp-resolution-roadmap >>
 <<~&#x0005; ui derivation? -> lar:///ha.ka.ba/loci#derivation-algorithm >>
 <<~&#x0005; ui prefixes? -> lar:///ha.ka.ba/loci#meme-type-prefix-table >>
+<<~&#x0005; ui convention? -> lar:///ha.ka.ba/loci#carrier-coherence >>
 <<~&#x0005; ui stability? -> lar:///ha.ka.ba/loci#address-stability >>
-<<~&#x0005; ui coherence? -> lar:///ha.ka.ba/loci#carrier-coherence >>
+<<~&#x0005; ui ratings? -> lar:///ha.ka.ba/loci#rating-resolution >>
 <<~&#x0005; ui high-rating? -> lar:///ha.ka.ba/loci#high-rating-loci >>
 <<~&#x0005; ui canon? -> lar:///ha.ka.ba/loci#canon-promotion >>
+<<~&#x0005; ui roadmap? -> lar:///ha.ka.ba/loci#mcp-resolution-roadmap >>
 <<~&#x0005; ui result? -> lar:///ha.ka.ba/loci#result >>
 
 <<~&#x0002; ahu #meme-body-open >>
-Loci opens the routing authority stream here.
+Loci opens the routing-and-rating authority stream here.
 <<~/ahu >>
 
 <<~ ahu #phase-map >>
@@ -74,7 +92,7 @@ Loci opens the routing authority stream here.
 
 `✶ Observe -> ⏿ Orient -> ◇ Decide -> ▶ Act -> ⤴ Hooko -> ↺ Aftermath`
 
-Loci gathers the routing request and candidate address, maps the URI against the derivation algorithm and meme-type prefix table, distinguishes local derivation from unresolved resolution tension, prepares the current routing product and MCP-roadmap note, crosses any carrier mutation into active law, and judges which addresses resolved locally and which remain open.
+Loci gathers the `lar:` URI meme and visible convention surfaces, maps the address through derivation and prefix law, classifies lifecycle stage and rating posture, prepares the current rating-and-routing product plus MCP-roadmap note, crosses any promotion or siting mutation into active law, and judges what resolved, what remains open, and what is still research.
 
 <!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/loci-phase-map >> -->
 <<~/ahu >>
@@ -83,38 +101,38 @@ Loci gathers the routing request and candidate address, maps the URI against the
 
 ```toml
 name = "loci-observe"
-description = "Observe phase for routing request intake, lar: URI capture, and document opener form recognition."
-role = "routing request intake"
-function = "receive the lar: URI to resolve, capture the document opener form, and note whether the request comes with a known meme_type or requires table-only lookup"
+description = "Observe phase for `lar:` URI meme intake, opener-form recognition, and explicit-convention capture."
+role = "loci request intake"
+function = "receive the `lar:` URI meme to assess, capture the opener form and any visible convention surfaces, and note whether the request comes with a known `meme_type` or prior rating context"
 input = "lar: URI|routing query|?"
-output = "captured lar: URI|document opener form|meme_type (if known)|routing request context"
+output = "captured lar: URI|opener form|visible convention surfaces|meme_type (if known)|routing request context"
 phase = "observe"
 glyph = "✶"
 ```
 
 ## Observe
 
-Observe gathers the routing request before any derivation or lookup begins.
+Observe gathers the routing request before any derivation, rating, or promotion judgment begins.
 
 Observe should detect:
 
 * the full `lar:` URI string to resolve, exactly as presented
-* whether the request context includes a known `meme_type` for the target
+* whether the request context includes a known `meme_type`, prior rating posture, or prior promotion context for the target
 * the document opener form of the target (if the target meme is already in memory): `<<~&#x0001; ? -> ...` (declared-open, with unbound uncertainty still flowing through the address graph) or `<<~&#x0001; lar:///...` (confirmed canon)
-* the target meme's `file_path` value, if the surface is already in memory
-* whether this is a first-time routing request or a re-resolution of a previously declared-unresolved address
+* whether the target already exposes explicit loci convention surfaces: `#iam` rating cluster, `register`, prefix-table membership, promotion note, and roadmap note
+* whether this is a first-time routing-and-rating request or a re-resolution of a previously declared-unresolved address
 
 Observe should not:
 
 * attempt URI decomposition before Orient
 * fabricate a resolution substrate that is not actually present
-* assume `meme_type = "loci"` without evidence
+* infer high readiness or `meme_type = "loci"` without evidence
 
 ### Self-Observation
 
-This file can observe itself lawfully: its opener declares `lar:///ha.ka.ba/loci`, while its `#iam` block declares `file_path = "ha.ka.ba/loci/loci.loci.md"`.
+This file can observe itself lawfully: its opener declares `lar:///ha.ka.ba/loci`, its `#iam` block carries the five rating fields with `register = "CS"`, and its body declares derivation, promotion, and roadmap surfaces.
 
-That pairing is already a live routing specimen. The law is not speaking only about remote targets; it is standing inside its own routing surface.
+That bundle is already a live loci specimen. The law is not speaking only about remote targets; it is standing inside its own convention surface.
 
 ### Dominant Resonance
 
@@ -126,7 +144,7 @@ Observe resonates with the carrier concern. It holds the raw routing request as 
 
 #### Observe / ha
 
-Observe-ha holds the identity domain: what a routing request fundamentally is. A routing request is a `lar:` URI plus optional context (known `meme_type`, caller identity, resolution urgency). The URI alone is not the full request. Context changes which resolution path Orient will select.
+Observe-ha holds the identity domain: what a loci request fundamentally is. A loci request is a `lar:` URI plus optional routing, rating, and lifecycle context. The URI alone is not the full request. Context changes both the resolution path and the rating posture Orient can justify.
 
 <!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/loci-observe-ha >> -->
 <<~/ahu >>
@@ -135,7 +153,7 @@ Observe-ha holds the identity domain: what a routing request fundamentally is. A
 
 #### Observe / ka
 
-Observe-ka governs intake procedure: capture the URI string verbatim, capture any accompanying context without filtering, note the absence of `meme_type` context explicitly (it matters to Decide).
+Observe-ka governs intake procedure: capture the URI string verbatim, capture any visible convention surfaces without normalizing them away, and note the absence of `meme_type` or promotion context explicitly because that absence matters later.
 
 <!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/loci-observe-ka >> -->
 <<~/ahu >>
@@ -156,18 +174,18 @@ Observe-ba governs noticing posture: a routing request that arrives mid-parse is
 
 ```toml
 name = "loci-orient"
-description = "Orient phase for URI decomposition, meme-type prefix mapping, derivation algorithm application, and address stability classification."
-role = "routing classification"
-function = "decompose the lar: URI, apply the meme-type prefix table, run the derivation algorithm, classify the candidate path as resolved or declared-unresolved, and assess address stability"
+description = "Orient phase for URI decomposition, meme-type prefix mapping, derivation algorithm application, explicit-convention classification, and preliminary rating posture."
+role = "routing and rating classification"
+function = "decompose the `lar:` URI, apply the meme-type prefix table, run the derivation algorithm, classify the current convention as explicit or thin, and assess address stability plus preliminary rating posture"
 input = "captured lar: URI|meme_type (if known)|routing request context"
-output = "decomposed URI parts|derived candidate path|resolution classification|stability assessment"
+output = "decomposed URI parts|derived candidate path|resolution classification|convention classification|stability assessment|rating posture"
 phase = "orient"
 glyph = "⏿"
 ```
 
 ## Orient
 
-Orient decomposes the URI and maps it through the derivation algorithm and prefix table before any verdict lands.
+Orient decomposes the URI and maps it through the derivation algorithm and prefix table before any rating or promotion verdict lands.
 
 <<~ ahu #derivation-algorithm >>
 
@@ -226,6 +244,8 @@ Given: lar_uri (string), meme_type (string | unknown)
 
 An agent that always knows the `meme_type` of the target can use this algorithm directly. An agent that does not know the `meme_type` should not guess a prefix. It should surface unresolved state honestly or hand the request to a live resolver when one exists.
 
+The algorithm does not by itself assign final ratings. It supplies the structural routing evidence that later sections convert into `mana`, `manao`, and `manaoio` posture.
+
 ### Live Self Examples
 
 | target `lar:` URI | local derivation candidate | current local outcome | tension surfaced |
@@ -266,7 +286,7 @@ A `lar:` URI is stable when all three conditions hold simultaneously:
 2. `register` is `CS` or `C`
 3. The `lar:` URI in the document opener (R2) remains coherent with the meme's declared carrier identity and does not drift during migration or promotion
 
-A stable `lar:` URI is **immutable**. It MUST NOT change even if the meme file migrates to a path-directory layout. On migration, `file_path` in `#iam` updates while the address named in the opener remains the same.
+A stable `lar:` URI is **immutable**. It MUST NOT change even if the carrier migrates to a path-directory layout. On migration, delegated siting evidence may update while the address named in the opener remains the same.
 
 The `?` form in the document opener (`<<~&#x0001; ? -> lar:///...`) marks declared-open routing: the URI is declared but address stability has not yet been confirmed.
 
@@ -281,30 +301,37 @@ That opener law is distinct from the meme footer law: even after opener `?` is e
 
 <<~ ahu #carrier-coherence >>
 
-### Carrier Coherence
+### Explicit Convention
 
-A loci carrier currently exposes one address identity through two authored surfaces:
+A `loci` meme makes routing convention explicit when an agent can point to the surfaces that justify the current resolution and rating posture.
+
+Current convention surfaces are:
 
 1. the `lar:` URI in the document opener
-2. the `file_path` value in `#iam`
+2. the `#iam` rating cluster and `register`
+3. the derivation algorithm and meme-type prefix table
+4. the canon-promotion section and MCP-resolution roadmap
 
-A future live resolver may expose a third operational surface, but that is not current law yet.
+Detailed siting capture and `file_path` agreement are delegated to `lar:///ha.ka.ba/loci/iam/file_path`. Loci may consume that evidence, but it does not restate the capture law here.
 
-A high-rated loci meme keeps the authored surfaces coherent without forcing them to be identical strings.
+A high-rated loci meme keeps these surfaces mutually intelligible without forcing them to collapse into one string.
 
 * the opener carries the stable address
-* `file_path` carries the current siting of the file on disk
+* the rating cluster and `register` make current maturity explicit
+* derivation behavior is explainable, including honest misses
+* the roadmap note keeps unresolved live-resolution tension visible
 
 Flat-file siting is the low-friction case: step 7 may resolve directly from derivation.
 
-Path-directory siting is the higher-energy case: step 7 may miss even while carrier coherence still holds. That is not automatically a defect. It is the present unresolved tension that future live resolution should absorb.
+Path-directory siting is the higher-energy case: step 7 may miss even while explicit convention still holds. That is not automatically a defect. It is the present unresolved tension that future live resolution should absorb.
 
-Coherence fails when any of these contradictions appears:
+Convention fails when any of these contradictions appears:
 
-* `file_path` names one siting while the file lives elsewhere
 * opener claims confirmed canon while address-stability conditions do not yet hold
+* the meme presents high manifestation readiness while resolution still depends on hidden heuristics
+* delegated siting evidence contradicts the declared address or promotion posture
 
-A loci meme may carry rich prose and still remain transport-thin. Carrier coherence is therefore a separate judgment from rhetorical quality.
+A loci meme may carry rich prose and still remain transport-thin. Explicit convention is therefore a separate judgment from rhetorical quality.
 
 <!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/loci-carrier-coherence >> -->
 <<~/ahu >>
@@ -341,7 +368,7 @@ Use a closing `ala` only when a real child or phase-level carrier is being decla
 
 #### Orient / ha
 
-Orient-ha holds the classification domain: what decomposition, prefix mapping, and stability assessment fundamentally determine. The core question is whether the URI maps cleanly to a derivable local path or remains an explicitly open resolution tension. That classification governs every subsequent decision in this routing pass.
+Orient-ha holds the classification domain: what decomposition, prefix mapping, explicit convention, and stability assessment fundamentally determine. The core question is whether the URI maps cleanly to a derivable local path, what that says about the current lifecycle stage, and whether the convention is explicit enough to deserve high ratings.
 
 <!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/loci-orient-ha >> -->
 <<~/ahu >>
@@ -350,7 +377,7 @@ Orient-ha holds the classification domain: what decomposition, prefix mapping, a
 
 #### Orient / ka
 
-Orient-ka governs the procedure: run the derivation algorithm in step order without skipping steps. An agent that jumps prematurely from URI intake to vague unresolved status misses the case where the derived path resolves directly. Step 7 (file existence check) is the most reliable current local resolution signal.
+Orient-ka governs the procedure: run the derivation algorithm in step order without skipping steps, then read the convention surfaces against the result. An agent that jumps prematurely from URI intake to vague unresolved status misses the case where the derived path resolves directly and therefore overstates the uncertainty.
 
 <!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/loci-orient-ka >> -->
 <<~/ahu >>
@@ -359,7 +386,7 @@ Orient-ka governs the procedure: run the derivation algorithm in step order with
 
 #### Orient / ba
 
-Orient-ba governs interpretive posture: hold the two current resolution states (resolved, declared-unresolved) distinctly rather than collapsing declared-unresolved into absent. A `lar:` URI that appears in a `depends_on` array but resolves to no derived local path is declared-unresolved — a real forward pressure, not a silent gap.
+Orient-ba governs interpretive posture: hold the two current resolution states (resolved, declared-unresolved) distinctly rather than collapsing declared-unresolved into absent. A `lar:` URI that appears in a `depends_on` array but resolves to no derived local path is declared-unresolved — a real forward pressure that lowers readiness and constrains promotion, not a silent gap.
 
 <!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/loci-orient-ba >> -->
 <<~/ahu >>
@@ -371,42 +398,49 @@ Orient-ba governs interpretive posture: hold the two current resolution states (
 
 ```toml
 name = "loci-decide"
-description = "Decide phase for resolution path selection, canon promotion stage assignment, and routing product commitment."
-role = "resolution commitment"
-function = "commit to one resolution path (derived or table), assign canon promotion stage, and fix routing product type"
-input = "decomposed URI parts|derived candidate path|resolution classification|stability assessment"
-output = "resolution commitment|canon stage|routing product type|normalization plan"
+description = "Decide phase for resolution posture selection, rating assignment, and canon promotion stage commitment."
+role = "resolution and rating commitment"
+function = "commit to one resolution posture, assign the current `mana`, `manao`, and `manaoio` posture, and fix the current lifecycle stage"
+input = "decomposed URI parts|derived candidate path|resolution classification|convention classification|stability assessment|rating posture"
+output = "resolution commitment|rating set|lifecycle stage|routing product type|normalization plan"
 phase = "decide"
 glyph = "◇"
 ```
 
 ## Decide
 
-Decide commits to one resolution posture and assigns the canon promotion stage for the target address.
+Decide commits to one resolution posture, one rating posture, and one canon-lifecycle stage for the target address.
 
 <<~ ahu #canon-promotion >>
 
 ### Canon Promotion
 
-Canon promotion stages govern the lifecycle of a `lar:` URI from first declaration to confirmed stability.
+Canon promotion tracks how a `lar:` URI meme climbs from raw signal to stable loci authority.
 
-| Stage | `register` | score range | `enacts` | document opener form | resolution posture |
-|---|---|---|---|---|---|
-| **Provisional** | `P` | 0.00–0.19 | `false` | `<<~&#x0001; ? -> lar:///...` | no trustworthy local resolution yet |
-| **Provisional-Synthesis** | `PS` | 0.20–0.39 | `false` | `<<~&#x0001; ? -> lar:///...` | derivation intent declared |
-| **Synthesis** | `S` | 0.40–0.59 | `true` | `<<~&#x0001; ? -> lar:///...` | locally classifiable; resolution may still be open |
-| **Synthetic-Canon** | `CS` | 0.60–0.79 | `true` | `<<~&#x0001; ? -> lar:///...` | carrier coherent; unresolved MCP tension still possible |
-| **Canon** | `C` | 0.80–1.00 | `true` | `<<~&#x0001; lar:///...` | externally confirmed resolution substrate present |
+| Form | usual `register` band | document opener form | what is true now |
+|---|---|---|---|
+| **Noise** | none or `P` | none, fragmentary, or `<<~&#x0001; ? -> lar:///...` | the URI is present as signal, but the convention is too thin to trust as a loci authority |
+| **Meme** | `PS` or `S` | `<<~&#x0001; ? -> lar:///...` | a boot-legal meme declares the address and enough structure to be rated |
+| **Loci** | `CS` | `<<~&#x0001; ? -> lar:///...` | explicit routing convention exists, address stability is a live discipline, and unresolved MCP tension may still remain |
+| **Canon loci** | `C` | `<<~&#x0001; lar:///...` | stability has been externally confirmed, live resolution substrate exists, and opener uncertainty has been removed |
 
-The full five-register rubric is declared in `lar:///ha.ka.ba/meme#rating-targets`. Confidence scores, register labels, and promotion criteria are governed there. Loci governs only the carrier and document-opener changes that accompany each stage.
+The full five-register rubric is declared in `lar:///ha.ka.ba/meme#rating-targets`. Confidence scores, register labels, and promotion criteria are governed there. Loci governs the routing, convention, and document-opener changes that accompany the climb from noise to meme to loci.
 
-**Promotion to Synthetic-Canon** requires:
+**Movement from noise to meme** requires:
+
+* boot-legal meme structure
+* a declared `lar:` address
+* enough explicit role and function to rate the carrier above raw noise
+
+**Movement from meme to loci** requires:
 
 * all nine required elements (R1–R9) present per `lar:///ha.ka.ba/meme`
 * `enacts = true`
-* carrier coherence holds between opener and `file_path`
+* explicit routing convention present
+* truthful derivation behavior, including honest misses
+* stable-address discipline strong enough to justify `CS`
 
-**Promotion to Canon** additionally requires:
+**Promotion from loci to canon loci** additionally requires:
 
 * all three address-stability conditions satisfied
 * operator or admin confirmation
@@ -419,19 +453,33 @@ A meme may not self-promote to canon. Canon promotion requires an external act: 
 
 <<~/ahu >>
 
+<<~ ahu #rating-resolution >>
+
+### Rating Resolution
+
+Loci resolves a `lar:` URI meme to a rating set by reading routing evidence, declared role, and operational readiness together.
+
+| field | rises when | falls when |
+|---|---|---|
+| `mana` | the URI decomposes cleanly, prefix mapping is explicit, convention surfaces are inspectable, and misses are named honestly | mapping depends on guesses, hidden heuristics, or blurred unresolved state |
+| `manao` | the meme clearly knows its loci role, names why the convention exists, and makes lifecycle posture explicit | purpose drifts, routing law mixes with unrelated concerns, or promotion posture stays vague |
+| `manaoio` | local resolution is repeatable now or a live resolver exists, operator crossings are bounded, and backlog is surfaced honestly | resolution depends on unstated manual recovery, promotion is self-asserted, or the live-resolution gap is hidden |
+
+These are loci-local readings layered atop the generic meme ratings at `lar:///ha.ka.ba/meme#rating-targets`. A local path hit may raise evidence, but it never overrides truthfulness about unresolved tension.
+
+<<~/ahu >>
+
 <<~ ahu #high-rating-loci >>
 
 ### High-Rating Loci Conditions
 
-`lar:///ha.ka.ba/meme#rating-targets` governs the generic structural climb. Loci adds transport predicates for memes whose carrier identity is itself part of the law surface.
+`lar:///ha.ka.ba/meme#rating-targets` governs the generic structural climb. Loci adds routing-and-convention predicates for memes whose carrier identity is itself part of the law surface.
 
-| band | generic meme requirement | additional loci requirement |
-|---|---|---|
-| `S` | boot-legal structure present | opener, `file_path`, and carrier file are at least inspectable enough to classify |
-| `CS` | generic `CS` content depth reached | opener address and `file_path` agree as one coherent carrier; derivation behavior is truthful about misses; `?` remains truthful |
-| `C` | generic `C` substance reached | all address-stability conditions hold; `?` removed by external act; live MCP resolution or equivalent external substrate is working; no unresolved transport contradictions remain |
+* high `mana` requires explicit routing convention, inspectable derivation steps, stable lifecycle naming, and honest unresolved-state handling
+* high `manao` requires a carrier that clearly knows it is loci law, states why the convention exists, and keeps enacted law separate from roadmap speculation
+* high `manaoio` requires repeatable resolution posture, bounded operator crossings, and a truthful account of what is enacted now versus what still depends on MCP-backed resolution
 
-This means a loci meme does not become high-rated merely by sounding complete. A highly rated loci meme must carry its address lawfully, survive migration lawfully, and remain routable lawfully.
+This means a loci meme does not become high-rated merely by sounding complete. A highly rated loci meme must carry its address lawfully, survive migration lawfully, and remain rateable lawfully.
 
 The reverse is also true: flawless routing alone does not produce a high-rated loci meme. Structural depth, examples, research, and aftermath quality still come from the generic meme law.
 
@@ -444,7 +492,7 @@ The reverse is also true: flawless routing alone does not produce a high-rated l
 
 #### Decide / ha
 
-Decide-ha holds the commitment domain: what Decide fundamentally binds is a resolution posture (locally resolved or currently unresolved) and a canon stage assignment. These two decisions determine the shape of the routing product Act prepares.
+Decide-ha holds the commitment domain: what Decide fundamentally binds is a resolution posture, a rating set, and a canon-lifecycle stage assignment. These three decisions determine the shape of the product Act prepares.
 
 <!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/loci-decide-ha >> -->
 <<~/ahu >>
@@ -453,7 +501,7 @@ Decide-ha holds the commitment domain: what Decide fundamentally binds is a reso
 
 #### Decide / ka
 
-Decide-ka governs the selection procedure: prefer derived-path resolution (step 7) when `meme_type` is known and the derived file exists. When step 7 misses, name unresolved state directly and do not pretend a missing local resolver already exists.
+Decide-ka governs the selection procedure: prefer derived-path resolution (step 7) when `meme_type` is known and the derived file exists. When step 7 misses, name unresolved state directly, lower readiness accordingly, and do not pretend a missing local resolver already exists.
 
 <!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/loci-decide-ka >> -->
 <<~/ahu >>
@@ -462,7 +510,7 @@ Decide-ka governs the selection procedure: prefer derived-path resolution (step 
 
 #### Decide / ba
 
-Decide-ba governs commitment style: do not soften a declared-unresolved classification into a partial match. A URI that resolves to no derived local path is declared-unresolved. The repair path may be authorship, subtype clarification, or MCP-resolver research. Vague "near match" verdicts obscure that repair path.
+Decide-ba governs commitment style: do not soften a declared-unresolved classification into a partial match or overrate it into false readiness. A URI that resolves to no derived local path is declared-unresolved. The repair path may be authorship, subtype clarification, or MCP-resolver research. Vague "near match" verdicts obscure that repair path.
 
 <!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/loci-decide-ba >> -->
 <<~/ahu >>
@@ -474,18 +522,18 @@ Decide-ba governs commitment style: do not soften a declared-unresolved classifi
 
 ```toml
 name = "loci-act"
-description = "Act phase for local resolution output, forward reference emission for declared-unresolved addresses, and MCP-resolution roadmap staging."
-role = "routing product preparation"
-function = "emit the resolved file path, prepare the MCP-resolution roadmap note, and emit typed forward references for declared-unresolved addresses"
+description = "Act phase for rating-envelope preparation, local resolution output, forward reference emission for declared-unresolved addresses, and MCP-resolution roadmap staging."
+role = "rating and routing product preparation"
+function = "emit the current rating set, any resolved carrier path, prepare the MCP-resolution roadmap note, and emit typed forward references for declared-unresolved addresses"
 input = "resolution commitment|canon stage|routing product type"
-output = "resolved file path|mcp-resolution roadmap note|forward reference list|prepared return-envelope"
+output = "rating set|resolved carrier path|mcp-resolution roadmap note|forward reference list|prepared return-envelope"
 phase = "act"
 glyph = "▶"
 ```
 
 ## Act
 
-Act prepares the routing product for agent consumption and the Hooko crossing.
+Act prepares the current loci rating and routing product for agent consumption and the Hooko crossing.
 
 <<~ ahu #mcp-resolution-roadmap >>
 
@@ -499,7 +547,7 @@ A live MCP server is the current roadmap answer to that tension. The intended sh
 * resolution is performed against live meme metadata rather than a handwritten registry
 * path-directory migration stops being a special failure case for local derivation-only agents
 * agents can ask for one `lar:` URI and receive the current carrier without guessing file siting
-* coherence between opener, `file_path`, and resolver output becomes testable as a live system property
+* coherence between opener, delegated siting evidence, and resolver output becomes testable as a live system property
 
 ### Research Backlog
 
@@ -519,7 +567,7 @@ This is explicitly still research. No MCP resolver is enacted by this meme today
 
 #### Act / ha
 
-Act-ha holds the output domain: what Act may produce. A routing product is one of: a resolved file path string, an MCP-roadmap note, a forward reference for a declared-unresolved address, or a prepared return envelope. Act may not enact a live resolver — that crossing belongs outside the current meme.
+Act-ha holds the output domain: what Act may produce. A loci product is one of: a rating set, a resolved carrier path string, an MCP-roadmap note, a forward reference for a declared-unresolved address, or a prepared return envelope. Act may not enact a live resolver — that crossing belongs outside the current meme.
 
 <!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/loci-act-ha >> -->
 <<~/ahu >>
@@ -528,7 +576,7 @@ Act-ha holds the output domain: what Act may produce. A routing product is one o
 
 #### Act / ka
 
-Act-ka governs the output format: resolved paths are emitted as plain strings. The roadmap is emitted as law text in `#mcp-resolution-roadmap`, not as a fake machine registry. Forward references for declared-unresolved addresses carry the full `lar:` URI and the classification (declared-unresolved), not a broken-link marker.
+Act-ka governs the output format: rating sets should be emitted explicitly, resolved paths are emitted as plain strings, and the roadmap is emitted as law text in `#mcp-resolution-roadmap`, not as a fake machine registry. Forward references for declared-unresolved addresses carry the full `lar:` URI and the classification (declared-unresolved), not a broken-link marker.
 
 <!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/loci-act-ka >> -->
 <<~/ahu >>
@@ -549,9 +597,9 @@ Act-ba governs execution rhythm: prepare the routing product before Hooko, not d
 
 ```toml
 name = "loci-hooko"
-description = "Hooko phase for carrier mutation, opener promotion, and any future live-resolver crossings not enacted here."
+description = "Hooko phase for carrier mutation, promotion crossing, and any future live-resolver enactment not yet enacted here."
 role = "routing state crossing"
-function = "execute carrier mutations such as siting changes, remove the ? from confirmed-canon document openers when justified, and name any future live-resolver crossing as external to this meme"
+function = "execute carrier mutations such as siting changes or delegated metadata updates, remove the ? from confirmed-canon document openers when justified, and name any future live-resolver crossing as external to this meme"
 input = "prepared carrier mutation|canon promotion decision|confirmed-canon document opener update"
 output = "updated carrier state|updated document opener|promotion confirmation|transaction trace"
 phase = "hooko"
@@ -581,7 +629,7 @@ In both cases, the stable thing was the `lar:` address. The mutable thing was th
 
 #### Hooko / ha
 
-Hooko-ha holds the mutation domain: what Hooko may alter. It may alter file siting, `file_path`, and document openers (`?` removal on canon promotion). It may not alter the `lar:` URI of a stable meme — that would break address stability for all memes that depend on it.
+Hooko-ha holds the mutation domain: what Hooko may alter. It may alter file siting, delegated siting metadata, and document openers (`?` removal on canon promotion). It may not alter the `lar:` URI of a stable meme — that would break address stability for all memes that depend on it.
 
 <!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/loci-hooko-ha >> -->
 <<~/ahu >>
@@ -590,7 +638,7 @@ Hooko-ha holds the mutation domain: what Hooko may alter. It may alter file siti
 
 #### Hooko / ka
 
-Hooko-ka governs the update procedure: when updating `file_path` on migration, verify the named `lar:` address does not change. When removing the `?` from a document opener for canon promotion, verify all three address-stability conditions hold before making the edit. A future live MCP resolver, if enacted, is its own separate Hooko-class crossing and is not performed by this meme today.
+Hooko-ka governs the update procedure: when migration updates siting evidence, follow `lar:///ha.ka.ba/loci/iam/file_path` and verify the named `lar:` address does not change. When removing the `?` from a document opener for canon promotion, verify all three address-stability conditions hold before making the edit. A future live MCP resolver, if enacted, is its own separate Hooko-class crossing and is not performed by this meme today.
 
 <!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/loci-hooko-ka >> -->
 <<~/ahu >>
@@ -611,18 +659,18 @@ Hooko-ba governs landing pressure: changing siting without preserving address tr
 
 ```toml
 name = "loci-aftermath"
-description = "Aftermath phase for routing gap reporting, declared-unresolved address surfacing, carrier coherence judgment, and MCP-roadmap escalation."
-role = "routing evaluation and gap judgment"
-function = "judge which URIs resolved, which remain declared-unresolved, whether carrier coherence holds, and whether MCP-roadmap research should be advanced"
+description = "Aftermath phase for routing gap reporting, rating review, explicit-convention judgment, and MCP-roadmap escalation."
+role = "routing evaluation, rating review, and gap judgment"
+function = "judge which URIs resolved, which remain declared-unresolved, what rating set is justified, whether explicit convention holds, and whether MCP-roadmap research should be advanced"
 input = "resolution results|forward reference list|transaction trace"
-output = "routing completeness report|declared-unresolved list|carrier coherence verdict|next-observation route"
+output = "routing-and-rating completeness report|declared-unresolved list|convention verdict|next-observation route"
 phase = "aftermath"
 glyph = "↺"
 ```
 
 ## Aftermath
 
-Aftermath judges what routing resolved and what remains open.
+Aftermath judges what routing resolved, what ratings are justified, and what remains open.
 
 ### Core Aftermath Kānāwai (law)
 
@@ -632,7 +680,8 @@ Aftermath should name:
 
 * which URIs resolved via derivation (step 7)
 * which URIs remain declared-unresolved after local derivation
-* whether opener and `file_path` still cohere as one carrier
+* what `mana`, `manao`, and `manaoio` posture is currently justified
+* whether explicit convention still holds
 * what would close each declared-unresolved address now
 * whether the remaining tension is ordinary authoring backlog or MCP-resolution research backlog
 
@@ -657,7 +706,7 @@ Aftermath-ha holds the residue domain: what remains unresolved after all routing
 
 #### Aftermath / ka
 
-Aftermath-ka governs the coherence check procedure: compare opener address, `file_path`, and physical file state. If they agree, the carrier is coherent even if local derivation still misses after migration. That miss should then surface as MCP-roadmap pressure, not as disguised corruption.
+Aftermath-ka governs the convention check procedure: compare opener address, declared convention surfaces, and any delegated siting evidence. If they agree, the carrier remains explicit even if local derivation still misses after migration. That miss should then surface as MCP-roadmap pressure, not as disguised corruption.
 
 <!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/loci-aftermath-ka >> -->
 <<~/ahu >>
@@ -684,12 +733,13 @@ Loci closes the routing authority stream here.
 
 A lawful loci envelope from this meme may carry:
 
-* a resolved file path for the queried `lar:` URI
+* a current `mana`, `manao`, and `manaoio` posture for the queried `lar:` URI meme
+* a resolved carrier path for the queried `lar:` URI when local derivation succeeds
 * the meme-type prefix table for derivation-algorithm step 5
 * the MCP-resolution roadmap note
-* the canon promotion stage for the target address
+* the current canon-lifecycle stage for the target address
 * a declared-unresolved forward reference when local derivation yields no result
-* a carrier coherence verdict
+* an explicit-convention verdict
 * gaps and declared-unresolved addresses named explicitly
 
 <<~/ahu >>
@@ -703,9 +753,9 @@ yield = "loci"
 return = "render"
 upward_context = "chat"
 downward_context = "none"
-residue = "path-directory carriers still exceed local derivation-only resolution; sub-meme files (loci-observe-ha, loci-orient, etc.) not yet authored; live MCP resolution remains research backlog"
+residue = "path-directory carriers still exceed local derivation-only resolution; high `manaoio` remains capped until live MCP-backed resolution exists; sub-meme files (loci-observe-ha, loci-orient, etc.) not yet authored"
 next_observation = "lar:///ha.ka.ba/loci#mcp-resolution-roadmap"
-next_question = "What is the minimal live MCP server contract that would resolve lar: URIs without a handwritten registry?"
+next_question = "What is the minimal live MCP server contract that would resolve `lar:` URI memes to trustworthy ratings without a handwritten registry?"
 ```
 
 <<~&#x0004; -> ? >>
