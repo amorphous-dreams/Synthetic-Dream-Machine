@@ -14,7 +14,7 @@ allowed-tools: Read, Grep, Glob, Bash, Edit, Write
 ```toml
 # <<~ ahu #iam-ha "structure" >>
 name = "template"
-file-path = "ha-ka-ba/pono/skill-template.md"
+file-path = "ha-ka-ba/pono/skill-pono-template.md"
 description = "Template and authoring guide for memetic-wikitext verification skill packages under lares/ha-ka-ba/pono/. Covers the SKILL.md * OODA-HA * ha.ka.ba structure, invariant declaration, pre-MCP Python and Node implementation patterns, and post-MCP roadmap."
 version = "0.1-draft"
 tulen = 0.52

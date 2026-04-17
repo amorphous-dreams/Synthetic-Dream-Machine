@@ -6,7 +6,7 @@
 ```toml
 # <<~ ahu #iam-ha "structure" >>
 name = "render-pipeline"
-file-path = "ha-ka-ba/pono/loci-render-pipeline.md"
+file-path = "ha-ka-ba/pono/loci-pono-render-pipeline.md"
 description = "Rendering and lowering kānāwai (law) for memetic-wikitext, covering the high-mana sigil surface, parsed AST, widget tree, render projection, trace continuity, and transactional aftermath."
 version = "0.1-draft"
 tulen = 0.76

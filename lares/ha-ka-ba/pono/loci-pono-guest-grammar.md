@@ -6,7 +6,7 @@
 ```toml
 # <<~ ahu #iam-ha "structure" >>
 name = "guest-grammar"
-file-path = "ha-ka-ba/pono/loci-guest-grammar.md"
+file-path = "ha-ka-ba/pono/loci-pono-guest-grammar.md"
 description = "Kānāwai (law) for explicit admission of guest grammars into memetic-wikitext without overloading the root primitive cluster."
 version = "0.1-draft"
 tulen = 0.56
