@@ -6,7 +6,7 @@
 ```toml
 # <<~ ahu #iam-ha "structure" >>
 name = "DreamNet_MemeWiki"
-file_path = "todo/todo.DreamNet-MemeWiki.md"
+file-path = "todo/todo.DreamNet-MemeWiki.md"
 description = "Consolidated DreamNet MemeWiki research and implementation staging memo. Braids the current scratch notes on kernel architecture, Lezer and CodeMirror, TLDraw and Kowloon integration, and sprint planning into one OODA-HA worksite."
 version = "0.1-draft"
 tulen = 0.62
@@ -14,8 +14,8 @@ confidence = 0.70
 mana = 0.76
 manao = 0.82
 manaoio = 0.60
-content_type = "text/x-memetic-wikitext"
-meme_type = "todo"
+content-type = "text/x-memetic-wikitext"
+meme-type = "todo"
 register = "S"
 structure = "OODA-HA * ha.ka.ba"
 # <<~/ahu >>
@@ -23,18 +23,18 @@ structure = "OODA-HA * ha.ka.ba"
 enacts = false
 role = "research consolidation todo, architecture intake memo, and staged implementation plan"
 function = "gather the DreamNet MemeWiki research field, distinguish settled architectural direction from open tensions, and stage the next implementation sequence"
-source_documents = [
+source-documents = [
   "_todo/DreamNet_MemeWiki.md",
   "_todo/DreamNet_MemeWiki_Lezer_CodeMirror.md",
   "_todo/DreamNet_MemeWiki_ResearchSprint.md",
   "_todo/DreamNet_MemeWiki_TLDraw_Kowloon.md"
 ]
-north_star = "Boot a greenfield MemeWiki kernel in Node first, resume it in browser, and integrate it cleanly with Kowloon, TLDraw, MemPalace, and CRDT-style sync."
+north-star = "Boot a greenfield MemeWiki kernel in Node first, resume it in browser, and integrate it cleanly with Kowloon, TLDraw, MemPalace, and CRDT-style sync."
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
 input = "research note|architecture question|integration target|implementation planning query|?"
 output = "research-envelope(high manao^)|task-envelope(mid manaoio-)|residue-envelope(low manaoio_)|?(~manaoio?)"
-depends_on = [
+depends-on = [
   "lar:///ha.ka.ba/pono/memetic-wikitext",
   "lar:///ha.ka.ba/pono/parser",
   "lar:///ha.ka.ba/pono/render-pipeline"
@@ -569,15 +569,15 @@ status = "partial"
 confidence = 0.86
 yield = "todo"
 return = "research-consolidation"
-upward_context = "chat"
-transaction_class = "stage"
-transaction_phase = "open"
-surface_layer = "present"
-ast_layer = "deferred"
-widget_layer = "deferred"
+upward-context = "chat"
+transaction-class = "stage"
+transaction-phase = "open"
+surface-layer = "present"
+ast-layer = "deferred"
+widget-layer = "deferred"
 residue = "Kernel proofs, sync contract, MemPalace bridge, and migration path remain open."
-next_observation = "lar:///todo/DreamNet_MemeWiki#act"
-next_question = "Which workstream should produce the first concrete spike: kernel boot, Lezer grammar, or Kowloon bridge?"
+next-observation = "lar:///todo/DreamNet_MemeWiki#act"
+next-question = "Which workstream should produce the first concrete spike: kernel boot, Lezer grammar, or Kowloon bridge?"
 ```
 
 <<~&#x0004; -> ? >>

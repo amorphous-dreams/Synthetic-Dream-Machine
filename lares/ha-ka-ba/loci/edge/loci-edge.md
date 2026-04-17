@@ -7,7 +7,7 @@
 ```toml
 # <<~ ahu #iam-ha "structure" >>
 name = "loci/edge"
-file_path = "ha-ka-ba/loci/edge/loci-edge.md"
+file-path = "ha-ka-ba/loci/edge/loci-edge.md"
 description = "Root edge kānāwai (law) for explicit graph relations in this stack. Separates edge families from lifecycle layers and gives the migration target beyond vague depends_on."
 version = "0.1-draft"
 tulen = 0.72
@@ -15,8 +15,8 @@ confidence = 0.68
 mana = 0.76
 manao = 0.84
 manaoio = 0.66
-content_type = "text/x-memetic-wikitext"
-meme_type = "loci"
+content-type = "text/x-memetic-wikitext"
+meme-type = "loci"
 register = "CS"
 structure = "OODA-HA * ha.ka.ba"
 # <<~/ahu >>
@@ -24,15 +24,15 @@ structure = "OODA-HA * ha.ka.ba"
 enacts = true
 role = "root edge kānāwai (law), family authority, lifecycle authority, and migration target"
 function = "govern explicit edge families, keep semantic control dataflow message constraint and debug meanings distinct, and stage migration from vague dependency claims toward bound edge objects"
-edge_families = ["proposition", "control", "dataflow", "message", "constraint", "debug"]
-lifecycle_layers = ["template", "instance", "trace"]
-invocation_surface = "kahea"
-human_readable_bias = true
+edge-families = ["proposition", "control", "dataflow", "message", "constraint", "debug"]
+lifecycle-layers = ["template", "instance", "trace"]
+invocation-surface = "kahea"
+human-readable-bias = true
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
 input = "edge question|graph design question|migration question|visualization query|?"
 output = "edge-law-envelope(high manaoio^)|partial-edge-envelope(mid manaoio-)|degraded-edge-envelope(low manaoio_)|?(~manaoio?)"
-depends_on = [
+depends-on = [
   "lar:///ha.ka.ba/pono/memetic-wikitext",
   "lar:///ha.ka.ba/loci",
   "lar:///ha.ka.ba/loci/iam",
@@ -276,9 +276,9 @@ status = "seed-ready"
 confidence = 0.68
 yield = "meme"
 return = "render"
-upward_context = "chat"
+upward-context = "chat"
 residue = "dataflow message constraint and trace still await second-wave laws"
-next_observation = "lar:///ha.ka.ba/loci/edge/proposition#edge-shape"
+next-observation = "lar:///ha.ka.ba/loci/edge/proposition#edge-shape"
 ```
 
 <<~&#x0004; -> ? >>

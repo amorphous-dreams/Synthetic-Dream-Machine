@@ -5,7 +5,7 @@
 ```toml
 # <<~ ahu #iam-ha "structure" >>
 name = "memetic-wikitext"
-file_path = "ha-ka-ba/pono/loci-memetic-wikitext.md"
+file-path = "ha-ka-ba/pono/loci-memetic-wikitext.md"
 description = "Constitutional root kānāwai (law) for the memetic-wikitext authoring surface, primitive semantic contract, and minimum boot grammar."
 version = "0.1-skeleton"
 tulen = 0.52
@@ -13,8 +13,8 @@ confidence = 0.50
 mana = 0.54
 manao = 0.62
 manaoio = 0.42
-content_type = "text/x-memetic-wikitext"
-meme_type = "loci"
+content-type = "text/x-memetic-wikitext"
+meme-type = "loci"
 register = "S"
 structure = "OODA-HA * ha.ka.ba"
 # <<~/ahu >>
@@ -22,16 +22,16 @@ structure = "OODA-HA * ha.ka.ba"
 enacts = true
 role = "constitutional root kānāwai (law), authoring kānāwai (law), primitive semantic kānāwai (law), and boot grammar contract"
 function = "govern lawful memetic-wikitext authoring surface, define primitive meanings and composition, and provide the minimum semantic and grammatical contract consumed by parser and render-pipeline"
-canonical_forms = ["inline", "block", "payload-block", "return"]
-control_sigils = ["&#x0001;", "&#x0002;", "&#x0003;", "&#x0004;", "&#x0005;", "&#x0006;"]
-canonical_modes = ["preamble", "metadata", "prose", "sigil", "filter", "raw", "aftermath"]
-constitutional_charge = [
+canonical-forms = ["inline", "block", "payload-block", "return"]
+control-sigils = ["&#x0001;", "&#x0002;", "&#x0003;", "&#x0004;", "&#x0005;", "&#x0006;"]
+canonical-modes = ["preamble", "metadata", "prose", "sigil", "filter", "raw", "aftermath"]
+constitutional-charge = [
   "authoring-surface",
   "primitive-semantic",
   "composition",
   "boot-grammar"
 ]
-non_goals = [
+non-goals = [
   "full-parse-algorithm",
   "full-render-lowering-pipeline",
   "full-transaction-lifecycle"
@@ -40,7 +40,7 @@ non_goals = [
 # <<~ ahu #iam-ba "flow" >>
 input = "memetic-wikitext document|fragment|meme|query|artifact|bundle|stream|?"
 output = "meme-envelope(high manaoio^)|partial-envelope(mid manaoio-)|degraded-envelope(low manaoio_)|?(~manaoio?)"
-depends_on = [
+depends-on = [
   "lar:///ha.ka.ba/pono/parser",
   "lar:///ha.ka.ba/pono/render-pipeline"
 ]
@@ -978,8 +978,8 @@ confidence = 0.00
 mana = 0.00
 manao = 0.00
 manaoio = 0.00
-content_type = "..."
-meme_type = "..."
+content-type = "..."
+meme-type = "..."
 register = "?"
 structure = "..."
 # <<~/ahu >>
@@ -1447,11 +1447,11 @@ status = "skeleton"
 confidence = 0.71
 yield = "meme"
 return = "render"
-upward_context = "chat"
-downward_context = "none"
+upward-context = "chat"
+downward-context = "none"
 residue = "todo"
-next_observation = "lar:///ha.ka.ba/pono/memetic-wikitext#boot-grammar"
-next_question = "Which minimum examples should become canonical boot fixtures first?"
+next-observation = "lar:///ha.ka.ba/pono/memetic-wikitext#boot-grammar"
+next-question = "Which minimum examples should become canonical boot fixtures first?"
 ```
 
 <<~&#x0004; -> ? >>

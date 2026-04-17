@@ -6,7 +6,7 @@
 ```toml
 # <<~ ahu #iam-ha "structure" >>
 name = "x-tiddlywiki-filter"
-file_path = "ha-ka-ba/grammars/grammar-x-tiddlywiki-filter.md"
+file-path = "ha-ka-ba/grammars/grammar-x-tiddlywiki-filter.md"
 description = "Registered imported function sigil grammar for TiddlyWiki-style filter work under explicit hana admission."
 version = "0.1-draft"
 tulen = 0.45
@@ -14,8 +14,8 @@ confidence = 0.48
 mana = 0.44
 manao = 0.52
 manaoio = 0.36
-content_type = "text/x-memetic-wikitext"
-meme_type = "grammar"
+content-type = "text/x-memetic-wikitext"
+meme-type = "grammar"
 register = "S"
 structure = "OODA-HA * ha.ka.ba"
 # <<~/ahu >>
@@ -23,15 +23,15 @@ structure = "OODA-HA * ha.ka.ba"
 enacts = true
 role = "grammar meme, import-profile meme, sigil-centric translation contract, and boundary-safe work grammar registry entry"
 function = "define the admitted x-tiddlywiki-filter guest family, its host-facing priming contract, its sigil-centric term shifts, and its minimum lawful use through hana"
-grammar_key = "x-tiddlywiki-filter"
-guest_mime = "text/x-tiddlywiki-filter"
-invocation_worksite = "hana"
-prior_art_name = "TiddlyWiki filter language"
+grammar-key = "x-tiddlywiki-filter"
+guest-mime = "text/x-tiddlywiki-filter"
+invocation-worksite = "hana"
+prior-art-name = "TiddlyWiki filter language"
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
 input = "hana worksite|guest grammar query|filter body|artifact|bundle|stream|?"
 output = "grammar-envelope(high manaoio^)|partial-grammar-envelope(mid manaoio-)|degraded-grammar-envelope(low manaoio_)|?(~manaoio?)"
-depends_on = [
+depends-on = [
   "lar:///ha.ka.ba/pono/guest-grammar",
   "lar:///ha.ka.ba/pono/memetic-wikitext",
   "lar:///ha.ka.ba/pono/parser",
@@ -233,7 +233,7 @@ grammar = "x-tiddlywiki-filter"
 context = "+currentMeme"
 profile = "canonical"
 degrade = "no-op"
-result_shape = "set"
+result-shape = "set"
 ```
 
 [all[sigils]links:to[+currentMeme]]
@@ -522,15 +522,15 @@ status = "partial"
 confidence = 0.94
 yield = "meme"
 return = "grammar"
-upward_context = "chat"
-transaction_class = "stage"
-transaction_phase = "open"
-surface_layer = "present"
-ast_layer = "outlined"
-widget_layer = "outlined"
+upward-context = "chat"
+transaction-class = "stage"
+transaction-phase = "open"
+surface-layer = "present"
+ast-layer = "outlined"
+widget-layer = "outlined"
 residue = "operator-table, function-sigil coverage, fixture corpus"
-next_observation = "lar:///ha.ka.ba/pono/implictations-of-hana"
-next_question = "Which canonical memes now need direct hana-aware updates?"
+next-observation = "lar:///ha.ka.ba/pono/implictations-of-hana"
+next-question = "Which canonical memes now need direct hana-aware updates?"
 ```
 
 <<~&#x0004; -> ? >>

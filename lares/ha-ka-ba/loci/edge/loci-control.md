@@ -7,7 +7,7 @@
 ```toml
 # <<~ ahu #iam-ha "structure" >>
 name = "loci/edge/control"
-file_path = "ha-ka-ba/loci/edge/loci-control.md"
+file-path = "ha-ka-ba/loci/edge/loci-control.md"
 description = "Control-flow edge kānāwai (law) for execution pulse, branch, gate, sequence, and outlet semantics."
 version = "0.1-draft"
 tulen = 0.72
@@ -15,8 +15,8 @@ confidence = 0.69
 mana = 0.77
 manao = 0.84
 manaoio = 0.67
-content_type = "text/x-memetic-wikitext"
-meme_type = "loci"
+content-type = "text/x-memetic-wikitext"
+meme-type = "loci"
 register = "CS"
 structure = "OODA-HA * ha.ka.ba"
 # <<~/ahu >>
@@ -24,14 +24,14 @@ structure = "OODA-HA * ha.ka.ba"
 enacts = true
 role = "control-flow edge kānāwai (law), branch authority, and execution-order authority"
 function = "govern execution pulse between nodes or phases, keep branch and gate semantics explicit, and keep control flow distinct from proposition or carried data"
-default_direction = "forward"
-branch_visible = true
-gate_visible = true
+default-direction = "forward"
+branch-visible = true
+gate-visible = true
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
 input = "execution question|branch question|sequence question|?"
 output = "control-envelope(high manaoio^)|partial-control-envelope(mid manaoio-)|degraded-control-envelope(low manaoio_)|?(~manaoio?)"
-depends_on = [
+depends-on = [
   "lar:///ha.ka.ba/loci/edge",
   "lar:///ha.ka.ba/loci/edge/template",
   "lar:///ha.ka.ba/loci/edge/instance"
@@ -121,10 +121,10 @@ from = "lar:///ha.ka.ba/loci/edge/template"
 to = "lar:///ha.ka.ba/loci/edge/instance"
 label = "binds_next"
 direction = "forward"
-branch_label = "then"
+branch-label = "then"
 gate = "sequence"
 confidence = 0.88
-render_mode = "pulse-wire"
+render-mode = "pulse-wire"
 status = "declared"
 ```
 
@@ -233,9 +233,9 @@ status = "seed-ready"
 confidence = 0.69
 yield = "meme"
 return = "render"
-upward_context = "chat"
+upward-context = "chat"
 residue = "dataflow and message families still await dedicated laws"
-next_observation = "lar:///ha.ka.ba/loci/edge/debug#debug-modes"
+next-observation = "lar:///ha.ka.ba/loci/edge/debug#debug-modes"
 ```
 
 <<~&#x0004; -> ? >>

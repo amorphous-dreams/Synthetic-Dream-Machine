@@ -7,7 +7,7 @@
 ```toml
 # <<~ ahu #iam-ha "structure" >>
 name = "meme"
-file_path = "ha-ka-ba/meme/loci-meme.md"
+file-path = "ha-ka-ba/meme/loci-meme.md"
 description = "Canonical meme kānāwai (law) for the OODA-HA * ha.ka.ba pattern. Defines required and optional elements, rating targets, and serves as a copy-ready authoring template."
 version = "0.1-draft"
 tulen = 0.79
@@ -15,8 +15,8 @@ confidence = 0.79
 mana = 0.78
 manao = 0.84
 manaoio = 0.76
-content_type = "text/x-memetic-wikitext"
-meme_type = "loci"
+content-type = "text/x-memetic-wikitext"
+meme-type = "loci"
 register = "CS"
 structure = "OODA-HA * ha.ka.ba"
 # <<~/ahu >>
@@ -28,7 +28,7 @@ function = "define the required and optional structure of a meme in this stack, 
 # <<~ ahu #iam-ba "flow" >>
 input = "authoring intent|meme draft|rating query|skeleton request|?"
 output = "skeleton-envelope(high manaoio^)|partial-skeleton-envelope(mid manaoio-)|degraded-skeleton-envelope(low manaoio_)|?(~manaoio?)"
-depends_on = [
+depends-on = [
   "lar:///ha.ka.ba/pono/memetic-wikitext",
   "lar:///ha.ka.ba/pono/parser",
   "lar:///ha.ka.ba/pono/render-pipeline"
@@ -250,7 +250,7 @@ The `#iam` block MUST carry at minimum:
 ```toml
 # <<~ ahu #iam-ha "structure" >>
 name = "..."
-file_path = "..."
+file-path = "..."
 description = "..."
 version = "..."
 tulen = 0.00
@@ -258,8 +258,8 @@ confidence = 0.00
 mana = 0.00
 manao = 0.00
 manaoio = 0.00
-content_type = "text/x-memetic-wikitext"
-meme_type = "..."
+content-type = "text/x-memetic-wikitext"
+meme-type = "..."
 register = "?"
 structure = "OODA-HA * ha.ka.ba"
 # <<~/ahu >>
@@ -271,7 +271,7 @@ function = "..."
 # <<~ ahu #iam-ba "flow" >>
 input = "...|?"
 output = "...(high manaoio^)|...(mid manaoio-)|...(low manaoio_)|?(~manaoio?)"
-depends_on = ["lar:///ha.ka.ba/pono/memetic-wikitext"]
+depends-on = ["lar:///ha.ka.ba/pono/memetic-wikitext"]
 # <<~/ahu >>
 ```
 
@@ -340,11 +340,11 @@ status = "..."
 confidence = 0.00
 yield = "meme"
 return = "render"
-upward_context = "chat"
-downward_context = "none"
+upward-context = "chat"
+downward-context = "none"
 residue = "..."
-next_observation = "..."
-next_question = "..."
+next-observation = "..."
+next-question = "..."
 ```
 
 <<~&#x0004; -> ? >>
@@ -720,7 +720,7 @@ Copy this block. Replace every `[PLACEHOLDER]` with local content. Delete option
 ```toml
 # <<~ ahu #iam-ha "structure" >>
 name = "[NAME]"
-file_path = "ha-ka-ba/[MEME-TYPE]-[NAME].md"
+file-path = "ha-ka-ba/[MEME-TYPE]-[NAME].md"
 description = "[One sentence: what this meme governs.]"
 version = "0.1-skeleton"
 tulen = 0.10
@@ -728,8 +728,8 @@ confidence = 0.10
 mana = 0.10
 manao = 0.10
 manaoio = 0.10
-content_type = "text/x-memetic-wikitext"
-meme_type = "[MEME_TYPE]"
+content-type = "text/x-memetic-wikitext"
+meme-type = "[MEME_TYPE]"
 register = "P"
 structure = "OODA-HA * ha.ka.ba"
 # <<~/ahu >>
@@ -741,7 +741,7 @@ function = "[function]"
 # <<~ ahu #iam-ba "flow" >>
 input = "[input types]|?"
 output = "[name]-envelope(high manaoio^)|partial-[name]-envelope(mid manaoio-)|degraded-[name]-envelope(low manaoio_)|?(~manaoio?)"
-depends_on = [
+depends-on = [
   "lar:///ha.ka.ba/pono/memetic-wikitext"
 ]
 # <<~/ahu >>
@@ -807,11 +807,11 @@ status = "skeleton"
 confidence = 0.10
 yield = "meme"
 return = "render"
-upward_context = "chat"
-downward_context = "none"
+upward-context = "chat"
+downward-context = "none"
 residue = "todo"
-next_observation = "lar:///ha.ka.ba/[NAME]#phase-map"
-next_question = "[What should this meme answer first?]"
+next-observation = "lar:///ha.ka.ba/[NAME]#phase-map"
+next-question = "[What should this meme answer first?]"
 ```
 
 <<~&#x0004; -> ? >>
@@ -1172,11 +1172,11 @@ status = "partial"
 confidence = 0.79
 yield = "meme"
 return = "render"
-upward_context = "chat"
-downward_context = "none"
+upward-context = "chat"
+downward-context = "none"
 residue = "transport-specific predicates for loci-routed carriers now governed outward by loci; O7/O8/O9 sub-meme files not yet authored; deferred-resolution and research-foundation sections present and governing"
-next_observation = "lar:///ha.ka.ba/loci#high-rating-loci"
-next_question = "Which concrete meme family should this generic meme law tighten next — loci, grammar, or skill?"
+next-observation = "lar:///ha.ka.ba/loci#high-rating-loci"
+next-question = "Which concrete meme family should this generic meme law tighten next — loci, grammar, or skill?"
 ```
 
 <<~&#x0004; -> ? >>

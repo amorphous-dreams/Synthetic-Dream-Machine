@@ -7,7 +7,7 @@
 ```toml
 # <<~ ahu #iam-ha "structure" >>
 name = "iam"
-file_path = "ha-ka-ba/loci/iam/loci-iam.md"
+file-path = "ha-ka-ba/loci/iam/loci-iam.md"
 description = "Canonical kānāwai (law) for the #iam root metadata block. Fixes the surviving field set, locates each field in ha, ka, or ba, and collapses redundant flow claims."
 version = "0.1-draft"
 tulen = 0.74
@@ -15,8 +15,8 @@ confidence = 0.70
 mana = 0.76
 manao = 0.84
 manaoio = 0.68
-content_type = "text/x-memetic-wikitext"
-meme_type = "loci"
+content-type = "text/x-memetic-wikitext"
+meme-type = "loci"
 register = "CS"
 structure = "OODA-HA * ha.ka.ba"
 # <<~/ahu >>
@@ -24,7 +24,7 @@ structure = "OODA-HA * ha.ka.ba"
 enacts = true
 role = "root metadata kānāwai (law), field-set authority, and reduction charter"
 function = "govern the surviving #iam field set, place each field in the correct ha ka ba slot, and cut redundant or ornamental metadata from live carriers"
-required_ha_keys = [
+required-ha-keys = [
   "name",
   "file_path",
   "description",
@@ -39,14 +39,14 @@ required_ha_keys = [
   "register",
   "structure"
 ]
-common_ka_keys = ["enacts", "role", "function"]
-common_ba_keys = ["input", "output", "depends_on"]
-banned_flow_keys = ["requires", "provides", "receives_state", "emits_state"]
+common-ka-keys = ["enacts", "role", "function"]
+common-ba-keys = ["input", "output", "depends_on"]
+banned-flow-keys = ["requires", "provides", "receives_state", "emits_state"]
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
 input = "#iam block|field inventory|migration question|query|?"
 output = "metadata-law-envelope(high manaoio^)|partial-metadata-law-envelope(mid manaoio-)|degraded-metadata-law-envelope(low manaoio_)|?(~manaoio?)"
-depends_on = [
+depends-on = [
   "lar:///ha.ka.ba/pono/memetic-wikitext",
   "lar:///ha.ka.ba/loci",
   "lar:///ha.ka.ba/meme"
@@ -278,7 +278,7 @@ status = "metadata-law-ready"
 confidence = 0.70
 yield = "meme"
 return = "render"
-next_observation = "file_path under the reduced #iam contract"
+next-observation = "file_path under the reduced #iam contract"
 ```
 
 This law now names the reduced `#iam` contract for the live corpus.

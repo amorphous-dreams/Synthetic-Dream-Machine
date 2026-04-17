@@ -7,7 +7,7 @@
 ```toml
 # <<~ ahu #iam-ha "structure" >>
 name = "loci/edge/proposition"
-file_path = "ha-ka-ba/loci/edge/loci-proposition.md"
+file-path = "ha-ka-ba/loci/edge/loci-proposition.md"
 description = "Semantic edge kānāwai (law) for proposition-bearing relations. Gives labeled semantic links, ontology-backed relation vocab, direction modes, and polarity guidance."
 version = "0.1-draft"
 tulen = 0.71
@@ -15,8 +15,8 @@ confidence = 0.69
 mana = 0.75
 manao = 0.83
 manaoio = 0.67
-content_type = "text/x-memetic-wikitext"
-meme_type = "loci"
+content-type = "text/x-memetic-wikitext"
+meme-type = "loci"
 register = "CS"
 structure = "OODA-HA * ha.ka.ba"
 # <<~/ahu >>
@@ -24,14 +24,14 @@ structure = "OODA-HA * ha.ka.ba"
 enacts = true
 role = "semantic edge kānāwai (law), proposition authority, and ontology-link bridge"
 function = "govern labeled semantic relations between concepts sigils memes and loci while keeping proposition meaning distinct from execution or message flow"
-link_phrase_required = true
-ontology_backed = true
-default_direction = "forward"
+link-phrase-required = true
+ontology-backed = true
+default-direction = "forward"
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
 input = "semantic relation|ontology question|link label|?"
 output = "proposition-envelope(high manaoio^)|partial-proposition-envelope(mid manaoio-)|degraded-proposition-envelope(low manaoio_)|?(~manaoio?)"
-depends_on = [
+depends-on = [
   "lar:///ha.ka.ba/loci/edge",
   "lar:///ha.ka.ba/loci",
   "lar:///ha.ka.ba/meme"
@@ -111,12 +111,12 @@ kind = "proposition"
 from = "lar:///ha.ka.ba/loci/iam"
 to = "lar:///ha.ka.ba/loci/iam/file_path"
 label = "governs"
-relation_kind = "ontology"
+relation-kind = "ontology"
 direction = "forward"
 polarity = "affirming"
 confidence = 0.91
-ontology_source = "lar:///ha.ka.ba/loci"
-render_mode = "inline-label"
+ontology-source = "lar:///ha.ka.ba/loci"
+render-mode = "inline-label"
 status = "declared"
 ```
 
@@ -248,9 +248,9 @@ status = "seed-ready"
 confidence = 0.69
 yield = "meme"
 return = "render"
-upward_context = "chat"
+upward-context = "chat"
 residue = "template promotion of repeated proposition phrases still awaits live use"
-next_observation = "lar:///ha.ka.ba/loci/edge/template#binding-precedence"
+next-observation = "lar:///ha.ka.ba/loci/edge/template#binding-precedence"
 ```
 
 <<~&#x0004; -> ? >>

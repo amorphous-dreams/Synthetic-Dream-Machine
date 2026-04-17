@@ -7,7 +7,7 @@
 ```toml
 # <<~ ahu #iam-ha "structure" >>
 name = "parser"
-file_path = "ha-ka-ba/pono/loci-parser.md"
+file-path = "ha-ka-ba/pono/loci-parser.md"
 description = "Full parsing kānāwai (law) for memetic-wikitext, including canonical sigil forms, metadata payload rules, mode transitions, normalization, and typed parse aftermath."
 version = "0.1-draft"
 tulen = 0.79
@@ -15,8 +15,8 @@ confidence = 0.86
 mana = 0.82
 manao = 0.76
 manaoio = 0.72
-content_type = "text/x-memetic-wikitext"
-meme_type = "loci"
+content-type = "text/x-memetic-wikitext"
+meme-type = "loci"
 register = "C"
 structure = "OODA-HA * ha.ka.ba"
 # <<~/ahu >>
@@ -24,14 +24,14 @@ structure = "OODA-HA * ha.ka.ba"
 enacts = true
 role = "parsing kānāwai (law), normalization kānāwai (law), metadata fetch kānāwai (law), and deterministic scripting contract"
 function = "parse documents, classify forms, normalize surfaces, surface typed issues, and return addressed metadata or parse products"
-canonical_forms = ["inline", "block", "payload-block", "return"]
-control_sigils = ["&#x0001;", "&#x0002;", "&#x0003;", "&#x0004;", "&#x0005;", "&#x0006;"]
-canonical_modes = ["preamble", "metadata", "prose", "sigil", "filter", "raw", "aftermath"]
+canonical-forms = ["inline", "block", "payload-block", "return"]
+control-sigils = ["&#x0001;", "&#x0002;", "&#x0003;", "&#x0004;", "&#x0005;", "&#x0006;"]
+canonical-modes = ["preamble", "metadata", "prose", "sigil", "filter", "raw", "aftermath"]
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
 input = "memetic-wikitext document|fragment|meme|query|artifact|bundle|stream|?"
 output = "return-envelope(high manaoio^)|partial-envelope(mid manaoio-)|degraded-envelope(low manaoio_)|?(~manaoio?)"
-depends_on = [
+depends-on = [
   "lar:///ha.ka.ba/pono/memetic-wikitext",
   "lar:///ha.ka.ba/ooda-ha",
   "lar:///ha.ka.ba/error-result"
@@ -1239,12 +1239,12 @@ A compliant parser MAY compute `mana_score` as a weighted combination under the 
 Recommended boot-profile weights:
 
 ```toml
-carrier_order = 0.15
-structural_validity = 0.25
-payload_integrity = 0.15
-boundary_truth = 0.20
-signal_to_noise = 0.15
-recovery_quality = 0.10
+carrier-order = 0.15
+structural-validity = 0.25
+payload-integrity = 0.15
+boundary-truth = 0.20
+signal-to-noise = 0.15
+recovery-quality = 0.10
 ```
 
 Recommended calculation:
@@ -2224,11 +2224,11 @@ status = "partial"
 confidence = 0.86
 yield = "meme"
 return = "render"
-upward_context = "chat"
-downward_context = "none"
+upward-context = "chat"
+downward-context = "none"
 residue = "trace"
-next_observation = "lar:///ha.ka.ba/filter-mode"
-next_question = "How strict should legacy closer normalization run during boot?"
+next-observation = "lar:///ha.ka.ba/filter-mode"
+next-question = "How strict should legacy closer normalization run during boot?"
 ```
 
 <<~&#x0004; -> ? >>
@@ -2377,11 +2377,11 @@ status = "partial"
 confidence = 0.86
 yield = "meme"
 return = "render"
-upward_context = "chat"
-downward_context = "none"
+upward-context = "chat"
+downward-context = "none"
 residue = "trace"
-next_observation = "lar:///ha.ka.ba/filter-mode"
-next_question = "How strict should legacy closer normalization run during boot?"
+next-observation = "lar:///ha.ka.ba/filter-mode"
+next-question = "How strict should legacy closer normalization run during boot?"
 ```
 
 <<~&#x0004; -> ? >>

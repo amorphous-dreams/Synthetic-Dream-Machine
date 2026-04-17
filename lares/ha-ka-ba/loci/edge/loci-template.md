@@ -7,7 +7,7 @@
 ```toml
 # <<~ ahu #iam-ha "structure" >>
 name = "loci/edge/template"
-file_path = "ha-ka-ba/loci/edge/loci-template.md"
+file-path = "ha-ka-ba/loci/edge/loci-template.md"
 description = "Template edge sigil kānāwai (law). Defines reusable edge templates, slot contracts, kahea binding order, and promotion discipline."
 version = "0.1-draft"
 tulen = 0.70
@@ -15,8 +15,8 @@ confidence = 0.67
 mana = 0.75
 manao = 0.82
 manaoio = 0.65
-content_type = "text/x-memetic-wikitext"
-meme_type = "loci"
+content-type = "text/x-memetic-wikitext"
+meme-type = "loci"
 register = "CS"
 structure = "OODA-HA * ha.ka.ba"
 # <<~/ahu >>
@@ -24,14 +24,14 @@ structure = "OODA-HA * ha.ka.ba"
 enacts = true
 role = "template edge sigil kānāwai (law), slot-contract authority, and kahea binding authority"
 function = "govern reusable edge templates, declare slot and default surfaces, and bind template invocations into concrete edge instances without hiding context precedence"
-binding_order = ["invocation", "local-body", "addressed-iam", "session-state", "template-defaults"]
-promotion_rule = "repeat-before-promotion"
-invocation_surface = "kahea"
+binding-order = ["invocation", "local-body", "addressed-iam", "session-state", "template-defaults"]
+promotion-rule = "repeat-before-promotion"
+invocation-surface = "kahea"
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
 input = "edge pattern|kahea invocation|slot question|?"
 output = "template-envelope(high manaoio^)|partial-template-envelope(mid manaoio-)|degraded-template-envelope(low manaoio_)|?(~manaoio?)"
-depends_on = [
+depends-on = [
   "lar:///ha.ka.ba/loci/edge",
   "lar:///ha.ka.ba/loci",
   "lar:///ha.ka.ba/meme"
@@ -102,15 +102,15 @@ Orient gives the template its slot contract.
 
 ```toml
 kind = "proposition"
-template_name = "governs"
-allowed_from = ["loci", "meme"]
-allowed_to = ["loci", "meme"]
-required_slots = ["from", "to"]
-optional_slots = ["direction", "polarity", "confidence", "payload", "render_mode"]
-label_default = "governs"
-direction_default = "forward"
-render_mode_default = "inline-label"
-status_default = "declared"
+template-name = "governs"
+allowed-from = ["loci", "meme"]
+allowed-to = ["loci", "meme"]
+required-slots = ["from", "to"]
+optional-slots = ["direction", "polarity", "confidence", "payload", "render_mode"]
+label-default = "governs"
+direction-default = "forward"
+render-mode-default = "inline-label"
+status-default = "declared"
 ```
 
 Template fields should declare defaults plainly. Hidden defaults weaken later debugging.
@@ -141,7 +141,7 @@ Later sources may fill gaps. They should not silently overwrite earlier explicit
 <<~ kahea lar:///ha.ka.ba/loci/edge/template >>
 ```toml
 kind = "proposition"
-template_name = "governs"
+template-name = "governs"
 from = "lar:///ha.ka.ba/loci/iam"
 to = "lar:///ha.ka.ba/loci/iam/file_path"
 confidence = 0.91
@@ -235,9 +235,9 @@ status = "seed-ready"
 confidence = 0.67
 yield = "meme"
 return = "render"
-upward_context = "chat"
+upward-context = "chat"
 residue = "first live template library still awaits concrete edge authoring"
-next_observation = "lar:///ha.ka.ba/loci/edge/instance#instance-shape"
+next-observation = "lar:///ha.ka.ba/loci/edge/instance#instance-shape"
 ```
 
 <<~&#x0004; -> ? >>

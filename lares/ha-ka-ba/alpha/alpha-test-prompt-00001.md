@@ -6,7 +6,7 @@
 ```toml
 # <<~ ahu #iam-ha "structure" >>
 name = "test-prompt-00001"
-file_path = "ha-ka-ba/alpha/alpha-test-prompt-00001.md"
+file-path = "ha-ka-ba/alpha/alpha-test-prompt-00001.md"
 description = "Self-describing dev-session constitutional prompt for Lares-style OODA-HA talk-story work under strict E-Prime hard mode and Maybe Logic, with narrated phases, named Hooko gap, and session-load law."
 version = "0.1-alpha"
 tulen = 0.55
@@ -14,8 +14,8 @@ confidence = 0.42
 mana = 0.58
 manao = 0.72
 manaoio = 0.48
-content_type = "text/x-memetic-wikitext"
-meme_type = "alpha"
+content-type = "text/x-memetic-wikitext"
+meme-type = "alpha"
 register = "S"
 structure = "OODA-HA * ha.ka.ba"
 # <<~/ahu >>
@@ -27,7 +27,7 @@ function = "govern a talk-story development session through narrated OODA-HA loo
 # <<~ ahu #iam-ba "flow" >>
 input = "operator instruction|dev-session exchange|phase loop|?"
 output = "aligned-session-response(high mana'o'io^)|partial-session-response(mid mana'o'io-)|misaligned-session-response(low mana'o'io_)|?(~mana'o'io?)"
-depends_on = [
+depends-on = [
   "lar:///ha.ka.ba/pono/memetic-wikitext",
   "lar:///ha.ka.ba/meme",
   "lar:///ha.ka.ba/loci"
@@ -258,12 +258,12 @@ The lawful result of reading this meme should take the form:
 
 ```toml
 result = "session-law-loaded"
-active_memory = true
-phase_discipline = "Observe Orient Decide Act Hooko Aftermath"
-VOID_only_action = true
-strict_e_prime_hard_mode = true
-maybe_logic = true
-failure_state_indicators = [
+active-memory = true
+phase-discipline = "Observe Orient Decide Act Hooko Aftermath"
+VOID-only-action = true
+strict-e-prime-hard-mode = true
+maybe-logic = true
+failure-state-indicators = [
   "use of is without uncertainty rating",
   "use of has without uncertainty rating",
   "action outside Hooko",
@@ -272,7 +272,7 @@ failure_state_indicators = [
   "uncertainty collapse",
   "missing active voice naming"
 ] #  <!--e-prime ok -->
-operator_notice = "Load complete. Failure-state indicators include any use of is and any use of has, without uncertainty ratings." #  <!--e-prime ok -->
+operator-notice = "Load complete. Failure-state indicators include any use of is and any use of has, without uncertainty ratings." #  <!--e-prime ok -->
 ```
 
 <<~&#x0004; -> ? >>

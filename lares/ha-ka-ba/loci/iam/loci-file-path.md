@@ -7,7 +7,7 @@
 ```toml
 # <<~ ahu #iam-ha "structure" >>
 name = "file_path"
-file_path = "ha-ka-ba/loci/iam/loci-file-path.md"
+file-path = "ha-ka-ba/loci/iam/loci-file-path.md"
 description = "Kānāwai (law) for the file_path metadata key. Governs its two canonical forms (flat-file and path-directory), its required agreement with the lar: URI in the document opener, and the migration procedure when a meme moves between forms."
 version = "0.1-draft"
 tulen = 0.60
@@ -15,8 +15,8 @@ confidence = 0.62
 mana = 0.60
 manao = 0.68
 manaoio = 0.52
-content_type = "text/x-memetic-wikitext"
-meme_type = "loci"
+content-type = "text/x-memetic-wikitext"
+meme-type = "loci"
 register = "CS"
 structure = "OODA-HA * ha.ka.ba"
 # <<~/ahu >>
@@ -24,15 +24,15 @@ structure = "OODA-HA * ha.ka.ba"
 enacts = true
 role = "file_path key authority, path-form classifier, and migration-procedure kānāwai (law)"
 function = "define the two canonical file_path forms, govern the agreement check between file_path and lar: URI, and declare the migration procedure when a meme moves from flat-file to path-directory siting"
-key_name = "file_path"
-key_position = "second field in #iam TOML, immediately after name"
-path_root = "ha-ka-ba/"
-install_root = "lares/"
+key-name = "file_path"
+key-position = "second field in #iam TOML, immediately after name"
+path-root = "ha-ka-ba/"
+install-root = "lares/"
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
 input = "file_path value|#iam TOML block|lar: URI|migration request|?"
 output = "file-path-envelope(high manaoio^)|partial-file-path-envelope(mid manaoio-)|degraded-file-path-envelope(low manaoio_)|?(~manaoio?)"
-depends_on = [
+depends-on = [
   "lar:///ha.ka.ba/loci/iam",
   "lar:///ha.ka.ba/pono/memetic-wikitext",
   "lar:///ha.ka.ba/loci",
@@ -551,11 +551,11 @@ status = "partial"
 confidence = 0.62
 yield = "loci"
 return = "render"
-upward_context = "chat"
-downward_context = "none"
+upward-context = "chat"
+downward-context = "none"
 residue = "sub-meme files (file_path-observe-ha, file_path-orient, etc.) not yet authored; loci/iam/ namespace established but only file_path registered so far"
-next_observation = "lar:///ha.ka.ba/loci/iam/file_path#file-path-forms"
-next_question = "Which #iam key should the next loci/iam/ sub-meme govern — name, meme_type, or one of the five canonical rating fields?"
+next-observation = "lar:///ha.ka.ba/loci/iam/file_path#file-path-forms"
+next-question = "Which #iam key should the next loci/iam/ sub-meme govern — name, meme_type, or one of the five canonical rating fields?"
 ```
 
 <<~&#x0004; -> ? >>

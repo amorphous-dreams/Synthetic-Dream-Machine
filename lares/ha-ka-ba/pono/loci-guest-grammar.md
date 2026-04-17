@@ -6,7 +6,7 @@
 ```toml
 # <<~ ahu #iam-ha "structure" >>
 name = "guest-grammar"
-file_path = "ha-ka-ba/pono/loci-guest-grammar.md"
+file-path = "ha-ka-ba/pono/loci-guest-grammar.md"
 description = "Kānāwai (law) for explicit admission of guest grammars into memetic-wikitext without overloading the root primitive cluster."
 version = "0.1-draft"
 tulen = 0.56
@@ -14,8 +14,8 @@ confidence = 0.58
 mana = 0.56
 manao = 0.62
 manaoio = 0.48
-content_type = "text/x-memetic-wikitext"
-meme_type = "loci"
+content-type = "text/x-memetic-wikitext"
+meme-type = "loci"
 register = "S"
 structure = "OODA-HA * ha.ka.ba"
 # <<~/ahu >>
@@ -23,13 +23,13 @@ structure = "OODA-HA * ha.ka.ba"
 enacts = true
 role = "guest-grammar admission kānāwai (law), invocation-boundary kānāwai (law), and host-guest ownership contract"
 function = "define how memetic-wikitext admits, names, bounds, invokes, degrades, and hands forward guest grammars under explicit host control"
-grammar_registry_root = "lar:///ha.ka.ba/grammars/"
-canonical_guest_worksite = "hana"
+grammar-registry-root = "lar:///ha.ka.ba/grammars/"
+canonical-guest-worksite = "hana"
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
 input = "memetic-wikitext document|guest grammar declaration|hana worksite|query|artifact|bundle|stream|?"
 output = "guest-envelope(high manaoio^)|partial-guest-envelope(mid manaoio-)|degraded-guest-envelope(low manaoio_)|?(~manaoio?)"
-depends_on = [
+depends-on = [
   "lar:///ha.ka.ba/pono/memetic-wikitext",
   "lar:///ha.ka.ba/pono/parser",
   "lar:///ha.ka.ba/pono/render-pipeline",
@@ -268,7 +268,7 @@ grammar = "x-tiddlywiki-filter"
 profile = "canonical"
 context = "+currentMeme"
 degrade = "no-op"
-result_shape = "set"
+result-shape = "set"
 ```
 
 [all[sigils]links:to[+currentMeme]]
@@ -542,15 +542,15 @@ status = "partial"
 confidence = 0.95
 yield = "meme"
 return = "guest-law"
-upward_context = "chat"
-transaction_class = "stage"
-transaction_phase = "open"
-surface_layer = "present"
-ast_layer = "outlined"
-widget_layer = "outlined"
+upward-context = "chat"
+transaction-class = "stage"
+transaction-phase = "open"
+surface-layer = "present"
+ast-layer = "outlined"
+widget-layer = "outlined"
 residue = "parser-forms, render-node-schema, pono-skill"
-next_observation = "lar:///ha.ka.ba/grammars/x-tiddlywiki-filter"
-next_question = "Which imported guest family should become the first fully registered hana grammar?"
+next-observation = "lar:///ha.ka.ba/grammars/x-tiddlywiki-filter"
+next-question = "Which imported guest family should become the first fully registered hana grammar?"
 ```
 
 <<~&#x0004; -> ? >>

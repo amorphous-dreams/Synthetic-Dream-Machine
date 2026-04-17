@@ -13,8 +13,8 @@ confidence = 0.54
 mana = 0.60
 manao = 0.74
 manaoio = 0.48
-content_type = "text/x-memetic-wikitext"
-meme_type = "loci"
+content-type = "text/x-memetic-wikitext"
+meme-type = "loci"
 register = "S"
 structure = "OODA-HA * ha.ka.ba"
 # <<~/ahu >>
@@ -22,13 +22,13 @@ structure = "OODA-HA * ha.ka.ba"
 enacts = true
 role = "handoff prompt, continuation plan, and local-agent execution contract"
 function = "brief a local agent on current root status, preserved constraints, next pass targets, and stepwise continuation discipline"
-active_pass = "ka"
-next_pass = "ba"
+active-pass = "ka"
+next-pass = "ba"
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
 input = "current memetic-wikitext canvas draft|rebuild ledger|parser-law|render-pipeline-law|chat residue|?"
 output = "continued root revision(high mana'o'io^)|partial continuation(mid mana'o'io-)|degraded continuation(low mana'o'io_)|?(~mana'o'io?)"
-depends_on = [
+depends-on = [
   "lar:///ha.ka.ba/memetic-wikitext",
   "lar:///ha.ka.ba/parser-law",
   "lar:///ha.ka.ba/render-pipeline-law",
@@ -229,8 +229,8 @@ Local-agent handoff closes the continuation stream here.
 ```toml
 pass = "ka"
 status = "handoff-ready"
-next_target = "lar:///ha.ka.ba/memetic-wikitext#phase-map"
-preserved_constraints = [
+next-target = "lar:///ha.ka.ba/memetic-wikitext#phase-map"
+preserved-constraints = [
   "root-not-parser-duplicate",
   "root-not-render-duplicate",
   "metadata-is-fenced-toml",

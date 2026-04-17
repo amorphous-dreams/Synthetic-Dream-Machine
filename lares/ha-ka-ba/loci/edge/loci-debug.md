@@ -7,7 +7,7 @@
 ```toml
 # <<~ ahu #iam-ha "structure" >>
 name = "loci/edge/debug"
-file_path = "ha-ka-ba/loci/edge/loci-debug.md"
+file-path = "ha-ka-ba/loci/edge/loci-debug.md"
 description = "Debug edge kānāwai (law) for observation, reveal, watch, and operator-visible illumination of hidden graph behavior."
 version = "0.1-draft"
 tulen = 0.71
@@ -15,8 +15,8 @@ confidence = 0.69
 mana = 0.78
 manao = 0.85
 manaoio = 0.68
-content_type = "text/x-memetic-wikitext"
-meme_type = "loci"
+content-type = "text/x-memetic-wikitext"
+meme-type = "loci"
 register = "CS"
 structure = "OODA-HA * ha.ka.ba"
 # <<~/ahu >>
@@ -24,14 +24,14 @@ structure = "OODA-HA * ha.ka.ba"
 enacts = true
 role = "debug edge kānāwai (law), observation authority, and hidden-edge illumination authority"
 function = "govern observation and reveal edges that surface hidden graph behavior, operator knowledge, or runtime residue without mutating the underlying ontology"
-visibility_modes = ["inline", "overlay", "trace-only", "operator-only"]
-changes_runtime = false
-source_visible = true
+visibility-modes = ["inline", "overlay", "trace-only", "operator-only"]
+changes-runtime = false
+source-visible = true
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
 input = "debug question|observation request|hidden-edge reveal|?"
 output = "debug-envelope(high manaoio^)|partial-debug-envelope(mid manaoio-)|degraded-debug-envelope(low manaoio_)|?(~manaoio?)"
-depends_on = [
+depends-on = [
   "lar:///ha.ka.ba/loci/edge",
   "lar:///ha.ka.ba/loci/edge/instance",
   "lar:///ha.ka.ba/loci"
@@ -224,9 +224,9 @@ status = "seed-ready"
 confidence = 0.69
 yield = "meme"
 return = "render"
-upward_context = "chat"
+upward-context = "chat"
 residue = "trace law still remains external to this seed pass"
-next_observation = "lar:///ha.ka.ba/loci/edge#research-foundation"
+next-observation = "lar:///ha.ka.ba/loci/edge#research-foundation"
 ```
 
 <<~&#x0004; -> ? >>

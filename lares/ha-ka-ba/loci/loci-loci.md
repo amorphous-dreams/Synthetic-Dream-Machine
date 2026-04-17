@@ -7,7 +7,7 @@
 ```toml
 # <<~ ahu #iam-ha "structure" >>
 name = "loci"
-file_path = "ha-ka-ba/loci/loci-loci.md"
+file-path = "ha-ka-ba/loci/loci-loci.md"
 description = "Loci kānāwai (law) for resolving `lar:` URI memes into explicit routing evidence and current `mana`, `manao`, and `manaoio` posture. Declares the derivation algorithm, the convention surfaces that make routing explicit, the conditions for high-mana `loci` memes, the promotion path from noise to data to meme to typed meme to canon typed meme, and the MCP-resolution research roadmap."
 version = "0.1-draft"
 tulen = 0.76
@@ -15,8 +15,8 @@ confidence = 0.74
 mana = 0.74
 manao = 0.84
 manaoio = 0.66
-content_type = "text/x-memetic-wikitext"
-meme_type = "loci"
+content-type = "text/x-memetic-wikitext"
+meme-type = "loci"
 register = "CS"
 structure = "OODA-HA * ha.ka.ba"
 # <<~/ahu >>
@@ -24,14 +24,14 @@ structure = "OODA-HA * ha.ka.ba"
 enacts = true
 role = "loci-rating kānāwai (law), routing convention authority, address stability authority, canon promotion rule, and MCP-resolution roadmap"
 function = "resolve a `lar:` URI meme into routing evidence and present `mana`, `manao`, and `manaoio` posture, while governing explicit convention, address stability, canon promotion, and MCP-resolution research"
-install_root = "lares/"
-path_root = "ha-ka-ba/"
-mcp_resolution_status = "research-roadmap"
+install-root = "lares/"
+path-root = "ha-ka-ba/"
+mcp-resolution-status = "research-roadmap"
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
 input = "lar: URI|routing query|meme_type|rating query|?"
 output = "loci-rating-envelope(high manaoio^)|partial-loci-rating-envelope(mid manaoio-)|degraded-loci-rating-envelope(low manaoio_)|?(~manaoio?)"
-depends_on = [
+depends-on = [
   "lar:///ha.ka.ba/pono/memetic-wikitext",
   "lar:///ha.ka.ba/meme"
 ]
@@ -767,11 +767,11 @@ status = "partial"
 confidence = 0.74
 yield = "loci"
 return = "render"
-upward_context = "chat"
-downward_context = "none"
+upward-context = "chat"
+downward-context = "none"
 residue = "path-directory carriers still exceed local derivation-only resolution; high `manaoio` remains capped until live MCP-backed resolution exists; sub-meme files (loci-observe-ha, loci-orient, etc.) not yet authored"
-next_observation = "lar:///ha.ka.ba/loci#mcp-resolution-roadmap"
-next_question = "What minimal live MCP server contract would resolve `lar:` URI memes to trustworthy ratings without a handwritten registry?"
+next-observation = "lar:///ha.ka.ba/loci#mcp-resolution-roadmap"
+next-question = "What minimal live MCP server contract would resolve `lar:` URI memes to trustworthy ratings without a handwritten registry?"
 ```
 
 <<~&#x0004; -> ? >>

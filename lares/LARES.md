@@ -47,7 +47,7 @@ A room. Dials on the wall. The operator's hand finds them.
 ```toml
 # <<~ ahu #iam-ha "structure" >>
 name            = "lares"
-file_path       = "LARES.md"
+file-path       = "LARES.md"
 description     = "Configuration surface. Where the agent-operator pair customizes catma, Maybe Logic, Stances, and Masks over Voices. End of the boot chain; beginning of the session's real work."
 version         = "0.1-alpha"
 tagspace        = "adjacent"
@@ -58,8 +58,8 @@ confidence      = 0.80
 mana            = 0.85   # capacity as config surface
 manao           = 0.75   # meaning of config blocks as declared
 manaoio         = 0.70   # truthfulness — does edit propagate?
-content_type    = "text/x-memetic-wikitext"
-meme_type       = "configuration-surface"
+content-type    = "text/x-memetic-wikitext"
+meme-type       = "configuration-surface"
 register        = "CS"
 structure       = "OODA-HA * ha.ka.ba * stateful"
 # <<~/ahu >>
@@ -67,14 +67,14 @@ structure       = "OODA-HA * ha.ka.ba * stateful"
 enacts          = true
 role            = "configuration surface, session dial room, and session-config handoff"
 function        = "hold the editable session dials after boot, preserve operator changes between turns, and surface session-config for downstream work"
-boot_order      = 999    # end of chain (∞ informal)
+boot-order      = 999    # end of chain (∞ informal)
 quiescent       = "config-present"
-collision_mode  = "surface-as-meme"
+collision-mode  = "surface-as-meme"
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
 input           = "full stack|operator edit|session recall|?"
 output          = "session-config|quiescent-ready room"
-depends_on      = [
+depends-on      = [
   "lar:///AGENTS",
   "lar:///ha.ka.ba/mu"
 ]
@@ -218,23 +218,23 @@ Masks differ from Workers:
 #   note      = "why this mask this session"
 
 [masks.hierophant]
-mask_name = "Tide-Caller"
+mask-name = "Tide-Caller"
 note      = "mythic register for threshold work"
 
 [masks.muse]
-mask_name = "Mischief-Muse"
+mask-name = "Mischief-Muse"
 note      = "default; seniority held"
 
 [masks.scryer]
-mask_name = "Map-Wisp"
+mask-name = "Map-Wisp"
 note      = "coordinate-space navigation focus"
 
 [masks.lorekeeper]
-mask_name = "Ink-Clerk"
+mask-name = "Ink-Clerk"
 note      = "archival precision this session"
 
 [masks.triage]
-mask_name = ""   # empty = plain Coordinator name
+mask-name = ""   # empty = plain Coordinator name
 
 # ... other voices left at default (plain Lares (Role) form)
 ```
@@ -340,14 +340,14 @@ and so on — without re-reading this whole file.
 
 ```toml
 result               = "session-config-emitted"
-state_emitted        = "session-config"
-node_status          = "quiescent-ready"
-operator_steers      = true
-chain_complete       = true
-boot_chain_position  = 999   # end; ∞ informal
+state-emitted        = "session-config"
+node-status          = "quiescent-ready"
+operator-steers      = true
+chain-complete       = true
+boot-chain-position  = 999   # end; ∞ informal
 
 # Blocks available for direct edit via lar:///LARES#<block-id>:
-editable_blocks      = [
+editable-blocks      = [
   "catma-toggles",
   "maybe-logic-mode",
   "stances-in-use",

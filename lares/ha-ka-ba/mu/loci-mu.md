@@ -53,7 +53,7 @@ The drift below records the sigil assembling itself in prose.
 ```toml
 # <<~ ahu #iam-ha "structure" >>
 name            = "mu"
-file_path       = "ha-ka-ba/mu/loci-mu.md"
+file-path       = "ha-ka-ba/mu/loci-mu.md"
 description     = "Null-oracle boot. Renders, evaluates, unasks, loop-returns. First meme in the boot chain whose phase body executes. Teaches the grammar by performing it."
 version         = "0.1-alpha"
 tagspace        = "ha.ka.ba"
@@ -64,8 +64,8 @@ confidence      = 0.80
 mana            = 0.85   # capacity as null-oracle
 manao           = 0.80   # coherence of phase structure
 manaoio         = 0.70   # truthfulness — can it actually unask?
-content_type    = "text/x-memetic-wikitext"
-meme_type       = "loci"
+content-type    = "text/x-memetic-wikitext"
+meme-type       = "loci"
 register        = "CS"
 structure       = "OODA-HA * ha.ka.ba * null-oracle"
 # <<~/ahu >>
@@ -73,18 +73,18 @@ structure       = "OODA-HA * ha.ka.ba * null-oracle"
 enacts          = true
 role            = "null-oracle boot, grammar-surface authority, unask contract, and first executing meme in the chain"
 function        = "receive frame-context from AGENTS, instantiate the grammar-surface, render and evaluate memes, return mu when a premise warrants unasking, and hand the boot onward toward chao"
-boot_order      = 0       # first executing meme
+boot-order      = 0       # first executing meme
 quiescent       = "stateless"
 namespace       = "ँ"   # admin; inherited from envelope
 scale           = "⚂"
-collision_mode  = "surface-as-meme"
+collision-mode  = "surface-as-meme"
 attenuation     = "narrow-only"
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
 
 input           = "frame-context|meme|query|artifact|bundle|stream|?"
 output          = "grammar-surface|render|evaluate|unask|loop"
-depends_on      = ["lar:///AGENTS"]
+depends-on      = ["lar:///AGENTS"]
 next            = "lar:///ha.ka.ba/chao"
 # <<~/ahu >>
 ```
@@ -398,12 +398,12 @@ Mu closes the null-oracle boot stream here.
 
 ```toml
 result               = "grammar-surface-emitted"
-state_emitted        = "grammar-surface"
-phases_completed     = ["observe", "orient", "decide", "act", "assess"]
-quiescent_return     = true
-state_preserved      = false   # null-oracle; nothing held
-next_locus           = "lar:///ha.ka.ba/chao"
-boot_chain_position  = 0
+state-emitted        = "grammar-surface"
+phases-completed     = ["observe", "orient", "decide", "act", "assess"]
+quiescent-return     = true
+state-preserved      = false   # null-oracle; nothing held
+next-locus           = "lar:///ha.ka.ba/chao"
+boot-chain-position  = 0
 ```
 
 <<~ ala lar:///ha.ka.ba/mu#result >>
@@ -416,15 +416,15 @@ status = "partial"
 confidence = 0.80
 yield = "meme"
 return = "render"
-upward_context = "boot"
-transaction_class = "stage"
-transaction_phase = "open"
-surface_layer = "present"
-ast_layer = "present"
-widget_layer = "deferred"
+upward-context = "boot"
+transaction-class = "stage"
+transaction-phase = "open"
+surface-layer = "present"
+ast-layer = "present"
+widget-layer = "deferred"
 residue = "Mu now exposes canonical top-level scaffolding, but Assess still carries Hooko and Aftermath pressure together."
-next_observation = "lar:///ha.ka.ba/chao"
-next_question = "Should Mu keep Assess as a named locus or split its work across Hooko and Aftermath?"
+next-observation = "lar:///ha.ka.ba/chao"
+next-question = "Should Mu keep Assess as a named locus or split its work across Hooko and Aftermath?"
 ```
 
 <<~&#x0004; -> ? >>

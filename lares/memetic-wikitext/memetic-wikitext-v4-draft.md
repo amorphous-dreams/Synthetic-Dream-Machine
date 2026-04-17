@@ -87,7 +87,7 @@ natural-language prose, prefer **TOML** over JSON for
 human-agent-addressable metadata.
 
 ```toml
-entity_id = "0xAddressableSpace"
+entity-id = "0xAddressableSpace"
 mana = 0.995
 manao = 0.992
 manaoio = 0.987
@@ -1484,7 +1484,7 @@ manaoio = 0.9801
 status = "Iʻo"
 
 [address]
-entity_id = "lar:///ha.ka.ba/mu#phase-table"
+entity-id = "lar:///ha.ka.ba/mu#phase-table"
 
 [notes]
 description = "Portable, self-describing, self-executing meme packet."

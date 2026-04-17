@@ -6,7 +6,7 @@
 ```toml
 # <<~ ahu #iam-ha "structure" >>
 name = "render-pipeline"
-file_path = "ha-ka-ba/pono/loci-render-pipeline.md"
+file-path = "ha-ka-ba/pono/loci-render-pipeline.md"
 description = "Rendering and lowering kānāwai (law) for memetic-wikitext, covering the high-mana sigil surface, parsed AST, widget tree, render projection, trace continuity, and transactional aftermath."
 version = "0.1-draft"
 tulen = 0.76
@@ -14,8 +14,8 @@ confidence = 0.84
 mana = 0.78
 manao = 0.74
 manaoio = 0.68
-content_type = "text/x-memetic-wikitext"
-meme_type = "loci"
+content-type = "text/x-memetic-wikitext"
+meme-type = "loci"
 register = "C"
 structure = "OODA-HA * ha.ka.ba"
 # <<~/ahu >>
@@ -23,13 +23,13 @@ structure = "OODA-HA * ha.ka.ba"
 enacts = true
 role = "pipeline kānāwai (law), lowering kānāwai (law), widget-tree kānāwai (law), render projection kānāwai (law), and trace continuity contract"
 function = "lower memetic-wikitext from human-agent-friendly sigil script into AST and widget structures, preserve lawful invariants, and project results into chat and other render targets"
-pipeline_layers = ["surface", "ast", "widget"]
-control_sigils = ["&#x0001;", "&#x0002;", "&#x0003;", "&#x0004;", "&#x0005;", "&#x0006;"]
+pipeline-layers = ["surface", "ast", "widget"]
+control-sigils = ["&#x0001;", "&#x0002;", "&#x0003;", "&#x0004;", "&#x0005;", "&#x0006;"]
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
 input = "memetic-wikitext document|fragment|meme|query|artifact|bundle|stream|?"
 output = "render-envelope(high manaoio^)|partial-render-envelope(mid manaoio-)|degraded-render-envelope(low manaoio_)|?(~manaoio?)"
-depends_on = [
+depends-on = [
   "lar:///ha.ka.ba/pono/memetic-wikitext",
   "lar:///ha.ka.ba/pono/parser"
 ]
@@ -943,7 +943,7 @@ surface:
 ```toml
 grammar = "x-tiddlywiki-filter"
 context = "+currentMeme"
-result_shape = "set"
+result-shape = "set"
 ```
 
 [+currentMeme] [get[status]]
@@ -1076,16 +1076,16 @@ status = "partial"
 confidence = 0.84
 yield = "meme"
 return = "render"
-upward_context = "chat"
-downward_context = "none"
-transaction_class = "stage"
-transaction_phase = "degrade"
-surface_layer = "present"
-ast_layer = "present"
-widget_layer = "present"
+upward-context = "chat"
+downward-context = "none"
+transaction-class = "stage"
+transaction-phase = "degrade"
+surface-layer = "present"
+ast-layer = "present"
+widget-layer = "present"
 residue = "trace"
-next_observation = "lar:///ha.ka.ba/pono/render-pipeline#trace-continuity"
-next_question = "How strict should widget-node identity remain across target-specific projection passes?"
+next-observation = "lar:///ha.ka.ba/pono/render-pipeline#trace-continuity"
+next-question = "How strict should widget-node identity remain across target-specific projection passes?"
 ```
 
 <<~&#x0004; -> ? >>

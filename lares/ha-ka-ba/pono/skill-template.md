@@ -14,7 +14,7 @@ allowed-tools: Read, Grep, Glob, Bash, Edit, Write
 ```toml
 # <<~ ahu #iam-ha "structure" >>
 name = "template"
-file_path = "ha-ka-ba/pono/skill-template.md"
+file-path = "ha-ka-ba/pono/skill-template.md"
 description = "Template and authoring guide for memetic-wikitext verification skill packages under lares/ha-ka-ba/pono/. Covers the SKILL.md * OODA-HA * ha.ka.ba structure, invariant declaration, pre-MCP Python and Node implementation patterns, and post-MCP roadmap."
 version = "0.1-draft"
 tulen = 0.52
@@ -22,8 +22,8 @@ confidence = 0.52
 mana = 0.54
 manao = 0.60
 manaoio = 0.42
-content_type = "text/x-memetic-wikitext"
-meme_type = "skill loci"
+content-type = "text/x-memetic-wikitext"
+meme-type = "skill loci"
 register = "S"
 structure = "SKILL.md * OODA-HA * ha.ka.ba"
 # <<~/ahu >>
@@ -31,19 +31,19 @@ structure = "SKILL.md * OODA-HA * ha.ka.ba"
 enacts = true
 role = "skill template, verification authoring guide, and pre/post-MCP implementation roadmap"
 function = "describe the required shape of a pono verification skill package, declare the dual-surface SKILL.md + memetic-wikitext composition, and provide implementation patterns for grammar conformance checking"
-skill_package_root = "ha-ka-ba/pono/skill-*.md"
+skill-package-root = "ha-ka-ba/pono/skill-*.md"
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
 input = "target-meme|law-address|invariant-set|query|artifact|bundle|stream|?"
 output = "skill-envelope(high manaoio^)|partial-skill-envelope(mid manaoio-)|degraded-skill-envelope(low manaoio_)|?(~manaoio?)"
-depends_on = [
+depends-on = [
   "lar:///ha.ka.ba/pono/memetic-wikitext",
   "lar:///ha.ka.ba/pono"
 ]
 covers = []
 invariants = []
-pass_surface = "all declared invariants hold; result envelope carries status = 'pass' with per-invariant verdicts"
-fail_surface = "one or more invariants fail; result envelope carries status = 'fail' with named failing invariant, observed surface, and repair path"
+pass-surface = "all declared invariants hold; result envelope carries status = 'pass' with per-invariant verdicts"
+fail-surface = "one or more invariants fail; result envelope carries status = 'fail' with named failing invariant, observed surface, and repair path"
 # <<~/ahu >>
 ```
 <<~/ahu >>
@@ -116,8 +116,8 @@ The `#iam` block carries all memetic-wikitext identity signals. In addition to t
 ```toml
 covers = ["lar:///ha.ka.ba/[law-name]"]
 invariants = ["[invariant-1]", "[invariant-2]"]
-pass_surface = "[description of what a passing result carries]"
-fail_surface = "[description of what a failing result carries and what it names]"
+pass-surface = "[description of what a passing result carries]"
+fail-surface = "[description of what a failing result carries and what it names]"
 ```
 
 `covers` may name more than one law address when the skill verifies a cross-law invariant.
@@ -180,8 +180,8 @@ invariants = [
 ### Pass and Fail Surface
 
 ```toml
-pass_surface = "result envelope carries status = 'pass', per-invariant verdicts all 'pass', confidence >= 0.80"
-fail_surface = "result envelope carries status = 'fail', named failing invariant(s), observed surface excerpt, and repair path for each failure"
+pass-surface = "result envelope carries status = 'pass', per-invariant verdicts all 'pass', confidence >= 0.80"
+fail-surface = "result envelope carries status = 'fail', named failing invariant(s), observed surface excerpt, and repair path for each failure"
 ```
 
 A fail result should name: which invariant failed, what the skill observed at that site, and what the author should change to satisfy the invariant. A fail result that only says "R3 failed" without naming the observed surface carries low signal value.
@@ -566,11 +566,11 @@ status = "partial"
 confidence = 0.52
 yield = "skill"
 return = "template"
-upward_context = "chat"
-downward_context = "none"
+upward-context = "chat"
+downward-context = "none"
 residue = "pre-MCP scripts not yet written; no skill-*.md package exists yet; post-MCP MCP server not yet implemented"
-next_observation = "lar:///ha.ka.ba/pono/skill-template#invariant-declaration"
-next_question = "Which law should the first skill package cover — loci-parser.md or meme/loci-meme.md?"
+next-observation = "lar:///ha.ka.ba/pono/skill-template#invariant-declaration"
+next-question = "Which law should the first skill package cover — loci-parser.md or meme/loci-meme.md?"
 ```
 
 <<~&#x0004; -> ? >>

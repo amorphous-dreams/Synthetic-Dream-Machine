@@ -7,7 +7,7 @@
 ```toml
 # <<~ ahu #iam-ha "structure" >>
 name = "loci/edge/instance"
-file_path = "ha-ka-ba/loci/edge/loci-instance.md"
+file-path = "ha-ka-ba/loci/edge/loci-instance.md"
 description = "Concrete edge instance kānāwai (law). Defines bound edge objects, override discipline, instance state, and separation from runtime trace."
 version = "0.1-draft"
 tulen = 0.71
@@ -15,8 +15,8 @@ confidence = 0.68
 mana = 0.76
 manao = 0.82
 manaoio = 0.66
-content_type = "text/x-memetic-wikitext"
-meme_type = "loci"
+content-type = "text/x-memetic-wikitext"
+meme-type = "loci"
 register = "CS"
 structure = "OODA-HA * ha.ka.ba"
 # <<~/ahu >>
@@ -24,14 +24,14 @@ structure = "OODA-HA * ha.ka.ba"
 enacts = true
 role = "concrete edge instance kānāwai (law), bound-object authority, and override discipline"
 function = "govern bound edge objects between actual endpoints, permit explicit overrides over template defaults, and keep declared instances distinct from observed traces"
-instance_states = ["declared", "bound", "observed", "stale"]
-trace_separation = true
-template_optional = true
+instance-states = ["declared", "bound", "observed", "stale"]
+trace-separation = true
+template-optional = true
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
 input = "bound edge request|edge object|override question|?"
 output = "instance-envelope(high manaoio^)|partial-instance-envelope(mid manaoio-)|degraded-instance-envelope(low manaoio_)|?(~manaoio?)"
-depends_on = [
+depends-on = [
   "lar:///ha.ka.ba/loci/edge",
   "lar:///ha.ka.ba/loci/edge/template",
   "lar:///ha.ka.ba/loci"
@@ -111,7 +111,7 @@ direction = "forward"
 polarity = "affirming"
 confidence = 0.91
 payload = {}
-render_mode = "inline-label"
+render-mode = "inline-label"
 status = "bound"
 ```
 
@@ -227,9 +227,9 @@ status = "seed-ready"
 confidence = 0.68
 yield = "meme"
 return = "render"
-upward_context = "chat"
+upward-context = "chat"
 residue = "trace law still awaits second-wave authoring"
-next_observation = "lar:///ha.ka.ba/loci/edge/control#control-primitives"
+next-observation = "lar:///ha.ka.ba/loci/edge/control#control-primitives"
 ```
 
 <<~&#x0004; -> ? >>

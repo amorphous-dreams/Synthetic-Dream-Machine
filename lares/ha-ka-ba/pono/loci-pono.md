@@ -6,7 +6,7 @@
 ```toml
 # <<~ ahu #iam-ha "structure" >>
 name = "pono"
-file_path = "ha-ka-ba/pono/loci-pono.md"
+file-path = "ha-ka-ba/pono/loci-pono.md"
 description = "Index of all memetic-wikitext kānāwai (law) memes. Hosts verification skills as skill-*.md packages under `ha-ka-ba/pono/`."
 version = "0.1-draft"
 tulen = 0.65
@@ -14,8 +14,8 @@ confidence = 0.65
 mana = 0.65
 manao = 0.70
 manaoio = 0.60
-content_type = "text/x-memetic-wikitext"
-meme_type = "loci"
+content-type = "text/x-memetic-wikitext"
+meme-type = "loci"
 register = "CS"
 structure = "OODA-HA * ha.ka.ba"
 # <<~/ahu >>
@@ -23,13 +23,13 @@ structure = "OODA-HA * ha.ka.ba"
 enacts = true
 role = "kānāwai (law) index, verification registry, and skill package host"
 function = "enumerate all active kānāwai (law) memes, surface their addresses and roles, and host conformance verification skills"
-law_index_root = "lar:///ha.ka.ba/pono"
-skill_package_root = "ha-ka-ba/pono/skill-*.md"
+law-index-root = "lar:///ha.ka.ba/pono"
+skill-package-root = "ha-ka-ba/pono/skill-*.md"
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
 input = "query|law-name|?"
 output = "law-envelope(index^)|skill-envelope(verification^)|?(~manaoio?)"
-depends_on = [
+depends-on = [
   "lar:///ha.ka.ba/pono/boot-wikitext"
 ]
 # <<~/ahu >>
@@ -201,15 +201,15 @@ status = "partial"
 confidence = 0.90
 yield = "meme"
 return = "index"
-upward_context = "chat"
-transaction_class = "stage"
-transaction_phase = "open"
-surface_layer = "present"
-ast_layer = "present"
-widget_layer = "deferred"
+upward-context = "chat"
+transaction-class = "stage"
+transaction-phase = "open"
+surface-layer = "present"
+ast-layer = "present"
+widget-layer = "deferred"
 residue = "skill-index empty — awaiting first skill-*.md package"
-next_observation = "lar:///ha.ka.ba/pono#skill-index"
-next_question = "Which kānāwai (law) should the first verification skill cover — parser or render-pipeline?"
+next-observation = "lar:///ha.ka.ba/pono#skill-index"
+next-question = "Which kānāwai (law) should the first verification skill cover — parser or render-pipeline?"
 ```
 
 <<~&#x0004; -> ? >>

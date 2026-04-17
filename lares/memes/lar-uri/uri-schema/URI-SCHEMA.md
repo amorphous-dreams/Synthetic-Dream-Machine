@@ -955,22 +955,22 @@ The `lar_uri` + `confidence` fields on module descriptors, registry records, and
 
 ```toml
 # Tier 1 — Global Core (version-controlled by module version)
-lar_uri   = "lar:///kernel.invariant.anchors/"
+lar-uri   = "lar:///kernel.invariant.anchors/"
 confidence    = "C:1.0"
-module_id   = "lares-kernel"
-version_num = 4
+module-id   = "lares-kernel"
+version-num = 4
 
 # Tier 2 — Session Core (version-controlled within session)
-lar_uri   = "lar:///session.permissions.gates/"
+lar-uri   = "lar:///session.permissions.gates/"
 confidence    = "C:0.95"
-module_id   = "lares-permissions"
-version_num = 2
+module-id   = "lares-permissions"
+version-num = 2
 
 # Tier 3 — Dynamic (span_seq lives outside descriptor)
-lar_uri   = "lar:///task.current.recon/"
+lar-uri   = "lar:///task.current.recon/"
 confidence    = "S:0.55"
-module_id   = "lares-task-recon"
-version_num = 1
+module-id   = "lares-task-recon"
+version-num = 1
 ```
 
 Module descriptors use `version_num` or semver-like fields for content versioning. Exchange sequencing belongs to spanSpan metadata (`span_seq`), not module descriptors.

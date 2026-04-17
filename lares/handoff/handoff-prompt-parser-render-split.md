@@ -13,7 +13,7 @@ confidence = 0.50
 mana = 0.60
 manao = 0.74
 manaoio = 0.46
-content_type = "text/x-memetic-wikitext"
+content-type = "text/x-memetic-wikitext"
 register = "S"
 structure = "OODA-HA * ha.ka.ba"
 # <<~/ahu >>
@@ -21,15 +21,15 @@ structure = "OODA-HA * ha.ka.ba"
 enacts = true
 role = "handoff prompt, roadmap law, patch-planning guide, and local-agent alignment frame"
 function = "guide a local agent through a narrow parser-law patch, a richer render-pipeline-law transaction design pass, and a later semantic-root cleanup pass"
-transaction_class = "prepare"
-transaction_phase = "open"
+transaction-class = "prepare"
+transaction-phase = "open"
 safety = "safe"
 idempotency = "true"
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
 input = "current parser-law|current render-pipeline-law|current memetic-wikitext root|operator approval|?"
 output = "handoff-envelope(high mana'o'io^)|partial-handoff-envelope(mid mana'o'io-)|degraded-handoff-envelope(low mana'o'io_)|?(~mana'o'io?)"
-depends_on = [
+depends-on = [
   "lar:///ha.ka.ba/parser-law",
   "lar:///ha.ka.ba/render-pipeline-law",
   "lar:///ha.ka.ba/pono/memetic-wikitext"
@@ -585,7 +585,7 @@ input = "patch-ready prose|patch script|diff notes|review checklist|prepared mut
 output = "committed patch|degraded patch|rolled-back patch|transaction trace|aftermath seeds"
 phase = "hooko"
 glyph = "⤴"
-transaction_class = "mutate"
+transaction-class = "mutate"
 ```
 
 ## Hooko
@@ -1074,16 +1074,16 @@ status = "partial"
 confidence = 0.88
 yield = "meme"
 return = "render"
-transaction_class = "prepare"
-transaction_phase = "stage"
-transaction_outcome = "staged"
+transaction-class = "prepare"
+transaction-phase = "stage"
+transaction-outcome = "staged"
 safety = "safe"
 idempotency = "true"
-upward_context = "chat"
-downward_context = "none"
+upward-context = "chat"
+downward-context = "none"
 residue = "trace"
-next_observation = "lar:///ha.ka.ba/render-pipeline-law#transaction-lifecycle"
-next_question = "Should nested savepoint-like rollback law enter render-pipeline-law now or wait for a later dedicated transaction-law?"
+next-observation = "lar:///ha.ka.ba/render-pipeline-law#transaction-lifecycle"
+next-question = "Should nested savepoint-like rollback law enter render-pipeline-law now or wait for a later dedicated transaction-law?"
 ```
 
 <<~&#x0004; -> ? >>

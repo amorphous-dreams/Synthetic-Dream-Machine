@@ -13,8 +13,8 @@ confidence = 0.57
 mana = 0.60
 manao = 0.74
 manaoio = 0.52
-content_type = "text/x-memetic-wikitext"
-meme_type = "loci"
+content-type = "text/x-memetic-wikitext"
+meme-type = "loci"
 register = "S"
 structure = "OODA-HA * ha.ka.ba"
 # <<~/ahu >>
@@ -22,13 +22,13 @@ structure = "OODA-HA * ha.ka.ba"
 enacts = true
 role = "agent hand-off, constitutional journey log, continuation contract"
 function = "transfer current parser-law state, preserve non-regression boundaries, and guide the next lawful continuation under routed return law"
-handoff_scope = "parser-law root draft, return-types law, and immediate adjacent backlog pressure"
-golden_reference_role = "one of three core golden tool references"
+handoff-scope = "parser-law root draft, return-types law, and immediate adjacent backlog pressure"
+golden-reference-role = "one of three core golden tool references"
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
 input = "current parser-law draft|repo context|future agent attention|?"
 output = "aligned continuation(high mana'o'io^)|partial continuation(mid mana'o'io-)|misaligned continuation(low mana'o'io_)|?(~mana'o'io?)"
-depends_on = ["lar:///ha.ka.ba/pono/parser"]
+depends-on = ["lar:///ha.ka.ba/pono/parser"]
 # <<~/ahu >>
 ```
 <<~/ahu >>
@@ -686,10 +686,10 @@ status = "completed"
 confidence = 0.93
 yield = "meme"
 return = "render"
-upward_context = "chat"
-downward_context = "none"
+upward-context = "chat"
+downward-context = "none"
 residue = "trace"
-next_observation = "lar:///ha.ka.ba/parser-law#return-types"
-next_question = "Which boot fixtures should canonize degraded, committed, and rolled-back &#x0004; transactions first?"
+next-observation = "lar:///ha.ka.ba/parser-law#return-types"
+next-question = "Which boot fixtures should canonize degraded, committed, and rolled-back &#x0004; transactions first?"
 ```
 <<~&#x0004; -> ? >>
