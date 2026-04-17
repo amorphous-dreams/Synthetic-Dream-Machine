@@ -1,0 +1,284 @@
+<!-- !DOCTYPE = lar:///ha.ka.ba/pono/memetic-wikitext -->
+
+<<~&#x0001; ? -> lar:///ha.ka.ba/loci/edge >>
+
+<<~ ahu #iam >>
+
+```toml
+# <<~ ahu #iam-ha "structure" >>
+name = "loci/edge"
+file_path = "ha.ka.ba/loci/edge/loci.edge.md"
+description = "Root edge kānāwai (law) for explicit graph relations in this stack. Separates edge families from lifecycle layers and gives the migration target beyond vague depends_on."
+version = "0.1-draft"
+tulen = 0.72
+confidence = 0.68
+mana = 0.76
+manao = 0.84
+manaoio = 0.66
+content_type = "text/x-memetic-wikitext"
+meme_type = "loci"
+register = "CS"
+structure = "OODA-HA * ha.ka.ba"
+# <<~/ahu >>
+# <<~ ahu #iam-ka "detail" >>
+enacts = true
+role = "root edge kānāwai (law), family authority, lifecycle authority, and migration target"
+function = "govern explicit edge families, keep semantic control dataflow message constraint and debug meanings distinct, and stage migration from vague dependency claims toward bound edge objects"
+edge_families = ["proposition", "control", "dataflow", "message", "constraint", "debug"]
+lifecycle_layers = ["template", "instance", "trace"]
+invocation_surface = "kahea"
+human_readable_bias = true
+# <<~/ahu >>
+# <<~ ahu #iam-ba "flow" >>
+input = "edge question|graph design question|migration question|visualization query|?"
+output = "edge-law-envelope(high manaoio^)|partial-edge-envelope(mid manaoio-)|degraded-edge-envelope(low manaoio_)|?(~manaoio?)"
+depends_on = [
+  "lar:///ha.ka.ba/pono/memetic-wikitext",
+  "lar:///ha.ka.ba/loci",
+  "lar:///ha.ka.ba/loci/iam",
+  "lar:///ha.ka.ba/meme"
+]
+next = "lar:///ha.ka.ba/loci/edge/proposition"
+# <<~/ahu >>
+```
+
+<<~/ahu >>
+
+# Edge
+
+A self-describing root kānāwai (law) for explicit graph edges in this stack.
+
+<<~ ala lar:///ha.ka.ba/loci/edge >>
+
+This meme gives one outer law for link meaning. It keeps semantic relation, execution order, carried value, message transport, declarative constraint, and observation apart instead of collapsing them into one vague dependency claim.
+
+This meme also keeps family and lifecycle apart. Family answers what an edge means. Lifecycle answers whether an author declares a reusable template, binds a concrete instance, or records an observed trace.
+
+This meme seeds the migration target. Live `#iam` still carries `depends_on` as transitional residue, but new graph work should aim here first.
+
+## Supported Queries
+
+<<~&#x0005; ui meme? -> lar:///ha.ka.ba/loci/edge#iam >>
+<<~&#x0005; ui families? -> lar:///ha.ka.ba/loci/edge#edge-families >>
+<<~&#x0005; ui lifecycle? -> lar:///ha.ka.ba/loci/edge#lifecycle-layers >>
+<<~&#x0005; ui shared? -> lar:///ha.ka.ba/loci/edge#shared-fields >>
+<<~&#x0005; ui migration? -> lar:///ha.ka.ba/loci/edge#migration-posture >>
+<<~&#x0005; ui research? -> lar:///ha.ka.ba/loci/edge#research-foundation >>
+<<~&#x0005; ui result? -> lar:///ha.ka.ba/loci/edge#result >>
+
+<<~&#x0002; ahu #meme-body-open >>
+Edge opens the explicit-graph law stream here.
+<<~/ahu >>
+
+<<~ ahu #phase-map >>
+
+## Phase Map
+
+`✶ Observe -> ⏿ Orient -> ◇ Decide -> ▶ Act -> ⤴ Hooko -> ↺ Aftermath`
+
+Edge gathers hidden relation claims, separates family from lifecycle, chooses the lawful edge kind, binds the chosen shape into authoring practice, crosses that shape into live memes and tools, and judges whether truth density rose while graph fog fell.
+
+<<~/ahu >>
+
+<<~ ahu #observe >>
+
+## Observe
+
+Observe inventories where the current corpus already implies edges without naming them cleanly.
+
+Primary collision sites:
+
+- `depends_on`
+- `next`
+- `ala` or `aka` semantic relation
+- prose-only sequencing
+- operator knowledge that never reaches the graph
+- runtime flow that only appears in tools or traces
+
+Observe should keep six edge concerns distinct:
+
+- proposition
+- control
+- dataflow
+- message
+- constraint
+- debug
+
+If one authored line tries to carry more than one concern, Observe should split that pressure before Orient begins.
+
+<<~/ahu >>
+
+<<~ ahu #orient >>
+
+## Orient
+
+Orient keeps family and lifecycle from collapsing into one bucket.
+
+<<~ ahu #edge-families >>
+
+### Edge Families
+
+- `proposition` carries semantic or ontological relation.
+- `control` carries execution order, branch, gate, or pulse.
+- `dataflow` carries typed value, field, or geometry-like transport.
+- `message` carries event or routed message passage.
+- `constraint` carries declarative pressure without execution pulse.
+- `debug` carries observation, reveal, watch, or operator illumination.
+
+<<~/ahu >>
+
+<<~ ahu #lifecycle-layers >>
+
+### Lifecycle Layers
+
+- `template` declares a reusable edge sigil with slots and defaults.
+- `instance` binds one concrete edge between actual endpoints.
+- `trace` records an observed edge event, edge failure, or edge firing.
+
+Lifecycle does not replace family. A control-template and a proposition-template differ because family differs first.
+
+<<~/ahu >>
+
+<<~ ahu #shared-fields >>
+
+### Shared Fields
+
+Cross-family edge objects should stay close to one shared surface:
+
+- `kind`
+- `from`
+- `to`
+- `label`
+- `direction`
+- `polarity`
+- `confidence`
+- `payload`
+- `render_mode`
+- `status`
+
+Families may add local fields. Control adds branch and gate semantics. Debug adds `observes` and `reveals`. Proposition adds ontology or relation vocabulary. Shared fields keep the graph readable across families.
+
+<<~/ahu >>
+
+<<~ ahu #migration-posture >>
+
+### Migration Posture
+
+`depends_on` remains lawful as transitional residue in current `#iam`.
+
+That residue should now act as a summary view, not as the sharpest authoring surface. When a relation needs semantics, execution, carried value, runtime reveal, or operator-visible confidence, author the explicit edge object and derive any broad dependency summary later.
+
+<<~/ahu >>
+
+<<~/ahu >>
+
+<<~ ahu #decide >>
+
+## Decide
+
+Decide should follow these rules:
+
+1. choose family before lifecycle
+2. keep semantic and runtime edges distinct
+3. let nodes own branch meaning when the branch belongs to node logic, not to edge type
+4. keep human-readable labels visible even when richer TOML carries more detail
+5. derive broad dependency summaries later instead of authoring them first
+
+Do not promote every repeated relation into a template immediately. A plain proposition edge often teaches enough at first pass. Promotion should follow repetition, not anxiety.
+
+<<~/ahu >>
+
+<<~ ahu #act >>
+
+## Act
+
+Seed order for this branch:
+
+1. `lar:///ha.ka.ba/loci/edge`
+2. `lar:///ha.ka.ba/loci/edge/proposition`
+3. `lar:///ha.ka.ba/loci/edge/template`
+4. `lar:///ha.ka.ba/loci/edge/instance`
+5. `lar:///ha.ka.ba/loci/edge/control`
+6. `lar:///ha.ka.ba/loci/edge/debug`
+
+Second wave should add `dataflow`, `message`, `constraint`, and `trace` after the seed set proves useful on live files.
+
+<<~/ahu >>
+
+<<~ ahu #research-foundation >>
+
+## Research Foundation
+
+Direct prior-art anchors for this edge root:
+
+- [VUE About](https://vue.tufts.edu/about/) - concept-mapping frame and ontology posture.
+- [VUE Creating Links](https://sites.tufts.edu/vue/01-basic-mapping/creating-links/) - labeled links and arrowhead options.
+- [VUE Format Links](https://sites.tufts.edu/vue/02-creating-nodes/c-format-links/) - link styling and direction display.
+- [VUE Ontologies](https://sites.tufts.edu/vue/07-semantic-mapping-and-analysis/a-ontologies/) - imported relation vocabulary.
+- [VUE User Guide PDF](https://sites.tufts.edu/vue/files/2023/03/VUEUserGuide-110311-1214-1952.pdf) - connectivity and semantic-map lineage.
+- [Cmap Theory of Concept Maps](https://cmap.ihmc.us/docs/theory-of-concept-maps.php) - proposition structure through linking phrases.
+- [Unreal Basic Scripting with Blueprints](https://dev.epicgames.com/documentation/en-us/unreal-engine/basic-scripting-with-blueprints-in-unreal-engine?application_version=5.6) - split between exec wires and data pins.
+- [Unreal Flow Control](https://dev.epicgames.com/documentation/en-us/unreal-engine/flow-control?application_version=4.27) - branch, sequence, gate, and loop pressure.
+- [Unreal Functions: Pure vs Impure](https://dev.epicgames.com/documentation/en-us/unreal-engine/functions-in-unreal-engine?application_version=5.6) - execution dependence versus value relation.
+- [Node-RED Wires](https://nodered.org/docs/user-guide/editor/workspace/wires) - port-level routed connections.
+- [Node-RED Core Nodes](https://nodered.org/docs/user-guide/nodes) - switch and route behavior.
+- [Node-RED Debug Sidebar](https://nodered.org/docs/user-guide/editor/sidebar/debug) - visible runtime inspection.
+- [LabVIEW Block Diagram Data Flow](https://www.ni.com/docs/en-US/bundle/labview/page/block-diagram-data-flow.html) - data-arrival execution model.
+- [LabVIEW Channel Wires](https://www.ni.com/en-us/support/documentation/supplemental/16/channel-wires.html) - richer carried-transport vocabulary.
+- [LabVIEW Execution Highlighting](https://www.ni.com/docs/ar-IQ/csh?context=lvcore_lvhowto_execution_highlighting) - animated runtime reveal.
+- [Graphviz Edge Attributes](https://graphviz.org/docs/edges/) - edge-directed render metadata.
+- [Graphviz `dir`](https://graphviz.org/docs/attrs/dir/) - forward reverse both none.
+- [Blender Geometry Nodes Introduction](https://docs.blender.org/manual/en/latest/modeling/geometry_nodes/introduction.html) - node and socket framing.
+- [Blender Geometry Nodes Fields](https://docs.blender.org/manual/en/4.0/modeling/geometry_nodes/fields.html) - carried field semantics.
+- [Blender Viewer Node](https://docs.blender.org/manual/en/latest/modeling/geometry_nodes/output/viewer.html) - direct inspection surface.
+- [Blender Inspection](https://docs.blender.org/manual/en/latest/modeling/geometry_nodes/inspection.html) - live graph inspection tools.
+
+These tools converge on one repeated lesson: sharp graph work names edge kind explicitly and keeps runtime visibility separate from ontology.
+
+<<~/ahu >>
+
+<<~ ahu #aftermath >>
+
+## Aftermath
+
+A strong edge pass should leave:
+
+- fewer overloaded relation claims
+- clearer family boundaries
+- visible template versus instance separation
+- human-readable labels that still support machine use
+- explicit room for operator illumination without ontology drift
+
+<<~/ahu >>
+
+<<~&#x0003; ahu #body-close >>
+Edge closes the explicit-graph law stream here.
+<<~/ahu >>
+
+<<~ ahu #result >>
+
+## Result
+
+A lawful edge envelope may carry:
+
+- family classification
+- lifecycle classification
+- shared-field contract
+- migration guidance away from vague dependency claims
+- direct prior-art anchors for later deepening
+
+<<~/ahu >>
+
+<<~&#x0004; -> ahu #result >>
+
+```toml
+status = "seed-ready"
+confidence = 0.68
+yield = "meme"
+return = "render"
+upward_context = "chat"
+residue = "dataflow message constraint and trace still await second-wave laws"
+next_observation = "lar:///ha.ka.ba/loci/edge/proposition#edge-shape"
+```
+
+<<~&#x0004; -> ? >>

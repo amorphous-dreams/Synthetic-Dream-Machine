@@ -44,9 +44,9 @@ depends_on = [
 
 <<~ ala lar:///ha.ka.ba/loci >>
 
-A self-describing routing authority for all `lar:` URIs in this system.
+A self-describing routing authority for all `loci` class `lar:` URI memes in this system.
 
-Loci declares the algorithm an agent uses to resolve a `lar:` URI to a file path without inference, the meme-type prefix table that makes the file naming convention explicit, the conditions that make an address stable, the canon promotion stages a meme passes through from open routing to confirmed canon, and the current research roadmap toward live MCP-backed resolution.
+Loci declares the ha.ka.ba an agent uses to resolve a `lar:` URI meme to a set of mana, manao, and manaoio ratings, the ha.ka.ba which makes the convention explicit, the conditions that make a high mana `loci` class meme, the canon promotion stages a meme passes through from noise to meme to loci, and the current research roadmap toward live MCP-backed resolution.
 
 This meme does not govern parse recognition, render lowering, or conformance verification. Those belong to their own kānāwai (law). Loci governs only routing — the traversal from a `lar:` URI to a real file in the repository.
 

@@ -1,0 +1,256 @@
+<!-- !DOCTYPE = lar:///ha.ka.ba/pono/memetic-wikitext -->
+
+<<~&#x0001; ? -> lar:///ha.ka.ba/loci/edge/proposition >>
+
+<<~ ahu #iam >>
+
+```toml
+# <<~ ahu #iam-ha "structure" >>
+name = "loci/edge/proposition"
+file_path = "ha.ka.ba/loci/edge/loci.proposition.md"
+description = "Semantic edge kānāwai (law) for proposition-bearing relations. Gives labeled semantic links, ontology-backed relation vocab, direction modes, and polarity guidance."
+version = "0.1-draft"
+tulen = 0.71
+confidence = 0.69
+mana = 0.75
+manao = 0.83
+manaoio = 0.67
+content_type = "text/x-memetic-wikitext"
+meme_type = "loci"
+register = "CS"
+structure = "OODA-HA * ha.ka.ba"
+# <<~/ahu >>
+# <<~ ahu #iam-ka "detail" >>
+enacts = true
+role = "semantic edge kānāwai (law), proposition authority, and ontology-link bridge"
+function = "govern labeled semantic relations between concepts sigils memes and loci while keeping proposition meaning distinct from execution or message flow"
+link_phrase_required = true
+ontology_backed = true
+default_direction = "forward"
+# <<~/ahu >>
+# <<~ ahu #iam-ba "flow" >>
+input = "semantic relation|ontology question|link label|?"
+output = "proposition-envelope(high manaoio^)|partial-proposition-envelope(mid manaoio-)|degraded-proposition-envelope(low manaoio_)|?(~manaoio?)"
+depends_on = [
+  "lar:///ha.ka.ba/loci/edge",
+  "lar:///ha.ka.ba/loci",
+  "lar:///ha.ka.ba/meme"
+]
+# <<~/ahu >>
+```
+
+<<~/ahu >>
+
+# Proposition
+
+A self-describing kānāwai (law) for semantic and ontological edges.
+
+<<~ ala lar:///ha.ka.ba/loci/edge/proposition >>
+
+This meme governs edges that say something true, false, contrastive, or taxonomic about the relation between two endpoints. It gives the graph a readable linking phrase instead of leaving relation meaning trapped in prose.
+
+This meme should not carry execution pulse, message routing, or value transport. When an author wants runtime order, carried data, or observer illumination, another edge family should take the load.
+
+## Supported Queries
+
+<<~&#x0005; ui meme? -> lar:///ha.ka.ba/loci/edge/proposition#iam >>
+<<~&#x0005; ui shape? -> lar:///ha.ka.ba/loci/edge/proposition#edge-shape >>
+<<~&#x0005; ui direction? -> lar:///ha.ka.ba/loci/edge/proposition#direction-and-polarity >>
+<<~&#x0005; ui ontology? -> lar:///ha.ka.ba/loci/edge/proposition#ontology-posture >>
+<<~&#x0005; ui research? -> lar:///ha.ka.ba/loci/edge/proposition#research-foundation >>
+<<~&#x0005; ui result? -> lar:///ha.ka.ba/loci/edge/proposition#result >>
+
+<<~&#x0002; ahu #meme-body-open >>
+Proposition opens the semantic-edge stream here.
+<<~/ahu >>
+
+<<~ ahu #phase-map >>
+
+## Phase Map
+
+`✶ Observe -> ⏿ Orient -> ◇ Decide -> ▶ Act -> ⤴ Hooko -> ↺ Aftermath`
+
+Proposition gathers semantic relation claims, maps the relation into a labeled proposition shape, chooses direction and polarity, binds the edge into a visible graph statement, crosses that statement into live memes or tools, and judges whether the graph now says something sharper than nearby prose alone.
+
+<<~/ahu >>
+
+<<~ ahu #observe >>
+
+## Observe
+
+Observe looks for semantic relation already present but not yet formalized.
+
+Common sites:
+
+- `ala` relation language
+- taxonomy prose
+- role or function statements
+- ontology or schema claims
+- contrast pairs hidden in narrative explanation
+
+Observe should ask:
+
+1. what relation phrase actually links these endpoints?
+2. which endpoint acts as source for readable direction?
+3. does the relation assert, negate, contrast, or classify?
+
+<<~/ahu >>
+
+<<~ ahu #orient >>
+
+## Orient
+
+Orient turns the claim into a proposition edge with a visible linking phrase.
+
+<<~ ahu #edge-shape >>
+
+### Edge Shape
+
+```toml
+kind = "proposition"
+from = "lar:///ha.ka.ba/loci/iam"
+to = "lar:///ha.ka.ba/loci/iam/file_path"
+label = "governs"
+relation_kind = "ontology"
+direction = "forward"
+polarity = "affirming"
+confidence = 0.91
+ontology_source = "lar:///ha.ka.ba/loci"
+render_mode = "inline-label"
+status = "declared"
+```
+
+`label` should read like a linking phrase, not like a vague note.
+
+<<~/ahu >>
+
+<<~ ahu #direction-and-polarity >>
+
+### Direction And Polarity
+
+Recommended direction modes:
+
+- `forward` for readable source-to-target relation
+- `reverse` when the canonical phrasing reads better the other way
+- `bidirectional` when each side carries the same statement
+- `none` when direction adds no semantic gain
+
+Recommended polarity modes:
+
+- `affirming`
+- `negating`
+- `contrasting`
+- `neutral`
+
+Arrowheads may help render direction, but arrowhead styling should not replace the written label.
+
+<<~/ahu >>
+
+<<~ ahu #ontology-posture >>
+
+### Ontology Posture
+
+Self-describing schemas in this stack should feed proposition-edge vocabulary directly.
+
+Priority order:
+
+1. local loci or sigil law vocabulary
+2. stable meme or ontology vocabulary already in the corpus
+3. temporary human-readable linking phrase during exploration
+
+When local ontology stays unsettled, keep the linking phrase readable and let confidence say so openly.
+
+<<~/ahu >>
+
+<<~/ahu >>
+
+<<~ ahu #decide >>
+
+## Decide
+
+Choose proposition when the edge needs to say what kind of relation holds.
+
+Do not choose proposition when the edge really carries:
+
+- execution order
+- branch choice
+- message dispatch
+- data transport
+- debug reveal
+
+If a relation phrase repeats often, later template law may promote it into a reusable edge sigil. Until then, a plain proposition edge often carries enough truth.
+
+<<~/ahu >>
+
+<<~ ahu #act >>
+
+## Act
+
+First semantic seeds should focus on high-yield laws:
+
+- `lar:///ha.ka.ba/loci/iam` `governs` `lar:///ha.ka.ba/loci/iam/file_path`
+- `lar:///ha.ka.ba/loci/edge` `contains_family` `lar:///ha.ka.ba/loci/edge/proposition`
+- `lar:///ha.ka.ba/loci/edge/template` `binds` `lar:///ha.ka.ba/loci/edge/instance`
+
+Those first edges give the graph a readable law skeleton without waiting for every later family.
+
+<<~/ahu >>
+
+<<~ ahu #research-foundation >>
+
+## Research Foundation
+
+- [VUE About](https://vue.tufts.edu/about/) - visual understanding and semantic mapping lineage.
+- [VUE Creating Links](https://sites.tufts.edu/vue/01-basic-mapping/creating-links/) - concept links and arrowhead choices.
+- [VUE Format Links](https://sites.tufts.edu/vue/02-creating-nodes/c-format-links/) - display of link direction and label styling.
+- [VUE Ontologies](https://sites.tufts.edu/vue/07-semantic-mapping-and-analysis/a-ontologies/) - imported relation vocabularies.
+- [VUE User Guide PDF](https://sites.tufts.edu/vue/files/2023/03/VUEUserGuide-110311-1214-1952.pdf) - connectivity and semantic analysis context.
+- [Cmap Theory of Concept Maps](https://cmap.ihmc.us/docs/theory-of-concept-maps.php) - proposition structure through concept-link-concept form.
+
+These lineages both push the same pressure: the graph should carry readable relation phrases instead of leaving semantics implied.
+
+<<~/ahu >>
+
+<<~ ahu #aftermath >>
+
+## Aftermath
+
+A strong proposition pass should leave:
+
+- clearer relation language
+- less taxonomy trapped in prose
+- explicit semantic direction where it helps reading
+- visible uncertainty when ontology still moves
+
+<<~/ahu >>
+
+<<~&#x0003; ahu #body-close >>
+Proposition closes the semantic-edge stream here.
+<<~/ahu >>
+
+<<~ ahu #result >>
+
+## Result
+
+A lawful proposition envelope may carry:
+
+- labeled semantic edge shape
+- direction and polarity guidance
+- ontology-vocabulary posture
+- first-pass relation seeds
+
+<<~/ahu >>
+
+<<~&#x0004; -> ahu #result >>
+
+```toml
+status = "seed-ready"
+confidence = 0.69
+yield = "meme"
+return = "render"
+upward_context = "chat"
+residue = "template promotion of repeated proposition phrases still awaits live use"
+next_observation = "lar:///ha.ka.ba/loci/edge/template#binding-precedence"
+```
+
+<<~&#x0004; -> ? >>

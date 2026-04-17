@@ -84,6 +84,14 @@ Active kānāwai (law) memes registered under `lar:///ha.ka.ba/`:
 | loci | `lar:///ha.ka.ba/loci` | lar: URI routing derivation algorithm, meme-type prefix table, carrier coherence, MCP-resolution roadmap, address stability, and canon promotion kānāwai (law) |
 | iam | `lar:///ha.ka.ba/loci/iam` | root `#iam` metadata kānāwai (law), surviving field-set authority, and reduction charter |
 | file_path | `lar:///ha.ka.ba/loci/iam/file_path` | `file_path` key kānāwai (law), form classifier, and URI-agreement procedure |
+| loci/edge | `lar:///ha.ka.ba/loci/edge` | root edge kānāwai (law), family authority, lifecycle authority, and migration target beyond vague dependency claims |
+| loci/edge/proposition | `lar:///ha.ka.ba/loci/edge/proposition` | semantic edge kānāwai (law), proposition authority, and ontology-link bridge |
+| loci/edge/template | `lar:///ha.ka.ba/loci/edge/template` | template edge sigil kānāwai (law), slot-contract authority, and kahea binding authority |
+| loci/edge/instance | `lar:///ha.ka.ba/loci/edge/instance` | concrete edge instance kānāwai (law), bound-object authority, and override discipline |
+| loci/edge/control | `lar:///ha.ka.ba/loci/edge/control` | control-flow edge kānāwai (law), branch authority, and execution-order authority |
+| loci/edge/debug | `lar:///ha.ka.ba/loci/edge/debug` | debug edge kānāwai (law), observation authority, and hidden-edge illumination authority |
+
+The `loci/edge` branch now seeds explicit edge law under `lar:///ha.ka.ba/loci/edge`. This first wave covers root edge law, semantic proposition, template sigils, concrete instances, control flow, and debug illumination. Dataflow, message, constraint, and trace remain second-wave work.
 
 The `guest-grammar` and `x-tiddlywiki-filter` kānāwai (law) memes carry a canonical host-facing term shift: `tiddler` → `meme`, `currentTiddler` → `+currentMeme`. Host-facing examples and law statements throughout the stack should reflect this shift. Imported lineage terms may appear only in visibly quoted prior-art notes.
 
