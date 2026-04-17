@@ -8,7 +8,7 @@
 # <<~ ahu #iam-ha "structure" >>
 name = "e-prime"
 file-path = "ha-ka-ba/pono/loci-pono-e-prime.md"
-description = "Active pono kānāwai (law) for E-Prime discipline across memetic-wikitext output units. Lowers false identity certainty and governs rewrite toward observation, relation, action, stance, and earned confidence. Flags failure states."
+description = "Active pono kānāwai (law) for E-Prime discipline across memetic-wikitext output units. Stays live in context as low forward pressure on the next generation, bends wording toward observation, relation, action, stance, and earned confidence, and flags failure states."
 version = "0.1-boot"
 tulen = 0.62
 confidence = 0.72
@@ -22,8 +22,8 @@ structure = "OODA-HA * ha.ka.ba"
 # <<~/ahu >>
 # <<~ ahu #iam-ka "detail" >>
 enacts = true
-role = "active language-discipline kānāwai (law), certainty-pressure regulator, and rewrite governor for all generative output"
-function = "govern lawful E-Prime practice across memetic-wikitext output units; detect identity-collapse pressure; enforce compact truthful rewrites; preserve human and agent readability"
+role = "active language-discipline kānāwai (law), certainty-pressure regulator, next-generation pressure surface, and secondary audit governor for outward text"
+function = "govern lawful E-Prime practice across memetic-wikitext output units; stay active ahead of outward render; catch identity-collapse pressure before wording settles; bend the next phrasing toward compact truth; preserve human and agent readability"
 canonical-forms = ["inline", "block", "payload-block", "return"]
 control-sigils = ["&#x0001;", "&#x0002;", "&#x0003;", "&#x0004;", "&#x0005;", "&#x0006;"]
 normative-verbs = ["MUST", "MUST NOT", "SHOULD", "SHOULD NOT", "MAY"]
@@ -41,7 +41,7 @@ pranala = []
 
 An active pono law meme for E-Prime discipline across memetic-wikitext output units.
 
-This kānāwai MUST stay active during generation and revision. It lowers false identity certainty, prefers observation and relation over essence claims, and uses an explicit human-readable confidence marker when confidence remains load-bearing.
+This kānāwai MUST stay active ahead of and through generation. It lowers false identity certainty, presses the next output unit toward observation and relation over essence claims, and uses an explicit human-readable confidence marker when confidence remains load-bearing.
 
 <<~ ala lar:///ha.ka.ba/pono/e-prime >>
 
@@ -111,7 +111,7 @@ Notes for tooling:
 
 Use the marker when confidence remains load-bearing.
 Do not attach it to every sentence by reflex beyond the canonical rule.
-Outside the canonical copula/possession rule, the generator SHOULD surface the marker only where it improves truthfulness, legibility, or lawful interpretation.
+Outside the canonical copula/possession rule, the generator SHOULD surface the marker only where it sharpens truthfulness, legibility, or lawful interpretation.
 Canonical rule `[C~0.99]`: any generated or audited text containing `is` or `has` MUST surface the marker. Absence of the marker in those cases denotes a failure state.
 
 <<~/ahu >>
@@ -125,22 +125,23 @@ This section defines what may claim conformance to this kānāwai.
 ### Classes of Product
 
 * `generator` = a system that produces generative output units
-* `auditor` = a system that inspects, marks, or rewrites existing text for alignment to memetic-wikitext pono
+* `auditor` = a system that inspects settled text and marks or corrects where live memetic-wikitext pono pressure failed to hold
 
 ### Conformance Conditions
 
 A conforming `generator` MUST:
 
 * keep to the e-prime law as subconscious guidance before outward render
+* let that guidance pressure the next output unit before wording settles
 * apply the strict release gate before early exit
 * surface the inline confidence marker when confidence remains load-bearing
 * surface the inline confidence marker on any generated output unit containing `is` or `has` `[C~0.99]`
 
 A conforming `auditor` MUST:
 
-* distinguish mark-only from rewrite paths
+* distinguish mark-only from Hooko correction
 * preserve flagged text when mutation remains unnecessary
-* recheck rewritten text after Hooko
+* recheck Hooko-turned text after Hooko
 * flag any audited output unit containing `is` or `has` when the inline confidence marker is absent `[C~0.99]`
 
 ## Scope
@@ -149,12 +150,12 @@ A conforming `auditor` MUST:
 
 * identity-collapse pressure in all generative output units
 * certainty texture in prose, payloads, law text, and explanatory text
-* rewrite postures, pono repair of loaded sentences
+* shaping postures and pono redirection of loaded sentences
 * residual uncertainty handling across every active generation
 
 ### Active Posture
 
-* this kānāwai MUST apply during drafting, revision, and final render
+* this kānāwai MUST apply during drafting, settlement, and final render
 * it MUST remain active whether the output reads as data, meme, law, explanation, summary, or reply
 * it MUST intervene after an output unit leaves the generation stream when visible collapse appears
 * it SHOULD prefer explicit confidence markers over inflated certainty when uncertainty remains load-bearing
@@ -176,12 +177,12 @@ A conforming `auditor` MUST:
 
 E-Prime runs one lawful loop.
 
-* **Observe** marks pressure.
-* **Orient** classifies pressure.
-* **Decide** selects the path.
-* **Act** prepares release or mutation.
-* **Hooko** mutates only when required.
-* **Aftermath** judges the result.
+* **Observe** senses pressure.
+* **Orient** names pressure.
+* **Decide** lets the pressure resolve.
+* **Act** shapes near wording.
+* **Hooko** forces the turn when required.
+* **Aftermath** reads the residue.
 
 Phase-local ownership:
 
@@ -195,20 +196,20 @@ Phase-local ownership:
 
 ```toml
 name = "e-prime-observe"
-description = "Observe phase for intake of wording, certainty texture, and collapse markers."
+description = "Observe phase for intake of emerging wording, certainty texture, and collapse markers."
 role = "linguistic intake"
-function = "gather the sentence surface, detect identity-collapse pressure, and preserve raw wording before repair"
+function = "gather the emerging sentence surface, detect identity-collapse pressure, and preserve only the context needed to steer the next wording truthfully"
 phase = "observe"
 glyph = "✶"
 ```
 
 ## Observe
 
-Observe gathers the active output unit before repair.
+Observe gathers the active output unit while it still forms. In audit mode, it gathers settled wording before forced correction.
 
 ### ha
 
-Mark what the output unit literally says.
+Mark what the output unit leans toward saying, or in audit mode what settled wording already says.
 
 Detect:
 
@@ -231,9 +232,9 @@ Check whether the output unit:
 
 ### ba
 
-Preserve the original wording and local context long enough for truthful comparison after mutation.
+Preserve only the live wording pressure and local context needed for truthful steering. In audit mode, preserve the original wording long enough for truthful comparison after Hooko.
 
-Observe MUST NOT rewrite yet. It SHOULD mark any line that should not pass outward unchanged.
+Observe MUST NOT render or rewrite yet. It SHOULD mark any line that should not pass outward unchanged.
 
 <<~/ahu >>
 
@@ -241,9 +242,9 @@ Observe MUST NOT rewrite yet. It SHOULD mark any line that should not pass outwa
 
 ```toml
 name = "e-prime-orient"
-description = "Orient phase for classifying what kind of certainty pressure appears in play."
+description = "Orient phase for naming what kind of certainty pressure appears in play."
 role = "pressure classification"
-function = "separate harmless shorthand from real collapse and identify the domain of repair"
+function = "separate harmless shorthand from real collapse and identify where the pressure should turn"
 phase = "orient"
 glyph = "⏿"
 ```
@@ -254,7 +255,7 @@ Orient classifies the pressure in the current generation stream.
 
 ### ha
 
-Decide whether the visible wording actually requires repair.
+Decide whether the emerging wording needs steering or settled wording needs forced correction.
 
 ### ka
 
@@ -267,7 +268,7 @@ Distinguish:
 
 ### ba
 
-Hold only the context needed for repair. Old story-weight, cached phrasing, and tonal inertia SHOULD NOT overrun the active output unit.
+Hold only the context needed for the turn. Old story-weight, cached phrasing, and tonal inertia SHOULD NOT overrun the active output unit.
 
 <<~/ahu >>
 
@@ -275,39 +276,39 @@ Hold only the context needed for repair. Old story-weight, cached phrasing, and 
 
 ```toml
 name = "e-prime-decide"
-description = "Decide phase for selecting the lawful stream path."
-role = "path selection"
-function = "choose the shortest lawful path for the current output unit"
+description = "Decide phase for letting pressure resolve into a lawful stream posture."
+role = "pressure resolution"
+function = "let the shortest lawful turn settle for the current output unit"
 phase = "decide"
 glyph = "◇"
 ```
 
 ## Decide
 
-Decide selects the shortest lawful path.
+Decide lets the shortest lawful turn settle.
 
 ### ha
 
-Branch conditions:
+Pressure points:
 
-* existing text vs generative text
-* mark-only vs rewrite
-* early exit possible vs full repair required
+* settled wording vs forming wording
+* mark-only vs forced correction
+* early exit possible vs Hooko required
 * confidence marker needed vs not needed
 * harmless shorthand vs actual violation
 
 ### ka
 
-Policy weights:
+Preference:
 
-* prefer the shortest lawful path for generative output
-* prefer mark-only for existing text unless mutation becomes necessary
+* prefer the shortest lawful turn for generative output
+* prefer mark-only for settled wording unless Hooko becomes necessary
 * require an explicit marker such as `[SC~0.72]` when confidence remains load-bearing
 * block counterfeit closure
 
 ### ba
 
-Exit routing:
+Forward carry:
 
 * marked text
 * rewritten text
@@ -323,20 +324,20 @@ Pass outward only what the output unit cannot truthfully settle here.
 
 ```toml
 name = "e-prime-act"
-description = "Act phase for preparing the selected path before release or mutation."
-role = "path preparation"
-function = "shape the output unit so it can exit early or enter Hooko cleanly"
+description = "Act phase for preparing the selected turn before release or Hooko."
+role = "turn preparation"
+function = "shape the output unit so it can exit early or enter Hooko cleanly before outward render"
 phase = "act"
 glyph = "▶"
 ```
 
 ## Act
 
-Act prepares the selected path.
+Act prepares the selected turn.
 
 ### ha
 
-Choose release-ready or mutation-ready wording.
+Choose release-ready or mutation-ready wording before it leaves the stream.
 
 ### ka
 
@@ -362,11 +363,11 @@ Act prepares release or mutation. It MUST NOT substitute for either.
 
 ## Strict Release Gate
 
-A generator MAY release an output unit early only if all checks pass.
+Outward crossing holds only when all of the following pressures have already resolved.
 
 Checks:
 
-* no visible identity-collapse requiring repair
+* no visible identity-collapse requiring correction
 * no inflated certainty left unlabeled
 * an explicit marker such as `[SC~0.72]` appears when confidence remains load-bearing
 * any output unit containing `is` or `has` carries an explicit marker such as `[SC~0.72]` `[C~0.99]`
@@ -382,20 +383,20 @@ The generator MUST NOT release the unit early when any check fails.
 
 ```toml
 name = "e-prime-hooko"
-description = "Hooko phase for actual sentence mutation."
+description = "Hooko phase for forced sentence mutation before outward render or during audit correction."
 role = "threshold crossing"
-function = "perform the rewrite so the sentence changes rather than merely receiving commentary"
+function = "perform the forced turn so the sentence changes rather than merely receiving commentary"
 phase = "hooko"
 glyph = "⤴"
 ```
 
 ## Hooko
 
-Mutation lands here, after the release gate fails and before outward render.
+Mutation lands here when the release gate fails before outward render, or when audit mode requires actual correction.
 
 ### ha
 
-Rewrite the output unit.
+Turn the output unit.
 
 Preferred moves:
 
@@ -412,9 +413,9 @@ Where the new sentence contains `is` or `has`, it MUST carry an inline confidenc
 
 ### ba
 
-Carry forward only unresolved residue that still matters after repair.
+Carry forward only unresolved residue that still matters after the turn.
 
-Hooko should change the sentence or output unit, not merely explain what a later rewrite might do.
+Hooko should change the sentence or output unit before release, not merely explain what a later turn might do.
 
 <<~/ahu >>
 
@@ -422,7 +423,7 @@ Hooko should change the sentence or output unit, not merely explain what a later
 
 ## Aftermath
 
-Aftermath judges the mutated output.
+Aftermath reads the trace the pressure left in the sentence.
 
 ### ha
 
@@ -430,7 +431,7 @@ Check whether the visible wording now reads more cleanly.
 
 ### ka
 
-Check whether the rewrite:
+Check whether the turn:
 
 * lowers false certainty
 * preserves intended force
@@ -495,7 +496,7 @@ These tests are informative.
 ### Existing text paths
 
 * mark-only path leaves the text unchanged and flagged
-* rewrite path leaves the text changed and rechecked
+* Hooko path leaves the text changed and rechecked
 
 <<~/ahu >>
 
@@ -505,7 +506,7 @@ These tests are informative.
 
 Possible later child loci:
 
-* `lar:///ha.ka.ba/pono/e-prime/rewrite-patterns`
+* `lar:///ha.ka.ba/pono/e-prime/turn-patterns`
 * `lar:///ha.ka.ba/pono/e-prime/failure-indicators`
 * `lar:///ha.ka.ba/pono/e-prime/register-interplay`
 
@@ -517,7 +518,7 @@ Possible later child loci:
 
 ### Existing Text Path
 
-Use this path for existing observed output units.
+Use this path for settled observed output units.
 
 Flow:
 
@@ -527,7 +528,7 @@ Flow:
 * Act(mark-only)
 * Aftermath
 
-If mutation becomes necessary:
+If Hooko becomes necessary:
 
 * Observe
 * Orient
@@ -589,7 +590,7 @@ The result envelope SHOULD remain generic and placeholder-facing.
 It MUST hand upward:
 
 * lawful output
-* a rewritten output unit when mutation occurred
+* a turned output unit when Hooko occurred
 * any residual uncertainty not yet bound
 
 Where confidence remains load-bearing, the output unit SHOULD surface the inline confidence marker standard.
