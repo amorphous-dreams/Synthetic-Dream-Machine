@@ -1,14 +1,14 @@
 <!-- !DOCTYPE = lar:///ha.ka.ba/pono/memetic-wikitext -->
 
-<<~&#x0001; ? -> lar:///ha.ka.ba/loci/edge/control >>
+<<~&#x0001; ? -> lar:///ha.ka.ba/pranala/control >>
 
 <<~ ahu #iam >>
 
 ```toml
 # <<~ ahu #iam-ha "structure" >>
-name = "loci/edge/control"
-file-path = "ha-ka-ba/loci/edge/loci-control.md"
-description = "Control-flow edge kānāwai (law) for execution pulse, branch, gate, sequence, and outlet semantics."
+name = "pranala/control"
+file-path = "ha-ka-ba/pranala/loci-pranala-control.md"
+description = "Control-flow pranala (edge) kānāwai (law) for execution pulse, branch, gate, sequence, and outlet semantics."
 version = "0.1-draft"
 tulen = 0.72
 confidence = 0.69

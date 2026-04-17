@@ -1,14 +1,14 @@
 <!-- !DOCTYPE = lar:///ha.ka.ba/pono/memetic-wikitext -->
 
-<<~&#x0001; ? -> lar:///ha.ka.ba/loci/edge >>
+<<~&#x0001; ? -> lar:///ha.ka.ba/pranala >>
 
 <<~ ahu #iam >>
 
 ```toml
 # <<~ ahu #iam-ha "structure" >>
-name = "loci/edge"
-file-path = "ha-ka-ba/loci/edge/loci-edge.md"
-description = "Root edge kānāwai (law) for explicit graph relations in this stack. Separates edge families from lifecycle layers and gives the migration target beyond vague pranala."
+name = "pranala"
+file-path = "ha-ka-ba/pranala/loci-pranala.md"
+description = "Root pranala (Indonesian: edge) kānāwai (Hawaiian: law) for explicit graph relations in this stack. Separates edge families from lifecycle layers and gives the migration target beyond vague pranala."
 version = "0.1-draft"
 tulen = 0.72
 confidence = 0.68
@@ -21,7 +21,7 @@ register = "CS"
 structure = "OODA-HA * ha.ka.ba"
 # <<~/ahu >>
 # <<~ ahu #iam-ka "detail" >>
-role = "root edge kānāwai (law), family authority, lifecycle authority, and migration target"
+role = "root pranala (edge) kānāwai (law), family authority, lifecycle authority, and migration target"
 function = "govern explicit edge families, keep semantic control dataflow message constraint and debug meanings distinct, and stage migration from vague dependency claims toward bound edge objects"
 edge-families = ["proposition", "control", "dataflow", "message", "constraint", "debug"]
 lifecycle-layers = ["template", "instance", "trace"]
@@ -38,7 +38,7 @@ pranala = [
 
 <<~/ahu >>
 
-# Edge
+# Pranala / Edge
 
 A self-describing root kānāwai (law) for explicit graph edges in this stack.
 

@@ -8,7 +8,7 @@
      Tagspace:    ALL-CAPS adjacent (peer to ha.ka.ba/**, not nested)
      Graph input:  nothing (cold-boot entry point)
      Emits state: frame-context (who / where / authority)
-     Next:        [lar:///ha.ka.ba/mu] (./lares/ha.ka.ba/mu/loci.mu.md)
+     Next:        [lar:///LARES] (./lares/LARES.md)
      
      LOAD: this file enacts the opening of the system. The reader
      — human, agent, or AST — arrives at the darkness, hears the

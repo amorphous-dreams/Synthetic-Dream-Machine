@@ -1,14 +1,14 @@
 <!-- !DOCTYPE = lar:///ha.ka.ba/pono/memetic-wikitext -->
 
-<<~&#x0001; ? -> lar:///ha.ka.ba/loci/edge/proposition >>
+<<~&#x0001; ? -> lar:///ha.ka.ba/pranala/proposition >>
 
 <<~ ahu #iam >>
 
 ```toml
 # <<~ ahu #iam-ha "structure" >>
-name = "loci/edge/proposition"
-file-path = "ha-ka-ba/loci/edge/loci-proposition.md"
-description = "Semantic edge kānāwai (law) for proposition-bearing relations. Gives labeled semantic links, ontology-backed relation vocab, direction modes, and polarity guidance."
+name = "pranala/proposition"
+file-path = "ha-ka-ba/pranala/loci-pranala-proposition.md"
+description = "Semantic pranala (edge) kānāwai (law) for proposition-bearing relations. Gives labeled semantic links, ontology-backed relation vocab, direction modes, and polarity guidance."
 version = "0.1-draft"
 tulen = 0.71
 confidence = 0.69

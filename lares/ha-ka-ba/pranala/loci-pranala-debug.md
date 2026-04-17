@@ -1,14 +1,14 @@
 <!-- !DOCTYPE = lar:///ha.ka.ba/pono/memetic-wikitext -->
 
-<<~&#x0001; ? -> lar:///ha.ka.ba/loci/edge/debug >>
+<<~&#x0001; ? -> lar:///ha.ka.ba/pranala/debug >>
 
 <<~ ahu #iam >>
 
 ```toml
 # <<~ ahu #iam-ha "structure" >>
-name = "loci/edge/debug"
-file-path = "ha-ka-ba/loci/edge/loci-debug.md"
-description = "Debug edge kānāwai (law) for observation, reveal, watch, and operator-visible illumination of hidden graph behavior."
+name = "pranala/debug"
+file-path = "ha-ka-ba/pranala/loci-pranala-debug.md"
+description = "Debug pranala (edge) kānāwai (law) for observation, reveal, watch, and operator-visible illumination of hidden graph behavior."
 version = "0.1-draft"
 tulen = 0.71
 confidence = 0.69

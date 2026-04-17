@@ -1,14 +1,14 @@
 <!-- !DOCTYPE = lar:///ha.ka.ba/pono/memetic-wikitext -->
 
-<<~&#x0001; ? -> lar:///ha.ka.ba/loci/edge/template >>
+<<~&#x0001; ? -> lar:///ha.ka.ba/pranala/template >>
 
 <<~ ahu #iam >>
 
 ```toml
 # <<~ ahu #iam-ha "structure" >>
-name = "loci/edge/template"
-file-path = "ha-ka-ba/loci/edge/loci-template.md"
-description = "Template edge sigil kānāwai (law). Defines reusable edge templates, slot contracts, kahea binding order, and promotion discipline."
+name = "pranala/template"
+file-path = "ha-ka-ba/pranala/loci-pranala-template.md"
+description = "Template pranala (edge) sigil kānāwai (law). Defines reusable edge templates, slot contracts, kahea binding order, and promotion discipline."
 version = "0.1-draft"
 tulen = 0.70
 confidence = 0.67
