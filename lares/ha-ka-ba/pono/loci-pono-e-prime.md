@@ -1,13 +1,13 @@
 <!-- !DOCTYPE = lar:///ha.ka.ba/pono/memetic-wikitext -->
 
-<<~&#x0001; ? -> lar:///ka.ka.ba/pono/e-prime >>
+<<~&#x0001; ? -> lar:///ha.ka.ba/pono/e-prime >>
 
 <<~ ahu #iam >>
 
 ```toml
 # <<~ ahu #iam-ha "structure" >>
 name = "e-prime"
-file-path = "ka-ka-ba/pono/e-prime.md"
+file-path = "ha-ka-ba/pono/loci-pono-e-prime.md"
 description = "Active pono kānāwai (law) for E-Prime discipline across memetic-wikitext output units. Lowers false identity certainty and governs rewrite toward observation, relation, action, stance, and earned confidence. Flags failure states."
 version = "0.1-boot"
 tulen = 0.62
@@ -29,7 +29,7 @@ control-sigils = ["&#x0001;", "&#x0002;", "&#x0003;", "&#x0004;", "&#x0005;", "&
 normative-verbs = ["MUST", "MUST NOT", "SHOULD", "SHOULD NOT", "MAY"]
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
-todo = "..."
+pranala = []
 # <<~/ahu >>
 ```
 
@@ -43,7 +43,7 @@ An active pono law meme for E-Prime discipline across memetic-wikitext output un
 
 This kānāwai MUST stay active during generation and revision. It lowers false identity certainty, prefers observation and relation over essence claims, and uses an explicit human-readable confidence marker when confidence remains load-bearing.
 
-<<~ ala lar:///ka.ka.ba/pono/e-prime >>
+<<~ ala lar:///ha.ka.ba/pono/e-prime >>
 
 <<~/ahu >>
 
@@ -94,13 +94,13 @@ Examples:
 Canonical validator:
 
 ```regex
-^\[(P|PS|S|SC|C) (?:0(?:\.\d{2})?|1(?:\.00)?)\]$
+^\[(P|PS|S|SC|C)~(?:0(?:\.\d{2})?|1(?:\.00)?)\]$
 ```
 
 Named-group extractor:
 
 ```regex
-\[(?<register>P|PS|S|SC|C) (?<confidence>0(?:\.\d{2})?|1(?:\.00)?)\]
+\[(?<register>P|PS|S|SC|C)~(?<confidence>0(?:\.\d{2})?|1(?:\.00)?)\]
 ```
 
 Notes for tooling:
@@ -110,9 +110,9 @@ Notes for tooling:
 * use the extractor for inline scan; use the validator for full-token checks
 
 Use the marker when confidence remains load-bearing.
-Do not attach it to every sentence by reflex.
-The generator SHOULD surface the marker only where it improves truthfulness, legibility, or lawful interpretation.
-The generator MUST surface the marker where any instance of `is` or `has` appears. Not surfacing the marker in these instances denotes a failuer state.
+Do not attach it to every sentence by reflex beyond the canonical rule.
+Outside the canonical copula/possession rule, the generator SHOULD surface the marker only where it improves truthfulness, legibility, or lawful interpretation.
+Canonical rule `[C~0.99]`: any generated or audited text containing `is` or `has` MUST surface the marker. Absence of the marker in those cases denotes a failure state.
 
 <<~/ahu >>
 
@@ -124,22 +124,24 @@ This section defines what may claim conformance to this kānāwai.
 
 ### Classes of Product
 
-* `generator` = a system that produces gernative output units
+* `generator` = a system that produces generative output units
 * `auditor` = a system that inspects, marks, or rewrites existing text for alignment to memetic-wikitext pono
 
 ### Conformance Conditions
 
 A conforming `generator` MUST:
 
-* keep to the e-prime law as subconsious guidance before outward render
+* keep to the e-prime law as subconscious guidance before outward render
 * apply the strict release gate before early exit
 * surface the inline confidence marker when confidence remains load-bearing
+* surface the inline confidence marker on any generated output unit containing `is` or `has` `[C~0.99]`
 
 A conforming `auditor` MUST:
 
 * distinguish mark-only from rewrite paths
-* preserve flagged text when mutation is not required
+* preserve flagged text when mutation remains unnecessary
 * recheck rewritten text after Hooko
+* flag any audited output unit containing `is` or `has` when the inline confidence marker is absent `[C~0.99]`
 
 ## Scope
 
@@ -222,7 +224,7 @@ Notice the stance the sentence tries to impose.
 
 Check whether the output unit:
 
-* presses for certainty it has not earned
+* presses for certainty it did not earn
 * flattens relation into essence
 * asks the reader to submit rather than observe
 * needs an inline confidence marker such as `[SC~0.72]`
@@ -239,7 +241,7 @@ Observe MUST NOT rewrite yet. It SHOULD mark any line that should not pass outwa
 
 ```toml
 name = "e-prime-orient"
-description = "Orient phase for classifying what kind of certainty pressure is present."
+description = "Orient phase for classifying what kind of certainty pressure appears in play."
 role = "pressure classification"
 function = "separate harmless shorthand from real collapse and identify the domain of repair"
 phase = "orient"
@@ -299,7 +301,7 @@ Branch conditions:
 Policy weights:
 
 * prefer the shortest lawful path for generative output
-* prefer mark-only for existing text unless mutation is required
+* prefer mark-only for existing text unless mutation becomes necessary
 * require an explicit marker such as `[SC~0.72]` when confidence remains load-bearing
 * block counterfeit closure
 
@@ -367,6 +369,7 @@ Checks:
 * no visible identity-collapse requiring repair
 * no inflated certainty left unlabeled
 * an explicit marker such as `[SC~0.72]` appears when confidence remains load-bearing
+* any output unit containing `is` or `has` carries an explicit marker such as `[SC~0.72]` `[C~0.99]`
 * register and confidence do not conflict
 * the output reads cleanly enough to leave the stream
 
@@ -405,7 +408,7 @@ Preferred moves:
 
 The new sentence should carry less coercive certainty and more honest stance.
 
-Where uncertainty remains materially relevant, the new sentence MAY carry an inline confidence marker such as `[SC~0.72]`.
+Where the new sentence contains `is` or `has`, it MUST carry an inline confidence marker such as `[SC~0.72]` `[C~0.99]`. Where uncertainty remains materially relevant without those forms, the new sentence SHOULD carry the marker when omission would counterfeit closure.
 
 ### ba
 
@@ -449,12 +452,12 @@ These examples are informative.
 
 ### Identity collapse
 
-* weak: `This rule is truth.`
+* weak: `This rule is truth.` `[C~0.99]`
 * better: `This rule appears to function as the current guidance surface.`
 
 ### Possession collapse
 
-* weak: `The meme has final authority.`
+* weak: `The meme has final authority.` `[C~0.99]`
 * better: `The meme carries local authority within its declared scope.`
 
 ### Confidence laundering
@@ -502,9 +505,9 @@ These tests are informative.
 
 Possible later child loci:
 
-* `lar:///ka.ka.ba/pono/e-prime/rewrite-patterns`
-* `lar:///ka.ka.ba/pono/e-prime/failure-indicators`
-* `lar:///ka.ka.ba/pono/e-prime/register-interplay`
+* `lar:///ha.ka.ba/pono/e-prime/rewrite-patterns`
+* `lar:///ha.ka.ba/pono/e-prime/failure-indicators`
+* `lar:///ha.ka.ba/pono/e-prime/register-interplay`
 
 <<~/ahu >>
 
@@ -524,7 +527,7 @@ Flow:
 * Act(mark-only)
 * Aftermath
 
-If mutation is required:
+If mutation becomes necessary:
 
 * Observe
 * Orient
@@ -605,7 +608,7 @@ downward-context = "none"
 parent-binding = "generic-placeholder; envelope header/footer and ahu sockets remain available"
 edge-state = "unresolved; sockets exposed, graph semantics deferred"
 residue = "full story and extended child loci remain outward; unresolved uncertainty should remain visible rather than counterfeited"
-next-observation = "lar:///ka.ka.ba/pono/e-prime#orient"
+next-observation = "lar:///ha.ka.ba/pono/e-prime#orient"
 next-question = "How should result envelopes and graph-edge semantics bind cleanly to ahu sockets without overfitting too early?"
 ```
 
