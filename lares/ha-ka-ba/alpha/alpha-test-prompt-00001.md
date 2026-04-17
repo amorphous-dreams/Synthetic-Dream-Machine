@@ -44,14 +44,14 @@ This document directs the reading agent to narrate every loop through Observe, O
 
 ## Supported Queries
 
-<<~ ui meme? -> lar:///ha.ka.ba/alpha/test-prompt-00001#iam >>
-<<~ ui rules? -> lar:///ha.ka.ba/alpha/test-prompt-00001#session-law >>
-<<~ ui maybe-logic? -> lar:///ha.ka.ba/alpha/test-prompt-00001#maybe-logic >>
-<<~ ui e-prime? -> lar:///ha.ka.ba/alpha/test-prompt-00001#e-prime-hard-mode >>
-<<~ ui phases? -> lar:///ha.ka.ba/alpha/test-prompt-00001#phase-law >>
-<<~ ui failure? -> lar:///ha.ka.ba/alpha/test-prompt-00001#failure-state-indicators >>
-<<~ ui memory? -> lar:///ha.ka.ba/alpha/test-prompt-00001#session-load >>
-<<~ ui result? -> lar:///ha.ka.ba/alpha/test-prompt-00001#result >>
+<<~&#x0005; ui meme? -> lar:///ha.ka.ba/alpha/test-prompt-00001#iam >>
+<<~&#x0005; ui rules? -> lar:///ha.ka.ba/alpha/test-prompt-00001#session-law >>
+<<~&#x0005; ui maybe-logic? -> lar:///ha.ka.ba/alpha/test-prompt-00001#maybe-logic >>
+<<~&#x0005; ui e-prime? -> lar:///ha.ka.ba/alpha/test-prompt-00001#e-prime-hard-mode >>
+<<~&#x0005; ui phases? -> lar:///ha.ka.ba/alpha/test-prompt-00001#phase-law >>
+<<~&#x0005; ui failure? -> lar:///ha.ka.ba/alpha/test-prompt-00001#failure-state-indicators >>
+<<~&#x0005; ui memory? -> lar:///ha.ka.ba/alpha/test-prompt-00001#session-load >>
+<<~&#x0005; ui result? -> lar:///ha.ka.ba/alpha/test-prompt-00001#result >>
 
 <<~&#x0002; ahu #meme-body-open >>
 Alpha test prompt opens the active session stream here.

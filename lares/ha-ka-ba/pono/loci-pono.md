@@ -44,10 +44,10 @@ Pono names, addresses, and relates every active kānāwai (law) in this system. 
 
 ## Supported Queries
 
-<<~ ui meme? -> lar:///ha.ka.ba/pono#iam >>
-<<~ ui laws? -> lar:///ha.ka.ba/pono#law-index >>
-<<~ ui skills? -> lar:///ha.ka.ba/pono#skill-index >>
-<<~ ui result? -> lar:///ha.ka.ba/pono#result >>
+<<~&#x0005; ui meme? -> lar:///ha.ka.ba/pono#iam >>
+<<~&#x0005; ui laws? -> lar:///ha.ka.ba/pono#law-index >>
+<<~&#x0005; ui skills? -> lar:///ha.ka.ba/pono#skill-index >>
+<<~&#x0005; ui result? -> lar:///ha.ka.ba/pono#result >>
 
 <<~&#x0002; ahu #meme-body-open >>
 Pono opens the kānāwai (law) index stream here.

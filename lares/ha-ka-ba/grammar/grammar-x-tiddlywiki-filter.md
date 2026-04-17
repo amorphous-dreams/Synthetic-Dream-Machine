@@ -50,15 +50,15 @@ This meme should preserve the imported filter language substantially intact whil
 
 ## Supported Queries
 
-<<~ ui meme? -> lar:///ha.ka.ba/grammars/x-tiddlywiki-filter#iam >>
-<<~ ui scope? -> lar:///ha.ka.ba/grammars/x-tiddlywiki-filter#constitutional-charge >>
-<<~ ui terms? -> lar:///ha.ka.ba/grammars/x-tiddlywiki-filter#sigil-centric-translation >>
-<<~ ui admission? -> lar:///ha.ka.ba/grammars/x-tiddlywiki-filter#host-admission >>
-<<~ ui features? -> lar:///ha.ka.ba/grammars/x-tiddlywiki-filter#boot-feature-set >>
-<<~ ui examples? -> lar:///ha.ka.ba/grammars/x-tiddlywiki-filter#canonical-examples >>
-<<~ ui degradation? -> lar:///ha.ka.ba/grammars/x-tiddlywiki-filter#degradation >>
-<<~ ui lowering? -> lar:///ha.ka.ba/grammars/x-tiddlywiki-filter#lowering-expectations >>
-<<~ ui result? -> lar:///ha.ka.ba/grammars/x-tiddlywiki-filter#result >>
+<<~&#x0005; ui meme? -> lar:///ha.ka.ba/grammars/x-tiddlywiki-filter#iam >>
+<<~&#x0005; ui scope? -> lar:///ha.ka.ba/grammars/x-tiddlywiki-filter#constitutional-charge >>
+<<~&#x0005; ui terms? -> lar:///ha.ka.ba/grammars/x-tiddlywiki-filter#sigil-centric-translation >>
+<<~&#x0005; ui admission? -> lar:///ha.ka.ba/grammars/x-tiddlywiki-filter#host-admission >>
+<<~&#x0005; ui features? -> lar:///ha.ka.ba/grammars/x-tiddlywiki-filter#boot-feature-set >>
+<<~&#x0005; ui examples? -> lar:///ha.ka.ba/grammars/x-tiddlywiki-filter#canonical-examples >>
+<<~&#x0005; ui degradation? -> lar:///ha.ka.ba/grammars/x-tiddlywiki-filter#degradation >>
+<<~&#x0005; ui lowering? -> lar:///ha.ka.ba/grammars/x-tiddlywiki-filter#lowering-expectations >>
+<<~&#x0005; ui result? -> lar:///ha.ka.ba/grammars/x-tiddlywiki-filter#result >>
 
 <<~&#x0002; ahu #meme-body-open >>
 X-TiddlyWiki-Filter opens the active imported grammar stream here.

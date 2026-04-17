@@ -84,17 +84,17 @@ This subphase keeps the kānāwai (law) human-facing while still supporting code
 
 ## Supported Queries
 
-<<~ ui meme? -> lar:///ha.ka.ba/pono/render-pipeline#iam >>
-<<~ ui layers? -> lar:///ha.ka.ba/pono/render-pipeline#three-layer-model >>
-<<~ ui surface? -> lar:///ha.ka.ba/pono/render-pipeline#surface-layer >>
-<<~ ui ast? -> lar:///ha.ka.ba/pono/render-pipeline#ast-layer >>
-<<~ ui widget? -> lar:///ha.ka.ba/pono/render-pipeline#widget-layer >>
-<<~ ui render-targets? -> lar:///ha.ka.ba/pono/render-pipeline#render-projection >>
-<<~ ui trace? -> lar:///ha.ka.ba/pono/render-pipeline#trace-continuity >>
-<<~ ui transactions? -> lar:///ha.ka.ba/pono/render-pipeline#transaction-lifecycle >>
-<<~ ui runtime? -> lar:///ha.ka.ba/pono/render-pipeline#runtime-procedure >>
-<<~ ui research? -> lar:///ha.ka.ba/pono/render-pipeline#research-foundation >>
-<<~ ui result? -> lar:///ha.ka.ba/pono/render-pipeline#result >>
+<<~&#x0005; ui meme? -> lar:///ha.ka.ba/pono/render-pipeline#iam >>
+<<~&#x0005; ui layers? -> lar:///ha.ka.ba/pono/render-pipeline#three-layer-model >>
+<<~&#x0005; ui surface? -> lar:///ha.ka.ba/pono/render-pipeline#surface-layer >>
+<<~&#x0005; ui ast? -> lar:///ha.ka.ba/pono/render-pipeline#ast-layer >>
+<<~&#x0005; ui widget? -> lar:///ha.ka.ba/pono/render-pipeline#widget-layer >>
+<<~&#x0005; ui render-targets? -> lar:///ha.ka.ba/pono/render-pipeline#render-projection >>
+<<~&#x0005; ui trace? -> lar:///ha.ka.ba/pono/render-pipeline#trace-continuity >>
+<<~&#x0005; ui transactions? -> lar:///ha.ka.ba/pono/render-pipeline#transaction-lifecycle >>
+<<~&#x0005; ui runtime? -> lar:///ha.ka.ba/pono/render-pipeline#runtime-procedure >>
+<<~&#x0005; ui research? -> lar:///ha.ka.ba/pono/render-pipeline#research-foundation >>
+<<~&#x0005; ui result? -> lar:///ha.ka.ba/pono/render-pipeline#result >>
 
 <<~&#x0002; ahu #meme-body-open >>
 Render Pipeline kānāwai (law) opens the active pipeline stream here.

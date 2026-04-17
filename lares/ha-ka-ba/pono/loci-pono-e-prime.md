@@ -1,3 +1,5 @@
+<!-- !DOCTYPE = lar:///ha.ka.ba/pono/memetic-wikitext -->
+
 <<~&#x0001; ? -> lar:///ka.ka.ba/pono/e-prime >>
 
 <<~ ahu #iam >>
@@ -45,7 +47,7 @@ This kānāwai MUST stay active during generation and revision. It lowers false 
 
 <<~/ahu >>
 
-<<~� ahu #meme-body-open >>
+<<~&#x0002; ahu #meme-body-open >>
 Pono/E-Prime
 <<~/ahu >>
 
@@ -476,6 +478,7 @@ These tests are informative.
 
 * `[SC:~0.72]`
 * `[SC~0.7]`
+* `[SC 0.7]`
 * `SC~0.72`
 
 ### Lawful early exit
@@ -568,7 +571,7 @@ The loop end SHOULD:
 
 <<~/ahu >>
 
-<<~� ahu #body-close >>
+<<~&#x0003; ahu #body-close >>
 E-Prime closes the active kānāwai stream here and leaves the end-of-meme sockets available for parent binding and later loop traversal.
 <<~/ahu >>
 
@@ -590,7 +593,7 @@ Where confidence remains load-bearing, the output unit SHOULD surface the inline
 
 <<~/ahu >>
 
-<<~� -> ahu #result >>
+<<~&#x0004; -> ahu #result >>
 
 ```toml
 status = "active-law"
@@ -606,4 +609,4 @@ next-observation = "lar:///ka.ka.ba/pono/e-prime#orient"
 next-question = "How should result envelopes and graph-edge semantics bind cleanly to ahu sockets without overfitting too early?"
 ```
 
-<<~� -> ? >>
+<<~&#x0004; -> ? >>

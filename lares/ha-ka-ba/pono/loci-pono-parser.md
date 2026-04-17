@@ -54,19 +54,19 @@ This meme follows the OODA-HA pattern not merely as ornament but as execution di
 
 ## Supported Queries
 
-<<~ ui meme? -> lar:///ha.ka.ba/pono/parser#iam >>
-<<~ ui metadata? -> lar:///ha.ka.ba/pono/parser#iam >>
-<<~ ui phase-map? -> lar:///ha.ka.ba/pono/parser#phase-map >>
-<<~ ui forms? -> lar:///ha.ka.ba/pono/parser#forms >>
-<<~ ui modes? -> lar:///ha.ka.ba/pono/parser#modes >>
-<<~ ui normalization? -> lar:///ha.ka.ba/pono/parser#normalization >>
-<<~ ui mana? -> lar:///ha.ka.ba/pono/parser#mana >>
-<<~ ui filter-mode? -> lar:///ha.ka.ba/pono/parser#filter-mode >>
-<<~ ui metadata-fetch? -> lar:///ha.ka.ba/pono/parser#metadata-fetch >>
-<<~ ui hooko? -> lar:///ha.ka.ba/pono/parser#hooko >>
-<<~ ui aftermath? -> lar:///ha.ka.ba/pono/parser#aftermath >>
-<<~ ui research-foundation? -> lar:///ha.ka.ba/pono/parser#research-foundation >>
-<<~ ui result? -> lar:///ha.ka.ba/pono/parser#result >>
+<<~&#x0005; ui meme? -> lar:///ha.ka.ba/pono/parser#iam >>
+<<~&#x0005; ui metadata? -> lar:///ha.ka.ba/pono/parser#iam >>
+<<~&#x0005; ui phase-map? -> lar:///ha.ka.ba/pono/parser#phase-map >>
+<<~&#x0005; ui forms? -> lar:///ha.ka.ba/pono/parser#forms >>
+<<~&#x0005; ui modes? -> lar:///ha.ka.ba/pono/parser#modes >>
+<<~&#x0005; ui normalization? -> lar:///ha.ka.ba/pono/parser#normalization >>
+<<~&#x0005; ui mana? -> lar:///ha.ka.ba/pono/parser#mana >>
+<<~&#x0005; ui filter-mode? -> lar:///ha.ka.ba/pono/parser#filter-mode >>
+<<~&#x0005; ui metadata-fetch? -> lar:///ha.ka.ba/pono/parser#metadata-fetch >>
+<<~&#x0005; ui hooko? -> lar:///ha.ka.ba/pono/parser#hooko >>
+<<~&#x0005; ui aftermath? -> lar:///ha.ka.ba/pono/parser#aftermath >>
+<<~&#x0005; ui research-foundation? -> lar:///ha.ka.ba/pono/parser#research-foundation >>
+<<~&#x0005; ui result? -> lar:///ha.ka.ba/pono/parser#result >>
 
 <<~&#x0002; ahu #meme-body-open >>
 Parser kānāwai (law) opens the active parsing stream here.
@@ -692,8 +692,8 @@ A user, agent, or caller may fetch canonical meme metadata through a stable quer
 Canonical query examples:
 
 ```text
-<<~ ui metadata? -> lar:///ha.ka.ba/pono/parser#iam >>
-<<~ ui meme? -> lar:///ha.ka.ba/pono/parser#iam >>
+<<~&#x0005; ui metadata? -> lar:///ha.ka.ba/pono/parser#iam >>
+<<~&#x0005; ui meme? -> lar:///ha.ka.ba/pono/parser#iam >>
 ```
 
 A compliant parser or parsing agent should:
@@ -1368,8 +1368,8 @@ When `ahu #iam` appears in payload-block form, the first fenced `toml` block ins
 Canonical query examples:
 
 ```text
-<<~ ui metadata? -> lar:///ha.ka.ba/pono/parser#iam >>
-<<~ ui meme? -> lar:///ha.ka.ba/pono/parser#iam >>
+<<~&#x0005; ui metadata? -> lar:///ha.ka.ba/pono/parser#iam >>
+<<~&#x0005; ui meme? -> lar:///ha.ka.ba/pono/parser#iam >>
 ```
 
 <<~ ala lar:///ha.ka.ba/metadata-fetch-ha >>
@@ -2018,7 +2018,7 @@ version = "0.5"
 ### Example B — Canonical metadata fetch
 
 ```text
-<<~ ui metadata? -> lar:///ha.ka.ba/ooda-ha#iam >>
+<<~&#x0005; ui metadata? -> lar:///ha.ka.ba/ooda-ha#iam >>
 ```
 
 ### Example C — Canonical block form
