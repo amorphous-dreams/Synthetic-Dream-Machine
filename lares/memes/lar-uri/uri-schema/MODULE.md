@@ -20,7 +20,7 @@ phase-map:
   decide: decide/CONVENTIONS.md
   act: act/PROCEDURES.md
   assess: assess/VERIFICATION.md
-flat-spec: URI_SCHEMA.md
+flat-spec: URI-SCHEMA.md
 scale-range: [action, session]
 trigger: >
   When working with lar: URIs, HUD lines, exchange vectors,
@@ -44,7 +44,7 @@ This module defines the navigational instrument layer for all Lares exchanges. I
 - Exchange span display contract: what URIs appear, in what order, at what scope
 - Validation rules for URI well-formedness and span consistency
 
-The flat specification lives in `URI_SCHEMA.md` in this module directory (`[CS:0.95]` — wins any conflict with phase files). The phase directories carry the decomposed view: context, architecture decisions, conventions, exchange procedures, and verification criteria.
+The flat specification lives in `URI-SCHEMA.md` in this module directory (`[CS:0.95]` — wins any conflict with phase files). The phase directories carry the decomposed view: context, architecture decisions, conventions, exchange procedures, and verification criteria.
 
 **What this module does NOT own (delegated):**
 - Sigil/emoji render rules → `lares/modules/sigilization/`
@@ -75,7 +75,7 @@ The flat specification lives in `URI_SCHEMA.md` in this module directory (`[CS:0
 
 ## Key Spec Reference
 
-Canonical specification: `lares/modules/uri-schema/URI_SCHEMA.md` `[CS:0.95]`
+Canonical specification: `lares/modules/uri-schema/URI-SCHEMA.md` `[CS:0.95]`
 Sigilization rules: `lares/modules/sigilization/` `[CS:0.85]`
 Micro-trace specification: `lares/modules/micro-trace/` `[CS:0.80]`
 Validation tool: `builds/scripts/verify_uri.py` · `make -C builds verify`

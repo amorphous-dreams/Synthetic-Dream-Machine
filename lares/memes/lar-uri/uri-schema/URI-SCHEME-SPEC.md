@@ -5,7 +5,7 @@
 > Domain: `lar/modules/uri-schema/` · scheme grammar, syntax rules, validation, stable address
 > Status: `[CS:0.95]` 🏛️ — RFC-grade scheme definition; slow-changing stone tablet
 > Updated: 2026-04-10
-> Version: 1 (fissioned from URI_SCHEMA.md v3)
+> Version: 1 (fissioned from URI-SCHEMA.md v3)
 > Companion: `URI_OPERATIONS.md` — operational semantics, exchange protocol, render targets, marker ontology
 > Blocks: IANA registration (`lar:` scheme), URI parser implementations, canonical form comparators
 

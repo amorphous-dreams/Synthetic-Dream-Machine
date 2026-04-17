@@ -7,7 +7,7 @@
 ```toml
 # <<~ ahu #iam-ha "structure" >>
 name = "file_path"
-file_path = "ha-ka-ba/loci/iam/loci_file_path.md"
+file_path = "ha-ka-ba/loci/iam/loci-file-path.md"
 description = "Kānāwai (law) for the file_path metadata key. Governs its two canonical forms (flat-file and path-directory), its required agreement with the lar: URI in the document opener, and the migration procedure when a meme moves between forms."
 version = "0.1-draft"
 tulen = 0.60
@@ -171,11 +171,11 @@ ha-ka-ba/[optional/subpath/]meme_type_name.md
 
 Examples:
 ```
-ha-ka-ba/loci_meme.md
-ha-ka-ba/pono/loci_parser.md
-ha-ka-ba/grammars/grammar_x-tiddlywiki-filter.md
-ha-ka-ba/alpha/alpha_test-prompt-00001.md
-ha-ka-ba/pono/skill_template.md
+ha-ka-ba/loci-meme.md
+ha-ka-ba/pono/loci-parser.md
+ha-ka-ba/grammars/grammar-x-tiddlywiki-filter.md
+ha-ka-ba/alpha/alpha-test-prompt-00001.md
+ha-ka-ba/pono/skill-template.md
 ```
 
 The meme file sits at `install_root + file_path` as a flat file alongside sibling memes. No child-meme directory accompanies it. New memes default to this form.
@@ -188,9 +188,9 @@ ha-ka-ba/[optional/subpath/]name/meme_type_name.md
 
 Examples:
 ```
-ha-ka-ba/loci/loci_loci.md
-ha-ka-ba/meme/loci_meme.md
-ha-ka-ba/pono/parser/loci_parser.md   ← (future, if parser migrates)
+ha-ka-ba/loci/loci-loci.md
+ha-ka-ba/meme/loci-meme.md
+ha-ka-ba/pono/parser/loci-parser.md   ← (future, if parser migrates)
 ```
 
 In this form, the meme lives inside its own directory (`name/`), which may hold child memes, child meme directories, and sidecar files alongside the root meme file. The directory name matches the meme `name` field. The root meme file inside that directory keeps the same `meme_type_name.md` filename.
@@ -203,9 +203,9 @@ In both forms, the filename component MUST follow the pattern `meme_type_name.md
 - `meme_type` and `name` join through `_`
 - extension always uses `.md`
 
-A filename like `loci_file_path.md` counts as correct for `meme_type = "loci"` and `name = "file_path"`.
+A filename like `loci-file-path.md` counts as correct for `meme_type = "loci"` and `name = "file_path"`.
 
-A filename like `alpha_test-prompt-00001.md` counts as correct for `meme_type = "alpha"` and `name = "test-prompt-00001"`.
+A filename like `alpha-test-prompt-00001.md` counts as correct for `meme_type = "alpha"` and `name = "test-prompt-00001"`.
 
 <<~/ahu >>
 
@@ -223,12 +223,12 @@ Given a `file_path` value, derive the expected `lar:` URI as follows:
 
 2. Strip path_root prefix:
      rest = path.removePrefix("ha-ka-ba/")
-     e.g. "loci/iam/loci_file_path.md" or "pono/loci_parser.md"
+     e.g. "loci/iam/loci-file-path.md" or "pono/loci-parser.md"
 
 3. Strip the meme_type_name.md filename:
      filename = rest.split("/").last
      subpath  = rest.split("/")[0..-2].join("/")
-     e.g. filename = "loci_file_path.md", subpath = "loci/iam"
+     e.g. filename = "loci-file-path.md", subpath = "loci/iam"
 
 4. In path-directory form, subpath ends with the name segment — strip it:
      parts = subpath.split("/")

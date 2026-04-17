@@ -171,7 +171,7 @@ If a human can admire the surface but a parser cannot trust the structure, the U
 - [hakaba/LOCI.md](../hakaba/LOCI.md)
 - [chronometer/LOCI.md](../chronometer/LOCI.md)
 - [exchange/LOCI.md](../exchange/LOCI.md)
-- [../../modules/uri-schema/URI_SCHEMA.md](../../modules/uri-schema/URI_SCHEMA.md)
+- [../../modules/uri-schema/URI-SCHEMA.md](../../modules/uri-schema/URI-SCHEMA.md)
 
 ---
 

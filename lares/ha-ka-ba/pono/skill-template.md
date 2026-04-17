@@ -14,7 +14,7 @@ allowed-tools: Read, Grep, Glob, Bash, Edit, Write
 ```toml
 # <<~ ahu #iam-ha "structure" >>
 name = "template"
-file_path = "ha-ka-ba/pono/skill_template.md"
+file_path = "ha-ka-ba/pono/skill-template.md"
 description = "Template and authoring guide for memetic-wikitext verification skill packages under lares/ha-ka-ba/pono/. Covers the SKILL.md * OODA-HA * ha.ka.ba structure, invariant declaration, pre-MCP Python and Node implementation patterns, and post-MCP roadmap."
 version = "0.1-draft"
 tulen = 0.52
@@ -31,7 +31,7 @@ structure = "SKILL.md * OODA-HA * ha.ka.ba"
 enacts = true
 role = "skill template, verification authoring guide, and pre/post-MCP implementation roadmap"
 function = "describe the required shape of a pono verification skill package, declare the dual-surface SKILL.md + memetic-wikitext composition, and provide implementation patterns for grammar conformance checking"
-skill_package_root = "ha-ka-ba/pono/skill_*.md"
+skill_package_root = "ha-ka-ba/pono/skill-*.md"
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
 input = "target-meme|law-address|invariant-set|query|artifact|bundle|stream|?"
@@ -350,7 +350,7 @@ if __name__ == "__main__":
 **Invocation from skill body (agent-native):**
 
 ```bash
-python3 lares/ha-ka-ba/pono/scripts/skill_check.py lares/ha-ka-ba/meme/loci_meme.md
+python3 lares/ha-ka-ba/pono/scripts/skill_check.py lares/ha-ka-ba/meme/loci-meme.md
 ```
 
 **Library choices:**
@@ -568,9 +568,9 @@ yield = "skill"
 return = "template"
 upward_context = "chat"
 downward_context = "none"
-residue = "pre-MCP scripts not yet written; no skill_*.md package exists yet; post-MCP MCP server not yet implemented"
+residue = "pre-MCP scripts not yet written; no skill-*.md package exists yet; post-MCP MCP server not yet implemented"
 next_observation = "lar:///ha.ka.ba/pono/skill-template#invariant-declaration"
-next_question = "Which law should the first skill package cover — loci_parser.md or meme/loci_meme.md?"
+next_question = "Which law should the first skill package cover — loci-parser.md or meme/loci-meme.md?"
 ```
 
 <<~&#x0004; -> ? >>

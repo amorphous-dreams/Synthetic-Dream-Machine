@@ -3,7 +3,7 @@
 # Signal — Act: Procedures
 
 > How to emit URIs, HUD lines, micro-trace annotations, and sub-agent handoff pairs.
-> Sources: `lares/signal/micro-trace.md` `[CS:0.80]` · `lares/modules/uri-schema/URI_SCHEMA.md` §5.5 `[CS:0.90]`
+> Sources: `lares/signal/micro-trace.md` `[CS:0.80]` · `lares/modules/uri-schema/URI-SCHEMA.md` §5.5 `[CS:0.90]`
 
 ---
 

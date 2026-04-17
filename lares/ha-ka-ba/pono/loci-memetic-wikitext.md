@@ -5,7 +5,7 @@
 ```toml
 # <<~ ahu #iam-ha "structure" >>
 name = "memetic-wikitext"
-file_path = "ha-ka-ba/pono/loci_memetic-wikitext.md"
+file_path = "ha-ka-ba/pono/loci-memetic-wikitext.md"
 description = "Constitutional root kānāwai (law) for the memetic-wikitext authoring surface, primitive semantic contract, and minimum boot grammar."
 version = "0.1-skeleton"
 tulen = 0.52

@@ -3,7 +3,7 @@
 # Signal — Assess: Verification
 
 > Validation rules, well-formedness checklist, and comparison rules for `lar:` URIs.
-> Source: `lares/modules/uri-schema/URI_SCHEMA.md` §10 `[CS:0.90]`.
+> Source: `lares/modules/uri-schema/URI-SCHEMA.md` §10 `[CS:0.90]`.
 
 ---
 
@@ -38,7 +38,7 @@ All `lar:` URI fields in a spanSpan record (`start_uri`, `attractor_uri`, `end_u
 - [ ] 3. `chronometer_start` matches the fragment value (without `#`) of `start_uri`; `chronometer_end` matches `end_uri`
 - [ ] 4. `lares_address` is the path-only strip of `start_uri` (no authority, no query, no fragment)
 
-The rendering table (§5.1 of `lares/modules/uri-schema/URI_SCHEMA.md`) governs the canonical-to-render-target transform for HUD lines and post-headers. Render-target surfaces (glyph-rich) are not stored in spanSpan URI fields.
+The rendering table (§5.1 of `lares/modules/uri-schema/URI-SCHEMA.md`) governs the canonical-to-render-target transform for HUD lines and post-headers. Render-target surfaces (glyph-rich) are not stored in spanSpan URI fields.
 
 ---
 
@@ -120,7 +120,7 @@ A clean scan returns zero matches on all three patterns.
 <!-- ∞ → lar:///uri.schema.holds/uri-schema/assess/?confidence=0.9#promotion-criteria -->
 ## Promotion Criteria
 
-`lares/modules/uri-schema/URI_SCHEMA.md` is currently `[CS:0.95]`. For promotion to `[C:0.95]` (full Canon):
+`lares/modules/uri-schema/URI-SCHEMA.md` is currently `[CS:0.95]`. For promotion to `[C:0.95]` (full Canon):
 
 - Core anatomy (§§2–6, 10): can promote independently — design tension resolved
 - Crystal integration layer (§§7–9): promotes when `lares/crystal/` settles STATE.jsonl schema
@@ -128,7 +128,7 @@ A clean scan returns zero matches on all three patterns.
 
 This module (Signal) is `[CS:0.85]`. Promotion criteria:
 - S0 scan verified clean ✅
-- `lares/modules/uri-schema/URI_SCHEMA.md` promoted to C:0.95 □
+- `lares/modules/uri-schema/URI-SCHEMA.md` promoted to C:0.95 □
 - micro-trace.md exchange URIs migrated to full record form ○
 
 <!-- → ? -->

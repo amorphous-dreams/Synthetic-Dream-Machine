@@ -6,7 +6,7 @@
 ```toml
 # <<~ ahu #iam-ha "structure" >>
 name = "DreamNet_MemeWiki"
-file_path = "todo/todo.DreamNet_MemeWiki.md"
+file_path = "todo/todo.DreamNet-MemeWiki.md"
 description = "Consolidated DreamNet MemeWiki research and implementation staging memo. Braids the current scratch notes on kernel architecture, Lezer and CodeMirror, TLDraw and Kowloon integration, and sprint planning into one OODA-HA worksite."
 version = "0.1-draft"
 tulen = 0.62

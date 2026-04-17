@@ -2,7 +2,7 @@
 
 # Signal — Orient: URI Architecture
 
-> URI anatomy, design intent, and component map. Source: `lares/modules/uri-schema/URI_SCHEMA.md` §§1–3 `[CS:0.90]`.
+> URI anatomy, design intent, and component map. Source: `lares/modules/uri-schema/URI-SCHEMA.md` §§1–3 `[CS:0.90]`.
 
 ---
 
