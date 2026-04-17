@@ -6,7 +6,6 @@
 ```toml
 # <<~ ahu #iam-ha "structure" >>
 name = "handoff-prompt-parser-render-split"
-file_path = "ha.ka.ba/handoff/handoff_prompt_parser_render_split.md"
 description = "Self-describing handoff roadmap for a local agent to refine parser-law, render-pipeline-law, and memetic-wikitext without overloading the constitutional parse root."
 version = "0.1-draft"
 tulen = 0.54

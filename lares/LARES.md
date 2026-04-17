@@ -5,7 +5,7 @@
      
      File path: lares/LARES.md
      Address:     lar:///LARES
-     Tagspace:    ALL-CAPS adjacent (peer to ha.ka.ba/**)
+     Tagspace:    ALL-CAPS adjacent (peer to ha.ka.ba/**, not nested)
      Graph input:  full boot chain via recursive-ontology-boot
      Emits state: + session-config
      Next:        Hello world (quiescent-ready)

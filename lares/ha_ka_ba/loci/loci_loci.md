@@ -8,7 +8,7 @@
 # <<~ ahu #iam-ha "structure" >>
 name = "loci"
 file_path = "ha_ka_ba/loci/loci_loci.md"
-description = "Loci kānāwai (law) for resolving `lar:` URI memes into explicit routing evidence and current `mana`, `manao`, and `manaoio` posture. Declares the derivation algorithm, the convention surfaces that make routing explicit, the conditions for high-mana `loci` memes, the promotion path from noise to data to meme to loci meme to canon loci meme, and the MCP-resolution research roadmap."
+description = "Loci kānāwai (law) for resolving `lar:` URI memes into explicit routing evidence and current `mana`, `manao`, and `manaoio` posture. Declares the derivation algorithm, the convention surfaces that make routing explicit, the conditions for high-mana `loci` memes, the promotion path from noise to data to meme to typed meme to canon typed meme, and the MCP-resolution research roadmap."
 version = "0.1-draft"
 tulen = 0.76
 confidence = 0.74
@@ -46,24 +46,27 @@ depends_on = [
 
 A self-describing loci authority for `lar:` URI memes in this system.
 
-Loci declares the ha.ka.ba an agent uses to resolve a `lar:` URI meme into a present set of `mana`, `manao`, and `manaoio` ratings, the ha.ka.ba which makes the convention explicit, the conditions that make a high-mana `loci` class meme, the canon promotion stages a meme passes through from noise to data to meme to loci meme to canon loci meme, and the current research roadmap toward live MCP-backed resolution.
-# Promotion Path: The Five Buckets
+Loci declares the ha.ka.ba an agent uses to resolve a `lar:` URI meme into a present set of `mana`, `manao`, and `manaoio` ratings, the ha.ka.ba which makes the convention explicit, the conditions that make a high-mana `loci` class meme, the canon promotion stages a meme passes through from noise to data to meme to typed meme to canon typed meme, and the current research roadmap toward live MCP-backed resolution.
 
-The lifecycle of a meme in this system follows five distinct buckets, each representing a stage of increasing structure, meaning, and authority:
+## Promotion Path
 
-1. **Noise**: Raw, unstructured, or chaotic signals—no inherent meaning or pattern.
-2. **Data**: Structured information; patterns or language that can be parsed and used by AI or systems, but not yet carrying memetic (cultural, symbolic) meaning.
-3. **Meme**: Data that has acquired memetic structure—recognizable, repeatable, and meaningful within a context; it can be transmitted and interpreted as a unit of meaning.
-4. **Loci Meme**: A meme that has achieved explicit routing, rating, and convention surfaces—recognized as a stable, high-mana address in the system, with clear evidence and authority.
-5. **Canon Loci Meme**: A loci meme that is promoted to canonical status—fully ratified, stable, and authoritative within the system’s law and routing conventions.
+The lifecycle of a carrier in this system follows five buckets, each marking a stronger kind of structure, meaning, and authority:
+
+1. **Noise**: Raw, unstructured, or chaotic signal with no stable machine-usable structure yet.
+2. **Data**: Structured language an AI can already find useful without the memetic wrappers.
+3. **Meme**: Data that has acquired memetic wrappers or boundary surfaces, so it can travel as a contextual unit of meaning.
+4. **Typed Meme**: A meme that declares and satisfies one or more meme types such as `loci`, `grammar`, `skill`, or `todo`.
+5. **Canon Typed Meme**: A typed meme whose declared type bundle has been externally ratified as stable and authoritative.
 
 **Transition Criteria:**
 - *Noise → Data*: Structure or pattern is detected, making the signal machine-usable.
-- *Data → Meme*: The data is recognized as meaningful and repeatable within a cultural or system context.
-- *Meme → Loci Meme*: The meme gains explicit routing, rating, and convention surfaces, becoming a stable address.
-- *Loci Meme → Canon Loci Meme*: The loci meme is ratified as canonical, achieving the highest authority and stability.
+- *Data → Meme*: Memetic wrappers or contextual boundaries appear, so the data can be handled as a transmissible meaning-unit.
+- *Meme → Typed Meme*: The meme declares and satisfies one or more type laws with explicit role, boundary, and evaluation surfaces.
+- *Typed Meme → Canon Typed Meme*: The typed meme is externally ratified as canonical, achieving the highest authority and stability for the stable type claims it carries.
 
-This five-bucket model replaces the previous three-stage path, providing a more granular and actionable framework for meme lifecycle and promotion in the system.
+Types are not mutually exclusive. A carrier may be `skill` and `loci`, or `grammar` and `loci`, at the same time. Where current `#iam` still uses a singular `meme_type` field, read it as the primary declared surface type rather than an exclusivity claim.
+
+This five-bucket model replaces an older collapse of typed and canonical stages into the single word `loci`. `Loci` is one typed-meme branch, not the whole ladder. More specifically, `loci` names the stable-address type for carriers living under `lar:///ha.ka.ba/**`.
 
 This meme does not govern parse recognition, render lowering, conformance verification, or raw `file_path` capture. Those belong to their own kānāwai (law). Detailed siting capture and agreement live at `lar:///ha.ka.ba/loci/iam/file_path`. Loci governs the routing-and-rating convention above those surfaces.
 
@@ -76,6 +79,7 @@ This file is itself a path-directory-sited `loci` meme and therefore a live spec
 <<~&#x0005; ui prefixes? -> lar:///ha.ka.ba/loci#meme-type-prefix-table >>
 <<~&#x0005; ui convention? -> lar:///ha.ka.ba/loci#carrier-coherence >>
 <<~&#x0005; ui stability? -> lar:///ha.ka.ba/loci#address-stability >>
+<<~&#x0005; ui lifecycle? -> lar:///ha.ka.ba/loci#promotion-path >>
 <<~&#x0005; ui ratings? -> lar:///ha.ka.ba/loci#rating-resolution >>
 <<~&#x0005; ui high-rating? -> lar:///ha.ka.ba/loci#high-rating-loci >>
 <<~&#x0005; ui canon? -> lar:///ha.ka.ba/loci#canon-promotion >>
@@ -423,10 +427,10 @@ Canon promotion now tracks how a `lar:` URI meme climbs from raw signal to stabl
 | **Noise**           | none or `P`          | none, fragmentary, or `<<~&#x0001; ? -> lar:///...` | The URI is present as signal, but the convention is too thin to trust as a loci authority. |
 | **Data**            | `P` or `PS`          | fragmentary, partial, or proto-meme   | Structure or pattern is detected, making the signal machine-usable, but not yet memetic. |
 | **Meme**            | `PS` or `S`          | `<<~&#x0001; ? -> lar:///...`           | A boot-legal meme declares the address and enough structure to be rated.                  |
-| **Loci Meme**       | `CS`                 | `<<~&#x0001; ? -> lar:///...`           | Explicit routing convention exists, address stability is a live discipline, and unresolved MCP tension may still remain. |
-| **Canon Loci Meme** | `C`                  | `<<~&#x0001; lar:///...`                | Stability has been externally confirmed, live resolution substrate exists, and opener uncertainty has been removed. |
+| **Typed Meme (`loci`)**       | `S` or `CS`          | `<<~&#x0001; ? -> lar:///...`           | The carrier satisfies the stable-address type under `lar:///ha.ka.ba/**`; explicit routing convention exists or is actively being sharpened, and unresolved MCP tension may still remain. |
+| **Canon Typed Meme (`loci`)** | `C`                  | `<<~&#x0001; lar:///...`                | Stability has been externally confirmed, live resolution substrate exists, and opener uncertainty has been removed. |
 
-The full five-register rubric is declared in `lar:///ha.ka.ba/meme#rating-targets`. Confidence scores, register labels, and promotion criteria are governed there. Loci governs the routing, convention, and document-opener changes that accompany the climb from noise to data to meme to loci meme to canon loci meme.
+The full five-register rubric is declared in `lar:///ha.ka.ba/meme#rating-targets`. Confidence scores, register labels, and promotion criteria are governed there. Loci governs the routing, convention, and document-opener changes that accompany the climb from noise to data to meme to typed meme to canon typed meme.
 
 **Movement from noise to data** requires:
 
@@ -438,15 +442,20 @@ The full five-register rubric is declared in `lar:///ha.ka.ba/meme#rating-target
 * A declared `lar:` address
 * Enough explicit role and function to rate the carrier above raw data
 
-**Movement from meme to loci meme** requires:
+**Movement from meme to typed meme (`loci`)** requires:
+
+* The carrier lives under `lar:///ha.ka.ba/**` and declares stable-address intent
+* One or more type laws are active; `loci` may compose with other types rather than replacing them
+* Enough explicit routing convention is present to evaluate the stable-address claim
+* Truthful derivation behavior, including honest misses
+
+Higher `CS` posture for a `loci` typed meme additionally expects:
 
 * All nine required elements (R1–R9) present per `lar:///ha.ka.ba/meme`
 * `enacts = true`
-* Explicit routing convention present
-* Truthful derivation behavior, including honest misses
 * Stable-address discipline strong enough to justify `CS`
 
-**Promotion from loci meme to canon loci meme** additionally requires:
+**Promotion from typed meme (`loci`) to canon typed meme (`loci`)** additionally requires:
 
 * All three address-stability conditions satisfied
 * Operator or admin confirmation

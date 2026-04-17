@@ -6,7 +6,6 @@
 ```toml
 # <<~ ahu #iam-ha "structure" >>
 name = "memetic-wikitext-local-agent-handoff"
-file_path = "ha.ka.ba/handoff/memetic_wikitext_local_agent_handoff.loci.md"
 description = "Handoff meme for a local agent to complete the memetic-wikitext root rebuild after the current canvas pass hit size limits."
 version = "0.1-draft"
 tulen = 0.56

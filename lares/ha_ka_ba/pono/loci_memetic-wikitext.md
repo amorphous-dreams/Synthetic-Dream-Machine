@@ -861,9 +861,9 @@ This ahu preserves profile variation as a practical reading aid rather than a so
 
 meme-confidence governs the canonical maturity and canon-status rating of a meme at the authoring surface.
 
-This locus should remain compact. It names the five-band confidence scale, the short tag form for inline use, and the relation to the `confidence` field that loci memes should carry in `#iam`.
+This locus should remain compact. It names the five-band confidence scale, the short tag form for inline use, and the relation to the `confidence` field that many typed memes should carry in `#iam`.
 
-Full loci meme type kānāwai (law) should deepen outward into `lar:///ha.ka.ba/loci`.
+Full stable-address `loci` kānāwai (law) should deepen outward into `lar:///ha.ka.ba/loci`. Other typed branches may deepen outward into their own subtype laws.
 
 ### Five-Band Confidence Scale
 
@@ -877,9 +877,9 @@ Full loci meme type kānāwai (law) should deepen outward into `lar:///ha.ka.ba/
 
 ### Confidence Field Kānāwai (law)
 
-A loci meme SHOULD carry a `confidence` field in its `#iam` metadata block expressing the current decimal value.
+A typed meme SHOULD carry a `confidence` field in its `#iam` metadata block expressing the current decimal value.
 
-A loci meme SHOULD carry a `register` field naming the short tag for the current band.
+A typed meme SHOULD carry a `register` field naming the short tag for the current band.
 
 Canon-rated memes (`[C]`) MAY activate instruction priority and kapu override potential for that meme within the active session.
 
@@ -889,7 +889,7 @@ Provisional-rated memes (`[P]`) should not claim canonical authority over later-
 
 This locus carries the minimum confidence vocabulary needed at the authoring surface.
 
-Full loci meme type identity, address stability kānāwai (law), and canon promotion procedure should deepen outward into `lar:///ha.ka.ba/loci` when that meme reaches Synthesis or above.
+For stable-address carriers under `lar:///ha.ka.ba/**`, full `loci` identity, address stability kānāwai (law), and canon promotion procedure should deepen outward into `lar:///ha.ka.ba/loci` when that carrier reaches Synthesis or above.
 
 <<~ ala lar:///ha.ka.ba/meme-confidence >>
 <<~/ahu >>
@@ -898,7 +898,7 @@ Full loci meme type identity, address stability kānāwai (law), and canon promo
 
 ## Meme Ratings
 
-Meme-ratings governs the full cluster of scalar quality fields that a loci meme SHOULD carry in its `#iam` metadata block.
+Meme-ratings governs the full cluster of scalar quality fields that many typed memes SHOULD carry in their `#iam` metadata blocks.
 
 This locus names each field, distinguishes what each measures, and routes to the locus where each receives fuller treatment.
 
@@ -918,7 +918,7 @@ They measure canon status and revision stability.
 
 See `#meme-confidence` for the five-band scale and field kānāwai (law).
 
-Full canon promotion procedure should deepen outward into `lar:///ha.ka.ba/loci`.
+For stable-address carriers under `lar:///ha.ka.ba/**`, full canon promotion procedure should deepen outward into `lar:///ha.ka.ba/loci`.
 
 ### Group 2 — Structural Parse Quality
 

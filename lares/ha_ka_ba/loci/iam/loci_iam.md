@@ -65,7 +65,7 @@ This meme freezes the surviving field surface for live carriers. It asks each fi
 
 This meme does not solve weak metadata by adding new buckets. It sharpens the surviving buckets and lets informative weakness remain visible.
 
-**Lifecycle Note:** The five-bucket lifecycle (noise → data → meme → loci meme → canon loci meme) is canonical for all meme law. This law governs the field set, not the lifecycle stages themselves.
+**Lifecycle Note:** The five-bucket lifecycle (noise → data → meme → typed meme → canon typed meme) is canonical for all meme law. Here `data` means structured language an AI can use without the memetic wrappers. This law governs the field set, not the lifecycle stages themselves.
 
 <<~ ala lar:///ha.ka.ba/loci/iam >>
 

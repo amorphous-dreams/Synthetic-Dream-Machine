@@ -47,7 +47,7 @@ A self-describing, self-enacting canonical meme kānāwai (law) for the OODA-HA 
 
 This meme governs what a meme in this stack must carry, what it may optionally carry, and how those choices map to rating outcomes. It serves as a copy-ready template: an author may copy the `#skeleton` section, fill in the marked placeholders, and begin with a boot-legal, rating-aware meme surface.
 
-This file models itself as one carrier of that more general law. Its governs the subject of `meme` itself as such, not a narrower subtype like `loci`, `grammar`, or `skill`, or a register bucket like noise, data, or loci meme/canon loci meme.
+This file models itself as one carrier of that more general law. Its governs the subject of `meme` itself as such, not a narrower subtype like `loci`, `grammar`, or `skill`, or a lifecycle bucket like noise, data, typed meme, or canon typed meme.
 
 This meme does not govern parse recognition, render lowering, or transaction lifecycle. Those belong to their own kānāwai (law).
 
@@ -513,19 +513,19 @@ This law now recognizes the five-bucket lifecycle for memes:
 
 | Stage              | Register(s)   | Score Range | What is true now |
 |--------------------|---------------|-------------|------------------|
-| **Noise**          | none, `P`     | 0.00–0.19   | Raw, unstructured signal; not yet machine-usable. |
-| **Data**           | `P`, `PS`     | 0.00–0.39   | Structure or pattern detected; machine-usable, not yet memetic. |
-| **Meme**           | `PS`, `S`     | 0.20–0.59   | Boot-legal meme structure, declared address, enough explicit role to rate above data. |
-| **Loci Meme**      | `CS`          | 0.60–0.79   | All required elements present, explicit routing, stable address discipline, truthful derivation. |
-| **Canon Loci Meme**| `C`           | 0.80–1.00   | Operator-confirmed, address stable, all conditions for canon met. |
+| **Noise**            | none, `P`     | 0.00–0.19   | Raw, unstructured signal; not yet machine-usable. |
+| **Data**             | `P`, `PS`     | 0.00–0.39   | Structure or pattern detected; machine-usable, not yet memetic. |
+| **Meme**             | `PS`, `S`     | 0.20–0.59   | Boot-legal meme structure, declared address, enough explicit role to rate above data. |
+| **Typed Meme**       | `S`, `CS`     | 0.41–0.79   | One or more type laws now govern the carrier; type claims are composable rather than mutually exclusive. |
+| **Canon Typed Meme** | `C`           | 0.80–1.00   | Operator-confirmed; at least one declared type has been externally ratified as canonical. |
 
 **Transition Criteria:**
 - *Noise → Data*: Detect structure or pattern, making the signal machine-usable.
 - *Data → Meme*: Add boot-legal meme structure, declared address, and explicit role.
-- *Meme → Loci Meme*: All required elements present, explicit routing, stable address, truthful derivation.
-- *Loci Meme → Canon Loci Meme*: Operator/admin confirmation, address stability, no unresolved sub-memes, live resolver, opener `?` removed.
+- *Meme → Typed Meme*: Declare and satisfy one or more type laws. `meme_type` may name the primary surface type, but type composition remains allowed.
+- *Typed Meme → Canon Typed Meme*: Operator/admin confirmation ratifies a declared type bundle as canonical.
 
-Subtype-specific high-band predicates belong outward in subtype laws. For example, loci-specific address stability, carrier coherence, MCP-resolution tension, and canon promotion are governed by `lar:///ha.ka.ba/loci`, not redefined here.
+Subtype-specific predicates belong outward in subtype laws. For example, `loci` governs the stable-address type under `lar:///ha.ka.ba/**`, while other types such as `skill` or `grammar` may compose alongside it rather than replacing it.
 
 #### Confidence Composition
 

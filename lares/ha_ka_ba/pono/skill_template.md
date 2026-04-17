@@ -23,7 +23,7 @@ mana = 0.54
 manao = 0.60
 manaoio = 0.42
 content_type = "text/x-memetic-wikitext"
-meme_type = "skill"
+meme_type = "skill loci"
 register = "S"
 structure = "SKILL.md * OODA-HA * ha.ka.ba"
 # <<~/ahu >>
@@ -58,7 +58,7 @@ The **inner layer** follows the memetic-wikitext standard — TOML `#iam` block,
 
 `SKILL.md * OODA-HA * ha.ka.ba` names the composition: the SKILL.md container governs the outer runtime identity; the OODA-HA * ha.ka.ba governs the inner epistemic structure and execution discipline.
 
-A skill authored in this pattern works as both an agentskills.io-compatible loadable skill and a first-class loci meme.
+A skill authored in this pattern works as both an agentskills.io-compatible loadable skill and a first-class typed meme. When a skill also claims a stable address under `lar:///ha.ka.ba/**`, it may compose with `loci` rather than being forced to choose between `skill` and `loci`.
 
 <<~ ala lar:///ha.ka.ba/pono/skill-template >>
 
@@ -111,7 +111,7 @@ allowed-tools: Read, Grep, Glob, Bash
 
 ### TOML `#iam` Block (memetic-wikitext inner surface)
 
-The `#iam` block carries all memetic-wikitext identity signals. In addition to the standard loci meme fields, a skill meme MUST carry:
+The `#iam` block carries all memetic-wikitext identity signals. In addition to the standard typed-meme fields, a skill meme MUST carry:
 
 ```toml
 covers = ["lar:///ha.ka.ba/[law-name]"]
@@ -233,7 +233,7 @@ Before a dedicated MCP server exists, a skill runs as one of:
 
 ```python
 #!/usr/bin/env python3
-"""skill_check.py — pre-MCP conformance checker for memetic-wikitext loci memes.
+"""skill_check.py — pre-MCP conformance checker for memetic-wikitext typed memes.
 Usage: python skill_check.py <target_file> [--invariants R1,R3,R6]
 Output: TOML result envelope on stdout
 """
