@@ -4,30 +4,25 @@
 
 <<~ ahu #iam >>
 ```toml
+# <<~ ahu #iam-ha "structure" >>
 name = "DreamNet_MemeWiki"
 file_path = "todo/todo.DreamNet_MemeWiki.md"
 description = "Consolidated DreamNet MemeWiki research and implementation staging memo. Braids the current scratch notes on kernel architecture, Lezer and CodeMirror, TLDraw and Kowloon integration, and sprint planning into one OODA-HA worksite."
 version = "0.1-draft"
-content_type = "text/x-memetic-wikitext"
+tulen = 0.62
 confidence = 0.70
-confidence_band = "S"
 mana = 0.76
 manao = 0.82
 manaoio = 0.60
+content_type = "text/x-memetic-wikitext"
 meme_type = "todo"
+register = "S"
 structure = "OODA-HA * ha.ka.ba"
+# <<~/ahu >>
+# <<~ ahu #iam-ka "detail" >>
 enacts = false
 role = "research consolidation todo, architecture intake memo, and staged implementation plan"
 function = "gather the DreamNet MemeWiki research field, distinguish settled architectural direction from open tensions, and stage the next implementation sequence"
-input = "research note|architecture question|integration target|implementation planning query|?"
-output = "research-envelope(high manao^)|task-envelope(mid manaoio-)|residue-envelope(low manaoio_)|?(~manaoio?)"
-depends_on = [
-  "lar:///ha.ka.ba/pono/memetic-wikitext",
-  "lar:///ha.ka.ba/pono/parser",
-  "lar:///ha.ka.ba/pono/render-pipeline"
-]
-canonical_metadata_locus = "#iam"
-canonical_metadata_payload = "toml"
 source_documents = [
   "_todo/DreamNet_MemeWiki.md",
   "_todo/DreamNet_MemeWiki_Lezer_CodeMirror.md",
@@ -35,6 +30,16 @@ source_documents = [
   "_todo/DreamNet_MemeWiki_TLDraw_Kowloon.md"
 ]
 north_star = "Boot a greenfield MemeWiki kernel in Node first, resume it in browser, and integrate it cleanly with Kowloon, TLDraw, MemPalace, and CRDT-style sync."
+# <<~/ahu >>
+# <<~ ahu #iam-ba "flow" >>
+input = "research note|architecture question|integration target|implementation planning query|?"
+output = "research-envelope(high manao^)|task-envelope(mid manaoio-)|residue-envelope(low manaoio_)|?(~manaoio?)"
+depends_on = [
+  "lar:///ha.ka.ba/pono/memetic-wikitext",
+  "lar:///ha.ka.ba/pono/parser",
+  "lar:///ha.ka.ba/pono/render-pipeline"
+]
+# <<~/ahu >>
 ```
 <<~/ahu >>
 
@@ -72,7 +77,8 @@ DreamNet MemeWiki gathers the current research field, maps it into an implementa
 
 This file uses the OODA-HA loop as work discipline rather than ornament. The point is not to sound ceremonial. The point is to keep raw findings, synthesis, decisions, action, and residue from collapsing into one undifferentiated planning blob.
 
-<<~ ala lar:///todo/DreamNet_MemeWiki#phase-map >>
+
+
 <<~/ahu >>
 
 <<~ ahu #observe >>
@@ -130,7 +136,8 @@ Observe-ha holds source identity and research boundaries.
 
 The DreamNet MemeWiki research field is not one idea. It is a bundle of kernel questions, editor questions, collaboration questions, and integration questions that should stay distinguishable until Decide compresses them intentionally.
 
-<<~ ala lar:///todo/DreamNet_MemeWiki#observe-ha >>
+
+
 <<~/ahu >>
 
 <<~ ahu #observe-ka >>
@@ -141,7 +148,8 @@ Observe-ka governs how intake should be read.
 
 Read the current field in four lanes: deterministic kernel shape, authoring and parsing stack, collaborative canvas and frontend bridge, and implementation sequencing. Losing those lanes too early makes later prioritization harder.
 
-<<~ ala lar:///todo/DreamNet_MemeWiki#observe-ka >>
+
+
 <<~/ahu >>
 
 <<~ ahu #observe-ba >>
@@ -152,10 +160,12 @@ Observe-ba governs posture under planning pressure.
 
 This stage should preserve uncertainty openly. A confident-sounding guess about MemPalace or sync does not become an architectural fact merely because it sounds tidy in a memo.
 
-<<~ ala lar:///todo/DreamNet_MemeWiki#observe-ba >>
+
+
 <<~/ahu >>
 
-<<~ ala lar:///todo/DreamNet_MemeWiki#observe >>
+
+
 <<~/ahu >>
 
 <<~ ahu #orient >>
@@ -221,7 +231,8 @@ Orient-ha holds architectural identity.
 
 DreamNet MemeWiki is currently best understood as a kernel-centered system with editor, app, sync, and semantic bridges around it. If the kernel disappears from view, the plan turns into a bag of integrations with no stable center.
 
-<<~ ala lar:///todo/DreamNet_MemeWiki#orient-ha >>
+
+
 <<~/ahu >>
 
 <<~ ahu #orient-ka >>
@@ -232,7 +243,8 @@ Orient-ka governs relation mapping.
 
 Map each subsystem by ownership, not by enthusiasm. TLDraw should not own the core memetic parser. Kowloon should not dictate kernel internals. MemPalace should not become a hidden source of truth before the base document model exists.
 
-<<~ ala lar:///todo/DreamNet_MemeWiki#orient-ka >>
+
+
 <<~/ahu >>
 
 <<~ ahu #orient-ba >>
@@ -243,10 +255,12 @@ Orient-ba governs movement from research toward design.
 
 Favor the narrowest architecture that can still grow. The research points toward a modular stack, but not toward building every module at once.
 
-<<~ ala lar:///todo/DreamNet_MemeWiki#orient-ba >>
+
+
 <<~/ahu >>
 
-<<~ ala lar:///todo/DreamNet_MemeWiki#orient >>
+
+
 <<~/ahu >>
 
 <<~ ahu #decide >>
@@ -307,7 +321,8 @@ Decide-ha holds what counts as settled enough for motion.
 
 The key settled claim is simple: build the kernel first, keep it greenfield, and make integrations prove themselves against it rather than defining it by committee.
 
-<<~ ala lar:///todo/DreamNet_MemeWiki#decide-ha >>
+
+
 <<~/ahu >>
 
 <<~ ahu #decide-ka >>
@@ -318,7 +333,8 @@ Decide-ka governs decision sharpness.
 
 Every active decision above changes implementation order immediately. Every explicit deferral above protects the work from fake certainty and scope sprawl.
 
-<<~ ala lar:///todo/DreamNet_MemeWiki#decide-ka >>
+
+
 <<~/ahu >>
 
 <<~ ahu #decide-ba >>
@@ -329,10 +345,12 @@ Decide-ba governs commitment posture.
 
 Commit to the smallest decisions that unlock code. Refuse the larger decisions that only create architecture theater before the kernel can even roundtrip a document.
 
-<<~ ala lar:///todo/DreamNet_MemeWiki#decide-ba >>
+
+
 <<~/ahu >>
 
-<<~ ala lar:///todo/DreamNet_MemeWiki#decide >>
+
+
 <<~/ahu >>
 
 <<~ ahu #act >>
@@ -406,7 +424,8 @@ Act-ha holds workstream identity.
 
 The workstreams are ordered so each later proof depends on earlier semantic stability instead of masking its absence with UI or sync novelty.
 
-<<~ ala lar:///todo/DreamNet_MemeWiki#act-ha >>
+
+
 <<~/ahu >>
 
 <<~ ahu #act-ka >>
@@ -417,7 +436,8 @@ Act-ka governs sequencing.
 
 If work begins on TLDraw or MemPalace before the kernel can parse and render deterministically, the project risks building adapters around a moving void.
 
-<<~ ala lar:///todo/DreamNet_MemeWiki#act-ka >>
+
+
 <<~/ahu >>
 
 <<~ ahu #act-ba >>
@@ -428,10 +448,12 @@ Act-ba governs execution posture.
 
 Prototype narrowly, verify hard, and only then widen scope. Each workstream should produce a proof artifact, not just a more detailed opinion.
 
-<<~ ala lar:///todo/DreamNet_MemeWiki#act-ba >>
+
+
 <<~/ahu >>
 
-<<~ ala lar:///todo/DreamNet_MemeWiki#act >>
+
+
 <<~/ahu >>
 
 <<~ ahu #aftermath >>
@@ -490,7 +512,8 @@ Aftermath-ha holds yield and residue identity.
 
 What is clear now: the research no longer lives in four disconnected scraps. What remains unclear now: several core contracts still need proof rather than prose.
 
-<<~ ala lar:///todo/DreamNet_MemeWiki#aftermath-ha >>
+
+
 <<~/ahu >>
 
 <<~ ahu #aftermath-ka >>
@@ -501,7 +524,8 @@ Aftermath-ka governs judgment detail.
 
 A successful next pass should convert at least one residue item into a tested artifact. If the next pass only rewrites this memo at greater length, the loop has not actually advanced.
 
-<<~ ala lar:///todo/DreamNet_MemeWiki#aftermath-ka >>
+
+
 <<~/ahu >>
 
 <<~ ahu #aftermath-ba >>
@@ -512,10 +536,12 @@ Aftermath-ba governs how the work lands.
 
 Leave the unresolved items visible and bounded. Hidden residue is how architecture debt later masquerades as surprise.
 
-<<~ ala lar:///todo/DreamNet_MemeWiki#aftermath-ba >>
+
+
 <<~/ahu >>
 
-<<~ ala lar:///todo/DreamNet_MemeWiki#aftermath >>
+
+
 <<~/ahu >>
 
 <<~&#x0003; ahu #body-close >>
@@ -533,7 +559,7 @@ A lawful DreamNet MemeWiki todo envelope may carry:
 * the current implementation sequence
 * the still-open residue
 
-<<~ ala lar:///todo/DreamNet_MemeWiki#result >>
+
 <<~/ahu >>
 
 <<~&#x0004; -> kahea ala ahu #result >>

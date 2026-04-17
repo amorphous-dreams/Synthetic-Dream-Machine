@@ -17,22 +17,20 @@ name = "skill.template"
 file_path = "ha.ka.ba/pono/skill.template.md"
 description = "Template and authoring guide for memetic-wikitext verification skill packages under lares/ha.ka.ba/pono/. Covers the SKILL.md * OODA-HA * ha.ka.ba structure, invariant declaration, pre-MCP Python and Node implementation patterns, and post-MCP roadmap."
 version = "0.1-draft"
-# <<~/ahu >>
-# <<~ ahu #iam-ka "detail" >>
 tulen = 0.52
 confidence = 0.52
 mana = 0.54
 manao = 0.60
 manaoio = 0.42
-enacts = true
-role = "skill template, verification authoring guide, and pre/post-MCP implementation roadmap"
-function = "describe the required shape of a pono verification skill package, declare the dual-surface SKILL.md + memetic-wikitext composition, and provide implementation patterns for grammar conformance checking"
 content_type = "text/x-memetic-wikitext"
 meme_type = "skill"
 register = "S"
 structure = "SKILL.md * OODA-HA * ha.ka.ba"
-canonical_metadata_locus = "#iam"
-canonical_metadata_payload = "toml"
+# <<~/ahu >>
+# <<~ ahu #iam-ka "detail" >>
+enacts = true
+role = "skill template, verification authoring guide, and pre/post-MCP implementation roadmap"
+function = "describe the required shape of a pono verification skill package, declare the dual-surface SKILL.md + memetic-wikitext composition, and provide implementation patterns for grammar conformance checking"
 skill_package_root = "ha.ka.ba/pono/skill.*.md"
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>

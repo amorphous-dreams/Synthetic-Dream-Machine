@@ -23,8 +23,6 @@ structure = "OODA-HA * ha.ka.ba"
 enacts = true
 role = "migration meme, alignment memo, canonical-update instruction set, and example patch charter"
 function = "capture the implications of adopting block-only hana and direct how the current canonical memes should update without swallowing each other's authority"
-canonical_metadata_locus = "#iam"
-canonical_metadata_payload = "toml"
 affected_memes = [
   "lar:///ha.ka.ba/pono/memetic-wikitext",
   "lar:///ha.ka.ba/pono/parser",
@@ -32,7 +30,6 @@ affected_memes = [
   "lar:///ha.ka.ba/pono"
 ]
 canonical_guest_worksite = "hana"
-product_identity = "Implictations of Hana meme as used by this swarm"
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
 input = "law change|hana decision|canonical memes|query|artifact|bundle|stream|?"

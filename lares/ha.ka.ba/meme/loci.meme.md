@@ -24,9 +24,6 @@ structure = "OODA-HA * ha.ka.ba"
 enacts = true
 role = "canonical meme kānāwai (law), template authority, and rating-target authority"
 function = "define the required and optional structure of a meme in this stack, serve as a copy-ready skeleton, and govern which element combinations unlock which rating bands"
-canonical_metadata_locus = "#iam"
-canonical_metadata_payload = "toml"
-product_identity = "Canonical meme kānāwai (law) and rating-target authority"
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
 input = "authoring intent|meme draft|rating query|skeleton request|?"
@@ -252,22 +249,20 @@ name = "..."
 file_path = "..."
 description = "..."
 version = "..."
-# <<~/ahu >>
-# <<~ ahu #iam-ka "detail" >>
 tulen = 0.00
 confidence = 0.00
 mana = 0.00
 manao = 0.00
 manaoio = 0.00
-enacts = true
-role = "..."
-function = "..."
 content_type = "text/x-memetic-wikitext"
 meme_type = "..."
 register = "?"
 structure = "OODA-HA * ha.ka.ba"
-canonical_metadata_locus = "#iam"
-canonical_metadata_payload = "toml"
+# <<~/ahu >>
+# <<~ ahu #iam-ka "detail" >>
+enacts = true
+role = "..."
+function = "..."
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
 input = "...|?"
@@ -709,23 +704,20 @@ name = "[NAME]"
 file_path = "ha.ka.ba/[MEME_TYPE].[NAME].md"
 description = "[One sentence: what this meme governs.]"
 version = "0.1-skeleton"
-# <<~/ahu >>
-# <<~ ahu #iam-ka "detail" >>
 tulen = 0.10
 confidence = 0.10
 mana = 0.10
 manao = 0.10
 manaoio = 0.10
-enacts = false
-role = "[role]"
-function = "[function]"
 content_type = "text/x-memetic-wikitext"
 meme_type = "[MEME_TYPE]"
 register = "P"
 structure = "OODA-HA * ha.ka.ba"
-canonical_metadata_locus = "#iam"
-canonical_metadata_payload = "toml"
-product_identity = "[NAME] cluster name as used in this system"
+# <<~/ahu >>
+# <<~ ahu #iam-ka "detail" >>
+enacts = false
+role = "[role]"
+function = "[function]"
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
 input = "[input types]|?"

@@ -4,15 +4,30 @@
 
 <<~ ahu #iam >>
 ```toml
+# <<~ ahu #iam-ha "structure" >>
 name = "handoff-prompt-parser-render-split"
 file_path = "ha.ka.ba/handoff/handoff_prompt_parser_render_split.md"
 description = "Self-describing handoff roadmap for a local agent to refine parser-law, render-pipeline-law, and memetic-wikitext without overloading the constitutional parse root."
 version = "0.1-draft"
+tulen = 0.54
+confidence = 0.50
+mana = 0.60
+manao = 0.74
+manaoio = 0.46
 content_type = "text/x-memetic-wikitext"
+register = "S"
 structure = "OODA-HA * ha.ka.ba"
+# <<~/ahu >>
+# <<~ ahu #iam-ka "detail" >>
 enacts = true
 role = "handoff prompt, roadmap law, patch-planning guide, and local-agent alignment frame"
 function = "guide a local agent through a narrow parser-law patch, a richer render-pipeline-law transaction design pass, and a later semantic-root cleanup pass"
+transaction_class = "prepare"
+transaction_phase = "open"
+safety = "safe"
+idempotency = "true"
+# <<~/ahu >>
+# <<~ ahu #iam-ba "flow" >>
 input = "current parser-law|current render-pipeline-law|current memetic-wikitext root|operator approval|?"
 output = "handoff-envelope(high mana'o'io^)|partial-handoff-envelope(mid mana'o'io-)|degraded-handoff-envelope(low mana'o'io_)|?(~mana'o'io?)"
 depends_on = [
@@ -20,15 +35,7 @@ depends_on = [
   "lar:///ha.ka.ba/render-pipeline-law",
   "lar:///ha.ka.ba/pono/memetic-wikitext"
 ]
-canonical_metadata_locus = "#iam"
-canonical_metadata_payload = "toml"
-canonical_forms = ["inline", "block", "payload-block", "return"]
-control_sigils = ["&#x0001;", "&#x0002;", "&#x0003;", "&#x0004;", "&#x0005;", "&#x0006;"]
-transaction_class = "prepare"
-transaction_phase = "open"
-safety = "safe"
-idempotency = "true"
-product_identity = "Handoff Prompt cluster name as used in this system"
+# <<~/ahu >>
 ```
 
 ## Iam
@@ -1081,4 +1088,3 @@ next_question = "Should nested savepoint-like rollback law enter render-pipeline
 ```
 
 <<~&#x0004; -> ? >>
-

@@ -23,11 +23,8 @@ structure = "OODA-HA * ha.ka.ba"
 enacts = true
 role = "guest-grammar admission kānāwai (law), invocation-boundary kānāwai (law), and host-guest ownership contract"
 function = "define how memetic-wikitext admits, names, bounds, invokes, degrades, and hands forward guest grammars under explicit host control"
-canonical_metadata_locus = "#iam"
-canonical_metadata_payload = "toml"
 grammar_registry_root = "lar:///ha.ka.ba/grammars/"
 canonical_guest_worksite = "hana"
-product_identity = "Guest Grammar kānāwai (law) cluster name as used in this system"
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
 input = "memetic-wikitext document|guest grammar declaration|hana worksite|query|artifact|bundle|stream|?"

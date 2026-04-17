@@ -23,8 +23,6 @@ structure = "OODA-HA * ha.ka.ba"
 enacts = true
 role = "kānāwai (law) index, verification registry, and skill package host"
 function = "enumerate all active kānāwai (law) memes, surface their addresses and roles, and host conformance verification skills"
-canonical_metadata_locus = "#iam"
-canonical_metadata_payload = "toml"
 law_index_root = "lar:///ha.ka.ba/pono"
 skill_package_root = "ha.ka.ba/pono/skill.*.md"
 # <<~/ahu >>
@@ -84,6 +82,8 @@ Active kānāwai (law) memes registered under `lar:///ha.ka.ba/`:
 | x-tiddlywiki-filter | `lar:///ha.ka.ba/grammars/x-tiddlywiki-filter` | first registered hana guest grammar |
 | pono | `lar:///ha.ka.ba/pono` | kānāwai (law) index and verification skill host |
 | loci | `lar:///ha.ka.ba/loci` | lar: URI routing derivation algorithm, meme-type prefix table, carrier coherence, MCP-resolution roadmap, address stability, and canon promotion kānāwai (law) |
+| iam | `lar:///ha.ka.ba/loci/iam` | root `#iam` metadata kānāwai (law), surviving field-set authority, and reduction charter |
+| file_path | `lar:///ha.ka.ba/loci/iam/file_path` | `file_path` key kānāwai (law), form classifier, and URI-agreement procedure |
 
 The `guest-grammar` and `x-tiddlywiki-filter` kānāwai (law) memes carry a canonical host-facing term shift: `tiddler` → `meme`, `currentTiddler` → `+currentMeme`. Host-facing examples and law statements throughout the stack should reflect this shift. Imported lineage terms may appear only in visibly quoted prior-art notes.
 

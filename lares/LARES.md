@@ -64,29 +64,20 @@ register        = "CS"
 structure       = "OODA-HA * ha.ka.ba * stateful"
 # <<~/ahu >>
 # <<~ ahu #iam-ka "detail" >>
+enacts          = true
+role            = "configuration surface, session dial room, and session-config handoff"
+function        = "hold the editable session dials after boot, preserve operator changes between turns, and surface session-config for downstream work"
 boot_order      = 999    # end of chain (∞ informal)
-# Quiescence: stateful. Unlike Mu's stateless rest, LARES holds session config at last setting.
-# The operator can return and re-dial without re-booting the chain.
 quiescent       = "config-present"
 collision_mode  = "surface-as-meme"
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
-
-requires        = ["full-stack"]   # all kānāwai loaded upstream
-receives_state  = "full-stack"
-provides        = ["session-config"]
-emits_state     = """
-{
-  + session-config: {
-    catma-toggles:     { ... },
-    maybe-logic:       off | active | strict,
-    stances-active:    [philosopher, poet, satirist, humorist, private],
-    masks-over-voices: { voice -> mask },
-    operating-mode:    plan | auto | default,
-    flags:             { ... }
-  }
-}
-"""
+input           = "full stack|operator edit|session recall|?"
+output          = "session-config|quiescent-ready room"
+depends_on      = [
+  "lar:///AGENTS",
+  "lar:///ha.ka.ba/mu"
+]
 next            = null    # hello-world; operator steers
 # <<~/ahu >>
 ```

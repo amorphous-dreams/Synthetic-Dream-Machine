@@ -23,12 +23,6 @@ structure = "OODA-HA * ha.ka.ba"
 enacts = true
 role = "session constitutional prompt, phase narration law, memory-load instruction, and failure-state indicator"
 function = "govern a talk-story development session through narrated OODA-HA loops, preserve hard-mode language constraints, define the Hooko gap as the sole site of action, and load these rules into active session memory"
-canonical_metadata_locus = "#iam"
-canonical_metadata_payload = "toml"
-canonical_forms = ["inline", "block", "payload-block", "return"]
-control_sigils = ["&#x0001;", "&#x0002;", "&#x0003;", "&#x0004;", "&#x0005;", "&#x0006;"]
-canonical_modes = ["preamble", "metadata", "prose", "sigil", "filter", "raw", "aftermath"]
-product_identity = "lar:///ha.ka.ba/alpha/test-prompt-00001"
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
 input = "operator instruction|dev-session exchange|phase loop|?"

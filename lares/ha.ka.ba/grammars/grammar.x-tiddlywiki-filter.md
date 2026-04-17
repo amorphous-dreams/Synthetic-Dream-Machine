@@ -23,13 +23,10 @@ structure = "OODA-HA * ha.ka.ba"
 enacts = true
 role = "grammar meme, import-profile meme, sigil-centric translation contract, and boundary-safe work grammar registry entry"
 function = "define the admitted x-tiddlywiki-filter guest family, its host-facing priming contract, its sigil-centric term shifts, and its minimum lawful use through hana"
-canonical_metadata_locus = "#iam"
-canonical_metadata_payload = "toml"
 grammar_key = "x-tiddlywiki-filter"
 guest_mime = "text/x-tiddlywiki-filter"
 invocation_worksite = "hana"
 prior_art_name = "TiddlyWiki filter language"
-product_identity = "X-TiddlyWiki-Filter grammar meme as used in this system"
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
 input = "hana worksite|guest grammar query|filter body|artifact|bundle|stream|?"

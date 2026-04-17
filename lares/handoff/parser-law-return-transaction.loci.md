@@ -4,20 +4,33 @@
 
 <<~ ahu #iam >>
 ```toml
+# <<~ ahu #iam-ha "structure" >>
 name = "parser-law-handoff-return-transaction"
 file_path = "ha.ka.ba/handoff/parser-law-return-transaction.loci.md"
 description = "Agent hand-off prompt carrying the current constitutional state of parser-law, with return-types and &#x0004; transaction law treated as canonical continuation constraints."
 version = "0.2-handoff"
+tulen = 0.58
+confidence = 0.57
+mana = 0.60
+manao = 0.74
+manaoio = 0.52
 content_type = "text/x-memetic-wikitext"
+meme_type = "loci"
+register = "S"
 structure = "OODA-HA * ha.ka.ba"
+# <<~/ahu >>
+# <<~ ahu #iam-ka "detail" >>
 enacts = true
 role = "agent hand-off, constitutional journey log, continuation contract"
 function = "transfer current parser-law state, preserve non-regression boundaries, and guide the next lawful continuation under routed return law"
-input = "current parser-law draft|repo context|future agent attention|?"
-output = "aligned continuation(high mana'o'io^)|partial continuation(mid mana'o'io-)|misaligned continuation(low mana'o'io_)|?(~mana'o'io?)"
-canonical_metadata_locus = "#iam"
 handoff_scope = "parser-law root draft, return-types law, and immediate adjacent backlog pressure"
 golden_reference_role = "one of three core golden tool references"
+# <<~/ahu >>
+# <<~ ahu #iam-ba "flow" >>
+input = "current parser-law draft|repo context|future agent attention|?"
+output = "aligned continuation(high mana'o'io^)|partial continuation(mid mana'o'io-)|misaligned continuation(low mana'o'io_)|?(~mana'o'io?)"
+depends_on = ["lar:///ha.ka.ba/pono/parser"]
+# <<~/ahu >>
 ```
 <<~/ahu >>
 

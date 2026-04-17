@@ -24,12 +24,9 @@ structure = "OODA-HA * ha.ka.ba"
 enacts = true
 role = "routing kānāwai (law), carrier coherence authority, address stability authority, canon promotion rule, and MCP-resolution roadmap"
 function = "resolve lar: URIs to file paths by local derivation where possible, surface current resolution tension where derivation misses, and govern carrier coherence, address stability, canon promotion, and MCP-resolution research"
-canonical_metadata_locus = "#iam"
-canonical_metadata_payload = "toml"
 install_root = "lares/"
 path_root = "ha.ka.ba/"
 mcp_resolution_status = "research-roadmap"
-product_identity = "Loci routing kānāwai (law) as used in this system"
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
 input = "lar: URI|routing query|meme_type|file_path|?"

@@ -4,15 +4,29 @@
 
 <<~ ahu #iam >>
 ```toml
+# <<~ ahu #iam-ha "structure" >>
 name = "memetic-wikitext-local-agent-handoff"
 file_path = "ha.ka.ba/handoff/memetic_wikitext_local_agent_handoff.loci.md"
 description = "Handoff meme for a local agent to complete the memetic-wikitext root rebuild after the current canvas pass hit size limits."
 version = "0.1-draft"
+tulen = 0.56
+confidence = 0.54
+mana = 0.60
+manao = 0.74
+manaoio = 0.48
 content_type = "text/x-memetic-wikitext"
+meme_type = "loci"
+register = "S"
 structure = "OODA-HA * ha.ka.ba"
+# <<~/ahu >>
+# <<~ ahu #iam-ka "detail" >>
 enacts = true
 role = "handoff prompt, continuation plan, and local-agent execution contract"
 function = "brief a local agent on current root status, preserved constraints, next pass targets, and stepwise continuation discipline"
+active_pass = "ka"
+next_pass = "ba"
+# <<~/ahu >>
+# <<~ ahu #iam-ba "flow" >>
 input = "current memetic-wikitext canvas draft|rebuild ledger|parser-law|render-pipeline-law|chat residue|?"
 output = "continued root revision(high mana'o'io^)|partial continuation(mid mana'o'io-)|degraded continuation(low mana'o'io_)|?(~mana'o'io?)"
 depends_on = [
@@ -21,11 +35,7 @@ depends_on = [
   "lar:///ha.ka.ba/render-pipeline-law",
   "lar:///ha.ka.ba/memetic-wikitext-hakaba-pass"
 ]
-canonical_metadata_locus = "#iam"
-canonical_metadata_payload = "toml"
-active_pass = "ka"
-next_pass = "ba"
-product_identity = "Local-agent handoff for memetic-wikitext root rebuild"
+# <<~/ahu >>
 ```
 <<~/ahu >>
 

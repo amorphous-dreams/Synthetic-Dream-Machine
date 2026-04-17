@@ -22,12 +22,9 @@ structure = "OODA-HA * ha.ka.ba"
 enacts = true
 role = "constitutional root kānāwai (law), authoring kānāwai (law), primitive semantic kānāwai (law), and boot grammar contract"
 function = "govern lawful memetic-wikitext authoring surface, define primitive meanings and composition, and provide the minimum semantic and grammatical contract consumed by parser and render-pipeline"
-canonical_metadata_locus = "#iam"
-canonical_metadata_payload = "toml"
 canonical_forms = ["inline", "block", "payload-block", "return"]
 control_sigils = ["&#x0001;", "&#x0002;", "&#x0003;", "&#x0004;", "&#x0005;", "&#x0006;"]
 canonical_modes = ["preamble", "metadata", "prose", "sigil", "filter", "raw", "aftermath"]
-product_identity = "Memetic Wikitext cluster name as used in this system"
 constitutional_charge = [
   "authoring-surface",
   "primitive-semantic",

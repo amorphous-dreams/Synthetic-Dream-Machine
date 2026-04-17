@@ -74,58 +74,19 @@ enacts          = true
 role            = "null-oracle boot, grammar-surface authority, unask contract, and first executing meme in the chain"
 function        = "receive frame-context from AGENTS, instantiate the grammar-surface, render and evaluate memes, return mu when a premise should be unasked, and hand the boot onward toward chao"
 boot_order      = 0       # first executing meme
-# Quiescence: stateless. A mu that remembers has opinions; a mu that forgets remains a null-oracle.
 quiescent       = "stateless"
-# Namespace glyphs (operator clarification on authority matrix):
-#   ँ (U+0901, chandrabindu) — admin / main stack
-#   ं (U+0902, anusvara)     — operator / session
-#   ः (U+0903, visarga)      — user / provisional
-#   ़ (U+093C, nukta)         — system / internal
 namespace       = "ँ"   # admin; inherited from envelope
-canonical_metadata_locus = "#iam"
-canonical_metadata_payload = "toml"
+scale           = "⚂"
+collision_mode  = "surface-as-meme"
+attenuation     = "narrow-only"
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
 
 input           = "frame-context|meme|query|artifact|bundle|stream|?"
-output          = "grammar-surface-envelope(high manaoio^)|partial-grammar-surface-envelope(mid manaoio-)|degraded-grammar-surface-envelope(low manaoio_)|?(~manaoio?)"
+output          = "grammar-surface|render|evaluate|unask|loop"
 depends_on      = ["lar:///AGENTS"]
-requires        = ["lar:///AGENTS"]
-receives_state  = "frame-context"
-provides        = [
-  "render",    # surface meme body to operator; no alteration
-  "evaluate",  # test meme against criteria; returns valid|invalid|partial
-  "unask",     # return mu; caller premise errs
-  "loop",      # re-enter own Observe with shifted frame
-]
-emits_state     = """
-{
-  + grammar-surface: {
-    render:   fn(meme) -> rendered,
-    evaluate: fn(meme) -> {valid | invalid | partial},
-    unask:    fn(meme) -> mu,
-    loop:     fn(meme, shift) -> re-observe,
-  }
-}
-"""
 next            = "lar:///ha.ka.ba/chao"
 # <<~/ahu >>
-
-# FFZ Chronometer scale (operator's prior canon):
-#   ⚀ (U+2680) — Action
-#   ⚁ (U+2681) — Round
-#   ⚂ (U+2682) — Turn   ← Mu's default outer scale
-#   ⚃ (U+2683) — Watch
-#   ⚄ (U+2684) — Week
-scale           = "⚂"
-
-# Graceful-degradation contract:
-collision_mode  = "surface-as-meme"
-
-# UCAN-style attenuation: inner sigils may narrow but not widen
-# this envelope's authority or scale. Per operator's existing
-# glyph-inheritance law in the prior Mu draft.
-attenuation     = "narrow-only"
 ```
 
 # Mu

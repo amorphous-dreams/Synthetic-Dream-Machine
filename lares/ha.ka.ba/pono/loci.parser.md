@@ -24,12 +24,9 @@ structure = "OODA-HA * ha.ka.ba"
 enacts = true
 role = "parsing kānāwai (law), normalization kānāwai (law), metadata fetch kānāwai (law), and deterministic scripting contract"
 function = "parse documents, classify forms, normalize surfaces, surface typed issues, and return addressed metadata or parse products"
-canonical_metadata_locus = "#iam"
-canonical_metadata_payload = "toml"
 canonical_forms = ["inline", "block", "payload-block", "return"]
 control_sigils = ["&#x0001;", "&#x0002;", "&#x0003;", "&#x0004;", "&#x0005;", "&#x0006;"]
 canonical_modes = ["preamble", "metadata", "prose", "sigil", "filter", "raw", "aftermath"]
-product_identity = "Parser kānāwai (law) cluster name as used in this system"
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
 input = "memetic-wikitext document|fragment|meme|query|artifact|bundle|stream|?"
@@ -812,9 +809,17 @@ it should build a canonical metadata object for the enclosing meme.
 That object may populate:
 
 * name
+* file_path
 * description
 * version
+* tulen
+* confidence
+* mana
+* manao
+* manaoio
 * content_type
+* meme_type
+* register
 * structure
 * enacts
 * role
@@ -822,7 +827,6 @@ That object may populate:
 * input
 * output
 * depends_on
-* product_identity
 * later declared fields
 
 Unknown metadata keys may remain legal unless a stricter profile forbids them.
