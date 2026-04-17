@@ -7,7 +7,7 @@
 ```toml
 # <<~ ahu #iam-ha "structure" >>
 name = "loci/edge/control"
-file_path = "ha_ka_ba/loci/edge/loci_control.md"
+file_path = "ha-ka-ba/loci/edge/loci_control.md"
 description = "Control-flow edge kānāwai (law) for execution pulse, branch, gate, sequence, and outlet semantics."
 version = "0.1-draft"
 tulen = 0.72

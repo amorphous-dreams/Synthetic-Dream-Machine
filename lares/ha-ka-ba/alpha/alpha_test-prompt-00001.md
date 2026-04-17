@@ -6,7 +6,7 @@
 ```toml
 # <<~ ahu #iam-ha "structure" >>
 name = "test-prompt-00001"
-file_path = "ha_ka_ba/alpha/alpha_test-prompt-00001.md"
+file_path = "ha-ka-ba/alpha/alpha_test-prompt-00001.md"
 description = "Self-describing dev-session constitutional prompt for Lares-style OODA-HA talk-story work under strict E-Prime hard mode and Maybe Logic, with narrated phases, named Hooko gap, and session-load law."
 version = "0.1-alpha"
 tulen = 0.55

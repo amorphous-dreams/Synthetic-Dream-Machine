@@ -7,7 +7,7 @@
 ```toml
 # <<~ ahu #iam-ha "structure" >>
 name = "loci/edge/instance"
-file_path = "ha_ka_ba/loci/edge/loci_instance.md"
+file_path = "ha-ka-ba/loci/edge/loci_instance.md"
 description = "Concrete edge instance kānāwai (law). Defines bound edge objects, override discipline, instance state, and separation from runtime trace."
 version = "0.1-draft"
 tulen = 0.71

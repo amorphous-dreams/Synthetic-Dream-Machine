@@ -6,8 +6,8 @@
 ```toml
 # <<~ ahu #iam-ha "structure" >>
 name = "pono"
-file_path = "ha_ka_ba/pono/loci_pono.md"
-description = "Index of all memetic-wikitext kānāwai (law) memes. Hosts verification skills as skill_*.md packages under `ha_ka_ba/pono/`."
+file_path = "ha-ka-ba/pono/loci_pono.md"
+description = "Index of all memetic-wikitext kānāwai (law) memes. Hosts verification skills as skill_*.md packages under `ha-ka-ba/pono/`."
 version = "0.1-draft"
 tulen = 0.65
 confidence = 0.65
@@ -24,7 +24,7 @@ enacts = true
 role = "kānāwai (law) index, verification registry, and skill package host"
 function = "enumerate all active kānāwai (law) memes, surface their addresses and roles, and host conformance verification skills"
 law_index_root = "lar:///ha.ka.ba/pono"
-skill_package_root = "ha_ka_ba/pono/skill_*.md"
+skill_package_root = "ha-ka-ba/pono/skill_*.md"
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
 input = "query|law-name|?"
@@ -40,7 +40,7 @@ depends_on = [
 
 A self-describing index of all memetic-wikitext kānāwai (law) memes.
 
-Pono names, addresses, and relates every active kānāwai (law) in this system. It also hosts verification skills as `skill_*.md` packages under [lares/ha_ka_ba/pono/](lares/ha_ka_ba/pono/).
+Pono names, addresses, and relates every active kānāwai (law) in this system. It also hosts verification skills as `skill_*.md` packages under [lares/ha-ka-ba/pono/](lares/ha-ka-ba/pono/).
 
 <<~ ala lar:///ha.ka.ba/pono >>
 
@@ -132,7 +132,7 @@ This subphase keeps the index machine-readable without losing human legibility.
 
 ## Skill Index
 
-Verification skills live as `skill_*.md` packages under [lares/ha_ka_ba/pono/](lares/ha_ka_ba/pono/).
+Verification skills live as `skill_*.md` packages under [lares/ha-ka-ba/pono/](lares/ha-ka-ba/pono/).
 
 Each skill package verifies conformance of one or more kānāwai (law) memes.
 

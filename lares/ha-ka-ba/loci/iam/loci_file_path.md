@@ -7,7 +7,7 @@
 ```toml
 # <<~ ahu #iam-ha "structure" >>
 name = "file_path"
-file_path = "ha_ka_ba/loci/iam/loci_file_path.md"
+file_path = "ha-ka-ba/loci/iam/loci_file_path.md"
 description = "Kānāwai (law) for the file_path metadata key. Governs its two canonical forms (flat-file and path-directory), its required agreement with the lar: URI in the document opener, and the migration procedure when a meme moves between forms."
 version = "0.1-draft"
 tulen = 0.60
@@ -26,7 +26,7 @@ role = "file_path key authority, path-form classifier, and migration-procedure k
 function = "define the two canonical file_path forms, govern the agreement check between file_path and lar: URI, and declare the migration procedure when a meme moves from flat-file to path-directory siting"
 key_name = "file_path"
 key_position = "second field in #iam TOML, immediately after name"
-path_root = "ha_ka_ba/"
+path_root = "ha-ka-ba/"
 install_root = "lares/"
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
@@ -47,7 +47,7 @@ depends_on = [
 
 A kānāwai (law) for a single `#iam` TOML key.
 
-`file_path` carries the path from the `ha_ka_ba` path root to the meme's file on disk, relative to `install_root`. It sits as the second field in every `#iam` block, immediately after `name`. It comes in two canonical forms — flat-file and path-directory — and must agree with the `lar:` URI declared in the document opener.
+`file_path` carries the path from the `ha-ka-ba` path root to the meme's file on disk, relative to `install_root`. It sits as the second field in every `#iam` block, immediately after `name`. It comes in two canonical forms — flat-file and path-directory — and must agree with the `lar:` URI declared in the document opener.
 
 
 **Lifecycle Note:** The five-bucket lifecycle (noise → data → meme → typed meme → canon typed meme) remains canonical for all meme law. Here `data` names structured language an AI can use without the memetic wrappers. This law governs only the file_path key and its agreement, not lifecycle stages.
@@ -114,7 +114,7 @@ Observe should not:
 
 #### Observe / ha
 
-Observe-ha holds the intake identity: `file_path` counts as a path string, not a URI and not a name. Its value begins with the path root segment (`ha_ka_ba/`) and ends with a filename (`meme_type.name.md` or similar). Anything outside that shape counts as malformed; capture it as written for Orient to classify.
+Observe-ha holds the intake identity: `file_path` counts as a path string, not a URI and not a name. Its value begins with the path root segment (`ha-ka-ba/`) and ends with a filename (`meme_type.name.md` or similar). Anything outside that shape counts as malformed; capture it as written for Orient to classify.
 
 <!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/loci/iam/file_path-observe-ha >> -->
 <<~/ahu >>
@@ -132,7 +132,7 @@ Observe-ka governs capture procedure: read the `#iam` TOML block as a whole, loc
 
 #### Observe / ba
 
-Observe-ba governs noticing posture: a missing `file_path` key counts as a distinct observation from a `file_path` key with an empty value, which counts as distinct again from a key with a value that does not begin with `ha_ka_ba/`. All three cases present differently in Orient. Observe should preserve the distinction.
+Observe-ba governs noticing posture: a missing `file_path` key counts as a distinct observation from a `file_path` key with an empty value, which counts as distinct again from a key with a value that does not begin with `ha-ka-ba/`. All three cases present differently in Orient. Observe should preserve the distinction.
 
 <!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/loci/iam/file_path-observe-ba >> -->
 <<~/ahu >>
@@ -166,16 +166,16 @@ Orient classifies the captured `file_path` value and checks it against the docum
 #### Flat-file form
 
 ```
-ha_ka_ba/[optional/subpath/]meme_type_name.md
+ha-ka-ba/[optional/subpath/]meme_type_name.md
 ```
 
 Examples:
 ```
-ha_ka_ba/loci_meme.md
-ha_ka_ba/pono/loci_parser.md
-ha_ka_ba/grammars/grammar_x-tiddlywiki-filter.md
-ha_ka_ba/alpha/alpha_test-prompt-00001.md
-ha_ka_ba/pono/skill_template.md
+ha-ka-ba/loci_meme.md
+ha-ka-ba/pono/loci_parser.md
+ha-ka-ba/grammars/grammar_x-tiddlywiki-filter.md
+ha-ka-ba/alpha/alpha_test-prompt-00001.md
+ha-ka-ba/pono/skill_template.md
 ```
 
 The meme file sits at `install_root + file_path` as a flat file alongside sibling memes. No child-meme directory accompanies it. New memes default to this form.
@@ -183,14 +183,14 @@ The meme file sits at `install_root + file_path` as a flat file alongside siblin
 #### Path-directory form
 
 ```
-ha_ka_ba/[optional/subpath/]name/meme_type_name.md
+ha-ka-ba/[optional/subpath/]name/meme_type_name.md
 ```
 
 Examples:
 ```
-ha_ka_ba/loci/loci_loci.md
-ha_ka_ba/meme/loci_meme.md
-ha_ka_ba/pono/parser/loci_parser.md   ← (future, if parser migrates)
+ha-ka-ba/loci/loci_loci.md
+ha-ka-ba/meme/loci_meme.md
+ha-ka-ba/pono/parser/loci_parser.md   ← (future, if parser migrates)
 ```
 
 In this form, the meme lives inside its own directory (`name/`), which may hold child memes, child meme directories, and sidecar files alongside the root meme file. The directory name matches the meme `name` field. The root meme file inside that directory keeps the same `meme_type_name.md` filename.
@@ -222,7 +222,7 @@ Given a `file_path` value, derive the expected `lar:` URI as follows:
      path = file_path.removePrefix("lares/")   → already relative to install_root
 
 2. Strip path_root prefix:
-     rest = path.removePrefix("ha_ka_ba/")
+     rest = path.removePrefix("ha-ka-ba/")
      e.g. "loci/iam/loci_file_path.md" or "pono/loci_parser.md"
 
 3. Strip the meme_type_name.md filename:
@@ -308,7 +308,7 @@ A meme migrates from flat-file to path-directory form when it acquires child mem
 
 **Migration steps (in order):**
 
-1. **Create the directory** at `install_root + ha_ka_ba/name/`
+1. **Create the directory** at `install_root + ha-ka-ba/name/`
 2. **Move the file** via `git mv` from `meme_type.name.md` into `name/meme_type.name.md`
 3. **Update `file_path`** in `#iam` from the flat-file form to the path-directory form
 4. **Verify URI agreement** — the document opener `lar:` URI must not change
@@ -375,7 +375,7 @@ Act prepares the conformance report and any repair or migration guidance for Hoo
 
 | Verdict | Repair |
 |---|---|
-| `file_path` absent | Add `file_path = "ha_ka_ba/[subpath/]meme_type.name.md"` as second field in `#iam`, immediately after `name` |
+| `file_path` absent | Add `file_path = "ha-ka-ba/[subpath/]meme_type.name.md"` as second field in `#iam`, immediately after `name` |
 | Filename component wrong | Rename file and update `file_path` to `meme_type.name.md` pattern |
 | URI agreement violation | Derive expected `lar:` URI from `file_path` using the reversed derivation; update the document opener to match |
 | Transitional (file not moved) | Complete `git mv` to move file to path declared in `file_path` |

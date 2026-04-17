@@ -7,7 +7,7 @@
 ```toml
 # <<~ ahu #iam-ha "structure" >>
 name = "loci/edge"
-file_path = "ha_ka_ba/loci/edge/loci_edge.md"
+file_path = "ha-ka-ba/loci/edge/loci_edge.md"
 description = "Root edge kānāwai (law) for explicit graph relations in this stack. Separates edge families from lifecycle layers and gives the migration target beyond vague depends_on."
 version = "0.1-draft"
 tulen = 0.72

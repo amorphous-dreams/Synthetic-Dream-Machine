@@ -7,7 +7,7 @@
 ```toml
 # <<~ ahu #iam-ha "structure" >>
 name = "loci/edge/proposition"
-file_path = "ha_ka_ba/loci/edge/loci_proposition.md"
+file_path = "ha-ka-ba/loci/edge/loci_proposition.md"
 description = "Semantic edge kānāwai (law) for proposition-bearing relations. Gives labeled semantic links, ontology-backed relation vocab, direction modes, and polarity guidance."
 version = "0.1-draft"
 tulen = 0.71

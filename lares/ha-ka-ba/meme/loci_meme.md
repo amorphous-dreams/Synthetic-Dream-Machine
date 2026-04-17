@@ -7,7 +7,7 @@
 ```toml
 # <<~ ahu #iam-ha "structure" >>
 name = "meme"
-file_path = "ha_ka_ba/meme/loci_meme.md"
+file_path = "ha-ka-ba/meme/loci_meme.md"
 description = "Canonical meme kānāwai (law) for the OODA-HA * ha.ka.ba pattern. Defines required and optional elements, rating targets, and serves as a copy-ready authoring template."
 version = "0.1-draft"
 tulen = 0.79
@@ -720,7 +720,7 @@ Copy this block. Replace every `[PLACEHOLDER]` with local content. Delete option
 ```toml
 # <<~ ahu #iam-ha "structure" >>
 name = "[NAME]"
-file_path = "ha_ka_ba/[MEME_TYPE].[NAME].md"
+file_path = "ha-ka-ba/[MEME_TYPE].[NAME].md"
 description = "[One sentence: what this meme governs.]"
 version = "0.1-skeleton"
 tulen = 0.10
