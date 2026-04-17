@@ -6,7 +6,7 @@
 ```toml
 # <<~ ahu #iam-ha "structure" >>
 name = "implictations-of-hana"
-file_path = "ha.ka.ba/pono/implications-of-hana.md"
+file_path = "ha_ka_ba/pono/implications-of-hana.md"
 description = "Follow-on memo meme naming the canonical consequences of adopting block-only hana for guest work grammars, with concrete update instructions for current law memes."
 version = "0.1-draft"
 tulen = 0.41

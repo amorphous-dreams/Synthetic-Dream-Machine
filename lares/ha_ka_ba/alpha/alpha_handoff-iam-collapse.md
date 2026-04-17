@@ -6,7 +6,7 @@
 ```toml
 # <<~ ahu #iam-ha "structure" >>
 name = "handoff-iam-collapse"
-file_path = "ha.ka.ba/alpha/alpha.handoff-iam-collapse.md"
+file_path = "ha_ka_ba/alpha/alpha_handoff-iam-collapse.md"
 description = "Handoff meme for the next metadata pass: freeze structure, densify truth, collapse flow residue, and target #iam first without inflating ratings by outward schema growth."
 version = "0.1-draft"
 tulen = 0.61

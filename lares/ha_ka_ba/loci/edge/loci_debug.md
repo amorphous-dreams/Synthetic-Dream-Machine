@@ -7,7 +7,7 @@
 ```toml
 # <<~ ahu #iam-ha "structure" >>
 name = "loci/edge/debug"
-file_path = "ha.ka.ba/loci/edge/loci.debug.md"
+file_path = "ha_ka_ba/loci/edge/loci_debug.md"
 description = "Debug edge kānāwai (law) for observation, reveal, watch, and operator-visible illumination of hidden graph behavior."
 version = "0.1-draft"
 tulen = 0.71

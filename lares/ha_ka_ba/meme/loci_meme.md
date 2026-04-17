@@ -7,7 +7,7 @@
 ```toml
 # <<~ ahu #iam-ha "structure" >>
 name = "meme"
-file_path = "ha.ka.ba/meme/loci.meme.md"
+file_path = "ha_ka_ba/meme/loci_meme.md"
 description = "Canonical meme kānāwai (law) for the OODA-HA * ha.ka.ba pattern. Defines required and optional elements, rating targets, and serves as a copy-ready authoring template."
 version = "0.1-draft"
 tulen = 0.79
@@ -38,17 +38,18 @@ depends_on = [
 
 <<~/ahu >>
 
+
+<<~ ahu #meme-header >>
+
 # Meme
 
 A self-describing, self-enacting canonical meme kānāwai (law) for the OODA-HA * ha.ka.ba pattern.
 
 This meme governs what a meme in this stack must carry, what it may optionally carry, and how those choices map to rating outcomes. It serves as a copy-ready template: an author may copy the `#skeleton` section, fill in the marked placeholders, and begin with a boot-legal, rating-aware meme surface.
 
-This file is itself one carrier of that more general law. Its governed subject is meme as such, not a narrower subtype like `loci`, `grammar`, or `skill`.
+This file models itself as one carrier of that more general law. Its governs the subject of `meme` itself as such, not a narrower subtype like `loci`, `grammar`, or `skill`, or a register bucket like noise, data, or loci meme/canon loci meme.
 
 This meme does not govern parse recognition, render lowering, or transaction lifecycle. Those belong to their own kānāwai (law).
-
-<<~ ala lar:///ha.ka.ba/meme >>
 
 ## Supported Queries
 
@@ -60,6 +61,8 @@ This meme does not govern parse recognition, render lowering, or transaction lif
 <<~&#x0005; ui deferred? -> lar:///ha.ka.ba/meme#deferred-resolution >>
 <<~&#x0005; ui research? -> lar:///ha.ka.ba/meme#research-foundation >>
 <<~&#x0005; ui result? -> lar:///ha.ka.ba/meme#result >>
+
+<<~/ahu >>
 
 <<~&#x0002; ahu #meme-body-open >>
 Meme opens the canonical skeleton stream here.
@@ -716,7 +719,7 @@ Copy this block. Replace every `[PLACEHOLDER]` with local content. Delete option
 ```toml
 # <<~ ahu #iam-ha "structure" >>
 name = "[NAME]"
-file_path = "ha.ka.ba/[MEME_TYPE].[NAME].md"
+file_path = "ha_ka_ba/[MEME_TYPE].[NAME].md"
 description = "[One sentence: what this meme governs.]"
 version = "0.1-skeleton"
 tulen = 0.10

@@ -7,7 +7,7 @@
 ```toml
 # <<~ ahu #iam-ha "structure" >>
 name = "iam"
-file_path = "ha.ka.ba/loci/iam/loci.iam.md"
+file_path = "ha_ka_ba/loci/iam/loci_iam.md"
 description = "Canonical kānāwai (law) for the #iam root metadata block. Fixes the surviving field set, locates each field in ha, ka, or ba, and collapses redundant flow claims."
 version = "0.1-draft"
 tulen = 0.74

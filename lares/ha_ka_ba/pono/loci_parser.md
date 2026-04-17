@@ -7,7 +7,7 @@
 ```toml
 # <<~ ahu #iam-ha "structure" >>
 name = "parser"
-file_path = "ha.ka.ba/pono/loci.parser.md"
+file_path = "ha_ka_ba/pono/loci_parser.md"
 description = "Full parsing kānāwai (law) for memetic-wikitext, including canonical sigil forms, metadata payload rules, mode transitions, normalization, and typed parse aftermath."
 version = "0.1-draft"
 tulen = 0.79

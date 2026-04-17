@@ -7,7 +7,7 @@
 ```toml
 # <<~ ahu #iam-ha "structure" >>
 name = "loci/edge/template"
-file_path = "ha.ka.ba/loci/edge/loci.template.md"
+file_path = "ha_ka_ba/loci/edge/loci_template.md"
 description = "Template edge sigil kānāwai (law). Defines reusable edge templates, slot contracts, kahea binding order, and promotion discipline."
 version = "0.1-draft"
 tulen = 0.70

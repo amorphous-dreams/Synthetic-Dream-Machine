@@ -6,7 +6,7 @@
 ```toml
 # <<~ ahu #iam-ha "structure" >>
 name = "x-tiddlywiki-filter"
-file_path = "ha.ka.ba/grammars/grammar.x-tiddlywiki-filter.md"
+file_path = "ha_ka_ba/grammars/grammar_x-tiddlywiki-filter.md"
 description = "Registered imported function sigil grammar for TiddlyWiki-style filter work under explicit hana admission."
 version = "0.1-draft"
 tulen = 0.45

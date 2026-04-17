@@ -7,7 +7,7 @@
 ```toml
 # <<~ ahu #iam-ha "structure" >>
 name = "loci"
-file_path = "ha.ka.ba/loci/loci.loci.md"
+file_path = "ha_ka_ba/loci/loci_loci.md"
 description = "Loci kānāwai (law) for resolving `lar:` URI memes into explicit routing evidence and current `mana`, `manao`, and `manaoio` posture. Declares the derivation algorithm, the convention surfaces that make routing explicit, the conditions for high-mana `loci` memes, the promotion path from noise to data to meme to loci meme to canon loci meme, and the MCP-resolution research roadmap."
 version = "0.1-draft"
 tulen = 0.76
@@ -25,7 +25,7 @@ enacts = true
 role = "loci-rating kānāwai (law), routing convention authority, address stability authority, canon promotion rule, and MCP-resolution roadmap"
 function = "resolve a `lar:` URI meme into routing evidence and present `mana`, `manao`, and `manaoio` posture, while governing explicit convention, address stability, canon promotion, and MCP-resolution research"
 install_root = "lares/"
-path_root = "ha.ka.ba/"
+path_root = "ha_ka_ba/"
 mcp_resolution_status = "research-roadmap"
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
@@ -198,7 +198,7 @@ Given: lar_uri (string), meme_type (string | unknown)
 
 1. Strip scheme and authority:
      path_segment = lar_uri.removePrefix("lar:///")
-     e.g. "lar:///ha.ka.ba/pono/parser" → "ha.ka.ba/pono/parser"
+     e.g. "lar:///ha.ka.ba/pono/parser" → "ha_ka_ba/pono/parser"
 
 2. Split path_segment by "/":
      parts = path_segment.split("/")
@@ -215,7 +215,7 @@ Given: lar_uri (string), meme_type (string | unknown)
 5. Look up meme-type prefix:
      If meme_type is known:
        prefix = meme_type_prefix_table[meme_type]
-       e.g. "loci" → "loci."
+       e.g. "loci" → "loci_"
      If meme_type is unknown:
        prefix = nil → classification becomes DECLARED-UNRESOLVED
        emit note: "meme_type unknown; local derivation cannot continue"
@@ -224,14 +224,14 @@ Given: lar_uri (string), meme_type (string | unknown)
 6. Derive candidate file_path:
      If subpath is empty:
        candidate = path_root + "/" + prefix + name + ".md"
-       e.g. "ha.ka.ba/loci.meme.md"   (pre-migration candidate for `lar:///ha.ka.ba/meme`)
+       e.g. "ha_ka_ba/loci_meme.md"   (pre-migration candidate for `lar:///ha.ka.ba/meme`)
      Else:
        candidate = path_root + "/" + subpath + "/" + prefix + name + ".md"
-       e.g. "ha.ka.ba/pono/loci.parser.md"
+       e.g. "ha_ka_ba/pono/loci_parser.md"
 
 7. Derive full repo path:
      full_repo_path = install_root + candidate
-     e.g. "lares/ha.ka.ba/pono/loci.parser.md"
+     e.g. "lares/ha_ka_ba/pono/loci_parser.md"
      Check whether full_repo_path exists as a file.
      If YES → RESOLVED. Return full_repo_path. Done.
 
@@ -250,9 +250,9 @@ The algorithm does not by itself assign final ratings. It supplies the structura
 
 | target `lar:` URI | local derivation candidate | current local outcome | tension surfaced |
 |---|---|---|---|
-| `lar:///ha.ka.ba/loci` | `lares/ha.ka.ba/loci.loci.md` | derivation miss | this meme is path-directory-sited |
-| `lar:///ha.ka.ba/meme` | `lares/ha.ka.ba/loci.meme.md` | derivation miss | generic meme law is path-directory-sited |
-| `lar:///ha.ka.ba/alpha/test-prompt-00001` | `lares/ha.ka.ba/alpha/alpha.test-prompt-00001.md` | resolved | alpha carriers currently resolve as ordinary flat-file carriers under `ha.ka.ba/alpha/` |
+| `lar:///ha.ka.ba/loci` | `lares/ha_ka_ba/loci_loci.md` | derivation miss | this meme is path-directory-sited |
+| `lar:///ha.ka.ba/meme` | `lares/ha_ka_ba/loci_meme.md` | derivation miss | generic meme law is path-directory-sited |
+| `lar:///ha.ka.ba/alpha/test-prompt-00001` | `lares/ha_ka_ba/alpha/alpha_test-prompt-00001.md` | resolved | alpha carriers currently resolve as ordinary flat-file carriers under `ha_ka_ba/alpha/` |
 
 These examples show the current routing state plainly: derivation alone is insufficient after migration for path-directory-sited loci carriers, while ordinary flat-file carriers still resolve locally.
 
@@ -266,10 +266,10 @@ The prefix table is the fix for the inference gap. Before this table was declare
 
 | `meme_type` value | file prefix | example file | example lar: URI |
 |---|---|---|---|
-| `loci` | `loci.` | `loci.parser.md` | `lar:///ha.ka.ba/pono/parser` |
-| `alpha` | `alpha.` | `alpha.test-prompt-00001.md` | `lar:///ha.ka.ba/alpha/test-prompt-00001` |
-| `grammar` | `grammar.` | `grammar.x-tiddlywiki-filter.md` | `lar:///ha.ka.ba/grammars/x-tiddlywiki-filter` |
-| `skill` | `skill.` | `skill.template.md` | `lar:///ha.ka.ba/pono/skill-template` |
+| `loci` | `loci_` | `loci_parser.md` | `lar:///ha.ka.ba/pono/parser` |
+| `alpha` | `alpha_` | `alpha_test-prompt-00001.md` | `lar:///ha.ka.ba/alpha/test-prompt-00001` |
+| `grammar` | `grammar_` | `grammar_x-tiddlywiki-filter.md` | `lar:///ha.ka.ba/grammars/x-tiddlywiki-filter` |
+| `skill` | `skill_` | `skill_template.md` | `lar:///ha.ka.ba/pono/skill-template` |
 
 When a new `meme_type` is introduced, an entry MUST be added to this table before any file of that type is registered. A `meme_type` value with no entry in this table is an error in the meme definition, not a routing ambiguity.
 
@@ -624,8 +624,8 @@ A carrier mutation and a canon promotion are two distinct crossings that may not
 
 Two Hooko-class crossings matter in the current stack and are already visible from this file:
 
-* this meme's own migration into `ha.ka.ba/loci/loci.loci.md`
-* the meme law's migration into `ha.ka.ba/meme/loci.meme.md`
+* this meme's own migration into `ha_ka_ba/loci/loci_loci.md`
+* the meme law's migration into `ha_ka_ba/meme/loci_meme.md`
 
 In both cases, the stable thing was the `lar:` address. The mutable thing was the concrete file siting that had to be crossed into law.
 
