@@ -1,6 +1,6 @@
 <!-- ? → lar:///ka.ka.ba/e-prime -->
 
-# Grammar: E-Prime
+# E-Prime
 
 ```yaml
 ---
@@ -11,7 +11,6 @@ description: >
   observation, relation, action, stance, and earned confidence.
 trigger: always — background language discipline
 confidence: SC:0.75
-grammar: true
 heritage: >
   General Semantics via Alfred Korzybski (map/territory discipline),
   Robert Anton Wilson's generalized agnosticism and E-Prime practice,
