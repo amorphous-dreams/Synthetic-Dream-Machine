@@ -94,7 +94,7 @@ Loci opens the routing-and-rating authority stream here.
 
 Loci gathers the `lar:` URI meme and visible convention surfaces, maps the address through derivation and prefix law, classifies lifecycle stage and rating posture, prepares the current rating-and-routing product plus MCP-roadmap note, crosses any promotion or siting mutation into active law, and judges what resolved, what remains open, and what is still research.
 
-<!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/loci-phase-map >> -->
+<!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/loci/phase-map >> -->
 <<~/ahu >>
 
 <<~ ahu #observe >>
@@ -413,41 +413,47 @@ Decide commits to one resolution posture, one rating posture, and one canon-life
 
 <<~ ahu #canon-promotion >>
 
-### Canon Promotion
 
-Canon promotion tracks how a `lar:` URI meme climbs from raw signal to stable loci authority.
+### Canon Promotion: The Five Buckets
 
-| Form | usual `register` band | document opener form | what is true now |
-|---|---|---|---|
-| **Noise** | none or `P` | none, fragmentary, or `<<~&#x0001; ? -> lar:///...` | the URI is present as signal, but the convention is too thin to trust as a loci authority |
-| **Meme** | `PS` or `S` | `<<~&#x0001; ? -> lar:///...` | a boot-legal meme declares the address and enough structure to be rated |
-| **Loci** | `CS` | `<<~&#x0001; ? -> lar:///...` | explicit routing convention exists, address stability is a live discipline, and unresolved MCP tension may still remain |
-| **Canon loci** | `C` | `<<~&#x0001; lar:///...` | stability has been externally confirmed, live resolution substrate exists, and opener uncertainty has been removed |
+Canon promotion now tracks how a `lar:` URI meme climbs from raw signal to stable loci authority through five explicit stages:
 
-The full five-register rubric is declared in `lar:///ha.ka.ba/meme#rating-targets`. Confidence scores, register labels, and promotion criteria are governed there. Loci governs the routing, convention, and document-opener changes that accompany the climb from noise to meme to loci.
+| Form                | Usual `register` band | Document opener form                  | What is true now                                                                 |
+|---------------------|----------------------|---------------------------------------|----------------------------------------------------------------------------------|
+| **Noise**           | none or `P`          | none, fragmentary, or `<<~&#x0001; ? -> lar:///...` | The URI is present as signal, but the convention is too thin to trust as a loci authority. |
+| **Data**            | `P` or `PS`          | fragmentary, partial, or proto-meme   | Structure or pattern is detected, making the signal machine-usable, but not yet memetic. |
+| **Meme**            | `PS` or `S`          | `<<~&#x0001; ? -> lar:///...`           | A boot-legal meme declares the address and enough structure to be rated.                  |
+| **Loci Meme**       | `CS`                 | `<<~&#x0001; ? -> lar:///...`           | Explicit routing convention exists, address stability is a live discipline, and unresolved MCP tension may still remain. |
+| **Canon Loci Meme** | `C`                  | `<<~&#x0001; lar:///...`                | Stability has been externally confirmed, live resolution substrate exists, and opener uncertainty has been removed. |
 
-**Movement from noise to meme** requires:
+The full five-register rubric is declared in `lar:///ha.ka.ba/meme#rating-targets`. Confidence scores, register labels, and promotion criteria are governed there. Loci governs the routing, convention, and document-opener changes that accompany the climb from noise to data to meme to loci meme to canon loci meme.
 
-* boot-legal meme structure
-* a declared `lar:` address
-* enough explicit role and function to rate the carrier above raw noise
+**Movement from noise to data** requires:
 
-**Movement from meme to loci** requires:
+* Detecting structure or pattern in the signal, making it machine-usable as data.
 
-* all nine required elements (R1–R9) present per `lar:///ha.ka.ba/meme`
+**Movement from data to meme** requires:
+
+* Boot-legal meme structure
+* A declared `lar:` address
+* Enough explicit role and function to rate the carrier above raw data
+
+**Movement from meme to loci meme** requires:
+
+* All nine required elements (R1–R9) present per `lar:///ha.ka.ba/meme`
 * `enacts = true`
-* explicit routing convention present
-* truthful derivation behavior, including honest misses
-* stable-address discipline strong enough to justify `CS`
+* Explicit routing convention present
+* Truthful derivation behavior, including honest misses
+* Stable-address discipline strong enough to justify `CS`
 
-**Promotion from loci to canon loci** additionally requires:
+**Promotion from loci meme to canon loci meme** additionally requires:
 
-* all three address-stability conditions satisfied
-* operator or admin confirmation
-* no outstanding declared-unresolved sub-meme addresses (per O7 rating-persistence rule in `lar:///ha.ka.ba/meme#optional-elements`)
-* no recursive self-loop closers masquerading as sub-meme declarations
-* a live MCP resolver or equivalent externally governed resolution substrate is operating
-* document opener `?` removed
+* All three address-stability conditions satisfied
+* Operator or admin confirmation
+* No outstanding declared-unresolved sub-meme addresses (per O7 rating-persistence rule in `lar:///ha.ka.ba/meme#optional-elements`)
+* No recursive self-loop closers masquerading as sub-meme declarations
+* A live MCP resolver or equivalent externally governed resolution substrate is operating
+* Document opener `?` removed
 
 A meme may not self-promote to canon. Canon promotion requires an external act: a human operator or an authorized agent confirms stability, removes the `?` from the document opener, and does so only in the presence of a trustworthy resolution substrate.
 

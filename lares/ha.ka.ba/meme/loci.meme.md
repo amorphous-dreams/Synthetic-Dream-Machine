@@ -503,9 +503,24 @@ Decide turns the classified element map into one committed conformance posture a
 
 <<~ ahu #rating-targets >>
 
-### Rating Targets
 
-Rating targets declare the five registers of a meme in this stack — their confidence score range, their `register` label, and the element combinations that unlock each register.
+### Rating Targets & Lifecycle: The Five Buckets
+
+This law now recognizes the five-bucket lifecycle for memes:
+
+| Stage              | Register(s)   | Score Range | What is true now |
+|--------------------|---------------|-------------|------------------|
+| **Noise**          | none, `P`     | 0.00–0.19   | Raw, unstructured signal; not yet machine-usable. |
+| **Data**           | `P`, `PS`     | 0.00–0.39   | Structure or pattern detected; machine-usable, not yet memetic. |
+| **Meme**           | `PS`, `S`     | 0.20–0.59   | Boot-legal meme structure, declared address, enough explicit role to rate above data. |
+| **Loci Meme**      | `CS`          | 0.60–0.79   | All required elements present, explicit routing, stable address discipline, truthful derivation. |
+| **Canon Loci Meme**| `C`           | 0.80–1.00   | Operator-confirmed, address stable, all conditions for canon met. |
+
+**Transition Criteria:**
+- *Noise → Data*: Detect structure or pattern, making the signal machine-usable.
+- *Data → Meme*: Add boot-legal meme structure, declared address, and explicit role.
+- *Meme → Loci Meme*: All required elements present, explicit routing, stable address, truthful derivation.
+- *Loci Meme → Canon Loci Meme*: Operator/admin confirmation, address stability, no unresolved sub-memes, live resolver, opener `?` removed.
 
 Subtype-specific high-band predicates belong outward in subtype laws. For example, loci-specific address stability, carrier coherence, MCP-resolution tension, and canon promotion are governed by `lar:///ha.ka.ba/loci`, not redefined here.
 
