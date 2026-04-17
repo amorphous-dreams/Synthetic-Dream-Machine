@@ -37,8 +37,8 @@ skill-package-root = "ha-ka-ba/pono/skill-*.md"
 input = "target-meme|law-address|invariant-set|query|artifact|bundle|stream|?"
 output = "skill-envelope(high manaoio^)|partial-skill-envelope(mid manaoio-)|degraded-skill-envelope(low manaoio_)|?(~manaoio?)"
 depends-on = [
-  "lar:///ha.ka.ba/pono/memetic-wikitext",
-  "lar:///ha.ka.ba/pono"
+    "lar:///ha.ka.ba/pono/memetic-wikitext",
+    "lar:///ha.ka.ba/pono"
 ]
 covers = []
 invariants = []

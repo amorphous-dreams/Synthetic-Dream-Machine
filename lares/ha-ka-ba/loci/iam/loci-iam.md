@@ -26,7 +26,7 @@ role = "root metadata kānāwai (law), field-set authority, and reduction charte
 function = "govern the surviving #iam field set, place each field in the correct ha ka ba slot, and cut redundant or ornamental metadata from live carriers"
 required-ha-keys = [
   "name",
-  "file_path",
+  "file-path",
   "description",
   "version",
   "tulen",
@@ -34,14 +34,14 @@ required-ha-keys = [
   "mana",
   "manao",
   "manaoio",
-  "content_type",
-  "meme_type",
+  "content-type",
+  "meme-type",
   "register",
   "structure"
 ]
 common-ka-keys = ["enacts", "role", "function"]
-common-ba-keys = ["input", "output", "depends_on"]
-banned-flow-keys = ["requires", "provides", "receives_state", "emits_state"]
+common-ba-keys = ["input", "output", "depends-on"]
+banned-flow-keys = ["requires", "provides", "receives-state", "emits-state"]
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
 input = "#iam block|field inventory|migration question|query|?"
@@ -51,7 +51,7 @@ depends-on = [
   "lar:///ha.ka.ba/loci",
   "lar:///ha.ka.ba/meme"
 ]
-next = "lar:///ha.ka.ba/loci/iam/file_path"
+next = "lar:///ha.ka.ba/loci/iam/file-path"
 # <<~/ahu >>
 ```
 

@@ -6,9 +6,9 @@
 
 ```toml
 # <<~ ahu #iam-ha "structure" >>
-name = "file_path"
+name = "file-path"
 file-path = "ha-ka-ba/loci/iam/loci-file-path.md"
-description = "Kānāwai (law) for the file_path metadata key. Governs its two canonical forms (flat-file and path-directory), its required agreement with the lar: URI in the document opener, and the migration procedure when a meme moves between forms."
+description = "Kānāwai (law) for the file-path metadata key. Governs its two canonical forms (flat-file and path-directory), its required agreement with the lar: URI in the document opener, and the migration procedure when a meme moves between forms."
 version = "0.1-draft"
 tulen = 0.60
 confidence = 0.62
@@ -22,21 +22,21 @@ structure = "OODA-HA * ha.ka.ba"
 # <<~/ahu >>
 # <<~ ahu #iam-ka "detail" >>
 enacts = true
-role = "file_path key authority, path-form classifier, and migration-procedure kānāwai (law)"
-function = "define the two canonical file_path forms, govern the agreement check between file_path and lar: URI, and declare the migration procedure when a meme moves from flat-file to path-directory siting"
-key-name = "file_path"
+role = "file-path key authority, path-form classifier, and migration-procedure kānāwai (law)"
+function = "define the two canonical file-path forms, govern the agreement check between file-path and lar: URI, and declare the migration procedure when a meme moves from flat-file to path-directory siting"
+key-name = "file-path"
 key-position = "second field in #iam TOML, immediately after name"
 path-root = "ha-ka-ba/"
 install-root = "lares/"
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
-input = "file_path value|#iam TOML block|lar: URI|migration request|?"
+input = "file-path value|#iam TOML block|lar: URI|migration request|?"
 output = "file-path-envelope(high manaoio^)|partial-file-path-envelope(mid manaoio-)|degraded-file-path-envelope(low manaoio_)|?(~manaoio?)"
 depends-on = [
-  "lar:///ha.ka.ba/loci/iam",
-  "lar:///ha.ka.ba/pono/memetic-wikitext",
-  "lar:///ha.ka.ba/loci",
-  "lar:///ha.ka.ba/meme"
+     "lar:///ha.ka.ba/loci/iam",
+     "lar:///ha.ka.ba/pono/memetic-wikitext",
+     "lar:///ha.ka.ba/loci",
+     "lar:///ha.ka.ba/meme"
 ]
 # <<~/ahu >>
 ```
