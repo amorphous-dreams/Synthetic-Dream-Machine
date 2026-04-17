@@ -157,7 +157,7 @@ Constitutional-charge-ba remains intentionally spare.
 
 ## Sigil-Centric Translation
 
-References to “tiddlers” are deprecated in this host context.
+References to “tiddlers” now count as deprecated in this host context.
 
 Use **Sigil** for the atomic unit of data addressed by the imported grammar under memetic-wikitext.
 
@@ -270,7 +270,7 @@ Host-admission-ba remains minimal in this draft.
 
 ## Boot Feature Set
 
-The boot profile should preserve at least these imported work families when they can be supported lawfully:
+Boot profile should preserve at least these imported work families when lawful support remains available:
 
 * all-sigils traversal
 * relation queries against the current Sigil
@@ -418,7 +418,7 @@ Canonical-examples-ba stays intentionally light.
 
 ## Degradation
 
-If this guest grammar is malformed, unsupported, or context-null, a lawful boot profile should degrade toward No-Op or empty-set return and emit one boundary warning rather than collapsing the parent parse.
+If this guest grammar arrives malformed, unsupported, or context-null, a lawful boot profile should degrade toward No-Op or empty-set return and emit one boundary warning rather than collapsing the parent parse.
 
 The host must not silently fabricate `+currentMeme` when the active context remains absent.
 

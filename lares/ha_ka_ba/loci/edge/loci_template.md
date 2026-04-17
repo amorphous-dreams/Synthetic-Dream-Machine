@@ -86,7 +86,7 @@ Observe looks for edge patterns that repeat with stable meaning:
 - same endpoint class restrictions
 - same branch semantics
 
-If only the endpoints vary while the law stays stable, template pressure has begun.
+If only the endpoints vary while the law stays stable, template pressure begins.
 
 <<~/ahu >>
 

@@ -47,7 +47,7 @@ A self-describing, self-enacting canonical meme kānāwai (law) for the OODA-HA 
 
 This meme governs what a meme in this stack must carry, what it may optionally carry, and how those choices map to rating outcomes. It serves as a copy-ready template: an author may copy the `#skeleton` section, fill in the marked placeholders, and begin with a boot-legal, rating-aware meme surface.
 
-This file models itself as one carrier of that more general law. Its governs the subject of `meme` itself as such, not a narrower subtype like `loci`, `grammar`, or `skill`, or a lifecycle bucket like noise, data, typed meme, or canon typed meme.
+This file models itself as one carrier of that more general law. It governs the subject of `meme` itself as such, not a narrower subtype like `loci`, `grammar`, or `skill`, or a lifecycle bucket like noise, data, typed meme, or canon typed meme.
 
 This meme does not govern parse recognition, render lowering, or transaction lifecycle. Those belong to their own kānāwai (law).
 
@@ -103,7 +103,8 @@ Observe should detect:
 * HTML DOCTYPE preamble comment
 * document opener and its target address
 * `#iam` locus and its fenced TOML payload
-* five canonical rating fields grouped below `version` in the order `tulen`, `confidence`, `mana`, `manao`, `manaoio`, plus adjacent `register` surface texture below `meme_type` and above `structure`
+* five canonical rating fields grouped below `version` in the order `tulen`, `confidence`, `mana`, `manao`, `manaoio`,
+* plus adjacent `register` surface texture below `meme_type` and above `structure` for the operator-facing `tulen`/`confidence` bands
 * title heading and opening prose
 * self-reference ala
 * supported query block and query throats
@@ -131,14 +132,14 @@ Observe should not:
 1. Which of the nine required elements surfaced?
 2. Which optional elements appeared?
 3. Which elements appeared but carry only stub content?
-4. Which elements are entirely absent?
-5. Which rating fields are present and in canonical position?
+4. Which elements remain entirely absent?
+5. Which rating fields appear and hold canonical position?
 
 ### Self-Observation
 
-In this file, Observe is not only inspecting a generic candidate. It is also inspecting the currently loaded law surface that declares `lar:///ha.ka.ba/meme`.
+In this file, Observe not only inspects a generic candidate. It also inspects the currently loaded law surface that declares `lar:///ha.ka.ba/meme`.
 
-That doubling matters: the same surface being observed is both the governing law for meme structure and one concrete carrier of that law.
+That doubling matters: the same observed surface serves both as the governing law for meme structure and as one concrete carrier of that law.
 
 ### Dominant Resonance
 
@@ -183,7 +184,7 @@ This subphase shapes how Observe moves without premature collapse. A stub elemen
 
 ### Non-Normative Prior-Art Note
 
-> TiddlyWiki's skeleton tiddler pattern offers a clean precedent here: the skeleton exists as a pre-runtime form that an author fills in when creating a new tiddler of that type. Observe in that lineage amounts to comparing the instantiated tiddler against the skeleton's expected field set. The meme kānāwai (law) extends that pattern: a skeleton meme carries the expected element set explicitly so that Observe has a stable reference to check against.
+> TiddlyWiki's skeleton tiddler pattern offers a clean precedent here: the skeleton serves as a pre-runtime form that an author fills in when creating a new tiddler of that type. Observe in that lineage amounts to comparing the instantiated tiddler against the skeleton's expected field set. The meme kānāwai (law) extends that pattern: a skeleton meme carries the expected element set explicitly so that Observe can check against a stable reference.
 
 <!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/meme-observe >> -->
 <<~/ahu >>
@@ -209,7 +210,7 @@ Orient should answer:
 
 * which detected elements satisfy a required slot (R1–R9)
 * which detected elements satisfy an optional slot (O1–O9)
-* which sub-meme `ala` addresses are resolved, declared-unresolved, or absent (O7–O9)
+* which sub-meme `ala` addresses resolve, remain declared-unresolved, or remain absent (O7–O9)
 * whether each present element carries locally meaningful content or only a stub
 * which required elements remain absent
 * which rating band the current surface appears capable of reaching
@@ -218,7 +219,7 @@ Orient should answer:
 
 ### Required Elements
 
-Required elements are those whose absence directly degrades `mana`, `structural_validity`, or `manaoio` below the mid band.
+Required elements directly degrade `mana`, `structural_validity`, or `manaoio` below the mid band when absent.
 
 A boot-legal meme MUST carry all nine.
 
@@ -238,9 +239,9 @@ Marks the document as a memetic-wikitext surface before any active sigil appears
 
 One per document, near the top. Names the meme's own canonical address. The `?` marks declared-open routing until canon status resolves it.
 
-That `?` is not decorative. It is the meme's document-time admission that unbound uncertainty still flows through the address graph while the carrier has not yet earned confirmed canon.
+That `?` does not serve as decoration. It marks the meme's document-time admission that unbound uncertainty still flows through the address graph while the carrier still awaits confirmed canon.
 
-Transport-specific opener semantics, including how `?` behaves for loci-routed carriers, are governed by `lar:///ha.ka.ba/loci`.
+Transport-specific opener semantics, including how `?` behaves for loci-routed carriers, fall under `lar:///ha.ka.ba/loci`.
 
 #### R3 — Identity locus (`#iam`) with canonical TOML payload
 
@@ -274,11 +275,11 @@ depends_on = ["lar:///ha.ka.ba/pono/memetic-wikitext"]
 # <<~/ahu >>
 ```
 
-The five canonical rating fields MUST appear immediately below `version` in this order: `tulen`, `confidence`, `mana`, `manao`, `manaoio`. The adjacent `register` surface-texture key MUST appear below `meme_type` and immediately before `structure`. Absence of any rating field degrades `payload_integrity`.
+The five canonical rating fields MUST appear immediately below `version` in this order: `tulen`, `confidence`, `mana`, `manao`, `manaoio`. The adjacent `register` surface-texture key MUST appear below `meme_type` and immediately before `structure`. That key abbreviates the operator-facing `tulen`/`confidence` band surfaces. Absence of any rating field degrades `payload_integrity`.
 
-Comment-line `ahu` markers MAY section `#iam` TOML into agent-operator friendly groups without changing payload semantics. The canonical grouping form is `# <<~ ahu #iam-ha "structure" >>`, `# <<~ ahu #iam-ka "detail" >>`, and `# <<~ ahu #iam-ba "flow" >>`, each closed by `# <<~/ahu >>`. Because these stay inside TOML comment lines, they remain parse-inert.
+Comment-line `ahu` markers MAY section `#iam` TOML into agent-operator friendly groups without changing payload semantics. The canonical grouping follows `# <<~ ahu #iam-ha "structure" >>`, `# <<~ ahu #iam-ka "detail" >>`, and `# <<~ ahu #iam-ba "flow" >>`, each closed by `# <<~/ahu >>`. Because these stay inside TOML comment lines, they remain parse-inert.
 
-`file_path` names the current carrier siting for the meme surface. Canonical file-path forms, migration between flat-file and path-directory siting, and agreement rules between `file_path` and the document opener are governed outward by `lar:///ha.ka.ba/loci` and `lar:///ha.ka.ba/loci/iam/file_path`.
+`file_path` names the current carrier siting for the meme surface. Canonical file-path forms, migration between flat-file and path-directory siting, and agreement rules between `file_path` and the document opener fall outward under `lar:///ha.ka.ba/loci` and `lar:///ha.ka.ba/loci/iam/file_path`.
 
 #### R4 — Title heading and opening prose
 
@@ -351,7 +352,7 @@ next_question = "..."
 
 Both the return throat and the degraded close MUST appear. The degraded close preserves truthful incompletion.
 
-For configured memes, that footer is also the canonical outward handoff of residual uncertainty: the meme returns what it knows in the envelope, then passes the still-unbound pressure back outward through `-> ?` rather than hiding it.
+For configured memes, that footer also carries the canonical outward handoff of residual uncertainty: the meme returns what it knows in the envelope, then passes the still-unbound pressure back outward through `-> ?` rather than hiding it.
 
 <<~/ahu >>
 
@@ -393,9 +394,9 @@ Each ha/ka/ba subloop may carry an explicit depth callout: an `ala` link pointin
 <<~ ala lar:///ha.ka.ba/[NAME]-[phase]-[subphase] >>
 ```
 
-Use this closing `ala` only when the enclosing subloop is declaring a real deeper loci-path that either already exists or is being intentionally declared as a forward/unresolved child.
+Use this closing `ala` only when the enclosing subloop declares a real deeper loci-path that either already resolves or stands intentionally declared as a forward/unresolved child.
 
-Do not use a closing `ala` to restate the enclosing `ahu` anchor in place. A form such as `<<~ ala lar:///ha.ka.ba/[current-path]#[same-anchor] >>` is non-canonical: the `ahu #...` opener already names that local anchor, so the closing `ala` adds no forward depth and should be omitted.
+Do not use a closing `ala` to restate the enclosing `ahu` anchor in place. A form such as `<<~ ala lar:///ha.ka.ba/[current-path]#[same-anchor] >>` counts as non-canonical: the `ahu #...` opener already names that local anchor, so the closing `ala` adds no forward depth; omit it.
 
 Three resolution states apply to every declared sub-meme address:
 
@@ -405,9 +406,9 @@ Three resolution states apply to every declared sub-meme address:
 | **Declared-unresolved** | Address declared; sub-meme file absent | No penalty to `mana`; mild drag on `manaoio` — the claim exists but yields nothing yet; creates explicit backlog pressure |
 | **Absent** | No address declared; subloop closes immediately after its one-sentence governs line | Treated as a stub; rated the same as a subloop with no external claim |
 
-A resolved sub-meme callout contributes more than equivalent local prose because it draws on a separately addressable, separately rateable loci with its own `#iam` and rating surface. A declared-unresolved callout outperforms an absent one: the declared address creates forward pressure without falsely claiming yield it has not yet produced. An absent subloop is honest but low; it should not be confused with an address that was declared and then removed.
+A resolved sub-meme callout contributes more than equivalent local prose because it draws on a separately addressable, separately rateable loci with its own `#iam` and rating surface. A declared-unresolved callout outperforms an absent one: the declared address creates forward pressure without falsely claiming yield not yet produced. An absent subloop stays honest but low; do not blur it with an address that later got declared and then removed.
 
-An author choosing between local prose and a depth callout should prefer a depth callout only if the sub-meme either already exists or will be authored shortly. Declaring addresses for sub-memes that will never get written degrades `manaoio` over time as the declared-unresolved state persists without resolution.
+An author choosing between local prose and a depth callout should prefer a depth callout only if the sub-meme either already resolves or will get authored shortly. Declaring addresses for sub-memes that will never get written degrades `manaoio` over time as the declared-unresolved state persists without resolution.
 
 #### O8 — Phase-level external sub-meme closing links
 
@@ -417,9 +418,9 @@ Each phase section may close with an `ala` link pointing at a phase-level sub-me
 <<~ ala lar:///ha.ka.ba/[NAME]-[phase] >>
 ```
 
-This is likewise a forward/downward path declaration, not an echo of the enclosing phase anchor. If the author intends no separate phase-level child carrier, the phase should close without an `ala` line.
+This likewise forms a forward/downward path declaration, not an echo of the enclosing phase anchor. If the author intends no separate phase-level child carrier, the phase should close without an `ala` line.
 
-The three resolution states from O7 apply identically. A resolved phase-level sub-meme pulls that phase's governing authority into a separately rateable loci. This is a stronger structural claim than a resolved subloop callout because it extends the whole phase outward, not only one ha/ka/ba subdivision.
+The three resolution states from O7 apply identically. A resolved phase-level sub-meme pulls that phase's governing authority into a separately rateable loci. This makes a stronger structural claim than a resolved subloop callout because it extends the whole phase outward, not only one ha/ka/ba subdivision.
 
 Rating contribution: a resolved phase-level sub-meme raises `mana` above what full local prose alone achieves for that phase.
 
@@ -453,7 +454,7 @@ Orient-ha holds element classification identity, the required/optional distincti
 
 This subphase governs what Orient fundamentally structures: the mapping from raw detected elements onto their required or optional slots, held clearly before any verdict or rating computation begins.
 
-Carrier-specific agreement rules may deepen outward into subtype laws. `meme` governs that the identity signals exist; subtype laws such as `lar:///ha.ka.ba/loci` govern exactly how transport coherence is judged for that carrier family.
+Carrier-specific agreement rules may deepen outward into subtype laws. `meme` governs the appearance of identity signals; subtype laws such as `lar:///ha.ka.ba/loci` govern exactly how transport coherence gets judged for that carrier family.
 
 <!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/meme-orient-ha >> -->
 <<~/ahu >>
@@ -475,7 +476,7 @@ This subphase focuses on how Orient performs its mapping work. The stub/filled d
 
 Orient-ba governs interpretive motion, tension-holding, and comparative flow across competing element readings.
 
-This subphase shapes how orientation moves without collapsing ambiguity prematurely. A phase section that carries a glyph line but no local prose sits in a tension between R8 satisfied and O1 unfilled. Orient should hold that tension rather than resolving it silently in either direction. The same posture applies more generally whenever a meme's structural surface looks complete while a subtype law may still be carrying unresolved transport or enactment residue.
+This subphase shapes how orientation moves without collapsing ambiguity prematurely. A phase section that carries a glyph line but no local prose sits in a tension between R8 satisfied and O1 unfilled. Orient should hold that tension rather than resolving it silently in either direction. The same posture applies more generally whenever a meme's structural surface looks complete while a subtype law may still carry unresolved transport or enactment residue.
 
 <!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/meme-orient-ba >> -->
 <<~/ahu >>
@@ -511,13 +512,13 @@ Decide turns the classified element map into one committed conformance posture a
 
 This law now recognizes the five-bucket lifecycle for memes:
 
-| Stage              | Register(s)   | Score Range | What is true now |
+| Stage              | Register(s)   | Score Range | Current reading |
 |--------------------|---------------|-------------|------------------|
 | **Noise**            | none, `P`     | 0.00–0.19   | Raw, unstructured signal; not yet machine-usable. |
 | **Data**             | `P`, `PS`     | 0.00–0.39   | Structure or pattern detected; machine-usable, not yet memetic. |
 | **Meme**             | `PS`, `S`     | 0.20–0.59   | Boot-legal meme structure, declared address, enough explicit role to rate above data. |
-| **Typed Meme**       | `S`, `CS`     | 0.41–0.79   | One or more type laws now govern the carrier; type claims are composable rather than mutually exclusive. |
-| **Canon Typed Meme** | `C`           | 0.80–1.00   | Operator-confirmed; at least one declared type has been externally ratified as canonical. |
+| **Typed Meme**       | `S`, `CS`     | 0.41–0.79   | One or more type laws now govern the carrier; type claims remain composable rather than mutually exclusive. |
+| **Canon Typed Meme** | `C`           | 0.80–1.00   | Operator-confirmed; at least one declared type received external ratification as canonical. |
 
 **Transition Criteria:**
 - *Noise → Data*: Detect structure or pattern, making the signal machine-usable.
@@ -529,19 +530,19 @@ Subtype-specific predicates belong outward in subtype laws. For example, `loci` 
 
 #### Confidence Composition
 
-`confidence` is the holistic summary rating. It tracks the center of gravity of the three structural fields — `mana`, `manao`, and `manaoio` — adjusted by an editorial factor from operator and agent judgment:
+`confidence` serves as the holistic summary rating. It tracks the center of gravity of the three structural fields — `mana`, `manao`, and `manaoio` — adjusted by an editorial factor from operator and agent judgment:
 
 ```
 confidence ≈ center_of_gravity(mana, manao, manaoio) ± editorial_factor
 ```
 
-The editorial factor is real and bounded (±0.10 maximum). It reflects: how deeply a human operator has reviewed the meme, how much trust an agent has accrued in the meme's practical behavior, and whether peer verification (a passing skill package) has confirmed conformance. It is not unlimited — a meme whose three structural fields average 0.40 cannot reach a confidence of 0.80 through editorial enthusiasm alone.
+The editorial factor stays real and bounded (±0.10 maximum). It reflects how deeply a human operator reviewed the meme, how much trust an agent accrued in the meme's practical behavior, and whether peer verification (a passing skill package) confirmed conformance. It does not scale without limit — a meme whose three structural fields average 0.40 cannot reach a confidence of 0.80 through editorial enthusiasm alone.
 
-All ratings are provisional. A rating of 1.00 remains rare in language, software, and reality. Every score carries implicit uncertainty. High scores reflect stability of judgment, not certainty of truth.
+All ratings remain provisional. A rating of 1.00 remains rare in language, software, and reality. Every score carries implicit uncertainty. High scores reflect stability of judgment, not certainty of truth.
 
 #### The Law of 5s Rubric
 
-All scalar ratings in this system — `tulen`, `confidence`, `mana`, `manao`, `manaoio` — are graded on a 0.0–1.0 rubric with five registers of equal width (0.20 per register):
+All scalar ratings in this system — `tulen`, `confidence`, `mana`, `manao`, `manaoio` — follow a 0.0–1.0 rubric with five registers of equal width (~0.20 per register):
 
 | Register | Score range | `register` | Character |
 |---|---|---|---|
@@ -551,27 +552,27 @@ All scalar ratings in this system — `tulen`, `confidence`, `mana`, `manao`, `m
 | 4 | 0.60 – 0.79 | `CS` | Synthetic-Canon — content meaningful, nearing law quality |
 | 5 | 0.80 – 1.00 | `C` | Canon — operator-confirmed, substantive, address stable |
 
-The `register` label applies to the `confidence` score only. The four scalar quality fields (`mana`, `manao`, `manaoio`, `tulen`) are scored on the same 0.0–1.0 rubric but do not carry their own register label. `Tulen` names genuine trust, especially at boot surfaces. High `mana`, `manao`, `manaoio`, and `confidence` support high `tulen`, but a meme may still hold `tulen` provisionally while the surface remains under active confirmation.
+The `register` label applies to both `tulen` and `confidence` as the operator-facing band surfaces. When both scores land in the same band, one abbreviation suffices. When they diverge, prose should surface the split explicitly while the scalar fields retain authority. The three scalar quality fields (`mana`, `manao`, `manaoio`) use the same 0.0–1.0 rubric but do not carry their own register label. `Tulen` names genuine trust, especially at boot surfaces. High `mana`, `manao`, `manaoio`, and `confidence` support high `tulen`, but a meme may still hold `tulen` provisionally while the surface remains under active confirmation.
 
 #### Register 1 — Provisional (`P`, 0.00–0.19)
 
-The meme has barely emerged. Most or all required elements (R1–R9) are absent. May carry only a DOCTYPE comment and a title. Not boot-legal. Cannot be walked by the routing system without manual intervention.
+This band marks a barely emerged meme. Most or all required elements (R1–R9) remain absent. It may carry only a DOCTYPE comment and a title. Not boot-legal. The routing system cannot walk it without manual intervention.
 
-A `P`-band meme signals: authoring has begun but nothing can be relied upon yet. No law statements may cite a `P`-band meme as authority.
+A `P`-band meme signals authoring underway but nothing reliable yet. No law statements may cite a `P`-band meme as authority.
 
 #### Register 2 — Provisional-Synthesis (`PS`, 0.20–0.39)
 
-Some required elements are present but the full nine are not. May carry an `#iam` block but missing rating fields, phase map, or result locus. Authoring is underway; the author intends to complete it. Not boot-legal.
+Some required elements appear but the full nine do not. It may carry an `#iam` block while missing rating fields, phase map, or result locus. Authoring remains underway; the author intends completion. Not boot-legal.
 
-A `PS`-band meme signals: structure is forming. Law statements may reference it only as declared backlog.
+A `PS`-band meme signals structure still forming. Law statements may reference it only as declared backlog.
 
 #### Register 3 — Synthesis (`S`, 0.40–0.59)
 
 All nine required elements (R1–R9) present. Boot-legal. Structurally complete. Content-thin.
 
-Phase map present with glyph line. Phase sections may be one-sentence stubs or glyph-only. ha/ka/ba subloops may be absent or declared-unresolved HTML comments. The skeleton block (if applicable) is copy-ready at this register.
+Phase map present with glyph line. Phase sections may take one-sentence stubs or glyph-only form. ha/ka/ba subloops may stay absent or declared-unresolved HTML comments. The skeleton block (if applicable) becomes copy-ready at this register.
 
-This is the template minimum — the floor from which rating improvement requires real content.
+This marks the template minimum — the floor from which rating improvement requires real content.
 
 #### Register 4 — Synthetic-Canon (`CS`, 0.60–0.79)
 
@@ -585,7 +586,7 @@ ha/ka/ba subloops carry at least one orienting sentence each, or point at resolv
 
 Sub-meme callouts declared and either resolved or explicitly noted as backlog: O7/O8 addresses present.
 
-May be cited as a meaningful structural authority within the stack, subject to any additional transport or subtype predicates the meme family carries.
+This band may serve as meaningful structural authority within the stack, subject to any additional transport or subtype predicates the meme family carries.
 
 #### Register 5 — Canon (`C`, 0.80–1.00)
 
@@ -603,9 +604,9 @@ Research foundation or prior-art notes present and translated into backlog press
 
 `#deferred-resolution` section present and governing the three resolution states explicitly.
 
-Externally confirmed. Any subtype-specific transport predicates for confirmed enactment have been satisfied. Peer verification, if the meme family supports it, is completed or actively underway.
+External confirmation landed. Any subtype-specific transport predicates for confirmed enactment now hold. Peer verification, if the meme family supports it, either finished or continues actively.
 
-A score of 1.00 is practically unreachable — language, software, and reality all resist perfect closure. Scores of 0.95+ indicate mature, heavily reviewed, peer-verified law.
+A score of 1.00 remains practically unreachable — language, software, and reality all resist perfect closure. Scores of 0.95+ indicate mature, heavily reviewed, peer-verified law.
 
 #### Sub-meme Resolution Impact Table
 
@@ -632,9 +633,9 @@ Missing R3 degrades differently than missing R8. Typed per-element absence produ
 For this file, Decide should hold two truths at once:
 
 * the carrier may belong to one concrete transport family
-* the governed subject is meme as such, not one narrower meme subtype
+* the governed subject names meme as such, not one narrower meme subtype
 
-That is not a contradiction. Carrier law may sit outward in subtype memes while the structural law here reaches more generally across meme forms in this stack.
+That does not produce a contradiction. Carrier law may sit outward in subtype memes while the structural law here reaches more generally across meme forms in this stack.
 
 ### Dominant Resonance
 
@@ -887,9 +888,9 @@ Act may prepare intent. Aftermath may judge what landed. Hooko alone may perform
 
 ### Self-Example Crossing
 
-This file still demonstrates that preparation and crossing are distinct. The exact transport details of its current siting, route continuity, and migration history are governed outward by `lar:///ha.ka.ba/loci`.
+This file still demonstrates that preparation and crossing remain distinct. The exact transport details of its current siting, route continuity, and migration history fall outward under `lar:///ha.ka.ba/loci`.
 
-What remains local here is the more general threshold law: preparation may happen anywhere upstream, but the moment a meme surface actually becomes changed state belongs in Hooko.
+What remains local here: the more general threshold law. Preparation may happen anywhere upstream, but the moment a meme surface actually crosses into changed state belongs in Hooko.
 
 ### Dominant Resonance
 
@@ -927,14 +928,14 @@ This subphase governs how Hooko performs its work. When instantiating a skeleton
 
 Hooko-ba governs landing pressure, volatility posture, and truthful state crossing under real authoring conditions.
 
-This subphase governs how Hooko moves in practice. A skeleton that gets instantiated but not yet filled sits at `confidence = 0.10`, `enacts = false`. That state should remain explicit in the new meme rather than being silently upgraded to look more complete than it is.
+This subphase governs how Hooko moves in practice. A skeleton that gets instantiated but not yet filled sits at `confidence = 0.10`, `enacts = false`. That state should remain explicit in the new meme rather than silently upgrading it to look more complete than it currently reads.
 
 <!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/meme-hooko-ba >> -->
 <<~/ahu >>
 
 ### Non-Normative Prior-Art Note
 
-> TiddlyWiki's skeleton tiddler pattern crosses its own Hooko at the moment a user clicks "new tiddler from skeleton" and the skeleton fields get cloned into a new live tiddler. The memetic-wikitext equivalent is the moment the skeleton block gets written to a real file at a real path with real placeholder values substituted. Before that moment: intent. After: changed state.
+> TiddlyWiki's skeleton tiddler pattern crosses its own Hooko at the moment a user clicks "new tiddler from skeleton" and the skeleton fields clone into a new live tiddler. The memetic-wikitext equivalent arrives at the moment the skeleton block gets written to a real file at a real path with real placeholder values substituted. Before that moment: intent. After: changed state.
 
 <!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/meme-hooko >> -->
 <<~/ahu >>
@@ -964,7 +965,7 @@ Aftermath should name:
 
 * which required elements satisfied
 * which required elements remain absent or stub-only
-* which optional elements are present and filled
+* which optional elements appear and carry filled content
 * which rating band the meme currently reaches
 * what would move it to the next band
 * what remains repairable without full rewrite
@@ -1033,25 +1034,25 @@ Deferred resolution governs how a meme author or reader should treat `ala` links
 
 **Resolved**: the sub-meme exists at the declared address and carries lawful content. The walker or reader may traverse it and receive real yield. Rating consequence: full contribution as described in O7–O9 above.
 
-**Declared-unresolved**: the address is declared in an `ala` link, but no file or meme exists there yet. The link is not broken in intent — it names a site of future authorship. The parser or reader should degrade gracefully: emit the declared address as a forward reference, flag it as unresolved without aborting, and continue. Rating consequence: no `mana` penalty; mild drag on `manaoio` because the intent exceeds the current yield.
+**Declared-unresolved**: the address gets declared in an `ala` link, but no file or meme resolves there yet. The link does not break in intent — it names a site of future authorship. The parser or reader should degrade gracefully: emit the declared address as a forward reference, flag it as unresolved without aborting, and continue. Rating consequence: no `mana` penalty; mild drag on `manaoio` because the intent exceeds the current yield.
 
-**Absent**: no address declared. The subloop or phase section closes without any `ala` link. No external claim exists. The element is counted as a stub for rating purposes. This is honest. Absent differs from declared-unresolved in exactly one way: declared-unresolved creates backlog pressure that absent does not.
+**Absent**: no address declared. The subloop or phase section closes without any `ala` link. No external claim resolves outward. The element counts as a stub for rating purposes. This remains honest. Absent differs from declared-unresolved in exactly one way: declared-unresolved creates backlog pressure that absent does not.
 
 ### When to Declare Depth
 
-Declare a closing `ala` only when the block is naming a deeper child path such as `lar:///ha.ka.ba/[NAME]-[phase]-[subphase]` or `lar:///ha.ka.ba/[NAME]-[phase]`.
+Declare a closing `ala` only when the block names a deeper child path such as `lar:///ha.ka.ba/[NAME]-[phase]-[subphase]` or `lar:///ha.ka.ba/[NAME]-[phase]`.
 
-If no deeper child is intended, omit the `ala` line entirely.
+If the author intends no deeper child, omit the `ala` line entirely.
 
-If the only meaning available is "this block is `#foo`," do not add `<<~ ala lar:///ha.ka.ba/[current-path]#foo >>`; the `ahu #foo` opener already carries that identity.
+If the only available meaning reads "this block names `#foo`," do not add `<<~ ala lar:///ha.ka.ba/[current-path]#foo >>`; the `ahu #foo` opener already carries that identity.
 
 ### ala versus aka
 
-`ala` governs **walking**: following a declared path to a separately addressable loci if and when it exists. It does not inline content. Walking may be deferred until the reader or agent explicitly follows the link.
+`ala` governs **walking**: following a declared path to a separately addressable loci if and when it resolves. It does not inline content. Walking may wait until the reader or agent explicitly follows the link.
 
 `aka` governs **passive transclusion**: pulling named content into the current render inline. An `aka` that points at a nonexistent address degrades harder than an `ala` that does the same, because `aka` makes a render-time claim that the content will appear here.
 
-A sub-meme depth callout should always use `ala`, not `aka`, when the sub-meme may not yet exist. `aka` is reserved for content that is known to resolve at render time.
+A sub-meme depth callout should always use `ala`, not `aka`, when the sub-meme may not yet resolve. `aka` stays reserved for content known to resolve at render time.
 
 ### Graceful Degradation Kānāwai (law)
 
@@ -1062,7 +1063,7 @@ A parser or reader encountering a declared-unresolved `ala` address SHALL:
 3. Continue parsing the current meme without aborting.
 4. Preserve the declared address in the conformance report so that Aftermath may surface it as residue.
 
-A parser or reader encountering a broken `ala` toward a locus that once existed but was removed should surface the difference between declared-unresolved (never written) and retracted (written and removed). These differ in repair path.
+A parser or reader encountering a broken `ala` toward a locus that once resolved but later got removed should surface the difference between declared-unresolved (never written) and retracted (written and removed). These take different repair paths.
 
 ### Rating Persistence
 
@@ -1076,7 +1077,7 @@ Authors should not accumulate declared-unresolved addresses as a way to inflate 
 
 Deferred-resolution-ha holds the identity domain: what deferred resolution fundamentally governs and what the three resolution states distinctly mean.
 
-The core claim: resolution state is not a binary. A declared-unresolved address is categorically distinct from both a resolved one and an absent one. Flattening these into a binary present/absent collapses information the system needs to score and route forward pressure.
+The core claim: resolution state does not reduce to a binary. A declared-unresolved address remains categorically distinct from both a resolved one and an absent one. Flattening these into a binary present/absent collapses information the system needs to score and route forward pressure.
 
 <!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/meme-deferred-resolution-ha >> -->
 <<~/ahu >>
@@ -1098,7 +1099,7 @@ A compliant parser scans `ala` links in document order, attempts resolution, cla
 
 Deferred-resolution-ba governs authoring posture: how an author should hold declared-unresolved addresses in practice.
 
-Declare addresses intentionally. Retract addresses honestly when the sub-meme will not be written. Prefer a truthfully absent subloop over a declared address that will never resolve. Prefer a resolved depth callout over local prose whenever the sub-meme already exists.
+Declare addresses intentionally. Retract addresses honestly when the sub-meme will not get written. Prefer a truthfully absent subloop over a declared address that will never resolve. Prefer a resolved depth callout over local prose whenever the sub-meme already resolves.
 
 <!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/meme-deferred-resolution-ba >> -->
 <<~/ahu >>
@@ -1116,29 +1117,29 @@ Each entry names the lineage, its core principle, and what backlog pressure or e
 
 ---
 
-**XInclude (`xi:fallback`)** — W3C XML Inclusions define `<xi:include>` with an explicit `<xi:fallback>` child element. When the included document does not exist, the fallback content renders instead of aborting. Core principle: *caller declares both the happy path and the degraded path explicitly.* Extraction pressure: meme `ala` links could carry an optional inline fallback render target when the addressed sub-meme is absent.
+**XInclude (`xi:fallback`)** — W3C XML Inclusions define `<xi:include>` with an explicit `<xi:fallback>` child element. When the included document fails to resolve, the fallback content renders instead of aborting. Core principle: *caller declares both the happy path and the degraded path explicitly.* Extraction pressure: meme `ala` links could carry an optional inline fallback render target when the addressed sub-meme stays absent.
 
-**TiddlyWiki lazy loading and missing-tiddler indicator** — TiddlyWiki separates tiddler existence from tiddler content availability. A reference to a missing tiddler renders as a distinctively styled link (conventionally red or dashed) rather than as an error. Core principle: *broken references are a first-class display state, not a fault condition.* Extraction pressure: declared-unresolved `ala` addresses should surface with a distinct visual or textual marker in rendered output so authors can see gaps without reading raw source.
+**TiddlyWiki lazy loading and missing-tiddler indicator** — TiddlyWiki separates tiddler existence from tiddler content availability. A reference to a missing tiddler renders as a distinctively styled link (conventionally red or dashed) rather than as an error. Core principle: *broken references count as a first-class display state, not a fault condition.* Extraction pressure: declared-unresolved `ala` addresses should surface with a distinct visual or textual marker in rendered output so authors can see gaps without reading raw source.
 
-**CommonMark link reference degradation** — A CommonMark link reference definition that is referenced but not defined renders the full bracket text as literal. The document does not abort; the reference degrades gracefully. Core principle: *the absence of a definition is a recoverable parse state.* Extraction pressure: declared-unresolved sub-meme addresses should produce a parseable, quotable surface (the address itself) rather than nothing.
+**CommonMark link reference degradation** — A CommonMark link reference definition that gets referenced but not defined renders the full bracket text as literal. The document does not abort; the reference degrades gracefully. Core principle: *the absence of a definition marks a recoverable parse state.* Extraction pressure: declared-unresolved sub-meme addresses should produce a parseable, quotable surface (the address itself) rather than nothing.
 
-**HTML `loading="lazy"` and Intersection Observer** — Browsers defer image and iframe fetch until the element nears the viewport. Core principle: *load on demand, not on parse.* Extraction pressure: sub-meme content might be walked on agent demand rather than at initial parse, reducing load for large meme graphs. The three resolution states apply equally whether loading eagerly or lazily.
+**HTML `loading="lazy"` and Intersection Observer** — Browsers defer image and iframe fetch until the element nears the viewport. Core principle: *load on demand, not on parse.* Extraction pressure: sub-meme content might get walked on agent demand rather than at initial parse, reducing load for large meme graphs. The three resolution states apply equally whether loading eagerly or lazily.
 
-**Service Worker stale-while-revalidate** — A Service Worker may serve stale cached content immediately while fetching a fresh version in the background. Core principle: *availability and freshness are separable concerns; stale is better than absent.* Extraction pressure: a cached prior rendering of a sub-meme may serve as declared-unresolved fallback content while the current sub-meme is reauthored or refetched.
+**Service Worker stale-while-revalidate** — A Service Worker may serve stale cached content immediately while fetching a fresh version in the background. Core principle: *availability and freshness stay separable concerns; stale may outrank absent.* Extraction pressure: a cached prior rendering of a sub-meme may serve as declared-unresolved fallback content while the current sub-meme gets reauthored or refetched.
 
-**Org-mode `#+INCLUDE`** — Org-mode's include directive fails hard when the target file is absent (export errors). Its absence of graceful degradation is the negative prior art here: it shows why a law governing the three resolution states is necessary rather than relying on include-or-abort semantics.
+**Org-mode `#+INCLUDE`** — Org-mode's include directive fails hard when the target file stays absent (export errors). Its lack of graceful degradation serves as the negative prior art here: it shows why a law governing the three resolution states remains necessary rather than relying on include-or-abort semantics.
 
-**Quarto cross-references** — Quarto's `@ref` cross-reference syntax produces a broken-reference warning with the raw label string rendered in the document rather than aborting the build. Core principle: *cross-references degrade to their own declared label rather than producing silence.* Extraction pressure: the declared address itself is a valid degraded rendering.
+**Quarto cross-references** — Quarto's `@ref` cross-reference syntax produces a broken-reference warning with the raw label string rendered in the document rather than aborting the build. Core principle: *cross-references degrade to their own declared label rather than producing silence.* Extraction pressure: the declared address itself counts as a valid degraded rendering.
 
-**Roam Research block references** — Roam's block reference system (`((block-uid))`) renders a live transclusion when the block exists and a broken reference indicator when it does not. Users can see which references are unresolved without editing raw source. Core principle: *the reference graph is a live first-class artifact, not just a navigation convenience.* Extraction pressure: the memetic-wikitext `ala` / `aka` walk graph should be inspectable as a first-class product of the meme store, with resolution states queryable.
+**Roam Research block references** — Roam's block reference system (`((block-uid))`) renders a live transclusion when the block resolves and a broken reference indicator when it does not. Users can see which references remain unresolved without editing raw source. Core principle: *the reference graph counts as a live first-class artifact, not just a navigation convenience.* Extraction pressure: the memetic-wikitext `ala` / `aka` walk graph should stay inspectable as a first-class product of the meme store, with resolution states queryable.
 
-**ESM dynamic `import()`** — JavaScript's dynamic import returns a Promise that rejects if the module does not exist at resolution time. Core principle: *deferred resolution surfaces at call time, not at parse time.* Extraction pressure: `ala` walking can follow the same pattern — the walk is attempted at agent-traversal time, and the three resolution states are determined then, not during initial document parse.
+**ESM dynamic `import()`** — JavaScript's dynamic import returns a Promise that rejects if the module fails to resolve at resolution time. Core principle: *deferred resolution surfaces at call time, not at parse time.* Extraction pressure: `ala` walking can follow the same pattern — the walk gets attempted at agent-traversal time, and the three resolution states get determined then, not during initial document parse.
 
 ### Backlog from Research Foundation
 
 * Define a standard rendered marker for declared-unresolved `ala` addresses (extracts from TiddlyWiki missing-tiddler pattern).
 * Define an optional inline fallback block for `ala` addresses, analogous to `xi:fallback` (future grammar addition).
-* Specify that the meme-store walk graph should be inspectable as a queryable artifact (extracts from Roam Research principle).
+* Specify that the meme-store walk graph should remain inspectable as a queryable artifact (extracts from Roam Research principle).
 * Specify that sub-meme walking occurs at agent-traversal time, not initial parse (extracts from ESM dynamic import pattern).
 * Add explicit kānāwai (law) to guest-grammar for how hana guest grammars should handle deferred resolution within guest work.
 

@@ -407,21 +407,21 @@ A lawful root reading should treat `?` as a bounded declaration that semantic wo
 
 `?` should remain a core graph component rather than a local ornament.
 
-It names unbound uncertainty that may enter a local worksite, travel through nested sigil composition, and leave again without being laundered into false closure.
+It names unbound uncertainty that may enter a local worksite, travel through nested sigil composition, and leave again without laundering into false closure.
 
 ### Graph-Flow Kānāwai (law)
 
 When `?` appears in a lawful surface, the reader should ask three questions:
 
 * what remains unbound
-* which local act is carrying that unbound pressure
+* which local act carries that unbound pressure
 * where the residual uncertainty exits if full binding does not yet surface
 
 The root should therefore treat `?` as a directional semantic token, not merely as a missing-value mark.
 
 ### New Sigil Object Kānāwai (law)
 
-At document time, when a new nested Meme-type sigil entity is being authored before its binding fully settles, the canonical opener should take this form:
+At document time, when authors begin a new nested Meme-type sigil entity before its binding fully settles, the canonical opener should take this form:
 
 ```text
 <<~ ? -> KEYWORD ... >>
@@ -434,7 +434,7 @@ Examples:
 <<~ ? -> kahea lar:///ha.ka.ba/source >>
 ```
 
-In that pattern, `?` marks the sigil object as born under unbound uncertainty while `KEYWORD` still names the primitive act being attempted.
+In that pattern, `?` marks the sigil object under unbound uncertainty while `KEYWORD` still names the primitive act under attempt.
 
 The underlying keyword continues to govern local body shape, composition, and closer law.
 
@@ -520,11 +520,11 @@ This locus should define what kind of boundary object kapu names, how kapu trave
 
 Kapu should govern:
 
-* what may be traversed
-* what may be included
-* what may be invoked
-* what may be retained
-* what may be emitted
+* what traversal may reach
+* what inclusion may carry inward
+* what invocation may call
+* what retention may keep
+* what emission may send outward
 * what trust posture applies
 * what disclosure burden applies
 * what failure posture applies when boundary resolution remains incomplete
@@ -559,7 +559,7 @@ Deeper inheritance tables, enforcement behavior, and downstream mutation detail 
 
 ### Boundary Truth Kānāwai (law)
 
-An unresolved kapu should not silently pass as if permission had already surfaced.
+An unresolved kapu should not silently pass under a pretense of already-surfaced permission.
 
 When boundary status remains incomplete, the authoring surface should prefer explicit qualification, bounded uncertainty, degradation, or named failure posture over flattering completion.
 
@@ -680,7 +680,7 @@ A lawful boot surface should follow these principles:
 
 ### Operational Boot Reading
 
-At boot, a human or agent should be able to answer these questions in order:
+At boot, a human or agent should answer these questions in order:
 
 1. what meme entered here
 2. where canonical identity lives
@@ -711,7 +711,7 @@ Boot grammar should therefore treat metadata as a compact identity-bearing paylo
 
 ### Boot Sufficiency Reminder
 
-The boot grammar should be strong enough to support:
+Boot grammar should support:
 
 * one minimum document
 * one minimum anchored semantic worksite
@@ -950,7 +950,7 @@ A low `manao` meme reads as drifting, over-broad, or uncertain about what it wan
 
 A high `manaoio` meme reads as ready for real use, capable of lawful crossing into execution or deployment, and honest about its own completion status.
 
-A low `manaoio` meme reads as a sketch, a stub, or a declared intent that has not yet manifested into trustworthy form.
+A low `manaoio` meme reads as a sketch, a stub, or a declared intent still awaiting manifestation into trustworthy form.
 
 `manao` and `manaoio` should deepen into their own linked kānāwai (law) once `mana` stabilizes as a base metric. Until then, these fields should carry best-estimate values and remain explicit about their provisional status.
 

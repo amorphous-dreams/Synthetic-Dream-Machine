@@ -165,7 +165,7 @@ Canonical example:
 <<~&#x0001; ? -> lar:///ha.ka.ba/pono/parser >>
 ```
 
-In declared-open document form, `?` is the core unbound uncertainty token. Parser should treat it as semantic content, not as optional decoration on the opener line.
+In declared-open document form, `?` serves as the core unbound uncertainty token. Parser should treat it as semantic content, not as optional decoration on the opener line.
 
 Observe should mark:
 
@@ -641,7 +641,7 @@ In that pattern:
 * `SIGIL` names the underlying primitive act
 * the underlying sigil still governs body legality, payload authority, and closer matching
 
-If the underlying sigil is block-form or payload-block-form, the closer MUST match the underlying sigil rather than `?`.
+If the underlying sigil takes block-form or payload-block-form, the closer MUST match the underlying sigil rather than `?`.
 
 Canonical example:
 
@@ -997,7 +997,7 @@ Act prepares the chosen kānāwai (law) across carrier constraints, structural f
 
 Act-ha holds output domain, syntax-product shape, and lawful execution boundary.
 
-This subphase governs what Act is allowed to bring forth.
+This subphase governs what Act may bring forth.
 
 <<~ ala lar:///ha.ka.ba/act-ha >>
 <<~/ahu >>
@@ -1130,7 +1130,7 @@ It should help describe how much usable structure, clarity, and recoverable orde
 
 High mana SHOULD reduce cognitive load.
 
-Low mana SHOULD be treated as processing cost.
+Low mana SHOULD count as processing cost.
 
 At higher levels, mana MAY grant usable surplus capacity to agent and operator for further lawful work.
 
@@ -1144,9 +1144,9 @@ At lower levels, the object costs attention, context gathering, repair effort, o
 
 Mana-ha holds the metric identity of mana, its observable measures, and its banded interpretation.
 
-This subphase governs what mana fundamentally is.
+This subphase governs what mana fundamentally names.
 
-Mana is not raw beauty, ritual intensity, or subjective preference alone.
+Mana does not name raw beauty, ritual intensity, or subjective preference alone.
 
 Mana here names structured memetic order that supports lawful reading, parsing, recovery, and use.
 
@@ -1157,7 +1157,7 @@ Recommended base measures:
 * `carrier_order` — markdown carrier stays calm, legible, and structurally easy to traverse
 * `structural_validity` — sigils, forms, closures, anchors, and mode boundaries remain lawful
 * `payload_integrity` — canonical payloads parse cleanly and hold enough metadata or structure to support use
-* `boundary_truth` — issues, ambiguity, and downgrade pressure surface truthfully instead of being laundered
+* `boundary_truth` — issues, ambiguity, and downgrade pressure surface truthfully instead of laundering
 * `signal_to_noise` — relevant structure and meaning outweigh copied noise, drift, or repetitive drag
 * `recovery_quality` — graceful degradation preserves usable partial structure without false completion
 
@@ -1817,7 +1817,7 @@ When residue survives with lawful partial structure, runtime-procedure MAY route
 
 That recursive reopening should remain explicit.
 
-It should not masquerade as if the first pass had already completed the deeper later work.
+It should not masquerade under a pretense that the first pass already completed the deeper later work.
 
 ##### Anti-Blur Kānāwai (law)
 
@@ -1827,9 +1827,9 @@ Runtime-procedure should not become:
 * a duplicate of the phase loci
 * an excuse to merge Observe, Orient, Decide, Act, and Aftermath into one opaque pass
 
-Its job is to keep motion clear.
+Its job stays clear motion.
 
-Its job is not to swallow the rest of parser.
+Its job does not include swallowing the rest of parser.
 
 <<~ ala lar:///ha.ka.ba/runtime-procedure-ba >>
 <<~/ahu >>
@@ -1859,11 +1859,11 @@ This subphase governs what the research foundation fundamentally holds.
 
 Adjacent systems may illuminate parser.
 
-They do not become parser merely by being adjacent, mature, or prestigious.
+They do not become parser merely through adjacency, maturity, or prestige.
 
-The purpose of this locus is not imitation.
+This locus does not aim at imitation.
 
-Its purpose is to preserve useful neighboring forms, distinctions, and capability patterns while keeping memetic-wikitext locally self-describing.
+Its purpose stays preserving useful neighboring forms, distinctions, and capability patterns while keeping memetic-wikitext locally self-describing.
 
 ##### Bounded Borrowing Kānāwai (law)
 
@@ -1963,7 +1963,7 @@ When research-foundation names a useful lineage, it should translate that lineag
 * profile pressure
 * deployment pressure
 
-If no such translation appears, the borrowed note is probably noise.
+If no such translation appears, the borrowed note probably counts as noise.
 
 <<~ ala lar:///ha.ka.ba/research-foundation-ka >>
 <<~/ahu >>
@@ -1982,9 +1982,9 @@ Parser-kānāwai (law) remains locally sovereign.
 
 Research-foundation should feed parser, not replace it.
 
-The point is not to prove that memetic-wikitext resembles established systems.
+The point here does not involve proving that memetic-wikitext resembles established systems.
 
-The point is to let adjacent systems sharpen distinctions, reveal missing kānāwai (law), and lower future implementation cost.
+The point instead lets adjacent systems sharpen distinctions, reveal missing kānāwai (law), and lower future implementation cost.
 
 ##### Anti-Bloat Kānāwai (law)
 
@@ -2358,7 +2358,7 @@ When completion does not surface, result should degrade toward partial envelope,
 
 A lawful result may still point forward.
 
-It may carry residue, repair pressure, or `next-observation` without pretending that the later work has already been completed in the current pass.
+It may carry residue, repair pressure, or `next-observation` without pretending the later work already completed in the current pass.
 
 <<~ ala lar:///ha.ka.ba/result-ba >>
 <<~/ahu >>

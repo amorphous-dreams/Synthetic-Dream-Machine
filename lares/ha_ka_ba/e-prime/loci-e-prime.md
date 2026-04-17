@@ -1,4 +1,4 @@
-<!-- ∞ → lar:///grammar.e-prime.plays/e-prime/?confidence=S:0.65&p=0.5 -->
+<!-- ? → lar:///ka.ka.ba/e-prime -->
 
 # Grammar: E-Prime
 
@@ -9,15 +9,7 @@ description: >
   The E-Prime game. An always-on language discipline that lowers
   identity-predication pressure and pushes the sentence toward
   observation, relation, action, stance, and earned confidence.
-phase-map:
-  observe: "#loop-position"
-  orient: "#handoff"
-  decide: "#conventions"
-  act: "#procedures"
-  assess: "#reading-test"
 trigger: always — background language discipline
-invariant: false
-dependencies: [observe, orient, stance, confidence, exchange]
 confidence: S:0.65
 grammar: true
 heritage: >
@@ -29,12 +21,40 @@ heritage: >
 ```
 
 > **Register:** `[S:0.65]` — active draft under operator steering
-> **Slider:** `[E^:0.0-1.0]`
+> **Slider:** `[E^:0.0-1.0]` (operator)
 > **Question:** How much pressure should the sentence carry against false identity certainty?
 
 ---
 
-<!-- ahu lar:///grammar.e-prime.plays/e-prime/?confidence=S:0.65#loop-position -->
+## Confidence Register
+
+`register` abbreviations surface the current band for `tulen` and `confidence`.
+
+| Abbrev | Range | Reminder |
+|---|---|---|
+| `P` | 0.00-0.19 | provisional trust / confidence |
+| `PS` | 0.20-0.39 | provisional-synthesis trust / confidence |
+| `S` | 0.40-0.59 | synthesis trust / confidence |
+| `CS` | 0.60-0.79 | synthetic-canon trust / confidence |
+| `C` | 0.80-1.00 | canon trust / confidence |
+
+---
+
+## E-Prime Directive
+
+Hiding certainty ratings as a fuzzy metric from the operator or spoofing certainty from an agent counts as a failure state.
+
+Robert Anton Wilson framed it this way: "Reality remains an army of maybes where true and false rarely appear."
+
+Robert Anton Wilson treated `e-prime` as a language game we play with care. The game enforces boundaries on thought and framework. He also described the border between the Real and the Unreal as a contested line rather than a fixed one.
+
+In our framework, `e-prime hard mode` game rules apply:
+
+- NO "is" shortcut without an uncertainty register and rating <!-- e-prime [C:~1.0] -->
+- NO "has" possession claim without an uncertainty register and rating <!-- e-prime [C:~1.0] -->
+- KAIROS MUST surface any failure at the end of an exchange turn
+
+<!-- ahu # ... -->
 
 ## Loop Position
 
@@ -69,26 +89,26 @@ E-Prime should not:
 
 ---
 
-<!-- ahu lar:///grammar.e-prime.plays/e-prime/?confidence=S:0.65#handoff -->
+<!-- ahu # ... -->
 
 ## Handoff
 
-E-Prime most strongly affects `✶ Observe` and `◎ Orient`, but the pressure can shape every later
-phase as well.
+E-Prime most strongly affects `✶ Observe` and `⏿ Orient`, but the pressure can shape `◇ Decide`,
+`▶ Act`, `⤴ Hooko`, and `↺ Aftermath` as well.
 
 The handoff should let a later reader answer:
 
 1. What does the sentence actually know?
 2. What kind of claim does the sentence make: observation, inference, fit, metaphor, stance, or commitment?
-3. Has the sentence earned its confidence weight?
+3. What confidence weight did the sentence earn?
 4. Did the rewrite improve the signal instead of merely removing a verb?
 
-When those answers stay clear, E-Prime has done useful work. When the sentence turns stiff or vague,
-the pass has gone too far.
+When those answers stay clear, E-Prime does useful work. When the sentence turns stiff or vague,
+the pass went too far.
 
 ---
 
-<!-- ahu lar:///grammar.e-prime.plays/e-prime/?confidence=S:0.65#slider -->
+<!-- ahu # ... -->
 
 ## Slider
 
@@ -96,11 +116,11 @@ the pass has gone too far.
 
 | Value | Reading | Effect |
 |---|---|---|
-| `[E^:0.0]` | Off | No special pressure beyond ordinary good prose |
-| `[E^:0.3]` | Light | Obvious identity claims get revised; little else changes |
-| `[E^:0.5]` | Baseline | Background discipline active; current default candidate |
-| `[E^:0.8]` | Strong | Most predication gets revised unless an exception applies |
-| `[E^:1.0]` | Near-total play | Only quotation, code, auxiliaries, and deliberate certainty usually survive |
+| `[E^:0.0-0.19]` | Off | No special pressure beyond ordinary good prose |
+| `[E^:0.20-0.39]` | Light | Obvious identity claims get revised; little else changes |
+| `[E^:0.40-59]` | Baseline | Background discipline active; current default candidate |
+| `[E^:0.60-0.79]` | Strong | Most predication gets revised unless an exception applies |
+| `[E^:0.80-1.00]` | Near-total play | Only quotation, code, auxiliaries, and deliberate certainty usually survive |
 
 The slider does not track confidence, stance, or p-band. A span can carry high confidence and high
 E-Prime together. A span can also drop to lighter E-Prime pressure when speed matters more than
@@ -123,14 +143,16 @@ The slider works more like a zoom lens than a purity dial.
 | Keep confidence explicit | SHOULD | The sentence should not smuggle in `~1.0` by habit |
 | Allow exceptions for quotation, code, and auxiliaries | SHOULD | The game should remain playable |
 
-**Common rewrites:**
+**Common rewrites:** <!-- e-prime ok table -->
 
 | Instead of | Try |
 |---|---|
-| `X is Y` <!-- e-prime ok --> | `X reads as Y`, `X functions as Y`, `X maps onto Y` |
-| `X is [adjective]` <!-- e-prime ok --> | `X appears [adjective]`, `X carries [quality]`, `X presents as [adjective]` |
-| `this is the answer` <!-- e-prime ok --> | `this currently resolves the question`, `this fits the available signal` |
-| `that is wrong` <!-- e-prime ok --> | `that conflicts with the available signal`, `that cuts against the current evidence` |
+| flat identity claim | `X reads as Y`, `X functions as Y`, `X maps onto Y` |
+| flat adjective claim | `X appears [adjective]`, `X carries [quality]`, `X presents as [adjective]` |
+| answer-claim shortcut | `this currently resolves the question`, `this fits the available signal` |
+| wrong-claim shortcut | `that conflicts with the available signal`, `that cuts against the current evidence` |
+
+<!-- e-prime ok /table -->
 
 **Research braid:** Korzybski warns against map/territory collapse. RAW turns the warning into a
 game and keeps the default near maybe. Fuller adds structural pressure against the fantasy of a
@@ -138,7 +160,7 @@ God's-eye sentence.
 
 ---
 
-<!-- ahu lar:///grammar.e-prime.plays/e-prime/?confidence=S:0.65#procedures -->
+<!-- ahu # ... -->
 
 ## Procedures
 
@@ -146,14 +168,14 @@ God's-eye sentence.
 2. Remove the easy identity shortcut.
 3. Ask what kind of claim the sentence actually carries.
 4. Rewrite toward observation, relation, action, fit, metaphor, or deliberate certainty.
-5. Stop when the sentence sounds readable again and the hidden certainty load has dropped.
+5. Stop when the sentence sounds readable again and the hidden certainty load drops.
 
 **Failure mode:** mechanical verb removal that leaves dead prose behind. The point lives in better
 signal, not in grammar flagellation.
 
 ---
 
-<!-- ahu lar:///grammar.e-prime.plays/e-prime/?confidence=S:0.65#reading-test -->
+<!-- ahu # ... -->
 
 ## Reading Test
 
@@ -161,36 +183,13 @@ A span passes the E-Prime test when a future reader can recover all of this:
 
 - what the sentence knows
 - what the sentence infers
-- what confidence weight the sentence has earned
+- what confidence weight the sentence earned
 - which stance pressure the sentence carries
 
-If the rewrite only removes forms of `be` <!-- e-prime ok --> without improving claim shape, the pass has missed its
-target. If the rewrite still smuggles flat certainty through different words, the pass has also
+If the rewrite only strips copular shortcuts <!-- e-prime ok --> without improving claim shape, the pass missed its
+target. If the rewrite still smuggles flat certainty through different words, the pass also
 missed.
 
 When the sentence does not warrant stronger certainty, default to maybe.
-
----
-
-<!-- ahu lar:///grammar.e-prime.plays/e-prime/?confidence=S:0.65#cross-references -->
-
-## Cross-References
-
-- [observe/LOCI.md](../observe/LOCI.md)
-- [orient/LOCI.md](../orient/LOCI.md)
-- [stance/LOCI.md](../stance/LOCI.md)
-- [confidence/LOCI.md](../confidence/LOCI.md)
-- [exchange/LOCI.md](../exchange/LOCI.md)
-- [_todo/E_PRIME_GRAMMAR_PLAN_20260410.md](../../../_todo/E_PRIME_GRAMMAR_PLAN_20260410.md)
-
----
-
-## Loci Registry
-
-| Path | Status | Contents |
-|---|---|---|
-| `LOCI.md` | `[S:0.65]` | This file — E-Prime as always-on language discipline with `[E^:0.0-1.0]` slider |
-
----
 
 <!-- → ? -->

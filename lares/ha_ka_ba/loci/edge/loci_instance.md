@@ -124,8 +124,8 @@ During migration, `template` may remain absent. The instance should still say en
 ### Instance State
 
 - `declared` means the edge appears in authored form.
-- `bound` means the edge has all required fields for its family.
-- `observed` means a runtime or tool pass has seen the edge in action.
+- `bound` counts the edge as carrying all required fields for its family.
+- `observed` marks a runtime or tool pass that saw the edge in action.
 - `stale` means the instance no longer matches the current carrier context.
 
 `observed` does not replace trace law. It only marks that some observation happened.

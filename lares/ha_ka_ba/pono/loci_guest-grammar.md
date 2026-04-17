@@ -247,11 +247,11 @@ This ahu keeps the contract readable while later execution behavior deepens outw
 
 `hana` as a root primitive invites "work" in the context it.
 
-`hana` MAY also serves as the admitted guest-work sigil keyword.
+`hana` MAY also function as the admitted guest-work sigil keyword.
 
 ### Canonical Form
 
-`hana` SHALL be block-only in canonical form.
+`hana` MUST remain block-only in canonical form.
 
 A canonical `hana` block MAY begin with one fenced `toml` priming payload.
 
@@ -527,7 +527,7 @@ A lawful guest-grammar envelope may carry:
 * one lowering handoff sketch
 * one verification seed family
 
-This meme should not claim full imported-grammar completeness when only the host admission contract has stabilized.
+This meme should not claim full imported-grammar completeness when only the host admission contract stands stable.
 
 <<~/ahu >>
 

@@ -98,13 +98,13 @@ The `guest-grammar` and `x-tiddlywiki-filter` kānāwai (law) memes carry a cano
 
 A **loci meme** occupies the stable `lar:///ha.ka.ba/*` tagspace with a locked address, a stable `lar:` URI. Loci memes carry all five canonical rating fields in `#iam` — `tulen`, `confidence`, `mana`, `manao`, and `manaoio` — grouped directly below `version`, plus the adjacent `register` agent-operator surface-texture key below `meme_type` and immediately above `structure`. They reach prospective-canon status (`[CS]`) before an admin or operator may move them to `[C]` canon status. Other meme types may drift their path-root address (what3words-style path root section). The loci kānāwai (law) governs `lar:` URI routing derivation, carrier coherence, address stability, canon promotion, and the research roadmap toward live MCP-backed resolution.
 
-**Lifecycle Note:** All meme law in this system now follows the five-bucket lifecycle: noise → data → meme → typed meme → canon typed meme. Here `data` means structured language an AI can use without the memetic wrappers. Types are composable rather than mutually exclusive, and `loci` names the stable-address branch for carriers under `lar:///ha.ka.ba/**`. See `lar:///ha.ka.ba/loci#promotion-path` and `lar:///ha.ka.ba/meme#rating-targets` for canonical lifecycle and rating details.
+**Lifecycle Note:** All meme law in this system now follows the five-bucket lifecycle: noise → data → meme → typed meme → canon typed meme. Here `data` names structured language an AI can use without the memetic wrappers. Types remain composable rather than mutually exclusive, and `loci` names the stable-address branch for carriers under `lar:///ha.ka.ba/**`. See `lar:///ha.ka.ba/loci#promotion-path` and `lar:///ha.ka.ba/meme#rating-targets` for canonical lifecycle and rating details.
 
 See `lar:///ha.ka.ba/loci#derivation-algorithm` for the current local path-derivation procedure and `lar:///ha.ka.ba/loci#mcp-resolution-roadmap` for the open resolver roadmap. See `lar:///ha.ka.ba/pono/memetic-wikitext#meme-ratings` for the full ontological account of the five canonical rating fields plus `register` surface texture, and `lar:///ha.ka.ba/pono/memetic-wikitext#meme-confidence` for the five-band confidence scale.
 
-A kānāwai (law) meme is active when it carries `enacts = true` in its `#iam` metadata block.
+A kānāwai (law) meme counts as active when it carries `enacts = true` in its `#iam` metadata block.
 
-A kānāwai (law) meme is registered here when it depends on `lar:///ha.ka.ba/pono/memetic-wikitext` and carries a stable address.
+A kānāwai (law) meme counts as registered here when it depends on `lar:///ha.ka.ba/pono/memetic-wikitext` and carries a stable address.
 
 <<~ ahu #law-index-ha >>
 
@@ -161,7 +161,7 @@ First skill package candidates, in priority order:
 
 Skill-index-ha holds package identity and coverage scope.
 
-This subphase governs what a skill package must declare to be registered here.
+This subphase governs what a skill package must declare for registration here.
 
 <<~/ahu >>
 

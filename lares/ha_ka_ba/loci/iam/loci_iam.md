@@ -65,7 +65,7 @@ This meme freezes the surviving field surface for live carriers. It asks each fi
 
 This meme does not solve weak metadata by adding new buckets. It sharpens the surviving buckets and lets informative weakness remain visible.
 
-**Lifecycle Note:** The five-bucket lifecycle (noise → data → meme → typed meme → canon typed meme) is canonical for all meme law. Here `data` means structured language an AI can use without the memetic wrappers. This law governs the field set, not the lifecycle stages themselves.
+**Lifecycle Note:** The five-bucket lifecycle (noise → data → meme → typed meme → canon typed meme) remains canonical for all meme law. Here `data` names structured language an AI can use without the memetic wrappers. This law governs the field set, not the lifecycle stages themselves.
 
 <<~ ala lar:///ha.ka.ba/loci/iam >>
 
@@ -109,7 +109,7 @@ The first collision cluster sits in flow:
 - `receives_state`
 - `emits_state`
 
-Observe should keep those distinct only while the block still teaches a real difference. Once two or more fields point at the same movement, the cluster has begun to lie.
+Observe should keep those distinct only while the block still teaches a real difference. Once two or more fields point at the same movement, the cluster begins to lie.
 
 <<~/ahu >>
 
@@ -210,7 +210,7 @@ Top-level `#iam` should cut these keys from live carriers unless a later law re-
 - `emits_state`
 - `confidence_band`
 
-Keep weakness visible when a carrier has not yet migrated into full alignment. Do not widen the schema to hide that seam.
+Keep weakness visible while a carrier still sits short of full alignment. Do not widen the schema to hide that seam.
 
 <<~/ahu >>
 
