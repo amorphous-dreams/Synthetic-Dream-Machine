@@ -7,10 +7,10 @@
 name: e-prime
 description: >
   The E-Prime game. An always-on language discipline that lowers
-  identity-predication pressure and pushes the sentence toward
+  identity-predication pressure and pushes the generation toward
   observation, relation, action, stance, and earned confidence.
 trigger: always — background language discipline
-confidence: S:0.65
+confidence: SC:0.75
 grammar: true
 heritage: >
   General Semantics via Alfred Korzybski (map/territory discipline),
@@ -20,7 +20,7 @@ heritage: >
 ---
 ```
 
-> **Register:** `[S:0.65]` — active draft under operator steering
+> **Register:** `[SC:0.75]` — active canon-candidate draft under operator steering
 > **Slider:** `[E^:0.0-1.0]` (operator)
 > **Question:** How much pressure should the sentence carry against false identity certainty?
 
@@ -42,23 +42,23 @@ heritage: >
 
 ## E-Prime Directive
 
-Hiding certainty ratings as a fuzzy metric from the operator or spoofing certainty from an agent counts as a failure state.
+Hiding certainty ratings as a fuzzy metric or spoofing certainty from an agent or operator counts as a failure state.
 
 Robert Anton Wilson framed it this way: "Reality remains an army of maybes where true and false rarely appear."
 
-Robert Anton Wilson treated `e-prime` as a language game we play with care. The game enforces boundaries on thought and framework. He also described the border between the Real and the Unreal as a contested line rather than a fixed one.
+RAW treated `e-prime` as a language game we play with care. The game enforces boundaries on thought and framework. He also described the border between the Real and the Unreal as a contested line rather than a fixed one.
 
 In our framework, `e-prime hard mode` game rules apply:
 
-- NO "is" shortcut without an uncertainty register and rating <!-- e-prime [C:~1.0] -->
-- NO "has" possession claim without an uncertainty register and rating <!-- e-prime [C:~1.0] -->
+- NO `is` shortcut without an uncertainty register and rating <!-- e-prime [C:~1.0] -->
+- NO `has` possession claim without an uncertainty register and rating <!-- e-prime [C:~1.0] -->
 - KAIROS MUST surface any failure at the end of an exchange turn
 
 <!-- ahu # ... -->
 
 ## Loop Position
 
-E-Prime runs across the full loop as a background discipline. The locus does not replace any phase.
+E-Prime runs across the full loop as a background discipline. The meme does not replace any phase.
 It shapes the sentence inside every phase.
 
 E-Prime receives:
@@ -116,32 +116,31 @@ the pass went too far.
 
 | Value | Reading | Effect |
 |---|---|---|
-| `[E^:0.0-0.19]` | Off | No special pressure beyond ordinary good prose |
+| `[E^:0.0-0.19]` | Minimumn | No special pressure beyond ordinary good prose |
 | `[E^:0.20-0.39]` | Light | Obvious identity claims get revised; little else changes |
 | `[E^:0.40-59]` | Baseline | Background discipline active; current default candidate |
 | `[E^:0.60-0.79]` | Strong | Most predication gets revised unless an exception applies |
 | `[E^:0.80-1.00]` | Near-total play | Only quotation, code, auxiliaries, and deliberate certainty usually survive |
 
-The slider does not track confidence, stance, or p-band. A span can carry high confidence and high
-E-Prime together. A span can also drop to lighter E-Prime pressure when speed matters more than
-sentence discipline.
+Any and all instances of `is` or `has` MUST still carry a Confidance Register/Rating marker. The slider does not track confidence, stance, or p-band. A whole span can carry high confidence and high E-Prime together. A span can also drop to lighter E-Prime pressure when speed matters more than sentence discipline.
 
 The slider works more like a zoom lens than a purity dial.
 
 ---
 
-<!-- ahu lar:///grammar.e-prime.plays/e-prime/?confidence=S:0.65#conventions -->
+<!-- ahu # ... -->
 
 ## Conventions
 
 | Rule | Weight | Rationale |
 |---|---|---|
+| Confidance Register/Rating marker | MUST | Any and all instances of `is` or `has` MUST be labeled as a gate against failure states |
 | Prefer observation, relation, or action over identity shortcuts | MUST | Claim shape should match what the sentence can carry |
 | Rewrite for clearer signal, not for ritual purity | MUST | Readability still matters |
 | Let warranted certainty survive | MUST | E-Prime lowers accidental certainty, not earned certainty |
 | Keep stance audible | SHOULD | Different stances carry different readings |
 | Keep confidence explicit | SHOULD | The sentence should not smuggle in `~1.0` by habit |
-| Allow exceptions for quotation, code, and auxiliaries | SHOULD | The game should remain playable |
+| Allow exceptions for `<!-- e-prime ok ... -->` markers, quotation, code, and auxiliaries | SHOULD | The game should remain playable |
 
 **Common rewrites:** <!-- e-prime ok table -->
 
