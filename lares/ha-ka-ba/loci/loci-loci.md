@@ -219,18 +219,19 @@ Given: lar_uri (string), meme_type (string | unknown)
 5. Look up meme-type prefix:
      When meme_type known:
        prefix = meme_type_prefix_table[meme_type]
-       e.g. "loci" → "loci_"
+       e.g. "loci" → "loci-"
      When meme_type unknown:
        prefix = nil → classification becomes DECLARED-UNRESOLVED
        emit note: "meme_type unknown; local derivation cannot continue"
        stop local resolution here
 
 6. Derive candidate file_path:
+     filename_stem = name.replace("_", "-")
      If subpath == "":
-       candidate = path_root + "/" + prefix + name + ".md"
+       candidate = path_root + "/" + prefix + filename_stem + ".md"
        e.g. "ha-ka-ba/loci-meme.md"   (pre-migration candidate for `lar:///ha.ka.ba/meme`)
      Else:
-       candidate = path_root + "/" + subpath + "/" + prefix + name + ".md"
+       candidate = path_root + "/" + subpath + "/" + prefix + filename_stem + ".md"
        e.g. "ha-ka-ba/pono/loci-parser.md"
 
 7. Derive full repo path:
@@ -270,10 +271,10 @@ The prefix table fixes the inference gap. Before this table got declared, agents
 
 | `meme_type` value | file prefix | example file | example lar: URI |
 |---|---|---|---|
-| `loci` | `loci_` | `loci-parser.md` | `lar:///ha.ka.ba/pono/parser` |
-| `alpha` | `alpha_` | `alpha-test-prompt-00001.md` | `lar:///ha.ka.ba/alpha/test-prompt-00001` |
-| `grammar` | `grammar_` | `grammar-x-tiddlywiki-filter.md` | `lar:///ha.ka.ba/grammars/x-tiddlywiki-filter` |
-| `skill` | `skill_` | `skill-template.md` | `lar:///ha.ka.ba/pono/skill-template` |
+| `loci` | `loci-` | `loci-parser.md` | `lar:///ha.ka.ba/pono/parser` |
+| `alpha` | `alpha-` | `alpha-test-prompt-00001.md` | `lar:///ha.ka.ba/alpha/test-prompt-00001` |
+| `grammar` | `grammar-` | `grammar-x-tiddlywiki-filter.md` | `lar:///ha.ka.ba/grammars/x-tiddlywiki-filter` |
+| `skill` | `skill-` | `skill-template.md` | `lar:///ha.ka.ba/pono/skill-template` |
 
 When a new `meme_type` enters use, an entry MUST join this table before any file of that type joins the registry. A `meme_type` value with no entry in this table counts as an error in the meme definition, not a routing ambiguity.
 

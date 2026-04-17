@@ -114,7 +114,7 @@ Observe should not:
 
 #### Observe / ha
 
-Observe-ha holds the intake identity: `file_path` counts as a path string, not a URI and not a name. Its value begins with the path root segment (`ha-ka-ba/`) and ends with a filename (`meme_type.name.md` or similar). Anything outside that shape counts as malformed; capture it as written for Orient to classify.
+Observe-ha holds the intake identity: `file_path` counts as a path string, not a URI and not a name. Its value begins with the path root segment (`ha-ka-ba/`) and ends with a filename (`<meme-type>-<name>.md` or similar). Anything outside that shape counts as malformed; capture it as written for Orient to classify.
 
 <!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/loci/iam/file_path-observe-ha >> -->
 <<~/ahu >>
@@ -166,7 +166,7 @@ Orient classifies the captured `file_path` value and checks it against the docum
 #### Flat-file form
 
 ```
-ha-ka-ba/[optional/subpath/]meme_type_name.md
+ha-ka-ba/[optional/subpath/]<meme-type>-<name>.md
 ```
 
 Examples:
@@ -183,7 +183,7 @@ The meme file sits at `install_root + file_path` as a flat file alongside siblin
 #### Path-directory form
 
 ```
-ha-ka-ba/[optional/subpath/]name/meme_type_name.md
+ha-ka-ba/[optional/subpath/]name/<meme-type>-<name>.md
 ```
 
 Examples:
@@ -193,14 +193,15 @@ ha-ka-ba/meme/loci-meme.md
 ha-ka-ba/pono/parser/loci-parser.md   ← (future, if parser migrates)
 ```
 
-In this form, the meme lives inside its own directory (`name/`), which may hold child memes, child meme directories, and sidecar files alongside the root meme file. The directory name matches the meme `name` field. The root meme file inside that directory keeps the same `meme_type_name.md` filename.
+In this form, the meme lives inside its own directory (`name/`), which may hold child memes, child meme directories, and sidecar files alongside the root meme file. The directory name matches the meme `name` field. The root meme file inside that directory keeps the same `<meme-type>-<name>.md` filename.
 
 #### Filename component rule
 
-In both forms, the filename component MUST follow the pattern `meme_type_name.md`:
+In both forms, the filename component MUST follow the pattern `<meme-type>-<name>.md`:
 - `meme_type` matches the `meme_type` field in `#iam`
 - `name` matches the `name` field in `#iam`
-- `meme_type` and `name` join through `_`
+- both components render into kebab-case on the filename surface
+- `meme_type` and `name` join through `-`
 - extension always uses `.md`
 
 A filename like `loci-file-path.md` counts as correct for `meme_type = "loci"` and `name = "file_path"`.
@@ -225,7 +226,7 @@ Given a `file_path` value, derive the expected `lar:` URI as follows:
      rest = path.removePrefix("ha-ka-ba/")
      e.g. "loci/iam/loci-file-path.md" or "pono/loci-parser.md"
 
-3. Strip the meme_type_name.md filename:
+3. Strip the kebab-case filename:
      filename = rest.split("/").last
      subpath  = rest.split("/")[0..-2].join("/")
      e.g. filename = "loci-file-path.md", subpath = "loci/iam"
@@ -266,7 +267,7 @@ Orient-ha holds the classification domain: what form and agreement mean as the f
 
 #### Orient / ka
 
-Orient-ka governs the classification and agreement check procedure in order: (1) classify form by testing whether the path contains a `name/meme_type.name.md` segment; (2) verify the filename component matches `meme_type.name.md`; (3) run the URI agreement derivation; (4) assess migration state. All four checks run independently — a form-classification result should not suppress the agreement check.
+Orient-ka governs the classification and agreement check procedure in order: (1) classify form by testing whether the path contains a `name/<meme-type>-<name>.md` segment; (2) verify the filename component matches `<meme-type>-<name>.md`; (3) run the URI agreement derivation; (4) assess migration state. All four checks run independently — a form-classification result should not suppress the agreement check.
 
 <!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/loci/iam/file_path-orient-ka >> -->
 <<~/ahu >>
@@ -309,7 +310,7 @@ A meme migrates from flat-file to path-directory form when it acquires child mem
 **Migration steps (in order):**
 
 1. **Create the directory** at `install_root + ha-ka-ba/name/`
-2. **Move the file** via `git mv` from `meme_type.name.md` into `name/meme_type.name.md`
+2. **Move the file** via `git mv` from `<meme-type>-<name>.md` into `name/<meme-type>-<name>.md`
 3. **Update `file_path`** in `#iam` from the flat-file form to the path-directory form
 4. **Verify URI agreement** — the document opener `lar:` URI must not change
 5. **Record resolution tension honestly** — local derivation may now miss until a live MCP resolver exists
@@ -375,8 +376,8 @@ Act prepares the conformance report and any repair or migration guidance for Hoo
 
 | Verdict | Repair |
 |---|---|
-| `file_path` absent | Add `file_path = "ha-ka-ba/[subpath/]meme_type.name.md"` as second field in `#iam`, immediately after `name` |
-| Filename component wrong | Rename file and update `file_path` to `meme_type.name.md` pattern |
+| `file_path` absent | Add `file_path = "ha-ka-ba/[subpath/]<meme-type>-<name>.md"` as second field in `#iam`, immediately after `name` |
+| Filename component wrong | Rename file and update `file_path` to `<meme-type>-<name>.md` pattern |
 | URI agreement violation | Derive expected `lar:` URI from `file_path` using the reversed derivation; update the document opener to match |
 | Transitional (file not moved) | Complete `git mv` to move file to path declared in `file_path` |
 | Local derivation miss after migration | Keep opener and `file_path` coherent; surface MCP-resolution backlog rather than fabricating a registry |
@@ -535,7 +536,7 @@ file_path closes the key-authority stream here.
 A lawful file_path envelope from this locus may carry:
 
 * the form verdict (flat-file, path-directory, malformed, or transitional)
-* the filename component verdict (meme_type.name.md pattern satisfied or violated)
+* the filename component verdict (`<meme-type>-<name>.md` pattern satisfied or violated)
 * the URI agreement verdict (agreement holds or named divergence)
 * the migration posture (not migrating, staged, transitional, or complete)
 * staged migration steps for Hooko during ongoing migration

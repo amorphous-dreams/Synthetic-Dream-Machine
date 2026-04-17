@@ -233,8 +233,8 @@ Before a dedicated MCP server exists, a skill runs as one of:
 
 ```python
 #!/usr/bin/env python3
-"""skill_check.py — pre-MCP conformance checker for memetic-wikitext typed memes.
-Usage: python skill_check.py <target_file> [--invariants R1,R3,R6]
+"""skill-check.py — pre-MCP conformance checker for memetic-wikitext typed memes.
+Usage: python skill-check.py <target_file> [--invariants R1,R3,R6]
 Output: TOML result envelope on stdout
 """
 import re
@@ -350,7 +350,7 @@ if __name__ == "__main__":
 **Invocation from skill body (agent-native):**
 
 ```bash
-python3 lares/ha-ka-ba/pono/scripts/skill_check.py lares/ha-ka-ba/meme/loci-meme.md
+python3 lares/ha-ka-ba/pono/scripts/skill-check.py lares/ha-ka-ba/meme/loci-meme.md
 ```
 
 **Library choices:**
@@ -524,7 +524,7 @@ Post-MCP-ha holds the MCP identity domain: what the MCP server counts as in this
 
 #### Post-MCP / ka
 
-Post-MCP-ka governs the migration procedure. Do not migrate to MCP before Phase 1 tools exist and at least one real skill package (e.g. `skill_parser.md`) receives validation against real memes. Migration before validation produces MCP tools that go wrong in ways the tool surface hides. Validate the invariant logic first in CLI or agent-native form, then lift into MCP.
+Post-MCP-ka governs the migration procedure. Do not migrate to MCP before Phase 1 tools exist and at least one real skill package (e.g. `skill-parser.md`) receives validation against real memes. Migration before validation produces MCP tools that go wrong in ways the tool surface hides. Validate the invariant logic first in CLI or agent-native form, then lift into MCP.
 
 <!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/skill-template-post-mcp-ka >> -->
 <<~/ahu >>

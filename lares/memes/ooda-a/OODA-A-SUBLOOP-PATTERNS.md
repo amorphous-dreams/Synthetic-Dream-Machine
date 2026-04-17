@@ -46,5 +46,5 @@ This sidecar file enumerates enforceable sub-loop patterns and architectural inv
 
 ---
 
-**Location:** lares/grammar/ooda-ha/ooda-ha_SUBLOOP_PATTERNS.md
+**Location:** lares/grammar/ooda-ha/ooda-ha-SUBLOOP-PATTERNS.md
 <!-- → ? -->

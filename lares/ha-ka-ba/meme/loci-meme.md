@@ -720,7 +720,7 @@ Copy this block. Replace every `[PLACEHOLDER]` with local content. Delete option
 ```toml
 # <<~ ahu #iam-ha "structure" >>
 name = "[NAME]"
-file_path = "ha-ka-ba/[MEME_TYPE].[NAME].md"
+file_path = "ha-ka-ba/[MEME-TYPE]-[NAME].md"
 description = "[One sentence: what this meme governs.]"
 version = "0.1-skeleton"
 tulen = 0.10
