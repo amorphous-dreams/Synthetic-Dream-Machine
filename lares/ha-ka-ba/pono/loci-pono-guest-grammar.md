@@ -42,18 +42,6 @@ This meme governs how the host may admit a guest grammar explicitly, preserve th
 
 This meme should not swallow the full guest grammar specification, full parser legality tables, or full render lowering detail.
 
-## Supported Queries
-
-<<~&#x0005; ui meme? -> lar:///ha.ka.ba/pono/guest-grammar#iam >>
-<<~&#x0005; ui scope? -> lar:///ha.ka.ba/pono/guest-grammar#constitutional-charge >>
-<<~&#x0005; ui admission? -> lar:///ha.ka.ba/pono/guest-grammar#admission-contract >>
-<<~&#x0005; ui hana? -> lar:///ha.ka.ba/pono/guest-grammar#hana-pattern >>
-<<~&#x0005; ui ownership? -> lar:///ha.ka.ba/pono/guest-grammar#ownership-map >>
-<<~&#x0005; ui degradation? -> lar:///ha.ka.ba/pono/guest-grammar#degradation >>
-<<~&#x0005; ui lowering? -> lar:///ha.ka.ba/pono/guest-grammar#lowering-handoff >>
-<<~&#x0005; ui fixtures? -> lar:///ha.ka.ba/pono/guest-grammar#fixture-seeds >>
-<<~&#x0005; ui result? -> lar:///ha.ka.ba/pono/guest-grammar#result >>
-
 <<~&#x0002; ahu #meme-body-open >>
 Guest Grammar opens the active admission stream here.
 <<~/ahu >>

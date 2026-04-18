@@ -48,22 +48,6 @@ This meme follows the OODA-HA pattern not merely as ornament but as execution di
 1. strict sigil grammar
 2. explicit phased cognition through Observe, Orient, Decide, Act, and Aftermath
 
-## Supported Queries
-
-<<~&#x0005; ui meme? -> lar:///ha.ka.ba/pono/parser#iam >>
-<<~&#x0005; ui metadata? -> lar:///ha.ka.ba/pono/parser#iam >>
-<<~&#x0005; ui phase-map? -> lar:///ha.ka.ba/pono/parser#phase-map >>
-<<~&#x0005; ui forms? -> lar:///ha.ka.ba/pono/parser#forms >>
-<<~&#x0005; ui modes? -> lar:///ha.ka.ba/pono/parser#modes >>
-<<~&#x0005; ui normalization? -> lar:///ha.ka.ba/pono/parser#normalization >>
-<<~&#x0005; ui mana? -> lar:///ha.ka.ba/pono/parser#mana >>
-<<~&#x0005; ui filter-mode? -> lar:///ha.ka.ba/pono/parser#filter-mode >>
-<<~&#x0005; ui metadata-fetch? -> lar:///ha.ka.ba/pono/parser#metadata-fetch >>
-<<~&#x0005; ui hooko? -> lar:///ha.ka.ba/pono/parser#hooko >>
-<<~&#x0005; ui aftermath? -> lar:///ha.ka.ba/pono/parser#aftermath >>
-<<~&#x0005; ui research-foundation? -> lar:///ha.ka.ba/pono/parser#research-foundation >>
-<<~&#x0005; ui result? -> lar:///ha.ka.ba/pono/parser#result >>
-
 <<~&#x0002; ahu #meme-body-open >>
 Parser kānāwai (law) opens the active parsing stream here.
 <<~/ahu >>

@@ -68,19 +68,6 @@ This subphase keeps the handoff readable while preserving enough structure for l
 
 <<~/ahu >>
 
-## Supported Queries
-
-<<~ ui meme? -> lar:///ha.ka.ba/handoff-prompt-parser-render-split#iam >>
-<<~ ui scope? -> lar:///ha.ka.ba/handoff-prompt-parser-render-split#handoff-scope >>
-<<~ ui placement? -> lar:///ha.ka.ba/handoff-prompt-parser-render-split#placement-law >>
-<<~ ui roadmap? -> lar:///ha.ka.ba/handoff-prompt-parser-render-split#roadmap >>
-<<~ ui parser? -> lar:///ha.ka.ba/handoff-prompt-parser-render-split#parser-law-work >>
-<<~ ui pipeline? -> lar:///ha.ka.ba/handoff-prompt-parser-render-split#render-pipeline-work >>
-<<~ ui semantic-root? -> lar:///ha.ka.ba/handoff-prompt-parser-render-split#semantic-root-work >>
-<<~ ui transactions? -> lar:///ha.ka.ba/handoff-prompt-parser-render-split#transaction-design >>
-<<~ ui acceptance? -> lar:///ha.ka.ba/handoff-prompt-parser-render-split#acceptance-criteria >>
-<<~ ui result? -> lar:///ha.ka.ba/handoff-prompt-parser-render-split#result >>
-
 <<~&#x0002; ahu #meme-body-open >>
 Handoff prompt opens the active roadmap stream here.
 

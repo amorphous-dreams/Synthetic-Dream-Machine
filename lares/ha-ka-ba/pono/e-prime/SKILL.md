@@ -56,21 +56,6 @@ Read [`loci-pono-e-prime.md`](./loci-pono-e-prime.md) first.
 Treat that loci as constitutional.
 This skill does not weaken or reinterpret it.
 
-## Supported Queries
-
-<<~&#x0005; ui skill? -> lar:///ha.ka.ba/pono/e-prime/SKILL#iam >>
-<<~&#x0005; ui load? -> lar:///ha.ka.ba/pono/e-prime/SKILL#load-contract >>
-<<~&#x0005; ui workflow? -> lar:///ha.ka.ba/pono/e-prime/SKILL#workflow-contract >>
-<<~&#x0005; ui marker? -> lar:///ha.ka.ba/pono/e-prime/SKILL#marker-contract >>
-<<~&#x0005; ui trigger? -> lar:///ha.ka.ba/pono/e-prime/SKILL#trigger >>
-<<~&#x0005; ui observe? -> lar:///ha.ka.ba/pono/e-prime/SKILL#observe >>
-<<~&#x0005; ui orient? -> lar:///ha.ka.ba/pono/e-prime/SKILL#orient >>
-<<~&#x0005; ui decide? -> lar:///ha.ka.ba/pono/e-prime/SKILL#decide >>
-<<~&#x0005; ui act? -> lar:///ha.ka.ba/pono/e-prime/SKILL#act >>
-<<~&#x0005; ui hooko? -> lar:///ha.ka.ba/pono/e-prime/SKILL#hooko >>
-<<~&#x0005; ui aftermath? -> lar:///ha.ka.ba/pono/e-prime/SKILL#aftermath >>
-<<~&#x0005; ui result? -> lar:///ha.ka.ba/pono/e-prime/SKILL#result >>
-
 <<~&#x0002; ahu #skill-body-open >>
 E-Prime auditor opens the settled-text correction stream here.
 <<~/ahu >>

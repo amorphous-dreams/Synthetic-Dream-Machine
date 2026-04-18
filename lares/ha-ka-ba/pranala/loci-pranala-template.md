@@ -48,15 +48,6 @@ This meme governs the reusable edge form that an author invokes through `kahea`.
 
 Template law should stay small. It should carry the edge species that repeat enough to deserve slots, defaults, and render posture. It should not swallow every one-off relation just because a template could exist.
 
-## Supported Queries
-
-<<~&#x0005; ui meme? -> lar:///ha.ka.ba/loci/edge/template#iam >>
-<<~&#x0005; ui shape? -> lar:///ha.ka.ba/loci/edge/template#template-shape >>
-<<~&#x0005; ui binding? -> lar:///ha.ka.ba/loci/edge/template#binding-precedence >>
-<<~&#x0005; ui kahea? -> lar:///ha.ka.ba/loci/edge/template#kahea-invocation >>
-<<~&#x0005; ui research? -> lar:///ha.ka.ba/loci/edge/template#research-foundation >>
-<<~&#x0005; ui result? -> lar:///ha.ka.ba/loci/edge/template#result >>
-
 <<~&#x0002; ahu #meme-body-open >>
 Template opens the reusable-edge-sigil stream here.
 <<~/ahu >>

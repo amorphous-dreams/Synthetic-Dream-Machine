@@ -45,15 +45,6 @@ Control edges carry execution order. They name which pulse, branch, outlet, or g
 
 This family matters early because it forces discipline. Once control enters the graph, vague dependency language quickly stops helping.
 
-## Supported Queries
-
-<<~&#x0005; ui meme? -> lar:///ha.ka.ba/loci/edge/control#iam >>
-<<~&#x0005; ui primitives? -> lar:///ha.ka.ba/loci/edge/control#control-primitives >>
-<<~&#x0005; ui shape? -> lar:///ha.ka.ba/loci/edge/control#edge-shape >>
-<<~&#x0005; ui branch? -> lar:///ha.ka.ba/loci/edge/control#branch-posture >>
-<<~&#x0005; ui research? -> lar:///ha.ka.ba/loci/edge/control#research-foundation >>
-<<~&#x0005; ui result? -> lar:///ha.ka.ba/loci/edge/control#result >>
-
 <<~&#x0002; ahu #meme-body-open >>
 Control opens the execution-edge stream here.
 <<~/ahu >>

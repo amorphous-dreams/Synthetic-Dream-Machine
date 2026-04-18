@@ -44,14 +44,6 @@ A kānāwai (law) for a single `#iam` TOML key.
 
 **Lifecycle Note:** The five-bucket lifecycle (noise → data → meme → typed meme → canon typed meme) remains canonical for all meme law. Here `data` names structured language an AI can use without the memetic wrappers. This law governs only the file-path key and its agreement, not lifecycle stages.
 
-## Supported Queries
-
-<<~&#x0005; ui meme? -> lar:///ha.ka.ba/loci/iam/file-path#iam >>
-<<~&#x0005; ui forms? -> lar:///ha.ka.ba/loci/iam/file-path#file-path-forms >>
-<<~&#x0005; ui agreement? -> lar:///ha.ka.ba/loci/iam/file-path#uri-agreement >>
-<<~&#x0005; ui migration? -> lar:///ha.ka.ba/loci/iam/file-path#migration-procedure >>
-<<~&#x0005; ui result? -> lar:///ha.ka.ba/loci/iam/file-path#result >>
-
 <<~&#x0002; ahu #meme-body-open >>
 file-path opens the key-authority stream here.
 <<~/ahu >>

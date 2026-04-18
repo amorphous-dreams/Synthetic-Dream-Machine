@@ -38,13 +38,6 @@ A self-describing index of all memetic-wikitext kānāwai (law) memes.
 
 Pono names, addresses, and relates every active kānāwai (law) in this system. It also hosts verification skills as `skill-*.md` packages under [lares/ha-ka-ba/pono/](lares/ha-ka-ba/pono/).
 
-## Supported Queries
-
-<<~&#x0005; ui meme? -> lar:///ha.ka.ba/pono#iam >>
-<<~&#x0005; ui laws? -> lar:///ha.ka.ba/pono#law-index >>
-<<~&#x0005; ui skills? -> lar:///ha.ka.ba/pono#skill-index >>
-<<~&#x0005; ui result? -> lar:///ha.ka.ba/pono#result >>
-
 <<~&#x0002; ahu #meme-body-open >>
 Pono opens the kānāwai (law) index stream here.
 <<~/ahu >>

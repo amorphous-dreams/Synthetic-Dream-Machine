@@ -40,17 +40,6 @@ The next agent should also treat the newly crystallized `#return-types` locus an
 
 Do not regress the file toward flatter prose, weaker routing law, or ambiguous end-of-file result staging.
 
-## Supported Queries
-
-<<~ ui handoff? -> lar:///ha.ka.ba/handoff/parser-law-return-transaction#iam >>
-<<~ ui journey? -> lar:///ha.ka.ba/handoff/parser-law-return-transaction#journey-log >>
-<<~ ui state? -> lar:///ha.ka.ba/handoff/parser-law-return-transaction#current-state >>
-<<~ ui constraints? -> lar:///ha.ka.ba/handoff/parser-law-return-transaction#constraints >>
-<<~ ui returns? -> lar:///ha.ka.ba/handoff/parser-law-return-transaction#return-transaction-law >>
-<<~ ui gaps? -> lar:///ha.ka.ba/handoff/parser-law-return-transaction#pressure-zones >>
-<<~ ui backlog? -> lar:///ha.ka.ba/handoff/parser-law-return-transaction#backlog-bridge >>
-<<~ ui result? -> lar:///ha.ka.ba/handoff/parser-law-return-transaction#result >>
-
 <<~&#x0002; ahu #meme-body-open >>
 The hand-off stream opens here.
 <<~/ahu >>

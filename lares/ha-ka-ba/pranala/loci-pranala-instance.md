@@ -48,15 +48,6 @@ This meme governs the concrete edge an author or tool can point at directly. It 
 
 An instance may come from a template or stand alone during migration. Either way, it should stay inspectable. A reader should see what the instance says without reverse-engineering hidden defaults.
 
-## Supported Queries
-
-<<~&#x0005; ui meme? -> lar:///ha.ka.ba/loci/edge/instance#iam >>
-<<~&#x0005; ui shape? -> lar:///ha.ka.ba/loci/edge/instance#instance-shape >>
-<<~&#x0005; ui state? -> lar:///ha.ka.ba/loci/edge/instance#instance-state >>
-<<~&#x0005; ui overrides? -> lar:///ha.ka.ba/loci/edge/instance#override-discipline >>
-<<~&#x0005; ui research? -> lar:///ha.ka.ba/loci/edge/instance#research-foundation >>
-<<~&#x0005; ui result? -> lar:///ha.ka.ba/loci/edge/instance#result >>
-
 <<~&#x0002; ahu #meme-body-open >>
 Instance opens the bound-edge-object stream here.
 <<~/ahu >>

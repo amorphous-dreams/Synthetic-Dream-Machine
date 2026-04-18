@@ -48,24 +48,6 @@ This meme governs the human-agent-facing semantic surface, primitive meanings, c
 
 This meme should not swallow full parse kānāwai (law) or full render-pipeline kānāwai (law).
 
-## Supported Queries
-
-<<~&#x0005; ui meme? -> lar:///ha.ka.ba/pono/memetic-wikitext#iam >>
-<<~&#x0005; ui scope? -> lar:///ha.ka.ba/pono/memetic-wikitext#constitutional-charge >>
-<<~&#x0005; ui phase-map? -> lar:///ha.ka.ba/pono/memetic-wikitext#phase-map >>
-<<~&#x0005; ui primitives? -> lar:///ha.ka.ba/pono/memetic-wikitext#primitive-cluster >>
-<<~&#x0005; ui composition? -> lar:///ha.ka.ba/pono/memetic-wikitext#composition >>
-<<~&#x0005; ui uncertainty? -> lar:///ha.ka.ba/pono/memetic-wikitext#uncertainty >>
-<<~&#x0005; ui kapu? -> lar:///ha.ka.ba/pono/memetic-wikitext#kapu >>
-<<~&#x0005; ui boot-grammar? -> lar:///ha.ka.ba/pono/memetic-wikitext#boot-grammar >>
-<<~&#x0005; ui profiles? -> lar:///ha.ka.ba/pono/memetic-wikitext#authoring-profiles >>
-<<~&#x0005; ui ratings? -> lar:///ha.ka.ba/pono/memetic-wikitext#meme-ratings >>
-<<~&#x0005; ui confidence? -> lar:///ha.ka.ba/pono/memetic-wikitext#meme-confidence >>
-<<~&#x0005; ui parser-bridge? -> lar:///ha.ka.ba/pono/memetic-wikitext#bridge-to-parser >>
-<<~&#x0005; ui render-bridge? -> lar:///ha.ka.ba/pono/memetic-wikitext#bridge-to-render-pipeline >>
-<<~&#x0005; ui examples? -> lar:///ha.ka.ba/pono/memetic-wikitext#minimum-boot-examples >>
-<<~&#x0005; ui result? -> lar:///ha.ka.ba/pono/memetic-wikitext#result >>
-
 <<~&#x0002; ahu #meme-body-open >>
 Memetic Wikitext opens the active constitutional authoring stream here.
 <<~/ahu >>

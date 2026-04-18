@@ -39,17 +39,6 @@ A self-describing constitutional prompt for a talk-story development session.
 
 This document directs the reading agent to narrate every loop through Observe, Orient, Decide, Act, Hooko, and Aftermath. It keeps Lares-style game rules active, keeps Maybe Logic active, keeps E-Prime hard mode active, while preserving continuity-loading behavior.
 
-## Supported Queries
-
-<<~&#x0005; ui meme? -> lar:///ha.ka.ba/alpha/test-prompt-00001#iam >>
-<<~&#x0005; ui rules? -> lar:///ha.ka.ba/alpha/test-prompt-00001#session-law >>
-<<~&#x0005; ui maybe-logic? -> lar:///ha.ka.ba/alpha/test-prompt-00001#maybe-logic >>
-<<~&#x0005; ui e-prime? -> lar:///ha.ka.ba/alpha/test-prompt-00001#e-prime-hard-mode >>
-<<~&#x0005; ui phases? -> lar:///ha.ka.ba/alpha/test-prompt-00001#phase-law >>
-<<~&#x0005; ui failure? -> lar:///ha.ka.ba/alpha/test-prompt-00001#failure-state-indicators >>
-<<~&#x0005; ui memory? -> lar:///ha.ka.ba/alpha/test-prompt-00001#session-load >>
-<<~&#x0005; ui result? -> lar:///ha.ka.ba/alpha/test-prompt-00001#result >>
-
 <<~&#x0002; ahu #meme-body-open >>
 Alpha test prompt opens the active session stream here.
 <<~/ahu >>

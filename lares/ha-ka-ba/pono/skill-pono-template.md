@@ -53,15 +53,6 @@ The **inner layer** follows the memetic-wikitext standard — TOML `#iam` block,
 
 A skill authored in this pattern works both as an agentskills.io-compatible loadable skill and as a first-class typed meme. When a skill also claims a stable address under `lar:///ha.ka.ba/**`, it may compose with `loci` rather than facing a forced choice between `skill` and `loci`.
 
-## Supported Queries
-
-<<~&#x0005; ui skill? -> lar:///ha.ka.ba/pono/skill-template#iam >>
-<<~&#x0005; ui structure? -> lar:///ha.ka.ba/pono/skill-template#dual-surface >>
-<<~&#x0005; ui invariants? -> lar:///ha.ka.ba/pono/skill-template#invariant-declaration >>
-<<~&#x0005; ui pre-mcp? -> lar:///ha.ka.ba/pono/skill-template#pre-mcp >>
-<<~&#x0005; ui post-mcp? -> lar:///ha.ka.ba/pono/skill-template#post-mcp >>
-<<~&#x0005; ui result? -> lar:///ha.ka.ba/pono/skill-template#result >>
-
 <<~&#x0002; ahu #skill-body-open >>
 Skill template opens the verification authoring stream here.
 <<~/ahu >>

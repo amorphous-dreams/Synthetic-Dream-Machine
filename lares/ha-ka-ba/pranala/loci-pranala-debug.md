@@ -46,15 +46,6 @@ Debug edges surface what the graph would otherwise hide. They let an operator, t
 
 This family should illuminate, not overwrite. A debug edge may point at another edge, node, or phase, but it should not silently become the thing it observes.
 
-## Supported Queries
-
-<<~&#x0005; ui meme? -> lar:///ha.ka.ba/loci/edge/debug#iam >>
-<<~&#x0005; ui modes? -> lar:///ha.ka.ba/loci/edge/debug#debug-modes >>
-<<~&#x0005; ui shape? -> lar:///ha.ka.ba/loci/edge/debug#edge-shape >>
-<<~&#x0005; ui visibility? -> lar:///ha.ka.ba/loci/edge/debug#visibility-posture >>
-<<~&#x0005; ui research? -> lar:///ha.ka.ba/loci/edge/debug#research-foundation >>
-<<~&#x0005; ui result? -> lar:///ha.ka.ba/loci/edge/debug#result >>
-
 <<~&#x0002; ahu #meme-body-open >>
 Debug opens the observation-edge stream here.
 <<~/ahu >>

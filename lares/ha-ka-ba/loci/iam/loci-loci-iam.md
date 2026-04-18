@@ -45,16 +45,6 @@ This meme does not solve weak metadata by adding new buckets. It sharpens the su
 
 **Lifecycle Note:** The five-bucket lifecycle (noise → data → meme → typed meme → canon typed meme) remains canonical for all meme law. Here `data` names structured language an AI can use without the memetic wrappers. This law governs the field set, not the lifecycle stages themselves.
 
-## Supported Queries
-
-<<~&#x0005; ui meme? -> lar:///ha.ka.ba/loci/iam#iam >>
-<<~&#x0005; ui fields? -> lar:///ha.ka.ba/loci/iam#surviving-field-set >>
-<<~&#x0005; ui cuts? -> lar:///ha.ka.ba/loci/iam#cut-and-merge-rule >>
-<<~&#x0005; ui ha? -> lar:///ha.ka.ba/loci/iam#ha-fields >>
-<<~&#x0005; ui ka? -> lar:///ha.ka.ba/loci/iam#ka-fields >>
-<<~&#x0005; ui ba? -> lar:///ha.ka.ba/loci/iam#ba-fields >>
-<<~&#x0005; ui result? -> lar:///ha.ka.ba/loci/iam#result >>
-
 <<~&#x0002; ahu #meme-body-open >>
 IAM opens the metadata law stream here.
 <<~/ahu >>

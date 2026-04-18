@@ -47,15 +47,6 @@ This meme governs edges that say something true, false, contrastive, or taxonomi
 
 This meme should not carry execution pulse, message routing, or value transport. When an author wants runtime order, carried data, or observer illumination, another edge family should take the load.
 
-## Supported Queries
-
-<<~&#x0005; ui meme? -> lar:///ha.ka.ba/loci/edge/proposition#iam >>
-<<~&#x0005; ui shape? -> lar:///ha.ka.ba/loci/edge/proposition#edge-shape >>
-<<~&#x0005; ui direction? -> lar:///ha.ka.ba/loci/edge/proposition#direction-and-polarity >>
-<<~&#x0005; ui ontology? -> lar:///ha.ka.ba/loci/edge/proposition#ontology-posture >>
-<<~&#x0005; ui research? -> lar:///ha.ka.ba/loci/edge/proposition#research-foundation >>
-<<~&#x0005; ui result? -> lar:///ha.ka.ba/loci/edge/proposition#result >>
-
 <<~&#x0002; ahu #meme-body-open >>
 Proposition opens the semantic-edge stream here.
 <<~/ahu >>

@@ -93,18 +93,6 @@ performing itself.
 
 <<~/ahu >>
 
-## Supported Queries
-
-<<~&#x0005; ui meme? -> lar:///ha.ka.ba/mu#iam >>
-<<~&#x0005; ui glyphs? -> lar:///ha.ka.ba/mu#iam-glyph-inheritance >>
-<<~&#x0005; ui observe? -> lar:///ha.ka.ba/mu#phase-observe >>
-<<~&#x0005; ui orient? -> lar:///ha.ka.ba/mu#phase-orient >>
-<<~&#x0005; ui decide? -> lar:///ha.ka.ba/mu#phase-decide >>
-<<~&#x0005; ui act? -> lar:///ha.ka.ba/mu#phase-act >>
-<<~&#x0005; ui assess? -> lar:///ha.ka.ba/mu#phase-assess >>
-<<~&#x0005; ui quiescence? -> lar:///ha.ka.ba/mu#quiescence >>
-<<~&#x0005; ui result? -> lar:///ha.ka.ba/mu#result >>
-
 <<~ॐ ँ&#x0002; ahu #meme-body-open >>
 Mu opens the null-oracle boot stream here.
 <<~/ahu >>

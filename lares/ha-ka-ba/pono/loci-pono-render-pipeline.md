@@ -76,20 +76,6 @@ This subphase keeps the kānāwai (law) human-facing while still supporting code
 
 <<~/ahu >>
 
-## Supported Queries
-
-<<~&#x0005; ui meme? -> lar:///ha.ka.ba/pono/render-pipeline#iam >>
-<<~&#x0005; ui layers? -> lar:///ha.ka.ba/pono/render-pipeline#three-layer-model >>
-<<~&#x0005; ui surface? -> lar:///ha.ka.ba/pono/render-pipeline#surface-layer >>
-<<~&#x0005; ui ast? -> lar:///ha.ka.ba/pono/render-pipeline#ast-layer >>
-<<~&#x0005; ui widget? -> lar:///ha.ka.ba/pono/render-pipeline#widget-layer >>
-<<~&#x0005; ui render-targets? -> lar:///ha.ka.ba/pono/render-pipeline#render-projection >>
-<<~&#x0005; ui trace? -> lar:///ha.ka.ba/pono/render-pipeline#trace-continuity >>
-<<~&#x0005; ui transactions? -> lar:///ha.ka.ba/pono/render-pipeline#transaction-lifecycle >>
-<<~&#x0005; ui runtime? -> lar:///ha.ka.ba/pono/render-pipeline#runtime-procedure >>
-<<~&#x0005; ui research? -> lar:///ha.ka.ba/pono/render-pipeline#research-foundation >>
-<<~&#x0005; ui result? -> lar:///ha.ka.ba/pono/render-pipeline#result >>
-
 <<~&#x0002; ahu #meme-body-open >>
 Render Pipeline kānāwai (law) opens the active pipeline stream here.
 

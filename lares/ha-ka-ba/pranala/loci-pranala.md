@@ -50,16 +50,6 @@ This meme also keeps family and lifecycle apart. Family answers what an edge mea
 
 This meme seeds the migration target. Live `#iam` still carries `depends-on` as transitional residue, but new graph work should aim here first.
 
-## Supported Queries
-
-<<~&#x0005; ui meme? -> lar:///ha.ka.ba/loci/edge#iam >>
-<<~&#x0005; ui families? -> lar:///ha.ka.ba/loci/edge#edge-families >>
-<<~&#x0005; ui lifecycle? -> lar:///ha.ka.ba/loci/edge#lifecycle-layers >>
-<<~&#x0005; ui shared? -> lar:///ha.ka.ba/loci/edge#shared-fields >>
-<<~&#x0005; ui migration? -> lar:///ha.ka.ba/loci/edge#migration-posture >>
-<<~&#x0005; ui research? -> lar:///ha.ka.ba/loci/edge#research-foundation >>
-<<~&#x0005; ui result? -> lar:///ha.ka.ba/loci/edge#result >>
-
 <<~&#x0002; ahu #meme-body-open >>
 Edge opens the explicit-graph law stream here.
 <<~/ahu >>

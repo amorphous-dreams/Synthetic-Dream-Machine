@@ -48,17 +48,6 @@ This file models itself as one carrier of that more general law. It governs the 
 
 This meme does not govern parse recognition, render lowering, or transaction lifecycle. Those belong to their own kānāwai (law).
 
-## Supported Queries
-
-<<~&#x0005; ui meme? -> lar:///ha.ka.ba/meme#iam >>
-<<~&#x0005; ui required? -> lar:///ha.ka.ba/meme#required-elements >>
-<<~&#x0005; ui optional? -> lar:///ha.ka.ba/meme#optional-elements >>
-<<~&#x0005; ui ratings? -> lar:///ha.ka.ba/meme#rating-targets >>
-<<~&#x0005; ui skeleton? -> lar:///ha.ka.ba/meme#skeleton >>
-<<~&#x0005; ui deferred? -> lar:///ha.ka.ba/meme#deferred-resolution >>
-<<~&#x0005; ui research? -> lar:///ha.ka.ba/meme#research-foundation >>
-<<~&#x0005; ui result? -> lar:///ha.ka.ba/meme#result >>
-
 <<~/ahu >>
 
 <<~&#x0002; ahu #meme-body-open >>
@@ -744,11 +733,6 @@ pranala = [
 # [Title]
 
 [One to three sentences: what this meme governs, what it does not govern, how it relates to adjacent laws.]
-
-## Supported Queries
-
-<<~&#x0005; ui meme? -> lar:///ha.ka.ba/[NAME]#iam >>
-<<~&#x0005; ui result? -> lar:///ha.ka.ba/[NAME]#result >>
 
 <<~&#x0002; ahu #meme-body-open >>
 [NAME] opens the active stream here.

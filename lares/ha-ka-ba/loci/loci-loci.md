@@ -64,20 +64,6 @@ This meme does not govern parse recognition, render lowering, conformance verifi
 
 This file itself takes path-directory-sited `loci` meme form and therefore serves as a live specimen of the law it names: stable address, explicit convention, high-mana aspiration, and still-open MCP resolver backlog.
 
-## Supported Queries
-
-<<~&#x0005; ui meme? -> lar:///ha.ka.ba/loci#iam >>
-<<~&#x0005; ui derivation? -> lar:///ha.ka.ba/loci#derivation-algorithm >>
-<<~&#x0005; ui prefixes? -> lar:///ha.ka.ba/loci#meme-type-prefix-table >>
-<<~&#x0005; ui convention? -> lar:///ha.ka.ba/loci#carrier-coherence >>
-<<~&#x0005; ui stability? -> lar:///ha.ka.ba/loci#address-stability >>
-<<~&#x0005; ui lifecycle? -> lar:///ha.ka.ba/loci#promotion-path >>
-<<~&#x0005; ui ratings? -> lar:///ha.ka.ba/loci#rating-resolution >>
-<<~&#x0005; ui high-rating? -> lar:///ha.ka.ba/loci#high-rating-loci >>
-<<~&#x0005; ui canon? -> lar:///ha.ka.ba/loci#canon-promotion >>
-<<~&#x0005; ui roadmap? -> lar:///ha.ka.ba/loci#mcp-resolution-roadmap >>
-<<~&#x0005; ui result? -> lar:///ha.ka.ba/loci#result >>
-
 <<~&#x0002; ahu #meme-body-open >>
 Loci opens the routing-and-rating authority stream here.
 <<~/ahu >>

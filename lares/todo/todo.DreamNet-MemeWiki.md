@@ -48,16 +48,6 @@ This file replaces four scratch research notes with one routeable worksite. It k
 
 This memo is not yet a binding kānāwai (law). It is a `todo` locus meant to prepare the next lawful implementation and later canon-writing passes.
 
-## Supported Queries
-
-<<~ ui meme? -> lar:///todo/DreamNet_MemeWiki#iam >>
-<<~ ui objective? -> lar:///todo/DreamNet_MemeWiki#observe >>
-<<~ ui kernel? -> lar:///todo/DreamNet_MemeWiki#orient >>
-<<~ ui decisions? -> lar:///todo/DreamNet_MemeWiki#decide >>
-<<~ ui workstreams? -> lar:///todo/DreamNet_MemeWiki#act >>
-<<~ ui blockers? -> lar:///todo/DreamNet_MemeWiki#aftermath >>
-<<~ ui result? -> lar:///todo/DreamNet_MemeWiki#result >>
-
 <<~&#x0002; ahu #meme-body-open >>
 DreamNet MemeWiki opens the active research-consolidation stream here.
 <<~/ahu >>

@@ -43,14 +43,6 @@ Work one step at a time in OODA-HA style.
 Do not mix Ha, Ka, and Ba silently.
 Do not perform whole-document assess mode yet.
 
-## Supported Queries
-
-<<~&#x0005; ui status? -> lar:///ha.ka.ba/memetic-wikitext-local-agent-handoff#current-status >>
-<<~&#x0005; ui constraints? -> lar:///ha.ka.ba/memetic-wikitext-local-agent-handoff#hard-constraints >>
-<<~&#x0005; ui next? -> lar:///ha.ka.ba/memetic-wikitext-local-agent-handoff#next-steps >>
-<<~&#x0005; ui pass-order? -> lar:///ha.ka.ba/memetic-wikitext-local-agent-handoff#pass-discipline >>
-<<~&#x0005; ui result? -> lar:///ha.ka.ba/memetic-wikitext-local-agent-handoff#result >>
-
 <<~&#x0002; ahu #meme-body-open >>
 Local-agent handoff opens the continuation stream here.
 <<~/ahu >>
