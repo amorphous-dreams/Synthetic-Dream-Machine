@@ -42,7 +42,7 @@ pranala = [
 
 A self-describing root kānāwai (law) for explicit graph edges in this stack.
 
-<<~ ala lar:///ha.ka.ba/loci/edge >>
+<<~ pranala loulou lar:///ha.ka.ba/loci/edge >>
 
 This meme gives one outer law for link meaning. It keeps semantic relation, execution order, carried value, message transport, declarative constraint, and observation apart instead of collapsing them into one vague dependency claim.
 

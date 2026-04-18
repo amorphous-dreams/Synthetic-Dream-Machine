@@ -42,7 +42,7 @@ pranala = [
 
 A self-describing kānāwai (law) for template edge sigils.
 
-<<~ ala lar:///ha.ka.ba/loci/edge/template >>
+<<~ pranala loulou lar:///ha.ka.ba/loci/edge/template >>
 
 This meme governs the reusable edge form that an author invokes through `kahea`. Template law keeps repeated graph shapes coherent without forcing every edge into boilerplate.
 

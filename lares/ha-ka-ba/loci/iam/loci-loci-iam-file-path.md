@@ -45,7 +45,7 @@ A kānāwai (law) for a single `#iam` TOML key.
 
 **Lifecycle Note:** The five-bucket lifecycle (noise → data → meme → typed meme → canon typed meme) remains canonical for all meme law. Here `data` names structured language an AI can use without the memetic wrappers. This law governs only the file-path key and its agreement, not lifecycle stages.
 
-<<~ ala lar:///ha.ka.ba/loci/iam/file-path >>
+<<~ pranala loulou lar:///ha.ka.ba/loci/iam/file-path >>
 
 ## Supported Queries
 
@@ -67,7 +67,7 @@ file-path opens the key-authority stream here.
 
 file-path kānāwai (law) captures the raw key value from the `#iam` block, classifies it into its canonical form and checks agreement with the `lar:` URI, decides conformance verdict and migration posture, prepares any repair guidance, crosses any migration update, and judges residue including live-resolution tension.
 
-<!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/loci/iam/file-path-phase-map >> -->
+<!-- OPTIONAL: <<~ pranala loulou lar:///ha.ka.ba/loci/iam/file-path-phase-map >> -->
 <<~/ahu >>
 
 <<~ ahu #observe >>
@@ -107,7 +107,7 @@ Observe should not:
 
 Observe-ha holds the intake identity: `file-path` counts as a path string, not a URI and not a name. Its value begins with the path root segment (`ha-ka-ba/`) and ends with a filename (`<meme-type>-<name>.md` or similar). Anything outside that shape counts as malformed; capture it as written for Orient to classify.
 
-<!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/loci/iam/file-path-observe-ha >> -->
+<!-- OPTIONAL: <<~ pranala loulou lar:///ha.ka.ba/loci/iam/file-path-observe-ha >> -->
 <<~/ahu >>
 
 <<~ ahu #observe-ka >>
@@ -116,7 +116,7 @@ Observe-ha holds the intake identity: `file-path` counts as a path string, not a
 
 Observe-ka governs capture procedure: read the `#iam` TOML block as a whole, locate `file-path` by key name, extract the string value verbatim. Also capture the raw document opener line for the agreement check. Do not normalize or trim at this stage.
 
-<!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/loci/iam/file-path-observe-ka >> -->
+<!-- OPTIONAL: <<~ pranala loulou lar:///ha.ka.ba/loci/iam/file-path-observe-ka >> -->
 <<~/ahu >>
 
 <<~ ahu #observe-ba >>
@@ -125,10 +125,10 @@ Observe-ka governs capture procedure: read the `#iam` TOML block as a whole, loc
 
 Observe-ba governs noticing posture: a missing `file-path` key counts as a distinct observation from a `file-path` key with an empty value, which counts as distinct again from a key with a value that does not begin with `ha-ka-ba/`. All three cases present differently in Orient. Observe should preserve the distinction.
 
-<!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/loci/iam/file-path-observe-ba >> -->
+<!-- OPTIONAL: <<~ pranala loulou lar:///ha.ka.ba/loci/iam/file-path-observe-ba >> -->
 <<~/ahu >>
 
-<!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/loci/iam/file-path-observe >> -->
+<!-- OPTIONAL: <<~ pranala loulou lar:///ha.ka.ba/loci/iam/file-path-observe >> -->
 <<~/ahu >>
 
 <<~ ahu #orient >>
@@ -250,7 +250,7 @@ If they differ → **agreement violation**: a conformance flag that does not abo
 
 Orient-ha holds the classification domain: what form and agreement mean as the fundamental identity of a `file-path` value. The two forms do not operate as stylistic variations — they signal the meme's siting posture (flat or directory). A meme in flat-file form with a path-directory-style `file-path` counts as inconsistent, not flexible.
 
-<!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/loci/iam/file-path-orient-ha >> -->
+<!-- OPTIONAL: <<~ pranala loulou lar:///ha.ka.ba/loci/iam/file-path-orient-ha >> -->
 <<~/ahu >>
 
 <<~ ahu #orient-ka >>
@@ -259,7 +259,7 @@ Orient-ha holds the classification domain: what form and agreement mean as the f
 
 Orient-ka governs the classification and agreement check procedure in order: (1) classify form by testing whether the path contains a `name/<meme-type>-<name>.md` segment; (2) verify the filename component matches `<meme-type>-<name>.md`; (3) run the URI agreement derivation; (4) assess migration state. All four checks run independently — a form-classification result should not suppress the agreement check.
 
-<!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/loci/iam/file-path-orient-ka >> -->
+<!-- OPTIONAL: <<~ pranala loulou lar:///ha.ka.ba/loci/iam/file-path-orient-ka >> -->
 <<~/ahu >>
 
 <<~ ahu #orient-ba >>
@@ -268,10 +268,10 @@ Orient-ka governs the classification and agreement check procedure in order: (1)
 
 Orient-ba governs tension-holding: a meme mid-migration may sit with `file-path` already updated to the path-directory form while the physical file still does not reside at the declared path. Even after the move completes, local derivation may still miss until a live resolver operates. Orient should name these states explicitly rather than flattening them.
 
-<!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/loci/iam/file-path-orient-ba >> -->
+<!-- OPTIONAL: <<~ pranala loulou lar:///ha.ka.ba/loci/iam/file-path-orient-ba >> -->
 <<~/ahu >>
 
-<!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/loci/iam/file-path-orient >> -->
+<!-- OPTIONAL: <<~ pranala loulou lar:///ha.ka.ba/loci/iam/file-path-orient >> -->
 <<~/ahu >>
 
 <<~ ahu #decide >>
@@ -320,7 +320,7 @@ After migration, an agent running the derivation algorithm may derive the flat-f
 
 Decide-ha holds the commitment domain: one form verdict, one agreement verdict. These remain independent. A meme may carry a correctly classified path-directory `file-path` that still fails URI agreement (e.g. the `lar:` URI accidentally changed during migration). Both verdicts surface separately.
 
-<!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/loci/iam/file-path-decide-ha >> -->
+<!-- OPTIONAL: <<~ pranala loulou lar:///ha.ka.ba/loci/iam/file-path-decide-ha >> -->
 <<~/ahu >>
 
 <<~ ahu #decide-ka >>
@@ -329,7 +329,7 @@ Decide-ha holds the commitment domain: one form verdict, one agreement verdict. 
 
 Decide-ka governs verdict procedure: form verdict comes first (flat-file, path-directory, malformed, or transitional?), then filename component check, then URI agreement. A malformed verdict supersedes all subsequent checks — no agreement verdict exists for a value that does not parse as a path.
 
-<!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/loci/iam/file-path-decide-ka >> -->
+<!-- OPTIONAL: <<~ pranala loulou lar:///ha.ka.ba/loci/iam/file-path-decide-ka >> -->
 <<~/ahu >>
 
 <<~ ahu #decide-ba >>
@@ -338,10 +338,10 @@ Decide-ka governs verdict procedure: form verdict comes first (flat-file, path-d
 
 Decide-ba governs migration-posture commitment: do not call a meme "migrated" until both the `file-path` value and the physical file agree on the path-directory form. A meme whose `file-path` says path-directory but whose file still lives at the flat-file path counts as transitional, not migrated. Transitional counts as a distinct verdict with a specific repair path: complete the `git mv`.
 
-<!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/loci/iam/file-path-decide-ba >> -->
+<!-- OPTIONAL: <<~ pranala loulou lar:///ha.ka.ba/loci/iam/file-path-decide-ba >> -->
 <<~/ahu >>
 
-<!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/loci/iam/file-path-decide >> -->
+<!-- OPTIONAL: <<~ pranala loulou lar:///ha.ka.ba/loci/iam/file-path-decide >> -->
 <<~/ahu >>
 
 <<~ ahu #act >>
@@ -377,7 +377,7 @@ Act prepares the conformance report and any repair or migration guidance for Hoo
 
 Act-ha holds the output domain: a conformance report with exactly one form verdict, one agreement verdict, one migration posture verdict, and zero or more repair paths. Act may not execute any repair — that belongs to Hooko. Act prepares the repair paths as stated procedures.
 
-<!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/loci/iam/file-path-act-ha >> -->
+<!-- OPTIONAL: <<~ pranala loulou lar:///ha.ka.ba/loci/iam/file-path-act-ha >> -->
 <<~/ahu >>
 
 <<~ ahu #act-ka >>
@@ -386,7 +386,7 @@ Act-ha holds the output domain: a conformance report with exactly one form verdi
 
 Act-ka governs report assembly: emit verdicts in order (form → filename → agreement → migration posture), then emit repair guidance for each failure, then prepare migration steps on request for migration crossing. The return envelope should reflect the highest-severity verdict: malformed `file-path` produces a degraded envelope regardless of other verdicts.
 
-<!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/loci/iam/file-path-act-ka >> -->
+<!-- OPTIONAL: <<~ pranala loulou lar:///ha.ka.ba/loci/iam/file-path-act-ka >> -->
 <<~/ahu >>
 
 <<~ ahu #act-ba >>
@@ -395,10 +395,10 @@ Act-ka governs report assembly: emit verdicts in order (form → filename → ag
 
 Act-ba governs execution restraint: Act stages migration steps but does not perform them. An agent that receives staged migration steps from Act should confirm before proceeding to Hooko, because migration involves a `git mv` (a state-changing operation). It should not fabricate extra registry writes to mask the current resolver gap.
 
-<!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/loci/iam/file-path-act-ba >> -->
+<!-- OPTIONAL: <<~ pranala loulou lar:///ha.ka.ba/loci/iam/file-path-act-ba >> -->
 <<~/ahu >>
 
-<!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/loci/iam/file-path-act >> -->
+<!-- OPTIONAL: <<~ pranala loulou lar:///ha.ka.ba/loci/iam/file-path-act >> -->
 <<~/ahu >>
 
 <<~ ahu #hooko >>
@@ -426,7 +426,7 @@ Each of these counts as a distinct crossing. Hooko should perform them in the or
 
 Hooko-ha holds the mutation boundary: what Hooko may alter and what it may not. It may move files, update `file-path` values, and correct document openers. It may not change the `lar:` URI — address stability law at `lar:///ha.ka.ba/loci#address-stability` locks that surface. A Hooko that changes the `lar:` URI violates loci kānāwai (law).
 
-<!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/loci/iam/file-path-hooko-ha >> -->
+<!-- OPTIONAL: <<~ pranala loulou lar:///ha.ka.ba/loci/iam/file-path-hooko-ha >> -->
 <<~/ahu >>
 
 <<~ ahu #hooko-ka >>
@@ -435,7 +435,7 @@ Hooko-ha holds the mutation boundary: what Hooko may alter and what it may not. 
 
 Hooko-ka governs execution order: (1) `git mv` the file; (2) update `file-path` in `#iam` of the moved file; (3) verify opener coherence and physical-file agreement. Each step depends on the previous. Do not claim the open resolution tension resolves if only the carrier mutation completed.
 
-<!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/loci/iam/file-path-hooko-ka >> -->
+<!-- OPTIONAL: <<~ pranala loulou lar:///ha.ka.ba/loci/iam/file-path-hooko-ka >> -->
 <<~/ahu >>
 
 <<~ ahu #hooko-ba >>
@@ -444,10 +444,10 @@ Hooko-ka governs execution order: (1) `git mv` the file; (2) update `file-path` 
 
 Hooko-ba governs landing pressure: a `git mv` remains irreversible without a second `git mv`. An agent performing a migration crossing should confirm the target path before executing. If migration stalls between steps, Aftermath must surface exactly which steps completed so a human operator can resume from the correct point.
 
-<!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/loci/iam/file-path-hooko-ba >> -->
+<!-- OPTIONAL: <<~ pranala loulou lar:///ha.ka.ba/loci/iam/file-path-hooko-ba >> -->
 <<~/ahu >>
 
-<!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/loci/iam/file-path-hooko >> -->
+<!-- OPTIONAL: <<~ pranala loulou lar:///ha.ka.ba/loci/iam/file-path-hooko >> -->
 <<~/ahu >>
 
 <<~ ahu #aftermath >>
@@ -484,7 +484,7 @@ If any of the four checks fails, Aftermath surfaces it as named residue with the
 
 Aftermath-ha holds the residue domain: what remains inconsistent after all crossings. Residue does not equal failure; it names addressable unresolved tension. A meme with one incomplete migration crossing carries one residue item. Aftermath names it precisely so a human operator or future agent can resolve it without re-investigating from scratch.
 
-<!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/loci/iam/file-path-aftermath-ha >> -->
+<!-- OPTIONAL: <<~ pranala loulou lar:///ha.ka.ba/loci/iam/file-path-aftermath-ha >> -->
 <<~/ahu >>
 
 <<~ ahu #aftermath-ka >>
@@ -493,7 +493,7 @@ Aftermath-ha holds the residue domain: what remains inconsistent after all cross
 
 Aftermath-ka governs the four-check procedure: run all four checks independently, do not short-circuit on first failure. A meme may carry both a `file-path`/physical-file disagreement and an open resolver tension simultaneously. Both should surface in residue. Running all four checks produces the minimum residue list needed to fully repair the meme state.
 
-<!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/loci/iam/file-path-aftermath-ka >> -->
+<!-- OPTIONAL: <<~ pranala loulou lar:///ha.ka.ba/loci/iam/file-path-aftermath-ka >> -->
 <<~/ahu >>
 
 <<~ ahu #aftermath-ba >>
@@ -502,10 +502,10 @@ Aftermath-ka governs the four-check procedure: run all four checks independently
 
 Aftermath-ba governs landing quality: aftermath that ends without a coherence judgment reads as incomplete. Even when all four checks pass, Aftermath should state that outcome explicitly rather than leaving the result implicit. A passing aftermath still yields a typed result.
 
-<!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/loci/iam/file-path-aftermath-ba >> -->
+<!-- OPTIONAL: <<~ pranala loulou lar:///ha.ka.ba/loci/iam/file-path-aftermath-ba >> -->
 <<~/ahu >>
 
-<!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/loci/iam/file-path-aftermath >> -->
+<!-- OPTIONAL: <<~ pranala loulou lar:///ha.ka.ba/loci/iam/file-path-aftermath >> -->
 <<~/ahu >>
 
 <<~&#x0003; ahu #body-close >>

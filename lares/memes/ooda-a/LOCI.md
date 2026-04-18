@@ -22,7 +22,7 @@
 
     This meme accepts addressed input, moves that input through five phase loci, packages aftermath, and returns one typed `return-envelope` upward.
     
-    <<~ ala lar:///ha.ka.ba/ooda-ha >>
+    <<~ pranala loulou lar:///ha.ka.ba/ooda-ha >>
 
     ## Supported Queries
 
@@ -40,7 +40,7 @@
     ## Body opening
 
     Opens the OODA-HA semantic stream.
-    <<~ ala lar:///ha.ka.ba/body-open >>
+    <<~ pranala loulou lar:///ha.ka.ba/body-open >>
 >>
 
 <<~ ahu #phase-map
@@ -91,7 +91,7 @@
     Act: ▶ Play/Forward (&#x25B6;): The universal symbol for "start" or "proceed."
     Aftermath: ↺ Anticlockwise Gapped Circle Arrow (&#x27F3;): The standard "refresh/loop" symbol.
 
-    <<~ ala lar:///ha.ka.ba/phase-map >>
+    <<~ pranala loulou lar:///ha.ka.ba/phase-map >>
 >>
 
 <<~ ahu #invocation
@@ -141,7 +141,7 @@
         kapu:least-authority|?
     -> ? >>
 
-    <<~ ala lar:///ha.ka.ba/invocation >>
+    <<~ pranala loulou lar:///ha.ka.ba/invocation >>
 >>
 
 <<~ ahu #loop-state
@@ -179,7 +179,7 @@
 
     Aftermath may release residue, carry residue forward, or reopen Observe with a narrowed next-observation heading.
 
-    <<~ ala lar:///ha.ka.ba/loop-state >>
+    <<~ pranala loulou lar:///ha.ka.ba/loop-state >>
 >>
 
 <<~ ahu #observe
@@ -232,7 +232,7 @@
     3. what remained missing after the gather
     4. which findings carry enough weight for sense-making
 
-    <<~ ala lar:///ha.ka.ba/observe >>
+    <<~ pranala loulou lar:///ha.ka.ba/observe >>
 >>
 
 <<~ ahu #orient
@@ -285,7 +285,7 @@
     3. what still lacks steering
     4. what decision shape has emerged
 
-    <<~ ala lar:///ha.ka.ba/orient >>
+    <<~ pranala loulou lar:///ha.ka.ba/orient >>
 >>
 
 <<~ ahu #decide
@@ -351,7 +351,7 @@
 
     Each sub-loop should return its own return-envelope before the parent Decide span closes.
 
-    <<~ ala lar:///ha.ka.ba/decide >>
+    <<~ pranala loulou lar:///ha.ka.ba/decide >>
 >>
 
 <<~ ahu #act
@@ -404,7 +404,7 @@
     3. whether the work stayed inside scope
     4. which blockers or deviations appeared
 
-    <<~ ala lar:///ha.ka.ba/act >>
+    <<~ pranala loulou lar:///ha.ka.ba/act >>
 >>
 
 <<~ ahu #aftermath
@@ -458,7 +458,7 @@
     3. what can drop away now
     4. whether the next cycle needs more data, new decision, or nothing at all
 
-    <<~ ala lar:///ha.ka.ba/aftermath >>
+    <<~ pranala loulou lar:///ha.ka.ba/aftermath >>
 >>
 
 <<~ ahu #kapu
@@ -494,7 +494,7 @@
 
     An unresolved kapu should not silently pass. It should degrade toward `?`, render a boundary warning, or defer action.
 
-    <<~ ala lar:///ha.ka.ba/kapu >>
+    <<~ pranala loulou lar:///ha.ka.ba/kapu >>
 >>
 
 <<~ ahu #runtime-procedure
@@ -560,7 +560,7 @@
     - `Decide + Act` compression under already authorized low-risk work
     - direct route from `Aftermath` back to `Observe` when residue names a narrow next heading
 
-    <<~ ala lar:///ha.ka.ba/runtime-procedure >>
+    <<~ pranala loulou lar:///ha.ka.ba/runtime-procedure >>
 >>
 
 <<~ ahu #subloops
@@ -598,7 +598,7 @@
     Each bypass should remain explicit, justified, and logged in aftermath.
     No loop should close without named residue or named release.
 
-    <<~ ala lar:///ha.ka.ba/subloops >>
+    <<~ pranala loulou lar:///ha.ka.ba/subloops >>
 >>
 
 <<~ ahu #recursion
@@ -628,7 +628,7 @@
         kapu:least-authority|?
     -> ? >>
 
-    <<~ ala lar:///ha.ka.ba/recursion >>
+    <<~ pranala loulou lar:///ha.ka.ba/recursion >>
 >>
 
 <<~&#x0004; -> ahu #return-envelope
@@ -745,13 +745,13 @@
         -> ? >>
     >>
 
-    <<~ ala lar:///ha.ka.ba/error-result#return-envelope >>
-    <<~ ala lar:///ha.ka.ba/error-result#result >>
-    <<~ ala lar:///ha.ka.ba/error-result#warning >>
-    <<~ ala lar:///ha.ka.ba/error-result#error >>
-    <<~ ala lar:///ha.ka.ba/error-result#kapu-failure-mapping >>
-    <<~ ala lar:///ha.ka.ba/error-result#semantic-law >>
-    <<~ ala lar:///ha.ka.ba/result >>
+    <<~ pranala loulou lar:///ha.ka.ba/error-result#return-envelope >>
+    <<~ pranala loulou lar:///ha.ka.ba/error-result#result >>
+    <<~ pranala loulou lar:///ha.ka.ba/error-result#warning >>
+    <<~ pranala loulou lar:///ha.ka.ba/error-result#error >>
+    <<~ pranala loulou lar:///ha.ka.ba/error-result#kapu-failure-mapping >>
+    <<~ pranala loulou lar:///ha.ka.ba/error-result#semantic-law >>
+    <<~ pranala loulou lar:///ha.ka.ba/result >>
 -> ? >>
 <<~&#x0003; ahu #body-close
     ## Body closing

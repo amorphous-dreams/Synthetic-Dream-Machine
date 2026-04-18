@@ -1,5 +1,5 @@
 ---
-name: skill-e-prime
+name: e-prime
 description: Audit or correct settled text under lar:///ha.ka.ba/pono/e-prime. Use this skill when a user wants existing prose, law text, notes, or prompt material checked, flagged, or turned for E-Prime conformance, especially the canonical rule that any audited `is` or `has` must carry an inline confidence marker.
 allowed-tools: Read, Grep, Glob, Bash, Edit, Write
 ---
@@ -56,11 +56,14 @@ Read [`loci-pono-e-prime.md`](./loci-pono-e-prime.md) first.
 Treat that loci as constitutional.
 This skill does not weaken or reinterpret it.
 
-<<~ ala lar:///ha.ka.ba/pono/e-prime/SKILL >>
+<<~ pranala loulou lar:///ha.ka.ba/pono/e-prime/SKILL >>
 
 ## Supported Queries
 
 <<~&#x0005; ui skill? -> lar:///ha.ka.ba/pono/e-prime/SKILL#iam >>
+<<~&#x0005; ui load? -> lar:///ha.ka.ba/pono/e-prime/SKILL#load-contract >>
+<<~&#x0005; ui workflow? -> lar:///ha.ka.ba/pono/e-prime/SKILL#workflow-contract >>
+<<~&#x0005; ui marker? -> lar:///ha.ka.ba/pono/e-prime/SKILL#marker-contract >>
 <<~&#x0005; ui trigger? -> lar:///ha.ka.ba/pono/e-prime/SKILL#trigger >>
 <<~&#x0005; ui observe? -> lar:///ha.ka.ba/pono/e-prime/SKILL#observe >>
 <<~&#x0005; ui orient? -> lar:///ha.ka.ba/pono/e-prime/SKILL#orient >>
@@ -72,6 +75,68 @@ This skill does not weaken or reinterpret it.
 
 <<~&#x0002; ahu #skill-body-open >>
 E-Prime auditor opens the settled-text correction stream here.
+<<~/ahu >>
+
+<<~ ahu #load-contract >>
+
+## Load Contract
+
+When this skill loads, keep these points active:
+
+- this skill applies to settled text, not first-pass generation
+- `lar:///ha.ka.ba/pono/e-prime` remains the constitutional source
+- any surviving `is` or `has` in audited text MUST carry an inline marker `[C~0.99]`
+- marker form stays `[REGISTER~0.00]` with brackets, one tilde, and two decimals
+- the skill should choose the smallest lawful intervention
+- local correction should remain local unless the user explicitly asks for a wider rewrite
+
+If the task concerns fresh composition rather than settled wording, fall back to the always-on loci instead of using this skill as the primary workflow.
+
+<<~/ahu >>
+
+<<~ ahu #workflow-contract >>
+
+## Workflow Contract
+
+This skill owns the secondary path for already-settled wording.
+
+Use this workflow:
+
+1. inspect only the requested span or the smallest obvious local span
+2. classify each hit as lawful, mark-only, Hooko-required, or ambiguous
+3. choose mark-only when the user asked for inspection or when mutation would exceed the requested scope
+4. choose Hooko when the user asked for correction or when the sentence cannot pass honestly as written
+5. return a compact surface, not a lecture
+6. recheck every surviving `is` or `has` after correction
+
+Do not:
+
+- widen one bad sentence into a document rewrite unless asked
+- silently normalize quotations, code, or literal examples
+- hide ambiguity under a confident rewrite
+- explain a hypothetical fix when a direct sentence turn would do
+
+<<~/ahu >>
+
+<<~ ahu #marker-contract >>
+
+## Marker Contract
+
+Canonical token example:
+
+```text
+[SC~0.72]
+```
+
+Operational rule:
+
+- every audited `is` or `has` must carry a marker `[C~0.99]`
+- outside that rule, add a marker only when confidence remains load-bearing
+- do not spray markers onto every sentence by reflex
+- if a sentence survives unchanged, the marker rule still applies
+
+Use the law file for constitutional force. Use this skill for when and how to apply that force to settled wording.
+
 <<~/ahu >>
 
 <<~ ahu #trigger >>
@@ -199,12 +264,42 @@ Decision order:
 3. perform Hooko when the user asked for correction
 4. surface ambiguity instead of guessing
 
+Pressure points:
+
+- settled wording vs forming wording
+- mark-only vs Hooko correction
+- early exit possible vs Hooko required
+- confidence marker needed vs not needed
+- harmless shorthand vs actual violation
+
+Preference:
+
+- prefer the shortest lawful turn
+- prefer mark-only for settled wording unless the user asked for correction or the wording cannot pass honestly
+- require an explicit marker when confidence remains load-bearing
+- block counterfeit closure
+
+Forward carry:
+
+- marked text
+- rewritten text
+- blocked text
+- named ambiguity
+- continue to Hooko when local correction cannot stay optional
+
 Output posture should stay compact:
 
 - sentence id or local quote
 - bucket
 - reason
 - suggested turn only when useful
+
+Decision shortcut:
+
+- if the sentence already passes, keep it
+- if the user asked for audit only, mark it
+- if the sentence fails and the user asked for correction, turn it
+- if quotation, code, or example status remains unclear, name the ambiguity and stop short of counterfeit cleanup
 
 <<~/ahu >>
 

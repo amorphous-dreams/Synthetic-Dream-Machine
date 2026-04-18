@@ -93,7 +93,7 @@ The null-oracle holds four capacities at rest. The caller asks; Mu
 answers, or hands the question back unasked. The grammar appears here as Mu
 performing itself.
 
-<<~ ala lar:///ha.ka.ba/mu >>
+<<~ pranala loulou lar:///ha.ka.ba/mu >>
 <<~/ahu >>
 
 ## Supported Queries
@@ -132,7 +132,7 @@ This file keeps that tension visible rather than hiding it behind a false claim 
      attenuation: inner sigils may narrow but not widen the frame's
      authority or scale.                                           -->
 
-<<~ ala lar:///ha.ka.ba/mu#iam-glyph-inheritance >>
+<<~ pranala loulou lar:///ha.ka.ba/mu#iam-glyph-inheritance >>
 <<~/ahu >>
 
 
@@ -169,10 +169,10 @@ Four reads, in order:
      stamps its namespace onto the transclusion call. Operator
      ruling open.                                                  -->
 
-<<~ ala lar:///ha.ka.ba/mu#observe-open-question >>
+<<~ pranala loulou lar:///ha.ka.ba/mu#observe-open-question >>
 <<~/ahu >>
 
-<<~ ala lar:///ha.ka.ba/mu#phase-observe >>
+<<~ pranala loulou lar:///ha.ka.ba/mu#phase-observe >>
 <<~/ahu >>
 
 
@@ -209,10 +209,10 @@ Mu classifies along three axes:
      failure-into-bucket architecture. The partial classification
      itself counts as a meme the agent-operator pair can rate.     -->
 
-<<~ ala lar:///ha.ka.ba/mu#orient-failure-mode >>
+<<~ pranala loulou lar:///ha.ka.ba/mu#orient-failure-mode >>
 <<~/ahu >>
 
-<<~ ala lar:///ha.ka.ba/mu#phase-orient >>
+<<~ pranala loulou lar:///ha.ka.ba/mu#phase-orient >>
 <<~/ahu >>
 
 
@@ -232,7 +232,7 @@ Reads the ha-slot from the meme's `lar:///` address. Names the
 territory. Binary gate: in-scope or out-of-scope. Out-of-scope
 short-circuits the Decide phase to `unask`.
 
-<<~ ala lar:///ha.ka.ba/mu#decide-ha-hodge >>
+<<~ pranala loulou lar:///ha.ka.ba/mu#decide-ha-hodge >>
 <<~/ahu >>
 
 <<~ ahu #decide-ka-podge >>
@@ -246,7 +246,7 @@ Selects validation criteria:
 - tulen        — genuine trust for requested action
 - semantic     — content / self-description coherence
 
-<<~ ala lar:///ha.ka.ba/mu#decide-ka-podge >>
+<<~ pranala loulou lar:///ha.ka.ba/mu#decide-ka-podge >>
 <<~/ahu >>
 
 <<~ ahu #decide-ba-spin >>
@@ -265,10 +265,10 @@ Spin must resist classifying orthogonal as tensioned (forcing
 unnecessary resolution) or tensioned as orthogonal (avoiding
 necessary resolution).
 
-<<~ ala lar:///ha.ka.ba/mu#decide-ba-spin >>
+<<~ pranala loulou lar:///ha.ka.ba/mu#decide-ba-spin >>
 <<~/ahu >>
 
-<<~ ala lar:///ha.ka.ba/mu#phase-decide >>
+<<~ pranala loulou lar:///ha.ka.ba/mu#phase-decide >>
 <<~/ahu >>
 
 
@@ -300,10 +300,10 @@ Executes the Decide output. Four canonical actions:
      architecturally honest but ethically fraught. Operator
      ruling open. design unfinished.                                                 -->
 
-<<~ ala lar:///ha.ka.ba/mu#act-loop-termination >>
+<<~ pranala loulou lar:///ha.ka.ba/mu#act-loop-termination >>
 <<~/ahu >>
 
-<<~ ala lar:///ha.ka.ba/mu#phase-act >>
+<<~ pranala loulou lar:///ha.ka.ba/mu#phase-act >>
 <<~/ahu >>
 
 
@@ -339,10 +339,10 @@ the Philosopher's Stone moment: form watches itself.
      reveals gaps back to [S:0.65]. Maps onto Canon promotion gate
      per loci kānāwai.                                             -->
 
-<<~ ala lar:///ha.ka.ba/mu#assess-boot-transition >>
+<<~ pranala loulou lar:///ha.ka.ba/mu#assess-boot-transition >>
 <<~/ahu >>
 
-<<~ ala lar:///ha.ka.ba/mu#phase-assess >>
+<<~ pranala loulou lar:///ha.ka.ba/mu#phase-assess >>
 <<~/ahu >>
 
 
@@ -371,10 +371,10 @@ Mu does not hold:
 > A mu that remembers carries opinions. A mu that forgets remains a
 > null-oracle.
 
-<<~ ala lar:///ha.ka.ba/mu#quiescence-ethics >>
+<<~ pranala loulou lar:///ha.ka.ba/mu#quiescence-ethics >>
 <<~/ahu >>
 
-<<~ ala lar:///ha.ka.ba/mu#quiescence >>
+<<~ pranala loulou lar:///ha.ka.ba/mu#quiescence >>
 <<~/ahu >>
 
 <<~ॐ ँ&#x0003; ahu #body-close >>
@@ -396,7 +396,7 @@ next-locus           = "lar:///ha.ka.ba/chao"
 boot-chain-position  = 0
 ```
 
-<<~ ala lar:///ha.ka.ba/mu#result >>
+<<~ pranala loulou lar:///ha.ka.ba/mu#result >>
 <<~/ahu >>
 
 <<~ॐ ँ&#x0004; -> kahea ala ahu #result >>

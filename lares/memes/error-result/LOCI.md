@@ -18,7 +18,7 @@
 
     This meme gives `#result`, `#warning`, and `#error` a shared law so that `aka`, `kahea`, renderers, agents, and callers can route outcomes without quiet invention.
 
-    <<~ ala lar:///ha.ka.ba/error-result >>
+    <<~ pranala loulou lar:///ha.ka.ba/error-result >>
 
     ## Supported Queries
 
@@ -38,7 +38,7 @@
     ## Body opening
 
     Opens the active typed return stream.
-    <<~ ala lar:///ha.ka.ba/body-open >>
+    <<~ pranala loulou lar:///ha.ka.ba/body-open >>
 >>
 
 <<~ ahu #return-envelope
@@ -77,7 +77,7 @@
 
     A nil payload should still return an envelope.
 
-    <<~ ala lar:///ha.ka.ba/return-envelope >>
+    <<~ pranala loulou lar:///ha.ka.ba/return-envelope >>
 >>
 
 <<~ ahu #result
@@ -119,7 +119,7 @@
 
     When payload fails usability, route through `#error` even if a partial artifact exists.
 
-    <<~ ala lar:///ha.ka.ba/result >>
+    <<~ pranala loulou lar:///ha.ka.ba/result >>
 >>
 
 <<~ ahu #issue
@@ -148,7 +148,7 @@
     - `@recovery "retry|defer|downgrade-to-?|request-operator|quarantine|abort|none|?"`
     - `@blame-domain "input|schema|runtime|policy|external|mixed|unknown|?"`
 
-    <<~ ala lar:///ha.ka.ba/issue >>
+    <<~ pranala loulou lar:///ha.ka.ba/issue >>
 >>
 
 <<~ ahu #warning
@@ -181,7 +181,7 @@
 
     A warning should point at recovery when recovery remains actionable.
 
-    <<~ ala lar:///ha.ka.ba/warning >>
+    <<~ pranala loulou lar:///ha.ka.ba/warning >>
 >>
 
 <<~ ahu #error
@@ -215,7 +215,7 @@
 
     An error should not hide under `@status "completed"`.
 
-    <<~ ala lar:///ha.ka.ba/error >>
+    <<~ pranala loulou lar:///ha.ka.ba/error >>
 >>
 
 <<~ ahu #issue-taxonomy
@@ -290,7 +290,7 @@
 
     Two or more live claims cannot jointly stand inside the current scope.
 
-    <<~ ala lar:///ha.ka.ba/issue-taxonomy >>
+    <<~ pranala loulou lar:///ha.ka.ba/issue-taxonomy >>
 >>
 
 <<~ ahu #status-lattice
@@ -320,7 +320,7 @@
 
     A runtime should choose the lowest truthful status rather than the highest flattering status.
 
-    <<~ ala lar:///ha.ka.ba/status-lattice >>
+    <<~ pranala loulou lar:///ha.ka.ba/status-lattice >>
 >>
 
 <<~ ahu #kapu-mapping
@@ -338,7 +338,7 @@
     - `request-operator` -> emit `#error` or `#warning` with `@recovery "request-operator"`
     - `emit-aftermath` -> package issue and hand route to `#aftermath`
 
-    <<~ ala lar:///ha.ka.ba/kapu-failure-mapping >>
+    <<~ pranala loulou lar:///ha.ka.ba/kapu-failure-mapping >>
 >>
 
 <<~ ahu #semantic-law
@@ -372,7 +372,7 @@
 
     Explicit operator override may change route or recovery, but override should remain named in trace or residue.
 
-    <<~ ala lar:///ha.ka.ba/semantic-law >>
+    <<~ pranala loulou lar:///ha.ka.ba/semantic-law >>
 >>
 
 <<~ ahu #examples
@@ -491,7 +491,7 @@
         >>
     >>
 
-    <<~ ala lar:///ha.ka.ba/examples >>
+    <<~ pranala loulou lar:///ha.ka.ba/examples >>
 >>
 
 <<~ ahu #integration-notes
@@ -508,7 +508,7 @@
     4. Bind `@kapu-failure` through `#kapu-failure-mapping`.
     5. Route merge or recursion breakage through typed issue classes instead of prose-only residue.
 
-    <<~ ala lar:///ha.ka.ba/integration-notes >>
+    <<~ pranala loulou lar:///ha.ka.ba/integration-notes >>
 >>
 
 <<~&#x0004; -> ahu #result-object
@@ -530,7 +530,7 @@
 
     Export-friendly result field bundle for direct import.
 
-    <<~ ala lar:///ha.ka.ba/result-object >>
+    <<~ pranala loulou lar:///ha.ka.ba/result-object >>
 -> ? >>
 
 <<~&#x0003; ahu #body-close

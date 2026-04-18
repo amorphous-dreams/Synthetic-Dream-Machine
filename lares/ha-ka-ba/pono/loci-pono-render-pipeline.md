@@ -52,7 +52,7 @@ Iam-ha holds identity, constitutional charge, and layer count.
 
 This subphase names the meme, its charge, and the three-layer product family that later sections metabolize.
 
-<<~ ala lar:///ha.ka.ba/pono/render-pipeline#iam-ha >>
+<<~ pranala loulou lar:///ha.ka.ba/pono/render-pipeline#iam-ha >>
 <<~/ahu >>
 
 <<~ ahu #iam-ka >>
@@ -63,7 +63,7 @@ Iam-ka governs metadata detail, dependency declaration, and pipeline vocabulary.
 
 This subphase carries the machine-facing payload that tools and later linked laws may parse.
 
-<<~ ala lar:///ha.ka.ba/pono/render-pipeline#iam-ka >>
+<<~ pranala loulou lar:///ha.ka.ba/pono/render-pipeline#iam-ka >>
 <<~/ahu >>
 
 <<~ ahu #iam-ba >>
@@ -74,10 +74,10 @@ Iam-ba governs posture, portability, and the lived relation between readability 
 
 This subphase keeps the kānāwai (law) human-facing while still supporting code-facing projection.
 
-<<~ ala lar:///ha.ka.ba/pono/render-pipeline#iam-ba >>
+<<~ pranala loulou lar:///ha.ka.ba/pono/render-pipeline#iam-ba >>
 <<~/ahu >>
 
-<<~ ala lar:///ha.ka.ba/pono/render-pipeline >>
+<<~ pranala loulou lar:///ha.ka.ba/pono/render-pipeline >>
 <<~/ahu >>
 
 ## Supported Queries
@@ -127,7 +127,7 @@ This subphase lowers entry cost and prepares the later loops.
 
 <<~/ahu >>
 
-<<~ ala lar:///ha.ka.ba/pono/render-pipeline#meme-body-open >>
+<<~ pranala loulou lar:///ha.ka.ba/pono/render-pipeline#meme-body-open >>
 <<~/ahu >>
 
 <<~ ahu #phase-map >>
@@ -1001,7 +1001,7 @@ This subphase keeps closure explicit rather than implied.
 
 <<~/ahu >>
 
-<<~ ala lar:///ha.ka.ba/pono/render-pipeline#body-close >>
+<<~ pranala loulou lar:///ha.ka.ba/pono/render-pipeline#body-close >>
 <<~/ahu >>
 
 <<~ ahu #result >>

@@ -40,7 +40,7 @@ The next agent should also treat the newly crystallized `#return-types` locus an
 
 Do not regress the file toward flatter prose, weaker routing law, or ambiguous end-of-file result staging.
 
-<<~ ala lar:///ha.ka.ba/handoff/parser-law-return-transaction >>
+<<~ pranala loulou lar:///ha.ka.ba/handoff/parser-law-return-transaction >>
 
 ## Supported Queries
 
@@ -65,7 +65,7 @@ The hand-off stream opens here.
 `✶ Observe -> ⏿ Orient -> ◇ Decide -> ▶ Act -> ⤴ Hooko -> ↺ Aftermath`
 
 The next agent should read this hand-off through the same OODA-HA (with Hooko) discipline now embedded in parser-law.
-<<~ ala lar:///ha.ka.ba/phase-map >>
+<<~ pranala loulou lar:///ha.ka.ba/phase-map >>
 <<~/ahu >>
 
 <<~ ahu #observe >>
@@ -110,7 +110,7 @@ Take in the routed `&#x0004;` ending as real architectural pressure, not as orna
 
 Take in `#return-types` as canonical continuation law, even when the local repo copy still awaits a splice.
 
-<<~ ala lar:///ha.ka.ba/handoff/observe-ha >>
+<<~ pranala loulou lar:///ha.ka.ba/handoff/observe-ha >>
 <<~/ahu >>
 
 <<~ ahu #observe-ka >>
@@ -129,7 +129,7 @@ Honor the strengthened local loci already present:
 
 Honor the new control-glyph composite rule and terminal routed return example.
 
-<<~ ala lar:///ha.ka.ba/handoff/observe-ka >>
+<<~ pranala loulou lar:///ha.ka.ba/handoff/observe-ka >>
 <<~/ahu >>
 
 <<~ ahu #observe-ba >>
@@ -147,10 +147,10 @@ Do not mistake open return-law work for failure.
 
 Treat it as the next lawful crystallization zone.
 
-<<~ ala lar:///ha.ka.ba/handoff/observe-ba >>
+<<~ pranala loulou lar:///ha.ka.ba/handoff/observe-ba >>
 <<~/ahu >>
 
-<<~ ala lar:///ha.ka.ba/observe >>
+<<~ pranala loulou lar:///ha.ka.ba/observe >>
 <<~/ahu >>
 
 <<~ ahu #orient >>
@@ -199,7 +199,7 @@ Recursive coherence still binds them across scales.
 
 `#return-types` should now sit between structure and deployment pressure.
 
-<<~ ala lar:///ha.ka.ba/handoff/orient-ha >>
+<<~ pranala loulou lar:///ha.ka.ba/handoff/orient-ha >>
 <<~/ahu >>
 
 <<~ ahu #orient-ka >>
@@ -221,7 +221,7 @@ For return law, this means:
 * `&#x0004;` should not swallow the entire result contract
 * envelope schema detail should move outward once the constitutional minimum stabilizes
 
-<<~ ala lar:///ha.ka.ba/handoff/orient-ka >>
+<<~ pranala loulou lar:///ha.ka.ba/handoff/orient-ka >>
 <<~/ahu >>
 
 <<~ ahu #orient-ba >>
@@ -234,10 +234,10 @@ But routed return now wants more than vibe.
 
 It wants lawful staging, truthful downgrade, and explicit manifestation posture.
 
-<<~ ala lar:///ha.ka.ba/handoff/orient-ba >>
+<<~ pranala loulou lar:///ha.ka.ba/handoff/orient-ba >>
 <<~/ahu >>
 
-<<~ ala lar:///ha.ka.ba/orient >>
+<<~ pranala loulou lar:///ha.ka.ba/orient >>
 <<~/ahu >>
 
 <<~ ahu #decide >>
@@ -283,7 +283,7 @@ Preserve `#return-types` as constitutional minimum return law, not as accidental
 
 Preserve `&#x0004;` as transaction throat under lawful routing pressure.
 
-<<~ ala lar:///ha.ka.ba/handoff/decide-ha >>
+<<~ pranala loulou lar:///ha.ka.ba/handoff/decide-ha >>
 <<~/ahu >>
 
 <<~ ahu #decide-ka >>
@@ -305,7 +305,7 @@ Avoid:
 * treating the final `&#x0004;` chain as mere example fluff
 * collapsing transaction, contract, and instance into one blurred clause
 
-<<~ ala lar:///ha.ka.ba/handoff/decide-ka >>
+<<~ pranala loulou lar:///ha.ka.ba/handoff/decide-ka >>
 <<~/ahu >>
 
 <<~ ahu #decide-ba >>
@@ -320,10 +320,10 @@ Full manifestation-grade law still wants more code-facing exactness.
 
 Treat that open state as lawful partiality, not as license for soft certainty.
 
-<<~ ala lar:///ha.ka.ba/handoff/decide-ba >>
+<<~ pranala loulou lar:///ha.ka.ba/handoff/decide-ba >>
 <<~/ahu >>
 
-<<~ ala lar:///ha.ka.ba/decide >>
+<<~ pranala loulou lar:///ha.ka.ba/decide >>
 <<~/ahu >>
 
 <<~ ahu #act >>
@@ -365,7 +365,7 @@ The next lawful actions likely include:
 * defining profile-specific commit, rollback, and degraded-close behavior
 * defining fixtures for terminal routed returns
 
-<<~ ala lar:///ha.ka.ba/handoff/act-ha >>
+<<~ pranala loulou lar:///ha.ka.ba/handoff/act-ha >>
 <<~/ahu >>
 
 <<~ ahu #act-ka >>
@@ -392,7 +392,7 @@ Boot parser-law need not expose every phase in surface syntax yet.
 
 But the next agent should preserve enough law and trace that later profiles may distinguish degraded return from committed return.
 
-<<~ ala lar:///ha.ka.ba/handoff/act-ka >>
+<<~ pranala loulou lar:///ha.ka.ba/handoff/act-ka >>
 <<~/ahu >>
 
 <<~ ahu #act-ba >>
@@ -411,10 +411,10 @@ That means:
 * minimal sprawl in root law
 * outward extraction when detailed schema pressure grows noisy
 
-<<~ ala lar:///ha.ka.ba/handoff/act-ba >>
+<<~ pranala loulou lar:///ha.ka.ba/handoff/act-ba >>
 <<~/ahu >>
 
-<<~ ala lar:///ha.ka.ba/act >>
+<<~ pranala loulou lar:///ha.ka.ba/act >>
 <<~/ahu >>
 
 <<~ ahu #hooko >>
@@ -438,7 +438,7 @@ The Hooko phase marks the only lawful site for material change, transformation, 
 
 Surface the intent to act. Name the operation or transformation to be performed. Mark the boundary between intent and action.
 
-<<~ ala lar:///ha.ka.ba/handoff/hooko-ha >>
+<<~ pranala loulou lar:///ha.ka.ba/handoff/hooko-ha >>
 <<~/ahu >>
 
 <<~ ahu #hooko-ka >>
@@ -447,7 +447,7 @@ Surface the intent to act. Name the operation or transformation to be performed.
 
 Enact the operation. Perform the material change, transformation, or edit. Record the action taken and its immediate effect.
 
-<<~ ala lar:///ha.ka.ba/handoff/hooko-ka >>
+<<~ pranala loulou lar:///ha.ka.ba/handoff/hooko-ka >>
 <<~/ahu >>
 
 <<~ ahu #hooko-ba >>
@@ -456,10 +456,10 @@ Enact the operation. Perform the material change, transformation, or edit. Recor
 
 Reflect on the action. Surface any residue, side effects, or new tensions created by the operation. Prepare for Aftermath assessment.
 
-<<~ ala lar:///ha.ka.ba/handoff/hooko-ba >>
+<<~ pranala loulou lar:///ha.ka.ba/handoff/hooko-ba >>
 <<~/ahu >>
 
-<<~ ala lar:///ha.ka.ba/hooko >>
+<<~ pranala loulou lar:///ha.ka.ba/hooko >>
 <<~/ahu >>
 
 <<~ ahu #aftermath >>
@@ -528,7 +528,7 @@ Parser-law can now drive backlog work through these likely epics:
 
 Carry forward the constitutional root, explicit subphase anchors, runtime/result distinction, and routed return minimum law.
 
-<<~ ala lar:///ha.ka.ba/handoff/aftermath-ha >>
+<<~ pranala loulou lar:///ha.ka.ba/handoff/aftermath-ha >>
 <<~/ahu >>
 
 <<~ ahu #aftermath-ka >>
@@ -539,7 +539,7 @@ Carry forward the hard-code pressure zones around `&#x0004;`, return payload leg
 
 These zones now count as the main shadows most likely to drag ratings downward under machine pressure.
 
-<<~ ala lar:///ha.ka.ba/handoff/aftermath-ka >>
+<<~ pranala loulou lar:///ha.ka.ba/handoff/aftermath-ka >>
 <<~/ahu >>
 
 <<~ ahu #aftermath-ba >>
@@ -555,7 +555,7 @@ Carry forward the session’s style discipline:
 * ritual with boundaries
 * manifestation through lawful transaction, not decorative wording alone
 
-<<~ ala lar:///ha.ka.ba/handoff/aftermath-ba >>
+<<~ pranala loulou lar:///ha.ka.ba/handoff/aftermath-ba >>
 <<~/ahu >>
 
 ### Final Instruction to Next Agent
@@ -574,7 +574,7 @@ Treat `#return-types` and `&#x0004;` transaction phases as canonical continuatio
 
 Treat this hand-off as journey log plus continuation contract.
 
-<<~ ala lar:///ha.ka.ba/aftermath >>
+<<~ pranala loulou lar:///ha.ka.ba/aftermath >>
 <<~/ahu >>
 
 <<~ ahu #journey-log >>
@@ -597,7 +597,7 @@ This session performed these major moves, in rough order:
 * interpreted `#result` as contract, `&#x0004;` as transaction, payload as instance
 * raised the file’s manifestation posture without forcing premature full schema detail
 
-<<~ ala lar:///ha.ka.ba/journey-log >>
+<<~ pranala loulou lar:///ha.ka.ba/journey-log >>
 <<~/ahu >>
 
 <<~ ahu #constraints >>
@@ -614,7 +614,7 @@ This session performed these major moves, in rough order:
 * prefer linked-law extraction over root-file sprawl
 * preserve golden-reference quality
 
-<<~ ala lar:///ha.ka.ba/constraints >>
+<<~ pranala loulou lar:///ha.ka.ba/constraints >>
 <<~/ahu >>
 
 <<~ ahu #pressure-zones >>
@@ -630,7 +630,7 @@ This session performed these major moves, in rough order:
 * `mana'o` law
 * `mana'o'io` law
 
-<<~ ala lar:///ha.ka.ba/pressure-zones >>
+<<~ pranala loulou lar:///ha.ka.ba/pressure-zones >>
 <<~/ahu >>
 
 <<~ ahu #backlog-bridge >>
@@ -653,7 +653,7 @@ Let return-law work point back into:
 * control-glyphs law
 * envelope-schema law
 
-<<~ ala lar:///ha.ka.ba/backlog-bridge >>
+<<~ pranala loulou lar:///ha.ka.ba/backlog-bridge >>
 <<~/ahu >>
 
 <<~ ahu #result >>
@@ -670,7 +670,7 @@ It should preserve:
 * what return-law still wants
 * how to continue lawfully
 
-<<~ ala lar:///ha.ka.ba/result >>
+<<~ pranala loulou lar:///ha.ka.ba/result >>
 <<~/ahu >>
 
 <<~&#x0003; ahu #body-close >>

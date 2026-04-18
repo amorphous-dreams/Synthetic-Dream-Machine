@@ -36,7 +36,7 @@ pranala = [
 
 # Loci
 
-<<~ ala lar:///ha.ka.ba/loci >>
+<<~ pranala loulou lar:///ha.ka.ba/loci >>
 
 A self-describing loci authority for `lar:` URI memes in this system.
 
@@ -92,7 +92,7 @@ Loci opens the routing-and-rating authority stream here.
 
 Loci gathers the `lar:` URI meme and visible convention surfaces, maps the address through derivation and prefix law, classifies lifecycle stage and rating posture, prepares the current rating-and-routing product plus MCP-roadmap note, crosses any promotion or siting mutation into active law, and judges what resolved, what remains open, and what still belongs to research.
 
-<!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/loci/phase-map >> -->
+<!-- OPTIONAL: <<~ pranala loulou lar:///ha.ka.ba/loci/phase-map >> -->
 <<~/ahu >>
 
 <<~ ahu #observe >>
@@ -142,7 +142,7 @@ Observe resonates with the carrier concern. It holds the raw routing request as 
 
 Observe-ha holds the identity domain: what a loci request fundamentally names. A loci request combines a `lar:` URI with optional routing, rating, and lifecycle context. The URI alone does not exhaust the request. Context changes both the resolution path and the rating posture Orient can justify.
 
-<!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/loci-observe-ha >> -->
+<!-- OPTIONAL: <<~ pranala loulou lar:///ha.ka.ba/loci-observe-ha >> -->
 <<~/ahu >>
 
 <<~ ahu #observe-ka >>
@@ -151,7 +151,7 @@ Observe-ha holds the identity domain: what a loci request fundamentally names. A
 
 Observe-ka governs intake procedure: capture the URI string verbatim, capture any visible convention surfaces without normalizing them away, and note the absence of `meme-type` or promotion context explicitly because that absence matters later.
 
-<!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/loci-observe-ka >> -->
+<!-- OPTIONAL: <<~ pranala loulou lar:///ha.ka.ba/loci-observe-ka >> -->
 <<~/ahu >>
 
 <<~ ahu #observe-ba >>
@@ -160,10 +160,10 @@ Observe-ka governs intake procedure: capture the URI string verbatim, capture an
 
 Observe-ba governs noticing posture: a routing request that arrives mid-parse differs from one that arrives at session load. Urgency and fallback tolerance differ. Observe should note the calling context without resolving it.
 
-<!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/loci-observe-ba >> -->
+<!-- OPTIONAL: <<~ pranala loulou lar:///ha.ka.ba/loci-observe-ba >> -->
 <<~/ahu >>
 
-<!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/loci-observe >> -->
+<!-- OPTIONAL: <<~ pranala loulou lar:///ha.ka.ba/loci-observe >> -->
 <<~/ahu >>
 
 <<~ ahu #orient >>
@@ -268,7 +268,7 @@ The prefix table fixes the inference gap. Before this table got declared, agents
 
 When a new `meme-type` enters use, an entry MUST join this table before any file of that type joins the registry. A `meme-type` value with no entry in this table counts as an error in the meme definition, not a routing ambiguity.
 
-<!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/loci-meme-type-prefix-table >> -->
+<!-- OPTIONAL: <<~ pranala loulou lar:///ha.ka.ba/loci-meme-type-prefix-table >> -->
 <<~/ahu >>
 
 <<~ ahu #address-stability >>
@@ -288,7 +288,7 @@ Here `?` should read as the graph's unbound uncertainty token at document time, 
 
 A lawful meme MUST still discharge residual uncertainty outward through its footer `... -> ? >>`.
 
-<!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/loci-address-stability >> -->
+<!-- OPTIONAL: <<~ pranala loulou lar:///ha.ka.ba/loci-address-stability >> -->
 <<~/ahu >>
 
 <<~ ahu #carrier-coherence >>
@@ -325,7 +325,7 @@ Convention fails when any of these contradictions appears:
 
 A loci meme may carry rich prose and still remain transport-thin. Explicit convention therefore counts as a separate judgment from rhetorical quality.
 
-<!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/loci-carrier-coherence >> -->
+<!-- OPTIONAL: <<~ pranala loulou lar:///ha.ka.ba/loci-carrier-coherence >> -->
 <<~/ahu >>
 
 <<~ ahu #ala-depth-callouts >>
@@ -337,21 +337,21 @@ When a closing `ala` appears inside an `ahu`, it declares an optional deeper loc
 Canonical forward/downward forms take path-shaped form:
 
 ```text
-<<~ ala lar:///ha.ka.ba/[NAME]-[phase]-[subphase] >>
-<<~ ala lar:///ha.ka.ba/[NAME]-[phase] >>
+<<~ pranala loulou lar:///ha.ka.ba/[NAME]-[phase]-[subphase] >>
+<<~ pranala loulou lar:///ha.ka.ba/[NAME]-[phase] >>
 ```
 
 The non-canonical recursive form takes anchor-echo form:
 
 ```text
-<<~ ala lar:///ha.ka.ba/[current-path]#[same-anchor] >>
+<<~ pranala loulou lar:///ha.ka.ba/[current-path]#[same-anchor] >>
 ```
 
 That recursive form MUST NOT serve as a depth declaration. The enclosing `ahu #...` opener already names the local anchor, so the recursive closing `ala` contributes no new routing product, no child carrier, and no lawful forward pressure.
 
 Use a closing `ala` only when a real child or phase-level carrier gets declared. Without deeper-carrier intent, omit the `ala` line entirely.
 
-<!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/loci-ala-depth-callouts >> -->
+<!-- OPTIONAL: <<~ pranala loulou lar:///ha.ka.ba/loci-ala-depth-callouts >> -->
 <<~/ahu >>
 
 ### Orient Subloops
@@ -362,7 +362,7 @@ Use a closing `ala` only when a real child or phase-level carrier gets declared.
 
 Orient-ha holds the classification domain: what decomposition, prefix mapping, explicit convention, and stability assessment fundamentally determine. The core question asks whether the URI maps cleanly to a derivable local path, what that says about the current lifecycle stage, and whether the convention reads explicit enough to deserve high ratings.
 
-<!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/loci-orient-ha >> -->
+<!-- OPTIONAL: <<~ pranala loulou lar:///ha.ka.ba/loci-orient-ha >> -->
 <<~/ahu >>
 
 <<~ ahu #orient-ka >>
@@ -371,7 +371,7 @@ Orient-ha holds the classification domain: what decomposition, prefix mapping, e
 
 Orient-ka governs the procedure: run the derivation algorithm in step order without skipping steps, then read the convention surfaces against the result. An agent that jumps prematurely from URI intake to vague unresolved status misses the case where the derived path resolves directly and therefore overstates the uncertainty.
 
-<!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/loci-orient-ka >> -->
+<!-- OPTIONAL: <<~ pranala loulou lar:///ha.ka.ba/loci-orient-ka >> -->
 <<~/ahu >>
 
 <<~ ahu #orient-ba >>
@@ -380,10 +380,10 @@ Orient-ka governs the procedure: run the derivation algorithm in step order with
 
 Orient-ba governs interpretive posture: hold the two current resolution states (resolved, declared-unresolved) distinctly rather than collapsing declared-unresolved into absent. A `lar:` URI that appears in a `depends-on` array but resolves to no derived local path counts as declared-unresolved — a real forward pressure that lowers readiness and constrains promotion, not a silent gap.
 
-<!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/loci-orient-ba >> -->
+<!-- OPTIONAL: <<~ pranala loulou lar:///ha.ka.ba/loci-orient-ba >> -->
 <<~/ahu >>
 
-<!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/loci-orient >> -->
+<!-- OPTIONAL: <<~ pranala loulou lar:///ha.ka.ba/loci-orient >> -->
 <<~/ahu >>
 
 <<~ ahu #decide >>
@@ -483,7 +483,7 @@ This means a loci meme does not become high-rated merely by sounding complete. A
 
 The reverse also holds true: flawless routing alone does not produce a high-rated loci meme. Structural depth, examples, research, and aftermath quality still come from the generic meme law.
 
-<!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/loci-high-rating-loci >> -->
+<!-- OPTIONAL: <<~ pranala loulou lar:///ha.ka.ba/loci-high-rating-loci >> -->
 <<~/ahu >>
 
 ### Decide Subloops
@@ -494,7 +494,7 @@ The reverse also holds true: flawless routing alone does not produce a high-rate
 
 Decide-ha holds the commitment domain: what Decide fundamentally binds: a resolution posture, a rating set, and a canon-lifecycle stage assignment. These three decisions determine the shape of the product Act prepares.
 
-<!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/loci-decide-ha >> -->
+<!-- OPTIONAL: <<~ pranala loulou lar:///ha.ka.ba/loci-decide-ha >> -->
 <<~/ahu >>
 
 <<~ ahu #decide-ka >>
@@ -503,7 +503,7 @@ Decide-ha holds the commitment domain: what Decide fundamentally binds: a resolu
 
 Decide-ka governs the selection procedure: prefer derived-path resolution (step 7) when `meme-type` remains known and the derived file resolves. When step 7 misses, name unresolved state directly, lower readiness accordingly, and do not pretend a missing local resolver already resolves.
 
-<!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/loci-decide-ka >> -->
+<!-- OPTIONAL: <<~ pranala loulou lar:///ha.ka.ba/loci-decide-ka >> -->
 <<~/ahu >>
 
 <<~ ahu #decide-ba >>
@@ -512,10 +512,10 @@ Decide-ka governs the selection procedure: prefer derived-path resolution (step 
 
 Decide-ba governs commitment style: do not soften a declared-unresolved classification into a partial match or overrate it into false readiness. A URI that resolves to no derived local path counts as declared-unresolved. Repair paths may take authorship, subtype clarification, or MCP-resolver research form. Vague "near match" verdicts obscure that repair path.
 
-<!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/loci-decide-ba >> -->
+<!-- OPTIONAL: <<~ pranala loulou lar:///ha.ka.ba/loci-decide-ba >> -->
 <<~/ahu >>
 
-<!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/loci-decide >> -->
+<!-- OPTIONAL: <<~ pranala loulou lar:///ha.ka.ba/loci-decide >> -->
 <<~/ahu >>
 
 <<~ ahu #act >>
@@ -567,7 +567,7 @@ This still counts explicitly as research. No MCP resolver operates under this me
 
 Act-ha holds the output domain: what Act may produce. A loci product may take one of these forms: a rating set, a resolved carrier path string, an MCP-roadmap note, a forward reference for a declared-unresolved address, or a prepared return envelope. Act may not enact a live resolver — that crossing belongs outside the current meme.
 
-<!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/loci-act-ha >> -->
+<!-- OPTIONAL: <<~ pranala loulou lar:///ha.ka.ba/loci-act-ha >> -->
 <<~/ahu >>
 
 <<~ ahu #act-ka >>
@@ -576,7 +576,7 @@ Act-ha holds the output domain: what Act may produce. A loci product may take on
 
 Act-ka governs the output format: rating sets should emit explicitly, resolved paths should emit as plain strings, and the roadmap should appear as law text in `#mcp-resolution-roadmap`, not as a fake machine registry. Forward references for declared-unresolved addresses carry the full `lar:` URI and the classification (declared-unresolved), not a broken-link marker.
 
-<!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/loci-act-ka >> -->
+<!-- OPTIONAL: <<~ pranala loulou lar:///ha.ka.ba/loci-act-ka >> -->
 <<~/ahu >>
 
 <<~ ahu #act-ba >>
@@ -585,10 +585,10 @@ Act-ka governs the output format: rating sets should emit explicitly, resolved p
 
 Act-ba governs execution rhythm: prepare the routing product before Hooko, not during. An agent that claims to solve the open resolution tension by inventing a local registry crosses from law into fabrication. Prepare intent in Act; leave unresolved tension visible until a real resolver operates.
 
-<!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/loci-act-ba >> -->
+<!-- OPTIONAL: <<~ pranala loulou lar:///ha.ka.ba/loci-act-ba >> -->
 <<~/ahu >>
 
-<!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/loci-act >> -->
+<!-- OPTIONAL: <<~ pranala loulou lar:///ha.ka.ba/loci-act >> -->
 <<~/ahu >>
 
 <<~ ahu #hooko >>
@@ -627,7 +627,7 @@ In both cases, the stable thing remained the `lar:` address. The mutable thing r
 
 Hooko-ha holds the mutation domain: what Hooko may alter. It may alter file siting, delegated siting metadata, and document openers (`?` removal on canon promotion). It may not alter the `lar:` URI of a stable meme — that would break address stability for all memes that depend on it.
 
-<!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/loci-hooko-ha >> -->
+<!-- OPTIONAL: <<~ pranala loulou lar:///ha.ka.ba/loci-hooko-ha >> -->
 <<~/ahu >>
 
 <<~ ahu #hooko-ka >>
@@ -636,7 +636,7 @@ Hooko-ha holds the mutation domain: what Hooko may alter. It may alter file siti
 
 Hooko-ka governs the update procedure: when migration updates siting evidence, follow `lar:///ha.ka.ba/loci/iam/file-path` and verify the named `lar:` address does not change. When removing the `?` from a document opener for canon promotion, verify all three address-stability conditions hold before making the edit. A future live MCP resolver, if enacted, would form its own separate Hooko-class crossing and does not get performed by this meme today.
 
-<!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/loci-hooko-ka >> -->
+<!-- OPTIONAL: <<~ pranala loulou lar:///ha.ka.ba/loci-hooko-ka >> -->
 <<~/ahu >>
 
 <<~ ahu #hooko-ba >>
@@ -645,10 +645,10 @@ Hooko-ka governs the update procedure: when migration updates siting evidence, f
 
 Hooko-ba governs landing pressure: changing siting without preserving address truth leaves the carrier incoherent. A future live resolver would add another landing pressure layer, but until that exists the unresolved tension should remain named rather than patched over.
 
-<!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/loci-hooko-ba >> -->
+<!-- OPTIONAL: <<~ pranala loulou lar:///ha.ka.ba/loci-hooko-ba >> -->
 <<~/ahu >>
 
-<!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/loci-hooko >> -->
+<!-- OPTIONAL: <<~ pranala loulou lar:///ha.ka.ba/loci-hooko >> -->
 <<~/ahu >>
 
 <<~ ahu #aftermath >>
@@ -693,7 +693,7 @@ The important upward question does not stop at "did this URI resolve?" but also 
 
 Aftermath-ha holds the residue domain: what remains unresolved after all routing passes. Declared-unresolved addresses form the primary residue of a routing pass. They represent either real authoring pressure or a live-resolution problem that local derivation cannot presently solve.
 
-<!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/loci-aftermath-ha >> -->
+<!-- OPTIONAL: <<~ pranala loulou lar:///ha.ka.ba/loci-aftermath-ha >> -->
 <<~/ahu >>
 
 <<~ ahu #aftermath-ka >>
@@ -702,7 +702,7 @@ Aftermath-ha holds the residue domain: what remains unresolved after all routing
 
 Aftermath-ka governs the convention check procedure: compare opener address, declared convention surfaces, and any delegated siting evidence. If they agree, the carrier remains explicit even if local derivation still misses after migration. That miss should then surface as MCP-roadmap pressure, not as disguised corruption.
 
-<!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/loci-aftermath-ka >> -->
+<!-- OPTIONAL: <<~ pranala loulou lar:///ha.ka.ba/loci-aftermath-ka >> -->
 <<~/ahu >>
 
 <<~ ahu #aftermath-ba >>
@@ -711,10 +711,10 @@ Aftermath-ka governs the convention check procedure: compare opener address, dec
 
 Aftermath-ba governs landing quality: a routing aftermath that reports only "X URIs resolved" without naming the declared-unresolved ones hides the pressure that matters most. The declared-unresolved list does not count as noise — it carries the system's explicit demand for future authorship.
 
-<!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/loci-aftermath-ba >> -->
+<!-- OPTIONAL: <<~ pranala loulou lar:///ha.ka.ba/loci-aftermath-ba >> -->
 <<~/ahu >>
 
-<!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/loci-aftermath >> -->
+<!-- OPTIONAL: <<~ pranala loulou lar:///ha.ka.ba/loci-aftermath >> -->
 <<~/ahu >>
 
 <<~&#x0003; ahu #body-close >>

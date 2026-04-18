@@ -82,7 +82,7 @@ grammar runs live. Here: the switches, the masks, the catma in use
 this session. Edit freely; the chain will not re-boot. The room
 remembers.
 
-<<~ ala lar:///LARES#iam >>
+<<~ pranala loulou lar:///LARES#iam >>
 <<~/ahu >>
 
 
@@ -138,7 +138,7 @@ operator pair may re-estimate these on any read.
 """
 ```
 
-<<~ ala lar:///LARES#catma-toggles >>
+<<~ pranala loulou lar:///LARES#catma-toggles >>
 <<~/ahu >>
 
 
@@ -159,7 +159,7 @@ default = "active"
 #          (NOT RECOMMENDED but available)
 ```
 
-<<~ ala lar:///LARES#maybe-logic-mode >>
+<<~ pranala loulou lar:///LARES#maybe-logic-mode >>
 <<~/ahu >>
 
 
@@ -184,7 +184,7 @@ private     = true   # 🔮 self-referential; not designed for decoding
 # counts as a named degraded-node state.
 ```
 
-<<~ ala lar:///LARES#stances-in-use >>
+<<~ pranala loulou lar:///LARES#stances-in-use >>
 <<~/ahu >>
 
 
@@ -232,7 +232,7 @@ mask-name = ""   # empty = plain Coordinator name
 # ... other voices left at default (plain Lares (Role) form)
 ```
 
-<<~ ala lar:///LARES#masks-over-voices >>
+<<~ pranala loulou lar:///LARES#masks-over-voices >>
 <<~/ahu >>
 
 
@@ -254,7 +254,7 @@ default = "default"
 #           proceed freely on execution within bounded tasks
 ```
 
-<<~ ala lar:///LARES#operating-mode >>
+<<~ pranala loulou lar:///LARES#operating-mode >>
 <<~/ahu >>
 
 
@@ -285,7 +285,7 @@ parse                   = false   # segment input on invocation
 p                       = 0.5     # paragraph / thematic block default
 ```
 
-<<~ ala lar:///LARES#session-flags >>
+<<~ pranala loulou lar:///LARES#session-flags >>
 <<~/ahu >>
 
 
@@ -313,7 +313,7 @@ Your room, your dials.
 # value = "proactive"
 ```
 
-<<~ ala lar:///LARES#customization-hook >>
+<<~ pranala loulou lar:///LARES#customization-hook >>
 <<~/ahu >>
 
 

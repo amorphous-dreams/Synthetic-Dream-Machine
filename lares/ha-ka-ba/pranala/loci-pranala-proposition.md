@@ -41,7 +41,7 @@ pranala = [
 
 A self-describing kānāwai (law) for semantic and ontological edges.
 
-<<~ ala lar:///ha.ka.ba/loci/edge/proposition >>
+<<~ pranala loulou lar:///ha.ka.ba/loci/edge/proposition >>
 
 This meme governs edges that say something true, false, contrastive, or taxonomic about the relation between two endpoints. It gives the graph a readable linking phrase instead of leaving relation meaning trapped in prose.
 

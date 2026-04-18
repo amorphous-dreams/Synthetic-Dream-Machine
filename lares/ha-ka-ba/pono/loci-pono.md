@@ -38,7 +38,7 @@ A self-describing index of all memetic-wikitext kānāwai (law) memes.
 
 Pono names, addresses, and relates every active kānāwai (law) in this system. It also hosts verification skills as `skill-*.md` packages under [lares/ha-ka-ba/pono/](lares/ha-ka-ba/pono/).
 
-<<~ ala lar:///ha.ka.ba/pono >>
+<<~ pranala loulou lar:///ha.ka.ba/pono >>
 
 ## Supported Queries
 

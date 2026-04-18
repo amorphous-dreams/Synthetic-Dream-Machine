@@ -48,7 +48,7 @@ This file replaces four scratch research notes with one routeable worksite. It k
 
 This memo is not yet a binding kānāwai (law). It is a `todo` locus meant to prepare the next lawful implementation and later canon-writing passes.
 
-<<~ ala lar:///todo/DreamNet_MemeWiki >>
+<<~ pranala loulou lar:///todo/DreamNet_MemeWiki >>
 
 ## Supported Queries
 

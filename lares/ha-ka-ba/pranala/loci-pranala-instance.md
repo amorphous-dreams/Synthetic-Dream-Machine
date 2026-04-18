@@ -42,7 +42,7 @@ pranala = [
 
 A self-describing kānāwai (law) for bound edge objects.
 
-<<~ ala lar:///ha.ka.ba/loci/edge/instance >>
+<<~ pranala loulou lar:///ha.ka.ba/loci/edge/instance >>
 
 This meme governs the concrete edge an author or tool can point at directly. It binds actual endpoints, an actual family, actual payload, and an actual confidence posture.
 

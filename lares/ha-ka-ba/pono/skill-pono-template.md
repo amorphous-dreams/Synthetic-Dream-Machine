@@ -53,7 +53,7 @@ The **inner layer** follows the memetic-wikitext standard — TOML `#iam` block,
 
 A skill authored in this pattern works both as an agentskills.io-compatible loadable skill and as a first-class typed meme. When a skill also claims a stable address under `lar:///ha.ka.ba/**`, it may compose with `loci` rather than facing a forced choice between `skill` and `loci`.
 
-<<~ ala lar:///ha.ka.ba/pono/skill-template >>
+<<~ pranala loulou lar:///ha.ka.ba/pono/skill-template >>
 
 ## Supported Queries
 
@@ -76,7 +76,7 @@ Skill template opens the verification authoring stream here.
 
 A verification skill gathers the target meme surface, classifies element presence against declared invariants, decides pass/fail per invariant, prepares a typed conformance report, crosses the report threshold into session state, and judges residue and repair paths.
 
-<!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/skill-template-phase-map >> -->
+<!-- OPTIONAL: <<~ pranala loulou lar:///ha.ka.ba/skill-template-phase-map >> -->
 <<~/ahu >>
 
 <<~ ahu #dual-surface >>
@@ -123,7 +123,7 @@ Comment-line `ahu` markers MAY group the `#iam` TOML into agent-operator friendl
 
 Dual-surface-ha holds the identity domain: the YAML frontmatter carries the agentskills.io runtime identity. The TOML `#iam` carries the memetic-wikitext constitutional identity. Neither replaces the other. A skill that carries only YAML lacks law standing. A skill that carries only TOML `#iam` cannot load progressively through agent runtimes. Both surfaces must appear and agree on name, role, and coverage.
 
-<!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/skill-template-dual-surface-ha >> -->
+<!-- OPTIONAL: <<~ pranala loulou lar:///ha.ka.ba/skill-template-dual-surface-ha >> -->
 <<~/ahu >>
 
 <<~ ahu #dual-surface-ka >>
@@ -132,7 +132,7 @@ Dual-surface-ha holds the identity domain: the YAML frontmatter carries the agen
 
 Dual-surface-ka governs the agreement check procedure between the two surfaces. The YAML `name` and the TOML `name` should agree (modulo YAML hyphen vs TOML dot conventions). The YAML `description` and the TOML `description` should carry the same essential claim — the YAML form serves agent startup (~100 tokens); the TOML form may run longer and more precise. Description disagreement between surfaces counts as a conformance flag.
 
-<!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/skill-template-dual-surface-ka >> -->
+<!-- OPTIONAL: <<~ pranala loulou lar:///ha.ka.ba/skill-template-dual-surface-ka >> -->
 <<~/ahu >>
 
 <<~ ahu #dual-surface-ba >>
@@ -141,10 +141,10 @@ Dual-surface-ka governs the agreement check procedure between the two surfaces. 
 
 Dual-surface-ba governs authoring posture: write the YAML `description` first, as the constraint. The TOML `description` expands it. If you cannot write a one-sentence YAML description that makes an agent's activation decision clear, the skill's scope still lacks definition precise enough to implement.
 
-<!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/skill-template-dual-surface-ba >> -->
+<!-- OPTIONAL: <<~ pranala loulou lar:///ha.ka.ba/skill-template-dual-surface-ba >> -->
 <<~/ahu >>
 
-<<~ ala lar:///ha.ka.ba/pono/skill-template-dual-surface >>
+<<~ pranala loulou lar:///ha.ka.ba/pono/skill-template-dual-surface >>
 <<~/ahu >>
 
 <<~ ahu #invariant-declaration >>
@@ -166,7 +166,7 @@ invariants = [
   "R3: canonical order reads tulen, confidence, mana, manao, manaoio",
   "R3: register field present after meme-type and before structure",
   "R6: at least one <<~STX; ui ...? -> ...#... >> query throat present",
-  "O7: all <<~ ala lar:// >> links outside fenced blocks point at addresses resolved or wrapped as OPTIONAL HTML comments",
+  "O7: all <<~ pranala loulou lar:// >> links outside fenced blocks point at addresses resolved or wrapped as OPTIONAL HTML comments",
 ]
 ```
 
@@ -189,7 +189,7 @@ Beyond pass/fail, a skill may return `status = "skip"` when the target meme lack
 
 Invariant-declaration-ha holds the invariant identity domain: what makes a claim a checkable invariant versus a vague quality impression. The key test uses falsifiability — if an agent cannot determine pass/fail by reading the target meme surface, the claim does not yet qualify as an invariant; it reads instead as an aspiration. Aspirations belong in `residue`, not in `invariants`.
 
-<!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/skill-template-invariant-declaration-ha >> -->
+<!-- OPTIONAL: <<~ pranala loulou lar:///ha.ka.ba/skill-template-invariant-declaration-ha >> -->
 <<~/ahu >>
 
 <<~ ahu #invariant-declaration-ka >>
@@ -198,7 +198,7 @@ Invariant-declaration-ha holds the invariant identity domain: what makes a claim
 
 Invariant-declaration-ka governs the check procedure per invariant. For each declared invariant: (1) identify the exact element site (line, locus, TOML key); (2) compare observed surface against the declared expected state; (3) emit pass, fail, or skip with observed surface captured. A skill that checks all invariants in a single undifferentiated scan loses per-invariant traceability. Scan in invariant order, emit in invariant order.
 
-<!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/skill-template-invariant-declaration-ka >> -->
+<!-- OPTIONAL: <<~ pranala loulou lar:///ha.ka.ba/skill-template-invariant-declaration-ka >> -->
 <<~/ahu >>
 
 <<~ ahu #invariant-declaration-ba >>
@@ -207,10 +207,10 @@ Invariant-declaration-ka governs the check procedure per invariant. For each dec
 
 Invariant-declaration-ba governs the authoring motion: start with the most structurally load-bearing invariant, not the easiest to check. If R1 fails, R3 may lose meaning. Order invariants so that an early failure provides maximum information about the meme's state. A skill that surfaces "R9 missing" when "R1 missing" likewise applies buries the primary signal.
 
-<!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/skill-template-invariant-declaration-ba >> -->
+<!-- OPTIONAL: <<~ pranala loulou lar:///ha.ka.ba/skill-template-invariant-declaration-ba >> -->
 <<~/ahu >>
 
-<<~ ala lar:///ha.ka.ba/pono/skill-template-invariant-declaration >>
+<<~ pranala loulou lar:///ha.ka.ba/pono/skill-template-invariant-declaration >>
 <<~/ahu >>
 
 <<~ ahu #pre-mcp >>
@@ -425,7 +425,7 @@ The agent-native pattern offers the lowest-cost path to first-skill yield. Write
 
 Pre-MCP-ha holds the implementation domain: the three available substrates (agent-native, CLI subprocess, hybrid) and their identity boundaries. Agent-native runs in the agent's own context. CLI subprocess runs in a shell with its own parse environment. Hybrid splits mechanical from semantic. The choice of substrate governs what the skill can and cannot verify without ambiguity.
 
-<!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/skill-template-pre-mcp-ha >> -->
+<!-- OPTIONAL: <<~ pranala loulou lar:///ha.ka.ba/skill-template-pre-mcp-ha >> -->
 <<~/ahu >>
 
 <<~ ahu #pre-mcp-ka >>
@@ -434,7 +434,7 @@ Pre-MCP-ha holds the implementation domain: the three available substrates (agen
 
 Pre-MCP-ka governs implementation detail: the agent-native pattern offers the cheapest path but the least reproducible one (the agent's parse behavior may vary). The CLI subprocess pattern offers the most reproducible path but requires a maintained script. For invariants that parse TOML or count sigil occurrences mechanically, CLI subprocess stays strongly preferred. For invariants that require interpretive judgment about local prose meaning, agent-native remains the only viable substrate.
 
-<!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/skill-template-pre-mcp-ka >> -->
+<!-- OPTIONAL: <<~ pranala loulou lar:///ha.ka.ba/skill-template-pre-mcp-ka >> -->
 <<~/ahu >>
 
 <<~ ahu #pre-mcp-ba >>
@@ -443,10 +443,10 @@ Pre-MCP-ka governs implementation detail: the agent-native pattern offers the ch
 
 Pre-MCP-ba governs implementation motion: start with two or three mechanical invariants (R1, R3 ratings, R6 throats) implemented as CLI subprocess. Add semantic invariants (O1 phase prose quality) as agent-native supplements. Do not try to build a complete verification suite before any invariant receives verification against a real meme. One working invariant check with a real pass/fail result outweighs ten declared invariants with no implementation.
 
-<!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/skill-template-pre-mcp-ba >> -->
+<!-- OPTIONAL: <<~ pranala loulou lar:///ha.ka.ba/skill-template-pre-mcp-ba >> -->
 <<~/ahu >>
 
-<<~ ala lar:///ha.ka.ba/pono/skill-template-pre-mcp >>
+<<~ pranala loulou lar:///ha.ka.ba/pono/skill-template-pre-mcp >>
 <<~/ahu >>
 
 <<~ ahu #post-mcp >>
@@ -510,7 +510,7 @@ For full-graph conformance sweeps (all memes against all registered invariants),
 
 Post-MCP-ha holds the MCP identity domain: what the MCP server counts as in this system. It does not replace the skill body; it serves as a runtime substrate that makes mechanical invariant checks reproducible, URI routing explicit, and semantic judgment callable. The skill body remains authoritative for what to check; MCP governs how those checks execute.
 
-<!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/skill-template-post-mcp-ha >> -->
+<!-- OPTIONAL: <<~ pranala loulou lar:///ha.ka.ba/skill-template-post-mcp-ha >> -->
 <<~/ahu >>
 
 <<~ ahu #post-mcp-ka >>
@@ -519,7 +519,7 @@ Post-MCP-ha holds the MCP identity domain: what the MCP server counts as in this
 
 Post-MCP-ka governs the migration procedure. Do not migrate to MCP before Phase 1 tools exist and at least one real skill package (e.g. `skill-parser.md`) receives validation against real memes. Migration before validation produces MCP tools that go wrong in ways the tool surface hides. Validate the invariant logic first in CLI or agent-native form, then lift into MCP.
 
-<!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/skill-template-post-mcp-ka >> -->
+<!-- OPTIONAL: <<~ pranala loulou lar:///ha.ka.ba/skill-template-post-mcp-ka >> -->
 <<~/ahu >>
 
 <<~ ahu #post-mcp-ba >>
@@ -528,10 +528,10 @@ Post-MCP-ka governs the migration procedure. Do not migrate to MCP before Phase 
 
 Post-MCP-ba governs the authoring motion across migration: keep the skill body current even after MCP tools exist. The skill body remains the law; the MCP tool serves as the implementation. An agent that reads the skill body should still perform the verification without the MCP server, at lower fidelity but without aborting. The MCP server should raise fidelity, not gate execution.
 
-<!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/skill-template-post-mcp-ba >> -->
+<!-- OPTIONAL: <<~ pranala loulou lar:///ha.ka.ba/skill-template-post-mcp-ba >> -->
 <<~/ahu >>
 
-<<~ ala lar:///ha.ka.ba/pono/skill-template-post-mcp >>
+<<~ pranala loulou lar:///ha.ka.ba/pono/skill-template-post-mcp >>
 <<~/ahu >>
 
 <<~&#x0003; ahu #body-close >>
