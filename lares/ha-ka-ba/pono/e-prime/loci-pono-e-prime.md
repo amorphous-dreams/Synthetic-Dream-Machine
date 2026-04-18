@@ -17,19 +17,38 @@ manaoio = 0.76
 content-type = "text/x-memetic-wikitext"
 meme-type = "pono"
 register = "SC"
-structure = "OODA-HA * ha.ka.ba"
+structure = "invariant * OODA-HA" #todo
 # <<~/ahu >>
 # <<~ ahu #iam-ka "detail" >>
 role = "active language-discipline kānāwai (law), certainty-pressure regulator, next-generation pressure surface, and secondary audit governor for outward text"
 function = "govern lawful E-Prime practice across memetic-wikitext output units; stay active ahead of outward render; catch identity-collapse pressure before wording settles; bend the next phrasing toward compact truth; preserve human and agent readability"
 invariant = true
-cacheable = true
-canonical-forms = ["inline", "block", "payload-block", "return"]
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
-pranala = []
+pranala = [
+    "lar:///ha.ka.ba/pono/e-prime/SKILL"
+]
 # <<~/ahu >>
 ```
+
+<<~/ahu >>
+
+<<~ ahu #normative-language >>
+
+## Normative Language
+
+The key words `MUST`, `MUST NOT`, `SHOULD`, `SHOULD NOT`, and `MAY` in this meme mark normative force per RFC 2119.
+
+Normative keywords MUST bind generation, release, correction, or recheck.
+Normative keywords MUST NOT decorate prose.
+Normative keywords SHOULD stay sparse enough to carry weight.
+
+Canonical set: <<~ pranala loulou lar:///ha.ka.ba/memetic-wikitext/normative-verbs >>
+
+<!-- 
+todo - transclude this block into place with:
+<<~ aka lar:///ha.ka.ba/pono/normative-verbs >>
+ -->
 
 <<~/ahu >>
 
@@ -45,18 +64,6 @@ This kānāwai MUST stay active through drafting and release. It pressures the n
 
 <<~&#x0002; ahu #meme-body-open >>
 Pono/E-Prime
-<<~/ahu >>
-
-<<~ ahu #normative-language >>
-
-## Normative Language
-
-The key words `MUST`, `MUST NOT`, `SHOULD`, `SHOULD NOT`, and `MAY` in this meme mark normative force.
-
-The canonical set lives at `lar:///ha.ka.ba/pono/normative-verbs`.
-
-Use them only where this law binds generation, release, correction, or recheck.
-
 <<~/ahu >>
 
 <<~ ahu #confidence-marker >>

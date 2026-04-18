@@ -105,7 +105,7 @@ Before the hula begins, the lead chanter calls the *kahea* — a specific phrase
 | *Pūʻili* | To weave together | The result of kahea — content woven into the calling locus |
 | *Koʻo* | To support, to prop | The supporting relationship of transcluded content |
 
-**'Ōlelo Hawaiʻi on calling:**
+**ʻŌlelo Hawaiʻi on calling:**
 - *E kahea ana* — "calling out" (continuous action)
 - *Ua kahea ʻia* — "was called" — the passive: the content was summoned
 - *Ka mea i kāhea ʻia* — "the thing that was called" — the transcluded content itself

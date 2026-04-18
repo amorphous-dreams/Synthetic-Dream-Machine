@@ -40,7 +40,7 @@
       <<~ PHASE/2/ORIENT
         <<~ iam 
             @name "memetic-wikitext#orient"
-            @description "Orient on the mana, mana'o, and mana'o'io."
+            @description "Orient on the mana, manaʻo, and manaʻoʻiʻo."
             @role "context formation"
             @function "interpret, relate, map, define"
             @input "raw signals"

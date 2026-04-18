@@ -76,7 +76,7 @@ Not all ahu are the same. Hawaiian tradition distinguishes:
 |---|---|---|
 | *Ahu pohaku* | Stacked stone cairn — trail marker, boundary marker | Section waypoint in a LOCI.md |
 | *Ahu heiau* | Altar platform within a sacred complex — the innermost working surface | The high-confidence section (`[CS:0.90+]`) |
-| *Ahu ko'a* | Fishing shrine — small coastal stone where fishermen offered before going out | Pre-sortie orientation point |
+| *Ahu koʻa* | Fishing shrine — small coastal stone where fishermen offered before going out | Pre-sortie orientation point |
 | *Ahu pā* | Boundary marker of a land division (*ahupuaʻa*) | The kapu line between loci |
 | *Ahu a Māui* | "The cairn of Māui" — mythic stacked islands | The grammar root itself |
 

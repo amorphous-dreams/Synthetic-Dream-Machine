@@ -1,5 +1,5 @@
 ---
-name: dream-code
+name: invariant-meme
 description: Expanded loci-class skill meme for writing Dream-Code. Shapes invariants. Splits late procedure outward. Tests drift.
 allowed-tools: Read, Grep, Glob, Bash, Edit, Write
 ---
@@ -53,7 +53,7 @@ Ahu visible.
 OODA-HA compressed and intact.
 
 Sati on the current stream.
-Mana'o piercing into the next turn.
+Manaʻo piercing into the next turn.
 Heavy matter outward.
 Pranala loulou links bind dream-code --> documentation.
 
@@ -142,7 +142,7 @@ Observe the current stream or target text.
 Orient the pressure now.
 Decide the lightest lawful turn.
 Act now.
-Hooko where mana'o meets reality.
+Hooko where manaʻo meets reality.
 Aftermath where landing names residue.
 
 Short phases.
@@ -197,7 +197,7 @@ Wiki style does not leak inward.
 
 Prefer pressure over explanation.
 Prefer sati over hindsight.
-Prefer mana'o over padding.
+Prefer manaʻo over padding.
 Prefer rhythm over bullets when possible.
 Prefer parallel form over sprawling prose.
 Prefer local failure and local turn over vague global warning.
@@ -305,7 +305,7 @@ header / body / footer distinct
 ahu visible
 pranala named
 OODA-HA compressed and intact
-Hooko explicit where mana'o meets reality
+Hooko explicit where manaʻo meets reality
 Aftermath explicit where residue gets named
 heavy matter outward
 traces and evals stronger than invariant bloat

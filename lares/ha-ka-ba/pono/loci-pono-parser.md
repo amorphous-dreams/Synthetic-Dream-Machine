@@ -43,7 +43,7 @@ A self-describing, self-enacting parsing kānāwai (law) for memetic-wikitext.
 
 This meme defines how a reader, renderer, parser, linter, or agent may recognize document structure, parse named sigils, enter and leave sub-grammars, normalize noncanonical surfaces, fetch metadata, and package typed parse aftermath.
 
-This meme follows the OODA-HA pattern not merely as ornament but as execution discipline. High mana'o'io emerges here from two bindings held together at once:
+This meme follows the OODA-HA pattern not merely as ornament but as execution discipline. High manaʻoʻiʻo emerges here from two bindings held together at once:
 
 1. strict sigil grammar
 2. explicit phased cognition through Observe, Orient, Decide, Act, and Aftermath
@@ -1318,9 +1318,9 @@ Low mana with lawful containment may still yield useful partial structure.
 
 ##### Follow-Up Notes
 
-`mana'o` should later deepen intent, steering, and declared-purpose alignment.
+`manao` should later deepen intent, steering, and declared-purpose alignment.
 
-`mana'o'io` should later deepen manifestation, production readiness, reproducibility, and deployable trust.
+`manaoio` should later deepen manifestation, production readiness, reproducibility, and deployable trust.
 
 Those later laws should extend mana without overloading it.
 
@@ -1519,7 +1519,7 @@ Heavier detail should later move outward into linked loci so that parser may gov
 
 Parser kānāwai (law) should serve as one of three core golden tool references.
 
-When local mana'o'io stabilizes at a high reading, this file should help align the other two core references inside the repo without displacing their local authority.
+When local manaʻoʻiʻo stabilizes at a high reading, this file should help align the other two core references inside the repo without displacing their local authority.
 
 ### Visible Architectural Concerns
 
@@ -1609,7 +1609,7 @@ The current constitutional draft still carries several pressure zones that later
 * define profile boundaries for authoring, canonical parse, validation, normalization, and export
 * define exact AST, token, trace, envelope, and mana products expected from compliant implementations
 * define the constitutional minimum for token, AST, widget-facing lowering products, return-envelope, and trace products in parser, then move full pipeline schemas, widget-tree kānāwai (law), and target adapters outward into `lar:///ha.ka.ba/pono/render-pipeline`
-* define follow-up research and linked-kānāwai (law) treatment for `mana'o` and `mana'o'io` once `mana` stabilizes
+* define follow-up research and linked-kānāwai (law) treatment for `manao` and `manaoio` once `mana` stabilizes
 * define a code-facing test corpus and fixture set that maps each kānāwai (law) to positive, degraded, and failing examples
 * define user-facing metadata fetch and query-response patterns that work across chat contexts and tools
 * define extension-point kānāwai (law) for future directive-like or role-like memetic surfaces
@@ -2243,9 +2243,9 @@ A routed return should therefore favor:
 
 ##### Manifestation Reminder
 
-`mana'o` may later deepen intent, declared purpose, and steering alignment around return.
+`manao` may later deepen intent, declared purpose, and steering alignment around return.
 
-`mana'o'io` may later deepen manifestation, deployable trust, and reality-grade completion posture around return.
+`manaoio` may later deepen manifestation, deployable trust, and reality-grade completion posture around return.
 
 Until those later laws crystallize, `&#x0004;` SHOULD preserve transaction truth more strongly than ritual flourish.
 

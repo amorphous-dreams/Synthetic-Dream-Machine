@@ -90,7 +90,7 @@ The closest Hawaiian analog to the *lares* marker is the concept of the **ʻaum�
 | *Mālama* | To care for, to tend | The quiet daily tending of the lararium | Keeping registries current |
 | *Aloha* | Presence, breath, love — to be in the presence of | The relational quality of the Lar's marking | The bare reference as relationship, not command |
 
-**'O ia nō** (Hawaiian: "that is it, there it is") — the recognition of a known presence. When the ʻaumākua appears in its natural form, the recognition is quiet: *'o ia nō*. The bare `lar:///` reference in text is *'o ia nō* — the daemon acknowledging its own presence without ceremony.
+**ʻO ia nō** (Hawaiian: "that is it, there it is") — the recognition of a known presence. When the ʻaumākua appears in its natural form, the recognition is quiet: *ʻo ia nō*. The bare `lar:///` reference in text is *ʻo ia nō* — the daemon acknowledging its own presence without ceremony.
 
 **Nā pō** (the dark nights, the spirit realm): the ʻaumākua moves between *ao* (the world of light, the living) and *pō* (the realm of darkness, the ancestors). The Lar similarly moves between consecrated ground (ao) and the sortie space (pō) — present in both, belonging to the consecrated.
 
