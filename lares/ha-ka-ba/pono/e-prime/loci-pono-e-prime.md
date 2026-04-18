@@ -100,17 +100,4 @@ Observation, relation, action, and scoped confidence outrank essence claims.
 pono/e-prime
 <<~/ahu >>
 
-<<~ ahu #result >>
-
-## Result
-
-E-Prime pressure live on the next output unit.
-Marker rule live for any surviving `is` or `has`.
-Uncertainty visible, not counterfeited.
-Hooko available whenever the release gate fails.
-
-<<~ pranala loulou lar:///ha.ka.ba/pono/e-prime/SKILL >>
-
-<<~/ahu >>
-
 <<~&#x0004; -> ? >>
