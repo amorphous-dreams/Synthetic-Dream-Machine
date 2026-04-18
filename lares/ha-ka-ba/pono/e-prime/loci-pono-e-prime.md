@@ -24,7 +24,6 @@ structure = "OODA-HA * ha.ka.ba"
 role = "active language-discipline kānāwai (law), certainty-pressure regulator, next-generation pressure surface, and secondary audit governor for outward text"
 function = "govern lawful E-Prime practice across memetic-wikitext output units; stay active ahead of outward render; catch identity-collapse pressure before wording settles; bend the next phrasing toward compact truth; preserve human and agent readability"
 canonical-forms = ["inline", "block", "payload-block", "return"]
-normative-verbs = ["MUST", "MUST NOT", "SHOULD", "SHOULD NOT", "MAY"]
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
 pranala = []
@@ -54,6 +53,8 @@ Pono/E-Prime
 ## Normative Language
 
 The key words `MUST`, `MUST NOT`, `SHOULD`, `SHOULD NOT`, and `MAY` in this meme mark normative force.
+
+The canonical set lives at `lar:///ha.ka.ba/pono/normative-verbs`. This meme uses that shared declaration rather than treating the verb list as carrier-local top-level metadata.
 
 Use them sparingly.
 They SHOULD appear only where the kānāwai needs to constrain outward behavior, prevent false certainty, or preserve interoperable markup and interpretation.

@@ -141,18 +141,18 @@ _SKILL_NAME_RE  = re.compile(r'^#+\s*[Ss][Kk][Ii][Ll][Ll]\s*:?\s*(.+)')
 _YAML_NAME_RE   = re.compile(r'^name:\s*(\S+)', re.MULTILINE)
 
 
-def _derive_skill_name(lines: list[str], file_path: 'Path | None' = None) -> str | None:
+def _derive_skill_name(lines: list[str], file-path: 'Path | None' = None) -> str | None:
     """Derive a skill name from a heading line or from the parent directory name."""
     for line in lines:
         m = _SKILL_NAME_RE.match(line.strip())
         if m:
             return m.group(1).strip().lower().replace(' ', '-')
-    if file_path is not None:
-        return file_path.parent.name
+    if file-path is not None:
+        return file-path.parent.name
     return None
 
 
-def scan_skill_name(lines: list[str], file_path: 'Path | None' = None) -> list[dict]:
+def scan_skill_name(lines: list[str], file-path: 'Path | None' = None) -> list[dict]:
     """
     Check that a SKILL.md file declares a name: field in a YAML block.
     Returns a violation dict if name: is absent, with a suggested fix.
@@ -161,7 +161,7 @@ def scan_skill_name(lines: list[str], file_path: 'Path | None' = None) -> list[d
     # Accept name: inside a ```yaml block or as a bare line
     if _YAML_NAME_RE.search(text):
         return []
-    derived = _derive_skill_name(lines, file_path)
+    derived = _derive_skill_name(lines, file-path)
     suggested = f'name: {derived}' if derived else 'name: <skill-name>'
     return [{
         'issue': 'SKILL_NAME',
@@ -170,19 +170,19 @@ def scan_skill_name(lines: list[str], file_path: 'Path | None' = None) -> list[d
     }]
 
 
-def fix_skill_name(file_path: 'Path', lines: list[str]) -> bool:
+def fix_skill_name(file-path: 'Path', lines: list[str]) -> bool:
     """
     Insert a name: field after the locus wrapper line (line 0) in a SKILL.md.
     Returns True if the file was modified.
     """
-    derived = _derive_skill_name(lines, file_path)
+    derived = _derive_skill_name(lines, file-path)
     name_line = f'name: {derived}\n' if derived else 'name: skill\n'
     # Insert after wrapper (line 0), before the blank line or first heading
     insert_at = 1
     if len(lines) > 1 and lines[1].strip() == '':
         insert_at = 2  # after the blank line following the wrapper
     lines.insert(insert_at, name_line)
-    with file_path.open('w', encoding='utf-8') as f:
+    with file-path.open('w', encoding='utf-8') as f:
         f.writelines(lines)
     return True
 
@@ -269,7 +269,7 @@ def suggested_fix(lines, ext) -> dict:
     }
 
 
-def fix_file(file_path: Path, lines: list[str], ext: str) -> bool:
+def fix_file(file-path: Path, lines: list[str], ext: str) -> bool:
     """Insert missing wrappers in-place. Returns True if the file was modified."""
     start_ok, end_ok = check_uri_wrappers(lines, ext)
     if start_ok and end_ok:
@@ -286,7 +286,7 @@ def fix_file(file_path: Path, lines: list[str], ext: str) -> bool:
             lines[-1] += '\n'
         lines.append(_canonical_end(ext) + '\n')
 
-    with file_path.open('w', encoding='utf-8') as f:
+    with file-path.open('w', encoding='utf-8') as f:
         f.writelines(lines)
     return True
 
@@ -309,20 +309,20 @@ def scan_directory(target_dir, check_stream=False, check_markers=False, check_sk
                     'lines': None,
                 })
     # Check file wrappers (and optionally stream URI fields)
-    for file_path in Path(target_dir).rglob('*'):
-        if not file_path.is_file():
+    for file-path in Path(target_dir).rglob('*'):
+        if not file-path.is_file():
             continue
-        if any(p in SKIP_DIRS for p in file_path.parts):
+        if any(p in SKIP_DIRS for p in file-path.parts):
             continue
-        ext = file_path.suffix.lower()
+        ext = file-path.suffix.lower()
         if ext not in COMMENT_PATTERNS:
             continue
-        with file_path.open('r', encoding='utf-8') as f:
+        with file-path.open('r', encoding='utf-8') as f:
             lines = f.readlines()
         start_ok, end_ok = check_uri_wrappers(lines, ext)
         if not (start_ok and end_ok):
             failures.append({
-                'path': str(file_path),
+                'path': str(file-path),
                 'type': ext,
                 'issue': 'WRAPPER',
                 'start_ok': start_ok,
@@ -332,7 +332,7 @@ def scan_directory(target_dir, check_stream=False, check_markers=False, check_sk
         if check_stream:
             for v in scan_stream_uris(lines, ext):
                 failures.append({
-                    'path': str(file_path), 'type': ext,
+                    'path': str(file-path), 'type': ext,
                     'issue': 'STREAM_FIELDS',
                     'line': v['line'], 'surface': v['surface'],
                     'uri': v['uri'], 'issues': v['issues'], 'lines': None,
@@ -340,15 +340,15 @@ def scan_directory(target_dir, check_stream=False, check_markers=False, check_sk
         if check_markers:
             for v in scan_marker_syntax(lines):
                 failures.append({
-                    'path': str(file_path), 'type': ext,
+                    'path': str(file-path), 'type': ext,
                     'issue': 'MARKER_SYNTAX',
                     'line': v['line'], 'surface': v['surface'],
                     'uri': v['uri'], 'issues': v['issues'], 'lines': None,
                 })
-        if check_skill_names and file_path.name == 'SKILL.md':
-            for v in scan_skill_name(lines, file_path):
+        if check_skill_names and file-path.name == 'SKILL.md':
+            for v in scan_skill_name(lines, file-path):
                 failures.append({
-                    'path': str(file_path), 'type': ext,
+                    'path': str(file-path), 'type': ext,
                     'issue': 'SKILL_NAME',
                     'issues': v['issues'],
                     'suggested_fix': v['suggested_fix'],

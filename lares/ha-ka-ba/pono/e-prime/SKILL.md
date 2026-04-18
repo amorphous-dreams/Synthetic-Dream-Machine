@@ -41,8 +41,6 @@ pranala = [
   "lar:///ha.ka.ba/pono/e-prime",
   "lar:///ha.ka.ba/pono"
 ]
-pass-surface = "mark-only or Hooko surface returned compactly; surviving `is` or `has` all carry markers; residue named honestly"
-fail-surface = "canonical `is` or `has` failure remains unmarked, ambiguity hides itself, or Hooko correction counterfeits closure"
 # <<~/ahu >>
 ```
 <<~/ahu >>
@@ -157,9 +155,9 @@ Do not spread pressure from one sentence across the whole document unless the sa
 
 These remain placeholders until the design settles:
 
-- `scripts/scan_markers.*`
-- `scripts/scan_copulas.*`
-- `scripts/segment_settled_text.*`
+- `scripts/scan-markers.*`
+- `scripts/scan-copulas.*`
+- `scripts/segment-settled-text.*`
 
 If they do not exist, perform the scan directly.
 
@@ -274,9 +272,9 @@ Do not widen a local fix into a document rewrite unless the user asked for a ful
 
 Future hooks may land here:
 
-- `scripts/turn_sentence.*`
-- `scripts/apply_marker_policy.*`
-- `scripts/recheck_turn.*`
+- `scripts/turn-sentence.*`
+- `scripts/apply-marker-policy.*`
+- `scripts/recheck-turn.*`
 
 Treat these as optional implementation surfaces, not current dependencies.
 
@@ -311,13 +309,25 @@ Leave residue honestly:
 
 When using this skill, prefer one of these compact result shapes.
 
+Pass surface:
+
+- mark-only or Hooko output returned compactly
+- surviving `is` or `has` forms all carry markers
+- residue stays named honestly
+
+Fail surface:
+
+- a canonical `is` or `has` failure remains unmarked
+- ambiguity hides itself rather than getting named
+- Hooko correction counterfeits closure
+
 ### Audit Result
 
 ```toml
 mode = "mark-only"
 status = "completed"
-failures_found = <integer>
-hooko_performed = false
+failures-found = <integer>
+hooko-performed = false
 residue = "<short note>"
 ```
 
@@ -326,8 +336,8 @@ residue = "<short note>"
 ```toml
 mode = "hooko"
 status = "completed"
-failures_found = <integer>
-hooko_performed = true
+failures-found = <integer>
+hooko-performed = true
 residue = "<short note>"
 ```
 

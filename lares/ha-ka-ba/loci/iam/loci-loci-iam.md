@@ -23,23 +23,6 @@ structure = "OODA-HA * ha.ka.ba"
 # <<~ ahu #iam-ka "detail" >>
 role = "root metadata kānāwai (law), field-set authority, and reduction charter"
 function = "govern the surviving #iam field set, place each field in the correct ha ka ba slot, and cut redundant or ornamental metadata from live carriers"
-required-ha-keys = [
-  "name",
-  "file-path",
-  "description",
-  "version",
-  "tulen",
-  "confidence",
-  "mana",
-  "manao",
-  "manaoio",
-  "content-type",
-  "meme-type",
-  "register",
-  "structure"
-]
-common-ka-keys = ["role", "function"]
-common-ba-keys = ["pranala"]
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
 pranala = [
@@ -98,11 +81,11 @@ Name where a field changes parse, routing, execution, or truth. Name where a fie
 
 The first collision cluster sits in flow:
 
-- `depends_on`
+- `depends-on`
 - `requires`
 - `provides`
-- `receives_state`
-- `emits_state`
+- `receives-state`
+- `emits-state`
 
 Observe should keep those distinct only while the block still teaches a real difference. Once two or more fields point at the same movement, the cluster begins to lie.
 
@@ -121,10 +104,12 @@ Orient keeps the threefold split intact and sharp.
 The reduced carrier shape:
 
 ```text
-ha: name file_path description version tulen confidence mana manao manaoio content_type meme_type register structure
+ha: name file-path description version tulen confidence mana manao manaoio content-type meme-type register structure
 ka: role function + only the local detail keys that change parse, routing, execution, or truth
-ba: input output depends_on + next only when a real forward edge exists
+ba: input output depends-on + next only when a real forward edge exists
 ```
+
+These field lists govern here as law prose. Live carriers should not restate them as schema-summary keys inside top-level `#iam` metadata.
 
 <<~/ahu >>
 
@@ -137,7 +122,7 @@ ba: input output depends_on + next only when a real forward edge exists
 These fields should stay ordered and dense:
 
 - `name`
-- `file_path`
+- `file-path`
 - `description`
 - `version`
 - `tulen`
@@ -145,8 +130,8 @@ These fields should stay ordered and dense:
 - `mana`
 - `manao`
 - `manaoio`
-- `content_type`
-- `meme_type`
+- `content-type`
+- `meme-type`
 - `register`
 - `structure`
 
@@ -165,7 +150,7 @@ The common core:
 - `role`
 - `function`
 
-Local detail keys survive only when removal would hide real behavior. Good survivors include `boot_order`, `quiescent`, `collision_mode`, `scale`, `attenuation`, `pipeline_layers`, `canonical_forms`, and other keys that materially alter parse, routing, execution, or law scope.
+Local detail keys survive only when removal would hide real behavior. Good survivors include `boot-order`, `quiescent`, `collision-mode`, `scale`, `attenuation`, `pipeline-layers`, `canonical-forms`, and other keys that materially alter parse, routing, execution, or law scope.
 
 Boilerplate that merely restates `#iam` as the metadata locus should not survive here.
 
@@ -181,7 +166,7 @@ The surviving flow keys:
 
 - `input`
 - `output`
-- `depends_on`
+- `depends-on`
 
 `next` may remain only when a real forward edge exists in boot, handoff, or routing sequence.
 
@@ -195,14 +180,14 @@ The surviving flow keys:
 
 Top-level `#iam` should cut these keys from live carriers unless a later law re-justifies one with concrete work:
 
-- `canonical_metadata_locus`
-- `canonical_metadata_payload`
-- `product_identity`
+- `canonical-metadata-locus`
+- `canonical-metadata-payload`
+- `product-identity`
 - `requires`
 - `provides`
-- `receives_state`
-- `emits_state`
-- `confidence_band`
+- `receives-state`
+- `emits-state`
+- `confidence-band`
 
 Keep weakness visible while a carrier still sits short of full alignment. Do not widen the schema to hide that seam.
 
@@ -239,7 +224,7 @@ First:
 4. patch the child laws that govern surviving special keys
 5. leave named weakness visible where migration still remains incomplete
 
-The child law for `file_path` follows next because `file_path` carries the most immediate agreement pressure between metadata and route.
+The child law for `file-path` follows next because `file-path` carries the most immediate agreement pressure between metadata and route.
 
 <<~/ahu >>
 
@@ -272,7 +257,7 @@ status = "metadata-law-ready"
 confidence = 0.70
 yield = "meme"
 return = "render"
-next-observation = "file_path under the reduced #iam contract"
+next-observation = "file-path under the reduced #iam contract"
 ```
 
 This law now names the reduced `#iam` contract for the live corpus.

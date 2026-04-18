@@ -103,7 +103,7 @@ template-name = "governs"
 allowed-from = ["loci", "meme"]
 allowed-to = ["loci", "meme"]
 required-slots = ["from", "to"]
-optional-slots = ["direction", "polarity", "confidence", "payload", "render_mode"]
+optional-slots = ["direction", "polarity", "confidence", "payload", "render-mode"]
 label-default = "governs"
 direction-default = "forward"
 render-mode-default = "inline-label"
@@ -140,7 +140,7 @@ Later sources may fill gaps. They should not silently overwrite earlier explicit
 kind = "proposition"
 template-name = "governs"
 from = "lar:///ha.ka.ba/loci/iam"
-to = "lar:///ha.ka.ba/loci/iam/file_path"
+to = "lar:///ha.ka.ba/loci/iam/file-path"
 confidence = 0.91
 ```
 ````
@@ -185,9 +185,9 @@ Let live authoring test those three before wider canon grows.
 
 - [VUE Creating Links](https://sites.tufts.edu/vue/01-basic-mapping/creating-links/) - reusable relation presentation with link text.
 - [VUE Format Links](https://sites.tufts.edu/vue/02-creating-nodes/c-format-links/) - stable direction and style defaults.
-- [Unreal Basic Scripting with Blueprints](https://dev.epicgames.com/documentation/en-us/unreal-engine/basic-scripting-with-blueprints-in-unreal-engine?application_version=5.6) - reusable node-and-wire authoring grammar.
-- [Unreal Flow Control](https://dev.epicgames.com/documentation/en-us/unreal-engine/flow-control?application_version=4.27) - repeatable branch and gate shapes.
-- [Unreal Functions: Pure vs Impure](https://dev.epicgames.com/documentation/en-us/unreal-engine/functions-in-unreal-engine?application_version=5.6) - visible default behavior per callable form.
+- [Unreal Basic Scripting with Blueprints](https://dev.epicgames.com/documentation/en-us/unreal-engine/basic-scripting-with-blueprints-in-unreal-engine?application-version=5.6) - reusable node-and-wire authoring grammar.
+- [Unreal Flow Control](https://dev.epicgames.com/documentation/en-us/unreal-engine/flow-control?application-version=4.27) - repeatable branch and gate shapes.
+- [Unreal Functions: Pure vs Impure](https://dev.epicgames.com/documentation/en-us/unreal-engine/functions-in-unreal-engine?application-version=5.6) - visible default behavior per callable form.
 - [Graphviz Edge Attributes](https://graphviz.org/docs/edges/) - declarative edge defaults.
 - [Graphviz `dir`](https://graphviz.org/docs/attrs/dir/) - explicit direction defaults.
 

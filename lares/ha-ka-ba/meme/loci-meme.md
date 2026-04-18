@@ -100,7 +100,7 @@ Observe should detect:
 * document opener and its target address
 * `#iam` locus and its fenced TOML payload
 * five canonical rating fields grouped below `version` in the order `tulen`, `confidence`, `mana`, `manao`, `manaoio`,
-* plus adjacent `register` surface texture below `meme_type` and above `structure` for the operator-facing `tulen`/`confidence` bands
+* plus adjacent `register` surface texture below `meme-type` and above `structure` for the operator-facing `tulen`/`confidence` bands
 * title heading and opening prose
 * self-reference ala
 * supported query block and query throats
@@ -213,7 +213,7 @@ Orient should answer:
 
 ### Required Elements
 
-Required elements directly degrade `mana`, `structural_validity`, or `manaoio` below the mid band when absent.
+Required elements directly degrade `mana`, `structural-validity`, or `manaoio` below the mid band when absent.
 
 A boot-legal meme MUST carry all nine.
 
@@ -223,7 +223,7 @@ A boot-legal meme MUST carry all nine.
 <!-- !DOCTYPE = lar:///ha.ka.ba/pono/memetic-wikitext -->
 ```
 
-Marks the document as a memetic-wikitext surface before any active sigil appears. Absence degrades `structural_validity` immediately.
+Marks the document as a memetic-wikitext surface before any active sigil appears. Absence degrades `structural-validity` immediately.
 
 #### R2 — Document opener
 
@@ -266,11 +266,11 @@ pranala = ["lar:///ha.ka.ba/pono/memetic-wikitext"]
 # <<~/ahu >>
 ```
 
-The five canonical rating fields MUST appear immediately below `version` in this order: `tulen`, `confidence`, `mana`, `manao`, `manaoio`. The adjacent `register` surface-texture key MUST appear below `meme_type` and immediately before `structure`. That key abbreviates the operator-facing `tulen`/`confidence` band surfaces. Absence of any rating field degrades `payload_integrity`.
+The five canonical rating fields MUST appear immediately below `version` in this order: `tulen`, `confidence`, `mana`, `manao`, `manaoio`. The adjacent `register` surface-texture key MUST appear below `meme-type` and immediately before `structure`. That key abbreviates the operator-facing `tulen`/`confidence` band surfaces. Absence of any rating field degrades `payload-integrity`.
 
 Comment-line `ahu` markers MAY section `#iam` TOML into agent-operator friendly groups without changing payload semantics. The canonical grouping follows `# <<~ ahu #iam-ha "structure" >>`, `# <<~ ahu #iam-ka "detail" >>`, and `# <<~ ahu #iam-ba "flow" >>`, each closed by `# <<~/ahu >>`. Because these stay inside TOML comment lines, they remain parse-inert.
 
-`file_path` names the current carrier siting for the meme surface. Canonical file-path forms, migration between flat-file and path-directory siting, and agreement rules between `file_path` and the document opener fall outward under `lar:///ha.ka.ba/loci` and `lar:///ha.ka.ba/loci/iam/file_path`.
+`file-path` names the current carrier siting for the meme surface. Canonical file-path forms, migration between flat-file and path-directory siting, and agreement rules between `file-path` and the document opener fall outward under `lar:///ha.ka.ba/loci` and `lar:///ha.ka.ba/loci/iam/file-path`.
 
 Some detail keys belong to the meme law as shared canonical declarations rather than as repeated carrier-local payload. `control-glyphs` names that class here: the canonical array lives in `lar:///ha.ka.ba/meme`, and other memes should rely on this declaration rather than restating the same list in their own top-level `#iam` blocks unless a subtype law truly defines a different glyph family.
 
@@ -361,7 +361,7 @@ Each of the six phases may carry its own `<<~ ahu #PHASE >>` block with a local 
 
 #### O2 — ha/ka/ba subloops with prose
 
-Each phase may carry three subloops: ha (identity and domain), ka (procedure and detail), ba (motion and lived practice). A subloop carrying only `<<~ ala ref >>` and an immediate close reads as a declared stub. A subloop with one sentence naming what it governs raises `signal_to_noise` and `manaoio` meaningfully. A stub pointing at a real, resolved external locus outperforms a stub pointing at a nonexistent address.
+Each phase may carry three subloops: ha (identity and domain), ka (procedure and detail), ba (motion and lived practice). A subloop carrying only `<<~ ala ref >>` and an immediate close reads as a declared stub. A subloop with one sentence naming what it governs raises `signal-to-noise` and `manaoio` meaningfully. A stub pointing at a real, resolved external locus outperforms a stub pointing at a nonexistent address.
 
 #### O3 — Examples section
 
@@ -514,7 +514,7 @@ This law now recognizes the five-bucket lifecycle for memes:
 **Transition Criteria:**
 - *Noise → Data*: Detect structure or pattern, making the signal machine-usable.
 - *Data → Meme*: Add boot-legal meme structure, declared address, and explicit role.
-- *Meme → Typed Meme*: Declare and satisfy one or more type laws. `meme_type` may name the primary surface type, but type composition remains allowed.
+- *Meme → Typed Meme*: Declare and satisfy one or more type laws. `meme-type` may name the primary surface type, but type composition remains allowed.
 - *Typed Meme → Canon Typed Meme*: Operator/admin confirmation ratifies a declared type bundle as canonical.
 
 Subtype-specific predicates belong outward in subtype laws. For example, `loci` governs the stable-address type under `lar:///ha.ka.ba/**`, while other types such as `skill` or `grammar` may compose alongside it rather than replacing it.
@@ -524,7 +524,7 @@ Subtype-specific predicates belong outward in subtype laws. For example, `loci` 
 `confidence` serves as the holistic summary rating. It tracks the center of gravity of the three structural fields — `mana`, `manao`, and `manaoio` — adjusted by an editorial factor from operator and agent judgment:
 
 ```
-confidence ≈ center_of_gravity(mana, manao, manaoio) ± editorial_factor
+confidence ≈ center-of-gravity(mana, manao, manaoio) ± editorial-factor
 ```
 
 The editorial factor stays real and bounded (±0.10 maximum). It reflects how deeply a human operator reviewed the meme, how much trust an agent accrued in the meme's practical behavior, and whether peer verification (a passing skill package) confirmed conformance. It does not scale without limit — a meme whose three structural fields average 0.40 cannot reach a confidence of 0.80 through editorial enthusiasm alone.
@@ -728,7 +728,7 @@ mana = 0.10
 manao = 0.10
 manaoio = 0.10
 content-type = "text/x-memetic-wikitext"
-meme-type = "[MEME_TYPE]"
+meme-type = "[meme-type]"
 register = "P"
 structure = "OODA-HA * ha.ka.ba"
 # <<~/ahu >>

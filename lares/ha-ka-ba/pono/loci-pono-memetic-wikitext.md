@@ -29,11 +29,6 @@ constitutional-charge = [
   "composition",
   "boot-grammar"
 ]
-non-goals = [
-  "full-parse-algorithm",
-  "full-render-lowering-pipeline",
-  "full-transaction-lifecycle"
-]
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
 pranala = [
@@ -962,7 +957,7 @@ High `mana`, `manao`, `manaoio`, and `confidence` support high `tulen`.
 
 ### Field Ordering Kānāwai (law)
 
-In canonical `#iam` TOML, the five canonical rating fields SHOULD appear immediately below `version`, and the adjacent `register` surface-texture key SHOULD appear below `meme_type` and immediately before `structure`, in this order:
+In canonical `#iam` TOML, the five canonical rating fields SHOULD appear immediately below `version`, and the adjacent `register` surface-texture key SHOULD appear below `meme-type` and immediately before `structure`, in this order:
 
 ```toml
 # <<~ ahu #iam-ha "structure" >>

@@ -37,8 +37,6 @@ pranala = [
     "lar:///ha.ka.ba/pono/memetic-wikitext",
     "lar:///ha.ka.ba/pono"
 ]
-pass-surface = "all declared invariants hold; result envelope carries status = 'pass' with per-invariant verdicts"
-fail-surface = "one or more invariants fail; result envelope carries status = 'fail' with named failing invariant, observed surface, and repair path"
 # <<~/ahu >>
 ```
 <<~/ahu >>
@@ -49,7 +47,7 @@ A verification skill in this system lives at two simultaneous identity layers th
 
 The **outer layer** follows the [agentskills.io open standard](https://agentskills.io/specification) — YAML frontmatter at the very top of the file, consumed by agent runtimes at startup for progressive disclosure. Only the `name` and `description` fields load at startup (~100 tokens). The full body loads only on activation.
 
-The **inner layer** follows the memetic-wikitext standard — TOML `#iam` block, OODA-HA * ha.ka.ba phase structure, five canonical rating fields grouped below `version` in the order `tulen`, `confidence`, `mana`, `manao`, `manaoio`, plus adjacent `register` surface texture below `meme_type` and above `structure`, supported query throats, and result locus. This layer feeds the memetic-wikitext parser and law system.
+The **inner layer** follows the memetic-wikitext standard — TOML `#iam` block, OODA-HA * ha.ka.ba phase structure, five canonical rating fields grouped below `version` in the order `tulen`, `confidence`, `mana`, `manao`, `manaoio`, plus adjacent `register` surface texture below `meme-type` and above `structure`, supported query throats, and result locus. This layer feeds the memetic-wikitext parser and law system.
 
 `SKILL.md * OODA-HA * ha.ka.ba` names the composition: the SKILL.md container governs the outer runtime identity; the OODA-HA * ha.ka.ba governs the inner epistemic structure and execution discipline.
 
@@ -111,11 +109,11 @@ The `#iam` block carries all memetic-wikitext identity signals. In addition to t
 ```toml
 covers = ["lar:///ha.ka.ba/[law-name]"]
 invariants = ["[invariant-1]", "[invariant-2]"]
-pass-surface = "[description of what a passing result carries]"
-fail-surface = "[description of what a failing result carries and what it names]"
 ```
 
 `covers` may name more than one law address when the skill verifies a cross-law invariant.
+
+Pass/fail surface belongs in the skill's prose result contract.
 
 Comment-line `ahu` markers MAY group the `#iam` TOML into agent-operator friendly sections. The canonical grouping follows `# <<~ ahu #iam-ha "structure" >>`, `# <<~ ahu #iam-ka "detail" >>`, and `# <<~ ahu #iam-ba "flow" >>`, each closed by `# <<~/ahu >>`.
 
@@ -166,7 +164,7 @@ invariants = [
   "R1: HTML DOCTYPE preamble comment present on line 1",
   "R3: #iam block carries all five canonical rating fields immediately below version",
   "R3: canonical order reads tulen, confidence, mana, manao, manaoio",
-  "R3: register field present after meme_type and before structure",
+  "R3: register field present after meme-type and before structure",
   "R6: at least one <<~STX; ui ...? -> ...#... >> query throat present",
   "O7: all <<~ ala lar:// >> links outside fenced blocks point at addresses resolved or wrapped as OPTIONAL HTML comments",
 ]
@@ -174,10 +172,10 @@ invariants = [
 
 ### Pass and Fail Surface
 
-```toml
-pass-surface = "result envelope carries status = 'pass', per-invariant verdicts all 'pass', confidence >= 0.80"
-fail-surface = "result envelope carries status = 'fail', named failing invariant(s), observed surface excerpt, and repair path for each failure"
-```
+Define pass and fail surface in prose under the skill's result contract:
+
+- Pass surface: result envelope carries `status = "pass"` with per-invariant verdicts all `pass`
+- Fail surface: result envelope carries `status = "fail"` with named failing invariant(s), observed surface excerpt, and repair path for each failure
 
 A fail result should name: which invariant failed, what the skill observed at that site, and what the author should change to satisfy the invariant. A fail result that only says "R3 failed" without naming the observed surface carries low signal value.
 
@@ -229,7 +227,7 @@ Before a dedicated MCP server exists, a skill runs as one of:
 ```python
 #!/usr/bin/env python3
 """skill-check.py — pre-MCP conformance checker for memetic-wikitext typed memes.
-Usage: python skill-check.py <target_file> [--invariants R1,R3,R6]
+Usage: python skill-check.py <target-file> [--invariants R1,R3,R6]
 Output: TOML result envelope on stdout
 """
 import re
@@ -245,7 +243,7 @@ class InvariantResult:
     observed: str = ""
     repair: str = ""
 
-def check_r1(lines: list[str]) -> InvariantResult:
+def check-r1(lines: list[str]) -> InvariantResult:
     """R1: HTML DOCTYPE preamble comment present on line 1."""
     if lines and lines[0].strip().startswith("<!-- !DOCTYPE = lar:///"):
         return InvariantResult("R1", "pass", observed=lines[0].strip())
@@ -255,16 +253,16 @@ def check_r1(lines: list[str]) -> InvariantResult:
         repair="Add <!-- !DOCTYPE = lar:///ha.ka.ba/pono/memetic-wikitext --> as line 1"
     )
 
-def check_r3_rating_fields(content: str) -> InvariantResult:
+def check-r3-rating-fields(content: str) -> InvariantResult:
     """R3: five canonical rating fields present in canonical order immediately below version."""
     required = ["tulen", "confidence", "mana", "manao", "manaoio"]
     # Extract #iam TOML block
     m = re.search(r'<<~ ahu #iam >>.*?```toml(.*?)```', content, re.DOTALL)
     if not m:
         return InvariantResult("R3-ratings", "skip", observed="no #iam TOML block found")
-    toml_text = m.group(1)
+    toml-text = m.group(1)
     try:
-        data = tomllib.loads(toml_text)
+        data = tomllib.loads(toml-text)
     except Exception as e:
         return InvariantResult("R3-ratings", "fail", observed=f"TOML parse error: {e}")
     missing = [f for f in required if f not in data]
@@ -276,9 +274,9 @@ def check_r3_rating_fields(content: str) -> InvariantResult:
         )
     # Check ordering
     keys = list(data.keys())
-    version_idx = keys.index("version") if "version" in keys else -1
-    content_idx = keys.index("content_type") if "content_type" in keys else len(keys)
-    cluster = keys[version_idx+1:content_idx]
+    version-idx = keys.index("version") if "version" in keys else -1
+    content-idx = keys.index("content-type") if "content-type" in keys else len(keys)
+    cluster = keys[version-idx+1:content-idx]
     if cluster != required:
         return InvariantResult(
             "R3-ratings", "fail",
@@ -287,18 +285,18 @@ def check_r3_rating_fields(content: str) -> InvariantResult:
         )
     return InvariantResult("R3-ratings", "pass", observed=f"fields present in canonical order")
 
-def check_r3_register(content: str) -> InvariantResult:
-    """R3: register field present after meme_type and before structure."""
-    m = re.search(r'meme_type\s*=.*?\n(register\s*=).*?\nstructure\s*=', content)
+def check-r3-register(content: str) -> InvariantResult:
+    """R3: register field present after meme-type and before structure."""
+    m = re.search(r'meme-type\s*=.*?\n(register\s*=).*?\nstructure\s*=', content)
     if m:
-        return InvariantResult("R3-register", "pass", observed="register present after meme_type")
+        return InvariantResult("R3-register", "pass", observed="register present after meme-type")
     return InvariantResult(
         "R3-register", "fail",
         observed="register field absent or out of position",
-        repair="Add register = \"[label]\" immediately after meme_type and before structure in #iam TOML"
+        repair="Add register = \"[label]\" immediately after meme-type and before structure in #iam TOML"
     )
 
-def check_r6(content: str) -> InvariantResult:
+def check-r6(content: str) -> InvariantResult:
     """R6: at least one query throat present."""
     throats = re.findall(r'<<~\x05 ui \S+\? -> \S+ >>', content)
     if throats:
@@ -309,19 +307,19 @@ def check_r6(content: str) -> InvariantResult:
         repair="Add at least one <<~STX; ui meme? -> lar:///ha.ka.ba/NAME#iam >> query throat"
     )
 
-CHECKS = [check_r1, check_r3_rating_fields, check_r3_register, check_r6]
+CHECKS = [check-r1, check-r3-rating-fields, check-r3-register, check-r6]
 
 def run(target: Path) -> list[InvariantResult]:
-    content = target.read_text(encoding="utf-8")
+    content = target.read-text(encoding="utf-8")
     lines = content.splitlines()
-    return [check(content) if check != check_r1 else check(lines) for check in CHECKS]
+    return [check(content) if check != check-r1 else check(lines) for check in CHECKS]
 
-def emit_toml(results: list[InvariantResult], target: Path) -> str:
+def emit-toml(results: list[InvariantResult], target: Path) -> str:
     overall = "pass" if all(r.status == "pass" for r in results) else "fail"
     lines = [
         f'status = "{overall}"',
         f'target = "{target}"',
-        f'invariant_count = {len(results)}',
+        f'invariant-count = {len(results)}',
         '',
     ]
     for r in results:
@@ -335,10 +333,10 @@ def emit_toml(results: list[InvariantResult], target: Path) -> str:
         lines.append('')
     return '\n'.join(lines)
 
-if __name__ == "__main__":
+if _-name-_ == "_-main-_":
     target = Path(sys.argv[1])
     results = run(target)
-    print(emit_toml(results, target))
+    print(emit-toml(results, target))
     sys.exit(0 if all(r.status in ("pass", "skip") for r in results) else 1)
 ```
 
@@ -460,9 +458,9 @@ When the memetic-wikitext system acquires an MCP server, verification skills mig
 ### Phase 1 — Structural MCP Tools (mechanical invariants)
 
 ```
-Tool: check_r_elements(file_path: str, invariants: list[str]) -> ConformanceReport
-Tool: check_toml_payload(file_path: str, locus: str) -> TOMLPayloadReport
-Tool: list_ala_links(file_path: str, resolved_only: bool) -> AlaLinkGraph
+Tool: check-r_elements(file-path: str, invariants: list[str]) -> ConformanceReport
+Tool: check-toml-payload(file-path: str, locus: str) -> TOMLPayloadReport
+Tool: list-ala-links(file-path: str, resolved-only: bool) -> AlaLinkGraph
 ```
 
 These tools replace the CLI subprocess pattern. The agent calls them directly; no subprocess invocation needed. The MCP server handles file reading, regex parsing, and TOML validation in its own runtime.
@@ -470,9 +468,9 @@ These tools replace the CLI subprocess pattern. The agent calls them directly; n
 ### Phase 2 — Semantic MCP Tools (interpretive invariants)
 
 ```
-Tool: rate_phase_prose(file_path: str, phase: str) -> ProseDensityScore
-Tool: check_sub_meme_resolution(file_path: str) -> ResolutionStateMap
-Tool: score_meme(file_path: str) -> MemeRatingReport
+Tool: rate-phase-prose(file-path: str, phase: str) -> ProseDensityScore
+Tool: check-sub-meme-resolution(file-path: str) -> ResolutionStateMap
+Tool: score-meme(file-path: str) -> MemeRatingReport
 ```
 
 Phase 2 tools require the MCP server to call back into a language model for interpretive judgment. The November 2025 MCP spec's sampling capability supports this: the MCP server may request a completion from the client model, which means verification tools can use LLM judgment without the calling agent needing to prompt separately.
@@ -485,13 +483,13 @@ Resource: lar:///ha.ka.ba/{name}#{locus}  → resolves to specific #locus block 
 Resource: lar:///ha.ka.ba/pono/walk-graph → resolves the full ala/aka link graph
 ```
 
-MCP Resources (not Tools) expose the `lar:` URI space as addressable content. An agent that calls `list_resources()` sees the full meme registry. An agent that reads `lar:///ha.ka.ba/meme#optional-elements` gets that specific `ahu` block without loading the full file. This closes the URI–file routing gap identified in the OODA-HA assessment without requiring agents to infer the `lar:` → `file_path` mapping.
+MCP Resources (not Tools) expose the `lar:` URI space as addressable content. An agent that calls `list-resources()` sees the full meme registry. An agent that reads `lar:///ha.ka.ba/meme#optional-elements` gets that specific `ahu` block without loading the full file. This closes the URI–file routing gap identified in the OODA-HA assessment without requiring agents to infer the `lar:` → `file-path` mapping.
 
 ### Phase 4 — Async Conformance Scan
 
 ```
-Tool: scan_graph(root: str, invariant_set: str) -> AsyncJobHandle
-Tool: get_scan_result(handle: AsyncJobHandle) -> FullConformanceReport
+Tool: scan-graph(root: str, invariant-set: str) -> AsyncJobHandle
+Tool: get-scan-result(handle: AsyncJobHandle) -> FullConformanceReport
 ```
 
 For full-graph conformance sweeps (all memes against all registered invariants), async execution allows the agent to continue other work while the scan runs. This maps to the November 2025 MCP spec's long-running tool support.
@@ -500,7 +498,7 @@ For full-graph conformance sweeps (all memes against all registered invariants),
 
 | Pre-MCP pattern | MCP equivalent | Migration trigger |
 |---|---|---|
-| Agent reads file, applies skill body | MCP Tool: `check_r_elements` | When invariant set exceeds 5 mechanical checks |
+| Agent reads file, applies skill body | MCP Tool: `check-r_elements` | When invariant set exceeds 5 mechanical checks |
 | CLI Python subprocess | MCP Tool with same logic | When CLI needs to run in environments without Python |
 | Agent-native semantic judgment | MCP Tool with sampling | When judgment must reproduce across agents |
 | Manual `lar:` → file path derivation | MCP Resource: `lar:///...` | When URI routing gap causes agent friction |

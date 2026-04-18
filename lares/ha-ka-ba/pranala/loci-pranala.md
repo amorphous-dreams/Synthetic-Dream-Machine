@@ -48,7 +48,7 @@ This meme gives one outer law for link meaning. It keeps semantic relation, exec
 
 This meme also keeps family and lifecycle apart. Family answers what an edge means. Lifecycle answers whether an author declares a reusable template, binds a concrete instance, or records an observed trace.
 
-This meme seeds the migration target. Live `#iam` still carries `depends_on` as transitional residue, but new graph work should aim here first.
+This meme seeds the migration target. Live `#iam` still carries `depends-on` as transitional residue, but new graph work should aim here first.
 
 ## Supported Queries
 
@@ -82,7 +82,7 @@ Observe inventories where the current corpus already implies edges without namin
 
 Primary collision sites:
 
-- `depends_on`
+- `depends-on`
 - `next`
 - `ala` or `aka` semantic relation
 - prose-only sequencing
@@ -147,7 +147,7 @@ Cross-family edge objects should stay close to one shared surface:
 - `polarity`
 - `confidence`
 - `payload`
-- `render_mode`
+- `render-mode`
 - `status`
 
 Families may add local fields. Control adds branch and gate semantics. Debug adds `observes` and `reveals`. Proposition adds ontology or relation vocabulary. Shared fields keep the graph readable across families.
@@ -158,7 +158,7 @@ Families may add local fields. Control adds branch and gate semantics. Debug add
 
 ### Migration Posture
 
-`depends_on` remains lawful as transitional residue in current `#iam`.
+`depends-on` remains lawful as transitional residue in current `#iam`.
 
 That residue should now act as a summary view, not as the sharpest authoring surface. When a relation needs semantics, execution, carried value, runtime reveal, or operator-visible confidence, author the explicit edge object and derive any broad dependency summary later.
 
@@ -211,21 +211,21 @@ Direct prior-art anchors for this edge root:
 - [VUE Ontologies](https://sites.tufts.edu/vue/07-semantic-mapping-and-analysis/a-ontologies/) - imported relation vocabulary.
 - [VUE User Guide PDF](https://sites.tufts.edu/vue/files/2023/03/VUEUserGuide-110311-1214-1952.pdf) - connectivity and semantic-map lineage.
 - [Cmap Theory of Concept Maps](https://cmap.ihmc.us/docs/theory-of-concept-maps.php) - proposition structure through linking phrases.
-- [Unreal Basic Scripting with Blueprints](https://dev.epicgames.com/documentation/en-us/unreal-engine/basic-scripting-with-blueprints-in-unreal-engine?application_version=5.6) - split between exec wires and data pins.
-- [Unreal Flow Control](https://dev.epicgames.com/documentation/en-us/unreal-engine/flow-control?application_version=4.27) - branch, sequence, gate, and loop pressure.
-- [Unreal Functions: Pure vs Impure](https://dev.epicgames.com/documentation/en-us/unreal-engine/functions-in-unreal-engine?application_version=5.6) - execution dependence versus value relation.
+- [Unreal Basic Scripting with Blueprints](https://dev.epicgames.com/documentation/en-us/unreal-engine/basic-scripting-with-blueprints-in-unreal-engine?application-version=5.6) - split between exec wires and data pins.
+- [Unreal Flow Control](https://dev.epicgames.com/documentation/en-us/unreal-engine/flow-control?application-version=4.27) - branch, sequence, gate, and loop pressure.
+- [Unreal Functions: Pure vs Impure](https://dev.epicgames.com/documentation/en-us/unreal-engine/functions-in-unreal-engine?application-version=5.6) - execution dependence versus value relation.
 - [Node-RED Wires](https://nodered.org/docs/user-guide/editor/workspace/wires) - port-level routed connections.
 - [Node-RED Core Nodes](https://nodered.org/docs/user-guide/nodes) - switch and route behavior.
 - [Node-RED Debug Sidebar](https://nodered.org/docs/user-guide/editor/sidebar/debug) - visible runtime inspection.
 - [LabVIEW Block Diagram Data Flow](https://www.ni.com/docs/en-US/bundle/labview/page/block-diagram-data-flow.html) - data-arrival execution model.
 - [LabVIEW Channel Wires](https://www.ni.com/en-us/support/documentation/supplemental/16/channel-wires.html) - richer carried-transport vocabulary.
-- [LabVIEW Execution Highlighting](https://www.ni.com/docs/ar-IQ/csh?context=lvcore_lvhowto_execution_highlighting) - animated runtime reveal.
+- [LabVIEW Execution Highlighting](https://www.ni.com/docs/ar-IQ/csh?context=lvcore-lvhowto-execution-highlighting) - animated runtime reveal.
 - [Graphviz Edge Attributes](https://graphviz.org/docs/edges/) - edge-directed render metadata.
 - [Graphviz `dir`](https://graphviz.org/docs/attrs/dir/) - forward reverse both none.
-- [Blender Geometry Nodes Introduction](https://docs.blender.org/manual/en/latest/modeling/geometry_nodes/introduction.html) - node and socket framing.
-- [Blender Geometry Nodes Fields](https://docs.blender.org/manual/en/4.0/modeling/geometry_nodes/fields.html) - carried field semantics.
-- [Blender Viewer Node](https://docs.blender.org/manual/en/latest/modeling/geometry_nodes/output/viewer.html) - direct inspection surface.
-- [Blender Inspection](https://docs.blender.org/manual/en/latest/modeling/geometry_nodes/inspection.html) - live graph inspection tools.
+- [Blender Geometry Nodes Introduction](https://docs.blender.org/manual/en/latest/modeling/geometry-nodes/introduction.html) - node and socket framing.
+- [Blender Geometry Nodes Fields](https://docs.blender.org/manual/en/4.0/modeling/geometry-nodes/fields.html) - carried field semantics.
+- [Blender Viewer Node](https://docs.blender.org/manual/en/latest/modeling/geometry-nodes/output/viewer.html) - direct inspection surface.
+- [Blender Inspection](https://docs.blender.org/manual/en/latest/modeling/geometry-nodes/inspection.html) - live graph inspection tools.
 
 These tools converge on one repeated lesson: sharp graph work names edge kind explicitly and keeps runtime visibility separate from ontology.
 

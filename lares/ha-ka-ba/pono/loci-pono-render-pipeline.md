@@ -934,7 +934,7 @@ result-shape = "set"
 <<~/hana >>
 
 ast:
-GuestWorkNode(grammar="x-tiddlywiki-filter", context="+currentMeme", result_shape="set", body="[+currentMeme] [get[status]]")
+GuestWorkNode(grammar="x-tiddlywiki-filter", context="+currentMeme", result-shape="set", body="[+currentMeme] [get[status]]")
 
 widget:
 GuestWorkResultWidget(source=GuestWorkNode, result=<set|degraded|no-op>)

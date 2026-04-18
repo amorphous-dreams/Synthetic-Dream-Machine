@@ -797,7 +797,7 @@ it should build a canonical metadata object for the enclosing meme.
 That object may populate:
 
 * name
-* file_path
+* file-path
 * description
 * version
 * tulen
@@ -805,15 +805,15 @@ That object may populate:
 * mana
 * manao
 * manaoio
-* content_type
-* meme_type
+* content-type
+* meme-type
 * register
 * structure
 * role
 * function
 * input
 * output
-* depends_on
+* depends-on
 * later declared fields
 
 Unknown metadata keys may remain legal unless a stricter profile forbids them.
@@ -1139,12 +1139,12 @@ Mana here names structured memetic order that supports lawful reading, parsing, 
 
 Recommended base measures:
 
-* `carrier_order` — markdown carrier stays calm, legible, and structurally easy to traverse
-* `structural_validity` — sigils, forms, closures, anchors, and mode boundaries remain lawful
-* `payload_integrity` — canonical payloads parse cleanly and hold enough metadata or structure to support use
-* `boundary_truth` — issues, ambiguity, and downgrade pressure surface truthfully instead of laundering
-* `signal_to_noise` — relevant structure and meaning outweigh copied noise, drift, or repetitive drag
-* `recovery_quality` — graceful degradation preserves usable partial structure without false completion
+* `carrier-order` — markdown carrier stays calm, legible, and structurally easy to traverse
+* `structural-validity` — sigils, forms, closures, anchors, and mode boundaries remain lawful
+* `payload-integrity` — canonical payloads parse cleanly and hold enough metadata or structure to support use
+* `boundary-truth` — issues, ambiguity, and downgrade pressure surface truthfully instead of laundering
+* `signal-to-noise` — relevant structure and meaning outweigh copied noise, drift, or repetitive drag
+* `recovery-quality` — graceful degradation preserves usable partial structure without false completion
 
 Each measure SHOULD normalize to the range `0.0-1.0`.
 
@@ -1219,7 +1219,7 @@ This subphase governs how mana actually gets computed and surfaced.
 
 ##### Measurement Procedure
 
-A compliant parser MAY compute `mana_score` as a weighted combination under the active profile.
+A compliant parser MAY compute `mana-score` as a weighted combination under the active profile.
 
 Recommended boot-profile weights:
 
@@ -1235,16 +1235,16 @@ recovery-quality = 0.10
 Recommended calculation:
 
 ```text
-mana_score =
-  0.15 * carrier_order +
-  0.25 * structural_validity +
-  0.15 * payload_integrity +
-  0.20 * boundary_truth +
-  0.15 * signal_to_noise +
-  0.10 * recovery_quality
+mana-score =
+  0.15 * carrier-order +
+  0.25 * structural-validity +
+  0.15 * payload-integrity +
+  0.20 * boundary-truth +
+  0.15 * signal-to-noise +
+  0.10 * recovery-quality
 ```
 
-A compliant parser SHOULD clamp `mana_score` into the inclusive range `0.0-1.0` after calculation.
+A compliant parser SHOULD clamp `mana-score` into the inclusive range `0.0-1.0` after calculation.
 
 ##### Partial-Profile Kānāwai (law)
 
@@ -1258,12 +1258,12 @@ When one or more component measures remain unavailable, a compliant parser SHOUL
 
 A mana-aware parser SHOULD return:
 
-* `mana_score`
-* `mana_band`
-* `mana_components`
-* `mana_reasons`
-* `mana_profile`
-* `mana_confidence` when component absence or partial profiling reduces certainty
+* `mana-score`
+* `mana-band`
+* `mana-components`
+* `mana-reasons`
+* `mana-profile`
+* `mana-confidence` when component absence or partial profiling reduces certainty
 
 ##### Test-Facing Reminder
 
@@ -1306,7 +1306,7 @@ Low-mana zones often require not only tighter agent-operator synchronization but
 
 That added dependence SHOULD count as mana cost.
 
-When a task requires extra tools, extra repair passes, or extra external context merely to reach lawful interpretability, a parser or pono tool SHOULD reflect that burden in `signal_to_noise`, `recovery_quality`, `mana_reasons`, or all three.
+When a task requires extra tools, extra repair passes, or extra external context merely to reach lawful interpretability, a parser or pono tool SHOULD reflect that burden in `signal-to-noise`, `recovery-quality`, `mana-reasons`, or all three.
 
 ##### Confidence Relation
 

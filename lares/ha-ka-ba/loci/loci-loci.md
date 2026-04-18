@@ -58,11 +58,11 @@ The lifecycle of a carrier in this system follows five buckets, each marking a s
 - *Meme → Typed Meme*: The meme declares and satisfies one or more type laws with explicit role, boundary, and evaluation surfaces.
 - *Typed Meme → Canon Typed Meme*: The typed meme receives external ratification as canonical, reaching the highest authority and stability for the stable type claims it carries.
 
-Types need not stay mutually exclusive. A carrier may carry `skill` and `loci`, or `grammar` and `loci`, at the same time. Where current `#iam` still uses a singular `meme_type` field, read it as the primary declared surface type rather than an exclusivity claim.
+Types need not stay mutually exclusive. A carrier may carry `skill` and `loci`, or `grammar` and `loci`, at the same time. Where current `#iam` still uses a singular `meme-type` field, read it as the primary declared surface type rather than an exclusivity claim.
 
 This five-bucket model replaces an older collapse of typed and canonical stages into the single word `loci`. `Loci` counts as one typed-meme branch, not the whole ladder. More specifically, `loci` names the stable-address type for carriers living under `lar:///ha.ka.ba/**`.
 
-This meme does not govern parse recognition, render lowering, conformance verification, or raw `file_path` capture. Those belong to their own kānāwai (law). Detailed siting capture and agreement live at `lar:///ha.ka.ba/loci/iam/file_path`. Loci governs the routing-and-rating convention above those surfaces.
+This meme does not govern parse recognition, render lowering, conformance verification, or raw `file-path` capture. Those belong to their own kānāwai (law). Detailed siting capture and agreement live at `lar:///ha.ka.ba/loci/iam/file-path`. Loci governs the routing-and-rating convention above those surfaces.
 
 This file itself takes path-directory-sited `loci` meme form and therefore serves as a live specimen of the law it names: stable address, explicit convention, high-mana aspiration, and still-open MCP resolver backlog.
 
@@ -101,7 +101,7 @@ Loci gathers the `lar:` URI meme and visible convention surfaces, maps the addre
 name = "loci-observe"
 description = "Observe phase for `lar:` URI meme intake, opener-form recognition, and explicit-convention capture."
 role = "loci request intake"
-function = "receive the `lar:` URI meme to assess, capture the opener form and any visible convention surfaces, and note whether the request comes with a known `meme_type` or prior rating context"
+function = "receive the `lar:` URI meme to assess, capture the opener form and any visible convention surfaces, and note whether the request comes with a known `meme-type` or prior rating context"
 phase = "observe"
 glyph = "✶"
 ```
@@ -113,7 +113,7 @@ Observe gathers the routing request before any derivation, rating, or promotion 
 Observe should detect:
 
 * the full `lar:` URI string to resolve, exactly as presented
-* whether the request context includes a known `meme_type`, prior rating posture, or prior promotion context for the target
+* whether the request context includes a known `meme-type`, prior rating posture, or prior promotion context for the target
 * the document opener form of the target (if the target meme already sits in memory): `<<~&#x0001; ? -> ...` (declared-open, with unbound uncertainty still flowing through the address graph) or `<<~&#x0001; lar:///...` (confirmed canon)
 * whether the target already exposes explicit loci convention surfaces: `#iam` rating cluster, `register`, prefix-table membership, promotion note, and roadmap note
 * whether the request marks a first-time routing-and-rating pass or a re-resolution of a previously declared-unresolved address
@@ -122,7 +122,7 @@ Observe should not:
 
 * attempt URI decomposition before Orient
 * fabricate a resolution substrate not actually present
-* infer high readiness or `meme_type = "loci"` without evidence
+* infer high readiness or `meme-type = "loci"` without evidence
 
 ### Self-Observation
 
@@ -149,7 +149,7 @@ Observe-ha holds the identity domain: what a loci request fundamentally names. A
 
 #### Observe / ka
 
-Observe-ka governs intake procedure: capture the URI string verbatim, capture any visible convention surfaces without normalizing them away, and note the absence of `meme_type` or promotion context explicitly because that absence matters later.
+Observe-ka governs intake procedure: capture the URI string verbatim, capture any visible convention surfaces without normalizing them away, and note the absence of `meme-type` or promotion context explicitly because that absence matters later.
 
 <!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/loci-observe-ka >> -->
 <<~/ahu >>
@@ -188,18 +188,18 @@ Orient decomposes the URI and maps it through the derivation algorithm and prefi
 The derivation algorithm converts a `lar:` URI to a candidate file path. It remains the only local resolution path this law currently guarantees.
 
 ```
-Given: lar_uri (string), meme_type (string | unknown)
+Given: lar-uri (string), meme-type (string | unknown)
 
 1. Strip scheme and authority:
-     path_segment = lar_uri.removePrefix("lar:///")
+     path-segment = lar-uri.removePrefix("lar:///")
      e.g. "lar:///ha.ka.ba/pono/parser" → "ha-ka-ba/pono/parser"
 
-2. Split path_segment by "/":
-     parts = path_segment.split("/")
+2. Split path-segment by "/":
+     parts = path-segment.split("/")
      e.g. ["ha.ka.ba", "pono", "parser"]
 
 3. Validate path root:
-     parts[0] MUST equal path_root ("ha.ka.ba")
+     parts[0] MUST equal path-root ("ha.ka.ba")
      If not → resolution fails. Emit: "unrecognized path root: " + parts[0]
 
 4. Extract name and subpath:
@@ -207,37 +207,37 @@ Given: lar_uri (string), meme_type (string | unknown)
      subpath = parts[1..-2].join("/") e.g. "pono"   (empty string if none)
 
 5. Look up meme-type prefix:
-     When meme_type known:
-       prefix = meme_type_prefix_table[meme_type]
+     When meme-type known:
+       prefix = meme-type-prefix-table[meme-type]
        e.g. "loci" → "loci-"
-     When meme_type unknown:
+     When meme-type unknown:
        prefix = nil → classification becomes DECLARED-UNRESOLVED
-       emit note: "meme_type unknown; local derivation cannot continue"
+       emit note: "meme-type unknown; local derivation cannot continue"
        stop local resolution here
 
-6. Derive candidate file_path:
-     filename_stem = name.replace("_", "-")
+6. Derive candidate file-path:
+     filename-stem = name.replace("_", "-")
      If subpath == "":
-       candidate = path_root + "/" + prefix + filename_stem + ".md"
+       candidate = path-root + "/" + prefix + filename-stem + ".md"
        e.g. "ha-ka-ba/loci-meme.md"   (pre-migration candidate for `lar:///ha.ka.ba/meme`)
      Else:
-       candidate = path_root + "/" + subpath + "/" + prefix + filename_stem + ".md"
+       candidate = path-root + "/" + subpath + "/" + prefix + filename-stem + ".md"
        e.g. "ha-ka-ba/pono/loci-parser.md"
 
 7. Derive full repo path:
-     full_repo_path = install_root + candidate
+     full-repo-path = install-root + candidate
      e.g. "lares/ha-ka-ba/pono/loci-parser.md"
-     Check whether full_repo_path exists as a file.
-     If YES → RESOLVED. Return full_repo_path. Done.
+     Check whether full-repo-path exists as a file.
+     If YES → RESOLVED. Return full-repo-path. Done.
 
 8. If step 7 misses:
      Classification: DECLARED-UNRESOLVED
-     Emit forward reference: lar_uri as declared-unresolved address.
+     Emit forward reference: lar-uri as declared-unresolved address.
      Emit note: "local derivation miss; carrier may use path-directory siting or require live resolver support"
      Do NOT abort. Continue with calling context.
 ```
 
-An agent that always knows the `meme_type` of the target can use this algorithm directly. An agent that does not know the `meme_type` should not guess a prefix. It should surface unresolved state honestly or hand the request to a live resolver when one exists.
+An agent that always knows the `meme-type` of the target can use this algorithm directly. An agent that does not know the `meme-type` should not guess a prefix. It should surface unresolved state honestly or hand the request to a live resolver when one exists.
 
 The algorithm does not by itself assign final ratings. It supplies the structural routing evidence that later sections convert into `mana`, `manao`, and `manaoio` posture.
 
@@ -259,14 +259,14 @@ These examples show the current routing state plainly: derivation alone falls sh
 
 The prefix table fixes the inference gap. Before this table got declared, agents needed to guess the file prefix from context. This table turns the mapping into law, not heuristic.
 
-| `meme_type` value | file prefix | example file | example lar: URI |
+| `meme-type` value | file prefix | example file | example lar: URI |
 |---|---|---|---|
 | `loci` | `loci-` | `loci-parser.md` | `lar:///ha.ka.ba/pono/parser` |
 | `alpha` | `alpha-` | `alpha-test-prompt-00001.md` | `lar:///ha.ka.ba/alpha/test-prompt-00001` |
 | `grammar` | `grammar-` | `grammar-x-tiddlywiki-filter.md` | `lar:///ha.ka.ba/grammars/x-tiddlywiki-filter` |
 | `skill` | `skill-` | `skill-template.md` | `lar:///ha.ka.ba/pono/skill-template` |
 
-When a new `meme_type` enters use, an entry MUST join this table before any file of that type joins the registry. A `meme_type` value with no entry in this table counts as an error in the meme definition, not a routing ambiguity.
+When a new `meme-type` enters use, an entry MUST join this table before any file of that type joins the registry. A `meme-type` value with no entry in this table counts as an error in the meme definition, not a routing ambiguity.
 
 <!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/loci-meme-type-prefix-table >> -->
 <<~/ahu >>
@@ -304,7 +304,7 @@ Current convention surfaces include:
 3. the derivation algorithm and meme-type prefix table
 4. the canon-promotion section and MCP-resolution roadmap
 
-Detailed siting capture and `file_path` agreement sit delegated to `lar:///ha.ka.ba/loci/iam/file_path`. Loci may consume that evidence, but it does not restate the capture law here.
+Detailed siting capture and `file-path` agreement sit delegated to `lar:///ha.ka.ba/loci/iam/file-path`. Loci may consume that evidence, but it does not restate the capture law here.
 
 A high-rated loci meme keeps these surfaces mutually intelligible without forcing them to collapse into one string.
 
@@ -378,7 +378,7 @@ Orient-ka governs the procedure: run the derivation algorithm in step order with
 
 #### Orient / ba
 
-Orient-ba governs interpretive posture: hold the two current resolution states (resolved, declared-unresolved) distinctly rather than collapsing declared-unresolved into absent. A `lar:` URI that appears in a `depends_on` array but resolves to no derived local path counts as declared-unresolved — a real forward pressure that lowers readiness and constrains promotion, not a silent gap.
+Orient-ba governs interpretive posture: hold the two current resolution states (resolved, declared-unresolved) distinctly rather than collapsing declared-unresolved into absent. A `lar:` URI that appears in a `depends-on` array but resolves to no derived local path counts as declared-unresolved — a real forward pressure that lowers readiness and constrains promotion, not a silent gap.
 
 <!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/loci-orient-ba >> -->
 <<~/ahu >>
@@ -501,7 +501,7 @@ Decide-ha holds the commitment domain: what Decide fundamentally binds: a resolu
 
 #### Decide / ka
 
-Decide-ka governs the selection procedure: prefer derived-path resolution (step 7) when `meme_type` remains known and the derived file resolves. When step 7 misses, name unresolved state directly, lower readiness accordingly, and do not pretend a missing local resolver already resolves.
+Decide-ka governs the selection procedure: prefer derived-path resolution (step 7) when `meme-type` remains known and the derived file resolves. When step 7 misses, name unresolved state directly, lower readiness accordingly, and do not pretend a missing local resolver already resolves.
 
 <!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/loci-decide-ka >> -->
 <<~/ahu >>
@@ -550,7 +550,7 @@ A live MCP server marks the current roadmap answer to that tension. The intended
 ### Research Backlog
 
 * define the minimal metadata the MCP server needs to expose for one meme
-* decide whether `meme_type` remains a required caller hint or becomes discoverable from the server
+* decide whether `meme-type` remains a required caller hint or becomes discoverable from the server
 * decide how path-directory carriers advertise canonical children and sidecars
 * define failure surfaces for unresolved `lar:` URIs in a live resolver
 * define how canon promotion depends on live resolver trust, uptime, and cache semantics
@@ -608,7 +608,7 @@ Hooko governs the bounded threshold where routing state actually changes.
 
 Only Hooko may cross a real carrier mutation or remove the `?` from a document opener as part of canon promotion. Act prepares intent; Hooko executes.
 
-A carrier mutation and a canon promotion mark two distinct crossings that may not batch silently. Each should enter the transaction trace with the `lar_uri`, the change made, and the agent or operator who authorized it.
+A carrier mutation and a canon promotion mark two distinct crossings that may not batch silently. Each should enter the transaction trace with the `lar-uri`, the change made, and the agent or operator who authorized it.
 
 ### Self-Example Crossings
 
@@ -634,7 +634,7 @@ Hooko-ha holds the mutation domain: what Hooko may alter. It may alter file siti
 
 #### Hooko / ka
 
-Hooko-ka governs the update procedure: when migration updates siting evidence, follow `lar:///ha.ka.ba/loci/iam/file_path` and verify the named `lar:` address does not change. When removing the `?` from a document opener for canon promotion, verify all three address-stability conditions hold before making the edit. A future live MCP resolver, if enacted, would form its own separate Hooko-class crossing and does not get performed by this meme today.
+Hooko-ka governs the update procedure: when migration updates siting evidence, follow `lar:///ha.ka.ba/loci/iam/file-path` and verify the named `lar:` address does not change. When removing the `?` from a document opener for canon promotion, verify all three address-stability conditions hold before making the edit. A future live MCP resolver, if enacted, would form its own separate Hooko-class crossing and does not get performed by this meme today.
 
 <!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/loci-hooko-ka >> -->
 <<~/ahu >>

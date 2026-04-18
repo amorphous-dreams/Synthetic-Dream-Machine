@@ -24,7 +24,6 @@ structure = "OODA-HA * ha.ka.ba"
 role = "debug edge kānāwai (law), observation authority, and hidden-edge illumination authority"
 function = "govern observation and reveal edges that surface hidden graph behavior, operator knowledge, or runtime residue without mutating the underlying ontology"
 visibility-modes = ["inline", "overlay", "trace-only", "operator-only"]
-changes-runtime = false
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
 pranala = [
@@ -113,7 +112,7 @@ Choose the narrowest mode that tells the truth.
 
 ```toml
 kind = "debug"
-from = "lar:///todo/DreamNet_MemeWiki"
+from = "lar:///todo/DreamNet-MemeWiki"
 to = "lar:///ha.ka.ba/loci/edge/instance"
 observer = "operator"
 observes = "lar:///ha.ka.ba/loci/edge/instance"
@@ -161,7 +160,7 @@ Do not use debug to sneak ontology changes into the graph. If the relation belon
 
 First debug seeds should illuminate:
 
-- hidden `depends_on` residue beside explicit edge instances
+- hidden `depends-on` residue beside explicit edge instances
 - branch choice during control testing
 - confidence seams in early proposition templates
 
@@ -174,10 +173,10 @@ Those three reveals will pay back immediately during migration.
 ## Research Foundation
 
 - [Node-RED Debug Sidebar](https://nodered.org/docs/user-guide/editor/sidebar/debug) - visible message inspection.
-- [Blender Viewer Node](https://docs.blender.org/manual/en/latest/modeling/geometry_nodes/output/viewer.html) - targeted graph reveal.
-- [Blender Inspection](https://docs.blender.org/manual/en/latest/modeling/geometry_nodes/inspection.html) - interactive runtime inspection.
-- [LabVIEW Execution Highlighting](https://www.ni.com/docs/ar-IQ/csh?context=lvcore_lvhowto_execution_highlighting) - animated execution visibility.
-- [Unreal Basic Scripting with Blueprints](https://dev.epicgames.com/documentation/en-us/unreal-engine/basic-scripting-with-blueprints-in-unreal-engine?application_version=5.6) - live graph-reading lineage around execution flow.
+- [Blender Viewer Node](https://docs.blender.org/manual/en/latest/modeling/geometry-nodes/output/viewer.html) - targeted graph reveal.
+- [Blender Inspection](https://docs.blender.org/manual/en/latest/modeling/geometry-nodes/inspection.html) - interactive runtime inspection.
+- [LabVIEW Execution Highlighting](https://www.ni.com/docs/ar-IQ/csh?context=lvcore-lvhowto-execution-highlighting) - animated execution visibility.
+- [Unreal Basic Scripting with Blueprints](https://dev.epicgames.com/documentation/en-us/unreal-engine/basic-scripting-with-blueprints-in-unreal-engine?application-version=5.6) - live graph-reading lineage around execution flow.
 
 These references all reward the same move: make hidden behavior visible without rewriting the base structure silently.
 

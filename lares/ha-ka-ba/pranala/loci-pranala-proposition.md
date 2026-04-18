@@ -105,7 +105,7 @@ Orient turns the claim into a proposition edge with a visible linking phrase.
 ```toml
 kind = "proposition"
 from = "lar:///ha.ka.ba/loci/iam"
-to = "lar:///ha.ka.ba/loci/iam/file_path"
+to = "lar:///ha.ka.ba/loci/iam/file-path"
 label = "governs"
 relation-kind = "ontology"
 direction = "forward"
@@ -184,8 +184,8 @@ If a relation phrase repeats often, later template law may promote it into a reu
 
 First semantic seeds should focus on high-yield laws:
 
-- `lar:///ha.ka.ba/loci/iam` `governs` `lar:///ha.ka.ba/loci/iam/file_path`
-- `lar:///ha.ka.ba/loci/edge` `contains_family` `lar:///ha.ka.ba/loci/edge/proposition`
+- `lar:///ha.ka.ba/loci/iam` `governs` `lar:///ha.ka.ba/loci/iam/file-path`
+- `lar:///ha.ka.ba/loci/edge` `contains-family` `lar:///ha.ka.ba/loci/edge/proposition`
 - `lar:///ha.ka.ba/loci/edge/template` `binds` `lar:///ha.ka.ba/loci/edge/instance`
 
 Those first edges give the graph a readable law skeleton without waiting for every later family.

@@ -22,7 +22,6 @@ structure = "OODA-HA * ha.ka.ba"
 # <<~ ahu #iam-ka "detail" >>
 role = "kānāwai (law) index, verification registry, and skill package host"
 function = "enumerate all active kānāwai (law) memes, surface their addresses and roles, and host conformance verification skills"
-law-index-root = "lar:///ha.ka.ba/pono"
 skill-package-root = "ha-ka-ba/pono/skill-*.md"
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
@@ -76,11 +75,12 @@ Active kānāwai (law) memes registered under `lar:///ha.ka.ba/`:
 | memetic-wikitext | `lar:///ha.ka.ba/pono/memetic-wikitext` | surface grammar and sigil kānāwai (law) |
 | render-pipeline | `lar:///ha.ka.ba/pono/render-pipeline` | lowering, widget tree, render projection, trace continuity |
 | guest-grammar | `lar:///ha.ka.ba/pono/guest-grammar` | guest grammar admission kānāwai (law), hana worksite contract, host-guest ownership |
+| normative-verbs | `lar:///ha.ka.ba/pono/normative-verbs` | shared normative vocabulary kānāwai (law), modal-force registry, and cross-meme reference point |
 | x-tiddlywiki-filter | `lar:///ha.ka.ba/grammars/x-tiddlywiki-filter` | first registered hana guest grammar |
 | pono | `lar:///ha.ka.ba/pono` | kānāwai (law) index and verification skill host |
 | loci | `lar:///ha.ka.ba/loci` | lar: URI routing derivation algorithm, meme-type prefix table, carrier coherence, MCP-resolution roadmap, address stability, and canon promotion kānāwai (law) |
 | iam | `lar:///ha.ka.ba/loci/iam` | root `#iam` metadata kānāwai (law), surviving field-set authority, and reduction charter |
-| file_path | `lar:///ha.ka.ba/loci/iam/file_path` | `file_path` key kānāwai (law), form classifier, and URI-agreement procedure |
+| file-path | `lar:///ha.ka.ba/loci/iam/file-path` | `file-path` key kānāwai (law), form classifier, and URI-agreement procedure |
 | loci/edge | `lar:///ha.ka.ba/loci/edge` | root edge kānāwai (law), family authority, lifecycle authority, and migration target beyond vague dependency claims |
 | loci/edge/proposition | `lar:///ha.ka.ba/loci/edge/proposition` | semantic edge kānāwai (law), proposition authority, and ontology-link bridge |
 | loci/edge/template | `lar:///ha.ka.ba/loci/edge/template` | template edge sigil kānāwai (law), slot-contract authority, and kahea binding authority |
@@ -93,7 +93,7 @@ The `loci/edge` branch now seeds explicit edge law under `lar:///ha.ka.ba/loci/e
 The `guest-grammar` and `x-tiddlywiki-filter` kānāwai (law) memes carry a canonical host-facing term shift: `tiddler` → `meme`, `currentTiddler` → `+currentMeme`. Host-facing examples and law statements throughout the stack should reflect this shift. Imported lineage terms may appear only in visibly quoted prior-art notes.
 
 
-A **loci meme** occupies the stable `lar:///ha.ka.ba/*` tagspace with a locked address, a stable `lar:` URI. Loci memes carry all five canonical rating fields in `#iam` — `tulen`, `confidence`, `mana`, `manao`, and `manaoio` — grouped directly below `version`, plus the adjacent `register` agent-operator surface-texture key below `meme_type` and immediately above `structure`. They reach prospective-canon status (`[CS]`) before an admin or operator may move them to `[C]` canon status. Other meme types may drift their path-root address (what3words-style path root section). The loci kānāwai (law) governs `lar:` URI routing derivation, carrier coherence, address stability, canon promotion, and the research roadmap toward live MCP-backed resolution.
+A **loci meme** occupies the stable `lar:///ha.ka.ba/*` tagspace with a locked address, a stable `lar:` URI. Loci memes carry all five canonical rating fields in `#iam` — `tulen`, `confidence`, `mana`, `manao`, and `manaoio` — grouped directly below `version`, plus the adjacent `register` agent-operator surface-texture key below `meme-type` and immediately above `structure`. They reach prospective-canon status (`[CS]`) before an admin or operator may move them to `[C]` canon status. Other meme types may drift their path-root address (what3words-style path root section). The loci kānāwai (law) governs `lar:` URI routing derivation, carrier coherence, address stability, canon promotion, and the research roadmap toward live MCP-backed resolution.
 
 **Lifecycle Note:** All meme law in this system now follows the five-bucket lifecycle: noise → data → meme → typed meme → canon typed meme. Here `data` names structured language an AI can use without the memetic wrappers. Types remain composable rather than mutually exclusive, and `loci` names the stable-address branch for carriers under `lar:///ha.ka.ba/**`. See `lar:///ha.ka.ba/loci#promotion-path` and `lar:///ha.ka.ba/meme#rating-targets` for canonical lifecycle and rating details.
 

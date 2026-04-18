@@ -102,7 +102,7 @@ Orient binds the edge into a stable object surface.
 template = "lar:///ha.ka.ba/loci/edge/template"
 kind = "proposition"
 from = "lar:///ha.ka.ba/loci/iam"
-to = "lar:///ha.ka.ba/loci/iam/file_path"
+to = "lar:///ha.ka.ba/loci/iam/file-path"
 label = "governs"
 direction = "forward"
 polarity = "affirming"
@@ -166,7 +166,7 @@ Do not use instance to record runtime history. That work belongs to trace later.
 
 ## Act
 
-First live migrations can bind instances beside current `depends_on` surfaces.
+First live migrations can bind instances beside current `depends-on` surfaces.
 
 That dual period should stay temporary. Once an instance carries sharper truth, broad summary fields should later derive from it instead of competing with it.
 
@@ -180,7 +180,7 @@ That dual period should stay temporary. Once an instance carries sharper truth, 
 - [Node-RED Core Nodes](https://nodered.org/docs/user-guide/nodes) - routed instances with visible outlets.
 - [LabVIEW Block Diagram Data Flow](https://www.ni.com/docs/en-US/bundle/labview/page/block-diagram-data-flow.html) - execution from concrete wire satisfaction.
 - [LabVIEW Channel Wires](https://www.ni.com/en-us/support/documentation/supplemental/16/channel-wires.html) - richer typed carried-edge forms.
-- [Blender Geometry Nodes Introduction](https://docs.blender.org/manual/en/latest/modeling/geometry_nodes/introduction.html) - socket-bound concrete graph connections.
+- [Blender Geometry Nodes Introduction](https://docs.blender.org/manual/en/latest/modeling/geometry-nodes/introduction.html) - socket-bound concrete graph connections.
 - [Graphviz Edge Attributes](https://graphviz.org/docs/edges/) - explicit per-edge object metadata.
 
 These references reinforce one pressure: a concrete edge object should stay readable without digging through surrounding inference.

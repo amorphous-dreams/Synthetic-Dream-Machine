@@ -25,7 +25,6 @@ function = "define the admitted x-tiddlywiki-filter guest family, its host-facin
 grammar-key = "x-tiddlywiki-filter"
 guest-mime = "text/x-tiddlywiki-filter"
 invocation-worksite = "hana"
-prior-art-name = "TiddlyWiki filter language"
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
 pranala = [

@@ -98,7 +98,7 @@ Orient chooses the control primitive and outlet shape.
 - `branch`
 - `sequence`
 - `gate`
-- `loop_back`
+- `loop-back`
 - `reset`
 
 Branch meaning usually belongs to the node or gate. The edge should carry the outlet label that tells a reader which route fired.
@@ -113,7 +113,7 @@ Branch meaning usually belongs to the node or gate. The edge should carry the ou
 kind = "control"
 from = "lar:///ha.ka.ba/loci/edge/template"
 to = "lar:///ha.ka.ba/loci/edge/instance"
-label = "binds_next"
+label = "binds-next"
 direction = "forward"
 branch-label = "then"
 gate = "sequence"
@@ -181,9 +181,9 @@ Those three already cover most early graph pressure in authoring and invocation 
 
 ## Research Foundation
 
-- [Unreal Basic Scripting with Blueprints](https://dev.epicgames.com/documentation/en-us/unreal-engine/basic-scripting-with-blueprints-in-unreal-engine?application_version=5.6) - execution wires versus data pins.
-- [Unreal Flow Control](https://dev.epicgames.com/documentation/en-us/unreal-engine/flow-control?application_version=4.27) - branch, sequence, gate, loop, and control outlets.
-- [Unreal Functions: Pure vs Impure](https://dev.epicgames.com/documentation/en-us/unreal-engine/functions-in-unreal-engine?application_version=5.6) - call sites that require exec versus value-only flow.
+- [Unreal Basic Scripting with Blueprints](https://dev.epicgames.com/documentation/en-us/unreal-engine/basic-scripting-with-blueprints-in-unreal-engine?application-version=5.6) - execution wires versus data pins.
+- [Unreal Flow Control](https://dev.epicgames.com/documentation/en-us/unreal-engine/flow-control?application-version=4.27) - branch, sequence, gate, loop, and control outlets.
+- [Unreal Functions: Pure vs Impure](https://dev.epicgames.com/documentation/en-us/unreal-engine/functions-in-unreal-engine?application-version=5.6) - call sites that require exec versus value-only flow.
 - [LabVIEW Block Diagram Data Flow](https://www.ni.com/docs/en-US/bundle/labview/page/block-diagram-data-flow.html) - contrast pressure between execution order and value availability.
 
 These references converge on one lesson: control edges should stay visible and separate.
