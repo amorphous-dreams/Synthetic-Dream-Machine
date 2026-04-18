@@ -526,32 +526,5 @@ Post-MCP-ba governs the authoring motion across migration: keep the skill body c
 Skill template closes the verification authoring stream here.
 <<~/ahu >>
 
-<<~ ahu #result >>
-
-## Result
-
-A lawful skill envelope from this template may carry:
-
-* per-invariant verdicts (pass / fail / skip) with observed surface and repair path for each failure
-* overall conformance status (pass / fail)
-* rating consequence: which rating fields improve when all invariants pass, which degrade when any fail
-* residue: invariants declared but not yet implemented, substrate used (agent-native / CLI / MCP)
-* next-observation route: which invariant or meme section to check in the next pass
-
-<<~/ahu >>
-
-<<~&#x0004; -> ahu #result >>
-
-```toml
-status = "partial"
-confidence = 0.52
-yield = "skill"
-return = "template"
-upward-context = "chat"
-downward-context = "none"
-residue = "pre-MCP scripts not yet written; no skill-*.md package exists yet; post-MCP MCP server not yet implemented"
-next-observation = "lar:///ha.ka.ba/pono/skill-template#invariant-declaration"
-next-question = "Which law should the first skill package cover — loci-parser.md or meme/loci-meme.md?"
-```
 
 <<~&#x0004; -> ? >>

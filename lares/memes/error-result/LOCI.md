@@ -18,15 +18,6 @@
 
     This meme gives `#result`, `#warning`, and `#error` a shared law so that `aka`, `kahea`, renderers, agents, and callers can route outcomes without quiet invention.
 
-    ## Supported Queries
-
-    <<~&#x0005; ui meme? -> <<~&#x0006; ? -> lar:///ha.ka.ba/error-result#iam >> >>
-    <<~&#x0005; ui envelope? -> <<~&#x0006; ? -> lar:///ha.ka.ba/error-result#return-envelope >> >>
-    <<~&#x0005; ui result? -> <<~&#x0006; ? -> lar:///ha.ka.ba/error-result#result >> >>
-    <<~&#x0005; ui warning? -> <<~&#x0006; ? -> lar:///ha.ka.ba/error-result#warning >> >>
-    <<~&#x0005; ui error? -> <<~&#x0006; ? -> lar:///ha.ka.ba/error-result#error >> >>
-    <<~&#x0005; ui laws? -> <<~&#x0006; ? -> lar:///ha.ka.ba/error-result#semantic-law >> >>
-    <<~&#x0005; ui examples? -> <<~&#x0006; ? -> lar:///ha.ka.ba/error-result#examples >> >>
 >>
 
 <<~&#x0002; ahu #meme-body-open
@@ -339,160 +330,13 @@
     @role "worked examples"
     @function "show how the ontology lands in practice"
 
-    ## Examples
-
-    ### Example A — Completed result with warning
-
-    <<~ ahu #example-completed-with-warning
-        @kind "return-envelope"
-        @status "partial"
-        @primary "#result-a"
-        @payload "lar:///payloads/answer-a"
-        @issues "one"
-        @trace "normal"
-        @route "render"
-        @confidence "0.71"
-        @kapu "least-authority"
-        @residue "warning"
-
-        <<~ ahu #result-a
-            @kind "result"
-            @status "partial"
-            @result-class "answer"
-            @yield "meme"
-            @payload "lar:///payloads/answer-a"
-            @confidence "0.71"
-            @return "render"
-            @residue "warning"
-            @next-observation "lar:///ha.ka.ba/missing-anchor-followup"
-        >>
-
-        <<~ ahu #warning-a
-            @kind "warning"
-            @issue-class "absence"
-            @severity "warning"
-            @code "ABSENCE.SECONDARY_ANCHOR"
-            @phase "observe"
-            @subject "ala"
-            @message "Secondary anchor never surfaced; payload remains usable."
-            @evidence "trace://observe/gaps/secondary-anchor"
-            @recovery "retry"
-            @blame-domain "input"
-        >>
-    >>
-
-    ### Example B — Kapu-blocked error
-
-    <<~ ahu #example-kapu-blocked
-        @kind "return-envelope"
-        @status "blocked"
-        @primary "#error-b"
-        @payload "none"
-        @issues "one"
-        @trace "full"
-        @route "quarantine"
-        @confidence "0.93"
-        @kapu "lar:///policies/public-no-store"
-        @residue "error"
-
-        <<~ ahu #error-b
-            @kind "error"
-            @issue-class "kapu"
-            @severity "error"
-            @code "KAPU.STORE_FORBIDDEN"
-            @phase "act"
-            @subject "memory"
-            @message "Enclosing kapu forbade addressed-memory retention."
-            @evidence "trace://act/kapu/store"
-            @recovery "defer"
-            @blame-domain "policy"
-        >>
-    >>
-
-    ### Example C — Degraded renderer fallback
-
-    <<~ ahu #example-renderer-fallback
-        @kind "return-envelope"
-        @status "degraded"
-        @primary "#result-c"
-        @payload "lar:///payloads/render-c"
-        @issues "one"
-        @trace "normal"
-        @route "emit"
-        @confidence "0.64"
-        @kapu "least-authority"
-        @residue "warning"
-
-        <<~ ahu #result-c
-            @kind "result"
-            @status "degraded"
-            @result-class "render"
-            @yield "artifact"
-            @payload "lar:///payloads/render-c"
-            @confidence "0.64"
-            @return "emit"
-            @residue "warning"
-            @next-question "none"
-        >>
-
-        <<~ ahu #warning-c
-            @kind "warning"
-            @issue-class "render"
-            @severity "caution"
-            @code "RENDER.TEMPLATE_FALLBACK"
-            @phase "act"
-            @subject "renderer"
-            @message "Preferred template dropped away; fallback template carried the return."
-            @evidence "trace://act/render/template-fallback"
-            @recovery "none"
-            @blame-domain "runtime"
-        >>
-    >>
-
     <<~ pranala loulou lar:///ha.ka.ba/examples >>
 >>
 
-<<~ ahu #integration-notes
-    @name "memetic-wikitext-integration-notes"
-    @description "Patch notes for folding typed ontology into the current root and OODA-HA shards."
-    @role "integration bridge"
-    @function "show where the meme plugs into existing fields"
-
-    ## Integration Notes
-
-    1. Replace or extend the current `#result` field bundle with `lar:///ha.ka.ba/error-result#result`.
-    2. Add `@primary`, `@issues`, and `@trace` to the outer return carrier.
-    3. Allow `#aftermath` feed to accept `warning|error` alongside `result|payload|trace|residue`.
-    4. Bind `@kapu-failure` through `#kapu-failure-mapping`.
-    5. Route merge or recursion breakage through typed issue classes instead of prose-only residue.
-
-    <<~ pranala loulou lar:///ha.ka.ba/integration-notes >>
->>
-
-<<~&#x0004; -> ahu #result-object
-    @name "error-result-result-object"
-    @kind "result"
-    @status "completed|partial|degraded|recursive|deferred|?"
-    @result-class "artifact|answer|transclusion|render|citation-bundle|state-bundle|route-bundle|?"
-    @yield "meme|data|signal|artifact|bundle|?"
-    @payload "payload-address|payload-object|?"
-    @confidence "0.0-1.0|?"
-    @return "render|store|emit|recurse|invoke|defer|?"
-    @upward-context "parent|caller|chat|ui|memory|graph|?"
-    @downward-context "none|observe|orient|decide|act|assess|ooda-ha|subloop|renderer|?"
-    @residue "none|trace|warning|surplus|drift|?"
-    @next-observation "lar:///...|none|?"
-    @next-question "lar:///...|text|none|?"
-
-    ## Result object export
-
-    Export-friendly result field bundle for direct import.
-
-    <<~ pranala loulou lar:///ha.ka.ba/result-object >>
--> ? >>
-
-<<~&#x0003; ahu #body-close
+<<~&#x0003; ahu #body-close >>
     ## Body closing
 
     Ends the typed aftermath stream.
->>
+<<~/ahu >>>>
+
+<<~&#x0004; -> ? >>

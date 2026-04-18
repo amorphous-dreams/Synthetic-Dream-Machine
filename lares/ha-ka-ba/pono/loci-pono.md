@@ -165,35 +165,4 @@ This subphase keeps skill packages testable and auditable.
 Pono closes the kānāwai (law) index stream here.
 <<~/ahu >>
 
-<<~ ahu #result >>
-
-## Result
-
-A lawful pono envelope may carry:
-
-* the active kānāwai (law) roster with addresses and roles
-* the active skill package roster with coverage
-* an addressed kānāwai (law) or skill in response to a query
-* gaps or absences named explicitly
-
-<<~/ahu >>
-
-<<~&#x0004; -> kahea ala ahu #result >>
-
-```toml
-status = "partial"
-confidence = 0.90
-yield = "meme"
-return = "index"
-upward-context = "chat"
-transaction-class = "stage"
-transaction-phase = "open"
-surface-layer = "present"
-ast-layer = "present"
-widget-layer = "deferred"
-residue = "skill-index empty — awaiting first skill-*.md package"
-next-observation = "lar:///ha.ka.ba/pono#skill-index"
-next-question = "Which kānāwai (law) should the first verification skill cover — parser or render-pipeline?"
-```
-
 <<~&#x0004; -> ? >>

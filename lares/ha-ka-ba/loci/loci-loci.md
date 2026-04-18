@@ -703,35 +703,4 @@ Aftermath-ba governs landing quality: a routing aftermath that reports only "X U
 Loci closes the routing authority stream here.
 <<~/ahu >>
 
-<<~ ahu #result >>
-
-## Result
-
-A lawful loci envelope from this meme may carry:
-
-* a current `mana`, `manao`, and `manaoio` posture for the queried `lar:` URI meme
-* a resolved carrier path for the queried `lar:` URI when local derivation succeeds
-* the meme-type prefix table for derivation-algorithm step 5
-* the MCP-resolution roadmap note
-* the current canon-lifecycle stage for the target address
-* a declared-unresolved forward reference when local derivation yields no result
-* an explicit-convention verdict
-* gaps and declared-unresolved addresses named explicitly
-
-<<~/ahu >>
-
-<<~&#x0004; -> ahu #result >>
-
-```toml
-status = "partial"
-confidence = 0.74
-yield = "loci"
-return = "render"
-upward-context = "chat"
-downward-context = "none"
-residue = "path-directory carriers still exceed local derivation-only resolution; high `manaoio` remains capped until live MCP-backed resolution exists; sub-meme files (loci-observe-ha, loci-orient, etc.) not yet authored"
-next-observation = "lar:///ha.ka.ba/loci#mcp-resolution-roadmap"
-next-question = "What minimal live MCP server contract would resolve `lar:` URI memes to trustworthy ratings without a handwritten registry?"
-```
-
 <<~&#x0004; -> ? >>

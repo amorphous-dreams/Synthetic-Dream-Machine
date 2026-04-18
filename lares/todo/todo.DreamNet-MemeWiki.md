@@ -480,35 +480,4 @@ Leave the unresolved items visible and bounded. Hidden residue is how architectu
 DreamNet MemeWiki closes the active research-consolidation stream here.
 <<~/ahu >>
 
-<<~ ahu #result >>
-
-## Result
-
-A lawful DreamNet MemeWiki todo envelope may carry:
-
-* the consolidated research field
-* the present architectural posture
-* the current implementation sequence
-* the still-open residue
-
-<<~/ahu >>
-
-<<~&#x0004; -> kahea ala ahu #result >>
-
-```toml
-status = "partial"
-confidence = 0.86
-yield = "todo"
-return = "research-consolidation"
-upward-context = "chat"
-transaction-class = "stage"
-transaction-phase = "open"
-surface-layer = "present"
-ast-layer = "deferred"
-widget-layer = "deferred"
-residue = "Kernel proofs, sync contract, MemPalace bridge, and migration path remain open."
-next-observation = "lar:///todo/DreamNet_MemeWiki#act"
-next-question = "Which workstream should produce the first concrete spike: kernel boot, Lezer grammar, or Kowloon bridge?"
-```
-
 <<~&#x0004; -> ? >>

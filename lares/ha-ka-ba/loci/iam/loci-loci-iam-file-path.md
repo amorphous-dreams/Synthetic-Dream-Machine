@@ -500,33 +500,4 @@ Aftermath-ba governs landing quality: aftermath that ends without a coherence ju
 file-path closes the key-authority stream here.
 <<~/ahu >>
 
-<<~ ahu #result >>
-
-## Result
-
-A lawful file-path envelope from this locus may carry:
-
-* the form verdict (flat-file, path-directory, malformed, or transitional)
-* the filename component verdict (`<meme-type>-<name>.md` pattern satisfied or violated)
-* the URI agreement verdict (agreement holds or named divergence)
-* the migration posture (not migrating, staged, transitional, or complete)
-* staged migration steps for Hooko during ongoing migration
-* the five-check aftermath verdict with any residue named explicitly
-
-<<~/ahu >>
-
-<<~&#x0004; -> ahu #result >>
-
-```toml
-status = "partial"
-confidence = 0.62
-yield = "loci"
-return = "render"
-upward-context = "chat"
-downward-context = "none"
-residue = "sub-meme files (file-path-observe-ha, file-path-orient, etc.) not yet authored; loci/iam/ namespace established but only file-path registered so far"
-next-observation = "lar:///ha.ka.ba/loci/iam/file-path#file-path-forms"
-next-question = "Which #iam key should the next loci/iam/ sub-meme govern — name, meme-type, or one of the five canonical rating fields?"
-```
-
 <<~&#x0004; -> ? >>

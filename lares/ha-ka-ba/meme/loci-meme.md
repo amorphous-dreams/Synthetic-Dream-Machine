@@ -90,7 +90,6 @@ Observe should detect:
 * plus adjacent `register` surface texture immediately below `meme-type` for the operator-facing `tulen`/`confidence` bands
 * title heading and opening prose
 * self-reference ala
-* supported query block and query throats
 * body-open and body-close control sigil sites
 * phase map block and its glyph line
 * OODA-HA phase sections and whether each carries local prose or only a stub
@@ -272,11 +271,7 @@ Do not add a top-level `<<~ pranala loulou lar:///ha.ka.ba/NAME >>` line that on
 
 `pranala loulou` should route outward toward a real child or adjacent carrier. If no outward routing belongs here yet, omit the line and continue directly into supported queries or body-open.
 
-#### R6 — Supported queries
-
-At least one `<<~&#x0005; ui ...? -> ...#... >>` query throat routing toward `#iam`.
-
-#### R7 — Body open and body close
+#### R6 — Body open and body close
 
 ```text
 <<~&#x0002; ahu #meme-body-open >>
@@ -292,7 +287,7 @@ At least one `<<~&#x0005; ui ...? -> ...#... >>` query throat routing toward `#i
 
 These mark the active parse threshold into and out of the meme body.
 
-#### R8 — Phase map
+#### R7 — Phase map
 
 ```text
 <<~ ahu #phase-map >>
@@ -727,29 +722,8 @@ pranala = [
 [NAME] closes the active stream here.
 <<~/ahu >>
 
-<<~ ahu #result >>
-
-## Result
-
-[What this meme hands upward after lawful authorship and interpretation.]
-
-<<~/ahu >>
-
-<<~&#x0004; -> ahu #result >>
-
-```toml
-status = "skeleton"
-confidence = 0.10
-yield = "meme"
-return = "render"
-upward-context = "chat"
-downward-context = "none"
-residue = "todo"
-next-observation = "lar:///ha.ka.ba/[NAME]#phase-map"
-next-question = "[What should this meme answer first?]"
-```
-
 <<~&#x0004; -> ? >>
+
 ````
 
 <<~/ahu >>
@@ -1080,34 +1054,5 @@ Each entry names the lineage, its core principle, and what backlog pressure or e
 <<~&#x0003; ahu #body-close >>
 Meme closes the canonical skeleton stream here.
 <<~/ahu >>
-
-<<~ ahu #result >>
-
-## Result
-
-A lawful meme envelope from this locus may carry:
-
-* the required element set (R1–R9) with per-element conformance verdicts
-* the optional element set (O1–O9) with rating-contribution table and resolution-state impact
-* the rating-target table for the requested band
-* the skeleton block ready for author copy and placeholder fill
-* repair guidance naming which elements would move the meme to the next rating band
-* gaps and absences named explicitly
-
-<<~/ahu >>
-
-<<~&#x0004; -> ahu #result >>
-
-```toml
-status = "partial"
-confidence = 0.79
-yield = "meme"
-return = "render"
-upward-context = "chat"
-downward-context = "none"
-residue = "transport-specific predicates for loci-routed carriers now governed outward by loci; O7/O8/O9 sub-meme files not yet authored; deferred-resolution and research-foundation sections present and governing"
-next-observation = "lar:///ha.ka.ba/loci#high-rating-loci"
-next-question = "Which concrete meme family should this generic meme law tighten next — loci, grammar, or skill?"
-```
 
 <<~&#x0004; -> ? >>

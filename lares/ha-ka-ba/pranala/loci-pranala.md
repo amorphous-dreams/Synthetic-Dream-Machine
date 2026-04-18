@@ -238,30 +238,4 @@ A strong edge pass should leave:
 Edge closes the explicit-graph law stream here.
 <<~/ahu >>
 
-<<~ ahu #result >>
-
-## Result
-
-A lawful edge envelope may carry:
-
-- family classification
-- lifecycle classification
-- shared-field contract
-- migration guidance away from vague dependency claims
-- direct prior-art anchors for later deepening
-
-<<~/ahu >>
-
-<<~&#x0004; -> ahu #result >>
-
-```toml
-status = "seed-ready"
-confidence = 0.68
-yield = "meme"
-return = "render"
-upward-context = "chat"
-residue = "dataflow message constraint and trace still await second-wave laws"
-next-observation = "lar:///ha.ka.ba/loci/edge/proposition#edge-shape"
-```
-
 <<~&#x0004; -> ? >>

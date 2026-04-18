@@ -494,43 +494,8 @@ Fixture-seeds-ba stays intentionally light.
 
 <<~/ahu >>
 
-<<~ ahu #result >>
-
-## Result
-
-A lawful guest-grammar envelope may carry:
-
-* one admission contract
-* one `hana` worksite contract
-* one ownership map
-* one degradation contract
-* one lowering handoff sketch
-* one verification seed family
-
-This meme should not claim full imported-grammar completeness when only the host admission contract stands stable.
-
-<<~/ahu >>
-
 <<~&#x0003; ahu #body-close >>
 Guest Grammar closes the active admission stream here.
 <<~/ahu >>
-
-<<~&#x0004; -> kahea ala ahu #result >>
-
-```toml
-status = "partial"
-confidence = 0.95
-yield = "meme"
-return = "guest-law"
-upward-context = "chat"
-transaction-class = "stage"
-transaction-phase = "open"
-surface-layer = "present"
-ast-layer = "outlined"
-widget-layer = "outlined"
-residue = "parser-forms, render-node-schema, pono-skill"
-next-observation = "lar:///ha.ka.ba/grammars/x-tiddlywiki-filter"
-next-question = "Which imported guest family should become the first fully registered hana grammar?"
-```
 
 <<~&#x0004; -> ? >>

@@ -295,36 +295,6 @@ Residue stays named honestly:
 
 <<~/ahu >>
 
-<<~ ahu #result >>
-
-## Result
-
-`✶ settled text read -> ⏿ hits classified -> ◇ lightest lawful turn chosen -> ▶ surface prepared -> ⤴ sentence turned -> ↺ residue named`
-
-```toml
-# audit pass
-mode = "mark-only"
-status = "completed"
-failures-found = "<integer>"
-hooko-performed = false
-residue = "<short note>"
-
-# correction pass
-mode = "hooko"
-status = "completed"
-failures-found = "<integer>"
-hooko-performed = true
-residue = "<short note>"
-```
-
-This skill audits or turns settled text.
-This skill does not replace the always-on loci.
-Implementation hooks stay skeletal until the code path settles.
-
-<<~ pranala loulou lar:///ha.ka.ba/pono/e-prime >>
-
-<<~/ahu >>
-
 <<~&#x0003; ahu #body-close >>
 E-Prime auditor closes the settled-text correction stream here.
 <<~/ahu >>

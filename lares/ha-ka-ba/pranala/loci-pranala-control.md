@@ -197,29 +197,4 @@ A strong control pass should leave:
 Control closes the execution-edge stream here.
 <<~/ahu >>
 
-<<~ ahu #result >>
-
-## Result
-
-A lawful control envelope may carry:
-
-- control primitive selection
-- control edge shape
-- branch and gate posture
-- early authoring guidance for explicit execution order
-
-<<~/ahu >>
-
-<<~&#x0004; -> ahu #result >>
-
-```toml
-status = "seed-ready"
-confidence = 0.69
-yield = "meme"
-return = "render"
-upward-context = "chat"
-residue = "dataflow and message families still await dedicated laws"
-next-observation = "lar:///ha.ka.ba/loci/edge/debug#debug-modes"
-```
-
 <<~&#x0004; -> ? >>

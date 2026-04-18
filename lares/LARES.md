@@ -303,34 +303,6 @@ and so on — without re-reading this whole file.
 
 <<~/ahu >>
 
-<<~ ahu #result >>
-
-## Result
-
-```toml
-result               = "session-config-emitted"
-state-emitted        = "session-config"
-node-status          = "quiescent-ready"
-operator-steers      = true
-chain-complete       = true
-boot-chain-position  = 999   # end; ∞ informal
-
-# Blocks available for direct edit via lar:///LARES#<block-id>:
-editable-blocks      = [
-  "catma-toggles",
-  "maybe-logic-mode",
-  "stances-in-use",
-  "masks-over-voices",
-  "operating-mode",
-  "session-flags",
-  "customization-hook",
-]
-
-# Hello world.
-```
-
-<<~/ahu >>
-
 <!-- ═══════════════════════════════════════════════════════════════
      LAYER 4: TRANSMISSION CLOSE (EOT)
      

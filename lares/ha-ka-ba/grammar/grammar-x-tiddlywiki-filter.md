@@ -474,44 +474,8 @@ Lowering-expectations-ba remains sparse in this first pass.
 
 <<~/ahu >>
 
-<<~ ahu #result >>
-
-## Result
-
-A lawful x-tiddlywiki-filter envelope may carry:
-
-* one grammar key and import identity
-* one sigil-centric term mapping
-* one host admission rule through `hana`
-* one preserved boot feature family
-* one example family
-* one degradation posture
-* one lowering expectation sketch
-
-This meme should not claim full parity with every historical TiddlyWiki feature before parser and fixture work prove that claim.
-
-<<~/ahu >>
-
 <<~&#x0003; ahu #body-close >>
 X-TiddlyWiki-Filter closes the active imported grammar stream here.
 <<~/ahu >>
-
-<<~&#x0004; -> kahea ala ahu #result >>
-
-```toml
-status = "partial"
-confidence = 0.94
-yield = "meme"
-return = "grammar"
-upward-context = "chat"
-transaction-class = "stage"
-transaction-phase = "open"
-surface-layer = "present"
-ast-layer = "outlined"
-widget-layer = "outlined"
-residue = "operator-table, function-sigil coverage, fixture corpus"
-next-observation = "lar:///ha.ka.ba/pono/implictations-of-hana"
-next-question = "Which canonical memes now need direct hana-aware updates?"
-```
 
 <<~&#x0004; -> ? >>

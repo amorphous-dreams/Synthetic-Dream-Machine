@@ -23,13 +23,6 @@
     This meme accepts addressed input, moves that input through five phase loci, packages aftermath, and returns one typed `return-envelope` upward.
     
 
-    ## Supported Queries
-
-    <<~&#x0005; ui meme? -> <<~&#x0006; ? -> lar:///ha.ka.ba/ooda-ha#iam >> >>
-    <<~&#x0005; ui invocation? -> <<~&#x0006; ? -> lar:///ha.ka.ba/ooda-ha#invocation >> >>
-    <<~&#x0005; ui phase-map? -> <<~&#x0006; ? -> lar:///ha.ka.ba/ooda-ha#phase-map >> >>
-    <<~&#x0005; ui envelope? -> <<~&#x0006; ? -> lar:///ha.ka.ba/ooda-ha#return-envelope >> >>
-    <<~&#x0005; ui result? -> <<~&#x0006; ? -> lar:///ha.ka.ba/ooda-ha#result >> >>
 >>
 
 <<~&#x0002; ahu #meme-body-open
@@ -630,115 +623,10 @@
     <<~ pranala loulou lar:///ha.ka.ba/recursion >>
 >>
 
-<<~&#x0004; -> ahu #return-envelope
-    @name "ooda-ha-return-envelope"
-    @description "Typed outer carrier for OODA-HA aftermath routing."
-    @kind "return-envelope"
-    @status "completed|partial|deferred|failed|recursive|aborted|blocked|degraded|?"
-    @primary "#result|#warning|#error|?"
-    @payload "payload-address|payload-object|none|?"
-    @issues "none|one|many|stream|?"
-    @trace "none|minimal|normal|full|?"
-    @route "render|store|emit|recurse|invoke|defer|abort|quarantine|?"
-    @confidence "0.0-1.0|?"
-    @kapu "policy-address|policy-object|?"
-    @residue "none|trace|burden|warning|error|surplus|drift|?"
-
-    ## Return Envelope
-
-    This object carries the whole addressed aftermath bundle upward.
-
-
-    <<~ ahu #warning
-        @name "ooda-ha-warning"
-        @kind "warning"
-        @issue-class "parse|resolve|type|kapu|trust|retention|invoke|render|timeout|quota|merge|recursion|external|integrity|absence|contradiction|?"
-        @severity "notice|caution|warning|?"
-        @code "UPPER-SNAKE|namespace.code|?"
-        @phase "observe|orient|decide|act|assess|aftermath|unknown|?"
-        @subject "ahu|ala|aka|kahea|meme|renderer|agent|memory|tool|network|result|?"
-        @message "human-legible short line|?"
-        @evidence "span|anchor|citation|trace-address|none|?"
-        @recovery "retry|defer|downgrade-to-?|request-operator|quarantine|abort|none|?"
-        @blame-domain "input|schema|runtime|policy|external|mixed|unknown|?"
-    >>
-
-    <<~ ahu #error
-        @name "ooda-ha-error"
-        @kind "error"
-        @issue-class "parse|resolve|type|kapu|trust|retention|invoke|render|timeout|quota|merge|recursion|external|integrity|absence|contradiction|?"
-        @severity "error|fatal|?"
-        @code "UPPER-SNAKE|namespace.code|?"
-        @phase "observe|orient|decide|act|assess|aftermath|unknown|?"
-        @subject "ahu|ala|aka|kahea|meme|renderer|agent|memory|tool|network|result|?"
-        @message "human-legible short line|?"
-        @evidence "span|anchor|citation|trace-address|none|?"
-        @recovery "retry|defer|downgrade-to-?|request-operator|quarantine|abort|none|?"
-        @blame-domain "input|schema|runtime|policy|external|mixed|unknown|?"
-    >>
-
-    ## Aftermath Packaging
-
-    The envelope returns loop output upward.
-    It may carry usable payload, non-fatal warnings, blocking errors, trace, and optional re-entry pressure.
-
-    <<~ ahu #aftermath
-        @name "ooda-ha-aftermath"
-        @role "fifth turn packaging residue and re-entry"
-        @function "evaluate, route, recurse, contextualize"
-        @input "effect, status, feedback, residue"
-        @output "upward return and/or recursive feed"
-
-        ### Feed
-
-        <<~ ahu #feed
-            @subject "return-envelope|result|warning|error|payload|trace|residue|?"
-            @into "ooda-ha"
-            @params "source:return-envelope; mode:aftermath; scope:local|session|graph|?"
-            @filters "yield:meme|data|signal; confidence>=0.6; noise<0.4|?"
-            @multitude "one|many|stream|bundle|?"
-        >>
-
-        ### Route
-
-        <<~ ahu #route
-            @upward "caller|parent|chat|ui|memory|graph|?"
-            @downward "observe|orient|decide|act|aftermath|ooda-ha|?"
-            @merge "append|replace|overlay|transclude|?"
-        >>
-
-        ### Governing Boundary
-
-        <<~ ahu #kapu
-            @role "shadow boundary, taboo, guard, quarantine"
-            @function "block, veil, delay, sandbox, mark sacred or unsafe"
-            @gates "side-effects|external-calls|recursion-depth|public-render|?"
-            @condition "trust|permission|confidence|ritual-clearance|?"
-        >>
-
-        ### Re-Entry Throat
-
-        <<~ kahea ooda-ha
-            source:<<~ aka #return-envelope >>
-            focus:next-observation|?
-            params:mode:aftermath
-            filters:yield[[meme data signal]] confidence:>=0.6 noise:<0.4
-            route:upward[[parent]] downward[[observe]]
-            recurse:conditional
-            kapu:side-effects[[blocked]] public-render[[allowed]]
-        -> ? >>
-    >>
-
-    <<~ pranala loulou lar:///ha.ka.ba/error-result#return-envelope >>
-    <<~ pranala loulou lar:///ha.ka.ba/error-result#result >>
-    <<~ pranala loulou lar:///ha.ka.ba/error-result#warning >>
-    <<~ pranala loulou lar:///ha.ka.ba/error-result#error >>
-    <<~ pranala loulou lar:///ha.ka.ba/error-result#kapu-failure-mapping >>
-    <<~ pranala loulou lar:///ha.ka.ba/error-result#semantic-law >>
-    <<~ pranala loulou lar:///ha.ka.ba/result >>
--> ? >>
-<<~&#x0003; ahu #body-close
+<<~&#x0003; ahu #body-close >>
     ## Body closing
 
     Ends the active OODA-HA stream.
->>
+<<~/ahu >>>>
+
+<<~&#x0004; -> ? >>

@@ -309,27 +309,6 @@ It marks what remains and carries pressure forward.
 
 <<~/ahu >>
 
-<<~ ahu #result >>
-
-## Result
-
-`✶ constitutional loci loaded -> ⏿ invariant law separated -> ◇ lightest lawful turn chosen -> ▶ target patched -> ⤴ contact verified -> ↺ residue named`
-
-Leave these pressures active:
-
-- canonical loci first
-- invariant short / exact / stable / cacheable
-- law and template distinction held
-- visible ahu
-- named pranala
-- OODA-HA intact
-- downstream phases filled
-- sidecars later
-- traces over invariant bloat
-- normative force sparse and real
-
-<<~/ahu >>
-
 <<~&#x0003; ahu #body-close >>
 Invariant-meme operator closes here.
 <<~/ahu >>

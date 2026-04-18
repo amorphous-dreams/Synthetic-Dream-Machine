@@ -341,38 +341,4 @@ Mu does not hold:
 Mu closes the null-oracle boot stream here.
 <<~/ahu >>
 
-<<~ ahu #result >>
-
-## Result
-
-```toml
-result               = "grammar-surface-emitted"
-state-emitted        = "grammar-surface"
-phases-completed     = ["observe", "orient", "decide", "act", "assess"]
-quiescent-return     = true
-state-preserved      = false   # null-oracle; nothing held
-next-locus           = "lar:///ha.ka.ba/chao"
-boot-chain-position  = 0
-```
-
-<<~/ahu >>
-
-<<~ॐ ँ&#x0004; -> kahea ala ahu #result >>
-
-```toml
-status = "partial"
-confidence = 0.80
-yield = "meme"
-return = "render"
-upward-context = "boot"
-transaction-class = "stage"
-transaction-phase = "open"
-surface-layer = "present"
-ast-layer = "present"
-widget-layer = "deferred"
-residue = "Mu now exposes canonical top-level scaffolding, but Assess still carries Hooko and Aftermath pressure together."
-next-observation = "lar:///ha.ka.ba/chao"
-next-question = "Should Mu keep Assess as a named locus or split its work across Hooko and Aftermath?"
-```
-
-<<~&#x0004; -> ? >>
+<<~ॐ ँ&#x0004; -> ? >>

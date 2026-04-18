@@ -189,29 +189,4 @@ A strong debug pass should leave:
 Debug closes the observation-edge stream here.
 <<~/ahu >>
 
-<<~ ahu #result >>
-
-## Result
-
-A lawful debug envelope may carry:
-
-- debug mode selection
-- reveal edge shape
-- visibility posture
-- early migration targets for graph illumination
-
-<<~/ahu >>
-
-<<~&#x0004; -> ahu #result >>
-
-```toml
-status = "seed-ready"
-confidence = 0.69
-yield = "meme"
-return = "render"
-upward-context = "chat"
-residue = "trace law still remains external to this seed pass"
-next-observation = "lar:///ha.ka.ba/loci/edge#research-foundation"
-```
-
 <<~&#x0004; -> ? >>

@@ -235,20 +235,4 @@ Signs of gain:
 IAM closes the metadata law stream here.
 <<~/ahu >>
 
-<<~ ahu #result >>
-
-## Result
-
-```toml
-status = "metadata-law-ready"
-confidence = 0.70
-yield = "meme"
-return = "render"
-next-observation = "file-path under the reduced #iam contract"
-```
-
-This law now names the reduced `#iam` contract for the live corpus.
-
-<<~/ahu >>
-
-<<~&#x0004; -> ahu #result >>
+<<~&#x0004; -> ? >>

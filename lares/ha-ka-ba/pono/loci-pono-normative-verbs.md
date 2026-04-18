@@ -209,26 +209,4 @@ Aftermath-ba names any residue where a law still duplicates or mutates the share
 Normative-verbs closes the shared modal-force stream here.
 <<~/ahu >>
 
-<<~ ahu #result >>
-
-## Result
-
-This meme hands upward one stable declaration site for the canonical normative verb set and a compact rule against re-declaring that same set as carrier-local top-level metadata.
-
-<<~/ahu >>
-
-<<~&#x0004; -> ahu #result >>
-
-```toml
-status = "draft-law"
-confidence = 0.62
-yield = "meme"
-return = "render"
-upward-context = "chat"
-downward-context = "none"
-residue = "carrier-specific usage guidance still lives locally; broader modal-force law beyond the five canonical verbs remains open"
-next-observation = "lar:///ha.ka.ba/pono/e-prime#normative-language"
-next-question = "Which other carrier-local declaration should move into one central meme next?"
-```
-
 <<~&#x0004; -> ? >>

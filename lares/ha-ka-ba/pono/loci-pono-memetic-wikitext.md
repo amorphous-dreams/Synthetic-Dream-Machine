@@ -1264,18 +1264,7 @@ degrade = "no-op"
 <<~/hana >>
 ````
 
-#### Example I - minimum upward result
-
-````text
-<<~&#x0004; -> ahu #result >>
-```toml
-status = "partial"
-return = "render"
-```
-<<~&#x0004; -> ? >>
-````
-
-The footer `-> ?` passes residual uncertainty back outward truthfully. It does not erase the structured result that already surfaced above it.
+The footer `-> ?` passes residual uncertainty back outward truthfully.
 
 ### Example Coverage Reminder
 
@@ -1323,104 +1312,12 @@ Minimum-boot-examples-ba governs teachability, reading flow, and high-mana trans
 
 This ahu preserves the examples as living entry points rather than as inert specimen blocks.
 
- <<~/ahu >>
+<<~/ahu >>
 
- <<~/ahu >>
-
-<<~ ahu #result >>
-
-## Result
-
-Result governs the primary upward semantic package of the constitutional root.
-
-This locus should name what the root may hand upward after lawful authorship, semantic interpretation, and boot-level organization, while leaving deeper typed parse and render result machinery to downstream laws.
-
-### Root Result Charge
-
-A lawful root result may carry:
-
-* semantic identity summary
-* primitive and composition summary
-* boot grammar summary
-* boundary warnings
-* unresolved semantic pressure
-* profile or teaching posture
-* next-observation route
-
-### Root Result Kānāwai (law)
-
-The root should return one compact semantic package rather than a full implementation-facing aftermath structure.
-
-That package should remain stable enough for human and agent use, but light enough that parser and render-pipeline may still own their deeper typed envelopes, traces, and transaction-aware residue.
-
-### Truthful Incompletion Kānāwai (law)
-
-The root should not claim full completion when boundary, uncertainty, or boot sufficiency remains unresolved.
-
-When the root cannot lawfully close a question, it should prefer explicit residue, bounded uncertainty, or named next observation over flattering completion.
-
-### Outward Boundary Reminder
-
-This locus should name the semantic carry-shape of the root.
-
-This locus should not yet swallow:
-
-* typed parse issue bundles
-* parse trace packaging
-* render transaction outcome detail
-* widget-facing residue
-* target-specific aftermath classes
-
-Those details should remain outward in downstream kānāwai (law).
-
-<<~ ahu #result-ha >>
-
-#### Result / ha
-
-Result-ha holds the identity, scope, and carry-shape of the root semantic return.
-
-This ahu governs what kind of upward package the constitutional root may lawfully hand forward.
-
- <<~/ahu >>
-
-<<~ ahu #result-ka >>
-
-#### Result / ka
-
-Result-ka governs field stability, semantic comparison posture, and handoff fit with downstream laws.
-
-This ahu sharpens how the root may remain compact while still handing enough structure into later parse and render work.
-
- <<~/ahu >>
-
-<<~ ahu #result-ba >>
-
-#### Result / ba
-
-Result-ba governs truthful incompletion, forward pressure, and lawful upward semantic landing.
-
-This ahu preserves the root result as a live route into the next observation rather than a false claim of final closure.
-
- <<~/ahu >>
-
- <<~/ahu >>
+<<~/ahu >>
 
 <<~&#x0003; ahu #body-close >>
 Memetic Wikitext closes the active constitutional authoring stream here.
 <<~/ahu >>
-
-<<~&#x0004; -> ahu #result >>
-
-```toml
-status = "skeleton"
-confidence = 0.71
-yield = "meme"
-return = "render"
-upward-context = "chat"
-downward-context = "none"
-residue = "todo"
-next-observation = "lar:///ha.ka.ba/pono/memetic-wikitext#boot-grammar"
-next-question = "Which minimum examples should become canonical boot fixtures first?"
-```
 
 <<~&#x0004; -> ? >>

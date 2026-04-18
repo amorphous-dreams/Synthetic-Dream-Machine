@@ -2038,9 +2038,8 @@ degrade = "no-op"
 <<~ pranala loulou lar:///ha.ka.ba/examples >>
 <<~/ahu >>
 
-Yep. Your new draft already pushes `&#x0004;` toward a real routed return throat: the control-glyph kānāwai (law) now admits composite-prefix behavior, and the file now closes with an explicit `&#x0004; -> kahea ala ahu #result` chain carrying TOML. What still looks missing to me: a dedicated kānāwai (law) that names **return kinds**, **`&#x0004;` transaction behavior**, and the **boot-legal status** of that final degraded close.  
+Yep. Your new draft already pushes `&#x0004;` toward a real routed return throat: the control-glyph kānāwai (law) now admits composite-prefix behavior, and the file now closes with an explicit `&#x0004; -> ?` sigil. What still looks missing to me: a dedicated kānāwai (law) that names **return kinds**, **`&#x0004;` transaction behavior**, and the **boot-legal status** of that final degraded close.  
 
-I’d place the new section **immediately before `#result`**. That placement would let the doc flow as:
 control-glyph kānāwai (law) → return-types kānāwai (law) → result contract → concrete terminal return transaction.  
 
 <<~ ahu #return-types >>
@@ -2055,11 +2054,7 @@ This locus should keep three things distinct while allowing them to compose:
 * return transaction
 * return payload instance
 
-`#result` names the contract for the primary upward package.
-
 `&#x0004;` governs the active return transaction that routes toward that contract.
-
-A fenced payload following a lawful `&#x0004;` routed opener may instantiate one concrete return-envelope under that contract.
 
 ### Return Types Subloops
 
@@ -2089,15 +2084,6 @@ A primary return-envelope SHOULD declare exactly one primary `return` class for 
 
 Auxiliary material MAY still travel as residue, trace, issue bundle, or next-observation pressure.
 
-##### Contract versus Instance Kānāwai (law)
-
-`#result` governs what a lawful primary return may carry.
-
-A concrete `&#x0004;` transaction does not replace `#result`.
-
-It routes one actual return-envelope instance through that contract.
-
-<<~ pranala loulou lar:///ha.ka.ba/return-types-ha >>
 <<~/ahu >>
 
 <<~ ahu #return-types-ka >>
@@ -2141,35 +2127,6 @@ Broader layer-to-target transaction-lifecycle detail, widget persistence, and re
 
 Boot parser SHOULD admit this routed pattern as a lawful result-transaction opener:
 
-```text
-<<~&#x0004; -> kahea ala ahu #result >>
-````
-
-That opener means:
-
-* open a return transaction
-* route toward the local `#result` waypoint
-* stage one concrete return-envelope instance under that contract
-
-##### Payload Kānāwai (law) for Routed Return
-
-A fenced payload immediately following a lawful `&#x0004;` routed opener MAY count as a return-envelope instance when:
-
-* the routed target resolves lawfully
-* the payload remains the first meaningful child of the transaction body
-* the payload language belongs to an allowed envelope language for the active profile
-* one primary return-envelope emerges for the current pass
-
-Recommended boot envelope language for examples: `toml`.
-
-##### Boot Degraded Close
-
-Boot parser SHOULD admit this closer:
-
-```text
-<<~&#x0004; -> ? >>
-```
-
 That closer marks degraded or still-open upward termination for the current return transaction.
 
 It does not claim full committed completion.
@@ -2179,24 +2136,6 @@ It preserves truthful incompletion while still allowing a structured envelope to
 Parser should also interpret it as the canonical outward discharge of residual unbound uncertainty from the local return transaction back into the enclosing graph.
 
 ##### Canonical Boot Example
-
-````text
-<<~&#x0004; -> kahea ala ahu #result >>
-
-```toml
-status = "partial"
-confidence = 0.86
-yield = "meme"
-return = "render"
-upward-context = "chat"
-downward-context = "none"
-residue = "trace"
-next-observation = "lar:///ha.ka.ba/filter-mode"
-next-question = "How strict should legacy closer normalization run during boot?"
-```
-
-<<~&#x0004; -> ? >>
-````
 
 Under boot kānāwai (law), that pattern counts as a lawful degraded routed return carrying one primary `render` envelope plus explicit trace residue and forward continuation pressure.
 
@@ -2248,104 +2187,8 @@ Parser-kānāwai (law) should retain the constitutional minimum needed to keep r
 <<~ pranala loulou lar:///ha.ka.ba/return-types >>
 <<~/ahu >>
 
-<<~ ahu #result >>
-
-## Result
-
-Result governs the primary upward return shape of parser.
-
-This locus should remain compact, stable, and comparison-facing.
-
-It should say what the parse hands upward, how that package remains implementation-legible, and how truthful partiality lands when full completion does not surface.
-
-### Result Subloops
-
-<<~ ahu #result-ha >>
-
-#### Result / ha
-
-Result-ha holds the identity, scope, and primary carry-shape of parser's return.
-
-This subphase governs what result fundamentally holds.
-
-Parser kānāwai (law) returns one typed `return-envelope` upward.
-
-That envelope may carry:
-
-* normalized text
-* metadata object
-* syntax tree
-* issue bundle
-* trace bundle
-* mana score and mana band
-* next-observation route
-
-The primary result should remain singular enough that agent, operator, parser, and test harness can recognize what the current pass actually brought forth.
-
-<<~ pranala loulou lar:///ha.ka.ba/result-ha >>
-<<~/ahu >>
-
-<<~ ahu #result-ka >>
-
-#### Result / ka
-
-Result-ka governs result assembly, field stability, and comparison-facing return discipline.
-
-This subphase governs how result actually performs work.
-
-Typed return should remain stable enough that later lexer, parser, profile, and test surfaces may compare outcomes without inventing new result shapes.
-
-When implementations differ, the result surface should make that difference inspectable through typed fields, trace, issues, profile markers, or other lawful residue rather than through hidden drift.
-
-Result should therefore favor explicit structure over ad hoc prose summary whenever stable comparison matters.
-
-Hooko governs the actual crossing of prepared change.
-
-Return-types governs routed return class and transaction kānāwai (law).
-
-Result governs the primary upward package contract that travels after that crossing.
-
-<<~ pranala loulou lar:///ha.ka.ba/result-ka >>
-<<~/ahu >>
-
-<<~ ahu #result-ba >>
-
-#### Result / ba
-
-Result-ba governs landing quality, truthful incompletion, and forward-routing posture.
-
-This subphase governs how result behaves in practice.
-
-Parser kānāwai (law) should not claim completed parse when blocking rupture prevents truthful structure recovery.
-
-When completion does not surface, result should degrade toward partial envelope, issue-bearing return, trace-bearing return, or explicit `?` rather than flattering completion.
-
-A lawful result may still point forward.
-
-It may carry residue, repair pressure, or `next-observation` without pretending the later work already completed in the current pass.
-
-<<~ pranala loulou lar:///ha.ka.ba/result-ba >>
-<<~/ahu >>
-
-<<~ pranala loulou lar:///ha.ka.ba/result >>
-<<~/ahu >>
-
 <<~&#x0003; ahu #body-close >>
 Parser kānāwai (law) closes the active parsing stream here.
 <<~/ahu >>
-
-<<~&#x0004; -> kahea ala ahu #result >>
-
-```toml
-status = "partial"
-confidence = 0.86
-yield = "meme"
-return = "render"
-upward-context = "chat"
-downward-context = "none"
-residue = "trace"
-next-observation = "lar:///ha.ka.ba/filter-mode"
-next-question = "How strict should legacy closer normalization run during boot?"
-```
 
 <<~&#x0004; -> ? >>
