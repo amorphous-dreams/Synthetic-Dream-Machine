@@ -78,46 +78,6 @@
     <<~ pranala loulou lar:///ha.ka.ba/return-envelope >>
 >>
 
-<<~ ahu #result
-    @name "memetic-wikitext-typed-result"
-    @description "Typed successful or usable runtime outcome."
-    @role "payload return"
-    @function "return usable artifact, named route, and aftermath residue"
-    @kind "result"
-    @status "completed|partial|degraded|recursive|deferred|?"
-    @result-class "artifact|answer|transclusion|render|citation-bundle|state-bundle|route-bundle|?"
-    @yield "meme|data|signal|artifact|bundle|?"
-    @severity "none|notice|?"
-
-    ## Result
-
-    A result returns a usable thing.
-
-    Usable does not require perfection. A partial artifact may still count as result when the caller can work with it and the envelope names the gaps.
-
-    ### Core Fields
-
-    - `@kind "result"`
-    - `@status "completed|partial|degraded|recursive|deferred|?"`
-    - `@result-class "artifact|answer|transclusion|render|citation-bundle|state-bundle|route-bundle|?"`
-    - `@payload "payload-address|payload-object|?"`
-    - `@confidence "0.0-1.0|?"`
-    - `@return "render|store|emit|recurse|invoke|defer|?"`
-    - `@upward-context "parent|caller|chat|ui|memory|graph|?"`
-    - `@downward-context "none|observe|orient|decide|act|assess|ooda-ha|subloop|renderer|?"`
-    - `@residue "none|trace|warning|surplus|drift|?"`
-    - `@next-observation "lar:///...|none|?"`
-    - `@next-question "lar:///...|text|none|?"`
-
-    ### Result Law
-
-    A result should not smuggle fatal breakage under success-colored fields.
-
-    When payload remains usable and breakage remains non-fatal, emit `#result` plus one or more `#warning` objects.
-
-    When payload fails usability, route through `#error` even if a partial artifact exists.
-
-    <<~ pranala loulou lar:///ha.ka.ba/result >>
 >>
 
 <<~ ahu #issue

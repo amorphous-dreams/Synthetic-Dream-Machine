@@ -214,29 +214,4 @@ A strong proposition pass should leave:
 Proposition closes the semantic-edge stream here.
 <<~/ahu >>
 
-<<~ ahu #result >>
-
-## Result
-
-A lawful proposition envelope may carry:
-
-- labeled semantic edge shape
-- direction and polarity guidance
-- ontology-vocabulary posture
-- first-pass relation seeds
-
-<<~/ahu >>
-
-<<~&#x0004; -> ahu #result >>
-
-```toml
-status = "seed-ready"
-confidence = 0.69
-yield = "meme"
-return = "render"
-upward-context = "chat"
-residue = "template promotion of repeated proposition phrases still awaits live use"
-next-observation = "lar:///ha.ka.ba/loci/edge/template#binding-precedence"
-```
-
 <<~&#x0004; -> ? >>

@@ -326,14 +326,6 @@ When continuing from this hand-off, the next agent should work in this order:
 
 1. read the latest parser-law draft in full
 2. preserve current OODA-HA shell and named phase-local subloops
-3. splice or preserve `#return-types` immediately before `#result`
-4. treat `#return-types` as constitutional law, not as optional appendix
-5. preserve the terminal `&#x0004; -> kahea ala ahu #result` chain as canonical boot example
-6. preserve the degraded closer `<<~&#x0004; -> ? >>` as truthful incomplete upward termination under boot law
-7. keep `#result` narrow enough to govern contract, not full transaction machinery
-8. keep `#aftermath` narrow enough to govern landing and residue, not full return-schema law
-9. align future extraction work to linked control-glyphs law, return-law, and envelope-schema law
-10. convert open return-pressure into fixtures, profiles, and explicit parser checks
 
 ### Act Subloops
 

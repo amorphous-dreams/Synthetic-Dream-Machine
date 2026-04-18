@@ -194,29 +194,4 @@ A strong instance pass should leave:
 Instance closes the bound-edge-object stream here.
 <<~/ahu >>
 
-<<~ ahu #result >>
-
-## Result
-
-A lawful instance envelope may carry:
-
-- bound edge object shape
-- instance-state contract
-- override discipline
-- migration posture for coexistence with older summary fields
-
-<<~/ahu >>
-
-<<~&#x0004; -> ahu #result >>
-
-```toml
-status = "seed-ready"
-confidence = 0.68
-yield = "meme"
-return = "render"
-upward-context = "chat"
-residue = "trace law still awaits second-wave authoring"
-next-observation = "lar:///ha.ka.ba/loci/edge/control#control-primitives"
-```
-
 <<~&#x0004; -> ? >>

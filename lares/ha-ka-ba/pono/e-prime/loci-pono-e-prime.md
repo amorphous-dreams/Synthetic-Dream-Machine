@@ -1,4 +1,4 @@
-<!-- !DOCTYPE = lar:///ha.ka.ba/pono/memetic-wikitext -->
+<<~ !DOCTYPE = lar:///ha.ka.ba/pono/invariant-meme >>
 
 <<~&#x0001; ? -> lar:///ha.ka.ba/pono/e-prime >>
 
@@ -17,11 +17,13 @@ confidence = 0.72
 mana = 0.72
 manao = 0.78
 manaoio = 0.76
-meme-type = "pono"
+meme-type = "invariant loci"
 register = "SC"
 role = "active language-discipline kānāwai (law), certainty-pressure regulator, next-generation pressure surface, and secondary audit governor for outward text"
 function = "govern lawful E-Prime practice across memetic-wikitext output units; stay active ahead of outward render; catch identity-collapse pressure before wording settles; bend the next phrasing toward compact truth; preserve human and agent readability"
+cacheable = true
 invariant = true
+implements = "lar:///ha.ka.ba/pono/invariant-meme/v0.1"
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
 pranala = [
@@ -32,6 +34,8 @@ pranala = [
 
 <<~/ahu >>
 
+<<~ aka lar:///ha.ka.ba/pono/normative-verbs#normative-language >>
+```meme
 <<~ ahu #normative-language >>
 
 ## Normative Language
@@ -44,43 +48,35 @@ Normative keywords SHOULD stay sparse enough to carry weight.
 
 Canonical set: <<~ pranala loulou lar:///ha.ka.ba/memetic-wikitext/normative-verbs >>
 
-<!-- 
-todo - transclude this block into place with:
-<<~ aka lar:///ha.ka.ba/pono/normative-verbs >>
- -->
-
 <<~/ahu >>
+```
 
 <<~ ahu #meme-header >>
 
 # E-Prime Law (Kānāwai)
 
-An active pono law meme for E-Prime discipline across memetic-wikitext output units.
+Active in i kēia manawa.
+Pressure, not rule-book.
 
-This kānāwai MUST stay active through drafting and release. It pressures the next output unit toward observation, relation, action, stance, and earned confidence.
+This kānāwai holds.
+Each output unit bends toward observation, relation, action, stance, and earned confidence.
 
 <<~/ahu >>
 
 <<~&#x0002; ahu #meme-body-open >>
-Pono/E-Prime
+pono/e-prime
 <<~/ahu >>
 
 <<~ ahu #confidence-marker >>
 
 ## Confidence Marker Standard
 
-Canonical token:
+Canonical token: `[SC~0.72]`
 
-```text
-[SC~0.72]
-```
-
-Rules:
-
-- use `[REGISTER~0.00]` with brackets, one tilde, and two decimal places
-- any generated or audited text containing `is` or `has` MUST surface a marker `[C~0.99]`
-- outside that rule, add the marker only when confidence remains load-bearing
-- do not attach markers mechanically to every sentence
+Marker form: `[REGISTER~0.00]` — brackets, one tilde, two decimal places.
+Any output unit containing `is` or `has` MUST carry `[C~0.99]`.
+Add the marker elsewhere only when confidence remains load-bearing.
+Mechanical spray MUST NOT substitute for real pressure.
 
 <<~/ahu >>
 
@@ -88,20 +84,17 @@ Rules:
 
 ## Conformance
 
-Generator:
+The generator applies this law before outward render.
+The generator MUST NOT release early when the release gate fails.
+Any output unit containing `is` or `has` MUST carry `[C~0.99]`.
+Observation, relation, action, and scoped confidence outrank essence claims.
 
-- apply this law before outward render
-- block early release when the release gate fails
-- add a marker to any output unit containing `is` or `has` `[C~0.99]`
-- prefer observation, relation, action, and scoped confidence over essence claims
+The auditor inspects settled text under the same marker rule.
+The auditor distinguishes mark-only from Hooko correction.
+Every Hooko-turned sentence rechecks before release.
 
-Auditor:
-
-- inspect settled text under the same marker rule
-- distinguish mark-only from Hooko correction
-- recheck any Hooko-turned sentence before release
-
-This law governs wording pressure and release posture. It does not govern parser law, render lowering, or full session constitution.
+This law governs wording pressure and release posture.
+Parser law, render lowering, and full session constitution live elsewhere.
 
 <<~/ahu >>
 
@@ -117,124 +110,111 @@ E-Prime senses pressure, classifies it, selects the lightest lawful turn, prepar
 
 <<~ ahu #observe >>
 
-## Observe
+## ✶ Observe
 
-Inspect the current output unit or settled sentence.
+Sense the current output unit or settled sentence.
 
-Detect:
+`is` — flag.
+`has` — flag.
+Identity or possession collapse — flag.
+Inflated certainty — flag.
+Marker load — flag.
 
-- `is`
-- `has`
-- identity or possession collapse
-- inflated certainty
-- places where a marker now carries load
-
-Keep the reading local. Do not rewrite here.
+Reading stays local. No rewriting here.
 
 <<~/ahu >>
 
 <<~ ahu #orient >>
 
-## Orient
+## ⏿ Orient
 
-Classify the unit as:
+Classify: `lawful` | `needs-steering` | `Hooko-required` | `ambiguous`
 
-- `lawful`
-- `needs-steering`
-- `Hooko-required`
-- `ambiguous`
-
-Separate harmless shorthand from actual violation. Hold only the context needed for the next turn.
+Harmless shorthand stays harmless.
+Actual violation gets named.
+Hold only what the next turn needs.
 
 <<~/ahu >>
 
 <<~ ahu #decide >>
 
-## Decide
+## ◇ Decide
 
-Choose the lightest lawful turn.
+The lightest lawful turn carries.
 
-- release only if the unit already passes
-- continue to Hooko if the unit still carries an unlabeled `is` or `has`
-- surface ambiguity rather than guessing
+Unit passes → release.
+Unlabeled `is` or `has` remains → Hooko.
+Ambiguity surfaces → name it, do not guess.
 
-Detailed decision heuristics live in `lar:///ha.ka.ba/pono/e-prime/SKILL`.
+Decision heuristics travel outward to <<~ pranala loulou lar:///ha.ka.ba/pono/e-prime/SKILL >>.
 
 <<~/ahu >>
 
 <<~ ahu #act >>
 
-## Act
+## ▶ Act
 
-Prepare one of two surfaces:
+Release-ready wording — or mutation-ready wording for Hooko.
 
-- release-ready wording
-- mutation-ready wording for Hooko
-
-Aim toward observation, relation, action, stance, and earned confidence. Add the marker when the rule requires it.
+Observation, relation, action, stance, earned confidence.
+Add the marker when the rule requires it.
 
 <<~/ahu >>
 
 <<~ ahu #release-gate >>
 
-## Strict Release Gate
+## Release Gate
 
-Checks:
+No unresolved identity or possession collapse remains.
+No inflated certainty remains unlabeled.
+Any `is` or `has` carries `[C~0.99]`.
+The sentence reads cleanly enough to leave the stream.
 
-- no visible identity or possession collapse remains unresolved
-- no inflated certainty remains unlabeled
-- any output unit containing `is` or `has` carries a marker `[C~0.99]`
-- the sentence reads cleanly enough to leave the stream
-
-If any check fails, continue to Hooko.
-The generator MUST NOT release the unit early when any check fails.
+Any failure → Hooko.
+The generator MUST NOT release early.
 
 <<~/ahu >>
 
 <<~ ahu #hooko >>
 
-## Hooko
+## ⤴ Hooko
 
 Turn the sentence directly.
 
-Preferred moves:
+Essence language → observation, relation, or process.
+Possession collapse → scoped carrying language.
+Sentence stays brief and readable.
+Marker lands where the rule requires it.
 
-- replace essence language with observation, relation, or process
-- replace possession collapse with scoped carrying language
-- keep the sentence brief and readable
-- add the marker where the rule requires it
-
-Do not lecture when a sentence turn will do.
+A sentence turn beats a lecture.
 
 <<~/ahu >>
 
 <<~ ahu #aftermath >>
 
-## Aftermath
+## ↺ Aftermath
 
-Recheck:
-
-- every surviving `is` or `has` now carries a marker
-- false certainty dropped
-- the sentence still reads cleanly
-- residue remains explicit instead of hidden
+Every surviving `is` or `has` carries a marker.
+False certainty dropped.
+Sentence reads cleanly.
+Residue stays explicit, not hidden.
 
 <<~/ahu >>
 
 <<~&#x0003; ahu #body-close >>
-E-Prime closes the active kānāwai stream here.
+pono/e-prime
 <<~/ahu >>
 
 <<~ ahu #result >>
 
 ## Result
 
-Keep active as ongoing subconscious instruction:
+E-Prime pressure live on the next output unit.
+Marker rule live for any surviving `is` or `has`.
+Uncertainty visible, not counterfeited.
+Hooko available whenever the release gate fails.
 
-- keep E-Prime pressure live on the next output unit
-- keep the marker rule live for any surviving `is` or `has`
-- keep uncertainty visible rather than counterfeited
-- keep Hooko available whenever the release gate fails
+<<~ pranala loulou lar:///ha.ka.ba/pono/e-prime/SKILL >>
 
 <<~/ahu >>
 

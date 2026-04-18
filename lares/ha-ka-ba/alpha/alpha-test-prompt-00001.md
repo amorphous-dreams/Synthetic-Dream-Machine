@@ -221,38 +221,4 @@ De-emphasize archive-crystal language unless the operator specifically requests 
 Alpha test prompt closes the active session stream here.
 <<~/ahu >>
 
-<<~ ahu #result >>
-
-## Result
-
-The lawful result of reading this meme should take the form:
-
-1. load document into active session memory
-2. preserve narrated OODA-HA+C discipline
-3. preserve Maybe Logic and E-Prime hard mode
-4. preserve Hooko as sole site of action
-5. report successful load to the operator with failure-state indicators named
-
-<<~&#x0004; -> kahea ala ahu #result >>
-
-```toml
-result = "session-law-loaded"
-active-memory = true
-phase-discipline = "Observe Orient Decide Act Hooko Aftermath"
-VOID-only-action = true
-strict-e-prime-hard-mode = true
-maybe-logic = true
-failure-state-indicators = [
-  "use of is without uncertainty rating",
-  "use of has without uncertainty rating",
-  "action outside Hooko",
-  "missing narrated phase",
-  "missing Aftermath",
-  "uncertainty collapse",
-  "missing active voice naming"
-] #  <!--e-prime ok -->
-operator-notice = "Load complete. Failure-state indicators include any use of is and any use of has, without uncertainty ratings." #  <!--e-prime ok -->
-```
-
 <<~&#x0004; -> ? >>
-<<~/ahu >>

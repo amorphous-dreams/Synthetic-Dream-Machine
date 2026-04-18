@@ -188,36 +188,4 @@ Do not batch-edit the whole document in one move.
 
 <<~/ahu >>
 
-<<~ ahu #result >>
-
-## Result
-
-A lawful handoff result should carry:
-- active pass
-- current completion state
-- next named target
-- preserved constraints
-- named reopen pressure, if any
-
-<<~/ahu >>
-
-<<~&#x0003; ahu #body-close >>
-Local-agent handoff closes the continuation stream here.
-<<~/ahu >>
-
-<<~&#x0004; -> ahu #result >>
-```toml
-pass = "ka"
-status = "handoff-ready"
-next-target = "lar:///ha.ka.ba/memetic-wikitext#phase-map"
-preserved-constraints = [
-  "root-not-parser-duplicate",
-  "root-not-render-duplicate",
-  "metadata-is-fenced-toml",
-  "boot-is-critical",
-  "one-step-at-a-time",
-  "no-assess-mode-yet"
-]
-reopen = "none"
-```
 <<~&#x0004; -> ? >>

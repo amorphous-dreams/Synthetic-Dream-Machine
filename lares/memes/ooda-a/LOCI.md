@@ -648,21 +648,6 @@
 
     This object carries the whole addressed aftermath bundle upward.
 
-    <<~ ahu #result
-        @name "ooda-ha-result"
-        @kind "result"
-        @status "completed|partial|degraded|recursive|deferred|?"
-        @result-class "artifact|answer|transclusion|render|citation-bundle|state-bundle|route-bundle|?"
-        @yield "meme|data|signal|artifact|bundle|?"
-        @payload "payload-address|payload-object|?"
-        @confidence "0.0-1.0|?"
-        @return "render|store|emit|recurse|invoke|defer|?"
-        @upward-context "parent|caller|chat|ui|memory|graph|?"
-        @downward-context "none|observe|orient|decide|act|assess|ooda-ha|subloop|renderer|?"
-        @residue "none|trace|warning|surplus|drift|?"
-        @next-observation "lar:///...|none|?"
-        @next-question "lar:///...|text|none|?"
-    >>
 
     <<~ ahu #warning
         @name "ooda-ha-warning"

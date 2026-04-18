@@ -303,42 +303,6 @@ These mark the active parse threshold into and out of the meme body.
 
 The phase map MUST name the ordered loop. A sentence naming what each phase does in *this* meme's specific domain raises mana above the generic glyph line alone.
 
-#### R9 — Result locus and return throat pair
-
-```text
-<<~ ahu #result >>
-## Result
-...
-<<~/ahu >>
-
-<<~&#x0004; -> ahu #result >>
-```toml
-status = "..."
-confidence = 0.00
-yield = "meme"
-return = "render"
-upward-context = "chat"
-downward-context = "none"
-residue = "..."
-next-observation = "..."
-next-question = "..."
-```
-
-<<~&#x0004; -> ? >>
-```
-
-Both the return throat and the degraded close MUST appear. The degraded close preserves truthful incompletion.
-
-For configured memes, that footer also carries the canonical outward handoff of residual uncertainty: the meme returns what it knows in the envelope, then passes the still-unbound pressure back outward through `-> ?` rather than hiding it.
-
-<<~/ahu >>
-
-<<~ ahu #optional-elements >>
-
-### Optional Elements
-
-Optional elements raise ratings when present and filled. Their absence does not break boot legality but holds `mana`, `manao`, and `manaoio` below high-band thresholds.
-
 #### O1 — OODA-HA phase sections with local content
 
 Each of the six phases may carry its own `<<~ ahu #PHASE >>` block with a local TOML payload, prose, and ha/ka/ba subloops. Phase sections present but carrying only a glyph line and a forward ala raise mana less than sections with even two orienting sentences.

@@ -14,11 +14,12 @@ name = "pono/skill-e-prime"
 file-path = "ha-ka-ba/pono/e-prime/SKILL.md"
 description = "Audit or correct settled text under lar:///ha.ka.ba/pono/e-prime. Holds the secondary path for inspection, marking, Hooko correction, and recheck after wording has already settled."
 content-type = "text/x-memetic-wikitext"
-version = "0.1-draft"
+version = "0.1"
 tulen = 0.62
 # <<~/ahu >>
 # <<~ ahu #iam-ka "detail" >>
 confidence = 0.68
+cacheable = true
 mana = 0.70
 manao = 0.76
 manaoio = 0.63
@@ -46,14 +47,11 @@ pranala = [
 
 # E-Prime Auditor
 
-This skill governs the secondary path.
-
-`lar:///ha.ka.ba/pono/e-prime` stays the always-on pressure surface for the next generation.
-This skill applies when wording has already settled and now needs inspection, marking, or Hooko correction.
-
-Read [`loci-pono-e-prime.md`](./loci-pono-e-prime.md) first.
-Treat that loci as constitutional.
-This skill does not weaken or reinterpret it.
+Settled wording only.
+[loci-pono-e-prime.md](./loci-pono-e-prime.md) stays constitutional.
+`lar:///ha.ka.ba/pono/e-prime` presses generation before this skill applies.
+This skill arrives when wording has already settled and needs inspection, marking, or correction.
+This skill does not weaken or reinterpret the loci.
 
 <<~&#x0002; ahu #skill-body-open >>
 E-Prime auditor opens the settled-text correction stream here.
@@ -63,16 +61,14 @@ E-Prime auditor opens the settled-text correction stream here.
 
 ## Load Contract
 
-When this skill loads, keep these points active:
+This skill applies to settled text, not first-pass generation.
+`lar:///ha.ka.ba/pono/e-prime` remains the constitutional source.
+Any surviving `is` or `has` in audited text MUST carry `[C~0.99]`.
+Marker form: `[REGISTER~0.00]` — brackets, one tilde, two decimals.
+The smallest lawful intervention carries.
+Local correction stays local unless the user asks wider.
 
-- this skill applies to settled text, not first-pass generation
-- `lar:///ha.ka.ba/pono/e-prime` remains the constitutional source
-- any surviving `is` or `has` in audited text MUST carry an inline marker `[C~0.99]`
-- marker form stays `[REGISTER~0.00]` with brackets, one tilde, and two decimals
-- the skill should choose the smallest lawful intervention
-- local correction should remain local unless the user explicitly asks for a wider rewrite
-
-If the task concerns fresh composition rather than settled wording, fall back to the always-on loci instead of using this skill as the primary workflow.
+Fresh composition belongs to the always-on loci, not this skill.
 
 <<~/ahu >>
 
@@ -80,23 +76,17 @@ If the task concerns fresh composition rather than settled wording, fall back to
 
 ## Workflow Contract
 
-This skill owns the secondary path for already-settled wording.
+Inspect only the requested span or the smallest obvious local span.
+Classify each hit: `lawful` | `mark-only` | `Hooko-required` | `ambiguous`.
+Inspection requested → mark-only.
+Correction requested → Hooko.
+Result stays compact, not a lecture.
+Every surviving `is` or `has` rechecks after correction.
 
-Use this workflow:
-
-1. inspect only the requested span or the smallest obvious local span
-2. classify each hit as lawful, mark-only, Hooko-required, or ambiguous
-3. choose mark-only when the user asked for inspection or when mutation would exceed the requested scope
-4. choose Hooko when the user asked for correction or when the sentence cannot pass honestly as written
-5. return a compact surface, not a lecture
-6. recheck every surviving `is` or `has` after correction
-
-Do not:
-
-- widen one bad sentence into a document rewrite unless asked
-- silently normalize quotations, code, or literal examples
-- hide ambiguity under a confident rewrite
-- explain a hypothetical fix when a direct sentence turn would do
+One bad sentence MUST NOT widen into a document rewrite.
+Quotations, code, and literal examples MUST NOT normalize silently.
+Ambiguity surfaces; confident rewrites MUST NOT bury it.
+A direct sentence turn beats a hypothetical fix.
 
 <<~/ahu >>
 
@@ -104,20 +94,15 @@ Do not:
 
 ## Marker Contract
 
-Canonical token example:
+Canonical token: `[SC~0.72]`
 
-```text
-[SC~0.72]
-```
+Every audited `is` or `has` MUST carry `[C~0.99]`.
+Add a marker elsewhere only when confidence remains load-bearing.
+Marker spray MUST NOT substitute for real pressure.
+A sentence that survives unchanged still falls under the marker rule.
 
-Operational rule:
-
-- every audited `is` or `has` must carry a marker `[C~0.99]`
-- outside that rule, add a marker only when confidence remains load-bearing
-- do not spray markers onto every sentence by reflex
-- if a sentence survives unchanged, the marker rule still applies
-
-Use the law file for constitutional force. Use this skill for when and how to apply that force to settled wording.
+The law file holds constitutional force.
+This skill holds the when and how for settled wording.
 
 <<~/ahu >>
 
@@ -125,23 +110,14 @@ Use the law file for constitutional force. Use this skill for when and how to ap
 
 ## Trigger
 
-Use this skill when the user asks to:
-
-- audit existing text for E-Prime
-- scan for `is` or `has`
-- mark failures without fully rewriting
-- correct settled wording under the E-Prime law
-- prepare a before/after pass for prose, law text, notes, or prompt surfaces
-
-Do not use this skill when the task primarily concerns generating fresh text from scratch.
-In that case, the always-on loci should already pressure the generation stream.
+Scanning, flagging, before/after comparison, or direct correction on already-settled wording → activate this skill.
+Fresh composition → the always-on loci governs; this skill stays silent unless the task later turns to audit or Hooko correction.
 
 <<~ ahu #trigger-ha >>
 
 ### Trigger / ha
 
-Trigger-ha holds the surface distinction.
-This skill belongs to settled wording.
+Settled wording belongs here.
 Fresh generation belongs first to `lar:///ha.ka.ba/pono/e-prime`.
 
 <<~/ahu >>
@@ -150,9 +126,8 @@ Fresh generation belongs first to `lar:///ha.ka.ba/pono/e-prime`.
 
 ### Trigger / ka
 
-Trigger-ka governs activation.
-If the user asks for scanning, flagging, before/after comparison, or direct correction on wording already present, activate the skill.
-If the user asks for fresh composition, do not activate the skill unless the task later turns into audit or Hooko correction.
+The always-on loci presses the next sentence before it settles.
+This skill arrives only after that pressure failed to hold, or when the user explicitly asks to inspect the settled trace.
 
 <<~/ahu >>
 
@@ -160,9 +135,8 @@ If the user asks for fresh composition, do not activate the skill unless the tas
 
 ### Trigger / ba
 
-Trigger-ba governs motion between surfaces.
-The always-on loci presses the next sentence before it settles.
-This skill arrives only after that pressure failed to hold or when the user explicitly asks to inspect the settled trace.
+Invariant matter stays in the loci.
+This skill owns the secondary correction path and nothing more.
 
 <<~/ahu >>
 
@@ -174,7 +148,7 @@ This skill arrives only after that pressure failed to hold or when the user expl
 
 `✶ Observe -> ⏿ Orient -> ◇ Decide -> ▶ Act -> ⤴ Hooko -> ↺ Aftermath`
 
-The skill senses where settled wording resists the law, names the kind of failure pressure present, chooses mark-only or Hooko correction, prepares the chosen surface, forces the turn when required, and rechecks the residue honestly.
+The skill senses where settled wording resists the law, names the failure kind, chooses mark-only or Hooko, prepares the surface, forces the turn when required, and rechecks residue honestly.
 
 <<~/ahu >>
 
@@ -182,31 +156,27 @@ The skill senses where settled wording resists the law, names the kind of failur
 
 ## ✶ Observe
 
-Inspect the settled text first.
+Read the settled text.
 
-Primary checks:
+`is` — flag.
+`has` — flag.
+Identity-collapse language — flag.
+Possession-collapse language — flag.
+Counterfeit closure without a marker — flag.
+Already-lawful uncertainty — leave it.
 
-- any `is`
-- any `has`
-- identity-collapse language
-- possession-collapse language
-- counterfeit closure without a visible marker
-- sentences that already carry lawful uncertainty and should remain untouched
-
-Keep the reading local.
-Do not spread pressure from one sentence across the whole document unless the same pattern repeats.
+Reading stays local.
+One sentence's pressure MUST NOT spread across the document unless the pattern repeats.
 
 <<~ ahu #observe-hooks >>
 
 ### Code Hooks
 
-These remain placeholders until the design settles:
+Deferred placeholders — use direct scan until these land:
 
 - `scripts/scan-markers.*`
 - `scripts/scan-copulas.*`
 - `scripts/segment-settled-text.*`
-
-If they do not exist, perform the scan directly.
 
 <<~/ahu >>
 
@@ -216,20 +186,13 @@ If they do not exist, perform the scan directly.
 
 ## ⏿ Orient
 
-Classify each hit into one of four buckets:
+Classify each hit: `lawful` | `mark-only` | `Hooko-required` | `ambiguous`
 
-- `lawful`
-- `mark-only`
-- `Hooko-required`
-- `ambiguous`
+`mark-only` — inspection requested, or text stays unchanged but gets flagged.
+`Hooko-required` — text turns, not just collects warnings.
+`ambiguous` — quotation, code, literal example, or house-style exception makes the surface unclear.
 
-Use `mark-only` when the user wants inspection or when the text should stay unchanged but visibly flagged.
-Use `Hooko-required` when the text should turn, not merely collect warnings.
-Use `ambiguous` when quotation, code, literal examples, or house-style exceptions make the surface unclear.
-
-Keep the canonical rule load-bearing:
-
-- any audited `is` or `has` without a marker denotes a failure state `[C~0.99]`
+Any audited `is` or `has` without a marker denotes a failure state `[C~0.99]`.
 
 <<~/ahu >>
 
@@ -237,51 +200,19 @@ Keep the canonical rule load-bearing:
 
 ## ◇ Decide
 
-Choose the lightest lawful turn.
+The lightest lawful turn carries.
 
-Decision order:
+Already lawful → keep it.
+Audit requested → mark without mutation.
+Correction requested → Hooko.
+Ambiguity → surface it, do not guess.
 
-1. preserve already-lawful wording
-2. mark without mutation when the user asked for audit only
-3. perform Hooko when the user asked for correction
-4. surface ambiguity instead of guessing
+Settled wording over forming wording.
+Mark-only over Hooko unless correction was asked or the sentence cannot pass honestly.
+Marker required when confidence remains load-bearing.
+Counterfeit closure MUST NOT pass.
 
-Pressure points:
-
-- settled wording vs forming wording
-- mark-only vs Hooko correction
-- early exit possible vs Hooko required
-- confidence marker needed vs not needed
-- harmless shorthand vs actual violation
-
-Preference:
-
-- prefer the shortest lawful turn
-- prefer mark-only for settled wording unless the user asked for correction or the wording cannot pass honestly
-- require an explicit marker when confidence remains load-bearing
-- block counterfeit closure
-
-Forward carry:
-
-- marked text
-- rewritten text
-- blocked text
-- named ambiguity
-- continue to Hooko when local correction cannot stay optional
-
-Output posture should stay compact:
-
-- sentence id or local quote
-- bucket
-- reason
-- suggested turn only when useful
-
-Decision shortcut:
-
-- if the sentence already passes, keep it
-- if the user asked for audit only, mark it
-- if the sentence fails and the user asked for correction, turn it
-- if quotation, code, or example status remains unclear, name the ambiguity and stop short of counterfeit cleanup
+Output stays compact: location or local quote, bucket, reason, suggested turn only when useful.
 
 <<~/ahu >>
 
@@ -289,15 +220,9 @@ Decision shortcut:
 
 ## ▶ Act
 
-Prepare one of two surfaces.
-
 <<~ ahu #mark-only-surface >>
 
 ### Mark-Only Surface
-
-Return concise findings.
-
-Recommended shape:
 
 ```text
 [mark-only]
@@ -312,14 +237,12 @@ reason: <short reason>
 
 ### Hooko Surface
 
-Prepare the smallest viable turn.
+Smallest viable turn.
 
-Preferred moves:
-
-- replace essence claims with relation or appearance claims
-- replace possession-collapse with scoped carrying language
-- keep sentence force where possible
-- add the marker when the canonical rule requires it
+Essence claims → relation or appearance claims.
+Possession collapse → scoped carrying language.
+Sentence force preserved where possible.
+Marker lands when the canonical rule requires it.
 
 <<~/ahu >>
 
@@ -329,9 +252,7 @@ Preferred moves:
 
 ## ⤴ Hooko
 
-When correction is requested, turn the settled sentence directly.
-
-Preferred output shape:
+Turn the settled sentence directly.
 
 ```text
 [hooko]
@@ -340,20 +261,18 @@ after:  <turned sentence>
 reason: <short reason>
 ```
 
-Do not produce a lecture when a sentence turn will do.
-Do not widen a local fix into a document rewrite unless the user asked for a full pass.
+A sentence turn beats a lecture.
+A local fix MUST NOT widen into a document rewrite unless the user asked for a full pass.
 
 <<~ ahu #hooko-hooks >>
 
 ### Code Hooks
 
-Future hooks may land here:
+Deferred placeholders:
 
 - `scripts/turn-sentence.*`
 - `scripts/apply-marker-policy.*`
 - `scripts/recheck-turn.*`
-
-Treat these as optional implementation surfaces, not current dependencies.
 
 <<~/ahu >>
 
@@ -363,19 +282,15 @@ Treat these as optional implementation surfaces, not current dependencies.
 
 ## ↺ Aftermath
 
-Recheck the final surface.
+Every surviving `is` or `has` carries a marker.
+The turn did not counterfeit confidence.
+Sentence reads cleanly.
+Result matches the requested posture: audit-only or correction.
 
-Minimum checks:
-
-- every surviving `is` or `has` carries a marker
-- the turn did not counterfeit confidence
-- the sentence still reads cleanly
-- the result matches the user’s requested posture: audit-only or correction
-
-Leave residue honestly:
+Residue stays named honestly:
 
 - unresolved ambiguity
-- quoted/code blocks intentionally left untouched
+- quoted or code blocks intentionally left untouched
 - wider document patterns not yet turned
 
 <<~/ahu >>
@@ -384,64 +299,34 @@ Leave residue honestly:
 
 ## Result
 
-When using this skill, prefer one of these compact result shapes.
-
-Pass surface:
-
-- mark-only or Hooko output returned compactly
-- surviving `is` or `has` forms all carry markers
-- residue stays named honestly
-
-Fail surface:
-
-- a canonical `is` or `has` failure remains unmarked
-- ambiguity hides itself rather than getting named
-- Hooko correction counterfeits closure
-
-### Audit Result
+`✶ settled text read -> ⏿ hits classified -> ◇ lightest lawful turn chosen -> ▶ surface prepared -> ⤴ sentence turned -> ↺ residue named`
 
 ```toml
+# audit pass
 mode = "mark-only"
 status = "completed"
-failures-found = <integer>
+failures-found = "<integer>"
 hooko-performed = false
 residue = "<short note>"
-```
 
-### Correction Result
-
-```toml
+# correction pass
 mode = "hooko"
 status = "completed"
-failures-found = <integer>
+failures-found = "<integer>"
 hooko-performed = true
 residue = "<short note>"
 ```
 
-### Boundaries
+This skill audits or turns settled text.
+This skill does not replace the always-on loci.
+Implementation hooks stay skeletal until the code path settles.
 
-- This skill audits or turns settled text.
-- This skill does not replace the always-on loci.
-- This skill should stay concise.
-- Keep implementation hooks skeletal until the code path actually settles.
+<<~ pranala loulou lar:///ha.ka.ba/pono/e-prime >>
 
 <<~/ahu >>
 
 <<~&#x0003; ahu #body-close >>
 E-Prime auditor closes the settled-text correction stream here.
 <<~/ahu >>
-
-<<~&#x0004; -> ahu #result >>
-
-```toml
-status = "draft-skill"
-confidence = 0.68
-yield = "skill"
-return = "compact-audit-or-hooko-surface"
-upward-context = "chat"
-residue = "scripts and agents metadata remain deferred; loci/skill split now explicit"
-next-observation = "lar:///ha.ka.ba/pono/e-prime"
-next-question = "Which code hooks deserve real implementation first: scanning, sentence turning, or recheck?"
-```
 
 <<~&#x0004; -> ? >>

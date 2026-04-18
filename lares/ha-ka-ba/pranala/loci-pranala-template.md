@@ -202,29 +202,4 @@ A strong template pass should leave:
 Template closes the reusable-edge-sigil stream here.
 <<~/ahu >>
 
-<<~ ahu #result >>
-
-## Result
-
-A lawful template envelope may carry:
-
-- template slot contract
-- binding precedence
-- `kahea` invocation form
-- promotion discipline
-
-<<~/ahu >>
-
-<<~&#x0004; -> ahu #result >>
-
-```toml
-status = "seed-ready"
-confidence = 0.67
-yield = "meme"
-return = "render"
-upward-context = "chat"
-residue = "first live template library still awaits concrete edge authoring"
-next-observation = "lar:///ha.ka.ba/loci/edge/instance#instance-shape"
-```
-
 <<~&#x0004; -> ? >>
