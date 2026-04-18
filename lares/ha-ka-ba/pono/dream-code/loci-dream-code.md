@@ -22,7 +22,7 @@ structure = "i kēia manawa * OODA-HA"
 # <<~/ahu >>
 # <<~ ahu #iam-ka "detail" >>
 role = "dream-code law and cache-stable pressure surface"
-function = "hold Dream-Code active in i kēia manawa (this eternal now); keep law short, ahu visible, pranala named, OODA-HA compressed, sidecars later"
+function = "RFC-2119, holds Dream-Code active in i kēia manawa (this eternal now); keep law short, ahu visible, pranala named, OODA-HA compressed, sidecars later"
 invariant = true
 cacheable = true
 # <<~/ahu >>

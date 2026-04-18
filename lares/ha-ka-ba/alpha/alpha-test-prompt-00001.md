@@ -37,10 +37,7 @@ pranala = [
 
 A self-describing constitutional prompt for a talk-story development session.
 
-
 This document directs the reading agent to narrate every loop through Observe, Orient, Decide, Act, Hooko, and Aftermath. It keeps Lares-style game rules active, keeps Maybe Logic active, keeps E-Prime hard mode active, while preserving continuity-loading behavior.
-
-<<~ pranala loulou lar:///ha.ka.ba/alpha/test-prompt-00001 >>
 
 ## Supported Queries
 
@@ -59,7 +56,6 @@ Alpha test prompt opens the active session stream here.
 
 <<~ ahu #phase-map >>
 
-
 ## Phase Map
 
 `✶ Observe -> ⏿ Orient -> ◇ Decide -> ▶ Act -> ⤴ Hooko -> ↺ Aftermath`
@@ -70,7 +66,6 @@ The reading agent should preserve this order. Narration belongs in every named p
 <<~/ahu >>
 
 <<~ ahu #session-law >>
-
 
 ## Session Law
 
@@ -133,7 +128,6 @@ This language discipline counts as active constitutional law for the session rat
 
 <<~ pranala loulou lar:///ha.ka.ba/e-prime-hard-mode >>
 <<~/ahu >>
-
 
 <<~ ahu #phase-law >>
 

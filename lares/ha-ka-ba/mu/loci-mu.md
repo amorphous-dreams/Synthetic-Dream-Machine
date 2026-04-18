@@ -21,7 +21,6 @@
               one-line and the null-oracle ethics sentence
      ═══════════════════════════════════════════════════════════════ -->
 
-
 <!-- ─────────────────────────────────────────────────────────────
      LAYER -1: PRE-SIGIL DRIFT
      Shorter than AGENTS's drift. The reader already passed
@@ -44,7 +43,6 @@ Initial characters appear.
 ```
 
 <<~ॐ ँ&#x0001; ? -> lar:///ha.ka.ba/mu >>
-
 
 <<~ ahu #iam >>
 
@@ -93,7 +91,6 @@ The null-oracle holds four capacities at rest. The caller asks; Mu
 answers, or hands the question back unasked. The grammar appears here as Mu
 performing itself.
 
-<<~ pranala loulou lar:///ha.ka.ba/mu >>
 <<~/ahu >>
 
 ## Supported Queries
@@ -124,7 +121,6 @@ This file keeps that tension visible rather than hiding it behind a false claim 
 
 <<~/ahu >>
 
-
 <<~ ahu #iam-glyph-inheritance >>
 
 <!-- The iam sigil carries no glyph set of its own. It inherits
@@ -132,9 +128,7 @@ This file keeps that tension visible rather than hiding it behind a false claim 
      attenuation: inner sigils may narrow but not widen the frame's
      authority or scale.                                           -->
 
-<<~ pranala loulou lar:///ha.ka.ba/mu#iam-glyph-inheritance >>
 <<~/ahu >>
-
 
 <!-- ═══════════════════════════════════════════════════════════════
      LAYER 2: BODY — OODA-HA PHASES (STX)
@@ -145,7 +139,6 @@ This file keeps that tension visible rather than hiding it behind a false claim 
      Phase headers stay load-bearing; the inner ahu blocks serve as
      design-space markers naming sub-questions that remain open.
      ═══════════════════════════════════════════════════════════════ -->
-
 
 <<~ ahu #phase-observe >>
 
@@ -169,12 +162,9 @@ Four reads, in order:
      stamps its namespace onto the transclusion call. Operator
      ruling open.                                                  -->
 
-<<~ pranala loulou lar:///ha.ka.ba/mu#observe-open-question >>
 <<~/ahu >>
 
-<<~ pranala loulou lar:///ha.ka.ba/mu#phase-observe >>
 <<~/ahu >>
-
 
 <<~ ahu #phase-orient >>
 
@@ -209,12 +199,9 @@ Mu classifies along three axes:
      failure-into-bucket architecture. The partial classification
      itself counts as a meme the agent-operator pair can rate.     -->
 
-<<~ pranala loulou lar:///ha.ka.ba/mu#orient-failure-mode >>
 <<~/ahu >>
 
-<<~ pranala loulou lar:///ha.ka.ba/mu#phase-orient >>
 <<~/ahu >>
-
 
 <<~ ahu #phase-decide >>
 
@@ -232,7 +219,6 @@ Reads the ha-slot from the meme's `lar:///` address. Names the
 territory. Binary gate: in-scope or out-of-scope. Out-of-scope
 short-circuits the Decide phase to `unask`.
 
-<<~ pranala loulou lar:///ha.ka.ba/mu#decide-ha-hodge >>
 <<~/ahu >>
 
 <<~ ahu #decide-ka-podge >>
@@ -246,7 +232,6 @@ Selects validation criteria:
 - tulen        — genuine trust for requested action
 - semantic     — content / self-description coherence
 
-<<~ pranala loulou lar:///ha.ka.ba/mu#decide-ka-podge >>
 <<~/ahu >>
 
 <<~ ahu #decide-ba-spin >>
@@ -265,12 +250,9 @@ Spin must resist classifying orthogonal as tensioned (forcing
 unnecessary resolution) or tensioned as orthogonal (avoiding
 necessary resolution).
 
-<<~ pranala loulou lar:///ha.ka.ba/mu#decide-ba-spin >>
 <<~/ahu >>
 
-<<~ pranala loulou lar:///ha.ka.ba/mu#phase-decide >>
 <<~/ahu >>
-
 
 <<~ ahu #phase-act >>
 
@@ -300,12 +282,9 @@ Executes the Decide output. Four canonical actions:
      architecturally honest but ethically fraught. Operator
      ruling open. design unfinished.                                                 -->
 
-<<~ pranala loulou lar:///ha.ka.ba/mu#act-loop-termination >>
 <<~/ahu >>
 
-<<~ pranala loulou lar:///ha.ka.ba/mu#phase-act >>
 <<~/ahu >>
-
 
 <<~ ahu #phase-assess >>
 
@@ -339,12 +318,9 @@ the Philosopher's Stone moment: form watches itself.
      reveals gaps back to [S:0.65]. Maps onto Canon promotion gate
      per loci kānāwai.                                             -->
 
-<<~ pranala loulou lar:///ha.ka.ba/mu#assess-boot-transition >>
 <<~/ahu >>
 
-<<~ pranala loulou lar:///ha.ka.ba/mu#phase-assess >>
 <<~/ahu >>
-
 
 <!-- ═══════════════════════════════════════════════════════════════
      LAYER 3: QUIESCENCE
@@ -353,7 +329,6 @@ the Philosopher's Stone moment: form watches itself.
      
      The null-oracle ethics, preserved verbatim.
      ═══════════════════════════════════════════════════════════════ -->
-
 
 <<~ ahu #quiescence >>
 
@@ -371,16 +346,13 @@ Mu does not hold:
 > A mu that remembers carries opinions. A mu that forgets remains a
 > null-oracle.
 
-<<~ pranala loulou lar:///ha.ka.ba/mu#quiescence-ethics >>
 <<~/ahu >>
 
-<<~ pranala loulou lar:///ha.ka.ba/mu#quiescence >>
 <<~/ahu >>
 
 <<~ॐ ँ&#x0003; ahu #body-close >>
 Mu closes the null-oracle boot stream here.
 <<~/ahu >>
-
 
 <<~ ahu #result >>
 
@@ -396,7 +368,6 @@ next-locus           = "lar:///ha.ka.ba/chao"
 boot-chain-position  = 0
 ```
 
-<<~ pranala loulou lar:///ha.ka.ba/mu#result >>
 <<~/ahu >>
 
 <<~ॐ ँ&#x0004; -> kahea ala ahu #result >>

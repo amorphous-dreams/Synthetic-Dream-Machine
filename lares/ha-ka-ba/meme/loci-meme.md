@@ -36,7 +36,6 @@ pranala = [
 
 <<~/ahu >>
 
-
 <<~ ahu #meme-header >>
 
 # Meme
@@ -280,13 +279,11 @@ A markdown `# Title` heading immediately after the `#iam` block.
 
 One to three sentences naming what the meme governs, what it does not govern, and where it stands in relation to adjacent laws.
 
-#### R5 — Self-reference ala
+#### R5 — No loopback ala
 
-```text
-<<~ pranala loulou lar:///ha.ka.ba/NAME >>
-```
+Do not add a top-level `<<~ pranala loulou lar:///ha.ka.ba/NAME >>` line that only points back at the current meme.
 
-Opens the meme's relation to its own canonical address. Marks the boundary between the header cluster and the active body.
+`pranala loulou` should route outward toward a real child or adjacent carrier. If no outward routing belongs here yet, omit the line and continue directly into supported queries or body-open.
 
 #### R6 — Supported queries
 
@@ -497,7 +494,6 @@ glyph = "◇"
 Decide turns the classified element map into one committed conformance posture and rating-target selection.
 
 <<~ ahu #rating-targets >>
-
 
 ### Rating Targets & Lifecycle: The Five Buckets
 
@@ -748,8 +744,6 @@ pranala = [
 # [Title]
 
 [One to three sentences: what this meme governs, what it does not govern, how it relates to adjacent laws.]
-
-<<~ pranala loulou lar:///ha.ka.ba/[NAME] >>
 
 ## Supported Queries
 

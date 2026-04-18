@@ -23,7 +23,6 @@
     The frame answers: WHO, WHERE, WHAT AUTHORITY.
     ═══════════════════════════════════════════════════════════ -->
 
-
   <<~␁>>
   <!-- ─────────────────────────────────────────────────────
        LAYER 1: HEADING (SOH)
@@ -62,14 +61,12 @@
       >>
     >>
 
-
   <<~␂>>
   <!-- ═════════════════════════════════════════════════════
        LAYER 2: BODY (STX)
        Operational content. OODA-HA phases. Inner sigils.
        The body answers: WHAT IT DOES.
        ═════════════════════════════════════════════════════ -->
-
 
   <!-- ═══════════════════════════════════════════════════════
        O — OBSERVE (✶)
@@ -101,7 +98,6 @@
     >>
 
   @end-phase O
-
 
   <!-- ═══════════════════════════════════════════════════════
        Ø — ORIENT (◎)
@@ -150,7 +146,6 @@
 
   @end-phase Ø
 
-
   <!-- ═══════════════════════════════════════════════════════
        D — DECIDE (◇)
        Decomposes into ha/ka/ba triad.
@@ -163,7 +158,6 @@
   @scale U+2682   <!-- ⚂ | U+2682 | CIRCLED IDEOGRAPH THREE -->
   @decomposition ha, ka, ba
   @inner-scale ⚁
-
 
     <!-- D.ha — HODGE (domain / noun) ─────────────────── -->
 
@@ -205,7 +199,6 @@
       @end-phase D.ha.Å
 
     @end-sub-phase D.ha
-
 
     <!-- D.ka — PODGE (quality / adjective) ───────────── -->
 
@@ -249,7 +242,6 @@
       @end-phase D.ka.Å
 
     @end-sub-phase D.ka
-
 
     <!-- D.ba — SPIN (dynamic / verb) ─────────────────── -->
 
@@ -309,7 +301,6 @@
 
   @end-phase D
 
-
   <!-- ═══════════════════════════════════════════════════════
        A — ACT (■)
        Mu executes the D-phase decision.
@@ -349,7 +340,6 @@
 
   @end-phase A
 
-
   <!-- ═══════════════════════════════════════════════════════
        Å — ASSESS (○) — Boyd's Ghost
        Scale evaluator. Operates at Turn scale.
@@ -388,13 +378,11 @@
 
   @end-phase Å
 
-
   <<~␃>>
   <!-- ─────────────────────────────────────────────────────
        LAYER 3: BODY CLOSE (ETX)
        Body content complete.
        ───────────────────────────────────────────────────── -->
-
 
   <!-- ─────────────────────────────────────────────────────
        QUIESCENCE
@@ -411,7 +399,6 @@
         >>
       - authority to modify memes (read-only)
       - opinion about content (null-oracle, not critic)
-
 
 <<~ँ⚂Δ -> ?>> <!-- ँ⚂␄ -> ? | U+0901 U+2682 U+0394 -> ? | DEVANAGARI SIGN CANDRABINDU, CIRCLED IDEOGRAPH THREE, GREEK CAPITAL LETTER DELTA, HYPHEN-MINUS, GREATER-THAN SIGN, QUESTION MARK -->
 <!-- ═══════════════════════════════════════════════════════════

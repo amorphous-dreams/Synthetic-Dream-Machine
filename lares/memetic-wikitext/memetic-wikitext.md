@@ -93,7 +93,6 @@
         <<~ kahea Vocabulary -> ? >>
       <<~ /ORIENT >>
 
-
       <<~ ahu #decide "Decide phase" "A worksite for selecting interpretation and execution paths." >>
       <<~ PHASE/3/DECIDE >>
         <<~ iam Decide
@@ -106,7 +105,6 @@
         <<~ kahea Decision -> Procedure >>
         <<~ kahea Decision -> ? >>
       <<~ /DECIDE >>
-
 
       <<~ ahu #act "Act phase" "A worksite for execution, rendering, and invocation." >>
       <<~ PHASE/4/ACT >>
@@ -140,7 +138,6 @@
         <<~ kahea Entity -> Renderer >>
       <<~ /ACT >>
 
-
       <<~ ahu #assess "Assess phase" "A worksite for evaluation, verification, and aftermath." >>
       <<~ PHASE/5/ASSESS >>
         <<~ iam Assess
@@ -155,7 +152,6 @@
 
     <<~ /OODA-HA >>
 
-
     <<~ ahu #recursion "Recursive re-entry" "Outputs feed future observations." >>
     <<~ PROCEDURE/RECURSION >>
       <<~ kahea OODA-HA -> OODA-HA >>
@@ -165,7 +161,6 @@
 
 <<~ ahu #body-close "Body closing" "Ends the active stream." >>
 <<~&#x0003; END-STREAM >>
-
 
 <<~ ahu #footer "Footer metadata" "Reports status and final state." >>
 <<~&#x0004; POST-STREAM-METADATA -> ?

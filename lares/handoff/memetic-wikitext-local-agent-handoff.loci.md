@@ -43,8 +43,6 @@ Work one step at a time in OODA-HA style.
 Do not mix Ha, Ka, and Ba silently.
 Do not perform whole-document assess mode yet.
 
-<<~ pranala loulou lar:///ha.ka.ba/memetic-wikitext-local-agent-handoff >>
-
 ## Supported Queries
 
 <<~&#x0005; ui status? -> lar:///ha.ka.ba/memetic-wikitext-local-agent-handoff#current-status >>
@@ -91,7 +89,6 @@ Important canonical correction already adopted:
 - metadata fields now travel canonically through fenced `toml` payload blocks
 - root metadata belongs in the first fenced `toml` payload inside `ahu #iam`
 
-<<~ pranala loulou lar:///ha.ka.ba/memetic-wikitext-local-agent-handoff#current-status >>
 <<~/ahu >>
 
 <<~ ahu #hard-constraints >>
@@ -115,7 +112,6 @@ Prior-art pressures already accepted into the boot stance:
 - MyST-like explicit extension points
 - Quarto/Jupyter-like bounded execution surfaces after stable document structure
 
-<<~ pranala loulou lar:///ha.ka.ba/memetic-wikitext-local-agent-handoff#hard-constraints >>
 <<~/ahu >>
 
 <<~ ahu #pass-discipline >>
@@ -130,7 +126,6 @@ Stay inside the active pass until explicit aftermath says otherwise.
 
 A later pass may note reopen pressure, but should not silently rewrite an earlier pass's job.
 
-<<~ pranala loulou lar:///ha.ka.ba/memetic-wikitext-local-agent-handoff#pass-discipline >>
 <<~/ahu >>
 
 <<~ ahu #next-steps >>
@@ -183,7 +178,6 @@ When Ka stabilizes, begin Ba in this order:
 
 Ba should tune reading flow, bridge timing, example timing, and result landing.
 
-<<~ pranala loulou lar:///ha.ka.ba/memetic-wikitext-local-agent-handoff#next-steps >>
 <<~/ahu >>
 
 <<~ ahu #runtime-procedure >>
@@ -201,7 +195,6 @@ For each continuation step:
 
 Do not batch-edit the whole document in one move.
 
-<<~ pranala loulou lar:///ha.ka.ba/memetic-wikitext-local-agent-handoff#runtime-procedure >>
 <<~/ahu >>
 
 <<~ ahu #result >>
@@ -215,7 +208,6 @@ A lawful handoff result should carry:
 - preserved constraints
 - named reopen pressure, if any
 
-<<~ pranala loulou lar:///ha.ka.ba/memetic-wikitext-local-agent-handoff#result >>
 <<~/ahu >>
 
 <<~&#x0003; ahu #body-close >>

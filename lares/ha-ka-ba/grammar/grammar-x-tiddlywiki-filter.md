@@ -45,8 +45,6 @@ This meme governs how TiddlyWiki filter language enters the host under explicit 
 
 This meme should preserve the imported filter language substantially intact while translating host-facing metaphysics explicitly rather than silently.
 
-<<~ pranala loulou lar:///ha.ka.ba/grammars/x-tiddlywiki-filter >>
-
 ## Supported Queries
 
 <<~&#x0005; ui meme? -> lar:///ha.ka.ba/grammars/x-tiddlywiki-filter#iam >>

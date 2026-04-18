@@ -40,8 +40,6 @@ The next agent should also treat the newly crystallized `#return-types` locus an
 
 Do not regress the file toward flatter prose, weaker routing law, or ambiguous end-of-file result staging.
 
-<<~ pranala loulou lar:///ha.ka.ba/handoff/parser-law-return-transaction >>
-
 ## Supported Queries
 
 <<~ ui handoff? -> lar:///ha.ka.ba/handoff/parser-law-return-transaction#iam >>
@@ -58,7 +56,6 @@ The hand-off stream opens here.
 <<~/ahu >>
 
 <<~ ahu #phase-map >>
-
 
 ## Phase Map
 

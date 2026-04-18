@@ -38,8 +38,6 @@ A shared pono kānāwai (law) for the canonical normative verb set used across m
 
 This meme governs which modal verbs count as normative force markers in this stack and gives carrier-specific laws one central declaration site. It does not itself decide where a given law should use those verbs; that remains local to each law.
 
-<<~ pranala loulou lar:///ha.ka.ba/pono/normative-verbs >>
-
 ## Supported Queries
 
 <<~&#x0005; ui meme? -> lar:///ha.ka.ba/pono/normative-verbs#iam >>

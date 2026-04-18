@@ -48,8 +48,6 @@ This meme governs the human-agent-facing semantic surface, primitive meanings, c
 
 This meme should not swallow full parse kānāwai (law) or full render-pipeline kānāwai (law).
 
-<<~ pranala loulou lar:///ha.ka.ba/pono/memetic-wikitext >>
-
 ## Supported Queries
 
 <<~&#x0005; ui meme? -> lar:///ha.ka.ba/pono/memetic-wikitext#iam >>
@@ -132,7 +130,7 @@ Constitutional-charge-ha holds root identity, semantic scope, constitutional pla
 
 This ahu governs what territory belongs inside the constitutional root before deeper parse or render routing begins.
 
-<<~ pranala loulou lar:///ha.ka.ba/pono/memetic-wikitext#constitutional-charge-ha >> <<~/ahu >>
+ <<~/ahu >>
 
 <<~ ahu #constitutional-charge-ka >>
 
@@ -142,7 +140,7 @@ Constitutional-charge-ka governs distribution of kānāwai (law) across root, pa
 
 This ahu sharpens which duties remain local, which duties move outward, and which duties should never blur across loci.
 
-<<~ pranala loulou lar:///ha.ka.ba/pono/memetic-wikitext#constitutional-charge-ka >> <<~/ahu >>
+ <<~/ahu >>
 
 <<~ ahu #constitutional-charge-ba >>
 
@@ -152,9 +150,9 @@ Constitutional-charge-ba governs anti-sprawl posture, future growth discipline, 
 
 This ahu preserves living fit by keeping the root compact enough to guide later work without drowning in later detail.
 
-<<~ pranala loulou lar:///ha.ka.ba/pono/memetic-wikitext#constitutional-charge-ba >> <<~/ahu >>
+ <<~/ahu >>
 
-<<~ pranala loulou lar:///ha.ka.ba/pono/memetic-wikitext#constitutional-charge >> <<~/ahu >>
+ <<~/ahu >>
 
 <<~ ahu #phase-map >>
 
@@ -178,7 +176,7 @@ Unicode hex entity symbols for the OODA-HA loop:
 
 Phase-map-ha holds ordered semantic loci and root cognitive rhythm.
 
-<<~ pranala loulou lar:///ha.ka.ba/pono/memetic-wikitext#phase-map-ha >> <<~/ahu >>
+ <<~/ahu >>
 
 <<~ ahu #phase-map-ka >>
 
@@ -186,7 +184,7 @@ Phase-map-ha holds ordered semantic loci and root cognitive rhythm.
 
 Phase-map-ka governs the semantic work each phase performs at the authoring surface.
 
-<<~ pranala loulou lar:///ha.ka.ba/pono/memetic-wikitext#phase-map-ka >> <<~/ahu >>
+ <<~/ahu >>
 
 <<~ ahu #phase-map-ba >>
 
@@ -194,9 +192,9 @@ Phase-map-ka governs the semantic work each phase performs at the authoring surf
 
 Phase-map-ba governs living movement through the loop without collapsing into mere ornament.
 
-<<~ pranala loulou lar:///ha.ka.ba/pono/memetic-wikitext#phase-map-ba >> <<~/ahu >>
+ <<~/ahu >>
 
-<<~ pranala loulou lar:///ha.ka.ba/pono/memetic-wikitext#phase-map >> <<~/ahu >>
+ <<~/ahu >>
 
 <<~ ahu #primitive-cluster >>
 
@@ -252,7 +250,7 @@ Primitive-cluster-ha holds primitive identity, family membership, and semantic t
 
 This ahu governs what kinds of primitive action the root language recognizes before deeper composition or downstream reading begins.
 
-<<~ pranala loulou lar:///ha.ka.ba/pono/memetic-wikitext#primitive-cluster-ha >> <<~/ahu >>
+ <<~/ahu >>
 
 <<~ ahu #primitive-cluster-ka >>
 
@@ -262,7 +260,7 @@ Primitive-cluster-ka governs primitive distinction, admissible role separation, 
 
 This ahu sharpens how each primitive differs from its siblings so later laws do not inherit ambiguity from the root.
 
-<<~ pranala loulou lar:///ha.ka.ba/pono/memetic-wikitext#primitive-cluster-ka >> <<~/ahu >>
+ <<~/ahu >>
 
 <<~ ahu #primitive-cluster-ba >>
 
@@ -272,9 +270,9 @@ Primitive-cluster-ba governs live semantic fit under real authoring pressure.
 
 This ahu preserves the cluster as a usable working family rather than as a dead taxonomy, while resisting drift into synonym blur.
 
-<<~ pranala loulou lar:///ha.ka.ba/pono/memetic-wikitext#primitive-cluster-ba >> <<~/ahu >>
+ <<~/ahu >>
 
-<<~ pranala loulou lar:///ha.ka.ba/pono/memetic-wikitext#primitive-cluster >> <<~/ahu >>
+ <<~/ahu >>
 
 <<~ ahu #composition >>
 
@@ -347,7 +345,7 @@ Composition-ha holds compositional identity, primitive role boundaries, and the 
 
 This ahu governs what kinds of combination belong to the root before downstream parse or render specialization begins.
 
-<<~ pranala loulou lar:///ha.ka.ba/pono/memetic-wikitext#composition-ha >> <<~/ahu >>
+ <<~/ahu >>
 
 <<~ ahu #composition-ka >>
 
@@ -357,7 +355,7 @@ Composition-ka governs lawful primitive combination, inheritance, qualification,
 
 This ahu sharpens how composition adds meaning while preserving distinction among the participating primitives.
 
-<<~ pranala loulou lar:///ha.ka.ba/pono/memetic-wikitext#composition-ka >> <<~/ahu >>
+ <<~/ahu >>
 
 <<~ ahu #composition-ba >>
 
@@ -367,9 +365,9 @@ Composition-ba governs living compositional style, readability, and mana under r
 
 This ahu preserves semantic motion by favoring explicit, teachable pairings over fused or overloaded surfaces.
 
-<<~ pranala loulou lar:///ha.ka.ba/pono/memetic-wikitext#composition-ba >> <<~/ahu >>
+ <<~/ahu >>
 
-<<~ pranala loulou lar:///ha.ka.ba/pono/memetic-wikitext#composition >> <<~/ahu >>
+ <<~/ahu >>
 
 <<~ ahu #uncertainty >>
 
@@ -473,7 +471,7 @@ Uncertainty-ha holds unresolved identity, bounded absence, and the semantic terr
 
 This ahu governs what kind of unresolved pressure the root may name before deeper parse or render aftermath begins.
 
-<<~ pranala loulou lar:///ha.ka.ba/pono/memetic-wikitext#uncertainty-ha >> <<~/ahu >>
+ <<~/ahu >>
 
 <<~ ahu #uncertainty-ka >>
 
@@ -483,7 +481,7 @@ Uncertainty-ka governs how unresolved slots travel, degrade, and remain distingu
 
 This ahu sharpens the difference between explicit uncertainty and mere vagueness so later laws inherit a cleaner contract.
 
-<<~ pranala loulou lar:///ha.ka.ba/pono/memetic-wikitext#uncertainty-ka >> <<~/ahu >>
+ <<~/ahu >>
 
 <<~ ahu #uncertainty-ba >>
 
@@ -493,9 +491,9 @@ Uncertainty-ba governs truth posture, forward pressure, and living semantic open
 
 This ahu preserves `?` as a live route into next observation rather than as a dead placeholder.
 
-<<~ pranala loulou lar:///ha.ka.ba/pono/memetic-wikitext#uncertainty-ba >> <<~/ahu >>
+ <<~/ahu >>
 
-<<~ pranala loulou lar:///ha.ka.ba/pono/memetic-wikitext#uncertainty >> <<~/ahu >>
+ <<~/ahu >>
 
 <<~ ahu #kapu >>
 
@@ -575,7 +573,7 @@ Kapu-ha holds threshold identity, semantic scope, and the kinds of boundary terr
 
 This ahu governs what kapu fundamentally marks before deeper parse, invocation, or render routing begins.
 
-<<~ pranala loulou lar:///ha.ka.ba/pono/memetic-wikitext#kapu-ha >> <<~/ahu >>
+ <<~/ahu >>
 
 <<~ ahu #kapu-ka >>
 
@@ -585,7 +583,7 @@ Kapu-ka governs qualification, inheritance pressure, nearest-scope dominance, an
 
 This ahu sharpens how kapu attaches to other primitives without dissolving their distinct jobs.
 
-<<~ pranala loulou lar:///ha.ka.ba/pono/memetic-wikitext#kapu-ka >> <<~/ahu >>
+ <<~/ahu >>
 
 <<~ ahu #kapu-ba >>
 
@@ -595,9 +593,9 @@ Kapu-ba governs lived boundary truth under inclusion, invocation, memory, and em
 
 This ahu preserves kapu as a living boundary membrane rather than a decorative warning label, especially when the root carries unresolved or risky semantic motion.
 
-<<~ pranala loulou lar:///ha.ka.ba/pono/memetic-wikitext#kapu-ba >> <<~/ahu >>
+ <<~/ahu >>
 
-<<~ pranala loulou lar:///ha.ka.ba/pono/memetic-wikitext#kapu >> <<~/ahu >>
+ <<~/ahu >>
 
 <<~ ahu #boot-grammar >>
 
@@ -741,7 +739,7 @@ Boot-grammar-ha holds the minimum grammatical identity of the language and the b
 
 This ahu governs which surface distinctions belong in the root before deeper legality, normalization, or lowering begins.
 
-<<~ pranala loulou lar:///ha.ka.ba/pono/memetic-wikitext#boot-grammar-ha >> <<~/ahu >>
+ <<~/ahu >>
 
 <<~ ahu #boot-grammar-ka >>
 
@@ -751,7 +749,7 @@ Boot-grammar-ka governs minimal legal constructions, admissible surfaces, and bo
 
 This ahu sharpens how little the root may require while still remaining sufficient for lawful authorship and downstream handoff.
 
-<<~ pranala loulou lar:///ha.ka.ba/pono/memetic-wikitext#boot-grammar-ka >> <<~/ahu >>
+ <<~/ahu >>
 
 <<~ ahu #boot-grammar-ba >>
 
@@ -761,9 +759,9 @@ Boot-grammar-ba governs legibility, teachability, and minimum viable manifestati
 
 This ahu preserves the root as a living teaching grammar by favoring the smallest stable surface that still supports semantic motion.
 
-<<~ pranala loulou lar:///ha.ka.ba/pono/memetic-wikitext#boot-grammar-ba >> <<~/ahu >>
+ <<~/ahu >>
 
-<<~ pranala loulou lar:///ha.ka.ba/pono/memetic-wikitext#boot-grammar >> <<~/ahu >>
+ <<~/ahu >>
 
 <<~ ahu #authoring-profiles >>
 
@@ -822,7 +820,7 @@ Authoring-profiles-ha holds profile identity, user-facing posture, and the terri
 
 This ahu governs what kinds of profile difference belong in the constitutional root before deeper parse or render profile systems begin.
 
-<<~ pranala loulou lar:///ha.ka.ba/pono/memetic-wikitext#authoring-profiles-ha >> <<~/ahu >>
+ <<~/ahu >>
 
 <<~ ahu #authoring-profiles-ka >>
 
@@ -832,7 +830,7 @@ Authoring-profiles-ka governs profile differences in strictness, pedagogy, toler
 
 This ahu sharpens why the profile set remains useful rather than ornamental.
 
-<<~ pranala loulou lar:///ha.ka.ba/pono/memetic-wikitext#authoring-profiles-ka >> <<~/ahu >>
+ <<~/ahu >>
 
 <<~ ahu #authoring-profiles-ba >>
 
@@ -842,9 +840,9 @@ Authoring-profiles-ba governs drift control, portability, and living fit across 
 
 This ahu preserves profile variation as a practical reading aid rather than a source of semantic fork.
 
-<<~ pranala loulou lar:///ha.ka.ba/pono/memetic-wikitext#authoring-profiles-ba >> <<~/ahu >>
+ <<~/ahu >>
 
-<<~ pranala loulou lar:///ha.ka.ba/pono/memetic-wikitext#authoring-profiles >> <<~/ahu >>
+ <<~/ahu >>
 
 <<~ ahu #meme-confidence >>
 
@@ -1059,7 +1057,7 @@ Bridge-to-parser-ha holds downstream parse relation, constitutional boundary, an
 
 This ahu governs the stable edge between semantic authorship and parse-time reading.
 
-<<~ pranala loulou lar:///ha.ka.ba/pono/memetic-wikitext#bridge-to-parser-ha >> <<~/ahu >>
+ <<~/ahu >>
 
 <<~ ahu #bridge-to-parser-ka >>
 
@@ -1069,7 +1067,7 @@ Bridge-to-parser-ka governs which root guarantees parser may assume and which de
 
 This ahu sharpens the minimum handoff contract so the parser receives enough kānāwai (law) without inheriting duplication noise.
 
-<<~ pranala loulou lar:///ha.ka.ba/pono/memetic-wikitext#bridge-to-parser-ka >> <<~/ahu >>
+ <<~/ahu >>
 
 <<~ ahu #bridge-to-parser-ba >>
 
@@ -1079,9 +1077,9 @@ Bridge-to-parser-ba governs anti-duplication posture and living fit between sema
 
 This ahu preserves a workable handoff by keeping the root compact and the parser specific, even as later detail deepens.
 
-<<~ pranala loulou lar:///ha.ka.ba/pono/memetic-wikitext#bridge-to-parser-ba >> <<~/ahu >>
+ <<~/ahu >>
 
-<<~ pranala loulou lar:///ha.ka.ba/pono/memetic-wikitext#bridge-to-parser >> <<~/ahu >>
+ <<~/ahu >>
 
 <<~ ahu #bridge-to-render-pipeline >>
 
@@ -1145,7 +1143,7 @@ Bridge-to-render-pipeline-ha holds downstream render relation, constitutional bo
 
 This ahu governs the stable edge between semantic authorship and render-time lowering.
 
-<<~ pranala loulou lar:///ha.ka.ba/pono/memetic-wikitext#bridge-to-render-pipeline-ha >> <<~/ahu >>
+ <<~/ahu >>
 
 <<~ ahu #bridge-to-render-pipeline-ka >>
 
@@ -1155,7 +1153,7 @@ Bridge-to-render-pipeline-ka governs which root guarantees render-pipeline may a
 
 This ahu sharpens the minimum handoff contract so the renderer receives enough kānāwai (law) without inheriting projection duplication noise.
 
-<<~ pranala loulou lar:///ha.ka.ba/pono/memetic-wikitext#bridge-to-render-pipeline-ka >> <<~/ahu >>
+ <<~/ahu >>
 
 <<~ ahu #bridge-to-render-pipeline-ba >>
 
@@ -1165,9 +1163,9 @@ Bridge-to-render-pipeline-ba governs anti-duplication posture and living fit bet
 
 This ahu preserves a workable handoff by keeping the root compact and the renderer specific, even as later projection detail deepens.
 
-<<~ pranala loulou lar:///ha.ka.ba/pono/memetic-wikitext#bridge-to-render-pipeline-ba >> <<~/ahu >>
+ <<~/ahu >>
 
-<<~ pranala loulou lar:///ha.ka.ba/pono/memetic-wikitext#bridge-to-render-pipeline >> <<~/ahu >>
+ <<~/ahu >>
 
 <<~ ahu #minimum-boot-examples >>
 
@@ -1325,7 +1323,7 @@ Minimum-boot-examples-ha holds canonical teaching examples and boot exemplars.
 
 This ahu governs which tiny fixtures the root must carry in order to remain teachable and testable at boot.
 
-<<~ pranala loulou lar:///ha.ka.ba/pono/memetic-wikitext#minimum-boot-examples-ha >> <<~/ahu >>
+ <<~/ahu >>
 
 <<~ ahu #minimum-boot-examples-ka >>
 
@@ -1335,7 +1333,7 @@ Minimum-boot-examples-ka governs example selection, minimal sufficiency, and non
 
 This ahu sharpens which examples remain constitutional and which examples belong in parser or render-pipeline instead.
 
-<<~ pranala loulou lar:///ha.ka.ba/pono/memetic-wikitext#minimum-boot-examples-ka >> <<~/ahu >>
+ <<~/ahu >>
 
 <<~ ahu #minimum-boot-examples-ba >>
 
@@ -1345,9 +1343,9 @@ Minimum-boot-examples-ba governs teachability, reading flow, and high-mana trans
 
 This ahu preserves the examples as living entry points rather than as inert specimen blocks.
 
-<<~ pranala loulou lar:///ha.ka.ba/pono/memetic-wikitext#minimum-boot-examples-ba >> <<~/ahu >>
+ <<~/ahu >>
 
-<<~ pranala loulou lar:///ha.ka.ba/pono/memetic-wikitext#minimum-boot-examples >> <<~/ahu >>
+ <<~/ahu >>
 
 <<~ ahu #result >>
 
@@ -1403,7 +1401,7 @@ Result-ha holds the identity, scope, and carry-shape of the root semantic return
 
 This ahu governs what kind of upward package the constitutional root may lawfully hand forward.
 
-<<~ pranala loulou lar:///ha.ka.ba/pono/memetic-wikitext#result-ha >> <<~/ahu >>
+ <<~/ahu >>
 
 <<~ ahu #result-ka >>
 
@@ -1413,7 +1411,7 @@ Result-ka governs field stability, semantic comparison posture, and handoff fit 
 
 This ahu sharpens how the root may remain compact while still handing enough structure into later parse and render work.
 
-<<~ pranala loulou lar:///ha.ka.ba/pono/memetic-wikitext#result-ka >> <<~/ahu >>
+ <<~/ahu >>
 
 <<~ ahu #result-ba >>
 
@@ -1423,9 +1421,9 @@ Result-ba governs truthful incompletion, forward pressure, and lawful upward sem
 
 This ahu preserves the root result as a live route into the next observation rather than a false claim of final closure.
 
-<<~ pranala loulou lar:///ha.ka.ba/pono/memetic-wikitext#result-ba >> <<~/ahu >>
+ <<~/ahu >>
 
-<<~ pranala loulou lar:///ha.ka.ba/pono/memetic-wikitext#result >> <<~/ahu >>
+ <<~/ahu >>
 
 <<~&#x0003; ahu #body-close >>
 Memetic Wikitext closes the active constitutional authoring stream here.

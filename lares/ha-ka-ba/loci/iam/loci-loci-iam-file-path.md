@@ -42,10 +42,7 @@ A kānāwai (law) for a single `#iam` TOML key.
 
 `file-path` carries the path from the `ha-ka-ba` path root to the meme's file on disk, relative to `install-root`. It sits as the second field in every `#iam` block, immediately after `name`. It comes in two canonical forms — flat-file and path-directory — and must agree with the `lar:` URI declared in the document opener.
 
-
 **Lifecycle Note:** The five-bucket lifecycle (noise → data → meme → typed meme → canon typed meme) remains canonical for all meme law. Here `data` names structured language an AI can use without the memetic wrappers. This law governs only the file-path key and its agreement, not lifecycle stages.
-
-<<~ pranala loulou lar:///ha.ka.ba/loci/iam/file-path >>
 
 ## Supported Queries
 

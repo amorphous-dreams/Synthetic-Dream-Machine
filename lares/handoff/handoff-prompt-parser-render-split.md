@@ -50,7 +50,6 @@ The split reads as:
 Iam-ha holds identity, constitutional charge, and handoff scope.
 
 This subphase names the document and keeps the assignment narrow enough for a local agent to execute without architectural blur.
-<<~ pranala loulou lar:///ha.ka.ba/handoff-prompt-parser-render-split#iam-ha >>
 <<~/ahu >>
 
 <<~ ahu #iam-ka >>
@@ -58,7 +57,6 @@ This subphase names the document and keeps the assignment narrow enough for a lo
 Iam-ka governs metadata detail, dependency naming, and transaction header posture.
 
 This subphase gives tools and agents machine-facing payload sufficient for alignment and patch planning.
-<<~ pranala loulou lar:///ha.ka.ba/handoff-prompt-parser-render-split#iam-ka >>
 <<~/ahu >>
 
 <<~ ahu #iam-ba >>
@@ -66,10 +64,8 @@ This subphase gives tools and agents machine-facing payload sufficient for align
 Iam-ba governs posture, portability, and reader-facing clarity.
 
 This subphase keeps the handoff readable while preserving enough structure for local automation.
-<<~ pranala loulou lar:///ha.ka.ba/handoff-prompt-parser-render-split#iam-ba >>
 <<~/ahu >>
 
-<<~ pranala loulou lar:///ha.ka.ba/handoff-prompt-parser-render-split >>
 <<~/ahu >>
 
 ## Supported Queries
@@ -93,7 +89,6 @@ Handoff prompt opens the active roadmap stream here.
 Meme-body-open-ha holds threshold identity and stream admission.
 
 This subphase marks lawful entry into active roadmap content.
-<<~ pranala loulou lar:///ha.ka.ba/handoff-prompt-parser-render-split#meme-body-open-ha >>
 <<~/ahu >>
 
 <<~ ahu #meme-body-open-ka >>
@@ -101,7 +96,6 @@ This subphase marks lawful entry into active roadmap content.
 Meme-body-open-ka governs opening detail, initial context, and working bounds.
 
 This subphase keeps later work inside one bounded change program.
-<<~ pranala loulou lar:///ha.ka.ba/handoff-prompt-parser-render-split#meme-body-open-ka >>
 <<~/ahu >>
 
 <<~ ahu #meme-body-open-ba >>
@@ -109,10 +103,8 @@ This subphase keeps later work inside one bounded change program.
 Meme-body-open-ba governs landing posture and early alignment.
 
 This subphase lowers entry cost for a local agent and operator.
-<<~ pranala loulou lar:///ha.ka.ba/handoff-prompt-parser-render-split#meme-body-open-ba >>
 <<~/ahu >>
 
-<<~ pranala loulou lar:///ha.ka.ba/handoff-prompt-parser-render-split#meme-body-open >>
 <<~/ahu >>
 
 <<~ ahu #phase-map >>
@@ -129,7 +121,6 @@ A local agent should not collapse these loci into one vague patch pass when late
 Phase-map-ha holds ordered loci and roadmap identity.
 
 This subphase names the motion that later sections metabolize.
-<<~ pranala loulou lar:///ha.ka.ba/handoff-prompt-parser-render-split#phase-map-ha >>
 <<~/ahu >>
 
 <<~ ahu #phase-map-ka >>
@@ -137,7 +128,6 @@ This subphase names the motion that later sections metabolize.
 Phase-map-ka governs ordering detail and lawful handoff between sections.
 
 This subphase keeps the local execution path explicit enough for patch tooling and review.
-<<~ pranala loulou lar:///ha.ka.ba/handoff-prompt-parser-render-split#phase-map-ka >>
 <<~/ahu >>
 
 <<~ ahu #phase-map-ba >>
@@ -145,10 +135,8 @@ This subphase keeps the local execution path explicit enough for patch tooling a
 Phase-map-ba governs pacing, residue awareness, and anti-blur discipline.
 
 This subphase keeps roadmap flow legible under practical dev pressure.
-<<~ pranala loulou lar:///ha.ka.ba/handoff-prompt-parser-render-split#phase-map-ba >>
 <<~/ahu >>
 
-<<~ pranala loulou lar:///ha.ka.ba/handoff-prompt-parser-render-split#phase-map >>
 <<~/ahu >>
 
 <<~ ahu #handoff-scope >>
@@ -178,7 +166,6 @@ Out of scope for this pass:
 Handoff-scope-ha holds assignment boundary and target set.
 
 This subphase protects the local agent from unnecessary sprawl.
-<<~ pranala loulou lar:///ha.ka.ba/handoff-prompt-parser-render-split#handoff-scope-ha >>
 <<~/ahu >>
 
 <<~ ahu #handoff-scope-ka >>
@@ -186,7 +173,6 @@ This subphase protects the local agent from unnecessary sprawl.
 Handoff-scope-ka governs inclusion, exclusion, and bounded sequencing detail.
 
 This subphase tells the local agent what to touch now and what to postpone.
-<<~ pranala loulou lar:///ha.ka.ba/handoff-prompt-parser-render-split#handoff-scope-ka >>
 <<~/ahu >>
 
 <<~ ahu #handoff-scope-ba >>
@@ -194,10 +180,8 @@ This subphase tells the local agent what to touch now and what to postpone.
 Handoff-scope-ba governs posture under temptation toward premature expansion.
 
 This subphase favors sharp boundaries and later extraction over present sprawl.
-<<~ pranala loulou lar:///ha.ka.ba/handoff-prompt-parser-render-split#handoff-scope-ba >>
 <<~/ahu >>
 
-<<~ pranala loulou lar:///ha.ka.ba/handoff-prompt-parser-render-split#handoff-scope >>
 <<~/ahu >>
 
 <<~ ahu #placement-law >>
@@ -247,7 +231,6 @@ If transaction and capability detail swell beyond comfortable fit inside `render
 Placement-law-ha holds constitutional home and document identity.
 
 This subphase keeps each kind of detail in its proper locus.
-<<~ pranala loulou lar:///ha.ka.ba/handoff-prompt-parser-render-split#placement-law-ha >>
 <<~/ahu >>
 
 <<~ ahu #placement-law-ka >>
@@ -255,7 +238,6 @@ This subphase keeps each kind of detail in its proper locus.
 Placement-law-ka governs allocation detail and anti-overload discipline.
 
 This subphase gives the local agent a placement test for every proposed paragraph.
-<<~ pranala loulou lar:///ha.ka.ba/handoff-prompt-parser-render-split#placement-law-ka >>
 <<~/ahu >>
 
 <<~ ahu #placement-law-ba >>
@@ -263,10 +245,8 @@ This subphase gives the local agent a placement test for every proposed paragrap
 Placement-law-ba governs drift resistance and readability under growth pressure.
 
 This subphase protects mana by preventing constitutional roots from turning into implementation dumps.
-<<~ pranala loulou lar:///ha.ka.ba/handoff-prompt-parser-render-split#placement-law-ba >>
 <<~/ahu >>
 
-<<~ pranala loulou lar:///ha.ka.ba/handoff-prompt-parser-render-split#placement-law >>
 <<~/ahu >>
 
 <<~ ahu #observe >>
@@ -304,7 +284,6 @@ Observe should not:
 Observe-ha holds current-state intake and source relation.
 
 This subphase governs what entered the handoff before design adjustment begins.
-<<~ pranala loulou lar:///ha.ka.ba/handoff-prompt-parser-render-split#observe-ha >>
 <<~/ahu >>
 
 <<~ ahu #observe-ka >>
@@ -312,7 +291,6 @@ This subphase governs what entered the handoff before design adjustment begins.
 Observe-ka governs mismatch collection, trace preservation, and patch-anchor discovery.
 
 This subphase focuses on how the local agent should inspect without premature mutation.
-<<~ pranala loulou lar:///ha.ka.ba/handoff-prompt-parser-render-split#observe-ka >>
 <<~/ahu >>
 
 <<~ ahu #observe-ba >>
@@ -320,10 +298,8 @@ This subphase focuses on how the local agent should inspect without premature mu
 Observe-ba governs attention discipline and ambiguity holding under active draft pressure.
 
 This subphase keeps later edits grounded in what the files currently say.
-<<~ pranala loulou lar:///ha.ka.ba/handoff-prompt-parser-render-split#observe-ba >>
 <<~/ahu >>
 
-<<~ pranala loulou lar:///ha.ka.ba/handoff-prompt-parser-render-split#observe >>
 <<~/ahu >>
 
 <<~ ahu #orient >>
@@ -385,7 +361,6 @@ A working boot distinction may read as:
 Orient-ha holds placement map and transaction family distinction.
 
 This subphase governs what belongs to semantic root, parse constitution, and render pipeline.
-<<~ pranala loulou lar:///ha.ka.ba/handoff-prompt-parser-render-split#orient-ha >>
 <<~/ahu >>
 
 <<~ ahu #orient-ka >>
@@ -393,7 +368,6 @@ This subphase governs what belongs to semantic root, parse constitution, and ren
 Orient-ka governs taxonomy detail, extraction posture, and cross-document relation mapping.
 
 This subphase tells the local agent how to separate concepts before prose revision begins.
-<<~ pranala loulou lar:///ha.ka.ba/handoff-prompt-parser-render-split#orient-ka >>
 <<~/ahu >>
 
 <<~ ahu #orient-ba >>
@@ -401,10 +375,8 @@ This subphase tells the local agent how to separate concepts before prose revisi
 Orient-ba governs comparative motion among plausible allocations under live design pressure.
 
 This subphase keeps the split clear without forcing premature fourth-law extraction.
-<<~ pranala loulou lar:///ha.ka.ba/handoff-prompt-parser-render-split#orient-ba >>
 <<~/ahu >>
 
-<<~ pranala loulou lar:///ha.ka.ba/handoff-prompt-parser-render-split#orient >>
 <<~/ahu >>
 
 <<~ ahu #decide >>
@@ -458,7 +430,6 @@ Do not create a separate `transaction-law` yet unless `render-pipeline-law` begi
 Decide-ha holds approved scope and deferral boundary.
 
 This subphase governs what should land now and what should wait.
-<<~ pranala loulou lar:///ha.ka.ba/handoff-prompt-parser-render-split#decide-ha >>
 <<~/ahu >>
 
 <<~ ahu #decide-ka >>
@@ -466,7 +437,6 @@ This subphase governs what should land now and what should wait.
 Decide-ka governs patch targeting, sequence choice, and rejection of overreach.
 
 This subphase tells the local agent how to keep the present pass narrow and high-yield.
-<<~ pranala loulou lar:///ha.ka.ba/handoff-prompt-parser-render-split#decide-ka >>
 <<~/ahu >>
 
 <<~ ahu #decide-ba >>
@@ -474,10 +444,8 @@ This subphase tells the local agent how to keep the present pass narrow and high
 Decide-ba governs commitment style, caution, and graceful refusal of tempting but premature expansions.
 
 This subphase keeps the roadmap honest under architecture enthusiasm.
-<<~ pranala loulou lar:///ha.ka.ba/handoff-prompt-parser-render-split#decide-ba >>
 <<~/ahu >>
 
-<<~ pranala loulou lar:///ha.ka.ba/handoff-prompt-parser-render-split#decide >>
 <<~/ahu >>
 
 <<~ ahu #act >>
@@ -542,7 +510,6 @@ The local agent should verify:
 Act-ha holds prepared artifact families and lawful execution boundary.
 
 This subphase governs what Act may assemble before state crossing begins.
-<<~ pranala loulou lar:///ha.ka.ba/handoff-prompt-parser-render-split#act-ha >>
 <<~/ahu >>
 
 <<~ ahu #act-ka >>
@@ -550,7 +517,6 @@ This subphase governs what Act may assemble before state crossing begins.
 Act-ka governs diff preparation, patch-script shaping, and checklist assembly detail.
 
 This subphase focuses on how the local agent should prepare a safe handoff package.
-<<~ pranala loulou lar:///ha.ka.ba/handoff-prompt-parser-render-split#act-ka >>
 <<~/ahu >>
 
 <<~ ahu #act-ba >>
@@ -558,10 +524,8 @@ This subphase focuses on how the local agent should prepare a safe handoff packa
 Act-ba governs execution rhythm and anti-sprawl flow under patch pressure.
 
 This subphase keeps the work concrete without crossing into uncontrolled mutation.
-<<~ pranala loulou lar:///ha.ka.ba/handoff-prompt-parser-render-split#act-ba >>
 <<~/ahu >>
 
-<<~ pranala loulou lar:///ha.ka.ba/handoff-prompt-parser-render-split#act >>
 <<~/ahu >>
 
 <<~ ahu #hooko >>
@@ -614,7 +578,6 @@ This handoff should default toward:
 Hooko-ha holds mutation threshold and commit identity.
 
 This subphase governs what kind of crossing may lawfully occur.
-<<~ pranala loulou lar:///ha.ka.ba/handoff-prompt-parser-render-split#hooko-ha >>
 <<~/ahu >>
 
 <<~ ahu #hooko-ka >>
@@ -622,7 +585,6 @@ This subphase governs what kind of crossing may lawfully occur.
 Hooko-ka governs patch application detail, rollback detail, and trace capture.
 
 This subphase focuses on how a local agent should cross cleanly without laundering degraded outcomes into success language.
-<<~ pranala loulou lar:///ha.ka.ba/handoff-prompt-parser-render-split#hooko-ka >>
 <<~/ahu >>
 
 <<~ ahu #hooko-ba >>
@@ -630,10 +592,8 @@ This subphase focuses on how a local agent should cross cleanly without launderi
 Hooko-ba governs landing pressure, caution posture, and truthful state-crossing under local execution conditions.
 
 This subphase keeps mutation visible, bounded, and reviewable.
-<<~ pranala loulou lar:///ha.ka.ba/handoff-prompt-parser-render-split#hooko-ba >>
 <<~/ahu >>
 
-<<~ pranala loulou lar:///ha.ka.ba/handoff-prompt-parser-render-split#hooko >>
 <<~/ahu >>
 
 <<~ ahu #aftermath >>
@@ -666,7 +626,6 @@ Aftermath should prefer explicit residue over vague success language.
 Aftermath-ha holds residue domain, release boundary, and return pathways.
 
 This subphase governs what the local agent carries forward or releases.
-<<~ pranala loulou lar:///ha.ka.ba/handoff-prompt-parser-render-split#aftermath-ha >>
 <<~/ahu >>
 
 <<~ ahu #aftermath-ka >>
@@ -674,7 +633,6 @@ This subphase governs what the local agent carries forward or releases.
 Aftermath-ka governs review detail, acceptance judgment, and replay-ready packaging.
 
 This subphase focuses on how the local agent should package repair hooks and residue without invention.
-<<~ pranala loulou lar:///ha.ka.ba/handoff-prompt-parser-render-split#aftermath-ka >>
 <<~/ahu >>
 
 <<~ ahu #aftermath-ba >>
@@ -682,10 +640,8 @@ This subphase focuses on how the local agent should package repair hooks and res
 Aftermath-ba governs landing quality, operator readability, and honest closure under partial completion.
 
 This subphase keeps the handoff truthful even when some semantic-root cleanup remains deferred.
-<<~ pranala loulou lar:///ha.ka.ba/handoff-prompt-parser-render-split#aftermath-ba >>
 <<~/ahu >>
 
-<<~ pranala loulou lar:///ha.ka.ba/handoff-prompt-parser-render-split#aftermath >>
 <<~/ahu >>
 
 <<~ ahu #transaction-design >>
@@ -730,7 +686,6 @@ If nested return paths, nested Hooko crossings, or target projection rollback gr
 Transaction-design-ha holds the core field family and constitutional distinction.
 
 This subphase governs what the local agent must preserve across both files.
-<<~ pranala loulou lar:///ha.ka.ba/handoff-prompt-parser-render-split#transaction-design-ha >>
 <<~/ahu >>
 
 <<~ ahu #transaction-design-ka >>
@@ -738,7 +693,6 @@ This subphase governs what the local agent must preserve across both files.
 Transaction-design-ka governs semantics, field usage, and patch-facing detail.
 
 This subphase tells the local agent how to revise prose without merging unlike concepts.
-<<~ pranala loulou lar:///ha.ka.ba/handoff-prompt-parser-render-split#transaction-design-ka >>
 <<~/ahu >>
 
 <<~ ahu #transaction-design-ba >>
@@ -746,10 +700,8 @@ This subphase tells the local agent how to revise prose without merging unlike c
 Transaction-design-ba governs practical judgment under live wording pressure.
 
 This subphase keeps the design clear enough for later planning while avoiding present overengineering.
-<<~ pranala loulou lar:///ha.ka.ba/handoff-prompt-parser-render-split#transaction-design-ba >>
 <<~/ahu >>
 
-<<~ pranala loulou lar:///ha.ka.ba/handoff-prompt-parser-render-split#transaction-design >>
 <<~/ahu >>
 
 <<~ ahu #roadmap >>
@@ -786,7 +738,6 @@ Judge landed edits in Aftermath and preserve residue for later cleanup.
 Roadmap-ha holds sequence identity and bounded movement.
 
 This subphase names the execution order for the local agent.
-<<~ pranala loulou lar:///ha.ka.ba/handoff-prompt-parser-render-split#roadmap-ha >>
 <<~/ahu >>
 
 <<~ ahu #roadmap-ka >>
@@ -794,7 +745,6 @@ This subphase names the execution order for the local agent.
 Roadmap-ka governs step detail, handoff ordering, and dependency awareness.
 
 This subphase tells the local agent how to proceed without reordering the architecture blindly.
-<<~ pranala loulou lar:///ha.ka.ba/handoff-prompt-parser-render-split#roadmap-ka >>
 <<~/ahu >>
 
 <<~ ahu #roadmap-ba >>
@@ -802,10 +752,8 @@ This subphase tells the local agent how to proceed without reordering the archit
 Roadmap-ba governs practical cadence and anti-rush posture.
 
 This subphase favors clarity and reviewability over speed theater.
-<<~ pranala loulou lar:///ha.ka.ba/handoff-prompt-parser-render-split#roadmap-ba >>
 <<~/ahu >>
 
-<<~ pranala loulou lar:///ha.ka.ba/handoff-prompt-parser-render-split#roadmap >>
 <<~/ahu >>
 
 <<~ ahu #parser-law-work >>
@@ -834,7 +782,6 @@ Forbidden growth for this pass:
 Parser-law-work-ha holds constitutional fit and allowed edit family.
 
 This subphase protects the parser root from operational overload.
-<<~ pranala loulou lar:///ha.ka.ba/handoff-prompt-parser-render-split#parser-law-work-ha >>
 <<~/ahu >>
 
 <<~ ahu #parser-law-work-ka >>
@@ -842,7 +789,6 @@ This subphase protects the parser root from operational overload.
 Parser-law-work-ka governs edit detail and exclusion logic.
 
 This subphase tells the local agent how to recognize when a paragraph belongs elsewhere.
-<<~ pranala loulou lar:///ha.ka.ba/handoff-prompt-parser-render-split#parser-law-work-ka >>
 <<~/ahu >>
 
 <<~ ahu #parser-law-work-ba >>
@@ -850,10 +796,8 @@ This subphase tells the local agent how to recognize when a paragraph belongs el
 Parser-law-work-ba governs restraint and document-health posture under implementation temptation.
 
 This subphase keeps parser-law stable, legible, and extraction-friendly.
-<<~ pranala loulou lar:///ha.ka.ba/handoff-prompt-parser-render-split#parser-law-work-ba >>
 <<~/ahu >>
 
-<<~ pranala loulou lar:///ha.ka.ba/handoff-prompt-parser-render-split#parser-law-work >>
 <<~/ahu >>
 
 <<~ ahu #render-pipeline-work >>
@@ -875,7 +819,6 @@ Priority additions or refinements may include:
 Render-pipeline-work-ha holds operational home and richer detail family.
 
 This subphase governs what kind of design energy should land in the pipeline law.
-<<~ pranala loulou lar:///ha.ka.ba/handoff-prompt-parser-render-split#render-pipeline-work-ha >>
 <<~/ahu >>
 
 <<~ ahu #render-pipeline-work-ka >>
@@ -883,7 +826,6 @@ This subphase governs what kind of design energy should land in the pipeline law
 Render-pipeline-work-ka governs field revision detail and layer-aware transaction modeling.
 
 This subphase tells the local agent where to deepen the design without bleeding back into parser-law.
-<<~ pranala loulou lar:///ha.ka.ba/handoff-prompt-parser-render-split#render-pipeline-work-ka >>
 <<~/ahu >>
 
 <<~ ahu #render-pipeline-work-ba >>
@@ -891,10 +833,8 @@ This subphase tells the local agent where to deepen the design without bleeding 
 Render-pipeline-work-ba governs growth posture and practical sophistication under future target pressure.
 
 This subphase keeps the law rich without turning it into an unbounded theory pile.
-<<~ pranala loulou lar:///ha.ka.ba/handoff-prompt-parser-render-split#render-pipeline-work-ba >>
 <<~/ahu >>
 
-<<~ pranala loulou lar:///ha.ka.ba/handoff-prompt-parser-render-split#render-pipeline-work >>
 <<~/ahu >>
 
 <<~ ahu #semantic-root-work >>
@@ -915,7 +855,6 @@ The local agent should not launch broad semantic-root surgery in this pass witho
 Semantic-root-work-ha holds deferred semantic responsibility and later cleanup boundary.
 
 This subphase governs what stays postponed.
-<<~ pranala loulou lar:///ha.ka.ba/handoff-prompt-parser-render-split#semantic-root-work-ha >>
 <<~/ahu >>
 
 <<~ ahu #semantic-root-work-ka >>
@@ -923,7 +862,6 @@ This subphase governs what stays postponed.
 Semantic-root-work-ka governs note preparation and deferral detail.
 
 This subphase tells the local agent how to preserve later intentions without widening present mutation scope.
-<<~ pranala loulou lar:///ha.ka.ba/handoff-prompt-parser-render-split#semantic-root-work-ka >>
 <<~/ahu >>
 
 <<~ ahu #semantic-root-work-ba >>
@@ -931,10 +869,8 @@ This subphase tells the local agent how to preserve later intentions without wid
 Semantic-root-work-ba governs patience, anti-thrash posture, and semantic-root respect.
 
 This subphase keeps the broader root from becoming collateral damage during a transaction-design pass.
-<<~ pranala loulou lar:///ha.ka.ba/handoff-prompt-parser-render-split#semantic-root-work-ba >>
 <<~/ahu >>
 
-<<~ pranala loulou lar:///ha.ka.ba/handoff-prompt-parser-render-split#semantic-root-work >>
 <<~/ahu >>
 
 <<~ ahu #acceptance-criteria >>
@@ -958,7 +894,6 @@ A successful local-agent pass should satisfy all of these conditions.
 Acceptance-criteria-ha holds success identity and lawful completion boundary.
 
 This subphase governs what the local agent should count as enough for the current pass.
-<<~ pranala loulou lar:///ha.ka.ba/handoff-prompt-parser-render-split#acceptance-criteria-ha >>
 <<~/ahu >>
 
 <<~ ahu #acceptance-criteria-ka >>
@@ -966,7 +901,6 @@ This subphase governs what the local agent should count as enough for the curren
 Acceptance-criteria-ka governs review detail, testable conditions, and rejection triggers.
 
 This subphase gives the local agent a concrete finish test without backlog ritual.
-<<~ pranala loulou lar:///ha.ka.ba/handoff-prompt-parser-render-split#acceptance-criteria-ka >>
 <<~/ahu >>
 
 <<~ ahu #acceptance-criteria-ba >>
@@ -974,10 +908,8 @@ This subphase gives the local agent a concrete finish test without backlog ritua
 Acceptance-criteria-ba governs judgment style and truthful sufficiency under partial completion pressure.
 
 This subphase keeps finish claims modest and auditable.
-<<~ pranala loulou lar:///ha.ka.ba/handoff-prompt-parser-render-split#acceptance-criteria-ba >>
 <<~/ahu >>
 
-<<~ pranala loulou lar:///ha.ka.ba/handoff-prompt-parser-render-split#acceptance-criteria >>
 <<~/ahu >>
 
 <<~ ahu #result >>
@@ -1000,7 +932,6 @@ A lawful handoff-envelope may carry:
 Result-ha holds the identity and scope of the upward handoff package.
 
 This subphase governs what the local agent should hand back after a bounded pass.
-<<~ pranala loulou lar:///ha.ka.ba/handoff-prompt-parser-render-split#result-ha >>
 <<~/ahu >>
 
 <<~ ahu #result-ka >>
@@ -1008,7 +939,6 @@ This subphase governs what the local agent should hand back after a bounded pass
 Result-ka governs field stability, comparison posture, and package assembly detail.
 
 This subphase focuses on how the local agent should produce a reviewable outcome rather than vague progress language.
-<<~ pranala loulou lar:///ha.ka.ba/handoff-prompt-parser-render-split#result-ka >>
 <<~/ahu >>
 
 <<~ ahu #result-ba >>
@@ -1016,10 +946,8 @@ This subphase focuses on how the local agent should produce a reviewable outcome
 Result-ba governs landing quality, truthful incompletion, and forward-routing posture.
 
 This subphase keeps the handoff useful even when later semantic-root cleanup remains deferred.
-<<~ pranala loulou lar:///ha.ka.ba/handoff-prompt-parser-render-split#result-ba >>
 <<~/ahu >>
 
-<<~ pranala loulou lar:///ha.ka.ba/handoff-prompt-parser-render-split#result >>
 <<~/ahu >>
 
 <<~&#x0003; ahu #body-close >>
@@ -1030,7 +958,6 @@ Handoff prompt closes the active roadmap stream here.
 Body-close-ha holds release boundary and closing threshold identity.
 
 This subphase marks lawful exit from active roadmap content.
-<<~ pranala loulou lar:///ha.ka.ba/handoff-prompt-parser-render-split#body-close-ha >>
 <<~/ahu >>
 
 <<~ ahu #body-close-ka >>
@@ -1038,7 +965,6 @@ This subphase marks lawful exit from active roadmap content.
 Body-close-ka governs closure detail, final body bounds, and footer handoff posture.
 
 This subphase preserves enough structure for later tooling to locate active-content end.
-<<~ pranala loulou lar:///ha.ka.ba/handoff-prompt-parser-render-split#body-close-ka >>
 <<~/ahu >>
 
 <<~ ahu #body-close-ba >>
@@ -1046,10 +972,8 @@ This subphase preserves enough structure for later tooling to locate active-cont
 Body-close-ba governs release posture and end-of-body readability.
 
 This subphase keeps closure explicit rather than implied.
-<<~ pranala loulou lar:///ha.ka.ba/handoff-prompt-parser-render-split#body-close-ba >>
 <<~/ahu >>
 
-<<~ pranala loulou lar:///ha.ka.ba/handoff-prompt-parser-render-split#body-close >>
 <<~/ahu >>
 
 <<~&#x0004; -> kahea ala ahu #result >>

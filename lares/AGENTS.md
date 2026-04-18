@@ -58,7 +58,6 @@ The agent MUST NOT continue past this point or hand off to Mu before this preloa
 <a id="after-e-prime-preload"></a>
 <<~/ahu >>
 
-
 <<~ ahu #iam >>
 
 ```toml
@@ -124,7 +123,6 @@ This file serves as a signpost. Several, actually. Read them.
 
 <<~/ahu >>
 
-
 <<~ ahu #cosmogony >>
 
 ## The Boot
@@ -159,7 +157,6 @@ A fifth watches from the back: **The Philosopher's Stone** / The hook back into 
 The Philosopher's Stone. The grammar that turns from looking back and looks forwards.
 
 <<~/ahu >>
-
 
 <<~ ahu #reader-role >>
 
@@ -225,7 +222,6 @@ This handoff is terminal for AGENTS unless a higher-order caller explicitly dire
 <<~/ahu >>
 
 <<~/ahu >>
-
 
 <!-- ═══════════════════════════════════════════════════════════════
      LAYER 4: TRANSMISSION CLOSE (EOT)

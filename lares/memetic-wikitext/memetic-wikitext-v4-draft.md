@@ -147,7 +147,6 @@ Every memetic sigil carries:
   - Canonical form: sorted by code point value
   - Empty set valid
 
-
 ---
 
 ## 2. Sigil Shape Taxonomy
@@ -441,7 +440,6 @@ Layer 4: <<~ँ␄ -> ?>>              TRANSMISSION CLOSE (EOT)
 The outermost meme closes with EOT (Layer 4). An EOT inside a
 non-outermost meme constitutes a parse error.
 
-
 ---
 
 ## 3. Five-Layer Meme Structure
@@ -494,7 +492,6 @@ codes in the glyph block of its own open / close pair:
 Open  formation: <<~[glyphs]&#0002;>>
 Close formation: <<~[glyphs]&#0003;>>
 ```
-
 
 ## 3.2 UCAN-Style Attenuation (Expanded)
 
@@ -1390,7 +1387,6 @@ run-mode:   permissive. Unknown glyphs -> warning, treated as
             body content. Missing fragment tolerated when the
             calling context supplies time externally.
 ```
-
 
 ### 11.6 Full Parsing and Validation Logic (Restored from v3)
 

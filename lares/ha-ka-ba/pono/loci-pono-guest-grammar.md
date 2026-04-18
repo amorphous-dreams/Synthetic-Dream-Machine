@@ -42,8 +42,6 @@ This meme governs how the host may admit a guest grammar explicitly, preserve th
 
 This meme should not swallow the full guest grammar specification, full parser legality tables, or full render lowering detail.
 
-<<~ pranala loulou lar:///ha.ka.ba/pono/guest-grammar >>
-
 ## Supported Queries
 
 <<~&#x0005; ui meme? -> lar:///ha.ka.ba/pono/guest-grammar#iam >>

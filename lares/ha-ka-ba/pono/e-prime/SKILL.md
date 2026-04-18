@@ -56,8 +56,6 @@ Read [`loci-pono-e-prime.md`](./loci-pono-e-prime.md) first.
 Treat that loci as constitutional.
 This skill does not weaken or reinterpret it.
 
-<<~ pranala loulou lar:///ha.ka.ba/pono/e-prime/SKILL >>
-
 ## Supported Queries
 
 <<~&#x0005; ui skill? -> lar:///ha.ka.ba/pono/e-prime/SKILL#iam >>

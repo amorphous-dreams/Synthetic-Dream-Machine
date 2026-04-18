@@ -48,8 +48,6 @@ This file replaces four scratch research notes with one routeable worksite. It k
 
 This memo is not yet a binding kānāwai (law). It is a `todo` locus meant to prepare the next lawful implementation and later canon-writing passes.
 
-<<~ pranala loulou lar:///todo/DreamNet_MemeWiki >>
-
 ## Supported Queries
 
 <<~ ui meme? -> lar:///todo/DreamNet_MemeWiki#iam >>
@@ -73,8 +71,6 @@ DreamNet MemeWiki opens the active research-consolidation stream here.
 DreamNet MemeWiki gathers the current research field, maps it into an implementable architecture, fixes the present decision posture, stages the next work sequence, crosses that plan into active execution, and judges what still remains unresolved.
 
 This file uses the OODA-HA loop as work discipline rather than ornament. The point is not to sound ceremonial. The point is to keep raw findings, synthesis, decisions, action, and residue from collapsing into one undifferentiated planning blob.
-
-
 
 <<~/ahu >>
 
@@ -131,8 +127,6 @@ Observe-ha holds source identity and research boundaries.
 
 The DreamNet MemeWiki research field is not one idea. It is a bundle of kernel questions, editor questions, collaboration questions, and integration questions that should stay distinguishable until Decide compresses them intentionally.
 
-
-
 <<~/ahu >>
 
 <<~ ahu #observe-ka >>
@@ -142,8 +136,6 @@ The DreamNet MemeWiki research field is not one idea. It is a bundle of kernel q
 Observe-ka governs how intake should be read.
 
 Read the current field in four lanes: deterministic kernel shape, authoring and parsing stack, collaborative canvas and frontend bridge, and implementation sequencing. Losing those lanes too early makes later prioritization harder.
-
-
 
 <<~/ahu >>
 
@@ -155,11 +147,7 @@ Observe-ba governs posture under planning pressure.
 
 This stage should preserve uncertainty openly. A confident-sounding guess about MemPalace or sync does not become an architectural fact merely because it sounds tidy in a memo.
 
-
-
 <<~/ahu >>
-
-
 
 <<~/ahu >>
 
@@ -224,8 +212,6 @@ Orient-ha holds architectural identity.
 
 DreamNet MemeWiki is currently best understood as a kernel-centered system with editor, app, sync, and semantic bridges around it. If the kernel disappears from view, the plan turns into a bag of integrations with no stable center.
 
-
-
 <<~/ahu >>
 
 <<~ ahu #orient-ka >>
@@ -235,8 +221,6 @@ DreamNet MemeWiki is currently best understood as a kernel-centered system with 
 Orient-ka governs relation mapping.
 
 Map each subsystem by ownership, not by enthusiasm. TLDraw should not own the core memetic parser. Kowloon should not dictate kernel internals. MemPalace should not become a hidden source of truth before the base document model exists.
-
-
 
 <<~/ahu >>
 
@@ -248,11 +232,7 @@ Orient-ba governs movement from research toward design.
 
 Favor the narrowest architecture that can still grow. The research points toward a modular stack, but not toward building every module at once.
 
-
-
 <<~/ahu >>
-
-
 
 <<~/ahu >>
 
@@ -312,8 +292,6 @@ Decide-ha holds what counts as settled enough for motion.
 
 The key settled claim is simple: build the kernel first, keep it greenfield, and make integrations prove themselves against it rather than defining it by committee.
 
-
-
 <<~/ahu >>
 
 <<~ ahu #decide-ka >>
@@ -323,8 +301,6 @@ The key settled claim is simple: build the kernel first, keep it greenfield, and
 Decide-ka governs decision sharpness.
 
 Every active decision above changes implementation order immediately. Every explicit deferral above protects the work from fake certainty and scope sprawl.
-
-
 
 <<~/ahu >>
 
@@ -336,11 +312,7 @@ Decide-ba governs commitment posture.
 
 Commit to the smallest decisions that unlock code. Refuse the larger decisions that only create architecture theater before the kernel can even roundtrip a document.
 
-
-
 <<~/ahu >>
-
-
 
 <<~/ahu >>
 
@@ -413,8 +385,6 @@ Act-ha holds workstream identity.
 
 The workstreams are ordered so each later proof depends on earlier semantic stability instead of masking its absence with UI or sync novelty.
 
-
-
 <<~/ahu >>
 
 <<~ ahu #act-ka >>
@@ -424,8 +394,6 @@ The workstreams are ordered so each later proof depends on earlier semantic stab
 Act-ka governs sequencing.
 
 If work begins on TLDraw or MemPalace before the kernel can parse and render deterministically, the project risks building adapters around a moving void.
-
-
 
 <<~/ahu >>
 
@@ -437,11 +405,7 @@ Act-ba governs execution posture.
 
 Prototype narrowly, verify hard, and only then widen scope. Each workstream should produce a proof artifact, not just a more detailed opinion.
 
-
-
 <<~/ahu >>
-
-
 
 <<~/ahu >>
 
@@ -499,8 +463,6 @@ Aftermath-ha holds yield and residue identity.
 
 What is clear now: the research no longer lives in four disconnected scraps. What remains unclear now: several core contracts still need proof rather than prose.
 
-
-
 <<~/ahu >>
 
 <<~ ahu #aftermath-ka >>
@@ -510,8 +472,6 @@ What is clear now: the research no longer lives in four disconnected scraps. Wha
 Aftermath-ka governs judgment detail.
 
 A successful next pass should convert at least one residue item into a tested artifact. If the next pass only rewrites this memo at greater length, the loop has not actually advanced.
-
-
 
 <<~/ahu >>
 
@@ -523,11 +483,7 @@ Aftermath-ba governs how the work lands.
 
 Leave the unresolved items visible and bounded. Hidden residue is how architecture debt later masquerades as surprise.
 
-
-
 <<~/ahu >>
-
-
 
 <<~/ahu >>
 
@@ -545,7 +501,6 @@ A lawful DreamNet MemeWiki todo envelope may carry:
 * the present architectural posture
 * the current implementation sequence
 * the still-open residue
-
 
 <<~/ahu >>
 

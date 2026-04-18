@@ -53,8 +53,6 @@ The **inner layer** follows the memetic-wikitext standard — TOML `#iam` block,
 
 A skill authored in this pattern works both as an agentskills.io-compatible loadable skill and as a first-class typed meme. When a skill also claims a stable address under `lar:///ha.ka.ba/**`, it may compose with `loci` rather than facing a forced choice between `skill` and `loci`.
 
-<<~ pranala loulou lar:///ha.ka.ba/pono/skill-template >>
-
 ## Supported Queries
 
 <<~&#x0005; ui skill? -> lar:///ha.ka.ba/pono/skill-template#iam >>

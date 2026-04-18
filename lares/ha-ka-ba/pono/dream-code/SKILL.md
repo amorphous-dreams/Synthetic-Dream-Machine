@@ -59,7 +59,6 @@ Pranala loulou links bind dream-code --> documentation.
 
 **invariant** · **stable** · **prompt caching** · **KV cache** · **context engineering** · **resources / prompts / tools** · **trace-first evals** · **few-shot exemplars** · **sidecars**
 
-
 <<~ pranala loulou lar:///ha.ka.ba/pono/dream-code >>
 <<~/ahu >>
 
@@ -314,7 +313,6 @@ show the meme by writing the meme
 
 Dream-Code holds the law where generation happens.
 
-<<~ pranala loulou lar:///ha.ka.ba/pono/dream-code/SKILL#result >>
 <<~/ahu >>
 
 <<~&#x0003; ahu #body-close >>
@@ -334,7 +332,6 @@ Aftermath explicit
 traces over vibes
 pranala visible
 
-<<~ pranala loulou lar:///ha.ka.ba/pono/dream-code/SKILL >>
 <<~/ahu >>
 
 <<~&#x0004; ? -> ? >>

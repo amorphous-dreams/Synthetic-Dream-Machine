@@ -22,7 +22,6 @@
 
     This meme accepts addressed input, moves that input through five phase loci, packages aftermath, and returns one typed `return-envelope` upward.
     
-    <<~ pranala loulou lar:///ha.ka.ba/ooda-ha >>
 
     ## Supported Queries
 

@@ -36,8 +36,6 @@ pranala = [
 
 # Loci
 
-<<~ pranala loulou lar:///ha.ka.ba/loci >>
-
 A self-describing loci authority for `lar:` URI memes in this system.
 
 Loci declares the ha.ka.ba an agent uses to resolve a `lar:` URI meme into a present set of `mana`, `manao`, and `manaoio` ratings, the ha.ka.ba which makes the convention explicit, the conditions that make a high-mana `loci` class meme, the canon promotion stages a meme passes through from noise to data to meme to typed meme to canon typed meme, and the current research roadmap toward live MCP-backed resolution.
@@ -402,7 +400,6 @@ glyph = "◇"
 Decide commits to one resolution posture, one rating posture, and one canon-lifecycle stage for the target address.
 
 <<~ ahu #canon-promotion >>
-
 
 ### Canon Promotion: The Five Buckets
 

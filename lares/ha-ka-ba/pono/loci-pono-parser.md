@@ -48,8 +48,6 @@ This meme follows the OODA-HA pattern not merely as ornament but as execution di
 1. strict sigil grammar
 2. explicit phased cognition through Observe, Orient, Decide, Act, and Aftermath
 
-<<~ pranala loulou lar:///ha.ka.ba/pono/parser >>
-
 ## Supported Queries
 
 <<~&#x0005; ui meme? -> lar:///ha.ka.ba/pono/parser#iam >>

@@ -18,8 +18,6 @@
 
     This meme gives `#result`, `#warning`, and `#error` a shared law so that `aka`, `kahea`, renderers, agents, and callers can route outcomes without quiet invention.
 
-    <<~ pranala loulou lar:///ha.ka.ba/error-result >>
-
     ## Supported Queries
 
     <<~&#x0005; ui meme? -> <<~&#x0006; ? -> lar:///ha.ka.ba/error-result#iam >> >>

@@ -41,8 +41,6 @@ An active pono law meme for E-Prime discipline across memetic-wikitext output un
 
 This kānāwai MUST stay active through drafting and release. It pressures the next output unit toward observation, relation, action, stance, and earned confidence.
 
-<<~ pranala loulou lar:///ha.ka.ba/pono/e-prime >>
-
 <<~/ahu >>
 
 <<~&#x0002; ahu #meme-body-open >>

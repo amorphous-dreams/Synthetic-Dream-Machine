@@ -45,8 +45,6 @@ This meme does not solve weak metadata by adding new buckets. It sharpens the su
 
 **Lifecycle Note:** The five-bucket lifecycle (noise → data → meme → typed meme → canon typed meme) remains canonical for all meme law. Here `data` names structured language an AI can use without the memetic wrappers. This law governs the field set, not the lifecycle stages themselves.
 
-<<~ pranala loulou lar:///ha.ka.ba/loci/iam >>
-
 ## Supported Queries
 
 <<~&#x0005; ui meme? -> lar:///ha.ka.ba/loci/iam#iam >>
