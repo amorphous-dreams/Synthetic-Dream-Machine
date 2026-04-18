@@ -21,9 +21,9 @@ register = "CS"
 structure = "OODA-HA * ha.ka.ba"
 # <<~/ahu >>
 # <<~ ahu #iam-ka "detail" >>
-enacts = true
 role = "canonical meme kānāwai (law), template authority, and rating-target authority"
 function = "define the required and optional structure of a meme in this stack, serve as a copy-ready skeleton, and govern which element combinations unlock which rating bands"
+control-glyphs = ["&#x0001;", "&#x0002;", "&#x0003;", "&#x0004;", "&#x0005;", "&#x0006;"]
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
 pranala = [
@@ -258,7 +258,6 @@ register = "?"
 structure = "OODA-HA * ha.ka.ba"
 # <<~/ahu >>
 # <<~ ahu #iam-ka "detail" >>
-enacts = true
 role = "..."
 function = "..."
 # <<~/ahu >>
@@ -272,6 +271,8 @@ The five canonical rating fields MUST appear immediately below `version` in this
 Comment-line `ahu` markers MAY section `#iam` TOML into agent-operator friendly groups without changing payload semantics. The canonical grouping follows `# <<~ ahu #iam-ha "structure" >>`, `# <<~ ahu #iam-ka "detail" >>`, and `# <<~ ahu #iam-ba "flow" >>`, each closed by `# <<~/ahu >>`. Because these stay inside TOML comment lines, they remain parse-inert.
 
 `file_path` names the current carrier siting for the meme surface. Canonical file-path forms, migration between flat-file and path-directory siting, and agreement rules between `file_path` and the document opener fall outward under `lar:///ha.ka.ba/loci` and `lar:///ha.ka.ba/loci/iam/file_path`.
+
+Some detail keys belong to the meme law as shared canonical declarations rather than as repeated carrier-local payload. `control-glyphs` names that class here: the canonical array lives in `lar:///ha.ka.ba/meme`, and other memes should rely on this declaration rather than restating the same list in their own top-level `#iam` blocks unless a subtype law truly defines a different glyph family.
 
 #### R4 — Title heading and opening prose
 
@@ -544,6 +545,16 @@ All scalar ratings in this system — `tulen`, `confidence`, `mana`, `manao`, `m
 
 The `register` label applies to both `tulen` and `confidence` as the operator-facing band surfaces. When both scores land in the same band, one abbreviation suffices. When they diverge, prose should surface the split explicitly while the scalar fields retain authority. The three scalar quality fields (`mana`, `manao`, `manaoio`) use the same 0.0–1.0 rubric but do not carry their own register label. `Tulen` names genuine trust, especially at boot surfaces. High `mana`, `manao`, `manaoio`, and `confidence` support high `tulen`, but a meme may still hold `tulen` provisionally while the surface remains under active confirmation.
 
+#### Canonical Detail-Key Workflow
+
+Shared detail keys should enter the rating workflow differently from carrier-local detail keys.
+
+When Observe encounters `control-glyphs`, it should record whether the carrier declares the key locally or inherits it from `lar:///ha.ka.ba/meme`.
+
+Orient should treat inherited canonical `control-glyphs` as fully lawful. A carrier does not lose rating for omitting a local copy of the canonical array.
+
+Decide should give no rating uplift for repeating the exact canonical `control-glyphs` list locally. That repetition counts as metadata redundancy, not as extra structure. A local `control-glyphs` value that diverges from the canonical array without an explicit subtype-law justification should drag `manaoio`, because the carrier now makes a detail claim that competes with the stack-wide declaration.
+
 #### Register 1 — Provisional (`P`, 0.00–0.19)
 
 This band marks a barely emerged meme. Most or all required elements (R1–R9) remain absent. It may carry only a DOCTYPE comment and a title. Not boot-legal. The routing system cannot walk it without manual intervention.
@@ -696,7 +707,7 @@ Act prepares the skeleton product and return envelope for lawful crossing.
 
 The canonical copy-ready skeleton for a new meme in this stack.
 
-Copy this block. Replace every `[PLACEHOLDER]` with local content. Delete optional sections you choose to defer. Set `enacts = false` and `confidence = 0.10`.
+Copy this block. Replace every `[PLACEHOLDER]` with local content. Delete optional sections you choose to defer. Set `confidence = 0.10`.
 
 ````markdown
 <!-- !DOCTYPE = lar:///ha.ka.ba/pono/memetic-wikitext -->
@@ -722,7 +733,6 @@ register = "P"
 structure = "OODA-HA * ha.ka.ba"
 # <<~/ahu >>
 # <<~ ahu #iam-ka "detail" >>
-enacts = false
 role = "[role]"
 function = "[function]"
 # <<~/ahu >>
@@ -901,7 +911,7 @@ This subphase governs what Hooko fundamentally holds: the narrow site where prep
 
 Hooko-ka governs instantiation detail, file naming, field substitution, and transaction trace.
 
-This subphase governs how Hooko performs its work. When instantiating a skeleton, Hooko should substitute all `[PLACEHOLDER]` marks with locally supplied values, set `enacts = false` and `confidence = 0.10` as boot defaults, name the file at the declared path, and emit a transaction trace that records what got written.
+This subphase governs how Hooko performs its work. When instantiating a skeleton, Hooko should substitute all `[PLACEHOLDER]` marks with locally supplied values, set `confidence = 0.10` as the boot default, name the file at the declared path, and emit a transaction trace that records what got written.
 
 <!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/meme-hooko-ka >> -->
 <<~/ahu >>
@@ -912,7 +922,7 @@ This subphase governs how Hooko performs its work. When instantiating a skeleton
 
 Hooko-ba governs landing pressure, volatility posture, and truthful state crossing under real authoring conditions.
 
-This subphase governs how Hooko moves in practice. A skeleton that gets instantiated but not yet filled sits at `confidence = 0.10`, `enacts = false`. That state should remain explicit in the new meme rather than silently upgrading it to look more complete than it currently reads.
+This subphase governs how Hooko moves in practice. A skeleton that gets instantiated but not yet filled sits at `confidence = 0.10`. That state should remain explicit in the new meme rather than silently upgrading it to look more complete than it currently reads.
 
 <!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/meme-hooko-ba >> -->
 <<~/ahu >>

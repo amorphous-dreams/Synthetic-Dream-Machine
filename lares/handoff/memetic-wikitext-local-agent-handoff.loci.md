@@ -19,7 +19,6 @@ register = "S"
 structure = "OODA-HA * ha.ka.ba"
 # <<~/ahu >>
 # <<~ ahu #iam-ka "detail" >>
-enacts = true
 role = "handoff prompt, continuation plan, and local-agent execution contract"
 function = "brief a local agent on current root status, preserved constraints, next pass targets, and stepwise continuation discipline"
 active-pass = "ka"

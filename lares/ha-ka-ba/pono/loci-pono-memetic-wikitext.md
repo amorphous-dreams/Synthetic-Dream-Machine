@@ -19,11 +19,9 @@ register = "S"
 structure = "OODA-HA * ha.ka.ba"
 # <<~/ahu >>
 # <<~ ahu #iam-ka "detail" >>
-enacts = true
 role = "constitutional root kānāwai (law), authoring kānāwai (law), primitive semantic kānāwai (law), and boot grammar contract"
 function = "govern lawful memetic-wikitext authoring surface, define primitive meanings and composition, and provide the minimum semantic and grammatical contract consumed by parser and render-pipeline"
 canonical-forms = ["inline", "block", "payload-block", "return"]
-control-sigils = ["&#x0001;", "&#x0002;", "&#x0003;", "&#x0004;", "&#x0005;", "&#x0006;"]
 canonical-modes = ["preamble", "metadata", "prose", "sigil", "filter", "raw", "aftermath"]
 constitutional-charge = [
   "authoring-surface",
@@ -732,7 +730,7 @@ This locus should name the minimum grammatical contract.
 This locus should not yet swallow:
 
 * the full parse-form legality matrix
-* the full control-sigil integrity kānāwai (law)
+* the full control-glyph integrity kānāwai (law)
 * exact normalization procedures
 * AST schema
 * widget schema
@@ -1035,7 +1033,7 @@ Parser should deepen and own:
 * mode transitions
 * metadata extraction procedure
 * normalization posture
-* control-sigil integrity
+* control-glyph integrity
 * typed parse issues
 * parse aftermath and trace packaging
 

@@ -21,13 +21,8 @@ register = "CS"
 structure = "OODA-HA * ha.ka.ba"
 # <<~/ahu >>
 # <<~ ahu #iam-ka "detail" >>
-enacts = true
 role = "file-path key authority, path-form classifier, and migration-procedure kānāwai (law)"
 function = "define the two canonical file-path forms, govern the agreement check between file-path and lar: URI, and declare the migration procedure when a meme moves from flat-file to path-directory siting"
-key-name = "file-path"
-key-position = "second field in #iam TOML, immediately after name"
-path-root = "ha-ka-ba/"
-install-root = "lares/"
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
 pranala = [

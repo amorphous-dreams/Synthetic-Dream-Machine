@@ -18,7 +18,6 @@ register = "S"
 structure = "OODA-HA * ha.ka.ba"
 # <<~/ahu >>
 # <<~ ahu #iam-ka "detail" >>
-enacts = true
 role = "handoff prompt, roadmap law, patch-planning guide, and local-agent alignment frame"
 function = "guide a local agent through a narrow parser-law patch, a richer render-pipeline-law transaction design pass, and a later semantic-root cleanup pass"
 transaction-class = "prepare"
@@ -210,7 +209,7 @@ Placement-law governs what belongs where.
 
 `parser-law` should retain:
 
-* control-sigil legality
+* control-glyph legality
 * canonical sigil forms
 * constitutional minimum for `&#x0004;` routed return law
 * Hooko-only threshold law

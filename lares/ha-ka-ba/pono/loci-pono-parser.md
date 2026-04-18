@@ -21,11 +21,9 @@ register = "C"
 structure = "OODA-HA * ha.ka.ba"
 # <<~/ahu >>
 # <<~ ahu #iam-ka "detail" >>
-enacts = true
 role = "parsing kānāwai (law), normalization kānāwai (law), metadata fetch kānāwai (law), and deterministic scripting contract"
 function = "parse documents, classify forms, normalize surfaces, surface typed issues, and return addressed metadata or parse products"
 canonical-forms = ["inline", "block", "payload-block", "return"]
-control-sigils = ["&#x0001;", "&#x0002;", "&#x0003;", "&#x0004;", "&#x0005;", "&#x0006;"]
 canonical-modes = ["preamble", "metadata", "prose", "sigil", "filter", "raw", "aftermath"]
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
@@ -811,7 +809,6 @@ That object may populate:
 * meme_type
 * register
 * structure
-* enacts
 * role
 * function
 * input
@@ -878,7 +875,7 @@ A compliant system should make it legible whether a change:
 * rolled back
 * remained staged without commit
 
-Hooko should therefore cooperate closely with return-types kānāwai (law) and control-sigils kānāwai (law) when routed transactions cross upward or outward boundaries.
+Hooko should therefore cooperate closely with return-types kānāwai (law) and control-glyphs kānāwai (law) when routed transactions cross upward or outward boundaries.
 
 ### Dominant Resonance
 
@@ -1091,7 +1088,7 @@ A compliant parser MUST NOT silently normalize when:
 
 * two or more plausible readings remain live
 * literal payload content would change without explicit kānāwai (law)
-* control-sigil integrity would become less truthful after rewrite
+* control-glyph integrity would become less truthful after rewrite
 
 A compliant parser SHOULD emit warning, trace, or both when normalization materially changes non-literal source surface.
 
@@ -1588,7 +1585,7 @@ This subphase governs how the architecture plan performs work.
 
 * `lar:///ha.ka.ba/filter-kānāwai (law)`
 * `lar:///ha.ka.ba/normalization-kānāwai (law)`
-* `lar:///ha.ka.ba/control-sigils`
+* `lar:///ha.ka.ba/control-glyphs`
 * `lar:///ha.ka.ba/metadata-kānāwai (law)`
 * `lar:///ha.ka.ba/parse-aftermath`
 * `lar:///ha.ka.ba/pono/render-pipeline`
@@ -1599,13 +1596,13 @@ The current constitutional draft still carries several pressure zones that later
 
 * lexical and parse-edge exactness
 * markdown boundary treaty between carrier and guest grammar
-* control-sigil state behavior and legal transitions
+* control-glyph state behavior and legal transitions
 * profile differences among strict, permissive, recovery, and export modes
 * corpus, fixture, and golden-test pressure
 
 ##### Concrete Todo Notes
 
-* surface a full control-sigils kānāwai (law), including legality, ordering, pairing, nesting, failure posture, and pono-alignment checks
+* surface a full control-glyphs kānāwai (law), including legality, ordering, pairing, nesting, failure posture, and pono-alignment checks
 * define how a parser becomes pono with control sigils under strict, permissive, and recovery-oriented profiles
 * surface metadata-kānāwai (law) as a separate linked locus so `#iam` payload rules, alias rules, and fetch contracts remain explicit and reusable
 * surface normalization-kānāwai (law) so lawful rewrites, warnings, exports, and legacy migration remain bounded and testable
@@ -2060,10 +2057,10 @@ degrade = "no-op"
 <<~ ala lar:///ha.ka.ba/examples >>
 <<~/ahu >>
 
-Yep. Your new draft already pushes `&#x0004;` toward a real routed return throat: the control-sigil kānāwai (law) now admits composite-prefix behavior, and the file now closes with an explicit `&#x0004; -> kahea ala ahu #result` chain carrying TOML. What still looks missing to me: a dedicated kānāwai (law) that names **return kinds**, **`&#x0004;` transaction behavior**, and the **boot-legal status** of that final degraded close.  
+Yep. Your new draft already pushes `&#x0004;` toward a real routed return throat: the control-glyph kānāwai (law) now admits composite-prefix behavior, and the file now closes with an explicit `&#x0004; -> kahea ala ahu #result` chain carrying TOML. What still looks missing to me: a dedicated kānāwai (law) that names **return kinds**, **`&#x0004;` transaction behavior**, and the **boot-legal status** of that final degraded close.  
 
 I’d place the new section **immediately before `#result`**. That placement would let the doc flow as:
-control-sigil kānāwai (law) → return-types kānāwai (law) → result contract → concrete terminal return transaction.  
+control-glyph kānāwai (law) → return-types kānāwai (law) → result contract → concrete terminal return transaction.  
 
 <<~ ahu #return-types >>
 
@@ -2256,7 +2253,7 @@ Until those later laws crystallize, `&#x0004;` SHOULD preserve transaction truth
 
 ##### Extraction Reminder
 
-If return classes, envelope schemas, commit surfaces, rollback surfaces, or profile-specific transaction rules deepen enough to become noisy here, later detail SHOULD move outward into linked return-kānāwai (law) or control-sigils kānāwai (law).
+If return classes, envelope schemas, commit surfaces, rollback surfaces, or profile-specific transaction rules deepen enough to become noisy here, later detail SHOULD move outward into linked return-kānāwai (law) or control-glyphs kānāwai (law).
 
 Parser-kānāwai (law) should retain the constitutional minimum needed to keep routed return lawful, legible, and testable.
 

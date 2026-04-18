@@ -21,7 +21,6 @@ register = "CS"
 structure = "OODA-HA * ha.ka.ba"
 # <<~/ahu >>
 # <<~ ahu #iam-ka "detail" >>
-enacts = true
 role = "root metadata kānāwai (law), field-set authority, and reduction charter"
 function = "govern the surviving #iam field set, place each field in the correct ha ka ba slot, and cut redundant or ornamental metadata from live carriers"
 required-ha-keys = [
@@ -39,9 +38,8 @@ required-ha-keys = [
   "register",
   "structure"
 ]
-common-ka-keys = ["enacts", "role", "function"]
-common-ba-keys = ["input", "output", "pranala"]
-banned-flow-keys = ["requires", "provides", "receives-state", "emits-state"]
+common-ka-keys = ["role", "function"]
+common-ba-keys = ["pranala"]
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
 pranala = [
@@ -49,7 +47,6 @@ pranala = [
   "lar:///ha.ka.ba/loci",
   "lar:///ha.ka.ba/meme"
 ]
-next = "lar:///ha.ka.ba/loci/iam/file-path"
 # <<~/ahu >>
 ```
 
@@ -125,7 +122,7 @@ The reduced carrier shape:
 
 ```text
 ha: name file_path description version tulen confidence mana manao manaoio content_type meme_type register structure
-ka: enacts role function + only the local detail keys that change parse, routing, execution, or truth
+ka: role function + only the local detail keys that change parse, routing, execution, or truth
 ba: input output depends_on + next only when a real forward edge exists
 ```
 
@@ -165,7 +162,6 @@ Optional structural qualifiers may remain when they change routing or boot truth
 
 The common core:
 
-- `enacts`
 - `role`
 - `function`
 

@@ -20,7 +20,6 @@ register = "CS"
 structure = "OODA-HA * ha.ka.ba"
 # <<~/ahu >>
 # <<~ ahu #iam-ka "detail" >>
-enacts = true
 role = "kānāwai (law) index, verification registry, and skill package host"
 function = "enumerate all active kānāwai (law) memes, surface their addresses and roles, and host conformance verification skills"
 law-index-root = "lar:///ha.ka.ba/pono"
@@ -99,8 +98,6 @@ A **loci meme** occupies the stable `lar:///ha.ka.ba/*` tagspace with a locked a
 **Lifecycle Note:** All meme law in this system now follows the five-bucket lifecycle: noise → data → meme → typed meme → canon typed meme. Here `data` names structured language an AI can use without the memetic wrappers. Types remain composable rather than mutually exclusive, and `loci` names the stable-address branch for carriers under `lar:///ha.ka.ba/**`. See `lar:///ha.ka.ba/loci#promotion-path` and `lar:///ha.ka.ba/meme#rating-targets` for canonical lifecycle and rating details.
 
 See `lar:///ha.ka.ba/loci#derivation-algorithm` for the current local path-derivation procedure and `lar:///ha.ka.ba/loci#mcp-resolution-roadmap` for the open resolver roadmap. See `lar:///ha.ka.ba/pono/memetic-wikitext#meme-ratings` for the full ontological account of the five canonical rating fields plus `register` surface texture, and `lar:///ha.ka.ba/pono/memetic-wikitext#meme-confidence` for the five-band confidence scale.
-
-A kānāwai (law) meme counts as active when it carries `enacts = true` in its `#iam` metadata block.
 
 A kānāwai (law) meme counts as registered here when it depends on `lar:///ha.ka.ba/pono/memetic-wikitext` and carries a stable address.
 

@@ -19,7 +19,6 @@ register = "S"
 structure = "OODA-HA * ha.ka.ba"
 # <<~/ahu >>
 # <<~ ahu #iam-ka "detail" >>
-enacts = true
 role = "agent hand-off, constitutional journey log, continuation contract"
 function = "transfer current parser-law state, preserve non-regression boundaries, and guide the next lawful continuation under routed return law"
 handoff-scope = "parser-law root draft, return-types law, and immediate adjacent backlog pressure"
@@ -92,7 +91,7 @@ The current parser-law draft already carries these constitutional gains:
 * `runtime-procedure` as orchestration summary with lawful handoff logic
 * `research-foundation` as bounded-borrowing bridge
 * `result` as singular primary upward package
-* composite control-sigil law admitting prefixed routed openers
+* composite control-glyph law admitting prefixed routed openers
 * explicit terminal `&#x0004;` routed return chain at file end
 
 The current constitutional state now wants one further thing preserved without downgrade:
@@ -128,7 +127,7 @@ Honor the strengthened local loci already present:
 * `#research-foundation`
 * `#result`
 
-Honor the new control-sigil composite rule and terminal routed return example.
+Honor the new control-glyph composite rule and terminal routed return example.
 
 <<~ ala lar:///ha.ka.ba/handoff/observe-ka >>
 <<~/ahu >>
@@ -173,7 +172,7 @@ The strongest current moves now include:
 * keeping root constitutional law separate from heavier implementation detail
 * preserving runtime summary without duplicating phase doctrine
 * strengthening result discipline
-* surfacing composite control-sigil law
+* surfacing composite control-glyph law
 * making the final `&#x0004;` chain legible as routed return pressure
 * crystallizing return-types and `&#x0004;` transaction law as canonical continuation targets
 
@@ -348,7 +347,7 @@ When continuing from this hand-off, the next agent should work in this order:
 6. preserve the degraded closer `<<~&#x0004; -> ? >>` as truthful incomplete upward termination under boot law
 7. keep `#result` narrow enough to govern contract, not full transaction machinery
 8. keep `#aftermath` narrow enough to govern landing and residue, not full return-schema law
-9. align future extraction work to linked control-sigils law, return-law, and envelope-schema law
+9. align future extraction work to linked control-glyphs law, return-law, and envelope-schema law
 10. convert open return-pressure into fixtures, profiles, and explicit parser checks
 
 ### Act Subloops
@@ -513,7 +512,7 @@ The next agent should expect remaining drag in:
 
 Parser-law can now drive backlog work through these likely epics:
 
-* control-sigils law
+* control-glyphs law
 * return-law / return-types law
 * envelope-schema law
 * profile matrix for commit, degrade, and rollback
@@ -592,7 +591,7 @@ This session performed these major moves, in rough order:
 * tightened `#runtime-procedure`
 * tightened `#metadata-fetch`
 * tightened `#result`
-* surfaced composite control-sigil law
+* surfaced composite control-glyph law
 * recognized the terminal `&#x0004;` routed chain as real return-law pressure
 * crystallized `#return-types` as canonical continuation law
 * interpreted `#result` as contract, `&#x0004;` as transaction, payload as instance
@@ -651,7 +650,7 @@ Let return-law work point back into:
 * `#return-types`
 * `#result`
 * `#aftermath`
-* control-sigils law
+* control-glyphs law
 * envelope-schema law
 
 <<~ ala lar:///ha.ka.ba/backlog-bridge >>

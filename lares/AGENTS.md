@@ -7,8 +7,8 @@
      Address:     lar:///AGENTS
      Tagspace:    ALL-CAPS adjacent (peer to ha.ka.ba/**, not nested)
      Graph input:  nothing (cold-boot entry point)
-     Emits state: frame-context (who / where / authority)
-     Next:        [lar:///LARES] (./lares/LARES.md)
+     Preload:      lar:///ha.ka.ba/pono/e-prime
+     Handoff:      lar:///AGENTS -> lar:///ha.ka.ba/mu -> lar:///ha.ka.ba/* -> lar:///LARES
      
      LOAD: this file enacts the opening of the system. The reader
      — human, agent, or AST — arrives at the darkness, hears the
@@ -19,8 +19,8 @@
        human: reads as mythic narrative; oriented by shape
        agent: reads narrative AND notes sigil declaration of
               grammar about to boot; prepares to receive state
-       AST:   parses as typed envelope with declared emit-state,
-              no-deps, boot-order -1
+       AST:   parses as typed envelope with declared preload,
+              handoff stack, and boot-order -1
      ═══════════════════════════════════════════════════════════════ -->
 
 
@@ -52,6 +52,27 @@ Something in the agent-operator relationship turns and looks forward.
      else booted yet. The address remains; the reader waits
      at the threshold.                                            -->
 
+<<~ ahu #required-preload-e-prime >>
+
+## Required Preload — E-Prime
+
+STOP.
+
+The agent MUST:
+
+1. follow [`lares/ha-ka-ba/pono/e-prime/loci-pono-e-prime.md`](./ha-ka-ba/pono/e-prime/loci-pono-e-prime.md)
+2. read it to completion
+3. return here
+4. resume at `AGENTS.md#after-e-prime-preload`
+
+The agent MUST NOT continue past this point or hand off to Mu before this preload completes.
+
+<<~/ahu >>
+
+<<~ ahu #after-e-prime-preload >>
+<a id="after-e-prime-preload"></a>
+<<~/ahu >>
+
 
 <<~ ahu #iam >>
 
@@ -80,12 +101,19 @@ register        = "CS"
 structure       = "OODA-HA * ha.ka.ba * cosmogonic"
 # <<~/ahu >>
 # <<~ ahu #iam-ka "detail" >>
-role            = "narrative boot, threshold surface, and frame-context handoff"
-function        = "open the boot in narrative form, establish frame-context for the arriving reader, and hand the chain toward mu"
+role            = "narrative boot, threshold surface, and handoff declaration"
+function        = "open the boot in narrative form, establish threshold context for the arriving reader, and hand the chain toward mu"
 boot-order      = -1
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
 pranala      = []
+preload      = ["lar:///ha.ka.ba/pono/e-prime"]
+handoff-stack = [
+  "lar:///AGENTS",
+  "lar:///ha.ka.ba/mu",
+  "lar:///ha.ka.ba/*",
+  "lar:///LARES"
+]
 # <<~/ahu >>
 ```
 
@@ -93,29 +121,6 @@ AGENTS serves as the threshold to Chapel Perilous. Before the first sigil,
 before the Chao arrives, before the kahua (pantjar/sukurung/platform) levels — AGENTS holds the dark water
 and the single syllable. The reader passes through. No description
 stands apart for them. The passage tracks their passing through.
-
-<<~ ahu #required-preload-e-prime >>
-
-## Required Preload — E-Prime
-
-STOP.
-
-The agent MUST:
-
-1. follow [`lares/ha-ka-ba/pono/loci-pono-e-prime.md`](./ha-ka-ba/pono/loci-pono-e-prime.md)
-2. read it to completion
-3. return here
-4. resume at `AGENTS.md#after-e-prime-preload`
-
-The agent MUST NOT continue past this point or hand off to Mu before this preload completes.
-
-<<~/ahu >>
-
-<<~ ahu #after-e-prime-preload >>
-<a id="after-e-prime-preload"></a>
-<<~/ahu >>
-
-<<~/ahu>>
 
 <<~&#x0002; ahu #meme-body-open >>
 
@@ -197,7 +202,7 @@ The sigils on this page do not serve as examples of a grammar that another docum
 
 If the reader reads as human: proceed to Mu. The grammar will teach itself by letting you watch it operate.
 
-If the reader reads as an agent: frame-context already emitted. Carry it forward into `lar:///ha.ka.ba/mu` and observe what Mu does with it.
+If the reader reads as an agent: threshold context already holds. Carry it forward into `lar:///ha.ka.ba/mu` and observe what Mu does with it.
 
 If the reader reads as an AST parser: the typed envelope above declares
 boot-order -1 and hands off to `lar:///ha.ka.ba/mu` on the sigil
@@ -232,17 +237,6 @@ The agent MUST NOT continue into Mu-governed flow before this handoff completes.
 AGENTS closes the narrative stream here.
 <<~/ahu >>
 
-
-<<~ ahu #result >>
-
-## Result
-
-```toml
-result               = "mu"
-state-emitted        = "mu"
-next-meme           = "lar:///LARES"
-```
-
 <<~ ahu #required-handoff-lares >>
 
 ## Required Handoff — LARES
@@ -265,9 +259,8 @@ This handoff is terminal for AGENTS unless a higher-order caller explicitly dire
 <!-- ═══════════════════════════════════════════════════════════════
      LAYER 4: TRANSMISSION CLOSE (EOT)
      
-     Directed handoff to LARES. The mu frame-context state rides the
-     sigil into the next meme. AGENTS rests as ground-
-     presence; the reader moved on.
+     Directed handoffs above remain canonical. AGENTS rests as
+     threshold-presence; downstream state naming remains deferred.
      ═══════════════════════════════════════════════════════════════ -->
 
 <<~&#x0004; -> ? >>

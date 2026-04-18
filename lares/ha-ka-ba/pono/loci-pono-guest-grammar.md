@@ -20,11 +20,8 @@ register = "S"
 structure = "OODA-HA * ha.ka.ba"
 # <<~/ahu >>
 # <<~ ahu #iam-ka "detail" >>
-enacts = true
 role = "guest-grammar admission kānāwai (law), invocation-boundary kānāwai (law), and host-guest ownership contract"
 function = "define how memetic-wikitext admits, names, bounds, invokes, degrades, and hands forward guest grammars under explicit host control"
-grammar-registry-root = "lar:///ha.ka.ba/grammars/"
-canonical-guest-worksite = "hana"
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
 pranala = [

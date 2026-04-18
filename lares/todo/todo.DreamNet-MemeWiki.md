@@ -20,7 +20,6 @@ register = "S"
 structure = "OODA-HA * ha.ka.ba"
 # <<~/ahu >>
 # <<~ ahu #iam-ka "detail" >>
-enacts = false
 role = "research consolidation todo, architecture intake memo, and staged implementation plan"
 function = "gather the DreamNet MemeWiki research field, distinguish settled architectural direction from open tensions, and stage the next implementation sequence"
 source-documents = [

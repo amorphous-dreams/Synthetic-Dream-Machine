@@ -7,7 +7,7 @@
 ```toml
 # <<~ ahu #iam-ha "structure" >>
 name = "e-prime"
-file-path = "ha-ka-ba/pono/loci-pono-e-prime.md"
+file-path = "ha-ka-ba/pono/e-prime/loci-pono-e-prime.md"
 description = "Active pono kānāwai (law) for E-Prime discipline across memetic-wikitext output units. Stays live in context as low forward pressure on the next generation, bends wording toward observation, relation, action, stance, and earned confidence, and flags failure states."
 version = "0.1-boot"
 tulen = 0.62
