@@ -9,18 +9,17 @@
 name = "pranala"
 file-path = "ha-ka-ba/pranala/loci-pranala.md"
 description = "Root pranala (Indonesian: edge) kānāwai (Hawaiian: law) for explicit graph relations in this stack. Separates edge families from lifecycle layers and gives the migration target beyond vague pranala."
+content-type = "text/x-memetic-wikitext"
 version = "0.1-draft"
 tulen = 0.72
+# <<~/ahu >>
+# <<~ ahu #iam-ka "detail" >>
 confidence = 0.68
 mana = 0.76
 manao = 0.84
 manaoio = 0.66
-content-type = "text/x-memetic-wikitext"
 meme-type = "loci"
 register = "CS"
-structure = "OODA-HA * ha.ka.ba"
-# <<~/ahu >>
-# <<~ ahu #iam-ka "detail" >>
 role = "root pranala (edge) kānāwai (law), family authority, lifecycle authority, and migration target"
 function = "govern explicit edge families, keep semantic control dataflow message constraint and debug meanings distinct, and stage migration from vague dependency claims toward bound edge objects"
 edge-families = ["proposition", "control", "dataflow", "message", "constraint", "debug"]

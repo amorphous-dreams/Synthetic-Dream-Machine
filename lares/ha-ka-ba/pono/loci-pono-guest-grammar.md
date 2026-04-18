@@ -8,18 +8,17 @@
 name = "pono/guest-grammar"
 file-path = "ha-ka-ba/pono/loci-pono-guest-grammar.md"
 description = "Kānāwai (law) for explicit admission of guest grammars into memetic-wikitext without overloading the root primitive cluster."
+content-type = "text/x-memetic-wikitext"
 version = "0.1-draft"
 tulen = 0.56
+# <<~/ahu >>
+# <<~ ahu #iam-ka "detail" >>
 confidence = 0.58
 mana = 0.56
 manao = 0.62
 manaoio = 0.48
-content-type = "text/x-memetic-wikitext"
 meme-type = "loci"
 register = "S"
-structure = "OODA-HA * ha.ka.ba"
-# <<~/ahu >>
-# <<~ ahu #iam-ka "detail" >>
 role = "guest-grammar admission kānāwai (law), invocation-boundary kānāwai (law), and host-guest ownership contract"
 function = "define how memetic-wikitext admits, names, bounds, invokes, degrades, and hands forward guest grammars under explicit host control"
 # <<~/ahu >>

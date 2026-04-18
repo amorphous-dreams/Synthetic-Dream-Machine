@@ -8,18 +8,17 @@
 name = "x-tiddlywiki-filter"
 file-path = "ha-ka-ba/grammars/grammar-x-tiddlywiki-filter.md"
 description = "Registered imported function sigil grammar for TiddlyWiki-style filter work under explicit hana admission."
+content-type = "text/x-memetic-wikitext"
 version = "0.1-draft"
 tulen = 0.45
+# <<~/ahu >>
+# <<~ ahu #iam-ka "detail" >>
 confidence = 0.48
 mana = 0.44
 manao = 0.52
 manaoio = 0.36
-content-type = "text/x-memetic-wikitext"
 meme-type = "grammar"
 register = "S"
-structure = "OODA-HA * ha.ka.ba"
-# <<~/ahu >>
-# <<~ ahu #iam-ka "detail" >>
 role = "grammar meme, import-profile meme, sigil-centric translation contract, and boundary-safe work grammar registry entry"
 function = "define the admitted x-tiddlywiki-filter guest family, its host-facing priming contract, its sigil-centric term shifts, and its minimum lawful use through hana"
 grammar-key = "x-tiddlywiki-filter"

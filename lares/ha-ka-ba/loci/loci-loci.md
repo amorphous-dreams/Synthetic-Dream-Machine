@@ -9,18 +9,17 @@
 name = "loci"
 file-path = "ha-ka-ba/loci/loci-loci.md"
 description = "Loci kānāwai (law) for resolving `lar:` URI memes into explicit routing evidence and current `mana`, `manao`, and `manaoio` posture. Declares the derivation algorithm, the convention surfaces that make routing explicit, the conditions for high-mana `loci` memes, the promotion path from noise to data to meme to typed meme to canon typed meme, and the MCP-resolution research roadmap."
+content-type = "text/x-memetic-wikitext"
 version = "0.1-draft"
 tulen = 0.76
+# <<~/ahu >>
+# <<~ ahu #iam-ka "detail" >>
 confidence = 0.74
 mana = 0.74
 manao = 0.84
 manaoio = 0.66
-content-type = "text/x-memetic-wikitext"
 meme-type = "loci"
 register = "CS"
-structure = "OODA-HA * ha.ka.ba"
-# <<~/ahu >>
-# <<~ ahu #iam-ka "detail" >>
 role = "loci-rating kānāwai (law), routing convention authority, address stability authority, canon promotion rule, and MCP-resolution roadmap"
 function = "resolve a `lar:` URI meme into routing evidence and present `mana`, `manao`, and `manaoio` posture, while governing explicit convention, address stability, canon promotion, and MCP-resolution research"
 # <<~/ahu >>

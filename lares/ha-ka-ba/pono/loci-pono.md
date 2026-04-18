@@ -8,18 +8,17 @@
 name = "pono"
 file-path = "ha-ka-ba/pono/loci-pono.md"
 description = "Index of all memetic-wikitext kānāwai (law) memes. Hosts verification skills as skill-*.md packages under `ha-ka-ba/pono/`."
+content-type = "text/x-memetic-wikitext"
 version = "0.1-draft"
 tulen = 0.65
+# <<~/ahu >>
+# <<~ ahu #iam-ka "detail" >>
 confidence = 0.65
 mana = 0.65
 manao = 0.70
 manaoio = 0.60
-content-type = "text/x-memetic-wikitext"
 meme-type = "loci"
 register = "CS"
-structure = "OODA-HA * ha.ka.ba"
-# <<~/ahu >>
-# <<~ ahu #iam-ka "detail" >>
 role = "kānāwai (law) index, verification registry, and skill package host"
 function = "enumerate all active kānāwai (law) memes, surface their addresses and roles, and host conformance verification skills"
 skill-package-root = "ha-ka-ba/pono/skill-*.md"
@@ -83,7 +82,7 @@ The `loci/edge` branch now seeds explicit edge law under `lar:///ha.ka.ba/loci/e
 
 The `guest-grammar` and `x-tiddlywiki-filter` kānāwai (law) memes carry a canonical host-facing term shift: `tiddler` → `meme`, `currentTiddler` → `+currentMeme`. Host-facing examples and law statements throughout the stack should reflect this shift. Imported lineage terms may appear only in visibly quoted prior-art notes.
 
-A **loci meme** occupies the stable `lar:///ha.ka.ba/*` tagspace with a locked address, a stable `lar:` URI. Loci memes carry all five canonical rating fields in `#iam` — `tulen`, `confidence`, `mana`, `manao`, and `manaoio` — grouped directly below `version`, plus the adjacent `register` agent-operator surface-texture key below `meme-type` and immediately above `structure`. They reach prospective-canon status (`[CS]`) before an admin or operator may move them to `[C]` canon status. Other meme types may drift their path-root address (what3words-style path root section). The loci kānāwai (law) governs `lar:` URI routing derivation, carrier coherence, address stability, canon promotion, and the research roadmap toward live MCP-backed resolution.
+A **loci meme** occupies the stable `lar:///ha.ka.ba/*` tagspace with a locked address, a stable `lar:` URI. Loci memes carry all five canonical rating fields in `#iam` — `tulen`, `confidence`, `mana`, `manao`, and `manaoio` — with `tulen` directly below `version` and the remaining four support ratings opened by the detail ahu after the close/reopen marker, plus the adjacent `register` agent-operator surface-texture key below `meme-type` and immediately above `structure`. They reach prospective-canon status (`[CS]`) before an admin or operator may move them to `[C]` canon status. Other meme types may drift their path-root address (what3words-style path root section). The loci kānāwai (law) governs `lar:` URI routing derivation, carrier coherence, address stability, canon promotion, and the research roadmap toward live MCP-backed resolution.
 
 **Lifecycle Note:** All meme law in this system now follows the five-bucket lifecycle: noise → data → meme → typed meme → canon typed meme. Here `data` names structured language an AI can use without the memetic wrappers. Types remain composable rather than mutually exclusive, and `loci` names the stable-address branch for carriers under `lar:///ha.ka.ba/**`. See `lar:///ha.ka.ba/loci#promotion-path` and `lar:///ha.ka.ba/meme#rating-targets` for canonical lifecycle and rating details.
 

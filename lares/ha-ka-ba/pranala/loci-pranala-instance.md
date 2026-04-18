@@ -9,18 +9,17 @@
 name = "pranala/instance"
 file-path = "ha-ka-ba/pranala/loci-pranala-instance.md"
 description = "Concrete pranala (edge) instance kānāwai (law). Defines bound edge objects, override discipline, instance state, and separation from runtime trace."
+content-type = "text/x-memetic-wikitext"
 version = "0.1-draft"
 tulen = 0.71
+# <<~/ahu >>
+# <<~ ahu #iam-ka "detail" >>
 confidence = 0.68
 mana = 0.76
 manao = 0.82
 manaoio = 0.66
-content-type = "text/x-memetic-wikitext"
 meme-type = "loci"
 register = "CS"
-structure = "OODA-HA * ha.ka.ba"
-# <<~/ahu >>
-# <<~ ahu #iam-ka "detail" >>
 role = "concrete edge instance kānāwai (law), bound-object authority, and override discipline"
 function = "govern bound edge objects between actual endpoints, permit explicit overrides over template defaults, and keep declared instances distinct from observed traces"
 instance-states = ["declared", "bound", "observed", "stale"]

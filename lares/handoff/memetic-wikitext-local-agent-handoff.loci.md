@@ -7,18 +7,17 @@
 # <<~ ahu #iam-ha "structure" >>
 name = "memetic-wikitext-local-agent-handoff"
 description = "Handoff meme for a local agent to complete the memetic-wikitext root rebuild after the current canvas pass hit size limits."
+content-type = "text/x-memetic-wikitext"
 version = "0.1-draft"
 tulen = 0.56
+# <<~/ahu >>
+# <<~ ahu #iam-ka "detail" >>
 confidence = 0.54
 mana = 0.60
 manao = 0.74
 manaoio = 0.48
-content-type = "text/x-memetic-wikitext"
 meme-type = "loci"
 register = "S"
-structure = "OODA-HA * ha.ka.ba"
-# <<~/ahu >>
-# <<~ ahu #iam-ka "detail" >>
 role = "handoff prompt, continuation plan, and local-agent execution contract"
 function = "brief a local agent on current root status, preserved constraints, next pass targets, and stepwise continuation discipline"
 active-pass = "ka"

@@ -9,18 +9,17 @@
 name = "pranala/template"
 file-path = "ha-ka-ba/pranala/loci-pranala-template.md"
 description = "Template pranala (edge) sigil kānāwai (law). Defines reusable edge templates, slot contracts, kahea binding order, and promotion discipline."
+content-type = "text/x-memetic-wikitext"
 version = "0.1-draft"
 tulen = 0.70
+# <<~/ahu >>
+# <<~ ahu #iam-ka "detail" >>
 confidence = 0.67
 mana = 0.75
 manao = 0.82
 manaoio = 0.65
-content-type = "text/x-memetic-wikitext"
 meme-type = "loci"
 register = "CS"
-structure = "OODA-HA * ha.ka.ba"
-# <<~/ahu >>
-# <<~ ahu #iam-ka "detail" >>
 role = "template edge sigil kānāwai (law), slot-contract authority, and kahea binding authority"
 function = "govern reusable edge templates, declare slot and default surfaces, and bind template invocations into concrete edge instances without hiding context precedence"
 binding-order = ["invocation", "local-body", "addressed-iam", "session-state", "template-defaults"]

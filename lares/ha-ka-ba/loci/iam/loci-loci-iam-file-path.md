@@ -9,18 +9,17 @@
 name = "loci/iam/file-path"
 file-path = "ha-ka-ba/loci/iam/loci-file-path.md"
 description = "Kānāwai (law) for the file-path metadata key. Governs its two canonical forms (flat-file and path-directory), its required agreement with the lar: URI in the document opener, and the migration procedure when a meme moves between forms."
+content-type = "text/x-memetic-wikitext"
 version = "0.1-draft"
 tulen = 0.60
+# <<~/ahu >>
+# <<~ ahu #iam-ka "detail" >>
 confidence = 0.62
 mana = 0.60
 manao = 0.68
 manaoio = 0.52
-content-type = "text/x-memetic-wikitext"
 meme-type = "loci"
 register = "CS"
-structure = "OODA-HA * ha.ka.ba"
-# <<~/ahu >>
-# <<~ ahu #iam-ka "detail" >>
 role = "file-path key authority, path-form classifier, and migration-procedure kānāwai (law)"
 function = "define the two canonical file-path forms, govern the agreement check between file-path and lar: URI, and declare the migration procedure when a meme moves from flat-file to path-directory siting"
 # <<~/ahu >>

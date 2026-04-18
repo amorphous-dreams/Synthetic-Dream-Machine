@@ -9,18 +9,17 @@
 name = "pono/invariant-meme"
 file-path = "ha-ka-ba/pono/invariant-meme/loci-invariant-meme.md"
 description = "Active in i kēia manawa (this eternal now). Self-describing example of a minimal invariant meme. Short stable cache-able."
+content-type = "text/x-memetic-wikitext"
 version = "0.1"
 tulen = 0.6
+# <<~/ahu >>
+# <<~ ahu #iam-ka "detail" >>
 confidence = 0.7
 mana = 0.5
 manao = 0.5
 manaoio = 0.5
-content-type = "text/x-memetic-wikitext"
 meme-type = "invariant loci"
 register = "SC"
-structure = "+invariant +OODA-HA +[#iam[ha.ka.ba]]"
-# <<~/ahu >>
-# <<~ ahu #iam-ka "detail" >>
 role = "invariant-meme law and cache-stable pressure surface"
 function = "hold invariant-meme law active in i kēia manawa; RFC-2119 normative force binds all load-bearing directives; keep memes short, ahu visible, pranala named, OODA-HA compressed, sidecars later"
 cacheable = true

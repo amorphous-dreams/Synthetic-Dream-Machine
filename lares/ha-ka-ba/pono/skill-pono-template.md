@@ -16,18 +16,17 @@ allowed-tools: Read, Grep, Glob, Bash, Edit, Write
 name = "pono/skill-template"
 file-path = "ha-ka-ba/pono/skill-pono-template.md"
 description = "Template and authoring guide for memetic-wikitext verification skill packages under lares/ha-ka-ba/pono/. Covers the SKILL.md * OODA-HA * ha.ka.ba structure, invariant declaration, pre-MCP Python and Node implementation patterns, and post-MCP roadmap."
+content-type = "text/x-memetic-wikitext"
 version = "0.1-draft"
 tulen = 0.52
+# <<~/ahu >>
+# <<~ ahu #iam-ka "detail" >>
 confidence = 0.52
 mana = 0.54
 manao = 0.60
 manaoio = 0.42
-content-type = "text/x-memetic-wikitext"
 meme-type = "skill loci"
 register = "S"
-structure = "SKILL.md * OODA-HA * ha.ka.ba"
-# <<~/ahu >>
-# <<~ ahu #iam-ka "detail" >>
 role = "skill template, verification authoring guide, and pre/post-MCP implementation roadmap"
 function = "describe the required shape of a pono verification skill package, declare the dual-surface SKILL.md + memetic-wikitext composition, and provide implementation patterns for grammar conformance checking"
 skill-package-root = "ha-ka-ba/pono/skill-*.md"
@@ -47,7 +46,7 @@ A verification skill in this system lives at two simultaneous identity layers th
 
 The **outer layer** follows the [agentskills.io open standard](https://agentskills.io/specification) — YAML frontmatter at the very top of the file, consumed by agent runtimes at startup for progressive disclosure. Only the `name` and `description` fields load at startup (~100 tokens). The full body loads only on activation.
 
-The **inner layer** follows the memetic-wikitext standard — TOML `#iam` block, OODA-HA * ha.ka.ba phase structure, five canonical rating fields grouped below `version` in the order `tulen`, `confidence`, `mana`, `manao`, `manaoio`, plus adjacent `register` surface texture below `meme-type` and above `structure`, supported query throats, and result locus. This layer feeds the memetic-wikitext parser and law system.
+The **inner layer** follows the memetic-wikitext standard — TOML `#iam` block, OODA-HA * ha.ka.ba phase structure, `tulen` immediately below `version`, detail-side support ratings in the order `confidence`, `mana`, `manao`, `manaoio`, plus adjacent `register` surface texture below `meme-type` and above `structure`, supported query throats, and result locus. This layer feeds the memetic-wikitext parser and law system.
 
 `SKILL.md * OODA-HA * ha.ka.ba` names the composition: the SKILL.md container governs the outer runtime identity; the OODA-HA * ha.ka.ba governs the inner epistemic structure and execution discipline.
 
@@ -151,8 +150,8 @@ Every skill declares its invariants in `#iam` as a TOML string array. Invariants
 ```toml
 invariants = [
   "R1: HTML DOCTYPE preamble comment present on line 1",
-  "R3: #iam block carries all five canonical rating fields immediately below version",
-  "R3: canonical order reads tulen, confidence, mana, manao, manaoio",
+  "R3: #iam block places tulen immediately below version",
+  "R3: after the ahu close/reopen marker, canonical order reads confidence, mana, manao, manaoio",
   "R3: register field present after meme-type and before structure",
   "R6: at least one <<~STX; ui ...? -> ...#... >> query throat present",
   "O7: all <<~ pranala loulou lar:// >> links outside fenced blocks point at addresses resolved or wrapped as OPTIONAL HTML comments",
@@ -243,7 +242,7 @@ def check-r1(lines: list[str]) -> InvariantResult:
     )
 
 def check-r3-rating-fields(content: str) -> InvariantResult:
-    """R3: five canonical rating fields present in canonical order immediately below version."""
+    """R3: tulen sits below version and the support ratings follow in canonical detail order."""
     required = ["tulen", "confidence", "mana", "manao", "manaoio"]
     # Extract #iam TOML block
     m = re.search(r'<<~ ahu #iam >>.*?```toml(.*?)```', content, re.DOTALL)

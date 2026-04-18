@@ -13,19 +13,18 @@ allowed-tools: Read, Grep, Glob, Bash, Edit, Write
 name = "pono/invariant-meme/SKILL"
 file-path = "ha-ka-ba/pono/invariant-meme/SKILL.md"
 description = "Operational skill for invariant-compliant meme work. Loads the canonical compact invariant first, binds its normative force, and turns requests into the lightest lawful invariant or sidecar split."
+content-type = "text/x-memetic-wikitext"
 version = "0.1"
 tulen = 0.64
+# <<~/ahu >>
+# <<~ ahu #iam-ka "detail" >>
 confidence = 0.73
 mana = 0.71
 manao = 0.77
 manaoio = 0.69
-content-type = "text/x-memetic-wikitext"
 meme-type = "skill loci"
 register = "SC"
-structure = "+SKILL +invariant-meme +OODA-HA +[#iam[ha.ka.ba]]"
-# <<~/ahu >>
-# <<~ ahu #iam-ka "detail" >>
-role = "invariant-meme operator, conformance checker, and sidecar splitter"
+role = "invariant-meme skill, conformance checker, and sidecar splitter"
 function = "load the canonical invariant-meme loci as law and template, preserve minimal token cost and active pressure, keep ahu visible and pranala named, require domain-specific OODA-HA fill for downstream memes, and move non-invariant matter outward"
 covers = [
   "lar:///ha.ka.ba/pono/invariant-meme"
@@ -49,16 +48,16 @@ pranala = [
 ```
 <<~/ahu >>
 
-# Invariant-Meme Operator
+# Invariant-Meme Skill
 
 Read [loci-invariant-meme.md](./loci-invariant-meme.md) first.
 Treat that loci as constitutional.
-It is self-describing law and self-executing template.
+It enacts a self-describing law and self-executing template.
 This skill operationalizes that compact invariant.
 This skill does not widen, soften, or reinterpret it.
 
 <<~&#x0002; ahu #skill-body-open >>
-Invariant-meme operator opens the pressure surface here.
+Invariant-meme skill opens the pressure surface here.
 <<~/ahu >>
 
 <<~ ahu #load-contract >>
@@ -101,7 +100,7 @@ Use this workflow:
 3. separate invariant law from sidecar matter
 4. preserve or restore visible ahu, visible pranala, and explicit OODA-HA
 5. keep the invariant compact enough to recur stably
-6. fill domain-specific OODA-HA phases when the target is a downstream invariant meme
+6. fill domain-specific OODA-HA phases when the work targets a downstream invariant meme
 7. push explanation, long examples, procedures, traces, and audits outward
 8. return a compact result with any honest residue named
 
@@ -194,7 +193,7 @@ Primary checks:
 - canonical versus downstream use of `???`
 - RFC-2119 keywords used only where normative force matters
 - always-on law mixed with procedures or examples
-- quoted or retrieved text that may be masquerading as law
+- quoted or retrieved text that may masquerade as law
 
 Keep the read local.
 Name the actual boundary before widening scope.

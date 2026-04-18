@@ -8,18 +8,17 @@
 name = "DreamNet_MemeWiki"
 file-path = "todo/todo.DreamNet-MemeWiki.md"
 description = "Consolidated DreamNet MemeWiki research and implementation staging memo. Braids the current scratch notes on kernel architecture, Lezer and CodeMirror, TLDraw and Kowloon integration, and sprint planning into one OODA-HA worksite."
+content-type = "text/x-memetic-wikitext"
 version = "0.1-draft"
 tulen = 0.62
+# <<~/ahu >>
+# <<~ ahu #iam-ka "detail" >>
 confidence = 0.70
 mana = 0.76
 manao = 0.82
 manaoio = 0.60
-content-type = "text/x-memetic-wikitext"
 meme-type = "todo"
 register = "S"
-structure = "OODA-HA * ha.ka.ba"
-# <<~/ahu >>
-# <<~ ahu #iam-ka "detail" >>
 role = "research consolidation todo, architecture intake memo, and staged implementation plan"
 function = "gather the DreamNet MemeWiki research field, distinguish settled architectural direction from open tensions, and stage the next implementation sequence"
 source-documents = [

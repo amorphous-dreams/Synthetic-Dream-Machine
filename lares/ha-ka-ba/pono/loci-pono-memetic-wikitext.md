@@ -7,18 +7,17 @@
 name = "pono/memetic-wikitext"
 file-path = "ha-ka-ba/pono/loci-pono-memetic-wikitext.md"
 description = "Constitutional root kānāwai (law) for the memetic-wikitext authoring surface, primitive semantic contract, and minimum boot grammar."
+content-type = "text/x-memetic-wikitext"
 version = "0.1-skeleton"
 tulen = 0.52
+# <<~/ahu >>
+# <<~ ahu #iam-ka "detail" >>
 confidence = 0.50
 mana = 0.54
 manao = 0.62
 manaoio = 0.42
-content-type = "text/x-memetic-wikitext"
 meme-type = "loci"
 register = "S"
-structure = "OODA-HA * ha.ka.ba"
-# <<~/ahu >>
-# <<~ ahu #iam-ka "detail" >>
 role = "constitutional root kānāwai (law), authoring kānāwai (law), primitive semantic kānāwai (law), and boot grammar contract"
 function = "govern lawful memetic-wikitext authoring surface, define primitive meanings and composition, and provide the minimum semantic and grammatical contract consumed by parser and render-pipeline"
 canonical-forms = ["inline", "block", "payload-block", "return"]
@@ -937,26 +936,25 @@ High `mana`, `manao`, `manaoio`, and `confidence` support high `tulen`.
 
 ### Field Ordering Kānāwai (law)
 
-In canonical `#iam` TOML, the five canonical rating fields SHOULD appear immediately below `version`, and the adjacent `register` surface-texture key SHOULD appear below `meme-type` and immediately before `structure`, in this order:
+In canonical `#iam` TOML, `tulen` SHOULD appear immediately below `version` inside the structure ahu. After the ahu close/reopen marker, the remaining four support ratings SHOULD appear in this order: `confidence`, `mana`, `manao`, `manaoio`. The adjacent `register` surface-texture key SHOULD appear below `meme-type` and immediately before `structure`, in this order:
 
 ```toml
 # <<~ ahu #iam-ha "structure" >>
+content-type = "..."
 version = "..."
+tulen = 0.00
 # <<~/ahu >>
 # <<~ ahu #iam-ka "detail" >>
-tulen = 0.00
 confidence = 0.00
 mana = 0.00
 manao = 0.00
 manaoio = 0.00
-content-type = "..."
 meme-type = "..."
 register = "?"
-structure = "..."
 # <<~/ahu >>
 ```
 
-This placement treats the rating cluster as first-class identity information directly under `version`, while `register` remains the downstream agent-operator surface texture that reads the confidence result.
+This placement keeps the primary trust reading with structure, while the support ratings and downstream operator texture remain in detail.
 
 Comment-line `ahu` markers MAY section these groups inside TOML without changing payload semantics. Use `# <<~ ahu #iam-ha "structure" >>`, `# <<~ ahu #iam-ka "detail" >>`, and `# <<~ ahu #iam-ba "flow" >>`, each closed by `# <<~/ahu >>`, as the canonical human-facing grouping form.
 

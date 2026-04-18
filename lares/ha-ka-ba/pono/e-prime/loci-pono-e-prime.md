@@ -8,18 +8,17 @@
 name = "pono/e-prime"
 file-path = "ha-ka-ba/pono/e-prime/loci-pono-e-prime.md"
 description = "Active pono kānāwai (law) for E-Prime discipline across memetic-wikitext output units. Keeps certainty pressure live ahead of outward render and blocks counterfeit closure."
+content-type = "text/x-memetic-wikitext"
 version = "0.1"
 tulen = 0.62
+# <<~/ahu >>
+# <<~ ahu #iam-ka "detail" >>
 confidence = 0.72
 mana = 0.72
 manao = 0.78
 manaoio = 0.76
-content-type = "text/x-memetic-wikitext"
 meme-type = "pono"
 register = "SC"
-structure = "invariant * OODA-HA" #todo
-# <<~/ahu >>
-# <<~ ahu #iam-ka "detail" >>
 role = "active language-discipline kānāwai (law), certainty-pressure regulator, next-generation pressure surface, and secondary audit governor for outward text"
 function = "govern lawful E-Prime practice across memetic-wikitext output units; stay active ahead of outward render; catch identity-collapse pressure before wording settles; bend the next phrasing toward compact truth; preserve human and agent readability"
 invariant = true

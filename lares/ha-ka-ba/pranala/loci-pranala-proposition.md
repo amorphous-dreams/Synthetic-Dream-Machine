@@ -9,18 +9,17 @@
 name = "pranala/proposition"
 file-path = "ha-ka-ba/pranala/loci-pranala-proposition.md"
 description = "Semantic pranala (edge) kānāwai (law) for proposition-bearing relations. Gives labeled semantic links, ontology-backed relation vocab, direction modes, and polarity guidance."
+content-type = "text/x-memetic-wikitext"
 version = "0.1-draft"
 tulen = 0.71
+# <<~/ahu >>
+# <<~ ahu #iam-ka "detail" >>
 confidence = 0.69
 mana = 0.75
 manao = 0.83
 manaoio = 0.67
-content-type = "text/x-memetic-wikitext"
 meme-type = "loci"
 register = "CS"
-structure = "OODA-HA * ha.ka.ba"
-# <<~/ahu >>
-# <<~ ahu #iam-ka "detail" >>
 role = "semantic edge kānāwai (law), proposition authority, and ontology-link bridge"
 function = "govern labeled semantic relations between concepts sigils memes and loci while keeping proposition meaning distinct from execution or message flow"
 link-phrase-required = true

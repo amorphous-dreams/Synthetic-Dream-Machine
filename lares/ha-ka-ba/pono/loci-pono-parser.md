@@ -9,18 +9,17 @@
 name = "pono/parser"
 file-path = "ha-ka-ba/pono/loci-pono-parser.md"
 description = "Full parsing kānāwai (law) for memetic-wikitext, including canonical sigil forms, metadata payload rules, mode transitions, normalization, and typed parse aftermath."
+content-type = "text/x-memetic-wikitext"
 version = "0.1-draft"
 tulen = 0.79
+# <<~/ahu >>
+# <<~ ahu #iam-ka "detail" >>
 confidence = 0.86
 mana = 0.82
 manao = 0.76
 manaoio = 0.72
-content-type = "text/x-memetic-wikitext"
 meme-type = "loci"
 register = "C"
-structure = "OODA-HA * ha.ka.ba"
-# <<~/ahu >>
-# <<~ ahu #iam-ka "detail" >>
 role = "parsing kānāwai (law), normalization kānāwai (law), metadata fetch kānāwai (law), and deterministic scripting contract"
 function = "parse documents, classify forms, normalize surfaces, surface typed issues, and return addressed metadata or parse products"
 canonical-forms = ["inline", "block", "payload-block", "return"]

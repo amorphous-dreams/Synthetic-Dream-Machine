@@ -8,18 +8,17 @@
 name = "pono/render-pipeline"
 file-path = "ha-ka-ba/pono/loci-pono-render-pipeline.md"
 description = "Rendering and lowering kānāwai (law) for memetic-wikitext, covering the high-mana sigil surface, parsed AST, widget tree, render projection, trace continuity, and transactional aftermath."
+content-type = "text/x-memetic-wikitext"
 version = "0.1-draft"
 tulen = 0.76
+# <<~/ahu >>
+# <<~ ahu #iam-ka "detail" >>
 confidence = 0.84
 mana = 0.78
 manao = 0.74
 manaoio = 0.68
-content-type = "text/x-memetic-wikitext"
 meme-type = "loci"
 register = "C"
-structure = "OODA-HA * ha.ka.ba"
-# <<~/ahu >>
-# <<~ ahu #iam-ka "detail" >>
 role = "pipeline kānāwai (law), lowering kānāwai (law), widget-tree kānāwai (law), render projection kānāwai (law), and trace continuity contract"
 function = "lower memetic-wikitext from human-agent-friendly sigil script into AST and widget structures, preserve lawful invariants, and project results into chat and other render targets"
 pipeline-layers = ["surface", "ast", "widget"]

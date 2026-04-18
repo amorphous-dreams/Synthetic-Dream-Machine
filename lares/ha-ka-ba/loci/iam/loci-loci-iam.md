@@ -9,18 +9,17 @@
 name = "loci/iam"
 file-path = "ha-ka-ba/loci/iam/loci-iam.md"
 description = "Canonical kānāwai (law) for the #iam root metadata block. Fixes the surviving field set, locates each field in ha, ka, or ba, and collapses redundant flow claims."
+content-type = "text/x-memetic-wikitext"
 version = "0.1-draft"
 tulen = 0.74
+# <<~/ahu >>
+# <<~ ahu #iam-ka "detail" >>
 confidence = 0.70
 mana = 0.76
 manao = 0.84
 manaoio = 0.68
-content-type = "text/x-memetic-wikitext"
 meme-type = "loci"
 register = "CS"
-structure = "OODA-HA * ha.ka.ba"
-# <<~/ahu >>
-# <<~ ahu #iam-ka "detail" >>
 role = "root metadata kānāwai (law), field-set authority, and reduction charter"
 function = "govern the surviving #iam field set, place each field in the correct ha ka ba slot, and cut redundant or ornamental metadata from live carriers"
 # <<~/ahu >>

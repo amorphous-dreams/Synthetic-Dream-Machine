@@ -9,18 +9,17 @@
 name = "meme"
 file-path = "ha-ka-ba/meme/loci-meme.md"
 description = "Canonical meme kānāwai (law) for the OODA-HA * ha.ka.ba pattern. Defines required and optional elements, rating targets, and serves as a copy-ready authoring template."
+content-type = "text/x-memetic-wikitext"
 version = "0.1-draft"
 tulen = 0.79
+# <<~/ahu >>
+# <<~ ahu #iam-ka "detail" >>
 confidence = 0.79
 mana = 0.78
 manao = 0.84
 manaoio = 0.76
-content-type = "text/x-memetic-wikitext"
 meme-type = "loci"
 register = "CS"
-structure = "OODA-HA * ha.ka.ba"
-# <<~/ahu >>
-# <<~ ahu #iam-ka "detail" >>
 role = "canonical meme kānāwai (law), template authority, and rating-target authority"
 function = "define the required and optional structure of a meme in this stack, serve as a copy-ready skeleton, and govern which element combinations unlock which rating bands"
 control-glyphs = ["&#x0001;", "&#x0002;", "&#x0003;", "&#x0004;", "&#x0005;", "&#x0006;"]
@@ -87,7 +86,7 @@ Observe should detect:
 * HTML DOCTYPE preamble comment
 * document opener and its target address
 * `#iam` locus and its fenced TOML payload
-* five canonical rating fields grouped below `version` in the order `tulen`, `confidence`, `mana`, `manao`, `manaoio`,
+* `tulen` immediately below `version`, then detail-side support ratings in the order `confidence`, `mana`, `manao`, `manaoio`,
 * plus adjacent `register` surface texture below `meme-type` and above `structure` for the operator-facing `tulen`/`confidence` bands
 * title heading and opening prose
 * self-reference ala
@@ -234,18 +233,17 @@ The `#iam` block MUST carry at minimum:
 name = "..."
 file-path = "..."
 description = "..."
+content-type = "text/x-memetic-wikitext"
 version = "..."
 tulen = 0.00
+# <<~/ahu >>
+# <<~ ahu #iam-ka "detail" >>
 confidence = 0.00
 mana = 0.00
 manao = 0.00
 manaoio = 0.00
-content-type = "text/x-memetic-wikitext"
 meme-type = "..."
 register = "?"
-structure = "OODA-HA * ha.ka.ba"
-# <<~/ahu >>
-# <<~ ahu #iam-ka "detail" >>
 role = "..."
 function = "..."
 # <<~/ahu >>
@@ -254,7 +252,7 @@ pranala = ["lar:///ha.ka.ba/pono/memetic-wikitext"]
 # <<~/ahu >>
 ```
 
-The five canonical rating fields MUST appear immediately below `version` in this order: `tulen`, `confidence`, `mana`, `manao`, `manaoio`. The adjacent `register` surface-texture key MUST appear below `meme-type` and immediately before `structure`. That key abbreviates the operator-facing `tulen`/`confidence` band surfaces. Absence of any rating field degrades `payload-integrity`.
+The `#iam` block MUST place `tulen` immediately below `version`. After the ahu close/reopen marker, the remaining four rating fields MUST follow in this order: `confidence`, `mana`, `manao`, `manaoio`. The adjacent `register` surface-texture key MUST appear below `meme-type` and immediately before `structure`. That key abbreviates the operator-facing `tulen`/`confidence` band surfaces. Absence of any rating field degrades `payload-integrity`.
 
 Comment-line `ahu` markers MAY section `#iam` TOML into agent-operator friendly groups without changing payload semantics. The canonical grouping follows `# <<~ ahu #iam-ha "structure" >>`, `# <<~ ahu #iam-ka "detail" >>`, and `# <<~ ahu #iam-ba "flow" >>`, each closed by `# <<~/ahu >>`. Because these stay inside TOML comment lines, they remain parse-inert.
 
@@ -706,18 +704,17 @@ Copy this block. Replace every `[PLACEHOLDER]` with local content. Delete option
 name = "[NAME]"
 file-path = "ha-ka-ba/[MEME-TYPE]-[NAME].md"
 description = "[One sentence: what this meme governs.]"
+content-type = "text/x-memetic-wikitext"
 version = "0.1-skeleton"
 tulen = 0.10
+# <<~/ahu >>
+# <<~ ahu #iam-ka "detail" >>
 confidence = 0.10
 mana = 0.10
 manao = 0.10
 manaoio = 0.10
-content-type = "text/x-memetic-wikitext"
 meme-type = "[meme-type]"
 register = "P"
-structure = "OODA-HA * ha.ka.ba"
-# <<~/ahu >>
-# <<~ ahu #iam-ka "detail" >>
 role = "[role]"
 function = "[function]"
 # <<~/ahu >>

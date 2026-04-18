@@ -7,17 +7,16 @@
 # <<~ ahu #iam-ha "structure" >>
 name = "handoff-prompt-parser-render-split"
 description = "Self-describing handoff roadmap for a local agent to refine parser-law, render-pipeline-law, and memetic-wikitext without overloading the constitutional parse root."
+content-type = "text/x-memetic-wikitext"
 version = "0.1-draft"
 tulen = 0.54
+# <<~/ahu >>
+# <<~ ahu #iam-ka "detail" >>
 confidence = 0.50
 mana = 0.60
 manao = 0.74
 manaoio = 0.46
-content-type = "text/x-memetic-wikitext"
 register = "S"
-structure = "OODA-HA * ha.ka.ba"
-# <<~/ahu >>
-# <<~ ahu #iam-ka "detail" >>
 role = "handoff prompt, roadmap law, patch-planning guide, and local-agent alignment frame"
 function = "guide a local agent through a narrow parser-law patch, a richer render-pipeline-law transaction design pass, and a later semantic-root cleanup pass"
 transaction-class = "prepare"

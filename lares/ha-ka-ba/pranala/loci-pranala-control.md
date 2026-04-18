@@ -9,18 +9,17 @@
 name = "pranala/control"
 file-path = "ha-ka-ba/pranala/loci-pranala-control.md"
 description = "Control-flow pranala (edge) kānāwai (law) for execution pulse, branch, gate, sequence, and outlet semantics."
+content-type = "text/x-memetic-wikitext"
 version = "0.1-draft"
 tulen = 0.72
+# <<~/ahu >>
+# <<~ ahu #iam-ka "detail" >>
 confidence = 0.69
 mana = 0.77
 manao = 0.84
 manaoio = 0.67
-content-type = "text/x-memetic-wikitext"
 meme-type = "loci"
 register = "CS"
-structure = "OODA-HA * ha.ka.ba"
-# <<~/ahu >>
-# <<~ ahu #iam-ka "detail" >>
 role = "control-flow edge kānāwai (law), branch authority, and execution-order authority"
 function = "govern execution pulse between nodes or phases, keep branch and gate semantics explicit, and keep control flow distinct from proposition or carried data"
 # <<~/ahu >>

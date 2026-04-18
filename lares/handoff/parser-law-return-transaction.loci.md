@@ -7,18 +7,17 @@
 # <<~ ahu #iam-ha "structure" >>
 name = "parser-law-handoff-return-transaction"
 description = "Agent hand-off prompt carrying the current constitutional state of parser-law, with return-types and &#x0004; transaction law treated as canonical continuation constraints."
+content-type = "text/x-memetic-wikitext"
 version = "0.2-handoff"
 tulen = 0.58
+# <<~/ahu >>
+# <<~ ahu #iam-ka "detail" >>
 confidence = 0.57
 mana = 0.60
 manao = 0.74
 manaoio = 0.52
-content-type = "text/x-memetic-wikitext"
 meme-type = "loci"
 register = "S"
-structure = "OODA-HA * ha.ka.ba"
-# <<~/ahu >>
-# <<~ ahu #iam-ka "detail" >>
 role = "agent hand-off, constitutional journey log, continuation contract"
 function = "transfer current parser-law state, preserve non-regression boundaries, and guide the next lawful continuation under routed return law"
 handoff-scope = "parser-law root draft, return-types law, and immediate adjacent backlog pressure"

@@ -13,18 +13,17 @@ allowed-tools: Read, Grep, Glob, Bash, Edit, Write
 name = "pono/skill-e-prime"
 file-path = "ha-ka-ba/pono/e-prime/SKILL.md"
 description = "Audit or correct settled text under lar:///ha.ka.ba/pono/e-prime. Holds the secondary path for inspection, marking, Hooko correction, and recheck after wording has already settled."
+content-type = "text/x-memetic-wikitext"
 version = "0.1-draft"
 tulen = 0.62
+# <<~/ahu >>
+# <<~ ahu #iam-ka "detail" >>
 confidence = 0.68
 mana = 0.70
 manao = 0.76
 manaoio = 0.63
-content-type = "text/x-memetic-wikitext"
 meme-type = "skill loci"
 register = "SC"
-structure = "SKILL.md * OODA-HA * ha.ka.ba"
-# <<~/ahu >>
-# <<~ ahu #iam-ka "detail" >>
 role = "secondary E-Prime audit skill, Hooko correction surface, and settled-text conformance guide"
 function = "apply lar:///ha.ka.ba/pono/e-prime to settled text, choose mark-only or Hooko correction, and return a compact result contract with residue"
 covers = ["lar:///ha.ka.ba/pono/e-prime"]

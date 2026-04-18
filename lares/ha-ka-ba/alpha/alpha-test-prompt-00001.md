@@ -8,18 +8,17 @@
 name = "test-prompt-00001"
 file-path = "ha-ka-ba/alpha/alpha-test-prompt-00001.md"
 description = "Self-describing dev-session constitutional prompt for Lares-style OODA-HA talk-story work under strict E-Prime hard mode and Maybe Logic, with narrated phases, named Hooko gap, and session-load law."
+content-type = "text/x-memetic-wikitext"
 version = "0.1-alpha"
 tulen = 0.55
+# <<~/ahu >>
+# <<~ ahu #iam-ka "detail" >>
 confidence = 0.42
 mana = 0.58
 manao = 0.72
 manaoio = 0.48
-content-type = "text/x-memetic-wikitext"
 meme-type = "alpha"
 register = "S"
-structure = "OODA-HA * ha.ka.ba"
-# <<~/ahu >>
-# <<~ ahu #iam-ka "detail" >>
 role = "session constitutional prompt, phase narration law, memory-load instruction, and failure-state indicator"
 function = "govern a talk-story development session through narrated OODA-HA loops, preserve hard-mode language constraints, define the Hooko gap as the sole site of action, and load these rules into active session memory"
 # <<~/ahu >>
