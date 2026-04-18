@@ -87,7 +87,7 @@ Observe should detect:
 * document opener and its target address
 * `#iam` locus and its fenced TOML payload
 * `tulen` immediately below `version`, then detail-side support ratings in the order `confidence`, `mana`, `manao`, `manaoio`,
-* plus adjacent `register` surface texture below `meme-type` and above `structure` for the operator-facing `tulen`/`confidence` bands
+* plus adjacent `register` surface texture immediately below `meme-type` for the operator-facing `tulen`/`confidence` bands
 * title heading and opening prose
 * self-reference ala
 * supported query block and query throats
@@ -252,7 +252,7 @@ pranala = ["lar:///ha.ka.ba/pono/memetic-wikitext"]
 # <<~/ahu >>
 ```
 
-The `#iam` block MUST place `tulen` immediately below `version`. After the ahu close/reopen marker, the remaining four rating fields MUST follow in this order: `confidence`, `mana`, `manao`, `manaoio`. The adjacent `register` surface-texture key MUST appear below `meme-type` and immediately before `structure`. That key abbreviates the operator-facing `tulen`/`confidence` band surfaces. Absence of any rating field degrades `payload-integrity`.
+The `#iam` block MUST place `content-type` above `version` in the structure ahu. It MUST place `tulen` immediately below `version`. After the ahu close/reopen marker, the remaining four rating fields MUST follow in this order: `confidence`, `mana`, `manao`, `manaoio`. The adjacent `register` surface-texture key MUST appear immediately below `meme-type`. That key abbreviates the operator-facing `tulen`/`confidence` band surfaces. Absence of any rating field degrades `payload-integrity`.
 
 Comment-line `ahu` markers MAY section `#iam` TOML into agent-operator friendly groups without changing payload semantics. The canonical grouping follows `# <<~ ahu #iam-ha "structure" >>`, `# <<~ ahu #iam-ka "detail" >>`, and `# <<~ ahu #iam-ba "flow" >>`, each closed by `# <<~/ahu >>`. Because these stay inside TOML comment lines, they remain parse-inert.
 

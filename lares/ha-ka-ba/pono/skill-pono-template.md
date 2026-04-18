@@ -46,7 +46,7 @@ A verification skill in this system lives at two simultaneous identity layers th
 
 The **outer layer** follows the [agentskills.io open standard](https://agentskills.io/specification) — YAML frontmatter at the very top of the file, consumed by agent runtimes at startup for progressive disclosure. Only the `name` and `description` fields load at startup (~100 tokens). The full body loads only on activation.
 
-The **inner layer** follows the memetic-wikitext standard — TOML `#iam` block, OODA-HA * ha.ka.ba phase structure, `tulen` immediately below `version`, detail-side support ratings in the order `confidence`, `mana`, `manao`, `manaoio`, plus adjacent `register` surface texture below `meme-type` and above `structure`, supported query throats, and result locus. This layer feeds the memetic-wikitext parser and law system.
+The **inner layer** follows the memetic-wikitext standard — TOML `#iam` block, OODA-HA * ha.ka.ba phase structure, `content-type` above `version`, `tulen` immediately below `version`, detail-side support ratings in the order `confidence`, `mana`, `manao`, `manaoio`, plus adjacent `register` surface texture immediately below `meme-type`, supported query throats, and result locus. This layer feeds the memetic-wikitext parser and law system.
 
 `SKILL.md * OODA-HA * ha.ka.ba` names the composition: the SKILL.md container governs the outer runtime identity; the OODA-HA * ha.ka.ba governs the inner epistemic structure and execution discipline.
 
@@ -152,7 +152,7 @@ invariants = [
   "R1: HTML DOCTYPE preamble comment present on line 1",
   "R3: #iam block places tulen immediately below version",
   "R3: after the ahu close/reopen marker, canonical order reads confidence, mana, manao, manaoio",
-  "R3: register field present after meme-type and before structure",
+  "R3: register field present immediately after meme-type",
   "R6: at least one <<~STX; ui ...? -> ...#... >> query throat present",
   "O7: all <<~ pranala loulou lar:// >> links outside fenced blocks point at addresses resolved or wrapped as OPTIONAL HTML comments",
 ]
@@ -274,14 +274,14 @@ def check-r3-rating-fields(content: str) -> InvariantResult:
     return InvariantResult("R3-ratings", "pass", observed=f"fields present in canonical order")
 
 def check-r3-register(content: str) -> InvariantResult:
-    """R3: register field present after meme-type and before structure."""
-    m = re.search(r'meme-type\s*=.*?\n(register\s*=).*?\nstructure\s*=', content)
+    """R3: register field present immediately after meme-type."""
+    m = re.search(r'meme-type\s*=.*?\n(register\s*=)', content)
     if m:
         return InvariantResult("R3-register", "pass", observed="register present after meme-type")
     return InvariantResult(
         "R3-register", "fail",
         observed="register field absent or out of position",
-        repair="Add register = \"[label]\" immediately after meme-type and before structure in #iam TOML"
+        repair="Add register = \"[label]\" immediately after meme-type in #iam TOML"
     )
 
 def check-r6(content: str) -> InvariantResult:

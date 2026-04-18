@@ -936,7 +936,7 @@ High `mana`, `manao`, `manaoio`, and `confidence` support high `tulen`.
 
 ### Field Ordering Kānāwai (law)
 
-In canonical `#iam` TOML, `tulen` SHOULD appear immediately below `version` inside the structure ahu. After the ahu close/reopen marker, the remaining four support ratings SHOULD appear in this order: `confidence`, `mana`, `manao`, `manaoio`. The adjacent `register` surface-texture key SHOULD appear below `meme-type` and immediately before `structure`, in this order:
+In canonical `#iam` TOML, `content-type` SHOULD appear above `version` inside the structure ahu. `tulen` SHOULD appear immediately below `version` inside the structure ahu. After the ahu close/reopen marker, the remaining four support ratings SHOULD appear in this order: `confidence`, `mana`, `manao`, `manaoio`. The adjacent `register` surface-texture key SHOULD appear immediately below `meme-type`, in this order:
 
 ```toml
 # <<~ ahu #iam-ha "structure" >>
@@ -954,7 +954,7 @@ register = "?"
 # <<~/ahu >>
 ```
 
-This placement keeps the primary trust reading with structure, while the support ratings and downstream operator texture remain in detail.
+This placement keeps media identity and the primary trust reading with structure, while the support ratings and downstream operator texture remain in detail.
 
 Comment-line `ahu` markers MAY section these groups inside TOML without changing payload semantics. Use `# <<~ ahu #iam-ha "structure" >>`, `# <<~ ahu #iam-ka "detail" >>`, and `# <<~ ahu #iam-ba "flow" >>`, each closed by `# <<~/ahu >>`, as the canonical human-facing grouping form.
 
