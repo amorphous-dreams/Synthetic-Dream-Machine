@@ -20,7 +20,6 @@ manaoio = 0.5
 meme-type = "invariant loci"
 register = "SC"
 role = "invariant-meme law and cache-stable pressure surface"
-function = "hold invariant-meme law active in i kēia manawa; RFC-2119 normative force binds all load-bearing directives; keep memes short, ahu visible, pranala named, OODA-HA compressed, sidecars later"
 cacheable = true
 invariant = true
 implements = "lar:///ha.ka.ba/pono/invariant-meme/v0.1"

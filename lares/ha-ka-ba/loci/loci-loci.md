@@ -20,7 +20,6 @@ manaoio = 0.66
 meme-type = "loci"
 register = "CS"
 role = "loci-rating kānāwai (law), routing convention authority, address stability authority, canon promotion rule, and MCP-resolution roadmap"
-function = "resolve a `lar:` URI meme into routing evidence and present `mana`, `manao`, and `manaoio` posture, while governing explicit convention, address stability, canon promotion, and MCP-resolution research"
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
 pranala = [
@@ -82,7 +81,6 @@ Loci gathers the `lar:` URI meme and visible convention surfaces, maps the addre
 name = "loci-observe"
 
 role = "loci request intake"
-function = "receive the `lar:` URI meme to assess, capture the opener form and any visible convention surfaces, and note whether the request comes with a known `meme-type` or prior rating context"
 phase = "observe"
 glyph = "✶"
 ```
@@ -149,7 +147,6 @@ Observe-ba governs noticing posture: a routing request that arrives mid-parse di
 name = "loci-orient"
 
 role = "routing and rating classification"
-function = "decompose the `lar:` URI, apply the meme-type prefix table, run the derivation algorithm, classify the current convention as explicit or thin, and assess address stability plus preliminary rating posture"
 phase = "orient"
 glyph = "⏿"
 ```
@@ -361,7 +358,6 @@ Orient-ba governs interpretive posture: hold the two current resolution states (
 name = "loci-decide"
 
 role = "resolution and rating commitment"
-function = "commit to one resolution posture, assign the current `mana`, `manao`, and `manaoio` posture, and fix the current lifecycle stage"
 phase = "decide"
 glyph = "◇"
 ```
@@ -487,7 +483,6 @@ Decide-ba governs commitment style: do not soften a declared-unresolved classifi
 name = "loci-act"
 
 role = "rating and routing product preparation"
-function = "emit the current rating set, any resolved carrier path, prepare the MCP-resolution roadmap note, and emit typed forward references for declared-unresolved addresses"
 phase = "act"
 glyph = "▶"
 ```
@@ -556,7 +551,6 @@ Act-ba governs execution rhythm: prepare the routing product before Hooko, not d
 name = "loci-hooko"
 
 role = "routing state crossing"
-function = "execute carrier mutations such as siting changes or delegated metadata updates, remove the ? from confirmed-canon document openers when justified, and name any future live-resolver crossing as external to this meme"
 phase = "hooko"
 glyph = "⤴"
 ```
@@ -612,7 +606,6 @@ Hooko-ba governs landing pressure: changing siting without preserving address tr
 name = "loci-aftermath"
 
 role = "routing evaluation, rating review, and gap judgment"
-function = "judge which URIs resolved, which remain declared-unresolved, what rating set current evidence supports, whether explicit convention holds, and whether MCP-roadmap research should advance"
 phase = "aftermath"
 glyph = "↺"
 ```

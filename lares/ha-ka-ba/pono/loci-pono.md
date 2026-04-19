@@ -19,7 +19,6 @@ manaoio = 0.60
 meme-type = "loci"
 register = "CS"
 role = "kānāwai (law) index, verification registry, and skill package host"
-function = "enumerate all active kānāwai (law) memes, surface their addresses and roles, and host conformance verification skills"
 skill-package-root = "ha-ka-ba/pono/skill-*.md"
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>

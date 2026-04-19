@@ -19,7 +19,6 @@ manaoio = 0.68
 meme-type = "loci"
 register = "C"
 role = "pipeline kānāwai (law), lowering kānāwai (law), widget-tree kānāwai (law), render projection kānāwai (law), and trace continuity contract"
-function = "lower memetic-wikitext from human-agent-friendly sigil script into AST and widget structures, preserve lawful invariants, and project results into chat and other render targets"
 pipeline-layers = ["surface", "ast", "widget"]
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
@@ -202,7 +201,6 @@ This subphase preserves high mana at the surface while still supporting fast, la
 name = "render-pipeline-observe"
 
 role = "input acquisition"
-function = "gather surface script, preserve source relation, and mark candidate layer transitions"
 phase = "observe"
 glyph = "&#x2736;"
 ```
@@ -271,7 +269,6 @@ This subphase keeps early reading truthful and non-destructive.
 name = "render-pipeline-orient"
 
 role = "context formation"
-function = "classify source regions, map them to pipeline layers, and hold lawful lowering options"
 phase = "orient"
 glyph = "&#x23FF;"
 ```
@@ -336,7 +333,6 @@ This subphase keeps possibility open without losing structural discipline.
 name = "render-pipeline-decide"
 
 role = "selection and commitment"
-function = "choose canonical lowerings, choose transaction class, and preserve lawful retry and trace posture"
 phase = "decide"
 glyph = "&#x25C7;"
 ```
@@ -410,7 +406,6 @@ This subphase keeps the pipeline honest under real target pressure.
 name = "render-pipeline-act"
 
 role = "execution preparation"
-function = "build syntax products, lower them into widget structures, and prepare render payloads and trace bundles"
 phase = "act"
 glyph = "&#x25B6;"
 ```
@@ -491,7 +486,6 @@ This subphase keeps fast projection compatible with constitutional truth.
 name = "render-pipeline-hooko"
 
 role = "state-crossing threshold"
-function = "carry prepared render work across the live threshold, land target-facing change, and preserve transaction truth"
 phase = "hooko"
 glyph = "&#x2914;"
 ```
@@ -554,7 +548,6 @@ This subphase keeps target-facing motion explicit, inspectable, and bounded.
 name = "render-pipeline-aftermath"
 
 role = "evaluation and aftermath"
-function = "judge what landed, preserve source-to-target trace, and route repair or replay pressure forward"
 phase = "aftermath"
 glyph = "&#x21BA;"
 ```

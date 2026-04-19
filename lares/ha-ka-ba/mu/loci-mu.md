@@ -66,7 +66,6 @@ meme-type       = "loci"
 register        = "CS"
 namespace       = "ँ"   # admin; inherited from envelope
 role            = "null-oracle boot, grammar-surface authority, unask contract, and first executing meme in the chain"
-function        = "receive frame-context from AGENTS, instantiate the grammar-surface, render and evaluate memes, return mu when a premise warrants unasking, and hand the boot onward toward chao"
 boot-order      = 0       # first executing meme
 scale           = "⚂"
 # <<~/ahu >>

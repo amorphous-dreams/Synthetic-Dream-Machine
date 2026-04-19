@@ -47,10 +47,9 @@ confidence = 0.75
 mana       = 0.90
 manao      = 0.80
 manaoio    = 0.75
-meme-type  = "narrative-boot"
+meme-type  = "invariant"
 register   = "CS"
-role       = "narrative boot, threshold surface, handoff declaration"
-function   = "open the boot in narrative form; hand the chain toward mu"
+role       = "narrative startup, threshold surface, AGENTS"
 boot-order = -1
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>

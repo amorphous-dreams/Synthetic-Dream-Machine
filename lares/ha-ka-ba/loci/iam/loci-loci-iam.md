@@ -20,7 +20,6 @@ manaoio = 0.68
 meme-type = "loci"
 register = "CS"
 role = "root metadata kānāwai (law), field-set authority, and reduction charter"
-function = "govern the surviving #iam field set, place each field in the correct ha ka ba slot, and cut redundant or ornamental metadata from live carriers"
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
 pranala = [

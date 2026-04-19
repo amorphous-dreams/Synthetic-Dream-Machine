@@ -25,7 +25,6 @@ manaoio = 0.63
 meme-type = "skill loci"
 register = "SC"
 role = "secondary E-Prime audit skill, Hooko correction surface, and settled-text conformance guide"
-function = "apply lar:///ha.ka.ba/pono/e-prime to settled text, choose mark-only or Hooko correction, and return a compact result contract with residue"
 covers = ["lar:///ha.ka.ba/pono/e-prime"]
 invariants = [
   "S1: any audited `is` or `has` carries an inline confidence marker",

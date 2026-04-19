@@ -20,7 +20,6 @@ manaoio = 0.72
 meme-type = "loci"
 register = "C"
 role = "parsing kānāwai (law), normalization kānāwai (law), metadata fetch kānāwai (law), and deterministic scripting contract"
-function = "parse documents, classify forms, normalize surfaces, surface typed issues, and return addressed metadata or parse products"
 canonical-forms = ["inline", "block", "payload-block", "return"]
 canonical-modes = ["preamble", "metadata", "prose", "sigil", "filter", "raw", "aftermath"]
 # <<~/ahu >>
@@ -68,7 +67,6 @@ A parser or agent following this meme should not collapse those loci into one bl
 name = "parser-observe"
 
 role = "input acquisition"
-function = "gather source text, detect boundaries, preserve raw surface, and mark initial gaps"
 phase = "observe"
 glyph = "✶"
 ```
@@ -198,7 +196,6 @@ This subphase shapes how observation moves without premature collapse.
 name = "parser-orient"
 
 role = "context formation"
-function = "classify regions, assign modes, relate sigil types to forms, and hold competing readings where needed"
 phase = "orient"
 glyph = "⏿"
 ```
@@ -349,7 +346,6 @@ This subphase shapes how orientation moves across competing readings.
 name = "parser-decide"
 
 role = "selection and commitment"
-function = "choose canonical readings, reject illegal pairings, and fix lawful normalization routes"
 phase = "decide"
 glyph = "◇"
 ```
@@ -730,7 +726,6 @@ This subphase shapes how decision pressure lands without false certainty.
 name = "parser-act"
 
 role = "execution preparation"
-function = "apply parse rules, build syntax products, stage lawful variants, and prepare typed envelopes for Hooko crossing"
 phase = "act"
 glyph = "▶"
 ```
@@ -801,7 +796,6 @@ Unknown metadata keys may remain legal unless a stricter profile forbids them.
 name = "parser-hooko"
 
 role = "state-crossing threshold"
-function = "carry prepared intent across the live threshold, perform the bounded change, preserve transaction truth, and hand changed state into aftermath without laundering mutation into narration"
 phase = "hooko"
 glyph = "⤴"
 ```
@@ -1395,7 +1389,6 @@ When alias rules, stricter profiles, or additional metadata contracts deepen eno
 name = "parser-aftermath"
 
 role = "evaluation and aftermath"
-function = "judge what survived, package truthful return, preserve repairable residue, and route next observation"
 phase = "aftermath"
 glyph = "↺"
 ```

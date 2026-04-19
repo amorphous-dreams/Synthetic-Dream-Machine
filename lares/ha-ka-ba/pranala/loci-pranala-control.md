@@ -20,7 +20,6 @@ manaoio = 0.67
 meme-type = "loci"
 register = "CS"
 role = "control-flow edge kānāwai (law), branch authority, and execution-order authority"
-function = "govern execution pulse between nodes or phases, keep branch and gate semantics explicit, and keep control flow distinct from proposition or carried data"
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
 pranala = [

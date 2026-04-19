@@ -27,7 +27,6 @@ manaoio = 0.42
 meme-type = "skill loci"
 register = "S"
 role = "skill template, verification authoring guide, and pre/post-MCP implementation roadmap"
-function = "describe the required shape of a pono verification skill package, declare the dual-surface SKILL.md + memetic-wikitext composition, and provide implementation patterns for grammar conformance checking"
 skill-package-root = "ha-ka-ba/pono/skill-*.md"
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>

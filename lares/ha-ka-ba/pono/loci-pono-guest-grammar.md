@@ -19,7 +19,6 @@ manaoio = 0.48
 meme-type = "loci"
 register = "S"
 role = "guest-grammar admission kānāwai (law), invocation-boundary kānāwai (law), and host-guest ownership contract"
-function = "define how memetic-wikitext admits, names, bounds, invokes, degrades, and hands forward guest grammars under explicit host control"
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
 pranala = [

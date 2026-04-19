@@ -20,7 +20,6 @@ manaoio = 0.67
 meme-type = "loci"
 register = "CS"
 role = "semantic edge kānāwai (law), proposition authority, and ontology-link bridge"
-function = "govern labeled semantic relations between concepts sigils memes and loci while keeping proposition meaning distinct from execution or message flow"
 link-phrase-required = true
 ontology-backed = true
 # <<~/ahu >>

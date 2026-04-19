@@ -19,7 +19,6 @@ manaoio = 0.36
 meme-type = "grammar"
 register = "S"
 role = "grammar meme, import-profile meme, sigil-centric translation contract, and boundary-safe work grammar registry entry"
-function = "define the admitted x-tiddlywiki-filter guest family, its host-facing priming contract, its sigil-centric term shifts, and its minimum lawful use through hana"
 grammar-key = "x-tiddlywiki-filter"
 guest-mime = "text/x-tiddlywiki-filter"
 invocation-worksite = "hana"

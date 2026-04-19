@@ -20,7 +20,6 @@ manaoio = 0.66
 meme-type = "loci"
 register = "CS"
 role = "root pranala (edge) kānāwai (law), family authority, lifecycle authority, and migration target"
-function = "govern explicit edge families, keep semantic control dataflow message constraint and debug meanings distinct, and stage migration from vague dependency claims toward bound edge objects"
 edge-families = ["proposition", "control", "dataflow", "message", "constraint", "debug"]
 lifecycle-layers = ["template", "instance", "trace"]
 # <<~/ahu >>

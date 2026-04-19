@@ -20,7 +20,6 @@ manaoio = 0.52
 meme-type = "loci"
 register = "CS"
 role = "file-path key authority, path-form classifier, and migration-procedure kānāwai (law)"
-function = "define the two canonical file-path forms, govern the agreement check between file-path and lar: URI, and declare the migration procedure when a meme moves from flat-file to path-directory siting"
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
 pranala = [
@@ -62,7 +61,6 @@ file-path kānāwai (law) captures the raw key value from the `#iam` block, clas
 name = "file-path-observe"
 
 role = "key value intake"
-function = "locate the file-path key in #iam, capture its raw string value, and note the document opener lar: URI for later agreement check"
 phase = "observe"
 glyph = "✶"
 ```
@@ -119,7 +117,6 @@ Observe-ba governs noticing posture: a missing `file-path` key counts as a disti
 name = "file-path-orient"
 
 role = "form classification and agreement mapping"
-function = "classify the file-path value into flat-file or path-directory form, check agreement with the lar: URI and meme-type, and assess whether the meme sits in a transitional migration state"
 tensions"
 phase = "orient"
 glyph = "⏿"
@@ -258,7 +255,6 @@ Orient-ba governs tension-holding: a meme mid-migration may sit with `file-path`
 name = "file-path-decide"
 
 role = "conformance commitment"
-function = "commit to a form verdict (flat-file, path-directory, malformed, transitional), issue the URI agreement verdict, and fix the repair path for any failure"
 path"
 phase = "decide"
 glyph = "◇"
@@ -324,7 +320,6 @@ Decide-ba governs migration-posture commitment: do not call a meme "migrated" un
 name = "file-path-act"
 
 role = "repair and report preparation"
-function = "assemble the conformance report with form and agreement verdicts, stage repair guidance for any failure, and prepare migration steps for Hooko during ongoing migration"
 phase = "act"
 glyph = "▶"
 ```
@@ -377,7 +372,6 @@ Act-ba governs execution restraint: Act stages migration steps but does not perf
 name = "file-path-hooko"
 
 role = "file-path mutation threshold"
-function = "execute git mv on migration, update file-path in #iam, and correct any agreement violation in the document opener"
 phase = "hooko"
 glyph = "⤴"
 ```
@@ -422,7 +416,6 @@ Hooko-ba governs landing pressure: a `git mv` remains irreversible without a sec
 name = "file-path-aftermath"
 
 role = "file-path evaluation and sync judgment"
-function = "judge whether all migration crossings completed, verify carrier coherence and physical-file agreement, and surface any incomplete crossings as named residue"
 phase = "aftermath"
 glyph = "↺"
 ```

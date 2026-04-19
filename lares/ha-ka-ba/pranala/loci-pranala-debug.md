@@ -20,7 +20,6 @@ manaoio = 0.68
 meme-type = "loci"
 register = "CS"
 role = "debug edge kānāwai (law), observation authority, and hidden-edge illumination authority"
-function = "govern observation and reveal edges that surface hidden graph behavior, operator knowledge, or runtime residue without mutating the underlying ontology"
 visibility-modes = ["inline", "overlay", "trace-only", "operator-only"]
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>

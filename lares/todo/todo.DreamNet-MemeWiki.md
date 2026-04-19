@@ -19,7 +19,6 @@ manaoio = 0.60
 meme-type = "todo"
 register = "S"
 role = "research consolidation todo, architecture intake memo, and staged implementation plan"
-function = "gather the DreamNet MemeWiki research field, distinguish settled architectural direction from open tensions, and stage the next implementation sequence"
 source-documents = [
   "_todo/DreamNet_MemeWiki.md",
   "_todo/DreamNet_MemeWiki_Lezer_CodeMirror.md",
@@ -68,7 +67,6 @@ This file uses the OODA-HA loop as work discipline rather than ornament. The poi
 name = "DreamNet_MemeWiki-observe"
 
 role = "research intake"
-function = "capture what the four source notes already established, preserving both settled findings and open edges"
 phase = "observe"
 glyph = "✶"
 ```
@@ -145,7 +143,6 @@ This stage should preserve uncertainty openly. A confident-sounding guess about 
 name = "DreamNet_MemeWiki-orient"
 
 role = "architecture formation"
-function = "distinguish the boot path, editor path, collaboration path, and downstream bridge surfaces"
 phase = "orient"
 glyph = "⏿"
 ```
@@ -230,7 +227,6 @@ Favor the narrowest architecture that can still grow. The research points toward
 name = "DreamNet_MemeWiki-decide"
 
 role = "decision posture"
-function = "name what is settled enough to guide implementation now and what remains intentionally deferred"
 phase = "decide"
 glyph = "◇"
 ```
@@ -310,7 +306,6 @@ Commit to the smallest decisions that unlock code. Refuse the larger decisions t
 name = "DreamNet_MemeWiki-act"
 
 role = "implementation staging"
-function = "turn the research and decisions into an executable work sequence"
 phase = "act"
 glyph = "▶"
 ```
@@ -403,7 +398,6 @@ Prototype narrowly, verify hard, and only then widen scope. Each workstream shou
 name = "DreamNet_MemeWiki-aftermath"
 
 role = "residue judgment"
-function = "separate what this consolidation now makes clear from what still remains unresolved"
 phase = "aftermath"
 glyph = "↺"
 ```

@@ -20,7 +20,6 @@ manaoio = 0.66
 meme-type = "loci"
 register = "CS"
 role = "concrete edge instance kānāwai (law), bound-object authority, and override discipline"
-function = "govern bound edge objects between actual endpoints, permit explicit overrides over template defaults, and keep declared instances distinct from observed traces"
 instance-states = ["declared", "bound", "observed", "stale"]
 trace-separation = true
 template-optional = true

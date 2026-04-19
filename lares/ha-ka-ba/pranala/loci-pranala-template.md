@@ -20,7 +20,6 @@ manaoio = 0.65
 meme-type = "loci"
 register = "CS"
 role = "template edge sigil kānāwai (law), slot-contract authority, and kahea binding authority"
-function = "govern reusable edge templates, declare slot and default surfaces, and bind template invocations into concrete edge instances without hiding context precedence"
 binding-order = ["invocation", "local-body", "addressed-iam", "session-state", "template-defaults"]
 promotion-rule = "repeat-before-promotion"
 invocation-surface = "kahea"

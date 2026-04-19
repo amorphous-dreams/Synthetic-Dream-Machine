@@ -24,7 +24,6 @@ manaoio = 0.69
 meme-type = "skill loci"
 register = "SC"
 role = "invariant-meme skill, conformance checker, and sidecar splitter"
-function = "load the canonical invariant-meme loci as law and template, preserve minimal token cost and active pressure, keep ahu visible and pranala named, require domain-specific OODA-HA fill for downstream memes, and move non-invariant matter outward"
 covers = [
   "lar:///ha.ka.ba/pono/invariant-meme"
 ]

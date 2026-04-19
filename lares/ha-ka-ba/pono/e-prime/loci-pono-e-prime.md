@@ -19,7 +19,6 @@ manaoio = 0.76
 meme-type = "invariant loci"
 register = "SC"
 role = "active language-discipline kānāwai (law), certainty-pressure regulator, next-generation pressure surface, and secondary audit governor for outward text"
-function = "govern lawful E-Prime practice across memetic-wikitext output units; stay active ahead of outward render; catch identity-collapse pressure before wording settles; bend the next phrasing toward compact truth; preserve human and agent readability"
 cacheable = true
 invariant = true
 implements = "lar:///ha.ka.ba/pono/invariant-meme/v0.1"

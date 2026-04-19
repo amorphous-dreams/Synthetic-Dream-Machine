@@ -19,7 +19,6 @@ manaoio = 0.58
 meme-type = "pono"
 register = "S"
 role = "shared normative vocabulary kānāwai (law), modal-force registry, and cross-meme reference point"
-function = "define the canonical normative verb set for meme laws, assign force labels, and give carriers one central address to cite instead of repeating unsupported local metadata declarations"
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
 pranala = [

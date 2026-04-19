@@ -18,7 +18,6 @@ manaoio = 0.42
 meme-type = "loci"
 register = "S"
 role = "constitutional root kānāwai (law), authoring kānāwai (law), primitive semantic kānāwai (law), and boot grammar contract"
-function = "govern lawful memetic-wikitext authoring surface, define primitive meanings and composition, and provide the minimum semantic and grammatical contract consumed by parser and render-pipeline"
 canonical-forms = ["inline", "block", "payload-block", "return"]
 canonical-modes = ["preamble", "metadata", "prose", "sigil", "filter", "raw", "aftermath"]
 constitutional-charge = [

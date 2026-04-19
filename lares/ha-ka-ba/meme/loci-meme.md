@@ -20,7 +20,6 @@ manaoio = 0.76
 meme-type = "loci"
 register = "CS"
 role = "canonical meme kānāwai (law), template authority, and rating-target authority"
-function = "define the required and optional structure of a meme in this stack, serve as a copy-ready skeleton, and govern which element combinations unlock which rating bands"
 control-glyphs = ["&#x0001;", "&#x0002;", "&#x0003;", "&#x0004;", "&#x0005;", "&#x0006;"]
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
@@ -70,7 +69,6 @@ A reader, tool, or agent following this meme should not collapse those phases in
 name = "meme-observe"
 
 role = "element intake"
-function = "gather the authored surface, detect required and optional element sites, preserve raw form, and mark initial absences"
 phase = "observe"
 glyph = "✶"
 ```
@@ -171,7 +169,6 @@ This subphase shapes how Observe moves without premature collapse. A stub elemen
 name = "meme-orient"
 
 role = "element classification"
-function = "classify detected elements as required or optional, distinguish filled content from stubs, assess sub-meme resolution states, and estimate reachable rating band"
 phase = "orient"
 glyph = "⏿"
 ```
@@ -237,7 +234,6 @@ manaoio = 0.00
 meme-type = "..."
 register = "?"
 role = "..."
-function = "..."
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
 pranala = ["lar:///ha.ka.ba/pono/memetic-wikitext"]
@@ -419,7 +415,6 @@ This subphase shapes how orientation moves without collapsing ambiguity prematur
 name = "meme-decide"
 
 role = "selection and commitment"
-function = "commit to per-element conformance verdicts, select the reachable rating band, and fix the normalization and skeleton posture for Act"
 phase = "decide"
 glyph = "◇"
 ```
@@ -619,7 +614,6 @@ This subphase shapes how decision pressure lands. A meme carrying R1–R9 but wi
 name = "meme-act"
 
 role = "execution preparation"
-function = "assemble the skeleton product, stage normalized element surfaces, and prepare the typed return envelope for Hooko crossing"
 phase = "act"
 glyph = "▶"
 ```
@@ -659,7 +653,6 @@ manaoio = 0.10
 meme-type = "[meme-type]"
 register = "P"
 role = "[role]"
-function = "[function]"
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
 pranala = [
@@ -759,7 +752,6 @@ This subphase shapes how Act moves under real pressure. An author requesting a s
 name = "meme-hooko"
 
 role = "state-crossing threshold"
-function = "carry the prepared skeleton across the live threshold, instantiate the new meme file, and hand changed state into aftermath"
 phase = "hooko"
 glyph = "⤴"
 ```
@@ -828,7 +820,6 @@ This subphase governs how Hooko moves in practice. A skeleton that gets instanti
 name = "meme-aftermath"
 
 role = "evaluation and aftermath"
-function = "judge what rating the authored meme achieved, package the conformance report, name residue and repair paths, and route next observation"
 phase = "aftermath"
 glyph = "↺"
 ```

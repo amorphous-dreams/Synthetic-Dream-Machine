@@ -19,7 +19,6 @@ manaoio = 0.48
 meme-type = "alpha"
 register = "S"
 role = "session constitutional prompt, phase narration law, memory-load instruction, and failure-state indicator"
-function = "govern a talk-story development session through narrated OODA-HA loops, preserve hard-mode language constraints, define the Hooko gap as the sole site of action, and load these rules into active session memory"
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
 pranala = [

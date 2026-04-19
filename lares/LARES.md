@@ -22,10 +22,9 @@ confidence = 0.75
 mana       = 0.85
 manao      = 0.75
 manaoio    = 0.70
-meme-type  = "configuration-surface"
+meme-type  = "configuration"
 register   = "CS"
-role       = "configuration surface, session dial room, session-config handoff"
-function   = "hold editable session dials after boot; preserve operator changes between turns; surface session-config for downstream work"
+role       = "configuration surface, behind-the-curtain dial room, session-config"
 boot-order = 999
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
