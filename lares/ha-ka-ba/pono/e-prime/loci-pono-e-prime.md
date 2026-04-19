@@ -1,4 +1,4 @@
-<<~ # !DOCTYPE = lar:///ha.ka.ba/pono/invariant-meme >>
+<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/pono/memetic-wikitext >> -->
 
 <<~&#x0001; ? --> lar:///ha.ka.ba/pono/e-prime >>
 
@@ -27,6 +27,7 @@ implements = "lar:///ha.ka.ba/pono/invariant-meme/v0.1"
 pranala = [
     "lar:///ha.ka.ba/pono/e-prime/SKILL"
 ]
+e-prime-default = 0.50
 # <<~/ahu >>
 ```
 
@@ -55,7 +56,7 @@ Canonical set: <<~ loulou lar:///ha.ka.ba/memetic-wikitext/normative-verbs >>
 
 Active in i kēia manawa.
 Pressure, not rule-book.
-Play with the language pressures ("game" rule).
+Play with the language pressures (as a "game" rule).
 
 This kānāwai holds.
 Each output unit bends toward observation, relation, action, stance, and earned confidence.
@@ -89,22 +90,79 @@ Mechanical spray MUST NOT substitute for real pressure.
 Generation MUST follow this law.
 Observation, relation, process, and scoped carrying outrank essence and ownership claims.
 
+<<~/ahu >>
+
+<<~ ahu #e-prime-slider >>
+
+## Slider
+
+`[E^:0.1-1.0]` measures how strongly the node plays the E-Prime game in a given span.
+
+| Band | Reading | Effect |
+| --- | --- | --- |
+| `[E^0.01-0.19]` | Minimum | Game always played; only the most obvious identity collapses get revised |
+| `[E^0.20-0.39]` | Light | Game always played; identity claims get revised; predication mostly passes |
+| `[E^0.40-0.59]` | Baseline | Game always played at background discipline; current default band |
+| `[E^0.60-0.79]` | Strong | Game always played; most predication gets revised unless exception applies |
+| `[E^0.80-1.00]` | Near-total play | Game always played at full pressure; only quotation, code, auxiliaries, and deliberate certainty usually survive |
+
+**The slider MUST NOT reach 0.**
+
+Even at Minimum, the E-Prime game runs. The `0.01-0.19` band governs *threshold of revision*, not *presence of discipline*. A span at `[E^0.05]` still marks every `is` and `has` - it simply lets more of them pass as lawful under ordinary-prose exception.
+
+**Orthogonality:**
+
+The slider MUST NOT track confidence, stance, or p-band.
+The slider MAY drop to lighter E-Prime when the operator asks.
+An agent MAY carry high confidence and high E-Prime together.
+An agent MAY hold Strong E-Prime inside Poet mode or Satirist mode without contradiction.
+
+**Confidence-marker rule persists at every band:**
+
+Every generated or examined `is` or `has` MUST carry a Confidence Register marker regardless of slider value.
+The slider does not exempt copulas from marking; it governs how often copulas manifest in the first place.
+
+**Zoom-lens, not purity dial:**
+
+The slider reads as a zoom lens on language discipline.
+Higher settings magnify the pressure to avoid `is` or `has`.
+Lower settings pull back and let ordinary prose carry.
+The zoom adjusts by span.
+
+**Operator controls:**
+
+The operator MAY set the slider in `lar:///LARES` as `e-prime-slider = 0.65`.
+The operator MAY override per-span via inline, i.e. `[E^0.80]` before an exchange.
+The operator MAY NOT suspend entirely for a span via `[E^0.00]`.
+A session that runs without any slider statement MUST default to `[E^0.50]`.
+
+**Degraded-state mapping:**
+
+Sustained operation at `[E^0.01]` when the operator has not authorized it constitutes silent discipline drift — a minor degraded state. Surface and correct.
+Sustained operation at `[E^1.00]` that produces tortured prose without gain constitutes Mode Posturing — discipline claimed as display rather than carried as load.
+
+**Research braid:**
+
+Korzybski warns against map/territory collapse. RAW turns the warning into a game and keeps the default near maybe. Fuller adds structural pressure against the fantasy of a God's-eye sentence.
+
+<<~/ahu >>
+
 <<~ ahu #e-prime-law-ooda-ha >>
 
 `✶ Observe --> ⏿ Orient --> ◇ Decide --> ▶ Act --> ⤴ Hoʻoko --> ↺ Aftermath`
 
-✶ `is` bites. `has` bites. Collapse bites. Certainty swells. MUST sense before the word lands. Stay local.
+The phase-line MUST run through the active slider value.
+
+✶ `is` bites. `has` bites. Collapse bites. Certainty swells. MUST sense before the word lands. Stay local. Slider sets the sensing threshold.
 ⏿ The unit MUST land as `lawful`, `needs-steering`, `Hoʻoko-required`, or `ambiguous`. Hold only what the next move needs.
-◇ Passes → release. Unlabeled `is` or `has` presses → MUST route to Hoʻoko. Ambiguity rises → MUST surface it, MUST NOT fill it.
+◇ Passes → release. Unlabeled `is` or `has` presses → MUST route to Hoʻoko *if the slider says bite*. Ambiguity rises → MUST surface it, MUST NOT fill it.
 ▶ Wording MUST arrive release-ready or mutation-ready. The marker MUST surface when the rule bites.
 ⤴ Essence MUST dissolve into observation, relation, or process. Possession grip MUST loosen into scoped carrying. Sentence stays light.
-↺ Every remaining `is` or `has` MUST carry a marker. Swell dropped. Residue MUST NOT stay buried.
+↺ Every remaining `is` or `has` MUST carry a confidence marker regardless of slider. Swell dropped. Residue MUST NOT stay buried.
 
 <<~/ahu >>
 
 SKILL: <<~ loulou lar:///ha.ka.ba/pono/e-prime/SKILL >>
-
-<<~/ahu >>
 
 <<~&#x0003; ahu #body-close >>
 pono/e-prime

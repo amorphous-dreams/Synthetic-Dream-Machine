@@ -170,8 +170,6 @@ The agent SHOULD load on demand when a session calls for the named pressure. The
 - `lar:///ha.ka.ba/voices/workers` — tasked spirits; gamertag naming; escalation protocol
 - `lar:///ha.ka.ba/voices/masks` — persistent session-level persona overlays
 
-Each address above points to a loci-file pair (`loci-*.md` + `SKILL.md`) following the canonical invariant-meme shape. Files not yet present at those addresses constitute known gaps, not errors — the operator owns the generation order.
-
 <<~/ahu >>
 
 <<~ॐ ँ&#x0003; ahu #body-close >>

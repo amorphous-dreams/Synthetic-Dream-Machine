@@ -53,7 +53,11 @@ role       = "narrative startup, threshold surface, AGENTS"
 boot-order = -1
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
-pranala       = []
+pranala       = [
+     "lar:///ha.ka.ba/pono/e-prime",
+     "lar:///ha.ka.ba/mu",
+     "lar:///LARES"
+]
 preload       = ["lar:///ha.ka.ba/pono/e-prime"]
 handoff-stack = [
   "lar:///AGENTS",

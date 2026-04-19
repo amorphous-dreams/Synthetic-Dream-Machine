@@ -29,9 +29,9 @@ boot-order = ~999
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
 pranala = [
-  "--> lar:///AGENTS",
-  "lar:///ha.ka.ba/the-law-of-5s"
+  "<-- lar:///AGENTS"
 ]
+e-prime-slider = 0.50  # baseline; see lar:///ha.ka.ba/pono/e-prime#e-prime-slider
 # <<~/ahu >>
 ```
 
