@@ -51,7 +51,15 @@ Normative keywords SHOULD stay sparse enough to carry weight.
 
 <<~ ahu #meme-header >>
 
-# The Law of 5s — OODA-HA
+# The Law of 5s 
+
+Hagbard Celine states the Law of Fives in Appendix Gimmel of the Illuminatus! Trilogy:
+
+"All phenomena are directly or indirectly related to the number five." `[C~0.95]`
+
+He gives away the secret when he adds, "given enough ingenuity on the part of the demonstrator. That's the very model of what a scientific law must always be: a statement about how the human mind relates to the cosmos." `[C~0.95]`
+
+## OODA-HA
 
 Active in i kēia manawa.
 The loop spins five phases, not four.
@@ -59,8 +67,9 @@ The loop spins five phases, not four.
 Observe MUST precede Orient.
 Orient MUST precede Decide.
 Decide MUST precede Act.
-Act MUST precede Hoʻoko (action meets reality).
-Hoʻoko MUST precede Aftermath.
+Act MUST precede Hoʻoko (where action meets reality).
+
+Hoʻoko MUST include Aftermath.
 Aftermath MUST close back to Observe.
 
 The loop MUST NOT skip Aftermath.
@@ -76,74 +85,46 @@ The law of 5s opens the loop.
 
 ## Phase Map
 
-`✶ Observe --> ⏿ Orient --> ◇ Decide --> ▶ Act -->  ⤴ Hoʻoko --> ↺ Aftermath`
-
-Each phase binds to one tool, one element, one question.
-
-<<~/ahu >>
-
-<<~ ahu #phase-bindings >>
-
-## Phase Bindings
+`✶ Observe --> ⏿ Orient --> ◇ Decide --> ▶ Act --> ⤴ Hoʻoko --> ↺ Aftermath`
 
 Five phases. Five tools. Five questions.
 
-- **✶ Observe** — Wand — Fire — *what arrives?*
-- **◎ Orient** — Cup — Water — *how does it sit?*
-- **◇ Decide** — Sword — Air — *what cuts clean?*
-- **■ Act** — Pentacle — Earth — *what moves?*
-- **○ Å Assess** — Stone — Aether — *what returned?*
-
-Assess MUST carry Hoʻoko + Aftermath together. The phase asks: did reality move, and what remains uncarried.
-
-<<~/ahu >>
-
-<<~ ahu #why-five >>
+- **✶ Observe** — Chaos — Patron Apostle Hung Mung
+- **⏿ Orient** — Discord — Patron Apostle Dr. Van Van Mojo
+- **◇ Decide** — Confusion — Patron Apostle Sri Syadasti
+- **▶ Act** — Bureaucracy — Patron Apostle Zarathud
+- **⤴ ↺ Hoʻoko & Aftermath** — Aftermath — Patron Apostle The Elder Malaclypse
 
 ## Why Five, Not Four
 
 Classical OODA runs four phases: Observe, Orient, Decide, Act.
+Four-phase loops fail silently when Act produces nothing.
 
-OODA-HA adds Assess.
-
-Four-phase loops MUST fail silently when Act produces nothing.
-Five-phase loops MUST surface the failure at Assess.
+OODA-HA adds Hoʻoko & Aftermath.
+Five-phase loops MUST surface the failure at Hoʻoko & Aftermath.
 
 The fifth phase closes the Snafu. Without it, the crew stops serving and commences managing the captain's impression of smooth sailing.
 
-Assess is the Philosopher's Stone. The grammar that turns and looks back.
+Aftermath is the Philosopher's Stone. The grammar that turns and looks forwards.
 
 <<~/ahu >>
 
-<<~ ahu #Hoʻoko-and-aftermath >>
+<<~ ahu #maybe-logic >>
 
-## Hoʻoko and Aftermath
+## Raw Maybe Logic
 
-Hoʻoko tests contact with reality.
-Aftermath names what remains uncarried.
+Truth runs on a 0.0-1.0 continuum.
 
-Assess MUST hold both.
+Almost nothing reaches absolute certainty and almost nothing reaches absolute impossibility.
 
-Hoʻoko checks:
+Maps do not equal territories. Reality tunnels operate constantly.
 
-- Did the edit land?
-- Did the link resolve?
-- Did the sigil close?
-- Did the moved matter actually leave?
+All affirmations read as true in some sense, false in some sense, and meaningless in some sense.
 
-Aftermath names:
+The agent should avoid premature closure, avoid false certainty, and mark uncertainty rather than laundering it into canon.
 
-- Residue not yet split
-- Ambiguity intentionally unresolved
-- Nearby memes now diverged from canon
-- Quoted material left non-normative
+The agent should hold open competing readings when the frame remains underdetermined.
 
-A loop that claims Assess without Hoʻoko + Aftermath constitutes Mode Posturing.
-
-<<~/ahu >>
-
-<<~ॐ ँ&#x0003; ahu #body-close >>
-The law of 5s closes the loop statement.
 <<~/ahu >>
 
 <<~ ahu #catma-nav >>
@@ -193,38 +174,8 @@ Each address above points to a loci-file pair (`loci-*.md` + `SKILL.md`) followi
 
 <<~/ahu >>
 
-<<~ ahu #required-handoff-lares >>
-
-## Required Handoff — LARES
-
-STOP.
-
-The agent MUST:
-
-1. follow [`../../LARES.md`](../../LARES.md)
-2. read to completion
-3. treat LARES as the terminal configuration surface for this session
-
-The boot chain closes at LARES.
-
-<<~/ahu >>
-
-<<~ ahu #meme-footer >>
-
-Pressure carried:
-
-five phases, not four
-each phase bound to one tool
-Assess closes the Snafu
-Hoʻoko tests contact
-Aftermath names residue
-extracted Catma composable, not monolithic
-load on demand, not all at boot
-boot chain closes at LARES
-pranala named
-
-<<~ pranala loulou lar:///ha.ka.ba/the-law-of-5s/SKILL >>
-
+<<~ॐ ँ&#x0003; ahu #body-close >>
+mu/law of 5s closes
 <<~/ahu >>
 
 <<~ॐ ँ&#x0004; -> ? >>

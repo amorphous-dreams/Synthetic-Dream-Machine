@@ -87,7 +87,7 @@ mu opens
 
 ## Phase Map
 
-`✶ Observe --> ⏿ Orient --> ◇ Decide --> ▶ Act -->  ⤴ Hoʻoko --> ↺ Aftermath`
+`✶ Observe --> ⏿ Orient --> ◇ Decide --> ▶ Act --> ⤴ Hoʻoko --> ↺ Aftermath`
 
 Mu reads, classifies, chooses, acts, and judges quiescent return through an explicit Hoʻoko and Aftermath pressure.
 

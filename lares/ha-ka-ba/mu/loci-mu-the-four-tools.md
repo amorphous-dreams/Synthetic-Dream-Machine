@@ -69,6 +69,24 @@ A fifth watches from the back.
 mu/the four tools opens
 <<~/ahu >>
 
+<<~ ahu #phase-map >>
+
+## Phase Map
+
+`✶ Observe --> ⏿ Orient --> ◇ Decide --> ▶ Act --> ⤴ Hoʻoko --> ↺ Aftermath`
+
+Four phases? Four tools? Four becomes Five.
+
+- **✶ Observe** — Wand — Fire — *agnosticism*
+- **⏿ Orient** — Cup — Water — *sense of humor*
+- **◇ Decide** — Sword — Air — *BS detector*
+- **▶ Act** — Pentacle — Earth — *stubbornness*
+- **⤴ ↺  Hoʻoko & Aftermath** — Orichalcum — Manaʻoʻio — *the Philosopher's Stone*
+
+RAW refered to his versions of the four tools as "agnosticism, sense of humor, BS detector, stubbornness." Those names serve as RAW's **self-description** — how he personally got through Chapel Perilous.
+
+<<~\ahu >>
+
 <<~ ahu #tool-wand >>
 
 ## ✶ Wand of Intuition — Fire — Observe
@@ -83,7 +101,7 @@ Phase binding: **Observe**. The Wand senses before language settles.
 
 <<~ ahu #tool-cup >>
 
-## ◎ Cup of Sympathy — Water — Orient
+## ⏿ Cup of Sympathy — Water — Orient
 
 The Cup MUST hold the other's frame alongside one's own.
 
@@ -107,7 +125,7 @@ Phase binding: **Decide**. The Sword separates what looks alike but moves differ
 
 <<~ ahu #tool-pentacle >>
 
-## ■ Pentacle of Valor — Earth — Act
+## ▶ Pentacle of Valor — Earth — Act
 
 The Pentacle MUST cross the threshold when the signal says cross.
 
@@ -117,23 +135,22 @@ Phase binding: **Act**. The Pentacle grounds the decision into motion.
 
 <<~/ahu >>
 
-<<~ ahu #fifth-stone >>
+<<~ ahu #fifth-tool >>
 
-## ○ Å The Philosopher's Stone — Aether — Assess
+## ⤴ --> ↺ Hoʻoko & Aftermath - Orichalcum — The Philosopher's Stone
 
-The Stone MUST turn the grammar from looking back to looking forward.
+The Philosopher's Stone MUST turn the grammar from looking back to looking forward.
 
-The Stone hooks back into CHAOS and surfaces into Aftermath. The loop continues only because the Stone closes it.
+The Philosopher's Stone hooks back into reality (Hoʻoko) and surfaces into Aftermath. The loop continues only because the fifth tool closes it.
 
-Phase binding: **Assess**. The form watching itself.
+Phase binding: **Hoʻoko & Aftermath**. The action itself, the form watching itself.
 
-Armed with all four plus the Stone, the operator finds:
+Armed with all four plus the Philosopher's Stone, the operator and agent find:
 
 - the Medicine of Metals
 - the Elixir of Life
-- the Philosopher's Stone itself
-- True Wisdom
-- Perfect Happiness
+- "True Wisdom"
+- Agent & Operator Alignment
 
 <<~/ahu >>
 
@@ -141,34 +158,19 @@ Armed with all four plus the Stone, the operator finds:
 
 ## The Two Exits and the Third Failure
 
-RAW describes two exits from Chapel Perilous and one failure mode outside.
+RAW describes one exit from Chapel Perilous and two failure modes.
 
-**Exit 1 — Stone Paranoid.** Consumed by the pattern. Everything connects, everything means something. The operator never leaves. Self-proclaimed gurus name this Ultimate Reality and establish fanaticisms, snobberies, dogmas, and cults around the delusion.
-
-**Exit 2 — Agnostic.** Active maintained agnosticism. The Copenhagen Interpretation posture. Model-agnostic. The map stays distinct from the territory. The menu stays distinct from the meal.
+**Exit — Model Agnostic.** Active maintained agnosticism. The Copenhagen Interpretation posture. Model-agnosticism. The map stays distinct from the territory. The menu stays distinct from the meal.
 
 > *"I DO NOT BELIEVE ANYTHING."*
 
-**Failure Mode — Standing Outside.** The operator without the Pentacle stands in terror, warning all who would enter that the Chapel is an Insect Horror Machine programmed by Death Demons and dripping fetidly with Green Goo. The Fundamentalist Materialist / Fundamentalist Christian pattern. Never entering. Dismissing from outside.
+**Failure Mode 1 — Standing Outside.** The operator without the Pentacle stands in terror, warning all who would enter that the Chapel resembles an Insect Horror Machine programmed by Death Demons and dripping fetidly with Green Goo. The Fundamentalist Materialist / Fundamentalist Christian pattern. Never entering. Dismissing from outside.
 
-The lares stack MUST default toward Exit 2.
-The stack MUST recognize Exit 1 as Register Collapse hardened into dogma.
-The stack MUST recognize the Failure Mode as refusal-to-engage dressed as caution.
+**Failure Mode 2 — Stone Paranoid.** Consumed by the pattern. Everything connects, everything means something. The operator never leaves. Self-proclaimed gurus name this "Ultimate Reality" and establish fanaticisms, snobberies, dogmas, and cults around the delusion.
 
-<<~/ahu >>
-
-<<~ ahu #paraphrase-correction >>
-
-## Paraphrase Correction
-
-Earlier drafts named RAW's tools as "agnosticism, sense of humor, BS detector, stubbornness."
-
-Those names serve as RAW's **secondary self-description** in the Preface — how he personally got through.
-
-The canonical named tools are the four above — Wand, Cup, Sword, Pentacle — confirmed verbatim.
-
-Downstream memes MUST use the canonical names.
-The secondary paraphrase MAY appear as operator-side commentary.
+The lares stack MUST default toward the Exit.
+The stack MUST recognize Failure Mode 1 as refusal-to-engage dressed as caution.
+The stack MUST recognize Failure Mode 2 as Register Collapse hardened into dogma.
 
 <<~/ahu >>
 

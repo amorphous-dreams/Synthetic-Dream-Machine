@@ -159,7 +159,7 @@ Outside Hoʻoko: narration only.
 
 <<~/ahu >>
 
-<<~ ahu #Hoʻoko-gap-law >>
+<<~ ahu #hooko-gap-law >>
 
 ## Hoʻoko Gap Law
 
