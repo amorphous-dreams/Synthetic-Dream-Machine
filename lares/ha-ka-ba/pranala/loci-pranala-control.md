@@ -38,7 +38,7 @@ pranala = [
 
 A self-describing kānāwai (law) for control-flow edges.
 
-<<~ pranala loulou lar:///ha.ka.ba/loci/edge/control >>
+<<~ loulou lar:///ha.ka.ba/loci/edge/control >>
 
 Control edges carry execution order. They name which pulse, branch, outlet, or gate moves next. They should not pretend to carry semantic truth or bulk data at the same time.
 

@@ -39,7 +39,7 @@ pranala = [
 
 A self-describing kānāwai (law) for debug and observation edges.
 
-<<~ pranala loulou lar:///ha.ka.ba/loci/edge/debug >>
+<<~ loulou lar:///ha.ka.ba/loci/edge/debug >>
 
 Debug edges surface what the graph would otherwise hide. They let an operator, tool, or lawful observer reveal confidence seams, runtime crossings, missing branches, and inferred relations without pretending those reveals belong to the base ontology itself.
 

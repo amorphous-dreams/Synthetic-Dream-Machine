@@ -327,7 +327,7 @@ downstream phases filled
 sidecars later
 sparse real normativity
 
-<<~ pranala loulou lar:///ha.ka.ba/pono/invariant-meme >>
+<<~ loulou lar:///ha.ka.ba/pono/invariant-meme >>
 
 <<~/ahu >>
 

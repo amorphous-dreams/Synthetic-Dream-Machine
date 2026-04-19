@@ -46,7 +46,7 @@ Normative keywords MUST bind generation, release, correction, or recheck.
 Normative keywords MUST NOT decorate prose.
 Normative keywords SHOULD stay sparse enough to carry weight.
 
-Canonical set: <<~ pranala loulou lar:///ha.ka.ba/memetic-wikitext/normative-verbs >>
+Canonical set: <<~ loulou lar:///ha.ka.ba/memetic-wikitext/normative-verbs >>
 
 <<~/ahu >>
 ```
@@ -70,29 +70,41 @@ pono/e-prime
 
 <<~ ahu #e-prime-law >>
 
+The **is of identity** fuses map to territory.
+"X is Y" presents relation as essence — the observer's position disappears.
+In LLM output, identity collapse produces grammatical certainty the model does not hold.
+
+The **is of predication** encodes observer state as objective property.
+"The answer is wrong" vs "the answer diverges from expectation under these conditions."
+One closes; the other carries the observing agent forward.
+
+The **has of possession** collapses relation into ownership.
+"The model has knowledge" implies bounded containment.
+Scoped carrying stays honest: "the model carries patterns toward X under condition Y."
+
+All three generate overcertainty.
+All three MUST surface a confidence marker when they appear.
 Marker form: `[REGISTER~0.00]` — brackets, one tilde, two decimal places.
-Any `is` or `has` in any output MUST surface a confidence marker.
 Add the marker elsewhere only when confidence remains load-bearing.
 Mechanical spray MUST NOT substitute for real pressure.
 
-The generator applies this law before outward render and MUST NOT release early.
-The auditor inspects settled text under the same marker rule.
-Observation, relation, action, and scoped confidence outrank essence claims.
+Generation MUST follow this law.
+Observation, relation, process, and scoped carrying outrank essence and ownership claims.
 
-<<~ ahu #e-prime-ooda-ha >>
+<<~ ahu #e-prime-law-ooda-ha >>
 
 `✶ Observe -> ⏿ Orient -> ◇ Decide -> ▶ Act -> ⤴ Hooko -> ↺ Aftermath`
 
-✶ E-prime: `is` bites. `has` bites. Collapse bites. Certainty swells. Sense before the word lands. Stay local.
-⏿ The unit lands: `lawful`, `needs-steering`, `Hooko-required`, or `ambiguous`. Hold only what the next move needs.
-◇ Passes → release. `is` or `has` presses unlabeled → Hooko. Ambiguity rises → surface it, do not fill it.
-▶ Wording arrives release-ready or mutation-ready. The marker surfaces when the rule bites.
-⤴ Essence dissolves into observation, relation, or process. Possession grip loosens into scoped carrying. Sentence stays light.
-↺ Every remaining `is` or `has` carries a marker. Swell dropped. Residue named, not buried.
-
-<<~ pranala loulou lar:///ha.ka.ba/pono/e-prime/SKILL >>
+✶ `is` bites. `has` bites. Collapse bites. Certainty swells. MUST sense before the word lands. Stay local.
+⏿ The unit MUST land as `lawful`, `needs-steering`, `Hooko-required`, or `ambiguous`. Hold only what the next move needs.
+◇ Passes → release. Unlabeled `is` or `has` presses → MUST route to Hooko. Ambiguity rises → MUST surface it, MUST NOT fill it.
+▶ Wording MUST arrive release-ready or mutation-ready. The marker MUST surface when the rule bites.
+⤴ Essence MUST dissolve into observation, relation, or process. Possession grip MUST loosen into scoped carrying. Sentence stays light.
+↺ Every remaining `is` or `has` MUST carry a marker. Swell dropped. Residue MUST NOT stay buried.
 
 <<~/ahu >>
+
+SKILL: <<~ loulou lar:///ha.ka.ba/pono/e-prime/SKILL >>
 
 <<~/ahu >>
 

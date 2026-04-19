@@ -32,7 +32,7 @@
     ## Body opening
 
     Opens the OODA-HA semantic stream.
-    <<~ pranala loulou lar:///ha.ka.ba/body-open >>
+    <<~ loulou lar:///ha.ka.ba/body-open >>
 >>
 
 <<~ ahu #phase-map
@@ -83,7 +83,7 @@
     Act: ▶ Play/Forward (&#x25B6;): The universal symbol for "start" or "proceed."
     Aftermath: ↺ Anticlockwise Gapped Circle Arrow (&#x27F3;): The standard "refresh/loop" symbol.
 
-    <<~ pranala loulou lar:///ha.ka.ba/phase-map >>
+    <<~ loulou lar:///ha.ka.ba/phase-map >>
 >>
 
 <<~ ahu #invocation
@@ -133,7 +133,7 @@
         kapu:least-authority|?
     -> ? >>
 
-    <<~ pranala loulou lar:///ha.ka.ba/invocation >>
+    <<~ loulou lar:///ha.ka.ba/invocation >>
 >>
 
 <<~ ahu #loop-state
@@ -171,7 +171,7 @@
 
     Aftermath may release residue, carry residue forward, or reopen Observe with a narrowed next-observation heading.
 
-    <<~ pranala loulou lar:///ha.ka.ba/loop-state >>
+    <<~ loulou lar:///ha.ka.ba/loop-state >>
 >>
 
 <<~ ahu #observe
@@ -224,7 +224,7 @@
     3. what remained missing after the gather
     4. which findings carry enough weight for sense-making
 
-    <<~ pranala loulou lar:///ha.ka.ba/observe >>
+    <<~ loulou lar:///ha.ka.ba/observe >>
 >>
 
 <<~ ahu #orient
@@ -277,7 +277,7 @@
     3. what still lacks steering
     4. what decision shape has emerged
 
-    <<~ pranala loulou lar:///ha.ka.ba/orient >>
+    <<~ loulou lar:///ha.ka.ba/orient >>
 >>
 
 <<~ ahu #decide
@@ -343,7 +343,7 @@
 
     Each sub-loop should return its own return-envelope before the parent Decide span closes.
 
-    <<~ pranala loulou lar:///ha.ka.ba/decide >>
+    <<~ loulou lar:///ha.ka.ba/decide >>
 >>
 
 <<~ ahu #act
@@ -396,7 +396,7 @@
     3. whether the work stayed inside scope
     4. which blockers or deviations appeared
 
-    <<~ pranala loulou lar:///ha.ka.ba/act >>
+    <<~ loulou lar:///ha.ka.ba/act >>
 >>
 
 <<~ ahu #aftermath
@@ -450,7 +450,7 @@
     3. what can drop away now
     4. whether the next cycle needs more data, new decision, or nothing at all
 
-    <<~ pranala loulou lar:///ha.ka.ba/aftermath >>
+    <<~ loulou lar:///ha.ka.ba/aftermath >>
 >>
 
 <<~ ahu #kapu
@@ -486,7 +486,7 @@
 
     An unresolved kapu should not silently pass. It should degrade toward `?`, render a boundary warning, or defer action.
 
-    <<~ pranala loulou lar:///ha.ka.ba/kapu >>
+    <<~ loulou lar:///ha.ka.ba/kapu >>
 >>
 
 <<~ ahu #runtime-procedure
@@ -552,7 +552,7 @@
     - `Decide + Act` compression under already authorized low-risk work
     - direct route from `Aftermath` back to `Observe` when residue names a narrow next heading
 
-    <<~ pranala loulou lar:///ha.ka.ba/runtime-procedure >>
+    <<~ loulou lar:///ha.ka.ba/runtime-procedure >>
 >>
 
 <<~ ahu #subloops
@@ -590,7 +590,7 @@
     Each bypass should remain explicit, justified, and logged in aftermath.
     No loop should close without named residue or named release.
 
-    <<~ pranala loulou lar:///ha.ka.ba/subloops >>
+    <<~ loulou lar:///ha.ka.ba/subloops >>
 >>
 
 <<~ ahu #recursion
@@ -620,7 +620,7 @@
         kapu:least-authority|?
     -> ? >>
 
-    <<~ pranala loulou lar:///ha.ka.ba/recursion >>
+    <<~ loulou lar:///ha.ka.ba/recursion >>
 >>
 
 <<~&#x0003; ahu #body-close >>

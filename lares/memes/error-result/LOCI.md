@@ -27,7 +27,7 @@
     ## Body opening
 
     Opens the active typed return stream.
-    <<~ pranala loulou lar:///ha.ka.ba/body-open >>
+    <<~ loulou lar:///ha.ka.ba/body-open >>
 >>
 
 <<~ ahu #return-envelope
@@ -66,7 +66,7 @@
 
     A nil payload should still return an envelope.
 
-    <<~ pranala loulou lar:///ha.ka.ba/return-envelope >>
+    <<~ loulou lar:///ha.ka.ba/return-envelope >>
 >>
 
 >>
@@ -97,7 +97,7 @@
     - `@recovery "retry|defer|downgrade-to-?|request-operator|quarantine|abort|none|?"`
     - `@blame-domain "input|schema|runtime|policy|external|mixed|unknown|?"`
 
-    <<~ pranala loulou lar:///ha.ka.ba/issue >>
+    <<~ loulou lar:///ha.ka.ba/issue >>
 >>
 
 <<~ ahu #warning
@@ -130,7 +130,7 @@
 
     A warning should point at recovery when recovery remains actionable.
 
-    <<~ pranala loulou lar:///ha.ka.ba/warning >>
+    <<~ loulou lar:///ha.ka.ba/warning >>
 >>
 
 <<~ ahu #error
@@ -164,7 +164,7 @@
 
     An error should not hide under `@status "completed"`.
 
-    <<~ pranala loulou lar:///ha.ka.ba/error >>
+    <<~ loulou lar:///ha.ka.ba/error >>
 >>
 
 <<~ ahu #issue-taxonomy
@@ -239,7 +239,7 @@
 
     Two or more live claims cannot jointly stand inside the current scope.
 
-    <<~ pranala loulou lar:///ha.ka.ba/issue-taxonomy >>
+    <<~ loulou lar:///ha.ka.ba/issue-taxonomy >>
 >>
 
 <<~ ahu #status-lattice
@@ -269,7 +269,7 @@
 
     A runtime should choose the lowest truthful status rather than the highest flattering status.
 
-    <<~ pranala loulou lar:///ha.ka.ba/status-lattice >>
+    <<~ loulou lar:///ha.ka.ba/status-lattice >>
 >>
 
 <<~ ahu #kapu-mapping
@@ -287,7 +287,7 @@
     - `request-operator` -> emit `#error` or `#warning` with `@recovery "request-operator"`
     - `emit-aftermath` -> package issue and hand route to `#aftermath`
 
-    <<~ pranala loulou lar:///ha.ka.ba/kapu-failure-mapping >>
+    <<~ loulou lar:///ha.ka.ba/kapu-failure-mapping >>
 >>
 
 <<~ ahu #semantic-law
@@ -321,7 +321,7 @@
 
     Explicit operator override may change route or recovery, but override should remain named in trace or residue.
 
-    <<~ pranala loulou lar:///ha.ka.ba/semantic-law >>
+    <<~ loulou lar:///ha.ka.ba/semantic-law >>
 >>
 
 <<~ ahu #examples
@@ -330,7 +330,7 @@
     @role "worked examples"
     @function "show how the ontology lands in practice"
 
-    <<~ pranala loulou lar:///ha.ka.ba/examples >>
+    <<~ loulou lar:///ha.ka.ba/examples >>
 >>
 
 <<~&#x0003; ahu #body-close >>

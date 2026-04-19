@@ -861,7 +861,7 @@ This locus carries the minimum confidence vocabulary needed at the authoring sur
 
 For stable-address carriers under `lar:///ha.ka.ba/**`, full `loci` identity, address stability kānāwai (law), and canon promotion procedure should deepen outward into `lar:///ha.ka.ba/loci` when that carrier reaches Synthesis or above.
 
-<<~ pranala loulou lar:///ha.ka.ba/meme-confidence >>
+<<~ loulou lar:///ha.ka.ba/meme-confidence >>
 <<~/ahu >>
 
 <<~ ahu #meme-ratings >>
@@ -971,7 +971,7 @@ A meme may carry:
 
 A parser or pono tool SHOULD preserve those distinctions rather than collapsing the five fields and band texture into one undifferentiated quality score.
 
-<<~ pranala loulou lar:///ha.ka.ba/meme-ratings >>
+<<~ loulou lar:///ha.ka.ba/meme-ratings >>
 <<~/ahu >>
 
 <<~ ahu #bridge-to-parser >>
@@ -1209,7 +1209,7 @@ A local semantic worksite.
 #### Example C - minimum relation
 
 ```text
-<<~ pranala loulou lar:///ha.ka.ba/target >>
+<<~ loulou lar:///ha.ka.ba/target >>
 ```
 
 #### Example D - minimum passive inclusion
