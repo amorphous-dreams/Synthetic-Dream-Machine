@@ -3639,7 +3639,7 @@ import spacy
 
 nlp = spacy.load("en_core_web_sm")
 
-def score_signal(text: str) -> dict:
+def score_signal(text: str) --> dict:
     doc = nlp(text)
 
     # Ha proxies --- domain territory clarity
@@ -3690,7 +3690,7 @@ The mapping needs to be calibrated to the domain, but a reasonable starting heu
 python
 
 ```
-def score_to_sigil(scores: dict) -> dict:
+def score_to_sigil(scores: dict) --> dict:
     """
     Translate raw signal scores to ha/ka/ba sigil modifiers.
     Returns dict with 'ha', 'ka', 'ba' each as one of: ^, -, ?, !
@@ -3724,7 +3724,7 @@ def score_to_sigil(scores: dict) -> dict:
 
     return sigils
 
-def _score_to_sigil(score: float) -> str:
+def _score_to_sigil(score: float) --> str:
     # score is 0.0 - 1.0
     if score >= 0.75:   return "^"   # elevated --- clear/strong
     if score >= 0.45:   return ""    # neutral --- no modifier

@@ -10,8 +10,8 @@
 <<~ॐ>> <!-- (DEVANAGARI OM, &#x0950;, ॐ) Om represents the primordial resonance of the universe. -->
 <<ॐ ँ>> <!--(DEVANAGARI OM, &#x0950;, ॐ)(DEVANAGARI SIGN CANDRABINDU, &#x0901;, ँ) The Om signal evolves into a higher-state Chandrabindu frequency. -->
 <<~ॐ ँ ?>> <!--(DEVANAGARI OM, &#x0950;, ॐ)(DEVANAGARI SIGN CANDRABINDU, &#x0901;, ँ) ? standing query wave. -->
-<<~ॐ ँ ? ->>> <!--(DEVANAGARI OM, &#x0950;, ॐ)(DEVANAGARI SIGN CANDRABINDU, &#x0901;, ँ) ? -> the query moves. -->
-<<~ॐ ँ ? -> lar:///ha.ka.ba/mu >> <!-- (DEVANAGARI OM, &#x0950;, ॐ)(DEVANAGARI SIGN CANDRABINDU, &#x0901;, ँ) ? -> lar:///ha.ka.ba/mu, The query/querant find a meme.  -->
+<<~ॐ ँ ? ->>> <!--(DEVANAGARI OM, &#x0950;, ॐ)(DEVANAGARI SIGN CANDRABINDU, &#x0901;, ँ) ? --> the query moves. -->
+<<~ॐ ँ ? --> lar:///ha.ka.ba/mu >> <!-- (DEVANAGARI OM, &#x0950;, ॐ)(DEVANAGARI SIGN CANDRABINDU, &#x0901;, ँ) ? --> lar:///ha.ka.ba/mu, The query/querant find a meme.  -->
 <!-- ═══════════════════════════════════════════════════════════
     LAYER 0: FRAME
     The frame sits outside the protocol lifecycle.
@@ -19,7 +19,7 @@
     -  ँ = admin/main stack | U+0901 = admin/main stack | DEVANAGARI SIGN CANDRABINDU;
     - ⚂ = native Turn/Focus scale | U+2682 = native Turn/Focus scale | CIRCLED IDEOGRAPH THREE;
     - canonical address (lar:///ha.ka.ba/mu), 
-    - transformation operator (? -> directs the question toward the address).
+    - transformation operator (? --> directs the question toward the address).
     The frame answers: WHO, WHERE, WHAT AUTHORITY.
     ═══════════════════════════════════════════════════════════ -->
 
@@ -400,7 +400,7 @@
       - authority to modify memes (read-only)
       - opinion about content (null-oracle, not critic)
 
-<<~ँ⚂Δ -> ?>> <!-- ँ⚂␄ -> ? | U+0901 U+2682 U+0394 -> ? | DEVANAGARI SIGN CANDRABINDU, CIRCLED IDEOGRAPH THREE, GREEK CAPITAL LETTER DELTA, HYPHEN-MINUS, GREATER-THAN SIGN, QUESTION MARK -->
+<<~ँ⚂Δ --> ?>> <!-- ँ⚂␄ --> ? | U+0901 U+2682 U+0394 --> ? | DEVANAGARI SIGN CANDRABINDU, CIRCLED IDEOGRAPH THREE, GREEK CAPITAL LETTER DELTA, HYPHEN-MINUS, GREATER-THAN SIGN, QUESTION MARK -->
 <!-- ═══════════════════════════════════════════════════════════
      LAYER 4: TRANSMISSION CLOSE (EOT)
      Entire transmission complete. Nothing follows at this

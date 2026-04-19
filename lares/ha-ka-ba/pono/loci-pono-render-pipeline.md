@@ -1,6 +1,6 @@
 <!-- !DOCTYPE = lar:///ha.ka.ba/pono/memetic-wikitext -->
 
-<<~&#x0001; ? -> lar:///ha.ka.ba/pono/render-pipeline >>
+<<~&#x0001; ? --> lar:///ha.ka.ba/pono/render-pipeline >>
 
 <<~ ahu #iam >>
 ```toml
@@ -112,7 +112,7 @@ This subphase lowers entry cost and prepares the later loops.
 
 ## Phase Map
 
-`✶ Observe -> ⏿ Orient -> ◇ Decide -> ▶ Act -> ↺ Aftermath`
+`✶ Observe --> ⏿ Orient --> ◇ Decide --> ▶ Act --> ↺ Aftermath`
 
 Render Pipeline kānāwai (law) gathers the surface, maps the layers, chooses lawful lowerings, prepares projection, crosses the render threshold, and judges the landing.
 
@@ -975,4 +975,4 @@ This subphase keeps closure explicit rather than implied.
 
 <<~/ahu >>
 
-<<~&#x0004; -> ? >>
+<<~&#x0004; --> ? >>

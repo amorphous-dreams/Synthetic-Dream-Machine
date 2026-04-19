@@ -308,7 +308,7 @@ surface notation lowers into widgets:
 Research consequence:
 
 - this is a strong precedent for a two-stage model:
-  document notation -> structural lowering -> runtime realization
+  document notation --> structural lowering --> runtime realization
 - the current memetic sigil document-space / runtime-space split is
   therefore grounded, not invented from whole cloth
 
@@ -370,7 +370,7 @@ Research consequence:
 
 - your "choose a rendering mask by rule stack" intuition is
   directly TiddlyWiki-native
-- `kahea -> filter://cascade...` is not an arbitrary detour; it is
+- `kahea --> filter://cascade...` is not an arbitrary detour; it is
   conceptually aligned with existing TiddlyWiki selection
   machinery
 
@@ -444,7 +444,7 @@ Recommended sentence:
 > language whose nearest live practical ancestor is TiddlyWiki.
 > Its document form is parsed into a structural tree and then
 > interpreted into runtime formations, analogous in spirit to
-> TiddlyWiki's WikiText -> parse-tree -> widget-tree model.
+> TiddlyWiki's WikiText --> parse-tree --> widget-tree model.
 
 ### 4.10 Confidence boundary
 

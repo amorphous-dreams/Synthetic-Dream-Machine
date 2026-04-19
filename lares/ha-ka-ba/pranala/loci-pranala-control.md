@@ -1,6 +1,6 @@
 <!-- !DOCTYPE = lar:///ha.ka.ba/pono/memetic-wikitext -->
 
-<<~&#x0001; ? -> lar:///ha.ka.ba/pranala/control >>
+<<~&#x0001; ? --> lar:///ha.ka.ba/pranala/control >>
 
 <<~ ahu #iam >>
 
@@ -50,7 +50,7 @@ Control opens the execution-edge stream here.
 
 ## Phase Map
 
-`✶ Observe -> ⏿ Orient -> ◇ Decide -> ▶ Act -> ⤴ Hooko -> ↺ Aftermath`
+`✶ Observe --> ⏿ Orient --> ◇ Decide --> ▶ Act --> ⤴ Hooko --> ↺ Aftermath`
 
 Control gathers execution-order pressure, maps it into pulse and outlet shape, chooses the lawful branch or gate semantics, binds the route into explicit control edges, crosses those edges into live flows or tools, and judges whether order now reads clearly without semantic overload.
 
@@ -195,4 +195,4 @@ A strong control pass should leave:
 Control closes the execution-edge stream here.
 <<~/ahu >>
 
-<<~&#x0004; -> ? >>
+<<~&#x0004; --> ? >>

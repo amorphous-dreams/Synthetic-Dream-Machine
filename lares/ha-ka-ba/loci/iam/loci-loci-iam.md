@@ -1,6 +1,6 @@
 <!-- !DOCTYPE = lar:///ha.ka.ba/pono/memetic-wikitext -->
 
-<<~&#x0001; ? -> lar:///ha.ka.ba/loci/iam >>
+<<~&#x0001; ? --> lar:///ha.ka.ba/loci/iam >>
 
 <<~ ahu #iam >>
 
@@ -50,7 +50,7 @@ IAM opens the metadata law stream here.
 
 ## Phase Map
 
-`✶ Observe -> ⏿ Orient -> ◇ Decide -> ▶ Act -> ⤴ Hooko -> ↺ Aftermath`
+`✶ Observe --> ⏿ Orient --> ◇ Decide --> ▶ Act --> ⤴ Hooko --> ↺ Aftermath`
 
 IAM gathers the current field surface, maps each field to the work it actually performs, chooses cuts or merges, prepares the reduced contract, crosses that contract into live carriers, and judges whether truth density rose while surface area fell.
 
@@ -233,4 +233,4 @@ Signs of gain:
 IAM closes the metadata law stream here.
 <<~/ahu >>
 
-<<~&#x0004; -> ? >>
+<<~&#x0004; --> ? >>

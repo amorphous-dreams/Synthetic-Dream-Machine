@@ -8,7 +8,7 @@ allowed-tools: Read, Grep, Glob, Bash, Edit, Write
 ---
 <!-- !DOCTYPE = lar:///ha.ka.ba/pono/memetic-wikitext -->
 
-<<~&#x0001; ? -> lar:///ha.ka.ba/pono/skill-template >>
+<<~&#x0001; ? --> lar:///ha.ka.ba/pono/skill-template >>
 
 <<~ ahu #iam >>
 ```toml
@@ -58,7 +58,7 @@ Skill template opens the verification authoring stream here.
 
 ## Phase Map
 
-`✶ Observe -> ⏿ Orient -> ◇ Decide -> ▶ Act -> ⤴ Hooko -> ↺ Aftermath`
+`✶ Observe --> ⏿ Orient --> ◇ Decide --> ▶ Act --> ⤴ Hooko --> ↺ Aftermath`
 
 A verification skill gathers the target meme surface, classifies element presence against declared invariants, decides pass/fail per invariant, prepares a typed conformance report, crosses the report threshold into session state, and judges residue and repair paths.
 
@@ -146,7 +146,7 @@ invariants = [
   "R3: #iam block places tulen immediately below version",
   "R3: after the ahu close/reopen marker, canonical order reads confidence, mana, manao, manaoio",
   "R3: register field present immediately after meme-type",
-  "R6: at least one <<~STX; ui ...? -> ...#... >> query throat present",
+  "R6: at least one <<~STX; ui ...? --> ...#... >> query throat present",
   "O7: all <<~ loulou lar:// >> links outside fenced blocks point at addresses resolved or wrapped as OPTIONAL HTML comments",
 ]
 ```
@@ -220,7 +220,7 @@ class InvariantResult:
     observed: str = ""
     repair: str = ""
 
-def check-r1(lines: list[str]) -> InvariantResult:
+def check-r1(lines: list[str]) --> InvariantResult:
     """R1: HTML DOCTYPE preamble comment present on line 1."""
     if lines and lines[0].strip().startswith("<!-- !DOCTYPE = lar:///"):
         return InvariantResult("R1", "pass", observed=lines[0].strip())
@@ -230,7 +230,7 @@ def check-r1(lines: list[str]) -> InvariantResult:
         repair="Add <!-- !DOCTYPE = lar:///ha.ka.ba/pono/memetic-wikitext --> as line 1"
     )
 
-def check-r3-rating-fields(content: str) -> InvariantResult:
+def check-r3-rating-fields(content: str) --> InvariantResult:
     """R3: tulen sits below version and the support ratings follow in canonical detail order."""
     required = ["tulen", "confidence", "mana", "manao", "manaoio"]
     # Extract #iam TOML block
@@ -262,7 +262,7 @@ def check-r3-rating-fields(content: str) -> InvariantResult:
         )
     return InvariantResult("R3-ratings", "pass", observed=f"fields present in canonical order")
 
-def check-r3-register(content: str) -> InvariantResult:
+def check-r3-register(content: str) --> InvariantResult:
     """R3: register field present immediately after meme-type."""
     m = re.search(r'meme-type\s*=.*?\n(register\s*=)', content)
     if m:
@@ -273,25 +273,25 @@ def check-r3-register(content: str) -> InvariantResult:
         repair="Add register = \"[label]\" immediately after meme-type in #iam TOML"
     )
 
-def check-r6(content: str) -> InvariantResult:
+def check-r6(content: str) --> InvariantResult:
     """R6: at least one query throat present."""
-    throats = re.findall(r'<<~\x05 ui \S+\? -> \S+ >>', content)
+    throats = re.findall(r'<<~\x05 ui \S+\? --> \S+ >>', content)
     if throats:
         return InvariantResult("R6", "pass", observed=f"{len(throats)} query throat(s) found")
     return InvariantResult(
         "R6", "fail",
         observed="no query throats found",
-        repair="Add at least one <<~STX; ui meme? -> lar:///ha.ka.ba/NAME#iam >> query throat"
+        repair="Add at least one <<~STX; ui meme? --> lar:///ha.ka.ba/NAME#iam >> query throat"
     )
 
 CHECKS = [check-r1, check-r3-rating-fields, check-r3-register, check-r6]
 
-def run(target: Path) -> list[InvariantResult]:
+def run(target: Path) --> list[InvariantResult]:
     content = target.read-text(encoding="utf-8")
     lines = content.splitlines()
     return [check(content) if check != check-r1 else check(lines) for check in CHECKS]
 
-def emit-toml(results: list[InvariantResult], target: Path) -> str:
+def emit-toml(results: list[InvariantResult], target: Path) --> str:
     overall = "pass" if all(r.status == "pass" for r in results) else "fail"
     lines = [
         f'status = "{overall}"',
@@ -355,7 +355,7 @@ function checkR1(content: string): InvariantResult {
 }
 
 function checkQueryThroats(content: string): InvariantResult {
-  const matches = content.match(/<<~\u0005 ui \S+\? -> \S+ >>/g) ?? [];
+  const matches = content.match(/<<~\u0005 ui \S+\? --> \S+ >>/g) ?? [];
   if (matches.length > 0) {
     return { id: "R6", status: "pass", observed: `${matches.length} query throat(s)` };
   }
@@ -432,9 +432,9 @@ When the memetic-wikitext system acquires an MCP server, verification skills mig
 ### Phase 1 — Structural MCP Tools (mechanical invariants)
 
 ```
-Tool: check-r_elements(file-path: str, invariants: list[str]) -> ConformanceReport
-Tool: check-toml-payload(file-path: str, locus: str) -> TOMLPayloadReport
-Tool: list-ala-links(file-path: str, resolved-only: bool) -> AlaLinkGraph
+Tool: check-r_elements(file-path: str, invariants: list[str]) --> ConformanceReport
+Tool: check-toml-payload(file-path: str, locus: str) --> TOMLPayloadReport
+Tool: list-ala-links(file-path: str, resolved-only: bool) --> AlaLinkGraph
 ```
 
 These tools replace the CLI subprocess pattern. The agent calls them directly; no subprocess invocation needed. The MCP server handles file reading, regex parsing, and TOML validation in its own runtime.
@@ -442,9 +442,9 @@ These tools replace the CLI subprocess pattern. The agent calls them directly; n
 ### Phase 2 — Semantic MCP Tools (interpretive invariants)
 
 ```
-Tool: rate-phase-prose(file-path: str, phase: str) -> ProseDensityScore
-Tool: check-sub-meme-resolution(file-path: str) -> ResolutionStateMap
-Tool: score-meme(file-path: str) -> MemeRatingReport
+Tool: rate-phase-prose(file-path: str, phase: str) --> ProseDensityScore
+Tool: check-sub-meme-resolution(file-path: str) --> ResolutionStateMap
+Tool: score-meme(file-path: str) --> MemeRatingReport
 ```
 
 Phase 2 tools require the MCP server to call back into a language model for interpretive judgment. The November 2025 MCP spec's sampling capability supports this: the MCP server may request a completion from the client model, which means verification tools can use LLM judgment without the calling agent needing to prompt separately.
@@ -462,8 +462,8 @@ MCP Resources (not Tools) expose the `lar:` URI space as addressable content. An
 ### Phase 4 — Async Conformance Scan
 
 ```
-Tool: scan-graph(root: str, invariant-set: str) -> AsyncJobHandle
-Tool: get-scan-result(handle: AsyncJobHandle) -> FullConformanceReport
+Tool: scan-graph(root: str, invariant-set: str) --> AsyncJobHandle
+Tool: get-scan-result(handle: AsyncJobHandle) --> FullConformanceReport
 ```
 
 For full-graph conformance sweeps (all memes against all registered invariants), async execution allows the agent to continue other work while the scan runs. This maps to the November 2025 MCP spec's long-running tool support.
@@ -510,4 +510,4 @@ Skill template closes the verification authoring stream here.
 <<~/ahu >>
 
 
-<<~&#x0004; -> ? >>
+<<~&#x0004; --> ? >>

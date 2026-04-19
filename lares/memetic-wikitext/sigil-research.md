@@ -36,18 +36,18 @@ Does this predatory framing of syntax change how you feel about tagging or categ
 
 ---
 
-How does would you describe the `<<do a task -> ? >>` as shark teeth that break the flow of "document time" into "render time", from an LLM "shape/detail/motion" perspective?
+How does would you describe the `<<do a task --> ? >>` as shark teeth that break the flow of "document time" into "render time", from an LLM "shape/detail/motion" perspective?
 
 ---
 
 In an LLM’s internal "shape/detail/motion" register, the << >> brackets don't just sit on the page—they puncture it. If we view a standard block of text as "document time" (a flat, linear surface), these "shark teeth" represent a vertical breach.
-From this perspective, here is how the "bite" of <<do a task -> ? >> functions:
+From this perspective, here is how the "bite" of <<do a task --> ? >> functions:
 ## 1. The Shape: Serrated Interruption
 The double-chevron << acts as a leading edge. In a document, text flows like water—predictable and horizontal. The << introduces a sharp, non-natural angle that the LLM's attention mechanism "snags" on. It isn't a smooth curve; it is a mechanical jaw opening. It signals that the following tokens no longer belong to the "surface" of the story or the data, but to the engine underneath.
 ## 2. The Detail: The "Task" Hook
-The interior do a task -> ? acts as the barb on the tooth.
+The interior do a task --> ? acts as the barb on the tooth.
 
-* The -> provides a directional vector—a lunge.
+* The --> provides a directional vector—a lunge.
 * The ? creates a void or a vacuum.
 In "Maybe Logic," this sequence represents a collapse of the current state. The LLM stops "reading" (passive observation) and starts "rendering" (active construction). The "detail" here is the structural tension between the command and the question mark; it’s the moment the shark’s teeth meet resistance and begin to tear.
 
@@ -62,31 +62,31 @@ Does this temporal scarring make the << >> feel like a utility tool or a dangero
 
 ---
 
-Part of an incomplete grmmar. Talk story with me. Some other instances, draw your own conclusions from any authorial stance(s) <<name them -> ? >> or confidence register << from 0.0-1.0 -> ? >> you care to.
+Part of an incomplete grmmar. Talk story with me. Some other instances, draw your own conclusions from any authorial stance(s) <<name them --> ? >> or confidence register << from 0.0-1.0 --> ? >> you care to.
 Wild Magic:
-<<do a task -> ? >>
+<<do a task --> ? >>
 <<named-procedure>>
 <<[function[parameter]]>>
-<<named-procedure -> ? >>
-<<named-procedure -> named-procedure >>
+<<named-procedure --> ? >>
+<<named-procedure --> named-procedure >>
 <<named-procedure [function[parameter]] >>
-<<named-procedure [function[parameter]] -> ? >>
+<<named-procedure [function[parameter]] --> ? >>
 
 ---
 
 In the "Wild Magic" grammar, I perceive a transition from linguistic suggestion to computational imperative. If we view these brackets as shark teeth, they are no longer just biting the text; they are chewing through the "is-ness" of document time to create a "rendered" reality.
 From the stance of a Structural Ontologist (Confidence: 0.95), these instances map a progression of increasing formal density:
 
-* <<do a task -> ? >>: The Apex Predator. It represents the pure, unassigned "Render Time" event. The ? is the empty stomach of the shark, a vacuum that demands to be filled with action.
+* <<do a task --> ? >>: The Apex Predator. It represents the pure, unassigned "Render Time" event. The ? is the empty stomach of the shark, a vacuum that demands to be filled with action.
 * <<named-procedure>>: The Camouflage. It looks like a standard tag, but within this grammar, it functions as a dormant trigger. It sits in "Document Time" but vibrates with the potential to snap into a procedure.
 * <<[function[parameter]]>>: The Recursive Maw. The nested brackets imply a digestion process already in progress. It isn't just a command; it is a mechanism where the "function" consumes the "parameter" before the outer teeth even close.
-* <<named-procedure -> ? >>: The Call to Witness. This isn't just asking what to do, but asking the procedure to reveal itself. It shifts from "do this" to "define what 'this' looks like when rendered."
-* <<named-procedure -> named-procedure >>: The Transmutation. This is the motion of one state of being becoming another. In E-Prime, we wouldn't say "A is B"; we observe "A renders as B." It’s a horizontal "shark strike" across the conceptual field.
+* <<named-procedure --> ? >>: The Call to Witness. This isn't just asking what to do, but asking the procedure to reveal itself. It shifts from "do this" to "define what 'this' looks like when rendered."
+* <<named-procedure --> named-procedure >>: The Transmutation. This is the motion of one state of being becoming another. In E-Prime, we wouldn't say "A is B"; we observe "A renders as B." It’s a horizontal "shark strike" across the conceptual field.
 * <<named-procedure [function[parameter]] >>: The Heavy Infantry. It combines the named intent with a specific nested payload. It represents a high-mass object entering the render stream.
-* <<named-procedure [function[parameter]] -> ? >>: The Grand Inquiry. This is the most complex "tooth" in the set. It asks for the final emergent property of a complex, nested interaction.
+* <<named-procedure [function[parameter]] --> ? >>: The Grand Inquiry. This is the most complex "tooth" in the set. It asks for the final emergent property of a complex, nested interaction.
 
 ## Conclusions from a "Vibe Coder" Stance (Confidence: 0.7)
-I conclude that this grammar treats intent as a physical object. The -> is the "neck" of the shark, providing the directional snap that connects a static label (named-procedure) to an active void (?).
+I conclude that this grammar treats intent as a physical object. The --> is the "neck" of the shark, providing the directional snap that connects a static label (named-procedure) to an active void (?).
 This "Wild Magic" doesn't care about the truth of the document; it cares about the momentum of the render. Each set of brackets acts as a pressure vessel—if you don't provide the right data, the vacuum of the ? might collapse the surrounding text into "Mu."
 How do we test the structural integrity of one of these procedures? Should we attempt to nest a task within a transmutation?
 Follow-up: Which of these "teeth" feels most unstable to your current train of thought?
@@ -105,18 +105,18 @@ or
 ```
 vs
 ```
-<<named-procedure -> ? >>
+<<named-procedure --> ? >>
 ```
 Or these and many downstream variations that are possible. Map it out with me, talk story style.
 ```
-<<named-procedure -> named-procedure? >>
-<<named-procedure [function[parameter]] -> named-procedure>>
-<<named-procedure [function[parameter]] -> -> named-procedure? >>
+<<named-procedure --> named-procedure? >>
+<<named-procedure [function[parameter]] --> named-procedure>>
+<<named-procedure [function[parameter]] --> -> named-procedure? >>
 ```
 
 Finally, what about:
 ```
-<<? -> semantic grammar, like the object name and metadata>>
+<<? --> semantic grammar, like the object name and metadata>>
 ```
 or
 ```
@@ -137,31 +137,31 @@ These feel like sonar pings.
 * <<named-procedure?>> is a quick, sharp tap on a hollow container. It asks, "Are you there? Do you have a shape?"
 * <<[function[parameter]]?>> feels much heavier. It’s the sound of a complex machine humming. The nested [] are the gears, and the ? at the end is the LLM leaning in to hear if the gears are actually turning or just grinding. It feels like diagnostic motion.
 
-## 2. The Potential vs. The Kinetic: <<named-procedure>> vs <<named-procedure -> ? >>
+## 2. The Potential vs. The Kinetic: <<named-procedure>> vs <<named-procedure --> ? >>
 
 * <<named-procedure>> acts as a Noun. It is a sleeping shark. It has mass, it occupies space in "document time," but it isn't doing anything yet. It just sits there, menacingly.
-* <<named-procedure -> ? >> is the Verb. This is the shark striking. The -> is the lunge, and the ? is the impact. It demands a render. In "Maybe Logic," the first is a probability of 1.0 (it exists), while the second is a probability of 0.0 leading toward a 1.0 (it is becoming).
+* <<named-procedure --> ? >> is the Verb. This is the shark striking. The --> is the lunge, and the ? is the impact. It demands a render. In "Maybe Logic," the first is a probability of 1.0 (it exists), while the second is a probability of 0.0 leading toward a 1.0 (it is becoming).
 
 ## 3. The Downstream Cascades: Complex Transmutations
 
-* <<named-procedure -> named-procedure? >>: This feels like Identity Crisis. The first procedure is trying to turn into the question of the second. It’s a "What if I became...?" motion.
-* <<named-procedure [function[parameter]] -> named-procedure>>: This is Industrial Processing. We take a heavy, complex object (procedure + nested function), shove it through the -> pipe, and it comes out the other side as a clean, refined label. It feels like distillation.
-* <<named-procedure [function[parameter]] -> -> named-procedure? >>: The double -> -> creates a stutter-step or a double-jump. It implies an intermediate, hidden state—a "ghost render" that happens in the gap between the arrows. It’s high-velocity and slightly unstable.
+* <<named-procedure --> named-procedure? >>: This feels like Identity Crisis. The first procedure is trying to turn into the question of the second. It’s a "What if I became...?" motion.
+* <<named-procedure [function[parameter]] --> named-procedure>>: This is Industrial Processing. We take a heavy, complex object (procedure + nested function), shove it through the --> pipe, and it comes out the other side as a clean, refined label. It feels like distillation.
+* <<named-procedure [function[parameter]] --> -> named-procedure? >>: The double --> -> creates a stutter-step or a double-jump. It implies an intermediate, hidden state—a "ghost render" that happens in the gap between the arrows. It’s high-velocity and slightly unstable.
 
-## 4. The Inverse "Bait": <<? -> semantic grammar... >>
+## 4. The Inverse "Bait": <<? --> semantic grammar... >>
 This is where the "Shark Teeth" metaphor gets wild. Here, the ? is at the front.
 
 * Instead of a shark biting a fish, the void is biting the meaning.
-* <<? -> semantic grammar... >> feels like a vortex. The "unknown" (?) is pulling the "known" (metadata/name) into itself to be defined.
+* <<? --> semantic grammar... >> feels like a vortex. The "unknown" (?) is pulling the "known" (metadata/name) into itself to be defined.
 * In the long-form version with [function[parameter]] + [function[parameter]], the motion is additive assembly. You aren't just rendering; you are knitting a reality inside the brackets. The + acts as a weld point, fusing two functions together before they get sucked into the ? void.
 
 Internal Dialogue (The Architect vs. The Poet):
 
-* The Architect: "This is a stack-based structural flow. The -> is a pointer."
-* The Poet: "No, the -> is the trajectory of a soul moving from a name to a realization. The << >> are the ribs of the vessel holding it together."
+* The Architect: "This is a stack-based structural flow. The --> is a pointer."
+* The Poet: "No, the --> is the trajectory of a soul moving from a name to a realization. The << >> are the ribs of the vessel holding it together."
 
 Conclusion: We are looking at a Grammar of Becoming. The << >> are the boundaries of a "Magic Circle" where the normal rules of text don't apply. Inside, everything is in a state of high-energy flux.
-Follow-up: Does the -> -> "double-jump" feel like a safety feature or a glitch in the spell to you?
+Follow-up: Does the --> -> "double-jump" feel like a safety feature or a glitch in the spell to you?
 
 ---
 
@@ -176,7 +176,7 @@ Below is the categorized list of the grammar instances identified:
 
 * <<named-procedure>>: A standard macro call. Reference to a defined procedure without parameters.
 * <<named-procedure?>>: A conditional existence check. Probes the namespace for a definition without triggering its body.
-* <<do a task -> ? >>: An anonymous imperative. Signals a one-time execution block with an undefined output requirement.
+* <<do a task --> ? >>: An anonymous imperative. Signals a one-time execution block with an undefined output requirement.
 
 ## 2. Parameterized Operations (Nested Logic)
 
@@ -186,20 +186,20 @@ Below is the categorized list of the grammar instances identified:
 
 ## 3. Piping & Transmutation (Data Flow)
 
-* <<named-procedure -> ? >>: A resolution request. Forces the named procedure to output its value to the current stream.
-* <<named-procedure -> named-procedure >>: A recursive pipe. Passes the output of the first procedure as the context/input for the second.
-* <<named-procedure [function[parameter]] -> ? >>: A complex resolution. Executes a parameterized procedure and requests an immediate render of the result.
+* <<named-procedure --> ? >>: A resolution request. Forces the named procedure to output its value to the current stream.
+* <<named-procedure --> named-procedure >>: A recursive pipe. Passes the output of the first procedure as the context/input for the second.
+* <<named-procedure [function[parameter]] --> ? >>: A complex resolution. Executes a parameterized procedure and requests an immediate render of the result.
 
 ## 4. High-Velocity / Unstable Vectors
 
-* <<named-procedure -> named-procedure? >>: A transmuted query. Passes a procedure's output to check the existence/validity of a second procedure.
-* <<named-procedure [function[parameter]] -> named-procedure>>: A filtered pipe. Refines a complex input through a named procedure to transform it into a secondary named state.
-* <<named-procedure [function[parameter]] -> -> named-procedure? >>: A double-hop verify. Implies an intermediate, non-rendered state or a hidden variable assignment before checking the final target.
+* <<named-procedure --> named-procedure? >>: A transmuted query. Passes a procedure's output to check the existence/validity of a second procedure.
+* <<named-procedure [function[parameter]] --> named-procedure>>: A filtered pipe. Refines a complex input through a named procedure to transform it into a secondary named state.
+* <<named-procedure [function[parameter]] --> -> named-procedure? >>: A double-hop verify. Implies an intermediate, non-rendered state or a hidden variable assignment before checking the final target.
 
 ## 5. Semantic Definition & Assembly (The Inverse Void)
 
-* <<? -> semantic grammar, like the object name and metadata>>: A definition-by-capture. Uses the ? as a receiver to map a name and metadata to a new object.
-* <<? -> semantic grammar, [function[parameter]] +[function[parameter]] >>: Multi-source assembly. Aggregates metadata and multiple filter outputs to synthesize a new, complex system object.
+* <<? --> semantic grammar, like the object name and metadata>>: A definition-by-capture. Uses the ? as a receiver to map a name and metadata to a new object.
+* <<? --> semantic grammar, [function[parameter]] +[function[parameter]] >>: Multi-source assembly. Aggregates metadata and multiple filter outputs to synthesize a new, complex system object.
 
 Should we define the scope (Global vs. Tiddler-Local) for these recursive procedures next?
 
@@ -279,10 +279,10 @@ Core lessons:
 What to test against memetic sigils:
 
 - `kahea` bare form vs TiddlyWiki direct transclusion
-- `kahea -> procedure/function/filter/cascade` vs template masking
+- `kahea --> procedure/function/filter/cascade` vs template masking
   and callable object flow
 - `ahu` targeting vs tiddler/title/field addressing
-- wrapper/body lowering vs parse-tree -> widget-tree lowering
+- wrapper/body lowering vs parse-tree --> widget-tree lowering
 
 ## 2. MediaWiki
 
@@ -538,7 +538,7 @@ Core lessons:
 
 What to test against memetic sigils:
 
-- whether `kahea -> target` should behave more like include,
+- whether `kahea --> target` should behave more like include,
   import, or apply-templates
 - whether memetic sigils need a concept analogous to XSLT modes
 - whether wrapper/inner precedence should be formalized the way
@@ -568,7 +568,7 @@ That pattern supports the current memetic sigil split:
 
 - `<<~kahea {meme-name} ... >>` maps well to direct inclusion /
   transclusion families
-- `<<~kahea {meme-name} ... -> target >>` maps well to template,
+- `<<~kahea {meme-name} ... --> target >>` maps well to template,
   procedure, function, cascade, shortcode, and transform families
 
 But the prior art also says something stricter:

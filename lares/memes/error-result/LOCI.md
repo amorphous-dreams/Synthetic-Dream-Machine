@@ -1,5 +1,5 @@
 <!-- !DOCTYPE = lar:///ha.ka.ba/memetic-wikitext -->
-<<~&#x0001; ? -> lar:///ha.ka.ba/error-result
+<<~&#x0001; ? --> lar:///ha.ka.ba/error-result
     <<~ ahu #iam
         @name "error-result"
         @description "Typed return, warning, and error ontology for memetic-wikitext enactment."
@@ -280,12 +280,12 @@
 
     ## Kapu Failure Mapping
 
-    - `halt` -> emit `#error` with `@error-class "kapu"` and `@recovery "abort"`
-    - `defer` -> emit `#warning` or `#error` with `@status "deferred"` depending on payload usability
-    - `downgrade-to-?` -> emit `#warning` plus degraded `#result` when payload remains usable; else emit `#error`
-    - `render-warning` -> emit `#warning` and continue route when payload remains usable
-    - `request-operator` -> emit `#error` or `#warning` with `@recovery "request-operator"`
-    - `emit-aftermath` -> package issue and hand route to `#aftermath`
+    - `halt` --> emit `#error` with `@error-class "kapu"` and `@recovery "abort"`
+    - `defer` --> emit `#warning` or `#error` with `@status "deferred"` depending on payload usability
+    - `downgrade-to-?` --> emit `#warning` plus degraded `#result` when payload remains usable; else emit `#error`
+    - `render-warning` --> emit `#warning` and continue route when payload remains usable
+    - `request-operator` --> emit `#error` or `#warning` with `@recovery "request-operator"`
+    - `emit-aftermath` --> package issue and hand route to `#aftermath`
 
     <<~ loulou lar:///ha.ka.ba/kapu-failure-mapping >>
 >>
@@ -339,4 +339,4 @@
     Ends the typed aftermath stream.
 <<~/ahu >>>>
 
-<<~&#x0004; -> ? >>
+<<~&#x0004; --> ? >>

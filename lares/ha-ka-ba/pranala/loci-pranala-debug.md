@@ -1,6 +1,6 @@
 <!-- !DOCTYPE = lar:///ha.ka.ba/pono/memetic-wikitext -->
 
-<<~&#x0001; ? -> lar:///ha.ka.ba/pranala/debug >>
+<<~&#x0001; ? --> lar:///ha.ka.ba/pranala/debug >>
 
 <<~ ahu #iam >>
 
@@ -51,7 +51,7 @@ Debug opens the observation-edge stream here.
 
 ## Phase Map
 
-`✶ Observe -> ⏿ Orient -> ◇ Decide -> ▶ Act -> ⤴ Hooko -> ↺ Aftermath`
+`✶ Observe --> ⏿ Orient --> ◇ Decide --> ▶ Act --> ⤴ Hooko --> ↺ Aftermath`
 
 Debug gathers hidden graph pressure or operator knowledge, maps it into an observation edge, chooses reveal and visibility posture, binds the reveal into a lawful inspectable edge, crosses that reveal into live inspection surfaces, and judges whether understanding rose without mutating the base graph falsely.
 
@@ -187,4 +187,4 @@ A strong debug pass should leave:
 Debug closes the observation-edge stream here.
 <<~/ahu >>
 
-<<~&#x0004; -> ? >>
+<<~&#x0004; --> ? >>

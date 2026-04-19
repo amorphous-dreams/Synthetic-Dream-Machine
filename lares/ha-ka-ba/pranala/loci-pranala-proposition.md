@@ -1,6 +1,6 @@
 <!-- !DOCTYPE = lar:///ha.ka.ba/pono/memetic-wikitext -->
 
-<<~&#x0001; ? -> lar:///ha.ka.ba/pranala/proposition >>
+<<~&#x0001; ? --> lar:///ha.ka.ba/pranala/proposition >>
 
 <<~ ahu #iam >>
 
@@ -52,7 +52,7 @@ Proposition opens the semantic-edge stream here.
 
 ## Phase Map
 
-`✶ Observe -> ⏿ Orient -> ◇ Decide -> ▶ Act -> ⤴ Hooko -> ↺ Aftermath`
+`✶ Observe --> ⏿ Orient --> ◇ Decide --> ▶ Act --> ⤴ Hooko --> ↺ Aftermath`
 
 Proposition gathers semantic relation claims, maps the relation into a labeled proposition shape, chooses direction and polarity, binds the edge into a visible graph statement, crosses that statement into live memes or tools, and judges whether the graph now says something sharper than nearby prose alone.
 
@@ -212,4 +212,4 @@ A strong proposition pass should leave:
 Proposition closes the semantic-edge stream here.
 <<~/ahu >>
 
-<<~&#x0004; -> ? >>
+<<~&#x0004; --> ? >>

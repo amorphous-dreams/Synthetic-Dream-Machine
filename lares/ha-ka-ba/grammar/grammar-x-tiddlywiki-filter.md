@@ -1,6 +1,6 @@
 <!-- !DOCTYPE = lar:///ha.ka.ba/pono/memetic-wikitext -->
 
-<<~&#x0001; ? -> lar:///ha.ka.ba/grammars/x-tiddlywiki-filter >>
+<<~&#x0001; ? --> lar:///ha.ka.ba/grammars/x-tiddlywiki-filter >>
 
 <<~ ahu #iam >>
 ```toml
@@ -50,7 +50,7 @@ X-TiddlyWiki-Filter opens the active imported grammar stream here.
 
 ## Phase Map
 
-`✶ Observe -> ⏿ Orient -> ◇ Decide -> ▶ Act -> ⤴ Hooko -> ↺ Aftermath`
+`✶ Observe --> ⏿ Orient --> ◇ Decide --> ▶ Act --> ⤴ Hooko --> ↺ Aftermath`
 
 This grammar meme gathers imported filter expectations, maps them into host-safe vocabulary, chooses the minimum lawful preserved feature set, prepares the hana-facing contract, crosses into parser and render handoff, and judges what remains bounded, preserved, or deferred.
 
@@ -144,9 +144,9 @@ Use `+currentMeme` as the dynamic reference to the active execution context.
 
 ### Canonical Direct Reuse Pattern
 
-* `tiddler` -> `sigil`
-* `tiddlers` -> `sigils`
-* `currentTiddler` -> `+currentMeme`
+* `tiddler` --> `sigil`
+* `tiddlers` --> `sigils`
+* `currentTiddler` --> `+currentMeme`
 
 ### Translation Law
 
@@ -476,4 +476,4 @@ Lowering-expectations-ba remains sparse in this first pass.
 X-TiddlyWiki-Filter closes the active imported grammar stream here.
 <<~/ahu >>
 
-<<~&#x0004; -> ? >>
+<<~&#x0004; --> ? >>

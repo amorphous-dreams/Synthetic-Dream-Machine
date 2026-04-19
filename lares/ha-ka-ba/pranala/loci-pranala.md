@@ -1,6 +1,6 @@
 <!-- !DOCTYPE = lar:///ha.ka.ba/pono/memetic-wikitext -->
 
-<<~&#x0001; ? -> lar:///ha.ka.ba/pranala >>
+<<~&#x0001; ? --> lar:///ha.ka.ba/pranala >>
 
 <<~ ahu #iam >>
 
@@ -55,7 +55,7 @@ Edge opens the explicit-graph law stream here.
 
 ## Phase Map
 
-`✶ Observe -> ⏿ Orient -> ◇ Decide -> ▶ Act -> ⤴ Hooko -> ↺ Aftermath`
+`✶ Observe --> ⏿ Orient --> ◇ Decide --> ▶ Act --> ⤴ Hooko --> ↺ Aftermath`
 
 Edge gathers hidden relation claims, separates family from lifecycle, chooses the lawful edge kind, binds the chosen shape into authoring practice, crosses that shape into live memes and tools, and judges whether truth density rose while graph fog fell.
 
@@ -236,4 +236,4 @@ A strong edge pass should leave:
 Edge closes the explicit-graph law stream here.
 <<~/ahu >>
 
-<<~&#x0004; -> ? >>
+<<~&#x0004; --> ? >>

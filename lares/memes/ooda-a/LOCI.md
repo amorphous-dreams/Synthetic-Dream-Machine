@@ -1,5 +1,5 @@
 <!-- !DOCTYPE = lar:///ha.ka.ba/memetic-wikitext -->
-<<~&#x0001; ? -> lar:///ha.ka.ba/ooda-ha
+<<~&#x0001; ? --> lar:///ha.ka.ba/ooda-ha
     <<~ ahu #iam
         @name "ooda-ha"
         @description "Five-phase memetic loop cluster for observation, orientation, decision, action, and aftermath."
@@ -45,7 +45,7 @@
 
     ## Phase Map
     
-    `✶ Observe -> ⏿ Orient -> ◇ Decide -> ▶ Act -> ↺ Aftermath`
+    `✶ Observe --> ⏿ Orient --> ◇ Decide --> ▶ Act --> ↺ Aftermath`
 
     From `↺ Aftermath`, the loop either:
 
@@ -109,7 +109,7 @@
         route:upward[[CALLER]] downward[[observe]]
         recurse:true|false|conditional|?
         kapu:POLICY|POLICY?|?
-    -> ? >>
+    --> ? >>
     ```
 
     ### Invocation Fields
@@ -131,7 +131,7 @@
         route:upward[[caller]] downward[[observe]]
         recurse:conditional
         kapu:least-authority|?
-    -> ? >>
+    --> ? >>
 
     <<~ loulou lar:///ha.ka.ba/invocation >>
 >>
@@ -337,9 +337,9 @@
 
     Example sub-loop pressure:
 
-    <<~ kahea Hodge/Ha -> ? >>
-    <<~ kahea Podge/Ka -> ? >>
-    <<~ kahea Spin/Ba -> ? >>
+    <<~ kahea Hodge/Ha --> ? >>
+    <<~ kahea Podge/Ka --> ? >>
+    <<~ kahea Spin/Ba --> ? >>
 
     Each sub-loop should return its own return-envelope before the parent Decide span closes.
 
@@ -618,7 +618,7 @@
         route:upward[[parent]] downward[[observe]]
         recurse:conditional
         kapu:least-authority|?
-    -> ? >>
+    --> ? >>
 
     <<~ loulou lar:///ha.ka.ba/recursion >>
 >>
@@ -629,4 +629,4 @@
     Ends the active OODA-HA stream.
 <<~/ahu >>>>
 
-<<~&#x0004; -> ? >>
+<<~&#x0004; --> ? >>

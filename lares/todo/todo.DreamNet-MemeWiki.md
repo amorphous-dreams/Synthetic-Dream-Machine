@@ -1,6 +1,6 @@
 <!-- !DOCTYPE = lar:///ha.ka.ba/pono/memetic-wikitext -->
 
-<<~&#x0001; ? -> lar:///todo/DreamNet_MemeWiki >>
+<<~&#x0001; ? --> lar:///todo/DreamNet_MemeWiki >>
 
 <<~ ahu #iam >>
 ```toml
@@ -29,9 +29,9 @@ north-star = "Boot a greenfield MemeWiki kernel in Node first, resume it in brow
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
 pranala = [
-  "? -> lar:///ha.ka.ba/pono/memetic-wikitext",
-  "? -> lar:///ha.ka.ba/pono/parser",
-  "? -> lar:///ha.ka.ba/pono/render-pipeline"
+  "? --> lar:///ha.ka.ba/pono/memetic-wikitext",
+  "? --> lar:///ha.ka.ba/pono/parser",
+  "? --> lar:///ha.ka.ba/pono/render-pipeline"
 ]
 # <<~/ahu >>
 ```
@@ -53,7 +53,7 @@ DreamNet MemeWiki opens the active research-consolidation stream here.
 
 ## Phase Map
 
-`✶ Observe -> ⏿ Orient -> ◇ Decide -> ▶ Act -> ⤴ Hooko -> ↺ Aftermath`
+`✶ Observe --> ⏿ Orient --> ◇ Decide --> ▶ Act --> ⤴ Hooko --> ↺ Aftermath`
 
 DreamNet MemeWiki gathers the current research field, maps it into an implementable architecture, fixes the present decision posture, stages the next work sequence, crosses that plan into active execution, and judges what still remains unresolved.
 
@@ -473,4 +473,4 @@ Leave the unresolved items visible and bounded. Hidden residue is how architectu
 DreamNet MemeWiki closes the active research-consolidation stream here.
 <<~/ahu >>
 
-<<~&#x0004; -> ? >>
+<<~&#x0004; --> ? >>

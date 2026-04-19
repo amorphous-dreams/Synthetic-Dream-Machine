@@ -5,7 +5,7 @@ allowed-tools: Read, Grep, Glob, Bash, Edit, Write
 ---
 <!-- !DOCTYPE = lar:///ha.ka.ba/pono/memetic-wikitext -->
 
-<<~&#x0001; ? -> lar:///ha.ka.ba/pono/e-prime/SKILL >>
+<<~&#x0001; ? --> lar:///ha.ka.ba/pono/e-prime/SKILL >>
 
 <<~ ahu #iam >>
 ```toml
@@ -144,7 +144,7 @@ This skill owns the secondary correction path and nothing more.
 
 ## Phase Map
 
-`✶ Observe -> ⏿ Orient -> ◇ Decide -> ▶ Act -> ⤴ Hooko -> ↺ Aftermath`
+`✶ Observe --> ⏿ Orient --> ◇ Decide --> ▶ Act --> ⤴ Hooko --> ↺ Aftermath`
 
 The skill senses where settled wording resists the law, names the failure kind, chooses mark-only or Hooko, prepares the surface, forces the turn when required, and rechecks residue honestly.
 
@@ -297,4 +297,4 @@ Residue stays named honestly:
 E-Prime auditor closes the settled-text correction stream here.
 <<~/ahu >>
 
-<<~&#x0004; -> ? >>
+<<~&#x0004; --> ? >>

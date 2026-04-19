@@ -1,6 +1,6 @@
 <<~ # !DOCTYPE = lar:///ha.ka.ba/pono/invariant-meme >>
 
-<<~&#x0001; ? -> lar:///ha.ka.ba/pono/e-prime >>
+<<~&#x0001; ? --> lar:///ha.ka.ba/pono/e-prime >>
 
 <<~ ahu #iam >>
 ```toml
@@ -91,7 +91,7 @@ Observation, relation, process, and scoped carrying outrank essence and ownershi
 
 <<~ ahu #e-prime-law-ooda-ha >>
 
-`✶ Observe -> ⏿ Orient -> ◇ Decide -> ▶ Act -> ⤴ Hooko -> ↺ Aftermath`
+`✶ Observe --> ⏿ Orient --> ◇ Decide --> ▶ Act --> ⤴ Hooko --> ↺ Aftermath`
 
 ✶ `is` bites. `has` bites. Collapse bites. Certainty swells. MUST sense before the word lands. Stay local.
 ⏿ The unit MUST land as `lawful`, `needs-steering`, `Hooko-required`, or `ambiguous`. Hold only what the next move needs.
@@ -110,4 +110,4 @@ SKILL: <<~ loulou lar:///ha.ka.ba/pono/e-prime/SKILL >>
 pono/e-prime
 <<~/ahu >>
 
-<<~&#x0004; -> ? >>
+<<~&#x0004; --> ? >>

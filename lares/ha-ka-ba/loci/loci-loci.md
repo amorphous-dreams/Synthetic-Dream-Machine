@@ -1,6 +1,6 @@
 <!-- !DOCTYPE = lar:///ha.ka.ba/pono/memetic-wikitext -->
 
-<<~&#x0001; ? -> lar:///ha.ka.ba/loci >>
+<<~&#x0001; ? --> lar:///ha.ka.ba/loci >>
 
 <<~ ahu #iam >>
 
@@ -69,7 +69,7 @@ Loci opens the routing-and-rating authority stream here.
 
 ## Phase Map
 
-`✶ Observe -> ⏿ Orient -> ◇ Decide -> ▶ Act -> ⤴ Hooko -> ↺ Aftermath`
+`✶ Observe --> ⏿ Orient --> ◇ Decide --> ▶ Act --> ⤴ Hooko --> ↺ Aftermath`
 
 Loci gathers the `lar:` URI meme and visible convention surfaces, maps the address through derivation and prefix law, classifies lifecycle stage and rating posture, prepares the current rating-and-routing product plus MCP-roadmap note, crosses any promotion or siting mutation into active law, and judges what resolved, what remains open, and what still belongs to research.
 
@@ -93,7 +93,7 @@ Observe should detect:
 
 * the full `lar:` URI string to resolve, exactly as presented
 * whether the request context includes a known `meme-type`, prior rating posture, or prior promotion context for the target
-* the document opener form of the target (if the target meme already sits in memory): `<<~&#x0001; ? -> ...` (declared-open, with unbound uncertainty still flowing through the address graph) or `<<~&#x0001; lar:///...` (confirmed canon)
+* the document opener form of the target (if the target meme already sits in memory): `<<~&#x0001; ? --> ...` (declared-open, with unbound uncertainty still flowing through the address graph) or `<<~&#x0001; lar:///...` (confirmed canon)
 * whether the target already exposes explicit loci convention surfaces: `#iam` rating cluster, `register`, prefix-table membership, promotion note, and roadmap note
 * whether the request marks a first-time routing-and-rating pass or a re-resolution of a previously declared-unresolved address
 
@@ -255,11 +255,11 @@ A `lar:` URI counts as stable when all conditions hold simultaneously:
 
 A stable `lar:` URI stays **immutable**. It MUST NOT change even if the carrier migrates to a path-directory layout. On migration, delegated siting evidence may update while the address named in the opener remains the same.
 
-The `?` form in the document opener (`<<~&#x0001; ? -> lar:///...`) marks holding uncertainty through the graph network. In document time a "new entity" command pattern from other programming languages.
+The `?` form in the document opener (`<<~&#x0001; ? --> lar:///...`) marks holding uncertainty through the graph network. In document time a "new entity" command pattern from other programming languages.
 
 Here `?` should read as the graph's unbound uncertainty token at document time, not as filler punctuation.
 
-A lawful meme MUST still discharge residual uncertainty outward through its footer `... -> ? >>`.
+A lawful meme MUST still discharge residual uncertainty outward through its footer `... --> ? >>`.
 
 <<~/ahu >>
 
@@ -374,10 +374,10 @@ Canon promotion now tracks how a `lar:` URI meme climbs from raw signal to stabl
 
 | Form                | Usual `register` band | Document opener form                  | Current reading                                                                  |
 |---------------------|----------------------|---------------------------------------|----------------------------------------------------------------------------------|
-| **Noise**           | none or `P`          | none, fragmentary, or `<<~&#x0001; ? -> lar:///...` | The URI appears as signal, but the convention stays too thin for trusted loci authority. |
+| **Noise**           | none or `P`          | none, fragmentary, or `<<~&#x0001; ? --> lar:///...` | The URI appears as signal, but the convention stays too thin for trusted loci authority. |
 | **Data**            | `P` or `PS`          | fragmentary, partial, or proto-meme   | Structure or pattern becomes detectable, making the signal machine-usable, but not yet memetic. |
-| **Meme**            | `PS` or `S`          | `<<~&#x0001; ? -> lar:///...`           | A boot-legal meme declares the address and enough structure for rating. |
-| **Typed Meme (`loci`)**       | `S` or `CS`          | `<<~&#x0001; ? -> lar:///...`           | The carrier satisfies the stable-address type under `lar:///ha.ka.ba/**`; explicit routing convention already surfaces or continues sharpening, and unresolved MCP tension may still remain. |
+| **Meme**            | `PS` or `S`          | `<<~&#x0001; ? --> lar:///...`           | A boot-legal meme declares the address and enough structure for rating. |
+| **Typed Meme (`loci`)**       | `S` or `CS`          | `<<~&#x0001; ? --> lar:///...`           | The carrier satisfies the stable-address type under `lar:///ha.ka.ba/**`; explicit routing convention already surfaces or continues sharpening, and unresolved MCP tension may still remain. |
 | **Canon Typed Meme (`loci`)** | `C`                  | `<<~&#x0001; lar:///...`                | Stability received external confirmation, a live resolution substrate operates, and opener uncertainty no longer appears. |
 
 The full five-register rubric appears in `lar:///ha.ka.ba/meme#rating-targets`. Confidence scores, register labels, and promotion criteria sit governed there. Loci governs the routing, convention, and document-opener changes that accompany the climb from noise to data to meme to typed meme to canon typed meme.
@@ -665,4 +665,4 @@ Aftermath-ba governs landing quality: a routing aftermath that reports only "X U
 Loci closes the routing authority stream here.
 <<~/ahu >>
 
-<<~&#x0004; -> ? >>
+<<~&#x0004; --> ? >>

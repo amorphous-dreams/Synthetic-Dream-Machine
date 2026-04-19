@@ -1,0 +1,2 @@
+# .codex/config.toml
+model_instructions_file = "../lares/AGENTS.md"

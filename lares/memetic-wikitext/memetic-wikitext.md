@@ -1,5 +1,5 @@
 <!-- !DOCTYPE = lar:///ha.ka.ba/memetic-wikitext -->
-<<~&#x0001; ? -> lar:///ha.ka.ba/memetic-wikitext
+<<~&#x0001; ? --> lar:///ha.ka.ba/memetic-wikitext
     <<~ ahu #iam
         @name "memetic-wikitext"
         @description "Full memetic wikitext schema root. A self-describing and self-enacting schema."
@@ -10,7 +10,7 @@
         @enacts "true"
         @description "A self-describing, self-enacting memetic document schema with native transclusion, invocation, and uncertainty."
     >>
-    <<~ &#x0005;? -> &#x0006; lar:///ha.ka.ba/memetic-wikitext#iam>>
+    <<~ &#x0005;? --> &#x0006; lar:///ha.ka.ba/memetic-wikitext#iam>>
 >>
 
 <<~ ahu #header "Header metadata site" "Declares identity, vocabulary, and authority context." >>
@@ -19,10 +19,10 @@
 <<~&#x0002; "OPEN-STREAM" >>
 
     <<~ ahu #ooda-ha "OODA-HA Procedure" "Defines the canonical execution and interpretation flow." >>
-    <<~ ? -> PROCEDURE/OODA-HA >>
+    <<~ ? --> PROCEDURE/OODA-HA >>
 
         <<~ ahu #observe "Observe phase" "A worksite for intake and perception of raw symbols and signals." >>
-        <<~ ? -> PHASE/1/OBSERVE 
+        <<~ ? --> PHASE/1/OBSERVE 
             <<~ iam 
                 @name "memetic-wikitext#observe"
                 @description "Observe the memetic wikitext syntax"
@@ -31,9 +31,9 @@
                 @output "raw signals"
             >>
         >>
-            <<~ kahea Stream -> ? >>
-            <<~ kahea Tokens -> ? >>
-            <<~ kahea Patterns -> ? >>
+            <<~ kahea Stream --> ? >>
+            <<~ kahea Tokens --> ? >>
+            <<~ kahea Patterns --> ? >>
         <<~ /OBSERVE >>
 
       <<~ ahu #orient "Orient phase" "A worksite for context formation, vocabulary binding, and primitive definition." >>
@@ -50,19 +50,19 @@
 
         <<~ ahu #primitives "Primitive definitions" "Defines core operators and landmarks used by this document." >>
 
-        <<~ kahea Transclusion -> Definition >>
+        <<~ kahea Transclusion --> Definition >>
           <<~ iam Transclusion
             @role "passive symbolic inclusion"
-            @form "<<~ SUBJECT -> TARGET? >>"
+            @form "<<~ SUBJECT --> TARGET? >>"
             @function "include, represent, embed"
             @mode "passive"
           >>
         >>
 
-        <<~ kahea kahea -> Definition >>
+        <<~ kahea kahea --> Definition >>
           <<~ iam kahea
             @role "active process transclusion operator"
-            @form "<<~ kahea SUBJECT -> TARGET? >>"
+            @form "<<~ kahea SUBJECT --> TARGET? >>"
             @function "invoke, execute, summon, unfold"
             @subject "Entity|Procedure|Function|ExternalResource"
             @target "Renderer|Template|?"
@@ -71,7 +71,7 @@
           >>
         >>
 
-        <<~ kahea ahu -> Definition >>
+        <<~ kahea ahu --> Definition >>
           <<~ iam ahu
             @role "altar, worksite, bookmark, semantic landmark"
             @form "<<~ ahu #label \"description\" ... >>"
@@ -80,7 +80,7 @@
           >>
         >>
 
-        <<~ kahea Uncertainty -> Definition >>
+        <<~ kahea Uncertainty --> Definition >>
           <<~ iam Uncertainty
             @symbol "?"
             @role "bounded unresolved slot"
@@ -88,9 +88,9 @@
           >>
         >>
 
-        <<~ kahea Signals -> Context >>
-        <<~ kahea Context -> Vocabulary >>
-        <<~ kahea Vocabulary -> ? >>
+        <<~ kahea Signals --> Context >>
+        <<~ kahea Context --> Vocabulary >>
+        <<~ kahea Vocabulary --> ? >>
       <<~ /ORIENT >>
 
       <<~ ahu #decide "Decide phase" "A worksite for selecting interpretation and execution paths." >>
@@ -101,9 +101,9 @@
           @input "structured context"
           @output "intent"
         >>
-        <<~ kahea Context -> Decision >>
-        <<~ kahea Decision -> Procedure >>
-        <<~ kahea Decision -> ? >>
+        <<~ kahea Context --> Decision >>
+        <<~ kahea Decision --> Procedure >>
+        <<~ kahea Decision --> ? >>
       <<~ /DECIDE >>
 
       <<~ ahu #act "Act phase" "A worksite for execution, rendering, and invocation." >>
@@ -117,25 +117,25 @@
 
         <<~ ahu #transclusion-modes "Transclusion modes" "Defines passive vs active inclusion behaviors." >>
 
-        <<~ kahea PassiveExample -> Example >>
+        <<~ kahea PassiveExample --> Example >>
           <<~ meme entity >>
         >>
 
-        <<~ kahea PassiveTemplateExample -> Example >>
-          <<~ meme entity -> template|? >>
+        <<~ kahea PassiveTemplateExample --> Example >>
+          <<~ meme entity --> template|? >>
         >>
 
-        <<~ kahea ActiveExample -> Example >>
+        <<~ kahea ActiveExample --> Example >>
           <<~ kahea entity >>
         >>
 
-        <<~ kahea ActiveTemplateExample -> Example >>
-          <<~ kahea entity -> template|? >>
+        <<~ kahea ActiveTemplateExample --> Example >>
+          <<~ kahea entity --> template|? >>
         >>
 
-        <<~ kahea Decision -> Action >>
-        <<~ kahea Action -> Renderer >>
-        <<~ kahea Entity -> Renderer >>
+        <<~ kahea Decision --> Action >>
+        <<~ kahea Action --> Renderer >>
+        <<~ kahea Entity --> Renderer >>
       <<~ /ACT >>
 
       <<~ ahu #assess "Assess phase" "A worksite for evaluation, verification, and aftermath." >>
@@ -146,16 +146,16 @@
           @input "effect"
           @output "status, feedback"
         >>
-        <<~ kahea Action -> Result >>
-        <<~ kahea Result -> ? >>
+        <<~ kahea Action --> Result >>
+        <<~ kahea Result --> ? >>
       <<~ /ASSESS >>
 
     <<~ /OODA-HA >>
 
     <<~ ahu #recursion "Recursive re-entry" "Outputs feed future observations." >>
     <<~ PROCEDURE/RECURSION >>
-      <<~ kahea OODA-HA -> OODA-HA >>
-      <<~ kahea memetic-wikitext -> memetic-wikitext >>
+      <<~ kahea OODA-HA --> OODA-HA >>
+      <<~ kahea memetic-wikitext --> memetic-wikitext >>
       [Each execution becomes new observation.]
     <<~ /RECURSION >>
 
@@ -163,7 +163,7 @@
 <<~&#x0003; END-STREAM >>
 
 <<~ ahu #footer "Footer metadata" "Reports status and final state." >>
-<<~&#x0004; POST-STREAM-METADATA -> ?
+<<~&#x0004; POST-STREAM-METADATA --> ?
   <<~ iam 
     @name "memetic-wikitext"
     @status "SUCCESS"

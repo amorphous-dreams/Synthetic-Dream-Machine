@@ -325,7 +325,7 @@ A die face in a sigil's glyph set declares the meme's
 operational scale:
 
 ```
-<<~ँ⚂␂ ? -> lar:///ha.ka.ba/mu>>
+<<~ँ⚂␂ ? --> lar:///ha.ka.ba/mu>>
       │
       └── ⚂ = Turn/Focus scale (0.4–0.6, S2, 8 states)
 ```
@@ -350,7 +350,7 @@ A phase glyph in a sigil's glyph set declares the meme's
 OODA-HA phase:
 
 ```
-<<~ँ⚂◇␂ ? -> lar:///ha.ka.ba/mu/D>>
+<<~ँ⚂◇␂ ? --> lar:///ha.ka.ba/mu/D>>
       ││
       │└── ◇ = Decide phase
       └─── ⚂ = Turn scale
@@ -362,7 +362,7 @@ A glyph set containing both a die face and a phase glyph
 declares a specific Chronometer position:
 
 ```
-<<~ँ⚃◎␂ ? -> lar:///ha.ka.ba/chao>>
+<<~ँ⚃◎␂ ? --> lar:///ha.ka.ba/chao>>
       ││
       │└── ◎ = Orient phase
       └─── ⚃ = Watch scale
@@ -395,7 +395,7 @@ Layer 0: FRAME        — scale declared by die face in glyph set
 Layer 1: HEADING/SOH  — iam metadata, scale inherited from frame
 Layer 2: BODY/STX     — content operates at declared scale
 Layer 3: BODY CLOSE   — ETX at current scale
-Layer 4: TRANS CLOSE  — EOT, -> ? persists
+Layer 4: TRANS CLOSE  — EOT, --> ? persists
 
 Nesting:
   Outer meme at ⚃ contains inner memes at ⚂ or ⚁.
@@ -415,14 +415,14 @@ Ars Geomantica skill operates natively at ⚃ scale.
 This means a geomantic reading meme would carry ⚃ in its glyph set:
 
 ```
-<<~ं⚃␂ ? -> lar:///divination.sand.reads/reading>>
+<<~ं⚃␂ ? --> lar:///divination.sand.reads/reading>>
 ```
 
 And the specific figure in a house could carry a planetary glyph
 from the same Category 8 block:
 
 ```
-<<~ं⚃♄ ? -> lar:///divination.sand.reads/house-10>>
+<<~ं⚃♄ ? --> lar:///divination.sand.reads/house-10>>
                 │
                 └── ♄ = Saturn = Carcer or Tristitia in House 10
 ```
@@ -469,7 +469,7 @@ in the iam declares trust level. They combine but do not collapse:
 A complete meme envelope with Chronometer integration:
 
 ```
-<<~ँ⚂◇␁ ? -> lar:///ha.ka.ba/mu/D#⚄✶0.⚃✶0.⚂◇3.⚁✶0.⚀✶0>>
+<<~ँ⚂◇␁ ? --> lar:///ha.ka.ba/mu/D#⚄✶0.⚃✶0.⚂◇3.⚁✶0.⚀✶0>>
    ││││       │                  │ │
    ││││       │                  │ └─ Chronometer: system and
    ││││       │                  │    cluster observing, meme

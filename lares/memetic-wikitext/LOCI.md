@@ -36,7 +36,7 @@ Below is the categorized list of the grammar instances identified:
 
 * <<named-procedure>>: A standard macro call. Reference to a defined procedure without parameters.
 * <<named-procedure?>>: A conditional existence check. Probes the namespace for a definition without triggering its body.
-* <<do a task -> ? >>: An anonymous imperative. Signals a one-time execution block with an undefined output requirement.
+* <<do a task --> ? >>: An anonymous imperative. Signals a one-time execution block with an undefined output requirement.
 
 ## 2. Parameterized Operations (Nested Logic)
 
@@ -46,20 +46,20 @@ Below is the categorized list of the grammar instances identified:
 
 ## 3. Piping & Transmutation (Data Flow)
 
-* <<named-procedure -> ? >>: A resolution request. Forces the named procedure to output its value to the current stream.
-* <<named-procedure -> named-procedure >>: A recursive pipe. Passes the output of the first procedure as the context/input for the second.
-* <<named-procedure [function[parameter]] -> ? >>: A complex resolution. Executes a parameterized procedure and requests an immediate render of the result.
+* <<named-procedure --> ? >>: A resolution request. Forces the named procedure to output its value to the current stream.
+* <<named-procedure --> named-procedure >>: A recursive pipe. Passes the output of the first procedure as the context/input for the second.
+* <<named-procedure [function[parameter]] --> ? >>: A complex resolution. Executes a parameterized procedure and requests an immediate render of the result.
 
 ## 4. High-Velocity / Unstable Vectors
 
-* <<named-procedure -> named-procedure? >>: A transmuted query. Passes a procedure's output to check the existence/validity of a second procedure.
-* <<named-procedure [function[parameter]] -> named-procedure>>: A filtered pipe. Refines a complex input through a named procedure to transform it into a secondary named state.
-* <<named-procedure [function[parameter]] -> -> named-procedure? >>: A double-hop verify. Implies an intermediate, non-rendered state or a hidden variable assignment before checking the final target.
+* <<named-procedure --> named-procedure? >>: A transmuted query. Passes a procedure's output to check the existence/validity of a second procedure.
+* <<named-procedure [function[parameter]] --> named-procedure>>: A filtered pipe. Refines a complex input through a named procedure to transform it into a secondary named state.
+* <<named-procedure [function[parameter]] --> -> named-procedure? >>: A double-hop verify. Implies an intermediate, non-rendered state or a hidden variable assignment before checking the final target.
 
 ## 5. Semantic Definition & Assembly (The Inverse Void)
 
-* <<? -> semantic grammar, like the object name and metadata>>: A definition-by-capture. Uses the ? as a receiver to map a name and metadata to a new object.
-* <<? -> semantic grammar, [function[parameter]] +[function[parameter]] >>: Multi-source assembly. Aggregates metadata and multiple filter outputs to synthesize a new, complex system object.
+* <<? --> semantic grammar, like the object name and metadata>>: A definition-by-capture. Uses the ? as a receiver to map a name and metadata to a new object.
+* <<? --> semantic grammar, [function[parameter]] +[function[parameter]] >>: Multi-source assembly. Aggregates metadata and multiple filter outputs to synthesize a new, complex system object.
 
 Should we define the scope (Global vs. Tiddler-Local) for these recursive procedures next?
 

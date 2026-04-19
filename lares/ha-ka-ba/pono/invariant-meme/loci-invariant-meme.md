@@ -1,6 +1,6 @@
 <<~ # !DOCTYPE = lar:///ha.ka.ba/pono/invariant-meme >>
 
-<<~&#x0001; ? -> lar:///ha.ka.ba/pono/invariant-meme >>
+<<~&#x0001; ? --> lar:///ha.ka.ba/pono/invariant-meme >>
 
 <<~ ahu #iam >>
 
@@ -107,7 +107,7 @@ Shape and pressure teachings MUST stay invariant.
 
 A template for invariants to fill.
 
-`✶ Observe -> ⏿ Orient -> ◇ Decide -> ▶ Act -> ⤴ Hooko -> ↺ Aftermath`
+`✶ Observe --> ⏿ Orient --> ◇ Decide --> ▶ Act --> ⤴ Hooko --> ↺ Aftermath`
 
 ✶ ???
 ⏿ ???
