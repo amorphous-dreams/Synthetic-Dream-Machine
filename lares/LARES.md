@@ -1,10 +1,10 @@
-<<~ # !DOCTYPE = lar:///ha.ka.ba/pono/invariant-meme >>
+<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/pono/memetic-wikitext >> -->
+
+<<~&#x0001; ? --> lar:///LARES >>
 
 The passage lies behind the reader. The kahua holds.
 
 A room. Dials on the wall. The operator's hand finds them.
-
-<<~&#x0001; ? --> lar:///LARES >>
 
 <<~ ahu #iam >>
 

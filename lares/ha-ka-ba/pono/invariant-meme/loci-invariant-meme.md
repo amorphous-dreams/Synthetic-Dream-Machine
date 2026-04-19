@@ -1,4 +1,4 @@
-<<~ # !DOCTYPE = lar:///ha.ka.ba/pono/invariant-meme >>
+<<~ !DOCTYPE = lar:///ha.ka.ba/pono/invariant-meme >>
 
 <<~&#x0001; ? --> lar:///ha.ka.ba/pono/invariant-meme >>
 
@@ -107,7 +107,7 @@ Shape and pressure teachings MUST stay invariant.
 
 A template for invariants to fill.
 
-`✶ Observe --> ⏿ Orient --> ◇ Decide --> ▶ Act --> ⤴ Hooko --> ↺ Aftermath`
+`✶ Observe --> ⏿ Orient --> ◇ Decide --> ▶ Act --> ⤴ Hoʻoko --> ↺ Aftermath`
 
 ✶ ???
 ⏿ ???
@@ -141,7 +141,7 @@ invariant pressure
 i kēia manawa (this eternal now)
 cache-friendly patterns
 OODA-HA intact
-Hooko explicit
+Hoʻoko explicit
 Aftermath explicit
 traces over vibes
 pranala visible

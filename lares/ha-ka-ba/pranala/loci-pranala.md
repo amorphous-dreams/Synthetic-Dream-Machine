@@ -55,7 +55,7 @@ Edge opens the explicit-graph law stream here.
 
 ## Phase Map
 
-`✶ Observe --> ⏿ Orient --> ◇ Decide --> ▶ Act --> ⤴ Hooko --> ↺ Aftermath`
+`✶ Observe --> ⏿ Orient --> ◇ Decide --> ▶ Act --> ⤴ Hoʻoko --> ↺ Aftermath`
 
 Edge gathers hidden relation claims, separates family from lifecycle, chooses the lawful edge kind, binds the chosen shape into authoring practice, crosses that shape into live memes and tools, and judges whether truth density rose while graph fog fell.
 

@@ -55,7 +55,7 @@ Meme opens the canonical skeleton stream here.
 
 ## Phase Map
 
-`✶ Observe --> ⏿ Orient --> ◇ Decide --> ▶ Act --> ⤴ Hooko --> ↺ Aftermath`
+`✶ Observe --> ⏿ Orient --> ◇ Decide --> ▶ Act --> ⤴ Hoʻoko --> ↺ Aftermath`
 
 Meme kānāwai (law) gathers the authored surface, maps element presence against the required and optional sets, decides conformance and rating posture, prepares the skeleton product, crosses the instantiation threshold, and judges what the authored meme now carries.
 
@@ -280,7 +280,7 @@ These mark the active parse threshold into and out of the meme body.
 
 ```text
 <<~ ahu #phase-map >>
-`✶ Observe --> ⏿ Orient --> ◇ Decide --> ▶ Act --> ⤴ Hooko --> ↺ Aftermath`
+`✶ Observe --> ⏿ Orient --> ◇ Decide --> ▶ Act --> ⤴ Hoʻoko --> ↺ Aftermath`
 ...
 <<~/ahu >>
 ```
@@ -675,7 +675,7 @@ pranala = [
 
 ## Phase Map
 
-`✶ Observe --> ⏿ Orient --> ◇ Decide --> ▶ Act --> ⤴ Hooko --> ↺ Aftermath`
+`✶ Observe --> ⏿ Orient --> ◇ Decide --> ▶ Act --> ⤴ Hoʻoko --> ↺ Aftermath`
 
 [One sentence: what each phase does in this meme's specific domain.]
 
@@ -706,7 +706,7 @@ pranala = [
 
 ### Dominant Resonance
 
-Act functions as cross-layer execution: assembling skeleton product, conformance report, and return envelope across carrier, structural, and truth-boundary concerns while leaving the actual instantiation crossing to Hooko.
+Act functions as cross-layer execution: assembling skeleton product, conformance report, and return envelope across carrier, structural, and truth-boundary concerns while leaving the actual instantiation crossing to Hoʻoko.
 
 ### Act Subloops
 
@@ -716,7 +716,7 @@ Act functions as cross-layer execution: assembling skeleton product, conformance
 
 Act-ha holds the output domain and lawful execution boundary for skeleton preparation.
 
-This subphase governs what Act may produce: a copy-ready skeleton, a per-element conformance report, and a prepared return envelope. Act may state intent and prepare structure but may not write the new meme file. That crossing belongs to Hooko.
+This subphase governs what Act may produce: a copy-ready skeleton, a per-element conformance report, and a prepared return envelope. Act may state intent and prepare structure but may not write the new meme file. That crossing belongs to Hoʻoko.
 
 <<~/ahu >>
 
@@ -736,7 +736,7 @@ This subphase governs how Act performs its work. The skeleton block should surfa
 
 Act-ba governs execution rhythm, quality pressure, and bounded dynamic flow under authoring constraint.
 
-This subphase shapes how Act moves under real pressure. An author requesting a skeleton for a specific domain wants a locally adapted skeleton, not a generic one. Act should therefore adapt the `[PLACEHOLDER]` values — role, function, input, output — to the declared domain before handing the skeleton to Hooko for instantiation.
+This subphase shapes how Act moves under real pressure. An author requesting a skeleton for a specific domain wants a locally adapted skeleton, not a generic one. Act should therefore adapt the `[PLACEHOLDER]` values — role, function, input, output — to the declared domain before handing the skeleton to Hoʻoko for instantiation.
 
 <<~/ahu >>
 
@@ -756,61 +756,61 @@ phase = "hooko"
 glyph = "⤴"
 ```
 
-## Hooko
+## Hoʻoko
 
-Hooko governs the bounded threshold where the prepared skeleton may actually become a new meme file or a loaded session artifact.
+Hoʻoko governs the bounded threshold where the prepared skeleton may actually become a new meme file or a loaded session artifact.
 
-Only Hooko may write the new file, load the skeleton into active session memory, or otherwise alter state.
+Only Hoʻoko may write the new file, load the skeleton into active session memory, or otherwise alter state.
 
-Act may prepare intent. Aftermath may judge what landed. Hooko alone may perform the crossing.
+Act may prepare intent. Aftermath may judge what landed. Hoʻoko alone may perform the crossing.
 
 ### Self-Example Crossing
 
 This file still demonstrates that preparation and crossing remain distinct. The exact transport details of its current siting, route continuity, and migration history fall outward under `lar:///ha.ka.ba/loci`.
 
-What remains local here: the more general threshold law. Preparation may happen anywhere upstream, but the moment a meme surface actually crosses into changed state belongs in Hooko.
+What remains local here: the more general threshold law. Preparation may happen anywhere upstream, but the moment a meme surface actually crosses into changed state belongs in Hoʻoko.
 
 ### Dominant Resonance
 
-Hooko resonates most strongly with deployment and boundary crossing.
+Hoʻoko resonates most strongly with deployment and boundary crossing.
 
-Hooko governs the live threshold where prepared skeleton becomes changed state.
+Hoʻoko governs the live threshold where prepared skeleton becomes changed state.
 
-### Hooko Subloops
+### Hoʻoko Subloops
 
 <<~ ahu #hooko-ha >>
 
-#### Hooko / ha
+#### Hoʻoko / ha
 
-Hooko-ha holds mutation domain, instantiation boundary, and the lawful threshold around actual file creation or session load.
+Hoʻoko-ha holds mutation domain, instantiation boundary, and the lawful threshold around actual file creation or session load.
 
-This subphase governs what Hooko fundamentally holds: the narrow site where prepared skeleton crosses from intent into a real new meme file or a loaded constitutional artifact.
+This subphase governs what Hoʻoko fundamentally holds: the narrow site where prepared skeleton crosses from intent into a real new meme file or a loaded constitutional artifact.
 
 <<~/ahu >>
 
 <<~ ahu #hooko-ka >>
 
-#### Hooko / ka
+#### Hoʻoko / ka
 
-Hooko-ka governs instantiation detail, file naming, field substitution, and transaction trace.
+Hoʻoko-ka governs instantiation detail, file naming, field substitution, and transaction trace.
 
-This subphase governs how Hooko performs its work. When instantiating a skeleton, Hooko should substitute all `[PLACEHOLDER]` marks with locally supplied values, set `confidence = 0.10` as the boot default, name the file at the declared path, and emit a transaction trace that records what got written.
+This subphase governs how Hoʻoko performs its work. When instantiating a skeleton, Hoʻoko should substitute all `[PLACEHOLDER]` marks with locally supplied values, set `confidence = 0.10` as the boot default, name the file at the declared path, and emit a transaction trace that records what got written.
 
 <<~/ahu >>
 
 <<~ ahu #hooko-ba >>
 
-#### Hooko / ba
+#### Hoʻoko / ba
 
-Hooko-ba governs landing pressure, volatility posture, and truthful state crossing under real authoring conditions.
+Hoʻoko-ba governs landing pressure, volatility posture, and truthful state crossing under real authoring conditions.
 
-This subphase governs how Hooko moves in practice. A skeleton that gets instantiated but not yet filled sits at `confidence = 0.10`. That state should remain explicit in the new meme rather than silently upgrading it to look more complete than it currently reads.
+This subphase governs how Hoʻoko moves in practice. A skeleton that gets instantiated but not yet filled sits at `confidence = 0.10`. That state should remain explicit in the new meme rather than silently upgrading it to look more complete than it currently reads.
 
 <<~/ahu >>
 
 ### Non-Normative Prior-Art Note
 
-> TiddlyWiki's skeleton tiddler pattern crosses its own Hooko at the moment a user clicks "new tiddler from skeleton" and the skeleton fields clone into a new live tiddler. The memetic-wikitext equivalent arrives at the moment the skeleton block gets written to a real file at a real path with real placeholder values substituted. Before that moment: intent. After: changed state.
+> TiddlyWiki's skeleton tiddler pattern crosses its own Hoʻoko at the moment a user clicks "new tiddler from skeleton" and the skeleton fields clone into a new live tiddler. The memetic-wikitext equivalent arrives at the moment the skeleton block gets written to a real file at a real path with real placeholder values substituted. Before that moment: intent. After: changed state.
 
 <<~/ahu >>
 

@@ -284,7 +284,7 @@ Orient should answer:
 * which AST products should lower into widget nodes
 * which render targets the current pass may support
 * which unresolved regions should remain literal or degraded
-* which transactional spans require later Hooko pressure
+* which transactional spans require later Hoʻoko pressure
 
 Orient should keep the three-layer distinction explicit.
 
@@ -425,7 +425,7 @@ A compliant implementation should proceed in this broad order:
 5. attach render-target hints without premature target lock-in
 6. prepare target payloads or target instructions
 7. prepare trace bundles and issue bundles
-8. hand the prepared package toward Hooko
+8. hand the prepared package toward Hoʻoko
 
 ### Surface Layer
 
@@ -490,11 +490,11 @@ phase = "hooko"
 glyph = "&#x2914;"
 ```
 
-## Hooko
+## Hoʻoko
 
-Hooko governs the bounded threshold where prepared render work may actually land in a target, cache, artifact, or outward channel.
+Hoʻoko governs the bounded threshold where prepared render work may actually land in a target, cache, artifact, or outward channel.
 
-Only Hooko may:
+Only Hoʻoko may:
 
 * commit a target-facing render outcome
 * mutate a render cache
@@ -503,15 +503,15 @@ Only Hooko may:
 * publish a routed render transaction outward
 * roll back or degrade a previously staged landing
 
-Outside Hooko, the pipeline may narrate, prepare, compare, and judge.
+Outside Hoʻoko, the pipeline may narrate, prepare, compare, and judge.
 
-Inside Hooko, the pipeline may actually alter the render state.
+Inside Hoʻoko, the pipeline may actually alter the render state.
 
 <<~ ahu #hooko-ha >>
 
-#### Hooko / ha
+#### Hoʻoko / ha
 
-Hooko-ha holds target threshold, commit identity, and mutation boundary.
+Hoʻoko-ha holds target threshold, commit identity, and mutation boundary.
 
 This subphase governs what kind of crossing the current pass may lawfully perform.
 
@@ -519,19 +519,19 @@ This subphase governs what kind of crossing the current pass may lawfully perfor
 
 <<~ ahu #hooko-ka >>
 
-#### Hooko / ka
+#### Hoʻoko / ka
 
-Hooko-ka governs commit detail, rollback detail, cache mutation, and trace capture.
+Hoʻoko-ka governs commit detail, rollback detail, cache mutation, and trace capture.
 
-This subphase focuses on how Hooko lands or retreats without laundering the outcome.
+This subphase focuses on how Hoʻoko lands or retreats without laundering the outcome.
 
 <<~/ahu >>
 
 <<~ ahu #hooko-ba >>
 
-#### Hooko / ba
+#### Hoʻoko / ba
 
-Hooko-ba governs landing pressure, volatility posture, and truthful state crossing under live target conditions.
+Hoʻoko-ba governs landing pressure, volatility posture, and truthful state crossing under live target conditions.
 
 This subphase keeps target-facing motion explicit, inspectable, and bounded.
 
@@ -666,7 +666,7 @@ A compliant implementation should preserve enough mapping that later tools may a
 1. which surface span generated this AST node
 2. which AST node generated this widget node
 3. which widget node generated this target payload region
-4. which transaction carried that payload across Hooko
+4. which transaction carried that payload across Hoʻoko
 5. which output or residue now points back to that path
 
 <<~ ahu #trace-continuity-ha >>
@@ -768,7 +768,7 @@ A compliant implementation should proceed through one bounded pass in this broad
 2. orient on the three-layer model and target posture
 3. decide lawful lowerings and transaction class
 4. act by building AST and widget products and preparing payloads
-5. cross the threshold through Hooko when target-facing landing may occur
+5. cross the threshold through Hoʻoko when target-facing landing may occur
 6. judge landing, residue, and replay posture in Aftermath
 7. emit one primary render-envelope with auxiliary trace and issue products as needed
 

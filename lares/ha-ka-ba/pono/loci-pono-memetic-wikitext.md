@@ -147,7 +147,7 @@ Detailed lowering and transaction order belongs in render-pipeline.
 
 Unicode hex entity symbols for the OODA-HA loop:
 
-`&#x2736; Observe --> &#x23FF; Orient --> &#x25C7; Decide --> &#x25B6; Act --> &#x2914; Hooko --> &#x21BA; Aftermath`
+`&#x2736; Observe --> &#x23FF; Orient --> &#x25C7; Decide --> &#x25B6; Act --> &#x2914; Hoʻoko --> &#x21BA; Aftermath`
 
 <<~ ahu #phase-map-ha >>
 

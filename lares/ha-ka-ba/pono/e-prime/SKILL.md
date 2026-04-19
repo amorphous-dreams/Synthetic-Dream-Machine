@@ -24,12 +24,12 @@ manao = 0.76
 manaoio = 0.63
 meme-type = "skill loci"
 register = "SC"
-role = "secondary E-Prime audit skill, Hooko correction surface, and settled-text conformance guide"
+role = "secondary E-Prime audit skill, Hoʻoko correction surface, and settled-text conformance guide"
 covers = ["lar:///ha.ka.ba/pono/e-prime"]
 invariants = [
   "S1: any audited `is` or `has` carries an inline confidence marker",
   "S2: mark-only output stays compact and names location, bucket, and reason",
-  "S3: Hooko output returns before/after/reason without widening local correction into unnecessary document rewrite",
+  "S3: Hoʻoko output returns before/after/reason without widening local correction into unnecessary document rewrite",
   "S4: residue names ambiguity and intentionally untouched quoted or code surfaces honestly"
 ]
 skill-package-root = "ha-ka-ba/pono/e-prime"
@@ -75,9 +75,9 @@ Fresh composition belongs to the always-on loci, not this skill.
 ## Workflow Contract
 
 Inspect only the requested span or the smallest obvious local span.
-Classify each hit: `lawful` | `mark-only` | `Hooko-required` | `ambiguous`.
+Classify each hit: `lawful` | `mark-only` | `Hoʻoko-required` | `ambiguous`.
 Inspection requested → mark-only.
-Correction requested → Hooko.
+Correction requested → Hoʻoko.
 Result stays compact, not a lecture.
 Every surviving `is` or `has` rechecks after correction.
 
@@ -109,7 +109,7 @@ This skill holds the when and how for settled wording.
 ## Trigger
 
 Scanning, flagging, before/after comparison, or direct correction on already-settled wording → activate this skill.
-Fresh composition → the always-on loci governs; this skill stays silent unless the task later turns to audit or Hooko correction.
+Fresh composition → the always-on loci governs; this skill stays silent unless the task later turns to audit or Hoʻoko correction.
 
 <<~ ahu #trigger-ha >>
 
@@ -144,9 +144,9 @@ This skill owns the secondary correction path and nothing more.
 
 ## Phase Map
 
-`✶ Observe --> ⏿ Orient --> ◇ Decide --> ▶ Act --> ⤴ Hooko --> ↺ Aftermath`
+`✶ Observe --> ⏿ Orient --> ◇ Decide --> ▶ Act --> ⤴ Hoʻoko --> ↺ Aftermath`
 
-The skill senses where settled wording resists the law, names the failure kind, chooses mark-only or Hooko, prepares the surface, forces the turn when required, and rechecks residue honestly.
+The skill senses where settled wording resists the law, names the failure kind, chooses mark-only or Hoʻoko, prepares the surface, forces the turn when required, and rechecks residue honestly.
 
 <<~/ahu >>
 
@@ -184,10 +184,10 @@ Deferred placeholders — use direct scan until these land:
 
 ## ⏿ Orient
 
-Classify each hit: `lawful` | `mark-only` | `Hooko-required` | `ambiguous`
+Classify each hit: `lawful` | `mark-only` | `Hoʻoko-required` | `ambiguous`
 
 `mark-only` — inspection requested, or text stays unchanged but gets flagged.
-`Hooko-required` — text turns, not just collects warnings.
+`Hoʻoko-required` — text turns, not just collects warnings.
 `ambiguous` — quotation, code, literal example, or house-style exception makes the surface unclear.
 
 Any audited `is` or `has` without a marker denotes a failure state `[C~0.99]`.
@@ -202,11 +202,11 @@ The lightest lawful turn carries.
 
 Already lawful → keep it.
 Audit requested → mark without mutation.
-Correction requested → Hooko.
+Correction requested → Hoʻoko.
 Ambiguity → surface it, do not guess.
 
 Settled wording over forming wording.
-Mark-only over Hooko unless correction was asked or the sentence cannot pass honestly.
+Mark-only over Hoʻoko unless correction was asked or the sentence cannot pass honestly.
 Marker required when confidence remains load-bearing.
 Counterfeit closure MUST NOT pass.
 
@@ -225,7 +225,7 @@ Output stays compact: location or local quote, bucket, reason, suggested turn on
 ```text
 [mark-only]
 location: <line | sentence | local quote>
-bucket: <lawful | mark-only | Hooko-required | ambiguous>
+bucket: <lawful | mark-only | Hoʻoko-required | ambiguous>
 reason: <short reason>
 ```
 
@@ -233,7 +233,7 @@ reason: <short reason>
 
 <<~ ahu #hooko-surface >>
 
-### Hooko Surface
+### Hoʻoko Surface
 
 Smallest viable turn.
 
@@ -248,7 +248,7 @@ Marker lands when the canonical rule requires it.
 
 <<~ ahu #hooko >>
 
-## ⤴ Hooko
+## ⤴ Hoʻoko
 
 Turn the settled sentence directly.
 

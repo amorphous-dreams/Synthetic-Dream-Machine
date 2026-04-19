@@ -93,7 +93,7 @@ E-Prime should not:
 ## Handoff
 
 E-Prime most strongly affects `✶ Observe` and `⏿ Orient`, but the pressure can shape `◇ Decide`,
-`▶ Act`, `⤴ Hooko`, and `↺ Aftermath` as well.
+`▶ Act`, `⤴ Hoʻoko`, and `↺ Aftermath` as well.
 
 The handoff should let a later reader answer:
 

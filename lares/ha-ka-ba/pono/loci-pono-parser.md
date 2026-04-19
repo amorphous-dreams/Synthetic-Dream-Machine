@@ -53,7 +53,7 @@ Parser kānāwai (law) opens the active parsing stream here.
 
 ## Phase Map
 
-`✶ Observe --> ⏿ Orient --> ◇ Decide --> ▶ Act --> ⤴ Hooko --> ↺ Aftermath`
+`✶ Observe --> ⏿ Orient --> ◇ Decide --> ▶ Act --> ⤴ Hoʻoko --> ↺ Aftermath`
 
 Parser kānāwai (law) reads, shapes, chooses, prepares, crosses, and judges in that order.
 
@@ -750,7 +750,7 @@ A compliant parser should proceed in this broad order:
 10. build syntax products
 11. normalize lawful noncanonical spellings
 12. prepare typed return-envelope and mutation package
-13. cross the prepared change through Hooko
+13. cross the prepared change through Hoʻoko
 14. emit typed return-envelope, result, warnings, and or errors
 
 ### Metadata Parse Rule
@@ -800,23 +800,23 @@ phase = "hooko"
 glyph = "⤴"
 ```
 
-## Hooko
+## Hoʻoko
 
-Hooko governs the bounded threshold where intended operation may actually alter state.
+Hoʻoko governs the bounded threshold where intended operation may actually alter state.
 
-Hooko should remain explicit.
+Hoʻoko should remain explicit.
 
-Hooko should not dissolve into free-floating disorder, decorative rupture, or vague portal language.
+Hoʻoko should not dissolve into free-floating disorder, decorative rupture, or vague portal language.
 
-Hooko names the lawful crossing between Act and Aftermath.
+Hoʻoko names the lawful crossing between Act and Aftermath.
 
-Outside Hooko, a parser, agent, or operator-facing tool may narrate, prepare, stage, or judge.
+Outside Hoʻoko, a parser, agent, or operator-facing tool may narrate, prepare, stage, or judge.
 
-Inside Hooko, the system may actually change session trajectory.
+Inside Hoʻoko, the system may actually change session trajectory.
 
-### Core Hooko Kānāwai (law)
+### Core Hoʻoko Kānāwai (law)
 
-Only Hooko may:
+Only Hoʻoko may:
 
 * load continuity into active session memory
 * write files
@@ -830,11 +830,11 @@ Act may state intent.
 
 Aftermath may judge what landed.
 
-Hooko alone may perform the change.
+Hoʻoko alone may perform the change.
 
 ### Transaction Boundary Reminder
 
-Hooko should preserve explicit boundary truth.
+Hoʻoko should preserve explicit boundary truth.
 
 A compliant system should make it legible whether a change:
 
@@ -844,25 +844,25 @@ A compliant system should make it legible whether a change:
 * rolled back
 * remained staged without commit
 
-Hooko should therefore cooperate closely with return-types kānāwai (law) and control-glyphs kānāwai (law) when routed transactions cross upward or outward boundaries.
+Hoʻoko should therefore cooperate closely with return-types kānāwai (law) and control-glyphs kānāwai (law) when routed transactions cross upward or outward boundaries.
 
 ### Dominant Resonance
 
-Hooko resonates most strongly with deployment and boundary crossing.
+Hoʻoko resonates most strongly with deployment and boundary crossing.
 
-Hooko does not own deployment, truth, or structure absolutely, but it most strongly governs the live threshold where prepared intention becomes changed state.
+Hoʻoko does not own deployment, truth, or structure absolutely, but it most strongly governs the live threshold where prepared intention becomes changed state.
 
-### Hooko Subloops
+### Hoʻoko Subloops
 
 <<~ ahu #hooko-ha >>
 
-#### Hooko / ha
+#### Hoʻoko / ha
 
-Hooko-ha holds mutation domain, transaction threshold, and the lawful boundary around actual change.
+Hoʻoko-ha holds mutation domain, transaction threshold, and the lawful boundary around actual change.
 
-This subphase governs what Hooko fundamentally holds.
+This subphase governs what Hoʻoko fundamentally holds.
 
-Hooko holds the narrow site where prepared work may cross from intent into changed condition.
+Hoʻoko holds the narrow site where prepared work may cross from intent into changed condition.
 
 It keeps that crossing explicit.
 
@@ -875,13 +875,13 @@ It keeps state change distinguishable from preparation, narration, and judgment.
 
 <<~ ahu #hooko-ka >>
 
-#### Hooko / ka
+#### Hoʻoko / ka
 
-Hooko-ka governs commit detail, rollback detail, continuity loading, artifact mutation, and trace-worthy operation shape.
+Hoʻoko-ka governs commit detail, rollback detail, continuity loading, artifact mutation, and trace-worthy operation shape.
 
-This subphase governs how Hooko actually performs work.
+This subphase governs how Hoʻoko actually performs work.
 
-A compliant parser or agent should enter Hooko only after prior phases already prepared:
+A compliant parser or agent should enter Hoʻoko only after prior phases already prepared:
 
 * chosen operation
 * transaction target
@@ -889,35 +889,35 @@ A compliant parser or agent should enter Hooko only after prior phases already p
 * issue posture
 * degradation posture
 
-When prepared work crosses Hooko, transaction trace should preserve whether the outcome stayed staged, landed committed, degraded, or rolled back.
+When prepared work crosses Hoʻoko, transaction trace should preserve whether the outcome stayed staged, landed committed, degraded, or rolled back.
 
 A compliant parser should not launder one outcome class into another.
 
-Within Hooko, the system may:
+Within Hoʻoko, the system may:
 
 * commit one prepared change
 * stage and then degrade a change truthfully
 * roll back when legality fails
 * emit transaction trace for later aftermath judgment
 
-Hooko should favor explicit, inspectable change over hidden mutation.
+Hoʻoko should favor explicit, inspectable change over hidden mutation.
 
 <<~ loulou lar:///ha.ka.ba/hooko-ka >>
 <<~/ahu >>
 
 <<~ ahu #hooko-ba >>
 
-#### Hooko / ba
+#### Hoʻoko / ba
 
-Hooko-ba governs landing pressure, volatility posture, and truthful state crossing under real conditions.
+Hoʻoko-ba governs landing pressure, volatility posture, and truthful state crossing under real conditions.
 
-This subphase governs how Hooko moves in practice.
+This subphase governs how Hoʻoko moves in practice.
 
-Hooko may carry uncertainty, partiality, and risk.
+Hoʻoko may carry uncertainty, partiality, and risk.
 
-Hooko should not romanticize that pressure.
+Hoʻoko should not romanticize that pressure.
 
-A lawful Hooko phase should preserve:
+A lawful Hoʻoko phase should preserve:
 
 * explicit action site
 * explicit mutation outcome
@@ -925,14 +925,14 @@ A lawful Hooko phase should preserve:
 * explicit rollback when commit fails
 * explicit handoff into Aftermath
 
-When a system changes state without naming Hooko, that event should count as boundary drift rather than as invisible success.
+When a system changes state without naming Hoʻoko, that event should count as boundary drift rather than as invisible success.
 
 <<~ loulou lar:///ha.ka.ba/hooko-ba >>
 <<~/ahu >>
 
 ### Non-Normative Prior-Art Note
 
-> Hooko here takes shape less like pure randomness and more like an explicit commit window, transaction throat, or mutation boundary: a narrow zone where prepared intent crosses into stateful consequence.
+> Hoʻoko here takes shape less like pure randomness and more like an explicit commit window, transaction throat, or mutation boundary: a narrow zone where prepared intent crosses into stateful consequence.
 
 <<~ loulou lar:///ha.ka.ba/hooko >>
 <<~/ahu >>
@@ -941,7 +941,7 @@ When a system changes state without naming Hooko, that event should count as bou
 
 Act functions as cross-layer execution rather than as the exclusive home of one visible architectural concern.
 
-Act prepares the chosen kānāwai (law) across carrier constraints, structural forms, truth-boundary commitments, and deployment-facing return pressure, while leaving the actual crossing of state to Hooko.
+Act prepares the chosen kānāwai (law) across carrier constraints, structural forms, truth-boundary commitments, and deployment-facing return pressure, while leaving the actual crossing of state to Hoʻoko.
 
 ### Act Subloops
 
@@ -1395,7 +1395,7 @@ glyph = "↺"
 
 ## Aftermath
 
-Aftermath judges what the parse produced and how Hooko changed state, and how that changed state may truthfully travel upward or recurse.
+Aftermath judges what the parse produced and how Hoʻoko changed state, and how that changed state may truthfully travel upward or recurse.
 
 ### Core Aftermath Kānāwai (law)
 
@@ -1627,7 +1627,7 @@ Examples:
 * carrier resonates most strongly with Observe
 * structure resonates most strongly with Orient
 * truth and boundary resonate most strongly with Decide
-* deployment and threshold crossing resonate most strongly with Hooko
+* deployment and threshold crossing resonate most strongly with Hoʻoko
 * deployment and ritual landing resonate most strongly with Aftermath
 
 These resonances should guide reading and implementation, but they should not function as total identity claims.
@@ -1699,7 +1699,7 @@ That order should remain visible so that later implementations, tests, and agent
 3. run Orient on modes, forms, sigil types, and payload regions
 4. run Decide on canonical readings and normalization posture
 5. run Act on deterministic parse preparation
-6. run Hooko on bounded state crossing and mutation
+6. run Hoʻoko on bounded state crossing and mutation
 7. run Aftermath on typed result packaging
 8. return one typed `return-envelope`
 9. optionally feed residue into parent Observe or Orient through a later pono action
@@ -1723,9 +1723,9 @@ Orient should hand mode maps, sigil maps, payload maps, and open tensions into D
 
 Decide should hand chosen readings, scope bounds, normalization posture, and issue posture into Act.
 
-Act should hand syntax products, metadata objects, normalized text, issues, trace, and prepared mutation package into Hooko.
+Act should hand syntax products, metadata objects, normalized text, issues, trace, and prepared mutation package into Hoʻoko.
 
-Hooko should hand changed state, mutation outcome, and transaction trace into Aftermath.
+Hoʻoko should hand changed state, mutation outcome, and transaction trace into Aftermath.
 
 Aftermath should assemble one typed `return-envelope` that truthfully carries what survived, what degraded, what changed, and what may reopen later.
 
@@ -2014,11 +2014,11 @@ degrade = "no-op"
 <<~/hana >>
 ````
 
-### Example E — Act, Hooko, and Aftermath distinction
+### Example E — Act, Hoʻoko, and Aftermath distinction
 
 ```text
 ▶ Act — prepare one routed return-envelope
-⤴ Hooko — commit the routed return across the live threshold
+⤴ Hoʻoko — commit the routed return across the live threshold
 ↺ Aftermath — judge residue, trace, and landing quality
 ```
 

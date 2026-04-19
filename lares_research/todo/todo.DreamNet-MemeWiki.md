@@ -53,7 +53,7 @@ DreamNet MemeWiki opens the active research-consolidation stream here.
 
 ## Phase Map
 
-`✶ Observe --> ⏿ Orient --> ◇ Decide --> ▶ Act --> ⤴ Hooko --> ↺ Aftermath`
+`✶ Observe --> ⏿ Orient --> ◇ Decide --> ▶ Act --> ⤴ Hoʻoko --> ↺ Aftermath`
 
 DreamNet MemeWiki gathers the current research field, maps it into an implementable architecture, fixes the present decision posture, stages the next work sequence, crosses that plan into active execution, and judges what still remains unresolved.
 

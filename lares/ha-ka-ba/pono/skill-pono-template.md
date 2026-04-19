@@ -58,7 +58,7 @@ Skill template opens the verification authoring stream here.
 
 ## Phase Map
 
-`✶ Observe --> ⏿ Orient --> ◇ Decide --> ▶ Act --> ⤴ Hooko --> ↺ Aftermath`
+`✶ Observe --> ⏿ Orient --> ◇ Decide --> ▶ Act --> ⤴ Hoʻoko --> ↺ Aftermath`
 
 A verification skill gathers the target meme surface, classifies element presence against declared invariants, decides pass/fail per invariant, prepares a typed conformance report, crosses the report threshold into session state, and judges residue and repair paths.
 

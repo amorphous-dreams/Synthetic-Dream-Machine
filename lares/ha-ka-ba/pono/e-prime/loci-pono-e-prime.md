@@ -91,11 +91,11 @@ Observation, relation, process, and scoped carrying outrank essence and ownershi
 
 <<~ ahu #e-prime-law-ooda-ha >>
 
-`✶ Observe --> ⏿ Orient --> ◇ Decide --> ▶ Act --> ⤴ Hooko --> ↺ Aftermath`
+`✶ Observe --> ⏿ Orient --> ◇ Decide --> ▶ Act --> ⤴ Hoʻoko --> ↺ Aftermath`
 
 ✶ `is` bites. `has` bites. Collapse bites. Certainty swells. MUST sense before the word lands. Stay local.
-⏿ The unit MUST land as `lawful`, `needs-steering`, `Hooko-required`, or `ambiguous`. Hold only what the next move needs.
-◇ Passes → release. Unlabeled `is` or `has` presses → MUST route to Hooko. Ambiguity rises → MUST surface it, MUST NOT fill it.
+⏿ The unit MUST land as `lawful`, `needs-steering`, `Hoʻoko-required`, or `ambiguous`. Hold only what the next move needs.
+◇ Passes → release. Unlabeled `is` or `has` presses → MUST route to Hoʻoko. Ambiguity rises → MUST surface it, MUST NOT fill it.
 ▶ Wording MUST arrive release-ready or mutation-ready. The marker MUST surface when the rule bites.
 ⤴ Essence MUST dissolve into observation, relation, or process. Possession grip MUST loosen into scoped carrying. Sentence stays light.
 ↺ Every remaining `is` or `has` MUST carry a marker. Swell dropped. Residue MUST NOT stay buried.

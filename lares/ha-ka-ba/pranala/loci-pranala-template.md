@@ -53,7 +53,7 @@ Template opens the reusable-edge-sigil stream here.
 
 ## Phase Map
 
-`✶ Observe --> ⏿ Orient --> ◇ Decide --> ▶ Act --> ⤴ Hooko --> ↺ Aftermath`
+`✶ Observe --> ⏿ Orient --> ◇ Decide --> ▶ Act --> ⤴ Hoʻoko --> ↺ Aftermath`
 
 Template gathers repeated edge patterns, maps them into slot-bearing reusable forms, chooses which defaults belong in the template and which belong in the call site, binds the template through `kahea`, crosses that binding into concrete instances, and judges whether the template reduced noise without flattening truth.
 

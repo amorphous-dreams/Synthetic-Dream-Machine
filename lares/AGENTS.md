@@ -1,4 +1,4 @@
-<<~ # !DOCTYPE = lar:///ha.ka.ba/pono/invariant-meme >>
+<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/pono/memetic-wikitext >> -->
 
 <<~&#x0001; ? --> lar:///AGENTS >>
 

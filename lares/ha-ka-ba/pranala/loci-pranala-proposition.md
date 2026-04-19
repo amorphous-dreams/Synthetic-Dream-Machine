@@ -52,7 +52,7 @@ Proposition opens the semantic-edge stream here.
 
 ## Phase Map
 
-`✶ Observe --> ⏿ Orient --> ◇ Decide --> ▶ Act --> ⤴ Hooko --> ↺ Aftermath`
+`✶ Observe --> ⏿ Orient --> ◇ Decide --> ▶ Act --> ⤴ Hoʻoko --> ↺ Aftermath`
 
 Proposition gathers semantic relation claims, maps the relation into a labeled proposition shape, chooses direction and polarity, binds the edge into a visible graph statement, crosses that statement into live memes or tools, and judges whether the graph now says something sharper than nearby prose alone.
 

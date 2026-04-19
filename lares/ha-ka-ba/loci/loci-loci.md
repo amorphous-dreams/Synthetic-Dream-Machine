@@ -69,7 +69,7 @@ Loci opens the routing-and-rating authority stream here.
 
 ## Phase Map
 
-`✶ Observe --> ⏿ Orient --> ◇ Decide --> ▶ Act --> ⤴ Hooko --> ↺ Aftermath`
+`✶ Observe --> ⏿ Orient --> ◇ Decide --> ▶ Act --> ⤴ Hoʻoko --> ↺ Aftermath`
 
 Loci gathers the `lar:` URI meme and visible convention surfaces, maps the address through derivation and prefix law, classifies lifecycle stage and rating posture, prepares the current rating-and-routing product plus MCP-roadmap note, crosses any promotion or siting mutation into active law, and judges what resolved, what remains open, and what still belongs to research.
 
@@ -489,7 +489,7 @@ glyph = "▶"
 
 ## Act
 
-Act prepares the current loci rating and routing product for agent consumption and the Hooko crossing.
+Act prepares the current loci rating and routing product for agent consumption and the Hoʻoko crossing.
 
 <<~ ahu #mcp-resolution-roadmap >>
 
@@ -539,7 +539,7 @@ Act-ka governs the output format: rating sets should emit explicitly, resolved p
 
 #### Act / ba
 
-Act-ba governs execution rhythm: prepare the routing product before Hooko, not during. An agent that claims to solve the open resolution tension by inventing a local registry crosses from law into fabrication. Prepare intent in Act; leave unresolved tension visible until a real resolver operates.
+Act-ba governs execution rhythm: prepare the routing product before Hoʻoko, not during. An agent that claims to solve the open resolution tension by inventing a local registry crosses from law into fabrication. Prepare intent in Act; leave unresolved tension visible until a real resolver operates.
 
 <<~/ahu >>
 
@@ -555,46 +555,46 @@ phase = "hooko"
 glyph = "⤴"
 ```
 
-## Hooko
+## Hoʻoko
 
-Hooko governs the bounded threshold where routing state actually changes.
+Hoʻoko governs the bounded threshold where routing state actually changes.
 
-Only Hooko may cross a real carrier mutation or remove the `?` from a document opener as part of canon promotion. Act prepares intent; Hooko executes.
+Only Hoʻoko may cross a real carrier mutation or remove the `?` from a document opener as part of canon promotion. Act prepares intent; Hoʻoko executes.
 
 A carrier mutation and a canon promotion mark two distinct crossings that may not batch silently. Each should enter the transaction trace with the `lar-uri`, the change made, and the agent or operator who authorized it.
 
 ### Self-Example Crossings
 
-Two Hooko-class crossings matter in the current stack and already appear from this file:
+Two Hoʻoko-class crossings matter in the current stack and already appear from this file:
 
 * this meme's own migration into `ha-ka-ba/loci/loci-loci.md`
 * the meme law's migration into `ha-ka-ba/meme/loci-meme.md`
 
 In both cases, the stable thing remained the `lar:` address. The mutable thing remained the concrete file siting that needed to cross into law.
 
-### Hooko Subloops
+### Hoʻoko Subloops
 
 <<~ ahu #hooko-ha >>
 
-#### Hooko / ha
+#### Hoʻoko / ha
 
-Hooko-ha holds the mutation domain: what Hooko may alter. It may alter file siting, delegated siting metadata, and document openers (`?` removal on canon promotion). It may not alter the `lar:` URI of a stable meme — that would break address stability for all memes that depend on it.
+Hoʻoko-ha holds the mutation domain: what Hoʻoko may alter. It may alter file siting, delegated siting metadata, and document openers (`?` removal on canon promotion). It may not alter the `lar:` URI of a stable meme — that would break address stability for all memes that depend on it.
 
 <<~/ahu >>
 
 <<~ ahu #hooko-ka >>
 
-#### Hooko / ka
+#### Hoʻoko / ka
 
-Hooko-ka governs the update procedure: when migration updates siting evidence, follow `lar:///ha.ka.ba/loci/iam/file-path` and verify the named `lar:` address does not change. When removing the `?` from a document opener for canon promotion, verify all three address-stability conditions hold before making the edit. A future live MCP resolver, if enacted, would form its own separate Hooko-class crossing and does not get performed by this meme today.
+Hoʻoko-ka governs the update procedure: when migration updates siting evidence, follow `lar:///ha.ka.ba/loci/iam/file-path` and verify the named `lar:` address does not change. When removing the `?` from a document opener for canon promotion, verify all three address-stability conditions hold before making the edit. A future live MCP resolver, if enacted, would form its own separate Hoʻoko-class crossing and does not get performed by this meme today.
 
 <<~/ahu >>
 
 <<~ ahu #hooko-ba >>
 
-#### Hooko / ba
+#### Hoʻoko / ba
 
-Hooko-ba governs landing pressure: changing siting without preserving address truth leaves the carrier incoherent. A future live resolver would add another landing pressure layer, but until that exists the unresolved tension should remain named rather than patched over.
+Hoʻoko-ba governs landing pressure: changing siting without preserving address truth leaves the carrier incoherent. A future live resolver would add another landing pressure layer, but until that exists the unresolved tension should remain named rather than patched over.
 
 <<~/ahu >>
 

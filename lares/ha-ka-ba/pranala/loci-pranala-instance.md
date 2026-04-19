@@ -52,7 +52,7 @@ Instance opens the bound-edge-object stream here.
 
 ## Phase Map
 
-`✶ Observe --> ⏿ Orient --> ◇ Decide --> ▶ Act --> ⤴ Hooko --> ↺ Aftermath`
+`✶ Observe --> ⏿ Orient --> ◇ Decide --> ▶ Act --> ⤴ Hoʻoko --> ↺ Aftermath`
 
 Instance gathers the concrete relation to bind, maps it into a shared edge surface, chooses which defaults remain inherited and which values need explicit override, binds the edge object into a live carrier, crosses that object into graph or tool surfaces, and judges whether the instance carries enough truth to stand on its own.
 

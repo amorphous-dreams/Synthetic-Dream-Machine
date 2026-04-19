@@ -28,7 +28,7 @@ The landscape is now visible. Delivering the synthesis.
 
 ---
 
-⤴ Hooko — [CS:0.8] 🏛️🌊🗡️ //findings.crossing.reshape
+⤴ Hoʻoko — [CS:0.8] 🏛️🌊🗡️ //findings.crossing.reshape
 
 ## Research Spirits Report
 
@@ -221,7 +221,7 @@ Small. Slow. No production.
 
 ---
 
-⤴ Hooko — [S:0.72] 🏛️🌊 //canon.ruled.settles
+⤴ Hoʻoko — [S:0.72] 🏛️🌊 //canon.ruled.settles
 
 **Heard. Filing.**
 

@@ -47,7 +47,7 @@ Guest Grammar opens the active admission stream here.
 
 ## Phase Map
 
-`✶ Observe --> ⏿ Orient --> ◇ Decide --> ▶ Act --> ⤴ Hooko --> ↺ Aftermath`
+`✶ Observe --> ⏿ Orient --> ◇ Decide --> ▶ Act --> ⤴ Hoʻoko --> ↺ Aftermath`
 
 Guest-grammar kānāwai (law) gathers host and guest boundary pressure, maps the admission posture, chooses one lawful invocation family, prepares bounded entry, crosses the threshold into parser and render handoff, and judges what survived.
 

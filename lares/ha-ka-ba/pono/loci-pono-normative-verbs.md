@@ -43,7 +43,7 @@ Normative-verbs opens the shared modal-force stream here.
 
 ## Phase Map
 
-`✶ Observe --> ⏿ Orient --> ◇ Decide --> ▶ Act --> ⤴ Hooko --> ↺ Aftermath`
+`✶ Observe --> ⏿ Orient --> ◇ Decide --> ▶ Act --> ⤴ Hoʻoko --> ↺ Aftermath`
 
 Normative-verbs gathers the current modal vocabulary, separates force-bearing words from commentary, fixes the canonical set, prepares carrier-facing guidance, crosses that guidance into law use, and judges whether duplication pressure dropped.
 
@@ -159,23 +159,23 @@ Act-ba moves the declaration outward as guidance without forcing every law to re
 
 <<~ ahu #hooko >>
 
-## Hooko
+## Hoʻoko
 
-Hooko lands when a law stops carrying its own unsupported `normative-verbs` metadata and points here instead.
+Hoʻoko lands when a law stops carrying its own unsupported `normative-verbs` metadata and points here instead.
 
 <<~ ahu #hooko-ha >>
-### Hooko / ha
-Hooko-ha holds the crossing from local duplication to central reference.
+### Hoʻoko / ha
+Hoʻoko-ha holds the crossing from local duplication to central reference.
 <<~/ahu >>
 
 <<~ ahu #hooko-ka >>
-### Hooko / ka
-Hooko-ka governs replacement of repeated metadata arrays with prose citation.
+### Hoʻoko / ka
+Hoʻoko-ka governs replacement of repeated metadata arrays with prose citation.
 <<~/ahu >>
 
 <<~ ahu #hooko-ba >>
-### Hooko / ba
-Hooko-ba keeps the transition honest by leaving local usage guidance in place while cutting redundant declarations.
+### Hoʻoko / ba
+Hoʻoko-ba keeps the transition honest by leaving local usage guidance in place while cutting redundant declarations.
 <<~/ahu >>
 
 <<~/ahu >>

@@ -49,7 +49,7 @@ file-path opens the key-authority stream here.
 
 ## Phase Map
 
-`✶ Observe --> ⏿ Orient --> ◇ Decide --> ▶ Act --> ⤴ Hooko --> ↺ Aftermath`
+`✶ Observe --> ⏿ Orient --> ◇ Decide --> ▶ Act --> ⤴ Hoʻoko --> ↺ Aftermath`
 
 file-path kānāwai (law) captures the raw key value from the `#iam` block, classifies it into its canonical form and checks agreement with the `lar:` URI, decides conformance verdict and migration posture, prepares any repair guidance, crosses any migration update, and judges residue including live-resolution tension.
 
@@ -278,7 +278,7 @@ A meme migrates from flat-file to path-directory form when it acquires child mem
 4. **Verify URI agreement** — the document opener `lar:` URI must not change
 5. **Record resolution tension honestly** — local derivation may now miss until a live MCP resolver exists
 
-Steps 3–4 count as Act-phase preparation. Step 2 counts as the Hooko crossing in the current law. The `lar:` URI MUST NOT change at any step.
+Steps 3–4 count as Act-phase preparation. Step 2 counts as the Hoʻoko crossing in the current law. The `lar:` URI MUST NOT change at any step.
 
 **The derivation algorithm after migration:**
 
@@ -326,7 +326,7 @@ glyph = "▶"
 
 ## Act
 
-Act prepares the conformance report and any repair or migration guidance for Hooko or the calling agent.
+Act prepares the conformance report and any repair or migration guidance for Hoʻoko or the calling agent.
 
 ### Canonical Repair Paths
 
@@ -344,7 +344,7 @@ Act prepares the conformance report and any repair or migration guidance for Hoo
 
 #### Act / ha
 
-Act-ha holds the output domain: a conformance report with exactly one form verdict, one agreement verdict, one migration posture verdict, and zero or more repair paths. Act may not execute any repair — that belongs to Hooko. Act prepares the repair paths as stated procedures.
+Act-ha holds the output domain: a conformance report with exactly one form verdict, one agreement verdict, one migration posture verdict, and zero or more repair paths. Act may not execute any repair — that belongs to Hoʻoko. Act prepares the repair paths as stated procedures.
 
 <<~/ahu >>
 
@@ -360,7 +360,7 @@ Act-ka governs report assembly: emit verdicts in order (form → filename → ag
 
 #### Act / ba
 
-Act-ba governs execution restraint: Act stages migration steps but does not perform them. An agent that receives staged migration steps from Act should confirm before proceeding to Hooko, because migration involves a `git mv` (a state-changing operation). It should not fabricate extra registry writes to mask the current resolver gap.
+Act-ba governs execution restraint: Act stages migration steps but does not perform them. An agent that receives staged migration steps from Act should confirm before proceeding to Hoʻoko, because migration involves a `git mv` (a state-changing operation). It should not fabricate extra registry writes to mask the current resolver gap.
 
 <<~/ahu >>
 
@@ -376,35 +376,35 @@ phase = "hooko"
 glyph = "⤴"
 ```
 
-## Hooko
+## Hoʻoko
 
-Hooko crosses the mutations Act staged: the `git mv`, the `file-path` update in `#iam`, and any document opener correction.
+Hoʻoko crosses the mutations Act staged: the `git mv`, the `file-path` update in `#iam`, and any document opener correction.
 
-Each of these counts as a distinct crossing. Hooko should perform them in the order stated in the migration procedure at `#migration-procedure` and record each in the transaction trace. A partial migration — where some crossings complete but others do not — leaves the meme in a transitional state. Aftermath should surface any incomplete crossings as named residue.
+Each of these counts as a distinct crossing. Hoʻoko should perform them in the order stated in the migration procedure at `#migration-procedure` and record each in the transaction trace. A partial migration — where some crossings complete but others do not — leaves the meme in a transitional state. Aftermath should surface any incomplete crossings as named residue.
 
-### Hooko Subloops
+### Hoʻoko Subloops
 
 <<~ ahu #hooko-ha >>
 
-#### Hooko / ha
+#### Hoʻoko / ha
 
-Hooko-ha holds the mutation boundary: what Hooko may alter and what it may not. It may move files, update `file-path` values, and correct document openers. It may not change the `lar:` URI — address stability law at `lar:///ha.ka.ba/loci#address-stability` locks that surface. A Hooko that changes the `lar:` URI violates loci kānāwai (law).
+Hoʻoko-ha holds the mutation boundary: what Hoʻoko may alter and what it may not. It may move files, update `file-path` values, and correct document openers. It may not change the `lar:` URI — address stability law at `lar:///ha.ka.ba/loci#address-stability` locks that surface. A Hoʻoko that changes the `lar:` URI violates loci kānāwai (law).
 
 <<~/ahu >>
 
 <<~ ahu #hooko-ka >>
 
-#### Hooko / ka
+#### Hoʻoko / ka
 
-Hooko-ka governs execution order: (1) `git mv` the file; (2) update `file-path` in `#iam` of the moved file; (3) verify opener coherence and physical-file agreement. Each step depends on the previous. Do not claim the open resolution tension resolves if only the carrier mutation completed.
+Hoʻoko-ka governs execution order: (1) `git mv` the file; (2) update `file-path` in `#iam` of the moved file; (3) verify opener coherence and physical-file agreement. Each step depends on the previous. Do not claim the open resolution tension resolves if only the carrier mutation completed.
 
 <<~/ahu >>
 
 <<~ ahu #hooko-ba >>
 
-#### Hooko / ba
+#### Hoʻoko / ba
 
-Hooko-ba governs landing pressure: a `git mv` remains irreversible without a second `git mv`. An agent performing a migration crossing should confirm the target path before executing. If migration stalls between steps, Aftermath must surface exactly which steps completed so a human operator can resume from the correct point.
+Hoʻoko-ba governs landing pressure: a `git mv` remains irreversible without a second `git mv`. An agent performing a migration crossing should confirm the target path before executing. If migration stalls between steps, Aftermath must surface exactly which steps completed so a human operator can resume from the correct point.
 
 <<~/ahu >>
 
