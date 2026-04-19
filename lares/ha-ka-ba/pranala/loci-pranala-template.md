@@ -8,7 +8,6 @@
 # <<~ ahu #iam-ha "structure" >>
 name = "pranala/template"
 file-path = "ha-ka-ba/pranala/loci-pranala-template.md"
-description = "Template pranala (edge) sigil kānāwai (law). Defines reusable edge templates, slot contracts, kahea binding order, and promotion discipline."
 content-type = "text/x-memetic-wikitext"
 version = "0.1-draft"
 tulen = 0.70

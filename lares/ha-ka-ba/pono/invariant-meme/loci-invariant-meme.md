@@ -1,4 +1,4 @@
-<<~ !DOCTYPE = lar:///ha.ka.ba/pono/invariant-meme >>
+<<~ # !DOCTYPE = lar:///ha.ka.ba/pono/invariant-meme >>
 
 <<~&#x0001; ? -> lar:///ha.ka.ba/pono/invariant-meme >>
 
@@ -8,7 +8,6 @@
 # <<~ ahu #iam-ha "structure" >>
 name = "pono/invariant-meme"
 file-path = "ha-ka-ba/pono/invariant-meme/loci-invariant-meme.md"
-description = "Active in i kēia manawa (this eternal now). Self-describing example of a minimal invariant meme. Short stable cache-able."
 content-type = "text/x-memetic-wikitext"
 version = "0.1"
 tulen = 0.6

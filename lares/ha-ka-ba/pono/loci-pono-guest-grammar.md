@@ -7,7 +7,6 @@
 # <<~ ahu #iam-ha "structure" >>
 name = "pono/guest-grammar"
 file-path = "ha-ka-ba/pono/loci-pono-guest-grammar.md"
-description = "Kānāwai (law) for explicit admission of guest grammars into memetic-wikitext without overloading the root primitive cluster."
 content-type = "text/x-memetic-wikitext"
 version = "0.1-draft"
 tulen = 0.56

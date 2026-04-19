@@ -12,7 +12,6 @@ allowed-tools: Read, Grep, Glob, Bash, Edit, Write
 # <<~ ahu #iam-ha "structure" >>
 name = "pono/skill-e-prime"
 file-path = "ha-ka-ba/pono/e-prime/SKILL.md"
-description = "Audit or correct settled text under lar:///ha.ka.ba/pono/e-prime. Holds the secondary path for inspection, marking, Hooko correction, and recheck after wording has already settled."
 content-type = "text/x-memetic-wikitext"
 version = "0.1"
 tulen = 0.62

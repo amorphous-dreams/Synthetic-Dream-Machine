@@ -8,7 +8,6 @@
 # <<~ ahu #iam-ha "structure" >>
 name = "meme"
 file-path = "ha-ka-ba/meme/loci-meme.md"
-description = "Canonical meme kānāwai (law) for the OODA-HA * ha.ka.ba pattern. Defines required and optional elements, rating targets, and serves as a copy-ready authoring template."
 content-type = "text/x-memetic-wikitext"
 version = "0.1-draft"
 tulen = 0.79
@@ -69,7 +68,7 @@ A reader, tool, or agent following this meme should not collapse those phases in
 
 ```toml
 name = "meme-observe"
-description = "Observe phase for surface gathering, element detection, and raw presence marking across a meme candidate."
+
 role = "element intake"
 function = "gather the authored surface, detect required and optional element sites, preserve raw form, and mark initial absences"
 phase = "observe"
@@ -170,7 +169,7 @@ This subphase shapes how Observe moves without premature collapse. A stub elemen
 
 ```toml
 name = "meme-orient"
-description = "Orient phase for element classification, required/optional mapping, stub-versus-filled distinction, and rating-band reachability assessment."
+
 role = "element classification"
 function = "classify detected elements as required or optional, distinguish filled content from stubs, assess sub-meme resolution states, and estimate reachable rating band"
 phase = "orient"
@@ -226,7 +225,6 @@ The `#iam` block MUST carry at minimum:
 # <<~ ahu #iam-ha "structure" >>
 name = "..."
 file-path = "..."
-description = "..."
 content-type = "text/x-memetic-wikitext"
 version = "..."
 tulen = 0.00
@@ -419,7 +417,7 @@ This subphase shapes how orientation moves without collapsing ambiguity prematur
 
 ```toml
 name = "meme-decide"
-description = "Decide phase for conformance verdict, rating-target commitment, normalization posture, and skeleton-generation readiness."
+
 role = "selection and commitment"
 function = "commit to per-element conformance verdicts, select the reachable rating band, and fix the normalization and skeleton posture for Act"
 phase = "decide"
@@ -619,7 +617,7 @@ This subphase shapes how decision pressure lands. A meme carrying R1–R9 but wi
 
 ```toml
 name = "meme-act"
-description = "Act phase for skeleton preparation, element assembly, normalized surface staging, and return-envelope construction."
+
 role = "execution preparation"
 function = "assemble the skeleton product, stage normalized element surfaces, and prepare the typed return envelope for Hooko crossing"
 phase = "act"
@@ -649,7 +647,6 @@ Copy this block. Replace every `[PLACEHOLDER]` with local content. Delete option
 # <<~ ahu #iam-ha "structure" >>
 name = "[NAME]"
 file-path = "ha-ka-ba/[MEME-TYPE]-[NAME].md"
-description = "[One sentence: what this meme governs.]"
 content-type = "text/x-memetic-wikitext"
 version = "0.1-skeleton"
 tulen = 0.10
@@ -760,7 +757,7 @@ This subphase shapes how Act moves under real pressure. An author requesting a s
 
 ```toml
 name = "meme-hooko"
-description = "Hooko phase for skeleton instantiation, file creation, session-load crossing, and mutation boundary."
+
 role = "state-crossing threshold"
 function = "carry the prepared skeleton across the live threshold, instantiate the new meme file, and hand changed state into aftermath"
 phase = "hooko"
@@ -829,7 +826,7 @@ This subphase governs how Hooko moves in practice. A skeleton that gets instanti
 
 ```toml
 name = "meme-aftermath"
-description = "Aftermath phase for rating judgment, conformance report packaging, repair guidance, and recursive handoff."
+
 role = "evaluation and aftermath"
 function = "judge what rating the authored meme achieved, package the conformance report, name residue and repair paths, and route next observation"
 phase = "aftermath"

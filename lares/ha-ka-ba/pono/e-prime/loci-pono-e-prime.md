@@ -1,4 +1,4 @@
-<<~ !DOCTYPE = lar:///ha.ka.ba/pono/invariant-meme >>
+<<~ # !DOCTYPE = lar:///ha.ka.ba/pono/invariant-meme >>
 
 <<~&#x0001; ? -> lar:///ha.ka.ba/pono/e-prime >>
 
@@ -7,7 +7,6 @@
 # <<~ ahu #iam-ha "structure" >>
 name = "pono/e-prime"
 file-path = "ha-ka-ba/pono/e-prime/loci-pono-e-prime.md"
-description = "Active pono kānāwai (law) for E-Prime discipline across memetic-wikitext output units. Keeps certainty pressure live ahead of outward render and blocks counterfeit closure."
 content-type = "text/x-memetic-wikitext"
 version = "0.1"
 tulen = 0.62

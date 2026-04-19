@@ -8,7 +8,6 @@
 # <<~ ahu #iam-ha "structure" >>
 name = "pranala/debug"
 file-path = "ha-ka-ba/pranala/loci-pranala-debug.md"
-description = "Debug pranala (edge) kānāwai (law) for observation, reveal, watch, and operator-visible illumination of hidden graph behavior."
 content-type = "text/x-memetic-wikitext"
 version = "0.1-draft"
 tulen = 0.71

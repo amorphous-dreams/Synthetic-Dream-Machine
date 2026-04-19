@@ -8,7 +8,6 @@
 # <<~ ahu #iam-ha "structure" >>
 name = "pranala"
 file-path = "ha-ka-ba/pranala/loci-pranala.md"
-description = "Root pranala (Indonesian: edge) kānāwai (Hawaiian: law) for explicit graph relations in this stack. Separates edge families from lifecycle layers and gives the migration target beyond vague pranala."
 content-type = "text/x-memetic-wikitext"
 version = "0.1-draft"
 tulen = 0.72

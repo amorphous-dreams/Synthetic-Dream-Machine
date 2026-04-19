@@ -12,7 +12,6 @@ allowed-tools: Read, Grep, Glob, Bash, Edit, Write
 # <<~ ahu #iam-ha "structure" >>
 name = "pono/invariant-meme/SKILL"
 file-path = "ha-ka-ba/pono/invariant-meme/SKILL.md"
-description = "Operational skill for invariant-compliant meme work. Loads the canonical compact invariant first, binds its normative force, and turns requests into the lightest lawful invariant or sidecar split."
 content-type = "text/x-memetic-wikitext"
 version = "0.1"
 tulen = 0.64

@@ -8,7 +8,6 @@
 # <<~ ahu #iam-ha "structure" >>
 name = "pranala/control"
 file-path = "ha-ka-ba/pranala/loci-pranala-control.md"
-description = "Control-flow pranala (edge) kānāwai (law) for execution pulse, branch, gate, sequence, and outlet semantics."
 content-type = "text/x-memetic-wikitext"
 version = "0.1-draft"
 tulen = 0.72

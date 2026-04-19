@@ -7,7 +7,6 @@
 # <<~ ahu #iam-ha "structure" >>
 name = "DreamNet_MemeWiki"
 file-path = "todo/todo.DreamNet-MemeWiki.md"
-description = "Consolidated DreamNet MemeWiki research and implementation staging memo. Braids the current scratch notes on kernel architecture, Lezer and CodeMirror, TLDraw and Kowloon integration, and sprint planning into one OODA-HA worksite."
 content-type = "text/x-memetic-wikitext"
 version = "0.1-draft"
 tulen = 0.62
@@ -67,7 +66,7 @@ This file uses the OODA-HA loop as work discipline rather than ornament. The poi
 
 ```toml
 name = "DreamNet_MemeWiki-observe"
-description = "Observe phase for gathering the current DreamNet MemeWiki research field without prematurely flattening it into design verdicts."
+
 role = "research intake"
 function = "capture what the four source notes already established, preserving both settled findings and open edges"
 phase = "observe"
@@ -144,7 +143,7 @@ This stage should preserve uncertainty openly. A confident-sounding guess about 
 
 ```toml
 name = "DreamNet_MemeWiki-orient"
-description = "Orient phase for mapping the gathered DreamNet MemeWiki research into a coherent architecture and dependency order."
+
 role = "architecture formation"
 function = "distinguish the boot path, editor path, collaboration path, and downstream bridge surfaces"
 phase = "orient"
@@ -229,7 +228,7 @@ Favor the narrowest architecture that can still grow. The research points toward
 
 ```toml
 name = "DreamNet_MemeWiki-decide"
-description = "Decide phase for setting the current DreamNet MemeWiki architectural posture and test gates."
+
 role = "decision posture"
 function = "name what is settled enough to guide implementation now and what remains intentionally deferred"
 phase = "decide"
@@ -309,7 +308,7 @@ Commit to the smallest decisions that unlock code. Refuse the larger decisions t
 
 ```toml
 name = "DreamNet_MemeWiki-act"
-description = "Act phase for staging the next DreamNet MemeWiki workstreams, milestones, and proof obligations."
+
 role = "implementation staging"
 function = "turn the research and decisions into an executable work sequence"
 phase = "act"
@@ -402,7 +401,7 @@ Prototype narrowly, verify hard, and only then widen scope. Each workstream shou
 
 ```toml
 name = "DreamNet_MemeWiki-aftermath"
-description = "Aftermath phase for naming expected yields, remaining residue, and the conditions for promoting this memo into later law or implementation documents."
+
 role = "residue judgment"
 function = "separate what this consolidation now makes clear from what still remains unresolved"
 phase = "aftermath"

@@ -7,7 +7,6 @@
 # <<~ ahu #iam-ha "structure" >>
 name = "x-tiddlywiki-filter"
 file-path = "ha-ka-ba/grammars/grammar-x-tiddlywiki-filter.md"
-description = "Registered imported function sigil grammar for TiddlyWiki-style filter work under explicit hana admission."
 content-type = "text/x-memetic-wikitext"
 version = "0.1-draft"
 tulen = 0.45

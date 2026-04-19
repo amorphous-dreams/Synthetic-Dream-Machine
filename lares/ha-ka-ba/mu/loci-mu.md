@@ -50,7 +50,6 @@ Initial characters appear.
 # <<~ ahu #iam-ha "structure" >>
 name            = "mu"
 file-path       = "ha-ka-ba/mu/loci-mu.md"
-description     = "Null-oracle boot. Renders, evaluates, unasks, loop-returns. First meme in the boot chain whose phase body executes. Teaches the grammar by performing it."
 content-type    = "text/x-memetic-wikitext"
 version         = "0.1-alpha"
 tagspace        = "ha.ka.ba"

@@ -8,7 +8,6 @@
 # <<~ ahu #iam-ha "structure" >>
 name = "loci/iam/file-path"
 file-path = "ha-ka-ba/loci/iam/loci-file-path.md"
-description = "Kānāwai (law) for the file-path metadata key. Governs its two canonical forms (flat-file and path-directory), its required agreement with the lar: URI in the document opener, and the migration procedure when a meme moves between forms."
 content-type = "text/x-memetic-wikitext"
 version = "0.1-draft"
 tulen = 0.60
@@ -61,7 +60,7 @@ file-path kānāwai (law) captures the raw key value from the `#iam` block, clas
 
 ```toml
 name = "file-path-observe"
-description = "Observe phase for raw file-path value capture from the #iam TOML block."
+
 role = "key value intake"
 function = "locate the file-path key in #iam, capture its raw string value, and note the document opener lar: URI for later agreement check"
 phase = "observe"
@@ -118,7 +117,7 @@ Observe-ba governs noticing posture: a missing `file-path` key counts as a disti
 
 ```toml
 name = "file-path-orient"
-description = "Orient phase for file-path form classification, URI agreement check, and migration-state assessment."
+
 role = "form classification and agreement mapping"
 function = "classify the file-path value into flat-file or path-directory form, check agreement with the lar: URI and meme-type, and assess whether the meme sits in a transitional migration state"
 tensions"
@@ -257,7 +256,7 @@ Orient-ba governs tension-holding: a meme mid-migration may sit with `file-path`
 
 ```toml
 name = "file-path-decide"
-description = "Decide phase for conformance verdict, migration-posture commitment, and repair-path selection."
+
 role = "conformance commitment"
 function = "commit to a form verdict (flat-file, path-directory, malformed, transitional), issue the URI agreement verdict, and fix the repair path for any failure"
 path"
@@ -323,7 +322,7 @@ Decide-ba governs migration-posture commitment: do not call a meme "migrated" un
 
 ```toml
 name = "file-path-act"
-description = "Act phase for conformance report preparation, repair guidance, and migration-step staging."
+
 role = "repair and report preparation"
 function = "assemble the conformance report with form and agreement verdicts, stage repair guidance for any failure, and prepare migration steps for Hooko during ongoing migration"
 phase = "act"
@@ -376,7 +375,7 @@ Act-ba governs execution restraint: Act stages migration steps but does not perf
 
 ```toml
 name = "file-path-hooko"
-description = "Hooko phase for file migration execution and document opener correction."
+
 role = "file-path mutation threshold"
 function = "execute git mv on migration, update file-path in #iam, and correct any agreement violation in the document opener"
 phase = "hooko"
@@ -421,7 +420,7 @@ Hooko-ba governs landing pressure: a `git mv` remains irreversible without a sec
 
 ```toml
 name = "file-path-aftermath"
-description = "Aftermath phase for migration completeness judgment, carrier-coherence check, and residue surfacing."
+
 role = "file-path evaluation and sync judgment"
 function = "judge whether all migration crossings completed, verify carrier coherence and physical-file agreement, and surface any incomplete crossings as named residue"
 phase = "aftermath"

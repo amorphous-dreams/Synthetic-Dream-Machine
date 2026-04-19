@@ -92,7 +92,7 @@ mana = 0.995
 manao = 0.992
 manaoio = 0.987
 status = "Iʻo"
-description = "A well-structured meme providing OODA-HA-ready output."
+
 ```
 
 The TOML form stays readable in document space and remains simple
@@ -1483,7 +1483,7 @@ status = "Iʻo"
 entity-id = "lar:///ha.ka.ba/mu#phase-table"
 
 [notes]
-description = "Portable, self-describing, self-executing meme packet."
+
 ```
 
 JSON may still appear at system boundaries, but the canonical

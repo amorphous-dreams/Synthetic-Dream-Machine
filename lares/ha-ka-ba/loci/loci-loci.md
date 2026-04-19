@@ -8,7 +8,6 @@
 # <<~ ahu #iam-ha "structure" >>
 name = "loci"
 file-path = "ha-ka-ba/loci/loci-loci.md"
-description = "Loci kānāwai (law) for resolving `lar:` URI memes into explicit routing evidence and current `mana`, `manao`, and `manaoio` posture. Declares the derivation algorithm, the convention surfaces that make routing explicit, the conditions for high-mana `loci` memes, the promotion path from noise to data to meme to typed meme to canon typed meme, and the MCP-resolution research roadmap."
 content-type = "text/x-memetic-wikitext"
 version = "0.1-draft"
 tulen = 0.76
@@ -81,7 +80,7 @@ Loci gathers the `lar:` URI meme and visible convention surfaces, maps the addre
 
 ```toml
 name = "loci-observe"
-description = "Observe phase for `lar:` URI meme intake, opener-form recognition, and explicit-convention capture."
+
 role = "loci request intake"
 function = "receive the `lar:` URI meme to assess, capture the opener form and any visible convention surfaces, and note whether the request comes with a known `meme-type` or prior rating context"
 phase = "observe"
@@ -148,7 +147,7 @@ Observe-ba governs noticing posture: a routing request that arrives mid-parse di
 
 ```toml
 name = "loci-orient"
-description = "Orient phase for URI decomposition, meme-type prefix mapping, derivation algorithm application, explicit-convention classification, and preliminary rating posture."
+
 role = "routing and rating classification"
 function = "decompose the `lar:` URI, apply the meme-type prefix table, run the derivation algorithm, classify the current convention as explicit or thin, and assess address stability plus preliminary rating posture"
 phase = "orient"
@@ -360,7 +359,7 @@ Orient-ba governs interpretive posture: hold the two current resolution states (
 
 ```toml
 name = "loci-decide"
-description = "Decide phase for resolution posture selection, rating assignment, and canon promotion stage commitment."
+
 role = "resolution and rating commitment"
 function = "commit to one resolution posture, assign the current `mana`, `manao`, and `manaoio` posture, and fix the current lifecycle stage"
 phase = "decide"
@@ -486,7 +485,7 @@ Decide-ba governs commitment style: do not soften a declared-unresolved classifi
 
 ```toml
 name = "loci-act"
-description = "Act phase for rating-envelope preparation, local resolution output, forward reference emission for declared-unresolved addresses, and MCP-resolution roadmap staging."
+
 role = "rating and routing product preparation"
 function = "emit the current rating set, any resolved carrier path, prepare the MCP-resolution roadmap note, and emit typed forward references for declared-unresolved addresses"
 phase = "act"
@@ -555,7 +554,7 @@ Act-ba governs execution rhythm: prepare the routing product before Hooko, not d
 
 ```toml
 name = "loci-hooko"
-description = "Hooko phase for carrier mutation, promotion crossing, and any future live-resolver enactment not yet enacted here."
+
 role = "routing state crossing"
 function = "execute carrier mutations such as siting changes or delegated metadata updates, remove the ? from confirmed-canon document openers when justified, and name any future live-resolver crossing as external to this meme"
 phase = "hooko"
@@ -611,7 +610,7 @@ Hooko-ba governs landing pressure: changing siting without preserving address tr
 
 ```toml
 name = "loci-aftermath"
-description = "Aftermath phase for routing gap reporting, rating review, explicit-convention judgment, and MCP-roadmap escalation."
+
 role = "routing evaluation, rating review, and gap judgment"
 function = "judge which URIs resolved, which remain declared-unresolved, what rating set current evidence supports, whether explicit convention holds, and whether MCP-roadmap research should advance"
 phase = "aftermath"

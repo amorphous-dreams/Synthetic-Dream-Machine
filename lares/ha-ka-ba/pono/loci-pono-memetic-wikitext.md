@@ -6,7 +6,6 @@
 # <<~ ahu #iam-ha "structure" >>
 name = "pono/memetic-wikitext"
 file-path = "ha-ka-ba/pono/loci-pono-memetic-wikitext.md"
-description = "Constitutional root kānāwai (law) for the memetic-wikitext authoring surface, primitive semantic contract, and minimum boot grammar."
 content-type = "text/x-memetic-wikitext"
 version = "0.1-skeleton"
 tulen = 0.52

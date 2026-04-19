@@ -7,7 +7,6 @@
 # <<~ ahu #iam-ha "structure" >>
 name = "normative-verbs"
 file-path = "ha-ka-ba/pono/loci-pono-normative-verbs.md"
-description = "Shared pono kānāwai (law) for the canonical normative verb set used across meme laws. Centralizes modal-force declarations so carrier-local metadata does not keep inventing duplicate lists."
 content-type = "text/x-memetic-wikitext"
 version = "0.1-draft"
 tulen = 0.56

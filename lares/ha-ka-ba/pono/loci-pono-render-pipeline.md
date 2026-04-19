@@ -7,7 +7,6 @@
 # <<~ ahu #iam-ha "structure" >>
 name = "pono/render-pipeline"
 file-path = "ha-ka-ba/pono/loci-pono-render-pipeline.md"
-description = "Rendering and lowering kānāwai (law) for memetic-wikitext, covering the high-mana sigil surface, parsed AST, widget tree, render projection, trace continuity, and transactional aftermath."
 content-type = "text/x-memetic-wikitext"
 version = "0.1-draft"
 tulen = 0.76
@@ -201,7 +200,7 @@ This subphase preserves high mana at the surface while still supporting fast, la
 <<~ ahu #observe >>
 ```toml
 name = "render-pipeline-observe"
-description = "Observe phase for surface intake, raw render context gathering, and early layer boundary recognition."
+
 role = "input acquisition"
 function = "gather surface script, preserve source relation, and mark candidate layer transitions"
 phase = "observe"
@@ -270,7 +269,7 @@ This subphase keeps early reading truthful and non-destructive.
 <<~ ahu #orient >>
 ```toml
 name = "render-pipeline-orient"
-description = "Orient phase for layer assignment, product-family distinction, and lowering path formation."
+
 role = "context formation"
 function = "classify source regions, map them to pipeline layers, and hold lawful lowering options"
 phase = "orient"
@@ -335,7 +334,7 @@ This subphase keeps possibility open without losing structural discipline.
 <<~ ahu #decide >>
 ```toml
 name = "render-pipeline-decide"
-description = "Decide phase for lawful lowering choice, transaction class selection, and idempotency posture."
+
 role = "selection and commitment"
 function = "choose canonical lowerings, choose transaction class, and preserve lawful retry and trace posture"
 phase = "decide"
@@ -409,7 +408,7 @@ This subphase keeps the pipeline honest under real target pressure.
 <<~ ahu #act >>
 ```toml
 name = "render-pipeline-act"
-description = "Act phase for AST construction, widget lowering, and target projection preparation."
+
 role = "execution preparation"
 function = "build syntax products, lower them into widget structures, and prepare render payloads and trace bundles"
 phase = "act"
@@ -490,7 +489,7 @@ This subphase keeps fast projection compatible with constitutional truth.
 <<~ ahu #hooko >>
 ```toml
 name = "render-pipeline-hooko"
-description = "Hooko phase for explicit render-threshold crossing, target commit, cache mutation, and truthful transaction landing."
+
 role = "state-crossing threshold"
 function = "carry prepared render work across the live threshold, land target-facing change, and preserve transaction truth"
 phase = "hooko"
@@ -553,7 +552,7 @@ This subphase keeps target-facing motion explicit, inspectable, and bounded.
 <<~ ahu #aftermath >>
 ```toml
 name = "render-pipeline-aftermath"
-description = "Aftermath phase for render judgment, trace packaging, residue naming, and replay guidance."
+
 role = "evaluation and aftermath"
 function = "judge what landed, preserve source-to-target trace, and route repair or replay pressure forward"
 phase = "aftermath"

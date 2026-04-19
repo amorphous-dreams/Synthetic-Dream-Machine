@@ -8,7 +8,6 @@
 # <<~ ahu #iam-ha "structure" >>
 name = "pranala/instance"
 file-path = "ha-ka-ba/pranala/loci-pranala-instance.md"
-description = "Concrete pranala (edge) instance kānāwai (law). Defines bound edge objects, override discipline, instance state, and separation from runtime trace."
 content-type = "text/x-memetic-wikitext"
 version = "0.1-draft"
 tulen = 0.71

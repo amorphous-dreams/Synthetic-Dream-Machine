@@ -7,7 +7,6 @@
 # <<~ ahu #iam-ha "structure" >>
 name = "pono"
 file-path = "ha-ka-ba/pono/loci-pono.md"
-description = "Index of all memetic-wikitext kānāwai (law) memes. Hosts verification skills as skill-*.md packages under `ha-ka-ba/pono/`."
 content-type = "text/x-memetic-wikitext"
 version = "0.1-draft"
 tulen = 0.65

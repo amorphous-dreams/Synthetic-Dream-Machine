@@ -8,7 +8,6 @@
 # <<~ ahu #iam-ha "structure" >>
 name = "pono/parser"
 file-path = "ha-ka-ba/pono/loci-pono-parser.md"
-description = "Full parsing kānāwai (law) for memetic-wikitext, including canonical sigil forms, metadata payload rules, mode transitions, normalization, and typed parse aftermath."
 content-type = "text/x-memetic-wikitext"
 version = "0.1-draft"
 tulen = 0.79
@@ -67,7 +66,7 @@ A parser or agent following this meme should not collapse those loci into one bl
 
 ```toml
 name = "parser-observe"
-description = "Observe phase for lexical intake, boundary recognition, and raw surface gathering."
+
 role = "input acquisition"
 function = "gather source text, detect boundaries, preserve raw surface, and mark initial gaps"
 phase = "observe"
@@ -197,7 +196,7 @@ This subphase shapes how observation moves without premature collapse.
 
 ```toml
 name = "parser-orient"
-description = "Orient phase for mode formation, sigil classification, payload recognition, and structural interpretation."
+
 role = "context formation"
 function = "classify regions, assign modes, relate sigil types to forms, and hold competing readings where needed"
 phase = "orient"
@@ -348,7 +347,7 @@ This subphase shapes how orientation moves across competing readings.
 
 ```toml
 name = "parser-decide"
-description = "Decide phase for canonical kānāwai (law) selection, ambiguity handling, normalization posture, and legal form enforcement."
+
 role = "selection and commitment"
 function = "choose canonical readings, reject illegal pairings, and fix lawful normalization routes"
 phase = "decide"
@@ -729,7 +728,7 @@ This subphase shapes how decision pressure lands without false certainty.
 
 ```toml
 name = "parser-act"
-description = "Act phase for deterministic parse preparation, metadata extraction, mode transitions, normalization staging, and typed output preparation."
+
 role = "execution preparation"
 function = "apply parse rules, build syntax products, stage lawful variants, and prepare typed envelopes for Hooko crossing"
 phase = "act"
@@ -800,7 +799,7 @@ Unknown metadata keys may remain legal unless a stricter profile forbids them.
 
 ```toml
 name = "parser-hooko"
-description = "Hooko phase for explicit state crossing, lawful mutation, continuity loading, artifact change, and transaction-pressure passage between Act and Aftermath."
+
 role = "state-crossing threshold"
 function = "carry prepared intent across the live threshold, perform the bounded change, preserve transaction truth, and hand changed state into aftermath without laundering mutation into narration"
 phase = "hooko"
@@ -1394,7 +1393,7 @@ When alias rules, stricter profiles, or additional metadata contracts deepen eno
 
 ```toml
 name = "parser-aftermath"
-description = "Aftermath phase for typed parse judgment, recovery discipline, trace packaging, repair guidance, and recursive handoff."
+
 role = "evaluation and aftermath"
 function = "judge what survived, package truthful return, preserve repairable residue, and route next observation"
 phase = "aftermath"
