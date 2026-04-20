@@ -17,7 +17,7 @@ confidence = 0.82
 # <<~ ahu #iam-ka "detail" >>
 mana       = 0.85
 manao      = 0.80
-meme-type  = "invariant loci"
+implements = "lar:///ha.ka.ba/pono/invariant-meme/v0.1"
 register   = "CS"
 namespace  = "ॐ ँ"
 role       = "tool initialization, phase-to-instrument mapping, exit-mode enumeration"

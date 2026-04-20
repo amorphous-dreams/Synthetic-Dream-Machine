@@ -9,14 +9,14 @@
 name = "loci"
 file-path = "ha-ka-ba/loci/loci-loci.md"
 content-type = "text/x-memetic-wikitext"
-version = "0.1-draft"
+version = "0.1"
 manaoio = 0.66
 confidence = 0.74
 # <<~/ahu >>
 # <<~ ahu #iam-ka "detail" >>
 mana = 0.74
 manao = 0.84
-meme-type = "loci"
+implements = "lar:///ha.ka.ba/loci/v0.1"
 register = "CS"
 role = "loci-rating kānāwai (law), routing convention authority, address stability authority, canon promotion rule, and MCP-resolution roadmap"
 # <<~/ahu >>

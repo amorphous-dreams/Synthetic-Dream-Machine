@@ -15,7 +15,7 @@ confidence = 0.65
 # <<~ ahu #iam-ka "detail" >>
 mana = 0.65
 manao = 0.70
-meme-type = "loci"
+implements = "lar:///ha.ka.ba/loci/v0.1"
 register = "CS"
 role = "kānāwai (law) index, verification registry, and skill package host"
 skill-package-root = "ha-ka-ba/pono/skill-*.md"

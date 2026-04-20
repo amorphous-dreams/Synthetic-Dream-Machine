@@ -16,7 +16,7 @@ confidence = 0.67
 # <<~ ahu #iam-ka "detail" >>
 mana = 0.75
 manao = 0.82
-meme-type = "loci"
+implements = "lar:///ha.ka.ba/loci/v0.1"
 register = "CS"
 role = "template edge sigil kānāwai (law), slot-contract authority, and kahea binding authority"
 binding-order = ["invocation", "local-body", "addressed-iam", "session-state", "template-defaults"]

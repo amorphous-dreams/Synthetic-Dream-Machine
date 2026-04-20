@@ -16,7 +16,7 @@ confidence = 0.69
 # <<~ ahu #iam-ka "detail" >>
 mana = 0.75
 manao = 0.83
-meme-type = "loci"
+implements = "lar:///ha.ka.ba/loci/v0.1"
 register = "CS"
 role = "semantic edge kānāwai (law), proposition authority, and ontology-link bridge"
 link-phrase-required = true

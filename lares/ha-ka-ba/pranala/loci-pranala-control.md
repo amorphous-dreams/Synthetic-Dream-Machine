@@ -16,7 +16,7 @@ confidence = 0.69
 # <<~ ahu #iam-ka "detail" >>
 mana = 0.77
 manao = 0.84
-meme-type = "loci"
+implements = "lar:///ha.ka.ba/loci/v0.1"
 register = "CS"
 role = "control-flow edge kānāwai (law), branch authority, and execution-order authority"
 # <<~/ahu >>

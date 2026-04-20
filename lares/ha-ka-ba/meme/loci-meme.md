@@ -16,7 +16,7 @@ confidence = 0.79
 # <<~ ahu #iam-ka "detail" >>
 mana = 0.78
 manao = 0.84
-meme-type = "loci"
+implements = "lar:///ha.ka.ba/loci/v0.1"
 register = "CS"
 role = "canonical meme kānāwai (law), template authority, and rating-target authority"
 control-glyphs = ["&#x0001;", "&#x0002;", "&#x0003;", "&#x0004;", "&#x0005;", "&#x0006;"]

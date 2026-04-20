@@ -16,7 +16,7 @@ confidence = 0.69
 # <<~ ahu #iam-ka "detail" >>
 mana = 0.78
 manao = 0.85
-meme-type = "loci"
+implements = "lar:///ha.ka.ba/loci/v0.1"
 register = "CS"
 role = "debug edge kānāwai (law), observation authority, and hidden-edge illumination authority"
 visibility-modes = ["inline", "overlay", "trace-only", "operator-only"]

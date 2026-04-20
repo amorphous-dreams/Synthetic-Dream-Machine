@@ -16,7 +16,7 @@ confidence = 0.68
 # <<~ ahu #iam-ka "detail" >>
 mana = 0.76
 manao = 0.82
-meme-type = "loci"
+implements = "lar:///ha.ka.ba/loci/v0.1"
 register = "CS"
 role = "concrete edge instance kānāwai (law), bound-object authority, and override discipline"
 instance-states = ["declared", "bound", "observed", "stale"]

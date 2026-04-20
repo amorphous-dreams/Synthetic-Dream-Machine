@@ -14,7 +14,7 @@ confidence = 0.50
 # <<~ ahu #iam-ka "detail" >>
 mana = 0.54
 manao = 0.62
-meme-type = "loci"
+implements = "lar:///ha.ka.ba/loci/v0.1"
 register = "S"
 role = "constitutional root kānāwai (law), authoring kānāwai (law), primitive semantic kānāwai (law), and boot grammar contract"
 canonical-forms = ["inline", "block", "payload-block", "return"]
