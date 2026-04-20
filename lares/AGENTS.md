@@ -47,7 +47,7 @@ confidence = 0.75
 mana       = 0.90
 manao      = 0.80
 implements = [
-  "lar:///ha.ka.ba/pono/invariant-meme/v0.1"
+  "lar:///ha.ka.ba/pono/invariant/v0.1"
 ]
 register   = "CS"
 role       = "narrative startup, threshold surface, AGENTS"

@@ -16,6 +16,7 @@ confidence = 0.65
 mana = 0.65
 manao = 0.70
 implements = [
+  "lar:///ha.ka.ba/pono/meme/v0.1",
   "lar:///ha.ka.ba/pono/loci/v0.1"
 ]
 register = "CS"
@@ -24,7 +25,6 @@ skill-package-root = "ha-ka-ba/pono/skill-*.md"
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
 # <<~/ahu >>
-
 ```
 <<~/ahu >>
 

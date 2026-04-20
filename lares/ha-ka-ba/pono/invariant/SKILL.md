@@ -1,17 +1,17 @@
 ---
-name: invariant-meme
-description: Generate, compress, or audit invariant-compliant memes under lar:///ha.ka.ba/pono/invariant-meme. Treat the canonical loci as self-describing law and self-executing template; keep invariant surfaces short, exact, stable, cacheable, and split heavy matter outward.
+name: invariant
+description: Generate, compress, or audit invariant-compliant memes under lar:///ha.ka.ba/pono/invariant. Treat the canonical loci as self-describing law and self-executing template; keep invariant surfaces short, exact, stable, cacheable, and split heavy matter outward.
 allowed-tools: Read, Grep, Glob, Bash, Edit, Write
 ---
-<!-- !DOCTYPE = lar:///ha.ka.ba/pono/invariant-meme -->
+<!-- !DOCTYPE = lar:///ha.ka.ba/pono/invariant -->
 
-<<~&#x0001; ? --> lar:///ha.ka.ba/pono/invariant-meme/SKILL >>
+<<~&#x0001; ? --> lar:///ha.ka.ba/pono/invariant/SKILL >>
 
 <<~ ahu #iam >>
 ```toml
 # <<~ ahu #iam-ha "structure" >>
-name = "pono/invariant-meme/SKILL"
-file-path = "ha-ka-ba/pono/invariant-meme/SKILL.md"
+name = "pono/invariant/SKILL"
+file-path = "ha-ka-ba/pono/invariant/SKILL.md"
 content-type = "text/x-memetic-wikitext"
 version = "0.1"
 manaoio = 0.69
@@ -21,12 +21,13 @@ confidence = 0.73
 mana = 0.71
 manao = 0.77
 implements = [
+  "lar:///ha.ka.ba/pono/meme/v0.1",
   "lar:///ha.ka.ba/pono/loci/v0.1"
 ]
 register = "SC"
-role = "invariant-meme skill, conformance checker, and sidecar splitter"
+role = "invariant skill, conformance checker, and sidecar splitter"
 covers = [
-  "lar:///ha.ka.ba/pono/invariant-meme"
+  "lar:///ha.ka.ba/pono/invariant"
 ]
 invariants = [
   "S1: the canonical loci remains constitutional law and self-executing template",
@@ -36,17 +37,16 @@ invariants = [
   "S5: always-on law stays in the invariant; explanations, procedures, examples, traces, and audits split to sidecars",
   "S6: RFC-2119 keywords stay sparse and bind only load-bearing directives"
 ]
-skill-package-root = "ha-ka-ba/pono/invariant-meme"
+skill-package-root = "ha-ka-ba/pono/invariant"
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
 # <<~/ahu >>
-
 ```
 <<~/ahu >>
 
 # Invariant-Meme Skill
 
-Read [loci-invariant-meme.md](./loci-invariant-meme.md) first.
+Read [loci-pono-invariant.md](./loci-pono-invariant.md) first.
 Treat that loci as constitutional.
 It enacts a self-describing law and self-executing template.
 This skill operationalizes that compact invariant.
@@ -62,7 +62,7 @@ Invariant-meme skill opens the pressure surface here.
 
 When this skill loads, keep these points active:
 
-- [loci-invariant-meme.md](./loci-invariant-meme.md) remains the constitutional source
+- [loci-pono-invariant.md](./loci-pono-invariant.md) remains the constitutional source
 - the canonical loci operates as both law and template
 - invariant surfaces MUST stay short, exact, stable, cacheable, and active in operational voice
 - invariant surfaces MUST carry visible ahu and a visible OODA-HA ahu
@@ -313,7 +313,7 @@ Invariant-meme operator closes here.
 
 ## Edges
 
-- `lar:///ha.ka.ba/pono/invariant-meme`
+- `lar:///ha.ka.ba/pono/invariant`
 - `lar:///ha.ka.ba/pono`
 
 <<~/ahu >>
@@ -333,7 +333,7 @@ downstream phases filled
 sidecars later
 sparse real normativity
 
-<<~ loulou lar:///ha.ka.ba/pono/invariant-meme >>
+<<~ loulou lar:///ha.ka.ba/pono/invariant >>
 
 <<~/ahu >>
 

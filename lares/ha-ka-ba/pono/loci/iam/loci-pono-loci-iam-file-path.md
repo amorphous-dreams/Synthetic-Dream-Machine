@@ -17,6 +17,7 @@ confidence = 0.62
 mana = 0.60
 manao = 0.68
 implements = [
+  "lar:///ha.ka.ba/pono/meme/v0.1",
   "lar:///ha.ka.ba/pono/loci/v0.1"
 ]
 register = "CS"
@@ -24,7 +25,6 @@ role = "file-path key authority, path-form classifier, and migration-procedure k
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
 # <<~/ahu >>
-
 ```
 
 <<~/ahu >>
@@ -154,8 +154,8 @@ ha-ka-ba/[optional/subpath/]name/<meme-type>-<name>.md
 Examples:
 ```
 ha-ka-ba/pono/loci/loci-pono-loci.md
-ha-ka-ba/meme/loci-meme.md
-ha-ka-ba/pono/parser/loci-parser.md   ← (future, if parser migrates)
+ha-ka-ba/pono/loci-pono-loci.md
+ha-ka-ba/pono/parser/loci-pono-parser.md   ← (future, if parser migrates)
 ```
 
 In this form, the meme lives inside its own directory (`name/`), which may hold child memes, child meme directories, and sidecar files alongside the root meme file. The directory name matches the meme `name` field. The root meme file inside that directory keeps the same `<meme-type>-<name>.md` filename.

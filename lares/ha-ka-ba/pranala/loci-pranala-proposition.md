@@ -17,6 +17,7 @@ confidence = 0.69
 mana = 0.75
 manao = 0.83
 implements = [
+  "lar:///ha.ka.ba/pono/meme/v0.1",
   "lar:///ha.ka.ba/pono/loci/v0.1"
 ]
 register = "CS"
@@ -26,7 +27,6 @@ ontology-backed = true
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
 # <<~/ahu >>
-
 ```
 
 <<~/ahu >>

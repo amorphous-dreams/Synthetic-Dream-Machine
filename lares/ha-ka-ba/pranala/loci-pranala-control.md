@@ -17,6 +17,7 @@ confidence = 0.69
 mana = 0.77
 manao = 0.84
 implements = [
+  "lar:///ha.ka.ba/pono/meme/v0.1",
   "lar:///ha.ka.ba/pono/loci/v0.1"
 ]
 register = "CS"
@@ -24,7 +25,6 @@ role = "control-flow edge kānāwai (law), branch authority, and execution-order
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
 # <<~/ahu >>
-
 ```
 
 <<~/ahu >>

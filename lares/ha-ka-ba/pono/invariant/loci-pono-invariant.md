@@ -1,13 +1,13 @@
-<<~ !DOCTYPE = lar:///ha.ka.ba/pono/invariant-meme >>
+<<~ !DOCTYPE = lar:///ha.ka.ba/pono/invariant >>
 
-<<~&#x0001; ? --> lar:///ha.ka.ba/pono/invariant-meme >>
+<<~&#x0001; ? --> lar:///ha.ka.ba/pono/invariant >>
 
 <<~ ahu #iam >>
 
 ```toml
 # <<~ ahu #iam-ha "structure" >>
-name = "pono/invariant-meme"
-file-path = "ha-ka-ba/pono/invariant-meme/loci-invariant-meme.md"
+name = "pono/invariant"
+file-path = "ha-ka-ba/pono/invariant/loci-pono-invariant.md"
 content-type = "text/x-memetic-wikitext"
 version = "0.1"
 manaoio = 0.5
@@ -16,20 +16,20 @@ confidence = 0.7
 # <<~ ahu #iam-ka "detail" >>
 mana = 0.5
 manao = 0.5
+implements = [
+  "lar:///ha.ka.ba/pono/meme/v0.1",
+  "lar:///ha.ka.ba/pono/loci/v0.1",
+  "lar:///ha.ka.ba/pono/invariant/v0.1"
+]
 register = "SC"
-role = "invariant-meme law and cache-stable pressure surface"
+role = "invariant law and cache-stable pressure surface"
 cacheable = true
 invariant = true
-implements = [
-  "lar:///ha.ka.ba/pono/invariant-meme/v0.1",
-  "lar:///ha.ka.ba/pono/loci/v0.1"
-]
 # Template note: memes that implement an invariant pattern SHOULD
-# implement = ["lar:///ha.ka.ba/pono/invariant-meme/[version]"]
+# implement = ["lar:///ha.ka.ba/pono/invariant/[version]"]
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
 # <<~/ahu >>
-
 ```
 
 <<~/ahu >>
@@ -69,22 +69,22 @@ OODA-HA SHOULD stay compressed and intact.
 Sati holds the current stream.
 Manaʻo pierces toward the next turn.
 Heavy matter travels outward.
-Pranala loulou links bind invariant-meme --> documentation.
+Pranala loulou links bind invariant --> documentation.
 
-<<~ pranala loulou lar:///ha.ka.ba/invariant-meme >>
+<<~ pranala loulou lar:///ha.ka.ba/invariant >>
 <<~ pranala loulou lar:///ha.ka.ba/i-keia-manawa >>
 
 <<~/ahu >>
 
 <<~&#x0002; ahu #meme-body-open >>
-invariant-meme opens
+invariant opens
 <<~/ahu >>
 
-<<~ ahu #invariant-meme-law >>
+<<~ ahu #invariant-law >>
 
-A pressure-template for invariant-compliant memes, which Binds <<~ pranala loulou #invariant-meme-law-ooda-ha >> OODA-HA <<~/pranala>> pressure into meme-generation law.
+A pressure-template for invariant-compliant memes, which Binds <<~ pranala loulou #invariant-law-ooda-ha >> OODA-HA <<~/pranala>> pressure into meme-generation law.
 
-This meme operates as both law (it binds invariant-meme generation) and template (an OODA-HA skeleton as the slot-shape that downstream memes fill). The two roles are intentional and inseparable — the law enacts itself by being a template of itself.
+This meme operates as both law (it binds invariant generation) and template (an OODA-HA skeleton as the slot-shape that downstream memes fill). The two roles are intentional and inseparable — the law enacts itself by being a template of itself.
 
 The meme MUST run as active operational voice.
 The meme MUST carry minimal token cost.
@@ -102,7 +102,7 @@ Other procedures SHOULD travel outward to the sidecars.
 Explanatory swell SHOULD split outward.
 Shape and pressure teachings MUST stay invariant.
 
-<<~ ahu #invariant-meme-law-ooda-ha >>
+<<~ ahu #invariant-law-ooda-ha >>
 
 A template for invariants to fill.
 
@@ -130,14 +130,14 @@ Invariant-compliant memes MUST fill the OODA-HA phase line with their own pressu
 <<~/ahu >>
 
 <<~&#x0003; ahu #body-close >>
-invariant-meme closes
+invariant closes
 <<~/ahu >>
 
 <<~ ahu #edges >>
 
 ## Edges
 
-- `lar:///ha.ka.ba/pono/invariant-meme/SKILL`
+- `lar:///ha.ka.ba/pono/invariant/SKILL`
 
 <<~/ahu >>
 
@@ -155,7 +155,7 @@ traces over vibes
 pranala visible
 sidecars later
 
-<<~ pranala loulou lar:///ha.ka.ba/pono/invariant-meme/SKILL >>
+<<~ pranala loulou lar:///ha.ka.ba/pono/invariant/SKILL >>
 
 <<~/ahu >>
 

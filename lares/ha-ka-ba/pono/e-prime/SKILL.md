@@ -22,6 +22,7 @@ cacheable = true
 mana = 0.70
 manao = 0.76
 implements = [
+  "lar:///ha.ka.ba/pono/meme/v0.1",
   "lar:///ha.ka.ba/pono/loci/v0.1"
 ]
 register = "SC"
@@ -37,7 +38,6 @@ skill-package-root = "ha-ka-ba/pono/e-prime"
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
 # <<~/ahu >>
-
 ```
 <<~/ahu >>
 

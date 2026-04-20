@@ -15,14 +15,15 @@ confidence = 0.72
 # <<~ ahu #iam-ka "detail" >>
 mana = 0.72
 manao = 0.78
+implements = [
+  "lar:///ha.ka.ba/pono/meme/v0.1",
+  "lar:///ha.ka.ba/pono/loci/v0.1",
+  "lar:///ha.ka.ba/pono/invariant/v0.1"
+]
 register = "SC"
 role = "active language-discipline kānāwai (law), certainty-pressure regulator, next-generation pressure surface, and secondary audit governor for outward text"
 cacheable = true
 invariant = true
-implements = [
-  "lar:///ha.ka.ba/pono/invariant-meme/v0.1",
-  "lar:///ha.ka.ba/pono/loci/v0.1"
-]
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
 e-prime-default = 0.50

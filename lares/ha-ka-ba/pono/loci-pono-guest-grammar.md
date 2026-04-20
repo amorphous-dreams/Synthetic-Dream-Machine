@@ -16,6 +16,7 @@ confidence = 0.58
 mana = 0.56
 manao = 0.62
 implements = [
+  "lar:///ha.ka.ba/pono/meme/v0.1",
   "lar:///ha.ka.ba/pono/loci/v0.1"
 ]
 register = "S"
@@ -23,7 +24,6 @@ role = "guest-grammar admission kānāwai (law), invocation-boundary kānāwai (
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
 # <<~/ahu >>
-
 ```
 <<~/ahu >>
 

@@ -15,6 +15,7 @@ confidence = 0.50
 mana = 0.54
 manao = 0.62
 implements = [
+  "lar:///ha.ka.ba/pono/meme/v0.1",
   "lar:///ha.ka.ba/pono/loci/v0.1"
 ]
 register = "S"
@@ -30,7 +31,6 @@ constitutional-charge = [
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
 # <<~/ahu >>
-
 ```
 
 <<~/ahu >>

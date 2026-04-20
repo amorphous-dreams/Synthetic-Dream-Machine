@@ -18,7 +18,9 @@ confidence = 0.78
 mana       = 0.85
 manao      = 0.82
 implements = [
-  "lar:///ha.ka.ba/pono/invariant-meme/v0.1"
+  "lar:///ha.ka.ba/pono/meme/v0.1",
+  "lar:///ha.ka.ba/pono/loci/v0.1",
+  "lar:///ha.ka.ba/pono/invariant/v0.1"
 ]
 register   = "CS"
 namespace  = "ॐ ँ"

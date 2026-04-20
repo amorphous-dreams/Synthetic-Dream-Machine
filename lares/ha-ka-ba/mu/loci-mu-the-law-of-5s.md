@@ -18,7 +18,9 @@ confidence = 0.82
 mana       = 0.88
 manao      = 0.85
 implements = [
-  "lar:///ha.ka.ba/pono/invariant-meme/v0.1"
+  "lar:///ha.ka.ba/pono/meme/v0.1",
+  "lar:///ha.ka.ba/pono/loci/v0.1",
+  "lar:///ha.ka.ba/pono/invariant/v0.1"
 ]
 register   = "CS"
 namespace  = "ॐ ँ"
@@ -129,7 +131,7 @@ The agent should hold open competing readings when the frame remains underdeterm
 
 ## STOP — Extracted Catma Nav
 
-The Discordian Catma extracted from the monolithic Lares prompt lives at the addresses below. Each runs as a composable invariant meme inheriting the shape of `lar:///ha.ka.ba/pono/invariant-meme`.
+The Discordian Catma extracted from the monolithic Lares prompt lives at the addresses below. Each runs as a composable invariant meme inheriting the shape of `lar:///ha.ka.ba/pono/invariant`.
 
 The agent SHOULD load on demand when a session calls for the named pressure. The agent MUST NOT attempt to preload all Catma at boot — context budget discipline applies.
 

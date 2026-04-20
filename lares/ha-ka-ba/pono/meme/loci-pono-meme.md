@@ -17,6 +17,7 @@ confidence = 0.6
 mana = 0.78
 manao = 0.84
 implements = [
+  "lar:///ha.ka.ba/pono/meme/v0.1",
   "lar:///ha.ka.ba/pono/loci/v0.1"
 ]
 register = "CS"
@@ -25,7 +26,6 @@ control-glyphs = ["&#x0001;", "&#x0002;", "&#x0003;", "&#x0004;", "&#x0005;", "&
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
 # <<~/ahu >>
-
 ```
 
 <<~/ahu >>

@@ -17,6 +17,7 @@ confidence = 0.69
 mana = 0.78
 manao = 0.85
 implements = [
+  "lar:///ha.ka.ba/pono/meme/v0.1",
   "lar:///ha.ka.ba/pono/loci/v0.1"
 ]
 register = "CS"
@@ -25,7 +26,6 @@ visibility-modes = ["inline", "overlay", "trace-only", "operator-only"]
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
 # <<~/ahu >>
-
 ```
 
 <<~/ahu >>

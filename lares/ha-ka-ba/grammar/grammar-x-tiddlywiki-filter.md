@@ -15,7 +15,10 @@ confidence = 0.48
 # <<~ ahu #iam-ka "detail" >>
 mana = 0.44
 manao = 0.52
-meme-type = "grammar"
+implements = [
+  "lar:///ha.ka.ba/pono/meme/v0.1",
+  "lar:///ha.ka.ba/pono/loci/v0.1"
+]
 register = "S"
 role = "grammar meme, import-profile meme, sigil-centric translation contract, and boundary-safe work grammar registry entry"
 grammar-key = "x-tiddlywiki-filter"
@@ -24,7 +27,6 @@ invocation-worksite = "hana"
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
 # <<~/ahu >>
-
 ```
 <<~/ahu >>
 

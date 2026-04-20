@@ -16,6 +16,7 @@ confidence = 0.84
 mana = 0.78
 manao = 0.74
 implements = [
+  "lar:///ha.ka.ba/pono/meme/v0.1",
   "lar:///ha.ka.ba/pono/loci/v0.1"
 ]
 register = "C"
@@ -24,7 +25,6 @@ pipeline-layers = ["surface", "ast", "widget"]
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
 # <<~/ahu >>
-
 ```
 
 # Render Pipeline Kānāwai (law)

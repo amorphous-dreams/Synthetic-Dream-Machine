@@ -17,6 +17,7 @@ confidence = 0.86
 mana = 0.82
 manao = 0.76
 implements = [
+  "lar:///ha.ka.ba/pono/meme/v0.1",
   "lar:///ha.ka.ba/pono/loci/v0.1"
 ]
 register = "C"
@@ -26,7 +27,6 @@ canonical-modes = ["preamble", "metadata", "prose", "sigil", "filter", "raw", "a
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
 # <<~/ahu >>
-
 ```
 
 <<~/ahu >>

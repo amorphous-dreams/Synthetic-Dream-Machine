@@ -15,13 +15,15 @@ confidence = 0.62
 # <<~ ahu #iam-ka "detail" >>
 mana = 0.60
 manao = 0.68
-meme-type = "pono"
+implements = [
+  "lar:///ha.ka.ba/pono/meme/v0.1",
+  "lar:///ha.ka.ba/pono/loci/v0.1"
+]
 register = "S"
 role = "shared normative vocabulary kānāwai (law), modal-force registry, and cross-meme reference point"
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
 # <<~/ahu >>
-
 ```
 <<~/ahu >>
 

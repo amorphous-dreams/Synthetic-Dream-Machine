@@ -17,6 +17,7 @@ confidence = 0.68
 mana = 0.76
 manao = 0.84
 implements = [
+  "lar:///ha.ka.ba/pono/meme/v0.1",
   "lar:///ha.ka.ba/pono/loci/v0.1"
 ]
 register = "CS"
@@ -26,7 +27,6 @@ lifecycle-layers = ["template", "instance", "trace"]
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
 # <<~/ahu >>
-
 ```
 
 <<~/ahu >>
