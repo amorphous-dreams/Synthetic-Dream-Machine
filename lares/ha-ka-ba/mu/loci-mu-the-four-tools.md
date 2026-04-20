@@ -10,14 +10,13 @@ name         = "mu/the-four-tools"
 file-path    = "ha-ka-ba/mu/loci-mu-the-four-tools.md"
 content-type = "text/x-memetic-wikitext"
 version      = "0.1"
-tagspace     = "ha.ka.ba"
-tulen        = 0.92
+tagspace     = "stable"
+manaoio    = 0.85
+confidence = 0.82
 # <<~/ahu >>
 # <<~ ahu #iam-ka "detail" >>
-confidence = 0.82
 mana       = 0.85
 manao      = 0.80
-manaoio    = 0.85
 meme-type  = "invariant loci"
 register   = "CS"
 namespace  = "ॐ ँ"

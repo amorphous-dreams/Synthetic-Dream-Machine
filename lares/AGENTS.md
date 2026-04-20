@@ -40,13 +40,12 @@ file-path    = "AGENTS.md"
 content-type = "text/x-memetic-wikitext"
 version      = "0.1-alpha"
 tagspace     = "adjacent"
-tulen        = 1.0
+manaoio    = 0.75
+confidence = 0.75
 # <<~/ahu >>
 # <<~ ahu #iam-ka "detail" >>
-confidence = 0.75
 mana       = 0.90
 manao      = 0.80
-manaoio    = 0.75
 meme-type  = "invariant"
 register   = "CS"
 role       = "narrative startup, threshold surface, AGENTS"

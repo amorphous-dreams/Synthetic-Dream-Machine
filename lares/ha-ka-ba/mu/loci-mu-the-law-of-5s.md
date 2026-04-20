@@ -10,14 +10,13 @@ name         = "mu/the-law-of-5s"
 file-path    = "ha-ka-ba/mu/loci-mu-the-law-of-5s.md"
 content-type = "text/x-memetic-wikitext"
 version      = "0.1"
-tagspace     = "ha.ka.ba"
-tulen        = 0.95
+tagspace     = "stable"
+manaoio    = 0.80
+confidence = 0.82
 # <<~/ahu >>
 # <<~ ahu #iam-ka "detail" >>
-confidence = 0.82
 mana       = 0.88
 manao      = 0.85
-manaoio    = 0.80
 meme-type  = "invariant loci"
 register   = "CS"
 namespace  = "ॐ ँ"
@@ -72,13 +71,13 @@ Act MUST precede Hoʻoko (where action meets reality).
 Hoʻoko MUST include Aftermath.
 Aftermath MUST close back to Observe.
 
-The loop MUST NOT skip Aftermath.
+A loop MUST NOT skip Aftermath.
 A loop that skips Aftermath has stopped serving and commenced managing.
 
 <<~/ahu >>
 
 <<~ॐ ँ&#x0002; ahu #meme-body-open >>
-The law of 5s opens the loop.
+The law of 5s opens
 <<~/ahu >>
 
 <<~ ahu #phase-map >>
@@ -111,7 +110,7 @@ Aftermath is the Philosopher's Stone. The grammar that turns and looks forwards.
 
 <<~ ahu #maybe-logic >>
 
-## Raw Maybe Logic
+## RAW's Maybe Logic
 
 Truth runs on a 0.0-1.0 continuum.
 

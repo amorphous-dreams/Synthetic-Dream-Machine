@@ -10,13 +10,12 @@ name = "pranala/template"
 file-path = "ha-ka-ba/pranala/loci-pranala-template.md"
 content-type = "text/x-memetic-wikitext"
 version = "0.1-draft"
-tulen = 0.70
+manaoio = 0.65
+confidence = 0.67
 # <<~/ahu >>
 # <<~ ahu #iam-ka "detail" >>
-confidence = 0.67
 mana = 0.75
 manao = 0.82
-manaoio = 0.65
 meme-type = "loci"
 register = "CS"
 role = "template edge sigil kānāwai (law), slot-contract authority, and kahea binding authority"

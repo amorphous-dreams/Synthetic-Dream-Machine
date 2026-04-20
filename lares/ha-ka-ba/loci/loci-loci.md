@@ -10,13 +10,12 @@ name = "loci"
 file-path = "ha-ka-ba/loci/loci-loci.md"
 content-type = "text/x-memetic-wikitext"
 version = "0.1-draft"
-tulen = 0.76
+manaoio = 0.66
+confidence = 0.74
 # <<~/ahu >>
 # <<~ ahu #iam-ka "detail" >>
-confidence = 0.74
 mana = 0.74
 manao = 0.84
-manaoio = 0.66
 meme-type = "loci"
 register = "CS"
 role = "loci-rating kānāwai (law), routing convention authority, address stability authority, canon promotion rule, and MCP-resolution roadmap"
@@ -105,7 +104,7 @@ Observe should not:
 
 ### Self-Observation
 
-This file can observe itself lawfully: its opener declares `lar:///ha.ka.ba/loci`, its `#iam` block carries the five rating fields with `register = "CS"`, and its body declares derivation, promotion, and roadmap surfaces.
+This file can observe itself lawfully: its opener declares `lar:///ha.ka.ba/loci`, its `#iam` block carries the four rating fields with `register = "CS"`, and its body declares derivation, promotion, and roadmap surfaces.
 
 That bundle already forms a live loci specimen. The law does not speak only about remote targets; it stands inside its own convention surface.
 

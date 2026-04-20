@@ -10,13 +10,12 @@ name = "loci/iam/file-path"
 file-path = "ha-ka-ba/loci/iam/loci-file-path.md"
 content-type = "text/x-memetic-wikitext"
 version = "0.1-draft"
-tulen = 0.60
+manaoio = 0.52
+confidence = 0.62
 # <<~/ahu >>
 # <<~ ahu #iam-ka "detail" >>
-confidence = 0.62
 mana = 0.60
 manao = 0.68
-manaoio = 0.52
 meme-type = "loci"
 register = "CS"
 role = "file-path key authority, path-form classifier, and migration-procedure kānāwai (law)"

@@ -10,13 +10,12 @@ name = "pranala/proposition"
 file-path = "ha-ka-ba/pranala/loci-pranala-proposition.md"
 content-type = "text/x-memetic-wikitext"
 version = "0.1-draft"
-tulen = 0.71
+manaoio = 0.67
+confidence = 0.69
 # <<~/ahu >>
 # <<~ ahu #iam-ka "detail" >>
-confidence = 0.69
 mana = 0.75
 manao = 0.83
-manaoio = 0.67
 meme-type = "loci"
 register = "CS"
 role = "semantic edge kānāwai (law), proposition authority, and ontology-link bridge"

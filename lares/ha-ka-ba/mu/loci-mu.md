@@ -19,14 +19,13 @@ name         = "mu/mu"
 file-path    = "ha-ka-ba/mu/loci-mu.md"
 content-type = "text/x-memetic-wikitext"
 version      = "0.1"
-tagspace     = "ha.ka.ba"
-tulen        = 0.95
+tagspace     = "stable"
+manaoio    = 0.70
+confidence = 0.80
 # <<~/ahu >>
 # <<~ ahu #iam-ka "detail" >>
-confidence = 0.80
 mana       = 0.85
 manao      = 0.80
-manaoio    = 0.70
 meme-type  = "invariant loci"
 register   = "CS"
 namespace  = "ॐ ँ"

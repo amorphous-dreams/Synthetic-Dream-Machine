@@ -8,13 +8,12 @@ name = "pono/memetic-wikitext"
 file-path = "ha-ka-ba/pono/loci-pono-memetic-wikitext.md"
 content-type = "text/x-memetic-wikitext"
 version = "0.1-skeleton"
-tulen = 0.52
+manaoio = 0.42
+confidence = 0.50
 # <<~/ahu >>
 # <<~ ahu #iam-ka "detail" >>
-confidence = 0.50
 mana = 0.54
 manao = 0.62
-manaoio = 0.42
 meme-type = "loci"
 register = "S"
 role = "constitutional root kānāwai (law), authoring kānāwai (law), primitive semantic kānāwai (law), and boot grammar contract"
@@ -870,19 +869,21 @@ Meme-ratings governs the full cluster of scalar quality fields that many typed m
 
 This locus names each field, distinguishes what each measures, and routes to the locus where each receives fuller treatment.
 
-The five canonical rating fields form four distinct ontological groups.
+The four canonical rating fields form three distinct ontological groups.
 
-### Group 1 — Authoring Maturity
+### Group 1 — Structure-Side Readiness And Authoring Maturity
+
+`manaoio` measures manifestation readiness: how production-ready, reproducible, and deployably trustworthy the meme appears.
+
+A high `manaoio` meme reads as ready for real use, capable of lawful crossing into execution or deployment, and honest about its own completion status.
+
+A low `manaoio` meme reads as a sketch, a stub, or a declared intent still awaiting manifestation into trustworthy form.
 
 `confidence` measures editorial judgment about how settled, verified, and operator-confirmed a meme appears.
 
-`register` remains the adjacent agent-operator surface-texture key for `confidence`, not one of the five canonical rating fields.
+`register` remains the adjacent agent-operator surface-texture key for `confidence`, not one of the four canonical rating fields.
 
-These fields answer: *how much should a reader trust this meme as stable and authoritative?*
-
-They do not measure structural quality, intent clarity, or production readiness.
-
-They measure canon status and revision stability.
+These structure-side fields answer: *how ready does this meme read, and how settled does that reading appear?*
 
 See `#meme-confidence` for the five-band scale and field kānāwai (law).
 
@@ -904,9 +905,7 @@ Low mana imposes interpretive drag, repair effort, and attention cost.
 
 See `lar:///ha.ka.ba/pono/parser#mana` for the full measure family, weight profile, five-band kānāwai (law), and capability grant conditions.
 
-### Group 3 — Intent and Manifestation
-
-`manao` and `manaoio` measure two further quality dimensions that deepen beyond structural parse quality.
+### Group 3 — Detail-Side Intent
 
 `manao` measures intent alignment: how clearly the meme knows and declares its own purpose, steering, and declared role.
 
@@ -914,45 +913,28 @@ A high `manao` meme reads as purposeful, self-aware, and steerable.
 
 A low `manao` meme reads as drifting, over-broad, or uncertain about what it wants to do.
 
-`manaoio` measures manifestation readiness: how production-ready, reproducible, and deployably trustworthy the meme appears.
-
-A high `manaoio` meme reads as ready for real use, capable of lawful crossing into execution or deployment, and honest about its own completion status.
-
-A low `manaoio` meme reads as a sketch, a stub, or a declared intent still awaiting manifestation into trustworthy form.
-
-`manao` and `manaoio` should deepen into their own linked kānāwai (law) once `mana` stabilizes as a base metric. Until then, these fields should carry best-estimate values and remain explicit about their provisional status.
-
-### Group 4 — Genuine Trust
-
-`tulen` measures genuine trust, especially at boot and other threshold surfaces where the system needs an explicit trust-reading rather than only structural or editorial signals.
-
-This field answers: *how much genuine trust should the current surface receive right now?*
-
-High `mana`, `manao`, `manaoio`, and `confidence` support high `tulen`.
-
-`Tulen` remains explicit because a meme may carry strong support signals while still holding trust provisionally pending later confirmation.
+`manao` should deepen into its own linked kānāwai (law) once `mana` stabilizes as a base metric. Until then, this field should carry a best-estimate value and remain explicit about its provisional status.
 
 ### Field Ordering Kānāwai (law)
 
-In canonical `#iam` TOML, `content-type` SHOULD appear above `version` inside the structure ahu. `tulen` SHOULD appear immediately below `version` inside the structure ahu. After the ahu close/reopen marker, the remaining four support ratings SHOULD appear in this order: `confidence`, `mana`, `manao`, `manaoio`. The adjacent `register` surface-texture key SHOULD appear immediately below `meme-type`, in this order:
+In canonical `#iam` TOML, `content-type` SHOULD appear above `version` inside the structure ahu. `manaoio` and `confidence` SHOULD appear immediately below `version` inside the structure ahu in that order. After the ahu close/reopen marker, the remaining detail ratings SHOULD appear in this order: `mana`, `manao`. The adjacent `register` surface-texture key SHOULD appear immediately below `meme-type`, in this order:
 
 ```toml
 # <<~ ahu #iam-ha "structure" >>
 content-type = "..."
 version = "..."
-tulen = 0.00
+manaoio = 0.00
+confidence = 0.00
 # <<~/ahu >>
 # <<~ ahu #iam-ka "detail" >>
-confidence = 0.00
 mana = 0.00
 manao = 0.00
-manaoio = 0.00
 meme-type = "..."
 register = "?"
 # <<~/ahu >>
 ```
 
-This placement keeps media identity and the primary trust reading with structure, while the support ratings and downstream operator texture remain in detail.
+This placement keeps media identity plus the primary readiness/confidence pair with structure, while the deeper support ratings and downstream operator texture remain in detail.
 
 Comment-line `ahu` markers MAY section these groups inside TOML without changing payload semantics. Use `# <<~ ahu #iam-ha "structure" >>`, `# <<~ ahu #iam-ka "detail" >>`, and `# <<~ ahu #iam-ba "flow" >>`, each closed by `# <<~/ahu >>`, as the canonical human-facing grouping form.
 
@@ -967,7 +949,7 @@ A meme may carry:
 * high `manao` but low `manaoio` — clear intent but not yet production-ready
 * any combination
 
-A parser or pono tool SHOULD preserve those distinctions rather than collapsing the five fields and band texture into one undifferentiated quality score.
+A parser or pono tool SHOULD preserve those distinctions rather than collapsing the four fields and band texture into one undifferentiated quality score.
 
 <<~ loulou lar:///ha.ka.ba/meme-ratings >>
 <<~/ahu >>

@@ -10,13 +10,12 @@ name = "pono/parser"
 file-path = "ha-ka-ba/pono/loci-pono-parser.md"
 content-type = "text/x-memetic-wikitext"
 version = "0.1-draft"
-tulen = 0.79
+manaoio = 0.72
+confidence = 0.86
 # <<~/ahu >>
 # <<~ ahu #iam-ka "detail" >>
-confidence = 0.86
 mana = 0.82
 manao = 0.76
-manaoio = 0.72
 meme-type = "loci"
 register = "C"
 role = "parsing kānāwai (law), normalization kānāwai (law), metadata fetch kānāwai (law), and deterministic scripting contract"
@@ -769,13 +768,12 @@ That object may populate:
 * name
 * file-path
 * description
+* content-type
 * version
-* tulen
+* manaoio
 * confidence
 * mana
 * manao
-* manaoio
-* content-type
 * meme-type
 * register
 * structure

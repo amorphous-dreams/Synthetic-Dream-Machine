@@ -14,14 +14,13 @@ name = "pono/skill-e-prime"
 file-path = "ha-ka-ba/pono/e-prime/SKILL.md"
 content-type = "text/x-memetic-wikitext"
 version = "0.1"
-tulen = 0.62
+manaoio = 0.63
+confidence = 0.68
 # <<~/ahu >>
 # <<~ ahu #iam-ka "detail" >>
-confidence = 0.68
 cacheable = true
 mana = 0.70
 manao = 0.76
-manaoio = 0.63
 meme-type = "skill loci"
 register = "SC"
 role = "secondary E-Prime audit skill, Hoʻoko correction surface, and settled-text conformance guide"

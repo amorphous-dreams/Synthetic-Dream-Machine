@@ -10,13 +10,12 @@ name = "loci/iam"
 file-path = "ha-ka-ba/loci/iam/loci-iam.md"
 content-type = "text/x-memetic-wikitext"
 version = "0.1-draft"
-tulen = 0.74
+manaoio = 0.68
+confidence = 0.70
 # <<~/ahu >>
 # <<~ ahu #iam-ka "detail" >>
-confidence = 0.70
 mana = 0.76
 manao = 0.84
-manaoio = 0.68
 meme-type = "loci"
 register = "CS"
 role = "root metadata kānāwai (law), field-set authority, and reduction charter"
@@ -89,7 +88,7 @@ Orient keeps the threefold split intact and sharp.
 The reduced carrier shape:
 
 ```text
-ha: name file-path description version tulen confidence mana manao manaoio content-type meme-type register structure
+ha: name file-path description content-type version manaoio confidence meme-type register structure
 ka: role function + only the local detail keys that change parse, routing, execution, or truth
 ba: input output depends-on + next only when a real forward edge exists
 ```
@@ -102,20 +101,17 @@ These field lists govern here as law prose. Live carriers should not restate the
 
 ### Ha Fields
 
-`ha` carries stable identity and rating posture.
+`ha` carries stable identity and the primary readiness/confidence rating posture.
 
 These fields should stay ordered and dense:
 
 - `name`
 - `file-path`
 - `description`
-- `version`
-- `tulen`
-- `confidence`
-- `mana`
-- `manao`
-- `manaoio`
 - `content-type`
+- `version`
+- `manaoio`
+- `confidence`
 - `meme-type`
 - `register`
 - `structure`

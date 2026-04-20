@@ -10,13 +10,12 @@ name = "pranala/instance"
 file-path = "ha-ka-ba/pranala/loci-pranala-instance.md"
 content-type = "text/x-memetic-wikitext"
 version = "0.1-draft"
-tulen = 0.71
+manaoio = 0.66
+confidence = 0.68
 # <<~/ahu >>
 # <<~ ahu #iam-ka "detail" >>
-confidence = 0.68
 mana = 0.76
 manao = 0.82
-manaoio = 0.66
 meme-type = "loci"
 register = "CS"
 role = "concrete edge instance kānāwai (law), bound-object authority, and override discipline"

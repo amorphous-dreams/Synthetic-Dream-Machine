@@ -14,13 +14,12 @@ name = "pono/invariant-meme/SKILL"
 file-path = "ha-ka-ba/pono/invariant-meme/SKILL.md"
 content-type = "text/x-memetic-wikitext"
 version = "0.1"
-tulen = 0.64
+manaoio = 0.69
+confidence = 0.73
 # <<~/ahu >>
 # <<~ ahu #iam-ka "detail" >>
-confidence = 0.73
 mana = 0.71
 manao = 0.77
-manaoio = 0.69
 meme-type = "skill loci"
 register = "SC"
 role = "invariant-meme skill, conformance checker, and sidecar splitter"

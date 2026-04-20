@@ -9,13 +9,12 @@ name = "x-tiddlywiki-filter"
 file-path = "ha-ka-ba/grammars/grammar-x-tiddlywiki-filter.md"
 content-type = "text/x-memetic-wikitext"
 version = "0.1-draft"
-tulen = 0.45
+manaoio = 0.36
+confidence = 0.48
 # <<~/ahu >>
 # <<~ ahu #iam-ka "detail" >>
-confidence = 0.48
 mana = 0.44
 manao = 0.52
-manaoio = 0.36
 meme-type = "grammar"
 register = "S"
 role = "grammar meme, import-profile meme, sigil-centric translation contract, and boundary-safe work grammar registry entry"

@@ -9,13 +9,12 @@ name = "pono/e-prime"
 file-path = "ha-ka-ba/pono/e-prime/loci-pono-e-prime.md"
 content-type = "text/x-memetic-wikitext"
 version = "0.1"
-tulen = 0.62
+manaoio = 0.76
+confidence = 0.72
 # <<~/ahu >>
 # <<~ ahu #iam-ka "detail" >>
-confidence = 0.72
 mana = 0.72
 manao = 0.78
-manaoio = 0.76
 meme-type = "invariant loci"
 register = "SC"
 role = "active language-discipline kānāwai (law), certainty-pressure regulator, next-generation pressure surface, and secondary audit governor for outward text"

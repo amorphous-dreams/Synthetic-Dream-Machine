@@ -15,13 +15,12 @@ file-path    = "LARES.md"
 content-type = "text/x-memetic-wikitext"
 version      = "0.1-alpha"
 tagspace     = "adjacent"
-tulen        = 0.95
+manaoio    = 0.70
+confidence = 0.75
 # <<~/ahu >>
 # <<~ ahu #iam-ka "detail" >>
-confidence = 0.75
 mana       = 0.85
 manao      = 0.75
-manaoio    = 0.70
 meme-type  = "configuration"
 register   = "CS"
 role       = "configuration surface, behind-the-curtain dial room, session-config"

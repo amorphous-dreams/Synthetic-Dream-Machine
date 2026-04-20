@@ -10,13 +10,12 @@ name = "pranala/debug"
 file-path = "ha-ka-ba/pranala/loci-pranala-debug.md"
 content-type = "text/x-memetic-wikitext"
 version = "0.1-draft"
-tulen = 0.71
+manaoio = 0.68
+confidence = 0.69
 # <<~/ahu >>
 # <<~ ahu #iam-ka "detail" >>
-confidence = 0.69
 mana = 0.78
 manao = 0.85
-manaoio = 0.68
 meme-type = "loci"
 register = "CS"
 role = "debug edge kānāwai (law), observation authority, and hidden-edge illumination authority"

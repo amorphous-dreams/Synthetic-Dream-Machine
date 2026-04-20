@@ -10,13 +10,12 @@ name = "pono/invariant-meme"
 file-path = "ha-ka-ba/pono/invariant-meme/loci-invariant-meme.md"
 content-type = "text/x-memetic-wikitext"
 version = "0.1"
-tulen = 0.6
+manaoio = 0.5
+confidence = 0.7
 # <<~/ahu >>
 # <<~ ahu #iam-ka "detail" >>
-confidence = 0.7
 mana = 0.5
 manao = 0.5
-manaoio = 0.5
 meme-type = "invariant loci"
 register = "SC"
 role = "invariant-meme law and cache-stable pressure surface"

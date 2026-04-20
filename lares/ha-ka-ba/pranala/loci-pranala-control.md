@@ -10,13 +10,12 @@ name = "pranala/control"
 file-path = "ha-ka-ba/pranala/loci-pranala-control.md"
 content-type = "text/x-memetic-wikitext"
 version = "0.1-draft"
-tulen = 0.72
+manaoio = 0.67
+confidence = 0.69
 # <<~/ahu >>
 # <<~ ahu #iam-ka "detail" >>
-confidence = 0.69
 mana = 0.77
 manao = 0.84
-manaoio = 0.67
 meme-type = "loci"
 register = "CS"
 role = "control-flow edge kānāwai (law), branch authority, and execution-order authority"

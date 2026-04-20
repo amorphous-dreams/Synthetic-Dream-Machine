@@ -9,13 +9,12 @@ name = "pono/guest-grammar"
 file-path = "ha-ka-ba/pono/loci-pono-guest-grammar.md"
 content-type = "text/x-memetic-wikitext"
 version = "0.1-draft"
-tulen = 0.56
+manaoio = 0.48
+confidence = 0.58
 # <<~/ahu >>
 # <<~ ahu #iam-ka "detail" >>
-confidence = 0.58
 mana = 0.56
 manao = 0.62
-manaoio = 0.48
 meme-type = "loci"
 register = "S"
 role = "guest-grammar admission kānāwai (law), invocation-boundary kānāwai (law), and host-guest ownership contract"

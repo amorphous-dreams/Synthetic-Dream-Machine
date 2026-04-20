@@ -10,13 +10,12 @@ name = "meme"
 file-path = "ha-ka-ba/meme/loci-meme.md"
 content-type = "text/x-memetic-wikitext"
 version = "0.1-draft"
-tulen = 0.79
+manaoio = 0.76
+confidence = 0.79
 # <<~/ahu >>
 # <<~ ahu #iam-ka "detail" >>
-confidence = 0.79
 mana = 0.78
 manao = 0.84
-manaoio = 0.76
 meme-type = "loci"
 register = "CS"
 role = "canonical meme kānāwai (law), template authority, and rating-target authority"
@@ -82,8 +81,8 @@ Observe should detect:
 * HTML DOCTYPE preamble comment
 * document opener and its target address
 * `#iam` locus and its fenced TOML payload
-* `tulen` immediately below `version`, then detail-side support ratings in the order `confidence`, `mana`, `manao`, `manaoio`,
-* plus adjacent `register` surface texture immediately below `meme-type` for the operator-facing `tulen`/`confidence` bands
+* `content-type` above `version`, with structure-side ratings in the order `manaoio`, `confidence`,
+* then detail-side ratings in the order `mana`, `manao`, plus adjacent `register` surface texture immediately below `meme-type` for the operator-facing `confidence` band
 * title heading and opening prose
 * self-reference ala
 * body-open and body-close control sigil sites
@@ -224,13 +223,12 @@ name = "..."
 file-path = "..."
 content-type = "text/x-memetic-wikitext"
 version = "..."
-tulen = 0.00
+manaoio = 0.00
+confidence = 0.00
 # <<~/ahu >>
 # <<~ ahu #iam-ka "detail" >>
-confidence = 0.00
 mana = 0.00
 manao = 0.00
-manaoio = 0.00
 meme-type = "..."
 register = "?"
 role = "..."
@@ -240,7 +238,7 @@ pranala = ["lar:///ha.ka.ba/pono/memetic-wikitext"]
 # <<~/ahu >>
 ```
 
-The `#iam` block MUST place `content-type` above `version` in the structure ahu. It MUST place `tulen` immediately below `version`. After the ahu close/reopen marker, the remaining four rating fields MUST follow in this order: `confidence`, `mana`, `manao`, `manaoio`. The adjacent `register` surface-texture key MUST appear immediately below `meme-type`. That key abbreviates the operator-facing `tulen`/`confidence` band surfaces. Absence of any rating field degrades `payload-integrity`.
+The `#iam` block MUST place `content-type` above `version` in the structure ahu. It MUST place `manaoio` and `confidence` immediately below `version` in that order. After the ahu close/reopen marker, the remaining detail rating fields MUST follow in this order: `mana`, `manao`. The adjacent `register` surface-texture key MUST appear immediately below `meme-type`. That key abbreviates the operator-facing `confidence` band surface. Absence of any rating field degrades `payload-integrity`.
 
 Comment-line `ahu` markers MAY section `#iam` TOML into agent-operator friendly groups without changing payload semantics. The canonical grouping follows `# <<~ ahu #iam-ha "structure" >>`, `# <<~ ahu #iam-ka "detail" >>`, and `# <<~ ahu #iam-ba "flow" >>`, each closed by `# <<~/ahu >>`. Because these stay inside TOML comment lines, they remain parse-inert.
 
@@ -459,7 +457,7 @@ All ratings remain provisional. A rating of 1.00 remains rare in language, softw
 
 #### The Law of 5s Rubric
 
-All scalar ratings in this system — `tulen`, `confidence`, `mana`, `manao`, `manaoio` — follow a 0.0–1.0 rubric with five registers of equal width (~0.20 per register):
+All scalar ratings in this system — `manaoio`, `confidence`, `mana`, and `manao` — follow a 0.0–1.0 rubric with five registers of equal width (~0.20 per register):
 
 | Register | Score range | `register` | Character |
 |---|---|---|---|
@@ -469,7 +467,7 @@ All scalar ratings in this system — `tulen`, `confidence`, `mana`, `manao`, `m
 | 4 | 0.60 – 0.79 | `CS` | Synthetic-Canon — content meaningful, nearing law quality |
 | 5 | 0.80 – 1.00 | `C` | Canon — operator-confirmed, substantive, address stable |
 
-The `register` label applies to both `tulen` and `confidence` as the operator-facing band surfaces. When both scores land in the same band, one abbreviation suffices. When they diverge, prose should surface the split explicitly while the scalar fields retain authority. The three scalar quality fields (`mana`, `manao`, `manaoio`) use the same 0.0–1.0 rubric but do not carry their own register label. `Tulen` names genuine trust, especially at boot surfaces. High `mana`, `manao`, `manaoio`, and `confidence` support high `tulen`, but a meme may still hold `tulen` provisionally while the surface remains under active confirmation.
+The `register` label applies to `confidence` as the operator-facing band surface. The three scalar quality fields (`manaoio`, `mana`, `manao`) use the same 0.0–1.0 rubric without their own register label. High `manaoio` and high `confidence` now sit nearest the structure surface; `mana` and `manao` still deepen the reading from detail.
 
 #### Canonical Detail-Key Workflow
 
@@ -643,13 +641,12 @@ name = "[NAME]"
 file-path = "ha-ka-ba/[MEME-TYPE]-[NAME].md"
 content-type = "text/x-memetic-wikitext"
 version = "0.1-skeleton"
-tulen = 0.10
+manaoio = 0.10
+confidence = 0.10
 # <<~/ahu >>
 # <<~ ahu #iam-ka "detail" >>
-confidence = 0.10
 mana = 0.10
 manao = 0.10
-manaoio = 0.10
 meme-type = "[meme-type]"
 register = "P"
 role = "[role]"

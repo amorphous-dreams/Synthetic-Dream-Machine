@@ -9,13 +9,12 @@ name = "pono/render-pipeline"
 file-path = "ha-ka-ba/pono/loci-pono-render-pipeline.md"
 content-type = "text/x-memetic-wikitext"
 version = "0.1-draft"
-tulen = 0.76
+manaoio = 0.68
+confidence = 0.84
 # <<~/ahu >>
 # <<~ ahu #iam-ka "detail" >>
-confidence = 0.84
 mana = 0.78
 manao = 0.74
-manaoio = 0.68
 meme-type = "loci"
 register = "C"
 role = "pipeline kānāwai (law), lowering kānāwai (law), widget-tree kānāwai (law), render projection kānāwai (law), and trace continuity contract"
