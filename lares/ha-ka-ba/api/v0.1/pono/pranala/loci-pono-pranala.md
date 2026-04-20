@@ -64,12 +64,12 @@ Lawful explicit form:
 
 `? -> TO` SHOULD resolve `?` to the nearest enclosing socket.
 A named enclosing `#fragment-id` SHOULD win first.
-Otherwise `?` SHOULD land on the enclosing meme.
+Otherwise `?` SHOULD land on the enclosing meme URI.
 
 Valid socket targets:
 
-* `lar:///...`
-* `lar:///...#fragment`
+* `lar://[HOST?]/...`
+* `lar://[HOST?]/...#fragment`
 
 Named `ahu` worksites SHOULD carry socket pressure first.
 Any wrapping sigil, including the whole meme, MAY expose a default socket.
@@ -77,8 +77,14 @@ Any wrapping sigil, including the whole meme, MAY expose a default socket.
 Fragment pressure SHOULD stay term-aligned across sigils as `#fragment`.
 Human-readable text MAY still travel in `label`.
 
-Hawaiian short-invocation surfaces MAY carry pranala pressure.
-`ahu` SHOULD carry the cleanest socket pressure.
+Hawaiian short-invocation surfaces MUST carry pranala pressure.
+
+Socket: `ahu` MUST carry the cleanest socket pressure. Ahu MAY resovle in a nested structure. Ahu MAY serve as an html style `anchor` entity.
+
+Edge sigil syntatic sugar:
+* `<<~ loulou URI >>` MAY represent an HTML style outgoing link
+* `<<~ aka URI >>` MAY represent a "shadow" tranclusion - invoking the image/text context
+* `<<~ kahea URI >>` MAY represent a "live" transclusion - invoking the widget/rendered context
 
 Family carries edge meaning.
 Lifecycle carries `template`, `instance`, or `trace` pressure.
@@ -193,6 +199,41 @@ Block form MUST carry richer local edge data as a TOML payload.
 <<~ pranala ? -> lar:///ha.ka.ba/api/v0.1/mu#entry family:relation >>
 ```
 
+Long-form equivalents for edge sigil sugar:
+
+````text
+<<~ pranala #link ? -> URI >>
+```toml
+family = "relation"
+lifecycle = "instance"
+label = "outgoing link"
+alias = "loulou"
+```
+<<~/pranala >>
+````
+
+````text
+<<~ pranala #shadow ? -> URI >>
+```toml
+family = "observe"
+lifecycle = "instance"
+label = "shadow transclusion"
+alias = "aka"
+```
+<<~/pranala >>
+````
+
+````text
+<<~ pranala #live ? -> URI >>
+```toml
+family = "dataflow"
+lifecycle = "instance"
+label = "live transclusion"
+alias = "kahea"
+```
+<<~/pranala >>
+````
+
 ```text
 <<~ pranala ? -> lar:///ha.ka.ba/api/v0.1/pono/parser#forms family:relation label:"forms" >>
 ```
@@ -200,6 +241,15 @@ Block form MUST carry richer local edge data as a TOML payload.
 ```text
 <<~ pranala lar:///A#out -> lar:///B#in family:relation >>
 ```
+
+<<~/ahu >>
+
+<<~ ahu #edges >>
+
+<<~ pranala #edge-ahu ? -> lar:///ha.ka.ba/api/v0.1/grammar/ahu family:relation >>
+<<~ pranala #edge-loulou ? -> lar:///ha.ka.ba/api/v0.1/grammar/loulou family:relation >>
+<<~ pranala #edge-aka ? -> lar:///ha.ka.ba/api/v0.1/grammar/aka family:relation >>
+<<~ pranala #edge-kahea ? -> lar:///ha.ka.ba/api/v0.1/grammar/kahea family:relation >>
 
 <<~/ahu >>
 
