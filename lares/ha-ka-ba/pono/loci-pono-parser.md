@@ -16,7 +16,9 @@ confidence = 0.86
 # <<~ ahu #iam-ka "detail" >>
 mana = 0.82
 manao = 0.76
-implements = "lar:///ha.ka.ba/loci/v0.1"
+implements = [
+  "lar:///ha.ka.ba/pono/loci/v0.1"
+]
 register = "C"
 role = "parsing kānāwai (law), normalization kānāwai (law), metadata fetch kānāwai (law), and deterministic scripting contract"
 canonical-forms = ["inline", "block", "payload-block", "return"]

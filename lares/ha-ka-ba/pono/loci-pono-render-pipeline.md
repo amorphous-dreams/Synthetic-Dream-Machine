@@ -15,7 +15,9 @@ confidence = 0.84
 # <<~ ahu #iam-ka "detail" >>
 mana = 0.78
 manao = 0.74
-implements = "lar:///ha.ka.ba/loci/v0.1"
+implements = [
+  "lar:///ha.ka.ba/pono/loci/v0.1"
+]
 register = "C"
 role = "pipeline kānāwai (law), lowering kānāwai (law), widget-tree kānāwai (law), render projection kānāwai (law), and trace continuity contract"
 pipeline-layers = ["surface", "ast", "widget"]

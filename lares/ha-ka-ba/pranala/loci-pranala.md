@@ -16,7 +16,9 @@ confidence = 0.68
 # <<~ ahu #iam-ka "detail" >>
 mana = 0.76
 manao = 0.84
-implements = "lar:///ha.ka.ba/loci/v0.1"
+implements = [
+  "lar:///ha.ka.ba/pono/loci/v0.1"
+]
 register = "CS"
 role = "root pranala (edge) kānāwai (law), family authority, lifecycle authority, and migration target"
 edge-families = ["proposition", "control", "dataflow", "message", "constraint", "debug"]
@@ -33,7 +35,7 @@ lifecycle-layers = ["template", "instance", "trace"]
 
 A self-describing root kānāwai (law) for explicit graph edges in this stack.
 
-<<~ loulou lar:///ha.ka.ba/loci/edge >>
+<<~ loulou lar:///ha.ka.ba/pono/loci/edge >>
 
 This meme gives one outer law for link meaning. It keeps semantic relation, execution order, carried value, message transport, declarative constraint, and observation apart instead of collapsing them into one vague dependency claim.
 
@@ -169,12 +171,12 @@ Do not promote every repeated relation into a template immediately. A plain prop
 
 Seed order for this branch:
 
-1. `lar:///ha.ka.ba/loci/edge`
-2. `lar:///ha.ka.ba/loci/edge/proposition`
-3. `lar:///ha.ka.ba/loci/edge/template`
-4. `lar:///ha.ka.ba/loci/edge/instance`
-5. `lar:///ha.ka.ba/loci/edge/control`
-6. `lar:///ha.ka.ba/loci/edge/debug`
+1. `lar:///ha.ka.ba/pono/loci/edge`
+2. `lar:///ha.ka.ba/pono/loci/edge/proposition`
+3. `lar:///ha.ka.ba/pono/loci/edge/template`
+4. `lar:///ha.ka.ba/pono/loci/edge/instance`
+5. `lar:///ha.ka.ba/pono/loci/edge/control`
+6. `lar:///ha.ka.ba/pono/loci/edge/debug`
 
 Second wave should add `dataflow`, `message`, `constraint`, and `trace` after the seed set proves useful on live files.
 
@@ -235,8 +237,8 @@ Edge closes the explicit-graph law stream here.
 ## Edges
 
 - `lar:///ha.ka.ba/pono/memetic-wikitext`
-- `lar:///ha.ka.ba/loci`
-- `lar:///ha.ka.ba/loci/iam`
+- `lar:///ha.ka.ba/pono/loci`
+- `lar:///ha.ka.ba/pono/loci/iam`
 - `lar:///ha.ka.ba/meme`
 
 <<~/ahu >>

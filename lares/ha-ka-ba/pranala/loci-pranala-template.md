@@ -16,7 +16,9 @@ confidence = 0.67
 # <<~ ahu #iam-ka "detail" >>
 mana = 0.75
 manao = 0.82
-implements = "lar:///ha.ka.ba/loci/v0.1"
+implements = [
+  "lar:///ha.ka.ba/pono/loci/v0.1"
+]
 register = "CS"
 role = "template edge sigil kānāwai (law), slot-contract authority, and kahea binding authority"
 binding-order = ["invocation", "local-body", "addressed-iam", "session-state", "template-defaults"]
@@ -34,7 +36,7 @@ invocation-surface = "kahea"
 
 A self-describing kānāwai (law) for template edge sigils.
 
-<<~ loulou lar:///ha.ka.ba/loci/edge/template >>
+<<~ loulou lar:///ha.ka.ba/pono/loci/edge/template >>
 
 This meme governs the reusable edge form that an author invokes through `kahea`. Template law keeps repeated graph shapes coherent without forcing every edge into boilerplate.
 
@@ -118,12 +120,12 @@ Later sources may fill gaps. They should not silently overwrite earlier explicit
 ### Kahea Invocation
 
 ````text
-<<~ kahea lar:///ha.ka.ba/loci/edge/template >>
+<<~ kahea lar:///ha.ka.ba/pono/loci/edge/template >>
 ```toml
 kind = "proposition"
 template-name = "governs"
-from = "lar:///ha.ka.ba/loci/iam"
-to = "lar:///ha.ka.ba/loci/iam/file-path"
+from = "lar:///ha.ka.ba/pono/loci/iam"
+to = "lar:///ha.ka.ba/pono/loci/iam/file-path"
 confidence = 0.91
 ```
 ````
@@ -199,8 +201,8 @@ Template closes the reusable-edge-sigil stream here.
 
 ## Edges
 
-- `lar:///ha.ka.ba/loci/edge`
-- `lar:///ha.ka.ba/loci`
+- `lar:///ha.ka.ba/pono/loci/edge`
+- `lar:///ha.ka.ba/pono/loci`
 - `lar:///ha.ka.ba/meme`
 
 <<~/ahu >>

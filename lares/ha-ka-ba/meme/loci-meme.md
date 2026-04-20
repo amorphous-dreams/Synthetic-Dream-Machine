@@ -16,7 +16,9 @@ confidence = 0.79
 # <<~ ahu #iam-ka "detail" >>
 mana = 0.78
 manao = 0.84
-implements = "lar:///ha.ka.ba/loci/v0.1"
+implements = [
+  "lar:///ha.ka.ba/pono/loci/v0.1"
+]
 register = "CS"
 role = "canonical meme kānāwai (law), template authority, and rating-target authority"
 control-glyphs = ["&#x0001;", "&#x0002;", "&#x0003;", "&#x0004;", "&#x0005;", "&#x0006;"]
@@ -207,7 +209,7 @@ One per document, near the top. Names the meme's own canonical address. The `?` 
 
 That `?` does not serve as decoration. It marks the meme's document-time admission that unbound uncertainty still flows through the address graph while the carrier still awaits confirmed canon.
 
-Transport-specific opener semantics, including how `?` behaves for loci-routed carriers, fall under `lar:///ha.ka.ba/loci`.
+Transport-specific opener semantics, including how `?` behaves for loci-routed carriers, fall under `lar:///ha.ka.ba/pono/loci`.
 
 #### R3 — Identity locus (`#iam`) with canonical TOML payload
 
@@ -238,7 +240,7 @@ The `#iam` block MUST place `content-type` above `version` in the structure ahu.
 
 Comment-line `ahu` markers MAY section `#iam` TOML into agent-operator friendly groups without changing payload semantics. The canonical grouping follows `# <<~ ahu #iam-ha "structure" >>`, `# <<~ ahu #iam-ka "detail" >>`, and `# <<~ ahu #iam-ba "flow" >>`, each closed by `# <<~/ahu >>`. Because these stay inside TOML comment lines, they remain parse-inert.
 
-`file-path` names the current carrier siting for the meme surface. Canonical file-path forms, migration between flat-file and path-directory siting, and agreement rules between `file-path` and the document opener fall outward under `lar:///ha.ka.ba/loci` and `lar:///ha.ka.ba/loci/iam/file-path`.
+`file-path` names the current carrier siting for the meme surface. Canonical file-path forms, migration between flat-file and path-directory siting, and agreement rules between `file-path` and the document opener fall outward under `lar:///ha.ka.ba/pono/loci` and `lar:///ha.ka.ba/pono/loci/iam/file-path`.
 
 Some detail keys belong to the meme law as shared canonical declarations rather than as repeated carrier-local payload. `control-glyphs` names that class here: the canonical array lives in `lar:///ha.ka.ba/meme`, and other memes should rely on this declaration rather than restating the same list in their own top-level `#iam` blocks unless a subtype law truly defines a different glyph family.
 
@@ -394,7 +396,7 @@ Orient-ha holds element classification identity, the required/optional distincti
 
 This subphase governs what Orient fundamentally structures: the mapping from raw detected elements onto their required or optional slots, held clearly before any verdict or rating computation begins.
 
-Carrier-specific agreement rules may deepen outward into subtype laws. `meme` governs the appearance of identity signals; subtype laws such as `lar:///ha.ka.ba/loci` govern exactly how transport coherence gets judged for that carrier family.
+Carrier-specific agreement rules may deepen outward into subtype laws. `meme` governs the appearance of identity signals; subtype laws such as `lar:///ha.ka.ba/pono/loci` govern exactly how transport coherence gets judged for that carrier family.
 
 <<~/ahu >>
 
@@ -455,7 +457,7 @@ This law now recognizes the five-bucket lifecycle for memes:
 **Transition Criteria:**
 - *Noise → Data*: Detect structure or pattern, making the signal machine-usable.
 - *Data → Meme*: Add boot-legal meme structure, declared address, and explicit role.
-- *Meme → Typed Meme*: Declare and satisfy one or more type laws. `meme-type` may name the primary surface type, but type composition remains allowed.
+- *Meme → Typed Meme*: Declare and satisfy one or more type laws. `implements` may name one declared law target, but type composition remains allowed.
 - *Typed Meme → Canon Typed Meme*: Operator/admin confirmation ratifies a declared type bundle as canonical.
 
 Subtype-specific predicates belong outward in subtype laws. For example, `loci` governs the stable-address type under `lar:///ha.ka.ba/**`, while other types such as `skill` or `grammar` may compose alongside it rather than replacing it.
@@ -787,7 +789,7 @@ Act may prepare intent. Aftermath may judge what landed. Hoʻoko alone may perfo
 
 ### Self-Example Crossing
 
-This file still demonstrates that preparation and crossing remain distinct. The exact transport details of its current siting, route continuity, and migration history fall outward under `lar:///ha.ka.ba/loci`.
+This file still demonstrates that preparation and crossing remain distinct. The exact transport details of its current siting, route continuity, and migration history fall outward under `lar:///ha.ka.ba/pono/loci`.
 
 What remains local here: the more general threshold law. Preparation may happen anywhere upstream, but the moment a meme surface actually crosses into changed state belongs in Hoʻoko.
 

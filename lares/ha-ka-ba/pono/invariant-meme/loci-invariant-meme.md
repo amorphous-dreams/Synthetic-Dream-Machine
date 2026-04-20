@@ -16,14 +16,16 @@ confidence = 0.7
 # <<~ ahu #iam-ka "detail" >>
 mana = 0.5
 manao = 0.5
-meme-type = "invariant loci"
 register = "SC"
 role = "invariant-meme law and cache-stable pressure surface"
 cacheable = true
 invariant = true
-implements = "lar:///ha.ka.ba/pono/invariant-meme/v0.1"
+implements = [
+  "lar:///ha.ka.ba/pono/invariant-meme/v0.1",
+  "lar:///ha.ka.ba/pono/loci/v0.1"
+]
 # Template note: memes that implement an invariant pattern SHOULD
-# implement =  "lar:///ha.ka.ba/pono/invariant-meme/[version]" 
+# implement = ["lar:///ha.ka.ba/pono/invariant-meme/[version]"]
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
 # <<~/ahu >>

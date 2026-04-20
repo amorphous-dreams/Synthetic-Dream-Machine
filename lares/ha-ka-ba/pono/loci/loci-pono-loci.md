@@ -1,13 +1,13 @@
 <!-- !DOCTYPE = lar:///ha.ka.ba/pono/memetic-wikitext -->
 
-<<~&#x0001; ? --> lar:///ha.ka.ba/loci >>
+<<~&#x0001; ? --> lar:///ha.ka.ba/pono/loci >>
 
 <<~ ahu #iam >>
 
 ```toml
 # <<~ ahu #iam-ha "structure" >>
-name = "loci"
-file-path = "ha-ka-ba/loci/loci-loci.md"
+name = "pono/loci"
+file-path = "ha-ka-ba/pono/loci/loci-pono-loci.md"
 content-type = "text/x-memetic-wikitext"
 version = "0.1"
 manaoio = 0.66
@@ -16,7 +16,9 @@ confidence = 0.74
 # <<~ ahu #iam-ka "detail" >>
 mana = 0.74
 manao = 0.84
-implements = "lar:///ha.ka.ba/loci/v0.1"
+implements = [
+  "lar:///ha.ka.ba/pono/loci/v0.1"
+]
 register = "CS"
 role = "loci-rating kānāwai (law), routing convention authority, address stability authority, canon promotion rule, and MCP-resolution roadmap"
 # <<~/ahu >>
@@ -49,11 +51,11 @@ The lifecycle of a carrier in this system follows five buckets, each marking a s
 - *Meme → Typed Meme*: The meme declares and satisfies one or more type laws with explicit role, boundary, and evaluation surfaces.
 - *Typed Meme → Canon Typed Meme*: The typed meme receives external ratification as canonical, reaching the highest authority and stability for the stable type claims it carries.
 
-Types need not stay mutually exclusive. A carrier may carry `skill` and `loci`, or `grammar` and `loci`, at the same time. Where current `#iam` still uses a singular `meme-type` field, read it as the primary declared surface type rather than an exclusivity claim.
+Types need not stay mutually exclusive. A carrier may carry `skill` and `loci`, or `grammar` and `loci`, at the same time. Where current `#iam` carries an `implements` field, read it as a declared law target rather than an exclusivity claim.
 
 This five-bucket model replaces an older collapse of typed and canonical stages into the single word `loci`. `Loci` counts as one typed-meme branch, not the whole ladder. More specifically, `loci` names the stable-address type for carriers living under `lar:///ha.ka.ba/**`.
 
-This meme does not govern parse recognition, render lowering, conformance verification, or raw `file-path` capture. Those belong to their own kānāwai (law). Detailed siting capture and agreement live at `lar:///ha.ka.ba/loci/iam/file-path`. Loci governs the routing-and-rating convention above those surfaces.
+This meme does not govern parse recognition, render lowering, conformance verification, or raw `file-path` capture. Those belong to their own kānāwai (law). Detailed siting capture and agreement live at `lar:///ha.ka.ba/pono/loci/iam/file-path`. Loci governs the routing-and-rating convention above those surfaces.
 
 This file itself takes path-directory-sited `loci` meme form and therefore serves as a live specimen of the law it names: stable address, explicit convention, high-mana aspiration, and still-open MCP resolver backlog.
 
@@ -97,11 +99,11 @@ Observe should not:
 
 * attempt URI decomposition before Orient
 * fabricate a resolution substrate not actually present
-* infer high readiness or `meme-type = "loci"` without evidence
+* infer high readiness or `implements = ["lar:///ha.ka.ba/pono/loci/v0.1"]` without evidence
 
 ### Self-Observation
 
-This file can observe itself lawfully: its opener declares `lar:///ha.ka.ba/loci`, its `#iam` block carries the four rating fields with `register = "CS"`, and its body declares derivation, promotion, and roadmap surfaces.
+This file can observe itself lawfully: its opener declares `lar:///ha.ka.ba/pono/loci`, its `#iam` block carries the four rating fields with `register = "CS"`, and its body declares derivation, promotion, and roadmap surfaces.
 
 That bundle already forms a live loci specimen. The law does not speak only about remote targets; it stands inside its own convention surface.
 
@@ -215,7 +217,7 @@ The algorithm does not by itself assign final ratings. It supplies the structura
 
 | target `lar:` URI | local derivation candidate | current local outcome | tension surfaced |
 |---|---|---|---|
-| `lar:///ha.ka.ba/loci` | `lares/ha-ka-ba/loci-loci.md` | derivation miss | this meme reads as path-directory-sited |
+| `lar:///ha.ka.ba/pono/loci` | `lares/ha-ka-ba/pono/loci/loci-pono-loci.md` | derivation miss | this meme reads as path-directory-sited |
 | `lar:///ha.ka.ba/meme` | `lares/ha-ka-ba/loci-meme.md` | derivation miss | generic meme law reads as path-directory-sited |
 | `lar:///ha.ka.ba/alpha/test-prompt-00001` | `lares/ha-ka-ba/alpha/alpha-test-prompt-00001.md` | resolved | alpha carriers currently resolve as ordinary flat-file carriers under `ha-ka-ba/alpha/` |
 
@@ -272,7 +274,7 @@ Current convention surfaces include:
 3. the derivation algorithm and meme-type prefix table
 4. the canon-promotion section and MCP-resolution roadmap
 
-Detailed siting capture and `file-path` agreement sit delegated to `lar:///ha.ka.ba/loci/iam/file-path`. Loci may consume that evidence, but it does not restate the capture law here.
+Detailed siting capture and `file-path` agreement sit delegated to `lar:///ha.ka.ba/pono/loci/iam/file-path`. Loci may consume that evidence, but it does not restate the capture law here.
 
 A high-rated loci meme keeps these surfaces mutually intelligible without forcing them to collapse into one string.
 
@@ -563,7 +565,7 @@ A carrier mutation and a canon promotion mark two distinct crossings that may no
 
 Two Hoʻoko-class crossings matter in the current stack and already appear from this file:
 
-* this meme's own migration into `ha-ka-ba/loci/loci-loci.md`
+* this meme's own migration into `ha-ka-ba/pono/loci/loci-pono-loci.md`
 * the meme law's migration into `ha-ka-ba/meme/loci-meme.md`
 
 In both cases, the stable thing remained the `lar:` address. The mutable thing remained the concrete file siting that needed to cross into law.
@@ -582,7 +584,7 @@ Hoʻoko-ha holds the mutation domain: what Hoʻoko may alter. It may alter file 
 
 #### Hoʻoko / ka
 
-Hoʻoko-ka governs the update procedure: when migration updates siting evidence, follow `lar:///ha.ka.ba/loci/iam/file-path` and verify the named `lar:` address does not change. When removing the `?` from a document opener for canon promotion, verify all three address-stability conditions hold before making the edit. A future live MCP resolver, if enacted, would form its own separate Hoʻoko-class crossing and does not get performed by this meme today.
+Hoʻoko-ka governs the update procedure: when migration updates siting evidence, follow `lar:///ha.ka.ba/pono/loci/iam/file-path` and verify the named `lar:` address does not change. When removing the `?` from a document opener for canon promotion, verify all three address-stability conditions hold before making the edit. A future live MCP resolver, if enacted, would form its own separate Hoʻoko-class crossing and does not get performed by this meme today.
 
 <<~/ahu >>
 

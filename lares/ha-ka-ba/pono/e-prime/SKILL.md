@@ -21,7 +21,9 @@ confidence = 0.68
 cacheable = true
 mana = 0.70
 manao = 0.76
-meme-type = "skill loci"
+implements = [
+  "lar:///ha.ka.ba/pono/loci/v0.1"
+]
 register = "SC"
 role = "secondary E-Prime audit skill, Hoʻoko correction surface, and settled-text conformance guide"
 covers = ["lar:///ha.ka.ba/pono/e-prime"]

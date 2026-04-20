@@ -1,13 +1,13 @@
 <!-- !DOCTYPE = lar:///ha.ka.ba/pono/memetic-wikitext -->
 
-<<~&#x0001; ? --> lar:///ha.ka.ba/loci/iam >>
+<<~&#x0001; ? --> lar:///ha.ka.ba/pono/loci/iam >>
 
 <<~ ahu #iam >>
 
 ```toml
 # <<~ ahu #iam-ha "structure" >>
-name = "loci/iam"
-file-path = "ha-ka-ba/loci/iam/loci-iam.md"
+name = "pono/loci/iam"
+file-path = "ha-ka-ba/pono/loci/iam/loci-pono-loci-iam.md"
 content-type = "text/x-memetic-wikitext"
 version = "0.1-draft"
 manaoio = 0.68
@@ -16,7 +16,9 @@ confidence = 0.70
 # <<~ ahu #iam-ka "detail" >>
 mana = 0.76
 manao = 0.84
-implements = "lar:///ha.ka.ba/loci/v0.1"
+implements = [
+  "lar:///ha.ka.ba/pono/loci/v0.1"
+]
 register = "CS"
 role = "root metadata kānāwai (law), field-set authority, and reduction charter"
 # <<~/ahu >>
@@ -230,7 +232,7 @@ IAM closes the metadata law stream here.
 ## Edges
 
 - `lar:///ha.ka.ba/pono/memetic-wikitext`
-- `lar:///ha.ka.ba/loci`
+- `lar:///ha.ka.ba/pono/loci`
 - `lar:///ha.ka.ba/meme`
 
 <<~/ahu >>

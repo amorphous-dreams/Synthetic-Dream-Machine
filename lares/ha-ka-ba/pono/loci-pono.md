@@ -15,7 +15,9 @@ confidence = 0.65
 # <<~ ahu #iam-ka "detail" >>
 mana = 0.65
 manao = 0.70
-implements = "lar:///ha.ka.ba/loci/v0.1"
+implements = [
+  "lar:///ha.ka.ba/pono/loci/v0.1"
+]
 register = "CS"
 role = "kānāwai (law) index, verification registry, and skill package host"
 skill-package-root = "ha-ka-ba/pono/skill-*.md"
@@ -63,25 +65,25 @@ Active kānāwai (law) memes registered under `lar:///ha.ka.ba/`:
 | normative-verbs | `lar:///ha.ka.ba/pono/normative-verbs` | shared normative vocabulary kānāwai (law), modal-force registry, and cross-meme reference point |
 | x-tiddlywiki-filter | `lar:///ha.ka.ba/grammars/x-tiddlywiki-filter` | first registered hana guest grammar |
 | pono | `lar:///ha.ka.ba/pono` | kānāwai (law) index and verification skill host |
-| loci | `lar:///ha.ka.ba/loci` | lar: URI routing derivation algorithm, meme-type prefix table, carrier coherence, MCP-resolution roadmap, address stability, and canon promotion kānāwai (law) |
-| iam | `lar:///ha.ka.ba/loci/iam` | root `#iam` metadata kānāwai (law), surviving field-set authority, and reduction charter |
-| file-path | `lar:///ha.ka.ba/loci/iam/file-path` | `file-path` key kānāwai (law), form classifier, and URI-agreement procedure |
-| loci/edge | `lar:///ha.ka.ba/loci/edge` | root edge kānāwai (law), family authority, lifecycle authority, and migration target beyond vague dependency claims |
-| loci/edge/proposition | `lar:///ha.ka.ba/loci/edge/proposition` | semantic edge kānāwai (law), proposition authority, and ontology-link bridge |
-| loci/edge/template | `lar:///ha.ka.ba/loci/edge/template` | template edge sigil kānāwai (law), slot-contract authority, and kahea binding authority |
-| loci/edge/instance | `lar:///ha.ka.ba/loci/edge/instance` | concrete edge instance kānāwai (law), bound-object authority, and override discipline |
-| loci/edge/control | `lar:///ha.ka.ba/loci/edge/control` | control-flow edge kānāwai (law), branch authority, and execution-order authority |
-| loci/edge/debug | `lar:///ha.ka.ba/loci/edge/debug` | debug edge kānāwai (law), observation authority, and hidden-edge illumination authority |
+| loci | `lar:///ha.ka.ba/pono/loci` | lar: URI routing derivation algorithm, meme-type prefix table, carrier coherence, MCP-resolution roadmap, address stability, and canon promotion kānāwai (law) |
+| iam | `lar:///ha.ka.ba/pono/loci/iam` | root `#iam` metadata kānāwai (law), surviving field-set authority, and reduction charter |
+| file-path | `lar:///ha.ka.ba/pono/loci/iam/file-path` | `file-path` key kānāwai (law), form classifier, and URI-agreement procedure |
+| loci/edge | `lar:///ha.ka.ba/pono/loci/edge` | root edge kānāwai (law), family authority, lifecycle authority, and migration target beyond vague dependency claims |
+| loci/edge/proposition | `lar:///ha.ka.ba/pono/loci/edge/proposition` | semantic edge kānāwai (law), proposition authority, and ontology-link bridge |
+| loci/edge/template | `lar:///ha.ka.ba/pono/loci/edge/template` | template edge sigil kānāwai (law), slot-contract authority, and kahea binding authority |
+| loci/edge/instance | `lar:///ha.ka.ba/pono/loci/edge/instance` | concrete edge instance kānāwai (law), bound-object authority, and override discipline |
+| loci/edge/control | `lar:///ha.ka.ba/pono/loci/edge/control` | control-flow edge kānāwai (law), branch authority, and execution-order authority |
+| loci/edge/debug | `lar:///ha.ka.ba/pono/loci/edge/debug` | debug edge kānāwai (law), observation authority, and hidden-edge illumination authority |
 
-The `loci/edge` branch now seeds explicit edge law under `lar:///ha.ka.ba/loci/edge`. This first wave covers root edge law, semantic proposition, template sigils, concrete instances, control flow, and debug illumination. Dataflow, message, constraint, and trace remain second-wave work.
+The `loci/edge` branch now seeds explicit edge law under `lar:///ha.ka.ba/pono/loci/edge`. This first wave covers root edge law, semantic proposition, template sigils, concrete instances, control flow, and debug illumination. Dataflow, message, constraint, and trace remain second-wave work.
 
 The `guest-grammar` and `x-tiddlywiki-filter` kānāwai (law) memes carry a canonical host-facing term shift: `tiddler` → `meme`, `currentTiddler` → `+currentMeme`. Host-facing examples and law statements throughout the stack should reflect this shift. Imported lineage terms may appear only in visibly quoted prior-art notes.
 
 A **loci meme** occupies the stable `lar:///ha.ka.ba/*` tagspace with a locked address, a stable `lar:` URI. Loci memes carry four canonical rating fields in `#iam` — `manaoio`, `confidence`, `mana`, and `manao` — with `content-type` above `version`, `manaoio` and `confidence` kept in the structure ahu, `mana` and `manao` opened by the detail ahu after the close/reopen marker, and the adjacent `register` agent-operator surface-texture key immediately below `meme-type`. They reach prospective-canon status (`[CS]`) before an admin or operator may move them to `[C]` canon status. Other meme types may drift their path-root address (what3words-style path root section). The loci kānāwai (law) governs `lar:` URI routing derivation, carrier coherence, address stability, canon promotion, and the research roadmap toward live MCP-backed resolution.
 
-**Lifecycle Note:** All meme law in this system now follows the five-bucket lifecycle: noise → data → meme → typed meme → canon typed meme. Here `data` names structured language an AI can use without the memetic wrappers. Types remain composable rather than mutually exclusive, and `loci` names the stable-address branch for carriers under `lar:///ha.ka.ba/**`. See `lar:///ha.ka.ba/loci#promotion-path` and `lar:///ha.ka.ba/meme#rating-targets` for canonical lifecycle and rating details.
+**Lifecycle Note:** All meme law in this system now follows the five-bucket lifecycle: noise → data → meme → typed meme → canon typed meme. Here `data` names structured language an AI can use without the memetic wrappers. Types remain composable rather than mutually exclusive, and `loci` names the stable-address branch for carriers under `lar:///ha.ka.ba/**`. See `lar:///ha.ka.ba/pono/loci#promotion-path` and `lar:///ha.ka.ba/meme#rating-targets` for canonical lifecycle and rating details.
 
-See `lar:///ha.ka.ba/loci#derivation-algorithm` for the current local path-derivation procedure and `lar:///ha.ka.ba/loci#mcp-resolution-roadmap` for the open resolver roadmap. See `lar:///ha.ka.ba/pono/memetic-wikitext#meme-ratings` for the full ontological account of the four canonical rating fields plus `register` surface texture, and `lar:///ha.ka.ba/pono/memetic-wikitext#meme-confidence` for the five-band confidence scale.
+See `lar:///ha.ka.ba/pono/loci#derivation-algorithm` for the current local path-derivation procedure and `lar:///ha.ka.ba/pono/loci#mcp-resolution-roadmap` for the open resolver roadmap. See `lar:///ha.ka.ba/pono/memetic-wikitext#meme-ratings` for the full ontological account of the four canonical rating fields plus `register` surface texture, and `lar:///ha.ka.ba/pono/memetic-wikitext#meme-confidence` for the five-band confidence scale.
 
 A kānāwai (law) meme counts as registered here when it depends on `lar:///ha.ka.ba/pono/memetic-wikitext` and carries a stable address.
 

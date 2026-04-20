@@ -20,7 +20,9 @@ confidence = 0.73
 # <<~ ahu #iam-ka "detail" >>
 mana = 0.71
 manao = 0.77
-meme-type = "skill loci"
+implements = [
+  "lar:///ha.ka.ba/pono/loci/v0.1"
+]
 register = "SC"
 role = "invariant-meme skill, conformance checker, and sidecar splitter"
 covers = [

@@ -16,7 +16,9 @@ confidence = 0.69
 # <<~ ahu #iam-ka "detail" >>
 mana = 0.75
 manao = 0.83
-implements = "lar:///ha.ka.ba/loci/v0.1"
+implements = [
+  "lar:///ha.ka.ba/pono/loci/v0.1"
+]
 register = "CS"
 role = "semantic edge kānāwai (law), proposition authority, and ontology-link bridge"
 link-phrase-required = true
@@ -33,7 +35,7 @@ ontology-backed = true
 
 A self-describing kānāwai (law) for semantic and ontological edges.
 
-<<~ loulou lar:///ha.ka.ba/loci/edge/proposition >>
+<<~ loulou lar:///ha.ka.ba/pono/loci/edge/proposition >>
 
 This meme governs edges that say something true, false, contrastive, or taxonomic about the relation between two endpoints. It gives the graph a readable linking phrase instead of leaving relation meaning trapped in prose.
 
@@ -87,14 +89,14 @@ Orient turns the claim into a proposition edge with a visible linking phrase.
 
 ```toml
 kind = "proposition"
-from = "lar:///ha.ka.ba/loci/iam"
-to = "lar:///ha.ka.ba/loci/iam/file-path"
+from = "lar:///ha.ka.ba/pono/loci/iam"
+to = "lar:///ha.ka.ba/pono/loci/iam/file-path"
 label = "governs"
 relation-kind = "ontology"
 direction = "forward"
 polarity = "affirming"
 confidence = 0.91
-ontology-source = "lar:///ha.ka.ba/loci"
+ontology-source = "lar:///ha.ka.ba/pono/loci"
 render-mode = "inline-label"
 status = "declared"
 ```
@@ -167,9 +169,9 @@ If a relation phrase repeats often, later template law may promote it into a reu
 
 First semantic seeds should focus on high-yield laws:
 
-- `lar:///ha.ka.ba/loci/iam` `governs` `lar:///ha.ka.ba/loci/iam/file-path`
-- `lar:///ha.ka.ba/loci/edge` `contains-family` `lar:///ha.ka.ba/loci/edge/proposition`
-- `lar:///ha.ka.ba/loci/edge/template` `binds` `lar:///ha.ka.ba/loci/edge/instance`
+- `lar:///ha.ka.ba/pono/loci/iam` `governs` `lar:///ha.ka.ba/pono/loci/iam/file-path`
+- `lar:///ha.ka.ba/pono/loci/edge` `contains-family` `lar:///ha.ka.ba/pono/loci/edge/proposition`
+- `lar:///ha.ka.ba/pono/loci/edge/template` `binds` `lar:///ha.ka.ba/pono/loci/edge/instance`
 
 Those first edges give the graph a readable law skeleton without waiting for every later family.
 
@@ -211,8 +213,8 @@ Proposition closes the semantic-edge stream here.
 
 ## Edges
 
-- `lar:///ha.ka.ba/loci/edge`
-- `lar:///ha.ka.ba/loci`
+- `lar:///ha.ka.ba/pono/loci/edge`
+- `lar:///ha.ka.ba/pono/loci`
 - `lar:///ha.ka.ba/meme`
 
 <<~/ahu >>

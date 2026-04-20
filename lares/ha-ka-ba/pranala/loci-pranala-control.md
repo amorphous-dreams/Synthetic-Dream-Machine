@@ -16,7 +16,9 @@ confidence = 0.69
 # <<~ ahu #iam-ka "detail" >>
 mana = 0.77
 manao = 0.84
-implements = "lar:///ha.ka.ba/loci/v0.1"
+implements = [
+  "lar:///ha.ka.ba/pono/loci/v0.1"
+]
 register = "CS"
 role = "control-flow edge kānāwai (law), branch authority, and execution-order authority"
 # <<~/ahu >>
@@ -31,7 +33,7 @@ role = "control-flow edge kānāwai (law), branch authority, and execution-order
 
 A self-describing kānāwai (law) for control-flow edges.
 
-<<~ loulou lar:///ha.ka.ba/loci/edge/control >>
+<<~ loulou lar:///ha.ka.ba/pono/loci/edge/control >>
 
 Control edges carry execution order. They name which pulse, branch, outlet, or gate moves next. They should not pretend to carry semantic truth or bulk data at the same time.
 
@@ -94,8 +96,8 @@ Branch meaning usually belongs to the node or gate. The edge should carry the ou
 
 ```toml
 kind = "control"
-from = "lar:///ha.ka.ba/loci/edge/template"
-to = "lar:///ha.ka.ba/loci/edge/instance"
+from = "lar:///ha.ka.ba/pono/loci/edge/template"
+to = "lar:///ha.ka.ba/pono/loci/edge/instance"
 label = "binds-next"
 direction = "forward"
 branch-label = "then"
@@ -194,9 +196,9 @@ Control closes the execution-edge stream here.
 
 ## Edges
 
-- `lar:///ha.ka.ba/loci/edge`
-- `lar:///ha.ka.ba/loci/edge/template`
-- `lar:///ha.ka.ba/loci/edge/instance`
+- `lar:///ha.ka.ba/pono/loci/edge`
+- `lar:///ha.ka.ba/pono/loci/edge/template`
+- `lar:///ha.ka.ba/pono/loci/edge/instance`
 
 <<~/ahu >>
 

@@ -15,7 +15,9 @@ confidence = 0.58
 # <<~ ahu #iam-ka "detail" >>
 mana = 0.56
 manao = 0.62
-implements = "lar:///ha.ka.ba/loci/v0.1"
+implements = [
+  "lar:///ha.ka.ba/pono/loci/v0.1"
+]
 register = "S"
 role = "guest-grammar admission kānāwai (law), invocation-boundary kānāwai (law), and host-guest ownership contract"
 # <<~/ahu >>

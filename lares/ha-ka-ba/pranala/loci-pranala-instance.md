@@ -16,7 +16,9 @@ confidence = 0.68
 # <<~ ahu #iam-ka "detail" >>
 mana = 0.76
 manao = 0.82
-implements = "lar:///ha.ka.ba/loci/v0.1"
+implements = [
+  "lar:///ha.ka.ba/pono/loci/v0.1"
+]
 register = "CS"
 role = "concrete edge instance kānāwai (law), bound-object authority, and override discipline"
 instance-states = ["declared", "bound", "observed", "stale"]
@@ -81,10 +83,10 @@ Orient binds the edge into a stable object surface.
 ### Instance Shape
 
 ```toml
-template = "lar:///ha.ka.ba/loci/edge/template"
+template = "lar:///ha.ka.ba/pono/loci/edge/template"
 kind = "proposition"
-from = "lar:///ha.ka.ba/loci/iam"
-to = "lar:///ha.ka.ba/loci/iam/file-path"
+from = "lar:///ha.ka.ba/pono/loci/iam"
+to = "lar:///ha.ka.ba/pono/loci/iam/file-path"
 label = "governs"
 direction = "forward"
 polarity = "affirming"
@@ -190,9 +192,9 @@ Instance closes the bound-edge-object stream here.
 
 ## Edges
 
-- `lar:///ha.ka.ba/loci/edge`
-- `lar:///ha.ka.ba/loci/edge/template`
-- `lar:///ha.ka.ba/loci`
+- `lar:///ha.ka.ba/pono/loci/edge`
+- `lar:///ha.ka.ba/pono/loci/edge/template`
+- `lar:///ha.ka.ba/pono/loci`
 
 <<~/ahu >>
 

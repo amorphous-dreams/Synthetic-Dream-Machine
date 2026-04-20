@@ -16,7 +16,9 @@ confidence = 0.69
 # <<~ ahu #iam-ka "detail" >>
 mana = 0.78
 manao = 0.85
-implements = "lar:///ha.ka.ba/loci/v0.1"
+implements = [
+  "lar:///ha.ka.ba/pono/loci/v0.1"
+]
 register = "CS"
 role = "debug edge kānāwai (law), observation authority, and hidden-edge illumination authority"
 visibility-modes = ["inline", "overlay", "trace-only", "operator-only"]
@@ -32,7 +34,7 @@ visibility-modes = ["inline", "overlay", "trace-only", "operator-only"]
 
 A self-describing kānāwai (law) for debug and observation edges.
 
-<<~ loulou lar:///ha.ka.ba/loci/edge/debug >>
+<<~ loulou lar:///ha.ka.ba/pono/loci/edge/debug >>
 
 Debug edges surface what the graph would otherwise hide. They let an operator, tool, or lawful observer reveal confidence seams, runtime crossings, missing branches, and inferred relations without pretending those reveals belong to the base ontology itself.
 
@@ -96,9 +98,9 @@ Choose the narrowest mode that tells the truth.
 ```toml
 kind = "debug"
 from = "lar:///todo/DreamNet-MemeWiki"
-to = "lar:///ha.ka.ba/loci/edge/instance"
+to = "lar:///ha.ka.ba/pono/loci/edge/instance"
 observer = "operator"
-observes = "lar:///ha.ka.ba/loci/edge/instance"
+observes = "lar:///ha.ka.ba/pono/loci/edge/instance"
 reveals = "hidden dependency seam between summary and bound edge"
 phase = "hooko"
 visibility = "overlay"
@@ -186,9 +188,9 @@ Debug closes the observation-edge stream here.
 
 ## Edges
 
-- `lar:///ha.ka.ba/loci/edge`
-- `lar:///ha.ka.ba/loci/edge/instance`
-- `lar:///ha.ka.ba/loci`
+- `lar:///ha.ka.ba/pono/loci/edge`
+- `lar:///ha.ka.ba/pono/loci/edge/instance`
+- `lar:///ha.ka.ba/pono/loci`
 
 <<~/ahu >>
 

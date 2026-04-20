@@ -46,7 +46,9 @@ confidence = 0.75
 # <<~ ahu #iam-ka "detail" >>
 mana       = 0.90
 manao      = 0.80
-meme-type  = "invariant"
+implements = [
+  "lar:///ha.ka.ba/pono/invariant-meme/v0.1"
+]
 register   = "CS"
 role       = "narrative startup, threshold surface, AGENTS"
 boot-order = -1

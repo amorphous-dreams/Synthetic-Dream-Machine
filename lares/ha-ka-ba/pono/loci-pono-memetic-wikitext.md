@@ -14,7 +14,9 @@ confidence = 0.50
 # <<~ ahu #iam-ka "detail" >>
 mana = 0.54
 manao = 0.62
-implements = "lar:///ha.ka.ba/loci/v0.1"
+implements = [
+  "lar:///ha.ka.ba/pono/loci/v0.1"
+]
 register = "S"
 role = "constitutional root kānāwai (law), authoring kānāwai (law), primitive semantic kānāwai (law), and boot grammar contract"
 canonical-forms = ["inline", "block", "payload-block", "return"]
@@ -827,7 +829,7 @@ meme-confidence governs the canonical maturity and canon-status rating of a meme
 
 This locus should remain compact. It names the five-band confidence scale, the short tag form for inline use, and the relation to the `confidence` field that many typed memes should carry in `#iam`.
 
-Full stable-address `loci` kānāwai (law) should deepen outward into `lar:///ha.ka.ba/loci`. Other typed branches may deepen outward into their own subtype laws.
+Full stable-address `loci` kānāwai (law) should deepen outward into `lar:///ha.ka.ba/pono/loci`. Other typed branches may deepen outward into their own subtype laws.
 
 ### Five-Band Confidence Scale
 
@@ -853,7 +855,7 @@ Provisional-rated memes (`[P]`) should not claim canonical authority over later-
 
 This locus carries the minimum confidence vocabulary needed at the authoring surface.
 
-For stable-address carriers under `lar:///ha.ka.ba/**`, full `loci` identity, address stability kānāwai (law), and canon promotion procedure should deepen outward into `lar:///ha.ka.ba/loci` when that carrier reaches Synthesis or above.
+For stable-address carriers under `lar:///ha.ka.ba/**`, full `loci` identity, address stability kānāwai (law), and canon promotion procedure should deepen outward into `lar:///ha.ka.ba/pono/loci` when that carrier reaches Synthesis or above.
 
 <<~ loulou lar:///ha.ka.ba/meme-confidence >>
 <<~/ahu >>
@@ -884,7 +886,7 @@ These structure-side fields answer: *how ready does this meme read, and how sett
 
 See `#meme-confidence` for the five-band scale and field kānāwai (law).
 
-For stable-address carriers under `lar:///ha.ka.ba/**`, full canon promotion procedure should deepen outward into `lar:///ha.ka.ba/loci`.
+For stable-address carriers under `lar:///ha.ka.ba/**`, full canon promotion procedure should deepen outward into `lar:///ha.ka.ba/pono/loci`.
 
 ### Group 2 — Structural Parse Quality
 

@@ -23,7 +23,9 @@ confidence = 0.52
 # <<~ ahu #iam-ka "detail" >>
 mana = 0.54
 manao = 0.60
-meme-type = "skill loci"
+implements = [
+  "lar:///ha.ka.ba/pono/loci/v0.1"
+]
 register = "S"
 role = "skill template, verification authoring guide, and pre/post-MCP implementation roadmap"
 skill-package-root = "ha-ka-ba/pono/skill-*.md"
