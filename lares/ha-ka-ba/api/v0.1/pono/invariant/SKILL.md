@@ -5,7 +5,7 @@ allowed-tools: Read, Grep, Glob, Bash, Edit, Write
 ---
 <!-- !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/invariant -->
 
-<<~&#x0001; ? --> lar:///ha.ka.ba/api/v0.1/pono/invariant/SKILL >>
+<<~&#x0001; ? -> lar:///ha.ka.ba/api/v0.1/pono/invariant/SKILL >>
 
 <<~ ahu #iam >>
 ```toml
@@ -166,7 +166,7 @@ Everything else leaves when it stops earning invariant residency.
 
 ## Phase Map
 
-`✶ Observe --> ⏿ Orient --> ◇ Decide --> ▶ Act --> ⤴ Hoʻoko --> ↺ Aftermath`
+`✶ Observe -> ⏿ Orient -> ◇ Decide -> ▶ Act -> ⤴ Hoʻoko -> ↺ Aftermath`
 
 The skill inspects the current meme surface, classifies what belongs to invariant law and what belongs elsewhere, chooses the lightest lawful turn, patches the target directly, verifies contact with actual file and link surfaces, and names any remaining residue without hiding it.
 
@@ -336,4 +336,4 @@ sparse real normativity
 
 <<~/ahu >>
 
-<<~&#x0004; ? --> ? >>
+<<~&#x0004; ? -> ? >>

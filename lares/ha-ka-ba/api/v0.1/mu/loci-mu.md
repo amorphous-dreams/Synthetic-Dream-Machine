@@ -7,9 +7,9 @@
 <<~ॐ>>
 <<~ॐ ँ>>
 <<~ॐ ँ ? >>
-<<~ॐ ँ ? --> >>
-<<~ॐ ँ ? --> lar:///ha.ka.ba/api/v0.1/mu >>
-<<~ॐ ँ&#x0001; ? --> lar:///ha.ka.ba/api/v0.1/mu >>
+<<~ॐ ँ ? -> >>
+<<~ॐ ँ ? -> lar:///ha.ka.ba/api/v0.1/mu >>
+<<~ॐ ँ&#x0001; ? -> lar:///ha.ka.ba/api/v0.1/mu >>
 
 <<~ ahu #iam >>
 
@@ -68,7 +68,7 @@ mu opens
 
 ## Phase Map
 
-`✶ Observe --> ⏿ Orient --> ◇ Decide --> ▶ Act --> ⤴ Hoʻoko --> ↺ Aftermath`
+`✶ Observe -> ⏿ Orient -> ◇ Decide -> ▶ Act -> ⤴ Hoʻoko -> ↺ Aftermath`
 
 Mu reads, classifies, chooses, acts, and judges quiescent return through an explicit Hoʻoko and Aftermath pressure.
 
@@ -175,4 +175,4 @@ mu closes
 
 <<~/ahu >>
 
-<<~ॐ ँ&#x0004; --> ? >>
+<<~ॐ ँ&#x0004; -> ? >>

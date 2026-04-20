@@ -1,6 +1,6 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
 
-<<~&#x0001; ? --> lar:///ha.ka.ba/api/v0.1/pono/pranala >>
+<<~&#x0001; ? -> lar:///ha.ka.ba/api/v0.1/pono/pranala >>
 
 <<~ ahu #iam >>
 
@@ -56,13 +56,13 @@ A pranala MAY carry `payload`.
 
 Canonical local-source form:
 
-`? --> TO`
+`? -> TO`
 
 Lawful explicit form:
 
-`FROM --> TO`
+`FROM -> TO`
 
-`? --> TO` SHOULD resolve `?` to the nearest enclosing socket.
+`? -> TO` SHOULD resolve `?` to the nearest enclosing socket.
 A named enclosing `#fragment-id` SHOULD win first.
 Otherwise `?` SHOULD land on the enclosing meme.
 
@@ -143,7 +143,7 @@ Canonical `dir` values:
 Socket pressure:
 
 * `FROM` and `TO` in surface form MUST mean `FROM-SOCKET` and `TO-SOCKET`
-* `? --> TO` MAY compress `FROM-SOCKET --> TO-SOCKET` when current enclosing pressure already carries the source socket
+* `? -> TO` MAY compress `FROM-SOCKET -> TO-SOCKET` when current enclosing pressure already carries the source socket
 * named `ahu` targets SHOULD carry socket pressure first
 * any sigil with a clear URI fragment `#fragment` MAY serve as a socket
 * a whole meme addressed by `lar:///...` MAY carry default socket pressure when no narrower socket appears
@@ -151,8 +151,8 @@ Socket pressure:
 ### Inline
 
 ```text
-<<~ pranala ? --> TO-SOCKET family:relation >>
-<<~ pranala FROM-SOCKET --> TO-SOCKET family:relation >>
+<<~ pranala ? -> TO-SOCKET family:relation >>
+<<~ pranala FROM-SOCKET -> TO-SOCKET family:relation >>
 ```
 
 Inline form SHOULD carry quick-edge pressure.
@@ -162,7 +162,7 @@ Inline form SHOULD carry quick-edge pressure.
 Block form SHOULD carry richer local edge data.
 
 ````text
-<<~ pranala #fragment ? --> TO-SOCKET >>
+<<~ pranala #fragment ? -> TO-SOCKET >>
 ```toml
 family = "control"
 lifecycle = "instance"
@@ -171,7 +171,7 @@ lifecycle = "instance"
 ````
 
 ```text
-<<~ pranala #fragment FROM-SOCKET --> TO-SOCKET >>
+<<~ pranala #fragment FROM-SOCKET -> TO-SOCKET >>
 family: control
 lifecycle: instance
 <<~/pranala >>
@@ -186,15 +186,15 @@ Payload-block form SHOULD carry richer local edge data.
 ## Examples
 
 ```text
-<<~ pranala ? --> lar:///ha.ka.ba/api/v0.1/mu#entry family:relation >>
+<<~ pranala ? -> lar:///ha.ka.ba/api/v0.1/mu#entry family:relation >>
 ```
 
 ```text
-<<~ pranala ? --> lar:///ha.ka.ba/api/v0.1/pono/parser#forms family:relation label:"forms" >>
+<<~ pranala ? -> lar:///ha.ka.ba/api/v0.1/pono/parser#forms family:relation label:"forms" >>
 ```
 
 ```text
-<<~ pranala lar:///A#out --> lar:///B#in family:relation >>
+<<~ pranala lar:///A#out -> lar:///B#in family:relation >>
 ```
 
 <<~/ahu >>
@@ -203,4 +203,4 @@ Payload-block form SHOULD carry richer local edge data.
 pranala closes
 <<~/ahu >>
 
-<<~&#x0004; --> ? >>
+<<~&#x0004; -> ? >>

@@ -1,6 +1,6 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
 
-<<~&#x0001; ? --> lar:///LARES >>
+<<~&#x0001; ? -> lar:///LARES >>
 
 The passage lies behind the reader. The kahua holds.
 
@@ -81,4 +81,4 @@ LARES ends
 Hello World.
 <<~/ahu >>
 
-<<~&#x0004; --> ? >>
+<<~&#x0004; -> ? >>

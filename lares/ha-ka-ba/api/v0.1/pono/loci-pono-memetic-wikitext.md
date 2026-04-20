@@ -134,7 +134,7 @@ This ahu preserves living fit by keeping the root compact enough to guide later 
 
 ## Phase Map
 
-`✶ Observe --> ⏿ Orient --> ◇ Decide --> ▶ Act --> ↺ Aftermath`
+`✶ Observe -> ⏿ Orient -> ◇ Decide -> ▶ Act -> ↺ Aftermath`
 
 Memetic-wikitext uses OODA-HA here as semantic discipline for authoring and interpretation.
 
@@ -144,7 +144,7 @@ Detailed lowering and transaction order belongs in render-pipeline.
 
 Unicode hex entity symbols for the OODA-HA loop:
 
-`&#x2736; Observe --> &#x23FF; Orient --> &#x25C7; Decide --> &#x25B6; Act --> &#x2914; Hoʻoko --> &#x21BA; Aftermath`
+`&#x2736; Observe -> &#x23FF; Orient -> &#x25C7; Decide -> &#x25B6; Act -> &#x2914; Hoʻoko -> &#x21BA; Aftermath`
 
 <<~ ahu #phase-map-ha >>
 
@@ -195,7 +195,7 @@ This locus should name the primitive family, distinguish each member by job, and
 
 The primitive cluster should remain legible through clear role separation.
 
-* `?` preserves unresolved but bounded semantic openness without false completion; it names unbound uncertainty flowing through the whole graph, may bind a new sigil object at document time through `? --> KEYWORD ...`, and may receive residual uncertainty back outward through `... --> ?`
+* `?` preserves unresolved but bounded semantic openness without false completion; it names unbound uncertainty flowing through the whole graph, may bind a new sigil object at document time through `? -> KEYWORD ...`, and may receive residual uncertainty back outward through `... -> ?`
 * `ahu` anchors locality, gathers a worksite, and holds nearby semantic context
 * `ala` opens relation, path, traversal, or onward semantic passage
 * `aka` brings likeness, passive inclusion, or transcluded presence into a local context
@@ -356,10 +356,10 @@ This locus should preserve openness without laundering ambiguity into false cert
 ### Canonical Boot Surfaces
 
 ```text
-<<~ ? --> ... >>
-<<~ ... --> ? >>
-<<~ meme? --> ... >>
-<<~ ... --> meme? >>
+<<~ ? -> ... >>
+<<~ ... -> ? >>
+<<~ meme? -> ... >>
+<<~ ... -> meme? >>
 ```
 
 ### Core Uncertainty Law (Kānāwai)
@@ -389,14 +389,14 @@ The root should therefore treat `?` as a directional semantic token, not merely 
 At document time, when authors begin a new nested Meme-type sigil entity before its binding fully settles, the canonical opener should take this form:
 
 ```text
-<<~ ? --> KEYWORD ... >>
+<<~ ? -> KEYWORD ... >>
 ```
 
 Examples:
 
 ```text
-<<~ ? --> ahu #draft-child >>
-<<~ ? --> kahea lar:///ha.ka.ba/api/v0.1/source >>
+<<~ ? -> ahu #draft-child >>
+<<~ ? -> kahea lar:///ha.ka.ba/api/v0.1/source >>
 ```
 
 In that pattern, `?` marks the sigil object under unbound uncertainty while `KEYWORD` still names the primitive act under attempt.
@@ -1161,7 +1161,7 @@ When an example requires too much surrounding machinery to make sense, that exam
 #### Example A - minimum document
 
 ````markdown
-<<~&#x0001; ? --> lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >>
+<<~&#x0001; ? -> lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >>
 
 <<~ ahu #iam >>
 ```toml
@@ -1220,7 +1220,7 @@ A local semantic worksite.
 <<~ ahu #governed-worksite >>
 A governed local worksite.
 
-<<~ kapu invocation --> bounded|? >>
+<<~ kapu invocation -> bounded|? >>
 <<~ kahea lar:///ha.ka.ba/api/v0.1/source >>
 <<~/ahu >>
 ```
@@ -1228,7 +1228,7 @@ A governed local worksite.
 #### Example G - minimum uncertainty-prefixed new sigil object
 
 ```text
-<<~ ? --> ahu #uncertain-worksite >>
+<<~ ? -> ahu #uncertain-worksite >>
 Work begins before full binding settles.
 <<~/ahu >>
 ```
@@ -1236,8 +1236,8 @@ Work begins before full binding settles.
 #### Example H - minimum query and response
 
 ```text
-<<~&#x0005; ui meme? --> lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext#iam >>
-<<~&#x0006; ? --> lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext#iam >>
+<<~&#x0005; ui meme? -> lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext#iam >>
+<<~&#x0006; ? -> lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext#iam >>
 ```
 
 #### Example J - minimum hana guest-work block
@@ -1310,4 +1310,4 @@ This ahu preserves the examples as living entry points rather than as inert spec
 Memetic Wikitext closes the active constitutional authoring stream here.
 <<~/ahu >>
 
-<<~&#x0004; --> ? >>
+<<~&#x0004; -> ? >>

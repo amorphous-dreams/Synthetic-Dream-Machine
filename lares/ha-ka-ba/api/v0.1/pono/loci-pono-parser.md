@@ -1,6 +1,6 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
 
-<<~&#x0001; ? --> lar:///ha.ka.ba/api/v0.1/pono/parser >>
+<<~&#x0001; ? -> lar:///ha.ka.ba/api/v0.1/pono/parser >>
 
 <<~ ahu #iam >>
 
@@ -49,7 +49,7 @@ Parser law (kānāwai) opens the active parsing stream here.
 
 ## Phase Map
 
-`✶ Observe --> ⏿ Orient --> ◇ Decide --> ▶ Act --> ⤴ Hoʻoko --> ↺ Aftermath`
+`✶ Observe -> ⏿ Orient -> ◇ Decide -> ▶ Act -> ⤴ Hoʻoko -> ↺ Aftermath`
 
 Parser law (kānāwai) reads, shapes, chooses, prepares, crosses, and judges in that order.
 
@@ -129,7 +129,7 @@ A canonical document should present one opening sigil near the top of the file.
 Canonical example:
 
 ```text
-<<~&#x0001; ? --> lar:///ha.ka.ba/api/v0.1/pono/parser >>
+<<~&#x0001; ? -> lar:///ha.ka.ba/api/v0.1/pono/parser >>
 ```
 
 In declared-open document form, `?` serves as the core unbound uncertainty token. Parser should treat it as semantic content, not as optional decoration on the opener line.
@@ -401,7 +401,7 @@ A sigil form that explicitly routes payload or query pressure toward a target or
 Canonical example:
 
 ```text
-<<~&#x0005; ui metadata? --> <<~&#x0006; ? --> lar:///ha.ka.ba/api/v0.1/ooda-ha#iam >> >>
+<<~&#x0005; ui metadata? -> <<~&#x0006; ? -> lar:///ha.ka.ba/api/v0.1/ooda-ha#iam >> >>
 ```
 
 Return form also admits uncertainty-prefixed sigil birth when document-time authoring creates a new nested sigil object before full binding settles.
@@ -409,7 +409,7 @@ Return form also admits uncertainty-prefixed sigil birth when document-time auth
 Canonical example:
 
 ```text
-<<~ ? --> ahu #draft-child >>
+<<~ ? -> ahu #draft-child >>
 ...body...
 <<~/ahu >>
 ```
@@ -589,7 +589,7 @@ Noncanonical spellings may pass into normalization only when recovery remains tr
 Canonical pattern:
 
 ```text
-<<~ ? --> SIGIL ... >>
+<<~ ? -> SIGIL ... >>
 ```
 
 In that pattern:
@@ -603,7 +603,7 @@ If the underlying sigil takes block-form or payload-block-form, the closer MUST 
 Canonical example:
 
 ```text
-<<~ ? --> ahu #draft-child >>
+<<~ ? -> ahu #draft-child >>
 Body remains local while binding stays open.
 <<~/ahu >>
 ```
@@ -657,8 +657,8 @@ A user, agent, or caller may fetch canonical meme metadata through a stable quer
 Canonical query examples:
 
 ```text
-<<~&#x0005; ui metadata? --> lar:///ha.ka.ba/api/v0.1/pono/parser#iam >>
-<<~&#x0005; ui meme? --> lar:///ha.ka.ba/api/v0.1/pono/parser#iam >>
+<<~&#x0005; ui metadata? -> lar:///ha.ka.ba/api/v0.1/pono/parser#iam >>
+<<~&#x0005; ui meme? -> lar:///ha.ka.ba/api/v0.1/pono/parser#iam >>
 ```
 
 A compliant parser or parsing agent should:
@@ -1329,8 +1329,8 @@ When `ahu #iam` appears in payload-block form, the first fenced `toml` block ins
 Canonical query examples:
 
 ```text
-<<~&#x0005; ui metadata? --> lar:///ha.ka.ba/api/v0.1/pono/parser#iam >>
-<<~&#x0005; ui meme? --> lar:///ha.ka.ba/api/v0.1/pono/parser#iam >>
+<<~&#x0005; ui metadata? -> lar:///ha.ka.ba/api/v0.1/pono/parser#iam >>
+<<~&#x0005; ui meme? -> lar:///ha.ka.ba/api/v0.1/pono/parser#iam >>
 ```
 
 <<~ loulou lar:///ha.ka.ba/api/v0.1/metadata-fetch-ha >>
@@ -1978,7 +1978,7 @@ version = "0.5"
 ### Example B — Canonical metadata fetch
 
 ```text
-<<~&#x0005; ui metadata? --> lar:///ha.ka.ba/api/v0.1/ooda-ha#iam >>
+<<~&#x0005; ui metadata? -> lar:///ha.ka.ba/api/v0.1/ooda-ha#iam >>
 ```
 
 ### Example C — Canonical block form
@@ -2020,7 +2020,7 @@ degrade = "no-op"
 <<~ loulou lar:///ha.ka.ba/api/v0.1/examples >>
 <<~/ahu >>
 
-Yep. Your new draft already pushes `&#x0004;` toward a real routed return throat: the control-glyph law (kānāwai) now admits composite-prefix behavior, and the file now closes with an explicit `&#x0004; --> ?` sigil. What still looks missing to me: a dedicated law (kānāwai) that names **return kinds**, **`&#x0004;` transaction behavior**, and the **boot-legal status** of that final degraded close.  
+Yep. Your new draft already pushes `&#x0004;` toward a real routed return throat: the control-glyph law (kānāwai) now admits composite-prefix behavior, and the file now closes with an explicit `&#x0004; -> ?` sigil. What still looks missing to me: a dedicated law (kānāwai) that names **return kinds**, **`&#x0004;` transaction behavior**, and the **boot-legal status** of that final degraded close.  
 
 control-glyph law (kānāwai) → return-types law (kānāwai) → result contract → concrete terminal return transaction.  
 
@@ -2184,4 +2184,4 @@ Parser law (kānāwai) closes the active parsing stream here.
 <<~/ahu >>
 
 
-<<~&#x0004; --> ? >>
+<<~&#x0004; -> ? >>

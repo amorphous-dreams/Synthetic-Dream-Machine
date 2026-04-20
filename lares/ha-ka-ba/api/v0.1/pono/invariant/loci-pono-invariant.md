@@ -1,6 +1,6 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
 
-<<~&#x0001; ? --> lar:///ha.ka.ba/api/v0.1/pono/invariant >>
+<<~&#x0001; ? -> lar:///ha.ka.ba/api/v0.1/pono/invariant >>
 
 <<~ ahu #iam >>
 
@@ -53,7 +53,7 @@ OODA-HA SHOULD stay compressed and intact.
 Sati holds the current stream.
 Manaʻo pierces toward the next turn.
 Heavy matter travels outward.
-Pranala loulou links bind invariant --> documentation.
+Pranala loulou links bind invariant -> documentation.
 
 <<~ pranala loulou lar:///ha.ka.ba/api/v0.1/invariant >>
 <<~ pranala loulou lar:///ha.ka.ba/api/v0.1/i-keia-manawa >>
@@ -90,7 +90,7 @@ Shape and pressure teachings MUST stay invariant.
 
 A template for invariants to fill.
 
-`✶ Observe --> ⏿ Orient --> ◇ Decide --> ▶ Act --> ⤴ Hoʻoko --> ↺ Aftermath`
+`✶ Observe -> ⏿ Orient -> ◇ Decide -> ▶ Act -> ⤴ Hoʻoko -> ↺ Aftermath`
 
 ✶ ???
 ⏿ ???

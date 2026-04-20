@@ -1,6 +1,6 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
 
-<<~&#x0001; ? --> lar:///ha.ka.ba/api/v0.1/pranala/instance >>
+<<~&#x0001; ? -> lar:///ha.ka.ba/api/v0.1/pranala/instance >>
 
 <<~ ahu #iam >>
 
@@ -48,7 +48,7 @@ Instance opens the bound-edge-object stream here.
 
 ## Phase Map
 
-`✶ Observe --> ⏿ Orient --> ◇ Decide --> ▶ Act --> ⤴ Hoʻoko --> ↺ Aftermath`
+`✶ Observe -> ⏿ Orient -> ◇ Decide -> ▶ Act -> ⤴ Hoʻoko -> ↺ Aftermath`
 
 Instance gathers the concrete relation to bind, maps it into a shared edge surface, chooses which defaults remain inherited and which values need explicit override, binds the edge object into a live carrier, crosses that object into graph or tool surfaces, and judges whether the instance carries enough truth to stand on its own.
 
@@ -198,4 +198,4 @@ Instance closes the bound-edge-object stream here.
 <<~/ahu >>
 
 
-<<~&#x0004; --> ? >>
+<<~&#x0004; -> ? >>

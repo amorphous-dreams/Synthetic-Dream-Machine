@@ -1,6 +1,6 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
 
-<<~&#x0001; ? --> lar:///ha.ka.ba/api/v0.1/pono/loci/iam/file-path >>
+<<~&#x0001; ? -> lar:///ha.ka.ba/api/v0.1/pono/loci/iam/file-path >>
 
 <<~ ahu #iam >>
 
@@ -44,7 +44,7 @@ file-path opens the key-authority stream here.
 
 ## Phase Map
 
-`✶ Observe --> ⏿ Orient --> ◇ Decide --> ▶ Act --> ⤴ Hoʻoko --> ↺ Aftermath`
+`✶ Observe -> ⏿ Orient -> ◇ Decide -> ▶ Act -> ⤴ Hoʻoko -> ↺ Aftermath`
 
 file-path law (kānāwai) captures the raw key value from the `#iam` block, classifies it into its canonical form and checks agreement with the `lar:` URI, decides conformance verdict and migration posture, prepares any repair guidance, crosses any migration update, and judges residue including live-resolution tension.
 
@@ -474,4 +474,4 @@ file-path closes the key-authority stream here.
 <<~/ahu >>
 
 
-<<~&#x0004; --> ? >>
+<<~&#x0004; -> ? >>

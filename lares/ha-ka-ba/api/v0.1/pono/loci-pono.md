@@ -1,6 +1,6 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
 
-<<~&#x0001; ? --> lar:///ha.ka.ba/api/v0.1/pono >>
+<<~&#x0001; ? -> lar:///ha.ka.ba/api/v0.1/pono >>
 
 <<~ ahu #iam >>
 ```toml
@@ -41,7 +41,7 @@ Pono opens the law (kānāwai) index stream here.
 
 ## Phase Map
 
-`✶ Observe --> ⏿ Orient --> ◇ Decide --> ▶ Act --> ⤴ Hoʻoko --> ↺ Aftermath`
+`✶ Observe -> ⏿ Orient -> ◇ Decide -> ▶ Act -> ⤴ Hoʻoko -> ↺ Aftermath`
 
 Pono gathers the law (kānāwai) roster, maps roles and addresses, selects the right law (kānāwai) or skill for the query, prepares an index envelope, crosses the threshold, and judges completeness.
 
@@ -170,4 +170,4 @@ Pono closes the law (kānāwai) index stream here.
 <<~/ahu >>
 
 
-<<~&#x0004; --> ? >>
+<<~&#x0004; -> ? >>

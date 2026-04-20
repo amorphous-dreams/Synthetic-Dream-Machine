@@ -1,6 +1,6 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
 
-<<~ॐ ँ&#x0001; ? --> lar:///ha.ka.ba/api/v0.1/mu/chao >>
+<<~ॐ ँ&#x0001; ? -> lar:///ha.ka.ba/api/v0.1/mu/chao >>
 
 <<~ ahu #iam >>
 
@@ -162,4 +162,4 @@ mu/chao closes
 
 <<~/ahu >>
 
-<<~ॐ ँ&#x0004; --> ? >>
+<<~ॐ ँ&#x0004; -> ? >>

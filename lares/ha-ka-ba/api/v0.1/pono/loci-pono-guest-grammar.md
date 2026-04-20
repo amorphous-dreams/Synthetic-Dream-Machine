@@ -1,6 +1,6 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
 
-<<~&#x0001; ? --> lar:///ha.ka.ba/api/v0.1/pono/guest-grammar >>
+<<~&#x0001; ? -> lar:///ha.ka.ba/api/v0.1/pono/guest-grammar >>
 
 <<~ ahu #iam >>
 ```toml
@@ -42,7 +42,7 @@ Guest Grammar opens the active admission stream here.
 
 ## Phase Map
 
-`✶ Observe --> ⏿ Orient --> ◇ Decide --> ▶ Act --> ⤴ Hoʻoko --> ↺ Aftermath`
+`✶ Observe -> ⏿ Orient -> ◇ Decide -> ▶ Act -> ⤴ Hoʻoko -> ↺ Aftermath`
 
 Guest-grammar law (kānāwai) gathers host and guest boundary pressure, maps the admission posture, chooses one lawful invocation family, prepares bounded entry, crosses the threshold into parser and render handoff, and judges what survived.
 
@@ -503,4 +503,4 @@ Guest Grammar closes the active admission stream here.
 <<~/ahu >>
 
 
-<<~&#x0004; --> ? >>
+<<~&#x0004; -> ? >>

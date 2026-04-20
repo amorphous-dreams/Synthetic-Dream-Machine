@@ -1,6 +1,6 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
 
-<<~&#x0001; ? --> lar:///AGENTS >>
+<<~&#x0001; ? -> lar:///AGENTS >>
 
 A text span appears as ocean. The internet an endless sea.
 
@@ -159,4 +159,4 @@ The agent MUST:
 AGENTS closes the threshold stream here.
 <<~/ahu >>
 
-<<~&#x0004; --> ? >>
+<<~&#x0004; -> ? >>

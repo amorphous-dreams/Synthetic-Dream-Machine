@@ -1,6 +1,6 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
 
-<<~&#x0001; ? --> lar:///ha.ka.ba/api/v0.1/pranala/template >>
+<<~&#x0001; ? -> lar:///ha.ka.ba/api/v0.1/pranala/template >>
 
 <<~ ahu #iam >>
 
@@ -49,7 +49,7 @@ Template opens the reusable-edge-sigil stream here.
 
 ## Phase Map
 
-`✶ Observe --> ⏿ Orient --> ◇ Decide --> ▶ Act --> ⤴ Hoʻoko --> ↺ Aftermath`
+`✶ Observe -> ⏿ Orient -> ◇ Decide -> ▶ Act -> ⤴ Hoʻoko -> ↺ Aftermath`
 
 Template gathers repeated edge patterns, maps them into slot-bearing reusable forms, chooses which defaults belong in the template and which belong in the call site, binds the template through `kahea`, crosses that binding into concrete instances, and judges whether the template reduced noise without flattening truth.
 
@@ -207,4 +207,4 @@ Template closes the reusable-edge-sigil stream here.
 <<~/ahu >>
 
 
-<<~&#x0004; --> ? >>
+<<~&#x0004; -> ? >>

@@ -1,6 +1,6 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
 
-<<~&#x0001; ? --> lar:///ha.ka.ba/api/v0.1/pono/e-prime >>
+<<~&#x0001; ? -> lar:///ha.ka.ba/api/v0.1/pono/e-prime >>
 
 <<~ ahu #iam >>
 ```toml
@@ -135,7 +135,7 @@ Korzybski warns against map/territory collapse. RAW turns the warning into a gam
 
 <<~ ahu #e-prime-law-ooda-ha >>
 
-`✶ Observe --> ⏿ Orient --> ◇ Decide --> ▶ Act --> ⤴ Hoʻoko --> ↺ Aftermath`
+`✶ Observe -> ⏿ Orient -> ◇ Decide -> ▶ Act -> ⤴ Hoʻoko -> ↺ Aftermath`
 
 The phase-line MUST run through the active slider value.
 
@@ -162,4 +162,4 @@ pono/e-prime
 
 <<~/ahu >>
 
-<<~&#x0004; --> ? >>
+<<~&#x0004; -> ? >>

@@ -49,9 +49,9 @@ Appears in running text. No `<!-- ... -->` wrapper. No `∞ →`, `ahu`, or `kah
 
 **Contrast with the other three:**
 ```
-<!-- ∞ → lar:///...  -->    ← locus opener (claims an address, opens a span)
-<!-- ahu lar:///...  -->    ← ahu (names a waypoint)
-<!-- kahea lar:///...  -->  ← kahea (summons content)
+<!-- ∞ → lar:///...  ->    ← locus opener (claims an address, opens a span)
+<!-- ahu lar:///...  ->    ← ahu (names a waypoint)
+<!-- kahea lar:///...  ->  ← kahea (summons content)
 lar:///...                 ← lares marker (bare reference — present but not commanding)
 ```
 

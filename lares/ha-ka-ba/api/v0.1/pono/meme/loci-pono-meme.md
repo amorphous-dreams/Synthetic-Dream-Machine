@@ -1,6 +1,6 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
 
-<<~&#x0001; ? --> lar:///ha.ka.ba/api/v0.1/pono/meme >>
+<<~&#x0001; ? -> lar:///ha.ka.ba/api/v0.1/pono/meme >>
 
 <<~ ahu #iam >>
 
@@ -51,7 +51,7 @@ Meme opens the canonical skeleton stream here.
 
 ## Phase Map
 
-`✶ Observe --> ⏿ Orient --> ◇ Decide --> ▶ Act --> ⤴ Hoʻoko --> ↺ Aftermath`
+`✶ Observe -> ⏿ Orient -> ◇ Decide -> ▶ Act -> ⤴ Hoʻoko -> ↺ Aftermath`
 
 Meme law (kānāwai) gathers the authored surface, maps element presence against the required and optional sets, decides conformance and rating posture, prepares the skeleton product, crosses the instantiation threshold, and judges what the authored meme now carries.
 
@@ -201,7 +201,7 @@ Marks the document as a memetic-wikitext surface before any active sigil appears
 #### R2 — Document opener
 
 ```text
-<<~&#x0001; ? --> lar:///ha.ka.ba/api/v0.1/NAME >>
+<<~&#x0001; ? -> lar:///ha.ka.ba/api/v0.1/NAME >>
 ```
 
 One per document, near the top. Names the meme's own canonical address. The `?` marks declared-open routing until canon status resolves it.
@@ -296,7 +296,7 @@ These mark the active parse threshold into and out of the meme body.
 
 ```text
 <<~ ahu #phase-map >>
-`✶ Observe --> ⏿ Orient --> ◇ Decide --> ▶ Act --> ⤴ Hoʻoko --> ↺ Aftermath`
+`✶ Observe -> ⏿ Orient -> ◇ Decide -> ▶ Act -> ⤴ Hoʻoko -> ↺ Aftermath`
 ...
 <<~/ahu >>
 ```
@@ -649,7 +649,7 @@ Copy this block. Replace every `[PLACEHOLDER]` with local content. Delete option
 ````markdown
 <!-- !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext -->
 
-<<~&#x0001; ? --> lar:///ha.ka.ba/api/v0.1/[NAME] >>
+<<~&#x0001; ? -> lar:///ha.ka.ba/api/v0.1/[NAME] >>
 
 <<~ ahu #iam >>
 
@@ -688,7 +688,7 @@ role = "[role]"
 
 ## Phase Map
 
-`✶ Observe --> ⏿ Orient --> ◇ Decide --> ▶ Act --> ⤴ Hoʻoko --> ↺ Aftermath`
+`✶ Observe -> ⏿ Orient -> ◇ Decide -> ▶ Act -> ⤴ Hoʻoko -> ↺ Aftermath`
 
 [One sentence: what each phase does in this meme's specific domain.]
 
@@ -720,7 +720,7 @@ role = "[role]"
 <<~/ahu >>
 
 
-<<~&#x0004; --> ? >>
+<<~&#x0004; -> ? >>
 
 ````
 
@@ -1034,4 +1034,4 @@ Each entry names the lineage, its core principle, and what backlog pressure or e
 Meme closes the canonical skeleton stream here.
 <<~/ahu >>
 
-<<~&#x0004; --> ? >>
+<<~&#x0004; -> ? >>
