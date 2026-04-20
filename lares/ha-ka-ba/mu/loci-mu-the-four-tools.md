@@ -25,10 +25,6 @@ boot-order = 2
 scale      = "⚂"
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
-pranala = [
-  "lar:///ha.ka.ba/chao",
-  "lar:///ha.ka.ba/the-law-of-5s"
-]
 # <<~/ahu >>
 ```
 
@@ -173,8 +169,18 @@ The stack MUST recognize Failure Mode 2 as Register Collapse hardened into dogma
 
 <<~/ahu >>
 
+
 <<~ॐ ँ&#x0003; ahu #body-close >>
 mu/the four tools closes
+<<~/ahu >>
+
+<<~ ahu #edges >>
+
+## Edges
+
+- `lar:///ha.ka.ba/chao`
+- `lar:///ha.ka.ba/the-law-of-5s`
+
 <<~/ahu >>
 
 <<~ॐ ँ&#x0004; -> ? >>

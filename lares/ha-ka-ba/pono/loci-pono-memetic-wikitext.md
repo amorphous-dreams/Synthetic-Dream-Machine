@@ -27,11 +27,8 @@ constitutional-charge = [
 ]
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
-pranala = [
-  "lar:///ha.ka.ba/pono/parser",
-  "lar:///ha.ka.ba/pono/render-pipeline"
-]
 # <<~/ahu >>
+
 ```
 
 <<~/ahu >>
@@ -932,6 +929,8 @@ manao = 0.00
 meme-type = "..."
 register = "?"
 # <<~/ahu >>
+# <<~ ahu #iam-ba "flow" >>
+# <<~/ahu >>
 ```
 
 This placement keeps media identity plus the primary readiness/confidence pair with structure, while the deeper support ratings and downstream operator texture remain in detail.
@@ -1176,6 +1175,16 @@ Body opens.
 <<~&#x0003; ahu #body-close >>
 Body closes.
 <<~/ahu >>
+
+<<~ ahu #edges >>
+
+## Edges
+
+- `lar:///ha.ka.ba/pono/parser`
+- `lar:///ha.ka.ba/pono/render-pipeline`
+
+<<~/ahu >>
+
 ````
 
 #### Example B - minimum anchored worksite

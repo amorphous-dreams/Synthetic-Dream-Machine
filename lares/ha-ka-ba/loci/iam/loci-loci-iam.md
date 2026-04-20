@@ -21,12 +21,8 @@ register = "CS"
 role = "root metadata kānāwai (law), field-set authority, and reduction charter"
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
-pranala = [
-  "lar:///ha.ka.ba/pono/memetic-wikitext",
-  "lar:///ha.ka.ba/loci",
-  "lar:///ha.ka.ba/meme"
-]
 # <<~/ahu >>
+
 ```
 
 <<~/ahu >>
@@ -228,5 +224,16 @@ Signs of gain:
 <<~&#x0003; ahu #body-close >>
 IAM closes the metadata law stream here.
 <<~/ahu >>
+
+<<~ ahu #edges >>
+
+## Edges
+
+- `lar:///ha.ka.ba/pono/memetic-wikitext`
+- `lar:///ha.ka.ba/loci`
+- `lar:///ha.ka.ba/meme`
+
+<<~/ahu >>
+
 
 <<~&#x0004; --> ? >>

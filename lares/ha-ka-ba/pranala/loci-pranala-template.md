@@ -24,12 +24,8 @@ promotion-rule = "repeat-before-promotion"
 invocation-surface = "kahea"
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
-pranala = [
-  "lar:///ha.ka.ba/loci/edge",
-  "lar:///ha.ka.ba/loci",
-  "lar:///ha.ka.ba/meme"
-]
 # <<~/ahu >>
+
 ```
 
 <<~/ahu >>
@@ -198,5 +194,16 @@ A strong template pass should leave:
 <<~&#x0003; ahu #body-close >>
 Template closes the reusable-edge-sigil stream here.
 <<~/ahu >>
+
+<<~ ahu #edges >>
+
+## Edges
+
+- `lar:///ha.ka.ba/loci/edge`
+- `lar:///ha.ka.ba/loci`
+- `lar:///ha.ka.ba/meme`
+
+<<~/ahu >>
+
 
 <<~&#x0004; --> ? >>

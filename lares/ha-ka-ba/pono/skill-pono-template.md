@@ -29,11 +29,8 @@ role = "skill template, verification authoring guide, and pre/post-MCP implement
 skill-package-root = "ha-ka-ba/pono/skill-*.md"
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
-pranala = [
-    "lar:///ha.ka.ba/pono/memetic-wikitext",
-    "lar:///ha.ka.ba/pono"
-]
 # <<~/ahu >>
+
 ```
 <<~/ahu >>
 
@@ -506,6 +503,16 @@ Post-MCP-ba governs the authoring motion across migration: keep the skill body c
 <<~&#x0003; ahu #body-close >>
 Skill template closes the verification authoring stream here.
 <<~/ahu >>
+
+<<~ ahu #edges >>
+
+## Edges
+
+- `lar:///ha.ka.ba/pono/memetic-wikitext`
+- `lar:///ha.ka.ba/pono`
+
+<<~/ahu >>
+
 
 
 <<~&#x0004; --> ? >>

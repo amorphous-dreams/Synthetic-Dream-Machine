@@ -22,12 +22,8 @@ role = "canonical meme kānāwai (law), template authority, and rating-target au
 control-glyphs = ["&#x0001;", "&#x0002;", "&#x0003;", "&#x0004;", "&#x0005;", "&#x0006;"]
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
-pranala = [
-  "lar:///ha.ka.ba/pono/memetic-wikitext",
-  "lar:///ha.ka.ba/pono/parser",
-  "lar:///ha.ka.ba/pono/render-pipeline"
-]
 # <<~/ahu >>
+
 ```
 
 <<~/ahu >>
@@ -234,8 +230,8 @@ register = "?"
 role = "..."
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
-pranala = ["lar:///ha.ka.ba/pono/memetic-wikitext"]
 # <<~/ahu >>
+
 ```
 
 The `#iam` block MUST place `content-type` above `version` in the structure ahu. It MUST place `manaoio` and `confidence` immediately below `version` in that order. After the ahu close/reopen marker, the remaining detail rating fields MUST follow in this order: `mana`, `manao`. The adjacent `register` surface-texture key MUST appear immediately below `meme-type`. That key abbreviates the operator-facing `confidence` band surface. Absence of any rating field degrades `payload-integrity`.
@@ -270,6 +266,27 @@ Do not add a top-level `<<~ loulou lar:///ha.ka.ba/NAME >>` line that only point
 <<~&#x0003; ahu #body-close >>
 ...
 <<~/ahu >>
+
+<<~ ahu #edges >>
+
+## Edges
+
+- `lar:///ha.ka.ba/pono/memetic-wikitext`
+
+<<~/ahu >>
+
+
+
+<<~ ahu #edges >>
+
+## Edges
+
+- `lar:///ha.ka.ba/pono/memetic-wikitext`
+- `lar:///ha.ka.ba/pono/parser`
+- `lar:///ha.ka.ba/pono/render-pipeline`
+
+<<~/ahu >>
+
 ```
 
 These mark the active parse threshold into and out of the meme body.
@@ -652,10 +669,8 @@ register = "P"
 role = "[role]"
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
-pranala = [
-  "lar:///ha.ka.ba/pono/memetic-wikitext"
-]
 # <<~/ahu >>
+
 ```
 
 <<~/ahu >>
@@ -694,6 +709,15 @@ pranala = [
 <<~&#x0003; ahu #body-close >>
 [NAME] closes the active stream here.
 <<~/ahu >>
+
+<<~ ahu #edges >>
+
+## Edges
+
+- `lar:///ha.ka.ba/pono/memetic-wikitext`
+
+<<~/ahu >>
+
 
 <<~&#x0004; --> ? >>
 

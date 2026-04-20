@@ -21,13 +21,8 @@ register = "CS"
 role = "file-path key authority, path-form classifier, and migration-procedure kānāwai (law)"
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
-pranala = [
-     "lar:///ha.ka.ba/loci/iam",
-     "lar:///ha.ka.ba/pono/memetic-wikitext",
-     "lar:///ha.ka.ba/loci",
-     "lar:///ha.ka.ba/meme"
-]
 # <<~/ahu >>
+
 ```
 
 <<~/ahu >>
@@ -465,5 +460,17 @@ Aftermath-ba governs landing quality: aftermath that ends without a coherence ju
 <<~&#x0003; ahu #body-close >>
 file-path closes the key-authority stream here.
 <<~/ahu >>
+
+<<~ ahu #edges >>
+
+## Edges
+
+- `lar:///ha.ka.ba/loci/iam`
+- `lar:///ha.ka.ba/pono/memetic-wikitext`
+- `lar:///ha.ka.ba/loci`
+- `lar:///ha.ka.ba/meme`
+
+<<~/ahu >>
+
 
 <<~&#x0004; --> ? >>

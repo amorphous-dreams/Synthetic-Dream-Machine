@@ -22,12 +22,8 @@ role = "debug edge kānāwai (law), observation authority, and hidden-edge illum
 visibility-modes = ["inline", "overlay", "trace-only", "operator-only"]
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
-pranala = [
-  "lar:///ha.ka.ba/loci/edge",
-  "lar:///ha.ka.ba/loci/edge/instance",
-  "lar:///ha.ka.ba/loci"
-]
 # <<~/ahu >>
+
 ```
 
 <<~/ahu >>
@@ -185,5 +181,16 @@ A strong debug pass should leave:
 <<~&#x0003; ahu #body-close >>
 Debug closes the observation-edge stream here.
 <<~/ahu >>
+
+<<~ ahu #edges >>
+
+## Edges
+
+- `lar:///ha.ka.ba/loci/edge`
+- `lar:///ha.ka.ba/loci/edge/instance`
+- `lar:///ha.ka.ba/loci`
+
+<<~/ahu >>
+
 
 <<~&#x0004; --> ? >>

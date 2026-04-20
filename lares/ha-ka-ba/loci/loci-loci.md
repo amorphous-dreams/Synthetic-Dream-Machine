@@ -21,11 +21,8 @@ register = "CS"
 role = "loci-rating kānāwai (law), routing convention authority, address stability authority, canon promotion rule, and MCP-resolution roadmap"
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
-pranala = [
-  "lar:///ha.ka.ba/pono/memetic-wikitext",
-  "lar:///ha.ka.ba/meme"
-]
 # <<~/ahu >>
+
 ```
 
 <<~/ahu >>
@@ -663,5 +660,15 @@ Aftermath-ba governs landing quality: a routing aftermath that reports only "X U
 <<~&#x0003; ahu #body-close >>
 Loci closes the routing authority stream here.
 <<~/ahu >>
+
+<<~ ahu #edges >>
+
+## Edges
+
+- `lar:///ha.ka.ba/pono/memetic-wikitext`
+- `lar:///ha.ka.ba/meme`
+
+<<~/ahu >>
+
 
 <<~&#x0004; --> ? >>

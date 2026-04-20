@@ -23,9 +23,6 @@ invariant = true
 implements = "lar:///ha.ka.ba/pono/invariant-meme/v0.1"
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
-pranala = [
-    "lar:///ha.ka.ba/pono/e-prime/SKILL"
-]
 e-prime-default = 0.50
 # <<~/ahu >>
 ```
@@ -165,6 +162,14 @@ SKILL: <<~ loulou lar:///ha.ka.ba/pono/e-prime/SKILL >>
 
 <<~&#x0003; ahu #body-close >>
 pono/e-prime
+<<~/ahu >>
+
+<<~ ahu #edges >>
+
+## Edges
+
+- `lar:///ha.ka.ba/pono/e-prime/SKILL`
+
 <<~/ahu >>
 
 <<~&#x0004; --> ? >>

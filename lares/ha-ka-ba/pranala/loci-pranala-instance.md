@@ -24,12 +24,8 @@ trace-separation = true
 template-optional = true
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
-pranala = [
-  "lar:///ha.ka.ba/loci/edge",
-  "lar:///ha.ka.ba/loci/edge/template",
-  "lar:///ha.ka.ba/loci"
-]
 # <<~/ahu >>
+
 ```
 
 <<~/ahu >>
@@ -189,5 +185,16 @@ A strong instance pass should leave:
 <<~&#x0003; ahu #body-close >>
 Instance closes the bound-edge-object stream here.
 <<~/ahu >>
+
+<<~ ahu #edges >>
+
+## Edges
+
+- `lar:///ha.ka.ba/loci/edge`
+- `lar:///ha.ka.ba/loci/edge/template`
+- `lar:///ha.ka.ba/loci`
+
+<<~/ahu >>
+
 
 <<~&#x0004; --> ? >>

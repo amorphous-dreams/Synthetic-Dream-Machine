@@ -20,13 +20,8 @@ register = "S"
 role = "guest-grammar admission kānāwai (law), invocation-boundary kānāwai (law), and host-guest ownership contract"
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
-pranala = [
-  "lar:///ha.ka.ba/pono/memetic-wikitext",
-  "lar:///ha.ka.ba/pono/parser",
-  "lar:///ha.ka.ba/pono/render-pipeline",
-  "lar:///ha.ka.ba/pono"
-]
 # <<~/ahu >>
+
 ```
 <<~/ahu >>
 
@@ -494,5 +489,17 @@ Fixture-seeds-ba stays intentionally light.
 <<~&#x0003; ahu #body-close >>
 Guest Grammar closes the active admission stream here.
 <<~/ahu >>
+
+<<~ ahu #edges >>
+
+## Edges
+
+- `lar:///ha.ka.ba/pono/memetic-wikitext`
+- `lar:///ha.ka.ba/pono/parser`
+- `lar:///ha.ka.ba/pono/render-pipeline`
+- `lar:///ha.ka.ba/pono`
+
+<<~/ahu >>
+
 
 <<~&#x0004; --> ? >>

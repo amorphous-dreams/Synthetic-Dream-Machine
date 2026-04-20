@@ -26,10 +26,8 @@ implements = "lar:///ha.ka.ba/pono/invariant-meme/v0.1"
 # implement =  "lar:///ha.ka.ba/pono/invariant-meme/[version]" 
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
-pranala = [
-  "lar:///ha.ka.ba/pono/invariant-meme/SKILL"
-]
 # <<~/ahu >>
+
 ```
 
 <<~/ahu >>
@@ -132,6 +130,15 @@ Invariant-compliant memes MUST fill the OODA-HA phase line with their own pressu
 <<~&#x0003; ahu #body-close >>
 invariant-meme closes
 <<~/ahu >>
+
+<<~ ahu #edges >>
+
+## Edges
+
+- `lar:///ha.ka.ba/pono/invariant-meme/SKILL`
+
+<<~/ahu >>
+
 
 <<~ ahu #meme-footer >>
 Pressure carried:

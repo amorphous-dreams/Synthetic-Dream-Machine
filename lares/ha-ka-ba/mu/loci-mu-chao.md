@@ -24,9 +24,6 @@ role       = "sacred chao boot, ha/ka/ba triad instantiator, address-space seman
 boot-order = 1
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
-pranala = [
-  "lar:///ha.ka.ba/mu",
-]
 # <<~/ahu >>
 ```
 
@@ -163,8 +160,17 @@ A lar URI with all three slots aligned reads the address back at the Chao's rota
 
 <<~/ahu >>
 
+
 <<~ॐ ँ&#x0003; ahu #body-close >>
 mu/chao closes
+<<~/ahu >>
+
+<<~ ahu #edges >>
+
+## Edges
+
+- `lar:///ha.ka.ba/mu`
+
 <<~/ahu >>
 
 <<~ॐ ँ&#x0004; -> ? >>

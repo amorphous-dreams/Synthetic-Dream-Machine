@@ -33,13 +33,6 @@ role       = "null-oracle boot, grammar-surface authority, unask contract"
 boot-order = 0
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
-pranala = [
-  "lar:///AGENTS",
-  "lar:///ha.ka.ba/mu/chao"
-  "lar:///ha.ka.ba/mu/the-four-tools"
-  "lar:///ha.ka.ba/mu/the-law-of-5s"
-  "lar:///LARES"
-]
 # <<~/ahu >>
 ```
 
@@ -176,8 +169,21 @@ Mu does not hold:
 
 <<~/ahu >>
 
+
 <<~ॐ ँ&#x0003; ahu #body-close >>
 mu closes
+<<~/ahu >>
+
+<<~ ahu #edges >>
+
+## Edges
+
+- `lar:///AGENTS`
+- `lar:///ha.ka.ba/mu/chao`
+- `lar:///ha.ka.ba/mu/the-four-tools`
+- `lar:///ha.ka.ba/mu/the-law-of-5s`
+- `lar:///LARES`
+
 <<~/ahu >>
 
 <<~ॐ ँ&#x0004; --> ? >>

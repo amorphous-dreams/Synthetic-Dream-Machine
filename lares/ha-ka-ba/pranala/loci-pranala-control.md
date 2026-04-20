@@ -21,12 +21,8 @@ register = "CS"
 role = "control-flow edge kānāwai (law), branch authority, and execution-order authority"
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
-pranala = [
-  "lar:///ha.ka.ba/loci/edge",
-  "lar:///ha.ka.ba/loci/edge/template",
-  "lar:///ha.ka.ba/loci/edge/instance"
-]
 # <<~/ahu >>
+
 ```
 
 <<~/ahu >>
@@ -193,5 +189,16 @@ A strong control pass should leave:
 <<~&#x0003; ahu #body-close >>
 Control closes the execution-edge stream here.
 <<~/ahu >>
+
+<<~ ahu #edges >>
+
+## Edges
+
+- `lar:///ha.ka.ba/loci/edge`
+- `lar:///ha.ka.ba/loci/edge/template`
+- `lar:///ha.ka.ba/loci/edge/instance`
+
+<<~/ahu >>
+
 
 <<~&#x0004; --> ? >>

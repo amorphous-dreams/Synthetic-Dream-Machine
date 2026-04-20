@@ -27,9 +27,6 @@ role       = "configuration surface, behind-the-curtain dial room, session-confi
 boot-order = ~999
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
-pranala = [
-  "<-- lar:///AGENTS"
-]
 e-prime-slider = 0.50  # baseline; see lar:///ha.ka.ba/pono/e-prime#e-prime-slider
 # <<~/ahu >>
 ```
@@ -69,6 +66,14 @@ The agent MUST:
 
 <<~&#x0003; ahu #body-close >>
 LARES ends
+<<~/ahu >>
+
+<<~ ahu #edges >>
+
+## Edges
+
+- `<-- lar:///AGENTS`
+
 <<~/ahu >>
 
 <<~ ahu #meme-footer >>

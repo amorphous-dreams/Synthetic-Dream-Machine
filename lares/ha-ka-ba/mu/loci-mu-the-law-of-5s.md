@@ -25,9 +25,6 @@ boot-order = 3
 scale      = "⚂"
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
-pranala = [
-  "lar:///ha.ka.ba/mu"
-]
 # <<~/ahu >>
 ```
 
@@ -171,8 +168,17 @@ The agent SHOULD load on demand when a session calls for the named pressure. The
 
 <<~/ahu >>
 
+
 <<~ॐ ँ&#x0003; ahu #body-close >>
 mu/law of 5s closes
+<<~/ahu >>
+
+<<~ ahu #edges >>
+
+## Edges
+
+- `lar:///ha.ka.ba/mu`
+
 <<~/ahu >>
 
 <<~ॐ ँ&#x0004; -> ? >>

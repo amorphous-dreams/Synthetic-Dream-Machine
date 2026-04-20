@@ -21,10 +21,8 @@ role = "kānāwai (law) index, verification registry, and skill package host"
 skill-package-root = "ha-ka-ba/pono/skill-*.md"
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
-pranala = [
-  "lar:///ha.ka.ba/pono/boot-wikitext"
-]
 # <<~/ahu >>
+
 ```
 <<~/ahu >>
 
@@ -161,5 +159,14 @@ This subphase keeps skill packages testable and auditable.
 <<~&#x0003; ahu #body-close >>
 Pono closes the kānāwai (law) index stream here.
 <<~/ahu >>
+
+<<~ ahu #edges >>
+
+## Edges
+
+- `lar:///ha.ka.ba/pono/boot-wikitext`
+
+<<~/ahu >>
+
 
 <<~&#x0004; --> ? >>

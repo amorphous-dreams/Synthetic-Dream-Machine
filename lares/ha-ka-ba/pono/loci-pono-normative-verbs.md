@@ -20,11 +20,8 @@ register = "S"
 role = "shared normative vocabulary kānāwai (law), modal-force registry, and cross-meme reference point"
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
-pranala = [
-  "lar:///ha.ka.ba/meme",
-  "lar:///ha.ka.ba/pono"
-]
 # <<~/ahu >>
+
 ```
 <<~/ahu >>
 
@@ -205,5 +202,15 @@ Aftermath-ba names any residue where a law still duplicates or mutates the share
 <<~&#x0003; ahu #body-close >>
 Normative-verbs closes the shared modal-force stream here.
 <<~/ahu >>
+
+<<~ ahu #edges >>
+
+## Edges
+
+- `lar:///ha.ka.ba/meme`
+- `lar:///ha.ka.ba/pono`
+
+<<~/ahu >>
+
 
 <<~&#x0004; --> ? >>

@@ -37,11 +37,8 @@ invariants = [
 skill-package-root = "ha-ka-ba/pono/invariant-meme"
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
-pranala = [
-  "lar:///ha.ka.ba/pono/invariant-meme",
-  "lar:///ha.ka.ba/pono"
-]
 # <<~/ahu >>
+
 ```
 <<~/ahu >>
 
@@ -309,6 +306,16 @@ It marks what remains and carries pressure forward.
 <<~&#x0003; ahu #body-close >>
 Invariant-meme operator closes here.
 <<~/ahu >>
+
+<<~ ahu #edges >>
+
+## Edges
+
+- `lar:///ha.ka.ba/pono/invariant-meme`
+- `lar:///ha.ka.ba/pono`
+
+<<~/ahu >>
+
 
 <<~ ahu #meme-footer >>
 Pressure carried:

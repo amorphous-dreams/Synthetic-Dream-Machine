@@ -34,11 +34,8 @@ invariants = [
 skill-package-root = "ha-ka-ba/pono/e-prime"
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
-pranala = [
-  "lar:///ha.ka.ba/pono/e-prime",
-  "lar:///ha.ka.ba/pono"
-]
 # <<~/ahu >>
+
 ```
 <<~/ahu >>
 
@@ -295,5 +292,15 @@ Residue stays named honestly:
 <<~&#x0003; ahu #body-close >>
 E-Prime auditor closes the settled-text correction stream here.
 <<~/ahu >>
+
+<<~ ahu #edges >>
+
+## Edges
+
+- `lar:///ha.ka.ba/pono/e-prime`
+- `lar:///ha.ka.ba/pono`
+
+<<~/ahu >>
+
 
 <<~&#x0004; --> ? >>

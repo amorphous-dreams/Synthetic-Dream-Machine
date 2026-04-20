@@ -23,13 +23,8 @@ guest-mime = "text/x-tiddlywiki-filter"
 invocation-worksite = "hana"
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
-pranala = [
-  "lar:///ha.ka.ba/pono/guest-grammar",
-  "lar:///ha.ka.ba/pono/memetic-wikitext",
-  "lar:///ha.ka.ba/pono/parser",
-  "lar:///ha.ka.ba/pono/render-pipeline"
-]
 # <<~/ahu >>
+
 ```
 <<~/ahu >>
 
@@ -474,5 +469,17 @@ Lowering-expectations-ba remains sparse in this first pass.
 <<~&#x0003; ahu #body-close >>
 X-TiddlyWiki-Filter closes the active imported grammar stream here.
 <<~/ahu >>
+
+<<~ ahu #edges >>
+
+## Edges
+
+- `lar:///ha.ka.ba/pono/guest-grammar`
+- `lar:///ha.ka.ba/pono/memetic-wikitext`
+- `lar:///ha.ka.ba/pono/parser`
+- `lar:///ha.ka.ba/pono/render-pipeline`
+
+<<~/ahu >>
+
 
 <<~&#x0004; --> ? >>

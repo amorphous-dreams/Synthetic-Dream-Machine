@@ -21,11 +21,8 @@ role = "pipeline kānāwai (law), lowering kānāwai (law), widget-tree kānāwa
 pipeline-layers = ["surface", "ast", "widget"]
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
-pranala = [
-  "lar:///ha.ka.ba/pono/memetic-wikitext",
-  "lar:///ha.ka.ba/pono/parser"
-]
 # <<~/ahu >>
+
 ```
 
 # Render Pipeline Kānāwai (law)
@@ -951,6 +948,16 @@ Body-close-ha holds threshold identity and release boundary.
 This subphase marks the lawful crossing from active contents toward footer and return.
 
 <<~/ahu >>
+
+<<~ ahu #edges >>
+
+## Edges
+
+- `lar:///ha.ka.ba/pono/memetic-wikitext`
+- `lar:///ha.ka.ba/pono/parser`
+
+<<~/ahu >>
+
 
 <<~ ahu #body-close-ka >>
 

@@ -23,12 +23,8 @@ canonical-forms = ["inline", "block", "payload-block", "return"]
 canonical-modes = ["preamble", "metadata", "prose", "sigil", "filter", "raw", "aftermath"]
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
-pranala = [
-  "lar:///ha.ka.ba/pono/memetic-wikitext",
-  "lar:///ha.ka.ba/ooda-ha",
-  "lar:///ha.ka.ba/error-result"
-]
 # <<~/ahu >>
+
 ```
 
 <<~/ahu >>
@@ -2175,5 +2171,16 @@ Parser-kānāwai (law) should retain the constitutional minimum needed to keep r
 <<~&#x0003; ahu #body-close >>
 Parser kānāwai (law) closes the active parsing stream here.
 <<~/ahu >>
+
+<<~ ahu #edges >>
+
+## Edges
+
+- `lar:///ha.ka.ba/pono/memetic-wikitext`
+- `lar:///ha.ka.ba/ooda-ha`
+- `lar:///ha.ka.ba/error-result`
+
+<<~/ahu >>
+
 
 <<~&#x0004; --> ? >>
