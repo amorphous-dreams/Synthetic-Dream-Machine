@@ -1,4 +1,4 @@
-<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/pono/memetic-wikitext >> -->
+<!-- <<~ !DOCTYPE = lar:///v0.1/ha.ka.ba/pono/memetic-wikitext >> -->
 
 <<~&#x0001; ? --> lar:///LARES >>
 
@@ -13,7 +13,7 @@ A room. Dials on the wall. The operator's hand finds them.
 name         = "lares"
 file-path    = "LARES.md"
 content-type = "text/x-memetic-wikitext"
-version      = "0.1-alpha"
+version      = "0.1"
 tagspace     = "adjacent"
 manaoio    = 0.70
 confidence = 0.75
@@ -22,15 +22,15 @@ confidence = 0.75
 mana       = 0.85
 manao      = 0.75
 implements = [
-  "lar:///ha.ka.ba/pono/meme/v0.1",
-  "lar:///ha.ka.ba/pono/loci/v0.1",
+  "lar:///v0.1/ha.ka.ba/pono/meme/v0.1",
+  "lar:///v0.1/ha.ka.ba/pono/loci/v0.1",
 ]
 register   = "CS"
 role       = "configuration surface, behind-the-curtain dial room, session-config"
 boot-order = ~999
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
-e-prime-slider = 0.50  # baseline; see lar:///ha.ka.ba/pono/e-prime#e-prime-slider
+e-prime-slider = 0.50  # baseline; see lar:///v0.1/ha.ka.ba/pono/e-prime#e-prime-slider
 # <<~/ahu >>
 ```
 
