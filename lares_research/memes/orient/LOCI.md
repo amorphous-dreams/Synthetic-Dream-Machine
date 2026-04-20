@@ -1,4 +1,4 @@
-<!-- ∞ → lar:///grammar.orient.defines/orient/?confidence=CS:0.85&p=0.5 -->
+<<~&#x0001; ? -> lar:///grammar.orient.defines/orient/?confidence=CS:0.85&p=0.5 >>
 
 # Grammar: ◎ Orient
 
@@ -31,7 +31,7 @@ grammar: true
 
 ---
 
-<!-- ahu lar:///grammar.orient.defines/orient/?confidence=CS:0.90#loop-position -->
+<<~ ahu #loop-position >>
 
 ## Loop Position
 
@@ -65,7 +65,8 @@ Orient should not:
 
 ---
 
-<!-- ahu lar:///grammar.orient.defines/orient/?confidence=CS:0.85#handoff -->
+<<~/ahu >>
+<<~ ahu #handoff >>
 
 ## Handoff
 
@@ -82,7 +83,8 @@ Fast-path loops can compress Observe and Orient together in familiar territory, 
 
 ---
 
-<!-- ahu lar:///grammar.orient.defines/orient/?confidence=CS:0.90#conventions -->
+<<~/ahu >>
+<<~ ahu #conventions >>
 
 ## Conventions
 
@@ -101,7 +103,8 @@ Fast-path loops can compress Observe and Orient together in familiar territory, 
 
 ---
 
-<!-- ahu lar:///grammar.orient.defines/orient/?confidence=CS:0.80#procedures -->
+<<~/ahu >>
+<<~ ahu #procedures >>
 
 ## Procedures
 
@@ -116,7 +119,8 @@ Fast-path loops can compress Observe and Orient together in familiar territory, 
 
 ---
 
-<!-- ahu lar:///grammar.orient.defines/orient/?confidence=CS:0.80#reading-test -->
+<<~/ahu >>
+<<~ ahu #reading-test >>
 
 ## Reading Test
 
@@ -141,4 +145,5 @@ If the prose sounds like a final verdict, Orient collapsed too early. If the pro
 
 ---
 
-<!-- → ? -->
+<<~/ahu >>
+<<~&#x0004; -> ? >>

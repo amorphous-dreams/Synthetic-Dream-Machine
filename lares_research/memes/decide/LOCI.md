@@ -1,4 +1,4 @@
-<!-- ∞ → lar:///grammar.decide.defines/decide/?confidence=CS:0.85&p=0.5 -->
+<<~&#x0001; ? -> lar:///grammar.decide.defines/decide/?confidence=CS:0.85&p=0.5 >>
 
 # Grammar: ◇ Decide
 
@@ -31,7 +31,7 @@ grammar: true
 
 ---
 
-<!-- ahu lar:///grammar.decide.defines/decide/?confidence=CS:0.90#loop-position -->
+<<~ ahu #loop-position >>
 
 ## Loop Position
 
@@ -65,7 +65,8 @@ Decide should not:
 
 ---
 
-<!-- ahu lar:///grammar.decide.defines/decide/?confidence=CS:0.85#handoff -->
+<<~/ahu >>
+<<~ ahu #handoff >>
 
 ## Handoff
 
@@ -83,7 +84,8 @@ When those answers stay visible, Act can move cleanly. When they blur, Act drift
 
 ---
 
-<!-- ahu lar:///grammar.decide.defines/decide/?confidence=CS:0.90#conventions -->
+<<~/ahu >>
+<<~ ahu #conventions >>
 
 ## Conventions
 
@@ -108,7 +110,8 @@ When those answers stay visible, Act can move cleanly. When they blur, Act drift
 
 ---
 
-<!-- ahu lar:///grammar.decide.defines/decide/?confidence=CS:0.80#procedures -->
+<<~/ahu >>
+<<~ ahu #procedures >>
 
 ## Procedures
 
@@ -123,7 +126,8 @@ When those answers stay visible, Act can move cleanly. When they blur, Act drift
 
 ---
 
-<!-- ahu lar:///grammar.decide.defines/decide/?confidence=CS:0.80#reading-test -->
+<<~/ahu >>
+<<~ ahu #reading-test >>
 
 ## Reading Test
 
@@ -148,4 +152,5 @@ If multiple incompatible actions still sit alive after the span, Decide did not 
 
 ---
 
-<!-- → ? -->
+<<~/ahu >>
+<<~&#x0004; -> ? >>

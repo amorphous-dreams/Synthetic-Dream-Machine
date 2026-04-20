@@ -1,4 +1,4 @@
-<!-- ∞ → lar:///grammar.lares.defines/lares/?confidence=CS:0.85&p=0.5 -->
+<<~&#x0001; ? -> lar:///grammar.lares.defines/lares/?confidence=CS:0.85&p=0.5 >>
 
 # Grammar: Lares
 
@@ -37,7 +37,7 @@ heritage: Latin (Lar, Lares — household guardian spirits)
 
 ---
 
-<!-- ahu lar:///grammar.lares.defines/lares/?confidence=CS:0.90#what-the-lar-is -->
+<<~ ahu #what-the-lar-is >>
 
 ## What the Lar Is
 
@@ -56,7 +56,8 @@ The four marker types in the transclusion model are the Lar's senses. Without th
 
 ---
 
-<!-- ahu lar:///grammar.lares.defines/lares/?confidence=CS:0.85#self-transclusion -->
+<<~/ahu >>
+<<~ ahu #self-transclusion >>
 
 ## Self-Transclusion
 
@@ -79,7 +80,8 @@ When a future engine (TiddlyWiki, build system) resolves transclusions automatic
 
 ---
 
-<!-- ahu lar:///grammar.lares.defines/lares/?confidence=CS:0.85#consecration-scope -->
+<<~/ahu >>
+<<~ ahu #consecration-scope >>
 
 ## Consecration Scope
 
@@ -107,7 +109,8 @@ The kapu boundary is defined by addressing and protocol, not by file format or s
 
 ---
 
-<!-- ahu lar:///grammar.lares.defines/lares/?confidence=CS:0.85#daemon-operations -->
+<<~/ahu >>
+<<~ ahu #daemon-operations >>
 
 ## Daemon Operations
 
@@ -136,7 +139,8 @@ The five-step mandatory exchange flow. Every substantive interaction. The Lar is
 
 ---
 
-<!-- ahu lar:///grammar.lares.defines/lares/?confidence=CS:0.85#integrity -->
+<<~/ahu >>
+<<~ ahu #integrity >>
 
 ## Integrity
 
@@ -175,4 +179,5 @@ The fourth marker — `lares` — is the bare reference. No HTML comment wrappin
 
 ---
 
-<!-- → ? -->
+<<~/ahu >>
+<<~&#x0004; -> ? >>

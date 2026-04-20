@@ -1,4 +1,4 @@
-<!-- ∞ → lar:///grammar.assess.defines/assess/?confidence=CS:0.85&p=0.5 -->
+<<~&#x0001; ? -> lar:///grammar.assess.defines/assess/?confidence=CS:0.85&p=0.5 >>
 
 # Grammar: ○ Assess
 
@@ -31,7 +31,7 @@ grammar: true
 
 ---
 
-<!-- ahu lar:///grammar.assess.defines/assess/?confidence=CS:0.90#loop-position -->
+<<~ ahu #loop-position >>
 
 ## Loop Position
 
@@ -65,7 +65,8 @@ Assess should not:
 
 ---
 
-<!-- ahu lar:///grammar.assess.defines/assess/?confidence=CS:0.85#handoff -->
+<<~/ahu >>
+<<~ ahu #handoff >>
 
 ## Handoff
 
@@ -82,7 +83,8 @@ Assess also carries the scale-fit question: did this cycle run at the right alti
 
 ---
 
-<!-- ahu lar:///grammar.assess.defines/assess/?confidence=CS:0.90#conventions -->
+<<~/ahu >>
+<<~ ahu #conventions >>
 
 ## Conventions
 
@@ -100,7 +102,8 @@ Assess also carries the scale-fit question: did this cycle run at the right alti
 
 ---
 
-<!-- ahu lar:///grammar.assess.defines/assess/?confidence=CS:0.80#procedures -->
+<<~/ahu >>
+<<~ ahu #procedures >>
 
 ## Procedures
 
@@ -115,7 +118,8 @@ Assess also carries the scale-fit question: did this cycle run at the right alti
 
 ---
 
-<!-- ahu lar:///grammar.assess.defines/assess/?confidence=CS:0.80#reading-test -->
+<<~/ahu >>
+<<~ ahu #reading-test >>
 
 ## Reading Test
 
@@ -140,4 +144,5 @@ If the span reads like cheerleading, Assess has thinned out. If the span quietly
 
 ---
 
-<!-- → ? -->
+<<~/ahu >>
+<<~&#x0004; -> ? >>

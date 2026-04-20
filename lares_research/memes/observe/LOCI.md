@@ -1,4 +1,4 @@
-<!-- ∞ → lar:///grammar.observe.defines/observe/?confidence=CS:0.85&p=0.5 -->
+<<~&#x0001; ? -> lar:///grammar.observe.defines/observe/?confidence=CS:0.85&p=0.5 >>
 
 # Grammar: ✶ Observe
 
@@ -31,7 +31,7 @@ grammar: true
 
 ---
 
-<!-- ahu lar:///grammar.observe.defines/observe/?confidence=CS:0.90#loop-position -->
+<<~ ahu #loop-position >>
 
 ## Loop Position
 
@@ -66,7 +66,8 @@ That pressure belongs to later phases.
 
 ---
 
-<!-- ahu lar:///grammar.observe.defines/observe/?confidence=CS:0.85#handoff -->
+<<~/ahu >>
+<<~ ahu #handoff >>
 
 ## Handoff
 
@@ -89,7 +90,8 @@ Loop-back from `○ Assess` returns here when:
 
 ---
 
-<!-- ahu lar:///grammar.observe.defines/observe/?confidence=CS:0.90#conventions -->
+<<~/ahu >>
+<<~ ahu #conventions >>
 
 ## Conventions
 
@@ -108,7 +110,8 @@ Loop-back from `○ Assess` returns here when:
 
 ---
 
-<!-- ahu lar:///grammar.observe.defines/observe/?confidence=CS:0.80#procedures -->
+<<~/ahu >>
+<<~ ahu #procedures >>
 
 ## Procedures
 
@@ -123,7 +126,8 @@ Loop-back from `○ Assess` returns here when:
 
 ---
 
-<!-- ahu lar:///grammar.observe.defines/observe/?confidence=CS:0.80#reading-test -->
+<<~/ahu >>
+<<~ ahu #reading-test >>
 
 ## Reading Test
 
@@ -148,4 +152,5 @@ If the prose already sounds interpretive, Decide-colored, or solution-heavy, the
 
 ---
 
-<!-- → ? -->
+<<~/ahu >>
+<<~&#x0004; -> ? >>

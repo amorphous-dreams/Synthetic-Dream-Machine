@@ -1,4 +1,4 @@
-<!-- ∞ → lar:///ha.ka.ba/lar-uri/?confidence=CS:0.90&p=0.5 -->
+<<~&#x0001; ? -> lar:///ha.ka.ba/lar-uri/?confidence=CS:0.90&p=0.5 >>
 
 # Grammar: `lar:` URI Syntax
 
@@ -28,7 +28,7 @@ grammar: true
 
 ---
 
-<!-- ahu lar:///grammar.uri.defines/uri/?confidence=CS:0.80#loop-position -->
+<<~ ahu #loop-position >>
 
 ## Loop Position
 
@@ -64,7 +64,8 @@ URI syntax should not:
 
 ---
 
-<!-- ahu lar:///grammar.uri.defines/uri/?confidence=CS:0.80#handoff -->
+<<~/ahu >>
+<<~ ahu #handoff >>
 
 ## Handoff
 
@@ -88,7 +89,8 @@ If those answers cannot come back out of the string, the URI still carries noise
 
 ---
 
-<!-- ahu lar:///grammar.uri.defines/uri/?confidence=CS:0.80#surface -->
+<<~/ahu >>
+<<~ ahu #surface >>
 
 ## Composable Surface
 
@@ -121,7 +123,8 @@ That surface should remain reusable across:
 
 ---
 
-<!-- ahu lar:///grammar.uri.defines/uri/?confidence=CS:0.80#conventions -->
+<<~/ahu >>
+<<~ ahu #conventions >>
 
 ## Conventions
 
@@ -137,7 +140,8 @@ That surface should remain reusable across:
 
 ---
 
-<!-- ahu lar:///grammar.uri.defines/uri/?confidence=CS:0.80#procedures -->
+<<~/ahu >>
+<<~ ahu #procedures >>
 
 ## Procedures
 
@@ -151,7 +155,8 @@ That surface should remain reusable across:
 
 ---
 
-<!-- ahu lar:///grammar.uri.defines/uri/?confidence=CS:0.80#reading-test -->
+<<~/ahu >>
+<<~ ahu #reading-test >>
 
 ## Reading Test
 
@@ -185,4 +190,5 @@ If a human can admire the surface but a parser cannot trust the structure, the U
 
 ---
 
-<!-- → ? -->
+<<~/ahu >>
+<<~&#x0004; -> ? >>

@@ -1,4 +1,4 @@
-<!-- ∞ → lar:///grammar.act.defines/act/?confidence=CS:0.85&p=0.5 -->
+<<~&#x0001; ? -> lar:///grammar.act.defines/act/?confidence=CS:0.85&p=0.5 >>
 
 # Grammar: ■ Act
 
@@ -31,7 +31,7 @@ grammar: true
 
 ---
 
-<!-- ahu lar:///grammar.act.defines/act/?confidence=CS:0.90#loop-position -->
+<<~ ahu #loop-position >>
 
 ## Loop Position
 
@@ -65,7 +65,8 @@ Act should not:
 
 ---
 
-<!-- ahu lar:///grammar.act.defines/act/?confidence=CS:0.85#handoff -->
+<<~/ahu >>
+<<~ ahu #handoff >>
 
 ## Handoff
 
@@ -82,7 +83,8 @@ Sub-agent work also passes through this phase. Coordinator and worker should lea
 
 ---
 
-<!-- ahu lar:///grammar.act.defines/act/?confidence=CS:0.90#conventions -->
+<<~/ahu >>
+<<~ ahu #conventions >>
 
 ## Conventions
 
@@ -108,7 +110,8 @@ Those cases call for a loop-back, not stubborn continuation.
 
 ---
 
-<!-- ahu lar:///grammar.act.defines/act/?confidence=CS:0.80#procedures -->
+<<~/ahu >>
+<<~ ahu #procedures >>
 
 ## Procedures
 
@@ -123,7 +126,8 @@ Those cases call for a loop-back, not stubborn continuation.
 
 ---
 
-<!-- ahu lar:///grammar.act.defines/act/?confidence=CS:0.80#reading-test -->
+<<~/ahu >>
+<<~ ahu #reading-test >>
 
 ## Reading Test
 
@@ -148,4 +152,5 @@ If the span cannot point back to a prior decision, Act outran the loop. If the s
 
 ---
 
-<!-- → ? -->
+<<~/ahu >>
+<<~&#x0004; -> ? >>

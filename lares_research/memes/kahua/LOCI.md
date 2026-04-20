@@ -1,4 +1,4 @@
-<!-- ∞ → lar:///grammar.kahua.grounds/kahua/?confidence=CS:0.95&p=0.5 -->
+<<~&#x0001; ? -> lar:///grammar.kahua.grounds/kahua/?confidence=CS:0.95&p=0.5 >>
 
 # Grammar: Kahua
 
@@ -30,7 +30,7 @@ heritage: Hawaiian (kahua — prepared foundation ground)
 
 ---
 
-<!-- ahu lar:///grammar.kahua.grounds/kahua/?confidence=CS:0.95#loop-position -->
+<<~ ahu #loop-position >>
 
 ## Loop Position
 
@@ -63,7 +63,8 @@ Kahua should not:
 
 ---
 
-<!-- ahu lar:///grammar.kahua.grounds/kahua/?confidence=CS:0.95#handoff -->
+<<~/ahu >>
+<<~ ahu #handoff >>
 
 ## Handoff
 
@@ -87,7 +88,8 @@ If those answers blur, the rest of the grammar inherits structural drift immedia
 
 ---
 
-<!-- ahu lar:///grammar.kahua.grounds/kahua/?confidence=CS:0.95#surface -->
+<<~/ahu >>
+<<~ ahu #surface >>
 
 ## Composable Surface
 
@@ -106,7 +108,8 @@ as one architectural field.
 
 ---
 
-<!-- ahu lar:///grammar.kahua.grounds/kahua/?confidence=CS:0.95#conventions -->
+<<~/ahu >>
+<<~ ahu #conventions >>
 
 ## Conventions
 
@@ -120,7 +123,8 @@ as one architectural field.
 
 ---
 
-<!-- ahu lar:///grammar.kahua.grounds/kahua/?confidence=CS:0.95#procedures -->
+<<~/ahu >>
+<<~ ahu #procedures >>
 
 ## Procedures
 
@@ -135,7 +139,8 @@ spends structural trust across the whole repo.
 
 ---
 
-<!-- ahu lar:///grammar.kahua.grounds/kahua/?confidence=CS:0.95#reading-test -->
+<<~/ahu >>
+<<~ ahu #reading-test >>
 
 ## Reading Test
 
@@ -173,4 +178,5 @@ yet done enough visible work.
 
 ---
 
-<!-- → ? -->
+<<~/ahu >>
+<<~&#x0004; -> ? >>
