@@ -1,4 +1,4 @@
----
+<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
 name: e-prime
 description: Audit or correct settled text under lar:///ha.ka.ba/api/v0.1/pono/e-prime. Use this skill when a user wants existing prose, law text, notes, or prompt material checked, flagged, or turned for E-Prime conformance, especially the canonical rule that any audited `is` or `has` must carry an inline confidence marker.
 allowed-tools: Read, Grep, Glob, Bash, Edit, Write

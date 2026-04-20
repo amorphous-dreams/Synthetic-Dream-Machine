@@ -1,4 +1,4 @@
----
+<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
 name: invariant
 description: Generate, compress, or audit invariant-compliant memes under lar:///ha.ka.ba/api/v0.1/pono/invariant. Treat the canonical loci as self-describing law and self-executing template; keep invariant surfaces short, exact, stable, cacheable, and split heavy matter outward.
 allowed-tools: Read, Grep, Glob, Bash, Edit, Write
