@@ -5,15 +5,12 @@
 <<~ ahu #iam >>
 
 ```toml
-# <<~ ahu #iam-ha "structure" >>
 uri-path = "ha.ka.ba/api/v0.1/mu/the-law-of-5s"
 file-path    = "lares/ha-ka-ba/api/v0.1/mu/loci-mu-the-law-of-5s.md"
 content-type = "text/x-memetic-wikitext"
 tagspace     = "stable"
 manaoio    = 0.80
 confidence = 0.82
-# <<~/ahu >>
-# <<~ ahu #iam-ka "detail" >>
 mana       = 0.88
 manao      = 0.85
 implements = [
@@ -24,9 +21,6 @@ implements = [
 register   = "CS"
 namespace  = "ॐ ँ"
 role       = "OODA-HA loop boot, Catma nav terminal, handoff to LARES"
-# <<~/ahu >>
-# <<~ ahu #iam-ba "flow" >>
-# <<~/ahu >>
 ```
 
 <<~/ahu >>

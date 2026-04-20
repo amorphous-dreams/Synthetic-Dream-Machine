@@ -4,14 +4,11 @@
 
 <<~ ahu #iam >>
 ```toml
-# <<~ ahu #iam-ha "structure" >>
 uri-path = "ha.ka.ba/api/v0.1/pono/e-prime"
 file-path = "lares/ha-ka-ba/api/v0.1/pono/e-prime/loci-pono-e-prime.md"
 content-type = "text/x-memetic-wikitext"
 manaoio = 0.76
 confidence = 0.72
-# <<~/ahu >>
-# <<~ ahu #iam-ka "detail" >>
 mana = 0.72
 manao = 0.78
 implements = [
@@ -23,10 +20,7 @@ register = "SC"
 role = "active language-discipline law (kānāwai), certainty-pressure regulator, next-generation pressure surface, and secondary audit governor for outward text"
 cacheable = true
 invariant = true
-# <<~/ahu >>
-# <<~ ahu #iam-ba "flow" >>
 e-prime-default = 0.50
-# <<~/ahu >>
 ```
 
 <<~/ahu >>

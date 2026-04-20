@@ -4,14 +4,11 @@
 
 <<~ ahu #iam >>
 ```toml
-# <<~ ahu #iam-ha "structure" >>
 uri-path = "ha.ka.ba/api/v0.1/pono/RFC-219"
 file-path = "lares/ha-ka-ba/api/v0.1/pono/loci-pono-RFC-219.md"
 content-type = "text/x-memetic-wikitext"
 manaoio = 0.58
 confidence = 0.62
-# <<~/ahu >>
-# <<~ ahu #iam-ka "detail" >>
 mana = 0.60
 manao = 0.68
 implements = [
@@ -20,9 +17,6 @@ implements = [
 ]
 register = "S"
 role = "shared normative vocabulary law (kānāwai), modal-force registry, and cross-meme reference point"
-# <<~/ahu >>
-# <<~ ahu #iam-ba "flow" >>
-# <<~/ahu >>
 ```
 <<~/ahu >>
 

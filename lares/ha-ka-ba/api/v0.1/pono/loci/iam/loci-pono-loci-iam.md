@@ -5,14 +5,11 @@
 <<~ ahu #iam >>
 
 ```toml
-# <<~ ahu #iam-ha "structure" >>
 uri-path = "ha.ka.ba/api/v0.1/pono/loci/iam"
 file-path = "lares/ha-ka-ba/api/v0.1/pono/loci/iam/loci-pono-loci-iam.md"
 content-type = "text/x-memetic-wikitext"
 manaoio = 0.68
 confidence = 0.70
-# <<~/ahu >>
-# <<~ ahu #iam-ka "detail" >>
 mana = 0.76
 manao = 0.84
 implements = [
@@ -21,9 +18,6 @@ implements = [
 ]
 register = "CS"
 role = "root metadata law (kānāwai), field-set authority, and reduction charter"
-# <<~/ahu >>
-# <<~ ahu #iam-ba "flow" >>
-# <<~/ahu >>
 ```
 
 <<~/ahu >>

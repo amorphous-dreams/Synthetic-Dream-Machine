@@ -9,14 +9,11 @@ allowed-tools: Read, Grep, Glob, Bash, Edit, Write
 
 <<~ ahu #iam >>
 ```toml
-# <<~ ahu #iam-ha "structure" >>
 uri-path = "ha.ka.ba/api/v0.1/pono/invariant/SKILL"
 file-path = "lares/ha-ka-ba/api/v0.1/pono/invariant/SKILL.md"
 content-type = "text/x-memetic-wikitext"
 manaoio = 0.69
 confidence = 0.73
-# <<~/ahu >>
-# <<~ ahu #iam-ka "detail" >>
 mana = 0.71
 manao = 0.77
 implements = [
@@ -37,9 +34,6 @@ invariants = [
   "S6: RFC-2119 keywords stay sparse and bind only load-bearing directives"
 ]
 skill-package-root = "ha-ka-ba/api/v0.1/pono/invariant"
-# <<~/ahu >>
-# <<~ ahu #iam-ba "flow" >>
-# <<~/ahu >>
 ```
 <<~/ahu >>
 

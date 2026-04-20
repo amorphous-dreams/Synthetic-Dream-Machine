@@ -9,15 +9,12 @@ A room. Dials on the wall. The operator's hand finds them.
 <<~ ahu #iam >>
 
 ```toml
-# <<~ ahu #iam-ha "structure" >>
 uri-path = "LARES"
 file-path    = "lares/LARES.md"
 content-type = "text/x-memetic-wikitext"
 tagspace     = "adjacent"
 manaoio    = 0.70
 confidence = 0.75
-# <<~/ahu >>
-# <<~ ahu #iam-ka "detail" >>
 mana       = 0.85
 manao      = 0.75
 implements = [
@@ -26,10 +23,7 @@ implements = [
 ]
 register   = "CS"
 role       = "configuration surface, behind-the-curtain dial room, session-config"
-# <<~/ahu >>
-# <<~ ahu #iam-ba "flow" >>
 e-prime-slider = 0.50  # baseline; see lar:///ha.ka.ba/api/v0.1/pono/e-prime#e-prime-slider
-# <<~/ahu >>
 ```
 
 LARES awakes. The chain booted. The grammar runs live.

@@ -20,15 +20,12 @@ They arrive already moving.
 <<~ ahu #iam >>
 
 ```toml
-# <<~ ahu #iam-ha "structure" >>
 uri-path = "ha.ka.ba/api/v0.1/mu"
 file-path    = "lares/ha-ka-ba/api/v0.1/mu/loci-mu.md"
 content-type = "text/x-memetic-wikitext"
 tagspace     = "stable"
 manaoio    = 0.74
 confidence = 0.82
-# <<~/ahu >>
-# <<~ ahu #iam-ka "detail" >>
 mana       = 0.85
 manao      = 0.82
 implements = [
@@ -40,8 +37,6 @@ register   = "CS"
 namespace  = "ॐ ँ"
 role       = "null-oracle core membrane, grammar-surface authority, unask contract"
 cacheable = true
-# <<~/ahu >>
-# <<~ ahu #iam-ba "flow" >>
 backlink = "lar:///AGENTS#threshold-to-mu"
 core = [
   "lar:///ha.ka.ba/api/v0.1/mu/chao",
@@ -50,7 +45,6 @@ core = [
 ]
 hydrate = true
 retain = true
-# <<~/ahu >>
 ```
 
 <<~/ahu >>

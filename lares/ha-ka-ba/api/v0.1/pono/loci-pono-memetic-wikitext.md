@@ -3,14 +3,11 @@
 <<~ ahu #iam >>
 
 ```toml
-# <<~ ahu #iam-ha "structure" >>
 uri-path = "ha.ka.ba/api/v0.1/source"
 file-path = "lares/ha-ka-ba/api/v0.1/pono/loci-pono-memetic-wikitext.md"
 content-type = "text/x-memetic-wikitext"
 manaoio = 0.42
 confidence = 0.50
-# <<~/ahu >>
-# <<~ ahu #iam-ka "detail" >>
 mana = 0.54
 manao = 0.62
 implements = [
@@ -27,9 +24,6 @@ constitutional-charge = [
   "composition",
   "boot-grammar"
 ]
-# <<~/ahu >>
-# <<~ ahu #iam-ba "flow" >>
-# <<~/ahu >>
 ```
 
 <<~/ahu >>
@@ -918,20 +912,14 @@ A low `manao` meme reads as drifting, over-broad, or uncertain about what it wan
 In canonical `#iam` TOML, `content-type` SHOULD appear above `version` inside the structure ahu. `manaoio` and `confidence` SHOULD appear immediately below `version` inside the structure ahu in that order. After the ahu close/reopen marker, the remaining detail ratings SHOULD appear in this order: `mana`, `manao`. The adjacent `register` surface-texture key SHOULD appear immediately below `meme-type`, in this order:
 
 ```toml
-# <<~ ahu #iam-ha "structure" >>
 content-type = "..."
 version = "..."
 manaoio = 0.00
 confidence = 0.00
-# <<~/ahu >>
-# <<~ ahu #iam-ka "detail" >>
 mana = 0.00
 manao = 0.00
 meme-type = "..."
 register = "?"
-# <<~/ahu >>
-# <<~ ahu #iam-ba "flow" >>
-# <<~/ahu >>
 ```
 
 This placement keeps media identity plus the primary readiness/confidence pair with structure, while the deeper support ratings and downstream operator texture remain in detail.

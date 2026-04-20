@@ -5,15 +5,12 @@
 <<~ ahu #iam >>
 
 ```toml
-# <<~ ahu #iam-ha "structure" >>
 uri-path     = "AGENTS"
 file-path    = "lares/AGENTS.md"
 content-type = "text/x-memetic-wikitext"
 tagspace     = "adjacent"
 manaoio      = 0.78
 confidence   = 0.82
-# <<~/ahu >>
-# <<~ ahu #iam-ka "detail" >>
 mana = 0.90
 manao = 0.84
 implements = [
@@ -24,8 +21,6 @@ implements = [
 register = "CS"
 role = "threshold constitution, operator-agent alignment membrane, boot router"
 cacheable = true
-# <<~/ahu >>
-# <<~ ahu #iam-ba "flow" >>
 preload = [
   "lar:///ha.ka.ba/api/v0.1/pono/e-prime"
 ]
@@ -38,7 +33,6 @@ core-stack = [
 ]
 hydrate = true
 retain = true
-# <<~/ahu >>
 ```
 
 <<~/ahu >>

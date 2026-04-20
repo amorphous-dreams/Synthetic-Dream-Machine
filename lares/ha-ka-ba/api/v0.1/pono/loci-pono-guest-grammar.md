@@ -4,14 +4,11 @@
 
 <<~ ahu #iam >>
 ```toml
-# <<~ ahu #iam-ha "structure" >>
 uri-path = "ha.ka.ba/api/v0.1/pono/guest-grammar"
 file-path = "lares/ha-ka-ba/api/v0.1/pono/loci-pono-guest-grammar.md"
 content-type = "text/x-memetic-wikitext"
 manaoio = 0.48
 confidence = 0.58
-# <<~/ahu >>
-# <<~ ahu #iam-ka "detail" >>
 mana = 0.56
 manao = 0.62
 implements = [
@@ -20,9 +17,6 @@ implements = [
 ]
 register = "S"
 role = "guest-grammar admission law (kānāwai), invocation-boundary law (kānāwai), and host-guest ownership contract"
-# <<~/ahu >>
-# <<~ ahu #iam-ba "flow" >>
-# <<~/ahu >>
 ```
 <<~/ahu >>
 

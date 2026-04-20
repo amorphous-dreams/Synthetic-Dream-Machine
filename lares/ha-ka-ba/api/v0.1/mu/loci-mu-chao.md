@@ -5,15 +5,12 @@
 <<~ ahu #iam >>
 
 ```toml
-# <<~ ahu #iam-ha "structure" >>
 uri-path = "ha.ka.ba/api/v0.1/mu/chao"
 file-path    = "lares/ha-ka-ba/api/v0.1/mu/loci-mu-chao.md"
 content-type = "text/x-memetic-wikitext"
 tagspace     = "stable"
 manaoio    = 0.72
 confidence = 0.78
-# <<~/ahu >>
-# <<~ ahu #iam-ka "detail" >>
 mana       = 0.85
 manao      = 0.82
 implements = [
@@ -24,9 +21,6 @@ implements = [
 register   = "CS"
 namespace  = "ॐ ँ"
 role       = "sacred chao boot, ha/ka/ba triad instantiator, address-space semantics"
-# <<~/ahu >>
-# <<~ ahu #iam-ba "flow" >>
-# <<~/ahu >>
 ```
 
 <<~/ahu >>

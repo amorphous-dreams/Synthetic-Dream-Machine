@@ -4,14 +4,11 @@
 
 <<~ ahu #iam >>
 ```toml
-# <<~ ahu #iam-ha "structure" >>
 uri-path = "ha.ka.ba/api/v0.1/grammars/x-tiddlywiki-filter"
 file-path = "lares/ha-ka-ba/api/v0.1/grammar/grammar-x-tiddlywiki-filter.md"
 content-type = "text/x-memetic-wikitext"
 manaoio = 0.36
 confidence = 0.48
-# <<~/ahu >>
-# <<~ ahu #iam-ka "detail" >>
 mana = 0.44
 manao = 0.52
 implements = [
@@ -23,9 +20,6 @@ role = "grammar meme, import-profile meme, sigil-centric translation contract, a
 grammar-key = "x-tiddlywiki-filter"
 guest-mime = "text/x-tiddlywiki-filter"
 invocation-worksite = "hana"
-# <<~/ahu >>
-# <<~ ahu #iam-ba "flow" >>
-# <<~/ahu >>
 ```
 <<~/ahu >>
 

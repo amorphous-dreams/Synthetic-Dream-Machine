@@ -5,14 +5,11 @@
 <<~ ahu #iam >>
 
 ```toml
-# <<~ ahu #iam-ha "structure" >>
 uri-path = "ha.ka.ba/api/v0.1/pono/loci"
 file-path = "lares/ha-ka-ba/api/v0.1/pono/loci/loci-pono-loci.md"
 content-type = "text/x-memetic-wikitext"
 manaoio = 0.66
 confidence = 0.74
-# <<~/ahu >>
-# <<~ ahu #iam-ka "detail" >>
 mana = 0.74
 manao = 0.84
 implements = [
@@ -21,9 +18,6 @@ implements = [
 ]
 register = "CS"
 role = "loci-rating law (kānāwai), routing convention authority, address stability authority, canon promotion rule, and MCP-resolution roadmap"
-# <<~/ahu >>
-# <<~ ahu #iam-ba "flow" >>
-# <<~/ahu >>
 ```
 
 <<~/ahu >>

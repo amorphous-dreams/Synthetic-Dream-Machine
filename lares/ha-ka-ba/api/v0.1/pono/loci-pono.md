@@ -4,14 +4,11 @@
 
 <<~ ahu #iam >>
 ```toml
-# <<~ ahu #iam-ha "structure" >>
 uri-path = "ha.ka.ba/api/v0.1/pono"
 file-path = "lares/ha-ka-ba/api/v0.1/pono/loci-pono.md"
 content-type = "text/x-memetic-wikitext"
 manaoio = 0.60
 confidence = 0.65
-# <<~/ahu >>
-# <<~ ahu #iam-ka "detail" >>
 mana = 0.65
 manao = 0.70
 implements = [
@@ -21,9 +18,6 @@ implements = [
 register = "CS"
 role = "law (kānāwai) index, verification registry, and skill package host"
 skill-package-root = "ha-ka-ba/api/v0.1/pono/skill-*.md"
-# <<~/ahu >>
-# <<~ ahu #iam-ba "flow" >>
-# <<~/ahu >>
 ```
 <<~/ahu >>
 

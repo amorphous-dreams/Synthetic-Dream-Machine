@@ -9,14 +9,11 @@ allowed-tools: Read, Grep, Glob, Bash, Edit, Write
 
 <<~ ahu #iam >>
 ```toml
-# <<~ ahu #iam-ha "structure" >>
 uri-path = "ha.ka.ba/api/v0.1/pono/e-prime/SKILL"
 file-path = "lares/ha-ka-ba/api/v0.1/pono/e-prime/SKILL.md"
 content-type = "text/x-memetic-wikitext"
 manaoio = 0.63
 confidence = 0.68
-# <<~/ahu >>
-# <<~ ahu #iam-ka "detail" >>
 cacheable = true
 mana = 0.70
 manao = 0.76
@@ -34,9 +31,6 @@ invariants = [
   "S4: residue names ambiguity and intentionally untouched quoted or code surfaces honestly"
 ]
 skill-package-root = "ha-ka-ba/api/v0.1/pono/e-prime"
-# <<~/ahu >>
-# <<~ ahu #iam-ba "flow" >>
-# <<~/ahu >>
 ```
 <<~/ahu >>
 

@@ -5,14 +5,11 @@
 <<~ ahu #iam >>
 
 ```toml
-# <<~ ahu #iam-ha "structure" >>
 uri-path = "ha.ka.ba/api/v0.1/pono/meme"
 file-path = "lares/ha-ka-ba/api/v0.1/pono/meme/loci-pono-meme.md"
 content-type = "text/x-memetic-wikitext"
 manaoio = 0.6
 confidence = 0.6
-# <<~/ahu >>
-# <<~ ahu #iam-ka "detail" >>
 mana = 0.78
 manao = 0.84
 implements = [
@@ -22,9 +19,6 @@ implements = [
 register = "CS"
 role = "canonical meme law (kānāwai), template authority, and rating-target authority"
 control-glyphs = ["&#x0001;", "&#x0002;", "&#x0003;", "&#x0004;", "&#x0005;", "&#x0006;"]
-# <<~/ahu >>
-# <<~ ahu #iam-ba "flow" >>
-# <<~/ahu >>
 ```
 
 <<~/ahu >>
@@ -215,23 +209,17 @@ Transport-specific opener semantics, including how `?` behaves for loci-routed c
 The `#iam` block MUST carry at minimum:
 
 ```toml
-# <<~ ahu #iam-ha "structure" >>
 name = "..."
 file-path = "..."
 content-type = "text/x-memetic-wikitext"
 version = "..."
 manaoio = 0.00
 confidence = 0.00
-# <<~/ahu >>
-# <<~ ahu #iam-ka "detail" >>
 mana = 0.00
 manao = 0.00
 meme-type = "..."
 register = "?"
 role = "..."
-# <<~/ahu >>
-# <<~ ahu #iam-ba "flow" >>
-# <<~/ahu >>
 
 ```
 
@@ -654,23 +642,17 @@ Copy this block. Replace every `[PLACEHOLDER]` with local content. Delete option
 <<~ ahu #iam >>
 
 ```toml
-# <<~ ahu #iam-ha "structure" >>
 name = "[NAME]"
 file-path = "lares/ha-ka-ba/api/v0.1/[MEME-TYPE]-[NAME].md"
 content-type = "text/x-memetic-wikitext"
 version = "0.1-skeleton"
 manaoio = 0.10
 confidence = 0.10
-# <<~/ahu >>
-# <<~ ahu #iam-ka "detail" >>
 mana = 0.10
 manao = 0.10
 meme-type = "[meme-type]"
 register = "P"
 role = "[role]"
-# <<~/ahu >>
-# <<~ ahu #iam-ba "flow" >>
-# <<~/ahu >>
 
 ```
 

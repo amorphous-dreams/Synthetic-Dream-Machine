@@ -5,14 +5,11 @@
 <<~ ahu #iam >>
 
 ```toml
-# <<~ ahu #iam-ha "structure" >>
 uri-path = "ha.ka.ba/api/v0.1/pono/invariant"
 file-path = "lares/ha-ka-ba/api/v0.1/pono/invariant/loci-pono-invariant.md"
 content-type = "text/x-memetic-wikitext"
 manaoio = 0.5
 confidence = 0.7
-# <<~/ahu >>
-# <<~ ahu #iam-ka "detail" >>
 mana = 0.5
 manao = 0.5
 implements = [
@@ -26,9 +23,6 @@ cacheable = true
 invariant = true
 # Template note: memes that implement an invariant pattern SHOULD
 # implement = ["lar:///ha.ka.ba/api/v0.1/pono/invariant"]
-# <<~/ahu >>
-# <<~ ahu #iam-ba "flow" >>
-# <<~/ahu >>
 ```
 
 <<~/ahu >>
