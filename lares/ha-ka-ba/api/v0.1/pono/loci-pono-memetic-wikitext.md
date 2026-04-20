@@ -14,8 +14,8 @@ confidence = 0.50
 mana = 0.54
 manao = 0.62
 implements = [
-  "lar:///ha.ka.ba/api/v0.1/pono/meme/v0.1",
-  "lar:///ha.ka.ba/api/v0.1/pono/loci/v0.1"
+  "lar:///ha.ka.ba/api/v0.1/pono/meme",
+  "lar:///ha.ka.ba/api/v0.1/pono/loci"
 ]
 register = "S"
 role = "constitutional root kānāwai (law), authoring kānāwai (law), primitive semantic kānāwai (law), and boot grammar contract"

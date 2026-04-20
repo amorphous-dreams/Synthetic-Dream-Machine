@@ -17,14 +17,13 @@ confidence = 0.78
 mana       = 0.85
 manao      = 0.82
 implements = [
-  "lar:///ha.ka.ba/api/v0.1/pono/meme/v0.1",
-  "lar:///ha.ka.ba/api/v0.1/pono/loci/v0.1",
-  "lar:///ha.ka.ba/api/v0.1/pono/invariant/v0.1"
+  "lar:///ha.ka.ba/api/v0.1/pono/meme",
+  "lar:///ha.ka.ba/api/v0.1/pono/loci",
+  "lar:///ha.ka.ba/api/v0.1/pono/invariant"
 ]
 register   = "CS"
 namespace  = "ॐ ँ"
 role       = "sacred chao boot, ha/ka/ba triad instantiator, address-space semantics"
-boot-order = 1
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
 # <<~/ahu >>

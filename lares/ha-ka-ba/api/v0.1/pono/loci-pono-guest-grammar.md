@@ -15,8 +15,8 @@ confidence = 0.58
 mana = 0.56
 manao = 0.62
 implements = [
-  "lar:///ha.ka.ba/api/v0.1/pono/meme/v0.1",
-  "lar:///ha.ka.ba/api/v0.1/pono/loci/v0.1"
+  "lar:///ha.ka.ba/api/v0.1/pono/meme",
+  "lar:///ha.ka.ba/api/v0.1/pono/loci"
 ]
 register = "S"
 role = "guest-grammar admission kānāwai (law), invocation-boundary kānāwai (law), and host-guest ownership contract"

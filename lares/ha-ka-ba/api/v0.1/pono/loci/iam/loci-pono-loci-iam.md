@@ -16,8 +16,8 @@ confidence = 0.70
 mana = 0.76
 manao = 0.84
 implements = [
-  "lar:///ha.ka.ba/api/v0.1/pono/meme/v0.1",
-  "lar:///ha.ka.ba/api/v0.1/pono/loci/v0.1"
+  "lar:///ha.ka.ba/api/v0.1/pono/meme",
+  "lar:///ha.ka.ba/api/v0.1/pono/loci"
 ]
 register = "CS"
 role = "root metadata kānāwai (law), field-set authority, and reduction charter"
@@ -127,8 +127,6 @@ The common core:
 
 - `role`
 - `function`
-
-Local detail keys survive only when removal would hide real behavior. Good survivors include `boot-order`, `quiescent`, `collision-mode`, `scale`, `attenuation`, `pipeline-layers`, `canonical-forms`, and other keys that materially alter parse, routing, execution, or law scope.
 
 Boilerplate that merely restates `#iam` as the metadata locus should not survive here.
 

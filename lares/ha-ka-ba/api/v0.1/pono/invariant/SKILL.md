@@ -20,8 +20,8 @@ confidence = 0.73
 mana = 0.71
 manao = 0.77
 implements = [
-  "lar:///ha.ka.ba/api/v0.1/pono/meme/v0.1",
-  "lar:///ha.ka.ba/api/v0.1/pono/loci/v0.1"
+  "lar:///ha.ka.ba/api/v0.1/pono/meme",
+  "lar:///ha.ka.ba/api/v0.1/pono/loci"
 ]
 register = "SC"
 role = "invariant skill, conformance checker, and sidecar splitter"

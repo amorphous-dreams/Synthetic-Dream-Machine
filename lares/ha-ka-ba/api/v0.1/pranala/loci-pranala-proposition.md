@@ -16,8 +16,8 @@ confidence = 0.69
 mana = 0.75
 manao = 0.83
 implements = [
-  "lar:///ha.ka.ba/api/v0.1/pono/meme/v0.1",
-  "lar:///ha.ka.ba/api/v0.1/pono/loci/v0.1"
+  "lar:///ha.ka.ba/api/v0.1/pono/meme",
+  "lar:///ha.ka.ba/api/v0.1/pono/loci"
 ]
 register = "CS"
 role = "semantic edge kānāwai (law), proposition authority, and ontology-link bridge"

@@ -21,12 +21,11 @@ confidence = 0.75
 mana       = 0.85
 manao      = 0.75
 implements = [
-  "lar:///ha.ka.ba/api/v0.1/pono/meme/v0.1",
-  "lar:///ha.ka.ba/api/v0.1/pono/loci/v0.1",
+  "lar:///ha.ka.ba/api/v0.1/pono/meme",
+  "lar:///ha.ka.ba/api/v0.1/pono/loci",
 ]
 register   = "CS"
 role       = "configuration surface, behind-the-curtain dial room, session-config"
-boot-order = ~999
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
 e-prime-slider = 0.50  # baseline; see lar:///ha.ka.ba/api/v0.1/pono/e-prime#e-prime-slider

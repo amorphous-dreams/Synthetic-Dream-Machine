@@ -16,8 +16,8 @@ confidence = 0.67
 mana = 0.75
 manao = 0.82
 implements = [
-  "lar:///ha.ka.ba/api/v0.1/pono/meme/v0.1",
-  "lar:///ha.ka.ba/api/v0.1/pono/loci/v0.1"
+  "lar:///ha.ka.ba/api/v0.1/pono/meme",
+  "lar:///ha.ka.ba/api/v0.1/pono/loci"
 ]
 register = "CS"
 role = "template edge sigil kānāwai (law), slot-contract authority, and kahea binding authority"

@@ -21,8 +21,8 @@ cacheable = true
 mana = 0.70
 manao = 0.76
 implements = [
-  "lar:///ha.ka.ba/api/v0.1/pono/meme/v0.1",
-  "lar:///ha.ka.ba/api/v0.1/pono/loci/v0.1"
+  "lar:///ha.ka.ba/api/v0.1/pono/meme",
+  "lar:///ha.ka.ba/api/v0.1/pono/loci"
 ]
 register = "SC"
 role = "secondary E-Prime audit skill, Hoʻoko correction surface, and settled-text conformance guide"

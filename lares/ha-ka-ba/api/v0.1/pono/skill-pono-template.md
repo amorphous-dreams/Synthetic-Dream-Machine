@@ -23,8 +23,8 @@ confidence = 0.52
 mana = 0.54
 manao = 0.60
 implements = [
-  "lar:///ha.ka.ba/api/v0.1/pono/meme/v0.1",
-  "lar:///ha.ka.ba/api/v0.1/pono/loci/v0.1"
+  "lar:///ha.ka.ba/api/v0.1/pono/meme",
+  "lar:///ha.ka.ba/api/v0.1/pono/loci"
 ]
 register = "S"
 role = "skill template, verification authoring guide, and pre/post-MCP implementation roadmap"

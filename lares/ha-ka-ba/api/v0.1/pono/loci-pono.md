@@ -15,8 +15,8 @@ confidence = 0.65
 mana = 0.65
 manao = 0.70
 implements = [
-  "lar:///ha.ka.ba/api/v0.1/pono/meme/v0.1",
-  "lar:///ha.ka.ba/api/v0.1/pono/loci/v0.1"
+  "lar:///ha.ka.ba/api/v0.1/pono/meme",
+  "lar:///ha.ka.ba/api/v0.1/pono/loci"
 ]
 register = "CS"
 role = "kānāwai (law) index, verification registry, and skill package host"

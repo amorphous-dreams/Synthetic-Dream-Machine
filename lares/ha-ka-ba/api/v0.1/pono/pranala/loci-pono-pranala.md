@@ -15,6 +15,10 @@ confidence = 0.5
 # <<~ ahu #iam-ka "detail" >>
 mana = 0.5
 manao = 0.5
+implements = [
+  "lar:///ha.ka.ba/api/v0.1/pono/meme",
+  "lar:///ha.ka.ba/api/v0.1/pono/loci"
+]
 register = "CS"
 role = "invariant edge law"
 canonical-forms = ["inline", "block", "payload-block"]

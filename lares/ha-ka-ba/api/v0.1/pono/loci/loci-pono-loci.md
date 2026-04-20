@@ -16,8 +16,8 @@ confidence = 0.74
 mana = 0.74
 manao = 0.84
 implements = [
-  "lar:///ha.ka.ba/api/v0.1/pono/meme/v0.1",
-  "lar:///ha.ka.ba/api/v0.1/pono/loci/v0.1"
+  "lar:///ha.ka.ba/api/v0.1/pono/meme",
+  "lar:///ha.ka.ba/api/v0.1/pono/loci"
 ]
 register = "CS"
 role = "loci-rating kānāwai (law), routing convention authority, address stability authority, canon promotion rule, and MCP-resolution roadmap"
@@ -98,7 +98,7 @@ Observe should not:
 
 * attempt URI decomposition before Orient
 * fabricate a resolution substrate not actually present
-* infer high readiness or `implements = ["lar:///ha.ka.ba/api/v0.1/pono/loci/v0.1"]` without evidence
+* infer high readiness or `implements = ["lar:///ha.ka.ba/api/v0.1/pono/loci"]` without evidence
 
 ### Self-Observation
 

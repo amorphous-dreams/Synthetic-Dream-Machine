@@ -16,8 +16,8 @@ confidence = 0.6
 mana = 0.78
 manao = 0.84
 implements = [
-  "lar:///ha.ka.ba/api/v0.1/pono/meme/v0.1",
-  "lar:///ha.ka.ba/api/v0.1/pono/loci/v0.1"
+  "lar:///ha.ka.ba/api/v0.1/pono/meme",
+  "lar:///ha.ka.ba/api/v0.1/pono/loci"
 ]
 register = "CS"
 role = "canonical meme kānāwai (law), template authority, and rating-target authority"

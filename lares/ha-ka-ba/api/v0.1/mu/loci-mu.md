@@ -26,14 +26,13 @@ confidence = 0.80
 mana       = 0.85
 manao      = 0.80
 implements = [
-  "lar:///ha.ka.ba/api/v0.1/pono/meme/v0.1",
-  "lar:///ha.ka.ba/api/v0.1/pono/loci/v0.1",
-  "lar:///ha.ka.ba/api/v0.1/pono/invariant/v0.1"
+  "lar:///ha.ka.ba/api/v0.1/pono/meme",
+  "lar:///ha.ka.ba/api/v0.1/pono/loci",
+  "lar:///ha.ka.ba/api/v0.1/pono/invariant"
 ]
 register   = "CS"
 namespace  = "ॐ ँ"
 role       = "null-oracle boot, grammar-surface authority, unask contract"
-boot-order = 0
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
 # <<~/ahu >>

@@ -15,9 +15,9 @@ confidence = 0.72
 mana = 0.72
 manao = 0.78
 implements = [
-  "lar:///ha.ka.ba/api/v0.1/pono/meme/v0.1",
-  "lar:///ha.ka.ba/api/v0.1/pono/loci/v0.1",
-  "lar:///ha.ka.ba/api/v0.1/pono/invariant/v0.1"
+  "lar:///ha.ka.ba/api/v0.1/pono/meme",
+  "lar:///ha.ka.ba/api/v0.1/pono/loci",
+  "lar:///ha.ka.ba/api/v0.1/pono/invariant"
 ]
 register = "SC"
 role = "active language-discipline kānāwai (law), certainty-pressure regulator, next-generation pressure surface, and secondary audit governor for outward text"

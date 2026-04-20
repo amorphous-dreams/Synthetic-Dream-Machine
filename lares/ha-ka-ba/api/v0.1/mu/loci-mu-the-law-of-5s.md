@@ -17,15 +17,13 @@ confidence = 0.82
 mana       = 0.88
 manao      = 0.85
 implements = [
-  "lar:///ha.ka.ba/api/v0.1/pono/meme/v0.1",
-  "lar:///ha.ka.ba/api/v0.1/pono/loci/v0.1",
-  "lar:///ha.ka.ba/api/v0.1/pono/invariant/v0.1"
+  "lar:///ha.ka.ba/api/v0.1/pono/meme",
+  "lar:///ha.ka.ba/api/v0.1/pono/loci",
+  "lar:///ha.ka.ba/api/v0.1/pono/invariant"
 ]
 register   = "CS"
 namespace  = "ॐ ँ"
 role       = "OODA-HA loop boot, Catma nav terminal, handoff to LARES"
-boot-order = 3
-scale      = "⚂"
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
 # <<~/ahu >>

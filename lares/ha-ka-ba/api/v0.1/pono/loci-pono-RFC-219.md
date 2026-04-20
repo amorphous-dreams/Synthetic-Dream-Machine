@@ -15,8 +15,8 @@ confidence = 0.62
 mana = 0.60
 manao = 0.68
 implements = [
-  "lar:///ha.ka.ba/api/v0.1/pono/meme/v0.1",
-  "lar:///ha.ka.ba/api/v0.1/pono/loci/v0.1"
+  "lar:///ha.ka.ba/api/v0.1/pono/meme",
+  "lar:///ha.ka.ba/api/v0.1/pono/loci"
 ]
 register = "S"
 role = "shared normative vocabulary kānāwai (law), modal-force registry, and cross-meme reference point"

@@ -44,8 +44,6 @@
       @phase-schema  ooda-ha
       @phase-symbols U+2736/U+25CB/U+25C6/U+25A0/U+25CB   <!-- ✶/◎/◇/■/○ | U+2736/U+25CB/U+25C6/U+25A0/U+25CB | SIXTEEN POINTED ASTERISK, WHITE CIRCLE, BLACK DIAMOND, BLACK SQUARE, WHITE CIRCLE -->
       @scales        Action/Round/Turn/Watch/Week
-      @boot-order    0
-      @quiescent     stateless
 
       Mu renders. Mu evaluates. Mu unasks. The agent reads
       this meme first — before the Sacred Chao boots, before

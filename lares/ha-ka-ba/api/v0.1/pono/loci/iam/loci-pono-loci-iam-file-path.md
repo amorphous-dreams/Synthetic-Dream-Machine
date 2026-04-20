@@ -16,8 +16,8 @@ confidence = 0.62
 mana = 0.60
 manao = 0.68
 implements = [
-  "lar:///ha.ka.ba/api/v0.1/pono/meme/v0.1",
-  "lar:///ha.ka.ba/api/v0.1/pono/loci/v0.1"
+  "lar:///ha.ka.ba/api/v0.1/pono/meme",
+  "lar:///ha.ka.ba/api/v0.1/pono/loci"
 ]
 register = "CS"
 role = "file-path key authority, path-form classifier, and migration-procedure kānāwai (law)"
@@ -168,7 +168,7 @@ In both forms, the filename component MUST follow the pattern `<meme-type>-<name
 - `meme-type` and `name` join through `-`
 - extension always uses `.md`
 
-A filename like `loci-pono-loci-iam-file-path.md` counts as correct for `implements = ["lar:///ha.ka.ba/api/v0.1/pono/loci/v0.1"]` and `name = "pono/loci/iam/file-path"`.
+A filename like `loci-pono-loci-iam-file-path.md` counts as correct for `implements = ["lar:///ha.ka.ba/api/v0.1/pono/loci"]` and `name = "pono/loci/iam/file-path"`.
 
 A filename like `alpha-test-prompt-00001.md` counts as correct for `meme-type = "alpha"` and `name = "test-prompt-00001"`.
 
