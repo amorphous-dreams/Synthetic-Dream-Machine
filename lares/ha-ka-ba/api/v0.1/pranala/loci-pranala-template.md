@@ -20,7 +20,7 @@ implements = [
   "lar:///ha.ka.ba/api/v0.1/pono/loci"
 ]
 register = "CS"
-role = "template edge sigil kānāwai (law), slot-contract authority, and kahea binding authority"
+role = "template edge sigil law (kānāwai), slot-contract authority, and kahea binding authority"
 binding-order = ["invocation", "local-body", "addressed-iam", "session-state", "template-defaults"]
 promotion-rule = "repeat-before-promotion"
 invocation-surface = "kahea"
@@ -33,7 +33,7 @@ invocation-surface = "kahea"
 
 # Template
 
-A self-describing kānāwai (law) for template edge sigils.
+A self-describing law (kānāwai) for template edge sigils.
 
 <<~ loulou lar:///ha.ka.ba/api/v0.1/pono/loci/edge/template >>
 

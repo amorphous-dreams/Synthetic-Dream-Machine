@@ -20,7 +20,7 @@ implements = [
   "lar:///ha.ka.ba/api/v0.1/pono/loci"
 ]
 register = "CS"
-role = "canonical meme kānāwai (law), template authority, and rating-target authority"
+role = "canonical meme law (kānāwai), template authority, and rating-target authority"
 control-glyphs = ["&#x0001;", "&#x0002;", "&#x0003;", "&#x0004;", "&#x0005;", "&#x0006;"]
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
@@ -33,13 +33,13 @@ control-glyphs = ["&#x0001;", "&#x0002;", "&#x0003;", "&#x0004;", "&#x0005;", "&
 
 # Meme
 
-A self-describing, self-enacting canonical meme kānāwai (law) for the OODA-HA * ha.ka.ba pattern.
+A self-describing, self-enacting canonical meme law (kānāwai) for the OODA-HA * ha.ka.ba pattern.
 
 This meme governs what a meme in this stack must carry, what it may optionally carry, and how those choices map to rating outcomes. It serves as a copy-ready template: an author may copy the `#skeleton` section, fill in the marked placeholders, and begin with a boot-legal, rating-aware meme surface.
 
 This file models itself as one carrier of that more general law. It governs the subject of `meme` itself as such, not a narrower subtype like `loci`, `grammar`, or `skill`, or a lifecycle bucket like noise, data, typed meme, or canon typed meme.
 
-This meme does not govern parse recognition, render lowering, or transaction lifecycle. Those belong to their own kānāwai (law).
+This meme does not govern parse recognition, render lowering, or transaction lifecycle. Those belong to their own law (kānāwai).
 
 <<~/ahu >>
 
@@ -53,7 +53,7 @@ Meme opens the canonical skeleton stream here.
 
 `✶ Observe --> ⏿ Orient --> ◇ Decide --> ▶ Act --> ⤴ Hoʻoko --> ↺ Aftermath`
 
-Meme kānāwai (law) gathers the authored surface, maps element presence against the required and optional sets, decides conformance and rating posture, prepares the skeleton product, crosses the instantiation threshold, and judges what the authored meme now carries.
+Meme law (kānāwai) gathers the authored surface, maps element presence against the required and optional sets, decides conformance and rating posture, prepares the skeleton product, crosses the instantiation threshold, and judges what the authored meme now carries.
 
 A reader, tool, or agent following this meme should not collapse those phases into one undifferentiated quality pass when later rating explanation, repair guidance, or skeleton generation matters.
 
@@ -155,7 +155,7 @@ This subphase shapes how Observe moves without premature collapse. A stub elemen
 
 ### Non-Normative Prior-Art Note
 
-> TiddlyWiki's skeleton tiddler pattern offers a clean precedent here: the skeleton serves as a pre-runtime form that an author fills in when creating a new tiddler of that type. Observe in that lineage amounts to comparing the instantiated tiddler against the skeleton's expected field set. The meme kānāwai (law) extends that pattern: a skeleton meme carries the expected element set explicitly so that Observe can check against a stable reference.
+> TiddlyWiki's skeleton tiddler pattern offers a clean precedent here: the skeleton serves as a pre-runtime form that an author fills in when creating a new tiddler of that type. Observe in that lineage amounts to comparing the instantiated tiddler against the skeleton's expected field set. The meme law (kānāwai) extends that pattern: a skeleton meme carries the expected element set explicitly so that Observe can check against a stable reference.
 
 <<~/ahu >>
 
@@ -325,7 +325,7 @@ A section governing placement, extraction pressure, and constitutional organizat
 
 #### O6 — Normalization, mana, or metadata-fetch sections
 
-Explicit kānāwai (law) for lawful normalization, structured mana scoring, or metadata retrieval procedure. These belong more naturally in parser and downstream laws unless the meme's specific domain requires local treatment.
+Explicit law (kānāwai) for lawful normalization, structured mana scoring, or metadata retrieval procedure. These belong more naturally in parser and downstream laws unless the meme's specific domain requires local treatment.
 
 #### O7 — Sub-meme depth callouts on ha/ka/ba subloops
 
@@ -375,7 +375,7 @@ Any `ahu` block may carry `ala` links pointing at external law memes or addresse
 
 These function as declared relational walks, not transclusion. A resolved link — one whose target locus exists and carries lawful content — raises `manao` by grounding the block's claims in the broader law system. A broken or nonexistent target degrades `manao` slightly, because the meme makes a relational claim it cannot support.
 
-For the full grammar of resolution states, degradation kānāwai (law), and graceful absence handling, see `lar:///ha.ka.ba/api/v0.1/pono/meme#deferred-resolution`.
+For the full grammar of resolution states, degradation law (kānāwai), and graceful absence handling, see `lar:///ha.ka.ba/api/v0.1/pono/meme#deferred-resolution`.
 
 <<~/ahu >>
 
@@ -421,7 +421,7 @@ This subphase shapes how orientation moves without collapsing ambiguity prematur
 
 ### Non-Normative Prior-Art Note
 
-> MyST's directive/role distinction offers a clean structural analogy: directives carry blocks with explicit parameters while roles carry inline spans. The required/optional element distinction in meme kānāwai (law) maps similarly — required elements define the minimum syntactic and semantic form; optional elements add depth, context, and rendering richness without changing the legal minimum.
+> MyST's directive/role distinction offers a clean structural analogy: directives carry blocks with explicit parameters while roles carry inline spans. The required/optional element distinction in meme law (kānāwai) maps similarly — required elements define the minimum syntactic and semantic form; optional elements add depth, context, and rendering richness without changing the legal minimum.
 
 <<~/ahu >>
 
@@ -565,7 +565,7 @@ A score of 1.00 remains practically unreachable — language, software, and real
 
 <<~/ahu >>
 
-### Conformance Kānāwai (law)
+### Conformance Law (Kānāwai)
 
 Decide should issue one verdict per required element rather than one binary pass/fail for the whole meme.
 
@@ -850,7 +850,7 @@ glyph = "↺"
 
 Aftermath judges what the meme now carries and how that maps to rating bands, residue, and forward motion.
 
-### Core Aftermath Kānāwai (law)
+### Core Aftermath Law (Kānāwai)
 
 Every meme pass should return one typed envelope, even when the meme degrades toward skeleton status.
 
@@ -893,7 +893,7 @@ This subphase governs what Aftermath fundamentally carries forward: a typed rati
 
 Aftermath-ka governs rating computation, repair-path naming, and next-observation routing.
 
-This subphase governs how Aftermath performs its evaluation work. Rating band assignment follows the `#rating-targets` kānāwai (law) exactly: the meme reaches the highest band all per-element verdicts jointly support, not the band it aspirationally targets.
+This subphase governs how Aftermath performs its evaluation work. Rating band assignment follows the `#rating-targets` law (kānāwai) exactly: the meme reaches the highest band all per-element verdicts jointly support, not the band it aspirationally targets.
 
 <<~/ahu >>
 
@@ -943,7 +943,7 @@ If the only available meaning reads "this block names `#foo`," do not add `<<~ l
 
 A sub-meme depth callout should always use `ala`, not `aka`, when the sub-meme may not yet resolve. `aka` stays reserved for content known to resolve at render time.
 
-### Graceful Degradation Kānāwai (law)
+### Graceful Degradation Law (Kānāwai)
 
 A parser or reader encountering a declared-unresolved `ala` address SHALL:
 
@@ -976,7 +976,7 @@ The core claim: resolution state does not reduce to a binary. A declared-unresol
 
 Deferred-resolution-ka governs detection procedure and graceful degradation detail.
 
-A compliant parser scans `ala` links in document order, attempts resolution, classifies each result into one of the three states, and surfaces the classification without collapsing it. The degradation kānāwai (law) above names the exact behavior required at each state boundary.
+A compliant parser scans `ala` links in document order, attempts resolution, classifies each result into one of the three states, and surfaces the classification without collapsing it. The degradation law (kānāwai) above names the exact behavior required at each state boundary.
 
 <<~/ahu >>
 
@@ -1026,7 +1026,7 @@ Each entry names the lineage, its core principle, and what backlog pressure or e
 * Define an optional inline fallback block for `ala` addresses, analogous to `xi:fallback` (future grammar addition).
 * Specify that the meme-store walk graph should remain inspectable as a queryable artifact (extracts from Roam Research principle).
 * Specify that sub-meme walking occurs at agent-traversal time, not initial parse (extracts from ESM dynamic import pattern).
-* Add explicit kānāwai (law) to guest-grammar for how hana guest grammars should handle deferred resolution within guest work.
+* Add explicit law (kānāwai) to guest-grammar for how hana guest grammars should handle deferred resolution within guest work.
 
 <<~/ahu >>
 

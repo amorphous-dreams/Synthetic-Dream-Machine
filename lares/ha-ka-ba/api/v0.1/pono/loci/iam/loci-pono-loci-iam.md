@@ -20,7 +20,7 @@ implements = [
   "lar:///ha.ka.ba/api/v0.1/pono/loci"
 ]
 register = "CS"
-role = "root metadata kānāwai (law), field-set authority, and reduction charter"
+role = "root metadata law (kānāwai), field-set authority, and reduction charter"
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
 # <<~/ahu >>
@@ -30,7 +30,7 @@ role = "root metadata kānāwai (law), field-set authority, and reduction charte
 
 # IAM
 
-A self-describing, self-enacting kānāwai (law) for the root `#iam` metadata block.
+A self-describing, self-enacting law (kānāwai) for the root `#iam` metadata block.
 
 This meme freezes the surviving field surface for live carriers. It asks each field what work it actually does, then keeps, moves, merges, or cuts on that basis.
 

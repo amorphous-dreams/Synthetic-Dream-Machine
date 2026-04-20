@@ -20,7 +20,7 @@ implements = [
   "lar:///ha.ka.ba/api/v0.1/pono/loci"
 ]
 register = "CS"
-role = "debug edge kānāwai (law), observation authority, and hidden-edge illumination authority"
+role = "debug edge law (kānāwai), observation authority, and hidden-edge illumination authority"
 visibility-modes = ["inline", "overlay", "trace-only", "operator-only"]
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
@@ -31,7 +31,7 @@ visibility-modes = ["inline", "overlay", "trace-only", "operator-only"]
 
 # Debug
 
-A self-describing kānāwai (law) for debug and observation edges.
+A self-describing law (kānāwai) for debug and observation edges.
 
 <<~ loulou lar:///ha.ka.ba/api/v0.1/pono/loci/edge/debug >>
 

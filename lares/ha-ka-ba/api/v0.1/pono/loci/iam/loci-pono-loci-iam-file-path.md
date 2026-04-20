@@ -20,7 +20,7 @@ implements = [
   "lar:///ha.ka.ba/api/v0.1/pono/loci"
 ]
 register = "CS"
-role = "file-path key authority, path-form classifier, and migration-procedure kānāwai (law)"
+role = "file-path key authority, path-form classifier, and migration-procedure law (kānāwai)"
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
 # <<~/ahu >>
@@ -30,7 +30,7 @@ role = "file-path key authority, path-form classifier, and migration-procedure k
 
 # file-path
 
-A kānāwai (law) for a single `#iam` TOML key.
+A law (kānāwai) for a single `#iam` TOML key.
 
 `file-path` carries the path from the `ha-ka-ba` path root to the meme's file on disk, relative to `install-root`. It sits as the second field in every `#iam` block, immediately after `name`. It comes in two canonical forms — flat-file and path-directory — and must agree with the `lar:` URI declared in the document opener.
 
@@ -46,7 +46,7 @@ file-path opens the key-authority stream here.
 
 `✶ Observe --> ⏿ Orient --> ◇ Decide --> ▶ Act --> ⤴ Hoʻoko --> ↺ Aftermath`
 
-file-path kānāwai (law) captures the raw key value from the `#iam` block, classifies it into its canonical form and checks agreement with the `lar:` URI, decides conformance verdict and migration posture, prepares any repair guidance, crosses any migration update, and judges residue including live-resolution tension.
+file-path law (kānāwai) captures the raw key value from the `#iam` block, classifies it into its canonical form and checks agreement with the `lar:` URI, decides conformance verdict and migration posture, prepares any repair guidance, crosses any migration update, and judges residue including live-resolution tension.
 
 <<~/ahu >>
 
@@ -383,7 +383,7 @@ Each of these counts as a distinct crossing. Hoʻoko should perform them in the 
 
 #### Hoʻoko / ha
 
-Hoʻoko-ha holds the mutation boundary: what Hoʻoko may alter and what it may not. It may move files, update `file-path` values, and correct document openers. It may not change the `lar:` URI — address stability law at `lar:///ha.ka.ba/api/v0.1/pono/loci#address-stability` locks that surface. A Hoʻoko that changes the `lar:` URI violates loci kānāwai (law).
+Hoʻoko-ha holds the mutation boundary: what Hoʻoko may alter and what it may not. It may move files, update `file-path` values, and correct document openers. It may not change the `lar:` URI — address stability law at `lar:///ha.ka.ba/api/v0.1/pono/loci#address-stability` locks that surface. A Hoʻoko that changes the `lar:` URI violates loci law (kānāwai).
 
 <<~/ahu >>
 
@@ -419,7 +419,7 @@ glyph = "↺"
 
 Aftermath judges completeness and surfaces any residue the migration left open.
 
-### Aftermath Kānāwai (law)
+### Aftermath Law (Kānāwai)
 
 After any `file-path` change — whether a full migration or a simple value correction — Aftermath MUST verify:
 

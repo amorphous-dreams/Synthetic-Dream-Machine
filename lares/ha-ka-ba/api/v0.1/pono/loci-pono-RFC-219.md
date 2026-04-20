@@ -19,7 +19,7 @@ implements = [
   "lar:///ha.ka.ba/api/v0.1/pono/loci"
 ]
 register = "S"
-role = "shared normative vocabulary kānāwai (law), modal-force registry, and cross-meme reference point"
+role = "shared normative vocabulary law (kānāwai), modal-force registry, and cross-meme reference point"
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
 # <<~/ahu >>
@@ -28,7 +28,7 @@ role = "shared normative vocabulary kānāwai (law), modal-force registry, and c
 
 # Normative Verbs
 
-A shared pono kānāwai (law) for the canonical normative verb set used across meme laws.
+A shared pono law (kānāwai) for the canonical normative verb set used across meme laws.
 
 This meme governs which modal verbs count as normative force markers in this stack and gives carrier-specific laws one central declaration site. It does not itself decide where a given law should use those verbs; that remains local to each law.
 

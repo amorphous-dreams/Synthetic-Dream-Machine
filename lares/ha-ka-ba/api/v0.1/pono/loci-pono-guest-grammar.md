@@ -19,7 +19,7 @@ implements = [
   "lar:///ha.ka.ba/api/v0.1/pono/loci"
 ]
 register = "S"
-role = "guest-grammar admission kānāwai (law), invocation-boundary kānāwai (law), and host-guest ownership contract"
+role = "guest-grammar admission law (kānāwai), invocation-boundary law (kānāwai), and host-guest ownership contract"
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
 # <<~/ahu >>
@@ -28,7 +28,7 @@ role = "guest-grammar admission kānāwai (law), invocation-boundary kānāwai (
 
 # Guest Grammar
 
-A self-describing, self-enacting kānāwai (law) for admitting guest grammars into memetic-wikitext.
+A self-describing, self-enacting law (kānāwai) for admitting guest grammars into memetic-wikitext.
 
 This meme governs how the host may admit a guest grammar explicitly, preserve the distinction between root primitives and guest invocation families, and hand lawful guest regions forward into parser, render-pipeline, and pono.
 
@@ -44,7 +44,7 @@ Guest Grammar opens the active admission stream here.
 
 `✶ Observe --> ⏿ Orient --> ◇ Decide --> ▶ Act --> ⤴ Hoʻoko --> ↺ Aftermath`
 
-Guest-grammar kānāwai (law) gathers host and guest boundary pressure, maps the admission posture, chooses one lawful invocation family, prepares bounded entry, crosses the threshold into parser and render handoff, and judges what survived.
+Guest-grammar law (kānāwai) gathers host and guest boundary pressure, maps the admission posture, chooses one lawful invocation family, prepares bounded entry, crosses the threshold into parser and render handoff, and judges what survived.
 
 Detailed parse runtime order belongs in parser.
 
@@ -84,7 +84,7 @@ This subphase keeps the law portable while later practice deepens.
 
 ## Constitutional Charge
 
-Guest-grammar kānāwai (law) functions here as the constitutional bridge between the root semantic surface and admitted subgrammars.
+Guest-grammar law (kānāwai) functions here as the constitutional bridge between the root semantic surface and admitted subgrammars.
 
 The host should stay compact.
 

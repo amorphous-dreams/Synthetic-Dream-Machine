@@ -20,7 +20,7 @@ implements = [
   "lar:///ha.ka.ba/api/v0.1/pono/loci"
 ]
 register = "CS"
-role = "concrete edge instance kānāwai (law), bound-object authority, and override discipline"
+role = "concrete edge instance law (kānāwai), bound-object authority, and override discipline"
 instance-states = ["declared", "bound", "observed", "stale"]
 trace-separation = true
 template-optional = true
@@ -33,7 +33,7 @@ template-optional = true
 
 # Instance
 
-A self-describing kānāwai (law) for bound edge objects.
+A self-describing law (kānāwai) for bound edge objects.
 
 
 This meme governs the concrete edge an author or tool can point at directly. It binds actual endpoints, an actual family, actual payload, and an actual confidence posture.

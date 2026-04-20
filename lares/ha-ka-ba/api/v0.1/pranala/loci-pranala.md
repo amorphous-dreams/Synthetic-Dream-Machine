@@ -20,7 +20,7 @@ implements = [
   "lar:///ha.ka.ba/api/v0.1/pono/loci"
 ]
 register = "CS"
-role = "root pranala (edge) kānāwai (law), family authority, lifecycle authority, and migration target"
+role = "root pranala (edge) law (kānāwai), family authority, lifecycle authority, and migration target"
 edge-families = ["proposition", "control", "dataflow", "message", "constraint", "debug"]
 lifecycle-layers = ["template", "instance", "trace"]
 # <<~/ahu >>
@@ -32,7 +32,7 @@ lifecycle-layers = ["template", "instance", "trace"]
 
 # Pranala / Edge
 
-A self-describing root kānāwai (law) for explicit graph edges in this stack.
+A self-describing root law (kānāwai) for explicit graph edges in this stack.
 
 <<~ loulou lar:///ha.ka.ba/api/v0.1/pono/loci/edge >>
 

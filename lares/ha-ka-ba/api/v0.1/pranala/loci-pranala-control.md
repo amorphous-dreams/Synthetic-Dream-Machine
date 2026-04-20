@@ -20,7 +20,7 @@ implements = [
   "lar:///ha.ka.ba/api/v0.1/pono/loci"
 ]
 register = "CS"
-role = "control-flow edge kānāwai (law), branch authority, and execution-order authority"
+role = "control-flow edge law (kānāwai), branch authority, and execution-order authority"
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
 # <<~/ahu >>
@@ -30,7 +30,7 @@ role = "control-flow edge kānāwai (law), branch authority, and execution-order
 
 # Control
 
-A self-describing kānāwai (law) for control-flow edges.
+A self-describing law (kānāwai) for control-flow edges.
 
 <<~ loulou lar:///ha.ka.ba/api/v0.1/pono/loci/edge/control >>
 

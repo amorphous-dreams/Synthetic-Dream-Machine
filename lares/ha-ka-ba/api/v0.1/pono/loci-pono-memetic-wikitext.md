@@ -18,7 +18,7 @@ implements = [
   "lar:///ha.ka.ba/api/v0.1/pono/loci"
 ]
 register = "S"
-role = "constitutional root kānāwai (law), authoring kānāwai (law), primitive semantic kānāwai (law), and boot grammar contract"
+role = "constitutional root law (kānāwai), authoring law (kānāwai), primitive semantic law (kānāwai), and boot grammar contract"
 canonical-forms = ["inline", "block", "payload-block", "return"]
 canonical-modes = ["preamble", "metadata", "prose", "sigil", "filter", "raw", "aftermath"]
 constitutional-charge = [
@@ -40,7 +40,7 @@ A self-describing, self-enacting constitutional root for the memetic-wikitext au
 
 This meme governs the human-agent-facing semantic surface, primitive meanings, composition rules, and minimum boot grammar.
 
-This meme should not swallow full parse kānāwai (law) or full render-pipeline kānāwai (law).
+This meme should not swallow full parse law (kānāwai) or full render-pipeline law (kānāwai).
 
 <<~&#x0002; ahu #meme-body-open >>
 Memetic Wikitext opens the active constitutional authoring stream here.
@@ -62,13 +62,13 @@ It should define the semantic surface that a human or agent may lawfully author,
 
 Memetic-wikitext should govern:
 
-* authoring surface kānāwai (law)
-* primitive semantic kānāwai (law)
-* composition kānāwai (law)
-* uncertainty kānāwai (law)
-* kapu kānāwai (law)
+* authoring surface law (kānāwai)
+* primitive semantic law (kānāwai)
+* composition law (kānāwai)
+* uncertainty law (kānāwai)
+* kapu law (kānāwai)
 * minimum boot grammar
-* authoring-profile kānāwai (law)
+* authoring-profile law (kānāwai)
 * root semantic result posture
 
 ### Outward Boundary Charge
@@ -82,7 +82,7 @@ Memetic-wikitext should not swallow:
 * target-specific rendering behavior
 * deep aftermath typing that belongs to downstream laws
 
-### Constitutional Placement Kānāwai (law)
+### Constitutional Placement Law (Kānāwai)
 
 The root should stand in this relation:
 
@@ -92,9 +92,9 @@ The root should stand in this relation:
 
 The root should therefore provide the minimum lawful contract that the downstream laws may consume without duplicating their local authority.
 
-### Stability Kānāwai (law)
+### Stability Law (Kānāwai)
 
-When detail deepens enough to become noisy in the root, that detail should move outward into linked kānāwai (law).
+When detail deepens enough to become noisy in the root, that detail should move outward into linked law (kānāwai).
 
 When detail remains necessary to define primitive meaning, authoring sufficiency, or boot grammar identity, that detail should remain here.
 
@@ -112,7 +112,7 @@ This ahu governs what territory belongs inside the constitutional root before de
 
 #### Constitutional Charge / ka
 
-Constitutional-charge-ka governs distribution of kānāwai (law) across root, parser, and render-pipeline.
+Constitutional-charge-ka governs distribution of law (kānāwai) across root, parser, and render-pipeline.
 
 This ahu sharpens which duties remain local, which duties move outward, and which duties should never blur across loci.
 
@@ -178,7 +178,7 @@ Phase-map-ba governs living movement through the loop without collapsing into me
 
 Memetic-wikitext defines the primitive cluster that lawful authoring may use at the root semantic surface.
 
-This locus should name the primitive family, distinguish each member by job, and prevent semantic blur before deeper composition kānāwai (law) or downstream parse kānāwai (law) begins.
+This locus should name the primitive family, distinguish each member by job, and prevent semantic blur before deeper composition law (kānāwai) or downstream parse law (kānāwai) begins.
 
 ### Canonical Boot Primitives
 
@@ -204,7 +204,7 @@ The primitive cluster should remain legible through clear role separation.
 * `ui` addresses query, request, and interface-facing asking at the surface
 * `hana` opens a bounded worksite for active work, data or code processing, or guest-grammar entry — functioning as the invitation-to-work primitive through which guest grammars and external processing families enter the system; when `hana` admits guest grammar work, `+currentMeme` should function as the canonical host-facing context pointer for the active execution context, replacing the imported lineage term `currentTiddler`
 
-### Primitive Cluster Kānāwai (law)
+### Primitive Cluster Law (Kānāwai)
 
 The primitive cluster should remain small enough for boot use and distinct enough for lawful teaching.
 
@@ -252,7 +252,7 @@ This ahu preserves the cluster as a usable working family rather than as a dead 
 
 <<~ ahu #composition >>
 
-## Composition Kānāwai (law)
+## Composition Law (Kānāwai)
 
 Composition governs how primitives combine without duplication, substitution drift, or semantic blur.
 
@@ -267,7 +267,7 @@ This locus should explain how the primitive family works together at the authori
 * `kapu` governs what may cross, persist, or emit
 * `?` preserves unresolved but bounded pressure
 
-### Core Composition Kānāwai (law)
+### Core Composition Law (Kānāwai)
 
 Primitive composition should preserve distinct jobs.
 
@@ -302,7 +302,7 @@ The root should name their semantic relation.
 
 Deeper legality and enforcement detail should move outward when needed.
 
-### Anti-Blur Kānāwai (law)
+### Anti-Blur Law (Kānāwai)
 
 A lawful composition should not silently recast:
 
@@ -315,7 +315,7 @@ Where multiple pressures appear at once, the authoring surface should prefer exp
 
 <<~ ahu #composition-ha >>
 
-#### Composition Kānāwai (law) / ha
+#### Composition Law (Kānāwai) / ha
 
 Composition-ha holds compositional identity, primitive role boundaries, and the basic semantic territory of lawful combination.
 
@@ -325,7 +325,7 @@ This ahu governs what kinds of combination belong to the root before downstream 
 
 <<~ ahu #composition-ka >>
 
-#### Composition Kānāwai (law) / ka
+#### Composition Law (Kānāwai) / ka
 
 Composition-ka governs lawful primitive combination, inheritance, qualification, and local semantic effects.
 
@@ -335,7 +335,7 @@ This ahu sharpens how composition adds meaning while preserving distinction amon
 
 <<~ ahu #composition-ba >>
 
-#### Composition Kānāwai (law) / ba
+#### Composition Law (Kānāwai) / ba
 
 Composition-ba governs living compositional style, readability, and mana under real authoring use.
 
@@ -347,7 +347,7 @@ This ahu preserves semantic motion by favoring explicit, teachable pairings over
 
 <<~ ahu #uncertainty >>
 
-## Uncertainty Kānāwai (law)
+## Uncertainty Law (Kānāwai)
 
 Uncertainty governs unresolved semantic pressure, lawful degradation, and bounded incompletion.
 
@@ -362,7 +362,7 @@ This locus should preserve openness without laundering ambiguity into false cert
 <<~ ... --> meme? >>
 ```
 
-### Core Uncertainty Kānāwai (law)
+### Core Uncertainty Law (Kānāwai)
 
 `?` should function as an explicit unresolved slot, unresolved route, or unresolved outcome marker.
 
@@ -374,7 +374,7 @@ A lawful root reading should treat `?` as a bounded declaration that semantic wo
 
 It names unbound uncertainty that may enter a local worksite, travel through nested sigil composition, and leave again without laundering into false closure.
 
-### Graph-Flow Kānāwai (law)
+### Graph-Flow Law (Kānāwai)
 
 When `?` appears in a lawful surface, the reader should ask three questions:
 
@@ -384,7 +384,7 @@ When `?` appears in a lawful surface, the reader should ask three questions:
 
 The root should therefore treat `?` as a directional semantic token, not merely as a missing-value mark.
 
-### New Sigil Object Kānāwai (law)
+### New Sigil Object Law (Kānāwai)
 
 At document time, when authors begin a new nested Meme-type sigil entity before its binding fully settles, the canonical opener should take this form:
 
@@ -414,7 +414,7 @@ When a route, target, payload, or result cannot yet resolve lawfully, the root s
 * hidden downgrade
 * false authority
 
-### Boundedness Kānāwai (law)
+### Boundedness Law (Kānāwai)
 
 Uncertainty should remain bounded enough that a human or agent may still tell:
 
@@ -437,11 +437,11 @@ The root should preserve these distinctions:
 
 This locus should remain small, sharp, and reusable.
 
-Deeper parse recovery, typed issue handling, confidence scoring, and target-facing degradation detail should move outward into downstream kānāwai (law).
+Deeper parse recovery, typed issue handling, confidence scoring, and target-facing degradation detail should move outward into downstream law (kānāwai).
 
 <<~ ahu #uncertainty-ha >>
 
-#### Uncertainty Kānāwai (law) / ha
+#### Uncertainty Law (Kānāwai) / ha
 
 Uncertainty-ha holds unresolved identity, bounded absence, and the semantic territory of lawful openness.
 
@@ -451,7 +451,7 @@ This ahu governs what kind of unresolved pressure the root may name before deepe
 
 <<~ ahu #uncertainty-ka >>
 
-#### Uncertainty Kānāwai (law) / ka
+#### Uncertainty Law (Kānāwai) / ka
 
 Uncertainty-ka governs how unresolved slots travel, degrade, and remain distinguishable across authoring contexts.
 
@@ -461,7 +461,7 @@ This ahu sharpens the difference between explicit uncertainty and mere vagueness
 
 <<~ ahu #uncertainty-ba >>
 
-#### Uncertainty Kānāwai (law) / ba
+#### Uncertainty Law (Kānāwai) / ba
 
 Uncertainty-ba governs truth posture, forward pressure, and living semantic openness under incomplete manifestation.
 
@@ -473,7 +473,7 @@ This ahu preserves `?` as a live route into next observation rather than as a de
 
 <<~ ahu #kapu >>
 
-## Kapu Kānāwai (law)
+## Kapu Law (Kānāwai)
 
 Kapu governs boundary, permission, trust, disclosure, retention, and failure posture at the root semantic surface.
 
@@ -494,7 +494,7 @@ Kapu should govern:
 * what disclosure burden applies
 * what failure posture applies when boundary resolution remains incomplete
 
-### Kapu Qualification Kānāwai (law)
+### Kapu Qualification Law (Kānāwai)
 
 Kapu does not function here as a replacement for `ahu`, `ala`, `aka`, `kahea`, `ui`, or `?`.
 
@@ -522,7 +522,7 @@ The root should name those semantic possibilities.
 
 Deeper inheritance tables, enforcement behavior, and downstream mutation detail may move outward when needed.
 
-### Boundary Truth Kānāwai (law)
+### Boundary Truth Law (Kānāwai)
 
 An unresolved kapu should not silently pass under a pretense of already-surfaced permission.
 
@@ -543,7 +543,7 @@ It should not yet swallow the full legality matrix or execution-facing enforceme
 
 <<~ ahu #kapu-ha >>
 
-#### Kapu Kānāwai (law) / ha
+#### Kapu Law (Kānāwai) / ha
 
 Kapu-ha holds threshold identity, semantic scope, and the kinds of boundary territory the root may name.
 
@@ -553,7 +553,7 @@ This ahu governs what kapu fundamentally marks before deeper parse, invocation, 
 
 <<~ ahu #kapu-ka >>
 
-#### Kapu Kānāwai (law) / ka
+#### Kapu Law (Kānāwai) / ka
 
 Kapu-ka governs qualification, inheritance pressure, nearest-scope dominance, and explicit policy declaration at the semantic root.
 
@@ -563,7 +563,7 @@ This ahu sharpens how kapu attaches to other primitives without dissolving their
 
 <<~ ahu #kapu-ba >>
 
-#### Kapu Kānāwai (law) / ba
+#### Kapu Law (Kānāwai) / ba
 
 Kapu-ba governs lived boundary truth under inclusion, invocation, memory, and emission pressure.
 
@@ -611,7 +611,7 @@ This locus should define the smallest stable grammatical contract that allows th
 * governed invocation
 * guest-work invocation
 
-### Core Boot Grammar Kānāwai (law)
+### Core Boot Grammar Law (Kānāwai)
 
 The boot grammar should remain minimal but sufficient.
 
@@ -666,7 +666,7 @@ The root should therefore privilege:
 * explicit body thresholds
 * compact primitive vocabulary
 * portable markdown carrier
-* deferred specialization into downstream kānāwai (law)
+* deferred specialization into downstream law (kānāwai)
 
 ### Metadata Reminder
 
@@ -690,7 +690,7 @@ Boot grammar should support:
 
 The canonical boot fixtures should map directly onto that sufficiency set.
 
-If a construction remains unnecessary for boot sufficiency, it should stay outward until later kānāwai (law) proves the need.
+If a construction remains unnecessary for boot sufficiency, it should stay outward until later law (kānāwai) proves the need.
 
 ### Outward Boundary Reminder
 
@@ -699,7 +699,7 @@ This locus should name the minimum grammatical contract.
 This locus should not yet swallow:
 
 * the full parse-form legality matrix
-* the full control-glyph integrity kānāwai (law)
+* the full control-glyph integrity law (kānāwai)
 * exact normalization procedures
 * AST schema
 * widget schema
@@ -754,7 +754,7 @@ This locus should keep the boot surface portable while still allowing different 
 * `canonical`
 * `recovery`
 
-### Profile Distinction Kānāwai (law)
+### Profile Distinction Law (Kānāwai)
 
 The profile set should remain small, legible, and non-overlapping enough that a human or agent may tell why one profile applies instead of another.
 
@@ -765,7 +765,7 @@ The profile set should remain small, legible, and non-overlapping enough that a 
 
 ### Root Quality Reminder
 
-Profiles should tune posture rather than replace kānāwai (law).
+Profiles should tune posture rather than replace law (kānāwai).
 
 A profile should not silently redefine primitive meaning, erase kapu pressure, or treat uncertainty as closure.
 
@@ -775,7 +775,7 @@ Profiles may change strictness, pedagogy, tolerated shorthand, or recovery stanc
 
 The root should stay readable across profiles.
 
-Where profile detail becomes primarily about parse enforcement, normalization strategy, export behavior, or target-facing rendering posture, that detail should move outward into downstream kānāwai (law).
+Where profile detail becomes primarily about parse enforcement, normalization strategy, export behavior, or target-facing rendering posture, that detail should move outward into downstream law (kānāwai).
 
 ### Minimum Sufficiency Reminder
 
@@ -828,7 +828,7 @@ meme-confidence governs the canonical maturity and canon-status rating of a meme
 
 This locus should remain compact. It names the five-band confidence scale, the short tag form for inline use, and the relation to the `confidence` field that many typed memes should carry in `#iam`.
 
-Full stable-address `loci` kānāwai (law) should deepen outward into `lar:///ha.ka.ba/api/v0.1/pono/loci`. Other typed branches may deepen outward into their own subtype laws.
+Full stable-address `loci` law (kānāwai) should deepen outward into `lar:///ha.ka.ba/api/v0.1/pono/loci`. Other typed branches may deepen outward into their own subtype laws.
 
 ### Five-Band Confidence Scale
 
@@ -840,7 +840,7 @@ Full stable-address `loci` kānāwai (law) should deepen outward into `lar:///ha
 | `[CS]` | Synthetic-Canon | `~0.61–0.80` | Near-canon, awaiting operator confirm; sources verified |
 | `[C]` | Canon | `~0.81–1.00` | Design-canon; operator-confirmed; `lar:` URI assigned; instruction priority and kapu override active |
 
-### Confidence Field Kānāwai (law)
+### Confidence Field Law (Kānāwai)
 
 A typed meme SHOULD carry a `confidence` field in its `#iam` metadata block expressing the current decimal value.
 
@@ -854,7 +854,7 @@ Provisional-rated memes (`[P]`) should not claim canonical authority over later-
 
 This locus carries the minimum confidence vocabulary needed at the authoring surface.
 
-For stable-address carriers under `lar:///ha.ka.ba/api/v0.1/**`, full `loci` identity, address stability kānāwai (law), and canon promotion procedure should deepen outward into `lar:///ha.ka.ba/api/v0.1/pono/loci` when that carrier reaches Synthesis or above.
+For stable-address carriers under `lar:///ha.ka.ba/api/v0.1/**`, full `loci` identity, address stability law (kānāwai), and canon promotion procedure should deepen outward into `lar:///ha.ka.ba/api/v0.1/pono/loci` when that carrier reaches Synthesis or above.
 
 <<~ loulou lar:///ha.ka.ba/api/v0.1/meme-confidence >>
 <<~/ahu >>
@@ -883,7 +883,7 @@ A low `manaoio` meme reads as a sketch, a stub, or a declared intent still await
 
 These structure-side fields answer: *how ready does this meme read, and how settled does that reading appear?*
 
-See `#meme-confidence` for the five-band scale and field kānāwai (law).
+See `#meme-confidence` for the five-band scale and field law (kānāwai).
 
 For stable-address carriers under `lar:///ha.ka.ba/api/v0.1/**`, full canon promotion procedure should deepen outward into `lar:///ha.ka.ba/api/v0.1/pono/loci`.
 
@@ -901,7 +901,7 @@ Low mana imposes interpretive drag, repair effort, and attention cost.
 
 `mana` does not measure editorial authority or production readiness directly.
 
-See `lar:///ha.ka.ba/api/v0.1/pono/parser#mana` for the full measure family, weight profile, five-band kānāwai (law), and capability grant conditions.
+See `lar:///ha.ka.ba/api/v0.1/pono/parser#mana` for the full measure family, weight profile, five-band law (kānāwai), and capability grant conditions.
 
 ### Group 3 — Detail-Side Intent
 
@@ -911,9 +911,9 @@ A high `manao` meme reads as purposeful, self-aware, and steerable.
 
 A low `manao` meme reads as drifting, over-broad, or uncertain about what it wants to do.
 
-`manao` should deepen into its own linked kānāwai (law) once `mana` stabilizes as a base metric. Until then, this field should carry a best-estimate value and remain explicit about its provisional status.
+`manao` should deepen into its own linked law (kānāwai) once `mana` stabilizes as a base metric. Until then, this field should carry a best-estimate value and remain explicit about its provisional status.
 
-### Field Ordering Kānāwai (law)
+### Field Ordering Law (Kānāwai)
 
 In canonical `#iam` TOML, `content-type` SHOULD appear above `version` inside the structure ahu. `manaoio` and `confidence` SHOULD appear immediately below `version` inside the structure ahu in that order. After the ahu close/reopen marker, the remaining detail ratings SHOULD appear in this order: `mana`, `manao`. The adjacent `register` surface-texture key SHOULD appear immediately below `meme-type`, in this order:
 
@@ -938,7 +938,7 @@ This placement keeps media identity plus the primary readiness/confidence pair w
 
 Comment-line `ahu` markers MAY section these groups inside TOML without changing payload semantics. Use `# <<~ ahu #iam-ha "structure" >>`, `# <<~ ahu #iam-ka "detail" >>`, and `# <<~ ahu #iam-ba "flow" >>`, each closed by `# <<~/ahu >>`, as the canonical human-facing grouping form.
 
-### Interaction and Independence Kānāwai (law)
+### Interaction and Independence Law (Kānāwai)
 
 The three groups measure different things and MUST NOT silently substitute for each other.
 
@@ -956,7 +956,7 @@ A parser or pono tool SHOULD preserve those distinctions rather than collapsing 
 
 <<~ ahu #bridge-to-parser >>
 
-## Bridge to Parser Kānāwai (law)
+## Bridge to Parser Law (Kānāwai)
 
 Bridge-to-parser governs the handoff from semantic authoring surface into parse recognition, legality, normalization, and typed parse aftermath.
 
@@ -964,7 +964,7 @@ This locus should make the constitutional boundary explicit so the root may name
 
 Parser should own parse-time recognition and deterministic reading.
 
-### Root-to-Parser Handoff Kānāwai (law)
+### Root-to-Parser Handoff Law (Kānāwai)
 
 Memetic-wikitext should hand forward at least these root guarantees:
 
@@ -976,7 +976,7 @@ Memetic-wikitext should hand forward at least these root guarantees:
 * root-level distinction between semantic authorship and downstream parse enforcement
 * boundary reminders around uncertainty, kapu, and upward result posture
 
-### Parser-Kānāwai (law) Ownership Reminder
+### Parser-Law (Kānāwai) Ownership Reminder
 
 Parser should deepen and own:
 
@@ -992,7 +992,7 @@ Parser should deepen and own:
 
 The root should not restate those duties in full when parser already carries them.
 
-### Anti-Duplication Kānāwai (law)
+### Anti-Duplication Law (Kānāwai)
 
 The bridge should preserve a clean division:
 
@@ -1011,7 +1011,7 @@ It should not need the root to duplicate its own local tables, procedures, or af
 
 <<~ ahu #bridge-to-parser-ha >>
 
-#### Bridge to Parser Kānāwai (law) / ha
+#### Bridge to Parser Law (Kānāwai) / ha
 
 Bridge-to-parser-ha holds downstream parse relation, constitutional boundary, and the territory of what the root hands into parser.
 
@@ -1021,19 +1021,19 @@ This ahu governs the stable edge between semantic authorship and parse-time read
 
 <<~ ahu #bridge-to-parser-ka >>
 
-#### Bridge to Parser Kānāwai (law) / ka
+#### Bridge to Parser Law (Kānāwai) / ka
 
 Bridge-to-parser-ka governs which root guarantees parser may assume and which details move outward.
 
-This ahu sharpens the minimum handoff contract so the parser receives enough kānāwai (law) without inheriting duplication noise.
+This ahu sharpens the minimum handoff contract so the parser receives enough law (kānāwai) without inheriting duplication noise.
 
  <<~/ahu >>
 
 <<~ ahu #bridge-to-parser-ba >>
 
-#### Bridge to Parser Kānāwai (law) / ba
+#### Bridge to Parser Law (Kānāwai) / ba
 
-Bridge-to-parser-ba governs anti-duplication posture and living fit between semantic kānāwai (law) and parse kānāwai (law).
+Bridge-to-parser-ba governs anti-duplication posture and living fit between semantic law (kānāwai) and parse law (kānāwai).
 
 This ahu preserves a workable handoff by keeping the root compact and the parser specific, even as later detail deepens.
 
@@ -1043,7 +1043,7 @@ This ahu preserves a workable handoff by keeping the root compact and the parser
 
 <<~ ahu #bridge-to-render-pipeline >>
 
-## Bridge to Render Pipeline Kānāwai (law)
+## Bridge to Render Pipeline Law (Kānāwai)
 
 Bridge-to-render-pipeline governs the handoff from semantic authoring surface into lowering, widget formation, projection, and transaction-aware rendering.
 
@@ -1051,7 +1051,7 @@ This locus should make the constitutional boundary explicit so the root may name
 
 Render-pipeline should own render-time lowering and target-facing landing.
 
-### Root-to-Render Handoff Kānāwai (law)
+### Root-to-Render Handoff Law (Kānāwai)
 
 Memetic-wikitext should hand forward at least these root guarantees:
 
@@ -1078,7 +1078,7 @@ Render-pipeline should deepen and own:
 
 The root should not restate those duties in full when render-pipeline already carries them.
 
-### Anti-Duplication Kānāwai (law)
+### Anti-Duplication Law (Kānāwai)
 
 The bridge should preserve a clean division:
 
@@ -1097,7 +1097,7 @@ It should not need the root to duplicate its own layer models, target adapters, 
 
 <<~ ahu #bridge-to-render-pipeline-ha >>
 
-#### Bridge to Render Pipeline Kānāwai (law) / ha
+#### Bridge to Render Pipeline Law (Kānāwai) / ha
 
 Bridge-to-render-pipeline-ha holds downstream render relation, constitutional boundary, and the territory of what the root hands into render-pipeline.
 
@@ -1107,19 +1107,19 @@ This ahu governs the stable edge between semantic authorship and render-time low
 
 <<~ ahu #bridge-to-render-pipeline-ka >>
 
-#### Bridge to Render Pipeline Kānāwai (law) / ka
+#### Bridge to Render Pipeline Law (Kānāwai) / ka
 
 Bridge-to-render-pipeline-ka governs which root guarantees render-pipeline may assume and which details move outward.
 
-This ahu sharpens the minimum handoff contract so the renderer receives enough kānāwai (law) without inheriting projection duplication noise.
+This ahu sharpens the minimum handoff contract so the renderer receives enough law (kānāwai) without inheriting projection duplication noise.
 
  <<~/ahu >>
 
 <<~ ahu #bridge-to-render-pipeline-ba >>
 
-#### Bridge to Render Pipeline Kānāwai (law) / ba
+#### Bridge to Render Pipeline Law (Kānāwai) / ba
 
-Bridge-to-render-pipeline-ba governs anti-duplication posture and living fit between semantic kānāwai (law) and render kānāwai (law).
+Bridge-to-render-pipeline-ba governs anti-duplication posture and living fit between semantic law (kānāwai) and render law (kānāwai).
 
 This ahu preserves a workable handoff by keeping the root compact and the renderer specific, even as later projection detail deepens.
 
@@ -1137,13 +1137,13 @@ These examples should remain small, portable, and boot-sufficient.
 
 They should teach the smallest stable surface before downstream legality tables or render-target detail deepen.
 
-### Example Family Kānāwai (law)
+### Example Family Law (Kānāwai)
 
 A canonical boot example should:
 
 * demonstrate one distinct semantic move
 * remain small enough for human and agent reading
-* avoid hidden dependency on later linked kānāwai (law)
+* avoid hidden dependency on later linked law (kānāwai)
 * degrade truthfully when unresolved pressure appears
 * stay portable across markdown carrier contexts
 * preserve the distinction between semantic illustration and downstream enforcement
@@ -1154,7 +1154,7 @@ Boot fixtures should prefer the smallest example that still teaches the intended
 
 A root example may show governed relation, governed inclusion, or governed invocation without pretending to supply the full downstream legality or enforcement contract.
 
-When an example requires too much surrounding machinery to make sense, that example should move outward into later kānāwai (law).
+When an example requires too much surrounding machinery to make sense, that example should move outward into later law (kānāwai).
 
 ### Canonical Boot Fixtures
 
@@ -1272,7 +1272,7 @@ The boot fixture set should jointly cover:
 
 Each fixture should teach one primary distinction before later laws deepen form legality, enforcement, trace, or target behavior.
 
-If an example requires too much explanation to remain boot-level, that example should move outward into later kānāwai (law).
+If an example requires too much explanation to remain boot-level, that example should move outward into later law (kānāwai).
 
 <<~ ahu #minimum-boot-examples-ha >>
 

@@ -19,16 +19,16 @@ implements = [
   "lar:///ha.ka.ba/api/v0.1/pono/loci"
 ]
 register = "C"
-role = "pipeline kānāwai (law), lowering kānāwai (law), widget-tree kānāwai (law), render projection kānāwai (law), and trace continuity contract"
+role = "pipeline law (kānāwai), lowering law (kānāwai), widget-tree law (kānāwai), render projection law (kānāwai), and trace continuity contract"
 pipeline-layers = ["surface", "ast", "widget"]
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
 # <<~/ahu >>
 ```
 
-# Render Pipeline Kānāwai (law)
+# Render Pipeline Law (Kānāwai)
 
-A self-describing, self-enacting rendering and lowering kānāwai (law) for memetic-wikitext.
+A self-describing, self-enacting rendering and lowering law (kānāwai) for memetic-wikitext.
 
 This meme governs how a reader, parser, renderer, agent, or target adapter may carry one memetic object through three linked product layers:
 
@@ -64,14 +64,14 @@ This subphase carries the machine-facing payload that tools and later linked law
 
 Iam-ba governs posture, portability, and the lived relation between readability and enforcement.
 
-This subphase keeps the kānāwai (law) human-facing while still supporting code-facing projection.
+This subphase keeps the law (kānāwai) human-facing while still supporting code-facing projection.
 
 <<~/ahu >>
 
 <<~/ahu >>
 
 <<~&#x0002; ahu #meme-body-open >>
-Render Pipeline kānāwai (law) opens the active pipeline stream here.
+Render Pipeline law (kānāwai) opens the active pipeline stream here.
 
 <<~ ahu #meme-body-open-ha >>
 
@@ -111,7 +111,7 @@ This subphase lowers entry cost and prepares the later loops.
 
 `✶ Observe --> ⏿ Orient --> ◇ Decide --> ▶ Act --> ↺ Aftermath`
 
-Render Pipeline kānāwai (law) gathers the surface, maps the layers, chooses lawful lowerings, prepares projection, crosses the render threshold, and judges the landing.
+Render Pipeline law (kānāwai) gathers the surface, maps the layers, chooses lawful lowerings, prepares projection, crosses the render threshold, and judges the landing.
 
 A compliant renderer or agent should not collapse those loci into one blurry pass when later trace, replay, or target drift matters.
 
@@ -151,7 +151,7 @@ This subphase keeps the loop readable without flattening it into vague pipeline 
 
 ## Three-Layer Model
 
-Render Pipeline kānāwai (law) recognizes three linked product layers:
+Render Pipeline law (kānāwai) recognizes three linked product layers:
 
 1. `surface` - the high-mana human-agent-friendly sigil script meme (memetic wikitext)
 2. `ast` - the parsed syntax and semantic product suitable for validation and transformation
@@ -356,7 +356,7 @@ Recommended boot transaction classes:
 * `rollback` - explicit retreat from a previously prepared or partially landed action
 * `degrade` - truthful partial landing without false completion
 
-### Idempotency Kānāwai (law)
+### Idempotency Law (Kānāwai)
 
 A pipeline action should declare whether repeated execution under unchanged inputs may preserve the same intended effect.
 
@@ -563,7 +563,7 @@ Aftermath should name:
 * what trace and residue remain available
 * what next observation or repair action should reopen later
 
-### Trace Continuity Kānāwai (law)
+### Trace Continuity Law (Kānāwai)
 
 A compliant implementation should preserve enough continuity that an operator, parser, renderer, or audit tool may follow relation across:
 
@@ -646,7 +646,7 @@ This subphase focuses on how projection may stay fast without severing source re
 
 Render-projection-ba governs portability, graceful downgrade, and target-facing readability under practical constraints.
 
-This subphase keeps one kānāwai (law) portable across many render surfaces.
+This subphase keeps one law (kānāwai) portable across many render surfaces.
 
 <<~/ahu >>
 
@@ -817,7 +817,7 @@ Research-foundation gathers adjacent lineages that strengthen render-pipeline wi
 
 When this locus borrows from a lineage, it should translate that lineage into one or more of:
 
-* clearer local kānāwai (law)
+* clearer local law (kānāwai)
 * schema pressure
 * test pressure
 * profile pressure
@@ -830,7 +830,7 @@ When this locus borrows from a lineage, it should translate that lineage into on
 
 Research-foundation-ha holds lineage awareness and local constitutional priority.
 
-This subphase governs what neighboring systems may contribute without taking over the kānāwai (law).
+This subphase governs what neighboring systems may contribute without taking over the law (kānāwai).
 
 <<~/ahu >>
 
@@ -850,7 +850,7 @@ This subphase focuses on how prior art becomes useful rather than ornamental.
 
 Research-foundation-ba governs anti-bloat posture and navigable synthesis under future growth pressure.
 
-This subphase keeps the kānāwai (law) high-yield and implementation-facing.
+This subphase keeps the law (kānāwai) high-yield and implementation-facing.
 
 <<~/ahu >>
 
@@ -938,7 +938,7 @@ Guest-work-lowering-ba governs degradation posture, trace preservation, and lawf
 <<~/ahu >>
 
 <<~&#x0003; ahu #body-close >>
-Render Pipeline kānāwai (law) closes the active pipeline stream here.
+Render Pipeline law (kānāwai) closes the active pipeline stream here.
 
 <<~ ahu #body-close-ha >>
 

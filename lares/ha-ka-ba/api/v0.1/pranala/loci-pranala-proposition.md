@@ -20,7 +20,7 @@ implements = [
   "lar:///ha.ka.ba/api/v0.1/pono/loci"
 ]
 register = "CS"
-role = "semantic edge kānāwai (law), proposition authority, and ontology-link bridge"
+role = "semantic edge law (kānāwai), proposition authority, and ontology-link bridge"
 link-phrase-required = true
 ontology-backed = true
 # <<~/ahu >>
@@ -32,7 +32,7 @@ ontology-backed = true
 
 # Proposition
 
-A self-describing kānāwai (law) for semantic and ontological edges.
+A self-describing law (kānāwai) for semantic and ontological edges.
 
 <<~ loulou lar:///ha.ka.ba/api/v0.1/pono/loci/edge/proposition >>
 

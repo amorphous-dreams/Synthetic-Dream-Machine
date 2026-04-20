@@ -35,7 +35,7 @@ lifecycle-layers = ["template", "instance", "trace"]
 
 # Pranala
 
-Pressure, not explanation.
+Edge pressure, not explanation.
 
 <<~&#x0002; ahu #meme-body-open >>
 pranala opens
@@ -43,7 +43,7 @@ pranala opens
 
 <<~ ahu #law >>
 
-## Law
+## Pranala Law (Kānāwai)
 
 One pranala carries one edge.
 

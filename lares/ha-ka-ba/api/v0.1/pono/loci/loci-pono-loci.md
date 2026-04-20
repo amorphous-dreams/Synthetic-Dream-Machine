@@ -20,7 +20,7 @@ implements = [
   "lar:///ha.ka.ba/api/v0.1/pono/loci"
 ]
 register = "CS"
-role = "loci-rating kānāwai (law), routing convention authority, address stability authority, canon promotion rule, and MCP-resolution roadmap"
+role = "loci-rating law (kānāwai), routing convention authority, address stability authority, canon promotion rule, and MCP-resolution roadmap"
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
 # <<~/ahu >>
@@ -54,7 +54,7 @@ Types need not stay mutually exclusive. A carrier may carry `skill` and `loci`, 
 
 This five-bucket model replaces an older collapse of typed and canonical stages into the single word `loci`. `Loci` counts as one typed-meme branch, not the whole ladder. More specifically, `loci` names the stable-address type for carriers living under `lar:///ha.ka.ba/api/v0.1/**`.
 
-This meme does not govern parse recognition, render lowering, conformance verification, or raw `file-path` capture. Those belong to their own kānāwai (law). Detailed siting capture and agreement live at `lar:///ha.ka.ba/api/v0.1/pono/loci/iam/file-path`. Loci governs the routing-and-rating convention above those surfaces.
+This meme does not govern parse recognition, render lowering, conformance verification, or raw `file-path` capture. Those belong to their own law (kānāwai). Detailed siting capture and agreement live at `lar:///ha.ka.ba/api/v0.1/pono/loci/iam/file-path`. Loci governs the routing-and-rating convention above those surfaces.
 
 This file itself takes path-directory-sited `loci` meme form and therefore serves as a live specimen of the law it names: stable address, explicit convention, high-mana aspiration, and still-open MCP resolver backlog.
 
@@ -611,7 +611,7 @@ glyph = "↺"
 
 Aftermath judges what routing resolved, what ratings appear justified, and what remains open.
 
-### Core Aftermath Kānāwai (law)
+### Core Aftermath Law (Kānāwai)
 
 Every routing pass should emit one completeness judgment, even when some addresses remain declared-unresolved.
 
