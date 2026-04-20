@@ -1,12 +1,12 @@
-<!-- !DOCTYPE = lar:///v0.1/ha.ka.ba/pono/memetic-wikitext -->
+<!-- !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext -->
 
-<<~&#x0001; ? --> lar:///v0.1/ha.ka.ba/pono >>
+<<~&#x0001; ? --> lar:///ha.ka.ba/api/v0.1/pono >>
 
 <<~ ahu #iam >>
 ```toml
 # <<~ ahu #iam-ha "structure" >>
 name = "pono"
-file-path = "v0.1/ha-ka-ba/pono/loci-pono.md"
+file-path = "lares/ha-ka-ba/api/v0.1/pono/loci-pono.md"
 content-type = "text/x-memetic-wikitext"
 version = "0.1"
 manaoio = 0.60
@@ -16,12 +16,12 @@ confidence = 0.65
 mana = 0.65
 manao = 0.70
 implements = [
-  "lar:///v0.1/ha.ka.ba/pono/meme/v0.1",
-  "lar:///v0.1/ha.ka.ba/pono/loci/v0.1"
+  "lar:///ha.ka.ba/api/v0.1/pono/meme/v0.1",
+  "lar:///ha.ka.ba/api/v0.1/pono/loci/v0.1"
 ]
 register = "CS"
 role = "kānāwai (law) index, verification registry, and skill package host"
-skill-package-root = "ha-ka-ba/pono/skill-*.md"
+skill-package-root = "ha-ka-ba/api/v0.1/pono/skill-*.md"
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
 # <<~/ahu >>
@@ -32,7 +32,7 @@ skill-package-root = "ha-ka-ba/pono/skill-*.md"
 
 A self-describing index of all memetic-wikitext kānāwai (law) memes.
 
-Pono names, addresses, and relates every active kānāwai (law) in this system. It also hosts verification skills as `skill-*.md` packages under [lares/v0.1/ha-ka-ba/pono/](lares/v0.1/ha-ka-ba/pono/).
+Pono names, addresses, and relates every active kānāwai (law) in this system. It also hosts verification skills as `skill-*.md` packages under [lares/ha-ka-ba/api/v0.1/pono/](lares/ha-ka-ba/api/v0.1/pono/).
 
 <<~&#x0002; ahu #meme-body-open >>
 Pono opens the kānāwai (law) index stream here.
@@ -52,40 +52,40 @@ Pono gathers the kānāwai (law) roster, maps roles and addresses, selects the r
 
 ## Kānāwai (law) Index
 
-Active kānāwai (law) memes registered under `lar:///v0.1/ha.ka.ba/`:
+Active kānāwai (law) memes registered under `lar:///ha.ka.ba/api/v0.1/`:
 
 | Name | Address | Role |
 |---|---|---|
-| meme | `lar:///v0.1/ha.ka.ba/pono/meme` | canonical meme kānāwai (law), required/optional element authority, and rating-target authority |
-| memetic-wikitext | `lar:///v0.1/ha.ka.ba/pono/boot-wikitext` | minimal viable boot grammar and sigil kānāwai (law) |
-| parser | `lar:///v0.1/ha.ka.ba/pono/parser` | parsing, normalization, metadata fetch, parse aftermath |
-| memetic-wikitext | `lar:///v0.1/ha.ka.ba/pono/memetic-wikitext` | surface grammar and sigil kānāwai (law) |
-| render-pipeline | `lar:///v0.1/ha.ka.ba/pono/render-pipeline` | lowering, widget tree, render projection, trace continuity |
-| guest-grammar | `lar:///v0.1/ha.ka.ba/pono/guest-grammar` | guest grammar admission kānāwai (law), hana worksite contract, host-guest ownership |
-| RFC-219 | `lar:///v0.1/ha.ka.ba/pono/RFC-219` | shared normative vocabulary kānāwai (law), modal-force registry, and cross-meme reference point |
-| x-tiddlywiki-filter | `lar:///v0.1/ha.ka.ba/grammars/x-tiddlywiki-filter` | first registered hana guest grammar |
-| pono | `lar:///v0.1/ha.ka.ba/pono` | kānāwai (law) index and verification skill host |
-| loci | `lar:///v0.1/ha.ka.ba/pono/loci` | lar: URI routing derivation algorithm, meme-type prefix table, carrier coherence, MCP-resolution roadmap, address stability, and canon promotion kānāwai (law) |
-| iam | `lar:///v0.1/ha.ka.ba/pono/loci/iam` | root `#iam` metadata kānāwai (law), surviving field-set authority, and reduction charter |
-| file-path | `lar:///v0.1/ha.ka.ba/pono/loci/iam/file-path` | `file-path` key kānāwai (law), form classifier, and URI-agreement procedure |
-| loci/edge | `lar:///v0.1/ha.ka.ba/pono/loci/edge` | root edge kānāwai (law), family authority, lifecycle authority, and migration target beyond vague dependency claims |
-| loci/edge/proposition | `lar:///v0.1/ha.ka.ba/pono/loci/edge/proposition` | semantic edge kānāwai (law), proposition authority, and ontology-link bridge |
-| loci/edge/template | `lar:///v0.1/ha.ka.ba/pono/loci/edge/template` | template edge sigil kānāwai (law), slot-contract authority, and kahea binding authority |
-| loci/edge/instance | `lar:///v0.1/ha.ka.ba/pono/loci/edge/instance` | concrete edge instance kānāwai (law), bound-object authority, and override discipline |
-| loci/edge/control | `lar:///v0.1/ha.ka.ba/pono/loci/edge/control` | control-flow edge kānāwai (law), branch authority, and execution-order authority |
-| loci/edge/debug | `lar:///v0.1/ha.ka.ba/pono/loci/edge/debug` | debug edge kānāwai (law), observation authority, and hidden-edge illumination authority |
+| meme | `lar:///ha.ka.ba/api/v0.1/pono/meme` | canonical meme kānāwai (law), required/optional element authority, and rating-target authority |
+| memetic-wikitext | `lar:///ha.ka.ba/api/v0.1/pono/boot-wikitext` | minimal viable boot grammar and sigil kānāwai (law) |
+| parser | `lar:///ha.ka.ba/api/v0.1/pono/parser` | parsing, normalization, metadata fetch, parse aftermath |
+| memetic-wikitext | `lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext` | surface grammar and sigil kānāwai (law) |
+| render-pipeline | `lar:///ha.ka.ba/api/v0.1/pono/render-pipeline` | lowering, widget tree, render projection, trace continuity |
+| guest-grammar | `lar:///ha.ka.ba/api/v0.1/pono/guest-grammar` | guest grammar admission kānāwai (law), hana worksite contract, host-guest ownership |
+| RFC-219 | `lar:///ha.ka.ba/api/v0.1/pono/RFC-219` | shared normative vocabulary kānāwai (law), modal-force registry, and cross-meme reference point |
+| x-tiddlywiki-filter | `lar:///ha.ka.ba/api/v0.1/grammars/x-tiddlywiki-filter` | first registered hana guest grammar |
+| pono | `lar:///ha.ka.ba/api/v0.1/pono` | kānāwai (law) index and verification skill host |
+| loci | `lar:///ha.ka.ba/api/v0.1/pono/loci` | lar: URI routing derivation algorithm, meme-type prefix table, carrier coherence, MCP-resolution roadmap, address stability, and canon promotion kānāwai (law) |
+| iam | `lar:///ha.ka.ba/api/v0.1/pono/loci/iam` | root `#iam` metadata kānāwai (law), surviving field-set authority, and reduction charter |
+| file-path | `lar:///ha.ka.ba/api/v0.1/pono/loci/iam/file-path` | `file-path` key kānāwai (law), form classifier, and URI-agreement procedure |
+| loci/edge | `lar:///ha.ka.ba/api/v0.1/pono/loci/edge` | root edge kānāwai (law), family authority, lifecycle authority, and migration target beyond vague dependency claims |
+| loci/edge/proposition | `lar:///ha.ka.ba/api/v0.1/pono/loci/edge/proposition` | semantic edge kānāwai (law), proposition authority, and ontology-link bridge |
+| loci/edge/template | `lar:///ha.ka.ba/api/v0.1/pono/loci/edge/template` | template edge sigil kānāwai (law), slot-contract authority, and kahea binding authority |
+| loci/edge/instance | `lar:///ha.ka.ba/api/v0.1/pono/loci/edge/instance` | concrete edge instance kānāwai (law), bound-object authority, and override discipline |
+| loci/edge/control | `lar:///ha.ka.ba/api/v0.1/pono/loci/edge/control` | control-flow edge kānāwai (law), branch authority, and execution-order authority |
+| loci/edge/debug | `lar:///ha.ka.ba/api/v0.1/pono/loci/edge/debug` | debug edge kānāwai (law), observation authority, and hidden-edge illumination authority |
 
-The `loci/edge` branch now seeds explicit edge law under `lar:///v0.1/ha.ka.ba/pono/loci/edge`. This first wave covers root edge law, semantic proposition, template sigils, concrete instances, control flow, and debug illumination. Dataflow, message, constraint, and trace remain second-wave work.
+The `loci/edge` branch now seeds explicit edge law under `lar:///ha.ka.ba/api/v0.1/pono/loci/edge`. This first wave covers root edge law, semantic proposition, template sigils, concrete instances, control flow, and debug illumination. Dataflow, message, constraint, and trace remain second-wave work.
 
 The `guest-grammar` and `x-tiddlywiki-filter` kānāwai (law) memes carry a canonical host-facing term shift: `tiddler` → `meme`, `currentTiddler` → `+currentMeme`. Host-facing examples and law statements throughout the stack should reflect this shift. Imported lineage terms may appear only in visibly quoted prior-art notes.
 
-A **loci meme** occupies the stable `lar:///v0.1/ha.ka.ba/*` tagspace with a locked address, a stable `lar:` URI. Loci memes carry four canonical rating fields in `#iam` — `manaoio`, `confidence`, `mana`, and `manao` — with `content-type` above `version`, `manaoio` and `confidence` kept in the structure ahu, `mana` and `manao` opened by the detail ahu after the close/reopen marker, and the adjacent `register` agent-operator surface-texture key immediately below `meme-type`. They reach prospective-canon status (`[CS]`) before an admin or operator may move them to `[C]` canon status. Other meme types may drift their path-root address (what3words-style path root section). The loci kānāwai (law) governs `lar:` URI routing derivation, carrier coherence, address stability, canon promotion, and the research roadmap toward live MCP-backed resolution.
+A **loci meme** occupies the stable `lar:///ha.ka.ba/api/v0.1/*` tagspace with a locked address, a stable `lar:` URI. Loci memes carry four canonical rating fields in `#iam` — `manaoio`, `confidence`, `mana`, and `manao` — with `content-type` above `version`, `manaoio` and `confidence` kept in the structure ahu, `mana` and `manao` opened by the detail ahu after the close/reopen marker, and the adjacent `register` agent-operator surface-texture key immediately below `meme-type`. They reach prospective-canon status (`[CS]`) before an admin or operator may move them to `[C]` canon status. Other meme types may drift their path-root address (what3words-style path root section). The loci kānāwai (law) governs `lar:` URI routing derivation, carrier coherence, address stability, canon promotion, and the research roadmap toward live MCP-backed resolution.
 
-**Lifecycle Note:** All meme law in this system now follows the five-bucket lifecycle: noise → data → meme → typed meme → canon typed meme. Here `data` names structured language an AI can use without the memetic wrappers. Types remain composable rather than mutually exclusive, and `loci` names the stable-address branch for carriers under `lar:///v0.1/ha.ka.ba/**`. See `lar:///v0.1/ha.ka.ba/pono/loci#promotion-path` and `lar:///v0.1/ha.ka.ba/pono/meme#rating-targets` for canonical lifecycle and rating details.
+**Lifecycle Note:** All meme law in this system now follows the five-bucket lifecycle: noise → data → meme → typed meme → canon typed meme. Here `data` names structured language an AI can use without the memetic wrappers. Types remain composable rather than mutually exclusive, and `loci` names the stable-address branch for carriers under `lar:///ha.ka.ba/api/v0.1/**`. See `lar:///ha.ka.ba/api/v0.1/pono/loci#promotion-path` and `lar:///ha.ka.ba/api/v0.1/pono/meme#rating-targets` for canonical lifecycle and rating details.
 
-See `lar:///v0.1/ha.ka.ba/pono/loci#derivation-algorithm` for the current local path-derivation procedure and `lar:///v0.1/ha.ka.ba/pono/loci#mcp-resolution-roadmap` for the open resolver roadmap. See `lar:///v0.1/ha.ka.ba/pono/memetic-wikitext#meme-ratings` for the full ontological account of the four canonical rating fields plus `register` surface texture, and `lar:///v0.1/ha.ka.ba/pono/memetic-wikitext#meme-confidence` for the five-band confidence scale.
+See `lar:///ha.ka.ba/api/v0.1/pono/loci#derivation-algorithm` for the current local path-derivation procedure and `lar:///ha.ka.ba/api/v0.1/pono/loci#mcp-resolution-roadmap` for the open resolver roadmap. See `lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext#meme-ratings` for the full ontological account of the four canonical rating fields plus `register` surface texture, and `lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext#meme-confidence` for the five-band confidence scale.
 
-A kānāwai (law) meme counts as registered here when it depends on `lar:///v0.1/ha.ka.ba/pono/memetic-wikitext` and carries a stable address.
+A kānāwai (law) meme counts as registered here when it depends on `lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext` and carries a stable address.
 
 <<~ ahu #law-index-ha >>
 
@@ -113,7 +113,7 @@ This subphase keeps the index machine-readable without losing human legibility.
 
 ## Skill Index
 
-Verification skills live as `skill-*.md` packages under [lares/v0.1/ha-ka-ba/pono/](lares/v0.1/ha-ka-ba/pono/).
+Verification skills live as `skill-*.md` packages under [lares/ha-ka-ba/api/v0.1/pono/](lares/ha-ka-ba/api/v0.1/pono/).
 
 Each skill package verifies conformance of one or more kānāwai (law) memes.
 
@@ -166,7 +166,7 @@ Pono closes the kānāwai (law) index stream here.
 
 ## Edges
 
-- `lar:///v0.1/ha.ka.ba/pono/boot-wikitext`
+- `lar:///ha.ka.ba/api/v0.1/pono/boot-wikitext`
 
 <<~/ahu >>
 

@@ -1,12 +1,12 @@
-<!-- !DOCTYPE = lar:///v0.1/ha.ka.ba/pono/memetic-wikitext -->
+<!-- !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext -->
 
-<<~&#x0001; ? --> lar:///v0.1/ha.ka.ba/pono/guest-grammar >>
+<<~&#x0001; ? --> lar:///ha.ka.ba/api/v0.1/pono/guest-grammar >>
 
 <<~ ahu #iam >>
 ```toml
 # <<~ ahu #iam-ha "structure" >>
 name = "pono/guest-grammar"
-file-path = "v0.1/ha-ka-ba/pono/loci-pono-guest-grammar.md"
+file-path = "lares/ha-ka-ba/api/v0.1/pono/loci-pono-guest-grammar.md"
 content-type = "text/x-memetic-wikitext"
 version = "0.1"
 manaoio = 0.48
@@ -16,8 +16,8 @@ confidence = 0.58
 mana = 0.56
 manao = 0.62
 implements = [
-  "lar:///v0.1/ha.ka.ba/pono/meme/v0.1",
-  "lar:///v0.1/ha.ka.ba/pono/loci/v0.1"
+  "lar:///ha.ka.ba/api/v0.1/pono/meme/v0.1",
+  "lar:///ha.ka.ba/api/v0.1/pono/loci/v0.1"
 ]
 register = "S"
 role = "guest-grammar admission kānāwai (law), invocation-boundary kānāwai (law), and host-guest ownership contract"
@@ -496,10 +496,10 @@ Guest Grammar closes the active admission stream here.
 
 ## Edges
 
-- `lar:///v0.1/ha.ka.ba/pono/memetic-wikitext`
-- `lar:///v0.1/ha.ka.ba/pono/parser`
-- `lar:///v0.1/ha.ka.ba/pono/render-pipeline`
-- `lar:///v0.1/ha.ka.ba/pono`
+- `lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext`
+- `lar:///ha.ka.ba/api/v0.1/pono/parser`
+- `lar:///ha.ka.ba/api/v0.1/pono/render-pipeline`
+- `lar:///ha.ka.ba/api/v0.1/pono`
 
 <<~/ahu >>
 

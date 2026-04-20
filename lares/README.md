@@ -1,2 +1,2 @@
-<!-- <<~ !DOCTYPE = lar:///v0.1/ha.ka.ba/pono/memetic-wikitext >> -->
+<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
 

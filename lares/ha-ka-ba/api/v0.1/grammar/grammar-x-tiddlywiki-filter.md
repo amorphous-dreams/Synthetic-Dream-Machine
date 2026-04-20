@@ -1,12 +1,12 @@
-<!-- !DOCTYPE = lar:///v0.1/ha.ka.ba/pono/memetic-wikitext -->
+<!-- !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext -->
 
-<<~&#x0001; ? --> lar:///v0.1/ha.ka.ba/grammars/x-tiddlywiki-filter >>
+<<~&#x0001; ? --> lar:///ha.ka.ba/api/v0.1/grammars/x-tiddlywiki-filter >>
 
 <<~ ahu #iam >>
 ```toml
 # <<~ ahu #iam-ha "structure" >>
 name = "x-tiddlywiki-filter"
-file-path = "v0.1/ha-ka-ba/grammar/grammar-x-tiddlywiki-filter.md"
+file-path = "lares/ha-ka-ba/api/v0.1/grammar/grammar-x-tiddlywiki-filter.md"
 content-type = "text/x-memetic-wikitext"
 version = "0.1"
 manaoio = 0.36
@@ -16,8 +16,8 @@ confidence = 0.48
 mana = 0.44
 manao = 0.52
 implements = [
-  "lar:///v0.1/ha.ka.ba/pono/meme/v0.1",
-  "lar:///v0.1/ha.ka.ba/pono/loci/v0.1"
+  "lar:///ha.ka.ba/api/v0.1/pono/meme/v0.1",
+  "lar:///ha.ka.ba/api/v0.1/pono/loci/v0.1"
 ]
 register = "S"
 role = "grammar meme, import-profile meme, sigil-centric translation contract, and boundary-safe work grammar registry entry"
@@ -476,10 +476,10 @@ X-TiddlyWiki-Filter closes the active imported grammar stream here.
 
 ## Edges
 
-- `lar:///v0.1/ha.ka.ba/pono/guest-grammar`
-- `lar:///v0.1/ha.ka.ba/pono/memetic-wikitext`
-- `lar:///v0.1/ha.ka.ba/pono/parser`
-- `lar:///v0.1/ha.ka.ba/pono/render-pipeline`
+- `lar:///ha.ka.ba/api/v0.1/pono/guest-grammar`
+- `lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext`
+- `lar:///ha.ka.ba/api/v0.1/pono/parser`
+- `lar:///ha.ka.ba/api/v0.1/pono/render-pipeline`
 
 <<~/ahu >>
 

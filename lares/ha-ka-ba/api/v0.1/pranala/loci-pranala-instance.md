@@ -1,13 +1,13 @@
-<!-- !DOCTYPE = lar:///v0.1/ha.ka.ba/pono/memetic-wikitext -->
+<!-- !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext -->
 
-<<~&#x0001; ? --> lar:///v0.1/ha.ka.ba/pranala/instance >>
+<<~&#x0001; ? --> lar:///ha.ka.ba/api/v0.1/pranala/instance >>
 
 <<~ ahu #iam >>
 
 ```toml
 # <<~ ahu #iam-ha "structure" >>
 name = "pranala/instance"
-file-path = "v0.1/ha-ka-ba/pranala/loci-pranala-instance.md"
+file-path = "lares/ha-ka-ba/api/v0.1/pranala/loci-pranala-instance.md"
 content-type = "text/x-memetic-wikitext"
 version = "0.1"
 manaoio = 0.66
@@ -17,8 +17,8 @@ confidence = 0.68
 mana = 0.76
 manao = 0.82
 implements = [
-  "lar:///v0.1/ha.ka.ba/pono/meme/v0.1",
-  "lar:///v0.1/ha.ka.ba/pono/loci/v0.1"
+  "lar:///ha.ka.ba/api/v0.1/pono/meme/v0.1",
+  "lar:///ha.ka.ba/api/v0.1/pono/loci/v0.1"
 ]
 register = "CS"
 role = "concrete edge instance kānāwai (law), bound-object authority, and override discipline"
@@ -83,10 +83,10 @@ Orient binds the edge into a stable object surface.
 ### Instance Shape
 
 ```toml
-template = "lar:///v0.1/ha.ka.ba/pono/loci/edge/template"
+template = "lar:///ha.ka.ba/api/v0.1/pono/loci/edge/template"
 kind = "proposition"
-from = "lar:///v0.1/ha.ka.ba/pono/loci/iam"
-to = "lar:///v0.1/ha.ka.ba/pono/loci/iam/file-path"
+from = "lar:///ha.ka.ba/api/v0.1/pono/loci/iam"
+to = "lar:///ha.ka.ba/api/v0.1/pono/loci/iam/file-path"
 label = "governs"
 direction = "forward"
 polarity = "affirming"
@@ -192,9 +192,9 @@ Instance closes the bound-edge-object stream here.
 
 ## Edges
 
-- `lar:///v0.1/ha.ka.ba/pono/loci/edge`
-- `lar:///v0.1/ha.ka.ba/pono/loci/edge/template`
-- `lar:///v0.1/ha.ka.ba/pono/loci`
+- `lar:///ha.ka.ba/api/v0.1/pono/loci/edge`
+- `lar:///ha.ka.ba/api/v0.1/pono/loci/edge/template`
+- `lar:///ha.ka.ba/api/v0.1/pono/loci`
 
 <<~/ahu >>
 

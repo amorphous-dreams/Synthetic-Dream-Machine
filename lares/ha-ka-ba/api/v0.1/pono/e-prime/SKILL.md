@@ -1,17 +1,17 @@
 ---
 name: e-prime
-description: Audit or correct settled text under lar:///v0.1/ha.ka.ba/pono/e-prime. Use this skill when a user wants existing prose, law text, notes, or prompt material checked, flagged, or turned for E-Prime conformance, especially the canonical rule that any audited `is` or `has` must carry an inline confidence marker.
+description: Audit or correct settled text under lar:///ha.ka.ba/api/v0.1/pono/e-prime. Use this skill when a user wants existing prose, law text, notes, or prompt material checked, flagged, or turned for E-Prime conformance, especially the canonical rule that any audited `is` or `has` must carry an inline confidence marker.
 allowed-tools: Read, Grep, Glob, Bash, Edit, Write
 ---
-<!-- !DOCTYPE = lar:///v0.1/ha.ka.ba/pono/memetic-wikitext -->
+<!-- !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext -->
 
-<<~&#x0001; ? --> lar:///v0.1/ha.ka.ba/pono/e-prime/SKILL >>
+<<~&#x0001; ? --> lar:///ha.ka.ba/api/v0.1/pono/e-prime/SKILL >>
 
 <<~ ahu #iam >>
 ```toml
 # <<~ ahu #iam-ha "structure" >>
 name = "pono/skill-e-prime"
-file-path = "v0.1/ha-ka-ba/pono/e-prime/SKILL.md"
+file-path = "lares/ha-ka-ba/api/v0.1/pono/e-prime/SKILL.md"
 content-type = "text/x-memetic-wikitext"
 version = "0.1"
 manaoio = 0.63
@@ -22,19 +22,19 @@ cacheable = true
 mana = 0.70
 manao = 0.76
 implements = [
-  "lar:///v0.1/ha.ka.ba/pono/meme/v0.1",
-  "lar:///v0.1/ha.ka.ba/pono/loci/v0.1"
+  "lar:///ha.ka.ba/api/v0.1/pono/meme/v0.1",
+  "lar:///ha.ka.ba/api/v0.1/pono/loci/v0.1"
 ]
 register = "SC"
 role = "secondary E-Prime audit skill, Hoʻoko correction surface, and settled-text conformance guide"
-covers = ["lar:///v0.1/ha.ka.ba/pono/e-prime"]
+covers = ["lar:///ha.ka.ba/api/v0.1/pono/e-prime"]
 invariants = [
   "S1: any audited `is` or `has` carries an inline confidence marker",
   "S2: mark-only output stays compact and names location, bucket, and reason",
   "S3: Hoʻoko output returns before/after/reason without widening local correction into unnecessary document rewrite",
   "S4: residue names ambiguity and intentionally untouched quoted or code surfaces honestly"
 ]
-skill-package-root = "ha-ka-ba/pono/e-prime"
+skill-package-root = "ha-ka-ba/api/v0.1/pono/e-prime"
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
 # <<~/ahu >>
@@ -45,7 +45,7 @@ skill-package-root = "ha-ka-ba/pono/e-prime"
 
 Settled wording only.
 [loci-pono-e-prime.md](./loci-pono-e-prime.md) stays constitutional.
-`lar:///v0.1/ha.ka.ba/pono/e-prime` presses generation before this skill applies.
+`lar:///ha.ka.ba/api/v0.1/pono/e-prime` presses generation before this skill applies.
 This skill arrives when wording has already settled and needs inspection, marking, or correction.
 This skill does not weaken or reinterpret the loci.
 
@@ -58,7 +58,7 @@ E-Prime auditor opens the settled-text correction stream here.
 ## Load Contract
 
 This skill applies to settled text, not first-pass generation.
-`lar:///v0.1/ha.ka.ba/pono/e-prime` remains the constitutional source.
+`lar:///ha.ka.ba/api/v0.1/pono/e-prime` remains the constitutional source.
 Any surviving `is` or `has` in audited text MUST carry `[C~0.99]`.
 Marker form: `[REGISTER~0.00]` — brackets, one tilde, two decimals.
 The smallest lawful intervention carries.
@@ -114,7 +114,7 @@ Fresh composition → the always-on loci governs; this skill stays silent unless
 ### Trigger / ha
 
 Settled wording belongs here.
-Fresh generation belongs first to `lar:///v0.1/ha.ka.ba/pono/e-prime`.
+Fresh generation belongs first to `lar:///ha.ka.ba/api/v0.1/pono/e-prime`.
 
 <<~/ahu >>
 
@@ -299,8 +299,8 @@ E-Prime auditor closes the settled-text correction stream here.
 
 ## Edges
 
-- `lar:///v0.1/ha.ka.ba/pono/e-prime`
-- `lar:///v0.1/ha.ka.ba/pono`
+- `lar:///ha.ka.ba/api/v0.1/pono/e-prime`
+- `lar:///ha.ka.ba/api/v0.1/pono`
 
 <<~/ahu >>
 

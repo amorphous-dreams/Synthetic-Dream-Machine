@@ -1,13 +1,13 @@
-<!-- !DOCTYPE = lar:///v0.1/ha.ka.ba/pono/memetic-wikitext -->
+<!-- !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext -->
 
-<<~&#x0001; ? --> lar:///v0.1/ha.ka.ba/pono/loci/iam/file-path >>
+<<~&#x0001; ? --> lar:///ha.ka.ba/api/v0.1/pono/loci/iam/file-path >>
 
 <<~ ahu #iam >>
 
 ```toml
 # <<~ ahu #iam-ha "structure" >>
 name = "pono/loci/iam/file-path"
-file-path = "v0.1/ha-ka-ba/pono/loci/iam/loci-pono-loci-iam-file-path.md"
+file-path = "lares/ha-ka-ba/api/v0.1/pono/loci/iam/loci-pono-loci-iam-file-path.md"
 content-type = "text/x-memetic-wikitext"
 version = "0.1"
 manaoio = 0.52
@@ -17,8 +17,8 @@ confidence = 0.62
 mana = 0.60
 manao = 0.68
 implements = [
-  "lar:///v0.1/ha.ka.ba/pono/meme/v0.1",
-  "lar:///v0.1/ha.ka.ba/pono/loci/v0.1"
+  "lar:///ha.ka.ba/api/v0.1/pono/meme/v0.1",
+  "lar:///ha.ka.ba/api/v0.1/pono/loci/v0.1"
 ]
 register = "CS"
 role = "file-path key authority, path-form classifier, and migration-procedure kānāwai (law)"
@@ -85,7 +85,7 @@ Observe should not:
 
 #### Observe / ha
 
-Observe-ha holds the intake identity: `file-path` counts as a path string, not a URI and not a name. Its value begins with the path root segment (`ha-ka-ba/`) and ends with a filename (`<meme-type>-<name>.md` or similar). Anything outside that shape counts as malformed; capture it as written for Orient to classify.
+Observe-ha holds the intake identity: `file-path` counts as a path string, not a URI and not a name. Its value begins with the path root segment (`ha-ka-ba/api/v0.1/`) and ends with a filename (`<meme-type>-<name>.md` or similar). Anything outside that shape counts as malformed; capture it as written for Orient to classify.
 
 <<~/ahu >>
 
@@ -101,7 +101,7 @@ Observe-ka governs capture procedure: read the `#iam` TOML block as a whole, loc
 
 #### Observe / ba
 
-Observe-ba governs noticing posture: a missing `file-path` key counts as a distinct observation from a `file-path` key with an empty value, which counts as distinct again from a key with a value that does not begin with `ha-ka-ba/`. All three cases present differently in Orient. Observe should preserve the distinction.
+Observe-ba governs noticing posture: a missing `file-path` key counts as a distinct observation from a `file-path` key with an empty value, which counts as distinct again from a key with a value that does not begin with `ha-ka-ba/api/v0.1/`. All three cases present differently in Orient. Observe should preserve the distinction.
 
 <<~/ahu >>
 
@@ -131,15 +131,15 @@ Orient classifies the captured `file-path` value and checks it against the docum
 #### Flat-file form
 
 ```
-ha-ka-ba/[optional/subpath/]<meme-type>-<name>.md
+ha-ka-ba/api/v0.1/[optional/subpath/]<meme-type>-<name>.md
 ```
 
 Examples:
 ```
-ha-ka-ba/pono/meme/loci-pono-meme.md
-ha-ka-ba/pono/loci-pono-parser.md
-ha-ka-ba/grammar/grammar-x-tiddlywiki-filter.md
-ha-ka-ba/pono/skill-pono-template.md
+ha-ka-ba/api/v0.1/pono/meme/loci-pono-meme.md
+ha-ka-ba/api/v0.1/pono/loci-pono-parser.md
+ha-ka-ba/api/v0.1/grammar/grammar-x-tiddlywiki-filter.md
+ha-ka-ba/api/v0.1/pono/skill-pono-template.md
 ```
 
 The meme file sits at `install-root + file-path` as a flat file alongside sibling memes. No child-meme directory accompanies it. New memes default to this form.
@@ -147,15 +147,15 @@ The meme file sits at `install-root + file-path` as a flat file alongside siblin
 #### Path-directory form
 
 ```
-ha-ka-ba/[optional/subpath/]name/<meme-type>-<name>.md
+ha-ka-ba/api/v0.1/[optional/subpath/]name/<meme-type>-<name>.md
 ```
 
 Examples:
 ```
-ha-ka-ba/pono/loci/loci-pono-loci.md
-ha-ka-ba/pono/meme/loci-pono-meme.md
-ha-ka-ba/pono/invariant/loci-pono-invariant.md
-ha-ka-ba/pono/parser/loci-pono-parser.md   ← (future, if parser migrates)
+ha-ka-ba/api/v0.1/pono/loci/loci-pono-loci.md
+ha-ka-ba/api/v0.1/pono/meme/loci-pono-meme.md
+ha-ka-ba/api/v0.1/pono/invariant/loci-pono-invariant.md
+ha-ka-ba/api/v0.1/pono/parser/loci-pono-parser.md   ← (future, if parser migrates)
 ```
 
 In this form, the meme lives inside its own directory (`name/`), which may hold child memes, child meme directories, and sidecar files alongside the root meme file. The directory name matches the meme `name` field. The root meme file inside that directory keeps the same `<meme-type>-<name>.md` filename.
@@ -169,7 +169,7 @@ In both forms, the filename component MUST follow the pattern `<meme-type>-<name
 - `meme-type` and `name` join through `-`
 - extension always uses `.md`
 
-A filename like `loci-pono-loci-iam-file-path.md` counts as correct for `implements = ["lar:///v0.1/ha.ka.ba/pono/loci/v0.1"]` and `name = "pono/loci/iam/file-path"`.
+A filename like `loci-pono-loci-iam-file-path.md` counts as correct for `implements = ["lar:///ha.ka.ba/api/v0.1/pono/loci/v0.1"]` and `name = "pono/loci/iam/file-path"`.
 
 A filename like `alpha-test-prompt-00001.md` counts as correct for `meme-type = "alpha"` and `name = "test-prompt-00001"`.
 
@@ -179,16 +179,16 @@ A filename like `alpha-test-prompt-00001.md` counts as correct for `meme-type = 
 
 ### URI Agreement
 
-`file-path` and the `lar:` URI in the document opener MUST agree. The agreement check follows the derivation algorithm at `lar:///v0.1/ha.ka.ba/pono/loci#derivation-algorithm`, reversed:
+`file-path` and the `lar:` URI in the document opener MUST agree. The agreement check follows the derivation algorithm at `lar:///ha.ka.ba/api/v0.1/pono/loci#derivation-algorithm`, reversed:
 
 Given a `file-path` value, derive the expected `lar:` URI as follows:
 
 ```
 1. Strip install-root prefix if present:
-     path = file-path.removePrefix("lares/v0.1/")   → already relative to install-root
+     path = file-path.removePrefix("lares/")   → already relative to install-root
 
 2. Strip path-root prefix:
-     rest = path.removePrefix("ha-ka-ba/")
+     rest = path.removePrefix("ha-ka-ba/api/v0.1/")
      e.g. "pono/loci/iam/loci-pono-loci-iam-file-path.md" or "pono/loci-pono-parser.md"
 
 3. Strip the kebab-case filename:
@@ -205,10 +205,10 @@ Given a `file-path` value, derive the expected `lar:` URI as follows:
 
 5. Derive expected lar: URI:
      if subpath == "":
-       expected-uri = "lar:///v0.1/ha.ka.ba/" + name-field
+       expected-uri = "lar:///ha.ka.ba/api/v0.1/" + name-field
      else:
-       expected-uri = "lar:///v0.1/ha.ka.ba/" + subpath + "/" + name-field
-     e.g. "lar:///v0.1/ha.ka.ba/pono/loci/iam/file-path"
+       expected-uri = "lar:///ha.ka.ba/api/v0.1/" + subpath + "/" + name-field
+     e.g. "lar:///ha.ka.ba/api/v0.1/pono/loci/iam/file-path"
 ```
 
 If `expected-uri` matches the document opener URI → **agreement holds**.
@@ -268,7 +268,7 @@ A meme migrates from flat-file to path-directory form when it acquires child mem
 
 **Migration steps (in order):**
 
-1. **Create the directory** at `install-root + ha-ka-ba/name/`
+1. **Create the directory** at `install-root + ha-ka-ba/api/v0.1/name/`
 2. **Move the file** via `git mv` from `<meme-type>-<name>.md` into `name/<meme-type>-<name>.md`
 3. **Update `file-path`** in `#iam` from the flat-file form to the path-directory form
 4. **Verify URI agreement** — the document opener `lar:` URI must not change
@@ -278,7 +278,7 @@ Steps 3–4 count as Act-phase preparation. Step 2 counts as the Hoʻoko crossin
 
 **The derivation algorithm after migration:**
 
-After migration, an agent running the derivation algorithm may derive the flat-file candidate path at step 7 and find it absent. That miss now surfaces as an explicit resolution tension rather than hiding behind a handwritten registry. The roadmap points toward a live MCP resolver. See `lar:///v0.1/ha.ka.ba/pono/loci#mcp-resolution-roadmap`.
+After migration, an agent running the derivation algorithm may derive the flat-file candidate path at step 7 and find it absent. That miss now surfaces as an explicit resolution tension rather than hiding behind a handwritten registry. The roadmap points toward a live MCP resolver. See `lar:///ha.ka.ba/api/v0.1/pono/loci#mcp-resolution-roadmap`.
 
 <<~/ahu >>
 
@@ -328,7 +328,7 @@ Act prepares the conformance report and any repair or migration guidance for Ho�
 
 | Verdict | Repair |
 |---|---|
-| `file-path` absent | Add `file-path = "v0.1/ha-ka-ba/[subpath/]<meme-type>-<name>.md"` as second field in `#iam`, immediately after `name` |
+| `file-path` absent | Add `file-path = "lares/ha-ka-ba/api/v0.1/[subpath/]<meme-type>-<name>.md"` as second field in `#iam`, immediately after `name` |
 | Filename component wrong | Rename file and update `file-path` to `<meme-type>-<name>.md` pattern |
 | URI agreement violation | Derive expected `lar:` URI from `file-path` using the reversed derivation; update the document opener to match |
 | Transitional (file not moved) | Complete `git mv` to move file to path declared in `file-path` |
@@ -384,7 +384,7 @@ Each of these counts as a distinct crossing. Hoʻoko should perform them in the 
 
 #### Hoʻoko / ha
 
-Hoʻoko-ha holds the mutation boundary: what Hoʻoko may alter and what it may not. It may move files, update `file-path` values, and correct document openers. It may not change the `lar:` URI — address stability law at `lar:///v0.1/ha.ka.ba/pono/loci#address-stability` locks that surface. A Hoʻoko that changes the `lar:` URI violates loci kānāwai (law).
+Hoʻoko-ha holds the mutation boundary: what Hoʻoko may alter and what it may not. It may move files, update `file-path` values, and correct document openers. It may not change the `lar:` URI — address stability law at `lar:///ha.ka.ba/api/v0.1/pono/loci#address-stability` locks that surface. A Hoʻoko that changes the `lar:` URI violates loci kānāwai (law).
 
 <<~/ahu >>
 
@@ -467,10 +467,10 @@ file-path closes the key-authority stream here.
 
 ## Edges
 
-- `lar:///v0.1/ha.ka.ba/pono/loci/iam`
-- `lar:///v0.1/ha.ka.ba/pono/memetic-wikitext`
-- `lar:///v0.1/ha.ka.ba/pono/loci`
-- `lar:///v0.1/ha.ka.ba/pono/meme`
+- `lar:///ha.ka.ba/api/v0.1/pono/loci/iam`
+- `lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext`
+- `lar:///ha.ka.ba/api/v0.1/pono/loci`
+- `lar:///ha.ka.ba/api/v0.1/pono/meme`
 
 <<~/ahu >>
 

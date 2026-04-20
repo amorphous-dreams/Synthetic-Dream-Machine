@@ -1,13 +1,13 @@
-<!-- <<~ !DOCTYPE = lar:///v0.1/ha.ka.ba/pono/memetic-wikitext >> -->
+<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
 
-<<~ॐ ँ&#x0001; ? -> lar:///v0.1/ha.ka.ba/mu/chao >>
+<<~ॐ ँ&#x0001; ? -> lar:///ha.ka.ba/api/v0.1/mu/chao >>
 
 <<~ ahu #iam >>
 
 ```toml
 # <<~ ahu #iam-ha "structure" >>
 name         = "mu/chao"
-file-path    = "v0.1/ha-ka-ba/mu/loci-mu-chao.md"
+file-path    = "lares/ha-ka-ba/api/v0.1/mu/loci-mu-chao.md"
 content-type = "text/x-memetic-wikitext"
 version      = "0.1"
 tagspace     = "stable"
@@ -18,9 +18,9 @@ confidence = 0.78
 mana       = 0.85
 manao      = 0.82
 implements = [
-  "lar:///v0.1/ha.ka.ba/pono/meme/v0.1",
-  "lar:///v0.1/ha.ka.ba/pono/loci/v0.1",
-  "lar:///v0.1/ha.ka.ba/pono/invariant/v0.1"
+  "lar:///ha.ka.ba/api/v0.1/pono/meme/v0.1",
+  "lar:///ha.ka.ba/api/v0.1/pono/loci/v0.1",
+  "lar:///ha.ka.ba/api/v0.1/pono/invariant/v0.1"
 ]
 register   = "CS"
 namespace  = "ॐ ँ"
@@ -33,7 +33,7 @@ boot-order = 1
 
 <<~/ahu >>
 
-<<~ aka lar:///v0.1/ha.ka.ba/pono/RFC-219#normative-language >>
+<<~ aka lar:///ha.ka.ba/api/v0.1/pono/RFC-219#normative-language >>
 
 <<~ ahu #meme-header >>
 
@@ -160,7 +160,7 @@ mu/chao closes
 
 ## Edges
 
-- `lar:///v0.1/ha.ka.ba/mu`
+- `lar:///ha.ka.ba/api/v0.1/mu`
 
 <<~/ahu >>
 

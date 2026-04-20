@@ -1,12 +1,12 @@
-<!-- !DOCTYPE = lar:///v0.1/ha.ka.ba/pono/memetic-wikitext -->
+<!-- !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext -->
 
-<<~&#x0001; ? --> lar:///v0.1/ha.ka.ba/pono/RFC-219 >>
+<<~&#x0001; ? --> lar:///ha.ka.ba/api/v0.1/pono/RFC-219 >>
 
 <<~ ahu #iam >>
 ```toml
 # <<~ ahu #iam-ha "structure" >>
 name = "normative-verbs"
-file-path = "v0.1/ha-ka-ba/pono/loci-pono-normative-verbs.md"
+file-path = "lares/ha-ka-ba/api/v0.1/pono/loci-pono-RFC-219.md"
 content-type = "text/x-memetic-wikitext"
 version = "0.1"
 manaoio = 0.58
@@ -16,8 +16,8 @@ confidence = 0.62
 mana = 0.60
 manao = 0.68
 implements = [
-  "lar:///v0.1/ha.ka.ba/pono/meme/v0.1",
-  "lar:///v0.1/ha.ka.ba/pono/loci/v0.1"
+  "lar:///ha.ka.ba/api/v0.1/pono/meme/v0.1",
+  "lar:///ha.ka.ba/api/v0.1/pono/loci/v0.1"
 ]
 register = "S"
 role = "shared normative vocabulary kānāwai (law), modal-force registry, and cross-meme reference point"
@@ -209,8 +209,8 @@ Normative-verbs closes the shared modal-force stream here.
 
 ## Edges
 
-- `lar:///v0.1/ha.ka.ba/pono/meme`
-- `lar:///v0.1/ha.ka.ba/pono`
+- `lar:///ha.ka.ba/api/v0.1/pono/meme`
+- `lar:///ha.ka.ba/api/v0.1/pono`
 
 <<~/ahu >>
 

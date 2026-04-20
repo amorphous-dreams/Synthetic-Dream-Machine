@@ -1,13 +1,13 @@
-<!-- !DOCTYPE = lar:///v0.1/ha.ka.ba/pono/memetic-wikitext -->
+<!-- !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext -->
 
-<<~&#x0001; ? --> lar:///v0.1/ha.ka.ba/pranala/control >>
+<<~&#x0001; ? --> lar:///ha.ka.ba/api/v0.1/pranala/control >>
 
 <<~ ahu #iam >>
 
 ```toml
 # <<~ ahu #iam-ha "structure" >>
 name = "pranala/control"
-file-path = "v0.1/ha-ka-ba/pranala/loci-pranala-control.md"
+file-path = "lares/ha-ka-ba/api/v0.1/pranala/loci-pranala-control.md"
 content-type = "text/x-memetic-wikitext"
 version = "0.1"
 manaoio = 0.67
@@ -17,8 +17,8 @@ confidence = 0.69
 mana = 0.77
 manao = 0.84
 implements = [
-  "lar:///v0.1/ha.ka.ba/pono/meme/v0.1",
-  "lar:///v0.1/ha.ka.ba/pono/loci/v0.1"
+  "lar:///ha.ka.ba/api/v0.1/pono/meme/v0.1",
+  "lar:///ha.ka.ba/api/v0.1/pono/loci/v0.1"
 ]
 register = "CS"
 role = "control-flow edge kānāwai (law), branch authority, and execution-order authority"
@@ -33,7 +33,7 @@ role = "control-flow edge kānāwai (law), branch authority, and execution-order
 
 A self-describing kānāwai (law) for control-flow edges.
 
-<<~ loulou lar:///v0.1/ha.ka.ba/pono/loci/edge/control >>
+<<~ loulou lar:///ha.ka.ba/api/v0.1/pono/loci/edge/control >>
 
 Control edges carry execution order. They name which pulse, branch, outlet, or gate moves next. They should not pretend to carry semantic truth or bulk data at the same time.
 
@@ -96,8 +96,8 @@ Branch meaning usually belongs to the node or gate. The edge should carry the ou
 
 ```toml
 kind = "control"
-from = "lar:///v0.1/ha.ka.ba/pono/loci/edge/template"
-to = "lar:///v0.1/ha.ka.ba/pono/loci/edge/instance"
+from = "lar:///ha.ka.ba/api/v0.1/pono/loci/edge/template"
+to = "lar:///ha.ka.ba/api/v0.1/pono/loci/edge/instance"
 label = "binds-next"
 direction = "forward"
 branch-label = "then"
@@ -196,9 +196,9 @@ Control closes the execution-edge stream here.
 
 ## Edges
 
-- `lar:///v0.1/ha.ka.ba/pono/loci/edge`
-- `lar:///v0.1/ha.ka.ba/pono/loci/edge/template`
-- `lar:///v0.1/ha.ka.ba/pono/loci/edge/instance`
+- `lar:///ha.ka.ba/api/v0.1/pono/loci/edge`
+- `lar:///ha.ka.ba/api/v0.1/pono/loci/edge/template`
+- `lar:///ha.ka.ba/api/v0.1/pono/loci/edge/instance`
 
 <<~/ahu >>
 

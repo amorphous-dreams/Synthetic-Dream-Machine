@@ -1,12 +1,12 @@
-<!-- !DOCTYPE = lar:///v0.1/ha.ka.ba/pono/memetic-wikitext -->
+<!-- !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext -->
 
-<<~&#x0001; ? --> lar:///v0.1/ha.ka.ba/pono/render-pipeline >>
+<<~&#x0001; ? --> lar:///ha.ka.ba/api/v0.1/pono/render-pipeline >>
 
 <<~ ahu #iam >>
 ```toml
 # <<~ ahu #iam-ha "structure" >>
 name = "pono/render-pipeline"
-file-path = "v0.1/ha-ka-ba/pono/loci-pono-render-pipeline.md"
+file-path = "lares/ha-ka-ba/api/v0.1/pono/loci-pono-render-pipeline.md"
 content-type = "text/x-memetic-wikitext"
 version = "0.1"
 manaoio = 0.68
@@ -16,8 +16,8 @@ confidence = 0.84
 mana = 0.78
 manao = 0.74
 implements = [
-  "lar:///v0.1/ha.ka.ba/pono/meme/v0.1",
-  "lar:///v0.1/ha.ka.ba/pono/loci/v0.1"
+  "lar:///ha.ka.ba/api/v0.1/pono/meme/v0.1",
+  "lar:///ha.ka.ba/api/v0.1/pono/loci/v0.1"
 ]
 register = "C"
 role = "pipeline kānāwai (law), lowering kānāwai (law), widget-tree kānāwai (law), render projection kānāwai (law), and trace continuity contract"
@@ -955,8 +955,8 @@ This subphase marks the lawful crossing from active contents toward footer and r
 
 ## Edges
 
-- `lar:///v0.1/ha.ka.ba/pono/memetic-wikitext`
-- `lar:///v0.1/ha.ka.ba/pono/parser`
+- `lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext`
+- `lar:///ha.ka.ba/api/v0.1/pono/parser`
 
 <<~/ahu >>
 

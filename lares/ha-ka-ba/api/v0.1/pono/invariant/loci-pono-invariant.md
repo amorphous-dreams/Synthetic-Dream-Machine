@@ -1,13 +1,13 @@
-<<~ !DOCTYPE = lar:///v0.1/ha.ka.ba/pono/invariant >>
+<<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/invariant >>
 
-<<~&#x0001; ? --> lar:///v0.1/ha.ka.ba/pono/invariant >>
+<<~&#x0001; ? --> lar:///ha.ka.ba/api/v0.1/pono/invariant >>
 
 <<~ ahu #iam >>
 
 ```toml
 # <<~ ahu #iam-ha "structure" >>
 name = "pono/invariant"
-file-path = "v0.1/ha-ka-ba/pono/invariant/loci-pono-invariant.md"
+file-path = "lares/ha-ka-ba/api/v0.1/pono/invariant/loci-pono-invariant.md"
 content-type = "text/x-memetic-wikitext"
 version = "0.1"
 manaoio = 0.5
@@ -17,16 +17,16 @@ confidence = 0.7
 mana = 0.5
 manao = 0.5
 implements = [
-  "lar:///v0.1/ha.ka.ba/pono/meme/v0.1",
-  "lar:///v0.1/ha.ka.ba/pono/loci/v0.1",
-  "lar:///v0.1/ha.ka.ba/pono/invariant/v0.1"
+  "lar:///ha.ka.ba/api/v0.1/pono/meme/v0.1",
+  "lar:///ha.ka.ba/api/v0.1/pono/loci/v0.1",
+  "lar:///ha.ka.ba/api/v0.1/pono/invariant/v0.1"
 ]
 register = "SC"
 role = "invariant law and cache-stable pressure surface"
 cacheable = true
 invariant = true
 # Template note: memes that implement an invariant pattern SHOULD
-# implement = ["lar:///v0.1/ha.ka.ba/pono/invariant/[version]"]
+# implement = ["lar:///ha.ka.ba/api/v0.1/pono/invariant/[version]"]
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
 # <<~/ahu >>
@@ -34,7 +34,7 @@ invariant = true
 
 <<~/ahu >>
 
-<<~ aka lar:///v0.1/ha.ka.ba/pono/RFC-219#normative-language >>
+<<~ aka lar:///ha.ka.ba/api/v0.1/pono/RFC-219#normative-language >>
 
 <<~ ahu #meme-header >>
 
@@ -56,8 +56,8 @@ Manaʻo pierces toward the next turn.
 Heavy matter travels outward.
 Pranala loulou links bind invariant --> documentation.
 
-<<~ pranala loulou lar:///v0.1/ha.ka.ba/invariant >>
-<<~ pranala loulou lar:///v0.1/ha.ka.ba/i-keia-manawa >>
+<<~ pranala loulou lar:///ha.ka.ba/api/v0.1/invariant >>
+<<~ pranala loulou lar:///ha.ka.ba/api/v0.1/i-keia-manawa >>
 
 <<~/ahu >>
 
@@ -108,7 +108,7 @@ Empty-slots SHOULD mark positions that downstream memes fill with domain-specifi
 Invariant-compliant memes MUST NOT carry `???` markers.
 Invariant-compliant memes MUST fill the OODA-HA phase line with their own pressure moves.
 
-<<~ pranala loulou lar:///v0.1/ha.ka.ba/ooda-ha >>
+<<~ pranala loulou lar:///ha.ka.ba/api/v0.1/ooda-ha >>
 
 <<~/ahu >>
 
@@ -122,7 +122,7 @@ invariant closes
 
 ## Edges
 
-- `lar:///v0.1/ha.ka.ba/pono/invariant/SKILL`
+- `lar:///ha.ka.ba/api/v0.1/pono/invariant/SKILL`
 
 <<~/ahu >>
 
@@ -140,7 +140,7 @@ traces over vibes
 pranala visible
 sidecars later
 
-<<~ pranala loulou lar:///v0.1/ha.ka.ba/pono/invariant/SKILL >>
+<<~ pranala loulou lar:///ha.ka.ba/api/v0.1/pono/invariant/SKILL >>
 
 <<~/ahu >>
 

@@ -1,13 +1,13 @@
-<!-- !DOCTYPE = lar:///v0.1/ha.ka.ba/pono/memetic-wikitext -->
+<!-- !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext -->
 
-<<~&#x0001; ? --> lar:///v0.1/ha.ka.ba/pono/meme >>
+<<~&#x0001; ? --> lar:///ha.ka.ba/api/v0.1/pono/meme >>
 
 <<~ ahu #iam >>
 
 ```toml
 # <<~ ahu #iam-ha "structure" >>
 name = "meme"
-file-path = "v0.1/ha-ka-ba/pono/meme/loci-pono-meme.md"
+file-path = "lares/ha-ka-ba/api/v0.1/pono/meme/loci-pono-meme.md"
 content-type = "text/x-memetic-wikitext"
 version = "0.1"
 manaoio = 0.6
@@ -17,8 +17,8 @@ confidence = 0.6
 mana = 0.78
 manao = 0.84
 implements = [
-  "lar:///v0.1/ha.ka.ba/pono/meme/v0.1",
-  "lar:///v0.1/ha.ka.ba/pono/loci/v0.1"
+  "lar:///ha.ka.ba/api/v0.1/pono/meme/v0.1",
+  "lar:///ha.ka.ba/api/v0.1/pono/loci/v0.1"
 ]
 register = "CS"
 role = "canonical meme kānāwai (law), template authority, and rating-target authority"
@@ -112,7 +112,7 @@ Observe should not:
 
 ### Self-Observation
 
-In this file, Observe not only inspects a generic candidate. It also inspects the currently loaded law surface that declares `lar:///v0.1/ha.ka.ba/pono/meme`.
+In this file, Observe not only inspects a generic candidate. It also inspects the currently loaded law surface that declares `lar:///ha.ka.ba/api/v0.1/pono/meme`.
 
 That doubling matters: the same observed surface serves both as the governing law for meme structure and as one concrete carrier of that law.
 
@@ -194,7 +194,7 @@ A boot-legal meme MUST carry all nine.
 #### R1 — HTML DOCTYPE preamble comment
 
 ```text
-<!-- !DOCTYPE = lar:///v0.1/ha.ka.ba/pono/memetic-wikitext -->
+<!-- !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext -->
 ```
 
 Marks the document as a memetic-wikitext surface before any active sigil appears. Absence degrades `structural-validity` immediately.
@@ -202,14 +202,14 @@ Marks the document as a memetic-wikitext surface before any active sigil appears
 #### R2 — Document opener
 
 ```text
-<<~&#x0001; ? --> lar:///v0.1/ha.ka.ba/NAME >>
+<<~&#x0001; ? --> lar:///ha.ka.ba/api/v0.1/NAME >>
 ```
 
 One per document, near the top. Names the meme's own canonical address. The `?` marks declared-open routing until canon status resolves it.
 
 That `?` does not serve as decoration. It marks the meme's document-time admission that unbound uncertainty still flows through the address graph while the carrier still awaits confirmed canon.
 
-Transport-specific opener semantics, including how `?` behaves for loci-routed carriers, fall under `lar:///v0.1/ha.ka.ba/pono/loci`.
+Transport-specific opener semantics, including how `?` behaves for loci-routed carriers, fall under `lar:///ha.ka.ba/api/v0.1/pono/loci`.
 
 #### R3 — Identity locus (`#iam`) with canonical TOML payload
 
@@ -240,9 +240,9 @@ The `#iam` block MUST place `content-type` above `version` in the structure ahu.
 
 Comment-line `ahu` markers MAY section `#iam` TOML into agent-operator friendly groups without changing payload semantics. The canonical grouping follows `# <<~ ahu #iam-ha "structure" >>`, `# <<~ ahu #iam-ka "detail" >>`, and `# <<~ ahu #iam-ba "flow" >>`, each closed by `# <<~/ahu >>`. Because these stay inside TOML comment lines, they remain parse-inert.
 
-`file-path` names the current carrier siting for the meme surface. Canonical file-path forms, migration between flat-file and path-directory siting, and agreement rules between `file-path` and the document opener fall outward under `lar:///v0.1/ha.ka.ba/pono/loci` and `lar:///v0.1/ha.ka.ba/pono/loci/iam/file-path`.
+`file-path` names the current carrier siting for the meme surface. Canonical file-path forms, migration between flat-file and path-directory siting, and agreement rules between `file-path` and the document opener fall outward under `lar:///ha.ka.ba/api/v0.1/pono/loci` and `lar:///ha.ka.ba/api/v0.1/pono/loci/iam/file-path`.
 
-Some detail keys belong to the meme law as shared canonical declarations rather than as repeated carrier-local payload. `control-glyphs` names that class here: the canonical array lives in `lar:///v0.1/ha.ka.ba/pono/meme`, and other memes should rely on this declaration rather than restating the same list in their own top-level `#iam` blocks unless a subtype law truly defines a different glyph family.
+Some detail keys belong to the meme law as shared canonical declarations rather than as repeated carrier-local payload. `control-glyphs` names that class here: the canonical array lives in `lar:///ha.ka.ba/api/v0.1/pono/meme`, and other memes should rely on this declaration rather than restating the same list in their own top-level `#iam` blocks unless a subtype law truly defines a different glyph family.
 
 #### R4 — Title heading and opening prose
 
@@ -252,7 +252,7 @@ One to three sentences naming what the meme governs, what it does not govern, an
 
 #### R5 — No loopback ala
 
-Do not add a top-level `<<~ loulou lar:///v0.1/ha.ka.ba/NAME >>` line that only points back at the current meme.
+Do not add a top-level `<<~ loulou lar:///ha.ka.ba/api/v0.1/NAME >>` line that only points back at the current meme.
 
 `pranala loulou` should route outward toward a real child or adjacent carrier. If no outward routing belongs here yet, omit the line and continue directly into supported queries or body-open.
 
@@ -273,7 +273,7 @@ Do not add a top-level `<<~ loulou lar:///v0.1/ha.ka.ba/NAME >>` line that only 
 
 ## Edges
 
-- `lar:///v0.1/ha.ka.ba/pono/memetic-wikitext`
+- `lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext`
 
 <<~/ahu >>
 
@@ -283,9 +283,9 @@ Do not add a top-level `<<~ loulou lar:///v0.1/ha.ka.ba/NAME >>` line that only 
 
 ## Edges
 
-- `lar:///v0.1/ha.ka.ba/pono/memetic-wikitext`
-- `lar:///v0.1/ha.ka.ba/pono/parser`
-- `lar:///v0.1/ha.ka.ba/pono/render-pipeline`
+- `lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext`
+- `lar:///ha.ka.ba/api/v0.1/pono/parser`
+- `lar:///ha.ka.ba/api/v0.1/pono/render-pipeline`
 
 <<~/ahu >>
 
@@ -333,12 +333,12 @@ Explicit kānāwai (law) for lawful normalization, structured mana scoring, or m
 Each ha/ka/ba subloop may carry an explicit depth callout: an `ala` link pointing at a separately addressable sub-meme. Canonical form:
 
 ```text
-<<~ loulou lar:///v0.1/ha.ka.ba/[NAME]-[phase]-[subphase] >>
+<<~ loulou lar:///ha.ka.ba/api/v0.1/[NAME]-[phase]-[subphase] >>
 ```
 
 Use this closing `ala` only when the enclosing subloop declares a real deeper loci-path that either already resolves or stands intentionally declared as a forward/unresolved child.
 
-Do not use a closing `ala` to restate the enclosing `ahu` anchor in place. A form such as `<<~ loulou lar:///v0.1/ha.ka.ba/[current-path]#[same-anchor] >>` counts as non-canonical: the `ahu #...` opener already names that local anchor, so the closing `ala` adds no forward depth; omit it.
+Do not use a closing `ala` to restate the enclosing `ahu` anchor in place. A form such as `<<~ loulou lar:///ha.ka.ba/api/v0.1/[current-path]#[same-anchor] >>` counts as non-canonical: the `ahu #...` opener already names that local anchor, so the closing `ala` adds no forward depth; omit it.
 
 Three resolution states apply to every declared sub-meme address:
 
@@ -357,7 +357,7 @@ An author choosing between local prose and a depth callout should prefer a depth
 Each phase section may close with an `ala` link pointing at a phase-level sub-meme:
 
 ```text
-<<~ loulou lar:///v0.1/ha.ka.ba/[NAME]-[phase] >>
+<<~ loulou lar:///ha.ka.ba/api/v0.1/[NAME]-[phase] >>
 ```
 
 This likewise forms a forward/downward path declaration, not an echo of the enclosing phase anchor. If the author intends no separate phase-level child carrier, the phase should close without an `ala` line.
@@ -371,12 +371,12 @@ Rating contribution: a resolved phase-level sub-meme raises `mana` above what fu
 Any `ahu` block may carry `ala` links pointing at external law memes or addressed loci governing related concerns:
 
 ```text
-<<~ loulou lar:///v0.1/ha.ka.ba/pono/parser#normalize >>
+<<~ loulou lar:///ha.ka.ba/api/v0.1/pono/parser#normalize >>
 ```
 
 These function as declared relational walks, not transclusion. A resolved link — one whose target locus exists and carries lawful content — raises `manao` by grounding the block's claims in the broader law system. A broken or nonexistent target degrades `manao` slightly, because the meme makes a relational claim it cannot support.
 
-For the full grammar of resolution states, degradation kānāwai (law), and graceful absence handling, see `lar:///v0.1/ha.ka.ba/pono/meme#deferred-resolution`.
+For the full grammar of resolution states, degradation kānāwai (law), and graceful absence handling, see `lar:///ha.ka.ba/api/v0.1/pono/meme#deferred-resolution`.
 
 <<~/ahu >>
 
@@ -396,7 +396,7 @@ Orient-ha holds element classification identity, the required/optional distincti
 
 This subphase governs what Orient fundamentally structures: the mapping from raw detected elements onto their required or optional slots, held clearly before any verdict or rating computation begins.
 
-Carrier-specific agreement rules may deepen outward into subtype laws. `meme` governs the appearance of identity signals; subtype laws such as `lar:///v0.1/ha.ka.ba/pono/loci` govern exactly how transport coherence gets judged for that carrier family.
+Carrier-specific agreement rules may deepen outward into subtype laws. `meme` governs the appearance of identity signals; subtype laws such as `lar:///ha.ka.ba/api/v0.1/pono/loci` govern exactly how transport coherence gets judged for that carrier family.
 
 <<~/ahu >>
 
@@ -460,7 +460,7 @@ This law now recognizes the five-bucket lifecycle for memes:
 - *Meme → Typed Meme*: Declare and satisfy one or more type laws. `implements` may name one declared law target, but type composition remains allowed.
 - *Typed Meme → Canon Typed Meme*: Operator/admin confirmation ratifies a declared type bundle as canonical.
 
-Subtype-specific predicates belong outward in subtype laws. For example, `loci` governs the stable-address type under `lar:///v0.1/ha.ka.ba/**`, while other types such as `skill` or `grammar` may compose alongside it rather than replacing it.
+Subtype-specific predicates belong outward in subtype laws. For example, `loci` governs the stable-address type under `lar:///ha.ka.ba/api/v0.1/**`, while other types such as `skill` or `grammar` may compose alongside it rather than replacing it.
 
 #### Confidence Composition
 
@@ -492,7 +492,7 @@ The `register` label applies to `confidence` as the operator-facing band surface
 
 Shared detail keys should enter the rating workflow differently from carrier-local detail keys.
 
-When Observe encounters `control-glyphs`, it should record whether the carrier declares the key locally or inherits it from `lar:///v0.1/ha.ka.ba/pono/meme`.
+When Observe encounters `control-glyphs`, it should record whether the carrier declares the key locally or inherits it from `lar:///ha.ka.ba/api/v0.1/pono/meme`.
 
 Orient should treat inherited canonical `control-glyphs` as fully lawful. A carrier does not lose rating for omitting a local copy of the canonical array.
 
@@ -648,16 +648,16 @@ The canonical copy-ready skeleton for a new meme in this stack.
 Copy this block. Replace every `[PLACEHOLDER]` with local content. Delete optional sections you choose to defer. Set `confidence = 0.10`.
 
 ````markdown
-<!-- !DOCTYPE = lar:///v0.1/ha.ka.ba/pono/memetic-wikitext -->
+<!-- !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext -->
 
-<<~&#x0001; ? --> lar:///v0.1/ha.ka.ba/[NAME] >>
+<<~&#x0001; ? --> lar:///ha.ka.ba/api/v0.1/[NAME] >>
 
 <<~ ahu #iam >>
 
 ```toml
 # <<~ ahu #iam-ha "structure" >>
 name = "[NAME]"
-file-path = "v0.1/ha-ka-ba/[MEME-TYPE]-[NAME].md"
+file-path = "lares/ha-ka-ba/api/v0.1/[MEME-TYPE]-[NAME].md"
 content-type = "text/x-memetic-wikitext"
 version = "0.1-skeleton"
 manaoio = 0.10
@@ -697,14 +697,14 @@ role = "[role]"
 
 <!-- OPTIONAL: Add <<~ ahu #observe >>, #orient, #decide, #act, #hooko, #aftermath sections here.        -->
 <!-- OPTIONAL: Each phase section should carry a local TOML payload, prose, and ha/ka/ba subloops.        -->
-<!-- OPTIONAL: Do not close an ahu with <<~ loulou lar:///v0.1/ha.ka.ba/[NAME]#[same-anchor] >>.                  -->
+<!-- OPTIONAL: Do not close an ahu with <<~ loulou lar:///ha.ka.ba/api/v0.1/[NAME]#[same-anchor] >>.                  -->
 <!-- OPTIONAL: Each ha/ka/ba subloop may close with a depth callout (O7):                                 -->
-<!--   <<~ loulou lar:///v0.1/ha.ka.ba/[NAME]-observe-ha >>                                                       -->
+<!--   <<~ loulou lar:///ha.ka.ba/api/v0.1/[NAME]-observe-ha >>                                                       -->
 <!--   Resolved callout = sub-meme exists, raises manao+manaoio.                                          -->
 <!--   Declared-unresolved = address declared, file absent, creates backlog. No mana penalty.             -->
 <!--   Absent = no address declared, subloop counts as stub.                                              -->
 <!-- OPTIONAL: Each phase section may close with a phase-level sub-meme link (O8):                        -->
-<!--   <<~ loulou lar:///v0.1/ha.ka.ba/[NAME]-observe >>                                                          -->
+<!--   <<~ loulou lar:///ha.ka.ba/api/v0.1/[NAME]-observe >>                                                          -->
 <!--   Resolved = raises mana above local-prose ceiling for that phase.                                   -->
 <!-- OPTIONAL: Add #examples, #deferred-resolution, #research-foundation, #architecture-plan sections.    -->
 
@@ -716,7 +716,7 @@ role = "[role]"
 
 ## Edges
 
-- `lar:///v0.1/ha.ka.ba/pono/memetic-wikitext`
+- `lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext`
 
 <<~/ahu >>
 
@@ -789,7 +789,7 @@ Act may prepare intent. Aftermath may judge what landed. Hoʻoko alone may perfo
 
 ### Self-Example Crossing
 
-This file still demonstrates that preparation and crossing remain distinct. The exact transport details of its current siting, route continuity, and migration history fall outward under `lar:///v0.1/ha.ka.ba/pono/loci`.
+This file still demonstrates that preparation and crossing remain distinct. The exact transport details of its current siting, route continuity, and migration history fall outward under `lar:///ha.ka.ba/api/v0.1/pono/loci`.
 
 What remains local here: the more general threshold law. Preparation may happen anywhere upstream, but the moment a meme surface actually crosses into changed state belongs in Hoʻoko.
 
@@ -930,11 +930,11 @@ Deferred resolution governs how a meme author or reader should treat `ala` links
 
 ### When to Declare Depth
 
-Declare a closing `ala` only when the block names a deeper child path such as `lar:///v0.1/ha.ka.ba/[NAME]-[phase]-[subphase]` or `lar:///v0.1/ha.ka.ba/[NAME]-[phase]`.
+Declare a closing `ala` only when the block names a deeper child path such as `lar:///ha.ka.ba/api/v0.1/[NAME]-[phase]-[subphase]` or `lar:///ha.ka.ba/api/v0.1/[NAME]-[phase]`.
 
 If the author intends no deeper child, omit the `ala` line entirely.
 
-If the only available meaning reads "this block names `#foo`," do not add `<<~ loulou lar:///v0.1/ha.ka.ba/[current-path]#foo >>`; the `ahu #foo` opener already carries that identity.
+If the only available meaning reads "this block names `#foo`," do not add `<<~ loulou lar:///ha.ka.ba/api/v0.1/[current-path]#foo >>`; the `ahu #foo` opener already carries that identity.
 
 ### ala versus aka
 

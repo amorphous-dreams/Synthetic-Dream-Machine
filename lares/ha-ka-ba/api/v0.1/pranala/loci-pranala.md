@@ -1,13 +1,13 @@
-<!-- !DOCTYPE = lar:///v0.1/ha.ka.ba/pono/memetic-wikitext -->
+<!-- !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext -->
 
-<<~&#x0001; ? --> lar:///v0.1/ha.ka.ba/pranala >>
+<<~&#x0001; ? --> lar:///ha.ka.ba/api/v0.1/pranala >>
 
 <<~ ahu #iam >>
 
 ```toml
 # <<~ ahu #iam-ha "structure" >>
 name = "pranala"
-file-path = "v0.1/ha-ka-ba/pranala/loci-pranala.md"
+file-path = "lares/ha-ka-ba/api/v0.1/pranala/loci-pranala.md"
 content-type = "text/x-memetic-wikitext"
 version = "0.1"
 manaoio = 0.66
@@ -17,8 +17,8 @@ confidence = 0.68
 mana = 0.76
 manao = 0.84
 implements = [
-  "lar:///v0.1/ha.ka.ba/pono/meme/v0.1",
-  "lar:///v0.1/ha.ka.ba/pono/loci/v0.1"
+  "lar:///ha.ka.ba/api/v0.1/pono/meme/v0.1",
+  "lar:///ha.ka.ba/api/v0.1/pono/loci/v0.1"
 ]
 register = "CS"
 role = "root pranala (edge) kānāwai (law), family authority, lifecycle authority, and migration target"
@@ -35,7 +35,7 @@ lifecycle-layers = ["template", "instance", "trace"]
 
 A self-describing root kānāwai (law) for explicit graph edges in this stack.
 
-<<~ loulou lar:///v0.1/ha.ka.ba/pono/loci/edge >>
+<<~ loulou lar:///ha.ka.ba/api/v0.1/pono/loci/edge >>
 
 This meme gives one outer law for link meaning. It keeps semantic relation, execution order, carried value, message transport, declarative constraint, and observation apart instead of collapsing them into one vague dependency claim.
 
@@ -171,12 +171,12 @@ Do not promote every repeated relation into a template immediately. A plain prop
 
 Seed order for this branch:
 
-1. `lar:///v0.1/ha.ka.ba/pono/loci/edge`
-2. `lar:///v0.1/ha.ka.ba/pono/loci/edge/proposition`
-3. `lar:///v0.1/ha.ka.ba/pono/loci/edge/template`
-4. `lar:///v0.1/ha.ka.ba/pono/loci/edge/instance`
-5. `lar:///v0.1/ha.ka.ba/pono/loci/edge/control`
-6. `lar:///v0.1/ha.ka.ba/pono/loci/edge/debug`
+1. `lar:///ha.ka.ba/api/v0.1/pono/loci/edge`
+2. `lar:///ha.ka.ba/api/v0.1/pono/loci/edge/proposition`
+3. `lar:///ha.ka.ba/api/v0.1/pono/loci/edge/template`
+4. `lar:///ha.ka.ba/api/v0.1/pono/loci/edge/instance`
+5. `lar:///ha.ka.ba/api/v0.1/pono/loci/edge/control`
+6. `lar:///ha.ka.ba/api/v0.1/pono/loci/edge/debug`
 
 Second wave should add `dataflow`, `message`, `constraint`, and `trace` after the seed set proves useful on live files.
 
@@ -236,10 +236,10 @@ Edge closes the explicit-graph law stream here.
 
 ## Edges
 
-- `lar:///v0.1/ha.ka.ba/pono/memetic-wikitext`
-- `lar:///v0.1/ha.ka.ba/pono/loci`
-- `lar:///v0.1/ha.ka.ba/pono/loci/iam`
-- `lar:///v0.1/ha.ka.ba/pono/meme`
+- `lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext`
+- `lar:///ha.ka.ba/api/v0.1/pono/loci`
+- `lar:///ha.ka.ba/api/v0.1/pono/loci/iam`
+- `lar:///ha.ka.ba/api/v0.1/pono/meme`
 
 <<~/ahu >>
 

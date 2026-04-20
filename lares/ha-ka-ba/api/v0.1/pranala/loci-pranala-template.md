@@ -1,13 +1,13 @@
-<!-- !DOCTYPE = lar:///v0.1/ha.ka.ba/pono/memetic-wikitext -->
+<!-- !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext -->
 
-<<~&#x0001; ? --> lar:///v0.1/ha.ka.ba/pranala/template >>
+<<~&#x0001; ? --> lar:///ha.ka.ba/api/v0.1/pranala/template >>
 
 <<~ ahu #iam >>
 
 ```toml
 # <<~ ahu #iam-ha "structure" >>
 name = "pranala/template"
-file-path = "v0.1/ha-ka-ba/pranala/loci-pranala-template.md"
+file-path = "lares/ha-ka-ba/api/v0.1/pranala/loci-pranala-template.md"
 content-type = "text/x-memetic-wikitext"
 version = "0.1"
 manaoio = 0.65
@@ -17,8 +17,8 @@ confidence = 0.67
 mana = 0.75
 manao = 0.82
 implements = [
-  "lar:///v0.1/ha.ka.ba/pono/meme/v0.1",
-  "lar:///v0.1/ha.ka.ba/pono/loci/v0.1"
+  "lar:///ha.ka.ba/api/v0.1/pono/meme/v0.1",
+  "lar:///ha.ka.ba/api/v0.1/pono/loci/v0.1"
 ]
 register = "CS"
 role = "template edge sigil kānāwai (law), slot-contract authority, and kahea binding authority"
@@ -36,7 +36,7 @@ invocation-surface = "kahea"
 
 A self-describing kānāwai (law) for template edge sigils.
 
-<<~ loulou lar:///v0.1/ha.ka.ba/pono/loci/edge/template >>
+<<~ loulou lar:///ha.ka.ba/api/v0.1/pono/loci/edge/template >>
 
 This meme governs the reusable edge form that an author invokes through `kahea`. Template law keeps repeated graph shapes coherent without forcing every edge into boilerplate.
 
@@ -120,12 +120,12 @@ Later sources may fill gaps. They should not silently overwrite earlier explicit
 ### Kahea Invocation
 
 ````text
-<<~ kahea lar:///v0.1/ha.ka.ba/pono/loci/edge/template >>
+<<~ kahea lar:///ha.ka.ba/api/v0.1/pono/loci/edge/template >>
 ```toml
 kind = "proposition"
 template-name = "governs"
-from = "lar:///v0.1/ha.ka.ba/pono/loci/iam"
-to = "lar:///v0.1/ha.ka.ba/pono/loci/iam/file-path"
+from = "lar:///ha.ka.ba/api/v0.1/pono/loci/iam"
+to = "lar:///ha.ka.ba/api/v0.1/pono/loci/iam/file-path"
 confidence = 0.91
 ```
 ````
@@ -201,9 +201,9 @@ Template closes the reusable-edge-sigil stream here.
 
 ## Edges
 
-- `lar:///v0.1/ha.ka.ba/pono/loci/edge`
-- `lar:///v0.1/ha.ka.ba/pono/loci`
-- `lar:///v0.1/ha.ka.ba/pono/meme`
+- `lar:///ha.ka.ba/api/v0.1/pono/loci/edge`
+- `lar:///ha.ka.ba/api/v0.1/pono/loci`
+- `lar:///ha.ka.ba/api/v0.1/pono/meme`
 
 <<~/ahu >>
 

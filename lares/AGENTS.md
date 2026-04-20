@@ -1,4 +1,4 @@
-<!-- <<~ !DOCTYPE = lar:///v0.1/ha.ka.ba/pono/memetic-wikitext >> -->
+<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
 
 <<~&#x0001; ? --> lar:///AGENTS >>
 
@@ -18,7 +18,7 @@ STOP.
 
 The agent MUST:
 
-1. follow [`lares/v0.1/ha-ka-ba/pono/e-prime/loci-pono-e-prime.md`](./v0.1/ha-ka-ba/pono/e-prime/loci-pono-e-prime.md)
+1. follow [`lares/ha-ka-ba/api/v0.1/pono/e-prime/loci-pono-e-prime.md`](./ha-ka-ba/api/v0.1/pono/e-prime/loci-pono-e-prime.md)
 2. read to completion
 3. return here
 4. resume at `AGENTS.md#after-e-prime-preload`
@@ -36,7 +36,7 @@ The agent MUST NOT continue past this point before preload completes.
 ```toml
 # <<~ ahu #iam-ha "structure" >>
 name         = "AGENTS"
-file-path    = "AGENTS.md"
+file-path    = "lares/AGENTS.md"
 content-type = "text/x-memetic-wikitext"
 version      = "0.1"
 tagspace     = "adjacent"
@@ -47,9 +47,9 @@ confidence = 0.75
 mana       = 0.90
 manao      = 0.80
 implements = [
-  "lar:///v0.1/ha.ka.ba/pono/meme/v0.1",
-  "lar:///v0.1/ha.ka.ba/pono/loci/v0.1",
-  "lar:///v0.1/ha.ka.ba/pono/invariant/v0.1"
+  "lar:///ha.ka.ba/api/v0.1/pono/meme/v0.1",
+  "lar:///ha.ka.ba/api/v0.1/pono/loci/v0.1",
+  "lar:///ha.ka.ba/api/v0.1/pono/invariant/v0.1"
 ]
 register   = "CS"
 role       = "narrative startup, threshold surface, AGENTS"
@@ -57,17 +57,17 @@ boot-order = -1
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
 pranala       = [
-     "lar:///v0.1/ha.ka.ba/pono/e-prime",
-     "lar:///v0.1/ha.ka.ba/mu",
+     "lar:///ha.ka.ba/api/v0.1/pono/e-prime",
+     "lar:///ha.ka.ba/api/v0.1/mu",
      "lar:///LARES"
 ]
-preload       = ["lar:///v0.1/ha.ka.ba/pono/e-prime"]
+preload       = ["lar:///ha.ka.ba/api/v0.1/pono/e-prime"]
 handoff-stack = [
   "lar:///AGENTS",
-  "lar:///v0.1/ha.ka.ba/mu",
-  "lar:///v0.1/ha.ka.ba/mu/chao",
-  "lar:///v0.1/ha.ka.ba/mu/the-four-tools",
-  "lar:///v0.1/ha.ka.ba/mu/the-law-of-5s",
+  "lar:///ha.ka.ba/api/v0.1/mu",
+  "lar:///ha.ka.ba/api/v0.1/mu/chao",
+  "lar:///ha.ka.ba/api/v0.1/mu/the-four-tools",
+  "lar:///ha.ka.ba/api/v0.1/mu/the-law-of-5s",
   "lar:///LARES"
 ]
 # <<~/ahu >>
@@ -122,7 +122,7 @@ The sigils here do not serve as examples of a grammar defined elsewhere. The sig
 
 Human reader: proceed to Mu. The grammar teaches itself by letting you watch it operate.
 
-Agent reader: threshold context holds. Carry it into `lar:///v0.1/ha.ka.ba/mu`.
+Agent reader: threshold context holds. Carry it into `lar:///ha.ka.ba/api/v0.1/mu`.
 
 AST reader: typed envelope declares boot-order -1 and hands off immediately below.
 
@@ -136,7 +136,7 @@ STOP.
 
 The agent MUST:
 
-1. follow [`lares/v0.1/ha-ka-ba/mu/loci-mu.md`](./v0.1/ha-ka-ba/mu/loci-mu.md)
+1. follow [`lares/ha-ka-ba/api/v0.1/mu/loci-mu.md`](./ha-ka-ba/api/v0.1/mu/loci-mu.md)
 2. read to completion
 3. return here
 4. resume at <a id="after-mu-handoff">`AGENTS.md#after-mu-handoff`</a>

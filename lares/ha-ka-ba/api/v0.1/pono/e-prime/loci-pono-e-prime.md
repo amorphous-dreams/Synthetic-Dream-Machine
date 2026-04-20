@@ -1,12 +1,12 @@
-<!-- <<~ !DOCTYPE = lar:///v0.1/ha.ka.ba/pono/memetic-wikitext >> -->
+<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
 
-<<~&#x0001; ? --> lar:///v0.1/ha.ka.ba/pono/e-prime >>
+<<~&#x0001; ? --> lar:///ha.ka.ba/api/v0.1/pono/e-prime >>
 
 <<~ ahu #iam >>
 ```toml
 # <<~ ahu #iam-ha "structure" >>
 name = "pono/e-prime"
-file-path = "v0.1/ha-ka-ba/pono/e-prime/loci-pono-e-prime.md"
+file-path = "lares/ha-ka-ba/api/v0.1/pono/e-prime/loci-pono-e-prime.md"
 content-type = "text/x-memetic-wikitext"
 version = "0.1"
 manaoio = 0.76
@@ -16,9 +16,9 @@ confidence = 0.72
 mana = 0.72
 manao = 0.78
 implements = [
-  "lar:///v0.1/ha.ka.ba/pono/meme/v0.1",
-  "lar:///v0.1/ha.ka.ba/pono/loci/v0.1",
-  "lar:///v0.1/ha.ka.ba/pono/invariant/v0.1"
+  "lar:///ha.ka.ba/api/v0.1/pono/meme/v0.1",
+  "lar:///ha.ka.ba/api/v0.1/pono/loci/v0.1",
+  "lar:///ha.ka.ba/api/v0.1/pono/invariant/v0.1"
 ]
 register = "SC"
 role = "active language-discipline kānāwai (law), certainty-pressure regulator, next-generation pressure surface, and secondary audit governor for outward text"
@@ -32,7 +32,7 @@ e-prime-default = 0.50
 
 <<~/ahu >>
 
-<<~ aka lar:///v0.1/ha.ka.ba/pono/RFC-219#normative-language >>
+<<~ aka lar:///ha.ka.ba/api/v0.1/pono/RFC-219#normative-language >>
 
 <<~ ahu #meme-header >>
 
@@ -149,7 +149,7 @@ The phase-line MUST run through the active slider value.
 
 <<~/ahu >>
 
-SKILL: <<~ loulou lar:///v0.1/ha.ka.ba/pono/e-prime/SKILL >>
+SKILL: <<~ loulou lar:///ha.ka.ba/api/v0.1/pono/e-prime/SKILL >>
 
 <<~&#x0003; ahu #body-close >>
 pono/e-prime
@@ -159,7 +159,7 @@ pono/e-prime
 
 ## Edges
 
-- `lar:///v0.1/ha.ka.ba/pono/e-prime/SKILL`
+- `lar:///ha.ka.ba/api/v0.1/pono/e-prime/SKILL`
 
 <<~/ahu >>
 

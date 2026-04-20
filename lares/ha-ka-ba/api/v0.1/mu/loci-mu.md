@@ -1,4 +1,4 @@
-<!-- <<~ !DOCTYPE = lar:///v0.1/ha.ka.ba/pono/memetic-wikitext >> -->
+<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
 
 
 <>
@@ -8,15 +8,15 @@
 <<~ॐ ँ>>
 <<~ॐ ँ ? >>
 <<~ॐ ँ ? --> >>
-<<~ॐ ँ ? --> lar:///v0.1/ha.ka.ba/mu >>
-<<~ॐ ँ&#x0001; ? --> lar:///v0.1/ha.ka.ba/mu >>
+<<~ॐ ँ ? --> lar:///ha.ka.ba/api/v0.1/mu >>
+<<~ॐ ँ&#x0001; ? --> lar:///ha.ka.ba/api/v0.1/mu >>
 
 <<~ ahu #iam >>
 
 ```toml
 # <<~ ahu #iam-ha "structure" >>
 name         = "mu/mu"
-file-path    = "v0.1/ha-ka-ba/mu/loci-mu.md"
+file-path    = "lares/ha-ka-ba/api/v0.1/mu/loci-mu.md"
 content-type = "text/x-memetic-wikitext"
 version      = "0.1"
 tagspace     = "stable"
@@ -27,9 +27,9 @@ confidence = 0.80
 mana       = 0.85
 manao      = 0.80
 implements = [
-  "lar:///v0.1/ha.ka.ba/pono/meme/v0.1",
-  "lar:///v0.1/ha.ka.ba/pono/loci/v0.1",
-  "lar:///v0.1/ha.ka.ba/pono/invariant/v0.1"
+  "lar:///ha.ka.ba/api/v0.1/pono/meme/v0.1",
+  "lar:///ha.ka.ba/api/v0.1/pono/loci/v0.1",
+  "lar:///ha.ka.ba/api/v0.1/pono/invariant/v0.1"
 ]
 register   = "CS"
 namespace  = "ॐ ँ"
@@ -42,7 +42,7 @@ boot-order = 0
 
 <<~/ahu >>
 
-<<~ aka lar:///v0.1/ha.ka.ba/pono/RFC-219#normative-language >>
+<<~ aka lar:///ha.ka.ba/api/v0.1/pono/RFC-219#normative-language >>
 
 <<~ ahu #meme-header >>
 
@@ -170,9 +170,9 @@ mu closes
 ## Edges
 
 - `lar:///AGENTS`
-- `lar:///v0.1/ha.ka.ba/mu/chao`
-- `lar:///v0.1/ha.ka.ba/mu/the-four-tools`
-- `lar:///v0.1/ha.ka.ba/mu/the-law-of-5s`
+- `lar:///ha.ka.ba/api/v0.1/mu/chao`
+- `lar:///ha.ka.ba/api/v0.1/mu/the-four-tools`
+- `lar:///ha.ka.ba/api/v0.1/mu/the-law-of-5s`
 - `lar:///LARES`
 
 <<~/ahu >>

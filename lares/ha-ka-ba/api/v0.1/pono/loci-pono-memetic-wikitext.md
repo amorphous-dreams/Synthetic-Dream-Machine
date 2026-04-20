@@ -1,11 +1,11 @@
-<<~&#x0001; ? --> lar:///v0.1/ha.ka.ba/pono/memetic-wikitext >>
+<<~&#x0001; ? --> lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >>
 
 <<~ ahu #iam >>
 
 ```toml
 # <<~ ahu #iam-ha "structure" >>
 name = "pono/memetic-wikitext"
-file-path = "v0.1/ha-ka-ba/pono/loci-pono-memetic-wikitext.md"
+file-path = "lares/ha-ka-ba/api/v0.1/pono/loci-pono-memetic-wikitext.md"
 content-type = "text/x-memetic-wikitext"
 version = "0.1"
 manaoio = 0.42
@@ -15,8 +15,8 @@ confidence = 0.50
 mana = 0.54
 manao = 0.62
 implements = [
-  "lar:///v0.1/ha.ka.ba/pono/meme/v0.1",
-  "lar:///v0.1/ha.ka.ba/pono/loci/v0.1"
+  "lar:///ha.ka.ba/api/v0.1/pono/meme/v0.1",
+  "lar:///ha.ka.ba/api/v0.1/pono/loci/v0.1"
 ]
 register = "S"
 role = "constitutional root kānāwai (law), authoring kānāwai (law), primitive semantic kānāwai (law), and boot grammar contract"
@@ -87,9 +87,9 @@ Memetic-wikitext should not swallow:
 
 The root should stand in this relation:
 
-* `lar:///v0.1/ha.ka.ba/pono/memetic-wikitext` governs semantic authorship and primitive meaning
-* `lar:///v0.1/ha.ka.ba/pono/parser` governs lawful reading, recognition, normalization, and typed parse aftermath
-* `lar:///v0.1/ha.ka.ba/pono/render-pipeline` governs lowering, projection, transaction-aware landing, and render aftermath
+* `lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext` governs semantic authorship and primitive meaning
+* `lar:///ha.ka.ba/api/v0.1/pono/parser` governs lawful reading, recognition, normalization, and typed parse aftermath
+* `lar:///ha.ka.ba/api/v0.1/pono/render-pipeline` governs lowering, projection, transaction-aware landing, and render aftermath
 
 The root should therefore provide the minimum lawful contract that the downstream laws may consume without duplicating their local authority.
 
@@ -397,7 +397,7 @@ Examples:
 
 ```text
 <<~ ? --> ahu #draft-child >>
-<<~ ? --> kahea lar:///v0.1/ha.ka.ba/source >>
+<<~ ? --> kahea lar:///ha.ka.ba/api/v0.1/source >>
 ```
 
 In that pattern, `?` marks the sigil object under unbound uncertainty while `KEYWORD` still names the primitive act under attempt.
@@ -829,7 +829,7 @@ meme-confidence governs the canonical maturity and canon-status rating of a meme
 
 This locus should remain compact. It names the five-band confidence scale, the short tag form for inline use, and the relation to the `confidence` field that many typed memes should carry in `#iam`.
 
-Full stable-address `loci` kānāwai (law) should deepen outward into `lar:///v0.1/ha.ka.ba/pono/loci`. Other typed branches may deepen outward into their own subtype laws.
+Full stable-address `loci` kānāwai (law) should deepen outward into `lar:///ha.ka.ba/api/v0.1/pono/loci`. Other typed branches may deepen outward into their own subtype laws.
 
 ### Five-Band Confidence Scale
 
@@ -855,9 +855,9 @@ Provisional-rated memes (`[P]`) should not claim canonical authority over later-
 
 This locus carries the minimum confidence vocabulary needed at the authoring surface.
 
-For stable-address carriers under `lar:///v0.1/ha.ka.ba/**`, full `loci` identity, address stability kānāwai (law), and canon promotion procedure should deepen outward into `lar:///v0.1/ha.ka.ba/pono/loci` when that carrier reaches Synthesis or above.
+For stable-address carriers under `lar:///ha.ka.ba/api/v0.1/**`, full `loci` identity, address stability kānāwai (law), and canon promotion procedure should deepen outward into `lar:///ha.ka.ba/api/v0.1/pono/loci` when that carrier reaches Synthesis or above.
 
-<<~ loulou lar:///v0.1/ha.ka.ba/meme-confidence >>
+<<~ loulou lar:///ha.ka.ba/api/v0.1/meme-confidence >>
 <<~/ahu >>
 
 <<~ ahu #meme-ratings >>
@@ -886,7 +886,7 @@ These structure-side fields answer: *how ready does this meme read, and how sett
 
 See `#meme-confidence` for the five-band scale and field kānāwai (law).
 
-For stable-address carriers under `lar:///v0.1/ha.ka.ba/**`, full canon promotion procedure should deepen outward into `lar:///v0.1/ha.ka.ba/pono/loci`.
+For stable-address carriers under `lar:///ha.ka.ba/api/v0.1/**`, full canon promotion procedure should deepen outward into `lar:///ha.ka.ba/api/v0.1/pono/loci`.
 
 ### Group 2 — Structural Parse Quality
 
@@ -902,7 +902,7 @@ Low mana imposes interpretive drag, repair effort, and attention cost.
 
 `mana` does not measure editorial authority or production readiness directly.
 
-See `lar:///v0.1/ha.ka.ba/pono/parser#mana` for the full measure family, weight profile, five-band kānāwai (law), and capability grant conditions.
+See `lar:///ha.ka.ba/api/v0.1/pono/parser#mana` for the full measure family, weight profile, five-band kānāwai (law), and capability grant conditions.
 
 ### Group 3 — Detail-Side Intent
 
@@ -952,7 +952,7 @@ A meme may carry:
 
 A parser or pono tool SHOULD preserve those distinctions rather than collapsing the four fields and band texture into one undifferentiated quality score.
 
-<<~ loulou lar:///v0.1/ha.ka.ba/meme-ratings >>
+<<~ loulou lar:///ha.ka.ba/api/v0.1/meme-ratings >>
 <<~/ahu >>
 
 <<~ ahu #bridge-to-parser >>
@@ -1002,7 +1002,7 @@ The bridge should preserve a clean division:
 
 Where the root must mention parse-facing concepts, it should do so only to define the minimum contract handed forward.
 
-Where a detail becomes primarily about recognition, legality, recovery, or typed parse output, that detail should move outward into `lar:///v0.1/ha.ka.ba/pono/parser`.
+Where a detail becomes primarily about recognition, legality, recovery, or typed parse output, that detail should move outward into `lar:///ha.ka.ba/api/v0.1/pono/parser`.
 
 ### Consumption Reminder
 
@@ -1088,7 +1088,7 @@ The bridge should preserve a clean division:
 
 Where the root must mention render-facing concepts, it should do so only to define the minimum contract handed forward.
 
-Where a detail becomes primarily about projection, lowering, widget behavior, transaction lifecycle, or target-facing landing, that detail should move outward into `lar:///v0.1/ha.ka.ba/pono/render-pipeline`.
+Where a detail becomes primarily about projection, lowering, widget behavior, transaction lifecycle, or target-facing landing, that detail should move outward into `lar:///ha.ka.ba/api/v0.1/pono/render-pipeline`.
 
 ### Consumption Reminder
 
@@ -1162,7 +1162,7 @@ When an example requires too much surrounding machinery to make sense, that exam
 #### Example A - minimum document
 
 ````markdown
-<<~&#x0001; ? --> lar:///v0.1/ha.ka.ba/pono/memetic-wikitext >>
+<<~&#x0001; ? --> lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >>
 
 <<~ ahu #iam >>
 ```toml
@@ -1182,8 +1182,8 @@ Body closes.
 
 ## Edges
 
-- `lar:///v0.1/ha.ka.ba/pono/parser`
-- `lar:///v0.1/ha.ka.ba/pono/render-pipeline`
+- `lar:///ha.ka.ba/api/v0.1/pono/parser`
+- `lar:///ha.ka.ba/api/v0.1/pono/render-pipeline`
 
 <<~/ahu >>
 
@@ -1200,19 +1200,19 @@ A local semantic worksite.
 #### Example C - minimum relation
 
 ```text
-<<~ loulou lar:///v0.1/ha.ka.ba/target >>
+<<~ loulou lar:///ha.ka.ba/api/v0.1/target >>
 ```
 
 #### Example D - minimum passive inclusion
 
 ```text
-<<~ aka lar:///v0.1/ha.ka.ba/source >>
+<<~ aka lar:///ha.ka.ba/api/v0.1/source >>
 ```
 
 #### Example E - minimum active invocation
 
 ```text
-<<~ kahea lar:///v0.1/ha.ka.ba/source >>
+<<~ kahea lar:///ha.ka.ba/api/v0.1/source >>
 ```
 
 #### Example F - minimum governed invocation
@@ -1222,7 +1222,7 @@ A local semantic worksite.
 A governed local worksite.
 
 <<~ kapu invocation --> bounded|? >>
-<<~ kahea lar:///v0.1/ha.ka.ba/source >>
+<<~ kahea lar:///ha.ka.ba/api/v0.1/source >>
 <<~/ahu >>
 ```
 
@@ -1237,8 +1237,8 @@ Work begins before full binding settles.
 #### Example H - minimum query and response
 
 ```text
-<<~&#x0005; ui meme? --> lar:///v0.1/ha.ka.ba/pono/memetic-wikitext#iam >>
-<<~&#x0006; ? --> lar:///v0.1/ha.ka.ba/pono/memetic-wikitext#iam >>
+<<~&#x0005; ui meme? --> lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext#iam >>
+<<~&#x0006; ? --> lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext#iam >>
 ```
 
 #### Example J - minimum hana guest-work block

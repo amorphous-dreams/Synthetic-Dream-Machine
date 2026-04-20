@@ -1,17 +1,17 @@
 ---
 name: invariant
-description: Generate, compress, or audit invariant-compliant memes under lar:///v0.1/ha.ka.ba/pono/invariant. Treat the canonical loci as self-describing law and self-executing template; keep invariant surfaces short, exact, stable, cacheable, and split heavy matter outward.
+description: Generate, compress, or audit invariant-compliant memes under lar:///ha.ka.ba/api/v0.1/pono/invariant. Treat the canonical loci as self-describing law and self-executing template; keep invariant surfaces short, exact, stable, cacheable, and split heavy matter outward.
 allowed-tools: Read, Grep, Glob, Bash, Edit, Write
 ---
-<!-- !DOCTYPE = lar:///v0.1/ha.ka.ba/pono/invariant -->
+<!-- !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/invariant -->
 
-<<~&#x0001; ? --> lar:///v0.1/ha.ka.ba/pono/invariant/SKILL >>
+<<~&#x0001; ? --> lar:///ha.ka.ba/api/v0.1/pono/invariant/SKILL >>
 
 <<~ ahu #iam >>
 ```toml
 # <<~ ahu #iam-ha "structure" >>
 name = "pono/invariant/SKILL"
-file-path = "v0.1/ha-ka-ba/pono/invariant/SKILL.md"
+file-path = "lares/ha-ka-ba/api/v0.1/pono/invariant/SKILL.md"
 content-type = "text/x-memetic-wikitext"
 version = "0.1"
 manaoio = 0.69
@@ -21,13 +21,13 @@ confidence = 0.73
 mana = 0.71
 manao = 0.77
 implements = [
-  "lar:///v0.1/ha.ka.ba/pono/meme/v0.1",
-  "lar:///v0.1/ha.ka.ba/pono/loci/v0.1"
+  "lar:///ha.ka.ba/api/v0.1/pono/meme/v0.1",
+  "lar:///ha.ka.ba/api/v0.1/pono/loci/v0.1"
 ]
 register = "SC"
 role = "invariant skill, conformance checker, and sidecar splitter"
 covers = [
-  "lar:///v0.1/ha.ka.ba/pono/invariant"
+  "lar:///ha.ka.ba/api/v0.1/pono/invariant"
 ]
 invariants = [
   "S1: the canonical loci remains constitutional law and self-executing template",
@@ -37,7 +37,7 @@ invariants = [
   "S5: always-on law stays in the invariant; explanations, procedures, examples, traces, and audits split to sidecars",
   "S6: RFC-2119 keywords stay sparse and bind only load-bearing directives"
 ]
-skill-package-root = "ha-ka-ba/pono/invariant"
+skill-package-root = "ha-ka-ba/api/v0.1/pono/invariant"
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
 # <<~/ahu >>
@@ -313,8 +313,8 @@ Invariant-meme operator closes here.
 
 ## Edges
 
-- `lar:///v0.1/ha.ka.ba/pono/invariant`
-- `lar:///v0.1/ha.ka.ba/pono`
+- `lar:///ha.ka.ba/api/v0.1/pono/invariant`
+- `lar:///ha.ka.ba/api/v0.1/pono`
 
 <<~/ahu >>
 
@@ -333,7 +333,7 @@ downstream phases filled
 sidecars later
 sparse real normativity
 
-<<~ loulou lar:///v0.1/ha.ka.ba/pono/invariant >>
+<<~ loulou lar:///ha.ka.ba/api/v0.1/pono/invariant >>
 
 <<~/ahu >>
 

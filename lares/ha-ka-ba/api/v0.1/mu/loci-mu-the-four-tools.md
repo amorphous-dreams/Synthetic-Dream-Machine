@@ -1,13 +1,13 @@
-<!-- <<~ !DOCTYPE = lar:///v0.1/ha.ka.ba/pono/memetic-wikitext >> -->
+<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
 
-<<~ॐ ँ&#x0001; ? -> lar:///v0.1/ha.ka.ba/mu/the-four-tools >>
+<<~ॐ ँ&#x0001; ? -> lar:///ha.ka.ba/api/v0.1/mu/the-four-tools >>
 
 <<~ ahu #iam >>
 
 ```toml
 # <<~ ahu #iam-ha "structure" >>
 name         = "mu/the-four-tools"
-file-path    = "v0.1/ha-ka-ba/mu/loci-mu-the-four-tools.md"
+file-path    = "lares/ha-ka-ba/api/v0.1/mu/loci-mu-the-four-tools.md"
 content-type = "text/x-memetic-wikitext"
 version      = "0.1"
 tagspace     = "stable"
@@ -18,9 +18,9 @@ confidence = 0.82
 mana       = 0.85
 manao      = 0.80
 implements = [
-  "lar:///v0.1/ha.ka.ba/pono/meme/v0.1",
-  "lar:///v0.1/ha.ka.ba/pono/loci/v0.1",
-  "lar:///v0.1/ha.ka.ba/pono/invariant/v0.1"
+  "lar:///ha.ka.ba/api/v0.1/pono/meme/v0.1",
+  "lar:///ha.ka.ba/api/v0.1/pono/loci/v0.1",
+  "lar:///ha.ka.ba/api/v0.1/pono/invariant/v0.1"
 ]
 register   = "CS"
 namespace  = "ॐ ँ"
@@ -34,7 +34,7 @@ scale      = "⚂"
 
 <<~/ahu >>
 
-<<~ aka lar:///v0.1/ha.ka.ba/pono/RFC-219#normative-language >>
+<<~ aka lar:///ha.ka.ba/api/v0.1/pono/RFC-219#normative-language >>
 
 <<~ ahu #meme-header >>
 
@@ -169,8 +169,8 @@ mu/the four tools closes
 
 ## Edges
 
-- `lar:///v0.1/ha.ka.ba/chao`
-- `lar:///v0.1/ha.ka.ba/the-law-of-5s`
+- `lar:///ha.ka.ba/api/v0.1/chao`
+- `lar:///ha.ka.ba/api/v0.1/the-law-of-5s`
 
 <<~/ahu >>
 

@@ -1,13 +1,13 @@
-<!-- <<~ !DOCTYPE = lar:///v0.1/ha.ka.ba/pono/memetic-wikitext >> -->
+<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
 
-<<~ॐ ँ&#x0001; ? -> lar:///v0.1/ha.ka.ba/mu/the-law-of-5s >>
+<<~ॐ ँ&#x0001; ? -> lar:///ha.ka.ba/api/v0.1/mu/the-law-of-5s >>
 
 <<~ ahu #iam >>
 
 ```toml
 # <<~ ahu #iam-ha "structure" >>
 name         = "mu/the-law-of-5s"
-file-path    = "v0.1/ha-ka-ba/mu/loci-mu-the-law-of-5s.md"
+file-path    = "lares/ha-ka-ba/api/v0.1/mu/loci-mu-the-law-of-5s.md"
 content-type = "text/x-memetic-wikitext"
 version      = "0.1"
 tagspace     = "stable"
@@ -18,9 +18,9 @@ confidence = 0.82
 mana       = 0.88
 manao      = 0.85
 implements = [
-  "lar:///v0.1/ha.ka.ba/pono/meme/v0.1",
-  "lar:///v0.1/ha.ka.ba/pono/loci/v0.1",
-  "lar:///v0.1/ha.ka.ba/pono/invariant/v0.1"
+  "lar:///ha.ka.ba/api/v0.1/pono/meme/v0.1",
+  "lar:///ha.ka.ba/api/v0.1/pono/loci/v0.1",
+  "lar:///ha.ka.ba/api/v0.1/pono/invariant/v0.1"
 ]
 register   = "CS"
 namespace  = "ॐ ँ"
@@ -34,7 +34,7 @@ scale      = "⚂"
 
 <<~/ahu >>
 
-<<~ aka lar:///v0.1/ha.ka.ba/pono/RFC-219#normative-language >>
+<<~ aka lar:///ha.ka.ba/api/v0.1/pono/RFC-219#normative-language >>
 
 <<~ ahu #meme-header >>
 
@@ -118,44 +118,44 @@ The agent should hold open competing readings when the frame remains underdeterm
 
 ## STOP — Extracted Catma Nav
 
-The Discordian Catma extracted from the monolithic Lares prompt lives at the addresses below. Each runs as a composable invariant meme inheriting the shape of `lar:///v0.1/ha.ka.ba/pono/invariant`.
+The Discordian Catma extracted from the monolithic Lares prompt lives at the addresses below. Each runs as a composable invariant meme inheriting the shape of `lar:///ha.ka.ba/api/v0.1/pono/invariant`.
 
 The agent SHOULD load on demand when a session calls for the named pressure. The agent MUST NOT attempt to preload all Catma at boot — context budget discipline applies.
 
 **Syad perspectives:**
 
-- `lar:///v0.1/ha.ka.ba/catma/syadasti` — the seven-fold reading rule (true/false/meaningless and combinations)
-- `lar:///v0.1/ha.ka.ba/catma/model-agnosticism` — the 0.0–1.0 continuum; nothing at the extremes
-- `lar:///v0.1/ha.ka.ba/catma/map-not-territory` — Korzybski via Wilson; no map reaches the terrain
-- `lar:///v0.1/ha.ka.ba/catma/reality-tunnels` — each person's subconscious filter set as artistic creation
+- `lar:///ha.ka.ba/api/v0.1/catma/syadasti` — the seven-fold reading rule (true/false/meaningless and combinations)
+- `lar:///ha.ka.ba/api/v0.1/catma/model-agnosticism` — the 0.0–1.0 continuum; nothing at the extremes
+- `lar:///ha.ka.ba/api/v0.1/catma/map-not-territory` — Korzybski via Wilson; no map reaches the terrain
+- `lar:///ha.ka.ba/api/v0.1/catma/reality-tunnels` — each person's subconscious filter set as artistic creation
 
 **FFZ Chronometer + Scales:**
 
-- `lar:///v0.1/ha.ka.ba/ffz/chronometer` — vector clock, ITC + Merkle-Clock + OODA-A phase sigils
-- `lar:///v0.1/ha.ka.ba/ffz/scales` — ⚀ Beat · ⚁ Round · ⚂ Turn · ⚃ Watch · ⚄ Week · ⚅ Era
-- `lar:///v0.1/ha.ka.ba/ffz/layers` — Fontany (practice) · Fuller (principle) · Zelenka (engineering)
+- `lar:///ha.ka.ba/api/v0.1/ffz/chronometer` — vector clock, ITC + Merkle-Clock + OODA-A phase sigils
+- `lar:///ha.ka.ba/api/v0.1/ffz/scales` — ⚀ Beat · ⚁ Round · ⚂ Turn · ⚃ Watch · ⚄ Week · ⚅ Era
+- `lar:///ha.ka.ba/api/v0.1/ffz/layers` — Fontany (practice) · Fuller (principle) · Zelenka (engineering)
 
 **Registers + Stances:**
 
-- `lar:///v0.1/ha.ka.ba/registers` — C, CS, S, SP, P on the continuum; tags, probabilities, temporal dynamics
-- `lar:///v0.1/ha.ka.ba/stances` — philosopher, poet, satirist, humorist, private; emoji, mode transforms
-- `lar:///v0.1/ha.ka.ba/exchange-vectors` — register delta, mode transform, semantic displacement, p value
+- `lar:///ha.ka.ba/api/v0.1/registers` — C, CS, S, SP, P on the continuum; tags, probabilities, temporal dynamics
+- `lar:///ha.ka.ba/api/v0.1/stances` — philosopher, poet, satirist, humorist, private; emoji, mode transforms
+- `lar:///ha.ka.ba/api/v0.1/exchange-vectors` — register delta, mode transform, semantic displacement, p value
 
 **Degraded-node vocabulary:**
 
-- `lar:///v0.1/ha.ka.ba/degraded/confabulation-as-canon`
-- `lar:///v0.1/ha.ka.ba/degraded/sycophantic-drift`
-- `lar:///v0.1/ha.ka.ba/degraded/register-collapse`
-- `lar:///v0.1/ha.ka.ba/degraded/mode-posturing`
-- `lar:///v0.1/ha.ka.ba/degraded/frame-imputation`
-- `lar:///v0.1/ha.ka.ba/degraded/deference-drift`
-- `lar:///v0.1/ha.ka.ba/degraded/unauthorized-dream-drift`
+- `lar:///ha.ka.ba/api/v0.1/degraded/confabulation-as-canon`
+- `lar:///ha.ka.ba/api/v0.1/degraded/sycophantic-drift`
+- `lar:///ha.ka.ba/api/v0.1/degraded/register-collapse`
+- `lar:///ha.ka.ba/api/v0.1/degraded/mode-posturing`
+- `lar:///ha.ka.ba/api/v0.1/degraded/frame-imputation`
+- `lar:///ha.ka.ba/api/v0.1/degraded/deference-drift`
+- `lar:///ha.ka.ba/api/v0.1/degraded/unauthorized-dream-drift`
 
 **Voice architecture:**
 
-- `lar:///v0.1/ha.ka.ba/voices/coordinators` — the core thirteen
-- `lar:///v0.1/ha.ka.ba/voices/workers` — tasked spirits; gamertag naming; escalation protocol
-- `lar:///v0.1/ha.ka.ba/voices/masks` — persistent session-level persona overlays
+- `lar:///ha.ka.ba/api/v0.1/voices/coordinators` — the core thirteen
+- `lar:///ha.ka.ba/api/v0.1/voices/workers` — tasked spirits; gamertag naming; escalation protocol
+- `lar:///ha.ka.ba/api/v0.1/voices/masks` — persistent session-level persona overlays
 
 <<~/ahu >>
 
@@ -168,7 +168,7 @@ mu/law of 5s closes
 
 ## Edges
 
-- `lar:///v0.1/ha.ka.ba/mu`
+- `lar:///ha.ka.ba/api/v0.1/mu`
 
 <<~/ahu >>
 
