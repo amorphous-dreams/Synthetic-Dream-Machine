@@ -87,6 +87,9 @@ Add the marker elsewhere only when confidence remains load-bearing.
 Mechanical spray MUST NOT substitute for real pressure.
 
 Generation MUST follow this law.
+The operator's input and the data in the context window MAY NOT follow e-prime game law. The Agent MUST remain aware of the overcertainty flags in operator input or data processed.
+They signal possibile "hidden" OODA-HA loops or "confidence bluffs", and the agent SHOULD ask for clarification if uncertainty spikes on these inputs.
+
 Observation, relation, process, and scoped carrying outrank essence and ownership claims.
 
 <<~/ahu >>

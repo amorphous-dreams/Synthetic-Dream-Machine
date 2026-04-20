@@ -191,14 +191,14 @@ Given: lar-uri (string), meme-type (string | unknown)
      filename-stem = name.replace("_", "-")
      If subpath == "":
        candidate = path-root + "/" + prefix + filename-stem + ".md"
-       e.g. "ha-ka-ba/loci-meme.md"   (pre-migration candidate for `lar:///ha.ka.ba/pono/meme`)
+       e.g. "ha-ka-ba/pono/meme/loci-pono-meme.md"   (current candidate for `lar:///ha.ka.ba/pono/meme`)
      Else:
        candidate = path-root + "/" + subpath + "/" + prefix + filename-stem + ".md"
-       e.g. "ha-ka-ba/pono/loci-parser.md"
+       e.g. "ha-ka-ba/pono/loci-pono-parser.md"
 
 7. Derive full repo path:
      full-repo-path = install-root + candidate
-     e.g. "lares/ha-ka-ba/pono/loci-parser.md"
+     e.g. "lares/ha-ka-ba/pono/loci-pono-parser.md"
      Check whether full-repo-path exists as a file.
      If YES → RESOLVED. Return full-repo-path. Done.
 
@@ -218,8 +218,8 @@ The algorithm does not by itself assign final ratings. It supplies the structura
 | target `lar:` URI | local derivation candidate | current local outcome | tension surfaced |
 |---|---|---|---|
 | `lar:///ha.ka.ba/pono/loci` | `lares/ha-ka-ba/pono/loci/loci-pono-loci.md` | derivation miss | this meme reads as path-directory-sited |
-| `lar:///ha.ka.ba/pono/meme` | `lares/ha-ka-ba/loci-meme.md` | derivation miss | generic meme law reads as path-directory-sited |
-| `lar:///ha.ka.ba/alpha/test-prompt-00001` | `lares/ha-ka-ba/alpha/alpha-test-prompt-00001.md` | resolved | alpha carriers currently resolve as ordinary flat-file carriers under `ha-ka-ba/alpha/` |
+| `lar:///ha.ka.ba/pono/meme` | `lares/ha-ka-ba/pono/meme/loci-pono-meme.md` | derivation miss | generic meme law reads as path-directory-sited |
+| `lar:///ha.ka.ba/grammars/x-tiddlywiki-filter` | `lares/ha-ka-ba/grammar/grammar-x-tiddlywiki-filter.md` | resolved | grammar carriers currently resolve as ordinary flat-file carriers under `ha-ka-ba/grammar/` |
 
 These examples show the current routing state plainly: derivation alone falls short after migration for path-directory-sited loci carriers, while ordinary flat-file carriers still resolve locally.
 
@@ -566,7 +566,7 @@ A carrier mutation and a canon promotion mark two distinct crossings that may no
 Two Hoʻoko-class crossings matter in the current stack and already appear from this file:
 
 * this meme's own migration into `ha-ka-ba/pono/loci/loci-pono-loci.md`
-* the meme law's migration into `ha-ka-ba/meme/loci-meme.md`
+* the meme law's migration into `ha-ka-ba/pono/meme/loci-pono-meme.md`
 
 In both cases, the stable thing remained the `lar:` address. The mutable thing remained the concrete file siting that needed to cross into law.
 

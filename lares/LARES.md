@@ -21,7 +21,10 @@ confidence = 0.75
 # <<~ ahu #iam-ka "detail" >>
 mana       = 0.85
 manao      = 0.75
-meme-type  = "configuration"
+implements = [
+  "lar:///ha.ka.ba/pono/meme/v0.1",
+  "lar:///ha.ka.ba/pono/loci/v0.1",
+]
 register   = "CS"
 role       = "configuration surface, behind-the-curtain dial room, session-config"
 boot-order = ~999

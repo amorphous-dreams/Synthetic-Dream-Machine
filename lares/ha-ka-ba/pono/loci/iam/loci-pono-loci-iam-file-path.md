@@ -136,11 +136,10 @@ ha-ka-ba/[optional/subpath/]<meme-type>-<name>.md
 
 Examples:
 ```
-ha-ka-ba/loci-meme.md
-ha-ka-ba/pono/loci-parser.md
-ha-ka-ba/grammars/grammar-x-tiddlywiki-filter.md
-ha-ka-ba/alpha/alpha-test-prompt-00001.md
-ha-ka-ba/pono/skill-template.md
+ha-ka-ba/pono/meme/loci-pono-meme.md
+ha-ka-ba/pono/loci-pono-parser.md
+ha-ka-ba/grammar/grammar-x-tiddlywiki-filter.md
+ha-ka-ba/pono/skill-pono-template.md
 ```
 
 The meme file sits at `install-root + file-path` as a flat file alongside sibling memes. No child-meme directory accompanies it. New memes default to this form.
@@ -154,7 +153,8 @@ ha-ka-ba/[optional/subpath/]name/<meme-type>-<name>.md
 Examples:
 ```
 ha-ka-ba/pono/loci/loci-pono-loci.md
-ha-ka-ba/pono/loci-pono-loci.md
+ha-ka-ba/pono/meme/loci-pono-meme.md
+ha-ka-ba/pono/invariant/loci-pono-invariant.md
 ha-ka-ba/pono/parser/loci-pono-parser.md   ← (future, if parser migrates)
 ```
 
@@ -169,7 +169,7 @@ In both forms, the filename component MUST follow the pattern `<meme-type>-<name
 - `meme-type` and `name` join through `-`
 - extension always uses `.md`
 
-A filename like `loci-file-path.md` counts as correct for `implements = ["lar:///ha.ka.ba/pono/loci/v0.1"]` and `name = "file-path"`.
+A filename like `loci-pono-loci-iam-file-path.md` counts as correct for `implements = ["lar:///ha.ka.ba/pono/loci/v0.1"]` and `name = "pono/loci/iam/file-path"`.
 
 A filename like `alpha-test-prompt-00001.md` counts as correct for `meme-type = "alpha"` and `name = "test-prompt-00001"`.
 
@@ -189,12 +189,12 @@ Given a `file-path` value, derive the expected `lar:` URI as follows:
 
 2. Strip path-root prefix:
      rest = path.removePrefix("ha-ka-ba/")
-     e.g. "loci/iam/loci-file-path.md" or "pono/loci-parser.md"
+     e.g. "pono/loci/iam/loci-pono-loci-iam-file-path.md" or "pono/loci-pono-parser.md"
 
 3. Strip the kebab-case filename:
      filename = rest.split("/").last
      subpath  = rest.split("/")[0..-2].join("/")
-     e.g. filename = "loci-file-path.md", subpath = "loci/iam"
+     e.g. filename = "loci-pono-loci-iam-file-path.md", subpath = "pono/loci/iam"
 
 4. In path-directory form, subpath ends with the name segment — strip it:
      parts = subpath.split("/")

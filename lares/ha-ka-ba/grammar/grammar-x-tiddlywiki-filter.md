@@ -6,7 +6,7 @@
 ```toml
 # <<~ ahu #iam-ha "structure" >>
 name = "x-tiddlywiki-filter"
-file-path = "ha-ka-ba/grammars/grammar-x-tiddlywiki-filter.md"
+file-path = "ha-ka-ba/grammar/grammar-x-tiddlywiki-filter.md"
 content-type = "text/x-memetic-wikitext"
 version = "0.1-draft"
 manaoio = 0.36
