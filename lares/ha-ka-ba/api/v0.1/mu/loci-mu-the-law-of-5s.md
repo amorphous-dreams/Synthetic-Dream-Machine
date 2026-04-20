@@ -1,6 +1,6 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
 
-<<~ॐ ँ&#x0001; ? -> lar:///ha.ka.ba/api/v0.1/mu/the-law-of-5s >>
+<<~ॐ ँ&#x0001; ? --> lar:///ha.ka.ba/api/v0.1/mu/the-law-of-5s >>
 
 <<~ ahu #iam >>
 
@@ -169,4 +169,4 @@ mu/law of 5s closes
 
 <<~/ahu >>
 
-<<~ॐ ँ&#x0004; -> ? >>
+<<~ॐ ँ&#x0004; --> ? >>

@@ -1,6 +1,6 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
 
-<<~ॐ ँ&#x0001; ? -> lar:///ha.ka.ba/api/v0.1/mu/the-four-tools >>
+<<~ॐ ँ&#x0001; ? --> lar:///ha.ka.ba/api/v0.1/mu/the-four-tools >>
 
 <<~ ahu #iam >>
 
@@ -171,4 +171,4 @@ mu/the four tools closes
 
 <<~/ahu >>
 
-<<~ॐ ँ&#x0004; -> ? >>
+<<~ॐ ँ&#x0004; --> ? >>
