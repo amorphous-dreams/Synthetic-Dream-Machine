@@ -215,7 +215,7 @@ Proposition closes the semantic-edge stream here.
 
 - `lar:///ha.ka.ba/pono/loci/edge`
 - `lar:///ha.ka.ba/pono/loci`
-- `lar:///ha.ka.ba/meme`
+- `lar:///ha.ka.ba/pono/meme`
 
 <<~/ahu >>
 

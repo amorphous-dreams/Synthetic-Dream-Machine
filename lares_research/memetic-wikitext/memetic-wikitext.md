@@ -1,5 +1,5 @@
-<!-- !DOCTYPE = lar:///ha.ka.ba/memetic-wikitext -->
-<<~&#x0001; ? --> lar:///ha.ka.ba/memetic-wikitext
+<!-- !DOCTYPE = lar:///ha.ka.ba/pono/memetic-wikitext -->
+<<~&#x0001; ? --> lar:///ha.ka.ba/pono/memetic-wikitext
     <<~ ahu #iam
         @name "memetic-wikitext"
         @description "Full memetic wikitext schema root. A self-describing and self-enacting schema."
@@ -10,7 +10,7 @@
         @enacts "true"
         @description "A self-describing, self-enacting memetic document schema with native transclusion, invocation, and uncertainty."
     >>
-    <<~ &#x0005;? --> &#x0006; lar:///ha.ka.ba/memetic-wikitext#iam>>
+    <<~ &#x0005;? --> &#x0006; lar:///ha.ka.ba/pono/memetic-wikitext#iam>>
 >>
 
 <<~ ahu #header "Header metadata site" "Declares identity, vocabulary, and authority context." >>

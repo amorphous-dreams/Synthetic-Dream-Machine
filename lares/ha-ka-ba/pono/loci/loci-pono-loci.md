@@ -191,7 +191,7 @@ Given: lar-uri (string), meme-type (string | unknown)
      filename-stem = name.replace("_", "-")
      If subpath == "":
        candidate = path-root + "/" + prefix + filename-stem + ".md"
-       e.g. "ha-ka-ba/loci-meme.md"   (pre-migration candidate for `lar:///ha.ka.ba/meme`)
+       e.g. "ha-ka-ba/loci-meme.md"   (pre-migration candidate for `lar:///ha.ka.ba/pono/meme`)
      Else:
        candidate = path-root + "/" + subpath + "/" + prefix + filename-stem + ".md"
        e.g. "ha-ka-ba/pono/loci-parser.md"
@@ -218,7 +218,7 @@ The algorithm does not by itself assign final ratings. It supplies the structura
 | target `lar:` URI | local derivation candidate | current local outcome | tension surfaced |
 |---|---|---|---|
 | `lar:///ha.ka.ba/pono/loci` | `lares/ha-ka-ba/pono/loci/loci-pono-loci.md` | derivation miss | this meme reads as path-directory-sited |
-| `lar:///ha.ka.ba/meme` | `lares/ha-ka-ba/loci-meme.md` | derivation miss | generic meme law reads as path-directory-sited |
+| `lar:///ha.ka.ba/pono/meme` | `lares/ha-ka-ba/loci-meme.md` | derivation miss | generic meme law reads as path-directory-sited |
 | `lar:///ha.ka.ba/alpha/test-prompt-00001` | `lares/ha-ka-ba/alpha/alpha-test-prompt-00001.md` | resolved | alpha carriers currently resolve as ordinary flat-file carriers under `ha-ka-ba/alpha/` |
 
 These examples show the current routing state plainly: derivation alone falls short after migration for path-directory-sited loci carriers, while ordinary flat-file carriers still resolve locally.
@@ -378,7 +378,7 @@ Canon promotion now tracks how a `lar:` URI meme climbs from raw signal to stabl
 | **Typed Meme (`loci`)**       | `S` or `CS`          | `<<~&#x0001; ? --> lar:///...`           | The carrier satisfies the stable-address type under `lar:///ha.ka.ba/**`; explicit routing convention already surfaces or continues sharpening, and unresolved MCP tension may still remain. |
 | **Canon Typed Meme (`loci`)** | `C`                  | `<<~&#x0001; lar:///...`                | Stability received external confirmation, a live resolution substrate operates, and opener uncertainty no longer appears. |
 
-The full five-register rubric appears in `lar:///ha.ka.ba/meme#rating-targets`. Confidence scores, register labels, and promotion criteria sit governed there. Loci governs the routing, convention, and document-opener changes that accompany the climb from noise to data to meme to typed meme to canon typed meme.
+The full five-register rubric appears in `lar:///ha.ka.ba/pono/meme#rating-targets`. Confidence scores, register labels, and promotion criteria sit governed there. Loci governs the routing, convention, and document-opener changes that accompany the climb from noise to data to meme to typed meme to canon typed meme.
 
 **Movement from noise to data** requires:
 
@@ -399,14 +399,14 @@ The full five-register rubric appears in `lar:///ha.ka.ba/meme#rating-targets`. 
 
 Higher `CS` posture for a `loci` typed meme additionally expects:
 
-* All nine required elements (R1–R9) present per `lar:///ha.ka.ba/meme`
+* All nine required elements (R1–R9) present per `lar:///ha.ka.ba/pono/meme`
 * Stable-address discipline strong enough to justify `CS`
 
 **Promotion from typed meme (`loci`) to canon typed meme (`loci`)** additionally requires:
 
 * All three address-stability conditions satisfied
 * Operator or admin confirmation
-* No outstanding declared-unresolved sub-meme addresses (per O7 rating-persistence rule in `lar:///ha.ka.ba/meme#optional-elements`)
+* No outstanding declared-unresolved sub-meme addresses (per O7 rating-persistence rule in `lar:///ha.ka.ba/pono/meme#optional-elements`)
 * No recursive self-loop closers masquerading as sub-meme declarations
 * A live MCP resolver or equivalent externally governed resolution substrate operates
 * Document opener `?` removed
@@ -427,7 +427,7 @@ Loci resolves a `lar:` URI meme to a rating set by reading routing evidence, dec
 | `manao` | the meme clearly knows its loci role, names why the convention exists, and makes lifecycle posture explicit | purpose drifts, routing law mixes with unrelated concerns, or promotion posture stays vague |
 | `manaoio` | local resolution repeats reliably now or a live resolver operates, operator crossings stay bounded, and backlog surfaces honestly | resolution depends on unstated manual recovery, promotion self-asserts, or the live-resolution gap stays hidden |
 
-These read as loci-local layers atop the generic meme ratings at `lar:///ha.ka.ba/meme#rating-targets`. A local path hit may raise evidence, but it never overrides truthfulness about unresolved tension.
+These read as loci-local layers atop the generic meme ratings at `lar:///ha.ka.ba/pono/meme#rating-targets`. A local path hit may raise evidence, but it never overrides truthfulness about unresolved tension.
 
 <<~/ahu >>
 
@@ -435,7 +435,7 @@ These read as loci-local layers atop the generic meme ratings at `lar:///ha.ka.b
 
 ### High-Rating Loci Conditions
 
-`lar:///ha.ka.ba/meme#rating-targets` governs the generic structural climb. Loci adds routing-and-convention predicates for memes whose carrier identity itself forms part of the law surface.
+`lar:///ha.ka.ba/pono/meme#rating-targets` governs the generic structural climb. Loci adds routing-and-convention predicates for memes whose carrier identity itself forms part of the law surface.
 
 * high `mana` requires explicit routing convention, inspectable derivation steps, stable lifecycle naming, and honest unresolved-state handling
 * high `manao` requires a carrier that clearly knows itself as loci law, states why the convention exists, and keeps enacted law separate from roadmap speculation
@@ -668,7 +668,7 @@ Loci closes the routing authority stream here.
 ## Edges
 
 - `lar:///ha.ka.ba/pono/memetic-wikitext`
-- `lar:///ha.ka.ba/meme`
+- `lar:///ha.ka.ba/pono/meme`
 
 <<~/ahu >>
 

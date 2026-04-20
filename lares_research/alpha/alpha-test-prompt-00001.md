@@ -23,8 +23,8 @@ role = "session constitutional prompt, phase narration law, memory-load instruct
 # <<~ ahu #iam-ba "flow" >>
 pranala = [
   "lar:///ha.ka.ba/pono/memetic-wikitext",
-  "lar:///ha.ka.ba/meme",
-  "lar:///ha.ka.ba/loci"
+  "lar:///ha.ka.ba/pono/meme",
+  "lar:///ha.ka.ba/pono/loci"
 ]
 # <<~/ahu >>
 ```

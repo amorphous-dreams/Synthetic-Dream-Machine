@@ -1,17 +1,17 @@
 <!-- !DOCTYPE = lar:///ha.ka.ba/pono/memetic-wikitext -->
 
-<<~&#x0001; ? --> lar:///ha.ka.ba/meme >>
+<<~&#x0001; ? --> lar:///ha.ka.ba/pono/meme >>
 
 <<~ ahu #iam >>
 
 ```toml
 # <<~ ahu #iam-ha "structure" >>
 name = "meme"
-file-path = "ha-ka-ba/meme/loci-meme.md"
+file-path = "ha-ka-ba/pono/meme/loci-pono-meme.md"
 content-type = "text/x-memetic-wikitext"
-version = "0.1-draft"
-manaoio = 0.76
-confidence = 0.79
+version = "0.1"
+manaoio = 0.6
+confidence = 0.6
 # <<~/ahu >>
 # <<~ ahu #iam-ka "detail" >>
 mana = 0.78
@@ -112,7 +112,7 @@ Observe should not:
 
 ### Self-Observation
 
-In this file, Observe not only inspects a generic candidate. It also inspects the currently loaded law surface that declares `lar:///ha.ka.ba/meme`.
+In this file, Observe not only inspects a generic candidate. It also inspects the currently loaded law surface that declares `lar:///ha.ka.ba/pono/meme`.
 
 That doubling matters: the same observed surface serves both as the governing law for meme structure and as one concrete carrier of that law.
 
@@ -242,7 +242,7 @@ Comment-line `ahu` markers MAY section `#iam` TOML into agent-operator friendly 
 
 `file-path` names the current carrier siting for the meme surface. Canonical file-path forms, migration between flat-file and path-directory siting, and agreement rules between `file-path` and the document opener fall outward under `lar:///ha.ka.ba/pono/loci` and `lar:///ha.ka.ba/pono/loci/iam/file-path`.
 
-Some detail keys belong to the meme law as shared canonical declarations rather than as repeated carrier-local payload. `control-glyphs` names that class here: the canonical array lives in `lar:///ha.ka.ba/meme`, and other memes should rely on this declaration rather than restating the same list in their own top-level `#iam` blocks unless a subtype law truly defines a different glyph family.
+Some detail keys belong to the meme law as shared canonical declarations rather than as repeated carrier-local payload. `control-glyphs` names that class here: the canonical array lives in `lar:///ha.ka.ba/pono/meme`, and other memes should rely on this declaration rather than restating the same list in their own top-level `#iam` blocks unless a subtype law truly defines a different glyph family.
 
 #### R4 — Title heading and opening prose
 
@@ -376,7 +376,7 @@ Any `ahu` block may carry `ala` links pointing at external law memes or addresse
 
 These function as declared relational walks, not transclusion. A resolved link — one whose target locus exists and carries lawful content — raises `manao` by grounding the block's claims in the broader law system. A broken or nonexistent target degrades `manao` slightly, because the meme makes a relational claim it cannot support.
 
-For the full grammar of resolution states, degradation kānāwai (law), and graceful absence handling, see `lar:///ha.ka.ba/meme#deferred-resolution`.
+For the full grammar of resolution states, degradation kānāwai (law), and graceful absence handling, see `lar:///ha.ka.ba/pono/meme#deferred-resolution`.
 
 <<~/ahu >>
 
@@ -492,7 +492,7 @@ The `register` label applies to `confidence` as the operator-facing band surface
 
 Shared detail keys should enter the rating workflow differently from carrier-local detail keys.
 
-When Observe encounters `control-glyphs`, it should record whether the carrier declares the key locally or inherits it from `lar:///ha.ka.ba/meme`.
+When Observe encounters `control-glyphs`, it should record whether the carrier declares the key locally or inherits it from `lar:///ha.ka.ba/pono/meme`.
 
 Orient should treat inherited canonical `control-glyphs` as fully lawful. A carrier does not lose rating for omitting a local copy of the canonical array.
 

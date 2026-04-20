@@ -454,7 +454,7 @@ Resource: lar:///ha.ka.ba/{name}#{locus}  → resolves to specific #locus block 
 Resource: lar:///ha.ka.ba/pono/walk-graph → resolves the full ala/aka link graph
 ```
 
-MCP Resources (not Tools) expose the `lar:` URI space as addressable content. An agent that calls `list-resources()` sees the full meme registry. An agent that reads `lar:///ha.ka.ba/meme#optional-elements` gets that specific `ahu` block without loading the full file. This closes the URI–file routing gap identified in the OODA-HA assessment without requiring agents to infer the `lar:` → `file-path` mapping.
+MCP Resources (not Tools) expose the `lar:` URI space as addressable content. An agent that calls `list-resources()` sees the full meme registry. An agent that reads `lar:///ha.ka.ba/pono/meme#optional-elements` gets that specific `ahu` block without loading the full file. This closes the URI–file routing gap identified in the OODA-HA assessment without requiring agents to infer the `lar:` → `file-path` mapping.
 
 ### Phase 4 — Async Conformance Scan
 

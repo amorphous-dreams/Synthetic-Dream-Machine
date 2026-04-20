@@ -1,4 +1,4 @@
-<<~ ? --> lar:///ha.ka.ba/memetic-wikitext
+<<~ ? --> lar:///ha.ka.ba/pono/memetic-wikitext
   <<~ ahu "iam" "Full memetic wikitext schema root. A self-describing and self-enacting schema."
     @name "memetic-wikitext"
     @version "1.0"

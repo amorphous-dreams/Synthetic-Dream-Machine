@@ -6,8 +6,8 @@
 
 ```toml
 # <<~ ahu #iam-ha "structure" >>
-name = "pono/loci/iam/file-path"
-file-path = "ha-ka-ba/pono/loci/iam/loci-pono-loci-iam-file-path.md"
+name = "loci/iam/file-path"
+file-path = "ha-ka-ba/loci/iam/loci-file-path.md"
 content-type = "text/x-memetic-wikitext"
 version = "0.1-draft"
 manaoio = 0.52
@@ -16,9 +16,7 @@ confidence = 0.62
 # <<~ ahu #iam-ka "detail" >>
 mana = 0.60
 manao = 0.68
-implements = [
-  "lar:///ha.ka.ba/pono/loci/v0.1"
-]
+implements = "lar:///ha.ka.ba/pono/loci/v0.1"
 register = "CS"
 role = "file-path key authority, path-form classifier, and migration-procedure kānāwai (law)"
 # <<~/ahu >>
@@ -153,7 +151,7 @@ ha-ka-ba/[optional/subpath/]name/<meme-type>-<name>.md
 
 Examples:
 ```
-ha-ka-ba/pono/loci/loci-pono-loci.md
+ha-ka-ba/loci/loci-loci.md
 ha-ka-ba/meme/loci-meme.md
 ha-ka-ba/pono/parser/loci-parser.md   ← (future, if parser migrates)
 ```
@@ -169,7 +167,7 @@ In both forms, the filename component MUST follow the pattern `<meme-type>-<name
 - `meme-type` and `name` join through `-`
 - extension always uses `.md`
 
-A filename like `loci-file-path.md` counts as correct for `implements = ["lar:///ha.ka.ba/pono/loci/v0.1"]` and `name = "file-path"`.
+A filename like `loci-file-path.md` counts as correct for `meme-type = "loci"` and `name = "file-path"`.
 
 A filename like `alpha-test-prompt-00001.md` counts as correct for `meme-type = "alpha"` and `name = "test-prompt-00001"`.
 

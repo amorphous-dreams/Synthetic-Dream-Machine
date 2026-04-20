@@ -233,7 +233,7 @@ IAM closes the metadata law stream here.
 
 - `lar:///ha.ka.ba/pono/memetic-wikitext`
 - `lar:///ha.ka.ba/pono/loci`
-- `lar:///ha.ka.ba/meme`
+- `lar:///ha.ka.ba/pono/meme`
 
 <<~/ahu >>
 

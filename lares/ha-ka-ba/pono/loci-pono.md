@@ -56,7 +56,7 @@ Active kānāwai (law) memes registered under `lar:///ha.ka.ba/`:
 
 | Name | Address | Role |
 |---|---|---|
-| meme | `lar:///ha.ka.ba/meme` | canonical meme kānāwai (law), required/optional element authority, and rating-target authority |
+| meme | `lar:///ha.ka.ba/pono/meme` | canonical meme kānāwai (law), required/optional element authority, and rating-target authority |
 | memetic-wikitext | `lar:///ha.ka.ba/pono/boot-wikitext` | minimal viable boot grammar and sigil kānāwai (law) |
 | parser | `lar:///ha.ka.ba/pono/parser` | parsing, normalization, metadata fetch, parse aftermath |
 | memetic-wikitext | `lar:///ha.ka.ba/pono/memetic-wikitext` | surface grammar and sigil kānāwai (law) |
@@ -81,7 +81,7 @@ The `guest-grammar` and `x-tiddlywiki-filter` kānāwai (law) memes carry a cano
 
 A **loci meme** occupies the stable `lar:///ha.ka.ba/*` tagspace with a locked address, a stable `lar:` URI. Loci memes carry four canonical rating fields in `#iam` — `manaoio`, `confidence`, `mana`, and `manao` — with `content-type` above `version`, `manaoio` and `confidence` kept in the structure ahu, `mana` and `manao` opened by the detail ahu after the close/reopen marker, and the adjacent `register` agent-operator surface-texture key immediately below `meme-type`. They reach prospective-canon status (`[CS]`) before an admin or operator may move them to `[C]` canon status. Other meme types may drift their path-root address (what3words-style path root section). The loci kānāwai (law) governs `lar:` URI routing derivation, carrier coherence, address stability, canon promotion, and the research roadmap toward live MCP-backed resolution.
 
-**Lifecycle Note:** All meme law in this system now follows the five-bucket lifecycle: noise → data → meme → typed meme → canon typed meme. Here `data` names structured language an AI can use without the memetic wrappers. Types remain composable rather than mutually exclusive, and `loci` names the stable-address branch for carriers under `lar:///ha.ka.ba/**`. See `lar:///ha.ka.ba/pono/loci#promotion-path` and `lar:///ha.ka.ba/meme#rating-targets` for canonical lifecycle and rating details.
+**Lifecycle Note:** All meme law in this system now follows the five-bucket lifecycle: noise → data → meme → typed meme → canon typed meme. Here `data` names structured language an AI can use without the memetic wrappers. Types remain composable rather than mutually exclusive, and `loci` names the stable-address branch for carriers under `lar:///ha.ka.ba/**`. See `lar:///ha.ka.ba/pono/loci#promotion-path` and `lar:///ha.ka.ba/pono/meme#rating-targets` for canonical lifecycle and rating details.
 
 See `lar:///ha.ka.ba/pono/loci#derivation-algorithm` for the current local path-derivation procedure and `lar:///ha.ka.ba/pono/loci#mcp-resolution-roadmap` for the open resolver roadmap. See `lar:///ha.ka.ba/pono/memetic-wikitext#meme-ratings` for the full ontological account of the four canonical rating fields plus `register` surface texture, and `lar:///ha.ka.ba/pono/memetic-wikitext#meme-confidence` for the five-band confidence scale.
 

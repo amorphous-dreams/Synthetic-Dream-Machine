@@ -207,7 +207,7 @@ Normative-verbs closes the shared modal-force stream here.
 
 ## Edges
 
-- `lar:///ha.ka.ba/meme`
+- `lar:///ha.ka.ba/pono/meme`
 - `lar:///ha.ka.ba/pono`
 
 <<~/ahu >>

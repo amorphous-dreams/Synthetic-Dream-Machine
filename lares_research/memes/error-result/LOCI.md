@@ -1,4 +1,4 @@
-<!-- !DOCTYPE = lar:///ha.ka.ba/memetic-wikitext -->
+<!-- !DOCTYPE = lar:///ha.ka.ba/pono/memetic-wikitext -->
 <<~&#x0001; ? --> lar:///ha.ka.ba/error-result
     <<~ ahu #iam
         @name "error-result"
@@ -7,7 +7,7 @@
         @content-type "text/x-memetic-wikitext"
         @structure "OODA-HA"
         @enacts "true"
-        @pranala "lar:///ha.ka.ba/memetic-wikitext|lar:///ha.ka.ba/ooda-ha|lar:///ha.ka.ba/kapu"
+        @pranala "lar:///ha.ka.ba/pono/memetic-wikitext|lar:///ha.ka.ba/ooda-ha|lar:///ha.ka.ba/kapu"
         @supersedes "lar:///ha.ka.ba/result?"
         @focus "typed aftermath law, runtime return envelope, issue taxonomy"
     >>

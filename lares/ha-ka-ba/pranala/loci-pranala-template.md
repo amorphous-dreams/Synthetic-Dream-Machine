@@ -203,7 +203,7 @@ Template closes the reusable-edge-sigil stream here.
 
 - `lar:///ha.ka.ba/pono/loci/edge`
 - `lar:///ha.ka.ba/pono/loci`
-- `lar:///ha.ka.ba/meme`
+- `lar:///ha.ka.ba/pono/meme`
 
 <<~/ahu >>
 

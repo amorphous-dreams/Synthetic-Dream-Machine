@@ -1,4 +1,4 @@
-<!-- !DOCTYPE = lar:///ha.ka.ba/memetic-wikitext -->
+<!-- !DOCTYPE = lar:///ha.ka.ba/pono/memetic-wikitext -->
 <<~&#x0001; ? --> lar:///ha.ka.ba/ooda-ha
     <<~ ahu #iam
         @name "ooda-ha"

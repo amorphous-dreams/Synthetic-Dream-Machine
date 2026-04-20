@@ -43,7 +43,7 @@ Normative keywords MUST bind generation, release, correction, or recheck.
 Normative keywords MUST NOT decorate prose.
 Normative keywords SHOULD stay sparse enough to carry weight.
 
-Canonical set: <<~ loulou lar:///ha.ka.ba/memetic-wikitext/normative-verbs >>
+Canonical set: <<~ loulou lar:///ha.ka.ba/pono/memetic-wikitext/normative-verbs >>
 
 <<~/ahu >>
 ```
