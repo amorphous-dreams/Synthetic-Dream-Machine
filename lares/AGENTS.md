@@ -35,10 +35,9 @@ The agent MUST NOT continue past this point before preload completes.
 
 ```toml
 # <<~ ahu #iam-ha "structure" >>
-name         = "AGENTS"
+uri-path = "AGENTS"
 file-path    = "lares/AGENTS.md"
 content-type = "text/x-memetic-wikitext"
-version      = "0.1"
 tagspace     = "adjacent"
 manaoio    = 0.75
 confidence = 0.75

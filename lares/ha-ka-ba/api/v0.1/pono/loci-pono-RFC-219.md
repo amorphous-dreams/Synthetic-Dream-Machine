@@ -5,10 +5,9 @@
 <<~ ahu #iam >>
 ```toml
 # <<~ ahu #iam-ha "structure" >>
-name = "normative-verbs"
+uri-path = "ha.ka.ba/api/v0.1/pono/RFC-219"
 file-path = "lares/ha-ka-ba/api/v0.1/pono/loci-pono-RFC-219.md"
 content-type = "text/x-memetic-wikitext"
-version = "0.1"
 manaoio = 0.58
 confidence = 0.62
 # <<~/ahu >>

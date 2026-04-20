@@ -5,10 +5,9 @@
 <<~ ahu #iam >>
 ```toml
 # <<~ ahu #iam-ha "structure" >>
-name = "pono/guest-grammar"
+uri-path = "ha.ka.ba/api/v0.1/pono/guest-grammar"
 file-path = "lares/ha-ka-ba/api/v0.1/pono/loci-pono-guest-grammar.md"
 content-type = "text/x-memetic-wikitext"
-version = "0.1"
 manaoio = 0.48
 confidence = 0.58
 # <<~/ahu >>

@@ -10,10 +10,9 @@ A room. Dials on the wall. The operator's hand finds them.
 
 ```toml
 # <<~ ahu #iam-ha "structure" >>
-name         = "lares"
+uri-path = "LARES"
 file-path    = "lares/LARES.md"
 content-type = "text/x-memetic-wikitext"
-version      = "0.1"
 tagspace     = "adjacent"
 manaoio    = 0.70
 confidence = 0.75

@@ -10,10 +10,9 @@ allowed-tools: Read, Grep, Glob, Bash, Edit, Write
 <<~ ahu #iam >>
 ```toml
 # <<~ ahu #iam-ha "structure" >>
-name = "pono/skill-e-prime"
+uri-path = "ha.ka.ba/api/v0.1/pono/e-prime/SKILL"
 file-path = "lares/ha-ka-ba/api/v0.1/pono/e-prime/SKILL.md"
 content-type = "text/x-memetic-wikitext"
-version = "0.1"
 manaoio = 0.63
 confidence = 0.68
 # <<~/ahu >>

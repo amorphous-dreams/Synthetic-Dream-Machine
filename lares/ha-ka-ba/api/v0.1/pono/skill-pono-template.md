@@ -13,10 +13,9 @@ allowed-tools: Read, Grep, Glob, Bash, Edit, Write
 <<~ ahu #iam >>
 ```toml
 # <<~ ahu #iam-ha "structure" >>
-name = "pono/skill-template"
+uri-path = "ha.ka.ba/api/v0.1/pono/skill-template"
 file-path = "lares/ha-ka-ba/api/v0.1/pono/skill-pono-template.md"
 content-type = "text/x-memetic-wikitext"
-version = "0.1"
 manaoio = 0.42
 confidence = 0.52
 # <<~/ahu >>

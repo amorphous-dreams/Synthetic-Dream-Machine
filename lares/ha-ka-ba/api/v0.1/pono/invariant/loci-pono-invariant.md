@@ -6,10 +6,9 @@
 
 ```toml
 # <<~ ahu #iam-ha "structure" >>
-name = "pono/invariant"
+uri-path = "ha.ka.ba/api/v0.1/pono/invariant"
 file-path = "lares/ha-ka-ba/api/v0.1/pono/invariant/loci-pono-invariant.md"
 content-type = "text/x-memetic-wikitext"
-version = "0.1"
 manaoio = 0.5
 confidence = 0.7
 # <<~/ahu >>

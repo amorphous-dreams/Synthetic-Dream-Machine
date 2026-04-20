@@ -5,10 +5,9 @@
 <<~ ahu #iam >>
 ```toml
 # <<~ ahu #iam-ha "structure" >>
-name = "x-tiddlywiki-filter"
+uri-path = "ha.ka.ba/api/v0.1/grammars/x-tiddlywiki-filter"
 file-path = "lares/ha-ka-ba/api/v0.1/grammar/grammar-x-tiddlywiki-filter.md"
 content-type = "text/x-memetic-wikitext"
-version = "0.1"
 manaoio = 0.36
 confidence = 0.48
 # <<~/ahu >>

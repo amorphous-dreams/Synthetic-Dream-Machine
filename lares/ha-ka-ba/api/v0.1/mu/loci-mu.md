@@ -15,10 +15,9 @@
 
 ```toml
 # <<~ ahu #iam-ha "structure" >>
-name         = "mu/mu"
+uri-path = "ha.ka.ba/api/v0.1/mu"
 file-path    = "lares/ha-ka-ba/api/v0.1/mu/loci-mu.md"
 content-type = "text/x-memetic-wikitext"
-version      = "0.1"
 tagspace     = "stable"
 manaoio    = 0.70
 confidence = 0.80

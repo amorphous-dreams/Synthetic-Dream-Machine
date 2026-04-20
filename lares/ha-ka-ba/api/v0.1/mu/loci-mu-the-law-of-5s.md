@@ -6,10 +6,9 @@
 
 ```toml
 # <<~ ahu #iam-ha "structure" >>
-name         = "mu/the-law-of-5s"
+uri-path = "ha.ka.ba/api/v0.1/mu/the-law-of-5s"
 file-path    = "lares/ha-ka-ba/api/v0.1/mu/loci-mu-the-law-of-5s.md"
 content-type = "text/x-memetic-wikitext"
-version      = "0.1"
 tagspace     = "stable"
 manaoio    = 0.80
 confidence = 0.82

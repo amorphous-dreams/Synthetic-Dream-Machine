@@ -6,10 +6,9 @@
 
 ```toml
 # <<~ ahu #iam-ha "structure" >>
-name = "pranala/proposition"
+uri-path = "ha.ka.ba/api/v0.1/pranala/proposition"
 file-path = "lares/ha-ka-ba/api/v0.1/pranala/loci-pranala-proposition.md"
 content-type = "text/x-memetic-wikitext"
-version = "0.1"
 manaoio = 0.67
 confidence = 0.69
 # <<~/ahu >>

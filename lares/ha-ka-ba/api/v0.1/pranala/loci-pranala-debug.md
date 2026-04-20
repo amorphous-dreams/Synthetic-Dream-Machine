@@ -6,10 +6,9 @@
 
 ```toml
 # <<~ ahu #iam-ha "structure" >>
-name = "pranala/debug"
+uri-path = "ha.ka.ba/api/v0.1/pranala/debug"
 file-path = "lares/ha-ka-ba/api/v0.1/pranala/loci-pranala-debug.md"
 content-type = "text/x-memetic-wikitext"
-version = "0.1"
 manaoio = 0.68
 confidence = 0.69
 # <<~/ahu >>

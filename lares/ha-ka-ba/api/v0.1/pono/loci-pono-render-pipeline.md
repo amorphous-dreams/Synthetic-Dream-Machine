@@ -5,10 +5,9 @@
 <<~ ahu #iam >>
 ```toml
 # <<~ ahu #iam-ha "structure" >>
-name = "pono/render-pipeline"
+uri-path = "ha.ka.ba/api/v0.1/pono/render-pipeline"
 file-path = "lares/ha-ka-ba/api/v0.1/pono/loci-pono-render-pipeline.md"
 content-type = "text/x-memetic-wikitext"
-version = "0.1"
 manaoio = 0.68
 confidence = 0.84
 # <<~/ahu >>

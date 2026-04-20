@@ -1,34 +1,39 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
 
-<<~� ? --> lar:///ha.ka.ba/pono/pranala >>
+<<~&#x0001; ? --> lar:///ha.ka.ba/api/v0.1/pono/pranala >>
 
 <<~ ahu #iam >>
 
 ```toml
-name = "pono/pranala"
-file-path = "ha-ka-ba/pono/loci-pranala.md"
+# <<~ ahu #iam-ha "structure" >>
+uri-path = "ha.ka.ba/api/v0.1/pono/pranala"
+file-path = "lares/ha-ka-ba/api/v0.1/pono/pranala/loci-pono-pranala.md"
 content-type = "text/x-memetic-wikitext"
-version = "0.2-draft"
-manaoio = 0.74
-confidence = 0.76
-mana = 0.86
-manao = 0.90
+manaoio = 0.5
+confidence = 0.5
+# <<~/ahu >>
+# <<~ ahu #iam-ka "detail" >>
+mana = 0.5
+manao = 0.5
 register = "CS"
 role = "invariant edge law"
 canonical-forms = ["inline", "block", "payload-block"]
 edge-families = ["relation", "control", "dataflow", "event", "constraint", "observe"]
 lifecycle-layers = ["template", "instance", "trace"]
+# <<~/ahu >>
+# <<~ ahu #iam-ba "flow" >>
+# <<~/ahu >>
 ```
 
 <<~/ahu >>
 
-<<~ aka lar:///v0.1/ha.ka.ba/pono/RFC-219#normative-language >>
+<<~ aka lar:///ha.ka.ba/api/v0.1/pono/RFC-219#normative-language >>
 
 # Pranala
 
 Pressure, not explanation.
 
-<<~� ahu #meme-body-open >>
+<<~&#x0002; ahu #meme-body-open >>
 pranala opens
 <<~/ahu >>
 
@@ -134,24 +139,10 @@ Canonical `dir` values:
 Socket pressure:
 
 * `FROM` and `TO` in surface form MUST mean `FROM-SOCKET` and `TO-SOCKET`
-* `\? --> TO` MAY compress `FROM-SOCKET -> TO-SOCKET` when current enclosing pressure already carries the source socket
+* `? --> TO` MAY compress `FROM-SOCKET -> TO-SOCKET` when current enclosing pressure already carries the source socket
 * named `ahu` targets SHOULD carry socket pressure first
 * any sigil with a clear URI fragment `#tag` MAY serve as a socket
 * a whole meme addressed by `lar:///...` MAY carry default socket pressure when no narrower socket appears
-
-### Inline
-
-```text
-<<~ pranala ? --> TO-SOCKET family:relation >>
-```
-
-Inline form SHOULD carry quick-edge pressure.
-
-### Block
-
-``<<~ ahu #forms >>
-
-## Forms
 
 ### Inline
 
@@ -164,42 +155,38 @@ Inline form SHOULD carry quick-edge pressure.
 
 ### Block
 
-```text
-<<~ pranala #label ? --> TO-SOCKET >>
-family: control
-lifecycle: instance
-label: handoff
-<<~/pranala >>
-```
-
-```text
-<<~ pranala #label FROM-SOCKET -> TO-SOCKET >>
-family: control
-lifecycle: instance
-label: handoff
-<<~/pranala >>
-```
-
-Block form SHOULD carry readable edge pressure.
-
-### Payload-block
+Block form SHOULD carry richer local edge data.
 
 ````text
 <<~ pranala #label ? --> TO-SOCKET >>
 ```toml
 family = "control"
 lifecycle = "instance"
-label = "handoff"
 ```
 <<~/pranala >>
 ````
 
-Payload-block <<~ ahu #examples >>
+```text
+<<~ pranala #label FROM-SOCKET -> TO-SOCKET >>
+family: control
+lifecycle: instance
+<<~/pranala >>
+```
+
+Payload-block form SHOULD carry richer local edge data.
+
+<<~/ahu >>
+
+<<~ ahu #examples >>
 
 ## Examples
 
 ```text
-<<~ pranala ? --> lar:///ha.ka.ba/mu#entry family:relation >>
+<<~ pranala ? --> lar:///ha.ka.ba/api/v0.1/mu#entry family:relation >>
+```
+
+```text
+<<~ pranala ? --> lar:///ha.ka.ba/api/v0.1/pono/parser#forms family:relation label:"forms" >>
 ```
 
 ```text
@@ -208,8 +195,8 @@ Payload-block <<~ ahu #examples >>
 
 <<~/ahu >>
 
-<<~� ahu #body-close >>ition" >>
-<<~ pranala ? --> lar:///ha.ka.ba/pono/parser#forms family:relation label:"forms" >>
+<<~&#x0003; ahu #body-close >>
+pranala closes
 <<~/ahu >>
 
-<<~� --> ? >>
+<<~&#x0004; --> ? >>

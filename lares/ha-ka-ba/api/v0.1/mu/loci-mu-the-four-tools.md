@@ -6,10 +6,9 @@
 
 ```toml
 # <<~ ahu #iam-ha "structure" >>
-name         = "mu/the-four-tools"
+uri-path = "ha.ka.ba/api/v0.1/mu/the-four-tools"
 file-path    = "lares/ha-ka-ba/api/v0.1/mu/loci-mu-the-four-tools.md"
 content-type = "text/x-memetic-wikitext"
-version      = "0.1"
 tagspace     = "stable"
 manaoio    = 0.85
 confidence = 0.82
@@ -169,8 +168,8 @@ mu/the four tools closes
 
 ## Edges
 
-- `lar:///ha.ka.ba/api/v0.1/chao`
-- `lar:///ha.ka.ba/api/v0.1/the-law-of-5s`
+- `lar:///ha.ka.ba/api/v0.1/mu/chao`
+- `lar:///ha.ka.ba/api/v0.1/mu/the-law-of-5s`
 
 <<~/ahu >>
 

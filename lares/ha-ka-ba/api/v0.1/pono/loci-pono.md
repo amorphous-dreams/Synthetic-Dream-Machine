@@ -5,10 +5,9 @@
 <<~ ahu #iam >>
 ```toml
 # <<~ ahu #iam-ha "structure" >>
-name = "pono"
+uri-path = "ha.ka.ba/api/v0.1/pono"
 file-path = "lares/ha-ka-ba/api/v0.1/pono/loci-pono.md"
 content-type = "text/x-memetic-wikitext"
-version = "0.1"
 manaoio = 0.60
 confidence = 0.65
 # <<~/ahu >>

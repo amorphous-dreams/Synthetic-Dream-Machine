@@ -10,10 +10,9 @@ allowed-tools: Read, Grep, Glob, Bash, Edit, Write
 <<~ ahu #iam >>
 ```toml
 # <<~ ahu #iam-ha "structure" >>
-name = "pono/invariant/SKILL"
+uri-path = "ha.ka.ba/api/v0.1/pono/invariant/SKILL"
 file-path = "lares/ha-ka-ba/api/v0.1/pono/invariant/SKILL.md"
 content-type = "text/x-memetic-wikitext"
-version = "0.1"
 manaoio = 0.69
 confidence = 0.73
 # <<~/ahu >>
