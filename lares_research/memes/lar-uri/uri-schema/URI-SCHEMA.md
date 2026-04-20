@@ -1,4 +1,4 @@
-<!-- ? --> lar:///ha.ka.ba/uri-schema/?confidence=CS:0.95&p=0.5 -->
+<!-- ? -> lar:///ha.ka.ba/uri-schema/?confidence=CS:0.95&p=0.5 -->
 
 # `lar:` URI Schema — Canonical Specification
 
@@ -310,7 +310,7 @@ A system file MAY contain one or more loci. Each locus is bounded by its own `? 
 Appears on: system files. Uses HTML comment wrapping.
 
 ```
-<!-- ? --> lar:///ha.ka.ba/uri-schema/?confidence=CS:0.95&p=0.5 -->
+<!-- ? -> lar:///ha.ka.ba/uri-schema/?confidence=CS:0.95&p=0.5 -->
 ```
 
 The locus opener carries the file-level confidence and resolution parameter. Section-level confidence rides on ahu markers (see below).
@@ -376,7 +376,7 @@ Kahea markers appear in assembly files — documents that stitch together conten
 **Single-locus file** (most common — the file IS one place):
 
 ```
-<!-- ? --> lar:///territory.domain.path/?confidence=CS:0.95&p=0.5 -->
+<!-- ? -> lar:///territory.domain.path/?confidence=CS:0.95&p=0.5 -->
 
 # Title
 [metadata block]
@@ -397,13 +397,13 @@ One door in. Raised stones along the path. One door out.
 **Multi-locus file** (the file contains several places, each self-contained):
 
 ```
-<!-- ? --> lar:///first.territory.path/?confidence=CS:0.95&p=0.5 -->
+<!-- ? -> lar:///first.territory.path/?confidence=CS:0.95&p=0.5 -->
 
 # First Locus
 [content with ahu waypoints]
 
 <!-- → ? -->
-<!-- ? --> lar:///second.territory.path/?confidence=0.85 -->
+<!-- ? -> lar:///second.territory.path/?confidence=0.85 -->
 
 # Second Locus
 [content with ahu waypoints]
@@ -452,7 +452,7 @@ The two special characters in marker sigils are `?` (U+221E, infinity) and `→`
 **Full marker sequences (copy-paste templates):**
 
 ```
-<!-- ? --> lar:///TERRITORY/?confidence=CS:0.95&p=0.5 -->
+<!-- ? -> lar:///TERRITORY/?confidence=CS:0.95&p=0.5 -->
 <!-- → ? -->
 <!-- ahu lar:///TERRITORY/?confidence=0.85#SECTION -->
 <!-- kahea lar:///TERRITORY/?confidence=0.85 -->
@@ -906,8 +906,8 @@ Alignment points with Kowloon prior art:
 - Kowloon Activities already model `actorId`, `object`, `target`, `to`, `canReply`, and `canReact`, which cleanly host publication envelopes for exported Lares spans.
 - Kowloon IDs (`type:dbid@domain`) should remain **Kowloon-native** IDs. They do not replace `span_id` or `lar_uri`.
 - A published transcript span can export as:
-  - a Kowloon `Create --> Post` for conversational thread slices
-  - a `Create --> Page` for fuller archival or transcript views
+  - a Kowloon `Create -> Post` for conversational thread slices
+  - a `Create -> Page` for fuller archival or transcript views
   - later, linked reply chains for DreamDeck feed rendering
 
 Recommended export mapping:
@@ -1123,7 +1123,7 @@ lar://scryer:node@enyalios/schema.settled.rests/?stances=^.-.-.-.-&confidence=CS
 ### A.6 System File Span (v2)
 
 ```
-<!-- ? --> lar:///protocol.observed.grounds/talk-story/observe/?confidence=0.95&p=0.5 -->
+<!-- ? -> lar:///protocol.observed.grounds/talk-story/observe/?confidence=0.95&p=0.5 -->
 
 # Talk Story — Observe Protocol
 [metadata block]

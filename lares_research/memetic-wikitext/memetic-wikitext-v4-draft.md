@@ -178,7 +178,7 @@ SHAPE              FUNCTION                     CONTEXT
                    Body complete. More content   Inner memes.
                    may follow at nesting level.
 
-<<~[GS]␄ --> ?>>   Transmission close (EOT).    Layer 4 boundary.
+<<~[GS]␄ -> ?>>   Transmission close (EOT).    Layer 4 boundary.
                    Nothing follows. Frame ends.  Outermost meme.
                    ? persists.
 
@@ -225,7 +225,7 @@ becomes addressable.
 Example target flow:
 
 ```
-<<~&#2305;&#9858; ? --> lar:///ha.ka.ba/mu#phase-table>>
+<<~&#2305;&#9858; ? -> lar:///ha.ka.ba/mu#phase-table>>
 
 <<~ahu #"phase-table"
   "Canonical worksite for the phase invariant table."
@@ -284,7 +284,7 @@ The practical reading is:
 Arrowed render form:
 
 ```text
-<<~kahea {meme-name} ... --> target >>
+<<~kahea {meme-name} ... -> target >>
 ```
 
 This form indicates **active rendering of content through another
@@ -301,7 +301,7 @@ Normative semantics for active rendering:
 - the source meme MUST be resolved first
 - the render target MUST then receive that resolved meme as input
 - the arrow therefore introduces an explicit second stage:
-  **resolution --> transformation**
+  **resolution -> transformation**
 - the render target MAY reshape, filter, template, project,
   summarize, or otherwise realize the input through another
   medium
@@ -347,8 +347,8 @@ Examples:
 
 ```text
 <<~kahea {mu.phase-table} >>
-<<~kahea {mu.phase-table} --> procedure://view.phase-table >>
-<<~kahea {mu.phase-table} --> filter://cascade.phase-table >>
+<<~kahea {mu.phase-table} -> procedure://view.phase-table >>
+<<~kahea {mu.phase-table} -> filter://cascade.phase-table >>
 ```
 
 Extended examples:
@@ -427,13 +427,13 @@ named bridge between stored meme content and realized meme output.
 ## 3. Five-Layer Structure
 
 ```
-Layer 0: <<~ँ ? --> lar:///...>>     FRAME
+Layer 0: <<~ँ ? -> lar:///...>>     FRAME
 Layer 1:   <<~␁ ... >>                   HEADING (SOH)
              <<~iam name ...>>        iam inside heading
 Layer 2:   <<~␂>>                   BODY (STX)
              [content]                phases, sigils, ahu
 Layer 3:   <<~␃>>                   BODY CLOSE (ETX)
-Layer 4: <<~ँ␄ --> ?>>              TRANSMISSION CLOSE (EOT)
+Layer 4: <<~ँ␄ -> ?>>              TRANSMISSION CLOSE (EOT)
 ```
 
 **ETX vs EOT:** inner (nested) memes close with ETX (Layer 3).
@@ -445,13 +445,13 @@ non-outermost meme constitutes a parse error.
 ## 3. Five-Layer Meme Structure
 
 ```
-Layer 0: FRAME    <<~[glyphs] ? --> lar:///h.k.b/name>>
+Layer 0: FRAME    <<~[glyphs] ? -> lar:///h.k.b/name>>
 Layer 1: HEADING  <<~&#0001;>>  +  <<~iam name [metadata] >>
 Layer 2: BODY     <<~&#0002;>>  +  required <<~ahu #"...">> worksites
                    (requirement feeds into 0.0-1.0 Mana rating,
                    separate from confidence)
 Layer 3: BODY CL. <<~&#0003;>>
-Layer 4: TRANS CL. <<~[glyphs]&#0004; --> ?>>
+Layer 4: TRANS CL. <<~[glyphs]&#0004; -> ?>>
 ```
 
 **Protocol lifecycle within layers:**
@@ -719,8 +719,8 @@ even if this draft currently renders that pair through the local
 file/transmission boundary controls:
 
 ```
-Open  wrapper: <<~[glyphs]&#0028; ? --> lar:///...>>
-Close wrapper: <<~[glyphs]&#0004; --> ?>>
+Open  wrapper: <<~[glyphs]&#0028; ? -> lar:///...>>
+Close wrapper: <<~[glyphs]&#0004; -> ?>>
 ```
 
 <<~ahu #"open-close-formation"
@@ -1099,7 +1099,7 @@ A die face in a sigil's glyph set declares the meme's
 operational scale before the address or body loads.
 
 ```
-<<~&#2305;&#9858;&#0002; ? --> lar:///ha.ka.ba/mu>>
+<<~&#2305;&#9858;&#0002; ? -> lar:///ha.ka.ba/mu>>
       │
       └── &#9858; / U+2682 / ⚂
           game alias: Turn
@@ -1361,7 +1361,7 @@ PROTOCOL:   <=1 lifecycle glyph per sigil
 NAMESPACE:  omitted = inherit nearest enclosing effective set;
             declared glyphs = intersection attenuation;
             RESET glyph = rollback to wrapper/user origin namespace
-AUXILIARY:  any count; contradictory combos --> warning
+AUXILIARY:  any count; contradictory combos -> warning
 DIRECTION:  <=1 primary arrow
 RELATION:   compositional
 TECHNICAL:  context-dependent
@@ -1379,11 +1379,11 @@ Kahea:      bare form = static transclusion; arrowed form = active
 ### 11.5 Strictness Modes
 
 ```
-boot-mode:  strict. Unknown glyphs --> error. Fragment required
+boot-mode:  strict. Unknown glyphs -> error. Fragment required
             for boot-critical traces. `ahu` ids must resolve.
             Mu validates before load.
 
-run-mode:   permissive. Unknown glyphs --> warning, treated as
+run-mode:   permissive. Unknown glyphs -> warning, treated as
             body content. Missing fragment tolerated when the
             calling context supplies time externally.
 ```
@@ -1460,7 +1460,7 @@ The same invariant may appear in all three layers:
 Round-trip fidelity requirement:
 
 ```
-Storage --> Interchange --> Storage
+Storage -> Interchange -> Storage
 ```
 
 must preserve identical code points.
@@ -1498,7 +1498,7 @@ TOML.
 `boot.js` that loads before higher-order behavior. Under `v0.5`:
 
 - Mu SHOULD declare its native scale in the frame glyph set:
-  `<<~&#2305;&#9858; ? --> lar:///ha.ka.ba/mu>>`
+  `<<~&#2305;&#9858; ? -> lar:///ha.ka.ba/mu>>`
 - Mu SHOULD treat die faces as authoritative scale invariants
   and all English scale words as aliases
 - Mu SHOULD emit Chronometer fragments with phase glyph true
@@ -1525,11 +1525,11 @@ future parser or operator will look first.
 | Prefer TOML over JSON for strict human-agent metadata objects | SHOULD |
 | Use phase glyph triplicates (`✶ ◎ ◇ ■ ○`) as true names | MUST |
 | Keep five Chronometer slots always present | MUST |
-| Read fragment left-to-right as Action --> Week | SHOULD |
+| Read fragment left-to-right as Action -> Week | SHOULD |
 | Keep Chronometer data in the fragment only | MUST |
 | Canonical bodies MUST declare at least one targetable `ahu` | MUST |
 | `<<~kahea {meme-name}>>` means static transclusion | MUST |
-| `<<~kahea {meme-name} --> target>>` means active rendering | MUST |
+| `<<~kahea {meme-name} -> target>>` means active rendering | MUST |
 | `kahea` source memes MUST resolve before realization | MUST |
 | Arrowed `kahea` targets SHOULD be typed as procedure/function/filter/cascade | SHOULD |
 | Bare `kahea` MUST NOT imply downstream transformation by itself | MUST |

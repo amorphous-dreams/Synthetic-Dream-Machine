@@ -1,7 +1,7 @@
 # mu Boot Module (Scale 2)
 
 ``` txt
-<<~ ? --> lar:///ha.ka.ba/mu
+<<~ ? -> lar:///ha.ka.ba/mu
   <<~ ahu #root "Boot root" "Minimal boot contract for memetic parsing." >>
   <<~ iam mu
     @name "mu"
@@ -16,10 +16,10 @@
 
 <<~ OPEN-STREAM >>
   <<~ ahu #boot "Boot behavior" "Establish primitives and routing." >>
-  <<~ kahea primitives --> ? >>
+  <<~ kahea primitives -> ? >>
 <<~ END-STREAM >>
 
-<<~ POST-STREAM-METADATA --> ?
+<<~ POST-STREAM-METADATA -> ?
   <<~ iam mu
     @status "BOOTSTRAPPED"
   >>

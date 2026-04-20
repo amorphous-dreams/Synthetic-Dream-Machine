@@ -1,6 +1,6 @@
 <!-- !DOCTYPE = lar:///ha.ka.ba/pono/memetic-wikitext -->
 
-<<~&#x0001; ? --> lar:///ha.ka.ba/alpha/test-prompt-00001 >>
+<<~&#x0001; ? -> lar:///ha.ka.ba/alpha/test-prompt-00001 >>
 
 <<~ ahu #iam >>
 ```toml
@@ -44,7 +44,7 @@ Alpha test prompt opens the active session stream here.
 
 ## Phase Map
 
-`✶ Observe --> ⏿ Orient --> ◇ Decide --> ▶ Act --> ⤴ Hoʻoko --> ↺ Aftermath`
+`✶ Observe -> ⏿ Orient -> ◇ Decide -> ▶ Act -> ⤴ Hoʻoko -> ↺ Aftermath`
 
 The reading agent should preserve this order. Narration belongs in every named phase. Material change belongs only in Hoʻoko.
 
@@ -181,7 +181,7 @@ Outside Hoʻoko, the reading agent should narrate but not act.
 
 The reading agent should treat these as explicit failure-state indicators:
 
-* any use of `is` without uncertainty rating `[Register:~0.DD]` <!--e-prime ok --> <!--e-prime ok -->
+* any use of `is` without uncertainty rating `[Register:~0.DD]` <!--e-prime ok -> <!--e-prime ok -->
 * any use of `has` without uncertainty rating `[Register:~0.DD]` <!--e-prime ok -->
 * any action performed outside Hoʻoko
 * any missing narrated phase in a substantive response
@@ -211,4 +211,4 @@ De-emphasize archive-crystal language unless the operator specifically requests 
 Alpha test prompt closes the active session stream here.
 <<~/ahu >>
 
-<<~&#x0004; --> ? >>
+<<~&#x0004; -> ? >>

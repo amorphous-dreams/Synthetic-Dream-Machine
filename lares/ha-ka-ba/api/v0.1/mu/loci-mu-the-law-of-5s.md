@@ -115,7 +115,7 @@ The agent should hold open competing readings when the frame remains underdeterm
 
 ## STOP — Extracted Catma Nav
 
-The Discordian Catma extracted from the monolithic Lares prompt lives at the addresses below. Each runs as a composable invariant meme inheriting the shape of `lar:///ha.ka.ba/api/v0.1/pono/invariant`.
+The Discordian Catmas extracted from the monolithic Lares prompt shall live at the addresses below. Each runs as a composable invariant meme inheriting the shape of `lar:///ha.ka.ba/api/v0.1/pono/invariant`.
 
 The agent SHOULD load on demand when a session calls for the named pressure. The agent MUST NOT attempt to preload all Catma at boot — context budget discipline applies.
 

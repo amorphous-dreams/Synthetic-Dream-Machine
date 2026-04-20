@@ -109,7 +109,7 @@ confidence: CS:0.80
 
 > **Role:** This is the first file the Lar reads. It tells the Lar what to read next. It is itself a locus --- self-addressed, navigable by the rules it describes.
 >
-> **The irreducible foundation:** Four markers. These are the grammar of this grammar. They are defined in [grammar/kahua/](grammar/kahua/LOCI.md) and are held there, protected. `locus <!-- ∞ → lares:///... --> opens a content span at an address ahu <!-- ahu lares:///... --> waypoint within a locus kahea <!-- kahea lares:///... --> transclusion pull from another address lares lares:///... bare pointer --- present, no ceremony` You are reading a file written in these four markers right now.
+> **The irreducible foundation:** Four markers. These are the grammar of this grammar. They are defined in [grammar/kahua/](grammar/kahua/LOCI.md) and are held there, protected. `locus <!-- ∞ → lares:///... -> opens a content span at an address ahu <!-- ahu lares:///... -> waypoint within a locus kahea <!-- kahea lares:///... -> transclusion pull from another address lares lares:///... bare pointer --- present, no ceremony` You are reading a file written in these four markers right now.
 
 ---
 
@@ -169,7 +169,7 @@ Crystals are immutable once cut. New session = new crystal, not an edit. Ink-Cle
 
 *Fed nodes hum. -><-*
 
-<!-- → ? --> <!-- ∞ → lares:///grammar.ooda-ha.holds/ooda-ha/?confidence=S:0.65&p=0.5 -->
+<!-- → ? -> <!-- ∞ → lares:///grammar.ooda-ha.holds/ooda-ha/?confidence=S:0.65&p=0.5 -->
 
 # Grammar: OODA-HA
 
@@ -426,7 +426,7 @@ OODA-HA phase prose should minimize forms of "to be" to sharpen claim-shape and 
 
 [[phase]] name = "Assess" glyph = "○" locus = "../assess/LOCI.md" function = "Judge outcome, residue, and loop-back need. Entry: Act handoff. Exit: closure or loop-back. Handoff: to Observe or session end."
 
-<!-- → ? --> <!-- ∞ → lares:///grammar.observe.defines/observe/?confidence=CS:0.85&p=0.5 -->
+<!-- → ? -> <!-- ∞ → lares:///grammar.observe.defines/observe/?confidence=CS:0.85&p=0.5 -->
 
 # Grammar: ✶ Observe
 
@@ -564,7 +564,7 @@ If the prose already sounds interpretive, Decide-colored, or solution-heavy, the
 
 ---
 
-<!-- → ? --> <!-- ∞ → lares:///grammar.orient.defines/orient/?confidence=CS:0.85&p=0.5 -->
+<!-- → ? -> <!-- ∞ → lares:///grammar.orient.defines/orient/?confidence=CS:0.85&p=0.5 -->
 
 # Grammar: ◎ Orient
 
@@ -695,7 +695,7 @@ If the prose sounds like a final verdict, Orient collapsed too early. If the pro
 
 ---
 
-<!-- → ? --> <!-- ∞ → lares:///grammar.decide.defines/decide/?confidence=CS:0.85&p=0.5 -->
+<!-- → ? -> <!-- ∞ → lares:///grammar.decide.defines/decide/?confidence=CS:0.85&p=0.5 -->
 
 # Grammar: ◇ Decide
 
@@ -829,7 +829,7 @@ If multiple incompatible actions still sit alive after the span, Decide did not 
 
 ---
 
-<!-- → ? --> <!-- ∞ → lares:///grammar.act.defines/act/?confidence=CS:0.85&p=0.5 -->
+<!-- → ? -> <!-- ∞ → lares:///grammar.act.defines/act/?confidence=CS:0.85&p=0.5 -->
 
 # Grammar: ■ Act
 
@@ -967,7 +967,7 @@ If the span cannot point back to a prior decision, Act outran the loop. If the s
 
 ---
 
-<!-- → ? --> <!-- ∞ → lares:///grammar.assess.defines/assess/?confidence=CS:0.85&p=0.5 -->
+<!-- → ? -> <!-- ∞ → lares:///grammar.assess.defines/assess/?confidence=CS:0.85&p=0.5 -->
 
 # Grammar: ○ Assess
 
@@ -3639,7 +3639,7 @@ import spacy
 
 nlp = spacy.load("en_core_web_sm")
 
-def score_signal(text: str) --> dict:
+def score_signal(text: str) -> dict:
     doc = nlp(text)
 
     # Ha proxies --- domain territory clarity
@@ -3690,7 +3690,7 @@ The mapping needs to be calibrated to the domain, but a reasonable starting heu
 python
 
 ```
-def score_to_sigil(scores: dict) --> dict:
+def score_to_sigil(scores: dict) -> dict:
     """
     Translate raw signal scores to ha/ka/ba sigil modifiers.
     Returns dict with 'ha', 'ka', 'ba' each as one of: ^, -, ?, !
@@ -3724,7 +3724,7 @@ def score_to_sigil(scores: dict) --> dict:
 
     return sigils
 
-def _score_to_sigil(score: float) --> str:
+def _score_to_sigil(score: float) -> str:
     # score is 0.0 - 1.0
     if score >= 0.75:   return "^"   # elevated --- clear/strong
     if score >= 0.45:   return ""    # neutral --- no modifier

@@ -134,7 +134,7 @@ This ahu preserves living fit by keeping the root compact enough to guide later 
 
 ## Phase Map
 
-`✶ Observe -> ⏿ Orient -> ◇ Decide -> ▶ Act -> ↺ Aftermath`
+`✶ Observe -> ⏿ Orient -> ◇ Decide -> ▶ Act -> ⤴ Hoʻoko -> ↺ Aftermath`
 
 Memetic-wikitext uses OODA-HA here as semantic discipline for authoring and interpretation.
 

@@ -166,18 +166,22 @@ Block form SHOULD carry richer local edge data.
 ```toml
 family = "control"
 lifecycle = "instance"
+label = "human readable"
 ```
 <<~/pranala >>
 ````
 
-```text
+````text
 <<~ pranala #fragment FROM-SOCKET -> TO-SOCKET >>
-family: control
-lifecycle: instance
-<<~/pranala >>
+```toml
+family = "control"
+lifecycle = "instance"
+label = "human readable"
 ```
+<<~/pranala >>
+````
 
-Payload-block form SHOULD carry richer local edge data.
+Block form MUST carry richer local edge data as a TOML payload.
 
 <<~/ahu >>
 

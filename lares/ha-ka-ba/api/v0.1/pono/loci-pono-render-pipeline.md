@@ -109,7 +109,7 @@ This subphase lowers entry cost and prepares the later loops.
 
 ## Phase Map
 
-`✶ Observe -> ⏿ Orient -> ◇ Decide -> ▶ Act -> ↺ Aftermath`
+`✶ Observe -> ⏿ Orient -> ◇ Decide -> ▶ Act -> ⤴ Hoʻoko -> ↺ Aftermath`
 
 Render Pipeline law (kānāwai) gathers the surface, maps the layers, chooses lawful lowerings, prepares projection, crosses the render threshold, and judges the landing.
 

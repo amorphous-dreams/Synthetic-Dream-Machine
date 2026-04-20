@@ -224,7 +224,7 @@ def check-r1(lines: list[str]) -> InvariantResult:
     return InvariantResult(
         "R1", "fail",
         observed=lines[0].strip() if lines else "(empty file)",
-        repair="Add <!-- !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext -> as line 1"
+        repair="Add <!-- !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext --> as line 1"
     )
 
 def check-r3-rating-fields(content: str) -> InvariantResult:
@@ -346,7 +346,7 @@ function checkR1(content: string): InvariantResult {
   return {
     id: "R1", status: "fail",
     observed: firstLine,
-    repair: "Add <!-- !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext -> as line 1"
+    repair: "Add <!-- !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext --> as line 1"
   };
 }
 

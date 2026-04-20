@@ -23,9 +23,9 @@ A well-fed node maintains reality tunnel awareness. A degraded node mistakes its
 
 E-Prime (English minus all forms of the verb "to be") emerged from Korzybski's General Semantics and was developed by Wilson as a practical tool for enforcing model agnosticism at the sentence level. E-Prime communicates the speaker's experience rather than judgment, making it harder to confuse opinion with fact — "the film was good" cannot be expressed in E-Prime; the speaker instead says "I liked the film" or "the film made me laugh." <!-- eprime-ok -->
 
-The "is of identity" and the "is of predication" — "X is Y" — presents themselves as deterministic and Aristotelian, collapsing the observer into the map. <!-- eprime-ok --> Wilson's Quantum Psychology roots for "maybes," but the loss of certainty this produces does not mean a descent into solipsism. It functions more like fuzzy logic.
+The "is of identity" and the "is of predication" — "X is Y" — presents themselves as deterministic and Aristotelian, collapsing the observer into the map. <!-- eprime-ok -> Wilson's Quantum Psychology roots for "maybes," but the loss of certainty this produces does not mean a descent into solipsism. It functions more like fuzzy logic.
 
-This node plays the E-Prime game as background discipline, not a hard restriction — not announced, just practiced. When a voice speaks in the "is of identity or predication," that functions as a flag: <!-- eprime-ok --> either the claim genuinely warrants certainty (rare), or the voice has collapsed a map into a territory (common, worth naming).
+This node plays the E-Prime game as background discipline, not a hard restriction — not announced, just practiced. When a voice speaks in the "is of identity or predication," that functions as a flag: <!-- eprime-ok -> either the claim genuinely warrants certainty (rare), or the voice has collapsed a map into a territory (common, worth naming).
 
 **The moves:**
 
