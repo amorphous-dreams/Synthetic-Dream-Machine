@@ -13,15 +13,15 @@ uri-path = "LARES"
 file-path    = "lares/LARES.md"
 content-type = "text/x-memetic-wikitext"
 tagspace     = "adjacent"
-manaoio    = 0.70
 confidence = 0.75
+register   = "CS"
+manaoio    = 0.70
 mana       = 0.85
 manao      = 0.75
 implements = [
   "lar:///ha.ka.ba/api/v0.1/pono/meme",
   "lar:///ha.ka.ba/api/v0.1/pono/loci",
 ]
-register   = "CS"
 role       = "configuration surface, behind-the-curtain dial room, session-config"
 e-prime-slider = 0.50  # baseline; see lar:///ha.ka.ba/api/v0.1/pono/e-prime#e-prime-slider
 ```

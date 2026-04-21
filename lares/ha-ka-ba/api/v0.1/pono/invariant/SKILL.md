@@ -12,15 +12,15 @@ allowed-tools: Read, Grep, Glob, Bash, Edit, Write
 uri-path = "ha.ka.ba/api/v0.1/pono/invariant/SKILL"
 file-path = "lares/ha-ka-ba/api/v0.1/pono/invariant/SKILL.md"
 content-type = "text/x-memetic-wikitext"
-manaoio = 0.69
 confidence = 0.73
+register = "SC"
+manaoio = 0.69
 mana = 0.71
 manao = 0.77
 implements = [
   "lar:///ha.ka.ba/api/v0.1/pono/meme",
   "lar:///ha.ka.ba/api/v0.1/pono/loci"
 ]
-register = "SC"
 role = "invariant skill, conformance checker, and sidecar splitter"
 covers = [
   "lar:///ha.ka.ba/api/v0.1/pono/invariant"

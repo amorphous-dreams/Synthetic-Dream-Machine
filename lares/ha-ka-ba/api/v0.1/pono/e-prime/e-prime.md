@@ -7,8 +7,9 @@
 uri-path = "ha.ka.ba/api/v0.1/pono/e-prime"
 file-path = "lares/ha-ka-ba/api/v0.1/pono/e-prime/e-prime.md"
 content-type = "text/x-memetic-wikitext"
-manaoio = 0.76
 confidence = 0.72
+register = "SC"
+manaoio = 0.76
 mana = 0.72
 manao = 0.78
 implements = [
@@ -16,7 +17,6 @@ implements = [
   "lar:///ha.ka.ba/api/v0.1/pono/loci",
   "lar:///ha.ka.ba/api/v0.1/pono/invariant"
 ]
-register = "SC"
 role = "active language-discipline law (kānāwai), certainty-pressure regulator, next-generation pressure surface, and secondary audit governor for outward text"
 cacheable = true
 invariant = true

@@ -9,15 +9,15 @@ uri-path = "ha.ka.ba/docs/syad/source"
 file-path = "lares/ha-ka-ba/docs/syad/syad-source.md"
 content-type = "text/x-memetic-wikitext"
 tagspace = "stable"
-manaoio = 0.84
 confidence = 0.80
+register = "S"
+manaoio = 0.84
 mana = 0.78
 manao = 0.86
 implements = [
   "lar:///ha.ka.ba/api/v0.1/pono/meme",
   "lar:///ha.ka.ba/api/v0.1/pono/loci"
 ]
-register = "S"
 namespace = "ॐ ँ"
 role = "extracted syad source shelf, archive-consumed derivation store, register-metaphysics provenance locus"
 cacheable = true

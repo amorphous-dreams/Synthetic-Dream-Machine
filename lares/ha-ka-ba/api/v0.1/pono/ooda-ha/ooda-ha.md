@@ -8,8 +8,9 @@
 uri-path = "ha.ka.ba/api/v0.1/pono/ooda-ha"
 file-path = "lares/ha-ka-ba/api/v0.1/pono/ooda-ha/ooda-ha.md"
 content-type = "text/x-memetic-wikitext"
-manaoio = 0.88
 confidence = 0.90
+register = "CS"
+manaoio = 0.88
 mana = 0.92
 manao = 0.88
 implements = [
@@ -17,7 +18,6 @@ implements = [
   "lar:///ha.ka.ba/api/v0.1/pono/loci",
   "lar:///ha.ka.ba/api/v0.1/pono/invariant"
 ]
-register = "CS"
 role = "invariant OODA-HA loop law and loop-visibility slider"
 cacheable = true
 invariant = true

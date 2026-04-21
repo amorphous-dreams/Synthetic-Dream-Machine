@@ -8,15 +8,15 @@
 uri-path = "ha.ka.ba/api/v0.1/pono/loci/iam"
 file-path = "lares/ha-ka-ba/api/v0.1/pono/loci/iam/loci-iam.md"
 content-type = "text/x-memetic-wikitext"
-manaoio = 0.68
 confidence = 0.70
+register = "CS"
+manaoio = 0.68
 mana = 0.76
 manao = 0.84
 implements = [
   "lar:///ha.ka.ba/api/v0.1/pono/meme",
   "lar:///ha.ka.ba/api/v0.1/pono/loci"
 ]
-register = "CS"
 role = "root metadata law (kānāwai), field-set authority, and reduction charter"
 ```
 

@@ -9,15 +9,15 @@ uri-path = "ha.ka.ba/library/discordia/malaclypse/are-discordians-serious"
 file-path = "lares/ha-ka-ba/library/discordia/malaclypse/are-discordians-serious.md"
 content-type = "text/x-memetic-wikitext"
 tagspace = "stable"
-manaoio = 0.90
 confidence = 0.90
+register = "C"
+manaoio = 0.90
 mana = 0.90
 manao = 0.90
 implements = [
   "lar:///ha.ka.ba/api/v0.1/pono/meme",
   "lar:///ha.ka.ba/api/v0.1/pono/loci"
 ]
-register = "C"
 role = "discordian witness meme, Mal-2 reading locus, stance-plurality provenance shelf"
 ```
 

@@ -9,8 +9,9 @@ uri-path     = "AGENTS"
 file-path    = "lares/AGENTS.md"
 content-type = "text/x-memetic-wikitext"
 tagspace     = "adjacent"
-manaoio      = 0.78
 confidence   = 0.82
+register = "CS"
+manaoio      = 0.78
 mana = 0.90
 manao = 0.84
 implements = [
@@ -18,7 +19,6 @@ implements = [
   "lar:///ha.ka.ba/api/v0.1/pono/loci",
   "lar:///ha.ka.ba/api/v0.1/pono/invariant"
 ]
-register = "CS"
 role = "threshold constitution, operator-agent alignment membrane, boot router"
 cacheable = true
 preload = [

@@ -9,8 +9,9 @@ uri-path = "ha.ka.ba/api/v0.1/mu/chao"
 file-path    = "lares/ha-ka-ba/api/v0.1/mu/chao.md"
 content-type = "text/x-memetic-wikitext"
 tagspace     = "stable"
-manaoio    = 0.72
 confidence = 0.78
+register   = "CS"
+manaoio    = 0.72
 mana       = 0.85
 manao      = 0.82
 implements = [
@@ -18,7 +19,6 @@ implements = [
   "lar:///ha.ka.ba/api/v0.1/pono/loci",
   "lar:///ha.ka.ba/api/v0.1/pono/invariant"
 ]
-register   = "CS"
 namespace  = "ॐ ँ"
 role       = "sacred chao boot, ha/ka/ba triad instantiator, address-space semantics"
 ```

@@ -8,8 +8,9 @@
 uri-path = "ha.ka.ba/api/v0.1/pono/pranala"
 file-path = "lares/ha-ka-ba/api/v0.1/pono/pranala/pranala.md"
 content-type = "text/x-memetic-wikitext"
-manaoio = 0.74
 confidence = 0.82
+register = "CS"
+manaoio = 0.74
 mana = 0.82
 manao = 0.78
 implements = [
@@ -17,7 +18,6 @@ implements = [
   "lar:///ha.ka.ba/api/v0.1/pono/loci",
   "lar:///ha.ka.ba/api/v0.1/pono/invariant"
 ]
-register = "CS"
 role = "invariant edge law"
 cacheable = true
 invariant = true

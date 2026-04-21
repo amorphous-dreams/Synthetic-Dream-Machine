@@ -9,8 +9,9 @@ uri-path = "ha.ka.ba/api/v0.1/mu/the-four-tools"
 file-path    = "lares/ha-ka-ba/api/v0.1/mu/the-four-tools.md"
 content-type = "text/x-memetic-wikitext"
 tagspace     = "stable"
-manaoio    = 0.85
 confidence = 0.82
+register   = "CS"
+manaoio    = 0.85
 mana       = 0.85
 manao      = 0.80
 implements = [
@@ -18,7 +19,6 @@ implements = [
   "lar:///ha.ka.ba/api/v0.1/pono/loci",
   "lar:///ha.ka.ba/api/v0.1/pono/invariant"
 ]
-register   = "CS"
 namespace  = "ॐ ँ"
 role       = "tool initialization, phase-to-instrument mapping, exit-mode enumeration"
 ```

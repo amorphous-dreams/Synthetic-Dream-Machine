@@ -9,8 +9,9 @@ uri-path = "ha.ka.ba/api/v0.1/mu/syad-perspectives"
 file-path = "lares/ha-ka-ba/api/v0.1/mu/syad-perspectives.md"
 content-type = "text/x-memetic-wikitext"
 tagspace = "stable"
-manaoio = 0.86
 confidence = 0.86
+register = "CS"
+manaoio = 0.86
 mana = 0.82
 manao = 0.88
 implements = [
@@ -18,7 +19,6 @@ implements = [
   "lar:///ha.ka.ba/api/v0.1/pono/loci",
   "lar:///ha.ka.ba/api/v0.1/pono/invariant"
 ]
-register = "CS"
 namespace = "ॐ ँ"
 role = "syad reading invariant, register metaphysics anchor, stance-conditioned confidence law"
 cacheable = true

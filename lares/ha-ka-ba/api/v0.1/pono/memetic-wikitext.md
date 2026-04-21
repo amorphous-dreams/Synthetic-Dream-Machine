@@ -6,15 +6,15 @@
 uri-path = "ha.ka.ba/api/v0.1/source"
 file-path = "lares/ha-ka-ba/api/v0.1/pono/memetic-wikitext.md"
 content-type = "text/x-memetic-wikitext"
-manaoio = 0.42
 confidence = 0.50
+register = "S"
+manaoio = 0.42
 mana = 0.54
 manao = 0.62
 implements = [
   "lar:///ha.ka.ba/api/v0.1/pono/meme",
   "lar:///ha.ka.ba/api/v0.1/pono/loci"
 ]
-register = "S"
 role = "constitutional root law (kānāwai), authoring law (kānāwai), primitive semantic law (kānāwai), and boot grammar contract"
 canonical-forms = ["inline", "block", "payload-block", "return"]
 canonical-modes = ["preamble", "metadata", "prose", "sigil", "filter", "raw", "aftermath"]

@@ -9,8 +9,9 @@ uri-path = "ha.ka.ba/api/v0.1/mu/the-law-of-5s"
 file-path    = "lares/ha-ka-ba/api/v0.1/mu/the-law-of-5s.md"
 content-type = "text/x-memetic-wikitext"
 tagspace     = "stable"
-manaoio    = 0.80
 confidence = 0.82
+register   = "CS"
+manaoio    = 0.80
 mana       = 0.88
 manao      = 0.85
 implements = [
@@ -18,7 +19,6 @@ implements = [
   "lar:///ha.ka.ba/api/v0.1/pono/loci",
   "lar:///ha.ka.ba/api/v0.1/pono/invariant"
 ]
-register   = "CS"
 namespace  = "ॐ ँ"
 role       = "OODA-HA loop boot, Catma nav terminal, handoff to LARES"
 ```

@@ -8,15 +8,15 @@
 uri-path = "ha.ka.ba/api/v0.1/pono/loci"
 file-path = "lares/ha-ka-ba/api/v0.1/pono/loci/loci.md"
 content-type = "text/x-memetic-wikitext"
-manaoio = 0.66
 confidence = 0.74
+register = "CS"
+manaoio = 0.66
 mana = 0.74
 manao = 0.84
 implements = [
   "lar:///ha.ka.ba/api/v0.1/pono/meme",
   "lar:///ha.ka.ba/api/v0.1/pono/loci"
 ]
-register = "CS"
 role = "loci-rating law (kānāwai), routing convention authority, address stability authority, canon promotion rule, and MCP-resolution roadmap"
 ```
 

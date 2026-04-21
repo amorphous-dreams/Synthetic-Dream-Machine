@@ -8,8 +8,9 @@
 uri-path = "ha.ka.ba/api/v0.1/pono/invariant"
 file-path = "lares/ha-ka-ba/api/v0.1/pono/invariant/invariant.md"
 content-type = "text/x-memetic-wikitext"
-manaoio = 0.5
 confidence = 0.7
+register = "SC"
+manaoio = 0.5
 mana = 0.5
 manao = 0.5
 implements = [
@@ -17,7 +18,6 @@ implements = [
   "lar:///ha.ka.ba/api/v0.1/pono/loci",
   "lar:///ha.ka.ba/api/v0.1/pono/invariant"
 ]
-register = "SC"
 role = "invariant law and cache-stable pressure surface"
 cacheable = true
 invariant = true

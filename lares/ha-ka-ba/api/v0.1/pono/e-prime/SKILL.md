@@ -12,8 +12,9 @@ allowed-tools: Read, Grep, Glob, Bash, Edit, Write
 uri-path = "ha.ka.ba/api/v0.1/pono/e-prime/SKILL"
 file-path = "lares/ha-ka-ba/api/v0.1/pono/e-prime/SKILL.md"
 content-type = "text/x-memetic-wikitext"
-manaoio = 0.63
 confidence = 0.68
+register = "SC"
+manaoio = 0.63
 cacheable = true
 mana = 0.70
 manao = 0.76
@@ -21,7 +22,6 @@ implements = [
   "lar:///ha.ka.ba/api/v0.1/pono/meme",
   "lar:///ha.ka.ba/api/v0.1/pono/loci"
 ]
-register = "SC"
 role = "secondary E-Prime audit skill, Hoʻoko correction surface, and settled-text conformance guide"
 covers = ["lar:///ha.ka.ba/api/v0.1/pono/e-prime"]
 invariants = [

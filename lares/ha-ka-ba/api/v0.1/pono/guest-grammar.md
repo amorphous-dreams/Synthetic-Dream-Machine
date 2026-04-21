@@ -7,15 +7,15 @@
 uri-path = "ha.ka.ba/api/v0.1/pono/guest-grammar"
 file-path = "lares/ha-ka-ba/api/v0.1/pono/guest-grammar.md"
 content-type = "text/x-memetic-wikitext"
-manaoio = 0.48
 confidence = 0.58
+register = "S"
+manaoio = 0.48
 mana = 0.56
 manao = 0.62
 implements = [
   "lar:///ha.ka.ba/api/v0.1/pono/meme",
   "lar:///ha.ka.ba/api/v0.1/pono/loci"
 ]
-register = "S"
 role = "guest-grammar admission law (kānāwai), invocation-boundary law (kānāwai), and host-guest ownership contract"
 ```
 <<~/ahu >>

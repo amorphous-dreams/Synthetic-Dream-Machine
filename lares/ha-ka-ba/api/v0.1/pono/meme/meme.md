@@ -8,15 +8,15 @@
 uri-path = "ha.ka.ba/api/v0.1/pono/meme"
 file-path = "lares/ha-ka-ba/api/v0.1/pono/meme/meme.md"
 content-type = "text/x-memetic-wikitext"
-manaoio = 0.6
 confidence = 0.6
+register = "CS"
+manaoio = 0.6
 mana = 0.78
 manao = 0.84
 implements = [
   "lar:///ha.ka.ba/api/v0.1/pono/meme",
   "lar:///ha.ka.ba/api/v0.1/pono/loci"
 ]
-register = "CS"
 role = "canonical meme law (kānāwai), template authority, and rating-target authority"
 control-glyphs = ["&#x0001;", "&#x0002;", "&#x0003;", "&#x0004;", "&#x0005;", "&#x0006;"]
 ```
