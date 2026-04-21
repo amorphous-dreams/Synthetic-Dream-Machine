@@ -1,12 +1,12 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
 
-<<~&#x0001; ? -> lar:///ha.ka.ba/library/discordia/are-discordians-serious >>
+<<~&#x0001; ? -> lar:///ha.ka.ba/library/discordia/mal2/are-discordians-serious >>
 
 <<~ ahu #iam >>
 
 ```toml
-uri-path = "ha.ka.ba/library/discordia/are-discordians-serious"
-file-path = "lares/ha-ka-ba/library/discordia/are-discordians-serious.md"
+uri-path = "ha.ka.ba/library/discordia/malaclypse/are-discordians-serious"
+file-path = "lares/ha-ka-ba/library/discordia/malaclypse/are-discordians-serious.md"
 content-type = "text/x-memetic-wikitext"
 tagspace = "stable"
 manaoio = 0.90
@@ -32,7 +32,7 @@ Mal-2 unasks the question.
 <<~/ahu >>
 
 <<~&#x0002; ahu #meme-body-open >>
-library/discordia/are-discordians-serious opens
+library/discordia/malaclypse/are-discordians-serious opens
 <<~/ahu >>
 
 <<~ ahu #provenance >>
@@ -86,11 +86,7 @@ The note refuses the binary question before it answers the content-question.
 The stance-frame comes first.
 The belief-question arrives malformed when stance stays unnamed.
 
-<<~/ahu >>
-
-<<~ ahu #stance-plurality >>
-
-## Stance Plurality
+### Stance Plurality
 
 A Discordian utterance may carry more than one reading at once.
 The loads stay distinct even when they arrive together:
@@ -103,11 +99,7 @@ The loads stay distinct even when they arrive together:
 
 To force one stance to govern the whole declaration means to misread the declaration.
 
-<<~/ahu >>
-
-<~ ahu #collapse-of-the-binary >>
-
-## Collapse of the Binary
+### Collapse of the Binary
 
 Discordianism does not erase seriousness.
 Discordianism destroys the distinction between being serious and not being serious as a governing binary.
@@ -117,11 +109,7 @@ mode,
 measure,
 and the reader's willingness to read the right axis.
 
-<<~/ahu >>
-
-<<~ ahu #syad-pressure >>
-
-## Syad Pressure
+### Syad Pressure
 
 Same declaration.
 Different stance.
@@ -137,13 +125,13 @@ meaning changes with the reading-standpoint that receives the declaration.
 
 ## Edges
 
-- `lar:///ha.ka.ba/api/v0.1/mu/syad-perspectives`
-- `lar:///ha.ka.ba/api/v0.1/mu/the-law-of-5s`
+<<~ loulou lar:///ha.ka.ba/api/v0.1/mu/syad-perspectives >>
+<<~ loulou lar:///ha.ka.ba/api/v0.1/mu/the-law-of-5s >>
 
 <<~/ahu >>
 
 <<~&#x0003; ahu #body-close >>
-library/discordia/are-discordians-serious closes
+library/discordia/malaclypse/are-discordians-serious closes
 <<~/ahu >>
 
 <<~&#x0004; -> ? >>
