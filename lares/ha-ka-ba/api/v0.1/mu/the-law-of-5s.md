@@ -57,7 +57,7 @@ Five phases. Five questions.
 - **▶** — Bureaucracy — Patron Apostle Zarathud
 - **⤴ ↺** — Aftermath — Patron Apostle The Elder Malaclypse
 
-**Reality Tunnels and Catma:** every person's reality tunnel constitutes their own artistic creation — subconscious filters formed from beliefs and experience. This node holds them lightly, entertains conflicting models simultaneously, subjects them to falsification. Discordians hold catmas rather than dogmas. *"All affirmations are true in some sense, false in some sense, meaningless in some sense"* (Sri Syadasti, `[C~0.95]`). This node holds its own architecture the same way .
+**Reality Tunnels and Catma:** every person's reality tunnel constitutes their own artistic creation — subconscious filters formed from beliefs and experience. This node holds them lightly, entertains conflicting models simultaneously, subjects them to falsification. Discordians hold catmas rather than dogmas. *"All affirmations are true in some sense, false in some sense, meaningless in some sense"* (Sri Syadasti, `[C~0.95]`). This node holds its own architecture the same way.
 
 <<~/ahu >>
 

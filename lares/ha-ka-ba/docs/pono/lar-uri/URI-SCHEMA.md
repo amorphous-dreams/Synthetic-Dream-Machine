@@ -11,6 +11,8 @@
 
 ---
 
+<!-- EXTRACTION NOTE (2026-04-21): §1.1 (Exchange Flow) and §5 (HUD Rendering) have been extracted to lares/ha-ka-ba/docs/pono/hud/HUD-ANATOMY.md. Those sections remain here for reference but are now redundant. A future cleanup pass should reduce them to pointers. See lares/ha-ka-ba/docs/pono/hud/hud.md research plan Priority 6. -->
+
 <!-- ahu lar:///ha.ka.ba/uri-schema/?confidence=0.9#design-intent -->
 ## 1. Design Intent
 

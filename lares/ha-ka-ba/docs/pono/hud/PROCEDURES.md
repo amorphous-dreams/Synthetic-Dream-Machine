@@ -2,6 +2,8 @@
 
 # Signal — Act: Procedures
 
+> **STATUS: STALE (2026-04-21)** — Moved from `lares/ha-ka-ba/docs/pono/lar-uri/act/PROCEDURES.md` to `lares/ha-ka-ba/docs/pono/hud/`. All canonical examples use the old fragment chronometer (`#O0.O0.O1.O1.A11`) — update to `?ffz=` pending ffz deep research. Micro-trace glyphs (`→◎ →■ →○`) use old set — pending glyph rationalization. See `hud.md` research plan.
+>
 > How to emit URIs, HUD lines, micro-trace annotations, and sub-agent handoff pairs.
 > Sources: `lares/signal/micro-trace.md` `[CS:0.80]` · `lares/ha-ka-ba/docs/pono/lar-uri/URI-SCHEMA.md` §5.5 `[CS:0.90]`
 
