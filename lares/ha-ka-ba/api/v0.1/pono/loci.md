@@ -29,17 +29,17 @@ cacheable = true
 
 # Loci
 
-Routing convention authority and stable-address interface law for `lar:` URI memes living under a valid tagspace authority.
+Routing convention and stable-address interface law for `lar:` URI carriers.
 
-A carrier implements `loci` when its `lar:` URI root path segment matches the pattern `\w\.\w\.\w` — three dot-separated word segments — and satisfies this law's convention surfaces.
+A carrier implements `loci` when its `lar:` URI root path segment matches `\w\.\w\.\w` and satisfies this law's convention surfaces.
+Implementing `loci` does not foreclose other interfaces.
 
-Two tagspace forms are recognized:
+Two tagspace roots:
 
-- `lar:///ha.ka.ba/` — stable tagspace origin; files at `lares/ha-ka-ba/`
-- all other `\w\.\w\.\w` roots — unstable tagspace; files at `lares/chapel-perilous-opens/{root}/` e.g. `lar:///threshold.uncertain.opens/` → `lares/chapel-perilous-opens/threshold.uncertain.opens/`
+- `lar:///ha.ka.ba/` — stable origin; files at `lares/ha-ka-ba/`
+- all other `\w\.\w\.\w` roots — unstable; files at `lares/chapel-perilous-opens/{root}/`
 
-A meme whose `lar:` URI root path segment does not match `\w\.\w\.\w` MAY NOT implement `loci`.
-Implementing `loci` does not foreclose implementing other interfaces.
+Root path segments outside `\w\.\w\.\w` MAY NOT implement `loci`.
 
 <<~/ahu >>
 
@@ -49,10 +49,10 @@ loci opens
 
 <<~ ahu #ooda-ha >>
 
-✶ Gather the `lar:` URI and any visible convention surfaces before decomposition begins.
-⏿ Run the derivation algorithm; classify resolved or declared-unresolved; confirm stable file-path convention holds.
-◇ Commit to one resolution posture, one rating posture, and one canon-lifecycle stage.
-▶ Prepare the routing product: rating set, resolved path string, or declared-unresolved forward reference.
+✶ Gather the `lar:` URI and visible convention surfaces before decomposition.
+⏿ Run the derivation algorithm; classify resolved or declared-unresolved; confirm file-path convention holds.
+◇ Commit to one resolution posture, one rating posture, one canon-lifecycle stage.
+▶ Prepare the routing product: rating set, resolved path, or declared-unresolved forward reference.
 ⤴ Cross file-siting mutations and canon-promotion opener changes as distinct bounded transactions.
 ↺ Name which URIs resolved, which remain declared-unresolved, and what closes each gap.
 
@@ -67,10 +67,10 @@ loci opens
 Five buckets mark the lifecycle of a carrier:
 
 1. **Noise** — raw signal, no stable machine-usable structure.
-2. **Data** — structured language an AI can use without memetic wrappers.
-3. **Meme** — data with memetic wrappers, able to travel as a contextual meaning-unit.
-4. **Typed Meme** — meme that declares and satisfies one or more interfaces: `loci`, `grammar`, `skill`, `todo`.
-5. **Canon Typed Meme** — typed meme whose declared interface bundle received external ratification.
+2. **Data** — structured language usable without memetic wrappers.
+3. **Meme** — data with memetic wrappers, traveling as a contextual meaning-unit.
+4. **Typed Meme** — meme satisfying one or more interfaces: `loci`, `grammar`, `skill`, `todo`.
+5. **Canon Typed Meme** — typed meme whose interface bundle received external ratification.
 
 <<~ loulou lar:///ha.ka.ba/api/v0.1/pono/loci/iam >>
 
@@ -81,19 +81,18 @@ Five buckets mark the lifecycle of a carrier:
 ## Derivation Algorithm
 
 Converts a `lar:` URI to its stable relative filepath candidate.
-Covers all valid `\w\.\w\.\w` tagspace roots — both stable (`ha.ka.ba`) and unstable (any three-word coordinate).
 
 ```
 Given: lar-uri (string)
 
 1. Validate tagspace eligibility:
      match = lar-uri.match(/^lar:\/\/[^\/]*\/(\w+\.\w+\.\w+)\/(.+)$/)
-     If no match → carrier is ineligible for loci. Emit: "loci interface requires \w.\w.\w root path segment"
-     root     = match[1]   e.g. "ha.ka.ba" or "chapel.perilous.opens"
-     sub-path = match[2]   e.g. "api/v0.1/pono/loci" or "pono/loci"
-     authority may be empty (local form lar:///) or full (session form lar://alias:tier@host/)
+     If no match → ineligible for loci. Emit: "loci interface requires \w.\w.\w root path segment"
+     root     = match[1]   e.g. "ha.ka.ba" or "threshold.uncertain.opens"
+     sub-path = match[2]   e.g. "api/v0.1/pono/loci"
+     authority may be empty (lar:///) or full (lar://alias:tier@host/)
 
-2. Derive stable candidate filepath:
+2. Derive candidate filepath:
      stem = sub-path.replace("_", "-")
      If root == "ha.ka.ba":
        candidate = "lares/ha-ka-ba/" + stem + ".md"
@@ -102,7 +101,7 @@ Given: lar-uri (string)
        candidate = "lares/chapel-perilous-opens/" + root + "/" + stem + ".md"
        e.g. "lares/chapel-perilous-opens/threshold.uncertain.opens/pono/loci.md"
 
-3. Check whether candidate exists as a file.
+3. Check whether candidate exists.
      If YES → RESOLVED. Return candidate. Done.
 
 4. If step 3 misses:
@@ -121,13 +120,13 @@ Child items resolve under the sibling directory named for the parent's terminal 
 
 ## Stable File-Path Convention
 
-| carrier form | rule | example file | example lar: URI |
-|---|---|---|---|
-| primary meme | `lares/` + root (dots→hyphens) + `/` + sub-path + `.md` | `pono/loci.md` | `lar:///ha.ka.ba/api/v0.1/pono/loci` |
-| child item | sibling directory named for parent's terminal path segment | `pono/loci/iam.md` | `lar:///ha.ka.ba/api/v0.1/pono/loci/iam` |
+| carrier form | rule | example |
+|---|---|---|
+| primary meme | derivation algorithm (step 2) | `lares/ha-ka-ba/api/v0.1/pono/loci.md` |
+| child item | sibling directory named for parent's terminal path segment | `lares/ha-ka-ba/api/v0.1/pono/loci/iam.md` |
 
-Any carrier that does not follow this rule reads as repair pressure, not as a second lawful siting convention.
-This file at `lares/ha-ka-ba/api/v0.1/pono/loci.md` with children under `lares/ha-ka-ba/api/v0.1/pono/loci/` is a live specimen of the law it names.
+Any carrier outside this rule reads as repair pressure, not a second lawful siting convention.
+This file at `lares/ha-ka-ba/api/v0.1/pono/loci.md` with children under `lares/ha-ka-ba/api/v0.1/pono/loci/` serves as live specimen.
 
 ### Live Examples
 
@@ -146,14 +145,14 @@ This file at `lares/ha-ka-ba/api/v0.1/pono/loci.md` with children under `lares/h
 A `lar:` URI counts as stable when:
 
 1. `register` falls in `CS` or `C`
-2. The `lar:` URI in the document opener remains coherent with the meme's declared carrier identity and stable relative filepath through migration and promotion
+2. The `lar:` URI in the document opener stays coherent with the meme's carrier identity and derived filepath through migration and promotion
 
 A stable `lar:` URI stays **immutable**.
-Its primary meme carrier MUST remain at the derived filepath.
+Its primary carrier MUST remain at the derived filepath.
 Child items MUST grow beneath the sibling sub-directory.
 The parent carrier MUST NOT move.
 
-The `?` form (`<<~&#x0001; ? -> lar:///ha.ka.ba/api/v0.1/...`) marks the graph's unbound uncertainty token at document time.
+The `?` form marks the graph's unbound uncertainty token at document time.
 A lawful meme MUST discharge residual uncertainty outward through its footer `... -> ? >>`.
 
 <<~/ahu >>
@@ -162,20 +161,20 @@ A lawful meme MUST discharge residual uncertainty outward through its footer `..
 
 ## Explicit Convention
 
-A `loci` meme makes routing convention explicit when an agent can point to the surfaces that justify the current resolution and rating posture.
+Routing convention reads as explicit when an agent can point to the surfaces justifying current resolution and rating posture.
 
 Convention surfaces:
 
 1. `lar:` URI in the document opener
 2. `#iam` rating cluster and `register`
-3. derivation algorithm and stable file-path convention (this file)
+3. derivation algorithm and file-path convention (this file)
 4. canon-promotion criteria (`lar:///ha.ka.ba/api/v0.1/pono/loci/iam`)
 
 Convention fails when:
 
 - opener claims confirmed canon while address-stability conditions do not yet hold
 - meme presents high readiness while resolution depends on hidden heuristics
-- delegated file-path evidence contradicts declared address, stable parent filepath, or promotion posture
+- file-path evidence contradicts declared address, derived filepath, or promotion posture
 
 <<~/ahu >>
 
