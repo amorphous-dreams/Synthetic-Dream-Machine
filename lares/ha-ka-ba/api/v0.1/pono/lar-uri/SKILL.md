@@ -131,12 +131,12 @@ Span sequencing MUST NOT encode in authority — it lives in adjacent calibratio
 ## FFZ Chronometer Encoding
 
 <!-- TODO: UNFINISHED — needs deep research before promotion.
-  Open questions:
-  - Hex entity form (&#x2736;) is valid in memetic-wikitext source but is NOT RFC 3986-safe in a raw query string. Does the canonical record form percent-encode the glyphs instead? Or does `lar:` carve out an exception for non-dereferenceable URIs?
-  - Counter semantics: does the counter track loop iterations at that scale, or current phase depth, or something else?
-  - Multi-participant encoding: session-form URIs carry one speaker's ffz. How does a two-party exchange vector encode both participant chronometers?
-  - Scale-to-OODA-HA mapping: the five FFZ scales (strategic → action) map to OODA-HA phases, but the exact binding rule is not yet settled.
-  - Provisionality in ffz: can a chronometer position itself be provisional (e.g., &#x2736;~0)?
+  Open questions tracked as F1–F5 in docs/pono/lar-uri/lar-uri.md §6.5 (canon doc).
+  - F1: Hex entity form (&#x2736;) is valid in memetic-wikitext source but is NOT RFC 3986-safe in a raw query string. Percent-encode or carve exception for non-dereferenceable URIs?
+  - F2: Counter semantics: loop iterations at that scale, or current phase depth?
+  - F3: Multi-participant encoding: how does a two-party exchange vector encode both chronometers?
+  - F4: Scale-to-OODA-HA exact binding rule not yet settled.
+  - F5: Provisionality in ffz: can a chronometer position itself be provisional (e.g., &#x2736;~0)?
   Current encoding below is best available understanding, NOT canon. -->
 
 The `?ffz=` parameter carries nested OODA-HA loop position across five scales per participant.
