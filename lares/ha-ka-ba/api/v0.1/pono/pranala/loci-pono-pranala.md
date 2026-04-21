@@ -8,18 +8,21 @@
 uri-path = "ha.ka.ba/api/v0.1/pono/pranala"
 file-path = "lares/ha-ka-ba/api/v0.1/pono/pranala/loci-pono-pranala.md"
 content-type = "text/x-memetic-wikitext"
-manaoio = 0.68
-confidence = 0.72
-mana = 0.72
-manao = 0.72
+manaoio = 0.74
+confidence = 0.82
+mana = 0.82
+manao = 0.78
 implements = [
   "lar:///ha.ka.ba/api/v0.1/pono/meme",
-  "lar:///ha.ka.ba/api/v0.1/pono/loci"
+  "lar:///ha.ka.ba/api/v0.1/pono/loci",
+  "lar:///ha.ka.ba/api/v0.1/pono/invariant"
 ]
 register = "CS"
 role = "invariant edge law"
-canonical-forms = ["inline", "block", "payload-block"]
-edge-families = ["relation", "control", "dataflow", "message", "constraint", "debug"]
+cacheable = true
+invariant = true
+canonical-forms = ["inline", "block"]
+edge-families = ["relation", "control", "dataflow", "message", "constraint", "observe"]
 lifecycle-layers = ["template", "instance", "trace"]
 ```
 
@@ -27,16 +30,22 @@ lifecycle-layers = ["template", "instance", "trace"]
 
 <<~ aka lar:///ha.ka.ba/api/v0.1/pono/RFC-219#normative-language >>
 
+<<~ ahu #meme-header >>
+
 # Pranala
 
-Edge pressure, not explanation.
+One typed, directed, acyclic edge between two sockets.
+
+<<~ aka lar:///ha.ka.ba/api/v0.1/mu-ooda-ha >>
 
 ✶ Inventory hidden edge claims — name family, traversal, propagation, role distinctly.
-⏿ Keep family from collapsing into lifecycle; keep traversal from collapsing into propagation.
+⏿ Keep family from collapsing into lifecycle; traversal from collapsing into propagation.
 ◇ Choose family first; let role and cardinality carry ownership pressure.
 ▶ Author one edge per pranala; bind socket targets explicitly.
 ⤴ Cross the edge into live memes; verify DAG invariant holds.
 ↺ Truth density rose if fewer vague dependencies survive.
+
+<<~/ahu >>
 
 <<~&#x0002; ahu #meme-body-open >>
 pranala opens
@@ -46,72 +55,39 @@ pranala opens
 
 ## Pranala Law (Kānāwai)
 
-One pranala carries one edge.
+One pranala carries one typed, directed, acyclic edge between two sockets.
 
-A pranala MUST carry one primary `family`.
+A pranala MUST carry one `family`.
 A pranala MUST carry one `lifecycle`.
-A pranala MUST connect sockets.
-A pranala MUST NOT collapse into vague dependency.
-A pranala SHOULD carry `#fragment` when fragment pressure helps.
-A pranala SHOULD carry `role` when lifecycle ownership matters.
-A pranala MAY carry `cardinality` when structural limits must hold.
+A pranala MUST bind a `from` socket and a `to` socket.
+A pranala MUST NOT form a cycle — directly or transitively — in any family.
+A pranala MUST NOT carry `traversal: both`; reciprocal pressure MUST use two parallel edges with distinct families.
+Exception: `relation` edges MAY appear as mutual parallel pairs (A→B and B→A) to model genuinely symmetric semantics (e.g., `sibling-of`, `adjacent-to`). Each edge in the pair remains individually directed and acyclic.
+A pranala SHOULD carry `role` when the edge encodes ownership, reference, or composition semantics.
+A pranala SHOULD carry `traversal` and `propagation` when query direction and invalidation flow differ.
+A pranala MAY carry `cardinality` when the connection enforces a structural limit.
 A pranala MAY carry `payload`.
 
-Canonical local-source form:
+`family` — what the edge *means*: relation, control, dataflow, message, constraint, observe.
+`role` — what the edge *does to lifecycle*: owns, references, composes, constrains, instantiates.
+`traversal` — how a query *moves*: source-to-target, target-to-source, none.
+`propagation` — how invalidation *fires*: push-forward, push-back, pull, none.
+These four concerns are independent and MUST NOT collapse into each other.
 
-`? -> TO`
+`traversal` and `propagation` operate on the same arc independently.
+A single `control` edge MAY carry `traversal: source-to-target` and `propagation: push-back` simultaneously.
 
-Lawful explicit form:
+Surface forms:
 
-`FROM -> TO`
+`? -> TO` — local-source; `?` resolves to the nearest enclosing socket or `#fragment-id`.
+`FROM -> TO` — explicit; both sockets named.
 
-`? -> TO` SHOULD resolve `?` to the nearest enclosing socket.
-A named enclosing `#fragment-id` SHOULD win first.
-Otherwise `?` SHOULD land on the enclosing meme URI.
-
-Valid socket targets:
-
-* `lar://[HOST?]/...`
-* `lar://[HOST?]/...#fragment`
-
-Named `ahu` worksites SHOULD carry socket pressure first.
-Any wrapping sigil, including the whole meme, MAY expose a default socket.
-
-Fragment pressure SHOULD stay term-aligned across sigils as `#fragment`.
-Human-readable text MAY still travel in `label`.
-
-Hawaiian short-invocation surfaces MUST carry pranala pressure.
-
-Socket: `ahu` MUST carry the cleanest socket pressure. Ahu MAY resolve in a nested structure. Ahu MAY serve as an html style `anchor` entity.
+`ahu` MUST carry the cleanest socket pressure; it MAY resolve nested and MAY act as an anchor.
 
 Edge sigil syntactic sugar:
-* `<<~ loulou URI >>` MAY represent an HTML style outgoing link
-* `<<~ aka URI >>` MAY represent a "shadow" transclusion — invoking the image/text context
-* `<<~ kahea URI >>` MAY represent a "live" transclusion — invoking the widget/rendered context
-
-Family carries edge meaning.
-Lifecycle carries `template`, `instance`, or `trace` pressure.
-
-Family MUST NOT collapse into lifecycle.
-Lifecycle MUST NOT collapse into status.
-Traversal MUST NOT collapse into propagation.
-
-<<~/ahu >>
-
-<<~ ahu #dag-invariant >>
-
-## DAG Invariant
-
-Structural families MUST NOT form cycles.
-
-A pranala in `control`, `dataflow`, or `constraint` family MUST point from source to target without returning, directly or transitively, to the source.
-
-`traversal: both` is not a legal value.
-Reciprocal pressure SHOULD use two parallel edges with distinct families.
-
-Example: a parent-owns-child `control` edge forward plus a child-notifies-parent `message` edge back — two edges, not one bidirectional edge.
-
-High-performance scene graph engines (OpenUSD, OpenExec, Maya parallel eval, UEFN) enforce this invariant. Cycles break transform propagation, invalidation scheduling, and parallel evaluation.
+* `<<~ loulou URI >>` — outgoing link (`family:relation`)
+* `<<~ aka URI >>` — shadow transclusion (`family:observe`)
+* `<<~ kahea URI >>` — live transclusion (`family:dataflow`)
 
 <<~/ahu >>
 
@@ -119,12 +95,12 @@ High-performance scene graph engines (OpenUSD, OpenExec, Maya parallel eval, UEF
 
 ## Families
 
-* `relation` — semantic or ontological link; says what kind of connection holds
-* `control` — execution order, branch, gate, pulse; carries structural ownership hierarchy
-* `dataflow` — typed value, field, or geometry-like transport
-* `message` — event or routed message passage
-* `constraint` — declarative rule without execution pulse; spatial or logical
-* `debug` — observation, reveal, watch, or operator illumination
+* `relation` — semantic or ontological link; names what kind of connection holds; carries no execution pulse
+* `control` — execution order, branch, gate, pulse; carries structural ownership hierarchy and Entity lifetime
+* `dataflow` — typed value, field, or geometry transport; carries `kahea`-style live transclusion pressure
+* `message` — routed event or signal passage; carries notification without structural ownership stake
+* `constraint` — declarative rule without execution pulse; spatial, logical, or physical
+* `observe` — live inspection, reveal, watch, or operator illumination; carries `aka`-style shadow transclusion pressure
 
 <<~/ahu >>
 
@@ -142,46 +118,32 @@ High-performance scene graph engines (OpenUSD, OpenExec, Maya parallel eval, UEF
 
 ## Fields
 
-Shared fields:
+* `family` · `lifecycle` · `from` · `to`
+* `traversal` · `propagation`
+* `role` · `cardinality`
+* `label` · `status` · `confidence` · `payload`
 
-* `family`
-* `lifecycle`
-* `from`
-* `to`
-* `traversal`
-* `propagation`
-* `role`
-* `cardinality`
-* `label`
-* `status`
-* `confidence`
-* `payload`
+---
 
-Canonical `traversal` values:
+`traversal` — structural query direction:
+* `source-to-target`
+* `target-to-source`
+* `none`
 
-* `source-to-target` — structural query or render moves from `from` toward `to`
-* `target-to-source` — structural query moves from `to` toward `from`
-* `none` — direction adds no structural gain
-
-Canonical `propagation` values:
-
-* `push-forward` — invalidation or notification pushes from `from` toward `to`
-* `push-back` — invalidation or notification pushes from `to` toward `from` (dirty propagation)
+`propagation` — invalidation / notification direction:
+* `push-forward` — fires from `from` toward `to`
+* `push-back` — fires from `to` toward `from`
 * `pull` — consumer requests value from upstream on demand
-* `none` — no propagation pressure
+* `none`
 
-`traversal` and `propagation` are independent. A forward-traversal edge MAY carry push-back propagation (e.g., transform hierarchy reads top-down; dirty flags push bottom-up).
-
-Canonical `role` values (SHOULD carry when lifecycle ownership matters):
-
-* `owns` — source controls target lifecycle; destruction propagates
-* `references` — source observes target without structural dependency
-* `composes` — source layers opinion over target (composition arc posture)
-* `constrains` — source imposes declarative rule on target
+`role` — lifecycle ownership posture (SHOULD carry when ownership matters):
+* `owns` — source controls target lifetime; destroying source removes target
+* `references` — source observes target without lifecycle stake
+* `composes` — source layers opinion over target with strength ordering
+* `constrains` — source imposes a declarative rule on target without execution pulse
 * `instantiates` — source template binds target instance
 
-Canonical `cardinality` values (MAY carry when structural limits must hold):
-
+`cardinality` — structural limit (MAY carry):
 * `one-to-one`
 * `one-to-many`
 * `many-to-one`
@@ -193,39 +155,18 @@ Canonical `cardinality` values (MAY carry when structural limits must hold):
 
 ## Forms
 
-Socket pressure:
-
-* `FROM` and `TO` in surface form MUST mean `FROM-SOCKET` and `TO-SOCKET`
-* `? -> TO` MAY compress `FROM-SOCKET -> TO-SOCKET` when current enclosing pressure already carries the source socket
-* named `ahu` targets SHOULD carry socket pressure first
-* any sigil with a clear URI fragment `#fragment` MAY serve as a socket
-* a whole meme addressed by `lar:///...` MAY carry default socket pressure when no narrower socket appears
+`FROM` and `TO` MUST mean `FROM-SOCKET` and `TO-SOCKET`.
+`? -> TO` MAY compress when enclosing pressure already carries the source socket.
+A named `#fragment` SHOULD win socket resolution before the enclosing meme URI.
 
 ### Inline
 
 ```text
 <<~ pranala ? -> TO-SOCKET family:relation >>
-<<~ pranala FROM-SOCKET -> TO-SOCKET family:relation >>
+<<~ pranala FROM-SOCKET -> TO-SOCKET family:control role:owns >>
 ```
-
-Inline form SHOULD carry quick-edge pressure.
 
 ### Block
-
-Block form SHOULD carry richer local edge data.
-
-````text
-<<~ pranala #fragment ? -> TO-SOCKET >>
-```toml
-family = "control"
-lifecycle = "instance"
-traversal = "source-to-target"
-propagation = "push-back"
-role = "owns"
-label = "human readable"
-```
-<<~/pranala >>
-````
 
 ````text
 <<~ pranala #fragment FROM-SOCKET -> TO-SOCKET >>
@@ -233,12 +174,13 @@ label = "human readable"
 family = "control"
 lifecycle = "instance"
 traversal = "source-to-target"
-label = "human readable"
+propagation = "push-back"
+role = "owns"
+cardinality = "one-to-many"
+label = "parent owns child"
 ```
 <<~/pranala >>
 ````
-
-Block form MUST carry richer local edge data as a TOML payload.
 
 <<~/ahu >>
 
@@ -250,7 +192,11 @@ Block form MUST carry richer local edge data as a TOML payload.
 <<~ pranala ? -> lar:///ha.ka.ba/api/v0.1/mu#entry family:relation >>
 ```
 
-Long-form equivalents for edge sigil sugar:
+```text
+<<~ pranala lar:///A#out -> lar:///B#in family:relation >>
+```
+
+Sigil sugar long-forms:
 
 ````text
 <<~ pranala #link ? -> URI >>
@@ -266,7 +212,7 @@ alias = "loulou"
 ````text
 <<~ pranala #shadow ? -> URI >>
 ```toml
-family = "debug"
+family = "observe"
 lifecycle = "instance"
 label = "shadow transclusion"
 alias = "aka"
@@ -285,51 +231,12 @@ alias = "kahea"
 <<~/pranala >>
 ````
 
-Ownership edge (parent controls child lifecycle):
-
-````text
-<<~ pranala #scene-parent lar:///A#entity -> lar:///B#entity >>
-```toml
-family = "control"
-lifecycle = "instance"
-traversal = "source-to-target"
-propagation = "push-back"
-role = "owns"
-cardinality = "one-to-many"
-label = "owns"
-```
-<<~/pranala >>
-````
-
-Reciprocal pressure using parallel edges (not `traversal: both`):
+Reciprocal pressure — two parallel edges, not one bidirectional arc:
 
 ```text
-<<~ pranala lar:///A#entity -> lar:///B#entity family:control role:owns traversal:source-to-target >>
+<<~ pranala lar:///A#entity -> lar:///B#entity family:control role:owns traversal:source-to-target propagation:push-back >>
 <<~ pranala lar:///B#entity -> lar:///A#entity family:message role:references propagation:push-back >>
 ```
-
-```text
-<<~ pranala ? -> lar:///ha.ka.ba/api/v0.1/pono/parser#forms family:relation label:"forms" >>
-```
-
-```text
-<<~ pranala lar:///A#out -> lar:///B#in family:relation >>
-```
-
-<<~/ahu >>
-
-<<~ ahu #research-foundation >>
-
-## Research Foundation
-
-* [OpenUSD LIVERPS strength ordering](https://docs.nvidia.com/learn-openusd/latest/creating-composition-arcs/strength-ordering/what-is-liverps.html) — composition arcs as role-typed edges; `role:composes` lineage
-* [OpenUSD Glossary](https://openusd.org/release/glossary.html) — Attributes vs Relationships; ownership via UsdStage
-* [OpenExec System Design](https://openusd.org/dev/api/page__execution__system__design.html) — DAG computation network; traversal vs invalidation as distinct edge pressures
-* [Introduction to OpenExec](https://openusd.org/release/intro_to_openexec.html) — push invalidation and pull evaluation on the same structural edge; `propagation` field lineage
-* [Using Parallel Maya 2026](https://damassets.autodesk.net/content/dam/autodesk/www/html/using-parallel-maya/2026/UsingParallelMaya.pdf) — push dirty propagation vs pull evaluation; forward scheduling model
-* [UEFN Scene Graph](https://www.fortnite.com/news/scene-graph-is-now-available-as-an-experimental-feature-in-unreal-editor-for-fortnite) — entity owns children; one component per type; `role:owns`, `cardinality` lineage
-* [LearnOpenGL Scene Graph](https://learnopengl.com/Guest-Articles/2021/Scene/Scene-Graph) — transform hierarchy as strict DAG; cycle prohibition
-* [Graphviz `dir`](https://graphviz.org/docs/attrs/dir/) — prior source of `dir` field; render metadata only; replaced by `traversal`
 
 <<~/ahu >>
 
@@ -344,6 +251,19 @@ Reciprocal pressure using parallel edges (not `traversal: both`):
 
 <<~&#x0003; ahu #body-close >>
 pranala closes
+<<~/ahu >>
+
+<<~ ahu #meme-footer >>
+Pressure carried:
+
+one directed acyclic edge per pranala
+family · lifecycle · traversal · propagation · role · cardinality
+DAG invariant holds across all families
+OODA-HA intact
+sidecars later
+
+<<~ pranala loulou lar:///ha.ka.ba/api/v0.1/pono/pranala/research >>
+
 <<~/ahu >>
 
 <<~&#x0004; -> ? >>

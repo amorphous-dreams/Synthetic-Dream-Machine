@@ -84,7 +84,7 @@ Shape and pressure teachings MUST stay invariant.
 
 A template for invariants to fill.
 
-`✶ Observe -> ⏿ Orient -> ◇ Decide -> ▶ Act -> ⤴ Hoʻoko -> ↺ Aftermath`
+<<~ aka lar:///ha.ka.ba/api/v0.1/mu-ooda-ha#meme-header >>
 
 ✶ ???
 ⏿ ???
@@ -101,7 +101,7 @@ Empty-slots SHOULD mark positions that downstream memes fill with domain-specifi
 Invariant-compliant memes MUST NOT carry `???` markers.
 Invariant-compliant memes MUST fill the OODA-HA phase line with their own pressure moves.
 
-<<~ pranala loulou lar:///ha.ka.ba/api/v0.1/ooda-ha >>
+<<~ loulou lar:///ha.ka.ba/api/v0.1/mu-ooda-ha >>
 
 <<~/ahu >>
 

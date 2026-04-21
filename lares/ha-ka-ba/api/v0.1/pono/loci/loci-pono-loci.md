@@ -60,7 +60,6 @@ Loci opens the routing-and-rating authority stream here.
 
 ## Phase Map
 
-`✶ Observe -> ⏿ Orient -> ◇ Decide -> ▶ Act -> ⤴ Hoʻoko -> ↺ Aftermath`
 
 Loci gathers the `lar:` URI meme and visible convention surfaces, maps the address through derivation and prefix law, classifies lifecycle stage and rating posture, prepares the current rating-and-routing product plus MCP-roadmap note, crosses any promotion or siting mutation into active law, and judges what resolved, what remains open, and what still belongs to research.
 

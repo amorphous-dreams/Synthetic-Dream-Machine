@@ -129,7 +129,6 @@ Korzybski warns against map/territory collapse. RAW turns the warning into a gam
 
 <<~ ahu #e-prime-law-ooda-ha >>
 
-`✶ Observe -> ⏿ Orient -> ◇ Decide -> ▶ Act -> ⤴ Hoʻoko -> ↺ Aftermath`
 
 The phase-line MUST run through the active slider value.
 

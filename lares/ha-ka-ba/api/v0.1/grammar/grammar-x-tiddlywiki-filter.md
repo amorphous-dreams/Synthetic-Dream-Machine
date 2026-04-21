@@ -39,7 +39,6 @@ X-TiddlyWiki-Filter opens the active imported grammar stream here.
 
 ## Phase Map
 
-`✶ Observe -> ⏿ Orient -> ◇ Decide -> ▶ Act -> ⤴ Hoʻoko -> ↺ Aftermath`
 
 This grammar meme gathers imported filter expectations, maps them into host-safe vocabulary, chooses the minimum lawful preserved feature set, prepares the hana-facing contract, crosses into parser and render handoff, and judges what remains bounded, preserved, or deferred.
 

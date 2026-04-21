@@ -119,7 +119,6 @@ AST reader: read the sockets, then route.
 
 ## Phase Map
 
-`✶ Observe -> ⏿ Orient -> ◇ Decide -> ▶ Act -> ⤴ Hoʻoko -> ↺ Aftermath`
 
 Mu reads, classifies, chooses, acts, and judges quiescent return through explicit Hoʻoko and Aftermath pressure.
 Mu keeps that tension visible.

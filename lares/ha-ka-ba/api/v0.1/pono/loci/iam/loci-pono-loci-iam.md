@@ -40,7 +40,6 @@ IAM opens the metadata law stream here.
 
 ## Phase Map
 
-`✶ Observe -> ⏿ Orient -> ◇ Decide -> ▶ Act -> ⤴ Hoʻoko -> ↺ Aftermath`
 
 IAM gathers the current field surface, maps each field to the work it actually performs, chooses cuts or merges, prepares the reduced contract, crosses that contract into live carriers, and judges whether truth density rose while surface area fell.
 

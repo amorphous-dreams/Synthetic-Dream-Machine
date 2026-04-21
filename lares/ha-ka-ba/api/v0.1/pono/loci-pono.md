@@ -35,7 +35,6 @@ Pono opens the law (kānāwai) index stream here.
 
 ## Phase Map
 
-`✶ Observe -> ⏿ Orient -> ◇ Decide -> ▶ Act -> ⤴ Hoʻoko -> ↺ Aftermath`
 
 Pono gathers the law (kānāwai) roster, maps roles and addresses, selects the right law (kānāwai) or skill for the query, prepares an index envelope, crosses the threshold, and judges completeness.
 

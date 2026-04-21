@@ -34,7 +34,6 @@ Normative-verbs opens the shared modal-force stream here.
 
 ## Phase Map
 
-`✶ Observe -> ⏿ Orient -> ◇ Decide -> ▶ Act -> ⤴ Hoʻoko -> ↺ Aftermath`
 
 Normative-verbs gathers the current modal vocabulary, separates force-bearing words from commentary, fixes the canonical set, prepares carrier-facing guidance, crosses that guidance into law use, and judges whether duplication pressure dropped.
 

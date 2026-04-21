@@ -45,8 +45,6 @@ Meme opens the canonical skeleton stream here.
 
 ## Phase Map
 
-`✶ Observe -> ⏿ Orient -> ◇ Decide -> ▶ Act -> ⤴ Hoʻoko -> ↺ Aftermath`
-
 Meme law (kānāwai) gathers the authored surface, maps element presence against the required and optional sets, decides conformance and rating posture, prepares the skeleton product, crosses the instantiation threshold, and judges what the authored meme now carries.
 
 A reader, tool, or agent following this meme should not collapse those phases into one undifferentiated quality pass when later rating explanation, repair guidance, or skeleton generation matters.

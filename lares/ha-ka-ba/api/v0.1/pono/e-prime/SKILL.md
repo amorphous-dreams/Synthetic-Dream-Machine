@@ -135,7 +135,6 @@ This skill owns the secondary correction path and nothing more.
 
 ## Phase Map
 
-`✶ Observe -> ⏿ Orient -> ◇ Decide -> ▶ Act -> ⤴ Hoʻoko -> ↺ Aftermath`
 
 The skill senses where settled wording resists the law, names the failure kind, chooses mark-only or Hoʻoko, prepares the surface, forces the turn when required, and rechecks residue honestly.
 

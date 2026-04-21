@@ -63,7 +63,7 @@ The law of 5s opens
 
 ## Phase Map
 
-`✶ Observe -> ⏿ Orient -> ◇ Decide -> ▶ Act -> ⤴ Hoʻoko -> ↺ Aftermath`
+<<~ aka lar:///ha.ka.ba/api/v0.1/mu-ooda-ha >>
 
 Five phases. Five tools. Five questions.
 

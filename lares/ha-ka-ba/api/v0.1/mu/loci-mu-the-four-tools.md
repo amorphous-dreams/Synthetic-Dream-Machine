@@ -50,7 +50,6 @@ mu/the four tools opens
 
 ## Phase Map
 
-`✶ Observe -> ⏿ Orient -> ◇ Decide -> ▶ Act -> ⤴ Hoʻoko -> ↺ Aftermath`
 
 Four phases? Four tools? Four becomes Five.
 
