@@ -159,8 +159,24 @@ payload = {
 
 <<~/pranala >>
 
+<<~ pranala #to-mal-2-source ? -> lar:///ha.ka.ba/library/discordian/are-discordians-serious#reading >>
+
+```toml
+family = "reference"
+lifecycle = "template"
+label = "library-source-shelf"
+payload = {
+  when = ["need discordian witness", "need stance plurality source", "need seriousness boundary"],
+  priority = "support",
+  retain = true
+}
+```
+
+<<~/pranala >>
+
 The invariant stays here.
 The extracted archive source lives in docs space.
+Discordian witness texts can also rest in library space.
 
 <<~/ahu >>
 
@@ -171,6 +187,7 @@ The extracted archive source lives in docs space.
 - `lar:///ha.ka.ba/api/v0.1/mu`
 - `lar:///ha.ka.ba/api/v0.1/mu/the-law-of-5s`
 - `lar:///ha.ka.ba/docs/syad/source`
+- `lar:///ha.ka.ba/library/discordian/are-discordians-serious`
 - `lar:///ha.ka.ba/api/v0.1/pono/e-prime`
 
 <<~/ahu >>
