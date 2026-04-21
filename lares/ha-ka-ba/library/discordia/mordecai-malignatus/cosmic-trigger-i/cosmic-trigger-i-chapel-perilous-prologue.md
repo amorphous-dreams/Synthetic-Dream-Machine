@@ -1,4 +1,42 @@
-<!-- ∞ → lar:///source.raw.holds/chapel-perilous/?confidence=CS:0.80&p=0.5 -->
+<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
+
+<<~&#x0001; ? -> lar:///ha.ka.ba/library/discordia/mordecai-malignatus/cosmic-trigger-i/cosmic-trigger-i-chapel-perilous-prologue >>
+
+<<~ ahu #iam >>
+
+```toml
+uri-path = "ha.ka.ba/library/discordia/mordecai-malignatus/cosmic-trigger-i/cosmic-trigger-i-chapel-perilous-prologue"
+file-path = "lares/ha-ka-ba/library/discordia/mordecai-malignatus/cosmic-trigger-i/cosmic-trigger-i-chapel-perilous-prologue.md"
+content-type = "text/x-memetic-wikitext"
+tagspace = "stable"
+confidence = 0.80
+register = "CS"
+manaoio = 0.82
+mana = 0.80
+manao = 0.84
+implements = [
+  "lar:///ha.ka.ba/api/v0.1/pono/meme",
+  "lar:///ha.ka.ba/api/v0.1/pono/loci"
+]
+role = "discordian source witness meme, Robert Anton Wilson Chapel Perilous locus, verbatim provenance shelf"
+```
+
+<<~/ahu >>
+
+<<~ ahu #meme-header >>
+
+# Robert Anton Wilson — Chapel Perilous (Primary Source)
+
+Canonical library loci for this discordia witness text.
+Current lar address follows the file path now on disk.
+
+<<~/ahu >>
+
+<<~&#x0002; ahu #meme-body-open >>
+library/discordia/mordecai-malignatus/cosmic-trigger-i/cosmic-trigger-i-chapel-perilous-prologue opens
+<<~/ahu >>
+
+<<~ ahu #source-text >>
 
 # Robert Anton Wilson — Chapel Perilous (Primary Source)
 
@@ -37,7 +75,7 @@ note: >
 
 ---
 
-<!-- ahu lar:///source.raw.holds/chapel-perilous/?confidence=CS:0.80#preface-framing -->
+<!-- ahu lar:///ha.ka.ba/library/discordia/mordecai-malignatus/cosmic-trigger-i/cosmic-trigger-i-chapel-perilous-prologue#preface-framing -->
 
 ## I. Preface — Model Agnosticism and the Philosophical Ground
 
@@ -116,7 +154,7 @@ Alan Watts may have said it best of all: *"The universe is a giant Rorshach ink-
 
 ---
 
-<!-- ahu lar:///source.raw.holds/chapel-perilous/?confidence=CS:0.80#failure-modes -->
+<!-- ahu lar:///ha.ka.ba/library/discordia/mordecai-malignatus/cosmic-trigger-i/cosmic-trigger-i-chapel-perilous-prologue#failure-modes -->
 
 ## II. Preface — Failure Modes Named
 
@@ -149,7 +187,7 @@ to support my contention that when dogma enters the brain, all intellectual acti
 
 ---
 
-<!-- ahu lar:///source.raw.holds/chapel-perilous/?confidence=CS:0.80#the-definition -->
+<!-- ahu lar:///ha.ka.ba/library/discordia/mordecai-malignatus/cosmic-trigger-i/cosmic-trigger-i-chapel-perilous-prologue#the-definition -->
 
 ## III. Prologue — The Definition
 
@@ -177,7 +215,7 @@ Stone, True Wisdom and Perfect Happiness.
 
 ---
 
-<!-- ahu lar:///source.raw.holds/chapel-perilous/?confidence=CS:0.80#the-tools -->
+<!-- ahu lar:///ha.ka.ba/library/discordia/mordecai-malignatus/cosmic-trigger-i/cosmic-trigger-i-chapel-perilous-prologue#the-tools -->
 
 ## IV. Prologue — The Four Tools and Their Consequences
 
@@ -195,7 +233,7 @@ and ambiguous book. Chapel Perilous is tricky that way.
 
 ---
 
-<!-- ahu lar:///source.raw.holds/chapel-perilous/?confidence=CS:0.80#exit-conditions -->
+<!-- ahu lar:///ha.ka.ba/library/discordia/mordecai-malignatus/cosmic-trigger-i/cosmic-trigger-i-chapel-perilous-prologue#exit-conditions -->
 
 ## V. Prologue — Exit Conditions and the Crossroads
 
@@ -222,7 +260,7 @@ traditional Zen saying sums it up:
 
 ---
 
-<!-- ahu lar:///source.raw.holds/chapel-perilous/?confidence=S:0.65#prometheus-rising -->
+<!-- ahu lar:///ha.ka.ba/library/discordia/mordecai-malignatus/cosmic-trigger-i/cosmic-trigger-i-chapel-perilous-prologue#prometheus-rising -->
 
 ## VI. Prometheus Rising Variant
 
@@ -270,8 +308,14 @@ stubbornness, dumb luck") describes how he personally navigated — not the form
 
 | Path | Status | Contents |
 |---|---|---|
-| `LOCI.md` | `[CS:0.80]` | This file — RAW Chapel Perilous verbatim source |
+| `lar:///ha.ka.ba/library/discordia/mordecai-malignatus/cosmic-trigger-i/cosmic-trigger-i-chapel-perilous-prologue` | `[CS:0.80]` | This file — RAW Chapel Perilous verbatim source |
 
 ---
 
-<!-- → ? -->
+<<~/ahu >>
+
+<<~&#x0003; ahu #body-close >>
+library/discordia/mordecai-malignatus/cosmic-trigger-i/cosmic-trigger-i-chapel-perilous-prologue closes
+<<~/ahu >>
+
+<<~&#x0004; -> ? >>

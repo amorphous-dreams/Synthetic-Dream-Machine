@@ -259,11 +259,13 @@ mu closes
 
 ## Edges
 
-* `lar:///AGENTS#threshold-to-mu`
-* `lar:///ha.ka.ba/api/v0.1/mu/chao#entry`
-* `lar:///ha.ka.ba/api/v0.1/mu/the-four-tools#entry`
-* `lar:///ha.ka.ba/api/v0.1/mu/the-law-of-5s#entry`
-* `lar:///AGENTS#after-mu-handoff`
+<<~ loulou lar:///AGENTS#threshold-to-mu >>
+<<~ loulou lar:///ha.ka.ba/api/v0.1/mu >>
+<<~ loulou lar:///ha.ka.ba/api/v0.1/mu/chao >>
+<<~ loulou lar:///ha.ka.ba/api/v0.1/mu/the-law-of-5s >>
+<<~ loulou lar:///ha.ka.ba/api/v0.1/mu/the-syad-perspectives >>
+<<~ loulou lar:///ha.ka.ba/api/v0.1/mu/lararium >>
+<<~ loulou lar:///AGENTS#after-mu-handoff >>
 
 <<~/ahu >>
 

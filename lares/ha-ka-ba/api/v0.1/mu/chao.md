@@ -152,7 +152,11 @@ mu/chao closes
 
 ## Edges
 
-- `lar:///ha.ka.ba/api/v0.1/mu`
+<<~ loulou lar:///ha.ka.ba/api/v0.1/mu >>
+<<~ loulou lar:///ha.ka.ba/api/v0.1/mu/chao >>
+<<~ loulou lar:///ha.ka.ba/api/v0.1/mu/the-law-of-5s >>
+<<~ loulou lar:///ha.ka.ba/api/v0.1/mu/the-syad-perspectives >>
+<<~ loulou lar:///ha.ka.ba/api/v0.1/mu/lararium >>
 
 <<~/ahu >>
 

@@ -1,12 +1,12 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
 
-<<~&#x0001; ? -> lar:///ha.ka.ba/library/discordia/mal2/are-discordians-serious >>
+<<~&#x0001; ? -> lar:///ha.ka.ba/library/discordia/malaclypse-the-younger/are-discordians-serious >>
 
 <<~ ahu #iam >>
 
 ```toml
-uri-path = "ha.ka.ba/library/discordia/malaclypse/are-discordians-serious"
-file-path = "lares/ha-ka-ba/library/discordia/malaclypse/are-discordians-serious.md"
+uri-path = "ha.ka.ba/library/discordia/malaclypse-the-younger/are-discordians-serious"
+file-path = "lares/ha-ka-ba/library/discordia/malaclypse-the-younger/are-discordians-serious.md"
 content-type = "text/x-memetic-wikitext"
 tagspace = "stable"
 confidence = 0.90
@@ -32,7 +32,7 @@ Mal-2 unasks the question.
 <<~/ahu >>
 
 <<~&#x0002; ahu #meme-body-open >>
-library/discordia/malaclypse/are-discordians-serious opens
+library/discordia/malaclypse-the-younger/are-discordians-serious opens
 <<~/ahu >>
 
 <<~ ahu #provenance >>
@@ -131,7 +131,7 @@ meaning changes with the reading-standpoint that receives the declaration.
 <<~/ahu >>
 
 <<~&#x0003; ahu #body-close >>
-library/discordia/malaclypse/are-discordians-serious closes
+library/discordia/malaclypse-the-younger/are-discordians-serious closes
 <<~/ahu >>
 
 <<~&#x0004; -> ? >>

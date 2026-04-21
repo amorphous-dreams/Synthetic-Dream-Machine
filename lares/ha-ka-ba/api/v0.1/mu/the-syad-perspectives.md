@@ -1,12 +1,12 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
 
-<<~ॐ ँ&#x0001; ? -> lar:///ha.ka.ba/api/v0.1/mu/syad-perspectives >>
+<<~ॐ ँ&#x0001; ? -> lar:///ha.ka.ba/api/v0.1/mu/the-syad-perspectives >>
 
 <<~ ahu #iam >>
 
 ```toml
-uri-path = "ha.ka.ba/api/v0.1/mu/syad-perspectives"
-file-path = "lares/ha-ka-ba/api/v0.1/mu/syad-perspectives.md"
+uri-path = "ha.ka.ba/api/v0.1/mu/the-syad-perspectives"
+file-path = "lares/ha-ka-ba/api/v0.1/mu/the-syad-perspectives.md"
 content-type = "text/x-memetic-wikitext"
 tagspace = "stable"
 confidence = 0.86
@@ -33,14 +33,14 @@ retain = true
 
 # The Syad Perspectives
 
-Same number.
+Same confidence number.
 Different measure.
 Standpoint declares the measure.
 
 <<~/ahu >>
 
 <<~ॐ ँ&#x0002; ahu #meme-body-open >>
-mu/syad-perspectives opens
+mu/the-syad-perspectives opens
 <<~/ahu >>
 
 <<~ ahu #syad-law >>
@@ -65,8 +65,8 @@ Do not flatten the five measures into one truth spectrum.
 | 🎭 Humorist | relational fit | fell flat | connected cleanly |
 | 🔮 Private | presence / inward access | minimal presence | maximal presence |
 
-All five stances surface at all times in full rendered HUD and `lar` URI query forms.
-A full syad reading never drops positions to imply silence.
+All five stances surface at all times in fully rendered HUD and `lar` URI query forms.
+A 5-part syad reading never drops positions to imply silence.
 
 The order stays fixed:
 Philosopher.
@@ -76,9 +76,11 @@ Humorist.
 Private.
 
 Quiet stances stay named.
-They read as held back, not absent.
+They read as hidden, not absent.
 
-One or more stances may surface in text-spans or other context where a modifier glyph indicated a change. The next HUD or `lar` URI SHOULD consume these changes.
+### Stance Changes
+
+One or more stance icons or names may surface in text-spans or other generated or consumed context, where a modifier glyph indicates a change. IF these offur during an exchange turn, the next HUD or `lar` URI SHOULD reflect these changes.
 
 <<~/ahu >>
 
@@ -159,7 +161,7 @@ payload = {
 
 <<~/pranala >>
 
-<<~ pranala #to-mal-2-source ? -> lar:///ha.ka.ba/library/discordian/are-discordians-serious#reading >>
+<<~ pranala #to-mal-2-source ? -> lar:///ha.ka.ba/library/discordia/malaclypse-the-younger/are-discordians-serious#reading >>
 
 ```toml
 family = "reference"
@@ -184,16 +186,19 @@ Discordian witness texts can also rest in library space.
 
 ## Edges
 
-- `lar:///ha.ka.ba/api/v0.1/mu`
-- `lar:///ha.ka.ba/api/v0.1/mu/the-law-of-5s`
-- `lar:///ha.ka.ba/docs/syad/source`
-- `lar:///ha.ka.ba/library/discordian/are-discordians-serious`
-- `lar:///ha.ka.ba/api/v0.1/pono/e-prime`
+<<~ loulou lar:///ha.ka.ba/api/v0.1/mu >>
+<<~ loulou lar:///ha.ka.ba/api/v0.1/mu/chao >>
+<<~ loulou lar:///ha.ka.ba/api/v0.1/mu/the-law-of-5s >>
+<<~ loulou lar:///ha.ka.ba/api/v0.1/mu/the-syad-perspectives >>
+<<~ loulou lar:///ha.ka.ba/api/v0.1/mu/lararium >>
+<<~ loulou lar:///ha.ka.ba/api/v0.1/pono/e-prime >>
+<<~ loulou lar:///ha.ka.ba/docs/syad/source >>
+<<~ loulou lar:///ha.ka.ba/library/discordia/malaclypse-the-younger/are-discordians-serious >>
 
 <<~/ahu >>
 
 <<~ॐ ँ&#x0003; ahu #body-close >>
-mu/syad-perspectives closes
+mu/the-syad-perspectives closes
 <<~/ahu >>
 
 <<~ॐ ँ&#x0004; -> ? >>

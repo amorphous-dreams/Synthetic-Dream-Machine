@@ -1,12 +1,12 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
 
-<<~ॐ ँ&#x0001; ? -> lar:///ha.ka.ba/docs/syad/source >>
+<<~&#x0001; ? -> lar:///ha.ka.ba/docs/mu/the-syad-perspectives >>
 
 <<~ ahu #iam >>
 
 ```toml
-uri-path = "ha.ka.ba/docs/syad/source"
-file-path = "lares/ha-ka-ba/docs/syad/syad-source.md"
+uri-path = "ha.ka.ba/docs/mu/the-syad-perspectives"
+file-path = "lares/ha-ka-ba/docs/mu/the-syad-perspectives.md"
 content-type = "text/x-memetic-wikitext"
 tagspace = "stable"
 confidence = 0.80
@@ -18,7 +18,6 @@ implements = [
   "lar:///ha.ka.ba/api/v0.1/pono/meme",
   "lar:///ha.ka.ba/api/v0.1/pono/loci"
 ]
-namespace = "ॐ ँ"
 role = "extracted syad source shelf, archive-consumed derivation store, register-metaphysics provenance locus"
 cacheable = true
 retain = true
@@ -38,7 +37,7 @@ Derivation remains recoverable here.
 
 <<~/ahu >>
 
-<<~ॐ ँ&#x0002; ahu #meme-body-open >>
+<<~&#x0002; ahu #meme-body-open >>
 docs/syad/source opens
 <<~/ahu >>
 
@@ -250,8 +249,8 @@ They do not govern the live fold.
 
 <<~/ahu >>
 
-<<~ॐ ँ&#x0003; ahu #body-close >>
+<<~&#x0003; ahu #body-close >>
 docs/syad/source closes
 <<~/ahu >>
 
-<<~ॐ ँ&#x0004; -> ? >>
+<<~&#x0004; -> ? >>
