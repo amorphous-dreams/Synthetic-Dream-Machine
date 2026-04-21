@@ -38,50 +38,12 @@ The separation is strict: **canonical form in the record; sigil form on the surf
 
 ### Amplitude Modifiers
 
-| Record (ASCII) | HUD/Sigil | Meaning |
-|---|---|---|
-| `^` or `^^` | `+` or `++` | Elevated / strongly elevated |
-| `.` | *(none — no modifier)* | Baseline presence |
-| `-` | `-` | Suppressed / lightly engaged |
-| `--` | `--` | Barely present / nominal |
-| `?` | `?` | Uncertain / provisional |
+**Consumed into**
+- `lares/ha-ka-ba/api/v0.1/mu/loci-mu-syad-perspectives.md#stance-flags`
+- `lares/ha-ka-ba/docs/syad/loci-docs-syad-source.md#flag-surface`
+- `lares/ha-ka-ba/docs/syad/loci-docs-syad-source.md#stance-array`
 
-**Attachment rule:** Amplitude modifiers attach directly to the preceding stance emoji, no space.
-```
-🏛️+   ← Philosopher, above baseline
-🌊++  ← Poet, strongly elevated
-🗡️-   ← Satirist, suppressed
-🎭    ← Humorist, baseline (no modifier)
-🔮--  ← Private, barely present
-```
-
----
-
-## All-Five-Stances Construction
-
-Full 5-stance sigil string assembly from record form `stances=^.^.-.-.-`:
-
-```
-Position 1: ^ → 🏛️+
-Position 2: . → 🌊      (baseline, no modifier)
-Position 3: ^ → 🗡️+     (wait — this example used ^.^.-.-.- but pos 2 is .)
-```
-
-Correct parse of `stances=^.-.^.-.-`:
-```
-Position 1: ^  → 🏛️+
-Position 2: -  → 🌊-
-Position 3: ^  → 🗡️+
-Position 4: -  → 🎭-
-Position 5: -  → 🔮-
-Result: 🏛️+🌊-🗡️+🎭-🔮-
-```
-
-The five positions are **always present**, even when all are suppressed:
-```
-stances=-.-.-.-.-.  →  🏛️-🌊-🗡️-🎭-🔮-   (all suppressed — still five)
-stances=^.^.^.^.^   →  🏛️+🌊+🗡️+🎭+🔮+   (all elevated)
-```
+**Legacy note:** this archive section held the migration bridge from early sigil surfaces to the fixed five-position array. Live canon keeps all five positions present and treats omission-based examples as legacy.
 
 ---
 

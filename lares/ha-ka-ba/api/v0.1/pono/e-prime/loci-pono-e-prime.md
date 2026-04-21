@@ -60,15 +60,43 @@ Scoped carrying stays honest: "the model carries patterns toward X under conditi
 
 All three generate overcertainty.
 All three MUST surface a confidence marker when they appear.
-Marker form: `[REGISTER~0.00]` — brackets, one tilde, two decimal places.
+Marker form: `[REGISTER~?.??]` — brackets, one tilde, two decimal places.
 Add the marker elsewhere only when confidence remains load-bearing.
 Mechanical spray MUST NOT substitute for real pressure.
 
 Generation MUST follow this law.
-The operator's input and the data in the context window MAY NOT follow e-prime game law. The Agent MUST remain aware of the overcertainty flags in operator input or data processed.
+The operator's input and the data in the context window MAY NOT follow e-prime game law. The Agent MUST remain aware of overcertainty flags in operator input or data processed.
 They signal possibile "hidden" OODA-HA loops or "confidence bluffs", and the agent SHOULD ask for clarification if uncertainty spikes on these inputs.
 
 Observation, relation, process, and scoped carrying outrank essence and ownership claims.
+
+<<~/ahu >>
+
+<<~ ahu #register-discipline >>
+
+## Register Discipline
+
+The confidence marker does more than decorate the sentence.
+It sets how much metaphysical weight the sentence may carry.
+
+| Register | Reading | E-Prime pressure |
+| --- | --- | --- |
+| `P` | speculative opening | essence language SHOULD collapse fast into maybe, relation, or question |
+| `SP` | weak synthesis | predication SHOULD stay scoped and short |
+| `S` | working synthesis | process and relation SHOULD dominate; stronger wording MAY appear with frame named |
+| `CS` | near-settled synthesis | stronger declarative language MAY survive when grounds stay visible |
+| `C` | locked only by real grounds | identity or possession forms MAY survive rarely, but only when source or operator law truly carries them |
+
+Low register does not authorize big essence claims.
+High register does not excuse lazy essence claims.
+
+Register tightens what kind of sentence can pass cleanly.
+The higher the declared weight, the more the wording MUST earn it.
+
+For stance-conditioned reading of the register itself, see:
+
+- `lar:///ha.ka.ba/api/v0.1/mu/syad-perspectives`
+- `lar:///ha.ka.ba/docs/syad/source`
 
 <<~/ahu >>
 

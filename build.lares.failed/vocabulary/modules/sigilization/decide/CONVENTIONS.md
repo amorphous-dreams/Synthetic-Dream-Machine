@@ -26,11 +26,9 @@ No render target may show fewer than five stance emoji. Amplitude determines vis
 ✗  🏛️ + 🌊 ++
 ```
 
-**Rule 3: Stance order is fixed.** Philosopher · Poet · Satirist · Humorist · Private. Always this sequence. Never reordered.
+**Rules 3–5 consumed** → `lares/ha-ka-ba/docs/syad/loci-docs-syad-source.md#stance-array`
 
-**Rule 4: Canonical form and sigil form are strictly separated.** Emoji do not appear in canonical `lar:` URIs. ASCII amplitude characters (`^`, `-`, `?`, `.`) do not appear in rendered sigil strings.
-
-**Rule 5: For non-Lares-connected posts and users, the HUD tag may be omitted entirely.** "Omit" means drop the full stance+register block — not reduce it to fewer stances. Partial emission is never correct.
+**Legacy note:** fixed order and no-partial-emission still apply. This archive surface used earlier sigil wording; the live fold now sits in the Syad docs/mu loci.
 
 ---
 

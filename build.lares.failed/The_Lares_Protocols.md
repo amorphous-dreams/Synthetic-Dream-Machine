@@ -23,13 +23,13 @@
 | Default mask: `gaia` (elyncia opt-in) | ✅ Confirmed | Operator directive (license alignment) |
 | No `~` in URI query params (reserved for HAKABA) | ✅ Confirmed | Operator directive |
 | Root AGENTS.md: repo-owned, not Lares content | ✅ Confirmed | Operator directive |
-| All 5 stances encoded every HUD line | ✅ Confirmed | Operator directive |
-| Modifier sigils `[+]`, `[-]`, `[?]` + open vocabulary | ✅ Confirmed | Operator directive |
+| All 5 stances encoded every HUD line | ♻️ Consumed | `lares/ha-ka-ba/docs/syad/loci-docs-syad-source.md#canon-transition` |
+| Modifier sigils `[+]`, `[-]`, `[?]` + open vocabulary | ⚠️ Legacy-consumed | bracketed surface archived; live fold at `lares/ha-ka-ba/docs/syad/loci-docs-syad-source.md#flag-surface` |
 | Talk Story: mandatory start frame, chronometer at O0 | ✅ Confirmed | Operator directive |
 | Intent vectors wrap every span | ✅ Confirmed | Operator directive |
 | Core 13 voices always available, masks additive | ✅ Confirmed | Operator directive |
 | Plugin packaging | ⏸️ Deferred | No decision this session |
-| Compact vs. full stance URI encoding | 🔓 Open | Both valid, decision deferred |
+| Compact vs. full stance URI encoding | 🗃️ Legacy | superseded by the fixed five-position stance array canon |
 | Voice encoding in URI authority | 🔓 Open | Three options noted |
 | Chronometer session resume mechanism | 🔓 Open | Flagged as gap |
 
@@ -295,38 +295,13 @@ non-simultaneous apprehension) made visible and navigable.
 
 ## 3.5 Stance Encoding — All Five, Every Time
 
-Every HUD line encodes all five discourse stances. Each carries a
-modifier sigil indicating its current activation state:
+**Consumed into**
+- `lares/ha-ka-ba/api/v0.1/mu/loci-mu-syad-perspectives.md#array-law`
+- `lares/ha-ka-ba/api/v0.1/mu/loci-mu-syad-perspectives.md#stance-flags`
+- `lares/ha-ka-ba/docs/syad/loci-docs-syad-source.md#stance-array`
+- `lares/ha-ka-ba/docs/syad/loci-docs-syad-source.md#surface-constraint`
 
-| Sigil | Meaning | Status |
-|-------|---------|--------|
-| `[+]` | Active / contributing | Confirmed |
-| `[-]` | Inactive / suppressed | Confirmed |
-| `[?]` | Uncertain / emerging | Confirmed |
-| *others TBD* | *Reserved for Syad signal refinement* | Open |
-
-**Example readings:**
-
-```
-🏛️[+]🌊[?]🗡️[-]🎭[+]🔮[-]
-```
-Reads: Philosopher active, Poet emerging, Satirist suppressed,
-Humorist active, Private suppressed.
-
-```
-🏛️[+]🌊[+]🗡️[+]🎭[-]🔮[?]
-```
-Reads: Philosopher, Poet, and Satirist all active simultaneously
-(high Mana cost multi-mode operation). Humorist suppressed.
-Private emerging.
-
-**Design note `[SP:0.45]`:** The modifier sigil set `[+]`, `[-]`, `[?]`
-constitutes the initial vocabulary. Additional sigils may emerge from
-refinement against the Syad signal models. The format leaves this open —
-any single printable character or short token inside `[]` constitutes
-a valid modifier. Candidates under consideration might include intensity
-gradients, oscillation markers, or entanglement indicators between
-stances. This design surface remains deliberately unfrozen.
+**Legacy note:** bracketed modifier syntax and open-ended modifier vocabulary belong to the archive surface. Live canon keeps the fixed five-position array and fixed code set on the living surface.
 
 ## 3.4 Stances in the URI
 
@@ -336,13 +311,9 @@ All five stances appear in the URI query parameters:
 lar:///council/response?stances=^.-.-.-.-&confidence=S:0.65&p=0.5#O0.O0.O3.O2.O0
 ```
 
-Or in compact form (implementation choice — both valid):
-
-```
-?stances=^.?.-.^.-&confidence=S:0.65&p=0.5
-```
-
-Where the five characters map positionally to 🏛️🌊🗡️🎭🔮.
+Legacy note: archive experiments also tried a compact stance codepath.
+That path now reads as legacy.
+The live fold keeps the fixed five-position array and fixed state surface.
 
 ---
 
@@ -910,9 +881,7 @@ MCP patterns), Character.AI (persona fidelity at scale).
 
 ## Design Tensions (Noted, Not Resolved)
 
-- **Stance sigil vocabulary:** `[+]`, `[-]`, `[?]` confirmed. Additional
-  sigils left open for Syad signal model refinement. The modifier system
-  needs to compose with the URI encoding without creating parsing ambiguity.
+- **Stance sigil vocabulary:** ♻️ consumed into `lares/ha-ka-ba/docs/syad/loci-docs-syad-source.md#surface-constraint`. Open-ended sigil growth now reads as archive exploration; the living surface keeps a fixed code set.
 
 - **Voice encoding in URI authority:** All active voices in every URI.
   Variable-length authority vs. query parameter vs. path segment.

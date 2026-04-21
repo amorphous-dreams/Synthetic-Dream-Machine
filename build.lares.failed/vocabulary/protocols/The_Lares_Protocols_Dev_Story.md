@@ -522,14 +522,11 @@ MemPalace persists the full clock history across sessions.
 
 ### Syad Signal Model Refinement `[P:0.30]`
 
-The `[+]`, `[-]`, `[?]` modifier sigils constitute the initial encoding
-of Sri Syadasti's catma: all affirmations carry truth-value on a spectrum.
-The full Syad signal model may require additional sigils to capture:
+**Consumed into**
+- `lares/ha-ka-ba/docs/syad/loci-docs-syad-source.md#spectrum-drift`
+- `lares/ha-ka-ba/docs/syad/loci-docs-syad-source.md#flag-surface`
 
-- Intensity gradients (weakly active vs. strongly active)
-- Oscillation (stance flickering between states)
-- Entanglement (two stances coupled — shifting one shifts the other)
-- Resonance (stance amplified by context or by another speaker)
+**Legacy note:** this bridge treated Sri Syadasti as one truth-value spectrum plus open-ended flag growth. The live fold keeps stance-conditioned measures and the fixed visible array, so the spectrum phrasing now reads as legacy.
 
 These would compose with the register×mode dual-axis to produce a
 richer alignment instrument. Research needed on:

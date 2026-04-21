@@ -14,13 +14,13 @@
 |---|---|---|---|
 | 1 | 2026-04-08 | Initial 5 improvements | Operator-directed refinements |
 | 2 | 2026-04-08 | Added centroid~δ notation to §5.3 | Multi-stance register fuzz research |
-| 3 | 2026-04-08 | **REVERTED centroid~δ.** Stance count IS the fuzz indicator. Added Syadasti reading rule. Added stance semantics table. Updated document map. | F-report (multi-stance scaling fails beyond 2), G-report (Sri Syadasti / Saptabhangi as epistemological ground), Spirit research (SyadVoice, BridgeWatch, NavLight) |
+| 3 | 2026-04-08 | **Partially legacy.** Syadasti reading rule and stance semantics survived; stance-count-as-fuzz did not. | F-report + G-report lineage; live fold now in `lares/ha-ka-ba/docs/syad/loci-docs-syad-source.md` |
 | 4 | 2026-04-08 | DreamDeck/Kowloon render target formalization (§3.3.1): `@handle@node` canonical identity form, render target taxonomy (`chat-log:post-header` / `hud:exchange-pair` / `record:full`), stance amplitude modifiers (`++`/`+`/(none)/`-`/`--`), territory-first ordering, optional sub-path in templates. | Local session ticks 43–46: story format work surfaced schema gaps |
 
 **Key decisions in this revision:**
 
-- `[DECISION]` centroid~δ notation REVERTED — stance count IS the fuzz indicator (more emoji = more register spread). No numeric delta. No boundary arithmetic. Register stays a point value everywhere.
-- `[DECISION]` Register is stance-dependent (Syadasti/Saptabhangi ground). Same 0.0–1.0 scale, different meaning per stance (Philosopher=truth-confidence, Poet=resonance-confidence, Satirist=targeting-confidence, Humorist=relational-confidence, Private=nominal).
+- `[DECISION]` centroid~δ notation REVERTED — ⚠️ legacy bridge. The live fold keeps register as a point and marks stance-count-as-fuzz as superseded in `lares/ha-ka-ba/docs/syad/loci-docs-syad-source.md#legacy-notes`.
+- `[DECISION]` Register is stance-dependent (Syadasti/Saptabhangi ground). ♻️ Consumed into `lares/ha-ka-ba/docs/syad/loci-docs-syad-source.md#reading-question`.
 - `[DECISION]` Authority transfer (`--set`, `⊙` indicator) is S2 scope, not S0. Flagged in backlog.
 
 ---
@@ -88,24 +88,11 @@ Scope: one sentence describing the node's current condition.
 stance (what kind of claim), and the scope (at what time-scale)
 — then merge into a single state sentence.
 
-**The Triangle:** Phase × Stance × Scope form a triangle.
-Each corner is normally a point value. Multi-stance makes the
-Stance corner spread — a distribution rather than a position.
-The number of active stances communicates the spread directly:
+**The Triangle:** syad-specific multi-stance spread material consumed into `lares/ha-ka-ba/docs/syad/loci-docs-syad-source.md#multi-stance-boundary`.
 
-| Stances Active | Register Character | What It Tells the Operator |
-|---|---|---|
-| 1 (`🏛️`) | Point value | Trust the number |
-| 2 (`🏛️🗡️`) | Bimodal spread | Register fuzzy around declared value |
-| 3 (`🏛️🌊🗡️`) | Trimodal spread | Register is a rough center-of-mass |
-| 4 (`🏛️🌊🗡️🎭`) | Wide spread | Register is an approximation. High Mana cost |
-| 5 (`🏛️🌊🗡️🎭🔮`) | Full Discordian | Register is a gesture. Maximum fuzz. Rare |
+**Legacy note:** this archive bridge treated stance count and visual density as a direct fuzz readout. The live fold keeps register as a point and lets the visible array carry simultaneous measures without collapsing them into fuzz arithmetic.
 
-Stance count IS the fuzz indicator. No numeric delta is needed.
-The visual density of the stance field communicates register
-uncertainty directly. This is the Register-Stance
-Complementarity (Kernel §Register-Mode Complementarity) made
-visible: more stances active -> wider register spread.
+Legacy note: the old Register-Stance Complementarity bridge here also assumed wider spread from more active stances. The live fold does not use that rule.
 
 **Worked readings:**
 
@@ -113,48 +100,24 @@ visible: more stances active -> wider register spread.
 |---|---|---|---|
 | ◎ | 🏛️ | 🔍 | Orienting analytically at exploration scale — making sense of a local finding |
 | ■ | 🗡️ | ⚔️ | Acting critically in combat — executing under pressure with an edge |
-| ◇ | 🏛️🌊 | 🗺️ | Deciding at strategic scale, holding propositional and analogical — a fork with deep resonance. Register bimodal. |
+| ◇ | 🏛️🌊 | 🗺️ | Deciding at strategic scale, holding propositional and analogical together. Legacy archive once called this bimodal. |
 | ✶ | 🎭 | 🔍 | Observing playfully at tactical scale — light reconnaissance, no commitment |
 | ○ | 🏛️ | ⚙️ | Aftermath at operational scale, Philosopher stance — assessing what happened across a watch |
-| ◎ | 🏛️🌊🗡️🎭🔮 | 🗺️ | Full Discordian orientation at strategic scale — all five stances active. Maximum Mana cost. Register is a gesture toward center. Rare. |
+| ◎ | 🏛️🌊🗡️🎭🔮 | 🗺️ | Full Discordian orientation at strategic scale — all five stances active. Maximum Mana cost. Legacy archive once treated the register as a gesture toward center. |
 
 #### 5.3.3 Register Is Stance-Dependent (Syadasti Reading Rule)
 
-Register measures confidence *within the active stance's
-evaluation frame*, not truth-weight universally.
+**Consumed into**
+- `lares/ha-ka-ba/api/v0.1/mu/loci-mu-syad-perspectives.md#law`
+- `lares/ha-ka-ba/docs/syad/loci-docs-syad-source.md#reading-question`
+- `lares/ha-ka-ba/docs/syad/loci-docs-syad-source.md#saptabhangi`
+- `lares/ha-ka-ba/docs/syad/loci-docs-syad-source.md#stance-endpoints`
 
-This principle derives from the Discordian catma of Sri Syadasti,
-which reproduces the Jaina Saptabhangi (seven-valued logic,
-c. 400 BCE): all affirmations are true in some sense, false in
-some sense, and meaningless in some sense. The three primitives
-— asti (true), nāsti (false), avaktavya (inexpressible) —
-generate seven values by combination. The five stances partition
-claims by *which primitive applies*. Register then measures
-confidence within that partition.
+**Legacy note:** this plan block preserved a strong derivation and a useful reading question. It also sat beside now-legacy stance-count-as-fuzz planning. The live fold keeps the derivation and marks the fuzz reading as superseded.
 
-**What 0.0 and 1.0 mean at each stance:**
+**Multi-stance reading:** consumed into `lares/ha-ka-ba/docs/syad/loci-docs-syad-source.md#multi-stance-boundary`.
 
-| Stance | Syadasti Primitive | 0.0 Means | 0.5 Means | 1.0 Means |
-|---|---|---|---|---|
-| 🏛️ Philosopher | asti (true) | Unsupported | Contested but plausible | Fully confirmed |
-| 🌊 Poet | avaktavya (inexpressible) | No resonance | Partial correspondence | Perfect resonance |
-| 🗡️ Satirist | nāsti→asti (false→true) | Indirection missed target | Hit glancingly | Landed with full force |
-| 🎭 Humorist | asti-nāsti (true+false) | Relational move fell flat | Landed with mixed reception | Connected perfectly |
-| 🔮 Private | avaktavya (inexpressible) | Minimal presence | Present | Maximal presence |
-
-**One-sentence reading rule:** When you read a Register value,
-ask: *what does this number measure for this stance?* The answer
-changes per stance. A Philosopher at 0.65 is propositionally
-contested. A Poet at 0.65 is resonating solidly. A Satirist at
-0.65 is landing with moderate force. Same number, different
-meaning.
-
-**Multi-stance reading:** When multiple stances are active, the
-Register value sits at the intersection of their evaluation
-frames. `[S:0.65] 🏛️🌊` means "Synthesis-level confidence in a
-claim that is both propositionally plausible AND analogically
-resonant." The Register point is a center-of-mass across two
-evaluation frames, each of which would assess it differently.
+**Legacy note:** this archive bridge used intersection / center-of-mass language. The live fold keeps register as a point and lets the visible stance array carry the spread.
 ```
 
 ### Files Changed

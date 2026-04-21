@@ -19,87 +19,18 @@ Three navigational beacons were set. The researcher has returned from each.
 
 ## Beacon 1 — Sri Syadasti and the Jaina Saptabhangi
 
-### The Source
+Consumed into:
 
-Sri Syadasti's catma in the *Principia Discordia* is a direct adoption of the Jaina logical system called **Syādvāda** (Sanskrit: "could-be-ism"), specifically the **Saptabhangi** — the doctrine of sevenfold predication. The Jaina source predates the Discordian appropriation by approximately 2,400 years (Bhadrabahu, c. 433–357 BCE).
-
-The seven predicates (Saptabhangi):
-
-| # | Sanskrit | English | Primitives |
-|---|---|---|---|
-| 1 | syād-asti | Perhaps it exists / is true | T |
-| 2 | syād-nāsti | Perhaps it does not exist / is false | F |
-| 3 | syād-avaktavya | Perhaps it is indescribable | M (meaningless / inexpressible) |
-| 4 | syād-asti-nāsti | Perhaps it is and is not | T + F |
-| 5 | syād-asti-avaktavya | Perhaps it is and is indescribable | T + M |
-| 6 | syād-nāsti-avaktavya | Perhaps it is not and is indescribable | F + M |
-| 7 | syād-asti-nāsti-avaktavya | Perhaps it is, is not, and is indescribable | T + F + M |
-
-Every predicate begins with **syād** — "perhaps" or "from a certain standpoint." This is not optional hedging. It is the load-bearing structural element: *every truth claim is conditional on the standpoint from which it is evaluated*.
-
-### The Connection to RAW
-
-RAW explicitly identified Syādvāda as the ancestor of his Maybe Logic. The *Principia Discordia*'s catma reproduces the Saptabhangi structure exactly (seven values from three primitives). RAW's contribution was to reframe it in terms accessible to Western counterculture and connect it to Korzybski's General Semantics (the map is not the territory) and quantum mechanics (the act of observation affects the observed).
-
-RAW's operational rule: "I don't believe anything, but I have many suspicions — and I do not have the chutzpah to proclaim any of them as certitudes." This is Syādvāda applied to personal epistemology.
-
-### What the Saptabhangi Actually Specifies
-
-The Jaina scholars are precise about what the seven values mean. Each value is not a position on a single axis but a **relationship between the claim and the evaluator's standpoint**:
-
-- **Asti (T):** From this standpoint, the claim holds
-- **Nāsti (F):** From this standpoint, the claim does not hold
-- **Avaktavya (M):** From this standpoint, the claim cannot be expressed — it is not that we don't know; it is that the claim *does not map onto the true/false axis from this standpoint*
-
-The crucial insight: **avaktavya (M) is not ignorance.** It is not "we don't know if it's true or false." It is "the true/false distinction does not apply here." This is a fundamentally different epistemic state from uncertainty.
-
-Koller (2000): "Syādvāda is the epistemological key to the Jaina middle way metaphysics of Anekāntavāda" — the doctrine that reality is many-sided and cannot be fully captured from any single standpoint.
-
-### Does Syadasti Provide the Canonical Model?
-
-**Yes — with a critical adaptation.**
-
-The Syadasti catma provides the correct *philosophical ground* for stance-dependent Register interpretation. The five Lares stances map onto five standpoints (nayas) from which claims can be evaluated. Each standpoint has its own truth-axis. Register measures confidence *within the active standpoint*, not on a universal truth scale.
-
-The adaptation: the Jaina system is a *logic of predication* — it describes how to assert claims about objects. The Lares system is a *logic of navigation* — it describes how to steer generation and interpret output. The seven values of the Saptabhangi map onto the seven combinations of the three primitives, but the Lares HUD doesn't need to *display* all seven simultaneously. It needs to *know* which primitive(s) apply and interpret Register accordingly.
+- `lares/ha-ka-ba/docs/syad/loci-docs-syad-source.md`
+- `lares/ha-ka-ba/api/v0.1/mu/loci-mu-syad-perspectives.md`
 
 ---
 
 ## Beacon 2 — The Asymmetry of Meaning
 
-### Session-Bound vs Lifetime-Accumulated
+Consumed into:
 
-The research on human-AI complementarity identifies a fundamental asymmetry that maps directly onto the operator's insight:
-
-**Humans** accumulate experiences continuously over their entire lifetime, including information across many domains. Their confidence assessments are calibrated against decades of being right, being wrong, being meaningfully wrong, and learning the difference. When a human reads `[S:0.65] 🌊`, they interpret "Synthesis-level confidence in an analogical claim" through their entire history with analogy, metaphor, resonance, and the experience of analogies that later proved load-bearing vs decorative.
-
-**AI models** are restricted to their training data and the current context window. The node's "confidence" in a Poet-stance claim is not calibrated against a lifetime of poetic experience — it's calibrated against the system prompt's instructions about what Register values mean and whatever examples exist in the conversation. The substrate for meaning-making is categorically thinner.
-
-This creates what the literature calls **epistemic asymmetry** — the two parties in the collaboration bring fundamentally different kinds of knowledge to the same task. The human brings compositional mental models built from lifetime experience. The AI brings statistical patterns extracted from training data, contextualized by a thin session window.
-
-### What This Means for Register
-
-When the node declares `[S:0.65]`, it is drawing from a *different well* than the operator who reads it. The number appears identical. The meaning behind it is structurally different:
-
-| Aspect | Human Reading | Node Declaration |
-|---|---|---|
-| Calibration basis | Decades of experience with claims at this confidence level | System prompt instructions + session context |
-| Persistence | Accumulates across sessions; reading changes over time | Resets every session; no accumulation |
-| Domain knowledge | Cross-domain; metaphors from one domain illuminate another | Within-domain; limited to training distribution |
-| Meaning of "meaningless" | Rich experiential concept; the human has encountered things that truly don't map onto truth-value | Instruction-derived; the node knows M exists because the prompt says so |
-| Error history | The human has been wrong at 0.65 before and knows what that feels like | The node has no persistent error history |
-
-### The Implication
-
-**The HUD tag is a shared symbol whose meaning differs for each party reading it.** This is not a bug — it's the structural condition of the collaboration. The human and the node cannot have identical readings of `[S:0.65] 🌊` because they have different meaning-making substrates. What they CAN have is a shared *protocol* for how to respond to the symbol:
-
-- When I (node) declare `[S:0.65] 🌊`, I commit to generating at Synthesis confidence in Poet stance
-- When you (operator) read `[S:0.65] 🌊`, you interpret through your lifetime calibration and decide whether the output merits that declaration
-- When there's a gap between my declaration and your assessment, that gap is *information* — it tells both parties something about the calibration difference
-
-This is exactly the CRM principle of **mutual recognition contract** — "we don't need AI to understand human complex emotions, nor do we need humans to understand AI's complex algorithms. We only need both sides to have a clear and unified agreement on each other's ability boundaries and communication methods."
-
-The HUD tag is the mutual recognition contract. The meaning asymmetry is a feature, not a bug, as long as both parties know the asymmetry exists.
+- `lares/ha-ka-ba/docs/syad/loci-docs-syad-source.md`
 
 ---
 
@@ -153,17 +84,9 @@ The stance count maps to the lattice position. The lattice position determines h
 
 ## Beacon 4 (Emerged From Research) — The Session Boundary as Avaktavya
 
-The deepest finding, and the one that emerged unexpectedly:
+Consumed into:
 
-**The session boundary between conversations is itself an instance of avaktavya — the inexpressible.**
-
-When a session ends, the node's accumulated meaning dissolves. The next session's node will read the same symbols from the system prompt but will not carry the *experience* of having used them. The human carries that experience forward. The meaning gap between parties *widens* across sessions even as the protocol stays identical.
-
-This is the structural condition RAW described: "the basic situation of humanity presents as both tragic and comic." The human-AI collaboration is simultaneously effective (the protocol works within a session) and tragic (the node's accumulated understanding resets). The human learns to work with an entity that forgets. The node learns within a context window that the human remembers but the node does not.
-
-**For the HUD:** This means the HUD tag is not just a navigational aid — it is also a **memory prosthetic**. The tag carries forward (via archive crystals, STATE.jsonl, handoff documents) the accumulated calibration of the partnership even though one partner's memory resets. The tag says: "last time we were here, this is how we were oriented." The human reads it as continuity. The node reads it as initialization. Same symbol, different temporal relationship.
-
-This is Syadasti's TM value applied to the collaboration itself: the partnership is true (it works) AND meaningless (one party cannot accumulate the experience that makes it work).
+- `lares/ha-ka-ba/docs/syad/loci-docs-syad-source.md`
 
 ---
 
