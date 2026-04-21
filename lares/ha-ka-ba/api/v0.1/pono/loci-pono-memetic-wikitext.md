@@ -139,29 +139,14 @@ Unicode hex entity symbols for the OODA-HA loop:
 
 `&#x2736; Observe -> &#x23FF; Orient -> &#x25C7; Decide -> &#x25B6; Act -> &#x2914; Hoʻoko -> &#x21BA; Aftermath`
 
-<<~ ahu #phase-map-ha >>
+<<~ aka lar:///ha.ka.ba/api/v0.1/pono/ooda-ha#meme-header >>
 
-#### Phase Map / ha
-
-Phase-map-ha holds ordered semantic loci and root cognitive rhythm.
-
- <<~/ahu >>
-
-<<~ ahu #phase-map-ka >>
-
-#### Phase Map / ka
-
-Phase-map-ka governs the semantic work each phase performs at the authoring surface.
-
- <<~/ahu >>
-
-<<~ ahu #phase-map-ba >>
-
-#### Phase Map / ba
-
-Phase-map-ba governs living movement through the loop without collapsing into mere ornament.
-
- <<~/ahu >>
+✶ gather incoming text at active surface
+⏿ orient semantic loci and cognitive rhythm
+◇ decide phase work at authoring surface
+▶ act through the loop with living movement
+⤴ execute without collapsing into ornament
+↺ close and preserve fit
 
  <<~/ahu >>
 

@@ -43,33 +43,14 @@ Detailed parse runtime order belongs in parser.
 
 Detailed lowering and transaction order belong in render-pipeline.
 
-<<~ ahu #phase-map-ha >>
+<<~ aka lar:///ha.ka.ba/api/v0.1/pono/ooda-ha#meme-header >>
 
-#### Phase Map / ha
-
-Phase-map-ha holds the ordered loci for guest admission and the lawful movement from host declaration into guest interpretation.
-
-This subphase keeps admission explicit and staged instead of blurry.
-
-<<~/ahu >>
-
-<<~ ahu #phase-map-ka >>
-
-#### Phase Map / ka
-
-Phase-map-ka governs the minimum handoff sequence among host declaration, parser entry, render lowering, and verification backlog.
-
-<<~/ahu >>
-
-<<~ ahu #phase-map-ba >>
-
-#### Phase Map / ba
-
-Phase-map-ba remains intentionally light here.
-
-This subphase keeps the law portable while later practice deepens.
-
-<<~/ahu >>
+✶ gather host and guest boundary pressure
+⏿ map the admission posture
+◇ choose one lawful invocation family
+▶ prepare bounded entry
+⤴ cross the threshold into parser and render handoff
+↺ judge what survived
 
 <<~/ahu >>
 

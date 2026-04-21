@@ -42,29 +42,14 @@ X-TiddlyWiki-Filter opens the active imported grammar stream here.
 
 This grammar meme gathers imported filter expectations, maps them into host-safe vocabulary, chooses the minimum lawful preserved feature set, prepares the hana-facing contract, crosses into parser and render handoff, and judges what remains bounded, preserved, or deferred.
 
-<<~ ahu #phase-map-ha >>
+<<~ aka lar:///ha.ka.ba/api/v0.1/pono/ooda-ha#meme-header >>
 
-#### Phase Map / ha
-
-Phase-map-ha holds the ordered grammar-registration movement from imported lineage into admitted host use.
-
-<<~/ahu >>
-
-<<~ ahu #phase-map-ka >>
-
-#### Phase Map / ka
-
-Phase-map-ka governs the minimum decisions needed before parser and render work may proceed without term drift.
-
-<<~/ahu >>
-
-<<~ ahu #phase-map-ba >>
-
-#### Phase Map / ba
-
-Phase-map-ba remains light in this first draft.
-
-<<~/ahu >>
+✶ gather imported filter expectations
+⏿ map into host-safe vocabulary
+◇ choose minimum lawful preserved feature set
+▶ prepare hana-facing contract
+⤴ cross into parser and render handoff
+↺ judge what remains bounded, preserved, or deferred
 
 <<~/ahu >>
 

@@ -239,7 +239,7 @@ One to three sentences naming what the meme governs, what it does not govern, an
 
 Do not add a top-level `<<~ loulou lar:///ha.ka.ba/api/v0.1/NAME >>` line that only points back at the current meme.
 
-`pranala loulou` should route outward toward a real child or adjacent carrier. If no outward routing belongs here yet, omit the line and continue directly into supported queries or body-open.
+`loulou` should route outward toward a real child or adjacent carrier. If no outward routing belongs here yet, omit the line and continue directly into supported queries or body-open.
 
 #### R6 — Body open and body close
 

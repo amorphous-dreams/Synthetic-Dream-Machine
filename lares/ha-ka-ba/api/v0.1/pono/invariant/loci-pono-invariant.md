@@ -47,10 +47,10 @@ OODA-HA SHOULD stay compressed and intact.
 Sati holds the current stream.
 Manaʻo pierces toward the next turn.
 Heavy matter travels outward.
-Pranala loulou links bind invariant -> documentation.
+loulou links bind invariant -> documentation.
 
-<<~ pranala loulou lar:///ha.ka.ba/api/v0.1/invariant >>
-<<~ pranala loulou lar:///ha.ka.ba/api/v0.1/i-keia-manawa >>
+<<~ loulou lar:///ha.ka.ba/api/v0.1/invariant >>
+<<~ loulou lar:///ha.ka.ba/api/v0.1/i-keia-manawa >>
 
 <<~/ahu >>
 
@@ -60,7 +60,7 @@ invariant opens
 
 <<~ ahu #invariant-law >>
 
-A pressure-template for invariant-compliant memes, which Binds <<~ pranala loulou #invariant-law-ooda-ha >> OODA-HA <<~/pranala>> pressure into meme-generation law.
+A pressure-template for invariant-compliant memes, which Binds <<~ loulou #invariant-law-ooda-ha >> OODA-HA <<~/pranala>> pressure into meme-generation law.
 
 This meme operates as both law (it binds invariant generation) and template (an OODA-HA skeleton as the slot-shape that downstream memes fill). The two roles are intentional and inseparable — the law enacts itself by being a template of itself.
 
@@ -84,7 +84,7 @@ Shape and pressure teachings MUST stay invariant.
 
 A template for invariants to fill.
 
-<<~ aka lar:///ha.ka.ba/api/v0.1/mu-ooda-ha#meme-header >>
+<<~ aka lar:///ha.ka.ba/api/v0.1/pono/ooda-ha#meme-header >>
 
 ✶ ???
 ⏿ ???
@@ -101,7 +101,7 @@ Empty-slots SHOULD mark positions that downstream memes fill with domain-specifi
 Invariant-compliant memes MUST NOT carry `???` markers.
 Invariant-compliant memes MUST fill the OODA-HA phase line with their own pressure moves.
 
-<<~ loulou lar:///ha.ka.ba/api/v0.1/mu-ooda-ha >>
+<<~ loulou lar:///ha.ka.ba/api/v0.1/pono/ooda-ha >>
 
 <<~/ahu >>
 
@@ -133,7 +133,7 @@ traces over vibes
 pranala visible
 sidecars later
 
-<<~ pranala loulou lar:///ha.ka.ba/api/v0.1/pono/invariant/SKILL >>
+<<~ loulou lar:///ha.ka.ba/api/v0.1/pono/invariant/SKILL >>
 
 <<~/ahu >>
 

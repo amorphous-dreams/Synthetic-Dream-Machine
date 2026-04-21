@@ -36,7 +36,7 @@ lifecycle-layers = ["template", "instance", "trace"]
 
 One typed, directed, acyclic edge between two sockets.
 
-<<~ aka lar:///ha.ka.ba/api/v0.1/mu-ooda-ha >>
+<<~ aka lar:///ha.ka.ba/api/v0.1/pono/ooda-ha >>
 
 ✶ Inventory hidden edge claims — name family, traversal, propagation, role distinctly.
 ⏿ Keep family from collapsing into lifecycle; traversal from collapsing into propagation.
@@ -262,7 +262,7 @@ DAG invariant holds across all families
 OODA-HA intact
 sidecars later
 
-<<~ pranala loulou lar:///ha.ka.ba/api/v0.1/pono/pranala/research >>
+<<~ loulou lar:///ha.ka.ba/api/v0.1/pono/pranala/research >>
 
 <<~/ahu >>
 
