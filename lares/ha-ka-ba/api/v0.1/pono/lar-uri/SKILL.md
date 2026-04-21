@@ -24,7 +24,7 @@ implements = [
 ]
 role = "lar: URI operational skill — construction, validation, canonical conversion, and chronometer encoding"
 covers = ["lar:///ha.ka.ba/api/v0.1/pono/lar-uri"]
-invariants = [
+constraints = [
   "S1: record form is the only form stored, transported, or compared — render targets are projections, never authoritative",
   "S2: stable address strips authority, query, and fragment — path only, lowercased",
   "S3: all five stances MUST appear in every session-form URI — no omission, no partial encoding",

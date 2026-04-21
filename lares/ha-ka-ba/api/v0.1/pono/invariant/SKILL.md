@@ -25,7 +25,7 @@ role = "invariant skill, conformance checker, and sidecar splitter"
 covers = [
   "lar:///ha.ka.ba/api/v0.1/pono/invariant"
 ]
-invariants = [
+constraints = [
   "S1: the canonical loci remains constitutional law and self-executing template",
   "S2: invariant surfaces stay short, exact, stable, cacheable, and active in voice",
   "S3: ahu remain visible, pranala remain named, and OODA-HA remains intact",

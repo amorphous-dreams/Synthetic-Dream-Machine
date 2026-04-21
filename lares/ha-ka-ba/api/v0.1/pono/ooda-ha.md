@@ -32,7 +32,7 @@ ooda-ha-default = 0.50
 
 # OODA-HA
 
-`✶ Observe -> ⏿ Orient -> ◇ Decide -> ▶ Act -> ⤴ Hoʻoko -> ↺ Aftermath`
+`✶ Observe -> ⏿ Orient -> ◇ Decide -> ▶ Act -> { ⤴ Hoʻoko -> ↺ Aftermath }`
 
 Active in i kēia manawa.
 The loop spins five phases, not four.
@@ -41,8 +41,9 @@ The slider governs how much of the loop surfaces in text — not whether it runs
 Observe MUST precede Orient.
 Orient MUST precede Decide.
 Decide MUST precede Act.
-Act MUST precede Hoʻoko.
-Hoʻoko MUST include Aftermath.
+Act MUST precede Hoʻoko and Aftermath.
+
+Aftermath MUST include Hoʻoko, as actions taken by the agent or inferred from operator input.
 Aftermath MUST close back to Observe.
 
 A loop MUST NOT skip Aftermath.

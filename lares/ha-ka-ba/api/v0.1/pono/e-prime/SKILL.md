@@ -24,7 +24,7 @@ implements = [
 ]
 role = "secondary E-Prime audit skill, Hoʻoko correction surface, and settled-text conformance guide"
 covers = ["lar:///ha.ka.ba/api/v0.1/pono/e-prime"]
-invariants = [
+constraints = [
   "S1: any audited `is` or `has` carries an inline confidence marker",
   "S2: mark-only output stays compact and names location, bucket, and reason",
   "S3: Hoʻoko output returns before/after/reason without widening local correction into unnecessary document rewrite",
