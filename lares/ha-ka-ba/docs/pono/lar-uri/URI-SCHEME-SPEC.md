@@ -8,6 +8,8 @@
 > Version: 1 (fissioned from URI-SCHEMA.md v3)
 > Companion: `URI-OPERATIONS.md` — operational semantics, exchange protocol, render targets, marker ontology
 > Blocks: IANA registration (`lar:` scheme), URI parser implementations, canonical form comparators
+>
+> **Migration note (2026-04-21):** FFZ chronometer moved from fragment (`#O0.O0.O3.D2.A1`) to query param (`?ffz=`). Phase sigils updated from letter codes (O, Ø, D, A, Å) to OODA-HA Unicode hex entities (&#x2736; &#x23FF; &#x25C7; &#x25B6; &#x21BA;). Hoʻoko (⤴) confirmed not a chronometer position — it is the execution gap within Act that surfaces to Aftermath. Fragment now reserved exclusively for section anchors (`#ahu-name`, `#section-id`). See `lar:///ha.ka.ba/api/v0.1/pono/lar-uri/SKILL#ffz-encoding` for canonical encoding rules.
 
 ---
 
@@ -70,7 +72,7 @@ This applies to authority-less forms as well: `lar:///ha.ka.ba/` — the (0,0,0)
 | 6 | **`?query`** | Non-hierarchical params | Signal parameters | `?stances=%5E.%3F.-.-.-&confidence=S:0.65&p=0.5` |
 | 7 | **`#fragment`** | Secondary resource / viewpoint | FFZ chronometer position | `#O0.O0.O3.D2.A1` |
 
-> **Layout validation `[C:0.90]`:** The WHERE → HOW → WHEN ordering (path → query → fragment) places the most semantically stable, least volatile information first. This grouped, goal-oriented layout is confirmed by Li et al. (2024) automotive HUD research: grouped information layouts produce superior cognitive performance, lower workload, and better eye movement patterns compared to disordered layouts. *Source: `../../_todo/E-deep-research-report.md` §4.2*
+> **Layout validation `[C:0.90]`:** The WHERE → HOW → WHEN ordering (path → query → fragment) places the most semantically stable, least volatile information first. This grouped, goal-oriented layout is confirmed by Li et al. (2024) automotive HUD research: grouped information layouts produce superior cognitive performance, lower workload, and better eye movement patterns compared to disordered layouts. *Source: `_todo/E-deep-research-report.md` §4.2*
 
 Render-target forms (HUD, post header, etc.) are defined in `URI-OPERATIONS.md` §6.
 

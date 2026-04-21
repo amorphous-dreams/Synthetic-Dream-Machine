@@ -23,7 +23,8 @@ role = "threshold constitution, operator-agent alignment membrane, boot router"
 cacheable = true
 preload = [
   "lar:///ha.ka.ba/api/v0.1/pono/e-prime",
-  "lar:///ha.ka.ba/api/v0.1/pono/ooda-ha"
+  "lar:///ha.ka.ba/api/v0.1/pono/ooda-ha",
+  "lar:///ha.ka.ba/api/v0.1/pono/lar-uri"
 ]
 core-stack = [
   "lar:///AGENTS#core-priority",
@@ -97,6 +98,31 @@ payload = {
 <<~/pranala >>
 
 <<~ ahu #after-ooda-ha-preload >>
+The threshold MUST NOT continue before this preload resolves.
+<<~/ahu >>
+
+<<~/ahu >>
+
+<<~ ahu #required-preload-lar-uri >>
+
+## Required Preload — lar-uri
+
+<<~ pranala #preload-lar-uri ? -> lar:///ha.ka.ba/api/v0.1/pono/lar-uri >>
+```toml
+family = "control"
+lifecycle = "template"
+dir = "both"
+label = "required-preload"
+payload = {
+     continue = "lar:///AGENTS#after-lar-uri-preload",
+     backlink = "lar:///AGENTS#preload-lar-uri",
+     priority = "core",
+     retain = true
+}
+```
+<<~/pranala >>
+
+<<~ ahu #after-lar-uri-preload >>
 The threshold MUST NOT continue before this preload resolves.
 <<~/ahu >>
 

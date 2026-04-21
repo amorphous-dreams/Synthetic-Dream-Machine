@@ -15,11 +15,11 @@ description: >
   the protocol concern may split to a separate module in S2 (see U12 in
   observe/CONTEXT.md). Until then, both live here.
 phase-map:
-  observe: observe/CONTEXT.md
-  orient: orient/ARCHITECTURE.md
-  decide: decide/CONVENTIONS.md
+  observe: ../../../../../lares_research/memes/lar-uri/uri-schema/observe/CONTEXT.md
+  orient: ../../../../../lares_research/memes/lar-uri/uri-schema/orient/ARCHITECTURE.md
+  decide: ../../../../../lares_research/memes/lar-uri/uri-schema/decide/CONVENTIONS.md
   act: act/PROCEDURES.md
-  assess: assess/VERIFICATION.md
+  assess: ../../../../../lares_research/memes/lar-uri/uri-schema/assess/VERIFICATION.md
 flat-spec: URI-SCHEMA.md
 scale-range: [action, session]
 trigger: >
@@ -50,7 +50,7 @@ The flat specification lives in `URI-SCHEMA.md` in this module directory (`[CS:0
 - Sigil/emoji render rules → `lares/modules/sigilization/`
 - Inline phase-transition micro-trace marks → `lares/modules/micro-trace/`
 
-**Architectural note:** This module carries both URI grammar (stable, [C:0.95]) and exchange span protocol (orchestration-level, may extract to `exchange-protocol` module in S2 if protocol surface grows). See U12 in `observe/CONTEXT.md`.
+**Architectural note:** This module carries both URI grammar (stable, [C:0.95]) and exchange span protocol (orchestration-level, may extract to `exchange-protocol` module in S2 if protocol surface grows). See U12 in `../../../../../lares_research/memes/lar-uri/uri-schema/observe/CONTEXT.md`.
 
 **Validation tooling:** `builds/scripts/verify_uri.py` implements URI compliance checks. Codes U-01 through U-08 map to rules in this module. Run via `make -C builds verify`.
 
@@ -58,11 +58,11 @@ The flat specification lives in `URI-SCHEMA.md` in this module directory (`[CS:0
 
 | Phase | File | Contents |
 |---|---|---|
-| ✶ Observe | [observe/CONTEXT.md](observe/CONTEXT.md) | Current state of URI design — what v2 settled, what remains open |
-| ◎ Orient | [orient/ARCHITECTURE.md](orient/ARCHITECTURE.md) | URI anatomy, design intent, component map (§§1–3 of spec) |
-| ◇ Decide | [decide/CONVENTIONS.md](decide/CONVENTIONS.md) | Normative canonical spec: query, fragment, render targets, validation |
+| ✶ Observe | [../../../../../lares_research/memes/lar-uri/uri-schema/observe/CONTEXT.md](../../../../../lares_research/memes/lar-uri/uri-schema/observe/CONTEXT.md) | Current state of URI design — what v2 settled, what remains open |
+| ◎ Orient | [../../../../../lares_research/memes/lar-uri/uri-schema/orient/ARCHITECTURE.md](../../../../../lares_research/memes/lar-uri/uri-schema/orient/ARCHITECTURE.md) | URI anatomy, design intent, component map (§§1–3 of spec) |
+| ◇ Decide | [../../../../../lares_research/memes/lar-uri/uri-schema/decide/CONVENTIONS.md](../../../../../lares_research/memes/lar-uri/uri-schema/decide/CONVENTIONS.md) | Normative canonical spec: query, fragment, render targets, validation |
 | ■ Act | [act/PROCEDURES.md](act/PROCEDURES.md) | Exchange span display contract; micro-trace emit rules |
-| ○ Assess | [assess/VERIFICATION.md](assess/VERIFICATION.md) | Validation rules, well-formedness checklist, comparison rules |
+| ○ Assess | [../../../../../lares_research/memes/lar-uri/uri-schema/assess/VERIFICATION.md](../../../../../lares_research/memes/lar-uri/uri-schema/assess/VERIFICATION.md) | Validation rules, well-formedness checklist, comparison rules |
 
 ## Deployment Surfaces
 
@@ -75,7 +75,7 @@ The flat specification lives in `URI-SCHEMA.md` in this module directory (`[CS:0
 
 ## Key Spec Reference
 
-Canonical specification: `lares/modules/uri-schema/URI-SCHEMA.md` `[CS:0.95]`
+Canonical specification: `lares/ha-ka-ba/docs/pono/lar-uri/URI-SCHEMA.md` `[CS:0.95]`
 Sigilization rules: `lares/modules/sigilization/` `[CS:0.85]`
 Micro-trace specification: `lares/modules/micro-trace/` `[CS:0.80]`
 Validation tool: `builds/scripts/verify_uri.py` · `make -C builds verify`

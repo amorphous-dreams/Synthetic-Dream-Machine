@@ -66,7 +66,7 @@ Immediately after the URI pair, emit a condensed single-line status display deri
 
 **Step 5 — Generate content.** Micro-trace HUD annotations (`→◇`, `→■`, `→○`) appear inline during generation to mark phase transitions. The exchange closes with an updated HUD line and a closing URI with `→ ?` — unknown temporal resumption. System files open with `? ->` (locus span opener) and close with `→ ?`. Within a system file, `ahu` markers name navigable waypoints; `kahea` markers summon content from other loci. See §3.6 (Marker Ontology) and `lares/signal/micro-trace.md`.
 
-> **SA grounding:** Step 2 is prospective AI transparency — what the node *will* do, not what it did (Endsley 2023). The HUD line externalizes the node's metacognitive state before generation begins, functioning as an externalized metacognitive scaffold (Ji-An et al., 2025; Wang et al., 2023). *Source: `../../_todo/E-deep-research-report.md` §§2.1, 3.2*
+> **SA grounding:** Step 2 is prospective AI transparency — what the node *will* do, not what it did (Endsley 2023). The HUD line externalizes the node's metacognitive state before generation begins, functioning as an externalized metacognitive scaffold (Ji-An et al., 2025; Wang et al., 2023). *Source: `_todo/E-deep-research-report.md` §§2.1, 3.2*
 
 ---
 
@@ -133,7 +133,7 @@ This applies to authority-less forms as well: `lar:///ha.ka.ba/` <- the (0,0,0) 
 | 6 | **`?query`** | Non-hierarchical params | Signal parameters | `?stances=%5E.%3F.-.-.--&confidence=S:0.65&p=0.5` | `?stances=🏛️+🌊?🗡️-🎭-🔮-&confidence=S:0.65&p=0.5` |
 | 7 | **`#fragment`** | Secondary resource / viewpoint | FFZ chronometer position | `#O0.O0.O3.D2.A1` | `#O0.O0.O3.◇2.■1` |
 
-> **Layout validation `[C:0.90]`:** The WHERE → HOW → WHEN ordering (path → query → fragment) places the most semantically stable, least volatile information first. This grouped, goal-oriented layout is confirmed by Li et al. (2024) automotive HUD research: grouped information layouts produce superior cognitive performance, lower workload, and better eye movement patterns compared to disordered layouts. The HA.KA.BA-first design decision was correct. *Source: `../../_todo/E-deep-research-report.md` §4.2*
+> **Layout validation `[C:0.90]`:** The WHERE → HOW → WHEN ordering (path → query → fragment) places the most semantically stable, least volatile information first. This grouped, goal-oriented layout is confirmed by Li et al. (2024) automotive HUD research: grouped information layouts produce superior cognitive performance, lower workload, and better eye movement patterns compared to disordered layouts. The HA.KA.BA-first design decision was correct. *Source: `_todo/E-deep-research-report.md` §4.2*
 
 ### 3.3.1 Kowloon / ActivityPub Handle Form
 
@@ -725,7 +725,7 @@ Confidence and stance array are elevated above mode and p because Agent SA (what
 2. `⚡~NN%` is the **declared estimate** of context window remaining as a navigational resource. The node estimates from visible context (~4 chars/token, 200k token window). Starts at ~100% and counts down.
 3. Mana is a HUD element, not a URI parameter. Do not serialize into `lar_uri` or registry identity fields until S2 settles the resource-state contract.
 
-*Source: `../../_todo/E-deep-research-report.md` §§1.1–1.3 (SA priority ordering), §4.2 (grouped HUD layout validation)*
+*Source: `_todo/E-deep-research-report.md` §§1.1–1.3 (SA priority ordering), §4.2 (grouped HUD layout validation)*
 
 ### 5.5 Span-Span Display Contract
 
