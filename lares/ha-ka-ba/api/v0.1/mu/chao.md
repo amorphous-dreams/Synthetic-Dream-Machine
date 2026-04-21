@@ -6,7 +6,7 @@
 
 ```toml
 uri-path = "ha.ka.ba/api/v0.1/mu/chao"
-file-path    = "lares/ha-ka-ba/api/v0.1/mu/loci-mu-chao.md"
+file-path    = "lares/ha-ka-ba/api/v0.1/mu/chao.md"
 content-type = "text/x-memetic-wikitext"
 tagspace     = "stable"
 manaoio    = 0.72

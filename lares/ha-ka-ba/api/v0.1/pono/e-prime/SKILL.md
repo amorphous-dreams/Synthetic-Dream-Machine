@@ -37,7 +37,7 @@ skill-package-root = "ha-ka-ba/api/v0.1/pono/e-prime"
 # E-Prime Auditor
 
 Settled wording only.
-[loci-pono-e-prime.md](./loci-pono-e-prime.md) stays constitutional.
+[e-prime.md](./e-prime.md) stays constitutional.
 `lar:///ha.ka.ba/api/v0.1/pono/e-prime` presses generation before this skill applies.
 This skill arrives when wording has already settled and needs inspection, marking, or correction.
 This skill does not weaken or reinterpret the loci.

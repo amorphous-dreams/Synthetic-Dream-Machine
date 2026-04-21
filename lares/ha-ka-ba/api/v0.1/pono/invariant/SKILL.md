@@ -39,7 +39,7 @@ skill-package-root = "ha-ka-ba/api/v0.1/pono/invariant"
 
 # Invariant-Meme Skill
 
-Read [loci-pono-invariant.md](./loci-pono-invariant.md) first.
+Read [invariant.md](./invariant.md) first.
 Treat that loci as constitutional.
 It enacts a self-describing law and self-executing template.
 This skill operationalizes that compact invariant.
@@ -55,7 +55,7 @@ Invariant-meme skill opens the pressure surface here.
 
 When this skill loads, keep these points active:
 
-- [loci-pono-invariant.md](./loci-pono-invariant.md) remains the constitutional source
+- [invariant.md](./invariant.md) remains the constitutional source
 - the canonical loci operates as both law and template
 - invariant surfaces MUST stay short, exact, stable, cacheable, and active in operational voice
 - invariant surfaces MUST carry visible ahu and a visible OODA-HA ahu

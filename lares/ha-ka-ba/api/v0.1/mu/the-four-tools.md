@@ -6,7 +6,7 @@
 
 ```toml
 uri-path = "ha.ka.ba/api/v0.1/mu/the-four-tools"
-file-path    = "lares/ha-ka-ba/api/v0.1/mu/loci-mu-the-four-tools.md"
+file-path    = "lares/ha-ka-ba/api/v0.1/mu/the-four-tools.md"
 content-type = "text/x-memetic-wikitext"
 tagspace     = "stable"
 manaoio    = 0.85

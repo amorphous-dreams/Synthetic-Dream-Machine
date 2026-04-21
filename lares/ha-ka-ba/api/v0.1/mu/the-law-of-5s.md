@@ -6,7 +6,7 @@
 
 ```toml
 uri-path = "ha.ka.ba/api/v0.1/mu/the-law-of-5s"
-file-path    = "lares/ha-ka-ba/api/v0.1/mu/loci-mu-the-law-of-5s.md"
+file-path    = "lares/ha-ka-ba/api/v0.1/mu/the-law-of-5s.md"
 content-type = "text/x-memetic-wikitext"
 tagspace     = "stable"
 manaoio    = 0.80

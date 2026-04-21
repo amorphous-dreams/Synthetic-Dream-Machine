@@ -39,9 +39,9 @@ The separation is strict: **canonical form in the record; sigil form on the surf
 ### Amplitude Modifiers
 
 **Consumed into**
-- `lares/ha-ka-ba/api/v0.1/mu/loci-mu-syad-perspectives.md#stance-flags`
-- `lares/ha-ka-ba/docs/syad/loci-docs-syad-source.md#flag-surface`
-- `lares/ha-ka-ba/docs/syad/loci-docs-syad-source.md#stance-array`
+- `lares/ha-ka-ba/api/v0.1/mu/syad-perspectives.md#stance-flags`
+- `lares/ha-ka-ba/docs/syad/syad-source.md#flag-surface`
+- `lares/ha-ka-ba/docs/syad/syad-source.md#stance-array`
 
 **Legacy note:** this archive section held the migration bridge from early sigil surfaces to the fixed five-position array. Live canon keeps all five positions present and treats omission-based examples as legacy.
 

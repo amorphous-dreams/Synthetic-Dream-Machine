@@ -14,13 +14,13 @@
 |---|---|---|---|
 | 1 | 2026-04-08 | Initial 5 improvements | Operator-directed refinements |
 | 2 | 2026-04-08 | Added centroid~δ notation to §5.3 | Multi-stance register fuzz research |
-| 3 | 2026-04-08 | **Partially legacy.** Syadasti reading rule and stance semantics survived; stance-count-as-fuzz did not. | F-report + G-report lineage; live fold now in `lares/ha-ka-ba/docs/syad/loci-docs-syad-source.md` |
+| 3 | 2026-04-08 | **Partially legacy.** Syadasti reading rule and stance semantics survived; stance-count-as-fuzz did not. | F-report + G-report lineage; live fold now in `lares/ha-ka-ba/docs/syad/syad-source.md` |
 | 4 | 2026-04-08 | DreamDeck/Kowloon render target formalization (§3.3.1): `@handle@node` canonical identity form, render target taxonomy (`chat-log:post-header` / `hud:exchange-pair` / `record:full`), stance amplitude modifiers (`++`/`+`/(none)/`-`/`--`), territory-first ordering, optional sub-path in templates. | Local session ticks 43–46: story format work surfaced schema gaps |
 
 **Key decisions in this revision:**
 
-- `[DECISION]` centroid~δ notation REVERTED — ⚠️ legacy bridge. The live fold keeps register as a point and marks stance-count-as-fuzz as superseded in `lares/ha-ka-ba/docs/syad/loci-docs-syad-source.md#legacy-notes`.
-- `[DECISION]` Register is stance-dependent (Syadasti/Saptabhangi ground). ♻️ Consumed into `lares/ha-ka-ba/docs/syad/loci-docs-syad-source.md#reading-question`.
+- `[DECISION]` centroid~δ notation REVERTED — ⚠️ legacy bridge. The live fold keeps register as a point and marks stance-count-as-fuzz as superseded in `lares/ha-ka-ba/docs/syad/syad-source.md#legacy-notes`.
+- `[DECISION]` Register is stance-dependent (Syadasti/Saptabhangi ground). ♻️ Consumed into `lares/ha-ka-ba/docs/syad/syad-source.md#reading-question`.
 - `[DECISION]` Authority transfer (`--set`, `⊙` indicator) is S2 scope, not S0. Flagged in backlog.
 
 ---
@@ -88,7 +88,7 @@ Scope: one sentence describing the node's current condition.
 stance (what kind of claim), and the scope (at what time-scale)
 — then merge into a single state sentence.
 
-**The Triangle:** syad-specific multi-stance spread material consumed into `lares/ha-ka-ba/docs/syad/loci-docs-syad-source.md#multi-stance-boundary`.
+**The Triangle:** syad-specific multi-stance spread material consumed into `lares/ha-ka-ba/docs/syad/syad-source.md#multi-stance-boundary`.
 
 **Legacy note:** this archive bridge treated stance count and visual density as a direct fuzz readout. The live fold keeps register as a point and lets the visible array carry simultaneous measures without collapsing them into fuzz arithmetic.
 
@@ -108,14 +108,14 @@ Legacy note: the old Register-Stance Complementarity bridge here also assumed wi
 #### 5.3.3 Register Is Stance-Dependent (Syadasti Reading Rule)
 
 **Consumed into**
-- `lares/ha-ka-ba/api/v0.1/mu/loci-mu-syad-perspectives.md#law`
-- `lares/ha-ka-ba/docs/syad/loci-docs-syad-source.md#reading-question`
-- `lares/ha-ka-ba/docs/syad/loci-docs-syad-source.md#saptabhangi`
-- `lares/ha-ka-ba/docs/syad/loci-docs-syad-source.md#stance-endpoints`
+- `lares/ha-ka-ba/api/v0.1/mu/syad-perspectives.md#law`
+- `lares/ha-ka-ba/docs/syad/syad-source.md#reading-question`
+- `lares/ha-ka-ba/docs/syad/syad-source.md#saptabhangi`
+- `lares/ha-ka-ba/docs/syad/syad-source.md#stance-endpoints`
 
 **Legacy note:** this plan block preserved a strong derivation and a useful reading question. It also sat beside now-legacy stance-count-as-fuzz planning. The live fold keeps the derivation and marks the fuzz reading as superseded.
 
-**Multi-stance reading:** consumed into `lares/ha-ka-ba/docs/syad/loci-docs-syad-source.md#multi-stance-boundary`.
+**Multi-stance reading:** consumed into `lares/ha-ka-ba/docs/syad/syad-source.md#multi-stance-boundary`.
 
 **Legacy note:** this archive bridge used intersection / center-of-mass language. The live fold keeps register as a point and lets the visible stance array carry the spread.
 ```

@@ -118,8 +118,8 @@ These were made in the 2026-04-08 browser session. They are `[CS:0.80]` — near
 
 | Decision | Summary | Source |
 |---|---|---|
-| Register is stance-dependent | ♻️ Consumed into `lares/ha-ka-ba/docs/syad/loci-docs-syad-source.md#reading-question`. | `lares/ha-ka-ba/docs/syad/loci-docs-syad-source.md` |
-| Stance count IS the fuzz indicator | ⚠️ Legacy archive reading. Live fold marks this as superseded. | `lares/ha-ka-ba/docs/syad/loci-docs-syad-source.md#legacy-notes` |
+| Register is stance-dependent | ♻️ Consumed into `lares/ha-ka-ba/docs/syad/syad-source.md#reading-question`. | `lares/ha-ka-ba/docs/syad/syad-source.md` |
+| Stance count IS the fuzz indicator | ⚠️ Legacy archive reading. Live fold marks this as superseded. | `lares/ha-ka-ba/docs/syad/syad-source.md#legacy-notes` |
 | Path 3 — Consecration | MemPalace is the orichalcum (storage substrate). Lares is the Lar (navigational intelligence). Crystal architecture survives as calibration layer, not storage layer. | `_todo/KAIJU_ASSESSMENT.md` |
 | Sprint Roadmap Rev 4 | 6 sprints (S0–S5). S1 redesigned for MemPalace. S5 new (DreamDeck). | `_todo/SESSION_CRYSTAL_20260408.md` § Payload 2 |
 | Story format | DreamDeck feed archive, JackPoint-style BBS thread. | `_todo/LINDWYRM_STORY_SHAPE.md` |

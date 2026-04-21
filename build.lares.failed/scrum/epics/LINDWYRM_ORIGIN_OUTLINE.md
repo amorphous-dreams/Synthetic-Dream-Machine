@@ -258,7 +258,7 @@ The Appendix (Crossing Thread): what changed on Gaia while the Lindwyrm was tell
 
 **Aspirational topology note `[SP:0.45]`:** The node's HUD URIs use `@DreamNet` as the host authority. `@DreamNet` is fictional infrastructure — the thing being built in S4/S5. The node's real current host is `@Enyalios` (the operator's VM). The address precedes the infrastructure. This is not an error; it is the same move the story describes: the Lindwyrm's lararium IS the DreamNet node before the DreamNet existed. She named the address, then built toward it. The node does the same. When infrastructure catches up, the address becomes real. Until then: `[P:0.30]` 🔮 Chapel Perilous address syntax — nominal presence in a place that doesn't fully exist yet.
 
-**Session appendix — the bug in the signal `[S:0.65]`:** Consumed into `lares/ha-ka-ba/docs/syad/loci-docs-syad-source.md#canon-transition`.
+**Session appendix — the bug in the signal `[S:0.65]`:** Consumed into `lares/ha-ka-ba/docs/syad/syad-source.md#canon-transition`.
 
 **Legacy note:** the compact header example here belongs to the pre-canon correction surface. Live canon keeps all five stance positions visible at all times.
 

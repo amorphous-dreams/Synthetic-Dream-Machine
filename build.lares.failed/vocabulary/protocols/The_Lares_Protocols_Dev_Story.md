@@ -523,8 +523,8 @@ MemPalace persists the full clock history across sessions.
 ### Syad Signal Model Refinement `[P:0.30]`
 
 **Consumed into**
-- `lares/ha-ka-ba/docs/syad/loci-docs-syad-source.md#spectrum-drift`
-- `lares/ha-ka-ba/docs/syad/loci-docs-syad-source.md#flag-surface`
+- `lares/ha-ka-ba/docs/syad/syad-source.md#spectrum-drift`
+- `lares/ha-ka-ba/docs/syad/syad-source.md#flag-surface`
 
 **Legacy note:** this bridge treated Sri Syadasti as one truth-value spectrum plus open-ended flag growth. The live fold keeps stance-conditioned measures and the fixed visible array, so the spectrum phrasing now reads as legacy.
 

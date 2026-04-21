@@ -6,7 +6,7 @@
 
 ```toml
 uri-path = "ha.ka.ba/api/v0.1/pono/loci"
-file-path = "lares/ha-ka-ba/api/v0.1/pono/loci/loci-pono-loci.md"
+file-path = "lares/ha-ka-ba/api/v0.1/pono/loci/loci.md"
 content-type = "text/x-memetic-wikitext"
 manaoio = 0.66
 confidence = 0.74
@@ -61,7 +61,7 @@ Loci opens the routing-and-rating authority stream here.
 ## Phase Map
 
 
-Loci gathers the `lar:` URI meme and visible convention surfaces, maps the address through derivation and prefix law, classifies lifecycle stage and rating posture, prepares the current rating-and-routing product plus MCP-roadmap note, crosses any promotion or siting mutation into active law, and judges what resolved, what remains open, and what still belongs to research.
+Loci gathers the `lar:` URI meme and visible convention surfaces, maps the address through derivation and siting law, classifies lifecycle stage and rating posture, prepares the current rating-and-routing product plus MCP-roadmap note, crosses any promotion or siting mutation into active law, and judges what resolved, what remains open, and what still belongs to research.
 
 <<~/ahu >>
 
@@ -84,7 +84,7 @@ Observe should detect:
 * the full `lar:` URI string to resolve, exactly as presented
 * whether the request context includes a known `meme-type`, prior rating posture, or prior promotion context for the target
 * the document opener form of the target (if the target meme already sits in memory): `<<~&#x0001; ? -> ...` (declared-open, with unbound uncertainty still flowing through the address graph) or `<<~&#x0001; lar:///ha.ka.ba/api/v0.1/...` (confirmed canon)
-* whether the target already exposes explicit loci convention surfaces: `#iam` rating cluster, `register`, prefix-table membership, promotion note, and roadmap note
+* whether the target already exposes explicit loci convention surfaces: `#iam` rating cluster, `register`, siting clarity, promotion note, and roadmap note
 * whether the request marks a first-time routing-and-rating pass or a re-resolution of a previously declared-unresolved address
 
 Observe should not:
@@ -143,7 +143,7 @@ glyph = "⏿"
 
 ## Orient
 
-Orient decomposes the URI and maps it through the derivation algorithm and prefix table before any rating or promotion verdict lands.
+Orient decomposes the URI and maps it through the derivation algorithm and siting rule before any rating or promotion verdict lands.
 
 <<~ ahu #derivation-algorithm >>
 
@@ -170,38 +170,29 @@ Given: lar-uri (string), meme-type (string | unknown)
      name    = parts[last]           e.g. "parser"
      subpath = parts[0..-2].join("/") e.g. "pono"   (empty string if none)
 
-5. Look up meme-type prefix:
-     When meme-type known:
-       prefix = meme-type-prefix-table[meme-type]
-       e.g. "loci" → "loci-"
-     When meme-type unknown:
-       prefix = nil → classification becomes DECLARED-UNRESOLVED
-       emit note: "meme-type unknown; local derivation cannot continue"
-       stop local resolution here
-
-6. Derive candidate file-path:
+5. Derive candidate file-path:
      filename-stem = name.replace("_", "-")
      If subpath == "":
-       candidate = path-root + "/" + prefix + filename-stem + ".md"
-       e.g. "ha-ka-ba/api/v0.1/pono/meme/loci-pono-meme.md"   (current candidate for `lar:///ha.ka.ba/api/v0.1/pono/meme`)
+       candidate = path-root + "/" + filename-stem + ".md"
+       e.g. "ha-ka-ba/api/v0.1/pono/meme/meme.md"   (current candidate for `lar:///ha.ka.ba/api/v0.1/pono/meme`)
      Else:
-       candidate = path-root + "/" + subpath + "/" + prefix + filename-stem + ".md"
-       e.g. "ha-ka-ba/api/v0.1/pono/loci-pono-parser.md"
+       candidate = path-root + "/" + subpath + "/" + filename-stem + ".md"
+       e.g. "ha-ka-ba/api/v0.1/pono/parser.md"
 
-7. Derive full repo path:
+6. Derive full repo path:
      full-repo-path = install-root + candidate
-     e.g. "lares/ha-ka-ba/api/v0.1/pono/loci-pono-parser.md"
+     e.g. "lares/ha-ka-ba/api/v0.1/pono/parser.md"
      Check whether full-repo-path exists as a file.
      If YES → RESOLVED. Return full-repo-path. Done.
 
-8. If step 7 misses:
+7. If step 6 misses:
      Classification: DECLARED-UNRESOLVED
      Emit forward reference: lar-uri as declared-unresolved address.
      Emit note: "local derivation miss; carrier may use path-directory siting or require live resolver support"
      Do NOT abort. Continue with calling context.
 ```
 
-An agent that always knows the `meme-type` of the target can use this algorithm directly. An agent that does not know the `meme-type` should not guess a prefix. It should surface unresolved state honestly or hand the request to a live resolver when one exists.
+An agent can use this algorithm directly without guessing a filename prefix. It should surface unresolved state honestly or hand the request to a live resolver when one exists.
 
 The algorithm does not by itself assign final ratings. It supplies the structural routing evidence that later sections convert into `mana`, `manao`, and `manaoio` posture.
 
@@ -209,28 +200,28 @@ The algorithm does not by itself assign final ratings. It supplies the structura
 
 | target `lar:` URI | local derivation candidate | current local outcome | tension surfaced |
 |---|---|---|---|
-| `lar:///ha.ka.ba/api/v0.1/pono/loci` | `lares/ha-ka-ba/api/v0.1/pono/loci/loci-pono-loci.md` | derivation miss | this meme reads as path-directory-sited |
-| `lar:///ha.ka.ba/api/v0.1/pono/meme` | `lares/ha-ka-ba/api/v0.1/pono/meme/loci-pono-meme.md` | derivation miss | generic meme law reads as path-directory-sited |
-| `lar:///ha.ka.ba/api/v0.1/grammars/x-tiddlywiki-filter` | `lares/ha-ka-ba/api/v0.1/grammar/grammar-x-tiddlywiki-filter.md` | resolved | grammar carriers currently resolve as ordinary flat-file carriers under `ha-ka-ba/api/v0.1/grammar/` |
+| `lar:///ha.ka.ba/api/v0.1/pono/loci` | `lares/ha-ka-ba/api/v0.1/pono/loci/loci.md` | derivation miss | this meme reads as path-directory-sited |
+| `lar:///ha.ka.ba/api/v0.1/pono/meme` | `lares/ha-ka-ba/api/v0.1/pono/meme/meme.md` | derivation miss | generic meme law reads as path-directory-sited |
+| `lar:///ha.ka.ba/api/v0.1/grammars/x-tiddlywiki-filter` | `lares/ha-ka-ba/api/v0.1/grammar/tiddlywiki-filter.md` | resolved | grammar carriers currently resolve as ordinary flat-file carriers under `ha-ka-ba/api/v0.1/grammar/` |
 
 These examples show the current routing state plainly: derivation alone falls short after migration for path-directory-sited loci carriers, while ordinary flat-file carriers still resolve locally.
 
 <<~/ahu >>
 
-<<~ ahu #meme-type-prefix-table >>
+<<~ ahu #meme-type-siting-table >>
 
-### Meme-Type Prefix Table
+### Meme-Type Siting Table
 
-The prefix table fixes the inference gap. Before this table got declared, agents needed to guess the file prefix from context. This table turns the mapping into law, not heuristic.
+The siting table fixes the inference gap. File naming no longer carries a `type-folder-` prefix. Directory siting and the terminal URI name now carry the routing load.
 
-| `meme-type` value | file prefix | example file | example lar: URI |
+| `meme-type` value | siting note | example file | example lar: URI |
 |---|---|---|---|
-| `loci` | `loci-` | `loci-parser.md` | `lar:///ha.ka.ba/api/v0.1/pono/parser` |
-| `alpha` | `alpha-` | `alpha-test-prompt-00001.md` | `lar:///ha.ka.ba/api/v0.1/alpha/test-prompt-00001` |
-| `grammar` | `grammar-` | `grammar-x-tiddlywiki-filter.md` | `lar:///ha.ka.ba/api/v0.1/grammars/x-tiddlywiki-filter` |
-| `skill` | `skill-` | `skill-template.md` | `lar:///ha.ka.ba/api/v0.1/pono/skill-template` |
+| `loci` | resolved by directory path + terminal name | `parser.md` | `lar:///ha.ka.ba/api/v0.1/pono/parser` |
+| `alpha` | resolved by directory path + terminal name | `test-prompt-00001.md` | `lar:///ha.ka.ba/api/v0.1/alpha/test-prompt-00001` |
+| `grammar` | resolved by directory path + terminal name | `tiddlywiki-filter.md` | `lar:///ha.ka.ba/api/v0.1/grammars/x-tiddlywiki-filter` |
+| `skill` | resolved by directory path + terminal name | `SKILL.md` | `lar:///ha.ka.ba/api/v0.1/pono/invariant/SKILL` |
 
-When a new `meme-type` enters use, an entry MUST join this table before any file of that type joins the registry. A `meme-type` value with no entry in this table counts as an error in the meme definition, not a routing ambiguity.
+When a new `meme-type` enters use, its siting convention SHOULD surface clearly before any file of that type joins the registry. A `meme-type` value with no clear siting note increases routing ambiguity.
 
 <<~/ahu >>
 
@@ -263,7 +254,7 @@ Current convention surfaces include:
 
 1. the `lar:` URI in the document opener
 2. the `#iam` rating cluster and `register`
-3. the derivation algorithm and meme-type prefix table
+3. the derivation algorithm and meme-type siting table
 4. the canon-promotion section and MCP-resolution roadmap
 
 Detailed siting capture and `file-path` agreement sit delegated to `lar:///ha.ka.ba/api/v0.1/pono/loci/iam/file-path`. Loci may consume that evidence, but it does not restate the capture law here.
@@ -320,7 +311,7 @@ Use a closing `ala` only when a real child or phase-level carrier gets declared.
 
 #### Orient / ha
 
-Orient-ha holds the classification domain: what decomposition, prefix mapping, explicit convention, and stability assessment fundamentally determine. The core question asks whether the URI maps cleanly to a derivable local path, what that says about the current lifecycle stage, and whether the convention reads explicit enough to deserve high ratings.
+Orient-ha holds the classification domain: what decomposition, siting rule, explicit convention, and stability assessment fundamentally determine. The core question asks whether the URI maps cleanly to a derivable local path, what that says about the current lifecycle stage, and whether the convention reads explicit enough to deserve high ratings.
 
 <<~/ahu >>
 
@@ -415,7 +406,7 @@ Loci resolves a `lar:` URI meme to a rating set by reading routing evidence, dec
 
 | field | rises when | falls when |
 |---|---|---|
-| `mana` | the URI decomposes cleanly, prefix mapping stays explicit, convention surfaces remain inspectable, and misses receive honest naming | mapping depends on guesses, hidden heuristics, or blurred unresolved state |
+| `mana` | the URI decomposes cleanly, siting stays explicit, convention surfaces remain inspectable, and misses receive honest naming | mapping depends on guesses, hidden heuristics, or blurred unresolved state |
 | `manao` | the meme clearly knows its loci role, names why the convention exists, and makes lifecycle posture explicit | purpose drifts, routing law mixes with unrelated concerns, or promotion posture stays vague |
 | `manaoio` | local resolution repeats reliably now or a live resolver operates, operator crossings stay bounded, and backlog surfaces honestly | resolution depends on unstated manual recovery, promotion self-asserts, or the live-resolution gap stays hidden |
 
@@ -557,8 +548,8 @@ A carrier mutation and a canon promotion mark two distinct crossings that may no
 
 Two Hoʻoko-class crossings matter in the current stack and already appear from this file:
 
-* this meme's own migration into `ha-ka-ba/api/v0.1/pono/loci/loci-pono-loci.md`
-* the meme law's migration into `ha-ka-ba/api/v0.1/pono/meme/loci-pono-meme.md`
+* this meme's own migration into `ha-ka-ba/api/v0.1/pono/loci/loci.md`
+* the meme law's migration into `ha-ka-ba/api/v0.1/pono/meme/meme.md`
 
 In both cases, the stable thing remained the `lar:` address. The mutable thing remained the concrete file siting that needed to cross into law.
 

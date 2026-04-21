@@ -4,7 +4,7 @@
 
 ```toml
 uri-path = "ha.ka.ba/api/v0.1/source"
-file-path = "lares/ha-ka-ba/api/v0.1/pono/loci-pono-memetic-wikitext.md"
+file-path = "lares/ha-ka-ba/api/v0.1/pono/memetic-wikitext.md"
 content-type = "text/x-memetic-wikitext"
 manaoio = 0.42
 confidence = 0.50

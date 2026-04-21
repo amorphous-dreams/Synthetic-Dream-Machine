@@ -312,7 +312,7 @@ Boot the first two OODA-HA modules: talk-story and signal.
 ## 8. V2 Canonical Quick Reference
 
 ### Stance Amplitude (query: `stances=`)
-Consumed into `lares/ha-ka-ba/api/v0.1/mu/loci-mu-syad-perspectives.md#stance-flags` and `lares/ha-ka-ba/docs/syad/loci-docs-syad-source.md#flag-surface`.
+Consumed into `lares/ha-ka-ba/api/v0.1/mu/syad-perspectives.md#stance-flags` and `lares/ha-ka-ba/docs/syad/syad-source.md#flag-surface`.
 
 Legacy note: this handoff preserved the v2 migration key. The live fold keeps the full five-position array visible at all times and reads the same codes as visible/hidden plus confident/uncertain pressure.
 

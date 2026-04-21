@@ -12,7 +12,7 @@
 
 Core derivation extracted into:
 
-- `lares/ha-ka-ba/docs/syad/loci-docs-syad-source.md`
-- `lares/ha-ka-ba/api/v0.1/mu/loci-mu-syad-perspectives.md`
+- `lares/ha-ka-ba/docs/syad/syad-source.md`
+- `lares/ha-ka-ba/api/v0.1/mu/syad-perspectives.md`
 
 This archive file now remains as a moved-marker so git can track the consumption cleanly.

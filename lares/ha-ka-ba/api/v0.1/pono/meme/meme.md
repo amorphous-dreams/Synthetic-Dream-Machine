@@ -6,7 +6,7 @@
 
 ```toml
 uri-path = "ha.ka.ba/api/v0.1/pono/meme"
-file-path = "lares/ha-ka-ba/api/v0.1/pono/meme/loci-pono-meme.md"
+file-path = "lares/ha-ka-ba/api/v0.1/pono/meme/meme.md"
 content-type = "text/x-memetic-wikitext"
 manaoio = 0.6
 confidence = 0.6
@@ -641,7 +641,7 @@ Copy this block. Replace every `[PLACEHOLDER]` with local content. Delete option
 
 ```toml
 name = "[NAME]"
-file-path = "lares/ha-ka-ba/api/v0.1/[MEME-TYPE]-[NAME].md"
+file-path = "lares/ha-ka-ba/api/v0.1/[NAME].md"
 content-type = "text/x-memetic-wikitext"
 version = "0.1-skeleton"
 manaoio = 0.10

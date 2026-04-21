@@ -316,7 +316,7 @@ if _-name-_ == "_-main-_":
 **Invocation from skill body (agent-native):**
 
 ```bash
-python3 lares/ha-ka-ba/api/v0.1/pono/scripts/skill-check.py lares/ha-ka-ba/api/v0.1/pono/meme/loci-pono-meme.md
+python3 lares/ha-ka-ba/api/v0.1/pono/scripts/skill-check.py lares/ha-ka-ba/api/v0.1/pono/meme/meme.md
 ```
 
 **Library choices:**

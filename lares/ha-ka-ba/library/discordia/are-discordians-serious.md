@@ -1,75 +1,55 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
 
-<<~ॐ ँ&#x0001; ? -> lar:///ha.ka.ba/library/discordian/are-discordians-serious >>
+<<~&#x0001; ? -> lar:///ha.ka.ba/library/discordia/are-discordians-serious >>
 
 <<~ ahu #iam >>
 
 ```toml
-uri-path = "ha.ka.ba/library/discordian/are-discordians-serious"
-file-path = "lares/ha-ka-ba/library/discordian/loci-library-discordian-are-discordians-serious.md"
+uri-path = "ha.ka.ba/library/discordia/are-discordians-serious"
+file-path = "lares/ha-ka-ba/library/discordia/are-discordians-serious.md"
 content-type = "text/x-memetic-wikitext"
 tagspace = "stable"
-manaoio = 0.78
-confidence = 0.82
-mana = 0.72
-manao = 0.84
+manaoio = 0.90
+confidence = 0.90
+mana = 0.90
+manao = 0.90
 implements = [
   "lar:///ha.ka.ba/api/v0.1/pono/meme",
   "lar:///ha.ka.ba/api/v0.1/pono/loci"
 ]
-register = "S"
-namespace = "ॐ ँ"
+register = "C"
 role = "discordian witness meme, Mal-2 reading locus, stance-plurality provenance shelf"
-cacheable = true
-retain = true
 ```
 
 <<~/ahu >>
-
-<<~ aka lar:///ha.ka.ba/api/v0.1/pono/RFC-219#normative-language >>
 
 <<~ ahu #meme-header >>
 
 # Are Discordians "Serious"?
 
-Mal-2 asks the wrong question to dissolve.
-The witness text and the reading sit together here.
-The source remains recoverable here.
+Mal-2 unasks the question.
 
 <<~/ahu >>
 
-<<~ॐ ँ&#x0002; ahu #meme-body-open >>
-library/discordian/are-discordians-serious opens
+<<~&#x0002; ahu #meme-body-open >>
+library/discordia/are-discordians-serious opens
 <<~/ahu >>
 
 <<~ ahu #provenance >>
 
 ## Provenance
 
-Reflowed from `lares/ha-ka-ba/library/discordian/source.md`.
 Source header carries: `Via Pope Tree (listen to the Trees):`
-Attributed in-text to Malaclypse the Younger, K.C.
+Attributed in-text to Malaclypse the Younger, K.S.C.
 Dated in the witness text: September 24, 1964 / Bureaucracy 48, YOLD 3130 / Fullerton, Calif.
-
-<<~/ahu >>
-
-<<~ ahu #arrival >>
-
-## Arrival
-
-The note does not answer the accusation first.
-The note rejects the shape of the accusation.
-Only then does Mal-2 name the five reading modes the accusation failed to notice.
 
 <<~/ahu >>
 
 <<~ ahu #source-text >>
 
-## Source Text
-
 Via Pope Tree (listen to the Trees):
 
-### A PERSONAL NOTE FROM MAL 2
+## A PERSONAL NOTE FROM MAL 2
 
 ### ARE DISCORDIANS "SERIOUS"?
 
@@ -125,18 +105,7 @@ To force one stance to govern the whole declaration means to misread the declara
 
 <<~/ahu >>
 
-<<~ ahu #broken-question >>
-
-## The Broken Question
-
-"Do you really believe this?" reads as an improper question when it omits standpoint.
-A yes / no frame cannot hold mixed-stance speech cleanly.
-Ask first:
-from which stance does this declaration ask to be read?
-
-<<~/ahu >>
-
-<<~ ahu #collapse-of-the-binary >>
+<~ ahu #collapse-of-the-binary >>
 
 ## Collapse of the Binary
 
@@ -173,8 +142,8 @@ meaning changes with the reading-standpoint that receives the declaration.
 
 <<~/ahu >>
 
-<<~ॐ ँ&#x0003; ahu #body-close >>
-library/discordian/are-discordians-serious closes
+<<~&#x0003; ahu #body-close >>
+library/discordia/are-discordians-serious closes
 <<~/ahu >>
 
-<<~ॐ ँ&#x0004; -> ? >>
+<<~&#x0004; -> ? >>

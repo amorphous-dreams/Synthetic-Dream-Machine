@@ -6,7 +6,7 @@
 
 ```toml
 uri-path = "ha.ka.ba/api/v0.1/pono/pranala"
-file-path = "lares/ha-ka-ba/api/v0.1/pono/pranala/loci-pono-pranala.md"
+file-path = "lares/ha-ka-ba/api/v0.1/pono/pranala/pranala.md"
 content-type = "text/x-memetic-wikitext"
 manaoio = 0.74
 confidence = 0.82

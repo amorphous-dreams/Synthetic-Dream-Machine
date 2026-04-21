@@ -5,7 +5,7 @@
 <<~ ahu #iam >>
 ```toml
 uri-path = "ha.ka.ba/api/v0.1/grammars/x-tiddlywiki-filter"
-file-path = "lares/ha-ka-ba/api/v0.1/grammar/grammar-x-tiddlywiki-filter.md"
+file-path = "lares/ha-ka-ba/api/v0.1/grammar/tiddlywiki-filter.md"
 content-type = "text/x-memetic-wikitext"
 manaoio = 0.36
 confidence = 0.48
