@@ -6,7 +6,7 @@
 
 ```toml
 uri-path = "ha.ka.ba/api/v0.1/pono/lar-uri"
-file-path = "lares/ha-ka-ba/api/v0.1/pono/lar-uri/lar-uri.md"
+file-path = "lares/ha-ka-ba/api/v0.1/pono/lar-uri.md"
 content-type = "text/x-memetic-wikitext"
 confidence = 0.84
 register = "CS"

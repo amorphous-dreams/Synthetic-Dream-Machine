@@ -6,7 +6,7 @@
 
 ```toml
 uri-path = "ha.ka.ba/api/v0.1/pono/loci"
-file-path = "lares/ha-ka-ba/api/v0.1/pono/loci/loci.md"
+file-path = "lares/ha-ka-ba/api/v0.1/pono/loci.md"
 content-type = "text/x-memetic-wikitext"
 confidence = 0.74
 register = "CS"
@@ -50,7 +50,7 @@ This five-bucket model replaces an older collapse of typed and canonical stages 
 
 This meme does not govern parse recognition, render lowering, conformance verification, or raw `file-path` capture. Those belong to their own law (kānāwai). Detailed siting capture and agreement live at `lar:///ha.ka.ba/api/v0.1/pono/loci/iam/file-path`. Loci governs the routing-and-rating convention above those surfaces.
 
-This file itself takes path-directory-sited `loci` meme form and therefore serves as a live specimen of the law it names: stable address, explicit convention, high-mana aspiration, and still-open MCP resolver backlog.
+This file itself now takes flat-file `loci` meme form and therefore serves as a live specimen of the law it names: stable address, explicit convention, high-mana aspiration, and still-open MCP resolver backlog.
 
 <<~&#x0002; ahu #meme-body-open >>
 Loci opens the routing-and-rating authority stream here.
@@ -200,11 +200,11 @@ The algorithm does not by itself assign final ratings. It supplies the structura
 
 | target `lar:` URI | local derivation candidate | current local outcome | tension surfaced |
 |---|---|---|---|
-| `lar:///ha.ka.ba/api/v0.1/pono/loci` | `lares/ha-ka-ba/api/v0.1/pono/loci/loci.md` | derivation miss | this meme reads as path-directory-sited |
-| `lar:///ha.ka.ba/api/v0.1/pono/meme` | `lares/ha-ka-ba/api/v0.1/pono/meme/meme.md` | derivation miss | generic meme law reads as path-directory-sited |
+| `lar:///ha.ka.ba/api/v0.1/pono/loci` | `lares/ha-ka-ba/api/v0.1/pono/loci.md` | resolved | this meme now reads as flat-file-sited |
+| `lar:///ha.ka.ba/api/v0.1/pono/meme` | `lares/ha-ka-ba/api/v0.1/pono/meme.md` | resolved | generic meme law now resolves as flat-file-sited |
 | `lar:///ha.ka.ba/api/v0.1/grammars/x-tiddlywiki-filter` | `lares/ha-ka-ba/api/v0.1/grammar/tiddlywiki-filter.md` | resolved | grammar carriers currently resolve as ordinary flat-file carriers under `ha-ka-ba/api/v0.1/grammar/` |
 
-These examples show the current routing state plainly: derivation alone falls short after migration for path-directory-sited loci carriers, while ordinary flat-file carriers still resolve locally.
+These examples show the current routing state plainly: direct derivation now resolves the core flat-file loci carriers locally, while ordinary flat-file grammar carriers still resolve locally too.
 
 <<~/ahu >>
 
@@ -628,7 +628,7 @@ Aftermath-ha holds the residue domain: what remains unresolved after all routing
 
 #### Aftermath / ka
 
-Aftermath-ka governs the convention check procedure: compare opener address, declared convention surfaces, and any delegated siting evidence. If they agree, the carrier remains explicit even if local derivation still misses after migration. That miss should then surface as MCP-roadmap pressure, not as disguised corruption.
+Aftermath-ka governs the convention check procedure: compare opener address, declared convention surfaces, and any delegated siting evidence. If they agree, the carrier remains explicit even when a future migration or delegated resolver leaves local derivation incomplete. That miss should then surface as MCP-roadmap pressure, not as disguised corruption.
 
 <<~/ahu >>
 

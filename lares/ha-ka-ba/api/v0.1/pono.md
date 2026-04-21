@@ -5,7 +5,7 @@
 <<~ ahu #iam >>
 ```toml
 uri-path = "ha.ka.ba/api/v0.1/pono"
-file-path = "lares/ha-ka-ba/api/v0.1/pono/pono.md"
+file-path = "lares/ha-ka-ba/api/v0.1/pono.md"
 content-type = "text/x-memetic-wikitext"
 confidence = 0.65
 register = "CS"
