@@ -1,0 +1,71 @@
+<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
+
+<<~&#x0001; ? -> lar:///ha.ka.ba/docs/lararium >>
+
+<<~ ahu #iam >>
+
+```toml
+uri-path = "ha.ka.ba/docs/lararium"
+file-path = "lares/ha-ka-ba/docs/lararium.md"
+content-type = "text/x-memetic-wikitext"
+tagspace = "stable"
+confidence = 0.74
+register = "S"
+manaoio = 0.78
+mana = 0.76
+manao = 0.82
+implements = [
+  "lar:///ha.ka.ba/api/v0.1/pono/meme",
+  "lar:///ha.ka.ba/api/v0.1/pono/loci"
+]
+role = "parent docs shelf for lararium voice-work, old all-in-one AGENTS ingests, agent preferences, and house-presence materials where Mischief-Muse and the others can rest"
+cacheable = true
+retain = true
+```
+
+<<~/ahu >>
+
+<<~ aka lar:///ha.ka.ba/api/v0.1/pono/RFC-219#normative-language >>
+
+<<~ ahu #meme-header >>
+
+# Lararium Docs
+
+Not invariant law.
+This shelf holds the voice-house, old all-in-one ingests, and archival materials that carry the Lares presences without binding the live threshold.
+
+<<~/ahu >>
+
+<<~&#x0002; ahu #meme-body-open >>
+docs/lararium opens
+<<~/ahu >>
+
+<<~ ahu #tree >>
+
+## Tree
+
+Use this branch for:
+
+- old all-in-one `AGENTS.md` ingests
+- `Agents_Preferences` and related house-memory surfaces
+- voice bundles where Mischief-Muse and the others live
+- lararium witness matter that should not burden the live api stub
+
+<<~/ahu >>
+
+<<~ ahu #edges >>
+
+## Edges
+
+<<~ loulou lar:///ha.ka.ba/api/v0.1/lararium >>
+<<~ loulou lar:///LARES >>
+<<~ loulou lar:///ha.ka.ba/docs/crystal >>
+<<~ loulou lar:///ha.ka.ba/docs/story >>
+
+<<~/ahu >>
+
+<<~&#x0003; ahu #body-close >>
+docs/lararium closes
+<<~/ahu >>
+
+<<~&#x0004; -> ? >>
