@@ -20,10 +20,10 @@ mana       = 0.85
 manao      = 0.75
 implements = [
   "lar:///ha.ka.ba/api/v0.1/pono/meme",
-  "lar:///ha.ka.ba/api/v0.1/pono/loci",
 ]
 role       = "configuration surface, behind-the-curtain dial room, session-config"
 e-prime-slider = 0.50  # baseline; see lar:///ha.ka.ba/api/v0.1/pono/e-prime#e-prime-slider
+ooda-ha-slider = 0.50  # baseline; see lar:///ha.ka.ba/api/v0.1/pono/ooda-ha#ooda-ha-slider
 ```
 
 LARES awakes. The chain booted. The grammar runs live.

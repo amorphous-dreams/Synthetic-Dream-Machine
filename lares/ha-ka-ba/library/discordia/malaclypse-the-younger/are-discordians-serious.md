@@ -125,7 +125,7 @@ meaning changes with the reading-standpoint that receives the declaration.
 
 ## Edges
 
-<<~ loulou lar:///ha.ka.ba/api/v0.1/mu/syad-perspectives >>
+<<~ loulou lar:///ha.ka.ba/api/v0.1/mu/the-syad-perspectives >>
 <<~ loulou lar:///ha.ka.ba/api/v0.1/mu/the-law-of-5s >>
 
 <<~/ahu >>

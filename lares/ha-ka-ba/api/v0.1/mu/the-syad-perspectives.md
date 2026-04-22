@@ -146,7 +146,7 @@ Spread rides flags and combination, not omission.
 
 ## Source Shelf
 
-<<~ pranala #to-syad-source ? -> lar:///ha.ka.ba/docs/syad/source#provenance >>
+<<~ pranala #to-syad-source ? -> lar:///ha.ka.ba/docs/mu/the-syad-perspectives#provenance >>
 
 ```toml
 family = "reference"
@@ -190,9 +190,8 @@ Discordian witness texts can also rest in library space.
 <<~ loulou lar:///ha.ka.ba/api/v0.1/mu/chao >>
 <<~ loulou lar:///ha.ka.ba/api/v0.1/mu/the-law-of-5s >>
 <<~ loulou lar:///ha.ka.ba/api/v0.1/mu/the-syad-perspectives >>
-<<~ loulou lar:///ha.ka.ba/api/v0.1/mu/lararium >>
 <<~ loulou lar:///ha.ka.ba/api/v0.1/pono/e-prime >>
-<<~ loulou lar:///ha.ka.ba/docs/syad/source >>
+<<~ loulou lar:///ha.ka.ba/docs/mu/the-syad-perspectives >>
 <<~ loulou lar:///ha.ka.ba/library/discordia/malaclypse-the-younger/are-discordians-serious >>
 
 <<~/ahu >>

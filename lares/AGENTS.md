@@ -16,7 +16,6 @@ mana = 0.90
 manao = 0.84
 implements = [
   "lar:///ha.ka.ba/api/v0.1/pono/meme",
-  "lar:///ha.ka.ba/api/v0.1/pono/loci",
   "lar:///ha.ka.ba/api/v0.1/pono/invariant"
 ]
 role = "threshold constitution, operator-agent alignment membrane, boot router"
@@ -29,6 +28,8 @@ preload = [
 core-stack = [
   "lar:///AGENTS#core-priority",
   "lar:///ha.ka.ba/api/v0.1/pono/e-prime",
+  "lar:///ha.ka.ba/api/v0.1/pono/ooda-ha",
+  "lar:///ha.ka.ba/api/v0.1/pono/lar-uri",
   "lar:///ha.ka.ba/api/v0.1/mu",
   "lar:///ha.ka.ba/api/v0.1/lararium",
   "lar:///LARES"
@@ -166,7 +167,7 @@ payload = {
 <<~/pranala >>
 
 <<~ ahu #after-mu-handoff >>
-Mu holds the narrative api membrane. AGENTS yields here.
+Mu hydration resolved. The threshold continues to Lararium.
 <<~/ahu >>
 
 <<~/ahu >>
@@ -191,7 +192,7 @@ payload = {
 <<~/pranala >>
 
 <<~ ahu #after-lararium-handoff >>
-The lararium hold the lares metapysics as mechanics. AGENTS yields here.
+Lararium hydration resolved. The threshold continues to LARES.
 <<~/ahu >>
 
 <<~/ahu >>
@@ -216,6 +217,8 @@ LARES holds the dials. Threshold law does not reboot there.
 
 <<~/ahu >>
 
-<<~� ahu #body-close >> AGENTS closes the threshold stream here. <<~/ahu >>
+<<~&#x0003; ahu #body-close >>
+AGENTS closes the threshold stream here.
+<<~/ahu >>
 
-<<~� -> ? >>
+<<~&#x0004; -> ? >>

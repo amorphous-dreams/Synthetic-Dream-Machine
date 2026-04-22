@@ -26,7 +26,7 @@ No render target may show fewer than five stance emoji. Amplitude determines vis
 ✗  🏛️ + 🌊 ++
 ```
 
-**Rules 3–5 consumed** → `lares/ha-ka-ba/docs/syad/syad-source.md#stance-array`
+**Rules 3–5 consumed** → `lares/ha-ka-ba/docs/mu/the-syad-perspectives/README.md#stance-array`
 
 **Legacy note:** fixed order and no-partial-emission still apply. This archive surface used earlier sigil wording; the live fold now sits in the Syad docs/mu loci.
 

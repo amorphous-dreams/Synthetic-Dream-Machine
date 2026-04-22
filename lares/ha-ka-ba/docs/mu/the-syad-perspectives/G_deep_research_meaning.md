@@ -21,8 +21,8 @@ Three navigational beacons were set. The researcher has returned from each.
 
 Consumed into:
 
-- `lares/ha-ka-ba/docs/syad/syad-source.md`
-- `lares/ha-ka-ba/api/v0.1/mu/syad-perspectives.md`
+- `lares/ha-ka-ba/docs/mu/the-syad-perspectives/README.md`
+- `lares/ha-ka-ba/api/v0.1/mu/the-syad-perspectives.md`
 
 ---
 
@@ -30,7 +30,7 @@ Consumed into:
 
 Consumed into:
 
-- `lares/ha-ka-ba/docs/syad/syad-source.md`
+- `lares/ha-ka-ba/docs/mu/the-syad-perspectives/README.md`
 
 ---
 
@@ -86,7 +86,7 @@ The stance count maps to the lattice position. The lattice position determines h
 
 Consumed into:
 
-- `lares/ha-ka-ba/docs/syad/syad-source.md`
+- `lares/ha-ka-ba/docs/mu/the-syad-perspectives/README.md`
 
 ---
 

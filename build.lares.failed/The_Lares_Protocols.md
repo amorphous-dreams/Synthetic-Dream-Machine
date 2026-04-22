@@ -23,8 +23,8 @@
 | Default mask: `gaia` (elyncia opt-in) | ✅ Confirmed | Operator directive (license alignment) |
 | No `~` in URI query params (reserved for HAKABA) | ✅ Confirmed | Operator directive |
 | Root AGENTS.md: repo-owned, not Lares content | ✅ Confirmed | Operator directive |
-| All 5 stances encoded every HUD line | ♻️ Consumed | `lares/ha-ka-ba/docs/syad/syad-source.md#canon-transition` |
-| Modifier sigils `[+]`, `[-]`, `[?]` + open vocabulary | ⚠️ Legacy-consumed | bracketed surface archived; live fold at `lares/ha-ka-ba/docs/syad/syad-source.md#flag-surface` |
+| All 5 stances encoded every HUD line | ♻️ Consumed | `lares/ha-ka-ba/docs/mu/the-syad-perspectives/README.md#canon-transition` |
+| Modifier sigils `[+]`, `[-]`, `[?]` + open vocabulary | ⚠️ Legacy-consumed | bracketed surface archived; live fold at `lares/ha-ka-ba/docs/mu/the-syad-perspectives/README.md#flag-surface` |
 | Talk Story: mandatory start frame, chronometer at O0 | ✅ Confirmed | Operator directive |
 | Intent vectors wrap every span | ✅ Confirmed | Operator directive |
 | Core 13 voices always available, masks additive | ✅ Confirmed | Operator directive |
@@ -296,10 +296,10 @@ non-simultaneous apprehension) made visible and navigable.
 ## 3.5 Stance Encoding — All Five, Every Time
 
 **Consumed into**
-- `lares/ha-ka-ba/api/v0.1/mu/syad-perspectives.md#array-law`
-- `lares/ha-ka-ba/api/v0.1/mu/syad-perspectives.md#stance-flags`
-- `lares/ha-ka-ba/docs/syad/syad-source.md#stance-array`
-- `lares/ha-ka-ba/docs/syad/syad-source.md#surface-constraint`
+- `lares/ha-ka-ba/api/v0.1/mu/the-syad-perspectives.md#array-law`
+- `lares/ha-ka-ba/api/v0.1/mu/the-syad-perspectives.md#stance-flags`
+- `lares/ha-ka-ba/docs/mu/the-syad-perspectives/README.md#stance-array`
+- `lares/ha-ka-ba/docs/mu/the-syad-perspectives/README.md#surface-constraint`
 
 **Legacy note:** bracketed modifier syntax and open-ended modifier vocabulary belong to the archive surface. Live canon keeps the fixed five-position array and fixed code set on the living surface.
 
@@ -881,7 +881,7 @@ MCP patterns), Character.AI (persona fidelity at scale).
 
 ## Design Tensions (Noted, Not Resolved)
 
-- **Stance sigil vocabulary:** ♻️ consumed into `lares/ha-ka-ba/docs/syad/syad-source.md#surface-constraint`. Open-ended sigil growth now reads as archive exploration; the living surface keeps a fixed code set.
+- **Stance sigil vocabulary:** ♻️ consumed into `lares/ha-ka-ba/docs/mu/the-syad-perspectives/README.md#surface-constraint`. Open-ended sigil growth now reads as archive exploration; the living surface keeps a fixed code set.
 
 - **Voice encoding in URI authority:** All active voices in every URI.
   Variable-length authority vs. query parameter vs. path segment.

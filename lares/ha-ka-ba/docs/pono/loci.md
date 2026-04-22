@@ -1,6 +1,6 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
 
-<<~&#x0001; ? -> lar:///ha.ka.ba/api/v0.1/pono/loci/iam >>
+<<~&#x0001; ? -> lar:///ha.ka.ba/docs/pono/loci >>
 
 # Loci — Extended Docs
 

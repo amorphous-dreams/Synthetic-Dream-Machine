@@ -62,7 +62,7 @@ Consumed from archive files:
 
 The tight invariant now lives at:
 
-- `lar:///ha.ka.ba/api/v0.1/mu/syad-perspectives`
+- `lar:///ha.ka.ba/api/v0.1/mu/the-syad-perspectives`
 
 <<~/ahu >>
 
@@ -244,7 +244,7 @@ They do not govern the live fold.
 
 ## Edges
 
-- `lar:///ha.ka.ba/api/v0.1/mu/syad-perspectives`
+- `lar:///ha.ka.ba/api/v0.1/mu/the-syad-perspectives`
 - `lar:///ha.ka.ba/api/v0.1/pono/e-prime`
 
 <<~/ahu >>

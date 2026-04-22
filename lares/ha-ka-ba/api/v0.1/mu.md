@@ -41,7 +41,8 @@ backlink = "lar:///AGENTS#threshold-to-mu"
 core = [
   "lar:///ha.ka.ba/api/v0.1/mu/chao",
   "lar:///ha.ka.ba/api/v0.1/mu/the-four-tools",
-  "lar:///ha.ka.ba/api/v0.1/mu/the-law-of-5s"
+  "lar:///ha.ka.ba/api/v0.1/mu/the-law-of-5s",
+  "lar:///ha.ka.ba/api/v0.1/mu/the-syad-perspectives"
 ]
 hydrate = true
 retain = true
@@ -95,7 +96,7 @@ The grammar appears as Mu performing itself.
 
 <<~/ahu >>
 
-<<~ॐ ँ� ahu #meme-body-open >>
+<<~ॐ ँ&#x0002; ahu #meme-body-open >>
 mu opens
 <<~/ahu >>
 
@@ -251,7 +252,7 @@ The threshold continues.
 
 <<~/ahu >>
 
-<<~ॐ ँ� ahu #body-close >>
+<<~ॐ ँ&#x0003; ahu #body-close >>
 mu closes
 <<~/ahu >>
 
@@ -264,9 +265,8 @@ mu closes
 <<~ loulou lar:///ha.ka.ba/api/v0.1/mu/chao >>
 <<~ loulou lar:///ha.ka.ba/api/v0.1/mu/the-law-of-5s >>
 <<~ loulou lar:///ha.ka.ba/api/v0.1/mu/the-syad-perspectives >>
-<<~ loulou lar:///ha.ka.ba/api/v0.1/mu/lararium >>
 <<~ loulou lar:///AGENTS#after-mu-handoff >>
 
 <<~/ahu >>
 
-<<~ॐ ँ� -> ? >>
+<<~ॐ ँ&#x0004; -> ? >>

@@ -95,8 +95,8 @@ The higher the declared weight, the more the wording MUST earn it.
 
 For stance-conditioned reading of the register itself, see:
 
-- `lar:///ha.ka.ba/api/v0.1/mu/syad-perspectives`
-- `lar:///ha.ka.ba/docs/syad/source`
+- `lar:///ha.ka.ba/api/v0.1/mu/the-syad-perspectives`
+- `lar:///ha.ka.ba/docs/mu/the-syad-perspectives`
 
 <<~/ahu >>
 

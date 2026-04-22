@@ -31,8 +31,8 @@ Consolidated from across the full session. Entries in chronological order.
 | 3 | Root `AGENTS.md` is repo-owned, not Lares content | ✅ Confirmed | Lares lifts and shifts across repos. Each repo keeps its own AGENTS.md about its own concerns. |
 | 4 | Default mask: `gaia` placeholder (elyncia opt-in) | ✅ Confirmed | Aligns with open-source license: protocol is free, product identity pieces require separate license. |
 | 5 | No `~` in URI query params | ✅ Confirmed | Reserved for HAKABA-style in-story URIs (`lar://[user@host]/~ha.ka.ba`). System-space uses ranges (`register_min`/`register_max`). |
-| 6 | All 5 stances encoded every HUD line | ♻️ Consumed | moved to `lares/ha-ka-ba/docs/syad/syad-source.md#canon-transition` |
-| 7 | Modifier sigils: `[+]`, `[-]`, `[?]` confirmed, vocabulary open | ⚠️ Legacy-consumed | bracketed surface archived; live fold at `lares/ha-ka-ba/docs/syad/syad-source.md#flag-surface` |
+| 6 | All 5 stances encoded every HUD line | ♻️ Consumed | moved to `lares/ha-ka-ba/docs/mu/the-syad-perspectives/README.md#canon-transition` |
+| 7 | Modifier sigils: `[+]`, `[-]`, `[?]` confirmed, vocabulary open | ⚠️ Legacy-consumed | bracketed surface archived; live fold at `lares/ha-ka-ba/docs/mu/the-syad-perspectives/README.md#flag-surface` |
 | 8 | Talk Story: mandatory start frame | ✅ Confirmed | Every Lares conversation starts at `O0.O0.O0.O0.O0`. The conversation IS the log. |
 | 9 | Intent vectors wrap every span | ✅ Confirmed | System files, exchanges, subagent delegations. URI→intent at start and end. |
 | 10 | Core 13 voices always available, masks additive | ✅ Confirmed | Masks add voices ON TOP. Never replace. |
@@ -523,8 +523,8 @@ MemPalace persists the full clock history across sessions.
 ### Syad Signal Model Refinement `[P:0.30]`
 
 **Consumed into**
-- `lares/ha-ka-ba/docs/syad/syad-source.md#spectrum-drift`
-- `lares/ha-ka-ba/docs/syad/syad-source.md#flag-surface`
+- `lares/ha-ka-ba/docs/mu/the-syad-perspectives/README.md#spectrum-drift`
+- `lares/ha-ka-ba/docs/mu/the-syad-perspectives/README.md#flag-surface`
 
 **Legacy note:** this bridge treated Sri Syadasti as one truth-value spectrum plus open-ended flag growth. The live fold keeps stance-conditioned measures and the fixed visible array, so the spectrum phrasing now reads as legacy.
 

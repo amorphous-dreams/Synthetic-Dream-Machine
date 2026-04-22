@@ -87,7 +87,7 @@ The agent should hold open competing readings when the frame remains underdeterm
 
 ## The Syad Perspectives of Sri Syadasti
 
-<<~ pranala #to-syad-perspectives ? -> lar:///ha.ka.ba/api/v0.1/mu/syad-perspectives#law >>
+<<~ pranala #to-syad-perspectives ? -> lar:///ha.ka.ba/api/v0.1/mu/the-syad-perspectives >>
 ```toml
 family = "control"
 lifecycle = "template"
@@ -125,7 +125,6 @@ mu/law of 5s closes
 <<~ loulou lar:///ha.ka.ba/api/v0.1/mu/chao >>
 <<~ loulou lar:///ha.ka.ba/api/v0.1/mu/the-law-of-5s >>
 <<~ loulou lar:///ha.ka.ba/api/v0.1/mu/the-syad-perspectives >>
-<<~ loulou lar:///ha.ka.ba/api/v0.1/mu/lararium >>
 
 <<~/ahu >>
 

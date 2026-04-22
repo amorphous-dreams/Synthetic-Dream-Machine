@@ -34,7 +34,7 @@ lar://alias:tier@host/ha.ka.ba/?stances=XXXXX&confidence=R:N&p=N#O0.O0.O0.O0.O0
 
 | Field | Old form | V2 canonical | Notes |
 |---|---|---|---|
-| `stances` | legacy migration bridge | `lar:///ha.ka.ba/docs/syad/source#flag-surface` | consumed: fixed 5-position array; `^`=elevated, `-`=suppressed, `?`=uncertain, `.`=baseline; positional order remains philosopher, poet, satirist, humorist, private. |
+| `stances` | legacy migration bridge | `lar:///ha.ka.ba/docs/mu/the-syad-perspectives#flag-surface` | consumed: fixed 5-position array; `^`=elevated, `-`=suppressed, `?`=uncertain, `.`=baseline; positional order remains philosopher, poet, satirist, humorist, private. |
 | `confidence` | `register=S:0.65` | `confidence=S:0.65` | Field renamed from `register` to `confidence`. Same values. |
 | Fragment | `#@T.3.2.7` (scope prefix + trailing-zero omission) | `#O0.O0.O3.D2.A7` (all 5 positions, phase+counter) | Always 5 positions. Phase sigils: O, Ø, D, A, Å. No scope prefix. |
 | Path | `/core/observe/context` (module-path) | `/ha.ka.ba/sub/path/` (3-slot HA.KA.BA + optional sub-path) | EVERY `lar:` URI uses HA.KA.BA. `lar:///ha.ka.ba/` is (0,0,0). Module routing goes in the sub-path. |
@@ -312,7 +312,7 @@ Boot the first two OODA-HA modules: talk-story and signal.
 ## 8. V2 Canonical Quick Reference
 
 ### Stance Amplitude (query: `stances=`)
-Consumed into `lares/ha-ka-ba/api/v0.1/mu/syad-perspectives.md#stance-flags` and `lares/ha-ka-ba/docs/syad/syad-source.md#flag-surface`.
+Consumed into `lares/ha-ka-ba/api/v0.1/mu/the-syad-perspectives.md#stance-flags` and `lares/ha-ka-ba/docs/mu/the-syad-perspectives/README.md#flag-surface`.
 
 Legacy note: this handoff preserved the v2 migration key. The live fold keeps the full five-position array visible at all times and reads the same codes as visible/hidden plus confident/uncertain pressure.
 

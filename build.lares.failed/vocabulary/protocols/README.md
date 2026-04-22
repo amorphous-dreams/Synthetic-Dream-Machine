@@ -296,9 +296,9 @@ non-simultaneous apprehension) made visible and navigable.
 ## 3.5 Stance Encoding — All Five, Every Time
 
 **Consumed into**
-- `lares/ha-ka-ba/api/v0.1/mu/syad-perspectives.md#array-law`
-- `lares/ha-ka-ba/api/v0.1/mu/syad-perspectives.md#stance-flags`
-- `lares/ha-ka-ba/docs/syad/syad-source.md#stance-array`
+- `lares/ha-ka-ba/api/v0.1/mu/the-syad-perspectives.md#array-law`
+- `lares/ha-ka-ba/api/v0.1/mu/the-syad-perspectives.md#stance-flags`
+- `lares/ha-ka-ba/docs/mu/the-syad-perspectives/README.md#stance-array`
 
 **Legacy note:** bracketed modifier syntax and open-ended modifier vocabulary belong to the archive surface. Live canon keeps the full five-position stance array visible at all times and treats partial emission as non-canon.
 
@@ -880,7 +880,7 @@ MCP patterns), Character.AI (persona fidelity at scale).
 
 ## Design Tensions (Noted, Not Resolved)
 
-- **Stance sigil vocabulary:** ♻️ consumed into `lares/ha-ka-ba/docs/syad/syad-source.md#surface-constraint`. Open-ended sigil growth now reads as archive exploration; the living surface keeps a fixed code set.
+- **Stance sigil vocabulary:** ♻️ consumed into `lares/ha-ka-ba/docs/mu/the-syad-perspectives/README.md#surface-constraint`. Open-ended sigil growth now reads as archive exploration; the living surface keeps a fixed code set.
 
 - **Voice encoding in URI authority:** All active voices in every URI.
   Variable-length authority vs. query parameter vs. path segment.
