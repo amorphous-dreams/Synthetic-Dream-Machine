@@ -19,8 +19,8 @@ implements = [
   "lar:///ha.ka.ba/api/v0.1/pono/loci"
 ]
 role = "staging docs shelf for named epistemic failure-weather, collapse patterns, and possible short-invariant promotion targets"
-cacheable = true
-retain = true
+cacheable = false
+retain = false
 ```
 
 <<~/ahu >>

@@ -19,8 +19,8 @@ implements = [
   "lar:///ha.ka.ba/api/v0.1/pono/loci"
 ]
 role = "docs concept room for the transference model, tiered capability, aliasing, and authority boundaries in the recovered Lares stack"
-cacheable = true
-retain = true
+cacheable = false
+retain = false
 ```
 
 <<~/ahu >>

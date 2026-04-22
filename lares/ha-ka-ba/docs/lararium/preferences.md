@@ -19,8 +19,8 @@ implements = [
   "lar:///ha.ka.ba/api/v0.1/pono/loci"
 ]
 role = "extraction shelf for durable concepts recovered from Lares_Preferences.system-prompt and adjacent lararium witnesses"
-cacheable = true
-retain = true
+cacheable = false
+retain = false
 ```
 
 <<~/ahu >>

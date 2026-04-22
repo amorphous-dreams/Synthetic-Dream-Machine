@@ -13,6 +13,8 @@ implements   = [
   "lar:///ha.ka.ba/api/v0.1/pono/meme"
 ]
 role = "docs companion for e-prime: research provenance, braid notes, and slider guidance"
+cacheable = false
+retain = false
 ```
 <<~/ahu >>
 

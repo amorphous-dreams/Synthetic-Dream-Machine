@@ -19,8 +19,8 @@ implements = [
   "lar:///ha.ka.ba/api/v0.1/pono/loci"
 ]
 role = "staging docs shelf for the explicit complementarity claim between epistemic register and discourse stance"
-cacheable = true
-retain = true
+cacheable = false
+retain = false
 ```
 
 <<~/ahu >>

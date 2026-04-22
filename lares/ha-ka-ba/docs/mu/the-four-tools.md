@@ -19,8 +19,8 @@ implements = [
   "lar:///ha.ka.ba/api/v0.1/pono/loci"
 ]
 role = "witness shelf and source braid for the four tools of Chapel Perilous"
-cacheable = true
-retain = true
+cacheable = false
+retain = false
 ```
 
 <<~/ahu >>

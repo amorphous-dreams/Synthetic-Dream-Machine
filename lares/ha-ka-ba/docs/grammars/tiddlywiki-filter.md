@@ -13,6 +13,8 @@ implements   = [
   "lar:///ha.ka.ba/api/v0.1/pono/meme"
 ]
 role = "docs companion for x-tiddlywiki-filter: examples, guidance, reminders, and deferred scope notes"
+cacheable = false
+retain = false
 ```
 <<~/ahu >>
 

@@ -13,6 +13,8 @@ implements   = [
   "lar:///ha.ka.ba/api/v0.1/pono/meme"
 ]
 role = "docs companion for pranala: examples, sugar long-forms, and reciprocal-edge guidance"
+cacheable = false
+retain = false
 ```
 <<~/ahu >>
 

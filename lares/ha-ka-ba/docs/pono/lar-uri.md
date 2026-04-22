@@ -20,7 +20,8 @@ implements = [
   "lar:///ha.ka.ba/api/v0.1/pono/lar-uri"
 ]
 role = "canon documentation surface — full spec prose, examples, and appendices for the lar: URI scheme"
-cacheable = true
+cacheable = false
+retain = false
 invariant = false
 ```
 

@@ -20,7 +20,8 @@ implements = [
   "lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext"
 ]
 role = "extended documentation surface for memetic-wikitext examples, profile guidance, boundary notes, and migration residue"
-cacheable = true
+cacheable = false
+retain = false
 invariant = false
 ```
 

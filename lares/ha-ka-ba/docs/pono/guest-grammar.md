@@ -19,7 +19,8 @@ implements = [
   "lar:///ha.ka.ba/api/v0.1/pono/loci"
 ]
 role = "extended documentation surface for guest-grammar examples, ownership notes, fixture seeds, and migration residue"
-cacheable = true
+cacheable = false
+retain = false
 invariant = false
 ```
 

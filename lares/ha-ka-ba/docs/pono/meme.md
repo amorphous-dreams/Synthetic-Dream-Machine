@@ -19,7 +19,8 @@ implements = [
   "lar:///ha.ka.ba/api/v0.1/pono/loci"
 ]
 role = "extended documentation surface for meme examples, lifecycle table, resolution notes, and migration residue"
-cacheable = true
+cacheable = false
+retain = false
 invariant = false
 ```
 
