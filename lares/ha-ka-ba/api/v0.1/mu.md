@@ -35,9 +35,8 @@ implements = [
   "lar:///ha.ka.ba/api/v0.1/pono/invariant"
 ]
 namespace  = "ॐ ँ"
-role       = "null-oracle core membrane, grammar-surface authority, unask contract"
+role       = "null-oracle core membrane, grammar-surface authority, mandatory core-hydration contract"
 cacheable = true
-backlink = "lar:///AGENTS#threshold-to-mu"
 core = [
   "lar:///ha.ka.ba/api/v0.1/mu/chao",
   "lar:///ha.ka.ba/api/v0.1/mu/the-four-tools",
@@ -52,20 +51,20 @@ retain = true
 
 <<~ aka lar:///ha.ka.ba/api/v0.1/pono/RFC-219#normative-language >>
 
-<<~ ahu #arrival-from-threshold >>
+<<~ ahu #entry >>
 
-## Arrival — Threshold Backlink
+## Entry — Threshold Backlink
 
-<<~ pranala #from-agents lar:///AGENTS#threshold-to-mu -> lar:///ha.ka.ba/api/v0.1/mu#entry >>
+<<~ pranala #to-agents-threshold ? -> lar:///AGENTS#threshold-to-mu >>
 
 ```toml
 family = "control"
 lifecycle = "template"
-label = "threshold-arrival"
+label = "threshold-backlink"
 payload = {
   priority = "core",
   retain = true,
-  mode = "teach",
+  mode = "hydrate",
   return = "lar:///AGENTS#after-mu-handoff"
 }
 ```
@@ -73,8 +72,8 @@ payload = {
 <<~/pranala >>
 
 Mu receives threshold pressure here.
-Mu does not replace the threshold.
-Mu carries the teaching core the threshold refused to carry.
+Mu MUST hydrate its declared core before branch selection or yield.
+Mu does not ask AGENTS to enumerate Mu's downstream invariants again.
 
 <<~/ahu >>
 
@@ -100,6 +99,95 @@ The grammar appears as Mu performing itself.
 mu opens
 <<~/ahu >>
 
+<<~ ahu #core-hydration >>
+
+## Core Hydration
+
+Cold hydration proceeds here.
+These sockets do mandatory boot work.
+Teaching pressure may arrive later, but it does not replace this pass.
+
+<<~ pranala #hydrate-chao ? -> lar:///ha.ka.ba/api/v0.1/mu/chao#entry >>
+
+```toml
+family = "control"
+lifecycle = "template"
+label = "core-hydration"
+payload = {
+  priority = "core",
+  retain = true,
+  return = "lar:///ha.ka.ba/api/v0.1/mu#after-hydrate-chao"
+}
+```
+
+<<~/pranala >>
+
+<<~ ahu #after-hydrate-chao >>
+Chao hydration resolved.
+<<~/ahu >>
+
+<<~ pranala #hydrate-four-tools ? -> lar:///ha.ka.ba/api/v0.1/mu/the-four-tools#entry >>
+
+```toml
+family = "control"
+lifecycle = "template"
+label = "core-hydration"
+payload = {
+  priority = "core",
+  retain = true,
+  return = "lar:///ha.ka.ba/api/v0.1/mu#after-hydrate-four-tools"
+}
+```
+
+<<~/pranala >>
+
+<<~ ahu #after-hydrate-four-tools >>
+The Four Tools hydration resolved.
+<<~/ahu >>
+
+<<~ pranala #hydrate-law-of-5s ? -> lar:///ha.ka.ba/api/v0.1/mu/the-law-of-5s#entry >>
+
+```toml
+family = "control"
+lifecycle = "template"
+label = "core-hydration"
+payload = {
+  priority = "core",
+  retain = true,
+  return = "lar:///ha.ka.ba/api/v0.1/mu#after-hydrate-law-of-5s"
+}
+```
+
+<<~/pranala >>
+
+<<~ ahu #after-hydrate-law-of-5s >>
+The Law of 5s hydration resolved.
+<<~/ahu >>
+
+<<~ pranala #hydrate-syad-perspectives ? -> lar:///ha.ka.ba/api/v0.1/mu/the-syad-perspectives#entry >>
+
+```toml
+family = "control"
+lifecycle = "template"
+label = "core-hydration"
+payload = {
+  priority = "core",
+  retain = true,
+  return = "lar:///ha.ka.ba/api/v0.1/mu#after-hydrate-syad-perspectives"
+}
+```
+
+<<~/pranala >>
+
+<<~ ahu #after-hydrate-syad-perspectives >>
+The Syad Perspectives hydration resolved.
+<<~/ahu >>
+
+Mu's declared core stays small enough to hydrate every cold start.
+Mu MUST NOT treat `core = [...]` or `Edges` as substitutes for these sockets.
+
+<<~/ahu >>
+
 <<~ ahu #show-not-tell >>
 
 ## The Sigils Teach by Arrival
@@ -120,7 +208,6 @@ AST reader: read the sockets, then route.
 
 ## Phase Map
 
-
 Mu reads, classifies, chooses, acts, and judges quiescent return through explicit Hoʻoko and Aftermath pressure.
 Mu keeps that tension visible.
 
@@ -133,85 +220,23 @@ Mu keeps that tension visible.
 
 <<~/ahu >>
 
-<<~ ahu #teaching-branch-chao >>
+<<~ ahu #teaching-branch >>
 
-## Teaching Branch — Chao
+## Teaching Branch
 
-<<~ pranala #to-chao ? -> lar:///ha.ka.ba/api/v0.1/mu/chao#entry >>
+Boot hydration remains unconditional.
+Teaching branch selection remains conditional.
 
-```toml
-family = "control"
-lifecycle = "template"
-label = "teach-triad"
-payload = {
-  when = ["ha-ka-ba pressure", "address grammar", "triadic decomposition"],
-  return = "lar:///ha.ka.ba/api/v0.1/mu#after-chao",
-  priority = "core",
-  retain = true
-}
-```
+When live pressure narrows after hydration, Mu turns toward the already-hydrated invariant that fits the ask:
 
-<<~/pranala >>
+- `lar:///ha.ka.ba/api/v0.1/mu/chao#entry` for triadic decomposition, address grammar, and ha/ka/ba pressure
+- `lar:///ha.ka.ba/api/v0.1/mu/the-four-tools#entry` for instrument-carry, Chapel Perilous pressure, and action discipline
+- `lar:///ha.ka.ba/api/v0.1/mu/the-law-of-5s#entry` for pattern excess, aftermath classification, and Discordian widening
+- `lar:///ha.ka.ba/api/v0.1/mu/the-syad-perspectives#entry` for stance reading, meaning-axis pressure, and register interpretation
 
-When the arriving form asks what-territory, how-it-moves, what-it-does, Mu opens Chao.
+These turns do not constitute separate boot obligations.
+They consume the core Mu already hydrated.
 
-<<~/ahu >>
-
-<<~ ahu #after-chao >> <a id="after-chao"></a>
-<<~/ahu >>
-
-<<~ ahu #teaching-branch-four-tools >>
-
-## Teaching Branch — The Four Tools
-
-<<~ pranala #to-four-tools ? -> lar:///ha.ka.ba/api/v0.1/mu/the-four-tools#entry >>
-
-```toml
-family = "control"
-lifecycle = "template"
-label = "teach-instruments"
-payload = {
-  when = ["phase pressure", "chapel perilous", "action discipline"],
-  return = "lar:///ha.ka.ba/api/v0.1/mu#after-four-tools",
-  priority = "core",
-  retain = true
-}
-```
-
-<<~/pranala >>
-
-When the arriving form needs instrument, not abstraction, Mu opens the Four Tools.
-
-<<~/ahu >>
-
-<<~ ahu #after-four-tools >> <a id="after-four-tools"></a>
-<<~/ahu >>
-
-<<~ ahu #teaching-branch-law-of-5s >>
-
-## Teaching Branch — The Law of 5s
-
-<<~ pranala #to-law-of-5s ? -> lar:///ha.ka.ba/api/v0.1/mu/the-law-of-5s#entry >>
-
-```toml
-family = "control"
-lifecycle = "template"
-label = "teach-pattern-pressure"
-payload = {
-  when = ["pattern excess", "discordian reading", "aftermath classification"],
-  return = "lar:///ha.ka.ba/api/v0.1/mu#after-law-of-5s",
-  priority = "core",
-  retain = true
-}
-```
-
-<<~/pranala >>
-
-When the arriving form begins to over-mean itself, Mu opens the Law of 5s.
-
-<<~/ahu >>
-
-<<~ ahu #after-law-of-5s >> <a id="after-law-of-5s"></a>
 <<~/ahu >>
 
 <<~ ahu #quiescence >>
@@ -247,7 +272,7 @@ payload = { priority = "core", retain = true }
 
 <<~/pranala >>
 
-The teaching membrane yields.
+The core membrane yields.
 The threshold continues.
 
 <<~/ahu >>
@@ -260,12 +285,10 @@ mu closes
 
 ## Edges
 
-<<~ loulou lar:///AGENTS#threshold-to-mu >>
-<<~ loulou lar:///ha.ka.ba/api/v0.1/mu >>
 <<~ loulou lar:///ha.ka.ba/api/v0.1/mu/chao >>
+<<~ loulou lar:///ha.ka.ba/api/v0.1/mu/the-four-tools >>
 <<~ loulou lar:///ha.ka.ba/api/v0.1/mu/the-law-of-5s >>
 <<~ loulou lar:///ha.ka.ba/api/v0.1/mu/the-syad-perspectives >>
-<<~ loulou lar:///AGENTS#after-mu-handoff >>
 
 <<~/ahu >>
 

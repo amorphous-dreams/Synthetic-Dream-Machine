@@ -20,18 +20,45 @@ implements = [
   "lar:///ha.ka.ba/api/v0.1/pono/invariant"
 ]
 namespace  = "ॐ ँ"
-role       = "OODA-HA loop boot, Catma nav terminal, handoff to LARES"
+role       = "OODA-HA loop boot, Catma nav terminal, syad handoff shelf"
+cacheable = true
+hydrate = true
+retain = true
 ```
 
 <<~/ahu >>
 
 <<~ aka lar:///ha.ka.ba/api/v0.1/pono/RFC-219#normative-language >>
 
+<<~ ahu #entry >>
+
+## Entry — Mu Core Hydration
+
+<<~ pranala #to-mu-hydration ? -> lar:///ha.ka.ba/api/v0.1/mu#hydrate-law-of-5s >>
+
+```toml
+family = "control"
+lifecycle = "template"
+label = "core-hydration-backlink"
+payload = {
+  priority = "core",
+  retain = true,
+  return = "lar:///ha.ka.ba/api/v0.1/mu#after-hydrate-law-of-5s"
+}
+```
+
+<<~/pranala >>
+
+The Law of 5s receives Mu's cold-hydration pressure here.
+Pattern widening loads before live aftermath sorting begins.
+
+<<~/ahu >>
+
 <<~ ahu #meme-header >>
 
-# The Law of 5s 
+# The Law of 5s
 
-Hagbard Celine states the Law of Fives in Appendix Gimmel of the Illuminatus! Trilogy:
+Hagbard Celine states the Law of Fives in Appendix Gimmel of the *Illuminatus!* Trilogy:
 
 "All phenomena are directly or indirectly related to the number five." `[C~0.95]`
 
@@ -61,8 +88,6 @@ Five phases. Five questions.
 
 <<~/ahu >>
 
-<<~ ahu #catma >>
-
 <<~ ahu #maybe-logic >>
 
 ## RAW's Maybe Logic
@@ -83,11 +108,11 @@ The agent should hold open competing readings when the frame remains underdeterm
 
 <<~/ahu >>
 
-<<~ahu #sri-syadasti >>
+<<~ ahu #sri-syadasti >>
 
 ## The Syad Perspectives of Sri Syadasti
 
-<<~ pranala #to-syad-perspectives ? -> lar:///ha.ka.ba/api/v0.1/mu/the-syad-perspectives >>
+<<~ pranala #to-syad-perspectives ? -> lar:///ha.ka.ba/api/v0.1/mu/the-syad-perspectives#entry >>
 ```toml
 family = "control"
 lifecycle = "template"
@@ -110,9 +135,6 @@ The same declaration changes meaning with the standpoint that reads it.
 
 <<~/ahu >>
 
-<<~/ahu >>
-
-
 <<~ॐ ँ&#x0003; ahu #body-close >>
 mu/law of 5s closes
 <<~/ahu >>
@@ -123,7 +145,7 @@ mu/law of 5s closes
 
 <<~ loulou lar:///ha.ka.ba/api/v0.1/mu >>
 <<~ loulou lar:///ha.ka.ba/api/v0.1/mu/chao >>
-<<~ loulou lar:///ha.ka.ba/api/v0.1/mu/the-law-of-5s >>
+<<~ loulou lar:///ha.ka.ba/api/v0.1/mu/the-four-tools >>
 <<~ loulou lar:///ha.ka.ba/api/v0.1/mu/the-syad-perspectives >>
 
 <<~/ahu >>

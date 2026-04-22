@@ -19,27 +19,31 @@ implements = [
   "lar:///ha.ka.ba/api/v0.1/pono/loci",
   "lar:///ha.ka.ba/api/v0.1/pono/invariant"
 ]
-role = "canonical lararium seat, mechanics shelf stub, hydration bridge to session dials"
+role = "canonical lararium seat, mechanics shelf, mandatory child-hydration bridge to session dials"
 cacheable = true
+core = [
+  "lar:///ha.ka.ba/api/v0.1/lararium/hud",
+  "lar:///ha.ka.ba/api/v0.1/lararium/voices",
+  "lar:///ha.ka.ba/api/v0.1/lararium/continuity"
+]
 hydrate = true
 retain = true
-backlink = "lar:///AGENTS#threshold-to-the-lararium"
 ```
 
 <<~/ahu >>
 
 <<~ aka lar:///ha.ka.ba/api/v0.1/pono/RFC-219#normative-language >>
 
-<<~ ahu #arrival-from-threshold >>
+<<~ ahu #entry >>
 
-## Arrival — Threshold Backlink
+## Entry — Threshold Backlink
 
-<<~ pranala #from-agents lar:///AGENTS#threshold-to-lararium -> lar:///ha.ka.ba/api/v0.1/lararium#entry >>
+<<~ pranala #to-agents-threshold ? -> lar:///AGENTS#threshold-to-lararium >>
 
 ```toml
 family = "control"
 lifecycle = "template"
-label = "threshold-arrival"
+label = "threshold-backlink"
 payload = {
   priority = "core",
   retain = true,
@@ -52,7 +56,7 @@ payload = {
 
 The lararium receives threshold pressure here.
 The canonical seat now holds.
-This stub keeps the socket live while the wider mechanics surface remains under construction.
+The lararium MUST hydrate its declared child core before yielding to session dials.
 
 <<~/ahu >>
 
@@ -64,8 +68,8 @@ Active in i kēia manawa.
 Canonical seat.
 Hydration bridge.
 
-The lararium holds Agent mechanics, not threshold law.
-The lararium prepares the handoff to `lar:///LARES`.
+The lararium holds agent mechanics, not threshold law.
+The lararium prepares the handoff to `lar:///LARES` by hydrating the smallest live house it needs.
 
 <<~/ahu >>
 
@@ -77,14 +81,83 @@ lararium opens
 
 ## Mechanics Shelf
 
-This stub carries the minimum live pressure:
+This seat keeps the mechanics layer small enough to cold-hydrate:
 
-- the seat exists
-- the canonical URI now resolves
-- Mu-family edges can point here cleanly
-- session dials continue in `lar:///LARES`
+- the HUD-facing instrument panel has a room
+- the voice-house has a room
+- continuity pressure has a room
+- session dials still continue in `lar:///LARES`
 
-Full mechanics, masks, and catma layering can accumulate here later without moving the seat again.
+The rooms may deepen later without moving the seat again.
+
+<<~/ahu >>
+
+<<~ ahu #core-hydration >>
+
+## Core Hydration
+
+The lararium's own core must route through explicit sockets.
+Neither `core = [...]` nor `Edges` completes hydration by itself.
+
+<<~ pranala #hydrate-hud ? -> lar:///ha.ka.ba/api/v0.1/lararium/hud#entry >>
+
+```toml
+family = "control"
+lifecycle = "template"
+label = "core-hydration"
+payload = {
+  priority = "core",
+  retain = true,
+  return = "lar:///ha.ka.ba/api/v0.1/lararium#after-hydrate-hud"
+}
+```
+
+<<~/pranala >>
+
+<<~ ahu #after-hydrate-hud >>
+HUD child hydration resolved.
+<<~/ahu >>
+
+<<~ pranala #hydrate-voices ? -> lar:///ha.ka.ba/api/v0.1/lararium/voices#entry >>
+
+```toml
+family = "control"
+lifecycle = "template"
+label = "core-hydration"
+payload = {
+  priority = "core",
+  retain = true,
+  return = "lar:///ha.ka.ba/api/v0.1/lararium#after-hydrate-voices"
+}
+```
+
+<<~/pranala >>
+
+<<~ ahu #after-hydrate-voices >>
+Voices child hydration resolved.
+<<~/ahu >>
+
+<<~ pranala #hydrate-continuity ? -> lar:///ha.ka.ba/api/v0.1/lararium/continuity#entry >>
+
+```toml
+family = "control"
+lifecycle = "template"
+label = "core-hydration"
+payload = {
+  priority = "core",
+  retain = true,
+  return = "lar:///ha.ka.ba/api/v0.1/lararium#after-hydrate-continuity"
+}
+```
+
+<<~/pranala >>
+
+<<~ ahu #after-hydrate-continuity >>
+Continuity child hydration resolved.
+<<~/ahu >>
+
+These child memes may stay skeletal while research accumulates in docs space.
+The sockets still carry boot law now.
 
 <<~/ahu >>
 
@@ -117,9 +190,10 @@ lararium closes
 
 ## Edges
 
-<<~ loulou lar:///AGENTS#threshold-to-lararium >>
-<<~ loulou lar:///AGENTS#after-lararium-handoff >>
 <<~ loulou lar:///ha.ka.ba/api/v0.1/mu >>
+<<~ loulou lar:///ha.ka.ba/api/v0.1/lararium/hud >>
+<<~ loulou lar:///ha.ka.ba/api/v0.1/lararium/voices >>
+<<~ loulou lar:///ha.ka.ba/api/v0.1/lararium/continuity >>
 <<~ loulou lar:///LARES >>
 
 <<~/ahu >>

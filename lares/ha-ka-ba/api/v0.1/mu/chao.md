@@ -21,11 +21,38 @@ implements = [
 ]
 namespace  = "ॐ ँ"
 role       = "sacred chao boot, ha/ka/ba triad instantiator, address-space semantics"
+cacheable = true
+hydrate = true
+retain = true
 ```
 
 <<~/ahu >>
 
 <<~ aka lar:///ha.ka.ba/api/v0.1/pono/RFC-219#normative-language >>
+
+<<~ ahu #entry >>
+
+## Entry — Mu Core Hydration
+
+<<~ pranala #to-mu-hydration ? -> lar:///ha.ka.ba/api/v0.1/mu#hydrate-chao >>
+
+```toml
+family = "control"
+lifecycle = "template"
+label = "core-hydration-backlink"
+payload = {
+  priority = "core",
+  retain = true,
+  return = "lar:///ha.ka.ba/api/v0.1/mu#after-hydrate-chao"
+}
+```
+
+<<~/pranala >>
+
+The Chao receives Mu's cold-hydration pressure here.
+The triad becomes boot-addressable before any later branch turn.
+
+<<~/ahu >>
 
 <<~ ahu #meme-header >>
 
@@ -143,7 +170,6 @@ A lar URI with all three slots aligned reads the address back at the Chao's rota
 
 <<~/ahu >>
 
-
 <<~ॐ ँ&#x0003; ahu #body-close >>
 mu/chao closes
 <<~/ahu >>
@@ -153,7 +179,7 @@ mu/chao closes
 ## Edges
 
 <<~ loulou lar:///ha.ka.ba/api/v0.1/mu >>
-<<~ loulou lar:///ha.ka.ba/api/v0.1/mu/chao >>
+<<~ loulou lar:///ha.ka.ba/api/v0.1/mu/the-four-tools >>
 <<~ loulou lar:///ha.ka.ba/api/v0.1/mu/the-law-of-5s >>
 <<~ loulou lar:///ha.ka.ba/api/v0.1/mu/the-syad-perspectives >>
 

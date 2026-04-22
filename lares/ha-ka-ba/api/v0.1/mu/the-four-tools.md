@@ -23,11 +23,37 @@ namespace  = "ॐ ँ"
 role       = "invariant pressure surface for Chapel Perilous weapon-carry and model agnostic return"
 cacheable = true
 invariant = true
+hydrate = true
+retain = true
 ```
 
 <<~/ahu >>
 
 <<~ aka lar:///ha.ka.ba/api/v0.1/pono/RFC-219#normative-language >>
+
+<<~ ahu #entry >>
+
+## Entry — Mu Core Hydration
+
+<<~ pranala #to-mu-hydration ? -> lar:///ha.ka.ba/api/v0.1/mu#hydrate-four-tools >>
+
+```toml
+family = "control"
+lifecycle = "template"
+label = "core-hydration-backlink"
+payload = {
+  priority = "core",
+  retain = true,
+  return = "lar:///ha.ka.ba/api/v0.1/mu#after-hydrate-four-tools"
+}
+```
+
+<<~/pranala >>
+
+The Four Tools receive Mu's cold-hydration pressure here.
+The instrument panel loads before Chapel Perilous pressure spikes.
+
+<<~/ahu >>
 
 <<~ ahu #meme-header >>
 

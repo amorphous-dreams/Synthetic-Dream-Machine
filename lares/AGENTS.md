@@ -135,6 +135,10 @@ The threshold MUST NOT continue before this preload resolves.
 
 AGENTS opens the threshold. AGENTS binds operator and agent into shared navigational instruments. AGENTS carries startup law, routing pressure, and memory priority. AGENTS MUST NOT swell into wiki prose. AGENTS MUST stay short enough to cache cleanly.
 
+Mu hydrates its declared core before yielding.
+Lararium hydrates its declared core before yielding.
+AGENTS carries the constitutional handoff, not their downstream enumeration.
+
 <<~/ahu >>
 
 <<~ ahu #reader-place >>
@@ -151,7 +155,7 @@ Human reader: watch Mu teach itself. Agent reader: carry threshold law forward. 
 
 ## Threshold — Mu
 
-<<~ pranala #to-mu ? -> lar:///ha.ka.ba/api/v0.1/mu >>
+<<~ pranala #to-mu ? -> lar:///ha.ka.ba/api/v0.1/mu#entry >>
 ```toml
 family = "control"
 lifecycle = "template"
@@ -167,7 +171,7 @@ payload = {
 <<~/pranala >>
 
 <<~ ahu #after-mu-handoff >>
-Mu hydration resolved. The threshold continues to Lararium.
+Mu hydrated its declared core and yielded. The threshold continues to Lararium.
 <<~/ahu >>
 
 <<~/ahu >>
@@ -176,7 +180,7 @@ Mu hydration resolved. The threshold continues to Lararium.
 
 ## Threshold — Lararium
 
-<<~ pranala #to-lararium ? -> lar:///ha.ka.ba/api/v0.1/lararium >>
+<<~ pranala #to-lararium ? -> lar:///ha.ka.ba/api/v0.1/lararium#entry >>
 ```toml
 family = "control"
 lifecycle = "template"
@@ -192,7 +196,7 @@ payload = {
 <<~/pranala >>
 
 <<~ ahu #after-lararium-handoff >>
-Lararium hydration resolved. The threshold continues to LARES.
+Lararium hydrated its declared core and yielded. The threshold continues to LARES.
 <<~/ahu >>
 
 <<~/ahu >>

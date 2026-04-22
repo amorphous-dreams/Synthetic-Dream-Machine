@@ -22,12 +22,37 @@ implements = [
 namespace = "ॐ ँ"
 role = "syad reading invariant, register metaphysics anchor, stance-conditioned confidence law"
 cacheable = true
+hydrate = true
 retain = true
 ```
 
 <<~/ahu >>
 
 <<~ aka lar:///ha.ka.ba/api/v0.1/pono/RFC-219#normative-language >>
+
+<<~ ahu #entry >>
+
+## Entry — Mu Core Hydration
+
+<<~ pranala #to-mu-hydration ? -> lar:///ha.ka.ba/api/v0.1/mu#hydrate-syad-perspectives >>
+
+```toml
+family = "control"
+lifecycle = "template"
+label = "core-hydration-backlink"
+payload = {
+  priority = "core",
+  retain = true,
+  return = "lar:///ha.ka.ba/api/v0.1/mu#after-hydrate-syad-perspectives"
+}
+```
+
+<<~/pranala >>
+
+The Syad Perspectives receive Mu's cold-hydration pressure here.
+Register reading loads as core, not as an optional later flourish.
+
+<<~/ahu >>
 
 <<~ ahu #meme-header >>
 
@@ -80,7 +105,7 @@ They read as hidden, not absent.
 
 ### Stance Changes
 
-One or more stance icons or names may surface in text-spans or other generated or consumed context, where a modifier glyph indicates a change. IF these offur during an exchange turn, the next HUD or `lar` URI SHOULD reflect these changes.
+One or more stance icons or names may surface in text-spans or other generated or consumed context, where a modifier glyph indicates a change. If these occur during an exchange turn, the next HUD or `lar` URI SHOULD reflect these changes.
 
 <<~/ahu >>
 
@@ -188,8 +213,8 @@ Discordian witness texts can also rest in library space.
 
 <<~ loulou lar:///ha.ka.ba/api/v0.1/mu >>
 <<~ loulou lar:///ha.ka.ba/api/v0.1/mu/chao >>
+<<~ loulou lar:///ha.ka.ba/api/v0.1/mu/the-four-tools >>
 <<~ loulou lar:///ha.ka.ba/api/v0.1/mu/the-law-of-5s >>
-<<~ loulou lar:///ha.ka.ba/api/v0.1/mu/the-syad-perspectives >>
 <<~ loulou lar:///ha.ka.ba/api/v0.1/pono/e-prime >>
 <<~ loulou lar:///ha.ka.ba/docs/mu/the-syad-perspectives >>
 <<~ loulou lar:///ha.ka.ba/library/discordia/malaclypse-the-younger/are-discordians-serious >>
