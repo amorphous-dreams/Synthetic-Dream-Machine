@@ -25,7 +25,7 @@ retain = true
 
 <<~/ahu >>
 
-<<~ aka lar:///ha.ka.ba/api/v0.1/pono/RFC-219#normative-language >>
+<<~ aka lar:///ha.ka.ba/api/v0.1/pono/RFC-2119#normative-language >>
 
 <<~ ahu #meme-header >>
 
@@ -85,6 +85,19 @@ The live fold keeps a fixed five-position array and a fixed code set:
 
 No live form drops positions.
 Quiet stances stay encoded as quiet, not missing.
+
+<<~/ahu >>
+
+<<~ ahu #legacy-boundary >>
+
+## Legacy Boundary
+
+Older partial-emission examples read as legacy.
+Older "stance-count is fuzz" readings read as legacy.
+Older compact stance codepaths read as legacy.
+
+Canon keeps the full five-position array on the surface.
+Spread rides flags and combination, not omission.
 
 <<~/ahu >>
 

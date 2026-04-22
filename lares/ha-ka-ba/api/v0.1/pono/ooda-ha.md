@@ -26,7 +26,7 @@ ooda-ha-default = 0.50
 
 <<~/ahu >>
 
-<<~ aka lar:///ha.ka.ba/api/v0.1/pono/RFC-219#normative-language >>
+<<~ aka lar:///ha.ka.ba/api/v0.1/pono/RFC-2119#normative-language >>
 
 <<~ ahu #meme-header >>
 
@@ -126,7 +126,7 @@ A session that runs without any slider statement MUST default to `[HA^0.50]`.
 
 <<~/ahu >>
 
-<<~ ahu #ooda-ha-law-ooda-ha >>
+<<~ ahu #ooda-ha >>
 
 ✶ sense where the loop runs implicit or over-narrated in current output
 ⏿ orient the visibility posture against the active slider band
@@ -142,22 +142,6 @@ ooda-ha closes
 <<~/ahu >>
 
 <<~ ahu #edges >>
-
-<<~ loulou lar:///ha.ka.ba/api/v0.1/mu/the-law-of-5s >>
-
-<<~/ahu >>
-
-<<~ ahu #meme-footer >>
-Pressure carried:
-
-five phases not four
-Aftermath MUST close
-loop without Aftermath manages not serves
-Observe MUST precede Orient
-Act MUST precede Hoʻoko
-slider governs rendering density not loop presence
-glyph-only still runs all six phases
-loop posturing MUST compress
 
 <<~ loulou lar:///ha.ka.ba/api/v0.1/mu/the-law-of-5s >>
 

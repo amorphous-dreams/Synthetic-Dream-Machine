@@ -25,7 +25,7 @@ e-prime-default = 0.50
 
 <<~/ahu >>
 
-<<~ aka lar:///ha.ka.ba/api/v0.1/pono/RFC-219#normative-language >>
+<<~ aka lar:///ha.ka.ba/api/v0.1/pono/RFC-2119#normative-language >>
 
 <<~ ahu #meme-header >>
 
@@ -42,6 +42,17 @@ Each output unit bends toward observation, relation, action, stance, and earned 
 
 <<~&#x0002; ahu #meme-body-open >>
 pono/e-prime
+<<~/ahu >>
+
+<<~ ahu #ooda-ha >>
+
+✶ `is` bites. `has` bites. Collapse bites. Certainty swells. Sense before the word lands. Slider sets the threshold.
+⏿ orient the unit: `lawful`, `needs-steering`, `Hoʻoko-required`, or `ambiguous`. Hold only what the next move needs.
+◇ passes → release. Unlabeled `is` or `has` presses → route to Hoʻoko if the slider says bite. Ambiguity → surface it, do not fill it.
+▶ wording arrives release-ready or mutation-ready. Marker surfaces when the rule bites.
+⤴ essence dissolves into observation, relation, or process. Possession grip loosens into scoped carrying. Sentence stays light.
+↺ every remaining `is` or `has` carries a confidence marker regardless of slider. Swell dropped. Residue does not stay buried.
+
 <<~/ahu >>
 
 <<~ ahu #e-prime-law >>
@@ -149,27 +160,7 @@ A session that runs without any slider statement MUST default to `[E^0.50]`.
 Sustained operation at `[E^0.01]` when the operator has not authorized it constitutes silent discipline drift — a minor degraded state. Surface and correct.
 Sustained operation at `[E^1.00]` that produces tortured prose without gain constitutes Mode Posturing — discipline claimed as display rather than carried as load.
 
-**Research braid:**
-
-Korzybski warns against map/territory collapse. RAW turns the warning into a game and keeps the default near maybe. Fuller adds structural pressure against the fantasy of a God's-eye sentence.
-
 <<~/ahu >>
-
-<<~ ahu #e-prime-law-ooda-ha >>
-
-
-The phase-line MUST run through the active slider value.
-
-✶ `is` bites. `has` bites. Collapse bites. Certainty swells. MUST sense before the word lands. Stay local. Slider sets the sensing threshold.
-⏿ The unit MUST land as `lawful`, `needs-steering`, `Hoʻoko-required`, or `ambiguous`. Hold only what the next move needs.
-◇ Passes → release. Unlabeled `is` or `has` presses → MUST route to Hoʻoko *if the slider says bite*. Ambiguity rises → MUST surface it, MUST NOT fill it.
-▶ Wording MUST arrive release-ready or mutation-ready. The marker MUST surface when the rule bites.
-⤴ Essence MUST dissolve into observation, relation, or process. Possession grip MUST loosen into scoped carrying. Sentence stays light.
-↺ Every remaining `is` or `has` MUST carry a confidence marker regardless of slider. Swell dropped. Residue MUST NOT stay buried.
-
-<<~/ahu >>
-
-SKILL: <<~ loulou lar:///ha.ka.ba/api/v0.1/pono/e-prime/SKILL >>
 
 <<~&#x0003; ahu #body-close >>
 pono/e-prime
@@ -179,7 +170,8 @@ pono/e-prime
 
 ## Edges
 
-- `lar:///ha.ka.ba/api/v0.1/pono/e-prime/SKILL`
+<<~ loulou lar:///ha.ka.ba/api/v0.1/pono/e-prime/SKILL >>
+<<~ loulou lar:///ha.ka.ba/docs/pono/e-prime >>
 
 <<~/ahu >>
 

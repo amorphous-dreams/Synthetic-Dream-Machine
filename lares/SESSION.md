@@ -152,7 +152,7 @@ Hold back when:
 | `mu/the-syad-perspectives.md` | 228 | none | yes | inspect for parent/docs rebalance |
 | `pono/e-prime.md` | 186 | yes | none | probably add docs companion rather than widen the parent |
 | `pono/ooda-ha.md` | 166 | none | none | canonical audit; split only if needed |
-| `pono/RFC-219.md` | 210 | none | none | likely keep intact unless a precise residue pattern appears |
+| `pono/RFC-2119.md` | 210 | none | none | likely keep intact unless a precise residue pattern appears |
 
 Begin with `pono/memetic-wikitext.md`, then `pono/meme.md`.
 

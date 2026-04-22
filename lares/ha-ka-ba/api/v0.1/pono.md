@@ -54,7 +54,7 @@ Active law (kānāwai) memes registered under `lar:///ha.ka.ba/api/v0.1/`:
 | memetic-wikitext | `lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext` | surface grammar and sigil law (kānāwai) |
 | render-pipeline | `lar:///ha.ka.ba/api/v0.1/pono/render-pipeline` | lowering, widget tree, render projection, trace continuity |
 | guest-grammar | `lar:///ha.ka.ba/api/v0.1/pono/guest-grammar` | guest grammar admission law (kānāwai), hana worksite contract, host-guest ownership |
-| RFC-219 | `lar:///ha.ka.ba/api/v0.1/pono/RFC-219` | shared normative vocabulary law (kānāwai), modal-force registry, and cross-meme reference point |
+| RFC-2119 | `lar:///ha.ka.ba/api/v0.1/pono/RFC-2119` | shared normative vocabulary law (kānāwai), modal-force registry, and cross-meme reference point |
 | x-tiddlywiki-filter | `lar:///ha.ka.ba/api/v0.1/grammars/x-tiddlywiki-filter` | first registered hana guest grammar |
 | pono | `lar:///ha.ka.ba/api/v0.1/pono` | law (kānāwai) index and verification skill host |
 | loci | `lar:///ha.ka.ba/api/v0.1/pono/loci` | lar: URI routing derivation algorithm, meme-type prefix table, carrier coherence, MCP-resolution roadmap, address stability, and canon promotion law (kānāwai) |

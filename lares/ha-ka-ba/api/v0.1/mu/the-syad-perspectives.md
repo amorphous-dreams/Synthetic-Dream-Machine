@@ -28,7 +28,7 @@ retain = true
 
 <<~/ahu >>
 
-<<~ aka lar:///ha.ka.ba/api/v0.1/pono/RFC-219#normative-language >>
+<<~ aka lar:///ha.ka.ba/api/v0.1/pono/RFC-2119#normative-language >>
 
 <<~ ahu #entry >>
 
@@ -66,6 +66,17 @@ Standpoint declares the measure.
 
 <<~ॐ ँ&#x0002; ahu #meme-body-open >>
 mu/the-syad-perspectives opens
+<<~/ahu >>
+
+<<~ ahu #ooda-ha >>
+
+✶ read the arriving claim; note which stance or stances carry load.
+⏿ orient by standpoint: hold the active `syād` angle before reading the confidence number.
+◇ decide whether the claim fits the truth axis or presses toward `avaktavya`.
+▶ surface the five-position array; let flags carry spread, not omission.
+⤴ verify the number reads within its standpoint, not as universal truth-weight.
+↺ quiet stances stay named; hidden does not mean absent.
+
 <<~/ahu >>
 
 <<~ ahu #syad-law >>
@@ -151,19 +162,6 @@ The active stance pattern carries the spread.
 
 The number does not widen itself.
 The standpoint field tells the reader how many measures press on the same declaration.
-
-<<~/ahu >>
-
-<<~ ahu #legacy-boundary >>
-
-## Legacy Boundary
-
-Older partial-emission examples read as legacy.
-Older "stance-count is fuzz" readings read as legacy.
-Older compact stance codepaths read as legacy.
-
-Canon keeps the full five-position array on the surface.
-Spread rides flags and combination, not omission.
 
 <<~/ahu >>
 
