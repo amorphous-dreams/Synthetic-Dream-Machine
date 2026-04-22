@@ -5,7 +5,7 @@
 <<~ ahu #iam >>
 ```toml
 uri-path     = "ha.ka.ba/api/v0.1/grammars/x-tiddlywiki-filter"
-file-path    = "lares/ha-ka-ba/api/v0.1/grammar/tiddlywiki-filter.md"
+file-path    = "lares/ha-ka-ba/api/v0.1/grammars/tiddlywiki-filter.md"
 content-type = "text/x-memetic-wikitext"
 confidence   = 0.72
 register     = "CS"
@@ -52,7 +52,7 @@ x-tiddlywiki-filter opens
 ↺ name what remains deferred; malformed guest work degrades locally and does not collapse the parent.
 
 <<~ loulou lar:///ha.ka.ba/api/v0.1/grammars/x-tiddlywiki-filter/SKILL >>
-<<~ loulou lar:///ha.ka.ba/docs/grammar/tiddlywiki-filter >>
+<<~ loulou lar:///ha.ka.ba/docs/grammars/tiddlywiki-filter >>
 
 <<~/ahu >>
 

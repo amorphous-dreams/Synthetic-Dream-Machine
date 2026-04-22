@@ -14,41 +14,50 @@ mana = 0.65
 manao = 0.70
 implements = [
   "lar:///ha.ka.ba/api/v0.1/pono/meme",
-  "lar:///ha.ka.ba/api/v0.1/pono/loci"
+  "lar:///ha.ka.ba/api/v0.1/pono/loci",
+  "lar:///ha.ka.ba/api/v0.1/pono/invariant"
 ]
-role = "law (kānāwai) index, verification registry, and skill package host"
-skill-package-root = "ha-ka-ba/api/v0.1/pono/skill-*.md"
+role = "core invariant example of a pono meme: right-sized law surface, bounded self-description, and outward routing pressure"
+cacheable = true
+invariant = true
 ```
 <<~/ahu >>
 
 # Pono
 
-A self-describing index of all memetic-wikitext law (kānāwai) memes.
+A core invariant example of a pono meme.
 
-Pono names, addresses, and relates every active law (kānāwai) in this system. It also hosts verification skills as `skill-*.md` packages under [lares/ha-ka-ba/api/v0.1/pono/](lares/ha-ka-ba/api/v0.1/pono/).
+In Hawaiian, *pono* carries rightness, properness, equity, and true condition. Here that pressure becomes a writing law: the meme stays in right proportion, names its boundary clearly, and sends heavier matter to the carrier that properly holds it.
+
+This folder already shows the family shape around it: `meme`, `invariant`, `memetic-wikitext`, `loci`, `lar-uri`, `pranala`, `e-prime`, `guest-grammar`, and their skill surfaces. Pono ties to that shape not by swallowing those laws into itself, but by staying small enough that each child may keep its own true work.
 
 <<~&#x0002; ahu #meme-body-open >>
-Pono opens the law (kānāwai) index stream here.
+pono opens
 <<~/ahu >>
 
 <<~ ahu #ooda-ha >>
 
-✶ gather the active law (kānāwai) and skill roster for the query surface
-⏿ map names, roles, and addresses; orient the request against the right carrier
-◇ decide which law (kānāwai), skill, or cluster actually governs the work
-▶ prepare the index envelope and cross the threshold toward the selected surface
-⤴ verify the handoff covers the needed law, address, and role without omission
-↺ close with completeness judged and any missing registry surface named
+✶ read the local law surface first; find the right proportion before adding more
+⏿ orient what properly stays here versus what belongs with adjacent pono carriers or docs
+◇ decide the smallest lawful shape that still names the pressure honestly and fairly
+▶ write compactly; keep the parent clear and route heavier procedure or teaching matter to the fitting room
+⤴ verify the meme still holds its true condition: explicit, bounded, and not swollen past its work
+↺ close with honest residue; what belongs elsewhere leaves so the parent may remain pono
 
 <<~/ahu >>
 
 <<~&#x0003; ahu #body-close >>
-Pono closes the law (kānāwai) index stream here.
+pono closes
 <<~/ahu >>
 
 <<~ ahu #edges >>
 
 ## Edges
+
+<<~ loulou lar:///ha.ka.ba/api/v0.1/pono/meme >>
+<<~ loulou lar:///ha.ka.ba/api/v0.1/pono/loci >>
+<<~ loulou lar:///ha.ka.ba/api/v0.1/pono/invariant >>
+<<~ loulou lar:///ha.ka.ba/docs/pono >>
 
 
 <<~/ahu >>

@@ -71,8 +71,8 @@ LARES ends
 
 <<~/ahu >>
 
-<<~ ahu #meme-footer >>
-Hello World.
+<<~ ahu #hello-world >>
+&#2384; Hello World.
 <<~/ahu >>
 
 <<~&#x0004; -> ? >>

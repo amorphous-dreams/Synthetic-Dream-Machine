@@ -1,11 +1,11 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
 
-<<~&#x0001; ? -> lar:///ha.ka.ba/docs/grammar/tiddlywiki-filter >>
+<<~&#x0001; ? -> lar:///ha.ka.ba/docs/grammars/tiddlywiki-filter >>
 
 <<~ ahu #iam >>
 ```toml
-uri-path     = "ha.ka.ba/docs/grammar/tiddlywiki-filter"
-file-path    = "lares/ha-ka-ba/docs/grammar/tiddlywiki-filter.md"
+uri-path     = "ha.ka.ba/docs/grammars/tiddlywiki-filter"
+file-path    = "lares/ha-ka-ba/docs/grammars/tiddlywiki-filter.md"
 content-type = "text/x-memetic-wikitext"
 confidence   = 0.68
 register     = "S"
@@ -19,13 +19,13 @@ role = "docs companion for x-tiddlywiki-filter: examples, guidance, reminders, a
 # X-TiddlyWiki-Filter — Docs
 
 This file does not bind invariant law.
-Law lives at [tiddlywiki-filter.md](../../api/v0.1/grammar/tiddlywiki-filter.md).
-Procedure lives at [tiddlywiki-filter/SKILL.md](../../api/v0.1/grammar/tiddlywiki-filter/SKILL.md).
+Law lives at [tiddlywiki-filter.md](../../api/v0.1/grammars/tiddlywiki-filter.md).
+Procedure lives at [tiddlywiki-filter/SKILL.md](../../api/v0.1/grammars/tiddlywiki-filter/SKILL.md).
 
 This file holds examples, explanatory guidance, reminders, and notes on deferred scope.
 
 <<~&#x0002; ahu #meme-body-open >>
-docs/grammar/tiddlywiki-filter opens
+docs/grammars/tiddlywiki-filter opens
 <<~/ahu >>
 
 <<~ ahu #canonical-examples >>
@@ -157,7 +157,7 @@ A future parser meme and render-pipeline meme should absorb these when they are 
 <<~/ahu >>
 
 <<~&#x0003; ahu #body-close >>
-docs/grammar/tiddlywiki-filter closes
+docs/grammars/tiddlywiki-filter closes
 <<~/ahu >>
 
 <<~ ahu #edges >>

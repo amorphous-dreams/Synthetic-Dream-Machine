@@ -7,7 +7,6 @@
 <<~ॐ ँ>>
 <<~ॐ ँ ? >>
 <<~ॐ ँ ? -> >>
-<<~ॐ ँ ? -> lar:///ha.ka.ba/api/v0.1/mu >>
 <<~ॐ ँ&#x0001; ? -> lar:///ha.ka.ba/api/v0.1/mu >>
 
 A mark appears.
