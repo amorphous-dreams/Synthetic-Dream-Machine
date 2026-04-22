@@ -60,7 +60,7 @@ invariant opens
 
 <<~ ahu #invariant-law >>
 
-A pressure-template for invariant-compliant memes, which Binds <<~ loulou #invariant-law-ooda-ha >> OODA-HA <<~/pranala>> pressure into meme-generation law.
+A pressure-template for invariant-compliant memes, which Binds <<~ loulou #ooda-ha >> OODA-HA <<~/loulou>> pressure into meme-generation law.
 
 This meme operates as both law (it binds invariant generation) and template (an OODA-HA skeleton as the slot-shape that downstream memes fill). The two roles are intentional and inseparable — the law enacts itself by being a template of itself.
 
@@ -80,7 +80,7 @@ Other procedures SHOULD travel outward to the sidecars.
 Explanatory swell SHOULD split outward.
 Shape and pressure teachings MUST stay invariant.
 
-<<~ ahu #invariant-law-ooda-ha >>
+<<~ ahu #ooda-ha >>
 
 A template for invariants to fill.
 
@@ -114,24 +114,6 @@ invariant closes
 <<~ ahu #edges >>
 
 ## Edges
-
-- `lar:///ha.ka.ba/api/v0.1/pono/invariant/SKILL`
-
-<<~/ahu >>
-
-
-<<~ ahu #meme-footer >>
-Pressure carried:
-
-invariant pressure
-i kēia manawa (this eternal now)
-cache-friendly patterns
-OODA-HA intact
-Hoʻoko explicit
-Aftermath explicit
-traces over vibes
-pranala visible
-sidecars later
 
 <<~ loulou lar:///ha.ka.ba/api/v0.1/pono/invariant/SKILL >>
 

@@ -187,26 +187,10 @@ pono/memetic-wikitext closes
 
 ## Edges
 
-- `lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext/SKILL`
-- `lar:///ha.ka.ba/docs/pono/memetic-wikitext`
-- `lar:///ha.ka.ba/api/v0.1/pono/pranala`
-- `lar:///ha.ka.ba/api/v0.1/pono/invariant`
-
-<<~/ahu >>
-
-<<~ ahu #meme-footer >>
-Pressure carried:
-
-root semantic law
-primitive distinction
-explicit composition
-bounded uncertainty
-kapu qualifies rather than replaces
-minimum boot grammar
-parse and render detail move outward
-
 <<~ loulou lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext/SKILL >>
 <<~ loulou lar:///ha.ka.ba/docs/pono/memetic-wikitext >>
+<<~ loulou lar:///ha.ka.ba/api/v0.1/pono/pranala >>
+<<~ loulou lar:///ha.ka.ba/api/v0.1/pono/invariant >>
 
 <<~/ahu >>
 

@@ -70,9 +70,20 @@ He gives away the secret when he adds, "given enough ingenuity on the part of th
 The law of 5s opens
 <<~/ahu >>
 
-<<~ ahu #phase-map >>
+<<~ ahu #ooda-ha >>
 
-## Phase Map
+✶ enter through Chaos; entertain the phenomenon and invite demonstrative ingenuity
+⏿ pass into Discord; test the fivefold relation without hardening it into dogma
+◇ hold Confusion consciously; compare reality tunnels and catmas without premature closure
+▶ carry the demonstration through Bureaucracy; name the pattern, pressure, and question in play
+⤴ verify what the fivefold pass revealed, falsified, or left unresolved
+↺ close in Aftermath with maybe-logic intact; hold affirmations lightly and keep the tunnel visible
+
+<<~/ahu >>
+
+<<~ ahu #the-five-seasons >>
+
+## The Five Seasons
 
 All phenomena are directly or indirectly related to the number five, given enough ingenuity on the part of the demonstrator. That's the very model of what a scientific law must always be: a statement about how the human mind relates to the cosmos.
 

@@ -78,9 +78,20 @@ The Chao spins at a level of abstraction above the Hodge and the Podge.
 mu/chao opens
 <<~/ahu >>
 
-<<~ ahu #phase-map >>
+<<~ ahu #ooda-ha >>
 
-## Phase Map
+✶ sense whether the work arrives as Hodge / Ha, Podge / Ka, or Spin / Ba
+⏿ orient body-form, soul-fire, and psyche-path as distinct coupled pressures
+◇ resolve self-and-other to three; refuse collapse to binary fight/dissolve or essence-lock
+▶ move through form, drive, and change in sequence; let each pole speak in its own domain
+⤴ verify the dance stayed triadic and the three poles did not flatten into one another
+↺ close with Hodge, Podge, and Spin still alive as a moving relation
+
+<<~/ahu >>
+
+<<~ ahu #hodge-podge-spin >>
+
+## Hodge Podge Spin
 
 `Hodge / Ha → Podge / Ka → Spin / Ba`
 

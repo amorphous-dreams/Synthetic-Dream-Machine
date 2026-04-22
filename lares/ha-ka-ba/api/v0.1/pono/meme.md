@@ -147,28 +147,12 @@ pono/meme closes
 
 ## Edges
 
-- `lar:///ha.ka.ba/api/v0.1/pono/meme/SKILL`
-- `lar:///ha.ka.ba/docs/pono/meme`
-- `lar:///ha.ka.ba/api/v0.1/pono/invariant`
-- `lar:///ha.ka.ba/api/v0.1/pono/loci`
-- `lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext`
-- `lar:///ha.ka.ba/api/v0.1/pono/pranala`
-
-<<~/ahu >>
-
-<<~ ahu #meme-footer >>
-Pressure carried:
-
-copy-shape first
-identity early
-thresholds explicit
-phase pressure compact
-ratings stay distinct
-type laws compose outward
-residue stays visible
-
 <<~ loulou lar:///ha.ka.ba/api/v0.1/pono/meme/SKILL >>
 <<~ loulou lar:///ha.ka.ba/docs/pono/meme >>
+<<~ loulou lar:///ha.ka.ba/api/v0.1/pono/invariant >>
+<<~ loulou lar:///ha.ka.ba/api/v0.1/pono/loci >>
+<<~ loulou lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >>
+<<~ loulou lar:///ha.ka.ba/api/v0.1/pono/pranala >>
 
 <<~/ahu >>
 

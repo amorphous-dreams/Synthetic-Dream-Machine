@@ -111,7 +111,7 @@ WHERE (path) → HOW (query: stances, confidence, p, ffz) → SECTION (fragment)
 
 <<~/ahu >>
 
-<<~ ahu #lar-uri-law-ooda-ha >>
+<<~ ahu #ooda-ha >>
 
 ✶ sense whether the URI carries local form or session form; identify path class
 ⏿ orient against scheme law — slot count, param completeness, record vs render
@@ -130,7 +130,7 @@ pono/lar-uri
 
 ## Edges
 
-SKILL: <<~ loulou lar:///ha.ka.ba/api/v0.1/pono/lar-uri/SKILL >>
+<<~ loulou lar:///ha.ka.ba/api/v0.1/pono/lar-uri/SKILL >>
 
 <<~ loulou lar:///ha.ka.ba/docs/pono/lar-uri >>
 <<~ loulou lar:///ha.ka.ba/api/v0.1/pono/invariant >>

@@ -186,26 +186,10 @@ loci closes
 
 ## Edges
 
-- `lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext`
-- `lar:///ha.ka.ba/api/v0.1/pono/meme`
-- `lar:///ha.ka.ba/api/v0.1/pono/loci/iam`
-
-<<~/ahu >>
-
-
-<<~ ahu #meme-footer >>
-Pressure carried:
-
-stable address law
-one derivation path
-file-path from URI directly
-child items under sibling directory
-address immutable once stable
-resolution honest when it misses
-loulou links bind to SKILL and docs
-
-<<~ loulou lar:///ha.ka.ba/api/v0.1/pono/loci/SKILL >>
+<<~ loulou lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >>
+<<~ loulou lar:///ha.ka.ba/api/v0.1/pono/meme >>
 <<~ loulou lar:///ha.ka.ba/api/v0.1/pono/loci/iam >>
+<<~ loulou lar:///ha.ka.ba/api/v0.1/pono/loci/SKILL >>
 
 <<~/ahu >>
 

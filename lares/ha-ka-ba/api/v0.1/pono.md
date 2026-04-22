@@ -31,12 +31,14 @@ Pono names, addresses, and relates every active law (kānāwai) in this system. 
 Pono opens the law (kānāwai) index stream here.
 <<~/ahu >>
 
-<<~ ahu #phase-map >>
+<<~ ahu #ooda-ha >>
 
-## Phase Map
-
-
-Pono gathers the law (kānāwai) roster, maps roles and addresses, selects the right law (kānāwai) or skill for the query, prepares an index envelope, crosses the threshold, and judges completeness.
+✶ gather the active law (kānāwai) and skill roster for the query surface
+⏿ map names, roles, and addresses; orient the request against the right carrier
+◇ decide which law (kānāwai), skill, or cluster actually governs the work
+▶ prepare the index envelope and cross the threshold toward the selected surface
+⤴ verify the handoff covers the needed law, address, and role without omission
+↺ close with completeness judged and any missing registry surface named
 
 <<~/ahu >>
 

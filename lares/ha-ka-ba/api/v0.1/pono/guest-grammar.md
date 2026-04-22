@@ -143,28 +143,13 @@ pono/guest-grammar closes
 
 ## Edges
 
-- `lar:///ha.ka.ba/api/v0.1/pono/guest-grammar/SKILL`
-- `lar:///ha.ka.ba/docs/pono/guest-grammar`
-- `lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext`
-- `lar:///ha.ka.ba/api/v0.1/pono/pranala`
-- `lar:///ha.ka.ba/api/v0.1/pono/parser`
-- `lar:///ha.ka.ba/api/v0.1/pono/render-pipeline`
-- `lar:///ha.ka.ba/api/v0.1/pono`
-
-<<~/ahu >>
-
-<<~ ahu #meme-footer >>
-Pressure carried:
-
-explicit admission
-hana stays bounded
-host primitives stay host-side
-guest family stays guest-side
-degradation stays local
-parser and render detail move outward
-
 <<~ loulou lar:///ha.ka.ba/api/v0.1/pono/guest-grammar/SKILL >>
 <<~ loulou lar:///ha.ka.ba/docs/pono/guest-grammar >>
+<<~ loulou lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >>
+<<~ loulou lar:///ha.ka.ba/api/v0.1/pono/pranala >>
+<<~ loulou lar:///ha.ka.ba/api/v0.1/pono/parser >>
+<<~ loulou lar:///ha.ka.ba/api/v0.1/pono/render-pipeline >>
+<<~ loulou lar:///ha.ka.ba/api/v0.1/pono >>
 
 <<~/ahu >>
 
