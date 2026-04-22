@@ -50,6 +50,7 @@ Use this branch for:
 - `Agents_Preferences` and related house-memory surfaces
 - voice bundles where Mischief-Muse and the others live
 - lararium witness matter that should not burden the live api stub
+- extracted preference loci under `lar:///ha.ka.ba/docs/lararium/preferences`
 
 <<~/ahu >>
 
@@ -75,6 +76,7 @@ The rooms may deepen later without moving the seat again.
 <<~ loulou lar:///ha.ka.ba/api/v0.1/lararium >>
 <<~ loulou lar:///LARES >>
 <<~ loulou lar:///ha.ka.ba/docs/crystal >>
+<<~ loulou lar:///ha.ka.ba/docs/lararium/preferences >>
 <<~ loulou lar:///ha.ka.ba/docs/story >>
 
 <<~/ahu >>

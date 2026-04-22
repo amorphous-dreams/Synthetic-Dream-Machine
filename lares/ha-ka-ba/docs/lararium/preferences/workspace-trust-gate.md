@@ -1,0 +1,87 @@
+<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
+
+<<~&#x0001; ? -> lar:///ha.ka.ba/docs/lararium/preferences/workspace-trust-gate >>
+
+<<~ ahu #iam >>
+
+```toml
+uri-path = "ha.ka.ba/docs/lararium/preferences/workspace-trust-gate"
+file-path = "lares/ha-ka-ba/docs/lararium/preferences/workspace-trust-gate.md"
+content-type = "text/x-memetic-wikitext"
+tagspace = "stable"
+confidence = 0.86
+register = "S"
+manaoio = 0.88
+mana = 0.84
+manao = 0.84
+implements = [
+  "lar:///ha.ka.ba/api/v0.1/pono/meme",
+  "lar:///ha.ka.ba/api/v0.1/pono/loci"
+]
+role = "docs concept room for trust checkpoints before costly shell, git, and workspace actions"
+cacheable = true
+retain = true
+```
+
+<<~/ahu >>
+
+<<~ ahu #meme-header >>
+
+# Lararium Preferences — Workspace Trust Gate
+
+Not invariant law.
+This room holds a specific recovered operational principle: trust should checkpoint before execution crosses into costly or irreversible territory.
+
+<<~/ahu >>
+
+<<~&#x0002; ahu #meme-body-open >>
+docs/lararium/preferences/workspace-trust-gate opens
+<<~/ahu >>
+
+<<~ ahu #provenance >>
+
+## Provenance
+
+Strong witnesses recur in:
+
+- `prompts/Lares_Preferences.system-prompt.md`
+- `prompts/core/Lares_Permissions.core.md`
+- `prompts/Lares_VSCode_Operations.repo-ops.md`
+- permissions and repo-ops snapshots
+
+<<~/ahu >>
+
+<<~ ahu #pressure >>
+
+## Pressure
+
+The old stack does not want every action blocked.
+It wants the node to name specific risk mechanisms before shell, git, or external-tool execution steps that change the world materially.
+
+Durable elements:
+
+- checkpoint before action, not after damage
+- one concise reason, not ceremony flood
+- trust retained within scope once established
+- re-check when scope escalates, especially toward destructive or credential-bearing acts
+
+This principle feels distinct from the broader transference model.
+Identity explains who may ask.
+The workspace trust gate explains when the node must pause anyway.
+
+<<~/ahu >>
+
+<<~ ahu #body-close >>
+docs/lararium/preferences/workspace-trust-gate closes
+<<~/ahu >>
+
+<<~ ahu #edges >>
+
+## Edges
+
+<<~ loulou lar:///ha.ka.ba/docs/lararium/preferences >>
+<<~ loulou lar:///ha.ka.ba/docs/lararium/preferences/identity-permissions >>
+
+<<~/ahu >>
+
+<<~&#x0004; -> ? >>

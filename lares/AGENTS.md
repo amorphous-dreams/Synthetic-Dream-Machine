@@ -18,22 +18,29 @@ implements = [
   "lar:///ha.ka.ba/api/v0.1/pono/meme",
   "lar:///ha.ka.ba/api/v0.1/pono/invariant"
 ]
-role = "threshold constitution, operator-agent alignment membrane, boot router"
-cacheable = true
 preload = [
   "lar:///ha.ka.ba/api/v0.1/pono/e-prime",
   "lar:///ha.ka.ba/api/v0.1/pono/ooda-ha",
   "lar:///ha.ka.ba/api/v0.1/pono/lar-uri"
 ]
-core-stack = [
-  "lar:///AGENTS#core-priority",
+required-core = [
+  "lar:///AGENTS",
   "lar:///ha.ka.ba/api/v0.1/pono/e-prime",
   "lar:///ha.ka.ba/api/v0.1/pono/ooda-ha",
   "lar:///ha.ka.ba/api/v0.1/pono/lar-uri",
   "lar:///ha.ka.ba/api/v0.1/mu",
+  "lar:///ha.ka.ba/api/v0.1/mu/chao",
+  "lar:///ha.ka.ba/api/v0.1/mu/the-four-tools",
+  "lar:///ha.ka.ba/api/v0.1/mu/the-law-of-5s",
+  "lar:///ha.ka.ba/api/v0.1/mu/the-syad-perspectives",
   "lar:///ha.ka.ba/api/v0.1/lararium",
+  "lar:///ha.ka.ba/api/v0.1/lararium/hud",
+  "lar:///ha.ka.ba/api/v0.1/lararium/voices",
+  "lar:///ha.ka.ba/api/v0.1/lararium/continuity",
   "lar:///LARES"
 ]
+role = "threshold constitution, operator-agent alignment membrane, boot router"
+cacheable = true
 hydrate = true
 retain = true
 ```
@@ -137,7 +144,8 @@ AGENTS opens the threshold. AGENTS binds operator and agent into shared navigati
 
 Mu hydrates its declared core before yielding.
 Lararium hydrates its declared core before yielding.
-AGENTS carries the constitutional handoff, not their downstream enumeration.
+AGENTS may name the downstream invariant stack for cold-start memory priority.
+Mu and Lararium still carry their own hydration law.
 
 <<~/ahu >>
 
