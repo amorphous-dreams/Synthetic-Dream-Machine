@@ -147,7 +147,7 @@ If the reader still has to guess what `0.65` means here, stance has not yet done
 
 - [confidence/LOCI.md](../confidence/LOCI.md)
 - [e-prime/LOCI.md](../e-prime/LOCI.md)
-- [../../scrum/sprints/00000/SYADASTI_READING_RULE.md](../../scrum/sprints/00000/SYADASTI_READING_RULE.md)
+- [SYADASTI_READING_RULE.md](SYADASTI_READING_RULE.md)
 - [../../modules/uri-schema/URI_SCHEMA.md](../../modules/uri-schema/URI_SCHEMA.md)
 
 ---

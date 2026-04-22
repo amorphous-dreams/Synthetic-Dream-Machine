@@ -1,12 +1,12 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
 
-<<~&#x0001; ? -> lar:///ha.ka.ba/docs/mu/the-syad-perspectives >>
+<<~&#x0001; ? -> lar:///ha.ka.ba/docs/mu/the-syad-perspectives/README >>
 
 <<~ ahu #iam >>
 
 ```toml
-uri-path = "ha.ka.ba/docs/mu/the-syad-perspectives"
-file-path = "lares/ha-ka-ba/docs/mu/the-syad-perspectives.md"
+uri-path = "ha.ka.ba/docs/mu/the-syad-perspectives/README"
+file-path = "lares/ha-ka-ba/docs/mu/the-syad-perspectives/README.md"
 content-type = "text/x-memetic-wikitext"
 tagspace = "stable"
 confidence = 0.80
@@ -29,7 +29,7 @@ retain = true
 
 <<~ ahu #meme-header >>
 
-# Syad Source Shelf
+# Syad Perspectives Shelf
 
 Archive text moved here.
 Invariant reduced elsewhere.
@@ -38,17 +38,18 @@ Derivation remains recoverable here.
 <<~/ahu >>
 
 <<~&#x0002; ahu #meme-body-open >>
-docs/syad/source opens
+docs/mu/the-syad-perspectives opens
 <<~/ahu >>
 
 <<~ ahu #provenance >>
 
 ## Provenance
 
-Consumed from archive files:
+Consumed from archive files and now shelved in this bundle:
 
-- `build.lares.failed/scrum/sprints/00000/SYADASTI_READING_RULE.md`
-- `build.lares.failed/scrum/research/G_deep_research_meaning.md`
+- `lares/ha-ka-ba/docs/mu/the-syad-perspectives/SYADASTI_READING_RULE.md`
+- `lares/ha-ka-ba/docs/mu/the-syad-perspectives/G_deep_research_meaning.md`
+- `lares/ha-ka-ba/docs/mu/the-syad-perspectives/STANCE_LOCI.md`
 - `build.lares.failed/S0_Boot_Handoff.md`
 - `build.lares.failed/The_Lares_Protocols.md`
 - `build.lares.failed/The_Lares_Protocols_Dev_Story.md`
@@ -250,7 +251,7 @@ They do not govern the live fold.
 <<~/ahu >>
 
 <<~&#x0003; ahu #body-close >>
-docs/syad/source closes
+docs/mu/the-syad-perspectives closes
 <<~/ahu >>
 
 <<~&#x0004; -> ? >>

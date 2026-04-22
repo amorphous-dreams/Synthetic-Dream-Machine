@@ -148,7 +148,7 @@ If the band could move wildly without changing the supporting reasons, the tag s
 
 - [stance/LOCI.md](../stance/LOCI.md)
 - [e-prime/LOCI.md](../e-prime/LOCI.md)
-- [../../scrum/sprints/00000/SYADASTI_READING_RULE.md](../../scrum/sprints/00000/SYADASTI_READING_RULE.md)
+- [../../../lares/ha-ka-ba/docs/mu/the-syad-perspectives/SYADASTI_READING_RULE.md](../../../lares/ha-ka-ba/docs/mu/the-syad-perspectives/SYADASTI_READING_RULE.md)
 - [../../modules/uri-schema/URI_SCHEMA.md](../../modules/uri-schema/URI_SCHEMA.md)
 
 ---
