@@ -12,10 +12,10 @@ Archived files do not retain the exact basenames `AGENTS.md` or `CLAUDE.md`.
 
 | Original path | Archived path |
 |---|---|
-| `AGENTS.md` | `_archive/agentic-surfaces/2026-04-10/root__AGENTS.archived.md` |
+| `AGENTS.md` | `lares/ha-ka-ba/docs/lararium/archive/root__AGENTS.archived.md` |
 | `CLAUDE.md` | `_archive/agentic-surfaces/2026-04-10/root__CLAUDE.archived.md` |
 | `_todo/BECMI/AGENTS.md` | `_archive/agentic-surfaces/2026-04-10/_todo__BECMI__AGENTS.archived.md` |
-| `builds.stuffed.failed/agents/AGENTS.md` | `_archive/agentic-surfaces/2026-04-10/builds.stuffed.failed__agents__AGENTS.archived.md` |
+| `builds.stuffed.failed/agents/AGENTS.md` | `lares/ha-ka-ba/docs/lararium/archive/builds.stuffed.failed__agents__AGENTS.archived.md` |
 | `kowloon-client/CLAUDE.md` | `_archive/agentic-surfaces/2026-04-10/kowloon-client__CLAUDE.archived.md` |
 | `kowloon-frontend/CLAUDE.md` | `_archive/agentic-surfaces/2026-04-10/kowloon-frontend__CLAUDE.archived.md` |
 | `kowloon/CLAUDE.md` | `_archive/agentic-surfaces/2026-04-10/kowloon__CLAUDE.archived.md` |
