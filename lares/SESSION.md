@@ -9,15 +9,15 @@ uri-path     = "SESSION"
 file-path    = "lares/SESSION.md"
 content-type = "text/x-memetic-wikitext"
 tagspace     = "adjacent"
-confidence   = 0.80
+confidence   = 0.82
 register     = "CS"
-manaoio      = 0.78
-mana         = 0.82
-manao        = 0.80
+manaoio      = 0.80
+mana         = 0.84
+manao        = 0.82
 implements   = [
   "lar:///ha.ka.ba/api/v0.1/pono/meme"
 ]
-role         = "archive crystal — session handoff for the lares/ha-ka-ba refine/split/update/tighten loop"
+role         = "archive crystal — session handoff for the yin split/refine/clean pass across overloaded api/v0.1 surfaces"
 ```
 
 <<~/ahu >>
@@ -28,12 +28,12 @@ SESSION opens
 
 <<~ ahu #ooda-ha >>
 
-✶ Read the target file fully; note line count, OODA-HA style, SKILL/docs existence, and any stale field names.
-⏿ Orient against current standards; identify what stays, what moves to SKILL, what moves to docs.
-◇ Decide the split boundary; target invariant core under 250 lines, SKILL under 350, docs under 150.
-▶ Write three files; apply e-prime pass; cut sentences that repeat what structure already shows.
-⤴ Verify: `#iam` correct in all three; `loulou` links connect; `constraints` not `invariants`; 6-glyph OODA-HA in invariant; no sub-loops.
-↺ Name what changed, what lines remain in the queue, and which file moves next.
+✶ Read the whole target file; note line count, live interfaces, child surfaces, docs surfaces, and mixed registers.
+⏿ Sort content into core law, operating procedure, explanation, examples, tables, backlog, and migration residue.
+◇ Choose the smallest lawful split: minimal invariant parent, one child SKILL or sibling child when needed, one docs companion when needed.
+▶ Cut, tighten, and relink; keep the parent as compressed pressure and move heavy matter outward.
+⤴ Verify implements, loulou links, constraints fields, docs posture, and file siting before closing the turn.
+↺ Name what left the parent, what still crowds nearby, and which overloaded file comes next.
 
 <<~/ahu >>
 
@@ -41,20 +41,43 @@ SESSION opens
 
 ## Session Context
 
-Branch: `fix/green-jello-dinosaurs-3` | Scribe: Claude Sonnet 4.6 | Date: 2026-04-21
+Branch: `fix/green-jello-dinosaurs-3` | Scribe: Codex | Date: 2026-04-21
 
-This session ran the full refine/split/update/tighten loop on `loci`. The pattern now applies to the rest of `lares/ha-ka-ba`.
+This session continues the loci cleanup pattern, but the scope widens.
+We work in yin polarity: splitting, refining, cleaning.
+We do not inflate.
+We do not add ceremony for its own sake.
 
-### What Changed
+Primary target set: large files under `lares/ha-ka-ba/api/v0.1` that would serve better as a minimal core invariant plus outward children.
+Usual destination pattern:
 
-- `pono/loci.md` — split from 659 lines into three surfaces
-- `pono/loci/SKILL.md` — new; agent-facing OODA-HA procedural surface
-- `lares/ha-ka-ba/docs/pono/loci.md` — new; extended docs, rating guidance, MCP roadmap
-- `invariants` → `constraints` in all four SKILL files
-- `ala` → `loulou` throughout
-- Derivation algorithm: URI root path segment corrected; two-branch logic for stable vs unstable tagspace
-- Unstable tagspace root fixed: `lares/chapel-perilous-opens/{root}/`
-- Interface language: "implements X interface" replaces multi-typed inheritance framing
+- parent core invariant
+- child `SKILL.md` or another lawful child surface when operation needs its own room
+- companion docs meme under `lares/ha-ka-ba/docs/`
+
+When the parent functions as law, interface, and stable-address carrier, prefer the parent to implement:
+
+- `lar:///ha.ka.ba/api/v0.1/pono/meme`
+- `lar:///ha.ka.ba/api/v0.1/pono/loci`
+- `lar:///ha.ka.ba/api/v0.1/pono/invariant`
+
+Do not force that triple onto files that do not earn it.
+Small canonical references may stay single-surface.
+Child-only materials may stay children.
+
+<<~/ahu >>
+
+<<~ ahu #working-principle >>
+
+## Working Principle
+
+The parent should hold only what must recur, cache, and bind.
+Procedure should leave for a child.
+Explanation should leave for docs.
+Examples, tables, backlog, migration notes, and research residue should leave first.
+
+A good split lowers parent line count, sharpens interface pressure, and clarifies where each kind of matter now lives.
+A bad split merely renames clutter.
 
 <<~/ahu >>
 
@@ -62,56 +85,76 @@ This session ran the full refine/split/update/tighten loop on `loci`. The patter
 
 ## Current Standards
 
-### Invariant core memes
-- Short, cacheable, active voice, pressure not explanation
-- OODA-HA: six single-line glyph pressures — `✶ ⏿ ◇ ▶ ⤴ ↺` each one sentence
-- `loulou` links bind invariant → SKILL and → docs; `ala` replaced
-- `#meme-footer` ahu with pressure list and `loulou` links
-- No nested ha/ka/ba sub-loops in the invariant surface
-- `cacheable = true` where applicable
+### Parent invariant core
+- target the smallest lawful parent; usually under 250 lines
+- if lawful, implement `meme + loci + invariant`
+- keep visible `#iam`, visible opener, visible closer, visible edges
+- keep one six-line glyph OODA-HA block: `✶ ⏿ ◇ ▶ ⤴ ↺`
+- keep pressure language, not tutorial swell
+- keep named `loulou` links to child and docs surfaces where they exist
+- keep file-siting and interface claims explicit
+- no nested ha/ka/ba sub-loops inside the parent OODA-HA
 
-### SKILL files
-- YAML frontmatter first (hook-injected): `name`, `description`, `allowed-tools`
-- `constraints` field (not `invariants`) in `#iam` toml
-- `covers` field naming parent meme
-- Sections: Load Contract, Workflow Contract, Trigger, Phase Map, OODA-HA phases
-- OODA-HA as `## ✶ Observe` etc. — bullet-list pressure, no ha/ka/ba sub-loops
-- `#meme-footer` ahu with `loulou` back to parent invariant
+### Child operational surface
+- prefer `SKILL.md` when the outward matter reads as operator/agent procedure
+- choose another child when the outward matter reads better as `iam`, examples, registry, or other bounded support
+- keep YAML frontmatter first for `SKILL.md`
+- use `constraints`, not `invariants`
+- keep procedural OODA-HA as sectioned phases, not compressed glyph law
+- cover the parent; do not replace it
 
-### Docs files
-- Not a law surface — state so at the top
-- E-prime operational language; short sentences; active verbs
-- Holds: criteria tables, rating guidance, MCP roadmap, research backlog, migration history
+### Docs companion
+- place at `lares/ha-ka-ba/docs/...`
+- open by stating that the file does not bind invariant law
+- hold explanation, guidance, examples, research backlog, migration history, comparison tables, and long notes
+- keep links back to the parent and child where useful
 
-### E-Prime
-- No `is/are/was/were` without justification — replace with action verbs, `stays`, `holds`, `reads as`, `counts as`
-- Invariant register: subconscious pressure, compressed
-- SKILL/docs register: operational, clear, direct
+### E-prime and register discipline
+- cut lazy `is/are/was/were` forms when a stronger verb fits
+- keep parent language compressed and load-bearing
+- keep child and docs language direct and operational
+- cut any sentence that only repeats visible structure
 
-### Interface and tagspace
-- `implements` names interfaces satisfied — not "carries both" or "multi-typed"
-- `loci` eligibility: root path segment MUST match `\w\.\w\.\w`
-- Stable: `ha.ka.ba` → `lares/ha-ka-ba/`
-- Unstable: all other `\w\.\w\.\w` roots → `lares/chapel-perilous-opens/{root}/`
-- Adjacent (`lar:///AGENTS`, `lar:///SESSION`) MAY NOT implement `loci`
+<<~/ahu >>
+
+<<~ ahu #selection-heuristics >>
+
+## Selection Heuristics
+
+Choose the next file by this order:
+
+1. largest overloaded parent in `api/v0.1`
+2. strongest mix of law + procedure + explanation in one file
+3. weakest current sidecar support
+4. clearest payoff from a smaller invariant parent
+
+Hold back when:
+
+- the file already stays small and sharp
+- the file functions mainly as a child, not a parent
+- the file reads as canonical reference material that would lose force from fragmentation
 
 <<~/ahu >>
 
 <<~ ahu #queue >>
 
-## Queue (priority order)
+## Queue
 
-| file | lines | condition |
-|---|---|---|
-| `pono/meme.md` | 1017 | old nested OODA-HA with inline toml phase blocks; no SKILL or docs split |
-| `pono/memetic-wikitext.md` | 1285 | same condition, larger |
-| `pono/pranala.md` | 269 | pre-standards prose; audit needed |
-| `pono/guest-grammar.md` | 480 | large; check for nested sub-loops |
-| `pono/ooda-ha.md` | 166 | canonical; verify standards alignment |
-| `pono/e-prime.md` | 186 | has SKILL child; verify invariant core current |
-| `pono/RFC-219.md` | 210 | normative reference; probably fine |
+| file | lines | child | docs | next move |
+|---|---:|---|---|---|
+| `pono/memetic-wikitext.md` | 1285 | none | none | highest-priority split; law, procedure, and explanation currently crowd one surface |
+| `pono/meme.md` | 1017 | none | none | split into minimal invariant parent plus operational child and docs companion |
+| `pono/guest-grammar.md` | 480 | none | none | audit for invariant-core extraction and outward grammar guidance |
+| `grammar/tiddlywiki-filter.md` | 464 | none | none | likely core grammar law plus examples/docs split |
+| `mu.md` | 295 | none | yes | sharpen parent; decide whether child procedure deserves its own surface |
+| `pono/pranala.md` | 269 | none | none | audit boundary; split only if the parent still carries too much explanation |
+| `lararium.md` | 201 | none | yes | tighten parent; decide whether a child operational surface would reduce pressure on the core |
+| `mu/the-syad-perspectives.md` | 228 | none | yes | inspect for parent/docs rebalance |
+| `pono/e-prime.md` | 186 | yes | none | probably add docs companion rather than widen the parent |
+| `pono/ooda-ha.md` | 166 | none | none | canonical audit; split only if needed |
+| `pono/RFC-219.md` | 210 | none | none | likely keep intact unless a precise residue pattern appears |
 
-Begin with `meme.md`.
+Begin with `pono/memetic-wikitext.md`, then `pono/meme.md`.
 
 <<~/ahu >>
 
@@ -120,38 +163,59 @@ Begin with `meme.md`.
 ## The Loop
 
 ```
-1. READ the file. Note:
+1. READ the target file fully. Note:
    - line count
-   - OODA-HA style: nested sub-loops (old) or 6-line glyph block (current)
-   - SKILL child present?
-   - docs/pono/ counterpart present?
-   - `invariants` field? (rename to `constraints`)
-   - `ala` usage? (rename to `loulou`)
-   - is/are/was forms in prose
+   - opener, #iam cluster, implements set, footer shape
+   - current child surfaces under the sibling directory
+   - current docs companion under lares/ha-ka-ba/docs/
+   - whether the parent currently mixes law, procedure, explanation, tables, examples, or backlog
 
-2. PLAN the split:
-   invariant core   → OODA-HA 6-glyph block, core law sections, edges, footer
-   SKILL child      → procedural OODA-HA phases, workflow, trigger, load contract
-   docs surface     → criteria tables, rating guidance, MCP roadmap, migration history
+2. CLASSIFY the file.
+   - Should the parent become a minimal invariant core?
+   - Should the parent implement meme + loci + invariant?
+   - What matter belongs in a child?
+   - What matter belongs in docs?
+   - What matter should simply vanish?
 
-3. WRITE three files:
-   - invariant core  (target: under 250 lines)
-   - SKILL child     (target: under 350 lines)
-   - docs surface    (target: under 150 lines)
+3. MAP the split.
+   parent core  -> invariant pressure, stable interfaces, short OODA-HA, load-bearing edges
+   child        -> workflow, trigger, criteria, registry, examples, or another bounded support role
+   docs         -> explanation, tables, backlog, migration, comparison, commentary
 
-4. TIGHTEN:
-   - e-prime pass on all three
-   - cut any sentence repeating what structure already shows
-   - pressure language in invariant; operational language in SKILL/docs
+4. WRITE the smallest lawful set.
+   - tighten the parent first
+   - create or refine one child surface if needed
+   - create or refine one docs companion if needed
+   - add loulou links so the surfaces actually form one system
 
-5. VERIFY:
-   - #iam toml correct in all three
-   - loulou links connect the three surfaces
-   - constraints not invariants in SKILL
-   - no ala anywhere
-   - 6 glyph lines only in invariant OODA-HA
-   - bullet-list phase sections in SKILL, no sub-loops
+5. VERIFY.
+   - parent stays small and cacheable
+   - implements set matches the true role
+   - SKILL frontmatter and constraints field read correctly
+   - docs file states non-law posture near the top
+   - named `pranala` sugar reads consistently and does not spawn legacy sidebars
+   - no nested sub-loops in the parent OODA-HA
+   - file siting follows loci rules
+
+6. CLOSE HONESTLY.
+   - name what left the parent
+   - name what still needs another pass
+   - queue the next overloaded file
 ```
+
+<<~/ahu >>
+
+<<~ ahu #done-pattern >>
+
+## Done Pattern
+
+A pass counts as done when:
+
+- the parent now reads as minimal invariant pressure
+- the parent no longer carries obvious tutorial or archive swell
+- child and docs surfaces hold the outward matter cleanly
+- links between the surfaces work in both directions where needed
+- the new shape helps the next reader decide faster, not slower
 
 <<~/ahu >>
 
@@ -159,9 +223,20 @@ Begin with `meme.md`.
 
 ## Reference Exemplars
 
-Invariant: `lares/ha-ka-ba/api/v0.1/pono/loci.md`, `lares/ha-ka-ba/api/v0.1/pono/lar-uri.md`, `lares/ha-ka-ba/api/v0.1/pono/invariant.md`
-SKILL: `lares/ha-ka-ba/api/v0.1/pono/loci/SKILL.md`, `lares/ha-ka-ba/api/v0.1/pono/invariant/SKILL.md`
-Docs: `lares/ha-ka-ba/docs/pono/loci.md`, `lares/ha-ka-ba/docs/pono/lar-uri.md`
+Parent invariants:
+- `lares/ha-ka-ba/api/v0.1/pono/loci.md`
+- `lares/ha-ka-ba/api/v0.1/pono/lar-uri.md`
+- `lares/ha-ka-ba/api/v0.1/pono/invariant.md`
+
+Child surfaces:
+- `lares/ha-ka-ba/api/v0.1/pono/loci/SKILL.md`
+- `lares/ha-ka-ba/api/v0.1/pono/invariant/SKILL.md`
+- `lares/ha-ka-ba/api/v0.1/pono/loci/iam.md`
+
+Docs companions:
+- `lares/ha-ka-ba/docs/pono/loci.md`
+- `lares/ha-ka-ba/docs/pono/lar-uri.md`
+- `lares/ha-ka-ba/docs/lararium.md`
 
 <<~/ahu >>
 

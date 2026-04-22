@@ -53,6 +53,23 @@ Use this branch for:
 
 <<~/ahu >>
 
+<<~ ahu #sigil-arrival >>
+
+## The Sigils Teach by Arrival
+
+Not invariant law — reader and agent orientation.
+
+A worksite ahu #socket appears because a #socket means somewhere to go.
+A flow-edge pranala #stream appears because pressure already moves.
+The sigils in mu.md do not serve as examples of a grammar defined elsewhere.
+The sigils enact the grammar already in motion.
+
+Human reader: watch the grammar teach itself.
+Agent reader: carry only the pressure that arrives.
+AST reader: read the sockets, then route.
+
+<<~/ahu >>
+
 <<~ ahu #edges >>
 
 ## Edges

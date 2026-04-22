@@ -36,7 +36,9 @@ lifecycle-layers = ["template", "instance", "trace"]
 
 One typed, directed, acyclic edge between two sockets.
 
-<<~ aka lar:///ha.ka.ba/api/v0.1/pono/ooda-ha >>
+<<~/ahu >>
+
+<<~ ahu #ooda-ha >>
 
 ✶ Inventory hidden edge claims — name family, traversal, propagation, role distinctly.
 ⏿ Keep family from collapsing into lifecycle; traversal from collapsing into propagation.
@@ -184,62 +186,6 @@ label = "parent owns child"
 
 <<~/ahu >>
 
-<<~ ahu #examples >>
-
-## Examples
-
-```text
-<<~ pranala ? -> lar:///ha.ka.ba/api/v0.1/mu#entry family:relation >>
-```
-
-```text
-<<~ pranala lar:///A#out -> lar:///B#in family:relation >>
-```
-
-Sigil sugar long-forms:
-
-````text
-<<~ pranala #link ? -> URI >>
-```toml
-family = "relation"
-lifecycle = "instance"
-label = "outgoing link"
-alias = "loulou"
-```
-<<~/pranala >>
-````
-
-````text
-<<~ pranala #shadow ? -> URI >>
-```toml
-family = "observe"
-lifecycle = "instance"
-label = "shadow transclusion"
-alias = "aka"
-```
-<<~/pranala >>
-````
-
-````text
-<<~ pranala #live ? -> URI >>
-```toml
-family = "dataflow"
-lifecycle = "instance"
-label = "live transclusion"
-alias = "kahea"
-```
-<<~/pranala >>
-````
-
-Reciprocal pressure — two parallel edges, not one bidirectional arc:
-
-```text
-<<~ pranala lar:///A#entity -> lar:///B#entity family:control role:owns traversal:source-to-target propagation:push-back >>
-<<~ pranala lar:///B#entity -> lar:///A#entity family:message role:references propagation:push-back >>
-```
-
-<<~/ahu >>
-
 <<~ ahu #edges >>
 
 <<~ pranala #edge-ahu ? -> lar:///ha.ka.ba/api/v0.1/grammar/ahu family:relation >>
@@ -247,23 +193,12 @@ Reciprocal pressure — two parallel edges, not one bidirectional arc:
 <<~ pranala #edge-aka ? -> lar:///ha.ka.ba/api/v0.1/grammar/aka family:relation >>
 <<~ pranala #edge-kahea ? -> lar:///ha.ka.ba/api/v0.1/grammar/kahea family:relation >>
 
+<<~ loulou lar:///ha.ka.ba/docs/pono/pranala >>
+
 <<~/ahu >>
 
 <<~&#x0003; ahu #body-close >>
 pranala closes
-<<~/ahu >>
-
-<<~ ahu #meme-footer >>
-Pressure carried:
-
-one directed acyclic edge per pranala
-family · lifecycle · traversal · propagation · role · cardinality
-DAG invariant holds across all families
-OODA-HA intact
-sidecars later
-
-<<~ loulou lar:///ha.ka.ba/api/v0.1/pono/pranala/research >>
-
 <<~/ahu >>
 
 <<~&#x0004; -> ? >>

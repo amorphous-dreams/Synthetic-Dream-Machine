@@ -53,6 +53,21 @@ Use this branch for:
 
 <<~/ahu >>
 
+<<~ ahu #mechanics-shelf >>
+
+## Mechanics Shelf
+
+The lararium keeps the mechanics layer small enough to cold-hydrate:
+
+- the HUD-facing instrument panel has a room (`lararium/hud`)
+- the voice-house has a room (`lararium/voices`)
+- continuity pressure has a room (`lararium/continuity`)
+- session dials continue in `lar:///LARES`
+
+The rooms may deepen later without moving the seat again.
+
+<<~/ahu >>
+
 <<~ ahu #edges >>
 
 ## Edges

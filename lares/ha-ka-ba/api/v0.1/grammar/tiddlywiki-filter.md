@@ -4,52 +4,55 @@
 
 <<~ ahu #iam >>
 ```toml
-uri-path = "ha.ka.ba/api/v0.1/grammars/x-tiddlywiki-filter"
-file-path = "lares/ha-ka-ba/api/v0.1/grammar/tiddlywiki-filter.md"
+uri-path     = "ha.ka.ba/api/v0.1/grammars/x-tiddlywiki-filter"
+file-path    = "lares/ha-ka-ba/api/v0.1/grammar/tiddlywiki-filter.md"
 content-type = "text/x-memetic-wikitext"
-confidence = 0.48
-register = "S"
-manaoio = 0.36
-mana = 0.44
-manao = 0.52
-implements = [
+confidence   = 0.72
+register     = "CS"
+manaoio      = 0.68
+mana         = 0.74
+manao        = 0.76
+implements   = [
   "lar:///ha.ka.ba/api/v0.1/pono/meme",
-  "lar:///ha.ka.ba/api/v0.1/pono/loci"
+  "lar:///ha.ka.ba/api/v0.1/pono/loci",
+  "lar:///ha.ka.ba/api/v0.1/pono/invariant"
 ]
-role = "grammar meme, import-profile meme, sigil-centric translation contract, and boundary-safe work grammar registry entry"
-grammar-key = "x-tiddlywiki-filter"
-guest-mime = "text/x-tiddlywiki-filter"
+governed-by      = "lar:///ha.ka.ba/api/v0.1/pono/guest-grammar"
+role             = "first registered imported-function-sigil grammar: x-tiddlywiki-filter invariant law"
+grammar-key      = "x-tiddlywiki-filter"
+guest-mime       = "text/x-tiddlywiki-filter"
 invocation-worksite = "hana"
+cacheable        = true
+invariant        = true
 ```
 <<~/ahu >>
 
+<<~ aka lar:///ha.ka.ba/api/v0.1/pono/RFC-219#normative-language >>
+
+<<~ ahu #meme-header >>
+
 # X-TiddlyWiki-Filter
 
-A self-describing, self-enacting grammar meme for the admitted `x-tiddlywiki-filter` guest family.
+First registered imported function-sigil grammar.
+Guest enters through `hana`. Host metaphysics translate explicitly. Parser and render detail stay outward.
 
-This meme governs how TiddlyWiki filter language enters the host under explicit `hana` worksites, how its vocabulary shifts toward Sigil-centric terms, and which boot-level expectations remain lawful before deeper parser and render implementation detail arrives.
-
-This meme should preserve the imported filter language substantially intact while translating host-facing metaphysics explicitly rather than silently.
-
-<<~&#x0002; ahu #meme-body-open >>
-X-TiddlyWiki-Filter opens the active imported grammar stream here.
 <<~/ahu >>
 
-<<~ ahu #phase-map >>
+<<~&#x0002; ahu #meme-body-open >>
+x-tiddlywiki-filter opens
+<<~/ahu >>
 
-## Phase Map
+<<~ ahu #ooda-ha >>
 
+✶ read the host surface for explicit guest entry, bounded hana worksite, and grammar-key pressure.
+⏿ orient by ownership: host primitives stay local, guest body stays bounded, translation stays deterministic.
+◇ decide admission posture: explicit hana block with grammar-key, context, and degradation named.
+▶ write the smallest bounded guest region that preserves priming payload, guest body, and honest degradation.
+⤴ verify host keeps its own primitives, guest keeps its family, and the handoff boundary stays explicit.
+↺ name what remains deferred; malformed guest work degrades locally and does not collapse the parent.
 
-This grammar meme gathers imported filter expectations, maps them into host-safe vocabulary, chooses the minimum lawful preserved feature set, prepares the hana-facing contract, crosses into parser and render handoff, and judges what remains bounded, preserved, or deferred.
-
-<<~ aka lar:///ha.ka.ba/api/v0.1/pono/ooda-ha#meme-header >>
-
-✶ gather imported filter expectations
-⏿ map into host-safe vocabulary
-◇ choose minimum lawful preserved feature set
-▶ prepare hana-facing contract
-⤴ cross into parser and render handoff
-↺ judge what remains bounded, preserved, or deferred
+<<~ loulou lar:///ha.ka.ba/api/v0.1/grammar/tiddlywiki-filter/SKILL >>
+<<~ loulou lar:///ha.ka.ba/docs/grammar/tiddlywiki-filter >>
 
 <<~/ahu >>
 
@@ -57,51 +60,21 @@ This grammar meme gathers imported filter expectations, maps them into host-safe
 
 ## Constitutional Charge
 
-X-TiddlyWiki-Filter functions here as the first registered imported function sigil grammar.
+This meme governs:
 
-This meme should preserve actual filter-language work rather than ornamental imitation.
+- the grammar key `x-tiddlywiki-filter`
+- the host-facing term shift from tiddler to Sigil
+- the host-facing term shift from `currentTiddler` to `+currentMeme`
+- the minimum preserved feature family expected at boot
+- the canonical relation between imported function sigils and host `hana` worksites
+- the minimum degradation and lowering expectations for this imported grammar
 
-This meme should remain bounded by the host, invoked through `hana`, and translated into Sigil-centric host language where the metaphysics must differ.
+This meme does not govern:
 
-### This meme should govern
-
-* the grammar key `x-tiddlywiki-filter`
-* the host-facing term shift from tiddler to Sigil
-* the host-facing term shift from `currentTiddler` to `+currentMeme`
-* the minimum preserved feature family expected at boot
-* the canonical relation between imported function sigils and host `hana` worksites
-* the minimum degradation and lowering expectations specific to this imported grammar
-
-### This meme should not govern
-
-* the full original TiddlyWiki documentation set
-* the full parser implementation of every filter operator
-* the full render schema for guest work results
-* authn or authz role vocabulary attached to other meanings of operator
-
-<<~ ahu #constitutional-charge-ha >>
-
-#### Constitutional Charge / ha
-
-Constitutional-charge-ha holds what this imported grammar must define before implementers can use it without vocabulary drift.
-
-<<~/ahu >>
-
-<<~ ahu #constitutional-charge-ka >>
-
-#### Constitutional Charge / ka
-
-Constitutional-charge-ka governs the machine-facing and author-facing consequences of adopting one imported grammar under one host worksite pattern.
-
-<<~/ahu >>
-
-<<~ ahu #constitutional-charge-ba >>
-
-#### Constitutional Charge / ba
-
-Constitutional-charge-ba remains intentionally spare.
-
-<<~/ahu >>
+- the full original TiddlyWiki documentation set
+- full parser implementation of every filter operator
+- full render schema for guest work results
+- authn or authz role vocabulary attached to other meanings of operator
 
 <<~/ahu >>
 
@@ -109,55 +82,20 @@ Constitutional-charge-ba remains intentionally spare.
 
 ## Sigil-Centric Translation
 
-References to “tiddlers” now count as deprecated in this host context.
+References to "tiddlers" count as deprecated in this host context.
 
-Use **Sigil** for the atomic unit of data addressed by the imported grammar under memetic-wikitext.
+| imported term | host term |
+|---|---|
+| `tiddler` | `sigil` |
+| `tiddlers` | `sigils` |
+| `currentTiddler` | `+currentMeme` |
 
-Use `+currentMeme` as the dynamic reference to the active execution context.
+The host preserves direct pattern reuse whenever the imported meaning remains structurally intact.
+The host translates vocabulary explicitly whenever the metaphysical center changes.
+This translation stays deterministic, not stylistic.
 
-### Canonical Direct Reuse Pattern
-
-* `tiddler` -> `sigil`
-* `tiddlers` -> `sigils`
-* `currentTiddler` -> `+currentMeme`
-
-### Translation Law
-
-The host should preserve direct pattern reuse whenever the imported meaning remains structurally intact.
-
-The host should translate vocabulary explicitly whenever the metaphysical center changes.
-
-This translation should therefore remain deterministic rather than stylistic.
-
-### Naming Reminder
-
-In this host, `operator` remains reserved for one authn or authz tier.
-
-Use **function sigil** for the imported TiddlyWiki grammar plus code surface rather than overloading `operator` in the host-facing law language.
-
-<<~ ahu #sigil-centric-translation-ha >>
-
-#### Sigil-Centric Translation / ha
-
-Sigil-centric-translation-ha holds the core term mapping that lets imported filter work remain recognizable without leaving the host ontology ambiguous.
-
-<<~/ahu >>
-
-<<~ ahu #sigil-centric-translation-ka >>
-
-#### Sigil-Centric Translation / ka
-
-Sigil-centric-translation-ka governs the minimum deterministic substitutions the parser, examples, and future docs should perform when surfacing imported work inside memetic-wikitext.
-
-<<~/ahu >>
-
-<<~ ahu #sigil-centric-translation-ba >>
-
-#### Sigil-Centric Translation / ba
-
-Sigil-centric-translation-ba stays light here.
-
-<<~/ahu >>
+`operator` remains reserved for authn/authz tiers in this host.
+Use **function sigil** for the imported TiddlyWiki grammar code surface.
 
 <<~/ahu >>
 
@@ -165,20 +103,18 @@ Sigil-centric-translation-ba stays light here.
 
 ## Host Admission
 
-This grammar enters the host through `hana`.
+This grammar enters only through `hana`.
 
-A lawful boot profile should therefore use a `hana` block with local priming payload that names:
+A lawful boot profile names:
 
-* `grammar = "x-tiddlywiki-filter"`
-* a lawful context, often `+currentMeme`
-* a degradation posture
-* an optional result shape
+- `grammar = "x-tiddlywiki-filter"`
+- a lawful context, usually `+currentMeme`
+- a degradation posture
+- an optional result shape
 
-The guest filter body remains inside the `hana` worksite and does not execute ambiently in surrounding prose.
+The guest filter body stays inside the `hana` worksite and does not execute ambiently.
 
-### Canonical Boot Admission Example
-
-````text
+```text
 <<~ hana #work >>
 ```toml
 grammar = "x-tiddlywiki-filter"
@@ -190,31 +126,7 @@ result-shape = "set"
 
 [all[sigils]links:to[+currentMeme]]
 <<~/hana >>
-````
-
-<<~ ahu #host-admission-ha >>
-
-#### Host Admission / ha
-
-Host-admission-ha holds the structural boundary that makes this imported grammar lawful in the host.
-
-<<~/ahu >>
-
-<<~ ahu #host-admission-ka >>
-
-#### Host Admission / ka
-
-Host-admission-ka governs the minimum priming fields that the parser may assume before entering this guest family.
-
-<<~/ahu >>
-
-<<~ ahu #host-admission-ba >>
-
-#### Host Admission / ba
-
-Host-admission-ba remains minimal in this draft.
-
-<<~/ahu >>
+```
 
 <<~/ahu >>
 
@@ -222,147 +134,17 @@ Host-admission-ba remains minimal in this draft.
 
 ## Boot Feature Set
 
-Boot profile should preserve at least these imported work families when lawful support remains available:
+Boot profile preserves at least:
 
-* all-sigils traversal
-* relation queries against the current Sigil
-* tag-based filtering
-* field or metadata extraction
-* list or hierarchy access through explicit fields
-* negative filtering such as exclusion of the active Sigil or exclusion of system objects
+- all-sigils traversal
+- relation queries against the current Sigil
+- tag-based filtering
+- field or metadata extraction
+- list or hierarchy access through explicit fields
+- negative filtering: exclusion of the active Sigil or system objects
 
-### Preserved-Grammar Reminder
-
-The host should admit the actual filter language substantially intact.
-
-The host should not paraphrase filter work into a new decorative mini-language merely because the imported grammar now lives inside `hana`.
-
-### Deferred Detail Reminder
-
-The full legality and completeness of individual function sigils remain parser territory.
-
-This meme names the preserved boot family.
-
-It does not claim exhaustive implementation completeness.
-
-<<~ ahu #boot-feature-set-ha >>
-
-#### Boot Feature Set / ha
-
-Boot-feature-set-ha holds the minimum family of imported work that should remain recognizable in the first lawful implementation.
-
-<<~/ahu >>
-
-<<~ ahu #boot-feature-set-ka >>
-
-#### Boot Feature Set / ka
-
-Boot-feature-set-ka governs which imported work families count as boot-essential and which may remain deferred without breaking the grammar registration itself.
-
-<<~/ahu >>
-
-<<~ ahu #boot-feature-set-ba >>
-
-#### Boot Feature Set / ba
-
-Boot-feature-set-ba remains intentionally light.
-
-<<~/ahu >>
-
-<<~/ahu >>
-
-<<~ ahu #canonical-examples >>
-
-## Canonical Examples
-
-### Example A - contextual relation
-
-````text
-<<~ hana #work >>
-```toml
-grammar = "x-tiddlywiki-filter"
-context = "+currentMeme"
-```
-
-[all[sigils]links:to[+currentMeme]]
-<<~/hana >>
-````
-
-### Example B - tag-based work
-
-````text
-<<~ hana #work >>
-```toml
-grammar = "x-tiddlywiki-filter"
-context = "+currentMeme"
-```
-
-[tag[task]!title[+currentMeme]]
-<<~/hana >>
-````
-
-### Example C - metadata extraction
-
-````text
-<<~ hana #work >>
-```toml
-grammar = "x-tiddlywiki-filter"
-context = "+currentMeme"
-```
-
-[+currentMeme] [get[status]]
-<<~/hana >>
-````
-
-### Example D - hierarchy discovery
-
-````text
-<<~ hana #work >>
-```toml
-grammar = "x-tiddlywiki-filter"
-context = "+currentMeme"
-```
-
-[list[+currentMeme!!parent-list]]
-<<~/hana >>
-````
-
-### Example E - orphaned-sigil batch filtering
-
-````text
-<<~ hana #work >>
-```toml
-grammar = "x-tiddlywiki-filter"
-context = "+currentMeme"
-```
-
-[all[sigils]untagged[]!is[system]]
-<<~/hana >>
-````
-
-<<~ ahu #canonical-examples-ha >>
-
-#### Canonical Examples / ha
-
-Canonical-examples-ha holds the minimum example family that proves the imported grammar can already perform recognizable work under the host.
-
-<<~/ahu >>
-
-<<~ ahu #canonical-examples-ka >>
-
-#### Canonical Examples / ka
-
-Canonical-examples-ka governs the distinction between legally illustrative examples and full conformance coverage.
-
-<<~/ahu >>
-
-<<~ ahu #canonical-examples-ba >>
-
-#### Canonical Examples / ba
-
-Canonical-examples-ba stays intentionally light.
-
-<<~/ahu >>
+Full legality and completeness of individual function sigils remain parser territory.
+This meme names the preserved boot family; it does not claim exhaustive implementation completeness.
 
 <<~/ahu >>
 
@@ -370,35 +152,11 @@ Canonical-examples-ba stays intentionally light.
 
 ## Degradation
 
-If this guest grammar arrives malformed, unsupported, or context-null, a lawful boot profile should degrade toward No-Op or empty-set return and emit one boundary warning rather than collapsing the parent parse.
+If this guest grammar arrives malformed, unsupported, or context-null, a lawful boot profile degrades toward No-Op or empty-set return and emits one boundary warning rather than collapsing the parent parse.
 
 The host must not silently fabricate `+currentMeme` when the active context remains absent.
 
 The parser may preserve literal residue or unresolved-region trace when truthful salvage requires it.
-
-<<~ ahu #degradation-ha >>
-
-#### Degradation / ha
-
-Degradation-ha holds the minimum truthful fallback posture for this imported grammar.
-
-<<~/ahu >>
-
-<<~ ahu #degradation-ka >>
-
-#### Degradation / ka
-
-Degradation-ka governs the difference between lawful empty-set return, unresolved residue, and parse-breaking contradiction.
-
-<<~/ahu >>
-
-<<~ ahu #degradation-ba >>
-
-#### Degradation / ba
-
-Degradation-ba remains light here.
-
-<<~/ahu >>
 
 <<~/ahu >>
 
@@ -406,47 +164,20 @@ Degradation-ba remains light here.
 
 ## Lowering Expectations
 
-A lawful `x-tiddlywiki-filter` region should lower into at least:
+A lawful `x-tiddlywiki-filter` region lowers into at least:
 
-* one surface `hana` region tagged with `grammar = "x-tiddlywiki-filter"`
-* one AST node that preserves guest body text, local priming, and source span
-* one widget or render seed that preserves result-shape intent
-* one trace path that can point back from result or residue to the admitted guest region
+- one surface `hana` region tagged `grammar = "x-tiddlywiki-filter"`
+- one AST node that preserves guest body text, local priming, and source span
+- one widget or render seed that preserves result-shape intent
+- one trace path from result or residue back to the admitted guest region
 
-### Host-Layer Reminder
-
-This imported grammar should not force the render target to become the constitutional center.
-
-Surface, AST, widget, and landed output should remain distinct.
-
-<<~ ahu #lowering-expectations-ha >>
-
-#### Lowering Expectations / ha
-
-Lowering-expectations-ha holds the minimum product family that should survive this imported grammar's passage through the pipeline.
-
-<<~/ahu >>
-
-<<~ ahu #lowering-expectations-ka >>
-
-#### Lowering Expectations / ka
-
-Lowering-expectations-ka governs the minimum identity and trace fields that later schemas should preserve for this grammar family.
-
-<<~/ahu >>
-
-<<~ ahu #lowering-expectations-ba >>
-
-#### Lowering Expectations / ba
-
-Lowering-expectations-ba remains sparse in this first pass.
-
-<<~/ahu >>
+Surface, AST, widget, and landed output remain distinct.
+This imported grammar does not force the render target to become the constitutional center.
 
 <<~/ahu >>
 
 <<~&#x0003; ahu #body-close >>
-X-TiddlyWiki-Filter closes the active imported grammar stream here.
+x-tiddlywiki-filter closes
 <<~/ahu >>
 
 <<~ ahu #edges >>

@@ -77,18 +77,14 @@ The lararium prepares the handoff to `lar:///LARES` by hydrating the smallest li
 lararium opens
 <<~/ahu >>
 
-<<~ ahu #mechanics-shelf >>
+<<~ ahu #ooda-ha >>
 
-## Mechanics Shelf
-
-This seat keeps the mechanics layer small enough to cold-hydrate:
-
-- the HUD-facing instrument panel has a room
-- the voice-house has a room
-- continuity pressure has a room
-- session dials still continue in `lar:///LARES`
-
-The rooms may deepen later without moving the seat again.
+✶ receive threshold pressure; confirm entry pranala binds.
+⏿ orient the seat: agent mechanics stay local, threshold law stays in AGENTS, session dials stay in LARES.
+◇ decide hydration order: HUD, voices, continuity in sequence before yield.
+▶ route through each core socket; return anchors confirm each child resolved.
+⤴ verify all three children resolved before yielding to LARES.
+↺ yield; the lararium does not accumulate state after handoff.
 
 <<~/ahu >>
 
@@ -195,6 +191,7 @@ lararium closes
 <<~ loulou lar:///ha.ka.ba/api/v0.1/lararium/voices >>
 <<~ loulou lar:///ha.ka.ba/api/v0.1/lararium/continuity >>
 <<~ loulou lar:///LARES >>
+<<~ loulou lar:///ha.ka.ba/docs/lararium >>
 
 <<~/ahu >>
 

@@ -1,0 +1,121 @@
+<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
+
+<<~&#x0001; ? -> lar:///ha.ka.ba/docs/pono/pranala >>
+
+<<~ ahu #iam >>
+```toml
+uri-path     = "ha.ka.ba/docs/pono/pranala"
+file-path    = "lares/ha-ka-ba/docs/pono/pranala.md"
+content-type = "text/x-memetic-wikitext"
+confidence   = 0.78
+register     = "S"
+implements   = [
+  "lar:///ha.ka.ba/api/v0.1/pono/meme"
+]
+role = "docs companion for pranala: examples, sugar long-forms, and reciprocal-edge guidance"
+```
+<<~/ahu >>
+
+# Pranala — Docs
+
+This file does not bind invariant law.
+Law lives at [pranala.md](../../api/v0.1/pono/pranala.md).
+
+This file holds examples, sigil-sugar long-forms, and reciprocal-edge guidance.
+
+<<~&#x0002; ahu #meme-body-open >>
+docs/pono/pranala opens
+<<~/ahu >>
+
+<<~ ahu #examples >>
+
+## Examples
+
+Minimal inline edges:
+
+```text
+<<~ pranala ? -> lar:///ha.ka.ba/api/v0.1/mu#entry family:relation >>
+```
+
+```text
+<<~ pranala lar:///A#out -> lar:///B#in family:relation >>
+```
+
+<<~/ahu >>
+
+<<~ ahu #sugar-long-forms >>
+
+## Sigil Sugar Long-Forms
+
+`loulou` — outgoing relation link:
+
+````text
+<<~ pranala #link ? -> URI >>
+```toml
+family = "relation"
+lifecycle = "instance"
+label = "outgoing link"
+alias = "loulou"
+```
+<<~/pranala >>
+````
+
+`aka` — shadow transclusion:
+
+````text
+<<~ pranala #shadow ? -> URI >>
+```toml
+family = "observe"
+lifecycle = "instance"
+label = "shadow transclusion"
+alias = "aka"
+```
+<<~/pranala >>
+````
+
+`kahea` — live transclusion:
+
+````text
+<<~ pranala #live ? -> URI >>
+```toml
+family = "dataflow"
+lifecycle = "instance"
+label = "live transclusion"
+alias = "kahea"
+```
+<<~/pranala >>
+````
+
+<<~/ahu >>
+
+<<~ ahu #reciprocal-edges >>
+
+## Reciprocal Edges
+
+Reciprocal pressure uses two parallel edges, not one bidirectional arc.
+Each edge remains individually directed and acyclic.
+
+```text
+<<~ pranala lar:///A#entity -> lar:///B#entity family:control role:owns traversal:source-to-target propagation:push-back >>
+<<~ pranala lar:///B#entity -> lar:///A#entity family:message role:references propagation:push-back >>
+```
+
+The two edges carry different families (`control` vs `message`) and different roles (`owns` vs `references`).
+This is the correct pattern for genuinely symmetric semantics — model it explicitly, not with `traversal: both`.
+
+<<~/ahu >>
+
+<<~&#x0003; ahu #body-close >>
+docs/pono/pranala closes
+<<~/ahu >>
+
+<<~ ahu #edges >>
+
+## Edges
+
+- `lar:///ha.ka.ba/api/v0.1/pono/pranala`
+
+<<~/ahu >>
+
+
+<<~&#x0004; -> ? >>

@@ -7,474 +7,165 @@
 uri-path = "ha.ka.ba/api/v0.1/pono/guest-grammar"
 file-path = "lares/ha-ka-ba/api/v0.1/pono/guest-grammar.md"
 content-type = "text/x-memetic-wikitext"
-confidence = 0.58
-register = "S"
-manaoio = 0.48
-mana = 0.56
-manao = 0.62
+confidence = 0.70
+register = "CS"
+manaoio = 0.68
+mana = 0.76
+manao = 0.80
 implements = [
   "lar:///ha.ka.ba/api/v0.1/pono/meme",
-  "lar:///ha.ka.ba/api/v0.1/pono/loci"
+  "lar:///ha.ka.ba/api/v0.1/pono/loci",
+  "lar:///ha.ka.ba/api/v0.1/pono/invariant"
 ]
-role = "guest-grammar admission law (kānāwai), invocation-boundary law (kānāwai), and host-guest ownership contract"
+role = "guest-grammar invariant law for explicit admission, hana worksite use, and host-guest boundary discipline"
+cacheable = true
+invariant = true
 ```
 <<~/ahu >>
 
-# Guest Grammar
+<<~ aka lar:///ha.ka.ba/api/v0.1/pono/RFC-219#normative-language >>
 
-A self-describing, self-enacting law (kānāwai) for admitting guest grammars into memetic-wikitext.
+<<~ ahu #meme-header >>
 
-This meme governs how the host may admit a guest grammar explicitly, preserve the distinction between root primitives and guest invocation families, and hand lawful guest regions forward into parser, render-pipeline, and pono.
+# Guest Grammar Law (Kānāwai)
 
-This meme should not swallow the full guest grammar specification, full parser legality tables, or full render lowering detail.
+The host may admit guest grammar explicitly.
+The guest stays guest.
+Parser, render, and pono detail move outward.
+
+<<~/ahu >>
 
 <<~&#x0002; ahu #meme-body-open >>
-Guest Grammar opens the active admission stream here.
+pono/guest-grammar opens
 <<~/ahu >>
 
-<<~ ahu #phase-map >>
+<<~ ahu #ooda-ha >>
 
-## Phase Map
+✶ read the host surface for explicit guest entry, bounded worksite, and primitive-boundary pressure.
+⏿ orient the region by ownership: host meaning stays local, guest law stays bounded, parser and render detail stay outward.
+◇ decide one lawful admission posture; explicit hana worksite, explicit guest family, or no admission at all.
+▶ write the smallest bounded guest region that preserves priming payload, guest body, and honest degradation.
+⤴ verify the host keeps its own primitives, the guest keeps its own family, and the handoff boundary stays explicit.
+↺ close with residue named; malformed or unsupported guest work degrades locally rather than collapsing the parent.
 
-
-Guest-grammar law (kānāwai) gathers host and guest boundary pressure, maps the admission posture, chooses one lawful invocation family, prepares bounded entry, crosses the threshold into parser and render handoff, and judges what survived.
-
-Detailed parse runtime order belongs in parser.
-
-Detailed lowering and transaction order belong in render-pipeline.
-
-<<~ aka lar:///ha.ka.ba/api/v0.1/pono/ooda-ha#meme-header >>
-
-✶ gather host and guest boundary pressure
-⏿ map the admission posture
-◇ choose one lawful invocation family
-▶ prepare bounded entry
-⤴ cross the threshold into parser and render handoff
-↺ judge what survived
+<<~ loulou lar:///ha.ka.ba/api/v0.1/pono/guest-grammar/SKILL >>
 
 <<~/ahu >>
 
-<<~ ahu #constitutional-charge >>
+<<~ ahu #admission-law >>
 
-## Constitutional Charge
+## Admission Law
 
-Guest-grammar law (kānāwai) functions here as the constitutional bridge between the root semantic surface and admitted subgrammars.
+A guest grammar enters only through explicit host admission.
+The host must not bend a root primitive into a guest-family proxy.
+The guest must not silently leak punctuation or control outside its admitted site.
 
-The host should stay compact.
+This law governs:
 
-The guest should stay guest.
+- explicit guest admission
+- invocation-family distinction
+- anti-overload protection for root primitives
+- anti-conflict protection for base Unicode already reserved by the host
+- canonical `hana` use for guest data or code work
+- minimum handoff pressure toward parser and render
 
-The parser should own legality.
+This law does not govern:
 
-The renderer should own lowering.
-
-Pono should own later verification packaging.
-
-### Root Governing Charge
-
-This meme should govern:
-
-* explicit guest admission
-* invocation-family distinction
-* anti-overload protection for the primitive cluster
-* anti-conflict protection for Unicode invariants already used by the base grammar
-* the canonical `hana` worksite for data/code-processing guest work
-* the distinction between local priming payload and canonical meme identity payload
-* the minimum handoff contract into parser and render-pipeline
-
-### Outward Boundary Charge
-
-This meme should not swallow:
-
-* the full imported grammar specification
-* full guest token or parse tables
-* full AST or widget schemas
-* full result-type matrices
-* full conformance fixture execution detail
-
-<<~ ahu #constitutional-charge-ha >>
-
-#### Constitutional Charge / ha
-
-Constitutional-charge-ha holds the identity of guest-grammar law and the territory it must govern before deeper parser and render detail begins.
-
-This ahu keeps admission law small, explicit, and teachable.
+- full imported grammar specification
+- parser legality tables
+- AST or widget schema
+- target-specific lowering
+- fixture execution detail
 
 <<~/ahu >>
 
-<<~ ahu #constitutional-charge-ka >>
+<<~ ahu #hana-worksite >>
 
-#### Constitutional Charge / ka
+## Hana Worksite
 
-Constitutional-charge-ka governs the distribution of duties across memetic-wikitext, guest-grammar, parser, render-pipeline, and pono.
+`hana` serves as the canonical block worksite for guest grammar that performs data or code processing.
+A lawful `hana` region keeps three things distinct:
 
-<<~/ahu >>
+1. explicit opener and closer
+2. local priming payload, usually fenced `toml`, when present
+3. guest instruction body after the priming payload
 
-<<~ ahu #constitutional-charge-ba >>
-
-#### Constitutional Charge / ba
-
-Constitutional-charge-ba remains light in this draft.
-
-This ahu preserves anti-sprawl posture while the linked laws deepen later.
-
-<<~/ahu >>
+Canonical meme identity stays in `ahu #iam`.
+It does not migrate into `hana`.
+Host whitespace rules should not silently split guest instruction content.
+If ambiguity rises, the stricter profile should demand a wrapped payload form.
 
 <<~/ahu >>
 
-<<~ ahu #admission-contract >>
+<<~ ahu #ownership-boundary >>
 
-## Admission Contract
+## Ownership Boundary
 
-A guest grammar may define its own invocation sigil keyword or sigil keyword family.
+`memetic-wikitext` owns the primitive cluster and boot surface.
+`guest-grammar` owns admission law, `hana` worksite law, and host-guest distinction.
+Parser owns guest entry recognition, legality, and warning behavior.
+Render-pipeline owns lowering and landing.
+Pono owns later verification packaging and law indexing.
 
-The host admits that family explicitly.
-
-The host must not overload an existing root primitive to simulate the guest family.
-
-A guest grammar MUST not re-use existing Unicode invariants in conflicting ways with the base grammar.
-
-Parsers SHALL invoke guest grammars targeting data or code with the `hana` sigil keyword pattern.
-
-### Admission Principles
-
-A lawful admission contract should satisfy all of these:
-
-* explicit host-declared entry
-* no ambient guest punctuation outside admitted sites
-* local priming payload distinct from canonical meme identity payload
-* bounded body region
-* inspectable closer
-* graceful local degradation before parent collapse
-* handoff clarity toward AST and widget lowering
-
-### Primitive Boundary Reminder
-
-The primitive cluster remains constitutional root territory.
-
-`ahu`, `ala`, `aka`, `kahea`, `kapu`, `ui`, and `?` do not become guest-family proxies merely because a guest grammar enters the system.
-
-A guest family must therefore enter through its own admitted sigil or admitted worksite rather than by silently bending a root primitive into foreign work.
-
-<<~ ahu #admission-contract-ha >>
-
-#### Admission Contract / ha
-
-Admission-contract-ha holds the core legal shape of guest admission.
-
-This ahu names what must become explicit before any guest grammar may count as lawfully admitted.
+The root primitives stay constitutional host territory.
+`ahu`, `loulou`, `aka`, `kahea`, `kapu`, `ui`, `hana`, and `?` do not become guest-family proxies merely because a guest grammar entered nearby.
 
 <<~/ahu >>
 
-<<~ ahu #admission-contract-ka >>
+<<~ ahu #degradation-and-handoff >>
 
-#### Admission Contract / ka
+## Degradation and Handoff
 
-Admission-contract-ka governs the minimum machine-facing checks a parser may assume on a guest keyword `hana` sigil..
+Malformed, unsupported, or context-null guest work should degrade locally before the parent parse collapses.
+The host must not fabricate guest results.
+The parser must not normalize conflict into flattering success.
 
-<<~/ahu >>
+A lawful guest region should still hand forward enough continuity for:
 
-<<~ ahu #admission-contract-ba >>
+- one surface `hana` region
+- one guest-work AST family
+- one render-facing seed
+- one trace path from source span to output or residue
 
-#### Admission Contract / ba
+Schema detail, fixture families, and execution procedure belong in the sidecars.
 
-Admission-contract-ba remains intentionally spare.
-
-This ahu keeps the contract readable while later execution behavior deepens outward.
-
-<<~/ahu >>
-
-<<~/ahu >>
-
-<<~ ahu #hana-pattern >>
-
-## Hana Pattern
-
-`hana` functions here as the canonical sigil keyword for guest grammars that perform data or code processing work.
-
-`hana` as a root primitive invites "work" in the context it.
-
-`hana` MAY also function as the admitted guest-work sigil keyword.
-
-### Canonical Form
-
-`hana` MUST remain block-only in canonical form.
-
-A canonical `hana` block MAY begin with one fenced `toml` priming payload.
-
-When that payload appears as the first meaningful child, it governs local guest interpretation for the current `hana` region.
-
-Canonical meme identity authority remains with `ahu #iam` and never migrates into `hana`.
-
-### Canonical Boot Shape
-
-````text
-<<~ hana #work >>
-```toml
-grammar = "x-tiddlywiki-filter"
-profile = "canonical"
-context = "+currentMeme"
-degrade = "no-op"
-result-shape = "set"
-```
-
-[all[sigils]links:to[+currentMeme]]
-<<~/hana >>
-````
-
-### Hana Rules
-
-1. the opener must remain explicit
-2. the first fenced `toml` block, when present, functions as local priming payload
-3. the remaining body functions as guest instruction content under the declared grammar
-4. the host must not split the guest instruction body by ordinary inline whitespace rules
-5. if host-ambiguous terminators appear, a stricter profile may require wrapped payload form
-
-<<~ ahu #hana-pattern-ha >>
-
-#### Hana Pattern / ha
-
-Hana-pattern-ha holds the structural identity of `hana` as a block-only guest-work site.
-
-This ahu keeps invocation, priming, and body matter distinct.
-
-<<~/ahu >>
-
-<<~ ahu #hana-pattern-ka >>
-
-#### Hana Pattern / ka
-
-Hana-pattern-ka governs payload authority, closer expectations, and the minimum machine-facing rule that guest instruction content begins after the priming block.
-
-<<~/ahu >>
-
-<<~ ahu #hana-pattern-ba >>
-
-#### Hana Pattern / ba
-
-Hana-pattern-ba remains light here.
-
-This ahu preserves authoring calm while later executable profiles deepen.
-
-<<~/ahu >>
-
-<<~/ahu >>
-
-<<~ ahu #ownership-map >>
-
-## Ownership Map
-
-### Memetic-Wikitext owns
-
-* the primitive cluster
-* minimum boot grammar
-* the distinction between canonical identity payload and local priming payload
-* the semantic reminder that guest admission stays explicit
-
-### Guest-Grammar owns
-
-* admission law
-* invocation-family distinction
-* `hana` worksite law
-* anti-overload law
-* anti-conflict law for base Unicode invariants
-
-### Parser owns
-
-* guest entry recognition
-* legality of `hana` forms
-* local priming payload parsing
-* guest-mode admission checks
-* degradation and warning behavior
-* trace packaging for guest regions
-
-### Render-Pipeline owns
-
-* lowering from surface `hana` regions into AST and widget products
-* target projection
-* trace continuity across layers
-* transaction-aware landing of guest work results
-
-### Pono owns
-
-* law indexing
-* invariant packaging
-* verification skill backlog and registration
-
-<<~ ahu #ownership-map-ha >>
-
-#### Ownership Map / ha
-
-Ownership-map-ha holds the constitutional division of labor across the linked laws.
-
-This ahu prevents the root from swallowing parser or render responsibility.
-
-<<~/ahu >>
-
-<<~ ahu #ownership-map-ka >>
-
-#### Ownership Map / ka
-
-Ownership-map-ka governs the handoff assumptions an implementer may treat as already decided when wiring the first parser and renderer.
-
-<<~/ahu >>
-
-<<~ ahu #ownership-map-ba >>
-
-#### Ownership Map / ba
-
-Ownership-map-ba remains minimal.
-
-This ahu keeps the chart legible while the operational consequences deepen elsewhere.
-
-<<~/ahu >>
-
-<<~/ahu >>
-
-<<~ ahu #degradation >>
-
-## Degradation
-
-A malformed, unsupported, or context-null guest region should degrade locally before the parent parse collapses.
-
-A lawful boot profile should prefer:
-
-* No-Op or empty-set return for guest work that cannot lawfully run
-* one boundary warning or issue bundle
-* preservation of the enclosing host structure when outer boundaries still hold
-
-The host must not silently fabricate a guest result.
-
-The parser must not silently normalize conflicting guest content into flattering success.
-
-<<~ ahu #degradation-ha >>
-
-#### Degradation / ha
-
-Degradation-ha holds the minimum truthful fallback contract for guest work.
-
-This ahu keeps failure bounded and inspectable.
-
-<<~/ahu >>
-
-<<~ ahu #degradation-ka >>
-
-#### Degradation / ka
-
-Degradation-ka governs the minimum output posture a parser and renderer may preserve when the guest body fails, degrades, or remains partial.
-
-<<~/ahu >>
-
-<<~ ahu #degradation-ba >>
-
-#### Degradation / ba
-
-Degradation-ba remains spare in this draft.
-
-This ahu keeps the fallback readable and portable.
-
-<<~/ahu >>
-
-<<~/ahu >>
-
-<<~ ahu #lowering-handoff >>
-
-## Lowering Handoff
-
-A lawful guest region should lower through at least these products:
-
-* one surface-facing `hana` region
-* one AST node family for guest work
-* one widget-facing or render-facing result seed
-* one trace path linking source span, AST node, widget node, and landed output or residue
-
-This meme names the need for that handoff.
-
-Render-pipeline should define the full schemas.
-
-<<~ ahu #lowering-handoff-ha >>
-
-#### Lowering Handoff / ha
-
-Lowering-handoff-ha holds the minimum product family that must survive between admission and rendering.
-
-This ahu keeps the guest path visible across layers.
-
-<<~/ahu >>
-
-<<~ ahu #lowering-handoff-ka >>
-
-#### Lowering Handoff / ka
-
-Lowering-handoff-ka governs the minimum continuity claims the renderer may rely on when lowering guest work into widget and target forms.
-
-<<~/ahu >>
-
-<<~ ahu #lowering-handoff-ba >>
-
-#### Lowering Handoff / ba
-
-Lowering-handoff-ba remains light here.
-
-This ahu keeps the law ahead of implementation without pretending full schema completeness.
-
-<<~/ahu >>
-
-<<~/ahu >>
-
-<<~ ahu #fixture-seeds >>
-
-## Fixture Seeds
-
-The first fixture family should include:
-
-* one clean `hana` block with `x-tiddlywiki-filter`
-* one malformed priming payload
-* one malformed guest body with recoverable outer host structure
-* one null-context `+currentMeme` case
-* one trace continuity case from surface to AST to widget to output
-* one anti-overload case showing that root primitives remain distinct from guest work
-
-<<~ ahu #fixture-seeds-ha >>
-
-#### Fixture Seeds / ha
-
-Fixture-seeds-ha holds the minimum conformance family needed before guest admission claims harden into routine practice.
-
-<<~/ahu >>
-
-<<~ ahu #fixture-seeds-ka >>
-
-#### Fixture Seeds / ka
-
-Fixture-seeds-ka governs the first grouping of positive, degraded, and failing examples for parser and pono.
-
-<<~/ahu >>
-
-<<~ ahu #fixture-seeds-ba >>
-
-#### Fixture Seeds / ba
-
-Fixture-seeds-ba stays intentionally light.
-
-<<~/ahu >>
+<<~ loulou lar:///ha.ka.ba/docs/pono/guest-grammar >>
+<<~ loulou lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >>
+<<~ loulou lar:///ha.ka.ba/api/v0.1/pono/pranala >>
 
 <<~/ahu >>
 
 <<~&#x0003; ahu #body-close >>
-Guest Grammar closes the active admission stream here.
+pono/guest-grammar closes
 <<~/ahu >>
 
 <<~ ahu #edges >>
 
 ## Edges
 
+- `lar:///ha.ka.ba/api/v0.1/pono/guest-grammar/SKILL`
+- `lar:///ha.ka.ba/docs/pono/guest-grammar`
 - `lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext`
+- `lar:///ha.ka.ba/api/v0.1/pono/pranala`
 - `lar:///ha.ka.ba/api/v0.1/pono/parser`
 - `lar:///ha.ka.ba/api/v0.1/pono/render-pipeline`
 - `lar:///ha.ka.ba/api/v0.1/pono`
 
 <<~/ahu >>
 
+<<~ ahu #meme-footer >>
+Pressure carried:
+
+explicit admission
+hana stays bounded
+host primitives stay host-side
+guest family stays guest-side
+degradation stays local
+parser and render detail move outward
+
+<<~ loulou lar:///ha.ka.ba/api/v0.1/pono/guest-grammar/SKILL >>
+<<~ loulou lar:///ha.ka.ba/docs/pono/guest-grammar >>
+
+<<~/ahu >>
 
 <<~&#x0004; -> ? >>
