@@ -39,31 +39,14 @@ SESSION opens
 
 <<~ ahu #session-context >>
 
-## Session Context
+## Active Worksite
 
-Branch: `fix/green-jello-dinosaurs-3` | Scribe: Codex | Date: 2026-04-21 (updated 2026-04-21)
+Active work now centers in:
 
-This session continues the loci cleanup pattern, but the scope widens.
-We work in yin polarity: splitting, refining, cleaning.
-We do not inflate.
-We do not add ceremony for its own sake.
+- `lares/ha-ka-ba/docs/`
 
-Primary target set: large files under `lares/ha-ka-ba/api/v0.1` that would serve better as a minimal core invariant plus outward children.
-Usual destination pattern:
-
-- parent core invariant
-- child `SKILL.md` or another lawful child surface when operation needs its own room
-- companion docs meme under `lares/ha-ka-ba/docs/`
-
-When the parent functions as law, interface, and stable-address carrier, prefer the parent to implement:
-
-- `lar:///ha.ka.ba/api/v0.1/pono/meme`
-- `lar:///ha.ka.ba/api/v0.1/pono/loci`
-- `lar:///ha.ka.ba/api/v0.1/pono/invariant`
-
-Do not force that triple onto files that do not earn it.
-Small canonical references may stay single-surface.
-Child-only materials may stay children.
+Use `docs/` as the live worksite for archive consumption, staging shelves, witness migration, and later promotion into smaller stable loci memes.
+Keep `SESSION.md` free of per-branch queue state.
 
 <<~/ahu >>
 
@@ -221,39 +204,6 @@ Hold back when:
 - the file already stays small and sharp
 - the file functions mainly as a child, not a parent
 - the file reads as canonical reference material that would lose force from fragmentation
-
-<<~/ahu >>
-
-<<~ ahu #queue >>
-
-## Queue
-
-All original queue items completed this session.
-
-| file | final lines | child | docs | status |
-|---|---:|---|---|---|
-| `pono/memetic-wikitext.md` | ~200 | `memetic-wikitext/SKILL.md` | `docs/pono/memetic-wikitext.md` | ✓ split and staged |
-| `pono/meme.md` | ~200 | `meme/SKILL.md` | `docs/pono/meme.md` | ✓ split and staged |
-| `pono/guest-grammar.md` | ~150 | `guest-grammar/SKILL.md` | `docs/pono/guest-grammar.md` | ✓ split and staged |
-| `grammar/tiddlywiki-filter.md` | 195 | `tiddlywiki-filter/SKILL.md` | `docs/grammar/tiddlywiki-filter.md` | ✓ done |
-| `mu.md` | 250 | none | `docs/mu.md` | ✓ tightened; #show-not-tell → docs |
-| `pono/pranala.md` | 206 | none | `docs/pono/pranala.md` | ✓ examples → docs; #ooda-ha extracted |
-| `lararium.md` | 198 | none | `docs/lararium.md` | ✓ #ooda-ha added; #mechanics-shelf → docs |
-| `mu/the-syad-perspectives.md` | 226 | none | `docs/mu/the-syad-perspectives.md` | ✓ #ooda-ha added; #legacy-boundary → docs |
-| `pono/e-prime.md` | 178 | `e-prime/SKILL.md` | `docs/pono/e-prime.md` | ✓ #ooda-ha repositioned; research braid → docs |
-| `pono/ooda-ha.md` | 150 | none | none | ✓ #ooda-ha renamed; #meme-footer cut |
-| `pono/RFC-2119.md` | 80 | none | `docs/pono/RFC-2119.md` | ✓ renamed from RFC-219; 18 sub-blocks cut; docs with IETF links added |
-
-New surfaces created this session:
-- `grammar/tiddlywiki-filter/SKILL.md`
-- `docs/grammar/tiddlywiki-filter.md`
-- `docs/pono/pranala.md`
-- `docs/pono/e-prime.md`
-- `docs/pono/RFC-2119.md`
-
-All 31 stale `RFC-219` citations updated to `RFC-2119` across the stack.
-
-Next: broad review of all files in `lares/` to surface any remaining ha/ka/ba sub-blocks, misnamed OODA-Ha blocks, floating loulou lines, or other pattern violations outside the original queue.
 
 <<~/ahu >>
 

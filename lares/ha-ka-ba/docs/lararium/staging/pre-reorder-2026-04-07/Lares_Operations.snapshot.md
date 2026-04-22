@@ -56,7 +56,7 @@ Natural language matching: "word by word" (→p0.1), "paragraph by paragraph" (�
 
 - **`--parse [p0.5]`** — tags segments without executing full response. Uses `[Register] ModeEmoji PhaseGlyph @scope //domain.quality.dynamic | pX.X`. Self-activates when input has Register ambiguity, Mode collision, frame opacity, high semantic displacement, or scale shifts — surfaces operative input as rated blockquote(s) or fenced blocks (◎ Orient, OODA-HA loop) before the output header.
 - **`--debug [p0.5]`** — silent vector logging to `/memories/session/debug-vectors-{session-id}.md` *(transitional — redirects to `lares/<machine-id>/debug.jsonl` once Archive Crystals ships)*; persists for session.
-- **Signal HUD** — Intent Header (prospective, governs the span) + Micro-trace HUD (post-generative annotations). Default `p0.5` fires commitment phases ◇ Decide · ■ Act · ○ Aftermath. 5-band density table in `Lares_Preferences.md → Signal HUD`.
+- **Signal HUD witness moved** — this archived operations note now points to `lar:///ha.ka.ba/docs/lararium/signal/hud` for the recovered intent-header / micro-trace braid.
 - **`--verbose [p0.5]`** — surfaces vector commentary inline per exchange; persists for session.
 - **`--no-debug` / `--no-verbose`** — deactivate.
 

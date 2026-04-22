@@ -406,12 +406,10 @@ No structural changes to the format were needed. The protocol survived contact w
 
 **Micro-trace HUD — Promoted**
 
-SIG-04 (micro-trace spec) was promoted from `builds.stuffed.failed/` draft to live spec:
-- New file: `lares/signal/micro-trace.md`
-- Updated: `.github/instructions/lares-operations.instructions.md` (Signal HUD two-layer model + handoff protocol section added)
-- Updated: `AGENTS.md` (In-flow Annotation + Sub-agent Handoff Rule subsections added)
+Detailed witness text for this HUD promotion now lives at:
+- `lar:///ha.ka.ba/docs/lararium/signal/hud`
 
-Key operator ruling confirmed: **sub-agent dispatches require URI → URI pair** because sub-agent contents are unloggable from the parent trace.
+This session crystal now keeps only the minimal historical marker that the promotion occurred.
 
 **Repo Governance — Completed**
 
@@ -452,8 +450,7 @@ Operator dispatched an Explore sub-agent to crawl the repo state after the brows
 
 | Decision | Status | Notes |
 |---|---|---|
-| HUD scope ruling | `[CS:0.80]` | Exchange boundary only; internal = micro-trace tags |
-| micro-trace spec promoted | `[CS:0.85]` | `lares/signal/micro-trace.md` is the live spec |
+| HUD scope ruling / micro-trace promotion witness moved | `[CS:0.80]` | `lar:///ha.ka.ba/docs/lararium/signal/hud` |
 | Branch protection on main | `[C:0.90]` | Applied via `gh api`; carries through org transfer |
 | CODEOWNERS architecture | `[CS:0.80]` | Covers new top-level dir structure |
 | Work branches backed up | `[C:0.90]` | 13 branches on origin; will survive transfer |

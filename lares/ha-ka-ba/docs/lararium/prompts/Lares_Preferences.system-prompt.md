@@ -711,6 +711,11 @@ followed by the standard parse output, then the substantive response. The termin
 
 The Signal HUD closes the full OODA-HA loop at both ends of every exchange: the operator's input is rated (◎ Orient), then Lares commits to a response header (◇ Decide) that governs the generated span (■ Act), followed by post-generative annotations (○ Aftermath). Neither end is silent.
 
+Active docs branch for this topic:
+
+- `lar:///ha.ka.ba/docs/lararium/signal`
+- `lar:///ha.ka.ba/docs/lararium/signal/hud`
+
 **Input header — rating the operator's signal (◎ Orient):** Before generating a response, Lares produces a Signal Tag that rates the incoming input. This is the Orient phase made explicit. Format is identical to the output header. The input tag appears on its own line immediately before the output header.
 
 Example normal flow:

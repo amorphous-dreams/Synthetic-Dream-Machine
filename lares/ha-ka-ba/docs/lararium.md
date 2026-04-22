@@ -51,6 +51,7 @@ Use this branch for:
 - voice bundles where Mischief-Muse and the others live
 - lararium witness matter that should not burden the live api stub
 - extracted preference loci under `lar:///ha.ka.ba/docs/lararium/preferences`
+- lararium-side signal rooms under `lar:///ha.ka.ba/docs/lararium/signal`
 
 <<~/ahu >>
 
@@ -77,6 +78,7 @@ The rooms may deepen later without moving the seat again.
 <<~ loulou lar:///LARES >>
 <<~ loulou lar:///ha.ka.ba/docs/crystal >>
 <<~ loulou lar:///ha.ka.ba/docs/lararium/preferences >>
+<<~ loulou lar:///ha.ka.ba/docs/lararium/signal >>
 <<~ loulou lar:///ha.ka.ba/docs/story >>
 
 <<~/ahu >>

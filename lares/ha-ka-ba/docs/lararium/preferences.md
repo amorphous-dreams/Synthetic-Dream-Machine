@@ -73,7 +73,6 @@ This pass only promotes concepts that recur strongly enough to feel load-bearing
 - `lar:///ha.ka.ba/docs/lararium/preferences/voice-architecture`
 - `lar:///ha.ka.ba/docs/lararium/preferences/worker-personas`
 - `lar:///ha.ka.ba/docs/lararium/preferences/operating-modes`
-- `lar:///ha.ka.ba/docs/lararium/preferences/signal-hud`
 - `lar:///ha.ka.ba/docs/lararium/preferences/collaboration-model`
 - `lar:///ha.ka.ba/docs/lararium/preferences/frame-uncertainty`
 - `lar:///ha.ka.ba/docs/lararium/preferences/proactive-surfacing`
