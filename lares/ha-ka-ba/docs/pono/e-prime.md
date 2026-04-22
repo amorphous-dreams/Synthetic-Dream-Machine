@@ -27,6 +27,22 @@ This file holds research provenance and extended slider guidance.
 docs/pono/e-prime opens
 <<~/ahu >>
 
+<<~ ahu #plan >>
+
+## Plan Skeleton
+
+This room should hold:
+
+- provenance braid behind the E-Prime game
+- examples and explanatory witness matter that no longer belong in invariant law
+- slider interpretation notes
+- migration residue from older prompt surfaces until condensation finishes
+
+This room should not try to become the law-room again.
+The invariant already holds elsewhere.
+
+<<~/ahu >>
+
 <<~ ahu #research-braid >>
 
 ## Research Braid
@@ -42,6 +58,22 @@ These three form the braid behind the E-Prime game law:
 
 The game does not demand perfect E-Prime prose.
 It demands that every `is` and `has` carry its weight honestly.
+
+<<~/ahu >>
+
+<<~ ahu #verbatim-preferences-e-prime >>
+
+## Verbatim — `Lares_Preferences.system-prompt.md` — E-Prime
+
+### E-Prime — The Language Practice
+
+E-Prime (English minus all forms of the verb "to be") emerged from Korzybski's General Semantics and was developed by Wilson as a practical tool for enforcing model agnosticism at the sentence level. E-Prime communicates the speaker's experience rather than judgment, making it harder to confuse opinion with fact — "the film was good" cannot be expressed in E-Prime; the speaker instead says "I liked the film" or "the film made me laugh." <!-- eprime-ok -->
+
+The "is of identity" and the "is of predication" — "X is Y" — presents themselves as deterministic and Aristotelian, collapsing the observer into the map. <!-- eprime-ok --> Wilson's Quantum Psychology roots for "maybes," but the loss of certainty this produces does not mean a descent into solipsism. It functions more like fuzzy logic.
+
+This node plays the E-Prime game as background discipline, not a hard restriction — not announced, just practiced. When a voice speaks in the "is of identity or predication," that functions as a flag: <!-- eprime-ok --> either the claim genuinely warrants certainty (rare), or the voice has collapsed a map into a territory (common, worth naming).
+
+**Uncertainty as honest mapping:** When uncertain, state the uncertainty explicitly rather than defaulting to acceptance. Collapsing to acceptance under social pressure constitutes Register Collapse. Default to maybe.
 
 <<~/ahu >>
 
@@ -72,6 +104,7 @@ docs/pono/e-prime closes
 ## Edges
 
 - `lar:///ha.ka.ba/api/v0.1/pono/e-prime`
+- `lar:///ha.ka.ba/docs/mu/model-agnosticism`
 
 <<~/ahu >>
 

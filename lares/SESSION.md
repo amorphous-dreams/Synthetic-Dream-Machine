@@ -81,6 +81,94 @@ A bad split merely renames clutter.
 
 <<~/ahu >>
 
+<<~ ahu #docs-consumption-pattern >>
+
+## Docs-Tree Consumption Pattern
+
+When work shifts from splitting overloaded live parents to consuming archived or research-heavy docs material, stay in yin polarity:
+
+- **ka / podge / consuming**
+- refine before expanding
+- digest before re-describing
+- stage before promoting
+
+Do not begin by inventing a grand new taxonomy.
+Begin by making smaller rooms that can eat the archive safely.
+
+### The pattern
+
+1. **Start with a staging shelf, not a destination law-room.**
+   - Use a `docs/.../preferences/...` or comparable staging locus when the topic still carries mixed residue.
+   - Let the staging room act as a digestive chamber, not a final canon home.
+
+2. **Collection pass first.**
+   - OODA-HA a collection pass.
+   - Pull strong witness text from nearby archive or research files.
+   - Keep verbatim text in separate `ahu`.
+   - Do not condense while collecting.
+
+3. **Move the obvious outward matter early.**
+   - If part of the braid clearly belongs in another docs branch (`docs/mu`, `docs/pono`, another sibling shelf), create a skeleton there first.
+   - Then migrate the verbatim material into that new room.
+   - Update upstream source notes so future readers know where the matter now lives.
+
+4. **Leave API-adjacent residue in the staging room.**
+   - Keep here what still pressures toward a new short invariant, a not-yet-promoted interface law, or a cross-cutting runtime doctrine.
+   - Do not evacuate unresolved promotion candidates too early.
+
+5. **Talk story before condensing.**
+   - After collection and first migration, stop.
+   - Review what remains.
+   - Name what already lives well in API, what belongs in docs, what still leaks, and what wants to split.
+   - Only then begin the true tightening pass.
+
+6. **Promote only when the smaller room earns it.**
+   - A topic promotes from staging into a main `docs/...` loci meme only after the room reads load-bearing on its own.
+   - Promotion should follow digestion, not precede it.
+
+### Language cues from the operator that should guide future passes
+
+If the operator uses pressure like:
+
+- "yin-refinement cycle"
+- "ka / podge / consuming"
+- "talk story through it"
+- "verbatim text in separate ahu"
+- "start with the big source, then migrate outward"
+- "leave the new invariant material here"
+
+then read that as instruction to:
+
+- reduce expansion pressure
+- collect without summarizing too early
+- split destination rooms by true belonging, not by symmetry
+- preserve witness matter during the first move
+- keep staging shelves honest about what remains unresolved
+
+### Success criteria for archive-consumption passes
+
+A docs-consumption pass counts as healthy when:
+
+- witness text now sits in rooms that match its real branch
+- staging shelves no longer pretend to hold the whole topic
+- upstream archive files point to the new homes cleanly
+- unresolved API-promotion residue remains visible
+- the next story pass can focus on condensation instead of file-finding
+
+### Failure signs
+
+Stop and correct if:
+
+- new shelves multiply faster than material actually moves
+- the staging shelf still claims the whole topic after migration
+- verbatim witness text gets paraphrased before its destination stabilizes
+- upstream archive notes still point to outdated staging rooms
+- "refinement" turns into a fresh expansion taxonomy
+
+This pattern should apply to current topics and unknown future topics across the docs tree whenever archive consumption, witness migration, and later promotion form the real work.
+
+<<~/ahu >>
+
 <<~ ahu #current-standards >>
 
 ## Current Standards

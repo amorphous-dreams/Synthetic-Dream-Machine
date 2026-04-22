@@ -50,6 +50,7 @@ Use this branch for:
 - Chapel Perilous witness shelves
 - model-agnostic return and interpretive pressure
 - condensed research that explains Mu-facing invariant law
+- model agnosticism and reality-tunnel staging shelves during archive consumption
 
 <<~/ahu >>
 
@@ -77,6 +78,8 @@ AST reader: read the sockets, then route.
 <<~ loulou lar:///ha.ka.ba/api/v0.1/mu >>
 <<~ loulou lar:///ha.ka.ba/docs/mu/the-four-tools >>
 <<~ loulou lar:///ha.ka.ba/docs/mu/the-syad-perspectives >>
+<<~ loulou lar:///ha.ka.ba/docs/mu/model-agnosticism >>
+<<~ loulou lar:///ha.ka.ba/docs/mu/reality-tunnels >>
 
 <<~/ahu >>
 

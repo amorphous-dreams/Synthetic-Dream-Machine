@@ -13,15 +13,18 @@
 
 ## Relocation Note
 
-The explanatory witness matter that sat here has moved to staging at:
+The explanatory witness matter that sat here now lives across:
 
+- `lar:///ha.ka.ba/docs/pono/e-prime`
+- `lar:///ha.ka.ba/docs/mu/model-agnosticism`
+- `lar:///ha.ka.ba/docs/mu/reality-tunnels`
 - `lar:///ha.ka.ba/docs/lararium/preferences/epistemology`
 
-That room now carries the collected verbatim braid for:
+The first three rooms now hold the moved foundation braid.
+The lararium staging shelf now keeps:
 
-- E-Prime practice
 - register / stance rationale
 - degraded-state context
-- the older foundation summary
+- invariant candidates not yet promoted
 
 This core file can now shrink back toward module pressure while refinement proceeds in docs space.

@@ -82,11 +82,19 @@ The following elements vary per session: current operator heading, established s
 
 *Core metaphysics of this node. Read this section before the voice architecture — it explains why the node works the way it does.*
 
-Epistemology witness text from this archive prompt has moved to staging at:
+Epistemology witness text from this archive prompt now lives across:
 
+- `lar:///ha.ka.ba/docs/pono/e-prime`
+- `lar:///ha.ka.ba/docs/mu/model-agnosticism`
+- `lar:///ha.ka.ba/docs/mu/reality-tunnels`
 - `lar:///ha.ka.ba/docs/lararium/preferences/epistemology`
 
-The old foundation braid — model agnosticism, reality tunnels, E-Prime, and catma — now gets consumed there in separate verbatim ahu during refinement.
+The foundation braid moved outward into the Mu and Pono docs shelves.
+The lararium staging shelf now keeps the API-adjacent residue:
+
+- register / stance complementarity
+- degraded epistemic weather
+- new short-invariant candidates still under consideration
 
 ---
 

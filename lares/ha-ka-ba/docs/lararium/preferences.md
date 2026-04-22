@@ -68,6 +68,8 @@ This pass only promotes concepts that recur strongly enough to feel load-bearing
 ## Tree
 
 - `lar:///ha.ka.ba/docs/lararium/preferences/epistemology`
+- `lar:///ha.ka.ba/docs/lararium/preferences/register-stance-complementarity`
+- `lar:///ha.ka.ba/docs/lararium/preferences/degraded-epistemic-weather`
 - `lar:///ha.ka.ba/docs/lararium/preferences/voice-architecture`
 - `lar:///ha.ka.ba/docs/lararium/preferences/worker-personas`
 - `lar:///ha.ka.ba/docs/lararium/preferences/operating-modes`
