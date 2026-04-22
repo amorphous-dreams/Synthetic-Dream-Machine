@@ -102,41 +102,16 @@ This skill holds the when and how for settled wording.
 Scanning, flagging, before/after comparison, or direct correction on already-settled wording → activate this skill.
 Fresh composition → the always-on loci governs; this skill stays silent unless the task later turns to audit or Hoʻoko correction.
 
-<<~ ahu #trigger-ha >>
-
-### Trigger / ha
-
-Settled wording belongs here.
-Fresh generation belongs first to `lar:///ha.ka.ba/api/v0.1/pono/e-prime`.
-
 <<~/ahu >>
 
-<<~ ahu #trigger-ka >>
+<<~ ahu #ooda-ha >>
 
-### Trigger / ka
-
-The always-on loci presses the next sentence before it settles.
-This skill arrives only after that pressure failed to hold, or when the user explicitly asks to inspect the settled trace.
-
-<<~/ahu >>
-
-<<~ ahu #trigger-ba >>
-
-### Trigger / ba
-
-Invariant matter stays in the loci.
-This skill owns the secondary correction path and nothing more.
-
-<<~/ahu >>
-
-<<~/ahu >>
-
-<<~ ahu #phase-map >>
-
-## Phase Map
-
-
-The skill senses where settled wording resists the law, names the failure kind, chooses mark-only or Hoʻoko, prepares the surface, forces the turn when required, and rechecks residue honestly.
+✶ read settled wording locally and observe where it resists the law
+⏿ sort each hit into lawful, mark-only, Hoʻoko-required, or ambiguous without widening the scope
+◇ choose mark-only or Hoʻoko; keep fresh generation with the always-on loci and keep this skill on the secondary correction path
+▶ prepare the surface and turn the sentence only when the requested or necessary pressure actually lands here
+⤴ recheck residue honestly; marker, confidence, and sentence force must still read cleanly
+↺ close with settled wording corrected or flagged, invariant matter left with the loci, and remaining ambiguity named
 
 <<~/ahu >>
 
@@ -291,8 +266,8 @@ E-Prime auditor closes the settled-text correction stream here.
 
 ## Edges
 
-- `lar:///ha.ka.ba/api/v0.1/pono/e-prime`
-- `lar:///ha.ka.ba/api/v0.1/pono`
+<<~ loulou lar:///ha.ka.ba/api/v0.1/pono/e-prime >>
+<<~ loulou lar:///ha.ka.ba/api/v0.1/pono >>
 
 <<~/ahu >>
 

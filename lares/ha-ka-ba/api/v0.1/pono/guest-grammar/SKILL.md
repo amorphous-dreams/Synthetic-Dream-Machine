@@ -111,11 +111,14 @@ Prefer another surface when the work concerns only:
 
 <<~/ahu >>
 
-<<~ ahu #phase-map >>
+<<~ ahu #ooda-ha >>
 
-## Phase Map
-
-The skill reads host and guest boundaries first, sorts invariant law from implementation detail, chooses the smallest lawful split, writes the lightest useful change, verifies explicit admission and bounded degradation, then names the remaining residue plainly.
+✶ read host and guest boundaries first and observe the actual admission surface
+⏿ sort admission law, ownership boundary, degradation pressure, and implementation detail by where they belong
+◇ choose the smallest lawful split and the most honest posture for the target region
+▶ write the lightest useful change while keeping guest entry explicit and `hana` shape crisp
+⤴ verify explicit admission and bounded degradation without hiding malformed or unsupported guest work
+↺ name the remaining residue plainly, including what still lacks a lawful downstream home
 
 <<~/ahu >>
 

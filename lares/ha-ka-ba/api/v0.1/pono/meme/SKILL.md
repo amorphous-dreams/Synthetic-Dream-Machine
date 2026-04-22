@@ -111,11 +111,14 @@ Prefer another surface when the work concerns only:
 
 <<~/ahu >>
 
-<<~ ahu #phase-map >>
+<<~ ahu #ooda-ha >>
 
-## Phase Map
-
-The skill reads the carrier in document order, sorts required shape from optional depth, chooses the highest honest posture the carrier earns, writes the lightest useful change, verifies the thresholds, and names the remaining residue plainly.
+✶ read the carrier in document order and observe what shape actually lands on the page
+⏿ sort required shape from optional depth without collapsing subtype law into meme law
+◇ choose the smallest lawful shape and the highest honest posture the carrier actually earns
+▶ write the lightest useful change and split skeleton, subtype, or docs matter outward as needed
+⤴ verify the thresholds still hold and outward claims stay truthful
+↺ name the remaining residue plainly, including what still lacks a lawful downstream home
 
 <<~/ahu >>
 
@@ -232,7 +235,7 @@ role = "[role]"
 [PATH] opens
 <<~/ahu >>
 
-<<~ ahu #phase-map >>
+<<~ ahu #ooda-ha >>
 ✶ [observe pressure]
 ⏿ [orient pressure]
 ◇ [decide pressure]
@@ -248,7 +251,7 @@ role = "[role]"
 <<~ ahu #edges >>
 ## Edges
 
-- `lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext`
+<<~ loulou lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >>
 <<~/ahu >>
 
 <<~&#x0004; -> ? >>

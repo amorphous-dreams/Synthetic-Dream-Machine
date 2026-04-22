@@ -164,9 +164,9 @@ x-tiddlywiki-filter/SKILL closes
 
 ## Edges
 
-- `lar:///ha.ka.ba/api/v0.1/grammars/x-tiddlywiki-filter`
-- `lar:///ha.ka.ba/api/v0.1/pono/guest-grammar`
-- `lar:///ha.ka.ba/docs/grammar/tiddlywiki-filter`
+<<~ loulou lar:///ha.ka.ba/api/v0.1/grammars/x-tiddlywiki-filter >>
+<<~ loulou lar:///ha.ka.ba/api/v0.1/pono/guest-grammar >>
+<<~ loulou lar:///ha.ka.ba/docs/grammar/tiddlywiki-filter >>
 
 <<~/ahu >>
 

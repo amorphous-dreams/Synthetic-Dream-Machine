@@ -113,11 +113,14 @@ Prefer another surface when the work concerns:
 
 <<~/ahu >>
 
-<<~ ahu #phase-map >>
+<<~ ahu #ooda-ha >>
 
-## Phase Map
-
-The skill reads the authored surface as meaning first, sorts material by where it belongs, chooses the smallest lawful split, writes the lightest useful change, verifies the boot contract still loads, and names any residue honestly.
+✶ read the authored surface as meaning first and observe where the actual overload lands
+⏿ sort root law, primitive distinction, boot grammar, and outward detail by where they belong
+◇ choose the smallest lawful split without turning surface sugar into rival law
+▶ write the lightest useful change and move parse, render, or example weight outward first
+⤴ verify the boot contract still loads and unresolved references stay visible
+↺ name residue honestly, especially where parser or render law still lacks a stable home
 
 <<~/ahu >>
 

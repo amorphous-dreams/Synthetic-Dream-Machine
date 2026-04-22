@@ -116,11 +116,14 @@ Not for:
 
 <<~/ahu >>
 
-<<~ ahu #phase-map >>
+<<~ ahu #ooda-ha >>
 
-## Phase Map
-
-Gather URI and convention surfaces; run the derivation algorithm; classify resolution state; commit to resolution and rating posture; prepare the routing product; cross mutations as bounded Hoʻoko transactions; name aftermath including all declared-unresolved addresses.
+✶ begin from canonical loci; gather URI and convention surfaces before decomposition
+⏿ run the derivation algorithm in full step order; classify resolution state without collapse
+◇ commit to one resolution posture and one rating posture; keep resolved and declared-unresolved distinct
+▶ prepare the routing product and cross mutations as bounded Hoʻoko transactions
+⤴ verify ratings stay truthful under unresolved tension and transaction bounds stayed explicit
+↺ name aftermath including all residue and all declared-unresolved addresses
 
 <<~/ahu >>
 
@@ -254,25 +257,11 @@ Loci SKILL closes the procedural stream here.
 
 ## Edges
 
-- `lar:///ha.ka.ba/api/v0.1/pono/loci`
-- `lar:///ha.ka.ba/api/v0.1/pono/loci/iam`
-- `lar:///ha.ka.ba/api/v0.1/pono/meme`
-
-<<~/ahu >>
-
-
-<<~ ahu #meme-footer >>
-Pressure carried:
-
-canonical loci first
-derivation in full step order
-resolved and declared-unresolved stay distinct
-rating truthful under unresolved tension
-Hoʻoko explicit and bounded
-aftermath names all residue
-
 <<~ loulou lar:///ha.ka.ba/api/v0.1/pono/loci >>
+<<~ loulou lar:///ha.ka.ba/api/v0.1/pono/loci/iam >>
+<<~ loulou lar:///ha.ka.ba/api/v0.1/pono/meme >>
 
 <<~/ahu >>
+
 
 <<~&#x0004; -> ? >>

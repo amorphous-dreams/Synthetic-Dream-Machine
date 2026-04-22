@@ -51,7 +51,7 @@ x-tiddlywiki-filter opens
 ⤴ verify host keeps its own primitives, guest keeps its family, and the handoff boundary stays explicit.
 ↺ name what remains deferred; malformed guest work degrades locally and does not collapse the parent.
 
-<<~ loulou lar:///ha.ka.ba/api/v0.1/grammar/tiddlywiki-filter/SKILL >>
+<<~ loulou lar:///ha.ka.ba/api/v0.1/grammars/x-tiddlywiki-filter/SKILL >>
 <<~ loulou lar:///ha.ka.ba/docs/grammar/tiddlywiki-filter >>
 
 <<~/ahu >>
@@ -184,8 +184,8 @@ x-tiddlywiki-filter closes
 
 ## Edges
 
-- `lar:///ha.ka.ba/api/v0.1/pono/guest-grammar`
-- `lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext`
+<<~ loulou lar:///ha.ka.ba/api/v0.1/pono/guest-grammar >>
+<<~ loulou lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >>
 - `lar:///ha.ka.ba/api/v0.1/pono/parser`
 - `lar:///ha.ka.ba/api/v0.1/pono/render-pipeline`
 

@@ -147,8 +147,6 @@ pono/guest-grammar closes
 <<~ loulou lar:///ha.ka.ba/docs/pono/guest-grammar >>
 <<~ loulou lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >>
 <<~ loulou lar:///ha.ka.ba/api/v0.1/pono/pranala >>
-<<~ loulou lar:///ha.ka.ba/api/v0.1/pono/parser >>
-<<~ loulou lar:///ha.ka.ba/api/v0.1/pono/render-pipeline >>
 <<~ loulou lar:///ha.ka.ba/api/v0.1/pono >>
 
 <<~/ahu >>

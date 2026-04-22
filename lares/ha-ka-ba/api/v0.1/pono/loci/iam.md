@@ -223,9 +223,9 @@ IAM closes the metadata law stream here.
 
 ## Edges
 
-- `lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext`
-- `lar:///ha.ka.ba/api/v0.1/pono/loci`
-- `lar:///ha.ka.ba/api/v0.1/pono/meme`
+<<~ loulou lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >>
+<<~ loulou lar:///ha.ka.ba/api/v0.1/pono/loci >>
+<<~ loulou lar:///ha.ka.ba/api/v0.1/pono/meme >>
 
 <<~/ahu >>
 

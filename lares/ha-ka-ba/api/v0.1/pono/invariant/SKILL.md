@@ -1,4 +1,4 @@
-<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
+---
 name: invariant
 description: Generate, compress, or audit invariant-compliant memes under lar:///ha.ka.ba/api/v0.1/pono/invariant. Treat the canonical loci as self-describing law and self-executing template; keep invariant surfaces short, exact, stable, cacheable, and split heavy matter outward.
 allowed-tools: Read, Grep, Glob, Bash, Edit, Write
@@ -124,44 +124,16 @@ Do not use this skill as the primary surface for:
 - a standalone sidecar with no invariant work
 - generic prose cleanup unrelated to invariant law
 
-<<~ ahu #trigger-ha >>
-
-### Trigger / ha
-
-Trigger-ha holds the constitutional distinction.
-The canonical loci binds the law.
-This skill turns that law into repeatable compose, compress, audit, and split moves.
-
 <<~/ahu >>
 
-<<~ ahu #trigger-ka >>
+<<~ ahu #ooda-ha >>
 
-### Trigger / ka
-
-Trigger-ka governs activation.
-If the request touches invariant shape, token economy, phase integrity, visible ahu, or sidecar boundary, activate the skill.
-If the request concerns only sidecar prose, use the sidecar surface instead.
-
-<<~/ahu >>
-
-<<~ ahu #trigger-ba >>
-
-### Trigger / ba
-
-Trigger-ba governs outward motion.
-The invariant holds the always-on law.
-Everything else leaves when it stops earning invariant residency.
-
-<<~/ahu >>
-
-<<~/ahu >>
-
-<<~ ahu #phase-map >>
-
-## Phase Map
-
-
-The skill inspects the current meme surface, classifies what belongs to invariant law and what belongs elsewhere, chooses the lightest lawful turn, patches the target directly, verifies contact with actual file and link surfaces, and names any remaining residue without hiding it.
+✶ begin from canonical loci; inspect the current meme surface before changing it
+⏿ classify what belongs to invariant law, template law, and outward matter; keep law and template inseparable where intended
+◇ choose the lightest lawful turn and decide what leaves when it stops earning invariant residency
+▶ patch the target directly; keep ahu, pranala, and OODA-HA visible and live
+⤴ verify contact with actual file and link surfaces and that downstream phases stay filled with domain pressure
+↺ name remaining residue without hiding it; keep always-on law in the invariant and sidecars outward
 
 <<~/ahu >>
 
@@ -209,6 +181,9 @@ Orientation rules:
 - `example-or-trace` moves outward unless token-small and load-bearing
 - `commentary-drift` compresses or leaves
 - `quoted-constitutional-text` stays quoted and MUST NOT silently become new law
+
+The invariant holds the always-on law.
+Everything else leaves when it stops earning invariant residency.
 
 The question here stays simple:
 what must remain invariant, and what merely wants to remain nearby
@@ -305,28 +280,10 @@ Invariant-meme operator closes here.
 
 ## Edges
 
-- `lar:///ha.ka.ba/api/v0.1/pono/invariant`
-- `lar:///ha.ka.ba/api/v0.1/pono`
-
-<<~/ahu >>
-
-
-<<~ ahu #meme-footer >>
-Pressure carried:
-
-canonical loci first
-law and template inseparable where intended
-short stable invariant
-active voice
-ahu visible
-pranala named
-OODA-HA intact
-downstream phases filled
-sidecars later
-sparse real normativity
-
 <<~ loulou lar:///ha.ka.ba/api/v0.1/pono/invariant >>
+<<~ loulou lar:///ha.ka.ba/api/v0.1/pono >>
 
 <<~/ahu >>
+
 
 <<~&#x0004; -> ? >>
