@@ -61,13 +61,8 @@ legend.
 
 **Stance (query — discourse posture of the claim):**
 
-| Sigil | Machine | Stance | One-Line Reading |
-|---|---|---|---|
-| 🏛️ | `philosopher` | Philosopher | Propositional; evaluate for truth-value |
-| 🌊 | `poet` | Poet | Analogical; resonance, not verification |
-| 🗡️ | `satirist` | Satirist | Critical through indirection |
-| 🎭 | `humorist` | Humorist | Relational; maintaining working rapport |
-| 🔮 | `private` | Private | Self-referential; present, not to decode |
+Consumed into:
+- `lar:///ha.ka.ba/docs/lararium/signal/hud#migrated-hud-anatomy-symbol-table`
 
 **Scope (fragment prefix — active simulation scale):**
 

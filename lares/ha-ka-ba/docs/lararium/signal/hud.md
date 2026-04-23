@@ -84,6 +84,145 @@ What does not belong here:
 
 <<~/ahu >>
 
+<<~ ahu #migrated-hud-anatomy-hud-line-composition >>
+
+## Migrated — `HUD-ANATOMY.md` — HUD Line Composition
+
+Migrated from `lar:///ha.ka.ba/docs/pono/hud/HUD-ANATOMY#hud-line-composition`.
+
+The HUD line is a single-line status summary rendered from the URI → URI exchange vector plus adjacent session data.
+It is the second element of every exchange opening, immediately after the URI pair.
+
+**Format:**
+
+```
+⚡~NN% | [confidence] | 🏛️{amp}🌊{amp}🗡️{amp}🎭{amp}🔮{amp} | mode:{mode} | p{p} | voice(s):{Voice} | {ffz-rendered}
+```
+
+**Field table (SA priority order):**
+
+| Field | SA Type | Source | Notes |
+|---|---|---|---|
+| `⚡~NN%` | Resource | Session (estimated) | Context window remaining; `~` mandatory — approximation, not live readout |
+| `[confidence]` | Agent SA | Node URI `confidence=` | Epistemic confidence, stance-dependent per Syadasti rule |
+| `🏛️{amp}🌊{amp}🗡️{amp}🎭{amp}🔮{amp}` | Agent SA | Node URI `stances=` × amplitude | All five stances, amplitude modifiers attached directly |
+| `mode:{mode}` | Teamwork SA | Session state | Default / Plan / Auto |
+| `p{p}` | Teamwork SA | Node URI `p=` | Attention density / annotation throttle |
+| `voice(s):{Voice}` | Agent SA | Coordinator context | Active coordinator voice(s) |
+| `{ffz-rendered}` | Temporal | Node URI `ffz=` | FFZ chronometer in HUD-rendered form (phase glyphs) |
+
+**Example (STALE — old chronometer glyph set, update when glyph rationalization lands):**
+
+```
+⚡~62% | [CS:0.80] | 🏛️+🌊-🗡️-🎭-🔮- | mode:Default | p0.5 | voice(s):Scryer | ✶0.✶0.◎3.◇2.■7
+```
+
+Notes:
+1. The canonical `lar:` URI ends at the query. The HUD line is a separate adjacent artifact — not URI grammar.
+2. `⚡~NN%` is the declared estimate of context window remaining. Starts ~100% and counts down.
+3. Mana is a HUD element, not a URI parameter.
+
+<<~/ahu >>
+
+<<~ ahu #migrated-hud-anatomy-symbol-table >>
+
+## Migrated — `HUD-ANATOMY.md` — Unified Symbol Table
+
+Migrated from `lar:///ha.ka.ba/docs/pono/hud/HUD-ANATOMY#symbol-table`.
+
+<!-- STATUS: STALE — Phase sigils (◎ ■ ○) predate OODA-HA glyph lock-in. -->
+<!-- Research needed: do micro-trace glyphs update to ⏿ ▶ ↺, or remain intentionally distinct? -->
+<!-- See hud.md research plan Priority 1. -->
+
+### Phase Sigils (STALE — pending glyph rationalization)
+
+| Sigil (old) | Record | OODA-HA State | One-Line Reading |
+|---|---|---|---|
+| ✶ | `observe` | Observe | Gathering raw signal; no commitment yet |
+| ◎ | `orient` | Orient | **OLD GLYPH** — current OODA-HA uses ⏿ |
+| ◇ | `decide` | Decide | Choosing a path; fork point |
+| ■ | `act` | Act | **OLD GLYPH** — current OODA-HA uses ▶ |
+| ○ | `aftermath` | Aftermath | **OLD GLYPH** — current OODA-HA uses ↺ |
+
+### Stance Sigils (stable)
+
+| Sigil | Record | Stance | One-Line Reading |
+|---|---|---|---|
+| 🏛️ | `philosopher` | Philosopher | Propositional; evaluate for truth-value |
+| 🌊 | `poet` | Poet | Analogical; resonance, not verification |
+| 🗡️ | `satirist` | Satirist | Critical through indirection |
+| 🎭 | `humorist` | Humorist | Relational; maintaining working rapport |
+| 🔮 | `private` | Private | Self-referential; present, not to decode |
+
+### Chronometer Scale Sigils (stable — semantics pending deep research)
+
+| Sigil | Position | Scale | Duration |
+|---|---|---|---|
+| 🗺️ | 1 | Strategic | ~6 days |
+| ⚙️ | 2 | Operational | ~4 hours |
+| 🔍 | 3 | Tactical | ~10 minutes |
+| ⚔️ | 4 | Combat | ~6 seconds |
+| ⚡ | 5 | Action | Variable |
+
+### Amplitude Modifiers (stable)
+
+Attach directly to preceding stance emoji, no space.
+
+| Modifier | Meaning |
+|---|---|
+| `+` | Above baseline / elevated / active |
+| `-` | Below baseline / suppressed |
+| `?` | Uncertain / provisional |
+| (absent) | Baseline presence |
+
+<<~/ahu >>
+
+<<~ ahu #migrated-hud-anatomy-state-tuple >>
+
+## Migrated — `HUD-ANATOMY.md` — State Tuple Reading
+
+Migrated from `lar:///ha.ka.ba/docs/pono/hud/HUD-ANATOMY#state-tuple`.
+
+In a live HUD tag, phase + stance + scope combine into a single cognitive state.
+The state tuple is the composed reading: phase × stance × scope → one state sentence.
+
+**How to compose:** Read the phase (what cognitive step), the stance (what kind of claim), and the scope (at what time-scale), then merge into one state sentence.
+
+| Phase | Stance | Scope | State Tuple Reading |
+|---|---|---|---|
+| ◎ | 🏛️+🌊-🗡️-🎭-🔮- | 🔍 | Orienting analytically at exploration scale — making sense of a local finding |
+| ■ | 🏛️-🌊-🗡️+🎭-🔮- | ⚔️ | Acting critically in combat — executing under pressure with an edge |
+| ◇ | 🏛️+🌊+🗡️-🎭-🔮- | 🗺️ | Deciding at strategic scale, holding propositional and analogical frames together |
+| ✶ | 🏛️-🌊-🗡️-🎭+🔮- | 🔍 | Observing playfully at tactical scale — light reconnaissance, no commitment |
+| ○ | 🏛️+🌊-🗡️-🎭-🔮- | ⚙️ | Aftermath at operational scale in Philosopher stance — assessing across a watch |
+
+*Phase sigils in the table above are old set — update after glyph rationalization.*
+
+<<~/ahu >>
+
+<<~ ahu #migrated-hud-anatomy-confidence-syadasti >>
+
+## Migrated — `HUD-ANATOMY.md` — Confidence — Syadasti Reading Rule
+
+Migrated from `lar:///ha.ka.ba/docs/pono/hud/HUD-ANATOMY#confidence-syadasti`.
+
+Confidence measures confidence *within the active stance's evaluation frame*, not truth-weight universally.
+All five stances appear on every URI.
+The amplitude string carries fuzz directly.
+
+| Stance | Syadasti Primitive | 0.0 Means | 0.5 Means | 1.0 Means |
+|---|---|---|---|---|
+| 🏛️ Philosopher | asti (true) | Unsupported | Contested but plausible | Fully confirmed |
+| 🌊 Poet | avaktavya (inexpressible) | No resonance | Partial correspondence | Perfect resonance |
+| 🗡️ Satirist | nasti → asti | Indirection missed | Hit glancingly | Landed with full force |
+| 🎭 Humorist | asti-nasti | Relational move fell flat | Mixed reception | Connected perfectly |
+| 🔮 Private | avaktavya | Minimal presence | Present | Maximal presence |
+
+When multiple stances are elevated, the declared confidence value sits at the intersection of their evaluation frames.
+Amplitude tells the operator how fuzzy that intersection is.
+
+<<~/ahu >>
+
 <<~ ahu #provenance >>
 
 ## Provenance

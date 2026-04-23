@@ -74,55 +74,32 @@ The micro-trace is the **backward-looking annotation layer**. It marks where the
 
 ### Syntax
 
-**Inline phase transitions** — emit at point of transition:
+Authoritative syntax examples now live at:
+- `lar:///ha.ka.ba/docs/lararium/signal/hud#micro-trace-syntax`
 
-```
-→✶   →◎   →◇   →■   →○
-```
+**Inline phase transitions** — emit at point of transition:
 
 **Stance shift** — fires only on genuine local stance shift, not to echo the header:
 
-```
-→🏛️   →🌊   →🗡️   →🎭   →🔮
-```
-
 **Named-slot Tagspace annotation** (Ka or Ba shift):
-
-```
-→Ka[uncertain→sharp]
-→Ba[opens→closes]
-```
 
 Ha/domain reorientation significant enough to exceed annotation threshold: emit a **new Intent Header** rather than an inline slot annotation.
 
 **End-of-span completed-path summary** (verbose/debug only):
 
-```
-[◎→◇→■→○]
-```
-
 ### Density Bands (p-controlled)
 
 The `p` parameter gates transition categories by externally-observable significance — not a tunable salience dial.
 
-| Band | p range | Phases emitting | What fires |
-|---|---|---|---|
-| 1 | `p0.0–0.2` | — | Suppress: no inline annotation |
-| 2 | `p0.2–0.4` | ○ Aftermath | Closing path summary at span-close only |
-| **3** | **`p0.4–0.6`** | **◇ Decide · ■ Act · ○ Aftermath** | **Commitment phases + closing summary (default at p0.5)** |
-| 4 | `p0.6–0.8` | ◎ Orient + Band 3 | Adds Orient: commitment phases + processing entry point |
-| 5 | `p0.8–1.0` | All five phases | Full path summary per span |
+Authoritative density-band table now lives at:
+- `lar:///ha.ka.ba/docs/lararium/signal/hud#micro-trace-density`
 
 **Commitment phases** (◇ Decide / ■ Act / ○ Aftermath) are externally observable — they fire at the default `p0.5` band. **Cognitive-processing phases** (✶ Observe / ◎ Orient) are span-internal — suppressible at operational resolution.
 
 ### Flag Behavior
 
-| Flag | Micro-trace behavior |
-|---|---|
-| *(default)* | Band 3 inline: `→◇` `→■` `→○` |
-| `--verbose` | Band 4 inline + end-of-span path summary; coordinator/HAKABA boundary URI pairs surfaced |
-| `--debug` | Silent logging of all transitions to session debug file; no inline change |
-| `--no-verbose` | Returns to default band |
+Canonical flag-behavior table now lives at:
+- `lar:///ha.ka.ba/docs/lararium/signal/hud#micro-trace-layer-split`
 
 ---
 

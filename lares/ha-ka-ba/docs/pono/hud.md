@@ -143,14 +143,6 @@ HUD-ANATOMY.md §5.3.1 carries four separate sigil sets:
 
 ---
 
-### Priority 4 — Sigilization Module Extraction
-
-URI-SCHEMA.md delegated render rules to `lares/modules/sigilization/` — that module does not yet exist. The render rule content (record form → HUD glyph substitution tables) currently lives inline in HUD-ANATOMY.md.
-
-**Action needed:** When sigilization module lands, extract render tables there and replace with loulou links.
-
----
-
 ### Priority 5 — DreamDeck / ActivityPub Social Layer
 
 HUD-ANATOMY.md carries the Kowloon two-part handle form (`@alias@host`) and DreamDeck post header format. This is a social-layer concern separate from the exchange span contract.
