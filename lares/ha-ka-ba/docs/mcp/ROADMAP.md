@@ -88,6 +88,7 @@ Deliverables:
 - AST envelope for memetic-wikitext and admitted guest grammars
 - execution/widget graph contract
 - deterministic closure algorithm
+- `lares/`-native read-only carrier spine
 - submodule adapter contract
 - compiled artifacts:
   - minimal hydration packet
@@ -98,6 +99,7 @@ Deliverables:
   - invariant/core pressure index
   - `implements` interface-bundle index
   - `lar:` -> filepath/resource namespace map
+  - all-caps virtual namespace reads such as `lar:///INDEXES/**`
 
 Exit signal:
 - same entry point yields the same hydration packet and the same submodule attachment set under fixtures

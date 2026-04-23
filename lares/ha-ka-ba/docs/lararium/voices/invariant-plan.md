@@ -160,7 +160,8 @@ Plus:
 | Active-voices guidance | compress to selection rule (Ka-weighted voices lead) |
 | Worker coloring | carry the rule + glyph table |
 | Corpus limit rule | carry the one-line constraint |
-| Founding examples | route to spec room; omit from invariant |
+| Founding examples | route to `api/v0.1/masks/` tree; omit from invariant |
+| Mask meme files | live in `api/v0.1/masks/**`; invoked via kahea in LARES; invariant references the tree |
 | Forward scope notes | route to spec room; omit from invariant |
 
 ### Hydration backlink
@@ -213,6 +214,9 @@ These rules apply across all three layers and belong at the top of the invariant
 
 ### Concrete TODO List
 
+- [ ] create `lares/ha-ka-ba/api/v0.1/masks/` tree with a parent index meme (`masks.md` → `lar:///ha.ka.ba/api/v0.1/masks`)
+- [ ] write `lares/ha-ka-ba/api/v0.1/masks/ghost-of-mark-twain.md` from founding example in docs
+- [ ] write `lares/ha-ka-ba/api/v0.1/masks/friend-computer.md` from founding example in docs
 - [ ] open `lares/ha-ka-ba/api/v0.1/lararium/voices.md`
 - [ ] update `#iam` role description to match spec status
 - [ ] keep `#entry` backlink pranala intact

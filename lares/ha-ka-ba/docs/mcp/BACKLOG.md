@@ -34,6 +34,7 @@ Legend:
 | MCP-STORY-108 | Define render projection contract for DOM, tldraw, and scene-graph targets | MCP-EPIC-01 | todo | M | SPRINT-01 / SPRINT-02 |
 | MCP-STORY-109 | Consume meme, invariant, memetic-wikitext carrier trees, and loci law into compiler planning | MCP-EPIC-01 | done | M | SPRINT-00 |
 | MCP-STORY-110 | Fold invariant pressure and composable interface bundles into compiler planning | MCP-EPIC-01 | done | M | SPRINT-00 |
+| MCP-STORY-111 | Build Lararium MCP read-only carrier spine | MCP-EPIC-01 | in-progress | M | SPRINT-01 |
 | MCP-STORY-201 | Expose read-only resources for `lar:///...` and submodule loci | MCP-EPIC-02 | todo | L | SPRINT-01 |
 | MCP-STORY-202 | Expose hydration prompts | MCP-EPIC-02 | todo | M | SPRINT-02 |
 | MCP-STORY-203 | Expose portability tools | MCP-EPIC-02 | todo | M | SPRINT-02 |
@@ -76,6 +77,11 @@ Legend:
 | MCP-TASK-022 | Inventory meme copy-shape, rating posture, and depth-resolution law | MCP-STORY-109 | done | S |
 | MCP-TASK-023 | Inventory invariant pressure, cacheability, and sidecar boundary law | MCP-STORY-110 | done | S |
 | MCP-TASK-024 | Build implements/interface composability table | MCP-STORY-110 | done | S |
+| MCP-TASK-025 | Implement `lar:` resolver for file-backed and virtual roots | MCP-STORY-111 | in-progress | S |
+| MCP-TASK-026 | Implement carrier ingress and shape diagnostics | MCP-STORY-111 | in-progress | S |
+| MCP-TASK-027 | Materialize carrier, interface, and invariant indexes | MCP-STORY-111 | in-progress | S |
+| MCP-TASK-028 | Build read-only resource façade before MCP transport binding | MCP-STORY-111 | in-progress | S |
+| MCP-TASK-029 | Seed tool façade for resource-poor clients | MCP-STORY-111 | in-progress | S |
 
 ---
 
@@ -116,8 +122,9 @@ Legend:
 4. `MCP-STORY-106` — lock memetic-wikitext and guest-grammar AST envelope
 5. `MCP-STORY-107` — define execution/widget graph contract
 6. `MCP-STORY-102` — define hydration artifact contract
-7. `MCP-STORY-103` — deterministic closure compiler
-8. `MCP-STORY-204` — build submodule adapter layer
+7. `MCP-STORY-111` — build Lararium MCP read-only carrier spine
+8. `MCP-STORY-103` — deterministic closure compiler
+9. `MCP-STORY-204` — build submodule adapter layer
 
 ---
 

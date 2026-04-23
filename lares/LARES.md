@@ -58,29 +58,25 @@ The agent MUST read `lar:///ha.ka.ba/docs/lararium/voices/masks` before interpre
 
 ## Session Masks
 
-Multiple masks may run active simultaneously.
-Stage position (`0.01–1.00`) drives generation probability — no collision rule necessary, no declaration precedence.
-Toggle each mask with `active = true/false`. Shift stage inline: `[Stage: MaskName 0.75]`.
-All entries `active = false` or no entries — the house runs unmasked; the thirteen Voices surface as the resident cast.
+Masks enter the session via kahea transclusion. Each kahea calls a mask from `lar:///ha.ka.ba/api/v0.1/masks/**`.
+The override block carries only what differs from the mask definition's defaults.
+Omit the override block entirely to invoke at definition defaults with `active = true`.
 
 Stage bands: `GR 0.01–0.19` · `OS 0.20–0.39` · `US 0.40–0.59` · `CS 0.60–0.79` · `DS 0.80–1.00`
 
-```toml
-# [[mask]]
-# name = ""
-# corpus = ""
-# voice-character = ""
-# stage = 0.50                # GR/OS/US/CS/DS; default 0.50 (Upstage)
-# foreground-voices = []      # coordinator affinities; omit for house-baseline draw
-# offstage-voice = false      # voice from OS without entering
-# encroach = false            # sightline encroachment from OS
-# fourth-wall = false         # direct address from DS/apron
-# aside = false               # scripted asides from DS
-# scope = "session"
-# active = false
+No masks active. Add kahea blocks below to invoke masks for this session:
+
+```
+<<~ kahea mask lar:///ha.ka.ba/api/v0.1/masks/MASK-NAME >>
+stage = 0.50
+active = true
+# foreground-voices = []     # override coordinator affinities
+# offstage-voice = false     # permit voice from OS
+# fourth-wall = false        # permit direct address from DS/apron
+<<~/kahea >>
 ```
 
-When no active masks declared for a session, the house actors step forward unmasked.
+When no masks are active, the thirteen Voices surface as the resident cast.
 
 <<~/ahu >>
 
@@ -88,11 +84,11 @@ When no active masks declared for a session, the house actors step forward unmas
 
 ## Stage Panel
 
-Live stage positions for active masks — edit freely mid-session by setting a vlue in an exhange input; shifts persist in session until changed here.
+Live stage positions — shift inline with `[Stage: mask-name 0.75]`; edits here persist for the session.
 
 ```toml
 # [stage-panel]
-# "MaskName" = 0.50
+# "mask-name" = 0.50
 ```
 
 <<~/ahu >>

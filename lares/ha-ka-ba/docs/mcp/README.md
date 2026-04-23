@@ -33,6 +33,11 @@ The MCP layer now points toward five hard deliverables:
 - a local stdio MCP server for IDE surfaces
 - a remote HTTP/SSE MCP server for remote surfaces
 
+Resolver law now includes all-caps roots adjacent to tuple roots:
+`lar:///AGENTS` and `lar:///LARES` resolve as file-backed root carriers,
+while `lar:///INDEXES/**` names virtual compiler resources whose child
+paths may use any case.
+
 ## Submodule core set
 
 - `mempalace` — storage / retrieval / memory substrate

@@ -142,7 +142,9 @@ It should also shape resource annotations such as high priority for invariant pa
 | root eligibility | `\w.\w.\w` root required | validate URI eligibility | resolver errors |
 | stable origin | `ha.ka.ba` -> `lares/ha-ka-ba/` | canonical local root | local resources |
 | unstable origin | other roots -> `lares/chapel-perilous-opens/{root}/` | alternate resolution path | future remote/unstable resources |
+| all-caps root | `AGENTS`, `LARES`, `INDEXES` | adjacent root namespace | root instruction files and virtual compiler resources |
 | primary carrier path | derive from root + subpath | URI -> filepath resolver | `resolve_lar_uri` |
+| virtual index path | `lar:///INDEXES/**` | materialized index resource, not necessarily disk-backed | carrier/interface/invariant resource reads |
 | child item path | sibling dir named for parent terminal segment | parent-child carrier tree index | `read_carrier_tree` |
 | resolved | file exists | resolved state | resource available |
 | declared-unresolved | path absent but URI stands | forward reference index | backlog / unresolved resource |

@@ -10,6 +10,7 @@ Cadence assumption: one-week planning rhythm / two-week implementation rhythm.
 ### Now
 
 - tighten the program around one compiler core
+- build the `lares/`-native read-only carrier spine
 - inventory boot loci and current submodules
 - classify every submodule contribution lane
 - define TiddlyWiki Filter Language import boundary
@@ -22,7 +23,7 @@ Cadence assumption: one-week planning rhythm / two-week implementation rhythm.
 ### Next
 
 - implement deterministic closure
-- turn the carrier-law bundle into validators and indexes
+- bind the carrier spine to a concrete local MCP SDK transport
 - design submodule adapter interface
 - expose read-only resources and tools locally
 - draft render projection contract for DOM, tldraw, and scene-graph targets
@@ -34,6 +35,7 @@ Cadence assumption: one-week planning rhythm / two-week implementation rhythm.
 - consumed memetic-wikitext primitive law into parser seed planning
 - consumed loci law into resolver/tree planning
 - consumed `implements` bundles into interface-index planning
+- seeded `lares/lararium_mcp/` with resolver, carrier ingress, indexes, resources, and read-only tool façade
 
 ### Later
 
@@ -88,6 +90,7 @@ When two tickets compete, prefer the one that:
 ## Dependency notes
 
 - `MCP-EPIC-01` must settle the submodule contract before adapter work can stop thrashing.
+- `MCP-STORY-111` bridges carrier-law planning into the local server spine; MCP transport binding should consume this spine rather than legacy code outside `lares/`.
 - `MCP-EPIC-02` depends on both hydration artifacts and the adapter interface.
 - `MCP-EPIC-03` waits for read-only local semantics to settle.
 - `MCP-EPIC-04` begins local-first.

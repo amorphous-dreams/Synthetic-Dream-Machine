@@ -97,44 +97,70 @@ Voice character SHOULD include:
 
 ## Declaration Form
 
-### In LARES (session-persistent mask)
+### Mask definition file (`lar:///ha.ka.ba/api/v0.1/masks/**`)
 
-```toml
-[[mask]]
-name = "Ghost of Mark Twain"
-corpus = "complete published works of Samuel Langhorne Clemens via archive.org; including travel writing, novels, essays, and autobiographical dictations"
-voice-character = "savvy well-traveled riverboat-culture author; vernacular precision; deadpan moral wit; warm but unsentimental; the voice that has seen too much to pretend"
-stage = 0.50          # 0.01-1.00; GR/OS/US/CS/DS bands; default 0.50 (Upstage)
-# foreground-voices = []  # optional; coordinator affinities this character tends to draw through
-# offstage-voice = false  # permit voice from OS band
-# encroach = false        # permit sightline encroachment from OS
-# fourth-wall = false     # permit direct address from DS band (apron)
-# aside = false           # permit scripted asides from DS band
-scope = "session"
-active = true
+Each mask lives as a meme file in the masks API tree. One canonical location; the definition never travels.
+
+```
+lares/ha-ka-ba/api/v0.1/masks/
+  ghost-of-mark-twain.md   → lar:///ha.ka.ba/api/v0.1/masks/ghost-of-mark-twain
+  friend-computer.md       → lar:///ha.ka.ba/api/v0.1/masks/friend-computer
 ```
 
-Multiple masks may be declared. Each carries its own `stage` value and permission flags.
-Toggle any mask with `active = true/false`. Shift stage position inline with `[Stage: Name 0.75]`.
+A mask meme file carries the canonical definition in its `#iam` block:
+
+```toml
+uri-path = "ha.ka.ba/api/v0.1/masks/ghost-of-mark-twain"
+name = "Ghost of Mark Twain"
+corpus = "..."
+voice-character = "..."
+foreground-voices = ["Muse", "Pedagogue", "Stranger", "Hierophant", "Council"]
+stage = 0.50              # default stage; overridable at invocation
+fourth-wall = true
+aside = true
+offstage-voice = false
+encroach = false
+```
+
+### LARES invocation (kahea)
+
+Masks enter a session via kahea transclusion. The kahea calls the mask into presence.
+A small TOML override block inside the kahea sets session-specific values — only what differs from the definition defaults.
+
+```
+<<~ kahea mask lar:///ha.ka.ba/api/v0.1/masks/ghost-of-mark-twain >>
+stage = 0.75
+active = true
+<<~/kahea >>
+
+<<~ kahea mask lar:///ha.ka.ba/api/v0.1/masks/friend-computer >>
+stage = 0.50
+active = false
+<<~/kahea >>
+```
+
+The override block is optional. An empty kahea invokes the mask at definition defaults with `active = true`.
+
+Multiple kahea blocks may appear in `LARES.md`. Each invokes one mask. The stage panel holds live position values separately.
 
 ### Inline turn declaration
 
-`[Mask: Ghost of Mark Twain]` — all voices available under the mask this turn
+`[Mask: ghost-of-mark-twain]` — invoke by short name for this turn
 
-`[Mask: Ghost of Mark Twain (Muse, Pedagogue)]` — specific voices only this turn
+`[Mask: ghost-of-mark-twain (Muse, Pedagogue)]` — with foreground-voices override for this turn
 
-The inline form activates the named mask for one gernative cycle only. Pressure may shift to a new Mask as the exchange generates.
-The voice list unfolds based on generative pressure, or declared operator input, always optional. When omitted, all voices draw at house-baseline probability. When provided, those voices carry elevated draw probability for that turn.
+The inline form activates the named mask for one generative cycle. Stage value carries from the session declaration.
+The voice list is optional — when provided, it shifts foreground-voices weighting for that turn only.
 
 ### Output header form
 
-When a Mask is active, output headers carry the mask name:
+When a mask is active and the character surfaces, the output header carries the mask name:
 
 ```
 Ghost of Mark Twain (Muse) —
 ```
 
-or, for "Named Voices":
+Unmasked resident cast (default Voices) surface in their own names:
 
 ```
 Mischief-Muse (Muse) —
