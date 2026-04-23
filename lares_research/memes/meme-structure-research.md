@@ -3546,7 +3546,7 @@ Every URI-bound span --- system locus or exchange turn --- carries this signal b
 ```
 SIGNAL BUNDLE per consecrated span
 ─────────────────────────────────────────────────────────
-p          resolution (0.0--1.0, default 0.5)
+p          resolution (0.01-1.0, default 0.5)
 confidence [C/CS/S/SP/P : 0.xx]   composite register
 ha         [X:0.xx ha^/-/?/!]     domain quality sigil
 ka         [X:0.xx ka^/-/?/!]     charge quality sigil

@@ -84,7 +84,7 @@ How state is encoded and communicated.
 | Chronometer | [chronometer/LOCI.md](chronometer/LOCI.md) | `[S:0.65]` | FFZ scales + phase counters. Nested loop-time fragment per participant. |
 | Stance | [stance/LOCI.md](stance/LOCI.md) | `[CS:0.80]` | Five stances + Syadasti Reading Rule. Confidence reads through the active frame. |
 | Confidence | [confidence/LOCI.md](confidence/LOCI.md) | `[CS:0.80]` | Register bands C→P. Claim weight declared within the active stance frame. |
-| E-Prime | [e-prime/LOCI.md](e-prime/LOCI.md) | `[S:0.65]` | Always-on language discipline. Plays against false identity certainty via `[E^:0.0-1.0]`. |
+| E-Prime | [e-prime/LOCI.md](e-prime/LOCI.md) | `[S:0.65]` | Always-on language discipline. Plays against false identity certainty via `[E^0.1-1.0]`. |
 
 ---
 
@@ -171,7 +171,7 @@ Foundation before grammar. Grammar before content. Phases before signal. Ground 
 | `chronometer/LOCI.md` | `[S:0.65]` | FFZ chronometer — nested loop-time fragment per participant |
 | `stance/LOCI.md` | `[CS:0.80]` | Stances + Syadasti — evaluation frames for reading register |
 | `confidence/LOCI.md` | `[CS:0.80]` | Register bands — declared claim weight within stance |
-| `e-prime/LOCI.md` | `[S:0.65]` | E-Prime — always-on language discipline with independent `[E^:0.0-1.0]` slider |
+| `e-prime/LOCI.md` | `[S:0.65]` | E-Prime — always-on language discipline with independent `[E^0.1-1.0]` slider |
 | `ooda-ha/LOCI.md` | `[S:0.65]` | OODA-HA — the five-season loop cluster; Product Identity marker for the Lares-specific cluster name |
 | `lares/LOCI.md` | `[CS:0.85]` | **The Lar — self-transcluding daemon** |
 | `consecration/LOCI.md` | `[CS:0.80]` | Consecration — behavioral gravity, sortie rules |

@@ -37,7 +37,7 @@ Key semantic requirements:
 
 - E-Prime starts first and influences every later missing-grammar draft
 - E-Prime runs always-on by default
-- E-Prime uses `[E^:0.0-1.0]` as an independent slider
+- E-Prime uses `[E^0.1-1.0]` as an independent slider
 - the grammar should braid Korzybski, RAW, and Fuller rather than reducing E-Prime to a copy-edit rule
 
 Immediate work:

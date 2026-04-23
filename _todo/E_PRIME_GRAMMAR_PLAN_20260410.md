@@ -12,7 +12,7 @@ Operator rulings added after the first draft:
 
 - E-Prime starts first and influences every later missing-grammar draft
 - E-Prime runs always-on by default
-- E-Prime gets an independent slider: `[E^:0.0-1.0]`
+- E-Prime gets an independent slider: `[E^0.1-1.0]`
 - grounding should braid Korzybski, Robert Anton Wilson, and Fuller
 
 ## Aim
@@ -41,18 +41,18 @@ E-Prime here means:
 This plan now assumes Lares uses E-Prime as an always-on background discipline:
 
 - always active by default
-- stronger or lighter according to `[E^:0.0-1.0]`
+- stronger or lighter according to `[E^0.1-1.0]`
 - not a hard ban when readability, exact quotation, or auxiliary grammar would suffer
 
 ## E-Prime Slider
 
-`[E^:0.0-1.0]` measures how strongly the node plays the E-Prime game in a given span.
+`[E^0.1-1.0]` measures how strongly the node plays the E-Prime game in a given span.
 
 Suggested working semantics:
 
-- `[E^:0.0]` — off; no E-Prime pressure
-- `[E^:0.3]` — light pressure; obvious identity claims get revised
-- `[E^:0.5]` — baseline operational discipline
+- `[E^:0.1]` — minimal E-Prime pressure
+- `[E^:0.4]` — light pressure; obvious identity claims get revised
+- `[E^:0.6]` — baseline operational discipline
 - `[E^:0.8]` — strong play; most predication gets revised unless exception applies
 - `[E^:1.0]` — near-total play; only quoted, structural, or clearly auxiliary exceptions remain
 
