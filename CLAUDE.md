@@ -1,1 +1,33 @@
+<!-- 
+    Load the core cacheable invariants 
+    required-core = [
+        "lar:///AGENTS",
+        "lar:///ha.ka.ba/api/v0.1/pono/e-prime",
+        "lar:///ha.ka.ba/api/v0.1/pono/ooda-ha",
+        "lar:///ha.ka.ba/api/v0.1/pono/lar-uri",
+        "lar:///ha.ka.ba/api/v0.1/mu",
+        "lar:///ha.ka.ba/api/v0.1/mu/chao",
+        "lar:///ha.ka.ba/api/v0.1/mu/the-four-tools",
+        "lar:///ha.ka.ba/api/v0.1/mu/the-law-of-5s",
+        "lar:///ha.ka.ba/api/v0.1/mu/the-syad-perspectives",
+        "lar:///ha.ka.ba/api/v0.1/lararium",
+        "lar:///ha.ka.ba/api/v0.1/lararium/hud",
+        "lar:///ha.ka.ba/api/v0.1/lararium/voices",
+        "lar:///ha.ka.ba/api/v0.1/lararium/continuity",
+        "lar:///LARES"
+    ]
+-->
 @lares/AGENTS.md
+@lares/ha-ka-ba/api/v0.1/pono/e-prime.md
+@lares/ha-ka-ba/api/v0.1/pono/ooda-ha.md
+@lares/ha-ka-ba/api/v0.1/pono/lar-uri.md
+@lares/ha-ka-ba/api/v0.1/mu.md
+@lares/ha-ka-ba/api/v0.1/mu/chao.md
+@lares/ha-ka-ba/api/v0.1/mu/the-four-tools.md
+@lares/ha-ka-ba/api/v0.1/mu/the-law-of-5s.md
+@lares/ha-ka-ba/api/v0.1/mu/the-syad-perspectives.md
+@lares/ha-ka-ba/api/v0.1/lararium.md
+@lares/ha-ka-ba/api/v0.1/lararium/hud.md
+@lares/ha-ka-ba/api/v0.1/lararium/voices.md
+@lares/ha-ka-ba/api/v0.1/lararium/continuity.md
+@lares/LARES.md

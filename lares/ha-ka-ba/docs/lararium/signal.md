@@ -33,7 +33,7 @@ retain = false
 
 Not invariant law.
 This shelf holds the lararium-side signal frame that binds agent and operator.
-The tagspace definition, HUD, and other render target documents live below this loci.
+The tagspace definition, HUD, micro-trace, drift, provenance, and render-target documents live below this loci.
 
 <<~/ahu >>
 
@@ -51,7 +51,7 @@ This parent keeps only branch-level signal framing:
 - the split between canonical URI vectors, HUD lines, and in-span micro-trace
 - routing pressure toward the correct child room
 
-Long witness bundles, migration residue, symbol tables, and research argument should leave this parent.
+Long witness bundles, migration residue, drift-recovery detail, symbol tables, and research argument should leave this parent.
 
 <<~/ahu >>
 
@@ -123,7 +123,8 @@ operator-URI → node-URI
   The exchange closes with an updated HUD line and `lar URI → ?`.
 
 
-Detailed header anatomy, annotation thresholds, and examples now live in the HUD room.
+Detailed HUD anatomy now lives in the HUD room.
+Annotation thresholds and micro-trace examples now live in sibling signal rooms.
 
 <<~/ahu >>
 
@@ -137,7 +138,7 @@ The signal branch splits across five layers:
 |---|---|---|
 | Canonical URI vector | audit-ready record form for exchange boundaries | parent branch framing, see `lar:///ha.ka.ba/docs/lararium/signal/tagspace` |
 | HUD line | live exchange-boundary instrument rendered from the vector | `lar:///ha.ka.ba/docs/lararium/signal/hud` |
-| Micro-trace | compact in-span annotation under the governing header | `lar:///ha.ka.ba/docs/lararium/signal/hud` |
+| Micro-trace | compact in-span annotation under the governing header | `lar:///ha.ka.ba/docs/lararium/signal/micro-trace` |
 | Render targets | cross-surface sigilization and projection rules | `lar:///ha.ka.ba/docs/lararium/signal/render-targets` |
 | SA-display framing | shared-mental-model theory, research grounding, and SA/XAI split | `lar:///ha.ka.ba/docs/lararium/signal/sa-display` |
 
@@ -153,8 +154,10 @@ The render layer projects the same signal differently across surfaces without re
 
 Text that clearly belongs outward:
 
-- verbatim HUD witness, field tables, and micro-trace examples → `signal/hud.md`
-- forward-vs-backward trace detail and annotation-threshold rationale → `signal/hud.md`
+- HUD line field tables and exchange-boundary instrument reading → `signal/hud.md`
+- micro-trace syntax, density bands, handoff rules, and examples → `signal/micro-trace.md`
+- drift-recovery protocol pressure → `signal/drift.md`
+- provenance, witness strands, and snapshot residue → `signal/provenance.md`
 - shared-situation-awareness research framing and SA-vs-XAI argument → `signal/sa-display.md`
 - tagspace slot definitions and address semantics → `signal/tagspace.md`
 - render-surface mapping tables and per-surface conventions → `signal/render-targets.md`
@@ -170,6 +173,9 @@ The current chronometer material still reads as a research cluster under `signal
 Settled child rooms in this branch:
 
 <<~ loulou lar:///ha.ka.ba/docs/lararium/signal/hud >>
+<<~ loulou lar:///ha.ka.ba/docs/lararium/signal/micro-trace >>
+<<~ loulou lar:///ha.ka.ba/docs/lararium/signal/provenance >>
+<<~ loulou lar:///ha.ka.ba/docs/lararium/signal/drift >>
 <<~ loulou lar:///ha.ka.ba/docs/lararium/signal/render-targets >>
 <<~ loulou lar:///ha.ka.ba/docs/lararium/signal/sa-display >>
 <<~ loulou lar:///ha.ka.ba/docs/lararium/signal/tagspace >>
@@ -181,10 +187,6 @@ Settled child rooms in this branch:
 ## Edges
 
 <<~ loulou lar:///ha.ka.ba/docs/lararium >>
-<<~ loulou lar:///ha.ka.ba/docs/lararium/signal/hud >>
-<<~ loulou lar:///ha.ka.ba/docs/lararium/signal/render-targets >>
-<<~ loulou lar:///ha.ka.ba/docs/lararium/signal/sa-display >>
-<<~ loulou lar:///ha.ka.ba/docs/lararium/signal/tagspace >>
 <<~ loulou lar:///ha.ka.ba/api/v0.1/lararium/hud >>
 
 <<~/ahu >>
