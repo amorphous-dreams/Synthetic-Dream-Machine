@@ -1,7 +1,7 @@
 # Story: MCP-STORY-111 — Build Lararium MCP read-only carrier spine
 
 Parent epic: `MCP-EPIC-01`
-Status: `in-progress`
+Status: `done`
 Size: `M`
 Target sprint: `SPRINT-01`
 
@@ -20,6 +20,7 @@ so that the server compiles from Lararium source truth before it exposes transpo
 - future `lar:///*.*.*/**` tuple roots can resolve through the unstable tuple path without replacing all-caps roots
 - carrier ingress extracts `#iam` metadata, `implements`, shape diagnostics, rating posture, and depth state
 - interface and invariant indexes materialize as virtual read-only resources before MCP transport binding
+- a dependency-light stdio MCP JSON-RPC server binds the carrier spine to `initialize`, `resources/list`, `resources/read`, `resources/templates/list`, `tools/list`, and `tools/call`
 
 ## Linked tasks
 

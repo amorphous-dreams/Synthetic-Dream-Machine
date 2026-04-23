@@ -1,7 +1,7 @@
 # Task: MCP-TASK-001 — Create canonical inventory of boot-critical loci
 
 Parent story: `MCP-STORY-101`
-Status: `ready`
+Status: `done`
 Size: `S`
 
 ## Deliverable

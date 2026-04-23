@@ -246,6 +246,12 @@ The operator may shift `foreground-voices` per turn with `[Voices: MaskName Tria
 
 ## Founding Examples
 
+Canonical homes for these masks now live in the masks API tree:
+- `lar:///ha.ka.ba/api/v0.1/masks/character/ghost-of-mark-twain`
+- `lar:///ha.ka.ba/api/v0.1/masks/character/friend-computer`
+
+The definitions below remain as documentation reference. The API tree files carry the canonical invokable definitions.
+
 ### Example 1 — Ghost of Mark Twain
 
 ```toml

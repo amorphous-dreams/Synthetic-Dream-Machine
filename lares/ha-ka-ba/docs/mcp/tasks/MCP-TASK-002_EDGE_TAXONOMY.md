@@ -1,7 +1,7 @@
 # Task: MCP-TASK-002 — Define edge taxonomy and precedence table
 
 Parent story: `MCP-STORY-101`
-Status: `ready`
+Status: `done`
 Size: `S`
 
 ## Deliverable

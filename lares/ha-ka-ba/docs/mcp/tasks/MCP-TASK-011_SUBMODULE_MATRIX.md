@@ -1,7 +1,7 @@
 # Task: MCP-TASK-011 — Draft submodule integration matrix
 
 Parent story: `MCP-STORY-104`
-Status: `ready`
+Status: `done`
 Size: `S`
 
 ## Deliverable

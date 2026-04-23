@@ -1,7 +1,7 @@
 # Task: MCP-TASK-012 — Classify submodule contribution types
 
 Parent story: `MCP-STORY-104`
-Status: `ready`
+Status: `done`
 Size: `S`
 
 ## Deliverable

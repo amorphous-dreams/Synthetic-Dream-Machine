@@ -6,6 +6,7 @@ import unittest
 
 from lares.lararium_mcp import read_carrier, resolve_lar_uri
 from lares.lararium_mcp.resources import list_lar_resources, read_lar_resource_or_index
+from lares.lararium_mcp.server import handle_jsonrpc_message
 
 
 class CarrierSpineTests(unittest.TestCase):
@@ -40,6 +41,72 @@ class CarrierSpineTests(unittest.TestCase):
         self.assertTrue(any(item.uri == "lar:///INDEXES/interfaces" for item in resources))
         interface_index = read_lar_resource_or_index("lar:///INDEXES/interfaces")
         self.assertIn("lar:///ha.ka.ba/api/v0.1/pono/meme", interface_index)
+
+    def test_mcp_initialize(self) -> None:
+        response = handle_jsonrpc_message(
+            {
+                "jsonrpc": "2.0",
+                "id": 1,
+                "method": "initialize",
+                "params": {
+                    "protocolVersion": "2025-11-25",
+                    "capabilities": {},
+                    "clientInfo": {"name": "test", "version": "0"},
+                },
+            }
+        )
+        self.assertIsNotNone(response)
+        assert response is not None
+        self.assertEqual(response["result"]["protocolVersion"], "2025-11-25")
+        self.assertIn("resources", response["result"]["capabilities"])
+        self.assertIn("tools", response["result"]["capabilities"])
+
+    def test_mcp_resources_list_and_read(self) -> None:
+        listed = handle_jsonrpc_message({"jsonrpc": "2.0", "id": 2, "method": "resources/list"})
+        self.assertIsNotNone(listed)
+        assert listed is not None
+        resources = listed["result"]["resources"]
+        self.assertTrue(any(item["uri"] == "lar:///INDEXES/interfaces" for item in resources))
+
+        read = handle_jsonrpc_message(
+            {
+                "jsonrpc": "2.0",
+                "id": 3,
+                "method": "resources/read",
+                "params": {"uri": "lar:///INDEXES/interfaces"},
+            }
+        )
+        self.assertIsNotNone(read)
+        assert read is not None
+        contents = read["result"]["contents"]
+        self.assertEqual(contents[0]["mimeType"], "application/json")
+        self.assertIn("lar:///ha.ka.ba/api/v0.1/pono/meme", contents[0]["text"])
+
+    def test_mcp_tools_list_and_call(self) -> None:
+        listed = handle_jsonrpc_message({"jsonrpc": "2.0", "id": 4, "method": "tools/list"})
+        self.assertIsNotNone(listed)
+        assert listed is not None
+        self.assertTrue(any(item["name"] == "lararium.resolve_lar_uri" for item in listed["result"]["tools"]))
+
+        called = handle_jsonrpc_message(
+            {
+                "jsonrpc": "2.0",
+                "id": 5,
+                "method": "tools/call",
+                "params": {
+                    "name": "lararium.resolve_lar_uri",
+                    "arguments": {"uri": "lar:///INDEXES/carriers"},
+                },
+            }
+        )
+        self.assertIsNotNone(called)
+        assert called is not None
+        self.assertFalse(called["result"]["isError"])
+        self.assertIn('"virtual": true', called["result"]["content"][0]["text"])
+
+    def test_notification_returns_no_response(self) -> None:
+        response = handle_jsonrpc_message({"jsonrpc": "2.0", "method": "notifications/initialized"})
+        self.assertIsNone(response)
 
 
 if __name__ == "__main__":

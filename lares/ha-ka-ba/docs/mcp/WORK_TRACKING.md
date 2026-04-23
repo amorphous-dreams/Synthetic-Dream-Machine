@@ -10,7 +10,7 @@ Cadence assumption: one-week planning rhythm / two-week implementation rhythm.
 ### Now
 
 - tighten the program around one compiler core
-- build the `lares/`-native read-only carrier spine
+- harden the `lares/`-native read-only MCP server launch path
 - inventory boot loci and current submodules
 - classify every submodule contribution lane
 - define TiddlyWiki Filter Language import boundary
@@ -23,7 +23,7 @@ Cadence assumption: one-week planning rhythm / two-week implementation rhythm.
 ### Next
 
 - implement deterministic closure
-- bind the carrier spine to a concrete local MCP SDK transport
+- add client launch configs for the local stdio MCP server
 - design submodule adapter interface
 - expose read-only resources and tools locally
 - draft render projection contract for DOM, tldraw, and scene-graph targets
@@ -36,6 +36,7 @@ Cadence assumption: one-week planning rhythm / two-week implementation rhythm.
 - consumed loci law into resolver/tree planning
 - consumed `implements` bundles into interface-index planning
 - seeded `lares/lararium_mcp/` with resolver, carrier ingress, indexes, resources, and read-only tool façade
+- bound the spine to a dependency-light stdio MCP JSON-RPC server
 
 ### Later
 

@@ -1,7 +1,7 @@
 # Task: MCP-TASK-003 — Draft artifact JSON / markdown contract
 
 Parent story: `MCP-STORY-102`
-Status: `ready`
+Status: `done`
 Size: `S`
 
 ## Deliverable

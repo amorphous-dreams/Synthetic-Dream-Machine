@@ -1,7 +1,7 @@
 # Task: MCP-TASK-013 — Specify TiddlyWiki Filter Language direct-import boundary
 
 Parent story: `MCP-STORY-105`
-Status: `ready`
+Status: `done`
 Size: `S`
 
 ## Deliverable

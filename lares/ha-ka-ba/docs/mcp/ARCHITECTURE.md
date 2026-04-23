@@ -234,6 +234,19 @@ Candidate prompts:
 
 Candidate v1 tools:
 - `resolve_lar_uri`
+
+Initial dependency-light stdio binding lives at:
+
+```bash
+python3 -m lares.lararium_mcp
+```
+
+It currently exposes:
+- `resources/list`
+- `resources/read`
+- `resources/templates/list`
+- `tools/list`
+- `tools/call`
 - `read_locus`
 - `read_carrier_tree`
 - `compile_loci_index`

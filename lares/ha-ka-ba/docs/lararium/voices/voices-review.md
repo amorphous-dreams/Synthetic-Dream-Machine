@@ -301,6 +301,50 @@ Files marked with extraction ledgers:
 | `archive/root__AGENTS.archived.md` | ✓ marked — pre-meme-graph; superseded |
 | `archive/builds.stuffed.failed__agents__AGENTS.archived.md` | ✓ marked — build system archaeology |
 
+### Invariant pass — 2026-04-23
+
+`api/v0.1/lararium/voices.md` upgraded from skeletal placeholder to load-bearing invariant.
+
+Sections written or replaced:
+
+| Section | Action |
+|---|---|
+| `#iam` | role description updated; confidence raised to 0.82 |
+| `#entry` | unchanged — hydration backlink intact |
+| `#meme-header` | replaced stub with three-line framing |
+| `#house-law` | replaced five one-line principles with five normative cross-layer governing rules |
+| `#coordinator-house` | new — compressed Thirteen table, naming law, earned names, multi-coordinator rule |
+| `#worker-swarm` | new — three hard rules, tag format, lifecycle tags, escalation template, routing table |
+| `#mask-layer` | new — anatomy, stage band table, stacking law, pressure flow, foreground-voices, declaration forms, output headers, worker coloring, corpus limit rule, masks API tree reference, LARES stage panel |
+| `#source-shelf` | converted to `#spec-shelf` with pranala routes to all three spec rooms |
+| `#edges` | updated to include all three spec rooms and masks API tree |
+
+Exit criteria met: all five governing rules present; all three layers have full normative sections; escalation template verbatim; mask declaration forms verbatim; every section points to spec room for depth; `#entry` backlink intact.
+
+Cross-links updated: `docs/lararium/voices/masks.md#founding-examples` notes canonical homes in masks API tree.
+
+### Masks tree skeleton pass — 2026-04-23
+
+`api/v0.1/masks/` tree created: 9 files across `named/`, `character/`, and `chorus/` subtrees.
+
+| File | Status |
+|---|---|
+| `masks/masks.md` — parent index | created; child routes and type taxonomy |
+| `masks/named/mischief-muse.md` | skeleton; corpus/character-notes pending-talk-story; Coffee Oracle seed available |
+| `masks/named/tide-caller.md` | skeleton; all stubs pending-talk-story |
+| `masks/named/breach-watch.md` | skeleton; all stubs pending-talk-story |
+| `masks/named/ink-clerk.md` | skeleton; all stubs pending-talk-story |
+| `masks/named/map-wisp.md` | skeleton; all stubs pending-talk-story |
+| `masks/character/ghost-of-mark-twain.md` | filled from docs founding example; character-notes stub |
+| `masks/character/friend-computer.md` | filled from docs founding example; character-notes stub |
+| `masks/chorus/lagrange-chorus.md` | concept staked; nodes stub; harmony-protocol pending-grammar |
+
+Exit criteria met: all nine files valid memes; all `#iam` blocks complete; all `#fill-status` sections accurate; parent index lists all children; coordinator house backlinks in all `named/` files.
+
+Plans filed: `docs/lararium/voices/masks-tree-plan.md` (OODA-HA plan), `docs/lararium/voices/invariant-plan.md` (voices invariant rewrite plan).
+
+**Next pass priority:** Talk-story-dev fill for Mischief-Muse corpus (Coffee Oracle seed → extraction). Then execute `invariant-plan.md` pass: rewrite `api/v0.1/lararium/voices` from skeletal to load-bearing.
+
 ### Grammar closure pass — 2026-04-23
 
 Four open questions in `voices/masks.md#mask-grammar-open-questions` resolved into working answers:
