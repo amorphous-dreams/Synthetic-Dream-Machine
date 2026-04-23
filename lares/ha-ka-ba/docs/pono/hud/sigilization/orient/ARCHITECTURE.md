@@ -6,7 +6,9 @@
 
 ---
 
-## Design Intent
+## Design Intent *(migrated)*
+
+> Migrated to `lar:///ha.ka.ba/docs/lararium/signal/render-targets#migrated-sigilization-design-intent`
 
 The sigilization layer exists to serve human perception without compromising canonical form. The canonical `lar:` URI is machine-stable: URL-safe, storable, comparable by string. The sigil form is human-navigable: glances communicate phase, stance, and amplitude before the reader processes the text.
 
@@ -14,7 +16,9 @@ The separation is strict: **canonical form in the record; sigil form on the surf
 
 ---
 
-## ASCII → Glyph Mapping Tables
+## ASCII → Glyph Mapping Tables *(migrated)*
+
+> Migrated to `lar:///ha.ka.ba/docs/lararium/signal/render-targets#migrated-sigilization-mapping-tables`
 
 ### Phase Sigils
 
@@ -47,7 +51,9 @@ The separation is strict: **canonical form in the record; sigil form on the surf
 
 ---
 
-## Surface Anatomy
+## Surface Anatomy *(migrated)*
+
+> Migrated to `lar:///ha.ka.ba/docs/lararium/signal/render-targets#migrated-sigilization-per-surface-rules`
 
 ### `hud:exchange-pair`
 

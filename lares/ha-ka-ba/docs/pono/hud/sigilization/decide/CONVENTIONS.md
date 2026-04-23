@@ -6,7 +6,9 @@
 
 ---
 
-## Mandatory Rules (All Surfaces)
+## Mandatory Rules (All Surfaces) *(migrated)*
+
+> Migrated to `lar:///ha.ka.ba/docs/lararium/signal/render-targets#migrated-sigilization-mandatory-rules`
 
 **Rule 1: All five stances appear on every render target, always.**
 
@@ -32,7 +34,9 @@ No render target may show fewer than five stance emoji. Amplitude determines vis
 
 ---
 
-## Per-Surface Rules
+## Per-Surface Rules *(migrated)*
+
+> Migrated to `lar:///ha.ka.ba/docs/lararium/signal/render-targets#migrated-sigilization-per-surface-rules`
 
 ### `hud:exchange-pair`
 
@@ -77,7 +81,9 @@ Same all-five rule applies if the tag is emitted at all.
 
 ---
 
-## Amplitude Quick Reference
+## Amplitude Quick Reference *(migrated)*
+
+> Migrated to `lar:///ha.ka.ba/docs/lararium/signal/render-targets#migrated-sigilization-amplitude-quick-reference`
 
 | Record | Sigil | Meaning |
 |---|---|---|

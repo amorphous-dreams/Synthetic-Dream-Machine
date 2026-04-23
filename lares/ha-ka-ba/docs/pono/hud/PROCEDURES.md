@@ -11,7 +11,9 @@
 
 <!-- → ? -->
 <!-- ∞ → lar:///uri.schema.holds/uri-schema/act/?confidence=0.9#exchange-span-display-contract -->
-## Exchange Span Display Contract
+## Exchange Span Display Contract *(consumed)*
+
+> Consumed into `lar:///ha.ka.ba/docs/lararium/signal#migrated-hud-anatomy-exchange-flow` and `#migrated-hud-anatomy-span-display-contract`
 
 A **span** is one operator → Lares exchange at any scale. Every substantive exchange produces this sequence. **Mandatory — no exceptions.**
 
@@ -59,7 +61,9 @@ lar://scryer:node@enyalios/~aftermath.docs.settle/?stances=^.-.-.-.-&confidence=
 
 <!-- → ? -->
 <!-- ∞ → lar:///uri.schema.holds/uri-schema/act/?confidence=0.9#micro-trace-rules -->
-## Micro-trace HUD — Emit Rules
+## Micro-trace HUD — Emit Rules *(consumed)*
+
+> Consumed into `lar:///ha.ka.ba/docs/lararium/signal/hud#micro-trace-syntax`, `#micro-trace-density`, and `#micro-trace-layer-split`
 
 The micro-trace is the **backward-looking annotation layer**. It marks where the governed response *actually changed state* during generation — not a prospective commitment. Source: `lares/signal/micro-trace.md`.
 
@@ -105,7 +109,9 @@ Canonical flag-behavior table now lives at:
 
 <!-- → ? -->
 <!-- ∞ → lar:///uri.schema.holds/uri-schema/act/?confidence=0.9#sub-agent-handoff -->
-## Sub-agent and Coordinator Handoff Protocol
+## Sub-agent and Coordinator Handoff Protocol *(consumed)*
+
+> Consumed into `lar:///ha.ka.ba/docs/lararium/signal/hud#micro-trace-handoff`
 
 ### Why URI Pairs at Sub-agent Boundaries
 
@@ -134,7 +140,9 @@ Within the same session (no spawned sub-agent): micro-trace tag only, unless:
 
 <!-- → ? -->
 <!-- ∞ → lar:///uri.schema.holds/uri-schema/act/?confidence=0.9#parse-mode -->
-## Parse Mode and Layer Separation
+## Parse Mode and Layer Separation *(consumed)*
+
+> Consumed into `lar:///ha.ka.ba/docs/lararium/signal/hud#micro-trace-layer-split`
 
 Parse boundaries and micro-trace HUD events are **orthogonal**:
 

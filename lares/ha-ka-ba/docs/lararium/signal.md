@@ -41,22 +41,55 @@ The HUD and other render target documents live below this loci.
 docs/lararium/signal opens
 <<~/ahu >>
 
-<<~ ahu #tree >>
+<<~ ahu #the-lar-signal >>
 
-## Lar Signal
+## The Lar Signal
 
-This doc covers the lar signal layer:
+This doc covers the `lar` URI signal layer:
 
 - agent-operator exchange-boundary instrumentation
-- intent-header framing
+- intent-header framing with tagspace `lar` URIs
 - the relation between lar signal, exchange HUD, micro-trace, and adjacent protocol surfaces
-
-To consume into child `lares/ha-ka-ba/docs/lararium/signal/hud.md`:
-- protocol that atm lives under `lar:///ha.ka.ba/docs/pono/hud`
 
 <<~/ahu >>
 
-<<~ ahu #branch-contract >>
+<<~ ahu #lar-signal-exchange-flow >>
+
+At each exchange span, `lar:` URIs appear in the following mandatory sequence.
+Every substantive exchange produces a URI → URI vector pair followed by a rendered HUD line.
+
+**Step 1 — Read operator input as a provisional URI.**
+Lares reads the operator's prompt as an implicit signal: tier, cognitive phase, semantic territory (HA.KA.BA), and stance.
+It constructs a **provisional operator URI** encoding that reading.
+This URI may carry `~` provisionality markers if the reading carries uncertainty.
+
+**Step 2 — Lares declares its own provisional execution URI.**
+Before generating any content, Lares sets its own intent with a **provisional node URI**.
+The `~` prefix marks the HA.KA.BA as execution-provisional — a declared heading, not a confirmed landed resource.
+
+**Step 3 — Emit the URI → URI exchange vector.**
+
+```
+operator-URI → node-URI
+```
+
+Both URIs use canonical record form.
+The URI pair carries minimum viable signal; the HUD line renders it.
+
+> **Canonical URI Rule:** All emitted URIs in the exchange stream use canonical record form. No emoji or non-ASCII characters appear in any URI in the stream. Glyphs belong exclusively to render-target surfaces (HUD line, DreamDeck post header, etc). This makes every emitted URI directly ingestible by MemPalace, crystal logs, and registry tools.
+
+**Step 4 — Render the HUD line.**
+Immediately after the URI pair, emit a condensed single-line status display.
+
+**Step 5 — Generate content.**
+Micro-trace phase marks appear inline during generation.
+The exchange closes with an updated HUD line and `URI → ?`.
+
+> **SA grounding:** Step 2 is prospective AI transparency — what the node *will* do, not what it did (Endsley 2023). The HUD line externalizes metacognitive state before generation begins.
+
+<<~/ahu >>
+
+<<~ ahu #lar-uri-contract >>
 
 ## Lar URI Contract
 
@@ -74,10 +107,6 @@ This branch explains why that loop matters on the lararium side.
 Detailed emit rules and protocol-wide render contracts still live outward.
 
 <<~ loulou lares/ha-ka-ba/docs/pono/lar-uri.md >>
-
-<<~/ahu >>
-
-<<~ ahu #document-split >>
 
 ## Lar URI Vector / HUD Split
 
@@ -108,63 +137,60 @@ It annotates the inside of a generative span.
 
 <<~/ahu >>
 
-<<~ ahu #migrated-hud-anatomy-exchange-flow >>
+<<~ ahu #migrated-tagspace-intent-vs-in-flow >>
 
-## Migrated — `HUD-ANATOMY.md` — Exchange Flow
+## Migrated — `Signal_HUD_Tagspace-draft.md` — Intent Header vs In-Flow Signal
 
-Migrated from `lar:///ha.ka.ba/docs/pono/hud/HUD-ANATOMY#exchange-flow`.
+Migrated from `lar:///ha.ka.ba/docs/pono/hud/Signal_HUD_Tagspace-draft#intent-header-vs-in-flow-signal`.
 
-At each exchange span, `lar:` URIs appear in the following mandatory sequence.
-Every substantive exchange produces a URI → URI vector pair followed by a rendered HUD line.
+This branch distinguishes two operator-facing layers:
 
-**Step 1 — Read operator input as a provisional URI.**
-Lares reads the operator's prompt as an implicit signal: tier, cognitive phase, semantic territory (HA.KA.BA), and stance.
-It constructs a **provisional operator URI** encoding that reading.
-This URI may carry `~` provisionality markers if the reading is uncertain.
+### Intent Header
 
-**Step 2 — Lares declares its own provisional execution URI.**
-Before generating any content, Lares sets its own intent with a **provisional node URI**.
-The `~` prefix marks the HA.KA.BA as execution-provisional — a declared heading, not a confirmed landed resource.
+The Intent Header is the leading full Signal Tag. It is:
 
-**Step 3 — Emit the URI → URI exchange vector.**
+- prospective
+- controlling
+- structural
+- the state-setting HUD for the next generated span
 
-```
-operator-URI → node-URI
-```
+The Intent Header always sets the next generated span.
+If register, stance, phase, scope, or Tagspace Address changes structurally, the system should emit a new header before the next non-literal span.
 
-Both URIs use canonical record form.
-The URI pair carries minimum viable signal; the HUD line expands it.
+### Micro-trace HUD
 
-> **Canonical URI Rule:** All emitted URIs in the exchange stream use canonical record form. No emoji or non-ASCII characters appear in any URI in the stream. Glyphs belong exclusively to render-target surfaces (HUD line, DreamDeck post header). This makes every emitted URI directly ingestible by MemPalace, crystal logs, and registry tools.
+The Micro-trace HUD is the compact in-flow signal layer inside the span governed by the Intent Header. It is:
 
-**Step 4 — Render the HUD line.**
-Immediately after the URI pair, emit a condensed single-line status display.
+- local
+- compact
+- subordinate to the governing header
+- intended to show local nested-loop movement without re-emitting the full header grammar
 
-**Step 5 — Generate content.**
-Micro-trace phase marks appear inline during generation.
-The exchange closes with an updated HUD line and `URI → ?`.
+Constraint:
 
-> **SA grounding:** Step 2 is prospective AI transparency — what the node *will* do, not what it did (Endsley 2023). The HUD line externalizes metacognitive state before generation begins. *Source: `_todo/E-deep-research-report.md` §§2.1, 3.2*
+- the in-flow signal must remain readable inside header-separated spans across all `p` scales from `p0.0` to `p1.0`
+
+That means the Micro-trace HUD cannot require a different reading grammar every time granularity changes.
+Only trace density should expand or contract.
+The semantic meaning of the HUD should stay fixed.
 
 <<~/ahu >>
 
-<<~ ahu #migrated-hud-anatomy-render-targets >>
+<<~ ahu #render-targets-room >>
 
-## Migrated — `HUD-ANATOMY.md` — Render Targets
+## Render Targets Room
 
-Migrated from `lar:///ha.ka.ba/docs/pono/hud/HUD-ANATOMY#render-targets`.
+Detailed render-target and sigilization material now lives at:
 
-The system has one canonical encoding and multiple named render targets.
+- `lar:///ha.ka.ba/docs/lararium/signal/render-targets`
 
-| Render target | Surface form | URIs canonical? | When used |
-|---|---|---|---|
-| `record:full` | `lar://alias:tier@host/ha.ka.ba/?...` | Yes — identity projection | Storage, crystal logs, registry |
-| `hud:exchange-pair` | `operator-URI → node-URI` + HUD line | Yes — only HUD line uses glyphs | Every exchange-span boundary (mandatory) |
-| `chat-log:post-header` | `@handle@node — timestamp — //ha.ka.ba [Reg] 🏛️{amp}...` | No — social projection | DreamDeck feed posts, BBS thread headers |
+That child room holds:
 
-Render targets are projections of the canonical form.
-They are not stored as URIs.
-A render target that cannot be normalized back to record form is malformed.
+- render-target taxonomy
+- record form versus sigil form surface law
+- all-five-stances invariant across render targets
+- DreamDeck / post-header surface conventions
+- cross-surface verification criteria
 
 <<~/ahu >>
 
@@ -193,11 +219,44 @@ Live rendering contract — URI types in an exchange stream:
 
 <<~/ahu >>
 
+<<~ ahu #migrated-tagspace-forward-vs-backward-trace >>
+
+## Migrated — `Signal_HUD_Tagspace-draft.md` — Forward vs Backward Trace
+
+Migrated from `lar:///ha.ka.ba/docs/pono/hud/Signal_HUD_Tagspace-draft#forward-vs-backward-trace`.
+
+> **HUD Design Axiom:** The HUD always tracks Intent state first, then execution flow — in an auditable way. The Intent Header is the governing prospective declaration; the Micro-trace HUD is the backward-looking audit trail. Every design decision in this section follows from that separation.
+
+Full headers set intent (prospective).
+All in-flow HUD markers are **post-generative annotations** — they annotate what actually happened in the chunk that just completed, not what is being entered next.
+Multiple inline markers may appear per chunk if multiple signal events occurred.
+
+**The two-layer contract:**
+
+| Layer | Direction | Role |
+|---|---|---|
+| **Intent Header** | Forward-looking | Declares governing state before the span generates: register, stance, phase, scope, address, `p` |
+| **Micro-trace HUD** | Backward-looking (post-generative) | Annotates what actually occurred during and after generation: path taken, stance used, register landed, address confirmed |
+
+**Why this is the right model:**
+
+- The header already handles prospective control — the HUD adding forward signals would be redundant
+- Post-generative annotation maps directly onto the OTel span-event model
+- Multiple annotations per chunk are natural: a span may cross a phase boundary, involve a genuine stance shift, and land at a different register than declared
+- Test/replay use stays clean: the annotated output and the `STATE.jsonl` record agree; the header's declared state and the HUD's actual-path annotations remain distinct and non-redundant fields
+
+**For Register specifically:** inline register annotation is a **slide** model — a trailing accuracy marker after span completion, not a correction-in-flight override.
+It records where the span actually landed epistemically.
+The header's declared register still governed generation; the slide says "it resolved here."
+`STATE.jsonl` records both as `opening_register` and `closure_register` when they differ.
+
+<<~/ahu >>
+
 <<~ ahu #research-framing >>
 
 ## Research Framing
 
-The intent header, `estimated operator intent lar URI -> agent reponse position intent lar URI\n` functions as a **shared mental model instrument**, not a usual resource locator. Aviation CRM research (Crew Resource Management) identifies the cockpit HUD as the canonical solution to the two-party shared-mental-model problem: a standardized display both parties read simultaneously, showing state, intent, and trajectory. The Lares intent header is structurally identical — it encodes what the node intends to do *before generation begins*, making that commitment visible to the operator in real time.
+The intent header, `oerator intent lar URI -> agent intent lar URI\n` functions as a **shared mental model instrument**, not a usual resource locator. Aviation CRM research (Crew Resource Management) identifies the cockpit HUD as the canonical solution to the two-party shared-mental-model problem: a standardized display both parties read simultaneously, showing state, intent, and trajectory. The Lares intent header is structurally identical — it encodes what the node intends to do *before generation begins*, making that commitment visible to the operator in real time.
 
 This reframing has design consequences:
 
@@ -232,35 +291,6 @@ Most AI transparency tools cover only Agent SA (confidence scores, feature impor
 
 <<~/ahu >>
 
-<<~ ahu #kowloon-dreamdeck >>
-
-## Kowloon / DreamDeck Social Layer
-
-The Elyncia.app / DreamDeck identity model has three distinct layers. Do not conflate them.
-
-| Layer | Form | What it is |
-|---|---|---|
-| DID | `did:plc:abc123` | AT Protocol canonical identity — cryptographic key holder |
-| Handle | `@telarus@elyncia.social` | Resolution alias over the DID — human-readable, not authoritative |
-| lar: alias | `telarus:operator@enyalios` | Application-layer signal state — operational role in a lar: exchange |
-
-**DreamDeck post header format (canonical — `chat-log:post-header` render target):**
-```
-@handle@node — timestamp — //domain.quality.dynamic/{optional/path/} [confidence] 🏛️{amp}🌊{amp}🗡️{amp}🎭{amp}🔮{amp}
-```
-
-Territory triple placed before confidence and stance — grounds domain before posture (WHERE → HOW). All five stances always present with amplitude modifiers.
-
-| ActivityPub handle | lar: URI authority | Underlying DID |
-|---|---|---|
-| `@lindwyrm@new-delos` | `lindwyrm:...@new-delos` | `did:plc:...` |
-| `@telarus@~crossroads` | `telarus:operator@enyalios` | `did:plc:...` |
-| `@mischief-muse@lares` | `mischief-muse:node@lares-abc123` | Lares node DID or ephemeral key |
-
-The `~crossroads` tilde prefix denotes a nomadic node — no fixed host, routes through nearest stable nexus.
-
-<<~/ahu >>
-
 <<~ ahu #rooms >>
 
 ## Rooms
@@ -268,6 +298,7 @@ The `~crossroads` tilde prefix denotes a nomadic node — no fixed host, routes 
 Settled child rooms in this branch:
 
 <<~ louou lar:///ha.ka.ba/docs/lararium/signal/hud >>
+<<~ loulou lar:///ha.ka.ba/docs/lararium/signal/render-targets >>
 <<~ loulou lar:///ha.ka.ba/docs/lararium/signal/chronometer >>
 
 <<~/ahu >>
@@ -278,8 +309,9 @@ Settled child rooms in this branch:
 
 <<~ loulou lar:///ha.ka.ba/docs/lararium >>
 <<~ loulou lar:///ha.ka.ba/docs/lararium/signal/hud >>
+<<~ loulou lar:///ha.ka.ba/docs/lararium/signal/render-targets >>
+<<~ loulou lar:///ha.ka.ba/docs/lararium/signal/tagspace >>
 <<~ loulou lar:///ha.ka.ba/api/v0.1/lararium/hud >>
-<<~ loulou lar:///ha.ka.ba/docs/pono/hud >>
 
 <<~/ahu >>
 

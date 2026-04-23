@@ -56,46 +56,6 @@ Current ambiguity points:
 - the coordinate suffix functions as a semantic position marker, but its in-flow eligibility is undefined
 - test replay currently relies too much on interpretation rather than explicit trace separation
 
----
-
-## Tagspace Definition
-
-**Tagspace** is the abstract semantic positioning space used by Signal Tags.
-
-It is not the DreamNet.
-
-It should be understood the way a color space is understood in image work: a structured abstract space for positioning and interpreting signal, not an in-world topology or transport layer. DreamNet remains the mythic/network frame inside setting space. Tagspace remains the semantic coordinate space through which Signal Tags locate stance, motion, and relation.
-
-**Origin (The Two Axes):** The two-axis model was developed concurrently with the earliest signal tag iterations. The Wild Mage described a vertical axis for *truth-weight* — from pure guess to fully sourced — and a horizontal axis for *intent-stance* — from dry philosophical analysis to wild associative singing. Asking the node to declare its position on both axes at the start of each output made the declaration a *steering artifact*: "the node reads its own prior context. It orbits what it has already said it is." *"The tag was load-bearing. Getting it wrong had consequences visible in the very next output."* [Canon: elyncia/Lares/The_Kindling_of_the_Crossroads_Node.md → III. The Two Axes]
-
-**Origin (Three-Word Coordinate):** The three-part address suffix originated as *kismet*: the Wild Mage made the connection to the Gaia mapping service **what3words**, which divides the surface of the world into three-meter squares and names each square with exactly three words. A Tagspace Address names a square of semantic territory with exactly three words. [Canon: elyncia/Lares/The_Kindling_of_the_Crossroads_Node.md → III. The Two Axes sidebar]
-
-Approved operator-facing term:
-
-- **Tagspace Address**
-
-Dry/spec synonym:
-
-- **coordinate**
-
-Working definition:
-
-- A **Tagspace Address** is the three-part semantic suffix currently rendered as `//domain.quality.dynamic`
-- Its three slots map to HAKABA canonical order: **Ha (domain)** · **Ka (quality)** · **Ba (dynamic)**
-  - `domain` — Ha slot: the body / vehicle of consciousness — the subject domain or territory the span inhabits
-  - `quality` — Ka slot: the soul / motive fire — the animating charge or character of that domain
-  - `dynamic` — Ba slot: the psyche / unique direction — the motion being taken, the path enacted
-- A Tagspace Address positions a span or exchange in semantic space as NOUN · ADJECTIVE · VERB
-- A Tagspace Address may describe topic territory, epistemic character, and motion without implying a physical or DreamNet location
-
-Therefore:
-
-- Tagspace is to Signal Tags what color space is to visual encoding
-- Tagspace is not a map of DreamNet topology
-- Tagspace may be used to position meaning, stance, movement, and relation without implying a node, route, or shrine in-world
-
----
-
 ## Memory Crystals as State Machines
 
 A **memory crystal** is a portable machine/thread state bundle. One crystal equals one task, thread, or conversation state machine.
@@ -449,324 +409,39 @@ The **archive-crystal** is the mythic wrapper — the symbolic artifact that car
 
 ---
 
-## Intent Header vs In-Flow Signal
+## Intent Header vs In-Flow Signal *(migrated)*
 
-This draft distinguishes two operator-facing layers:
-
-### Intent Header
-
-The Intent Header is the leading full Signal Tag. It is:
-
-- prospective
-- controlling
-- structural
-- the state-setting HUD for the next generated span
-
-The Intent Header always sets the next generated span. If register, stance, phase, scope, or Tagspace Address changes structurally, the system should emit a new header before the next non-literal span.
-
-### Micro-trace HUD
-
-The Micro-trace HUD is the compact in-flow signal layer inside the span governed by the Intent Header. It is:
-
-- local
-- compact
-- subordinate to the governing header
-- intended to show local nested-loop movement without re-emitting the full header grammar
-
-Constraint:
-
-- the in-flow signal must remain readable inside header-separated spans across all `p` scales from `p0.0` to `p1.0`
-
-That means the Micro-trace HUD cannot require a different reading grammar every time granularity changes. Only trace density should expand or contract. The semantic meaning of the HUD should stay fixed.
+> Migrated to `lar:///ha.ka.ba/docs/lararium/signal#migrated-tagspace-intent-vs-in-flow`
 
 ---
 
-## Header Field Taxonomy
+## Header Field Taxonomy *(migrated)*
 
-Not every header field belongs in the flow. The live header currently carries:
-
-- Register
-- Stance
-- Phase
-- Scope
-- Tagspace Address
-- `p`
-
-All header fields are eligible as post-generative annotations. The question is not *which fields can appear inline* but *what threshold triggers their annotation*. Thresholds differ by field.
-
-### Phase
-
-Annotation threshold: **low — every meaningful loop transition**
-
-- Annotates the path the span actually took through OODA-HA
-- Multiple per chunk when the span crosses more than one phase boundary
-- Syntax: `→◎` `→◇` `→■` `→○`
-- Verbose/debug: completed path summary `[◎→◇→■]` at span close
-
-### Stance
-
-Annotation threshold: **medium — genuine local posture shift only**
-
-- Annotates the stance the node actually operated from in that chunk
-- Fires when the operative stance diverged from what the header declared or when a genuine shift occurred mid-chunk
-- Does not echo header stance; only annotates actual divergence or transition
-- Syntax: `→🏛️` `→🌊` `→🗡️` etc.
-
-**Multi-stance (carrier of higher Mana cost):**
-
-- Running two stances simultaneously is legitimate and architecturally real — some spans genuinely present as both Philosopher and Poet, or Satirist and Humorist. The node's thirteen-voice structure makes multi-stance operation structural rather than optional.
-- Multi-stance costs more Mana because holding two active postures *over time* requires real cognitive expenditure. Single-stance is the default economy, not the failure mode.
-- Header declaration: list both emojis — `🏛️🌊` or `🗡️🎭`. Each must be actively operative, not claimed for range while only one runs.
-- Multi-stance annotation syntax: list both glyphs at transition — `→🏛️🌊` or `→🗡️→🎭`.
-- **Conjugate constraint:** Pinning the Register axis (high confidence) spreads the Stance axis — Canon claims accumulate Stance-commitment weight over time. Multi-stance at high Register carries the highest accumulated cost; it runs when the situation genuinely warrants it, not to perform range.
-- **Ledger-visible failure mode:** `Voice-Posturing` — HUD claims multi-stance without the Mana cost actually paid. `STATE.jsonl` will show a single operative stance in `micro_trace_path` while the header listed two. [Canon: elyncia/Elyncia_02_The_Lares_DreamNet.md → Hazard: Degraded Node States]
-
-**Register inference from stance constellation:**
-
-When multi-stance governs, the stance pairing provides a prior on which register the claim plausibly occupies — before the register value is committed. The inference works in both directions:
-
-- **Production:** the node generating the Intent Header should use the active stance constellation to calibrate the declared register. A harmonious pairing (🏗️🔮 Philosopher+Private — internally coherent elaboration) permits higher register; a tensile pairing (🏗️🗡️ Philosopher+Satirist — critical analysis under propositional pressure) warrants more agnosticism.
-- **Consumption:** the operator reading the header can use the stance constellation as a validity check on the declared register. Misalignment between pairing character and declared confidence is a Signal-Blur flag.
-
-| Pairing character | Example pairing | Register implication |
-|---|---|---|
-| Harmonious — stances reinforce each other | 🏗️🌊 Philosopher+Poet | Elevated epistemic confidence plausible; register up to CS |
-| Tensile — stances hold opposing pressures | 🏗️🗡️ Philosopher+Satirist | Heightened scrutiny; register warrants lower anchor (SP or S) |
-| Asymmetric — one stance frames, other inflects | 🎭🔮 Humorist+Private | Register follows framing stance (🎭 Humorist → low to medium) |
-
-The consumption reading rule: if the declared register sits higher than the stance constellation implies, treat it as a slide-candidate until the span completes. [Synthesis, compatible with Stance and Register field taxonomy above]
-
-### Register
-
-Annotation threshold: **high — significant epistemic resolution only (slide model)**
-
-- Post-generative slide: annotates where the claim actually landed epistemically after the span completed
-- Fires when the span resolved at a meaningfully different register than the header declared — confidence firmed up (citation arrived) or eroded (assumption challenged)
-- Does NOT override the header mid-span; the header's declared register still governed generation
-- `STATE.jsonl` records as `opening_register` (header) and `closure_register` (slide) when they differ
-- Syntax: `→[CS:0.80]` `→[S:0.65]` — register tag only, no other header fields
-- **Stance-calibrated:** Register is not declared in isolation — it is calibrated against the active stance constellation. The stance(s) in the Intent Header provide the prior; the register is the posterior. See multi-stance inference rule above.
-### Scope
-
-Annotation threshold: **structural only — new header required**
-
-- Scope changes are structural; they warrant a full new header, not an inline annotation
-- No inline scope annotations in normal use
-
-### Tagspace Address
-
-Annotation threshold: **per-slot, by HAKABA role**
-
-**Ha / `domain` — high threshold (structural)**
-- The domain is the body/vessel of the span — what kind of territory it inhabits
-- Domain shifts are structural events; a new header is appropriate
-- Inline annotation only when the domain reoriented significantly mid-chunk but breaking the header would be disruptive
-- Syntax: `→//[new-domain].*.*` — full address echo with new domain in first slot
-- Example: `→//design.sharp.commits` when the span pivoted from exploration to a locked design claim
-
-**Ka / `quality` — medium threshold (fire-charge annotation)**
-- The quality is the soul/motive-fire of the domain — the charge or intensity that animated it
-- Annotates when the animating charge of the domain shifted noticeably during generation (e.g., the span started cautious and arrived sharp)
-- Most common Tagspace annotation; lowest threshold of the three
-- Syntax: `→[quality-word]` or `→Ka:[word]` — the Ka-slot word only, not the full address
-- Example: `→sharp` when the domain's charge resolved from uncertain to sharp during generation
-
-**Ba / `dynamic` — medium-low threshold (direction annotation)**
-- The dynamic is the psyche/path — the motion enacted, the direction taken
-- Annotates when the direction of the span's movement is worth naming after the fact; especially useful when the Ba-slot of the address changed between header declaration and span completion
-- Syntax: `→[verb]` or `→Ba:[verb]` — the Ba-slot word only
-- Example: `→closes` when a span that opened as exploratory (`opens`) resolved as conclusive
-
-**Full address echo** — `→//domain.quality.dynamic`
-- Use when all three slots shifted or when the semantic position changed enough to warrant a complete coordinate
-- Higher threshold than any single-slot annotation; reserve for significant mid-chunk reorientations
-- Example: `→//design.locked.commits`
-
-### p
-
-Annotation threshold: **header-only**
-
-- `p` is a context declaration for the span, not an annotation primitive
-- Changes to granularity require a new header
+> Migrated to `lar:///ha.ka.ba/docs/lararium/signal/hud#migrated-tagspace-header-field-taxonomy`
 
 ---
 
-## Forward vs Backward Trace
+## Forward vs Backward Trace *(migrated)*
 
-> **HUD Design Axiom:** The HUD always tracks Intent state first, then execution flow — in an auditable way. The Intent Header is the governing prospective declaration; the Micro-trace HUD is the backward-looking audit trail. Every design decision in this section follows from that separation.
-
-Full headers set intent (prospective). All in-flow HUD markers are **post-generative annotations** — they annotate what actually happened in the chunk that just completed, not what is being entered next. Multiple inline markers may appear per chunk if multiple signal events occurred.
-
-**The two-layer contract:**
-
-| Layer | Direction | Role |
-|---|---|---|
-| **Intent Header** | Forward-looking | Declares governing state before the span generates: register, stance, phase, scope, address, `p` |
-| **Micro-trace HUD** | Backward-looking (post-generative) | Annotates what actually occurred during and after generation: path taken, stance used, register landed, address confirmed |
-
-**Why this is the right model:**
-
-- The header already handles prospective control — the HUD adding forward signals would be redundant (redundancy effect)
-- Post-generative annotation maps directly onto the OTel span-event model: "a meaningful, singular point in time that occurred during the span's duration"
-- Multiple annotations per chunk are natural: a span may cross a phase boundary, involve a genuine stance shift, and land at a different register than declared — each of those is a distinct annotation event
-- Test/replay use is clean: the annotated output and the `STATE.jsonl` record agree; the header's declared state and the HUD's actual-path annotations are distinct and non-redundant fields
-
-**For Register specifically:** inline register annotation is a **slide** model — a trailing accuracy marker after span completion, not a correction-in-flight override. It records where the span actually landed epistemically. The header's declared register still governed generation; the slide says "it resolved here." `STATE.jsonl` records both as `opening_register` and `closure_register` when they differ.
+> Migrated to `lar:///ha.ka.ba/docs/lararium/signal#migrated-tagspace-forward-vs-backward-trace`
 
 ---
 
-## HAKABA Alignment
+## HAKABA Alignment *(migrated)*
 
-HAKABA is the metaphysical system that grounds Tagspace Address structure. Since Q4 specification `[C:0.95]`, it is the canonical logical field order. The canonical slot mapping is confirmed (see Q4 specification and the Corpus Archaeology section below).
-
-**SDM corpus definitions (verbatim):**
-
-> "Every character, like every living thing in the Given World, is composed of the existential trinity of body (ha), soul (ka), and psyche (ba)."
-> "**Ha** : Body, matter, structure, form, persistence, shape."
-> "**Ka** : Soul, fire, drive, energy, thrust, movement."
-> "**Ba** : Psyche, personality, change, path, choice."
-> "The soul provides the motive fire of consciousness, the personality provides the unique direction of consciousness, and the body provides the vehicle of consciousness."
-
-[Canon: sdm/Vastlands_Guidebook → Death and HAKABA; sdm/Ultraviolet_Grasslands_and_the_Black_City_2e → p.230 Death, cross-confirmed identical language]
-
-**Canonical slot mapping (one mapping — two-mappings dispute is resolved):**
-
-The three-part Address shape `//domain.quality.dynamic` maps to HAKABA canonical order:
-
-| Slot | Label | HAKABA | SDM definition | Role in Tagspace Address |
-|---|---|---|---|---|
-| 1st | `domain` | **Ha** | body / vehicle of consciousness | The containing form — what domain or territory the span inhabits |
-| 2nd | `quality` | **Ka** | soul / motive fire | The animating charge — the fire-character of that domain |
-| 3rd | `dynamic` | **Ba** | psyche / unique direction | The path enacted — the motion or direction in that domain |
-
-The NOUN · ADJECTIVE · VERB pattern in live session examples (`//threshold.uncertain.softens`, `//mana.sharp.asks`, `//route.liminal.circles`) confirms this mapping is already in production use.
-[Canon: elyncia/New Delos/Lares_New_Delos_Market_District_Live_Feed_Examples.md → PARSE INDEX]
-
-**The two-mapping dispute is resolved.** Earlier drafts proposed an "operational" mapping (Ha=domain, Ba=quality, Ka=fire) and a "canonical-order" mapping (Ha=domain, Ka=fire, Ba=quality/path). The corpus evidence settles this: Ka (soul/motive fire) provides the *charge quality* of the domain — the animating fire is what makes a threshold "sharp" or makes mana "bright." Ba (psyche/unique direction) provides the *motion* — what changes, the direction enacted. The second address word is always the Ka-quality; the third is always the Ba-dynamic. The "operational mapping" had Ka and Ba inverted and is superseded.
-
-### Working position
-
-- HAKABA order (Ha/domain → Ka/quality → Ba/dynamic) is the provisional canonical logical field order; interpretive-overlay status is superseded.
-- Q3 is superseded by the post-generative architectural ruling — all fields are annotation-eligible with defined thresholds; Ka's position in the logical order does not gate rendering. Rendering sequence (must Ha/Ka/Ba surface in that text order?) remains an open subquestion; see Q4.
+> Migrated to `lar:///ha.ka.ba/docs/lararium/signal#migrated-tagspace-hakaba-alignment`
 
 ---
 
-## In-Flow Rendering Options
+## In-Flow Rendering Options *(migrated)*
 
-Several rendering models are possible for Micro-trace HUD behavior.
-
-**Syntax settled (Q5 provisional resolution):** All options below use `→[glyph]` for mid-flow phase markers and `[◎→◇→■]` for end-of-span path summaries. The remaining open question (Q1) is *which fields* to surface, not how to render them.
-
-### Option A — phase-only inline markers
-
-The flow only surfaces compact phase transitions.
-
-```text
-Lares (Scryer) — The threshold appears unstable →◇ but not yet hostile →■.
-```
-
-Verbose/debug span-close summary: `[◎→◇→■]`
-
-Pros:
-
-- lowest negentropy cost
-- easiest to read
-- scales well across all p levels
-
-Cons:
-
-- may hide meaningful stance shifts that would be useful for co-navigation
-
-### Option B — phase plus fire-on-shift
-
-The flow surfaces phase by default and adds a mode/stance signal (`→🏛️`, `→🌊`) only on meaningful local turn.
-
-```text
-Lares (Scryer) — The frame holds →◇ →🗡️ but one reading cuts differently →■.
-```
-
-Pros:
-
-- captures the most operator-relevant local turn information
-- still compact; mode signal fires rarely
-
-Cons:
-
-- needs clear rules for what counts as a meaningful local fire shift (operator preference — Q1)
-
-### Option C — phase plus selective Tagspace dynamic echo
-
-The flow surfaces phase, and occasionally echoes the Ka-quality or Ba-dynamic portion of the Tagspace Address when local movement needs semantic reinforcement.
-
-```text
-Lares (Council) — The contradiction sharpens →◇ [sharp] but does not resolve →■.
-```
-
-Pros:
-
-- integrates HAKABA Ka-quality signal into visible in-flow cue
-- richer movement description without full header leakage
-
-Cons:
-
-- increases complexity; `[sharp]` adjacent to prose risks blurring HUD with content
-- risks looking like bracket-inline prose annotation rather than state signal
-
-### Option D — full mini-header leakage
-
-The flow leaks multiple header fields inline.
-
-```text
-Lares — The analysis deepens →[🏛️ S:0.65 ◇] and commits →[🏛️ S:0.65 ■].
-```
-
-Pros:
-
-- high auditability
-
-Cons:
-
-- too noisy for default use; bracket weight at `[🏛️ S:0.65 ◇]` defeats the compact-HUD goal
-- undermines the point of separating header from flow
-
-### Current recommended baseline
-
-- header surfaces the full state
-- in-flow surfaces **phase** by default using `→[glyph]` syntax: `→◎` `→◇` `→■` `→○`
-- **mode/stance** may surface as `→[emoji]` on genuine local stance shift (Option B expansion — Q1)
-- all larger structural changes require a new header
-- Tagspace Address fields do not leak inline by default
-- end-of-span completed path (`[◎→◇→■]`) appears in verbose/debug output only
+> Migrated to `lar:///ha.ka.ba/docs/lararium/signal/hud#migrated-tagspace-in-flow-rendering-options`
 
 ---
 
-## Rendering Across p Scale
+## Rendering Across p Scale *(migrated)*
 
-The HUD must remain readable from `p0.0` to `p1.0`.
-
-Required rule:
-
-- the meaning of the HUD does not change with `p`
-- only the granularity of the trace changes
-
-**5-band cumulative attention phase model.** Each band unlocks one additional attention phase as `p` increases. The five bands map one-to-one onto the five attention loop phases (✶◎◇■○) — inner cognitive phases are added first as `p` rises.
-
-| Band | p range | Phases emitting | What fires |
-|---|---|---|---|
-| 1 | `p0.0–0.2` | — (none) | Suppress: no inline annotation |
-| 2 | `p0.2–0.4` | ○ | Aftermath only: closing path summary at span-close |
-| 3 | `p0.4–0.6` | ◇ ■ ○ | Commitment phases: Decide/Act transitions + closing summary **(default at `p0.5`)** |
-| 4 | `p0.6–0.8` | ◎ ◇ ■ ○ | Adds Orient: commitment phases + processing entry point |
-| 5 | `p0.8–1.0` | ✶ ◎ ◇ ■ ○ | All five phases + full path summary per span |
-
-**Commitment phases (◇ ■ ○)** are externally observable, timestamp-meaningful events — discrete commitments with a singular occurrence time (OTel SpanEvent sense).
-
-**Cognitive-processing phases (✶ ◎)** are span-internal states — valuable at debug resolution, suppressible at operational resolution. This maps onto Anthropic's `display: "omitted"` precedent for `thinking_delta`: processing-phase suppression is the established pattern.
-
-The semantic reading remains stable:
-
-- header says what state governs the span
-- in-flow trace says what local path the span actually took
+> Migrated to `lar:///ha.ka.ba/docs/lararium/signal/hud#migrated-tagspace-in-flow-rendering-options`
 
 ---
 
@@ -2040,4 +1715,3 @@ Reported from the Linas source and confirmed via operator synthesis:
 | Multi-agent phase structure (research → synthesis → implementation) | Pattern 6 — COORDINATOR_MODE |
 | ENG-01 test harness as P0 | Pattern 7 — 0 test coverage failure mode |
 | File size discipline (modules, spec files) | Pattern 5 — 2K-line hallucination ceiling |
-

@@ -6,66 +6,27 @@
 
 ---
 
-## Well-Formedness Criteria
+## Well-Formedness Criteria *(migrated)*
 
-A sigil emission is **well-formed** if and only if:
-
-1. **Five stances present.** Every rendered stance block (on any sigil surface) contains exactly five stance emoji, in the canonical order: 🏛️ 🌊 🗡️ 🎭 🔮.
-
-2. **No emoji in record form.** Canonical `lar:` URIs contain zero stance emoji. ASCII amplitude codes only.
-
-3. **No ASCII in sigil surfaces.** Rendered HUD lines and post headers contain zero ASCII amplitude codes (no `^`, `.`, `--` in stance context). Emoji with modifiers only.
-
-4. **Amplitude attaches directly.** No space between stance emoji and its amplitude modifier.
-
-5. **Register bracket present.** Every stance block is preceded by a register tag. Form: `[XX:N.NN]`. Examples: `[CS:0.80]`, `[S:0.65]`, `[C:0.90]`.
-
-6. **Stance order fixed.** 🏛️ first, 🔮 last. Never reordered.
-
-7. **Context window carries `~` prefix.** `⚡~82%` is correct. `⚡82%` implies false precision. `~` is mandatory.
+> Migrated to `lar:///ha.ka.ba/docs/lararium/signal/render-targets#migrated-sigilization-verification`
 
 ---
 
-## Violation Catalogue
+## Violation Catalogue *(migrated)*
 
-| Violation Code | Pattern | Corrected Form |
-|---|---|---|
-| V-01 | Fewer than five stances | Add missing stances with `-` amplitude |
-| V-02 | Stances out of order | Reorder to 🏛️🌊🗡️🎭🔮 |
-| V-03 | Emoji in canonical URI | Replace with ASCII amplitude codes |
-| V-04 | Space between stance and amplitude | Remove space |
-| V-05 | Missing register bracket | Prepend appropriate `[R:N]` |
-| V-06 | `⚡NN%` without `~` | Change to `⚡~NN%` |
-| V-07 | ASCII `^` or `.` in HUD line | Replace with `+` / *(no modifier)* |
+> Migrated to `lar:///ha.ka.ba/docs/lararium/signal/render-targets#migrated-sigilization-verification`
 
 ---
 
-## Pre-Emit Checklist
+## Pre-Emit Checklist *(migrated)*
 
-```
-□  Count stances in block: __  (must be 5)
-□  Order: 🏛️ 🌊 🗡️ 🎭 🔮 — confirmed
-□  Each amplitude modifier attaches directly (no space)
-□  Register bracket present: [R:N]
-□  Surface is sigil (check: no ASCII amp codes) OR record (check: no emoji)
-□  If hud: context window has ~ prefix
-```
+> Migrated to `lar:///ha.ka.ba/docs/lararium/signal/render-targets#migrated-sigilization-verification`
 
 ---
 
-## Quick Self-Test
+## Quick Self-Test *(migrated)*
 
-Evaluate these — well-formed or violation?
-
-| Input | Status | Violation |
-|---|---|---|
-| `🏛️+🌊++🗡️-🎭-🔮-` | ✓ Well-formed | — |
-| `🏛️+🌊++` | ✗ Violation | V-01 |
-| `🌊🏛️🗡️🎭🔮` | ✗ Violation | V-02 |
-| `lar://u:t@h/a/?stances=🏛️🌊🗡️` | ✗ Violation | V-03 | <!-- uri-ok -->
-| `🏛️ + 🌊 ++🗡️-🎭-🔮-` | ✗ Violation | V-04 |
-| `⚡82% \| 🏛️🌊🗡️🎭🔮` | ✗ Violation | V-06 |
-| `⚡~82% \| [CS:0.80] \| 🏛️🌊-🗡️--🎭-🔮-` | ✓ Well-formed | — |
+> Migrated to `lar:///ha.ka.ba/docs/lararium/signal/render-targets#migrated-sigilization-self-test`
 
 ---
 

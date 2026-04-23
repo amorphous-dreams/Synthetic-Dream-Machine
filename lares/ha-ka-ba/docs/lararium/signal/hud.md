@@ -223,6 +223,172 @@ Amplitude tells the operator how fuzzy that intersection is.
 
 <<~/ahu >>
 
+<<~ ahu #migrated-tagspace-header-field-taxonomy >>
+
+## Migrated — `Signal_HUD_Tagspace-draft.md` — Header Field Taxonomy
+
+Migrated from `lar:///ha.ka.ba/docs/pono/hud/Signal_HUD_Tagspace-draft#header-field-taxonomy`.
+
+Not every header field belongs in the flow.
+The live header currently carries:
+
+- Register
+- Stance
+- Phase
+- Scope
+- Tagspace Address
+- `p`
+
+All header fields are eligible as post-generative annotations.
+The question is not *which fields can appear inline* but *what threshold triggers their annotation*.
+Thresholds differ by field.
+
+### Phase
+
+Annotation threshold: **low — every meaningful loop transition**
+
+- Annotates the path the span actually took through OODA-HA
+- Multiple per chunk when the span crosses more than one phase boundary
+- Syntax: `→◎` `→◇` `→■` `→○`
+- Verbose/debug: completed path summary `[◎→◇→■]` at span close
+
+### Stance
+
+Annotation threshold: **medium — genuine local posture shift only**
+
+- Annotates the stance the node actually operated from in that chunk
+- Fires when the operative stance diverged from what the header declared or when a genuine shift occurred mid-chunk
+- Does not echo header stance; only annotates actual divergence or transition
+- Syntax: `→🏛️` `→🌊` `→🗡️` etc.
+
+### Register
+
+Annotation threshold: **high — significant epistemic resolution only (slide model)**
+
+- Post-generative slide: annotates where the claim actually landed epistemically after the span completed
+- Fires when the span resolved at a meaningfully different register than the header declared
+- Does not override the header mid-span; the header's declared register still governed generation
+- `STATE.jsonl` records as `opening_register` and `closure_register` when they differ
+- Syntax: `→[CS:0.80]` `→[S:0.65]`
+
+### Scope
+
+Annotation threshold: **structural only — new header required**
+
+- Scope changes are structural; they warrant a full new header, not an inline annotation
+- No inline scope annotations in normal use
+
+### Tagspace Address
+
+Annotation threshold: **per-slot, by HAKABA role**
+
+**Ha / `domain` — high threshold (structural)**
+- Domain shifts are structural events; a new header is appropriate
+
+**Ka / `quality` — medium threshold (fire-charge annotation)**
+- Annotates when the animating charge of the domain shifted noticeably during generation
+- Most common Tagspace annotation
+
+**Ba / `dynamic` — medium-low threshold (direction annotation)**
+- Annotates when the direction of the span's movement is worth naming after the fact
+
+**Full address echo** — `→//domain.quality.dynamic`
+- Use when all three slots shifted or when the semantic position changed enough to warrant a complete coordinate
+
+### p
+
+Annotation threshold: **header-only**
+
+- `p` is a context declaration for the span, not an annotation primitive
+- Changes to granularity require a new header
+
+<<~/ahu >>
+
+<<~ ahu #migrated-tagspace-in-flow-rendering-options >>
+
+## Migrated — `Signal_HUD_Tagspace-draft.md` — In-Flow Rendering Options
+
+Migrated from `lar:///ha.ka.ba/docs/pono/hud/Signal_HUD_Tagspace-draft#in-flow-rendering-options` and `#rendering-across-p-scale`.
+
+Several rendering models are possible for Micro-trace HUD behavior.
+
+### Option A — phase-only inline markers
+
+The flow only surfaces compact phase transitions.
+
+Pros:
+
+- lowest negentropy cost
+- easiest to read
+- scales well across all p levels
+
+Cons:
+
+- may hide meaningful stance shifts that would be useful for co-navigation
+
+### Option B — phase plus fire-on-shift
+
+The flow surfaces phase by default and adds a stance signal (`→🏛️`, `→🌊`) only on meaningful local turn.
+
+Pros:
+
+- captures the most operator-relevant local turn information
+- still compact; stance signal fires rarely
+
+Cons:
+
+- needs clear rules for what counts as a meaningful local stance shift
+
+### Option C — phase plus selective Tagspace dynamic echo
+
+The flow surfaces phase, and occasionally echoes the Ka-quality or Ba-dynamic portion of the Tagspace Address when local movement needs semantic reinforcement.
+
+Pros:
+
+- integrates HAKABA quality/dynamic signal into visible in-flow cue
+- richer movement description without full header leakage
+
+Cons:
+
+- increases complexity
+- risks blurring HUD with prose
+
+### Option D — full mini-header leakage
+
+The flow leaks multiple header fields inline.
+
+Pros:
+
+- high auditability
+
+Cons:
+
+- too noisy for default use
+- undermines the separation between header and flow
+
+### Current recommended baseline
+
+- header surfaces the full state
+- in-flow surfaces **phase** by default using `→[glyph]` syntax
+- **stance** may surface on genuine local shift
+- all larger structural changes require a new header
+- Tagspace Address fields do not leak inline by default
+- end-of-span completed path appears in verbose/debug output only
+
+### Rendering Across p Scale
+
+Required rule:
+
+- the meaning of the HUD does not change with `p`
+- only the granularity of the trace changes
+
+The semantic reading remains stable:
+
+- header says what state governs the span
+- in-flow trace says what local path the span actually took
+
+<<~/ahu >>
+
 <<~ ahu #provenance >>
 
 ## Provenance
@@ -464,21 +630,6 @@ lar://worker(Explore):node@lares-sdm:7/research.findings.returns?stances=🏛️
 
 <<~/ahu >>
 
-<<~ ahu #micro-trace-prior-art >>
-
-## Micro-trace — Prior Art and Sources
-
-- `builds.stuffed.failed/agents/Lares_Preferences.md` § The Micro-trace HUD
-- `builds.stuffed.failed/ADMIN/platform/Lares_Kernel_Claude.md`
-- `_todo/E-deep-research-report.md` §§ SA display / XAI distinction
-- `_todo/LIMINAL_PERSPECTIVES.md`
-- SIG-04 backlog items in `lares/sprints/SPRINT_ROADMAP_1_4.md` and `lares/sprints/SPRINT_ROADMAP_1_5.md`
-
-Micro-trace was promoted from SIG-04 draft to live use.
-The sub-agent handoff URI-pair rule entered on 2026-04-08 by operator ruling.
-
-<<~/ahu >>
-
 <<~ ahu #drift-correction-pressure >>
 
 ## Drift Correction Pressure
@@ -491,16 +642,7 @@ The sub-agent handoff URI-pair rule entered on 2026-04-08 by operator ruling.
 
 <<~/ahu >>
 
-<<~ ahu #promotion-witness >>
-
-## Promotion Witness
-
-**Micro-trace HUD — Promoted**
-
-SIG-04 (micro-trace spec) was promoted from `builds.stuffed.failed/` draft to live spec:
-- New file: `lares/signal/micro-trace.md`
-- Updated: `.github/instructions/lares-operations.instructions.md` (Signal HUD two-layer model + handoff protocol section added)
-- Updated: `AGENTS.md` (In-flow Annotation + Sub-agent Handoff Rule subsections added)
+<<~ ahu #subagents >>
 
 Key operator ruling confirmed: **sub-agent dispatches require URI → URI pair** because sub-agent contents are unloggable from the parent trace.
 
@@ -515,16 +657,11 @@ Key operator ruling confirmed: **sub-agent dispatches require URI → URI pair**
 
 ## Design Status
 
-Sprint 0 operator calls (OP-01, OP-02) resolved. URI schema promoted to `[C:0.95]` in `lares/sprints/0/URI_SCHEMA.md`. Next workstream: Sprint 1 Crystal State Machine (`lares/crystal/`). Old AE-01–AE-05 implementation references have been superseded — see `lares/sprints/SPRINT_ROADMAP_1_4.md`.
-
 Current aftermath settlement to preserve:
 
 - URI authority identifies speaker + machine locus only; exchange sequencing moved to TickSpan metadata.
 - `⊙` is the operator authority mark in the HUD registry.
-- `○` remains the Aftermath phase sigil and is expected at end-of-tick destination URIs when the node is settling result state.
 - Kowloon is one downstream publication sink for exported tick spans, not the canonical state model.
-
-**Note:** `builds/agents/` does not exist. Deployment targets are the paths in `REFINEMENT_LOG.md` PA-01 through PA-05 (S4 Deployment sprint scope).
 
 <<~/ahu >>
 
@@ -552,12 +689,10 @@ Q16 (Tagspace slot shift notation) — locked.
 
 | File | Notes |
 |---|---|
-| `../../_todo/core/Signal_HUD_Tagspace-draft.md` | Full HUD + Crystal source; HUD sections target here |
-| `../../_todo/core/TODO_Signal_HUD_Crystal_Plan.md` | Epics 1–4 (AE-01 through AE-13) govern HUD layer implementation |
 | `../../_todo/core/TODO_Resolution_Scale_Design.md` | Resolution scale / p-band model |
 | `../../_todo/LIMINAL_PERSPECTIVES.md` | `[S:0.65]` — GlassFloor outsider analysis: CRM/HUD framing, emoji instrument symbols, token budget hypothesis, progressive disclosure model. Not a primary design source — a perspective document. Feeds SHD-01 through SHD-03 open decisions and S2 p-band scope. |
 | `../../_todo/E-deep-research-report.md` | `[S:0.70]` — 40+ source research synthesis (Endsley 2023, Ji-An 2025, Steyvers 2025, Lee 2024, Li 2024, Gao 2023). Academic grounding for the CRM/SA framing adopted in this subdomain. Key feeds: §1.2 SA type mapping (all 7 HUD channels classified); §2 SA vs XAI distinction (prospective vs retrospective; SAOD not XAI principles); §3 LLM metacognitive scaffold hypothesis; §4.1 cognitive capture / attentional tunneling → SHD-02 register bump; §5.2 ATSA bidirectional model → S2 BIDIRECTIONAL_PROTOCOL.md. Not primary design source — research grounding. |
-| `../sprints/0/URI_SCHEMA.md` | Canonical S0 settlement for authority-without-port, TickSpan mapping, MemPalace metadata mirror subset, and Kowloon export alignment. |
+
 
 <<~/ahu >>
 
