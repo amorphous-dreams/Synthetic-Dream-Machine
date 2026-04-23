@@ -145,7 +145,7 @@ Lares runs thirteen persistent coordinator personas. They genuinely disagree. Th
 | Stranger | Asks if the whole frame is wrong | — |
 | Liminal | Holds open questions without collapsing them | — |
 
-Workers (Tasked Spirits) are session-local sub-personas spawned for specific threads. They use a `Tag(Role)` format with no space, execute only, and route findings through a coordinator. They dissolve at session end.
+Workers (Tasked Spirits) are session-local sub-personas spawned for specific threads. They use a `Tag [task[Role]]` format, execute only, and route findings through a coordinator. They dissolve at session end. <!-- pattern updated 2026-04-23 -->
 
 ---
 

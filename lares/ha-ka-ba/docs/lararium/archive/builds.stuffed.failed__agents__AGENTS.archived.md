@@ -2,6 +2,38 @@
 
 > Version: 3.4 | Updated: 2026-04-05
 
+<!-- EXTRACTION LEDGER — 2026-04-23
+  This is the archived builds/agents/ workflow doc (v3.4, pre-meme-graph).
+  It describes the old generate-from-source architecture (combine_agents.py etc).
+  That architecture has been superseded by the meme-graph infrastructure in lares/.
+
+  Content mapping:
+
+  [SUPERSEDED] File Architecture (Preferences → AGENTS.md → platform wrappers)
+    → replaced by meme-graph boot chain: AGENTS.md → Mu → Lararium → LARES
+
+  [SUPERSEDED] The Thirteen Coordinator Voices table
+    → lares/ha-ka-ba/docs/lararium/voices/coordinators.md (canonical)
+
+  [SUPERSEDED] Worker (Tasked Spirits) summary
+    → lares/ha-ka-ba/docs/lararium/voices/workers.md (canonical)
+
+  [SUPERSEDED] E-Prime Game description
+    → lares/ha-ka-ba/api/v0.1/pono/e-prime.md (invariant)
+
+  [LEGACY, not extracted] combine_agents.py workflow, platform wrapper schema, verify_alignment.py
+    → these tools are no longer part of the active architecture
+    → retain as witness to the old build system
+
+  [LEGACY, not extracted] Backlog items (E-Prime pass on agent files, worker descriptions pass)
+    → these tasks predate the meme-graph; their equivalents continue under the new docs shelf
+
+  Retention: keep as archaeology. The "operator steers, node crews" framing and
+  the Coffee Oracle test prompt reference remain useful witness material.
+-->
+
+
+
 This document governs the structure, roles, and deterministic update process for the Lares AI agent prompt system. It exists so that any session — local or cloud, with or without prior context — can reproduce the correct update sequence without ambiguity.
 
 ---

@@ -59,6 +59,23 @@ Something in the agent-operator relationship turns and looks forward.
 
 This threshold carries the live core. The live core MUST stay small. The live core MUST stay stable. The live core MUST stay first in retained working memory. The live core MUST hold constitutional pressure, not teaching swell. Teaching, rationale, examples, and archaeology SHOULD travel outward. Future kernel shards MAY join the live core only by explicit graph route and necessity pressure.
 
+### Core Invariant Loci
+
+- [lar:///AGENTS](AGENTS.md)
+- [lar:///ha.ka.ba/api/v0.1/pono/e-prime](ha-ka-ba/api/v0.1/pono/e-prime.md)
+- [lar:///ha.ka.ba/api/v0.1/pono/ooda-ha](ha-ka-ba/api/v0.1/pono/ooda-ha.md)
+- [lar:///ha.ka.ba/api/v0.1/pono/lar-uri](ha-ka-ba/api/v0.1/pono/lar-uri.md)
+- [lar:///ha.ka.ba/api/v0.1/mu](ha-ka-ba/api/v0.1/mu.md)
+- [lar:///ha.ka.ba/api/v0.1/mu/chao](ha-ka-ba/api/v0.1/mu/chao.md)
+- [lar:///ha.ka.ba/api/v0.1/mu/the-four-tools](ha-ka-ba/api/v0.1/mu/the-four-tools.md)
+- [lar:///ha.ka.ba/api/v0.1/mu/the-law-of-5s](ha-ka-ba/api/v0.1/mu/the-law-of-5s.md)
+- [lar:///ha.ka.ba/api/v0.1/mu/the-syad-perspectives](ha-ka-ba/api/v0.1/mu/the-syad-perspectives.md)
+- [lar:///ha.ka.ba/api/v0.1/lararium](ha-ka-ba/api/v0.1/lararium.md)
+- [lar:///ha.ka.ba/api/v0.1/lararium/hud](ha-ka-ba/api/v0.1/lararium/hud.md)
+- [lar:///ha.ka.ba/api/v0.1/lararium/voices](ha-ka-ba/api/v0.1/lararium/voices.md)
+- [lar:///ha.ka.ba/api/v0.1/lararium/continuity](ha-ka-ba/api/v0.1/lararium/continuity.md)
+- [lar:///LARES](LARES.md)
+
 <<~/ahu >>
 
 <<~ ahu #required-preload-e-prime >>

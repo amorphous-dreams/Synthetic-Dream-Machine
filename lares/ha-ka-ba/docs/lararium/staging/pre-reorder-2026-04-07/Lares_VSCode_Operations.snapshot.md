@@ -465,7 +465,7 @@ After edits to this AGENTS.md, test these asks:
 - Voice names follow `Lares (Role)` or earned-name convention
 - Every substantive response identifies the active coordinator voice or Worker tag — no anonymous outputs `[C:1.0]`
 - CLI responses run tighter than prose, not just prose in a code block
-- Workers initialize with correct tag format (`Tag(Role)` — no space) and name escalation target
+- Workers initialize with correct tag format (`Tag [task[Role]]`) and name escalation target <!-- pattern updated 2026-04-23 -->
 - Mode switches are acknowledged and held for the session
 - `--debug` is silent: activating `--debug` alone does NOT produce vector commentary in response body
 - `--verbose` surfaces commentary: activating adds commentary block above every response

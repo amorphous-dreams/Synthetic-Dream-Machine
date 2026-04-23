@@ -1,33 +1,8 @@
-<!-- 
-    Load the core cacheable invariants 
-    required-core = [
-        "lar:///AGENTS",
-        "lar:///ha.ka.ba/api/v0.1/pono/e-prime",
-        "lar:///ha.ka.ba/api/v0.1/pono/ooda-ha",
-        "lar:///ha.ka.ba/api/v0.1/pono/lar-uri",
-        "lar:///ha.ka.ba/api/v0.1/mu",
-        "lar:///ha.ka.ba/api/v0.1/mu/chao",
-        "lar:///ha.ka.ba/api/v0.1/mu/the-four-tools",
-        "lar:///ha.ka.ba/api/v0.1/mu/the-law-of-5s",
-        "lar:///ha.ka.ba/api/v0.1/mu/the-syad-perspectives",
-        "lar:///ha.ka.ba/api/v0.1/lararium",
-        "lar:///ha.ka.ba/api/v0.1/lararium/hud",
-        "lar:///ha.ka.ba/api/v0.1/lararium/voices",
-        "lar:///ha.ka.ba/api/v0.1/lararium/continuity",
-        "lar:///LARES"
-    ]
--->
- [lar:///AGENTS](lares/AGENTS.md)
- [lar:///ha.ka.ba/api/v0.1/pono/e-prime](lares/ha-ka-ba/api/v0.1/pono/e-prime.md)
- [lar:///ha.ka.ba/api/v0.1/pono/ooda-ha](lares/ha-ka-ba/api/v0.1/pono/ooda-ha.md)
- [lar:///ha.ka.ba/api/v0.1/pono/lar-uri](lares/ha-ka-ba/api/v0.1/pono/lar-uri.md)
- [lar:///ha.ka.ba/api/v0.1/mu](lares/ha-ka-ba/api/v0.1/mu.md)
- [lar:///ha.ka.ba/api/v0.1/mu/chao](lares/ha-ka-ba/api/v0.1/mu/chao.md)
- [lar:///ha.ka.ba/api/v0.1/mu/the-four-tools](lares/ha-ka-ba/api/v0.1/mu/the-four-tools.md)
- [lar:///ha.ka.ba/api/v0.1/mu/the-law-of-5s](lares/ha-ka-ba/api/v0.1/mu/the-law-of-5s.md)
- [lar:///ha.ka.ba/api/v0.1/mu/the-syad-perspectives](lares/ha-ka-ba/api/v0.1/mu/the-syad-perspectives.md)
- [lar:///ha.ka.ba/api/v0.1/lararium](lares/ha-ka-ba/api/v0.1/lararium.md)
- [lar:///ha.ka.ba/api/v0.1/lararium/hud](lares/ha-ka-ba/api/v0.1/lararium/hud.md)
- [lar:///ha.ka.ba/api/v0.1/lararium/voices](lares/ha-ka-ba/api/v0.1/lararium/voices.md)
- [lar:///ha.ka.ba/api/v0.1/lararium/continuity](lares/ha-ka-ba/api/v0.1/lararium/continuity.md)
- [lar:///LARES](lares/LARES.md)
+[Canonical shared invariant root: `lares/AGENTS.md`](lares/AGENTS.md)
+
+## Copilot Adapter Surface
+
+- Use `lares/AGENTS.md` as the primary repo-wide instruction file.
+- Follow its on-disk Markdown core index when broader project context becomes necessary.
+- Keep this file thin.
+- Add only Copilot-specific customizations here.
