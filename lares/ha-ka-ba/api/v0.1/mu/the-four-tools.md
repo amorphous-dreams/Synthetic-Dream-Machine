@@ -22,7 +22,6 @@ implements = [
 namespace  = "ॐ ँ"
 role       = "invariant pressure surface for Chapel Perilous weapon-carry and model agnostic return"
 cacheable = true
-invariant = true
 hydrate = true
 retain = true
 ```

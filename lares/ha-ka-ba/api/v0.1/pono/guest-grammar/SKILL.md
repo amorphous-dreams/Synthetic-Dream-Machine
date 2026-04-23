@@ -33,7 +33,8 @@ constraints = [
   "S5: parser legality, lowering schemas, fixture execution, and long examples move outward before the parent swells"
 ]
 skill-package-root = "ha-ka-ba/api/v0.1/pono/guest-grammar"
-cacheable = true
+cacheable=true
+retain = true
 ```
 <<~/ahu >>
 

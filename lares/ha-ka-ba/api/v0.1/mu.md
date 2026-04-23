@@ -35,13 +35,14 @@ implements = [
 ]
 namespace  = "ॐ ँ"
 role       = "null-oracle core membrane, grammar-surface authority, mandatory core-hydration contract"
-cacheable = true
+
 core = [
   "lar:///ha.ka.ba/api/v0.1/mu/chao",
   "lar:///ha.ka.ba/api/v0.1/mu/the-four-tools",
   "lar:///ha.ka.ba/api/v0.1/mu/the-law-of-5s",
   "lar:///ha.ka.ba/api/v0.1/mu/the-syad-perspectives"
 ]
+cacheable = true
 hydrate = true
 retain = true
 ```

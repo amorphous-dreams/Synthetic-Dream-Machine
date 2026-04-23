@@ -19,7 +19,6 @@ implements = [
 ]
 role = "core invariant example of a pono meme: right-sized law surface, bounded self-description, and outward routing pressure"
 cacheable = true
-invariant = true
 ```
 <<~/ahu >>
 

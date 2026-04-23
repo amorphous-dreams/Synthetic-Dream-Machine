@@ -19,8 +19,8 @@ implements = [
   "lar:///ha.ka.ba/api/v0.1/pono/invariant"
 ]
 role = "invariant edge law"
-cacheable = true
-invariant = true
+cacheable=true
+retain = true
 canonical-forms = ["inline", "block"]
 edge-families = ["relation", "control", "dataflow", "message", "constraint", "observe"]
 lifecycle-layers = ["template", "instance", "trace"]

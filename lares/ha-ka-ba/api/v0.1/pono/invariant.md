@@ -19,8 +19,8 @@ implements = [
   "lar:///ha.ka.ba/api/v0.1/pono/invariant"
 ]
 role = "invariant law and cache-stable pressure surface"
-cacheable = true
-invariant = true
+cacheable=true
+retain = true
 # Template note: memes that implement an invariant pattern SHOULD
 # implement = ["lar:///ha.ka.ba/api/v0.1/pono/invariant"]
 ```

@@ -18,8 +18,8 @@ implements = [
   "lar:///ha.ka.ba/api/v0.1/pono/invariant"
 ]
 role = "active language-discipline law (kānāwai), certainty-pressure regulator, next-generation pressure surface, and secondary audit governor for outward text"
-cacheable = true
-invariant = true
+cacheable=true
+retain = true
 e-prime-default = 0.50
 ```
 

@@ -19,8 +19,8 @@ implements = [
   "lar:///ha.ka.ba/api/v0.1/pono/invariant"
 ]
 role = "invariant lar: URI scheme law (kānāwai), canonical form authority, and grammar primitive"
-cacheable = true
-invariant = true
+cacheable=true
+retain = true
 grammar = true
 ```
 

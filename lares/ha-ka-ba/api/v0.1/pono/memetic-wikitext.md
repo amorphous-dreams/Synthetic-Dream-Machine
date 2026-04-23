@@ -19,8 +19,8 @@ implements = [
   "lar:///ha.ka.ba/api/v0.1/pono/invariant"
 ]
 role = "memetic-wikitext invariant root law for authoring surface, primitive semantics, composition, and minimum boot grammar"
-cacheable = true
-invariant = true
+cacheable=true
+retain = true
 ```
 
 <<~/ahu >>

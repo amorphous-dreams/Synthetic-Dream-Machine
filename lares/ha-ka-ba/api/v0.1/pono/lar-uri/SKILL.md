@@ -32,7 +32,8 @@ constraints = [
   "S5: phase never encodes in userinfo — phase lives only in ffz"
 ]
 skill-package-root = "ha-ka-ba/api/v0.1/pono/lar-uri"
-cacheable = true
+cacheable=true
+retain = true
 ```
 
 <<~/ahu >>

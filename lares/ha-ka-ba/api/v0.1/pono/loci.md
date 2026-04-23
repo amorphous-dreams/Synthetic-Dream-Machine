@@ -18,7 +18,8 @@ implements = [
   "lar:///ha.ka.ba/api/v0.1/pono/loci"
 ]
 role = "loci-rating law (kānāwai), routing convention authority, address stability authority, canon promotion rule"
-cacheable = true
+cacheable=true
+retain = true
 ```
 
 <<~/ahu >>

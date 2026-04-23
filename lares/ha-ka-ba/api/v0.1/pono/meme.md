@@ -20,8 +20,8 @@ implements = [
 ]
 role = "meme invariant law, copy-shape authority, and rating posture root"
 control-glyphs = ["&#x0001;", "&#x0002;", "&#x0003;", "&#x0004;", "&#x0005;", "&#x0006;"]
-cacheable = true
-invariant = true
+cacheable=true
+retain = true
 ```
 
 <<~/ahu >>

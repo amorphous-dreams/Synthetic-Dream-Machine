@@ -19,8 +19,8 @@ implements = [
   "lar:///ha.ka.ba/api/v0.1/pono/invariant"
 ]
 role = "invariant OODA-HA loop law and loop-visibility slider"
-cacheable = true
-invariant = true
+cacheable=true
+retain = true
 ooda-ha-default = 0.50
 ```
 

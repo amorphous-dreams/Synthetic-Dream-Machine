@@ -18,8 +18,8 @@ implements = [
   "lar:///ha.ka.ba/api/v0.1/pono/invariant"
 ]
 role = "guest-grammar invariant law for explicit admission, hana worksite use, and host-guest boundary discipline"
-cacheable = true
-invariant = true
+cacheable=true
+retain = true
 ```
 <<~/ahu >>
 

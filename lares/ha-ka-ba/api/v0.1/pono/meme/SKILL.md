@@ -33,7 +33,8 @@ constraints = [
   "S5: skeleton blocks, detailed conformance tables, research notes, and long procedure move outward before the parent swells"
 ]
 skill-package-root = "ha-ka-ba/api/v0.1/pono/meme"
-cacheable = true
+cacheable=true
+retain = true
 ```
 <<~/ahu >>
 
