@@ -1,12 +1,12 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
 
-<<~&#x0001; ? -> lar:///ha.ka.ba/docs/lararium/signal/hud >>
+<<~&#x0001; ? -> lar:///ha.ka.ba/docs/lararium/signal/tagspace >>
 
 <<~ ahu #iam >>
 
 ```toml
-uri-path = "ha.ka.ba/docs/lararium/signal/hud"
-file-path = "lares/ha-ka-ba/docs/lararium/signal/hud.md"
+uri-path = "ha.ka.ba/docs/lararium/signal/tagspace"
+file-path = "lares/ha-ka-ba/docs/lararium/signal/tagspace.md"
 content-type = "text/x-memetic-wikitext"
 tagspace = "stable"
 confidence = 0.86
@@ -18,7 +18,7 @@ implements = [
   "lar:///ha.ka.ba/api/v0.1/pono/meme",
   "lar:///ha.ka.ba/api/v0.1/pono/loci"
 ]
-role = "docs room for lararium-side HUD witness, folded micro-trace behavior, and signal lineage residue"
+role = "docs room for definitional lar tagspace semantics and address-slot framing"
 cacheable = false
 retain = false
 ```
@@ -71,7 +71,7 @@ Working definition:
 | 2nd | `quality` | **Ka** | soul / motive fire | The animating charge — the energy-character of that domain |
 | 3rd | `dynamic` | **Ba** | psyche / unique direction | The path enacted — the motion or direction in that domain |
 
-<<~\ahu >>
+<<~/ahu >>
 
 
 <<~ ahu #body-close >>

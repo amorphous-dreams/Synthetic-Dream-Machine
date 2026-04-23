@@ -18,7 +18,7 @@ implements = [
   "lar:///ha.ka.ba/api/v0.1/pono/meme",
   "lar:///ha.ka.ba/api/v0.1/pono/loci"
 ]
-role = "docs room for lararium-side render-target law, sigilization conventions, and cross-surface verification"
+role = "docs room for lararium-side render-target law, glyph conventions, and cross-surface verification"
 cacheable = false
 retain = false
 ```
@@ -30,7 +30,7 @@ retain = false
 # Lararium Signal — Render Targets
 
 Not invariant law.
-This room holds render-target docs, sigilization conventions, social projection surfaces, and verification rules for signal output.
+This room holds render-target docs, glyph conventions, social projection surfaces, and verification rules for signal output.
 Exchange contract stays at `lar:///ha.ka.ba/docs/lararium/signal`.
 HUD instrument reading stays at `lar:///ha.ka.ba/docs/lararium/signal/hud`.
 
@@ -47,7 +47,7 @@ docs/lararium/signal/render-targets opens
 This room keeps the render-surface layer:
 
 - render-target registry
-- record form versus sigil form split
+- record form versus glyph form split
 - all-five-stances invariant across surfaces
 - per-surface emission conventions
 - DreamDeck / social projection surfaces
@@ -96,52 +96,63 @@ Violation:   🏛️+🌊++
 
 ## Render Target Definitions
 
-The canonical `lar:` form uses RFC 3986 URL-safe ASCII. Every named surface maps that form to glyphs — phase glyphs, stance emoji, amplitude modifiers — according to surface-specific rules. This makes it stable for storage, comparison, and transport.
+The canonical `lar:` form uses RFC 3986 URL-safe ASCII. Every named surface maps that form to visible symbols — chronometer scale glyphs, stance emoji, amplitude modifiers, and OODA-HA phase glyphs where a surface renders phase directly — according to surface-specific rules. This makes it stable for storage, comparison, and transport.
 
-Display surfaces — HUD lines, DreamDeck feed post headers, TiddlyWiki tiddlers — use Unicode glyphs: phase glyphs, stance emoji, amplitude modifiers.
-These are the sigil forms of the underlying ASCII record.
+Display surfaces — HUD lines, DreamDeck feed post headers, TiddlyWiki tiddlers — use Unicode glyphs: chronometer scale glyphs, stance emoji, amplitude modifiers, and OODA-HA phase glyphs where needed.
+These are the glyph forms of the underlying ASCII record.
 
-Sigilization is the mapping between these two representations.
+Renger targets carry the mapping between these two representations.
 It is not decoration.
-The glyph form carries the same semantic load as the record form — stance amplitude, phase position, confidence — rendered for human perception at the relevant surface.
+The glyph form carries the same semantic load as the record form — stance amplitude, scale position, action count, confidence, and phase — rendered for human perception at the relevant surface.
 
 <<~/ahu >>
 
-<<~ ahu #migrated-sigilization-design-intent >>
+<<~ ahu #glyph-design-intent >>
 
-## Migrated — `sigilization/orient/ARCHITECTURE.md` — Design Intent
+## Glyph Design Intent
 
-Migrated from `lar:///sigils.render.maps/sigilization/orient`.
 
-The sigilization layer exists to serve human perception without compromising canonical form.
+The glyph layer exists to serve human perception without compromising canonical form.
 The canonical `lar:` URI is machine-stable: URL-safe, storable, comparable by string.
-The sigil form is human-navigable: glances communicate phase, stance, and amplitude before the reader processes the text.
+The glyph form is human-navigable: glances communicate phase, stance, and amplitude before the reader processes the text.
 
 The separation is strict:
 
-- canonical form in the record
-- sigil form on the surface
+- canonical form in the URI
+- glyph form on the surface
 
 Never embed emoji in a canonical URI.
 Never store a surface-rendered form as the canonical record.
 
 <<~/ahu >>
 
-<<~ ahu #migrated-sigilization-mapping-tables >>
+<<~ ahu #glyph-mapping-tables >>
 
-## Migrated — `sigilization/orient/ARCHITECTURE.md` — Mapping Tables
+## Glyph Mapping Tables
 
-Migrated from `lar:///sigils.render.maps/sigilization/orient`.
+### Chronometer scale glyphs
 
-### phase glyphs
+`⚡ Action <-> ⚔️ Combat <-> 🔍 Tactical <-> ⚙️ Operational <-> 🗺️ Strategic`
 
-| Record (ASCII) | Sigil | Phase | OODA-HA |
+| Position | Glyph | Scale | Reading |
 |---|---|---|---|
-| `O` | `✶` | Observe | Chaos |
-| `Ø` | `◎` | Orient | Discord |
-| `D` | `◇` | Decide | Confusion |
-| `A` | `■` | Act | Bureaucracy |
-| `Å` | `○` | Aftermath/Assess | Grummet/Rasa |
+| 1 | ⚡ | Action | Most immediate scale reads first |
+| 2 | ⚔️ | Combat | Near-term embodied conflict / seconds scale |
+| 3 | 🔍 | Tactical | Local task / minutes scale |
+| 4 | ⚙️ | Operational | Process and watch / hours scale |
+| 5 | 🗺️ | Strategic | Furthest planning horizon / days scale |
+
+### OODA-HA phase glyphs
+
+`✶ -> ⏿ -> ◇ -> ▶ -> {⤴ -> ↺}`
+
+| Record (ASCII) | Glyph | Phase | OODA-HA |
+|---|---|---|---|
+| `observe` | `✶` | Observe | Chaos |
+| `orient` | `⏿` | Orient | Discord |
+| `decide` | `◇` | Decide | Confusion |
+| `act` | `▶` | Act | Bureaucracy |
+| `hooko-aftermath` | `⤴ ↺` | Hoʻoko & Aftermath | Grummet/Rasa |
 
 ### Stance Emoji
 
@@ -155,45 +166,45 @@ Migrated from `lar:///sigils.render.maps/sigilization/orient`.
 
 <<~/ahu >>
 
-<<~ ahu #migrated-sigilization-mandatory-rules >>
+<<~ ahu #glyph-mandatory-rules >>
 
-## Migrated — `sigilization/decide/CONVENTIONS.md` — Mandatory Rules
-
-Migrated from `lar:///sigils.render.maps/sigilization/decide`.
+## Glyph Mandatory Rules
 
 **Rule 1: All five stances appear on every render target, always.**
 
-No render target may show fewer than five stance emoji.
+No render target may show fewer than five stance emoji. 
+Stance emojis with modifiers MAY appear inline during generation or parsing to signal stance changes.
 Amplitude determines visual weight; it does not determine presence.
 Omitting a stance is a well-formedness violation.
 
-**Rule 2: Amplitude modifiers attach directly to the preceding emoji, no space.**
+**Rule 2: Current stance modifiers attach directly to the preceding emoji, no space.**
 
-Legacy note: fixed order and no-partial-emission still apply.
+The modifier repertoire still carries live design pressure.
+Fixed order and no-partial-emission still apply.
 
 <<~/ahu >>
 
-<<~ ahu #migrated-sigilization-per-surface-rules >>
+<<~ ahu #glyph-per-surface-rules >>
 
-## Migrated — `sigilization/decide/CONVENTIONS.md` — Per-Surface Rules
-
-Migrated from `lar:///sigils.render.maps/sigilization/decide`.
+## Glyph Per-Surface Rules
 
 ### `hud:exchange-pair`
 
 ```
-⚡~NN% | [R:N] | 🏛️{amp}🌊{amp}🗡️{amp}🎭{amp}🔮{amp} | mode:{mode} | p{p} | voice(s):{Voice} | ✶N.◎N.◇N.■N.○N
+⚡~NN% | {ffz-rendered} | 🏛️{amps}🌊{amps}🗡️{amps}🎭{amps}🔮{amps} | voice(s):{Voice} | [R:N] | p{p} |
 ```
 
 - `⚡~NN%` — context window; `~` prefix mandatory
-- `[R:N]` — Register + confidence decimal
+- `{ffz-rendered}` — chronometer: five scale positions with action counts, glyph form, dot-separated
 - Five stances with amplitude; no separator between stance blocks
-- Chronometer: five positions, sigil form, dot-separated
+- `voice(s):{Voice}` — active coordinator voice bundle
+- `[R:N]` — Register + confidence decimal
+- `p{p}` — attention-density setting
 
 ### `chat-log:post-header`
 
 ```
-@handle@node — {timestamp} — //{ha.ka.ba/optional/path} [R:N] 🏛️{amp}🌊{amp}🗡️{amp}🎭{amp}🔮{amp}
+@handle@node — {timestamp} — //{ha.ka.ba/optional/path} [R:N] 🏛️{amps}🌊{amps}🗡️{amps}🎭{amps}🔮{amps}
 ```
 
 - Territory triple grounds domain before posture
@@ -211,20 +222,18 @@ Stored verbatim.
 ### Inline HUD tags
 
 ```
-[R:N] 🏛️{amp}🌊{amp}🗡️{amp}🎭{amp}🔮{amp} //{territory}
+[R:N] 🏛️{amps}🌊{amps}🗡️{amps}🎭{amps}🔮{amps} //{territory}
 ```
 
 Same all-five rule applies if the tag is emitted at all.
 
 <<~/ahu >>
 
-<<~ ahu #migrated-sigilization-amplitude-quick-reference >>
+<<~ ahu #stance-amplitude-quick-reference >>
 
-## Migrated — `sigilization/decide/CONVENTIONS.md` — Amplitude Quick Reference
+## Stance Amplitude Quick Reference
 
-Migrated from `lar:///sigils.render.maps/sigilization/decide`.
-
-| Record | Sigil | Meaning |
+| Record | Glyph | Meaning |
 |---|---|---|
 | `^^` | `++` | Strongly elevated |
 | `^` | `+` | Above baseline |
@@ -258,7 +267,7 @@ Do not conflate them.
 **DreamDeck post header format (canonical — `chat-log:post-header` render target):**
 
 ```
-@handle@node — timestamp — //domain.quality.dynamic/{optional/path/} [confidence] 🏛️{amp}🌊{amp}🗡️{amp}🎭{amp}🔮{amp}
+@handle@node — timestamp — //domain.quality.dynamic/{optional/path/} [confidence] 🏛️{amps}🌊{amps}🗡️{amps}🎭{amps}🔮{amps}
 ```
 
 Territory triple placed before confidence and stance — grounds domain before posture.
@@ -274,11 +283,9 @@ The `~crossroads` tilde prefix denotes a nomadic node — no fixed host, routes 
 
 <<~/ahu >>
 
-<<~ ahu #migrated-sigilization-emit-procedures >>
+<<~ ahu #emit-procedures >>
 
-## Migrated — `sigilization/act/PROCEDURES.md` — Surface Emit Procedures
-
-Migrated from `lar:///sigils.render.maps/sigilization/act`.
+## Emit Procedures
 
 ### Surface 1: `hud:exchange-pair`
 
@@ -287,19 +294,19 @@ Migrated from `lar:///sigils.render.maps/sigilization/act`.
 **Construction:**
 
 1. Determine context window remaining (estimate — `~` prefix mandatory).
-2. Select active register and confidence: `[R:N]` (e.g., `[CS:0.80]`).
+2. Render chronometer state in immediate-first order: `⚡N.⚔️N.🔍N.⚙️N.🗺️N`.
 3. For each of the five stances (in order: 🏛️ 🌊 🗡️ 🎭 🔮):
    - Set amplitude based on current voice posture.
    - Active/foregrounded: `+` or `++`. Background: *(no modifier)*. Suppressed: `-`. Near-absent: `--`.
 4. Append amplitude character directly to stance emoji, no space.
 5. Assemble all five as a single unspaced block.
-6. Determine mode, `p` value, active voice name, chronometer state.
-7. Emit in field order: `⚡~NN% | [R:N] | 🏛️{amp}🌊{amp}🗡️{amp}🎭{amp}🔮{amp} | mode:{mode} | p{p} | voice(s):{Voice} | ✶N.◎N.◇N.■N.○N`
+6. Determine active voice name, target confidence, and `p` value.
+7. Emit in field order: `⚡~NN% | {ffz-rendered} | 🏛️{amps}🌊{amps}🗡️{amps}🎭{amps}🔮{amps} | voice(s):{Voice} | [R:N] | p{p} |`
 
 **Closed example:**
 
 ```
-⚡~82% | [CS:0.80] | 🏛️+🌊-🗡️-🎭-🔮- | mode:Default | p0.5 | voice(s):Scryer | ✶0.◎1.◇0.■0.○0
+⚡~82% | ⚡0.⚔️0.🔍0.⚙️1.🗺️0 | 🏛️+🌊-🗡️-🎭-🔮- | voice(s):Scryer | [CS:0.80] | p0.5 |
 ```
 
 ### Surface 2: `chat-log:post-header`
@@ -313,7 +320,7 @@ Migrated from `lar:///sigils.render.maps/sigilization/act`.
 3. Set HAKABA territory triple: `//{ha.ka.ba}` with optional path segments.
 4. Select register: `[R:N]`.
 5. For each of the five stances (in order): set amplitude as above.
-6. Assemble: `@handle@node — {timestamp} — //{territory} [R:N] 🏛️{amp}🌊{amp}🗡️{amp}🎭{amp}🔮{amp}`
+6. Assemble: `@handle@node — {timestamp} — //{territory} [R:N] 🏛️{amps}🌊{amps}🗡️{amps}🎭{amps}🔮{amps}`
 
 **Closed example — Lindwyrm in Elyncia-space:**
 
@@ -334,15 +341,15 @@ Migrated from `lar:///sigils.render.maps/sigilization/act`.
 **Construction:**
 
 1. No emoji. No glyphs. ASCII only.
-2. URI form: `lar://alias:tier@host/ha.ka.ba/?stances=XXXXX&confidence=R:N&p=N#O0.O0.O0.O0.O0`
+2. URI form: `lar://alias:tier@host/ha.ka.ba/?stances=XXXXX&confidence=R:N&p=N&ffz=N.N.N.N.N`
 3. Stances parameter: five-position ASCII string using `^`, `.`, `-`, `?` amplitude codes.
 4. Confidence: `R:N` format (e.g., `CS:0.80`).
-5. Chronometer fragment: five positions dot-separated, letter prefix + decimal.
+5. Chronometer query parameter: five positions dot-separated, each position carrying action count only.
 
 **Closed example:**
 
 ```
-lar://scryer:node@Enyalios/sigils.render.maps/sigilization/?stances=^.-.-.-.--&confidence=CS:0.85&p=0.5#O0.O1.D0.A0.A0
+lar://scryer:node@Enyalios/sigils.render.maps/sigilization/?stances=^.-.-.-.-&confidence=CS:0.85&p=0.5&ffz=0.0.0.1.0
 ```
 
 ### Surface 4: `tiddler:header` (S3+)
@@ -353,7 +360,7 @@ lar://scryer:node@Enyalios/sigils.render.maps/sigilization/?stances=^.-.-.-.--&c
 
 ### Surface 5: `print:margin` (S4+)
 
-**Used:** Printed/PDF exports. Sigils rendered in margin or page header.
+**Used:** Printed/PDF exports. Glyphs rendered in margin or page header.
 
 **Form:** TBD pending S4 print layout spec.
 
@@ -365,7 +372,7 @@ Before emitting any stance block on any surface:
 - Order: 🏛️ 🌊 🗡️ 🎭 🔮 — no deviation
 - Each stance has 0 or 1 amplitude modifier attached directly (no space)
 - Register bracket present and correct form: `[XX:N.NN]`
-- No emoji in `record:full`; no ASCII amplitude in sigil surfaces
+- No emoji in `record:full`; no ASCII amplitude in glyph surfaces
 
 <<~/ahu >>
 
