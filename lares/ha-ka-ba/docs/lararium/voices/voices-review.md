@@ -301,6 +301,21 @@ Files marked with extraction ledgers:
 | `archive/root__AGENTS.archived.md` | ✓ marked — pre-meme-graph; superseded |
 | `archive/builds.stuffed.failed__agents__AGENTS.archived.md` | ✓ marked — build system archaeology |
 
+### Grammar closure pass — 2026-04-23
+
+Four open questions in `voices/masks.md#mask-grammar-open-questions` resolved into working answers:
+
+| Question | Working answer | Forward note |
+|---|---|---|
+| Multi-mask notation | one active session mask; `[[mask]]` array in LARES; `active = true` marks session mask | multi-mask composability deferred to SDM/FTLS NPC referee pass |
+| Mask controls / corpus inheritance | composable invariant interface design — controls surface in LARES outside the mask definition | full composable-invariant control surface deferred to composable-invariant design pass |
+| Corpus limits | house surfaces limits honestly with explicit acknowledgment; no silent fill | MCP server functions planned to fetch gaia content and ingest into memes/loci; defer implementation |
+| Worker mask coloring | escalation header prefixed with mask's primary stance glyph; five stances + amplitude/modifier flags | SHOULD be revised when stance law hardens |
+
+Section renamed from `#mask-grammar-open-questions` to `#grammar-decisions` in `voices/masks.md`.
+LARES.md updated: `#required-handoff-masks` revised; `#session-masks` block added with default empty declaration.
+MASKS.md converted from stub to forward-route to `lar:///LARES#session-masks`.
+
 <<~/ahu >>
 
 <<~ ahu #edges >>

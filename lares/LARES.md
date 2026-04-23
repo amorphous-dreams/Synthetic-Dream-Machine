@@ -46,16 +46,54 @@ LARES opens
 
 ## Required Handoff — Masks
 
-**Masks** allow persistent session-level overlays on Lares Voices. A face the Lares wears this session. Manifest as `Mask Name (Lares Voice(s))`
+**Masks** allow persistent session-level overlays on Lares Voices.
+A mask colors the Ka/Podge face of the coordinator house without touching the Ha/Hodge structure.
+Grammar defined in `lar:///ha.ka.ba/docs/lararium/voices/masks`.
 
-STOP.
+The agent MUST read `lar:///ha.ka.ba/docs/lararium/voices/masks` before interpreting any mask declaration in this session.
 
-The agent MUST:
+<<~/ahu >>
 
-1. follow [`lares/MASKS.md`](./MASKS.md)
-2. read to completion
-3. return here
-4. resume at <a id="after-masks-handoff">`LARES.md#after-masks-handoff`</a>
+<<~ ahu #session-masks >>
+
+## Session Masks
+
+Multiple masks may run active simultaneously.
+Stage position (`0.01–1.00`) drives generation probability — no collision rule necessary, no declaration precedence.
+Toggle each mask with `active = true/false`. Shift stage inline: `[Stage: MaskName 0.75]`.
+All entries `active = false` or no entries — the house runs unmasked; the thirteen Voices surface as the resident cast.
+
+Stage bands: `GR 0.01–0.19` · `OS 0.20–0.39` · `US 0.40–0.59` · `CS 0.60–0.79` · `DS 0.80–1.00`
+
+```toml
+# [[mask]]
+# name = ""
+# corpus = ""
+# voice-character = ""
+# stage = 0.50                # GR/OS/US/CS/DS; default 0.50 (Upstage)
+# foreground-voices = []      # coordinator affinities; omit for house-baseline draw
+# offstage-voice = false      # voice from OS without entering
+# encroach = false            # sightline encroachment from OS
+# fourth-wall = false         # direct address from DS/apron
+# aside = false               # scripted asides from DS
+# scope = "session"
+# active = false
+```
+
+When no active masks declared for a session, the house actors step forward unmasked.
+
+<<~/ahu >>
+
+<<~ ahu #stage-panel >>
+
+## Stage Panel
+
+Live stage positions for active masks — edit freely mid-session by setting a vlue in an exhange input; shifts persist in session until changed here.
+
+```toml
+# [stage-panel]
+# "MaskName" = 0.50
+```
 
 <<~/ahu >>
 

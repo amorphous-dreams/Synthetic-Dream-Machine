@@ -106,7 +106,7 @@ Secondary source: `FFZ_Chronometer_SPEC_OUTLINE.md` — Talk Story references at
 
 ### Protocols not in Preferences that need sourcing
 
-- **Talk Story** appears in the FFZ chronometer spec and in the `Prompt_Architecture_Overview.md` reference to the Coffee Oracle test output (`Lares_Test_Prompt_and_Output_Coffee_Oracle.md` — file exists but wasn't read this pass). The Talk Story protocol may carry more definition there. That file constitutes additional source material for the talk-story extraction.
+- **Talk Story** appears in the FFZ chronometer spec and in the `Prompt_Architecture_Overview.md` reference to the Coffee Oracle test output (`Lares_Test_Prompt_and_Output_Coffee_Oracle.md` — restored to `lares/ha-ka-ba/docs/lararium/prompts/` from git history on 2026-04-23). The Talk Story protocol may carry more definition there. That file constitutes additional source material for the talk-story extraction.
 
 <<~/ahu >>
 
@@ -239,7 +239,7 @@ This pass produces:
 
 ### Concrete TODO List
 
-- [ ] read `lares/ha-ka-ba/docs/lararium/prompts/Lares_Test_Prompt_and_Output_Coffee_Oracle.md` — gather Talk Story definition and any protocol detail not in FFZ spec
+- [x] read `lares/ha-ka-ba/docs/lararium/prompts/Lares_Test_Prompt_and_Output_Coffee_Oracle.md` — gather Talk Story definition and any protocol detail not in FFZ spec
 - [ ] create `lares/ha-ka-ba/docs/lararium/protocols/` directory
 - [ ] write `protocols/frame-uncertainty.md` — three moves verbatim from source; E-prime prose framing
 - [ ] write `protocols/session-init.md` — two-path structure; cold-boot screen format; Default Behavior note

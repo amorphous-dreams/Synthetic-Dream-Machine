@@ -18,7 +18,7 @@ implements = [
   "lar:///ha.ka.ba/api/v0.1/pono/meme",
   "lar:///ha.ka.ba/api/v0.1/pono/loci"
 ]
-role = "canonical worker swarm definition: session-local sub-voices, lifecycle, tag format, and escalation routing"
+role = "specification for the worker swarm: session-local sub-voices, lifecycle, tag format, escalation template, and coordinator routing table"
 cacheable = false
 retain = false
 ```
@@ -136,6 +136,16 @@ Workers emerge from the task. Tags should read as recognizable shorthand for the
 <<~/ahu >>
 
 <<~ ahu #edges >>
+
+## Invariant Contract
+
+The worker swarm spec defines what `lar:///ha.ka.ba/api/v0.1/lararium/voices` MUST implement for this layer:
+
+- worker-coordinator distinction: session-local, tag format, execute-not-synthesize
+- worker lifecycle: spawn, persist, escalate, dissolve
+- escalation template and header format
+- coordinator routing table (finding type → coordinator)
+- hard constraint: workers MUST NOT address the operator directly
 
 ## Edges
 

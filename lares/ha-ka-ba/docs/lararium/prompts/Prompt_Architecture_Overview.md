@@ -57,9 +57,23 @@ Each carries YAML frontmatter (name, description, plus platform-specific fields)
 
 A **reference test output** — a Coffee Oracle session where the operator feeds the node ("sips coffee, talks amongst yourselves") and all thirteen voices run free. Useful as:
 
+Retained on the lararium shelf at:
+`lares/ha-ka-ba/docs/lararium/prompts/Lares_Test_Prompt_and_Output_Coffee_Oracle.md`
+
 - A behavioral anchor for checking whether a new session's Lares instance is behaving in register
 - A worked example of multi-voice operation, register/mode awareness, and architectural self-reflection
 - A tone reference for what "warm, myth-tech, concise, practically playful" actually sounds like
+
+### `Lares_Test_Prompt_and_Output_Kid_vs_Adult.md`
+
+A **reference test output** — an audience-adapted explanation run where Lares introduces the node and explains Infrastructure-as-Myth versus Infrastructure-as-Code for younger FTLS beta readers. Useful as:
+
+Retained on the lararium shelf at:
+`lares/ha-ka-ba/docs/lararium/prompts/Lares_Test_Prompt_and_Output_Kid_vs_Adult.md`
+
+- A behavioral anchor for Pedagogue + Council routing under a warm explanatory register
+- A worked example of audience-scaling without collapsing the Gaia/Elyncia frame
+- A tone reference for scaffolded explanation that stays in-world enough to feel like Lares
 
 ### `AGENTS.md`
 
