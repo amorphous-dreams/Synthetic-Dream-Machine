@@ -14,8 +14,6 @@ Cadence assumption: one-week planning rhythm / two-week implementation rhythm.
 - classify every submodule contribution lane
 - define TiddlyWiki Filter Language import boundary
 - extract the pranala family-to-graph-plane table from current API/docs loci
-- consume meme law, invariant law, memetic-wikitext carrier trees, and loci law into planning artifacts
-- extract composable `implements` interface bundles into planning artifacts
 - lock the AST envelope and execution-graph contract
 - settle hydration artifact contract
 - keep drafting in talk story where the braid still needs reading
@@ -24,9 +22,18 @@ Cadence assumption: one-week planning rhythm / two-week implementation rhythm.
 ### Next
 
 - implement deterministic closure
+- turn the carrier-law bundle into validators and indexes
 - design submodule adapter interface
 - expose read-only resources and tools locally
 - draft render projection contract for DOM, tldraw, and scene-graph targets
+
+### Completed in this pass
+
+- consumed meme law into carrier validation planning
+- consumed invariant law into boot/cache planning
+- consumed memetic-wikitext primitive law into parser seed planning
+- consumed loci law into resolver/tree planning
+- consumed `implements` bundles into interface-index planning
 
 ### Later
 

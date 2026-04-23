@@ -1,7 +1,7 @@
 # Story: MCP-STORY-110 — Fold invariant pressure and composable interface bundles into compiler planning
 
 Parent epic: `MCP-EPIC-01`
-Status: `ready`
+Status: `done`
 Size: `M`
 Target sprint: `SPRINT-00`
 

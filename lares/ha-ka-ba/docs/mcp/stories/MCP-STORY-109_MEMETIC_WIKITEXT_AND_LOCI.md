@@ -1,7 +1,7 @@
 # Story: MCP-STORY-109 — Consume meme, memetic-wikitext carrier trees, and loci law into compiler planning
 
 Parent epic: `MCP-EPIC-01`
-Status: `ready`
+Status: `done`
 Size: `M`
 Target sprint: `SPRINT-00`
 

@@ -32,8 +32,8 @@ Legend:
 | MCP-STORY-106 | Lock memetic-wikitext and guest-grammar AST envelope | MCP-EPIC-01 | ready | M | SPRINT-00 / SPRINT-01 |
 | MCP-STORY-107 | Define execution/widget graph contract | MCP-EPIC-01 | ready | M | SPRINT-01 |
 | MCP-STORY-108 | Define render projection contract for DOM, tldraw, and scene-graph targets | MCP-EPIC-01 | todo | M | SPRINT-01 / SPRINT-02 |
-| MCP-STORY-109 | Consume meme, invariant, memetic-wikitext carrier trees, and loci law into compiler planning | MCP-EPIC-01 | ready | M | SPRINT-00 |
-| MCP-STORY-110 | Fold invariant pressure and composable interface bundles into compiler planning | MCP-EPIC-01 | ready | M | SPRINT-00 |
+| MCP-STORY-109 | Consume meme, invariant, memetic-wikitext carrier trees, and loci law into compiler planning | MCP-EPIC-01 | done | M | SPRINT-00 |
+| MCP-STORY-110 | Fold invariant pressure and composable interface bundles into compiler planning | MCP-EPIC-01 | done | M | SPRINT-00 |
 | MCP-STORY-201 | Expose read-only resources for `lar:///...` and submodule loci | MCP-EPIC-02 | todo | L | SPRINT-01 |
 | MCP-STORY-202 | Expose hydration prompts | MCP-EPIC-02 | todo | M | SPRINT-02 |
 | MCP-STORY-203 | Expose portability tools | MCP-EPIC-02 | todo | M | SPRINT-02 |
@@ -71,11 +71,11 @@ Legend:
 | MCP-TASK-017 | Draft execution/widget graph schema | MCP-STORY-107 | todo | M |
 | MCP-TASK-018 | Draft render projection contract | MCP-STORY-108 | todo | M |
 | MCP-TASK-019 | Extract pranala family-to-graph-plane alignment table | MCP-STORY-101 | ready | S |
-| MCP-TASK-020 | Inventory memetic-wikitext primitive cluster and lowering boundary | MCP-STORY-109 | ready | S |
-| MCP-TASK-021 | Build loci-derived carrier-tree and child-resolution table | MCP-STORY-109 | ready | S |
-| MCP-TASK-022 | Inventory meme copy-shape, rating posture, and depth-resolution law | MCP-STORY-109 | ready | S |
-| MCP-TASK-023 | Inventory invariant pressure, cacheability, and sidecar boundary law | MCP-STORY-110 | ready | S |
-| MCP-TASK-024 | Build implements/interface composability table | MCP-STORY-110 | ready | S |
+| MCP-TASK-020 | Inventory memetic-wikitext primitive cluster and lowering boundary | MCP-STORY-109 | done | S |
+| MCP-TASK-021 | Build loci-derived carrier-tree and child-resolution table | MCP-STORY-109 | done | S |
+| MCP-TASK-022 | Inventory meme copy-shape, rating posture, and depth-resolution law | MCP-STORY-109 | done | S |
+| MCP-TASK-023 | Inventory invariant pressure, cacheability, and sidecar boundary law | MCP-STORY-110 | done | S |
+| MCP-TASK-024 | Build implements/interface composability table | MCP-STORY-110 | done | S |
 
 ---
 
@@ -100,11 +100,11 @@ Legend:
 | MCP-SUBTASK-015 | map widget lifecycle, message, and refresh primitives | MCP-TASK-017 | todo |
 | MCP-SUBTASK-016 | compare DOM, tldraw, and scene-graph projection fields | MCP-TASK-018 | todo |
 | MCP-SUBTASK-017 | inventory current api/docs pranala families, sockets, and ownership examples | MCP-TASK-019 | ready |
-| MCP-SUBTASK-018 | inventory memetic-wikitext primitives, composition law, and boot grammar atoms | MCP-TASK-020 | ready |
-| MCP-SUBTASK-019 | inventory loci parent-child tree, derived filepaths, and child-item conventions | MCP-TASK-021 | ready |
-| MCP-SUBTASK-020 | inventory meme copy-shape surfaces, rating postures, and declared-depth states | MCP-TASK-022 | ready |
-| MCP-SUBTASK-021 | inventory invariant pressure surfaces, cacheability rules, and sidecar boundaries | MCP-TASK-023 | ready |
-| MCP-SUBTASK-022 | inventory current implements bundles and interface composition patterns | MCP-TASK-024 | ready |
+| MCP-SUBTASK-018 | inventory memetic-wikitext primitives, composition law, and boot grammar atoms | MCP-TASK-020 | done |
+| MCP-SUBTASK-019 | inventory loci parent-child tree, derived filepaths, and child-item conventions | MCP-TASK-021 | done |
+| MCP-SUBTASK-020 | inventory meme copy-shape surfaces, rating postures, and declared-depth states | MCP-TASK-022 | done |
+| MCP-SUBTASK-021 | inventory invariant pressure surfaces, cacheability rules, and sidecar boundaries | MCP-TASK-023 | done |
+| MCP-SUBTASK-022 | inventory current implements bundles and interface composition patterns | MCP-TASK-024 | done |
 
 ---
 
@@ -113,13 +113,11 @@ Legend:
 1. `MCP-STORY-101` — inventory Lararium boot loci, edge classes, and submodule attachments
 2. `MCP-STORY-104` — define submodule integration contract
 3. `MCP-STORY-105` — define direct-import boundary for TiddlyWiki Filter Language
-4. `MCP-STORY-109` — consume meme, invariant, memetic-wikitext carrier trees, and loci law into compiler planning
-5. `MCP-STORY-110` — fold invariant pressure and composable interface bundles into compiler planning
-6. `MCP-STORY-106` — lock memetic-wikitext and guest-grammar AST envelope
-7. `MCP-STORY-107` — define execution/widget graph contract
-8. `MCP-STORY-102` — define hydration artifact contract
-9. `MCP-STORY-103` — deterministic closure compiler
-10. `MCP-STORY-204` — build submodule adapter layer
+4. `MCP-STORY-106` — lock memetic-wikitext and guest-grammar AST envelope
+5. `MCP-STORY-107` — define execution/widget graph contract
+6. `MCP-STORY-102` — define hydration artifact contract
+7. `MCP-STORY-103` — deterministic closure compiler
+8. `MCP-STORY-204` — build submodule adapter layer
 
 ---
 
