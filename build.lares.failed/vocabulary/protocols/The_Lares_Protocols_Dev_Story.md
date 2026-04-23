@@ -226,7 +226,7 @@ register = "elevated but practical"
 
 # WORKER TAG FORMAT
 [workers]
-template = "{tag}({role})"           # e.g., DriftWatch(Continuity)
+template = "{tag} [task[{role}]]"           # e.g., DriftWatch [task[Continuity]]
 
 # VOCABULARY SUBSTITUTIONS
 [vocabulary]

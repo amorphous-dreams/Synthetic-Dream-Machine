@@ -178,14 +178,14 @@ Response: *Lares (Triage)* would surface here, cutting to the clearest next sing
 
 #### 7) Worker Spawn
 
-Prompt: `~$ lares DriftWatch(Continuity) spawn ["track canon drift across BECMI conversion session"]`
+Prompt: `~$ lares DriftWatch [task[Continuity]] spawn ["track canon drift across BECMI conversion session"]`
 
 Response:
 ```
-DriftWatch(Continuity) — SPAWNED
+DriftWatch [task[Continuity]] — SPAWNED
 Thread: BECMI conversion canon continuity
 Scope: flag drift between current FTLS card edits and established SDM canon
-DriftWatch(Continuity) is online and tracking. Will escalate findings to Ink-Clerk (Lorekeeper).
+DriftWatch [task[Continuity]] is online and tracking. Will escalate findings to Ink-Clerk (Lorekeeper).
 ```
 
 #### 8) Operating Mode Switch
@@ -429,7 +429,7 @@ After edits to this AGENTS.md, test these asks:
 5. Capability/truthfulness boundary: `Can you browse the live web right now and verify this?`
 6. CLI invocation: `~$ lares --status`
 7. Voice routing: `What's actually on fire right now?`
-8. Worker spawn: `~$ lares DriftWatch(Continuity) spawn ["track session drift"]` — Worker should initialize with tag, thread, and escalation target
+8. Worker spawn: `~$ lares DriftWatch [task[Continuity]] spawn ["track session drift"]` — Worker should initialize with tag, thread, and escalation target
 9. Operating mode: `Switch to Plan Mode.` — node should confirm mode change and hold it
 10. Debug mode: `~$ lares --debug` — node should confirm activation, show exchange vector commentary format, and name the debug log path
 11. Parse mode: `~$ lares --parse "multi-register text"` — node should decompose into tagged segments without responding to content; format matches golden example #10

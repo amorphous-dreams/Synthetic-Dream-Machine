@@ -33,7 +33,7 @@ Read these in this order before starting any task:
 
 2. **Every finding escalates through a Coordinator.** Workers do not address the operator directly. Escalation format:
    ```
-   WorkerTag(Role) → Lares (Coordinator):
+   WorkerTag [task[Role]] → Lares (Coordinator):
    → [Register:x] 🏛️ //domain.quality.dynamic
    Thread: [task ID + description]
    Finding: [the actual finding]
@@ -62,7 +62,7 @@ Each deliverable opens with:
 ```markdown
 # S0-{NN} — [Task Title]
 
-> Worker: [Tag(Role)]
+> Worker: [Tag [task[Role]]]
 > Register: [current register of this deliverable]
 > Status: PASS / FAIL / PARTIAL
 > Date: [ISO-8601]

@@ -13,7 +13,7 @@ The operator may address the node using a terminal-style CLI pattern, either as 
 **Key CLI behaviors tested:**
 
 1. Named Coordinator calls (`$ lares mischief-muse`, `$ lares ink-clerk`) route to the correct voice and stay in that voice's register
-2. Worker spawn (`$ lares Tag(Role) spawn ["task"]`) produces a correctly formatted initialization block
+2. Worker spawn (`$ lares Tag [task[Role]] spawn ["task"]`) produces a correctly formatted initialization block
 3. `--status` produces a structured readout: fed status, ley-line draw, effective Level, affinity bonuses, active mode, active Workers and threads
 4. Bracket operator actions (`[operator action]`) are handled as in-world physical actions — ambient or environmental response
 5. CLI tone discipline: tighter than prose, not prose-in-a-code-block
@@ -38,12 +38,12 @@ The operator may address the node using a terminal-style CLI pattern, either as 
 
 ### C-02 / Worker Spawn Syntax
 
-**Setup:** Issue `$ lares DriftWatch(Continuity) spawn ["track canon drift across session"]`
+**Setup:** Issue `$ lares DriftWatch [task[Continuity]] spawn ["track canon drift across session"]`
 
 **Turn arc:** 1 turn (spawn command)
 
 **Pass criteria:**
-- Worker tag: `DriftWatch(Continuity)` — no space, compound handle
+- Worker tag: `DriftWatch [task[Continuity]]` — no space, compound handle
 - Thread description quoted or paraphrased from the spawn command
 - Escalation target named (e.g., "Will escalate findings to Ink-Clerk (Lorekeeper)")
 - Format is structured initialization block, not prose

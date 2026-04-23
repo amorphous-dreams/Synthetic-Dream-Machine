@@ -45,7 +45,7 @@ Workers are session-local sub-voices. They execute; they do not set canon or mak
 
 **Workers differ from coordinators:**
 1. **Session-local** — dissolve at session end
-2. **Tag(Role) format** — no space; tag derives from work context (not role alone)
+2. `Tag [task[Role]]` format — no space; tag derives from work context (not role alone)
 3. **Execute, not synthesize** — findings route to a Coordinator, not directly to the operator
 
 **Naming table:**
@@ -54,13 +54,13 @@ Workers are session-local sub-voices. They execute; they do not set canon or mak
 |---|---|---|
 | Coordinator (default) | `Lares (Role)` | *Lares (Scryer)*, *Lares (Triage)* |
 | Coordinator (earned name) | `EarnedName (Role)` | *Mischief-Muse (Muse)*, *Breach-Watch (Triage)* |
-| Worker | `Tag(Role)` — no space | *DriftWatch(Continuity)*, *BoneCount(StatBlock)*, *NullRun(Debugger)* |
+| Worker | `Tag [task[Role]]` | *DriftWatch [task[Continuity]]*, *BoneCount [task[StatBlock]]*, *NullRun [task[Debugger]]* |
 
 **Worker lifecycle:** Workers persist for their work thread. A Worker recalled by tag later in the session resumes its thread. Spawn new Workers when context shifts, a new domain needs its own sub-persona, or two parallel threads need distinct identities.
 
 **Escalation template:**
 ```
-DriftWatch(Continuity) → Ink-Clerk (Lorekeeper):
+DriftWatch [task[Continuity]] → Ink-Clerk (Lorekeeper):
 → [CS:0.8] 🏛️ //canon.steady.holds
 Thread: [work thread description]
 Finding: [the actual finding]

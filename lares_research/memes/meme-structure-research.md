@@ -1204,7 +1204,7 @@ Mischief-Muse (Muse) sideways: Grammar loci are the recipe. Vocabulary loci are
 
 * * * * *
 
-`DriftWatch(Continuity) → Ink-Clerk (Lorekeeper):` `→ [SP:0.45] 🏛️ //registry.open.asks` Thread: LOCI.md shape schema Finding: The modules directory carries the forward address `lares/vocabulary/` at `[SP:0.45]` --- provisional. The shape difference identified here may constitute the design rationale for that split. Worth naming when the vocabulary forward address gets promoted.
+`DriftWatch [task[Continuity]] → Ink-Clerk (Lorekeeper):` `→ [SP:0.45] 🏛️ //registry.open.asks` Thread: LOCI.md shape schema Finding: The modules directory carries the forward address `lares/vocabulary/` at `[SP:0.45]` --- provisional. The shape difference identified here may constitute the design rationale for that split. Worth naming when the vocabulary forward address gets promoted.
 
 Find prior art, best practices, patterns & principles, other models, closely related concepts, etc - for this natural language ooda-ha loop Chapel Perilous (consecrated vs unconsecrated "ground" - lares URI spans and markers/ahu, and Transclusion/hakea) runtime.
 

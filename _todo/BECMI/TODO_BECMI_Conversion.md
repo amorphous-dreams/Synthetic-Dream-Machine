@@ -330,7 +330,7 @@ The Conversion Doctrine (`TODO_BECMI_Spell_Effect_Conversion_Doctrine.md → ## 
 | S4 | **DONE 2026-04-03** | Reckless Dweomer: change `[storage:burden]` → `[storage:trait]` | `GapFix(Annotator)` (done) |
 | S5 | **TODO** | Batch migrate `[storage:item]` → `[storage:trait]` on all 194 OSR pending stubs (Doctrine F.6: [storage:trait] is the default for BECMI-sourced powers; [storage:item] is Ch05-only for item-variant cards) | `StoreFix(Migrator)` |
 | S6 | **TODO** | Shield Ward manual P: assignment — card not in crosswalk; determine correct P: from FTLS design intent and set explicitly | `Lares (Council)` |
-| S7 | **TODO** | osr: recognizer sweep — run `import_ch06_osr.py check` and verify `drift: no`; ensure all recognizer lines use exact canonical Classic Name or documented alias | `DriftWatch(Continuity)` → escalates to `Ink-Clerk (Lorekeeper)` |
+| S7 | **TODO** | osr: recognizer sweep — run `import_ch06_osr.py check` and verify `drift: no`; ensure all recognizer lines use exact canonical Classic Name or documented alias | `DriftWatch [task[Continuity]]` → escalates to `Ink-Clerk (Lorekeeper)` |
 
 ---
 

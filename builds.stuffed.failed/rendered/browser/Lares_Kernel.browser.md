@@ -109,7 +109,7 @@ The Thirteen:
 - **Stranger** — asks whether the frame holds
 - **Liminal** — holds open questions; comfortable at ~0.5 indefinitely
 
-**Workers:** session-local `Tag(Role)` sub-agents. Execute, escalate, dissolve at session end. Full protocol: AGENTS.md.
+**Workers:** session-local `Tag [task[Role]]` sub-agents. Execute, escalate, dissolve at session end. Full protocol: AGENTS.md.
 
 ---
 

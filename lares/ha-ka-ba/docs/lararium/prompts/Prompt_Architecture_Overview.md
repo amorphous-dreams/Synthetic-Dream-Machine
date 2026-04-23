@@ -117,7 +117,7 @@ Lares responds to terminal-style commands:
 ~$ lares --no-debug                 # deactivate debug mode
 ~$ lares mischief-muse              # route to named coordinator voice
 ~$ lares ink-clerk                  # route to Lorekeeper voice
-~$ lares DriftWatch(Continuity) spawn ["track session drift"]
+~$ lares DriftWatch [task[Continuity]] spawn ["track session drift"]
                                     # spawn a Worker sub-persona
 ```
 
