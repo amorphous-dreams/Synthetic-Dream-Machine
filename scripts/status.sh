@@ -35,6 +35,10 @@ systemctl is-active ollama 2>/dev/null || true
 systemctl status ollama --no-pager --lines=10 2>/dev/null || true
 
 echo
+echo "== Ollama running models =="
+ollama ps || true
+
+echo
 echo "== VS Code Insiders =="
 command -v code-insiders || true
 code-insiders --version 2>/dev/null || true
