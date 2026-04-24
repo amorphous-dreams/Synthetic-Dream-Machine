@@ -9,14 +9,15 @@ Cadence assumption: one-week planning rhythm / two-week implementation rhythm.
 
 ### Now
 
-Sprint-00 complete. Sprint-01 focus:
+Sprint-01 complete. Sprint-02 focus:
 
-- implement deterministic closure compiler (MCP-STORY-103, MCP-TASK-004)
-- add client launch configs for the local stdio MCP server (MCP-STORY-201 polish)
 - design submodule adapter interface (MCP-STORY-204, MCP-TASK-014)
-- lock AST envelope and execution-graph contract (MCP-STORY-106, MCP-STORY-107)
-- draft render projection contract for DOM, tldraw, and scene-graph targets (MCP-STORY-108)
-- expose read-only resources through named client launch paths
+- define execution/widget graph contract (MCP-STORY-107, MCP-TASK-017)
+- draft render projection contract for DOM, tldraw, and scene-graph targets (MCP-STORY-108, MCP-TASK-018)
+- expose hydration prompts (MCP-STORY-202, MCP-TASK-006)
+- expose portability tools (MCP-STORY-203, MCP-TASK-007)
+- wire VS Code / Copilot workspace integration (MCP-STORY-401)
+- wire Claude Code local/project scopes (MCP-STORY-402)
 
 ### Next
 
@@ -39,6 +40,15 @@ Sprint-00 complete. Sprint-01 focus:
 - wrote and committed `TW_FILTER_BOUNDARY.md` (MCP-TASK-013)
 - confirmed `SUBMODULE_INTEGRATION_MATRIX.md` complete (MCP-TASK-011, MCP-TASK-012)
 - closed MCP-STORY-101, MCP-STORY-102, MCP-STORY-104, MCP-STORY-105 as done
+- built `lares/lararium_mcp/compiler.py` — `compile_minimal_boot`, `compile_full_boot`, `compile_boot_receipt` (MCP-STORY-103, MCP-TASK-004)
+- added 26 compiler tests; 35 total tests pass
+- wired compiler tools and boot artifact resources into the MCP server
+- wired `lararium` server entry into `.mcp.json` (MCP-STORY-201 closed)
+- committed `docs/mcp/examples/minimal_boot_example.json` and `boot_receipt_example.json`
+- wrote and committed `AST_ENVELOPE.md` (MCP-TASK-015)
+- wrote and committed `TW_AST_MAPPING.md` (MCP-TASK-016)
+- wrote and committed `PRANALA_ALIGNMENT.md` (MCP-TASK-019)
+- closed MCP-STORY-103, MCP-STORY-106, MCP-STORY-201 as done
 
 ### Later
 

@@ -1,7 +1,7 @@
 # Task: MCP-TASK-019 — Extract pranala family-to-graph-plane alignment table
 
 Parent story: `MCP-STORY-101`
-Status: `ready`
+Status: `done`
 Size: `S`
 
 ## Deliverable

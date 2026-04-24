@@ -1,7 +1,7 @@
 # Task: MCP-TASK-015 — Draft AST envelope and node schema
 
 Parent story: `MCP-STORY-106`
-Status: `ready`
+Status: `done`
 Size: `M`
 
 ## Deliverable

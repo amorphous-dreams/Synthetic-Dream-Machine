@@ -14,6 +14,7 @@ from collections.abc import Callable
 from typing import Any
 
 from .compiler import compile_boot_receipt, compile_full_boot, compile_minimal_boot
+from .prompts import get_prompt, list_prompts
 from .resources import ResourceEntry, inspect_carrier, inspect_resolution, list_lar_resources, read_lar_resource_or_index
 from .tools import (
     inspect_carrier_tool,
@@ -217,6 +218,7 @@ def _handle_initialize(message: dict[str, object]) -> dict[str, object]:
         "capabilities": {
             "resources": {},
             "tools": {},
+            "prompts": {},
         },
         "serverInfo": {"name": SERVER_NAME, "version": SERVER_VERSION},
         "instructions": (
@@ -282,6 +284,25 @@ def _handle_resource_templates_list(_message: dict[str, object]) -> dict[str, ob
     }
 
 
+def _handle_prompts_list(_message: dict[str, object]) -> dict[str, object]:
+    return {"prompts": list_prompts()}
+
+
+def _handle_prompts_get(message: dict[str, object]) -> dict[str, object]:
+    params = _require_params(message)
+    name = _require_string(params, "name")
+    arguments = params.get("arguments", {})
+    if not isinstance(arguments, dict):
+        raise MCPError(JSONRPC_INVALID_PARAMS, "params.arguments must be an object")
+    str_arguments = {k: str(v) for k, v in arguments.items() if isinstance(v, str)}
+    try:
+        return get_prompt(name, str_arguments)
+    except KeyError as exc:
+        raise MCPError(JSONRPC_METHOD_NOT_FOUND, str(exc)) from exc
+    except ValueError as exc:
+        raise MCPError(JSONRPC_INVALID_PARAMS, str(exc)) from exc
+
+
 REQUEST_HANDLERS: dict[str, Callable[[dict[str, object]], dict[str, object]]] = {
     "initialize": _handle_initialize,
     "ping": lambda _message: {},
@@ -290,6 +311,8 @@ REQUEST_HANDLERS: dict[str, Callable[[dict[str, object]], dict[str, object]]] = 
     "resources/templates/list": _handle_resource_templates_list,
     "tools/list": _handle_tools_list,
     "tools/call": _handle_tools_call,
+    "prompts/list": _handle_prompts_list,
+    "prompts/get": _handle_prompts_get,
 }
 
 

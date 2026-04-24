@@ -29,13 +29,13 @@ Legend:
 | MCP-STORY-103 | Implement deterministic closure compiler | MCP-EPIC-01 | done | L | SPRINT-01 |
 | MCP-STORY-104 | Define submodule integration contract | MCP-EPIC-01 | done | M | SPRINT-00 |
 | MCP-STORY-105 | Define direct-import boundary for TiddlyWiki Filter Language | MCP-EPIC-01 | done | S | SPRINT-00 |
-| MCP-STORY-106 | Lock memetic-wikitext and guest-grammar AST envelope | MCP-EPIC-01 | ready | M | SPRINT-00 / SPRINT-01 |
+| MCP-STORY-106 | Lock memetic-wikitext and guest-grammar AST envelope | MCP-EPIC-01 | done | M | SPRINT-00 / SPRINT-01 |
 | MCP-STORY-107 | Define execution/widget graph contract | MCP-EPIC-01 | ready | M | SPRINT-01 |
 | MCP-STORY-108 | Define render projection contract for DOM, tldraw, and scene-graph targets | MCP-EPIC-01 | todo | M | SPRINT-01 / SPRINT-02 |
 | MCP-STORY-109 | Consume meme, invariant, memetic-wikitext carrier trees, and loci law into compiler planning | MCP-EPIC-01 | done | M | SPRINT-00 |
 | MCP-STORY-110 | Fold invariant pressure and composable interface bundles into compiler planning | MCP-EPIC-01 | done | M | SPRINT-00 |
 | MCP-STORY-111 | Build Lararium MCP read-only carrier spine | MCP-EPIC-01 | done | M | SPRINT-01 |
-| MCP-STORY-201 | Expose read-only resources for `lar:///...` and submodule loci | MCP-EPIC-02 | in-progress | L | SPRINT-01 |
+| MCP-STORY-201 | Expose read-only resources for `lar:///...` and submodule loci | MCP-EPIC-02 | done | L | SPRINT-01 |
 | MCP-STORY-202 | Expose hydration prompts | MCP-EPIC-02 | todo | M | SPRINT-02 |
 | MCP-STORY-203 | Expose portability tools | MCP-EPIC-02 | todo | M | SPRINT-02 |
 | MCP-STORY-204 | Build submodule adapter layer | MCP-EPIC-02 | todo | L | SPRINT-01 / SPRINT-02 |
@@ -67,11 +67,11 @@ Legend:
 | MCP-TASK-012 | Classify submodule contribution types | MCP-STORY-104 | done | S |
 | MCP-TASK-013 | Specify TiddlyWiki Filter Language direct-import boundary | MCP-STORY-105 | done | S |
 | MCP-TASK-014 | Design submodule adapter interface | MCP-STORY-204 | todo | M |
-| MCP-TASK-015 | Draft AST envelope and node schema | MCP-STORY-106 | ready | M |
-| MCP-TASK-016 | Map TiddlyWiki parse tree and filter grammar into the AST envelope | MCP-STORY-106 | ready | S |
+| MCP-TASK-015 | Draft AST envelope and node schema | MCP-STORY-106 | done | M |
+| MCP-TASK-016 | Map TiddlyWiki parse tree and filter grammar into the AST envelope | MCP-STORY-106 | done | S |
 | MCP-TASK-017 | Draft execution/widget graph schema | MCP-STORY-107 | todo | M |
 | MCP-TASK-018 | Draft render projection contract | MCP-STORY-108 | todo | M |
-| MCP-TASK-019 | Extract pranala family-to-graph-plane alignment table | MCP-STORY-101 | ready | S |
+| MCP-TASK-019 | Extract pranala family-to-graph-plane alignment table | MCP-STORY-101 | done | S |
 | MCP-TASK-020 | Inventory memetic-wikitext primitive cluster and lowering boundary | MCP-STORY-109 | done | S |
 | MCP-TASK-021 | Build loci-derived carrier-tree and child-resolution table | MCP-STORY-109 | done | S |
 | MCP-TASK-022 | Inventory meme copy-shape, rating posture, and depth-resolution law | MCP-STORY-109 | done | S |

@@ -1,7 +1,7 @@
 # Task: MCP-TASK-016 — Map TiddlyWiki parse tree and filter grammar into the AST envelope
 
 Parent story: `MCP-STORY-106`
-Status: `ready`
+Status: `done`
 Size: `S`
 
 ## Deliverable

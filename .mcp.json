@@ -1,5 +1,10 @@
 {
   "mcpServers": {
+    "lararium": {
+      "command": "/home/joshu/Synthetic-Dream-Machine/.venv/bin/python3",
+      "args": ["-m", "lares.lararium_mcp"],
+      "cwd": "/home/joshu/Synthetic-Dream-Machine"
+    },
     "lares-probe-runner": {
       "command": "/home/joshu/Synthetic-Dream-Machine/.venv/bin/python",
       "args": ["tests/mcp/probe_runner.py"],
