@@ -1,8 +1,8 @@
 # Epic: MCP-EPIC-02 — Local STDIO MCP Server and Adapters
 
 > Backlog prefix: `MCP-EPIC-02`
-> Target window: May -> June 2026
-> Status: `todo`
+> Sequence lane: Phase 2 / local stdio server
+> Status: `in-progress`
 
 ## Outcome
 

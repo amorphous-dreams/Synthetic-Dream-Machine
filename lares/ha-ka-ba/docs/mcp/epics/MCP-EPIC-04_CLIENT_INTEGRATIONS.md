@@ -1,8 +1,8 @@
 # Epic: MCP-EPIC-04 — Client Integrations and UX
 
 > Backlog prefix: `MCP-EPIC-04`
-> Target window: June -> August 2026
-> Status: `todo`
+> Sequence lane: Phase 3 / client integrations
+> Status: `in-progress`
 
 ## Outcome
 

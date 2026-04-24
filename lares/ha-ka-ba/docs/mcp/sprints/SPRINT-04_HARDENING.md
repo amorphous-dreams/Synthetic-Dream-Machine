@@ -1,6 +1,6 @@
 # Sprint: SPRINT-04 — Hardening and Release Prep
 
-Window: **2026-06-14 -> 2026-06-27**
+Flow slot: **SPRINT-04 / follow-on sequence**
 Goal: push the service from promising demo toward trustworthy release candidate.
 
 ## Planned stories

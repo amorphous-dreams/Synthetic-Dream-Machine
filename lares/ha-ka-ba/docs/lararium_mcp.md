@@ -16,7 +16,7 @@ role         = "docs-spec parent locus for the Lararium MCP server — index, ru
 implements   = [
   "lar:///ha.ka.ba/api/v0.1/pono/meme",
 ]
-status-date  = "2026-04-23"
+status      = "living docs-spec; test count verified"
 server-version = "0.1.0"
 protocol-versions = ["2025-11-25", "2025-06-18", "2025-03-26", "2024-11-05"]
 entry-point  = "python3 -m lares.lararium_mcp"
@@ -86,7 +86,7 @@ Expected: `{"jsonrpc":"2.0","id":1,"result":{"protocolVersion":"2025-11-25","cap
 
 ```bash
 python3 -m unittest discover -s lares/lararium_mcp/tests -v
-# Ran 55 tests in ~0.5s — OK
+# Ran 77 tests in ~0.7s — OK
 ```
 
 <<~/ahu >>
@@ -195,6 +195,16 @@ The durable MCP design now lives under `lares/ha-ka-ba/docs/lararium_mcp/**` as 
 | `local-clients` | VS Code, Claude Code, Codex, prompt catalog, read-only tool façade |
 | `sprint-ledger` | closed Sprint-00/01/02 contraction and consumed-source map |
 
+Graph redesign cluster lives under `lares/ha-ka-ba/docs/graph/**`:
+
+| Locus | Canonical role |
+|---|---|
+| `lar:///ha.ka.ba/docs/graph` | spine — research synthesis, committed decisions, open `? ->` gate |
+| `lar:///ha.ka.ba/docs/graph/nodes` | `PranaEdge`, `CarrierNode`, `CarrierGraph` data model contracts |
+| `lar:///ha.ka.ba/docs/graph/traversal` | Tier 0/1/2 walk, DFS cycle detection, Kahn topo sort, declared-unresolved law |
+| `lar:///ha.ka.ba/docs/graph/pranala-parser` | block + inline + sugar parser, field normalization, `? ->` gate |
+| `lar:///ha.ka.ba/docs/graph/artifacts` | SHA256 content-addressed artifacts, three classes, compaction rules |
+
 Legacy non-meme design docs in `docs/mcp/` that contributed content now carry consumed markers.
 Active Sprint-03, roadmap, backlog, and todo work-tracking files remain live planning surfaces.
 
@@ -229,20 +239,20 @@ Checked-in design contracts under `lares/ha-ka-ba/docs/mcp/` now act as consumed
 
 ## Known Gaps (Stubs and Residue)
 
-| Gap | Status | Planned sprint |
+| Gap | Status | Lane |
 |---|---|---|
-| Pranala-edge DAG walk (compiler uses static required-core list, not parsed edges) | stub | SPRINT-03 |
-| `lar:///boot/full` `edge_count` and `pranala_edges` fields are empty | stub | SPRINT-03 |
-| `lar:///exec/**` execution graph resources | not started | SPRINT-02 |
-| `lar:///ast/**` AST resources | not started | SPRINT-02 |
-| Submodule adapter implementations (MemPalace, Kowloon, tldraw, TiddlyWiki5) | interface only | SPRINT-03 |
-| Remote HTTP/SSE transport | not started | SPRINT-03 |
-| Auth, scopes, approval policy | not started | SPRINT-03 |
-| Hydration drift eval fixtures | not started | SPRINT-03 |
+| Pranala-edge DAG walk and `compile_full_boot` edge materialization | design-active stub | hold for base DAG redesign |
+| `lar:///boot/full` `edge_count` and `pranala_edges` fields are empty | honest stub | follows pranala DAG walker |
+| `lar:///exec/**` execution graph resources | not started | post-DAG contract |
+| `lar:///ast/**` AST resources | not started | post-DAG contract |
+| Non-MemPalace adapter implementations (Kowloon, tldraw, TiddlyWiki5) | not started | adapter expansion |
+| Remote HTTP/SSE transport | not started | remote surface |
+| Auth, scopes, approval policy | not started | remote surface prerequisite |
+| Hydration drift eval fixtures | not started | hardening/eval lane |
 | x-tiddlywiki-filter guest grammar executor | not started | post-v1 |
-| tldraw shape projection implementation | not started | SPRINT-03 |
+| tldraw shape projection implementation | not started | render lane |
 | Write-back tools (MemPalace store, Kowloon post) | blocked by read-only gate | post-v1 |
-| Codex remote examples | not started | SPRINT-03 |
+| Codex remote examples | not started | remote examples residue |
 
 <<~/ahu >>
 
@@ -335,6 +345,7 @@ lararium_mcp docs-spec closes
 <<~ loulou lar:///ha.ka.ba/docs/lararium_mcp/adapters >>
 <<~ loulou lar:///ha.ka.ba/docs/lararium_mcp/local-clients >>
 <<~ loulou lar:///ha.ka.ba/docs/lararium_mcp/sprint-ledger >>
+<<~ loulou lar:///ha.ka.ba/docs/graph >>
 <<~ loulou lar:///ha.ka.ba/api/v0.1/lararium >>
 
 <<~/ahu >>

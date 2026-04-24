@@ -1,11 +1,11 @@
 > [!IMPORTANT]
-> Consumption status: fully-consumed on 2026-04-23.
+> Consumption status: fully-consumed.
 > Canonical loci-meme: `lar:///ha.ka.ba/docs/lararium_mcp/local-clients and lar:///ha.ka.ba/docs/lararium_mcp/sprint-ledger`.
 > This non-meme markdown source may become a safe-delete candidate after link checks confirm no required references remain.
 
 # Sprint: SPRINT-02 — Local Client Surfaces
 
-Window: **2026-05-17 -> 2026-05-30**
+Flow slot: **SPRINT-02 / closed sequence**
 Goal: surface resources, prompts, and tools locally and wire first client integrations.
 
 ## Planned stories
@@ -18,7 +18,7 @@ Goal: surface resources, prompts, and tools locally and wire first client integr
 ## Exit markers
 
 - hydration prompts exposed (`lares/lararium_mcp/prompts.py`, 6 prompts: boot_minimal, hydrate_full, boot_receipt, resolve_uri, read_carrier, compare_hydration) ✓
-- prompt naming aligned to `lararium-` dash convention, matching tool naming ✓ (55 tests pass)
+- prompt naming aligned to `lararium-` dash convention, matching tool naming ✓ (77 tests pass)
 - read-only tool façade exposed (`lares/lararium_mcp/tools.py`) ✓
 - `.mcp.json` wired for Claude Code local/project scope ✓
 - `SUBMODULE_ADAPTER_INTERFACE.md` committed, adapter contract defined ✓

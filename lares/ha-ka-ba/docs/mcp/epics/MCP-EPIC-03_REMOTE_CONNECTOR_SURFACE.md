@@ -1,7 +1,7 @@
 # Epic: MCP-EPIC-03 — Remote HTTP/SSE Connector Surface
 
 > Backlog prefix: `MCP-EPIC-03`
-> Target window: July -> August 2026
+> Sequence lane: Phase 4 / remote surface
 > Status: `todo`
 
 ## Outcome

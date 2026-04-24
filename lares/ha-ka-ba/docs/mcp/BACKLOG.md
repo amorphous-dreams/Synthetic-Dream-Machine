@@ -1,6 +1,6 @@
 # Backlog — Lararium MCP Program
 
-Status date: **April 23, 2026**
+Status: **living planning surface; sequence-bound, not calendar-bound**
 
 Legend:
 - Status: `todo`, `ready`, `in-progress`, `blocked`, `done`
@@ -12,10 +12,10 @@ Legend:
 
 | ID | Epic | Status | Target sprint | Notes |
 |---|---|---:|---|---|
-| MCP-EPIC-01 | Hydration Core, Graph Compiler, and Submodule Contract | ready | SPRINT-00 / SPRINT-01 | first delivery lane |
-| MCP-EPIC-02 | Local STDIO MCP Server and Adapters | todo | SPRINT-01 / SPRINT-02 | depends on hydration and adapter contracts |
+| MCP-EPIC-01 | Hydration Core, Graph Compiler, and Submodule Contract | in-progress | SPRINT-00 / SPRINT-01 / DAG follow-on | core slice closed; DAG redesign follow-on remains |
+| MCP-EPIC-02 | Local STDIO MCP Server and Adapters | in-progress | SPRINT-01 / SPRINT-02 / adapter expansion | local server closed; non-MemPalace adapter expansion remains |
 | MCP-EPIC-03 | Remote HTTP/SSE Connector Surface | todo | SPRINT-03 | read-only only in v1 |
-| MCP-EPIC-04 | Client Integrations and UX | todo | SPRINT-02 / SPRINT-03 | three local surfaces first |
+| MCP-EPIC-04 | Client Integrations and UX | in-progress | SPRINT-02 / SPRINT-03 | local surfaces closed; remote examples remain residue |
 | MCP-EPIC-05 | Security, Evals, and Operations | todo | SPRINT-03 / SPRINT-04 | hardening lane |
 
 ---
@@ -43,7 +43,7 @@ Legend:
 | MCP-STORY-302 | Add auth, scopes, and approval policy | MCP-EPIC-03 | todo | L | SPRINT-03 |
 | MCP-STORY-401 | Wire VS Code / Copilot workspace integration | MCP-EPIC-04 | done | M | SPRINT-02 |
 | MCP-STORY-402 | Wire Claude Code local/project scopes | MCP-EPIC-04 | done | M | SPRINT-02 |
-| MCP-STORY-403 | Wire Codex local config and remote examples | MCP-EPIC-04 | done | M | SPRINT-03 |
+| MCP-STORY-403 | Wire Codex local config; keep remote examples as residue | MCP-EPIC-04 | done | M | SPRINT-03 |
 | MCP-STORY-501 | Define eval suite for hydration and submodule drift | MCP-EPIC-05 | todo | M | SPRINT-03 |
 | MCP-STORY-502 | Document security model and operational runbook | MCP-EPIC-05 | todo | M | SPRINT-04 |
 

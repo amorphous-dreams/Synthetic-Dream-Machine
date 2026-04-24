@@ -1,7 +1,7 @@
 # Roadmap — Lararium MCP Program
 
-Status date: **April 23, 2026**
-Planning horizon: **2026 Q2 -> 2026 Q4**
+Status: **living roadmap; sequence-bound, not calendar-bound**
+Planning horizon: **ordered phases, burned down as local truth stabilizes**
 Program objective: deliver a production-worthy MCP layer that hydrates the Lararium graph and integrates all current git submodules as core pieces of one coherent system.
 
 ---
@@ -60,7 +60,7 @@ That protocol should keep the program close to repo truth and away from decorati
 
 ### Phase 0 — Contraction / program reset
 
-Target window: **late April 2026**
+Sequence slot: **Phase 0 / closed**
 
 Deliverables:
 - tightened docs shelf
@@ -74,7 +74,7 @@ Exit signal:
 
 ### Phase 1 — Hydration core + submodule contract
 
-Target window: **May 2026**
+Sequence slot: **Phase 1 / mostly closed**
 
 Deliverables:
 - graph inventory pass over `AGENTS`, `LARES`, Mu, Lararium, required invariants, meme/invariant/memetic-wikitext carrier trees, and all current submodules
@@ -108,7 +108,7 @@ Exit signal:
 
 ### Phase 2 — Local stdio MCP slice
 
-Target window: **May -> June 2026**
+Sequence slot: **Phase 2 / closed local slice**
 
 Deliverables:
 - local stdio server
@@ -123,7 +123,7 @@ Exit signal:
 
 ### Phase 3 — Three-surface local integration
 
-Target window: **June -> July 2026**
+Sequence slot: **Phase 3 / closed local slice**
 
 Deliverables:
 - `.vscode/mcp.json` path
@@ -137,7 +137,7 @@ Exit signal:
 
 ### Phase 4 — Remote read-only surface
 
-Target window: **July -> August 2026**
+Sequence slot: **Phase 4 / remote-readiness lane**
 
 Deliverables:
 - streamable HTTP or SSE adapter
@@ -151,7 +151,7 @@ Exit signal:
 
 ### Phase 5 — Hardening and operations
 
-Target window: **August -> October 2026**
+Sequence slot: **Phase 5 / hardening lane**
 
 Deliverables:
 - security review
@@ -167,14 +167,14 @@ Exit signal:
 
 ## Milestone table
 
-| Milestone | Target | Success marker |
+| Milestone | Sequence | Success marker |
 |---|---|---|
-| M0 — Crucible reset | 2026-04-23 | narrowed program docs and submodule matrix committed |
-| M1 — Hydration + submodule contract alpha | 2026-05-15 | boot packet from `lar:///AGENTS` includes stable submodule attachment model |
-| M2 — Local MCP alpha | 2026-05-31 | VS Code can read Lararium and submodule resources locally |
-| M3 — Three-client local demo | 2026-06-20 | Copilot + Claude Code + Codex consume the same local MCP |
-| M4 — Remote read-only beta | 2026-07-31 | remote server answers hydration and submodule inspection calls |
-| M5 — Hardening gate | 2026-09-15 | evals, security review, and rollout checklist pass |
+| M0 — Crucible reset | closed | narrowed program docs and submodule matrix committed |
+| M1 — Hydration + submodule contract alpha | closed/contracting | boot packet from `lar:///AGENTS` includes stable submodule attachment model |
+| M2 — Local MCP alpha | closed | VS Code can read Lararium and submodule resources locally |
+| M3 — Three-client local demo | closed | Copilot + Claude Code + Codex consume the same local MCP |
+| M4 — Remote read-only beta | next remote lane | remote server answers hydration and submodule inspection calls |
+| M5 — Hardening gate | follow-on | evals, security review, and rollout checklist pass |
 
 ---
 

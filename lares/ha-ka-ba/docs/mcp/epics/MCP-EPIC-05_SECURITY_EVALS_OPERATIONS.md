@@ -1,7 +1,7 @@
 # Epic: MCP-EPIC-05 — Security, Evals, and Operations
 
 > Backlog prefix: `MCP-EPIC-05`
-> Target window: July -> October 2026
+> Sequence lane: Phase 5 / security, evals, operations
 > Status: `todo`
 
 ## Outcome

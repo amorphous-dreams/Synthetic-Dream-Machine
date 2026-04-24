@@ -23,7 +23,7 @@ source-consumes = [
   "lares/ha-ka-ba/docs/mcp/sprints/SPRINT-01_HYDRATION_SLICE.md",
   "lares/ha-ka-ba/docs/mcp/sprints/SPRINT-02_LOCAL_CLIENTS.md"
 ]
-status-date  = "2026-04-23"
+status      = "sequence-bound; no calendar dates"
 ```
 <<~/ahu >>
 
@@ -43,13 +43,13 @@ lararium_mcp/sprint-ledger opens
 <<~ ahu #closed-sprints >>
 ## Closed Sprint Outcomes
 
-| Sprint | Window | Goal | Exit contraction |
-|---|---|---|---|
-| SPRINT-00 | 2026-04-23 → 2026-05-02 | contraction, inventory, boundary | submodule matrix, TiddlyWiki filter boundary, boot inventory, edge taxonomy, artifact contract closed |
-| SPRINT-01 | 2026-05-03 → 2026-05-16 | hydration compiler slice | closure algorithm demonstrated, boot examples committed, AST/TW/pranala design added, local resource spine started |
-| SPRINT-02 | 2026-05-17 → 2026-05-30 | local client surfaces | prompts, tools, VS Code, Claude Code, Codex local config, and adapter contract closed |
+Sprint IDs mark ordered work slices, not wall-clock promises.
 
-Dates come from planning documents; closure happened in the current repo state on April 23, 2026.
+| Sprint | Goal | Exit contraction |
+|---|---|---|
+| SPRINT-00 | contraction, inventory, boundary | submodule matrix, TiddlyWiki filter boundary, boot inventory, edge taxonomy, artifact contract closed |
+| SPRINT-01 | hydration compiler slice | closure algorithm demonstrated, boot examples committed, AST/TW/pranala design added, local resource spine started |
+| SPRINT-02 | local client surfaces | prompts, tools, VS Code, Claude Code, Codex local config, and adapter contract closed |
 
 <<~/ahu >>
 

@@ -1,11 +1,11 @@
 > [!IMPORTANT]
-> Consumption status: fully-consumed on 2026-04-23.
+> Consumption status: fully-consumed.
 > Canonical loci-meme: `lar:///ha.ka.ba/docs/lararium_mcp/sprint-ledger`.
 > This non-meme markdown source may become a safe-delete candidate after link checks confirm no required references remain.
 
 # Sprint: SPRINT-00 — Contraction, Inventory, and Boundary
 
-Window: **2026-04-23 -> 2026-05-02**
+Flow slot: **SPRINT-00 / closed sequence**
 Goal: tighten scope, inventory the graph and submodules, and define hydration plus grammar boundaries.
 
 ## Planned stories

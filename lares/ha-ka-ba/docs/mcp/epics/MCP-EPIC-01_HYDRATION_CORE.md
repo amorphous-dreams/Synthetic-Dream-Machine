@@ -1,8 +1,8 @@
 # Epic: MCP-EPIC-01 — Hydration Core, Graph Compiler, and Submodule Contract
 
 > Backlog prefix: `MCP-EPIC-01`
-> Target window: May 2026
-> Status: `ready`
+> Sequence lane: Phase 1 / hydration core
+> Status: `in-progress`
 
 ## Outcome
 

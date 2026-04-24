@@ -1,7 +1,7 @@
 # Work Tracking — Lararium MCP Program
 
-Status date: **April 23, 2026**
-Cadence assumption: one-week planning rhythm / two-week implementation rhythm.
+Status: **living planning surface; sequence-bound, not calendar-bound**
+Cadence assumption: burn-down follows readiness and operator attention, not IRL calendar windows.
 
 ---
 
@@ -14,7 +14,7 @@ Sprint-02 closed. Sprint-03 focus:
 - remote HTTP/SSE adapter (MCP-STORY-301, MCP-TASK-008)
 - auth, scopes, and approval policy (MCP-STORY-302, MCP-TASK-009)
 - eval suite for hydration drift (MCP-STORY-501, MCP-TASK-010)
-- pranala-edge DAG walk to make `compile_full_boot` honest (MCP-TASK-004 follow-on)
+- pranala-edge DAG walk stays on design hold until the base DAG concept settles (MCP-TASK-004 follow-on)
 
 ### Next
 
@@ -54,9 +54,9 @@ Sprint-02 closed. Sprint-03 focus:
 
 ### Later
 
-- wire three local chat surfaces
 - expose remote read-only server
 - add evals and operations hardening
+- expand non-MemPalace adapter lanes after the read-only boundary stays stable
 
 ---
 
@@ -92,13 +92,15 @@ When two tickets compete, prefer the one that:
 
 ## Sprint ledger
 
-| Sprint | Window | Theme | Status |
-|---|---|---|---:|
-| SPRINT-00 | 2026-04-23 -> 2026-05-02 | contraction, inventory, submodule contract, filter boundary | active-planned |
-| SPRINT-01 | 2026-05-03 -> 2026-05-16 | hydration compiler + adapter contract + first local read path | planned |
-| SPRINT-02 | 2026-05-17 -> 2026-05-30 | local stdio slice + three-surface local wiring | planned |
-| SPRINT-03 | 2026-05-31 -> 2026-06-13 | remote read-only surface + eval start | planned |
-| SPRINT-04 | 2026-06-14 -> 2026-06-27 | hardening, runbook, and release prep | planned |
+The sprint IDs now mark ordered work slices, not wall-clock promises.
+
+| Sprint | Theme | Status |
+|---|---|---:|
+| SPRINT-00 | contraction, inventory, submodule contract, filter boundary | closed |
+| SPRINT-01 | hydration compiler + adapter contract + first local read path | closed |
+| SPRINT-02 | local stdio slice + three-surface local wiring | closed |
+| SPRINT-03 | remote read-only surface + eval start | active-next |
+| SPRINT-04 | hardening, runbook, and release prep | follow-on |
 
 ---
 
