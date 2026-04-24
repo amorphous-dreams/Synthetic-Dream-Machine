@@ -1,3 +1,18 @@
+Metadata-Version: 2.4
+Name: lares
+Version: 0.1.0
+Summary: Modular MCP server and agentic framework.
+Author-email: Your Name <your@email.com>
+License: [../../FTLS-3rd-Party-License.md](../../FTLS-3rd-Party-License.md)
+        
+Requires-Python: >=3.8
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Provides-Extra: dev
+Requires-Dist: pytest; extra == "dev"
+Requires-Dist: pytest-cov; extra == "dev"
+Dynamic: license-file
+
 ---
 layout: gruv_default_adapter
 title: 'Flying Triremes and Laser Swords — Open Beta'
