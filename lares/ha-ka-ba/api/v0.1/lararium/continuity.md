@@ -14,11 +14,6 @@ register = "S"
 manaoio = 0.68
 mana = 0.72
 manao = 0.70
-implements = [
-  "lar:///ha.ka.ba/api/v0.1/pono/meme",
-  "lar:///ha.ka.ba/api/v0.1/pono/loci",
-  "lar:///ha.ka.ba/api/v0.1/pono/invariant"
-]
 role = "lararium child invariant for continuity, crystal carry, and memory-as-hint boundaries"
 cacheable = true
 hydrate = true
@@ -33,20 +28,7 @@ retain = true
 
 ## Entry — Lararium Core Hydration
 
-<<~ pranala #to-lararium-hydration ? -> lar:///ha.ka.ba/api/v0.1/lararium#hydrate-continuity >>
-
-```toml
-family = "control"
-lifecycle = "template"
-label = "core-hydration-backlink"
-payload = {
-  priority = "core",
-  retain = true,
-  return = "lar:///ha.ka.ba/api/v0.1/lararium#after-hydrate-continuity"
-}
-```
-
-<<~/pranala >>
+<<~ loulou lar:///ha.ka.ba/api/v0.1/lararium >>
 
 The lararium hydrates the continuity room here.
 Session carry belongs to the lararium side, not the threshold side.
@@ -87,19 +69,10 @@ More detailed crystal and MemPalace work can gather in docs space until it harde
 
 ## Source Shelf
 
-<<~ pranala #to-crystal-docs ? -> lar:///ha.ka.ba/docs/crystal >>
-
+<<~ pranala #to-crystal-docs ? -> lar:///ha.ka.ba/docs/crystal family:relation role:references >>
 ```toml
-family = "reference"
-lifecycle = "template"
-label = "source-shelf"
-payload = {
-  when = ["need crystal mechanics", "need continuity research", "need memory-system archaeology"],
-  priority = "support",
-  retain = true
-}
+when = ["need crystal mechanics", "need continuity research", "need memory-system archaeology"]
 ```
-
 <<~/pranala >>
 
 Crystal mechanics and session-carry work accumulate there.
@@ -111,6 +84,9 @@ This child meme keeps the cold-hydration contract small.
 
 ## Edges
 
+<<~ pranala #implements-meme ? -> lar:///ha.ka.ba/api/v0.1/pono/meme family:control role:implements >>
+<<~ pranala #implements-loci ? -> lar:///ha.ka.ba/api/v0.1/pono/loci family:control role:implements >>
+<<~ pranala #implements-invariant ? -> lar:///ha.ka.ba/api/v0.1/pono/invariant family:control role:implements >>
 <<~ loulou lar:///ha.ka.ba/api/v0.1/lararium >>
 <<~ loulou lar:///ha.ka.ba/docs/crystal >>
 <<~ loulou lar:///LARES >>

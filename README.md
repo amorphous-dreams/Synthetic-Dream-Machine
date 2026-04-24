@@ -245,49 +245,195 @@ Custom model pull:
 
 The script skips models that are already present.
 
-**Start Ollama and warm a local model:**
+### 6. Manage the Ollama service
 
-`ollama list` shows models that are installed locally. It does **not** mean a model is currently loaded.
+On WSL/Linux service installs, Ollama runs as a `systemd` service. Use these commands to start, stop, restart, or disable it.
 
-Check whether the Ollama daemon is responsive:
+This is useful when working on a laptop that should not keep local model services running, or when large models are not appropriate for the current machine.
+
+#### Check Ollama service status
+
+```bash
+systemctl status ollama --no-pager
+````
+
+Check whether the daemon is reachable:
 
 ```bash
 ollama ps
 ```
 
-If that fails, start Ollama.
+Check installed models:
 
-For WSL/systemd or Linux service installs:
+```bash
+ollama list
+```
+
+Useful distinction:
+
+```text
+ollama list   # installed / pulled models
+ollama ps     # currently loaded / running models
+ollama run    # starts a model session and loads it
+ollama serve  # starts the Ollama daemon manually, not a specific model
+```
+
+#### Start Ollama
 
 ```bash
 sudo systemctl start ollama
+```
+
+Verify:
+
+```bash
+systemctl is-active ollama
 ollama ps
 ```
 
-For a foreground/manual daemon:
+#### Stop Ollama for the current WSL session
 
 ```bash
-ollama serve
+sudo systemctl stop ollama
 ```
 
-Then open a second terminal and warm a model that fits your machine:
+Verify:
+
+```bash
+systemctl is-active ollama
+```
+
+Expected output:
+
+```text
+inactive
+```
+
+#### Restart Ollama
+
+Use this after changing service configuration, model storage paths, or environment variables.
+
+```bash
+sudo systemctl restart ollama
+```
+
+Then verify:
+
+```bash
+systemctl status ollama --no-pager
+ollama ps
+```
+
+#### Enable Ollama auto-start on WSL boot
+
+```bash
+sudo systemctl enable --now ollama
+```
+
+This enables the service and starts it immediately.
+
+Verify:
+
+```bash
+systemctl is-enabled ollama
+systemctl is-active ollama
+```
+
+#### Disable Ollama auto-start
+
+Recommended for laptops or machines that should not automatically run local model infrastructure.
+
+```bash
+sudo systemctl disable --now ollama
+```
+
+This disables auto-start and stops the currently running service.
+
+Verify:
+
+```bash
+systemctl is-enabled ollama || true
+systemctl is-active ollama || true
+```
+
+Expected output:
+
+```text
+disabled
+inactive
+```
+
+#### Stop a loaded model without stopping the daemon
+
+If the Ollama daemon should remain available but a model should be unloaded:
+
+```bash
+ollama ps
+ollama stop qwen3.6:27b
+```
+
+Or with an environment variable:
 
 ```bash
 OLLAMA_SMOKE_MODEL="${OLLAMA_SMOKE_MODEL:-qwen3.6:27b}"
-ollama run "$OLLAMA_SMOKE_MODEL" "Reply with ready."
+ollama stop "$OLLAMA_SMOKE_MODEL"
 ```
 
-Confirm that the model is currently loaded:
+Then confirm:
 
 ```bash
 ollama ps
 ```
 
-Stop a running model when needed:
+#### View Ollama logs
 
 ```bash
-ollama stop "$OLLAMA_SMOKE_MODEL"
+journalctl -u ollama -n 100 --no-pager
 ```
+
+Follow logs live:
+
+```bash
+journalctl -u ollama -f
+```
+
+#### Laptop-safe default
+
+For a local development laptop that is not suitable for large local models, keep Ollama installed but disabled by default:
+
+```bash
+sudo systemctl disable --now ollama
+```
+
+Start it only when needed:
+
+```bash
+sudo systemctl start ollama
+```
+
+Stop it when done:
+
+```bash
+sudo systemctl stop ollama
+```
+
+#### Windows boot vs WSL boot
+
+`systemctl enable ollama` starts Ollama when the WSL distro starts. It does not necessarily start WSL at Windows login.
+
+If Ollama should start on every Windows login, create a Windows Task Scheduler task that starts the WSL distro, for example:
+
+```powershell
+wsl.exe -d Ubuntu --exec systemctl start ollama
+```
+
+Replace `Ubuntu` with the distro name from:
+
+```powershell
+wsl.exe -l -v
+```
+
+For this project, the recommended laptop default is **not** to auto-start Ollama unless the machine is intended to serve local models.
 
 Useful distinction:
 
@@ -308,14 +454,13 @@ ollama ps
 ollama run "$OLLAMA_SMOKE_MODEL" "Reply with ready."
 ollama ps
 ```
-
-### 6. Run tests
+### 7. Run tests
 
 ```bash
 pytest
 ```
 
-### 7. Smoke-test the repo MCP server
+### 8. Smoke-test the repo MCP server
 
 Default smoke test:
 
@@ -332,7 +477,7 @@ python scripts/mcp-smoke.py -- ./lares/lararium_mcp/run.sh
 
 The smoke test sends MCP `initialize` and `tools/list` requests over stdio.
 
-### 8. Check local environment status
+### 9. Check local environment status
 
 ```bash
 make status
@@ -342,7 +487,7 @@ make status
 
 This prints repo, Python, package import, installed Ollama models, running Ollama models, Ollama service, and VS Code Insiders status.
 
-### 9. Open the repo in VS Code Insiders
+### 10. Open the repo in VS Code Insiders
 
 ```bash
 code-insiders .

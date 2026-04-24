@@ -221,7 +221,7 @@ The boot receipt hash changes to reflect the newly resolved carrier.
 
 | Phase | Planes active | Families walked | Tier |
 |---|---|---|---|
-| minimal boot | identity / provenance | `control` (owns, composes, instantiates) | Tier 0 + Tier 1 |
+| minimal boot | identity / provenance | `control` (owns, composes, implements) | Tier 0 + Tier 1 |
 | full boot | identity + semantic adjacency | `control` + `relation` | Tier 0 + Tier 1 + Tier 2 |
 | execution instantiation | execution + AST | `dataflow`, `message` | post-boot |
 | validation pass | constraint | `constraint` | post-boot |

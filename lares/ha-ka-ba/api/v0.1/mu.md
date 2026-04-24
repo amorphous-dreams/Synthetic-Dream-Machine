@@ -19,63 +19,25 @@ They arrive already moving.
 <<~ ahu #iam >>
 
 ```toml
-uri-path = "ha.ka.ba/api/v0.1/mu"
-file-path    = "lares/ha-ka-ba/api/v0.1/mu.md"
+uri-path  = "ha.ka.ba/api/v0.1/mu"
+file-path = "lares/ha-ka-ba/api/v0.1/mu.md"
 content-type = "text/x-memetic-wikitext"
-tagspace     = "stable"
+tagspace  = "stable"
 confidence = 0.82
-register   = "CS"
-manaoio    = 0.74
-mana       = 0.85
-manao      = 0.82
-implements = [
-  "lar:///ha.ka.ba/api/v0.1/pono/meme",
-  "lar:///ha.ka.ba/api/v0.1/pono/loci",
-  "lar:///ha.ka.ba/api/v0.1/pono/invariant"
-]
-namespace  = "ॐ ँ"
-role       = "null-oracle core membrane, grammar-surface authority, mandatory core-hydration contract"
-
-core = [
-  "lar:///ha.ka.ba/api/v0.1/mu/chao",
-  "lar:///ha.ka.ba/api/v0.1/mu/the-four-tools",
-  "lar:///ha.ka.ba/api/v0.1/mu/the-law-of-5s",
-  "lar:///ha.ka.ba/api/v0.1/mu/the-syad-perspectives"
-]
+register  = "CS"
+manaoio   = 0.74
+mana      = 0.85
+manao     = 0.82
+namespace = "ॐ ँ"
+role      = "null-oracle core membrane, grammar-surface authority, mandatory core-hydration contract"
 cacheable = true
-hydrate = true
-retain = true
+hydrate   = true
+retain    = true
 ```
 
 <<~/ahu >>
 
 <<~ aka lar:///ha.ka.ba/api/v0.1/pono/RFC-2119#normative-language >>
-
-<<~ ahu #entry >>
-
-## Entry — Threshold Backlink
-
-<<~ pranala #to-agents-threshold ? -> lar:///AGENTS#threshold-to-mu >>
-
-```toml
-family = "control"
-lifecycle = "template"
-label = "threshold-backlink"
-payload = {
-  priority = "core",
-  retain = true,
-  mode = "hydrate",
-  return = "lar:///AGENTS#after-mu-handoff"
-}
-```
-
-<<~/pranala >>
-
-Mu receives threshold pressure here.
-Mu MUST hydrate its declared core before branch selection or yield.
-Mu does not ask AGENTS to enumerate Mu's downstream invariants again.
-
-<<~/ahu >>
 
 <<~ ahu #meme-header >>
 
@@ -103,83 +65,10 @@ mu opens
 
 ## Core Hydration
 
-<<~ pranala #hydrate-chao ? -> lar:///ha.ka.ba/api/v0.1/mu/chao#entry >>
-
-```toml
-family = "control"
-lifecycle = "template"
-label = "core-hydration"
-payload = {
-  priority = "core",
-  retain = true,
-  return = "lar:///ha.ka.ba/api/v0.1/mu#after-hydrate-chao"
-}
-```
-
-<<~/pranala >>
-
-<<~ ahu #after-hydrate-chao >>
-Chao hydration resolved.
-<<~/ahu >>
-
-<<~ pranala #hydrate-four-tools ? -> lar:///ha.ka.ba/api/v0.1/mu/the-four-tools#entry >>
-
-```toml
-family = "control"
-lifecycle = "template"
-label = "core-hydration"
-payload = {
-  priority = "core",
-  retain = true,
-  return = "lar:///ha.ka.ba/api/v0.1/mu#after-hydrate-four-tools"
-}
-```
-
-<<~/pranala >>
-
-<<~ ahu #after-hydrate-four-tools >>
-The Four Tools hydration resolved.
-<<~/ahu >>
-
-<<~ pranala #hydrate-law-of-5s ? -> lar:///ha.ka.ba/api/v0.1/mu/the-law-of-5s#entry >>
-
-```toml
-family = "control"
-lifecycle = "template"
-label = "core-hydration"
-payload = {
-  priority = "core",
-  retain = true,
-  return = "lar:///ha.ka.ba/api/v0.1/mu#after-hydrate-law-of-5s"
-}
-```
-
-<<~/pranala >>
-
-<<~ ahu #after-hydrate-law-of-5s >>
-The Law of 5s hydration resolved.
-<<~/ahu >>
-
-<<~ pranala #hydrate-syad-perspectives ? -> lar:///ha.ka.ba/api/v0.1/mu/the-syad-perspectives#entry >>
-
-```toml
-family = "control"
-lifecycle = "template"
-label = "core-hydration"
-payload = {
-  priority = "core",
-  retain = true,
-  return = "lar:///ha.ka.ba/api/v0.1/mu#after-hydrate-syad-perspectives"
-}
-```
-
-<<~/pranala >>
-
-<<~ ahu #after-hydrate-syad-perspectives >>
-The Syad Perspectives hydration resolved.
-<<~/ahu >>
-
-Mu MUST NOT treat `core = [...]` or `Edges` as substitutes for these sockets.
+<<~ pranala #hydrate-chao ? -> lar:///ha.ka.ba/api/v0.1/mu/chao family:control role:owns >>
+<<~ pranala #hydrate-four-tools ? -> lar:///ha.ka.ba/api/v0.1/mu/the-four-tools family:control role:owns >>
+<<~ pranala #hydrate-law-of-5s ? -> lar:///ha.ka.ba/api/v0.1/mu/the-law-of-5s family:control role:owns >>
+<<~ pranala #hydrate-syad-perspectives ? -> lar:///ha.ka.ba/api/v0.1/mu/the-syad-perspectives family:control role:owns >>
 
 <<~/ahu >>
 
@@ -212,26 +101,6 @@ Mu does not hold:
 
 <<~/ahu >>
 
-<<~ ahu #return-to-threshold >>
-
-## Return — Threshold Socket
-
-<<~ pranala #to-agents ? -> lar:///AGENTS#after-mu-handoff >>
-
-```toml
-family = "control"
-lifecycle = "template"
-label = "yield-to-threshold"
-payload = { priority = "core", retain = true }
-```
-
-<<~/pranala >>
-
-The core membrane yields.
-The threshold continues.
-
-<<~/ahu >>
-
 <<~ॐ ँ&#x0003; ahu #body-close >>
 mu closes
 <<~/ahu >>
@@ -240,6 +109,9 @@ mu closes
 
 ## Edges
 
+<<~ pranala #implements-meme ? -> lar:///ha.ka.ba/api/v0.1/pono/meme family:control role:implements >>
+<<~ pranala #implements-loci ? -> lar:///ha.ka.ba/api/v0.1/pono/loci family:control role:implements >>
+<<~ pranala #implements-invariant ? -> lar:///ha.ka.ba/api/v0.1/pono/invariant family:control role:implements >>
 <<~ loulou lar:///ha.ka.ba/api/v0.1/mu/chao >>
 <<~ loulou lar:///ha.ka.ba/api/v0.1/mu/the-four-tools >>
 <<~ loulou lar:///ha.ka.ba/api/v0.1/mu/the-law-of-5s >>

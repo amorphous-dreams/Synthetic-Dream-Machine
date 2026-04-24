@@ -43,7 +43,7 @@ The compiler uses `role` to assign ownership hierarchy within each plane.
 |---|---|---|
 | `owns` | parent controls child lifetime | add to owned-hierarchy edges; topological sort parent before child |
 | `composes` | parent assembles child inline | treat as composition boundary in AST; seed composition frame in execution |
-| `instantiates` | template produces instance | template must resolve before instance seeds; record template → instance binding |
+| `implements` | source realizes interface contract | interface must resolve before carrier seeds; record carrier → interface binding |
 | `references` | weak pointer to peer | no ordering constraint; record as identity-plane adjacency |
 | `constrains` | imposes a rule on target | record as constraint-plane edge; validate after target resolves |
 

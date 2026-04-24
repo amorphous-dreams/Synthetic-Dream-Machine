@@ -13,11 +13,6 @@ register = "CS"
 manaoio = 0.74
 mana = 0.82
 manao = 0.78
-implements = [
-  "lar:///ha.ka.ba/api/v0.1/pono/meme",
-  "lar:///ha.ka.ba/api/v0.1/pono/loci",
-  "lar:///ha.ka.ba/api/v0.1/pono/invariant"
-]
 role = "invariant edge law"
 cacheable=true
 retain = true
@@ -70,8 +65,12 @@ A pranala SHOULD carry `traversal` and `propagation` when query direction and in
 A pranala MAY carry `cardinality` when the connection enforces a structural limit.
 A pranala MAY carry `payload`.
 
+TOML inside a pranala block carries payload, metadata, and template-overrides only.
+The pranala sigil and inline fields are the primary grammar.
+Omit the TOML block when `family` and `role` in the sigil express the full intent.
+
 `family` — what the edge *means*: relation, control, dataflow, message, constraint, observe.
-`role` — what the edge *does to lifecycle*: owns, references, composes, constrains, instantiates.
+`role` — what the edge *does to lifecycle*: owns, references, composes, constrains, implements.
 `traversal` — how a query *moves*: source-to-target, target-to-source, none.
 `propagation` — how invalidation *fires*: push-forward, push-back, pull, none.
 These four concerns are independent and MUST NOT collapse into each other.
@@ -143,7 +142,7 @@ Edge sigil syntactic sugar:
 * `references` — source observes target without lifecycle stake
 * `composes` — source layers opinion over target with strength ordering
 * `constrains` — source imposes a declarative rule on target without execution pulse
-* `instantiates` — source template binds target instance
+* `implements` — source realizes target interface contract; the interface defines the required surface; the carrier provides it
 
 `cardinality` — structural limit (MAY carry):
 * `one-to-one`
@@ -188,6 +187,9 @@ label = "parent owns child"
 
 <<~ ahu #edges >>
 
+<<~ pranala #implements-meme ? -> lar:///ha.ka.ba/api/v0.1/pono/meme family:control role:implements >>
+<<~ pranala #implements-loci ? -> lar:///ha.ka.ba/api/v0.1/pono/loci family:control role:implements >>
+<<~ pranala #implements-invariant ? -> lar:///ha.ka.ba/api/v0.1/pono/invariant family:control role:implements >>
 <<~ pranala #edge-ahu ? -> lar:///ha.ka.ba/api/v0.1/grammar/ahu family:relation >>
 <<~ pranala #edge-loulou ? -> lar:///ha.ka.ba/api/v0.1/grammar/loulou family:relation >>
 <<~ pranala #edge-aka ? -> lar:///ha.ka.ba/api/v0.1/grammar/aka family:relation >>

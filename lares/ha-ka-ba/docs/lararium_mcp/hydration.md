@@ -80,7 +80,7 @@ Submodules do not enter required-core; they attach through adapter lanes.
 | `constraint` | validation | strict acyclic | rule enforcement after target resolution |
 | `observe` | debug | strict acyclic | inspection/shadow surfaces; never blocks boot |
 
-Hydration-critical means `family = control` and `role` in `owns`, `composes`, or `instantiates`.
+Hydration-critical means `family = control` and `role` in `owns`, `composes`, or `implements`.
 `references` and `constrains` do not block initial resolution, though constraints must validate after targets resolve.
 
 <<~/ahu >>

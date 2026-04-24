@@ -79,7 +79,7 @@ Stored as a frozen dataclass so that edge records remain hashable and sortable.
 
 **Lifecycle values:** `template`, `instance`, `trace`
 
-**Role values:** `owns`, `references`, `composes`, `constrains`, `instantiates`, or `None`
+**Role values:** `owns`, `references`, `composes`, `constrains`, `implements`, or `None`
 
 **Cardinality values:** `one-to-one`, `one-to-many`, `many-to-one`, `many-to-many`, or `None`
 

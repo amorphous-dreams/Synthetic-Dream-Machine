@@ -155,7 +155,7 @@ Local invariant pressure from `lar:///ha.ka.ba/api/v0.1/pono/pranala` gives the 
 - explicit `from` and `to` sockets
 - DAG pressure by family
 - independent traversal and propagation
-- explicit lifecycle roles such as `owns`, `references`, `composes`, `constrains`, and `instantiates`
+- explicit lifecycle roles such as `owns`, `references`, `composes`, `constrains`, and `implements`
 
 That means the Lararium should not treat `pranala` as decorative link sugar.
 It should compile `pranala` into first-class graph edges that survive across graph layers.

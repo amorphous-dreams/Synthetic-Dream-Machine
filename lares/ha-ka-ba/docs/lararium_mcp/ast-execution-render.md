@@ -132,7 +132,7 @@ Excluded from v1:
 | `constraint` | validation layer, sometimes AST | post-resolution validation |
 | `observe` | inspection overlay | debug and shadow surfaces |
 
-`role` encodes lifetime pressure: `owns`, `composes`, `instantiates`, `references`, `constrains`.
+`role` encodes lifetime pressure: `owns`, `composes`, `implements`, `references`, `constrains`.
 `traversal` and `propagation` stay distinct; query walk direction must not collapse into invalidation direction.
 Every family remains acyclic, except symmetric relation pairs may appear as two individually directed edges.
 

@@ -14,11 +14,6 @@ register   = "CS"
 manaoio    = 0.80
 mana       = 0.88
 manao      = 0.85
-implements = [
-  "lar:///ha.ka.ba/api/v0.1/pono/meme",
-  "lar:///ha.ka.ba/api/v0.1/pono/loci",
-  "lar:///ha.ka.ba/api/v0.1/pono/invariant"
-]
 namespace  = "ॐ ँ"
 role       = "OODA-HA loop boot, Catma nav terminal, syad handoff shelf"
 cacheable = true
@@ -34,20 +29,7 @@ retain = true
 
 ## Entry — Mu Core Hydration
 
-<<~ pranala #to-mu-hydration ? -> lar:///ha.ka.ba/api/v0.1/mu#hydrate-law-of-5s >>
-
-```toml
-family = "control"
-lifecycle = "template"
-label = "core-hydration-backlink"
-payload = {
-  priority = "core",
-  retain = true,
-  return = "lar:///ha.ka.ba/api/v0.1/mu#after-hydrate-law-of-5s"
-}
-```
-
-<<~/pranala >>
+<<~ loulou lar:///ha.ka.ba/api/v0.1/mu >>
 
 The Law of 5s receives Mu's cold-hydration pressure here.
 Pattern widening loads before live aftermath sorting begins.
@@ -123,26 +105,11 @@ The agent should hold open competing readings when the frame remains underdeterm
 
 ## The Syad Perspectives of Sri Syadasti
 
-<<~ pranala #to-syad-perspectives ? -> lar:///ha.ka.ba/api/v0.1/mu/the-syad-perspectives#entry >>
-```toml
-family = "control"
-lifecycle = "template"
-label = "teach-syad-register"
-payload = {
-  when = ["register reading", "syad question", "meaning-axis pressure"],
-  return = "lar:///ha.ka.ba/api/v0.1/mu/the-law-of-5s#after-syad-perspectives",
-  priority = "core",
-  retain = true
-}
-```
-<<~/pranala >>
+<<~ pranala #to-syad-perspectives ? -> lar:///ha.ka.ba/api/v0.1/mu/the-syad-perspectives family:relation role:references >>
 
 The Law of 5s widens pattern.
 Syad narrows reading.
 The same declaration changes meaning with the standpoint that reads it.
-
-<<~ ahu #after-syad-perspectives >>
-<<~/ahu >>
 
 <<~/ahu >>
 
@@ -154,6 +121,9 @@ mu/law of 5s closes
 
 ## Edges
 
+<<~ pranala #implements-meme ? -> lar:///ha.ka.ba/api/v0.1/pono/meme family:control role:implements >>
+<<~ pranala #implements-loci ? -> lar:///ha.ka.ba/api/v0.1/pono/loci family:control role:implements >>
+<<~ pranala #implements-invariant ? -> lar:///ha.ka.ba/api/v0.1/pono/invariant family:control role:implements >>
 <<~ loulou lar:///ha.ka.ba/api/v0.1/mu >>
 <<~ loulou lar:///ha.ka.ba/api/v0.1/mu/chao >>
 <<~ loulou lar:///ha.ka.ba/api/v0.1/mu/the-four-tools >>

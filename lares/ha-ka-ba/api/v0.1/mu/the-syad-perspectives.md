@@ -14,11 +14,6 @@ register = "CS"
 manaoio = 0.86
 mana = 0.82
 manao = 0.88
-implements = [
-  "lar:///ha.ka.ba/api/v0.1/pono/meme",
-  "lar:///ha.ka.ba/api/v0.1/pono/loci",
-  "lar:///ha.ka.ba/api/v0.1/pono/invariant"
-]
 namespace = "ॐ ँ"
 role = "syad reading invariant, register metaphysics anchor, stance-conditioned confidence law"
 cacheable = true
@@ -34,20 +29,7 @@ retain = true
 
 ## Entry — Mu Core Hydration
 
-<<~ pranala #to-mu-hydration ? -> lar:///ha.ka.ba/api/v0.1/mu#hydrate-syad-perspectives >>
-
-```toml
-family = "control"
-lifecycle = "template"
-label = "core-hydration-backlink"
-payload = {
-  priority = "core",
-  retain = true,
-  return = "lar:///ha.ka.ba/api/v0.1/mu#after-hydrate-syad-perspectives"
-}
-```
-
-<<~/pranala >>
+<<~ loulou lar:///ha.ka.ba/api/v0.1/mu >>
 
 The Syad Perspectives receive Mu's cold-hydration pressure here.
 Register reading loads as core, not as an optional later flourish.
@@ -209,6 +191,9 @@ Discordian witness texts can also rest in library space.
 
 ## Edges
 
+<<~ pranala #implements-meme ? -> lar:///ha.ka.ba/api/v0.1/pono/meme family:control role:implements >>
+<<~ pranala #implements-loci ? -> lar:///ha.ka.ba/api/v0.1/pono/loci family:control role:implements >>
+<<~ pranala #implements-invariant ? -> lar:///ha.ka.ba/api/v0.1/pono/invariant family:control role:implements >>
 <<~ loulou lar:///ha.ka.ba/api/v0.1/mu >>
 <<~ loulou lar:///ha.ka.ba/api/v0.1/mu/chao >>
 <<~ loulou lar:///ha.ka.ba/api/v0.1/mu/the-four-tools >>

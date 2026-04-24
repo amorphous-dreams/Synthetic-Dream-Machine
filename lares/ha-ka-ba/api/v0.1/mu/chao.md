@@ -14,11 +14,6 @@ register   = "CS"
 manaoio    = 0.72
 mana       = 0.85
 manao      = 0.82
-implements = [
-  "lar:///ha.ka.ba/api/v0.1/pono/meme",
-  "lar:///ha.ka.ba/api/v0.1/pono/loci",
-  "lar:///ha.ka.ba/api/v0.1/pono/invariant"
-]
 namespace  = "ॐ ँ"
 role       = "sacred chao boot, ha/ka/ba triad instantiator, address-space semantics"
 cacheable = true
@@ -32,25 +27,12 @@ retain = true
 
 <<~ ahu #entry >>
 
-## Entry — Mu Core Hydration
-
-<<~ pranala #to-mu-hydration ? -> lar:///ha.ka.ba/api/v0.1/mu#hydrate-chao >>
-
-```toml
-family = "control"
-lifecycle = "template"
-label = "core-hydration-backlink"
-payload = {
-  priority = "core",
-  retain = true,
-  return = "lar:///ha.ka.ba/api/v0.1/mu#after-hydrate-chao"
-}
-```
-
-<<~/pranala >>
+## Entry
 
 The Chao receives Mu's cold-hydration pressure here.
 The triad becomes boot-addressable before any later branch turn.
+
+<<~ loulou lar:///ha.ka.ba/api/v0.1/mu >>
 
 <<~/ahu >>
 
@@ -189,6 +171,9 @@ mu/chao closes
 
 ## Edges
 
+<<~ pranala #implements-meme ? -> lar:///ha.ka.ba/api/v0.1/pono/meme family:control role:implements >>
+<<~ pranala #implements-loci ? -> lar:///ha.ka.ba/api/v0.1/pono/loci family:control role:implements >>
+<<~ pranala #implements-invariant ? -> lar:///ha.ka.ba/api/v0.1/pono/invariant family:control role:implements >>
 <<~ loulou lar:///ha.ka.ba/api/v0.1/mu >>
 <<~ loulou lar:///ha.ka.ba/api/v0.1/mu/the-four-tools >>
 <<~ loulou lar:///ha.ka.ba/api/v0.1/mu/the-law-of-5s >>
