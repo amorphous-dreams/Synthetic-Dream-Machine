@@ -1,0 +1,125 @@
+<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
+
+<<~&#x0001; ? -> lar:///ha.ka.ba/docs/lararium_mcp/sprint-ledger >>
+
+<<~ ahu #iam >>
+```toml
+uri-path     = "ha.ka.ba/docs/lararium_mcp/sprint-ledger"
+file-path    = "lares/ha-ka-ba/docs/lararium_mcp/sprint-ledger.md"
+content-type = "text/x-memetic-wikitext"
+tagspace     = "stable"
+register     = "CS"
+confidence   = 0.84
+mana         = 0.80
+manaoio      = 0.76
+manao        = 0.82
+implements   = [
+  "lar:///ha.ka.ba/api/v0.1/pono/meme",
+  "lar:///ha.ka.ba/api/v0.1/pono/loci"
+]
+role         = "canonical closed-sprint ledger and consumption map for Lararium MCP planning documents"
+source-consumes = [
+  "lares/ha-ka-ba/docs/mcp/sprints/SPRINT-00_FOUNDATION.md",
+  "lares/ha-ka-ba/docs/mcp/sprints/SPRINT-01_HYDRATION_SLICE.md",
+  "lares/ha-ka-ba/docs/mcp/sprints/SPRINT-02_LOCAL_CLIENTS.md"
+]
+status-date  = "2026-04-23"
+```
+<<~/ahu >>
+
+<<~&#x0002; ahu #meme-body-open >>
+lararium_mcp/sprint-ledger opens
+<<~/ahu >>
+
+<<~ ahu #ooda-ha >>
+✶ observe: the closed sprint docs mostly name exits and pointers to design contracts.
+⏿ orient: canonical children now carry the durable design content; this ledger carries completion memory.
+◇ decide: keep closed sprint outcomes compact and point each consumed source to its new locus.
+▶ act: mark Sprint-00 through Sprint-02 as consumed; keep Sprint-03 live outside this ledger.
+⤴ verify: every closed-sprint exit marker appears here or in the child locus named by the map.
+↺ adapt: future sprint docs enter this ledger only after closure.
+<<~/ahu >>
+
+<<~ ahu #closed-sprints >>
+## Closed Sprint Outcomes
+
+| Sprint | Window | Goal | Exit contraction |
+|---|---|---|---|
+| SPRINT-00 | 2026-04-23 → 2026-05-02 | contraction, inventory, boundary | submodule matrix, TiddlyWiki filter boundary, boot inventory, edge taxonomy, artifact contract closed |
+| SPRINT-01 | 2026-05-03 → 2026-05-16 | hydration compiler slice | closure algorithm demonstrated, boot examples committed, AST/TW/pranala design added, local resource spine started |
+| SPRINT-02 | 2026-05-17 → 2026-05-30 | local client surfaces | prompts, tools, VS Code, Claude Code, Codex local config, and adapter contract closed |
+
+Dates come from planning documents; closure happened in the current repo state on April 23, 2026.
+
+<<~/ahu >>
+
+<<~ ahu #consumption-map >>
+## Consumed Source Map
+
+| Source | Canonical locus |
+|---|---|
+| `README.md` | `spine` |
+| `ARCHITECTURE.md` | `spine` |
+| `CARRIER_LAW_BUNDLE.md` | `carrier-law` |
+| `BOOT_LOCI_INVENTORY.md` | `hydration` |
+| `EDGE_TAXONOMY.md` | `hydration` |
+| `HYDRATION_ARTIFACT_CONTRACT.md` | `hydration` |
+| `TW_FILTER_BOUNDARY.md` | `ast-execution-render` |
+| `AST_ENVELOPE.md` | `ast-execution-render` |
+| `TW_AST_MAPPING.md` | `ast-execution-render` |
+| `PRANALA_ALIGNMENT.md` | `ast-execution-render` |
+| `EXECUTION_GRAPH_SCHEMA.md` | `ast-execution-render` |
+| `RENDER_PROJECTION_CONTRACT.md` | `ast-execution-render` |
+| `SUBMODULE_ADAPTER_INTERFACE.md` | `adapters` |
+| `SUBMODULE_INTEGRATION_MATRIX.md` | `adapters` |
+| `mempalace.md` | `adapters` |
+| `subtasks/MCP-SUBTASK-007_MEMPALACE_LANE.md` | `adapters` |
+| `SPRINT-00_FOUNDATION.md` | `sprint-ledger` + child design loci |
+| `SPRINT-01_HYDRATION_SLICE.md` | `sprint-ledger` + child design loci |
+| `SPRINT-02_LOCAL_CLIENTS.md` | `sprint-ledger` + `local-clients` |
+
+Active or not-yet-consumed sources: `SPRINT-03_REMOTE_SURFACES.md`, `SPRINT-04_HARDENING.md`, `ROADMAP.md`, `BACKLOG.md`, `WORK_TRACKING.md`, active todo story/task/subtask documents, and research notes.
+
+<<~/ahu >>
+
+<<~ ahu #done-story-index >>
+## Done Story Index
+
+These done stories have their durable content represented by the canonical loci above or by the implemented code they point at:
+
+| Story | Canonical landing |
+|---|---|
+| MCP-STORY-101, 102, 103 | `hydration` |
+| MCP-STORY-104, 204 | `adapters` |
+| MCP-STORY-105, 106, 107, 108 | `ast-execution-render` |
+| MCP-STORY-109, 110, 111 | `carrier-law`, `hydration`, `spine` |
+| MCP-STORY-201, 202, 203 | `hydration`, `local-clients` |
+| MCP-STORY-401, 402, 403 | `local-clients` |
+
+Individual story stubs may remain as issue-style trace records; they no longer need to carry design truth.
+
+<<~/ahu >>
+
+<<~ ahu #residue >>
+## Residue
+
+- Sprint-03 carries remote transport, auth/scope policy, evals, and pranala DAG walking.
+- Sprint-04 carries hardening and operations.
+- When a future sprint closes, add one row here and mark its source file consumed.
+
+<<~/ahu >>
+
+<<~&#x0003; ahu #body-close >>
+lararium_mcp/sprint-ledger closes
+<<~/ahu >>
+
+<<~ ahu #edges >>
+## Edges
+
+<<~ loulou lar:///ha.ka.ba/docs/lararium_mcp/spine >>
+<<~ loulou lar:///ha.ka.ba/docs/lararium_mcp/local-clients >>
+<<~ loulou lar:///ha.ka.ba/docs/lararium_mcp/hydration >>
+
+<<~/ahu >>
+
+<<~&#x0004; -> ? >>

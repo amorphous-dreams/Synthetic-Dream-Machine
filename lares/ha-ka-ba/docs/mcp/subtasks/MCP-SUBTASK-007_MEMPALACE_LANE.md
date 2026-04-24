@@ -1,3 +1,8 @@
+> [!IMPORTANT]
+> Consumption status: fully-consumed on 2026-04-23.
+> Canonical loci-meme: `lar:///ha.ka.ba/docs/lararium_mcp/adapters`.
+> This non-meme markdown source may become a safe-delete candidate after link checks confirm no required references remain.
+
 # Subtask: MCP-SUBTASK-007 — Map MemPalace contribution lane
 
 Parent task: `MCP-TASK-012`

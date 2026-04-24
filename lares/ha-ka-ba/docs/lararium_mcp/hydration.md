@@ -1,0 +1,177 @@
+<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
+
+<<~&#x0001; ? -> lar:///ha.ka.ba/docs/lararium_mcp/hydration >>
+
+<<~ ahu #iam >>
+```toml
+uri-path     = "ha.ka.ba/docs/lararium_mcp/hydration"
+file-path    = "lares/ha-ka-ba/docs/lararium_mcp/hydration.md"
+content-type = "text/x-memetic-wikitext"
+tagspace     = "stable"
+register     = "CS"
+confidence   = 0.87
+mana         = 0.85
+manaoio      = 0.80
+manao        = 0.84
+implements   = [
+  "lar:///ha.ka.ba/api/v0.1/pono/meme",
+  "lar:///ha.ka.ba/api/v0.1/pono/loci"
+]
+role         = "canonical hydration closure, edge taxonomy, artifact, resolver, and resource contract"
+source-consumes = [
+  "lares/ha-ka-ba/docs/mcp/BOOT_LOCI_INVENTORY.md",
+  "lares/ha-ka-ba/docs/mcp/EDGE_TAXONOMY.md",
+  "lares/ha-ka-ba/docs/mcp/HYDRATION_ARTIFACT_CONTRACT.md"
+]
+status-date  = "2026-04-23"
+```
+<<~/ahu >>
+
+<<~&#x0002; ahu #meme-body-open >>
+lararium_mcp/hydration opens
+<<~/ahu >>
+
+<<~ ahu #ooda-ha >>
+✶ observe: AGENTS names a 14-locus required-core closure and boot-critical control sockets.
+⏿ orient: minimal boot must stay deterministic; full boot waits on true pranala graph traversal.
+◇ decide: preserve flat required-core truth now, while naming the edge taxonomy that will replace static walking.
+▶ act: bind closure inventory, edge rules, artifact schemas, and MCP resource exposure here.
+⤴ verify: every required-core locus resolves on disk at the status date.
+↺ adapt: stale static maps receive drift tests until the pranala DAG compiler lands.
+<<~/ahu >>
+
+<<~ ahu #required-core >>
+## Required-Core Closure
+
+Entry: `lar:///AGENTS`.
+All 14 loci below must resolve before threshold yield.
+
+| # | URI | File path | Hydration socket |
+|---:|---|---|---|
+| 1 | `lar:///AGENTS` | `lares/AGENTS.md` | entry |
+| 2 | `lar:///ha.ka.ba/api/v0.1/pono/e-prime` | `lares/ha-ka-ba/api/v0.1/pono/e-prime.md` | `AGENTS#preload-e-prime` |
+| 3 | `lar:///ha.ka.ba/api/v0.1/pono/ooda-ha` | `lares/ha-ka-ba/api/v0.1/pono/ooda-ha.md` | `AGENTS#preload-ooda-ha` |
+| 4 | `lar:///ha.ka.ba/api/v0.1/pono/lar-uri` | `lares/ha-ka-ba/api/v0.1/pono/lar-uri.md` | `AGENTS#preload-lar-uri` |
+| 5 | `lar:///ha.ka.ba/api/v0.1/mu` | `lares/ha-ka-ba/api/v0.1/mu.md` | `AGENTS#threshold-to-mu` |
+| 6 | `lar:///ha.ka.ba/api/v0.1/mu/chao` | `lares/ha-ka-ba/api/v0.1/mu/chao.md` | Mu internal hydration |
+| 7 | `lar:///ha.ka.ba/api/v0.1/mu/the-four-tools` | `lares/ha-ka-ba/api/v0.1/mu/the-four-tools.md` | Mu internal hydration |
+| 8 | `lar:///ha.ka.ba/api/v0.1/mu/the-law-of-5s` | `lares/ha-ka-ba/api/v0.1/mu/the-law-of-5s.md` | Mu internal hydration |
+| 9 | `lar:///ha.ka.ba/api/v0.1/mu/the-syad-perspectives` | `lares/ha-ka-ba/api/v0.1/mu/the-syad-perspectives.md` | Mu internal hydration |
+| 10 | `lar:///ha.ka.ba/api/v0.1/lararium` | `lares/ha-ka-ba/api/v0.1/lararium.md` | `AGENTS#threshold-to-lararium` |
+| 11 | `lar:///ha.ka.ba/api/v0.1/lararium/hud` | `lares/ha-ka-ba/api/v0.1/lararium/hud.md` | Lararium internal hydration |
+| 12 | `lar:///ha.ka.ba/api/v0.1/lararium/voices` | `lares/ha-ka-ba/api/v0.1/lararium/voices.md` | Lararium internal hydration |
+| 13 | `lar:///ha.ka.ba/api/v0.1/lararium/continuity` | `lares/ha-ka-ba/api/v0.1/lararium/continuity.md` | Lararium internal hydration |
+| 14 | `lar:///LARES` | `lares/LARES.md` | `AGENTS#continue-to-lares` |
+
+Mu and Lararium hydrate their declared children before yielding.
+Submodules do not enter required-core; they attach through adapter lanes.
+
+<<~/ahu >>
+
+<<~ ahu #edge-taxonomy >>
+## Edge Taxonomy for Hydration
+
+| Family | Hydration tier | DAG pressure | Compiler role |
+|---|---|---|---|
+| `control` | boot-critical | strict acyclic | gates hydration order and lifetime |
+| `relation` | optional | strict acyclic per pair | semantic adjacency after identity settles |
+| `dataflow` | runtime | strict acyclic | live value transport; excluded from minimal boot |
+| `message` | runtime | strict acyclic | event routing; excluded from minimal boot |
+| `constraint` | validation | strict acyclic | rule enforcement after target resolution |
+| `observe` | debug | strict acyclic | inspection/shadow surfaces; never blocks boot |
+
+Hydration-critical means `family = control` and `role` in `owns`, `composes`, or `instantiates`.
+`references` and `constrains` do not block initial resolution, though constraints must validate after targets resolve.
+
+<<~/ahu >>
+
+<<~ ahu #boot-walk >>
+## Boot Walk Rules
+
+Minimal boot:
+
+1. start from entry locus
+2. walk only `control` edges whose roles own or compose hydration
+3. collect reachable loci
+4. resolve in topological order
+5. stop when required-core closes
+
+Full boot target:
+
+1. walk all `control` edges
+2. walk `relation` edges one hop from each control-reachable locus
+3. collect and resolve in topological order
+4. reject DAG violations
+5. materialize edge, interface, and invariant indexes
+
+Current implementation still uses static required-core and carrier-index scans in places.
+`StaticMapDriftTests` guard those maps until the true pranala walker replaces them.
+
+<<~/ahu >>
+
+<<~ ahu #artifact-contract >>
+## Hydration Artifact Contract
+
+| Artifact | Scope | MCP resource | Required fields |
+|---|---|---|---|
+| minimal boot | 14-locus required-core closure | `lar:///boot/minimal` | `artifact`, `compiled_at`, `entry`, `closure`, `locus_count`, `validation` |
+| full boot | control + relation reachable closure | `lar:///boot/full` | minimal fields plus `edge_count`, `pranala_edges`, `interface_index`, `invariant_index` |
+| boot receipt | digest summary of minimal boot | `lar:///boot/receipt` | `artifact`, `compiled_at`, `entry`, `mode`, `locus_count`, `sha256`, `validation` |
+
+Each closure entry carries URI, relative file path, kind, virtual flag, existence, role, hydration socket, implements bundle, and depth.
+The receipt digest hashes the serialized closure JSON rather than source files; clients can use it as a cache and drift key.
+
+<<~/ahu >>
+
+<<~ ahu #resource-exposure >>
+## Resource Exposure
+
+| URI | Type | Reading |
+|---|---|---|
+| `lar:///AGENTS` | file-backed caps root | threshold constitution |
+| `lar:///LARES` | file-backed caps root | session configuration surface |
+| `lar:///ha.ka.ba/**` | file-backed stable tuple root | carrier source truth |
+| `lar:///INDEXES/carriers` | virtual JSON | all carrier records |
+| `lar:///INDEXES/interfaces` | virtual JSON | interface URI → carrier URI list |
+| `lar:///INDEXES/invariants` | virtual JSON | invariant carriers |
+| `lar:///boot/minimal` | virtual JSON | required-core artifact |
+| `lar:///boot/full` | virtual JSON | full carrier artifact |
+| `lar:///boot/receipt` | virtual JSON | sha256 receipt |
+
+`lar:///graph/closure?...` remains contract residue until graph resources land.
+
+<<~/ahu >>
+
+<<~ ahu #compaction >>
+## Compaction Rule
+
+If a hydration packet grows past context limits, keep closure entries in full, keep control edges before other edge classes, replace large interface/invariant index bodies with counts, and record the loss in `compaction_notes`.
+Minimal boot should remain small enough to avoid compaction.
+
+<<~/ahu >>
+
+<<~ ahu #residue >>
+## Residue
+
+- Full pranala DAG traversal remains Sprint-03 carry-in work.
+- `lar:///boot/full` edge materialization should stop reporting empty edge data once the walker lands.
+- MemPalace persistence of boot receipts remains policy-gated until write lanes receive approval law.
+
+<<~/ahu >>
+
+<<~&#x0003; ahu #body-close >>
+lararium_mcp/hydration closes
+<<~/ahu >>
+
+<<~ ahu #edges >>
+## Edges
+
+<<~ loulou lar:///AGENTS >>
+<<~ loulou lar:///LARES >>
+<<~ loulou lar:///ha.ka.ba/api/v0.1/pono/pranala >>
+<<~ loulou lar:///ha.ka.ba/docs/lararium_mcp/carrier-law >>
+<<~ loulou lar:///ha.ka.ba/docs/lararium_mcp/ast-execution-render >>
+
+<<~/ahu >>
+
+<<~&#x0004; -> ? >>

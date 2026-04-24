@@ -1,3 +1,8 @@
+> [!IMPORTANT]
+> Consumption status: fully-consumed on 2026-04-23.
+> Canonical loci-meme: `lar:///ha.ka.ba/docs/lararium_mcp/sprint-ledger`.
+> This non-meme markdown source may become a safe-delete candidate after link checks confirm no required references remain.
+
 # Sprint: SPRINT-00 — Contraction, Inventory, and Boundary
 
 Window: **2026-04-23 -> 2026-05-02**

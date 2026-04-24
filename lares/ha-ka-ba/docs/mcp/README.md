@@ -1,3 +1,8 @@
+> [!IMPORTANT]
+> Consumption status: fully-consumed on 2026-04-23.
+> Canonical loci-meme: `lar:///ha.ka.ba/docs/lararium_mcp/spine`.
+> This non-meme markdown source may become a safe-delete candidate after link checks confirm no required references remain.
+
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
 
 # MCP — Lararium Delivery Shelf

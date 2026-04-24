@@ -12,7 +12,7 @@ confidence   = 0.88
 mana         = 0.80
 manaoio      = 0.76
 manao        = 0.82
-role         = "docs-spec locus for the Lararium MCP server — running state, features, templates, known gaps"
+role         = "docs-spec parent locus for the Lararium MCP server — index, running state, canonical child loci, known gaps"
 implements   = [
   "lar:///ha.ka.ba/api/v0.1/pono/meme",
 ]
@@ -21,7 +21,7 @@ server-version = "0.1.0"
 protocol-versions = ["2025-11-25", "2025-06-18", "2025-03-26", "2024-11-05"]
 entry-point  = "python3 -m lares.lararium_mcp"
 test-suite   = "python3 -m unittest discover -s lares/lararium_mcp/tests"
-test-count   = 55
+test-count   = 77
 ```
 <<~/ahu >>
 
@@ -167,19 +167,44 @@ lares/lararium_mcp/
   prompts.py        prompt catalog, get_prompt message builders
   server.py         JSON-RPC stdio loop, all method handlers
   diagnostics.py    Diagnostic dataclass
+  adapters/
+    __init__.py     adapter package marker
+    mempalace.py    MemPalace sidecar JSON-RPC stdio client
   tests/
-    test_carrier_spine.py   9 smoke tests (resolver, ingress, indexes, MCP wire)
-    test_compiler.py        26 tests (minimal/full boot, receipt, MCP tools/resources)
-    test_prompts.py         20 tests (catalog, get, MCP prompts/list, prompts/get)
+    test_carrier_spine.py       9 smoke tests (resolver, ingress, indexes, MCP wire)
+    test_compiler.py           34 tests (minimal/full boot, receipt, MCP tools/resources, static-map drift)
+    test_mempalace_adapter.py  14 tests (mocked sidecar lifecycle/protocol/wrappers)
+    test_prompts.py            20 tests (catalog, get, MCP prompts/list, prompts/get)
 ```
+
+<<~/ahu >>
+
+<<~ ahu #canonical-child-loci >>
+
+## Canonical Child Loci
+
+The durable MCP design now lives under `lares/ha-ka-ba/docs/lararium_mcp/**` as memetic-wikitext loci:
+
+| Locus | Canonical role |
+|---|---|
+| `spine` | program frame, architecture contraction, namespace posture |
+| `carrier-law` | meme, invariant, memetic-wikitext, loci, and interface bundle compiler pressure |
+| `hydration` | required-core closure, edge taxonomy, artifact contract, resource exposure |
+| `ast-execution-render` | AST envelope, TiddlyWiki boundary, pranala planes, execution graph, render projection |
+| `adapters` | submodule adapter interface, submodule lane map, MemPalace sidecar contract |
+| `local-clients` | VS Code, Claude Code, Codex, prompt catalog, read-only tool façade |
+| `sprint-ledger` | closed Sprint-00/01/02 contraction and consumed-source map |
+
+Legacy non-meme design docs in `docs/mcp/` that contributed content now carry consumed markers.
+Active Sprint-03, roadmap, backlog, and todo work-tracking files remain live planning surfaces.
 
 <<~/ahu >>
 
 <<~ ahu #contract-docs >>
 
-## Contract Documents
+## Legacy Contract Documents
 
-Checked-in design contracts under `lares/ha-ka-ba/docs/mcp/`:
+Checked-in design contracts under `lares/ha-ka-ba/docs/mcp/` now act as consumed source/reference stubs:
 
 | Document | Covers |
 |---|---|
@@ -303,7 +328,13 @@ lararium_mcp docs-spec closes
 
 ## Edges
 
-<<~ loulou lar:///ha.ka.ba/docs/mcp/ARCHITECTURE >>
+<<~ loulou lar:///ha.ka.ba/docs/lararium_mcp/spine >>
+<<~ loulou lar:///ha.ka.ba/docs/lararium_mcp/carrier-law >>
+<<~ loulou lar:///ha.ka.ba/docs/lararium_mcp/hydration >>
+<<~ loulou lar:///ha.ka.ba/docs/lararium_mcp/ast-execution-render >>
+<<~ loulou lar:///ha.ka.ba/docs/lararium_mcp/adapters >>
+<<~ loulou lar:///ha.ka.ba/docs/lararium_mcp/local-clients >>
+<<~ loulou lar:///ha.ka.ba/docs/lararium_mcp/sprint-ledger >>
 <<~ loulou lar:///ha.ka.ba/api/v0.1/lararium >>
 
 <<~/ahu >>
