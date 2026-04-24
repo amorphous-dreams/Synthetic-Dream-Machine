@@ -1,20 +1,24 @@
+# Local environments / dependency installs
 .venv/
 .bundle/
 vendor/
+
+# Generated site/build output
 _site/
 _becmi/
 _todo/_page_renders/.cache/
 
+# Generated media / archives
 **/hires_*
-**.zip
+*.zip
 
-# Ignore Python bytecode files
-*.pyc
-# Ignore __pycache__ directories recursively
+# Python bytecode / caches
 __pycache__/
-# Ignore .pyo and .pyd files as well
-*.pyo
-*.pyd
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
 
 # Python packaging/build artifacts
 *.egg-info/
