@@ -270,10 +270,11 @@ For a foreground/manual daemon:
 ollama serve
 ```
 
-Then open a second terminal and warm a coding model:
+Then open a second terminal and warm a model that fits your machine:
 
 ```bash
-ollama run qwen3-coder-next:latest "Reply with ready."
+OLLAMA_SMOKE_MODEL="${OLLAMA_SMOKE_MODEL:-qwen3.6:27b}"
+ollama run "$OLLAMA_SMOKE_MODEL" "Reply with ready."
 ```
 
 Confirm that the model is currently loaded:
@@ -285,7 +286,7 @@ ollama ps
 Stop a running model when needed:
 
 ```bash
-ollama stop qwen3-coder-next:latest
+ollama stop "$OLLAMA_SMOKE_MODEL"
 ```
 
 Useful distinction:
@@ -302,8 +303,9 @@ For VS Code Insiders + Copilot local models, the important requirement is that t
 Quick local smoke test:
 
 ```bash
+OLLAMA_SMOKE_MODEL="${OLLAMA_SMOKE_MODEL:-qwen3.6:27b}"
 ollama ps
-ollama run qwen3-coder-next:latest "Reply with ready."
+ollama run "$OLLAMA_SMOKE_MODEL" "Reply with ready."
 ollama ps
 ```
 
