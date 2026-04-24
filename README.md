@@ -192,7 +192,7 @@ If that happens, run this from PowerShell:
 wsl.exe --shutdown
 wsl
 cd ~/Synthetic-Dream-Machine
-code-insiders .
+code-insiders Synthetic-Dream-Machine.code-workspace
 ```
 
 Then reopen WSL, return to the repo, reactivate `.venv` if needed, and rerun:
