@@ -13,6 +13,7 @@ import traceback
 from collections.abc import Callable
 from typing import Any
 
+from .compiler import compile_boot_receipt, compile_full_boot, compile_minimal_boot
 from .resources import ResourceEntry, inspect_carrier, inspect_resolution, list_lar_resources, read_lar_resource_or_index
 from .tools import (
     inspect_carrier_tool,
@@ -122,8 +123,26 @@ TOOL_HANDLERS: dict[str, Callable[[dict[str, object]], object]] = {
     "lararium.read_lar_resource": lambda args: read_lar_resource_tool(_require_string(args, "uri")),
     "lararium.list_lar_resources": lambda args: list_lar_carriers_tool(),
     "lararium.inspect_carrier": lambda args: inspect_carrier_tool(_require_string(args, "uri")),
+    "lararium.compile_minimal_boot": lambda args: compile_minimal_boot(
+        str(args["entry"]) if isinstance(args.get("entry"), str) else "lar:///AGENTS"
+    ),
+    "lararium.compile_full_boot": lambda args: compile_full_boot(
+        str(args["entry"]) if isinstance(args.get("entry"), str) else "lar:///AGENTS"
+    ),
+    "lararium.compile_boot_receipt": lambda args: compile_boot_receipt(compile_minimal_boot()),
 }
 
+
+_OPTIONAL_ENTRY_SCHEMA: dict[str, object] = {
+    "type": "object",
+    "properties": {
+        "entry": {
+            "type": "string",
+            "description": "Entry URI for the boot closure. Defaults to lar:///AGENTS.",
+        }
+    },
+    "additionalProperties": False,
+}
 
 TOOL_DEFINITIONS: tuple[dict[str, object], ...] = (
     {
@@ -152,6 +171,38 @@ TOOL_DEFINITIONS: tuple[dict[str, object], ...] = (
         "title": "Inspect carrier",
         "description": "Inspect carrier metadata, implements bundle, shape diagnostics, rating posture, and depth state.",
         "inputSchema": _uri_schema("A file-backed Lararium carrier URI."),
+        "annotations": {"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True},
+    },
+    {
+        "name": "lararium.compile_minimal_boot",
+        "title": "Compile minimal boot",
+        "description": (
+            "Compile the minimal boot closure from the AGENTS required-core. "
+            "Returns a boot artifact with resolved loci, roles, implements bundles, and validation. "
+            "Use this when you need the smallest lawful hydration set for cold-start context."
+        ),
+        "inputSchema": _OPTIONAL_ENTRY_SCHEMA,
+        "annotations": {"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True},
+    },
+    {
+        "name": "lararium.compile_full_boot",
+        "title": "Compile full boot",
+        "description": (
+            "Compile the full boot closure: required-core plus all indexed carriers. "
+            "Returns a boot artifact with the complete reachable carrier graph. "
+            "Use this when you need the full hydrated graph for inspection or drift detection."
+        ),
+        "inputSchema": _OPTIONAL_ENTRY_SCHEMA,
+        "annotations": {"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True},
+    },
+    {
+        "name": "lararium.compile_boot_receipt",
+        "title": "Compile boot receipt",
+        "description": (
+            "Compile a boot receipt: a sha256-digested summary of the current minimal boot closure. "
+            "Use this for cache invalidation, drift detection, or continuity persistence."
+        ),
+        "inputSchema": {"type": "object", "additionalProperties": False},
         "annotations": {"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True},
     },
 )

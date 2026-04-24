@@ -9,24 +9,20 @@ Cadence assumption: one-week planning rhythm / two-week implementation rhythm.
 
 ### Now
 
-- tighten the program around one compiler core
-- harden the `lares/`-native read-only MCP server launch path
-- inventory boot loci and current submodules
-- classify every submodule contribution lane
-- define TiddlyWiki Filter Language import boundary
-- extract the pranala family-to-graph-plane table from current API/docs loci
-- lock the AST envelope and execution-graph contract
-- settle hydration artifact contract
-- keep drafting in talk story where the braid still needs reading
-- convert settled braid into refine-consume artifacts
+Sprint-00 complete. Sprint-01 focus:
+
+- implement deterministic closure compiler (MCP-STORY-103, MCP-TASK-004)
+- add client launch configs for the local stdio MCP server (MCP-STORY-201 polish)
+- design submodule adapter interface (MCP-STORY-204, MCP-TASK-014)
+- lock AST envelope and execution-graph contract (MCP-STORY-106, MCP-STORY-107)
+- draft render projection contract for DOM, tldraw, and scene-graph targets (MCP-STORY-108)
+- expose read-only resources through named client launch paths
 
 ### Next
 
-- implement deterministic closure
-- add client launch configs for the local stdio MCP server
-- design submodule adapter interface
-- expose read-only resources and tools locally
-- draft render projection contract for DOM, tldraw, and scene-graph targets
+- wire three local chat surfaces (VS Code, Claude Code, Codex)
+- expose remote read-only server
+- expose hydration prompts and portability tools
 
 ### Completed in this pass
 
@@ -37,6 +33,12 @@ Cadence assumption: one-week planning rhythm / two-week implementation rhythm.
 - consumed `implements` bundles into interface-index planning
 - seeded `lares/lararium_mcp/` with resolver, carrier ingress, indexes, resources, and read-only tool façade
 - bound the spine to a dependency-light stdio MCP JSON-RPC server
+- wrote and committed `BOOT_LOCI_INVENTORY.md` (MCP-TASK-001)
+- wrote and committed `EDGE_TAXONOMY.md` (MCP-TASK-002)
+- wrote and committed `HYDRATION_ARTIFACT_CONTRACT.md` (MCP-TASK-003)
+- wrote and committed `TW_FILTER_BOUNDARY.md` (MCP-TASK-013)
+- confirmed `SUBMODULE_INTEGRATION_MATRIX.md` complete (MCP-TASK-011, MCP-TASK-012)
+- closed MCP-STORY-101, MCP-STORY-102, MCP-STORY-104, MCP-STORY-105 as done
 
 ### Later
 

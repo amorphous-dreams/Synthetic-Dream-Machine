@@ -21,7 +21,9 @@ Goal: tighten scope, inventory the graph and submodules, and define hydration pl
 
 ## Sprint exit markers
 
-- submodule matrix committed
-- direct-import boundary for TiddlyWiki Filter Language committed
-- inventory story complete or narrowed with residue logged
-- artifact contract draft linked from architecture docs
+- submodule matrix committed ✓ (`SUBMODULE_INTEGRATION_MATRIX.md`)
+- direct-import boundary for TiddlyWiki Filter Language committed ✓ (`TW_FILTER_BOUNDARY.md`)
+- inventory story complete or narrowed with residue logged ✓ (`BOOT_LOCI_INVENTORY.md`, `EDGE_TAXONOMY.md`)
+- artifact contract draft linked from architecture docs ✓ (`HYDRATION_ARTIFACT_CONTRACT.md`)
+
+All exit markers met. Sprint-00 closed.

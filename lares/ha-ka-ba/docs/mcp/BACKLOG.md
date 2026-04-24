@@ -26,7 +26,7 @@ Legend:
 |---|---|---|---:|---:|---|
 | MCP-STORY-101 | Inventory Lararium boot loci, edge classes, and submodule attachments | MCP-EPIC-01 | done | M | SPRINT-00 |
 | MCP-STORY-102 | Define hydration artifact contract | MCP-EPIC-01 | done | M | SPRINT-00 |
-| MCP-STORY-103 | Implement deterministic closure compiler | MCP-EPIC-01 | todo | L | SPRINT-01 |
+| MCP-STORY-103 | Implement deterministic closure compiler | MCP-EPIC-01 | done | L | SPRINT-01 |
 | MCP-STORY-104 | Define submodule integration contract | MCP-EPIC-01 | done | M | SPRINT-00 |
 | MCP-STORY-105 | Define direct-import boundary for TiddlyWiki Filter Language | MCP-EPIC-01 | done | S | SPRINT-00 |
 | MCP-STORY-106 | Lock memetic-wikitext and guest-grammar AST envelope | MCP-EPIC-01 | ready | M | SPRINT-00 / SPRINT-01 |
@@ -56,7 +56,7 @@ Legend:
 | MCP-TASK-001 | Create canonical inventory of boot-critical loci and submodules | MCP-STORY-101 | done | S |
 | MCP-TASK-002 | Define edge taxonomy and precedence table | MCP-STORY-101 | done | S |
 | MCP-TASK-003 | Draft artifact JSON / markdown contract | MCP-STORY-102 | done | S |
-| MCP-TASK-004 | Design closure compiler algorithm | MCP-STORY-103 | todo | M |
+| MCP-TASK-004 | Design closure compiler algorithm | MCP-STORY-103 | done | M |
 | MCP-TASK-005 | Implement `resources/list` and `resources/read` | MCP-STORY-201 | done | M |
 | MCP-TASK-006 | Design prompt catalog and arguments | MCP-STORY-202 | todo | S |
 | MCP-TASK-007 | Design tool façade with read-only hints | MCP-STORY-203 | todo | S |
