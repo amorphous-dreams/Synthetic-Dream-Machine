@@ -13,8 +13,11 @@ lares/lararium_mcp/resolver.py
 lares/lararium_mcp/resources.py
 lares/lararium_mcp/server.py
 lares/lararium_mcp/tools.py
+lares/lararium_mcp/adapters/__init__.py
+lares/lararium_mcp/adapters/mempalace.py
 lares/lararium_mcp/tests/test_carrier_spine.py
 lares/lararium_mcp/tests/test_compiler.py
+lares/lararium_mcp/tests/test_mempalace_adapter.py
 lares/lararium_mcp/tests/test_prompts.py
 lares/lares.egg-info/PKG-INFO
 lares/lares.egg-info/SOURCES.txt

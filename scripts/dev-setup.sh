@@ -26,7 +26,12 @@ if [ -f .gitmodules ]; then
 fi
 
 log "Upgrading packaging tools"
-python -m pip install --upgrade pip setuptools wheel
+python -m pip install --upgrade pip setuptools
+
+# Do not force-upgrade wheel on Debian/Ubuntu venvs.
+# Some venvs inherit an apt-seeded wheel package without pip RECORD metadata,
+# which makes `pip install --upgrade wheel` fail.
+python -m pip show wheel >/dev/null 2>&1 || python -m pip install wheel
 
 log "Installing package in editable dev mode"
 python -m pip install -e '.[dev]'
