@@ -17,10 +17,6 @@ register = "SC"
 manaoio = 0.69
 mana = 0.71
 manao = 0.77
-implements = [
-  "lar:///ha.ka.ba/api/v0.1/pono/meme",
-  "lar:///ha.ka.ba/api/v0.1/pono/loci"
-]
 role = "invariant skill, conformance checker, and sidecar splitter"
 covers = [
   "lar:///ha.ka.ba/api/v0.1/pono/invariant"
@@ -283,6 +279,8 @@ Invariant-meme operator closes here.
 <<~ loulou lar:///ha.ka.ba/api/v0.1/pono/invariant >>
 <<~ loulou lar:///ha.ka.ba/api/v0.1/pono >>
 
+<<~ pranala #implements-meme ? -> lar:///ha.ka.ba/api/v0.1/pono/meme family:control role:implements >>
+<<~ pranala #implements-loci ? -> lar:///ha.ka.ba/api/v0.1/pono/loci family:control role:implements >>
 <<~/ahu >>
 
 

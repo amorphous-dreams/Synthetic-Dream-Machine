@@ -13,10 +13,6 @@ confidence   = 0.86
 mana         = 0.82
 manaoio      = 0.78
 manao        = 0.84
-implements   = [
-  "lar:///ha.ka.ba/api/v0.1/pono/meme",
-  "lar:///ha.ka.ba/api/v0.1/pono/loci"
-]
 role         = "canonical Lararium MCP program spine and architecture contraction"
 source-consumes = [
   "lares/ha-ka-ba/docs/mcp/README.md",
@@ -154,6 +150,8 @@ lararium_mcp/spine closes
 <<~ loulou lar:///ha.ka.ba/docs/lararium_mcp/local-clients >>
 <<~ loulou lar:///ha.ka.ba/docs/lararium_mcp/sprint-ledger >>
 
+<<~ pranala #implements-meme ? -> lar:///ha.ka.ba/api/v0.1/pono/meme family:control role:implements >>
+<<~ pranala #implements-loci ? -> lar:///ha.ka.ba/api/v0.1/pono/loci family:control role:implements >>
 <<~/ahu >>
 
 <<~&#x0004; -> ? >>

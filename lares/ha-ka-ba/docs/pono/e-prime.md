@@ -9,9 +9,6 @@ file-path    = "lares/ha-ka-ba/docs/pono/e-prime.md"
 content-type = "text/x-memetic-wikitext"
 confidence   = 0.70
 register     = "S"
-implements   = [
-  "lar:///ha.ka.ba/api/v0.1/pono/meme"
-]
 role = "docs companion for e-prime: research provenance, braid notes, and slider guidance"
 cacheable = false
 retain = false
@@ -108,6 +105,7 @@ docs/pono/e-prime closes
 - `lar:///ha.ka.ba/api/v0.1/pono/e-prime`
 - `lar:///ha.ka.ba/docs/mu/model-agnosticism`
 
+<<~ pranala #implements-meme ? -> lar:///ha.ka.ba/api/v0.1/pono/meme family:control role:implements >>
 <<~/ahu >>
 
 

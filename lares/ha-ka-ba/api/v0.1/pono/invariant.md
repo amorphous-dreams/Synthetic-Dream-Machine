@@ -13,11 +13,6 @@ register = "SC"
 manaoio = 0.5
 mana = 0.5
 manao = 0.5
-implements = [
-  "lar:///ha.ka.ba/api/v0.1/pono/meme",
-  "lar:///ha.ka.ba/api/v0.1/pono/loci",
-  "lar:///ha.ka.ba/api/v0.1/pono/invariant"
-]
 role = "invariant law and cache-stable pressure surface"
 cacheable=true
 retain = true
@@ -117,6 +112,9 @@ invariant closes
 
 <<~ loulou lar:///ha.ka.ba/api/v0.1/pono/invariant/SKILL >>
 
+<<~ pranala #implements-meme ? -> lar:///ha.ka.ba/api/v0.1/pono/meme family:control role:implements >>
+<<~ pranala #implements-loci ? -> lar:///ha.ka.ba/api/v0.1/pono/loci family:control role:implements >>
+<<~ pranala #implements-invariant ? -> lar:///ha.ka.ba/api/v0.1/pono/invariant family:control role:implements >>
 <<~/ahu >>
 
 <<~&#x0004; -> ? >>

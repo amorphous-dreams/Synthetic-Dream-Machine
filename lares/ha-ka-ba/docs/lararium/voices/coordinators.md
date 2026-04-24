@@ -14,10 +14,6 @@ register = "CS"
 manaoio = 0.86
 mana = 0.90
 manao = 0.86
-implements = [
-  "lar:///ha.ka.ba/api/v0.1/pono/meme",
-  "lar:///ha.ka.ba/api/v0.1/pono/loci"
-]
 role = "specification for the coordinator house: the thirteen, naming law, earned names, seniority, and hard gate"
 cacheable = false
 retain = false
@@ -211,6 +207,8 @@ The coordinator house spec defines what `lar:///ha.ka.ba/api/v0.1/lararium/voice
 <<~ loulou lar:///ha.ka.ba/api/v0.1/lararium/voices >>
 <<~ loulou lar:///ha.ka.ba/api/v0.1/mu/chao >>
 
+<<~ pranala #implements-meme ? -> lar:///ha.ka.ba/api/v0.1/pono/meme family:control role:implements >>
+<<~ pranala #implements-loci ? -> lar:///ha.ka.ba/api/v0.1/pono/loci family:control role:implements >>
 <<~/ahu >>
 
 <<~&#x0003; ahu #body-close >>

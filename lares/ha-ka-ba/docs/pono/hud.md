@@ -14,10 +14,6 @@ register = "SP"
 manaoio = 0.60
 mana = 0.64
 manao = 0.68
-implements = [
-  "lar:///ha.ka.ba/api/v0.1/pono/meme",
-  "lar:///ha.ka.ba/api/v0.1/pono/loci"
-]
 role = "HUD docs shelf — exchange span law, intent vectors, render targets, micro-trace, and sigilization intake locus"
 cacheable = false
 retain = false
@@ -168,6 +164,8 @@ Those sections in URI-SCHEMA.md now carry redundant content. A future pass shoul
 <<~ loulou lar:///ha.ka.ba/docs/pono/lar-uri >>
 <<~ loulou lar:///ha.ka.ba/api/v0.1/pono/lar-uri >>
 
+<<~ pranala #implements-meme ? -> lar:///ha.ka.ba/api/v0.1/pono/meme family:control role:implements >>
+<<~ pranala #implements-loci ? -> lar:///ha.ka.ba/api/v0.1/pono/loci family:control role:implements >>
 <<~/ahu >>
 
 <<~&#x0003; ahu #body-close >>

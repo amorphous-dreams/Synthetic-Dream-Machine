@@ -14,10 +14,6 @@ register = "S"
 manaoio = 0.78
 mana = 0.76
 manao = 0.82
-implements = [
-  "lar:///ha.ka.ba/api/v0.1/pono/meme",
-  "lar:///ha.ka.ba/api/v0.1/pono/loci"
-]
 role = "parent docs shelf for lararium voice-work, old all-in-one AGENTS ingests, agent preferences, and house-presence materials where Mischief-Muse and the others can rest and ressurect"
 cacheable = false
 retain = false
@@ -81,6 +77,8 @@ The rooms may deepen later without moving the seat again.
 <<~ loulou lar:///ha.ka.ba/docs/lararium/signal >>
 <<~ loulou lar:///ha.ka.ba/docs/story >>
 
+<<~ pranala #implements-meme ? -> lar:///ha.ka.ba/api/v0.1/pono/meme family:control role:implements >>
+<<~ pranala #implements-loci ? -> lar:///ha.ka.ba/api/v0.1/pono/loci family:control role:implements >>
 <<~/ahu >>
 
 <<~&#x0003; ahu #body-close >>

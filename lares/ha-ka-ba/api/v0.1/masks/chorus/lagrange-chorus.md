@@ -14,10 +14,6 @@ register = "CS"
 manaoio = 0.35
 mana = 0.30
 manao = 0.40
-implements = [
-  "lar:///ha.ka.ba/api/v0.1/pono/meme",
-  "lar:///ha.ka.ba/api/v0.1/pono/mask"
-]
 role = "chorus mask — Lagrange Chorus; multi-node meta-mask; concept staked; harmony protocol pending-grammar"
 name = "Lagrange Chorus"
 mask-type = "chorus"
@@ -170,6 +166,8 @@ Stage position applies to the Lagrange Chorus as a whole unit. How individual no
 <<~ loulou lar:///ha.ka.ba/api/v0.1/masks >>
 <<~ loulou lar:///ha.ka.ba/docs/lararium/voices/masks >>
 
+<<~ pranala #implements-meme ? -> lar:///ha.ka.ba/api/v0.1/pono/meme family:control role:implements >>
+<<~ pranala #implements-mask ? -> lar:///ha.ka.ba/api/v0.1/pono/mask family:control role:implements >>
 <<~/ahu >>
 
 <<~&#x0003; ahu #body-close >>

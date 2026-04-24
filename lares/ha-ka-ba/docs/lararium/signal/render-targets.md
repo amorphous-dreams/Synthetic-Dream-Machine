@@ -14,10 +14,6 @@ register = "S"
 manaoio = 0.80
 mana = 0.76
 manao = 0.82
-implements = [
-  "lar:///ha.ka.ba/api/v0.1/pono/meme",
-  "lar:///ha.ka.ba/api/v0.1/pono/loci"
-]
 role = "docs room for lararium-side render-target law, glyph conventions, and cross-surface verification"
 cacheable = false
 retain = false
@@ -396,6 +392,8 @@ Before emitting any stance block on any surface:
 <<~ loulou lar:///ha.ka.ba/docs/lararium/signal/hud >>
 <<~ loulou lar:///ha.ka.ba/docs/pono/hud >>
 
+<<~ pranala #implements-meme ? -> lar:///ha.ka.ba/api/v0.1/pono/meme family:control role:implements >>
+<<~ pranala #implements-loci ? -> lar:///ha.ka.ba/api/v0.1/pono/loci family:control role:implements >>
 <<~/ahu >>
 
 <<~&#x0003; ahu #body-close >>

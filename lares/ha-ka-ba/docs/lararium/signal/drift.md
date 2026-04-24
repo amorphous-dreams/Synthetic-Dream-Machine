@@ -14,10 +14,6 @@ register = "S"
 manaoio = 0.82
 mana = 0.78
 manao = 0.84
-implements = [
-  "lar:///ha.ka.ba/api/v0.1/pono/meme",
-  "lar:///ha.ka.ba/api/v0.1/pono/loci"
-]
 role = "docs room for governing-field drift, recovery protocol pressure, and projection-error handling across lararium signal surfaces"
 cacheable = false
 retain = false
@@ -70,6 +66,8 @@ The in-span annotation contract stays in `lar:///ha.ka.ba/docs/lararium/signal/m
 <<~ loulou lar:///ha.ka.ba/docs/lararium/signal/micro-trace >>
 <<~ loulou lar:///ha.ka.ba/docs/lararium/signal/sa-display >>
 
+<<~ pranala #implements-meme ? -> lar:///ha.ka.ba/api/v0.1/pono/meme family:control role:implements >>
+<<~ pranala #implements-loci ? -> lar:///ha.ka.ba/api/v0.1/pono/loci family:control role:implements >>
 <<~/ahu >>
 
 <<~&#x0003; ahu #body-close >>

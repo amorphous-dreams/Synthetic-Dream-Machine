@@ -14,10 +14,6 @@ register = "CS"
 manaoio = 0.82
 mana = 0.80
 manao = 0.84
-implements = [
-  "lar:///ha.ka.ba/api/v0.1/pono/meme",
-  "lar:///ha.ka.ba/api/v0.1/pono/loci"
-]
 role = "discordian source witness meme, Prometheus Rising chapter 8 locus, four-tools correspondence shelf"
 ```
 
@@ -83,6 +79,14 @@ Cross-reference stubs retained: nā lako grammar · truename grammar.
 
 <<~&#x0003; ahu #body-close >>
 library/discordia/mordecai-malignatus/prometheus-rising/prometheus-rising-ch-8-the-4-tools closes
+<<~/ahu >>
+
+
+<<~ ahu #edges >>
+
+<<~ pranala #implements-meme ? -> lar:///ha.ka.ba/api/v0.1/pono/meme family:control role:implements >>
+<<~ pranala #implements-loci ? -> lar:///ha.ka.ba/api/v0.1/pono/loci family:control role:implements >>
+
 <<~/ahu >>
 
 <<~&#x0004; -> ? >>

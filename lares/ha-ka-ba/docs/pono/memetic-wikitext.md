@@ -14,11 +14,6 @@ register = "CS"
 manaoio = 0.72
 mana = 0.78
 manao = 0.84
-implements = [
-  "lar:///ha.ka.ba/api/v0.1/pono/meme",
-  "lar:///ha.ka.ba/api/v0.1/pono/loci",
-  "lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext"
-]
 role = "extended documentation surface for memetic-wikitext examples, profile guidance, boundary notes, and migration residue"
 cacheable = false
 retain = false
@@ -165,6 +160,9 @@ docs/pono/memetic-wikitext closes
 <<~ loulou lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >>
 <<~ loulou lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext/SKILL >>
 
+<<~ pranala #implements-meme ? -> lar:///ha.ka.ba/api/v0.1/pono/meme family:control role:implements >>
+<<~ pranala #implements-loci ? -> lar:///ha.ka.ba/api/v0.1/pono/loci family:control role:implements >>
+<<~ pranala #implements-memetic-wikitext ? -> lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext family:control role:implements >>
 <<~/ahu >>
 
 <<~&#x0004; -> ? >>

@@ -17,10 +17,6 @@ register     = "CS"
 manaoio      = 0.66
 mana         = 0.72
 manao        = 0.76
-implements   = [
-  "lar:///ha.ka.ba/api/v0.1/pono/meme",
-  "lar:///ha.ka.ba/api/v0.1/pono/loci"
-]
 covers = [
   "lar:///ha.ka.ba/api/v0.1/grammars/x-tiddlywiki-filter"
 ]
@@ -168,6 +164,8 @@ x-tiddlywiki-filter/SKILL closes
 <<~ loulou lar:///ha.ka.ba/api/v0.1/pono/guest-grammar >>
 <<~ loulou lar:///ha.ka.ba/docs/grammars/tiddlywiki-filter >>
 
+<<~ pranala #implements-meme ? -> lar:///ha.ka.ba/api/v0.1/pono/meme family:control role:implements >>
+<<~ pranala #implements-loci ? -> lar:///ha.ka.ba/api/v0.1/pono/loci family:control role:implements >>
 <<~/ahu >>
 
 

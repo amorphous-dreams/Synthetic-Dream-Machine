@@ -14,11 +14,6 @@ register = "CS"
 manaoio = 0.84
 mana = 0.88
 manao = 0.86
-implements = [
-  "lar:///ha.ka.ba/api/v0.1/pono/meme",
-  "lar:///ha.ka.ba/api/v0.1/pono/loci",
-  "lar:///ha.ka.ba/api/v0.1/pono/lar-uri"
-]
 role = "canon documentation surface — full spec prose, examples, and appendices for the lar: URI scheme"
 cacheable = false
 retain = false
@@ -1147,6 +1142,9 @@ This does **not** mean "truth-confidence 0.60" universally. It means a `0.60` re
 <<~ loulou lar:///ha.ka.ba/api/v0.1/pono/lar-uri/SKILL >>
 <<~ loulou lar:///ha.ka.ba/docs/pono/hud/HUD-ANATOMY >>
 
+<<~ pranala #implements-meme ? -> lar:///ha.ka.ba/api/v0.1/pono/meme family:control role:implements >>
+<<~ pranala #implements-loci ? -> lar:///ha.ka.ba/api/v0.1/pono/loci family:control role:implements >>
+<<~ pranala #implements-lar-uri ? -> lar:///ha.ka.ba/api/v0.1/pono/lar-uri family:control role:implements >>
 <<~/ahu >>
 
 <<~&#x0003; ahu #body-close >>

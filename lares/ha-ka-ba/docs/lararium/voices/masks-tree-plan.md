@@ -14,10 +14,6 @@ register = "S"
 manaoio = 0.82
 mana = 0.80
 manao = 0.84
-implements = [
-  "lar:///ha.ka.ba/api/v0.1/pono/meme",
-  "lar:///ha.ka.ba/api/v0.1/pono/loci"
-]
 role = "OODA-HA plan for creating the api/v0.1/masks/ tree: parent index, named coordinator masks, character masks, chorus masks, and skeleton meme-loci template"
 cacheable = false
 retain = false
@@ -272,6 +268,8 @@ The tree deepens incrementally — each talk-story session fills one section of 
 <<~ loulou lar:///ha.ka.ba/docs/lararium/voices/invariant-plan >>
 <<~ loulou lar:///ha.ka.ba/api/v0.1/masks >>
 
+<<~ pranala #implements-meme ? -> lar:///ha.ka.ba/api/v0.1/pono/meme family:control role:implements >>
+<<~ pranala #implements-loci ? -> lar:///ha.ka.ba/api/v0.1/pono/loci family:control role:implements >>
 <<~/ahu >>
 
 <<~&#x0003; ahu #body-close >>

@@ -14,10 +14,6 @@ register = "CS"
 manaoio = 0.80
 mana = 0.78
 manao = 0.82
-implements = [
-  "lar:///ha.ka.ba/api/v0.1/pono/meme",
-  "lar:///ha.ka.ba/api/v0.1/pono/mask"
-]
 role = "character mask — Ghost of Mark Twain; historical persona; riverboat-culture author voice"
 name = "Ghost of Mark Twain"
 corpus = "complete published works of Samuel Langhorne Clemens via archive.org — novels, travel writing, essays, autobiographical dictations, published letters; riverboat and frontier American culture as world-frame"
@@ -169,6 +165,8 @@ Remaining coordinators — Gatekeeper, Lorekeeper, Scryer, Artificer, Advocate, 
 <<~ loulou lar:///ha.ka.ba/api/v0.1/masks >>
 <<~ loulou lar:///ha.ka.ba/docs/lararium/voices/masks >>
 
+<<~ pranala #implements-meme ? -> lar:///ha.ka.ba/api/v0.1/pono/meme family:control role:implements >>
+<<~ pranala #implements-mask ? -> lar:///ha.ka.ba/api/v0.1/pono/mask family:control role:implements >>
 <<~/ahu >>
 
 <<~&#x0003; ahu #body-close >>

@@ -14,10 +14,6 @@ register = "S"
 manaoio = 0.88
 mana = 0.84
 manao = 0.86
-implements = [
-  "lar:///ha.ka.ba/api/v0.1/pono/meme",
-  "lar:///ha.ka.ba/api/v0.1/pono/loci"
-]
 role = "docs room for definitional lar tagspace semantics and address-slot framing"
 cacheable = false
 retain = false
@@ -86,6 +82,8 @@ docs/lararium/signal/tagspace closes
 <<~ loulou lar:///ha.ka.ba/docs/lararium/signal/hud >>
 <<~ loulou lar:///ha.ka.ba/docs/lararium/signal/render-targets >>
 
+<<~ pranala #implements-meme ? -> lar:///ha.ka.ba/api/v0.1/pono/meme family:control role:implements >>
+<<~ pranala #implements-loci ? -> lar:///ha.ka.ba/api/v0.1/pono/loci family:control role:implements >>
 <<~/ahu >>
 
 <<~&#x0004; -> ? >>

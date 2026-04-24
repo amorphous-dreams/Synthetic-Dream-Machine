@@ -14,10 +14,6 @@ register = "S"
 manaoio = 0.78
 mana = 0.76
 manao = 0.80
-implements = [
-  "lar:///ha.ka.ba/api/v0.1/pono/meme",
-  "lar:///ha.ka.ba/api/v0.1/pono/loci"
-]
 role = "parent docs shelf for archive crystals, continuity mechanisms, prospective MemPalace work, and MCP-backed session carry"
 cacheable = false
 retain = false
@@ -60,6 +56,8 @@ Use this branch for:
 <<~ loulou lar:///ha.ka.ba/api/v0.1/lararium >>
 <<~ loulou lar:///LARES >>
 
+<<~ pranala #implements-meme ? -> lar:///ha.ka.ba/api/v0.1/pono/meme family:control role:implements >>
+<<~ pranala #implements-loci ? -> lar:///ha.ka.ba/api/v0.1/pono/loci family:control role:implements >>
 <<~/ahu >>
 
 <<~&#x0003; ahu #body-close >>

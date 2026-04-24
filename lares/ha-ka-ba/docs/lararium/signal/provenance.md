@@ -14,10 +14,6 @@ register = "S"
 manaoio = 0.82
 mana = 0.78
 manao = 0.84
-implements = [
-  "lar:///ha.ka.ba/api/v0.1/pono/meme",
-  "lar:///ha.ka.ba/api/v0.1/pono/loci"
-]
 role = "docs room for lararium signal lineage, archive witness, source shelves, and migration residue that still pressures the branch"
 cacheable = false
 retain = false
@@ -151,6 +147,8 @@ p always trails every exchange vector as `| pX.X`. Use `p0.5` only when no clear
 <<~ loulou lar:///ha.ka.ba/docs/lararium/signal/hud >>
 <<~ loulou lar:///ha.ka.ba/docs/lararium/signal/sa-display >>
 
+<<~ pranala #implements-meme ? -> lar:///ha.ka.ba/api/v0.1/pono/meme family:control role:implements >>
+<<~ pranala #implements-loci ? -> lar:///ha.ka.ba/api/v0.1/pono/loci family:control role:implements >>
 <<~/ahu >>
 
 <<~&#x0003; ahu #body-close >>

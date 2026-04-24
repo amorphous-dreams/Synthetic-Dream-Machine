@@ -18,10 +18,6 @@ register = "CS"
 manaoio = 0.64
 mana = 0.72
 manao = 0.80
-implements = [
-  "lar:///ha.ka.ba/api/v0.1/pono/meme",
-  "lar:///ha.ka.ba/api/v0.1/pono/loci"
-]
 role = "agent-facing procedural surface for loci routing and rating passes"
 covers = ["lar:///ha.ka.ba/api/v0.1/pono/loci"]
 constraints = [
@@ -261,6 +257,8 @@ Loci SKILL closes the procedural stream here.
 <<~ loulou lar:///ha.ka.ba/api/v0.1/pono/loci/iam >>
 <<~ loulou lar:///ha.ka.ba/api/v0.1/pono/meme >>
 
+<<~ pranala #implements-meme ? -> lar:///ha.ka.ba/api/v0.1/pono/meme family:control role:implements >>
+<<~ pranala #implements-loci ? -> lar:///ha.ka.ba/api/v0.1/pono/loci family:control role:implements >>
 <<~/ahu >>
 
 

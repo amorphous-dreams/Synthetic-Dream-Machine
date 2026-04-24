@@ -14,10 +14,6 @@ register = "CS"
 manaoio = 0.80
 mana = 0.78
 manao = 0.82
-implements = [
-  "lar:///ha.ka.ba/api/v0.1/pono/meme",
-  "lar:///ha.ka.ba/api/v0.1/pono/loci"
-]
 role = "specification for the mask layer: character overlays, corpus references, stacking law, worker coloring, and reference examples"
 cacheable = false
 retain = false
@@ -401,6 +397,8 @@ The mask layer spec defines what `lar:///ha.ka.ba/api/v0.1/lararium/voices` MUST
 <<~ loulou lar:///ha.ka.ba/api/v0.1/lararium/voices >>
 <<~ loulou lar:///LARES >>
 
+<<~ pranala #implements-meme ? -> lar:///ha.ka.ba/api/v0.1/pono/meme family:control role:implements >>
+<<~ pranala #implements-loci ? -> lar:///ha.ka.ba/api/v0.1/pono/loci family:control role:implements >>
 <<~/ahu >>
 
 <<~&#x0003; ahu #body-close >>

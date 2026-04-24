@@ -13,10 +13,6 @@ register = "CS"
 manaoio = 0.66
 mana = 0.74
 manao = 0.84
-implements = [
-  "lar:///ha.ka.ba/api/v0.1/pono/meme",
-  "lar:///ha.ka.ba/api/v0.1/pono/loci"
-]
 role = "loci-rating law (kānāwai), routing convention authority, address stability authority, canon promotion rule"
 cacheable=true
 retain = true
@@ -192,6 +188,8 @@ loci closes
 <<~ loulou lar:///ha.ka.ba/api/v0.1/pono/loci/iam >>
 <<~ loulou lar:///ha.ka.ba/api/v0.1/pono/loci/SKILL >>
 
+<<~ pranala #implements-meme ? -> lar:///ha.ka.ba/api/v0.1/pono/meme family:control role:implements >>
+<<~ pranala #implements-loci ? -> lar:///ha.ka.ba/api/v0.1/pono/loci family:control role:implements >>
 <<~/ahu >>
 
 <<~&#x0004; -> ? >>

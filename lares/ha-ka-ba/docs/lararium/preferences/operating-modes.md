@@ -14,10 +14,6 @@ register = "S"
 manaoio = 0.84
 mana = 0.88
 manao = 0.82
-implements = [
-  "lar:///ha.ka.ba/api/v0.1/pono/meme",
-  "lar:///ha.ka.ba/api/v0.1/pono/loci"
-]
 role = "docs concept room for named operating modes, scale vectors, and p-band visibility discipline in the recovered Lares stack"
 cacheable = false
 retain = false
@@ -97,6 +93,8 @@ docs/lararium/preferences/operating-modes closes
 <<~ loulou lar:///ha.ka.ba/api/v0.1/pono/ooda-ha >>
 <<~ loulou lar:///LARES >>
 
+<<~ pranala #implements-meme ? -> lar:///ha.ka.ba/api/v0.1/pono/meme family:control role:implements >>
+<<~ pranala #implements-loci ? -> lar:///ha.ka.ba/api/v0.1/pono/loci family:control role:implements >>
 <<~/ahu >>
 
 <<~&#x0004; -> ? >>

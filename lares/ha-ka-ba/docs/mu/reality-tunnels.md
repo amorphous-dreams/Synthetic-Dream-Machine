@@ -14,10 +14,6 @@ register = "S"
 manaoio = 0.84
 mana = 0.76
 manao = 0.84
-implements = [
-  "lar:///ha.ka.ba/api/v0.1/pono/meme",
-  "lar:///ha.ka.ba/api/v0.1/pono/loci"
-]
 role = "staging docs shelf for reality tunnels, catma, and observer-position pressure behind Mu-facing invariants"
 cacheable = false
 retain = false
@@ -101,6 +97,8 @@ docs/mu/reality-tunnels closes
 <<~ loulou lar:///ha.ka.ba/api/v0.1/mu/the-law-of-5s >>
 <<~ loulou lar:///ha.ka.ba/api/v0.1/mu/chao >>
 
+<<~ pranala #implements-meme ? -> lar:///ha.ka.ba/api/v0.1/pono/meme family:control role:implements >>
+<<~ pranala #implements-loci ? -> lar:///ha.ka.ba/api/v0.1/pono/loci family:control role:implements >>
 <<~/ahu >>
 
 <<~&#x0004; -> ? >>

@@ -14,10 +14,6 @@ register = "CS"
 manaoio = 0.84
 mana = 0.88
 manao = 0.84
-implements = [
-  "lar:///ha.ka.ba/api/v0.1/pono/meme",
-  "lar:///ha.ka.ba/api/v0.1/pono/loci"
-]
 role = "specification for the worker swarm: session-local sub-voices, lifecycle, tag format, escalation template, and coordinator routing table"
 cacheable = false
 retain = false
@@ -154,6 +150,8 @@ The worker swarm spec defines what `lar:///ha.ka.ba/api/v0.1/lararium/voices` MU
 <<~ loulou lar:///ha.ka.ba/docs/lararium/voices/masks >>
 <<~ loulou lar:///ha.ka.ba/api/v0.1/lararium/voices >>
 
+<<~ pranala #implements-meme ? -> lar:///ha.ka.ba/api/v0.1/pono/meme family:control role:implements >>
+<<~ pranala #implements-loci ? -> lar:///ha.ka.ba/api/v0.1/pono/loci family:control role:implements >>
 <<~/ahu >>
 
 <<~&#x0003; ahu #body-close >>

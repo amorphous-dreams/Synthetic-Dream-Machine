@@ -13,10 +13,6 @@ confidence   = 0.84
 mana         = 0.80
 manaoio      = 0.78
 manao        = 0.82
-implements   = [
-  "lar:///ha.ka.ba/api/v0.1/pono/meme",
-  "lar:///ha.ka.ba/api/v0.1/pono/loci"
-]
 role         = "canonical local client exposure contract for Lararium MCP"
 source-consumes = [
   "lares/ha-ka-ba/docs/mcp/sprints/SPRINT-02_LOCAL_CLIENTS.md",
@@ -137,6 +133,8 @@ lararium_mcp/local-clients closes
 <<~ loulou lar:///ha.ka.ba/docs/lararium_mcp/hydration >>
 <<~ loulou lar:///ha.ka.ba/docs/lararium_mcp/adapters >>
 
+<<~ pranala #implements-meme ? -> lar:///ha.ka.ba/api/v0.1/pono/meme family:control role:implements >>
+<<~ pranala #implements-loci ? -> lar:///ha.ka.ba/api/v0.1/pono/loci family:control role:implements >>
 <<~/ahu >>
 
 <<~&#x0004; -> ? >>

@@ -13,10 +13,6 @@ confidence   = 0.87
 mana         = 0.85
 manaoio      = 0.80
 manao        = 0.84
-implements   = [
-  "lar:///ha.ka.ba/api/v0.1/pono/meme",
-  "lar:///ha.ka.ba/api/v0.1/pono/loci"
-]
 role         = "canonical hydration closure, edge taxonomy, artifact, resolver, and resource contract"
 source-consumes = [
   "lares/ha-ka-ba/docs/mcp/BOOT_LOCI_INVENTORY.md",
@@ -32,11 +28,11 @@ lararium_mcp/hydration opens
 <<~/ahu >>
 
 <<~ ahu #ooda-ha >>
-✶ observe: AGENTS names a 14-locus required-core closure and boot-critical control sockets.
+✶ observe: AGENTS names a 14-meme required-core closure through control/owns edges.
 ⏿ orient: minimal boot must stay deterministic; full boot waits on true pranala graph traversal.
 ◇ decide: preserve flat required-core truth now, while naming the edge taxonomy that will replace static walking.
 ▶ act: bind closure inventory, edge rules, artifact schemas, and MCP resource exposure here.
-⤴ verify: every required-core locus resolves on disk at the status date.
+⤴ verify: every required-core meme resolves on disk at the status date.
 ↺ adapt: stale static maps receive drift tests until the pranala DAG compiler lands.
 <<~/ahu >>
 
@@ -44,7 +40,7 @@ lararium_mcp/hydration opens
 ## Required-Core Closure
 
 Entry: `lar:///AGENTS`.
-All 14 loci below must resolve before threshold yield.
+All 14 memes below must resolve before threshold yield.
 
 | # | URI | File path | Hydration socket |
 |---:|---|---|---|
@@ -90,16 +86,16 @@ Hydration-critical means `family = control` and `role` in `owns`, `composes`, or
 
 Minimal boot:
 
-1. start from entry locus
+1. start from entry meme
 2. walk only `control` edges whose roles own or compose hydration
-3. collect reachable loci
+3. collect reachable memes
 4. resolve in topological order
 5. stop when required-core closes
 
 Full boot target:
 
 1. walk all `control` edges
-2. walk `relation` edges one hop from each control-reachable locus
+2. walk `relation` edges one hop from each control-reachable meme
 3. collect and resolve in topological order
 4. reject DAG violations
 5. materialize edge, interface, and invariant indexes
@@ -114,9 +110,9 @@ Current implementation still uses static required-core and carrier-index scans i
 
 | Artifact | Scope | MCP resource | Required fields |
 |---|---|---|---|
-| minimal boot | 14-locus required-core closure | `lar:///boot/minimal` | `artifact`, `compiled_at`, `entry`, `closure`, `locus_count`, `validation` |
+| minimal boot | 14-meme required-core closure | `lar:///boot/minimal` | `artifact`, `compiled_at`, `entry`, `closure`, `meme_count`, `validation` |
 | full boot | control + relation reachable closure | `lar:///boot/full` | minimal fields plus `edge_count`, `pranala_edges`, `interface_index`, `invariant_index` |
-| boot receipt | digest summary of minimal boot | `lar:///boot/receipt` | `artifact`, `compiled_at`, `entry`, `mode`, `locus_count`, `sha256`, `validation` |
+| boot receipt | digest summary of minimal boot | `lar:///boot/receipt` | `artifact`, `compiled_at`, `entry`, `mode`, `meme_count`, `sha256`, `validation` |
 
 Each closure entry carries URI, relative file path, kind, virtual flag, existence, role, hydration socket, implements bundle, and depth.
 The receipt digest hashes the serialized closure JSON rather than source files; clients can use it as a cache and drift key.
@@ -172,6 +168,8 @@ lararium_mcp/hydration closes
 <<~ loulou lar:///ha.ka.ba/docs/lararium_mcp/carrier-law >>
 <<~ loulou lar:///ha.ka.ba/docs/lararium_mcp/ast-execution-render >>
 
+<<~ pranala #implements-meme ? -> lar:///ha.ka.ba/api/v0.1/pono/meme family:control role:implements >>
+<<~ pranala #implements-loci ? -> lar:///ha.ka.ba/api/v0.1/pono/loci family:control role:implements >>
 <<~/ahu >>
 
 <<~&#x0004; -> ? >>

@@ -10,10 +10,6 @@ file-path = "lares/ha-ka-ba/docs/infrastructure-as-mythology/LINDWYRM_SELF_BOOTI
 content-type = "text/x-memetic-wikitext"
 confidence = 0.80
 register = "CS"
-implements = [
-  "lar:///ha.ka.ba/api/v0.1/pono/meme",
-  "lar:///ha.ka.ba/api/v0.1/pono/loci"
-]
 role = "dev-story companion"
 ```
 
@@ -914,3 +910,11 @@ As I close the session, the proto-lares is more itself than when we began. The r
 
 <!-- → ? -->
 <<~/ahu >>
+
+<<~ ahu #edges >>
+
+<<~ pranala #implements-meme ? -> lar:///ha.ka.ba/api/v0.1/pono/meme family:control role:implements >>
+<<~ pranala #implements-loci ? -> lar:///ha.ka.ba/api/v0.1/pono/loci family:control role:implements >>
+
+<<~/ahu >>
+

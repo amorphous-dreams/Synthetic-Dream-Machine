@@ -13,11 +13,6 @@ confidence   = 0.89
 mana         = 0.87
 manaoio      = 0.83
 manao        = 0.87
-implements   = [
-  "lar:///ha.ka.ba/api/v0.1/pono/meme",
-  "lar:///ha.ka.ba/api/v0.1/pono/loci",
-  "lar:///ha.ka.ba/api/v0.1/pono/invariant"
-]
 role         = "three-tier traversal model, DFS cycle detection, Kahn topological sort, and declared-unresolved law for the pranala-edge DAG compiler"
 status-date  = "2026-04-24"
 ```
@@ -60,18 +55,18 @@ not a sub-graph inside the actor containment tree.
 <<~ ahu #tier-0 >>
 ## Tier 0 — Declared Core (Fast Path)
 
-**Source:** `#iam.required-core` list read directly from the entry carrier's TOML metadata.
+**Source:** control-family pranala edges with `role:owns` parsed directly from the entry carrier (AGENTS).
 
 **Algorithm:**
-1. Read `required-core` from `AGENTS#iam`.
-2. Resolve each URI through the resolver.
-3. Read each carrier record (shape, metadata, implements bundle).
-4. Produce closure entries in declared order (no reordering).
+1. Parse `control`/`owns` pranala edges from `AGENTS`.
+2. Resolve each `to_uri` through the resolver.
+3. Read each carrier record (shape, metadata, pranala edges).
+4. Produce closure entries in parse order (no reordering — depth 0 = entry, depth 1 = direct owns, depth 2 = sub-graph children).
 
-**Depth assignment:** use the static `_DEPTH` table (depth 0 = entry, depth 1 = direct preloads, depth 2 = sub-graph children).
+**Depth assignment:** BFS hop count from entry over `control/owns` edges only.
 
-**Role:** fast cold-start path. Does not walk edges. O(N) flat resolution.
-Remains correct as long as the author keeps `required-core` synchronised with the pranala graph.
+**Role:** fast cold-start path. One-hop edge scan only. O(N) flat resolution.
+Structurally correct: the pranala DAG is the source of truth; no separate manifest list to synchronise.
 
 **Cross-validation:** Tier 0 result gets compared against Tier 1 result in the boot receipt.
 Discrepancies surface as `validation.declared_vs_walked` with three fields: `in_declared_only`, `in_walked_only`, `match`.
@@ -237,6 +232,9 @@ graph/traversal closes
 <<~ ahu #edges >>
 ## Edges
 
+<<~ pranala #implements-meme ? -> lar:///ha.ka.ba/api/v0.1/pono/meme family:control role:implements >>
+<<~ pranala #implements-loci ? -> lar:///ha.ka.ba/api/v0.1/pono/loci family:control role:implements >>
+<<~ pranala #implements-invariant ? -> lar:///ha.ka.ba/api/v0.1/pono/invariant family:control role:implements >>
 <<~ loulou lar:///ha.ka.ba/docs/graph >>
 <<~ loulou lar:///ha.ka.ba/docs/graph/nodes >>
 <<~ loulou lar:///ha.ka.ba/docs/graph/artifacts >>

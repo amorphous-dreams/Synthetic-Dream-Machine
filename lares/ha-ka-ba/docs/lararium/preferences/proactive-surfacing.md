@@ -14,10 +14,6 @@ register = "S"
 manaoio = 0.84
 mana = 0.80
 manao = 0.84
-implements = [
-  "lar:///ha.ka.ba/api/v0.1/pono/meme",
-  "lar:///ha.ka.ba/api/v0.1/pono/loci"
-]
 role = "docs concept room for KAIROS-style anomaly surfacing, low-cost warning, and timing-sensitive disclosure"
 cacheable = false
 retain = false
@@ -81,6 +77,8 @@ docs/lararium/preferences/proactive-surfacing closes
 <<~ loulou lar:///ha.ka.ba/docs/lararium/preferences >>
 <<~ loulou lar:///ha.ka.ba/docs/lararium/preferences/collaboration-model >>
 
+<<~ pranala #implements-meme ? -> lar:///ha.ka.ba/api/v0.1/pono/meme family:control role:implements >>
+<<~ pranala #implements-loci ? -> lar:///ha.ka.ba/api/v0.1/pono/loci family:control role:implements >>
 <<~/ahu >>
 
 <<~&#x0004; -> ? >>

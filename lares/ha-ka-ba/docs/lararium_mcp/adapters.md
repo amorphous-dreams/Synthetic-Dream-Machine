@@ -13,10 +13,6 @@ confidence   = 0.84
 mana         = 0.82
 manaoio      = 0.77
 manao        = 0.84
-implements   = [
-  "lar:///ha.ka.ba/api/v0.1/pono/meme",
-  "lar:///ha.ka.ba/api/v0.1/pono/loci"
-]
 role         = "canonical submodule adapter and sidecar integration contract for Lararium MCP"
 source-consumes = [
   "lares/ha-ka-ba/docs/mcp/SUBMODULE_ADAPTER_INTERFACE.md",
@@ -179,6 +175,8 @@ lararium_mcp/adapters closes
 <<~ loulou lar:///ha.ka.ba/docs/lararium_mcp/ast-execution-render >>
 <<~ loulou lar:///ha.ka.ba/docs/lararium_mcp/hydration >>
 
+<<~ pranala #implements-meme ? -> lar:///ha.ka.ba/api/v0.1/pono/meme family:control role:implements >>
+<<~ pranala #implements-loci ? -> lar:///ha.ka.ba/api/v0.1/pono/loci family:control role:implements >>
 <<~/ahu >>
 
 <<~&#x0004; -> ? >>

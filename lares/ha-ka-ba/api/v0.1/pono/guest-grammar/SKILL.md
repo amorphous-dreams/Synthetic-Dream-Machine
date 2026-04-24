@@ -17,10 +17,6 @@ register = "CS"
 manaoio = 0.68
 mana = 0.74
 manao = 0.80
-implements = [
-  "lar:///ha.ka.ba/api/v0.1/pono/meme",
-  "lar:///ha.ka.ba/api/v0.1/pono/loci"
-]
 role = "guest-grammar operational skill — admission audit, hana shaping, and sidecar split discipline"
 covers = [
   "lar:///ha.ka.ba/api/v0.1/pono/guest-grammar"
@@ -259,6 +255,8 @@ pono/guest-grammar/SKILL closes
 <<~ loulou lar:///ha.ka.ba/api/v0.1/pono/guest-grammar >>
 <<~ loulou lar:///ha.ka.ba/docs/pono/guest-grammar >>
 
+<<~ pranala #implements-meme ? -> lar:///ha.ka.ba/api/v0.1/pono/meme family:control role:implements >>
+<<~ pranala #implements-loci ? -> lar:///ha.ka.ba/api/v0.1/pono/loci family:control role:implements >>
 <<~/ahu >>
 
 <<~&#x0004; -> ? >>

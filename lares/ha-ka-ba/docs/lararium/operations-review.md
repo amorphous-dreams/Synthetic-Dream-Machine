@@ -14,10 +14,6 @@ register = "S"
 manaoio = 0.80
 mana = 0.76
 manao = 0.82
-implements = [
-  "lar:///ha.ka.ba/api/v0.1/pono/meme",
-  "lar:///ha.ka.ba/api/v0.1/pono/loci"
-]
 role = "OODA-HA extraction plan for lararium interaction protocols — frame-uncertainty, talk story, session init, and related surfaces"
 cacheable = false
 retain = false
@@ -305,6 +301,8 @@ After the extraction pass closes, these questions remain for a future consolidat
 <<~ loulou lar:///ha.ka.ba/docs/lararium/preferences/proactive-surfacing >>
 <<~ loulou lar:///ha.ka.ba/docs/lararium/voices/voices-review >>
 
+<<~ pranala #implements-meme ? -> lar:///ha.ka.ba/api/v0.1/pono/meme family:control role:implements >>
+<<~ pranala #implements-loci ? -> lar:///ha.ka.ba/api/v0.1/pono/loci family:control role:implements >>
 <<~/ahu >>
 
 <<~&#x0003; ahu #body-close >>

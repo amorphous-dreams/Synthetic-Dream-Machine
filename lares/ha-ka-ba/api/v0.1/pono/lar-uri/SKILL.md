@@ -18,10 +18,6 @@ register = "CS"
 manaoio = 0.78
 mana = 0.82
 manao = 0.80
-implements = [
-  "lar:///ha.ka.ba/api/v0.1/pono/meme",
-  "lar:///ha.ka.ba/api/v0.1/pono/loci"
-]
 role = "lar: URI operational skill — construction, validation, canonical conversion, and chronometer encoding"
 covers = ["lar:///ha.ka.ba/api/v0.1/pono/lar-uri"]
 constraints = [
@@ -194,6 +190,8 @@ pono/lar-uri/SKILL closes
 <<~ loulou lar:///ha.ka.ba/api/v0.1/pono/lar-uri >>
 <<~ loulou lar:///ha.ka.ba/docs/pono/lar-uri >>
 
+<<~ pranala #implements-meme ? -> lar:///ha.ka.ba/api/v0.1/pono/meme family:control role:implements >>
+<<~ pranala #implements-loci ? -> lar:///ha.ka.ba/api/v0.1/pono/loci family:control role:implements >>
 <<~/ahu >>
 
 <<~&#x0004; -> ? >>

@@ -14,10 +14,6 @@ register = "S"
 manaoio = 0.80
 mana = 0.78
 manao = 0.82
-implements = [
-  "lar:///ha.ka.ba/api/v0.1/pono/meme",
-  "lar:///ha.ka.ba/api/v0.1/pono/loci"
-]
 role = "discordian book witness meme, Common Sense Tarot locus, suit-grammar provenance shelf"
 ```
 
@@ -3246,6 +3242,14 @@ Cover design: Michele Lanci-Altomare
 
 <<~&#x0003; ahu #body-close >>
 library/discordia/the-count-of-5s/common-sense-tarot closes
+<<~/ahu >>
+
+
+<<~ ahu #edges >>
+
+<<~ pranala #implements-meme ? -> lar:///ha.ka.ba/api/v0.1/pono/meme family:control role:implements >>
+<<~ pranala #implements-loci ? -> lar:///ha.ka.ba/api/v0.1/pono/loci family:control role:implements >>
+
 <<~/ahu >>
 
 <<~&#x0004; -> ? >>

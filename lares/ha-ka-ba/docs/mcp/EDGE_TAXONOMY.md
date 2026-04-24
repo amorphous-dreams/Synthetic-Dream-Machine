@@ -63,14 +63,14 @@ All other edges are:
 ## Boot closure walk rule
 
 Minimal boot closure:
-1. Walk only `control` edges with role `owns` or `composes` from the entry locus.
-2. Collect all reachable loci.
+1. Walk only `control` edges with role `owns` or `composes` from the entry meme.
+2. Collect all reachable memes.
 3. Resolve in topological order (sources before targets).
 4. Stop when the required-core closure is complete.
 
 Full boot closure:
 1. Walk all `control` edges.
-2. Then walk `relation` edges one hop from each control-reachable locus.
+2. Then walk `relation` edges one hop from each control-reachable meme.
 3. Collect and resolve in topological order.
 4. Stop when the full pranala graph is exhausted.
 

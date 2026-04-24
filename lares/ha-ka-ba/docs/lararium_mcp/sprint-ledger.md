@@ -13,10 +13,6 @@ confidence   = 0.84
 mana         = 0.80
 manaoio      = 0.76
 manao        = 0.82
-implements   = [
-  "lar:///ha.ka.ba/api/v0.1/pono/meme",
-  "lar:///ha.ka.ba/api/v0.1/pono/loci"
-]
 role         = "canonical closed-sprint ledger and consumption map for Lararium MCP planning documents"
 source-consumes = [
   "lares/ha-ka-ba/docs/mcp/sprints/SPRINT-00_FOUNDATION.md",
@@ -120,6 +116,8 @@ lararium_mcp/sprint-ledger closes
 <<~ loulou lar:///ha.ka.ba/docs/lararium_mcp/local-clients >>
 <<~ loulou lar:///ha.ka.ba/docs/lararium_mcp/hydration >>
 
+<<~ pranala #implements-meme ? -> lar:///ha.ka.ba/api/v0.1/pono/meme family:control role:implements >>
+<<~ pranala #implements-loci ? -> lar:///ha.ka.ba/api/v0.1/pono/loci family:control role:implements >>
 <<~/ahu >>
 
 <<~&#x0004; -> ? >>

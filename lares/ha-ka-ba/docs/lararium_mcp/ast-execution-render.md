@@ -13,10 +13,6 @@ confidence   = 0.84
 mana         = 0.82
 manaoio      = 0.76
 manao        = 0.84
-implements   = [
-  "lar:///ha.ka.ba/api/v0.1/pono/meme",
-  "lar:///ha.ka.ba/api/v0.1/pono/loci"
-]
 role         = "canonical AST envelope, pranala graph-plane, execution graph, and render projection contract"
 source-consumes = [
   "lares/ha-ka-ba/docs/mcp/TW_FILTER_BOUNDARY.md",
@@ -214,6 +210,8 @@ lararium_mcp/ast-execution-render closes
 <<~ loulou lar:///ha.ka.ba/api/v0.1/pono/pranala >>
 <<~ loulou lar:///ha.ka.ba/docs/grammars/tiddlywiki-filter >>
 
+<<~ pranala #implements-meme ? -> lar:///ha.ka.ba/api/v0.1/pono/meme family:control role:implements >>
+<<~ pranala #implements-loci ? -> lar:///ha.ka.ba/api/v0.1/pono/loci family:control role:implements >>
 <<~/ahu >>
 
 <<~&#x0004; -> ? >>

@@ -17,10 +17,6 @@ register = "CS"
 manaoio = 0.70
 mana = 0.76
 manao = 0.82
-implements = [
-  "lar:///ha.ka.ba/api/v0.1/pono/meme",
-  "lar:///ha.ka.ba/api/v0.1/pono/loci"
-]
 role = "memetic-wikitext operational skill — authoring, compression, audit, and sidecar split discipline"
 covers = [
   "lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext"
@@ -245,6 +241,8 @@ pono/memetic-wikitext/SKILL closes
 <<~ loulou lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >>
 <<~ loulou lar:///ha.ka.ba/docs/pono/memetic-wikitext >>
 
+<<~ pranala #implements-meme ? -> lar:///ha.ka.ba/api/v0.1/pono/meme family:control role:implements >>
+<<~ pranala #implements-loci ? -> lar:///ha.ka.ba/api/v0.1/pono/loci family:control role:implements >>
 <<~/ahu >>
 
 <<~&#x0004; -> ? >>

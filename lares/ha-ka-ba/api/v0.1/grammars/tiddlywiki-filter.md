@@ -12,11 +12,6 @@ register     = "CS"
 manaoio      = 0.68
 mana         = 0.74
 manao        = 0.76
-implements   = [
-  "lar:///ha.ka.ba/api/v0.1/pono/meme",
-  "lar:///ha.ka.ba/api/v0.1/pono/loci",
-  "lar:///ha.ka.ba/api/v0.1/pono/invariant"
-]
 governed-by      = "lar:///ha.ka.ba/api/v0.1/pono/guest-grammar"
 role             = "first registered imported-function-sigil grammar: x-tiddlywiki-filter invariant law"
 grammar-key      = "x-tiddlywiki-filter"
@@ -189,6 +184,9 @@ x-tiddlywiki-filter closes
 - `lar:///ha.ka.ba/api/v0.1/pono/parser`
 - `lar:///ha.ka.ba/api/v0.1/pono/render-pipeline`
 
+<<~ pranala #implements-meme ? -> lar:///ha.ka.ba/api/v0.1/pono/meme family:control role:implements >>
+<<~ pranala #implements-loci ? -> lar:///ha.ka.ba/api/v0.1/pono/loci family:control role:implements >>
+<<~ pranala #implements-invariant ? -> lar:///ha.ka.ba/api/v0.1/pono/invariant family:control role:implements >>
 <<~/ahu >>
 
 

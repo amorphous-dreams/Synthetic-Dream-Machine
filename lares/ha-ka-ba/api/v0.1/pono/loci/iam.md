@@ -13,10 +13,6 @@ register = "CS"
 manaoio = 0.68
 mana = 0.76
 manao = 0.84
-implements = [
-  "lar:///ha.ka.ba/api/v0.1/pono/meme",
-  "lar:///ha.ka.ba/api/v0.1/pono/loci"
-]
 role = "root metadata law (kānāwai), field-set authority, and reduction charter"
 ```
 
@@ -227,6 +223,8 @@ IAM closes the metadata law stream here.
 <<~ loulou lar:///ha.ka.ba/api/v0.1/pono/loci >>
 <<~ loulou lar:///ha.ka.ba/api/v0.1/pono/meme >>
 
+<<~ pranala #implements-meme ? -> lar:///ha.ka.ba/api/v0.1/pono/meme family:control role:implements >>
+<<~ pranala #implements-loci ? -> lar:///ha.ka.ba/api/v0.1/pono/loci family:control role:implements >>
 <<~/ahu >>
 
 

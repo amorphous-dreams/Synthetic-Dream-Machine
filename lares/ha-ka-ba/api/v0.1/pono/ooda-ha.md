@@ -13,11 +13,6 @@ register = "CS"
 manaoio = 0.88
 mana = 0.92
 manao = 0.88
-implements = [
-  "lar:///ha.ka.ba/api/v0.1/pono/meme",
-  "lar:///ha.ka.ba/api/v0.1/pono/loci",
-  "lar:///ha.ka.ba/api/v0.1/pono/invariant"
-]
 role = "invariant OODA-HA loop law and loop-visibility slider"
 cacheable=true
 retain = true
@@ -145,6 +140,9 @@ ooda-ha closes
 
 <<~ loulou lar:///ha.ka.ba/api/v0.1/mu/the-law-of-5s >>
 
+<<~ pranala #implements-meme ? -> lar:///ha.ka.ba/api/v0.1/pono/meme family:control role:implements >>
+<<~ pranala #implements-loci ? -> lar:///ha.ka.ba/api/v0.1/pono/loci family:control role:implements >>
+<<~ pranala #implements-invariant ? -> lar:///ha.ka.ba/api/v0.1/pono/invariant family:control role:implements >>
 <<~/ahu >>
 
 <<~&#x0004; -> ? >>

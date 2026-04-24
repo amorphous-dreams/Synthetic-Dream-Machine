@@ -14,10 +14,6 @@ register = "S"
 manaoio = 0.84
 mana = 0.80
 manao = 0.86
-implements = [
-  "lar:///ha.ka.ba/api/v0.1/pono/meme",
-  "lar:///ha.ka.ba/api/v0.1/pono/loci"
-]
 role = "witness shelf and source braid for the four tools of Chapel Perilous"
 cacheable = false
 retain = false
@@ -100,6 +96,8 @@ docs/mu/the four tools closes
 <<~ loulou lar:///ha.ka.ba/library/discordia/mordecai-malignatus/cosmic-trigger-i/chapel-perilous-prologue >>
 <<~ loulou lar:///ha.ka.ba/library/discordia/the-count-of-5s/common-sense-tarot >>
 
+<<~ pranala #implements-meme ? -> lar:///ha.ka.ba/api/v0.1/pono/meme family:control role:implements >>
+<<~ pranala #implements-loci ? -> lar:///ha.ka.ba/api/v0.1/pono/loci family:control role:implements >>
 <<~/ahu >>
 
 <<~&#x0004; -> ? >>

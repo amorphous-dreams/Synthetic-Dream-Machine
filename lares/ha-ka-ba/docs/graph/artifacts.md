@@ -13,11 +13,6 @@ confidence   = 0.88
 mana         = 0.86
 manaoio      = 0.82
 manao        = 0.86
-implements   = [
-  "lar:///ha.ka.ba/api/v0.1/pono/meme",
-  "lar:///ha.ka.ba/api/v0.1/pono/loci",
-  "lar:///ha.ka.ba/api/v0.1/pono/invariant"
-]
 role         = "content-addressed artifact contract for boot closure compilation — SHA256 scheme, three artifact classes, compaction rules, cache compatibility"
 status-date  = "2026-04-24"
 ```
@@ -80,7 +75,7 @@ Clients that carry the previous receipt can compare: if `sha256` matches, the co
 <<~ ahu #artifact-minimal >>
 ## Artifact: Minimal Boot
 
-**Scope:** Tier 0 declared-core closure (14 loci from `AGENTS#iam.required-core`).
+**Scope:** Tier 0 declared-core closure (14 memes from control/owns edges rooted at `AGENTS`).
 **MCP resource:** `lar:///boot/minimal`
 **Compiler:** `compile_minimal_boot(entry="lar:///AGENTS")`
 
@@ -286,7 +281,7 @@ A **valid artifact** carries `dag_violations = []`. All other validation fields 
 
 When a hydration packet grows past context limits, the compaction pass applies in order:
 
-1. Keep all `closure` entries in full — loci stay intact.
+1. Keep all `closure` entries in full — memes stay intact.
 2. Truncate `pranala_edges` to `family: control` edges only.
 3. Drop `interface_index` and `invariant_index` body — keep counts only (`interface_count`, `invariant_count`).
 4. Record the loss in `compaction_notes` with a brief description of what dropped.
@@ -309,6 +304,9 @@ graph/artifacts closes
 <<~ loulou lar:///ha.ka.ba/docs/lararium_mcp/hydration >>
 <<~ loulou lar:///ha.ka.ba/docs/graph/nodes >>
 
+<<~ pranala #implements-meme ? -> lar:///ha.ka.ba/api/v0.1/pono/meme family:control role:implements >>
+<<~ pranala #implements-loci ? -> lar:///ha.ka.ba/api/v0.1/pono/loci family:control role:implements >>
+<<~ pranala #implements-invariant ? -> lar:///ha.ka.ba/api/v0.1/pono/invariant family:control role:implements >>
 <<~/ahu >>
 
 <<~&#x0004; -> ? >>

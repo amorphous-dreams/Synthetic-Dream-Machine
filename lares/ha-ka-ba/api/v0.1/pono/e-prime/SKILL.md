@@ -19,10 +19,6 @@ cacheable=true
 retain = true
 mana = 0.70
 manao = 0.76
-implements = [
-  "lar:///ha.ka.ba/api/v0.1/pono/meme",
-  "lar:///ha.ka.ba/api/v0.1/pono/loci"
-]
 role = "secondary E-Prime audit skill, Hoʻoko correction surface, and settled-text conformance guide"
 covers = ["lar:///ha.ka.ba/api/v0.1/pono/e-prime"]
 constraints = [
@@ -270,6 +266,8 @@ E-Prime auditor closes the settled-text correction stream here.
 <<~ loulou lar:///ha.ka.ba/api/v0.1/pono/e-prime >>
 <<~ loulou lar:///ha.ka.ba/api/v0.1/pono >>
 
+<<~ pranala #implements-meme ? -> lar:///ha.ka.ba/api/v0.1/pono/meme family:control role:implements >>
+<<~ pranala #implements-loci ? -> lar:///ha.ka.ba/api/v0.1/pono/loci family:control role:implements >>
 <<~/ahu >>
 
 

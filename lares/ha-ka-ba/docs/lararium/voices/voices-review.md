@@ -14,10 +14,6 @@ register = "S"
 manaoio = 0.82
 mana = 0.78
 manao = 0.84
-implements = [
-  "lar:///ha.ka.ba/api/v0.1/pono/meme",
-  "lar:///ha.ka.ba/api/v0.1/pono/loci"
-]
 role = "OODA-HA extraction plan for the three-layer voice-house: coordinator, worker, and mask layers"
 cacheable = false
 retain = false
@@ -371,6 +367,8 @@ MASKS.md converted from stub to forward-route to `lar:///LARES#session-masks`.
 <<~ loulou lar:///ha.ka.ba/docs/lararium/voices/workers >>
 <<~ loulou lar:///ha.ka.ba/docs/lararium/voices/masks >>
 
+<<~ pranala #implements-meme ? -> lar:///ha.ka.ba/api/v0.1/pono/meme family:control role:implements >>
+<<~ pranala #implements-loci ? -> lar:///ha.ka.ba/api/v0.1/pono/loci family:control role:implements >>
 <<~/ahu >>
 
 <<~&#x0003; ahu #body-close >>

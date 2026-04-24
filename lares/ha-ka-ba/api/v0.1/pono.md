@@ -12,11 +12,6 @@ register = "CS"
 manaoio = 0.60
 mana = 0.65
 manao = 0.70
-implements = [
-  "lar:///ha.ka.ba/api/v0.1/pono/meme",
-  "lar:///ha.ka.ba/api/v0.1/pono/loci",
-  "lar:///ha.ka.ba/api/v0.1/pono/invariant"
-]
 role = "core invariant example of a pono meme: right-sized law surface, bounded self-description, and outward routing pressure"
 cacheable = true
 ```
@@ -59,6 +54,9 @@ pono closes
 <<~ loulou lar:///ha.ka.ba/docs/pono >>
 
 
+<<~ pranala #implements-meme ? -> lar:///ha.ka.ba/api/v0.1/pono/meme family:control role:implements >>
+<<~ pranala #implements-loci ? -> lar:///ha.ka.ba/api/v0.1/pono/loci family:control role:implements >>
+<<~ pranala #implements-invariant ? -> lar:///ha.ka.ba/api/v0.1/pono/invariant family:control role:implements >>
 <<~/ahu >>
 
 

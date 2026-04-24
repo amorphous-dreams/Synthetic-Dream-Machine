@@ -13,11 +13,6 @@ register = "CS"
 manaoio = 0.82
 mana = 0.86
 manao = 0.84
-implements = [
-  "lar:///ha.ka.ba/api/v0.1/pono/meme",
-  "lar:///ha.ka.ba/api/v0.1/pono/loci",
-  "lar:///ha.ka.ba/api/v0.1/pono/invariant"
-]
 role = "invariant lar: URI scheme law (kānāwai), canonical form authority, and grammar primitive"
 cacheable=true
 retain = true
@@ -135,6 +130,9 @@ pono/lar-uri
 <<~ loulou lar:///ha.ka.ba/docs/pono/lar-uri >>
 <<~ loulou lar:///ha.ka.ba/api/v0.1/pono/invariant >>
 
+<<~ pranala #implements-meme ? -> lar:///ha.ka.ba/api/v0.1/pono/meme family:control role:implements >>
+<<~ pranala #implements-loci ? -> lar:///ha.ka.ba/api/v0.1/pono/loci family:control role:implements >>
+<<~ pranala #implements-invariant ? -> lar:///ha.ka.ba/api/v0.1/pono/invariant family:control role:implements >>
 <<~/ahu >>
 
 <<~&#x0004; -> ? >>
