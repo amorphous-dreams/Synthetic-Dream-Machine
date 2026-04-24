@@ -1,7 +1,7 @@
 # Task: MCP-TASK-006 — Design prompt catalog and arguments
 
 Parent story: `MCP-STORY-202`
-Status: `todo`
+Status: `done`
 Size: `S`
 
 ## Linked subtasks

@@ -1,7 +1,7 @@
 # Task: MCP-TASK-017 — Draft execution/widget graph schema
 
 Parent story: `MCP-STORY-107`
-Status: `todo`
+Status: `done`
 Size: `M`
 
 ## Deliverable
