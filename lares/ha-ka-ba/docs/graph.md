@@ -41,15 +41,19 @@ graph opens
 ✶ observe: static `_SOCKET`/`_DEPTH` maps and carrier-index scans stand in for a real graph walk.
 ⏿ orient: build-system depsets, temporal KG bi-temporal edges, and UEFN ECS plane separation each name the same missing structure.
 ◇ decide: three-tier traversal model, content-addressed artifacts, pranala parser over actual carrier text.
-▶ act: write child loci for node schema, traversal rules, parser design, and artifact contract.
-⤴ verify: Tier 0 declared-core and Tier 1 graph walk converge on the same 14 loci before proceeding.
+▶ act: write child memes for meme data model, traversal rules, parser design, and artifact contract.
+⤴ verify: Tier 0 declared-core and Tier 1 graph walk converge on the same 14 memes before proceeding.
 ↺ surface one open question — `? ->` socket resolution depth — before implementing the parser.
 <<~/ahu >>
 
 <<~ ahu #core-proposition >>
+
 ## Core Proposition
 
 The pranala-edge DAG replaces static enumeration as the source of truth for boot closure.
+
+**Terminology Note:**
+*A "meme" is any carrier of a lar URI and is the default node in the graph. A "locus" is a meme that implements the loci interface (see canonical interface at its own URI). Use "meme/memes" for general graph structure, reserving "locus/loci" for interface boundaries and in "implements" blocks as required by canonical law. This distinction is intentional and should be preserved in all design docs and specs.*
 
 Three structural claims drive the redesign:
 
@@ -57,7 +61,7 @@ Three structural claims drive the redesign:
 
 2. **Temporal KG pattern.** Graphiti's bi-temporal four-timestamp model and TerminusDB's append-only delta encoding show that declared-unresolved forward references belong in the graph as valid entries, not as errors. A boot walk discovers them and classifies them by severity rather than failing.
 
-3. **ECS plane pattern.** UEFN's Scene Graph separates `entity` (pure container, no data), `component` (attached capability, owns data and logic), and `prefab` (reusable template, stamps instances). Lararium maps exactly: `CarrierNode` is the entity (URI + path, no business logic), the `implements` bundle is the component list (each interface URI is an attached capability), and `lifecycle: template` pranala edges are prefabs (declared intent that the compiler stamps into the walk). Pranala families form separate graph planes, each traversed by its own rules. Collapsing them into one walk loses the plane distinctions.
+3. **ECS plane pattern.** UEFN's Scene Graph separates `entity` (pure container, no data), `component` (attached capability, owns data and logic), and `prefab` (reusable template, stamps instances). Lararium maps exactly: a **meme** is the entity (URI + path, no business logic), the `implements` bundle is the component list (each interface URI is an attached capability, which may include the loci interface), and `lifecycle: template` pranala edges are prefabs (declared intent that the compiler stamps into the walk). Pranala families form separate graph planes, each traversed by its own rules. Collapsing them into one walk loses the plane distinctions.
 
 4. **Dual-index content addressing.** TiddlyWiki maintains multiple parallel indexes over the same tiddler corpus. `lar:///INDEXES/hashes` (URI → SHA256 map, lightweight poll) and `lar:///CONTENT/{hash}` (hash → carrier text, virtual resource) implement the same pattern. The boot receipt's `sha256` field becomes a stable Anthropic prompt cache key: a client that holds a matching receipt need not resend carrier text.
 
@@ -81,47 +85,52 @@ They do not require further operator input.
 <<~/ahu >>
 
 <<~ ahu #open-question >>
-## Open Question — `? ->` Socket Resolution Depth
+## `? ->` Socket Resolution — Closed
 
-One design question remains open before the pranala parser can implement `? ->` resolution.
+The canonical pranala law (`lar:///ha.ka.ba/api/v0.1/pono/pranala`) settles this:
 
-In AGENTS.md each pranala block appears inside a named `ahu` block:
+> "A named `#fragment` SHOULD win socket resolution before the enclosing meme URI."
 
-```
-<<~ ahu #required-preload-e-prime >>
-  <<~ pranala #preload-e-prime ? -> lar:///ha.ka.ba/api/v0.1/pono/e-prime >>
-  ...
-  <<~/pranala >>
-<<~/ahu >>
-```
+**Resolution: Option A — fragment-level.**
+`? ->` in a pranala block inside `<<~ ahu #required-preload-e-prime >>` resolves to `lar:///AGENTS#required-preload-e-prime`.
+The parser tracks enclosing `ahu` fragment context during scan.
+`from_socket` carries the fragment URI; `from_uri` carries the carrier URI.
 
-The `?` in `? -> TARGET` resolves to "the nearest enclosing socket or `#fragment-id`."
-
-**Option A — Fragment-level resolution:**
-`? ->` resolves to `lar:///AGENTS#required-preload-e-prime` (the enclosing `ahu` socket).
-Produces richer edge records with specific socket-level provenance.
-Matches how the hydration sockets table documents the boot sequence.
-Requires the parser to track enclosing `ahu` fragment context during scan.
-
-**Option B — Carrier-level resolution:**
-`? ->` resolves to `lar:///AGENTS` (the carrier URI).
-Simpler implementation; from-socket becomes the carrier root.
-Loses sub-carrier socket granularity in edge records.
-
-**Operator gate:** the parser implementation in `graph/pranala-parser` awaits this call.
-All other child loci in this graph cluster may land without it.
+The parser implementation in `graph/pranala-parser` may now proceed on this basis.
 
 <<~/ahu >>
 
 <<~ ahu #child-loci >>
 ## Child Loci
 
-| Locus | Role |
+| Meme | Role |
 |---|---|
-| `lar:///ha.ka.ba/docs/graph/nodes` | `PranaEdge`, `CarrierNode`, and `CarrierGraph` data model contracts |
+| `lar:///ha.ka.ba/docs/graph/loci` | `PranaEdge`, `Meme`, and `MemesGraph` data model contracts (see note above for loci interface) |
 | `lar:///ha.ka.ba/docs/graph/traversal` | three-tier walk rules, DFS cycle detection, Kahn topological sort, declared-unresolved handling |
 | `lar:///ha.ka.ba/docs/graph/pranala-parser` | block form, inline form, sugar expansion, `? ->` resolution, field normalization |
 | `lar:///ha.ka.ba/docs/graph/artifacts` | content-addressed SHA256 scheme, three artifact classes, compaction rules |
+
+<<~/ahu >>
+
+<<~ ahu #terminology-alignment >>
+## Deferred — Terminology Alignment
+
+The canonical loci law (`lar:///ha.ka.ba/api/v0.1/pono/loci`) uses **locus / loci** for a carrier in the graph.
+The server code and current graph docs use `node` / `CarrierNode` / `CarrierGraph`.
+
+Deferred rename target (Phase 1 implementation, not blocking design):
+
+| Current name | Target name |
+|---|---|
+| `CarrierNode` | `Locus` (or `CarrierLocus`) |
+| `CarrierGraph` | `LociGraph` |
+| `add_node` | `add_locus` |
+| `nodes` dict | `loci` dict |
+| `graph.py` identifiers | align to loci vocabulary throughout |
+| MCP tool descriptions | "loci" not "nodes" |
+
+All graph design docs should use `locus`/`loci` when describing carriers in the graph.
+The rename in the server awaits Phase 1 implementation. Until then, current code and design docs may carry both forms with this note as authority.
 
 <<~/ahu >>
 

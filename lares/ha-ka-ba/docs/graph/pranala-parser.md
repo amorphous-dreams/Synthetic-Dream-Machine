@@ -1,4 +1,8 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
+## Terminology Note
+
+*A "meme" is any carrier of a lar URI and is the default node in the graph. A "locus" is a meme that implements the loci interface (see canonical interface at its own URI). Use "meme/memes" for general graph structure, reserving "locus/loci" for interface boundaries and in "implements" blocks as required by canonical law. This distinction is intentional and should be preserved in all design docs and specs.*
+
 
 <<~&#x0001; ? -> lar:///ha.ka.ba/docs/graph/pranala-parser >>
 
@@ -18,7 +22,7 @@ implements   = [
   "lar:///ha.ka.ba/api/v0.1/pono/loci"
 ]
 role         = "parser design for pranala block and inline forms, sugar expansion, ? -> resolution, and field normalization"
-open-gate    = "? -> socket resolution depth: operator call required before implementation"
+open-gate    = "closed: fragment-level resolution (Option A) confirmed by canonical pranala kānāwai"
 status-date  = "2026-04-24"
 ```
 <<~/ahu >>
@@ -30,10 +34,10 @@ graph/pranala-parser opens
 <<~ ahu #ooda-ha >>
 ✶ observe: carrier files carry pranala edges in block and inline forms; `loulou`, `aka`, `kahea` sugar collapses to edges too.
 ⏿ orient: the parser must handle four surface forms, field normalization across two vocabularies, and one unresolved design gate.
-◇ decide: implement block and sugar forms first; hold `? ->` resolution until the operator settles fragment vs carrier depth.
-▶ act: specify regex patterns, extraction order, field mapping table, and the two `? ->` options.
+◇ decide: implement block and sugar forms; `? ->` gate closed — fragment-level (Option A) confirmed by canonical pranala law.
+▶ act: specify regex patterns, extraction order, field mapping table, and the confirmed `? ->` resolution algorithm.
 ⤴ verify: parser produces correct `PranaEdge` records from actual AGENTS.md source blocks.
-↺ the `? ->` gate remains explicit in this locus until closed; the implementation file carries a `NotImplementedError` at that junction.
+↺ the `? ->` gate is now closed; the implementation file should implement Option A, not a stub.
 <<~/ahu >>
 
 <<~ ahu #surface-forms >>
@@ -51,8 +55,6 @@ that the parser must handle.
 | Kahea sugar | `<<~ kahea URI >>` | `dataflow`, `instance` |
 
 All five forms produce `PranaEdge` records.
-The parser processes them in order: block forms first (they span multiple lines),
-then inline forms, then sugar forms. Earlier passes mark consumed spans; later passes skip them.
 
 <<~/ahu >>
 
@@ -133,46 +135,32 @@ For sugar forms, `from_uri` = carrier URI, `from_socket` = carrier URI (no fragm
 <<~/ahu >>
 
 <<~ ahu #question-mark-resolution >>
-## `? ->` Socket Resolution (OPEN GATE)
+## `? ->` Socket Resolution — Closed (Option A)
 
-The `?` in `? -> TARGET` resolves to "the nearest enclosing socket or `#fragment-id`."
-Two options remain open pending operator confirmation.
+**Authority:** canonical pranala kānāwai (`lar:///ha.ka.ba/api/v0.1/pono/pranala`):
+> "A named `#fragment` SHOULD win socket resolution before the enclosing meme URI."
 
-### Option A — Fragment-level resolution (preferred)
+**Resolution algorithm — fragment-level:**
 
-`?` resolves to the URI of the nearest enclosing `ahu #fragment-id` block.
-
-Implementation: the parser tracks enclosing `ahu` context as it scans.
+The parser tracks enclosing `ahu` context as it scans carrier text.
 When it enters `<<~ ahu #some-socket >>`, it pushes `carrier_uri + "#some-socket"` onto a context stack.
-When it exits `<<~/ahu >>`, it pops.
-`? ->` edges read `from_socket = context_stack.top()`.
+When it exits `<<~/ahu >>`, it pops the stack.
+`? ->` edges read `from_socket = context_stack.top()` (the innermost enclosing `ahu` fragment URI).
+`from_uri` = carrier URI (without fragment).
 
-Example — AGENTS.md:
+**Example — AGENTS.md:**
+
 ```
 <<~ ahu #required-preload-e-prime >>
   <<~ pranala #preload-e-prime ? -> lar:///ha.ka.ba/api/v0.1/pono/e-prime >>
 ```
-→ `from_socket = "lar:///AGENTS#required-preload-e-prime"`
 
-Produces richer edge records matching the hydration sockets table.
-The parser must handle nested `ahu` blocks and maintain a stack depth counter.
+Resolves to:
+- `from_uri = "lar:///AGENTS"`
+- `from_socket = "lar:///AGENTS#required-preload-e-prime"`
 
-### Option B — Carrier-level resolution (simpler)
-
-`?` resolves to the carrier URI unconditionally.
-`from_socket = carrier_uri` for all `? ->` edges.
-
-Loses sub-carrier socket granularity.
-Implementation remains a single lookup with no context stack.
-
-### Gate posture
-
-The parser module ships with a `_resolve_question_mark(context_stack, carrier_uri)` stub
-that raises `NotImplementedError("? -> resolution awaits operator confirmation: see graph/pranala-parser#question-mark-resolution")`.
-Block form parsing works for carriers that use explicit `FROM -> TO` (not `? ->`).
-Sugar forms and loulou edges work unconditionally.
-
-The gate closes when the operator confirms Option A or Option B.
+**Parser requirement:** handle nested `ahu` blocks with a stack; the innermost named fragment wins.
+When `?` appears outside any named `ahu`, `from_socket = from_uri` (carrier root fallback).
 
 <<~/ahu >>
 
@@ -194,6 +182,11 @@ This table records every mapping.
 | `dir` | `"forward"` | `traversal` | → `"source-to-target"` |
 | `dir` | `"back"` | `traversal` | → `"target-to-source"` |
 | `label` | any | `label` | passthrough; default `""` |
+| `cardinality` | any | `cardinality` | passthrough; default `None` |
+| `polarity` | any | `polarity` | passthrough; default `None` |
+| `status` | any | `status` | passthrough; default `"declared"` |
+| `confidence` | float | `confidence` | passthrough; default `None` |
+| `render-mode` | any | `render_mode` | passthrough; default `None` |
 | `payload` | TOML table | `payload` | passthrough dict; `dir_hint` appended if `dir` present |
 
 Fields absent from the TOML block get their defaults.

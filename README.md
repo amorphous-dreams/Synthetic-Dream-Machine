@@ -146,28 +146,92 @@ The Lares agent architecture (`AGENTS.md`, `builds/agents/`) is versioned at **v
 ---
 
 ## Development Setup
+0. Install Ollama and configure the system
+```bash
+set -euo pipefail
+
+# Install deps (idempotent)
+sudo apt-get update
+sudo apt-get install -y zstd curl
+
+# Install Ollama only if missing
+if ! command -v ollama >/dev/null 2>&1; then
+  curl -fsSL https://ollama.com/install.sh | sh
+else
+  echo "Ollama already installed: $(ollama -v)"
+fi
+
+# Route models to D: (WSL2 persistent storage)
+mkdir -p /mnt/d/ollama/models
+
+if ! grep -q 'export OLLAMA_MODELS=/mnt/d/ollama/models' ~/.bashrc; then
+  echo 'export OLLAMA_MODELS=/mnt/d/ollama/models' >> ~/.bashrc
+fi
+
+export OLLAMA_MODELS=/mnt/d/ollama/models
+
+# Stop any existing Ollama instance (ignore errors)
+sudo pkill ollama 2>/dev/null || true
+
+# Start Ollama if not already running
+if ! pgrep -x ollama >/dev/null 2>&1; then
+  nohup ollama serve >/tmp/ollama.log 2>&1 &
+fi
+
+# Verify daemon/CLI
+ollama -v
+ollama list
+
+# Pull models only if missing
+pull_if_missing () {
+  local model="$1"
+  if ollama list | awk '{print $1}' | grep -qx "$model"; then
+    echo "Already pulled: $model"
+  else
+    ollama pull "$model"
+  fi
+}
+
+pull_if_missing qwen3.6:27b
+pull_if_missing qwen3-coder-next
+```
+
+Then:
+```bash
+# Open the repo in VS Code Insiders
+cd /path/to/repo
+code-insiders .
+````
+
+Then configure Ollama in Copilot Chat → Manage Language Models → Add Models → Ollama, select **Local**, and add the repo MCP server through `.vscode/mcp.json`.
+
 1. Create and activate a virtual environment:
+
    ```bash
    python3 -m venv .venv
    source .venv/bin/activate
    ```
 2. Install in editable mode with dev dependencies:
+
    ```bash
    pip install -e .[dev]
    ```
 3. Run tests:
+
    ```bash
    pytest
    ```
 
 ## Project Structure
-- `lares/` — Main package (MCP server, modules, agentic logic)
-- `tests/` — Test suite
-- `requirements.txt` — Dev dependencies
-- `pyproject.toml` — Build and project metadata
+
+* `lares/` — Main package (MCP server, modules, agentic logic)
+* `tests/` — Test suite
+* `requirements.txt` — Dev dependencies
+* `pyproject.toml` — Build and project metadata
+
 
 ## License
-MIT
+LICENSE
 
 ---
 
