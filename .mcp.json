@@ -1,19 +1,17 @@
 {
   "mcpServers": {
     "lararium": {
-      "command": "/home/joshu/Synthetic-Dream-Machine/.venv/bin/python3",
+      "command": ".venv/bin/python3",
       "args": ["-m", "lares.lararium_mcp"],
-      "cwd": "/home/joshu/Synthetic-Dream-Machine"
+      "cwd": "."
     },
     "lares-probe-runner": {
-      "command": "/home/joshu/Synthetic-Dream-Machine/.venv/bin/python",
+      "command": ".venv/bin/python",
       "args": ["tests/mcp/probe_runner.py"],
+      "cwd": ".",
       "env": {
-        "LARES_TEST_BACKEND":  "${LARES_TEST_BACKEND:-openai}",
-        "LARES_TEST_MODEL":    "${LARES_TEST_MODEL:-gpt-4o}",
-        "LARES_JUDGE_MODEL":   "${LARES_JUDGE_MODEL:-gpt-4o-mini}",
-        "OPENAI_API_KEY":      "${OPENAI_API_KEY}",
-        "ANTHROPIC_API_KEY":   "${ANTHROPIC_API_KEY}"
+        "OPENAI_API_KEY": "${OPENAI_API_KEY}",
+        "ANTHROPIC_API_KEY": "${ANTHROPIC_API_KEY}"
       }
     }
   }

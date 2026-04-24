@@ -3,7 +3,6 @@
         "Synthetic-Dream-Machine/.vscode/mcp.json: lararium": {
             "allowedModels": [
                 "copilot/auto",
-                "copilotcli/claude-sonnet-4.6",
                 "copilotcli/claude-haiku-4.5",
                 "claude-code/claude-haiku-4.5",
                 "copilot/claude-haiku-4.5",
@@ -13,6 +12,7 @@
                 "copilotcli/claude-sonnet-4.5",
                 "claude-code/claude-sonnet-4.5",
                 "copilot/claude-sonnet-4.5",
+                "copilotcli/claude-sonnet-4.6",
                 "claude-code/claude-sonnet-4.6",
                 "copilot/claude-sonnet-4.6",
                 "copilot/gemini-2.5-pro",
@@ -34,7 +34,8 @@
                 "copilotcli/gpt-5.4-mini",
                 "copilot/gpt-5.4-mini",
                 "copilot/grok-code-fast-1",
-                "copilot/oswe-vscode-prime"
+                "copilot/oswe-vscode-prime",
+                "copilotcli/auto"
             ]
         }
     }
