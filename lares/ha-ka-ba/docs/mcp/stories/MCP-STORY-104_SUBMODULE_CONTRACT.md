@@ -1,7 +1,7 @@
 # Story: MCP-STORY-104 — Define submodule integration contract
 
 Parent epic: `MCP-EPIC-01`
-Status: `ready`
+Status: `done`
 Size: `M`
 Target sprint: `SPRINT-00`
 

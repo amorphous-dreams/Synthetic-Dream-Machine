@@ -7,6 +7,9 @@ import unittest
 
 from lares.lararium_mcp.compiler import (
     ENTRY_URI,
+    _DEPTH,
+    _SOCKET,
+    _read_required_core,
     compile_boot_receipt,
     compile_full_boot,
     compile_minimal_boot,
@@ -171,6 +174,59 @@ class CompilerMCPToolTests(unittest.TestCase):
         self.assertEqual(contents[0]["mimeType"], "application/json")
         data = json.loads(contents[0]["text"])
         self.assertEqual(data["artifact"], "minimal-boot")
+
+
+class StaticMapDriftTests(unittest.TestCase):
+    """Verify that _SOCKET and _DEPTH stay aligned with the live required-core.
+
+    The compiler reads required-core dynamically but annotates entries from static
+    maps.  A mismatch means hydration entries get empty socket labels or wrong
+    depths without any runtime error.
+    """
+
+    def setUp(self) -> None:
+        self.required_core = _read_required_core()
+        self.required_set = set(self.required_core)
+
+    def test_required_core_non_empty(self) -> None:
+        self.assertGreater(len(self.required_core), 0)
+
+    def test_socket_covers_all_required_core(self) -> None:
+        missing = self.required_set - set(_SOCKET)
+        self.assertEqual(
+            missing, set(),
+            f"_SOCKET missing entries that appear in required-core: {missing}",
+        )
+
+    def test_socket_has_no_phantom_loci(self) -> None:
+        phantom = set(_SOCKET) - self.required_set
+        self.assertEqual(
+            phantom, set(),
+            f"_SOCKET contains loci absent from required-core: {phantom}",
+        )
+
+    def test_depth_covers_all_required_core(self) -> None:
+        missing = self.required_set - set(_DEPTH)
+        self.assertEqual(
+            missing, set(),
+            f"_DEPTH missing entries that appear in required-core: {missing}",
+        )
+
+    def test_depth_has_no_phantom_loci(self) -> None:
+        phantom = set(_DEPTH) - self.required_set
+        self.assertEqual(
+            phantom, set(),
+            f"_DEPTH contains loci absent from required-core: {phantom}",
+        )
+
+    def test_entry_uri_at_depth_zero(self) -> None:
+        self.assertEqual(_DEPTH.get(ENTRY_URI), 0)
+
+    def test_entry_uri_socket_is_entry(self) -> None:
+        self.assertEqual(_SOCKET.get(ENTRY_URI), "entry")
+
+    def test_lares_socket_is_continuation(self) -> None:
+        self.assertEqual(_SOCKET.get("lar:///LARES"), "AGENTS#continue-to-lares")
 
 
 if __name__ == "__main__":

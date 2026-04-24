@@ -21,7 +21,7 @@ from .resolver import resolve_lar_uri
 
 PROMPT_CATALOG: tuple[dict[str, Any], ...] = (
     {
-        "name": "lararium.boot_minimal",
+        "name": "lararium-boot_minimal",
         "description": (
             "Load the minimal Lararium boot closure into context. "
             "Embeds the 14-locus required-core artifact (roles, implements bundles, "
@@ -31,7 +31,7 @@ PROMPT_CATALOG: tuple[dict[str, Any], ...] = (
         "arguments": [],
     },
     {
-        "name": "lararium.hydrate_full",
+        "name": "lararium-hydrate_full",
         "description": (
             "Load the full Lararium hydration closure into context. "
             "Embeds all indexed carriers beyond the required-core. "
@@ -40,7 +40,7 @@ PROMPT_CATALOG: tuple[dict[str, Any], ...] = (
         "arguments": [],
     },
     {
-        "name": "lararium.boot_receipt",
+        "name": "lararium-boot_receipt",
         "description": (
             "Load the current boot receipt into context. "
             "Embeds the sha256-digested closure summary for cache and drift detection. "
@@ -49,7 +49,7 @@ PROMPT_CATALOG: tuple[dict[str, Any], ...] = (
         "arguments": [],
     },
     {
-        "name": "lararium.resolve_uri",
+        "name": "lararium-resolve_uri",
         "description": (
             "Resolve a lar:/// URI and embed its resolution record and carrier metadata. "
             "Use this to ground a session in one specific locus before navigating its graph."
@@ -63,7 +63,7 @@ PROMPT_CATALOG: tuple[dict[str, Any], ...] = (
         ],
     },
     {
-        "name": "lararium.read_carrier",
+        "name": "lararium-read_carrier",
         "description": (
             "Read a carrier's source text and embed it directly. "
             "Use this when the session needs the raw memetic-wikitext of a specific locus."
@@ -77,7 +77,7 @@ PROMPT_CATALOG: tuple[dict[str, Any], ...] = (
         ],
     },
     {
-        "name": "lararium.compare_hydration",
+        "name": "lararium-compare_hydration",
         "description": (
             "Compare minimal and full hydration closures. "
             "Embeds both artifact summaries side by side so the session can reason about "
@@ -238,23 +238,23 @@ def get_prompt(name: str, arguments: dict[str, str] | None = None) -> dict[str, 
         raise KeyError(f"unknown prompt: {name!r}")
 
     match name:
-        case "lararium.boot_minimal":
+        case "lararium-boot_minimal":
             return _get_boot_minimal()
-        case "lararium.hydrate_full":
+        case "lararium-hydrate_full":
             return _get_hydrate_full()
-        case "lararium.boot_receipt":
+        case "lararium-boot_receipt":
             return _get_boot_receipt()
-        case "lararium.resolve_uri":
+        case "lararium-resolve_uri":
             uri = arguments.get("uri", "")
             if not uri:
-                raise ValueError("argument 'uri' is required for lararium.resolve_uri")
+                raise ValueError("argument 'uri' is required for lararium-resolve_uri")
             return _get_resolve_uri(uri)
-        case "lararium.read_carrier":
+        case "lararium-read_carrier":
             uri = arguments.get("uri", "")
             if not uri:
-                raise ValueError("argument 'uri' is required for lararium.read_carrier")
+                raise ValueError("argument 'uri' is required for lararium-read_carrier")
             return _get_read_carrier(uri)
-        case "lararium.compare_hydration":
+        case "lararium-compare_hydration":
             return _get_compare_hydration()
         case _:
             raise KeyError(f"prompt handler not implemented: {name!r}")

@@ -1,7 +1,7 @@
 # Story: MCP-STORY-204 — Build submodule adapter layer
 
 Parent epic: `MCP-EPIC-02`
-Status: `todo`
+Status: `done`
 Size: `L`
 Target sprint: `SPRINT-01 / SPRINT-02`
 

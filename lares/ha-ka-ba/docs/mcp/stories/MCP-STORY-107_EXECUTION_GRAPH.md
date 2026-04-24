@@ -1,7 +1,7 @@
 # Story: MCP-STORY-107 — Define execution/widget graph contract
 
 Parent epic: `MCP-EPIC-01`
-Status: `ready`
+Status: `done`
 Size: `M`
 Target sprint: `SPRINT-01`
 

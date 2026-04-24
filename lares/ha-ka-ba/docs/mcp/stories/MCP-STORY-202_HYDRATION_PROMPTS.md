@@ -1,7 +1,7 @@
 # Story: MCP-STORY-202 — Expose hydration prompts
 
 Parent epic: `MCP-EPIC-02`
-Status: `todo`
+Status: `done`
 Size: `M`
 Target sprint: `SPRINT-02`
 

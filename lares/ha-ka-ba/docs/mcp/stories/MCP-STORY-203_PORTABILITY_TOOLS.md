@@ -1,7 +1,7 @@
 # Story: MCP-STORY-203 — Expose portability tools
 
 Parent epic: `MCP-EPIC-02`
-Status: `todo`
+Status: `done`
 Size: `M`
 Target sprint: `SPRINT-02`
 

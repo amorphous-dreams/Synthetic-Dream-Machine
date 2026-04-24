@@ -9,21 +9,17 @@ Cadence assumption: one-week planning rhythm / two-week implementation rhythm.
 
 ### Now
 
-Sprint-01 complete. Sprint-02 focus:
+Sprint-02 closed. Sprint-03 focus:
 
-- design submodule adapter interface (MCP-STORY-204, MCP-TASK-014)
-- define execution/widget graph contract (MCP-STORY-107, MCP-TASK-017)
-- draft render projection contract for DOM, tldraw, and scene-graph targets (MCP-STORY-108, MCP-TASK-018)
-- expose hydration prompts (MCP-STORY-202, MCP-TASK-006)
-- expose portability tools (MCP-STORY-203, MCP-TASK-007)
-- wire VS Code / Copilot workspace integration (MCP-STORY-401)
-- wire Claude Code local/project scopes (MCP-STORY-402)
+- remote HTTP/SSE adapter (MCP-STORY-301, MCP-TASK-008)
+- auth, scopes, and approval policy (MCP-STORY-302, MCP-TASK-009)
+- eval suite for hydration drift (MCP-STORY-501, MCP-TASK-010)
+- pranala-edge DAG walk to make `compile_full_boot` honest (MCP-TASK-004 follow-on)
 
 ### Next
 
-- wire three local chat surfaces (VS Code, Claude Code, Codex)
-- expose remote read-only server
-- expose hydration prompts and portability tools
+- security review and operational runbook (MCP-STORY-502)
+- hardening gate
 
 ### Completed in this pass
 
@@ -49,6 +45,12 @@ Sprint-01 complete. Sprint-02 focus:
 - wrote and committed `TW_AST_MAPPING.md` (MCP-TASK-016)
 - wrote and committed `PRANALA_ALIGNMENT.md` (MCP-TASK-019)
 - closed MCP-STORY-103, MCP-STORY-106, MCP-STORY-201 as done
+- fixed prompt naming: renamed `lararium.X` → `lararium-X` to match tool convention (77 tests pass)
+- reconciled all story Status fields with backlog truth (SPRINT-02 stories marked done)
+- wrote SPRINT-02 exit markers
+- added `StaticMapDriftTests` (8 tests) to `test_compiler.py` — guards `_SOCKET`/`_DEPTH` against required-core drift
+- created `lares/lararium_mcp/adapters/mempalace.py` — MemPalace sidecar adapter (subprocess + JSON-RPC client, all tool groups) with 14 unit tests
+- closed MCP-SUBTASK-007 (mempalace lane) as done
 
 ### Later
 

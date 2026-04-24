@@ -1,7 +1,7 @@
 # Story: MCP-STORY-108 — Define render projection contract for DOM, tldraw, and scene-graph targets
 
 Parent epic: `MCP-EPIC-01`
-Status: `todo`
+Status: `done`
 Size: `M`
 Target sprint: `SPRINT-01 / SPRINT-02`
 

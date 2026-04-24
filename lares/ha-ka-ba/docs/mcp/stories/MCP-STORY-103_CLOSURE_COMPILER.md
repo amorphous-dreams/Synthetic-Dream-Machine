@@ -1,7 +1,7 @@
 # Story: MCP-STORY-103 — Implement deterministic closure compiler
 
 Parent epic: `MCP-EPIC-01`
-Status: `todo`
+Status: `done`
 Size: `L`
 Target sprint: `SPRINT-01`
 

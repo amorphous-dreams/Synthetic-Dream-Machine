@@ -15,7 +15,7 @@ class PromptCatalogTests(unittest.TestCase):
 
     def test_catalog_names_are_namespaced(self) -> None:
         for p in list_prompts():
-            self.assertTrue(p["name"].startswith("lararium."), p["name"])
+            self.assertTrue(p["name"].startswith("lararium-"), p["name"])
 
     def test_all_prompts_have_description(self) -> None:
         for p in list_prompts():

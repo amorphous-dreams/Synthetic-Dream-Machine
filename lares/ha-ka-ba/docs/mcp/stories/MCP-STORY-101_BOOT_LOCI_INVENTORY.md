@@ -1,7 +1,7 @@
 # Story: MCP-STORY-101 — Inventory Lararium boot loci, edge classes, and submodule attachments
 
 Parent epic: `MCP-EPIC-01`
-Status: `ready`
+Status: `done`
 Size: `M`
 Target sprint: `SPRINT-00`
 

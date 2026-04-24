@@ -1,7 +1,7 @@
 # Story: MCP-STORY-102 — Define hydration artifact contract
 
 Parent epic: `MCP-EPIC-01`
-Status: `ready`
+Status: `done`
 Size: `M`
 Target sprint: `SPRINT-00`
 

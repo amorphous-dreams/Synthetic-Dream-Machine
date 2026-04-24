@@ -1,7 +1,7 @@
 # Story: MCP-STORY-105 — Define direct-import boundary for TiddlyWiki Filter Language
 
 Parent epic: `MCP-EPIC-01`
-Status: `ready`
+Status: `done`
 Size: `S`
 Target sprint: `SPRINT-00`
 

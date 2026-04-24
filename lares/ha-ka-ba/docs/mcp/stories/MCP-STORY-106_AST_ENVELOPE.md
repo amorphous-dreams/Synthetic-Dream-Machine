@@ -1,7 +1,7 @@
 # Story: MCP-STORY-106 — Lock memetic-wikitext and guest-grammar AST envelope
 
 Parent epic: `MCP-EPIC-01`
-Status: `ready`
+Status: `done`
 Size: `M`
 Target sprint: `SPRINT-00 / SPRINT-01`
 

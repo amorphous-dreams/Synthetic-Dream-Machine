@@ -1,7 +1,7 @@
 # Story: MCP-STORY-201 — Expose read-only resources for `lar:///...`
 
 Parent epic: `MCP-EPIC-02`
-Status: `in-progress`
+Status: `done`
 Size: `L`
 Target sprint: `SPRINT-01`
 
