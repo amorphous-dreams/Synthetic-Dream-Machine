@@ -120,17 +120,17 @@ def _uri_schema(description: str) -> dict[str, object]:
 
 
 TOOL_HANDLERS: dict[str, Callable[[dict[str, object]], object]] = {
-    "lararium.resolve_lar_uri": lambda args: resolve_lar_uri_tool(_require_string(args, "uri")),
-    "lararium.read_lar_resource": lambda args: read_lar_resource_tool(_require_string(args, "uri")),
-    "lararium.list_lar_resources": lambda args: list_lar_carriers_tool(),
-    "lararium.inspect_carrier": lambda args: inspect_carrier_tool(_require_string(args, "uri")),
-    "lararium.compile_minimal_boot": lambda args: compile_minimal_boot(
+    "lararium-resolve_lar_uri": lambda args: resolve_lar_uri_tool(_require_string(args, "uri")),
+    "lararium-read_lar_resource": lambda args: read_lar_resource_tool(_require_string(args, "uri")),
+    "lararium-list_lar_resources": lambda args: list_lar_carriers_tool(),
+    "lararium-inspect_carrier": lambda args: inspect_carrier_tool(_require_string(args, "uri")),
+    "lararium-compile_minimal_boot": lambda args: compile_minimal_boot(
         str(args["entry"]) if isinstance(args.get("entry"), str) else "lar:///AGENTS"
     ),
-    "lararium.compile_full_boot": lambda args: compile_full_boot(
+    "lararium-compile_full_boot": lambda args: compile_full_boot(
         str(args["entry"]) if isinstance(args.get("entry"), str) else "lar:///AGENTS"
     ),
-    "lararium.compile_boot_receipt": lambda args: compile_boot_receipt(compile_minimal_boot()),
+    "lararium-compile_boot_receipt": lambda args: compile_boot_receipt(compile_minimal_boot()),
 }
 
 
@@ -147,35 +147,35 @@ _OPTIONAL_ENTRY_SCHEMA: dict[str, object] = {
 
 TOOL_DEFINITIONS: tuple[dict[str, object], ...] = (
     {
-        "name": "lararium.resolve_lar_uri",
+        "name": "lararium-resolve_lar_uri",
         "title": "Resolve lar URI",
         "description": "Resolve a lar:/// URI into file-backed or virtual Lararium resource metadata.",
         "inputSchema": _uri_schema("A lar:/// URI such as lar:///AGENTS or lar:///INDEXES/carriers."),
         "annotations": {"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True},
     },
     {
-        "name": "lararium.read_lar_resource",
+        "name": "lararium-read_lar_resource",
         "title": "Read Lararium resource",
         "description": "Read a file-backed Lararium carrier or a virtual index resource.",
         "inputSchema": _uri_schema("A readable Lararium resource URI."),
         "annotations": {"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True},
     },
     {
-        "name": "lararium.list_lar_resources",
+        "name": "lararium-list_lar_resources",
         "title": "List Lararium resources",
         "description": "List file-backed carrier resources and virtual index resources.",
         "inputSchema": {"type": "object", "additionalProperties": False},
         "annotations": {"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True},
     },
     {
-        "name": "lararium.inspect_carrier",
+        "name": "lararium-inspect_carrier",
         "title": "Inspect carrier",
         "description": "Inspect carrier metadata, implements bundle, shape diagnostics, rating posture, and depth state.",
         "inputSchema": _uri_schema("A file-backed Lararium carrier URI."),
         "annotations": {"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True},
     },
     {
-        "name": "lararium.compile_minimal_boot",
+        "name": "lararium-compile_minimal_boot",
         "title": "Compile minimal boot",
         "description": (
             "Compile the minimal boot closure from the AGENTS required-core. "
@@ -186,7 +186,7 @@ TOOL_DEFINITIONS: tuple[dict[str, object], ...] = (
         "annotations": {"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True},
     },
     {
-        "name": "lararium.compile_full_boot",
+        "name": "lararium-compile_full_boot",
         "title": "Compile full boot",
         "description": (
             "Compile the full boot closure: required-core plus all indexed carriers. "
@@ -197,7 +197,7 @@ TOOL_DEFINITIONS: tuple[dict[str, object], ...] = (
         "annotations": {"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True},
     },
     {
-        "name": "lararium.compile_boot_receipt",
+        "name": "lararium-compile_boot_receipt",
         "title": "Compile boot receipt",
         "description": (
             "Compile a boot receipt: a sha256-digested summary of the current minimal boot closure. "

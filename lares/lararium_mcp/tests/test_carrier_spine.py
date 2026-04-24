@@ -86,7 +86,7 @@ class CarrierSpineTests(unittest.TestCase):
         listed = handle_jsonrpc_message({"jsonrpc": "2.0", "id": 4, "method": "tools/list"})
         self.assertIsNotNone(listed)
         assert listed is not None
-        self.assertTrue(any(item["name"] == "lararium.resolve_lar_uri" for item in listed["result"]["tools"]))
+        self.assertTrue(any(item["name"] == "lararium-resolve_lar_uri" for item in listed["result"]["tools"]))
 
         called = handle_jsonrpc_message(
             {
@@ -94,7 +94,7 @@ class CarrierSpineTests(unittest.TestCase):
                 "id": 5,
                 "method": "tools/call",
                 "params": {
-                    "name": "lararium.resolve_lar_uri",
+                    "name": "lararium-resolve_lar_uri",
                     "arguments": {"uri": "lar:///INDEXES/carriers"},
                 },
             }

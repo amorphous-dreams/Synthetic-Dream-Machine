@@ -24,13 +24,13 @@ class PromptCatalogTests(unittest.TestCase):
 
     def test_resolve_uri_declares_required_argument(self) -> None:
         catalog = {p["name"]: p for p in list_prompts()}
-        resolve = catalog["lararium.resolve_uri"]
+        resolve = catalog["lararium-resolve_uri"]
         args = resolve["arguments"]
         self.assertTrue(any(a["name"] == "uri" and a["required"] for a in args))
 
     def test_read_carrier_declares_required_argument(self) -> None:
         catalog = {p["name"]: p for p in list_prompts()}
-        read = catalog["lararium.read_carrier"]
+        read = catalog["lararium-read_carrier"]
         args = read["arguments"]
         self.assertTrue(any(a["name"] == "uri" and a["required"] for a in args))
 
@@ -46,26 +46,26 @@ class PromptGetTests(unittest.TestCase):
         self.assertTrue(msg["content"]["text"])
 
     def test_boot_minimal_returns_messages(self) -> None:
-        result = get_prompt("lararium.boot_minimal")
+        result = get_prompt("lararium-boot_minimal")
         self._assert_message_shape(result)
         self.assertIn("lar:///AGENTS", result["messages"][0]["content"]["text"])
 
     def test_hydrate_full_returns_messages(self) -> None:
-        result = get_prompt("lararium.hydrate_full")
+        result = get_prompt("lararium-hydrate_full")
         self._assert_message_shape(result)
         self.assertIn("full boot", result["messages"][0]["content"]["text"].lower())
 
     def test_boot_receipt_returns_sha256(self) -> None:
-        result = get_prompt("lararium.boot_receipt")
+        result = get_prompt("lararium-boot_receipt")
         self._assert_message_shape(result)
         self.assertIn("sha256", result["messages"][0]["content"]["text"])
 
     def test_resolve_uri_requires_argument(self) -> None:
         with self.assertRaises(ValueError):
-            get_prompt("lararium.resolve_uri", {})
+            get_prompt("lararium-resolve_uri", {})
 
     def test_resolve_uri_with_agents(self) -> None:
-        result = get_prompt("lararium.resolve_uri", {"uri": "lar:///AGENTS"})
+        result = get_prompt("lararium-resolve_uri", {"uri": "lar:///AGENTS"})
         self._assert_message_shape(result)
         text = result["messages"][0]["content"]["text"]
         self.assertIn("lar:///AGENTS", text)
@@ -73,15 +73,15 @@ class PromptGetTests(unittest.TestCase):
 
     def test_read_carrier_requires_argument(self) -> None:
         with self.assertRaises(ValueError):
-            get_prompt("lararium.read_carrier", {})
+            get_prompt("lararium-read_carrier", {})
 
     def test_read_carrier_with_agents(self) -> None:
-        result = get_prompt("lararium.read_carrier", {"uri": "lar:///AGENTS"})
+        result = get_prompt("lararium-read_carrier", {"uri": "lar:///AGENTS"})
         self._assert_message_shape(result)
         self.assertIn("AGENTS", result["messages"][0]["content"]["text"])
 
     def test_compare_hydration_shows_counts(self) -> None:
-        result = get_prompt("lararium.compare_hydration")
+        result = get_prompt("lararium-compare_hydration")
         self._assert_message_shape(result)
         text = result["messages"][0]["content"]["text"]
         self.assertIn("minimal_locus_count", text)
@@ -89,7 +89,7 @@ class PromptGetTests(unittest.TestCase):
 
     def test_unknown_prompt_raises_key_error(self) -> None:
         with self.assertRaises(KeyError):
-            get_prompt("lararium.does_not_exist")
+            get_prompt("lararium-does_not_exist")
 
 
 class PromptsMCPTests(unittest.TestCase):
@@ -114,15 +114,15 @@ class PromptsMCPTests(unittest.TestCase):
         response = self._req("prompts/list")
         prompts = response["result"]["prompts"]
         names = {p["name"] for p in prompts}
-        self.assertIn("lararium.boot_minimal", names)
-        self.assertIn("lararium.hydrate_full", names)
-        self.assertIn("lararium.boot_receipt", names)
-        self.assertIn("lararium.resolve_uri", names)
-        self.assertIn("lararium.read_carrier", names)
-        self.assertIn("lararium.compare_hydration", names)
+        self.assertIn("lararium-boot_minimal", names)
+        self.assertIn("lararium-hydrate_full", names)
+        self.assertIn("lararium-boot_receipt", names)
+        self.assertIn("lararium-resolve_uri", names)
+        self.assertIn("lararium-read_carrier", names)
+        self.assertIn("lararium-compare_hydration", names)
 
     def test_prompts_get_boot_minimal_via_jsonrpc(self) -> None:
-        response = self._req("prompts/get", {"name": "lararium.boot_minimal", "arguments": {}})
+        response = self._req("prompts/get", {"name": "lararium-boot_minimal", "arguments": {}})
         self.assertNotIn("error", response)
         msgs = response["result"]["messages"]
         self.assertTrue(msgs)
@@ -130,7 +130,7 @@ class PromptsMCPTests(unittest.TestCase):
 
     def test_prompts_get_resolve_uri_via_jsonrpc(self) -> None:
         response = self._req("prompts/get", {
-            "name": "lararium.resolve_uri",
+            "name": "lararium-resolve_uri",
             "arguments": {"uri": "lar:///LARES"},
         })
         self.assertNotIn("error", response)
@@ -139,13 +139,13 @@ class PromptsMCPTests(unittest.TestCase):
 
     def test_prompts_get_missing_argument_returns_error(self) -> None:
         response = self._req("prompts/get", {
-            "name": "lararium.resolve_uri",
+            "name": "lararium-resolve_uri",
             "arguments": {},
         })
         self.assertIn("error", response)
 
     def test_prompts_get_unknown_name_returns_error(self) -> None:
-        response = self._req("prompts/get", {"name": "lararium.no_such", "arguments": {}})
+        response = self._req("prompts/get", {"name": "lararium-no_such", "arguments": {}})
         self.assertIn("error", response)
 
 

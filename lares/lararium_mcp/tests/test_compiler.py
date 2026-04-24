@@ -123,21 +123,21 @@ class CompilerMCPToolTests(unittest.TestCase):
         return response
 
     def test_compile_minimal_boot_tool(self) -> None:
-        response = self._call_tool("lararium.compile_minimal_boot")
+        response = self._call_tool("lararium-compile_minimal_boot")
         self.assertFalse(response["result"]["isError"])
         data = json.loads(response["result"]["content"][0]["text"])
         self.assertEqual(data["artifact"], "minimal-boot")
         self.assertEqual(data["locus_count"], 14)
 
     def test_compile_full_boot_tool(self) -> None:
-        response = self._call_tool("lararium.compile_full_boot")
+        response = self._call_tool("lararium-compile_full_boot")
         self.assertFalse(response["result"]["isError"])
         data = json.loads(response["result"]["content"][0]["text"])
         self.assertEqual(data["artifact"], "full-boot")
         self.assertGreater(data["locus_count"], 14)
 
     def test_compile_boot_receipt_tool(self) -> None:
-        response = self._call_tool("lararium.compile_boot_receipt")
+        response = self._call_tool("lararium-compile_boot_receipt")
         self.assertFalse(response["result"]["isError"])
         data = json.loads(response["result"]["content"][0]["text"])
         self.assertEqual(data["artifact"], "boot-receipt")
@@ -147,9 +147,9 @@ class CompilerMCPToolTests(unittest.TestCase):
         response = handle_jsonrpc_message({"jsonrpc": "2.0", "id": 2, "method": "tools/list"})
         assert response is not None
         names = {t["name"] for t in response["result"]["tools"]}
-        self.assertIn("lararium.compile_minimal_boot", names)
-        self.assertIn("lararium.compile_full_boot", names)
-        self.assertIn("lararium.compile_boot_receipt", names)
+        self.assertIn("lararium-compile_minimal_boot", names)
+        self.assertIn("lararium-compile_full_boot", names)
+        self.assertIn("lararium-compile_boot_receipt", names)
 
     def test_boot_resources_listed(self) -> None:
         response = handle_jsonrpc_message({"jsonrpc": "2.0", "id": 3, "method": "resources/list"})

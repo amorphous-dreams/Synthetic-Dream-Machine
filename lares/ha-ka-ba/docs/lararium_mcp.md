@@ -113,13 +113,13 @@ python3 -m unittest discover -s lares/lararium_mcp/tests -v
 
 | Tool name | What it does |
 |---|---|
-| `lararium.resolve_lar_uri` | resolve a `lar:///` URI → resolution record |
-| `lararium.read_lar_resource` | read file-backed carrier or virtual index |
-| `lararium.list_lar_resources` | list all resources |
-| `lararium.inspect_carrier` | carrier metadata, implements bundle, shape diagnostics |
-| `lararium.compile_minimal_boot` | 14-locus required-core closure artifact |
-| `lararium.compile_full_boot` | required-core + all indexed carriers |
-| `lararium.compile_boot_receipt` | sha256 digest receipt of minimal boot |
+| `lararium-resolve_lar_uri` | resolve a `lar:///` URI → resolution record |
+| `lararium-read_lar_resource` | read file-backed carrier or virtual index |
+| `lararium-list_lar_resources` | list all resources |
+| `lararium-inspect_carrier` | carrier metadata, implements bundle, shape diagnostics |
+| `lararium-compile_minimal_boot` | 14-locus required-core closure artifact |
+| `lararium-compile_full_boot` | required-core + all indexed carriers |
+| `lararium-compile_boot_receipt` | sha256 digest receipt of minimal boot |
 
 All tools carry `readOnlyHint: true`, `destructiveHint: false`, `idempotentHint: true`.
 
@@ -141,12 +141,12 @@ All tools carry `readOnlyHint: true`, `destructiveHint: false`, `idempotentHint:
 
 | Prompt name | Arguments | What it embeds |
 |---|---|---|
-| `lararium.boot_minimal` | none | 14-locus required-core closure |
-| `lararium.hydrate_full` | none | full carrier closure summary |
-| `lararium.boot_receipt` | none | sha256 receipt |
-| `lararium.resolve_uri` | `uri` (required) | resolution record + carrier metadata |
-| `lararium.read_carrier` | `uri` (required) | raw carrier source text |
-| `lararium.compare_hydration` | none | minimal vs full diff |
+| `lararium-boot_minimal` | none | 14-locus required-core closure |
+| `lararium-hydrate_full` | none | full carrier closure summary |
+| `lararium-boot_receipt` | none | sha256 receipt |
+| `lararium-resolve_uri` | `uri` (required) | resolution record + carrier metadata |
+| `lararium-read_carrier` | `uri` (required) | raw carrier source text |
+| `lararium-compare_hydration` | none | minimal vs full diff |
 
 <<~/ahu >>
 
@@ -234,11 +234,11 @@ def my_tool(arg: str) -> dict[str, object]:
     ...
 
 # in server.py TOOL_HANDLERS
-"lararium.my_tool": lambda args: my_tool(_require_string(args, "arg")),
+"lararium-my_tool": lambda args: my_tool(_require_string(args, "arg")),
 
 # in server.py TOOL_DEFINITIONS
 {
-    "name": "lararium.my_tool",
+    "name": "lararium-my_tool",
     "title": "...",
     "description": "Use this when ...",
     "inputSchema": _uri_schema("..."),
@@ -265,13 +265,13 @@ if uri == MY_RESOURCE_URI:
 ```python
 # in prompts.py PROMPT_CATALOG
 {
-    "name": "lararium.my_prompt",
+    "name": "lararium-my_prompt",
     "description": "...",
     "arguments": [{"name": "uri", "description": "...", "required": True}],
 },
 
 # in get_prompt() match block
-case "lararium.my_prompt":
+case "lararium-my_prompt":
     return _get_my_prompt(arguments.get("uri", ""))
 ```
 
