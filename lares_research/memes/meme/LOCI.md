@@ -1,0 +1,1 @@
+meme = executable semantic unit (full OODA loops for a concept/idea-pattern-integrity)

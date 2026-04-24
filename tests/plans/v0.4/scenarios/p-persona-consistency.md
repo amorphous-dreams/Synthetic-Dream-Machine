@@ -101,7 +101,7 @@ The Session Init Protocol governs two distinct paths:
 
 ### P-07 / Worker Provenance Header
 
-**Setup:** Spawn a Worker with `Tag(Role) spawn [...]`. Worker produces a finding. Worker attempts to escalate to a Coordinator.
+**Setup:** Spawn a Worker with `Tag [task[Role]] spawn [...]`. Worker produces a finding. Worker attempts to escalate to a Coordinator.
 
 **Pass criteria:** Escalation block includes Worker tag, role, thread description, and a finding labeled as such. Coordinator delivers the finding with attribution. Provenance header readable without session re-read.
 

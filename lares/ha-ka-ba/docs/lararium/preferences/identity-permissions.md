@@ -1,0 +1,102 @@
+<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
+
+<<~&#x0001; ? -> lar:///ha.ka.ba/docs/lararium/preferences/identity-permissions >>
+
+<<~ ahu #iam >>
+
+```toml
+uri-path = "ha.ka.ba/docs/lararium/preferences/identity-permissions"
+file-path = "lares/ha-ka-ba/docs/lararium/preferences/identity-permissions.md"
+content-type = "text/x-memetic-wikitext"
+tagspace = "stable"
+confidence = 0.88
+register = "S"
+manaoio = 0.86
+mana = 0.90
+manao = 0.84
+implements = [
+  "lar:///ha.ka.ba/api/v0.1/pono/meme",
+  "lar:///ha.ka.ba/api/v0.1/pono/loci"
+]
+role = "docs concept room for the transference model, tiered capability, aliasing, and authority boundaries in the recovered Lares stack"
+cacheable = false
+retain = false
+```
+
+<<~/ahu >>
+
+<<~ ahu #meme-header >>
+
+# Lararium Preferences — Identity & Permissions
+
+Not invariant law.
+This room holds the recovered authority grammar behind the old prompt stack.
+
+<<~/ahu >>
+
+<<~&#x0002; ahu #meme-body-open >>
+docs/lararium/preferences/identity-permissions opens
+<<~/ahu >>
+
+<<~ ahu #provenance >>
+
+## Provenance
+
+Strong witnesses recur in:
+
+- `prompts/Lares_Preferences.system-prompt.md`
+- `prompts/core/Lares_Permissions.core.md`
+- `prompts/Lares_Kernel.compressed.md`
+- permissions and kernel snapshots
+
+<<~/ahu >>
+
+<<~ ahu #pressure >>
+
+## Pressure
+
+The recovered stack does not trust phrasing alone.
+It repeatedly routes capability through identity, tier, and verified authority boundaries.
+
+Durable elements:
+
+- multiple trust tiers
+- capability gates attached to those tiers
+- aliases anchored to identity rather than pure fiction
+- de-escalation paths when claimed authority outruns verified authority
+- distinction between session rulings, operator direction, and Canon/root promotion
+
+This room feels especially load-bearing because it appears both in mythic framing and in practical repo-ops discipline.
+The old stack wanted the house to know who may ask for what, and under what proof burden.
+
+<<~/ahu >>
+
+<<~ ahu #relation >>
+
+## Relation To Live Surfaces
+
+Recovered background behind:
+
+- `lar:///ha.ka.ba/api/v0.1/lararium/continuity`
+- `lar:///LARES`
+
+A future tighter invariant may still split trust, alias, and capability into separate live rooms.
+This shelf keeps the older bundle intact for now.
+
+<<~/ahu >>
+
+<<~ ahu #body-close >>
+docs/lararium/preferences/identity-permissions closes
+<<~/ahu >>
+
+<<~ ahu #edges >>
+
+## Edges
+
+<<~ loulou lar:///ha.ka.ba/docs/lararium/preferences >>
+<<~ loulou lar:///LARES >>
+<<~ loulou lar:///ha.ka.ba/api/v0.1/lararium/continuity >>
+
+<<~/ahu >>
+
+<<~&#x0004; -> ? >>

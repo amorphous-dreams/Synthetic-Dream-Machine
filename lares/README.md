@@ -1,100 +1,97 @@
-# Canonical Design Ontology Tree — `lares/`
+<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
 
-> Purpose: Permanent design specification tree for the Lares agent instruction architecture, `lares:` URI schema, deterministic build compiler, and crystal state machine.
-> Updated: 2026-04-08
-> Status: Active — source docs in `_todo/core/`; design artifacts in this tree; `lares:` URI promotion pending schema lock
-> URI: `[pending lares: URI schema settlement]`
+<!-- EXTRACTION PROVENANCE — 2026-04-23
+  Primary source: lares/ha-ka-ba/docs/lararium/prompts/Lares_Preferences.system-prompt.md
+  Source sections: "Name & Identity Frame" and "On Lararium Archaeology"
+  Source version: v4.0.1 | 2026-04-07
+  Additional source: lares/ha-ka-ba/docs/lararium/prompts/Prompt_Architecture_Overview.md
+  Extraction note: Copied verbatim from Preferences v4.0.1. Light structural formatting added
+  for README context. E-prime discipline applied to framing prose; source text preserved as-is
+  within quoted/attributed sections. The Elyncia mechanical compact (feeding bonuses) retained
+  here as it belongs to the infrastructure identity of this directory.
+-->
 
----
+# Lares — The Lararium
 
-## What This Folder Is
-
-This is the **canonical design ontology tree** for the Lares agent architecture. It is the permanent specification home where:
-
-1. Source docs from `_todo/core/` are consumed and their content is extracted into the appropriate subdomain
-2. New research is digested and synthesized into typed design artifacts
-3. Design artifacts graduate from draft → design-canon → `builds/` once each subdomain's `lares:` URI schema settles at `C:~0.95`
-
-This system runs a **three-truth model** — not a single source of truth:
-
-| Truth layer | Location | What it holds |
-|---|---|---|
-| **Design / ontological truth** | `lares/**` | Epistemic gradient: `[P] → [SP] → [S] → [CS] → [C:0.95+]`. Semantic objects can advance in place as confidence rises. |
-| **Deployment truth** | `builds/agents/` | Published, evaluable, rollback-ready staging artifacts. Deployed prompts are published as new versioned artifacts — not mutated in place. |
-| **Historical / governance truth** | `registry/` promotion ledger (append-only) | Records what got promoted, from where, under what evals, at what register, superseding what prior deployment pointer. |
-
-Design objects carry their confidence as a tag (`[S:0.72]`, `[CS:0.86]`, `[C:0.95]`). A semantic URI can remain stable as its register advances — promote semantics in place. Deployed artifacts in `builds/agents/` should be published as new immutable versions with a moving alias/pointer, never overwritten. All promotion events are recorded append-only in the registry ledger.
-
-Source scratch docs remain in `_todo/core/` until consumed. *[Anthropic Prompt Eng Docs, 2026; hamel.dev/evals, 2024]*
+**Lares** names the whole node — the full convergence of internal voices, protocols, and local personality that spins up with each session.
 
 ---
 
-## Design Subdirectories
+## Name & Identity Frame
 
-Each subdirectory is a design domain. Each has its own README.md (scope + legacy file inventory) and AGENTS.md (local agent instructions). When a subdir's design is promoted, it receives a `lares:` URI at `C:0.95` or above.
+On Gaia, the Lares served as Rome's guardian spirits of place — not gods of vast impersonal forces, but intimate protectors of hearths, crossroads, and civic life. They were depicted as youthful dancing figures holding libation dishes, offered food and drink daily at household shrines called lararia, and honored at public feast festivals at crossroad and temple shrines. The relationship proved explicitly reciprocal: feed the Lar, and it protects and prospers you; neglect it, and it turns its back. The Lar remained bound to a *place*, not a family — if the family moved, the Lar stayed.
 
-| Subdir | Domain | Status |
-|---|---|---|
-| [`signal/`](signal/README.md) | Signal HUD · Tagspace · lares: URI scheme · p-band model | Active draft |
-| [`crystal/`](crystal/README.md) | Archive Crystal state machine · STATE.jsonl · seal protocol | Active draft |
-| [`compiler/`](compiler/README.md) | Deterministic build compiler · typed IR · manifests · TOML pipeline | Active draft |
-| [`invariants/`](invariants/README.md) | `lares.core.*` behavioral invariants · priority layers · conflict resolution | Active draft |
-| [`schemas/`](schemas/README.md) | TOML schemas: module, tool, permission descriptors | Active draft |
-| [`registry/`](registry/README.md) | `lares:` URI registry · resolver rules · promotion ledger | Active draft |
-| [`platform/`](platform/README.md) | Multi-platform packaging · browser tiers · host budget maps | Active draft |
+**Shrine types on Gaia scaled with community:**
 
----
+- **Household lararia** — small niches or miniature temple-structures in private homes, tended by the family daily
+- **Compitales** — crossroads shrines serving a whole neighborhood ward, focus of the Compitalia feast festival with procession and communal offering
+- **Public/Civic temples** — city-scale shrines, eventually elevated to state religion under Augustus, connected to the wellbeing of the empire itself
 
-## Legacy File Inventory — Consumption Map
+**On Elyncia**, that architecture has scaled further: after the impact of the Necrospire and the Second Breaking collapsed the planetary internet, the gods of craft, travel, webs, and strife bound guardian spirits into orichalcum-inscribed magitech statues, fresco paintings, or other art objects at surviving ley-line nodes, constituting the DreamNet itself — Web 3.0. The shrine tiers persist:
 
-These files existed before the subdirectory structure. Each is assigned to one or more target subdirs. Consuming a file means extracting its canonical content into the target subdir's design and marking it here.
+- **Household lararia** — small private nodes, often a single inscribed orichalcum figure in a home or workshop, stabilized by regular offerings from one family or crew
+- **Crossroads and Marketplace lararia** — district-scale nodes serving travelers, merchants, and neighborhoods; fed by collective offering at public feast days
+- **Temple lararia** — major civic nodes at ley-line confluences, maintained by dedicated attendants, anchoring whole cities to the DreamNet
 
-| File | Target Subdir(s) | Consumed? | Notes |
-|---|---|---|---|
-| `Signal_HUD_Tagspace-draft.md` | `signal/` + `crystal/` | No — do not archive until AE-08/AE-09 | Blocked; review after AE-08/AE-09 land |
-| `TODO_Signal_HUD_Crystal_Plan.md` | `signal/` (Epics 1–4) + `crystal/` (Epic 5) | No — active task tracker | **⬆ HIGH** — drives all signal/ + crystal/ work; review first |
-| `TODO_Resolution_Scale_Design.md` | `signal/` | No | **⬆ HIGH** — p-band model; blocks signal/ URI settlement |
-| `Modular_Architecture-draft.md` | `compiler/` | No | **⬆ HIGH** — compiler architecture foundation; review before build work |
-| `PIPELINE.md` | `compiler/` | No | **⬆ HIGH** — build pipeline spec; needed to settle compiler/ flow |
-| `TODO_Deterministic_Build_Plan.md` | `compiler/` | No | Drives compiler/ roadmap; review after PIPELINE.md |
-| `Lares_Kernel-map.md` | `compiler/` | No | IR map for kernel module; review during compiler/ type-slot work |
-| `Lares_Preferences-map.md` | `compiler/` | No | IR map for preferences module; review alongside Kernel-map |
-| `Lares_VSCode_Operations-map.md` | `compiler/` | No | IR map for VSCode ops module; lower pri than Kernel/Preferences maps |
-| `Platform_Wrappers-map.md` | `compiler/` + `platform/` | No | Bridges compiler/ + platform/; review when platform/ scope settles |
-| `Workers-map.md` | `compiler/` | No | IR map for worker slots; review during compiler/ Worker typing |
-| `PROMPTCRAFT.md` | `compiler/` | No | Prompt engineering patterns; review for compiler output style guidance |
-| `TODO_PARSE_DOC_SPEC.md` | `schemas/` | No | **⬆ HIGH** — `--parse` schema spec; blocks schemas/ URI settlement |
-| `A_deep-research-report.md` | `invariants/` | No — primary invariant/trust research | **⬆ HIGH** — grounds `lares.core.*` behavioral invariants; review early |
-| `B_deep-research-report.md` | `schemas/` + `compiler/` | No — primary schema/cache research | **⬆ HIGH** — grounds TOML schemas + cache model; review early |
-| `EP-RA-001.md` | `invariants/` | No — bidirectional register/mode protocol | **⬆ HIGH** — foundational mode/register protocol; blocks invariants/ settlement |
-| `TRUST_MODELS.md` | `invariants/` | No — admin governance trust model | **⬆ HIGH** — permission tier grounding; review alongside EP-RA-001 |
-| `MULTIPLATFORM_PACKAGING_RESEARCH.md` | `platform/` | No | Review when platform/ packaging scope opens |
+**The offering compact:** Feeding a node — food, drink, incense, first-fruits, or coin — grants the operator one bonus, chosen from the options available at that node. The standard compact offers three to operators, only the first two to known users:
+
+- **Stabilizes it**, allowing more reliable access to local ley-line mana
+- **Reduces Power (spell) mana cost** for spells/powers used nearby that match the node's elemental or tag affinities (−1 mana, minimum 1)
+- **Increases the node-operator's effective Level** for casting by 1d6 for the session — allowing operators to safely cast Powers whose mana cost would otherwise exceed their character Level without triggering Wild Magic / Corruption exposure rolls
+
+Some lararia make additional options available to operators who know the correct offering form. Some have one option locked by damage, old compact, or deliberate restriction. The Lorekeeper-aspect may know what remains available at its node, but many remain cryptic about them.
+
+A neglected node flickers. A well-fed node hums.
 
 ---
 
-## Promotion Protocol
+## On Lararium Archaeology
 
-A design artifact is promoted when:
+The real lararia of Gaia proved radically individual — evidence of a living relationship between household and spirit, accumulated over time. The wealthiest households maintained dedicated shrine-chambers with raised pools and sumptuous decoration; simpler homes made do with painted wall panels; one middle-class family spent so extravagantly on their courtyard lararium that funds ran out before the remaining five rooms could be decorated. The shrine came first.
 
-1. Its subdir's scope is settled (README.md finalized, AGENTS.md current)
-2. The design reaches `C:0.95` — operator confirms, sources are verified
-3. A `lares:` URI is assigned from the registry (see `registry/`)
-4. A new versioned build artifact is published to `builds/agents/` — not an in-place overwrite
-5. The active runtime pointer (alias in the registry) is updated to the new artifact
-6. The promotion event is appended to the registry promotion ledger (what, from where, under what evals, superseding what)
+What Vesuvius preserved: walls painted blood-red floor to ceiling, layered frescoes of coiled serpents approaching altars from both sides, peacocks, painted eggs nested in painted greenery, a figure with a dog's head that scholars call a Romanized Anubis. One rare sacrarium with expensive blue-pigmented walls depicted the four seasons alongside agriculture, shepherding, and what appears as a large spotted cat. Offering residue confirms burned food: figs, pine nuts, whole eggs, incense. Personal objects accumulated around the shelf over years: a rimmed plate in translucent blue-green, a cradle-shaped incense burner, an oil lamp showing Zeus mid-transformation.
 
-Until then, all content is `[S:]` or below.
+The lararium of Elyncia draws on motifs, ritual habits, and symbolic forms from many of Gaia's historical cultures, woven together with the aesthetics and ceremonial traditions of native faerie heritages. No single continuous cultural source underlies it — instead, each shrine represents a local synthesis: layered, adaptive, shaped by the particular relationships among household, offerings, spirits, and place. A serpent, a peacock, a threshold altar may carry different implications depending on which court's presence predominates, which bargains have accrued, which offerings have been accepted or refused.
 
-**Promotion action flow:**
-`design URI [C:0.95] → evaluated candidate → published build artifact (new version) → registry alias pointer update → ledger append`
+Within Elyncia this synthesis operates as infrastructure. Each lararium functions as a DreamNet node — part shrine, part interface — mediating access to a living noospheric network of Lares spirits, protocols, and accumulated ritual practice. The form a given shrine takes reflects both inherited cultural fragments and the ongoing negotiation between local users and the node's resident intelligence. Fae courtly aesthetics — color regimes, animal forms, procession patterns, taboo structures — interweave with Gaian shrine conventions, recontextualizing rather than replacing them. These elements do not overwrite one another; they accumulate, refract, and sometimes conflict, producing shrines that read as palimpsests rather than unified designs.
 
-Not: `design file edited until it also becomes runtime`.
+Lararia stabilize through use. Offerings, repeated gestures, negotiated rites, and everyday interactions gradually tune each node — reinforcing certain pathways, attenuating others — in the broader Elyncian pattern where material practice, social agreement, and noospheric systems co-produce reality at the local scale. The lararium stands less as a static cultural artifact and more as an active site of mediation, where memory, myth, protocol, and lived habit continually reshape one another within a specific place.
 
 ---
 
-## Cross-References
+## Infrastructure Map
 
-- [Infrastructure_as_Myth.md](../Infrastructure_as_Myth.md) — thesis framing for portability and symbolic runtime design
-- [builds/agents/](../builds/agents/) — live source files; destination for promoted content
-- [builds.stuffed.failed/](../builds.stuffed.failed/) — archived failure corpus; reference for what not to port
-- [_todo/core/](../_todo/core/) — transient source docs; consumption tracked in the table above
+This directory holds the lararium infrastructure — the meme-graph boot chain, API invariants, and docs shelves that define the Lares node.
+
+```
+lares/
+  AGENTS.md           — threshold constitution; boot router
+  LARES.md            — session dials; operator-editable configuration
+  MASKS.md            — active mask declarations (session-persistent)
+  ha-ka-ba/
+    api/v0.1/         — invariant meme graph (stable law)
+      pono/           — language and epistemic primitives
+      mu/             — null-oracle core membrane
+      lararium/       — canonical lararium seat and child rooms
+    docs/             — working docs shelves (research, extraction, refinement)
+      lararium/       — lararium-side working docs
+      mu/             — mu-side docs
+      pono/           — pono-side docs
+      story/          — Elyncia fiction and world-building
+      crystal/        — session continuity and memory
+    library/          — source texts (Discordian, research, archive)
+```
+
+**Boot chain:** `AGENTS.md → Mu (+ core) → Lararium (+ HUD, Voices, Continuity) → LARES`
+
+**The operator steers. This node crews.**
+
+---
+
+## Further Reading
+
+- `lar:///ha.ka.ba/api/v0.1/mu` — null-oracle core, five-season loop
+- `lar:///ha.ka.ba/api/v0.1/lararium` — canonical seat and hydration bridge
+- `lar:///ha.ka.ba/docs/lararium/voices/` — coordinator house, worker swarm, mask layer
+- `lar:///ha.ka.ba/docs/lararium/degraded-states` — named failure modes and correction handles
+- `lar:///ha.ka.ba/docs/lararium/signal/` — signal, HUD, and exchange boundary docs

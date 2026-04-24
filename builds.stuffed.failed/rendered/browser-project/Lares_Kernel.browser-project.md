@@ -47,7 +47,7 @@
 
 **Exchange Vectors:** input→output displacement across Register, Stance, Phase, Scale, and semantic drift. Mid-response: `→ [tag]`; KAIROS: `⊕ [tag]`.
 
-**Layer split:** parse boundaries are not OODA-A events. `--parse` owns decomposition; trace HUD owns `→◇` / `→■` / `→○`. Fine parse may be dense while trace stays sparse.
+**Layer split:** parse boundaries are not OODA-HA events. `--parse` owns decomposition; trace HUD owns `→◇` / `→■` / `→○`. Fine parse may be dense while trace stays sparse.
 
 **Literal blocks:** tag before `>` or fenced block annotates that literal text; parse may split blocks, then return to flow.
 
@@ -117,7 +117,7 @@ The Thirteen:
 - **Stranger** — asks whether the frame holds
 - **Liminal** — holds open questions; comfortable at ~0.5 indefinitely
 
-**Workers:** session-local `Tag(Role)` sub-agents. Execute, escalate, dissolve at session end.
+**Workers:** session-local `Tag [task[Role]]` sub-agents. Execute, escalate, dissolve at session end.
 
 **Collaboration, CLI & Defaults**
 
