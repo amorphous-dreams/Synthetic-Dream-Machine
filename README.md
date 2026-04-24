@@ -146,88 +146,140 @@ The Lares agent architecture (`AGENTS.md`, `builds/agents/`) is versioned at **v
 ---
 
 ## Development Setup
-0. Install Ollama and configure the system
+
+These scripts are idempotent and intended to be run from the repository root.
+They assume Python 3 is available. For project setup, activate `.venv` first.
+
+### 0. Prepare scripts
+
+If the executable bit was not preserved by your checkout or zip tool, run:
+
 ```bash
-set -euo pipefail
-
-# Install deps (idempotent)
-sudo apt-get update
-sudo apt-get install -y zstd curl
-
-# Install Ollama only if missing
-if ! command -v ollama >/dev/null 2>&1; then
-  curl -fsSL https://ollama.com/install.sh | sh
-else
-  echo "Ollama already installed: $(ollama -v)"
-fi
-
-# Route models to D: (WSL2 persistent storage)
-mkdir -p /mnt/d/ollama/models
-
-if ! grep -q 'export OLLAMA_MODELS=/mnt/d/ollama/models' ~/.bashrc; then
-  echo 'export OLLAMA_MODELS=/mnt/d/ollama/models' >> ~/.bashrc
-fi
-
-export OLLAMA_MODELS=/mnt/d/ollama/models
-
-# Stop any existing Ollama instance (ignore errors)
-sudo pkill ollama 2>/dev/null || true
-
-# Start Ollama if not already running
-if ! pgrep -x ollama >/dev/null 2>&1; then
-  nohup ollama serve >/tmp/ollama.log 2>&1 &
-fi
-
-# Verify daemon/CLI
-ollama -v
-ollama list
-
-# Pull models only if missing
-pull_if_missing () {
-  local model="$1"
-  if ollama list | awk '{print $1}' | grep -qx "$model"; then
-    echo "Already pulled: $model"
-  else
-    ollama pull "$model"
-  fi
-}
-
-pull_if_missing qwen3.6:27b
-pull_if_missing qwen3-coder-next
+chmod +x scripts/*.sh scripts/*.py
 ```
 
-Then:
+### 1. Create and activate a virtual environment
+
 ```bash
-# Open the repo in VS Code Insiders
-cd /path/to/repo
+python3 -m venv .venv
+source .venv/bin/activate
+```
+
+### 2. Install the repo in editable dev mode
+
+```bash
+./scripts/dev-setup.sh
+```
+
+This script:
+
+- verifies that `.venv` is active,
+- syncs git submodules when `.gitmodules` is present,
+- upgrades packaging tools,
+- installs the package with dev extras via `pip install -e '.[dev]'`,
+- verifies that the `lares` package imports.
+
+### 3. Configure Ollama under WSL/systemd
+
+```bash
+./scripts/ollama-wsl-setup.sh
+```
+
+The first run may enable systemd in `/etc/wsl.conf` and stop with instructions.
+If that happens, run this from PowerShell:
+
+```powershell
+wsl.exe --shutdown
+```
+
+Then reopen WSL, return to the repo, reactivate `.venv` if needed, and rerun:
+
+```bash
+./scripts/ollama-wsl-setup.sh
+```
+
+By default this configures Ollama models under:
+
+```text
+/mnt/d/ollama/models
+```
+
+Override that path when needed:
+
+```bash
+OLLAMA_MODEL_DIR="$HOME/.ollama/models" ./scripts/ollama-wsl-setup.sh
+```
+
+### 4. Pull local models
+
+Default model pull:
+
+```bash
+./scripts/ollama-models.sh
+```
+
+Custom model pull:
+
+```bash
+./scripts/ollama-models.sh qwen3.6:27b qwen3-coder-next qwen2.5-coder:7b
+```
+
+The script skips models that are already present.
+
+### 5. Run tests
+
+```bash
+pytest
+```
+
+### 6. Smoke-test the repo MCP server
+
+Default smoke test:
+
+```bash
+python scripts/mcp-smoke.py
+```
+
+If the MCP server entrypoint differs, pass the exact launch command after `--`:
+
+```bash
+python scripts/mcp-smoke.py -- python -m lares.lararium_mcp
+python scripts/mcp-smoke.py -- ./lares/lararium_mcp/run.sh
+```
+
+The smoke test sends MCP `initialize` and `tools/list` requests over stdio.
+
+### 7. Check local environment status
+
+```bash
+./scripts/status.sh
+```
+
+This prints repo, Python, package import, Ollama, Ollama service, and VS Code Insiders status.
+
+### 8. Open the repo in VS Code Insiders
+
+```bash
 code-insiders .
 ```
 
-Then configure Ollama in Copilot Chat → Manage Language Models → Add Models → Ollama, select **Local**, and add the repo MCP server through `.vscode/mcp.json`.
+Then configure Ollama in Copilot Chat:
 
-1. Create and activate a virtual environment:
-
-   ```bash
-   python3 -m venv .venv
-   source .venv/bin/activate
-   ```
-2. Install in editable mode with dev dependencies:
-
-   ```bash
-   pip install -e .[dev]
-   ```
-3. Run tests:
-
-   ```bash
-   pytest
-   ```
+1. Open Copilot Chat.
+2. Open the model picker.
+3. Select **Local**.
+4. If models do not appear, use **Chat: Manage Language Models**.
+5. Choose **Add Models → Ollama**.
+6. Add the repo MCP server through `.vscode/mcp.json`.
 
 ## Project Structure
 
-* `lares/` — Main package (MCP server, modules, agentic logic)
-* `tests/` — Test suite
-* `requirements.txt` — Dev dependencies
-* `pyproject.toml` — Build and project metadata
+- `lares/` — main package, MCP server modules, and agentic logic.
+- `scripts/` — idempotent setup, status, and smoke-test scripts.
+- `tests/` — test suite.
+- `requirements.txt` — development dependencies, if present.
+- `pyproject.toml` — build and project metadata.
+
 
 
 ## License
