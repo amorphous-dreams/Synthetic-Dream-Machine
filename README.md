@@ -201,7 +201,7 @@ Then:
 # Open the repo in VS Code Insiders
 cd /path/to/repo
 code-insiders .
-````
+```
 
 Then configure Ollama in Copilot Chat → Manage Language Models → Add Models → Ollama, select **Local**, and add the repo MCP server through `.vscode/mcp.json`.
 
