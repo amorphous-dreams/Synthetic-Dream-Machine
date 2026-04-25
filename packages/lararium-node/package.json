@@ -18,7 +18,8 @@
     "build": "tsc",
     "typecheck": "tsc --noEmit",
     "test": "NODE_OPTIONS=--experimental-vm-modules node ../../node_modules/.pnpm/jest@29.7.0_@types+node@22.19.17/node_modules/jest/bin/jest.js --config jest.config.cjs",
-    "dev": "tsx src/index.ts"
+    "dev": "tsx src/index.ts",
+    "build-snapshot": "tsx scripts/build-snapshot.ts"
   },
   "dependencies": {
     "@lararium/core": "workspace:*"

@@ -5,11 +5,6 @@
       "args": ["packages/lararium-mcp/dist/stdio.js"],
       "cwd": "."
     },
-    "lararium-python": {
-      "command": ".venv/bin/python3",
-      "args": ["-m", "lares.lararium_mcp"],
-      "cwd": "."
-    },
     "lares-probe-runner": {
       "command": ".venv/bin/python",
       "args": ["tests/mcp/probe_runner.py"],

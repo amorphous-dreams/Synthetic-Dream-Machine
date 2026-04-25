@@ -7,12 +7,5 @@
       "cwd": ".",
       "env": {}
     },
-    "lararium-python": {
-      "type": "stdio",
-      "command": ".venv/bin/python3",
-      "args": ["-m", "lares.lararium_mcp"],
-      "cwd": ".",
-      "env": {}
-    }
   }
 }

@@ -26,3 +26,11 @@ __pycache__/
 *.egg-info/
 build/
 dist/
+# lararium-node generated artifacts
+lares/lararium-node/snapshot.json
+lares/lararium-node/fixtures.current.json
+
+# pnpm/Node
+node_modules/
+packages/*/dist/
+packages/*/node_modules/

@@ -1,0 +1,94 @@
+# Lararium MCP — Docker Compose
+#
+# Profiles:
+#   dev   — tsx watch mode, lares/ mounted rw, no build step
+#   qa    — built image, ports exposed for integration tests and VSCode sessions
+#   prod  — built image, lares/ read-only, no ports, stdio only
+#
+# Usage:
+#   docker compose --profile dev up
+#   docker compose --profile qa up
+#   docker compose --profile prod up
+#
+# Rollback to Python (transition window only):
+#   LARARIUM_SERVER=python docker compose --profile dev up
+
+services:
+
+  # ─── dev ────────────────────────────────────────────────────────────────────
+  lararium-dev:
+    profiles: [dev]
+    image: node:24-slim
+    working_dir: /app
+    volumes:
+      - .:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+    command: >
+      sh -c "npm install -g pnpm &&
+             pnpm install &&
+             pnpm --filter @lararium/mcp exec tsx --watch src/stdio.ts"
+    stdin_open: true
+    tty: true
+    # dev runs stdio only — no ports.
+    # Connect via: docker attach or pipe stdin from your MCP client.
+
+  # ─── qa ─────────────────────────────────────────────────────────────────────
+  lararium-qa:
+    profiles: [qa]
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: runtime
+    volumes:
+      - ./lares:/app/lares:rw
+    environment:
+      - NODE_ENV=qa
+    # Port 3000 reserved for future Streamable HTTP transport.
+    # Currently stdio only — the port is declared but not used.
+    # Uncomment when Streamable HTTP lands:
+    # ports:
+    #   - "3000:3000"
+    stdin_open: true
+    tty: true
+    healthcheck:
+      test: ["CMD", "node", "-e", "process.exit(0)"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  # ─── prod ───────────────────────────────────────────────────────────────────
+  lararium-prod:
+    profiles: [prod]
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: runtime
+    volumes:
+      - ./lares:/app/lares:ro
+    environment:
+      - NODE_ENV=production
+    # No ports in prod until Streamable HTTP is hardened with auth.
+    # Cloud deployments (elyncia.app, DreamNet) place a reverse proxy in front.
+    stdin_open: true
+    tty: true
+    restart: unless-stopped
+
+  # ─── qa-smoke ───────────────────────────────────────────────────────────────
+  # Run the stdio smoke tests against the qa image.
+  # Usage: docker compose --profile qa-smoke run --rm lararium-qa-smoke
+  lararium-qa-smoke:
+    profiles: [qa-smoke]
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: build
+    volumes:
+      - ./lares:/app/lares:ro
+    environment:
+      - NODE_ENV=test
+    command: >
+      sh -c "NODE_OPTIONS=--experimental-vm-modules
+             node node_modules/.pnpm/jest@29.7.0_@types+node@22.19.17/node_modules/jest/bin/jest.js
+             --config packages/lararium-mcp/jest.config.cjs"

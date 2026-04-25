@@ -585,6 +585,123 @@ The “do not do yet” list is short but important: do not embed the full Tiddl
 
 <<~/ahu >>
 
+<<~ ahu #milestone-1-complete >>
+
+## Milestone 1 — Complete (2026-04-25)
+
+pnpm monorepo standing. All Python MCP modules ported to TypeScript. 19/19 parity tests pass against Python golden fixtures. MCP launcher configs switched to Node with Python retained as `lararium-python` for one-edit rollback. Python golden fixtures archived to `lares/lararium-node/fixtures.golden.json`. Python MCP serves no further active role in the Node roadmap — it moves to `_archive/` once CI confirms Node stability.
+
+One critical bug found and fixed during port: `withMdSuffix()` in the resolver checked `p.includes(".")` across the full path string — `v0.1` in the path suppressed `.md` on bare-name segments like `mu`, yielding 7 instead of 14 minimal boot memes. Fixed to check only the final path segment.
+
+Parity baselines frozen:
+
+| Artifact | Count |
+|---|---|
+| Minimal boot memes | 14 |
+| Full boot memes | 57 |
+| Carrier index | (matches Python) |
+
+<<~/ahu >>
+
+<<~ ahu #deployment-targets >>
+
+## Deployment Targets and Container Model
+
+### Environment Model
+
+Three Docker environments. Each has a distinct purpose and a distinct level of lares/ mutability.
+
+**`dev`** — volume-mounted lares/, tsx watch mode, no build step. Used for local authoring, carrier editing, and pranala debugging. The MCP server here restarts on file change. VSCode connects directly. No ports exposed to the network beyond localhost.
+
+**`qa`** — built image, ports exposed for integration testing and live VSCode work sessions. This is the primary surface for MCP integration tests, stdio smoke, and any tooling that needs a stable running server to query. It is also the environment for live carrier authoring sessions where a running server is useful — think of it as the always-on local lab. Tests run against it rather than spawning their own server.
+
+**`prod`** — built image, deployment target only. Serves Claude Desktop, DreamNet cloud backends (elyncia.app and family, cloud-hosted containers, DNS-named services), and any other MCP consumer that needs a stable versioned server. `lares/` is mounted read-only in prod. Write-back is blocked at the runtime level. The prod container speaks only stdio or (later) Streamable HTTP behind auth. No dev tooling, no watch mode.
+
+### Client Surface Model
+
+Browser clients (`lararium-web`, tldraw surfaces, future DreamNet room views) follow a two-step boot pattern:
+
+1. Boot `lararium-core` from an embedded snapshot or a pre-built JSON bundle (the same carrier graph the Node compiler produces).
+2. Sync from a locally pulled repo clone if available, or from a cloud-served bundle endpoint if not.
+
+Session-scoped "rooms" gate what subset of the carrier graph a given view sees. Room filtering is deferred — the carrier graph itself stays complete; projection packages and the session layer determine what surfaces in a given room. This is the same pattern as the record scope model (document / session / presence) already in the architecture.
+
+The browser bundle must not import `lararium-node` or MCP packages. `lararium-web` depends only on `lararium-core` and its own host adapters.
+
+### DreamNet Cloud Surface
+
+Prod containers for DreamNet services (elyncia.app, .net, and sibling domains) run lararium-mcp behind DNS and a reverse proxy. Each service instance mounts its own lares/ snapshot. Auth hooks are required before these instances expose any surface beyond stdio. Streamable HTTP transport (with Origin validation and auth) is the target for cloud-hosted prod — but it stays off by default until the stdio parity window closes.
+
+### Rollback
+
+`lararium-python` entry remains in all launcher configs for one-edit rollback during the transition window. Once CI confirms Node stability across two consecutive release cycles, the Python entries are removed and `lararium_mcp` moves to `_archive/`.
+
+<<~/ahu >>
+
+<<~ ahu #ci-pipeline >>
+
+## CI Pipeline — Node Only
+
+No Python in the GitHub Actions pipeline. Python served as a sketch; the golden fixtures are the record. CI runs Node exclusively from Milestone 2 onward.
+
+### Workflows
+
+**`ci.yml`** — runs on every push and PR:
+
+1. Install Node 22+, install pnpm, install workspace deps.
+2. Typecheck all packages (`pnpm -r typecheck`).
+3. Build all packages (`pnpm -r build`).
+4. Run parity tests (`pnpm --filter @lararium/node test`).
+5. Run MCP stdio smoke: spawn `node packages/lararium-mcp/dist/stdio.js` as a child process, send `initialize` + `resources/list` + `tools/list` + `prompts/list` over stdin, assert response shape and meme count against the frozen fixture. This is a real protocol smoke — not a unit call — because stdout purity and JSON-RPC framing are the things most likely to silently regress.
+
+**`parity-drift.yml`** — scheduled weekly:
+
+Regenerates golden fixtures from the Node runtime (not Python — Python is archived). Diffs against `fixtures.golden.json`. Fails if meme counts change without a deliberate fixture update commit. This catches carrier graph drift before it accumulates.
+
+**`docker-qa.yml`** — runs on push to `main` and on release tags:
+
+Builds the `qa` image. Runs the MCP stdio smoke against the container rather than the local build. This is the integration surface — verifies the container behaves identically to the local build.
+
+### Test Matrix
+
+| Category | Tool | Where |
+|---|---|---|
+| Typecheck | `tsc --noEmit` | All packages |
+| Parity tests | jest (golden fixtures) | `lararium-node` |
+| MCP stdio smoke | Node child-process harness | `lararium-mcp` |
+| Docker integration | `docker-qa.yml` | Container |
+| Projection snapshot tests | jest | `lararium-tldraw` (future) |
+| No-write gate | jest | `lararium-node` (future) |
+
+### Protocol Version
+
+The MCP SDK handles version negotiation. CI smoke tests against `2025-11-25` only. The `2024-11-05` smoke case in the old Python script is not preserved — it was a sketch artifact, not a contract. If a consumer needs older protocol support, it surfaces as a deliberate adapter decision, not a CI default.
+
+<<~/ahu >>
+
+<<~ ahu #milestone-2-scope >>
+
+## Milestone 2 — Scope (Next 30 Days)
+
+Target outcomes:
+
+- Docker Compose with `dev`, `qa`, `prod` profiles
+- `ci.yml` GitHub Actions: typecheck → build → parity tests → MCP stdio smoke
+- `parity-drift.yml` scheduled fixture drift check
+- MCP stdio smoke as a child-process harness in `packages/lararium-mcp/tests/`
+- `lararium-web` skeleton: `lararium-core` boots in browser, loads a pre-built JSON bundle
+- No-write gate tests confirmed in `lararium-node`
+- `_archive/lararium_mcp/` Python code moved out of active tree
+
+Do not in Milestone 2:
+
+- Streamable HTTP (deferred to Milestone 3 canary)
+- tldraw or Kowloon projection packages
+- Write-back of any kind
+- Full room/session filtering in the browser surface
+
+<<~/ahu >>
+
 <<~ ahu #open-questions-limitations >>
 
 ## Open questions and limitationsThe largest open question is the lack of a public, formal `lararium-node` specification. I therefore treated `lararium-node` as a target architecture inferred from your brief and the repo’s own documents, not as a fully documented existing package.
