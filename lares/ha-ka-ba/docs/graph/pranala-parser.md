@@ -17,10 +17,6 @@ confidence   = 0.86
 mana         = 0.84
 manaoio      = 0.80
 manao        = 0.84
-implements   = [
-  "lar:///ha.ka.ba/api/v0.1/pono/meme",
-  "lar:///ha.ka.ba/api/v0.1/pono/loci"
-]
 role         = "parser design for pranala block and inline forms, sugar expansion, ? -> resolution, and field normalization"
 open-gate    = "closed: fragment-level resolution (Option A) confirmed by canonical pranala kānāwai"
 status-date  = "2026-04-24"
@@ -151,13 +147,13 @@ When it exits `<<~/ahu >>`, it pops the stack.
 **Example — AGENTS.md:**
 
 ```
-<<~ ahu #required-preload-e-prime >>
-  <<~ pranala #preload-e-prime ? -> lar:///ha.ka.ba/api/v0.1/pono/e-prime >>
+<<~ ahu #edges >>
+  <<~ pranala #preload-e-prime ? -> lar:///ha.ka.ba/api/v0.1/pono/e-prime family:control role:owns >>
 ```
 
 Resolves to:
 - `from_uri = "lar:///AGENTS"`
-- `from_socket = "lar:///AGENTS#required-preload-e-prime"`
+- `from_socket = "lar:///AGENTS#edges"`
 
 **Parser requirement:** handle nested `ahu` blocks with a stack; the innermost named fragment wins.
 When `?` appears outside any named `ahu`, `from_socket = from_uri` (carrier root fallback).
@@ -174,7 +170,7 @@ This table records every mapping.
 |---|---|---|---|
 | `family` | any | `family` | passthrough |
 | `lifecycle` | any | `lifecycle` | passthrough; default `"instance"` if absent |
-| `role` | any | `role` | passthrough; default `None` if absent |
+| `role` | any | `role` | passthrough; default `None` if absent. `implements` role implies `traversal: target-to-source` (concrete→abstract direction) unless overridden |
 | `traversal` | any | `traversal` | passthrough; default `"source-to-target"` if absent |
 | `propagation` | any | `propagation` | passthrough; default `"none"` if absent |
 | `dir` | `"both"` | `traversal` | → `"source-to-target"` |
@@ -218,6 +214,8 @@ graph/pranala-parser closes
 <<~ ahu #edges >>
 ## Edges
 
+<<~ pranala #implements-meme ? -> lar:///ha.ka.ba/api/v0.1/pono/meme family:control role:implements >>
+<<~ pranala #implements-loci ? -> lar:///ha.ka.ba/api/v0.1/pono/loci family:control role:implements >>
 <<~ loulou lar:///ha.ka.ba/docs/graph >>
 <<~ loulou lar:///ha.ka.ba/docs/graph/nodes >>
 <<~ loulou lar:///ha.ka.ba/docs/graph/traversal >>

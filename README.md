@@ -146,88 +146,400 @@ The Lares agent architecture (`AGENTS.md`, `builds/agents/`) is versioned at **v
 ---
 
 ## Development Setup
-0. Install Ollama and configure the system
+
+These scripts are idempotent and intended to be run from the repository root.
+They assume Python 3 is available. For project setup, activate `.venv` first.
+
+### 0. Prepare scripts
+
+If the executable bit was not preserved by your checkout or zip tool, run:
+
 ```bash
-set -euo pipefail
-
-# Install deps (idempotent)
-sudo apt-get update
-sudo apt-get install -y zstd curl
-
-# Install Ollama only if missing
-if ! command -v ollama >/dev/null 2>&1; then
-  curl -fsSL https://ollama.com/install.sh | sh
-else
-  echo "Ollama already installed: $(ollama -v)"
-fi
-
-# Route models to D: (WSL2 persistent storage)
-mkdir -p /mnt/d/ollama/models
-
-if ! grep -q 'export OLLAMA_MODELS=/mnt/d/ollama/models' ~/.bashrc; then
-  echo 'export OLLAMA_MODELS=/mnt/d/ollama/models' >> ~/.bashrc
-fi
-
-export OLLAMA_MODELS=/mnt/d/ollama/models
-
-# Stop any existing Ollama instance (ignore errors)
-sudo pkill ollama 2>/dev/null || true
-
-# Start Ollama if not already running
-if ! pgrep -x ollama >/dev/null 2>&1; then
-  nohup ollama serve >/tmp/ollama.log 2>&1 &
-fi
-
-# Verify daemon/CLI
-ollama -v
-ollama list
-
-# Pull models only if missing
-pull_if_missing () {
-  local model="$1"
-  if ollama list | awk '{print $1}' | grep -qx "$model"; then
-    echo "Already pulled: $model"
-  else
-    ollama pull "$model"
-  fi
-}
-
-pull_if_missing qwen3.6:27b
-pull_if_missing qwen3-coder-next
+chmod +x scripts/*.sh scripts/*.py
 ```
 
-Then:
+### 1. Create and activate a virtual environment
+
 ```bash
-# Open the repo in VS Code Insiders
-cd /path/to/repo
-code-insiders .
+python3 -m venv .venv
+source .venv/bin/activate
+```
+
+### 2. Install the repo in editable dev mode
+
+```bash
+./scripts/dev-setup.sh
+```
+
+This script:
+
+- verifies that `.venv` is active,
+- syncs git submodules when `.gitmodules` is present,
+- upgrades packaging tools,
+- installs the package with dev extras via `pip install -e '.[dev]'`,
+- verifies that the `lares` package imports.
+
+### 3. Install Ollama
+
+Install Ollama with the official installer:
+
+```bash
+curl -fsSL https://ollama.com/install.sh | sh
+```
+
+Verify the CLI is available:
+
+```bash
+ollama -v
+ollama list
+```
+
+### 4. Configure Ollama under WSL/systemd
+
+```bash
+./scripts/ollama-wsl-setup.sh
+```
+
+The first run may enable systemd in `/etc/wsl.conf` and stop with instructions.
+If that happens, run this from PowerShell:
+
+```powershell
+wsl.exe --shutdown
+wsl
+```
+
+Then, inside WSL:
+
+```bash
+cd ~/Synthetic-Dream-Machine
+code-insiders Synthetic-Dream-Machine.code-workspace
+source .venv/bin/activate
+./scripts/ollama-wsl-setup.sh
+```
+
+By default this configures Ollama models under:
+
+```text
+/mnt/d/ollama/models
+```
+
+Override that path when needed:
+
+```bash
+OLLAMA_MODEL_DIR="$HOME/.ollama/models" ./scripts/ollama-wsl-setup.sh
+```
+
+### 5. Pull local models
+
+Default model pull:
+
+```bash
+./scripts/ollama-models.sh
+```
+
+Custom model pull:
+
+```bash
+./scripts/ollama-models.sh qwen3.6:27b qwen3-coder-next qwen2.5-coder:7b
+```
+
+The script skips models that are already present.
+
+### 6. Manage the Ollama service
+
+On WSL/Linux service installs, Ollama runs as a `systemd` service. Use these commands to start, stop, restart, or disable it.
+
+This is useful when working on a laptop that should not keep local model services running, or when large models are not appropriate for the current machine.
+
+#### Check Ollama service status
+
+```bash
+systemctl status ollama --no-pager
 ````
 
-Then configure Ollama in Copilot Chat → Manage Language Models → Add Models → Ollama, select **Local**, and add the repo MCP server through `.vscode/mcp.json`.
+Check whether the daemon is reachable:
 
-1. Create and activate a virtual environment:
+```bash
+ollama ps
+```
 
-   ```bash
-   python3 -m venv .venv
-   source .venv/bin/activate
-   ```
-2. Install in editable mode with dev dependencies:
+Check installed models:
 
-   ```bash
-   pip install -e .[dev]
-   ```
-3. Run tests:
+```bash
+ollama list
+```
 
-   ```bash
-   pytest
-   ```
+Useful distinction:
+
+```text
+ollama list   # installed / pulled models
+ollama ps     # currently loaded / running models
+ollama run    # starts a model session and loads it
+ollama serve  # starts the Ollama daemon manually, not a specific model
+```
+
+#### Start Ollama
+
+```bash
+sudo systemctl start ollama
+```
+
+Verify:
+
+```bash
+systemctl is-active ollama
+ollama ps
+```
+
+#### Stop Ollama for the current WSL session
+
+```bash
+sudo systemctl stop ollama
+```
+
+Verify:
+
+```bash
+systemctl is-active ollama
+```
+
+Expected output:
+
+```text
+inactive
+```
+
+#### Restart Ollama
+
+Use this after changing service configuration, model storage paths, or environment variables.
+
+```bash
+sudo systemctl restart ollama
+```
+
+Then verify:
+
+```bash
+systemctl status ollama --no-pager
+ollama ps
+```
+
+#### Enable Ollama auto-start on WSL boot
+
+```bash
+sudo systemctl enable --now ollama
+```
+
+This enables the service and starts it immediately.
+
+Verify:
+
+```bash
+systemctl is-enabled ollama
+systemctl is-active ollama
+```
+
+#### Disable Ollama auto-start
+
+Recommended for laptops or machines that should not automatically run local model infrastructure.
+
+```bash
+sudo systemctl disable --now ollama
+```
+
+This disables auto-start and stops the currently running service.
+
+Verify:
+
+```bash
+systemctl is-enabled ollama || true
+systemctl is-active ollama || true
+```
+
+Expected output:
+
+```text
+disabled
+inactive
+```
+
+#### Stop a loaded model without stopping the daemon
+
+If the Ollama daemon should remain available but a model should be unloaded:
+
+```bash
+ollama ps
+ollama stop qwen3.6:27b
+```
+
+Or with an environment variable:
+
+```bash
+OLLAMA_SMOKE_MODEL="${OLLAMA_SMOKE_MODEL:-qwen3.6:27b}"
+ollama stop "$OLLAMA_SMOKE_MODEL"
+```
+
+Then confirm:
+
+```bash
+ollama ps
+```
+
+#### View Ollama logs
+
+```bash
+journalctl -u ollama -n 100 --no-pager
+```
+
+Follow logs live:
+
+```bash
+journalctl -u ollama -f
+```
+
+#### Laptop-safe default
+
+For a local development laptop that is not suitable for large local models, keep Ollama installed but disabled by default:
+
+```bash
+sudo systemctl disable --now ollama
+```
+
+Start it only when needed:
+
+```bash
+sudo systemctl start ollama
+```
+
+Stop it when done:
+
+```bash
+sudo systemctl stop ollama
+```
+
+#### Windows boot vs WSL boot
+
+`systemctl enable ollama` starts Ollama when the WSL distro starts. It does not necessarily start WSL at Windows login.
+
+If Ollama should start on every Windows login, create a Windows Task Scheduler task that starts the WSL distro, for example:
+
+```powershell
+wsl.exe -d Ubuntu --exec systemctl start ollama
+```
+
+Replace `Ubuntu` with the distro name from:
+
+```powershell
+wsl.exe -l -v
+```
+
+For this project, the recommended laptop default is **not** to auto-start Ollama unless the machine is intended to serve local models.
+
+Useful distinction:
+
+```text
+ollama list   # installed / pulled models
+ollama ps     # currently loaded / running models
+ollama run    # starts a model session and loads it
+ollama serve  # starts the Ollama daemon, not a specific model
+```
+
+For VS Code Insiders + Copilot local models, the important requirement is that the Ollama daemon is reachable and the model is pulled. Warming the model first is optional, but useful as a smoke test before opening Copilot Chat.
+
+Quick local smoke test:
+
+```bash
+OLLAMA_SMOKE_MODEL="${OLLAMA_SMOKE_MODEL:-qwen3.6:27b}"
+ollama ps
+ollama run "$OLLAMA_SMOKE_MODEL" "Reply with ready."
+ollama ps
+```
+### 7. Run tests
+
+```bash
+pytest
+```
+
+### 8. Smoke-test the repo MCP server
+
+Default smoke test:
+
+```bash
+python scripts/mcp-smoke.py
+```
+
+If the MCP server entrypoint differs, pass the exact launch command after `--`:
+
+```bash
+python scripts/mcp-smoke.py -- python -m lares.lararium_mcp
+python scripts/mcp-smoke.py -- ./lares/lararium_mcp/run.sh
+```
+
+The smoke test sends MCP `initialize` and `tools/list` requests over stdio.
+
+### 9. Check local environment status
+
+```bash
+make status
+# or
+./scripts/status.sh
+```
+
+This prints repo, Python, package import, installed Ollama models, running Ollama models, Ollama service, and VS Code Insiders status.
+
+### 10. Open the repo in VS Code Insiders
+
+```bash
+code-insiders .
+```
+
+Then configure Ollama in Copilot Chat:
+
+1. Open Copilot Chat.
+2. Open the model picker.
+3. Select **Local**.
+4. If models do not appear, use **Chat: Manage Language Models**.
+5. Choose **Add Models → Ollama**.
+6. Add the repo MCP server through `.vscode/mcp.json`.
+
+Recommended workspace MCP config:
+
+```json
+{
+  "servers": {
+    "lararium": {
+      "type": "stdio",
+      "command": ".venv/bin/python3",
+      "args": ["-m", "lares.lararium_mcp"],
+      "cwd": ".",
+      "env": {}
+    }
+  }
+}
+```
+
+For clients that read root `.mcp.json`:
+
+```json
+{
+  "mcpServers": {
+    "lararium": {
+      "command": ".venv/bin/python3",
+      "args": ["-m", "lares.lararium_mcp"],
+      "cwd": "."
+    }
+  }
+}
+```
 
 ## Project Structure
 
-* `lares/` — Main package (MCP server, modules, agentic logic)
-* `tests/` — Test suite
-* `requirements.txt` — Dev dependencies
-* `pyproject.toml` — Build and project metadata
+- `lares/` — main package, MCP server modules, and agentic logic.
+- `scripts/` — idempotent setup, status, and smoke-test scripts.
+- `tests/` — test suite.
+- `requirements.txt` — development dependencies, if present.
+- `pyproject.toml` — build and project metadata.
+
 
 
 ## License

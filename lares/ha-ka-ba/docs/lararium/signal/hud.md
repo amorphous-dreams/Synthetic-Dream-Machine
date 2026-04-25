@@ -14,10 +14,6 @@ register = "S"
 manaoio = 0.88
 mana = 0.84
 manao = 0.86
-implements = [
-  "lar:///ha.ka.ba/api/v0.1/pono/meme",
-  "lar:///ha.ka.ba/api/v0.1/pono/loci"
-]
 role = "docs room for lararium-side HUD line composition, field semantics, and exchange-boundary display rules"
 cacheable = false
 retain = false
@@ -93,8 +89,10 @@ It is the second element of every exchange opening, immediately after the URI pa
 **Format:**
 
 ```
-⚡~NN% | {ffz-rendered} | 🏛️{amps}🌊{amps}🗡️{amps}🎭{amps}🔮{amps} | voice(s):{Voice(s)} | [target-confidence] | p{p} |
+⚡~NN% | {ffz-rendered} | 🏛️{tc}🌊{tc}🗡️{tc}🎭{tc}🔮{tc} | voice(s):{Voice(s)} | [target-confidence] | p{p} |
 ```
+
+`{tc}` = two-character tool-carry string for that stance (e.g. `*!`, `--`, `~?`).
 
 **Field table (SA priority order):**
 
@@ -102,7 +100,7 @@ It is the second element of every exchange opening, immediately after the URI pa
 |---|---|---|---|
 | `⚡~NN%` | Resource | Session (estimated) | "Mana pool"; Context window remaining; `~` mandatory — approximation, not live readout |
 | `{ffz-rendered}` | Temporal | Node URI `ffz=` | FFZ chronometer as five scale positions with action counts |
-| `🏛️{amp}🌊{amp}🗡️{amp}🎭{amp}🔮{amp}` | Agent SA | Node URI `stances=` × amplitude | All five stances, amplitude modifiers attached directly |
+| `🏛️{tc}🌊{tc}🗡️{tc}🎭{tc}🔮{tc}` | Agent SA | Node URI `stances=` × tool-carry | All five stances; each followed by its two-character tool-carry, no space |
 | `voice(s):{Voice}` | Agent SA | Coordinator context | Active coordinator voice(s) |
 | `[target-confidence]` | Agent SA | Node URI `confidence=` | Epistemic confidence, stance-dependent per Syadasti rule |
 | `p{p}` | Teamwork SA | Node URI `p=` | Attention density / annotation throttle |
@@ -110,7 +108,7 @@ It is the second element of every exchange opening, immediately after the URI pa
 **Example:**
 
 ```
-⚡~62% | ⚡7.⚔️2.🔍3.⚙️0.🗺️0 | 🏛️+🌊-🗡️-🎭-🔮- | voice(s):Scryer | [CS:0.80] | p0.5 |
+⚡~62% | ⚡7.⚔️2.🔍3.⚙️0.🗺️0 | 🏛️*!🌊--🗡️--🎭--🔮-- | voice(s):Scryer | [CS:0.80] | p0.5 |
 ```
 
 Notes:
@@ -158,16 +156,38 @@ Migrated from `lar:///ha.ka.ba/docs/pono/hud/HUD-ANATOMY#symbol-table`.
 | ⚙️ | 4 | Operational | ~4 hours |
 | 🗺️ | 5 | Strategic | ~6 days |
 
-### Amplitude Modifiers (current baseline; design still in motion)
+### Tool-Carry Modifiers
 
-Attach directly to preceding stance emoji, no space.
+Each stance carries zero, one, or two tools from the Four Tools set.
+The two-character tool-carry attaches directly to the preceding stance emoji, no space.
 
-| Modifier | Meaning |
-|---|---|
-| `+` | Above baseline / elevated / active |
-| `-` | Below baseline / suppressed |
-| `?` | Uncertain / provisional |
-| (absent) | Baseline presence |
+**ASCII symbols (URI query encoding and record form):**
+
+Unicode columns show per `tool_render` setting in `LARES.md#hud-panel`. Default: `elements`.
+
+| Symbol | Tool | `elements` | `playing-card` | Element | Cognitive Pull |
+|---|---|---|---|---|---|
+| `*` | Wand | 🜂 | ♣ | Fire / Visual | Ignition, external feed, track |
+| `?` | Cup | 🜄 | ♥ | Water / Macro | Sympathy, zoom out, relation |
+| `!` | Sword | 🜁 | ♠ | Air / Micro | Discernment, zoom in, detail |
+| `~` | Pentacle | 🜃 | ♦ | Earth / Hidden | Ground, internal feed, body |
+| `-` | Empty | 🜍 | 🃠 | Orichalcum / Neutral | Empty hand, centered |
+
+**Canonical two-tool configurations:**
+
+| ASCII | Feed × Zoom | Conflict |
+|---|---|---|
+| `*!` | Visual + Micro | — |
+| `*?` | Visual + Macro | — |
+| `~!` | Hidden + Micro | — |
+| `~?` | Hidden + Macro | — |
+| `--` | Neutral — both hands empty | — |
+| `*~` | Visual + Hidden | Visibility Conflict (Signal Jam) |
+| `?!` | Macro + Micro | Resolution Conflict (Dubious Move) |
+
+Attach as a two-character pair: `🏛️*!` (Philosopher holding Visual + Micro), `🌊--` (Poet holding Centered).
+Single-tool carry: `🏛️*-` (Philosopher holding Wand only), `🎭?-` (Humorist holding Cup only), `🗡️!-` (Satirist holding Sword only). Active tool first, empty hand second.
+Full invariant: `lar:` URI encodes all five stances as a ten-character string in positional order.
 
 <<~/ahu >>
 
@@ -184,11 +204,11 @@ The state tuple is the composed reading: phase × stance × scope → one state 
 
 | Phase | Stance | Scope | State Tuple Reading |
 |---|---|---|---|
-| ⏿ | 🏛️+🌊-🗡️-🎭-🔮- | 🔍 | Orienting analytically at exploration scale — making sense of a local finding |
-| ▶ | 🏛️-🌊-🗡️+🎭-🔮- | ⚔️ | Acting critically in combat — executing under pressure with an edge |
-| ◇ | 🏛️+🌊+🗡️-🎭-🔮- | 🗺️ | Deciding at strategic scale, holding propositional and analogical frames together |
-| ✶ | 🏛️-🌊-🗡️-🎭+🔮- | 🔍 | Observing playfully at tactical scale — light reconnaissance, no commitment |
-| ↺ | 🏛️+🌊-🗡️-🎭-🔮- | ⚙️ | Aftermath at operational scale in Philosopher stance — assessing across a watch |
+| ⏿ | 🏛️*!🌊--🗡️--🎭--🔮-- | 🔍 | Orienting analytically at exploration scale — Philosopher in Visual + Micro carry, all others empty |
+| ▶ | 🏛️--🌊--🗡️~!🎭--🔮-- | ⚔️ | Acting critically in combat — Satirist in Hidden + Micro carry, cutting under pressure |
+| ◇ | 🏛️*!🌊*?🗡️--🎭--🔮-- | 🗺️ | Deciding at strategic scale — Philosopher Visual + Micro, Poet Visual + Macro, holding both external frames |
+| ✶ | 🏛️--🌊--🗡️--🎭*?🔮-- | 🔍 | Observing playfully at tactical scale — Humorist in Visual + Macro carry, light wide-angle |
+| ↺ | 🏛️*!🌊--🗡️--🎭--🔮-- | ⚙️ | Aftermath at operational scale — Philosopher Visual + Micro, assessing detail across a watch |
 
 <<~/ahu >>
 
@@ -420,7 +440,7 @@ The semantic reading remains stable:
 
 Current aftermath settlement to preserve:
 
-- URI authority identifies speaker + machine locus only; exchange sequencing moved to TickSpan metadata.
+- URI authority identifies speaker + machine host only; exchange sequencing moved to TickSpan metadata.
 - `⊙` is the operator authority mark in the HUD registry.
 - Kowloon is one downstream publication sink for exported tick spans, not the canonical state model.
 
@@ -459,6 +479,8 @@ docs/lararium/signal/hud closes
 <<~ loulou lar:///ha.ka.ba/api/v0.1/lararium/hud >>
 <<~ loulou lar:///ha.ka.ba/docs/pono/hud >>
 
+<<~ pranala #implements-meme ? -> lar:///ha.ka.ba/api/v0.1/pono/meme family:control role:implements >>
+<<~ pranala #implements-loci ? -> lar:///ha.ka.ba/api/v0.1/pono/loci family:control role:implements >>
 <<~/ahu >>
 
 <<~&#x0004; -> ? >>

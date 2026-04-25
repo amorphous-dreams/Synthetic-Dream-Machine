@@ -13,10 +13,6 @@ confidence   = 0.84
 mana         = 0.82
 manaoio      = 0.76
 manao        = 0.84
-implements   = [
-  "lar:///ha.ka.ba/api/v0.1/pono/meme",
-  "lar:///ha.ka.ba/api/v0.1/pono/loci"
-]
 role         = "canonical AST envelope, pranala graph-plane, execution graph, and render projection contract"
 source-consumes = [
   "lares/ha-ka-ba/docs/mcp/TW_FILTER_BOUNDARY.md",
@@ -132,7 +128,7 @@ Excluded from v1:
 | `constraint` | validation layer, sometimes AST | post-resolution validation |
 | `observe` | inspection overlay | debug and shadow surfaces |
 
-`role` encodes lifetime pressure: `owns`, `composes`, `instantiates`, `references`, `constrains`.
+`role` encodes lifetime pressure: `owns`, `composes`, `implements`, `references`, `constrains`.
 `traversal` and `propagation` stay distinct; query walk direction must not collapse into invalidation direction.
 Every family remains acyclic, except symmetric relation pairs may appear as two individually directed edges.
 
@@ -214,6 +210,8 @@ lararium_mcp/ast-execution-render closes
 <<~ loulou lar:///ha.ka.ba/api/v0.1/pono/pranala >>
 <<~ loulou lar:///ha.ka.ba/docs/grammars/tiddlywiki-filter >>
 
+<<~ pranala #implements-meme ? -> lar:///ha.ka.ba/api/v0.1/pono/meme family:control role:implements >>
+<<~ pranala #implements-loci ? -> lar:///ha.ka.ba/api/v0.1/pono/loci family:control role:implements >>
 <<~/ahu >>
 
 <<~&#x0004; -> ? >>

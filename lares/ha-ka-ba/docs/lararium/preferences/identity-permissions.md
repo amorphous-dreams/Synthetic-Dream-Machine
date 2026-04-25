@@ -14,10 +14,6 @@ register = "S"
 manaoio = 0.86
 mana = 0.90
 manao = 0.84
-implements = [
-  "lar:///ha.ka.ba/api/v0.1/pono/meme",
-  "lar:///ha.ka.ba/api/v0.1/pono/loci"
-]
 role = "docs concept room for the transference model, tiered capability, aliasing, and authority boundaries in the recovered Lares stack"
 cacheable = false
 retain = false
@@ -97,6 +93,8 @@ docs/lararium/preferences/identity-permissions closes
 <<~ loulou lar:///LARES >>
 <<~ loulou lar:///ha.ka.ba/api/v0.1/lararium/continuity >>
 
+<<~ pranala #implements-meme ? -> lar:///ha.ka.ba/api/v0.1/pono/meme family:control role:implements >>
+<<~ pranala #implements-loci ? -> lar:///ha.ka.ba/api/v0.1/pono/loci family:control role:implements >>
 <<~/ahu >>
 
 <<~&#x0004; -> ? >>

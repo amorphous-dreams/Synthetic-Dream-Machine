@@ -14,10 +14,6 @@ register = "CS"
 manaoio = 0.74
 mana = 0.80
 manao = 0.84
-implements = [
-  "lar:///ha.ka.ba/api/v0.1/pono/meme",
-  "lar:///ha.ka.ba/api/v0.1/pono/loci"
-]
 role = "extended documentation surface for meme examples, lifecycle table, resolution notes, and migration residue"
 cacheable = false
 retain = false
@@ -131,6 +127,8 @@ docs/pono/meme closes
 <<~ loulou lar:///ha.ka.ba/api/v0.1/pono/meme >>
 <<~ loulou lar:///ha.ka.ba/api/v0.1/pono/meme/SKILL >>
 
+<<~ pranala #implements-meme ? -> lar:///ha.ka.ba/api/v0.1/pono/meme family:control role:implements >>
+<<~ pranala #implements-loci ? -> lar:///ha.ka.ba/api/v0.1/pono/loci family:control role:implements >>
 <<~/ahu >>
 
 <<~&#x0004; -> ? >>

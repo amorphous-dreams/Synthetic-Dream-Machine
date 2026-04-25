@@ -9,9 +9,6 @@ file-path    = "lares/ha-ka-ba/docs/grammars/tiddlywiki-filter.md"
 content-type = "text/x-memetic-wikitext"
 confidence   = 0.68
 register     = "S"
-implements   = [
-  "lar:///ha.ka.ba/api/v0.1/pono/meme"
-]
 role = "docs companion for x-tiddlywiki-filter: examples, guidance, reminders, and deferred scope notes"
 cacheable = false
 retain = false
@@ -169,6 +166,7 @@ docs/grammars/tiddlywiki-filter closes
 - `lar:///ha.ka.ba/api/v0.1/grammars/x-tiddlywiki-filter`
 - `lar:///ha.ka.ba/api/v0.1/grammars/x-tiddlywiki-filter/SKILL`
 
+<<~ pranala #implements-meme ? -> lar:///ha.ka.ba/api/v0.1/pono/meme family:control role:implements >>
 <<~/ahu >>
 
 

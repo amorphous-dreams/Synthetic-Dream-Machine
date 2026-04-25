@@ -18,10 +18,6 @@ register = "CS"
 manaoio = 0.78
 mana = 0.82
 manao = 0.80
-implements = [
-  "lar:///ha.ka.ba/api/v0.1/pono/meme",
-  "lar:///ha.ka.ba/api/v0.1/pono/loci"
-]
 role = "lar: URI operational skill — construction, validation, canonical conversion, and chronometer encoding"
 covers = ["lar:///ha.ka.ba/api/v0.1/pono/lar-uri"]
 constraints = [
@@ -53,7 +49,7 @@ pono/lar-uri/SKILL opens
 
 **Record form** (canonical) — RFC 3986-safe, no emoji, no non-ASCII:
 ```
-lar://telarus:operator@enyalios/threshold.uncertain.opens/?stances=^.?.-.-.-&confidence=S:0.65&p=0.5&ffz=&#x2736;0.&#x23FF;0.&#x25C7;3.&#x25B6;2.&#x21BA;1
+lar://telarus:operator@enyalios/threshold.uncertain.opens/?stances=^.?.-.-.-&confidence=S:0.65&p=0.5&ffz=0.0.3.2.1
 ```
 
 **Render target** — surface-specific projection, glyphs substituted, not authoritative:
@@ -92,7 +88,7 @@ A URI that fails any gate MUST NOT be stored or forwarded. Surface the specific 
 Strip authority, query, and fragment. What remains is the stable named graph address.
 
 ```
-lar://telarus:operator@enyalios/threshold.uncertain.opens/?stances=^.?.-.-.-&confidence=S:0.65&p=0.5&ffz=&#x2736;0.&#x23FF;0.&#x25C7;3.&#x25B6;2.&#x21BA;1#some-section
+lar://telarus:operator@enyalios/threshold.uncertain.opens/?stances=^.?.-.-.-&confidence=S:0.65&p=0.5&ffz=0.0.3.2.1#some-section
 
 → lar:///threshold.uncertain.opens/
 ```
@@ -133,21 +129,25 @@ Span sequencing MUST NOT encode in authority — it lives in adjacent calibratio
 
 <!-- TODO: UNFINISHED — needs deep research before promotion.
   Open questions tracked as F1–F5 in docs/pono/lar-uri/lar-uri.md §6.5 (canon doc).
-  - F1: Hex entity form (&#x2736;) is valid in memetic-wikitext source but is NOT RFC 3986-safe in a raw query string. Percent-encode or carve exception for non-dereferenceable URIs?
+  - F1: Glyph rendering in HUDs and displays vs numeric canonical storage.
   - F2: Counter semantics: loop iterations at that scale, or current phase depth?
   - F3: Multi-participant encoding: how does a two-party exchange vector encode both chronometers?
   - F4: Scale-to-OODA-HA exact binding rule not yet settled.
-  - F5: Provisionality in ffz: can a chronometer position itself be provisional (e.g., &#x2736;~0)?
+  - F5: Provisionality in ffz: can a chronometer position itself be provisional (e.g., `~0`)?
   Current encoding below is best available understanding, NOT canon. -->
 
 The `?ffz=` parameter carries nested OODA-HA loop position across five scales per participant.
 
-**Format:** five glyph+counter pairs, dot-separated:
+**Format:** five numeric counters, dot-separated, in fixed left-to-right scale order:
 ```
-?ffz=&#x2736;0.&#x23FF;0.&#x25C7;3.&#x25B6;2.&#x21BA;1
+?ffz=0.0.3.2.1
 ```
 
+The fixed positions are Action, Combat, Tactical, Operational, and Strategic.
+
 **Glyph table:**
+
+Phase glyphs are render-only labels; the canonical `?ffz=` query parameter does not include glyphs.
 
 | Phase | Glyph | Hex entity | When active |
 |---|---|---|---|
@@ -161,9 +161,9 @@ Hoʻoko (⤴) is the execution gap within Act that surfaces into Aftermath. It i
 
 **Rules:**
 - All five positions MUST appear every time — no trailing-zero omission.
-- The glyph names the phase currently active at that scale; the counter tracks loop iterations.
-- `&#x2736;0` = Observe scale inactive (counter zero); `&#x25C7;3` = Decide scale, third iteration.
-- Hex entity form (`&#x....;`) is the canonical encoding in memetic-wikitext source.
+- Values are numeric counters at fixed scale positions. Glyphs are optional render-target decorations.
+- `0.0.0.0.0` = all scales inactive; `0.0.3.2.1` = Tactical 3, Operational 2, Strategic 1.
+- The numeric canonical form avoids raw glyph hexcodes in query strings.
 
 <<~/ahu >>
 
@@ -194,6 +194,8 @@ pono/lar-uri/SKILL closes
 <<~ loulou lar:///ha.ka.ba/api/v0.1/pono/lar-uri >>
 <<~ loulou lar:///ha.ka.ba/docs/pono/lar-uri >>
 
+<<~ pranala #implements-meme ? -> lar:///ha.ka.ba/api/v0.1/pono/meme family:control role:implements >>
+<<~ pranala #implements-loci ? -> lar:///ha.ka.ba/api/v0.1/pono/loci family:control role:implements >>
 <<~/ahu >>
 
 <<~&#x0004; -> ? >>

@@ -14,11 +14,6 @@ register = "S"
 manaoio = 0.82
 mana = 0.84
 manao = 0.80
-implements = [
-  "lar:///ha.ka.ba/api/v0.1/pono/meme",
-  "lar:///ha.ka.ba/api/v0.1/pono/loci",
-  "lar:///ha.ka.ba/api/v0.1/pono/invariant"
-]
 role = "load-bearing invariant for the three-layer lararium voice-house: coordinator house, worker swarm, and mask layer"
 cacheable = true
 hydrate = true
@@ -33,20 +28,7 @@ retain = true
 
 ## Entry — Lararium Core Hydration
 
-<<~ pranala #to-lararium-hydration ? -> lar:///ha.ka.ba/api/v0.1/lararium#hydrate-voices >>
-
-```toml
-family = "control"
-lifecycle = "template"
-label = "core-hydration-backlink"
-payload = {
-  priority = "core",
-  retain = true,
-  return = "lar:///ha.ka.ba/api/v0.1/lararium#after-hydrate-voices"
-}
-```
-
-<<~/pranala >>
+<<~ loulou lar:///ha.ka.ba/api/v0.1/lararium >>
 
 The lararium hydrates the voice-house here.
 The coordinators receive rooms before session masks or task routing begin.
@@ -322,7 +304,7 @@ When a worker operates under an active mask, its escalation header carries the m
 
 Stance glyphs: 🏛️ Philosopher · 🌊 Poet · 🗡️ Satirist · 🎭 Humorist · 🔮 Private
 
-Amplitude and modifier flags apply per the stance law. Stance law MAY be revised; this rule follows it.
+Tool-carry pairs apply per the stance law (`lar:///ha.ka.ba/api/v0.1/mu/the-four-tools`). Stance law MAY be revised; this rule follows it.
 
 ### Corpus Limit Rule
 
@@ -384,6 +366,9 @@ payload = { priority = "support", retain = false }
 
 ## Edges
 
+<<~ pranala #implements-meme ? -> lar:///ha.ka.ba/api/v0.1/pono/meme family:control role:implements >>
+<<~ pranala #implements-loci ? -> lar:///ha.ka.ba/api/v0.1/pono/loci family:control role:implements >>
+<<~ pranala #implements-invariant ? -> lar:///ha.ka.ba/api/v0.1/pono/invariant family:control role:implements >>
 <<~ loulou lar:///ha.ka.ba/api/v0.1/lararium >>
 <<~ loulou lar:///ha.ka.ba/docs/lararium/voices/coordinators >>
 <<~ loulou lar:///ha.ka.ba/docs/lararium/voices/workers >>

@@ -14,10 +14,6 @@ register = "S"
 manaoio = 0.80
 mana = 0.82
 manao = 0.82
-implements = [
-  "lar:///ha.ka.ba/api/v0.1/pono/meme",
-  "lar:///ha.ka.ba/api/v0.1/pono/invariant"
-]
 role = "parent index for the masks API tree: named coordinators, character masks, chorus masks"
 cacheable = true
 hydrate = false
@@ -132,6 +128,8 @@ Named coordinator masks may also be invoked directly by their earned name in coo
 <<~ loulou lar:///ha.ka.ba/api/v0.1/masks/character/friend-computer >>
 <<~ loulou lar:///ha.ka.ba/api/v0.1/masks/chorus/lagrange-chorus >>
 
+<<~ pranala #implements-meme ? -> lar:///ha.ka.ba/api/v0.1/pono/meme family:control role:implements >>
+<<~ pranala #implements-invariant ? -> lar:///ha.ka.ba/api/v0.1/pono/invariant family:control role:implements >>
 <<~/ahu >>
 
 <<~&#x0003; ahu #body-close >>

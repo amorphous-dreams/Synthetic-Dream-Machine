@@ -17,10 +17,6 @@ register = "CS"
 manaoio = 0.72
 mana = 0.78
 manao = 0.84
-implements = [
-  "lar:///ha.ka.ba/api/v0.1/pono/meme",
-  "lar:///ha.ka.ba/api/v0.1/pono/loci"
-]
 role = "meme operational skill — composition, audit, conformance check, and lawful sidecar split"
 covers = [
   "lar:///ha.ka.ba/api/v0.1/pono/meme"
@@ -221,9 +217,6 @@ register = "P"
 manaoio = 0.10
 mana = 0.10
 manao = 0.10
-implements = [
-  "lar:///ha.ka.ba/api/v0.1/pono/meme"
-]
 role = "[role]"
 ```
 <<~/ahu >>
@@ -253,6 +246,8 @@ role = "[role]"
 ## Edges
 
 <<~ loulou lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >>
+<<~ pranala #implements-meme ? -> lar:///ha.ka.ba/api/v0.1/pono/meme family:control role:implements >>
+<<~ pranala #implements-loci ? -> lar:///ha.ka.ba/api/v0.1/pono/loci family:control role:implements >>
 <<~/ahu >>
 
 <<~&#x0004; -> ? >>

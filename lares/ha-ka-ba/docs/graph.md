@@ -13,11 +13,6 @@ confidence   = 0.88
 mana         = 0.86
 manaoio      = 0.82
 manao        = 0.86
-implements   = [
-  "lar:///ha.ka.ba/api/v0.1/pono/meme",
-  "lar:///ha.ka.ba/api/v0.1/pono/loci",
-  "lar:///ha.ka.ba/api/v0.1/pono/invariant"
-]
 role         = "spine for the pranala-edge DAG graph redesign — research synthesis, committed decisions, child locus map"
 research-sources = [
   "Bazel depsets and Skyframe (Google 2024)",
@@ -182,6 +177,9 @@ graph closes
 <<~ loulou lar:///ha.ka.ba/docs/lararium_mcp/hydration >>
 <<~ loulou lar:///ha.ka.ba/api/v0.1/pono/pranala >>
 
+<<~ pranala #implements-meme ? -> lar:///ha.ka.ba/api/v0.1/pono/meme family:control role:implements >>
+<<~ pranala #implements-loci ? -> lar:///ha.ka.ba/api/v0.1/pono/loci family:control role:implements >>
+<<~ pranala #implements-invariant ? -> lar:///ha.ka.ba/api/v0.1/pono/invariant family:control role:implements >>
 <<~/ahu >>
 
 <<~&#x0004; -> ? >>

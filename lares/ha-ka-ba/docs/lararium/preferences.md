@@ -14,10 +14,6 @@ register = "S"
 manaoio = 0.82
 mana = 0.78
 manao = 0.84
-implements = [
-  "lar:///ha.ka.ba/api/v0.1/pono/meme",
-  "lar:///ha.ka.ba/api/v0.1/pono/loci"
-]
 role = "extraction shelf for durable concepts recovered from Lares_Preferences.system-prompt and adjacent lararium witnesses"
 cacheable = false
 retain = false
@@ -92,6 +88,8 @@ docs/lararium/preferences closes
 
 <<~ loulou lar:///ha.ka.ba/docs/lararium >>
 
+<<~ pranala #implements-meme ? -> lar:///ha.ka.ba/api/v0.1/pono/meme family:control role:implements >>
+<<~ pranala #implements-loci ? -> lar:///ha.ka.ba/api/v0.1/pono/loci family:control role:implements >>
 <<~/ahu >>
 
 <<~&#x0004; -> ? >>

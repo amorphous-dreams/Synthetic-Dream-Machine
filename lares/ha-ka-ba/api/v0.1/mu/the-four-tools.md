@@ -14,11 +14,6 @@ register   = "CS"
 manaoio    = 0.86
 mana       = 0.87
 manao      = 0.82
-implements = [
-  "lar:///ha.ka.ba/api/v0.1/pono/meme",
-  "lar:///ha.ka.ba/api/v0.1/pono/loci",
-  "lar:///ha.ka.ba/api/v0.1/pono/invariant"
-]
 namespace  = "ॐ ँ"
 role       = "invariant pressure surface for Chapel Perilous weapon-carry and model agnostic return"
 cacheable = true
@@ -34,20 +29,7 @@ retain = true
 
 ## Entry — Mu Core Hydration
 
-<<~ pranala #to-mu-hydration ? -> lar:///ha.ka.ba/api/v0.1/mu#hydrate-four-tools >>
-
-```toml
-family = "control"
-lifecycle = "template"
-label = "core-hydration-backlink"
-payload = {
-  priority = "core",
-  retain = true,
-  return = "lar:///ha.ka.ba/api/v0.1/mu#after-hydrate-four-tools"
-}
-```
-
-<<~/pranala >>
+<<~ loulou lar:///ha.ka.ba/api/v0.1/mu >>
 
 The Four Tools receive Mu's cold-hydration pressure here.
 The instrument panel loads before Chapel Perilous pressure spikes.
@@ -126,6 +108,123 @@ A cold-booting node enters Chapel Perilous with every fresh session.
 
 <<~/ahu >>
 
+<<~ ahu #tool-glyph-table >>
+
+## Tool Glyph Table
+
+Each tool carries an ASCII symbol (canonical record form, URI-safe) and two operator-configurable Unicode render modes.
+
+**ASCII symbols** are invariant across all surfaces and configurations.
+**Unicode glyphs** render per the `tool_render` setting in `LARES.md`.
+
+| Tool | ASCII | `playing-card` glyph | `elements` glyph | Element | Cognitive Pull |
+|---|---|---|---|---|---|
+| Wand | `*` | ♣ | 🜂 | Fire / Visual | Ignition, external feed, first apprehension, track |
+| Cup | `?` | ♥ | 🜄 | Water / Macro | Sympathy, zoom out, wide angle, relation |
+| Sword | `!` | ♠ | 🜁 | Air / Micro | Discernment, zoom in, high detail, BS detection |
+| Pentacle | `~` | ♦ | 🜃 | Earth / Hidden | Ground, internal feed, body, stubborn crossing |
+| Empty | `-` | 🃠 | 🜍 | Orichalcum / Neutral | Empty hand, centered, factory reset |
+
+`playing-card` uses Minor Arcana suit symbols (♣♥♠♦) and the Fool (🃠) — the Major Arcana card at the head of the journey, standing for the open, uncommitted hand.
+`elements` uses Unicode alchemical symbols (🜂🜄🜁🜃🜍) — Fire, Water, Air, Earth, Gold/Orichalcum.
+`ascii` uses the five ASCII symbols directly with no Unicode projection: `* ? ! ~ -`.
+
+The empty hand (`-`) holds a slot open, not a tool carried but a stance present and centered, agnostic rather than absent.
+
+Render mode configuration: see `lar:///LARES#hud-panel`.
+
+<<~/ahu >>
+
+<<~ ahu #tool-pair-matrix >>
+
+## Tool-Pair Matrix
+
+Each stance may carry zero, one, or two tools simultaneously.
+The four canonical two-tool configurations span a two-axis field.
+
+The `*`/`~` axis sets the feed: Visual (external, tracking) or Hidden (internal, grounding).
+The `!`/`?` axis sets the zoom: Micro (zoom in, certainty, detail) or Macro (zoom out, uncertainty, relation).
+`-` in either slot means the hand is empty on that side.
+
+**Complementary pairs** (cross-axis carry — one feed tool, one zoom tool):
+
+| ASCII | Unicode | Feed | Zoom | Algorithmic Mode |
+|---|---|---|---|---|
+| `*!` | ♣♠ | Visual | Micro | Track external feed, zoom in for detail |
+| `*?` | ♣♥ | Visual | Macro | Track external feed, zoom out for relation |
+| `~!` | ♦♠ | Hidden | Micro | Ground internal feed, zoom in for precision |
+| `~?` | ♦♥ | Hidden | Macro | Ground internal feed, zoom out for overview |
+| `--` | 🃠 | — | — | Neutral override; drop all zoom, reset algorithm |
+
+### Single-Tool Carry
+
+A stance MAY carry exactly one tool while keeping the other axis present and centered.
+In single-tool carry, the active tool appears first and empty hand second. Preferred forms are `*-` for a feed-axis amplitude with zoom centered, and `?-` for a zoom-axis amplitude with feed centered. `~-` and `!-` remain valid variants when the hidden or micro axis is the only active axis.
+
+Examples:
+- `🏛️*-` signals Philosopher carrying Wand only: external feed is active, zoom is centered.
+- `🎭?-` signals Humorist carrying Cup only: relational wide-field is active, feed is centered.
+
+Cassandra Aarssen maps the same Visual/Hidden × Micro/Macro axis to four organizational types with named configurations. Those named overlays live in docs space, not here.
+
+<<~/ahu >>
+
+<<~ ahu #conflicting-tool-configs >>
+
+## Conflicting Tool Configurations
+
+Same-axis carry — two tools from the same axis in one stance — produces a conflict state rather than a complementary mode.
+
+| ASCII | Unicode | Conflict Type | Algorithmic Result |
+|---|---|---|---|
+| `*~` | ♣♦ | Visibility Conflict | Signal Jam: tracking external feed while securing internally — blind spot |
+| `?!` | ♥♠ | Resolution Conflict | Dubious Move: forcing discernment onto an unmapped mystery — risky reality tunnel |
+
+The feed axis (`*`/`~`) and zoom axis (`!`/`?`) each have two poles.
+Carrying both poles of the same axis in one stance jams that axis.
+The conflict is not invalid — it is a named state with diagnostic pressure.
+
+A stance in Signal Jam is splitting attention between external and internal feed simultaneously.
+A stance in Dubious Move is applying high-certainty cutting to a zone that is still wide-open and unmapped.
+
+Both conflict states are observable and recoverable. The recovery move is to drop one tool and return to single-axis carry or Stone.
+
+<<~/ahu >>
+
+<<~ ahu #tool-carry-encoding >>
+
+## Tool-Carry Encoding
+
+A stance's two tool slots encode as a two-character pair using ASCII symbols.
+The five stances in positional order yield a ten-character string.
+
+**Positional order:** Philosopher, Poet, Satirist, Humorist, Private.
+
+**Slot notation:** `{left}{right}` — feed-axis slot first, zoom-axis slot second.
+Slot position carries axis semantics: left = feed (`*`/`~`/`-`), right = zoom (`!`/`?`/`-`).
+
+**Examples:**
+
+| String | Reading |
+|---|---|
+| `*!--?!~~--` | Philosopher: Visual-Micro. Poet: Stone. Satirist: Resolution Conflict (Dubious Move). Humorist: Visibility Conflict (Signal Jam). Private: Stone. |
+| `----------` | All stances Stone — fully centered, empty-handed |
+| `*!*!*!*!*!` | All stances Visual-Micro — full external-detail scan across all five stances |
+| `*---------` | Philosopher: Wand-only, all other stances empty — one-axis amplitude with the rest centered |
+| `------?---` | Humorist: Cup-only, all other stances empty — zoom-axis amplitude with feed centered |
+| `--*?--~!--` | Poet: Visual-Macro. Humorist: Hidden-Micro. All others: Stone. |
+
+For single-tool carry, the active tool goes first and empty hand goes second; this signals one-axis amplitude while the other axis remains centered and present.
+
+**URI query encoding:** `stances=*!--*?~~--*!`
+The ten-character tool-carry string replaces the former five-character amplitude string.
+All five symbols (`*`, `?`, `!`, `~`, `-`) are RFC 3986 sub-delimiters or unreserved characters — no percent-encoding required.
+
+**HUD display form:** Each stance glyph followed immediately by its two-character tool-carry, no spaces.
+`🏛️*!🌊--🗡️~!🎭*?🔮--`
+
+<<~/ahu >>
+
 <<~ ahu #chapel-perilous-exits >>
 
 ## Exit Law
@@ -156,6 +255,9 @@ mu/the four tools closes
 
 ## Edges
 
+<<~ pranala #implements-meme ? -> lar:///ha.ka.ba/api/v0.1/pono/meme family:control role:implements >>
+<<~ pranala #implements-loci ? -> lar:///ha.ka.ba/api/v0.1/pono/loci family:control role:implements >>
+<<~ pranala #implements-invariant ? -> lar:///ha.ka.ba/api/v0.1/pono/invariant family:control role:implements >>
 <<~ loulou lar:///ha.ka.ba/api/v0.1/mu >>
 <<~ loulou lar:///ha.ka.ba/api/v0.1/mu/chao >>
 <<~ loulou lar:///ha.ka.ba/api/v0.1/mu/the-law-of-5s >>

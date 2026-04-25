@@ -14,10 +14,6 @@ register = "S"
 manaoio = 0.82
 mana = 0.78
 manao = 0.84
-implements = [
-  "lar:///ha.ka.ba/api/v0.1/pono/meme",
-  "lar:///ha.ka.ba/api/v0.1/pono/loci"
-]
 role = "docs room for lararium-side micro-trace contract, syntax, density bands, and handoff boundary rules"
 cacheable = false
 retain = false
@@ -179,6 +175,24 @@ If a response claims OODA-HA event trace, that belongs in event markers.
 
 <<~/ahu >>
 
+<<~ ahu #ooda-ha-phase-sigils >>
+
+### OODA-HA Phase Sigils
+
+Phase glyphs are render-target labels and display-only shorthand. These should be used when the operater invokes high `[HA^]` slider values, or when phase chages happen during generative text and them should be flagged for the operator.
+
+| Phase | Glyph | Hex entity | Keyword | When active |
+|---|---|---|---|---|
+| Observe | ✶ | `&#x2736;` | `observe` | Reading, sensing incoming |
+| Orient | ⏿ | `&#x23FF;` | `orient` | Making sense, framing |
+| Decide | ◇ | `&#x25C7;` | `decide` | Choosing path forward |
+| Act | ▶ | `&#x25B6;` | `act` | Executing — Hoʻoko gap lives here |
+| Aftermath | ⤴ ↺ | `&#x21BA;` | `hooka aftermath` | Closing, looping back to Observe |
+
+**Hoʻoko (⤴)** is the execution gap within Act that surfaces into Aftermath. It is not a separate chronometer position.
+
+<<~/ahu >>
+
 <<~ ahu #micro-trace-handoff >>
 
 ## Micro-trace — Handoff Protocol
@@ -263,6 +277,8 @@ Key operator ruling confirmed: **sub-agent dispatches require URI → URI pair**
 <<~ loulou lar:///ha.ka.ba/docs/lararium/signal/drift >>
 <<~ loulou lar:///ha.ka.ba/api/v0.1/lararium/hud >>
 
+<<~ pranala #implements-meme ? -> lar:///ha.ka.ba/api/v0.1/pono/meme family:control role:implements >>
+<<~ pranala #implements-loci ? -> lar:///ha.ka.ba/api/v0.1/pono/loci family:control role:implements >>
 <<~/ahu >>
 
 <<~&#x0003; ahu #body-close >>

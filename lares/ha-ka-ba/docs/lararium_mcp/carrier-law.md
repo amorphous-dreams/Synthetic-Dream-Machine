@@ -13,10 +13,6 @@ confidence   = 0.86
 mana         = 0.84
 manaoio      = 0.78
 manao        = 0.86
-implements   = [
-  "lar:///ha.ka.ba/api/v0.1/pono/meme",
-  "lar:///ha.ka.ba/api/v0.1/pono/loci"
-]
 role         = "canonical carrier-law bundle for Lararium MCP compiler planning"
 source-consumes = [
   "lares/ha-ka-ba/docs/mcp/CARRIER_LAW_BUNDLE.md"
@@ -167,6 +163,8 @@ lararium_mcp/carrier-law closes
 <<~ loulou lar:///ha.ka.ba/api/v0.1/pono/loci >>
 <<~ loulou lar:///ha.ka.ba/docs/lararium_mcp/hydration >>
 
+<<~ pranala #implements-meme ? -> lar:///ha.ka.ba/api/v0.1/pono/meme family:control role:implements >>
+<<~ pranala #implements-loci ? -> lar:///ha.ka.ba/api/v0.1/pono/loci family:control role:implements >>
 <<~/ahu >>
 
 <<~&#x0004; -> ? >>

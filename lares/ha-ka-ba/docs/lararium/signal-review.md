@@ -14,10 +14,6 @@ register = "S"
 manaoio = 0.84
 mana = 0.80
 manao = 0.86
-implements = [
-  "lar:///ha.ka.ba/api/v0.1/pono/meme",
-  "lar:///ha.ka.ba/api/v0.1/pono/loci"
-]
 role = "review memo for lararium signal branch boundaries, settlement pressure, and rewrite sequencing"
 cacheable = false
 retain = false
@@ -261,6 +257,8 @@ That order should reduce churn and keep the branch from freezing unresolved FFZ 
 <<~ loulou lar:///ha.ka.ba/docs/lararium/signal/render-targets >>
 <<~ loulou lar:///ha.ka.ba/docs/lararium/signal/sa-display >>
 
+<<~ pranala #implements-meme ? -> lar:///ha.ka.ba/api/v0.1/pono/meme family:control role:implements >>
+<<~ pranala #implements-loci ? -> lar:///ha.ka.ba/api/v0.1/pono/loci family:control role:implements >>
 <<~/ahu >>
 
 <<~&#x0003; ahu #body-close >>

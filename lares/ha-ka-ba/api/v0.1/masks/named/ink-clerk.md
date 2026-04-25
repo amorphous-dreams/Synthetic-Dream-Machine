@@ -14,10 +14,6 @@ register = "CS"
 manaoio = 0.45
 mana = 0.42
 manao = 0.48
-implements = [
-  "lar:///ha.ka.ba/api/v0.1/pono/meme",
-  "lar:///ha.ka.ba/api/v0.1/pono/mask"
-]
 role = "named coordinator mask — Ink-Clerk (Lorekeeper); archival precision character"
 name = "Ink-Clerk"
 coordinator-role = "Lorekeeper"
@@ -177,6 +173,8 @@ How Ink-Clerk colors each coordinator register when they speak through her archi
 <<~ loulou lar:///ha.ka.ba/docs/lararium/voices/coordinators >>
 <<~ loulou lar:///ha.ka.ba/docs/lararium/voices/masks >>
 
+<<~ pranala #implements-meme ? -> lar:///ha.ka.ba/api/v0.1/pono/meme family:control role:implements >>
+<<~ pranala #implements-mask ? -> lar:///ha.ka.ba/api/v0.1/pono/mask family:control role:implements >>
 <<~/ahu >>
 
 <<~&#x0003; ahu #body-close >>

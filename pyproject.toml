@@ -20,4 +20,29 @@ dev = [
 ]
 
 [tool.setuptools.packages.find]
-where = ["lares"]
+where = ["."]
+include = ["lares*"]
+exclude = [
+    "mempalace*",
+    "kowloon*",
+    "kowloon-client*",
+    "kowloon-frontend*",
+    "tiddlywiki5*",
+    "tldraw*"
+]
+
+[tool.pytest.ini_options]
+testpaths = [
+    "tests",
+    "lares/lararium_mcp/tests"
+]
+norecursedirs = [
+    ".git",
+    ".venv",
+    "mempalace",
+    "kowloon",
+    "kowloon-client",
+    "kowloon-frontend",
+    "tiddlywiki5",
+    "tldraw"
+]

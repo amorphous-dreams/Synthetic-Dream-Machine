@@ -13,23 +13,19 @@ confidence   = 0.86
 mana         = 0.86
 manaoio      = 0.82
 manao        = 0.86
-implements   = [
-  "lar:///ha.ka.ba/api/v0.1/pono/meme",
-  "lar:///ha.ka.ba/api/v0.1/pono/loci"
-]
-role         = "PranaEdge, Locus, and LociGraph data model contracts for the pranala-edge DAG compiler"
+role         = "PranaEdge, Meme, and MemeGraph data model contracts for the pranala-edge DAG compiler"
 status-date  = "2026-04-24"
 renamed-from = "ha.ka.ba/docs/graph/loci"
 
 [uncertainty]
-locus-class-name  = "Locus preferred over CarrierLocus; not yet ratified in code"
-graph-class-name  = "LociGraph preferred over CarrierGraph or Graph; not yet ratified in code"
-relation-to-pono  = "lar:///ha.ka.ba/api/v0.1/pono/loci is the interface law; this locus holds the graph-compiler data model — same term, distinct scopes"
+meme-class-name   = "Meme preferred over CarrierMeme or Locus; not yet ratified in code"
+graph-class-name  = "MemeGraph preferred over LociGraph, CarrierGraph, or Graph; not yet ratified in code"
+locus-subtype     = "Locus remains valid as the subtype name for memes that implement the pono loci interface; distinct from graph node terminology"
 ```
 <<~/ahu >>
 
 <<~&#x0002; ahu #meme-body-open >>
-graph/loci opens
+graph/meme opens
 <<~/ahu >>
 
 <<~ ahu #terminology-note>>
@@ -41,9 +37,9 @@ graph/loci opens
 <<~/ahu >>
 
 <<~ ahu #ooda-ha >>
-✶ observe: the compiler needs three types — an edge, a locus, and a graph — before any walk can proceed.
-⏿ orient: Bazel's depset pattern informs locus structure; canonical pranala kānāwai (`lar:///ha.ka.ba/api/v0.1/pono/pranala`) governs the full PranaEdge field set and independence law.
-◇ decide: frozen dataclasses for PranaEdge and Locus; a mutable LociGraph that builds incrementally from carrier reads.
+✶ observe: the compiler needs three types — an edge, a meme, and a graph — before any walk can proceed.
+⏿ orient: Bazel's depset pattern informs meme structure; canonical pranala kānāwai (`lar:///ha.ka.ba/api/v0.1/pono/pranala`) governs the full PranaEdge field set and independence law.
+◇ decide: frozen dataclasses for PranaEdge and Meme; a mutable MemeGraph that builds incrementally from carrier reads.
 ▶ act: specify field-level contracts for each type and the graph's core operations.
 ⤴ verify: every field carries a type, a source (where the compiler reads it from), and a default.
 ↺ deeper parser/render concerns route to `pranala-parser` and `traversal` siblings.
@@ -79,7 +75,7 @@ Stored as a frozen dataclass so that edge records remain hashable and sortable.
 
 **Lifecycle values:** `template`, `instance`, `trace`
 
-**Role values:** `owns`, `references`, `composes`, `constrains`, `instantiates`, or `None`
+**Role values:** `owns`, `references`, `composes`, `constrains`, `implements`, or `None`
 
 **Cardinality values:** `one-to-one`, `one-to-many`, `many-to-one`, `many-to-many`, or `None`
 
@@ -107,19 +103,19 @@ An edge gates hydration order when `family == "control"`.
 <<~/ahu >>
 
 <<~ ahu #locus >>
-## Meme (General Node)
+## Meme
 
-One resolved carrier in the graph. Any meme is a valid node; only memes that implement the loci interface are loci.
+One resolved carrier in the graph. Class name `Meme` preferred; `CarrierMeme` is a fallback if module namespace collision requires disambiguation. Decision deferred to Phase 1.
 Built from a `CarrierRecord` (ingress result from `carrier.py`) plus content hash.
 
-**Locus (Special Case):**
-Class name `Locus` preferred for memes that implement the loci interface; `CarrierLocus` is a fallback if disambiguation with the pono loci interface becomes necessary at implementation time. Decision deferred to Phase 1.
+**Locus (subtype):**
+A meme that carries `control/implements` edges pointing to pono interface URIs is a locus. The subtype name `Locus` remains valid for code paths that need to distinguish interface-implementing memes. It does not replace `Meme` as the general node name.
 
 **ECS parallel (UEFN Scene Graph):**
 A meme maps to `entity` — a pure URI container with no embedded business logic.
-Each entry in `implements` maps to a `component` — an attached capability interface (which may include the loci interface, making the meme a locus).
+Each `control/implements` edge maps to a `component` attachment — a capability interface the meme declares.
 A `lifecycle: template` pranala edge maps to a `prefab` — declared connectivity the compiler stamps into the walk.
-The compiler adds and removes memes via `add_meme` / `dispose` semantics (children cascade on dispose). For loci, use `add_locus` as required by interface law.
+The compiler adds and removes memes via `add_meme` / `dispose` semantics (children cascade on dispose).
 
 | Field | Type | Source | Default |
 |---|---|---|---|
@@ -127,7 +123,7 @@ The compiler adds and removes memes via `add_meme` / `dispose` semantics (childr
 | `path` | `Path \| None` | resolver path | `None` for virtual |
 | `content_hash` | `str` | `SHA256(uri + ":" + file_bytes)` if file-backed, else `SHA256(uri + ":virtual")` | required |
 | `metadata` | `dict` | `#iam` TOML extraction | `{}` |
-| `implements` | `tuple[str, ...]` | `metadata["implements"]` | `()` |
+| `implements` | `tuple[str, ...]` | derived from `edges_out` where `role == "implements"` | `()` |
 | `shape` | `CarrierShape` | shape validation result from `carrier.py` | required |
 | `edges_out` | `list[PranaEdge]` | pranala parser output from carrier text | `[]` |
 | `virtual` | `bool` | resolver flag | `False` |
@@ -163,19 +159,19 @@ Neither causes the compilation to abort; the artifact remains valid with a `Fals
 
 <<~/ahu >>
 
-<<~ ahu #loci-graph >>
-## LociGraph
+<<~ ahu #meme-graph >>
+## MemeGraph
 
-Adjacency structure over all reachable loci.
+Adjacency structure over all reachable memes.
 Built incrementally as the compiler reads carriers and parses their pranala edges.
 
-**Uncertainty:** class name `LociGraph` preferred; `Graph` is a plausible shorter form once the module namespace makes the referent clear. Decision deferred to Phase 1.
+**Uncertainty:** class name `MemeGraph` preferred; `Graph` is a plausible shorter form once the module namespace makes the referent clear. Decision deferred to Phase 1.
 
 **Internal structure:**
 
 ```
-loci: dict[str, Locus]
-    uri → locus
+memes: dict[str, Meme]
+    uri → meme
 
 adjacency: dict[str, dict[str, list[PranaEdge]]]
     family → from_uri → [PranaEdge, ...]
@@ -185,19 +181,18 @@ adjacency: dict[str, dict[str, list[PranaEdge]]]
 
 | Method | Signature | Behaviour |
 |---|---|---|
-| `add_locus` | `(uri, record, edges)` → `None` | inserts locus; parses edges into adjacency index |
+| `add_meme` | `(uri, record, edges)` → `None` | inserts meme; parses edges into adjacency index |
 | `successors` | `(uri, family)` → `list[str]` | outbound target URIs for given family |
-| `walk_control` | `(entry_uri)` → `(list[str], list[list[str]])` | DFS from entry over control edges; returns topologically sorted URIs + cycle lists |
-| `one_hop_relation` | `(control_uris)` → `set[str]` | relation-edge neighbours of every control-reachable locus, excluding already-reachable |
+| `one_hop_relation` | `(control_uris)` → `set[str]` | relation-edge neighbours of every control-reachable meme, excluding already-reachable |
 | `detect_cycles` | `()` → `list[list[str]]` | DFS gray/black coloring over all families |
 | `topological_sort` | `(uri_set)` → `list[str]` | Kahn's algorithm (in-degree BFS) restricted to given URI set |
-| `closure_hash` | `(uri_list, edge_list)` → `str` | SHA256 of sorted locus hashes + serialised edge records |
+| `closure_hash` | `(uri_list, edge_list)` → `str` | SHA256 of sorted meme hashes + serialised edge records |
 
 **Depset traversal orders supported:**
 
 - `postorder` — leaves before roots (dependency resolution order)
 - `preorder` — roots before leaves (hydration loading order)
-- `topological` — defers shared loci until all parents visited (Bazel default)
+- `topological` — defers shared memes until all parents visited (Bazel default)
 
 The boot compiler uses `topological` for artifact production.
 
@@ -210,7 +205,7 @@ Two virtual MCP resources form the content-address lookup surface.
 
 ### `lar:///INDEXES/hashes`
 
-A JSON object mapping every indexed locus URI to its current `locus_hash`.
+A JSON object mapping every indexed meme URI to its current `meme_hash`.
 
 ```json
 {
@@ -220,34 +215,34 @@ A JSON object mapping every indexed locus URI to its current `locus_hash`.
 }
 ```
 
-Clients poll this resource to check whether any locus has changed since their last hydration.
+Clients poll this resource to check whether any meme has changed since their last hydration.
 If all hashes match the client's cached receipt `hash_sequence`, the Anthropic context prefix stays valid — no resend required.
 
 ### `lar:///CONTENT/{hash}`
 
-A virtual resource that maps a `locus_hash` value back to the raw carrier text.
+A virtual resource that maps a `meme_hash` value back to the raw carrier text.
 `{hash}` is the full hex digest (e.g., `sha256:abc123...`).
 
-The resolver expands `lar:///CONTENT/sha256:{hex}` → reads the matching locus from disk (looked up by reverse hash map) and returns its text.
+The resolver expands `lar:///CONTENT/sha256:{hex}` → reads the matching meme from disk (looked up by reverse hash map) and returns its text.
 
-**Purpose:** a client can request a single locus by content address without knowing its URI path — useful for cache miss fills and cross-session identity.
+**Purpose:** a client can request a single meme by content address without knowing its URI path — useful for cache miss fills and cross-session identity.
 
 **Index contract:**
 
 | Index | URI | Content |
 |---|---|---|
-| URI → hash | `lar:///INDEXES/hashes` | JSON object, all indexed loci |
+| URI → hash | `lar:///INDEXES/hashes` | JSON object, all indexed memes |
 | hash → text | `lar:///CONTENT/{hash}` | raw carrier text, virtual |
 
 **`hash_sequence` in boot receipt:**
 
-The boot receipt gains a `hash_sequence` field: an ordered list of `{uri, sha256, depth}` records in topological (hydration) order.
+The boot receipt gains a `hash_sequence` field: an ordered list of `{uri, meme_hash, depth}` records in topological (hydration) order.
 This lets a client verify the complete minimal-boot prefix byte-for-byte without re-requesting the full artifact.
 
 <<~/ahu >>
 
 <<~&#x0003; ahu #body-close >>
-graph/loci closes
+graph/meme closes
 <<~/ahu >>
 
 <<~ ahu #edges >>
@@ -259,6 +254,8 @@ graph/loci closes
 <<~ loulou lar:///ha.ka.ba/api/v0.1/pono/pranala >>
 <<~ loulou lar:///ha.ka.ba/api/v0.1/pono/loci >>
 
+<<~ pranala #implements-meme ? -> lar:///ha.ka.ba/api/v0.1/pono/meme family:control role:implements >>
+<<~ pranala #implements-loci ? -> lar:///ha.ka.ba/api/v0.1/pono/loci family:control role:implements >>
 <<~/ahu >>
 
 <<~&#x0004; -> ? >>

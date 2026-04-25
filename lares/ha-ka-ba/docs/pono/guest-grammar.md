@@ -14,10 +14,6 @@ register = "CS"
 manaoio = 0.70
 mana = 0.76
 manao = 0.80
-implements = [
-  "lar:///ha.ka.ba/api/v0.1/pono/meme",
-  "lar:///ha.ka.ba/api/v0.1/pono/loci"
-]
 role = "extended documentation surface for guest-grammar examples, ownership notes, fixture seeds, and migration residue"
 cacheable = false
 retain = false
@@ -109,6 +105,8 @@ docs/pono/guest-grammar closes
 <<~ loulou lar:///ha.ka.ba/api/v0.1/pono/guest-grammar >>
 <<~ loulou lar:///ha.ka.ba/api/v0.1/pono/guest-grammar/SKILL >>
 
+<<~ pranala #implements-meme ? -> lar:///ha.ka.ba/api/v0.1/pono/meme family:control role:implements >>
+<<~ pranala #implements-loci ? -> lar:///ha.ka.ba/api/v0.1/pono/loci family:control role:implements >>
 <<~/ahu >>
 
 <<~&#x0004; -> ? >>

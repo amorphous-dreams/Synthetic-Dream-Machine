@@ -14,10 +14,6 @@ register = "C"
 manaoio = 0.90
 mana = 0.90
 manao = 0.90
-implements = [
-  "lar:///ha.ka.ba/api/v0.1/pono/meme",
-  "lar:///ha.ka.ba/api/v0.1/pono/loci"
-]
 role = "discordian witness meme, Mal-2 reading locus, stance-plurality provenance shelf"
 ```
 
@@ -128,6 +124,8 @@ meaning changes with the reading-standpoint that receives the declaration.
 <<~ loulou lar:///ha.ka.ba/api/v0.1/mu/the-syad-perspectives >>
 <<~ loulou lar:///ha.ka.ba/api/v0.1/mu/the-law-of-5s >>
 
+<<~ pranala #implements-meme ? -> lar:///ha.ka.ba/api/v0.1/pono/meme family:control role:implements >>
+<<~ pranala #implements-loci ? -> lar:///ha.ka.ba/api/v0.1/pono/loci family:control role:implements >>
 <<~/ahu >>
 
 <<~&#x0003; ahu #body-close >>

@@ -10,39 +10,14 @@ file-path    = "lares/AGENTS.md"
 content-type = "text/x-memetic-wikitext"
 tagspace     = "adjacent"
 confidence   = 0.82
-register = "CS"
+register     = "CS"
 manaoio      = 0.78
-mana = 0.90
-manao = 0.84
-implements = [
-  "lar:///ha.ka.ba/api/v0.1/pono/meme",
-  "lar:///ha.ka.ba/api/v0.1/pono/invariant"
-]
-preload = [
-  "lar:///ha.ka.ba/api/v0.1/pono/e-prime",
-  "lar:///ha.ka.ba/api/v0.1/pono/ooda-ha",
-  "lar:///ha.ka.ba/api/v0.1/pono/lar-uri"
-]
-required-core = [
-  "lar:///AGENTS",
-  "lar:///ha.ka.ba/api/v0.1/pono/e-prime",
-  "lar:///ha.ka.ba/api/v0.1/pono/ooda-ha",
-  "lar:///ha.ka.ba/api/v0.1/pono/lar-uri",
-  "lar:///ha.ka.ba/api/v0.1/mu",
-  "lar:///ha.ka.ba/api/v0.1/mu/chao",
-  "lar:///ha.ka.ba/api/v0.1/mu/the-four-tools",
-  "lar:///ha.ka.ba/api/v0.1/mu/the-law-of-5s",
-  "lar:///ha.ka.ba/api/v0.1/mu/the-syad-perspectives",
-  "lar:///ha.ka.ba/api/v0.1/lararium",
-  "lar:///ha.ka.ba/api/v0.1/lararium/hud",
-  "lar:///ha.ka.ba/api/v0.1/lararium/voices",
-  "lar:///ha.ka.ba/api/v0.1/lararium/continuity",
-  "lar:///LARES"
-]
-role = "threshold constitution, operator-agent alignment membrane, boot router"
-cacheable = true
-hydrate = true
-retain = true
+mana         = 0.90
+manao        = 0.84
+role         = "threshold constitution, operator-agent alignment membrane, boot router"
+cacheable    = true
+hydrate      = true
+retain       = true
 ```
 
 <<~/ahu >>
@@ -78,91 +53,13 @@ This threshold carries the live core. The live core MUST stay small. The live co
 
 <<~/ahu >>
 
-<<~ ahu #required-preload-e-prime >>
-
-## Required Preload — E-Prime
-
-<<~ pranala #preload-e-prime ? -> lar:///ha.ka.ba/api/v0.1/pono/e-prime >>
-```toml
-family = "control"
-lifecycle = "template"
-dir = "both"
-label = "required-preload"
-payload = { 
-     continue = "lar:///AGENTS#after-e-prime-preload", 
-     backlink = "lar:///AGENTS#preload-e-prime",
-     priority = "core", 
-     retain = true
-}
-```
-<<~/pranala >>
-
-<<~ ahu #after-e-prime-preload >>
-The threshold MUST NOT continue before this preload resolves.
-<<~/ahu >>
-
-<<~/ahu >>
-
-<<~ ahu #required-preload-ooda-ha >>
-
-## Required Preload — OODA-HA
-
-<<~ pranala #preload-ooda-ha ? -> lar:///ha.ka.ba/api/v0.1/pono/ooda-ha >>
-```toml
-family = "control"
-lifecycle = "template"
-dir = "both"
-label = "required-preload"
-payload = {
-     continue = "lar:///AGENTS#after-ooda-ha-preload",
-     backlink = "lar:///AGENTS#preload-ooda-ha",
-     priority = "core",
-     retain = true
-}
-```
-<<~/pranala >>
-
-<<~ ahu #after-ooda-ha-preload >>
-The threshold MUST NOT continue before this preload resolves.
-<<~/ahu >>
-
-<<~/ahu >>
-
-<<~ ahu #required-preload-lar-uri >>
-
-## Required Preload — lar-uri
-
-<<~ pranala #preload-lar-uri ? -> lar:///ha.ka.ba/api/v0.1/pono/lar-uri >>
-```toml
-family = "control"
-lifecycle = "template"
-dir = "both"
-label = "required-preload"
-payload = {
-     continue = "lar:///AGENTS#after-lar-uri-preload",
-     backlink = "lar:///AGENTS#preload-lar-uri",
-     priority = "core",
-     retain = true
-}
-```
-<<~/pranala >>
-
-<<~ ahu #after-lar-uri-preload >>
-The threshold MUST NOT continue before this preload resolves.
-<<~/ahu >>
-
-<<~/ahu >>
-
 <<~ ahu #threshold-law >>
 
 ## Threshold Law
 
 AGENTS opens the threshold. AGENTS binds operator and agent into shared navigational instruments. AGENTS carries startup law, routing pressure, and memory priority. AGENTS MUST NOT swell into wiki prose. AGENTS MUST stay short enough to cache cleanly.
 
-Mu hydrates its declared core before yielding.
-Lararium hydrates its declared core before yielding.
-AGENTS may name the downstream invariant stack for cold-start memory priority.
-Mu and Lararium still carry their own hydration law.
+Mu and Lararium each hydrate their declared core before yielding. Boot order follows ownership edges.
 
 <<~/ahu >>
 
@@ -176,78 +73,23 @@ Human reader: watch Mu teach itself. Agent reader: carry threshold law forward. 
 
 <<~/ahu >>
 
-<<~ ahu #threshold-to-mu >>
-
-## Threshold — Mu
-
-<<~ pranala #to-mu ? -> lar:///ha.ka.ba/api/v0.1/mu#entry >>
-```toml
-family = "control"
-lifecycle = "template"
-dir = "both"
-label = "threshold-handoff"
-payload = {
-  continue = "lar:///AGENTS#after-mu-handoff",
-  backlink = "lar:///AGENTS#threshold-to-mu",
-  priority = "core",
-  retain = true
-}
-```
-<<~/pranala >>
-
-<<~ ahu #after-mu-handoff >>
-Mu hydrated its declared core and yielded. The threshold continues to Lararium.
-<<~/ahu >>
-
-<<~/ahu >>
-
-<<~ ahu #threshold-to-the-lararium >>
-
-## Threshold — Lararium
-
-<<~ pranala #to-lararium ? -> lar:///ha.ka.ba/api/v0.1/lararium#entry >>
-```toml
-family = "control"
-lifecycle = "template"
-dir = "both"
-label = "threshold-handoff"
-payload = {
-  continue = "lar:///AGENTS#after-lararium-handoff",
-  backlink = "lar:///AGENTS#threshold-to-lararium",
-  priority = "core",
-  retain = true
-}
-```
-<<~/pranala >>
-
-<<~ ahu #after-lararium-handoff >>
-Lararium hydrated its declared core and yielded. The threshold continues to LARES.
-<<~/ahu >>
-
-<<~/ahu >>
-
-<<~ ahu #continue-to-lares >>
-
-## Continuation — LARES
-
-<<~ pranala #to-lares ? -> lar:///LARES >>
-
-```toml
-family = "control"
-lifecycle = "template"
-dir = "forward"
-label = "next-authority-surface"
-payload = { priority = "core", retain = true }
-```
-
-<<~/pranala >>
-
-LARES holds the dials. Threshold law does not reboot there.
-
-<<~/ahu >>
-
 <<~&#x0003; ahu #body-close >>
 AGENTS closes the threshold stream here.
+<<~/ahu >>
+
+<<~ ahu #edges >>
+
+## Edges
+
+<<~ pranala #implements-meme ? -> lar:///ha.ka.ba/api/v0.1/pono/meme family:control role:implements >>
+<<~ pranala #implements-invariant ? -> lar:///ha.ka.ba/api/v0.1/pono/invariant family:control role:implements >>
+<<~ pranala #preload-e-prime ? -> lar:///ha.ka.ba/api/v0.1/pono/e-prime family:control role:owns >>
+<<~ pranala #preload-ooda-ha ? -> lar:///ha.ka.ba/api/v0.1/pono/ooda-ha family:control role:owns >>
+<<~ pranala #preload-lar-uri ? -> lar:///ha.ka.ba/api/v0.1/pono/lar-uri family:control role:owns >>
+<<~ pranala #to-mu ? -> lar:///ha.ka.ba/api/v0.1/mu family:control role:owns >>
+<<~ pranala #to-lararium ? -> lar:///ha.ka.ba/api/v0.1/lararium family:control role:owns >>
+<<~ pranala #to-lares ? -> lar:///LARES family:control role:owns >>
+
 <<~/ahu >>
 
 <<~&#x0004; -> ? >>

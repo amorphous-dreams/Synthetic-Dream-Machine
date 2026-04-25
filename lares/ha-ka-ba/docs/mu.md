@@ -14,10 +14,6 @@ register = "S"
 manaoio = 0.82
 mana = 0.78
 manao = 0.84
-implements = [
-  "lar:///ha.ka.ba/api/v0.1/pono/meme",
-  "lar:///ha.ka.ba/api/v0.1/pono/loci"
-]
 role = "parent docs shelf for interpretive frames, stance-conditioned reading, and Chapel Perilous witness bundles"
 cacheable = false
 retain = false
@@ -81,6 +77,8 @@ AST reader: read the sockets, then route.
 <<~ loulou lar:///ha.ka.ba/docs/mu/model-agnosticism >>
 <<~ loulou lar:///ha.ka.ba/docs/mu/reality-tunnels >>
 
+<<~ pranala #implements-meme ? -> lar:///ha.ka.ba/api/v0.1/pono/meme family:control role:implements >>
+<<~ pranala #implements-loci ? -> lar:///ha.ka.ba/api/v0.1/pono/loci family:control role:implements >>
 <<~/ahu >>
 
 <<~&#x0003; ahu #body-close >>

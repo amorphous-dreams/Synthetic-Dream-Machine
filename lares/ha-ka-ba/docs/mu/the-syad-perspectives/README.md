@@ -14,10 +14,6 @@ register = "S"
 manaoio = 0.84
 mana = 0.78
 manao = 0.86
-implements = [
-  "lar:///ha.ka.ba/api/v0.1/pono/meme",
-  "lar:///ha.ka.ba/api/v0.1/pono/loci"
-]
 role = "extracted syad source shelf, archive-consumed derivation store, register-metaphysics provenance locus"
 cacheable = false
 retain = false
@@ -248,6 +244,8 @@ They do not govern the live fold.
 - `lar:///ha.ka.ba/api/v0.1/mu/the-syad-perspectives`
 - `lar:///ha.ka.ba/api/v0.1/pono/e-prime`
 
+<<~ pranala #implements-meme ? -> lar:///ha.ka.ba/api/v0.1/pono/meme family:control role:implements >>
+<<~ pranala #implements-loci ? -> lar:///ha.ka.ba/api/v0.1/pono/loci family:control role:implements >>
 <<~/ahu >>
 
 <<~&#x0003; ahu #body-close >>

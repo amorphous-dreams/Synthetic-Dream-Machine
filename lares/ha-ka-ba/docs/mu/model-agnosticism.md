@@ -14,10 +14,6 @@ register = "S"
 manaoio = 0.82
 mana = 0.78
 manao = 0.84
-implements = [
-  "lar:///ha.ka.ba/api/v0.1/pono/meme",
-  "lar:///ha.ka.ba/api/v0.1/pono/loci"
-]
 role = "staging docs shelf for Wilson/Korzybski model-agnosticism braid behind Mu-facing invariants"
 cacheable = false
 retain = false
@@ -89,6 +85,8 @@ docs/mu/model-agnosticism closes
 <<~ loulou lar:///ha.ka.ba/api/v0.1/mu/the-law-of-5s >>
 <<~ loulou lar:///ha.ka.ba/api/v0.1/mu/the-four-tools >>
 
+<<~ pranala #implements-meme ? -> lar:///ha.ka.ba/api/v0.1/pono/meme family:control role:implements >>
+<<~ pranala #implements-loci ? -> lar:///ha.ka.ba/api/v0.1/pono/loci family:control role:implements >>
 <<~/ahu >>
 
 <<~&#x0004; -> ? >>

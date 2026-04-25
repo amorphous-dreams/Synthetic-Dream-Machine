@@ -13,9 +13,6 @@ mana         = 0.80
 manaoio      = 0.76
 manao        = 0.82
 role         = "docs-spec parent locus for the Lararium MCP server — index, running state, canonical child loci, known gaps"
-implements   = [
-  "lar:///ha.ka.ba/api/v0.1/pono/meme",
-]
 status      = "living docs-spec; test count verified"
 server-version = "0.1.0"
 protocol-versions = ["2025-11-25", "2025-06-18", "2025-03-26", "2024-11-05"]
@@ -348,6 +345,7 @@ lararium_mcp docs-spec closes
 <<~ loulou lar:///ha.ka.ba/docs/graph >>
 <<~ loulou lar:///ha.ka.ba/api/v0.1/lararium >>
 
+<<~ pranala #implements-meme ? -> lar:///ha.ka.ba/api/v0.1/pono/meme family:control role:implements >>
 <<~/ahu >>
 
 <<~&#x0004; -> ? >>

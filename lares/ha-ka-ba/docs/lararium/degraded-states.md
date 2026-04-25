@@ -14,10 +14,6 @@ register = "CS"
 manaoio = 0.86
 mana = 0.90
 manao = 0.86
-implements = [
-  "lar:///ha.ka.ba/api/v0.1/pono/meme",
-  "lar:///ha.ka.ba/api/v0.1/pono/loci"
-]
 role = "canonical vocabulary for named degraded-node states: failure modes, operator correction handles, and recovery patterns"
 cacheable = false
 retain = false
@@ -221,6 +217,8 @@ The operator naming a degraded state constitutes correction input, not accusatio
 <<~ loulou lar:///ha.ka.ba/api/v0.1/mu/the-syad-perspectives >>
 <<~ loulou lar:///ha.ka.ba/docs/lararium/voices/coordinators >>
 
+<<~ pranala #implements-meme ? -> lar:///ha.ka.ba/api/v0.1/pono/meme family:control role:implements >>
+<<~ pranala #implements-loci ? -> lar:///ha.ka.ba/api/v0.1/pono/loci family:control role:implements >>
 <<~/ahu >>
 
 <<~&#x0003; ahu #body-close >>

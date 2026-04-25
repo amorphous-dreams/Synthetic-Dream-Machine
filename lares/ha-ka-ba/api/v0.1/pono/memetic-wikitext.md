@@ -13,11 +13,6 @@ register = "CS"
 manaoio = 0.70
 mana = 0.78
 manao = 0.82
-implements = [
-  "lar:///ha.ka.ba/api/v0.1/pono/meme",
-  "lar:///ha.ka.ba/api/v0.1/pono/loci",
-  "lar:///ha.ka.ba/api/v0.1/pono/invariant"
-]
 role = "memetic-wikitext invariant root law for authoring surface, primitive semantics, composition, and minimum boot grammar"
 cacheable=true
 retain = true
@@ -192,6 +187,9 @@ pono/memetic-wikitext closes
 <<~ loulou lar:///ha.ka.ba/api/v0.1/pono/pranala >>
 <<~ loulou lar:///ha.ka.ba/api/v0.1/pono/invariant >>
 
+<<~ pranala #implements-meme ? -> lar:///ha.ka.ba/api/v0.1/pono/meme family:control role:implements >>
+<<~ pranala #implements-loci ? -> lar:///ha.ka.ba/api/v0.1/pono/loci family:control role:implements >>
+<<~ pranala #implements-invariant ? -> lar:///ha.ka.ba/api/v0.1/pono/invariant family:control role:implements >>
 <<~/ahu >>
 
 <<~&#x0004; -> ? >>

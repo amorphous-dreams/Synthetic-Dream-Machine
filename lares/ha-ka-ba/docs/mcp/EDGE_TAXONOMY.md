@@ -42,7 +42,7 @@ They carry `role` values that determine ownership and lifetime pressure.
 |---|---|---|
 | `owns` | parent owns child lifetime | parent must resolve before child materializes |
 | `composes` | parent assembles child inline | child resolves within parent's hydration pass |
-| `instantiates` | template instantiation | template must resolve first |
+| `implements` | source realizes interface contract | interface must resolve before carrier; boot-critical |
 | `references` | weak pointer to peer | does not block; peer may resolve independently |
 | `constrains` | imposes a rule on target | target must validate against constraint after it resolves |
 
@@ -50,7 +50,7 @@ They carry `role` values that determine ownership and lifetime pressure.
 
 ## Adjacency vs control — decision rule
 
-An edge is hydration-critical if and only if its `family` equals `control` **and** its `role` encodes ownership or composition (`owns`, `composes`, `instantiates`).
+An edge is hydration-critical if and only if its `family` equals `control` **and** its `role` encodes ownership, composition, or interface realization (`owns`, `composes`, `implements`).
 
 All other edges are:
 - `relation` → resolved after the identity graph settles
@@ -63,14 +63,14 @@ All other edges are:
 ## Boot closure walk rule
 
 Minimal boot closure:
-1. Walk only `control` edges with role `owns` or `composes` from the entry locus.
-2. Collect all reachable loci.
+1. Walk only `control` edges with role `owns` or `composes` from the entry meme.
+2. Collect all reachable memes.
 3. Resolve in topological order (sources before targets).
 4. Stop when the required-core closure is complete.
 
 Full boot closure:
 1. Walk all `control` edges.
-2. Then walk `relation` edges one hop from each control-reachable locus.
+2. Then walk `relation` edges one hop from each control-reachable meme.
 3. Collect and resolve in topological order.
 4. Stop when the full pranala graph is exhausted.
 
@@ -84,7 +84,7 @@ and do not participate in the boot walk.
 | Pranala family | Host graph plane | TiddlyWiki parallel | Unreal parallel |
 |---|---|---|---|
 | `control` (owns, composes) | identity / provenance, execution hierarchy | root-widget ownership, startup order | parent-child entity hierarchy and lifetime |
-| `control` (references, instantiates) | identity, source | tiddler reference | prefab instantiation |
+| `control` (references, implements) | identity, source | tiddler reference | interface realization |
 | `relation` | identity / semantic adjacency | tiddler reference / transclusion adjacency | entity reference, prefab adjacency |
 | `dataflow` | AST → execution, live value flow | transclusion / widget-fed value flow | component-fed runtime state or transform flow |
 | `message` | execution graph, event routing | widget message bubbling | event or signal routing across entity graph |

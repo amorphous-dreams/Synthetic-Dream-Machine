@@ -9,9 +9,6 @@ file-path    = "lares/ha-ka-ba/docs/pono/pranala.md"
 content-type = "text/x-memetic-wikitext"
 confidence   = 0.78
 register     = "S"
-implements   = [
-  "lar:///ha.ka.ba/api/v0.1/pono/meme"
-]
 role = "docs companion for pranala: examples, sugar long-forms, and reciprocal-edge guidance"
 cacheable = false
 retain = false
@@ -117,6 +114,7 @@ docs/pono/pranala closes
 
 - `lar:///ha.ka.ba/api/v0.1/pono/pranala`
 
+<<~ pranala #implements-meme ? -> lar:///ha.ka.ba/api/v0.1/pono/meme family:control role:implements >>
 <<~/ahu >>
 
 

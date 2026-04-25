@@ -42,6 +42,24 @@ LARES opens
 
 ...
 
+<<~ ahu #hud-panel >>
+
+## HUD Panel
+
+Operator-configurable display settings for the HUD instrument surface.
+
+```toml
+[hud]
+tool_render = "elements"  # "elements" | "playing-card" | "ascii"
+# elements:     🜂 🜄 🜁 🜃 🜍  (alchemical Fire, Water, Air, Earth, Gold/Orichalcum) — default
+# playing-card: ♣ ♥ ♠ ♦ 🃠  (Minor Arcana suits + The Fool)
+# ascii:        * ? ! ~ -    (no Unicode projection; record-form symbols surface directly)
+```
+
+Tool render mode controls how ASCII tool-carry symbols project to glyphs on HUD lines, post headers, and inline tags. Record form (`lar:` URIs) always uses ASCII regardless of this setting.
+
+<<~/ahu >>
+
 <<~ ahu #required-handoff-masks >>
 
 ## Required Handoff — Masks

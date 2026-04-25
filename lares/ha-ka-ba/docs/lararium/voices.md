@@ -14,10 +14,6 @@ register = "CS"
 manaoio = 0.82
 mana = 0.86
 manao = 0.84
-implements = [
-  "lar:///ha.ka.ba/api/v0.1/pono/meme",
-  "lar:///ha.ka.ba/api/v0.1/pono/loci"
-]
 role = "specification surface for the three-layer lararium voice-house: coordinator layer, worker layer, and mask layer"
 cacheable = false
 retain = false
@@ -125,6 +121,8 @@ Forward scope: composable-invariant control surface requires its own design pass
 <<~ loulou lar:///ha.ka.ba/api/v0.1/mu/chao >>
 <<~ loulou lar:///LARES >>
 
+<<~ pranala #implements-meme ? -> lar:///ha.ka.ba/api/v0.1/pono/meme family:control role:implements >>
+<<~ pranala #implements-loci ? -> lar:///ha.ka.ba/api/v0.1/pono/loci family:control role:implements >>
 <<~/ahu >>
 
 <<~&#x0003; ahu #body-close >>

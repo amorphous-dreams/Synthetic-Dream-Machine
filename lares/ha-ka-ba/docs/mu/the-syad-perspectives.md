@@ -14,10 +14,6 @@ register = "S"
 manaoio = 0.82
 mana = 0.76
 manao = 0.84
-implements = [
-  "lar:///ha.ka.ba/api/v0.1/pono/meme",
-  "lar:///ha.ka.ba/api/v0.1/pono/loci"
-]
 role = "condensed syad research shelf, stance-reading summary, bridge to the archive bundle"
 cacheable = false
 retain = false
@@ -128,6 +124,8 @@ The archive-derived research bundle lives at:
 <<~ loulou lar:///ha.ka.ba/docs/mu/the-syad-perspectives/README >>
 <<~ loulou lar:///ha.ka.ba/api/v0.1/pono/e-prime >>
 
+<<~ pranala #implements-meme ? -> lar:///ha.ka.ba/api/v0.1/pono/meme family:control role:implements >>
+<<~ pranala #implements-loci ? -> lar:///ha.ka.ba/api/v0.1/pono/loci family:control role:implements >>
 <<~/ahu >>
 
 <<~&#x0003; ahu #body-close >>

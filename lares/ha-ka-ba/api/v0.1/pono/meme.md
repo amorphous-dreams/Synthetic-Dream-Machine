@@ -13,11 +13,6 @@ register = "CS"
 manaoio = 0.72
 mana = 0.80
 manao = 0.84
-implements = [
-  "lar:///ha.ka.ba/api/v0.1/pono/meme",
-  "lar:///ha.ka.ba/api/v0.1/pono/loci",
-  "lar:///ha.ka.ba/api/v0.1/pono/invariant"
-]
 role = "meme invariant law, copy-shape authority, and rating posture root"
 control-glyphs = ["&#x0001;", "&#x0002;", "&#x0003;", "&#x0004;", "&#x0005;", "&#x0006;"]
 cacheable=true
@@ -154,6 +149,9 @@ pono/meme closes
 <<~ loulou lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >>
 <<~ loulou lar:///ha.ka.ba/api/v0.1/pono/pranala >>
 
+<<~ pranala #implements-meme ? -> lar:///ha.ka.ba/api/v0.1/pono/meme family:control role:implements >>
+<<~ pranala #implements-loci ? -> lar:///ha.ka.ba/api/v0.1/pono/loci family:control role:implements >>
+<<~ pranala #implements-invariant ? -> lar:///ha.ka.ba/api/v0.1/pono/invariant family:control role:implements >>
 <<~/ahu >>
 
 <<~&#x0004; -> ? >>

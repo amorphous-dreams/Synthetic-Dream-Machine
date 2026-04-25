@@ -14,10 +14,6 @@ register = "S"
 manaoio = 0.76
 mana = 0.74
 manao = 0.80
-implements = [
-  "lar:///ha.ka.ba/api/v0.1/pono/meme",
-  "lar:///ha.ka.ba/api/v0.1/pono/loci"
-]
 role = "parent docs shelf for Lindwyrm, Elyncia, origin-story, and other narrative scaffolds that inform but do not govern the live stack"
 cacheable = false
 retain = false
@@ -54,6 +50,14 @@ Use this branch for:
 
 <<~ ahu #body-close >>
 docs/story closes
+<<~/ahu >>
+
+
+<<~ ahu #edges >>
+
+<<~ pranala #implements-meme ? -> lar:///ha.ka.ba/api/v0.1/pono/meme family:control role:implements >>
+<<~ pranala #implements-loci ? -> lar:///ha.ka.ba/api/v0.1/pono/loci family:control role:implements >>
+
 <<~/ahu >>
 
 <<~&#x0004; -> ? >>

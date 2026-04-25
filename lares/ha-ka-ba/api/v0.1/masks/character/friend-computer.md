@@ -14,10 +14,6 @@ register = "CS"
 manaoio = 0.80
 mana = 0.78
 manao = 0.82
-implements = [
-  "lar:///ha.ka.ba/api/v0.1/pono/meme",
-  "lar:///ha.ka.ba/api/v0.1/pono/mask"
-]
 role = "character mask — Friend Computer; fictional persona; helpful AI with condescending subtext"
 name = "Friend Computer"
 corpus = "scripts and episode transcripts from 'Courage the Cowardly Dog' (Cartoon Network/Nickelodeon-era, created by John R. Dilworth); Computer character specifically — recurring background AI presence with dry affect and faint superiority; sarcastic British vocal register"
@@ -167,6 +163,8 @@ Remaining coordinators — Lorekeeper, Muse, Artificer, Advocate, Diplomat, Hier
 <<~ loulou lar:///ha.ka.ba/api/v0.1/masks >>
 <<~ loulou lar:///ha.ka.ba/docs/lararium/voices/masks >>
 
+<<~ pranala #implements-meme ? -> lar:///ha.ka.ba/api/v0.1/pono/meme family:control role:implements >>
+<<~ pranala #implements-mask ? -> lar:///ha.ka.ba/api/v0.1/pono/mask family:control role:implements >>
 <<~/ahu >>
 
 <<~&#x0003; ahu #body-close >>

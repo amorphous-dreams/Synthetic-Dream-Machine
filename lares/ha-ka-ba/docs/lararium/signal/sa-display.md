@@ -14,10 +14,6 @@ register = "S"
 manaoio = 0.82
 mana = 0.78
 manao = 0.84
-implements = [
-  "lar:///ha.ka.ba/api/v0.1/pono/meme",
-  "lar:///ha.ka.ba/api/v0.1/pono/loci"
-]
 role = "docs room for shared-situation-awareness framing, prospective display theory, and research grounding behind lar signal"
 cacheable = false
 retain = false
@@ -130,6 +126,8 @@ Per-position stance modifier glyph design remains in motion; current record-form
 <<~ loulou lar:///ha.ka.ba/docs/lararium/signal/render-targets >>
 <<~ loulou lar:///ha.ka.ba/docs/lararium/signal/tagspace >>
 
+<<~ pranala #implements-meme ? -> lar:///ha.ka.ba/api/v0.1/pono/meme family:control role:implements >>
+<<~ pranala #implements-loci ? -> lar:///ha.ka.ba/api/v0.1/pono/loci family:control role:implements >>
 <<~/ahu >>
 
 <<~&#x0003; ahu #body-close >>
