@@ -5,7 +5,7 @@ Provides:
   DeclaredUnresolved — a pranala edge whose target cannot be located on disk
   MemeGraph          — mutable adjacency structure; walk, sort, hash
 
-All graph operations (walk_control, topological_sort, etc.) operate on the
+All graph operations (topological_sort, detect_cycles, etc.) operate on the
 memes already loaded into the graph.  I/O — reading carrier files and parsing
 edges — belongs to the compiler; MemeGraph is a pure in-memory structure.
 """
@@ -17,7 +17,7 @@ import json
 from collections import defaultdict, deque
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any
 
 from .pranala_parser import PranaEdge
 
@@ -59,12 +59,22 @@ class Meme:
 class DeclaredUnresolved:
     uri: str
     edge: PranaEdge
-    severity: str  # "error" for control family, "warning" for relation, "info" otherwise
+    severity: str  # "error" | "warning" | "info"
 
     @classmethod
     def from_edge(cls, edge: PranaEdge) -> 'DeclaredUnresolved':
+        # Two-phase load pattern (Bazel/Flecs): interface attachment edges
+        # (control/implements) point to abstract interface URIs that are
+        # intentionally outside the boot walk spine.  They are not missing
+        # boot dependencies — they are Phase 1 interface references that
+        # resolve during interface_index construction.  Mark as "info".
+        # Hard "error" reserves for structural edges (owns, composes) whose
+        # targets must exist for the walk to be valid.
         if edge.family == 'control':
-            severity = 'error'
+            if edge.role == 'implements':
+                severity = 'info'
+            else:
+                severity = 'error'
         elif edge.family == 'relation':
             severity = 'warning'
         else:
@@ -115,71 +125,6 @@ class MemeGraph:
         if family is None:
             return list(meme.edges_out)
         return [e for e in meme.edges_out if e.family == family]
-
-    # ------------------------------------------------------------------
-    # Walk
-    # ------------------------------------------------------------------
-
-    def walk_control(
-        self,
-        entry_uri: str,
-        loader: Callable[[str], Meme | None] | None = None,
-        ignore_roles: set[str] | None = None,
-    ) -> tuple[list[str], list[list[str]]]:
-        """DFS over control edges from entry_uri.
-
-        If loader is provided, it is called for any URI not yet in the graph
-        before its outbound edges are explored.  The loader should call
-        add_meme() itself or return a Meme to be added.
-
-        ignore_roles: optional set of control edge roles to skip during
-        traversal.
-
-        Returns:
-            walked_uris  — topologically sorted list of reachable URIs
-            dag_violations — list of cycle paths (each a list of URIs)
-        """
-        WHITE, GRAY, BLACK = 0, 1, 2
-        color: dict[str, int] = defaultdict(int)
-        topo: list[str] = []
-        violations: list[list[str]] = []
-        stack_path: list[str] = []
-
-        def _successors(uri: str) -> list[str]:
-            return [
-                e.to_uri
-                for e in self.edges_out(uri, 'control')
-                if ignore_roles is None or e.role not in ignore_roles
-            ]
-
-        def visit(uri: str) -> None:
-            if color[uri] == GRAY:
-                # Cycle: record path from re-encountered node
-                cycle_start = stack_path.index(uri)
-                violations.append(stack_path[cycle_start:] + [uri])
-                return
-            if color[uri] == BLACK:
-                return
-            color[uri] = GRAY
-            stack_path.append(uri)
-
-            # Load if not yet in graph
-            if uri not in self.memes and loader is not None:
-                meme = loader(uri)
-                if meme is not None and uri not in self.memes:
-                    self.add_meme(meme)
-
-            for target in _successors(uri):
-                visit(target)
-
-            stack_path.pop()
-            color[uri] = BLACK
-            topo.append(uri)
-
-        visit(entry_uri)
-        # DFS postorder → reverse for topological (sources before targets)
-        topo_sorted = list(reversed(topo))
-        return topo_sorted, violations
 
     def one_hop_relation(self, control_uris: list[str] | set[str]) -> set[str]:
         """Relation-edge neighbours of control-reachable memes, excluding already-reachable."""
@@ -289,10 +234,18 @@ class MemeGraph:
     # ------------------------------------------------------------------
 
     def declared_unresolved(self) -> list[DeclaredUnresolved]:
-        """Edges pointing to URIs not loaded in this graph."""
-        result = []
+        """Edges pointing to URIs not loaded in this graph.
+
+        Deduplicates by target URI, keeping the highest severity seen.
+        Severity order: error > warning > info.
+        """
+        _rank = {'error': 2, 'warning': 1, 'info': 0}
+        best: dict[str, DeclaredUnresolved] = {}
         for meme in self.memes.values():
             for edge in meme.edges_out:
                 if edge.to_uri not in self.memes:
-                    result.append(DeclaredUnresolved.from_edge(edge))
-        return result
+                    du = DeclaredUnresolved.from_edge(edge)
+                    existing = best.get(du.uri)
+                    if existing is None or _rank[du.severity] > _rank[existing.severity]:
+                        best[du.uri] = du
+        return sorted(best.values(), key=lambda d: (-_rank[d.severity], d.uri))

@@ -183,7 +183,6 @@ adjacency: dict[str, dict[str, list[PranaEdge]]]
 |---|---|---|
 | `add_meme` | `(uri, record, edges)` → `None` | inserts meme; parses edges into adjacency index |
 | `successors` | `(uri, family)` → `list[str]` | outbound target URIs for given family |
-| `walk_control` | `(entry_uri)` → `(list[str], list[list[str]])` | DFS from entry over control edges; returns topologically sorted URIs + cycle lists |
 | `one_hop_relation` | `(control_uris)` → `set[str]` | relation-edge neighbours of every control-reachable meme, excluding already-reachable |
 | `detect_cycles` | `()` → `list[list[str]]` | DFS gray/black coloring over all families |
 | `topological_sort` | `(uri_set)` → `list[str]` | Kahn's algorithm (in-degree BFS) restricted to given URI set |

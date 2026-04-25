@@ -85,7 +85,7 @@ def extract_interface_bundle(metadata: dict[str, Any]) -> tuple[str, ...]:
     return tuple(item for item in implements if isinstance(item, str))
 
 
-def validate_carrier_shape(text: str, metadata: dict[str, Any] | None = None) -> CarrierShape:
+def validate_carrier_shape(text: str, metadata: dict[str, Any] | None = None, uri: str = '', edges: list[Any] | None = None) -> CarrierShape:
     metadata = metadata or {}
     diagnostics: list[Diagnostic] = []
 
@@ -134,7 +134,11 @@ def validate_carrier_shape(text: str, metadata: dict[str, Any] | None = None) ->
         )
 
     loulou_count = text.count("<<~ loulou lar:///")
-    implements = extract_interface_bundle(metadata)
+    parsed_edges = edges if edges is not None else parse_pranala_edges(uri, text)
+    implements = set(extract_interface_bundle(metadata))
+    for edge in parsed_edges:
+        if edge.family == 'control' and edge.role == 'implements':
+            implements.add(edge.to_uri)
     error_count = sum(1 for item in diagnostics if item.severity == "error")
     valid = error_count == 0
     if valid and implements:
@@ -159,7 +163,8 @@ def read_carrier(uri: str) -> CarrierRecord:
 
     text = resolution.path.read_text(encoding="utf-8")
     metadata, metadata_diagnostics = extract_iam_metadata(text)
-    shape = validate_carrier_shape(text, metadata)
+    edges = parse_pranala_edges(uri, text)
+    shape = validate_carrier_shape(text, metadata, uri, edges=edges)
     if metadata_diagnostics:
         shape = CarrierShape(
             False,
@@ -168,9 +173,7 @@ def read_carrier(uri: str) -> CarrierRecord:
             tuple((*metadata_diagnostics, *shape.diagnostics)),
         )
     implements = set(extract_interface_bundle(metadata))
-    for edge in parse_pranala_edges(uri, text):
+    for edge in edges:
         if edge.family == 'control' and edge.role == 'implements':
             implements.add(edge.to_uri)
-    if shape.valid and implements:
-        shape = CarrierShape(True, 'typed meme', shape.depth_state, shape.diagnostics)
     return CarrierRecord(uri, resolution.path, metadata, tuple(sorted(implements)), shape)

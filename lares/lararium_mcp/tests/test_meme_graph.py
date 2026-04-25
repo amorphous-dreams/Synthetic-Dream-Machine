@@ -35,47 +35,6 @@ def _simple_graph() -> MemeGraph:
     return g
 
 
-class WalkControlTests(unittest.TestCase):
-    def test_walk_returns_all_reachable(self) -> None:
-        g = _simple_graph()
-        walked, violations = g.walk_control("lar:///A")
-        self.assertEqual(set(walked), {"lar:///A", "lar:///B", "lar:///C", "lar:///D"})
-        self.assertEqual(violations, [])
-
-    def test_entry_is_first(self) -> None:
-        g = _simple_graph()
-        walked, _ = g.walk_control("lar:///A")
-        self.assertEqual(walked[0], "lar:///A")
-
-    def test_topo_order_sources_before_targets(self) -> None:
-        g = _simple_graph()
-        walked, _ = g.walk_control("lar:///A")
-        idx = {u: i for i, u in enumerate(walked)}
-        self.assertLess(idx["lar:///A"], idx["lar:///B"])
-        self.assertLess(idx["lar:///B"], idx["lar:///C"])
-        self.assertLess(idx["lar:///A"], idx["lar:///D"])
-
-    def test_cycle_detected(self) -> None:
-        g = MemeGraph()
-        g.add_meme(_make_meme("lar:///X", ["lar:///Y"]))
-        g.add_meme(_make_meme("lar:///Y", ["lar:///X"]))  # cycle
-        walked, violations = g.walk_control("lar:///X")
-        self.assertTrue(len(violations) > 0)
-
-    def test_loader_called_for_unknown_uri(self) -> None:
-        g = MemeGraph()
-        g.add_meme(_make_meme("lar:///Root", ["lar:///Child"]))
-        loaded = []
-
-        def loader(uri: str) -> Meme | None:
-            loaded.append(uri)
-            return _make_meme(uri)
-
-        walked, _ = g.walk_control("lar:///Root", loader=loader)
-        self.assertIn("lar:///Child", loaded)
-        self.assertIn("lar:///Child", walked)
-
-
 class SuccessorsTests(unittest.TestCase):
     def test_successors_by_family(self) -> None:
         g = _simple_graph()
@@ -93,10 +52,9 @@ class SuccessorsTests(unittest.TestCase):
 
 
 class TopologicalSortTests(unittest.TestCase):
-    def test_kahn_sort_matches_walk(self) -> None:
+    def test_kahn_sort_sources_before_targets(self) -> None:
         g = _simple_graph()
-        walked, _ = g.walk_control("lar:///A")
-        kahn = g.topological_sort(set(walked))
+        kahn = g.topological_sort({"lar:///A", "lar:///B", "lar:///C", "lar:///D"})
         idx = {u: i for i, u in enumerate(kahn)}
         self.assertLess(idx["lar:///A"], idx["lar:///B"])
         self.assertLess(idx["lar:///B"], idx["lar:///C"])
@@ -212,19 +170,19 @@ class DeclaredUnresolvedTests(unittest.TestCase):
 class ClosureHashTests(unittest.TestCase):
     def test_hash_is_stable(self) -> None:
         g = _simple_graph()
-        walked, _ = g.walk_control("lar:///A")
-        h1 = g.closure_hash(walked, [])
-        h2 = g.closure_hash(walked, [])
+        uris = g.topological_sort({"lar:///A", "lar:///B", "lar:///C", "lar:///D"})
+        h1 = g.closure_hash(uris, [])
+        h2 = g.closure_hash(uris, [])
         self.assertEqual(h1, h2)
 
     def test_hash_changes_when_meme_added(self) -> None:
         g1 = _simple_graph()
         g2 = _simple_graph()
         g2.add_meme(_make_meme("lar:///Extra"))
-        walked1, _ = g1.walk_control("lar:///A")
-        walked2 = walked1 + ["lar:///Extra"]
-        h1 = g1.closure_hash(walked1, [])
-        h2 = g2.closure_hash(walked2, [])
+        uris1 = g1.topological_sort({"lar:///A", "lar:///B", "lar:///C", "lar:///D"})
+        uris2 = uris1 + ["lar:///Extra"]
+        h1 = g1.closure_hash(uris1, [])
+        h2 = g2.closure_hash(uris2, [])
         self.assertNotEqual(h1, h2)
 
 
