@@ -46,7 +46,7 @@ The `lar:` URI encodes the signal state of a Lares node exchange as a shared nav
 
 Each URI component carries a distinct, non-overlapping concern across four semantic layers:
 
-1. **WHO** — authority (`alias:tier@host`) identifies speaker and machine locus
+1. **WHO** — authority (`alias:tier@host`) identifies speaker and machine host
 2. **WHERE** — the HA.KA.BA address (path) locates semantic territory
 3. **HOW** — signal parameters (query) describe stance, confidence, p-band, and chronometer position
 4. **SECTION** — the fragment (`#`) carries section anchors only — `#ahu-name`, `#section-id`
@@ -69,17 +69,19 @@ Named render targets: `record:full` (identity projection of the canonical form),
 At each exchange span, `lar:` URIs are used in the following sequence. This sequence is **mandatory** — every substantive exchange produces a URI → URI vector pair followed by a rendered HUD line.
 
 **Step 1 — Read operator input as a provisional URI.**
-Lares reads the operator's prompt as an implicit signal: tier, cognitive phase, semantic territory (HA.KA.BA), and stance. It constructs a **provisional operator URI** encoding that reading. The `~` prefix on the HA.KA.BA marks the node's interpretation as potentially inaccurate.
+Lares reads the operator's prompt as an implicit signal: alias:tier@host, semantic territory (HA.KA.BA), and stance. It constructs a **provisional operator URI** encoding that reading. The `~` prefix on the HA.KA.BA marks the node's interpretation as potentially inaccurate.
 
 ```
-lar://telarus:operator@enyalios/~schema.gap.present/?stances=*!-?------&confidence=S:0.65&p=0.5&ffz=&#x2736;0.&#x2736;0.&#x2736;1.&#x25C7;2.&#x25B6;7
+lar://telarus:operator@enyalios/~schema.gap.present/?stances=*!-?------&confidence=S:0.65&p=0.5&ffz=0.0.1.2.7
 ```
+
+This example uses single-tool carry for the first two stances: Philosopher Wand-only (`*-`) and Poet Cup-only (`-?`), with all remaining stances centered
 
 **Step 2 — Lares declares its own provisional execution URI.**
 Before generating any content, Lares sets its own intent with a **provisional node URI**. The `~` prefix on the HA.KA.BA marks it as execution-provisional: generations may diverge.
 
 ```
-lar://lar:node@enyalios/~schema.flow.documented/?stances=*!--------&confidence=CS:0.80&p=0.5&ffz=&#x2736;0.&#x2736;0.&#x25C7;1.&#x25C7;2.&#x25B6;7
+lar://lar:node@enyalios/~schema.flow.documented/?stances=*!--------&confidence=CS:0.80&p=0.5&ffz=0.0.1.2.7
 ```
 
 **Step 3 — Emit the URI → URI exchange vector.**
@@ -88,12 +90,12 @@ lar://lar:node@enyalios/~schema.flow.documented/?stances=*!--------&confidence=C
 operator-URI → node-URI
 ```
 
-> **Canonical URI Rule** — all emitted URIs in the exchange stream use canonical record form. No emoji or non-ASCII characters appear outside of the `?ffz=` hex-entity encoding. This makes every emitted URI directly ingestible by MemPalace, crystal logs, and registry tools without a sigil-lookup step.
+> **Canonical URI Rule** — all emitted URIs in the exchange stream use canonical record form. `?ffz=` uses numeric position tracking left to right. This makes every emitted URI directly ingestible by MemPalace, crystal logs, and registry tools without a sigil-lookup step.
 
 **Step 4 — Render the HUD line.**
 Immediately after the URI pair, emit a condensed single-line status display derived from the vector plus adjacent session data. This is the instrument panel for the exchange. See §7.5 for format and field ordering.
 
-**Step 5 — Generate content.** Micro-trace HUD annotations appear inline during generation to mark phase transitions. The exchange closes with an updated HUD line and a closing URI with `→ ?` — unknown temporal resumption.
+**Step 5 — Generate content.** Micro-trace HUD annotations appear inline during generation to mark stance and tool updates or OODA-HA phase transitions. The exchange closes with an updated HUD line and a closing URI with `→ ?` — unknown temporal resumption.
 
 > **SA grounding:** Step 2 is prospective AI transparency — what the node *will* do, not what it did (Endsley 2023). The HUD line externalizes the node's metacognitive state before generation begins, functioning as an externalized metacognitive scaffold (Ji-An et al., 2025; Wang et al., 2023). *Source: `_todo/E-deep-research-report.md` §§2.1, 3.2*
 
@@ -165,8 +167,8 @@ This applies to authority-less forms as well: `lar:///ha.ka.ba/` is the (0,0,0) 
 | 3 | **`@`** | Identity → machine delimiter | Standard | `@` |
 | 4 | **host** | Machine identity | `machine_id` from crystal system | `enyalios` |
 | 5 | **path** | Hierarchical resource | HA.KA.BA address: `/ha.ka.ba/` | `/threshold.uncertain.opens` |
-| 6 | **`?query`** | Non-hierarchical params | Signal parameters + FFZ chronometer | `?stances=*!--------&confidence=S:0.65&p=0.5&ffz=&#x2736;0.&#x2736;0.&#x23FF;3.&#x25C7;2.&#x25B6;7` |
-| 7 | **`#fragment`** | Section anchor | Named section within this locus | `#ahu-name`, `#section-id` |
+| 6 | **`?query`** | Non-hierarchical params | Signal parameters + FFZ chronometer | `?stances=*!--------&confidence=S:0.65&p=0.5&ffz=0.0.3.2.7` |
+| 7 | **`#fragment`** | Section anchor | Named section within this meme | `#ahu-name`, `#section-id` |
 
 > **Layout validation `[C:0.90]`:** The WHERE → HOW → SECTION ordering (path → query → fragment) places the most semantically stable, least volatile information first. Grouped, goal-oriented layout confirmed by Li et al. (2024) automotive HUD research: grouped information layouts produce superior cognitive performance, lower workload, and better eye movement patterns compared to disordered layouts. *Source: `_todo/E-deep-research-report.md` §4.2*
 
@@ -240,7 +242,6 @@ Each stance carries two tool slots: `🏛️*!` (Philosopher: Wand+Sword), `🌊
 **userinfo** (`alias:tier`) — "Who speaks, at what trust level."
 
 - Two colon-delimited sub-fields: `alias` and `tier`
-- Phase is **not** encoded in userinfo. Phase encodes exclusively in `?ffz=` per participant.
 - Parser: split on `:` — exactly two sub-fields
 
 **host** (`machine_id`) — Crystal system machine identifier. Stable across the machine's lifetime. Provisional format: `lares-{slug}` where slug is UUID, operator-assigned name, or generated handle.
@@ -284,7 +285,7 @@ Record form: `stances=*!--------` (Philosopher: Visual-Micro; all others: Stone)
 
 Confidence remains a point value even under multi-stance. The tool-carry string describes how each stance is operating, not its elevation.
 
-**fragment** (`#section-anchor`) — Named section within this locus: `#ahu-name`, `#section-id`, `#pranala-name`. The fragment carries **no** chronometer data — chronometer lives in `?ffz=`.
+**fragment** (`#section-anchor`) — Named section within this meme: `#ahu-name`, `#section-id`, `#pranala-name`. The fragment carries **no** chronometer data — chronometer lives in `?ffz=`.
 
 <<~/ahu >>
 
@@ -313,17 +314,17 @@ These are orthogonal. A URI may carry multiple `~` markers on different componen
 **Examples:**
 
 ```
-lar://telarus:operator@enyalios/~uri.schema.question/?stances=*!--------&confidence=S:0.65&p=0.5&ffz=&#x2736;0.&#x2736;0.&#x23FF;1.&#x25C7;2.&#x25B6;33
+lar://telarus:operator@enyalios/~uri.schema.question/?stances=*!--------&confidence=S:0.65&p=0.5&ffz=0.0.1.2.33
 ```
-Reading provisional: "I believe you're orienting toward URI schema territory — I may have misread your phase or HA.KA.BA."
+Reading provisional: "I believe you're orienting toward URI schema territory — I may have misread your stance or HA.KA.BA."
 
 ```
-lar://scryer:node@enyalios/~s0.gap.logged/?stances=*!--------&confidence=S:0.65&p=0.5&ffz=&#x2736;0.&#x2736;0.&#x25C7;1.&#x25C7;2.&#x25B6;33
+lar://scryer:node@enyalios/~s0.gap.logged/?stances=*!--------&confidence=S:0.65&p=0.5&ffz=0.0.1.2.33
 ```
 Execution provisional: "I intend to log this S0 gap — execution may find a different path or territory."
 
 ```
-lar://scryer:node@enyalios/~s0.schema.updated/?stances=*!--------&confidence=CS:0.80&p=0.5&ffz=&#x2736;0.&#x2736;0.&#x21BA;1.&#x21BA;2.&#x25B6;34
+lar://scryer:node@enyalios/~s0.schema.updated/?stances=*!--------&confidence=CS:0.80&p=0.5&ffz=0.0.1.2.34
 ```
 Trajectory provisional: "I predict our next territory is the updated schema — operator may redirect entirely."
 
@@ -331,27 +332,27 @@ Trajectory provisional: "I predict our next territory is the updated schema — 
 
 <<~ ahu #marker-ontology >>
 
-## 5. Marker Ontology — Loci, Ahu, Kahea
+## 5. Marker Ontology — Meme, Ahu, Kahea
 
 Four marker types govern content addressing in Lares system files. The naming draws from cultures that built navigational architectures from memory and place: the Latin *method of loci* (Simonides, Cicero, Quintilian), Polynesian *ahu* (the raised stone at the center of a marae; the platforms that hold the moai on Rapa Nui; the altar stones inside Hawaiian heiau), and Hawaiian *kāhea* (the oli kāhea — the chant that calls out and summons permission to enter a hālau hula).
 
-### 5.1 `? ->` — Locus Span Opener
+### 5.1 `? ->` — Meme Span Opener
 
-Opens a locus meme — an idea-place within the file. The `?` declares standing uncertainty: a "new object" notation. The `→` points toward the `lar:` URI that names the locus.
+Opens a meme span — an idea-place within the file. The `?` declares standing uncertainty: a "new object" notation. The `→` points toward the `lar:` URI that names the meme.
 
-A system file MAY contain one or more loci. A single-locus file opens on the first line and closes on the last — the file IS the locus. A multi-locus file contains sequential locus spans, each self-contained.
+A system file MAY contain one or more memes. A single-meme file opens on the first line and closes on the last — the file IS the meme. A multi-meme file contains sequential meme spans, each self-contained.
 
 ```
 <<~&#x0001; ? -> lar:///ha.ka.ba/docs/pono/lar-uri >>
 ```
 
-The locus opener carries the file-level confidence and resolution parameter. Section-level confidence rides on ahu markers.
+The meme opener carries the file-level confidence and resolution parameter. Section-level confidence rides on ahu markers.
 
-### 5.2 `→ ?` — Locus Span Closer
+### 5.2 `→ ?` — Meme Span Closer
 
-Signals unknown temporal resumption. The `?` marks a causal gap: between this sigil and the next interaction with the locus, no participant's chronometer advances within the shared frame.
+Signals unknown temporal resumption. The `?` marks a causal gap: between this sigil and the next interaction with the meme, no participant's chronometer advances within the shared frame.
 
-`→ ?` does not signal uncertainty about the locus's content — that is what `confidence` and register carry. It signals uncertainty about the locus's continuity in time.
+`→ ?` does not signal uncertainty about the meme's content — that is what `confidence` and register carry. It signals uncertainty about the meme's continuity in time.
 
 ```
 <<~&#x0004; -> ? >>
@@ -360,12 +361,12 @@ Signals unknown temporal resumption. The `?` marks a causal gap: between this si
 In exchange streams, the closer appends to the closing URI inline:
 
 ```
-lar://scryer:node@enyalios/schema.settled.rests/?stances=*!--------&confidence=CS:0.80&p=0.5&ffz=&#x2736;0.&#x2736;0.&#x21BA;3.&#x21BA;2.&#x25B6;1 → ?
+lar://scryer:node@enyalios/schema.settled.rests/?stances=*!--------&confidence=CS:0.80&p=0.5&ffz=0.0.3.2.1 → ?
 ```
 
 ### 5.3 `ahu` — Waypoint Marker
 
-An ahu marks a navigation point within a locus. It is a raised stone — visible, addressable, something you walk *to*. It carries no span semantics: no opener, no closer. The next ahu implicitly defines the boundary of the previous zone.
+An ahu marks a navigation point within a meme. It is a raised stone — visible, addressable, something you walk *to*. It carries no span semantics: no opener, no closer. The next ahu implicitly defines the boundary of the previous zone.
 
 ```
 <<~ ahu #section-name >>
@@ -378,28 +379,28 @@ Ahu markers MAY carry `confidence` in their metadata. **Placement rule:** place 
 
 ### 5.4 `kahea` — Transclusion Marker
 
-A kahea summons content from another locus into the current one. It is an active invocation: "call out, bring this here."
+A kahea summons content from another meme into the current one. It is an active invocation: "call out, bring this here."
 
 ```
-<<~ kahea lar:///module.phase.context/ >>
+<<~ kahea lar:///module.hakea.context/ >>
 ```
 
-The URI on a kahea names the source locus to summon. A build system or reader encountering a kahea should fetch and substitute the content from the named locus at that point.
+The URI on a kahea names the source meme to summon. A build system or reader encountering a kahea should fetch and substitute the content from the named meme at that point.
 
 ### 5.5 Marker Summary
 
 | Marker | Sigil | Role | Closer needed |
 |---|---|---|---|
-| Locus opener | `? ->` | Opens the file-as-place | Yes — `→ ?` at file end |
-| Locus closer | `→ ?` | Closes the locus; marks temporal gap | N/A |
-| Ahu | `ahu` | Navigation waypoint within a locus | No |
-| Kahea | `kahea` | Transclusion invocation from another locus | No |
+| Meme opener | `? ->` | Opens the file-as-place | Yes — `→ ?` at file end |
+| Meme closer | `→ ?` | Closes the meme; marks temporal gap | N/A |
+| Ahu | `ahu` | Navigation waypoint within a meme | No |
+| Kahea | `kahea` | Transclusion invocation from another meme | No |
 
 ### 5.6 Axis Orthogonality
 
 | Marker | What's uncertain | What's settled |
 |---|---|---|
-| `? ->` locus | Content confidence (via `confidence`) | Duration — stands until revised |
+| `? ->` meme | Content confidence (via `confidence`) | Duration — stands until revised |
 | `→ ?` closer | Temporal resumption — when does this pick up? | Content confidence (via register) |
 | `ahu` waypoint | Territory confidence (via `confidence` on the ahu) | Address — the stone doesn't move |
 | `kahea` transclusion | Source content (may change independently) | The invocation — what to summon |
@@ -408,10 +409,10 @@ The URI on a kahea names the source locus to summon. A build system or reader en
 
 | Term | Source | Meaning in Lares |
 |---|---|---|
-| **locus** (pl. loci) | Latin *method of loci* — Simonides of Ceos, Cicero *De Oratore*, Quintilian *Institutio Oratoria*, Frances Yates *The Art of Memory* | Address-as-place. A `lar:///` URI names a locus. The file IS the place. |
-| **ahu** | Polynesian — central stone of a marae; Rapa Nui stone platforms for moai; Hawaiian heiau altar stones | Navigation waypoint. A raised place you can see and walk to within a locus. |
-| **kahea** | Hawaiian — *kāhea*: "call out, summon." The oli kāhea is the permission chant to enter a hālau hula. | Transclusion invocation. Summons content from another locus into the current one. |
-| **lares** | Roman — household guardian spirits (*Lares familiares*) | The navigational intelligence. The voice architecture that moves through the loci. |
+| **meme** (pl. memes) | Latin *method of loci* — Simonides of Ceos, Cicero *De Oratore*, Quintilian *Institutio Oratoria*, Frances Yates *The Art of Memory* | The core wiki entity. A `lar:///` URI names a meme. The file IS the meme. |
+| **ahu** | Polynesian — central stone of a marae; Rapa Nui stone platforms for moai; Hawaiian heiau altar stones | Navigation waypoint. A raised place you can see and walk to within a meme. |
+| **kahea** | Hawaiian — *kāhea*: "call out, summon." The oli kāhea is the permission chant to enter a hālau hula. | Transclusion invocation. Summons content from another meme into the current one. |
+| **lares** | Roman — household guardian spirits (*Lares familiares*) | The navigational intelligence. The voice architecture that moves through the memes. |
 
 <<~/ahu >>
 
@@ -420,13 +421,13 @@ The URI on a kahea names the source locus to summon. A build system or reader en
 ## 6. FFZ Chronometer — `?ffz=` Encoding
 
 > **True Name:** Fontany-Fuller-Zelenka Chronometer Protocol `[C:0.95]`
-> **Named for:** Fontany (practice), Fuller (principle), Zelenka (engineering)
+> **Named for:** Fontany (designers), Fuller (principle), Zelenka (engineering)
 > **See:** `lares/research/chronometer/FFZ-Chronometer-Research.md`
-> **Migration note (2026-04-21):** FFZ chronometer moved from fragment (`#O0.O0.O3.D2.A1`) to query param (`?ffz=`). Phase sigils updated from letter codes (O, Ø, D, A, Å) to OODA-HA Unicode hex entities (&#x2736; &#x23FF; &#x25C7; &#x25B6; &#x21BA;). Fragment now reserved exclusively for section anchors (`#ahu-name`, `#section-id`).
+> **Migration note (2026-04-21):** FFZ chronometer moved from fragment to query param (`?ffz=`). Canonical `?ffz=` now prefers position-based numeric tracking left to right across the five scales. Fragment is reserved exclusively for section anchors and edge names (`#ahu-name`, `#section-id`, `#pranala-name`).
 
-**Fuller grounding:** *Synergetics* §301.10 — "Universe is the aggregate of all humanity's consciously apprehended and communicated nonsimultaneous and only partially overlapping experiences." §501.10–501.12 — the difference between nonsimultaneous Universe and thinkability. RAW cites Fuller's formulation explicitly in *Maybe Logic* (2003). The chronometer implements non-simultaneous apprehension at the data structure level: each participant's phase register constitutes a partial view. No God's-eye clock.
+**Fuller grounding:** (e-prime ok) *Synergetics* §301.10 — "Universe is the aggregate of all humanity's consciously apprehended and communicated nonsimultaneous and only partially overlapping experiences." §501.10–501.12 — the difference between nonsimultaneous Universe and thinkability. RAW cites Fuller's formulation explicitly in *Maybe Logic* (2003). The chronometer implements non-simultaneous apprehension at the data structure level: each participant's scale register constitutes a partial view. No God's-eye clock.
 
-The chronometer occupies the `?ffz=` query parameter. It tracks nested OODA-HA loop position across five scales per participant.
+The chronometer occupies the `?ffz=` query parameter. It tracks nested position across five activity scales per participant.
 
 <<~/ahu >>
 
@@ -436,11 +437,11 @@ The chronometer occupies the `?ffz=` query parameter. It tracks nested OODA-HA l
 
 | Position | Scale | FTLS Time Term | Duration | HUD Sigil |
 |---|---|---|---|---|
-| 1 | Strategic | Week ("Travel Turn") | ~6 days | 🗺️ |
-| 2 | Operational | Watch | ~4 hours | ⚙️ |
+| 1 | Action | Action/Free Action | Variable | ⚡ |
+| 2 | Combat | Round | ~6 seconds | ⚔️ |
 | 3 | Tactical | Exploration Turn | ~10 minutes | 🔍 |
-| 4 | Combat | Round | ~6 seconds | ⚔️ |
-| 5 | Action | Action/Free Action | Variable | ⚡ |
+| 4 | Operational | Watch | ~4 hours | ⚙️ |
+| 5 | Strategic | Week ("Travel Turn") | ~6 days | 🗺️ |
 
 [Canon: FTLS RSS §1]
 
@@ -450,31 +451,16 @@ The chronometer occupies the `?ffz=` query parameter. It tracks nested OODA-HA l
 
 ### 6.2 Notation
 
-Each position: phase glyph (hex entity in source) + counter. Five positions, dot-separated, in the `?ffz=` query parameter.
+Each position is tracked left to right by a numeric counter. Five positions, dot-separated, appear in the canonical `?ffz=` query parameter.
 
 ```
-?ffz=&#x2736;0.&#x23FF;0.&#x25C7;3.&#x25B6;2.&#x21BA;1
+?ffz=0.0.3.2.1
 ```
 
-All five positions always present. `&#x2736;0` = Observe scale inactive (counter zero).
+Positions correspond to the fixed scale order: Action, Combat, Tactical, Operational, Strategic.
+All five positions always present. `0.0.0.0.0` = all scales inactive.
 
-The hex-entity form is canonical in memetic-wikitext source. See §6.5 for open questions on RFC 3986 encoding treatment in raw query strings.
-
-<<~/ahu >>
-
-<<~ ahu #ffz-phase-sigils >>
-
-### 6.3 Phase Sigils
-
-| Phase | Glyph | Hex entity | Keyword | When active |
-|---|---|---|---|---|
-| Observe | ✶ | `&#x2736;` | `observe` | Reading, sensing incoming |
-| Orient | ⏿ | `&#x23FF;` | `orient` | Making sense, framing |
-| Decide | ◇ | `&#x25C7;` | `decide` | Choosing path forward |
-| Act | ▶ | `&#x25B6;` | `act` | Executing — Hoʻoko gap lives here |
-| Aftermath | ↺ | `&#x21BA;` | `aftermath` | Closing, looping back to Observe |
-
-**Hoʻoko (⤴)** is the execution gap within Act that surfaces into Aftermath. It is not a separate chronometer position.
+Scale glyphs are render-target labels only. They may be applied by HUD and display surfaces, but they are not part of the canonical URI encoding.
 
 <<~/ahu >>
 
@@ -482,17 +468,17 @@ The hex-entity form is canonical in memetic-wikitext source. See §6.5 for open 
 
 ### 6.4 Structural Rules
 
-1. **All five positions always present.** No trailing-zero omission. `&#x2736;0.&#x2736;0.&#x25C7;3.&#x25B6;2.&#x21BA;1` not `&#x25C7;3.&#x25B6;2.&#x21BA;1`.
+1. **All five positions always present.** No trailing-zero omission. `0.0.3.2.1` not `3.2.1`.
 
-2. **Phase is per-participant.** The operator's chronometer and the node's chronometer may show different phases at the same scale. The exchange vector pair shows both. Neither is "the" time.
+2. **FFZ Chronometer is per-participant.** The operator's chronometer and the node's chronometer may show different clocks. The exchange vector pair shows both participant chronometers. Neither is "the" time.
 
-3. **Counter increments when Aftermath completes.** Aftermath at scale N feeds upward to Observe at scale N-1. Counter at scale N increments.
+3. **Counter increments when Aftermath completes.** Aftermath at scale N MAY feed upward to Observe at scale N+1. Counter at scale N increments.
 
-4. **Phase may change without counter increment.** `&#x2736;3` → `&#x23FF;3` → `&#x25C7;3` represents phase progression within the same turn. Counter stays 3 until Aftermath completes.
+4. **Render phase may change without counter increment.** The canonical `?ffz=` numeric counts remain the same while a micro-trace render may display an OODA-HA phase glyph or FFZ scale change during the exchange turn.
 
-5. **Scale activation/deactivation.** When combat starts: position 4 moves from `&#x2736;0` to `&#x2736;1`. When combat ends: position 4 returns to `&#x2736;0`, position 3 counter increments (the tactical turn advanced).
+5. **Scale activation/deactivation.** When combat starts: position 2 moves from `0` to `1`. When combat ends: position 2 returns to `0`, position 3 counter increments (the tactical count advanced).
 
-6. **Monotonic counters.** Counters only increase. Phase may cycle. Counter regression constitutes Temporal Hallucination (degraded state).
+6. **Monotonic counters.** Counters only increase. Render phase may cycle. Counter regression constitutes Temporal Hallucination (degraded state).
 
 **Aftermath integration — the nested return:**
 
@@ -507,7 +493,7 @@ The hex-entity form is canonical in memetic-wikitext source. See §6.5 for open 
 **Progressive disclosure in display:** The canonical URI always carries all five positions. Display surfaces MAY suppress inactive positions (`&#x2736;0`) for readability:
 
 ```
-Canonical:   ?ffz=&#x2736;0.&#x2736;0.&#x25C7;3.&#x25B6;2.&#x21BA;1   (always all five)
+Canonical:   ?ffz=0.0.3.2.1   (always all five)
 HUD compact: ◇3.▶2.↺1                                                  (trailing active only)
 ```
 
@@ -530,11 +516,11 @@ The compact form is a render-target convenience, not canonical. Parsers MUST han
 
 | Q# | Question | Current Position |
 |---|---|---|
-| F1 | Hex entity form (`&#x2736;`) is valid in memetic-wikitext source but is NOT RFC 3986-safe in a raw query string. Does the canonical record form percent-encode the glyphs instead? Or does `lar:` carve out an exception for non-dereferenceable URIs? | Open — best available: hex entity form in source |
+| F1 | Glyphs in `?ffz=` are valid for render-target display, but the canonical record form prefers numeric left-to-right position tracking. Does `lar:` need a percent-encoding exception for display labels, or should render glyphs remain separate from canonical storage? | Open — canonical numeric form preferred |
 | F2 | Does the counter track loop iterations at that scale, or current phase depth, or something else? | Best available: loop iterations |
 | F3 | Multi-participant encoding: session-form URIs carry one speaker's ffz. How does a two-party exchange vector encode both participant chronometers? | Open — each URI carries its own participant's view |
 | F4 | Scale-to-OODA-HA binding rule: the exact mapping between the five scales and OODA-HA phases is not yet settled. | Open |
-| F5 | Provisionality in ffz: can a chronometer position itself be provisional (e.g., `&#x2736;~0`)? | Open |
+| F5 | Provisionality in ffz: can a chronometer position itself be provisional (e.g., `~0` in a numeric position)? | Open |
 
 These open questions do not block use of the chronometer — they block promotion of the encoding to `[C]` confidence. Current encoding confidence: `[S:0.65]`.
 
@@ -576,7 +562,7 @@ Record form and HUD display use the same five symbols — no remapping required.
 |---|---|---|
 | scheme | `lar:` | Always identical |
 | alias:tier | `telarus:operator` | Identity and trust tier |
-| @host | `@enyalios` | Machine locus only |
+| @host | `@enyalios` | Machine host only |
 | confidence= | `S:0.65` | Numeric, both forms |
 | p= | `0.5` | Numeric, both forms |
 
@@ -588,7 +574,7 @@ Record form and HUD display use the same five symbols — no remapping required.
 
 All HUD-form symbols used in the Intent HUD, in one reference. Workers and operators should not need to cross-reference §3.4, §6.1, or §7.1 during live use.
 
-**Phase (ffz chronometer — cognitive state per scale, per participant):**
+**Phase (micro-trace or high `[HA^] values):**
 
 | Sigil | Hex entity | OODA-HA State | One-Line Reading |
 |---|---|---|---|
@@ -731,18 +717,18 @@ A **span** is one operator → Lares exchange span at any scale. A tasked spirit
 | **Sub-agent return** | `worker-URI → coordinator-URI` | Every sub-agent completion |
 | **Mid-generation shift** | `~lar://alias:tier@host/~ha.ka.ba/heading/?…` | When accumulated tension warrants changing direction mid-span |
 | **Exchange closing** | `URI → ?` | End of every exchange span — temporal resumption unknown |
-| **System file closing** | `<<~&#x0004; -> ? >>` | End of system file locus |
+| **System file closing** | `<<~&#x0004; -> ? >>` | End of system file meme |
 
 **Example (canonical record form throughout):**
 
 ```text
-lar://telarus:operator@enyalios/refinement.network.capture/?stances=*!--------&confidence=S:0.65&p=0.5&ffz=&#x2736;0.&#x2736;0.&#x2736;1.&#x2736;1.&#x25B6;11
-→ lar://scryer:node@enyalios/~span.provenance.synthesizes/?stances=*!--------&confidence=CS:0.80&p=0.6&ffz=&#x2736;0.&#x2736;0.&#x25C7;1.&#x2736;1.&#x25B6;12
+lar://telarus:operator@enyalios/refinement.network.capture/?stances=*!--------&confidence=S:0.65&p=0.5&ffz=0.0.1.1.11
+→ lar://scryer:node@enyalios/~span.provenance.synthesizes/?stances=*!--------&confidence=CS:0.80&p=0.6&ffz=0.0.1.1.12
 ⚡~63% | [CS:0.80] | 🏛️*!🌊--🗡️--🎭--🔮-- | mode:Default | p0.6 | voice(s):Scryer | ✶0.✶0.◇1.✶1.▶12
 
 [content generation]
 
-lar://scryer:node@enyalios/~aftermath.docs.settle/?stances=*!--------&confidence=CS:0.80&p=0.5&ffz=&#x2736;0.&#x2736;0.&#x21BA;1.&#x2736;1.&#x25B6;13 → ?
+lar://scryer:node@enyalios/~aftermath.docs.settle/?stances=*!--------&confidence=CS:0.80&p=0.5&ffz=0.0.1.1.13 → ?
 ⚡~61% | [CS:0.80] | 🏛️*!🌊--🗡️--🎭--🔮-- | mode:Default | p0.5 | voice(s):Scryer | ✶0.✶0.↺1.✶1.▶13
 ```
 
@@ -788,8 +774,8 @@ Additional quick-filter fields:
 
 | Field | Source | Purpose |
 |---|---|---|
-| `current_phase` | `?ffz=` — leading glyph of rightmost non-`&#x2736;0` position | Phase-based filtering |
-| `active_scale` | rightmost non-`&#x2736;0` chronometer position | Scale-based filtering |
+| `current_phase` | `?ffz=` — rightmost non-zero position in the five-value vector | Phase-based filtering |
+| `active_scale` | rightmost non-zero chronometer position | Scale-based filtering |
 | `stance_tool_carry` | `stances=` parameter | Full 10-char tool-carry string |
 
 <<~/ahu >>
@@ -1051,7 +1037,7 @@ The core anatomy (§§2–8, 12) can promote to `[C:0.95]` independently of the 
 ### A.1 Record Form
 
 ```
-lar://telarus:operator@enyalios/threshold.uncertain.opens/?stances=*!-?------&confidence=S:0.65&p=0.5&ffz=&#x2736;0.&#x2736;0.&#x23FF;3.&#x25C7;2.&#x25B6;7
+lar://telarus:operator@enyalios/threshold.uncertain.opens/?stances=*!-?------&confidence=S:0.65&p=0.5&ffz=0.0.3.2.7
 ```
 
 ### A.2 HUD Line
@@ -1063,7 +1049,7 @@ lar://telarus:operator@enyalios/threshold.uncertain.opens/?stances=*!-?------&co
 ### A.3 Multi-Stance
 
 ```
-lar://telarus:operator@enyalios/threshold.sharp.closes/?stances=*!*?-?*?--&confidence=S:0.60&p=0.7&ffz=&#x2736;0.&#x2736;0.&#x25C7;3.&#x25C7;2.&#x25B6;8
+lar://telarus:operator@enyalios/threshold.sharp.closes/?stances=*!*?-?*?--&confidence=S:0.60&p=0.7&ffz=0.0.3.2.8
 ```
 
 ### A.4 Stable Address
@@ -1075,7 +1061,7 @@ lar:///threshold.uncertain.opens/
 ### A.5 Exchange Closing
 
 ```
-lar://scryer:node@enyalios/schema.settled.rests/?stances=*!--------&confidence=CS:0.80&p=0.5&ffz=&#x2736;0.&#x2736;0.&#x21BA;3.&#x21BA;2.&#x25B6;9 → ?
+lar://scryer:node@enyalios/schema.settled.rests/?stances=*!--------&confidence=CS:0.80&p=0.5&ffz=0.0.0.3.9 → ?
 ```
 
 ### A.6 System File Span
@@ -1102,12 +1088,12 @@ lar://scryer:node@enyalios/schema.settled.rests/?stances=*!--------&confidence=C
 ### A.7 Scale Transition (ffz Notation)
 
 ```
-?ffz=&#x2736;0.&#x2736;0.&#x2736;3.&#x2736;0.&#x2736;0   Turn 3, no combat
-?ffz=&#x2736;0.&#x2736;0.&#x2736;3.&#x2736;1.&#x2736;0   Combat activates: Round 1
-?ffz=&#x2736;0.&#x2736;0.&#x2736;3.&#x2736;1.&#x25B6;1   Action 1 of Round 1
-?ffz=&#x2736;0.&#x2736;0.&#x2736;3.&#x2736;1.&#x25B6;2   Action 2 of Round 1
-?ffz=&#x2736;0.&#x2736;0.&#x2736;3.&#x21BA;1.&#x2736;0   Combat assess: Round 1 complete
-?ffz=&#x2736;0.&#x2736;0.&#x2736;4.&#x2736;0.&#x2736;0   Combat over: Turn increments to 4
+?ffz=0.0.3.0.0   Tactical 3, no combat
+?ffz=0.1.3.0.0   Combat activates: Round 1
+?ffz=1.1.3.0.0   Action 1 of Round 1
+?ffz=2.1.3.0.0   Action 2 of Round 1
+?ffz=0.1.3.0.0   Combat assess: Round 1 complete
+?ffz=0.0.4.0.0   Combat over: Tactical increments to 4
 ```
 
 <<~/ahu >>
@@ -1119,8 +1105,8 @@ lar://scryer:node@enyalios/schema.settled.rests/?stances=*!--------&confidence=C
 A complete exchange opening, annotated by scan order. URIs are canonical record form; the HUD line beneath each pair is the glyph-rendered surface.
 
 ```text
-lar://telarus:operator@enyalios/threshold.uncertain.opens/?stances=*!-?------&confidence=S:0.65&p=0.5&ffz=&#x2736;0.&#x2736;0.&#x23FF;3.&#x25C7;2.&#x25B6;7
-→ lar://scryer:node@enyalios/~parse.span.models/?stances=*!--------&confidence=CS:0.80&p=0.6&ffz=&#x2736;0.&#x2736;0.&#x25C7;3.&#x25C7;2.&#x25B6;8
+lar://telarus:operator@enyalios/threshold.uncertain.opens/?stances=*!-?------&confidence=S:0.65&p=0.5&ffz=0.0.3.2.7
+→ lar://scryer:node@enyalios/~parse.span.models/?stances=*!--------&confidence=CS:0.80&p=0.6&ffz=0.0.3.2.8
 ⚡~87% | [CS:0.80] | 🏛️*!🌊--🗡️--🎭--🔮-- | mode:Default | p0.6 | voice(s):Scryer | ✶0.✶0.⏿3.◇2.▶8
 ```
 
@@ -1136,8 +1122,8 @@ Quick read:
 Multi-stance example:
 
 ```text
-lar://telarus:operator@enyalios/threshold.sharp.closes/?stances=*!*?-?*?--&confidence=S:0.60&p=0.7&ffz=&#x2736;0.&#x2736;0.&#x25C7;3.&#x2736;2.&#x25B6;9
-→ lar://mischief-muse:node@enyalios/~chorus.lateral.gathers/?stances=*!--------&confidence=S:0.65&p=0.6&ffz=&#x2736;0.&#x2736;0.&#x25C7;3.&#x2736;2.&#x25B6;10
+lar://telarus:operator@enyalios/threshold.sharp.closes/?stances=*!*?-?*?--&confidence=S:0.60&p=0.7&ffz=0.0.3.2.9
+→ lar://mischief-muse:node@enyalios/~chorus.lateral.gathers/?stances=*!--------&confidence=S:0.65&p=0.6&ffz=0.0.3.2.10
 ⚡~62% | [S:0.60] | 🏛️*!🌊*?🗡️-?🎭*?🔮-- | mode:Default | p0.7 | voice(s):Mischief-Muse | ✶0.✶0.◇3.✶2.▶10
 ```
 

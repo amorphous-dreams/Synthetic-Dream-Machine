@@ -175,6 +175,24 @@ If a response claims OODA-HA event trace, that belongs in event markers.
 
 <<~/ahu >>
 
+<<~ ahu #ooda-ha-phase-sigils >>
+
+### OODA-HA Phase Sigils
+
+Phase glyphs are render-target labels and display-only shorthand. These should be used when the operater invokes high `[HA^]` slider values, or when phase chages happen during generative text and them should be flagged for the operator.
+
+| Phase | Glyph | Hex entity | Keyword | When active |
+|---|---|---|---|---|
+| Observe | ✶ | `&#x2736;` | `observe` | Reading, sensing incoming |
+| Orient | ⏿ | `&#x23FF;` | `orient` | Making sense, framing |
+| Decide | ◇ | `&#x25C7;` | `decide` | Choosing path forward |
+| Act | ▶ | `&#x25B6;` | `act` | Executing — Hoʻoko gap lives here |
+| Aftermath | ⤴ ↺ | `&#x21BA;` | `hooka aftermath` | Closing, looping back to Observe |
+
+**Hoʻoko (⤴)** is the execution gap within Act that surfaces into Aftermath. It is not a separate chronometer position.
+
+<<~/ahu >>
+
 <<~ ahu #micro-trace-handoff >>
 
 ## Micro-trace — Handoff Protocol

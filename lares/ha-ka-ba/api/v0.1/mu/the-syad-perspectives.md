@@ -116,22 +116,46 @@ They do not borrow Philosopher's truth scale.
 
 <<~/ahu >>
 
-<<~ ahu #stance-flags >>
+<<~ ahu #stance-tool-modulation >>
 
-## Stance Flags
+## Stance Tool Modulation
 
-The stance string carries two pressures at once:
-visibility and certainty.
+Tool-carry modulates *how* a stance applies its evaluation frame.
+The Syadasti frame names *what* each stance measures.
+The tools name *how* the stance is oriented within that measure.
 
-| Code | Surface read | Visibility | Certainty |
-|---|---|---|---|
-| `^` | elevated / forward | visible | confident |
-| `.` | baseline / present | visible | confident |
-| `-` | suppressed / held back | hidden | confident |
-| `?` | emerging / indeterminate | visible | uncertain |
+All five tool-carry stance-positions remain present on every `lar:` URI and HUD surface.
 
-All five positions remain present even when a stance reads `-`.
-Uncertainty marks the stance, not the whole array.
+| Tool carry | Modulation |
+|---|---|
+| `*` Wand (Visual) | Stance draws from external, observable data — first apprehension, tracking |
+| `~` Pentacle (Hidden) | Stance draws from internal, embodied state — grounding, proprioception |
+| `!` Sword (Micro) | Stance evaluates at high detail and discernment — zoom in, cut fine |
+| `?` Cup (Macro) | Stance evaluates with wide sympathetic field — zoom out, hold open |
+| `-` Empty (Centered) | Stance is present but not actively oriented on that axis — empty hand |
+
+**Modulated Stance readings — tool modulation meeting Syadasti frame:**
+
+| Stance | Tool | Reading |
+|---|---|---|
+| 🏛️ Philosopher | `!` Sword | Propositional analysis at high detail — fine-grained truth cut |
+| 🏛️ Philosopher | `?` Cup | Propositional evaluation with wide field — contested plausibility held open |
+| 🌊 Poet | `*` Wand | Analogical resonance from external signal — surface-read correspondence |
+| 🌊 Poet | `~` Pentacle | Analogical resonance from interior state — body-felt correspondence |
+| 🗡️ Satirist | `*` Wand | Targeting visible patterns — external critique |
+| 🗡️ Satirist | `~` Pentacle | Targeting hidden or structural patterns — internal critique |
+| 🎭 Humorist | `?` Cup | Relational move with wide sympathetic field — easy reception |
+| 🔮 Private | `~` Pentacle | Inward presence deeply grounded — maximum interior access |
+
+The tool-carry does not override the Syadasti frame. Philosopher carrying Cup still measures propositional support — but measures it with wide, relation-holding focus.
+
+A conflict carry (`*~` Signal Jam or `?!` Dubious Move) produces diagnostic tension within the stance's evaluation frame: the stance cannot both track external and secure internal simultaneously, or cannot both cut fine and hold open simultaneously.
+
+Empty hands (`--`) means the stance is present and centered — not suppressed, not absent. A single tool SHOULD appear first (`?-`, `*-`) to indicate amplitude on one axis while remaining centered and present on the other, and this single-tool modulation should flow through generation and all render targets naturally.
+
+Examples:
+- `🏛️*-` signals Philosopher active on external feed, with zoom centered.
+- `🎭?-` signals Humorist active on wide relational field, with feed centered.
 
 <<~/ahu >>
 
@@ -139,8 +163,7 @@ Uncertainty marks the stance, not the whole array.
 
 ## Multi-Stance
 
-When more than one stance carries load, the register stays a point.
-The active stance pattern carries the spread.
+When more than one stance carries agreement, the confidence register stays near a point-value. When the active stance pattern carries a spread of modulation, the confidence register becomes fuzzy.
 
 The number does not widen itself.
 The standpoint field tells the reader how many measures press on the same declaration.

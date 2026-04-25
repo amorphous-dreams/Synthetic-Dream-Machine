@@ -169,7 +169,7 @@ The two-character tool-carry attaches directly to the preceding stance emoji, no
 | `?` | Cup | ♥ | Water / Macro | Sympathy, zoom out, relation |
 | `!` | Sword | ♠ | Air / Micro | Discernment, zoom in, detail |
 | `~` | Pentacle | ♦ | Earth / Hidden | Ground, internal feed, body |
-| `-` | Stone | 🃠 | Orichalcum / Neutral | Empty hand, centered |
+| `-` | Empty | 🃠 | Orichalcum / Neutral | Empty hand, centered |
 
 **Canonical two-tool configurations:**
 
@@ -183,8 +183,8 @@ The two-character tool-carry attaches directly to the preceding stance emoji, no
 | `*~` | Visual + Hidden | Visibility Conflict (Signal Jam) |
 | `?!` | Macro + Micro | Resolution Conflict (Dubious Move) |
 
-Attach as a two-character pair: `🏛️*!` (Philosopher holding Bee), `🌊--` (Poet holding Stone).
-Single-tool carry: `🗡️!-` (Satirist holding Sword only, right hand empty).
+Attach as a two-character pair: `🏛️*!` (Philosopher holding Visual + Micro), `🌊--` (Poet holding Centered).
+Single-tool carry: `🏛️*-` (Philosopher holding Wand only), `🎭?-` (Humorist holding Cup only), `🗡️!-` (Satirist holding Sword only). Active tool first, empty hand second.
 Full invariant: `lar:` URI encodes all five stances as a ten-character string in positional order.
 
 <<~/ahu >>
@@ -202,11 +202,11 @@ The state tuple is the composed reading: phase × stance × scope → one state 
 
 | Phase | Stance | Scope | State Tuple Reading |
 |---|---|---|---|
-| ⏿ | 🏛️*!🌊--🗡️--🎭--🔮-- | 🔍 | Orienting analytically at exploration scale — Philosopher in Bee carry, all others Stone |
-| ▶ | 🏛️--🌊--🗡️~!🎭--🔮-- | ⚔️ | Acting critically in combat — Satirist in Cricket carry, cutting under pressure |
-| ◇ | 🏛️*!🌊*?🗡️--🎭--🔮-- | 🗺️ | Deciding at strategic scale — Philosopher Bee, Poet Butterfly, holding both external frames |
-| ✶ | 🏛️--🌊--🗡️--🎭*?🔮-- | 🔍 | Observing playfully at tactical scale — Humorist in Butterfly carry, light wide-angle |
-| ↺ | 🏛️*!🌊--🗡️--🎭--🔮-- | ⚙️ | Aftermath at operational scale — Philosopher Bee, assessing detail across a watch |
+| ⏿ | 🏛️*!🌊--🗡️--🎭--🔮-- | 🔍 | Orienting analytically at exploration scale — Philosopher in Visual + Micro carry, all others empty |
+| ▶ | 🏛️--🌊--🗡️~!🎭--🔮-- | ⚔️ | Acting critically in combat — Satirist in Hidden + Micro carry, cutting under pressure |
+| ◇ | 🏛️*!🌊*?🗡️--🎭--🔮-- | 🗺️ | Deciding at strategic scale — Philosopher Visual + Micro, Poet Visual + Macro, holding both external frames |
+| ✶ | 🏛️--🌊--🗡️--🎭*?🔮-- | 🔍 | Observing playfully at tactical scale — Humorist in Visual + Macro carry, light wide-angle |
+| ↺ | 🏛️*!🌊--🗡️--🎭--🔮-- | ⚙️ | Aftermath at operational scale — Philosopher Visual + Micro, assessing detail across a watch |
 
 <<~/ahu >>
 
@@ -438,7 +438,7 @@ The semantic reading remains stable:
 
 Current aftermath settlement to preserve:
 
-- URI authority identifies speaker + machine locus only; exchange sequencing moved to TickSpan metadata.
+- URI authority identifies speaker + machine host only; exchange sequencing moved to TickSpan metadata.
 - `⊙` is the operator authority mark in the HUD registry.
 - Kowloon is one downstream publication sink for exported tick spans, not the canonical state model.
 

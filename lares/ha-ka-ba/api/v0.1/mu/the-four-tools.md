@@ -112,17 +112,25 @@ A cold-booting node enters Chapel Perilous with every fresh session.
 
 ## Tool Glyph Table
 
-Each tool carries a Unicode glyph for display surfaces and an ASCII symbol for URI query encoding and machine-readable record form.
+Each tool carries an ASCII symbol (canonical record form, URI-safe) and two operator-configurable Unicode render modes.
 
-| Tool | Unicode | ASCII | Element | Cognitive Pull |
-|---|---|---|---|---|
-| Wand | ♣ | `*` | Fire / Visual | Ignition, external feed, first apprehension, track |
-| Cup | ♥ | `?` | Water / Macro | Sympathy, zoom out, wide angle, relation |
-| Sword | ♠ | `!` | Air / Micro | Discernment, zoom in, high detail, BS detection |
-| Pentacle | ♦ | `~` | Earth / Hidden | Ground, internal feed, body, stubborn crossing |
-| Stone | 🃠 | `-` | Orichalcum / Neutral | Empty hand, centered, factory reset |
+**ASCII symbols** are invariant across all surfaces and configurations.
+**Unicode glyphs** render per the `tool_render` setting in `LARES.md`.
 
-The Stone (`-`) is not a tool carried but a slot held open — the hand is present and empty, agnostic rather than absent.
+| Tool | ASCII | `playing-card` glyph | `elements` glyph | Element | Cognitive Pull |
+|---|---|---|---|---|---|
+| Wand | `*` | ♣ | 🜂 | Fire / Visual | Ignition, external feed, first apprehension, track |
+| Cup | `?` | ♥ | 🜄 | Water / Macro | Sympathy, zoom out, wide angle, relation |
+| Sword | `!` | ♠ | 🜁 | Air / Micro | Discernment, zoom in, high detail, BS detection |
+| Pentacle | `~` | ♦ | 🜃 | Earth / Hidden | Ground, internal feed, body, stubborn crossing |
+| Fool | `-` | 🃠 | 🜍 | Orichalcum / Neutral | Empty hand, centered, factory reset |
+
+`playing-card` uses Minor Arcana suit symbols (♣♥♠♦) and the Joker/Fool (🃠).
+`elements` uses Unicode alchemical symbols (🜂🜄🜁🜃🜍) — Fire, Water, Air, Earth, Gold.
+
+The empty hand (`-`) holds a slot open, not a tool carried but a stance present and centered, agnostic rather than absent.
+
+Render mode configuration: see `lar:///LARES#hud-panel`.
 
 <<~/ahu >>
 
@@ -146,6 +154,15 @@ The `!`/`?` axis sets the zoom: Micro (zoom in, certainty, detail) or Macro (zoo
 | `~!` | ♦♠ | Hidden | Micro | Ground internal feed, zoom in for precision |
 | `~?` | ♦♥ | Hidden | Macro | Ground internal feed, zoom out for overview |
 | `--` | 🃠 | — | — | Neutral override; drop all zoom, reset algorithm |
+
+### Single-Tool Carry
+
+A stance MAY carry exactly one tool while keeping the other axis present and centered.
+In single-tool carry, the active tool appears first and empty hand second. Preferred forms are `*-` for a feed-axis amplitude with zoom centered, and `?-` for a zoom-axis amplitude with feed centered. `~-` and `!-` remain valid variants when the hidden or micro axis is the only active axis.
+
+Examples:
+- `🏛️*-` signals Philosopher carrying Wand only: external feed is active, zoom is centered.
+- `🎭?-` signals Humorist carrying Cup only: relational wide-field is active, feed is centered.
 
 Cassandra Aarssen maps the same Visual/Hidden × Micro/Macro axis to four organizational types with named configurations. Those named overlays live in docs space, not here.
 
@@ -192,7 +209,11 @@ Slot position carries axis semantics: left = feed (`*`/`~`/`-`), right = zoom (`
 | `*!--?!~~--` | Philosopher: Visual-Micro. Poet: Stone. Satirist: Resolution Conflict (Dubious Move). Humorist: Visibility Conflict (Signal Jam). Private: Stone. |
 | `----------` | All stances Stone — fully centered, empty-handed |
 | `*!*!*!*!*!` | All stances Visual-Micro — full external-detail scan across all five stances |
+| `*---------` | Philosopher: Wand-only, all other stances empty — one-axis amplitude with the rest centered |
+| `------?---` | Humorist: Cup-only, all other stances empty — zoom-axis amplitude with feed centered |
 | `--*?--~!--` | Poet: Visual-Macro. Humorist: Hidden-Micro. All others: Stone. |
+
+For single-tool carry, the active tool goes first and empty hand goes second; this signals one-axis amplitude while the other axis remains centered and present.
 
 **URI query encoding:** `stances=*!--*?~~--*!`
 The ten-character tool-carry string replaces the former five-character amplitude string.

@@ -57,7 +57,7 @@ This room keeps the render-surface layer:
 
 The render layer between canonical `lar:` URI record form and human-readable display surfaces can target multiple templates or actively invoked `kahea` sigils. 
 
-This docs loci owns:
+This docs meme owns:
 - The surface registry (what surfaces exist, what they render)
 - The all-five-stances invariant (applies to every surface, no exceptions)
 - ASCII → glyph mapping tables for phase, stance, and tool-carry
@@ -79,7 +79,7 @@ This docs loci owns:
 
 **All five stances appear on every render target, always.**
 
-Tool-carry determines how a stance is operating; it does not determine presence. A Stone stance (`--`) is present and empty-handed — structurally included. Omitting a stance from any render target is a well-formedness violation.
+Tool-carry determines how a stance is operating; it does not determine presence. An empty, centered stance (`--`) is present and empty-handed — structurally included. Omitting a stance from any render target is a well-formedness violation.
 
 ```
 Compliant:   🏛️*!🌊*?🗡️--🎭--🔮--
@@ -150,6 +150,15 @@ Never store a surface-rendered form as the canonical record.
 | `act` | `▶` | Act | Bureaucracy |
 | `hooko-aftermath` | `⤴ ↺` | Hoʻoko & Aftermath | Grummet/Rasa |
 
+### Tool Render Modes
+
+Tool render modes map the invariant ASCII tool symbols to surface-specific glyph sets. The underlying record form always uses ASCII: `* ? ! ~ -`.
+
+| Mode | Wand | Cup | Sword | Pentacle | Orichalcum | Notes |
+|---|---|---|---|---|---|---|
+| `playing-card` | ♣ | ♥ | ♠ | ♦ | 🃠 | Canonical Minor Arcana suit and Fool glyphs |
+| `elements` | 🜂 | 🜄 | 🜁 | 🜃 | 🜍 | Alchemical element glyphs for external/hidden and micro/macro axes |
+
 ### Stance Emoji
 
 | Record position | Emoji | Stance | Evaluation frame |
@@ -170,7 +179,7 @@ Never store a surface-rendered form as the canonical record.
 
 No render target may show fewer than five stance emoji.
 Stance emojis with tool-carry MAY appear inline during generation or parsing to signal stance changes.
-Tool-carry describes how the stance is operating; Stone (`--`) means present but empty-handed.
+Tool-carry describes how the stance is operating; `--` means present, empty, and centered. The fifth modulation is The Fool.
 Omitting a stance is a well-formedness violation.
 
 **Rule 2: Tool-carry attaches directly to the preceding stance emoji as a two-character pair, no space.**
@@ -238,7 +247,7 @@ Each stance gets a two-character pair: `{feed}{zoom}`.
 | `~` | Feed (left) | Pentacle | Hidden / internal / ground |
 | `!` | Zoom (right) | Sword | Micro / detail / discernment |
 | `?` | Zoom (right) | Cup | Macro / relation / sympathy |
-| `-` | Either | Stone | Empty hand |
+| `-` | Either | Empty / The Fool | Empty hand, centered |
 
 **Named configurations (complementary pairs):**
 
@@ -248,7 +257,8 @@ Each stance gets a two-character pair: `{feed}{zoom}`.
 | Visual-Macro | `*?` | Track external, zoom out |
 | Hidden-Micro | `~!` | Ground internal, zoom in |
 | Hidden-Macro | `~?` | Ground internal, zoom out |
-| Stone | `--` | Both hands empty — centered |
+| Empty-Hands | `--` | Both hands empty — centered |
+| Single Tool | active then empty | One-axis amplitude with the other axis centered; preferred active tool first, empty second |
 
 **Conflict configurations (same-axis carry):**
 
@@ -258,7 +268,7 @@ Each stance gets a two-character pair: `{feed}{zoom}`.
 | Dubious Move | `?!` | Two zoom tools — risky tunnel |
 
 Default for an operating stance: one of the four complementary pairs.
-Default for a background or resting stance: `--` (Stone).
+Default for a background or resting stance: `--` (empty, centered, The Fool).
 Never omit a stance. Never emit fewer than five pairs.
 
 <<~/ahu >>
@@ -311,9 +321,10 @@ The `~crossroads` tilde prefix denotes a nomadic node — no fixed host, routes 
 2. Render chronometer state in immediate-first order: `⚡N.⚔️N.🔍N.⚙️N.🗺️N`.
 3. For each of the five stances (in order: 🏛️ 🌊 🗡️ 🎭 🔮):
    - Determine which tools the stance is carrying (0, 1, or 2).
-   - Compose the two-character pair: left = feed slot (`*`/`~`/`-`), right = zoom slot (`!`/`?`/`-`).
-   - Active operating stance: one of the four complementary pairs (`*!` `*?` `~!` `~?`).
-   - Background or resting stance: `--` (Stone).
+   - Compose the two-character pair from any two: `*`/`~`/`-` `!`/`?`.
+   - Active operating stance: one of the four complementary pairs (`*!` `*?` `~!` `~?`), or two conflicting pairs (`*~`, `?!`), or a single-tool carry.
+   - Single-tool carry: active tool first, empty-hand second; preferred forms are `*-` and `?-` to show one-axis amplitude while the other axis remains centered and present.
+   - Background or resting stance: `--` (balance).
 4. Append the two-character pair directly to the stance emoji, no space.
 5. Assemble all five as a single unspaced block.
 6. Determine active voice name, target confidence, and `p` value.
