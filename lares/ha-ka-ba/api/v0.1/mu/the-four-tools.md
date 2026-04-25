@@ -123,10 +123,11 @@ Each tool carries an ASCII symbol (canonical record form, URI-safe) and two oper
 | Cup | `?` | ♥ | 🜄 | Water / Macro | Sympathy, zoom out, wide angle, relation |
 | Sword | `!` | ♠ | 🜁 | Air / Micro | Discernment, zoom in, high detail, BS detection |
 | Pentacle | `~` | ♦ | 🜃 | Earth / Hidden | Ground, internal feed, body, stubborn crossing |
-| Fool | `-` | 🃠 | 🜍 | Orichalcum / Neutral | Empty hand, centered, factory reset |
+| Empty | `-` | 🃠 | 🜍 | Orichalcum / Neutral | Empty hand, centered, factory reset |
 
-`playing-card` uses Minor Arcana suit symbols (♣♥♠♦) and the Joker/Fool (🃠).
-`elements` uses Unicode alchemical symbols (🜂🜄🜁🜃🜍) — Fire, Water, Air, Earth, Gold.
+`playing-card` uses Minor Arcana suit symbols (♣♥♠♦) and the Fool (🃠) — the Major Arcana card at the head of the journey, standing for the open, uncommitted hand.
+`elements` uses Unicode alchemical symbols (🜂🜄🜁🜃🜍) — Fire, Water, Air, Earth, Gold/Orichalcum.
+`ascii` uses the five ASCII symbols directly with no Unicode projection: `* ? ! ~ -`.
 
 The empty hand (`-`) holds a slot open, not a tool carried but a stance present and centered, agnostic rather than absent.
 

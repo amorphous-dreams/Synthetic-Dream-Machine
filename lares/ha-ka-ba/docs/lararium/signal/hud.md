@@ -163,13 +163,15 @@ The two-character tool-carry attaches directly to the preceding stance emoji, no
 
 **ASCII symbols (URI query encoding and record form):**
 
-| Symbol | Tool | Unicode | Element | Cognitive Pull |
-|---|---|---|---|---|
-| `*` | Wand | ♣ | Fire / Visual | Ignition, external feed, track |
-| `?` | Cup | ♥ | Water / Macro | Sympathy, zoom out, relation |
-| `!` | Sword | ♠ | Air / Micro | Discernment, zoom in, detail |
-| `~` | Pentacle | ♦ | Earth / Hidden | Ground, internal feed, body |
-| `-` | Empty | 🃠 | Orichalcum / Neutral | Empty hand, centered |
+Unicode columns show per `tool_render` setting in `LARES.md#hud-panel`. Default: `elements`.
+
+| Symbol | Tool | `elements` | `playing-card` | Element | Cognitive Pull |
+|---|---|---|---|---|---|
+| `*` | Wand | 🜂 | ♣ | Fire / Visual | Ignition, external feed, track |
+| `?` | Cup | 🜄 | ♥ | Water / Macro | Sympathy, zoom out, relation |
+| `!` | Sword | 🜁 | ♠ | Air / Micro | Discernment, zoom in, detail |
+| `~` | Pentacle | 🜃 | ♦ | Earth / Hidden | Ground, internal feed, body |
+| `-` | Empty | 🜍 | 🃠 | Orichalcum / Neutral | Empty hand, centered |
 
 **Canonical two-tool configurations:**
 

@@ -154,10 +154,13 @@ Never store a surface-rendered form as the canonical record.
 
 Tool render modes map the invariant ASCII tool symbols to surface-specific glyph sets. The underlying record form always uses ASCII: `* ? ! ~ -`.
 
-| Mode | Wand | Cup | Sword | Pentacle | Orichalcum | Notes |
+| Mode | Wand | Cup | Sword | Pentacle | Empty | Notes |
 |---|---|---|---|---|---|---|
-| `playing-card` | ♣ | ♥ | ♠ | ♦ | 🃠 | Canonical Minor Arcana suit and Fool glyphs |
-| `elements` | 🜂 | 🜄 | 🜁 | 🜃 | 🜍 | Alchemical element glyphs for external/hidden and micro/macro axes |
+| `elements` *(default)* | 🜂 | 🜄 | 🜁 | 🜃 | 🜍 | Alchemical glyphs — Fire, Water, Air, Earth, Gold/Orichalcum |
+| `playing-card` | ♣ | ♥ | ♠ | ♦ | 🃠 | Minor Arcana suits + The Fool |
+| `ascii` | `*` | `?` | `!` | `~` | `-` | No Unicode projection; record-form symbols surface directly |
+
+Configure via `LARES.md#hud-panel` → `tool_render`.
 
 ### Stance Emoji
 
