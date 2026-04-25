@@ -7,9 +7,6 @@ import unittest
 
 from lares.lararium_mcp.compiler import (
     ENTRY_URI,
-    _DEPTH,
-    _SOCKET,
-    _read_required_core,
     compile_boot_receipt,
     compile_full_boot,
     compile_minimal_boot,
@@ -28,7 +25,7 @@ class MinimalBootTests(unittest.TestCase):
         self.assertEqual(self.artifact["entry"], ENTRY_URI)
 
     def test_required_core_count(self) -> None:
-        self.assertEqual(self.artifact["locus_count"], 14)
+        self.assertEqual(self.artifact["meme_count"], 14)
         self.assertEqual(len(self.artifact["closure"]), 14)
 
     def test_agents_is_first_and_depth_zero(self) -> None:
@@ -36,29 +33,65 @@ class MinimalBootTests(unittest.TestCase):
         self.assertEqual(first["uri"], ENTRY_URI)
         self.assertEqual(first["depth"], 0)
 
-    def test_all_loci_exist(self) -> None:
+    def test_all_memes_exist(self) -> None:
         missing = self.artifact["validation"]["missing"]
-        self.assertEqual(missing, [], f"missing loci: {missing}")
+        self.assertEqual(missing, [], f"missing memes: {missing}")
 
     def test_all_resolved(self) -> None:
         self.assertTrue(self.artifact["validation"]["all_resolved"])
         self.assertTrue(self.artifact["validation"]["all_exist"])
 
+    def test_no_dag_violations(self) -> None:
+        self.assertEqual(self.artifact["validation"]["dag_violations"], [])
+
     def test_lares_present(self) -> None:
         uris = [e["uri"] for e in self.artifact["closure"]]
         self.assertIn("lar:///LARES", uris)
 
-    def test_hydration_sockets_annotated(self) -> None:
-        sockets = {e["uri"]: e["hydration_socket"] for e in self.artifact["closure"]}
-        self.assertEqual(sockets[ENTRY_URI], "entry")
-        self.assertEqual(sockets["lar:///ha.ka.ba/api/v0.1/pono/e-prime"], "AGENTS#preload-e-prime")
-        self.assertEqual(sockets["lar:///ha.ka.ba/api/v0.1/mu"], "AGENTS#threshold-to-mu")
-        self.assertEqual(sockets["lar:///LARES"], "AGENTS#continue-to-lares")
+    def test_mu_and_children_present(self) -> None:
+        uris = {e["uri"] for e in self.artifact["closure"]}
+        self.assertIn("lar:///ha.ka.ba/api/v0.1/mu", uris)
+        self.assertIn("lar:///ha.ka.ba/api/v0.1/mu/chao", uris)
+        self.assertIn("lar:///ha.ka.ba/api/v0.1/mu/the-four-tools", uris)
+        self.assertIn("lar:///ha.ka.ba/api/v0.1/mu/the-syad-perspectives", uris)
 
-    def test_implements_bundles_present(self) -> None:
-        agents_entry = next(e for e in self.artifact["closure"] if e["uri"] == ENTRY_URI)
-        self.assertIsInstance(agents_entry["implements"], list)
-        self.assertTrue(len(agents_entry["implements"]) > 0)
+    def test_lararium_and_children_present(self) -> None:
+        uris = {e["uri"] for e in self.artifact["closure"]}
+        self.assertIn("lar:///ha.ka.ba/api/v0.1/lararium", uris)
+        self.assertIn("lar:///ha.ka.ba/api/v0.1/lararium/voices", uris)
+        self.assertIn("lar:///ha.ka.ba/api/v0.1/lararium/hud", uris)
+        self.assertIn("lar:///ha.ka.ba/api/v0.1/lararium/continuity", uris)
+
+    def test_topo_order_mu_before_children(self) -> None:
+        uris = [e["uri"] for e in self.artifact["closure"]]
+        idx = {u: i for i, u in enumerate(uris)}
+        self.assertLess(idx["lar:///ha.ka.ba/api/v0.1/mu"],
+                        idx["lar:///ha.ka.ba/api/v0.1/mu/chao"])
+
+    def test_topo_order_lararium_before_children(self) -> None:
+        uris = [e["uri"] for e in self.artifact["closure"]]
+        idx = {u: i for i, u in enumerate(uris)}
+        self.assertLess(idx["lar:///ha.ka.ba/api/v0.1/lararium"],
+                        idx["lar:///ha.ka.ba/api/v0.1/lararium/voices"])
+
+    def test_implements_bundles_derived_from_edges(self) -> None:
+        # implements now comes from parsed edges_out, not TOML metadata
+        # All api memes should have at least meme interface registered
+        api_entries = [
+            e for e in self.artifact["closure"]
+            if "api/v0.1" in e["uri"]
+        ]
+        with_implements = [e for e in api_entries if e["implements"]]
+        self.assertTrue(len(with_implements) > 0,
+                        "expected some api memes to have implements edges")
+
+    def test_hydration_socket_entry(self) -> None:
+        first = self.artifact["closure"][0]
+        self.assertEqual(first["hydration_socket"], "entry")
+
+    def test_content_hash_present(self) -> None:
+        first = self.artifact["closure"][0]
+        self.assertTrue(first["content_hash"].startswith("sha256:"))
 
     def test_compiled_at_present(self) -> None:
         self.assertIn("T", self.artifact["compiled_at"])
@@ -75,18 +108,27 @@ class FullBootTests(unittest.TestCase):
         minimal = compile_minimal_boot()
         minimal_uris = {e["uri"] for e in minimal["closure"]}
         full_uris = {e["uri"] for e in self.artifact["closure"]}
-        self.assertTrue(minimal_uris.issubset(full_uris), "full boot must include all required-core loci")
+        self.assertTrue(minimal_uris.issubset(full_uris),
+                        "full boot must include all minimal-boot memes")
 
     def test_full_boot_larger_than_minimal(self) -> None:
         minimal = compile_minimal_boot()
-        self.assertGreater(self.artifact["locus_count"], minimal["locus_count"])
+        self.assertGreater(self.artifact["meme_count"], minimal["meme_count"])
 
     def test_no_duplicate_uris(self) -> None:
         uris = [e["uri"] for e in self.artifact["closure"]]
         self.assertEqual(len(uris), len(set(uris)))
 
-    def test_compiler_note_present(self) -> None:
-        self.assertIn("compiler_note", self.artifact)
+    def test_edge_count_nonzero(self) -> None:
+        self.assertGreater(self.artifact["edge_count"], 0)
+
+    def test_pranala_edges_present(self) -> None:
+        edges = self.artifact["pranala_edges"]
+        self.assertGreater(len(edges), 0)
+        first = edges[0]
+        self.assertIn("from_uri", first)
+        self.assertIn("to_uri", first)
+        self.assertIn("family", first)
 
 
 class BootReceiptTests(unittest.TestCase):
@@ -100,15 +142,15 @@ class BootReceiptTests(unittest.TestCase):
     def test_sha256_present_and_hex(self) -> None:
         sha = self.receipt["sha256"]
         self.assertEqual(len(sha), 64)
-        int(sha, 16)  # raises if not hex
+        int(sha, 16)
 
     def test_receipt_is_deterministic(self) -> None:
         r1 = compile_boot_receipt(self.minimal)
         r2 = compile_boot_receipt(self.minimal)
         self.assertEqual(r1["sha256"], r2["sha256"])
 
-    def test_locus_count_matches_minimal(self) -> None:
-        self.assertEqual(self.receipt["locus_count"], self.minimal["locus_count"])
+    def test_meme_count_matches_minimal(self) -> None:
+        self.assertEqual(self.receipt["meme_count"], self.minimal["meme_count"])
 
     def test_validation_propagated(self) -> None:
         self.assertTrue(self.receipt["validation"]["all_exist"])
@@ -130,14 +172,14 @@ class CompilerMCPToolTests(unittest.TestCase):
         self.assertFalse(response["result"]["isError"])
         data = json.loads(response["result"]["content"][0]["text"])
         self.assertEqual(data["artifact"], "minimal-boot")
-        self.assertEqual(data["locus_count"], 14)
+        self.assertEqual(data["meme_count"], 14)
 
     def test_compile_full_boot_tool(self) -> None:
         response = self._call_tool("lararium-compile_full_boot")
         self.assertFalse(response["result"]["isError"])
         data = json.loads(response["result"]["content"][0]["text"])
         self.assertEqual(data["artifact"], "full-boot")
-        self.assertGreater(data["locus_count"], 14)
+        self.assertGreater(data["meme_count"], 14)
 
     def test_compile_boot_receipt_tool(self) -> None:
         response = self._call_tool("lararium-compile_boot_receipt")
@@ -174,59 +216,6 @@ class CompilerMCPToolTests(unittest.TestCase):
         self.assertEqual(contents[0]["mimeType"], "application/json")
         data = json.loads(contents[0]["text"])
         self.assertEqual(data["artifact"], "minimal-boot")
-
-
-class StaticMapDriftTests(unittest.TestCase):
-    """Verify that _SOCKET and _DEPTH stay aligned with the live required-core.
-
-    The compiler reads required-core dynamically but annotates entries from static
-    maps.  A mismatch means hydration entries get empty socket labels or wrong
-    depths without any runtime error.
-    """
-
-    def setUp(self) -> None:
-        self.required_core = _read_required_core()
-        self.required_set = set(self.required_core)
-
-    def test_required_core_non_empty(self) -> None:
-        self.assertGreater(len(self.required_core), 0)
-
-    def test_socket_covers_all_required_core(self) -> None:
-        missing = self.required_set - set(_SOCKET)
-        self.assertEqual(
-            missing, set(),
-            f"_SOCKET missing entries that appear in required-core: {missing}",
-        )
-
-    def test_socket_has_no_phantom_loci(self) -> None:
-        phantom = set(_SOCKET) - self.required_set
-        self.assertEqual(
-            phantom, set(),
-            f"_SOCKET contains loci absent from required-core: {phantom}",
-        )
-
-    def test_depth_covers_all_required_core(self) -> None:
-        missing = self.required_set - set(_DEPTH)
-        self.assertEqual(
-            missing, set(),
-            f"_DEPTH missing entries that appear in required-core: {missing}",
-        )
-
-    def test_depth_has_no_phantom_loci(self) -> None:
-        phantom = set(_DEPTH) - self.required_set
-        self.assertEqual(
-            phantom, set(),
-            f"_DEPTH contains loci absent from required-core: {phantom}",
-        )
-
-    def test_entry_uri_at_depth_zero(self) -> None:
-        self.assertEqual(_DEPTH.get(ENTRY_URI), 0)
-
-    def test_entry_uri_socket_is_entry(self) -> None:
-        self.assertEqual(_SOCKET.get(ENTRY_URI), "entry")
-
-    def test_lares_socket_is_continuation(self) -> None:
-        self.assertEqual(_SOCKET.get("lar:///LARES"), "AGENTS#continue-to-lares")
 
 
 if __name__ == "__main__":

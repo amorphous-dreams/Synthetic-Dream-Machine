@@ -2,6 +2,6 @@
 model_instructions_file = "../lares/AGENTS.md"
 
 [mcp_servers.lararium]
-command = "/home/joshu/Synthetic-Dream-Machine/.venv/bin/python3"
+command = ".venv/bin/python3"
 args = ["-m", "lares.lararium_mcp"]
-cwd = "/home/joshu/Synthetic-Dream-Machine"
+cwd = "."
