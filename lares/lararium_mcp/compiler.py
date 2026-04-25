@@ -104,12 +104,15 @@ def _build_control_closure(entry_uri: str) -> tuple[MemeGraph, list[str], list[l
                 graph.add_meme(meme)
 
         current_depth = depth_map.get(uri, 0)
-        for target in graph.successors(uri, 'control'):
+        for edge in graph.edges_out(uri, 'control'):
+            if edge.role == 'implements':
+                continue
+            target = edge.to_uri
             if target not in visited:
                 queue.append(target)
                 depth_map[target] = max(depth_map.get(target, 0), current_depth + 1)
 
-    topo_uris, violations = graph.walk_control(entry_uri)
+    topo_uris, violations = graph.walk_control(entry_uri, ignore_roles={'implements'})
     return graph, topo_uris, violations
 
 

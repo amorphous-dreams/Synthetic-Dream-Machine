@@ -124,12 +124,16 @@ class MemeGraph:
         self,
         entry_uri: str,
         loader: Callable[[str], Meme | None] | None = None,
+        ignore_roles: set[str] | None = None,
     ) -> tuple[list[str], list[list[str]]]:
         """DFS over control edges from entry_uri.
 
         If loader is provided, it is called for any URI not yet in the graph
         before its outbound edges are explored.  The loader should call
         add_meme() itself or return a Meme to be added.
+
+        ignore_roles: optional set of control edge roles to skip during
+        traversal.
 
         Returns:
             walked_uris  — topologically sorted list of reachable URIs
@@ -140,6 +144,13 @@ class MemeGraph:
         topo: list[str] = []
         violations: list[list[str]] = []
         stack_path: list[str] = []
+
+        def _successors(uri: str) -> list[str]:
+            return [
+                e.to_uri
+                for e in self.edges_out(uri, 'control')
+                if ignore_roles is None or e.role not in ignore_roles
+            ]
 
         def visit(uri: str) -> None:
             if color[uri] == GRAY:
@@ -158,7 +169,7 @@ class MemeGraph:
                 if meme is not None and uri not in self.memes:
                     self.add_meme(meme)
 
-            for target in self.successors(uri, 'control'):
+            for target in _successors(uri):
                 visit(target)
 
             stack_path.pop()
