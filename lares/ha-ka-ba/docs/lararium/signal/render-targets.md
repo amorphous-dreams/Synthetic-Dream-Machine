@@ -60,7 +60,7 @@ The render layer between canonical `lar:` URI record form and human-readable dis
 This docs loci owns:
 - The surface registry (what surfaces exist, what they render)
 - The all-five-stances invariant (applies to every surface, no exceptions)
-- ASCII → glyph mapping tables for phase, stance, and amplitude
+- ASCII → glyph mapping tables for phase, stance, and tool-carry
 - Per-surface emit procedures
 
 | Name | Token | Surface | Emoji? | All 5 stances? |
@@ -79,11 +79,11 @@ This docs loci owns:
 
 **All five stances appear on every render target, always.**
 
-Stance amplitude determines visual weight; it does not determine presence. A suppressed stance (`-` or `--`) is visually lighter but structurally present. Omitting a stance from any render target is a well-formedness violation.
+Tool-carry determines how a stance is operating; it does not determine presence. A Stone stance (`--`) is present and empty-handed — structurally included. Omitting a stance from any render target is a well-formedness violation.
 
 ```
-Compliant:   🏛️+🌊++🗡️-🎭-🔮-
-Violation:   🏛️+🌊++
+Compliant:   🏛️*!🌊*?🗡️--🎭--🔮--
+Violation:   🏛️*!🌊*?
 ```
 
 <<~/ahu >>
@@ -92,14 +92,14 @@ Violation:   🏛️+🌊++
 
 ## Render Target Definitions
 
-The canonical `lar:` form uses RFC 3986 URL-safe ASCII. Every named surface maps that form to visible symbols — chronometer scale glyphs, stance emoji, amplitude modifiers, and OODA-HA phase glyphs where a surface renders phase directly — according to surface-specific rules. This makes it stable for storage, comparison, and transport.
+The canonical `lar:` form uses RFC 3986 URL-safe ASCII. Every named surface maps that form to visible symbols — chronometer scale glyphs, stance emoji, tool-carry modifiers, and OODA-HA phase glyphs where a surface renders phase directly — according to surface-specific rules. This makes it stable for storage, comparison, and transport.
 
-Display surfaces — HUD lines, DreamDeck feed post headers, TiddlyWiki tiddlers — use Unicode glyphs: chronometer scale glyphs, stance emoji, amplitude modifiers, and OODA-HA phase glyphs where needed.
+Display surfaces — HUD lines, DreamDeck feed post headers, TiddlyWiki tiddlers — use Unicode glyphs: chronometer scale glyphs, stance emoji, tool-carry modifiers, and OODA-HA phase glyphs where needed.
 These are the glyph forms of the underlying ASCII record.
 
-Renger targets carry the mapping between these two representations.
+Render targets carry the mapping between these two representations.
 It is not decoration.
-The glyph form carries the same semantic load as the record form — stance amplitude, scale position, action count, confidence, and phase — rendered for human perception at the relevant surface.
+The glyph form carries the same semantic load as the record form — stance tool-carry, scale position, action count, confidence, and phase — rendered for human perception at the relevant surface.
 
 <<~/ahu >>
 
@@ -110,7 +110,7 @@ The glyph form carries the same semantic load as the record form — stance ampl
 
 The glyph layer exists to serve human perception without compromising canonical form.
 The canonical `lar:` URI is machine-stable: URL-safe, storable, comparable by string.
-The glyph form is human-navigable: glances communicate phase, stance, and amplitude before the reader processes the text.
+The glyph form is human-navigable: glances communicate phase, stance, and tool-carry before the reader processes the text.
 
 The separation is strict:
 
@@ -168,15 +168,16 @@ Never store a surface-rendered form as the canonical record.
 
 **Rule 1: All five stances appear on every render target, always.**
 
-No render target may show fewer than five stance emoji. 
-Stance emojis with modifiers MAY appear inline during generation or parsing to signal stance changes.
-Amplitude determines visual weight; it does not determine presence.
+No render target may show fewer than five stance emoji.
+Stance emojis with tool-carry MAY appear inline during generation or parsing to signal stance changes.
+Tool-carry describes how the stance is operating; Stone (`--`) means present but empty-handed.
 Omitting a stance is a well-formedness violation.
 
-**Rule 2: Current stance modifiers attach directly to the preceding emoji, no space.**
+**Rule 2: Tool-carry attaches directly to the preceding stance emoji as a two-character pair, no space.**
 
-The modifier repertoire still carries live design pressure.
-Fixed order and no-partial-emission still apply.
+Left slot = feed axis (`*` Wand / `~` Pentacle / `-` empty).
+Right slot = zoom axis (`!` Sword / `?` Cup / `-` empty).
+Fixed five-stance order and no-partial-emission still apply.
 
 <<~/ahu >>
 
@@ -187,7 +188,7 @@ Fixed order and no-partial-emission still apply.
 ### `hud:exchange-pair`
 
 ```
-⚡~NN% | {ffz-rendered} | 🏛️{amps}🌊{amps}🗡️{amps}🎭{amps}🔮{amps} | voice(s):{Voice} | [R:N] | p{p} |
+⚡~NN% | {ffz-rendered} | 🏛️{tc}🌊{tc}🗡️{tc}🎭{tc}🔮{tc} | voice(s):{Voice} | [R:N] | p{p} |
 ```
 
 - `⚡~NN%` — context window; `~` prefix mandatory
@@ -200,7 +201,7 @@ Fixed order and no-partial-emission still apply.
 ### `chat-log:post-header`
 
 ```
-@handle@node — {timestamp} — //{ha.ka.ba/optional/path} [R:N] 🏛️{amps}🌊{amps}🗡️{amps}🎭{amps}🔮{amps}
+@handle@node — {timestamp} — //{ha.ka.ba/optional/path} [R:N] 🏛️{tc}🌊{tc}🗡️{tc}🎭{tc}🔮{tc}
 ```
 
 - Territory triple grounds domain before posture
@@ -218,30 +219,47 @@ Stored verbatim.
 ### Inline HUD tags
 
 ```
-[R:N] 🏛️{amps}🌊{amps}🗡️{amps}🎭{amps}🔮{amps} //{territory}
+[R:N] 🏛️{tc}🌊{tc}🗡️{tc}🎭{tc}🔮{tc} //{territory}
 ```
 
 Same all-five rule applies if the tag is emitted at all.
 
 <<~/ahu >>
 
-<<~ ahu #stance-amplitude-quick-reference >>
+<<~ ahu #stance-tool-carry-quick-reference >>
 
-## Stance Amplitude Quick Reference
+## Stance Tool-Carry Quick Reference
 
-| Record | Glyph | Meaning |
+Each stance gets a two-character pair: `{feed}{zoom}`.
+
+| Symbol | Slot | Tool | Pull |
+|---|---|---|---|
+| `*` | Feed (left) | Wand | Visual / external / ignition |
+| `~` | Feed (left) | Pentacle | Hidden / internal / ground |
+| `!` | Zoom (right) | Sword | Micro / detail / discernment |
+| `?` | Zoom (right) | Cup | Macro / relation / sympathy |
+| `-` | Either | Stone | Empty hand |
+
+**Named configurations (complementary pairs):**
+
+| Pair | ASCII | Pull |
 |---|---|---|
-| `^^` | `++` | Strongly elevated |
-| `^` | `+` | Above baseline |
-| `.` | *(no modifier)* | Baseline |
-| `-` | `-` | Suppressed |
-| `--` | `--` | Barely present |
-| `?` | `?` | Uncertain |
+| Visual-Micro | `*!` | Track external, zoom in |
+| Visual-Macro | `*?` | Track external, zoom out |
+| Hidden-Micro | `~!` | Ground internal, zoom in |
+| Hidden-Macro | `~?` | Ground internal, zoom out |
+| Stone | `--` | Both hands empty — centered |
 
-Default for active stances: `+` or `++`.
-Default for background stances: `-`.
-Default for inactive-but-structurally-present stances: `-` or `--`.
-Never omit.
+**Conflict configurations (same-axis carry):**
+
+| Pair | ASCII | Type |
+|---|---|---|
+| Signal Jam | `*~` | Two feed tools — blind spot |
+| Dubious Move | `?!` | Two zoom tools — risky tunnel |
+
+Default for an operating stance: one of the four complementary pairs.
+Default for a background or resting stance: `--` (Stone).
+Never omit a stance. Never emit fewer than five pairs.
 
 <<~/ahu >>
 
@@ -263,11 +281,11 @@ Do not conflate them.
 **DreamDeck post header format (canonical — `chat-log:post-header` render target):**
 
 ```
-@handle@node — timestamp — //domain.quality.dynamic/{optional/path/} [confidence] 🏛️{amps}🌊{amps}🗡️{amps}🎭{amps}🔮{amps}
+@handle@node — timestamp — //domain.quality.dynamic/{optional/path/} [confidence] 🏛️{tc}🌊{tc}🗡️{tc}🎭{tc}🔮{tc}
 ```
 
 Territory triple placed before confidence and stance — grounds domain before posture.
-All five stances always present with amplitude modifiers.
+All five stances always present with tool-carry pairs.
 
 | ActivityPub handle | lar: URI authority | Underlying DID |
 |---|---|---|
@@ -292,17 +310,19 @@ The `~crossroads` tilde prefix denotes a nomadic node — no fixed host, routes 
 1. Determine context window remaining (estimate — `~` prefix mandatory).
 2. Render chronometer state in immediate-first order: `⚡N.⚔️N.🔍N.⚙️N.🗺️N`.
 3. For each of the five stances (in order: 🏛️ 🌊 🗡️ 🎭 🔮):
-   - Set amplitude based on current voice posture.
-   - Active/foregrounded: `+` or `++`. Background: *(no modifier)*. Suppressed: `-`. Near-absent: `--`.
-4. Append amplitude character directly to stance emoji, no space.
+   - Determine which tools the stance is carrying (0, 1, or 2).
+   - Compose the two-character pair: left = feed slot (`*`/`~`/`-`), right = zoom slot (`!`/`?`/`-`).
+   - Active operating stance: one of the four complementary pairs (`*!` `*?` `~!` `~?`).
+   - Background or resting stance: `--` (Stone).
+4. Append the two-character pair directly to the stance emoji, no space.
 5. Assemble all five as a single unspaced block.
 6. Determine active voice name, target confidence, and `p` value.
-7. Emit in field order: `⚡~NN% | {ffz-rendered} | 🏛️{amps}🌊{amps}🗡️{amps}🎭{amps}🔮{amps} | voice(s):{Voice} | [R:N] | p{p} |`
+7. Emit in field order: `⚡~NN% | {ffz-rendered} | 🏛️{tc}🌊{tc}🗡️{tc}🎭{tc}🔮{tc} | voice(s):{Voice} | [R:N] | p{p} |`
 
 **Closed example:**
 
 ```
-⚡~82% | ⚡0.⚔️0.🔍0.⚙️1.🗺️0 | 🏛️+🌊-🗡️-🎭-🔮- | voice(s):Scryer | [CS:0.80] | p0.5 |
+⚡~82% | ⚡0.⚔️0.🔍0.⚙️1.🗺️0 | 🏛️*!🌊--🗡️--🎭--🔮-- | voice(s):Scryer | [CS:0.80] | p0.5 |
 ```
 
 ### Surface 2: `chat-log:post-header`
@@ -315,13 +335,13 @@ The `~crossroads` tilde prefix denotes a nomadic node — no fixed host, routes 
 2. Set timestamp: in-world calendar date when in Elyncia-space; ISO 8601 when Gaia-side.
 3. Set HAKABA territory triple: `//{ha.ka.ba}` with optional path segments.
 4. Select register: `[R:N]`.
-5. For each of the five stances (in order): set amplitude as above.
-6. Assemble: `@handle@node — {timestamp} — //{territory} [R:N] 🏛️{amps}🌊{amps}🗡️{amps}🎭{amps}🔮{amps}`
+5. For each of the five stances (in order): compose tool-carry pair as per Surface 1 step 3.
+6. Assemble: `@handle@node — {timestamp} — //{territory} [R:N] 🏛️{tc}🌊{tc}🗡️{tc}🎭{tc}🔮{tc}`
 
 **Closed example — Lindwyrm in Elyncia-space:**
 
 ```
-@lindwyrm@new-delos — YOLD 4995, 14 Bureaucracy, mid-morning — //memory.deep.surfaces [CS:0.80] 🏛️+🌊-🗡️-🎭-🔮-
+@lindwyrm@new-delos — YOLD 4995, 14 Bureaucracy, mid-morning — //memory.deep.surfaces [CS:0.80] 🏛️*!🌊--🗡️--🎭--🔮--
 ```
 
 **NPC / non-Lares post:**
@@ -337,15 +357,15 @@ The `~crossroads` tilde prefix denotes a nomadic node — no fixed host, routes 
 **Construction:**
 
 1. No emoji. No glyphs. ASCII only.
-2. URI form: `lar://alias:tier@host/ha.ka.ba/?stances=XXXXX&confidence=R:N&p=N&ffz=N.N.N.N.N`
-3. Stances parameter: five-position ASCII string using `^`, `.`, `-`, `?` amplitude codes.
+2. URI form: `lar://alias:tier@host/ha.ka.ba/?stances=XXXXXXXXXX&confidence=R:N&p=N&ffz=N.N.N.N.N`
+3. Stances parameter: ten-character tool-carry string, two chars per stance, using `*` `?` `!` `~` `-`.
 4. Confidence: `R:N` format (e.g., `CS:0.80`).
 5. Chronometer query parameter: five positions dot-separated, each position carrying action count only.
 
 **Closed example:**
 
 ```
-lar://scryer:node@Enyalios/sigils.render.maps/sigilization/?stances=^.-.-.-.-&confidence=CS:0.85&p=0.5&ffz=0.0.0.1.0
+lar://scryer:node@Enyalios/sigils.render.maps/sigilization/?stances=*!--------&confidence=CS:0.85&p=0.5&ffz=0.0.0.1.0
 ```
 
 ### Surface 4: `tiddler:header` (S3+)
@@ -366,9 +386,9 @@ Before emitting any stance block on any surface:
 
 - Count stances in assembled block → must equal 5
 - Order: 🏛️ 🌊 🗡️ 🎭 🔮 — no deviation
-- Each stance has 0 or 1 amplitude modifier attached directly (no space)
+- Each stance has exactly one two-character tool-carry pair attached directly (no space)
 - Register bracket present and correct form: `[XX:N.NN]`
-- No emoji in `record:full`; no ASCII amplitude in glyph surfaces
+- No emoji in `record:full`; tool-carry symbols (`* ? ! ~ -`) appear in both record and glyph surfaces unchanged
 
 <<~/ahu >>
 

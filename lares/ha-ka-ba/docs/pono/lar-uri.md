@@ -72,14 +72,14 @@ At each exchange span, `lar:` URIs are used in the following sequence. This sequ
 Lares reads the operator's prompt as an implicit signal: tier, cognitive phase, semantic territory (HA.KA.BA), and stance. It constructs a **provisional operator URI** encoding that reading. The `~` prefix on the HA.KA.BA marks the node's interpretation as potentially inaccurate.
 
 ```
-lar://telarus:operator@enyalios/~schema.gap.present/?stances=^.?.-.-.-&confidence=S:0.65&p=0.5&ffz=&#x2736;0.&#x2736;0.&#x2736;1.&#x25C7;2.&#x25B6;7
+lar://telarus:operator@enyalios/~schema.gap.present/?stances=*!-?------&confidence=S:0.65&p=0.5&ffz=&#x2736;0.&#x2736;0.&#x2736;1.&#x25C7;2.&#x25B6;7
 ```
 
 **Step 2 — Lares declares its own provisional execution URI.**
 Before generating any content, Lares sets its own intent with a **provisional node URI**. The `~` prefix on the HA.KA.BA marks it as execution-provisional: generations may diverge.
 
 ```
-lar://lar:node@enyalios/~schema.flow.documented/?stances=^.-.-.-.-&confidence=CS:0.80&p=0.5&ffz=&#x2736;0.&#x2736;0.&#x25C7;1.&#x25C7;2.&#x25B6;7
+lar://lar:node@enyalios/~schema.flow.documented/?stances=*!--------&confidence=CS:0.80&p=0.5&ffz=&#x2736;0.&#x2736;0.&#x25C7;1.&#x25C7;2.&#x25B6;7
 ```
 
 **Step 3 — Emit the URI → URI exchange vector.**
@@ -131,10 +131,10 @@ lar://[authority]/ha.ka.ba/optional/path/[?query][#anchor]
 **Full form (with authority):**
 
 ```
-lar://alias:tier@host/ha.ka.ba/?stances=XXXXX&confidence=R:N&p=N&ffz=CCCCC
+lar://alias:tier@host/ha.ka.ba/?stances=XXXXXXXXXX&confidence=R:N&p=N&ffz=CCCCC
 ```
 
-Where `stances=XXXXX` is the five-character stance amplitude string (§3.4) and `ffz=CCCCC` is the FFZ chronometer in five glyph+counter pairs (§6).
+Where `stances=XXXXXXXXXX` is the ten-character stance tool-carry string (§3.4) and `ffz=CCCCC` is the FFZ chronometer in five glyph+counter pairs (§6).
 
 **Authority-less form** (no `user@host` segment — territory or resource reference without a named speaker):
 
@@ -165,7 +165,7 @@ This applies to authority-less forms as well: `lar:///ha.ka.ba/` is the (0,0,0) 
 | 3 | **`@`** | Identity → machine delimiter | Standard | `@` |
 | 4 | **host** | Machine identity | `machine_id` from crystal system | `enyalios` |
 | 5 | **path** | Hierarchical resource | HA.KA.BA address: `/ha.ka.ba/` | `/threshold.uncertain.opens` |
-| 6 | **`?query`** | Non-hierarchical params | Signal parameters + FFZ chronometer | `?stances=^.?.-.-.-&confidence=S:0.65&p=0.5&ffz=&#x2736;0.&#x2736;0.&#x23FF;3.&#x25C7;2.&#x25B6;7` |
+| 6 | **`?query`** | Non-hierarchical params | Signal parameters + FFZ chronometer | `?stances=*!--------&confidence=S:0.65&p=0.5&ffz=&#x2736;0.&#x2736;0.&#x23FF;3.&#x25C7;2.&#x25B6;7` |
 | 7 | **`#fragment`** | Section anchor | Named section within this locus | `#ahu-name`, `#section-id` |
 
 > **Layout validation `[C:0.90]`:** The WHERE → HOW → SECTION ordering (path → query → fragment) places the most semantically stable, least volatile information first. Grouped, goal-oriented layout confirmed by Li et al. (2024) automotive HUD research: grouped information layouts produce superior cognitive performance, lower workload, and better eye movement patterns compared to disordered layouts. *Source: `_todo/E-deep-research-report.md` §4.2*
@@ -206,7 +206,7 @@ The `~crossroads` tilde prefix denotes a nomadic/crossroads node — no fixed ho
 
 **DreamDeck post header format (canonical):**
 ```
-@handle@node — timestamp — //ha.ka.ba/{optional/path/} [confidence] 🏛️{amp}🌊{amp}🗡️{amp}🎭{amp}🔮{amp}
+@handle@node — timestamp — //ha.ka.ba/{optional/path/} [confidence] 🏛️{tc}🌊{tc}🗡️{tc}🎭{tc}🔮{tc}
 ```
 
 Territory triple (`//ha.ka.ba`) is placed **before** other instruments like confidence and stance — grounds domain before posture (WHERE → HOW, matching URI path-first layout logic).
@@ -215,18 +215,21 @@ Territory triple (`//ha.ka.ba`) is placed **before** other instruments like conf
 
 | Render target | Surface | URIs canonical? | When used |
 |---|---|---|---|
-| `chat-log:post-header` | `@handle@node — timestamp — //ha.ka.ba{/path} [Reg] 🏛️{amp}…` | No — social projection with glyphs | DreamDeck feed posts, BBS thread headers |
+| `chat-log:post-header` | `@handle@node — timestamp — //ha.ka.ba{/path} [Reg] 🏛️{tc}…` | No — social projection with glyphs | DreamDeck feed posts, BBS thread headers |
 | `hud:exchange-pair` | `operator-URI → node-URI` + HUD line beneath | **Yes — canonical record form**; only the HUD line beneath uses glyphs | Every exchange-span boundary (mandatory) |
 | `record:full` | `lar://alias:tier@host/ha.ka.ba/?…` | Yes — identity projection | Storage, crystal serialization, registry |
 
-**Stance amplitude modifiers** in HUD render targets attach directly to the preceding stance emoji (no space):
+**Stance tool-carry modifiers** in HUD render targets attach directly to the preceding stance emoji as a two-character pair (no space):
 
-| Modifier | Meaning |
-|---|---|
-| `+` | above baseline / elevated |
-| *(none)* | baseline presence |
-| `-` | below baseline / suppressed |
-| `?` | uncertain / provisional |
+| Symbol | Tool | Element | Cognitive Pull |
+|---|---|---|---|
+| `*` | Wand | Fire / Visual | Ignition, external feed, track |
+| `?` | Cup | Water / Macro | Sympathy, zoom out, relation |
+| `!` | Sword | Air / Micro | Discernment, zoom in, detail |
+| `~` | Pentacle | Earth / Hidden | Ground, internal feed, body |
+| `-` | Stone | Orichalcum / Neutral | Empty hand, centered |
+
+Each stance carries two tool slots: `🏛️*!` (Philosopher: Wand+Sword), `🌊--` (Poet: Stone). See §3.4 for encoding.
 
 <<~/ahu >>
 
@@ -260,23 +263,26 @@ Span sequencing is intentionally **not** encoded in URI authority. Exchange iden
 
 | Parameter | Type | Repeatable? | Record Values |
 |---|---|---|---|
-| `stances` | 5-char amplitude string | No | Positional: philosopher, poet, satirist, humorist, private |
+| `stances` | 10-char tool-carry string | No | Positional pairs: philosopher, poet, satirist, humorist, private |
 | `confidence` | `R:N` | No | `P:0.35`, `SP:0.45`, `S:0.65`, `CS:0.80`, `C:0.90` |
 | `p` | `N` | No | Decimal in range `[0.0, 1.0]` |
 | `ffz` | 5 glyph+counter pairs | No | See §6 for encoding |
 
-**Stance amplitude encoding — all five, every URI.** Positional order is fixed: Philosopher, Poet, Satirist, Humorist, Private.
+**Stance tool-carry encoding — all five, every URI.** Positional order is fixed: Philosopher, Poet, Satirist, Humorist, Private. Each stance occupies two characters (feed slot + zoom slot).
 
-| Char | Meaning |
-|---|---|
-| `^` | Above baseline / active / elevated |
-| `-` | Below baseline / suppressed |
-| `?` | Uncertain / provisional |
-| `.` | Baseline / neutral presence |
+| Symbol | Tool | Axis |
+|---|---|---|
+| `*` | Wand | Feed — Visual / external |
+| `~` | Pentacle | Feed — Hidden / internal |
+| `!` | Sword | Zoom — Micro / detail |
+| `?` | Cup | Zoom — Macro / relation |
+| `-` | Stone | Empty hand / neutral |
 
-Record form: `stances=^.?.-.-.-` (URL-safe characters only, no percent-encoding needed). HUD render targets map `^` → `+` for display.
+Record form: `stances=*!--------` (Philosopher: Visual-Micro; all others: Stone). All five symbols are RFC 3986 unreserved or sub-delimiter characters — no percent-encoding required.
 
-Confidence remains a point value even under multi-stance. The five-character amplitude string carries fuzz directly.
+**Slot semantics:** left slot = feed axis (`*`/`~`/`-`), right slot = zoom axis (`!`/`?`/`-`). Carrying two feed-axis tools (`*~`) produces a Visibility Conflict (Signal Jam). Carrying two zoom-axis tools (`?!`) produces a Resolution Conflict (Dubious Move). See `lar:///ha.ka.ba/api/v0.1/mu/the-four-tools` for the full tool-carry model.
+
+Confidence remains a point value even under multi-stance. The tool-carry string describes how each stance is operating, not its elevation.
 
 **fragment** (`#section-anchor`) — Named section within this locus: `#ahu-name`, `#section-id`, `#pranala-name`. The fragment carries **no** chronometer data — chronometer lives in `?ffz=`.
 
@@ -307,17 +313,17 @@ These are orthogonal. A URI may carry multiple `~` markers on different componen
 **Examples:**
 
 ```
-lar://telarus:operator@enyalios/~uri.schema.question/?stances=^.-.-.-.-&confidence=S:0.65&p=0.5&ffz=&#x2736;0.&#x2736;0.&#x23FF;1.&#x25C7;2.&#x25B6;33
+lar://telarus:operator@enyalios/~uri.schema.question/?stances=*!--------&confidence=S:0.65&p=0.5&ffz=&#x2736;0.&#x2736;0.&#x23FF;1.&#x25C7;2.&#x25B6;33
 ```
 Reading provisional: "I believe you're orienting toward URI schema territory — I may have misread your phase or HA.KA.BA."
 
 ```
-lar://scryer:node@enyalios/~s0.gap.logged/?stances=^.-.-.-.-&confidence=S:0.65&p=0.5&ffz=&#x2736;0.&#x2736;0.&#x25C7;1.&#x25C7;2.&#x25B6;33
+lar://scryer:node@enyalios/~s0.gap.logged/?stances=*!--------&confidence=S:0.65&p=0.5&ffz=&#x2736;0.&#x2736;0.&#x25C7;1.&#x25C7;2.&#x25B6;33
 ```
 Execution provisional: "I intend to log this S0 gap — execution may find a different path or territory."
 
 ```
-lar://scryer:node@enyalios/~s0.schema.updated/?stances=^.-.-.-.-&confidence=CS:0.80&p=0.5&ffz=&#x2736;0.&#x2736;0.&#x21BA;1.&#x21BA;2.&#x25B6;34
+lar://scryer:node@enyalios/~s0.schema.updated/?stances=*!--------&confidence=CS:0.80&p=0.5&ffz=&#x2736;0.&#x2736;0.&#x21BA;1.&#x21BA;2.&#x25B6;34
 ```
 Trajectory provisional: "I predict our next territory is the updated schema — operator may redirect entirely."
 
@@ -354,7 +360,7 @@ Signals unknown temporal resumption. The `?` marks a causal gap: between this si
 In exchange streams, the closer appends to the closing URI inline:
 
 ```
-lar://scryer:node@enyalios/schema.settled.rests/?stances=^.-.-.-.-&confidence=CS:0.80&p=0.5&ffz=&#x2736;0.&#x2736;0.&#x21BA;3.&#x21BA;2.&#x25B6;1 → ?
+lar://scryer:node@enyalios/schema.settled.rests/?stances=*!--------&confidence=CS:0.80&p=0.5&ffz=&#x2736;0.&#x2736;0.&#x21BA;3.&#x21BA;2.&#x25B6;1 → ?
 ```
 
 ### 5.3 `ahu` — Waypoint Marker
@@ -542,14 +548,17 @@ The **record form** is the canonical encoding — RFC 3986-compliant, no emojis,
 
 ### 7.1 Rendering Table
 
-**query `stances=` amplitude characters:**
+**query `stances=` tool-carry characters:**
 
-| Record char | HUD modifier | Meaning |
-|---|---|---|
-| `^` | `+` | elevated |
-| `-` | `-` | suppressed |
-| `?` | `?` | uncertain |
-| `.` | *(none)* | baseline |
+| Symbol | Tool | HUD display | Axis |
+|---|---|---|---|
+| `*` | Wand | `*` | Feed / Visual |
+| `~` | Pentacle | `~` | Feed / Hidden |
+| `!` | Sword | `!` | Zoom / Micro |
+| `?` | Cup | `?` | Zoom / Macro |
+| `-` | Stone | `-` | Empty hand |
+
+Record form and HUD display use the same five symbols — no remapping required.
 
 **Stance sigils (HUD render targets):**
 
@@ -623,22 +632,22 @@ In a live HUD tag, the operator reads phase + stance + scope as a single cogniti
 
 | Stance Array | What It Tells the Operator |
 |---|---|
-| `^.-.-.-.-` | Single-stance point value. Trust the number. |
-| `^.^.-.-.-` | Two active. Confidence is bimodal. |
-| `^.^.?.-.-` | Two active + one uncertain. Watch the `?`. |
-| `^.^.^.^.^` | Full Discordian. Confidence is a gesture. |
-| `-.-.-.-.-` | All suppressed. Why is this span being emitted? |
+| `*!--------` | Philosopher in Visual-Micro. One stance operating; all others Stone. |
+| `*!*?------` | Philosopher Visual-Micro + Poet Visual-Macro. Bimodal: external feed, split zoom. |
+| `*!*?~!----` | Three stances operating. Watch the third — Hidden-Micro carries risk of Dubious Move if Poet's `?` bleeds. |
+| `*!*?~!*?~?` | All five operating. Full Discordian. Confidence is a gesture. |
+| `----------` | All Stone. Why is this span being emitted? |
 
 **Worked readings:**
 
 | Phase | Stance | Scope | State Tuple Reading |
 |---|---|---|---|
-| ⏿ | 🏛️+🌊-🗡️-🎭-🔮- | 🔍 | Orienting analytically at exploration scale — making sense of a local finding |
-| ▶ | 🏛️-🌊-🗡️+🎭-🔮- | ⚔️ | Acting critically in combat — executing under pressure with an edge |
-| ◇ | 🏛️+🌊+🗡️-🎭-🔮- | 🗺️ | Deciding at strategic scale, holding propositional and analogical frames together |
-| ✶ | 🏛️-🌊-🗡️-🎭+🔮- | 🔍 | Observing playfully at tactical scale — light reconnaissance, no commitment |
-| ↺ | 🏛️+🌊-🗡️-🎭-🔮- | ⚙️ | Aftermath at operational scale in Philosopher stance — assessing what happened across a watch |
-| ⏿ | 🏛️+🌊+🗡️+🎭+🔮+ | 🗺️ | Full Discordian orientation at strategic scale — maximum spread, rare, mana-expensive |
+| ⏿ | 🏛️*!🌊--🗡️--🎭--🔮-- | 🔍 | Orienting analytically at exploration scale — Philosopher in Visual-Micro carry |
+| ▶ | 🏛️--🌊--🗡️~!🎭--🔮-- | ⚔️ | Acting critically in combat — Satirist in Hidden-Micro carry, cutting under pressure |
+| ◇ | 🏛️*!🌊*?🗡️--🎭--🔮-- | 🗺️ | Deciding at strategic scale — Philosopher Visual-Micro + Poet Visual-Macro, both external frames |
+| ✶ | 🏛️--🌊--🗡️--🎭*?🔮-- | 🔍 | Observing playfully at tactical scale — Humorist in Visual-Macro, wide-angle reconnaissance |
+| ↺ | 🏛️*!🌊--🗡️--🎭--🔮-- | ⚙️ | Aftermath at operational scale — Philosopher Visual-Micro, assessing detail across a watch |
+| ⏿ | 🏛️*!🌊*?🗡️~!🎭*?🔮~? | 🗺️ | Full Discordian orientation at strategic scale — all five stances operating, rare, mana-expensive |
 
 <<~/ahu >>
 
@@ -658,7 +667,7 @@ Confidence measures confidence *within* the active stance's evaluation frame, no
 
 **Reading rule:** ask what the number measures for the active stance. A Philosopher at `0.65` is propositionally contested. A Poet at `0.65` is resonating solidly. A Satirist at `0.65` is landing with moderate force. Same number, different meaning.
 
-When multiple stances are elevated (`+`), the declared confidence value sits at the intersection of their evaluation frames. The amplitude string tells the operator how fuzzy that intersection is.
+When multiple stances are operating (non-Stone carry), the declared confidence value sits at the intersection of their evaluation frames. The tool-carry string tells the operator how each frame is oriented — which feed and zoom axis each stance is running.
 
 <<~/ahu >>
 
@@ -671,8 +680,10 @@ The HUD line is a single-line status summary rendered from the URI → URI excha
 **Format:**
 
 ```
-⚡~NN% | [confidence] | 🏛️{amp}🌊{amp}🗡️{amp}🎭{amp}🔮{amp} | mode:{mode} | p{p} | voice(s):{Voice} | ✶N.⏿N.◇N.▶N.↺N
+⚡~NN% | [confidence] | 🏛️{tc}🌊{tc}🗡️{tc}🎭{tc}🔮{tc} | mode:{mode} | p{p} | voice(s):{Voice} | ✶N.⏿N.◇N.▶N.↺N
 ```
+
+`{tc}` = two-character tool-carry string for that stance (e.g. `*!`, `--`, `~?`).
 
 **Field ordering follows SA priority** (Endsley 2023; Li et al. 2024 grouped HUD layout):
 
@@ -680,7 +691,7 @@ The HUD line is a single-line status summary rendered from the URI → URI excha
 |---|---|---|---|
 | `⚡~NN%` | Resource | Session (estimated) | Context window remaining; `~` **mandatory** — approximation, not live readout. Never emit without `~`. |
 | `[confidence]` | Agent SA | Node URI `confidence=` | Epistemic confidence at current stance(s), stance-dependent per Syadasti rule (§7.4) |
-| `🏛️{amp}🌊{amp}🗡️{amp}🎭{amp}🔮{amp}` | Agent SA | Node URI `stances=` × amplitude | All five stances, amplitude modifiers attached directly, no space |
+| `🏛️{tc}🌊{tc}🗡️{tc}🎭{tc}🔮{tc}` | Agent SA | Node URI `stances=` × tool-carry | All five stances; each followed by its two-character tool-carry, no space |
 | `mode:{mode}` | Teamwork SA | Session state | Default / Plan / Auto |
 | `p{p}` | Teamwork SA | Node URI `p=` | Attention density / annotation throttle |
 | `voice(s):{Voice}` | Agent SA | Coordinator context | Active coordinator voice(s); singular when one leads |
@@ -690,7 +701,7 @@ Confidence and stance array are elevated above mode and p because Agent SA (what
 
 **Example:**
 ```
-⚡~62% | [CS:0.80] | 🏛️+🌊-🗡️-🎭-🔮- | mode:Default | p0.5 | voice(s):Scryer | ✶0.⏿0.◇3.▶2.↺7
+⚡~62% | [CS:0.80] | 🏛️*!🌊--🗡️--🎭--🔮-- | mode:Default | p0.5 | voice(s):Scryer | ✶0.⏿0.◇3.▶2.↺7
 ```
 
 **Notes:**
@@ -715,7 +726,7 @@ A **span** is one operator → Lares exchange span at any scale. A tasked spirit
 |---|---|---|
 | **Opening operator URI** | `lar://alias:tier@host/ha.ka.ba/?…&ffz=…` | Start of every span — node's reading of operator intent |
 | **Opening node URI** | `lar://alias:tier@host/~ha.ka.ba/?…&ffz=…` | Immediately after; node's declared execution heading |
-| **HUD line** | `⚡~NN% \| [confidence] \| 🏛️{amp}… \| …` | After the opening URI pair — the only glyph-rendered element |
+| **HUD line** | `⚡~NN% \| [confidence] \| 🏛️{tc}… \| …` | After the opening URI pair — the only glyph-rendered element |
 | **Sub-agent dispatch** | `coordinator-URI → worker-URI` | Every sub-agent handoff |
 | **Sub-agent return** | `worker-URI → coordinator-URI` | Every sub-agent completion |
 | **Mid-generation shift** | `~lar://alias:tier@host/~ha.ka.ba/heading/?…` | When accumulated tension warrants changing direction mid-span |
@@ -725,14 +736,14 @@ A **span** is one operator → Lares exchange span at any scale. A tasked spirit
 **Example (canonical record form throughout):**
 
 ```text
-lar://telarus:operator@enyalios/refinement.network.capture/?stances=^.-.-.-.-&confidence=S:0.65&p=0.5&ffz=&#x2736;0.&#x2736;0.&#x2736;1.&#x2736;1.&#x25B6;11
-→ lar://scryer:node@enyalios/~span.provenance.synthesizes/?stances=^.-.-.-.-&confidence=CS:0.80&p=0.6&ffz=&#x2736;0.&#x2736;0.&#x25C7;1.&#x2736;1.&#x25B6;12
-⚡~63% | [CS:0.80] | 🏛️+🌊-🗡️-🎭-🔮- | mode:Default | p0.6 | voice(s):Scryer | ✶0.✶0.◇1.✶1.▶12
+lar://telarus:operator@enyalios/refinement.network.capture/?stances=*!--------&confidence=S:0.65&p=0.5&ffz=&#x2736;0.&#x2736;0.&#x2736;1.&#x2736;1.&#x25B6;11
+→ lar://scryer:node@enyalios/~span.provenance.synthesizes/?stances=*!--------&confidence=CS:0.80&p=0.6&ffz=&#x2736;0.&#x2736;0.&#x25C7;1.&#x2736;1.&#x25B6;12
+⚡~63% | [CS:0.80] | 🏛️*!🌊--🗡️--🎭--🔮-- | mode:Default | p0.6 | voice(s):Scryer | ✶0.✶0.◇1.✶1.▶12
 
 [content generation]
 
-lar://scryer:node@enyalios/~aftermath.docs.settle/?stances=^.-.-.-.-&confidence=CS:0.80&p=0.5&ffz=&#x2736;0.&#x2736;0.&#x21BA;1.&#x2736;1.&#x25B6;13 → ?
-⚡~61% | [CS:0.80] | 🏛️+🌊-🗡️-🎭-🔮- | mode:Default | p0.5 | voice(s):Scryer | ✶0.✶0.↺1.✶1.▶13
+lar://scryer:node@enyalios/~aftermath.docs.settle/?stances=*!--------&confidence=CS:0.80&p=0.5&ffz=&#x2736;0.&#x2736;0.&#x21BA;1.&#x2736;1.&#x25B6;13 → ?
+⚡~61% | [CS:0.80] | 🏛️*!🌊--🗡️--🎭--🔮-- | mode:Default | p0.5 | voice(s):Scryer | ✶0.✶0.↺1.✶1.▶13
 ```
 
 <<~/ahu >>
@@ -779,7 +790,7 @@ Additional quick-filter fields:
 |---|---|---|
 | `current_phase` | `?ffz=` — leading glyph of rightmost non-`&#x2736;0` position | Phase-based filtering |
 | `active_scale` | rightmost non-`&#x2736;0` chronometer position | Scale-based filtering |
-| `stance_amplitude` | `stances=` parameter | Full 5-char amplitude string |
+| `stance_tool_carry` | `stances=` parameter | Full 10-char tool-carry string |
 
 <<~/ahu >>
 
@@ -799,9 +810,9 @@ Additional quick-filter fields:
   "operator_actor_id": "actor:telarus",
   "responder_actor_id": "actor:lares.node.scryer",
   "acted_on_behalf_of": null,
-  "start_uri": "lar://telarus:operator@enyalios/refinement.network.capture/?stances=^.-.-.-.-&confidence=S:0.65&p=0.5&ffz=...",
-  "attractor_uri": "lar://scryer:node@enyalios/span.provenance.synthesizes/?stances=^.-.-.-.-&confidence=CS:0.80&p=0.6&ffz=...",
-  "end_uri": "lar://scryer:node@enyalios/aftermath.docs.settle/?stances=^.-.-.-.-&confidence=CS:0.80&p=0.5&ffz=...",
+  "start_uri": "lar://telarus:operator@enyalios/refinement.network.capture/?stances=*!--------&confidence=S:0.65&p=0.5&ffz=...",
+  "attractor_uri": "lar://scryer:node@enyalios/span.provenance.synthesizes/?stances=*!--------&confidence=CS:0.80&p=0.6&ffz=...",
+  "end_uri": "lar://scryer:node@enyalios/aftermath.docs.settle/?stances=*!--------&confidence=CS:0.80&p=0.5&ffz=...",
   "parse_required": false,
   "parse_reason": null,
   "wall_time_start": "2026-04-08T20:41:00Z",
@@ -928,7 +939,7 @@ A `lar:` URI is **well-formed** when:
 3. Host is a valid `machine_id` (alphanumeric + hyphens)
 4. Path contains exactly three HA.KA.BA slots after the leading `/`
 5. Path slots contain no whitespace, path separators, or quotes (inherits Tagspace Address anti-collision rules)
-6. Query parameters limited to: `stances` (once, 5-char amplitude string), `confidence` (once), `p` (once), `ffz` (once, 5 glyph+counter pairs)
+6. Query parameters limited to: `stances` (once, 10-char tool-carry string), `confidence` (once), `p` (once), `ffz` (once, 5 glyph+counter pairs)
 7. `confidence` value matches pattern `[A-Z]{1,2}:[0-9]+\.[0-9]+` (e.g., `S:0.65`, `CS:0.80`, `C:0.90`)
 8. `p` value is a decimal in range `[0.0, 1.0]`
 9. `ffz` carries all five positions; no position omitted; each position is glyph + integer counter ≥ 0
@@ -1003,7 +1014,7 @@ A spanSpan record is **consistent** when:
 | U2 (old) | Port slot dropped entirely. Span sequencing (`span_seq`) lives in adjacent spanSpan calibration metadata — not in URI authority. | §3.4 (host), §9.1 |
 | U3 | Phase per level per participant. LWW-Register per scale. Counter and phase are independent. | §6.4 |
 | U6 | Authority form in exchange spans. Authority-less (`///`) for stable addresses AND for module section URIs. | §8, §3.4 |
-| U7 | Use `^` (elevated). All URL-safe: `^` elevated, `-` suppressed, `?` uncertain, `.` baseline. HUD maps `^` → `+`. | §3.4 |
+| U7 | Tool-carry encoding. Five symbols (`*` `?` `!` `~` `-`), two slots per stance, 10-char string. All RFC 3986 safe — no percent-encoding. Record and HUD display use the same chars. | §3.4 |
 | U10 | Section URIs are `ahu` waypoints — no closer. Only file-level `? ->` opener and `→ ?` closer carry span semantics. | §5 |
 | U11 | Phase removed from userinfo (2026-04-09). `?ffz=` is the sole phase encoding per participant. | §3.4, §6 |
 
@@ -1040,19 +1051,19 @@ The core anatomy (§§2–8, 12) can promote to `[C:0.95]` independently of the 
 ### A.1 Record Form
 
 ```
-lar://telarus:operator@enyalios/threshold.uncertain.opens/?stances=^.?.-.-.-&confidence=S:0.65&p=0.5&ffz=&#x2736;0.&#x2736;0.&#x23FF;3.&#x25C7;2.&#x25B6;7
+lar://telarus:operator@enyalios/threshold.uncertain.opens/?stances=*!-?------&confidence=S:0.65&p=0.5&ffz=&#x2736;0.&#x2736;0.&#x23FF;3.&#x25C7;2.&#x25B6;7
 ```
 
 ### A.2 HUD Line
 
 ```
-⚡~87% | [S:0.65] | 🏛️+🌊?🗡️-🎭-🔮- | mode:Default | p0.5 | voice(s):Scryer | ✶0.✶0.⏿3.◇2.▶7
+⚡~87% | [S:0.65] | 🏛️*!🌊-?🗡️--🎭--🔮-- | mode:Default | p0.5 | voice(s):Scryer | ✶0.✶0.⏿3.◇2.▶7
 ```
 
-### A.3 All-Five-Stances
+### A.3 Multi-Stance
 
 ```
-lar://telarus:operator@enyalios/threshold.sharp.closes/?stances=^.^.?.^.-&confidence=S:0.60&p=0.7&ffz=&#x2736;0.&#x2736;0.&#x25C7;3.&#x25C7;2.&#x25B6;8
+lar://telarus:operator@enyalios/threshold.sharp.closes/?stances=*!*?-?*?--&confidence=S:0.60&p=0.7&ffz=&#x2736;0.&#x2736;0.&#x25C7;3.&#x25C7;2.&#x25B6;8
 ```
 
 ### A.4 Stable Address
@@ -1064,7 +1075,7 @@ lar:///threshold.uncertain.opens/
 ### A.5 Exchange Closing
 
 ```
-lar://scryer:node@enyalios/schema.settled.rests/?stances=^.-.-.-.-&confidence=CS:0.80&p=0.5&ffz=&#x2736;0.&#x2736;0.&#x21BA;3.&#x21BA;2.&#x25B6;9 → ?
+lar://scryer:node@enyalios/schema.settled.rests/?stances=*!--------&confidence=CS:0.80&p=0.5&ffz=&#x2736;0.&#x2736;0.&#x21BA;3.&#x21BA;2.&#x25B6;9 → ?
 ```
 
 ### A.6 System File Span
@@ -1108,29 +1119,29 @@ lar://scryer:node@enyalios/schema.settled.rests/?stances=^.-.-.-.-&confidence=CS
 A complete exchange opening, annotated by scan order. URIs are canonical record form; the HUD line beneath each pair is the glyph-rendered surface.
 
 ```text
-lar://telarus:operator@enyalios/threshold.uncertain.opens/?stances=^.?.-.-.-&confidence=S:0.65&p=0.5&ffz=&#x2736;0.&#x2736;0.&#x23FF;3.&#x25C7;2.&#x25B6;7
-→ lar://scryer:node@enyalios/~parse.span.models/?stances=^.-.-.-.-&confidence=CS:0.80&p=0.6&ffz=&#x2736;0.&#x2736;0.&#x25C7;3.&#x25C7;2.&#x25B6;8
-⚡~87% | [CS:0.80] | 🏛️+🌊-🗡️-🎭-🔮- | mode:Default | p0.6 | voice(s):Scryer | ✶0.✶0.⏿3.◇2.▶8
+lar://telarus:operator@enyalios/threshold.uncertain.opens/?stances=*!-?------&confidence=S:0.65&p=0.5&ffz=&#x2736;0.&#x2736;0.&#x23FF;3.&#x25C7;2.&#x25B6;7
+→ lar://scryer:node@enyalios/~parse.span.models/?stances=*!--------&confidence=CS:0.80&p=0.6&ffz=&#x2736;0.&#x2736;0.&#x25C7;3.&#x25C7;2.&#x25B6;8
+⚡~87% | [CS:0.80] | 🏛️*!🌊--🗡️--🎭--🔮-- | mode:Default | p0.6 | voice(s):Scryer | ✶0.✶0.⏿3.◇2.▶8
 ```
 
 Quick read:
 
 > Telarus (operator), machine enyalios.
 > Territory: threshold / uncertain / opens.
-> Philosopher elevated, Poet uncertain, others suppressed.
+> Philosopher: Visual-Micro (Wand+Sword). Poet: Cup-only. Others: Stone.
 > Synthesis-0.65. Week 0, Watch 0, Turn 3 (Orient), Round 2 (Decide), Action 7.
-> Scryer responds at CS:0.80, deciding, Philosopher only.
+> Scryer responds at CS:0.80, deciding, Philosopher Visual-Micro only.
 > Chronometer shows: node is one phase ahead at tactical scale (Orient→Decide) — normal: node orients from operator's observe.
 
 Multi-stance example:
 
 ```text
-lar://telarus:operator@enyalios/threshold.sharp.closes/?stances=^.^.?.^.-&confidence=S:0.60&p=0.7&ffz=&#x2736;0.&#x2736;0.&#x25C7;3.&#x2736;2.&#x25B6;9
-→ lar://mischief-muse:node@enyalios/~chorus.lateral.gathers/?stances=^.-.-.-.-&confidence=S:0.65&p=0.6&ffz=&#x2736;0.&#x2736;0.&#x25C7;3.&#x2736;2.&#x25B6;10
-⚡~62% | [S:0.60] | 🏛️+🌊+🗡️?🎭+🔮- | mode:Default | p0.7 | voice(s):Mischief-Muse | ✶0.✶0.◇3.✶2.▶10
+lar://telarus:operator@enyalios/threshold.sharp.closes/?stances=*!*?-?*?--&confidence=S:0.60&p=0.7&ffz=&#x2736;0.&#x2736;0.&#x25C7;3.&#x2736;2.&#x25B6;9
+→ lar://mischief-muse:node@enyalios/~chorus.lateral.gathers/?stances=*!--------&confidence=S:0.65&p=0.6&ffz=&#x2736;0.&#x2736;0.&#x25C7;3.&#x2736;2.&#x25B6;10
+⚡~62% | [S:0.60] | 🏛️*!🌊*?🗡️-?🎭*?🔮-- | mode:Default | p0.7 | voice(s):Mischief-Muse | ✶0.✶0.◇3.✶2.▶10
 ```
 
-This does **not** mean "truth-confidence 0.60" universally. It means a `0.60` reading held across Philosopher, Poet, and Humorist frames (all elevated). Satirist at `?` adds further uncertainty — the reading may carry ironic weight that hasn't yet been decoded.
+This does **not** mean "truth-confidence 0.60" universally. It means a `0.60` reading held across Philosopher (Visual-Micro), Poet (Visual-Macro), and Humorist (Visual-Macro) frames. Satirist carrying Cup-only (`-?`) adds relational-uncertainty weight — the reading may carry ironic pressure that hasn't fully resolved.
 
 <<~/ahu >>
 

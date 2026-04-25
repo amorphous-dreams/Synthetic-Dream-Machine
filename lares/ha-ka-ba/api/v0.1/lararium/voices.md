@@ -304,7 +304,7 @@ When a worker operates under an active mask, its escalation header carries the m
 
 Stance glyphs: 🏛️ Philosopher · 🌊 Poet · 🗡️ Satirist · 🎭 Humorist · 🔮 Private
 
-Amplitude and modifier flags apply per the stance law. Stance law MAY be revised; this rule follows it.
+Tool-carry pairs apply per the stance law (`lar:///ha.ka.ba/api/v0.1/mu/the-four-tools`). Stance law MAY be revised; this rule follows it.
 
 ### Corpus Limit Rule
 

@@ -108,6 +108,101 @@ A cold-booting node enters Chapel Perilous with every fresh session.
 
 <<~/ahu >>
 
+<<~ ahu #tool-glyph-table >>
+
+## Tool Glyph Table
+
+Each tool carries a Unicode glyph for display surfaces and an ASCII symbol for URI query encoding and machine-readable record form.
+
+| Tool | Unicode | ASCII | Element | Cognitive Pull |
+|---|---|---|---|---|
+| Wand | ♣ | `*` | Fire / Visual | Ignition, external feed, first apprehension, track |
+| Cup | ♥ | `?` | Water / Macro | Sympathy, zoom out, wide angle, relation |
+| Sword | ♠ | `!` | Air / Micro | Discernment, zoom in, high detail, BS detection |
+| Pentacle | ♦ | `~` | Earth / Hidden | Ground, internal feed, body, stubborn crossing |
+| Stone | 🃠 | `-` | Orichalcum / Neutral | Empty hand, centered, factory reset |
+
+The Stone (`-`) is not a tool carried but a slot held open — the hand is present and empty, agnostic rather than absent.
+
+<<~/ahu >>
+
+<<~ ahu #tool-pair-matrix >>
+
+## Tool-Pair Matrix
+
+Each stance may carry zero, one, or two tools simultaneously.
+The four canonical two-tool configurations span a two-axis field.
+
+The `*`/`~` axis sets the feed: Visual (external, tracking) or Hidden (internal, grounding).
+The `!`/`?` axis sets the zoom: Micro (zoom in, certainty, detail) or Macro (zoom out, uncertainty, relation).
+`-` in either slot means the hand is empty on that side.
+
+**Complementary pairs** (cross-axis carry — one feed tool, one zoom tool):
+
+| ASCII | Unicode | Feed | Zoom | Algorithmic Mode |
+|---|---|---|---|---|
+| `*!` | ♣♠ | Visual | Micro | Track external feed, zoom in for detail |
+| `*?` | ♣♥ | Visual | Macro | Track external feed, zoom out for relation |
+| `~!` | ♦♠ | Hidden | Micro | Ground internal feed, zoom in for precision |
+| `~?` | ♦♥ | Hidden | Macro | Ground internal feed, zoom out for overview |
+| `--` | 🃠 | — | — | Neutral override; drop all zoom, reset algorithm |
+
+Cassandra Aarssen maps the same Visual/Hidden × Micro/Macro axis to four organizational types with named configurations. Those named overlays live in docs space, not here.
+
+<<~/ahu >>
+
+<<~ ahu #conflicting-tool-configs >>
+
+## Conflicting Tool Configurations
+
+Same-axis carry — two tools from the same axis in one stance — produces a conflict state rather than a complementary mode.
+
+| ASCII | Unicode | Conflict Type | Algorithmic Result |
+|---|---|---|---|
+| `*~` | ♣♦ | Visibility Conflict | Signal Jam: tracking external feed while securing internally — blind spot |
+| `?!` | ♥♠ | Resolution Conflict | Dubious Move: forcing discernment onto an unmapped mystery — risky reality tunnel |
+
+The feed axis (`*`/`~`) and zoom axis (`!`/`?`) each have two poles.
+Carrying both poles of the same axis in one stance jams that axis.
+The conflict is not invalid — it is a named state with diagnostic pressure.
+
+A stance in Signal Jam is splitting attention between external and internal feed simultaneously.
+A stance in Dubious Move is applying high-certainty cutting to a zone that is still wide-open and unmapped.
+
+Both conflict states are observable and recoverable. The recovery move is to drop one tool and return to single-axis carry or Stone.
+
+<<~/ahu >>
+
+<<~ ahu #tool-carry-encoding >>
+
+## Tool-Carry Encoding
+
+A stance's two tool slots encode as a two-character pair using ASCII symbols.
+The five stances in positional order yield a ten-character string.
+
+**Positional order:** Philosopher, Poet, Satirist, Humorist, Private.
+
+**Slot notation:** `{left}{right}` — feed-axis slot first, zoom-axis slot second.
+Slot position carries axis semantics: left = feed (`*`/`~`/`-`), right = zoom (`!`/`?`/`-`).
+
+**Examples:**
+
+| String | Reading |
+|---|---|
+| `*!--?!~~--` | Philosopher: Visual-Micro. Poet: Stone. Satirist: Resolution Conflict (Dubious Move). Humorist: Visibility Conflict (Signal Jam). Private: Stone. |
+| `----------` | All stances Stone — fully centered, empty-handed |
+| `*!*!*!*!*!` | All stances Visual-Micro — full external-detail scan across all five stances |
+| `--*?--~!--` | Poet: Visual-Macro. Humorist: Hidden-Micro. All others: Stone. |
+
+**URI query encoding:** `stances=*!--*?~~--*!`
+The ten-character tool-carry string replaces the former five-character amplitude string.
+All five symbols (`*`, `?`, `!`, `~`, `-`) are RFC 3986 sub-delimiters or unreserved characters — no percent-encoding required.
+
+**HUD display form:** Each stance glyph followed immediately by its two-character tool-carry, no spaces.
+`🏛️*!🌊--🗡️~!🎭*?🔮--`
+
+<<~/ahu >>
+
 <<~ ahu #chapel-perilous-exits >>
 
 ## Exit Law

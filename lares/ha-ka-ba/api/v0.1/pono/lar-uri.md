@@ -50,7 +50,7 @@ lar:///path/
 
 **Session form** — full speaker, for exchange spans only:
 ```
-lar://alias:tier@host/ha.ka.ba/path/?stances=XXXXX&confidence=R:N&p=N&ffz=CCCCC
+lar://alias:tier@host/ha.ka.ba/path/?stances=XXXXXXXXXX&confidence=R:N&p=N&ffz=CCCCC
 ```
 
 Session form MUST NOT appear in storage, stable graph addresses, or system resource URI names.
@@ -91,7 +91,7 @@ Query parameters carry all signal — ordered, non-hierarchical:
 
 | Parameter | Type | Rule |
 |---|---|---|
-| `stances` | 5-char amplitude string | Positional: Philosopher, Poet, Satirist, Humorist, Private — all five MUST appear every URI |
+| `stances` | 10-char tool-carry string | Positional pairs (feed+zoom): Philosopher, Poet, Satirist, Humorist, Private — all five stances MUST appear every URI; each occupies two character slots |
 | `confidence` | `R:N` | Register ∈ {P, SP, S, CS, C} with provisional decimal rating |
 | `p` | decimal | Range [0.0, 1.0] |
 | `ffz` | 5 glyph+counter pairs | OODA-HA chronometer — all five positions MUST appear |
