@@ -90,5 +90,5 @@ services:
       - NODE_ENV=test
     command: >
       sh -c "NODE_OPTIONS=--experimental-vm-modules
-             node node_modules/.pnpm/jest@29.7.0_@types+node@22.19.17/node_modules/jest/bin/jest.js
+             pnpm exec jest
              --config packages/lararium-mcp/jest.config.cjs"

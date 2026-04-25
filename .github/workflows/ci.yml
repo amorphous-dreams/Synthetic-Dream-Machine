@@ -122,14 +122,7 @@ jobs:
           name: dist
           path: packages
 
-      - name: Install jest in lararium-mcp
-        run: pnpm --filter @lararium/mcp add -D jest@29 @jest/globals ts-jest @types/node
-
       - name: Run MCP stdio smoke
-        run: |
-          NODE_OPTIONS=--experimental-vm-modules \
-          node node_modules/.pnpm/jest@29.7.0_@types+node@22.19.17/node_modules/jest/bin/jest.js \
-            --config packages/lararium-mcp/jest.config.cjs \
-            --testPathPattern=tests/stdio-smoke
+        run: NODE_OPTIONS=--experimental-vm-modules pnpm exec jest --config jest.config.cjs --testPathPattern=tests/stdio-smoke
         working-directory: packages/lararium-mcp
         timeout-minutes: 2

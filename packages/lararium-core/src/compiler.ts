@@ -93,9 +93,9 @@ function buildSocketMap(graph: MemeGraph, topoUris: string[]): Map<string, strin
 function closureEntry(graph: MemeGraph, uri: string, depth: number, hydrationSocket: string): ClosureEntry {
   const meme = graph.memes.get(uri);
   if (!meme) {
-    return { uri, laresRelPath: null, kind: "unknown", virtual: false, exists: false, role: "", hydrationSocket, implements: [], contentHash: "", depth };
+    return Object.freeze({ uri, laresRelPath: null, kind: "unknown", virtual: false, exists: false, role: "", hydrationSocket, implements: [], contentHash: "", depth });
   }
-  return {
+  return Object.freeze({
     uri,
     laresRelPath: meme.laresRelPath,
     kind: meme.virtual ? "caps-virtual" : meme.laresRelPath?.includes("-") ? "tuple-file" : "caps-file",
@@ -106,7 +106,7 @@ function closureEntry(graph: MemeGraph, uri: string, depth: number, hydrationSoc
     implements: memeImplements(meme),
     contentHash: meme.contentHash,
     depth,
-  };
+  });
 }
 
 function buildInterfaceIndexes(
@@ -212,8 +212,18 @@ export function compileFullBoot(
 }
 
 export function compileBootReceipt(artifact: BootArtifact): BootReceipt {
-  const payload = JSON.stringify(artifact);
-  const sha = createHash("sha256").update(payload, "utf8").digest("hex");
+  // Hash stable content only — exclude compiledAt so two compiles of the same
+  // graph produce an identical receipt hash (determinism invariant).
+  const stablePayload = JSON.stringify({
+    entry: artifact.entry,
+    closure: artifact.closure,
+    memeCount: artifact.memeCount,
+    edgeCount: artifact.edgeCount ?? 0,
+    pranalaEdges: artifact.pranalaEdges ?? [],
+    interfaceIndex: artifact.interfaceIndex,
+    invariantIndex: artifact.invariantIndex,
+  });
+  const sha = createHash("sha256").update(stablePayload, "utf8").digest("hex");
   const v = artifact.validation;
   const modeName = artifact.artifact.replace("boot-", "").replace("-boot", "") || "unknown";
 

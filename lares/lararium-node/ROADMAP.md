@@ -307,7 +307,7 @@ More specifically, the contract that should survive the migration is this:
 | `list_prompts()` / `get_prompt()` | Provides prompt catalog and `messages` payloads; missing args raise; unknown prompt names error | `server.registerPrompt(...)` in `lararium-mcp`; prompt rendering stays read-only and data-backed   |
 | `handle_jsonrpc_message()` / stdio main loop | Newline-delimited JSON-RPC over stdio; `initialize`, `resources/list`, `resources/read`, `tools/list`, `tools/call`, `prompts/list`, `prompts/get`; notifications should not emit responses; stdout must stay clean | `McpServer` + `StdioServerTransport` in `lararium-mcp`; no handwritten JSON-RPC multiplexer unless parity tests prove it is needed     |
 
-A few concrete invariants deserve emphasis because they are migration-sensitive. The current transport is stdio-only and portless; all client launcher configs assume a spawned process, not a listening server. The current runtime is read-only. `notifications/initialized` should not produce a response. Minimal boot currently has a fixture count of 14 reachable memes on the branch test set; that number is not a timeless law, but it is today’s parity fixture. The branch compiler also derives implements bundles from parsed edges rather than just metadata, and it classifies unresolved control edges as errors and relation edges as warnings.       
+A few concrete invariants deserve emphasis because they are migration-sensitive. The current transport is stdio-only and portless; all client launcher configs assume a spawned process, not a listening server. The current runtime is read-only. `notifications/initialized` should not produce a response. Minimal boot currently has a fixture count of 18 reachable memes after the DAG rewire (was 14 pre-rewire); that number is not a timeless law, but it is today’s parity fixture. The branch compiler also derives implements bundles from parsed edges rather than just metadata, and it classifies unresolved control edges as errors and relation edges as warnings.       
 
 There is also a compatibility drift already visible inside the repo: tests and adapter code use protocol version `2025-11-25`, while the smoke script still initializes against `2024-11-05`. That means the migration should explicitly preserve or intentionally drop older transport behavior, and the decision should be made in code and documentation rather than left accidental.
 
@@ -585,6 +585,65 @@ The “do not do yet” list is short but important: do not embed the full Tiddl
 
 <<~/ahu >>
 
+<<~ ahu #dag-rewire-2026-04-25 >>
+
+## DAG Rewire — mu as Invariant Boot Kernel (2026-04-25)
+
+The minimal boot DAG was restructured to reflect best-practice microkernel topology. `mu` is now the invariant boot kernel; `AGENTS` is the threshold router only.
+
+### Before
+
+```
+AGENTS (entry, threshold)
+  ├─owns─→ e-prime, ooda-ha, lar-uri   (preloaded at threshold)
+  ├─owns─→ mu
+  │         └─owns─→ chao, the-four-tools, the-law-of-5s, the-syad-perspectives
+  ├─owns─→ lararium
+  │         ├─owns─→ hud, voices, continuity
+  │         └─owns─→ LARES  (dead-weight — also owned by AGENTS)
+  └─owns─→ LARES
+```
+
+### After
+
+```
+AGENTS (threshold router only)
+  ├─owns─→ mu (invariant boot kernel)
+  │         ├─owns─→ e-prime, ooda-ha, lar-uri   (kernel disciplines)
+  │         ├─owns─→ chao, the-four-tools, the-law-of-5s, the-syad-perspectives
+  │         └─owns─→ lararium (agent mechanics seat)
+  │                   ├─owns─→ hud, voices, continuity
+  │                   └─owns─→ live-session-overwrite, canon-promotion-boundary,
+  │                             tagspace-trust, exchange-vector   (lararium law)
+  └─owns─→ LARES (operator dials — threshold yields directly)
+```
+
+### Rationale
+
+`AGENTS` is a threshold membrane, not an execution owner. Routing and yielding are its only jobs. `mu` is the living practice kernel — it owns every discipline and law meme the agent carries into execution. `lararium` is the agent mechanics seat; the four new pono invariant memes (`live-session-overwrite`, `canon-promotion-boundary`, `tagspace-trust`, `exchange-vector`) are lararium law, not kernel law, so they land under `lararium`. `LARES` stays at the threshold — operator dials are not the kernel's to own.
+
+The dead-weight `lararium → LARES` owns edge was removed. LARES is reached once, cleanly, from AGENTS.
+
+### New Parity Baselines
+
+| Artifact | Old | New |
+|---|---|---|
+| Minimal boot memes | 14 | 18 |
+| Full boot memes | 57 | 58 |
+
+### Four New Invariant Law Memes
+
+| URI | Role |
+|---|---|
+| `lar:///ha.ka.ba/api/v0.1/pono/live-session-overwrite` | Names the green-jello-dinosaur failure mode; a live claim MUST NOT become canon by recency, repetition, or charm |
+| `lar:///ha.ka.ba/api/v0.1/pono/canon-promotion-boundary` | Promotion gate law; crossing from live exchange pressure to hostless canon requires explicit ceremony |
+| `lar:///ha.ka.ba/api/v0.1/pono/tagspace-trust` | Shared `lar:` tagspace MUST NOT imply shared authority; hostless memes outrank hostful exchange records |
+| `lar:///ha.ka.ba/api/v0.1/pono/exchange-vector` | Each substantive exchange turn MUST emit a canonical `lar:` URI vector before content |
+
+All four implement `meme`, `loci`, and `invariant` interfaces. All four appear in the minimal boot closure at depth 3 under lararium.
+
+<<~/ahu >>
+
 <<~ ahu #milestone-1-complete >>
 
 ## Milestone 1 — Complete (2026-04-25)
@@ -593,12 +652,12 @@ pnpm monorepo standing. All Python MCP modules ported to TypeScript. 19/19 parit
 
 One critical bug found and fixed during port: `withMdSuffix()` in the resolver checked `p.includes(".")` across the full path string — `v0.1` in the path suppressed `.md` on bare-name segments like `mu`, yielding 7 instead of 14 minimal boot memes. Fixed to check only the final path segment.
 
-Parity baselines frozen:
+Parity baselines frozen (post DAG-rewire):
 
 | Artifact | Count |
 |---|---|
-| Minimal boot memes | 14 |
-| Full boot memes | 57 |
+| Minimal boot memes | 18 |
+| Full boot memes | 58 |
 | Carrier index | (matches Python) |
 
 <<~/ahu >>
@@ -681,24 +740,38 @@ The MCP SDK handles version negotiation. CI smoke tests against `2025-11-25` onl
 
 <<~ ahu #milestone-2-scope >>
 
-## Milestone 2 — Scope (Next 30 Days)
+## Milestone 2 — Complete (2026-04-25)
+
+All target outcomes delivered:
+
+- ✓ Docker Compose with `dev`, `qa`, `prod`, `qa-smoke` profiles
+- ✓ `ci.yml` GitHub Actions: typecheck → build → parity tests → MCP stdio smoke (fragile pnpm store path replaced with `pnpm exec jest`)
+- ✓ `parity-drift.yml` scheduled fixture drift check (weekly, Node-only, no Python)
+- ✓ MCP stdio smoke child-process harness in `packages/lararium-mcp/tests/` — 7 tests passing
+- ✓ `lararium-web` skeleton: `createBrowserRuntime(snapshot)` + `bootFromUrl(url)`, depends only on `lararium-core`, zero Node APIs
+- ✓ No-write gate tests in `packages/lararium-node/tests/no-write-gate.test.ts` — 8 tests; `ClosureEntry` objects now `Object.freeze`d at compiler boundary
+- ✓ `_archive/lararium_mcp/` Python MCP moved out of active tree
+- ✓ DAG prose updated: AGENTS.md, mu.md, lararium.md reflect rewired topology
+- ✓ Parity baselines: 27/27 tests green (19 parity + 8 no-write gate), 7 MCP smoke
+
+## Milestone 3 — Scope (Next 30 Days)
 
 Target outcomes:
 
-- Docker Compose with `dev`, `qa`, `prod` profiles
-- `ci.yml` GitHub Actions: typecheck → build → parity tests → MCP stdio smoke
-- `parity-drift.yml` scheduled fixture drift check
-- MCP stdio smoke as a child-process harness in `packages/lararium-mcp/tests/`
-- `lararium-web` skeleton: `lararium-core` boots in browser, loads a pre-built JSON bundle
-- No-write gate tests confirmed in `lararium-node`
-- `_archive/lararium_mcp/` Python code moved out of active tree
+- Streamable HTTP canary in `lararium-mcp`: local-only default, Origin validation, auth hook stub, behind `--http` flag
+- `snapshot.json` produced in CI (`build-snapshot.ts` runs as CI step, artifact uploaded)
+- `lararium-web` Vite build: produces a distributable `dist/lararium-web.js` bundle that boots from an embedded or fetched snapshot
+- Property tests for URI normalization and `? ->` socket resolution (nested `ahu` structures)
+- Boot receipt stability test: two compiles of same graph produce identical receipt hash
+- `lararium-tldraw` skeleton: `packages/lararium-tldraw/` with `projectToTldraw()` stub and tldraw record type stubs — no write-back, pure projection
+- Hostful `lar://alias:tier@host/...` URI parse/resolve support in `lararium-core`
 
-Do not in Milestone 2:
+Do not in Milestone 3:
 
-- Streamable HTTP (deferred to Milestone 3 canary)
-- tldraw or Kowloon projection packages
 - Write-back of any kind
-- Full room/session filtering in the browser surface
+- Kowloon projection package (deferred to Milestone 4)
+- Room/session filtering
+- Full tldraw sync (projection skeleton only)
 
 <<~/ahu >>
 

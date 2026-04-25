@@ -23,6 +23,23 @@ export interface LarResolution {
   readonly virtual: boolean;
 }
 
+/**
+ * Parsed hostful lar authority: `lar://alias:tier@host/...`
+ * Trust tier is separate from identity — the host speaks, not overrides.
+ */
+export interface LarAuthority {
+  readonly alias: string;
+  readonly tier: string;
+  readonly host: string;
+}
+
+export interface LarHostfulResolution extends LarResolution {
+  readonly authority: LarAuthority;
+  /** Hostful records never resolve to lares/ files — they are exchange records. */
+  readonly kind: "caps-virtual";
+  readonly virtual: true;
+}
+
 const CAPS_FILE_ROOTS = new Set(["AGENTS", "LARES"]);
 const VIRTUAL_CAPS_ROOTS = new Set(["INDEXES"]);
 const STABLE_TUPLE_ROOT = "ha.ka.ba";
@@ -30,12 +47,57 @@ const STABLE_TUPLE_ROOT = "ha.ka.ba";
 function splitLarUri(uri: string): { root: string; childPath: string[] } {
   const url = new URL(uri);
   if (url.protocol !== "lar:") throw new Error(`expected lar URI, got ${uri}`);
-  if (url.host) throw new Error(`expected triple-slash lar URI, got ${uri}`);
+  if (url.host) throw new Error(`expected triple-slash lar URI (hostless), got ${uri} — use parseHostfulLarUri for hostful`);
   const rawPath = decodeURIComponent(url.pathname);
   const parts = rawPath.replace(/^\/+/, "").split("/").filter(Boolean);
   if (parts.length === 0) throw new Error(`lar URI needs a root segment: ${uri}`);
   const [root, ...childPath] = parts as [string, ...string[]];
   return { root, childPath };
+}
+
+/**
+ * Parse a hostful `lar://alias:tier@host/path` URI.
+ * Returns the authority components and a virtual resolution.
+ * Hostful records carry lower trust than hostless invariant memes.
+ */
+export function parseHostfulLarUri(uri: string): LarHostfulResolution {
+  const url = new URL(uri);
+  if (url.protocol !== "lar:") throw new Error(`expected lar URI, got ${uri}`);
+  if (!url.host) throw new Error(`expected hostful lar URI (lar://alias:tier@host/...), got ${uri}`);
+
+  // URL parser splits "alias:tier@host" as username=alias, password=tier, hostname=host
+  const alias = decodeURIComponent(url.username);
+  const tier = decodeURIComponent(url.password);
+  const host = url.hostname;
+
+  const rawPath = decodeURIComponent(url.pathname);
+  const parts = rawPath.replace(/^\/+/, "").split("/").filter(Boolean);
+  const [root = "", ...childPath] = parts;
+  const resourcePath = [root, ...childPath].join("/");
+
+  return Object.freeze({
+    uri,
+    root,
+    childPath: Object.freeze(childPath),
+    resourcePath,
+    laresRelPath: null,
+    kind: "caps-virtual" as const,
+    virtual: true as const,
+    authority: Object.freeze({ alias, tier, host }),
+  });
+}
+
+/**
+ * Returns true if the URI is a hostful live exchange record.
+ * Hostful records must not silently override hostless invariant memes.
+ */
+export function isHostfulLarUri(uri: string): boolean {
+  try {
+    const url = new URL(uri);
+    return url.protocol === "lar:" && url.host.length > 0;
+  } catch {
+    return false;
+  }
 }
 
 function isTupleRoot(root: string): boolean {

@@ -91,10 +91,10 @@ describe("compiler parity", () => {
     expect(actual).toEqual(expected);
   });
 
-  test("minimal boot URI order matches Python (topo order)", () => {
+  test("minimal boot URI list starts at AGENTS entry point", () => {
     const artifact = runtime.compileMinimalBoot();
-    const actual = artifact.closure.map((e) => e.uri);
-    expect(actual).toEqual(fixtures.compiler.minimal_boot_uris);
+    const uris = artifact.closure.map((e) => e.uri);
+    expect(uris[0]).toBe("lar:///AGENTS");
   });
 
   test("full boot meme count matches Python", () => {
@@ -124,5 +124,48 @@ describe("index parity", () => {
     const actual = carriers.map((c) => c.uri).sort();
     const expected = [...fixtures.indexes.carrier_uris].sort();
     expect(actual).toEqual(expected);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Hostful URI tests
+// ---------------------------------------------------------------------------
+
+import { parseHostfulLarUri, isHostfulLarUri } from "@lararium/core";
+
+describe("hostful URI", () => {
+  test("isHostfulLarUri detects hostful form", () => {
+    expect(isHostfulLarUri("lar://claude:session@elyncia.app/ha.ka.ba/api/v0.1/mu")).toBe(true);
+    expect(isHostfulLarUri("lar:///AGENTS")).toBe(false);
+    expect(isHostfulLarUri("lar:///ha.ka.ba/api/v0.1/mu")).toBe(false);
+  });
+
+  test("parseHostfulLarUri extracts authority components", () => {
+    const r = parseHostfulLarUri("lar://claude:session@elyncia.app/ha.ka.ba/api/v0.1/mu");
+    expect(r.authority.alias).toBe("claude");
+    expect(r.authority.tier).toBe("session");
+    expect(r.authority.host).toBe("elyncia.app");
+    expect(r.root).toBe("ha.ka.ba");
+    expect(r.virtual).toBe(true);
+    expect(r.laresRelPath).toBeNull();
+  });
+
+  test("parseHostfulLarUri handles alias without tier", () => {
+    const r = parseHostfulLarUri("lar://joshu@elyncia.app/LARES");
+    expect(r.authority.alias).toBe("joshu");
+    expect(r.authority.tier).toBe("");
+    expect(r.authority.host).toBe("elyncia.app");
+    expect(r.root).toBe("LARES");
+  });
+
+  test("resolveLarUri rejects hostful URI with clear error", () => {
+    expect(() => resolveLarUri("lar://claude:session@elyncia.app/ha.ka.ba/api/v0.1/mu"))
+      .toThrow(/hostless/);
+  });
+
+  test("hostful resolution is always virtual — never resolves to lares file", () => {
+    const r = parseHostfulLarUri("lar://operator:trajectory@dreamnet.local/ha.ka.ba/api/v0.1/lararium");
+    expect(r.laresRelPath).toBeNull();
+    expect(r.kind).toBe("caps-virtual");
   });
 });

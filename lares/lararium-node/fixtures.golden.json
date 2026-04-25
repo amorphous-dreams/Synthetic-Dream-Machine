@@ -142,7 +142,7 @@
           },
           {
             "code": "carrier.ooda_ha.incomplete",
-            "message": "six-line OODA-HA phase map lacks glyphs: \u2736 \u23ff \u25c7 \u25b6 \u2934 \u21ba",
+            "message": "six-line OODA-HA phase map lacks glyphs: ✶ ⏿ ◇ ▶ ⤴ ↺",
             "severity": "warning"
           }
         ]
@@ -682,25 +682,29 @@
     "invariant_count": 26
   },
   "compiler": {
-    "minimal_boot_count": 14,
+    "minimal_boot_count": 18,
     "minimal_boot_uris": [
       "lar:///AGENTS",
+      "lar:///ha.ka.ba/api/v0.1/mu",
       "lar:///ha.ka.ba/api/v0.1/pono/e-prime",
       "lar:///ha.ka.ba/api/v0.1/pono/ooda-ha",
       "lar:///ha.ka.ba/api/v0.1/pono/lar-uri",
-      "lar:///ha.ka.ba/api/v0.1/mu",
-      "lar:///ha.ka.ba/api/v0.1/lararium",
       "lar:///ha.ka.ba/api/v0.1/mu/chao",
       "lar:///ha.ka.ba/api/v0.1/mu/the-four-tools",
       "lar:///ha.ka.ba/api/v0.1/mu/the-law-of-5s",
       "lar:///ha.ka.ba/api/v0.1/mu/the-syad-perspectives",
+      "lar:///ha.ka.ba/api/v0.1/lararium",
       "lar:///ha.ka.ba/api/v0.1/lararium/hud",
       "lar:///ha.ka.ba/api/v0.1/lararium/voices",
       "lar:///ha.ka.ba/api/v0.1/lararium/continuity",
+      "lar:///ha.ka.ba/api/v0.1/pono/live-session-overwrite",
+      "lar:///ha.ka.ba/api/v0.1/pono/canon-promotion-boundary",
+      "lar:///ha.ka.ba/api/v0.1/pono/tagspace-trust",
+      "lar:///ha.ka.ba/api/v0.1/pono/exchange-vector",
       "lar:///LARES"
     ],
-    "full_boot_count": 57,
+    "full_boot_count": 58,
     "receipt_sha256": "f3982ba9fc05af64871a110d04c13cddfdcf311e505d7f5bf83b1d59ee3e2ea4",
-    "receipt_meme_count": 14
+    "receipt_meme_count": 18
   }
 }
