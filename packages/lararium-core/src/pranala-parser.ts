@@ -35,7 +35,7 @@ export interface PranaEdge {
 // ---------------------------------------------------------------------------
 
 const AHU_OPEN_RE = /<<~[^>]*\bahu\s+(#[\w-]+)\s*>>/g;
-const AHU_CLOSE_RE = /<<\/ahu\s*>>/g;
+const AHU_CLOSE_RE = /<<~\/ahu\s*>>/g;
 
 // Block pranala — note JS regex doesn't have dotall by default; use [\s\S]*? with 's' flag
 const BLOCK_RE = /<<~\s*pranala\s+(#[\w-]+\s+)?(\S+)\s*->\s*(\S+)\s*>>([\s\S]*?)<<~\/pranala\s*>>/gs;

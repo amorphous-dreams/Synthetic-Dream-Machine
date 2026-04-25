@@ -14,7 +14,7 @@
   "scripts": {
     "build": "tsc",
     "typecheck": "tsc --noEmit",
-    "test": "node --experimental-vm-modules ../../node_modules/.bin/jest --testPathPattern=tests/",
+    "test": "NODE_OPTIONS=--experimental-vm-modules pnpm exec jest --config jest.config.cjs",
     "dev": "tsx src/index.ts"
   },
   "devDependencies": {
