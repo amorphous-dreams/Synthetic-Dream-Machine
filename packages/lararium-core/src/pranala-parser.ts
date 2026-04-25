@@ -13,7 +13,14 @@
 
 export interface PranaEdge {
   readonly fromUri: string;
+  /** The enclosing ahu worksite socket. Falls back to carrierUri if no ahu is open. */
   readonly fromSocket: string;
+  /**
+   * Named outgoing slot on the fromSocket ahu, if the pranala carries an explicit #fragment.
+   * `<<~ pranala #hydrate-hud ? -> TARGET >>` → fromSocket=#core-hydration, fromSlot=#hydrate-hud
+   * Null for bare `?` pranala (no explicit slot name).
+   */
+  readonly fromSlot: string | null;
   readonly toUri: string;
   readonly toSocket: string;
   readonly family: string;
@@ -195,8 +202,8 @@ export function parsePranalaEdges(carrierUri: string, text: string): PranaEdge[]
       const toRaw   = (groups[3] ?? "").trim();
       const body    = groups[4] ?? "";
 
-      let [fromUri, fromSocket] = resolveFrom(fromRaw, carrierUri, ahuStack);
-      if (fragRaw) fromSocket = carrierUri + fragRaw;
+      const [fromUri, fromSocket] = resolveFrom(fromRaw, carrierUri, ahuStack);
+      const fromSlot = fragRaw ? carrierUri + fragRaw : null;
       const [toUri, toSocket] = resolveTo(toRaw, carrierUri);
 
       let fields: Record<string, unknown> = {};
@@ -211,7 +218,7 @@ export function parsePranalaEdges(carrierUri: string, text: string): PranaEdge[]
       }
       delete fields["family"];
 
-      edges.push(makeEdge(fromUri, fromSocket, toUri, toSocket, family, fields));
+      edges.push(makeEdge(fromUri, fromSocket, fromSlot, toUri, toSocket, family, fields));
       continue;
     }
 
@@ -222,11 +229,11 @@ export function parsePranalaEdges(carrierUri: string, text: string): PranaEdge[]
       const family  = (groups[4] ?? "relation").trim();
       const role    = (groups[5] ?? null) as string | null;
 
-      let [fromUri, fromSocket] = resolveFrom(fromRaw, carrierUri, ahuStack);
-      if (fragRaw) fromSocket = carrierUri + fragRaw;
+      const [fromUri, fromSocket] = resolveFrom(fromRaw, carrierUri, ahuStack);
+      const fromSlot = fragRaw ? carrierUri + fragRaw : null;
       const [toUri, toSocket] = resolveTo(toRaw, carrierUri);
 
-      edges.push(makeEdge(fromUri, fromSocket, toUri, toSocket, family, { role }));
+      edges.push(makeEdge(fromUri, fromSocket, fromSlot, toUri, toSocket, family, { role }));
       continue;
     }
 
@@ -245,11 +252,11 @@ export function parsePranalaEdges(carrierUri: string, text: string): PranaEdge[]
     const fromSocket = ahuStack.length > 0 ? (ahuStack[ahuStack.length - 1] as string) : carrierUri;
 
     if (kind === "loulou") {
-      edges.push(makeEdge(carrierUri, fromSocket, toUri, toSocket, "relation", {}));
+      edges.push(makeEdge(carrierUri, fromSocket, null, toUri, toSocket, "relation", {}));
     } else if (kind === "aka") {
-      edges.push(makeEdge(carrierUri, fromSocket, toUri, toSocket, "observe", {}));
+      edges.push(makeEdge(carrierUri, fromSocket, null, toUri, toSocket, "observe", {}));
     } else if (kind === "kahea") {
-      edges.push(makeEdge(carrierUri, fromSocket, toUri, toSocket, "dataflow", { propagation: "push-forward" }));
+      edges.push(makeEdge(carrierUri, fromSocket, null, toUri, toSocket, "dataflow", { propagation: "push-forward" }));
     }
   }
 
@@ -259,6 +266,7 @@ export function parsePranalaEdges(carrierUri: string, text: string): PranaEdge[]
 function makeEdge(
   fromUri: string,
   fromSocket: string,
+  fromSlot: string | null,
   toUri: string,
   toSocket: string,
   family: string,
@@ -267,6 +275,7 @@ function makeEdge(
   return {
     fromUri,
     fromSocket,
+    fromSlot,
     toUri,
     toSocket,
     family,

@@ -754,6 +754,24 @@ All target outcomes delivered:
 - ✓ DAG prose updated: AGENTS.md, mu.md, lararium.md reflect rewired topology
 - ✓ Parity baselines: 27/27 tests green (19 parity + 8 no-write gate), 7 MCP smoke
 
+## Milestone 3 — In Progress (2026-04-25)
+
+### Completed
+
+- ✓ Boot receipt determinism: hash covers stable content only (excludes `compiledAt`)
+- ✓ `ClosureEntry` frozen at compiler boundary (no external mutation)
+- ✓ Hostful `lar://alias:tier@host/path` URI parsing: `parseHostfulLarUri()`, `isHostfulLarUri()` in `lararium-core`; hostful records always virtual, never resolve to lares/ files; `resolveLarUri()` explicitly rejects hostful form
+- ✓ 22 property tests for nested `ahu` `? ->` resolution in `lararium-core`
+- ✓ **Grammar fix: `fromSlot` separated from `fromSocket`** — the critical invariant:
+  - `fromSocket` = the enclosing ahu worksite (always set from the ahu stack)
+  - `fromSlot` = the named outgoing slot on that ahu (set only when pranala carries an explicit `#fragment`)
+  - Before: `#hydrate-hud` on a pranala overrode `#core-hydration` as fromSocket. Now: `fromSocket=#core-hydration`, `fromSlot=#hydrate-hud`
+  - Bug fixed simultaneously: `AHU_CLOSE_RE` was missing `~`, so `<<~/ahu>>` never popped the stack
+- ✓ Streamable HTTP canary (`packages/lararium-mcp/src/http.ts`): separate entrypoint, Origin validation gate, auth hook stub, `LARARIUM_HTTP_PORT/HOST/ALLOWED_ORIGINS` env config, `lararium-mcp-http` bin
+- ✓ `lararium-tldraw` skeleton: pure projection, no tldraw runtime import (optional peer), `LarProjectionRecord` union (page/frame/arrow/note), `projectToTldraw()`, story river layout, TiddlyWiki mapping documented in source
+
+### Remaining
+
 ## Milestone 3 — Scope (Next 30 Days)
 
 Target outcomes:

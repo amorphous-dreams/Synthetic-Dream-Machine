@@ -67,28 +67,40 @@ describe("bare ? — ahu stack resolution", () => {
 // Mode 2: explicit #name — overrides ahu stack
 // ---------------------------------------------------------------------------
 
-describe("explicit socket #name — overrides ahu stack", () => {
-  test("explicit #name inside ahu uses #name, not ahu socket", () => {
+describe("explicit slot #name — names the outgoing slot on the ahu socket", () => {
+  test("explicit #name inside ahu: fromSocket = ahu, fromSlot = named slot", () => {
     const result = edges(`
 <<~ ahu #core-hydration >>
 <<~ pranala #hydrate-mu ? -> lar:///ha.ka.ba/api/v0.1/mu family:control role:owns >>
 <<~/ahu >>
 `);
-    expect(result[0]!.fromSocket).toBe(`${BASE}#hydrate-mu`);
+    expect(result[0]!.fromSocket).toBe(`${BASE}#core-hydration`);
+    expect(result[0]!.fromSlot).toBe(`${BASE}#hydrate-mu`);
   });
 
-  test("explicit #name inside nested ahu ignores both ahu levels", () => {
+  test("explicit #name inside nested ahu: fromSocket = innermost ahu, fromSlot = slot", () => {
     const result = edges(`
 <<~ ahu #outer >>
 <<~ ahu #inner >>
-<<~ pranala #my-edge ? -> lar:///ha.ka.ba/api/v0.1/mu family:control role:owns >>
+<<~ pranala #my-slot ? -> lar:///ha.ka.ba/api/v0.1/mu family:control role:owns >>
 <<~/ahu >>
 <<~/ahu >>
 `);
-    expect(result[0]!.fromSocket).toBe(`${BASE}#my-edge`);
+    expect(result[0]!.fromSocket).toBe(`${BASE}#inner`);
+    expect(result[0]!.fromSlot).toBe(`${BASE}#my-slot`);
   });
 
-  test("two explicit-named pranala inside the same ahu have distinct sockets", () => {
+  test("bare ? has null fromSlot", () => {
+    const result = edges(`
+<<~ ahu #core >>
+<<~ pranala ? -> lar:///ha.ka.ba/api/v0.1/mu family:control role:owns >>
+<<~/ahu >>
+`);
+    expect(result[0]!.fromSocket).toBe(`${BASE}#core`);
+    expect(result[0]!.fromSlot).toBeNull();
+  });
+
+  test("two named slots inside same ahu have distinct fromSlot, shared fromSocket", () => {
     const result = edges(`
 <<~ ahu #edges >>
 <<~ pranala #implements-meme ? -> lar:///ha.ka.ba/api/v0.1/pono/meme family:control role:implements >>
@@ -98,8 +110,12 @@ describe("explicit socket #name — overrides ahu stack", () => {
     expect(result).toHaveLength(2);
     const meme = result.find((e) => e.toUri.endsWith("meme"))!;
     const loci = result.find((e) => e.toUri.endsWith("loci"))!;
-    expect(meme.fromSocket).toBe(`${BASE}#implements-meme`);
-    expect(loci.fromSocket).toBe(`${BASE}#implements-loci`);
+    // Both share the enclosing ahu socket
+    expect(meme.fromSocket).toBe(`${BASE}#edges`);
+    expect(loci.fromSocket).toBe(`${BASE}#edges`);
+    // Each has its own named outgoing slot
+    expect(meme.fromSlot).toBe(`${BASE}#implements-meme`);
+    expect(loci.fromSlot).toBe(`${BASE}#implements-loci`);
   });
 });
 
@@ -313,18 +329,20 @@ describe("real carrier — lararium.md pattern", () => {
 <<~/ahu >>
 `;
 
-  test("explicit-named pranala inside #core-hydration have their own sockets", () => {
+  test("pranala inside #core-hydration: fromSocket = ahu, fromSlot = named slot", () => {
     const result = parsePranalaEdges(LARARIUM_URI, LARARIUM_TEXT);
     const hud = result.find((e) => e.toUri.endsWith("hud"))!;
-    expect(hud.fromSocket).toBe(`${LARARIUM_URI}#hydrate-hud`);
+    expect(hud.fromSocket).toBe(`${LARARIUM_URI}#core-hydration`);
+    expect(hud.fromSlot).toBe(`${LARARIUM_URI}#hydrate-hud`);
     expect(hud.family).toBe("control");
     expect(hud.role).toBe("owns");
   });
 
-  test("explicit-named pranala inside #edges has its own socket", () => {
+  test("pranala inside #edges: fromSocket = ahu, fromSlot = named slot", () => {
     const result = parsePranalaEdges(LARARIUM_URI, LARARIUM_TEXT);
     const meme = result.find((e) => e.toUri.endsWith("meme"))!;
-    expect(meme.fromSocket).toBe(`${LARARIUM_URI}#implements-meme`);
+    expect(meme.fromSocket).toBe(`${LARARIUM_URI}#edges`);
+    expect(meme.fromSlot).toBe(`${LARARIUM_URI}#implements-meme`);
     expect(meme.role).toBe("implements");
   });
 

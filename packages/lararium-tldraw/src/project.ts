@@ -121,7 +121,10 @@ export function projectToTldraw(artifact: BootArtifact, opts: ProjectOptions = {
         const text = readText(entry.uri);
         if (text) {
           const edges = parsePranalaEdges(entry.uri, text);
-          const sockets = new Set(edges.map((e) => e.fromSocket).filter((s) => s.includes("#")));
+          // fromSlot = named outgoing slot on the ahu; fromSocket = the ahu itself
+          const sockets = new Set(
+            edges.flatMap((e) => [e.fromSocket, e.fromSlot].filter((s): s is string => !!s && s.includes("#")))
+          );
           [...sockets].forEach((socket, sockIdx) => {
             const socketName = (socket.split("#")[1] as string | undefined) ?? socket;
             frames.push({
@@ -154,8 +157,10 @@ export function projectToTldraw(artifact: BootArtifact, opts: ProjectOptions = {
       const edges = parsePranalaEdges(entry.uri, text);
 
       for (const edge of edges) {
-        const fromId = edge.fromSocket.includes("#")
-          ? ahuFrameId(entry.uri, edge.fromSocket)
+        // Prefer the named slot frame; fall back to the ahu socket frame; then meme frame
+        const slotOrSocket = edge.fromSlot ?? (edge.fromSocket.includes("#") ? edge.fromSocket : null);
+        const fromId = slotOrSocket
+          ? ahuFrameId(entry.uri, slotOrSocket)
           : memeFrameId(edge.fromUri);
         const toId = memeFrameId(edge.toUri);
 
