@@ -1,6 +1,11 @@
 {
   "mcpServers": {
     "lararium": {
+      "command": "node",
+      "args": ["packages/lararium-mcp/dist/stdio.js"],
+      "cwd": "."
+    },
+    "lararium-python": {
       "command": ".venv/bin/python3",
       "args": ["-m", "lares.lararium_mcp"],
       "cwd": "."

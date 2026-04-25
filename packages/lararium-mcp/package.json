@@ -1,0 +1,28 @@
+{
+  "name": "@lararium/mcp",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "bin": {
+    "lararium-mcp": "./dist/stdio.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "dev": "tsx src/stdio.ts"
+  },
+  "dependencies": {
+    "@lararium/node": "workspace:*",
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "zod": "^3.24.0"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.0"
+  }
+}
