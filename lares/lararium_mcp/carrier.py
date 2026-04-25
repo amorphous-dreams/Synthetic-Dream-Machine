@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import Any
 
 from .diagnostics import Diagnostic
+from .pranala_parser import parse_pranala_edges
 from .resolver import resolve_lar_uri
 
 
@@ -166,4 +167,10 @@ def read_carrier(uri: str) -> CarrierRecord:
             shape.depth_state,
             tuple((*metadata_diagnostics, *shape.diagnostics)),
         )
-    return CarrierRecord(uri, resolution.path, metadata, extract_interface_bundle(metadata), shape)
+    implements = set(extract_interface_bundle(metadata))
+    for edge in parse_pranala_edges(uri, text):
+        if edge.family == 'control' and edge.role == 'implements':
+            implements.add(edge.to_uri)
+    if shape.valid and implements:
+        shape = CarrierShape(True, 'typed meme', shape.depth_state, shape.diagnostics)
+    return CarrierRecord(uri, resolution.path, metadata, tuple(sorted(implements)), shape)

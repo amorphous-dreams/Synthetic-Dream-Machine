@@ -256,6 +256,7 @@ def compile_minimal_boot(entry: str = ENTRY_URI) -> dict[str, Any]:
         'entry': entry,
         'closure': closure,
         'meme_count': len(closure),
+        'locus_count': len(closure),
         'validation': _validate(closure, violations, declared_unresolved),
     }
 
@@ -298,6 +299,7 @@ def compile_full_boot(entry: str = ENTRY_URI) -> dict[str, Any]:
         'entry': entry,
         'closure': closure,
         'meme_count': len(closure),
+        'locus_count': len(closure),
         'edge_count': len(all_edges),
         'pranala_edges': [
             {
@@ -328,6 +330,7 @@ def compile_boot_receipt(artifact: dict[str, Any]) -> dict[str, Any]:
             .replace('-boot', '') or 'unknown'
         ),
         'meme_count': artifact.get('meme_count', 0),
+        'locus_count': artifact.get('locus_count', artifact.get('meme_count', 0)),
         'edge_count': artifact.get('edge_count', 0),
         'sha256': sha,
         'validation': {

@@ -88,6 +88,8 @@ _TOML_FENCE_RE = re.compile(r'```toml\s*(.*?)```', re.DOTALL)
 
 def _resolve_to(raw: str, carrier_uri: str) -> tuple[str, str]:
     """Return (to_uri, to_socket) from a raw TO expression."""
+    if raw.startswith('#'):
+        return carrier_uri, carrier_uri + raw
     if '#' in raw and raw.startswith('lar:///'):
         uri, frag = raw.split('#', 1)
         return uri, uri + '#' + frag
@@ -110,6 +112,8 @@ def _resolve_from(token: str, carrier_uri: str, ahu_stack: list[str]) -> tuple[s
     if token == '?':
         socket = ahu_stack[-1] if ahu_stack else carrier_uri
         return carrier_uri, socket
+    if token.startswith('#'):
+        return carrier_uri, carrier_uri + token
     if '#' in token and token.startswith('lar:///'):
         uri, frag = token.split('#', 1)
         return uri, uri + '#' + frag
@@ -275,7 +279,9 @@ def parse_pranala_edges(carrier_uri: str, text: str) -> list[PranaEdge]:
 
         # Sugar forms
         target_uri = m.group(1)
-        if '#' in target_uri and target_uri.startswith('lar:///'):
+        if target_uri.startswith('#'):
+            to_uri_s, to_socket_s = carrier_uri, carrier_uri + target_uri
+        elif '#' in target_uri and target_uri.startswith('lar:///'):
             to_uri_s, to_socket_s = target_uri.split('#', 1)
             to_socket_s = to_uri_s + '#' + to_socket_s
         else:
