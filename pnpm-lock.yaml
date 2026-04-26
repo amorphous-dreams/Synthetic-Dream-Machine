@@ -35,6 +35,9 @@ importers:
       '@lararium/node':
         specifier: workspace:*
         version: link:../lararium-node
+      '@lararium/tldraw':
+        specifier: workspace:*
+        version: link:../lararium-tldraw
       '@modelcontextprotocol/sdk':
         specifier: ^1.29.0
         version: 1.29.0(zod@3.25.76)

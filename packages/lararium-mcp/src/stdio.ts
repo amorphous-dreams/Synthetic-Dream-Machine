@@ -11,6 +11,7 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import { z } from "zod";
 
 import { createLarariumRuntime, resolveLarUri, LARES_ROOT } from "@lararium/node";
+import { renderToTldraw } from "@lararium/tldraw";
 
 const runtime = createLarariumRuntime({ writeback: false });
 
@@ -255,6 +256,34 @@ server.registerPrompt(
     return {
       messages: [{ role: "user" as const, content: { type: "text" as const, text } }],
     };
+  },
+);
+
+// tldraw projection tool — emits store-ready shape records for the minimal boot closure
+server.registerTool(
+  "lararium-render_tldraw",
+  {
+    description: "Project the minimal boot closure into tldraw-ready shape records (story-river layout)",
+    inputSchema: {
+      boot: z.enum(["minimal", "full"]).optional().describe("Which boot artifact to project. Default: minimal"),
+    },
+  },
+  async ({ boot = "minimal" }) => {
+    try {
+      const artifact = boot === "full" ? runtime.compileFullBoot() : runtime.compileMinimalBoot();
+      const readText = (uri: string): string | null => {
+        try { return runtime.readResource(uri); } catch { return null; }
+      };
+      const emission = renderToTldraw(artifact, { readText, includeAhuFrames: true });
+      return {
+        content: [{
+          type: "text" as const,
+          text: JSON.stringify({ pages: emission.pages, shapes: emission.shapes }, null, 2),
+        }],
+      };
+    } catch (e) {
+      return { content: [{ type: "text" as const, text: String(e) }], isError: true };
+    }
   },
 );
 
