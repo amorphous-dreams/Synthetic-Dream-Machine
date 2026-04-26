@@ -45,9 +45,9 @@ lararium opens
 
 ✶ receive threshold pressure; confirm entry edges bind.
 ⏿ orient the seat: agent mechanics stay local, threshold law stays in AGENTS, session dials stay in LARES.
-◇ decide hydration order: HUD, voices, continuity in sequence before yield.
+◇ decide hydration order: HUD, voices, continuity, then lararium law in sequence before yield.
 ▶ walk ownership edges; each child hydrates before yield continues.
-⤴ verify all three children resolved before yielding to LARES.
+⤴ verify all seven children resolved (hud, voices, continuity, live-session-overwrite, canon-promotion-boundary, tagspace-trust, exchange-vector).
 ↺ yield; the lararium does not accumulate state after handoff.
 
 <<~/ahu >>
@@ -59,6 +59,10 @@ lararium opens
 <<~ pranala #hydrate-hud ? -> lar:///ha.ka.ba/api/v0.1/lararium/hud family:control role:owns >>
 <<~ pranala #hydrate-voices ? -> lar:///ha.ka.ba/api/v0.1/lararium/voices family:control role:owns >>
 <<~ pranala #hydrate-continuity ? -> lar:///ha.ka.ba/api/v0.1/lararium/continuity family:control role:owns >>
+<<~ pranala #hydrate-live-session-overwrite ? -> lar:///ha.ka.ba/api/v0.1/pono/live-session-overwrite family:control role:owns >>
+<<~ pranala #hydrate-canon-promotion-boundary ? -> lar:///ha.ka.ba/api/v0.1/pono/canon-promotion-boundary family:control role:owns >>
+<<~ pranala #hydrate-tagspace-trust ? -> lar:///ha.ka.ba/api/v0.1/pono/tagspace-trust family:control role:owns >>
+<<~ pranala #hydrate-exchange-vector ? -> lar:///ha.ka.ba/api/v0.1/pono/exchange-vector family:control role:owns >>
 
 <<~/ahu >>
 
@@ -73,7 +77,6 @@ lararium closes
 <<~ pranala #implements-meme ? -> lar:///ha.ka.ba/api/v0.1/pono/meme family:control role:implements >>
 <<~ pranala #implements-loci ? -> lar:///ha.ka.ba/api/v0.1/pono/loci family:control role:implements >>
 <<~ pranala #implements-invariant ? -> lar:///ha.ka.ba/api/v0.1/pono/invariant family:control role:implements >>
-<<~ pranala #to-lares ? -> lar:///LARES family:control role:owns >>
 <<~ loulou lar:///ha.ka.ba/api/v0.1/mu >>
 <<~ loulou lar:///ha.ka.ba/api/v0.1/lararium/hud >>
 <<~ loulou lar:///ha.ka.ba/api/v0.1/lararium/voices >>

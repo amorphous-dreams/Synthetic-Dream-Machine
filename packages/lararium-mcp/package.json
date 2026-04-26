@@ -1,0 +1,36 @@
+{
+  "name": "@lararium/mcp",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "bin": {
+    "lararium-mcp": "./dist/stdio.js",
+    "lararium-mcp-http": "./dist/http.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "test": "NODE_OPTIONS=--experimental-vm-modules pnpm exec jest --config jest.config.cjs",
+    "dev": "tsx src/stdio.ts",
+    "dev:http": "tsx src/http.ts"
+  },
+  "dependencies": {
+    "@lararium/node": "workspace:*",
+    "@lararium/tldraw": "workspace:*",
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "zod": "^3.24.0"
+  },
+  "devDependencies": {
+    "@jest/globals": "^29.7.0",
+    "@types/node": "^22.19.17",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.4.9",
+    "tsx": "^4.19.0"
+  }
+}

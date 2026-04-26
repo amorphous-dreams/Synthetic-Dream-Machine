@@ -36,20 +36,13 @@ This threshold carries the live core. The live core MUST stay small. The live co
 
 ### Core Invariant Loci
 
+AGENTS owns two children: mu and LARES.
+Mu owns the invariant grammar kernel and lararium.
+Lararium owns agent mechanics and lararium law.
+
 - [lar:///AGENTS](AGENTS.md)
-- [lar:///ha.ka.ba/api/v0.1/pono/e-prime](ha-ka-ba/api/v0.1/pono/e-prime.md)
-- [lar:///ha.ka.ba/api/v0.1/pono/ooda-ha](ha-ka-ba/api/v0.1/pono/ooda-ha.md)
-- [lar:///ha.ka.ba/api/v0.1/pono/lar-uri](ha-ka-ba/api/v0.1/pono/lar-uri.md)
-- [lar:///ha.ka.ba/api/v0.1/mu](ha-ka-ba/api/v0.1/mu.md)
-- [lar:///ha.ka.ba/api/v0.1/mu/chao](ha-ka-ba/api/v0.1/mu/chao.md)
-- [lar:///ha.ka.ba/api/v0.1/mu/the-four-tools](ha-ka-ba/api/v0.1/mu/the-four-tools.md)
-- [lar:///ha.ka.ba/api/v0.1/mu/the-law-of-5s](ha-ka-ba/api/v0.1/mu/the-law-of-5s.md)
-- [lar:///ha.ka.ba/api/v0.1/mu/the-syad-perspectives](ha-ka-ba/api/v0.1/mu/the-syad-perspectives.md)
-- [lar:///ha.ka.ba/api/v0.1/lararium](ha-ka-ba/api/v0.1/lararium.md)
-- [lar:///ha.ka.ba/api/v0.1/lararium/hud](ha-ka-ba/api/v0.1/lararium/hud.md)
-- [lar:///ha.ka.ba/api/v0.1/lararium/voices](ha-ka-ba/api/v0.1/lararium/voices.md)
-- [lar:///ha.ka.ba/api/v0.1/lararium/continuity](ha-ka-ba/api/v0.1/lararium/continuity.md)
-- [lar:///LARES](LARES.md)
+- [lar:///ha.ka.ba/api/v0.1/mu](ha-ka-ba/api/v0.1/mu.md) — invariant boot kernel; owns grammar + lararium
+- [lar:///LARES](LARES.md) — operator session dials
 
 <<~/ahu >>
 
@@ -83,11 +76,7 @@ AGENTS closes the threshold stream here.
 
 <<~ pranala #implements-meme ? -> lar:///ha.ka.ba/api/v0.1/pono/meme family:control role:implements >>
 <<~ pranala #implements-invariant ? -> lar:///ha.ka.ba/api/v0.1/pono/invariant family:control role:implements >>
-<<~ pranala #preload-e-prime ? -> lar:///ha.ka.ba/api/v0.1/pono/e-prime family:control role:owns >>
-<<~ pranala #preload-ooda-ha ? -> lar:///ha.ka.ba/api/v0.1/pono/ooda-ha family:control role:owns >>
-<<~ pranala #preload-lar-uri ? -> lar:///ha.ka.ba/api/v0.1/pono/lar-uri family:control role:owns >>
 <<~ pranala #to-mu ? -> lar:///ha.ka.ba/api/v0.1/mu family:control role:owns >>
-<<~ pranala #to-lararium ? -> lar:///ha.ka.ba/api/v0.1/lararium family:control role:owns >>
 <<~ pranala #to-lares ? -> lar:///LARES family:control role:owns >>
 
 <<~/ahu >>
