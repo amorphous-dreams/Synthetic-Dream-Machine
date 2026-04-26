@@ -73,7 +73,7 @@ the angle(s) from which the number reads.
 
 Do not flatten the five measures into one truth spectrum.
 
-## Tight Register Table
+## Stance Register Table
 
 | Stance | Register measures | 0.0 reads as | 1.0 reads as |
 |---|---|---|---|

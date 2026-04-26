@@ -1,6 +1,20 @@
 import { useEffect, useRef } from "react";
 import { Tldraw, inlineBase64AssetStore } from "tldraw";
-import type { TLPageId, TLShapeId } from "tldraw";
+import type { TLPageId, TLShapeId, TLComponents } from "tldraw";
+
+// Suppress tldraw's built-in chrome — Lararium shell provides its own.
+// PageMenu removed so users don't accidentally switch pages via tldraw UI.
+const LARARIUM_COMPONENTS: TLComponents = {
+  Toolbar: null,
+  StylePanel: null,
+  PageMenu: null,
+  NavigationPanel: null,
+  MainMenu: null,
+  ZoomMenu: null,
+  QuickActions: null,
+  HelperButtons: null,
+  MenuPanel: null,
+};
 import { useSync } from "@tldraw/sync";
 import "tldraw/tldraw.css";
 import type { LarViewState, LarViewAction, TldrawEditorLike } from "@lararium/tldraw";
@@ -93,6 +107,7 @@ export function LarariumCanvas({ wsUrl, navState, dispatch }: Props) {
     <div style={{ width: "100%", height: "100%" }}>
       <Tldraw
         store={store.store}
+        components={LARARIUM_COMPONENTS}
         onMount={(editor) => {
           editorRef.current = editor;
           (window as any).__larariumEditor = editor;

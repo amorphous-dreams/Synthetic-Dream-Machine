@@ -12,7 +12,7 @@ register    = "S"
 manaoio     = 0.84
 mana        = 0.90
 manao       = 0.86
-role        = "canonical design constitution for the Lararium multiplayer infinite-canvas wiki system"
+role        = "canonical design constitution for the Lararium multiplayer infinite-canvas wiki system — Kinopio-feel UX shell wrapping tldraw"
 cacheable   = true
 retain      = true
 invariant   = false
@@ -153,19 +153,25 @@ _Status: design only. Not yet implemented._
 
 <<~ ahu #views >>
 
-## Canvas Views
+## Canvas Views — Zoom-Gated, Not Page-Switched
 
-Three tldraw pages in the `boot` room:
+**Current implementation (milestone 4):** Three tldraw pages (`page:minimal-boot`, `page:meme-detail`, `page:graph`). Navigation via `LarViewState` reducer driving `setCurrentPage()`.
+
+**Target model (milestone 5+):** Single tldraw page per room. View "modes" are zoom-level gates, not page switches. See `#ux-shell` for zoom threshold table.
+
+The three-page model stays in place until the shape namespace collision problem is resolved (all memes on one page = IDs must be globally unique within the page, not just per-view-prefix). The `pageOverride` contract in `emitTldrawRecords` is already designed to handle this migration.
+
+**Current page layout (unchanged):**
 
 | Page ID | View | Layout |
 |---------|------|--------|
-| `page:minimal-boot` | **Story River** | Meme frames arranged by topo depth (X) and band position (Y). 200×120px frames, 60px H-gap, 30px V-gap. Arrows show pranala edges. |
-| `page:meme-detail` | **Meme Detail** | Single meme deep-dive with ahu socket sub-frames. Navigated to via double-click or SidePanel zoom. |
-| `page:graph` | **Graph** | Compact graph view. Smaller frames, denser layout. Edge families color-coded (control=blue, relation=grey, observe=green, dataflow=orange). |
+| `page:minimal-boot` | Story river | Meme frames at topo depth (X) × band (Y). 200×120px, 60px H-gap, 30px V-gap. Pranala arrows color-coded by family. |
+| `page:meme-detail` | Focus view | Single meme + ahu socket sub-frames + immediate neighbours. |
+| `page:graph` | Graph overview | 160px compact frames, denser layout, same edge color coding. |
 
-**Navigation is driven by `LarViewState`** (reducer in `@lararium/tldraw`). The canvas `syncNavState()` translates view state to tldraw editor calls (`setCurrentPage`, `zoomToFit`, `zoomToBounds`).
+**Navigation:** `LarViewState` reducer (`ZOOM_IN`, `OPEN_GRAPH`, `CLOSE_GRAPH`, `NAVIGATE_BACK`). In the target model, `ZOOM_IN` drives camera animation to a meme's position + zoom level, not `setCurrentPage`. `OPEN_GRAPH` zooms out to the full-graph zoom threshold.
 
-**SidePanel** dispatches `OPEN_GRAPH`, `CLOSE_GRAPH`, `ZOOM_IN`, `NAVIGATE_BACK`. These trigger re-render of `LarariumCanvas` via `useEffect([store.status, navState.*])`.
+**SidePanel → Command palette migration:** The slide-in `SidePanel` meme list is a stepping stone. Target: `⌘K` command palette replaces it as primary room/meme navigation.
 
 <<~/ahu >>
 
@@ -398,34 +404,301 @@ The tldraw canvas shows a visible distinction between pending (dashed border, am
 
 <<~/ahu >>
 
-<<~ ahu #kinopio-patterns >>
+<<~ ahu #kinopio-ux-model >>
 
-## Kinopio — Patterns Worth Stealing
+## Kinopio UX Model — Deep Research Findings
 
-Kinopio (`kinopio.club`) is a spatial thinking canvas (Vue 3, not npm-published, not directly importable). Its code is open-source but framework-incompatible with our React/tldraw stack. Value is in patterns, not dependencies.
+Kinopio (`kinopio.club`, Vue 3, open-source, not npm-publishable) is the closest public reference for the UX feel we want. Full source analysis at `github.com/kinopio-club/kinopio-client`.
 
-**Patterns to adopt:**
+### The Core Philosophy
 
-| Kinopio pattern | Lararium equivalent |
+**The canvas is primary. UI wraps around it — never blocks it.**
+
+Kinopio's `<Header>` is `position: fixed; pointer-events: none` with interaction re-enabled only on child buttons. The canvas fills 100% of the viewport. UI chrome exists at fixed viewport positions and *fades or repositions* during zoom. On iOS, the header dynamically repositions via `updatePositionInVisualViewport()` every 60 frames to track the visual viewport during pinch-zoom.
+
+This is the inverse of our current model (tldraw with overlaid React panels). We need to flip: the tldraw canvas is the root, our Chrome wraps it.
+
+### Layout Architecture (what lives where)
+
+```
+┌─ viewport (100vw × 100vh) ──────────────────────────────┐
+│  ┌─ HEADER (position:fixed, top:0, pointer-events:none) ┐│
+│  │  logo | room-name | share | presence avatars          ││
+│  └───────────────────────────────────────────────────────┘│
+│                                                            │
+│  ┌─ CANVAS (fills viewport, scrollable, zoomable) ───────┐│
+│  │  tldraw TLDraw instance                                ││
+│  │  meme frames, pranala arrows, ahu boxes               ││
+│  │  portal shapes, import drop zones                     ││
+│  │  remote cursors (canvas-relative, move with pan/zoom) ││
+│  └───────────────────────────────────────────────────────┘│
+│                                                            │
+│  ┌─ FOOTER-BAR (position:fixed, bottom:0) ───────────────┐│
+│  │  zoom% | room-id | meme-count | trust-tier badge      ││
+│  └───────────────────────────────────────────────────────┘│
+│                                                            │
+│  ┌─ MINIMAP (position:fixed, bottom-right) ──────────────┐│
+│  │  click-to-pan, drag-to-pan, viewport indicator        ││
+│  └───────────────────────────────────────────────────────┘│
+│                                                            │
+│  ┌─ CONTEXTUAL PANELS (position:fixed, viewport-aligned) ┐│
+│  │  appear on demand, auto-dismiss, never persistent      ││
+│  │  • card detail (click meme frame → panel slides up)   ││
+│  │  • room switcher (keyboard or header btn → drops down)││
+│  │  • import dialog (drag file → contextual at drop pos) ││
+│  └───────────────────────────────────────────────────────┘│
+└────────────────────────────────────────────────────────────┘
+```
+
+**What is NOT in the layout:** persistent side drawers, slide-in panels as primary navigation, floating bubbles over the canvas. Every panel is contextual and transient.
+
+### Interaction Patterns to Implement
+
+**Paint-select (lasso):** tldraw already has this. Expose it clearly — click-drag on empty canvas starts paint-select. Kinopio renders the lasso as an SVG overlay; tldraw handles this natively. No custom implementation needed — just ensure our component config doesn't suppress it.
+
+**Drag-from-edge to create pranala:** tldraw's arrow tool creates connections by dragging from shape edges. We should wire this so dragging from a meme frame edge creates a `pranala` arrow with a default `family: relation` (upgradeable to `control`/`observe`/`dataflow` via a right-click context menu on the arrow). This is standard tldraw arrow binding — no custom shape needed for the arrow itself.
+
+**Click empty canvas → create meme:** Click on empty canvas → drop a new pending meme frame at that position. Label = empty, URI = live-session hostful URI assigned immediately. Begin typing to set the label. This is the Kinopio card-creation flow. tldraw: programmatically create a frame shape on `editor.pointerDown` when target is the canvas (no existing shape under cursor).
+
+**Double-click meme frame → detail panel:** Already wired (Vector 2 from previous loop). The detail panel slides up from the bottom of the viewport (not a full-height sidebar). Shows: URI, carrier text, ahu sockets, pranala edges in/out, commit tier, trust gate.
+
+**Zoom = navigation:** No page-switching in the normal flow. Zooming out shows the graph overview at small scale. Zooming in past a threshold snaps the camera to the nearest meme frame and expands it (ahu socket sub-frames become visible). This is zoom-gated rendering: sub-frame geometry is only added to the DOM/store above a zoom threshold, not always present.
+
+**Stick-to-cursor drag physics:** Kinopio's drag offset tracking (6–24px stretch-resistance based on card area) creates tactile feedback. tldraw handles drag natively, but we can augment: when dragging a meme frame, apply a subtle easing to `shape.x/y` updates rather than direct snap. Low priority but high feel.
+
+### Space Model → Rooms
+
+Kinopio has no canonical "home space." We do: **the-altar-fire** is the home room for everyone.
+
+**User home spaces** are instanced rooms — each user gets `user:${did}` as their private lararium. The altar fire memes are **transcluded** into the user's home space: they appear as locked (read-only) shapes at a dedicated position on the canvas. This is not a separate page or tab — the transclusion renders the same invariant frames in the user's room, visually distinct (silver border, lock icon), non-moveable.
+
+Transclusion implementation: when seeding a user room, the boot closure memes are projected as a locked cluster in a corner of the canvas. They reference their canonical lar URIs. When the user navigates to them (double-click), the detail panel shows the canonical carrier — but any edit creates a pending fork attached to the user's room, not the canonical meme.
+
+**Room switching:** a single `⌘K` / keyboard shortcut opens a command-palette-style room switcher (viewport-fixed overlay, full-width at top). Type to filter room names. Arrow keys to navigate. Enter to switch rooms. Escape to dismiss. This replaces the SidePanel story-river as the primary room navigation surface.
+
+### Portal Shapes
+
+Portals are rendered as custom tldraw shapes (`LarPortalShapeUtil`). Visual: a rounded rectangle with a chevron-right and the target room name. Click navigates to that room (new WS connection, animated transition). Portal shapes are canvas-local state — moveable by operators without canonical write-back.
+
+The altar fire canvas seeds with portal shapes for all registered rooms at initial positions defined in `the-altar-fire.md`. Users can create their own portals by dragging a meme's URI onto the canvas and choosing "Create portal."
+
+### What Kinopio Does Not Have (Lararium extensions)
+
+| Missing from Kinopio | Lararium addition |
 |---|---|
-| **Spaces** as named persistent canvases | **Rooms** — already our model |
-| **Cards** as atomic content units anywhere on canvas | Meme frames — already our model |
-| **Connections** as draggable semantic links | Pranala arrows — already our model |
-| **Boxes** as group containers | Ahu frames (sub-frames grouping sockets) |
-| **Fractional indexing** for z-order / list ordering | Adopt `fractional-indexing` npm package for room shape ordering |
-| **IndexedDB offline queue** for disconnected edits | Needed for offline mode (see open questions) |
-| **Spatial memory** — position IS organization | Canonical: shape position in room state is authoritative; layout algorithms set initial positions but operators can move freely |
-| **Paint-select** (lasso multi-select) | tldraw already has this |
-| **No forced hierarchy** — spatial position replaces folders | Rooms are the hierarchy; within a room, position is free |
+| Trust tiers | Header badge shows current tier; shapes have visual tier encoding |
+| Content-addressed identity | Every shape has `meta.uri`; status bar shows URI on hover |
+| Semantic edge types (pranala families) | Arrow color + context menu for family/role |
+| Canon-promotion boundary | Commit-tier visual encoding (dashed=live, solid=branch, lock=canon) |
+| Invariant memes (locked in user spaces) | Silver border + lock icon + read-only interaction |
+| Command palette room switching | `⌘K` overlay |
 
-**Key Kinopio insight for Lararium:** Kinopio avoids modes and views entirely. Everything is on one canvas; zoom and pan are the only navigation. We should trend toward this model within a room (one page per room, zoom-based navigation) while using rooms as the boundary between discrete canvases.
+<<~/ahu >>
 
-**What Kinopio does not have that we need:**
-- Trust tiers and write gates
-- Content-addressed identity (lar URIs)
-- DAG-structured semantic edges (pranala has family/role, not just "connected")
-- Canon-promotion boundary
-- Invariant vs. mutable content distinction
+<<~ ahu #platform-targets >>
+
+## Platform Targets
+
+| Platform | Primary input | Notes |
+|---|---|---|
+| Windows 11 (native or WSL browser) | Mouse + keyboard | Primary dev environment |
+| Ubuntu WSL (browser via WSLg or Windows Chrome) | Mouse + keyboard | Same rendering path as Windows 11 |
+| Android Samsung (Galaxy phone / tablet) | Touch + optional S-Pen stylus | Responsive layout required; no hover states as primary affordance |
+
+**Layout breakpoints:**
+- Mobile (< 600px): header collapses to icon bar; footer hidden; minimap hidden; panels are full-screen overlays
+- Tablet (600–1024px): header shows room name + ⌘K; panels slide in from bottom (60vh max-height)
+- Desktop (> 1024px): full header + footer + minimap; panels contextual at 360px width
+
+**Touch affordances:**
+- All tap targets ≥ 44×44px (Android Material + Apple HIG minimum)
+- Pinch-to-zoom is tldraw-native; we must not suppress it
+- Long-press on empty canvas → create meme (equivalent to click-empty on desktop)
+- Long-press on meme frame → context menu (equivalent to right-click on desktop)
+- tldraw's paint-select is drag-from-empty — works on touch natively; ensure no canvas `onTouchStart` handlers interfere
+- Android Chrome does NOT have the iOS visual viewport offset problem — no `updatePositionInVisualViewport` needed. Standard `position:fixed` works correctly on Android Chrome.
+
+**WSL development note:** `serve.ts` binds `127.0.0.1` in dev. When running in WSL2, the WSL network adapter has a separate IP. Use `LARARIUM_HOST=0.0.0.0` to expose to Windows-side browser during dev. Do NOT commit `0.0.0.0` as the default.
+
+<<~/ahu >>
+
+<<~ ahu #tldraw-template-model >>
+
+## TLDraw Template Model — Use Built-ins, Not Custom Shapes
+
+**Rule: do not roll custom shape utils when a tldraw built-in shape covers the use case.** Custom shapes (`ShapeUtil` subclasses) carry a maintenance tax: they must be registered with the store schema, their props must be versioned across migrations, and they break tldraw upgrades silently.
+
+**Current shape mapping (what we already emit):**
+
+| Lararium concept | tldraw shape type | Why |
+|---|---|---|
+| Meme container | `frame` (built-in) | Groups child shapes, named, has resize handles |
+| Ahu socket sub-frame | `frame` nested in parent `frame` | Same type, different scale |
+| Pranala edge | `arrow` (built-in) | Has binding to source/target, family stored in `meta.family` |
+| Carrier text snippet | `note` (built-in) | Sticky-note look, auto-wrap text |
+| Portal shape | **`geo` with custom `meta`** | Built-in rect/rounded-rect + click handler via `onDoubleClickShape` |
+| Commit-tier indicator | `geo` dot shape | Small colored indicator overlaid on frame |
+
+**Custom shape utils required (genuinely novel):**
+- None currently. `LarPortalShapeUtil` was planned but a `geo` + meta approach is sufficient for MVP. Add a custom shape only when the built-in props model is demonstrably insufficient.
+
+### TiddlyWiki Template Cascade — Target Rendering Model
+
+TW5's rendering pipeline: tiddler → `$:/core/ui/ViewTemplate` → type-specific sub-template cascade → widget tree → DOM. The key pattern is the **cascade**: for each tiddler being rendered, TW5 walks a priority-ordered list of template candidates and picks the first match.
+
+**Lararium's equivalent cascade for meme frame rendering:**
+
+```
+for each meme URI in boot closure:
+  1. check lares/templates/${uri-slug}.md       — meme-specific override
+  2. check lares/templates/type/${meme-type}.md — type template (invariant / docs / interface)
+  3. check lares/templates/default.md            — fallback template
+  → template defines: frame W×H, child shapes, color scheme, label format
+```
+
+A **template** is a carrier file that declares how to project a meme type onto tldraw shapes. It specifies:
+- Frame dimensions (W, H)
+- Which child shapes to emit (carrier text note, ahu socket sub-frames, edge label style)
+- Color scheme (background fill, border color)
+- Label format (URI slug vs. full URI vs. role field)
+
+Templates are `lares/` carriers, so they have `lar:` URIs, are part of the boot closure, and can be edited via canon-promotion. The `renderAllViews()` function becomes `renderWithCascade(artifact, templateStore)`.
+
+**Phase 1 (current):** Hard-coded template logic inside `tldraw-shapes.ts`. The shape emission rules are the implicit default template.
+
+**Phase 2 (milestone 5):** Extract template logic into `LarTLTemplate` records, select via a `selectTemplate(meme, templateStore)` function (the cascade). Templates stored as in-memory objects derived from the boot closure.
+
+**Phase 3 (future):** Templates themselves are lares/ carriers with `lar:` URIs. Edit a template carrier → recompile → room reseeds with new visual style. The wiki edits its own renderer.
+
+### Built-in tldraw UI Components to Reuse
+
+tldraw exposes `components` prop on `<Tldraw>` to replace each piece of its default UI. We use this to inject our Kinopio-style chrome rather than rendering parallel DOM trees:
+
+```tsx
+<Tldraw
+  store={store.store}
+  components={{
+    // Replace tldraw's default toolbar with our header
+    // (we hide the toolbar entirely — all tools are keyboard-shortcut-only)
+    Toolbar: null,
+    // Replace style panel with our contextual panel
+    StylePanel: null,
+    // Keep tldraw's zoom controls but reposition them
+    ZoomMenu: null,
+    // Override top-left with our logo/room-name
+    TopPanel: LarariumTopPanel,
+    // Keep help/keyboard shortcuts
+    HelpMenu: LarariumHelpMenu,
+  }}
+  overrides={larUiOverrides}
+/>
+```
+
+By setting `Toolbar: null` and `StylePanel: null`, we remove tldraw's chrome from the render tree entirely. Our `<LarariumHeader>` and contextual panels take their place as fixed DOM siblings.
+
+The `TopPanel` slot is a first-class tldraw component position — rendered inside tldraw's layout but as a React subtree we own. This is safer than absolute-positioning over tldraw's DOM.
+
+<<~/ahu >>
+
+<<~ ahu #ux-shell >>
+
+## UX Shell Architecture
+
+The UX shell is the React layer that wraps the tldraw canvas. It owns:
+- Fixed-position chrome (header, footer, minimap, contextual panels)
+- Room state machine (active room, WS connection, reconnection)
+- Trust-tier state (current user DID, tier, capability set)
+- Command palette (room switcher, action palette)
+- Drag-and-drop import handler (canvas-level, not tldraw-level)
+
+tldraw's `components` prop suppresses its own chrome (Toolbar, StylePanel, ZoomMenu). Our shell injects Lararium chrome via fixed DOM siblings and tldraw's `TopPanel` slot. No `z-index` fighting — tldraw's UI is simply not rendered.
+
+### Component Tree
+
+```
+<LarariumShell>                          ← root, 100vw × 100vh, overflow:hidden
+  <LarariumCanvas                        ← tldraw fills 100%
+    wsUrl room
+    components={{ Toolbar:null, StylePanel:null, ZoomMenu:null,
+                  TopPanel: LarariumTopPanel }}
+    overrides={larUiOverrides}
+  />
+  ← all of the following are position:fixed siblings, rendered via React Portal →
+  <LarariumHeader />                     ← top:0, left:0, right:0; pointer-events:none + re-enable btns
+  <LarariumMinimap />                    ← bottom:48px, right:12px
+  <LarariumFooter />                     ← bottom:0, left:0, right:0; status bar
+  <LarariumCommandPalette />             ← conditional, top:0, full-width, ⌘K
+  <LarariumMemeDetail meme />            ← conditional, bottom:48px, slides up
+  <LarariumImportDialog pos />           ← conditional, positioned at drop coordinates
+</LarariumShell>
+```
+
+**`LarariumTopPanel`** (rendered inside tldraw's own layout): room name + breadcrumb. This is the one piece that stays inside tldraw's component tree so it scales correctly with the canvas. Everything else is fixed DOM outside.
+
+### Header Content
+
+```
+[⬡ Lararium]  [room-name ▾]  [room-breadcrumb]  ··· [share] [presence-avatars] [⌘K]
+```
+
+- **Logo + room name:** click room name → room switcher
+- **Breadcrumb:** `the-altar-fire > user:did > my-space` for nested navigation
+- **Presence avatars:** small circles, labeled on hover, positioned at their canvas location if visible
+- **`⌘K`:** opens command palette
+
+### Canvas Interaction Wiring (tldraw overrides)
+
+tldraw exposes `<Tldraw overrides={...}>` for custom tools and UI. We use:
+
+```ts
+const overrides: TLUiOverrides = {
+  tools(editor, tools) {
+    return {
+      ...tools,
+      "lar-portal": larPortalTool,  // P key
+    };
+  },
+  actions(editor, actions) {
+    return {
+      ...actions,
+      "create-meme": createMemeAction,        // click empty canvas
+      "promote-canon": promoteCanonAction,    // ⌘⏎ on selected meme
+      "open-command-palette": {               // ⌘K
+        id: "open-command-palette",
+        label: "Open command palette",
+        kbd: "$k",
+        onSelect: () => dispatch({ type: "OPEN_COMMAND_PALETTE" }),
+      },
+    };
+  },
+  contextMenu(editor, schema, helpers) {
+    // Add "Promote to canon", "Create portal", "Fork meme" to right-click menu
+    return schema;
+  },
+};
+```
+
+### Zoom-gated rendering
+
+tldraw's `editor.getZoomLevel()` drives what sub-structure is visible:
+
+| Zoom level | What renders |
+|---|---|
+| < 0.3 | Graph mode: meme label only, compact frames, edge colors only |
+| 0.3 – 0.8 | Story river: full frames with name + URI slug |
+| > 0.8 | Detail mode: ahu socket sub-frames visible, carrier text snippet |
+| > 1.5 | Full carrier text, edge labels, commit-tier indicators |
+
+This is not separate tldraw pages — it is one page with conditional shape visibility driven by `useEffect([editor.getZoomLevel()])`.
+
+### Offline / Reconnection Model
+
+Mirror Kinopio's dual-load strategy:
+1. On room open: restore IndexedDB snapshot immediately → render instantly
+2. Simultaneously: connect WS → receive deltas → merge with local state
+3. On disconnect: continue editing locally → queue mutations → replay on reconnect
+
+This requires `@tldraw/store`'s persistence adapter wired to IndexedDB. Not yet implemented — see open questions.
 
 <<~/ahu >>
 
@@ -433,25 +706,36 @@ Kinopio (`kinopio.club`) is a spatial thinking canvas (Vue 3, not npm-published,
 
 ## Open Questions
 
-1. **Story River population from store:** SidePanel currently shows `--- memes` because `app=null`. Fix: derive from `editor.getShapes()` filtered by `type === "geo"` with `meta.larUri` set. Store-native, CRDT-correct.
+**Resolved:**
+- ✓ SidePanel meme list: `/api/memes` endpoint, fetched in App.tsx, passed as `memes[]` prop
+- ✓ the-altar-fire invariant meme: authored at `lares/ha-ka-ba/api/v0.1/pono/the-altar-fire.md`
+- ✓ Double-click frame → ZOOM_IN dispatch: wired via `doubleClickShape` + `meta.uri`
 
-2. **Room reseeding after lares/ changes:** Options: (a) `GET /admin/reseed` endpoint deletes SQLite + evicts from rooms Map, reseeds on next connection; (b) diff-patch via `TLSocketRoom` (complex, not yet supported); (c) new room key per BootReceipt SHA (client redirected). Target: option (a) for now, option (c) when content-addressed keys land.
+**Open:**
 
-3. **Content-addressed room keys:** `boot-${receipt.sha.slice(0,16)}` is the target for boot/full rooms. Named rooms (the-altar-fire, chat:*, user:*) use stable slugs — content-addressing does not apply.
+1. **UX shell refactor:** Current `<SidePanel>` + `<LarariumCanvas>` structure needs to flip to `<LarariumShell>` model (header fixed outside canvas, panels contextual, no persistent drawers). See `#ux-shell`. This is the next major coding vector.
 
-4. **the-altar-fire invariant meme:** Needs authoring as a lares/ carrier at `lares/ha-ka-ba/api/v0.1/pono/the-altar-fire.md`. Owns room contract, portal registry shape, trust-tier welcome surface definitions.
+2. **Command palette (`⌘K`):** Room switcher + action palette. Replaces SidePanel story river as primary navigation. Viewport-fixed overlay, keyboard-navigable, filter-as-you-type. Depends on UX shell refactor.
 
-5. **LarPortal custom shape:** `@lararium/tldraw` needs a `LarPortalShapeUtil` — custom tldraw shape with click handler that dispatches room navigation. Requires tldraw's `createShapeId`, `defineShape`, shape util class.
+3. **Zoom-gated rendering:** One page per room, sub-frame geometry conditional on `editor.getZoomLevel()`. Blocked on shape namespace collision resolution — current three-page model stays until then.
 
-6. **Wiki-recipe carriers:** `lares/recipes/` directory and recipe carrier schema. RPG content rooms (`ftls`, `wtf`) depend on this — blocked until book content is wrapped in memetic-wikitext.
+4. **LarPortalShapeUtil:** Custom tldraw shape for room-to-room navigation. `@lararium/tldraw` package. Depends on UX shell (portal click must trigger room switch at shell level, not canvas level).
 
-7. **Write-back gate implementation:** `LarStorageBackend` interface and file backend. No implementation until parity window closes and policy tests land.
+5. **User home rooms (`user:${did}`) with altar-fire transclusion:** Seed logic for per-user rooms. Altar-fire memes projected as locked cluster in corner of user room canvas. Depends on UCAN/identity.
 
-8. **Offline / disconnected editing:** `useSync` reconnects but does not persist client edits across cold reloads. IndexedDB offline queue (Kinopio pattern) needed for operator offline use.
+6. **Room reseeding (`/admin/reseed`):** `GET /admin/reseed?roomId=boot` kills SQLite + evicts from rooms Map, reseeds on next connection. Needed for lares/ edit → live update workflow. Low effort.
 
-9. **UCAN implementation:** `@ucans/ucans` + `did-key`. Server DID generation, delegation flow, WS handshake gate. Blocked until trust-tier UI is designed.
+7. **Content-addressed room keys:** `boot-${receipt.sha.slice(0,16)}` for boot/full rooms. Named rooms use stable slugs. Transition path from `"boot"` needs client redirect.
 
-10. **ATProto identity integration:** BFF-preferred, PKCE/PAR/DPoP managed by SDK. See `lares/lararium-node/AUTH-ATPROTO.md`. Blocked until auth surface is scoped.
+8. **Offline / IndexedDB persistence:** `@tldraw/store` persistence adapter for IndexedDB. Mirror Kinopio's dual-load: restore IndexedDB immediately, merge remote deltas after WS connect.
+
+9. **Wiki-recipe carriers:** `lares/recipes/` schema. RPG rooms (`ftls`, `wtf`) depend on this.
+
+10. **Write-back gate + `LarStorageBackend`:** File backend wrapping `fs.writeFileSync` + git. Blocked until trust-tier UI + UCAN land.
+
+11. **UCAN implementation:** `@ucans/ucans` + `did-key`. Server DID, delegation, WS handshake gate.
+
+12. **ATProto identity (BFF):** See `lares/lararium-node/AUTH-ATPROTO.md`.
 
 <<~/ahu >>
 
