@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lararium</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body, #root { width: 100%; height: 100%; overflow: hidden; }
+    body { background: #1a1a1a; color: #e8e8e8; font-family: system-ui, sans-serif; }
+  </style>
+</head>
+<body>
+  <!--
+    Lararium snapshot injection point.
+    TiddlyWiki analogy: <script type="text/plain" class="TIDDLER_STORE"> blocks.
+    Server replaces the empty object with the full serialized LarSnapshot before sending.
+    Browser boot reads this via bootFromEmbedded() — no fetch required.
+  -->
+  <script type="application/json" id="lararium-snapshot">{}</script>
+
+  <div id="root"></div>
+  <script type="module" src="/src/main.tsx"></script>
+</body>
+</html>
