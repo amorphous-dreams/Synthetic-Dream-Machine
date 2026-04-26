@@ -1,18 +1,18 @@
 import { useState } from "react";
-import type { LarApp } from "@lararium/web";
+import type { MemeEntry } from "./App.js";
 import type { LarViewState, LarViewAction } from "@lararium/tldraw";
 
 interface Props {
-  app: LarApp | null;
+  memes: MemeEntry[];
   navState: LarViewState;
   dispatch: React.Dispatch<LarViewAction>;
 }
 
-export function SidePanel({ app, navState, dispatch }: Props) {
+export function SidePanel({ memes, navState, dispatch }: Props) {
   const [storyOpen, setStoryOpen] = useState(true);
   const isGraphOpen = navState.activeView === "graph";
 
-  const entries = app?.artifact.closure ?? [];
+  const entries = memes;
 
   return (
     <>
@@ -67,7 +67,7 @@ export function SidePanel({ app, navState, dispatch }: Props) {
 
       {/* ── Status bar ──────────────────────────────────────────────────── */}
       <div style={styles.statusBar}>
-        <span>{app?.artifact.memeCount ?? "—"} memes</span>
+        <span>{memes.length || "—"} memes</span>
         <span style={styles.viewBadge}>{navState.activeView}</span>
         {navState.focusUri && (
           <span style={styles.focusUri}>{navState.focusUri.replace("lar:///", "")}</span>

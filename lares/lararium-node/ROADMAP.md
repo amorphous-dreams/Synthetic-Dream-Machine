@@ -7,16 +7,15 @@
 uri-path = "LARARIUM-NODE/ROADMAP"
 file-path = "lares/lararium-node/ROADMAP.md"
 content-type = "text/x-memetic-wikitext"
-confidence = 0.72
+confidence = 0.88
 register = "S"
-manaoio = 0.68
-mana = 0.74
-manao = 0.82
-role = "docs meme — detailed migration roadmap for Lararium Node, preserving research detail while adding navigable ahu markers"
+manaoio = 0.82
+mana = 0.88
+manao = 0.86
+role = "docs meme — migration roadmap and milestone log for Lararium Node; Milestones 1–4 complete; M5 planned"
 cacheable = false
 retain = true
 invariant = false
-source-restored = "Pasted text.txt"
 ```
 <<~/ahu >>
 
@@ -892,7 +891,7 @@ Do not ship the snapshot-injection server as the primary path. Offline mode only
 
 <<~ ahu #milestone-4-scope >>
 
-## Milestone 4 — In Progress (2026-04-25)
+## Milestone 4 — Complete (2026-04-26)
 
 ### Completed
 
@@ -911,43 +910,84 @@ Do not ship the snapshot-injection server as the primary path. Offline mode only
 - ✓ `lares/lararium-node/AUTH-ATPROTO.md`: BFF-preferred, SDK-managed PKCE/PAR/DPoP, seven identity layers, k256 out of scope
 
 **Infinite canvas app scaffold**
-- ✓ `packages/lararium-app/` created: `index.html` (TW-style snapshot injection slot), `main.tsx`, `App.tsx`, `LarariumCanvas.tsx`, `SidePanel.tsx`
-- ✓ `bootFromEmbedded()` → `renderAppViews()` async boot chain in `App.tsx`
+- ✓ `packages/lararium-app/` created: `index.html`, `main.tsx`, `App.tsx`, `LarariumCanvas.tsx`, `SidePanel.tsx`
 - ✓ `viewStateReducer` wired; Back and Graph buttons in `SidePanel`
-- ✓ `LarariumCanvas.tsx`: tldraw mount, emission hydration, page routing, camera sync via `goToStoryRiver`/`goToGraph`/`zoomToMeme`
-- ✓ All packages typecheck clean; 36/36 tests pass
+- ✓ All packages typecheck clean
 
-### Remaining
-
-**Sync server (replaces snapshot injection)**
-- Upgrade `serve.ts` to WebSocket server: `@tldraw/sync-core` (`TLSocketRoom`, `SQLiteSyncStorage`)
-- On first connection, if room not in SQLite: seed from `renderAllViews(artifact)` output keyed by `BootReceipt.sha`
-- Room ID = `boot-${receipt.sha.slice(0, 16)}` — content-addressed, idempotent re-seed
-- Add `@tldraw/sync-core` to `lararium-node` deps; `@tldraw/sync` to `lararium-app`
+**Multiplayer sync server (replaces snapshot injection)**
+- ✓ `packages/lararium-node/scripts/serve.ts` rewritten as `TLSocketRoom` + `SQLiteSyncStorage` WebSocket server
+- ✓ `better-sqlite3` backend (not `node:sqlite`) — matches official tldraw template
+- ✓ Room seeded from `renderAllViews(artifact)` on first connection if SQLite empty; idempotent on resume
+- ✓ Room ID = `"boot"` (content-addressed SHA keying deferred to Milestone 5)
+- ✓ `@tldraw/sync-core` + `better-sqlite3` + `ws` added to `lararium-node` deps
+- ✓ Static file server injects `<meta name="lararium-ws">` into `index.html` (no snapshot blob)
+- ✓ WebSocket handler follows official tldraw simple-server-example: sessionId from URL query param, message buffering pattern, ws passed directly to `handleSocketConnect`
 
 **Browser client upgrade**
-- Replace `bootFromEmbedded()` + `loadSnapshot()` in `App.tsx` with `useSync({ uri: wsUrl })`
-- `wsUrl` served from a `<meta name="lararium-ws">` tag or env var — no snapshot blob in HTML
-- `index.html` snapshot injection slot retained for offline/embedded mode only
+- ✓ `App.tsx` rewritten: reads `wsUrl` from `<meta name="lararium-ws">` or same-host fallback; `useReducer(viewStateReducer)` nav state; `app={null}` (sync mode, no local boot)
+- ✓ `LarariumCanvas.tsx` rewritten: `useSync({ uri: wsUrl })`, `loading` / `error` / `synced-remote` states handled; `useEffect([store.status, navState])` drives `syncNavState`
+- ✓ `SidePanel.tsx` accepts `app: LarApp | null`; gracefully shows `--- memes` when null
 
-**First working browser session**
-- Build pipeline: `pnpm --filter @lararium/app build` then `pnpm --filter @lararium/node serve`
-- `goToRoom(editor, roomId)` nav helper in `nav.ts` (already scaffolded, verify with live sync)
-- Story river in `SidePanel`: scrollable meme URI list; click → `dispatch({ type: "ZOOM_IN", uri })`
-- Double-click on tldraw frame shapes → zoom-in dispatch (tldraw v4 event API)
+**tldraw v4 schema compliance (found and fixed during browser testing)**
+- ✓ All shape IDs must start with `shape:` — `memeFrameId`, `ahuFrameId`, `edgeArrowId`, note IDs all fixed in `records.ts` / `project.ts`
+- ✓ Index key format: replaced broken `a${n.toString(36)}` with `getIndexAbove`/`getIndicesAbove` from `@tldraw/utils`
+- ✓ Multi-view shape ID scoping: `scopeId()` rewrites `shape:foo` → `shape:${pageSlug}__foo` — collision-free across views, `shape:` prefix preserved
+- ✓ `TLArrowRecord` / `TLNoteRecord` now imported from `tldraw` directly and used with `satisfies` — schema drift is now a compile error, not a runtime `ValidationError`
+- ✓ Arrow props: `kind: "arc"`, `labelColor: "black"`, `fill: "none"`, `font: "draw"`, `elbowMidPoint: 0.5` added
+- ✓ Note props: `labelColor: "black"`, `font: "draw"`, `fontSizeAdjustment: 0` added
+- ✓ 34/34 `@lararium/tldraw` tests pass; 36 `@lararium/node` tests pass
 
-**Rooms and portals**
-- Portal shapes connecting rooms: `LarPortal` renders as TLArrow with click-navigation handler
-- `renderRoom(artifact, room, readText)` — filters via `filterMemesTW` then projects room content
-- Room registry in SidePanel control panel (right-slide overlay)
+**Build hygiene**
+- ✓ `tldraw` and `tiddlywiki5` git submodules removed; versioned npm deps replace them
+- ✓ `@tldraw/utils@^4.5.10` added to `lararium-tldraw`; `pnpm-workspace.yaml` no longer includes `tldraw/packages/*`
+- ✓ TW5 help banner suppressed during `boot.boot()` in `tw-filter.ts` (stdout redirect during init)
+- ✓ `mempalace`, `kowloon`, `kowloon-frontend`, `kowloon-client` submodules retained (private/co-developed)
 
-Do not in Milestone 4:
-- Actual Bluesky login implementation (doctrine only)
-- Write-back of any kind — canon-promotion-boundary holds
-- Kowloon projection package (Milestone 5)
-- Multi-user presence / cursors (Milestone 5+)
-- Snapshot injection as primary path (offline fallback only)
+**Design docs**
+- ✓ `lares/lararium-node/MULTIPLAYER-INFINITE-CANVAS-WIKI.md` — canonical design constitution for the multiplayer canvas system (system role, room model, seeding contract, trust tiers, canon boundary, views, MCP surface plan, deployment topology, open questions)
 
+### Known Open Items (carry to Milestone 5)
+
+- ⚠ `SidePanel` story river is empty (`app=null`); population requires store-derived selector over `editor.getShapes()` or `/api/boot/artifact` endpoint
+- ⚠ Room ID is `"boot"` string — content-addressed SHA keying not yet implemented
+- ⚠ UCAN access tier gating: design in MULTIPLAYER-INFINITE-CANVAS-WIKI.md, not implemented
+- ⚠ Path traversal guard in static file server: `join(APP_DIST, pathname)` has no boundary check
+- ⚠ WS URL injected as `ws://${HOST}:${PORT}` — should derive from request `Host` header for proxy/LAN correctness
+- ⚠ Double-click on frame shapes → zoom-in dispatch (tldraw v4 event API)
+- ⚠ Portal shapes connecting rooms
+
+<<~/ahu >>
+
+<<~ ahu #milestone-5-scope >>
+
+## Milestone 5 — Planned
+
+**Priority 1: Story river population from store**
+- `SidePanel` derives meme list from `editor.getShapes()` filtered to `meta.frameKind === "meme"` — no separate fetch, CRDT-native
+- Click → `dispatch({ type: "ZOOM_IN", uri: shape.meta.uri })`
+
+**Priority 2: Security hardening**
+- Path traversal guard: `path.resolve()` + boundary check against `APP_DIST` before static file serve
+- WS URL from request `Host` header (not hardcoded `HOST:PORT`); respect `x-forwarded-proto` for `wss:`
+
+**Priority 3: MCP integration**
+- Co-locate MCP server with HTTP/WS server in `packages/lararium-node`
+- Stdio transport default (Claude Desktop / Claude Code direct)
+- MCP tools per `MULTIPLAYER-INFINITE-CANVAS-WIKI.md #mcp-surface`: room/list, room/create, meme/inspect, meme/list, filter, edge/list
+
+**Priority 4: Content-addressed room identity**
+- Room key = `boot-${receipt.sha.slice(0, 16)}` — idempotent across recompiles
+- Client bookmark migration: redirect old `"boot"` key to SHA-keyed room
+
+**Priority 5: Canvas navigation polish**
+- Double-click on frame shapes → `dispatch({ type: "ZOOM_IN", uri })` via tldraw v4 shape event API
+- Portal shapes: custom `LarPortal` shape type linking rooms
+
+Do not in Milestone 5:
+- Canon promotion / write-back to `lares/`
+- UCAN implementation (design is frozen in MULTIPLAYER-INFINITE-CANVAS-WIKI.md)
+- Kowloon projection package
+- Multi-user presence / cursors
 
 <<~/ahu >>
 
@@ -994,6 +1034,7 @@ Required context now present in-document:
 
 <<~ pranala #implements-meme ? -> lar:///ha.ka.ba/api/v0.1/pono/meme family:control role:implements >>
 <<~ pranala #implements-loci ? -> lar:///ha.ka.ba/api/v0.1/pono/loci family:control role:implements >>
+<<~ pranala #to-canvas-wiki ? -> lar:///LARARIUM-NODE/MULTIPLAYER-INFINITE-CANVAS-WIKI family:relation role:companion >>
 <<~/ahu >>
 
 <<~&#x0003; ahu #body-close >>

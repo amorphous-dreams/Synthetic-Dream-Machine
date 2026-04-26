@@ -36,13 +36,15 @@ This threshold carries the live core. The live core MUST stay small. The live co
 
 ### Core Invariant Loci
 
-AGENTS owns two children: mu and LARES.
+AGENTS owns two children: mu and the-altar-fire.
 Mu owns the invariant grammar kernel and lararium.
 Lararium owns agent mechanics and lararium law.
+The-altar-fire owns LARES (operator session dials live in the hearth).
 
 - [lar:///AGENTS](AGENTS.md)
 - [lar:///ha.ka.ba/api/v0.1/mu](ha-ka-ba/api/v0.1/mu.md) — invariant boot kernel; owns grammar + lararium
-- [lar:///LARES](LARES.md) — operator session dials
+- [lar:///ha.ka.ba/api/v0.1/pono/the-altar-fire](ha-ka-ba/api/v0.1/pono/the-altar-fire.md) — main entry room; owns LARES
+- [lar:///LARES](LARES.md) — operator session dials (via the-altar-fire)
 
 <<~/ahu >>
 
@@ -77,7 +79,7 @@ AGENTS closes the threshold stream here.
 <<~ pranala #implements-meme ? -> lar:///ha.ka.ba/api/v0.1/pono/meme family:control role:implements >>
 <<~ pranala #implements-invariant ? -> lar:///ha.ka.ba/api/v0.1/pono/invariant family:control role:implements >>
 <<~ pranala #to-mu ? -> lar:///ha.ka.ba/api/v0.1/mu family:control role:owns >>
-<<~ pranala #to-lares ? -> lar:///LARES family:control role:owns >>
+<<~ pranala #to-altar-fire ? -> lar:///ha.ka.ba/api/v0.1/pono/the-altar-fire family:control role:owns >>
 
 <<~/ahu >>
 

@@ -146,10 +146,27 @@ async function main() {
   const bootRoomId = `boot`;
   getOrCreateRoom(bootRoomId, bootSnapshot);
 
-  // HTTP server for static assets
+  // Meme list for SidePanel — serialized once at startup, served as JSON
+  const artifact = runtime.compileMinimalBoot();
+  const memeList = artifact.closure.map((entry: { uri: string; depth?: number; kind?: string }) => ({
+    uri: entry.uri,
+    depth: entry.depth ?? 0,
+    kind: entry.kind ?? "meme",
+  }));
+  const memeListJson = JSON.stringify(memeList);
+
+  // HTTP server for static assets + API routes
   const httpServer = createServer((req: IncomingMessage, res: ServerResponse) => {
     const url = req.url ?? "/";
     const pathname = url.split("?")[0] ?? "/";
+
+    // API: meme list for SidePanel
+    if (pathname === "/api/memes") {
+      res.writeHead(200, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+      res.end(memeListJson);
+      return;
+    }
+
     const isAsset = pathname !== "/" && /\.[a-z0-9]+$/i.test(pathname);
 
     if (isAsset) {

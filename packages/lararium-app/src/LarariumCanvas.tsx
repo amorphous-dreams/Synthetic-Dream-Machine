@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import { Tldraw, inlineBase64AssetStore } from "tldraw";
-import type { TLPageId } from "tldraw";
+import type { TLPageId, TLShapeId } from "tldraw";
 import { useSync } from "@tldraw/sync";
 import "tldraw/tldraw.css";
 import type { LarViewState, LarViewAction, TldrawEditorLike } from "@lararium/tldraw";
@@ -25,13 +25,46 @@ function syncNavState(editor: TldrawEditor, navState: LarViewState) {
   }
 }
 
-export function LarariumCanvas({ wsUrl, navState, dispatch: _dispatch }: Props) {
+// Extract lar URI from a shape's meta or name field.
+// Meme frames are emitted with meta.larUri set by the projection layer.
+function getLarUriFromShape(editor: TldrawEditor, shapeId: TLShapeId): string | null {
+  const shape = editor.getShape(shapeId);
+  if (!shape) return null;
+  const meta = shape.meta as Record<string, unknown> | undefined;
+  if (meta?.uri && typeof meta.uri === "string") return meta.uri;
+  if (meta?.larUri && typeof meta.larUri === "string") return meta.larUri;
+  // Fallback: frames named after the URI slug
+  if (shape.type === "frame" || shape.type === "geo") {
+    const props = shape.props as unknown as Record<string, unknown>;
+    const name = props.name ?? props.text;
+    if (typeof name === "string" && name.startsWith("lar:")) return name;
+  }
+  return null;
+}
+
+export function LarariumCanvas({ wsUrl, navState, dispatch }: Props) {
   const store = useSync({
     uri: wsUrl,
     assets: inlineBase64AssetStore,
   });
   const editorRef = useRef<TldrawEditor | null>(null);
   (window as any).__larariumStore = store;
+
+  // Wire double-click on meme frames → ZOOM_IN dispatch
+  useEffect(() => {
+    const editor = editorRef.current;
+    if (!editor || store.status !== "synced-remote") return;
+
+    const handler = (e: { target?: { id?: TLShapeId } }) => {
+      const shapeId = e?.target?.id;
+      if (!shapeId) return;
+      const uri = getLarUriFromShape(editor, shapeId);
+      if (uri) dispatch({ type: "ZOOM_IN", uri });
+    };
+
+    editor.on("doubleClickShape" as any, handler);
+    return () => { editor.off("doubleClickShape" as any, handler); };
+  }, [store.status, dispatch]);
 
   useEffect(() => {
     const editor = editorRef.current;

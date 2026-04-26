@@ -34,13 +34,15 @@ Lararium is a **memetic wiki** rendered as a multiplayer infinite canvas.
 What this system is:
 - A tldraw multiplayer server (`TLSocketRoom` + `SQLiteSyncStorage`) that seeds rooms from boot projections
 - A pure projection layer (`@lararium/tldraw`) that converts `BootArtifact → tldraw store records`
-- A canon-promotion boundary: edits flow inward from canvas → `lares/` by explicit operator action only
+- A canon-promotion boundary: edits flow inward from canvas → `lares/` by explicit operator action only (with git-like commit tiers: live session → branch commit → deep save / canon)
+- A multi-room canvas: `the-altar-fire` is the main entry room; portals navigate to book rooms, user rooms, and chat rooms
 - An MCP server surface: Claude reads and acts on the canvas through declared tools
+- An identity-addressed content store: every persistent content unit (meme, import, chat turn) receives a `lar:` URI
 
 What this system is not:
-- A general-purpose wiki editor (TiddlyWiki handles authoring)
+- A general-purpose wiki editor (TiddlyWiki is a reference system, not the runtime)
 - A source-of-truth store (SQLite rooms are projections; `lares/` is truth)
-- A public-write surface (canvas edits are pending until promoted)
+- A public-write surface (canvas edits are pending until promoted through the canon-promotion ceremony)
 
 <<~/ahu >>
 
@@ -226,23 +228,230 @@ claude   → HTTP SSE MCP endpoint (authenticated)
 
 <<~/ahu >>
 
+<<~ ahu #the-altar-fire >>
+
+## The Altar Fire — Main Entry Room
+
+`the-altar-fire` is the canonical entry room for all trust tiers. It is the hearth: operators, users, and anon visitors all land here first. What they see and can do is governed by their current trust-tier capability set.
+
+```
+lar:///ha.ka.ba/api/v0.1/pono/the-altar-fire
+```
+
+This is an **invariant meme** (to be authored). It owns the room contract, portal registry, and trust-tier welcome surfaces.
+
+**Trust-tier presentation at the altar fire:**
+
+| Tier | What they see | What they can do |
+|------|---------------|-----------------|
+| **anon** | Public memes only, read-only canvas, chat room surface | Browse, read, enter chat rooms |
+| **user** | Own lararium rooms + shared public rooms | Read + create in own rooms, pending edits |
+| **operator** | Full boot closure + promoted room list | Read + pending edits in boot room |
+| **admin** | Full boot closure + invariant meme surfaces | Read + write + canon-promotion |
+
+**The altar fire is not a blank lobby.** It renders the minimal boot closure — the 18 invariant memes — as the starting canvas, with portals to other rooms arranged around the perimeter. Think of it as a TiddlyWiki `DefaultTiddlers` list rendered spatially: the memes that are always open when you first arrive.
+
+**Room portal arrangement:** Portals from the altar fire are positioned at canonical compass points or cluster zones on the canvas. Their placement is itself a meme (part of the altar fire carrier) — operators can edit portal position without canonical write-back.
+
+<<~/ahu >>
+
+<<~ ahu #room-model-v2 >>
+
+## Room Model — Extended
+
+A **room** is a named, persistent, multiplayer canvas backed by a `TLSocketRoom`. Rooms are organized under a namespace hierarchy that mirrors the `lar:` URI structure.
+
+### Room naming
+
+```
+the-altar-fire                  — main entry (always)
+boot                            — minimal 18-meme boot closure
+full                            — full 58-meme closure
+meme:${encoded-uri}             — single meme + direct neighbours + ahu sockets
+synthetic-dream-machine/ftls    — RPG: Faster Than Light Starships book content
+synthetic-dream-machine/wtf     — RPG: WTF Are We Playing book content
+chat:${slug}                    — live session chat room (anon-accessible)
+user:${did}                     — private user lararium
+```
+
+Room names are slugs. Room IDs are content-addressed (`sha:${receipt.sha.slice(0,16)}`) for boot/full rooms. Named rooms (chat, user, RPG content) use their slug directly — they are not seeded from the boot compiler.
+
+### Wiki-recipes
+
+A **wiki-recipe** is a room seeding specification: a named bundle of memes, carriers, and pranala edges that defines the initial canvas for a given room. Recipes are stored as lares/ carriers under `lares/recipes/${slug}.md`. The RPG rooms (`ftls`, `wtf`) will each have a recipe that imports all book-content memes once they are wrapped in memetic-wikitext and assigned `lar:` URIs.
+
+### Portal shapes
+
+A **portal** is a custom tldraw shape (`LarPortal`) that represents a navigable link to another room. Clicking a portal opens a WebSocket connection to the target room (in-tab navigation or new tab, user-selectable). Portals are part of the canvas state — they are room-level shapes, not lares/ canon, and do not require canon-promotion to be repositioned.
+
+Portal shape record:
+```ts
+type LarPortalShape = {
+  type: "lar-portal"
+  props: {
+    targetRoomId: string
+    targetRoomName: string
+    label: string
+    trustTierRequired: TrustTier
+  }
+}
+```
+
+<<~/ahu >>
+
+<<~ ahu #lar-uri-assignment >>
+
+## Lar URI Assignment — Everything Gets a URI
+
+All persistent content in Lararium receives a `lar:` URI. This is the foundational identity contract: if it exists and matters, it has an address.
+
+**URI assignment by content type:**
+
+| Content type | URI pattern | Example |
+|---|---|---|
+| Invariant meme | `lar:///ha.ka.ba/api/v0.1/pono/${name}` | `lar:///ha.ka.ba/api/v0.1/pono/the-altar-fire` |
+| Wiki carrier | `lar:///${path}` | `lar:///AGENTS` |
+| RPG book meme | `lar:///synthetic-dream-machine/ftls/${slug}` | `lar:///synthetic-dream-machine/ftls/jump-drive` |
+| Imported text | `lar:///imported/${sha256-prefix}/${slug}` | `lar:///imported/3a9f/my-notes` |
+| Imported image | `lar:///imported/images/${sha256}` | `lar:///imported/images/ba78…` |
+| Live chat message | `lar://alias:tier@host/chat/${room}/${turn-id}` | `lar://joshu:operator@local/chat/the-altar-fire/turn-001` |
+| Live session meme | `lar://alias:tier@host/${path}` | `lar://joshu:operator@local/sketch/idea-draft` |
+| Committed user meme | `lar:///user/${did-fragment}/${slug}` | `lar:///user/did-key-abc123/my-meme` |
+
+**Hostless URIs** (`lar:///...`) are canonical — they name things that exist in `lares/` or are promoted canon. **Hostful URIs** (`lar://alias:tier@host/...`) are live/session-scoped — they name things that exist only in the current session's branch/room until committed.
+
+**Import flow:** When a user drops a text file or image onto the canvas, the server:
+1. Computes `sha256(content)`
+2. Assigns a hostful URI: `lar://alias:tier@host/imported/${sha256-prefix}/${slug}`
+3. Creates a tldraw shape with that URI as its `sourceUri`
+4. On commit: promotes to hostless `lar:///imported/...` and writes a carrier file
+
+<<~/ahu >>
+
+<<~ ahu #write-back-architecture >>
+
+## Write-Back Architecture
+
+**Current state:** Read-only. The canon-promotion boundary holds. This section defines the target write-back model.
+
+### The commit model — git-like confidence tiers
+
+Canvas edits live in one of three tiers before reaching permanent storage:
+
+```
+┌─────────────────────────────────────────────────────────┐
+│  LIVE SESSION (room state, tldraw pending layer)        │
+│  Volatile. Lost on disconnect if not saved. Hostful.    │
+├─────────────────────────────────────────────────────────┤
+│  BRANCH / ROOM COMMIT (SQLite room state, persisted)    │
+│  Durable across reconnects. Visible to all room peers.  │
+│  Not yet canonical. Like a git branch commit.           │
+├─────────────────────────────────────────────────────────┤
+│  DEEP SAVE / CANON PROMOTION (lares/ files, git-tracked)│
+│  Immutable once committed. Hostless lar URI assigned.   │
+│  Equivalent to a merge to main. Requires ceremony.      │
+└─────────────────────────────────────────────────────────┘
+```
+
+This maps directly onto:
+- tldraw's pending client state → live session
+- tldraw's confirmed server state (SQLite) → branch commit
+- `lares/` tree + git → deep save / canon
+
+### Storage backend abstraction
+
+Write-back targets an abstract `LarStorageBackend` interface so the same promotion path works for:
+- **Files on disk** (`lares/` tree, git-tracked) — primary target
+- **Database** (future: PostgreSQL for cloud-hosted instances)
+- **IPFS / content-addressed store** (future: for DreamNet distribution)
+
+```ts
+interface LarStorageBackend {
+  write(uri: string, content: string): Promise<void>
+  delete(uri: string): Promise<void>
+  list(prefix: string): Promise<string[]>
+  commit(message: string, author: LarAuthority): Promise<string> // returns commit hash
+}
+```
+
+The file backend wraps `fs.writeFileSync` + `git add` + `git commit`. The commit message carries the operator's `lar:` URI as author.
+
+### Trust-tier write gates
+
+| Action | anon | user | operator | admin |
+|--------|------|------|----------|-------|
+| Create shape in own room | — | ✓ | ✓ | ✓ |
+| Edit pending shape in shared room | — | ✓ | ✓ | ✓ |
+| Branch-commit (room-level save) | — | ✓ | ✓ | ✓ |
+| Deep-save non-invariant meme | — | — | ✓ | ✓ |
+| Deep-save invariant meme | — | — | — | ✓ |
+| Canon-promote hostful → hostless URI | — | — | ✓ | ✓ |
+| Assign `lar:///ha.ka.ba/api/v0.1/...` URI | — | — | — | ✓ |
+
+### Ceremony surface
+
+Canon promotion is always an explicit two-step:
+1. Operator/admin triggers "Promote to canon" on a pending shape
+2. Server validates shape against Lararium schema, assigns hostless URI, writes carrier file, triggers recompile
+
+The tldraw canvas shows a visible distinction between pending (dashed border, amber) and confirmed (solid border, default) shapes. This is cosmetic enforcement of the canon-promotion-boundary invariant.
+
+<<~/ahu >>
+
+<<~ ahu #kinopio-patterns >>
+
+## Kinopio — Patterns Worth Stealing
+
+Kinopio (`kinopio.club`) is a spatial thinking canvas (Vue 3, not npm-published, not directly importable). Its code is open-source but framework-incompatible with our React/tldraw stack. Value is in patterns, not dependencies.
+
+**Patterns to adopt:**
+
+| Kinopio pattern | Lararium equivalent |
+|---|---|
+| **Spaces** as named persistent canvases | **Rooms** — already our model |
+| **Cards** as atomic content units anywhere on canvas | Meme frames — already our model |
+| **Connections** as draggable semantic links | Pranala arrows — already our model |
+| **Boxes** as group containers | Ahu frames (sub-frames grouping sockets) |
+| **Fractional indexing** for z-order / list ordering | Adopt `fractional-indexing` npm package for room shape ordering |
+| **IndexedDB offline queue** for disconnected edits | Needed for offline mode (see open questions) |
+| **Spatial memory** — position IS organization | Canonical: shape position in room state is authoritative; layout algorithms set initial positions but operators can move freely |
+| **Paint-select** (lasso multi-select) | tldraw already has this |
+| **No forced hierarchy** — spatial position replaces folders | Rooms are the hierarchy; within a room, position is free |
+
+**Key Kinopio insight for Lararium:** Kinopio avoids modes and views entirely. Everything is on one canvas; zoom and pan are the only navigation. We should trend toward this model within a room (one page per room, zoom-based navigation) while using rooms as the boundary between discrete canvases.
+
+**What Kinopio does not have that we need:**
+- Trust tiers and write gates
+- Content-addressed identity (lar URIs)
+- DAG-structured semantic edges (pranala has family/role, not just "connected")
+- Canon-promotion boundary
+- Invariant vs. mutable content distinction
+
+<<~/ahu >>
+
 <<~ ahu #open-questions >>
 
 ## Open Questions
 
-1. **Story River population from store:** SidePanel currently shows `--- memes` because `app=null`. Should the side panel derive its entry list from `editor.getShapes()` (store-native) or from a separate `/api/boot/artifact` endpoint? Store-native is CRDT-correct but requires a selector over shape metadata.
+1. **Story River population from store:** SidePanel currently shows `--- memes` because `app=null`. Fix: derive from `editor.getShapes()` filtered by `type === "geo"` with `meta.larUri` set. Store-native, CRDT-correct.
 
-2. **Room reseeding after lares/ changes:** When `lares/` is edited and recompiled, how does the running room get updated? Options: delete SQLite and restart (crude), diff-patch the room via `TLSocketRoom.handleTLDRawChange()` (elegant), or provision a new room with a new key and redirect clients.
+2. **Room reseeding after lares/ changes:** Options: (a) `GET /admin/reseed` endpoint deletes SQLite + evicts from rooms Map, reseeds on next connection; (b) diff-patch via `TLSocketRoom` (complex, not yet supported); (c) new room key per BootReceipt SHA (client redirected). Target: option (a) for now, option (c) when content-addressed keys land.
 
-3. **Content-addressed room keys:** Room key = BootReceipt SHA is the target. Transition path from `"boot"` string key to SHA-keyed rooms without breaking existing client bookmarks needs design.
+3. **Content-addressed room keys:** `boot-${receipt.sha.slice(0,16)}` is the target for boot/full rooms. Named rooms (the-altar-fire, chat:*, user:*) use stable slugs — content-addressing does not apply.
 
-4. **Meme-detail view population:** The detail page currently shows all memes. The intent is to show a single meme + its ahu sockets + immediate neighbors. Navigation from story river → detail needs a `focusUri` → page filter or a dynamic per-meme room.
+4. **the-altar-fire invariant meme:** Needs authoring as a lares/ carrier at `lares/ha-ka-ba/api/v0.1/pono/the-altar-fire.md`. Owns room contract, portal registry shape, trust-tier welcome surface definitions.
 
-5. **Portal shapes:** Shapes that link between rooms (e.g., story river frame → opens full meme room). tldraw has no native portal concept; this requires a custom shape type or an overlay navigation layer.
+5. **LarPortal custom shape:** `@lararium/tldraw` needs a `LarPortalShapeUtil` — custom tldraw shape with click handler that dispatches room navigation. Requires tldraw's `createShapeId`, `defineShape`, shape util class.
 
-6. **Offline / disconnected editing:** `useSync` reconnects automatically but does not persist client edits across cold page reloads. IndexedDB persistence (`@tldraw/store` persistence adapter) needed for offline-first operator use.
+6. **Wiki-recipe carriers:** `lares/recipes/` directory and recipe carrier schema. RPG content rooms (`ftls`, `wtf`) depend on this — blocked until book content is wrapped in memetic-wikitext.
 
-7. **UCAN implementation:** `@ucans/ucans` + `did-key` are the target libraries. Server DID generation and storage, delegation flow from admin → operator → user, and the WS handshake gate are all unimplemented.
+7. **Write-back gate implementation:** `LarStorageBackend` interface and file backend. No implementation until parity window closes and policy tests land.
+
+8. **Offline / disconnected editing:** `useSync` reconnects but does not persist client edits across cold reloads. IndexedDB offline queue (Kinopio pattern) needed for operator offline use.
+
+9. **UCAN implementation:** `@ucans/ucans` + `did-key`. Server DID generation, delegation flow, WS handshake gate. Blocked until trust-tier UI is designed.
+
+10. **ATProto identity integration:** BFF-preferred, PKCE/PAR/DPoP managed by SDK. See `lares/lararium-node/AUTH-ATPROTO.md`. Blocked until auth surface is scoped.
 
 <<~/ahu >>
 
@@ -255,6 +464,8 @@ MULTIPLAYER-INFINITE-CANVAS-WIKI closes
 <<~ pranala #implements-meme ? -> lar:///ha.ka.ba/api/v0.1/pono/meme family:control role:implements >>
 <<~ pranala #to-roadmap ? -> lar:///LARARIUM-NODE/ROADMAP family:control role:companion >>
 <<~ pranala #to-agents ? -> lar:///AGENTS family:control role:governed-by >>
+<<~ pranala #to-altar-fire ? -> lar:///ha.ka.ba/api/v0.1/pono/the-altar-fire family:control role:defines >>
+<<~ pranala #to-canon-promotion ? -> lar:///ha.ka.ba/api/v0.1/pono/canon-promotion-boundary family:control role:governed-by >>
 
 <<~/ahu >>
 

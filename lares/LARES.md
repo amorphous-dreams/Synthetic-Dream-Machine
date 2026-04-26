@@ -119,7 +119,7 @@ LARES ends
 
 ## Edges
 
-- `<-- lar:///AGENTS`
+<<~ pranala #from-altar-fire ? -> lar:///ha.ka.ba/api/v0.1/pono/the-altar-fire family:control role:owned-by >>
 
 <<~/ahu >>
 
