@@ -12,7 +12,8 @@
   "scripts": {
     "build": "tsc",
     "typecheck": "tsc --noEmit",
-    "test": "NODE_OPTIONS=--experimental-vm-modules pnpm exec jest --config jest.config.cjs"
+    "test": "NODE_OPTIONS=--experimental-vm-modules pnpm exec jest --config jest.config.cjs",
+    "dev": "tsx src/index.ts"
   },
   "dependencies": {
     "@lararium/core": "workspace:*"

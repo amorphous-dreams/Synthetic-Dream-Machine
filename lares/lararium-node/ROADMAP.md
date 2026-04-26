@@ -770,7 +770,13 @@ All target outcomes delivered:
 - ✓ Streamable HTTP canary (`packages/lararium-mcp/src/http.ts`): separate entrypoint, Origin validation gate, auth hook stub, `LARARIUM_HTTP_PORT/HOST/ALLOWED_ORIGINS` env config, `lararium-mcp-http` bin
 - ✓ `lararium-tldraw` skeleton: pure projection, no tldraw runtime import (optional peer), `LarProjectionRecord` union (page/frame/arrow/note), `projectToTldraw()`, story river layout, TiddlyWiki mapping documented in source
 
-### Remaining
+- ✓ Layout/projection separation: `LarTLLayout` pass sits between `LarTLSnapshot` and tldraw store
+- ✓ TiddlyWiki cascade pattern: `LayoutStrategy[]` with `predicate + apply`, `selectLayout()` picks first match
+- ✓ `storyRiverLayout()`: x=depth×(FRAME_W+GAP_X), y=band position; ahu sub-frames in local coords; arrow geometry center-to-center
+- ✓ `emitTldrawRecords(snapshot, layout)` → store-ready shape records with `{x,y,rotation,index,parentId,props:{w,h}}`; arrows emit relative start/end vectors; colors by family (control=blue, relation=grey, observe=green, dataflow=orange)
+- ✓ 16 layout + emission tests; 81 total tests green
+
+### Remaining in Milestone 3
 
 ## Milestone 3 — Scope (Next 30 Days)
 
