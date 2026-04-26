@@ -214,7 +214,7 @@ export interface LarariumRuntime {
   readCarrier(uri: string): CarrierRecord;
   compileMinimalBoot(): BootArtifact;
   compileFullBoot(): BootArtifact;
-  compileBootReceipt(artifact: BootArtifact): BootReceipt;
+  compileBootReceipt(artifact: BootArtifact): Promise<BootReceipt>;
   compileCarrierIndex(): CarrierRecord[];
 }
 

@@ -56,6 +56,9 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
+      - name: Build TW5 browser filter bundle
+        run: pnpm --filter @lararium/core tw:build-browser
+
       - name: Build all packages
         run: pnpm -r build
 

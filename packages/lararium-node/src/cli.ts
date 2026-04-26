@@ -41,7 +41,9 @@ switch (cmd) {
   }
   case "receipt": {
     const artifact = runtime.compileMinimalBoot();
-    console.log(JSON.stringify(runtime.compileBootReceipt(artifact), null, 2));
+    runtime.compileBootReceipt(artifact).then((receipt) => {
+      console.log(JSON.stringify(receipt, null, 2));
+    });
     break;
   }
   default:

@@ -31,6 +31,15 @@ export interface LarSnapshot {
   compiledAt: string;
   /** Carrier memes: uri → { text, laresRelPath } */
   memes: Record<string, { text: string; laresRelPath: string }>;
+  /**
+   * Pre-computed room filter results (TW5 engine, Node build-time).
+   * roomId → ordered list of meme URIs matching the room's filter expression.
+   * The browser can use these directly OR re-filter dynamically via
+   * tw-filter-browser.ts (same TW5 grammar, pre-built browser bundle).
+   */
+  rooms?: Record<string, string[]>;
+  /** Total meme count in the minimal boot closure */
+  bootMemeCount?: number;
 }
 
 // ---------------------------------------------------------------------------

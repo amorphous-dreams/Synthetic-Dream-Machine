@@ -1,15 +1,19 @@
 import { defineConfig } from "vite";
 import { resolve } from "path";
 
+const coreRoot = resolve(__dirname, "../lararium-core/src");
+
 export default defineConfig({
-  // Shim Node's crypto.createHash with the Web Crypto API for browser builds
   define: {
+    // Stub Node globals that TW5 or lararium-core may reference
     "globalThis.process": "{}",
   },
   resolve: {
     alias: {
-      // Redirect Node crypto to a browser-compatible shim via the web crypto API
-      crypto: resolve(__dirname, "src/crypto-shim.ts"),
+      // TW5 filter engine: swap Node (createRequire) path for pre-built browser bundle.
+      // Both export the same filterMemesTW / precomputeRooms API.
+      // Re-generate the browser bundle: node scripts/build-tw-browser-filter.mjs
+      [`${coreRoot}/tw-filter.js`]: resolve(coreRoot, "tw-filter-browser.ts"),
     },
   },
   build: {
@@ -24,5 +28,10 @@ export default defineConfig({
     },
     outDir: "dist",
     sourcemap: true,
+  },
+  optimizeDeps: {
+    // Pre-bundle the generated TW5 browser engine so Vite doesn't re-process it each HMR
+    include: [],
+    exclude: ["tiddlywiki"],
   },
 });

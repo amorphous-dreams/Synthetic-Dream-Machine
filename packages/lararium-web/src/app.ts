@@ -83,7 +83,7 @@ export async function bootApp(snapshotUrl: string): Promise<LarApp> {
  * Boot from an already-loaded snapshot object (embedded bundle mode).
  * Synchronous after the snapshot is in memory.
  */
-export function bootFromSnapshot(snapshot: LarSnapshot): LarApp {
+export async function bootFromSnapshot(snapshot: LarSnapshot): Promise<LarApp> {
   const runtime = createBrowserRuntime(snapshot);
   return bootFromRuntime(runtime);
 }
@@ -92,10 +92,10 @@ export function bootFromSnapshot(snapshot: LarSnapshot): LarApp {
  * Boot from a pre-hydrated BrowserRuntime.
  * Used when the caller has already constructed the runtime (e.g. incremental merge).
  */
-export function bootFromRuntime(runtime: BrowserRuntime): LarApp {
+export async function bootFromRuntime(runtime: BrowserRuntime): Promise<LarApp> {
   const { topoUris, violations } = buildBootClosure(runtime.graph);
   const artifact = compileMinimalBoot(runtime.graph, topoUris, violations);
-  const receipt = compileBootReceipt(artifact);
+  const receipt = await compileBootReceipt(artifact);
 
   return { runtime, artifact, receipt, emission: null };
 }
@@ -142,7 +142,7 @@ export async function renderAppViews(app: LarApp): Promise<LarApp> {
  *     const app = await bootFromEmbedded();
  *   </script>
  */
-export function bootFromEmbedded(scriptId = "lararium-snapshot"): LarApp {
+export async function bootFromEmbedded(scriptId = "lararium-snapshot"): Promise<LarApp> {
   const el = document.getElementById(scriptId);
   if (!el) throw new Error(`bootFromEmbedded: no element with id="${scriptId}" found`);
   const snapshot = JSON.parse(el.textContent ?? "") as LarSnapshot;

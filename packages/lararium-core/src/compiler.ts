@@ -5,8 +5,8 @@
  * These functions operate on a populated MemeGraph and return serialisable artifacts.
  */
 
-import { createHash } from "crypto";
 import { type MemeGraph, memeImplements } from "./meme-graph.js";
+import { type DigestProvider, defaultCryptoProvider, sha256Hex, canonicalJsonBytes } from "./crypto.js";
 import { type PranaEdge } from "./pranala-parser.js";
 
 export const ENTRY_URI = "lar:///AGENTS";
@@ -241,10 +241,13 @@ export function compileFullBoot(
   };
 }
 
-export function compileBootReceipt(artifact: BootArtifact): BootReceipt {
+export async function compileBootReceipt(
+  artifact: BootArtifact,
+  provider: DigestProvider = defaultCryptoProvider,
+): Promise<BootReceipt> {
   // Hash stable content only — exclude compiledAt so two compiles of the same
   // graph produce an identical receipt hash (determinism invariant).
-  const stablePayload = JSON.stringify({
+  const stablePayload = {
     entry: artifact.entry,
     closure: artifact.closure,
     memeCount: artifact.memeCount,
@@ -252,8 +255,8 @@ export function compileBootReceipt(artifact: BootArtifact): BootReceipt {
     pranalaEdges: artifact.pranalaEdges ?? [],
     interfaceIndex: artifact.interfaceIndex,
     invariantIndex: artifact.invariantIndex,
-  });
-  const sha = createHash("sha256").update(stablePayload, "utf8").digest("hex");
+  };
+  const sha = await sha256Hex(canonicalJsonBytes(stablePayload), provider);
   const v = artifact.validation;
   const modeName = artifact.artifact.replace("boot-", "").replace("-boot", "") || "unknown";
 

@@ -78,10 +78,11 @@ describe("filterMemesTW — TW5 engine", () => {
     expect(result.every((e) => !e.uri.startsWith("$:"))).toBe(true);
   });
 
-  test("parity with hand-rolled filter: both agree on depth-1 memes", async () => {
-    const { filterEntries } = await import("../src/filter.js");
-    const tw = await filterMemesTW(ENTRIES, "[all[memes]field:depth[1]]");
-    const ours = filterEntries(ENTRIES, "[all[memes]depth[1]]");
-    expect(new Set(tw.map((e) => e.uri))).toEqual(new Set(ours.map((e) => e.uri)));
+  test("depth-1 filter returns exactly 2 memes (LARES + mu)", async () => {
+    const result = await filterMemesTW(ENTRIES, "[all[memes]field:depth[1]]");
+    expect(result).toHaveLength(2);
+    const uris = result.map((e) => e.uri);
+    expect(uris).toContain("lar:///ha.ka.ba/api/v0.1/mu");
+    expect(uris).toContain("lar:///LARES");
   });
 });

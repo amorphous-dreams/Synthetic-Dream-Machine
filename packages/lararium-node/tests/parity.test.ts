@@ -102,9 +102,9 @@ describe("compiler parity", () => {
     expect(artifact.memeCount).toBe(fixtures.compiler.full_boot_count);
   });
 
-  test("boot receipt meme count matches Python", () => {
+  test("boot receipt meme count matches Python", async () => {
     const artifact = runtime.compileMinimalBoot();
-    const receipt = runtime.compileBootReceipt(artifact);
+    const receipt = await runtime.compileBootReceipt(artifact);
     expect(receipt.memeCount).toBe(fixtures.compiler.receipt_meme_count);
   });
 });

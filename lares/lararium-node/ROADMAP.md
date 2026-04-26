@@ -754,7 +754,7 @@ All target outcomes delivered:
 - ✓ DAG prose updated: AGENTS.md, mu.md, lararium.md reflect rewired topology
 - ✓ Parity baselines: 27/27 tests green (19 parity + 8 no-write gate), 7 MCP smoke
 
-## Milestone 3 — In Progress (2026-04-25)
+## Milestone 3 — Complete (2026-04-25)
 
 ### Completed
 
@@ -776,14 +776,16 @@ All target outcomes delivered:
 - ✓ `emitTldrawRecords(snapshot, layout)` → store-ready shape records with `{x,y,rotation,index,parentId,props:{w,h}}`; arrows emit relative start/end vectors; colors by family (control=blue, relation=grey, observe=green, dataflow=orange)
 - ✓ 16 layout + emission tests; 81 total tests green
 
-### Remaining in Milestone 3
+### Also Completed (beyond original Milestone 3 scope)
 
 - ✓ `lararium-web` Vite bundle: `dist/lararium-web.es.js` + `dist/lararium-web.umd.js` (22.67 kB / 18.10 kB), zero build warnings
 - ✓ `crypto-shim.ts`: deterministic djb2-inspired 32-byte mixing shim satisfies `createHash('sha256')` in browser build; vite.config.ts aliases `crypto → src/crypto-shim.ts`
 - ⚠ **Async crypto shim debt** — `crypto-shim.ts` is NOT a real SHA-256. It uses djb2-inspired mixing: deterministic and collision-resistant for carrier content hashing, but not cryptographically secure. When browser callers become `async`-capable, replace `hashBuf()` in `crypto-shim.ts` with `await crypto.subtle.digest('SHA-256', buf)` and update `BrowserHash.digest()` to return `Promise<string>`. Callers in `lararium-core` (boot receipt, carrier hash) will need to be awaited. Track: `packages/lararium-web/src/crypto-shim.ts` TODO comment.
-- ✓ **TW5 Filter Language guest grammar** (`lararium-core/src/filter.ts` + `tw-filter.ts`):
-  - `filter.ts`: lightweight hand-rolled evaluator (sync, isomorphic, browser-safe). Operators: `all`, `tag`/`implements`, `depth`, `rating`, `sort`, `limit`, `entry`, `uri`, `not`. 22 tests.
-  - `tw-filter.ts`: `filterMemesTW(entries, twExpr)` — async, uses TW5's actual engine via `tiddlywiki` devDep + `createRequire`. ClosureEntry maps to tiddler fields (`title=uri`, `tags=implements`, `depth/rating/role` as fields). `[all[memes]]` aliases to `[all[tiddlers]]`. 9 parity + operator tests.
+- ✓ **TW5 Filter Language — single canonical engine** (hand-rolled evaluator removed):
+  - `tw-filter.ts` (Node): `filterMemesTW(entries, twExpr)` + `precomputeRooms()` via `tiddlywiki` devDep + `createRequire`. ClosureEntry → tiddler fields (`title=uri`, `tags=implements`, `depth/rating/role`). `[all[memes]]` aliases `[all[tiddlers]]`.
+  - `tw-filter-browser.ts`: same API in browser, backed by pre-built `src/generated/tw-filter-engine.browser.js` (154 modules, 106 operators, 410 KB). Vite aliases swap Node path for browser path at bundle time.
+  - `scripts/build-tw-browser-filter.mjs`: deterministic extraction script — boots TW5, serializes filter+wiki+utils modules to ESM. Upgrade process: `pnpm update tiddlywiki` → re-run script → run tests.
+  - `LarSnapshot.rooms`: pre-computed room filter results embedded in snapshot for instant browser load.
   - Deterministic process: bump `tiddlywiki` dep → all 86+ TW operators available automatically. No vendoring, no code extraction.
   - `buildBootClosure(graph, entryUri)` extracted to `lararium-core/compiler.ts` — pure BFS+topoSort on a pre-loaded MemeGraph (enables browser boot without file system).
 - ✓ **Infinite canvas app bootstrap** (`lararium-web/src/app.ts`):
@@ -797,6 +799,47 @@ All target outcomes delivered:
   - `nav.ts`: `zoomToMeme()`, `zoomToFitAll()`, `switchToPage()`, `goToStoryRiver()`, `goToGraph()` — duck-typed against tldraw Editor, no runtime import required
   - `emitTldrawRecords()` accepts `pageOverride` option for multi-page emission
   - 33 tests total in lararium-tldraw; 75 across monorepo
+
+## Milestone 4 — In Progress (2026-04-25)
+
+### Scope
+
+Target outcomes:
+
+**Crypto provider boundary (replaces djb2 crypto-shim)**
+- Define `CryptoProvider` interface in `lararium-core`: `DigestProvider`, `RandomProvider`, `webDigest()`, `webGetRandomValues()`, `webRandomUUID()`
+- Canonical bytes helpers: `utf8Bytes()`, `canonicalJson()`, `canonicalJsonBytes()`, `hex()`, `sha256Hex()`
+- Replace `packages/lararium-web/src/crypto-shim.ts` (djb2, not real SHA-256) with `webDigest()` calling `globalThis.crypto.subtle.digest('SHA-256', data)`
+- Make `compileBootReceipt()` in `lararium-core` async (callers updated); remove `import { createHash } from 'crypto'`
+- All digest calls async; no `Math.random()` in any security path; no hand-rolled primitives
+- Known-vector tests: SHA-256("abc") = `ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad`
+- Docs: `lares/lararium-node/CRYPTO.md` ✓ (written this session)
+
+**ATProto / Bluesky login doctrine (deferred implementation)**
+- No implementation this milestone — doctrine only
+- BFF-preferred architecture: `@atproto/oauth-client-node` server-side, application session cookie to frontend
+- Browser-only fallback: `@atproto/oauth-client-browser`, explicitly labeled public-client risk
+- SDK owns PKCE / PAR / DPoP — Lararium must not re-implement any of these
+- Identity layer separation: handle → DID → PDS → OAuth session → Lararium session → `alias:tier@host` hostful URI → hostless `lar:///` invariant meme identity
+- DPoP keys: per-session ES256/P-256, non-extractable where runtime allows, SDK-managed by default
+- k256/secp256k1: out of scope unless official ATProto library owns it
+- Docs: `lares/lararium-node/AUTH-ATPROTO.md` ✓ (written this session)
+
+**Infinite canvas + portals browser UI**
+- `lararium-web/src/app.ts` wired to actual tldraw mount (HTML entry point)
+- Portal shapes connecting rooms: `LarPortal` renders as TLArrow with click-navigation handler
+- Side panel (story river): CSS overlay, slides in from left; driven by `LarViewState`
+- Control panel: slides in from right; room registry + filter expression editor
+- `goToRoom(editor, room)` nav helper in `nav.ts`
+- `renderRoom(artifact, room, readText)` — filters via `filterMemesTW` then projects room content
+- First working browser session: snapshot → boot → tldraw mount → room navigation
+
+Do not in Milestone 4:
+
+- Actual Bluesky login implementation (doctrine only)
+- Write-back of any kind
+- Kowloon projection package (Milestone 5)
+- Multi-user presence / cursors
 
 ## Milestone 3 — Scope (Next 30 Days)
 

@@ -27,8 +27,7 @@
  *   The navigation stack lets "back" work across arbitrary room hops.
  */
 
-import { type ClosureEntry } from "@lararium/core";
-import { filterEntries, type FilterExpression, parseFilter } from "@lararium/core";
+import { type ClosureEntry, filterMemesTW } from "@lararium/core";
 import { pageId, type LarProjectionId } from "./records.js";
 
 // ---------------------------------------------------------------------------
@@ -128,14 +127,12 @@ export function roomPageId(room: LarRoom): LarProjectionId {
   return (room.tlPageId ?? pageId(room.id)) as LarProjectionId;
 }
 
-/** Evaluate a room's filter against a closure to get its visible meme set. */
-export function roomEntries(room: LarRoom, allEntries: readonly ClosureEntry[]): ClosureEntry[] {
-  return filterEntries(allEntries, room.filter);
-}
-
-/** Parse a room's filter expression (cached by caller if needed). */
-export function roomFilter(room: LarRoom): FilterExpression {
-  return parseFilter(room.filter);
+/**
+ * Evaluate a room's TW5 filter against a closure to get its visible meme set.
+ * Async: TW5 engine boots once on first call (Node-only; browser uses snapshot).
+ */
+export async function roomEntries(room: LarRoom, allEntries: readonly ClosureEntry[]): Promise<ClosureEntry[]> {
+  return filterMemesTW(allEntries, room.filter);
 }
 
 // ---------------------------------------------------------------------------

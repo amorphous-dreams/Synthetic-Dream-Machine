@@ -101,7 +101,7 @@ server.registerResource(
   { title: "Lararium boot receipt" },
   async () => {
     const artifact = runtime.compileMinimalBoot();
-    const receipt = runtime.compileBootReceipt(artifact);
+    const receipt = await runtime.compileBootReceipt(artifact);
     return { contents: [{ uri: "lar:///boot/receipt", text: JSON.stringify(receipt, null, 2), mimeType: "application/json" }] };
   },
 );
@@ -203,7 +203,7 @@ server.registerTool(
   },
   async () => {
     const artifact = runtime.compileMinimalBoot();
-    const receipt = runtime.compileBootReceipt(artifact);
+    const receipt = await runtime.compileBootReceipt(artifact);
     return { content: [{ type: "text" as const, text: JSON.stringify(receipt, null, 2) }] };
   },
 );
@@ -217,16 +217,17 @@ server.registerPrompt(
   {
     description: "Explain or inspect the current minimal boot closure",
   },
-  () => {
+  async () => {
     const artifact = runtime.compileMinimalBoot();
     const uris = artifact.closure.map((e) => e.uri).join("\n");
+    const receipt = await runtime.compileBootReceipt(artifact);
     return {
       messages: [
         {
           role: "user" as const,
           content: {
             type: "text" as const,
-            text: `The Lararium minimal boot closure contains ${artifact.memeCount} memes:\n\n${uris}\n\nReceipt: ${JSON.stringify(runtime.compileBootReceipt(artifact), null, 2)}`,
+            text: `The Lararium minimal boot closure contains ${artifact.memeCount} memes:\n\n${uris}\n\nReceipt: ${JSON.stringify(receipt, null, 2)}`,
           },
         },
       ],

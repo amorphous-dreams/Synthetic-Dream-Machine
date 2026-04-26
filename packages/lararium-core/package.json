@@ -15,7 +15,8 @@
     "build": "tsc",
     "typecheck": "tsc --noEmit",
     "test": "NODE_OPTIONS=--experimental-vm-modules pnpm exec jest --config jest.config.cjs",
-    "dev": "tsx src/index.ts"
+    "dev": "tsx src/index.ts",
+    "tw:build-browser": "node ../../scripts/build-tw-browser-filter.mjs"
   },
   "devDependencies": {
     "@jest/globals": "^29.7.0",
