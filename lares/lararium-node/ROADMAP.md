@@ -781,6 +781,15 @@ All target outcomes delivered:
 - ✓ `lararium-web` Vite bundle: `dist/lararium-web.es.js` + `dist/lararium-web.umd.js` (22.67 kB / 18.10 kB), zero build warnings
 - ✓ `crypto-shim.ts`: deterministic djb2-inspired 32-byte mixing shim satisfies `createHash('sha256')` in browser build; vite.config.ts aliases `crypto → src/crypto-shim.ts`
 - ⚠ **Async crypto shim debt** — `crypto-shim.ts` is NOT a real SHA-256. It uses djb2-inspired mixing: deterministic and collision-resistant for carrier content hashing, but not cryptographically secure. When browser callers become `async`-capable, replace `hashBuf()` in `crypto-shim.ts` with `await crypto.subtle.digest('SHA-256', buf)` and update `BrowserHash.digest()` to return `Promise<string>`. Callers in `lararium-core` (boot receipt, carrier hash) will need to be awaited. Track: `packages/lararium-web/src/crypto-shim.ts` TODO comment.
+- ✓ **TW5 Filter Language guest grammar** (`lararium-core/src/filter.ts` + `tw-filter.ts`):
+  - `filter.ts`: lightweight hand-rolled evaluator (sync, isomorphic, browser-safe). Operators: `all`, `tag`/`implements`, `depth`, `rating`, `sort`, `limit`, `entry`, `uri`, `not`. 22 tests.
+  - `tw-filter.ts`: `filterMemesTW(entries, twExpr)` — async, uses TW5's actual engine via `tiddlywiki` devDep + `createRequire`. ClosureEntry maps to tiddler fields (`title=uri`, `tags=implements`, `depth/rating/role` as fields). `[all[memes]]` aliases to `[all[tiddlers]]`. 9 parity + operator tests.
+  - Deterministic process: bump `tiddlywiki` dep → all 86+ TW operators available automatically. No vendoring, no code extraction.
+  - `buildBootClosure(graph, entryUri)` extracted to `lararium-core/compiler.ts` — pure BFS+topoSort on a pre-loaded MemeGraph (enables browser boot without file system).
+- ✓ **Infinite canvas app bootstrap** (`lararium-web/src/app.ts`):
+  - `bootApp(snapshotUrl)`, `bootFromSnapshot(snapshot)`, `bootFromRuntime(runtime)`, `bootFromEmbedded(scriptId)` — four boot modes
+  - `renderAppViews(app)` — dynamic-imports `@lararium/tldraw`, calls `renderAllViews()`, attaches emission to app
+  - `LarApp { runtime, artifact, receipt, emission }` — single live state object
 - ✓ View-switching architecture: `LarViewState` navigation model, three-view rendering (story-river/meme-detail/graph), camera transition helpers in `lararium-tldraw`
   - `view-state.ts`: pure `LarViewState` type + `viewStateReducer()` (8 tests)
   - `multi-view.ts`: `renderAllViews()` → 3 tldraw pages in one emission (story-river/meme-detail/graph); `focusSnapshot()` filters to one meme + direct neighbours

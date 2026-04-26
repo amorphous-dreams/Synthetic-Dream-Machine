@@ -49,10 +49,21 @@ export type FilterExpression = FilterOperator[];
 
 /**
  * Parse a TW-style filter expression string into a FilterExpression.
- * Throws a descriptive error on syntax violation.
  *
- * Grammar: zero or more `[op]` or `[op[arg]]` tokens.
- * Whitespace between tokens is allowed. No nested not[] yet.
+ * Grammar (TW run model):
+ *   filter  := run+
+ *   run     := '[' step+ ']'
+ *   step    := opname | opname '[' operand ']'
+ *   opname  := /[a-zA-Z_:][a-zA-Z0-9_:-]+/
+ *
+ * A "run" wraps one or more steps. Multiple runs are flattened into the
+ * same FilterExpression (they execute in sequence on the same working set).
+ *
+ * Examples:
+ *   "[all[memes]sort[depth]limit[3]]"   → 3 steps in one run
+ *   "[all[memes]] [sort[depth]]"         → same (two runs, flattened)
+ *   "[entry[]]"                          → entry step
+ *   "[all[memes]tag[lar:///pono/meme]]"  → all then tag-filter
  */
 export function parseFilter(expr: string): FilterExpression {
   const steps: FilterOperator[] = [];
@@ -60,34 +71,43 @@ export function parseFilter(expr: string): FilterExpression {
   const src = expr.trim();
 
   while (i < src.length) {
-    // skip whitespace
+    // skip whitespace between runs
     while (i < src.length && /\s/.test(src[i]!)) i++;
     if (i >= src.length) break;
 
     if (src[i] !== "[") throw new SyntaxError(`filter: expected '[' at position ${i}, got '${src[i]}'`);
-    i++; // consume '['
+    i++; // consume run-open '['
 
-    // read operator name (up to '[' or ']')
-    let opName = "";
-    while (i < src.length && src[i] !== "[" && src[i] !== "]") {
-      opName += src[i++];
+    // Parse steps until the run-closing ']'
+    while (i < src.length && src[i] !== "]") {
+      // skip whitespace within run
+      while (i < src.length && /\s/.test(src[i]!)) i++;
+      if (src[i] === "]") break;
+
+      // read opname
+      let opName = "";
+      while (i < src.length && src[i] !== "[" && src[i] !== "]" && !/\s/.test(src[i]!)) {
+        opName += src[i++];
+      }
+      opName = opName.trim();
+      if (!opName) throw new SyntaxError(`filter: empty operator name at position ${i}`);
+
+      // optional inner [operand]
+      let operand: string | null = null;
+      if (i < src.length && src[i] === "[") {
+        i++; // consume inner '['
+        let arg = "";
+        while (i < src.length && src[i] !== "]") arg += src[i++];
+        if (src[i] !== "]") throw new SyntaxError(`filter: unclosed inner '[' for operator '${opName}'`);
+        i++; // consume inner ']'
+        operand = arg;
+      }
+
+      steps.push(buildStep(opName, operand));
     }
-    opName = opName.trim();
 
-    let operand: string | null = null;
-    if (i < src.length && src[i] === "[") {
-      i++; // consume inner '['
-      let arg = "";
-      while (i < src.length && src[i] !== "]") arg += src[i++];
-      if (src[i] !== "]") throw new SyntaxError(`filter: unclosed inner '[' for operator '${opName}'`);
-      i++; // consume inner ']'
-      operand = arg;
-    }
-
-    if (src[i] !== "]") throw new SyntaxError(`filter: expected closing ']' for operator '${opName}'`);
-    i++; // consume outer ']'
-
-    steps.push(buildStep(opName, operand));
+    if (src[i] !== "]") throw new SyntaxError(`filter: unclosed run '[' (missing closing ']')`);
+    i++; // consume run-close ']'
   }
 
   return steps;
@@ -160,9 +180,9 @@ export function applyFilter(
       case "sort":
         result = [...result].sort((a, b) => {
           if (step.operand === "depth") return a.depth - b.depth;
-          if (step.operand === "uri")   return a.uri.localeCompare(b.uri);
-          if (step.operand === "rating") return a.kind.localeCompare(b.kind);
-          return a.uri.localeCompare(b.uri); // "name" fallback
+          if (step.operand === "uri")   return a.uri < b.uri ? -1 : a.uri > b.uri ? 1 : 0;
+          if (step.operand === "rating") return a.kind < b.kind ? -1 : a.kind > b.kind ? 1 : 0;
+          return a.uri < b.uri ? -1 : a.uri > b.uri ? 1 : 0; // "name" fallback
         });
         break;
       case "limit":

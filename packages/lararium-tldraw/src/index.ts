@@ -5,6 +5,7 @@ export * from "./tldraw-shapes.js";
 export * from "./view-state.js";
 export * from "./nav.js";
 export * from "./multi-view.js";
+export * from "./room.js";
 
 // Convenience: project + layout + emit in one call
 export { renderToTldraw } from "./render.js";

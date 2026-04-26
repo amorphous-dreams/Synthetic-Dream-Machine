@@ -150,6 +150,36 @@ function validateClosure(
 // Public API — takes a populated MemeGraph
 // ---------------------------------------------------------------------------
 
+/**
+ * BFS over control edges from entryUri on an already-loaded MemeGraph.
+ * Used by the browser runtime (snapshot already loaded) and by lararium-node
+ * (graph loaded from file system before calling this).
+ *
+ * Returns { topoUris, violations } — the same shape as buildControlClosure in node-host,
+ * minus the file-loading step.
+ */
+export function buildBootClosure(
+  graph: MemeGraph,
+  entryUri: string = ENTRY_URI,
+): { topoUris: string[]; violations: string[][] } {
+  const queue: string[] = [entryUri];
+  const visited = new Set<string>();
+
+  while (queue.length > 0) {
+    const uri = queue.shift()!;
+    if (visited.has(uri)) continue;
+    visited.add(uri);
+    for (const edge of graph.edgesOut(uri, "control")) {
+      if (edge.role === "implements") continue;
+      if (!visited.has(edge.toUri)) queue.push(edge.toUri);
+    }
+  }
+
+  const topoUris = graph.topologicalSort(visited, "control");
+  const violations = graph.detectCycles(["control"]);
+  return { topoUris, violations };
+}
+
 export function compileMinimalBoot(graph: MemeGraph, topoUris: string[], violations: string[][]): BootArtifact {
   const socketMap = buildSocketMap(graph, topoUris);
   const depthMap = buildDepthMap(graph, topoUris);
