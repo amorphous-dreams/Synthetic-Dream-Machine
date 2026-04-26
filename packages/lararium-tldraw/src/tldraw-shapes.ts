@@ -13,6 +13,7 @@
 
 import { type LarTLSnapshot, type LarTLPage, type LarProjectionId } from "./records.js";
 import { type LarTLLayout, type FrameGeometry } from "./layout.js";
+import { getIndexAbove, getIndicesAbove, type IndexKey } from "@tldraw/utils";
 
 // ---------------------------------------------------------------------------
 // Minimal structural tldraw types (no runtime import required)
@@ -84,12 +85,21 @@ export interface TLPageRecord {
 export type TLRecord = TLPageRecord | TLFrameRecord | TLArrowRecord | TLNoteRecord;
 
 // ---------------------------------------------------------------------------
-// Index key helpers (tldraw uses fractional indexing 'a1', 'a2', ...)
+// Index key helpers (tldraw uses fractional indexing 'a0', 'a1', ...)
 // ---------------------------------------------------------------------------
 
-function indexKey(n: number): string {
-  // Minimal fractional index: a1, a2, ... a9, aA, ... sufficient for our counts
-  return `a${n.toString(36)}`;
+const nextIndexForParent = new Map<string, IndexKey>()
+
+function pageIndexKey(n: number): IndexKey {
+  const indices = getIndicesAbove(null, n)
+  return indices[n - 1]!
+}
+
+function shapeIndex(parentId: string): IndexKey {
+  const previous = nextIndexForParent.get(parentId) ?? ("a0" as IndexKey)
+  const next = getIndexAbove(previous)
+  nextIndexForParent.set(parentId, next)
+  return next
 }
 
 // ---------------------------------------------------------------------------
@@ -141,8 +151,23 @@ export function emitTldrawRecords(
   layout: LarTLLayout,
   emitOpts: EmitOptions = {},
 ): TldrawEmission {
+  nextIndexForParent.clear()
+
   const pages: TLPageRecord[] = [];
   const shapes: TLRecord[]    = [];
+
+  const pageIdOverride = emitOpts.pageOverride;
+  const shapeIdPrefix = pageIdOverride ? `${pageIdOverride}::` : "";
+  const remappedIds = new Map<string, string>();
+
+  function remapId(id: string): string {
+    if (!shapeIdPrefix) return id;
+    const existing = remappedIds.get(id);
+    if (existing) return existing;
+    const mapped = `${shapeIdPrefix}${id}`;
+    remappedIds.set(id, mapped);
+    return mapped;
+  }
 
   // Pages (optionally remap page ID for multi-view)
   snapshot.pages.forEach((page: LarTLPage, idx: number) => {
@@ -151,7 +176,7 @@ export function emitTldrawRecords(
       id,
       typeName: "page",
       name: page.name,
-      index: indexKey(idx + 1),
+      index: pageIndexKey(idx + 1),
       meta: { compiledAt: page.compiledAt, memeCount: page.memeCount },
     });
   });
@@ -163,17 +188,17 @@ export function emitTldrawRecords(
     const geo = layout.frames.get(frame.id);
     if (!geo) return; // no layout position — skip
 
-    const parentId = frame.parentId ?? defaultPageId;
+    const parentId = frame.parentId ? remapId(frame.parentId) : defaultPageId;
     const color = frame.frameKind === "ahu" ? "grey" : frameRatingColor(frame.rating);
 
     shapes.push({
-      id: frame.id,
+      id: remapId(frame.id),
       typeName: "shape",
       type: "frame",
       x: geo.x,
       y: geo.y,
       rotation: 0,
-      index: indexKey(idx + 1),
+      index: shapeIndex(parentId),
       parentId,
       isLocked: false,
       opacity: 1,
@@ -189,13 +214,13 @@ export function emitTldrawRecords(
 
     const label = [arrow.role, arrow.family].filter(Boolean).join(" · ");
     shapes.push({
-      id: arrow.id,
+      id: remapId(arrow.id),
       typeName: "shape",
       type: "arrow",
       x: geo.startX,
       y: geo.startY,
       rotation: 0,
-      index: indexKey(10000 + idx),
+      index: shapeIndex(defaultPageId),
       parentId: defaultPageId,
       isLocked: false,
       opacity: 1,
@@ -221,15 +246,16 @@ export function emitTldrawRecords(
     const parentGeo: FrameGeometry | undefined = layout.frames.get(note.parentFrameId as LarProjectionId);
     if (!parentGeo) return;
 
+    const remappedParentId = remapId(note.parentFrameId);
     shapes.push({
-      id: note.id,
+      id: remapId(note.id),
       typeName: "shape",
       type: "note",
       x: 8,
       y: 8,
       rotation: 0,
-      index: indexKey(20000 + idx),
-      parentId: note.parentFrameId,
+      index: shapeIndex(remappedParentId),
+      parentId: remappedParentId,
       isLocked: false,
       opacity: 1,
       meta: {},

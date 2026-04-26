@@ -109,6 +109,14 @@ describe("renderAllViews", () => {
     }
   });
 
+  test("emitted shape IDs are unique across all pages", () => {
+    const artifact = makeArtifact();
+    const emission = renderAllViews(artifact);
+    const ids = emission.shapes.map((shape) => shape.id);
+    const uniqueIds = new Set(ids);
+    expect(uniqueIds.size).toBe(ids.length);
+  });
+
   test("graph page shapes use smaller frame dimensions", () => {
     const artifact = makeArtifact();
     const emission = renderAllViews(artifact);

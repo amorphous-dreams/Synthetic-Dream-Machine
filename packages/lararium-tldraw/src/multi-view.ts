@@ -47,7 +47,7 @@ export function renderAllViews(artifact: BootArtifact, opts: MultiViewOptions = 
 
   // Story-river view (default page)
   const storyLayout = storyRiverLayout(snapshot);
-  const storyEmission = emitTldrawRecords(snapshot, storyLayout);
+  const storyEmission = emitTldrawRecords(snapshot, storyLayout, { pageOverride: pageId("minimal-boot") });
 
   // Meme-detail view — focused on focusUri or the entry point
   const detailUri = focusUri ?? artifact.entry;
