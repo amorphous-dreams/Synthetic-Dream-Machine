@@ -800,6 +800,98 @@ All target outcomes delivered:
   - `emitTldrawRecords()` accepts `pageOverride` option for multi-page emission
   - 33 tests total in lararium-tldraw; 75 across monorepo
 
+<<~/ahu >>
+
+<<~ ahu #tldraw-sync-arch >>
+
+## tldraw Sync Architecture Decision (2026-04-26)
+
+### Problem Identified
+
+The snapshot-injection model (inject `LarSnapshot` JSON into HTML `<script>` tag, browser calls `loadSnapshot()`) creates a race condition under multiplayer use. Two surfaces boot from the same frozen blob, diverge in session state, and have no authority model for reconciliation. TiddlyWiki's single-file multiplayer history and IPFS's content-addressed design both demonstrate that getting this wrong at the base level is expensive to fix later.
+
+### Decision: Skip Phase 1 Static Snapshot — Go Straight to TLSocketRoom
+
+**tldraw's own production pattern (tldraw.com, 400k+ users):**
+
+```
+lares/ → compileMinimalBoot() → renderAllViews() → TLStoreSnapshot
+                                                          │
+                                               (seed once, if room is new)
+                                                          ↓
+                                             SQLiteSyncStorage (room keyed by BootReceipt SHA)
+                                                          │
+                                                 TLSocketRoom (server-authoritative)
+                                                          │
+                               ┌──────────────────────────┴───────────────────────────┐
+                            useSync                                               useSync
+                         (VS Code webview)                                    (Chrome tab)
+```
+
+No snapshot injection in HTML. No `loadSnapshot()` on the client. Browser calls `useSync({ uri: "ws://localhost:4321/rooms/boot" })`. Server owns document state from byte one. No race condition possible.
+
+### Key Architecture Facts (from tldraw docs, Feb 2026)
+
+- `TLSocketRoom` accepts `initialSnapshot` on first creation — this is the seeding path from our projection
+- `SQLiteSyncStorage` is now the default persistence backend (SQLite, not in-memory, survives process restarts)
+- `initialSnapshot` and `onDataChange` are **deprecated** in favor of pluggable `storage` option
+- One `TLSocketRoom` per document — our three pages (story-river, meme-detail, graph) are partitions within one room
+- tldraw sync keeps confirmed server state and optimistic client pending state as **separate layers** — this structurally enforces `canon-promotion-boundary` without extra code
+- `useSync` (from `@tldraw/sync`) replaces the local store; clients never "load" a snapshot, they join a live room
+
+### Room Key = BootReceipt SHA
+
+Room identity is derived from `BootReceipt.sha`, making re-seeding idempotent:
+
+- If SQLite has no record for `sha:${receipt.sha}` → seed from `renderAllViews()` output
+- If SQLite has the record → clients connect and receive deltas
+- lares/ changes → new receipt SHA → new room (old room preserved in SQLite for rollback)
+
+This is content-addressed room identity. Same IPFS discipline: compute-then-address, not name-then-mutate.
+
+### canon-promotion-boundary Holds Structurally
+
+tldraw sync's two-layer model (confirmed server / pending client) is isomorphic to the Lararium trust tier model:
+
+```
+confirmed server state  ≡  hostless canon (lares/ tree)
+pending client state    ≡  hostful live exchange (session pressure)
+```
+
+Canvas edits live in the pending layer. Nothing crosses to server state without a sync commit. Nothing crosses from server state to lares/ canon without a separate promotion ceremony. The boundary is enforced by the protocol, not by convention.
+
+### What Changes in the Codebase
+
+| Component | Old plan | New plan |
+|---|---|---|
+| `lararium-app/src/App.tsx` | `bootFromEmbedded()` + `loadSnapshot()` | `useSync({ uri: wsUrl })` — no local boot |
+| `lararium-node/scripts/serve.ts` | Static file server + snapshot injection | WebSocket server; `TLSocketRoom` per room; seed from projection if SQLite empty |
+| `lararium-web` `bootFromEmbedded` | Primary boot path | Offline/embedded fallback only (single-file wiki mode) |
+| `index.html` injection slot | Required for boot | Optional — only needed for offline mode |
+| Room persistence | In-memory (lost on restart) | `SQLiteSyncStorage` — survives restarts |
+
+### Offline / Embedded Mode Stays
+
+`bootFromEmbedded()` + `loadSnapshot()` remains valid for:
+- Single-file wiki distribution (no server)
+- Offline read-only sessions
+- CI test rendering
+
+It is no longer the primary browser boot path.
+
+### Implementation Order
+
+1. Upgrade `serve.ts` to WebSocket server with `TLSocketRoom` + `SQLiteSyncStorage`
+2. Seed room from `renderAllViews()` on first connection if SQLite empty
+3. Replace `bootFromEmbedded` + `loadSnapshot` in `App.tsx` with `useSync`
+4. Add `@tldraw/sync` as dep to `lararium-app`, `@tldraw/sync-core` to `lararium-node`
+
+Do not ship the snapshot-injection server as the primary path. Offline mode only.
+
+<<~/ahu >>
+
+<<~ ahu #milestone-4-scope >>
+
 ## Milestone 4 — In Progress (2026-04-25)
 
 ### Completed
@@ -827,10 +919,20 @@ All target outcomes delivered:
 
 ### Remaining
 
+**Sync server (replaces snapshot injection)**
+- Upgrade `serve.ts` to WebSocket server: `@tldraw/sync-core` (`TLSocketRoom`, `SQLiteSyncStorage`)
+- On first connection, if room not in SQLite: seed from `renderAllViews(artifact)` output keyed by `BootReceipt.sha`
+- Room ID = `boot-${receipt.sha.slice(0, 16)}` — content-addressed, idempotent re-seed
+- Add `@tldraw/sync-core` to `lararium-node` deps; `@tldraw/sync` to `lararium-app`
+
+**Browser client upgrade**
+- Replace `bootFromEmbedded()` + `loadSnapshot()` in `App.tsx` with `useSync({ uri: wsUrl })`
+- `wsUrl` served from a `<meta name="lararium-ws">` tag or env var — no snapshot blob in HTML
+- `index.html` snapshot injection slot retained for offline/embedded mode only
+
 **First working browser session**
-- Snapshot injection server: HTTP endpoint in `lararium-node` that serves `lararium-app/dist/index.html` with `LarSnapshot` injected into `<script id="lararium-snapshot">`
 - Build pipeline: `pnpm --filter @lararium/app build` then `pnpm --filter @lararium/node serve`
-- `goToRoom(editor, room)` nav helper in `nav.ts`
+- `goToRoom(editor, roomId)` nav helper in `nav.ts` (already scaffolded, verify with live sync)
 - Story river in `SidePanel`: scrollable meme URI list; click → `dispatch({ type: "ZOOM_IN", uri })`
 - Double-click on tldraw frame shapes → zoom-in dispatch (tldraw v4 event API)
 
@@ -841,9 +943,10 @@ All target outcomes delivered:
 
 Do not in Milestone 4:
 - Actual Bluesky login implementation (doctrine only)
-- Write-back of any kind
+- Write-back of any kind — canon-promotion-boundary holds
 - Kowloon projection package (Milestone 5)
-- Multi-user presence / cursors
+- Multi-user presence / cursors (Milestone 5+)
+- Snapshot injection as primary path (offline fallback only)
 
 
 <<~/ahu >>

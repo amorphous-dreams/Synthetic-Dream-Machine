@@ -84,7 +84,7 @@ export async function bootApp(snapshotUrl: string): Promise<LarApp> {
  * Synchronous after the snapshot is in memory.
  */
 export async function bootFromSnapshot(snapshot: LarSnapshot): Promise<LarApp> {
-  const runtime = createBrowserRuntime(snapshot);
+  const runtime = await createBrowserRuntime(snapshot);
   return bootFromRuntime(runtime);
 }
 

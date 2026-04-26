@@ -7,7 +7,7 @@
 import { writeFileSync, join as _join } from "fs";
 import { join } from "path";
 import { createLarariumRuntime, LARES_ROOT } from "../src/node-host.js";
-import { buildSnapshot } from "../src/build-snapshot-lib.js";
+import { buildSnapshot } from "./build-snapshot-lib.js";
 
 const runtime = createLarariumRuntime({ writeback: false });
 const snapshot = await buildSnapshot(runtime);

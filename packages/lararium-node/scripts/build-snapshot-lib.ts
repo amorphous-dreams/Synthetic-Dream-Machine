@@ -7,9 +7,10 @@
 
 import { readFileSync, existsSync } from "fs";
 import { join } from "path";
-import { resolveLarUri, precomputeRooms } from "@lararium/core";
+import { resolveLarUri } from "@lararium/core";
+import { precomputeRooms } from "../../lararium-core/src/tw-filter.js";
 import { DEFAULT_ROOMS } from "@lararium/tldraw";
-import { compileCarrierIndex, LARES_ROOT, type LarariumRuntime } from "./node-host.js";
+import { compileCarrierIndex, LARES_ROOT, type LarariumRuntime } from "../src/node-host.js";
 
 export interface BuiltSnapshot {
   version: 1;

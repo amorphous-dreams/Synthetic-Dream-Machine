@@ -59,25 +59,24 @@ export interface BrowserRuntime {
   graph: MemeGraph;
 }
 
-export function createBrowserRuntime(snapshot: LarSnapshot): BrowserRuntime {
+export async function createBrowserRuntime(snapshot: LarSnapshot): Promise<BrowserRuntime> {
   const textByUri = new Map<string, string>();
   const recordByUri = new Map<string, CarrierRecord>();
   const graph = new MemeGraph();
 
-  // Hydrate all memes from snapshot
+  // Hydrate all memes from snapshot — async because makeMemeHash uses WebCrypto
   for (const [uri, { text, laresRelPath }] of Object.entries(snapshot.memes)) {
     textByUri.set(uri, text);
     const record = parseCarrier(uri, text);
     recordByUri.set(uri, record);
 
-    const encoder = new TextEncoder();
-    const fileBytes = encoder.encode(text);
+    const fileBytes = new TextEncoder().encode(text);
     const edges = parsePranalaEdges(uri, text);
 
     graph.addMeme({
       uri,
       laresRelPath,
-      contentHash: makeMemeHash(uri, fileBytes),
+      contentHash: await makeMemeHash(uri, fileBytes),
       metadata: record.metadata,
       edgesOut: edges,
       virtual: false,

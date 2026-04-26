@@ -6,6 +6,7 @@
  */
 
 import { readFileSync, existsSync, readdirSync, statSync } from "fs";
+import { createHash } from "crypto";
 import { join, relative, resolve } from "path";
 import { fileURLToPath } from "url";
 
@@ -15,7 +16,6 @@ import {
   parsePranalaEdges,
   MemeGraph,
   Meme,
-  makeMemeHash,
   laresRelPathToLarUri,
   compileMinimalBoot,
   compileFullBoot,
@@ -25,6 +25,14 @@ import {
   type BootReceipt,
   type CarrierRecord,
 } from "@lararium/core";
+
+// Sync SHA-256 content hash — Node-only. Same algorithm and output format as the
+// async makeMemeHash in lararium-core, but synchronous for use in the carrier loader.
+function makeMemeHashSync(uri: string, fileBytes: Uint8Array | null): string {
+  const content = fileBytes ? new TextDecoder().decode(fileBytes) : "virtual";
+  const payload = uri + ":" + content;
+  return "sha256:" + createHash("sha256").update(payload, "utf8").digest("hex");
+}
 
 // ---------------------------------------------------------------------------
 // Locate lares/ root relative to this file's location in packages/lararium-node/
@@ -70,14 +78,14 @@ function loadMeme(uri: string): Meme | null {
   try { resolution = resolveLarUri(uri); } catch { return null; }
 
   if (resolution.virtual) {
-    return { uri, laresRelPath: null, contentHash: makeMemeHash(uri, null), metadata: {}, edgesOut: [], virtual: true, exists: false, shape: null };
+    return { uri, laresRelPath: null, contentHash: makeMemeHashSync(uri, null), metadata: {}, edgesOut: [], virtual: true, exists: false, shape: null };
   }
 
   if (!resolution.laresRelPath) return null;
   const abs = join(LARES_ROOT, resolution.laresRelPath);
 
   if (!existsSync(abs)) {
-    return { uri, laresRelPath: resolution.laresRelPath, contentHash: makeMemeHash(uri, null), metadata: {}, edgesOut: [], virtual: false, exists: false, shape: null };
+    return { uri, laresRelPath: resolution.laresRelPath, contentHash: makeMemeHashSync(uri, null), metadata: {}, edgesOut: [], virtual: false, exists: false, shape: null };
   }
 
   try {
@@ -88,7 +96,7 @@ function loadMeme(uri: string): Meme | null {
     return {
       uri,
       laresRelPath: resolution.laresRelPath,
-      contentHash: makeMemeHash(uri, fileBytes),
+      contentHash: makeMemeHashSync(uri, fileBytes),
       metadata: record.metadata,
       edgesOut: edges,
       virtual: false,
