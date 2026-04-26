@@ -127,17 +127,28 @@ export interface TldrawEmission {
   readonly shapes: readonly TLRecord[];
 }
 
+export interface EmitOptions {
+  /**
+   * Override the page ID used in all emitted shape parentId fields.
+   * Used by multi-view rendering to place shapes on a different page than
+   * the snapshot's own page ID.
+   */
+  pageOverride?: string;
+}
+
 export function emitTldrawRecords(
   snapshot: LarTLSnapshot,
   layout: LarTLLayout,
+  emitOpts: EmitOptions = {},
 ): TldrawEmission {
   const pages: TLPageRecord[] = [];
   const shapes: TLRecord[]    = [];
 
-  // Pages
+  // Pages (optionally remap page ID for multi-view)
   snapshot.pages.forEach((page: LarTLPage, idx: number) => {
+    const id = emitOpts.pageOverride ?? page.id;
     pages.push({
-      id: page.id,
+      id,
       typeName: "page",
       name: page.name,
       index: indexKey(idx + 1),
@@ -145,7 +156,7 @@ export function emitTldrawRecords(
     });
   });
 
-  const defaultPageId = snapshot.pages[0]?.id ?? "page:default";
+  const defaultPageId = emitOpts.pageOverride ?? snapshot.pages[0]?.id ?? "page:default";
 
   // Frame shapes (meme + ahu)
   snapshot.frames.forEach((frame, idx) => {
