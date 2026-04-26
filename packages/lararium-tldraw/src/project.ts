@@ -108,7 +108,7 @@ export function projectToTldraw(artifact: BootArtifact, opts: ProjectOptions = {
 
         notes.push({
           type: "note",
-          id: `note:${fid}` as `note:${string}`,
+          id: `shape:note_${fid.replace(/^shape:/, "")}` as `shape:${string}`,
           scope: "document",
           pageId: page.id,
           parentFrameId: fid,

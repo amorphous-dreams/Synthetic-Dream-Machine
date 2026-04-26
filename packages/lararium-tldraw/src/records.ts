@@ -41,19 +41,21 @@
 /** Stable deterministic ID for a projected record: "type:larHash" */
 export type LarProjectionId = `${string}:${string}`;
 
+// tldraw requires all shape record IDs to start with "shape:" regardless of shape type.
+// The shape type (frame/arrow/note) is carried in the `type` field, not the ID prefix.
 export function memeFrameId(uri: string): LarProjectionId {
-  return `frame:${uri.replace(/[^a-zA-Z0-9]/g, "_")}`;
+  return `shape:frame_${uri.replace(/[^a-zA-Z0-9]/g, "_")}`;
 }
 
 export function ahuFrameId(uri: string, socket: string): LarProjectionId {
   const socketSuffix = socket.includes("#") ? socket.split("#")[1]! : "root";
-  return `frame:${uri.replace(/[^a-zA-Z0-9]/g, "_")}_ahu_${socketSuffix}`;
+  return `shape:ahu_${uri.replace(/[^a-zA-Z0-9]/g, "_")}_${socketSuffix}`;
 }
 
 export function edgeArrowId(fromSocket: string, toUri: string): LarProjectionId {
   const from = fromSocket.replace(/[^a-zA-Z0-9]/g, "_");
   const to = toUri.replace(/[^a-zA-Z0-9]/g, "_");
-  return `arrow:${from}__${to}`;
+  return `shape:arrow_${from}__${to}`;
 }
 
 export function pageId(artifactType: string): LarProjectionId {

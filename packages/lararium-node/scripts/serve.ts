@@ -21,7 +21,7 @@ import { createServer, type IncomingMessage, type ServerResponse } from "http";
 import { readFileSync, existsSync, statSync, mkdirSync } from "fs";
 import { join, extname, resolve } from "path";
 import { fileURLToPath } from "url";
-import { DatabaseSync } from "node:sqlite";
+import Database from "better-sqlite3";
 import { WebSocketServer, WebSocket } from "ws";
 import {
   TLSocketRoom,
@@ -76,7 +76,7 @@ function getOrCreateRoom(roomId: string, initialSnapshot?: unknown): TLSocketRoo
   if (existing) return existing;
 
   const dbPath = join(DATA_DIR, `${roomId}.sqlite`);
-  const db = new DatabaseSync(dbPath);
+  const db = new Database(dbPath);
   const sql = new NodeSqliteWrapper(db);
   const isNew = !SQLiteSyncStorage.hasBeenInitialized(sql);
 
@@ -166,50 +166,42 @@ async function main() {
   });
 
   // WebSocket server — path: /rooms/:roomId
+  // Follow the official tldraw simple-server-example pattern exactly:
+  //   - sessionId comes from the client query param (useSync appends ?sessionId=<TAB_ID>)
+  //   - pass ws socket directly (ws v8+ implements addEventListener natively)
+  //   - buffer messages received before room.handleSocketConnect, then replay
   const wss = new WebSocketServer({ server: httpServer });
 
   wss.on("connection", (ws: WebSocket, req: IncomingMessage) => {
-    const pathname = req.url ?? "/";
-    const match = pathname.match(/^\/rooms\/([^/?#]+)/);
+    const url = new URL(req.url ?? "/", `ws://${HOST}:${PORT}`);
+    const match = url.pathname.match(/^\/rooms\/([^/?#]+)/);
     if (!match) {
       ws.close(1008, "Invalid room path");
       return;
     }
 
     const roomId = match[1]!;
-    const sessionId = crypto.randomUUID();
+    // sessionId must come from the client — useSync appends ?sessionId=<TAB_ID>
+    const sessionId = url.searchParams.get("sessionId") ?? crypto.randomUUID();
+
+    // Buffer messages that arrive before handleSocketConnect (avoid race on async room load)
+    const buffered: import("ws").RawData[] = [];
+    const buffer = (msg: import("ws").RawData) => buffered.push(msg);
+    ws.on("message", buffer);
+
     const room = getOrCreateRoom(roomId, bootSnapshot);
 
-    // Adapt ws WebSocket to tldraw's expected interface
-    const socketLike = {
-      send: (msg: string) => {
-        if (ws.readyState === WebSocket.OPEN) ws.send(msg);
-      },
-      addEventListener: (
-        event: string,
-        handler: (event: { data: string } | { code: number; reason: string }) => void
-      ) => {
-        if (event === "message") {
-          ws.on("message", (data) => handler({ data: data.toString() }));
-        } else if (event === "close") {
-          ws.on("close", (code, reason) =>
-            handler({ code, reason: reason.toString() })
-          );
-        } else if (event === "error") {
-          ws.on("error", (err) => handler(err as unknown as { code: number; reason: string }));
-        }
-      },
-      removeEventListener: (_event: string, _handler: unknown) => {
-        // ws doesn't need explicit removeEventListener for our purposes
-      },
-    };
+    // Pass ws directly — ws v8+ implements addEventListener/removeEventListener
+    room.handleSocketConnect({
+      sessionId,
+      socket: ws as unknown as Parameters<typeof room.handleSocketConnect>[0]["socket"],
+    });
 
-    room.handleSocketConnect({ sessionId, socket: socketLike as Parameters<typeof room.handleSocketConnect>[0]["socket"] });
+    // Unregister buffer listener and replay any caught messages
+    ws.off("message", buffer);
+    for (const msg of buffered) ws.emit("message", msg);
 
-    ws.on("close", () => room.handleSocketClose(sessionId));
-    ws.on("error", () => room.handleSocketClose(sessionId));
-
-    console.log(`[lararium-serve] + session ${sessionId.slice(0, 8)} room=${roomId}`);
+    console.log(`[lararium-serve] + ${sessionId.slice(0, 8)} room=${roomId}`);
   });
 
   httpServer.listen(PORT, HOST, () => {

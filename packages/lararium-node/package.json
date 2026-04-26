@@ -26,7 +26,9 @@
     "@lararium/core": "workspace:*",
     "@lararium/tldraw": "workspace:*",
     "@tldraw/sync-core": "^4.5.10",
+    "@types/better-sqlite3": "^7.6.13",
     "@types/ws": "^8.18.1",
+    "better-sqlite3": "^12.9.0",
     "ws": "^8.20.0"
   },
   "devDependencies": {
