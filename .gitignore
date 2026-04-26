@@ -34,6 +34,4 @@ lares/lararium-node/fixtures.current.json
 node_modules/
 packages/*/dist/
 packages/*/node_modules/
-
-# ignore local SQLite runtime state
 .lararium-data/
