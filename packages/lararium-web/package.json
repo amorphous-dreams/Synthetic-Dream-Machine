@@ -12,12 +12,14 @@
   "scripts": {
     "build": "tsc",
     "typecheck": "tsc --noEmit",
-    "bundle": "node scripts/build-snapshot.js"
+    "bundle": "vite build",
+    "dev": "vite"
   },
   "dependencies": {
     "@lararium/core": "workspace:*"
   },
   "devDependencies": {
-    "tsx": "^4.19.0"
+    "tsx": "^4.19.0",
+    "vite": "^8.0.10"
   }
 }
