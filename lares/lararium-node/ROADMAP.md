@@ -802,63 +802,49 @@ All target outcomes delivered:
 
 ## Milestone 4 — In Progress (2026-04-25)
 
-### Scope
-
-Target outcomes:
+### Completed
 
 **Crypto provider boundary (replaces djb2 crypto-shim)**
-- Define `CryptoProvider` interface in `lararium-core`: `DigestProvider`, `RandomProvider`, `webDigest()`, `webGetRandomValues()`, `webRandomUUID()`
-- Canonical bytes helpers: `utf8Bytes()`, `canonicalJson()`, `canonicalJsonBytes()`, `hex()`, `sha256Hex()`
-- Replace `packages/lararium-web/src/crypto-shim.ts` (djb2, not real SHA-256) with `webDigest()` calling `globalThis.crypto.subtle.digest('SHA-256', data)`
-- Make `compileBootReceipt()` in `lararium-core` async (callers updated); remove `import { createHash } from 'crypto'`
-- All digest calls async; no `Math.random()` in any security path; no hand-rolled primitives
-- Known-vector tests: SHA-256("abc") = `ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad`
-- Docs: `lares/lararium-node/CRYPTO.md` ✓ (written this session)
+- ✓ `CryptoProvider` / `DigestProvider` / `RandomProvider` interfaces in `lararium-core/src/crypto.ts`
+- ✓ `webDigest()`, `webGetRandomValues()`, `webRandomUUID()`, `defaultCryptoProvider`
+- ✓ Canonical bytes helpers: `utf8Bytes()`, `canonicalJson()`, `canonicalJsonBytes()`, `hex()`, `sha256Hex()`
+- ✓ `compileBootReceipt()` async, uses `canonicalJsonBytes` + `sha256Hex`; `import { createHash } from 'crypto'` removed
+- ✓ `crypto-shim.ts` deleted; vite `crypto` alias removed from `lararium-web`
+- ✓ Known-vector test: SHA-256("abc") = `ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad` — passes
+- ✓ All callers (stdio.ts, cli.ts, app.ts, no-write-gate.test.ts, parity.test.ts) updated to `await`
+- ✓ `lares/lararium-node/CRYPTO.md` doctrine carrier
 
-**ATProto / Bluesky login doctrine (deferred implementation)**
-- No implementation this milestone — doctrine only
-- BFF-preferred architecture: `@atproto/oauth-client-node` server-side, application session cookie to frontend
-- Browser-only fallback: `@atproto/oauth-client-browser`, explicitly labeled public-client risk
-- SDK owns PKCE / PAR / DPoP — Lararium must not re-implement any of these
-- Identity layer separation: handle → DID → PDS → OAuth session → Lararium session → `alias:tier@host` hostful URI → hostless `lar:///` invariant meme identity
-- DPoP keys: per-session ES256/P-256, non-extractable where runtime allows, SDK-managed by default
-- k256/secp256k1: out of scope unless official ATProto library owns it
-- Docs: `lares/lararium-node/AUTH-ATPROTO.md` ✓ (written this session)
+**ATProto / Bluesky login doctrine**
+- ✓ Doctrine-only — no implementation
+- ✓ `lares/lararium-node/AUTH-ATPROTO.md`: BFF-preferred, SDK-managed PKCE/PAR/DPoP, seven identity layers, k256 out of scope
 
-**Infinite canvas + portals browser UI**
-- `lararium-web/src/app.ts` wired to actual tldraw mount (HTML entry point)
-- Portal shapes connecting rooms: `LarPortal` renders as TLArrow with click-navigation handler
-- Side panel (story river): CSS overlay, slides in from left; driven by `LarViewState`
-- Control panel: slides in from right; room registry + filter expression editor
+**Infinite canvas app scaffold**
+- ✓ `packages/lararium-app/` created: `index.html` (TW-style snapshot injection slot), `main.tsx`, `App.tsx`, `LarariumCanvas.tsx`, `SidePanel.tsx`
+- ✓ `bootFromEmbedded()` → `renderAppViews()` async boot chain in `App.tsx`
+- ✓ `viewStateReducer` wired; Back and Graph buttons in `SidePanel`
+- ✓ `LarariumCanvas.tsx`: tldraw mount, emission hydration, page routing, camera sync via `goToStoryRiver`/`goToGraph`/`zoomToMeme`
+- ✓ All packages typecheck clean; 36/36 tests pass
+
+### Remaining
+
+**First working browser session**
+- Snapshot injection server: HTTP endpoint in `lararium-node` that serves `lararium-app/dist/index.html` with `LarSnapshot` injected into `<script id="lararium-snapshot">`
+- Build pipeline: `pnpm --filter @lararium/app build` then `pnpm --filter @lararium/node serve`
 - `goToRoom(editor, room)` nav helper in `nav.ts`
+- Story river in `SidePanel`: scrollable meme URI list; click → `dispatch({ type: "ZOOM_IN", uri })`
+- Double-click on tldraw frame shapes → zoom-in dispatch (tldraw v4 event API)
+
+**Rooms and portals**
+- Portal shapes connecting rooms: `LarPortal` renders as TLArrow with click-navigation handler
 - `renderRoom(artifact, room, readText)` — filters via `filterMemesTW` then projects room content
-- First working browser session: snapshot → boot → tldraw mount → room navigation
+- Room registry in SidePanel control panel (right-slide overlay)
 
 Do not in Milestone 4:
-
 - Actual Bluesky login implementation (doctrine only)
 - Write-back of any kind
 - Kowloon projection package (Milestone 5)
 - Multi-user presence / cursors
 
-## Milestone 3 — Scope (Next 30 Days)
-
-Target outcomes:
-
-- Streamable HTTP canary in `lararium-mcp`: local-only default, Origin validation, auth hook stub, behind `--http` flag
-- `snapshot.json` produced in CI (`build-snapshot.ts` runs as CI step, artifact uploaded)
-- `lararium-web` Vite build: produces a distributable `dist/lararium-web.js` bundle that boots from an embedded or fetched snapshot
-- Property tests for URI normalization and `? ->` socket resolution (nested `ahu` structures)
-- Boot receipt stability test: two compiles of same graph produce identical receipt hash
-- `lararium-tldraw` skeleton: `packages/lararium-tldraw/` with `projectToTldraw()` stub and tldraw record type stubs — no write-back, pure projection
-- Hostful `lar://alias:tier@host/...` URI parse/resolve support in `lararium-core`
-
-Do not in Milestone 3:
-
-- Write-back of any kind
-- Kowloon projection package (deferred to Milestone 4)
-- Room/session filtering
-- Full tldraw sync (projection skeleton only)
 
 <<~/ahu >>
 

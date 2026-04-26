@@ -19,10 +19,12 @@
     "typecheck": "tsc --noEmit",
     "test": "NODE_OPTIONS=--experimental-vm-modules pnpm exec jest --config jest.config.cjs",
     "dev": "tsx src/index.ts",
-    "build-snapshot": "tsx scripts/build-snapshot.ts"
+    "build-snapshot": "tsx scripts/build-snapshot.ts",
+    "serve": "tsx src/serve.ts"
   },
   "dependencies": {
-    "@lararium/core": "workspace:*"
+    "@lararium/core": "workspace:*",
+    "@lararium/tldraw": "workspace:*"
   },
   "devDependencies": {
     "tsx": "^4.19.0",

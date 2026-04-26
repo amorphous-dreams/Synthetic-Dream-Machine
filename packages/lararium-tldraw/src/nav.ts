@@ -124,3 +124,12 @@ export function goToGraph(editor: TldrawEditorLike): void {
   switchToPage(editor, "page:graph");
   setTimeout(() => zoomToFitAll(editor), 50);
 }
+
+/**
+ * Switch to a room page by room ID and fit all shapes.
+ * Rooms are projected to tldraw pages with IDs matching `pageId(room.id)`.
+ */
+export function goToRoom(editor: TldrawEditorLike, roomId: string): void {
+  switchToPage(editor, `page:${roomId}`);
+  setTimeout(() => zoomToFitAll(editor), 50);
+}
