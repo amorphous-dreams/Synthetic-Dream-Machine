@@ -54,7 +54,11 @@ function getTw(): Promise<TwInstance> {
     const tw = _require("tiddlywiki");
     const instance = tw.TiddlyWiki();
     instance.boot.argv = [];
+    // TW5 prints its help banner to stdout when argv is empty; suppress it.
+    const origWrite = process.stdout.write.bind(process.stdout);
+    (process.stdout as any).write = () => true;
     instance.boot.boot(() => {
+      (process.stdout as any).write = origWrite;
       _tw = instance;
       resolve(instance);
     });
