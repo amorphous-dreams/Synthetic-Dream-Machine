@@ -41,6 +41,7 @@ export interface TLArrowBindingRecord {
     readonly normalizedAnchor:  { x: number; y: number };
     readonly isExact:           boolean;
     readonly isPrecise:         boolean;
+    readonly snap:              "center" | "edge-point" | "edge" | "none";
   };
 }
 
@@ -260,6 +261,7 @@ export function emitTldrawRecords(
           normalizedAnchor: { x: 0.5, y: 0.5 },
           isExact:          false,
           isPrecise:        false,
+          snap:             "center",
         },
       });
     }
@@ -278,6 +280,7 @@ export function emitTldrawRecords(
           normalizedAnchor: { x: 0.5, y: 0.5 },
           isExact:          false,
           isPrecise:        false,
+          snap:             "center",
         },
       });
     }

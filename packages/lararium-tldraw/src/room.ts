@@ -142,10 +142,3 @@ export async function roomEntries(
   return filter(allEntries, room.filter);
 }
 
-// ---------------------------------------------------------------------------
-// Portal shape ID helpers
-// ---------------------------------------------------------------------------
-
-export function portalShapeId(portal: LarPortal): string {
-  return `frame:portal_${portal.id.replace(/[^a-zA-Z0-9]/g, "_")}`;
-}

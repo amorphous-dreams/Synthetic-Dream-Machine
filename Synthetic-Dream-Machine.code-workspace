@@ -5,6 +5,15 @@
 		}
 	],
 	"settings": {
-		"markdown.validate.enabled": true
+		"markdown.validate.enabled": true,
+		"mcp": {
+			"servers": {
+				"github": {
+					"type": "http",
+					"url": "https://api.githubcopilot.com/mcp/"
+				}
+			},
+			"inputs": []
+		}
 	}
 }

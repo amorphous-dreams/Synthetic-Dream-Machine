@@ -15,7 +15,7 @@
 
 import { useReducer, useEffect, useState, useRef, useCallback } from "react";
 import { createPortal } from "react-dom";
-import { INITIAL_VIEW_STATE, viewStateReducer, DEFAULT_ROOMS } from "@lararium/tldraw";
+import { INITIAL_VIEW_STATE, viewStateReducer, DEFAULT_ROOMS, ROOM_SYSTEM } from "@lararium/tldraw";
 import type { LarViewAction, LarViewState, ZoomLevel } from "@lararium/tldraw";
 import { LarariumCanvas } from "./LarariumCanvas.js";
 import type { MemeEntry } from "./App.js";
@@ -89,6 +89,7 @@ const toggleCss = {
 interface ShellProps {
   wsUrl: string;
   memes: MemeEntry[];
+  onMemes: (memes: MemeEntry[]) => void;
 }
 
 // ---------------------------------------------------------------------------
@@ -116,8 +117,8 @@ function LarariumHeader({
 
       {/* center: room breadcrumb */}
       <div style={css.headerCenter}>
-        <span style={css.roomName}>the-altar-fire</span>
-        {navState.focusUri && (
+        <span style={css.roomName}>{activeRoomName(navState)}</span>
+        {navState.activeView === "meme-detail" && navState.focusUri && (
           <>
             <span style={css.breadcrumbSep}>›</span>
             <span style={css.focusCrumb}>{shortUri(navState.focusUri)}</span>
@@ -309,7 +310,7 @@ function LarariumCommandPalette({
 // Shell root
 // ---------------------------------------------------------------------------
 
-export function LarariumShell({ wsUrl, memes }: ShellProps) {
+export function LarariumShell({ wsUrl, memes, onMemes }: ShellProps) {
   const [navState, dispatch] = useReducer(viewStateReducer, INITIAL_VIEW_STATE);
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [canvasMode, setCanvasMode] = useState(false);
@@ -350,6 +351,7 @@ export function LarariumShell({ wsUrl, memes }: ShellProps) {
         dispatch={dispatch as React.Dispatch<LarViewAction>}
         canvasMode={canvasMode}
         onZoomLevel={setZoomLevel}
+        onMemes={onMemes}
       />
 
       {createPortal(
@@ -393,6 +395,18 @@ export function LarariumShell({ wsUrl, memes }: ShellProps) {
 
 function shortUri(uri: string): string {
   return uri.replace("lar:///", "").replace(/^ha\.ka\.ba\/api\/v0\.1\//, "").replace(/\//g, " / ");
+}
+
+const ROOM_NAME: Record<string, string> = Object.fromEntries(
+  DEFAULT_ROOMS.map((r) => [r.id, r.name])
+);
+
+function activeRoomName(navState: LarViewState): string {
+  if (navState.activeView === "room" && navState.focusUri) {
+    return ROOM_NAME[navState.focusUri] ?? navState.focusUri;
+  }
+  if (navState.activeView === "graph") return ROOM_NAME["graph"] ?? "Graph Overview";
+  return ROOM_NAME[ROOM_SYSTEM.id] ?? "System View";
 }
 
 // ---------------------------------------------------------------------------

@@ -153,15 +153,21 @@ _Status: design only. Not yet implemented._
 
 <<~ ahu #views >>
 
-## Canvas Views — Zoom-Gated, Not Page-Switched
+## Canvas Views — Three-Page Model with Zoom-Gated Auto-Switch
 
-**Current implementation (milestone 4):** Three tldraw pages (`page:minimal-boot`, `page:meme-detail`, `page:graph`). Navigation via `LarViewState` reducer driving `setCurrentPage()`.
+**Current implementation (milestone 5):** Three tldraw pages (`page:minimal-boot`, `page:meme-detail`, `page:graph`). Navigation via `LarViewState` reducer driving `setCurrentPage()`. Zoom-level auto-switch is live: `store.listen({ scope: "session" })` fires on camera change, classifies zoom via `classifyZoom()`, and auto-switches pages at threshold crossings.
 
-**Target model (milestone 5+):** Single tldraw page per room. View "modes" are zoom-level gates, not page switches. See `#ux-shell` for zoom threshold table.
+**Zoom-page routing (active):**
 
-The three-page model stays in place until the shape namespace collision problem is resolved (all memes on one page = IDs must be globally unique within the page, not just per-view-prefix). The `pageOverride` contract in `emitTldrawRecords` is already designed to handle this migration.
+| Zoom levels | Page |
+|---|---|
+| strategic + operational (< 0.35) | `page:graph` — compact frames, edge colors |
+| tactical (0.35–0.80) | `page:minimal-boot` — story river |
+| combat + action (> 0.80) | preserve current page — meme-detail driven by navState |
 
-**Current page layout (unchanged):**
+**Target model (future):** Single tldraw page per room. View "modes" become zoom-level gates driving conditional shape visibility, not page switches. Blocked until the shape namespace collision problem is resolved — all memes on one page requires globally unique IDs without the per-view-prefix scoping `pageOverride` currently provides. The `pageOverride` contract in `emitTldrawRecords` is already designed to support this migration.
+
+**Current page layout:**
 
 | Page ID | View | Layout |
 |---------|------|--------|
@@ -169,9 +175,9 @@ The three-page model stays in place until the shape namespace collision problem 
 | `page:meme-detail` | Focus view | Single meme + ahu socket sub-frames + immediate neighbours. |
 | `page:graph` | Graph overview | 160px compact frames, denser layout, same edge color coding. |
 
-**Navigation:** `LarViewState` reducer (`ZOOM_IN`, `OPEN_GRAPH`, `CLOSE_GRAPH`, `NAVIGATE_BACK`). In the target model, `ZOOM_IN` drives camera animation to a meme's position + zoom level, not `setCurrentPage`. `OPEN_GRAPH` zooms out to the full-graph zoom threshold.
+**Navigation:** `LarViewState` reducer (`ZOOM_IN`, `OPEN_GRAPH`, `CLOSE_GRAPH`, `NAVIGATE_BACK`, `GO_TO_ROOM`). `ZOOM_IN` drives `zoomToMeme()` camera animation. `OPEN_GRAPH` switches to graph page. `GO_TO_ROOM` switches to a room page by ID.
 
-**SidePanel → Command palette migration:** The slide-in `SidePanel` meme list is a stepping stone. Target: `⌘K` command palette replaces it as primary room/meme navigation.
+**⌘K command palette:** Implemented and active. Replaces `SidePanel` as primary room/meme navigation. Two sections: **Spaces** (DEFAULT_ROOMS with chronometer glyphs) and **Memes** (URI filter). Arrow-key navigation, Enter to activate, Escape to dismiss.
 
 <<~/ahu >>
 
@@ -410,13 +416,17 @@ The tldraw canvas shows a visible distinction between pending (dashed border, am
 
 Kinopio (`kinopio.club`, Vue 3, open-source, not npm-publishable) is the closest public reference for the UX feel we want. Full source analysis at `github.com/kinopio-club/kinopio-client`.
 
-### The Core Philosophy
+### The Core Philosophy — Now Implemented
 
 **The canvas is primary. UI wraps around it — never blocks it.**
 
-Kinopio's `<Header>` is `position: fixed; pointer-events: none` with interaction re-enabled only on child buttons. The canvas fills 100% of the viewport. UI chrome exists at fixed viewport positions and *fades or repositions* during zoom. On iOS, the header dynamically repositions via `updatePositionInVisualViewport()` every 60 frames to track the visual viewport during pinch-zoom.
+Kinopio's `<Header>` is `position: fixed; pointer-events: none` with interaction re-enabled only on child buttons. The canvas fills 100% of the viewport. UI chrome exists at fixed viewport positions and *fades or repositions* during zoom.
 
-This is the inverse of our current model (tldraw with overlaid React panels). We need to flip: the tldraw canvas is the root, our Chrome wraps it.
+**This model is now the Lararium implementation.** `LarariumShell` wraps `LarariumCanvas` via React portal: all chrome (`LarariumHeader`, `LarariumFooter`, `LarariumCommandPalette`) is `position:fixed`, rendered into `document.body` outside the tldraw DOM tree. The canvas fills 100vw × 100vh. `PageMenu`, `NavigationPanel`, `MainMenu`, `ZoomMenu`, `QuickActions`, `HelperButtons`, `MenuPanel` are all suppressed in wiki mode via `TLComponents = null`.
+
+**Canvas mode toggle (`` ` `` key):** Dims Lararium chrome (`opacity: 0.35, pointer-events: none`) and restores tldraw's full toolbar/style panel for freeform drawing. Toggle pill always visible at bottom-left. This is the Lararium answer to Kinopio's mode distinction — not a separate tool, just a chrome visibility gate.
+
+On iOS, Kinopio dynamically repositions its header via `updatePositionInVisualViewport()` every 60 frames to track the visual viewport during pinch-zoom. Android Chrome does NOT have this problem — `position:fixed` works correctly. Lararium targets Windows 11 + Android; no iOS visual viewport compensation needed.
 
 ### Layout Architecture (what lives where)
 
@@ -474,11 +484,13 @@ Kinopio has no canonical "home space." We do: **the-altar-fire** is the home roo
 
 Transclusion implementation: when seeding a user room, the boot closure memes are projected as a locked cluster in a corner of the canvas. They reference their canonical lar URIs. When the user navigates to them (double-click), the detail panel shows the canonical carrier — but any edit creates a pending fork attached to the user's room, not the canonical meme.
 
-**Room switching:** a single `⌘K` / keyboard shortcut opens a command-palette-style room switcher (viewport-fixed overlay, full-width at top). Type to filter room names. Arrow keys to navigate. Enter to switch rooms. Escape to dismiss. This replaces the SidePanel story-river as the primary room navigation surface.
+**Room switching — implemented:** `⌘K` command palette is the primary room switcher. Viewport-fixed overlay, full-width at top, filter-as-you-type. **Spaces** section shows DEFAULT_ROOMS with chronometer glyphs (🗺️⚙️🔍⚔️⚡). **Memes** section filters by URI substring. Arrow keys navigate across both sections. Enter activates. Escape dismisses. This replaces the SidePanel story-river — SidePanel is removed.
 
 ### Portal Shapes
 
-Portals are rendered as custom tldraw shapes (`LarPortalShapeUtil`). Visual: a rounded rectangle with a chevron-right and the target room name. Click navigates to that room (new WS connection, animated transition). Portal shapes are canvas-local state — moveable by operators without canonical write-back.
+Portals are **`geo` shapes with custom `meta`** (`meta.larPortal = true`, `meta.targetRoomId`, `meta.label`) — not a custom `ShapeUtil`. Visual: built-in tldraw hexagon. Double-click fires `GO_TO_ROOM` dispatch via `doubleClickShape` handler in `LarariumCanvas`. Portal shapes are canvas-local state — moveable by operators without canonical write-back.
+
+`LarPortalShapeUtil` is removed. Portal detection reads `shape.meta.larPortal` — no schema registration required, no tldraw upgrade risk.
 
 The altar fire canvas seeds with portal shapes for all registered rooms at initial positions defined in `the-altar-fire.md`. Users can create their own portals by dragging a meme's URI onto the canvas and choosing "Create portal."
 
@@ -678,18 +690,21 @@ const overrides: TLUiOverrides = {
 };
 ```
 
-### Zoom-gated rendering
+### Zoom-level ontology and page-switching (current implementation)
 
-tldraw's `editor.getZoomLevel()` drives what sub-structure is visible:
+The Lararium zoom ontology — five levels mapped to chronometer scale positions — drives both page auto-switching and future render gating. Implemented in `packages/lararium-tldraw/src/zoom-levels.ts`.
 
-| Zoom level | What renders |
-|---|---|
-| < 0.3 | Graph mode: meme label only, compact frames, edge colors only |
-| 0.3 – 0.8 | Story river: full frames with name + URI slug |
-| > 0.8 | Detail mode: ahu socket sub-frames visible, carrier text snippet |
-| > 1.5 | Full carrier text, edge labels, commit-tier indicators |
+| Level | Glyph | Threshold | Current effect | Future (single-page) |
+|---|---|---|---|---|
+| strategic | 🗺️ | < 0.15 | switch to `page:graph` | labels-only galaxy |
+| operational | ⚙️ | 0.15–0.35 | switch to `page:graph` | compact frames, edge colors |
+| tactical | 🔍 | 0.35–0.80 | switch to `page:minimal-boot` | full frame name + URI slug |
+| combat | ⚔️ | 0.80–1.50 | preserve page (navState drives) | ahu socket sub-frames visible |
+| action | ⚡ | ≥ 1.50 | preserve page (navState drives) | full carrier text, edge labels |
 
-This is not separate tldraw pages — it is one page with conditional shape visibility driven by `useEffect([editor.getZoomLevel()])`.
+Auto-switching uses `store.listen({ scope: "session" })` — camera records are session-scoped, so this fires ~100× less than an unscoped listener. Page switch fires only on level boundary crossings (hysteresis via `lastLevel` ref).
+
+Footer glyph tracks zoom level live via `onZoomLevel` callback from `LarariumCanvas`.
 
 ### Offline / Reconnection Model
 
@@ -710,16 +725,18 @@ This requires `@tldraw/store`'s persistence adapter wired to IndexedDB. Not yet 
 - ✓ SidePanel meme list: `/api/memes` endpoint, fetched in App.tsx, passed as `memes[]` prop
 - ✓ the-altar-fire invariant meme: authored at `lares/ha-ka-ba/api/v0.1/pono/the-altar-fire.md`
 - ✓ Double-click frame → ZOOM_IN dispatch: wired via `doubleClickShape` + `meta.uri`
+- ✓ **UX shell refactor:** `<LarariumShell>` implemented — kinopio-style, header `position:fixed; pointer-events:none`, canvas fills 100vh, all chrome via React portal. `<SidePanel>` removed.
+- ✓ **Command palette (`⌘K`):** Implemented. Spaces + Memes sections, unified arrow-key nav, `` ` `` key toggles canvas mode.
+- ✓ **Portal shapes:** `geo` + `meta.larPortal` pattern ships — no custom ShapeUtil. Double-click fires `GO_TO_ROOM`.
+- ✓ **Canvas mode toggle:** `` ` `` key dims Lararium chrome, restores tldraw toolbar. Toggle pill bottom-left.
 
 **Open:**
 
-1. **UX shell refactor:** Current `<SidePanel>` + `<LarariumCanvas>` structure needs to flip to `<LarariumShell>` model (header fixed outside canvas, panels contextual, no persistent drawers). See `#ux-shell`. This is the next major coding vector.
+1. **Zoom-gated single-page rendering:** Sub-frame geometry conditional on zoom level, one page per room. Blocked on shape namespace collision — current three-page + zoom-auto-switch model stays until resolved.
 
-2. **Command palette (`⌘K`):** Room switcher + action palette. Replaces SidePanel story river as primary navigation. Viewport-fixed overlay, keyboard-navigable, filter-as-you-type. Depends on UX shell refactor.
+2. **`/api/memes` endpoint:** Currently fetched from Vite dev server (5173) which has no handler — returns HTML 404. Two paths: (a) add Vite proxy to `serve.ts:4321`, or (b) replace fetch with `editor.getShapes()` filtered to `meta.frameKind === "meme"` (CRDT-native, the target model). Decision pending this session.
 
-3. **Zoom-gated rendering:** One page per room, sub-frame geometry conditional on `editor.getZoomLevel()`. Blocked on shape namespace collision resolution — current three-page model stays until then.
-
-4. **LarPortalShapeUtil:** Custom tldraw shape for room-to-room navigation. `@lararium/tldraw` package. Depends on UX shell (portal click must trigger room switch at shell level, not canvas level).
+3. **LarPortalShapeUtil (future):** Only needed if `geo` + meta proves insufficient for portal UX (click area, label rendering). Current `geo`+meta is MVP-sufficient.
 
 5. **User home rooms (`user:${did}`) with altar-fire transclusion:** Seed logic for per-user rooms. Altar-fire memes projected as locked cluster in corner of user room canvas. Depends on UCAN/identity.
 

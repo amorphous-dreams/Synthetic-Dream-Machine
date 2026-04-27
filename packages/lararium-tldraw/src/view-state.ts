@@ -59,7 +59,6 @@ export const INITIAL_VIEW_STATE: LarViewState = {
 
 export type LarViewAction =
   | { type: "ZOOM_IN"; uri: string; fromRect?: LarNavFrame["fromRect"] }
-  | { type: "ZOOM_OUT" }
   | { type: "OPEN_GRAPH" }
   | { type: "CLOSE_GRAPH" }
   | { type: "NAVIGATE_BACK" }
@@ -81,15 +80,6 @@ export function viewStateReducer(state: LarViewState, action: LarViewAction): La
         activeView: "meme-detail",
         focusUri: action.uri,
         history: [...state.history, frame],
-      };
-    }
-    case "ZOOM_OUT": {
-      const prev = state.history.at(-1);
-      if (!prev) return { ...state, activeView: "story-river", focusUri: null };
-      return {
-        activeView: prev.view,
-        focusUri: prev.focusUri,
-        history: state.history.slice(0, -1),
       };
     }
     case "OPEN_GRAPH": {

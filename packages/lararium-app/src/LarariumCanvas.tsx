@@ -31,6 +31,7 @@ interface Props {
   dispatch: React.Dispatch<LarViewAction>;
   canvasMode: boolean;
   onZoomLevel?: (level: ZoomLevel) => void;
+  onMemes?: (memes: { uri: string; depth: number; kind: string }[]) => void;
 }
 
 type TldrawEditor = Parameters<NonNullable<React.ComponentProps<typeof Tldraw>["onMount"]>>[0];
@@ -62,13 +63,34 @@ function getLarUriFromShape(editor: TldrawEditor, shapeId: TLShapeId): string | 
   return null;
 }
 
-export function LarariumCanvas({ wsUrl, navState, dispatch, canvasMode, onZoomLevel }: Props) {
+export function LarariumCanvas({ wsUrl, navState, dispatch, canvasMode, onZoomLevel, onMemes }: Props) {
   const store = useSync({ uri: wsUrl, assets: inlineBase64AssetStore });
   const editorRef = useRef<TldrawEditor | null>(null);
   if (process.env.NODE_ENV === "development") {
     (window as any).__larariumDebug ??= {};
     (window as any).__larariumDebug.store = store;
   }
+
+  // Populate meme list from store shapes once synced — CRDT-native, no /api/memes fetch.
+  useEffect(() => {
+    const editor = editorRef.current;
+    if (!editor || store.status !== "synced-remote" || !onMemes) return;
+    const memes = editor.getCurrentPageShapes()
+      .filter((s) => {
+        const meta = s.meta as Record<string, unknown> | undefined;
+        return s.type === "frame" && meta?.frameKind === "meme";
+      })
+      .map((s) => {
+        const meta = s.meta as Record<string, unknown>;
+        return {
+          uri:   String(meta.uri ?? ""),
+          depth: Number(meta.depth ?? 0),
+          kind:  String(meta.kind ?? "meme"),
+        };
+      })
+      .filter((m) => m.uri.startsWith("lar:"));
+    onMemes(memes);
+  }, [store.status, onMemes]);
 
   // Double-click: geo portal (meta.larPortal) → GO_TO_ROOM, meme frame → ZOOM_IN
   useEffect(() => {
@@ -164,6 +186,7 @@ export function LarariumCanvas({ wsUrl, navState, dispatch, canvasMode, onZoomLe
             (window as any).__larariumDebug ??= {};
             (window as any).__larariumDebug.editor = editor;
           }
+          editor.setCurrentTool("select");
           const storyPageId = pageId("minimal-boot") as unknown as TLPageId;
           if (editor.getPage(storyPageId)) {
             editor.setCurrentPage(storyPageId);

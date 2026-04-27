@@ -980,48 +980,82 @@ Do not ship the snapshot-injection server as the primary path. Offline mode only
 - ✓ `/admin/reseed` endpoint (localhost-only), `/api/rooms` endpoint
 - ✓ All packages build clean; 36/36 tests passing
 
-### Carries to Milestone 6
+### Also completed in M5 session (2026-04-27)
 
-**Schema/validation fix (2026-04-26)**
+**Schema/validation fix**
 - ✓ `lar-portal` custom shape type replaced with built-in `geo` (hexagon) + `meta: { larPortal, targetRoomId, label }` — tldraw's server-side schema (`DEFAULT_INITIAL_SNAPSHOT.schema`) rejects unknown types on sync; no custom `ShapeUtil` or schema registration needed
 - ✓ `LarPortalShapeUtil` deleted; portal detection in double-click handler reads `shape.meta.larPortal`
-- ✓ Zoom `store.listen` scoped to `{ scope: "session" }` — camera is session-scoped; fires ~100× less than unscoped (document mutations no longer trigger zoom check)
+- ✓ Zoom `store.listen` scoped to `{ scope: "session" }` — camera is session-scoped; fires ~100× less than unscoped
 
-**Not yet verified (browser smoke required)**
-- ⚠ Drag-follows-arrow: binding records emitted and type-correct; tactile test pending
-- ⚠ Portal double-click: geo+meta portal → GO_TO_ROOM dispatch path untested in browser
-- ⚠ Zoom auto page-switch: threshold crossing + page flip logic correct; live camera interaction untested
-
-**Security hardening (2026-04-26)**
+**Security hardening**
 - ✓ Path traversal guard: `resolve(filePath)` checked against `APP_DIST` prefix; 403 on escape
-- ✓ WS URL from `req.headers.host` + `x-forwarded-proto` — LAN/proxy clients get correct address; no hardcoded `HOST:PORT` in injected meta tag
+- ✓ WS URL from `req.headers.host` + `x-forwarded-proto` — LAN/proxy clients get correct address
 
-**Planned but not started**
-- ⚠ MCP integration: co-locate stdio server with HTTP/WS server in `packages/lararium-node`
-- ⚠ Story river population from store: meme list still from `/api/memes` fetch; goal is `editor.getShapes()` filtered to `meta.frameKind === "meme"` — CRDT-native, no separate fetch
+**UX shell + kinopio alignment (2026-04-27)**
+- ✓ `LarariumShell` — kinopio-model chrome: `position:fixed; pointer-events:none` header, all UI via React portal into `document.body`, canvas fills 100vh
+- ✓ ⌘K command palette: Spaces + Memes sections, unified arrow-key nav
+- ✓ Canvas mode toggle (`` ` `` key): dims Lararium chrome, restores tldraw toolbar; toggle pill bottom-left
+- ✓ `SidePanel` removed — palette is the navigation surface
+- ✓ Zoom-level ontology (strategic/operational/tactical/combat/action) with FTLS-scale thresholds (0.15/0.35/0.80/1.50); footer glyph tracks live
+- ✓ MULTIPLAYER-INFINITE-CANVAS-WIKI.md and ROADMAP.md aligned to current implementation
+
+**Pending browser smoke (Milestone 6 opens)**
+- ⚠ Drag-follows-arrow: binding records type-correct; tactile test pending
+- ⚠ Portal double-click: geo+meta → GO_TO_ROOM path untested live
+- ⚠ Zoom auto page-switch: threshold logic correct; live camera interaction untested
+- ⚠ `/api/memes` console error: fetch hits Vite (5173), no handler — decision required: Vite proxy to serve.ts OR replace fetch with `editor.getShapes()` (target model)
+- ⚠ MCP co-location: stdio server alongside HTTP/WS server in `packages/lararium-node`
 
 <<~/ahu >>
 
 <<~ ahu #milestone-6-scope >>
 
-## Milestone 6 — Planned
+## Milestone 6 — In Progress (2026-04-27)
 
 ### Priority 1: Browser smoke + canvas wiring verification
 
-Open running server, verify tactile:
-- Drag a meme frame → arrows follow (binding validation)
-- Double-click portal badge → room page switches
+Open running server, verify tactile (Playwright session):
+- Drag a meme frame → arrows follow (binding records emitted, tactile unconfirmed)
+- Double-click portal badge (geo+meta) → room page switches
 - Zoom out past 0.35 → auto-switches to graph page; zoom back → story river
-- ⌘K → Spaces section shows 4 rooms with glyphs; Enter navigates
+- ⌘K → Spaces section shows rooms with chronometer glyphs; Enter navigates
+- Canvas mode toggle (`` ` ``): Lararium chrome dims, tldraw toolbar appears
 
-Fix whatever breaks. Milestone 5 canvas wiring is unvalidated until this closes.
+Fix whatever breaks. M5 canvas wiring is partially unvalidated.
 
-### Priority 2: Security hardening
+### Priority 2: Tensegrity audit — code gaps found 2026-04-27
 
-- Path traversal guard: `path.resolve(filePath)` + reject if not within `APP_DIST`
-- WS URL from `req.headers.host` (not hardcoded `HOST:PORT`); respect `x-forwarded-proto` for `wss:`
+Eight structural gaps found by walking all packages against the kinopio/multiplayer model:
 
-### Priority 3: MCP integration (partially complete 2026-04-26)
+| # | Location | Issue | Severity |
+|---|---|---|---|
+| T1 | `LarariumShell.tsx` header | Breadcrumb hardcodes `"the-altar-fire"` — never updates on `GO_TO_ROOM` | **Broken live** |
+| T2 | `App.tsx` → `LarariumCommandPalette` | Meme list from `/api/memes` fetch — fails in all dev paths; palette Memes section always empty | **Broken live** |
+| T3 | `multi-view.ts` `ROOM_PAGE` | Duplicates `room.ts` `roomPageId()` — two sources of truth for room→page mapping, can drift | Mechanical fix |
+| T4 | `room.ts` `portalShapeId` | Returns `frame:portal_${...}` — portals are now `shape:portal_${...}` geo shapes; function is wrong and unused | Dead export |
+| T5 | `view-state.ts` `ZOOM_OUT` action | Exported, reducer handles it, nothing dispatches it — shadow nav | Orphan |
+| T6 | `lararium-web/src/app.ts` | Full offline boot API (`LarApp`, `bootFromSnapshot`, `renderAppViews`) orphaned from primary `useSync` path — no handoff signal | Slack |
+| T7 | `lararium-tldraw/src/render.ts` `renderToTldraw` | Single-view pipeline coexists with `renderAllViews`; nothing calls it in prod — looks dead but is the right shape for `meme:${uri}` rooms | Needs comment |
+| T8 | `room.ts` `roomEntries` + `MemeFilter` | Designed for per-room TW5 filtering; not yet wired to serve.ts seeding; `invariants`/`entry` rooms unresolvable | Unwired |
+
+Fix order: T1 → T2 → T3+T4+T5 (mechanical batch) → T6+T7+T8 (commentary).
+
+### Priority 3: `/api/memes` resolution
+
+Console error on boot: `fetch /api/memes` hits Vite (5173), returns HTML 404.
+
+Decision required (one of):
+- **(a) Vite proxy:** add `server.proxy` in `vite.config.ts` forwarding `/api/*` and `/rooms/*` to `serve.ts:4321`. Preserves HMR. Requires `serve.ts` running in parallel dev loop.
+- **(b) Skip fetch entirely:** replace `App.tsx` fetch with `editor.getShapes()` filtered to `meta.frameKind === "meme"` — CRDT-native, no separate endpoint. This is the target model (MULTIPLAYER §open-questions #2). Zero backend dependency.
+
+Option (b) is the architecturally correct path. Option (a) is simpler if `serve.ts` is already running.
+
+### Priority 3: Security hardening — complete (2026-04-26)
+
+- ✓ Path traversal guard: `resolve(filePath)` against `APP_DIST`
+- ✓ WS URL from `req.headers.host` + `x-forwarded-proto`
+
+### Priority 4: MCP integration (partially complete 2026-04-26)
 
 **Done**
 - ✓ `lararium-filter` tool: TW5 filter expression evaluated against boot closure — `[all[memes]tag[...invariant]]`, `[field:depth[0]]`, etc.

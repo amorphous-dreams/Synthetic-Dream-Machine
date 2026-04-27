@@ -22,7 +22,8 @@ import { projectToTldraw, type ProjectOptions } from "./project.js";
 import { selectLayout, storyRiverLayout, memeDetailLayout, graphLayout, type LayoutStrategy } from "./layout.js";
 import { emitTldrawRecords, type TldrawEmission } from "./tldraw-shapes.js";
 import { type LarTLSnapshot, type LarTLPage, type LarTLFrame, type LarTLArrow, type LarTLNote, pageId } from "./records.js";
-import { DEFAULT_PORTALS } from "./room.js";
+import { DEFAULT_PORTALS, DEFAULT_ROOMS, roomPageId } from "./room.js";
+import { getIndicesAbove, type IndexKey } from "@tldraw/utils";
 
 // ---------------------------------------------------------------------------
 // Options
@@ -75,11 +76,10 @@ export function renderAllViews(artifact: BootArtifact, opts: MultiViewOptions = 
 // ---------------------------------------------------------------------------
 // emitPortalShapes — lar-portal custom shapes at the top of each page
 // ---------------------------------------------------------------------------
-// Room ID → tldraw page ID (only pages that exist in the three-page model)
-const ROOM_PAGE: Partial<Record<string, string>> = {
-  system:  pageId("minimal-boot"),
-  graph:   pageId("graph"),
-};
+// Derive room→page map from the single source of truth in room.ts
+const ROOM_PAGE: Partial<Record<string, string>> = Object.fromEntries(
+  DEFAULT_ROOMS.map((r) => [r.id, roomPageId(r)])
+);
 
 function emitPortalShapes(): unknown[] {
   const shapes: unknown[] = [];
@@ -96,6 +96,7 @@ function emitPortalShapes(): unknown[] {
   }
 
   for (const [tlPageId, portals] of byPage) {
+    const indices = getIndicesAbove("a0" as IndexKey, portals.length);
     portals.forEach((portal, i) => {
       // Use built-in "geo" shape (hexagon) — custom types are rejected by tldraw's
       // server-side schema validation on sync. Portal identity lives in meta.
@@ -104,7 +105,7 @@ function emitPortalShapes(): unknown[] {
         typeName: "shape",
         type:     "geo",
         parentId: tlPageId,
-        index:    `a${i}` as `a${number}`,
+        index:    indices[i]!,
         x:        20 + i * 140,
         y:        -80,
         rotation: 0,
@@ -120,7 +121,10 @@ function emitPortalShapes(): unknown[] {
           dash:         "draw",
           size:         "s",
           font:         "draw",
-          text:         portal.label,
+          richText:     {
+            type: "doc",
+            content: [{ type: "paragraph", content: [{ type: "text", text: portal.label }] }],
+          },
           align:        "middle",
           verticalAlign: "middle",
           growY:        0,
