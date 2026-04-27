@@ -623,29 +623,54 @@ The UX shell is the React layer that wraps the tldraw canvas. It owns:
 - Command palette (room switcher, action palette)
 - Drag-and-drop import handler (canvas-level, not tldraw-level)
 
-tldraw's `components` prop suppresses its own chrome (Toolbar, StylePanel, ZoomMenu). Our shell injects Lararium chrome via fixed DOM siblings and tldraw's `TopPanel` slot. No `z-index` fighting — tldraw's UI is simply not rendered.
+**Stacking context law:** All Lararium chrome that competes with tldraw's panels MUST live inside tldraw's declared component slots. `position:fixed` DOM siblings outside tldraw create a separate stacking context that fights with tldraw's `.tlui-layout` (z-index 300). The correct model: one stacking context, tldraw owns it, Lararium fills the slots.
 
-### Component Tree
+### Component Tree (target)
 
 ```
 <LarariumShell>                          ← root, 100vw × 100vh, overflow:hidden
   <LarariumCanvas                        ← tldraw fills 100%
-    wsUrl room
-    components={{ Toolbar:null, StylePanel:null, ZoomMenu:null,
-                  TopPanel: LarariumTopPanel }}
+    wsUrl
+    components={{
+      Toolbar:      null,                ← wiki mode suppresses; canvas mode restores
+      StylePanel:   null,
+      ZoomMenu:     null,
+      PageMenu:     null,
+      TopPanel:     LarariumTopPanel,    ← room breadcrumb + nav — inside tldraw's layout
+      SharePanel:   LarariumSharePanel,  ← ⌘K trigger — top-right tldraw-placed
+      HelperButtons: LarariumHelperButtons, ← canvas toggle, back — bottom-right
+    }}
     overrides={larUiOverrides}
   />
-  ← all of the following are position:fixed siblings, rendered via React Portal →
-  <LarariumHeader />                     ← top:0, left:0, right:0; pointer-events:none + re-enable btns
-  <LarariumMinimap />                    ← bottom:48px, right:12px
-  <LarariumFooter />                     ← bottom:0, left:0, right:0; status bar
-  <LarariumCommandPalette />             ← conditional, top:0, full-width, ⌘K
-  <LarariumMemeDetail meme />            ← conditional, bottom:48px, slides up
-  <LarariumImportDialog pos />           ← conditional, positioned at drop coordinates
+  ← only overlays that must cover everything live outside tldraw's tree →
+  <LarariumFooter />                     ← position:fixed, bottom:0, status bar (no conflict)
+  <LarariumCommandPalette />             ← position:fixed, z:900, full-screen overlay
+  <LarariumMemeDetail />                 ← position:fixed, conditional, slides from bottom
 </LarariumShell>
 ```
 
-**`LarariumTopPanel`** (rendered inside tldraw's own layout): room name + breadcrumb. This is the one piece that stays inside tldraw's component tree so it scales correctly with the canvas. Everything else is fixed DOM outside.
+**Slot rules:**
+- `TopPanel` / `SharePanel` / `HelperButtons` render inside `.tlui-layout` → same stacking context as tldraw chrome → zero z-index conflict in any mode
+- Wiki mode: `Toolbar: null` etc. suppresses tldraw's own widgets; our slots fill the space
+- Canvas mode: tldraw's Toolbar/StylePanel restored alongside our slots — they coexist without fighting
+- `position:fixed` is reserved for true overlays (command palette, detail panel) that intentionally cover all other UI
+
+### Slot Contents
+
+**`LarariumTopPanel`** (top-center):
+```
+[⬡ Lararium]  [room-name]  [breadcrumb ›  focus-uri]  ···  [← Back]  [⬡ Graph]
+```
+
+**`LarariumSharePanel`** (top-right):
+```
+[⌘K]  [theme-toggle]
+```
+
+**`LarariumHelperButtons`** (bottom-right):
+```
+[` Wiki/Canvas]  [zoom-glyph]
+```
 
 ### Header Content
 
@@ -717,24 +742,88 @@ This requires `@tldraw/store`'s persistence adapter wired to IndexedDB. Not yet 
 
 <<~/ahu >>
 
+<<~ ahu #theme-system >>
+
+## Theme System
+
+tldraw exposes 70+ CSS custom properties under `.tl-theme__dark` / `.tl-theme__light` applied as classes on `.tl-container`. Lararium overrides them per-theme via a `data-theme` attribute on `<html>`.
+
+### Activation
+
+```css
+/* tldraw applies .tl-theme__dark or .tl-theme__light to .tl-container */
+/* We add overrides scoped to our data-theme so they win specificity */
+html[data-theme="gruvbox-dark"]  .tl-theme__dark  { --tl-color-background: #282828; ... }
+html[data-theme="gruvbox-light"] .tl-theme__light { --tl-color-background: #fbf1c7; ... }
+```
+
+tldraw's own dark/light toggle (`editor.user.updateUserPreferences({ colorScheme })`) stays as the master switch. Our theme selector calls it alongside setting `data-theme`.
+
+### Theme Tokens — Gruvbox Dark
+
+| tldraw token | Gruvbox dark value | Role |
+|---|---|---|
+| `--tl-color-background` | `#282828` | canvas bg |
+| `--tl-color-panel` | `#3c3836` | toolbar / panel bg |
+| `--tl-color-panel-contrast` | `#504945` | panel border |
+| `--tl-color-text` | `#ebdbb2` | primary text |
+| `--tl-color-text-1` | `#d5c4a1` | secondary text |
+| `--tl-color-text-3` | `#a89984` | muted text |
+| `--tl-color-primary` | `#83a598` | accent (aqua) |
+| `--tl-color-selected` | `#fabd2f` | selection stroke (yellow) |
+| `--tl-color-selection-stroke` | `#fabd2f` | |
+| `--tl-color-grid` | `#504945` | canvas grid lines |
+| `--tl-color-divider` | `#504945` | panel dividers |
+| `--tl-color-low` | `#1d2021` | deepest bg |
+
+### Theme Tokens — Gruvbox Light
+
+| tldraw token | Gruvbox light value | Role |
+|---|---|---|
+| `--tl-color-background` | `#fbf1c7` | canvas bg |
+| `--tl-color-panel` | `#f2e5bc` | panel bg |
+| `--tl-color-panel-contrast` | `#d5c4a1` | panel border |
+| `--tl-color-text` | `#3c3836` | primary text |
+| `--tl-color-text-1` | `#504945` | secondary text |
+| `--tl-color-text-3` | `#7c6f64` | muted text |
+| `--tl-color-primary` | `#076678` | accent (blue) |
+| `--tl-color-selected` | `#b57614` | selection (orange) |
+| `--tl-color-selection-stroke` | `#b57614` | |
+| `--tl-color-grid` | `#d5c4a1` | grid lines |
+| `--tl-color-divider` | `#d5c4a1` | panel dividers |
+| `--tl-color-low` | `#f9f5d7` | deepest bg |
+
+### Theme Selector UX
+
+Three options, cycled via sun/moon icon in `SharePanel`:
+- `system` — follows OS `prefers-color-scheme`; tldraw `colorScheme: "system"`
+- `gruvbox-dark` — warm dark; `colorScheme: "dark"` + `data-theme` overrides
+- `gruvbox-light` — warm cream; `colorScheme: "light"` + `data-theme` overrides
+
+State lives in `localStorage` (`lararium.theme`). Applied on mount before first render to avoid flash.
+
+<<~/ahu >>
+
 <<~ ahu #open-questions >>
 
 ## Open Questions
 
 **Resolved:**
-- ✓ SidePanel meme list: `/api/memes` endpoint, fetched in App.tsx, passed as `memes[]` prop
+- ✓ **Z-order / canvas mode chrome conflict:** All Lararium chrome moved into tldraw component slots (`MenuPanel`, `SharePanel`, `HelperButtons`). One stacking context, no z-index arithmetic. NavigationPanel (minimap+zoom) restored in both modes. See `#ux-shell`.
+- ✓ **Theme system (shipped 2026-04-27):** `src/lararium-theme.css` overrides tldraw CSS custom properties scoped to `html[data-theme]`. `useTheme()` hook, `localStorage` persistence, flash-prevention inline script in `index.html`. Cycle button (`◑/🌑/☀`) in `SharePanel`. tldraw `colorScheme` synced via `useEffect` in `LarariumCanvas`. Default: `gruvbox-dark`. See `#theme-system`.
+- ✓ **Meme list — CRDT-native (shipped 2026-04-27):** `editor.getCurrentPageShapes()` filtered to `meta.frameKind === "meme"` replaces `/api/memes` fetch. One-shot read on `synced-remote`. Reactive subscription (see open #2) still needed for live updates.
 - ✓ the-altar-fire invariant meme: authored at `lares/ha-ka-ba/api/v0.1/pono/the-altar-fire.md`
 - ✓ Double-click frame → ZOOM_IN dispatch: wired via `doubleClickShape` + `meta.uri`
-- ✓ **UX shell refactor:** `<LarariumShell>` implemented — kinopio-style, header `position:fixed; pointer-events:none`, canvas fills 100vh, all chrome via React portal. `<SidePanel>` removed.
-- ✓ **Command palette (`⌘K`):** Implemented. Spaces + Memes sections, unified arrow-key nav, `` ` `` key toggles canvas mode.
+- ✓ **UX shell refactor:** `LarariumShell` + `LarariumCtx` provider pattern. Slot components are stable module-level refs; all state via context. `SidePanel` removed. Footer merged into `MenuPanel` badge.
+- ✓ **Command palette (`⌘K`):** Spaces + Memes sections, unified arrow-key nav, `` ` `` key toggles canvas mode.
 - ✓ **Portal shapes:** `geo` + `meta.larPortal` pattern ships — no custom ShapeUtil. Double-click fires `GO_TO_ROOM`.
-- ✓ **Canvas mode toggle:** `` ` `` key dims Lararium chrome, restores tldraw toolbar. Toggle pill bottom-left.
+- ✓ **Canvas mode toggle:** `` ` `` key + `HelperButtons` pill. Same chrome landmarks in both modes; tldraw drawing chrome (Toolbar, StylePanel) added in canvas mode alongside Lararium slots.
 
 **Open:**
 
 1. **Zoom-gated single-page rendering:** Sub-frame geometry conditional on zoom level, one page per room. Blocked on shape namespace collision — current three-page + zoom-auto-switch model stays until resolved.
 
-2. **`/api/memes` endpoint:** Currently fetched from Vite dev server (5173) which has no handler — returns HTML 404. Two paths: (a) add Vite proxy to `serve.ts:4321`, or (b) replace fetch with `editor.getShapes()` filtered to `meta.frameKind === "meme"` (CRDT-native, the target model). Decision pending this session.
+2. ✓ **Meme count reactive subscription (shipped 2026-04-27):** `store.listen` with `scope: "document"` + 150ms debounce added to `LarariumCanvas`. One-shot scan on `synced-remote`, live re-scan on any shape mutation. `MenuPanel` now reflects live meme count.
 
 3. **LarPortalShapeUtil (future):** Only needed if `geo` + meta proves insufficient for portal UX (click area, label rendering). Current `geo`+meta is MVP-sufficient.
 

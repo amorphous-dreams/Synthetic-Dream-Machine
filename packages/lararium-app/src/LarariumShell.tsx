@@ -1,13 +1,17 @@
 /**
- * LarariumShell — Kinopio-style chrome that wraps tldraw without overlaying it.
+ * LarariumShell — tldraw-native chrome architecture.
  *
  * Architecture:
- *   - <LarariumCanvas> fills 100vw × 100vh with tldraw chrome suppressed
- *   - All Lararium UI is position:fixed siblings rendered via React.createPortal
- *   - Header: pointer-events:none shell, pointer-events:auto on interactive children
- *   - Footer: status bar, zoom level, trust tier badge
- *   - CommandPalette: ⌘K overlay (room + meme navigation)
- *   - MemeDetail: slides up from bottom on double-click
+ *   - <LarariumCanvas> fills 100vw × 100vh
+ *   - Nav chrome (breadcrumb, room name, back, graph) → tldraw TopPanel slot
+ *   - ⌘K trigger → tldraw SharePanel slot
+ *   - Canvas mode toggle + zoom glyph → tldraw HelperButtons slot
+ *   - Footer (status bar) → position:fixed bottom strip — no z conflict with tldraw chrome
+ *   - Command palette overlay → position:fixed, z:900 — intentional full-cover
+ *
+ * Stacking context: tldraw owns it. All interactive Lararium chrome lives inside
+ * tldraw's component tree via stable slot refs in lararium-context.tsx.
+ * No z-index arithmetic between Lararium and tldraw UI ever needed.
  *
  * Platform targets: Windows 11 / Ubuntu WSL (mouse+kb), Android Samsung (touch).
  * All tap targets ≥ 44×44px. No hover-only affordances.
@@ -15,171 +19,18 @@
 
 import { useReducer, useEffect, useState, useRef, useCallback } from "react";
 import { createPortal } from "react-dom";
-import { INITIAL_VIEW_STATE, viewStateReducer, DEFAULT_ROOMS, ROOM_SYSTEM } from "@lararium/tldraw";
-import type { LarViewAction, LarViewState, ZoomLevel } from "@lararium/tldraw";
+import { INITIAL_VIEW_STATE, viewStateReducer, DEFAULT_ROOMS } from "@lararium/tldraw";
+import type { LarViewAction, ZoomLevel } from "@lararium/tldraw";
 import { LarariumCanvas } from "./LarariumCanvas.js";
+import { LarariumCtx, useLararium, shortUri, useTheme } from "./lararium-context.js";
+import "./lararium-theme.css";
 import type { MemeEntry } from "./App.js";
 
-// ─── Canvas-mode toggle pill ──────────────────────────────────────────────────
-// Always-visible floating button that switches between:
-//   wiki mode  — Lararium chrome active, tldraw chrome suppressed
-//   canvas mode — full tldraw toolbar/style panel restored for freeform drawing
-// Keyboard: backtick ` toggles (unambiguous, doesn't conflict with tldraw shortcuts)
-
-function CanvasModeToggle({
-  canvasMode,
-  onToggle,
-}: {
-  canvasMode: boolean;
-  onToggle: () => void;
-}) {
-  return (
-    <button
-      style={{
-        ...toggleCss.pill,
-        ...(canvasMode ? toggleCss.pillCanvas : toggleCss.pillWiki),
-      }}
-      onClick={onToggle}
-      aria-label={canvasMode ? "Switch to wiki mode (suppress tldraw chrome)" : "Switch to canvas mode (restore tldraw chrome)"}
-      aria-pressed={canvasMode}
-      title="` — toggle canvas mode"
-    >
-      <span style={toggleCss.icon}>{canvasMode ? "✏" : "⬡"}</span>
-      <span style={toggleCss.label}>{canvasMode ? "Canvas" : "Wiki"}</span>
-    </button>
-  );
-}
-
-const toggleCss = {
-  pill: {
-    position: "fixed" as const,
-    bottom: 44,         // sits just above the footer bar
-    left: 12,
-    zIndex: 700,
-    display: "flex",
-    alignItems: "center",
-    gap: 6,
-    minHeight: 44,
-    padding: "0 14px",
-    borderRadius: 22,
-    border: "1px solid rgba(255,255,255,0.12)",
-    cursor: "pointer",
-    fontSize: 13,
-    fontFamily: "system-ui, sans-serif",
-    fontWeight: 600,
-    backdropFilter: "blur(10px)",
-    boxShadow: "0 2px 12px rgba(0,0,0,0.4)",
-    transition: "background 0.15s, color 0.15s, border-color 0.15s",
-    userSelect: "none" as const,
-  },
-  pillWiki: {
-    background: "rgba(22,27,34,0.85)",
-    color: "#8b949e",
-    borderColor: "rgba(255,255,255,0.08)",
-  },
-  pillCanvas: {
-    background: "rgba(31,48,74,0.92)",
-    color: "#58a6ff",
-    borderColor: "rgba(88,166,255,0.35)",
-  },
-  icon: { fontSize: 15, lineHeight: 1 },
-  label: { letterSpacing: "0.02em" },
-} as const;
 
 interface ShellProps {
   wsUrl: string;
   memes: MemeEntry[];
   onMemes: (memes: MemeEntry[]) => void;
-}
-
-// ---------------------------------------------------------------------------
-// Header
-// ---------------------------------------------------------------------------
-
-function LarariumHeader({
-  memes,
-  navState,
-  dispatch,
-  onPalette,
-}: {
-  memes: MemeEntry[];
-  navState: LarViewState;
-  dispatch: React.Dispatch<LarViewAction>;
-  onPalette: () => void;
-}) {
-  const isGraph = navState.activeView === "graph";
-  return (
-    <div style={css.header} aria-label="Lararium header">
-      {/* left: logo */}
-      <div style={css.headerLeft}>
-        <span style={css.logo}>⬡ Lararium</span>
-      </div>
-
-      {/* center: room breadcrumb */}
-      <div style={css.headerCenter}>
-        <span style={css.roomName}>{activeRoomName(navState)}</span>
-        {navState.activeView === "meme-detail" && navState.focusUri && (
-          <>
-            <span style={css.breadcrumbSep}>›</span>
-            <span style={css.focusCrumb}>{shortUri(navState.focusUri)}</span>
-          </>
-        )}
-      </div>
-
-      {/* right: nav actions + palette */}
-      <div style={css.headerRight}>
-        {navState.history.length > 0 && (
-          <button
-            style={css.headerBtn}
-            onClick={() => dispatch({ type: "NAVIGATE_BACK" })}
-            aria-label="Navigate back"
-          >
-            ← Back
-          </button>
-        )}
-        <button
-          style={css.headerBtn}
-          onClick={() => dispatch({ type: isGraph ? "CLOSE_GRAPH" : "OPEN_GRAPH" })}
-          aria-label={isGraph ? "Close graph" : "Open graph"}
-        >
-          {isGraph ? "✕ Graph" : "⬡ Graph"}
-        </button>
-        <button
-          style={{ ...css.headerBtn, ...css.paletteBtn }}
-          onClick={onPalette}
-          aria-label="Open command palette (⌘K)"
-          title="⌘K"
-        >
-          ⌘K
-        </button>
-      </div>
-    </div>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// Footer / status bar
-// ---------------------------------------------------------------------------
-
-const ZOOM_GLYPH: Record<ZoomLevel, string> = {
-  strategic:   "🗺️",   // furthest out — galaxy / labels only
-  operational: "⚙️",   // graph overview — edges readable
-  tactical:    "🔍",   // story river — full meme cards
-  combat:      "⚔️",   // detail — ahu sockets visible
-  action:      "⚡",   // full text / edit mode
-};
-
-function LarariumFooter({ memes, navState, zoomLevel }: { memes: MemeEntry[]; navState: LarViewState; zoomLevel: ZoomLevel }) {
-  return (
-    <div style={css.footer} role="status" aria-label="Canvas status">
-      <span style={css.footerItem} title={`Zoom: ${zoomLevel}`}>{ZOOM_GLYPH[zoomLevel]}</span>
-      <span style={css.footerItem}>{memes.length || "—"} memes</span>
-      <span style={css.viewBadge}>{navState.activeView}</span>
-      {navState.focusUri && (
-        <span style={css.footerUri}>{navState.focusUri.replace("lar:///", "")}</span>
-      )}
-    </div>
-  );
 }
 
 // ---------------------------------------------------------------------------
@@ -198,15 +49,8 @@ const ROOM_GLYPH: Record<string, string> = {
   entry:      "⚡",
 };
 
-function LarariumCommandPalette({
-  memes,
-  dispatch,
-  onClose,
-}: {
-  memes: MemeEntry[];
-  dispatch: React.Dispatch<LarViewAction>;
-  onClose: () => void;
-}) {
+function LarariumCommandPalette({ onClose }: { onClose: () => void }) {
+  const { memes, dispatch } = useLararium();
   const [query, setQuery] = useState("");
   const [cursor, setCursor] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -315,14 +159,13 @@ export function LarariumShell({ wsUrl, memes, onMemes }: ShellProps) {
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [canvasMode, setCanvasMode] = useState(false);
   const [zoomLevel, setZoomLevel] = useState<ZoomLevel>("tactical");
+  const [theme, cycleTheme] = useTheme();
 
   // ⌘K / Ctrl+K → palette   |   ` (backtick) → canvas mode toggle
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
-      // Ignore shortcuts when typing in an input
       const tag = (e.target as HTMLElement)?.tagName;
       if (tag === "INPUT" || tag === "TEXTAREA") return;
-
       if ((e.metaKey || e.ctrlKey) && e.key === "k") {
         e.preventDefault();
         setPaletteOpen((v) => !v);
@@ -333,81 +176,46 @@ export function LarariumShell({ wsUrl, memes, onMemes }: ShellProps) {
         setCanvasMode((v) => !v);
         return;
       }
-      if (e.key === "Escape") {
-        setPaletteOpen(false);
-      }
+      if (e.key === "Escape") setPaletteOpen(false);
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
   }, []);
 
-  const chromeRoot = document.body;
+  const ctxValue = {
+    navState,
+    dispatch: dispatch as React.Dispatch<LarViewAction>,
+    memes,
+    paletteOpen,
+    setPaletteOpen,
+    canvasMode,
+    setCanvasMode,
+    zoomLevel,
+    theme,
+    cycleTheme,
+  };
 
   return (
-    <div style={css.shellRoot}>
-      <LarariumCanvas
-        wsUrl={wsUrl}
-        navState={navState}
-        dispatch={dispatch as React.Dispatch<LarViewAction>}
-        canvasMode={canvasMode}
-        onZoomLevel={setZoomLevel}
-        onMemes={onMemes}
-      />
+    <LarariumCtx.Provider value={ctxValue}>
+      <div style={css.shellRoot}>
+        <LarariumCanvas
+          wsUrl={wsUrl}
+          navState={navState}
+          dispatch={dispatch as React.Dispatch<LarViewAction>}
+          canvasMode={canvasMode}
+          onZoomLevel={setZoomLevel}
+          onMemes={onMemes}
+        />
 
-      {createPortal(
-        <>
-          {/* Header dims (opacity + pointer-events:none) when canvas mode is active
-              so tldraw's toolbar doesn't fight our chrome for the same real estate */}
-          <div style={{ opacity: canvasMode ? 0.35 : 1, transition: "opacity 0.2s", pointerEvents: canvasMode ? "none" : "auto" }}>
-            <LarariumHeader
-              memes={memes}
-              navState={navState}
-              dispatch={dispatch as React.Dispatch<LarViewAction>}
-              onPalette={() => setPaletteOpen(true)}
-            />
-          </div>
-
-          {/* Footer also dims in canvas mode */}
-          <div style={{ opacity: canvasMode ? 0.2 : 1, transition: "opacity 0.2s", pointerEvents: "none" }}>
-            <LarariumFooter memes={memes} navState={navState} zoomLevel={zoomLevel} />
-          </div>
-
-          {/* Toggle pill: always fully visible, sits above footer */}
-          <CanvasModeToggle canvasMode={canvasMode} onToggle={() => setCanvasMode((v) => !v)} />
-
-          {paletteOpen && !canvasMode && (
-            <LarariumCommandPalette
-              memes={memes}
-              dispatch={dispatch as React.Dispatch<LarViewAction>}
-              onClose={() => setPaletteOpen(false)}
-            />
-          )}
-        </>,
-        chromeRoot
-      )}
-    </div>
+        {paletteOpen && createPortal(
+          <LarariumCommandPalette onClose={() => setPaletteOpen(false)} />,
+          document.body
+        )}
+      </div>
+    </LarariumCtx.Provider>
   );
 }
 
-// ---------------------------------------------------------------------------
-// Utilities
-// ---------------------------------------------------------------------------
-
-function shortUri(uri: string): string {
-  return uri.replace("lar:///", "").replace(/^ha\.ka\.ba\/api\/v0\.1\//, "").replace(/\//g, " / ");
-}
-
-const ROOM_NAME: Record<string, string> = Object.fromEntries(
-  DEFAULT_ROOMS.map((r) => [r.id, r.name])
-);
-
-function activeRoomName(navState: LarViewState): string {
-  if (navState.activeView === "room" && navState.focusUri) {
-    return ROOM_NAME[navState.focusUri] ?? navState.focusUri;
-  }
-  if (navState.activeView === "graph") return ROOM_NAME["graph"] ?? "Graph Overview";
-  return ROOM_NAME[ROOM_SYSTEM.id] ?? "System View";
-}
 
 // ---------------------------------------------------------------------------
 // Styles
@@ -419,124 +227,6 @@ const css = {
     height: "100%",
     position: "relative" as const,
     overflow: "hidden",
-  },
-
-  // Header: fixed, thin, pointer-events:none shell with re-enabled children
-  header: {
-    position: "fixed" as const,
-    top: 0,
-    left: 0,
-    right: 0,
-    height: 44,
-    zIndex: 600,
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    padding: "0 12px",
-    background: "rgba(13,13,15,0.75)",
-    backdropFilter: "blur(12px)",
-    borderBottom: "1px solid rgba(255,255,255,0.06)",
-    pointerEvents: "none" as const,
-  },
-  headerLeft: { display: "flex", alignItems: "center", pointerEvents: "auto" as const },
-  headerCenter: {
-    display: "flex",
-    alignItems: "center",
-    gap: 6,
-    pointerEvents: "none" as const,
-    flex: 1,
-    justifyContent: "center",
-    overflow: "hidden",
-  },
-  headerRight: {
-    display: "flex",
-    alignItems: "center",
-    gap: 6,
-    pointerEvents: "auto" as const,
-  },
-  logo: {
-    fontSize: 14,
-    fontWeight: 700,
-    color: "#58a6ff",
-    letterSpacing: "0.04em",
-    userSelect: "none" as const,
-  },
-  roomName: {
-    fontSize: 13,
-    color: "#c9d1d9",
-    fontFamily: "monospace",
-    userSelect: "none" as const,
-    whiteSpace: "nowrap" as const,
-  },
-  breadcrumbSep: { color: "#444d56", fontSize: 13, userSelect: "none" as const },
-  focusCrumb: {
-    fontSize: 12,
-    color: "#8b949e",
-    fontFamily: "monospace",
-    overflow: "hidden",
-    textOverflow: "ellipsis",
-    whiteSpace: "nowrap" as const,
-    maxWidth: 200,
-    userSelect: "none" as const,
-  },
-  headerBtn: {
-    minWidth: 44,
-    minHeight: 44,
-    padding: "0 12px",
-    background: "rgba(30,30,35,0.7)",
-    color: "#c9d1d9",
-    border: "1px solid rgba(255,255,255,0.1)",
-    borderRadius: 6,
-    cursor: "pointer",
-    fontSize: 13,
-    backdropFilter: "blur(4px)",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  paletteBtn: {
-    color: "#58a6ff",
-    fontFamily: "monospace",
-    fontWeight: 600,
-    letterSpacing: "0.04em",
-  },
-
-  // Footer
-  footer: {
-    position: "fixed" as const,
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: 32,
-    zIndex: 600,
-    display: "flex",
-    gap: 16,
-    alignItems: "center",
-    padding: "0 14px",
-    background: "rgba(13,13,15,0.75)",
-    backdropFilter: "blur(8px)",
-    borderTop: "1px solid rgba(255,255,255,0.06)",
-    pointerEvents: "none" as const,
-  },
-  footerItem: { fontSize: 11, color: "#6e7681", userSelect: "none" as const },
-  viewBadge: {
-    padding: "2px 8px",
-    background: "rgba(22,27,34,0.9)",
-    borderRadius: 4,
-    color: "#58a6ff",
-    fontFamily: "monospace",
-    fontSize: 11,
-    userSelect: "none" as const,
-  },
-  footerUri: {
-    color: "#8b949e",
-    fontFamily: "monospace",
-    overflow: "hidden",
-    textOverflow: "ellipsis",
-    whiteSpace: "nowrap" as const,
-    maxWidth: 400,
-    fontSize: 11,
-    userSelect: "none" as const,
   },
 
   // Command palette

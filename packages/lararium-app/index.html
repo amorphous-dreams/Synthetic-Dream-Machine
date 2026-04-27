@@ -9,6 +9,13 @@
     html, body, #root { width: 100%; height: 100%; overflow: hidden; }
     body { background: #1a1a1a; color: #e8e8e8; font-family: system-ui, sans-serif; }
   </style>
+  <!-- Apply stored theme before first paint to avoid flash -->
+  <script>
+    try {
+      var t = localStorage.getItem("lararium.theme") || "gruvbox-dark";
+      document.documentElement.dataset.theme = t;
+    } catch(e) {}
+  </script>
 </head>
 <body>
   <!--

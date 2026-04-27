@@ -5,24 +5,33 @@ import { useSync } from "@tldraw/sync";
 import "tldraw/tldraw.css";
 import type { LarViewState, LarViewAction, TldrawEditorLike, ZoomLevel } from "@lararium/tldraw";
 import { pageId, goToStoryRiver, goToGraph, goToRoom, zoomToMeme, classifyZoom, ZOOM_PAGE } from "@lararium/tldraw";
+import { LarariumMenuPanel, LarariumSharePanel, LarariumHelperButtons, useLararium } from "./lararium-context.js";
 
-// Wiki mode: suppress all tldraw chrome — Lararium shell owns the UI.
+// Wiki mode: suppress tldraw chrome; Lararium slot components fill the UI.
+// All slot components are stable module-level refs — tldraw won't remount them.
 const WIKI_COMPONENTS: TLComponents = {
-  Toolbar: null,
-  StylePanel: null,
-  PageMenu: null,
-  NavigationPanel: null,
-  MainMenu: null,
-  ZoomMenu: null,
+  Toolbar:      null,
+  StylePanel:   null,
+  PageMenu:     null,
+  MainMenu:     null,
+  ZoomMenu:     null,
   QuickActions: null,
-  HelperButtons: null,
-  MenuPanel: null,
+  TopPanel:     null,
+  // NavigationPanel (minimap + zoom) left at default — owns the bottom-left zone
+  // Lararium slots — room/status top-left, ⌘K top-right, controls row
+  MenuPanel:    LarariumMenuPanel,
+  SharePanel:   LarariumSharePanel,
+  HelperButtons: LarariumHelperButtons,
 };
 
-// Canvas mode: restore tldraw's full chrome. PageMenu stays null — navigation
-// through Lararium shell only.
+// Canvas mode: restore tldraw drawing chrome alongside Lararium slots.
+// PageMenu and TopPanel stay null — nav owned by Lararium slots.
 const CANVAS_COMPONENTS: TLComponents = {
-  PageMenu: null,
+  PageMenu:      null,
+  TopPanel:      null,
+  MenuPanel:     LarariumMenuPanel,
+  SharePanel:    LarariumSharePanel,
+  HelperButtons: LarariumHelperButtons,
 };
 
 interface Props {
@@ -66,31 +75,62 @@ function getLarUriFromShape(editor: TldrawEditor, shapeId: TLShapeId): string | 
 export function LarariumCanvas({ wsUrl, navState, dispatch, canvasMode, onZoomLevel, onMemes }: Props) {
   const store = useSync({ uri: wsUrl, assets: inlineBase64AssetStore });
   const editorRef = useRef<TldrawEditor | null>(null);
+  const { theme } = useLararium();
   if (process.env.NODE_ENV === "development") {
     (window as any).__larariumDebug ??= {};
     (window as any).__larariumDebug.store = store;
   }
 
-  // Populate meme list from store shapes once synced — CRDT-native, no /api/memes fetch.
+  // Populate meme list reactively — CRDT-native, no /api/memes fetch.
+  // One-shot scan on sync, then store.listen for document mutations (shape add/remove/update).
   useEffect(() => {
     const editor = editorRef.current;
     if (!editor || store.status !== "synced-remote" || !onMemes) return;
-    const memes = editor.getCurrentPageShapes()
-      .filter((s) => {
-        const meta = s.meta as Record<string, unknown> | undefined;
-        return s.type === "frame" && meta?.frameKind === "meme";
-      })
-      .map((s) => {
-        const meta = s.meta as Record<string, unknown>;
-        return {
-          uri:   String(meta.uri ?? ""),
-          depth: Number(meta.depth ?? 0),
-          kind:  String(meta.kind ?? "meme"),
-        };
-      })
-      .filter((m) => m.uri.startsWith("lar:"));
-    onMemes(memes);
+
+    const scanMemes = () => {
+      const memes = editor.getCurrentPageShapes()
+        .filter((s) => {
+          const meta = s.meta as Record<string, unknown> | undefined;
+          return s.type === "frame" && meta?.frameKind === "meme";
+        })
+        .map((s) => {
+          const meta = s.meta as Record<string, unknown>;
+          return {
+            uri:   String(meta.uri ?? ""),
+            depth: Number(meta.depth ?? 0),
+            kind:  String(meta.kind ?? "meme"),
+          };
+        })
+        .filter((m) => m.uri.startsWith("lar:"));
+      onMemes(memes);
+    };
+
+    scanMemes();
+
+    // Re-scan on any document mutation (shape add/remove/meta change).
+    // scope:'document' skips camera/presence records — fires ~100x less than default.
+    let debounce: ReturnType<typeof setTimeout> | null = null;
+    const unsub = editor.store.listen(
+      () => {
+        if (debounce) clearTimeout(debounce);
+        debounce = setTimeout(scanMemes, 150);
+      },
+      { scope: "document" },
+    );
+
+    return () => {
+      unsub();
+      if (debounce) clearTimeout(debounce);
+    };
   }, [store.status, onMemes]);
+
+  // Sync tldraw colorScheme when Lararium theme changes
+  useEffect(() => {
+    const editor = editorRef.current;
+    if (!editor) return;
+    const colorScheme = theme === "gruvbox-dark" ? "dark" : theme === "gruvbox-light" ? "light" : "system";
+    editor.user.updateUserPreferences({ colorScheme });
+  }, [theme]);
 
   // Double-click: geo portal (meta.larPortal) → GO_TO_ROOM, meme frame → ZOOM_IN
   useEffect(() => {
@@ -186,6 +226,7 @@ export function LarariumCanvas({ wsUrl, navState, dispatch, canvasMode, onZoomLe
             (window as any).__larariumDebug ??= {};
             (window as any).__larariumDebug.editor = editor;
           }
+          editor.user.updateUserPreferences({ colorScheme: "dark" });
           editor.setCurrentTool("select");
           const storyPageId = pageId("minimal-boot") as unknown as TLPageId;
           if (editor.getPage(storyPageId)) {

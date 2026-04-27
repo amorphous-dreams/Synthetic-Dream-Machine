@@ -1067,6 +1067,44 @@ Option (b) is the architecturally correct path. Option (a) is simpler if `serve.
 - ⚠ MCP ↔ canvas bridge: `stdio.ts` compiles fresh from `lares/` on each tool call — it cannot see live room state (active connections, shape positions, session camera). Bridge requires either: (a) `stdio.ts` queries `serve.ts` HTTP API for live state, or (b) both run in the same process. Env var `LARARIUM_HTTP_URL` would let `stdio.ts` query the canvas server.
 - ⚠ `lararium-meme_list` tool: currently `lararium-compile_minimal_boot` covers this but lacks the flat URI+depth+kind summary format that is optimally tool-shaped
 
+### Priority 5: UX chrome — tldraw component slot integration ✓ (2026-04-27)
+
+**Implemented.** All Lararium chrome moved into tldraw component slots. No `position:fixed` header competing with tldraw panels.
+
+Slot mapping (as shipped):
+
+| Lararium element | tldraw slot | Notes |
+|---|---|---|
+| Room breadcrumb + status badge | `MenuPanel` | Top-left; room name, zoom glyph, meme count, view badge |
+| ⌘K trigger + theme cycle button | `SharePanel` | Top-right |
+| Back / Graph / Wiki-Canvas toggle + zoom glyph | `HelperButtons` | Bottom-right row |
+| NavigationPanel (minimap + zoom) | tldraw default | Bottom-left; restored in both wiki and canvas modes |
+| Command palette overlay | `position:fixed` | Intentionally covers everything; z-index: 800 |
+
+Key patterns:
+- Slot components are stable **module-level** refs in `lararium-context.tsx` — tldraw never remounts them
+- All state is shared via `LarariumCtx` React context — slot components read it without prop drilling
+- `WIKI_COMPONENTS`: Toolbar/StylePanel/PageMenu/MainMenu/ZoomMenu/QuickActions/TopPanel all null; Lararium slots + NavigationPanel default
+- `CANVAS_COMPONENTS`: PageMenu/TopPanel null; Lararium slots + NavigationPanel + tldraw drawing chrome (Toolbar, StylePanel etc.) restored
+
+### Priority 6: Theme system — Gruvbox CSS tokens + selector ✓ (2026-04-27)
+
+**Implemented.**
+
+- `src/lararium-theme.css` — CSS custom property overrides scoped to `html[data-theme]`. Selector specificity: `html[data-theme="gruvbox-dark"] .tl-theme__dark { ... }` beats tldraw defaults without `!important`.
+- `useTheme()` hook in `lararium-context.tsx` — reads `localStorage("lararium.theme")`, applies `data-theme` on init, cycles via `cycleTheme()`.
+- Theme cycle: `system → gruvbox-dark → gruvbox-light → system`
+- `SharePanel` shows `◑ / 🌑 / ☀` button; click cycles theme.
+- `LarariumCanvas` syncs tldraw `colorScheme` (`dark` / `light` / `system`) whenever theme changes via `useEffect`.
+- `index.html` inline `<script>` applies stored theme before first paint — no flash on reload.
+- Default: `gruvbox-dark`.
+
+See MULTIPLAYER `#theme-system` for full CSS token tables.
+
+### Priority 7: Meme count reactive subscription ✓ (2026-04-27)
+
+**Implemented.** `store.listen(() => { debounce(scanMemes, 150) }, { scope: "document" })` added inside the `synced-remote` `useEffect` in `LarariumCanvas`. One-shot scan on first sync, then live re-scan on any shape add/remove/meta change. `scope: "document"` skips camera/presence records — fires ~100x less than default. Cleanup returns both `unsub()` and `clearTimeout`.
+
 Do not in Milestone 6:
 - Canon promotion / write-back to `lares/`
 - UCAN implementation (design frozen)

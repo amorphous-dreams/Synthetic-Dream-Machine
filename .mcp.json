@@ -2,9 +2,13 @@
   "mcpServers": {
     "playwright": {
       "command": "npx",
-      "args": ["@playwright/mcp@latest", "--extension"],
+      "args": [
+        "playwright-mcp-wsl",
+        "--headless",
+        "--browser", "chromium"
+      ],
       "env": {
-        "PLAYWRIGHT_MCP_EXTENSION_TOKEN": "TobGnoZQCvsWHH07J_zxs0ADEoz5KJBRAbgfLDLdfT4"
+        "PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH": "/home/joshu/.cache/ms-playwright/chromium-1217/chrome-linux64/chrome"
       }
     },
 "lararium-mcp": {

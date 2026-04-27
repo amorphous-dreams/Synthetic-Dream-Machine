@@ -14,6 +14,9 @@ importers:
       playwright:
         specifier: ^1.59.1
         version: 1.59.1
+      playwright-mcp-wsl:
+        specifier: ^1.0.0
+        version: 1.0.0
       typescript:
         specifier: ^5.7.0
         version: 5.9.3
@@ -2155,6 +2158,11 @@ packages:
 
   '@pinojs/redact@0.4.0':
     resolution: {integrity: sha512-k2ENnmBugE/rzQfEcdWHcCY+/FM3VLzH9cYEsbdsoqrvzAKRhUZeRNhAZvB8OitQJ1TBed3yqWtdjzS6wJKBwg==}
+
+  '@playwright/mcp@0.0.70':
+    resolution: {integrity: sha512-Kl0a6l9VL8rvT1oBou3hS5yArjwWV9UlwAkq+0skfK1YVg8XfmmNaAmwZhMeNx/ZhGiWXfCllo6rD/jvZz+WuA==}
+    engines: {node: '>=18'}
+    hasBin: true
 
   '@postgresql-typed/oids@0.2.0':
     resolution: {integrity: sha512-jh1nIP/nmtlZkj1t0cO2NC2lFHg/fXQhtRFsL70Rh/5ELp5fqxH/calwPVTkS8gPae1k/PTqQYbU23E+Q2q0rg==}
@@ -5591,8 +5599,23 @@ packages:
     engines: {node: '>=18'}
     hasBin: true
 
+  playwright-core@1.60.0-alpha-1774999321000:
+    resolution: {integrity: sha512-ams3Zo4VXxeOg5ZTTh16GkE8g48Bmxo/9pg9gXl9SVKlVohCU7Jaog7XntY8yFuzENA6dJc1Fz7Z/NNTm9nGEw==}
+    engines: {node: '>=18'}
+    hasBin: true
+
+  playwright-mcp-wsl@1.0.0:
+    resolution: {integrity: sha512-6/B3gw+ajVhXwXkJDXPkvjfPfN1m/lmjJpxU9DaslUwZ8PmZ3Rds1KrD0VEPGyLRg7/7ylm3bVxu5qTvtx8vBg==}
+    engines: {node: '>=18'}
+    hasBin: true
+
   playwright@1.59.1:
     resolution: {integrity: sha512-C8oWjPR3F81yljW9o5OxcWzfh6avkVwDD2VYdwIGqTkl+OGFISgypqzfu7dOe4QNLL2aqcWBmI3PMtLIK233lw==}
+    engines: {node: '>=18'}
+    hasBin: true
+
+  playwright@1.60.0-alpha-1774999321000:
+    resolution: {integrity: sha512-Bd5DkzYKG+2g1jLO6NeTXmGLbBYSFffJIOsR4l4hUBkJvzvGGdLZ7jZb2tOtb0WIoWXQKdQj3Ap6WthV4DBS8w==}
     engines: {node: '>=18'}
     hasBin: true
 
@@ -8205,6 +8228,11 @@ snapshots:
       webcrypto-core: 1.8.1
 
   '@pinojs/redact@0.4.0': {}
+
+  '@playwright/mcp@0.0.70':
+    dependencies:
+      playwright: 1.60.0-alpha-1774999321000
+      playwright-core: 1.60.0-alpha-1774999321000
 
   '@postgresql-typed/oids@0.2.0': {}
 
@@ -11933,9 +11961,21 @@ snapshots:
 
   playwright-core@1.59.1: {}
 
+  playwright-core@1.60.0-alpha-1774999321000: {}
+
+  playwright-mcp-wsl@1.0.0:
+    dependencies:
+      '@playwright/mcp': 0.0.70
+
   playwright@1.59.1:
     dependencies:
       playwright-core: 1.59.1
+    optionalDependencies:
+      fsevents: 2.3.2
+
+  playwright@1.60.0-alpha-1774999321000:
+    dependencies:
+      playwright-core: 1.60.0-alpha-1774999321000
     optionalDependencies:
       fsevents: 2.3.2
 
