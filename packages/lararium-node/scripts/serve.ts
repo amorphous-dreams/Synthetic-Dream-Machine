@@ -2,23 +2,24 @@
  * Lararium sync server — TLSocketRoom + SQLiteSyncStorage WebSocket backend.
  *
  * Architecture:
- *   - One TLSocketRoom per named room, keyed by BootReceipt SHA (content-addressed)
+ *   - One TLSocketRoom per named room, content-addressed by BootReceipt SHA
  *   - SQLiteSyncStorage persists room state; survives process restarts
  *   - On first connection to a new room, seeds from renderAllViews() projection
- *   - Browser clients connect via useSync({ uri: "ws://..." }) — no loadSnapshot() needed
+ *   - Browser clients connect via useSync({ uri: "ws://..." }) — no loadSnapshot()
  *   - Static assets from lararium-app/dist/ served over HTTP on the same port
+ *
+ * API routes:
+ *   GET /api/memes          — minimal boot meme list for command palette
+ *   GET /admin/reseed       — force-evict + delete SQLite for a room, reseed on next WS connect
+ *                             ?roomId=boot (default: current boot room alias)
  *
  * Usage:
  *   pnpm --filter @lararium/node serve
- *   LARARIUM_PORT=4321 pnpm --filter @lararium/node serve
- *
- * Offline / embedded mode:
- *   bootFromEmbedded() + loadSnapshot() remains valid for single-file wiki mode.
- *   This server is the primary path for all live sessions.
+ *   LARARIUM_PORT=4321 LARARIUM_HOST=0.0.0.0 pnpm --filter @lararium/node serve
  */
 
 import { createServer, type IncomingMessage, type ServerResponse } from "http";
-import { readFileSync, existsSync, statSync, mkdirSync } from "fs";
+import { readFileSync, existsSync, statSync, mkdirSync, unlinkSync } from "fs";
 import { join, extname, resolve } from "path";
 import { fileURLToPath } from "url";
 import Database from "better-sqlite3";
@@ -31,6 +32,7 @@ import {
 } from "@tldraw/sync-core";
 import { createLarariumRuntime } from "../src/node-host.js";
 import { buildSnapshot } from "./build-snapshot-lib.js";
+import type { BootArtifact } from "@lararium/core";
 
 const __dirname = fileURLToPath(new URL(".", import.meta.url));
 const REPO_ROOT = resolve(__dirname, "../../../");
@@ -59,10 +61,14 @@ const MIME: Record<string, string> = {
 function serveStatic(res: ServerResponse, filePath: string): boolean {
   if (!existsSync(filePath) || statSync(filePath).isDirectory()) return false;
   const ext = extname(filePath);
-  const mime = MIME[ext] ?? "application/octet-stream";
-  res.writeHead(200, { "Content-Type": mime });
+  res.writeHead(200, { "Content-Type": MIME[ext] ?? "application/octet-stream" });
   res.end(readFileSync(filePath));
   return true;
+}
+
+function json(res: ServerResponse, body: unknown, status = 200) {
+  res.writeHead(status, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+  res.end(JSON.stringify(body));
 }
 
 // ---------------------------------------------------------------------------
@@ -82,14 +88,64 @@ function getOrCreateRoom(roomId: string, initialSnapshot?: unknown): TLSocketRoo
 
   const storage = new SQLiteSyncStorage({
     sql,
-    ...(isNew && initialSnapshot ? { snapshot: initialSnapshot as Parameters<typeof SQLiteSyncStorage>[0]["snapshot"] } : {}),
+    ...(isNew && initialSnapshot
+      ? { snapshot: initialSnapshot as ConstructorParameters<typeof SQLiteSyncStorage>[0]["snapshot"] }
+      : {}),
   });
 
   const room = new TLSocketRoom({ storage });
   rooms.set(roomId, room);
-
-  console.log(`[lararium-serve] room ${roomId} ${isNew ? "(seeded)" : "(resumed from SQLite)"}`);
+  console.log(`[lararium-serve] room ${roomId} ${isNew ? "(seeded)" : "(resumed)"}`);
   return room;
+}
+
+/** Evict a room from memory and delete its SQLite file so next connect reseeds. */
+function evictRoom(roomId: string): boolean {
+  const room = rooms.get(roomId);
+  if (room) {
+    try { room.close(); } catch { /* ignore */ }
+    rooms.delete(roomId);
+  }
+  const dbPath = join(DATA_DIR, `${roomId}.sqlite`);
+  if (existsSync(dbPath)) { unlinkSync(dbPath); return true; }
+  return false;
+}
+
+// ---------------------------------------------------------------------------
+// Boot projection
+// ---------------------------------------------------------------------------
+
+type SnapshotData = Awaited<ReturnType<typeof buildSnapshot>>;
+
+async function buildBootProjection(
+  runtime: ReturnType<typeof createLarariumRuntime>,
+  snapshotMemes: SnapshotData,
+): Promise<{ snapshot: unknown; roomId: string; receiptSha: string }> {
+  const { renderAllViews } = await import("@lararium/tldraw");
+  const artifact: BootArtifact = runtime.compileMinimalBoot();
+  const receipt = await runtime.compileBootReceipt(artifact);
+  const receiptSha = receipt.sha256.replace(/^sha256:/, "");
+
+  const emission = renderAllViews(artifact, {
+    readText: (uri: string) => {
+      const meme = snapshotMemes.memes[uri];
+      if (!meme) throw new Error(`${uri} not in snapshot`);
+      return meme.text;
+    },
+    includeAhuFrames: true,
+  });
+
+  const store: Record<string, unknown> = {};
+  for (const page of emission.pages) store[page.id] = page;
+  for (const shape of emission.shapes) store[(shape as { id: string }).id] = shape;
+  for (const binding of emission.bindings) store[binding.id] = binding;
+
+  console.log(`[lararium-serve] projection ready: ${emission.pages.length} pages, ${emission.shapes.length} shapes`);
+  return {
+    snapshot: { store, schema: DEFAULT_INITIAL_SNAPSHOT.schema },
+    roomId: `boot-${receiptSha.slice(0, 16)}`,
+    receiptSha,
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -100,10 +156,9 @@ async function main() {
   mkdirSync(DATA_DIR, { recursive: true });
 
   const runtime = createLarariumRuntime();
-  const snapshot = await buildSnapshot(runtime);
+  const snapshotMemes = await buildSnapshot(runtime);
 
-  const appDistExists = existsSync(join(APP_DIST, "index.html"));
-  if (!appDistExists) {
+  if (!existsSync(join(APP_DIST, "index.html"))) {
     console.error(
       `[lararium-serve] lararium-app not built — run: pnpm --filter @lararium/app build\n` +
       `  Expected: ${APP_DIST}/index.html`
@@ -111,110 +166,109 @@ async function main() {
     process.exit(1);
   }
 
-  // Compile boot artifact and project to tldraw shapes for the boot room seed.
-  // SQLiteSyncStorage accepts a TLStoreSnapshot: { store: Record<id, record>, schema: SerializedSchema }
-  // We build one from the emission's pages + shapes arrays.
-  let bootSnapshot: unknown = undefined;
+  // Build tldraw projection and content-addressed room key
+  let bootProjection: Awaited<ReturnType<typeof buildBootProjection>> | null = null;
   try {
-    const { renderAllViews } = await import("@lararium/tldraw");
-    const artifact = runtime.compileMinimalBoot();
-    const emission = renderAllViews(artifact, {
-      readText: (uri: string) => {
-        const meme = snapshot.memes[uri];
-        if (!meme) throw new Error(`${uri} not in snapshot`);
-        return meme.text;
-      },
-      includeAhuFrames: true,
-    });
-
-    // Build TLStoreSnapshot from emission records
-    const store: Record<string, unknown> = {};
-    for (const page of emission.pages) store[page.id] = page;
-    for (const shape of emission.shapes) {
-      const s = shape as { id: string };
-      store[s.id] = shape;
-    }
-
-    // Use the default schema from sync-core (same schema TLSocketRoom uses internally)
-    bootSnapshot = { store, schema: DEFAULT_INITIAL_SNAPSHOT.schema };
-    console.log(`[lararium-serve] projection ready: ${emission.pages.length} pages, ${emission.shapes.length} shapes`);
+    bootProjection = await buildBootProjection(runtime, snapshotMemes);
   } catch (e) {
-    console.warn("[lararium-serve] renderAllViews failed — rooms will start empty:", e);
+    console.warn("[lararium-serve] projection failed — rooms will start empty:", e);
   }
 
-  // Pre-create the boot room so first connection is instant
-  const bootRoomId = `boot`;
-  getOrCreateRoom(bootRoomId, bootSnapshot);
+  const activeBootRoomId = bootProjection?.roomId ?? "boot";
+  const bootSnapshot = bootProjection?.snapshot;
 
-  // Meme list for SidePanel — serialized once at startup, served as JSON
-  const artifact = runtime.compileMinimalBoot();
-  const memeList = artifact.closure.map((entry: { uri: string; depth?: number; kind?: string }) => ({
-    uri: entry.uri,
-    depth: entry.depth ?? 0,
-    kind: entry.kind ?? "meme",
-  }));
-  const memeListJson = JSON.stringify(memeList);
+  // Also maintain a stable alias "boot" → current content-addressed id for WS URL injection
+  // (clients bookmark the stable alias; server redirects or forwards as needed)
+  getOrCreateRoom(activeBootRoomId, bootSnapshot);
 
-  // HTTP server for static assets + API routes
-  const httpServer = createServer((req: IncomingMessage, res: ServerResponse) => {
+  // Meme list — rebuilds after reseed
+  function buildMemeList() {
+    const artifact: BootArtifact = runtime.compileMinimalBoot();
+    return artifact.closure.map((e: { uri: string; depth?: number; kind?: string }) => ({
+      uri: e.uri,
+      depth: e.depth ?? 0,
+      kind: e.kind ?? "meme",
+    }));
+  }
+  let memeList = buildMemeList();
+
+  // HTTP server
+  const httpServer = createServer(async (req: IncomingMessage, res: ServerResponse) => {
     const url = req.url ?? "/";
     const pathname = url.split("?")[0] ?? "/";
+    const params = new URL(url, `http://${HOST}:${PORT}`).searchParams;
 
-    // API: meme list for SidePanel
+    // ── API ────────────────────────────────────────────────────────────────
     if (pathname === "/api/memes") {
-      res.writeHead(200, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
-      res.end(memeListJson);
-      return;
+      return json(res, memeList);
     }
 
+    if (pathname === "/api/rooms") {
+      return json(res, {
+        activeBootRoomId,
+        rooms: [...rooms.keys()],
+      });
+    }
+
+    // Admin: force-reseed a room (localhost-only guard)
+    if (pathname === "/admin/reseed") {
+      const remoteAddr = (req.socket.remoteAddress ?? "").replace("::ffff:", "");
+      if (remoteAddr !== "127.0.0.1" && remoteAddr !== "::1") {
+        return json(res, { error: "forbidden" }, 403);
+      }
+      const targetId = params.get("roomId") ?? activeBootRoomId;
+      const deleted = evictRoom(targetId);
+      console.log(`[lararium-serve] reseed requested for ${targetId} — sqlite ${deleted ? "deleted" : "not found"}`);
+
+      // Rebuild projection for the boot room
+      if (targetId === activeBootRoomId || targetId === "boot") {
+        try {
+          const fresh = await buildBootProjection(runtime, snapshotMemes);
+          getOrCreateRoom(fresh.roomId, fresh.snapshot);
+          memeList = buildMemeList();
+          return json(res, { reseeded: fresh.roomId, sha: fresh.receiptSha, deleted });
+        } catch (e) {
+          return json(res, { error: String(e) }, 500);
+        }
+      }
+      return json(res, { reseeded: targetId, deleted });
+    }
+
+    // ── Static ─────────────────────────────────────────────────────────────
     const isAsset = pathname !== "/" && /\.[a-z0-9]+$/i.test(pathname);
-
     if (isAsset) {
-      const filePath = join(APP_DIST, pathname);
-      if (serveStatic(res, filePath)) return;
+      if (serveStatic(res, join(APP_DIST, pathname))) return;
     }
 
-    // App shell — inject WS URL via meta tag so client knows where to connect
+    // App shell — inject WS URL pointing to the content-addressed boot room
     let html = readFileSync(join(APP_DIST, "index.html"), "utf-8");
-    const wsMeta = `<meta name="lararium-ws" content="ws://${HOST}:${PORT}/rooms/boot">`;
+    const wsMeta = `<meta name="lararium-ws" content="ws://${HOST}:${PORT}/rooms/${activeBootRoomId}">`;
     html = html.replace("</head>", `  ${wsMeta}\n</head>`);
     res.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
     res.end(html);
   });
 
-  // WebSocket server — path: /rooms/:roomId
-  // Follow the official tldraw simple-server-example pattern exactly:
-  //   - sessionId comes from the client query param (useSync appends ?sessionId=<TAB_ID>)
-  //   - pass ws socket directly (ws v8+ implements addEventListener natively)
-  //   - buffer messages received before room.handleSocketConnect, then replay
+  // WebSocket server — /rooms/:roomId
   const wss = new WebSocketServer({ server: httpServer });
 
   wss.on("connection", (ws: WebSocket, req: IncomingMessage) => {
-    const url = new URL(req.url ?? "/", `ws://${HOST}:${PORT}`);
-    const match = url.pathname.match(/^\/rooms\/([^/?#]+)/);
-    if (!match) {
-      ws.close(1008, "Invalid room path");
-      return;
-    }
+    const wsUrl = new URL(req.url ?? "/", `ws://${HOST}:${PORT}`);
+    const match = wsUrl.pathname.match(/^\/rooms\/([^/?#]+)/);
+    if (!match) { ws.close(1008, "Invalid room path"); return; }
 
     const roomId = match[1]!;
-    // sessionId must come from the client — useSync appends ?sessionId=<TAB_ID>
-    const sessionId = url.searchParams.get("sessionId") ?? crypto.randomUUID();
+    const sessionId = wsUrl.searchParams.get("sessionId") ?? crypto.randomUUID();
 
-    // Buffer messages that arrive before handleSocketConnect (avoid race on async room load)
     const buffered: import("ws").RawData[] = [];
     const buffer = (msg: import("ws").RawData) => buffered.push(msg);
     ws.on("message", buffer);
 
     const room = getOrCreateRoom(roomId, bootSnapshot);
-
-    // Pass ws directly — ws v8+ implements addEventListener/removeEventListener
     room.handleSocketConnect({
       sessionId,
       socket: ws as unknown as Parameters<typeof room.handleSocketConnect>[0]["socket"],
     });
 
-    // Unregister buffer listener and replay any caught messages
     ws.off("message", buffer);
     for (const msg of buffered) ws.emit("message", msg);
 
@@ -223,8 +277,9 @@ async function main() {
 
   httpServer.listen(PORT, HOST, () => {
     console.log(`[lararium-serve] http://${HOST}:${PORT}`);
-    console.log(`[lararium-serve] ws://${HOST}:${PORT}/rooms/boot`);
-    console.log(`[lararium-serve] data dir: ${DATA_DIR}`);
+    console.log(`[lararium-serve] boot room: ${activeBootRoomId}`);
+    console.log(`[lararium-serve] reseed:    curl http://${HOST}:${PORT}/admin/reseed`);
+    console.log(`[lararium-serve] data dir:  ${DATA_DIR}`);
   });
 }
 

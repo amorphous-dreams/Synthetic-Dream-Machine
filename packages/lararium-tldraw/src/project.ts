@@ -2,13 +2,8 @@
  * projectToTldraw — pure projection from a Lararium boot artifact to a tldraw snapshot.
  *
  * No tldraw runtime import. No I/O. No Node APIs.
- * Output is a LarTLSnapshot that any renderer can pass to tldraw's store.
- *
- * Story river layout:
- *   - X axis: topo depth (depth 0 = AGENTS at left)
- *   - Y axis: position within depth band
- *   - Frames are 200×120 px, 40 px gap horizontally, 20 px gap vertically
- *   - Ahu socket sub-frames are 160×60 px, stacked inside their meme frame
+ * Output is a LarTLSnapshot (data only — no geometry). Layout is computed
+ * separately by layout.ts, which reads the snapshot and returns a LarTLLayout.
  */
 
 import { type BootArtifact } from "@lararium/core";
@@ -25,15 +20,6 @@ import {
   edgeArrowId,
   pageId,
 } from "./records.js";
-
-// ---------------------------------------------------------------------------
-// Layout constants
-// ---------------------------------------------------------------------------
-
-const FRAME_W = 200;
-const FRAME_H = 120;
-const FRAME_GAP_X = 60;
-const FRAME_GAP_Y = 30;
 
 // ---------------------------------------------------------------------------
 // projectToTldraw
@@ -78,9 +64,7 @@ export function projectToTldraw(artifact: BootArtifact, opts: ProjectOptions = {
 
   // Build meme frames
   for (const [depth, band] of [...byDepth.entries()].sort((a, b) => a[0] - b[0])) {
-    const x = depth * (FRAME_W + FRAME_GAP_X);
-    band.forEach((entry, bandIdx) => {
-      const y = bandIdx * (FRAME_H + FRAME_GAP_Y);
+    band.forEach((entry) => {
       const fid = memeFrameId(entry.uri);
       const lastSegment = entry.uri.split("/").at(-1) ?? entry.uri;
 

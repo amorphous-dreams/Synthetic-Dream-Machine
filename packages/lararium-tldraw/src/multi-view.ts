@@ -62,8 +62,9 @@ export function renderAllViews(artifact: BootArtifact, opts: MultiViewOptions = 
 
   // Merge all three emissions into one
   return {
-    pages: [...storyEmission.pages, ...detailEmission.pages, ...graphEmission.pages],
-    shapes: [...storyEmission.shapes, ...detailEmission.shapes, ...graphEmission.shapes],
+    pages:    [...storyEmission.pages,    ...detailEmission.pages,    ...graphEmission.pages],
+    shapes:   [...storyEmission.shapes,   ...detailEmission.shapes,   ...graphEmission.shapes],
+    bindings: [...storyEmission.bindings, ...detailEmission.bindings, ...graphEmission.bindings],
   };
 }
 

@@ -16,9 +16,75 @@
 import { useReducer, useEffect, useState, useRef, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { INITIAL_VIEW_STATE, viewStateReducer } from "@lararium/tldraw";
-import type { LarViewAction, LarViewState } from "@lararium/tldraw";
+import type { LarViewAction, LarViewState, ZoomLevel } from "@lararium/tldraw";
 import { LarariumCanvas } from "./LarariumCanvas.js";
 import type { MemeEntry } from "./App.js";
+
+// ─── Canvas-mode toggle pill ──────────────────────────────────────────────────
+// Always-visible floating button that switches between:
+//   wiki mode  — Lararium chrome active, tldraw chrome suppressed
+//   canvas mode — full tldraw toolbar/style panel restored for freeform drawing
+// Keyboard: backtick ` toggles (unambiguous, doesn't conflict with tldraw shortcuts)
+
+function CanvasModeToggle({
+  canvasMode,
+  onToggle,
+}: {
+  canvasMode: boolean;
+  onToggle: () => void;
+}) {
+  return (
+    <button
+      style={{
+        ...toggleCss.pill,
+        ...(canvasMode ? toggleCss.pillCanvas : toggleCss.pillWiki),
+      }}
+      onClick={onToggle}
+      aria-label={canvasMode ? "Switch to wiki mode (suppress tldraw chrome)" : "Switch to canvas mode (restore tldraw chrome)"}
+      aria-pressed={canvasMode}
+      title="` — toggle canvas mode"
+    >
+      <span style={toggleCss.icon}>{canvasMode ? "✏" : "⬡"}</span>
+      <span style={toggleCss.label}>{canvasMode ? "Canvas" : "Wiki"}</span>
+    </button>
+  );
+}
+
+const toggleCss = {
+  pill: {
+    position: "fixed" as const,
+    bottom: 44,         // sits just above the footer bar
+    left: 12,
+    zIndex: 700,
+    display: "flex",
+    alignItems: "center",
+    gap: 6,
+    minHeight: 44,
+    padding: "0 14px",
+    borderRadius: 22,
+    border: "1px solid rgba(255,255,255,0.12)",
+    cursor: "pointer",
+    fontSize: 13,
+    fontFamily: "system-ui, sans-serif",
+    fontWeight: 600,
+    backdropFilter: "blur(10px)",
+    boxShadow: "0 2px 12px rgba(0,0,0,0.4)",
+    transition: "background 0.15s, color 0.15s, border-color 0.15s",
+    userSelect: "none" as const,
+  },
+  pillWiki: {
+    background: "rgba(22,27,34,0.85)",
+    color: "#8b949e",
+    borderColor: "rgba(255,255,255,0.08)",
+  },
+  pillCanvas: {
+    background: "rgba(31,48,74,0.92)",
+    color: "#58a6ff",
+    borderColor: "rgba(88,166,255,0.35)",
+  },
+  icon: { fontSize: 15, lineHeight: 1 },
+  label: { letterSpacing: "0.02em" },
+} as const;
 
 interface ShellProps {
   wsUrl: string;
@@ -94,9 +160,18 @@ function LarariumHeader({
 // Footer / status bar
 // ---------------------------------------------------------------------------
 
-function LarariumFooter({ memes, navState }: { memes: MemeEntry[]; navState: LarViewState }) {
+const ZOOM_GLYPH: Record<ZoomLevel, string> = {
+  strategic:   "🗺️",   // furthest out — galaxy / labels only
+  operational: "⚙️",   // graph overview — edges readable
+  tactical:    "🔍",   // story river — full meme cards
+  combat:      "⚔️",   // detail — ahu sockets visible
+  action:      "⚡",   // full text / edit mode
+};
+
+function LarariumFooter({ memes, navState, zoomLevel }: { memes: MemeEntry[]; navState: LarViewState; zoomLevel: ZoomLevel }) {
   return (
     <div style={css.footer} role="status" aria-label="Canvas status">
+      <span style={css.footerItem} title={`Zoom: ${zoomLevel}`}>{ZOOM_GLYPH[zoomLevel]}</span>
       <span style={css.footerItem}>{memes.length || "—"} memes</span>
       <span style={css.viewBadge}>{navState.activeView}</span>
       {navState.focusUri && (
@@ -189,15 +264,29 @@ function LarariumCommandPalette({
 export function LarariumShell({ wsUrl, memes }: ShellProps) {
   const [navState, dispatch] = useReducer(viewStateReducer, INITIAL_VIEW_STATE);
   const [paletteOpen, setPaletteOpen] = useState(false);
+  const [canvasMode, setCanvasMode] = useState(false);
+  const [zoomLevel, setZoomLevel] = useState<ZoomLevel>("tactical");
 
-  // ⌘K / Ctrl+K global shortcut
+  // ⌘K / Ctrl+K → palette   |   ` (backtick) → canvas mode toggle
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
+      // Ignore shortcuts when typing in an input
+      const tag = (e.target as HTMLElement)?.tagName;
+      if (tag === "INPUT" || tag === "TEXTAREA") return;
+
       if ((e.metaKey || e.ctrlKey) && e.key === "k") {
         e.preventDefault();
         setPaletteOpen((v) => !v);
+        return;
       }
-      if (e.key === "Escape") setPaletteOpen(false);
+      if (e.key === "`") {
+        e.preventDefault();
+        setCanvasMode((v) => !v);
+        return;
+      }
+      if (e.key === "Escape") {
+        setPaletteOpen(false);
+      }
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
@@ -207,24 +296,36 @@ export function LarariumShell({ wsUrl, memes }: ShellProps) {
 
   return (
     <div style={css.shellRoot}>
-      {/* tldraw fills entire shell — chrome suppressed, TopPanel injected inside */}
       <LarariumCanvas
         wsUrl={wsUrl}
         navState={navState}
         dispatch={dispatch as React.Dispatch<LarViewAction>}
+        canvasMode={canvasMode}
+        onZoomLevel={setZoomLevel}
       />
 
-      {/* Fixed chrome rendered outside tldraw DOM tree */}
       {createPortal(
         <>
-          <LarariumHeader
-            memes={memes}
-            navState={navState}
-            dispatch={dispatch as React.Dispatch<LarViewAction>}
-            onPalette={() => setPaletteOpen(true)}
-          />
-          <LarariumFooter memes={memes} navState={navState} />
-          {paletteOpen && (
+          {/* Header dims (opacity + pointer-events:none) when canvas mode is active
+              so tldraw's toolbar doesn't fight our chrome for the same real estate */}
+          <div style={{ opacity: canvasMode ? 0.35 : 1, transition: "opacity 0.2s", pointerEvents: canvasMode ? "none" : "auto" }}>
+            <LarariumHeader
+              memes={memes}
+              navState={navState}
+              dispatch={dispatch as React.Dispatch<LarViewAction>}
+              onPalette={() => setPaletteOpen(true)}
+            />
+          </div>
+
+          {/* Footer also dims in canvas mode */}
+          <div style={{ opacity: canvasMode ? 0.2 : 1, transition: "opacity 0.2s", pointerEvents: "none" }}>
+            <LarariumFooter memes={memes} navState={navState} zoomLevel={zoomLevel} />
+          </div>
+
+          {/* Toggle pill: always fully visible, sits above footer */}
+          <CanvasModeToggle canvasMode={canvasMode} onToggle={() => setCanvasMode((v) => !v)} />
+
+          {paletteOpen && !canvasMode && (
             <LarariumCommandPalette
               memes={memes}
               dispatch={dispatch as React.Dispatch<LarViewAction>}
