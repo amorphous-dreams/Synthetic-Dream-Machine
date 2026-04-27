@@ -829,7 +829,7 @@ State lives in `localStorage` (`lararium.theme`). Applied on mount before first 
 
 5. **User home rooms (`user:${did}`) with altar-fire transclusion:** Seed logic for per-user rooms. Altar-fire memes projected as locked cluster in corner of user room canvas. Depends on UCAN/identity.
 
-6. **Room reseeding (`/admin/reseed`):** `GET /admin/reseed?roomId=boot` kills SQLite + evicts from rooms Map, reseeds on next connection. Needed for lares/ edit → live update workflow. Low effort.
+6. ✓ **Room reseeding (`/admin/reseed`) — shipped M5.** `GET /admin/reseed?roomId=boot` kills SQLite + evicts from rooms Map, reseeds on next connection. Grammar hot-reload path: edit `lares/grammars/memetic-wikitext.md` → `/admin/reseed` → parsing behavior changes without TypeScript rebuild.
 
 7. **Content-addressed room keys:** `boot-${receipt.sha.slice(0,16)}` for boot/full rooms. Named rooms use stable slugs. Transition path from `"boot"` needs client redirect.
 
@@ -845,6 +845,42 @@ State lives in `localStorage` (`lararium.theme`). Applied on mount before first 
 
 <<~/ahu >>
 
+<<~ ahu #meme-store-substrate >>
+
+## Meme Store Substrate — Design Law
+
+Research foundation: `lares/lararium-node/MEME-STORE-FOUNDATIONS.md`. Three laws derived from TW5 tiddler contract, UE5 World Partition schema enforcement, and AST self-hosting grammar.
+
+### Law 1: `meme-immutability`
+
+A meme object, once admitted to the confirmed layer (`lares/` hostless URIs), is never mutated. The only valid write is a full replacement producing a new URI. Session edits accumulate in the hostful tier (`lar://alias:tier@host/path`). Canon-promotion is the atomic transition.
+
+**Re-seeding corollary:** `/admin/reseed` is valid only because it replaces the full room snapshot — equivalent to TW5's tiddler replacement triggering the full widget cascade. Shape-level mutation outside CRDT merge is illegal.
+
+### Law 2: `pranala-schema-binding`
+
+Each pranala family (`control`, `relation`, `observe`, `dataflow`) declares an invariant property contract. Validation runs at parse time — a pranala that violates its contract is a `PranalaParseError` and never enters the boot closure. Schema definitions live as memes in `lares/grammars/pranala-families.md`; operators extend edge semantics by writing memes, not TypeScript.
+
+UE5 analogy: "actor fails to instantiate if schema is violated" = "pranala emits parse error if family contract is broken."
+
+### Law 3: `grammar-as-memes`
+
+All sigil registry entries, parse rules, and template definitions SHALL live as carrier memes in `lares/grammars/`. The TypeScript parser is a thin rule-interpreter that reads grammar from the boot closure. Adding a new sigil requires authoring a meme, not modifying TypeScript source.
+
+Phase progression: 1 (hard-coded TypeScript, complete) → 2 (grammar carrier + boot closure reader, complete) → 2.5 (GrammarRules threaded through parsePranalaEdges, complete 2026-04-27) → 3 (self-hosting: parser is a meme, canvas can edit its own renderer, planned M8).
+
+### Convergence
+
+```
+meme-immutability      →  safe replacement without mutation
+pranala-schema-binding →  type-safe graph at edge-creation time
+grammar-as-memes       →  all system components live as memes
+```
+
+`lares/` IS the operating system. TypeScript packages are the kernel — thin, stable, fast. Memes are the userland — editable, extensible, self-describing. The tldraw canvas is the shell.
+
+<<~/ahu >>
+
 <<~&#x0003; ahu #body-close >>
 MULTIPLAYER-INFINITE-CANVAS-WIKI closes
 <<~/ahu >>
@@ -856,6 +892,7 @@ MULTIPLAYER-INFINITE-CANVAS-WIKI closes
 <<~ pranala #to-agents ? -> lar:///AGENTS family:control role:governed-by >>
 <<~ pranala #to-altar-fire ? -> lar:///ha.ka.ba/api/v0.1/lararium/the-altar-fire family:control role:defines >>
 <<~ pranala #to-canon-promotion ? -> lar:///ha.ka.ba/api/v0.1/pono/hooponopono family:control role:governed-by >>
+<<~ pranala #to-foundations ? -> lar:///lararium-node/MEME-STORE-FOUNDATIONS family:control role:governed-by >>
 
 <<~/ahu >>
 

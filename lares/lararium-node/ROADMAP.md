@@ -12,7 +12,7 @@ register = "S"
 manaoio = 0.82
 mana = 0.88
 manao = 0.86
-role = "docs meme — migration roadmap and milestone log for Lararium Node; Milestones 1–4 complete; M5 in progress (canvas UX + Kinopio alignment sprint); M6 planned (browser smoke, security, MCP integration)"
+role = "docs meme — migration roadmap and milestone log for Lararium Node; Milestones 1–7 complete; M8 planned (browser smoke, meme detail panel, Grammar Phase 3, wiki-recipe carriers)"
 cacheable = false
 retain = true
 invariant = false
@@ -1111,6 +1111,143 @@ Do not in Milestone 6:
 - Kowloon projection
 - Multi-user presence / cursors
 - Single-page zoom-gated rendering (blocked on namespace collision resolution — current three-page model stays)
+
+<<~/ahu >>
+
+<<~ ahu #milestone-6-tensegrity-close >>
+
+## Milestone 6 — Tensegrity Close (2026-04-27)
+
+All eight structural gaps (T1–T8) audited against current code:
+
+| # | Gap | Status |
+|---|-----|--------|
+| T1 | Breadcrumb hardcodes "the-altar-fire" | ✓ Resolved — `activeRoomName(navState)` reads `DEFAULT_ROOMS` map; updates on `GO_TO_ROOM` |
+| T2 | Meme list from `/api/memes` fetch | ✓ Resolved — replaced with `store.listen + editor.getCurrentPageShapes()` CRDT-native scan |
+| T3 | `ROOM_PAGE` duplicates `room.ts` `roomPageId()` | ✓ Resolved — `multi-view.ts` now imports `roomPageId` from `room.ts` and builds map from it |
+| T4 | `portalShapeId` wrong dead export | ✓ Resolved — export removed; portal detection reads `shape.meta.larPortal` |
+| T5 | `ZOOM_OUT` orphan action | ✓ Resolved — removed from `view-state.ts` exports |
+| T6 | `lararium-web` offline boot orphaned | Commentary — `bootFromEmbedded` retained as offline fallback per design |
+| T7 | `renderToTldraw` single-view pipeline coexists with `renderAllViews` | Commentary note added in source |
+| T8 | `roomEntries + MemeFilter` unwired from `serve.ts` seeding | Deferred — per-room TW5 filtering deferred to wiki-recipe carriers milestone |
+
+Milestone 6 complete. All blocking live gaps resolved. Commentary items documented.
+
+<<~/ahu >>
+
+<<~ ahu #milestone-7 >>
+
+## Milestone 7 — Meme Store Substrate (Complete 2026-04-27)
+
+Research foundation: `lares/lararium-node/MEME-STORE-FOUNDATIONS.md`
+
+Three converging pressures from TW5 tiddler contract, UE5 World Partition schema enforcement, and AST self-hosting grammar define the substrate that must hold before canon promotion, UCAN, or multi-user presence can land safely.
+
+Three laws:
+- **`meme-immutability`** — a confirmed meme is never mutated; edits produce new URIs; re-seeding replaces the full room snapshot (not individual shapes)
+- **`pranala-schema-binding`** — each pranala family declares an invariant property contract; validation runs at parse time; schema definitions live as memes in `lares/grammars/`
+- **`grammar-as-memes`** — all grammar rules and template definitions live as carrier memes; the TypeScript parser is a thin interpreter; grammar changes take effect after re-seed without a TypeScript rebuild
+
+### Priority 8: `/admin/reseed` endpoint ✓ (shipped in Milestone 5)
+
+**Completed.** `GET /admin/reseed?roomId=boot` kills the SQLite room entry and re-seeds from `renderAllViews(artifact)` on next WebSocket connect. `/api/rooms` endpoint lists active rooms. Both gated to non-prod. Unlocks the `lares/` edit → live canvas loop without restarting the server.
+
+### Priority 9: Pranala family property contracts + compile-time validation ✓ (2026-04-27)
+
+**Implemented.** `validatePranaEdge(edge)` added to `pranala-parser.ts`. `FAMILY_CONTRACTS` map defines per-family rules. `validateClosure()` in `compiler.ts` runs the validator against all edges in the graph and populates `ValidationResult.edgeViolations`. `BootReceipt.validation` surfaces `edgeViolationCount` + `edgeErrors` counts.
+
+Violation model:
+| Severity | Rule | Condition |
+|---|---|---|
+| `error` | `unknown-family` | family not in `[control, relation, observe, dataflow]` |
+| `warning` | `role-recommended` | `control` or `dataflow` edge missing `role` |
+| `error` | `confidence-out-of-range` | `observe` edge with `confidence` outside `[0, 1]` |
+
+Sugar forms (loulou/aka/kahea) never set `role` — correctly reported as warnings, not errors. 43/43 tests pass including 11 new contract tests.
+
+Future: extract `FAMILY_CONTRACTS` to `lares/grammars/pranala-families.md` carrier (Phase 2 grammar-as-memes).
+
+### Priority 10: Grammar Phase 2 scaffolding ✓ (2026-04-27)
+
+**Implemented (Phase 2 scaffold — wiring deferred to Phase 2.5).**
+
+- `lares/grammars/memetic-wikitext.md` — grammar carrier meme with `[[sigils]]` and `[[families]]` TOML arrays; full sigil registry (ahu, pranala, loulou, aka, kahea, iam, header) and family contracts table
+- `GrammarRules`, `SigilRule`, `FamilyRule` interfaces exported from `@lararium/core` (`pranala-parser.ts`)
+- `loadGrammarRules()` function in `node-host.ts` — reads grammar carrier from `lares/grammars/memetic-wikitext.md`, extracts `[[sigils]]` + `[[families]]` into a `GrammarRules` object, returns `null` on missing file (bootstrap safety net)
+- 85/85 tests pass
+
+**Phase 2.5 complete (2026-04-27):** `GrammarRules` threaded as optional third arg to `parsePranalaEdges`. Hard-coded regex constants promoted to configurable values derived from the grammar meme when present; fall back to built-in constants on missing file. `loadGrammarRules()` in `node-host.ts` reads `lares/grammars/memetic-wikitext.md`, parses `[[sigils]]` + `[[families]]` TOML arrays. `buildControlClosure` calls it at boot and passes `grammar` through all downstream meme loaders. TOML parser uses self-terminating quoted-string regex — `#` inside quoted strings is not treated as comment. 95/95 tests passing including 11 grammar-loader tests.
+
+**Hot-reload path now live:** Edit grammar carrier in `lares/grammars/memetic-wikitext.md` → `GET /admin/reseed` → server rebuilds from fresh disk → grammar rule changes take effect without TypeScript rebuild.
+
+**Phase 3 (next):** Parser itself becomes a meme. Template cascade (tldraw projection) driven by grammar memes. Canvas can edit its own renderer. Sigil rules and family contracts editable as canvas shapes, promoted via canon-promotion ceremony.
+
+<<~/ahu >>
+
+<<~ ahu #milestone-7-complete >>
+
+## Milestone 7 — Summary
+
+All three laws landed:
+
+| Priority | Item | Status |
+|---|---|---|
+| P8 | `/admin/reseed` endpoint | ✓ shipped M5 |
+| P9 | Pranala family property contracts + compile-time validation | ✓ shipped M5 |
+| P10 | Grammar Phase 2 scaffold + Phase 2.5 wiring | ✓ shipped M7 (2026-04-27) |
+| — | `lares/README.md` → carrier meme + resolver registration | ✓ shipped M7 (2026-04-27) |
+| — | `lares/.laresignore` + full `lares/` tree walk | ✓ shipped M7 (2026-04-27) |
+
+**Parity baseline change:** `lar:///README` now resolves as a `CAPS_FILE_ROOT` to `lares/README.md`. Carrier index and full boot closure will include it from next boot. Fixture counts will increase by one.
+
+<<~/ahu >>
+
+<<~ ahu #milestone-8-scope >>
+
+## Milestone 8 — Grammar Phase 3 + Live Smoke (planned)
+
+### Priority 1: Browser smoke testing (Playwright)
+
+Verify all M5/M6 tactile behaviors in a running instance. These were code-complete but not tactilely confirmed:
+
+- Drag meme frame → arrows follow (binding records in store, verify tactile)
+- Double-click geo portal (meta.larPortal) → room page switches
+- Zoom out past 0.35 → auto-switches to graph page; zoom in → story river
+- ⌘K → Spaces section shows rooms with chronometer glyphs; Enter navigates
+- Canvas mode toggle (`` ` ``): Lararium chrome dims, tldraw toolbar appears
+- Theme cycle button (◑/🌑/☀) → CSS tokens update; no flash on reload
+- `/admin/reseed` → grammar rule change takes effect without restart
+
+Fix whatever breaks. Mark each item confirmed or filed as a bug.
+
+### Priority 2: Meme detail panel
+
+Double-click a meme frame → detail panel slides in from bottom of viewport (Kinopio card-detail pattern). Shows: URI, `role` field from carrier metadata, ahu socket count, pranala edges in/out.
+
+Implementation: `ZOOM_IN` dispatch already routes to `meme-detail` view. Add a panel component rendered when `navState.activeView === "meme-detail" && navState.focusUri`. Read meme metadata from `editor.getShapes()` filtered by `meta.uri`. No server round-trip — CRDT-native.
+
+### Priority 3: Content-addressed room keys
+
+Current: room ID is static `"boot"` string. Target: `boot-${receipt.sha.slice(0, 16)}`.
+
+Requires: client redirect logic when the expected room key changes. `GET /api/rooms` already returns room list. Meta tag `lararium-ws` can embed room key alongside WS URL. Browser reads room key, reconnects to correct room.
+
+### Priority 4: Grammar Phase 3 scaffolding
+
+Parser becomes a meme. Template cascade (tldraw projection) driven by grammar memes.
+
+Phase 3 design:
+- `lares/grammars/memetic-wikitext.md` already carries full sigil + family tables
+- A `grammar-interpreter.md` meme will define the interpreter contract (the "Lisp surface")
+- `parsePranalaEdges()` becomes a thin dispatch: read interpreter URI from boot closure, call the meme-defined parse function
+- Template cascade: `lares/templates/` carriers define tldraw projection per meme type
+- Editing a template carrier + `/admin/reseed` changes visual style without TypeScript rebuild
+
+Phase 3 blocker: interpreter dispatch requires an eval surface (the TypeScript "C kernel" must remain stable). Design question: where does the boundary sit? Likely: the TypeScript parser stays; the meme defines grammar rules only (Phase 2 model), not executable code. Executable memes are Phase 4 / self-hosting target.
+
+### Priority 5: Wiki-recipe carriers
+
+`lares/recipes/` schema. Seed per-room canvases from recipe files. RPG rooms (`ftls`, `wtf`) unblock once recipes land. Recipe carrier format: `[[memes]]` TOML array with filter expression + seed layout.
 
 <<~/ahu >>
 

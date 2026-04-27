@@ -145,6 +145,10 @@ async function buildBootProjection(
   for (const shape of emission.shapes) store[(shape as { id: string }).id] = shape;
   for (const binding of emission.bindings) store[binding.id] = binding;
 
+  const ev = artifact.validation.edgeViolations ?? [];
+  const evErrors = ev.filter((v: { severity: string }) => v.severity === "error").length;
+  if (ev.length > 0)
+    console.warn(`[lararium-serve] edge violations: ${ev.length} (${evErrors} errors, ${ev.length - evErrors} warnings)`);
   console.log(`[lararium-serve] projection ready: ${emission.pages.length} pages, ${emission.shapes.length} shapes`);
   return {
     snapshot: { store, schema: DEFAULT_INITIAL_SNAPSHOT.schema },
@@ -161,7 +165,8 @@ async function main() {
   mkdirSync(DATA_DIR, { recursive: true });
 
   const runtime = createLarariumRuntime();
-  const snapshotMemes = await buildSnapshot(runtime);
+  // let so the reseed handler can rebuild from fresh lares/ reads
+  let snapshotMemes = await buildSnapshot(runtime);
 
   if (!existsSync(join(APP_DIST, "index.html"))) {
     console.error(
@@ -225,9 +230,10 @@ async function main() {
       const deleted = evictRoom(targetId);
       console.log(`[lararium-serve] reseed requested for ${targetId} — sqlite ${deleted ? "deleted" : "not found"}`);
 
-      // Rebuild projection for the boot room
+      // Rebuild projection for the boot room — refresh snapshot from disk first
       if (targetId === activeBootRoomId || targetId === "boot") {
         try {
+          snapshotMemes = await buildSnapshot(runtime);
           const fresh = await buildBootProjection(runtime, snapshotMemes);
           getOrCreateRoom(fresh.roomId, fresh.snapshot);
           memeList = buildMemeList();

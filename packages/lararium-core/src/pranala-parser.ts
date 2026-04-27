@@ -38,19 +38,206 @@ export interface PranaEdge {
 }
 
 // ---------------------------------------------------------------------------
-// Regexes (JS doesn't have re.DOTALL flag on character class, use [\s\S] for body)
+// Family contract — parse-time property schema
 // ---------------------------------------------------------------------------
 
-const AHU_OPEN_RE = /<<~[^>]*\bahu\s+(#[\w-]+)\s*>>/g;
-const AHU_CLOSE_RE = /<<~\/ahu\s*>>/g;
+export type PranaViolationSeverity = "error" | "warning";
 
-// Block pranala — note JS regex doesn't have dotall by default; use [\s\S]*? with 's' flag
-const BLOCK_RE = /<<~\s*pranala\s+(#[\w-]+\s+)?(\S+)\s*->\s*(\S+)\s*>>([\s\S]*?)<<~\/pranala\s*>>/gs;
-const INLINE_RE = /<<~\s*pranala\s+(#[\w-]+\s+)?(\S+)\s*->\s*(\S+)(?:\s+family:([\w-]+))?(?:\s+role:([\w-]+))?\s*>>/g;
-const LOULOU_RE = /<<~\s*loulou\s+(\S+)\s*>>/g;
-const AKA_RE    = /<<~\s*aka\s+(\S+)\s*>>/g;
-const KAHEA_RE  = /<<~\s*kahea\s+(\S+)\s*>>/g;
+export interface PranaEdgeViolation {
+  readonly fromUri: string;
+  readonly toUri: string;
+  readonly family: string;
+  readonly severity: PranaViolationSeverity;
+  readonly rule: string;
+  readonly message: string;
+}
+
+interface FamilyContract {
+  /** Error if family name not in this set */
+  knownFamilies: readonly string[];
+  /** Warn if role missing */
+  roleRecommended: boolean;
+  /** Error if confidence present but outside [0, 1] */
+  confidenceBounded: boolean;
+}
+
+const KNOWN_FAMILIES = ["control", "relation", "observe", "dataflow"] as const;
+
+const FAMILY_CONTRACTS: Record<string, Omit<FamilyContract, "knownFamilies">> = {
+  control:   { roleRecommended: true,  confidenceBounded: false },
+  relation:  { roleRecommended: false, confidenceBounded: false },
+  observe:   { roleRecommended: false, confidenceBounded: true  },
+  dataflow:  { roleRecommended: true,  confidenceBounded: false },
+};
+
+export function validatePranaEdge(edge: PranaEdge, grammar?: GrammarRules): PranaEdgeViolation[] {
+  const violations: PranaEdgeViolation[] = [];
+  const base = { fromUri: edge.fromUri, toUri: edge.toUri, family: edge.family };
+  const contracts = resolveFamilyContracts(grammar);
+  const knownFamilies = grammar
+    ? grammar.families.map((f) => f.name)
+    : (KNOWN_FAMILIES as readonly string[]);
+
+  if (!knownFamilies.includes(edge.family)) {
+    violations.push({ ...base, severity: "error", rule: "unknown-family",
+      message: `family "${edge.family}" not in [${knownFamilies.join(", ")}]` });
+    return violations;
+  }
+
+  const contract = contracts[edge.family]!;
+
+  if (contract.roleRecommended && !edge.role) {
+    violations.push({ ...base, severity: "warning", rule: "role-recommended",
+      message: `${edge.family} edge missing role (from ${edge.fromUri} → ${edge.toUri})` });
+  }
+
+  if (contract.confidenceBounded && edge.confidence !== null) {
+    if (typeof edge.confidence !== "number" || edge.confidence < 0 || edge.confidence > 1) {
+      violations.push({ ...base, severity: "error", rule: "confidence-out-of-range",
+        message: `confidence ${edge.confidence} outside [0, 1]` });
+    }
+  }
+
+  return violations;
+}
+
+export { KNOWN_FAMILIES, FAMILY_CONTRACTS };
+
+// ---------------------------------------------------------------------------
+// GrammarRules — Phase 2 external grammar interface
+//
+// In Phase 1 the parser uses hard-coded patterns below.
+// In Phase 2 a GrammarRules object (read from lares/grammars/memetic-wikitext.md)
+// overrides patterns and family contracts. parsePranalaEdges accepts GrammarRules
+// as an optional second argument; absent = fall back to built-ins.
+// ---------------------------------------------------------------------------
+
+export interface SigilRule {
+  name: string;
+  kind: "worksite" | "edge" | "edge-sugar" | "metadata" | "header";
+  /** For edge sigils: inline match pattern (regex source string) */
+  inlinePattern?: string;
+  /** For edge sigils: block match pattern (regex source string, dotAll) */
+  blockPattern?: string;
+  /** For worksite sigils: open pattern */
+  openPattern?: string;
+  /** For worksite sigils: close pattern */
+  closePattern?: string;
+  /** For sugar sigils: match pattern */
+  pattern?: string;
+  defaultFamily?: string;
+  defaultPropagation?: string;
+}
+
+export interface FamilyRule {
+  name: string;
+  dagRequired: boolean;
+  roleRecommended: boolean;
+  confidenceBounded: boolean;
+}
+
+export interface GrammarRules {
+  sigils: SigilRule[];
+  families: FamilyRule[];
+}
+
+// ---------------------------------------------------------------------------
+// Built-in regex constants (Phase 1 hard-coded kernel — bootstrap safety net)
+// ---------------------------------------------------------------------------
+
+const BUILTIN_AHU_OPEN    = /<<~[^>]*\bahu\s+(#[\w-]+)\s*>>/g;
+const BUILTIN_AHU_CLOSE   = /<<~\/ahu\s*>>/g;
+const BUILTIN_BLOCK_RE    = /<<~\s*pranala\s+(#[\w-]+\s+)?(\S+)\s*->\s*(\S+)\s*>>([\s\S]*?)<<~\/pranala\s*>>/gs;
+const BUILTIN_INLINE_RE   = /<<~\s*pranala\s+(#[\w-]+\s+)?(\S+)\s*->\s*(\S+)(?:\s+family:([\w-]+))?(?:\s+role:([\w-]+))?\s*>>/g;
+const BUILTIN_LOULOU_RE   = /<<~\s*loulou\s+(\S+)\s*>>/g;
+const BUILTIN_AKA_RE      = /<<~\s*aka\s+(\S+)\s*>>/g;
+const BUILTIN_KAHEA_RE    = /<<~\s*kahea\s+(\S+)\s*>>/g;
 const TOML_FENCE_RE = /```toml\s*([\s\S]*?)```/;
+
+// ---------------------------------------------------------------------------
+// Grammar-aware regex resolution (Phase 2 method-dictionary pattern)
+//
+// resolveRegexes() builds the active regex set from GrammarRules when provided,
+// falling back to built-in constants for any missing sigil entry.
+// The interpretation engine (how these regexes are applied) never changes —
+// only the rule table it reads is externally supplied.
+// ---------------------------------------------------------------------------
+
+interface ActiveRegexes {
+  ahuOpen:  RegExp;
+  ahuClose: RegExp;
+  block:    RegExp;
+  inline:   RegExp;
+  loulou:   RegExp;
+  aka:      RegExp;
+  kahea:    RegExp;
+  loulouDefaultFamily:  string;
+  akaDefaultFamily:     string;
+  kaheaDefaultFamily:   string;
+  kaheaDefaultPropagation: string;
+}
+
+function sigilPattern(grammar: GrammarRules, name: string, key: keyof SigilRule): string | undefined {
+  return grammar.sigils.find((s) => s.name === name)?.[key] as string | undefined;
+}
+
+function resolveRegexes(grammar?: GrammarRules): ActiveRegexes {
+  if (!grammar) {
+    return {
+      ahuOpen:  BUILTIN_AHU_OPEN,
+      ahuClose: BUILTIN_AHU_CLOSE,
+      block:    BUILTIN_BLOCK_RE,
+      inline:   BUILTIN_INLINE_RE,
+      loulou:   BUILTIN_LOULOU_RE,
+      aka:      BUILTIN_AKA_RE,
+      kahea:    BUILTIN_KAHEA_RE,
+      loulouDefaultFamily:     "relation",
+      akaDefaultFamily:        "observe",
+      kaheaDefaultFamily:      "dataflow",
+      kaheaDefaultPropagation: "push-forward",
+    };
+  }
+
+  const safe = (src: string | undefined, fallback: RegExp, flags: string): RegExp => {
+    if (!src) return new RegExp(fallback.source, flags);
+    try { return new RegExp(src, flags); }
+    catch { return new RegExp(fallback.source, flags); }
+  };
+
+  return {
+    ahuOpen:  safe(sigilPattern(grammar, "ahu", "openPattern"),  BUILTIN_AHU_OPEN,  "g"),
+    ahuClose: safe(sigilPattern(grammar, "ahu", "closePattern"), BUILTIN_AHU_CLOSE, "g"),
+    block:    safe(sigilPattern(grammar, "pranala", "blockPattern"),  BUILTIN_BLOCK_RE,  "gds"),
+    inline:   safe(sigilPattern(grammar, "pranala", "inlinePattern"), BUILTIN_INLINE_RE, "g"),
+    loulou:   safe(sigilPattern(grammar, "loulou", "pattern"), BUILTIN_LOULOU_RE, "g"),
+    aka:      safe(sigilPattern(grammar, "aka",    "pattern"), BUILTIN_AKA_RE,    "g"),
+    kahea:    safe(sigilPattern(grammar, "kahea",  "pattern"), BUILTIN_KAHEA_RE,  "g"),
+    loulouDefaultFamily:     sigilPattern(grammar, "loulou", "defaultFamily")     ?? "relation",
+    akaDefaultFamily:        sigilPattern(grammar, "aka",    "defaultFamily")     ?? "observe",
+    kaheaDefaultFamily:      sigilPattern(grammar, "kahea",  "defaultFamily")     ?? "dataflow",
+    kaheaDefaultPropagation: sigilPattern(grammar, "kahea",  "defaultPropagation") ?? "push-forward",
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Grammar-aware family contract resolution
+// ---------------------------------------------------------------------------
+
+function resolveFamilyContracts(grammar?: GrammarRules): typeof FAMILY_CONTRACTS {
+  if (!grammar || grammar.families.length === 0) return FAMILY_CONTRACTS;
+  const out: typeof FAMILY_CONTRACTS = {};
+  for (const f of grammar.families) {
+    out[f.name] = {
+      roleRecommended: f.roleRecommended,
+      confidenceBounded: f.confidenceBounded,
+    };
+  }
+  // Fill any gaps with built-in defaults
+  for (const [k, v] of Object.entries(FAMILY_CONTRACTS)) {
+    if (!out[k]) out[k] = v;
+  }
+  return out;
+}
 
 // ---------------------------------------------------------------------------
 // URI helpers
@@ -147,37 +334,38 @@ function fieldsFromToml(tomlText: string): Record<string, unknown> {
 type EventKind = "ahu_open" | "ahu_close" | "block" | "inline" | "loulou" | "aka" | "kahea";
 interface Event { pos: number; kind: EventKind; groups: (string | undefined)[] }
 
-export function parsePranalaEdges(carrierUri: string, text: string): PranaEdge[] {
+export function parsePranalaEdges(carrierUri: string, text: string, grammar?: GrammarRules): PranaEdge[] {
+  const rx = resolveRegexes(grammar);
   const edges: PranaEdge[] = [];
 
   // Collect block spans first so inline scan can exclude them
   const blockSpans: [number, number][] = [];
-  for (const m of text.matchAll(BLOCK_RE)) {
+  for (const m of text.matchAll(new RegExp(rx.block.source, "gs"))) {
     blockSpans.push([m.index!, m.index! + m[0].length]);
   }
   const inBlock = (pos: number) => blockSpans.some(([s, e]) => pos >= s && pos < e);
 
   const events: Event[] = [];
 
-  for (const m of text.matchAll(new RegExp(AHU_OPEN_RE.source, "g"))) {
+  for (const m of text.matchAll(new RegExp(rx.ahuOpen.source, "g"))) {
     events.push({ pos: m.index!, kind: "ahu_open", groups: [...m] });
   }
-  for (const m of text.matchAll(new RegExp(AHU_CLOSE_RE.source, "g"))) {
+  for (const m of text.matchAll(new RegExp(rx.ahuClose.source, "g"))) {
     events.push({ pos: m.index!, kind: "ahu_close", groups: [...m] });
   }
-  for (const m of text.matchAll(new RegExp(BLOCK_RE.source, "gds"))) {
+  for (const m of text.matchAll(new RegExp(rx.block.source, "gds"))) {
     events.push({ pos: m.index!, kind: "block", groups: [...m] });
   }
-  for (const m of text.matchAll(new RegExp(INLINE_RE.source, "g"))) {
+  for (const m of text.matchAll(new RegExp(rx.inline.source, "g"))) {
     if (!inBlock(m.index!)) events.push({ pos: m.index!, kind: "inline", groups: [...m] });
   }
-  for (const m of text.matchAll(new RegExp(LOULOU_RE.source, "g"))) {
+  for (const m of text.matchAll(new RegExp(rx.loulou.source, "g"))) {
     if (!inBlock(m.index!)) events.push({ pos: m.index!, kind: "loulou", groups: [...m] });
   }
-  for (const m of text.matchAll(new RegExp(AKA_RE.source, "g"))) {
+  for (const m of text.matchAll(new RegExp(rx.aka.source, "g"))) {
     if (!inBlock(m.index!)) events.push({ pos: m.index!, kind: "aka", groups: [...m] });
   }
-  for (const m of text.matchAll(new RegExp(KAHEA_RE.source, "g"))) {
+  for (const m of text.matchAll(new RegExp(rx.kahea.source, "g"))) {
     if (!inBlock(m.index!)) events.push({ pos: m.index!, kind: "kahea", groups: [...m] });
   }
 
@@ -252,11 +440,11 @@ export function parsePranalaEdges(carrierUri: string, text: string): PranaEdge[]
     const fromSocket = ahuStack.length > 0 ? (ahuStack[ahuStack.length - 1] as string) : carrierUri;
 
     if (kind === "loulou") {
-      edges.push(makeEdge(carrierUri, fromSocket, null, toUri, toSocket, "relation", {}));
+      edges.push(makeEdge(carrierUri, fromSocket, null, toUri, toSocket, rx.loulouDefaultFamily, {}));
     } else if (kind === "aka") {
-      edges.push(makeEdge(carrierUri, fromSocket, null, toUri, toSocket, "observe", {}));
+      edges.push(makeEdge(carrierUri, fromSocket, null, toUri, toSocket, rx.akaDefaultFamily, {}));
     } else if (kind === "kahea") {
-      edges.push(makeEdge(carrierUri, fromSocket, null, toUri, toSocket, "dataflow", { propagation: "push-forward" }));
+      edges.push(makeEdge(carrierUri, fromSocket, null, toUri, toSocket, rx.kaheaDefaultFamily, { propagation: rx.kaheaDefaultPropagation }));
     }
   }
 

@@ -7,7 +7,7 @@
 
 import { type MemeGraph, memeImplements } from "./meme-graph.js";
 import { type DigestProvider, defaultCryptoProvider, sha256Hex, canonicalJsonBytes } from "./crypto.js";
-import { type PranaEdge } from "./pranala-parser.js";
+import { type PranaEdge, validatePranaEdge, type PranaEdgeViolation } from "./pranala-parser.js";
 
 export const ENTRY_URI = "lar:///AGENTS";
 
@@ -34,6 +34,7 @@ export interface ValidationResult {
   missing: string[];
   dagViolations: string[][];
   declaredUnresolved: { uri: string; severity: string; family: string }[];
+  edgeViolations: PranaEdgeViolation[];
 }
 
 export interface BootArtifact {
@@ -59,7 +60,7 @@ export interface BootReceipt {
   locusCount: number;
   edgeCount: number;
   sha256: string;
-  validation: { allResolved: boolean; allExist: boolean; missing: string[]; dagViolations: string[][] };
+  validation: { allResolved: boolean; allExist: boolean; missing: string[]; dagViolations: string[][]; edgeViolationCount: number; edgeErrors: number };
   compactionNotes: string;
 }
 
@@ -143,7 +144,16 @@ function validateClosure(
   const du = graph.declaredUnresolved()
     .filter((d) => d.severity === "error" || d.severity === "warning")
     .map((d) => ({ uri: d.uri, severity: d.severity, family: d.edge.family }));
-  return { allResolved: true, allExist: missing.length === 0, missing, dagViolations: violations, declaredUnresolved: du };
+
+  // Family contract validation — runs against all edges in the graph
+  const edgeViolations: PranaEdgeViolation[] = [];
+  for (const meme of graph.memes.values()) {
+    for (const edge of meme.edgesOut) {
+      edgeViolations.push(...validatePranaEdge(edge));
+    }
+  }
+
+  return { allResolved: true, allExist: missing.length === 0, missing, dagViolations: violations, declaredUnresolved: du, edgeViolations };
 }
 
 // ---------------------------------------------------------------------------
@@ -269,7 +279,14 @@ export async function compileBootReceipt(
     locusCount: artifact.locusCount,
     edgeCount: artifact.edgeCount ?? 0,
     sha256: sha,
-    validation: { allResolved: v.allResolved, allExist: v.allExist, missing: v.missing, dagViolations: v.dagViolations },
+    validation: {
+      allResolved: v.allResolved,
+      allExist: v.allExist,
+      missing: v.missing,
+      dagViolations: v.dagViolations,
+      edgeViolationCount: v.edgeViolations.length,
+      edgeErrors: v.edgeViolations.filter((e) => e.severity === "error").length,
+    },
     compactionNotes: "",
   };
 }
