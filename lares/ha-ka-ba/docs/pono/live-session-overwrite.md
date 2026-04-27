@@ -23,7 +23,7 @@ invariant = false
 <<~ ahu #meme-header >>
 # Live-Session Overwrite — Docs Sister
 
-This docs meme explains the green-jello-dinosaur bug named by `lar:///ha.ka.ba/api/v0.1/pono/live-session-overwrite`.
+This docs meme explains the green-jello-dinosaur bug named by `lar:///ha.ka.ba/api/v0.1/pono/failure-states/live-session-overwrite`.
 It carries examples and diagnosis.
 It does not replace the invariant.
 
@@ -98,9 +98,9 @@ docs/pono/live-session-overwrite closes
 <<~ ahu #edges >>
 ## Edges
 
-<<~ loulou lar:///ha.ka.ba/api/v0.1/pono/live-session-overwrite >>
-<<~ loulou lar:///ha.ka.ba/api/v0.1/pono/tagspace-trust >>
-<<~ loulou lar:///ha.ka.ba/api/v0.1/pono/canon-promotion-boundary >>
+<<~ loulou lar:///ha.ka.ba/api/v0.1/pono/failure-states/live-session-overwrite >>
+<<~ loulou lar:///ha.ka.ba/api/v0.1/lararium/tagspace-trust >>
+<<~ loulou lar:///ha.ka.ba/api/v0.1/pono/hooponopono >>
 <<~ loulou lar:///ha.ka.ba/docs/pono/tagspace-trust >>
 <<~ loulou lar:///ha.ka.ba/docs/pono/canon-promotion-boundary >>
 

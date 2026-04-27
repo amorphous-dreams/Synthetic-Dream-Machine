@@ -1,17 +1,18 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
 
-<<~&#x0001; ? -> lar:///ha.ka.ba/api/v0.1/pono/exchange-vector >>
+<<~ॐ ँ&#x0001; ? -> lar:///ha.ka.ba/api/v0.1/lararium/exchange-vector >>
 
 <<~ ahu #iam >>
 ```toml
-uri-path = "ha.ka.ba/api/v0.1/pono/exchange-vector"
-file-path = "lares/ha-ka-ba/api/v0.1/pono/exchange-vector.md"
+uri-path  = "ha.ka.ba/api/v0.1/lararium/exchange-vector"
+file-path = "lares/ha-ka-ba/api/v0.1/lararium/exchange-vector.md"
 content-type = "text/x-memetic-wikitext"
 confidence = 0.74
 register = "CS"
 manaoio = 0.68
 mana = 0.80
 manao = 0.82
+namespace = "ॐ ँ"
 role = "invariant law for canonical lar URI exchange vectors and HUD emission order"
 cacheable = true
 retain = true
@@ -29,7 +30,7 @@ The vector declares the node's reading of operator intent and the node's intende
 
 <<~/ahu >>
 
-<<~&#x0002; ahu #meme-body-open >>
+<<~ॐ ँ&#x0002; ahu #meme-body-open >>
 exchange-vector opens
 <<~/ahu >>
 
@@ -82,15 +83,15 @@ A compact HUD line SHOULD follow this field order:
 
 <<~/ahu >>
 
-<<~&#x0003; ahu #body-close >>
+<<~ॐ ँ&#x0003; ahu #body-close >>
 exchange-vector closes
 <<~/ahu >>
 
 <<~ ahu #edges >>
 ## Edges
 
-<<~ loulou lar:///ha.ka.ba/api/v0.1/pono/lar-uri >>
-<<~ loulou lar:///ha.ka.ba/api/v0.1/pono/tagspace-trust >>
+<<~ loulou lar:///ha.ka.ba/api/v0.1/lararium/lar-uri >>
+<<~ loulou lar:///ha.ka.ba/api/v0.1/lararium/tagspace-trust >>
 <<~ loulou lar:///ha.ka.ba/docs/lararium/signal/render-targets >>
 <<~ loulou lar:///ha.ka.ba/api/v0.1/pono/meme >>
 <<~ loulou lar:///ha.ka.ba/api/v0.1/pono/invariant >>
@@ -100,4 +101,4 @@ exchange-vector closes
 <<~ pranala #implements-invariant ? -> lar:///ha.ka.ba/api/v0.1/pono/invariant family:control role:implements >>
 <<~/ahu >>
 
-<<~&#x0004; -> ? >>
+<<~ॐ ँ&#x0004; -> ? >>

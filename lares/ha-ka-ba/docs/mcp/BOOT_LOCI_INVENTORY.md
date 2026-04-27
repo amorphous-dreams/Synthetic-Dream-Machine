@@ -21,9 +21,9 @@ Every locus below must resolve and hydrate before the threshold yields.
 | URI | File path | Role | Hydration socket |
 |---|---|---|---|
 | `lar:///AGENTS` | `lares/AGENTS.md` | threshold constitution, operator-agent alignment membrane, boot router | entry |
-| `lar:///ha.ka.ba/api/v0.1/pono/e-prime` | `lares/ha-ka-ba/api/v0.1/pono/e-prime.md` | E-Prime grammar preload | `AGENTS#preload-e-prime` |
-| `lar:///ha.ka.ba/api/v0.1/pono/ooda-ha` | `lares/ha-ka-ba/api/v0.1/pono/ooda-ha.md` | OODA-HA orientation preload | `AGENTS#preload-ooda-ha` |
-| `lar:///ha.ka.ba/api/v0.1/pono/lar-uri` | `lares/ha-ka-ba/api/v0.1/pono/lar-uri.md` | lar-uri address law preload | `AGENTS#preload-lar-uri` |
+| `lar:///ha.ka.ba/api/v0.1/mu/e-prime` | `lares/ha-ka-ba/api/v0.1/pono/e-prime.md` | E-Prime grammar preload | `AGENTS#preload-e-prime` |
+| `lar:///ha.ka.ba/api/v0.1/mu/ooda-ha` | `lares/ha-ka-ba/api/v0.1/pono/ooda-ha.md` | OODA-HA orientation preload | `AGENTS#preload-ooda-ha` |
+| `lar:///ha.ka.ba/api/v0.1/lararium/lar-uri` | `lares/ha-ka-ba/api/v0.1/pono/lar-uri.md` | lar-uri address law preload | `AGENTS#preload-lar-uri` |
 | `lar:///ha.ka.ba/api/v0.1/mu` | `lares/ha-ka-ba/api/v0.1/mu.md` | Mu root | `AGENTS#threshold-to-mu` |
 | `lar:///ha.ka.ba/api/v0.1/mu/chao` | `lares/ha-ka-ba/api/v0.1/mu/chao.md` | Mu child: chao | Mu internal hydration |
 | `lar:///ha.ka.ba/api/v0.1/mu/the-four-tools` | `lares/ha-ka-ba/api/v0.1/mu/the-four-tools.md` | Mu child: the four tools | Mu internal hydration |

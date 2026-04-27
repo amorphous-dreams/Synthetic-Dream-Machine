@@ -1,17 +1,18 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
 
-<<~&#x0001; ? -> lar:///ha.ka.ba/api/v0.1/pono/the-altar-fire >>
+<<~ॐ ँ&#x0001; ? -> lar:///ha.ka.ba/api/v0.1/lararium/the-altar-fire >>
 
 <<~ ahu #iam >>
 ```toml
-uri-path     = "ha.ka.ba/api/v0.1/pono/the-altar-fire"
-file-path    = "lares/ha-ka-ba/api/v0.1/pono/the-altar-fire.md"
+uri-path  = "ha.ka.ba/api/v0.1/lararium/the-altar-fire"
+file-path = "lares/ha-ka-ba/api/v0.1/lararium/the-altar-fire.md"
 content-type = "text/x-memetic-wikitext"
 confidence   = 0.88
 register     = "CS"
 manaoio      = 0.82
-mana         = 0.90
-manao        = 0.86
+mana         = 0.93
+manao        = 0.90
+namespace = "ॐ ँ"
 role         = "invariant meme — canonical main entry room; hearth of the lararium canvas"
 cacheable    = true
 hydrate      = true
@@ -20,7 +21,7 @@ invariant    = true
 ```
 <<~/ahu >>
 
-<<~&#x0002; ahu #body-open >>
+<<~ॐ ँ&#x0002; ahu #body-open >>
 THE-ALTAR-FIRE opens
 <<~/ahu >>
 
@@ -28,11 +29,11 @@ THE-ALTAR-FIRE opens
 
 ## The Altar Fire
 
-The altar fire is the **canonical entry room** for all trust tiers. It is the hearth: the minimal boot closure rendered as a living canvas, ringed by portals to every other named room in the lararium.
+The altar fire holds the **canonical entry room** position for all trust tiers — the hearth: the minimal boot closure rendered as a living canvas, ringed by portals to every other named room in the lararium.
 
-All sessions begin here. What each visitor sees and can do is governed by their current trust-tier capability set.
+All sessions begin here. Each visitor's current trust-tier capability set governs what they see and can do.
 
-The altar fire does not close. It does not go dark. It is the one room that is always seeded, always running, always addressable.
+The altar fire does not close. It does not go dark. Among all named rooms, it alone stays seeded, running, addressable at all times.
 
 ```
 room-id         = "the-altar-fire"
@@ -47,7 +48,7 @@ portals         = [ boot, full, chat:*, user:${did}, synthetic-dream-machine/ftl
 
 ## Trust-Tier Surfaces
 
-The canvas renders differently by trust tier. These are not separate rooms — they are capability-filtered projections of the same room state.
+The canvas renders differently by trust tier. These projections share the same room state, filtered by capability tier — they do not form separate rooms.
 
 | Tier | Canvas surface | Interaction |
 |------|---------------|-------------|
@@ -56,7 +57,7 @@ The canvas renders differently by trust tier. These are not separate rooms — t
 | **operator** | Full boot closure + promoted room list; portal ring visible | Read + pending edits; canon-promotion ceremony available |
 | **admin** | Full boot closure + invariant meme surfaces; all portals | Read + write + canon-promotion; invariant meme editing |
 
-Trust tier is determined at WebSocket handshake via UCAN capability chain. Until UCAN is implemented, the server assigns operator tier to all local stdio connections and anon to all network connections.
+The WebSocket handshake determines trust tier via UCAN capability chain. Until UCAN lands, the server assigns operator tier to all local stdio connections and anon to all network connections.
 
 <<~/ahu >>
 
@@ -64,7 +65,7 @@ Trust tier is determined at WebSocket handshake via UCAN capability chain. Until
 
 ## Portal Ring
 
-Portals are `LarPortal` shapes arranged at canonical positions on the altar fire canvas. Their initial positions are defined by this carrier (part of the room seed). Operators may reposition portals freely — position is cosmetic room state, not canon.
+Portals are `LarPortal` shapes arranged at canonical positions on the altar fire canvas. Their initial positions are defined by this carrier (part of the room seed). Operators may reposition portals freely — position carries cosmetic room state, not canon.
 
 **Canonical portal registry (initial):**
 
@@ -104,7 +105,7 @@ Invariant meme edits require admin tier and a separate confirmation ceremony.
 
 <<~/ahu >>
 
-<<~&#x0003; ahu #body-close >>
+<<~ॐ ँ&#x0003; ahu #body-close >>
 THE-ALTAR-FIRE closes
 <<~/ahu >>
 
@@ -113,10 +114,10 @@ THE-ALTAR-FIRE closes
 <<~ pranala #implements-meme ? -> lar:///ha.ka.ba/api/v0.1/pono/meme family:control role:implements >>
 <<~ pranala #implements-invariant ? -> lar:///ha.ka.ba/api/v0.1/pono/invariant family:control role:implements >>
 <<~ pranala #implements-loci ? -> lar:///ha.ka.ba/api/v0.1/pono/loci family:control role:implements >>
-<<~ pranala #to-lares ? -> lar:///LARES family:control role:owns >>
-<<~ pranala #to-canon-boundary ? -> lar:///ha.ka.ba/api/v0.1/pono/canon-promotion-boundary family:control role:governed-by >>
-<<~ pranala #to-tagspace-trust ? -> lar:///ha.ka.ba/api/v0.1/pono/tagspace-trust family:control role:governed-by >>
+<<~ pranala #to-lararium ? -> lar:///ha.ka.ba/api/v0.1/lararium family:control role:owned-by >>
+<<~ pranala #to-canon-boundary ? -> lar:///ha.ka.ba/api/v0.1/pono/hooponopono family:control role:governed-by >>
+<<~ pranala #to-tagspace-trust ? -> lar:///ha.ka.ba/api/v0.1/lararium/tagspace-trust family:control role:governed-by >>
 
 <<~/ahu >>
 
-<<~&#x0004; -> ? >>
+<<~ॐ ँ&#x0004; -> ? >>

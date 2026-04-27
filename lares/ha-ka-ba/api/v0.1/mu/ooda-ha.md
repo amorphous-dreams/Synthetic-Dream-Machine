@@ -1,18 +1,19 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
 
-<<~&#x0001; ? -> lar:///ha.ka.ba/api/v0.1/pono/ooda-ha >>
+<<~ॐ ँ&#x0001; ? -> lar:///ha.ka.ba/api/v0.1/mu/ooda-ha >>
 
 <<~ ahu #iam >>
 
 ```toml
-uri-path = "ha.ka.ba/api/v0.1/pono/ooda-ha"
-file-path = "lares/ha-ka-ba/api/v0.1/pono/ooda-ha.md"
+uri-path  = "ha.ka.ba/api/v0.1/mu/ooda-ha"
+file-path = "lares/ha-ka-ba/api/v0.1/mu/ooda-ha.md"
 content-type = "text/x-memetic-wikitext"
 confidence = 0.90
 register = "CS"
 manaoio = 0.88
 mana = 0.92
 manao = 0.88
+namespace = "ॐ ँ"
 role = "invariant OODA-HA loop law and loop-visibility slider"
 cacheable=true
 retain = true
@@ -46,7 +47,7 @@ A loop that skips Aftermath has stopped serving and commenced managing.
 
 <<~/ahu >>
 
-<<~&#x0002; ahu #meme-body-open >>
+<<~ॐ ँ&#x0002; ahu #meme-body-open >>
 ooda-ha opens
 <<~/ahu >>
 
@@ -132,7 +133,7 @@ A session that runs without any slider statement MUST default to `[HA^0.50]`.
 
 <<~/ahu >>
 
-<<~&#x0003; ahu #body-close >>
+<<~ॐ ँ&#x0003; ahu #body-close >>
 ooda-ha closes
 <<~/ahu >>
 
@@ -145,4 +146,4 @@ ooda-ha closes
 <<~ pranala #implements-invariant ? -> lar:///ha.ka.ba/api/v0.1/pono/invariant family:control role:implements >>
 <<~/ahu >>
 
-<<~&#x0004; -> ? >>
+<<~ॐ ँ&#x0004; -> ? >>

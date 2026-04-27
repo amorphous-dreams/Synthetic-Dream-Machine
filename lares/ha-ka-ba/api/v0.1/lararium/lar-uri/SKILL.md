@@ -1,11 +1,11 @@
 ---
 name: lar-uri
-description: "Parse, construct, validate, or audit lar: URIs under lar:///ha.ka.ba/api/v0.1/pono/lar-uri. Use this skill when working with URI well-formedness, canonical form conversion, stable address derivation, authority slot assembly, or FFZ chronometer encoding."
+description: "Parse, construct, validate, or audit lar: URIs under lar:///ha.ka.ba/api/v0.1/lararium/lar-uri. Use this skill when working with URI well-formedness, canonical form conversion, stable address derivation, authority slot assembly, or FFZ chronometer encoding."
 allowed-tools: Read, Grep, Glob, Bash, Edit, Write
 ---
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
 
-<<~&#x0001; ? -> lar:///ha.ka.ba/api/v0.1/pono/lar-uri/SKILL >>
+<<~&#x0001; ? -> lar:///ha.ka.ba/api/v0.1/lararium/lar-uri/SKILL >>
 
 <<~ ahu #iam >>
 
@@ -19,7 +19,7 @@ manaoio = 0.78
 mana = 0.82
 manao = 0.80
 role = "lar: URI operational skill — construction, validation, canonical conversion, and chronometer encoding"
-covers = ["lar:///ha.ka.ba/api/v0.1/pono/lar-uri"]
+covers = ["lar:///ha.ka.ba/api/v0.1/lararium/lar-uri"]
 constraints = [
   "S1: record form is the only form stored, transported, or compared — render targets are projections, never authoritative",
   "S2: stable address strips authority, query, and fragment — path only, lowercased",
@@ -85,7 +85,7 @@ A URI that fails any gate MUST NOT be stored or forwarded. Surface the specific 
 
 ## Stable Address Derivation
 
-Strip authority, query, and fragment. What remains is the stable named graph address.
+Strip authority, query, and fragment. The stable named graph address remains.
 
 ```
 lar://telarus:operator@enyalios/threshold.uncertain.opens/?stances=^.?.-.-.-&confidence=S:0.65&p=0.5&ffz=0.0.3.2.1#some-section
@@ -157,7 +157,7 @@ Phase glyphs are render-only labels; the canonical `?ffz=` query parameter does 
 | Act | ▶ | `&#x25B6;` | Executing — Hoʻoko gap lives here |
 | Aftermath | ↺ | `&#x21BA;` | Closing, looping back to Observe |
 
-Hoʻoko (⤴) is the execution gap within Act that surfaces into Aftermath. It is not a separate chronometer position.
+Hoʻoko (⤴) names the execution gap within Act that surfaces into Aftermath. It does not occupy a separate chronometer position.
 
 **Rules:**
 - All five positions MUST appear every time — no trailing-zero omission.
@@ -191,7 +191,7 @@ pono/lar-uri/SKILL closes
 
 ## Edges
 
-<<~ loulou lar:///ha.ka.ba/api/v0.1/pono/lar-uri >>
+<<~ loulou lar:///ha.ka.ba/api/v0.1/lararium/lar-uri >>
 <<~ loulou lar:///ha.ka.ba/docs/pono/lar-uri >>
 
 <<~ pranala #implements-meme ? -> lar:///ha.ka.ba/api/v0.1/pono/meme family:control role:implements >>

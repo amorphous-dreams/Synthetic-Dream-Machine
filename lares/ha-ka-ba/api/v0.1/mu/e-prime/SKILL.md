@@ -1,11 +1,11 @@
-<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
+---
 name: e-prime
-description: Audit or correct settled text under lar:///ha.ka.ba/api/v0.1/pono/e-prime. Use this skill when a user wants existing prose, law text, notes, or prompt material checked, flagged, or turned for E-Prime conformance, especially the canonical rule that any audited `is` or `has` must carry an inline confidence marker.
+description: Audit or correct settled text under lar:///ha.ka.ba/api/v0.1/mu/e-prime. Use this skill when a user wants existing prose, law text, notes, or prompt material checked, flagged, or turned for E-Prime conformance, especially the canonical rule that any audited `is` or `has` must carry an inline confidence marker.
 allowed-tools: Read, Grep, Glob, Bash, Edit, Write
 ---
 <!-- !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext -->
 
-<<~&#x0001; ? -> lar:///ha.ka.ba/api/v0.1/pono/e-prime/SKILL >>
+<<~&#x0001; ? -> lar:///ha.ka.ba/api/v0.1/mu/e-prime/SKILL >>
 
 <<~ ahu #iam >>
 ```toml
@@ -20,7 +20,7 @@ retain = true
 mana = 0.70
 manao = 0.76
 role = "secondary E-Prime audit skill, Hoʻoko correction surface, and settled-text conformance guide"
-covers = ["lar:///ha.ka.ba/api/v0.1/pono/e-prime"]
+covers = ["lar:///ha.ka.ba/api/v0.1/mu/e-prime"]
 constraints = [
   "S1: any audited `is` or `has` carries an inline confidence marker",
   "S2: mark-only output stays compact and names location, bucket, and reason",
@@ -35,7 +35,7 @@ skill-package-root = "ha-ka-ba/api/v0.1/pono/e-prime"
 
 Settled wording only.
 [e-prime.md](./e-prime.md) stays constitutional.
-`lar:///ha.ka.ba/api/v0.1/pono/e-prime` presses generation before this skill applies.
+`lar:///ha.ka.ba/api/v0.1/mu/e-prime` presses generation before this skill applies.
 This skill arrives when wording has already settled and needs inspection, marking, or correction.
 This skill does not weaken or reinterpret the loci.
 
@@ -48,7 +48,7 @@ E-Prime auditor opens the settled-text correction stream here.
 ## Load Contract
 
 This skill applies to settled text, not first-pass generation.
-`lar:///ha.ka.ba/api/v0.1/pono/e-prime` remains the constitutional source.
+`lar:///ha.ka.ba/api/v0.1/mu/e-prime` remains the constitutional source.
 Any surviving `is` or `has` in audited text MUST carry `[C~0.99]`.
 Marker form: `[REGISTER~0.00]` — brackets, one tilde, two decimals.
 The smallest lawful intervention carries.
@@ -263,7 +263,7 @@ E-Prime auditor closes the settled-text correction stream here.
 
 ## Edges
 
-<<~ loulou lar:///ha.ka.ba/api/v0.1/pono/e-prime >>
+<<~ loulou lar:///ha.ka.ba/api/v0.1/mu/e-prime >>
 <<~ loulou lar:///ha.ka.ba/api/v0.1/pono >>
 
 <<~ pranala #implements-meme ? -> lar:///ha.ka.ba/api/v0.1/pono/meme family:control role:implements >>

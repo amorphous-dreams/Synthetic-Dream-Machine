@@ -241,7 +241,7 @@ claude   → HTTP SSE MCP endpoint (authenticated)
 `the-altar-fire` is the canonical entry room for all trust tiers. It is the hearth: operators, users, and anon visitors all land here first. What they see and can do is governed by their current trust-tier capability set.
 
 ```
-lar:///ha.ka.ba/api/v0.1/pono/the-altar-fire
+lar:///ha.ka.ba/api/v0.1/lararium/the-altar-fire
 ```
 
 This is an **invariant meme** (to be authored). It owns the room contract, portal registry, and trust-tier welcome surfaces.
@@ -315,7 +315,7 @@ All persistent content in Lararium receives a `lar:` URI. This is the foundation
 
 | Content type | URI pattern | Example |
 |---|---|---|
-| Invariant meme | `lar:///ha.ka.ba/api/v0.1/pono/${name}` | `lar:///ha.ka.ba/api/v0.1/pono/the-altar-fire` |
+| Invariant meme | `lar:///ha.ka.ba/api/v0.1/pono/${name}` | `lar:///ha.ka.ba/api/v0.1/lararium/the-altar-fire` |
 | Wiki carrier | `lar:///${path}` | `lar:///AGENTS` |
 | RPG book meme | `lar:///synthetic-dream-machine/ftls/${slug}` | `lar:///synthetic-dream-machine/ftls/jump-drive` |
 | Imported text | `lar:///imported/${sha256-prefix}/${slug}` | `lar:///imported/3a9f/my-notes` |
@@ -748,8 +748,8 @@ MULTIPLAYER-INFINITE-CANVAS-WIKI closes
 <<~ pranala #implements-meme ? -> lar:///ha.ka.ba/api/v0.1/pono/meme family:control role:implements >>
 <<~ pranala #to-roadmap ? -> lar:///LARARIUM-NODE/ROADMAP family:control role:companion >>
 <<~ pranala #to-agents ? -> lar:///AGENTS family:control role:governed-by >>
-<<~ pranala #to-altar-fire ? -> lar:///ha.ka.ba/api/v0.1/pono/the-altar-fire family:control role:defines >>
-<<~ pranala #to-canon-promotion ? -> lar:///ha.ka.ba/api/v0.1/pono/canon-promotion-boundary family:control role:governed-by >>
+<<~ pranala #to-altar-fire ? -> lar:///ha.ka.ba/api/v0.1/lararium/the-altar-fire family:control role:defines >>
+<<~ pranala #to-canon-promotion ? -> lar:///ha.ka.ba/api/v0.1/pono/hooponopono family:control role:governed-by >>
 
 <<~/ahu >>
 

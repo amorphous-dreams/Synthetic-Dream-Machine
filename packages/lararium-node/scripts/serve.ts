@@ -264,7 +264,9 @@ async function main() {
     const match = wsUrl.pathname.match(/^\/rooms\/([^/?#]+)/);
     if (!match) { ws.close(1008, "Invalid room path"); return; }
 
-    const roomId = match[1]!;
+    // Redirect stable alias "boot" → current content-addressed room
+    const rawRoomId = match[1]!;
+    const roomId = rawRoomId === "boot" ? activeBootRoomId : rawRoomId;
     const sessionId = wsUrl.searchParams.get("sessionId") ?? crypto.randomUUID();
 
     const buffered: import("ws").RawData[] = [];

@@ -81,9 +81,10 @@ function familyColor(family: string): TLColor {
 }
 
 function frameRatingColor(rating: string): TLColor {
-  if (rating.includes("typed")) return "blue";
-  if (rating === "meme")        return "violet";
-  if (rating === "data")        return "grey";
+  if (rating === "kapu")  return "orange";
+  if (rating === "ano")   return "blue";
+  if (rating === "meme")  return "violet";
+  if (rating === "data")  return "grey";
   return "black";
 }
 

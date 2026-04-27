@@ -211,7 +211,7 @@ A JSON object mapping every indexed meme URI to its current `meme_hash`.
 {
   "lar:///AGENTS": "sha256:abc123...",
   "lar:///LARES": "sha256:def456...",
-  "lar:///ha.ka.ba/api/v0.1/pono/e-prime": "sha256:..."
+  "lar:///ha.ka.ba/api/v0.1/mu/e-prime": "sha256:..."
 }
 ```
 

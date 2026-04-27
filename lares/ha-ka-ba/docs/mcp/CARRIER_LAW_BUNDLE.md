@@ -173,13 +173,13 @@ It should also shape resource annotations such as high priority for invariant pa
 |---|---|---|
 | `meme + loci` | `loci`, `loci/iam`, several skill carriers | minimum lawful typed carrier with stable address |
 | `meme + loci + invariant` | `meme`, `invariant`, `memetic-wikitext`, `pranala`, `lar-uri`, `e-prime`, `ooda-ha`, `guest-grammar` | stable carrier that also claims compressed/core pressure |
-| `meme + loci + <specific interface>` | many `SKILL` and law-specific carriers | composable typed meme, interface family extends base bundle |
+| `meme + loci + <specific interface>` | many `SKILL` and law-specific carriers | composable ano meme, interface family extends base bundle |
 
 ### Interface-bundle rules implied by current corpus
 
 | Rule | Evidence | Compiler implication |
 |---|---|---|
-| `implements` names real outward type laws | `meme` says typed meme may satisfy several interfaces at once | validate against actual law surfaces |
+| `implements` names real outward type laws | `meme` says an ano meme may satisfy several interfaces at once | validate against actual law surfaces |
 | bundle composition stays additive | `loci` says implementing one interface does not foreclose others | multi-interface routing |
 | interface truth matters | `meme/SKILL` warns to keep `implements` truthful | no decorative capabilities |
 | `loci` often acts as the routing floor | most stable carriers include `loci` | routing/resource baseline |

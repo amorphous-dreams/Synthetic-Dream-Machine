@@ -68,7 +68,7 @@ A variable defined at depth 0 remains visible to all descendants unless shadowed
 {
   "dep_id": "dep:lar:///AGENTS#preload-e-prime->e-prime#entry",
   "from_exec_id": "lar:///AGENTS#preload-e-prime/exec",
-  "to_exec_id": "lar:///ha.ka.ba/api/v0.1/pono/e-prime#entry/exec",
+  "to_exec_id": "lar:///ha.ka.ba/api/v0.1/mu/e-prime#entry/exec",
   "pranala_family": "control",
   "pranala_role": "owns",
   "propagation": "push-forward"

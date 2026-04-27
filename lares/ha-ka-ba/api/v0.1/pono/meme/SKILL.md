@@ -97,7 +97,7 @@ Use this skill when the request asks to:
 - create or revise a meme-law surface
 - audit required versus optional structure
 - build a copy-ready meme skeleton
-- judge lifecycle posture from noise through canon typed meme
+- judge structural rating from noise through kapu
 - separate meme law from subtype law or docs residue
 
 Prefer another surface when the work concerns only:
@@ -174,13 +174,13 @@ Choose the smallest lawful shape:
 - parent + docs, when examples, tables, or research crowd the root
 - parent + `SKILL.md` + docs, when law, procedure, and explanation all need different rooms
 
-Then choose one honest lifecycle posture:
+Then choose one honest structural rating:
 
 - noise
 - data
 - meme
-- typed meme
-- canon typed meme
+- ano
+- kapu
 
 Do not round up.
 

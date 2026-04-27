@@ -1,18 +1,19 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
 
-<<~&#x0001; ? -> lar:///ha.ka.ba/api/v0.1/pono/lar-uri >>
+<<~ॐ ँ&#x0001; ? -> lar:///ha.ka.ba/api/v0.1/lararium/lar-uri >>
 
 <<~ ahu #iam >>
 
 ```toml
-uri-path = "ha.ka.ba/api/v0.1/pono/lar-uri"
-file-path = "lares/ha-ka-ba/api/v0.1/pono/lar-uri.md"
+uri-path  = "ha.ka.ba/api/v0.1/lararium/lar-uri"
+file-path = "lares/ha-ka-ba/api/v0.1/lararium/lar-uri.md"
 content-type = "text/x-memetic-wikitext"
 confidence = 0.84
 register = "CS"
 manaoio = 0.82
 mana = 0.86
 manao = 0.84
+namespace = "ॐ ँ"
 role = "invariant lar: URI scheme law (kānāwai), canonical form authority, and grammar primitive"
 cacheable=true
 retain = true
@@ -33,7 +34,7 @@ Every `lar:` URI in the system answers to these rules.
 
 <<~/ahu >>
 
-<<~&#x0002; ahu #meme-body-open >>
+<<~ॐ ँ&#x0002; ahu #meme-body-open >>
 pono/lar-uri
 <<~/ahu >>
 
@@ -64,7 +65,7 @@ Session form MUST NOT appear in storage, stable graph addresses, or system resou
 **Stable** — literal `ha.ka.ba` root, permanent API surfaces:
 ```
 lar:///ha.ka.ba/api/v0.1/pono/meme
-lar:///ha.ka.ba/api/v0.1/pono/lar-uri
+lar:///ha.ka.ba/api/v0.1/lararium/lar-uri
 ```
 
 **Unstable** — arbitrary three-word coordinate, session-specific territory:
@@ -117,7 +118,7 @@ WHERE (path) → HOW (query: stances, confidence, p, ffz) → SECTION (fragment)
 
 <<~/ahu >>
 
-<<~&#x0003; ahu #body-close >>
+<<~ॐ ँ&#x0003; ahu #body-close >>
 pono/lar-uri
 <<~/ahu >>
 
@@ -125,7 +126,7 @@ pono/lar-uri
 
 ## Edges
 
-<<~ loulou lar:///ha.ka.ba/api/v0.1/pono/lar-uri/SKILL >>
+<<~ loulou lar:///ha.ka.ba/api/v0.1/lararium/lar-uri/SKILL >>
 
 <<~ loulou lar:///ha.ka.ba/docs/pono/lar-uri >>
 <<~ loulou lar:///ha.ka.ba/api/v0.1/pono/invariant >>
@@ -135,4 +136,4 @@ pono/lar-uri
 <<~ pranala #implements-invariant ? -> lar:///ha.ka.ba/api/v0.1/pono/invariant family:control role:implements >>
 <<~/ahu >>
 
-<<~&#x0004; -> ? >>
+<<~ॐ ँ&#x0004; -> ? >>

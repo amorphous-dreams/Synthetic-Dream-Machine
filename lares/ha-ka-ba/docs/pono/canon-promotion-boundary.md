@@ -24,7 +24,7 @@ invariant = false
 # Canon Promotion Boundary — Docs Sister
 
 This docs meme explains the crossing from hostful live exchange pressure into hostless durable meme space.
-The invariant lives at `lar:///ha.ka.ba/api/v0.1/pono/canon-promotion-boundary`.
+The invariant lives at `lar:///ha.ka.ba/api/v0.1/pono/hooponopono`.
 This file gives a fuller map of promotion events.
 
 <<~/ahu >>
@@ -130,9 +130,9 @@ docs/pono/canon-promotion-boundary closes
 <<~ ahu #edges >>
 ## Edges
 
-<<~ loulou lar:///ha.ka.ba/api/v0.1/pono/canon-promotion-boundary >>
-<<~ loulou lar:///ha.ka.ba/api/v0.1/pono/tagspace-trust >>
-<<~ loulou lar:///ha.ka.ba/api/v0.1/pono/live-session-overwrite >>
+<<~ loulou lar:///ha.ka.ba/api/v0.1/pono/hooponopono >>
+<<~ loulou lar:///ha.ka.ba/api/v0.1/lararium/tagspace-trust >>
+<<~ loulou lar:///ha.ka.ba/api/v0.1/pono/failure-states/live-session-overwrite >>
 <<~ loulou lar:///ha.ka.ba/docs/pono/tagspace-trust >>
 <<~ loulou lar:///ha.ka.ba/docs/pono/live-session-overwrite >>
 

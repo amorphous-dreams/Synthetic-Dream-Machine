@@ -89,7 +89,7 @@ JSON shape extends minimal boot:
   "pranala_edges": [
     {
       "from": "lar:///AGENTS",
-      "to": "lar:///ha.ka.ba/api/v0.1/pono/e-prime",
+      "to": "lar:///ha.ka.ba/api/v0.1/mu/e-prime",
       "family": "control",
       "role": "owns",
       "socket_from": "AGENTS#preload-e-prime",

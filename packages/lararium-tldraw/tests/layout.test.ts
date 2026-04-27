@@ -37,9 +37,9 @@ function makeSnapshot(overrides: Partial<LarTLSnapshot> = {}): LarTLSnapshot {
     projectedAt: "2026-04-25T00:00:00.000Z",
     pages: [{ type: "page", id: pid, scope: "document", name: "Minimal Boot", compiledAt: "2026-04-25T00:00:00.000Z", memeCount: 3 }],
     frames: [
-      { type: "frame", id: agentsId, scope: "document", pageId: pid, parentId: null, uri: "lar:///AGENTS", name: "AGENTS", depth: 0, frameKind: "meme", rating: "typed meme", implements: [] },
-      { type: "frame", id: muId,     scope: "document", pageId: pid, parentId: null, uri: "lar:///ha.ka.ba/api/v0.1/mu", name: "mu", depth: 1, frameKind: "meme", rating: "typed meme", implements: [] },
-      { type: "frame", id: laresId,  scope: "document", pageId: pid, parentId: null, uri: "lar:///LARES", name: "LARES", depth: 1, frameKind: "meme", rating: "typed meme", implements: [] },
+      { type: "frame", id: agentsId, scope: "document", pageId: pid, parentId: null, uri: "lar:///AGENTS", name: "AGENTS", depth: 0, frameKind: "meme", rating: "ano", implements: [] },
+      { type: "frame", id: muId,     scope: "document", pageId: pid, parentId: null, uri: "lar:///ha.ka.ba/api/v0.1/mu", name: "mu", depth: 1, frameKind: "meme", rating: "ano", implements: [] },
+      { type: "frame", id: laresId,  scope: "document", pageId: pid, parentId: null, uri: "lar:///LARES", name: "LARES", depth: 1, frameKind: "meme", rating: "ano", implements: [] },
       { type: "frame", id: edgesAhuId, scope: "document", pageId: pid, parentId: agentsId, uri: "lar:///AGENTS#edges", name: "#edges", depth: 0.5, frameKind: "ahu", rating: "socket", implements: [] },
     ],
     arrows: [

@@ -15,6 +15,15 @@ import { renderToTldraw, DEFAULT_ROOMS } from "@lararium/tldraw";
 
 const runtime = createLarariumRuntime({ writeback: false });
 
+// Optional: live canvas server bridge (set LARARIUM_HTTP_URL=http://127.0.0.1:4321)
+const CANVAS_HTTP = process.env["LARARIUM_HTTP_URL"]?.replace(/\/$/, "") ?? null;
+async function fetchCanvas(path: string): Promise<unknown> {
+  if (!CANVAS_HTTP) throw new Error("LARARIUM_HTTP_URL not set — canvas bridge unavailable");
+  const res = await fetch(`${CANVAS_HTTP}${path}`);
+  if (!res.ok) throw new Error(`canvas bridge ${path} → ${res.status}`);
+  return res.json();
+}
+
 const server = new McpServer({
   name: "lararium",
   version: "0.1.0",
@@ -314,13 +323,22 @@ server.registerTool(
 server.registerTool(
   "lararium-room_list",
   {
-    description: "List the available Lararium canvas rooms (spaces) with their filter expressions and tldraw page IDs.",
+    description: "List the available Lararium canvas rooms (spaces) with their filter expressions and tldraw page IDs. If LARARIUM_HTTP_URL is set, also reports which rooms are live on the canvas server.",
     inputSchema: {},
   },
   async () => {
-    const rows = DEFAULT_ROOMS.map((r) =>
-      `${r.id.padEnd(12)} page:${(r.tlPageId ?? r.id).replace("page:", "").padEnd(20)} filter: ${r.filter}`
-    );
+    let liveRooms: string[] | null = null;
+    try {
+      const data = await fetchCanvas("/api/rooms") as { rooms: string[]; activeBootRoomId: string };
+      liveRooms = data.rooms;
+    } catch { /* bridge unavailable — degrade gracefully */ }
+
+    const rows = DEFAULT_ROOMS.map((r) => {
+      const pageId = (r.tlPageId ?? r.id).replace("page:", "");
+      const live = liveRooms ? (liveRooms.some((id) => id.startsWith(r.id)) ? " [live]" : "") : "";
+      return `${r.id.padEnd(12)} page:${pageId.padEnd(20)} filter: ${r.filter}${live}`;
+    });
+    if (liveRooms) rows.push(`\nlive server rooms: ${liveRooms.join(", ")}`);
     return { content: [{ type: "text" as const, text: rows.join("\n") }] };
   },
 );

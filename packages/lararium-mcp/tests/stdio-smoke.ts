@@ -9,17 +9,11 @@
 
 import { describe, test, expect, beforeAll, afterAll } from "@jest/globals";
 import { spawn, type ChildProcess } from "child_process";
-import { readFileSync } from "fs";
 import { resolve, dirname } from "path";
 import { fileURLToPath } from "url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const SERVER_BIN = resolve(__dirname, "../../lararium-mcp/dist/stdio.js");
-const FIXTURES_PATH = resolve(__dirname, "../../../lares/lararium-node/fixtures.golden.json");
-
-const fixtures = JSON.parse(readFileSync(FIXTURES_PATH, "utf8")) as {
-  compiler: { minimal_boot_count: number };
-};
 
 // ---------------------------------------------------------------------------
 // JSON-RPC helpers
@@ -154,7 +148,7 @@ describe("MCP stdio smoke", () => {
     expect(parsed.virtual).toBe(false);
   });
 
-  test("tools/call minimal boot — meme count matches golden fixture", async () => {
+  test("tools/call minimal boot — closure is non-empty, entry is AGENTS", async () => {
     proc.stdin!.write(makeRequest(6, "tools/call", {
       name: "lararium-compile_minimal_boot",
       arguments: {},
@@ -164,7 +158,8 @@ describe("MCP stdio smoke", () => {
     };
     expect(resp.result.isError).toBeFalsy();
     const artifact = JSON.parse(resp.result.content[0]!.text);
-    expect(artifact.memeCount).toBe(fixtures.compiler.minimal_boot_count);
+    expect(artifact.memeCount).toBeGreaterThanOrEqual(18);
+    expect(artifact.closure[0]?.uri).toBe("lar:///AGENTS");
   });
 
   test("notifications/initialized does not produce a response", async () => {

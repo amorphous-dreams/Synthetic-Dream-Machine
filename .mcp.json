@@ -1,9 +1,19 @@
 {
   "mcpServers": {
-    "lararium": {
-      "command": "node",
+    "playwright": {
+      "command": "npx",
+      "args": ["@playwright/mcp@latest", "--extension"],
+      "env": {
+        "PLAYWRIGHT_MCP_EXTENSION_TOKEN": "TobGnoZQCvsWHH07J_zxs0ADEoz5KJBRAbgfLDLdfT4"
+      }
+    },
+"lararium-mcp": {
+      "command": "/home/joshu/.nvm/versions/node/v24.13.1/bin/node",
       "args": ["packages/lararium-mcp/dist/stdio.js"],
-      "cwd": "."
+      "cwd": "/home/joshu/Synthetic-Dream-Machine",
+      "env": {
+        "LARARIUM_HTTP_URL": "http://127.0.0.1:4321"
+      }
     },
     "lares-probe-runner": {
       "command": ".venv/bin/python",

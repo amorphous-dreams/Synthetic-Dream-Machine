@@ -131,7 +131,7 @@ Common patterns:
 |---|---|
 | `meme + loci` | minimum typed carrier with stable address pressure |
 | `meme + loci + invariant` | boot/core pressure with stable routing |
-| `meme + loci + specific interface` | typed meme whose family extends the routing floor |
+| `meme + loci + specific interface` | ano meme whose family extends the routing floor |
 
 <<~/ahu >>
 

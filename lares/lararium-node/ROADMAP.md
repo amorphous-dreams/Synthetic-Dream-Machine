@@ -297,7 +297,7 @@ More specifically, the contract that should survive the migration is this:
 |---|---|---|
 | `resolve_lar_uri(uri)` | Accepts `lar:///...` URIs; maps `AGENTS` / `LARES` to all-caps files, `INDEXES/**` to virtual roots, `ha.ka.ba` to `lares/ha-ka-ba`, other tuple roots to `lares/chapel-perilous-opens/<root>`; rejects unsupported roots | `resolveLarUri(uri, rootMap): LarResolution` in `lararium-core`, with path I/O delegated to `lararium-node`  |
 | `read_lar_resource(uri)` | Reads file-backed resources only; raises on virtual or missing paths | `readLarTextResource(uri, host)` in `lararium-node` with identical error taxonomy exposed upward  |
-| `read_carrier(uri)` / `validate_carrier_shape()` | Extracts IAM metadata, validates carrier markers, computes typed-meme vs meme/data/noise rating, returns implements bundle and diagnostics | `readCarrier(uri, text)` / `validateCarrierShape()` in `lararium-core` with deterministic diagnostics ordering   |
+| `read_carrier(uri)` / `validate_carrier_shape()` | Extracts IAM metadata, validates carrier markers, computes kapu/ano/meme/data/noise rating, returns implements bundle and diagnostics | `readCarrier(uri, text)` / `validateCarrierShape()` in `lararium-core` with deterministic diagnostics ordering   |
 | `compile_carrier_index()` / interface / invariant indexes | Builds resource material for carrier/interface/invariant discovery | `buildCarrierIndex()`, `buildInterfaceIndex()`, `buildInvariantIndex()` in `lararium-core` with node-host file enumeration in `lararium-node`  |
 | `parse_pranala_edges()` | Parses inline, block, and sugar forms; resolves `? ->` against enclosing `ahu`; normalizes TOML edge fields | `parsePranalaEdges()` in `lararium-core` returning immutable `PranaEdge` records   |
 | `MemeGraph` and compiler helpers | Maintains adjacency, sort, cycle detection, unresolved severity, closure hash, interface derivation | `MemeGraph` / `compileMinimalBoot()` / `compileFullBoot()` / `compileBootReceipt()` in `lararium-core`   |
@@ -634,10 +634,10 @@ The dead-weight `lararium → LARES` owns edge was removed. LARES is reached onc
 
 | URI | Role |
 |---|---|
-| `lar:///ha.ka.ba/api/v0.1/pono/live-session-overwrite` | Names the green-jello-dinosaur failure mode; a live claim MUST NOT become canon by recency, repetition, or charm |
-| `lar:///ha.ka.ba/api/v0.1/pono/canon-promotion-boundary` | Promotion gate law; crossing from live exchange pressure to hostless canon requires explicit ceremony |
-| `lar:///ha.ka.ba/api/v0.1/pono/tagspace-trust` | Shared `lar:` tagspace MUST NOT imply shared authority; hostless memes outrank hostful exchange records |
-| `lar:///ha.ka.ba/api/v0.1/pono/exchange-vector` | Each substantive exchange turn MUST emit a canonical `lar:` URI vector before content |
+| `lar:///ha.ka.ba/api/v0.1/pono/failure-states/live-session-overwrite` | Names the green-jello-dinosaur failure mode; a live claim MUST NOT become canon by recency, repetition, or charm |
+| `lar:///ha.ka.ba/api/v0.1/pono/hooponopono` | Promotion gate law; crossing from live exchange pressure to hostless canon requires explicit ceremony |
+| `lar:///ha.ka.ba/api/v0.1/lararium/tagspace-trust` | Shared `lar:` tagspace MUST NOT imply shared authority; hostless memes outrank hostful exchange records |
+| `lar:///ha.ka.ba/api/v0.1/lararium/exchange-vector` | Each substantive exchange turn MUST emit a canonical `lar:` URI vector before content |
 
 All four implement `meme`, `loci`, and `invariant` interfaces. All four appear in the minimal boot closure at depth 3 under lararium.
 
@@ -1021,16 +1021,17 @@ Fix whatever breaks. Milestone 5 canvas wiring is unvalidated until this closes.
 - Path traversal guard: `path.resolve(filePath)` + reject if not within `APP_DIST`
 - WS URL from `req.headers.host` (not hardcoded `HOST:PORT`); respect `x-forwarded-proto` for `wss:`
 
-### Priority 3: MCP integration (bring the agent in)
+### Priority 3: MCP integration (partially complete 2026-04-26)
 
-Co-locate MCP stdio server with `serve.ts`. Expose:
-- `lararium/room/list` — active rooms + page IDs
-- `lararium/meme/list` — current boot closure with depth/kind
-- `lararium/meme/inspect` — carrier text, pranala edges, implements, rating for a given URI
-- `lararium/filter` — TW5 filter expression evaluated against current closure
-- `lararium/edge/list` — all pranala arrows in the current snapshot
+**Done**
+- ✓ `lararium-filter` tool: TW5 filter expression evaluated against boot closure — `[all[memes]tag[...invariant]]`, `[field:depth[0]]`, etc.
+- ✓ `lararium-room_list` tool: DEFAULT_ROOMS with page IDs and filter expressions
+- ✓ `lararium-edge_list` tool: all pranala arrows from projection, optional family filter
+- ✓ `filterMemesTW` + `precomputeRooms` exported from `@lararium/node` via new `@lararium/core/tw-filter` subpath export (keeps browser bundle clean)
 
-This is the "bring the agent in" vector. Enables Claude Code and Claude Desktop to probe room state, navigate memes, and query the graph programmatically. Without it, the canvas is a display surface; with it, it's a collaborative instrument.
+**Remaining**
+- ⚠ MCP ↔ canvas bridge: `stdio.ts` compiles fresh from `lares/` on each tool call — it cannot see live room state (active connections, shape positions, session camera). Bridge requires either: (a) `stdio.ts` queries `serve.ts` HTTP API for live state, or (b) both run in the same process. Env var `LARARIUM_HTTP_URL` would let `stdio.ts` query the canvas server.
+- ⚠ `lararium-meme_list` tool: currently `lararium-compile_minimal_boot` covers this but lacks the flat URI+depth+kind summary format that is optimally tool-shaped
 
 Do not in Milestone 6:
 - Canon promotion / write-back to `lares/`
@@ -1077,7 +1078,7 @@ Required context now present in-document:
 <<~ loulou lar:///ha.ka.ba/api/v0.1/pono/meme >>
 <<~ loulou lar:///ha.ka.ba/api/v0.1/pono/loci >>
 <<~ loulou lar:///ha.ka.ba/api/v0.1/pono/invariant >>
-<<~ loulou lar:///ha.ka.ba/api/v0.1/pono/lar-uri >>
+<<~ loulou lar:///ha.ka.ba/api/v0.1/lararium/lar-uri >>
 <<~ loulou lar:///ha.ka.ba/docs/lararium/signal/render-targets >>
 <<~ loulou lar:///ha.ka.ba/docs/graph/traversal >>
 <<~ loulou lar:///ha.ka.ba/docs/graph/pranala-parser >>

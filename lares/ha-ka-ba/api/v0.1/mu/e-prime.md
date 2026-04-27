@@ -1,17 +1,18 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
 
-<<~&#x0001; ? -> lar:///ha.ka.ba/api/v0.1/pono/e-prime >>
+<<~ॐ ँ&#x0001; ? -> lar:///ha.ka.ba/api/v0.1/mu/e-prime >>
 
 <<~ ahu #iam >>
 ```toml
-uri-path = "ha.ka.ba/api/v0.1/pono/e-prime"
-file-path = "lares/ha-ka-ba/api/v0.1/pono/e-prime.md"
+uri-path  = "ha.ka.ba/api/v0.1/mu/e-prime"
+file-path = "lares/ha-ka-ba/api/v0.1/mu/e-prime.md"
 content-type = "text/x-memetic-wikitext"
 confidence = 0.72
 register = "SC"
 manaoio = 0.76
 mana = 0.72
 manao = 0.78
+namespace = "ॐ ँ"
 role = "active language-discipline law (kānāwai), certainty-pressure regulator, next-generation pressure surface, and secondary audit governor for outward text"
 cacheable=true
 retain = true
@@ -35,7 +36,7 @@ Each output unit bends toward observation, relation, action, stance, and earned 
 
 <<~/ahu >>
 
-<<~&#x0002; ahu #meme-body-open >>
+<<~ॐ ँ&#x0002; ahu #meme-body-open >>
 pono/e-prime
 <<~/ahu >>
 
@@ -157,7 +158,7 @@ Sustained operation at `[E^1.00]` that produces tortured prose without gain cons
 
 <<~/ahu >>
 
-<<~&#x0003; ahu #body-close >>
+<<~ॐ ँ&#x0003; ahu #body-close >>
 pono/e-prime
 <<~/ahu >>
 
@@ -165,7 +166,7 @@ pono/e-prime
 
 ## Edges
 
-<<~ loulou lar:///ha.ka.ba/api/v0.1/pono/e-prime/SKILL >>
+<<~ loulou lar:///ha.ka.ba/api/v0.1/mu/e-prime/SKILL >>
 <<~ loulou lar:///ha.ka.ba/docs/pono/e-prime >>
 
 <<~ pranala #implements-meme ? -> lar:///ha.ka.ba/api/v0.1/pono/meme family:control role:implements >>
@@ -173,4 +174,4 @@ pono/e-prime
 <<~ pranala #implements-invariant ? -> lar:///ha.ka.ba/api/v0.1/pono/invariant family:control role:implements >>
 <<~/ahu >>
 
-<<~&#x0004; -> ? >>
+<<~ॐ ँ&#x0004; -> ? >>

@@ -1,17 +1,18 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
 
-<<~&#x0001; ? -> lar:///ha.ka.ba/api/v0.1/pono/live-session-overwrite >>
+<<~⊙&#x0001; ? -> lar:///ha.ka.ba/api/v0.1/pono/failure-states/live-session-overwrite >>
 
 <<~ ahu #iam >>
 ```toml
-uri-path = "ha.ka.ba/api/v0.1/pono/live-session-overwrite"
-file-path = "lares/ha-ka-ba/api/v0.1/pono/live-session-overwrite.md"
+uri-path  = "ha.ka.ba/api/v0.1/pono/failure-states/live-session-overwrite"
+file-path = "lares/ha-ka-ba/api/v0.1/pono/failure-states/live-session-overwrite.md"
 content-type = "text/x-memetic-wikitext"
 confidence = 0.76
 register = "CS"
 manaoio = 0.70
 mana = 0.82
 manao = 0.84
+namespace    = "⊙"
 role = "invariant bug law for preventing live session claims from masquerading as canon"
 cacheable = true
 retain = true
@@ -29,7 +30,7 @@ A recent, vivid, high-authority exchange claim MUST NOT become canon merely beca
 
 <<~/ahu >>
 
-<<~&#x0002; ahu #meme-body-open >>
+<<~⊙&#x0002; ahu #meme-body-open >>
 live-session-overwrite opens
 <<~/ahu >>
 
@@ -73,16 +74,16 @@ If the node records the claim and marks promotion pressure separately, boundary 
 
 <<~/ahu >>
 
-<<~&#x0003; ahu #body-close >>
+<<~⊙&#x0003; ahu #body-close >>
 live-session-overwrite closes
 <<~/ahu >>
 
 <<~ ahu #edges >>
 ## Edges
 
-<<~ loulou lar:///ha.ka.ba/api/v0.1/pono/tagspace-trust >>
+<<~ loulou lar:///ha.ka.ba/api/v0.1/lararium/tagspace-trust >>
 <<~ loulou lar:///ha.ka.ba/api/v0.1/pono/canon-promotion-boundary >>
-<<~ loulou lar:///ha.ka.ba/api/v0.1/pono/lar-uri >>
+<<~ loulou lar:///ha.ka.ba/api/v0.1/lararium/lar-uri >>
 <<~ loulou lar:///ha.ka.ba/api/v0.1/pono/meme >>
 <<~ loulou lar:///ha.ka.ba/api/v0.1/pono/invariant >>
 
@@ -91,4 +92,4 @@ live-session-overwrite closes
 <<~ pranala #implements-invariant ? -> lar:///ha.ka.ba/api/v0.1/pono/invariant family:control role:implements >>
 <<~/ahu >>
 
-<<~&#x0004; -> ? >>
+<<~⊙&#x0004; -> ? >>

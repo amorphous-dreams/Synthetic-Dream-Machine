@@ -1,17 +1,18 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
 
-<<~&#x0001; ? -> lar:///ha.ka.ba/api/v0.1/pono/tagspace-trust >>
+<<~ॐ ँ&#x0001; ? -> lar:///ha.ka.ba/api/v0.1/lararium/tagspace-trust >>
 
 <<~ ahu #iam >>
 ```toml
-uri-path = "ha.ka.ba/api/v0.1/pono/tagspace-trust"
-file-path = "lares/ha-ka-ba/api/v0.1/pono/tagspace-trust.md"
+uri-path  = "ha.ka.ba/api/v0.1/lararium/tagspace-trust"
+file-path = "lares/ha-ka-ba/api/v0.1/lararium/tagspace-trust.md"
 content-type = "text/x-memetic-wikitext"
 confidence = 0.78
 register = "CS"
 manaoio = 0.72
 mana = 0.82
 manao = 0.86
+namespace = "ॐ ँ"
 role = "invariant law for shared lar tagspace precedence across system memes and live exchange records"
 cacheable = true
 retain = true
@@ -30,7 +31,7 @@ Hostless canonical memes carry stable law; hostful exchange records carry situat
 
 <<~/ahu >>
 
-<<~&#x0002; ahu #meme-body-open >>
+<<~ॐ ँ&#x0002; ahu #meme-body-open >>
 tagspace-trust opens
 <<~/ahu >>
 
@@ -76,7 +77,7 @@ Explicit operator-mediated promotion MAY move content upward by creating or revi
 
 <<~/ahu >>
 
-<<~&#x0003; ahu #body-close >>
+<<~ॐ ँ&#x0003; ahu #body-close >>
 tagspace-trust closes
 <<~/ahu >>
 
@@ -86,13 +87,13 @@ tagspace-trust closes
 <<~ loulou lar:///ha.ka.ba/api/v0.1/pono/meme >>
 <<~ loulou lar:///ha.ka.ba/api/v0.1/pono/loci >>
 <<~ loulou lar:///ha.ka.ba/api/v0.1/pono/invariant >>
-<<~ loulou lar:///ha.ka.ba/api/v0.1/pono/lar-uri >>
-<<~ loulou lar:///ha.ka.ba/api/v0.1/pono/live-session-overwrite >>
-<<~ loulou lar:///ha.ka.ba/api/v0.1/pono/canon-promotion-boundary >>
+<<~ loulou lar:///ha.ka.ba/api/v0.1/lararium/lar-uri >>
+<<~ loulou lar:///ha.ka.ba/api/v0.1/pono/failure-states/live-session-overwrite >>
+<<~ loulou lar:///ha.ka.ba/api/v0.1/pono/hooponopono >>
 
 <<~ pranala #implements-meme ? -> lar:///ha.ka.ba/api/v0.1/pono/meme family:control role:implements >>
 <<~ pranala #implements-loci ? -> lar:///ha.ka.ba/api/v0.1/pono/loci family:control role:implements >>
 <<~ pranala #implements-invariant ? -> lar:///ha.ka.ba/api/v0.1/pono/invariant family:control role:implements >>
 <<~/ahu >>
 
-<<~&#x0004; -> ? >>
+<<~ॐ ँ&#x0004; -> ? >>

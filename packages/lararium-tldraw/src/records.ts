@@ -94,7 +94,7 @@ export interface LarTLFrame {
   readonly depth: number;
   /** "meme" for carrier frames, "ahu" for socket frames */
   readonly frameKind: "meme" | "ahu";
-  /** carrier rating: typed meme | meme | data | noise */
+  /** carrier rating: kapu | ano | meme | data | noise */
   readonly rating: string;
   /** implements list from carrier */
   readonly implements: readonly string[];

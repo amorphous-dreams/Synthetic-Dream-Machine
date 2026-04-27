@@ -12,19 +12,31 @@ import { parsePranalaEdges, type PranaEdge } from "./pranala-parser.js";
 // ---------------------------------------------------------------------------
 
 const DOCTYPE_RE   = /<!--\s*<<~\s*!DOCTYPE\s*=\s*lar:\/\/\/[^>]+>>\s*-->/;
-const OPENER_RE    = /<<~(?:&#x[0-9a-fA-F]+;\s*)?\?\s*->\s*(lar:\/\/\/[^\s>]+)\s*>>/;
+// Kernel-tier sigils carry a Unicode control character — optionally prefixed by namespace glyphs.
+// Standard kernel range: &#x0001;–&#x000F; (&#x000[1-9a-fA-F])
+// Kapu extended range:   &#x0011;–&#x0014; (&#x001[1-4])
+// Operator sigils have no control character; control char presence marks elevated trust.
+const KERNEL_PREFIX = /(?:[^&<>\n]*&#x(?:000[1-9a-fA-F]|001[1-4]);\s*)?/;
+const OPENER_RE    = new RegExp(`<<~${KERNEL_PREFIX.source}\\?\\s*->\\s*(lar:\\/\\/\\/[^\\s>]+)\\s*>>`);
 const IAM_BLOCK_RE = /<<~\s*ahu\s+#iam\s*>>([\s\S]*?)<<~\/ahu\s*>>/;
 const TOML_FENCE_RE = /```toml\s*([\s\S]*?)```/;
-const BODY_OPEN_RE  = /<<~(?:&#x[0-9a-fA-F]+;\s*)?ahu\s+#(?:meme-)?body-open\s*>>/;
-const BODY_CLOSE_RE = /<<~(?:&#x[0-9a-fA-F]+;\s*)?ahu\s+#body-close\s*>>/;
-const RETURN_THROAT_RE = /<<~(?:&#x[0-9a-fA-F]+;\s*)?->\s*\?\s*>>/;
+const BODY_OPEN_RE  = new RegExp(`<<~${KERNEL_PREFIX.source}ahu\\s+#(?:meme-)?body-open\\s*>>`);
+const BODY_CLOSE_RE = new RegExp(`<<~${KERNEL_PREFIX.source}ahu\\s+#body-close\\s*>>`);
+const RETURN_THROAT_RE = new RegExp(`<<~${KERNEL_PREFIX.source}->\\s*\\?\\s*>>`);
 const OODA_GLYPHS = ["✶", "⏿", "◇", "▶", "⤴", "↺"] as const;
 
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
 
-export type CarrierRating = "typed meme" | "meme" | "data" | "noise";
+// Five-bucket rating — law-of-5s aligned.
+// kapu > ano > meme > data > noise
+// kapu  — above base namespace; kernel/sacred tier; cannot be overridden by lower tiers
+// ano   — declares its kind through an implements bundle (Hawaiian: kind, type, nature)
+// meme  — valid carrier, no declared interfaces
+// data  — invalid but has metadata or opener
+// noise — unrecognizable
+export type CarrierRating = "kapu" | "ano" | "meme" | "data" | "noise";
 export type DepthState = "resolved" | "absent";
 
 export interface CarrierShape {
@@ -98,7 +110,6 @@ export function extractInterfaceBundle(metadata: Record<string, unknown>): strin
 export function validateCarrierShape(
   text: string,
   metadata: Record<string, unknown>,
-  uri: string,
   edges: PranaEdge[],
 ): CarrierShape {
   const diagnostics: Diagnostic[] = [];
@@ -162,8 +173,10 @@ export function validateCarrierShape(
     if (edge.family === "control" && edge.role === "implements") implSet.add(edge.toUri);
   }
 
+  const KAPU_URI = "lar:///ha.ka.ba/api/v0.1/pono/kapu";
   let rating: CarrierRating;
-  if (valid && implSet.size > 0) rating = "typed meme";
+  if (valid && implSet.has(KAPU_URI)) rating = "kapu";
+  else if (valid && implSet.size > 0) rating = "ano";
   else if (valid) rating = "meme";
   else if (Object.keys(metadata).length > 0 || openerMatch) rating = "data";
   else rating = "noise";
@@ -180,7 +193,7 @@ export function validateCarrierShape(
 export function parseCarrier(uri: string, text: string): CarrierRecord {
   const { metadata, diagnostics: metaDiags } = extractIamMetadata(text);
   const edges = parsePranalaEdges(uri, text);
-  let shape = validateCarrierShape(text, metadata, uri, edges);
+  let shape = validateCarrierShape(text, metadata, edges);
 
   if (metaDiags.length > 0) {
     shape = {

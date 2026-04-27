@@ -213,14 +213,14 @@ function LarariumCommandPalette({
   useEffect(() => { inputRef.current?.focus(); }, []);
 
   // Build flat unified item list: rooms first (always shown when no query), then memes
-  const roomItems: PaletteItem[] = DEFAULT_ROOMS
+  const roomItems: Extract<PaletteItem, { kind: "room" }>[] = DEFAULT_ROOMS
     .filter((r) => !query || r.name.toLowerCase().includes(query.toLowerCase()) || r.id.includes(query.toLowerCase()))
-    .map((r) => ({ kind: "room", id: r.id, name: r.name, glyph: ROOM_GLYPH[r.id] ?? "⬡" }));
+    .map((r) => ({ kind: "room" as const, id: r.id, name: r.name, glyph: ROOM_GLYPH[r.id] ?? "⬡" }));
 
-  const memeItems: PaletteItem[] = (query
+  const memeItems: Extract<PaletteItem, { kind: "meme" }>[] = (query
     ? memes.filter((m) => m.uri.toLowerCase().includes(query.toLowerCase()))
     : memes
-  ).slice(0, 12).map((m) => ({ kind: "meme", uri: m.uri, depth: m.depth, memeKind: m.kind }));
+  ).slice(0, 12).map((m) => ({ kind: "meme" as const, uri: m.uri, depth: m.depth, memeKind: m.kind }));
 
   const items: PaletteItem[] = [...roomItems, ...memeItems];
 

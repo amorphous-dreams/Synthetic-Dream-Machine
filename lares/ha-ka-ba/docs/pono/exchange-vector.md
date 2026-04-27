@@ -24,7 +24,7 @@ invariant = false
 # Exchange Vector — Docs Sister
 
 This docs meme explains how each substantive exchange can carry a canonical `lar:` vector and a rendered HUD line.
-The law lives at `lar:///ha.ka.ba/api/v0.1/pono/exchange-vector`.
+The law lives at `lar:///ha.ka.ba/api/v0.1/lararium/exchange-vector`.
 This file gives examples and operator-facing guidance.
 
 <<~/ahu >>
@@ -110,8 +110,8 @@ docs/pono/exchange-vector closes
 <<~ ahu #edges >>
 ## Edges
 
-<<~ loulou lar:///ha.ka.ba/api/v0.1/pono/exchange-vector >>
-<<~ loulou lar:///ha.ka.ba/api/v0.1/pono/lar-uri >>
+<<~ loulou lar:///ha.ka.ba/api/v0.1/lararium/exchange-vector >>
+<<~ loulou lar:///ha.ka.ba/api/v0.1/lararium/lar-uri >>
 <<~ loulou lar:///ha.ka.ba/docs/lararium/signal/render-targets >>
 <<~ loulou lar:///ha.ka.ba/docs/pono/tagspace-trust >>
 

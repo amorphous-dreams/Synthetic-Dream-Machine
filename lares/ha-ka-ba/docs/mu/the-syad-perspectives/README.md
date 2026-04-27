@@ -242,7 +242,7 @@ They do not govern the live fold.
 ## Edges
 
 - `lar:///ha.ka.ba/api/v0.1/mu/the-syad-perspectives`
-- `lar:///ha.ka.ba/api/v0.1/pono/e-prime`
+- `lar:///ha.ka.ba/api/v0.1/mu/e-prime`
 
 <<~ pranala #implements-meme ? -> lar:///ha.ka.ba/api/v0.1/pono/meme family:control role:implements >>
 <<~ pranala #implements-loci ? -> lar:///ha.ka.ba/api/v0.1/pono/loci family:control role:implements >>

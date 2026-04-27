@@ -46,9 +46,9 @@ This room should test whether the older failure-weather language wants:
 
 Current comparison surfaces:
 
-- `lar:///ha.ka.ba/api/v0.1/pono/e-prime`
+- `lar:///ha.ka.ba/api/v0.1/mu/e-prime`
 - `lar:///ha.ka.ba/api/v0.1/mu/the-four-tools`
-- `lar:///ha.ka.ba/api/v0.1/pono/ooda-ha`
+- `lar:///ha.ka.ba/api/v0.1/mu/ooda-ha`
 
 <<~/ahu >>
 
@@ -81,9 +81,9 @@ docs/lararium/preferences/degraded-epistemic-weather closes
 ## Edges
 
 <<~ loulou lar:///ha.ka.ba/docs/lararium/preferences/epistemology >>
-<<~ loulou lar:///ha.ka.ba/api/v0.1/pono/e-prime >>
+<<~ loulou lar:///ha.ka.ba/api/v0.1/mu/e-prime >>
 <<~ loulou lar:///ha.ka.ba/api/v0.1/mu/the-four-tools >>
-<<~ loulou lar:///ha.ka.ba/api/v0.1/pono/ooda-ha >>
+<<~ loulou lar:///ha.ka.ba/api/v0.1/mu/ooda-ha >>
 
 <<~ pranala #implements-meme ? -> lar:///ha.ka.ba/api/v0.1/pono/meme family:control role:implements >>
 <<~ pranala #implements-loci ? -> lar:///ha.ka.ba/api/v0.1/pono/loci family:control role:implements >>

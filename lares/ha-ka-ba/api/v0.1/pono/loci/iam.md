@@ -26,7 +26,7 @@ This meme freezes the surviving field surface for live carriers. It asks each fi
 
 This meme does not solve weak metadata by adding new buckets. It sharpens the surviving buckets and lets informative weakness remain visible.
 
-**Lifecycle Note:** The five-bucket lifecycle (noise → data → meme → typed meme → canon typed meme) remains canonical for all meme law. Here `data` names structured language an AI can use without the memetic wrappers. This law governs the field set, not the lifecycle stages themselves.
+**Rating Note:** The five-bucket structural rating (noise → data → meme → ano → kapu) is canonical for all meme law. Here `data` names structured language an AI can use without the memetic wrappers. This law governs the field set, not the rating buckets themselves. Promotion to lares/ canon is a separate ceremony.
 
 <<~&#x0002; ahu #meme-body-open >>
 IAM opens the metadata law stream here.

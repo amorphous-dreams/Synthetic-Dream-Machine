@@ -1,11 +1,26 @@
 {
   "servers": {
-    "lararium": {
+    // playwright — Chrome extension mode (requires PLAYWRIGHT_MCP_EXTENSION_TOKEN)
+    "playwright": {
       "type": "stdio",
-      "command": "node",
+      "command": "npx",
+      "args": ["@playwright/mcp@latest", "--extension"],
+      "env": {
+        "PLAYWRIGHT_MCP_EXTENSION_TOKEN": "TobGnoZQCvsWHH07J_zxs0ADEoz5KJBRAbgfLDLdfT4"
+      }
+    },
+    // lararium-mcp — stdio adapter over the lararium-node runtime
+    // Source: packages/lararium-mcp/src/stdio.ts
+    // Build:  pnpm --filter @lararium/mcp build
+    // Bridge: LARARIUM_HTTP_URL connects to the live canvas serve.ts (port 4321)
+    "lararium-mcp": {
+      "type": "stdio",
+      "command": "/home/joshu/.nvm/versions/node/v24.13.1/bin/node",
       "args": ["packages/lararium-mcp/dist/stdio.js"],
-      "cwd": ".",
-      "env": {}
+      "cwd": "/home/joshu/Synthetic-Dream-Machine",
+      "env": {
+        "LARARIUM_HTTP_URL": "http://127.0.0.1:4321"
+      }
     },
   }
 }
