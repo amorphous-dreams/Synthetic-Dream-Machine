@@ -15,7 +15,7 @@
 
 import { useReducer, useEffect, useState, useRef, useCallback } from "react";
 import { createPortal } from "react-dom";
-import { INITIAL_VIEW_STATE, viewStateReducer } from "@lararium/tldraw";
+import { INITIAL_VIEW_STATE, viewStateReducer, DEFAULT_ROOMS } from "@lararium/tldraw";
 import type { LarViewAction, LarViewState, ZoomLevel } from "@lararium/tldraw";
 import { LarariumCanvas } from "./LarariumCanvas.js";
 import type { MemeEntry } from "./App.js";
@@ -185,6 +185,18 @@ function LarariumFooter({ memes, navState, zoomLevel }: { memes: MemeEntry[]; na
 // Command palette  (⌘K)
 // ---------------------------------------------------------------------------
 
+// Flat item list for unified keyboard nav across sections
+type PaletteItem =
+  | { kind: "room"; id: string; name: string; glyph: string }
+  | { kind: "meme"; uri: string; depth: number; memeKind: string };
+
+const ROOM_GLYPH: Record<string, string> = {
+  system:     "🔍",
+  invariants: "⬡",
+  graph:      "⚙️",
+  entry:      "⚡",
+};
+
 function LarariumCommandPalette({
   memes,
   dispatch,
@@ -200,20 +212,32 @@ function LarariumCommandPalette({
 
   useEffect(() => { inputRef.current?.focus(); }, []);
 
-  const filtered = query
-    ? memes.filter((m) => m.uri.toLowerCase().includes(query.toLowerCase()))
-    : memes;
+  // Build flat unified item list: rooms first (always shown when no query), then memes
+  const roomItems: PaletteItem[] = DEFAULT_ROOMS
+    .filter((r) => !query || r.name.toLowerCase().includes(query.toLowerCase()) || r.id.includes(query.toLowerCase()))
+    .map((r) => ({ kind: "room", id: r.id, name: r.name, glyph: ROOM_GLYPH[r.id] ?? "⬡" }));
 
-  const select = useCallback(
-    (uri: string) => { dispatch({ type: "ZOOM_IN", uri }); onClose(); },
-    [dispatch, onClose]
-  );
+  const memeItems: PaletteItem[] = (query
+    ? memes.filter((m) => m.uri.toLowerCase().includes(query.toLowerCase()))
+    : memes
+  ).slice(0, 12).map((m) => ({ kind: "meme", uri: m.uri, depth: m.depth, memeKind: m.kind }));
+
+  const items: PaletteItem[] = [...roomItems, ...memeItems];
+
+  const activate = useCallback((item: PaletteItem) => {
+    if (item.kind === "room") {
+      dispatch({ type: "GO_TO_ROOM", roomId: item.id });
+    } else {
+      dispatch({ type: "ZOOM_IN", uri: item.uri });
+    }
+    onClose();
+  }, [dispatch, onClose]);
 
   const onKey = (e: React.KeyboardEvent) => {
     if (e.key === "Escape") { onClose(); return; }
-    if (e.key === "ArrowDown") { setCursor((c) => Math.min(c + 1, filtered.length - 1)); return; }
-    if (e.key === "ArrowUp") { setCursor((c) => Math.max(c - 1, 0)); return; }
-    if (e.key === "Enter" && filtered[cursor]) { select(filtered[cursor]!.uri); return; }
+    if (e.key === "ArrowDown") { e.preventDefault(); setCursor((c) => Math.min(c + 1, items.length - 1)); return; }
+    if (e.key === "ArrowUp")   { e.preventDefault(); setCursor((c) => Math.max(c - 1, 0)); return; }
+    if (e.key === "Enter" && items[cursor]) { activate(items[cursor]!); return; }
   };
 
   return (
@@ -225,31 +249,55 @@ function LarariumCommandPalette({
           value={query}
           onChange={(e) => { setQuery(e.target.value); setCursor(0); }}
           onKeyDown={onKey}
-          placeholder="Jump to meme…"
-          aria-label="Search memes"
+          placeholder="Jump to space or meme…"
+          aria-label="Search spaces and memes"
           autoComplete="off"
           spellCheck={false}
         />
         <div style={css.paletteList} role="listbox">
-          {filtered.slice(0, 12).map((m, i) => (
-            <button
-              key={m.uri}
-              role="option"
-              aria-selected={i === cursor}
-              style={{
-                ...css.paletteItem,
-                ...(i === cursor ? css.paletteItemActive : {}),
-              }}
-              onClick={() => select(m.uri)}
-              onMouseEnter={() => setCursor(i)}
-            >
-              <span style={{ ...css.depthBar, width: 4 + m.depth * 6 }} />
-              <span style={css.paletteItemLabel}>{shortUri(m.uri)}</span>
-              <span style={css.paletteItemKind}>{m.kind}</span>
-            </button>
-          ))}
-          {filtered.length === 0 && (
-            <div style={css.paletteEmpty}>No memes match "{query}"</div>
+          {roomItems.length > 0 && (
+            <>
+              <div style={css.paletteSectionLabel}>Spaces</div>
+              {roomItems.map((item, i) => (
+                <button
+                  key={item.id}
+                  role="option"
+                  aria-selected={i === cursor}
+                  style={{ ...css.paletteItem, ...(i === cursor ? css.paletteItemActive : {}) }}
+                  onClick={() => activate(item)}
+                  onMouseEnter={() => setCursor(i)}
+                >
+                  <span style={css.paletteRoomGlyph}>{item.glyph}</span>
+                  <span style={css.paletteItemLabel}>{item.name}</span>
+                  <span style={css.paletteItemKind}>space</span>
+                </button>
+              ))}
+            </>
+          )}
+          {memeItems.length > 0 && (
+            <>
+              <div style={css.paletteSectionLabel}>Memes</div>
+              {memeItems.map((item, i) => {
+                const idx = roomItems.length + i;
+                return (
+                  <button
+                    key={item.uri}
+                    role="option"
+                    aria-selected={idx === cursor}
+                    style={{ ...css.paletteItem, ...(idx === cursor ? css.paletteItemActive : {}) }}
+                    onClick={() => activate(item)}
+                    onMouseEnter={() => setCursor(idx)}
+                  >
+                    <span style={{ ...css.depthBar, width: 4 + item.depth * 6 }} />
+                    <span style={css.paletteItemLabel}>{shortUri(item.uri)}</span>
+                    <span style={css.paletteItemKind}>{item.memeKind}</span>
+                  </button>
+                );
+              })}
+            </>
+          )}
+          {items.length === 0 && (
+            <div style={css.paletteEmpty}>No results for "{query}"</div>
           )}
         </div>
       </div>
@@ -546,6 +594,22 @@ const css = {
     border: "1px solid #21262d",
     borderRadius: 3,
     flexShrink: 0,
+  },
+  paletteSectionLabel: {
+    padding: "6px 16px 2px",
+    fontSize: 10,
+    fontWeight: 600,
+    letterSpacing: "0.08em",
+    color: "#6e7681",
+    textTransform: "uppercase" as const,
+    userSelect: "none" as const,
+  },
+  paletteRoomGlyph: {
+    fontSize: 16,
+    lineHeight: 1,
+    flexShrink: 0,
+    width: 20,
+    textAlign: "center" as const,
   },
   paletteEmpty: {
     padding: "20px 16px",

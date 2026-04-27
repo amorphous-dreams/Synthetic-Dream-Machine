@@ -7,6 +7,10 @@
     ".": {
       "import": "./dist/index.js",
       "types": "./dist/index.d.ts"
+    },
+    "./tw-filter": {
+      "import": "./dist/tw-filter.js",
+      "types": "./dist/tw-filter.d.ts"
     }
   },
   "main": "./dist/index.js",

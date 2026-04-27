@@ -12,7 +12,7 @@ register = "S"
 manaoio = 0.82
 mana = 0.88
 manao = 0.86
-role = "docs meme — migration roadmap and milestone log for Lararium Node; Milestones 1–4 complete; M5 planned"
+role = "docs meme — migration roadmap and milestone log for Lararium Node; Milestones 1–4 complete; M5 in progress (canvas UX + Kinopio alignment sprint); M6 planned (browser smoke, security, MCP integration)"
 cacheable = false
 retain = true
 invariant = false
@@ -960,34 +960,84 @@ Do not ship the snapshot-injection server as the primary path. Offline mode only
 
 <<~ ahu #milestone-5-scope >>
 
-## Milestone 5 — Planned
+## Milestone 5 — In Progress (2026-04-26)
 
-**Priority 1: Story river population from store**
-- `SidePanel` derives meme list from `editor.getShapes()` filtered to `meta.frameKind === "meme"` — no separate fetch, CRDT-native
-- Click → `dispatch({ type: "ZOOM_IN", uri: shape.meta.uri })`
+### Completed (this session)
 
-**Priority 2: Security hardening**
-- Path traversal guard: `path.resolve()` + boundary check against `APP_DIST` before static file serve
-- WS URL from request `Host` header (not hardcoded `HOST:PORT`); respect `x-forwarded-proto` for `wss:`
+**Canvas UX + Kinopio Alignment Sprint**
 
-**Priority 3: MCP integration**
-- Co-locate MCP server with HTTP/WS server in `packages/lararium-node`
-- Stdio transport default (Claude Desktop / Claude Code direct)
-- MCP tools per `MULTIPLAYER-INFINITE-CANVAS-WIKI.md #mcp-surface`: room/list, room/create, meme/inspect, meme/list, filter, edge/list
+- ✓ `TLArrowBindingRecord` emitted and seeded into store — drag-follows-arrow Kinopio behavior wired at the binding layer
+- ✓ Multi-view bindings merged across story/detail/graph emissions
+- ✓ Dead layout constants removed from `project.ts` (FRAME_W/H were computed but never stored — data layer is now geometry-free)
+- ✓ `LarariumShell` — Kinopio-style chrome: `position:fixed; pointer-events:none` header; canvas fills 100vh; canvas mode toggle (`` ` `` key, dims Lararium chrome, restores tldraw toolbar); error boundary with reload button; debug globals gated to `NODE_ENV=development`
+- ✓ `⌘K` command palette: **Spaces** section (DEFAULT_ROOMS with chronometer glyphs) above **Memes** section; unified arrow-key navigation across both sections
+- ✓ `zoom-levels.ts` — five-level ontology: `strategic/operational/tactical/combat/action` → 🗺️⚙️🔍⚔️⚡ mapped to chronometer scale positions; `classifyZoom()`, `ZOOM_SNAP`, `ZOOM_PAGE`; exported from `@lararium/tldraw`
+- ✓ Zoom auto page-switching: `editor.store.listen()` detects zoom threshold crossings → auto-switches to graph page (strategic/operational) or story page (tactical); `onZoomLevel` callback surfaces level to shell footer glyph
+- ✓ `LarPortalShapeUtil` — custom tldraw shape: hexagonal badge, blue border, `targetRoomId` + `label` props; registered via `shapeUtils` prop
+- ✓ Portal shapes emitted at `y=-80` above each page via `emitPortalShapes()` in `multi-view.ts` — placed for all live portal edges in DEFAULT_PORTALS
+- ✓ `GO_TO_ROOM` action in `LarViewState` reducer + `"room"` view kind; `syncNavState` calls `goToRoom()` on dispatch
+- ✓ Content-addressed room key: `boot-${receiptSha.slice(0, 16)}` — idempotent across recompiles; meta tag injection updated
+- ✓ `/admin/reseed` endpoint (localhost-only), `/api/rooms` endpoint
+- ✓ All packages build clean; 36/36 tests passing
 
-**Priority 4: Content-addressed room identity**
-- Room key = `boot-${receipt.sha.slice(0, 16)}` — idempotent across recompiles
-- Client bookmark migration: redirect old `"boot"` key to SHA-keyed room
+### Carries to Milestone 6
 
-**Priority 5: Canvas navigation polish**
-- Double-click on frame shapes → `dispatch({ type: "ZOOM_IN", uri })` via tldraw v4 shape event API
-- Portal shapes: custom `LarPortal` shape type linking rooms
+**Schema/validation fix (2026-04-26)**
+- ✓ `lar-portal` custom shape type replaced with built-in `geo` (hexagon) + `meta: { larPortal, targetRoomId, label }` — tldraw's server-side schema (`DEFAULT_INITIAL_SNAPSHOT.schema`) rejects unknown types on sync; no custom `ShapeUtil` or schema registration needed
+- ✓ `LarPortalShapeUtil` deleted; portal detection in double-click handler reads `shape.meta.larPortal`
+- ✓ Zoom `store.listen` scoped to `{ scope: "session" }` — camera is session-scoped; fires ~100× less than unscoped (document mutations no longer trigger zoom check)
 
-Do not in Milestone 5:
+**Not yet verified (browser smoke required)**
+- ⚠ Drag-follows-arrow: binding records emitted and type-correct; tactile test pending
+- ⚠ Portal double-click: geo+meta portal → GO_TO_ROOM dispatch path untested in browser
+- ⚠ Zoom auto page-switch: threshold crossing + page flip logic correct; live camera interaction untested
+
+**Security hardening (2026-04-26)**
+- ✓ Path traversal guard: `resolve(filePath)` checked against `APP_DIST` prefix; 403 on escape
+- ✓ WS URL from `req.headers.host` + `x-forwarded-proto` — LAN/proxy clients get correct address; no hardcoded `HOST:PORT` in injected meta tag
+
+**Planned but not started**
+- ⚠ MCP integration: co-locate stdio server with HTTP/WS server in `packages/lararium-node`
+- ⚠ Story river population from store: meme list still from `/api/memes` fetch; goal is `editor.getShapes()` filtered to `meta.frameKind === "meme"` — CRDT-native, no separate fetch
+
+<<~/ahu >>
+
+<<~ ahu #milestone-6-scope >>
+
+## Milestone 6 — Planned
+
+### Priority 1: Browser smoke + canvas wiring verification
+
+Open running server, verify tactile:
+- Drag a meme frame → arrows follow (binding validation)
+- Double-click portal badge → room page switches
+- Zoom out past 0.35 → auto-switches to graph page; zoom back → story river
+- ⌘K → Spaces section shows 4 rooms with glyphs; Enter navigates
+
+Fix whatever breaks. Milestone 5 canvas wiring is unvalidated until this closes.
+
+### Priority 2: Security hardening
+
+- Path traversal guard: `path.resolve(filePath)` + reject if not within `APP_DIST`
+- WS URL from `req.headers.host` (not hardcoded `HOST:PORT`); respect `x-forwarded-proto` for `wss:`
+
+### Priority 3: MCP integration (bring the agent in)
+
+Co-locate MCP stdio server with `serve.ts`. Expose:
+- `lararium/room/list` — active rooms + page IDs
+- `lararium/meme/list` — current boot closure with depth/kind
+- `lararium/meme/inspect` — carrier text, pranala edges, implements, rating for a given URI
+- `lararium/filter` — TW5 filter expression evaluated against current closure
+- `lararium/edge/list` — all pranala arrows in the current snapshot
+
+This is the "bring the agent in" vector. Enables Claude Code and Claude Desktop to probe room state, navigate memes, and query the graph programmatically. Without it, the canvas is a display surface; with it, it's a collaborative instrument.
+
+Do not in Milestone 6:
 - Canon promotion / write-back to `lares/`
-- UCAN implementation (design is frozen in MULTIPLAYER-INFINITE-CANVAS-WIKI.md)
-- Kowloon projection package
+- UCAN implementation (design frozen)
+- Kowloon projection
 - Multi-user presence / cursors
+- Single-page zoom-gated rendering (blocked on namespace collision resolution — current three-page model stays)
 
 <<~/ahu >>
 

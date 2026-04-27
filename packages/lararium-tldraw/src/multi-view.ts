@@ -22,6 +22,7 @@ import { projectToTldraw, type ProjectOptions } from "./project.js";
 import { selectLayout, storyRiverLayout, memeDetailLayout, graphLayout, type LayoutStrategy } from "./layout.js";
 import { emitTldrawRecords, type TldrawEmission } from "./tldraw-shapes.js";
 import { type LarTLSnapshot, type LarTLPage, type LarTLFrame, type LarTLArrow, type LarTLNote, pageId } from "./records.js";
+import { DEFAULT_PORTALS } from "./room.js";
 
 // ---------------------------------------------------------------------------
 // Options
@@ -60,12 +61,78 @@ export function renderAllViews(artifact: BootArtifact, opts: MultiViewOptions = 
   const graphLay = graphLayout(graphSnap);
   const graphEmission = emitTldrawRecords(graphSnap, graphLay, { pageOverride: pageId("graph") });
 
-  // Merge all three emissions into one
+  // Portal shapes — placed at top of each page (y=-80, above all meme content)
+  const portalShapes = emitPortalShapes();
+
+  // Merge all emissions
   return {
     pages:    [...storyEmission.pages,    ...detailEmission.pages,    ...graphEmission.pages],
-    shapes:   [...storyEmission.shapes,   ...detailEmission.shapes,   ...graphEmission.shapes],
+    shapes:   [...storyEmission.shapes,   ...detailEmission.shapes,   ...graphEmission.shapes, ...portalShapes] as TldrawEmission["shapes"],
     bindings: [...storyEmission.bindings, ...detailEmission.bindings, ...graphEmission.bindings],
   };
+}
+
+// ---------------------------------------------------------------------------
+// emitPortalShapes — lar-portal custom shapes at the top of each page
+// ---------------------------------------------------------------------------
+// Room ID → tldraw page ID (only pages that exist in the three-page model)
+const ROOM_PAGE: Partial<Record<string, string>> = {
+  system:  pageId("minimal-boot"),
+  graph:   pageId("graph"),
+};
+
+function emitPortalShapes(): unknown[] {
+  const shapes: unknown[] = [];
+
+  // Group portals by fromRoomId so we can stack them horizontally
+  const byPage = new Map<string, typeof DEFAULT_PORTALS[number][]>();
+  for (const portal of DEFAULT_PORTALS) {
+    const tlPage = ROOM_PAGE[portal.fromRoomId];
+    if (!tlPage) continue; // skip rooms without a live page
+    if (!ROOM_PAGE[portal.toRoomId]) continue; // skip portals to unseeded rooms
+    const list = byPage.get(tlPage) ?? [];
+    list.push(portal);
+    byPage.set(tlPage, list);
+  }
+
+  for (const [tlPageId, portals] of byPage) {
+    portals.forEach((portal, i) => {
+      // Use built-in "geo" shape (hexagon) — custom types are rejected by tldraw's
+      // server-side schema validation on sync. Portal identity lives in meta.
+      shapes.push({
+        id:       `shape:portal_${portal.id.replace(/[^a-zA-Z0-9]/g, "_")}`,
+        typeName: "shape",
+        type:     "geo",
+        parentId: tlPageId,
+        index:    `a${i}` as `a${number}`,
+        x:        20 + i * 140,
+        y:        -80,
+        rotation: 0,
+        isLocked: false,
+        opacity:  1,
+        meta:     { larPortal: true, targetRoomId: portal.toRoomId, label: portal.label },
+        props: {
+          geo:          "hexagon",
+          w:            120,
+          h:            36,
+          color:        "blue",
+          fill:         "semi",
+          dash:         "draw",
+          size:         "s",
+          font:         "draw",
+          text:         portal.label,
+          align:        "middle",
+          verticalAlign: "middle",
+          growY:        0,
+          url:          "",
+          scale:        1,
+          labelColor:   "black",
+        },
+      });
+    });
+  }
+
+  return shapes;
 }
 
 // ---------------------------------------------------------------------------

@@ -4,7 +4,7 @@ import type { TLPageId, TLShapeId, TLComponents } from "tldraw";
 import { useSync } from "@tldraw/sync";
 import "tldraw/tldraw.css";
 import type { LarViewState, LarViewAction, TldrawEditorLike, ZoomLevel } from "@lararium/tldraw";
-import { pageId, goToStoryRiver, goToGraph, zoomToMeme, classifyZoom, ZOOM_PAGE } from "@lararium/tldraw";
+import { pageId, goToStoryRiver, goToGraph, goToRoom, zoomToMeme, classifyZoom, ZOOM_PAGE } from "@lararium/tldraw";
 
 // Wiki mode: suppress all tldraw chrome — Lararium shell owns the UI.
 const WIKI_COMPONENTS: TLComponents = {
@@ -19,8 +19,8 @@ const WIKI_COMPONENTS: TLComponents = {
   MenuPanel: null,
 };
 
-// Canvas mode: restore tldraw's full chrome so the canvas is a complete drawing app.
-// PageMenu stays null — page-switching must go through Lararium navigation, not tldraw tabs.
+// Canvas mode: restore tldraw's full chrome. PageMenu stays null — navigation
+// through Lararium shell only.
 const CANVAS_COMPONENTS: TLComponents = {
   PageMenu: null,
 };
@@ -39,6 +39,8 @@ function syncNavState(editor: TldrawEditor, navState: LarViewState) {
   const ed = editor as unknown as TldrawEditorLike;
   if (navState.activeView === "graph") {
     goToGraph(ed);
+  } else if (navState.activeView === "room" && navState.focusUri) {
+    goToRoom(ed, navState.focusUri);
   } else if (navState.activeView === "meme-detail" && navState.focusUri) {
     zoomToMeme(ed, navState.focusUri);
   } else {
@@ -68,13 +70,19 @@ export function LarariumCanvas({ wsUrl, navState, dispatch, canvasMode, onZoomLe
     (window as any).__larariumDebug.store = store;
   }
 
-  // Double-click meme frame → ZOOM_IN
+  // Double-click: geo portal (meta.larPortal) → GO_TO_ROOM, meme frame → ZOOM_IN
   useEffect(() => {
     const editor = editorRef.current;
     if (!editor || store.status !== "synced-remote") return;
     const handler = (e: { target?: { id?: TLShapeId } }) => {
       const shapeId = e?.target?.id;
       if (!shapeId) return;
+      const shape = editor.getShape(shapeId);
+      const meta = shape?.meta as Record<string, unknown> | undefined;
+      if (meta?.larPortal && typeof meta.targetRoomId === "string") {
+        dispatch({ type: "GO_TO_ROOM", roomId: meta.targetRoomId });
+        return;
+      }
       const uri = getLarUriFromShape(editor, shapeId);
       if (uri) dispatch({ type: "ZOOM_IN", uri });
     };
@@ -96,7 +104,9 @@ export function LarariumCanvas({ wsUrl, navState, dispatch, canvasMode, onZoomLe
     syncNavState(editor, navState);
   }, [store.status, navState]);
 
-  // Zoom level → page auto-switch (Strategic/Operational → graph, Tactical → story)
+  // Zoom level → page auto-switch.
+  // scope:'session' filters to camera/presence records only — avoids firing on
+  // every document mutation (shape moves, text edits, etc.).
   useEffect(() => {
     const editor = editorRef.current;
     if (!editor || store.status !== "synced-remote") return;
@@ -106,24 +116,27 @@ export function LarariumCanvas({ wsUrl, navState, dispatch, canvasMode, onZoomLe
 
     let lastLevel = classifyZoom(editor.getZoomLevel());
 
-    const unsub = editor.store.listen(() => {
-      const zoom  = editor.getZoomLevel();
-      const level = classifyZoom(zoom);
-      if (level === lastLevel) return;
-      lastLevel = level;
+    const unsub = editor.store.listen(
+      () => {
+        const zoom  = editor.getZoomLevel();
+        const level = classifyZoom(zoom);
+        if (level === lastLevel) return;
+        lastLevel = level;
 
-      onZoomLevel?.(level);
+        onZoomLevel?.(level);
 
-      const target = ZOOM_PAGE[level];
-      if (target === "graph"  && editor.getCurrentPageId() !== graphPageId) {
-        editor.setCurrentPage(graphPageId);
-        editor.zoomToFit({ animation: { duration: 200 } });
-      } else if (target === "story" && editor.getCurrentPageId() !== storyPageId) {
-        editor.setCurrentPage(storyPageId);
-        editor.zoomToFit({ animation: { duration: 200 } });
-      }
-      // "preserve" → do nothing; meme-detail page stays under navState control
-    });
+        const target = ZOOM_PAGE[level];
+        if (target === "graph" && editor.getCurrentPageId() !== graphPageId) {
+          editor.setCurrentPage(graphPageId);
+          editor.zoomToFit({ animation: { duration: 200 } });
+        } else if (target === "story" && editor.getCurrentPageId() !== storyPageId) {
+          editor.setCurrentPage(storyPageId);
+          editor.zoomToFit({ animation: { duration: 200 } });
+        }
+        // "preserve" → meme-detail page stays under navState control
+      },
+      { scope: "session" },   // camera is session-scoped; this fires ~100x less than default
+    );
 
     return unsub;
   }, [store.status]);

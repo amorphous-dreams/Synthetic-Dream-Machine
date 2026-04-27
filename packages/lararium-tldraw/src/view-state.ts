@@ -23,7 +23,7 @@
 // Types
 // ---------------------------------------------------------------------------
 
-export type LarViewKind = "story-river" | "meme-detail" | "graph";
+export type LarViewKind = "story-river" | "meme-detail" | "graph" | "room";
 
 /** Immutable navigation frame (one entry in history) */
 export interface LarNavFrame {
@@ -62,7 +62,8 @@ export type LarViewAction =
   | { type: "ZOOM_OUT" }
   | { type: "OPEN_GRAPH" }
   | { type: "CLOSE_GRAPH" }
-  | { type: "NAVIGATE_BACK" };
+  | { type: "NAVIGATE_BACK" }
+  | { type: "GO_TO_ROOM"; roomId: string };
 
 // ---------------------------------------------------------------------------
 // Reducer — pure function, no side effects
@@ -100,6 +101,18 @@ export function viewStateReducer(state: LarViewState, action: LarViewAction): La
       return {
         activeView: "graph",
         focusUri: state.focusUri,
+        history: [...state.history, frame],
+      };
+    }
+    case "GO_TO_ROOM": {
+      const frame: LarNavFrame = {
+        view: state.activeView,
+        focusUri: state.focusUri,
+        fromRect: null,
+      };
+      return {
+        activeView: "room",
+        focusUri: action.roomId,
         history: [...state.history, frame],
       };
     }

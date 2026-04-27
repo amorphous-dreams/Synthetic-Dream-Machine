@@ -10,8 +10,8 @@ import { McpServer, ResourceTemplate } from "@modelcontextprotocol/sdk/server/mc
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
 
-import { createLarariumRuntime, resolveLarUri, LARES_ROOT } from "@lararium/node";
-import { renderToTldraw } from "@lararium/tldraw";
+import { createLarariumRuntime, resolveLarUri, LARES_ROOT, filterMemesTW } from "@lararium/node";
+import { renderToTldraw, DEFAULT_ROOMS } from "@lararium/tldraw";
 
 const runtime = createLarariumRuntime({ writeback: false });
 
@@ -282,6 +282,73 @@ server.registerTool(
           text: JSON.stringify({ pages: emission.pages, shapes: emission.shapes }, null, 2),
         }],
       };
+    } catch (e) {
+      return { content: [{ type: "text" as const, text: String(e) }], isError: true };
+    }
+  },
+);
+
+// Canvas-oriented tools — query the live meme graph and room model
+
+server.registerTool(
+  "lararium-filter",
+  {
+    description: "Evaluate a TiddlyWiki5 filter expression against the current boot closure. Returns matching meme URIs.\n\nExamples:\n  [all[memes]tag[lar:///ha.ka.ba/api/v0.1/pono/invariant]]\n  [all[memes]field:depth[0]]\n  [all[memes]nsort[depth]limit[5]]\n  [all[memes]field:rating[data]sort[title]]",
+    inputSchema: {
+      expr:  z.string().describe("TW5 filter expression"),
+      boot:  z.enum(["minimal", "full"]).optional().describe("Which closure to filter. Default: minimal"),
+    },
+  },
+  async ({ expr, boot = "minimal" }) => {
+    try {
+      const artifact = boot === "full" ? runtime.compileFullBoot() : runtime.compileMinimalBoot();
+      const matched = await filterMemesTW(artifact.closure, expr);
+      const lines = matched.map((e) => `${e.uri}  (depth:${e.depth} rating:${e.kind})`);
+      return { content: [{ type: "text" as const, text: lines.join("\n") || "(no matches)" }] };
+    } catch (e: unknown) {
+      return { content: [{ type: "text" as const, text: String(e) }], isError: true };
+    }
+  },
+);
+
+server.registerTool(
+  "lararium-room_list",
+  {
+    description: "List the available Lararium canvas rooms (spaces) with their filter expressions and tldraw page IDs.",
+    inputSchema: {},
+  },
+  async () => {
+    const rows = DEFAULT_ROOMS.map((r) =>
+      `${r.id.padEnd(12)} page:${(r.tlPageId ?? r.id).replace("page:", "").padEnd(20)} filter: ${r.filter}`
+    );
+    return { content: [{ type: "text" as const, text: rows.join("\n") }] };
+  },
+);
+
+server.registerTool(
+  "lararium-edge_list",
+  {
+    description: "List all pranala edges (arrows) in the minimal boot projection. Each row: sourceFrame → targetFrame  family:role",
+    inputSchema: {
+      family: z.enum(["control", "relation", "observe", "dataflow"]).optional().describe("Filter by edge family"),
+    },
+  },
+  async ({ family }) => {
+    try {
+      const artifact = runtime.compileMinimalBoot();
+      const readText = (uri: string): string | null => {
+        try { return runtime.readResource(uri); } catch { return null; }
+      };
+      const emission = renderToTldraw(artifact, { readText, includeAhuFrames: false });
+      // Arrows are in the tldraw snapshot as shape records with type:"arrow"
+      const arrows = (emission.shapes as unknown as Array<Record<string, unknown>>)
+        .filter((s) => s["type"] === "arrow")
+        .filter((s) => !family || (s["meta"] as Record<string, unknown>)?.["family"] === family);
+      const lines = arrows.map((s) => {
+        const meta = s["meta"] as Record<string, unknown>;
+        return `${String(s["id"]).slice(0, 40)}  family:${meta["family"]}  role:${meta["role"] ?? "—"}`;
+      });
+      return { content: [{ type: "text" as const, text: lines.join("\n") || "(no edges)" }] };
     } catch (e) {
       return { content: [{ type: "text" as const, text: String(e) }], isError: true };
     }

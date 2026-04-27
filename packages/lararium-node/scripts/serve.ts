@@ -59,10 +59,15 @@ const MIME: Record<string, string> = {
 };
 
 function serveStatic(res: ServerResponse, filePath: string): boolean {
-  if (!existsSync(filePath) || statSync(filePath).isDirectory()) return false;
-  const ext = extname(filePath);
+  // Path traversal guard: resolved path must stay within APP_DIST
+  const resolved = resolve(filePath);
+  if (!resolved.startsWith(APP_DIST + "/") && resolved !== APP_DIST) {
+    res.writeHead(403); res.end(); return true;
+  }
+  if (!existsSync(resolved) || statSync(resolved).isDirectory()) return false;
+  const ext = extname(resolved);
   res.writeHead(200, { "Content-Type": MIME[ext] ?? "application/octet-stream" });
-  res.end(readFileSync(filePath));
+  res.end(readFileSync(resolved));
   return true;
 }
 
@@ -240,9 +245,12 @@ async function main() {
       if (serveStatic(res, join(APP_DIST, pathname))) return;
     }
 
-    // App shell — inject WS URL pointing to the content-addressed boot room
+    // App shell — inject WS URL derived from request Host header so LAN/proxy
+    // clients get the correct address without hardcoding HOST:PORT.
+    const host = req.headers["host"] ?? `${HOST}:${PORT}`;
+    const wsProto = req.headers["x-forwarded-proto"] === "https" ? "wss" : "ws";
     let html = readFileSync(join(APP_DIST, "index.html"), "utf-8");
-    const wsMeta = `<meta name="lararium-ws" content="ws://${HOST}:${PORT}/rooms/${activeBootRoomId}">`;
+    const wsMeta = `<meta name="lararium-ws" content="${wsProto}://${host}/rooms/${activeBootRoomId}">`;
     html = html.replace("</head>", `  ${wsMeta}\n</head>`);
     res.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
     res.end(html);
