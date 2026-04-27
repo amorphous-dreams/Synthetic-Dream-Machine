@@ -60,7 +60,7 @@ name          = "aka"
 kind          = "edge-sugar"
 pattern       = '<<~\s*aka\s+(\S+)\s*>>'
 default_family = "observe"
-description   = "sugar: observe edge (directional); equivalent to pranala with family=observe"
+description   = "sugar: shadow transclusion (observe family); read-only embed; equivalent to pranala family=observe"
 
 [[sigils]]
 name          = "kahea"
@@ -68,7 +68,7 @@ kind          = "edge-sugar"
 pattern       = '<<~\s*kahea\s+(\S+)\s*>>'
 default_family = "dataflow"
 default_propagation = "push-forward"
-description   = "sugar: dataflow edge with push-forward propagation"
+description   = "sugar: live transclusion (dataflow family); push-forward propagation; equivalent to pranala family=dataflow"
 
 [[sigils]]
 name         = "iam"
@@ -102,7 +102,7 @@ dag_required        = true
 role_required       = false   # warning if absent, not error (sugar forms omit role)
 role_recommended    = true
 confidence_bounded  = false
-description         = "ownership/routing edges; must form a DAG across the lares/ tree"
+description         = "ownership/routing edges; must form a DAG across the lares/ tree; no transclusion semantics"
 
 [[families]]
 name                = "relation"
@@ -126,7 +126,23 @@ dag_required        = false
 role_required       = false
 role_recommended    = true    # warning if absent
 confidence_bounded  = false
-description         = "data-carrying edge; propagation direction matters"
+description         = "data-carrying edge; propagation direction matters; sugar: kahea (live transclusion)"
+
+[[families]]
+name                = "message"
+dag_required        = false
+role_required       = false
+role_recommended    = true
+confidence_bounded  = false
+description         = "routed event or signal passage; no structural ownership stake; sugar: pending"
+
+[[families]]
+name                = "constraint"
+dag_required        = false
+role_required       = false
+role_recommended    = false
+confidence_bounded  = false
+description         = "declarative rule without execution pulse; spatial, logical, or physical boundary; sugar: pending"
 ```
 
 <<~/ahu >>
