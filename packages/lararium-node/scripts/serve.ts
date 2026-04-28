@@ -10,6 +10,7 @@
  *
  * API routes:
  *   GET /api/memes          — minimal boot meme list for command palette
+ *   GET /api/carrier        — raw carrier text for a lar URI (?uri=lar:///...)
  *   GET /admin/reseed       — force-evict + delete SQLite for a room, reseed on next WS connect
  *                             ?roomId=boot (default: current boot room alias)
  *
@@ -39,6 +40,7 @@ import {
   ReactionGraph,
   type ReactionBinding,
   type LiveMsgEvent,
+  buildKumuRegistry,
 } from "@lararium/core";
 
 const __dirname = fileURLToPath(new URL(".", import.meta.url));
@@ -138,6 +140,8 @@ async function buildBootProjection(
   const receipt = await runtime.compileBootReceipt(artifact);
   const receiptSha = receipt.sha256.replace(/^sha256:/, "");
 
+  const registry = buildKumuRegistry(artifact.kumuDefs ?? []);
+
   const emission = renderAllViews(artifact, {
     readText: (uri: string) => {
       const meme = snapshotMemes.memes[uri];
@@ -145,6 +149,7 @@ async function buildBootProjection(
       return meme.text;
     },
     includeAhuFrames: true,
+    registry,
   });
 
   const store: Record<string, unknown> = {};
@@ -218,6 +223,22 @@ async function main() {
     // ── API ────────────────────────────────────────────────────────────────
     if (pathname === "/api/memes") {
       return json(res, memeList);
+    }
+
+    if (pathname === "/api/carrier") {
+      const uri = params.get("uri");
+      if (!uri) return json(res, { error: "missing uri param" }, 400);
+      try {
+        const text = runtime.readResource(uri);
+        res.writeHead(200, {
+          "Content-Type": "text/plain; charset=utf-8",
+          "Access-Control-Allow-Origin": "*",
+        });
+        res.end(text);
+      } catch {
+        return json(res, { error: "not found", uri }, 404);
+      }
+      return;
     }
 
     if (pathname === "/api/rooms") {

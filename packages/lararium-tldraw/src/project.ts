@@ -15,10 +15,12 @@ import {
   type LarTLFrame,
   type LarTLArrow,
   type LarTLNote,
+  type TemplatePropsByLevel,
   memeFrameId,
   ahuFrameId,
   edgeArrowId,
   pageId,
+  buildTemplatePropsByLevel,
 } from "./records.js";
 
 // ---------------------------------------------------------------------------
@@ -32,6 +34,8 @@ export interface ProjectOptions {
   includeNotes?: boolean;
   /** Read carrier text for edge extraction (uri → text). Required for arrows. */
   readText?: (uri: string) => string | null;
+  /** KumuRegistry — when provided, reads meme-* template defs to build templateProps. */
+  registry?: { get(name: string): import("@lararium/core").KumuDef | undefined };
 }
 
 export function projectToTldraw(artifact: BootArtifact, opts: ProjectOptions = {}): LarTLSnapshot {
@@ -39,7 +43,12 @@ export function projectToTldraw(artifact: BootArtifact, opts: ProjectOptions = {
     includeAhuFrames = true,
     includeNotes = false,
     readText,
+    registry,
   } = opts;
+
+  const templateProps: TemplatePropsByLevel | undefined = registry
+    ? buildTemplatePropsByLevel(registry)
+    : undefined;
 
   const page: LarTLPage = {
     type: "page",
@@ -68,6 +77,7 @@ export function projectToTldraw(artifact: BootArtifact, opts: ProjectOptions = {
       const fid = memeFrameId(entry.uri);
       const lastSegment = entry.uri.split("/").at(-1) ?? entry.uri;
 
+      const carrierText = readText ? (readText(entry.uri) ?? undefined) : undefined;
       frames.push({
         type: "frame",
         id: fid,
@@ -80,6 +90,8 @@ export function projectToTldraw(artifact: BootArtifact, opts: ProjectOptions = {
         frameKind: "meme",
         rating: entry.kind,
         implements: entry.implements,
+        ...(carrierText !== undefined && { carrierText }),
+        ...(templateProps !== undefined && { templateProps }),
       });
 
       // Metadata note inside frame

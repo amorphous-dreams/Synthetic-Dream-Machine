@@ -1,10 +1,10 @@
 import { useEffect, useRef } from "react";
 import { Tldraw, inlineBase64AssetStore } from "tldraw";
-import type { TLPageId, TLShapeId, TLComponents } from "tldraw";
+import type { TLShapeId, TLComponents } from "tldraw";
 import { useSync } from "@tldraw/sync";
 import "tldraw/tldraw.css";
 import type { LarViewState, LarViewAction, TldrawEditorLike, ZoomLevel } from "@lararium/tldraw";
-import { pageId, goToStoryRiver, goToGraph, goToRoom, zoomToMeme, classifyZoom, ZOOM_PAGE } from "@lararium/tldraw";
+import { goToStoryRiver, goToGraph, goToRoom, zoomToMeme, classifyZoom } from "@lararium/tldraw";
 import { LarariumMenuPanel, LarariumSharePanel, LarariumHelperButtons, useLararium } from "./lararium-context.js";
 
 // Wiki mode: suppress tldraw chrome; Lararium slot components fill the UI.
@@ -45,6 +45,49 @@ interface Props {
 
 type TldrawEditor = Parameters<NonNullable<React.ComponentProps<typeof Tldraw>["onMount"]>>[0];
 
+// ---------------------------------------------------------------------------
+// applyZoomTemplate — batch-update meme frame props for the active zoom level
+// ---------------------------------------------------------------------------
+
+type ZoomTemplateKey = "strategic" | "operational" | "tactical" | "combat" | "action";
+
+function applyZoomTemplate(editor: TldrawEditor, level: ZoomLevel) {
+  const key = level as ZoomTemplateKey;
+  const shapes = editor.getCurrentPageShapes();
+  const updates: { id: string; type: string; props: Record<string, unknown> }[] = [];
+
+  for (const shape of shapes) {
+    if (shape.type !== "frame") continue;
+    const meta = shape.meta as Record<string, unknown> | undefined;
+    if (meta?.frameKind !== "meme") continue;
+    const tpl = (meta?.templateProps as Record<string, unknown> | undefined)?.[key] as Record<string, unknown> | undefined;
+    if (!tpl) continue;
+
+    const rating = typeof meta?.uri === "string" ? ratingFromShape(shape) : "black";
+    const color = tpl["color"] === "rating" ? rating : (tpl["color"] as string ?? "grey");
+
+    updates.push({
+      id:    shape.id,
+      type:  "frame",
+      props: { w: tpl["w"], h: tpl["h"], color },
+    });
+  }
+
+  if (updates.length > 0) {
+    editor.updateShapes(updates as Parameters<typeof editor.updateShapes>[0]);
+  }
+}
+
+function ratingFromShape(shape: ReturnType<TldrawEditor["getCurrentPageShapes"]>[number]): string {
+  const meta = shape.meta as Record<string, unknown> | undefined;
+  const rating = meta?.rating as string | undefined;
+  if (rating === "kapu")  return "orange";
+  if (rating === "ano")   return "blue";
+  if (rating === "meme")  return "violet";
+  if (rating === "data")  return "grey";
+  return "black";
+}
+
 function syncNavState(editor: TldrawEditor, navState: LarViewState) {
   const ed = editor as unknown as TldrawEditorLike;
   if (navState.activeView === "graph") {
@@ -75,7 +118,7 @@ function getLarUriFromShape(editor: TldrawEditor, shapeId: TLShapeId): string | 
 export function LarariumCanvas({ wsUrl, navState, dispatch, canvasMode, onZoomLevel, onMemes }: Props) {
   const store = useSync({ uri: wsUrl, assets: inlineBase64AssetStore });
   const editorRef = useRef<TldrawEditor | null>(null);
-  const { theme } = useLararium();
+  const { theme, setEditor } = useLararium();
   if (process.env.NODE_ENV === "development") {
     (window as any).__larariumDebug ??= {};
     (window as any).__larariumDebug.store = store;
@@ -152,19 +195,16 @@ export function LarariumCanvas({ wsUrl, navState, dispatch, canvasMode, onZoomLe
     return () => { editor.off("doubleClickShape" as any, handler); };
   }, [store.status, dispatch]);
 
-  // Nav state → tldraw camera
+  // Nav state → tldraw camera.
+  // Only execute navState commands — do NOT push a page on sync.
+  // Page ordering (page:boot has index a1) makes tldraw default to the right page
+  // on first connect without an imperative setCurrentPage override that fights
+  // with in-progress navigation.
   useEffect(() => {
     const editor = editorRef.current;
     if (!editor || store.status !== "synced-remote") return;
-    const storyPageId = pageId("minimal-boot") as unknown as TLPageId;
-    if (editor.getPage(storyPageId)) {
-      editor.setCurrentPage(storyPageId);
-      editor.zoomToFit();
-    } else {
-      console.warn("[lararium] missing story page", storyPageId);
-    }
     syncNavState(editor, navState);
-  }, [store.status, navState]);
+  }, [navState]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Zoom level → page auto-switch.
   // scope:'session' filters to camera/presence records only — avoids firing on
@@ -172,9 +212,6 @@ export function LarariumCanvas({ wsUrl, navState, dispatch, canvasMode, onZoomLe
   useEffect(() => {
     const editor = editorRef.current;
     if (!editor || store.status !== "synced-remote") return;
-
-    const storyPageId = pageId("minimal-boot") as unknown as TLPageId;
-    const graphPageId = pageId("graph")         as unknown as TLPageId;
 
     let lastLevel = classifyZoom(editor.getZoomLevel());
 
@@ -186,18 +223,9 @@ export function LarariumCanvas({ wsUrl, navState, dispatch, canvasMode, onZoomLe
         lastLevel = level;
 
         onZoomLevel?.(level);
-
-        const target = ZOOM_PAGE[level];
-        if (target === "graph" && editor.getCurrentPageId() !== graphPageId) {
-          editor.setCurrentPage(graphPageId);
-          editor.zoomToFit({ animation: { duration: 200 } });
-        } else if (target === "story" && editor.getCurrentPageId() !== storyPageId) {
-          editor.setCurrentPage(storyPageId);
-          editor.zoomToFit({ animation: { duration: 200 } });
-        }
-        // "preserve" → meme-detail page stays under navState control
+        applyZoomTemplate(editor, level);
       },
-      { scope: "session" },   // camera is session-scoped; this fires ~100x less than default
+      { scope: "session" },
     );
 
     return unsub;
@@ -222,20 +250,13 @@ export function LarariumCanvas({ wsUrl, navState, dispatch, canvasMode, onZoomLe
         components={canvasMode ? CANVAS_COMPONENTS : WIKI_COMPONENTS}
         onMount={(editor) => {
           editorRef.current = editor;
+          setEditor(editor);
           if (process.env.NODE_ENV === "development") {
             (window as any).__larariumDebug ??= {};
             (window as any).__larariumDebug.editor = editor;
           }
           editor.user.updateUserPreferences({ colorScheme: "dark" });
           editor.setCurrentTool("select");
-          const storyPageId = pageId("minimal-boot") as unknown as TLPageId;
-          if (editor.getPage(storyPageId)) {
-            editor.setCurrentPage(storyPageId);
-            editor.zoomToFit();
-          } else {
-            console.warn("[lararium] missing story page", storyPageId);
-          }
-          syncNavState(editor, navState);
         }}
       />
     </div>

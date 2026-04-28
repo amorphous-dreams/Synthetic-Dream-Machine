@@ -1,93 +1,79 @@
 #!/usr/bin/env node
 /**
- * lararium-mcp stdio adapter.
+ * lararium-mcp stdio adapter — operator-agent HUD alignment surface.
  *
- * Thin MCP transport layer over the lararium-node runtime.
- * No carrier semantics live here — only resource/tool/prompt registration.
+ * Design principle: the agent inhabits the same space as the operator.
+ * Every tool maps to something the operator can see or do on the canvas.
+ *
+ * OODA-HA tool surface:
+ *   ✶ Observe  — lararium-hud, lararium-canvas
+ *   ⏿ Orient   — lararium-read, lararium-inspect, lararium-query, lararium-edges
+ *   ◇ Decide   — lararium-draft
+ *   ▶ Act      — lararium-write, lararium-fire
+ *   ⤴ Aftermath — lararium-receipt
+ *
+ * Live canvas bridge: set LARARIUM_HTTP_URL=http://127.0.0.1:4321
+ * Write gate:        set LARARIUM_WRITE_MODE=enabled  (default: dry-run only)
  */
 
 import { McpServer, ResourceTemplate } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
+import { writeFileSync, readFileSync, existsSync } from "node:fs";
+import { join } from "node:path";
 
 import { createLarariumRuntime, resolveLarUri, LARES_ROOT, filterMemesTW } from "@lararium/node";
-import { renderToTldraw, DEFAULT_ROOMS } from "@lararium/tldraw";
 
 const runtime = createLarariumRuntime({ writeback: false });
 
-// Optional: live canvas server bridge (set LARARIUM_HTTP_URL=http://127.0.0.1:4321)
+// ---------------------------------------------------------------------------
+// Canvas bridge — optional live server connection
+// ---------------------------------------------------------------------------
+
 const CANVAS_HTTP = process.env["LARARIUM_HTTP_URL"]?.replace(/\/$/, "") ?? null;
-async function fetchCanvas(path: string): Promise<unknown> {
-  if (!CANVAS_HTTP) throw new Error("LARARIUM_HTTP_URL not set — canvas bridge unavailable");
-  const res = await fetch(`${CANVAS_HTTP}${path}`);
-  if (!res.ok) throw new Error(`canvas bridge ${path} → ${res.status}`);
-  return res.json();
+const WRITE_ENABLED = process.env["LARARIUM_WRITE_MODE"] === "enabled";
+
+async function fetchCanvas<T = unknown>(path: string, opts?: RequestInit): Promise<T> {
+  if (!CANVAS_HTTP) throw new Error("LARARIUM_HTTP_URL not set");
+  const res = await fetch(`${CANVAS_HTTP}${path}`, opts);
+  if (!res.ok) throw new Error(`canvas ${path} → ${res.status}`);
+  return res.json() as Promise<T>;
 }
 
-const server = new McpServer({
-  name: "lararium",
-  version: "0.1.0",
-});
+async function canvasStatus(): Promise<{ url: string; rooms: string[]; status: "live" | "unreachable" }> {
+  if (!CANVAS_HTTP) return { url: "(not configured)", rooms: [], status: "unreachable" };
+  try {
+    const data = await fetchCanvas<{ rooms: string[] }>("/api/rooms");
+    return { url: CANVAS_HTTP, rooms: data.rooms, status: "live" };
+  } catch {
+    return { url: CANVAS_HTTP, rooms: [], status: "unreachable" };
+  }
+}
 
 // ---------------------------------------------------------------------------
-// Resources
+// MCP server
 // ---------------------------------------------------------------------------
 
-// File-backed carriers
+const server = new McpServer({ name: "lararium", version: "0.1.0" });
+
+// ---------------------------------------------------------------------------
+// Resources — always-fresh reads; use when you need the raw artifact or index
+// ---------------------------------------------------------------------------
+
 server.registerResource(
   "lar-resource",
   new ResourceTemplate("lar:///{path}", { list: undefined }),
-  { title: "Lararium resource" },
+  { title: "Lararium carrier" },
   async (uri) => {
     const text = runtime.readResource(uri.href);
     return { contents: [{ uri: uri.href, text, mimeType: "text/markdown" }] };
   },
 );
 
-// Index resources (virtual)
-server.registerResource(
-  "lararium-indexes-carriers",
-  "lar:///INDEXES/carriers",
-  { title: "Lararium carrier index" },
-  async () => {
-    const carriers = runtime.compileCarrierIndex();
-    const text = carriers.map((c) => c.uri).join("\n");
-    return { contents: [{ uri: "lar:///INDEXES/carriers", text, mimeType: "text/plain" }] };
-  },
-);
-
-server.registerResource(
-  "lararium-indexes-interfaces",
-  "lar:///INDEXES/interfaces",
-  { title: "Lararium interface index" },
-  async () => {
-    const carriers = runtime.compileCarrierIndex();
-    const index: Record<string, string[]> = {};
-    for (const c of carriers) {
-      for (const iface of c.implements) {
-        (index[iface] ??= []).push(c.uri);
-      }
-    }
-    return { contents: [{ uri: "lar:///INDEXES/interfaces", text: JSON.stringify(index, null, 2), mimeType: "application/json" }] };
-  },
-);
-
-server.registerResource(
-  "lararium-indexes-invariants",
-  "lar:///INDEXES/invariants",
-  { title: "Lararium invariant index" },
-  async () => {
-    const INVARIANT_URI = "lar:///ha.ka.ba/api/v0.1/pono/invariant";
-    const carriers = runtime.compileCarrierIndex();
-    const invariants = carriers.filter((c) => c.implements.includes(INVARIANT_URI)).map((c) => c.uri);
-    return { contents: [{ uri: "lar:///INDEXES/invariants", text: invariants.join("\n"), mimeType: "text/plain" }] };
-  },
-);
-
 server.registerResource(
   "lararium-boot",
   "lar:///boot",
-  { title: "Lararium boot artifact" },
+  { title: "Boot artifact — full closure JSON" },
   async () => {
     const artifact = runtime.compileBoot();
     return { contents: [{ uri: "lar:///boot", text: JSON.stringify(artifact, null, 2), mimeType: "application/json" }] };
@@ -97,7 +83,7 @@ server.registerResource(
 server.registerResource(
   "lararium-boot-receipt",
   "lar:///boot/receipt",
-  { title: "Lararium boot receipt" },
+  { title: "Boot receipt — SHA256 identity hash" },
   async () => {
     const artifact = runtime.compileBoot();
     const receipt = await runtime.compileBootReceipt(artifact);
@@ -105,47 +91,156 @@ server.registerResource(
   },
 );
 
-// ---------------------------------------------------------------------------
-// Tools
-// ---------------------------------------------------------------------------
-
-server.registerTool(
-  "lararium-resolve_lar_uri",
-  {
-    description: "Resolve a lar:/// URI into its resolution metadata",
-    inputSchema: { uri: z.string().describe("A lar:/// URI") },
-  },
-  async ({ uri }) => {
-    try {
-      const resolution = resolveLarUri(uri);
-      return { content: [{ type: "text" as const, text: JSON.stringify(resolution, null, 2) }] };
-    } catch (e) {
-      return { content: [{ type: "text" as const, text: String(e) }], isError: true };
-    }
+server.registerResource(
+  "lararium-indexes-carriers",
+  "lar:///INDEXES/carriers",
+  { title: "All carrier URIs in lares/" },
+  async () => {
+    const carriers = runtime.compileCarrierIndex();
+    return { contents: [{ uri: "lar:///INDEXES/carriers", text: carriers.map((c) => c.uri).join("\n"), mimeType: "text/plain" }] };
   },
 );
 
-server.registerTool(
-  "lararium-read_lar_resource",
-  {
-    description: "Read the text content of a file-backed lar:/// resource",
-    inputSchema: { uri: z.string().describe("A lar:/// URI pointing to a file-backed resource") },
+server.registerResource(
+  "lararium-indexes-interfaces",
+  "lar:///INDEXES/interfaces",
+  { title: "Interface → implementors index" },
+  async () => {
+    const carriers = runtime.compileCarrierIndex();
+    const index: Record<string, string[]> = {};
+    for (const c of carriers) {
+      for (const iface of c.implements) (index[iface] ??= []).push(c.uri);
+    }
+    return { contents: [{ uri: "lar:///INDEXES/interfaces", text: JSON.stringify(index, null, 2), mimeType: "application/json" }] };
   },
-  async ({ uri }) => {
+);
+
+// ---------------------------------------------------------------------------
+// ✶ Observe — lararium-hud
+//
+// Single-shot alignment snapshot. Call this first every session.
+// Returns: boot summary, validation status, invariant list, live canvas status.
+// ---------------------------------------------------------------------------
+
+server.registerTool(
+  "lararium-hud",
+  {
+    description:
+      "Full operator-agent alignment snapshot. Call this first to orient.\n\n" +
+      "Returns: boot closure summary, validation status, invariant URIs, live canvas status.\n" +
+      "If LARARIUM_HTTP_URL is set, also reports which rooms are live on the canvas server.",
+    inputSchema: {},
+  },
+  async () => {
+    const artifact = runtime.compileBoot();
+    const receipt = await runtime.compileBootReceipt(artifact);
+    const canvas = await canvasStatus();
+
+    const INVARIANT_URI = "lar:///ha.ka.ba/api/v0.1/pono/invariant";
+    const invariants = artifact.closure
+      .filter((e) => e.implements.includes(INVARIANT_URI))
+      .map((e) => e.uri);
+
+    const v = artifact.validation;
+    // Exchange vector — canonical session anchor per exchange-vector law.
+    // The agent should emit this URI as the node-uri at its exchange boundary.
+    // Territory: the active canvas room URI if live, else the boot entry.
+    const activeRoomUri = canvas.rooms[0]
+      ? `lar:///rooms/${canvas.rooms[0]}`
+      : artifact.entry;
+    const exchangeVector = {
+      operatorUri: "(read from operator turn)",
+      nodeUri: activeRoomUri,
+      canonicalForm: `lar://agent:0@lararium/ha.ka.ba/?confidence=boot:${artifact.memeCount}&p=0`,
+      activeRoomUri,
+      law: "lar:///ha.ka.ba/api/v0.1/lararium/exchange-vector",
+    };
+
+    const hud = {
+      entry: artifact.entry,
+      memeCount: artifact.memeCount,
+      compiledAt: artifact.compiledAt,
+      receipt: { sha256: receipt.sha256, mode: receipt.mode },
+      validation: {
+        allExist: v.allExist,
+        missing: v.missing,
+        dagViolationCount: v.dagViolations.length,
+        edgeErrors: v.edgeViolations.filter((e) => e.severity === "error").length,
+        edgeWarnings: v.edgeViolations.filter((e) => e.severity === "warning").length,
+        declaredUnresolved: v.declaredUnresolved.length,
+      },
+      invariants,
+      canvas,
+      exchange: exchangeVector,
+      writeEnabled: WRITE_ENABLED,
+    };
+
+    return { content: [{ type: "text" as const, text: JSON.stringify(hud, null, 2) }] };
+  },
+);
+
+// ---------------------------------------------------------------------------
+// ✶ Observe — lararium-canvas
+//
+// Live canvas state: active rooms, meme list, recent server activity.
+// Requires LARARIUM_HTTP_URL.
+// ---------------------------------------------------------------------------
+
+server.registerTool(
+  "lararium-canvas",
+  {
+    description:
+      "Live canvas state — active rooms, meme list, connection status.\n\n" +
+      "Requires LARARIUM_HTTP_URL. Use this to see what the operator currently has open.",
+    inputSchema: {},
+  },
+  async () => {
     try {
-      const text = runtime.readResource(uri);
+      const [rooms, memes] = await Promise.all([
+        fetchCanvas<{ rooms: string[]; activeBootRoomId: string }>("/api/rooms"),
+        fetchCanvas<Array<{ uri: string; depth: number; kind: string }>>("/api/memes").catch(() => null),
+      ]);
+      const text = JSON.stringify({ rooms: rooms.rooms, activeBootRoomId: rooms.activeBootRoomId, memeCount: memes?.length ?? null }, null, 2);
       return { content: [{ type: "text" as const, text }] };
     } catch (e) {
+      return { content: [{ type: "text" as const, text: `Canvas unreachable: ${String(e)}` }], isError: true };
+    }
+  },
+);
+
+// ---------------------------------------------------------------------------
+// ⏿ Orient — lararium-read
+//
+// Read the text content of any file-backed lar:/// carrier.
+// ---------------------------------------------------------------------------
+
+server.registerTool(
+  "lararium-read",
+  {
+    description: "Read the raw text of a file-backed lar:/// carrier (memetic wikitext).",
+    inputSchema: { uri: z.string().describe("lar:/// URI") },
+  },
+  async ({ uri }) => {
+    try {
+      return { content: [{ type: "text" as const, text: runtime.readResource(uri) }] };
+    } catch (e) {
       return { content: [{ type: "text" as const, text: String(e) }], isError: true };
     }
   },
 );
 
+// ---------------------------------------------------------------------------
+// ⏿ Orient — lararium-inspect
+//
+// Carrier metadata, shape, implements list, and outbound edges.
+// ---------------------------------------------------------------------------
+
 server.registerTool(
-  "lararium-inspect_carrier",
+  "lararium-inspect",
   {
-    description: "Inspect carrier metadata, shape, and implements for a lar:/// URI",
-    inputSchema: { uri: z.string().describe("A lar:/// URI pointing to a carrier") },
+    description:
+      "Inspect a lar:/// carrier: metadata (confidence, mana, role), shape, implements list, outbound pranala edges.",
+    inputSchema: { uri: z.string().describe("lar:/// URI") },
   },
   async ({ uri }) => {
     try {
@@ -157,35 +252,273 @@ server.registerTool(
   },
 );
 
+// ---------------------------------------------------------------------------
+// ⏿ Orient — lararium-query
+//
+// TW5 filter expression against the current boot closure.
+// ---------------------------------------------------------------------------
+
 server.registerTool(
-  "lararium-list_lar_resources",
+  "lararium-query",
   {
-    description: "List all discoverable lar:/// carrier URIs in the lares/ tree",
-    inputSchema: {},
+    description:
+      "Evaluate a TiddlyWiki5 filter expression against the current boot closure.\n\n" +
+      "Examples:\n" +
+      "  [all[memes]tag[lar:///ha.ka.ba/api/v0.1/pono/invariant]]\n" +
+      "  [all[memes]field:depth[0]]\n" +
+      "  [all[memes]nsort[depth]limit[5]]\n" +
+      "  [all[memes]field:rating[data]sort[title]]\n" +
+      "  [all[memes]field:role[threshold constitution]]",
+    inputSchema: { expr: z.string().describe("TW5 filter expression") },
   },
-  async () => {
-    const carriers = runtime.compileCarrierIndex();
-    const uris = carriers.map((c) => c.uri);
-    return { content: [{ type: "text" as const, text: uris.join("\n") }] };
+  async ({ expr }) => {
+    try {
+      const artifact = runtime.compileBoot();
+      const matched = await filterMemesTW(artifact.closure, expr);
+      const lines = matched.map((e) => `${e.uri}  depth:${e.depth}  kind:${e.kind}  role:${e.role || "—"}`);
+      return { content: [{ type: "text" as const, text: lines.join("\n") || "(no matches)" }] };
+    } catch (e) {
+      return { content: [{ type: "text" as const, text: String(e) }], isError: true };
+    }
   },
 );
 
+// ---------------------------------------------------------------------------
+// ⏿ Orient — lararium-edges
+//
+// Pranala edge list from the boot closure's compiled edge table.
+// Direct — does not route through tldraw render.
+// ---------------------------------------------------------------------------
+
 server.registerTool(
-  "lararium-compile_boot",
+  "lararium-edges",
   {
-    description: "Compile the boot closure (BFS over control edges from AGENTS, with kumu defs)",
-    inputSchema: {},
+    description:
+      "List all pranala edges in the boot closure.\n\n" +
+      "Each row: fromUri  fromSocket → toUri  family:role\n\n" +
+      "Optionally filter by family (control | relation | observe | dataflow | message | reaction).",
+    inputSchema: {
+      family: z.enum(["control", "relation", "observe", "dataflow", "message", "reaction", "constraint", "spatial"])
+        .optional()
+        .describe("Filter by edge family"),
+      from: z.string().optional().describe("Filter edges whose fromUri contains this substring"),
+    },
   },
-  async () => {
-    const artifact = runtime.compileBoot();
-    return { content: [{ type: "text" as const, text: JSON.stringify(artifact, null, 2) }] };
+  async ({ family, from }) => {
+    try {
+      const artifact = runtime.compileBoot();
+      const edges = artifact.pranalaEdges ?? [];
+      const filtered = edges
+        .filter((e) => !family || e.family === family)
+        .filter((e) => !from || e.fromUri.includes(from));
+      const lines = filtered.map((e) =>
+        `${e.fromUri}  ${e.fromSocket.split("#")[1] ?? e.fromSocket} → ${e.toUri}  ${e.family}:${e.role ?? "—"}`
+      );
+      return { content: [{ type: "text" as const, text: lines.join("\n") || "(no edges)" }] };
+    } catch (e) {
+      return { content: [{ type: "text" as const, text: String(e) }], isError: true };
+    }
   },
 );
 
+// ---------------------------------------------------------------------------
+// ◇ Decide — lararium-draft
+//
+// Scaffold a new carrier without writing it. Returns the proposed text.
+// ---------------------------------------------------------------------------
+
 server.registerTool(
-  "lararium-compile_boot_receipt",
+  "lararium-draft",
   {
-    description: "Compile a boot receipt (SHA256 digest of the minimal boot artifact)",
+    description:
+      "Scaffold a new meme carrier (memetic wikitext) without writing to disk.\n\n" +
+      "Generates a properly structured carrier with ahu header, metadata block, and edge stubs.\n" +
+      "Returns the proposed text — use lararium-write to commit it.",
+    inputSchema: {
+      uri: z.string().describe("Target lar:/// URI for the new carrier"),
+      role: z.string().optional().describe("Role metadata value (e.g. 'invariant law', 'agent mechanic')"),
+      implements: z.array(z.string()).optional().describe("URIs this carrier implements"),
+      body: z.string().optional().describe("Carrier body text (defaults to placeholder)"),
+    },
+  },
+  async ({ uri, role, implements: impls, body }) => {
+    try {
+      const resolution = resolveLarUri(uri);
+      const name = uri.split("/").at(-1) ?? uri;
+      const implEdges = (impls ?? ["lar:///ha.ka.ba/api/v0.1/pono/meme"]).map((i, idx) =>
+        `<<~ pranala #implements-${idx} ? -> ${i} family:control role:implements >>`
+      ).join("\n");
+
+      const draft = `<<~ ? -> ${uri} >>
+
+<<~ ahu #iam >>
+
+\`\`\`toml
+uri-path     = "${uri.replace("lar:///", "")}"
+content-type = "text/x-memetic-wikitext"
+confidence   = 0.70
+mana         = 0.70
+manao        = 0.70
+manaoio      = 0.70
+${role ? `role         = "${role}"` : `role         = ""`}
+\`\`\`
+
+<<~/ahu >>
+
+<<~ ahu #body >>
+${body ?? `${name} is defined here.`}
+<<~/ahu >>
+
+<<~ ahu #edges >>
+
+${implEdges}
+
+<<~/ahu >>
+
+<<~ -> ? >>
+`;
+
+      return {
+        content: [{
+          type: "text" as const,
+          text: `Draft carrier for ${uri}\nFile path: ${resolution.laresRelPath ?? "(unresolvable)"}\n\n---\n${draft}`,
+        }],
+      };
+    } catch (e) {
+      return { content: [{ type: "text" as const, text: String(e) }], isError: true };
+    }
+  },
+);
+
+// ---------------------------------------------------------------------------
+// ▶ Act — lararium-write
+//
+// Write a carrier to lares/. dry_run (default true) previews without writing.
+// Requires LARARIUM_WRITE_MODE=enabled for actual writes.
+// After a successful write, pings canvas /admin/reseed if LARARIUM_HTTP_URL is set.
+// ---------------------------------------------------------------------------
+
+server.registerTool(
+  "lararium-write",
+  {
+    description:
+      "Write carrier text to a lares/ file.\n\n" +
+      "dry_run: true (default) — preview the write, show current vs proposed text, no disk change.\n" +
+      "dry_run: false — write to disk. Requires LARARIUM_WRITE_MODE=enabled env var.\n\n" +
+      "After a successful write, triggers canvas reseed if LARARIUM_HTTP_URL is set.",
+    inputSchema: {
+      uri: z.string().describe("lar:/// URI of the carrier to write"),
+      text: z.string().describe("Full carrier text (memetic wikitext)"),
+      dry_run: z.boolean().optional().default(true).describe("Preview without writing (default true)"),
+    },
+  },
+  async ({ uri, text, dry_run }) => {
+    try {
+      const resolution = resolveLarUri(uri);
+      if (resolution.virtual) {
+        return { content: [{ type: "text" as const, text: `${uri} is a virtual resource — cannot write` }], isError: true };
+      }
+      if (!resolution.laresRelPath) {
+        return { content: [{ type: "text" as const, text: `${uri} has no file path` }], isError: true };
+      }
+
+      const absPath = join(LARES_ROOT, resolution.laresRelPath);
+      const exists = existsSync(absPath);
+      const current = exists ? readFileSync(absPath, "utf8") : null;
+
+      if (dry_run !== false) {
+        const preview = [
+          `URI:       ${uri}`,
+          `File:      ${resolution.laresRelPath}`,
+          `Action:    ${exists ? "overwrite" : "create"}`,
+          `Write gate: ${WRITE_ENABLED ? "enabled" : "disabled (set LARARIUM_WRITE_MODE=enabled)"}`,
+          "",
+          exists ? `--- current (${current!.length} chars) ---` : "--- (file does not exist) ---",
+          exists ? current! : "",
+          "",
+          `+++ proposed (${text.length} chars) +++`,
+          text,
+        ].join("\n");
+        return { content: [{ type: "text" as const, text: preview }] };
+      }
+
+      if (!WRITE_ENABLED) {
+        return {
+          content: [{ type: "text" as const, text: "Write blocked: set LARARIUM_WRITE_MODE=enabled to allow writes" }],
+          isError: true,
+        };
+      }
+
+      writeFileSync(absPath, text, "utf8");
+
+      let reseedResult = "(canvas bridge not configured)";
+      try {
+        const data = await fetchCanvas<{ reseeded: string; sha: string }>(`/admin/reseed?roomId=boot`);
+        reseedResult = `canvas reseeded — room: ${data.reseeded}, sha: ${data.sha}`;
+      } catch (e) {
+        reseedResult = `canvas reseed skipped: ${String(e)}`;
+      }
+
+      return {
+        content: [{
+          type: "text" as const,
+          text: `Written: ${resolution.laresRelPath} (${text.length} chars)\n${reseedResult}`,
+        }],
+      };
+    } catch (e) {
+      return { content: [{ type: "text" as const, text: String(e) }], isError: true };
+    }
+  },
+);
+
+// ---------------------------------------------------------------------------
+// ▶ Act — lararium-fire
+//
+// Fire a named reaction event on the live canvas server.
+// Requires LARARIUM_HTTP_URL. The server broadcasts the event to connected clients.
+// ---------------------------------------------------------------------------
+
+server.registerTool(
+  "lararium-fire",
+  {
+    description:
+      "Fire a named reaction event on the live canvas server.\n\n" +
+      "Requires LARARIUM_HTTP_URL. The event is broadcast to all connected canvas clients.\n\n" +
+      "Use this to trigger real-time reactions visible on the operator's canvas.",
+    inputSchema: {
+      fromUri: z.string().describe("Source meme URI"),
+      trigger: z.string().describe("Event trigger name (e.g. OnReady, OnActivate, OnBegin)"),
+      payload: z.record(z.unknown()).optional().describe("Event payload (arbitrary JSON object)"),
+    },
+  },
+  async ({ fromUri, trigger, payload }) => {
+    try {
+      const data = await fetchCanvas<{ fired: boolean; trigger: string }>("/api/fire", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ fromUri, trigger, payload: payload ?? {} }),
+      });
+      return { content: [{ type: "text" as const, text: JSON.stringify(data, null, 2) }] };
+    } catch (e) {
+      return { content: [{ type: "text" as const, text: String(e) }], isError: true };
+    }
+  },
+);
+
+// ---------------------------------------------------------------------------
+// ⤴ Aftermath — lararium-receipt
+//
+// Current boot receipt — SHA256 identity hash for the live closure.
+// Use this to verify alignment after a write or to detect drift.
+// ---------------------------------------------------------------------------
+
+server.registerTool(
+  "lararium-receipt",
+  {
+    description:
+      "Compile the current boot receipt — SHA256 identity hash of the live closure.\n\n" +
+      "Two receipts with the same hash mean the graph is identical. Use after a write\n" +
+      "to verify the change landed, or to detect drift between agent and operator state.",
     inputSchema: {},
   },
   async () => {
@@ -200,24 +533,33 @@ server.registerTool(
 // ---------------------------------------------------------------------------
 
 server.registerPrompt(
-  "lararium-boot_minimal",
-  {
-    description: "Explain or inspect the current minimal boot closure",
-  },
+  "lararium-align",
+  { description: "Bootstrap operator-agent alignment — orient the agent to the current graph state" },
   async () => {
     const artifact = runtime.compileBoot();
-    const uris = artifact.closure.map((e) => e.uri).join("\n");
     const receipt = await runtime.compileBootReceipt(artifact);
+    const canvas = await canvasStatus();
+    const INVARIANT_URI = "lar:///ha.ka.ba/api/v0.1/pono/invariant";
+    const invariants = artifact.closure.filter((e) => e.implements.includes(INVARIANT_URI)).map((e) => e.uri);
+    const closureLines = artifact.closure.map((e) => `  depth:${e.depth}  ${e.uri}`).join("\n");
+
     return {
-      messages: [
-        {
-          role: "user" as const,
-          content: {
-            type: "text" as const,
-            text: `The Lararium minimal boot closure contains ${artifact.memeCount} memes:\n\n${uris}\n\nReceipt: ${JSON.stringify(receipt, null, 2)}`,
-          },
+      messages: [{
+        role: "user" as const,
+        content: {
+          type: "text" as const,
+          text: [
+            `Lararium boot closure — ${artifact.memeCount} memes (receipt: ${receipt.sha256})`,
+            "",
+            closureLines,
+            "",
+            `Invariants (${invariants.length}):`,
+            invariants.map((u) => `  ${u}`).join("\n"),
+            "",
+            `Canvas: ${canvas.status === "live" ? `live at ${canvas.url} — rooms: ${canvas.rooms.join(", ")}` : "not connected"}`,
+          ].join("\n"),
         },
-      ],
+      }],
     };
   },
 );
@@ -244,107 +586,6 @@ server.registerPrompt(
     return {
       messages: [{ role: "user" as const, content: { type: "text" as const, text } }],
     };
-  },
-);
-
-// tldraw projection tool — emits store-ready shape records for the boot closure
-server.registerTool(
-  "lararium-render_tldraw",
-  {
-    description: "Project the boot closure into tldraw-ready shape records (story-river layout)",
-    inputSchema: {},
-  },
-  async () => {
-    try {
-      const artifact = runtime.compileBoot();
-      const readText = (uri: string): string | null => {
-        try { return runtime.readResource(uri); } catch { return null; }
-      };
-      const emission = renderToTldraw(artifact, { readText, includeAhuFrames: true });
-      return {
-        content: [{
-          type: "text" as const,
-          text: JSON.stringify({ pages: emission.pages, shapes: emission.shapes }, null, 2),
-        }],
-      };
-    } catch (e) {
-      return { content: [{ type: "text" as const, text: String(e) }], isError: true };
-    }
-  },
-);
-
-// Canvas-oriented tools — query the live meme graph and room model
-
-server.registerTool(
-  "lararium-filter",
-  {
-    description: "Evaluate a TiddlyWiki5 filter expression against the current boot closure. Returns matching meme URIs.\n\nExamples:\n  [all[memes]tag[lar:///ha.ka.ba/api/v0.1/pono/invariant]]\n  [all[memes]field:depth[0]]\n  [all[memes]nsort[depth]limit[5]]\n  [all[memes]field:rating[data]sort[title]]",
-    inputSchema: {
-      expr: z.string().describe("TW5 filter expression"),
-    },
-  },
-  async ({ expr }) => {
-    try {
-      const artifact = runtime.compileBoot();
-      const matched = await filterMemesTW(artifact.closure, expr);
-      const lines = matched.map((e) => `${e.uri}  (depth:${e.depth} rating:${e.kind})`);
-      return { content: [{ type: "text" as const, text: lines.join("\n") || "(no matches)" }] };
-    } catch (e: unknown) {
-      return { content: [{ type: "text" as const, text: String(e) }], isError: true };
-    }
-  },
-);
-
-server.registerTool(
-  "lararium-room_list",
-  {
-    description: "List the available Lararium canvas rooms (spaces) with their filter expressions and tldraw page IDs. If LARARIUM_HTTP_URL is set, also reports which rooms are live on the canvas server.",
-    inputSchema: {},
-  },
-  async () => {
-    let liveRooms: string[] | null = null;
-    try {
-      const data = await fetchCanvas("/api/rooms") as { rooms: string[]; activeBootRoomId: string };
-      liveRooms = data.rooms;
-    } catch { /* bridge unavailable — degrade gracefully */ }
-
-    const rows = DEFAULT_ROOMS.map((r) => {
-      const pageId = (r.tlPageId ?? r.id).replace("page:", "");
-      const live = liveRooms ? (liveRooms.some((id) => id.startsWith(r.id)) ? " [live]" : "") : "";
-      return `${r.id.padEnd(12)} page:${pageId.padEnd(20)} filter: ${r.filter}${live}`;
-    });
-    if (liveRooms) rows.push(`\nlive server rooms: ${liveRooms.join(", ")}`);
-    return { content: [{ type: "text" as const, text: rows.join("\n") }] };
-  },
-);
-
-server.registerTool(
-  "lararium-edge_list",
-  {
-    description: "List all pranala edges (arrows) in the minimal boot projection. Each row: sourceFrame → targetFrame  family:role",
-    inputSchema: {
-      family: z.enum(["control", "relation", "observe", "dataflow"]).optional().describe("Filter by edge family"),
-    },
-  },
-  async ({ family }) => {
-    try {
-      const artifact = runtime.compileBoot();
-      const readText = (uri: string): string | null => {
-        try { return runtime.readResource(uri); } catch { return null; }
-      };
-      const emission = renderToTldraw(artifact, { readText, includeAhuFrames: false });
-      // Arrows are in the tldraw snapshot as shape records with type:"arrow"
-      const arrows = (emission.shapes as unknown as Array<Record<string, unknown>>)
-        .filter((s) => s["type"] === "arrow")
-        .filter((s) => !family || (s["meta"] as Record<string, unknown>)?.["family"] === family);
-      const lines = arrows.map((s) => {
-        const meta = s["meta"] as Record<string, unknown>;
-        return `${String(s["id"]).slice(0, 40)}  family:${meta["family"]}  role:${meta["role"] ?? "—"}`;
-      });
-      return { content: [{ type: "text" as const, text: lines.join("\n") || "(no edges)" }] };
-    } catch (e) {
-      return { content: [{ type: "text" as const, text: String(e) }], isError: true };
-    }
   },
 );
 

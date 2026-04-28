@@ -117,48 +117,52 @@ describe("MCP stdio smoke", () => {
       result: { tools: { name: string }[] };
     };
     const names = resp.result.tools.map((t) => t.name);
-    expect(names).toContain("lararium-resolve_lar_uri");
-    expect(names).toContain("lararium-inspect_carrier");
-    expect(names).toContain("lararium-compile_boot");
-    expect(names).toContain("lararium-compile_boot_receipt");
+    expect(names).toContain("lararium-hud");
+    expect(names).toContain("lararium-read");
+    expect(names).toContain("lararium-inspect");
+    expect(names).toContain("lararium-query");
+    expect(names).toContain("lararium-edges");
+    expect(names).toContain("lararium-write");
+    expect(names).toContain("lararium-receipt");
   });
 
-  test("prompts/list — boot prompt present", async () => {
+  test("prompts/list — align and explain prompts present", async () => {
     proc.stdin!.write(makeRequest(4, "prompts/list"));
     const resp = await readResponse(proc) as {
       result: { prompts: { name: string }[] };
     };
     const names = resp.result.prompts.map((p) => p.name);
-    expect(names).toContain("lararium-boot_minimal");
+    expect(names).toContain("lararium-align");
     expect(names).toContain("lararium-explain_uri");
   });
 
-  test("tools/call resolve — AGENTS resolves correctly", async () => {
+  test("tools/call hud — returns memeCount and entry", async () => {
     proc.stdin!.write(makeRequest(5, "tools/call", {
-      name: "lararium-resolve_lar_uri",
-      arguments: { uri: "lar:///AGENTS" },
-    }));
-    const resp = await readResponse(proc) as {
-      result: { content: { type: string; text: string }[]; isError?: boolean };
-    };
-    expect(resp.result.isError).toBeFalsy();
-    const parsed = JSON.parse(resp.result.content[0]!.text);
-    expect(parsed.kind).toBe("caps-file");
-    expect(parsed.virtual).toBe(false);
-  });
-
-  test("tools/call minimal boot — closure is non-empty, entry is AGENTS", async () => {
-    proc.stdin!.write(makeRequest(6, "tools/call", {
-      name: "lararium-compile_boot",
+      name: "lararium-hud",
       arguments: {},
     }));
     const resp = await readResponse(proc, 10000) as {
       result: { content: { type: string; text: string }[]; isError?: boolean };
     };
     expect(resp.result.isError).toBeFalsy();
-    const artifact = JSON.parse(resp.result.content[0]!.text);
-    expect(artifact.memeCount).toBeGreaterThanOrEqual(18);
-    expect(artifact.closure[0]?.uri).toBe("lar:///AGENTS");
+    const hud = JSON.parse(resp.result.content[0]!.text);
+    expect(hud.memeCount).toBeGreaterThanOrEqual(18);
+    expect(hud.entry).toBe("lar:///AGENTS");
+    expect(hud.validation.allExist).toBe(true);
+  });
+
+  test("tools/call receipt — returns sha256", async () => {
+    proc.stdin!.write(makeRequest(6, "tools/call", {
+      name: "lararium-receipt",
+      arguments: {},
+    }));
+    const resp = await readResponse(proc, 10000) as {
+      result: { content: { type: string; text: string }[]; isError?: boolean };
+    };
+    expect(resp.result.isError).toBeFalsy();
+    const receipt = JSON.parse(resp.result.content[0]!.text);
+    expect(receipt.sha256).toMatch(/^(sha256:)?[0-9a-f]{63,64}$/);
+    expect(receipt.memeCount).toBeGreaterThanOrEqual(18);
   });
 
   test("notifications/initialized does not produce a response", async () => {

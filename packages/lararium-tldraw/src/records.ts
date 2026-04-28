@@ -63,6 +63,70 @@ export function pageId(artifactType: string): LarProjectionId {
 }
 
 // ---------------------------------------------------------------------------
+// Template prop extraction — parse a kumu def body TOML into MemeTemplateProps
+// ---------------------------------------------------------------------------
+
+import type { KumuDef } from "@lararium/core";
+
+/**
+ * Extract MemeTemplateProps from a kumu definition whose body contains a TOML block.
+ * Falls back to the provided default when the TOML is absent or unparseable.
+ */
+export function templatePropsFromKumuDef(
+  def: KumuDef,
+  fallback: MemeTemplateProps,
+): MemeTemplateProps {
+  for (const node of def.body) {
+    if (node.kind === "Sigil" && (node.sigilName === "toml" || node.sigilName === "iam")) {
+      const content = node.attrs["content"] ?? "";
+      return parseTemplateTOML(content, fallback);
+    }
+  }
+  return fallback;
+}
+
+function parseTemplateTOML(toml: string, fallback: MemeTemplateProps): MemeTemplateProps {
+  const get = (key: string): string | undefined => {
+    const m = new RegExp(`^${key}\\s*=\\s*(.+)$`, "m").exec(toml);
+    if (!m) return undefined;
+    return m[1]!.trim().replace(/^["']|["']$/g, "");
+  };
+  const num = (key: string, def: number): number => {
+    const v = get(key); return v ? (parseFloat(v) || def) : def;
+  };
+  const bool = (key: string, def: boolean): boolean => {
+    const v = get(key); return v !== undefined ? v === "true" : def;
+  };
+  return {
+    w:           num("w",           fallback.w),
+    h:           num("h",           fallback.h),
+    color:       get("color")    ?? fallback.color,
+    label:       get("label")    ?? fallback.label,
+    includeAhu:  bool("include-ahu",  fallback.includeAhu),
+    showNotes:   bool("show-notes",   fallback.showNotes),
+    showCarrier: bool("show-carrier", fallback.showCarrier),
+    opacity:     num("opacity",       fallback.opacity),
+  };
+}
+
+/**
+ * Build a TemplatePropsByLevel from a KumuRegistry.
+ * Falls back to DEFAULT_TEMPLATE_PROPS for any missing template.
+ */
+export function buildTemplatePropsByLevel(
+  registry: { get(name: string): KumuDef | undefined },
+): TemplatePropsByLevel {
+  const d = DEFAULT_TEMPLATE_PROPS;
+  return {
+    strategic:   registry.get("meme-strategic")   ? templatePropsFromKumuDef(registry.get("meme-strategic")!,   d.strategic)   : d.strategic,
+    operational: registry.get("meme-operational") ? templatePropsFromKumuDef(registry.get("meme-operational")!, d.operational) : d.operational,
+    tactical:    registry.get("meme-tactical")    ? templatePropsFromKumuDef(registry.get("meme-tactical")!,    d.tactical)    : d.tactical,
+    combat:      registry.get("meme-combat")      ? templatePropsFromKumuDef(registry.get("meme-combat")!,      d.combat)      : d.combat,
+    action:      registry.get("meme-action")      ? templatePropsFromKumuDef(registry.get("meme-action")!,      d.action)      : d.action,
+  };
+}
+
+// ---------------------------------------------------------------------------
 // Projection record types (tldraw-shaped, no tldraw import)
 // ---------------------------------------------------------------------------
 
@@ -98,7 +162,46 @@ export interface LarTLFrame {
   readonly rating: string;
   /** implements list from carrier */
   readonly implements: readonly string[];
+  /** Full carrier text — stored in tldraw meta so the CRDT carries it natively. */
+  readonly carrierText?: string;
+  /** Template props for all 5 zoom levels — seeded from lares/templates/ kumu defs. */
+  readonly templateProps?: TemplatePropsByLevel;
 }
+
+/**
+ * Canvas rendering props for one zoom-level template.
+ * Seeded into shape.meta.templateProps at projection time.
+ * Zoom listener applies the right set on threshold crossings.
+ */
+export interface MemeTemplateProps {
+  w:             number;
+  h:             number;
+  /** "rating" = use meme's own rating color; otherwise a tldraw color name. */
+  color:         string;
+  /** "slug" | "full" | "none" */
+  label:         string;
+  includeAhu:    boolean;
+  showNotes:     boolean;
+  showCarrier:   boolean;
+  opacity:       number;
+}
+
+export type TemplatePropsByLevel = {
+  strategic:   MemeTemplateProps;
+  operational: MemeTemplateProps;
+  tactical:    MemeTemplateProps;
+  combat:      MemeTemplateProps;
+  action:      MemeTemplateProps;
+};
+
+/** Fallback props used when a template carrier is missing from the registry. */
+export const DEFAULT_TEMPLATE_PROPS: TemplatePropsByLevel = {
+  strategic:   { w: 60,  h: 28,  color: "grey",   label: "none", includeAhu: false, showNotes: false, showCarrier: false, opacity: 0.7 },
+  operational: { w: 120, h: 52,  color: "rating",  label: "slug", includeAhu: false, showNotes: false, showCarrier: false, opacity: 1.0 },
+  tactical:    { w: 220, h: 100, color: "rating",  label: "slug", includeAhu: false, showNotes: true,  showCarrier: false, opacity: 1.0 },
+  combat:      { w: 320, h: 160, color: "rating",  label: "full", includeAhu: true,  showNotes: true,  showCarrier: false, opacity: 1.0 },
+  action:      { w: 400, h: 220, color: "rating",  label: "full", includeAhu: true,  showNotes: true,  showCarrier: true,  opacity: 1.0 },
+};
 
 /** A projected arrow shape — one per PranaEdge. */
 export interface LarTLArrow {

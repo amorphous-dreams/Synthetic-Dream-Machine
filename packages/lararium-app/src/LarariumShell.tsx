@@ -18,10 +18,12 @@
  */
 
 import { useReducer, useEffect, useState, useRef, useCallback } from "react";
+import type { Editor } from "tldraw";
 import { createPortal } from "react-dom";
 import { INITIAL_VIEW_STATE, viewStateReducer, DEFAULT_ROOMS } from "@lararium/tldraw";
 import type { LarViewAction, ZoomLevel } from "@lararium/tldraw";
 import { LarariumCanvas } from "./LarariumCanvas.js";
+import { MemeDetailPanel } from "./MemeDetailPanel.js";
 import { LarariumCtx, useLararium, shortUri, useTheme } from "./lararium-context.js";
 import "./lararium-theme.css";
 import type { MemeEntry } from "./App.js";
@@ -160,6 +162,8 @@ export function LarariumShell({ wsUrl, memes, onMemes }: ShellProps) {
   const [canvasMode, setCanvasMode] = useState(false);
   const [zoomLevel, setZoomLevel] = useState<ZoomLevel>("tactical");
   const [theme, cycleTheme] = useTheme();
+  const [editor, setEditorState] = useState<Editor | null>(null);
+  const setEditor = useCallback((e: Editor | null) => setEditorState(e), []);
 
   // ⌘K / Ctrl+K → palette   |   ` (backtick) → canvas mode toggle
   useEffect(() => {
@@ -193,6 +197,8 @@ export function LarariumShell({ wsUrl, memes, onMemes }: ShellProps) {
     zoomLevel,
     theme,
     cycleTheme,
+    editor,
+    setEditor,
   };
 
   return (
@@ -211,6 +217,7 @@ export function LarariumShell({ wsUrl, memes, onMemes }: ShellProps) {
           <LarariumCommandPalette onClose={() => setPaletteOpen(false)} />,
           document.body
         )}
+        {createPortal(<MemeDetailPanel />, document.body)}
       </div>
     </LarariumCtx.Provider>
   );
