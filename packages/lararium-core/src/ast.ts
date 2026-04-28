@@ -4,6 +4,9 @@
 // Everything else — conditionals, iteration, definitions, variables, etc. —
 // collapses into SigilNode: { sigilName, attrs, body }. Same shape TW5 uses.
 // DynamicNode is the escape hatch for grammar-meme-registered extensions.
+//
+// PranaEdge, GrammarRules, SigilRule, FamilyRule live here so parser.ts and
+// pranala-parser.ts can share them without a circular dependency.
 
 export type MemeAstKind =
   | "Worksite"      // ahu — addressable scope socket
@@ -50,7 +53,8 @@ export interface EdgeSugarNode extends AstBase {
   toRaw: string;
   family: string;
   role: string | null;
-  trigger: string | null; // papalohe only
+  trigger: string | null; // papalohe — source event name (DeviceA.EventX)
+  fn: string | null;      // papalohe — target function name (DeviceB.FunctionY)
 }
 
 export interface DispatchNode extends AstBase {
@@ -130,3 +134,240 @@ export type MemeAstNode =
   | TextNode
   | SigilNode
   | DynamicNode;
+
+// ---------------------------------------------------------------------------
+// PranaEdge — compiled edge record (output of edgesFromAst / parsePranalaEdges)
+// ---------------------------------------------------------------------------
+
+export interface PranaEdge {
+  readonly fromUri: string;
+  /** The enclosing ahu worksite socket. Falls back to carrierUri if no ahu is open. */
+  readonly fromSocket: string;
+  /**
+   * Named outgoing slot on the fromSocket ahu, if the pranala carries an explicit #fragment.
+   * `<<~ pranala #hydrate-hud ? -> TARGET >>` → fromSocket=#core-hydration, fromSlot=#hydrate-hud
+   * Null for bare `?` pranala (no explicit slot name).
+   */
+  readonly fromSlot: string | null;
+  readonly toUri: string;
+  readonly toSocket: string;
+  readonly family: string;
+  readonly lifecycle: string;
+  readonly role: string | null;
+  readonly traversal: string;
+  readonly propagation: string;
+  readonly label: string;
+  readonly payload: Record<string, unknown>;
+  readonly cardinality: string | null;
+  readonly polarity: string | null;
+  readonly status: string;
+  readonly confidence: number | null;
+  readonly renderMode: string | null;
+}
+
+export type PranaViolationSeverity = "error" | "warning";
+
+export interface PranaEdgeViolation {
+  readonly fromUri: string;
+  readonly toUri: string;
+  readonly family: string;
+  readonly severity: PranaViolationSeverity;
+  readonly rule: string;
+  readonly message: string;
+}
+
+// ---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------
+// Law of Fives — invariant 5-point ladders
+//
+// Two orthogonal axes appear across every domain in the system.
+// Scale tells you the size of a loop. Phase tells you where in it you are.
+// They run in opposite directions: Act is the finest-grain scale (Action);
+// Observe is the widest-lens scale (Week). This tension is productive.
+//
+// All domain-specific ladders (scope, zoom, Kowloon addressing, lifecycle)
+// are projections of LADDER_5. All phase/confidence/stance systems are
+// projections of OODA_HA_5.
+// ---------------------------------------------------------------------------
+
+/** Temporal/spatial scale ladder — finest (action) to coarsest (week). */
+export const LADDER_5 = ["action", "round", "turn", "watch", "week"] as const;
+export type Ladder5 = typeof LADDER_5[number];
+
+/** OODA-HA phase cycle — active (act) to reflective (aftermath). */
+export const OODA_HA_5 = ["act", "decide", "orient", "observe", "aftermath"] as const;
+export type OodaHa5 = typeof OODA_HA_5[number];
+
+/** Scope principle ladder — maps 1:1 onto LADDER_5. */
+export const SCOPE_5 = ["ephemeral", "personal", "consensual", "collective", "universal"] as const;
+export type Scope5 = typeof SCOPE_5[number];
+
+/** Scope → Ladder5 projection. */
+export const SCOPE_TO_LADDER: Record<Scope5, Ladder5> = {
+  ephemeral:  "action",
+  personal:   "round",
+  consensual: "turn",
+  collective: "watch",
+  universal:  "week",
+};
+
+// ---------------------------------------------------------------------------
+// Stances (Syad perspectives) — five epistemic standpoints.
+// Register measures confidence *within* the active stance; not universal truth.
+// ---------------------------------------------------------------------------
+
+export const STANCES = ["philosopher", "poet", "satirist", "humorist", "private"] as const;
+export type Stance = typeof STANCES[number];
+
+// ---------------------------------------------------------------------------
+// Syad (Jaina Saptabhangi) — 7 truth-value compounds.
+// Three primitives T/F/M yield 7 compounds. P5/P6 are threshold crossings
+// (stance past its boundary). P7 maps to Arcana only — no Stance mediates it.
+// Poet and Private share P3; feed direction (Tool graph) differentiates them.
+// Satirist: stated=P2, operational=P6 (maturity gradient within one stance).
+// ---------------------------------------------------------------------------
+
+export const SYAD_7 = [
+  "asti",                    // P1 T       — Philosopher
+  "nasti",                   // P2 F       — Satirist (stated)
+  "avaktavya",               // P3 M       — Poet (outward) / Private (inward)
+  "asti-nasti",              // P4 T+F     — Humorist
+  "asti-avaktavya",          // P5 T+M     — threshold: Philosopher past boundary
+  "nasti-avaktavya",         // P6 F+M     — threshold / Satirist operational
+  "asti-nasti-avaktavya",    // P7 T+F+M   — Arcana only
+] as const;
+export type Syad7 = typeof SYAD_7[number];
+
+/** Primary Syad predicate for each stance. Satirist maps to stated (P2); see SATIRIST_OPERATIONAL for P6. */
+export const STANCE_SYAD: Record<Stance, Syad7> = {
+  philosopher: "asti",
+  poet:        "avaktavya",
+  satirist:    "nasti",
+  humorist:    "asti-nasti",
+  private:     "avaktavya",
+};
+
+/** Satirist operational predicate — held when stable, not just stated. */
+export const SATIRIST_OPERATIONAL: Syad7 = "nasti-avaktavya";
+
+// ---------------------------------------------------------------------------
+// Tools (Chapel Perilous) — five orientation postures.
+// ASCII symbols are URI-safe invariants used in HUD notation.
+// Two axes: feed (external | internal | release) × aperture (wide | narrow | release).
+// Arcana has no Stance intermediary; maps directly to Syad P7.
+// ---------------------------------------------------------------------------
+
+export const TOOLS = ["wand", "cup", "sword", "pentacle", "arcana"] as const;
+export type Tool = typeof TOOLS[number];
+
+/** ASCII sigil for each tool. */
+export const TOOL_ASCII: Record<Tool, string> = {
+  wand:     "*",
+  cup:      "?",
+  sword:    "!",
+  pentacle: "~",
+  arcana:   "-",
+};
+
+export type ToolFeed     = "external" | "internal" | "release";
+export type ToolAperture = "wide" | "narrow" | "release";
+
+export const TOOL_FEED: Record<Tool, ToolFeed> = {
+  wand:     "external",
+  cup:      "external",
+  sword:    "external",
+  pentacle: "internal",
+  arcana:   "release",
+};
+
+export const TOOL_APERTURE: Record<Tool, ToolAperture> = {
+  wand:     "wide",
+  cup:      "wide",
+  sword:    "narrow",
+  pentacle: "narrow",
+  arcana:   "release",
+};
+
+// ---------------------------------------------------------------------------
+// Render modes — canonical values for PranaEdge.renderMode.
+// The render layer switches on these; null means default arrow treatment.
+// ---------------------------------------------------------------------------
+
+export const RENDER_MODES = [
+  "reaction-wire",   // papalohe — trigger label at source, fn label at target
+] as const;
+export type RenderMode = typeof RENDER_MODES[number];
+
+// ---------------------------------------------------------------------------
+// Canonical roles per family — informational; not exhaustive.
+// roleRecommended families should carry one of these (or a custom string).
+// ---------------------------------------------------------------------------
+
+export const REACTION_ROLES = ["subscription", "handler", "callback"] as const;
+export type ReactionRole = typeof REACTION_ROLES[number];
+
+// ---------------------------------------------------------------------------
+// Widget tree — Phase 3 self-hosting
+//
+// parseTree (MemeAstNode[])  →  resolveWidgetTree()  →  WidgetNode[]  →  render
+//
+// KumuDef: the compiled form of <<~! kumu name(params) >>...<<~/kumu >>
+//   Equivalent to TW5 \widget $name / UEFN creative_device type definition.
+//   Each kumu instance at render time is a causal island (async boundary).
+//
+// WidgetNode: the re-typed parse node that names its kumu handler.
+//   def === null → Hazel typed hole (unresolved kumu name — partial edits stay live).
+// ---------------------------------------------------------------------------
+
+export interface KumuDef {
+  readonly name: string;
+  readonly params: readonly string[];
+  readonly carrierUri: string;
+  readonly body: readonly MemeAstNode[];
+}
+
+export interface WidgetNode {
+  readonly kind: "Widget";
+  readonly kumuName: string;
+  /** null when kumu type is not in registry — typed hole; edit stays live */
+  readonly def: KumuDef | null;
+  readonly resolvedProps: Readonly<Record<string, string>>;
+  readonly body: readonly WidgetNode[];
+  readonly pos: number;
+  readonly raw: string;
+}
+
+// ---------------------------------------------------------------------------
+// GrammarRules — external grammar interface (Phase 2+)
+//
+// Loaded from lares/grammars/memetic-wikitext.md; overrides built-in patterns
+// and family contracts. Accepted as optional arg by parseMemeCarrier and
+// parsePranalaEdges.
+// ---------------------------------------------------------------------------
+
+export interface SigilRule {
+  name: string;
+  kind: "worksite" | "edge" | "edge-sugar" | "metadata" | "header" | "concurrency" | "query" | "guest-grammar" | "guest-grammar-alias" | "query-alias" | "pragma" | "conditional" | "conditional-else" | "conditional-branch" | "iteration" | "context" | "concurrency-alias" | "edge-alias" | "pragma-alias" | "iteration-alias" | "conditional-alias";
+  layer?: "compile" | "render" | "both";
+  inlinePattern?: string;
+  blockPattern?: string;
+  openPattern?: string;
+  closePattern?: string;
+  pattern?: string;
+  pragmaPattern?: string;
+  aliasFor?: string;
+  defaultFamily?: string;
+  defaultPropagation?: string;
+}
+
+export interface FamilyRule {
+  name: string;
+  dagRequired: boolean;
+  roleRecommended: boolean;
+  confidenceBounded: boolean;
+}
+
+export interface GrammarRules {
+  sigils: SigilRule[];
+  families: FamilyRule[];
+}

@@ -14,12 +14,14 @@ import {
   resolveLarUri,
   parseCarrier,
   parsePranalaEdges,
+  parseMemeCarrier,
   MemeGraph,
   Meme,
   laresRelPathToLarUri,
   compileMinimalBoot,
   compileFullBoot,
   compileBootReceipt,
+  collectKumuDefs,
   ENTRY_URI,
   type BootArtifact,
   type BootReceipt,
@@ -27,6 +29,7 @@ import {
   type GrammarRules,
   type SigilRule,
   type FamilyRule,
+  type KumuDef,
 } from "@lararium/core";
 
 // Sync SHA-256 content hash — Node-only. Same algorithm and output format as the
@@ -284,6 +287,27 @@ export function compileCarrierIndex(): CarrierRecord[] {
     } catch { continue; }
   }
   return records;
+}
+
+// ---------------------------------------------------------------------------
+// KumuDef collection — walks the loaded meme graph and extracts kumu type
+// definitions from carrier text. Called after the closure BFS is complete.
+// Each carrier is re-read once here; the AST parse is cheap relative to I/O.
+// ---------------------------------------------------------------------------
+
+function collectKumuDefsFromGraph(graph: MemeGraph, uris: string[]): KumuDef[] {
+  const result: KumuDef[] = [];
+  for (const uri of uris) {
+    const meme = graph.memes.get(uri);
+    if (!meme?.laresRelPath || !meme.exists) continue;
+    const abs = join(LARES_ROOT, meme.laresRelPath);
+    try {
+      const text = readFileSync(abs, "utf8");
+      const ast = parseMemeCarrier(uri, text);
+      result.push(...collectKumuDefs(uri, ast));
+    } catch { continue; }
+  }
+  return result;
 }
 
 // ---------------------------------------------------------------------------

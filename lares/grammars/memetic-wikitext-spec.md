@@ -204,11 +204,11 @@ State in lararium has five principled scopes. These are *principles*, not techni
 
 <<~/ahu >>
 
-<<~ ahu #seven-families >>
+<<~ ahu #eight-families >>
 
-## Seven Pranala Families
+## Eight Pranala Families
 
-All seven families are now registered in the grammar meme `[[families]]` TOML array and in `KNOWN_FAMILIES`/`FAMILY_CONTRACTS` in `pranala-parser.ts`.
+All eight families registered in the grammar meme `[[families]]` TOML array and in `KNOWN_FAMILIES`/`FAMILY_CONTRACTS` in `pranala-parser.ts`.
 
 | Family | Sigil sugar | Render semantic | Compile semantic |
 |--------|-------------|-----------------|------------------|
@@ -218,9 +218,49 @@ All seven families are now registered in the grammar meme `[[families]]` TOML ar
 | `observe` | `aka` | **shadow transclusion** | live inspection / reveal |
 | `message` | `lele` | fire-and-forget dispatch | signal passage, no ownership |
 | `constraint` | `pono` | declarative rule assertion | structural invariant, no exec pulse |
-| `reaction` | `papalohe` | triggered response — fires when source activates | UEFN device graph event wire; trigger property carries event name |
+| `reaction` | `papalohe` | triggered response — fires when source activates | UEFN device graph event wire; trigger at source, fn at target; renderMode: reaction-wire |
+| `spatial` | (pending) | containment / portal / adjacency | infinite canvas + RPG multi-level; roles: contains \| portal \| adjacent \| layer |
 
-**`papalohe`** — Lua tradition: *pāpālohe* — warrior body-listening reflex. The edge fires only when the source event activates it. Arrow label on a UEFN device graph canvas: `papalohe`.
+**`papalohe`** — Lua tradition: *pāpālohe* — warrior body-listening reflex. The edge fires only when the source event activates it.
+
+**Full UEFN wire:** `<<~ papalohe DeviceA -> DeviceB trigger:OnEliminated fn:ShowScore >>`
+- `trigger` — source event name (e.g. `GuardPost.OnEliminated`)
+- `fn` — target function name (e.g. `HUD.ShowScore`)
+- `role` — canonical values: `subscription` | `handler` | `callback` (warning if absent)
+- `renderMode` — always `reaction-wire` for papalohe; renderer places trigger label at source arrowhead, fn label at target
+
+**OODA-HA loop for a papalohe edge:**
+
+| Phase | Layer | Operation |
+|-------|-------|-----------|
+| Observe | wikitext surface | operator writes `<<~ papalohe A -> B trigger:OnElim fn:Show >>` |
+| Orient | `parseMemeCarrier` | → `EdgeSugarNode { trigger, fn }` |
+| Decide | `edgesFromAst` | → `PranaEdge { family: "reaction", payload: { trigger, fn }, renderMode: "reaction-wire" }` |
+| Act | Verse/UEFN runtime | `DeviceA.OnEliminated.Subscribe(agent => DeviceB.ShowScore(agent))` |
+| Aftermath | `validatePranaEdge` | warn if no role; loop closes; state change feeds back to Observe |
+
+The wire (`papalohe`) belongs to Orient phase — a named shape in the graph. The execution (`suspends`/`kukali`, Gap 5) belongs to Act phase. Different phases, different sigils.
+
+**Stance lenses on a papalohe edge:**
+
+Each posture reads the same edge differently — the stance sets what the register measures, the tool sets the aperture.
+
+- `*!` (external/narrow — Philosopher's natural posture): reads the specific wire — "A.OnEliminated causes B.ShowScore" — propositional commitment, detail view
+- `*?` (external/wide — Poet ranging): reads the reaction topology — which devices react to which across the carrier
+- `~!` (internal/narrow — Satirist targeting): reads what does NOT have a handler — the absent reactions, missing fn, unmatched triggers (P6: the void the targeting produced)
+- `~?` (internal/wide — Private reflecting): reads what the reaction does to B's internal state when it fires
+- `?` (Cup/Humorist): holds A and B as reaction partners — does this coupling fit? does ShowScore make sense after OnEliminated?
+
+**Rendering loop:**
+
+The canvas render layer reads `PranaEdge.renderMode`. For `"reaction-wire"`:
+1. Draw directed arrow A → B
+2. Label source end with `payload.trigger` (if set)
+3. Label target end with `payload.fn` (if set)
+4. Apply reaction family visual treatment (distinct from control/dataflow arrows)
+5. `role` value surfaces as edge tooltip or secondary label
+
+Posture-aware render: `*!` posture shows trigger/fn detail labels; `*?` posture renders topology only (device names, no labels); `~!` posture highlights edges with missing fn (Satirist reads the gap).
 
 ### Shadow vs. Live Transclusion
 
@@ -822,7 +862,7 @@ The render stack guard applies to `hui`/`heihei`/`puka` bodies.
 | Section transclusion | `{{Title##section}}` | `<<~ kahea lar:///uri#section-id >>` | ◎ proposed (fragment form) |
 | Macro/procedure definition | `\define name(p) body` | `<<~! wehe name(p) >>` or `<<~! \procedure name(p) >>` | ◎ `[SC]` — alias registered |
 | Function definition | `\function name(p) = expr` | `<<~! helu name(p) = expr >>` or `<<~! \function name(p) = expr >>` | ◎ `[SC]` — alias registered |
-| Macro/procedure call | `<<macroName params>>` | `<<~ kahea name(key:val) >>` or `<<~ \transclude name >>` | ◎ `[SC]` — alias registered |
+| Macro/procedure call | `<<macroName params>>` | `<<~ kahea name(key:val) >>` or `<<~ \transclude name >>` | ✓ parse layer — `SigilNode { sigilName:"kahea", attrs:{name,args} }`; wehe executor pending |
 | Context-set | `<$tiddler tiddler="X">` | `<<~ meme lar:///X >>` or `<<~ \tiddler lar:///X >>` | ◎ `[SC]` — alias registered |
 | Conditional | `<$list filter="..." limit="1">` | `<<~ wai filter >> ... <<~ mukuwai >> ... <<~/wai >>` | ◎ proposed `[C]` names |
 | Iteration | `<$list filter="...">` | `<<~ huli filter as item >> ... <<~/huli>>` | ◎ proposed `[SC]` approved |
@@ -854,6 +894,152 @@ The render stack guard applies to `hui`/`heihei`/`puka` bodies.
 | Event binding | `pranala family:message` / `lele` | ◎ `[SC]` |
 
 Legend: ✓ = current, ◎ = proposed/registered, ⚠ = deferred or pending
+
+<<~/ahu >>
+
+<<~ ahu #law-of-5s >>
+
+## The Law of Fives — Invariant Alignment Table
+
+All phenomena relate to five. Not mysticism — a statement about how the mind partitions continuous scales. The same 5-point skeleton recurs across every domain in the system.
+
+Two orthogonal axes. **Scale** (how big a loop). **Phase** (where in the loop). They run counter to each other: Act sits at the finest-grain scale; Observe spans the widest. That tension produces traction — to act you narrow, to observe you widen.
+
+### The Two Axes
+
+```
+LADDER_5  (scale, finest → coarsest):  action → round → turn → watch → week
+OODA_HA_5 (phase, active → reflective): act   → decide → orient → observe → aftermath
+```
+
+Exported from `packages/lararium-core/src/ast.ts` as `LADDER_5`, `OODA_HA_5`, `SCOPE_5`.
+
+### Alignment Table
+
+| axis | 1 — finest/active | 2 | 3 | 4 | 5 — coarsest/reflective |
+|------|------------------|---|---|---|------------------------|
+| **Chrono scale** | action | round | turn | watch | week |
+| **Scope** | ephemeral | personal | consensual | collective | universal |
+| **OODA-HA phase** ▶◇⏿✶⤴↺ | act | decide | orient | observe | aftermath |
+| **Discordian season** | Bureaucracy | Confusion | Discord | Chaos | Aftermath |
+| **Zoom level** | glyph | token | meme | room | network |
+| **Kowloon addressing** | (turn-local) | @domain | circle | group | @public |
+| **Type state** | typed/committed | interpret | named shapes | `?` string | — |
+| **Tool phase affinity** | Sword `!` | — | Cup `?` / Wand `*` | Wand `*` | Pentacle `~` |
+| **Stance phase affinity** | Satirist 🗡️ | Philosopher 🏛️ / Humorist 🎭 | Poet 🌊 / Humorist 🎭 | Poet 🌊 | Private 🔮 |
+
+Scale and phase run as **independent axes** — a Turn-scale loop can sit in any OODA-HA phase. The Chronometer fragment `#O0.O3.D2.A7` encodes both in display; the semantic model carries them separately: `{ scale: Ladder5, phase: OodaHa5, counter: number }`.
+
+Tool and Stance phase affinities show the natural convergence points — not locks. A Philosopher can run in any phase; Decide is simply where propositional register earns its keep. Arcana `-` has no phase affinity — it releases the loop rather than occupying a position in it.
+
+### Scale ↔ Scope ↔ Kowloon
+
+`kau scope:ephemeral` = `scale: "action"`. `kau scope:universal` = `scale: "week"`. The scope ladder IS the Ladder5 projected onto state ownership. `SCOPE_TO_LADDER` in `ast.ts` makes this explicit.
+
+<<~/ahu >>
+
+<<~ ahu #scope-phase-resolution >>
+
+## TW5 ↔ Verse Type Tension — Resolution
+
+The tension between TW5's string-typed store (`Record<string,string>`) and Verse's strong types resolves through the OODA-HA loop. They were never in conflict — they occupy different phases.
+
+### The Pipeline as Loop Phases
+
+| phase | system role | type state | scale |
+|-------|-------------|-----------|-------|
+| ✶ Observe | carrier text arrives as raw string | `Record<string,string>` — `?` | Week |
+| ⏿ Orient | `parseMemeCarrier` → `MemeAstNode[]` | named shapes, attrs unresolved strings | Watch |
+| ◇ Decide | `edgesFromAst` interprets sigil attrs | `string` → `Ladder5 \| OodaHa5 \| PranaEdge…` | Turn |
+| ▶ Act | Verse execute / render / canvas | typed, transactional, committed | Round |
+| ⤴↺ Aftermath | `validatePranaEdge`, blame calculus | contract violations surface, loop closes | Action |
+
+**`attrs: Record<string,string>`** — the honest Observe-phase representation. Siek's `?` type at parse boundary, correct for the phase. King's "parse, don't validate" fires at Decide: consume the string bag once, emit typed values, carry them forward. Act phase can then run as strict as Verse demands.
+
+**Blame calculus (Wadler & Findler):** when a `scope:ephemeral` value escapes its Action-scale container, blame falls on the boundary that failed to enforce the scope type — Aftermath surfaces it via `validatePranaEdge`.
+
+**Elm's no-nested-signals rule:** scope can only widen (`ephemeral → personal` valid), never silently leak (`universal → ephemeral` a contract violation). Enforced at the Decide→Act boundary.
+
+**`papalohe` and `kukali` (Gap 5):** `papalohe` declares the reaction wire at Orient phase — a named shape in the graph. Verse `suspends`/`kukali` operates at Act phase — execution suspended until the loop advances. The wire and the wait posture belong to different phases; they name different things. See `#gaps-tensions-conflicts` Gap 5.
+
+<<~/ahu >>
+
+<<~ ahu #stances-syad-tools >>
+
+## Stances, Syad, and Tools — Three Separate Graphs
+
+Three distinct graphs whose edges intersect but do not collapse. Conflating them produces overloaded tables; separating them reveals structural properties each graph alone cannot show.
+
+**Graph 1 — Stances → Syad predicate (epistemic register):**
+
+An operator holds a stance. The stance sets what the register measures — not a phase, not a tool. Phase affinity marks where that register earns its keep most naturally; any stance can operate in any phase.
+
+| stance | Syad predicate | P# | register measures | phase affinity |
+|--------|---------------|-----|-------------------|----------------|
+| 🏛️ Philosopher | asti | P1 | propositional support | Decide |
+| 🌊 Poet | avaktavya | P3 | analogical resonance (outward) | Observe/Orient |
+| 🗡️ Satirist | nāsti → nāsti+avaktavya | P2→P6 | targeting confidence | Act |
+| 🎭 Humorist | asti-nāsti | P4 | relational fit | Orient/Decide |
+| 🔮 Private | avaktavya | P3 | inward presence (inward) | Aftermath |
+
+Poet and Private share P3. The Syad graph alone cannot distinguish them — only the Tool graph (feed direction) separates the two avaktavya registers.
+
+The Satirist carries a gradient: stated predicate P2 (nāsti), operational predicate P6 (nāsti+avaktavya). A Satirist stable only at P2 names absence but unsteadies when the void opens. A Satirist who can hold P6 uses the void as the targeting instrument. This gradient marks maturity within a single stance.
+
+**Graph 2 — Syad 7 predicates:**
+
+Three primitives — T (asti/affirms), F (nāsti/denies), M (avaktavya/withholds) — yield 7 compounds. `avaktavya` does not signal "insufficient data"; it signals that the T/F axis does not fit the claim from this standpoint.
+
+| P# | compound | covered by |
+|----|----------|------------|
+| 1 | T | Philosopher |
+| 2 | F | Satirist (stated) |
+| 3 | M | Poet / Private (same predicate, opposite directions) |
+| 4 | T+F | Humorist |
+| 5 | T+M | threshold — Philosopher past its boundary |
+| 6 | F+M | threshold — Satirist operational; also Satirist past its boundary |
+| 7 | T+F+M | Arcana `-` only |
+
+P5 and P6 name threshold crossings, not stable standpoints. P5 surfaces when a Philosopher commits to a true claim and the claim points past what propositional form can carry — the proof holds, the object bleeds through it. P6 surfaces when a Satirist lands a clean targeting and the absence opens onto something that resists description — the void underneath will not close. Both signal the moment to consider reaching for Arcana.
+
+Arcana maps directly to P7. No stance mediates it — an operator reaches for it, does not inhabit it.
+
+**Graph 3 — Tools → feed × aperture:**
+
+Tools encode two orthogonal axes: feed direction (external/internal/release) and aperture (wide/narrow/release). This graph carries no Syad information — it encodes how an operator orients, not what they claim.
+
+| tool | ascii | feed | aperture | phase affinity |
+|------|-------|------|----------|----------------|
+| Wand | `*` | external | wide | Observe |
+| Cup | `?` | external | wide | Orient |
+| Sword | `!` | external | narrow | Decide/Act |
+| Pentacle | `~` | internal | narrow | Aftermath |
+| Arcana | `-` | release | release | — |
+
+Wand and Cup share feed=external/aperture=wide — they differ in phase affinity and relational character. Any operator may hold any tool within any stance. A Poet wielding `!` cuts precisely at resonance — strange and productive.
+
+**Conflict pairs — Tool graph only:**
+
+Conflict pairs encode Tool-axis tensions, not Syad tensions.
+
+- `*~` **Signal Jam** — Wand+Pentacle — external feed locked against internal feed. Poet↔Private tension when not resolved. The Satirist's natural posture IS `*~`; they hold it productively as targeting instrument. Signal Jam as pressure state applies to all other stances.
+- `?!` **Dubious Move** — Cup+Sword — wide aperture locked against narrow. Humorist↔Philosopher tension. No stance naturalizes this; it surfaces when relational fit asserts propositional precision it cannot support.
+
+The Satirist naturalizes one conflict pair and no other stance does. This marks the Satirist as the hinge of the Tool graph — they operate from what would jam everyone else.
+
+**Postures** — canonical Tool combinations:
+- `*!` — external/narrow — track external, zoom in for detail
+- `*?` — external/wide — track external, zoom out for relation
+- `~!` — internal/narrow — ground internal, precision
+- `~?` — internal/wide — ground internal, overview
+- `--` — Arcana — release current reading, model agnosticism
+
+**Structural observations from separation:**
+
+1. The system gravitates toward M. Three of five stances live in or near avaktavya (Poet P3, Private P3, Satirist P6). Only Philosopher and Humorist operate entirely in the T/F plane.
+2. Poet and Private require the Tool graph to differentiate — Syad alone cannot separate them.
+3. Arcana exists only in the Tool graph and Syad graph; it has no Stance. It cannot be inhabited, only reached for.
+4. Conflict pairs encode Tool-axis tensions exclusively; they carry no Syad structure.
 
 <<~/ahu >>
 
@@ -918,14 +1104,16 @@ global visibility. Mechanism: `<<~ aka lar:///carrier >>` imports the carrier's 
 (shadow transclusion brings in the definition namespace). This is unresolved in the boot model —
 does the compiler parse `wehe`/`helu` blocks inside `aka`-referenced carriers to build a definition index?
 
-### Tension 4: `kahea` dual dispatch — URI vs. definition name
+### ~~Tension 4: `kahea` dual dispatch — URI vs. definition name~~ — Resolved
 
-`kahea` now carries two dispatch paths:
-- URI (`lar:///...`) → compile-time dataflow edge + render-time live meme transclusion
-- Plain name (`greeting(...)`) → render-time definition lookup (no compile-time graph artifact)
+`kahea` carries two dispatch paths, disambiguated at parse time:
 
-Parser disambiguation: URI prefix determines path. A plain name must not start with `lar:` and must
-not look like a URI. This is a parse-time contract, not a runtime fallback.
+- **URI form** (`lar:///...`, path with `/`, fragment with `#`) → `EdgeSugarNode { sigil:"kahea", family:"dataflow" }` — compile-time dataflow edge + render-time live transclusion
+- **Name form** (plain identifier, optionally `name(args)`) → `SigilNode { sigilName:"kahea", attrs:{ name, args } }` — render-only, no graph edge
+
+The parser matches URI form first (regex anchored on `lar:` prefix or presence of `/`/`#`). Name form catches all remaining plain identifiers. A `wehe` parameter interpolation (`<<~ kahea paramName >>` inside a body) also resolves as name form — the parameter IS a locally-scoped definition.
+
+**Invariant:** the compile layer never sees a malformed dataflow edge for a plain name target. `parsePranalaEdges` on a carrier containing `<<~ kahea greeting >>` produces zero dataflow edges.
 
 ### Tension 5: TW5 filter inline vs. `hana` block syntax
 
@@ -938,6 +1126,53 @@ use `hana`. Simple one-liner filters use the inline sigil form.
 TW5 macro calls use `<<macroName>>`. This is not valid Lararium syntax.
 Authors migrating TW5 content MUST convert `<<macro>>` → `<<~ kahea macro >>`.
 There is no TW5-compat bare-bracket pass planned.
+
+### Gap 5: Verse `suspends` / `kukali` — reactive wait posture inside a causal island
+
+**Status:** Design model sharpened (2026-04-28). `kukali` candidate sigil. Blocked on async `ReactionGraph`.
+
+In Verse, `suspends` marks an expression that yields its causal island until an event fires. This is the *wait posture inside an island* — distinct from `papalohe` (which declares the inter-island wire) and `hui`/`heihei`/`puka` (which coordinate parallel islands). `papalohe` is the graph edge; `kukali` is the execution posture.
+
+**Causal island model (UEFN):** each `kumu` instance is an isolated async boundary. Events cross boundaries only via declared `papalohe` edges. Within an island, `kukali` yields execution until the subscribed event fires on the island's input port. This is isomorphic to `await` on a `Promise` — not a coroutine, not a callback, an async yield.
+
+**Async-first implication:** `ReactionGraph.fire()` must return `Promise<void>` before `kukali` can have semantics. The wait posture has no meaning without an async execution context. This is the correct dependency order — not a design gap, a sequencing requirement.
+
+Candidate surface form: `<<~ kukali trigger:OnBegin >>` (inline wait) or block `<<~ kukali trigger:OnBegin >>...<<~/kukali>>` (wait + body executes on resume). Register after `ReactionGraph.fire()` is async.
+
+### Gap 6: UEFN `prop` (static world geometry) vs. `kumu` (device type)
+
+**Status:** Unregistered. Low priority.
+
+UEFN has two named entity types: `creative_device` (interactive, event-capable) and `prop` (static geometry, no events). `kumu` covers `creative_device`. A `prop` is a typed world object with no reactive surface. Could be `kumu kind=prop` via a convention in the `params` attr, or a dedicated sugar sigil. Defer until UEFN projection milestone.
+
+### Gap 7: Verse module access modifiers
+
+**Status:** Convention proposed, not registered as sigil.
+
+Verse has `public`, `internal`, and `private` visibility modifiers. These map naturally to `<<~ kapu qualifier:public >>`, `<<~ kapu qualifier:internal >>`, `<<~ kapu qualifier:private >>` — but this convention is undocumented and untested. Register as a `kapu` attrs convention note, not a new sigil.
+
+### Gap 8: parseTree → widgetTree → renderTree — the missing middle layer
+
+**Status:** Design resolved (2026-04-28). Implementation pending Phase 3.
+
+TW5 executes via three trees: parse tree (WikiParser) → widget tree (Widget subclass instances) → DOM. The widget tree is the execution-bearing layer — each node knows its renderer.
+
+Lararium has parse tree (`MemeAstNode[]`) and render tree (tldraw shapes). The widget tree is missing.
+
+**`kumu` is the widget-tree node type definition.** `<<~! kumu name(params) >>...<<~/kumu >>` defines a new widget type — equivalent to TW5 `\widget $name`. A `<<~ kahea name(args) >>` name-form call (now correctly a `SigilNode`) resolves at widget-tree build time against the `KumuRegistry` into a `WidgetNode { type: KumuDef, props: {...} }`. The render pass walks `WidgetNode[]`, not raw `MemeAstNode[]`.
+
+**UEFN equivalence:** a `kumu` type IS a UEFN `creative_device` type — same primitive. It has `@editable` props (`kau` bindings), event ports (`papalohe` edges), and runs as a causal island (async boundary).
+
+**Three-tree pipeline (target):**
+
+```
+carrier text
+  → MemeAstNode[]           parseMemeCarrier()         Phase 2 (complete)
+  → WidgetNode[]             resolveWidgetTree()         Phase 3 (pending)
+  → tldraw shapes / output   render pass                Phase 3 (pending)
+```
+
+`resolveWidgetTree(ast, registry)` is the Phase 3 entry-point function. Registry populated from boot artifact's `kumu` sigil nodes.
 
 ### Conflict 2: TW5 `{{Title||Template}}` mapping
 
@@ -956,8 +1191,8 @@ The single-form version is not ruled out but adds parser complexity without clea
 
 ## Sigil Registry Status
 
-All sigils documented in this spec are now registered in `lares/grammars/memetic-wikitext.md`.
-All seven families are wired in `pranala-parser.ts`.
+All sigils documented in this spec are registered in `lares/grammars/memetic-wikitext.md`.
+All eight families are wired in `pranala-parser.ts` (`KNOWN_FAMILIES`, `FAMILY_CONTRACTS`).
 
 **Sigils added in Grammar Phase 2.x (post-M7):**
 
@@ -983,8 +1218,7 @@ All seven families are wired in `pranala-parser.ts`.
 1. **`wehe`/`helu` scope model.** Carrier-local vs. boot-closure-global for invariant meme definitions.
    Does `<<~ aka lar:///carrier >>` import that carrier's definitions into the current namespace?
 
-2. **Sugar sigils for `message` and `constraint` families.** `hau` and `pono` are candidates.
-   Both need invariant loci before registration. Which names fit the design ethos?
+2. **Sugar sigil for `spatial` family.** Family registered; sugar sigil pending. No English alias yet. Candidate: a directional portal sigil. Roles: `contains`, `portal`, `adjacent`, `layer`.
 
 3. **`<<~?` unresolved-pressure mode syntax.** Block form?
    `<<~? #fragment >> ... <<~/? >>` — marks a worksite as explicitly unresolved.
@@ -1000,7 +1234,15 @@ All seven families are wired in `pranala-parser.ts`.
    parameter names appear verbatim). Lararium `call param-name` inside a define body should be
    an explicit sigil call, not bare text substitution. Formal grammar rule needed.
 
-6. **Naming ratification status.** As of 2026-04-27:
+6. **`lele` vs Verse `branch` semantic alignment.** `lele` is fire-and-forget (unconditional send). Verse `branch` is a cancellable speculative fiber — closer to `spawn`. The `\branch` alias maps to `lele`, which is correct for fire-and-forget dispatch but does NOT cover Verse branch's speculative/cancellation semantics. A future `\spawn` or `\fiber` alias may be needed for the speculative case.
+
+7. **Async ReactionGraph.** `ReactionGraph.fire()` must return `Promise<void>` before `hui`/`heihei`/`puka`/`kukali` have execution semantics. The graph structure is correct; the execution model is synchronous today. This is the single unlock for Verse concurrency parity.
+
+8. **Widget tree resolution pass.** `resolveWidgetTree(ast: MemeAstNode[], registry: KumuRegistry): WidgetNode[]` is the Phase 3 entry function. `KumuRegistry` maps `kumu` name → `KumuDef`. `SigilNode { sigilName:"kahea" }` name-form nodes are re-typed at this pass. Render pass reads `WidgetNode[]`. See `#gaps-tensions-conflicts` Gap 8.
+
+9. **kumu causal island boundary.** Does each `kumu` instance get its own async execution context, or does the shared `ReactionGraph` manage all island dispatch? UEFN model: each device is isolated; the device graph (our reaction edges) is the only crossing point. Implementation: one `Promise` chain per `kumu` instance, dispatched via `ReactionGraph`. Not one global event loop.
+
+10. **Naming ratification status.** As of 2026-04-28:
    - `[C]`: `wai`, `mukuwai`, `kahawai` — operator-ratified.
    - `[SC]`: `huli`, `wehe`, `helu`, `meme`, `kahea` (extended), `aka`, `ahu`, `loulou`, `hana`, `ui`, `kapu`, `pono`, `hui`, `heihei`, `puka`, `lele`.
    - No standalone `call` sigil — `kahea` extended contract covers URI transclusion + definition invocation.

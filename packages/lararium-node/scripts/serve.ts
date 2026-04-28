@@ -19,7 +19,7 @@
  */
 
 import { createServer, type IncomingMessage, type ServerResponse } from "http";
-import { readFileSync, existsSync, statSync, mkdirSync, unlinkSync } from "fs";
+import { readFileSync, existsSync, statSync, mkdirSync, unlinkSync, watch } from "fs";
 import { join, extname, resolve } from "path";
 import { fileURLToPath } from "url";
 import Database from "better-sqlite3";
@@ -30,9 +30,16 @@ import {
   NodeSqliteWrapper,
   DEFAULT_INITIAL_SNAPSHOT,
 } from "@tldraw/sync-core";
-import { createLarariumRuntime } from "../src/node-host.js";
+import { createLarariumRuntime, LARES_ROOT } from "../src/node-host.js";
 import { buildSnapshot } from "./build-snapshot-lib.js";
-import type { BootArtifact } from "@lararium/core";
+import {
+  type BootArtifact,
+  parsePranalaEdges,
+  extractReactionBindings,
+  ReactionGraph,
+  type ReactionBinding,
+  type LiveMsgEvent,
+} from "@lararium/core";
 
 const __dirname = fileURLToPath(new URL(".", import.meta.url));
 const REPO_ROOT = resolve(__dirname, "../../../");
@@ -275,6 +282,9 @@ async function main() {
     const roomId = rawRoomId === "boot" ? activeBootRoomId : rawRoomId;
     const sessionId = wsUrl.searchParams.get("sessionId") ?? crypto.randomUUID();
 
+    // Tag socket for reaction-graph broadcast targeting
+    (ws as WebSocket & { _larariumRoomId?: string })._larariumRoomId = roomId;
+
     const buffered: import("ws").RawData[] = [];
     const buffer = (msg: import("ws").RawData) => buffered.push(msg);
     ws.on("message", buffer);
@@ -288,6 +298,32 @@ async function main() {
     ws.off("message", buffer);
     for (const msg of buffered) ws.emit("message", msg);
 
+    // Reaction graph "fire" messages — client sends { type:"fire", fromUri, trigger, payload? }
+    ws.on("message", (raw) => {
+      let msg: unknown;
+      try { msg = JSON.parse(raw.toString()); } catch { return; }
+      if (!msg || typeof msg !== "object") return;
+      const m = msg as Record<string, unknown>;
+      if (m["type"] !== "fire") return;
+      const fromUri = typeof m["fromUri"] === "string" ? m["fromUri"] : null;
+      const trigger = typeof m["trigger"] === "string" ? m["trigger"] : null;
+      if (!fromUri || !trigger) return;
+
+      reactionGraph.fire(fromUri, trigger, m["payload"] ?? {}).then(() => {
+        const event: LiveMsgEvent = {
+          type: "event",
+          fromUri,
+          trigger,
+          targetFn: null,
+          payload: m["payload"] ?? {},
+          timestamp: new Date().toISOString(),
+        };
+        broadcastToRoom(roomId, event);
+      }).catch((e: unknown) => {
+        console.error(`[lararium-serve] reaction fire error ${fromUri}#${trigger}:`, e);
+      });
+    });
+
     console.log(`[lararium-serve] + ${sessionId.slice(0, 8)} room=${roomId}`);
   });
 
@@ -297,6 +333,86 @@ async function main() {
     console.log(`[lararium-serve] reseed:    curl http://${HOST}:${PORT}/admin/reseed`);
     console.log(`[lararium-serve] data dir:  ${DATA_DIR}`);
   });
+
+  // ---------------------------------------------------------------------------
+  // Reaction graph — Verse-style live event routing over the CRDT room
+  //
+  // The reaction graph runs server-side. When a client fires an event (WS
+  // message type "fire"), the server validates the binding, executes handlers,
+  // and broadcasts the event as a "event" message to all room members.
+  //
+  // The CRDT room handles canvas state. The reaction graph handles Verse-style
+  // event wiring on top of it — two layers, one transport.
+  // ---------------------------------------------------------------------------
+
+  let reactionGraph = buildReactionGraph(runtime);
+
+  function buildReactionGraph(rt: ReturnType<typeof createLarariumRuntime>): ReactionGraph {
+    const artifact: BootArtifact = rt.compileMinimalBoot();
+    const edges = artifact.pranalaEdges ?? [];
+    const bindings: ReactionBinding[] = extractReactionBindings(
+      edges.map((e) => ({
+        fromUri:  e.fromUri,
+        toUri:    e.toUri,
+        family:   e.family,
+        role:     e.role,
+        payload:  (e as unknown as { payload?: Record<string, unknown> }).payload ?? {},
+      }))
+    );
+    const g = new ReactionGraph();
+    g.load(bindings);
+    return g;
+  }
+
+  // Broadcast to all WebSocket clients connected to a room
+  function broadcastToRoom(roomId: string, msg: object): void {
+    const text = JSON.stringify(msg);
+    for (const ws of wss.clients) {
+      // tag sockets with their roomId on connection — see wss.on("connection") above
+      const tagged = ws as WebSocket & { _larariumRoomId?: string };
+      if (tagged._larariumRoomId === roomId && ws.readyState === WebSocket.OPEN) {
+        ws.send(text);
+      }
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // lares/ file watcher — UEFN operational model
+  //
+  // Carrier changes re-project the boot room via evict + reseed. The CRDT room
+  // starts fresh from the new projection; clients reconnect to the stable "boot"
+  // alias and get the updated state. No snapshot+delta, no patch-over-stale-base.
+  //
+  // Debounced 400ms — batch rapid saves (editor auto-save bursts).
+  // ---------------------------------------------------------------------------
+
+  let reloadDebounce: ReturnType<typeof setTimeout> | null = null;
+
+  watch(LARES_ROOT, { recursive: true }, (event, filename) => {
+    if (!filename) return;
+    if (filename.includes("node_modules") || filename.endsWith(".sqlite")) return;
+
+    if (reloadDebounce) clearTimeout(reloadDebounce);
+    reloadDebounce = setTimeout(async () => {
+      reloadDebounce = null;
+      console.log(`[lararium-serve] lares/ changed (${filename}) — reseeding boot room`);
+      try {
+        snapshotMemes = await buildSnapshot(runtime);
+        const fresh = await buildBootProjection(runtime, snapshotMemes);
+        evictRoom(activeBootRoomId);
+        getOrCreateRoom(fresh.roomId, fresh.snapshot);
+        memeList = buildMemeList();
+        reactionGraph = buildReactionGraph(runtime);
+        console.log(`[lararium-serve] reseeded → ${fresh.roomId}`);
+        // Notify connected clients via reaction graph broadcast — they refresh to new room
+        broadcastToRoom(activeBootRoomId, { type: "reseed", roomId: fresh.roomId });
+      } catch (e) {
+        console.error("[lararium-serve] reseed failed:", e);
+      }
+    }, 400);
+  });
+
+  console.log(`[lararium-serve] watching lares/ for changes`);
 }
 
 main().catch((e) => { console.error(e); process.exit(1); });

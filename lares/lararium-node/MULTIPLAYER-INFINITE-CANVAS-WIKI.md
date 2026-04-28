@@ -580,7 +580,7 @@ Templates are `lares/` carriers, so they have `lar:` URIs, are part of the boot 
 
 **Phase 2 (milestone 5):** Extract template logic into `LarTLTemplate` records, select via a `selectTemplate(meme, templateStore)` function (the cascade). Templates stored as in-memory objects derived from the boot closure.
 
-**Phase 3 (future):** Templates themselves are lares/ carriers with `lar:` URIs. Edit a template carrier → recompile → room reseeds with new visual style. The wiki edits its own renderer.
+**Phase 3 (M8 target):** The three-tree pipeline: `parseMemeCarrier → MemeAstNode[]` → `resolveWidgetTree → WidgetNode[]` → render. `kumu` defines widget/device types. `kumu` instances are causal islands (see `#causal-islands`). Templates are lares/ carriers. Edit a template carrier → `/admin/reseed` → room reseeds with new visual style. The wiki edits its own renderer.
 
 ### Built-in tldraw UI Components to Reuse
 
@@ -823,6 +823,12 @@ State lives in `localStorage` (`lararium.theme`). Applied on mount before first 
 
 1. **Zoom-gated single-page rendering:** Sub-frame geometry conditional on zoom level, one page per room. Blocked on shape namespace collision — current three-page + zoom-auto-switch model stays until resolved.
 
+1a. **Async `ReactionGraph`:** `fire()` must return `Promise<void>` before `hui`/`heihei`/`puka`/`kukali` have execution semantics. Zero structural changes required — this is a method signature change in `live-protocol.ts`. Fanout modes (`Promise.all`, `Promise.race`, `Promise.any` + cancel) follow immediately after. See `#causal-islands`.
+
+1b. **Wehe executor:** bind `SigilNode { sigilName:"kahea", attrs:{name,args} }` name-form calls against registered `wehe` definitions at render time. Closes TW5 template transclusion + Verse procedure call simultaneously. Depends on `KumuRegistry` (Phase 3 widget tree).
+
+1c. **kumu/widget-tree resolution pass:** `resolveWidgetTree(ast, registry)` builds the intermediate `WidgetNode[]` tree between `parseMemeCarrier` output and tldraw shape emission. `kumu` definitions are the widget type system. See `#causal-islands`.
+
 2. ✓ **Meme count reactive subscription (shipped 2026-04-27):** `store.listen` with `scope: "document"` + 150ms debounce added to `LarariumCanvas`. One-shot scan on `synced-remote`, live re-scan on any shape mutation. `MenuPanel` now reflects live meme count.
 
 3. **LarPortalShapeUtil (future):** Only needed if `geo` + meta proves insufficient for portal UX (click area, label rendering). Current `geo`+meta is MVP-sufficient.
@@ -842,6 +848,66 @@ State lives in `localStorage` (`lararium.theme`). Applied on mount before first 
 11. **UCAN implementation:** `@ucans/ucans` + `did-key`. Server DID, delegation, WS handshake gate.
 
 12. **ATProto identity (BFF):** See `lares/lararium-node/AUTH-ATPROTO.md`.
+
+<<~/ahu >>
+
+<<~ ahu #causal-islands >>
+
+## Causal Islands — Async-First Execution Model
+
+**Status: design locked (2026-04-28). Implementation follows async `ReactionGraph` pivot.**
+
+### The model
+
+Each `kumu` instance on the canvas is a **causal island** — an isolated async execution boundary. Events cross island boundaries only via declared `papalohe` edges (the reaction family in the pranala graph). No shared mutable state crosses island walls directly.
+
+```
+  island A (kumu: DoorTrigger)      island B (kumu: LightPanel)
+  ┌────────────────────┐             ┌────────────────────┐
+  │ @editable props    │             │ @editable props    │
+  │ kau color = "red"  │             │ kau isOn = false   │
+  │                    │──papalohe──▶│                    │
+  │ fire OnActivated   │  reaction   │ handle OnActivated │
+  └────────────────────┘  edge       └────────────────────┘
+```
+
+The `ReactionGraph` is the causal island manager. `fire(fromUri, trigger, payload)` returns `Promise<void>`. Handlers `await` within their island. The graph routes the async message; the islands execute concurrently.
+
+### Why this matters for the canvas
+
+The CRDT room (tldraw `TLSocketRoom`) handles canvas *state* synchronization. Causal islands handle *event execution*. These are two separate layers:
+
+- CRDT room: who moved what shape, what color is it, who is online — CvRDT semantics, no ordering required
+- Causal islands: DoorTrigger fires → LightPanel activates → player gains 10 points — causal ordering required
+
+The canvas shows both: shape positions are CRDT-merged; event wires (`papalohe` edges) and their execution state (active/inactive island indicators) are rendered as reaction arrows.
+
+### Fanout modes (target)
+
+| sigil | `ReactionGraph` mode | async semantics |
+|-------|---------------------|-----------------|
+| `hui` | `Promise.all(handlers)` | all islands complete before caller resumes |
+| `heihei` | `Promise.race(handlers)` | first completion wins; others continue |
+| `puka` | `Promise.any` + cancel signals | first wins; others receive cancel |
+| `lele` | `void fire(...)` | fire-and-forget; caller does not await |
+
+### `kukali` — wait posture
+
+`kukali` (Hawaiian: to wait, to suspend) is the execution posture inside a causal island that yields until the island's input port fires. Isomorphic to `await someEventPromise()`. Cannot have semantics until `ReactionGraph.fire()` is async. This is the correct dependency order.
+
+### Relation to CRDT model
+
+The UEFN operational model (file watcher → evict → reseed) is already live. Hot-reload works. The causal island layer sits *above* the CRDT room and *below* the canon-promotion boundary:
+
+```
+lares/ (canon)               — immutable truth
+  ↓ compile + reseed
+CRDT room (TLSocketRoom)     — canvas state, multiplayer, confirmed/pending
+  ↓ event wire
+ReactionGraph (causal)       — async event routing between kumu islands
+  ↓ render
+tldraw shapes                — visual output
+```
 
 <<~/ahu >>
 

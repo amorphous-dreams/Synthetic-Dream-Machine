@@ -146,22 +146,21 @@ Minimum projection targets:
 
 Projection packages must not define core ontology.
 
-### Kowloon Narrow Interface
+### Kowloon Integration Model
 
-Treat Kowloon as a read-only social/feed projection target until proven otherwise.
+Lararium's live service is **elyncia.app** — a lararium node with Kowloon federation. The canvas and the social graph are the same thing. The Kowloon read-only posture was a bootstrap scaffold; the design direction is bidirectional.
 
-Minimum viable Kowloon payload:
+**Canvas actions that ARE Kowloon activities:**
+- Drawing a follow edge between two actor nodes → Follow activity (`family:relation role:follows`)
+- Adding a node to a circle (drag into circle shape) → Circle.updateOne
+- Publishing a meme from the canvas → Post activity (`to: @public | circle:<id> | group:<id>`)
+- Creating a room → Group creation with 5 system circles
 
-type
-actor
-object
-published
-lar_uri
-lares_address
-source_uri
-sha256 / receipt hash when available
+**Minimum viable Kowloon payload** (still valid for bootstrap):
+- `type`, `actor`, `object`, `published`
+- `lar_uri`, `source_uri`, `sha256` / receipt hash when available
 
-The current safe posture: `lararium-kowloon` emits feed/header/event payloads. It does not own storage, identity authority, or compiler behavior.
+**Posture going forward:** `lararium-kowloon` begins as a read + publish adapter. Write-back (circle membership, follow graph) follows after the canvas social graph visualization milestone. Stay agnostic about implementation order — the model is aligned, the build sequence is OODA-HA.
 
 ### Golden Fixtures Over Semantics
 
@@ -1388,6 +1387,65 @@ Device types map to `kumu` (element type definition). UEFN `@editable` propertie
 
 <<~/ahu >>
 
+<<~ ahu #design-decisions-law-of-5s >>
+
+## Design Decision: Law of Fives — Invariant Scale + Phase Model
+
+**Decision**: Two orthogonal const arrays (`LADDER_5`, `OODA_HA_5`) are canonical invariants in `ast.ts`. All domain ladders — scope, zoom, Kowloon addressing, lifecycle, temporal scale — are projections of `LADDER_5`. All phase/confidence/stance systems are projections of `OODA_HA_5`.
+
+```
+LADDER_5  (scale, finest → coarsest):  action · round · turn · watch · week
+OODA_HA_5 (phase, active → reflective): act · decide · orient · observe · aftermath
+```
+
+These axes run in **opposite directions**: `act` is the finest-grain phase (Action/ephemeral); `observe` is the widest-lens phase (Week/universal). The tension is productive — it models the operator-agent loop as a live crossing of scale and phase, not a single timeline.
+
+**Domain alignment table:**
+
+| Ladder5  | Scope5      | Zoom (canvas) | Kowloon  | Lifecycle   | OODA-HA    | Discordian |
+|----------|-------------|---------------|----------|-------------|------------|------------|
+| action   | ephemeral   | micro          | Activity | transient   | act        | Chaos      |
+| round    | personal    | card           | Object   | instance    | decide     | Discord    |
+| turn     | consensual  | room           | Group    | session     | orient     | Confusion  |
+| watch    | collective  | world          | Space    | persistent  | observe    | Bureaucracy|
+| week     | universal   | cosmos         | Universe | permanent   | aftermath  | Aftermath  |
+
+**`SCOPE_TO_LADDER`**: a `Record<Scope5, Ladder5>` projection lives in `ast.ts`. Scope narrows the ladder to the state-ownership read.
+
+**TW5 ↔ Verse resolution via OODA-HA pipeline phases:**
+
+The apparent tension between TW5 (everything is `Record<string,string>`) and UEFN Verse (statically typed, execution-phase) resolves when read as pipeline phases:
+
+| Phase      | Tool        | Type                       | Operation                          |
+|------------|-------------|----------------------------|------------------------------------|
+| Observe    | TW5 / wikitext | `Record<string,string>` | parse surface text; carry forward  |
+| Orient     | `parseMemeCarrier` | `MemeAstNode[]`     | token tree, typed sigil nodes      |
+| Decide     | `edgesFromAst` | typed attrs, `PranaEdge` | extract edge semantics             |
+| Act        | Verse runtime | statically typed           | execute game logic                 |
+| Aftermath  | `validatePranaEdge` | `PranaEdgeViolation[]` | violations surface, loop closes |
+
+`attrs: Record<string,string>` is correct at Observe phase. "Parse, don't validate" (King 2019) and the blame calculus (Wadler & Findler) both say: parse at the boundary once, carry typed values through. The single parse path (`parsePranalaEdges` → thin shim over `parseMemeCarrier` + `edgesFromAst`) enacts this.
+
+**Chronometer decoupling**: the FFZ Chronometer fantasy was useful as inspiration for discovering LADDER_5 as emergent, but the Chronometer itself is a rendering concern. LADDER_5 and OODA_HA_5 are grammar invariants, not clock state. They are `const` arrays in `ast.ts`, not timer types.
+
+**Stances (Syad perspectives) + Tools (Chapel Perilous) as phase postures:**
+
+Stances are epistemic standpoints that modulate how an operator reads a meme. Tools are orientation postures that modulate how an agent acts. Both are 5-point projections of OODA_HA_5.
+
+| Stance         | Natural tool     | Jaina register         | Natural phase   |
+|----------------|-----------------|------------------------|-----------------|
+| 🏛️ Philosopher | `!` Sword        | propositional (asti)   | Decide          |
+| 🌊 Poet         | `*` Wand         | resonance (avaktavya)  | Observe/Orient  |
+| 🗡️ Satirist    | `*~` Wand+Pent.  | targeting (nāsti→asti) | Act             |
+| 🎭 Humorist    | `?` Cup          | relational (asti-nāsti)| Orient/Decide   |
+| 🔮 Private      | `~` Pentacle     | inward (avaktavya)     | Aftermath       |
+
+Stances carry their natural tools, but an operator may hold any tool within any stance — the stance sets the register, the tool sets the zoom/feed posture. Canonical posture pairs (tool combinations): `*!` visual-micro, `*?` visual-macro, `~!` hidden-micro, `~?` hidden-macro, `--` neutral reset. Conflict states: `*~` Signal Jam (external/internal feed locked), `?!` Dubious Move (wide field asserts precision).
+
+Both `STANCES` and `TOOLS` (with `TOOL_ASCII`) are const arrays in `ast.ts`. They are grammar-level invariants used by render and HUD layers; no parser wiring needed.
+
+<<~/ahu >>
+
 <<~ ahu #open-questions-limitations >>
 
 ## Open questions and limitationsThe largest open question is the lack of a public, formal `lararium-node` specification. I therefore treated `lararium-node` as a target architecture inferred from your brief and the repo’s own documents, not as a fully documented existing package.
@@ -1413,6 +1471,179 @@ Required context now present in-document:
 - trust-tier ordering prevents Live-Session Overwrite
 - green-jello-dinosaur becomes a named fixture and failure-mode test
 - MCP adapter should surface trust-boundary conflicts instead of resolving them silently
+
+<<~/ahu >>
+
+<<~ ahu #milestone-8-progress >>
+
+## Milestone 8 — Progress (2026-04-28)
+
+### Parser + AST sprint (this session)
+
+**kahea dual dispatch — Tension 4 closed:**
+
+- ✓ `kahea` split into two regex entries in `parseMemeCarrier`: URI form (matches `lar:`, path `/`, fragment `#`) → `EdgeSugarNode { sigil:"kahea", family:"dataflow" }` — compile + render, dataflow edge. Name form (plain identifier, optional `name(args)`) → `SigilNode { sigilName:"kahea", attrs:{ name, args } }` — render-only, zero graph edge.
+- ✓ `CANONICAL_SIGILS` includes `"kahea-call"` internal name; case dispatch in `buildAst`
+- ✓ 12 tests: URI→EdgeSugar+edge, name→SigilNode+no-edge, args captured, wehe parameter interpolation, mixed carrier — all pass
+- ✓ `parsePranalaEdges("<<~ kahea greeting >>")` → zero dataflow edges (invariant confirmed)
+
+**ReactionGraph + live protocol:**
+
+- ✓ `packages/lararium-core/src/live-protocol.ts` (new) — isomorphic WebSocket protocol types + `ReactionGraph` class
+  - `LiveMsgSnapshot`, `LiveMsgDelta`, `LiveMsgEvent`, `LiveMsgFire`, `LiveClientMsg`, `LiveServerMsg`
+  - `ReactionGraph`: `load(bindings)`, `subscribe(fromUri, trigger, handler)`, `fire(fromUri, trigger, payload)`
+  - `extractReactionBindings(edges)` — filters `family:"reaction"` edges to `ReactionBinding[]`
+- ✓ Exported from `@lararium/core` via `index.ts`
+
+**UEFN file-watcher operational model (serve.ts):**
+
+- ✓ `watch(LARES_ROOT, { recursive: true })` debounced 400ms — batch rapid editor auto-save bursts
+- ✓ On change: evict room + delete SQLite → rebuild projection → reseed new room → rebuild reaction graph
+- ✓ `broadcastToRoom(roomId, { type: "reseed", roomId })` — notify connected clients to reconnect
+- ✓ Socket tagging: `ws._larariumRoomId` for targeted broadcast
+- ✓ `buildReactionGraph(runtime)` reconstructs `ReactionGraph` from fresh boot artifact on each reseed
+
+**Three-graph stances model (ast.ts):**
+
+- ✓ `SYAD_7` 7 Jain predicates; `Syad7` type; `STANCE_SYAD: Record<Stance, Syad7>` natural register per stance
+- ✓ `SATIRIST_OPERATIONAL: Syad7 = "nasti-avaktavya"` — P6 gradient marker
+- ✓ `TOOL_FEED: Record<Tool, ToolFeed>` and `TOOL_APERTURE: Record<Tool, ToolAperture>` — two orthogonal tool axes
+- ✓ `RENDER_MODES = ["reaction-wire"]` and `REACTION_ROLES = ["subscription","handler","callback"]`
+- ✓ Grammar meme updated: `[[stances]]`, `[[predicates]]` (7 Syad), `[[tools]]` with `feed`/`aperture`
+- ✓ `papalohe` render_mode and reaction family canonical_roles wired in spec
+
+**Parity confidence assessment (complete):**
+
+- TW5 compile/graph layer: ~0.90 — identity, tags, links, transclusion URI form, shadow, import, filter notation solid; `kahea` macro-call now ✓ at parse layer (SigilNode); wehe executor and render layer execution pending
+- UEFN Verse graph layer: ~0.80 — entity/ECS, event wiring (papalohe), hot-reload (UEFN CRDT model), lifecycle:template solid; async concurrency (hui/heihei/puka), kukali/suspends, wehe call execution pending
+
+### Also completed this session (2026-04-28)
+
+**Async ReactionGraph (live-protocol.ts):**
+- ✓ `ReactionHandler` type: `(binding, payload) => void | Promise<void>`
+- ✓ `fire()` returns `Promise<void>` — awaits all handlers via `Promise.all`
+- ✓ `fireAll()` alias for `fire()` — `hui` semantics
+- ✓ `fireRace()` — `Promise.race`, first handler wins, rest continue — `heihei` semantics
+- ✓ `fireRush()` — `Promise.any` + `AbortController` cancel signal — `puka` semantics
+- ✓ `load()` placeholder handler bug fixed — no phantom no-op in handlers list
+- ✓ `serve.ts` wired: browser `{ type:"fire", fromUri, trigger, payload }` → `reactionGraph.fire()` → `broadcastToRoom` event
+
+**Widget tree + kumu type system (ast.ts, widget-tree.ts):**
+- ✓ `KumuDef { name, params, carrierUri, body }` — compiled kumu type definition
+- ✓ `WidgetNode { kind:"Widget", kumuName, def, resolvedProps, body }` — widget-tree node
+- ✓ `KumuRegistry` class — `register/get/has/size/entries`
+- ✓ `buildKumuRegistry(defs)` — convenience constructor
+- ✓ `resolveWidgetTree(ast, registry): WidgetNode[]` — Phase 3 parse→widget pass
+  - kahea name-form `SigilNode → WidgetNode { def }` (registered) or `{ def: null }` (typed hole)
+  - Typed hole = Hazel semantics: unresolved kumu name stays live, partial edit doesn't crash
+  - URI-form kahea (`EdgeSugarNode`) ignored — not a widget call
+- ✓ `collectKumuDefs(carrierUri, ast): KumuDef[]` — extracts kumu sigil nodes from parsed carrier
+- ✓ `BootArtifact.kumuDefs?: KumuDef[]` — field added; population deferred to Phase 3 compiler pass
+- ✓ Exported from `@lararium/core` index
+- ✓ 117/117 tests pass (23 new widget-tree tests + 9 async ReactionGraph tests)
+- ✓ All packages typecheck clean
+
+**Research synthesis recorded:**
+- OMeta/Ohm bootstrap pattern: TypeScript parser = cold-start kernel (confirmed correct); grammar meme = extensions only
+- Unison hash identity: our `lar:///` URIs + BootReceipt SHA is this pattern
+- Hazel typed holes: `WidgetNode { def: null }` is the implementation
+- Verse STM: canon-promotion ceremony must be transactional (write-back gate design confirmed)
+- Eve failure (no stable identity + meta eats object): meme-immutability law + hash URIs is the defense
+
+### Critical path forward (M8 close conditions)
+
+1. ~~**ReactionGraph async**~~ ✓ shipped 2026-04-28 — `fire/fireAll/fireRace/fireRush` all async
+2. ~~**kumu → widget-tree**~~ ✓ shipped 2026-04-28 — `KumuRegistry`, `resolveWidgetTree`, `collectKumuDefs`, typed holes
+3. ~~**Wehe executor**~~ ✓ shipped 2026-04-28 — `kumu-executor.ts`: `executeKumu`, `executeBatch`, `substituteProps`, `detectSuspension`; 136/136 tests pass
+4. **BootArtifact.kumuDefs population** — compiler pass: `collectKumuDefs` across all closure carriers → `artifact.kumuDefs` → `buildKumuRegistry(artifact.kumuDefs)` live at boot.
+5. **kukali** — wait posture in a causal island; `fire()` is async, `detectSuspension` exists. Register sigil, emit `SigilNode { sigilName:"kukali", attrs:{trigger} }`. Caller subscribes to trigger, re-executes on reaction event.
+6. **Browser smoke** (Priority 1 from M8 original scope) — still pending.
+
+**Behavioral invariant discovered during testing:** Unbound params in a kumu body are NOT silently empty — they propagate as typed holes (`unresolved-hole`). Callers that want "empty string for missing prop" must explicitly pass `paramName:""`. Verse alignment: no silent wrong output.
+
+<<~/ahu >>
+
+<<~ ahu #design-decisions-async-first >>
+
+## Design Decision: Async-First + Causal Islands
+
+**Date:** 2026-04-28
+**Pressure sources:** UEFN causal island model, FFZ Chronometer research, TW5 multiplayer history
+
+### The decision
+
+`ReactionGraph.fire()` MUST be async-first from the start. Not retrofitted later.
+
+**Why:** TW5's multiplayer history and IPFS's content-addressed model both demonstrate that getting the causal model wrong at the base level is expensive to fix. UEFN avoids this via *causal islands*: each device runs in an isolated async boundary; events cross island boundaries only via declared ports (device graph edges — our `papalohe`). No shared mutable state across islands.
+
+```
+  causal island A          causal island B
+  ┌──────────┐             ┌──────────┐
+  │ kumu X   │──papalohe──▶│ kumu Y   │
+  │          │  (async     │          │
+  │ fire()   │   message)  │ handler  │
+  └──────────┘             └──────────┘
+```
+
+The `ReactionGraph` IS the causal island manager. `fire(fromUri, trigger, payload)` returns `Promise<void>`. Handlers may `await`. Fanout modes:
+
+| sigil | `ReactionGraph` mode | semantics |
+|-------|---------------------|-----------|
+| `hui` | `Promise.all` | all branches complete before proceeding |
+| `heihei` | `Promise.race` | first completion wins, rest continue |
+| `puka` | `Promise.any` + cancel | first wins, rest cancelled |
+| `lele` | fire-and-forget (`void`) | no await, side effects permitted |
+
+### FFZ Chronometer as causal timestamp
+
+The FFZ Chronometer fragment (`#O0.O3.D2.A7`) encodes `{ scale: Ladder5, phase: OodaHa5, counter: number }`. In the async model, each `fire()` call carries an implicit causal timestamp derived from the Chronometer — not a wall-clock time, but a logical position in the OODA-HA loop.
+
+This is the *why* behind decoupling Chronometer from grammar invariants: `LADDER_5` and `OODA_HA_5` are static arrays in `ast.ts`; the Chronometer generates a *live causal cursor* at runtime. They share vocabulary but live in different layers.
+
+**Causal ordering law:** an event fired at `(scale: "action", phase: "act")` cannot causally precede an event in the same island at `(scale: "round", phase: "decide")`. The Chronometer encodes this ordering as a sortable fragment, not as a wall clock. CRDT CRDTs maintain causal ordering structurally; the Chronometer makes it readable.
+
+### `kumu` as the widget-tree node type
+
+**The user question: `kumu` as widget? OR parseTree→widgetTree→renderTree?**
+
+Answer: Both. `kumu` IS the widget-tree node type definition — and the three-tree pipeline is the correct execution model.
+
+TW5 pipeline:
+```
+tiddler text → parse tree (WikiParser) → widget tree (Widget subclass instances) → DOM
+```
+
+Lararium pipeline (target):
+```
+carrier text → MemeAstNode[] (parseMemeCarrier)
+             → kumu-typed WidgetNode[] (widget-tree resolution)
+             → tldraw shapes / rendered output
+```
+
+The *missing middle layer* is the widget tree. `parseMemeCarrier` produces `MemeAstNode[]` — a generic parse tree. The widget tree re-types each parse node into a `kumu`-typed node that knows its renderer. This is Phase 3 self-hosting:
+
+- `<<~! kumu myCard(title body) >> ... <<~/kumu >>` defines a new node type
+- `<<~ kahea myCard(title:Welcome) >>` (name form) emits a `SigilNode { sigilName:"kahea", attrs:{name:"myCard", args:"title:Welcome"} }`
+- Widget-tree resolution walks the parse tree, matches each `SigilNode` against the registered `kumu` types, and emits a `WidgetNode { type: KumuDef, resolved: true, props: { title:"Welcome" } }`
+- The render pass walks `WidgetNode[]`, not raw `MemeAstNode[]`
+
+**UEFN device type = `kumu` causal island definition.** A UEFN `creative_device` is:
+- A named type (`kumu`)
+- With `@editable` properties (`kau` bindings in the kumu body)
+- With event ports (`papalohe` edges on the device graph)
+- Running in a causal island (async boundary)
+
+`kumu` is both the TW5 widget type AND the UEFN device type. The same primitive. The three-tree pipeline and the causal island model are the same model at different layers.
+
+### Implementation order
+
+1. Make `ReactionGraph.fire()` return `Promise<void>` — zero-cost change; no callers await today
+2. Add `fireAll` / `fireRace` / `fireRush` fanout methods
+3. Build `KumuRegistry` — a `Map<string, KumuDef>` populated from the boot artifact's `kumu` sigil nodes
+4. Add widget-tree resolution pass: `resolveWidgetTree(ast: MemeAstNode[], registry: KumuRegistry): WidgetNode[]`
+5. Render pass reads `WidgetNode[]` instead of raw `MemeAstNode[]`
+
+Steps 1–2 are pure `live-protocol.ts` changes. Steps 3–5 are the Phase 3 self-hosting pivot.
 
 <<~/ahu >>
 

@@ -49,6 +49,8 @@ export interface BootArtifact {
   validation: ValidationResult;
   edgeCount?: number;
   pranalaEdges?: { fromUri: string; fromSocket: string; toUri: string; family: string; role: string | null }[];
+  /** kumu type definitions collected from the boot closure — Phase 3 widget tree. */
+  kumuDefs?: import("./ast.js").KumuDef[];
 }
 
 export interface BootReceipt {
@@ -190,7 +192,12 @@ export function buildBootClosure(
   return { topoUris, violations };
 }
 
-export function compileMinimalBoot(graph: MemeGraph, topoUris: string[], violations: string[][]): BootArtifact {
+export function compileMinimalBoot(
+  graph: MemeGraph,
+  topoUris: string[],
+  violations: string[][],
+  kumuDefs?: import("./ast.js").KumuDef[],
+): BootArtifact {
   const socketMap = buildSocketMap(graph, topoUris);
   const depthMap = buildDepthMap(graph, topoUris);
 
@@ -210,6 +217,7 @@ export function compileMinimalBoot(graph: MemeGraph, topoUris: string[], violati
     interfaceIndex: Object.fromEntries([...interfaceIndex.entries()].map(([k, v]) => [k, v.length])),
     invariantIndex: Object.fromEntries([...invariantIndex.entries()].map(([k, v]) => [k, v.length])),
     validation: validateClosure(closure, violations, graph),
+    kumuDefs,
   };
 }
 
@@ -218,6 +226,7 @@ export function compileFullBoot(
   topoUris: string[],
   additionalUris: string[],
   violations: string[][],
+  kumuDefs?: import("./ast.js").KumuDef[],
 ): BootArtifact {
   const socketMap = buildSocketMap(graph, topoUris);
   const depthMap = buildDepthMap(graph, topoUris);

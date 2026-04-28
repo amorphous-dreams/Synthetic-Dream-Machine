@@ -65,10 +65,18 @@ description   = "sugar: shadow transclusion (observe family); read-only embed; e
 [[sigils]]
 name          = "kahea"
 kind          = "edge-sugar"
-pattern       = '<<~\s*kahea\s+(\S+)\s*>>'
+layer         = "both"
+pattern       = '<<~\s*kahea\s+(lar:[^\s>]+|[^\s>(]+\/[^\s>]*|[^\s>(]+#[^\s>]*)\s*>>'
 default_family = "dataflow"
 default_propagation = "push-forward"
-description   = "sugar: live transclusion (dataflow family) + definition invocation; dispatch: lar:/// prefix → meme transclusion; plain name → wehe/helu lookup; [SC]"
+description   = "URI form: live transclusion (dataflow family, compile+render); matches lar:/// prefix, path with /, or fragment with #; emits EdgeSugarNode → graph edge; [SC]"
+
+[[sigils]]
+name          = "kahea-call"
+kind          = "context"
+layer         = "render"
+pattern       = '<<~\s*kahea\s+([\w][\w.-]*)\s*(?:\(([^)]*)\))?\s*>>'
+description   = "name form: definition invocation (render-only, no graph edge); matches plain identifier optionally followed by (args); emits SigilNode { sigilName:kahea, attrs:{name,args} }; used for wehe/helu lookup and wehe parameter interpolation; [SC]"
 
 [[sigils]]
 name         = "iam"
@@ -194,7 +202,7 @@ kind          = "concurrency-alias"
 layer         = "both"
 alias_for     = "lele"
 pattern       = '<<~\s*\\branch\s+(\S+)\s*>>'
-description   = "English alias for lele; Verse branch keyword; parser maps to lele before evaluation"
+description   = "English alias for lele; maps to fire-and-forget dispatch (not Verse branch speculative fiber); parser maps to lele before evaluation"
 
 [[sigils]]
 name          = "\\tiddler"
@@ -245,7 +253,7 @@ kind           = "concurrency"
 layer          = "both"
 pattern        = '<<~\s*lele\s+(\S+)\s*>>'
 default_family = "message"
-description    = "fire and forget dispatch; Verse branch equivalent; compile: pranala family:message; [SC]"
+description    = "fire and forget dispatch; emits a message edge and continues without waiting for response; Verse spawn equivalent (NOT Verse branch — branch is a cancellable speculative fiber; lele is unconditional send); compile: pranala family:message; [SC]"
 
 # --- Render-time edge sugar ---
 
@@ -413,7 +421,7 @@ kind          = "pragma"
 layer         = "both"
 open_pattern  = '<<~!\s*kumu\s+([\w-]+)(?:\(([^)]*)\))?\s*>>'
 close_pattern = '<<~\/kumu\s*>>'
-description   = "element type definition; declares a new grammar node type (not a text template — that is wehe); self-hosting primitive; TW5 \\widget equivalent; [SC]"
+description   = "element type definition; declares a new grammar node type with a named body contract; self-hosting primitive; TW5 \\widget equivalent; UEFN: maps to creative_device class — body carries @editable property bindings as kau children, event/function ports declared as papalohe edges; not a text template (that is wehe); [SC]"
 
 # English aliases for kumu
 [[sigils]]
@@ -461,15 +469,14 @@ alias_for     = "pono"
 pattern       = '<<~\s*\\constraint\s+(#[\w-]+\s+)?(\S+)\s*->\s*(\S+)(?:\s+role:([\w-]+))?\s*>>'
 description   = "English alias for pono; declarative structural constraint; parser maps to pono before evaluation"
 
-# --- Reaction family sugar sigil (TALK STORY: name TBD — candidate: ala) ---
-
 [[sigils]]
 name           = "papalohe"
 kind           = "edge-sugar"
 layer          = "both"
-pattern        = '<<~\s*papalohe\s+(#[\w-]+\s+)?(\S+)\s*->\s*(\S+)(?:\s+trigger:([\w-]+))?\s*>>'
+pattern        = '<<~\s*papalohe\s+(#[\w-]+\s+)?(\S+)\s*->\s*(\S+)(?:\s+trigger:([\w.-]+))?(?:\s+fn:([\w.-]+))?\s*>>'
 default_family = "reaction"
-description    = "reaction family edge sugar; Lua: pāpālohe — warrior body-listening reflex, fires only when source activates it; UEFN device graph event wire; trigger property carries event name; compile: pranala family:reaction; [SC]"
+render_mode    = "reaction-wire"
+description    = "reaction family edge sugar; Lua: pāpālohe — warrior body-listening reflex; full UEFN wire: DeviceA -> DeviceB trigger:OnEliminated fn:ShowScore; trigger = source event name (DeviceA.EventX); fn = target function name (DeviceB.FunctionY); compile: pranala family:reaction renderMode:reaction-wire; render: arrow with trigger label at source, fn label at target; canonical roles: subscription | handler | callback; [SC]"
 ```
 
 <<~/ahu >>
@@ -523,7 +530,7 @@ dag_required        = false
 role_required       = false
 role_recommended    = true
 confidence_bounded  = false
-description         = "routed event or signal passage; routes leaf-upward toward control root; no structural ownership stake; sugar: pending"
+description         = "event or signal dispatch; one-way, fire-and-forget; no structural ownership stake; direction is topological not hierarchical — may route to any reachable socket; sugar: lele"
 
 [[families]]
 name                = "constraint"
@@ -537,9 +544,19 @@ description         = "declarative rule without execution pulse; spatial, logica
 name                = "reaction"
 dag_required        = false
 role_required       = false
-role_recommended    = true    # trigger property recommended; warning if absent
+role_recommended    = true
 confidence_bounded  = false
-description         = "triggered response subscription; pāpālohe — body-listening reflex; 'when source fires event, target awakens'; UEFN device graph event wire; carries trigger property naming the activating event; sugar: papalohe"
+canonical_roles     = ["subscription", "handler", "callback"]
+render_mode         = "reaction-wire"
+description         = "triggered response subscription; pāpālohe — body-listening reflex; fires only when source event activates; payload: trigger (source event name), fn (target function name); OODA-HA: wire declared at Orient phase, executes at Act phase, violations surface at Aftermath; sugar: papalohe; render: reaction-wire (trigger label at source, fn label at target)"
+
+[[families]]
+name                = "spatial"
+dag_required        = false
+role_required       = false
+role_recommended    = true    # role disambiguates spatial relationship type
+confidence_bounded  = false
+description         = "spatial containment and adjacency edges; navigable relationships between areas, levels, portals, and layers; UEFN Scene Graph hierarchy; roles: contains | portal | adjacent | layer; direction: area -> area or area -> portal -> area; load-bearing for infinite canvas portals and RPG multi-level maps; sugar: pending"
 ```
 
 <<~/ahu >>
@@ -566,6 +583,346 @@ description = "exists only for a single render pass or computation"
 [[lifecycle_values]]
 name        = "boot"
 description = "valid only during the boot compilation phase"
+
+[[lifecycle_values]]
+name        = "per-player"
+description = "Verse/UEFN: instantiated once per connected player agent; maps to scope:personal in Kowloon model; not shared across the room"
+```
+
+<<~/ahu >>
+
+<<~ ahu #law-of-5s >>
+
+## Law of Fives — Invariant Ladders
+
+Two orthogonal 5-point axes underlie all domain-specific scales in the system.
+Exported from `packages/lararium-core/src/ast.ts` as `LADDER_5`, `OODA_HA_5`, `SCOPE_5`.
+
+```toml
+# Scale ladder — finest to coarsest
+[[ladder_5]]
+index       = 1
+name        = "action"
+scope       = "ephemeral"
+chrono      = "⚡"
+zoom        = "glyph"
+kowloon     = "turn-local"
+ooda_ha     = "act"
+discordian  = "Bureaucracy"
+
+[[ladder_5]]
+index       = 2
+name        = "round"
+scope       = "personal"
+chrono      = "⚔️"
+zoom        = "token"
+kowloon     = "@domain"
+ooda_ha     = "decide"
+discordian  = "Confusion"
+
+[[ladder_5]]
+index       = 3
+name        = "turn"
+scope       = "consensual"
+chrono      = "🔍"
+zoom        = "meme"
+kowloon     = "circle:<id>"
+ooda_ha     = "orient"
+discordian  = "Discord"
+
+[[ladder_5]]
+index       = 4
+name        = "watch"
+scope       = "collective"
+chrono      = "⚙️"
+zoom        = "room"
+kowloon     = "group:<id>"
+ooda_ha     = "observe"
+discordian  = "Chaos"
+
+[[ladder_5]]
+index       = 5
+name        = "week"
+scope       = "universal"
+chrono      = "🗺️"
+zoom        = "network"
+kowloon     = "@public"
+ooda_ha     = "aftermath"
+discordian  = "Aftermath"
+
+# OODA-HA phases — active to reflective
+# Note: phase runs counter to scale. Act=action(finest); Aftermath=week(coarsest).
+[[ooda_ha_5]]
+index   = 1
+name    = "act"
+sigil   = "▶"
+patron  = "Zarathud"
+season  = "Bureaucracy"
+jaina   = "asti"
+type_state = "typed/committed"
+
+[[ooda_ha_5]]
+index   = 2
+name    = "decide"
+sigil   = "◇"
+patron  = "Sri Syadasti"
+season  = "Confusion"
+jaina   = "asti-nasti"
+type_state = "interpret"
+
+[[ooda_ha_5]]
+index   = 3
+name    = "orient"
+sigil   = "⏿"
+patron  = "Dr. Van Van Mojo"
+season  = "Discord"
+jaina   = "nasti"
+type_state = "named shapes"
+
+[[ooda_ha_5]]
+index   = 4
+name    = "observe"
+sigil   = "✶"
+patron  = "Hung Mung"
+season  = "Chaos"
+jaina   = "avaktavya"
+type_state = "? string"
+
+[[ooda_ha_5]]
+index   = 5
+name    = "aftermath"
+sigil   = "⤴↺"
+patron  = "Elder Malaclypse"
+season  = "Aftermath"
+jaina   = "asti-nasti-avaktavya"
+type_state = "blame/validate"
+```
+
+<<~/ahu >>
+
+<<~ ahu #stances-syad-tools >>
+
+## Stances, Syad, and Tools
+
+Three separate graphs. Stances encode epistemic register (Syad predicate). Tools encode aperture and feed direction. Syad encodes the 7 truth-value compounds. The graphs connect but do not collapse.
+
+Register measures confidence *within* the active stance — not universal truth weight.
+Source: `lar:///ha.ka.ba/api/v0.1/mu/the-syad-perspectives` and `lar:///ha.ka.ba/api/v0.1/mu/the-four-tools`
+
+```toml
+# Graph 1: Five stances → Syad predicate
+# tool_affinity records natural tool; does not lock stance to tool.
+# Poet and Private share jaina_predicate = "avaktavya" (P3);
+#   feed_direction differentiates them (external vs internal) — that edge lives in the Tool graph.
+# Satirist: stated predicate P2 (nasti); operational predicate P6 (nasti+avaktavya).
+#   The P2→P6 gradient marks maturity: brittle at P2, effective when holding P6.
+[[stances]]
+name              = "philosopher"
+sigil             = "🏛️"
+register_measures = "propositional support"
+jaina_predicate   = "asti"
+jaina_index       = 1
+phase_affinity    = "decide"
+tool_affinity     = "sword"
+description       = "propositional truth-confidence; commits to a claim; 0.0=no support, 1.0=full support"
+
+[[stances]]
+name              = "poet"
+sigil             = "🌊"
+register_measures = "analogical resonance"
+jaina_predicate   = "avaktavya"
+jaina_index       = 3
+phase_affinity    = "observe"
+tool_affinity     = "wand"
+description       = "analogical correspondence outward; T/F axis does not fit — measures resonance amplitude"
+
+[[stances]]
+name              = "satirist"
+sigil             = "🗡️"
+register_measures = "targeting confidence"
+jaina_predicate   = "nasti"
+jaina_index       = 2
+jaina_operational = "nasti+avaktavya"
+jaina_index_operational = 6
+phase_affinity    = "act"
+tool_affinity     = "wand+pentacle"
+description       = "targeting what does not hold; operational predicate P6 holds absence+inexpressible; 0.0=missed, 1.0=landed"
+
+[[stances]]
+name              = "humorist"
+sigil             = "🎭"
+register_measures = "relational fit"
+jaina_predicate   = "asti-nasti"
+jaina_index       = 4
+phase_affinity    = "orient"
+tool_affinity     = "cup"
+description       = "holds T and F simultaneously without resolving; 0.0=fell flat, 1.0=connected"
+
+[[stances]]
+name              = "private"
+sigil             = "🔮"
+register_measures = "inward presence"
+jaina_predicate   = "avaktavya"
+jaina_index       = 3
+phase_affinity    = "aftermath"
+tool_affinity     = "pentacle"
+description       = "avaktavya directed inward; T/F axis does not fit — measures interior presence amplitude"
+
+# Graph 2: Seven Syad predicates (Jaina Saptabhangi)
+# P5/P6 = threshold crossings (stance past its boundary, not stable standpoints).
+# P7 = Arcana only — no stance mediates it; reached for, not inhabited.
+[[predicates]]
+index       = 1
+compound    = "asti"
+primitives  = ["T"]
+covered_by  = "philosopher"
+description = "affirms; claim holds from this standpoint"
+
+[[predicates]]
+index       = 2
+compound    = "nasti"
+primitives  = ["F"]
+covered_by  = "satirist"
+description = "denies; claim does not hold from this standpoint"
+
+[[predicates]]
+index       = 3
+compound    = "avaktavya"
+primitives  = ["M"]
+covered_by  = "poet, private"
+description = "inexpressible; T/F axis does not fit the claim — two stances, opposite directions"
+
+[[predicates]]
+index       = 4
+compound    = "asti-nasti"
+primitives  = ["T", "F"]
+covered_by  = "humorist"
+description = "affirms and denies simultaneously; holds without resolving"
+
+[[predicates]]
+index       = 5
+compound    = "asti-avaktavya"
+primitives  = ["T", "M"]
+covered_by  = "threshold"
+description = "threshold crossing: philosopher past its boundary; claim holds AND resists propositional form"
+
+[[predicates]]
+index       = 6
+compound    = "nasti-avaktavya"
+primitives  = ["F", "M"]
+covered_by  = "threshold"
+description = "threshold crossing: satirist past its boundary; absence named AND void beneath resists description; also satirist operational predicate when stable"
+
+[[predicates]]
+index       = 7
+compound    = "asti-nasti-avaktavya"
+primitives  = ["T", "F", "M"]
+covered_by  = "arcana"
+description = "full compound; no stance mediates it; Arcana reaches for it to release the current reading"
+
+# Graph 3: Five tools — feed direction × aperture
+# feed: external | internal | release
+# aperture: wide | narrow | release
+# Arcana has no stance intermediary — maps directly to P7.
+[[tools]]
+name        = "wand"
+ascii       = "*"
+element     = "Fire/Spirit"
+feed        = "external"
+aperture    = "wide"
+phase       = "observe"
+description = "track external signal; wide scan; Observe phase emphasis"
+
+[[tools]]
+name        = "cup"
+ascii       = "?"
+element     = "Water/Emotion"
+feed        = "external"
+aperture    = "wide"
+phase       = "orient"
+description = "wide relational field; hold contested plausibility open; Orient phase emphasis"
+
+[[tools]]
+name        = "sword"
+ascii       = "!"
+element     = "Air/Mind"
+feed        = "external"
+aperture    = "narrow"
+phase       = "decide"
+description = "precision cut; commits to one side; Decide/Act phase emphasis"
+
+[[tools]]
+name        = "pentacle"
+ascii       = "~"
+element     = "Earth/Body"
+feed        = "internal"
+aperture    = "narrow"
+phase       = "aftermath"
+description = "ground internal feed; hidden/structural; Aftermath phase emphasis"
+
+[[tools]]
+name        = "arcana"
+ascii       = "-"
+element     = "Orichalcum"
+feed        = "release"
+aperture    = "release"
+phase       = "release"
+jaina_predicate = "asti-nasti-avaktavya"
+jaina_index = 7
+description = "no stance mediates it; releases current reading without replacing; model agnosticism"
+
+# Canonical posture pairs (Tool combinations — Graph 3 edges)
+[[postures]]
+ascii       = "*!"
+tools       = ["wand", "sword"]
+feed        = "external"
+aperture    = "narrow"
+description = "track external feed, zoom in for detail"
+
+[[postures]]
+ascii       = "*?"
+tools       = ["wand", "cup"]
+feed        = "external"
+aperture    = "wide"
+description = "track external feed, zoom out for relation"
+
+[[postures]]
+ascii       = "~!"
+tools       = ["pentacle", "sword"]
+feed        = "internal"
+aperture    = "narrow"
+description = "ground internal feed, zoom in for precision"
+
+[[postures]]
+ascii       = "~?"
+tools       = ["pentacle", "cup"]
+feed        = "internal"
+aperture    = "wide"
+description = "ground internal feed, zoom out for overview"
+
+[[postures]]
+ascii       = "--"
+tools       = ["arcana"]
+feed        = "release"
+aperture    = "release"
+description = "release current stance/tool reading; model agnosticism"
+
+# Conflict states — Tool graph conflicts only (not Syad conflicts)
+# *~ = Satirist natural posture; Signal Jam for all other stances.
+[[posture_conflicts]]
+ascii            = "*~"
+type             = "feed"
+name             = "Signal Jam"
+stance_pair      = "poet, private"
+satirist_posture = true
+description      = "external and internal feeds locked; Satirist owns this productively; all other stances: named pressure state"
+
+[[posture_conflicts]]
+ascii       = "?!"
+type        = "aperture"
+name        = "Dubious Move"
+stance_pair = "humorist, philosopher"
+description = "wide aperture and narrow aperture locked; wide field asserts precision it cannot support"
 ```
 
 <<~/ahu >>
@@ -601,7 +958,7 @@ The TypeScript parser at `packages/lararium-core/src/pranala-parser.ts` currentl
 3. Passes `GrammarRules` as an optional second argument to `parsePranalaEdges`
 4. Parser uses rule-provided patterns when present, falls back to built-ins for bootstrap safety
 
-The `GrammarRules` interface is defined in `pranala-parser.ts` and exported from `@lararium/core`.
+The `GrammarRules` interface is defined in `ast.ts` and exported from `@lararium/core` (moved from `pranala-parser.ts` in Phase 3 to break a circular dependency).
 Adding a new sigil requires authoring a `[[sigils]]` entry here and promoting this carrier — no TypeScript rebuild.
 
 <<~/ahu >>

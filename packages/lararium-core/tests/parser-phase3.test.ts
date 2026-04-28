@@ -48,11 +48,12 @@ describe("parseMemeCarrier — tree structure", () => {
     expect(s?.family).toBe("relation");
   });
 
-  test("papalohe → EdgeSugarNode with trigger in payload", () => {
-    const ast = parseMemeCarrier(BASE, `<<~ papalohe lar:///a -> lar:///b trigger:OnBegin >>`);
+  test("papalohe → EdgeSugarNode with trigger and fn", () => {
+    const ast = parseMemeCarrier(BASE, `<<~ papalohe lar:///a -> lar:///b trigger:OnBegin fn:ShowScore >>`);
     const s = ast.find((n) => n.kind === "EdgeSugar") as EdgeSugarNode | undefined;
     expect(s?.sigil).toBe("papalohe");
     expect(s?.trigger).toBe("OnBegin");
+    expect(s?.fn).toBe("ShowScore");
   });
 
   test("nested ahu — inner ahu is in outer body", () => {

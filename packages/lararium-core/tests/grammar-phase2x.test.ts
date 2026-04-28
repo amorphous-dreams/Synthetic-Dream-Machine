@@ -44,6 +44,24 @@ describe("papalohe — reaction family sugar", () => {
     const e = result[0]!;
     expect(e.family).toBe("reaction");
     expect(e.payload?.["trigger"]).toBe("OnBegin");
+    expect(e.payload?.["fn"]).toBeUndefined();
+  });
+
+  test("full UEFN wire: trigger + fn", () => {
+    const result = edges("<<~ papalohe lar:///device-a -> lar:///device-b trigger:OnEliminated fn:ShowScore >>");
+    expect(result).toHaveLength(1);
+    const e = result[0]!;
+    expect(e.family).toBe("reaction");
+    expect(e.payload?.["trigger"]).toBe("OnEliminated");
+    expect(e.payload?.["fn"]).toBe("ShowScore");
+  });
+
+  test("dotted UEFN device.method syntax in trigger and fn", () => {
+    const result = edges("<<~ papalohe lar:///guard-post -> lar:///hud trigger:GuardPost.OnEliminated fn:HUD.ShowScore >>");
+    expect(result).toHaveLength(1);
+    const e = result[0]!;
+    expect(e.payload?.["trigger"]).toBe("GuardPost.OnEliminated");
+    expect(e.payload?.["fn"]).toBe("HUD.ShowScore");
   });
 
   test("with #slot anchor", () => {
@@ -139,13 +157,17 @@ describe("reaction family — validatePranaEdge", () => {
 // KNOWN_FAMILIES export
 // ---------------------------------------------------------------------------
 
-describe("KNOWN_FAMILIES — 7 families registered", () => {
+describe("KNOWN_FAMILIES — 8 families registered", () => {
   test("reaction is in KNOWN_FAMILIES", () => {
     expect((KNOWN_FAMILIES as readonly string[]).includes("reaction")).toBe(true);
   });
 
-  test("all 7 families present", () => {
-    const expected = ["control", "relation", "observe", "dataflow", "message", "constraint", "reaction"];
+  test("spatial is in KNOWN_FAMILIES", () => {
+    expect((KNOWN_FAMILIES as readonly string[]).includes("spatial")).toBe(true);
+  });
+
+  test("all 8 families present", () => {
+    const expected = ["control", "relation", "observe", "dataflow", "message", "constraint", "reaction", "spatial"];
     for (const f of expected) {
       expect((KNOWN_FAMILIES as readonly string[]).includes(f)).toBe(true);
     }
