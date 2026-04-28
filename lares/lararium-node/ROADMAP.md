@@ -1263,13 +1263,17 @@ After the Phase 2 session documented above, a further grammar extension session 
 
 "When source fires event, target awakens." UEFN device graph event subscriptions. `papalohe` is the sugar sigil. Wired in `KNOWN_FAMILIES`, `FAMILY_CONTRACTS`, event loop, `ActiveRegexes`. `trigger` property stored in `payload["trigger"]`.
 
-**AST type layer:**
+**AST type layer (Phase 3 — compressed):**
 
-`packages/lararium-core/src/ast.ts` — full `MemeAstNode` union type with 22 node kinds. Exported from `@lararium/core`. `#ast-node-types` spec section added to `memetic-wikitext-spec.md`.
+`packages/lararium-core/src/ast.ts` — `MemeAstNode` union compressed to **8 node kinds**. 15 typed interfaces collapsed into `SigilNode { sigilName, attrs, body }`. `MetadataNode` removed — `toml`/`iam` are now `SigilNode`. `DynamicNode` added as grammar-meme escape hatch. `#ast-node-types` spec section updated to reflect compressed model.
+
+**Phase 3 parser (`parseMemeCarrier`):**
+
+New primary API: `parseMemeCarrier(uri, text, grammar?) → MemeAstNode[]`. SAX-internally (`collectEvents`), tree output (`buildAst`), edge projection (`edgesFromAst`). Inline alias erasure via `SigilScan.canonicalName` — no separate `eraseAliases` phase. `parsePranalaEdges` retained as stable edge-only API (avoids circular dep). BOOTSTRAP_SCANS drive the parser before grammar rules load.
 
 **`wikitext-filter.md`:** Added `[edge:family[reaction]trigger[X]]` operators section.
 
-**Test count:** 53 → 64 (11 new tests in `grammar-phase2x.test.ts` covering `papalohe` sugar parsing, reaction family contract validation, and `KNOWN_FAMILIES` export).
+**Test count:** 64 → 84 (20 new tests in `grammar-phase2x.test.ts` + `parser-phase3.test.ts` covering `papalohe`, reaction family contracts, Phase 3 tree structure, parity with `parsePranalaEdges`, alias erasure, `DynamicNode`, kau scope).
 
 <<~/ahu >>
 
@@ -1342,6 +1346,45 @@ Phase 3 entry condition: `lares/grammars/wikitext-filter.md` dialect carrier is 
 ### Priority 5: Wiki-recipe carriers
 
 `lares/recipes/` schema. Seed per-room canvases from recipe files. RPG rooms (`ftls`, `wtf`) unblock once recipes land. Recipe carrier format: `[[memes]]` TOML array with filter expression + seed layout.
+
+<<~/ahu >>
+
+<<~ ahu #design-decisions-kowloon-scope >>
+
+## Design Decisions — Kowloon Integration + Scope Principles (2026-04-27)
+
+### Lararium as Kowloon node
+
+A lararium node is (or connects to) a full Kowloon server. The canvas is a Kowloon Group. Circles, membership tiers, and the social graph are live Kowloon state rendered as visual graphs on the canvas. Use cases: summon feed, sync with others, draft/publish posts, manage circles as visual graphs.
+
+Kowloon architecture grounding:
+- Objects: Posts, Replies, Reacts, Circles, Groups — each with global ID `type:<id>@domain`
+- Addressing: `to: @public | @<domain> | circle:<id> | group:<id> | <userId>`
+- **The inversion:** Circles are *your* data structure, not the platform's. You follow someone *into a circle you own*. Author gates with `to: circle:<id>`; reader assembles their graph. Neither side sees the other's structure.
+- Federation: hybrid push (direct actions) + pull (discovery). Replication boundary = Group/Circle membership.
+- FeedItems coarse-sanitizes visibility (no circle IDs leaked); FeedFanOut is the authoritative grant table.
+
+### 5 scope principles
+
+State in lararium has five principled scopes (principles, not techniques):
+
+| scope | boundary | Kowloon ground |
+|-------|----------|----------------|
+| `ephemeral` | one agent turn | no Kowloon object |
+| `personal` | one actor, persistent | `to: @<domain>` |
+| `consensual` | shared by mutual choice, author-gated/reader-assembled | `to: circle:<id>` |
+| `collective` | shared by group identity with governance | `to: group:<id>` |
+| `universal` | no gate, federated | `to: @public` |
+
+Parse-time `kau` shorthands `carrier` (→ `personal`) and `block` (→ `collective`) retained for compatibility. `kapu` qualifier can be a scope principle name.
+
+### UEFN / `papalohe` design notes
+
+`papalohe` maps to UEFN device graph event binding: `DeviceA.EventX -> DeviceB.FunctionY`. Current syntax captures source event (`trigger:EventName`) but not target function. `fn:FunctionName` is the conventional extension key — additive, no parser change needed.
+
+Device types map to `kumu` (element type definition). UEFN `@editable` properties serialize as `kau` bindings within the kumu body.
+
+**`spatial` family** — locked as 8th pranala family (after `reaction`). Infinite canvas + portals requires spatial containment edges that are navigable, not just organizational. Roles: `contains`, `portal`, `adjacent`, `layer`. Direction: `area -> area` or `area -> portal -> area`. Load-bearing for RPG battlemap / multi-level / interlinked areas milestone.
 
 <<~/ahu >>
 

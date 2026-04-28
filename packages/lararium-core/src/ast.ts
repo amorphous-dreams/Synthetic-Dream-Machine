@@ -90,8 +90,10 @@ export interface TextNode extends AstBase {
 //   meme               → { targetUri }
 //   wehe / kumu        → { name, params }
 //   helu               → { name, params, expression }
-//   kau                → { name, value, scope: "carrier"|"block" }
+//   kau                → { name, value, scope: "ephemeral"|"personal"|"consensual"|"collective"|"universal"|"carrier"|"block" }
+//                         carrier/block are parse-time aliases for personal/collective (retained for compat)
 //   kapu               → { qualifier, inline: "true"|"false" }
+//                         qualifier may be a scope principle name to gate a block by scope
 //   toml / iam         → { content }  — iam is #iam ahu slot; toml is general data block
 //   hui / heihei / puka / mukuwai → {}
 // ---------------------------------------------------------------------------

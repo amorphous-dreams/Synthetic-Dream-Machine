@@ -146,41 +146,61 @@ When a renderer encounters `<<~ kahea lar:///uri >>`, it SHOULD embed that meme'
 
 ## AST Node Types
 
-The parse-time AST (`MemeAstNode` union, `packages/lararium-core/src/ast.ts`) maps each sigil to a typed node.
-Three layers are always present: compile-time graph (`PranaEdge[]`), parse-time structure (`MemeAstNode[]`), render-time directive.
+The parse-time AST (`MemeAstNode` union, `packages/lararium-core/src/ast.ts`) uses 8 node kinds.
+Everything that is not an edge or scope boundary collapses into `SigilNode { sigilName, attrs, body }`.
 
-| Node kind | Sigil(s) | Layer |
-|-----------|----------|-------|
-| `Worksite` | `ahu` | both |
-| `MemeBoundary` | `meme` / `\tiddler` | render |
-| `Edge` | `pranala` (block + inline) | both |
-| `EdgeSugar` | `loulou` / `aka` / `kahea` / `pono` / `lele` / `papalohe` | both |
-| `Conditional` | `wai` / `\if` | render |
-| `ConditionalElse` | `mukuwai` / `\else` | render |
-| `ConditionalBranch` | `kahawai` / `\elif` | render |
-| `Iteration` | `huli` / `\for` | render |
-| `WorkBlock` | `hana` / `\task` | both |
-| `TextTemplate` | `wehe` / `\procedure` / `\define` | render |
-| `FilterFunction` | `helu` / `\function` | render |
-| `TypeDefinition` | `kumu` / `\widget` / `\type` / `\typos` | both |
-| `Variable` | `kau` / `\const` / `\let` / `\var` | both |
-| `Qualification` | `kapu` / `\guard` (inline or block) | compile |
-| `SyncBlock` | `hui` / `\sync` | render |
-| `RaceBlock` | `heihei` / `\race` | render |
-| `RushBlock` | `puka` / `\rush` | render |
-| `Dispatch` | `lele` / `\branch` | both |
-| `Query` | `ui` / `\query` | render |
-| `Metadata` | `ahu #iam` | compile |
-| `CarrierHeader` | `<<~ ? -> URI >>` | compile |
-| `Text` | raw wikitext spans | render |
+| Node kind | Covers | Notes |
+|-----------|--------|-------|
+| `Worksite` | `ahu` | addressable scope socket; `uri = carrierUri + slot` |
+| `Edge` | `pranala` (block + inline) | typed edge; `family`, `role`, `slot` |
+| `EdgeSugar` | `loulou` / `aka` / `kahea` / `pono` / `papalohe` | sugar edge; `sigil`, `family`, `trigger` (papalohe only) |
+| `Dispatch` | `lele` | fire-and-forget; `family: "message"` |
+| `CarrierHeader` | `<<~ ? -> URI >>` | carrier self-edge; `toUri` |
+| `Text` | raw wikitext spans | `content` string |
+| `Sigil` | all canonical non-edge sigils | `sigilName`, `attrs` bag, `body[]` |
+| `Dynamic` | grammar-meme-registered unknown sigils | escape hatch; `sigilKind`, `eventType` |
 
-**`Variable` scope:** `<<~! kau name = val >>` (pragma, carrier-scoped, hoisted) vs `<<~ kau name = val >>...<<~/kau >>` (block-scoped).
-The `!` carries the scope elevation promise.
+**`SigilNode` attrs by sigilName:**
 
-**`TypeDefinition` vs `TextTemplate`:** `kumu` declares a new grammar node type with a declared body contract.
-`wehe` declares a text/content template (wikitext fragment). They are different body contracts and different AST nodes.
+| sigilName | attrs keys |
+|-----------|------------|
+| `wai` / `kahawai` / `ui` | `filter` |
+| `huli` | `filter`, `binding` |
+| `hana` | `grammarKey` |
+| `meme` | `targetUri` |
+| `wehe` / `kumu` | `name`, `params` |
+| `helu` | `name`, `params`, `expression` |
+| `kau` | `name`, `value`, `scope` (see scope principles below) |
+| `kapu` | `qualifier`, `inline` |
+| `toml` / `iam` | `content` |
 
-**`EdgeSugar` trigger field:** `papalohe` is the only `EdgeSugar` with a `trigger` property (event name). All others use `role`.
+**`kau` scope:** `<<~! kau name = val >>` (pragma → `scope:personal`) vs `<<~ kau name = val >>...<<~/kau >>` (block → `scope:collective`). The `!` is the scope elevation marker. See `#scope-principles` for the full five-value ladder.
+
+**`kumu` vs `wehe`:** `kumu` declares a new element type (grammar node with declared body contract). `wehe` declares a text/content template (wikitext fragment). Different body contracts, different `sigilName` — both collapse to `SigilNode`.
+
+<<~/ahu >>
+
+<<~ ahu #scope-principles >>
+
+## Scope Principles
+
+State in lararium has five principled scopes. These are *principles*, not techniques — implementation forms (circle IDs, group IDs, session tokens) are derived from them.
+
+| scope | boundary | who controls the boundary | Kowloon ground |
+|-------|----------|--------------------------|----------------|
+| `ephemeral` | one agent turn / recipe execution | nobody — evaporates | no Kowloon object |
+| `personal` | one actor, persistent | the actor alone | `to: @<domain>` (auth-required) |
+| `consensual` | shared by mutual choice | author gates; reader assembles | `to: circle:<id>` (Kowloon Circle) |
+| `collective` | shared by group identity | group governance (tiers) | `to: group:<id>` (Kowloon Group) |
+| `universal` | no gate | no one — federated | `to: @public` (Kowloon federation) |
+
+**The Kowloon inversion:** Kowloon inverts the social graph — circles are *your* data structure, not the platform's. You follow someone *into a circle you own*. The author's `to: circle:<id>` gates who sees a post; the reader's Following circle gates what lands in their feed. Neither side sees the other's structure. This is the model behind `consensual` scope.
+
+**`kau` scope values:** `ephemeral` | `personal` | `consensual` | `collective` | `universal`. Parse-time shorthands `carrier` (→ `personal`) and `block` (→ `collective`) are retained for compatibility.
+
+**`kapu` qualifier:** A `kapu` block may carry a scope principle name as its qualifier to gate rendering by scope. `<<~ kapu collective >>...<<~/kapu >>` renders only when the active scope is `collective` or wider.
+
+**Lararium as Kowloon node:** A lararium node is (or connects to) a full Kowloon server. A lararium room is a Kowloon Group. The canvas, circles, and membership tiers are all live Kowloon state — the lararium UI renders them as visual graphs.
 
 <<~/ahu >>
 
