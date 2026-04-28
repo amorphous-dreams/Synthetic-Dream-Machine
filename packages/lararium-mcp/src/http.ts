@@ -18,7 +18,8 @@ import { McpServer, ResourceTemplate } from "@modelcontextprotocol/sdk/server/mc
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { z } from "zod";
 
-import { createLarariumRuntime, resolveLarUri, LARES_ROOT } from "@lararium/node";
+import { createLarariumRuntime, LARES_ROOT } from "@lararium/node";
+import { resolveLarUri } from "@lararium/core";
 
 // ---------------------------------------------------------------------------
 // Config — flags or env

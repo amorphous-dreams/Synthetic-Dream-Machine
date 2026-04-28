@@ -22,7 +22,8 @@ import { z } from "zod";
 import { writeFileSync, readFileSync, existsSync } from "node:fs";
 import { join } from "node:path";
 
-import { createLarariumRuntime, resolveLarUri, LARES_ROOT, filterMemesTW } from "@lararium/node";
+import { createLarariumRuntime, LARES_ROOT, filterMemesTW } from "@lararium/node";
+import { resolveLarUri } from "@lararium/core";
 
 const runtime = createLarariumRuntime({ writeback: false });
 

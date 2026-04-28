@@ -342,6 +342,62 @@ export function emitTldrawRecords(
     }
   });
 
+  // -- Body node shapes (widget tree skeleton) --------------------------------
+  // One geo shape per LarTLBodyNode — structural skeleton of the meme's carrier content.
+  // Positioned relative to their parent frame, stacked top-to-bottom inside the frame body.
+  // Visibility toggled by templateProps.showCarrier at each zoom level.
+  //
+  // text   → grey rectangle with prose text (wikitext body content)
+  // widget → violet rectangle with kumu type + props (UEFN device slot — not executed)
+  // hole   → dashed grey rectangle (Hazel typed hole — kahea call with no registry match)
+  snapshot.bodyNodes?.forEach((node, idx) => {
+    const parentGeo = layout.frames.get(node.parentFrameId as LarProjectionId);
+    if (!parentGeo) return;
+
+    const scopedParentId = scopeId(node.parentFrameId) as TLGeoShape["parentId"];
+    const yOffset = 28 + idx * 28;  // stack below the frame label, 28px per node
+
+    const label = node.kind === "text"
+      ? node.text.slice(0, 120)
+      : node.kind === "widget"
+        ? `${node.kumuName}(${Object.entries(node.props).map(([k, v]) => `${k}:${v}`).join(" ")})`
+        : `? ${node.kumuName}`;
+
+    const color = node.kind === "widget" ? "violet" : "grey";
+    const dash  = node.kind === "hole"   ? "dashed" : "solid";
+
+    shapes.push({
+      id:       scopeId(`shape:body_${node.parentFrameId.replace(/^shape:/, "")}_${idx}`) as TLGeoShape["id"],
+      typeName: "shape",
+      type:     "geo",
+      x:        4,
+      y:        yOffset,
+      rotation: 0,
+      index:    shapeIndex(scopedParentId),
+      parentId: scopedParentId,
+      isLocked: true,
+      opacity:  0,  // hidden until showCarrier zoom level; applyZoomTemplate controls opacity
+      meta:     { bodyNodeKind: node.kind },
+      props: {
+        geo:          "rectangle",
+        w:            parentGeo.w - 8,
+        h:            24,
+        color,
+        labelColor:   "black",
+        fill:         "semi",
+        dash,
+        size:         "s",
+        font:         "mono",
+        richText:     richText(label),
+        align:        "start",
+        verticalAlign: "middle",
+        growY:        0,
+        url:          "",
+        scale:        1,
+      },
+    } satisfies TLGeoShape);
+  });
+
   // -- Note shapes ------------------------------------------------------------
   snapshot.notes.forEach((note) => {
     const parentGeo: FrameGeometry | undefined = layout.frames.get(note.parentFrameId as LarProjectionId);

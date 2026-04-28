@@ -12,7 +12,6 @@
   "dependencies": {
     "@lararium/core": "workspace:*",
     "@lararium/tldraw": "workspace:*",
-    "@lararium/web": "workspace:*",
     "@tldraw/sync": "^4.5.10",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",

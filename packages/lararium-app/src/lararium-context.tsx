@@ -8,7 +8,7 @@
  * Provider lives in LarariumShell. Consumers live here and in LarariumCanvas.
  */
 
-import { createContext, useContext, useState, useEffect, useCallback } from "react";
+import { createContext, useContext, useState, useCallback } from "react";
 import type { Editor } from "tldraw";
 import type { LarViewState, LarViewAction, ZoomLevel } from "@lararium/tldraw";
 import { DEFAULT_ROOMS, ROOM_SYSTEM } from "@lararium/tldraw";
@@ -66,11 +66,6 @@ export function useTheme(): [LarTheme, () => void] {
       return next;
     });
   }, []);
-
-  // Sync tldraw colorScheme when theme changes — called from LarariumCanvas via context
-  useEffect(() => {
-    // data-theme is already applied; tldraw colorScheme is synced in LarariumCanvas
-  }, [theme]);
 
   return [theme, cycle];
 }
@@ -166,9 +161,6 @@ const slotBtnAccent: React.CSSProperties = {
   fontWeight: 700,
 };
 
-// ---------------------------------------------------------------------------
-// LarariumTopPanel — room breadcrumb + nav   (tldraw TopPanel slot)
-// ---------------------------------------------------------------------------
 
 // MenuPanel: room label + live status — top-left, always visible in both modes.
 // Replaces the separate footer; NavigationPanel owns the bottom zone.
@@ -199,10 +191,6 @@ export function LarariumMenuPanel() {
     </div>
   );
 }
-
-// Keep LarariumTopPanel as null-equivalent — slot disabled in LarariumCanvas.
-// Exported so LarariumCanvas can keep its import clean.
-export function LarariumTopPanel() { return null; }
 
 const menuDivider: React.CSSProperties = {
   width:           1,

@@ -276,6 +276,23 @@ export interface LarTLNote {
   readonly text: string;
 }
 
+/**
+ * A body node inside a meme frame — the tldraw adapter's structural skeleton of
+ * the carrier's widget tree. Three variants follow the TW5 widget model:
+ *
+ *   text   — a wikitext content block (Worksite/Text nodes collapsed to readable prose)
+ *   widget — a resolved kumu instance: type known, props declared, body NOT executed
+ *            (UEFN device analogy: device type + editable properties, not runtime state)
+ *   hole   — a typed hole: kahea call whose kumuName has no registry match (Hazel semantics)
+ *
+ * Execution (kumu body output) belongs to the React adapter only.
+ * The tldraw adapter shows structure; the React detail panel shows rendered content.
+ */
+export type LarTLBodyNode =
+  | { readonly kind: "text";   readonly parentFrameId: LarProjectionId; readonly text: string }
+  | { readonly kind: "widget"; readonly parentFrameId: LarProjectionId; readonly kumuName: string; readonly props: Record<string, string> }
+  | { readonly kind: "hole";   readonly parentFrameId: LarProjectionId; readonly kumuName: string };
+
 /** Union of all lararium projection record types. */
 export type LarProjectionRecord = LarTLPage | LarTLFrame | LarTLSocket | LarTLArrow | LarTLNote;
 
@@ -286,9 +303,11 @@ export type LarProjectionRecord = LarTLPage | LarTLFrame | LarTLSocket | LarTLAr
 export interface LarTLSnapshot {
   readonly version: 1;
   readonly projectedAt: string;
-  readonly pages:   readonly LarTLPage[];
-  readonly frames:  readonly LarTLFrame[];
-  readonly sockets: readonly LarTLSocket[];
-  readonly arrows:  readonly LarTLArrow[];
-  readonly notes:   readonly LarTLNote[];
+  readonly pages:      readonly LarTLPage[];
+  readonly frames:     readonly LarTLFrame[];
+  readonly sockets:    readonly LarTLSocket[];
+  readonly arrows:     readonly LarTLArrow[];
+  readonly notes:      readonly LarTLNote[];
+  /** Widget tree body nodes — structural skeleton of each meme's carrier content. */
+  readonly bodyNodes:  readonly LarTLBodyNode[];
 }

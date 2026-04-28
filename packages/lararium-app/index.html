@@ -18,14 +18,6 @@
   </script>
 </head>
 <body>
-  <!--
-    Lararium snapshot injection point.
-    TiddlyWiki analogy: <script type="text/plain" class="TIDDLER_STORE"> blocks.
-    Server replaces the empty object with the full serialized LarSnapshot before sending.
-    Browser boot reads this via bootFromEmbedded() — no fetch required.
-  -->
-  <script type="application/json" id="lararium-snapshot">{}</script>
-
   <div id="root"></div>
   <script type="module" src="/src/main.tsx"></script>
 </body>

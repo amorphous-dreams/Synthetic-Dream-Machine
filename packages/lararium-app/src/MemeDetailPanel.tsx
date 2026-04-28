@@ -1,23 +1,21 @@
 /**
- * MemeDetailPanel — renders a carrier's parsed AST as wiki content.
+ * MemeDetailPanel — story river panel for a single meme carrier.
+ *
+ * This component owns: CRDT store read, parse/widget/execution pipeline,
+ * and panel chrome (backdrop, header, close). Rendering delegates entirely
+ * to the React render adapter (kumu-react-render.tsx).
  *
  * Pipeline (CRDT-native, no HTTP fetch):
- *   editor.getShape(shapeId).meta.carrierText  →  raw text already in the store
- *   parseMemeCarrier()                          →  MemeAstNode[]
- *   resolveWidgetTree()                         →  WidgetNode[] (typed skeleton)
- *   useKumuExecution()                          →  KumuResult[] (async island fanout)
- *   <AstRenderer>                               →  React (the third tree)
+ *   shape.meta.carrierText           ← seeded at projection from lares/ file
+ *   parseMemeCarrier()               → MemeAstNode[]   (parse tree)
+ *   resolveWidgetTree(ast, registry) → WidgetNode[]    (widget tree)
+ *   useKumuExecution()               → KumuResult[]    (async island fanout)
+ *   buildWidgetMap()                 → Map<pos, slot>  (O(1) lookup index)
+ *   renderCarrier(ast, widgetMap)    → React.ReactNode (React adapter)
  *
- * Carrier text is seeded into the tldraw room snapshot at projection time
- * (LarTLFrame.carrierText → shape.meta.carrierText). The CRDT carries it;
- * no separate HTTP channel needed.
- *
- * Slides up from the bottom when navState.activeView === "meme-detail".
- * Escape / backdrop click dispatches NAVIGATE_BACK.
- *
- * kumu execution is async (Verse-aligned causal island fanout via executeBatch).
- * Suspended kumu instances (kukali yield points) show a "waiting for trigger"
- * placeholder until the ReactionGraph fires and resume() re-executes them.
+ * TW5 analogy: this component = the story river container.
+ *   kumu-react-render.tsx = the WikiText widget renderer.
+ *   The carrier text IS the template — no hardcoded layout here.
  */
 
 import { useEffect, useMemo, useCallback, useState } from "react";
@@ -26,24 +24,16 @@ import {
   resolveWidgetTree,
   executeBatch,
 } from "@lararium/core";
-import type {
-  MemeAstNode,
-  WorksiteNode,
-  EdgeNode,
-  TextNode,
-  SigilNode,
-  WidgetNode,
-  KumuResult,
-  KumuContext,
-} from "@lararium/core";
+import type { MemeAstNode, WidgetNode, KumuResult, KumuContext } from "@lararium/core";
+import { buildWidgetMap } from "@lararium/tldraw";
 import { useLararium } from "./lararium-context.js";
+import { renderCarrier } from "./kumu-react-render.js";
 
 // ---------------------------------------------------------------------------
-// useKumuExecution — async causal island fanout for kumu widget tree
+// useKumuExecution — async Verse-aligned causal island fanout
 //
-// Verse-aligned: executeBatch runs all kumu instances as concurrent causal islands.
 // Suspended instances (kukali yield point) surface as {ok:false, error:"suspended"}.
-// TW5 selective refresh: re-executes only when carrierText changes in the CRDT delta.
+// Re-executes when carrierText changes in the CRDT delta (TW5 selective refresh model).
 // ---------------------------------------------------------------------------
 
 function useKumuExecution(
@@ -69,140 +59,7 @@ function useKumuExecution(
 }
 
 // ---------------------------------------------------------------------------
-// AST → React render pass
-// ---------------------------------------------------------------------------
-
-function renderNode(node: MemeAstNode, key: string): React.ReactNode {
-  switch (node.kind) {
-    case "CarrierHeader":
-      return null;
-
-    case "Worksite": {
-      const ws = node as WorksiteNode;
-      const slug = ws.slot.replace(/^#/, "");
-      const suppressedSlots = new Set(["iam", "meme-body-open", "body-close", "edges"]);
-      return (
-        <section key={key} style={css.worksite} data-slot={ws.slot}>
-          {slug && !suppressedSlots.has(slug) && (
-            <h4 style={css.worksiteSlug}>{slug}</h4>
-          )}
-          {ws.body.map((child, i) => renderNode(child, `${key}.${i}`))}
-        </section>
-      );
-    }
-
-    case "Text": {
-      const text = (node as TextNode).content.trim();
-      if (!text) return null;
-      return <p key={key} style={css.text}>{text}</p>;
-    }
-
-    case "Edge": {
-      const e = node as EdgeNode;
-      return (
-        <div key={key} style={css.edge}>
-          <span style={{ ...css.edgeBadge, ...familyColor(e.family) }}>{e.family}</span>
-          {e.role && <span style={css.edgeRole}>{e.role}</span>}
-          <span style={css.edgeTo}>{e.toRaw}</span>
-        </div>
-      );
-    }
-
-    case "Sigil": {
-      const s = node as SigilNode;
-      if (s.sigilName === "toml" || s.sigilName === "iam") {
-        const content = s.attrs["content"] ?? "";
-        if (!content.trim()) return null;
-        return <pre key={key} style={css.toml}><code>{content}</code></pre>;
-      }
-      if (s.sigilName === "kahea" || s.sigilName === "kumu" || s.sigilName === "wehe") {
-        return (
-          <div key={key} style={css.sigil}>
-            <span style={css.sigilName}>{s.sigilName}</span>
-            {s.attrs["name"] && <span style={css.sigilAttr}>{s.attrs["name"]}</span>}
-            {s.body.map((child, i) => renderNode(child, `${key}.${i}`))}
-          </div>
-        );
-      }
-      if (s.body.length > 0) {
-        return <div key={key}>{s.body.map((c, i) => renderNode(c, `${key}.${i}`))}</div>;
-      }
-      return null;
-    }
-
-    default:
-      return null;
-  }
-}
-
-// ---------------------------------------------------------------------------
-// renderKumuResult — show executed kumu output or typed hole / suspended state
-// ---------------------------------------------------------------------------
-
-function renderKumuResult(result: KumuResult, widget: WidgetNode, key: string): React.ReactNode {
-  if (result.ok) {
-    return (
-      <div key={key} style={css.widget}>
-        <span style={css.widgetKumu}>{widget.kumuName}</span>
-        {Object.entries(widget.resolvedProps).map(([k, v]) => (
-          <span key={k} style={css.widgetProp}>{k}: <em>{v}</em></span>
-        ))}
-        {result.nodes.map((node, i) => renderNode(node, `${key}.node.${i}`))}
-      </div>
-    );
-  }
-
-  if (result.error === "suspended") {
-    return (
-      <div key={key} style={{ ...css.widget, ...css.widgetSuspended }}>
-        <span style={css.widgetKumu}>{widget.kumuName}</span>
-        <span style={css.widgetSuspendedLabel}>
-          ⏿ kukali — waiting for trigger{result.detail ? `: ${result.detail}` : ""}
-        </span>
-      </div>
-    );
-  }
-
-  // unresolved-hole / recursion-limit / missing-prop
-  return (
-    <div key={key} style={{ ...css.widget, ...css.widgetHole }}>
-      <span style={css.widgetKumu}>{result.error === "unresolved-hole" ? `unknown kumu: ${widget.kumuName}` : widget.kumuName}</span>
-      {result.detail && <span style={css.widgetProp}>{result.error}: {result.detail}</span>}
-    </div>
-  );
-}
-
-// Fallback skeleton for when execution hasn't resolved yet
-function renderWidgetSkeleton(node: WidgetNode, key: string): React.ReactNode {
-  if (node.def) {
-    return (
-      <div key={key} style={{ ...css.widget, opacity: 0.5 }}>
-        <span style={css.widgetKumu}>{node.kumuName}</span>
-        {Object.entries(node.resolvedProps).map(([k, v]) => (
-          <span key={k} style={css.widgetProp}>{k}: <em>{v}</em></span>
-        ))}
-      </div>
-    );
-  }
-  return (
-    <div key={key} style={{ ...css.widget, ...css.widgetHole }}>
-      <span style={css.widgetKumu}>unknown kumu: {node.kumuName}</span>
-    </div>
-  );
-}
-
-function familyColor(family: string): React.CSSProperties {
-  const map: Record<string, string> = {
-    control:  "#58a6ff",
-    relation: "#7ee787",
-    observe:  "#f0a04b",
-    dataflow: "#bb8bfc",
-  };
-  return { background: map[family] ?? "#444d56" };
-}
-
-// ---------------------------------------------------------------------------
-// Panel component
+// Panel
 // ---------------------------------------------------------------------------
 
 export function MemeDetailPanel() {
@@ -210,14 +67,12 @@ export function MemeDetailPanel() {
   const visible = navState.activeView === "meme-detail" && !!navState.focusUri;
   const uri = visible ? navState.focusUri! : null;
 
-  // Read carrier text directly from CRDT store — no fetch needed.
-  // The shape with meta.uri === focusUri carries meta.carrierText seeded at projection.
+  // Read carrier text from CRDT store — seeded into shape.meta.carrierText at projection.
   const carrierText = useMemo<string | null>(() => {
     if (!uri || !editor) return null;
-    const shapes = editor.getCurrentPageShapes();
-    const shape = shapes.find(
+    const shape = editor.getCurrentPageShapes().find(
       (s) => (s.meta as Record<string, unknown>)?.uri === uri
-        && (s.meta as Record<string, unknown>)?.frameKind === "meme"
+        && (s.meta as Record<string, unknown>)?.frameKind === "meme",
     );
     return typeof (shape?.meta as Record<string, unknown>)?.carrierText === "string"
       ? (shape!.meta as Record<string, unknown>).carrierText as string
@@ -234,13 +89,15 @@ export function MemeDetailPanel() {
     return resolveWidgetTree(ast, kumuRegistry);
   }, [ast, kumuRegistry]);
 
-  // Async kumu execution — Verse-aligned causal island fanout.
-  // null = still resolving (show skeleton); [] = no widgets; [results] = executed.
   const kumuResults = useKumuExecution(widgetTree, kumuRegistry);
 
-  const onClose = useCallback(() => {
-    dispatch({ type: "NAVIGATE_BACK" });
-  }, [dispatch]);
+  // pos→slot index for O(1) lookup during the React adapter's AST walk
+  const widgetMap = useMemo(
+    () => buildWidgetMap(widgetTree ?? [], kumuResults),
+    [widgetTree, kumuResults],
+  );
+
+  const onClose = useCallback(() => dispatch({ type: "NAVIGATE_BACK" }), [dispatch]);
 
   useEffect(() => {
     if (!visible) return;
@@ -259,22 +116,10 @@ export function MemeDetailPanel() {
           <button style={css.closeBtn} onClick={onClose} aria-label="Close">✕</button>
         </div>
         <div style={css.body}>
-          {!carrierText && <div style={css.status}>No carrier text in store — reseed room to populate.</div>}
-
-          {/* kumu widget section — async executed output or skeleton while resolving */}
-          {widgetTree && widgetTree.length > 0 && (
-            <section style={css.widgetSection}>
-              <h4 style={css.widgetSectionHead}>kumu widgets</h4>
-              {kumuResults
-                ? widgetTree.map((node, i) =>
-                    renderKumuResult(kumuResults[i] ?? { ok: false, error: "unresolved-hole", detail: node.kumuName }, node, String(i))
-                  )
-                : widgetTree.map((node, i) => renderWidgetSkeleton(node, String(i)))
-              }
-            </section>
+          {!carrierText && (
+            <div style={css.status}>No carrier text in store — reseed room to populate.</div>
           )}
-
-          {ast && ast.map((node, i) => renderNode(node, String(i)))}
+          {ast && renderCarrier(ast, widgetMap)}
         </div>
       </div>
     </div>
@@ -282,7 +127,7 @@ export function MemeDetailPanel() {
 }
 
 // ---------------------------------------------------------------------------
-// Styles
+// Panel chrome styles — layout only; wiki content styles live in kumu-react-render.tsx
 // ---------------------------------------------------------------------------
 
 const css = {
@@ -344,124 +189,5 @@ const css = {
   status: {
     color: "#6e7681",
     fontStyle: "italic",
-  },
-  worksite: {
-    marginBottom: 16,
-    borderLeft: "2px solid #21262d",
-    paddingLeft: 12,
-  },
-  worksiteSlug: {
-    fontSize: 11,
-    fontWeight: 600,
-    letterSpacing: "0.08em",
-    textTransform: "uppercase" as const,
-    color: "#6e7681",
-    margin: "0 0 6px",
-  },
-  text: {
-    margin: "0 0 8px",
-    color: "#c9d1d9",
-  },
-  toml: {
-    margin: "0 0 8px",
-    padding: "8px 10px",
-    background: "#0d1117",
-    border: "1px solid #21262d",
-    borderRadius: 6,
-    fontSize: 11,
-    color: "#7ee787",
-    overflowX: "auto" as const,
-    fontFamily: "monospace",
-  },
-  edge: {
-    display: "flex",
-    alignItems: "center",
-    gap: 6,
-    marginBottom: 4,
-    fontSize: 11,
-    fontFamily: "monospace",
-  },
-  edgeBadge: {
-    padding: "1px 5px",
-    borderRadius: 3,
-    color: "#0d1117",
-    fontSize: 10,
-    fontWeight: 600,
-  },
-  edgeRole: {
-    color: "#6e7681",
-  },
-  edgeTo: {
-    color: "#58a6ff",
-    flex: 1,
-    overflow: "hidden",
-    textOverflow: "ellipsis",
-    whiteSpace: "nowrap" as const,
-  },
-  widgetSection: {
-    marginBottom: 16,
-    borderLeft: "2px solid #bb8bfc",
-    paddingLeft: 12,
-  },
-  widgetSectionHead: {
-    fontSize: 11,
-    fontWeight: 600,
-    letterSpacing: "0.08em",
-    textTransform: "uppercase" as const,
-    color: "#bb8bfc",
-    margin: "0 0 6px",
-  },
-  widget: {
-    display: "flex",
-    flexWrap: "wrap" as const,
-    gap: 6,
-    marginBottom: 6,
-    padding: "4px 8px",
-    background: "#0d1117",
-    border: "1px solid #30363d",
-    borderRadius: 4,
-    alignItems: "center",
-  },
-  widgetHole: {
-    borderStyle: "dashed",
-    opacity: 0.6,
-  },
-  widgetSuspended: {
-    borderColor: "#f0a04b",
-    borderStyle: "dashed",
-  },
-  widgetSuspendedLabel: {
-    fontSize: 11,
-    fontFamily: "monospace",
-    color: "#f0a04b",
-  },
-  widgetKumu: {
-    fontSize: 11,
-    fontFamily: "monospace",
-    color: "#bb8bfc",
-    fontWeight: 600,
-  },
-  widgetProp: {
-    fontSize: 11,
-    fontFamily: "monospace",
-    color: "#6e7681",
-  },
-  sigil: {
-    marginBottom: 8,
-    padding: "4px 8px",
-    background: "#0d1117",
-    border: "1px dashed #21262d",
-    borderRadius: 4,
-  },
-  sigilName: {
-    fontSize: 10,
-    fontFamily: "monospace",
-    color: "#bb8bfc",
-    marginRight: 6,
-  },
-  sigilAttr: {
-    fontSize: 11,
-    fontFamily: "monospace",
-    color: "#f0a04b",
   },
 } as const;

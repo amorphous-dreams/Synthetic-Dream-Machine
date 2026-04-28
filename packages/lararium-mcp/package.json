@@ -21,6 +21,7 @@
     "dev:http": "tsx src/http.ts"
   },
   "dependencies": {
+    "@lararium/core": "workspace:*",
     "@lararium/node": "workspace:*",
     "@lararium/tldraw": "workspace:*",
     "@modelcontextprotocol/sdk": "^1.29.0",

@@ -57,8 +57,9 @@ function applyZoomTemplate(editor: TldrawEditor, level: ZoomLevel) {
   const shapes = editor.getCurrentPageShapes();
   const updates: { id: string; type: string; x?: number; y?: number; opacity?: number; props?: Record<string, unknown> }[] = [];
 
-  // Pass 1: meme frames — resize/recolor; collect includeAhu per frame id
-  const memeIncludeAhu = new Map<string, boolean>();
+  // Pass 1: meme frames — resize/recolor; collect per-frame templateProp flags.
+  const memeIncludeAhu  = new Map<string, boolean>();
+  const memeShowCarrier = new Map<string, boolean>();
   for (const shape of shapes) {
     if (shape.type !== "frame") continue;
     const meta = shape.meta as Record<string, unknown> | undefined;
@@ -69,7 +70,8 @@ function applyZoomTemplate(editor: TldrawEditor, level: ZoomLevel) {
     const rating = typeof meta?.uri === "string" ? ratingFromShape(shape) : "black";
     const color = tpl["color"] === "rating" ? rating : (tpl["color"] as string ?? "grey");
     updates.push({ id: shape.id, type: "frame", props: { w: tpl["w"], h: tpl["h"], color } });
-    memeIncludeAhu.set(shape.id, tpl["includeAhu"] === true);
+    memeIncludeAhu.set(shape.id,  tpl["includeAhu"]  === true);
+    memeShowCarrier.set(shape.id, tpl["showCarrier"] === true);
   }
 
   // Pass 2: ahu sub-frames + ownership arrows — hide when parent meme has includeAhu=false
@@ -100,6 +102,16 @@ function applyZoomTemplate(editor: TldrawEditor, level: ZoomLevel) {
     const x = spread ? (meta["spreadX"] as number) : (meta["centerX"] as number);
     const y = spread ? (meta["spreadY"] as number) : (meta["centerY"] as number);
     updates.push({ id: shape.id, type: "geo", x, y });
+  }
+
+  // Pass 4: body node shapes — show/hide based on parent frame's showCarrier flag (built in Pass 1).
+  // showCarrier=true only at "action" zoom level — keeps canvas uncluttered at overview scales.
+  for (const shape of shapes) {
+    if (shape.type !== "geo") continue;
+    const meta = shape.meta as Record<string, unknown> | undefined;
+    if (!meta?.bodyNodeKind) continue;
+    const visible = memeShowCarrier.get(shape.parentId as string) ?? false;
+    updates.push({ id: shape.id, type: "geo", opacity: visible ? 1 : 0 });
   }
 
   if (updates.length > 0) {
