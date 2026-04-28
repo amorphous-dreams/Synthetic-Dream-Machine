@@ -7,7 +7,7 @@ file-path    = "lares/grammars/memetic-wikitext-spec.md"
 content-type = "text/x-memetic-wikitext"
 tagspace     = "grammar"
 confidence   = 0.90
-register     = "CS"
+register     = "SC"
 mana         = 0.90
 manao        = 0.88
 role         = "holistic grammar specification — outer delimiter system, full sigil registry, TW5 parity map, dual-layer model, six families, recursion guard, gaps and tensions"
@@ -123,10 +123,13 @@ separate layers with separate sigil sets — they are two readings of the same s
 │  ui    → query: render filter result as meme list                   │
 │                                                                      │
 │  Definition sigils (pragma mode) add:                                │
-│  define, function → named snippet / filter shorthand                 │
-│  call  → invoke defined name                                         │
-│  focus → context binding (<$tiddler> equivalent)                    │
-│  if, for → conditional / iterative rendering                         │
+│  wehe / \procedure / \define → named wikitext form                  │
+│  helu / \function → named filter-expression function                 │
+│  kahea / \transclude → summon URI or named definition                │
+│  meme / \tiddler → context binding (<$tiddler> equivalent)           │
+│  wai/mukuwai/kahawai → conditional rendering [C]                     │
+│  huli → iterative rendering [SC]                                     │
+│  hui/heihei/puka/lele → concurrency coordination [SC]               │
 │                                                                      │
 │  Output: rendered views (canvas shapes, HTML, chat, etc.)            │
 └──────────────────────────────────────────────────────────────────────┘
@@ -263,69 +266,86 @@ Qualifies the current worksite: confidence, restriction, boundary, or unresolved
 `kapu` in Hawaiian marks what is bounded and what requires ceremony to cross.
 Does not replace the act it qualifies — it marks the act's threshold.
 
-### `message` and `constraint` sugars (proposed)
-
-No sugar forms exist yet for `message` and `constraint` families.
-Proposed:
+### `pono` — constraint family edge sugar `[SC]`
 
 ```
-<<~ pono #slot ? -> lar:///uri >>   ← constraint (pono = rightness / rule)
-<<~ hau #slot ? -> lar:///uri >>    ← message (hau = gift / reciprocal signal)
+<<~ pono #slot ? -> lar:///uri >>
+<<~ pono required:boot-critical target:lar:///core >>
 ```
 
-These names are provisional. The families are fully defined in pranala invariant law
-but lack sugar forms in the sigil registry.
+Declares a structural rule or invariant that must hold — no execution pulse.
+Wires as `family:constraint` pranala at compile time.
+`pono` in Hawaiian: rightness, correctness, the proper state of a thing.
+
+Distinguished from `kapu`: `kapu` marks a boundary *at the surface* (render-layer qualification, uncertainty posture);
+`pono` declares a *structural rule* that must hold in the compiled graph (compile-layer assertion).
+
+### `message` sugar (deferred)
+
+`message` family has no dedicated sugar form yet. `lele` (branch/fire-and-forget) covers runtime
+message dispatch; explicit `<<~ pranala family:message >>` covers structural graph edges.
+`hau` (gift/reciprocal signal) remains a candidate if inline message-routing sugar proves necessary.
 
 <<~/ahu >>
 
 <<~ ahu #definition-sigils >>
 
-## Definition Sigils — Pragma Mode `<<~!` (Proposed, TW5 Parity)
+## Definition Sigils — Pragma Mode `<<~!` `[SC]`
 
 These sigils define reusable named content. They live in `<<~!` pragma mode.
 The boot compiler **ignores** `<<~!` blocks — they are render-time definitions only.
 No compile-time graph artifact is produced.
 
-### `define` — wikitext snippet (procedure/macro)
+### `wehe` — named wikitext form (procedure/macro) `[SC]`
 
 TW5 analogs: `\define`, `\procedure`
 
+`wehe` = to open, unfold, spread apart. Opens a named wikitext form that `kahea` can summon.
+
 ```
-<<~! define greeting(name "World") >>
-Hello, <<~ call name >>!
-<<~/define >>
+<<~! wehe greeting(name "World") >>
+Hello, <<~ kahea name >>!
+<<~/wehe>>
 ```
 
 Named wikitext snippet with optional parameters (name + optional default).
-Parameters substituted via `<<~ call param-name >>` inside the body — explicit, not text-substitution.
-Body is memetic-wikitext; rendered when called via `<<~ call greeting(name:"Operator") >>`.
+Parameters summoned via `<<~ kahea param-name >>` inside the body — not bare text substitution.
+Body is memetic-wikitext; invoked via `<<~ kahea greeting(name:"Operator") >>`.
 
-### `function` — filter expression shorthand
+**Distinction from `helu`:** `wehe` unfolds wikitext; `helu` produces a URI/value list.
+
+### `helu` — named filter-expression function `[SC]`
 
 TW5 analog: `\function`
 
+`helu` = to enumerate, count, list. Produces a list when `kahea` summons it.
+
 ```
-<<~! function taggedAs(tag) = [tag<tag>sort[title]] >>
+<<~! helu taggedAs(tag) = [tag<tag>sort[title]] >>
 ```
 
 Named filter expression fragment. Body is TW5 filter syntax (guest grammar `x-tiddlywiki-filter`).
-Returns a URI list when evaluated. Called via `<<~ call taggedAs(tag:"invariant") >>`.
+Yields a URI list when summoned via `<<~ kahea taggedAs(tag:"invariant") >>`.
 
-**Distinction from `define`:** `function` produces a list (URIs); `define` produces wikitext.
+### `kahea` extended — summon URI content or named definition `[SC]`
 
-### `call` — invoke a defined name
+`kahea` (live transclusion) extends naturally to cover definition invocation.
+The dispatch rule: URI prefix (`lar:///`) → meme transclusion. Plain name → definition lookup.
 
 ```
-<<~ call greeting(name:"Operator") >>
-<<~ call taggedAs(tag:"invariant") >>
+<<~ kahea lar:///ha.ka.ba/mu >>         summon URI content (existing contract)
+<<~ kahea greeting(name:"Operator") >>  summon a wehe definition
+<<~ kahea taggedAs(tag:"invariant") >>  summon a helu function (yields list)
 ```
 
-Invokes a `define` or `function`. If definition not found: emits a stub and logs a warning.
+If the definition is not found: emits a stub and logs a warning.
 Arguments use `key:"value"` notation. Positional args follow parameter order.
+
+No standalone `call` sigil. `kahea` carries both invocation paths.
 
 ### Scope model (open question)
 
-`define` / `function` in a carrier are **carrier-local** by default.
+`wehe` / `helu` definitions in a carrier are **carrier-local** by default.
 A definition in an invariant meme (depth 0) MAY be treated as boot-closure-global.
 Explicit cross-carrier scoping: `<<~ aka lar:///define-carrier >>` imports the carrier's definitions
 (observe edge at compile time + shadow embed at render time makes definitions available).
@@ -333,54 +353,184 @@ This is unresolved — see `#open-questions`.
 
 <<~/ahu >>
 
+<<~ ahu #english-aliases >>
+
+## English Alias Namespace `[SC]`
+
+The `\` prefix marks the **English alias namespace** inside the `<<~ ... >>` sigil surface.
+English aliases carry identical semantics to their Hawaiian canonical forms.
+The parser maps alias → canonical before evaluation — no semantic difference, no separate AST node.
+
+This separation serves two purposes:
+1. **Onboarding** — authors familiar with TW5 or English can write immediately without learning Hawaiian names.
+2. **Clarity** — Hawaiian memetics vocabulary remains visually distinct from English-prefixed aliases in the same carrier.
+
+### Alias table
+
+| English alias | Canonical | Form | Basis |
+|--------------|-----------|------|-------|
+| `\procedure` | `wehe` | pragma block (`<<~!`) | TW5 `\procedure my-name(params)` syntax |
+| `\function` | `helu` | pragma inline (`<<~!`) | TW5 `\function my-name(params) = expr` syntax |
+| `\define` | `wehe` | pragma block (`<<~!`) | TW5 `\define` legacy form |
+| `\tiddler` | `meme` | block | TW5 `<$tiddler>` |
+| `\transclude` | `kahea` | inline | TW5 `{{Title}}` transclusion |
+| `\link` | `loulou` | inline | HTML anchor / TW5 `[[link]]` |
+| `\shadow` | `aka` | inline | TW5 shadow tiddler terminology |
+| `\if` | `wai` | block | universal conditional |
+| `\else` | `mukuwai` | inline | universal fallback |
+| `\elif` | `kahawai` | inline | universal branch |
+| `\for` | `huli` | block | universal for-each iteration |
+| `\sync` | `hui` | block | Verse `sync` keyword — 1:1 |
+| `\race` | `heihei` | block | Verse `race` keyword — 1:1 |
+| `\rush` | `puka` | block | Verse `rush` keyword — 1:1 |
+| `\branch` | `lele` | inline | Verse `branch` keyword — 1:1 |
+| `\query` | `ui` | inline | filter result render surface |
+| `\task`   | `hana` | block | bounded guest grammar / work block |
+| `\guard` | `kapu` | inline | qualification / boundary posture *(provisional)* |
+
+### Syntax
+
+```text
+# English alias forms (\ prefix)
+<<~! \procedure greeting(name "World") >>
+Hello, <<~ \transclude name >>!
+<<~/\procedure>>
+
+<<~! \function taggedAs(tag) = [tag<tag>sort[title]] >>
+
+<<~ \tiddler lar:///uri >>
+  Content with lar:///uri as context.
+<<~/\tiddler>>
+
+<<~ \transclude lar:///ha.ka.ba/mu >>
+
+# Hawaiian canonical forms (same semantics)
+<<~! wehe greeting(name "World") >>
+Hello, <<~ kahea name >>!
+<<~/wehe>>
+```
+
+### Parser contract
+
+1. On encountering `\name` as a sigil command word, look up `alias_for` in the sigil registry.
+2. Substitute the canonical sigil name. Continue parsing as if the canonical form was written.
+3. The compiled AST carries the canonical name only — aliases are erased at parse time.
+4. Diagnostics and error messages use the canonical name.
+5. Authors may mix alias and canonical freely within a carrier.
+
+### Open/close pairing
+
+Alias block sigils use `\name` for both open and close:
+```text
+<<~! \procedure name >>
+  body
+<<~/\procedure>>
+```
+The close tag `<<~/\procedure>>` is valid. Parser maps it to `<<~/wehe>>` before matching.
+
+<<~/ahu >>
+
 <<~ ahu #context-conditional-sigils >>
 
-## Context and Conditional Sigils — Render-Time (Proposed, TW5 Parity)
+## Context and Conditional Sigils — Render-Time `[SC]` / `[C]`
 
-### `focus` — rendering context setter
+### `meme` — rendering context setter `[SC]`
 
 TW5 analog: `<$tiddler tiddler="Title">`
 
+`meme` = the well-defined named object. Sets which meme functions as "here" for the block body.
+The name reinforces the system's own vocabulary: memetic-wikitext renders within meme context.
+
 ```
-<<~ focus lar:///uri >>
-  Content rendered with lar:///uri as the current meme context.
-<<~/focus >>
+<<~ meme lar:///uri >>
+  Content renders with lar:///uri as the current meme context.
+<<~/meme>>
 ```
 
-Sets the implicit rendering context for the block body. Inside `<<~/focus >>`, references to
-"the current meme" resolve to `uri`. Enables templates that take a meme as input without
+Sets the implicit rendering context for the block body. Inside `<<~/meme>>`, references to
+"the current meme" resolve to `uri`. Enables templates that take any meme as input without
 hard-coding the URI inside the template.
 
-### `if` — conditional rendering
+### `wai` — conditional rendering `[C]`
 
 TW5 analogs: `<$list filter="..." limit="1">`, `<$reveal>`
 
-```
-<<~ if [tag[lar:///ha.ka.ba/api/v0.1/pono/invariant]] >>
-  Renders only when the current meme carries the invariant tag.
-<<~/if >>
+`wai` = water / conditional source. `mukuwai` = mouth of the water / fallback outflow. `[C]` operator-ratified.
+`kahawai` = branch-channel / else-if. `[C]` operator-ratified.
 
-<<~ if [field:depth[0]] else >>
+```
+<<~ wai [tag[lar:///ha.ka.ba/api/v0.1/pono/invariant]] >>
+  Renders only when the current meme carries the invariant tag.
+<<~/wai >>
+
+<<~ wai [field:depth[0]] >>
+  Renders when depth equals 0.
+<<~ mukuwai >>
   Renders when depth is NOT 0.
-<<~/if >>
+<<~/wai >>
+
+<<~ wai [tag[open-question]] >>
+  Unresolved flow.
+<<~ kahawai [tag[ready-for-canon]] >>
+  Ready for council.
+<<~ mukuwai >>
+  Ordinary rest.
+<<~/wai >>
 ```
 
 Filter expression evaluated against the current rendering context.
-Non-empty result: render body. Empty: skip (or render `else` body if present).
+Non-empty result: render body. Empty: fall through to next `kahawai` or `mukuwai`.
 Filter syntax: TW5 guest grammar (`x-tiddlywiki-filter`).
 
-### `for` — iteration over filter results
+### `huli` — iterative rendering over filter results `[SC]`
 
 TW5 analog: `<$list filter="...">`
 
-```
-<<~ for [tag[invariant]sort[title]] as item >>
-  <<~ kahea <<~ call item >> >>
-<<~/for >>
+Hawaiian dictionary senses of `huli` cover turning/reversing and looking for/searching/exploring/seeking/studying
+(Pukui-Elbert). These senses support the project meaning: turn through a result set and seek each yielded item
+systematically. `huli` receives approval as `[SC]` — iterative rendering, not general imperative looping.
+
+```text
+<<~ huli [tag[invariant]sort[title]] as item >>
+  <<~ kahea item >>
+<<~/huli>>
 ```
 
-Iterates over URIs returned by the filter. Loop variable bound to `item`.
-Implicit recursion guard: same URI not yielded twice in one chain.
+The command renders the body once for each URI the filter yields. The loop variable binds to `item` for
+each body render. Empty results render nothing.
+
+Implicit recursion guard: the same URI should not yield twice in one expansion chain. Duplicate suppression
+preserves first-occurrence order.
+
+Parser notes:
+
+- `huli` carries block-only shape.
+- The first argument functions as a filter expression or URI-producing selector.
+- `as item` binds each yielded URI/title to `item`. The binding clause remains recommended; parsers MAY default to `item` if absent.
+- Side effects remain disallowed unless a command definition explicitly permits them.
+- Counters, mutation, accumulators, break/continue, and async traversal fall outside this approval.
+
+Command declaration:
+
+```yaml
+command: huli
+register: SC
+shape: block-only
+args:
+  - filter_or_selector
+  - as_binding: optional explicit binding clause, recommended form `as item`
+body: render once per yielded result
+binds:
+  - item: yielded URI/title/result token
+close: <<~/huli>>
+side_effects: false
+empty_result: render nothing
+recursion_guard: per expansion chain; suppress duplicate URI yields
+failure:
+  invalid_filter: render nothing + diagnostic
+  missing_binding: bind to `item` as default; emit diagnostic if grammar does not permit it
+  mismatched_close: parse error with source preservation
+```
 
 <<~/ahu >>
 
@@ -401,7 +551,7 @@ Guest grammar MUST NOT redefine host primitives. Malformed guest work degrades l
 
 Currently registered grammar keys: `x-tiddlywiki-filter` (TiddlyWiki5 filter notation).
 
-`if`, `for`, and `ui` accept filter expressions inline as guest grammar arguments — shorthand
+`wai`, `huli`, and `ui` accept filter expressions inline as guest grammar arguments — shorthand
 for a `hana x-tiddlywiki-filter` block used as a gate or iteration driver.
 
 ### `ui` — query surface
@@ -445,6 +595,157 @@ Recursion-break stubs MUST be:
 
 <<~/ahu >>
 
+<<~ ahu #message-routing-protocol >>
+
+## Message Routing Protocol `[SC]`
+
+Research confirms that the message-up / render-down tree pattern is **correct modern architecture**,
+not TW5 legacy. SwiftUI (PreferenceKey) and Flutter (NotificationListener + InheritedWidget)
+independently converged on the same model. The key improvement over TW5: **decouple message
+channels from tree position** — multiple independent channels, not a single `messagecatcher` per branch.
+
+### Two routing directions
+
+```
+RENDER-DOWN  (environment / data-push)
+  pranala family:dataflow — push-forward from source toward owned subtree
+  Analog: SwiftUI Environment, Flutter InheritedWidget, React Context
+
+MESSAGE-UP   (event / signal-bubble)
+  pranala family:message — bubble from source toward control root
+  Analog: SwiftUI PreferenceKey, Flutter Notification, DOM bubbling
+```
+
+### Invariant routing rules
+
+1. A `family:dataflow` edge carries a value **root-ward → leaf-ward** (source pushes to owned subtree).
+2. A `family:message` edge carries a signal **leaf-ward → root-ward** (source bubbles toward control root).
+3. Routing follows the `family:control role:owns` DAG, not ahu nesting depth.
+4. **Multiple independent channels** — one per named pranala edge. No global catcher.
+   A meme declares itself a handler by having an inbound `family:message` pranala edge pointing to it.
+5. Message propagation stops at the nearest upstream handler. If no handler exists, signal is dropped
+   with a diagnostic (not an error).
+
+### Lexical scope — no ambient `currentMeme`
+
+Variables do not leak through sibling scope. `meme` sets an explicit lexical context:
+
+```text
+<<~ meme lar:///uri >>       binds lar:///uri as the rendering context — lexical, not ambient
+  <<~ kahea sub-template >>  template sees lar:///uri as current meme
+<<~/meme>>
+                             sibling sigils outside this block are unaffected
+```
+
+This follows the Svelte `setContext` model: explicit, bounded, non-leaking.
+`+currentMeme` ambient lookup from the TW5 filter grammar is **deprecated** in `wikitext-filter`.
+Explicit binding via `meme` sigil replaces it.
+
+### Filter context binding
+
+Filters inside `wai`/`huli`/`ui` evaluate against the **explicit current meme context**
+(set by the nearest enclosing `meme` block, or the carrier's own `#iam` URI if no `meme` is active).
+No ambient dynamic lookup.
+
+<<~/ahu >>
+
+<<~ ahu #concurrency-sigils >>
+
+## Concurrency Sigils `[SC]`
+
+These sigils cover Verse's concurrency model (`sync`/`race`/`rush`/`branch`) and the message/dataflow
+boundary for parallel execution. All four carry `[SC]` approval.
+
+Hawaiian semantic grounding (Pukui-Elbert):
+- `hui` — to gather, assemble, unite; a group coming together
+- `heihei` — to race, compete; contention between parallel flows
+- `puka` — to emerge, break through, come out; the first to surface
+- `lele` — to leap, fly, jump off; departure without waiting for return
+
+| Sigil | Shape | Verse analog | Meaning | Register |
+|-------|-------|-------------|---------|----------|
+| `hui` | block-only | `sync` | wait for all parallel flows to complete | `[SC]` |
+| `heihei` | block-only | `race` | first-to-finish wins; others continue | `[SC]` |
+| `puka` | block-only | `rush` | first-to-finish wins; rest cancelled | `[SC]` |
+| `lele` | inline | `branch` | fire and forget; no return value | `[SC]` |
+
+### `hui` — wait for all `[SC]`
+
+TW5 analog: none. Verse: `sync { expr1, expr2 }`.
+
+```text
+<<~ hui >>
+  <<~ kahea lar:///source-a >>
+  <<~ kahea lar:///source-b >>
+<<~/hui>>
+```
+
+Renders all child sigils in parallel. Waits for all to complete before proceeding.
+Result: all outputs composed in declaration order.
+
+### `heihei` — first wins, rest continue `[SC]`
+
+TW5 analog: none. Verse: `race { expr1, expr2 }`.
+
+```text
+<<~ heihei >>
+  <<~ kahea lar:///source-a >>
+  <<~ kahea lar:///source-b >>
+<<~/heihei>>
+```
+
+Evaluates all branches in parallel. Returns the first result to complete.
+Other branches continue to completion but their results are not rendered.
+Use when any valid result suffices and speed matters.
+
+### `puka` — first wins, rest cancelled `[SC]`
+
+TW5 analog: none. Verse: `rush { expr1, expr2 }`.
+
+```text
+<<~ puka >>
+  <<~ kahea lar:///source-a >>
+  <<~ kahea lar:///source-b >>
+<<~/puka>>
+```
+
+Evaluates all branches in parallel. Returns the first result to complete.
+Cancels all remaining branches immediately.
+Use when only one result is needed and redundant work should not continue.
+
+### `lele` — fire and forget `[SC]`
+
+TW5 analog: `<$action-sendmessage>`. Verse: `branch { expr }`.
+
+```text
+<<~ lele lar:///uri >>
+<<~ lele greeting(name:"Operator") >>
+```
+
+Inline only. Dispatches the target without waiting for completion.
+No return value. Side effects permitted (explicitly declared kind).
+Maps to `pranala family:message` at compile time — the graph records the dispatch edge
+but the renderer does not block on the result.
+
+### Relation to pranala families
+
+```text
+hui    → compile: no edge; render: aggregates dataflow results
+heihei → compile: no edge; render: races dataflow, first wins
+puka   → compile: no edge; render: races dataflow, cancels losers
+lele   → compile: pranala family:message; render: async dispatch
+```
+
+`lele` is the only concurrency sigil that produces a compile-time graph artifact.
+The other three are pure render-time coordination forms.
+
+### Recursion guard applies
+
+The render stack guard applies to `hui`/`heihei`/`puka` bodies.
+`lele` is fire-and-forget — it does not push to the render stack.
+
+<<~/ahu >>
+
 <<~ ahu #tw5-parity-map >>
 
 ## TW5 → Lararium Parity Map
@@ -456,25 +757,42 @@ Recursion-break stubs MUST be:
 | Link | `[[Title]]` | `<<~ loulou lar:///uri >>` | ✓ current |
 | Shadow tiddler reference | (implicit) | `<<~ aka lar:///uri >>` (observe family) | ✓ current |
 | Inline transclusion | `{{Title}}` | `<<~ kahea lar:///uri >>` (dataflow family) | ✓ current |
-| Template transclusion | `{{Title\|\|Template}}` | `<<~ focus lar:///uri >>` + `<<~ kahea >>` | ◎ proposed |
+| Template transclusion | `{{Title\|\|Template}}` | `<<~ meme lar:///uri >>` + `<<~ kahea lar:///template >>` | ◎ proposed `[SC]` |
 | Section transclusion | `{{Title##section}}` | `<<~ kahea lar:///uri#section-id >>` | ◎ proposed (fragment form) |
-| Macro/procedure definition | `\define name(p) body` | `<<~! define name(p) >> body <<~/define >>` | ◎ proposed |
-| Function definition | `\function name(p) = expr` | `<<~! function name(p) = filter-expr >>` | ◎ proposed |
-| Macro/procedure call | `<<macroName params>>` | `<<~ call name(key:val) >>` | ◎ proposed |
-| Context-set | `<$tiddler tiddler="X">` | `<<~ focus lar:///X >>` ... `<<~/focus >>` | ◎ proposed |
-| Conditional | `<$list filter="..." limit="1">` | `<<~ if filter >> ... <<~/if >>` | ◎ proposed |
-| Iteration | `<$list filter="...">` | `<<~ for filter as item >> ... <<~/for >>` | ◎ proposed |
-| Variable set | `<$set name="v" value="x">` | `<<~! define v = "x" >>` (no-param define) | ◎ proposed |
+| Macro/procedure definition | `\define name(p) body` | `<<~! wehe name(p) >>` or `<<~! \procedure name(p) >>` | ◎ `[SC]` — alias registered |
+| Function definition | `\function name(p) = expr` | `<<~! helu name(p) = expr >>` or `<<~! \function name(p) = expr >>` | ◎ `[SC]` — alias registered |
+| Macro/procedure call | `<<macroName params>>` | `<<~ kahea name(key:val) >>` or `<<~ \transclude name >>` | ◎ `[SC]` — alias registered |
+| Context-set | `<$tiddler tiddler="X">` | `<<~ meme lar:///X >>` or `<<~ \tiddler lar:///X >>` | ◎ `[SC]` — alias registered |
+| Conditional | `<$list filter="..." limit="1">` | `<<~ wai filter >> ... <<~ mukuwai >> ... <<~/wai >>` | ◎ proposed `[C]` names |
+| Iteration | `<$list filter="...">` | `<<~ huli filter as item >> ... <<~/huli>>` | ◎ proposed `[SC]` approved |
+| Variable set | `<$set name="v" value="x">` | `<<~! wehe v = "x" >>` (no-param wehe) | ◎ proposed |
 | Filter notation | `[tag[X]sort[title]]` | `<<~ hana x-tiddlywiki-filter >> ... <<~/hana >>` | ✓ current |
-| Filter in widgets | inline `filter="..."` | inline filter arg in `if`/`for`/`ui` | ◎ proposed |
+| Filter in widgets | inline `filter="..."` | inline filter arg in `wai`/`huli`/`ui` | ◎ proposed |
 | Recursion guard | depth 8 | render stack `len >= 8` → stub | ◎ proposed |
 | Import | `\import [[FilterExpr]]` | `<<~ aka lar:///carrier >>` (shadow include) | ✓ current |
 | Widget definition | `\widget $name` | deferred — no widget layer yet | ⚠ deferred |
 | HTML widgets | `<$widget ...>` | deferred — renderer-specific | ⚠ deferred |
-| Message family | (via `sendMessage`) | `<<~ pranala family:message >>` (no sugar) | ⚠ sugar pending |
-| Constraint family | (via rules) | `<<~ pranala family:constraint >>` (no sugar) | ⚠ sugar pending |
+| Message family | (via `sendMessage`) | `<<~ lele lar:///uri >>` (fire-and-forget sugar) | ◎ `[SC]` — `lele` registered |
+| Constraint family | (via rules) | `<<~ pono #slot ? -> lar:///uri >>` | ◎ `[SC]` — `pono` registered |
 
-Legend: ✓ = current, ◎ = proposed, ⚠ = deferred or pending
+**Verse/UEFN parity (additions):**
+
+| Verse construct | Lararium analog | Status |
+|-----------------|----------------|--------|
+| `sync { a, b }` | `<<~ hui >> ... <<~/hui>>` | ◎ `[SC]` |
+| `race { a, b }` | `<<~ heihei >> ... <<~/heihei>>` | ◎ `[SC]` |
+| `rush { a, b }` | `<<~ puka >> ... <<~/puka>>` | ◎ `[SC]` |
+| `branch { expr }` | `<<~ lele lar:///uri >>` | ◎ `[SC]` |
+| `if` (failure-typed) | `<<~ wai filter >>` (non-empty = success) | ◎ `[C]` — note: Verse `if` semantics differ |
+| `for` loop | `<<~ huli filter as item >>` | ◎ `[SC]` |
+| `\procedure` | `<<~! wehe name(p) >>` or `<<~! \procedure name(p) >>` | ◎ `[SC]` |
+| `\function` (pure) | `<<~! helu name(p) = expr >>` | ◎ `[SC]` |
+| Entity (ECS) | `ahu` block with `#iam` TOML | ✓ current |
+| Component (ECS) | `pranala family:control role:implements` | ✓ current |
+| Prefab/template | `lifecycle:template` pranala edge | ✓ designed |
+| Event binding | `pranala family:message` / `lele` | ◎ `[SC]` |
+
+Legend: ✓ = current, ◎ = proposed/registered, ⚠ = deferred or pending
 
 <<~/ahu >>
 
@@ -482,31 +800,28 @@ Legend: ✓ = current, ◎ = proposed, ⚠ = deferred or pending
 
 ## Gaps, Tensions, and Conflicts
 
-### Gap 1: `message` and `constraint` families unregistered in grammar meme
+### Gap 1: `message` and `constraint` families — sugar sigils
 
-**Problem:** The pranala invariant law defines six families. The grammar meme `[[families]]` array
-only defines four (`control`, `relation`, `observe`, `dataflow`). `message` and `constraint` are
-invisible to the Phase 2 rule-interpreter.
+**Status:** Both families registered in grammar meme `[[families]]` array (resolved M7).
+Message routing protocol documented in `#message-routing-protocol`.
 
-**Resolution:** Add `[[families]]` entries for `message` and `constraint` to
-`lares/grammars/memetic-wikitext.md`. Properties: `message` → `dag_required=false`,
-`role_recommended=true`, `confidence_bounded=false`. `constraint` → `dag_required=false`,
-`role_required=false`, `role_recommended=false`, `confidence_bounded=false`.
+`family:constraint` → `pono` registered as `[SC]` edge-sugar (compile layer). Distinction from `kapu`:
+- `kapu` = boundary **posture** at render surface (qualification, confidence, unresolved threshold)
+- `pono` = structural **rule assertion** in compiled graph (must-hold invariant, no execution pulse)
 
-**Also needed:** Sugar sigil names for `message` and `constraint` families.
-`hau` and `pono` are candidates (Hawaiian: hau=gift/reciprocal; pono=rightness/rule).
-These names need invariant loci before being registered.
+`family:message` → `lele` covers fire-and-forget runtime dispatch; explicit pranala covers structural edges.
+`hau` deferred — no current pressure requiring dedicated inline message-routing sugar.
 
-### Gap 2: `hana`, `kapu`, `ui`, `?` not registered in grammar meme
+### Gap 2: ~~`hana`, `kapu`, `ui` not registered~~ — Resolved
 
-**Problem:** Four primitives named in the invariant law have no `[[sigils]]` entries.
-
-**Resolution:** Add entries (patterns listed in `#unregistered-sigil-additions` section below).
+All three registered in grammar meme (2026-04-27). Also added: `meme`, `wai`, `mukuwai`,
+`kahawai`, `huli`, `wehe`, `helu`, plus 5 English aliases, plus 4 concurrency sigils.
+Grammar meme now carries 40 `[[sigils]]` entries.
 
 ### Gap 3: No `layer` field in sigil registry
 
 **Problem:** Grammar meme does not distinguish compile-time from render-time sigils.
-A na•ve parser might try to extract `define`/`if`/`for` as graph edges at boot time.
+A naïve parser might try to extract `wehe`/`huli`/`wai` as graph edges at boot time.
 
 **Resolution:** Add `layer = "compile"` | `layer = "render"` | `layer = "both"` to each
 `[[sigils]]` entry. Edge sigils (`aka`, `kahea`, etc.) get `layer = "both"`.
@@ -514,7 +829,7 @@ Definition/conditional sigils get `layer = "render"`. `ahu`, `iam`, `? ->` get `
 
 ### Gap 4: Pragma `<<~!` dispatch mode undefined in parser
 
-The current parser does not handle `<<~!`. Pragma blocks (define/function) are invisible.
+The current parser does not handle `<<~!`. Pragma blocks (`wehe`/`helu`) are invisible.
 
 **Resolution:** Boot compiler IGNORES `<<~!` blocks — they produce no compile-time artifacts.
 No parser change needed at the compile layer. Render-time interpreters handle them.
@@ -537,39 +852,40 @@ recursion via `aka`/`kahea`. A cycle-free graph can contain mutual live transclu
 
 ### Tension 3: `<<~!` pragma scope — carrier-local vs. global
 
-`define` and `function` in a carrier are local by default. Invariant meme definitions may need
+`wehe` and `helu` in a carrier are local by default. Invariant meme definitions may need
 global visibility. Mechanism: `<<~ aka lar:///carrier >>` imports the carrier's definitions
 (shadow transclusion brings in the definition namespace). This is unresolved in the boot model —
-does the compiler parse define blocks inside `aka`-referenced carriers to build a definition index?
+does the compiler parse `wehe`/`helu` blocks inside `aka`-referenced carriers to build a definition index?
 
-### Tension 4: `call` vs. `kahea` similarity of intent
+### Tension 4: `kahea` dual dispatch — URI vs. definition name
 
-`kahea` = compile-time dataflow edge + render-time live transclusion of the whole meme.
-`call` = render-time invocation of a named definition (snippet or function) with arguments.
+`kahea` now carries two dispatch paths:
+- URI (`lar:///...`) → compile-time dataflow edge + render-time live meme transclusion
+- Plain name (`greeting(...)`) → render-time definition lookup (no compile-time graph artifact)
 
-These are distinct: `kahea` targets whole memes; `call` targets named definitions.
-A meme might use both: `<<~ kahea lar:///util >>` (structural edge) + `<<~ call util.formatDate >>` (call).
+Parser disambiguation: URI prefix determines path. A plain name must not start with `lar:` and must
+not look like a URI. This is a parse-time contract, not a runtime fallback.
 
 ### Tension 5: TW5 filter inline vs. `hana` block syntax
 
-`if`/`for`/`ui` accept filter expressions inline. `hana` requires a block.
+`wai`/`huli`/`ui` accept filter expressions inline. `hana` requires a block.
 Both forms must parse to the same semantics. Authors who need complex multi-line filters
 use `hana`. Simple one-liner filters use the inline sigil form.
 
 ### Conflict 1: Bare `<<name>>` form
 
 TW5 macro calls use `<<macroName>>`. This is not valid Lararium syntax.
-Authors migrating TW5 content MUST convert `<<macro>>` → `<<~ call macro >>`.
+Authors migrating TW5 content MUST convert `<<macro>>` → `<<~ kahea macro >>`.
 There is no TW5-compat bare-bracket pass planned.
 
 ### Conflict 2: TW5 `{{Title||Template}}` mapping
 
 Simple transclusion `{{Title}}` maps cleanly to `<<~ kahea lar:///uri >>`.
 Template transclusion `{{Title||Template}}` has no direct sigil form — requires:
-1. `<<~ focus lar:///uri >>` to bind the target meme as context
+1. `<<~ meme lar:///uri >>` to bind the target meme as context
 2. `<<~ kahea lar:///template >>` to render the template with that context
 
-This is a two-sigil composition, not a single sigil. Authors should prefer explicit `focus`+`kahea`
+This is a two-sigil composition, not a single sigil. Authors should prefer explicit `meme`+`kahea`
 over a hypothetical `<<~ kahea lar:///uri via lar:///template >>` form.
 The single-form version is not ruled out but adds parser complexity without clear gain.
 
@@ -611,52 +927,62 @@ description  = "query surface; evaluates filter expression and renders result as
 # --- Proposed new sigils (render-time, TW5 parity) ---
 
 [[sigils]]
-name         = "focus"
+name         = "meme"
 kind         = "context"
 layer        = "render"
-open_pattern  = '<<~\s*focus\s+(\S+)\s*>>'
-close_pattern = '<<~\/focus\s*>>'
-description  = "sets the current meme context for the block body; TW5 <$tiddler> equivalent"
+open_pattern  = '<<~\s*meme\s+(\S+)\s*>>'
+close_pattern = '<<~\/meme\s*>>'
+description  = "sets the current meme as rendering context for the block body; TW5 <$tiddler> equivalent; [SC]"
 
 [[sigils]]
-name         = "if"
+name         = "wai"
 kind         = "conditional"
 layer        = "render"
-open_pattern  = '<<~\s*if\s+([^\n>]+?)\s*>>'
-close_pattern = '<<~\/if\s*>>'
-description  = "conditional rendering; renders body when filter result is non-empty"
+open_pattern  = '<<~\s*wai\s+([^\n>]+?)\s*>>'
+close_pattern = '<<~\/wai\s*>>'
+description  = "conditional source; renders body when filter result is non-empty; [C] operator-ratified"
 
 [[sigils]]
-name         = "for"
+name         = "mukuwai"
+kind         = "conditional-else"
+layer        = "render"
+pattern       = '<<~\s*mukuwai\s*>>'
+description  = "alternate outflow; fallback body in a wai block; [C] operator-ratified"
+
+[[sigils]]
+name         = "kahawai"
+kind         = "conditional-branch"
+layer        = "render"
+pattern       = '<<~\s*kahawai\s+([^\n>]+?)\s*>>'
+description  = "branch-channel; else-if form in a wai block; [C] operator-ratified"
+
+[[sigils]]
+name         = "huli"
 kind         = "iteration"
 layer        = "render"
-open_pattern  = '<<~\s*for\s+([^\n>]+?)\s+as\s+([\w-]+)\s*>>'
-close_pattern = '<<~\/for\s*>>'
-description  = "iterative rendering; renders body once per URI in filter result"
+open_pattern  = '<<~\s*huli\s+([^\n>]+?)\s+as\s+([\w-]+)\s*>>'
+close_pattern = '<<~\/huli\s*>>'
+description  = "iterative rendering over filter results; body renders once per yielded URI; [SC] approved"
 
-[[sigils]]
-name         = "call"
-kind         = "invocation"
-layer        = "render"
-pattern      = '<<~\s*call\s+([\w-]+(?:\.([\w-]+))?)(?:\((.*?)\))?\s*>>'
-description  = "invokes a named definition (define or function) with optional arguments"
+# No standalone call sigil — kahea extended contract covers both URI transclusion and definition invocation.
+# Dispatch: lar:/// prefix → meme transclusion; plain name → wehe/helu lookup.
 
 # --- Pragma sigils (<<~! mode, render-time only) ---
 
 [[sigils]]
-name         = "define"
+name         = "wehe"
 kind         = "pragma"
 layer        = "render"
-open_pattern  = '<<~!\s*define\s+([\w-]+)(?:\(([^)]*)\))?\s*>>'
-close_pattern = '<<~\/define\s*>>'
-description  = "defines a named wikitext snippet with parameters; TW5 \\procedure equivalent"
+open_pattern  = '<<~!\s*wehe\s+([\w-]+)(?:\(([^)]*)\))?\s*>>'
+close_pattern = '<<~\/wehe\s*>>'
+description  = "opens a named wikitext form with parameters; TW5 \\procedure equivalent; summoned via kahea; [SC]"
 
 [[sigils]]
-name         = "function"
+name         = "helu"
 kind         = "pragma"
 layer        = "render"
-pattern      = '<<~!\s*function\s+([\w-]+)(?:\(([^)]*)\))?\s*=\s*([^\n>]+?)\s*>>'
-description  = "defines a named filter expression; TW5 \\function equivalent"
+pattern      = '<<~!\s*helu\s+([\w-]+)(?:\(([^)]*)\))?\s*=\s*([^\n>]+?)\s*>>'
+description  = "defines a named filter-expression function; yields URI list; TW5 \\function equivalent; summoned via kahea; [SC]"
 ```
 
 Missing `[[families]]` entries:
@@ -687,7 +1013,7 @@ Also: add `layer` field to all existing `[[sigils]]` entries.
 
 ## Open Questions
 
-1. **`define` scope model.** Carrier-local vs. boot-closure-global for invariant meme defines.
+1. **`wehe`/`helu` scope model.** Carrier-local vs. boot-closure-global for invariant meme definitions.
    Does `<<~ aka lar:///carrier >>` import that carrier's definitions into the current namespace?
 
 2. **Sugar sigils for `message` and `constraint` families.** `hau` and `pono` are candidates.
@@ -706,6 +1032,13 @@ Also: add `layer` field to all existing `[[sigils]]` entries.
 5. **`call` parameter naming inside `define` body.** TW5 text substitution is fragile (positional
    parameter names appear verbatim). Lararium `call param-name` inside a define body should be
    an explicit sigil call, not bare text substitution. Formal grammar rule needed.
+
+6. **Naming ratification status.** As of 2026-04-27:
+   - `[C]`: `wai`, `mukuwai`, `kahawai` — operator-ratified.
+   - `[SC]`: `huli`, `wehe`, `helu`, `meme`, `kahea` (extended), `aka`, `ahu`, `loulou`, `hana`, `ui`, `kapu`, `pono`, `hui`, `heihei`, `puka`, `lele`.
+   - No standalone `call` sigil — `kahea` extended contract covers URI transclusion + definition invocation.
+   - Context sigil: `meme` (not `wahi`); the well-defined named object; reinforces system vocabulary.
+   - Heritage community consultation recommended before any `[SC]` names advance to `[C]`.
 
 <<~/ahu >>
 

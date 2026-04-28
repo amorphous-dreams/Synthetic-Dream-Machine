@@ -197,7 +197,7 @@ The Lararium node server will expose an MCP server alongside the HTTP/WS server.
 | `lararium/meme/inspect` | Read a meme's tldraw shape record + lares carrier text by URI |
 | `lararium/meme/list` | List memes in a room, filterable by TW5 filter expression |
 | `lararium/meme/promote` | Write a canvas edit back to `lares/` (canon-promotion boundary) |
-| `lararium/filter` | Run a TW5 filter expression against the current boot closure |
+| `lararium/filter` | Run a `wikitext-filter` expression against the current boot closure (TW5 compat mode available via `x-tiddlywiki-filter` grammar key) |
 | `lararium/edge/list` | List pranala edges for a given meme URI |
 | `lararium/snapshot/export` | Export a room's current tldraw store as a snapshot JSON |
 
@@ -261,7 +261,7 @@ This is an **invariant meme** (to be authored). It owns the room contract, porta
 | **operator** | Full boot closure + promoted room list | Read + pending edits in boot room |
 | **admin** | Full boot closure + invariant meme surfaces | Read + write + canon-promotion |
 
-**The altar fire is not a blank lobby.** It renders the minimal boot closure — the 18 invariant memes — as the starting canvas, with portals to other rooms arranged around the perimeter. Think of it as a TiddlyWiki `DefaultTiddlers` list rendered spatially: the memes that are always open when you first arrive.
+**The altar fire is not a blank lobby.** It renders the minimal boot closure — the 19 invariant memes — as the starting canvas, with portals to other rooms arranged around the perimeter. Think of it as a TiddlyWiki `DefaultTiddlers` list rendered spatially: the memes that are always open when you first arrive.
 
 **Room portal arrangement:** Portals from the altar fire are positioned at canonical compass points or cluster zones on the canvas. Their placement is itself a meme (part of the altar fire carrier) — operators can edit portal position without canonical write-back.
 
@@ -867,7 +867,13 @@ UE5 analogy: "actor fails to instantiate if schema is violated" = "pranala emits
 
 All sigil registry entries, parse rules, and template definitions SHALL live as carrier memes in `lares/grammars/`. The TypeScript parser is a thin rule-interpreter that reads grammar from the boot closure. Adding a new sigil requires authoring a meme, not modifying TypeScript source.
 
-Phase progression: 1 (hard-coded TypeScript, complete) → 2 (grammar carrier + boot closure reader, complete) → 2.5 (GrammarRules threaded through parsePranalaEdges, complete 2026-04-27) → 3 (self-hosting: parser is a meme, canvas can edit its own renderer, planned M8).
+Phase progression: 1 (hard-coded TypeScript, complete) → 2 (grammar carrier + boot closure reader, complete) → 2.5 (GrammarRules threaded through parsePranalaEdges, complete 2026-04-27) → **2.x (grammar meme expanded to 40 sigils: TW5+Verse parity, English alias namespace, concurrency sigils `hui`/`heihei`/`puka`/`lele`, `wikitext-filter` dialect carrier, `kapu`/`pono` constraint distinction, complete 2026-04-27)** → 3 (self-hosting: parser is a meme, canvas can edit its own renderer, planned M8).
+
+Grammar meme (`lares/grammars/memetic-wikitext.md`) now covers:
+- All TW5 filter operators (via `wikitext-filter` dialect — forked, modernized, pranala+TOML aligned)
+- All Verse/UEFN concurrency primitives (via 1:1 aliases `\sync`/`\race`/`\rush`/`\branch`)
+- Full six-family pranala model with `pono` (constraint sugar) filling the last `sugar: pending` gap
+- 18 English aliases erased to canonical Hawaiian at parse time — no semantic difference
 
 ### Convergence
 

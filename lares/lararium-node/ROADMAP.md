@@ -12,7 +12,7 @@ register = "S"
 manaoio = 0.82
 mana = 0.88
 manao = 0.86
-role = "docs meme — migration roadmap and milestone log for Lararium Node; Milestones 1–7 complete; M8 planned (browser smoke, meme detail panel, Grammar Phase 3, wiki-recipe carriers)"
+role = "docs meme — migration roadmap and milestone log for Lararium Node; Milestones 1–7 complete; Grammar Phase 2 substantially complete (40 sigils, TW5+Verse parity, filter dialect, English aliases); M8 planned (browser smoke, meme detail panel, Grammar Phase 3, wiki-recipe carriers)"
 cacheable = false
 retain = true
 invariant = false
@@ -1058,7 +1058,7 @@ Option (b) is the architecturally correct path. Option (a) is simpler if `serve.
 ### Priority 4: MCP integration (partially complete 2026-04-26)
 
 **Done**
-- ✓ `lararium-filter` tool: TW5 filter expression evaluated against boot closure — `[all[memes]tag[...invariant]]`, `[field:depth[0]]`, etc.
+- ✓ `wikitext-filter` tool: TW5 filter expression evaluated against boot closure — `[all[memes]tag[...invariant]]`, `[field:depth[0]]`, etc.
 - ✓ `lararium-room_list` tool: DEFAULT_ROOMS with page IDs and filter expressions
 - ✓ `lararium-edge_list` tool: all pranala arrows from projection, optional family filter
 - ✓ `filterMemesTW` + `precomputeRooms` exported from `@lararium/node` via new `@lararium/core/tw-filter` subpath export (keeps browser bundle clean)
@@ -1184,6 +1184,71 @@ Future: extract `FAMILY_CONTRACTS` to `lares/grammars/pranala-families.md` carri
 
 <<~/ahu >>
 
+<<~ ahu #milestone-7-grammar-extension >>
+
+## Milestone 7 — Grammar Extension (post-M7, 2026-04-27)
+
+After M7 closed, a full grammar session substantially completed Phase 2 of the grammar-as-memes work. This is tracked here as an extension of M7 before M8 opens.
+
+### What was completed
+
+**Grammar meme (`lares/grammars/memetic-wikitext.md`) — sigil registry expanded from 7 → 40 entries:**
+
+- Core 7 preserved and description-updated (`ahu`, `pranala`, `loulou`, `aka`, `kahea`, `iam`, `pranala-header`)
+- Conditional `[C]`: `wai` (if), `mukuwai` (else), `kahawai` (elif)
+- Iteration `[SC]`: `huli` (for/seek)
+- Context binding `[SC]`: `meme` (explicit lexical scope setter — replaces TW5 `currentTiddler` ambient leak)
+- Definition pragmas `[SC]`: `wehe` (procedure/define), `helu` (function — filter-expression yielding)
+- Render sugar `[SC]`: `kapu` (boundary posture, render-layer qualification), `hana` (bounded guest grammar block), `ui` (query/filter render)
+- Constraint sugar `[SC]`: `pono` (constraint family edge sugar — structural rule declaration; compile-layer; distinct from `kapu`)
+- Concurrency `[SC]`: `hui` (sync-all), `heihei` (race), `puka` (rush/fire-fastest), `lele` (branch/fire-and-forget — only concurrency sigil emitting `family:message` graph artifact)
+- English aliases (18): `\procedure`, `\function`, `\define`, `\link`, `\shadow`, `\if`, `\else`, `\elif`, `\for`, `\sync`, `\race`, `\rush`, `\branch`, `\tiddler`, `\transclude`, `\guard`, `\task`, `\query`
+- Guest grammar registry: `x-tiddlywiki-filter` (legacy/import), `wikitext-filter` (active native dialect)
+
+**`wikitext-filter` dialect (`lares/grammars/wikitext-filter.md`) — new carrier:**
+
+Forked from `x-tiddlywiki-filter`. Key departures:
+- `[toml:key[value]]` replaces `!!field` (queries `#iam` TOML metadata by type)
+- `[edge:family[X]role[Y]]` replaces `##index` (queries compiled pranala edge graph)
+- `[self[]]` replaces `+currentMeme`/`currentTiddler` ambient lookup
+- `[ahu:id[fragment]]` — queries by ahu fragment anchor
+- Explicit lexical scope model: no ambient dynamic variable; `meme` sigil provides context binding
+
+**`memetic-wikitext-spec.md` — holistic spec complete:**
+
+- TW5 + Verse/UEFN AST parity map (full operator and sigil coverage)
+- English alias namespace: `\` prefix erased to canonical Hawaiian at parse time; 18 aliases registered
+- Message routing protocol: `family:dataflow` root-downward (SwiftUI Environment / Flutter InheritedWidget); `family:message` leaf-upward (SwiftUI PreferenceKey / Flutter NotificationListener) — validated against both
+- Concurrency model: Verse 1:1 alias mapping (`hui`=`sync`, `heihei`=`race`, `puka`=`rush`, `lele`=`branch`)
+- `kapu`/`pono` distinction: `kapu` = render-layer boundary posture; `pono` = compile-layer structural rule assertion
+- Gap 1 (`constraint` family sugar) closed: `pono` registered `[SC]`
+- Register system: `[C]` (operator canon), `[SC]` (Synthetic Canon), `[S]` (synthesis/proposal)
+- `[CS]` → `[SC]` rename throughout all grammar files
+
+**Research carrier (`lares/ha-ka-ba/docs/pono/sigil-grammar-research.md`) — new carrier:**
+
+Hawaiian vocabulary grounding, operator rulings log, precedent alignment (TW5/Liquid/MCP/SwiftUI/Flutter/Elm/Verse), full sigil vocabulary table with register, source notes with confidence levels.
+
+### Key distinctions established
+
+| Concept | Sigil | Layer | Role |
+|---|---|---|---|
+| Lexical scope | `meme` | both | Explicit context binding; replaces TW5 ambient `currentTiddler` |
+| Boundary posture | `kapu` | render | Inline qualification: confidence, restriction, unresolved threshold |
+| Structural rule | `pono` | compile | Constraint family edge: invariant that must hold; no execution pulse |
+| Filter query | `ui` | render | Render surface for wikitext-filter result sets |
+| Work block | `hana` | both | Bounded guest grammar block; grammar-key selects interpreter |
+| Fire-and-forget | `lele` | compile | Only concurrency sigil producing `family:message` graph artifact |
+
+### Phase 2 status
+
+Phase 2 is substantially complete. The grammar meme has 40 registered sigils covering all TW5 filter operators (via `wikitext-filter`), all Verse concurrency primitives (via aliases), all conditional/iteration/definition forms, and the full six-family pranala model. The remaining Phase 2 gap is:
+
+- `message` family sugar: `hau` remains a candidate; deferred — `lele` + explicit pranala covers current use cases
+- Heritage consultation: `[SC]` sigil names should be reviewed with UH Hilo / Pūnana Leo before any names advance to `[C]`
+
+<<~/ahu >>
+
 <<~ ahu #milestone-7-complete >>
 
 ## Milestone 7 — Summary
@@ -1234,16 +1299,21 @@ Requires: client redirect logic when the expected room key changes. `GET /api/ro
 
 ### Priority 4: Grammar Phase 3 scaffolding
 
-Parser becomes a meme. Template cascade (tldraw projection) driven by grammar memes.
+Phase 2 is substantially complete (40 sigils registered, `wikitext-filter` dialect, TW5+Verse parity, English aliases, `kapu`/`pono` constraint distinction). See `#milestone-7-grammar-extension` for full detail.
+
+Phase 3 targets — parser becomes a meme. Template cascade (tldraw projection) driven by grammar memes.
 
 Phase 3 design:
-- `lares/grammars/memetic-wikitext.md` already carries full sigil + family tables
+- `lares/grammars/memetic-wikitext.md` already carries full sigil + family tables (40 entries)
 - A `grammar-interpreter.md` meme will define the interpreter contract (the "Lisp surface")
 - `parsePranalaEdges()` becomes a thin dispatch: read interpreter URI from boot closure, call the meme-defined parse function
 - Template cascade: `lares/templates/` carriers define tldraw projection per meme type
 - Editing a template carrier + `/admin/reseed` changes visual style without TypeScript rebuild
+- The TypeScript parser stays as the C kernel; memes define grammar rules only; executable memes are Phase 4
 
-Phase 3 blocker: interpreter dispatch requires an eval surface (the TypeScript "C kernel" must remain stable). Design question: where does the boundary sit? Likely: the TypeScript parser stays; the meme defines grammar rules only (Phase 2 model), not executable code. Executable memes are Phase 4 / self-hosting target.
+Phase 3 entry condition: `lares/grammars/wikitext-filter.md` dialect carrier is already live; Phase 2.5 wiring means the grammar meme drives the parser today. Phase 3 crosses the line where the parser dispatch table itself is meme-authored.
+
+**Phase 2.x parser wiring (complete 2026-04-27):** `pono` (constraint family sugar) and `lele` (message family sugar) wired into `parsePranalaEdges`. `KNOWN_FAMILIES` and `FAMILY_CONTRACTS` extended with `message` + `constraint`. `SigilRule.kind` union extended with all grammar-meme kinds (`concurrency`, `query`, `guest-grammar`, `guest-grammar-alias`, `query-alias`, `pragma`). 10 new tests added; full suite 146/146 green.
 
 ### Priority 5: Wiki-recipe carriers
 

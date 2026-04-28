@@ -61,13 +61,16 @@ interface FamilyContract {
   confidenceBounded: boolean;
 }
 
-const KNOWN_FAMILIES = ["control", "relation", "observe", "dataflow"] as const;
+const KNOWN_FAMILIES = ["control", "relation", "observe", "dataflow", "message", "constraint", "reaction"] as const;
 
 const FAMILY_CONTRACTS: Record<string, Omit<FamilyContract, "knownFamilies">> = {
-  control:   { roleRecommended: true,  confidenceBounded: false },
-  relation:  { roleRecommended: false, confidenceBounded: false },
-  observe:   { roleRecommended: false, confidenceBounded: true  },
-  dataflow:  { roleRecommended: true,  confidenceBounded: false },
+  control:    { roleRecommended: true,  confidenceBounded: false },
+  relation:   { roleRecommended: false, confidenceBounded: false },
+  observe:    { roleRecommended: false, confidenceBounded: true  },
+  dataflow:   { roleRecommended: true,  confidenceBounded: false },
+  message:    { roleRecommended: true,  confidenceBounded: false },
+  constraint: { roleRecommended: false, confidenceBounded: false },
+  reaction:   { roleRecommended: true,  confidenceBounded: false },
 };
 
 export function validatePranaEdge(edge: PranaEdge, grammar?: GrammarRules): PranaEdgeViolation[] {
@@ -114,7 +117,7 @@ export { KNOWN_FAMILIES, FAMILY_CONTRACTS };
 
 export interface SigilRule {
   name: string;
-  kind: "worksite" | "edge" | "edge-sugar" | "metadata" | "header";
+  kind: "worksite" | "edge" | "edge-sugar" | "metadata" | "header" | "concurrency" | "query" | "guest-grammar" | "guest-grammar-alias" | "query-alias" | "pragma";
   /** For edge sigils: inline match pattern (regex source string) */
   inlinePattern?: string;
   /** For edge sigils: block match pattern (regex source string, dotAll) */
@@ -152,6 +155,12 @@ const BUILTIN_INLINE_RE   = /<<~\s*pranala\s+(#[\w-]+\s+)?(\S+)\s*->\s*(\S+)(?:\
 const BUILTIN_LOULOU_RE   = /<<~\s*loulou\s+(\S+)\s*>>/g;
 const BUILTIN_AKA_RE      = /<<~\s*aka\s+(\S+)\s*>>/g;
 const BUILTIN_KAHEA_RE    = /<<~\s*kahea\s+(\S+)\s*>>/g;
+// pono: constraint family sugar — inline-pranala-style (#slot ? -> TARGET [role:R])
+const BUILTIN_PONO_RE     = /<<~\s*pono\s+(#[\w-]+\s+)?(\S+)\s*->\s*(\S+)(?:\s+role:([\w-]+))?\s*>>/g;
+// lele: message family sugar — fire-and-forget (lele TARGET)
+const BUILTIN_LELE_RE     = /<<~\s*lele\s+(\S+)\s*>>/g;
+// papalohe: reaction family sugar — pāpālohe "body-listening reflex" (#slot? FROM -> TO [trigger:EVENT])
+const BUILTIN_PAPALOHE_RE      = /<<~\s*papalohe\s+(#[\w-]+\s+)?(\S+)\s*->\s*(\S+)(?:\s+trigger:([\w-]+))?\s*>>/g;
 const TOML_FENCE_RE = /```toml\s*([\s\S]*?)```/;
 
 // ---------------------------------------------------------------------------
@@ -171,10 +180,16 @@ interface ActiveRegexes {
   loulou:   RegExp;
   aka:      RegExp;
   kahea:    RegExp;
-  loulouDefaultFamily:  string;
-  akaDefaultFamily:     string;
-  kaheaDefaultFamily:   string;
+  pono:     RegExp;
+  lele:     RegExp;
+  papalohe: RegExp;
+  loulouDefaultFamily:     string;
+  akaDefaultFamily:        string;
+  kaheaDefaultFamily:      string;
   kaheaDefaultPropagation: string;
+  ponoDefaultFamily:       string;
+  leleDefaultFamily:       string;
+  papaloheDefaultFamily:        string;
 }
 
 function sigilPattern(grammar: GrammarRules, name: string, key: keyof SigilRule): string | undefined {
@@ -191,10 +206,16 @@ function resolveRegexes(grammar?: GrammarRules): ActiveRegexes {
       loulou:   BUILTIN_LOULOU_RE,
       aka:      BUILTIN_AKA_RE,
       kahea:    BUILTIN_KAHEA_RE,
-      loulouDefaultFamily:     "relation",
-      akaDefaultFamily:        "observe",
-      kaheaDefaultFamily:      "dataflow",
-      kaheaDefaultPropagation: "push-forward",
+      pono:     BUILTIN_PONO_RE,
+      lele:     BUILTIN_LELE_RE,
+      papalohe: BUILTIN_PAPALOHE_RE,
+      loulouDefaultFamily:      "relation",
+      akaDefaultFamily:         "observe",
+      kaheaDefaultFamily:       "dataflow",
+      kaheaDefaultPropagation:  "push-forward",
+      ponoDefaultFamily:        "constraint",
+      leleDefaultFamily:        "message",
+      papaloheDefaultFamily:    "reaction",
     };
   }
 
@@ -212,10 +233,16 @@ function resolveRegexes(grammar?: GrammarRules): ActiveRegexes {
     loulou:   safe(sigilPattern(grammar, "loulou", "pattern"), BUILTIN_LOULOU_RE, "g"),
     aka:      safe(sigilPattern(grammar, "aka",    "pattern"), BUILTIN_AKA_RE,    "g"),
     kahea:    safe(sigilPattern(grammar, "kahea",  "pattern"), BUILTIN_KAHEA_RE,  "g"),
-    loulouDefaultFamily:     sigilPattern(grammar, "loulou", "defaultFamily")     ?? "relation",
-    akaDefaultFamily:        sigilPattern(grammar, "aka",    "defaultFamily")     ?? "observe",
-    kaheaDefaultFamily:      sigilPattern(grammar, "kahea",  "defaultFamily")     ?? "dataflow",
-    kaheaDefaultPropagation: sigilPattern(grammar, "kahea",  "defaultPropagation") ?? "push-forward",
+    pono:     safe(sigilPattern(grammar, "pono",      "pattern"), BUILTIN_PONO_RE,      "g"),
+    lele:     safe(sigilPattern(grammar, "lele",      "pattern"), BUILTIN_LELE_RE,      "g"),
+    papalohe: safe(sigilPattern(grammar, "papalohe",  "pattern"), BUILTIN_PAPALOHE_RE,  "g"),
+    loulouDefaultFamily:      sigilPattern(grammar, "loulou",   "defaultFamily")      ?? "relation",
+    akaDefaultFamily:         sigilPattern(grammar, "aka",      "defaultFamily")      ?? "observe",
+    kaheaDefaultFamily:       sigilPattern(grammar, "kahea",    "defaultFamily")      ?? "dataflow",
+    kaheaDefaultPropagation:  sigilPattern(grammar, "kahea",    "defaultPropagation") ?? "push-forward",
+    ponoDefaultFamily:        sigilPattern(grammar, "pono",     "defaultFamily")      ?? "constraint",
+    leleDefaultFamily:        sigilPattern(grammar, "lele",     "defaultFamily")      ?? "message",
+    papaloheDefaultFamily:    sigilPattern(grammar, "papalohe", "defaultFamily")      ?? "reaction",
   };
 }
 
@@ -331,7 +358,7 @@ function fieldsFromToml(tomlText: string): Record<string, unknown> {
 // Event-based parser
 // ---------------------------------------------------------------------------
 
-type EventKind = "ahu_open" | "ahu_close" | "block" | "inline" | "loulou" | "aka" | "kahea";
+type EventKind = "ahu_open" | "ahu_close" | "block" | "inline" | "loulou" | "aka" | "kahea" | "pono" | "lele" | "papalohe";
 interface Event { pos: number; kind: EventKind; groups: (string | undefined)[] }
 
 export function parsePranalaEdges(carrierUri: string, text: string, grammar?: GrammarRules): PranaEdge[] {
@@ -367,6 +394,15 @@ export function parsePranalaEdges(carrierUri: string, text: string, grammar?: Gr
   }
   for (const m of text.matchAll(new RegExp(rx.kahea.source, "g"))) {
     if (!inBlock(m.index!)) events.push({ pos: m.index!, kind: "kahea", groups: [...m] });
+  }
+  for (const m of text.matchAll(new RegExp(rx.pono.source, "g"))) {
+    if (!inBlock(m.index!)) events.push({ pos: m.index!, kind: "pono", groups: [...m] });
+  }
+  for (const m of text.matchAll(new RegExp(rx.lele.source, "g"))) {
+    if (!inBlock(m.index!)) events.push({ pos: m.index!, kind: "lele", groups: [...m] });
+  }
+  for (const m of text.matchAll(new RegExp(rx.papalohe.source, "g"))) {
+    if (!inBlock(m.index!)) events.push({ pos: m.index!, kind: "papalohe", groups: [...m] });
   }
 
   events.sort((a, b) => a.pos - b.pos);
@@ -425,7 +461,39 @@ export function parsePranalaEdges(carrierUri: string, text: string, grammar?: Gr
       continue;
     }
 
-    // Sugar forms
+    // pono: inline-pranala-style with family:constraint default
+    // groups: [full, #slot?, FROM, TO, role?]
+    if (kind === "pono") {
+      const fragRaw = (groups[1] ?? "").trim();
+      const fromRaw = (groups[2] ?? "").trim();
+      const toRaw   = (groups[3] ?? "").trim();
+      const role    = (groups[4] ?? null) as string | null;
+
+      const [fromUri, fromSocket] = resolveFrom(fromRaw, carrierUri, ahuStack);
+      const fromSlot = fragRaw ? carrierUri + fragRaw : null;
+      const [toUri, toSocket] = resolveTo(toRaw, carrierUri);
+
+      edges.push(makeEdge(fromUri, fromSocket, fromSlot, toUri, toSocket, rx.ponoDefaultFamily, { role }));
+      continue;
+    }
+
+    // papalohe: reaction family sugar — pāpālohe body-listening reflex (#slot? FROM -> TO [trigger:EVENT])
+    // groups: [full, #slot?, FROM, TO, trigger?]
+    if (kind === "papalohe") {
+      const fragRaw = (groups[1] ?? "").trim();
+      const fromRaw = (groups[2] ?? "").trim();
+      const toRaw   = (groups[3] ?? "").trim();
+      const trigger = (groups[4] ?? null) as string | null;
+
+      const [fromUri, fromSocket] = resolveFrom(fromRaw, carrierUri, ahuStack);
+      const fromSlot = fragRaw ? carrierUri + fragRaw : null;
+      const [toUri, toSocket] = resolveTo(toRaw, carrierUri);
+
+      edges.push(makeEdge(fromUri, fromSocket, fromSlot, toUri, toSocket, rx.papaloheDefaultFamily, { trigger }));
+      continue;
+    }
+
+    // Sugar forms (single URI capture in groups[1])
     const targetRaw = (groups[1] ?? "").trim();
     let toUri: string, toSocket: string;
     if (targetRaw.startsWith("#")) {
@@ -445,6 +513,9 @@ export function parsePranalaEdges(carrierUri: string, text: string, grammar?: Gr
       edges.push(makeEdge(carrierUri, fromSocket, null, toUri, toSocket, rx.akaDefaultFamily, {}));
     } else if (kind === "kahea") {
       edges.push(makeEdge(carrierUri, fromSocket, null, toUri, toSocket, rx.kaheaDefaultFamily, { propagation: rx.kaheaDefaultPropagation }));
+    } else if (kind === "lele") {
+      // fire-and-forget: sugar form, single URI target, family:message
+      edges.push(makeEdge(carrierUri, fromSocket, null, toUri, toSocket, rx.leleDefaultFamily, {}));
     }
   }
 
