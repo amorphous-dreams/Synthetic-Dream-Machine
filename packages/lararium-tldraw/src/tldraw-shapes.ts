@@ -188,7 +188,7 @@ export function emitTldrawRecords(
       rotation: 0,
       index:    shapeIndex(parentId),
       parentId,
-      isLocked: false,
+      isLocked: frame.frameKind === "ahu",
       opacity:  1,
       meta:     { uri: frame.uri, frameKind: frame.frameKind, implements: [...frame.implements], ...(frame.carrierText !== undefined && { carrierText: frame.carrierText }), ...(frame.templateProps !== undefined && { templateProps: JSON.parse(JSON.stringify(frame.templateProps)) }) },
       props: {
@@ -266,7 +266,8 @@ export function emitTldrawRecords(
     if (!geo) return;
 
     const arrowId    = scopeId(arrow.id) as TLArrowShape["id"];
-    const label      = [arrow.role, arrow.family].filter(Boolean).join(" · ");
+    const isOwn      = arrow.isOwnership === true;
+    const label      = isOwn ? "" : [arrow.role, arrow.family].filter(Boolean).join(" · ");
     const sourceId   = frameIdToScopedId.get(arrow.fromFrameId);
     const targetId   = frameIdToScopedId.get(arrow.toFrameId);
 
@@ -280,9 +281,9 @@ export function emitTldrawRecords(
       rotation: 0,
       index:    shapeIndex(defaultPageId),
       parentId: defaultPageId,
-      isLocked: false,
-      opacity:  1,
-      meta:     { family: arrow.family, role: arrow.role },
+      isLocked: isOwn,
+      opacity:  isOwn ? 0 : 1,
+      meta:     { family: arrow.family, role: arrow.role, isOwnership: isOwn, ...(isOwn && { ownsMemeId: scopeId(arrow.fromFrameId) }) },
       props: {
         kind:           "arc",
         // start/end vectors are placeholders — overridden by bindings at render time

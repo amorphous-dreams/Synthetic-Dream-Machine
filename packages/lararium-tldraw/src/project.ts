@@ -21,6 +21,7 @@ import {
   ahuFrameId,
   socketShapeId,
   edgeArrowId,
+  ownsArrowId,
   pageId,
   buildTemplatePropsByLevel,
 } from "./records.js";
@@ -126,10 +127,12 @@ export function projectToTldraw(artifact: BootArtifact, opts: ProjectOptions = {
           );
           [...slotSet].forEach((slot, ahuIdx) => {
             const slotName = (slot.split("#")[1] as string | undefined) ?? slot;
+            const ahuId = ahuFrameId(entry.uri, slot);
+            const sockId = socketShapeId(entry.uri, slot);
             // Ahu sub-frame: visual container visible at high zoom
             frames.push({
               type: "frame",
-              id: ahuFrameId(entry.uri, slot),
+              id: ahuId,
               scope: "document",
               pageId: page.id,
               parentId: fid,
@@ -143,13 +146,38 @@ export function projectToTldraw(artifact: BootArtifact, opts: ProjectOptions = {
             // Socket port shape: stable arrow binding target, repositioned by applyZoomTemplate
             sockets.push({
               type: "socket",
-              id: socketShapeId(entry.uri, slot),
+              id: sockId,
               scope: "document",
               pageId: page.id,
               parentId: fid,
               memeUri: entry.uri,
               slotId: slot,
               ahuIdx,
+            });
+            // Ownership skeleton: meme → ahu and meme → socket (control:owns, hidden at low zoom)
+            arrows.push({
+              type: "arrow",
+              id: ownsArrowId(fid, ahuId),
+              scope: "document",
+              pageId: page.id,
+              fromFrameId: fid,
+              toFrameId: ahuId,
+              family: "control",
+              role: "owns",
+              label: "",
+              isOwnership: true,
+            });
+            arrows.push({
+              type: "arrow",
+              id: ownsArrowId(fid, sockId),
+              scope: "document",
+              pageId: page.id,
+              fromFrameId: fid,
+              toFrameId: sockId,
+              family: "control",
+              role: "owns",
+              label: "",
+              isOwnership: true,
             });
           });
         }

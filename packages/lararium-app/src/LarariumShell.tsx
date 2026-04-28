@@ -25,6 +25,7 @@ import type { LarViewAction, ZoomLevel } from "@lararium/tldraw";
 import { LarariumCanvas } from "./LarariumCanvas.js";
 import { MemeDetailPanel } from "./MemeDetailPanel.js";
 import { LarariumCtx, useLararium, shortUri, useTheme } from "./lararium-context.js";
+import { buildKumuRegistry, type KumuRegistry } from "@lararium/core";
 import "./lararium-theme.css";
 import type { MemeEntry } from "./App.js";
 
@@ -164,6 +165,14 @@ export function LarariumShell({ wsUrl, memes, onMemes }: ShellProps) {
   const [theme, cycleTheme] = useTheme();
   const [editor, setEditorState] = useState<Editor | null>(null);
   const setEditor = useCallback((e: Editor | null) => setEditorState(e), []);
+  const [kumuRegistry, setKumuRegistry] = useState<KumuRegistry | null>(null);
+
+  useEffect(() => {
+    fetch("/api/kumu-defs")
+      .then((r) => r.json())
+      .then((defs) => setKumuRegistry(buildKumuRegistry(defs)))
+      .catch(() => { /* registry stays null; typed holes will render */ });
+  }, []);
 
   // ⌘K / Ctrl+K → palette   |   ` (backtick) → canvas mode toggle
   useEffect(() => {
@@ -199,6 +208,7 @@ export function LarariumShell({ wsUrl, memes, onMemes }: ShellProps) {
     cycleTheme,
     editor,
     setEditor,
+    kumuRegistry,
   };
 
   return (

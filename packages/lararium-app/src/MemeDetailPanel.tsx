@@ -15,8 +15,8 @@
  */
 
 import { useEffect, useMemo, useCallback } from "react";
-import { parseMemeCarrier } from "@lararium/core";
-import type { MemeAstNode, WorksiteNode, EdgeNode, TextNode, SigilNode } from "@lararium/core";
+import { parseMemeCarrier, resolveWidgetTree } from "@lararium/core";
+import type { MemeAstNode, WorksiteNode, EdgeNode, TextNode, SigilNode, WidgetNode } from "@lararium/core";
 import { useLararium } from "./lararium-context.js";
 
 // ---------------------------------------------------------------------------
@@ -86,6 +86,25 @@ function renderNode(node: MemeAstNode, key: string): React.ReactNode {
   }
 }
 
+function renderWidget(node: WidgetNode, key: string): React.ReactNode {
+  if (node.def) {
+    return (
+      <div key={key} style={css.widget}>
+        <span style={css.widgetKumu}>{node.kumuName}</span>
+        {Object.entries(node.resolvedProps).map(([k, v]) => (
+          <span key={k} style={css.widgetProp}>{k}: <em>{v}</em></span>
+        ))}
+        {node.body.map((child, i) => renderWidget(child, `${key}.${i}`))}
+      </div>
+    );
+  }
+  return (
+    <div key={key} style={{ ...css.widget, ...css.widgetHole }}>
+      <span style={css.widgetKumu}>unknown kumu: {node.kumuName}</span>
+    </div>
+  );
+}
+
 function familyColor(family: string): React.CSSProperties {
   const map: Record<string, string> = {
     control:  "#58a6ff",
@@ -101,7 +120,7 @@ function familyColor(family: string): React.CSSProperties {
 // ---------------------------------------------------------------------------
 
 export function MemeDetailPanel() {
-  const { navState, dispatch, editor } = useLararium();
+  const { navState, dispatch, editor, kumuRegistry } = useLararium();
   const visible = navState.activeView === "meme-detail" && !!navState.focusUri;
   const uri = visible ? navState.focusUri! : null;
 
@@ -123,6 +142,11 @@ export function MemeDetailPanel() {
     if (!uri || !carrierText) return null;
     return parseMemeCarrier(uri, carrierText);
   }, [uri, carrierText]);
+
+  const widgetTree = useMemo<WidgetNode[] | null>(() => {
+    if (!ast || !kumuRegistry) return null;
+    return resolveWidgetTree(ast, kumuRegistry);
+  }, [ast, kumuRegistry]);
 
   const onClose = useCallback(() => {
     dispatch({ type: "NAVIGATE_BACK" });
@@ -146,6 +170,12 @@ export function MemeDetailPanel() {
         </div>
         <div style={css.body}>
           {!carrierText && <div style={css.status}>No carrier text in store — reseed room to populate.</div>}
+          {widgetTree && widgetTree.length > 0 && (
+            <section style={css.widgetSection}>
+              <h4 style={css.widgetSectionHead}>kumu widgets</h4>
+              {widgetTree.map((node, i) => renderWidget(node, String(i)))}
+            </section>
+          )}
           {ast && ast.map((node, i) => renderNode(node, String(i)))}
         </div>
       </div>
@@ -269,6 +299,45 @@ const css = {
     overflow: "hidden",
     textOverflow: "ellipsis",
     whiteSpace: "nowrap" as const,
+  },
+  widgetSection: {
+    marginBottom: 16,
+    borderLeft: "2px solid #bb8bfc",
+    paddingLeft: 12,
+  },
+  widgetSectionHead: {
+    fontSize: 11,
+    fontWeight: 600,
+    letterSpacing: "0.08em",
+    textTransform: "uppercase" as const,
+    color: "#bb8bfc",
+    margin: "0 0 6px",
+  },
+  widget: {
+    display: "flex",
+    flexWrap: "wrap" as const,
+    gap: 6,
+    marginBottom: 6,
+    padding: "4px 8px",
+    background: "#0d1117",
+    border: "1px solid #30363d",
+    borderRadius: 4,
+    alignItems: "center",
+  },
+  widgetHole: {
+    borderStyle: "dashed",
+    opacity: 0.6,
+  },
+  widgetKumu: {
+    fontSize: 11,
+    fontFamily: "monospace",
+    color: "#bb8bfc",
+    fontWeight: 600,
+  },
+  widgetProp: {
+    fontSize: 11,
+    fontFamily: "monospace",
+    color: "#6e7681",
   },
   sigil: {
     marginBottom: 8,

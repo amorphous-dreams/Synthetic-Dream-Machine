@@ -166,14 +166,39 @@ export function storyRiverLayout(snapshot: LarTLSnapshot): LarTLLayout {
     socketParent.set(socket.id, socket.parentId);
   }
 
+  // Ahu frame → parent meme canvas position lookup (ahu coords are local; need offset for arrows)
+  const ahuParent = new Map<string, string>();
+  for (const f of ahuFrames) {
+    if (f.parentId) ahuParent.set(f.id, f.parentId);
+  }
+
   // Arrow geometry: initial placement uses spread position for socket sources
   for (const arrow of snapshot.arrows) {
+    // Ownership skeleton arrows: meme→ahu or meme→socket — use meme centroid for both ends.
+    // Bindings reposition them at runtime; opacity:0 means initial geometry is irrelevant.
+    if (arrow.isOwnership) {
+      const memeGeo = frameGeo.get(arrow.fromFrameId);
+      if (!memeGeo) continue;
+      const cx = memeGeo.x + memeGeo.w / 2;
+      const cy = memeGeo.y + FRAME_H / 2;
+      arrowGeo.set(arrow.id, { startX: cx, startY: cy, endX: cx, endY: cy });
+      continue;
+    }
+
     const sockGeo  = socketGeo.get(arrow.fromFrameId);
     const parentId = socketParent.get(arrow.fromFrameId);
     const fromGeo  = sockGeo && parentId
       ? frameGeo.get(parentId)
       : frameGeo.get(arrow.fromFrameId);
-    const toGeo = frameGeo.get(arrow.toFrameId);
+
+    // Target may be an ahu frame (local coords) — convert to canvas via parent offset
+    const rawToGeo  = frameGeo.get(arrow.toFrameId);
+    const toParentId = ahuParent.get(arrow.toFrameId);
+    const toParentGeo = toParentId ? frameGeo.get(toParentId) : undefined;
+    const toGeo = rawToGeo && toParentGeo
+      ? { x: toParentGeo.x + rawToGeo.x, y: toParentGeo.y + rawToGeo.y, w: rawToGeo.w, h: rawToGeo.h }
+      : rawToGeo;
+
     if (!fromGeo || !toGeo) continue;
 
     const startX = sockGeo ? fromGeo.x + sockGeo.spreadX : fromGeo.x + fromGeo.w / 2;

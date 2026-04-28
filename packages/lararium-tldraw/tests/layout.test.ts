@@ -214,7 +214,8 @@ describe("emitTldrawRecords", () => {
       expect(typeof shape.type).toBe("string");
       expect(typeof shape.parentId).toBe("string");
       expect(typeof shape.index).toBe("string");
-      expect(shape.isLocked).toBe(false);
+      const isAhu = (shape.meta as Record<string, unknown> | undefined)?.frameKind === "ahu";
+      expect(shape.isLocked).toBe(isAhu ? true : false);
     }
   });
 

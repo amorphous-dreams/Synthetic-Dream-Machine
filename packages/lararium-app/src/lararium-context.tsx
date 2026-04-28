@@ -12,6 +12,7 @@ import { createContext, useContext, useState, useEffect, useCallback } from "rea
 import type { Editor } from "tldraw";
 import type { LarViewState, LarViewAction, ZoomLevel } from "@lararium/tldraw";
 import { DEFAULT_ROOMS, ROOM_SYSTEM } from "@lararium/tldraw";
+import type { KumuRegistry } from "@lararium/core";
 import type { MemeEntry } from "./App.js";
 
 // ---------------------------------------------------------------------------
@@ -94,6 +95,8 @@ export interface LarariumCtxValue {
   /** Live tldraw editor — set by LarariumCanvas on mount, null before sync. */
   editor:         Editor | null;
   setEditor:      (editor: Editor | null) => void;
+  /** Kumu registry built from boot artifact — null until first fetch. */
+  kumuRegistry:   KumuRegistry | null;
 }
 
 export const LarariumCtx = createContext<LarariumCtxValue | null>(null);

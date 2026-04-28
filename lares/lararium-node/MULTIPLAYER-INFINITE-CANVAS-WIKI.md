@@ -12,7 +12,7 @@ register    = "S"
 manaoio     = 0.84
 mana        = 0.90
 manao       = 0.86
-role        = "canonical design constitution for the Lararium multiplayer infinite-canvas wiki system — Kinopio-feel UX shell wrapping tldraw"
+role        = "canonical design constitution for the Lararium multiplayer infinite-canvas wiki system — Kinopio-feel UX shell wrapping tldraw; socket port shapes + hidden ownership skeleton shipped; TW5/Verse re-render synthesis integrated; three-tree pipeline (parseTree→widgetTree→renderTree) is M9 target"
 cacheable   = true
 retain      = true
 invariant   = false
@@ -159,19 +159,43 @@ _Status: design only. Not yet implemented._
 
 **Zoom-template routing (active):**
 
-| Level | Threshold | Template | Effect |
-|---|---|---|---|
-| strategic | < 0.15 | `meme-strategic` | 60×28px dots, grey, labels off |
-| operational | 0.15–0.35 | `meme-operational` | 120×52px, rating color, slug label |
-| tactical | 0.35–0.80 | `meme-tactical` | 220×100px, rating color, notes visible |
-| combat | 0.80–1.50 | `meme-combat` | 320×160px, ahu sub-frames visible |
-| action | ≥ 1.50 | `meme-action` | 400×220px, carrier text inline |
+| Level | Threshold | Template | ahu visible | Ownership arrows |
+|---|---|---|---|---|
+| strategic | < 0.15 | `meme-strategic` | ✗ (opacity 0) | ✗ |
+| operational | 0.15–0.35 | `meme-operational` | ✗ | ✗ |
+| tactical | 0.35–0.80 | `meme-tactical` | ✗ | ✗ |
+| combat | 0.80–1.50 | `meme-combat` | ✓ | ✓ (opacity 0.3) |
+| action | ≥ 1.50 | `meme-action` | ✓ | ✓ (opacity 0.3) |
+
+**Socket port shapes (active):** Each ahu slot emits a hidden `TLGeoShape` ellipse (8×8, `opacity:0`) as a stable arrow binding target. Pranala arrows bind permanently to socket shapes — not to ahu frames. `applyZoomTemplate` repositions sockets between two positions: `centerX/Y` (meme header zone, all zoom levels) and `spreadX/Y` (ahu frame center, combat/action only). Bindings never change; only socket position changes. This is the TW5-style selective refresh: the binding graph is stable, only rendering state moves.
+
+**Ahu frame safety:** Ahu sub-frames are `isLocked:true` in projection emission to prevent tldraw from reparenting them when the operator drags a meme frame. At low zoom (meme frame shrunk to 60×28px), ahu frames at `y=108+` would escape parent bounds — the `opacity:0` hide prevents visual detachment and the lock prevents CRDT reparent.
 
 Shape IDs are URI-stable (`memeFrameId(uri)` — no per-page prefix scoping). The `pageOverride` contract in `emitTldrawRecords` is retained for future multi-room projection but is not used by the boot room.
 
 **Navigation:** `LarViewState` reducer (`ZOOM_IN`, `OPEN_GRAPH`, `CLOSE_GRAPH`, `NAVIGATE_BACK`, `GO_TO_ROOM`). `ZOOM_IN` drives `zoomToMeme()` camera animation. `GO_TO_ROOM` switches WebSocket connection to a different room. No page-switching in the navigation path.
 
 **⌘K command palette:** Implemented and active. Replaces `SidePanel` as primary room/meme navigation. Two sections: **Spaces** (DEFAULT_ROOMS with chronometer glyphs) and **Memes** (URI filter). Arrow-key navigation, Enter to activate, Escape to dismiss.
+
+<<~/ahu >>
+
+<<~ ahu #hidden-skeleton >>
+
+## Hidden Meme Skeleton — Ownership Graph as Render Target
+
+Every meme frame owns its ahu sub-frames, and every ahu owns its socket port shapes. This ownership is a queryable graph fact independent of tldraw's `parentId` hierarchy.
+
+**The problem `parentId` alone does not solve:** At low zoom, meme frames shrink to 60×28px. Ahu frames at `y=108+` are outside the parent bounds. tldraw's `parentId` keeps them structurally children, but their visual escape creates drag-reparenting risk and arrow binding instability.
+
+**The skeleton model:** Each meme→ahu and meme→socket relationship is also encoded as a `control:owns` arrow in the projection snapshot — the "ownership skeleton." These arrows are:
+- `isOwnership: true` — distinguished from pranala semantic arrows
+- `opacity: 0` at strategic/operational/tactical; `opacity: 0.3` at combat/action
+- `isLocked: true` — not draggable; structural, not cosmetic
+- `meta.ownsMemeId` — points back to the parent meme shape for zoom toggling
+
+**Why this matters for the widget tree:** The ownership skeleton is the tldraw-layer analogue of TW5's widget tree. When the render pass walks `WidgetNode[]` (Phase 3 target), it will use the ownership graph — not tldraw `parentId` — to find render targets. A template can ask "give me all ahu slots owned by meme X" by traversing `control:owns` arrows, not by inspecting shape hierarchy. This is queryable via `editor.getBindingsToShape()` and the MCP `lararium/edge/list` tool.
+
+**Numbers (boot artifact, 2026-04-28):** 7 socket shapes, 14 ownership arrows (7 meme→ahu + 7 meme→socket), 6 pranala bindings (3 arrows × 2), 28 ownership bindings (14 arrows × 2). Total 56 shapes, 34 bindings.
 
 <<~/ahu >>
 
@@ -887,7 +911,23 @@ The canvas shows both: shape positions are CRDT-merged; event wires (`papalohe` 
 
 ### `kukali` — wait posture
 
-`kukali` (Hawaiian: to wait, to suspend) is the execution posture inside a causal island that yields until the island's input port fires. Isomorphic to `await someEventPromise()`. Cannot have semantics until `ReactionGraph.fire()` is async. This is the correct dependency order.
+`kukali` (Hawaiian: to wait, to suspend) is the execution posture inside a causal island that yields until the island's input port fires. Isomorphic to `await someEventPromise()`. Registered in `BOOTSTRAP_SCANS` + `CANONICAL_SIGILS`; `\suspends` English alias. Emits `SigilNode { sigilName:"kukali", attrs:{ trigger? } }`. Semantics depend on `ReactionGraph.fire()` being async — correct dependency order (shipped 2026-04-28).
+
+### TW5 / UEFN Verse child re-render research synthesis
+
+**TW5 (push-on-change):** When the tiddler store mutates, the root widget's `refresh(changedTiddlers)` propagates down the entire widget tree. Each widget self-checks whether its dependencies appear in `changedTiddlers` — skips re-render if not. The `$list` widget patches single-item add/remove without full rebuild. Rapid changes are coalesced before DOM writes. No explicit subscription wiring required.
+
+**Verse (pull-on-demand):** No automatic child cascade on state change. Developers call `SetText()` / widget methods explicitly in response to `subscribable` var mutations or game events. The UI tree is inert until code reaches into it. This is correct for the UEFN device layer — deterministic, developer-controlled, no hidden reactive overhead.
+
+**Synthesis for Lararium:**
+
+| Layer | Model | Mechanism |
+|---|---|---|
+| CRDT → canvas refresh | TW5 push | CRDT delta ≈ `changedTiddlers`; zoom threshold ≈ `widget.refresh()` |
+| Kumu device layer (UEFN) | Verse pull | explicit `papalohe` wiring; `SetText()` analogue is `applyZoomTemplate` update |
+| Widget tree resolution | TW5 selective | only widgets depending on changed memes re-resolve; others skip |
+
+The socket port shape repositioning in `applyZoomTemplate` is the concrete implementation of TW5 selective refresh: the binding graph is stable (sockets don't change), only `x/y` position updates fire on threshold crossing. No shape rebuild, no binding change — pure property update on the dependency that actually changed.
 
 ### Relation to CRDT model
 

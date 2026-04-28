@@ -64,6 +64,13 @@ export function edgeArrowId(fromSocket: string, toUri: string): LarProjectionId 
   return `shape:arrow_${from}__${to}`;
 }
 
+/** Stable ID for a control:owns arrow from a meme/ahu frame to a child frame or socket. */
+export function ownsArrowId(fromId: string, toId: string): LarProjectionId {
+  const from = fromId.replace(/^shape:/, "").replace(/[^a-zA-Z0-9]/g, "_");
+  const to   = toId.replace(/^shape:/, "").replace(/[^a-zA-Z0-9]/g, "_");
+  return `shape:owns_${from}__${to}`;
+}
+
 export function pageId(artifactType: string): LarProjectionId {
   return `page:${artifactType}`;
 }
@@ -253,6 +260,8 @@ export interface LarTLArrow {
   readonly family: string;
   readonly role: string | null;
   readonly label: string;
+  /** True for structural control:owns skeleton arrows; false/absent for pranala semantic arrows. */
+  readonly isOwnership?: boolean;
 }
 
 /** A projected note shape — IAM block metadata summary inside a meme frame. */

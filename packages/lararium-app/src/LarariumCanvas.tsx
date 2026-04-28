@@ -54,7 +54,7 @@ type ZoomTemplateKey = "strategic" | "operational" | "tactical" | "combat" | "ac
 function applyZoomTemplate(editor: TldrawEditor, level: ZoomLevel) {
   const key = level as ZoomTemplateKey;
   const shapes = editor.getCurrentPageShapes();
-  const updates: { id: string; type: string; x?: number; y?: number; props?: Record<string, unknown> }[] = [];
+  const updates: { id: string; type: string; x?: number; y?: number; opacity?: number; props?: Record<string, unknown> }[] = [];
 
   // Pass 1: meme frames — resize/recolor; collect includeAhu per frame id
   const memeIncludeAhu = new Map<string, boolean>();
@@ -71,7 +71,25 @@ function applyZoomTemplate(editor: TldrawEditor, level: ZoomLevel) {
     memeIncludeAhu.set(shape.id, tpl["includeAhu"] === true);
   }
 
-  // Pass 2: socket port shapes — reposition between meme-center and ahu-spread
+  // Pass 2: ahu sub-frames + ownership arrows — hide when parent meme has includeAhu=false
+  // so ahu frames stay inside shrunken meme bounds and tldraw won't reparent them on drag
+  for (const shape of shapes) {
+    const meta = shape.meta as Record<string, unknown> | undefined;
+    if (shape.type === "frame" && meta?.frameKind === "ahu") {
+      const visible = memeIncludeAhu.get(shape.parentId as string) ?? false;
+      updates.push({ id: shape.id, type: "frame", opacity: visible ? 1 : 0 });
+    } else if (shape.type === "arrow" && meta?.isOwnership === true) {
+      // Ownership arrow's fromFrameId is in meta.family="control" — look up parent via parentId chain
+      // The arrow is on the page, so we need to check the source meme's includeAhu.
+      // Store meme URI in meta at emission and look it up via the meme frame's includeAhu flag.
+      // For now: show ownership arrows when ANY meme has includeAhu (conservative; refined below)
+      const memeId = (meta.ownsMemeId as string | undefined);
+      const visible = memeId ? (memeIncludeAhu.get(memeId) ?? false) : false;
+      updates.push({ id: shape.id, type: "arrow", opacity: visible ? 0.3 : 0 });
+    }
+  }
+
+  // Pass 3: socket port shapes — reposition between meme-center and ahu-spread
   for (const shape of shapes) {
     if (shape.type !== "geo") continue;
     const meta = shape.meta as Record<string, unknown> | undefined;

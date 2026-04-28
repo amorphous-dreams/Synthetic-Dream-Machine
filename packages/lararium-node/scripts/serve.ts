@@ -11,6 +11,7 @@
  * API routes:
  *   GET /api/memes          — minimal boot meme list for command palette
  *   GET /api/carrier        — raw carrier text for a lar URI (?uri=lar:///...)
+ *   GET /api/kumu-defs      — KumuDef[] from the active boot artifact
  *   GET /admin/reseed       — force-evict + delete SQLite for a room, reseed on next WS connect
  *                             ?roomId=boot (default: current boot room alias)
  *
@@ -134,7 +135,7 @@ type SnapshotData = Awaited<ReturnType<typeof buildSnapshot>>;
 async function buildBootProjection(
   runtime: ReturnType<typeof createLarariumRuntime>,
   snapshotMemes: SnapshotData,
-): Promise<{ snapshot: unknown; roomId: string; receiptSha: string }> {
+): Promise<{ snapshot: unknown; roomId: string; receiptSha: string; kumuDefs: import("@lararium/core").KumuDef[] }> {
   const { renderAllViews } = await import("@lararium/tldraw");
   const artifact: BootArtifact = runtime.compileBoot();
   const receipt = await runtime.compileBootReceipt(artifact);
@@ -166,6 +167,7 @@ async function buildBootProjection(
     snapshot: { store, schema: DEFAULT_INITIAL_SNAPSHOT.schema },
     roomId: `boot-${receiptSha.slice(0, 16)}`,
     receiptSha,
+    kumuDefs: artifact.kumuDefs ?? [],
   };
 }
 
@@ -198,6 +200,7 @@ async function main() {
 
   const activeBootRoomId = bootProjection?.roomId ?? "boot";
   const bootSnapshot = bootProjection?.snapshot;
+  let activeKumuDefs = bootProjection?.kumuDefs ?? [];
 
   // Also maintain a stable alias "boot" → current content-addressed id for WS URL injection
   // (clients bookmark the stable alias; server redirects or forwards as needed)
@@ -241,6 +244,10 @@ async function main() {
       return;
     }
 
+    if (pathname === "/api/kumu-defs") {
+      return json(res, activeKumuDefs);
+    }
+
     if (pathname === "/api/rooms") {
       return json(res, {
         activeBootRoomId,
@@ -265,6 +272,7 @@ async function main() {
           const fresh = await buildBootProjection(runtime, snapshotMemes);
           getOrCreateRoom(fresh.roomId, fresh.snapshot);
           memeList = buildMemeList();
+          activeKumuDefs = fresh.kumuDefs;
           return json(res, { reseeded: fresh.roomId, sha: fresh.receiptSha, deleted });
         } catch (e) {
           return json(res, { error: String(e) }, 500);

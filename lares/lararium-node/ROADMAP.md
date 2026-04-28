@@ -12,7 +12,7 @@ register = "S"
 manaoio = 0.82
 mana = 0.88
 manao = 0.86
-role = "docs meme — migration roadmap and milestone log for Lararium Node; Milestones 1–7 complete; Grammar Phase 2 substantially complete (40 sigils, TW5+Verse parity, filter dialect, English aliases); M8 planned (browser smoke, meme detail panel, Grammar Phase 3, wiki-recipe carriers)"
+role = "docs meme — migration roadmap and milestone log for Lararium Node; Milestones 1–8 complete; 229/229 tests green; socket port shapes + ownership skeleton + kukali + kumuDefs pipeline + resolveWidgetTree all shipped; M9 planned (widget tree render pass, browser smoke, spatial family, canon-promotion surface, wiki-recipe carriers)"
 cacheable = false
 retain = true
 invariant = false
@@ -1318,7 +1318,7 @@ All three laws landed:
 - ✓ `MemeTemplateProps` extended with `zoomLevel` (self-declared level name) and `cascade` (predicate string) — stored in CRDT for future wikitext-filter path
 - ✓ `DEFAULT_TEMPLATE_PROPS` updated with `zoomLevel` + `cascade` fallback values
 - ✓ `CRDT-native carrier text` — `shape.meta.carrierText` seeded at projection; `MemeDetailPanel` reads from store
-- ✓ Boot closure now includes 25 memes (up from 19); all exist; `allExist: true`; 226/226 tests green
+- ✓ Boot closure now includes 25 memes (up from 19); all exist; `allExist: true`; 229/229 tests green
 
 **CRDT-native carrier text + Meme detail panel**
 - ✓ `shape.meta.carrierText` — carrier text seeded at projection time, stored in tldraw CRDT store; no HTTP fetch
@@ -1583,11 +1583,75 @@ Required context now present in-document:
 1. ~~**ReactionGraph async**~~ ✓ shipped 2026-04-28 — `fire/fireAll/fireRace/fireRush` all async
 2. ~~**kumu → widget-tree**~~ ✓ shipped 2026-04-28 — `KumuRegistry`, `resolveWidgetTree`, `collectKumuDefs`, typed holes
 3. ~~**Wehe executor**~~ ✓ shipped 2026-04-28 — `kumu-executor.ts`: `executeKumu`, `executeBatch`, `substituteProps`, `detectSuspension`; 136/136 tests pass
-4. **BootArtifact.kumuDefs population** — compiler pass: `collectKumuDefs` across all closure carriers → `artifact.kumuDefs` → `buildKumuRegistry(artifact.kumuDefs)` live at boot.
-5. **kukali** — wait posture in a causal island; `fire()` is async, `detectSuspension` exists. Register sigil, emit `SigilNode { sigilName:"kukali", attrs:{trigger} }`. Caller subscribes to trigger, re-executes on reaction event.
+4. ~~**BootArtifact.kumuDefs population**~~ ✓ shipped 2026-04-28 — `collectKumuDefsFromGraph()` wired in `node-host.ts`; `artifact.kumuDefs` populated with 5 kumu defs (meme-strategic → meme-action); `buildKumuRegistry(artifact.kumuDefs)` live at boot; `renderAllViews` receives registry; `templateProps` seeded from lares carriers not hardcoded defaults.
+5. ~~**kukali**~~ ✓ shipped 2026-04-28 — `BOOTSTRAP_SCANS` entry, `attrsFromGroups` case, `CANONICAL_SIGILS` entry, grammar meme `[[sigils]]` entry, `\suspends` alias — all wired; 3 tests pass.
 6. **Browser smoke** (Priority 1 from M8 original scope) — still pending.
 
 **Behavioral invariant discovered during testing:** Unbound params in a kumu body are NOT silently empty — they propagate as typed holes (`unresolved-hole`). Callers that want "empty string for missing prop" must explicitly pass `paramName:""`. Verse alignment: no silent wrong output.
+
+### Also completed this session (2026-04-28, post-M8-core)
+
+**Socket port shapes + ownership skeleton (this session):**
+
+- ✓ `LarTLSocket` record type + `socketShapeId()` ID function — stable arrow binding target, child of meme frame
+- ✓ Socket port shapes emitted as `TLGeoShape` (ellipse, 8×8, opacity:0) — one per ahu slot per meme; `meta.socketKind:"port"`, `meta.centerX/Y` (meme header zone), `meta.spreadX/Y` (ahu frame center)
+- ✓ All pranala arrows now bind to socket shapes, not ahu frames — bindings are CRDT-stable across all zoom levels
+- ✓ `storyRiverLayout` computes `SocketGeometry { centerX, centerY, spreadX, spreadY }` per socket
+- ✓ `applyZoomTemplate` two-pass: Pass 1 resizes meme frames + collects `memeIncludeAhu`; Pass 2 hides/shows ahu frames + ownership arrows; Pass 3 repositions socket shapes between center and spread
+- ✓ Ahu detachment fix: ahu frames `isLocked:true` in emission + `opacity:0` at low zoom — prevents tldraw reparenting when meme frames shrink below ahu frame bounds
+- ✓ Ownership skeleton arrows: 14 `control:owns` arrows per boot (7 meme→ahu + 7 meme→socket), `opacity:0`, `isLocked:true`, `meta.isOwnership:true`, `meta.ownsMemeId` for zoom toggling; shown at combat/action zoom alongside ahu frames
+- ✓ `ownsArrowId(fromId, toId)` — stable ID function for ownership arrows
+- ✓ `LarTLArrow.isOwnership?: boolean` — flag distinguishes skeleton arrows from pranala semantic arrows
+- ✓ 229/229 tests green (was 226/226)
+
+**TW5 / UEFN Verse child re-render research (this session):**
+
+- ✓ TW5: push-on-change model — `changedTiddlers` map propagates down widget tree; each widget self-checks dependency; `$list` patches single-item add/remove without full rebuild; rapid changes coalesced. This is the target model for Lararium's CRDT delta → template refresh path.
+- ✓ Verse: pull-on-demand model — explicit `SetText()` / method calls; no automatic child cascade; `subscribable` vars as reactive sources. This is the target model for the Kumu device layer in UEFN — explicit `papalohe` wiring, not reactive tree.
+- ✓ Synthesis: CRDT delta event ≈ `changedTiddlers`; widget ownership skeleton ≈ TW5 widget tree; `applyZoomTemplate` on threshold crossing ≈ TW5 selective refresh; socket port shape repositioning ≈ DOM property update without re-render.
+
+<<~/ahu >>
+
+<<~ ahu #milestone-9-scope >>
+
+## Milestone 9 — Widget Tree Render Pass + Canon Surface (Planned)
+
+M8 delivered the full kumu type pipeline bottom-up: AST → kumuDefs → KumuRegistry → templateProps → tldraw shapes. M9 closes the loop top-down: widget tree resolution feeds the render pass directly, grammar meme drives the parser dispatch table, and canon-promotion has a write-back surface.
+
+### Priority 1: resolveWidgetTree render pass
+
+`resolveWidgetTree(ast, registry)` already exists and passes tests. M9 wires it into the tldraw render path:
+
+- Walk `WidgetNode[]` instead of raw `MemeAstNode[]` in the meme detail panel renderer
+- Each `WidgetNode { def: KumuDef }` maps to a named render slot (kumu type → tldraw shape kind)
+- `WidgetNode { def: null }` (typed hole) renders as a placeholder shape — Hazel semantics
+- Initial scope: meme detail panel only; full projection render pass is Phase 4
+
+This makes carrier editing visible as canvas shape changes without TypeScript rebuild.
+
+### Priority 2: Browser smoke testing
+
+All M5/M6/M7/M8 tactile behaviors unverified. Playwright baseline:
+
+- Drag meme frame → socket shapes follow (binding records verify); ahu frames stay locked
+- Zoom threshold crossings → `applyZoomTemplate` fires; meme frame dims correct at each level
+- Ownership arrows invisible at tactical/lower; visible (opacity 0.3) at combat/action
+- Double-click meme frame → `MemeDetailPanel` slides up; carrier text renders from store
+- ⌘K → Spaces + Memes sections; Enter navigates; Escape dismisses
+- Canvas mode toggle → tldraw toolbar appears; Lararium chrome dims
+- `/admin/reseed` → grammar carrier change takes effect without restart; lares/ watcher fires
+
+### Priority 3: Spatial family registration
+
+8th pranala family (`spatial`): roles `contains`, `portal`, `adjacent`, `layer`. Load-bearing for RPG battlemap, multi-level rooms, and interlinked area navigation. Unblocks portals-as-graph-edges (not just geo shapes with `meta.larPortal`).
+
+### Priority 4: Canon-promotion surface
+
+Write-back path: operator triggers "promote" from canvas → server validates against pranala schema → writes to `lares/` → recompile → reseed. Entry point: `PUT /admin/promote` with shape ID + proposed carrier text. Requires UCAN trust tier gate (operator+). Initial scope: metadata-only edits (name, IAM block fields), not full carrier authoring.
+
+### Priority 5: Wiki-recipe carriers
+
+`lares/recipes/` schema. Seed per-room canvases from recipe files. Format: `[[memes]]` TOML array with filter expression + seed layout. Unblocks `ftls`, `wtf`, and other RPG rooms.
 
 <<~/ahu >>
 
