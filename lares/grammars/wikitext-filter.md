@@ -103,6 +103,19 @@ Queries for memes that contain an ahu block with the given fragment id.
 [ahu:id[iam]]                 all indexed carriers (all have #iam)
 ```
 
+### `edge:family[reaction]` — reaction subscription query
+
+Queries memes by reaction-family (papalohe) edges. Useful for finding UEFN device graph event wires.
+
+```text
+[edge:family[reaction]]                         memes with any reaction edge
+[edge:family[reaction]trigger[OnBegin]]         memes activated by OnBegin
+[edge:family[reaction]dir[inbound]]             memes that receive reaction edges (awakened targets)
+[edge:family[reaction]dir[outbound]]            memes that emit reaction edges (event sources)
+```
+
+The `trigger` property carries the event name from the `papalohe` sugar form (`<<~ papalohe FROM -> TO trigger:OnBegin >>`).
+
 <<~/ahu >>
 
 <<~ ahu #preserved-operators >>

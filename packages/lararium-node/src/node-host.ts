@@ -101,6 +101,10 @@ export function loadGrammarRules(): GrammarRules | null {
     ...(r["pattern"]             !== undefined && { pattern:            r["pattern"] }),
     ...(r["default_family"]      !== undefined && { defaultFamily:      r["default_family"] }),
     ...(r["default_propagation"] !== undefined && { defaultPropagation: r["default_propagation"] }),
+    ...(r["pragma_pattern"]      !== undefined && { pragmaPattern:      r["pragma_pattern"] }),
+    ...(r["alias_for"]           !== undefined && { aliasFor:           r["alias_for"] }),
+    ...(r["layer"] === "compile" || r["layer"] === "render" || r["layer"] === "both"
+      ? { layer: r["layer"] as "compile" | "render" | "both" } : {}),
   }));
 
   const families: FamilyRule[] = rawFamilies.map((r) => ({

@@ -117,17 +117,23 @@ export { KNOWN_FAMILIES, FAMILY_CONTRACTS };
 
 export interface SigilRule {
   name: string;
-  kind: "worksite" | "edge" | "edge-sugar" | "metadata" | "header" | "concurrency" | "query" | "guest-grammar" | "guest-grammar-alias" | "query-alias" | "pragma";
+  kind: "worksite" | "edge" | "edge-sugar" | "metadata" | "header" | "concurrency" | "query" | "guest-grammar" | "guest-grammar-alias" | "query-alias" | "pragma" | "conditional" | "conditional-else" | "conditional-branch" | "iteration" | "context" | "concurrency-alias" | "edge-alias" | "pragma-alias" | "iteration-alias" | "conditional-alias";
+  /** Layer: compile, render, or both */
+  layer?: "compile" | "render" | "both";
   /** For edge sigils: inline match pattern (regex source string) */
   inlinePattern?: string;
   /** For edge sigils: block match pattern (regex source string, dotAll) */
   blockPattern?: string;
-  /** For worksite sigils: open pattern */
+  /** For open-close sigils: open pattern */
   openPattern?: string;
-  /** For worksite sigils: close pattern */
+  /** For open-close sigils: close pattern */
   closePattern?: string;
-  /** For sugar sigils: match pattern */
+  /** For leaf sigils: match pattern */
   pattern?: string;
+  /** For pragma hoisted sigils (<<~! form) */
+  pragmaPattern?: string;
+  /** For alias sigils: canonical sigil name this maps to */
+  aliasFor?: string;
   defaultFamily?: string;
   defaultPropagation?: string;
 }
@@ -355,7 +361,13 @@ function fieldsFromToml(tomlText: string): Record<string, unknown> {
 }
 
 // ---------------------------------------------------------------------------
-// Event-based parser
+// Event-based parser (Phase 1/2 — kept as the stable edge-projection path)
+//
+// parsePranalaEdges remains the public API for PranaEdge[] production.
+// Phase 3 adds parseCarrier() in parser.ts as the new primary path that
+// produces MemeAstNode[]; edgesFromAst() then projects PranaEdge[] from it.
+// parsePranalaEdges is NOT wired through parser.ts to avoid a circular dep
+// (parser.ts imports PranaEdge types from this file).
 // ---------------------------------------------------------------------------
 
 type EventKind = "ahu_open" | "ahu_close" | "block" | "inline" | "loulou" | "aka" | "kahea" | "pono" | "lele" | "papalohe";
@@ -489,7 +501,9 @@ export function parsePranalaEdges(carrierUri: string, text: string, grammar?: Gr
       const fromSlot = fragRaw ? carrierUri + fragRaw : null;
       const [toUri, toSocket] = resolveTo(toRaw, carrierUri);
 
-      edges.push(makeEdge(fromUri, fromSocket, fromSlot, toUri, toSocket, rx.papaloheDefaultFamily, { trigger }));
+      const payload: Record<string, unknown> = {};
+      if (trigger !== null) payload["trigger"] = trigger;
+      edges.push(makeEdge(fromUri, fromSocket, fromSlot, toUri, toSocket, rx.papaloheDefaultFamily, { payload }));
       continue;
     }
 

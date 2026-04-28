@@ -142,12 +142,53 @@ When a renderer encounters `<<~ kahea lar:///uri >>`, it SHOULD embed that meme'
 
 <<~/ahu >>
 
-<<~ ahu #six-families >>
+<<~ ahu #ast-node-types >>
 
-## Six Pranala Families
+## AST Node Types
 
-The pranala invariant (`lar:///ha.ka.ba/api/v0.1/pono/pranala`) defines six families.
-The grammar meme currently only registers four. **`message` and `constraint` are missing.**
+The parse-time AST (`MemeAstNode` union, `packages/lararium-core/src/ast.ts`) maps each sigil to a typed node.
+Three layers are always present: compile-time graph (`PranaEdge[]`), parse-time structure (`MemeAstNode[]`), render-time directive.
+
+| Node kind | Sigil(s) | Layer |
+|-----------|----------|-------|
+| `Worksite` | `ahu` | both |
+| `MemeBoundary` | `meme` / `\tiddler` | render |
+| `Edge` | `pranala` (block + inline) | both |
+| `EdgeSugar` | `loulou` / `aka` / `kahea` / `pono` / `lele` / `papalohe` | both |
+| `Conditional` | `wai` / `\if` | render |
+| `ConditionalElse` | `mukuwai` / `\else` | render |
+| `ConditionalBranch` | `kahawai` / `\elif` | render |
+| `Iteration` | `huli` / `\for` | render |
+| `WorkBlock` | `hana` / `\task` | both |
+| `TextTemplate` | `wehe` / `\procedure` / `\define` | render |
+| `FilterFunction` | `helu` / `\function` | render |
+| `TypeDefinition` | `kumu` / `\widget` / `\type` / `\typos` | both |
+| `Variable` | `kau` / `\const` / `\let` / `\var` | both |
+| `Qualification` | `kapu` / `\guard` (inline or block) | compile |
+| `SyncBlock` | `hui` / `\sync` | render |
+| `RaceBlock` | `heihei` / `\race` | render |
+| `RushBlock` | `puka` / `\rush` | render |
+| `Dispatch` | `lele` / `\branch` | both |
+| `Query` | `ui` / `\query` | render |
+| `Metadata` | `ahu #iam` | compile |
+| `CarrierHeader` | `<<~ ? -> URI >>` | compile |
+| `Text` | raw wikitext spans | render |
+
+**`Variable` scope:** `<<~! kau name = val >>` (pragma, carrier-scoped, hoisted) vs `<<~ kau name = val >>...<<~/kau >>` (block-scoped).
+The `!` carries the scope elevation promise.
+
+**`TypeDefinition` vs `TextTemplate`:** `kumu` declares a new grammar node type with a declared body contract.
+`wehe` declares a text/content template (wikitext fragment). They are different body contracts and different AST nodes.
+
+**`EdgeSugar` trigger field:** `papalohe` is the only `EdgeSugar` with a `trigger` property (event name). All others use `role`.
+
+<<~/ahu >>
+
+<<~ ahu #seven-families >>
+
+## Seven Pranala Families
+
+All seven families are now registered in the grammar meme `[[families]]` TOML array and in `KNOWN_FAMILIES`/`FAMILY_CONTRACTS` in `pranala-parser.ts`.
 
 | Family | Sigil sugar | Render semantic | Compile semantic |
 |--------|-------------|-----------------|------------------|
@@ -155,11 +196,11 @@ The grammar meme currently only registers four. **`message` and `constraint` are
 | `control` | (none — explicit pranala only) | structural ownership | DAG must hold |
 | `dataflow` | `kahea` | **live transclusion** | typed value / geometry transport |
 | `observe` | `aka` | **shadow transclusion** | live inspection / reveal |
-| `message` | (none yet) | event / notification routing | signal passage, no ownership |
-| `constraint` | (none yet) | declarative rule rendering | constraint assertion, no exec pulse |
+| `message` | `lele` | fire-and-forget dispatch | signal passage, no ownership |
+| `constraint` | `pono` | declarative rule assertion | structural invariant, no exec pulse |
+| `reaction` | `papalohe` | triggered response — fires when source activates | UEFN device graph event wire; trigger property carries event name |
 
-**Gap:** `message` and `constraint` have no sugar sigil form and are not in the grammar meme's
-`[[families]]` TOML array. They must be added.
+**`papalohe`** — Lua tradition: *pāpālohe* — warrior body-listening reflex. The edge fires only when the source event activates it. Arrow label on a UEFN device graph canvas: `papalohe`.
 
 ### Shadow vs. Live Transclusion
 
@@ -891,121 +932,27 @@ The single-form version is not ruled out but adds parser complexity without clea
 
 <<~/ahu >>
 
-<<~ ahu #unregistered-sigil-additions >>
+<<~ ahu #sigil-registry-status >>
 
-## Additions Needed in `lares/grammars/memetic-wikitext.md`
+## Sigil Registry Status
 
-Missing `[[sigils]]` entries for the grammar meme:
+All sigils documented in this spec are now registered in `lares/grammars/memetic-wikitext.md`.
+All seven families are wired in `pranala-parser.ts`.
 
-```toml
-# --- Missing from current registry (compile-time) ---
+**Sigils added in Grammar Phase 2.x (post-M7):**
 
-[[sigils]]
-name         = "kapu"
-kind         = "qualifier"
-layer        = "compile"
-pattern      = '<<~\s*kapu\s+([^\n>]*)\s*>>'
-description  = "qualification and boundary posture; marks confidence, restriction, or unresolved threshold"
+| Sigil | Kind | Family | Note |
+|-------|------|--------|------|
+| `kau` | pragma | — | variable binding; carrier-scoped (`<<~!`) or block-scoped (`<<~`) |
+| `kumu` | pragma | — | element type definition; self-hosting grammar node |
+| `papalohe` | edge-sugar | reaction | pāpālohe — body-listening reflex; UEFN device graph event wire |
+| `pono` | edge-sugar | constraint | inline-pranala-style constraint; no exec pulse |
+| `lele` | edge-sugar / concurrency | message | fire-and-forget dispatch; compile: pranala family:message |
+| `kapu` (block) | edge-sugar | — | block form `<<~ kapu Q >>...<<~/kapu >>` added alongside inline |
 
-# --- Missing (both layers) ---
+**English aliases added in Phase 2.x:**
 
-[[sigils]]
-name         = "hana"
-kind         = "guest-grammar"
-layer        = "both"
-open_pattern  = '<<~\s*hana\s+([\w-]+)\s*>>'
-close_pattern = '<<~\/hana\s*>>'
-description  = "bounded guest grammar block; grammar-key selects the interpreter"
-
-[[sigils]]
-name         = "ui"
-kind         = "query"
-layer        = "render"
-pattern      = '<<~\s*ui\s+([^\n>]+?)\s*>>'
-description  = "query surface; evaluates filter expression and renders result as meme list"
-
-# --- Proposed new sigils (render-time, TW5 parity) ---
-
-[[sigils]]
-name         = "meme"
-kind         = "context"
-layer        = "render"
-open_pattern  = '<<~\s*meme\s+(\S+)\s*>>'
-close_pattern = '<<~\/meme\s*>>'
-description  = "sets the current meme as rendering context for the block body; TW5 <$tiddler> equivalent; [SC]"
-
-[[sigils]]
-name         = "wai"
-kind         = "conditional"
-layer        = "render"
-open_pattern  = '<<~\s*wai\s+([^\n>]+?)\s*>>'
-close_pattern = '<<~\/wai\s*>>'
-description  = "conditional source; renders body when filter result is non-empty; [C] operator-ratified"
-
-[[sigils]]
-name         = "mukuwai"
-kind         = "conditional-else"
-layer        = "render"
-pattern       = '<<~\s*mukuwai\s*>>'
-description  = "alternate outflow; fallback body in a wai block; [C] operator-ratified"
-
-[[sigils]]
-name         = "kahawai"
-kind         = "conditional-branch"
-layer        = "render"
-pattern       = '<<~\s*kahawai\s+([^\n>]+?)\s*>>'
-description  = "branch-channel; else-if form in a wai block; [C] operator-ratified"
-
-[[sigils]]
-name         = "huli"
-kind         = "iteration"
-layer        = "render"
-open_pattern  = '<<~\s*huli\s+([^\n>]+?)\s+as\s+([\w-]+)\s*>>'
-close_pattern = '<<~\/huli\s*>>'
-description  = "iterative rendering over filter results; body renders once per yielded URI; [SC] approved"
-
-# No standalone call sigil — kahea extended contract covers both URI transclusion and definition invocation.
-# Dispatch: lar:/// prefix → meme transclusion; plain name → wehe/helu lookup.
-
-# --- Pragma sigils (<<~! mode, render-time only) ---
-
-[[sigils]]
-name         = "wehe"
-kind         = "pragma"
-layer        = "render"
-open_pattern  = '<<~!\s*wehe\s+([\w-]+)(?:\(([^)]*)\))?\s*>>'
-close_pattern = '<<~\/wehe\s*>>'
-description  = "opens a named wikitext form with parameters; TW5 \\procedure equivalent; summoned via kahea; [SC]"
-
-[[sigils]]
-name         = "helu"
-kind         = "pragma"
-layer        = "render"
-pattern      = '<<~!\s*helu\s+([\w-]+)(?:\(([^)]*)\))?\s*=\s*([^\n>]+?)\s*>>'
-description  = "defines a named filter-expression function; yields URI list; TW5 \\function equivalent; summoned via kahea; [SC]"
-```
-
-Missing `[[families]]` entries:
-
-```toml
-[[families]]
-name                = "message"
-dag_required        = false
-role_required       = false
-role_recommended    = true
-confidence_bounded  = false
-description         = "routed event or signal passage; carries notification without structural ownership"
-
-[[families]]
-name                = "constraint"
-dag_required        = false
-role_required       = false
-role_recommended    = false
-confidence_bounded  = false
-description         = "declarative rule without execution pulse; spatial, logical, or physical boundary"
-```
-
-Also: add `layer` field to all existing `[[sigils]]` entries.
+`\const`, `\let`, `\var` → `kau` | `\widget`, `\type`, `\typos` → `kumu` | `\import` → `kahea` | `\constraint` → `pono`
 
 <<~/ahu >>
 

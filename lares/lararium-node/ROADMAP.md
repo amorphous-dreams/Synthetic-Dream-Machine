@@ -1240,12 +1240,36 @@ Hawaiian vocabulary grounding, operator rulings log, precedent alignment (TW5/Li
 | Work block | `hana` | both | Bounded guest grammar block; grammar-key selects interpreter |
 | Fire-and-forget | `lele` | compile | Only concurrency sigil producing `family:message` graph artifact |
 
-### Phase 2 status
+### Phase 2 status (2026-04-27)
 
-Phase 2 is substantially complete. The grammar meme has 40 registered sigils covering all TW5 filter operators (via `wikitext-filter`), all Verse concurrency primitives (via aliases), all conditional/iteration/definition forms, and the full six-family pranala model. The remaining Phase 2 gap is:
+Phase 2 substantially complete. Grammar meme at 40 registered sigils (post-M7 session).
 
-- `message` family sugar: `hau` remains a candidate; deferred — `lele` + explicit pranala covers current use cases
-- Heritage consultation: `[SC]` sigil names should be reviewed with UH Hilo / Pūnana Leo before any names advance to `[C]`
+### Grammar Phase 2.x Extension (2026-04-27) — this session
+
+After the Phase 2 session documented above, a further grammar extension session completed the remaining gaps and added the 7th pranala family.
+
+**New sigils registered:**
+
+- `kau` — variable binding; `<<~! kau name = val >>` = carrier-scoped (hoisted pragma); `<<~ kau name = val >>...<<~/kau >>` = block-scoped; `!` carries scope elevation promise
+- `kumu` — element type definition (`\widget` equivalent); declares a new grammar node type (distinct from `wehe` which is text/content template)
+- `papalohe` — reaction family edge sugar; *pāpālohe* (Lua martial arts: body-listening reflex, heightened reflexive awareness); UEFN device graph event wire; `trigger` property carries event name
+- `kapu` block form — added `open_pattern`/`close_pattern` alongside existing inline `pattern`
+
+**New English aliases registered:**
+
+`\const`, `\let`, `\var` → `kau` | `\widget`, `\type`, `\typos` → `kumu` | `\import` → `kahea` | `\constraint` → `pono`
+
+**7th pranala family — `reaction`:**
+
+"When source fires event, target awakens." UEFN device graph event subscriptions. `papalohe` is the sugar sigil. Wired in `KNOWN_FAMILIES`, `FAMILY_CONTRACTS`, event loop, `ActiveRegexes`. `trigger` property stored in `payload["trigger"]`.
+
+**AST type layer:**
+
+`packages/lararium-core/src/ast.ts` — full `MemeAstNode` union type with 22 node kinds. Exported from `@lararium/core`. `#ast-node-types` spec section added to `memetic-wikitext-spec.md`.
+
+**`wikitext-filter.md`:** Added `[edge:family[reaction]trigger[X]]` operators section.
+
+**Test count:** 53 → 64 (11 new tests in `grammar-phase2x.test.ts` covering `papalohe` sugar parsing, reaction family contract validation, and `KNOWN_FAMILIES` export).
 
 <<~/ahu >>
 
