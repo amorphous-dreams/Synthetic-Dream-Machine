@@ -20,7 +20,7 @@
  *   - transclusionLayout — zoomed view of a single meme with its ahu socket sub-frames
  */
 
-import { type LarTLSnapshot, type LarTLFrame, type LarTLArrow, type LarTLSocket } from "./records.js";
+import { type LarTLSnapshot, type LarTLFrame, type LarTLSocket } from "./records.js";
 
 // ---------------------------------------------------------------------------
 // Layout geometry types
@@ -150,9 +150,10 @@ export function storyRiverLayout(snapshot: LarTLSnapshot): LarTLLayout {
   for (const socket of ((snapshot.sockets ?? []) as readonly LarTLSocket[])) {
     const memeGeo = frameGeo.get(socket.parentId);
     if (!memeGeo) continue;
-    // Center position clusters all sockets to the meme frame's visual center
-    const centerX = memeGeo.w / 2;
-    const centerY = memeGeo.h / 2;
+    // Center position clusters all sockets into the meme header zone (top FRAME_H strip),
+    // regardless of how tall the meme is due to ahu sub-frames
+    const centerX = FRAME_W / 2;
+    const centerY = FRAME_H / 2;
     // Spread position mirrors the ahu sub-frame center (local coords)
     const spreadX = AHU_PAD_X + AHU_W / 2;
     const spreadY = FRAME_H + AHU_PAD_Y + socket.ahuIdx * (AHU_H + AHU_GAP) + AHU_H / 2;

@@ -245,7 +245,7 @@ export function emitTldrawRecords(
         dash:         "solid",
         size:         "s",
         font:         "draw",
-        richText:     richText(""),
+        richText:     richText(" "),
         align:        "middle",
         verticalAlign: "middle",
         growY:        0,
