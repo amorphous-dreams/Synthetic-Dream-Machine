@@ -18,8 +18,7 @@ import {
   MemeGraph,
   Meme,
   laresRelPathToLarUri,
-  compileMinimalBoot,
-  compileFullBoot,
+  compileBoot,
   compileBootReceipt,
   collectKumuDefs,
   ENTRY_URI,
@@ -311,40 +310,13 @@ function collectKumuDefsFromGraph(graph: MemeGraph, uris: string[]): KumuDef[] {
 }
 
 // ---------------------------------------------------------------------------
-// Full boot closure (adds relation expansion + carrier index)
-// ---------------------------------------------------------------------------
-
-function buildFullClosure(graph: MemeGraph, topoUris: string[], grammar?: GrammarRules): { additionalUris: string[] } {
-  const additional = graph.oneHopRelation(topoUris);
-  for (const uri of additional) {
-    if (!graph.memes.has(uri)) {
-      const meme = loadMeme(uri, grammar);
-      if (meme) graph.addMeme(meme);
-    }
-  }
-
-  const indexUris = new Set(compileCarrierIndex().map((r) => r.uri));
-  const topoSet = new Set([...topoUris, ...additional]);
-  const indexAdditional = [...indexUris].filter((u) => !topoSet.has(u));
-  for (const uri of indexAdditional.sort()) {
-    if (!graph.memes.has(uri)) {
-      const meme = loadMeme(uri, grammar);
-      if (meme) graph.addMeme(meme);
-    }
-  }
-
-  return { additionalUris: [...[...additional].sort(), ...indexAdditional.sort()] };
-}
-
-// ---------------------------------------------------------------------------
 // Public runtime API
 // ---------------------------------------------------------------------------
 
 export interface LarariumRuntime {
   readResource(uri: string): string;
   readCarrier(uri: string): CarrierRecord;
-  compileMinimalBoot(): BootArtifact;
-  compileFullBoot(): BootArtifact;
+  compileBoot(): BootArtifact;
   compileBootReceipt(artifact: BootArtifact): Promise<BootReceipt>;
   compileCarrierIndex(): CarrierRecord[];
 }
@@ -355,17 +327,11 @@ export function createLarariumRuntime(_opts?: { writeback?: boolean }): Lararium
     readCarrier,
     compileCarrierIndex,
 
-    compileMinimalBoot(): BootArtifact {
+    compileBoot(): BootArtifact {
       const { graph, topoUris, violations, grammar } = buildControlClosure(ENTRY_URI);
       loadInterfaces(graph, grammar);
-      return compileMinimalBoot(graph, topoUris, violations);
-    },
-
-    compileFullBoot(): BootArtifact {
-      const { graph, topoUris, violations, grammar } = buildControlClosure(ENTRY_URI);
-      const { additionalUris } = buildFullClosure(graph, topoUris, grammar);
-      loadInterfaces(graph, grammar);
-      return compileFullBoot(graph, topoUris, additionalUris, violations);
+      const kumuDefs = collectKumuDefsFromGraph(graph, topoUris);
+      return compileBoot(graph, topoUris, violations, kumuDefs);
     },
 
     compileBootReceipt,

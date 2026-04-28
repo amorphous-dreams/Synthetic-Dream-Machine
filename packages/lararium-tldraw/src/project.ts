@@ -45,7 +45,7 @@ export function projectToTldraw(artifact: BootArtifact, opts: ProjectOptions = {
     type: "page",
     id: pageId(artifact.artifact),
     scope: "document",
-    name: artifact.artifact === "minimal-boot" ? "Minimal Boot" : "Full Boot",
+    name: "Boot",
     compiledAt: artifact.compiledAt,
     memeCount: artifact.memeCount,
   };

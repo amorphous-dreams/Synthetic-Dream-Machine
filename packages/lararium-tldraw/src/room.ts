@@ -71,7 +71,7 @@ export const ROOM_SYSTEM: LarRoom = {
   id: "system",
   name: "System View",
   filter: "[all[memes]sort[depth]]",
-  tlPageId: pageId("minimal-boot"),
+  tlPageId: pageId("boot"),
   layout: "story-river",
 };
 

@@ -107,7 +107,7 @@ describe("MCP stdio smoke", () => {
     const uris = resp.result.resources.map((r) => r.uri);
     expect(uris).toContain("lar:///INDEXES/carriers");
     expect(uris).toContain("lar:///INDEXES/interfaces");
-    expect(uris).toContain("lar:///boot/minimal");
+    expect(uris).toContain("lar:///boot");
     expect(uris).toContain("lar:///boot/receipt");
   });
 
@@ -119,8 +119,7 @@ describe("MCP stdio smoke", () => {
     const names = resp.result.tools.map((t) => t.name);
     expect(names).toContain("lararium-resolve_lar_uri");
     expect(names).toContain("lararium-inspect_carrier");
-    expect(names).toContain("lararium-compile_minimal_boot");
-    expect(names).toContain("lararium-compile_full_boot");
+    expect(names).toContain("lararium-compile_boot");
     expect(names).toContain("lararium-compile_boot_receipt");
   });
 
@@ -150,7 +149,7 @@ describe("MCP stdio smoke", () => {
 
   test("tools/call minimal boot — closure is non-empty, entry is AGENTS", async () => {
     proc.stdin!.write(makeRequest(6, "tools/call", {
-      name: "lararium-compile_minimal_boot",
+      name: "lararium-compile_boot",
       arguments: {},
     }));
     const resp = await readResponse(proc, 10000) as {

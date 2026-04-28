@@ -38,7 +38,7 @@ export interface ValidationResult {
 }
 
 export interface BootArtifact {
-  artifact: "minimal-boot" | "full-boot";
+  artifact: "boot";
   compiledAt: string;
   entry: string;
   closure: ClosureEntry[];
@@ -192,7 +192,7 @@ export function buildBootClosure(
   return { topoUris, violations };
 }
 
-export function compileMinimalBoot(
+export function compileBoot(
   graph: MemeGraph,
   topoUris: string[],
   violations: string[][],
@@ -205,48 +205,13 @@ export function compileMinimalBoot(
     closureEntry(graph, uri, depthMap.get(uri) ?? 0, socketMap.get(uri) ?? "")
   );
 
-  const { interfaceIndex, invariantIndex } = buildInterfaceIndexes(graph, topoUris);
-
-  return {
-    artifact: "minimal-boot",
-    compiledAt: new Date().toISOString(),
-    entry: ENTRY_URI,
-    closure,
-    memeCount: closure.length,
-    locusCount: closure.length,
-    interfaceIndex: Object.fromEntries([...interfaceIndex.entries()].map(([k, v]) => [k, v.length])),
-    invariantIndex: Object.fromEntries([...invariantIndex.entries()].map(([k, v]) => [k, v.length])),
-    validation: validateClosure(closure, violations, graph),
-    kumuDefs,
-  };
-}
-
-export function compileFullBoot(
-  graph: MemeGraph,
-  topoUris: string[],
-  additionalUris: string[],
-  violations: string[][],
-  kumuDefs?: import("./ast.js").KumuDef[],
-): BootArtifact {
-  const socketMap = buildSocketMap(graph, topoUris);
-  const depthMap = buildDepthMap(graph, topoUris);
-  const topoSet = new Set(topoUris);
-
-  const closure: ClosureEntry[] = [
-    ...topoUris.map((uri) => closureEntry(graph, uri, depthMap.get(uri) ?? 0, socketMap.get(uri) ?? "")),
-    ...additionalUris.filter((uri) => !topoSet.has(uri)).map((uri) =>
-      closureEntry(graph, uri, depthMap.get(uri) ?? 3, socketMap.get(uri) ?? "")
-    ),
-  ];
-
-  const allUris = [...topoUris, ...additionalUris.filter((u) => !topoSet.has(u))];
-  const { interfaceIndex, invariantIndex } = buildInterfaceIndexes(graph, allUris);
-
   const allEdges: PranaEdge[] = [];
   for (const meme of graph.memes.values()) allEdges.push(...meme.edgesOut);
 
+  const { interfaceIndex, invariantIndex } = buildInterfaceIndexes(graph, topoUris);
+
   return {
-    artifact: "full-boot",
+    artifact: "boot",
     compiledAt: new Date().toISOString(),
     entry: ENTRY_URI,
     closure,
@@ -254,9 +219,10 @@ export function compileFullBoot(
     locusCount: closure.length,
     edgeCount: allEdges.length,
     pranalaEdges: allEdges.map((e) => ({ fromUri: e.fromUri, fromSocket: e.fromSocket, toUri: e.toUri, family: e.family, role: e.role })),
-    interfaceIndex: Object.fromEntries(interfaceIndex.entries()),
-    invariantIndex: Object.fromEntries(invariantIndex.entries()),
+    interfaceIndex: Object.fromEntries([...interfaceIndex.entries()].map(([k, v]) => [k, v.length])),
+    invariantIndex: Object.fromEntries([...invariantIndex.entries()].map(([k, v]) => [k, v.length])),
     validation: validateClosure(closure, violations, graph),
+    ...(kumuDefs !== undefined && { kumuDefs }),
   };
 }
 

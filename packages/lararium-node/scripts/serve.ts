@@ -134,7 +134,7 @@ async function buildBootProjection(
   snapshotMemes: SnapshotData,
 ): Promise<{ snapshot: unknown; roomId: string; receiptSha: string }> {
   const { renderAllViews } = await import("@lararium/tldraw");
-  const artifact: BootArtifact = runtime.compileMinimalBoot();
+  const artifact: BootArtifact = runtime.compileBoot();
   const receipt = await runtime.compileBootReceipt(artifact);
   const receiptSha = receipt.sha256.replace(/^sha256:/, "");
 
@@ -200,7 +200,7 @@ async function main() {
 
   // Meme list — rebuilds after reseed
   function buildMemeList() {
-    const artifact: BootArtifact = runtime.compileMinimalBoot();
+    const artifact: BootArtifact = runtime.compileBoot();
     return artifact.closure.map((e: { uri: string; depth?: number; kind?: string }) => ({
       uri: e.uri,
       depth: e.depth ?? 0,
@@ -348,7 +348,7 @@ async function main() {
   let reactionGraph = buildReactionGraph(runtime);
 
   function buildReactionGraph(rt: ReturnType<typeof createLarariumRuntime>): ReactionGraph {
-    const artifact: BootArtifact = rt.compileMinimalBoot();
+    const artifact: BootArtifact = rt.compileBoot();
     const edges = artifact.pranalaEdges ?? [];
     const bindings: ReactionBinding[] = extractReactionBindings(
       edges.map((e) => ({

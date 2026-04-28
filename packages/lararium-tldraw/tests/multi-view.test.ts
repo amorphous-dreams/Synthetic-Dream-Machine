@@ -7,7 +7,7 @@ import { memeFrameId, pageId } from "../src/records.js";
 // Minimal synthetic boot artifact for testing
 function makeArtifact() {
   return {
-    artifact: "minimal-boot" as const,
+    artifact: "boot" as const,
     entry: "lar:///AGENTS",
     compiledAt: "2026-01-01T00:00:00.000Z",
     memeCount: 3,
@@ -25,14 +25,14 @@ function makeArtifact() {
 
 function makeSnapshot(includeAhu = false): LarTLSnapshot {
   const frames = [
-    { type: "frame" as const, id: memeFrameId("lar:///AGENTS"), scope: "document" as const, pageId: pageId("minimal-boot"), parentId: null, uri: "lar:///AGENTS", name: "AGENTS", depth: 0, frameKind: "meme" as const, rating: "meme", implements: [] },
-    { type: "frame" as const, id: memeFrameId("lar:///ha.ka.ba/api/v0.1/mu"), scope: "document" as const, pageId: pageId("minimal-boot"), parentId: null, uri: "lar:///ha.ka.ba/api/v0.1/mu", name: "mu", depth: 1, frameKind: "meme" as const, rating: "meme", implements: [] },
-    { type: "frame" as const, id: memeFrameId("lar:///LARES"), scope: "document" as const, pageId: pageId("minimal-boot"), parentId: null, uri: "lar:///LARES", name: "LARES", depth: 1, frameKind: "data" as const, rating: "data", implements: [] },
+    { type: "frame" as const, id: memeFrameId("lar:///AGENTS"), scope: "document" as const, pageId: pageId("boot"), parentId: null, uri: "lar:///AGENTS", name: "AGENTS", depth: 0, frameKind: "meme" as const, rating: "meme", implements: [] },
+    { type: "frame" as const, id: memeFrameId("lar:///ha.ka.ba/api/v0.1/mu"), scope: "document" as const, pageId: pageId("boot"), parentId: null, uri: "lar:///ha.ka.ba/api/v0.1/mu", name: "mu", depth: 1, frameKind: "meme" as const, rating: "meme", implements: [] },
+    { type: "frame" as const, id: memeFrameId("lar:///LARES"), scope: "document" as const, pageId: pageId("boot"), parentId: null, uri: "lar:///LARES", name: "LARES", depth: 1, frameKind: "data" as const, rating: "data", implements: [] },
   ];
   return {
     version: 1,
     projectedAt: "2026-01-01T00:00:00.000Z",
-    pages: [{ type: "page", id: pageId("minimal-boot"), scope: "document", name: "Minimal Boot", compiledAt: "2026-01-01T00:00:00.000Z", memeCount: 3 }],
+    pages: [{ type: "page", id: pageId("boot"), scope: "document", name: "Boot", compiledAt: "2026-01-01T00:00:00.000Z", memeCount: 3 }],
     frames,
     arrows: [],
     notes: [],
@@ -87,7 +87,7 @@ describe("renderAllViews", () => {
     const emission = renderAllViews(artifact);
     expect(emission.pages).toHaveLength(3);
     const pageIds = emission.pages.map((p) => p.id);
-    expect(pageIds).toContain(pageId("minimal-boot"));
+    expect(pageIds).toContain(pageId("boot"));
     expect(pageIds).toContain(pageId("meme-detail"));
     expect(pageIds).toContain(pageId("graph"));
   });

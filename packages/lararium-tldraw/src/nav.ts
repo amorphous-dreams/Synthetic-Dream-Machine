@@ -111,7 +111,7 @@ export function switchToPage(editor: TldrawEditorLike, pageId: string): void {
 /**
  * Switch to the story-river page and reset camera to fit all.
  */
-export function goToStoryRiver(editor: TldrawEditorLike, pageId = "page:minimal-boot"): void {
+export function goToStoryRiver(editor: TldrawEditorLike, pageId = "page:boot"): void {
   switchToPage(editor, pageId);
   // Small delay allows tldraw to settle before zooming
   setTimeout(() => zoomToFitAll(editor), 50);

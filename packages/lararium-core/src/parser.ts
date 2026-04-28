@@ -120,7 +120,15 @@ function buildScansFromGrammar(sigils: SigilRule[]): SigilScan[] {
       const rx = safe(s.pragmaPattern, "g");
       if (rx) scans.push({ sigilName: s.name, ...extra, regex: rx, eventType: "pragma" });
     }
-    if (s.pattern && !s.openPattern) {
+    if (s.blockPattern) {
+      const rx = safe(s.blockPattern, "gs");
+      if (rx) scans.push({ sigilName: s.name, ...extra, regex: rx, eventType: "leaf" });
+    }
+    if (s.inlinePattern) {
+      const rx = safe(s.inlinePattern, "g");
+      if (rx) scans.push({ sigilName: s.name, ...extra, regex: rx, eventType: "leaf" });
+    }
+    if (s.pattern && !s.openPattern && !s.blockPattern && !s.inlinePattern) {
       const flags = s.name === "pranala" ? "gs" : "g";
       const rx = safe(s.pattern, flags);
       if (rx) scans.push({ sigilName: s.name, ...extra, regex: rx, eventType: "leaf" });

@@ -85,22 +85,12 @@ server.registerResource(
 );
 
 server.registerResource(
-  "lararium-boot-minimal",
-  "lar:///boot/minimal",
-  { title: "Lararium minimal boot artifact" },
+  "lararium-boot",
+  "lar:///boot",
+  { title: "Lararium boot artifact" },
   async () => {
-    const artifact = runtime.compileMinimalBoot();
-    return { contents: [{ uri: "lar:///boot/minimal", text: JSON.stringify(artifact, null, 2), mimeType: "application/json" }] };
-  },
-);
-
-server.registerResource(
-  "lararium-boot-full",
-  "lar:///boot/full",
-  { title: "Lararium full boot artifact" },
-  async () => {
-    const artifact = runtime.compileFullBoot();
-    return { contents: [{ uri: "lar:///boot/full", text: JSON.stringify(artifact, null, 2), mimeType: "application/json" }] };
+    const artifact = runtime.compileBoot();
+    return { contents: [{ uri: "lar:///boot", text: JSON.stringify(artifact, null, 2), mimeType: "application/json" }] };
   },
 );
 
@@ -109,7 +99,7 @@ server.registerResource(
   "lar:///boot/receipt",
   { title: "Lararium boot receipt" },
   async () => {
-    const artifact = runtime.compileMinimalBoot();
+    const artifact = runtime.compileBoot();
     const receipt = await runtime.compileBootReceipt(artifact);
     return { contents: [{ uri: "lar:///boot/receipt", text: JSON.stringify(receipt, null, 2), mimeType: "application/json" }] };
   },
@@ -181,25 +171,13 @@ server.registerTool(
 );
 
 server.registerTool(
-  "lararium-compile_minimal_boot",
+  "lararium-compile_boot",
   {
-    description: "Compile the minimal boot closure (Tier 0+1: BFS over control edges from AGENTS)",
+    description: "Compile the boot closure (BFS over control edges from AGENTS, with kumu defs)",
     inputSchema: {},
   },
   async () => {
-    const artifact = runtime.compileMinimalBoot();
-    return { content: [{ type: "text" as const, text: JSON.stringify(artifact, null, 2) }] };
-  },
-);
-
-server.registerTool(
-  "lararium-compile_full_boot",
-  {
-    description: "Compile the full boot artifact (Tier 0+1+2: control + relation expansion + carrier index)",
-    inputSchema: {},
-  },
-  async () => {
-    const artifact = runtime.compileFullBoot();
+    const artifact = runtime.compileBoot();
     return { content: [{ type: "text" as const, text: JSON.stringify(artifact, null, 2) }] };
   },
 );
@@ -211,7 +189,7 @@ server.registerTool(
     inputSchema: {},
   },
   async () => {
-    const artifact = runtime.compileMinimalBoot();
+    const artifact = runtime.compileBoot();
     const receipt = await runtime.compileBootReceipt(artifact);
     return { content: [{ type: "text" as const, text: JSON.stringify(receipt, null, 2) }] };
   },
@@ -227,7 +205,7 @@ server.registerPrompt(
     description: "Explain or inspect the current minimal boot closure",
   },
   async () => {
-    const artifact = runtime.compileMinimalBoot();
+    const artifact = runtime.compileBoot();
     const uris = artifact.closure.map((e) => e.uri).join("\n");
     const receipt = await runtime.compileBootReceipt(artifact);
     return {
@@ -269,18 +247,16 @@ server.registerPrompt(
   },
 );
 
-// tldraw projection tool — emits store-ready shape records for the minimal boot closure
+// tldraw projection tool — emits store-ready shape records for the boot closure
 server.registerTool(
   "lararium-render_tldraw",
   {
-    description: "Project the minimal boot closure into tldraw-ready shape records (story-river layout)",
-    inputSchema: {
-      boot: z.enum(["minimal", "full"]).optional().describe("Which boot artifact to project. Default: minimal"),
-    },
+    description: "Project the boot closure into tldraw-ready shape records (story-river layout)",
+    inputSchema: {},
   },
-  async ({ boot = "minimal" }) => {
+  async () => {
     try {
-      const artifact = boot === "full" ? runtime.compileFullBoot() : runtime.compileMinimalBoot();
+      const artifact = runtime.compileBoot();
       const readText = (uri: string): string | null => {
         try { return runtime.readResource(uri); } catch { return null; }
       };
@@ -304,13 +280,12 @@ server.registerTool(
   {
     description: "Evaluate a TiddlyWiki5 filter expression against the current boot closure. Returns matching meme URIs.\n\nExamples:\n  [all[memes]tag[lar:///ha.ka.ba/api/v0.1/pono/invariant]]\n  [all[memes]field:depth[0]]\n  [all[memes]nsort[depth]limit[5]]\n  [all[memes]field:rating[data]sort[title]]",
     inputSchema: {
-      expr:  z.string().describe("TW5 filter expression"),
-      boot:  z.enum(["minimal", "full"]).optional().describe("Which closure to filter. Default: minimal"),
+      expr: z.string().describe("TW5 filter expression"),
     },
   },
-  async ({ expr, boot = "minimal" }) => {
+  async ({ expr }) => {
     try {
-      const artifact = boot === "full" ? runtime.compileFullBoot() : runtime.compileMinimalBoot();
+      const artifact = runtime.compileBoot();
       const matched = await filterMemesTW(artifact.closure, expr);
       const lines = matched.map((e) => `${e.uri}  (depth:${e.depth} rating:${e.kind})`);
       return { content: [{ type: "text" as const, text: lines.join("\n") || "(no matches)" }] };
@@ -353,7 +328,7 @@ server.registerTool(
   },
   async ({ family }) => {
     try {
-      const artifact = runtime.compileMinimalBoot();
+      const artifact = runtime.compileBoot();
       const readText = (uri: string): string | null => {
         try { return runtime.readResource(uri); } catch { return null; }
       };

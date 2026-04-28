@@ -13,7 +13,7 @@
  *   1. fetch snapshot.json from URL (or use embedded bundle)
  *   2. createBrowserRuntime(snapshot) — hydrates MemeGraph from carrier texts
  *   3. buildBootClosure(graph) — BFS from AGENTS over control edges → topoUris
- *   4. compileMinimalBoot(graph, topoUris, violations) → BootArtifact
+ *   4. compileBoot(graph, topoUris, violations) → BootArtifact
  *   5. renderAllViews(artifact, { readText, rooms }) → TldrawEmission (3+ pages)
  *   6. LarApp ready — caller mounts tldraw with emission.pages + emission.shapes
  *
@@ -26,7 +26,7 @@
 
 import {
   buildBootClosure,
-  compileMinimalBoot,
+  compileBoot,
   compileBootReceipt,
   type BootArtifact,
   type BootReceipt,
@@ -94,7 +94,7 @@ export async function bootFromSnapshot(snapshot: LarSnapshot): Promise<LarApp> {
  */
 export async function bootFromRuntime(runtime: BrowserRuntime): Promise<LarApp> {
   const { topoUris, violations } = buildBootClosure(runtime.graph);
-  const artifact = compileMinimalBoot(runtime.graph, topoUris, violations);
+  const artifact = compileBoot(runtime.graph, topoUris, violations);
   const receipt = await compileBootReceipt(artifact);
 
   return { runtime, artifact, receipt, emission: null };

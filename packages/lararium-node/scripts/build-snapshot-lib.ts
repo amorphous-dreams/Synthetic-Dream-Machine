@@ -34,8 +34,7 @@ export async function buildSnapshot(runtime: LarariumRuntime): Promise<BuiltSnap
     memes[carrier.uri] = { text: readFileSync(abs, "utf8"), laresRelPath: resolution.laresRelPath };
   }
 
-  const artifact = runtime.compileMinimalBoot();
-  const fullArtifact = runtime.compileFullBoot();
+  const artifact = runtime.compileBoot();
 
   const roomFilters: Record<string, string> = {};
   for (const room of DEFAULT_ROOMS) roomFilters[room.id] = room.filter;
@@ -49,6 +48,6 @@ export async function buildSnapshot(runtime: LarariumRuntime): Promise<BuiltSnap
     rooms,
     bootMemeCount: artifact.memeCount,
     memeCount: artifact.memeCount,
-    edgeCount: fullArtifact.edgeCount ?? 0,
+    edgeCount: artifact.edgeCount ?? 0,
   };
 }
