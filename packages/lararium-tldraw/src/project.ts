@@ -6,7 +6,7 @@
  * separately by layout.ts, which reads the snapshot and returns a LarTLLayout.
  */
 
-import { type BootArtifact } from "@lararium/core";
+import { type BootArtifact, scalarToStageBand } from "@lararium/core";
 import { parsePranalaEdges } from "@lararium/core";
 
 import {
@@ -93,6 +93,7 @@ export function projectToTldraw(artifact: BootArtifact, opts: ProjectOptions = {
         depth,
         frameKind: "meme",
         rating: entry.kind,
+        stage: scalarToStageBand(entry.confidence),
         implements: entry.implements,
         ...(carrierText !== undefined && { carrierText }),
         ...(templateProps !== undefined && { templateProps }),
@@ -141,6 +142,7 @@ export function projectToTldraw(artifact: BootArtifact, opts: ProjectOptions = {
               depth: depth + 0.5,
               frameKind: "ahu",
               rating: "socket",
+              stage: scalarToStageBand(entry.confidence),
               implements: [],
             });
             // Socket port shape: stable arrow binding target, repositioned by applyZoomTemplate

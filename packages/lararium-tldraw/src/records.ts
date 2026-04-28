@@ -175,6 +175,8 @@ export interface LarTLFrame {
   readonly frameKind: "meme" | "ahu";
   /** carrier rating: kapu | ano | meme | data | noise */
   readonly rating: string;
+  /** UX stage band derived from carrier confidence scalar — GR | OS | US | CS | DS (rendering annotation only, not a gate condition) */
+  readonly stage: string;
   /** implements list from carrier */
   readonly implements: readonly string[];
   /** Full carrier text — stored in tldraw meta so the CRDT carries it natively. */

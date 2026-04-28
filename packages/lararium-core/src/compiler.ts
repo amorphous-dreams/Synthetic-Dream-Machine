@@ -26,6 +26,8 @@ export interface ClosureEntry {
   implements: string[];
   contentHash: string;
   depth: number;
+  /** Operator-set confidence scalar from carrier TOML #iam block. 0 if absent. */
+  confidence: number;
 }
 
 export interface ValidationResult {
@@ -96,7 +98,7 @@ function buildSocketMap(graph: MemeGraph, topoUris: string[]): Map<string, strin
 function closureEntry(graph: MemeGraph, uri: string, depth: number, hydrationSocket: string): ClosureEntry {
   const meme = graph.memes.get(uri);
   if (!meme) {
-    return Object.freeze({ uri, laresRelPath: null, kind: "unknown", virtual: false, exists: false, role: "", hydrationSocket, implements: [], contentHash: "", depth });
+    return Object.freeze({ uri, laresRelPath: null, kind: "unknown", virtual: false, exists: false, role: "", hydrationSocket, implements: [], contentHash: "", depth, confidence: 0 });
   }
   return Object.freeze({
     uri,
@@ -109,6 +111,7 @@ function closureEntry(graph: MemeGraph, uri: string, depth: number, hydrationSoc
     implements: memeImplements(meme),
     contentHash: meme.contentHash,
     depth,
+    confidence: typeof meme.metadata["confidence"] === "number" ? meme.metadata["confidence"] : 0,
   });
 }
 

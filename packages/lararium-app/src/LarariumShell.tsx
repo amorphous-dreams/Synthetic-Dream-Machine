@@ -25,7 +25,7 @@ import type { LarViewAction, ZoomLevel } from "@lararium/tldraw";
 import { LarariumCanvas } from "./LarariumCanvas.js";
 import { MemeDetailPanel } from "./MemeDetailPanel.js";
 import { LarariumCtx, useLararium, shortUri, useTheme } from "./lararium-context.js";
-import { buildKumuRegistry, type KumuRegistry } from "@lararium/core";
+import { parseMemeCarrier, collectKumuDefs, buildKumuRegistry, type KumuRegistry } from "@lararium/core";
 import "./lararium-theme.css";
 import type { MemeEntry } from "./App.js";
 
@@ -167,12 +167,23 @@ export function LarariumShell({ wsUrl, memes, onMemes }: ShellProps) {
   const setEditor = useCallback((e: Editor | null) => setEditorState(e), []);
   const [kumuRegistry, setKumuRegistry] = useState<KumuRegistry | null>(null);
 
+  // Build kumuRegistry from carrier text already in the CRDT store.
+  // Fires once editor mounts and the meme list is populated (sync done).
+  // CRDT-native: no HTTP round-trip — shapes carry meta.carrierText from projection.
   useEffect(() => {
-    fetch("/api/kumu-defs")
-      .then((r) => r.json())
-      .then((defs) => setKumuRegistry(buildKumuRegistry(defs)))
-      .catch(() => { /* registry stays null; typed holes will render */ });
-  }, []);
+    if (!editor || memes.length === 0) return;
+    const shapes = editor.getCurrentPageShapes();
+    const allDefs: ReturnType<typeof collectKumuDefs> = [];
+    for (const shape of shapes) {
+      const meta = shape.meta as Record<string, unknown> | undefined;
+      if (meta?.frameKind !== "meme") continue;
+      const uri   = meta.uri as string | undefined;
+      const text  = meta.carrierText as string | undefined;
+      if (!uri || !text) continue;
+      allDefs.push(...collectKumuDefs(uri, parseMemeCarrier(uri, text)));
+    }
+    if (allDefs.length > 0) setKumuRegistry(buildKumuRegistry(allDefs));
+  }, [editor, memes.length]);
 
   // ⌘K / Ctrl+K → palette   |   ` (backtick) → canvas mode toggle
   useEffect(() => {

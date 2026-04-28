@@ -64,7 +64,40 @@ export interface LiveMsgError {
   message: string;
 }
 
-export type LiveServerMsg = LiveMsgSnapshot | LiveMsgDelta | LiveMsgEvent | LiveMsgError;
+/**
+ * Boot receipt — causal island join artifact.
+ *
+ * Sent by the server BEFORE any CRDT frames flow. This is the "shape of the
+ * visible world at join time" (federated-causal-islands lifecycle law).
+ * Not a full CRDT sync — a snapshot of what this peer is currently authorized to see.
+ *
+ * Usable as a prompt cache key via receiptHash.
+ * The offset belongs to the edge island: reconnect resumes from here, not from zero.
+ */
+export interface LiveMsgBootReceipt {
+  type:          "boot-receipt";
+  /** Edge island ID for this connection: "edge:${sourceNode}:${targetNode}:${epoch}" */
+  edgeIslandId:  string;
+  /** ISO timestamp when this receipt was issued. */
+  issuedAt:      string;
+  /** Visible room IDs at join time (derived from Orichalcum authority graph). */
+  visibleRooms:  string[];
+  /** Meme count visible to this peer at join time. */
+  visibleMemes:  number;
+  /** Monotonic offset — resume from here on reconnect (not from zero). */
+  offset:        number;
+  /** SHA-256 of the boot artifact receipt — prompt cache key. */
+  receiptHash:   string;
+  /** Authority mode for this session. "local-operator" in development. */
+  authorityMode: "local-operator" | "ucan-delegated";
+}
+
+export type LiveServerMsg =
+  | LiveMsgSnapshot
+  | LiveMsgDelta
+  | LiveMsgEvent
+  | LiveMsgError
+  | LiveMsgBootReceipt;
 
 // ---------------------------------------------------------------------------
 // Client → Server messages

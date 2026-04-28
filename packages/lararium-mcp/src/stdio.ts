@@ -196,11 +196,13 @@ server.registerTool(
   },
   async () => {
     try {
-      const [rooms, memes] = await Promise.all([
-        fetchCanvas<{ rooms: string[]; activeBootRoomId: string }>("/api/rooms"),
-        fetchCanvas<Array<{ uri: string; depth: number; kind: string }>>("/api/memes").catch(() => null),
-      ]);
-      const text = JSON.stringify({ rooms: rooms.rooms, activeBootRoomId: rooms.activeBootRoomId, memeCount: memes?.length ?? null }, null, 2);
+      const rooms = await fetchCanvas<{ rooms: string[]; activeBootRoomId: string }>("/api/rooms");
+      const artifact = runtime.compileBoot();
+      const text = JSON.stringify({
+        rooms: rooms.rooms,
+        activeBootRoomId: rooms.activeBootRoomId,
+        memeCount: artifact.memeCount,
+      }, null, 2);
       return { content: [{ type: "text" as const, text }] };
     } catch (e) {
       return { content: [{ type: "text" as const, text: `Canvas unreachable: ${String(e)}` }], isError: true };

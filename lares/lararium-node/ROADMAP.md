@@ -12,7 +12,7 @@ register = "S"
 manaoio = 0.82
 mana = 0.88
 manao = 0.86
-role = "docs meme — migration roadmap and milestone log for Lararium Node; Milestones 1–8 complete; 229/229 tests green; socket port shapes + ownership skeleton + kukali + kumuDefs pipeline + resolveWidgetTree all shipped; M9 planned (widget tree render pass, browser smoke, spatial family, canon-promotion surface, wiki-recipe carriers)"
+role = "docs meme — migration roadmap and milestone log for Lararium Node; Milestones 1–8 complete; 229/229 tests green; socket port shapes + ownership skeleton + kukali + kumuDefs pipeline + resolveWidgetTree all shipped; M9 planned (widget tree render pass, browser smoke, spatial family, canon-promotion surface, wiki-recipe carriers); Track D federation research complete — Orichalcum capability model + federated causal island law locked as invariant pono memes; Orichalcum Phase 1 implementation deferred until after M9"
 cacheable = false
 retain = true
 invariant = false
@@ -1221,7 +1221,7 @@ Forked from `x-tiddlywiki-filter`. Key departures:
 - Concurrency model: Verse 1:1 alias mapping (`hui`=`sync`, `heihei`=`race`, `puka`=`rush`, `lele`=`branch`)
 - `kapu`/`pono` distinction: `kapu` = render-layer boundary posture; `pono` = compile-layer structural rule assertion
 - Gap 1 (`constraint` family sugar) closed: `pono` registered `[SC]`
-- Register system: `[C]` (operator canon), `[SC]` (Synthetic Canon), `[S]` (synthesis/proposal)
+- Register system: `[C]` (operator canon), `[SC]` (Synthetic Canon), `[S]` (synthesis/proposal), `[SP]` (speculative/unproven), `[P]` (provisional — session-local candidate, dissolves rapidly)
 - `[CS]` → `[SC]` rename throughout all grammar files
 
 **Research carrier (`lares/ha-ka-ba/docs/pono/sigil-grammar-research.md`) — new carrier:**

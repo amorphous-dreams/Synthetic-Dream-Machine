@@ -213,6 +213,67 @@ export const SCOPE_TO_LADDER: Record<Scope5, Ladder5> = {
 };
 
 // ---------------------------------------------------------------------------
+// Law of Fives — rating and stage ladders
+//
+// rating = structural quality of the carrier (Noise→Data→Meme→Ano→Kapu)
+//   Used in federation gate: only Meme+ carriers federate.
+//
+// stage  = UX/rendering annotation (GR→OS→US→CS→DS, from confidence scalar)
+//   Used in masks/voices layer: color temperature, label prefix, arrow opacity.
+//   NOT a federation gate condition. Room recipes MAY filter by stage as
+//   operator-configured predicates, but stage does not appear in the
+//   hardcoded visibility predicate or Orichalcum capability caveats.
+// ---------------------------------------------------------------------------
+
+/** Structural quality ladder — lowest (noise) to highest (kapu). Gate: ≥meme to federate. */
+export const RATING_5 = ["noise", "data", "meme", "ano", "kapu"] as const;
+export type Rating5 = typeof RATING_5[number];
+
+/**
+ * UX stage ladder — masks/voices rendering annotation only.
+ * Maps onto the confidence scalar: GR 0.01–0.19, OS 0.20–0.39,
+ * US 0.40–0.59, CS 0.60–0.79, DS 0.80–1.00.
+ * NOT a federation gate condition.
+ */
+export const STAGE_5 = ["GR", "OS", "US", "CS", "DS"] as const;
+export type Stage5 = typeof STAGE_5[number];
+
+/**
+ * Map a raw scalar to its Stage5 UX band label.
+ * The scalar is a separate concept (operator-set or derived); Stage5 is the
+ * masks/voices rendering label derived from it. Two distinct things.
+ */
+export function scalarToStageBand(scalar: number): Stage5 {
+  if (scalar >= 0.80) return "DS";
+  if (scalar >= 0.60) return "CS";
+  if (scalar >= 0.40) return "US";
+  if (scalar >= 0.20) return "OS";
+  return "GR";
+}
+
+/** Stage5 band → representative scalar midpoint (for display and defaults). */
+export const STAGE_BAND_MID: Record<Stage5, number> = {
+  GR: 0.10,
+  OS: 0.30,
+  US: 0.50,
+  CS: 0.70,
+  DS: 0.90,
+};
+
+/**
+ * Rating5 → canonical tldraw color name.
+ * Used by template props when color === "rating".
+ * Noise/Data are node-local only and render muted; Meme+ federate.
+ */
+export const RATING_COLOR: Record<Rating5, string> = {
+  noise: "grey",
+  data:  "blue",
+  meme:  "green",
+  ano:   "orange",
+  kapu:  "violet",
+};
+
+// ---------------------------------------------------------------------------
 // Stances (Syad perspectives) — five epistemic standpoints.
 // Register measures confidence *within* the active stance; not universal truth.
 // ---------------------------------------------------------------------------

@@ -16,6 +16,7 @@ import type {
   TLPage,
 } from "tldraw";
 import { getIndexAbove, getIndicesAbove, type IndexKey } from "@tldraw/utils";
+import { RATING_COLOR, type Rating5 } from "@lararium/core";
 import { type LarTLSnapshot, type LarTLPage, type LarProjectionId } from "./records.js";
 import { type LarTLLayout, type FrameGeometry } from "./layout.js";
 
@@ -84,11 +85,8 @@ function familyColor(family: string): TLColor {
 }
 
 function frameRatingColor(rating: string): TLColor {
-  if (rating === "kapu")  return "orange";
-  if (rating === "ano")   return "blue";
-  if (rating === "meme")  return "violet";
-  if (rating === "data")  return "grey";
-  return "black";
+  const color = RATING_COLOR[rating as Rating5];
+  return (color as TLColor | undefined) ?? "black";
 }
 
 // ---------------------------------------------------------------------------
@@ -283,7 +281,7 @@ export function emitTldrawRecords(
       parentId: defaultPageId,
       isLocked: isOwn,
       opacity:  isOwn ? 0 : 1,
-      meta:     { family: arrow.family, role: arrow.role, isOwnership: isOwn, ...(isOwn && { ownsMemeId: scopeId(arrow.fromFrameId) }) },
+      meta:     { family: arrow.family, role: arrow.role, isOwnership: isOwn, ...(isOwn && { ownsMemeId: scopeId(arrow.fromFrameId) }), islandLifecycle: "boot-receipt" },
       props: {
         kind:           "arc",
         // start/end vectors are placeholders — overridden by bindings at render time

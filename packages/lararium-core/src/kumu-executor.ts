@@ -38,13 +38,75 @@ export type KumuResult =
   | { readonly ok: true;  readonly nodes: readonly MemeAstNode[] }
   | { readonly ok: false; readonly error: KumuError; readonly detail?: string };
 
+// ---------------------------------------------------------------------------
+// Kumu Instance Identity (Tier 1 causal island law)
+//
+// "Instance identity provisioned on first papalohe edge declaration,
+//  not on kahea invocation." — federated-causal-islands Tier Map
+//
+// A kumu instance that suspends at kukali needs a stable ID to re-attach
+// when the trigger fires. Without identity, suspended results silently drop.
+// ---------------------------------------------------------------------------
+
+/**
+ * Stable ID for a kumu instance.
+ * Format: "kumu:${carrierUri}:${kumuName}:${papaloheSlot}"
+ *
+ * Provisioned on first papalohe edge declaration (not on kahea invocation).
+ * If no papalohe slot is declared, the instance is anonymous (non-causal-island).
+ */
+export type KumuInstanceId = `kumu:${string}`;
+
+export function makeKumuInstanceId(
+  carrierUri:    string,
+  kumuName:      string,
+  papaloheSlot:  string,
+): KumuInstanceId {
+  return `kumu:${carrierUri}:${kumuName}:${papaloheSlot}`;
+}
+
+/** Lifecycle mirrors the edge island lifecycle for Tier 1 kumu islands. */
+export type KumuInstanceLifecycle = "boot-receipt" | "live-tail" | "revoked";
+
+export interface KumuInstanceState {
+  readonly id:                  KumuInstanceId;
+  readonly kumuName:            string;
+  readonly lifecycle:           KumuInstanceLifecycle;
+  readonly lastResult:          KumuResult | null;
+  /**
+   * If lifecycle === "boot-receipt" and the kumu suspended at kukali,
+   * this is the trigger name to subscribe to for live-tail transition.
+   */
+  readonly suspendedOnTrigger:  string | null;
+}
+
+/**
+ * Suspension subscription — bridge from a suspended kumu result to the
+ * ReactionGraph. When the trigger fires, call resume() to re-execute.
+ */
+export interface KumuSuspension {
+  readonly instanceId:  KumuInstanceId;
+  /** URI of the carrier that owns this kumu instance. */
+  readonly fromUri:     string;
+  /** Trigger name from the kukali node (the papalohe slot to subscribe to). */
+  readonly trigger:     string;
+  /** Re-execute the kumu. Called by ReactionGraph handler on trigger fire. */
+  readonly resume:      () => Promise<KumuResult>;
+}
+
 /** Immutable execution context for one kumu island invocation. */
 export interface KumuContext {
   /** Resolved parameter bindings — the @editable surface. */
-  readonly props:    Readonly<Record<string, string>>;
+  readonly props:       Readonly<Record<string, string>>;
   /** Recursion depth — incremented by value, never mutated. */
-  readonly depth:    number;
-  readonly registry: KumuRegistry;
+  readonly depth:       number;
+  readonly registry:    KumuRegistry;
+  /**
+   * Causal island identity for this kumu execution.
+   * Null for anonymous (non-papalohe) invocations.
+   * Provisioned on first papalohe edge declaration — not on kahea invocation.
+   */
+  readonly instanceId?: KumuInstanceId;
 }
 
 // ---------------------------------------------------------------------------

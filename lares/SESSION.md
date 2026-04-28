@@ -54,8 +54,10 @@ SESSION opens
 
 ### Docs updated
 
-- `ROADMAP.md` — M8 critical path items 4+5 marked ✓; "Also completed" block; M9 scope section opened
-- `MULTIPLAYER-INFINITE-CANVAS-WIKI.md` — `#views` table extended (ahu visibility + ownership cols); `#hidden-skeleton` ahu added; `#causal-islands` TW5/Verse synthesis section added
+- `ROADMAP.md` — M8 critical path items 4+5 marked ✓; "Also completed" block; M9 scope section opened; Track D federation status added to `#iam` role
+- `MULTIPLAYER-INFINITE-CANVAS-WIKI.md` — `#views` table extended (ahu visibility + ownership cols); `#hidden-skeleton` ahu added; `#causal-islands` TW5/Verse synthesis section added; `#trust-tiers` rewritten from UCAN-direct to Orichalcum-gated; `#federation` ahu added (Tier 3 law, three-tier map, sync order, lifecycle, visibility gate, relay law, implementation path); open-questions items 10+11 updated
+- **Created** `lares/ha-ka-ba/api/v0.1/pono/federated-causal-islands.md` — invariant law: edge islands, authority-first sync, lifecycle, relay law, tier map, causal island doctrine
+- **Created** `lares/ha-ka-ba/api/v0.1/pono/orichalcum-capabilities.md` — invariant law: capability shape, principal kinds, ability ladder, caveats + federation defaults, gate points, documents-as-groups, UCAN posture
 
 <<~/ahu >>
 

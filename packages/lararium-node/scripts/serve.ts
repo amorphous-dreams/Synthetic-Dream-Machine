@@ -9,9 +9,7 @@
  *   - Static assets from lararium-app/dist/ served over HTTP on the same port
  *
  * API routes:
- *   GET /api/memes          — minimal boot meme list for command palette
- *   GET /api/carrier        — raw carrier text for a lar URI (?uri=lar:///...)
- *   GET /api/kumu-defs      — KumuDef[] from the active boot artifact
+ *   GET /api/rooms          — live room registry (MCP canvas bridge)
  *   GET /admin/reseed       — force-evict + delete SQLite for a room, reseed on next WS connect
  *                             ?roomId=boot (default: current boot room alias)
  *
@@ -41,6 +39,9 @@ import {
   ReactionGraph,
   type ReactionBinding,
   type LiveMsgEvent,
+  type LiveMsgBootReceipt,
+  AuthorityFirstGuard,
+  makeEdgeIslandId,
   buildKumuRegistry,
 } from "@lararium/core";
 
@@ -135,7 +136,7 @@ type SnapshotData = Awaited<ReturnType<typeof buildSnapshot>>;
 async function buildBootProjection(
   runtime: ReturnType<typeof createLarariumRuntime>,
   snapshotMemes: SnapshotData,
-): Promise<{ snapshot: unknown; roomId: string; receiptSha: string; kumuDefs: import("@lararium/core").KumuDef[] }> {
+): Promise<{ snapshot: unknown; roomId: string; receiptSha: string; memeCount: number; kumuDefs: import("@lararium/core").KumuDef[] }> {
   const { renderAllViews } = await import("@lararium/tldraw");
   const artifact: BootArtifact = runtime.compileBoot();
   const receipt = await runtime.compileBootReceipt(artifact);
@@ -167,6 +168,7 @@ async function buildBootProjection(
     snapshot: { store, schema: DEFAULT_INITIAL_SNAPSHOT.schema },
     roomId: `boot-${receiptSha.slice(0, 16)}`,
     receiptSha,
+    memeCount: artifact.memeCount,
     kumuDefs: artifact.kumuDefs ?? [],
   };
 }
@@ -200,22 +202,10 @@ async function main() {
 
   const activeBootRoomId = bootProjection?.roomId ?? "boot";
   const bootSnapshot = bootProjection?.snapshot;
-  let activeKumuDefs = bootProjection?.kumuDefs ?? [];
 
   // Also maintain a stable alias "boot" → current content-addressed id for WS URL injection
   // (clients bookmark the stable alias; server redirects or forwards as needed)
   getOrCreateRoom(activeBootRoomId, bootSnapshot);
-
-  // Meme list — rebuilds after reseed
-  function buildMemeList() {
-    const artifact: BootArtifact = runtime.compileBoot();
-    return artifact.closure.map((e: { uri: string; depth?: number; kind?: string }) => ({
-      uri: e.uri,
-      depth: e.depth ?? 0,
-      kind: e.kind ?? "meme",
-    }));
-  }
-  let memeList = buildMemeList();
 
   // HTTP server
   const httpServer = createServer(async (req: IncomingMessage, res: ServerResponse) => {
@@ -224,30 +214,6 @@ async function main() {
     const params = new URL(url, `http://${HOST}:${PORT}`).searchParams;
 
     // ── API ────────────────────────────────────────────────────────────────
-    if (pathname === "/api/memes") {
-      return json(res, memeList);
-    }
-
-    if (pathname === "/api/carrier") {
-      const uri = params.get("uri");
-      if (!uri) return json(res, { error: "missing uri param" }, 400);
-      try {
-        const text = runtime.readResource(uri);
-        res.writeHead(200, {
-          "Content-Type": "text/plain; charset=utf-8",
-          "Access-Control-Allow-Origin": "*",
-        });
-        res.end(text);
-      } catch {
-        return json(res, { error: "not found", uri }, 404);
-      }
-      return;
-    }
-
-    if (pathname === "/api/kumu-defs") {
-      return json(res, activeKumuDefs);
-    }
-
     if (pathname === "/api/rooms") {
       return json(res, {
         activeBootRoomId,
@@ -271,8 +237,6 @@ async function main() {
           snapshotMemes = await buildSnapshot(runtime);
           const fresh = await buildBootProjection(runtime, snapshotMemes);
           getOrCreateRoom(fresh.roomId, fresh.snapshot);
-          memeList = buildMemeList();
-          activeKumuDefs = fresh.kumuDefs;
           return json(res, { reseeded: fresh.roomId, sha: fresh.receiptSha, deleted });
         } catch (e) {
           return json(res, { error: String(e) }, 500);
@@ -314,6 +278,35 @@ async function main() {
     // Tag socket for reaction-graph broadcast targeting
     (ws as WebSocket & { _larariumRoomId?: string })._larariumRoomId = roomId;
 
+    // Authority-first sync order — step 1: authenticate peer (bootstrap local-operator)
+    const guard = new AuthorityFirstGuard();
+    guard.advance("authenticate-peer");
+
+    // Step 2: Orichalcum authority graph — in dev, local-operator passes immediately
+    guard.advance("sync-authority-graph");
+
+    // Step 3: derive visible rooms + step 4: manifest
+    // For local-operator: all rooms are visible; skip to manifest
+    guard.advance("sync-collection-manifest");
+
+    // Send boot receipt BEFORE handing off to tldraw CRDT room.
+    // This is the "join artifact" — the shape of the visible world at join time.
+    // Clients use receiptHash as a prompt cache key and offset for delta resumption.
+    if (bootProjection) {
+      const edgeIslandId = makeEdgeIslandId("lararium-node", sessionId.slice(0, 8), bootProjection.receiptSha.slice(0, 8));
+      const bootReceipt: LiveMsgBootReceipt = {
+        type:          "boot-receipt",
+        edgeIslandId,
+        issuedAt:      new Date().toISOString(),
+        visibleRooms:  ["system", "invariants", "graph", "entry"],
+        visibleMemes:  bootProjection.memeCount,
+        offset:        0,
+        receiptHash:   bootProjection.receiptSha,
+        authorityMode: "local-operator",
+      };
+      if (ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify(bootReceipt));
+    }
+
     const buffered: import("ws").RawData[] = [];
     const buffer = (msg: import("ws").RawData) => buffered.push(msg);
     ws.on("message", buffer);
@@ -327,7 +320,8 @@ async function main() {
     ws.off("message", buffer);
     for (const msg of buffered) ws.emit("message", msg);
 
-    // Reaction graph "fire" messages — client sends { type:"fire", fromUri, trigger, payload? }
+    // Reaction graph "fire" messages — guard: only allowed in "live" state
+    // (guard reached "live" after step 4 above; this is the delta streaming phase)
     ws.on("message", (raw) => {
       let msg: unknown;
       try { msg = JSON.parse(raw.toString()); } catch { return; }
@@ -430,7 +424,6 @@ async function main() {
         const fresh = await buildBootProjection(runtime, snapshotMemes);
         evictRoom(activeBootRoomId);
         getOrCreateRoom(fresh.roomId, fresh.snapshot);
-        memeList = buildMemeList();
         reactionGraph = buildReactionGraph(runtime);
         console.log(`[lararium-serve] reseeded → ${fresh.roomId}`);
         // Notify connected clients via reaction graph broadcast — they refresh to new room

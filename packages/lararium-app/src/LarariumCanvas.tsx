@@ -5,6 +5,7 @@ import { useSync } from "@tldraw/sync";
 import "tldraw/tldraw.css";
 import type { LarViewState, LarViewAction, TldrawEditorLike, ZoomLevel } from "@lararium/tldraw";
 import { goToStoryRiver, goToGraph, goToRoom, zoomToMeme, classifyZoom } from "@lararium/tldraw";
+import { RATING_COLOR, type Rating5 } from "@lararium/core";
 import { LarariumMenuPanel, LarariumSharePanel, LarariumHelperButtons, useLararium } from "./lararium-context.js";
 
 // Wiki mode: suppress tldraw chrome; Lararium slot components fill the UI.
@@ -108,12 +109,8 @@ function applyZoomTemplate(editor: TldrawEditor, level: ZoomLevel) {
 
 function ratingFromShape(shape: ReturnType<TldrawEditor["getCurrentPageShapes"]>[number]): string {
   const meta = shape.meta as Record<string, unknown> | undefined;
-  const rating = meta?.rating as string | undefined;
-  if (rating === "kapu")  return "orange";
-  if (rating === "ano")   return "blue";
-  if (rating === "meme")  return "violet";
-  if (rating === "data")  return "grey";
-  return "black";
+  const rating = (meta?.rating as string | undefined)?.toLowerCase() as Rating5 | undefined;
+  return (rating && RATING_COLOR[rating]) ?? "black";
 }
 
 function syncNavState(editor: TldrawEditor, navState: LarViewState) {

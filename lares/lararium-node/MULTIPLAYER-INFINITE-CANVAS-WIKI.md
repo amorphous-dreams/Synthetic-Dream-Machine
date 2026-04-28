@@ -101,26 +101,28 @@ On first connection to a new room, the server:
 
 ## Trust Tiers and Access Control
 
-Four tiers, promotion is UCAN-based (capability token delegation chain), not web2 role assignment:
+Four tiers. Promotion is gated by **Orichalcum capabilities** (see `lar:///ha.ka.ba/api/v0.1/pono/orichalcum-capabilities`) — not web2 role assignment. The Orichalcum profile is UCAN-compatible at the wire boundary; Lararium-native caveats (`rating`, `manaoio`, `kapu-scope`, `epoch`) govern semantic authority beyond crypto validity. Stage band is a UX rendering annotation — it is NOT an Orichalcum gate condition.
 
-| Tier | Identity | Canvas access | Room access |
-|------|----------|---------------|-------------|
-| **anon** | Ephemeral session (no DID) | Lares chat rooms only | No boot room |
-| **user** | Self-sovereign DID | User-owned lararium rooms | No boot room |
-| **operator** | Promoted DID (delegated UCAN) | Full boot room (read + pending edits) | Yes |
-| **admin** | Root DID (UCAN issuer) | Full boot room (read + canon promotion) | Yes |
+| Tier | Identity | Canvas access | Room access | Orichalcum ability |
+|------|----------|---------------|-------------|-------------------|
+| **anon** | Ephemeral session (no DID) | Lares chat rooms only | No boot room | `read` (public recipe only) |
+| **user** | Self-sovereign DID | User-owned lararium rooms | No boot room | `read + propose` |
+| **operator** | Promoted DID (delegated capability) | Full boot room (read + pending edits) | Yes | `read + sync + write + propose` |
+| **admin** | Root DID (capability issuer) | Full boot room (read + canon promotion) | Yes | `promote + admin + revoke` |
 
-**UCAN gate at WebSocket handshake:** Before `handleSocketConnect`, verify the presented UCAN chain against the room's required capability. Reject with WS close code 4003 on failure.
+**Orichalcum gate at room join:** Before `handleSocketConnect`, verify the presented Orichalcum capability (UCAN-shaped at wire) against the room's required ability and Lararium caveats. Reject with WS close code 4003 on failure.
 
 ```
-ws://host/rooms/:roomId?sessionId=X&ucan=<JWT-encoded-UCAN>
+ws://host/rooms/:roomId?sessionId=X&cap=<capability-proof>
 ```
 
-Server DID is stable (Ed25519 keypair, generated once, stored in `.lararium-data/`). This is the UCAN audience for all room capabilities.
+Server principal is stable (Ed25519 keypair, generated once, stored in `.lararium-data/`). This is the Orichalcum audience for all room capabilities.
 
-**Anon path:** No UCAN required for lares chat rooms. Ephemeral signed nonce (short TTL) for rate limiting only.
+**Anon path:** No capability required for public lares chat rooms. Ephemeral signed nonce (short TTL) for rate limiting only.
 
-**Single-user-multi-session:** UCAN is scoped to the DID, not the session. Multiple tabs with the same identity have the same capability level automatically.
+**Single-user-multi-session:** Capability is scoped to the principal identity, not the session. Multiple tabs with the same identity share the same capability level automatically.
+
+**Room WebSocket connections are NOT edge islands.** A room connection is session-scoped and ephemeral. An edge island is a named, capability-gated, durable-offset causal boundary between two Lares nodes — a different architectural layer (see `lar:///ha.ka.ba/api/v0.1/pono/federated-causal-islands`).
 
 _Status: design only. Not yet implemented._
 
@@ -157,15 +159,37 @@ _Status: design only. Not yet implemented._
 
 **Current implementation (shipped 2026-04-28):** One tldraw page per room (`page:boot`). View "modes" are zoom-level gates — shape props are batch-updated via `applyZoomTemplate()` on threshold crossings, not by switching pages. Five zoom levels correspond to five kumu template carriers (`meme-strategic` through `meme-action`); each meme frame carries `meta.templateProps` for all five levels, seeded at projection time from the `KumuRegistry`.
 
-**Zoom-template routing (active):**
+**Zoom-template routing (active) — Law of Fives axis 1:**
 
-| Level | Threshold | Template | ahu visible | Ownership arrows |
-|---|---|---|---|---|
-| strategic | < 0.15 | `meme-strategic` | ✗ (opacity 0) | ✗ |
-| operational | 0.15–0.35 | `meme-operational` | ✗ | ✗ |
-| tactical | 0.35–0.80 | `meme-tactical` | ✗ | ✗ |
-| combat | 0.80–1.50 | `meme-combat` | ✓ | ✓ (opacity 0.3) |
-| action | ≥ 1.50 | `meme-action` | ✓ | ✓ (opacity 0.3) |
+| Level | Threshold | Template | ahu visible | Ownership arrows | OODA-HA phase |
+|---|---|---|---|---|---|
+| strategic | < 0.15 | `meme-strategic` | ✗ (opacity 0) | ✗ | aftermath |
+| operational | 0.15–0.35 | `meme-operational` | ✗ | ✗ | observe |
+| tactical | 0.35–0.80 | `meme-tactical` | ✗ | ✗ | orient |
+| combat | 0.80–1.50 | `meme-combat` | ✓ | ✓ (opacity 0.3) | decide |
+| action | ≥ 1.50 | `meme-action` | ✓ | ✓ (opacity 0.3) | act |
+
+**Rating and stage band rendering — Law of Fives axes 2 + 3:**
+
+Rating (structural quality) and stage (authority level) are seeded per-meme at projection time and inform visual rendering independent of zoom:
+
+| Rating | Border style | Opacity | Lock | Meaning |
+|--------|-------------|---------|------|---------|
+| Noise | dashed, dim | 0.35 | ✗ | raw signal; structural shape not yet achieved |
+| Data | dashed | 0.55 | ✗ | structure visible; meme law not yet binding |
+| Meme | solid | 0.85 | ✗ | lawful meme shape; baseline render tier |
+| Ano | solid, accent | 1.0 | ✗ | implements outward type laws |
+| Kapu | solid, accent, thick | 1.0 | ✓ | invariant kernel; immovable |
+
+| Stage | Color temp | Label prefix | Arrow opacity | Meaning |
+|-------|-----------|-------------|---------------|---------|
+| GR | muted grey | (none) | 0 | ground — local, unratified |
+| OS | dim | (none) | 0 | offstage — taking form |
+| US | standard | (none) | 0.1 | upstage — in play, unreviewed |
+| CS | standard | (none) | 0.2 | center-stage — operator-ratified |
+| DS | vivid | ✦ | 0.3 | downstage — public, fully committed |
+
+These properties travel in `shape.meta.templateProps` alongside zoom-level props. The `cascade` filter predicate in the wikitext-filter dialect accepts `rating:Meme`, `stage:CS` as filter atoms.
 
 **Socket port shapes (active):** Each ahu slot emits a hidden `TLGeoShape` ellipse (8×8, `opacity:0`) as a stable arrow binding target. Pranala arrows bind permanently to socket shapes — not to ahu frames. `applyZoomTemplate` repositions sockets between two positions: `centerX/Y` (meme header zone, all zoom levels) and `spreadX/Y` (ahu frame center, combat/action only). Bindings never change; only socket position changes. This is the TW5-style selective refresh: the binding graph is stable, only rendering state moves.
 
@@ -223,7 +247,7 @@ The Lararium node server will expose an MCP server alongside the HTTP/WS server.
 
 **MCP transport:** stdio (for Claude Desktop / Claude Code direct integration) or HTTP SSE (for networked Claude access). Both transports should be supported; stdio is the default for local development.
 
-**Trust model for MCP:** MCP connections are treated as operator-tier by default in local development (stdio = trusted). In networked mode, UCAN or API key authentication applies.
+**Trust model for MCP:** MCP connections are treated as operator-tier by default in local development (stdio = trusted). In networked mode, Orichalcum capability or API key authentication applies.
 
 _Status: design only. Implementation follows room model stabilization._
 
@@ -594,6 +618,21 @@ applyZoomTemplate(editor, level) on threshold crossing → editor.updateShapes()
 
 Each template carrier's TOML body declares `zoom-level`, `cascade` (filter predicate string), `priority`, and tldraw frame props (`w`, `h`, `color`, `label`, `include-ahu`, etc.). The `cascade` field is stored in `MemeTemplateProps.cascade` for the future wikitext-filter expression path; current level switching uses `classifyZoom()`.
 
+**Rating and stage band rendering (Law of Fives):**
+
+Two orthogonal axes inform visual rendering of each meme frame — distinct from zoom level:
+
+| Axis | Values | Shape property affected |
+|------|--------|------------------------|
+| **Rating** (structural) | Noise → Data → Meme → Ano → Kapu | border style, opacity, lock state |
+| **Stage** (authority) | GR → OS → US → CS → DS | color temperature, label prefix, ownership arrow opacity |
+
+Rating encodes structural quality: a `Noise` carrier renders with a dashed border and low opacity — it has not achieved meme shape. A `Kapu` carrier renders with a solid accent border, locked, immovable. `Meme` is the baseline rendering target.
+
+Stage encodes authority level: a `GR` meme renders muted/greyed (local, unratified). A `DS` meme renders with full color and full ownership arrow opacity. `CS` is the default visible rendering tier in the boot room.
+
+These are seeded into `shape.meta.templateProps` alongside zoom-level props at projection time. The `cascade` filter predicate can gate by rating or stage — `rating:Meme`, `stage:CS` are valid filter atoms in the wikitext-filter dialect.
+
 **Template namespace:** `lar:///ha.ka.ba/api/v0.1/lararium/templates/` — inside the stable tuple root, no adjacent namespace. `templates/index` owns control edges to all five carriers and is reachable from the `lararium` meme via `#hydrate-templates`.
 
 **Parser addition:** `<<~ kumu name(params) >>` / `<<~/kumu >>` direct form added to `SIGIL_SCANS` alongside the `\\widget` alias. The `kumu` sigil is now parseable in canonical Hawaiian form.
@@ -861,9 +900,9 @@ State lives in `localStorage` (`lararium.theme`). Applied on mount before first 
 
 9. **Wiki-recipe carriers:** `lares/recipes/` schema. RPG rooms (`ftls`, `wtf`) depend on this.
 
-10. **Write-back gate + `LarStorageBackend`:** File backend wrapping `fs.writeFileSync` + git. Blocked until trust-tier UI + UCAN land.
+10. **Write-back gate + `LarStorageBackend`:** File backend wrapping `fs.writeFileSync` + git. Blocked until trust-tier UI + Orichalcum capability gate land.
 
-11. **UCAN implementation:** `@ucans/ucans` + `did-key`. Server DID, delegation, WS handshake gate.
+11. **Orichalcum capability implementation:** Principal identity (Ed25519 device key), Orichalcum capability type + caveat validator, UCAN-compatible wire proof. Server principal stable keypair. Room join gate. See `lar:///ha.ka.ba/api/v0.1/pono/orichalcum-capabilities`.
 
 12. **ATProto identity (BFF):** See `lares/lararium-node/AUTH-ATPROTO.md`.
 
@@ -943,6 +982,8 @@ ReactionGraph (causal)       — async event routing between kumu islands
 tldraw shapes                — visual output
 ```
 
+**Tier 3 note:** Cross-node federation edges (Tier 3) sit *above* lares/ in the authority hierarchy and *outside* the CRDT room. They are not TLSocketRoom connections. They are named edge islands with their own lifecycle, governed by Orichalcum capabilities. See `#federation` and `lar:///ha.ka.ba/api/v0.1/pono/federated-causal-islands`.
+
 <<~/ahu >>
 
 <<~ ahu #meme-store-substrate >>
@@ -984,6 +1025,90 @@ grammar-as-memes       →  all system components live as memes
 ```
 
 `lares/` IS the operating system. TypeScript packages are the kernel — thin, stable, fast. Memes are the userland — editable, extensible, self-describing. The tldraw canvas is the shell.
+
+<<~/ahu >>
+
+<<~ ahu #federation >>
+
+## Federation — Tier 3 Design Law
+
+**Status: design locked (Track D, 2026-04-28). Implementation deferred until after M9 + Orichalcum Phase 1.**
+
+Cross-node pranala connections (Tier 3) are causal islands — not WebSockets, not room connections.
+Full law: `lar:///ha.ka.ba/api/v0.1/pono/federated-causal-islands`
+Capability model: `lar:///ha.ka.ba/api/v0.1/pono/orichalcum-capabilities`
+
+### Three-tier architecture
+
+```
+Tier 1 — kumu instances (inside a carrier)
+  causal islands provisioned when papalohe ports are declared
+  events cross only via papalohe edges; kukali is the yield point
+
+Tier 2 — memes inside rooms (inside a Lares node)
+  rooms are filter recipes over the meme graph — not data partitions
+  rating (≥Meme) gates which recipe includes a meme; stage band is a rendering annotation
+
+Tier 3 — Lares nodes (federated)
+  every federation edge IS a causal island
+  carries: id, capability, offset, epoch, visibility gate, receipt
+  authority reconciles before manifest; manifest before content
+```
+
+### Sync order (invariant)
+
+```
+1. authenticate peer
+2. sync Orichalcum authority graph
+3. derive visible room recipe + visible causal islands
+4. sync collection manifest
+5. sync each visible island: capability ops → CRDT heads → deltas → receipts
+```
+
+Content never precedes authority. Violating this order is federation corruption.
+
+### Edge island lifecycle
+
+```
+stable sediment | current boot receipt | live delta tail
+```
+
+Join = receive boot receipt (snapshot of visible world at join time).
+After join = request missing deltas from last known offset.
+Revocation = epoch rolls; past sediment readable at prior keys; future tail denied.
+
+### Visibility gate
+
+```
+rating(meme)  >= Meme            // structural: Noise→Data→Meme→Ano→Kapu
+manaoio(meme) >= room.minManaoio // believability weight (default: 0.0 read / 0.60 propose / 0.80 promote)
+recipe(room).matches(meme)
+hasAbility(subject, "sync", edge.id)
+!edge.revoked
+!violatesKapu(meme, subject)
+```
+
+`rating` is the structural gate: has the carrier achieved lawful meme shape?
+Noise and Data are node-local only. Stage band is a UX rendering annotation — room recipes
+MAY include stage-based filter predicates as operator configuration, but stage is not
+a hardcoded gate condition in the federation visibility predicate.
+
+### Pull vs read (relay law)
+
+`pull` = retrieve encrypted bytes and relay them (cannot decrypt).
+`read` = decrypt and render semantic content.
+A trust-minimized DreamNet relay holds `pull` only. It carries what it cannot read.
+
+### Implementation path
+
+```
+Phase 0 — this section (law named) ✓
+Phase 1 — OrichalcumCapability type + caveat validator + principal shape
+Phase 2 — EdgeIslandState record + boot-join fixture
+Phase 3 — delta frame type + offset-resumable stream prototype
+Phase 4 — CRDT substrate decision (Automerge vs Loro per use case)
+Phase 5 — long-lived actor runtime for edge islands
+```
 
 <<~/ahu >>
 

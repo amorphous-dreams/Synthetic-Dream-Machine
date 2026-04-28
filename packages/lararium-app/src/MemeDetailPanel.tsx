@@ -4,6 +4,8 @@
  * Pipeline (CRDT-native, no HTTP fetch):
  *   editor.getShape(shapeId).meta.carrierText  →  raw text already in the store
  *   parseMemeCarrier()                          →  MemeAstNode[]
+ *   resolveWidgetTree()                         →  WidgetNode[] (typed skeleton)
+ *   useKumuExecution()                          →  KumuResult[] (async island fanout)
  *   <AstRenderer>                               →  React (the third tree)
  *
  * Carrier text is seeded into the tldraw room snapshot at projection time
@@ -12,12 +14,59 @@
  *
  * Slides up from the bottom when navState.activeView === "meme-detail".
  * Escape / backdrop click dispatches NAVIGATE_BACK.
+ *
+ * kumu execution is async (Verse-aligned causal island fanout via executeBatch).
+ * Suspended kumu instances (kukali yield points) show a "waiting for trigger"
+ * placeholder until the ReactionGraph fires and resume() re-executes them.
  */
 
-import { useEffect, useMemo, useCallback } from "react";
-import { parseMemeCarrier, resolveWidgetTree } from "@lararium/core";
-import type { MemeAstNode, WorksiteNode, EdgeNode, TextNode, SigilNode, WidgetNode } from "@lararium/core";
+import { useEffect, useMemo, useCallback, useState } from "react";
+import {
+  parseMemeCarrier,
+  resolveWidgetTree,
+  executeBatch,
+} from "@lararium/core";
+import type {
+  MemeAstNode,
+  WorksiteNode,
+  EdgeNode,
+  TextNode,
+  SigilNode,
+  WidgetNode,
+  KumuResult,
+  KumuContext,
+} from "@lararium/core";
 import { useLararium } from "./lararium-context.js";
+
+// ---------------------------------------------------------------------------
+// useKumuExecution — async causal island fanout for kumu widget tree
+//
+// Verse-aligned: executeBatch runs all kumu instances as concurrent causal islands.
+// Suspended instances (kukali yield point) surface as {ok:false, error:"suspended"}.
+// TW5 selective refresh: re-executes only when carrierText changes in the CRDT delta.
+// ---------------------------------------------------------------------------
+
+function useKumuExecution(
+  widgetTree: WidgetNode[] | null,
+  kumuRegistry: ReturnType<typeof useLararium>["kumuRegistry"],
+): KumuResult[] | null {
+  const [results, setResults] = useState<KumuResult[] | null>(null);
+
+  useEffect(() => {
+    if (!widgetTree || !kumuRegistry || widgetTree.length === 0) {
+      setResults(null);
+      return;
+    }
+    let cancelled = false;
+    const ctx: KumuContext = { props: {}, depth: 0, registry: kumuRegistry };
+    executeBatch(widgetTree, ctx).then((r) => {
+      if (!cancelled) setResults(r);
+    });
+    return () => { cancelled = true; };
+  }, [widgetTree, kumuRegistry]);
+
+  return results;
+}
 
 // ---------------------------------------------------------------------------
 // AST → React render pass
@@ -86,15 +135,52 @@ function renderNode(node: MemeAstNode, key: string): React.ReactNode {
   }
 }
 
-function renderWidget(node: WidgetNode, key: string): React.ReactNode {
-  if (node.def) {
+// ---------------------------------------------------------------------------
+// renderKumuResult — show executed kumu output or typed hole / suspended state
+// ---------------------------------------------------------------------------
+
+function renderKumuResult(result: KumuResult, widget: WidgetNode, key: string): React.ReactNode {
+  if (result.ok) {
     return (
       <div key={key} style={css.widget}>
+        <span style={css.widgetKumu}>{widget.kumuName}</span>
+        {Object.entries(widget.resolvedProps).map(([k, v]) => (
+          <span key={k} style={css.widgetProp}>{k}: <em>{v}</em></span>
+        ))}
+        {result.nodes.map((node, i) => renderNode(node, `${key}.node.${i}`))}
+      </div>
+    );
+  }
+
+  if (result.error === "suspended") {
+    return (
+      <div key={key} style={{ ...css.widget, ...css.widgetSuspended }}>
+        <span style={css.widgetKumu}>{widget.kumuName}</span>
+        <span style={css.widgetSuspendedLabel}>
+          ⏿ kukali — waiting for trigger{result.detail ? `: ${result.detail}` : ""}
+        </span>
+      </div>
+    );
+  }
+
+  // unresolved-hole / recursion-limit / missing-prop
+  return (
+    <div key={key} style={{ ...css.widget, ...css.widgetHole }}>
+      <span style={css.widgetKumu}>{result.error === "unresolved-hole" ? `unknown kumu: ${widget.kumuName}` : widget.kumuName}</span>
+      {result.detail && <span style={css.widgetProp}>{result.error}: {result.detail}</span>}
+    </div>
+  );
+}
+
+// Fallback skeleton for when execution hasn't resolved yet
+function renderWidgetSkeleton(node: WidgetNode, key: string): React.ReactNode {
+  if (node.def) {
+    return (
+      <div key={key} style={{ ...css.widget, opacity: 0.5 }}>
         <span style={css.widgetKumu}>{node.kumuName}</span>
         {Object.entries(node.resolvedProps).map(([k, v]) => (
           <span key={k} style={css.widgetProp}>{k}: <em>{v}</em></span>
         ))}
-        {node.body.map((child, i) => renderWidget(child, `${key}.${i}`))}
       </div>
     );
   }
@@ -148,6 +234,10 @@ export function MemeDetailPanel() {
     return resolveWidgetTree(ast, kumuRegistry);
   }, [ast, kumuRegistry]);
 
+  // Async kumu execution — Verse-aligned causal island fanout.
+  // null = still resolving (show skeleton); [] = no widgets; [results] = executed.
+  const kumuResults = useKumuExecution(widgetTree, kumuRegistry);
+
   const onClose = useCallback(() => {
     dispatch({ type: "NAVIGATE_BACK" });
   }, [dispatch]);
@@ -170,12 +260,20 @@ export function MemeDetailPanel() {
         </div>
         <div style={css.body}>
           {!carrierText && <div style={css.status}>No carrier text in store — reseed room to populate.</div>}
+
+          {/* kumu widget section — async executed output or skeleton while resolving */}
           {widgetTree && widgetTree.length > 0 && (
             <section style={css.widgetSection}>
               <h4 style={css.widgetSectionHead}>kumu widgets</h4>
-              {widgetTree.map((node, i) => renderWidget(node, String(i)))}
+              {kumuResults
+                ? widgetTree.map((node, i) =>
+                    renderKumuResult(kumuResults[i] ?? { ok: false, error: "unresolved-hole", detail: node.kumuName }, node, String(i))
+                  )
+                : widgetTree.map((node, i) => renderWidgetSkeleton(node, String(i)))
+              }
             </section>
           )}
+
           {ast && ast.map((node, i) => renderNode(node, String(i)))}
         </div>
       </div>
@@ -327,6 +425,15 @@ const css = {
   widgetHole: {
     borderStyle: "dashed",
     opacity: 0.6,
+  },
+  widgetSuspended: {
+    borderColor: "#f0a04b",
+    borderStyle: "dashed",
+  },
+  widgetSuspendedLabel: {
+    fontSize: 11,
+    fontFamily: "monospace",
+    color: "#f0a04b",
   },
   widgetKumu: {
     fontSize: 11,
