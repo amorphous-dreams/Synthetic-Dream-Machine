@@ -13,11 +13,13 @@ import {
   type LarTLSnapshot,
   type LarTLPage,
   type LarTLFrame,
+  type LarTLSocket,
   type LarTLArrow,
   type LarTLNote,
   type TemplatePropsByLevel,
   memeFrameId,
   ahuFrameId,
+  socketShapeId,
   edgeArrowId,
   pageId,
   buildTemplatePropsByLevel,
@@ -67,9 +69,10 @@ export function projectToTldraw(artifact: BootArtifact, opts: ProjectOptions = {
     byDepth.set(entry.depth, band);
   }
 
-  const frames: LarTLFrame[] = [];
-  const notes: LarTLNote[] = [];
-  const arrows: LarTLArrow[] = [];
+  const frames:  LarTLFrame[]  = [];
+  const sockets: LarTLSocket[] = [];
+  const notes:   LarTLNote[]   = [];
+  const arrows:  LarTLArrow[]  = [];
 
   // Build meme frames
   for (const [depth, band] of [...byDepth.entries()].sort((a, b) => a[0] - b[0])) {
@@ -112,31 +115,42 @@ export function projectToTldraw(artifact: BootArtifact, opts: ProjectOptions = {
         });
       }
 
-      // Ahu socket sub-frames from pranala edges if readText provided
+      // Ahu socket sub-frames + socket port shapes from pranala edges if readText provided
       if (includeAhuFrames && readText) {
         const text = readText(entry.uri);
         if (text) {
           const edges = parsePranalaEdges(entry.uri, text);
-          // fromSlot = named outgoing slot on the ahu; fromSocket = the ahu itself
-          const sockets = new Set(
+          // Collect all #fragment identifiers that appear as fromSocket or fromSlot
+          const slotSet = new Set(
             edges.flatMap((e) => [e.fromSocket, e.fromSlot].filter((s): s is string => !!s && s.includes("#")))
           );
-          [...sockets].forEach((socket, sockIdx) => {
-            const socketName = (socket.split("#")[1] as string | undefined) ?? socket;
+          [...slotSet].forEach((slot, ahuIdx) => {
+            const slotName = (slot.split("#")[1] as string | undefined) ?? slot;
+            // Ahu sub-frame: visual container visible at high zoom
             frames.push({
               type: "frame",
-              id: ahuFrameId(entry.uri, socket),
+              id: ahuFrameId(entry.uri, slot),
               scope: "document",
               pageId: page.id,
               parentId: fid,
-              uri: socket,
-              name: `#${socketName}`,
+              uri: slot,
+              name: `#${slotName}`,
               depth: depth + 0.5,
               frameKind: "ahu",
               rating: "socket",
               implements: [],
             });
-            void sockIdx; // layout handled by tldraw itself for child frames
+            // Socket port shape: stable arrow binding target, repositioned by applyZoomTemplate
+            sockets.push({
+              type: "socket",
+              id: socketShapeId(entry.uri, slot),
+              scope: "document",
+              pageId: page.id,
+              parentId: fid,
+              memeUri: entry.uri,
+              slotId: slot,
+              ahuIdx,
+            });
           });
         }
       }
@@ -145,7 +159,7 @@ export function projectToTldraw(artifact: BootArtifact, opts: ProjectOptions = {
 
   // Build arrows from pranala edges
   if (readText) {
-    const frameIds = new Set(frames.map((f) => f.id));
+    const knownIds = new Set([...frames.map((f) => f.id), ...sockets.map((s) => s.id)]);
 
     for (const entry of artifact.closure) {
       const text = readText(entry.uri);
@@ -153,14 +167,14 @@ export function projectToTldraw(artifact: BootArtifact, opts: ProjectOptions = {
       const edges = parsePranalaEdges(entry.uri, text);
 
       for (const edge of edges) {
-        // Prefer the named slot frame; fall back to the ahu socket frame; then meme frame
+        // Arrows bind to socket port shapes (stable targets) not ahu sub-frames
         const slotOrSocket = edge.fromSlot ?? (edge.fromSocket.includes("#") ? edge.fromSocket : null);
         const fromId = slotOrSocket
-          ? ahuFrameId(entry.uri, slotOrSocket)
+          ? socketShapeId(entry.uri, slotOrSocket)
           : memeFrameId(edge.fromUri);
         const toId = memeFrameId(edge.toUri);
 
-        if (!frameIds.has(fromId) || !frameIds.has(toId)) continue;
+        if (!knownIds.has(fromId) || !knownIds.has(toId)) continue;
         if (fromId === toId) continue; // skip self-loops
 
         const arrowId = edgeArrowId(edge.fromSocket, edge.toUri);
@@ -185,9 +199,10 @@ export function projectToTldraw(artifact: BootArtifact, opts: ProjectOptions = {
   return Object.freeze({
     version: 1 as const,
     projectedAt: new Date().toISOString(),
-    pages: Object.freeze([page]),
-    frames: Object.freeze(frames),
-    arrows: Object.freeze(arrows),
-    notes: Object.freeze(notes),
+    pages:   Object.freeze([page]),
+    frames:  Object.freeze(frames),
+    sockets: Object.freeze(sockets),
+    arrows:  Object.freeze(arrows),
+    notes:   Object.freeze(notes),
   });
 }

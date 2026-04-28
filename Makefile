@@ -1,28 +1,33 @@
-.PHONY: help ollama-setup ollama-models dev-setup test mcp-smoke status
+.PHONY: help install build test typecheck serve reseed clean
 
 help:
 	@echo "Targets:"
-	@echo "  make ollama-setup   Configure Ollama service under WSL/systemd"
-	@echo "  make ollama-models  Pull default local models"
-	@echo "  make dev-setup      Install repo in editable dev mode"
-	@echo "  make test           Run pytest"
-	@echo "  make mcp-smoke      Smoke-test lararium MCP over stdio"
-	@echo "  make status         Print environment status"
+	@echo "  make install       Install all workspace dependencies"
+	@echo "  make build         Build all packages (core → tldraw → node → app → mcp)"
+	@echo "  make test          Run all package test suites"
+	@echo "  make typecheck     Run tsc --noEmit across all packages"
+	@echo "  make serve         Build app then start lararium serve on :4321"
+	@echo "  make reseed        Force-evict + reseed the boot room (server must be running)"
+	@echo "  make clean         Remove all dist/ and .lararium-data/ artifacts"
 
-ollama-setup:
-	./scripts/ollama-wsl-setup.sh
+install:
+	pnpm install
 
-ollama-models:
-	./scripts/ollama-models.sh
-
-dev-setup:
-	./scripts/dev-setup.sh
+build:
+	pnpm -r build
 
 test:
-	pytest
+	pnpm -r test
 
-mcp-smoke:
-	python scripts/mcp-smoke.py
+typecheck:
+	pnpm -r exec tsc --noEmit
 
-status:
-	./scripts/status.sh
+serve: build
+	pnpm --filter @lararium/node serve
+
+reseed:
+	curl -s "http://localhost:4321/admin/reseed" | python3 -m json.tool
+
+clean:
+	find . -path "*/node_modules" -prune -o -name "dist" -type d -print | grep -v node_modules | xargs rm -rf
+	rm -rf .lararium-data

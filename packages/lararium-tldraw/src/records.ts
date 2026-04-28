@@ -52,6 +52,12 @@ export function ahuFrameId(uri: string, socket: string): LarProjectionId {
   return `shape:ahu_${uri.replace(/[^a-zA-Z0-9]/g, "_")}_${socketSuffix}`;
 }
 
+/** Stable ID for a socket port shape — arrow binding target, child of meme frame. */
+export function socketShapeId(memeUri: string, slotId: string): LarProjectionId {
+  const slotSuffix = slotId.includes("#") ? slotId.split("#")[1]! : slotId.replace(/[^a-zA-Z0-9]/g, "_");
+  return `shape:sock_${memeUri.replace(/[^a-zA-Z0-9]/g, "_")}_${slotSuffix}`;
+}
+
 export function edgeArrowId(fromSocket: string, toUri: string): LarProjectionId {
   const from = fromSocket.replace(/[^a-zA-Z0-9]/g, "_");
   const to = toUri.replace(/[^a-zA-Z0-9]/g, "_");
@@ -213,6 +219,29 @@ export const DEFAULT_TEMPLATE_PROPS: TemplatePropsByLevel = {
   action:      { w: 400, h: 220, color: "rating", label: "full", includeAhu: true,  showNotes: true,  showCarrier: true,  opacity: 1.0, zoomLevel: "action",      cascade: "true"        },
 };
 
+/**
+ * A socket port shape — stable arrow binding target, child of meme frame.
+ *
+ * Arrows bind to sockets permanently. `applyZoomTemplate` repositions sockets:
+ *   - low zoom (includeAhu:false): cluster to meme center (centerX, centerY)
+ *   - high zoom (includeAhu:true): spread to ahu frame position (spreadX, spreadY)
+ *
+ * Coordinates are local to the parent meme frame.
+ */
+export interface LarTLSocket {
+  readonly type: "socket";
+  readonly id: LarProjectionId;
+  readonly scope: "document";
+  readonly pageId: LarProjectionId;
+  /** Parent meme frame id. */
+  readonly parentId: LarProjectionId;
+  readonly memeUri: string;
+  /** The slot this socket represents — e.g. "lar:///AGENTS#implements-meme". */
+  readonly slotId: string;
+  /** Index within this meme's slot list — used by layout to compute spread position. */
+  readonly ahuIdx: number;
+}
+
 /** A projected arrow shape — one per PranaEdge. */
 export interface LarTLArrow {
   readonly type: "arrow";
@@ -237,7 +266,7 @@ export interface LarTLNote {
 }
 
 /** Union of all lararium projection record types. */
-export type LarProjectionRecord = LarTLPage | LarTLFrame | LarTLArrow | LarTLNote;
+export type LarProjectionRecord = LarTLPage | LarTLFrame | LarTLSocket | LarTLArrow | LarTLNote;
 
 // ---------------------------------------------------------------------------
 // Projection snapshot — the full output of projectToTldraw()
@@ -246,8 +275,9 @@ export type LarProjectionRecord = LarTLPage | LarTLFrame | LarTLArrow | LarTLNot
 export interface LarTLSnapshot {
   readonly version: 1;
   readonly projectedAt: string;
-  readonly pages: readonly LarTLPage[];
-  readonly frames: readonly LarTLFrame[];
-  readonly arrows: readonly LarTLArrow[];
-  readonly notes: readonly LarTLNote[];
+  readonly pages:   readonly LarTLPage[];
+  readonly frames:  readonly LarTLFrame[];
+  readonly sockets: readonly LarTLSocket[];
+  readonly arrows:  readonly LarTLArrow[];
+  readonly notes:   readonly LarTLNote[];
 }

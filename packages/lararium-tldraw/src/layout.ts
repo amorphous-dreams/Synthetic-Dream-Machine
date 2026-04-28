@@ -20,7 +20,7 @@
  *   - transclusionLayout — zoomed view of a single meme with its ahu socket sub-frames
  */
 
-import { type LarTLSnapshot, type LarTLFrame, type LarTLArrow } from "./records.js";
+import { type LarTLSnapshot, type LarTLFrame, type LarTLArrow, type LarTLSocket } from "./records.js";
 
 // ---------------------------------------------------------------------------
 // Layout geometry types
@@ -31,6 +31,19 @@ export interface FrameGeometry {
   readonly y: number;
   readonly w: number;
   readonly h: number;
+}
+
+/**
+ * Socket port geometry — all coordinates local to the parent meme frame.
+ *
+ * centerX/Y: position when ahu frames are hidden (cluster to meme center).
+ * spreadX/Y: position when ahu frames are visible (near the ahu frame center).
+ */
+export interface SocketGeometry {
+  readonly centerX: number;
+  readonly centerY: number;
+  readonly spreadX: number;
+  readonly spreadY: number;
 }
 
 export interface ArrowGeometry {
@@ -44,8 +57,9 @@ export interface ArrowGeometry {
 
 export interface LarTLLayout {
   readonly strategy: string;
-  readonly frames: ReadonlyMap<string, FrameGeometry>;
-  readonly arrows: ReadonlyMap<string, ArrowGeometry>;
+  readonly frames:  ReadonlyMap<string, FrameGeometry>;
+  readonly sockets: ReadonlyMap<string, SocketGeometry>;
+  readonly arrows:  ReadonlyMap<string, ArrowGeometry>;
 }
 
 // ---------------------------------------------------------------------------
@@ -82,8 +96,9 @@ const CANVAS_OX   = 100; // origin offset
 const CANVAS_OY   = 100;
 
 export function storyRiverLayout(snapshot: LarTLSnapshot): LarTLLayout {
-  const frameGeo = new Map<string, FrameGeometry>();
-  const arrowGeo = new Map<string, ArrowGeometry>();
+  const frameGeo  = new Map<string, FrameGeometry>();
+  const socketGeo = new Map<string, SocketGeometry>();
+  const arrowGeo  = new Map<string, ArrowGeometry>();
 
   // Group meme frames by depth
   const memeFrames = snapshot.frames.filter((f) => f.frameKind === "meme");
@@ -131,24 +146,51 @@ export function storyRiverLayout(snapshot: LarTLSnapshot): LarTLLayout {
     curX += FRAME_W + GAP_X;
   }
 
-  // Arrow geometry: center-to-center
+  // Socket geometry: center = meme frame center; spread = near its ahu sub-frame center
+  for (const socket of ((snapshot.sockets ?? []) as readonly LarTLSocket[])) {
+    const memeGeo = frameGeo.get(socket.parentId);
+    if (!memeGeo) continue;
+    // Center position clusters all sockets to the meme frame's visual center
+    const centerX = memeGeo.w / 2;
+    const centerY = memeGeo.h / 2;
+    // Spread position mirrors the ahu sub-frame center (local coords)
+    const spreadX = AHU_PAD_X + AHU_W / 2;
+    const spreadY = FRAME_H + AHU_PAD_Y + socket.ahuIdx * (AHU_H + AHU_GAP) + AHU_H / 2;
+    socketGeo.set(socket.id, { centerX, centerY, spreadX, spreadY });
+  }
+
+  // Build socket→parent-frame lookup for arrow start position
+  const socketParent = new Map<string, string>();
+  for (const socket of ((snapshot.sockets ?? []) as readonly LarTLSocket[])) {
+    socketParent.set(socket.id, socket.parentId);
+  }
+
+  // Arrow geometry: initial placement uses spread position for socket sources
   for (const arrow of snapshot.arrows) {
-    const fromGeo = frameGeo.get(arrow.fromFrameId);
-    const toGeo   = frameGeo.get(arrow.toFrameId);
+    const sockGeo  = socketGeo.get(arrow.fromFrameId);
+    const parentId = socketParent.get(arrow.fromFrameId);
+    const fromGeo  = sockGeo && parentId
+      ? frameGeo.get(parentId)
+      : frameGeo.get(arrow.fromFrameId);
+    const toGeo = frameGeo.get(arrow.toFrameId);
     if (!fromGeo || !toGeo) continue;
 
+    const startX = sockGeo ? fromGeo.x + sockGeo.spreadX : fromGeo.x + fromGeo.w / 2;
+    const startY = sockGeo ? fromGeo.y + sockGeo.spreadY : fromGeo.y + fromGeo.h / 2;
+
     arrowGeo.set(arrow.id, {
-      startX: fromGeo.x + fromGeo.w / 2,
-      startY: fromGeo.y + fromGeo.h / 2,
-      endX:   toGeo.x + toGeo.w / 2,
-      endY:   toGeo.y + toGeo.h / 2,
+      startX,
+      startY,
+      endX: toGeo.x + toGeo.w / 2,
+      endY: toGeo.y + toGeo.h / 2,
     });
   }
 
   return {
     strategy: "story-river",
-    frames: frameGeo,
-    arrows: arrowGeo,
+    frames:  frameGeo,
+    sockets: socketGeo,
+    arrows:  arrowGeo,
   };
 }
 
@@ -218,7 +260,7 @@ export function memeDetailLayout(snapshot: LarTLSnapshot): LarTLLayout {
     });
   }
 
-  return { strategy: "meme-detail", frames: frameGeo, arrows: arrowGeo };
+  return { strategy: "meme-detail", frames: frameGeo, sockets: new Map(), arrows: arrowGeo };
 }
 
 // ---------------------------------------------------------------------------
@@ -269,7 +311,7 @@ export function graphLayout(snapshot: LarTLSnapshot): LarTLLayout {
     });
   }
 
-  return { strategy: "graph", frames: frameGeo, arrows: arrowGeo };
+  return { strategy: "graph", frames: frameGeo, sockets: new Map(), arrows: arrowGeo };
 }
 
 // ---------------------------------------------------------------------------

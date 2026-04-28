@@ -11,6 +11,7 @@
 import type {
   TLArrowShape,
   TLFrameShape,
+  TLGeoShape,
   TLNoteShape,
   TLPage,
 } from "tldraw";
@@ -25,8 +26,9 @@ import { type LarTLLayout, type FrameGeometry } from "./layout.js";
 export type TLFrameRecord  = TLFrameShape;
 export type TLArrowRecord  = TLArrowShape;
 export type TLNoteRecord   = TLNoteShape;
+export type TLGeoRecord    = TLGeoShape;
 export type TLPageRecord   = TLPage;
-export type TLRecord = TLPageRecord | TLFrameRecord | TLArrowRecord | TLNoteRecord;
+export type TLRecord = TLPageRecord | TLFrameRecord | TLArrowRecord | TLNoteRecord | TLGeoRecord;
 
 /** Minimal binding record shape — matches tldraw's TLArrowBinding at runtime. */
 export interface TLArrowBindingRecord {
@@ -196,6 +198,61 @@ export function emitTldrawRecords(
         color,
       },
     } satisfies TLFrameShape);
+  });
+
+  // -- Socket port shapes ----------------------------------------------------
+  // One tiny locked geo dot per ahu slot. Arrows bind to these instead of ahu frames
+  // so bindings never change across zoom levels — only socket positions move.
+
+  snapshot.sockets?.forEach((socket) => {
+    const geo = layout.sockets.get(socket.id);
+    if (!geo) return;
+
+    const scopedId   = scopeId(socket.id);
+    const scopedParent = scopeId(socket.parentId) as TLGeoShape["parentId"];
+
+    // Register in binding lookup so arrows can find it
+    frameIdToScopedId.set(socket.id, scopedId);
+
+    shapes.push({
+      id:       scopedId as TLGeoShape["id"],
+      typeName: "shape",
+      type:     "geo",
+      // Start at center position (strategic zoom default)
+      x:        geo.centerX,
+      y:        geo.centerY,
+      rotation: 0,
+      index:    shapeIndex(scopedParent),
+      parentId: scopedParent,
+      isLocked: false,
+      opacity:  0,
+      meta: {
+        socketKind: "port",
+        slotId:     socket.slotId,
+        memeUri:    socket.memeUri,
+        centerX:    geo.centerX,
+        centerY:    geo.centerY,
+        spreadX:    geo.spreadX,
+        spreadY:    geo.spreadY,
+      },
+      props: {
+        geo:          "ellipse",
+        w:            8,
+        h:            8,
+        color:        "grey",
+        labelColor:   "black",
+        fill:         "solid",
+        dash:         "solid",
+        size:         "s",
+        font:         "draw",
+        richText:     richText(""),
+        align:        "middle",
+        verticalAlign: "middle",
+        growY:        0,
+        url:          "",
+        scale:        1,
+      },
+    } satisfies TLGeoShape);
   });
 
   // -- Arrow shapes + bindings -----------------------------------------------

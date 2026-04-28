@@ -54,8 +54,10 @@ type ZoomTemplateKey = "strategic" | "operational" | "tactical" | "combat" | "ac
 function applyZoomTemplate(editor: TldrawEditor, level: ZoomLevel) {
   const key = level as ZoomTemplateKey;
   const shapes = editor.getCurrentPageShapes();
-  const updates: { id: string; type: string; props: Record<string, unknown> }[] = [];
+  const updates: { id: string; type: string; x?: number; y?: number; props?: Record<string, unknown> }[] = [];
 
+  // Pass 1: meme frames — resize/recolor; collect includeAhu per frame id
+  const memeIncludeAhu = new Map<string, boolean>();
   for (const shape of shapes) {
     if (shape.type !== "frame") continue;
     const meta = shape.meta as Record<string, unknown> | undefined;
@@ -65,12 +67,20 @@ function applyZoomTemplate(editor: TldrawEditor, level: ZoomLevel) {
 
     const rating = typeof meta?.uri === "string" ? ratingFromShape(shape) : "black";
     const color = tpl["color"] === "rating" ? rating : (tpl["color"] as string ?? "grey");
+    updates.push({ id: shape.id, type: "frame", props: { w: tpl["w"], h: tpl["h"], color } });
+    memeIncludeAhu.set(shape.id, tpl["includeAhu"] === true);
+  }
 
-    updates.push({
-      id:    shape.id,
-      type:  "frame",
-      props: { w: tpl["w"], h: tpl["h"], color },
-    });
+  // Pass 2: socket port shapes — reposition between meme-center and ahu-spread
+  for (const shape of shapes) {
+    if (shape.type !== "geo") continue;
+    const meta = shape.meta as Record<string, unknown> | undefined;
+    if (meta?.socketKind !== "port") continue;
+
+    const spread = memeIncludeAhu.get(shape.parentId as string) ?? false;
+    const x = spread ? (meta["spreadX"] as number) : (meta["centerX"] as number);
+    const y = spread ? (meta["spreadY"] as number) : (meta["centerY"] as number);
+    updates.push({ id: shape.id, type: "geo", x, y });
   }
 
   if (updates.length > 0) {
@@ -119,10 +129,8 @@ export function LarariumCanvas({ wsUrl, navState, dispatch, canvasMode, onZoomLe
   const store = useSync({ uri: wsUrl, assets: inlineBase64AssetStore });
   const editorRef = useRef<TldrawEditor | null>(null);
   const { theme, setEditor } = useLararium();
-  if (process.env.NODE_ENV === "development") {
-    (window as any).__larariumDebug ??= {};
-    (window as any).__larariumDebug.store = store;
-  }
+  (window as any).__larariumDebug ??= {};
+  (window as any).__larariumDebug.store = store;
 
   // Populate meme list reactively — CRDT-native, no /api/memes fetch.
   // One-shot scan on sync, then store.listen for document mutations (shape add/remove/update).
@@ -207,29 +215,6 @@ export function LarariumCanvas({ wsUrl, navState, dispatch, canvasMode, onZoomLe
   }, [navState]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Zoom level → page auto-switch.
-  // scope:'session' filters to camera/presence records only — avoids firing on
-  // every document mutation (shape moves, text edits, etc.).
-  useEffect(() => {
-    const editor = editorRef.current;
-    if (!editor || store.status !== "synced-remote") return;
-
-    let lastLevel = classifyZoom(editor.getZoomLevel());
-
-    const unsub = editor.store.listen(
-      () => {
-        const zoom  = editor.getZoomLevel();
-        const level = classifyZoom(zoom);
-        if (level === lastLevel) return;
-        lastLevel = level;
-
-        onZoomLevel?.(level);
-        applyZoomTemplate(editor, level);
-      },
-      { scope: "session" },
-    );
-
-    return unsub;
-  }, [store.status]);
 
   if (store.status === "loading") {
     return <div style={fill}>Connecting to Lararium…</div>;
@@ -251,12 +236,24 @@ export function LarariumCanvas({ wsUrl, navState, dispatch, canvasMode, onZoomLe
         onMount={(editor) => {
           editorRef.current = editor;
           setEditor(editor);
-          if (process.env.NODE_ENV === "development") {
-            (window as any).__larariumDebug ??= {};
-            (window as any).__larariumDebug.editor = editor;
-          }
+          (window as any).__larariumDebug ??= {};
+          (window as any).__larariumDebug.editor = editor;
           editor.user.updateUserPreferences({ colorScheme: "dark" });
           editor.setCurrentTool("select");
+
+          let lastLevel = classifyZoom(editor.getZoomLevel());
+          applyZoomTemplate(editor, lastLevel);
+
+          editor.store.listen(
+            () => {
+              const level = classifyZoom(editor.getZoomLevel());
+              if (level === lastLevel) return;
+              lastLevel = level;
+              onZoomLevel?.(level);
+              applyZoomTemplate(editor, level);
+            },
+            { scope: "session" },
+          );
         }}
       />
     </div>
