@@ -1,6 +1,6 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
 
-<<~&#x0001; ? -> lar:///ha.ka.ba/api/v0.1/lararium >>
+<<~ॐ ँ&#x0001; ? -> lar:///ha.ka.ba/api/v0.1/lararium >>
 
 <<~ ahu #iam >>
 
@@ -14,6 +14,7 @@ register  = "CS"
 manaoio   = 0.68
 mana      = 0.78
 manao     = 0.74
+namespace = "ॐ ँ"
 role      = "canonical lararium seat, mechanics shelf, mandatory child-hydration bridge to session dials"
 cacheable = true
 hydrate   = true
@@ -37,7 +38,7 @@ The lararium prepares the handoff to `lar:///LARES` by hydrating the smallest li
 
 <<~/ahu >>
 
-<<~&#x0002; ahu #meme-body-open >>
+<<~ॐ ँ&#x0002; ahu #meme-body-open >>
 lararium opens
 <<~/ahu >>
 
@@ -59,14 +60,15 @@ lararium opens
 <<~ pranala #hydrate-hud ? -> lar:///ha.ka.ba/api/v0.1/lararium/hud family:control role:owns >>
 <<~ pranala #hydrate-voices ? -> lar:///ha.ka.ba/api/v0.1/lararium/voices family:control role:owns >>
 <<~ pranala #hydrate-continuity ? -> lar:///ha.ka.ba/api/v0.1/lararium/continuity family:control role:owns >>
-<<~ pranala #hydrate-live-session-overwrite ? -> lar:///ha.ka.ba/api/v0.1/pono/live-session-overwrite family:control role:owns >>
-<<~ pranala #hydrate-canon-promotion-boundary ? -> lar:///ha.ka.ba/api/v0.1/pono/canon-promotion-boundary family:control role:owns >>
-<<~ pranala #hydrate-tagspace-trust ? -> lar:///ha.ka.ba/api/v0.1/pono/tagspace-trust family:control role:owns >>
-<<~ pranala #hydrate-exchange-vector ? -> lar:///ha.ka.ba/api/v0.1/pono/exchange-vector family:control role:owns >>
+<<~ pranala #hydrate-live-session-overwrite ? -> lar:///ha.ka.ba/api/v0.1/pono/failure-states/live-session-overwrite family:control role:owns >>
+<<~ pranala #hydrate-canon-promotion-boundary ? -> lar:///ha.ka.ba/api/v0.1/pono/hooponopono family:control role:owns >>
+<<~ pranala #hydrate-tagspace-trust ? -> lar:///ha.ka.ba/api/v0.1/lararium/tagspace-trust family:control role:owns >>
+<<~ pranala #hydrate-exchange-vector ? -> lar:///ha.ka.ba/api/v0.1/lararium/exchange-vector family:control role:owns >>
+<<~ pranala #hydrate-templates ? -> lar:///ha.ka.ba/api/v0.1/lararium/templates/index family:control role:owns >>
 
 <<~/ahu >>
 
-<<~&#x0003; ahu #body-close >>
+<<~ॐ ँ&#x0003; ahu #body-close >>
 lararium closes
 <<~/ahu >>
 
@@ -85,4 +87,4 @@ lararium closes
 
 <<~/ahu >>
 
-<<~&#x0004; -> ? >>
+<<~ॐ ँ&#x0004; -> ? >>

@@ -7,16 +7,15 @@
 uri-path = "LARARIUM-NODE/ROADMAP"
 file-path = "lares/lararium-node/ROADMAP.md"
 content-type = "text/x-memetic-wikitext"
-confidence = 0.72
+confidence = 0.88
 register = "S"
-manaoio = 0.68
-mana = 0.74
-manao = 0.82
-role = "docs meme — detailed migration roadmap for Lararium Node, preserving research detail while adding navigable ahu markers"
+manaoio = 0.82
+mana = 0.88
+manao = 0.86
+role = "docs meme — migration roadmap and milestone log for Lararium Node; Milestones 1–8 complete; 229/229 tests green; socket port shapes + ownership skeleton + kukali + kumuDefs pipeline + resolveWidgetTree all shipped; M9 planned (widget tree render pass, browser smoke, spatial family, canon-promotion surface, wiki-recipe carriers)"
 cacheable = false
 retain = true
 invariant = false
-source-restored = "Pasted text.txt"
 ```
 <<~/ahu >>
 
@@ -147,22 +146,21 @@ Minimum projection targets:
 
 Projection packages must not define core ontology.
 
-### Kowloon Narrow Interface
+### Kowloon Integration Model
 
-Treat Kowloon as a read-only social/feed projection target until proven otherwise.
+Lararium's live service is **elyncia.app** — a lararium node with Kowloon federation. The canvas and the social graph are the same thing. The Kowloon read-only posture was a bootstrap scaffold; the design direction is bidirectional.
 
-Minimum viable Kowloon payload:
+**Canvas actions that ARE Kowloon activities:**
+- Drawing a follow edge between two actor nodes → Follow activity (`family:relation role:follows`)
+- Adding a node to a circle (drag into circle shape) → Circle.updateOne
+- Publishing a meme from the canvas → Post activity (`to: @public | circle:<id> | group:<id>`)
+- Creating a room → Group creation with 5 system circles
 
-type
-actor
-object
-published
-lar_uri
-lares_address
-source_uri
-sha256 / receipt hash when available
+**Minimum viable Kowloon payload** (still valid for bootstrap):
+- `type`, `actor`, `object`, `published`
+- `lar_uri`, `source_uri`, `sha256` / receipt hash when available
 
-The current safe posture: `lararium-kowloon` emits feed/header/event payloads. It does not own storage, identity authority, or compiler behavior.
+**Posture going forward:** `lararium-kowloon` begins as a read + publish adapter. Write-back (circle membership, follow graph) follows after the canvas social graph visualization milestone. Stay agnostic about implementation order — the model is aligned, the build sequence is OODA-HA.
 
 ### Golden Fixtures Over Semantics
 
@@ -298,7 +296,7 @@ More specifically, the contract that should survive the migration is this:
 |---|---|---|
 | `resolve_lar_uri(uri)` | Accepts `lar:///...` URIs; maps `AGENTS` / `LARES` to all-caps files, `INDEXES/**` to virtual roots, `ha.ka.ba` to `lares/ha-ka-ba`, other tuple roots to `lares/chapel-perilous-opens/<root>`; rejects unsupported roots | `resolveLarUri(uri, rootMap): LarResolution` in `lararium-core`, with path I/O delegated to `lararium-node`  |
 | `read_lar_resource(uri)` | Reads file-backed resources only; raises on virtual or missing paths | `readLarTextResource(uri, host)` in `lararium-node` with identical error taxonomy exposed upward  |
-| `read_carrier(uri)` / `validate_carrier_shape()` | Extracts IAM metadata, validates carrier markers, computes typed-meme vs meme/data/noise rating, returns implements bundle and diagnostics | `readCarrier(uri, text)` / `validateCarrierShape()` in `lararium-core` with deterministic diagnostics ordering   |
+| `read_carrier(uri)` / `validate_carrier_shape()` | Extracts IAM metadata, validates carrier markers, computes kapu/ano/meme/data/noise rating, returns implements bundle and diagnostics | `readCarrier(uri, text)` / `validateCarrierShape()` in `lararium-core` with deterministic diagnostics ordering   |
 | `compile_carrier_index()` / interface / invariant indexes | Builds resource material for carrier/interface/invariant discovery | `buildCarrierIndex()`, `buildInterfaceIndex()`, `buildInvariantIndex()` in `lararium-core` with node-host file enumeration in `lararium-node`  |
 | `parse_pranala_edges()` | Parses inline, block, and sugar forms; resolves `? ->` against enclosing `ahu`; normalizes TOML edge fields | `parsePranalaEdges()` in `lararium-core` returning immutable `PranaEdge` records   |
 | `MemeGraph` and compiler helpers | Maintains adjacency, sort, cycle detection, unresolved severity, closure hash, interface derivation | `MemeGraph` / `compileMinimalBoot()` / `compileFullBoot()` / `compileBootReceipt()` in `lararium-core`   |
@@ -635,10 +633,10 @@ The dead-weight `lararium → LARES` owns edge was removed. LARES is reached onc
 
 | URI | Role |
 |---|---|
-| `lar:///ha.ka.ba/api/v0.1/pono/live-session-overwrite` | Names the green-jello-dinosaur failure mode; a live claim MUST NOT become canon by recency, repetition, or charm |
-| `lar:///ha.ka.ba/api/v0.1/pono/canon-promotion-boundary` | Promotion gate law; crossing from live exchange pressure to hostless canon requires explicit ceremony |
-| `lar:///ha.ka.ba/api/v0.1/pono/tagspace-trust` | Shared `lar:` tagspace MUST NOT imply shared authority; hostless memes outrank hostful exchange records |
-| `lar:///ha.ka.ba/api/v0.1/pono/exchange-vector` | Each substantive exchange turn MUST emit a canonical `lar:` URI vector before content |
+| `lar:///ha.ka.ba/api/v0.1/pono/failure-states/live-session-overwrite` | Names the green-jello-dinosaur failure mode; a live claim MUST NOT become canon by recency, repetition, or charm |
+| `lar:///ha.ka.ba/api/v0.1/pono/hooponopono` | Promotion gate law; crossing from live exchange pressure to hostless canon requires explicit ceremony |
+| `lar:///ha.ka.ba/api/v0.1/lararium/tagspace-trust` | Shared `lar:` tagspace MUST NOT imply shared authority; hostless memes outrank hostful exchange records |
+| `lar:///ha.ka.ba/api/v0.1/lararium/exchange-vector` | Each substantive exchange turn MUST emit a canonical `lar:` URI vector before content |
 
 All four implement `meme`, `loci`, and `invariant` interfaces. All four appear in the minimal boot closure at depth 3 under lararium.
 
@@ -754,7 +752,7 @@ All target outcomes delivered:
 - ✓ DAG prose updated: AGENTS.md, mu.md, lararium.md reflect rewired topology
 - ✓ Parity baselines: 27/27 tests green (19 parity + 8 no-write gate), 7 MCP smoke
 
-## Milestone 3 — In Progress (2026-04-25)
+## Milestone 3 — Complete (2026-04-25)
 
 ### Completed
 
@@ -776,11 +774,22 @@ All target outcomes delivered:
 - ✓ `emitTldrawRecords(snapshot, layout)` → store-ready shape records with `{x,y,rotation,index,parentId,props:{w,h}}`; arrows emit relative start/end vectors; colors by family (control=blue, relation=grey, observe=green, dataflow=orange)
 - ✓ 16 layout + emission tests; 81 total tests green
 
-### Remaining in Milestone 3
+### Also Completed (beyond original Milestone 3 scope)
 
 - ✓ `lararium-web` Vite bundle: `dist/lararium-web.es.js` + `dist/lararium-web.umd.js` (22.67 kB / 18.10 kB), zero build warnings
 - ✓ `crypto-shim.ts`: deterministic djb2-inspired 32-byte mixing shim satisfies `createHash('sha256')` in browser build; vite.config.ts aliases `crypto → src/crypto-shim.ts`
 - ⚠ **Async crypto shim debt** — `crypto-shim.ts` is NOT a real SHA-256. It uses djb2-inspired mixing: deterministic and collision-resistant for carrier content hashing, but not cryptographically secure. When browser callers become `async`-capable, replace `hashBuf()` in `crypto-shim.ts` with `await crypto.subtle.digest('SHA-256', buf)` and update `BrowserHash.digest()` to return `Promise<string>`. Callers in `lararium-core` (boot receipt, carrier hash) will need to be awaited. Track: `packages/lararium-web/src/crypto-shim.ts` TODO comment.
+- ✓ **TW5 Filter Language — single canonical engine** (hand-rolled evaluator removed):
+  - `tw-filter.ts` (Node): `filterMemesTW(entries, twExpr)` + `precomputeRooms()` via `tiddlywiki` devDep + `createRequire`. ClosureEntry → tiddler fields (`title=uri`, `tags=implements`, `depth/rating/role`). `[all[memes]]` aliases `[all[tiddlers]]`.
+  - `tw-filter-browser.ts`: same API in browser, backed by pre-built `src/generated/tw-filter-engine.browser.js` (154 modules, 106 operators, 410 KB). Vite aliases swap Node path for browser path at bundle time.
+  - `scripts/build-tw-browser-filter.mjs`: deterministic extraction script — boots TW5, serializes filter+wiki+utils modules to ESM. Upgrade process: `pnpm update tiddlywiki` → re-run script → run tests.
+  - `LarSnapshot.rooms`: pre-computed room filter results embedded in snapshot for instant browser load.
+  - Deterministic process: bump `tiddlywiki` dep → all 86+ TW operators available automatically. No vendoring, no code extraction.
+  - `buildBootClosure(graph, entryUri)` extracted to `lararium-core/compiler.ts` — pure BFS+topoSort on a pre-loaded MemeGraph (enables browser boot without file system).
+- ✓ **Infinite canvas app bootstrap** (`lararium-web/src/app.ts`):
+  - `bootApp(snapshotUrl)`, `bootFromSnapshot(snapshot)`, `bootFromRuntime(runtime)`, `bootFromEmbedded(scriptId)` — four boot modes
+  - `renderAppViews(app)` — dynamic-imports `@lararium/tldraw`, calls `renderAllViews()`, attaches emission to app
+  - `LarApp { runtime, artifact, receipt, emission }` — single live state object
 - ✓ View-switching architecture: `LarViewState` navigation model, three-view rendering (story-river/meme-detail/graph), camera transition helpers in `lararium-tldraw`
   - `view-state.ts`: pure `LarViewState` type + `viewStateReducer()` (8 tests)
   - `multi-view.ts`: `renderAllViews()` → 3 tldraw pages in one emission (story-river/meme-detail/graph); `focusSnapshot()` filters to one meme + direct neighbours
@@ -789,24 +798,679 @@ All target outcomes delivered:
   - `emitTldrawRecords()` accepts `pageOverride` option for multi-page emission
   - 33 tests total in lararium-tldraw; 75 across monorepo
 
-## Milestone 3 — Scope (Next 30 Days)
+<<~/ahu >>
 
-Target outcomes:
+<<~ ahu #tldraw-sync-arch >>
 
-- Streamable HTTP canary in `lararium-mcp`: local-only default, Origin validation, auth hook stub, behind `--http` flag
-- `snapshot.json` produced in CI (`build-snapshot.ts` runs as CI step, artifact uploaded)
-- `lararium-web` Vite build: produces a distributable `dist/lararium-web.js` bundle that boots from an embedded or fetched snapshot
-- Property tests for URI normalization and `? ->` socket resolution (nested `ahu` structures)
-- Boot receipt stability test: two compiles of same graph produce identical receipt hash
-- `lararium-tldraw` skeleton: `packages/lararium-tldraw/` with `projectToTldraw()` stub and tldraw record type stubs — no write-back, pure projection
-- Hostful `lar://alias:tier@host/...` URI parse/resolve support in `lararium-core`
+## tldraw Sync Architecture Decision (2026-04-26)
 
-Do not in Milestone 3:
+### Problem Identified
 
-- Write-back of any kind
-- Kowloon projection package (deferred to Milestone 4)
-- Room/session filtering
-- Full tldraw sync (projection skeleton only)
+The snapshot-injection model (inject `LarSnapshot` JSON into HTML `<script>` tag, browser calls `loadSnapshot()`) creates a race condition under multiplayer use. Two surfaces boot from the same frozen blob, diverge in session state, and have no authority model for reconciliation. TiddlyWiki's single-file multiplayer history and IPFS's content-addressed design both demonstrate that getting this wrong at the base level is expensive to fix later.
+
+### Decision: Skip Phase 1 Static Snapshot — Go Straight to TLSocketRoom
+
+**tldraw's own production pattern (tldraw.com, 400k+ users):**
+
+```
+lares/ → compileMinimalBoot() → renderAllViews() → TLStoreSnapshot
+                                                          │
+                                               (seed once, if room is new)
+                                                          ↓
+                                             SQLiteSyncStorage (room keyed by BootReceipt SHA)
+                                                          │
+                                                 TLSocketRoom (server-authoritative)
+                                                          │
+                               ┌──────────────────────────┴───────────────────────────┐
+                            useSync                                               useSync
+                         (VS Code webview)                                    (Chrome tab)
+```
+
+No snapshot injection in HTML. No `loadSnapshot()` on the client. Browser calls `useSync({ uri: "ws://localhost:4321/rooms/boot" })`. Server owns document state from byte one. No race condition possible.
+
+### Key Architecture Facts (from tldraw docs, Feb 2026)
+
+- `TLSocketRoom` accepts `initialSnapshot` on first creation — this is the seeding path from our projection
+- `SQLiteSyncStorage` is now the default persistence backend (SQLite, not in-memory, survives process restarts)
+- `initialSnapshot` and `onDataChange` are **deprecated** in favor of pluggable `storage` option
+- One `TLSocketRoom` per document — our three pages (story-river, meme-detail, graph) are partitions within one room
+- tldraw sync keeps confirmed server state and optimistic client pending state as **separate layers** — this structurally enforces `canon-promotion-boundary` without extra code
+- `useSync` (from `@tldraw/sync`) replaces the local store; clients never "load" a snapshot, they join a live room
+
+### Room Key = BootReceipt SHA
+
+Room identity is derived from `BootReceipt.sha`, making re-seeding idempotent:
+
+- If SQLite has no record for `sha:${receipt.sha}` → seed from `renderAllViews()` output
+- If SQLite has the record → clients connect and receive deltas
+- lares/ changes → new receipt SHA → new room (old room preserved in SQLite for rollback)
+
+This is content-addressed room identity. Same IPFS discipline: compute-then-address, not name-then-mutate.
+
+### canon-promotion-boundary Holds Structurally
+
+tldraw sync's two-layer model (confirmed server / pending client) is isomorphic to the Lararium trust tier model:
+
+```
+confirmed server state  ≡  hostless canon (lares/ tree)
+pending client state    ≡  hostful live exchange (session pressure)
+```
+
+Canvas edits live in the pending layer. Nothing crosses to server state without a sync commit. Nothing crosses from server state to lares/ canon without a separate promotion ceremony. The boundary is enforced by the protocol, not by convention.
+
+### What Changes in the Codebase
+
+| Component | Old plan | New plan |
+|---|---|---|
+| `lararium-app/src/App.tsx` | `bootFromEmbedded()` + `loadSnapshot()` | `useSync({ uri: wsUrl })` — no local boot |
+| `lararium-node/scripts/serve.ts` | Static file server + snapshot injection | WebSocket server; `TLSocketRoom` per room; seed from projection if SQLite empty |
+| `lararium-web` `bootFromEmbedded` | Primary boot path | Offline/embedded fallback only (single-file wiki mode) |
+| `index.html` injection slot | Required for boot | Optional — only needed for offline mode |
+| Room persistence | In-memory (lost on restart) | `SQLiteSyncStorage` — survives restarts |
+
+### Offline / Embedded Mode Stays
+
+`bootFromEmbedded()` + `loadSnapshot()` remains valid for:
+- Single-file wiki distribution (no server)
+- Offline read-only sessions
+- CI test rendering
+
+It is no longer the primary browser boot path.
+
+### Implementation Order
+
+1. Upgrade `serve.ts` to WebSocket server with `TLSocketRoom` + `SQLiteSyncStorage`
+2. Seed room from `renderAllViews()` on first connection if SQLite empty
+3. Replace `bootFromEmbedded` + `loadSnapshot` in `App.tsx` with `useSync`
+4. Add `@tldraw/sync` as dep to `lararium-app`, `@tldraw/sync-core` to `lararium-node`
+
+Do not ship the snapshot-injection server as the primary path. Offline mode only.
+
+<<~/ahu >>
+
+<<~ ahu #milestone-4-scope >>
+
+## Milestone 4 — Complete (2026-04-26)
+
+### Completed
+
+**Crypto provider boundary (replaces djb2 crypto-shim)**
+- ✓ `CryptoProvider` / `DigestProvider` / `RandomProvider` interfaces in `lararium-core/src/crypto.ts`
+- ✓ `webDigest()`, `webGetRandomValues()`, `webRandomUUID()`, `defaultCryptoProvider`
+- ✓ Canonical bytes helpers: `utf8Bytes()`, `canonicalJson()`, `canonicalJsonBytes()`, `hex()`, `sha256Hex()`
+- ✓ `compileBootReceipt()` async, uses `canonicalJsonBytes` + `sha256Hex`; `import { createHash } from 'crypto'` removed
+- ✓ `crypto-shim.ts` deleted; vite `crypto` alias removed from `lararium-web`
+- ✓ Known-vector test: SHA-256("abc") = `ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad` — passes
+- ✓ All callers (stdio.ts, cli.ts, app.ts, no-write-gate.test.ts, parity.test.ts) updated to `await`
+- ✓ `lares/lararium-node/CRYPTO.md` doctrine carrier
+
+**ATProto / Bluesky login doctrine**
+- ✓ Doctrine-only — no implementation
+- ✓ `lares/lararium-node/AUTH-ATPROTO.md`: BFF-preferred, SDK-managed PKCE/PAR/DPoP, seven identity layers, k256 out of scope
+
+**Infinite canvas app scaffold**
+- ✓ `packages/lararium-app/` created: `index.html`, `main.tsx`, `App.tsx`, `LarariumCanvas.tsx`, `SidePanel.tsx`
+- ✓ `viewStateReducer` wired; Back and Graph buttons in `SidePanel`
+- ✓ All packages typecheck clean
+
+**Multiplayer sync server (replaces snapshot injection)**
+- ✓ `packages/lararium-node/scripts/serve.ts` rewritten as `TLSocketRoom` + `SQLiteSyncStorage` WebSocket server
+- ✓ `better-sqlite3` backend (not `node:sqlite`) — matches official tldraw template
+- ✓ Room seeded from `renderAllViews(artifact)` on first connection if SQLite empty; idempotent on resume
+- ✓ Room ID = `"boot"` (content-addressed SHA keying deferred to Milestone 5)
+- ✓ `@tldraw/sync-core` + `better-sqlite3` + `ws` added to `lararium-node` deps
+- ✓ Static file server injects `<meta name="lararium-ws">` into `index.html` (no snapshot blob)
+- ✓ WebSocket handler follows official tldraw simple-server-example: sessionId from URL query param, message buffering pattern, ws passed directly to `handleSocketConnect`
+
+**Browser client upgrade**
+- ✓ `App.tsx` rewritten: reads `wsUrl` from `<meta name="lararium-ws">` or same-host fallback; `useReducer(viewStateReducer)` nav state; `app={null}` (sync mode, no local boot)
+- ✓ `LarariumCanvas.tsx` rewritten: `useSync({ uri: wsUrl })`, `loading` / `error` / `synced-remote` states handled; `useEffect([store.status, navState])` drives `syncNavState`
+- ✓ `SidePanel.tsx` accepts `app: LarApp | null`; gracefully shows `--- memes` when null
+
+**tldraw v4 schema compliance (found and fixed during browser testing)**
+- ✓ All shape IDs must start with `shape:` — `memeFrameId`, `ahuFrameId`, `edgeArrowId`, note IDs all fixed in `records.ts` / `project.ts`
+- ✓ Index key format: replaced broken `a${n.toString(36)}` with `getIndexAbove`/`getIndicesAbove` from `@tldraw/utils`
+- ✓ Multi-view shape ID scoping: `scopeId()` rewrites `shape:foo` → `shape:${pageSlug}__foo` — collision-free across views, `shape:` prefix preserved
+- ✓ `TLArrowRecord` / `TLNoteRecord` now imported from `tldraw` directly and used with `satisfies` — schema drift is now a compile error, not a runtime `ValidationError`
+- ✓ Arrow props: `kind: "arc"`, `labelColor: "black"`, `fill: "none"`, `font: "draw"`, `elbowMidPoint: 0.5` added
+- ✓ Note props: `labelColor: "black"`, `font: "draw"`, `fontSizeAdjustment: 0` added
+- ✓ 34/34 `@lararium/tldraw` tests pass; 36 `@lararium/node` tests pass
+
+**Build hygiene**
+- ✓ `tldraw` and `tiddlywiki5` git submodules removed; versioned npm deps replace them
+- ✓ `@tldraw/utils@^4.5.10` added to `lararium-tldraw`; `pnpm-workspace.yaml` no longer includes `tldraw/packages/*`
+- ✓ TW5 help banner suppressed during `boot.boot()` in `tw-filter.ts` (stdout redirect during init)
+- ✓ `mempalace`, `kowloon`, `kowloon-frontend`, `kowloon-client` submodules retained (private/co-developed)
+
+**Design docs**
+- ✓ `lares/lararium-node/MULTIPLAYER-INFINITE-CANVAS-WIKI.md` — canonical design constitution for the multiplayer canvas system (system role, room model, seeding contract, trust tiers, canon boundary, views, MCP surface plan, deployment topology, open questions)
+
+### Known Open Items (carry to Milestone 5)
+
+- ⚠ `SidePanel` story river is empty (`app=null`); population requires store-derived selector over `editor.getShapes()` or `/api/boot/artifact` endpoint
+- ⚠ Room ID is `"boot"` string — content-addressed SHA keying not yet implemented
+- ⚠ UCAN access tier gating: design in MULTIPLAYER-INFINITE-CANVAS-WIKI.md, not implemented
+- ⚠ Path traversal guard in static file server: `join(APP_DIST, pathname)` has no boundary check
+- ⚠ WS URL injected as `ws://${HOST}:${PORT}` — should derive from request `Host` header for proxy/LAN correctness
+- ⚠ Double-click on frame shapes → zoom-in dispatch (tldraw v4 event API)
+- ⚠ Portal shapes connecting rooms
+
+<<~/ahu >>
+
+<<~ ahu #milestone-5-scope >>
+
+## Milestone 5 — In Progress (2026-04-26)
+
+### Completed (this session)
+
+**Canvas UX + Kinopio Alignment Sprint**
+
+- ✓ `TLArrowBindingRecord` emitted and seeded into store — drag-follows-arrow Kinopio behavior wired at the binding layer
+- ✓ Multi-view bindings merged across story/detail/graph emissions
+- ✓ Dead layout constants removed from `project.ts` (FRAME_W/H were computed but never stored — data layer is now geometry-free)
+- ✓ `LarariumShell` — Kinopio-style chrome: `position:fixed; pointer-events:none` header; canvas fills 100vh; canvas mode toggle (`` ` `` key, dims Lararium chrome, restores tldraw toolbar); error boundary with reload button; debug globals gated to `NODE_ENV=development`
+- ✓ `⌘K` command palette: **Spaces** section (DEFAULT_ROOMS with chronometer glyphs) above **Memes** section; unified arrow-key navigation across both sections
+- ✓ `zoom-levels.ts` — five-level ontology: `strategic/operational/tactical/combat/action` → 🗺️⚙️🔍⚔️⚡ mapped to chronometer scale positions; `classifyZoom()`, `ZOOM_SNAP`, `ZOOM_PAGE`; exported from `@lararium/tldraw`
+- ✓ Zoom auto page-switching: `editor.store.listen()` detects zoom threshold crossings → auto-switches to graph page (strategic/operational) or story page (tactical); `onZoomLevel` callback surfaces level to shell footer glyph
+- ✓ `LarPortalShapeUtil` — custom tldraw shape: hexagonal badge, blue border, `targetRoomId` + `label` props; registered via `shapeUtils` prop
+- ✓ Portal shapes emitted at `y=-80` above each page via `emitPortalShapes()` in `multi-view.ts` — placed for all live portal edges in DEFAULT_PORTALS
+- ✓ `GO_TO_ROOM` action in `LarViewState` reducer + `"room"` view kind; `syncNavState` calls `goToRoom()` on dispatch
+- ✓ Content-addressed room key: `boot-${receiptSha.slice(0, 16)}` — idempotent across recompiles; meta tag injection updated
+- ✓ `/admin/reseed` endpoint (localhost-only), `/api/rooms` endpoint
+- ✓ All packages build clean; 36/36 tests passing
+
+### Also completed in M5 session (2026-04-27)
+
+**Schema/validation fix**
+- ✓ `lar-portal` custom shape type replaced with built-in `geo` (hexagon) + `meta: { larPortal, targetRoomId, label }` — tldraw's server-side schema (`DEFAULT_INITIAL_SNAPSHOT.schema`) rejects unknown types on sync; no custom `ShapeUtil` or schema registration needed
+- ✓ `LarPortalShapeUtil` deleted; portal detection in double-click handler reads `shape.meta.larPortal`
+- ✓ Zoom `store.listen` scoped to `{ scope: "session" }` — camera is session-scoped; fires ~100× less than unscoped
+
+**Security hardening**
+- ✓ Path traversal guard: `resolve(filePath)` checked against `APP_DIST` prefix; 403 on escape
+- ✓ WS URL from `req.headers.host` + `x-forwarded-proto` — LAN/proxy clients get correct address
+
+**UX shell + kinopio alignment (2026-04-27)**
+- ✓ `LarariumShell` — kinopio-model chrome: `position:fixed; pointer-events:none` header, all UI via React portal into `document.body`, canvas fills 100vh
+- ✓ ⌘K command palette: Spaces + Memes sections, unified arrow-key nav
+- ✓ Canvas mode toggle (`` ` `` key): dims Lararium chrome, restores tldraw toolbar; toggle pill bottom-left
+- ✓ `SidePanel` removed — palette is the navigation surface
+- ✓ Zoom-level ontology (strategic/operational/tactical/combat/action) with FTLS-scale thresholds (0.15/0.35/0.80/1.50); footer glyph tracks live
+- ✓ MULTIPLAYER-INFINITE-CANVAS-WIKI.md and ROADMAP.md aligned to current implementation
+
+**Pending browser smoke (Milestone 6 opens)**
+- ⚠ Drag-follows-arrow: binding records type-correct; tactile test pending
+- ⚠ Portal double-click: geo+meta → GO_TO_ROOM path untested live
+- ⚠ Zoom auto page-switch: threshold logic correct; live camera interaction untested
+- ⚠ `/api/memes` console error: fetch hits Vite (5173), no handler — decision required: Vite proxy to serve.ts OR replace fetch with `editor.getShapes()` (target model)
+- ⚠ MCP co-location: stdio server alongside HTTP/WS server in `packages/lararium-node`
+
+<<~/ahu >>
+
+<<~ ahu #milestone-6-scope >>
+
+## Milestone 6 — In Progress (2026-04-27)
+
+### Priority 1: Browser smoke + canvas wiring verification
+
+Open running server, verify tactile (Playwright session):
+- Drag a meme frame → arrows follow (binding records emitted, tactile unconfirmed)
+- Double-click portal badge (geo+meta) → room page switches
+- Zoom out past 0.35 → auto-switches to graph page; zoom back → story river
+- ⌘K → Spaces section shows rooms with chronometer glyphs; Enter navigates
+- Canvas mode toggle (`` ` ``): Lararium chrome dims, tldraw toolbar appears
+
+Fix whatever breaks. M5 canvas wiring is partially unvalidated.
+
+### Priority 2: Tensegrity audit — code gaps found 2026-04-27
+
+Eight structural gaps found by walking all packages against the kinopio/multiplayer model:
+
+| # | Location | Issue | Severity |
+|---|---|---|---|
+| T1 | `LarariumShell.tsx` header | Breadcrumb hardcodes `"the-altar-fire"` — never updates on `GO_TO_ROOM` | **Broken live** |
+| T2 | `App.tsx` → `LarariumCommandPalette` | Meme list from `/api/memes` fetch — fails in all dev paths; palette Memes section always empty | **Broken live** |
+| T3 | `multi-view.ts` `ROOM_PAGE` | Duplicates `room.ts` `roomPageId()` — two sources of truth for room→page mapping, can drift | Mechanical fix |
+| T4 | `room.ts` `portalShapeId` | Returns `frame:portal_${...}` — portals are now `shape:portal_${...}` geo shapes; function is wrong and unused | Dead export |
+| T5 | `view-state.ts` `ZOOM_OUT` action | Exported, reducer handles it, nothing dispatches it — shadow nav | Orphan |
+| T6 | `lararium-web/src/app.ts` | Full offline boot API (`LarApp`, `bootFromSnapshot`, `renderAppViews`) orphaned from primary `useSync` path — no handoff signal | Slack |
+| T7 | `lararium-tldraw/src/render.ts` `renderToTldraw` | Single-view pipeline coexists with `renderAllViews`; nothing calls it in prod — looks dead but is the right shape for `meme:${uri}` rooms | Needs comment |
+| T8 | `room.ts` `roomEntries` + `MemeFilter` | Designed for per-room TW5 filtering; not yet wired to serve.ts seeding; `invariants`/`entry` rooms unresolvable | Unwired |
+
+Fix order: T1 → T2 → T3+T4+T5 (mechanical batch) → T6+T7+T8 (commentary).
+
+### Priority 3: `/api/memes` resolution
+
+Console error on boot: `fetch /api/memes` hits Vite (5173), returns HTML 404.
+
+Decision required (one of):
+- **(a) Vite proxy:** add `server.proxy` in `vite.config.ts` forwarding `/api/*` and `/rooms/*` to `serve.ts:4321`. Preserves HMR. Requires `serve.ts` running in parallel dev loop.
+- **(b) Skip fetch entirely:** replace `App.tsx` fetch with `editor.getShapes()` filtered to `meta.frameKind === "meme"` — CRDT-native, no separate endpoint. This is the target model (MULTIPLAYER §open-questions #2). Zero backend dependency.
+
+Option (b) is the architecturally correct path. Option (a) is simpler if `serve.ts` is already running.
+
+### Priority 3: Security hardening — complete (2026-04-26)
+
+- ✓ Path traversal guard: `resolve(filePath)` against `APP_DIST`
+- ✓ WS URL from `req.headers.host` + `x-forwarded-proto`
+
+### Priority 4: MCP integration (partially complete 2026-04-26)
+
+**Done**
+- ✓ `wikitext-filter` tool: TW5 filter expression evaluated against boot closure — `[all[memes]tag[...invariant]]`, `[field:depth[0]]`, etc.
+- ✓ `lararium-room_list` tool: DEFAULT_ROOMS with page IDs and filter expressions
+- ✓ `lararium-edge_list` tool: all pranala arrows from projection, optional family filter
+- ✓ `filterMemesTW` + `precomputeRooms` exported from `@lararium/node` via new `@lararium/core/tw-filter` subpath export (keeps browser bundle clean)
+
+**Remaining**
+- ⚠ MCP ↔ canvas bridge: `stdio.ts` compiles fresh from `lares/` on each tool call — it cannot see live room state (active connections, shape positions, session camera). Bridge requires either: (a) `stdio.ts` queries `serve.ts` HTTP API for live state, or (b) both run in the same process. Env var `LARARIUM_HTTP_URL` would let `stdio.ts` query the canvas server.
+- ⚠ `lararium-meme_list` tool: currently `lararium-compile_minimal_boot` covers this but lacks the flat URI+depth+kind summary format that is optimally tool-shaped
+
+### Priority 5: UX chrome — tldraw component slot integration ✓ (2026-04-27)
+
+**Implemented.** All Lararium chrome moved into tldraw component slots. No `position:fixed` header competing with tldraw panels.
+
+Slot mapping (as shipped):
+
+| Lararium element | tldraw slot | Notes |
+|---|---|---|
+| Room breadcrumb + status badge | `MenuPanel` | Top-left; room name, zoom glyph, meme count, view badge |
+| ⌘K trigger + theme cycle button | `SharePanel` | Top-right |
+| Back / Graph / Wiki-Canvas toggle + zoom glyph | `HelperButtons` | Bottom-right row |
+| NavigationPanel (minimap + zoom) | tldraw default | Bottom-left; restored in both wiki and canvas modes |
+| Command palette overlay | `position:fixed` | Intentionally covers everything; z-index: 800 |
+
+Key patterns:
+- Slot components are stable **module-level** refs in `lararium-context.tsx` — tldraw never remounts them
+- All state is shared via `LarariumCtx` React context — slot components read it without prop drilling
+- `WIKI_COMPONENTS`: Toolbar/StylePanel/PageMenu/MainMenu/ZoomMenu/QuickActions/TopPanel all null; Lararium slots + NavigationPanel default
+- `CANVAS_COMPONENTS`: PageMenu/TopPanel null; Lararium slots + NavigationPanel + tldraw drawing chrome (Toolbar, StylePanel etc.) restored
+
+### Priority 6: Theme system — Gruvbox CSS tokens + selector ✓ (2026-04-27)
+
+**Implemented.**
+
+- `src/lararium-theme.css` — CSS custom property overrides scoped to `html[data-theme]`. Selector specificity: `html[data-theme="gruvbox-dark"] .tl-theme__dark { ... }` beats tldraw defaults without `!important`.
+- `useTheme()` hook in `lararium-context.tsx` — reads `localStorage("lararium.theme")`, applies `data-theme` on init, cycles via `cycleTheme()`.
+- Theme cycle: `system → gruvbox-dark → gruvbox-light → system`
+- `SharePanel` shows `◑ / 🌑 / ☀` button; click cycles theme.
+- `LarariumCanvas` syncs tldraw `colorScheme` (`dark` / `light` / `system`) whenever theme changes via `useEffect`.
+- `index.html` inline `<script>` applies stored theme before first paint — no flash on reload.
+- Default: `gruvbox-dark`.
+
+See MULTIPLAYER `#theme-system` for full CSS token tables.
+
+### Priority 7: Meme count reactive subscription ✓ (2026-04-27)
+
+**Implemented.** `store.listen(() => { debounce(scanMemes, 150) }, { scope: "document" })` added inside the `synced-remote` `useEffect` in `LarariumCanvas`. One-shot scan on first sync, then live re-scan on any shape add/remove/meta change. `scope: "document"` skips camera/presence records — fires ~100x less than default. Cleanup returns both `unsub()` and `clearTimeout`.
+
+Do not in Milestone 6:
+- Canon promotion / write-back to `lares/`
+- UCAN implementation (design frozen)
+- Kowloon projection
+- Multi-user presence / cursors
+- Single-page zoom-gated rendering (blocked on namespace collision resolution — current three-page model stays)
+
+<<~/ahu >>
+
+<<~ ahu #milestone-6-tensegrity-close >>
+
+## Milestone 6 — Tensegrity Close (2026-04-27)
+
+All eight structural gaps (T1–T8) audited against current code:
+
+| # | Gap | Status |
+|---|-----|--------|
+| T1 | Breadcrumb hardcodes "the-altar-fire" | ✓ Resolved — `activeRoomName(navState)` reads `DEFAULT_ROOMS` map; updates on `GO_TO_ROOM` |
+| T2 | Meme list from `/api/memes` fetch | ✓ Resolved — replaced with `store.listen + editor.getCurrentPageShapes()` CRDT-native scan |
+| T3 | `ROOM_PAGE` duplicates `room.ts` `roomPageId()` | ✓ Resolved — `multi-view.ts` now imports `roomPageId` from `room.ts` and builds map from it |
+| T4 | `portalShapeId` wrong dead export | ✓ Resolved — export removed; portal detection reads `shape.meta.larPortal` |
+| T5 | `ZOOM_OUT` orphan action | ✓ Resolved — removed from `view-state.ts` exports |
+| T6 | `lararium-web` offline boot orphaned | Commentary — `bootFromEmbedded` retained as offline fallback per design |
+| T7 | `renderToTldraw` single-view pipeline coexists with `renderAllViews` | Commentary note added in source |
+| T8 | `roomEntries + MemeFilter` unwired from `serve.ts` seeding | Deferred — per-room TW5 filtering deferred to wiki-recipe carriers milestone |
+
+Milestone 6 complete. All blocking live gaps resolved. Commentary items documented.
+
+<<~/ahu >>
+
+<<~ ahu #milestone-7 >>
+
+## Milestone 7 — Meme Store Substrate (Complete 2026-04-27)
+
+Research foundation: `lares/lararium-node/MEME-STORE-FOUNDATIONS.md`
+
+Three converging pressures from TW5 tiddler contract, UE5 World Partition schema enforcement, and AST self-hosting grammar define the substrate that must hold before canon promotion, UCAN, or multi-user presence can land safely.
+
+Three laws:
+- **`meme-immutability`** — a confirmed meme is never mutated; edits produce new URIs; re-seeding replaces the full room snapshot (not individual shapes)
+- **`pranala-schema-binding`** — each pranala family declares an invariant property contract; validation runs at parse time; schema definitions live as memes in `lares/grammars/`
+- **`grammar-as-memes`** — all grammar rules and template definitions live as carrier memes; the TypeScript parser is a thin interpreter; grammar changes take effect after re-seed without a TypeScript rebuild
+
+### Priority 8: `/admin/reseed` endpoint ✓ (shipped in Milestone 5)
+
+**Completed.** `GET /admin/reseed?roomId=boot` kills the SQLite room entry and re-seeds from `renderAllViews(artifact)` on next WebSocket connect. `/api/rooms` endpoint lists active rooms. Both gated to non-prod. Unlocks the `lares/` edit → live canvas loop without restarting the server.
+
+### Priority 9: Pranala family property contracts + compile-time validation ✓ (2026-04-27)
+
+**Implemented.** `validatePranaEdge(edge)` added to `pranala-parser.ts`. `FAMILY_CONTRACTS` map defines per-family rules. `validateClosure()` in `compiler.ts` runs the validator against all edges in the graph and populates `ValidationResult.edgeViolations`. `BootReceipt.validation` surfaces `edgeViolationCount` + `edgeErrors` counts.
+
+Violation model:
+| Severity | Rule | Condition |
+|---|---|---|
+| `error` | `unknown-family` | family not in `[control, relation, observe, dataflow]` |
+| `warning` | `role-recommended` | `control` or `dataflow` edge missing `role` |
+| `error` | `confidence-out-of-range` | `observe` edge with `confidence` outside `[0, 1]` |
+
+Sugar forms (loulou/aka/kahea) never set `role` — correctly reported as warnings, not errors. 43/43 tests pass including 11 new contract tests.
+
+Future: extract `FAMILY_CONTRACTS` to `lares/grammars/pranala-families.md` carrier (Phase 2 grammar-as-memes).
+
+### Priority 10: Grammar Phase 2 scaffolding ✓ (2026-04-27)
+
+**Implemented (Phase 2 scaffold — wiring deferred to Phase 2.5).**
+
+- `lares/grammars/memetic-wikitext.md` — grammar carrier meme with `[[sigils]]` and `[[families]]` TOML arrays; full sigil registry (ahu, pranala, loulou, aka, kahea, iam, header) and family contracts table
+- `GrammarRules`, `SigilRule`, `FamilyRule` interfaces exported from `@lararium/core` (`pranala-parser.ts`)
+- `loadGrammarRules()` function in `node-host.ts` — reads grammar carrier from `lares/grammars/memetic-wikitext.md`, extracts `[[sigils]]` + `[[families]]` into a `GrammarRules` object, returns `null` on missing file (bootstrap safety net)
+- 85/85 tests pass
+
+**Phase 2.5 complete (2026-04-27):** `GrammarRules` threaded as optional third arg to `parsePranalaEdges`. Hard-coded regex constants promoted to configurable values derived from the grammar meme when present; fall back to built-in constants on missing file. `loadGrammarRules()` in `node-host.ts` reads `lares/grammars/memetic-wikitext.md`, parses `[[sigils]]` + `[[families]]` TOML arrays. `buildControlClosure` calls it at boot and passes `grammar` through all downstream meme loaders. TOML parser uses self-terminating quoted-string regex — `#` inside quoted strings is not treated as comment. 95/95 tests passing including 11 grammar-loader tests.
+
+**Hot-reload path now live:** Edit grammar carrier in `lares/grammars/memetic-wikitext.md` → `GET /admin/reseed` → server rebuilds from fresh disk → grammar rule changes take effect without TypeScript rebuild.
+
+**Phase 3 (next):** Parser itself becomes a meme. Template cascade (tldraw projection) driven by grammar memes. Canvas can edit its own renderer. Sigil rules and family contracts editable as canvas shapes, promoted via canon-promotion ceremony.
+
+<<~/ahu >>
+
+<<~ ahu #milestone-7-grammar-extension >>
+
+## Milestone 7 — Grammar Extension (post-M7, 2026-04-27)
+
+After M7 closed, a full grammar session substantially completed Phase 2 of the grammar-as-memes work. This is tracked here as an extension of M7 before M8 opens.
+
+### What was completed
+
+**Grammar meme (`lares/grammars/memetic-wikitext.md`) — sigil registry expanded from 7 → 40 entries:**
+
+- Core 7 preserved and description-updated (`ahu`, `pranala`, `loulou`, `aka`, `kahea`, `iam`, `pranala-header`)
+- Conditional `[C]`: `wai` (if), `mukuwai` (else), `kahawai` (elif)
+- Iteration `[SC]`: `huli` (for/seek)
+- Context binding `[SC]`: `meme` (explicit lexical scope setter — replaces TW5 `currentTiddler` ambient leak)
+- Definition pragmas `[SC]`: `wehe` (procedure/define), `helu` (function — filter-expression yielding)
+- Render sugar `[SC]`: `kapu` (boundary posture, render-layer qualification), `hana` (bounded guest grammar block), `ui` (query/filter render)
+- Constraint sugar `[SC]`: `pono` (constraint family edge sugar — structural rule declaration; compile-layer; distinct from `kapu`)
+- Concurrency `[SC]`: `hui` (sync-all), `heihei` (race), `puka` (rush/fire-fastest), `lele` (branch/fire-and-forget — only concurrency sigil emitting `family:message` graph artifact)
+- English aliases (18): `\procedure`, `\function`, `\define`, `\link`, `\shadow`, `\if`, `\else`, `\elif`, `\for`, `\sync`, `\race`, `\rush`, `\branch`, `\tiddler`, `\transclude`, `\guard`, `\task`, `\query`
+- Guest grammar registry: `x-tiddlywiki-filter` (legacy/import), `wikitext-filter` (active native dialect)
+
+**`wikitext-filter` dialect (`lares/grammars/wikitext-filter.md`) — new carrier:**
+
+Forked from `x-tiddlywiki-filter`. Key departures:
+- `[toml:key[value]]` replaces `!!field` (queries `#iam` TOML metadata by type)
+- `[edge:family[X]role[Y]]` replaces `##index` (queries compiled pranala edge graph)
+- `[self[]]` replaces `+currentMeme`/`currentTiddler` ambient lookup
+- `[ahu:id[fragment]]` — queries by ahu fragment anchor
+- Explicit lexical scope model: no ambient dynamic variable; `meme` sigil provides context binding
+
+**`memetic-wikitext-spec.md` — holistic spec complete:**
+
+- TW5 + Verse/UEFN AST parity map (full operator and sigil coverage)
+- English alias namespace: `\` prefix erased to canonical Hawaiian at parse time; 18 aliases registered
+- Message routing protocol: `family:dataflow` root-downward (SwiftUI Environment / Flutter InheritedWidget); `family:message` leaf-upward (SwiftUI PreferenceKey / Flutter NotificationListener) — validated against both
+- Concurrency model: Verse 1:1 alias mapping (`hui`=`sync`, `heihei`=`race`, `puka`=`rush`, `lele`=`branch`)
+- `kapu`/`pono` distinction: `kapu` = render-layer boundary posture; `pono` = compile-layer structural rule assertion
+- Gap 1 (`constraint` family sugar) closed: `pono` registered `[SC]`
+- Register system: `[C]` (operator canon), `[SC]` (Synthetic Canon), `[S]` (synthesis/proposal)
+- `[CS]` → `[SC]` rename throughout all grammar files
+
+**Research carrier (`lares/ha-ka-ba/docs/pono/sigil-grammar-research.md`) — new carrier:**
+
+Hawaiian vocabulary grounding, operator rulings log, precedent alignment (TW5/Liquid/MCP/SwiftUI/Flutter/Elm/Verse), full sigil vocabulary table with register, source notes with confidence levels.
+
+### Key distinctions established
+
+| Concept | Sigil | Layer | Role |
+|---|---|---|---|
+| Lexical scope | `meme` | both | Explicit context binding; replaces TW5 ambient `currentTiddler` |
+| Boundary posture | `kapu` | render | Inline qualification: confidence, restriction, unresolved threshold |
+| Structural rule | `pono` | compile | Constraint family edge: invariant that must hold; no execution pulse |
+| Filter query | `ui` | render | Render surface for wikitext-filter result sets |
+| Work block | `hana` | both | Bounded guest grammar block; grammar-key selects interpreter |
+| Fire-and-forget | `lele` | compile | Only concurrency sigil producing `family:message` graph artifact |
+
+### Phase 2 status (2026-04-27)
+
+Phase 2 substantially complete. Grammar meme at 40 registered sigils (post-M7 session).
+
+### Grammar Phase 2.x Extension (2026-04-27) — this session
+
+After the Phase 2 session documented above, a further grammar extension session completed the remaining gaps and added the 7th pranala family.
+
+**New sigils registered:**
+
+- `kau` — variable binding; `<<~! kau name = val >>` = carrier-scoped (hoisted pragma); `<<~ kau name = val >>...<<~/kau >>` = block-scoped; `!` carries scope elevation promise
+- `kumu` — element type definition (`\widget` equivalent); declares a new grammar node type (distinct from `wehe` which is text/content template)
+- `papalohe` — reaction family edge sugar; *pāpālohe* (Lua martial arts: body-listening reflex, heightened reflexive awareness); UEFN device graph event wire; `trigger` property carries event name
+- `kapu` block form — added `open_pattern`/`close_pattern` alongside existing inline `pattern`
+
+**New English aliases registered:**
+
+`\const`, `\let`, `\var` → `kau` | `\widget`, `\type`, `\typos` → `kumu` | `\import` → `kahea` | `\constraint` → `pono`
+
+**7th pranala family — `reaction`:**
+
+"When source fires event, target awakens." UEFN device graph event subscriptions. `papalohe` is the sugar sigil. Wired in `KNOWN_FAMILIES`, `FAMILY_CONTRACTS`, event loop, `ActiveRegexes`. `trigger` property stored in `payload["trigger"]`.
+
+**AST type layer (Phase 3 — compressed):**
+
+`packages/lararium-core/src/ast.ts` — `MemeAstNode` union compressed to **8 node kinds**. 15 typed interfaces collapsed into `SigilNode { sigilName, attrs, body }`. `MetadataNode` removed — `toml`/`iam` are now `SigilNode`. `DynamicNode` added as grammar-meme escape hatch. `#ast-node-types` spec section updated to reflect compressed model.
+
+**Phase 3 parser (`parseMemeCarrier`):**
+
+New primary API: `parseMemeCarrier(uri, text, grammar?) → MemeAstNode[]`. SAX-internally (`collectEvents`), tree output (`buildAst`), edge projection (`edgesFromAst`). Inline alias erasure via `SigilScan.canonicalName` — no separate `eraseAliases` phase. `parsePranalaEdges` retained as stable edge-only API (avoids circular dep). BOOTSTRAP_SCANS drive the parser before grammar rules load.
+
+**`wikitext-filter.md`:** Added `[edge:family[reaction]trigger[X]]` operators section.
+
+**Test count:** 64 → 84 (20 new tests in `grammar-phase2x.test.ts` + `parser-phase3.test.ts` covering `papalohe`, reaction family contracts, Phase 3 tree structure, parity with `parsePranalaEdges`, alias erasure, `DynamicNode`, kau scope).
+
+<<~/ahu >>
+
+<<~ ahu #milestone-7-complete >>
+
+## Milestone 7 — Summary
+
+All three laws landed:
+
+| Priority | Item | Status |
+|---|---|---|
+| P8 | `/admin/reseed` endpoint | ✓ shipped M5 |
+| P9 | Pranala family property contracts + compile-time validation | ✓ shipped M5 |
+| P10 | Grammar Phase 2 scaffold + Phase 2.5 wiring | ✓ shipped M7 (2026-04-27) |
+| — | `lares/README.md` → carrier meme + resolver registration | ✓ shipped M7 (2026-04-27) |
+| — | `lares/.laresignore` + full `lares/` tree walk | ✓ shipped M7 (2026-04-27) |
+
+**Parity baseline change:** `lar:///README` now resolves as a `CAPS_FILE_ROOT` to `lares/README.md`. Carrier index and full boot closure will include it from next boot. Fixture counts will increase by one.
+
+<<~/ahu >>
+
+<<~ ahu #milestone-8-scope >>
+
+## Milestone 8 — Single-Page Zoom + kumu Template Pipeline (Complete 2026-04-28)
+
+### Completed
+
+**Single-page zoom-gated rendering (replaces three-page model)**
+- ✓ `renderAllViews()` collapsed to one page (`page:boot`) — URI-stable shape IDs, no `pageOverride` scoping
+- ✓ `applyZoomTemplate(editor, level)` — batch `editor.updateShapes()` on zoom threshold crossings; reads `shape.meta.templateProps[level]`
+- ✓ `ratingFromShape()` helper — maps `meta.rating` → tldraw color string; used by `color="rating"` template prop
+- ✓ Five `ZoomTemplateKey` levels: `strategic/operational/tactical/combat/action`
+- ✓ Multi-view tests updated: 34/34 pass against single-page model
+- ✓ MULTIPLAYER and ROADMAP docs updated to reflect single-page model as shipped
+
+**kumu template pipeline — fully wikitext-native**
+- ✓ Five template carriers at `lar:///ha.ka.ba/api/v0.1/lararium/templates/meme-*` (in `ha.ka.ba/api` namespace — no adjacent namespace)
+- ✓ `lares/ha-ka-ba/api/v0.1/lararium/templates/index.md` — namespace index, owns control edges to all five; wired from `lararium` meme via `#hydrate-templates` (control:owns)
+- ✓ Each template TOML body carries: `zoom-level`, `cascade` (filter predicate string), `priority`, `w`, `h`, `color`, `label`, `include-ahu`, `show-notes`, `show-carrier`, `opacity`
+- ✓ `<<~ kumu name(params) >>` / `<<~/kumu >>` direct form added to `SIGIL_SCANS` in `parser.ts` (alongside `\\widget` alias)
+- ✓ `collectKumuDefs()` + `collectKumuDefsFromGraph()` — extract kumu defs from boot closure carriers
+- ✓ `buildKumuRegistry(artifact.kumuDefs)` → `KumuRegistry` → `buildTemplatePropsByLevel(registry)` → `TemplatePropsByLevel` seeded into `shape.meta.templateProps` at projection time
+- ✓ `MemeTemplateProps` extended with `zoomLevel` (self-declared level name) and `cascade` (predicate string) — stored in CRDT for future wikitext-filter path
+- ✓ `DEFAULT_TEMPLATE_PROPS` updated with `zoomLevel` + `cascade` fallback values
+- ✓ `CRDT-native carrier text` — `shape.meta.carrierText` seeded at projection; `MemeDetailPanel` reads from store
+- ✓ Boot closure now includes 25 memes (up from 19); all exist; `allExist: true`; 229/229 tests green
+
+**CRDT-native carrier text + Meme detail panel**
+- ✓ `shape.meta.carrierText` — carrier text seeded at projection time, stored in tldraw CRDT store; no HTTP fetch
+- ✓ `MemeDetailPanel` — slides up from viewport bottom on `meme-detail` view; reads carrier text from store via context editor; parses with `parseMemeCarrier`; Escape/backdrop dismisses
+
+**TW5 cascade + UEFN instance model research (2026-04-28)**
+- ✓ TW5 `:cascade` filter run prefix: priority-ordered list of tagged tiddlers; each evaluates arbitrary filter expression against tiddler context; first non-empty result is the template title. Cascade rules are authored as tiddlers — no core JS modification.
+- ✓ UEFN Verse `creative_device`: class definition in `.verse` source (shared code); per-instance `@editable` props stored as level data (serialized at editor time, hydrated at simulation start). The class/instance seam is the exact `kumu` definition / placed instance seam. Inter-device topology is flat, pre-baked into per-instance level data — no runtime scene graph traversal. Maps directly to pranala edges declared in carrier fields.
+
+### Priority 1: Browser smoke testing (Playwright)
+
+Verify all M5/M6 tactile behaviors in a running instance. These were code-complete but not tactilely confirmed:
+
+- Drag meme frame → arrows follow (binding records in store, verify tactile)
+- Double-click geo portal (meta.larPortal) → room page switches
+- Zoom out past 0.35 → auto-switches to graph page; zoom in → story river
+- ⌘K → Spaces section shows rooms with chronometer glyphs; Enter navigates
+- Canvas mode toggle (`` ` ``): Lararium chrome dims, tldraw toolbar appears
+- Theme cycle button (◑/🌑/☀) → CSS tokens update; no flash on reload
+- `/admin/reseed` → grammar rule change takes effect without restart
+
+Fix whatever breaks. Mark each item confirmed or filed as a bug.
+
+### Priority 2: Meme detail panel ✓ (shipped M8)
+
+`MemeDetailPanel` implemented. CRDT-native: reads `meta.carrierText` from store, parses with `parseMemeCarrier`, renders AST. Slides from viewport bottom on `meme-detail` navState. Escape/backdrop dismisses. No server round-trip.
+
+### Priority 3: Content-addressed room keys
+
+Current: room ID is static `"boot"` string. Target: `boot-${receipt.sha.slice(0, 16)}`.
+
+Requires: client redirect logic when the expected room key changes. `GET /api/rooms` already returns room list. Meta tag `lararium-ws` can embed room key alongside WS URL. Browser reads room key, reconnects to correct room.
+
+### Priority 4: Grammar Phase 3 scaffolding
+
+Phase 2 is substantially complete (40 sigils registered, `wikitext-filter` dialect, TW5+Verse parity, English aliases, `kapu`/`pono` constraint distinction). See `#milestone-7-grammar-extension` for full detail.
+
+Phase 3 targets — parser becomes a meme. Template cascade (tldraw projection) driven by grammar memes.
+
+Phase 3 design:
+- `lares/grammars/memetic-wikitext.md` already carries full sigil + family tables (40 entries)
+- A `grammar-interpreter.md` meme will define the interpreter contract (the "Lisp surface")
+- `parsePranalaEdges()` becomes a thin dispatch: read interpreter URI from boot closure, call the meme-defined parse function
+- Template cascade: `lares/templates/` carriers define tldraw projection per meme type
+- Editing a template carrier + `/admin/reseed` changes visual style without TypeScript rebuild
+- The TypeScript parser stays as the C kernel; memes define grammar rules only; executable memes are Phase 4
+
+Phase 3 entry condition: `lares/grammars/wikitext-filter.md` dialect carrier is already live; Phase 2.5 wiring means the grammar meme drives the parser today. Phase 3 crosses the line where the parser dispatch table itself is meme-authored.
+
+**Phase 2.x parser wiring (complete 2026-04-27):** `pono` (constraint family sugar) and `lele` (message family sugar) wired into `parsePranalaEdges`. `KNOWN_FAMILIES` and `FAMILY_CONTRACTS` extended with `message` + `constraint`. `SigilRule.kind` union extended with all grammar-meme kinds (`concurrency`, `query`, `guest-grammar`, `guest-grammar-alias`, `query-alias`, `pragma`). 10 new tests added; full suite 146/146 green.
+
+### Priority 5: Wiki-recipe carriers
+
+`lares/recipes/` schema. Seed per-room canvases from recipe files. RPG rooms (`ftls`, `wtf`) unblock once recipes land. Recipe carrier format: `[[memes]]` TOML array with filter expression + seed layout.
+
+<<~/ahu >>
+
+<<~ ahu #design-decisions-kowloon-scope >>
+
+## Design Decisions — Kowloon Integration + Scope Principles (2026-04-27)
+
+### Lararium as Kowloon node
+
+A lararium node is (or connects to) a full Kowloon server. The canvas is a Kowloon Group. Circles, membership tiers, and the social graph are live Kowloon state rendered as visual graphs on the canvas. Use cases: summon feed, sync with others, draft/publish posts, manage circles as visual graphs.
+
+Kowloon architecture grounding:
+- Objects: Posts, Replies, Reacts, Circles, Groups — each with global ID `type:<id>@domain`
+- Addressing: `to: @public | @<domain> | circle:<id> | group:<id> | <userId>`
+- **The inversion:** Circles are *your* data structure, not the platform's. You follow someone *into a circle you own*. Author gates with `to: circle:<id>`; reader assembles their graph. Neither side sees the other's structure.
+- Federation: hybrid push (direct actions) + pull (discovery). Replication boundary = Group/Circle membership.
+- FeedItems coarse-sanitizes visibility (no circle IDs leaked); FeedFanOut is the authoritative grant table.
+
+### 5 scope principles
+
+State in lararium has five principled scopes (principles, not techniques):
+
+| scope | boundary | Kowloon ground |
+|-------|----------|----------------|
+| `ephemeral` | one agent turn | no Kowloon object |
+| `personal` | one actor, persistent | `to: @<domain>` |
+| `consensual` | shared by mutual choice, author-gated/reader-assembled | `to: circle:<id>` |
+| `collective` | shared by group identity with governance | `to: group:<id>` |
+| `universal` | no gate, federated | `to: @public` |
+
+Parse-time `kau` shorthands `carrier` (→ `personal`) and `block` (→ `collective`) retained for compatibility. `kapu` qualifier can be a scope principle name.
+
+### UEFN / `papalohe` design notes
+
+`papalohe` maps to UEFN device graph event binding: `DeviceA.EventX -> DeviceB.FunctionY`. Current syntax captures source event (`trigger:EventName`) but not target function. `fn:FunctionName` is the conventional extension key — additive, no parser change needed.
+
+Device types map to `kumu` (element type definition). UEFN `@editable` properties serialize as `kau` bindings within the kumu body.
+
+**`spatial` family** — locked as 8th pranala family (after `reaction`). Infinite canvas + portals requires spatial containment edges that are navigable, not just organizational. Roles: `contains`, `portal`, `adjacent`, `layer`. Direction: `area -> area` or `area -> portal -> area`. Load-bearing for RPG battlemap / multi-level / interlinked areas milestone.
+
+<<~/ahu >>
+
+<<~ ahu #design-decisions-law-of-5s >>
+
+## Design Decision: Law of Fives — Invariant Scale + Phase Model
+
+**Decision**: Two orthogonal const arrays (`LADDER_5`, `OODA_HA_5`) are canonical invariants in `ast.ts`. All domain ladders — scope, zoom, Kowloon addressing, lifecycle, temporal scale — are projections of `LADDER_5`. All phase/confidence/stance systems are projections of `OODA_HA_5`.
+
+```
+LADDER_5  (scale, finest → coarsest):  action · round · turn · watch · week
+OODA_HA_5 (phase, active → reflective): act · decide · orient · observe · aftermath
+```
+
+These axes run in **opposite directions**: `act` is the finest-grain phase (Action/ephemeral); `observe` is the widest-lens phase (Week/universal). The tension is productive — it models the operator-agent loop as a live crossing of scale and phase, not a single timeline.
+
+**Domain alignment table:**
+
+| Ladder5  | Scope5      | Zoom (canvas) | Kowloon  | Lifecycle   | OODA-HA    | Discordian |
+|----------|-------------|---------------|----------|-------------|------------|------------|
+| action   | ephemeral   | micro          | Activity | transient   | act        | Chaos      |
+| round    | personal    | card           | Object   | instance    | decide     | Discord    |
+| turn     | consensual  | room           | Group    | session     | orient     | Confusion  |
+| watch    | collective  | world          | Space    | persistent  | observe    | Bureaucracy|
+| week     | universal   | cosmos         | Universe | permanent   | aftermath  | Aftermath  |
+
+**`SCOPE_TO_LADDER`**: a `Record<Scope5, Ladder5>` projection lives in `ast.ts`. Scope narrows the ladder to the state-ownership read.
+
+**TW5 ↔ Verse resolution via OODA-HA pipeline phases:**
+
+The apparent tension between TW5 (everything is `Record<string,string>`) and UEFN Verse (statically typed, execution-phase) resolves when read as pipeline phases:
+
+| Phase      | Tool        | Type                       | Operation                          |
+|------------|-------------|----------------------------|------------------------------------|
+| Observe    | TW5 / wikitext | `Record<string,string>` | parse surface text; carry forward  |
+| Orient     | `parseMemeCarrier` | `MemeAstNode[]`     | token tree, typed sigil nodes      |
+| Decide     | `edgesFromAst` | typed attrs, `PranaEdge` | extract edge semantics             |
+| Act        | Verse runtime | statically typed           | execute game logic                 |
+| Aftermath  | `validatePranaEdge` | `PranaEdgeViolation[]` | violations surface, loop closes |
+
+`attrs: Record<string,string>` is correct at Observe phase. "Parse, don't validate" (King 2019) and the blame calculus (Wadler & Findler) both say: parse at the boundary once, carry typed values through. The single parse path (`parsePranalaEdges` → thin shim over `parseMemeCarrier` + `edgesFromAst`) enacts this.
+
+**Chronometer decoupling**: the FFZ Chronometer fantasy was useful as inspiration for discovering LADDER_5 as emergent, but the Chronometer itself is a rendering concern. LADDER_5 and OODA_HA_5 are grammar invariants, not clock state. They are `const` arrays in `ast.ts`, not timer types.
+
+**Stances (Syad perspectives) + Tools (Chapel Perilous) as phase postures:**
+
+Stances are epistemic standpoints that modulate how an operator reads a meme. Tools are orientation postures that modulate how an agent acts. Both are 5-point projections of OODA_HA_5.
+
+| Stance         | Natural tool     | Jaina register         | Natural phase   |
+|----------------|-----------------|------------------------|-----------------|
+| 🏛️ Philosopher | `!` Sword        | propositional (asti)   | Decide          |
+| 🌊 Poet         | `*` Wand         | resonance (avaktavya)  | Observe/Orient  |
+| 🗡️ Satirist    | `*~` Wand+Pent.  | targeting (nāsti→asti) | Act             |
+| 🎭 Humorist    | `?` Cup          | relational (asti-nāsti)| Orient/Decide   |
+| 🔮 Private      | `~` Pentacle     | inward (avaktavya)     | Aftermath       |
+
+Stances carry their natural tools, but an operator may hold any tool within any stance — the stance sets the register, the tool sets the zoom/feed posture. Canonical posture pairs (tool combinations): `*!` visual-micro, `*?` visual-macro, `~!` hidden-micro, `~?` hidden-macro, `--` neutral reset. Conflict states: `*~` Signal Jam (external/internal feed locked), `?!` Dubious Move (wide field asserts precision).
+
+Both `STANCES` and `TOOLS` (with `TOOL_ASCII`) are const arrays in `ast.ts`. They are grammar-level invariants used by render and HUD layers; no parser wiring needed.
 
 <<~/ahu >>
 
@@ -838,6 +1502,243 @@ Required context now present in-document:
 
 <<~/ahu >>
 
+<<~ ahu #milestone-8-progress >>
+
+## Milestone 8 — Progress (2026-04-28)
+
+### Parser + AST sprint (this session)
+
+**kahea dual dispatch — Tension 4 closed:**
+
+- ✓ `kahea` split into two regex entries in `parseMemeCarrier`: URI form (matches `lar:`, path `/`, fragment `#`) → `EdgeSugarNode { sigil:"kahea", family:"dataflow" }` — compile + render, dataflow edge. Name form (plain identifier, optional `name(args)`) → `SigilNode { sigilName:"kahea", attrs:{ name, args } }` — render-only, zero graph edge.
+- ✓ `CANONICAL_SIGILS` includes `"kahea-call"` internal name; case dispatch in `buildAst`
+- ✓ 12 tests: URI→EdgeSugar+edge, name→SigilNode+no-edge, args captured, wehe parameter interpolation, mixed carrier — all pass
+- ✓ `parsePranalaEdges("<<~ kahea greeting >>")` → zero dataflow edges (invariant confirmed)
+
+**ReactionGraph + live protocol:**
+
+- ✓ `packages/lararium-core/src/live-protocol.ts` (new) — isomorphic WebSocket protocol types + `ReactionGraph` class
+  - `LiveMsgSnapshot`, `LiveMsgDelta`, `LiveMsgEvent`, `LiveMsgFire`, `LiveClientMsg`, `LiveServerMsg`
+  - `ReactionGraph`: `load(bindings)`, `subscribe(fromUri, trigger, handler)`, `fire(fromUri, trigger, payload)`
+  - `extractReactionBindings(edges)` — filters `family:"reaction"` edges to `ReactionBinding[]`
+- ✓ Exported from `@lararium/core` via `index.ts`
+
+**UEFN file-watcher operational model (serve.ts):**
+
+- ✓ `watch(LARES_ROOT, { recursive: true })` debounced 400ms — batch rapid editor auto-save bursts
+- ✓ On change: evict room + delete SQLite → rebuild projection → reseed new room → rebuild reaction graph
+- ✓ `broadcastToRoom(roomId, { type: "reseed", roomId })` — notify connected clients to reconnect
+- ✓ Socket tagging: `ws._larariumRoomId` for targeted broadcast
+- ✓ `buildReactionGraph(runtime)` reconstructs `ReactionGraph` from fresh boot artifact on each reseed
+
+**Three-graph stances model (ast.ts):**
+
+- ✓ `SYAD_7` 7 Jain predicates; `Syad7` type; `STANCE_SYAD: Record<Stance, Syad7>` natural register per stance
+- ✓ `SATIRIST_OPERATIONAL: Syad7 = "nasti-avaktavya"` — P6 gradient marker
+- ✓ `TOOL_FEED: Record<Tool, ToolFeed>` and `TOOL_APERTURE: Record<Tool, ToolAperture>` — two orthogonal tool axes
+- ✓ `RENDER_MODES = ["reaction-wire"]` and `REACTION_ROLES = ["subscription","handler","callback"]`
+- ✓ Grammar meme updated: `[[stances]]`, `[[predicates]]` (7 Syad), `[[tools]]` with `feed`/`aperture`
+- ✓ `papalohe` render_mode and reaction family canonical_roles wired in spec
+
+**Parity confidence assessment (complete):**
+
+- TW5 compile/graph layer: ~0.90 — identity, tags, links, transclusion URI form, shadow, import, filter notation solid; `kahea` macro-call now ✓ at parse layer (SigilNode); wehe executor and render layer execution pending
+- UEFN Verse graph layer: ~0.80 — entity/ECS, event wiring (papalohe), hot-reload (UEFN CRDT model), lifecycle:template solid; async concurrency (hui/heihei/puka), kukali/suspends, wehe call execution pending
+
+### Also completed this session (2026-04-28)
+
+**Async ReactionGraph (live-protocol.ts):**
+- ✓ `ReactionHandler` type: `(binding, payload) => void | Promise<void>`
+- ✓ `fire()` returns `Promise<void>` — awaits all handlers via `Promise.all`
+- ✓ `fireAll()` alias for `fire()` — `hui` semantics
+- ✓ `fireRace()` — `Promise.race`, first handler wins, rest continue — `heihei` semantics
+- ✓ `fireRush()` — `Promise.any` + `AbortController` cancel signal — `puka` semantics
+- ✓ `load()` placeholder handler bug fixed — no phantom no-op in handlers list
+- ✓ `serve.ts` wired: browser `{ type:"fire", fromUri, trigger, payload }` → `reactionGraph.fire()` → `broadcastToRoom` event
+
+**Widget tree + kumu type system (ast.ts, widget-tree.ts):**
+- ✓ `KumuDef { name, params, carrierUri, body }` — compiled kumu type definition
+- ✓ `WidgetNode { kind:"Widget", kumuName, def, resolvedProps, body }` — widget-tree node
+- ✓ `KumuRegistry` class — `register/get/has/size/entries`
+- ✓ `buildKumuRegistry(defs)` — convenience constructor
+- ✓ `resolveWidgetTree(ast, registry): WidgetNode[]` — Phase 3 parse→widget pass
+  - kahea name-form `SigilNode → WidgetNode { def }` (registered) or `{ def: null }` (typed hole)
+  - Typed hole = Hazel semantics: unresolved kumu name stays live, partial edit doesn't crash
+  - URI-form kahea (`EdgeSugarNode`) ignored — not a widget call
+- ✓ `collectKumuDefs(carrierUri, ast): KumuDef[]` — extracts kumu sigil nodes from parsed carrier
+- ✓ `BootArtifact.kumuDefs?: KumuDef[]` — field added; population deferred to Phase 3 compiler pass
+- ✓ Exported from `@lararium/core` index
+- ✓ 117/117 tests pass (23 new widget-tree tests + 9 async ReactionGraph tests)
+- ✓ All packages typecheck clean
+
+**Research synthesis recorded:**
+- OMeta/Ohm bootstrap pattern: TypeScript parser = cold-start kernel (confirmed correct); grammar meme = extensions only
+- Unison hash identity: our `lar:///` URIs + BootReceipt SHA is this pattern
+- Hazel typed holes: `WidgetNode { def: null }` is the implementation
+- Verse STM: canon-promotion ceremony must be transactional (write-back gate design confirmed)
+- Eve failure (no stable identity + meta eats object): meme-immutability law + hash URIs is the defense
+
+### Critical path forward (M8 close conditions)
+
+1. ~~**ReactionGraph async**~~ ✓ shipped 2026-04-28 — `fire/fireAll/fireRace/fireRush` all async
+2. ~~**kumu → widget-tree**~~ ✓ shipped 2026-04-28 — `KumuRegistry`, `resolveWidgetTree`, `collectKumuDefs`, typed holes
+3. ~~**Wehe executor**~~ ✓ shipped 2026-04-28 — `kumu-executor.ts`: `executeKumu`, `executeBatch`, `substituteProps`, `detectSuspension`; 136/136 tests pass
+4. ~~**BootArtifact.kumuDefs population**~~ ✓ shipped 2026-04-28 — `collectKumuDefsFromGraph()` wired in `node-host.ts`; `artifact.kumuDefs` populated with 5 kumu defs (meme-strategic → meme-action); `buildKumuRegistry(artifact.kumuDefs)` live at boot; `renderAllViews` receives registry; `templateProps` seeded from lares carriers not hardcoded defaults.
+5. ~~**kukali**~~ ✓ shipped 2026-04-28 — `BOOTSTRAP_SCANS` entry, `attrsFromGroups` case, `CANONICAL_SIGILS` entry, grammar meme `[[sigils]]` entry, `\suspends` alias — all wired; 3 tests pass.
+6. **Browser smoke** (Priority 1 from M8 original scope) — still pending.
+
+**Behavioral invariant discovered during testing:** Unbound params in a kumu body are NOT silently empty — they propagate as typed holes (`unresolved-hole`). Callers that want "empty string for missing prop" must explicitly pass `paramName:""`. Verse alignment: no silent wrong output.
+
+### Also completed this session (2026-04-28, post-M8-core)
+
+**Socket port shapes + ownership skeleton (this session):**
+
+- ✓ `LarTLSocket` record type + `socketShapeId()` ID function — stable arrow binding target, child of meme frame
+- ✓ Socket port shapes emitted as `TLGeoShape` (ellipse, 8×8, opacity:0) — one per ahu slot per meme; `meta.socketKind:"port"`, `meta.centerX/Y` (meme header zone), `meta.spreadX/Y` (ahu frame center)
+- ✓ All pranala arrows now bind to socket shapes, not ahu frames — bindings are CRDT-stable across all zoom levels
+- ✓ `storyRiverLayout` computes `SocketGeometry { centerX, centerY, spreadX, spreadY }` per socket
+- ✓ `applyZoomTemplate` two-pass: Pass 1 resizes meme frames + collects `memeIncludeAhu`; Pass 2 hides/shows ahu frames + ownership arrows; Pass 3 repositions socket shapes between center and spread
+- ✓ Ahu detachment fix: ahu frames `isLocked:true` in emission + `opacity:0` at low zoom — prevents tldraw reparenting when meme frames shrink below ahu frame bounds
+- ✓ Ownership skeleton arrows: 14 `control:owns` arrows per boot (7 meme→ahu + 7 meme→socket), `opacity:0`, `isLocked:true`, `meta.isOwnership:true`, `meta.ownsMemeId` for zoom toggling; shown at combat/action zoom alongside ahu frames
+- ✓ `ownsArrowId(fromId, toId)` — stable ID function for ownership arrows
+- ✓ `LarTLArrow.isOwnership?: boolean` — flag distinguishes skeleton arrows from pranala semantic arrows
+- ✓ 229/229 tests green (was 226/226)
+
+**TW5 / UEFN Verse child re-render research (this session):**
+
+- ✓ TW5: push-on-change model — `changedTiddlers` map propagates down widget tree; each widget self-checks dependency; `$list` patches single-item add/remove without full rebuild; rapid changes coalesced. This is the target model for Lararium's CRDT delta → template refresh path.
+- ✓ Verse: pull-on-demand model — explicit `SetText()` / method calls; no automatic child cascade; `subscribable` vars as reactive sources. This is the target model for the Kumu device layer in UEFN — explicit `papalohe` wiring, not reactive tree.
+- ✓ Synthesis: CRDT delta event ≈ `changedTiddlers`; widget ownership skeleton ≈ TW5 widget tree; `applyZoomTemplate` on threshold crossing ≈ TW5 selective refresh; socket port shape repositioning ≈ DOM property update without re-render.
+
+<<~/ahu >>
+
+<<~ ahu #milestone-9-scope >>
+
+## Milestone 9 — Widget Tree Render Pass + Canon Surface (Planned)
+
+M8 delivered the full kumu type pipeline bottom-up: AST → kumuDefs → KumuRegistry → templateProps → tldraw shapes. M9 closes the loop top-down: widget tree resolution feeds the render pass directly, grammar meme drives the parser dispatch table, and canon-promotion has a write-back surface.
+
+### Priority 1: resolveWidgetTree render pass
+
+`resolveWidgetTree(ast, registry)` already exists and passes tests. M9 wires it into the tldraw render path:
+
+- Walk `WidgetNode[]` instead of raw `MemeAstNode[]` in the meme detail panel renderer
+- Each `WidgetNode { def: KumuDef }` maps to a named render slot (kumu type → tldraw shape kind)
+- `WidgetNode { def: null }` (typed hole) renders as a placeholder shape — Hazel semantics
+- Initial scope: meme detail panel only; full projection render pass is Phase 4
+
+This makes carrier editing visible as canvas shape changes without TypeScript rebuild.
+
+### Priority 2: Browser smoke testing
+
+All M5/M6/M7/M8 tactile behaviors unverified. Playwright baseline:
+
+- Drag meme frame → socket shapes follow (binding records verify); ahu frames stay locked
+- Zoom threshold crossings → `applyZoomTemplate` fires; meme frame dims correct at each level
+- Ownership arrows invisible at tactical/lower; visible (opacity 0.3) at combat/action
+- Double-click meme frame → `MemeDetailPanel` slides up; carrier text renders from store
+- ⌘K → Spaces + Memes sections; Enter navigates; Escape dismisses
+- Canvas mode toggle → tldraw toolbar appears; Lararium chrome dims
+- `/admin/reseed` → grammar carrier change takes effect without restart; lares/ watcher fires
+
+### Priority 3: Spatial family registration
+
+8th pranala family (`spatial`): roles `contains`, `portal`, `adjacent`, `layer`. Load-bearing for RPG battlemap, multi-level rooms, and interlinked area navigation. Unblocks portals-as-graph-edges (not just geo shapes with `meta.larPortal`).
+
+### Priority 4: Canon-promotion surface
+
+Write-back path: operator triggers "promote" from canvas → server validates against pranala schema → writes to `lares/` → recompile → reseed. Entry point: `PUT /admin/promote` with shape ID + proposed carrier text. Requires UCAN trust tier gate (operator+). Initial scope: metadata-only edits (name, IAM block fields), not full carrier authoring.
+
+### Priority 5: Wiki-recipe carriers
+
+`lares/recipes/` schema. Seed per-room canvases from recipe files. Format: `[[memes]]` TOML array with filter expression + seed layout. Unblocks `ftls`, `wtf`, and other RPG rooms.
+
+<<~/ahu >>
+
+<<~ ahu #design-decisions-async-first >>
+
+## Design Decision: Async-First + Causal Islands
+
+**Date:** 2026-04-28
+**Pressure sources:** UEFN causal island model, FFZ Chronometer research, TW5 multiplayer history
+
+### The decision
+
+`ReactionGraph.fire()` MUST be async-first from the start. Not retrofitted later.
+
+**Why:** TW5's multiplayer history and IPFS's content-addressed model both demonstrate that getting the causal model wrong at the base level is expensive to fix. UEFN avoids this via *causal islands*: each device runs in an isolated async boundary; events cross island boundaries only via declared ports (device graph edges — our `papalohe`). No shared mutable state across islands.
+
+```
+  causal island A          causal island B
+  ┌──────────┐             ┌──────────┐
+  │ kumu X   │──papalohe──▶│ kumu Y   │
+  │          │  (async     │          │
+  │ fire()   │   message)  │ handler  │
+  └──────────┘             └──────────┘
+```
+
+The `ReactionGraph` IS the causal island manager. `fire(fromUri, trigger, payload)` returns `Promise<void>`. Handlers may `await`. Fanout modes:
+
+| sigil | `ReactionGraph` mode | semantics |
+|-------|---------------------|-----------|
+| `hui` | `Promise.all` | all branches complete before proceeding |
+| `heihei` | `Promise.race` | first completion wins, rest continue |
+| `puka` | `Promise.any` + cancel | first wins, rest cancelled |
+| `lele` | fire-and-forget (`void`) | no await, side effects permitted |
+
+### FFZ Chronometer as causal timestamp
+
+The FFZ Chronometer fragment (`#O0.O3.D2.A7`) encodes `{ scale: Ladder5, phase: OodaHa5, counter: number }`. In the async model, each `fire()` call carries an implicit causal timestamp derived from the Chronometer — not a wall-clock time, but a logical position in the OODA-HA loop.
+
+This is the *why* behind decoupling Chronometer from grammar invariants: `LADDER_5` and `OODA_HA_5` are static arrays in `ast.ts`; the Chronometer generates a *live causal cursor* at runtime. They share vocabulary but live in different layers.
+
+**Causal ordering law:** an event fired at `(scale: "action", phase: "act")` cannot causally precede an event in the same island at `(scale: "round", phase: "decide")`. The Chronometer encodes this ordering as a sortable fragment, not as a wall clock. CRDT CRDTs maintain causal ordering structurally; the Chronometer makes it readable.
+
+### `kumu` as the widget-tree node type
+
+**The user question: `kumu` as widget? OR parseTree→widgetTree→renderTree?**
+
+Answer: Both. `kumu` IS the widget-tree node type definition — and the three-tree pipeline is the correct execution model.
+
+TW5 pipeline:
+```
+tiddler text → parse tree (WikiParser) → widget tree (Widget subclass instances) → DOM
+```
+
+Lararium pipeline (target):
+```
+carrier text → MemeAstNode[] (parseMemeCarrier)
+             → kumu-typed WidgetNode[] (widget-tree resolution)
+             → tldraw shapes / rendered output
+```
+
+The *missing middle layer* is the widget tree. `parseMemeCarrier` produces `MemeAstNode[]` — a generic parse tree. The widget tree re-types each parse node into a `kumu`-typed node that knows its renderer. This is Phase 3 self-hosting:
+
+- `<<~! kumu myCard(title body) >> ... <<~/kumu >>` defines a new node type
+- `<<~ kahea myCard(title:Welcome) >>` (name form) emits a `SigilNode { sigilName:"kahea", attrs:{name:"myCard", args:"title:Welcome"} }`
+- Widget-tree resolution walks the parse tree, matches each `SigilNode` against the registered `kumu` types, and emits a `WidgetNode { type: KumuDef, resolved: true, props: { title:"Welcome" } }`
+- The render pass walks `WidgetNode[]`, not raw `MemeAstNode[]`
+
+**UEFN device type = `kumu` causal island definition.** A UEFN `creative_device` is:
+- A named type (`kumu`)
+- With `@editable` properties (`kau` bindings in the kumu body)
+- With event ports (`papalohe` edges on the device graph)
+- Running in a causal island (async boundary)
+
+`kumu` is both the TW5 widget type AND the UEFN device type. The same primitive. The three-tree pipeline and the causal island model are the same model at different layers.
+
+### Implementation order
+
+1. Make `ReactionGraph.fire()` return `Promise<void>` — zero-cost change; no callers await today
+2. Add `fireAll` / `fireRace` / `fireRush` fanout methods
+3. Build `KumuRegistry` — a `Map<string, KumuDef>` populated from the boot artifact's `kumu` sigil nodes
+4. Add widget-tree resolution pass: `resolveWidgetTree(ast: MemeAstNode[], registry: KumuRegistry): WidgetNode[]`
+5. Render pass reads `WidgetNode[]` instead of raw `MemeAstNode[]`
+
+Steps 1–2 are pure `live-protocol.ts` changes. Steps 3–5 are the Phase 3 self-hosting pivot.
+
+<<~/ahu >>
+
 <<~ ahu #edges >>
 
 ## Edges
@@ -846,13 +1747,14 @@ Required context now present in-document:
 <<~ loulou lar:///ha.ka.ba/api/v0.1/pono/meme >>
 <<~ loulou lar:///ha.ka.ba/api/v0.1/pono/loci >>
 <<~ loulou lar:///ha.ka.ba/api/v0.1/pono/invariant >>
-<<~ loulou lar:///ha.ka.ba/api/v0.1/pono/lar-uri >>
+<<~ loulou lar:///ha.ka.ba/api/v0.1/lararium/lar-uri >>
 <<~ loulou lar:///ha.ka.ba/docs/lararium/signal/render-targets >>
 <<~ loulou lar:///ha.ka.ba/docs/graph/traversal >>
 <<~ loulou lar:///ha.ka.ba/docs/graph/pranala-parser >>
 
 <<~ pranala #implements-meme ? -> lar:///ha.ka.ba/api/v0.1/pono/meme family:control role:implements >>
 <<~ pranala #implements-loci ? -> lar:///ha.ka.ba/api/v0.1/pono/loci family:control role:implements >>
+<<~ pranala #to-canvas-wiki ? -> lar:///LARARIUM-NODE/MULTIPLAYER-INFINITE-CANVAS-WIKI family:relation role:companion >>
 <<~/ahu >>
 
 <<~&#x0003; ahu #body-close >>

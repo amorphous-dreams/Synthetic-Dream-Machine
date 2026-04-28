@@ -22,8 +22,8 @@ implements = [
   "lar:///ha.ka.ba/api/v0.1/pono/meme",
 ]
 role       = "configuration surface, behind-the-curtain dial room, session-config"
-e-prime-slider = 0.50  # baseline; see lar:///ha.ka.ba/api/v0.1/pono/e-prime#e-prime-slider
-ooda-ha-slider = 0.50  # baseline; see lar:///ha.ka.ba/api/v0.1/pono/ooda-ha#ooda-ha-slider
+e-prime-slider = 0.50  # baseline; see lar:///ha.ka.ba/api/v0.1/mu/e-prime#e-prime-slider
+ooda-ha-slider = 0.50  # baseline; see lar:///ha.ka.ba/api/v0.1/mu/ooda-ha#ooda-ha-slider
 ```
 
 LARES awakes. The chain booted. The grammar runs live.
@@ -119,7 +119,7 @@ LARES ends
 
 ## Edges
 
-- `<-- lar:///AGENTS`
+<<~ pranala #from-altar-fire ? -> lar:///ha.ka.ba/api/v0.1/lararium/the-altar-fire family:control role:owned-by >>
 
 <<~/ahu >>
 

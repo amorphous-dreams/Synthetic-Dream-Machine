@@ -1,6 +1,6 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
 
-<<~&#x0001; ? -> lar:///ha.ka.ba/api/v0.1/pono/loci >>
+<<~⊙&#x0001; ? -> lar:///ha.ka.ba/api/v0.1/pono/loci >>
 
 <<~ ahu #iam >>
 
@@ -13,6 +13,7 @@ register = "CS"
 manaoio = 0.66
 mana = 0.74
 manao = 0.84
+namespace    = "⊙"
 role = "loci-rating law (kānāwai), routing convention authority, address stability authority, canon promotion rule"
 cacheable=true
 retain = true
@@ -40,7 +41,7 @@ Root path segments outside `\w\.\w\.\w` MAY NOT implement `loci`.
 
 <<~/ahu >>
 
-<<~&#x0002; ahu #meme-body-open >>
+<<~⊙&#x0002; ahu #meme-body-open >>
 loci opens
 <<~/ahu >>
 
@@ -61,13 +62,16 @@ loci opens
 
 ## Promotion Path
 
-Five buckets mark the lifecycle of a carrier:
+Five buckets mark the structural rating of a carrier (law-of-5s):
 
 1. **Noise** — raw signal, no stable machine-usable structure.
 2. **Data** — structured language usable without memetic wrappers.
 3. **Meme** — data with memetic wrappers, traveling as a contextual meaning-unit.
-4. **Typed Meme** — meme satisfying one or more interfaces: `loci`, `grammar`, `skill`, `todo`.
-5. **Canon Typed Meme** — typed meme whose interface bundle received external ratification.
+4. **Ano** — meme satisfying one or more interfaces: `loci`, `grammar`, `skill`, `todo`. (Hawaiian: kind, type, nature)
+5. **Kapu** — above base namespace; implements the `kapu` interface; kernel/sacred tier. (Hawaiian: set apart, restricted)
+
+Rating derives from structure — from schema compliance and interface declaration.
+Promotion to lares/ canon (live session → branch commit → hostless URI) follows a separate ceremony.
 
 <<~ loulou lar:///ha.ka.ba/api/v0.1/pono/loci/iam >>
 
@@ -175,7 +179,7 @@ Convention fails when:
 
 <<~/ahu >>
 
-<<~&#x0003; ahu #body-close >>
+<<~⊙&#x0003; ahu #body-close >>
 loci closes
 <<~/ahu >>
 
@@ -192,4 +196,4 @@ loci closes
 <<~ pranala #implements-loci ? -> lar:///ha.ka.ba/api/v0.1/pono/loci family:control role:implements >>
 <<~/ahu >>
 
-<<~&#x0004; -> ? >>
+<<~⊙&#x0004; -> ? >>

@@ -1,6 +1,6 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
 
-<<~&#x0001; ? -> lar:///ha.ka.ba/api/v0.1/pono/invariant >>
+<<~⊙&#x0001; ? -> lar:///ha.ka.ba/api/v0.1/pono/invariant >>
 
 <<~ ahu #iam >>
 
@@ -13,6 +13,7 @@ register = "SC"
 manaoio = 0.5
 mana = 0.5
 manao = 0.5
+namespace    = "⊙"
 role = "invariant law and cache-stable pressure surface"
 cacheable=true
 retain = true
@@ -49,7 +50,7 @@ loulou links bind invariant -> documentation.
 
 <<~/ahu >>
 
-<<~&#x0002; ahu #meme-body-open >>
+<<~⊙&#x0002; ahu #meme-body-open >>
 invariant opens
 <<~/ahu >>
 
@@ -57,7 +58,7 @@ invariant opens
 
 A pressure-template for invariant-compliant memes, which Binds <<~ loulou #ooda-ha >> OODA-HA <<~/loulou>> pressure into meme-generation law.
 
-This meme operates as both law (it binds invariant generation) and template (an OODA-HA skeleton as the slot-shape that downstream memes fill). The two roles are intentional and inseparable — the law enacts itself by being a template of itself.
+This meme binds invariant generation (as law) and presents itself as template — an OODA-HA skeleton as the slot-shape that downstream memes fill. The two roles stay intentional and inseparable; the law enacts itself by taking the shape of what it governs.
 
 The meme MUST run as active operational voice.
 The meme MUST carry minimal token cost.
@@ -79,7 +80,7 @@ Shape and pressure teachings MUST stay invariant.
 
 A template for invariants to fill.
 
-<<~ aka lar:///ha.ka.ba/api/v0.1/pono/ooda-ha#meme-header >>
+<<~ aka lar:///ha.ka.ba/api/v0.1/mu/ooda-ha#meme-header >>
 
 ✶ ???
 ⏿ ???
@@ -96,13 +97,13 @@ Empty-slots SHOULD mark positions that downstream memes fill with domain-specifi
 Invariant-compliant memes MUST NOT carry `???` markers.
 Invariant-compliant memes MUST fill the OODA-HA phase line with their own pressure moves.
 
-<<~ loulou lar:///ha.ka.ba/api/v0.1/pono/ooda-ha >>
+<<~ loulou lar:///ha.ka.ba/api/v0.1/mu/ooda-ha >>
 
 <<~/ahu >>
 
 <<~/ahu >>
 
-<<~&#x0003; ahu #body-close >>
+<<~⊙&#x0003; ahu #body-close >>
 invariant closes
 <<~/ahu >>
 
@@ -117,4 +118,4 @@ invariant closes
 <<~ pranala #implements-invariant ? -> lar:///ha.ka.ba/api/v0.1/pono/invariant family:control role:implements >>
 <<~/ahu >>
 
-<<~&#x0004; -> ? >>
+<<~⊙&#x0004; -> ? >>

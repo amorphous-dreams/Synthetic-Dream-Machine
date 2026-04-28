@@ -9,17 +9,11 @@
 
 import { describe, test, expect, beforeAll, afterAll } from "@jest/globals";
 import { spawn, type ChildProcess } from "child_process";
-import { readFileSync } from "fs";
 import { resolve, dirname } from "path";
 import { fileURLToPath } from "url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const SERVER_BIN = resolve(__dirname, "../../lararium-mcp/dist/stdio.js");
-const FIXTURES_PATH = resolve(__dirname, "../../../lares/lararium-node/fixtures.golden.json");
-
-const fixtures = JSON.parse(readFileSync(FIXTURES_PATH, "utf8")) as {
-  compiler: { minimal_boot_count: number };
-};
 
 // ---------------------------------------------------------------------------
 // JSON-RPC helpers
@@ -113,7 +107,7 @@ describe("MCP stdio smoke", () => {
     const uris = resp.result.resources.map((r) => r.uri);
     expect(uris).toContain("lar:///INDEXES/carriers");
     expect(uris).toContain("lar:///INDEXES/interfaces");
-    expect(uris).toContain("lar:///boot/minimal");
+    expect(uris).toContain("lar:///boot");
     expect(uris).toContain("lar:///boot/receipt");
   });
 
@@ -123,48 +117,52 @@ describe("MCP stdio smoke", () => {
       result: { tools: { name: string }[] };
     };
     const names = resp.result.tools.map((t) => t.name);
-    expect(names).toContain("lararium-resolve_lar_uri");
-    expect(names).toContain("lararium-inspect_carrier");
-    expect(names).toContain("lararium-compile_minimal_boot");
-    expect(names).toContain("lararium-compile_full_boot");
-    expect(names).toContain("lararium-compile_boot_receipt");
+    expect(names).toContain("lararium-hud");
+    expect(names).toContain("lararium-read");
+    expect(names).toContain("lararium-inspect");
+    expect(names).toContain("lararium-query");
+    expect(names).toContain("lararium-edges");
+    expect(names).toContain("lararium-write");
+    expect(names).toContain("lararium-receipt");
   });
 
-  test("prompts/list — boot prompt present", async () => {
+  test("prompts/list — align and explain prompts present", async () => {
     proc.stdin!.write(makeRequest(4, "prompts/list"));
     const resp = await readResponse(proc) as {
       result: { prompts: { name: string }[] };
     };
     const names = resp.result.prompts.map((p) => p.name);
-    expect(names).toContain("lararium-boot_minimal");
+    expect(names).toContain("lararium-align");
     expect(names).toContain("lararium-explain_uri");
   });
 
-  test("tools/call resolve — AGENTS resolves correctly", async () => {
+  test("tools/call hud — returns memeCount and entry", async () => {
     proc.stdin!.write(makeRequest(5, "tools/call", {
-      name: "lararium-resolve_lar_uri",
-      arguments: { uri: "lar:///AGENTS" },
-    }));
-    const resp = await readResponse(proc) as {
-      result: { content: { type: string; text: string }[]; isError?: boolean };
-    };
-    expect(resp.result.isError).toBeFalsy();
-    const parsed = JSON.parse(resp.result.content[0]!.text);
-    expect(parsed.kind).toBe("caps-file");
-    expect(parsed.virtual).toBe(false);
-  });
-
-  test("tools/call minimal boot — meme count matches golden fixture", async () => {
-    proc.stdin!.write(makeRequest(6, "tools/call", {
-      name: "lararium-compile_minimal_boot",
+      name: "lararium-hud",
       arguments: {},
     }));
     const resp = await readResponse(proc, 10000) as {
       result: { content: { type: string; text: string }[]; isError?: boolean };
     };
     expect(resp.result.isError).toBeFalsy();
-    const artifact = JSON.parse(resp.result.content[0]!.text);
-    expect(artifact.memeCount).toBe(fixtures.compiler.minimal_boot_count);
+    const hud = JSON.parse(resp.result.content[0]!.text);
+    expect(hud.memeCount).toBeGreaterThanOrEqual(18);
+    expect(hud.entry).toBe("lar:///AGENTS");
+    expect(hud.validation.allExist).toBe(true);
+  });
+
+  test("tools/call receipt — returns sha256", async () => {
+    proc.stdin!.write(makeRequest(6, "tools/call", {
+      name: "lararium-receipt",
+      arguments: {},
+    }));
+    const resp = await readResponse(proc, 10000) as {
+      result: { content: { type: string; text: string }[]; isError?: boolean };
+    };
+    expect(resp.result.isError).toBeFalsy();
+    const receipt = JSON.parse(resp.result.content[0]!.text);
+    expect(receipt.sha256).toMatch(/^(sha256:)?[0-9a-f]{63,64}$/);
+    expect(receipt.memeCount).toBeGreaterThanOrEqual(18);
   });
 
   test("notifications/initialized does not produce a response", async () => {

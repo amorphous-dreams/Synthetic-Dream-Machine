@@ -114,7 +114,7 @@ This room now keeps the more API-adjacent residue:
 This room now reads as a staging basin adjacent to:
 
 - `lar:///ha.ka.ba/api/v0.1/mu`
-- `lar:///ha.ka.ba/api/v0.1/pono/e-prime`
+- `lar:///ha.ka.ba/api/v0.1/mu/e-prime`
 - `lar:///ha.ka.ba/api/v0.1/mu/the-syad-perspectives`
 - `lar:///ha.ka.ba/docs/lararium/preferences/register-stance-complementarity`
 - `lar:///ha.ka.ba/docs/lararium/preferences/degraded-epistemic-weather`
@@ -136,7 +136,7 @@ What follows reads as a collection note on what the stack already implements wit
 ### Mostly done
 
 - **E-Prime as active discipline law**  
-  `lar:///ha.ka.ba/api/v0.1/pono/e-prime` now carries the strongest finished constitutional work in this family:
+  `lar:///ha.ka.ba/api/v0.1/mu/e-prime` now carries the strongest finished constitutional work in this family:
   - identity / predication / possession collapse
   - confidence-marker discipline
   - register-conditioned pressure
@@ -173,7 +173,7 @@ What follows reads as a collection note on what the stack already implements wit
   `mu` holds the quiescent null-oracle posture that prevents opinion-hardening.
 
 - **Register and stance encoded into live transport / display grammar**  
-  `lar:///ha.ka.ba/api/v0.1/pono/lar-uri` already carries:
+  `lar:///ha.ka.ba/api/v0.1/lararium/lar-uri` already carries:
   - `stances`
   - `confidence`
   - fixed five-position ordering
@@ -240,7 +240,7 @@ docs/lararium/preferences/epistemology closes
 <<~ loulou lar:///ha.ka.ba/docs/lararium/preferences/register-stance-complementarity >>
 <<~ loulou lar:///ha.ka.ba/docs/lararium/preferences/degraded-epistemic-weather >>
 <<~ loulou lar:///ha.ka.ba/api/v0.1/mu >>
-<<~ loulou lar:///ha.ka.ba/api/v0.1/pono/e-prime >>
+<<~ loulou lar:///ha.ka.ba/api/v0.1/mu/e-prime >>
 
 <<~ pranala #implements-meme ? -> lar:///ha.ka.ba/api/v0.1/pono/meme family:control role:implements >>
 <<~ pranala #implements-loci ? -> lar:///ha.ka.ba/api/v0.1/pono/loci family:control role:implements >>

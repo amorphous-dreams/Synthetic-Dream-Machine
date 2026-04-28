@@ -1,0 +1,36 @@
+/* Gruvbox theme overrides for tldraw CSS custom properties.
+ * Scoped to html[data-theme] so they win specificity over tldraw defaults.
+ * tldraw applies .tl-theme__dark or .tl-theme__light to .tl-container.
+ */
+
+html[data-theme="gruvbox-dark"] .tl-theme__dark {
+  --tl-color-background:        #282828;
+  --tl-color-panel:             #3c3836;
+  --tl-color-panel-contrast:    #504945;
+  --tl-color-text:              #ebdbb2;
+  --tl-color-text-1:            #d5c4a1;
+  --tl-color-text-3:            #a89984;
+  --tl-color-primary:           #83a598;
+  --tl-color-selected:          #fabd2f;
+  --tl-color-selection-stroke:  #fabd2f;
+  --tl-color-grid:              #504945;
+  --tl-color-divider:           #504945;
+  --tl-color-low:               #1d2021;
+  --tl-color-muted-1:           #32302f;
+}
+
+html[data-theme="gruvbox-light"] .tl-theme__light {
+  --tl-color-background:        #fbf1c7;
+  --tl-color-panel:             #f2e5bc;
+  --tl-color-panel-contrast:    #d5c4a1;
+  --tl-color-text:              #3c3836;
+  --tl-color-text-1:            #504945;
+  --tl-color-text-3:            #7c6f64;
+  --tl-color-primary:           #076678;
+  --tl-color-selected:          #b57614;
+  --tl-color-selection-stroke:  #b57614;
+  --tl-color-grid:              #d5c4a1;
+  --tl-color-divider:           #d5c4a1;
+  --tl-color-low:               #f9f5d7;
+  --tl-color-muted-1:           #ebdbb2;
+}

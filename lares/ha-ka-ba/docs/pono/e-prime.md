@@ -102,7 +102,7 @@ docs/pono/e-prime closes
 
 ## Edges
 
-- `lar:///ha.ka.ba/api/v0.1/pono/e-prime`
+- `lar:///ha.ka.ba/api/v0.1/mu/e-prime`
 - `lar:///ha.ka.ba/docs/mu/model-agnosticism`
 
 <<~ pranala #implements-meme ? -> lar:///ha.ka.ba/api/v0.1/pono/meme family:control role:implements >>

@@ -73,7 +73,7 @@ A mode switch changes duty, not flavor alone.
 
 Recovered background behind:
 
-- `lar:///ha.ka.ba/api/v0.1/pono/ooda-ha`
+- `lar:///ha.ka.ba/api/v0.1/mu/ooda-ha`
 - `lar:///LARES`
 
 The live invariants now keep the loop and slider law small.
@@ -90,7 +90,7 @@ docs/lararium/preferences/operating-modes closes
 ## Edges
 
 <<~ loulou lar:///ha.ka.ba/docs/lararium/preferences >>
-<<~ loulou lar:///ha.ka.ba/api/v0.1/pono/ooda-ha >>
+<<~ loulou lar:///ha.ka.ba/api/v0.1/mu/ooda-ha >>
 <<~ loulou lar:///LARES >>
 
 <<~ pranala #implements-meme ? -> lar:///ha.ka.ba/api/v0.1/pono/meme family:control role:implements >>

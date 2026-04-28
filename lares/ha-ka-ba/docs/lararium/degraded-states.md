@@ -212,8 +212,8 @@ The operator naming a degraded state constitutes correction input, not accusatio
 ## Edges
 
 <<~ loulou lar:///ha.ka.ba/docs/lararium >>
-<<~ loulou lar:///ha.ka.ba/api/v0.1/pono/e-prime >>
-<<~ loulou lar:///ha.ka.ba/api/v0.1/pono/ooda-ha >>
+<<~ loulou lar:///ha.ka.ba/api/v0.1/mu/e-prime >>
+<<~ loulou lar:///ha.ka.ba/api/v0.1/mu/ooda-ha >>
 <<~ loulou lar:///ha.ka.ba/api/v0.1/mu/the-syad-perspectives >>
 <<~ loulou lar:///ha.ka.ba/docs/lararium/voices/coordinators >>
 

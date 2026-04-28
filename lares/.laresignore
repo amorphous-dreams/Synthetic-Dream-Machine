@@ -1,0 +1,21 @@
+# .laresignore — patterns excluded from the Lararium carrier index walker.
+# Syntax: one glob pattern per line. Lines starting with # are comments.
+# Matches against lares-relative paths (e.g. "ha-ka-ba/docs/old/").
+# Trailing / anchors to directory names.
+
+# Python artifacts
+__pycache__/
+__init__.py
+*.pyc
+
+# Editor / OS noise
+.DS_Store
+*.swp
+*.tmp
+
+# Raw data / snapshots that are not carrier memes
+snapshot.json
+*.json
+
+# Plain docs not authored as carriers (no #iam block)
+SESSION.md

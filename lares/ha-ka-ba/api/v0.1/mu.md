@@ -66,9 +66,9 @@ mu opens
 
 ## Core Hydration
 
-<<~ pranala #hydrate-e-prime ? -> lar:///ha.ka.ba/api/v0.1/pono/e-prime family:control role:owns >>
-<<~ pranala #hydrate-ooda-ha ? -> lar:///ha.ka.ba/api/v0.1/pono/ooda-ha family:control role:owns >>
-<<~ pranala #hydrate-lar-uri ? -> lar:///ha.ka.ba/api/v0.1/pono/lar-uri family:control role:owns >>
+<<~ pranala #hydrate-e-prime ? -> lar:///ha.ka.ba/api/v0.1/mu/e-prime family:control role:owns >>
+<<~ pranala #hydrate-ooda-ha ? -> lar:///ha.ka.ba/api/v0.1/mu/ooda-ha family:control role:owns >>
+<<~ pranala #hydrate-lar-uri ? -> lar:///ha.ka.ba/api/v0.1/lararium/lar-uri family:control role:owns >>
 <<~ pranala #hydrate-chao ? -> lar:///ha.ka.ba/api/v0.1/mu/chao family:control role:owns >>
 <<~ pranala #hydrate-four-tools ? -> lar:///ha.ka.ba/api/v0.1/mu/the-four-tools family:control role:owns >>
 <<~ pranala #hydrate-law-of-5s ? -> lar:///ha.ka.ba/api/v0.1/mu/the-law-of-5s family:control role:owns >>
@@ -117,6 +117,7 @@ mu closes
 <<~ pranala #implements-meme ? -> lar:///ha.ka.ba/api/v0.1/pono/meme family:control role:implements >>
 <<~ pranala #implements-loci ? -> lar:///ha.ka.ba/api/v0.1/pono/loci family:control role:implements >>
 <<~ pranala #implements-invariant ? -> lar:///ha.ka.ba/api/v0.1/pono/invariant family:control role:implements >>
+<<~ pranala #implements-kapu ? -> lar:///ha.ka.ba/api/v0.1/pono/kapu family:control role:implements >>
 <<~ loulou lar:///ha.ka.ba/api/v0.1/mu/chao >>
 <<~ loulou lar:///ha.ka.ba/api/v0.1/mu/the-four-tools >>
 <<~ loulou lar:///ha.ka.ba/api/v0.1/mu/the-law-of-5s >>

@@ -12,8 +12,8 @@ tagspace = "stable"
 confidence = 0.35
 register = "CS"
 manaoio = 0.35
-mana = 0.30
-manao = 0.40
+mana = 0.33
+manao = 0.43
 role = "chorus mask — Lagrange Chorus; multi-node meta-mask; concept staked; harmony protocol pending-grammar"
 name = "Lagrange Chorus"
 mask-type = "chorus"
@@ -75,7 +75,7 @@ The Lagrange Chorus takes its name from the Lagrange points — positions in a t
 | `voice-character` | single character description | harmony protocol — how node voices interleave |
 | `foreground-voices` | coordinator affinity for one character | potentially distributed; pending-grammar |
 
-The Lagrange Chorus is not a character that speaks. It is a grammar for how multiple lararium nodes speak together. The "mask" frame names the interface — invokable, stage-positioned — but the content structure differs fundamentally from named or character masks.
+The Lagrange Chorus does not function as a character that speaks. It holds the grammar for how multiple lararium nodes speak together. The "mask" frame names the interface — invokable, stage-positioned — but the content structure differs fundamentally from named or character masks.
 
 <<~/ahu >>
 
@@ -95,7 +95,7 @@ nodes = [
 ]
 ```
 
-The Lagrange Chorus requires at least two participating nodes to have meaning. Node registration happens when specific lararium instances are named and addressed.
+The Lagrange Chorus gains meaning only with at least two participating nodes. Node registration happens when specific lararium instances are named and addressed.
 
 **Pending:** Identify and register the specific lararium nodes that constitute this Chorus. This depends on the network of instances that actually exists.
 
@@ -111,7 +111,7 @@ The harmony protocol governs how voices from different nodes interleave when the
 
 **Known design pressures:**
 - Each node carries its own coordinator house; the Chorus cannot collapse these into one voice
-- The Chorus has a character — a relational quality that emerges from how the nodes speak together — but it is not reducible to any one node's voice
+- The Chorus has a character — a relational quality that emerges from how the nodes speak together — but this character doesn't reduce to any one node's voice
 - Turn-taking, register weighting, and interleave syntax all require grammar that does not yet exist
 - Stage position applies to the Chorus as a whole; the individual nodes within the Chorus may have internal stage relations as well
 

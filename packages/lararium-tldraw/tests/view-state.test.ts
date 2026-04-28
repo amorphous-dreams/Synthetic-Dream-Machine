@@ -23,17 +23,17 @@ describe("LarViewState reducer", () => {
     expect(s.history[0]!.view).toBe("story-river");
   });
 
-  test("ZOOM_OUT from meme-detail returns to story-river", () => {
+  test("NAVIGATE_BACK from meme-detail returns to story-river", () => {
     let s: LarViewState = INITIAL_VIEW_STATE;
     s = viewStateReducer(s, { type: "ZOOM_IN", uri: "lar:///AGENTS" });
-    s = viewStateReducer(s, { type: "ZOOM_OUT" });
+    s = viewStateReducer(s, { type: "NAVIGATE_BACK" });
     expect(s.activeView).toBe("story-river");
     expect(s.focusUri).toBeNull();
     expect(s.history).toHaveLength(0);
   });
 
-  test("ZOOM_OUT with empty history returns to story-river safely", () => {
-    const s = viewStateReducer(INITIAL_VIEW_STATE, { type: "ZOOM_OUT" });
+  test("NAVIGATE_BACK with empty history returns to story-river safely", () => {
+    const s = viewStateReducer(INITIAL_VIEW_STATE, { type: "NAVIGATE_BACK" });
     expect(s.activeView).toBe("story-river");
   });
 

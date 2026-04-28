@@ -4,9 +4,9 @@
  * Pure in-memory structure. I/O belongs to lararium-node.
  */
 
-import { createHash } from "crypto";
 import { type PranaEdge } from "./pranala-parser.js";
 import { type CarrierShape } from "./carrier.js";
+import { utf8Bytes, sha256Hex, defaultCryptoProvider } from "./crypto.js";
 
 // ---------------------------------------------------------------------------
 // Meme
@@ -30,10 +30,10 @@ export function memeImplements(meme: Meme): string[] {
     .map((e) => e.toUri);
 }
 
-export function makeMemeHash(uri: string, fileBytes: Uint8Array | null): string {
+export async function makeMemeHash(uri: string, fileBytes: Uint8Array | null): Promise<string> {
   const content = fileBytes ? new TextDecoder().decode(fileBytes) : "virtual";
   const payload = uri + ":" + content;
-  return "sha256:" + createHash("sha256").update(payload, "utf8").digest("hex");
+  return "sha256:" + await sha256Hex(utf8Bytes(payload), defaultCryptoProvider);
 }
 
 // ---------------------------------------------------------------------------
@@ -165,17 +165,6 @@ export class MemeGraph {
     return result;
   }
 
-  closureHash(uriList: string[], edgeList: PranaEdge[]): string {
-    const memeHashes = uriList
-      .filter((u) => this.memes.has(u))
-      .map((u) => this.memes.get(u)!.contentHash)
-      .sort();
-    const edgeRecords = edgeList
-      .map((e) => [e.fromSocket, e.toUri, e.family, e.role ?? ""] as const)
-      .sort((a, b) => a[0].localeCompare(b[0]) || a[1].localeCompare(b[1]));
-    const payload = JSON.stringify({ memes: memeHashes, edges: edgeRecords });
-    return "sha256:" + createHash("sha256").update(payload, "utf8").digest("hex");
-  }
 
   declaredUnresolved(): DeclaredUnresolved[] {
     const RANK: Record<string, number> = { error: 2, warning: 1, info: 0 };

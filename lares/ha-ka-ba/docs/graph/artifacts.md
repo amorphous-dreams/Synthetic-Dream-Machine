@@ -146,7 +146,7 @@ Clients that carry the previous receipt can compare: if `sha256` matches, the co
     {
       "from_uri": "lar:///AGENTS",
       "from_socket": "lar:///AGENTS#required-preload-e-prime",
-      "to_uri": "lar:///ha.ka.ba/api/v0.1/pono/e-prime",
+      "to_uri": "lar:///ha.ka.ba/api/v0.1/mu/e-prime",
       "to_socket": "",
       "family": "control",
       "lifecycle": "template",
@@ -203,7 +203,7 @@ Clients that carry the previous receipt can compare: if `sha256` matches, the co
   "sha256": "<closure_hash — stable cache key>",
   "hash_sequence": [
     {"uri": "lar:///AGENTS", "sha256": "<carrier_hash>", "depth": 0},
-    {"uri": "lar:///ha.ka.ba/api/v0.1/pono/e-prime", "sha256": "<carrier_hash>", "depth": 1}
+    {"uri": "lar:///ha.ka.ba/api/v0.1/mu/e-prime", "sha256": "<carrier_hash>", "depth": 1}
   ],
   "validation": {
     "all_resolved": true,

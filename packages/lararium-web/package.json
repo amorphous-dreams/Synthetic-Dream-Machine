@@ -16,7 +16,8 @@
     "dev": "vite"
   },
   "dependencies": {
-    "@lararium/core": "workspace:*"
+    "@lararium/core": "workspace:*",
+    "@lararium/tldraw": "workspace:*"
   },
   "devDependencies": {
     "tsx": "^4.19.0",

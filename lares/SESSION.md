@@ -17,7 +17,7 @@ manao        = 0.82
 implements   = [
   "lar:///ha.ka.ba/api/v0.1/pono/meme"
 ]
-role         = "archive crystal — session handoff for the yin split/refine/clean pass across overloaded api/v0.1 surfaces"
+role         = "session handoff crystal — 2026-04-28 — M8 complete; socket skeleton + ownership arrows + kumuDefs pipeline shipped; M9 target is resolveWidgetTree render pass in MemeDetailPanel"
 ```
 
 <<~/ahu >>
@@ -28,264 +28,82 @@ SESSION opens
 
 <<~ ahu #ooda-ha >>
 
-✶ Read the whole target file; note line count, live interfaces, child surfaces, docs surfaces, and mixed registers.
-⏿ Sort content into core law, operating procedure, explanation, examples, tables, backlog, and migration residue.
-◇ Choose the smallest lawful split: minimal invariant parent, one child SKILL or sibling child when needed, one docs companion when needed.
-▶ Cut, tighten, and relink; keep the parent as compressed pressure and move heavy matter outward.
-⤴ Verify implements, loulou links, constraints fields, docs posture, and file siting before closing the turn.
-↺ Name what left the parent, what still crowds nearby, and which overloaded file comes next.
+✶ Read ROADMAP `#milestone-9-scope` and WIKI `#hidden-skeleton` + `#causal-islands`. Confirm 229/229 tests green. Confirm server at `http://localhost:4321`.
+⏿ The tldraw ownership skeleton (meme→ahu→socket `control:owns` arrows) IS the widget tree binding surface. Render targets for tldraw DOM must obey TW5 selective refresh (changedTiddlers) and Verse pull-on-demand (explicit per-island update). No cascading re-renders outside declared papalohe ports.
+◇ M9 Priority 1: wire `resolveWidgetTree(ast, registry)` into `MemeDetailPanel` — walk `WidgetNode[]` not raw `MemeAstNode[]`; kumu-typed nodes render via template; unresolved names render as typed holes (Hazel). Priority 2: browser smoke. Priority 3: spatial family. Priority 4: canon-promotion surface.
+▶ Start with `MemeDetailPanel.tsx` + `widget-tree.ts`. Build the render pass. Keep TW5 selective refresh law: only re-resolve when `meta.carrierText` changes in CRDT delta.
+⤴ Verify 229/229 still green. Visual check: double-click meme at action zoom → detail panel renders kumu-typed nodes. Reseed and confirm.
+↺ Update ROADMAP `#milestone-9-scope` as items complete. Note what still crowds: browser smoke, spatial family, canon-promotion.
 
 <<~/ahu >>
 
-<<~ ahu #session-context >>
+<<~ ahu #state >>
 
-## Active Worksite
+## State as of 2026-04-28 session end
 
-Active work now centers in:
+**Branch:** `feature/lararium-node-2` — 229/229 tests green — server at `http://localhost:4321`
 
-- `lares/ha-ka-ba/docs/`
+### Shipped this session
 
-Use `docs/` as the live worksite for archive consumption, staging shelves, witness migration, and later promotion into smaller stable loci memes.
-Keep `SESSION.md` free of per-branch queue state.
+- **Socket port shapes** — `LarTLSocket`, hidden `TLGeoShape` ellipses (8×8, opacity:0) per ahu slot; pranala arrows bind to sockets permanently; `applyZoomTemplate` repositions sockets between `centerX/Y` (meme header, low zoom) and `spreadX/Y` (ahu center, combat/action)
+- **Ownership skeleton** — 14 `control:owns` arrows per boot (7 meme→ahu + 7 meme→socket); `isOwnership:true`, `isLocked:true`, `opacity:0` at low zoom → `0.3` at combat/action; `meta.ownsMemeId` for zoom toggle; queryable as graph facts independent of tldraw `parentId`
+- **Ahu detachment fix** — ahu frames `isLocked:true` in emission + `opacity:0` at low zoom; prevents tldraw reparenting when meme frame shrinks below ahu bounds
+- **kumuDefs pipeline** — `collectKumuDefsFromGraph()` in `node-host.ts` populates `artifact.kumuDefs` (5 defs: meme-strategic → meme-action); `buildKumuRegistry()` live at boot; `templateProps` seeded from lares carriers, not hardcoded defaults
+- **kukali / `\suspends`** — parser + grammar meme + 3 tests; depends on `ReactionGraph.fire()` async (already shipped prior session)
+- **TW5 / Verse research** — integrated into WIKI `#causal-islands`: TW5 = push-on-change (`changedTiddlers`); Verse = pull-on-demand (`SetText()`); socket repositioning IS TW5 selective refresh
 
-<<~/ahu >>
+### Docs updated
 
-<<~ ahu #working-principle >>
-
-## Working Principle
-
-The parent should hold only what must recur, cache, and bind.
-Procedure should leave for a child.
-Explanation should leave for docs.
-Examples, tables, backlog, migration notes, and research residue should leave first.
-
-A good split lowers parent line count, sharpens interface pressure, and clarifies where each kind of matter now lives.
-A bad split merely renames clutter.
+- `ROADMAP.md` — M8 critical path items 4+5 marked ✓; "Also completed" block; M9 scope section opened
+- `MULTIPLAYER-INFINITE-CANVAS-WIKI.md` — `#views` table extended (ahu visibility + ownership cols); `#hidden-skeleton` ahu added; `#causal-islands` TW5/Verse synthesis section added
 
 <<~/ahu >>
 
-<<~ ahu #docs-consumption-pattern >>
+<<~ ahu #next-build >>
 
-## Docs-Tree Consumption Pattern
+## M9 Priority 1 — resolveWidgetTree render pass
 
-When work shifts from splitting overloaded live parents to consuming archived or research-heavy docs material, stay in yin polarity:
+### The insight
 
-- **ka / podge / consuming**
-- refine before expanding
-- digest before re-describing
-- stage before promoting
+The tldraw skeleton acts as the visual binding of the widget tree and the first working template model. The rendered tldraw DOM should obey TW5 and Verse render target best practices:
 
-Do not begin by inventing a grand new taxonomy.
-Begin by making smaller rooms that can eat the archive safely.
+- **TW5 law:** each widget self-checks `changedTiddlers` before re-rendering — don't rebuild the whole tree. In Lararium: only re-resolve widget tree when `meta.carrierText` of the focal meme changes in the CRDT delta.
+- **Verse law:** each kumu instance = a causal island; render updates cross island boundaries only via declared `papalohe` edges, not by walking tldraw shape hierarchy. The render pass reads `WidgetNode[]`, not `MemeAstNode[]`.
 
-### The pattern
+### What to build
 
-1. **Start with a staging shelf, not a destination law-room.**
-   - Use a `docs/.../preferences/...` or comparable staging locus when the topic still carries mixed residue.
-   - Let the staging room act as a digestive chamber, not a final canon home.
+`MemeDetailPanel.tsx` currently renders raw `MemeAstNode[]`. Upgrade:
 
-2. **Collection pass first.**
-   - OODA-HA a collection pass.
-   - Pull strong witness text from nearby archive or research files.
-   - Keep verbatim text in separate `ahu`.
-   - Do not condense while collecting.
+1. Call `resolveWidgetTree(ast, registry): WidgetNode[]` after `parseMemeCarrier`
+2. `registry` reconstructed from `artifact.kumuDefs` already seeded in boot store — read from `editor.store` or pass through `LarariumContext`
+3. Walk `WidgetNode[]`:
+   - `{ def: KumuDef }` → render kumu template body (TOML props → shape props)
+   - `{ def: null }` → render placeholder: `"unknown kumu: name"` (Hazel typed hole)
+4. TW5 selective refresh: memoize on `meta.carrierText`; only re-resolve when the meme's carrier text changes in the store listener
 
-3. **Move the obvious outward matter early.**
-   - If part of the braid clearly belongs in another docs branch (`docs/mu`, `docs/pono`, another sibling shelf), create a skeleton there first.
-   - Then migrate the verbatim material into that new room.
-   - Update upstream source notes so future readers know where the matter now lives.
-
-4. **Leave API-adjacent residue in the staging room.**
-   - Keep here what still pressures toward a new short invariant, a not-yet-promoted interface law, or a cross-cutting runtime doctrine.
-   - Do not evacuate unresolved promotion candidates too early.
-
-5. **Talk story before condensing.**
-   - After collection and first migration, stop.
-   - Review what remains.
-   - Name what already lives well in API, what belongs in docs, what still leaks, and what wants to split.
-   - Only then begin the true tightening pass.
-
-6. **Promote only when the smaller room earns it.**
-   - A topic promotes from staging into a main `docs/...` loci meme only after the room reads load-bearing on its own.
-   - Promotion should follow digestion, not precede it.
-
-### Language cues from the operator that should guide future passes
-
-If the operator uses pressure like:
-
-- "yin-refinement cycle"
-- "ka / podge / consuming"
-- "talk story through it"
-- "verbatim text in separate ahu"
-- "start with the big source, then migrate outward"
-- "leave the new invariant material here"
-
-then read that as instruction to:
-
-- reduce expansion pressure
-- collect without summarizing too early
-- split destination rooms by true belonging, not by symmetry
-- preserve witness matter during the first move
-- keep staging shelves honest about what remains unresolved
-
-### Success criteria for archive-consumption passes
-
-A docs-consumption pass counts as healthy when:
-
-- witness text now sits in rooms that match its real branch
-- staging shelves no longer pretend to hold the whole topic
-- upstream archive files point to the new homes cleanly
-- unresolved API-promotion residue remains visible
-- the next story pass can focus on condensation instead of file-finding
-
-### Failure signs
-
-Stop and correct if:
-
-- new shelves multiply faster than material actually moves
-- the staging shelf still claims the whole topic after migration
-- verbatim witness text gets paraphrased before its destination stabilizes
-- upstream archive notes still point to outdated staging rooms
-- "refinement" turns into a fresh expansion taxonomy
-
-This pattern should apply to current topics and unknown future topics across the docs tree whenever archive consumption, witness migration, and later promotion form the real work.
-
-<<~/ahu >>
-
-<<~ ahu #current-standards >>
-
-## Current Standards
-
-### Parent invariant core
-- target the smallest lawful parent; usually under 250 lines
-- if lawful, implement `meme + loci + invariant`
-- keep visible `#iam`, visible opener, visible closer, visible edges
-- keep one six-line glyph OODA-HA block: `✶ ⏿ ◇ ▶ ⤴ ↺`
-- keep pressure language, not tutorial swell
-- keep named `loulou` links to child and docs surfaces where they exist
-- keep file-siting and interface claims explicit
-- no nested ha/ka/ba sub-loops inside the parent OODA-HA
-
-### Child operational surface
-- prefer `SKILL.md` when the outward matter reads as operator/agent procedure
-- choose another child when the outward matter reads better as `iam`, examples, registry, or other bounded support
-- keep YAML frontmatter first for `SKILL.md`
-- use `constraints`, not `invariants`
-- keep procedural OODA-HA as sectioned phases, not compressed glyph law
-- cover the parent; do not replace it
-
-### Docs companion
-- place at `lares/ha-ka-ba/docs/...`
-- open by stating that the file does not bind invariant law
-- hold explanation, guidance, examples, research backlog, migration history, comparison tables, and long notes
-- keep links back to the parent and child where useful
-
-### E-prime and register discipline
-- cut lazy `is/are/was/were` forms when a stronger verb fits
-- keep parent language compressed and load-bearing
-- keep child and docs language direct and operational
-- cut any sentence that only repeats visible structure
-
-<<~/ahu >>
-
-<<~ ahu #selection-heuristics >>
-
-## Selection Heuristics
-
-Choose the next file by this order:
-
-1. largest overloaded parent in `api/v0.1`
-2. strongest mix of law + procedure + explanation in one file
-3. weakest current sidecar support
-4. clearest payoff from a smaller invariant parent
-
-Hold back when:
-
-- the file already stays small and sharp
-- the file functions mainly as a child, not a parent
-- the file reads as canonical reference material that would lose force from fragmentation
-
-<<~/ahu >>
-
-<<~ ahu #the-loop >>
-
-## The Loop
+### Files
 
 ```
-1. READ the target file fully. Note:
-   - line count
-   - opener, #iam cluster, implements set, footer shape
-   - current child surfaces under the sibling directory
-   - current docs companion under lares/ha-ka-ba/docs/
-   - whether the parent currently mixes law, procedure, explanation, tables, examples, or backlog
-
-2. CLASSIFY the file.
-   - Should the parent become a minimal invariant core?
-   - Should the parent implement meme + loci + invariant?
-   - What matter belongs in a child?
-   - What matter belongs in docs?
-   - What matter should simply vanish?
-
-3. MAP the split.
-   parent core  -> invariant pressure, stable interfaces, short OODA-HA, load-bearing edges
-   child        -> workflow, trigger, criteria, registry, examples, or another bounded support role
-   docs         -> explanation, tables, backlog, migration, comparison, commentary
-
-4. WRITE the smallest lawful set.
-   - tighten the parent first
-   - create or refine one child surface if needed
-   - create or refine one docs companion if needed
-   - add loulou links so the surfaces actually form one system
-
-5. VERIFY.
-   - parent stays small and cacheable
-   - implements set matches the true role
-   - SKILL frontmatter and constraints field read correctly
-   - docs file states non-law posture near the top
-   - named `pranala` sugar reads consistently and does not spawn legacy sidebars
-   - no nested sub-loops in the parent OODA-HA
-   - file siting follows loci rules
-
-6. CLOSE HONESTLY.
-   - name what left the parent
-   - name what still needs another pass
-   - queue the next overloaded file
+packages/lararium-core/src/widget-tree.ts     — resolveWidgetTree, KumuRegistry, WidgetNode
+packages/lararium-app/src/MemeDetailPanel.tsx  — current raw AST renderer → upgrade target
+packages/lararium-app/src/lararium-context.tsx — LarariumContext, useLararium, editor ref
+packages/lararium-tldraw/src/records.ts        — LarTLSocket, LarTLArrow.isOwnership, ownsArrowId
+packages/lararium-tldraw/src/project.ts        — ownership arrow emission, socket projection
+packages/lararium-tldraw/src/layout.ts         — SocketGeometry, ownership arrow geometry
+packages/lararium-tldraw/src/tldraw-shapes.ts  — socket geo emission, isOwnership opacity/lock
+packages/lararium-node/src/node-host.ts        — collectKumuDefsFromGraph
+packages/lararium-node/scripts/serve.ts        — buildBootProjection, buildKumuRegistry
+lares/lararium-node/ROADMAP.md                 — #milestone-9-scope
+lares/lararium-node/MULTIPLAYER-INFINITE-CANVAS-WIKI.md — #hidden-skeleton, #views
 ```
 
-<<~/ahu >>
+### Commands
 
-<<~ ahu #done-pattern >>
-
-## Done Pattern
-
-A pass counts as done when:
-
-- the parent now reads as minimal invariant pressure
-- the parent no longer carries obvious tutorial or archive swell
-- child and docs surfaces hold the outward matter cleanly
-- links between the surfaces work in both directions where needed
-- the new shape helps the next reader decide faster, not slower
-
-<<~/ahu >>
-
-<<~ ahu #reference >>
-
-## Reference Exemplars
-
-Parent invariants:
-- `lares/ha-ka-ba/api/v0.1/pono/loci.md`
-- `lares/ha-ka-ba/api/v0.1/pono/lar-uri.md`
-- `lares/ha-ka-ba/api/v0.1/pono/invariant.md`
-
-Child surfaces:
-- `lares/ha-ka-ba/api/v0.1/pono/loci/SKILL.md`
-- `lares/ha-ka-ba/api/v0.1/pono/invariant/SKILL.md`
-- `lares/ha-ka-ba/api/v0.1/pono/loci/iam.md`
-
-Docs companions:
-- `lares/ha-ka-ba/docs/pono/loci.md`
-- `lares/ha-ka-ba/docs/pono/lar-uri.md`
-- `lares/ha-ka-ba/docs/lararium.md`
+```bash
+pnpm -r build
+pnpm -r test                                                        # 229 must stay green
+curl -s http://localhost:4321/admin/reseed | python3 -m json.tool   # reseed after build
+```
 
 <<~/ahu >>
 
@@ -297,12 +115,10 @@ SESSION closes
 
 ## Edges
 
-- `lar:///ha.ka.ba/api/v0.1/pono/meme`
-- `lar:///ha.ka.ba/api/v0.1/pono/loci`
-- `lar:///ha.ka.ba/api/v0.1/pono/invariant`
-- `lar:///LARES`
+<<~ pranala #implements-meme ? -> lar:///ha.ka.ba/api/v0.1/pono/meme family:control role:implements >>
+<<~ pranala #to-roadmap ? -> lar:///LARARIUM-NODE/ROADMAP family:relation role:companion >>
+<<~ pranala #to-wiki ? -> lar:///LARARIUM-NODE/MULTIPLAYER-INFINITE-CANVAS-WIKI family:relation role:companion >>
 
 <<~/ahu >>
-
 
 <<~&#x0004; -> ? >>

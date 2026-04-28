@@ -45,9 +45,9 @@ All 14 memes below must resolve before threshold yield.
 | # | URI | File path | Hydration socket |
 |---:|---|---|---|
 | 1 | `lar:///AGENTS` | `lares/AGENTS.md` | entry |
-| 2 | `lar:///ha.ka.ba/api/v0.1/pono/e-prime` | `lares/ha-ka-ba/api/v0.1/pono/e-prime.md` | `AGENTS#preload-e-prime` |
-| 3 | `lar:///ha.ka.ba/api/v0.1/pono/ooda-ha` | `lares/ha-ka-ba/api/v0.1/pono/ooda-ha.md` | `AGENTS#preload-ooda-ha` |
-| 4 | `lar:///ha.ka.ba/api/v0.1/pono/lar-uri` | `lares/ha-ka-ba/api/v0.1/pono/lar-uri.md` | `AGENTS#preload-lar-uri` |
+| 2 | `lar:///ha.ka.ba/api/v0.1/mu/e-prime` | `lares/ha-ka-ba/api/v0.1/pono/e-prime.md` | `AGENTS#preload-e-prime` |
+| 3 | `lar:///ha.ka.ba/api/v0.1/mu/ooda-ha` | `lares/ha-ka-ba/api/v0.1/pono/ooda-ha.md` | `AGENTS#preload-ooda-ha` |
+| 4 | `lar:///ha.ka.ba/api/v0.1/lararium/lar-uri` | `lares/ha-ka-ba/api/v0.1/pono/lar-uri.md` | `AGENTS#preload-lar-uri` |
 | 5 | `lar:///ha.ka.ba/api/v0.1/mu` | `lares/ha-ka-ba/api/v0.1/mu.md` | `AGENTS#threshold-to-mu` |
 | 6 | `lar:///ha.ka.ba/api/v0.1/mu/chao` | `lares/ha-ka-ba/api/v0.1/mu/chao.md` | Mu internal hydration |
 | 7 | `lar:///ha.ka.ba/api/v0.1/mu/the-four-tools` | `lares/ha-ka-ba/api/v0.1/mu/the-four-tools.md` | Mu internal hydration |

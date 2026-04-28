@@ -40,7 +40,7 @@ export interface LarHostfulResolution extends LarResolution {
   readonly virtual: true;
 }
 
-const CAPS_FILE_ROOTS = new Set(["AGENTS", "LARES"]);
+const CAPS_FILE_ROOTS = new Set(["AGENTS", "LARES", "README"]);
 const VIRTUAL_CAPS_ROOTS = new Set(["INDEXES"]);
 const STABLE_TUPLE_ROOT = "ha.ka.ba";
 
@@ -137,6 +137,15 @@ export function resolveLarUri(uri: string): LarResolution {
         ? root.replace(/\./g, "-")
         : `chapel-perilous-opens/${root}`;
     const joined = childPath.length > 0 ? `${base}/${childPath.join("/")}` : base;
+    const laresRelPath = withMdSuffix(joined);
+    return { uri, root, childPath, resourcePath, laresRelPath, kind: "tuple-file", virtual: false };
+  }
+
+  // Adjacent tagspace dirs: map directly to lares/ subdirs
+  // grammars/... → lares/grammars/
+  // lararium-node/... → lares/lararium-node/
+  if (root === "grammars" || root === "lararium-node") {
+    const joined = childPath.length > 0 ? `${root}/${childPath.join("/")}` : root;
     const laresRelPath = withMdSuffix(joined);
     return { uri, root, childPath, resourcePath, laresRelPath, kind: "tuple-file", virtual: false };
   }

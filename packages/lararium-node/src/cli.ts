@@ -4,9 +4,8 @@
  * Usage: lararium <command> [args]
  *   resolve <uri>          Resolve a lar:/// URI
  *   carrier <uri>          Read and validate a carrier
- *   minimal-boot           Compile minimal boot artifact
- *   full-boot              Compile full boot artifact
- *   receipt                Compile minimal boot receipt
+ *   boot                   Compile boot artifact
+ *   receipt                Compile boot receipt
  */
 
 import { createLarariumRuntime } from "./node-host.js";
@@ -29,23 +28,20 @@ switch (cmd) {
     console.log(JSON.stringify(runtime.readCarrier(uri), null, 2));
     break;
   }
-  case "minimal-boot": {
-    const artifact = runtime.compileMinimalBoot();
-    console.log(JSON.stringify(artifact, null, 2));
-    break;
-  }
-  case "full-boot": {
-    const artifact = runtime.compileFullBoot();
+  case "boot": {
+    const artifact = runtime.compileBoot();
     console.log(JSON.stringify(artifact, null, 2));
     break;
   }
   case "receipt": {
-    const artifact = runtime.compileMinimalBoot();
-    console.log(JSON.stringify(runtime.compileBootReceipt(artifact), null, 2));
+    const artifact = runtime.compileBoot();
+    runtime.compileBootReceipt(artifact).then((receipt) => {
+      console.log(JSON.stringify(receipt, null, 2));
+    });
     break;
   }
   default:
     console.error("Unknown command:", cmd);
-    console.error("Commands: resolve, carrier, minimal-boot, full-boot, receipt");
+    console.error("Commands: resolve, carrier, boot, receipt");
     process.exit(1);
 }

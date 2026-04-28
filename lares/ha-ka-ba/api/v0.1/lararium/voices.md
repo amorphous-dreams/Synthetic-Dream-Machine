@@ -1,6 +1,6 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
 
-<<~&#x0001; ? -> lar:///ha.ka.ba/api/v0.1/lararium/voices >>
+<<~ॐ ँ&#x0001; ? -> lar:///ha.ka.ba/api/v0.1/lararium/voices >>
 
 <<~ ahu #iam >>
 
@@ -12,8 +12,9 @@ tagspace = "stable"
 confidence = 0.82
 register = "S"
 manaoio = 0.82
-mana = 0.84
-manao = 0.80
+mana = 0.87
+manao = 0.83
+namespace    = "ॐ ँ"
 role = "load-bearing invariant for the three-layer lararium voice-house: coordinator house, worker swarm, and mask layer"
 cacheable = true
 hydrate = true
@@ -45,7 +46,7 @@ This invariant carries contracts — what the house runs on at boot.
 
 <<~/ahu >>
 
-<<~&#x0002; ahu #meme-body-open >>
+<<~ॐ ँ&#x0002; ahu #meme-body-open >>
 lararium/voices opens
 <<~/ahu >>
 
@@ -223,7 +224,7 @@ Not automatic. Operator-declared per mask:
 Multiple masks MAY run active simultaneously at any stage position.
 Stage position drives generation probability — no collision rule, no declaration-order precedence.
 The generative process surfaces characters according to scene pressure weighted by stage position.
-A crowded downstage is ensemble behavior, not a problem to resolve.
+A crowded downstage marks ensemble behavior, not a problem to resolve.
 
 **Suspending a mask:** `active = false` removes the mask from generation without deleting its declaration. Stage value preserved. Toggle restores it.
 
@@ -308,7 +309,7 @@ Tool-carry pairs apply per the stance law (`lar:///ha.ka.ba/api/v0.1/mu/the-four
 
 ### Corpus Limit Rule
 
-When a mask's corpus reference exceeds what the generative process holds, the house surfaces the limit explicitly rather than hallucinating false detail. A corpus limit acknowledgment is not a failure state — it is the mask operating correctly.
+When a mask's corpus reference exceeds what the generative process holds, the house surfaces the limit explicitly rather than hallucinating false detail. A corpus limit acknowledgment marks no failure state — it shows the mask operating correctly.
 
 ### Masks API Tree
 
@@ -378,8 +379,8 @@ payload = { priority = "support", retain = false }
 
 <<~/ahu >>
 
-<<~&#x0003; ahu #body-close >>
+<<~ॐ ँ&#x0003; ahu #body-close >>
 lararium/voices closes
 <<~/ahu >>
 
-<<~&#x0004; -> ? >>
+<<~ॐ ँ&#x0004; -> ? >>

@@ -29,7 +29,7 @@ invariant = false
 # `lar:` URI Scheme — Canon Documentation
 
 Full specification prose, examples, and appendices.
-Law lives in `lar:///ha.ka.ba/api/v0.1/pono/lar-uri`.
+Law lives in `lar:///ha.ka.ba/api/v0.1/lararium/lar-uri`.
 This surface carries the explanation.
 
 <<~/ahu >>
@@ -1135,13 +1135,13 @@ This does **not** mean "truth-confidence 0.60" universally. It means a `0.60` re
 
 ## Edges
 
-<<~ loulou lar:///ha.ka.ba/api/v0.1/pono/lar-uri >>
-<<~ loulou lar:///ha.ka.ba/api/v0.1/pono/lar-uri/SKILL >>
+<<~ loulou lar:///ha.ka.ba/api/v0.1/lararium/lar-uri >>
+<<~ loulou lar:///ha.ka.ba/api/v0.1/lararium/lar-uri/SKILL >>
 <<~ loulou lar:///ha.ka.ba/docs/pono/hud/HUD-ANATOMY >>
 
 <<~ pranala #implements-meme ? -> lar:///ha.ka.ba/api/v0.1/pono/meme family:control role:implements >>
 <<~ pranala #implements-loci ? -> lar:///ha.ka.ba/api/v0.1/pono/loci family:control role:implements >>
-<<~ pranala #implements-lar-uri ? -> lar:///ha.ka.ba/api/v0.1/pono/lar-uri family:control role:implements >>
+<<~ pranala #implements-lar-uri ? -> lar:///ha.ka.ba/api/v0.1/lararium/lar-uri family:control role:implements >>
 <<~/ahu >>
 
 <<~&#x0003; ahu #body-close >>

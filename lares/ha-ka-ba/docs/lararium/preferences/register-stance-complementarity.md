@@ -47,8 +47,8 @@ This room should test whether the old complementarity claim deserves:
 Current comparison surfaces:
 
 - `lar:///ha.ka.ba/api/v0.1/mu/the-syad-perspectives`
-- `lar:///ha.ka.ba/api/v0.1/pono/e-prime`
-- `lar:///ha.ka.ba/api/v0.1/pono/lar-uri`
+- `lar:///ha.ka.ba/api/v0.1/mu/e-prime`
+- `lar:///ha.ka.ba/api/v0.1/lararium/lar-uri`
 
 <<~/ahu >>
 
@@ -80,8 +80,8 @@ docs/lararium/preferences/register-stance-complementarity closes
 
 <<~ loulou lar:///ha.ka.ba/docs/lararium/preferences/epistemology >>
 <<~ loulou lar:///ha.ka.ba/api/v0.1/mu/the-syad-perspectives >>
-<<~ loulou lar:///ha.ka.ba/api/v0.1/pono/e-prime >>
-<<~ loulou lar:///ha.ka.ba/api/v0.1/pono/lar-uri >>
+<<~ loulou lar:///ha.ka.ba/api/v0.1/mu/e-prime >>
+<<~ loulou lar:///ha.ka.ba/api/v0.1/lararium/lar-uri >>
 
 <<~ pranala #implements-meme ? -> lar:///ha.ka.ba/api/v0.1/pono/meme family:control role:implements >>
 <<~ pranala #implements-loci ? -> lar:///ha.ka.ba/api/v0.1/pono/loci family:control role:implements >>

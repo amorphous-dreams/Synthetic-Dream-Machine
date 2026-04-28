@@ -20,7 +20,7 @@
  *   - transclusionLayout — zoomed view of a single meme with its ahu socket sub-frames
  */
 
-import { type LarTLSnapshot, type LarTLFrame, type LarTLArrow } from "./records.js";
+import { type LarTLSnapshot, type LarTLFrame, type LarTLSocket } from "./records.js";
 
 // ---------------------------------------------------------------------------
 // Layout geometry types
@@ -31,6 +31,19 @@ export interface FrameGeometry {
   readonly y: number;
   readonly w: number;
   readonly h: number;
+}
+
+/**
+ * Socket port geometry — all coordinates local to the parent meme frame.
+ *
+ * centerX/Y: position when ahu frames are hidden (cluster to meme center).
+ * spreadX/Y: position when ahu frames are visible (near the ahu frame center).
+ */
+export interface SocketGeometry {
+  readonly centerX: number;
+  readonly centerY: number;
+  readonly spreadX: number;
+  readonly spreadY: number;
 }
 
 export interface ArrowGeometry {
@@ -44,8 +57,9 @@ export interface ArrowGeometry {
 
 export interface LarTLLayout {
   readonly strategy: string;
-  readonly frames: ReadonlyMap<string, FrameGeometry>;
-  readonly arrows: ReadonlyMap<string, ArrowGeometry>;
+  readonly frames:  ReadonlyMap<string, FrameGeometry>;
+  readonly sockets: ReadonlyMap<string, SocketGeometry>;
+  readonly arrows:  ReadonlyMap<string, ArrowGeometry>;
 }
 
 // ---------------------------------------------------------------------------
@@ -82,8 +96,9 @@ const CANVAS_OX   = 100; // origin offset
 const CANVAS_OY   = 100;
 
 export function storyRiverLayout(snapshot: LarTLSnapshot): LarTLLayout {
-  const frameGeo = new Map<string, FrameGeometry>();
-  const arrowGeo = new Map<string, ArrowGeometry>();
+  const frameGeo  = new Map<string, FrameGeometry>();
+  const socketGeo = new Map<string, SocketGeometry>();
+  const arrowGeo  = new Map<string, ArrowGeometry>();
 
   // Group meme frames by depth
   const memeFrames = snapshot.frames.filter((f) => f.frameKind === "meme");
@@ -131,24 +146,77 @@ export function storyRiverLayout(snapshot: LarTLSnapshot): LarTLLayout {
     curX += FRAME_W + GAP_X;
   }
 
-  // Arrow geometry: center-to-center
+  // Socket geometry: center = meme frame center; spread = near its ahu sub-frame center
+  for (const socket of ((snapshot.sockets ?? []) as readonly LarTLSocket[])) {
+    const memeGeo = frameGeo.get(socket.parentId);
+    if (!memeGeo) continue;
+    // Center position clusters all sockets into the meme header zone (top FRAME_H strip),
+    // regardless of how tall the meme is due to ahu sub-frames
+    const centerX = FRAME_W / 2;
+    const centerY = FRAME_H / 2;
+    // Spread position mirrors the ahu sub-frame center (local coords)
+    const spreadX = AHU_PAD_X + AHU_W / 2;
+    const spreadY = FRAME_H + AHU_PAD_Y + socket.ahuIdx * (AHU_H + AHU_GAP) + AHU_H / 2;
+    socketGeo.set(socket.id, { centerX, centerY, spreadX, spreadY });
+  }
+
+  // Build socket→parent-frame lookup for arrow start position
+  const socketParent = new Map<string, string>();
+  for (const socket of ((snapshot.sockets ?? []) as readonly LarTLSocket[])) {
+    socketParent.set(socket.id, socket.parentId);
+  }
+
+  // Ahu frame → parent meme canvas position lookup (ahu coords are local; need offset for arrows)
+  const ahuParent = new Map<string, string>();
+  for (const f of ahuFrames) {
+    if (f.parentId) ahuParent.set(f.id, f.parentId);
+  }
+
+  // Arrow geometry: initial placement uses spread position for socket sources
   for (const arrow of snapshot.arrows) {
-    const fromGeo = frameGeo.get(arrow.fromFrameId);
-    const toGeo   = frameGeo.get(arrow.toFrameId);
+    // Ownership skeleton arrows: meme→ahu or meme→socket — use meme centroid for both ends.
+    // Bindings reposition them at runtime; opacity:0 means initial geometry is irrelevant.
+    if (arrow.isOwnership) {
+      const memeGeo = frameGeo.get(arrow.fromFrameId);
+      if (!memeGeo) continue;
+      const cx = memeGeo.x + memeGeo.w / 2;
+      const cy = memeGeo.y + FRAME_H / 2;
+      arrowGeo.set(arrow.id, { startX: cx, startY: cy, endX: cx, endY: cy });
+      continue;
+    }
+
+    const sockGeo  = socketGeo.get(arrow.fromFrameId);
+    const parentId = socketParent.get(arrow.fromFrameId);
+    const fromGeo  = sockGeo && parentId
+      ? frameGeo.get(parentId)
+      : frameGeo.get(arrow.fromFrameId);
+
+    // Target may be an ahu frame (local coords) — convert to canvas via parent offset
+    const rawToGeo  = frameGeo.get(arrow.toFrameId);
+    const toParentId = ahuParent.get(arrow.toFrameId);
+    const toParentGeo = toParentId ? frameGeo.get(toParentId) : undefined;
+    const toGeo = rawToGeo && toParentGeo
+      ? { x: toParentGeo.x + rawToGeo.x, y: toParentGeo.y + rawToGeo.y, w: rawToGeo.w, h: rawToGeo.h }
+      : rawToGeo;
+
     if (!fromGeo || !toGeo) continue;
 
+    const startX = sockGeo ? fromGeo.x + sockGeo.spreadX : fromGeo.x + fromGeo.w / 2;
+    const startY = sockGeo ? fromGeo.y + sockGeo.spreadY : fromGeo.y + fromGeo.h / 2;
+
     arrowGeo.set(arrow.id, {
-      startX: fromGeo.x + fromGeo.w / 2,
-      startY: fromGeo.y + fromGeo.h / 2,
-      endX:   toGeo.x + toGeo.w / 2,
-      endY:   toGeo.y + toGeo.h / 2,
+      startX,
+      startY,
+      endX: toGeo.x + toGeo.w / 2,
+      endY: toGeo.y + toGeo.h / 2,
     });
   }
 
   return {
     strategy: "story-river",
-    frames: frameGeo,
-    arrows: arrowGeo,
+    frames:  frameGeo,
+    sockets: socketGeo,
+    arrows:  arrowGeo,
   };
 }
 
@@ -218,7 +286,7 @@ export function memeDetailLayout(snapshot: LarTLSnapshot): LarTLLayout {
     });
   }
 
-  return { strategy: "meme-detail", frames: frameGeo, arrows: arrowGeo };
+  return { strategy: "meme-detail", frames: frameGeo, sockets: new Map(), arrows: arrowGeo };
 }
 
 // ---------------------------------------------------------------------------
@@ -269,7 +337,7 @@ export function graphLayout(snapshot: LarTLSnapshot): LarTLLayout {
     });
   }
 
-  return { strategy: "graph", frames: frameGeo, arrows: arrowGeo };
+  return { strategy: "graph", frames: frameGeo, sockets: new Map(), arrows: arrowGeo };
 }
 
 // ---------------------------------------------------------------------------

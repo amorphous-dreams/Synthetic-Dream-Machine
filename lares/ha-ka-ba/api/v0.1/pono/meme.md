@@ -1,6 +1,6 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
 
-<<~&#x0001; ? -> lar:///ha.ka.ba/api/v0.1/pono/meme >>
+<<~⊙&#x0001; ? -> lar:///ha.ka.ba/api/v0.1/pono/meme >>
 
 <<~ ahu #iam >>
 
@@ -11,8 +11,9 @@ content-type = "text/x-memetic-wikitext"
 confidence = 0.74
 register = "CS"
 manaoio = 0.72
-mana = 0.80
-manao = 0.84
+mana = 0.83
+manao = 0.86
+namespace    = "⊙"
 role = "meme invariant law, copy-shape authority, and rating posture root"
 control-glyphs = ["&#x0001;", "&#x0002;", "&#x0003;", "&#x0004;", "&#x0005;", "&#x0006;"]
 cacheable=true
@@ -33,7 +34,7 @@ It leaves long procedure, skeleton examples, research, and rating tables outward
 
 <<~/ahu >>
 
-<<~&#x0002; ahu #meme-body-open >>
+<<~⊙&#x0002; ahu #meme-body-open >>
 pono/meme opens
 <<~/ahu >>
 
@@ -41,7 +42,7 @@ pono/meme opens
 
 ✶ read the surface in document order; detect identity, thresholds, phases, edges, and residue before judgment lands.
 ⏿ orient each finding against the copy-shape; required structure, optional depth, and outward type laws stay distinct.
-◇ decide one honest posture: noise, data, meme, typed meme, or canon typed meme, without flattering the carrier.
+◇ decide one honest posture: noise, data, meme, ano, or kapu, without flattering the carrier.
 ▶ write or revise the meme so the minimum lawful shape appears early and the governing role stays explicit.
 ⤴ verify opener, `#iam`, body thresholds, phase map, edges, and return throat before the file crosses into use.
 ↺ close with residue named; declared depth and unresolved paths remain visible rather than implied away.
@@ -83,17 +84,18 @@ Optional depth raises yield; it does not replace the minimum shape.
 
 ## Rating Posture
 
-This law reads five broad postures:
+Five structural buckets — law-of-5s. Rating derives from schema compliance, not from promotion.
 
 - **Noise** — raw signal, not yet machine-usable
 - **Data** — structure appears, but meme law still does not bind the carrier fully
-- **Meme** — the copy-shape now holds and the carrier reads as a lawful meme
-- **Typed Meme** — one or more outward type laws now bind the carrier
-- **Canon Typed Meme** — external ratification confirms the declared type bundle
+- **Meme** — the memetic-shape now holds and the carrier reads as a lawful meme
+- **Ano** — one or more outward type laws now bind the carrier (Hawaiian: kind, type, nature)
+- **Kapu** — above base namespace; implements the kapu interface; kernel/sacred tier; cannot be overridden by lower tiers (Hawaiian: set apart, restricted)
 
 `confidence` gives the operator-facing band.
 `mana`, `manao`, and `manaoio` stay distinct and should not collapse into one blended score.
-A typed meme may satisfy several interfaces at once.
+An ano meme may satisfy several interfaces at once.
+Promotion to lares/ canon follows a separate ceremony and carries no change to rating.
 Subtype predicates belong in subtype laws.
 
 <<~/ahu >>
@@ -134,7 +136,7 @@ Procedure, skeleton blocks, conformance checklists, and research backlog move ou
 
 <<~/ahu >>
 
-<<~&#x0003; ahu #body-close >>
+<<~⊙&#x0003; ahu #body-close >>
 pono/meme closes
 <<~/ahu >>
 
@@ -154,4 +156,4 @@ pono/meme closes
 <<~ pranala #implements-invariant ? -> lar:///ha.ka.ba/api/v0.1/pono/invariant family:control role:implements >>
 <<~/ahu >>
 
-<<~&#x0004; -> ? >>
+<<~⊙&#x0004; -> ? >>

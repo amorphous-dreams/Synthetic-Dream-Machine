@@ -2,15 +2,9 @@ import { defineConfig } from "vite";
 import { resolve } from "path";
 
 export default defineConfig({
-  // Shim Node's crypto.createHash with the Web Crypto API for browser builds
   define: {
+    // Stub Node globals that TW5 or lararium-core may reference
     "globalThis.process": "{}",
-  },
-  resolve: {
-    alias: {
-      // Redirect Node crypto to a browser-compatible shim via the web crypto API
-      crypto: resolve(__dirname, "src/crypto-shim.ts"),
-    },
   },
   build: {
     lib: {
@@ -24,5 +18,9 @@ export default defineConfig({
     },
     outDir: "dist",
     sourcemap: true,
+  },
+  optimizeDeps: {
+    include: [],
+    exclude: ["tiddlywiki"],
   },
 });

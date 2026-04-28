@@ -1,6 +1,6 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
 
-<<~&#x0001; ? -> lar:///ha.ka.ba/api/v0.1/lararium/continuity >>
+<<~ॐ ँ&#x0001; ? -> lar:///ha.ka.ba/api/v0.1/lararium/continuity >>
 
 <<~ ahu #iam >>
 
@@ -14,6 +14,7 @@ register = "S"
 manaoio = 0.68
 mana = 0.72
 manao = 0.70
+namespace    = "ॐ ँ"
 role = "lararium child invariant for continuity, crystal carry, and memory-as-hint boundaries"
 cacheable = true
 hydrate = true
@@ -45,7 +46,7 @@ Continuity enters here as calibration and carry, not as unquestioned truth.
 
 <<~/ahu >>
 
-<<~&#x0002; ahu #meme-body-open >>
+<<~ॐ ँ&#x0002; ahu #meme-body-open >>
 lararium/continuity opens
 <<~/ahu >>
 
@@ -93,8 +94,8 @@ This child meme keeps the cold-hydration contract small.
 
 <<~/ahu >>
 
-<<~&#x0003; ahu #body-close >>
+<<~ॐ ँ&#x0003; ahu #body-close >>
 lararium/continuity closes
 <<~/ahu >>
 
-<<~&#x0004; -> ? >>
+<<~ॐ ँ&#x0004; -> ? >>

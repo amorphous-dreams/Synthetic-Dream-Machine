@@ -1,6 +1,6 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
 
-<<~&#x0001; ? -> lar:///ha.ka.ba/api/v0.1/lararium/hud >>
+<<~ॐ ँ&#x0001; ? -> lar:///ha.ka.ba/api/v0.1/lararium/hud >>
 
 <<~ ahu #iam >>
 
@@ -14,6 +14,7 @@ register = "S"
 manaoio = 0.62
 mana = 0.70
 manao = 0.68
+namespace    = "ॐ ँ"
 role = "lararium child invariant for the session-visible HUD and exchange instrument panel"
 cacheable = true
 hydrate = true
@@ -45,7 +46,7 @@ Session-facing status surface belongs here.
 
 <<~/ahu >>
 
-<<~&#x0002; ahu #meme-body-open >>
+<<~ॐ ँ&#x0002; ahu #meme-body-open >>
 lararium/hud opens
 <<~/ahu >>
 
@@ -89,13 +90,13 @@ This child meme stays small enough to hydrate on every cold start.
 <<~ pranala #implements-invariant ? -> lar:///ha.ka.ba/api/v0.1/pono/invariant family:control role:implements >>
 <<~ loulou lar:///ha.ka.ba/api/v0.1/lararium >>
 <<~ loulou lar:///ha.ka.ba/docs/pono/hud >>
-<<~ loulou lar:///ha.ka.ba/api/v0.1/pono/lar-uri >>
+<<~ loulou lar:///ha.ka.ba/api/v0.1/lararium/lar-uri >>
 <<~ loulou lar:///LARES >>
 
 <<~/ahu >>
 
-<<~&#x0003; ahu #body-close >>
+<<~ॐ ँ&#x0003; ahu #body-close >>
 lararium/hud closes
 <<~/ahu >>
 
-<<~&#x0004; -> ? >>
+<<~ॐ ँ&#x0004; -> ? >>

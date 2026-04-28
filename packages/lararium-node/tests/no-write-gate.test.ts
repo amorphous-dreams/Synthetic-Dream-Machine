@@ -33,15 +33,15 @@ describe("no-write gate", () => {
     expect(() => runtime.readResource("lar:///DOES_NOT_EXIST_9999")).toThrow();
   });
 
-  test("compileMinimalBoot returns a new object each call", () => {
-    const a = runtime.compileMinimalBoot();
-    const b = runtime.compileMinimalBoot();
+  test("compileBoot returns a new object each call", () => {
+    const a = runtime.compileBoot();
+    const b = runtime.compileBoot();
     expect(a).not.toBe(b);
     expect(a.closure).not.toBe(b.closure);
   });
 
-  test("compileMinimalBoot closure entries are frozen (immutable)", () => {
-    const artifact = runtime.compileMinimalBoot();
+  test("compileBoot closure entries are frozen (immutable)", () => {
+    const artifact = runtime.compileBoot();
     // Attempt mutation — should either throw in strict mode or be a no-op
     const entry = artifact.closure[0];
     const originalUri = entry.uri;
@@ -53,17 +53,11 @@ describe("no-write gate", () => {
     expect(artifact.closure[0].uri).toBe(originalUri);
   });
 
-  test("compileFullBoot does not share closure array with minimal boot", () => {
-    const minimal = runtime.compileMinimalBoot();
-    const full = runtime.compileFullBoot();
-    expect(minimal.closure).not.toBe(full.closure);
-  });
-
-  test("compileBootReceipt does not mutate the artifact it receives", () => {
-    const artifact = runtime.compileMinimalBoot();
+  test("compileBootReceipt does not mutate the artifact it receives", async () => {
+    const artifact = runtime.compileBoot();
     const originalCount = artifact.memeCount;
     const originalEntry0Uri = artifact.closure[0].uri;
-    runtime.compileBootReceipt(artifact);
+    await runtime.compileBootReceipt(artifact);
     expect(artifact.memeCount).toBe(originalCount);
     expect(artifact.closure[0].uri).toBe(originalEntry0Uri);
   });
@@ -80,21 +74,15 @@ describe("no-write gate", () => {
 });
 
 describe("boot receipt stability", () => {
-  test("two minimal boot compiles produce identical receipt hash", () => {
-    const a = runtime.compileBootReceipt(runtime.compileMinimalBoot());
-    const b = runtime.compileBootReceipt(runtime.compileMinimalBoot());
+  test("two boot compiles produce identical receipt hash", async () => {
+    const a = await runtime.compileBootReceipt(runtime.compileBoot());
+    const b = await runtime.compileBootReceipt(runtime.compileBoot());
     expect(a.sha256).toBe(b.sha256);
   });
 
-  test("two full boot compiles produce identical receipt hash", () => {
-    const a = runtime.compileBootReceipt(runtime.compileFullBoot());
-    const b = runtime.compileBootReceipt(runtime.compileFullBoot());
-    expect(a.sha256).toBe(b.sha256);
-  });
-
-  test("minimal and full boot produce different receipt hashes", () => {
-    const minimal = runtime.compileBootReceipt(runtime.compileMinimalBoot());
-    const full = runtime.compileBootReceipt(runtime.compileFullBoot());
-    expect(minimal.sha256).not.toBe(full.sha256);
+  test("SHA-256 known vector: sha256('abc') = ba7816bf...", async () => {
+    const { defaultCryptoProvider, utf8Bytes, sha256Hex } = await import("@lararium/core");
+    const result = await sha256Hex(utf8Bytes("abc"), defaultCryptoProvider);
+    expect(result).toBe("ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad");
   });
 });

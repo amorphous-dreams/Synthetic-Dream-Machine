@@ -5,9 +5,9 @@
  * These functions operate on a populated MemeGraph and return serialisable artifacts.
  */
 
-import { createHash } from "crypto";
 import { type MemeGraph, memeImplements } from "./meme-graph.js";
-import { type PranaEdge } from "./pranala-parser.js";
+import { type DigestProvider, defaultCryptoProvider, sha256Hex, canonicalJsonBytes } from "./crypto.js";
+import { type PranaEdge, validatePranaEdge, type PranaEdgeViolation } from "./pranala-parser.js";
 
 export const ENTRY_URI = "lar:///AGENTS";
 
@@ -34,10 +34,11 @@ export interface ValidationResult {
   missing: string[];
   dagViolations: string[][];
   declaredUnresolved: { uri: string; severity: string; family: string }[];
+  edgeViolations: PranaEdgeViolation[];
 }
 
 export interface BootArtifact {
-  artifact: "minimal-boot" | "full-boot";
+  artifact: "boot";
   compiledAt: string;
   entry: string;
   closure: ClosureEntry[];
@@ -48,6 +49,8 @@ export interface BootArtifact {
   validation: ValidationResult;
   edgeCount?: number;
   pranalaEdges?: { fromUri: string; fromSocket: string; toUri: string; family: string; role: string | null }[];
+  /** kumu type definitions collected from the boot closure — Phase 3 widget tree. */
+  kumuDefs?: import("./ast.js").KumuDef[];
 }
 
 export interface BootReceipt {
@@ -59,7 +62,7 @@ export interface BootReceipt {
   locusCount: number;
   edgeCount: number;
   sha256: string;
-  validation: { allResolved: boolean; allExist: boolean; missing: string[]; dagViolations: string[][] };
+  validation: { allResolved: boolean; allExist: boolean; missing: string[]; dagViolations: string[][]; edgeViolationCount: number; edgeErrors: number };
   compactionNotes: string;
 }
 
@@ -143,14 +146,58 @@ function validateClosure(
   const du = graph.declaredUnresolved()
     .filter((d) => d.severity === "error" || d.severity === "warning")
     .map((d) => ({ uri: d.uri, severity: d.severity, family: d.edge.family }));
-  return { allResolved: true, allExist: missing.length === 0, missing, dagViolations: violations, declaredUnresolved: du };
+
+  // Family contract validation — runs against all edges in the graph
+  const edgeViolations: PranaEdgeViolation[] = [];
+  for (const meme of graph.memes.values()) {
+    for (const edge of meme.edgesOut) {
+      edgeViolations.push(...validatePranaEdge(edge));
+    }
+  }
+
+  return { allResolved: true, allExist: missing.length === 0, missing, dagViolations: violations, declaredUnresolved: du, edgeViolations };
 }
 
 // ---------------------------------------------------------------------------
 // Public API — takes a populated MemeGraph
 // ---------------------------------------------------------------------------
 
-export function compileMinimalBoot(graph: MemeGraph, topoUris: string[], violations: string[][]): BootArtifact {
+/**
+ * BFS over control edges from entryUri on an already-loaded MemeGraph.
+ * Used by the browser runtime (snapshot already loaded) and by lararium-node
+ * (graph loaded from file system before calling this).
+ *
+ * Returns { topoUris, violations } — the same shape as buildControlClosure in node-host,
+ * minus the file-loading step.
+ */
+export function buildBootClosure(
+  graph: MemeGraph,
+  entryUri: string = ENTRY_URI,
+): { topoUris: string[]; violations: string[][] } {
+  const queue: string[] = [entryUri];
+  const visited = new Set<string>();
+
+  while (queue.length > 0) {
+    const uri = queue.shift()!;
+    if (visited.has(uri)) continue;
+    visited.add(uri);
+    for (const edge of graph.edgesOut(uri, "control")) {
+      if (edge.role === "implements") continue;
+      if (!visited.has(edge.toUri)) queue.push(edge.toUri);
+    }
+  }
+
+  const topoUris = graph.topologicalSort(visited, "control");
+  const violations = graph.detectCycles(["control"]);
+  return { topoUris, violations };
+}
+
+export function compileBoot(
+  graph: MemeGraph,
+  topoUris: string[],
+  violations: string[][],
+  kumuDefs?: import("./ast.js").KumuDef[],
+): BootArtifact {
   const socketMap = buildSocketMap(graph, topoUris);
   const depthMap = buildDepthMap(graph, topoUris);
 
@@ -158,46 +205,13 @@ export function compileMinimalBoot(graph: MemeGraph, topoUris: string[], violati
     closureEntry(graph, uri, depthMap.get(uri) ?? 0, socketMap.get(uri) ?? "")
   );
 
-  const { interfaceIndex, invariantIndex } = buildInterfaceIndexes(graph, topoUris);
-
-  return {
-    artifact: "minimal-boot",
-    compiledAt: new Date().toISOString(),
-    entry: ENTRY_URI,
-    closure,
-    memeCount: closure.length,
-    locusCount: closure.length,
-    interfaceIndex: Object.fromEntries([...interfaceIndex.entries()].map(([k, v]) => [k, v.length])),
-    invariantIndex: Object.fromEntries([...invariantIndex.entries()].map(([k, v]) => [k, v.length])),
-    validation: validateClosure(closure, violations, graph),
-  };
-}
-
-export function compileFullBoot(
-  graph: MemeGraph,
-  topoUris: string[],
-  additionalUris: string[],
-  violations: string[][],
-): BootArtifact {
-  const socketMap = buildSocketMap(graph, topoUris);
-  const depthMap = buildDepthMap(graph, topoUris);
-  const topoSet = new Set(topoUris);
-
-  const closure: ClosureEntry[] = [
-    ...topoUris.map((uri) => closureEntry(graph, uri, depthMap.get(uri) ?? 0, socketMap.get(uri) ?? "")),
-    ...additionalUris.filter((uri) => !topoSet.has(uri)).map((uri) =>
-      closureEntry(graph, uri, depthMap.get(uri) ?? 3, socketMap.get(uri) ?? "")
-    ),
-  ];
-
-  const allUris = [...topoUris, ...additionalUris.filter((u) => !topoSet.has(u))];
-  const { interfaceIndex, invariantIndex } = buildInterfaceIndexes(graph, allUris);
-
   const allEdges: PranaEdge[] = [];
   for (const meme of graph.memes.values()) allEdges.push(...meme.edgesOut);
 
+  const { interfaceIndex, invariantIndex } = buildInterfaceIndexes(graph, topoUris);
+
   return {
-    artifact: "full-boot",
+    artifact: "boot",
     compiledAt: new Date().toISOString(),
     entry: ENTRY_URI,
     closure,
@@ -205,16 +219,20 @@ export function compileFullBoot(
     locusCount: closure.length,
     edgeCount: allEdges.length,
     pranalaEdges: allEdges.map((e) => ({ fromUri: e.fromUri, fromSocket: e.fromSocket, toUri: e.toUri, family: e.family, role: e.role })),
-    interfaceIndex: Object.fromEntries(interfaceIndex.entries()),
-    invariantIndex: Object.fromEntries(invariantIndex.entries()),
+    interfaceIndex: Object.fromEntries([...interfaceIndex.entries()].map(([k, v]) => [k, v.length])),
+    invariantIndex: Object.fromEntries([...invariantIndex.entries()].map(([k, v]) => [k, v.length])),
     validation: validateClosure(closure, violations, graph),
+    ...(kumuDefs !== undefined && { kumuDefs }),
   };
 }
 
-export function compileBootReceipt(artifact: BootArtifact): BootReceipt {
+export async function compileBootReceipt(
+  artifact: BootArtifact,
+  provider: DigestProvider = defaultCryptoProvider,
+): Promise<BootReceipt> {
   // Hash stable content only — exclude compiledAt so two compiles of the same
   // graph produce an identical receipt hash (determinism invariant).
-  const stablePayload = JSON.stringify({
+  const stablePayload = {
     entry: artifact.entry,
     closure: artifact.closure,
     memeCount: artifact.memeCount,
@@ -222,8 +240,8 @@ export function compileBootReceipt(artifact: BootArtifact): BootReceipt {
     pranalaEdges: artifact.pranalaEdges ?? [],
     interfaceIndex: artifact.interfaceIndex,
     invariantIndex: artifact.invariantIndex,
-  });
-  const sha = createHash("sha256").update(stablePayload, "utf8").digest("hex");
+  };
+  const sha = await sha256Hex(canonicalJsonBytes(stablePayload), provider);
   const v = artifact.validation;
   const modeName = artifact.artifact.replace("boot-", "").replace("-boot", "") || "unknown";
 
@@ -236,7 +254,14 @@ export function compileBootReceipt(artifact: BootArtifact): BootReceipt {
     locusCount: artifact.locusCount,
     edgeCount: artifact.edgeCount ?? 0,
     sha256: sha,
-    validation: { allResolved: v.allResolved, allExist: v.allExist, missing: v.missing, dagViolations: v.dagViolations },
+    validation: {
+      allResolved: v.allResolved,
+      allExist: v.allExist,
+      missing: v.missing,
+      dagViolations: v.dagViolations,
+      edgeViolationCount: v.edgeViolations.length,
+      edgeErrors: v.edgeViolations.filter((e) => e.severity === "error").length,
+    },
     compactionNotes: "",
   };
 }

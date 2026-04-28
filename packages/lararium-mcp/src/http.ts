@@ -73,12 +73,12 @@ server.registerResource(
 );
 
 server.registerResource(
-  "lar-minimal-boot",
-  "lar:///boot/minimal",
-  { title: "Minimal boot artifact" },
+  "lar-boot",
+  "lar:///boot",
+  { title: "Boot artifact" },
   async () => {
-    const artifact = runtime.compileMinimalBoot();
-    return { contents: [{ uri: "lar:///boot/minimal", text: JSON.stringify(artifact, null, 2), mimeType: "application/json" }] };
+    const artifact = runtime.compileBoot();
+    return { contents: [{ uri: "lar:///boot", text: JSON.stringify(artifact, null, 2), mimeType: "application/json" }] };
   },
 );
 
@@ -97,10 +97,10 @@ server.registerTool(
 );
 
 server.registerTool(
-  "lararium-compile_minimal_boot",
+  "lararium-compile_boot",
   { description: "Compile the minimal boot closure from lar:///AGENTS", inputSchema: {} },
   async () => {
-    const artifact = runtime.compileMinimalBoot();
+    const artifact = runtime.compileBoot();
     return { content: [{ type: "text" as const, text: JSON.stringify(artifact, null, 2) }] };
   },
 );

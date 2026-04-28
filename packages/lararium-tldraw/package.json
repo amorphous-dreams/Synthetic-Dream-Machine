@@ -16,7 +16,8 @@
     "dev": "tsx src/index.ts"
   },
   "dependencies": {
-    "@lararium/core": "workspace:*"
+    "@lararium/core": "workspace:*",
+    "@tldraw/utils": "^4.5.10"
   },
   "devDependencies": {
     "@jest/globals": "^29.7.0",

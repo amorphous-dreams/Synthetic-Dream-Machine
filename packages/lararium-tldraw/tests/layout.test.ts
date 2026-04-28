@@ -25,7 +25,7 @@ import {
 // ---------------------------------------------------------------------------
 
 function makeSnapshot(overrides: Partial<LarTLSnapshot> = {}): LarTLSnapshot {
-  const pid = pageId("minimal-boot");
+  const pid = pageId("boot");
   const agentsId = memeFrameId("lar:///AGENTS");
   const muId     = memeFrameId("lar:///ha.ka.ba/api/v0.1/mu");
   const laresId  = memeFrameId("lar:///LARES");
@@ -35,11 +35,11 @@ function makeSnapshot(overrides: Partial<LarTLSnapshot> = {}): LarTLSnapshot {
   return {
     version: 1,
     projectedAt: "2026-04-25T00:00:00.000Z",
-    pages: [{ type: "page", id: pid, scope: "document", name: "Minimal Boot", compiledAt: "2026-04-25T00:00:00.000Z", memeCount: 3 }],
+    pages: [{ type: "page", id: pid, scope: "document", name: "Boot", compiledAt: "2026-04-25T00:00:00.000Z", memeCount: 3 }],
     frames: [
-      { type: "frame", id: agentsId, scope: "document", pageId: pid, parentId: null, uri: "lar:///AGENTS", name: "AGENTS", depth: 0, frameKind: "meme", rating: "typed meme", implements: [] },
-      { type: "frame", id: muId,     scope: "document", pageId: pid, parentId: null, uri: "lar:///ha.ka.ba/api/v0.1/mu", name: "mu", depth: 1, frameKind: "meme", rating: "typed meme", implements: [] },
-      { type: "frame", id: laresId,  scope: "document", pageId: pid, parentId: null, uri: "lar:///LARES", name: "LARES", depth: 1, frameKind: "meme", rating: "typed meme", implements: [] },
+      { type: "frame", id: agentsId, scope: "document", pageId: pid, parentId: null, uri: "lar:///AGENTS", name: "AGENTS", depth: 0, frameKind: "meme", rating: "ano", implements: [] },
+      { type: "frame", id: muId,     scope: "document", pageId: pid, parentId: null, uri: "lar:///ha.ka.ba/api/v0.1/mu", name: "mu", depth: 1, frameKind: "meme", rating: "ano", implements: [] },
+      { type: "frame", id: laresId,  scope: "document", pageId: pid, parentId: null, uri: "lar:///LARES", name: "LARES", depth: 1, frameKind: "meme", rating: "ano", implements: [] },
       { type: "frame", id: edgesAhuId, scope: "document", pageId: pid, parentId: agentsId, uri: "lar:///AGENTS#edges", name: "#edges", depth: 0.5, frameKind: "ahu", rating: "socket", implements: [] },
     ],
     arrows: [
@@ -153,7 +153,7 @@ describe("storyRiverLayout geometry", () => {
         type: "arrow",
         id: edgeArrowId("lar:///MISSING", "lar:///ALSO_MISSING"),
         scope: "document",
-        pageId: pageId("minimal-boot"),
+        pageId: pageId("boot"),
         fromFrameId: memeFrameId("lar:///MISSING"),
         toFrameId:   memeFrameId("lar:///ALSO_MISSING"),
         family: "control", role: null, label: "",
@@ -175,7 +175,7 @@ describe("emitTldrawRecords", () => {
     const { pages } = emitTldrawRecords(snap, layout);
     expect(pages).toHaveLength(1);
     expect(pages[0]!.typeName).toBe("page");
-    expect(pages[0]!.name).toBe("Minimal Boot");
+    expect(pages[0]!.name).toBe("Boot");
   });
 
   test("emits frame shapes for frames with layout geometry", () => {
@@ -214,7 +214,8 @@ describe("emitTldrawRecords", () => {
       expect(typeof shape.type).toBe("string");
       expect(typeof shape.parentId).toBe("string");
       expect(typeof shape.index).toBe("string");
-      expect(shape.isLocked).toBe(false);
+      const isAhu = (shape.meta as Record<string, unknown> | undefined)?.frameKind === "ahu";
+      expect(shape.isLocked).toBe(isAhu ? true : false);
     }
   });
 

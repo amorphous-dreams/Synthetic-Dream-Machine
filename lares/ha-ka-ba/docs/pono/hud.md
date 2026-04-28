@@ -53,7 +53,7 @@ This shelf collects and stages all research and law bearing on:
 - DreamDeck / ActivityPub social-layer post header
 
 This shelf does NOT govern URI grammar. URI scheme law lives at:
-- `lar:///ha.ka.ba/api/v0.1/pono/lar-uri` (invariant)
+- `lar:///ha.ka.ba/api/v0.1/lararium/lar-uri` (invariant)
 - `lar:///ha.ka.ba/docs/pono/lar-uri` (docs shelf)
 
 <<~/ahu >>
@@ -101,7 +101,7 @@ The HUD surface uses two glyph sets that are currently in conflict:
 **Old micro-trace glyphs** (in PROCEDURES.md and HUD-ANATOMY.md):
 - `✶` Observe, `◎` Orient, `◇` Decide, `■` Act, `○` Aftermath
 
-**Current OODA-HA glyphs** (locked in `lar:///ha.ka.ba/api/v0.1/pono/ooda-ha`):
+**Current OODA-HA glyphs** (locked in `lar:///ha.ka.ba/api/v0.1/mu/ooda-ha`):
 - `✶` Observe, `⏿` Orient, `◇` Decide, `▶` Act, `⤴` Hoʻoko, `↺` Aftermath
 
 Hoʻoko (⤴) does not appear in the chronometer (it is the execution gap inside Act that surfaces to Aftermath). The chronometer's five phase positions use: `✶ ⏿ ◇ ▶ ↺`.
@@ -162,7 +162,7 @@ Those sections in URI-SCHEMA.md now carry redundant content. A future pass shoul
 ## Edges
 
 <<~ loulou lar:///ha.ka.ba/docs/pono/lar-uri >>
-<<~ loulou lar:///ha.ka.ba/api/v0.1/pono/lar-uri >>
+<<~ loulou lar:///ha.ka.ba/api/v0.1/lararium/lar-uri >>
 
 <<~ pranala #implements-meme ? -> lar:///ha.ka.ba/api/v0.1/pono/meme family:control role:implements >>
 <<~ pranala #implements-loci ? -> lar:///ha.ka.ba/api/v0.1/pono/loci family:control role:implements >>

@@ -111,7 +111,7 @@ export function switchToPage(editor: TldrawEditorLike, pageId: string): void {
 /**
  * Switch to the story-river page and reset camera to fit all.
  */
-export function goToStoryRiver(editor: TldrawEditorLike, pageId = "page:minimal-boot"): void {
+export function goToStoryRiver(editor: TldrawEditorLike, pageId = "page:boot"): void {
   switchToPage(editor, pageId);
   // Small delay allows tldraw to settle before zooming
   setTimeout(() => zoomToFitAll(editor), 50);
@@ -122,5 +122,14 @@ export function goToStoryRiver(editor: TldrawEditorLike, pageId = "page:minimal-
  */
 export function goToGraph(editor: TldrawEditorLike): void {
   switchToPage(editor, "page:graph");
+  setTimeout(() => zoomToFitAll(editor), 50);
+}
+
+/**
+ * Switch to a room page by room ID and fit all shapes.
+ * Rooms are projected to tldraw pages with IDs matching `pageId(room.id)`.
+ */
+export function goToRoom(editor: TldrawEditorLike, roomId: string): void {
+  switchToPage(editor, `page:${roomId}`);
   setTimeout(() => zoomToFitAll(editor), 50);
 }

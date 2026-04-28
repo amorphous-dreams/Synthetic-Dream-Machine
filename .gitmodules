@@ -10,9 +10,3 @@
 [submodule "kowloon-client"]
 	path = kowloon-client
 	url = git@github.com:amorphous-dreams/kowloon-client.git
-[submodule "tldraw"]
-	path = tldraw
-	url = git@github.com:amorphous-dreams/tldraw.git
-[submodule "tiddlywiki5"]
-	path = tiddlywiki5
-	url = git@github.com:amorphous-dreams/TiddlyWiki5.git

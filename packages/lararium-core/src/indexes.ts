@@ -29,6 +29,12 @@ export function laresRelPathToLarUri(relPath: string): string {
     return "lar:///ha.ka.ba/" + parts.slice(1).join("/");
   }
 
+  // Adjacent tagspace dirs: grammars/... → lar:///grammars/...
+  //                         lararium-node/... → lar:///lararium-node/...
+  if (parts[0] === "grammars" || parts[0] === "lararium-node") {
+    return "lar:///" + withoutMd;
+  }
+
   throw new Error(`cannot derive lar URI for lares-relative path: ${relPath}`);
 }
 

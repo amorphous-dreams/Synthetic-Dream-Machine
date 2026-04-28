@@ -1,0 +1,220 @@
+<<~&#x0001; ? -> lar:///LARARIUM-NODE/AUTH-ATPROTO >>
+
+<<~ ahu #iam >>
+
+```toml
+uri-path     = "LARARIUM-NODE/AUTH-ATPROTO"
+file-path    = "lares/lararium-node/AUTH-ATPROTO.md"
+content-type = "text/x-memetic-wikitext"
+tagspace     = "adjacent"
+confidence   = 0.91
+register     = "CS"
+manaoio      = 0.86
+mana         = 0.90
+manao        = 0.88
+role         = "ATProto / Bluesky login architecture doctrine — BFF, identity layers, DPoP boundary"
+cacheable    = true
+hydrate      = true
+retain       = true
+```
+
+<<~/ahu >>
+
+<<~ ahu #oauth-position >>
+
+## ATProto OAuth Position
+
+Bluesky login means ATProto OAuth.
+
+ATProto OAuth profile requirements (mandatory, not optional):
+- Authorization-code flow only
+- PKCE (S256 only — `plain` is prohibited)
+- PAR (Pushed Authorization Requests)
+- DPoP (Demonstrating Proof of Possession)
+- DPoP proofs are per-request
+- DPoP uses server-issued nonces
+- Authorization server nonce and PDS/resource server nonce are tracked separately
+- ES256 / P-256 key support required
+- `atproto` scope must be requested
+- Token `sub` must match the expected DID
+- PDS / issuer authority must be verified
+
+Do not manually implement any item on this list.
+The official ATProto SDK (`@atproto/oauth-client-*`) owns this boundary entirely.
+
+<<~/ahu >>
+
+<<~ ahu #bff-preferred-flow >>
+
+## Preferred Architecture: BFF
+
+Backend-for-Frontend (BFF) / server-managed OAuth.
+
+```
+Browser ──── application session cookie ──── BFF (Node.js server)
+                                                │
+                                    @atproto/oauth-client-node
+                                                │
+                                         ATProto PDS / AS
+```
+
+- Use `@atproto/oauth-client-node` for server-side / BFF flows
+- OAuth session material (tokens, DPoP keys) stays server-side
+- Frontend receives an application session cookie or Lararium session reference
+- Frontend never receives raw OAuth authority or DPoP keys by default
+- This is the confidential-client posture
+
+Rationale:
+- DPoP private keys should not live in browser storage
+- Token refresh complexity is server-contained
+- BFF can enforce trust-tier checks before forwarding requests
+- Matches ATProto's own recommended architecture for web apps
+
+<<~/ahu >>
+
+<<~ ahu #browser-fallback-flow >>
+
+## Allowed Fallback: Browser-Only Login
+
+Browser-only / public-client login using `@atproto/oauth-client-browser`.
+
+**Label this explicitly as public-client risk posture.**
+
+Rules when using browser-only flow:
+- Do not store long-lived secrets or refresh tokens in `localStorage` or `sessionStorage`
+- Do not treat browser-only login as equivalent to confidential-client BFF login
+- Use session-scoped memory where possible
+- Accept and document the security degradation
+- Consider this appropriate for: personal tools, desktop-adjacent browser contexts,
+  or development environments where BFF infrastructure is not available
+
+Do not use browser-only login as the default production architecture.
+
+<<~/ahu >>
+
+<<~ ahu #identity-layers >>
+
+## Identity Layer Separation
+
+Keep these layers strictly distinct. None may collapse into another.
+
+```
+Human-visible Bluesky handle          (input, not identity — must be resolved)
+  ↓ resolve
+DID                                   (authoritative identity, from OAuth token sub)
+  ↓ discovery
+PDS / issuer / authorization server   (authority over the DID's data)
+  ↓ OAuth flow
+OAuth session                         (access token, refresh token, DPoP keys)
+  ↓ application layer
+Lararium session                      (application-level session, issued by BFF/server)
+  ↓ runtime addressing
+Lararium alias:tier@host              (hostful URI — runtime / deployment claim)
+  ↓ invariant identity
+lar:///... hostless meme URI          (canonical Lararium identity — no host, no session)
+```
+
+Rules:
+- A handle starts login but must not become final identity. Resolve and verify via OAuth.
+- The token `sub` must match the expected DID after OAuth completes.
+- `alias:tier@host` may map to an ATProto identity, but must not collapse into it.
+  A deployment alias is not a DID. A DID is not an alias.
+- Hostful runtime claims (`lar://alias:tier@host/...`) must not override
+  hostless invariant meme identity (`lar:///...`).
+- Lararium session tokens are application-layer; they are not OAuth tokens.
+- PDS/resource server authority must be checked — do not accept unverified issuer claims.
+
+<<~/ahu >>
+
+<<~ ahu #dpop-boundary >>
+
+## DPoP Boundary
+
+Default: let `@atproto/oauth-client-*` manage DPoP entirely.
+
+If direct DPoP handling ever becomes necessary (formal reviewed exception required):
+- Generate an ES256 / P-256 key pair per OAuth session
+- Do not reuse DPoP keys across users or sessions
+- Prefer non-extractable private keys where the runtime and SDK allow
+- Track nonce separately for authorization server and PDS/resource server
+- Retry only according to SDK/spec behavior when nonce rotation requires it
+- Never hand-roll DPoP inside `lararium-core` or `lararium-web`
+- Any direct DPoP code belongs in a dedicated auth-boundary package, not core
+
+<<~/ahu >>
+
+<<~ ahu #storage-policy >>
+
+## Storage Policy
+
+Server-side (BFF path):
+- OAuth session material: server memory or server-side session store
+- DPoP keys: server-side, non-extractable where possible
+- Application session: `HttpOnly`, `Secure`, `SameSite=Strict` cookie
+
+Browser-only path (fallback):
+- Use session-scoped memory (`Map` in module scope) where possible
+- Do not store DPoP private keys in `localStorage`, `sessionStorage`, or IndexedDB
+- Do not store refresh tokens in browser storage if avoidable
+- Document any deviation from this policy explicitly
+
+General:
+- No long-lived secrets in browser storage
+- No raw token material in URL parameters or fragment identifiers
+- PKCE state and nonces: memory-only during the OAuth flow; discard after use
+
+<<~/ahu >>
+
+<<~ ahu #curve-policy >>
+
+## Curve Policy
+
+Use **P-256 / ES256** where ATProto OAuth / DPoP requires it.
+
+Do not implement k256 / secp256k1 in Lararium.
+
+ATProto supports both p256 and k256 generally, but:
+- k256 is not Web Crypto-native (requires a reviewed third-party library)
+- P-256 covers all current mandatory ATProto OAuth requirements
+- k256 is out of scope unless a formal reviewed dependency (official ATProto lib) owns it
+
+If repo signing or ATProto data-auth work later requires k256:
+- Use official ATProto libraries or a reviewed dependency
+- Do not implement k256 operations in `lararium-core`
+
+<<~/ahu >>
+
+<<~ ahu #risks >>
+
+## Known Risks and Deferred Decisions
+
+| Risk | Status | Mitigation |
+|------|--------|------------|
+| Browser-only login exposes session to XSS | Accepted for fallback path | Label explicitly; prefer BFF |
+| DPoP nonce rotation complexity | Deferred to SDK | Do not re-implement |
+| k256 if ATProto data-auth requires it | Deferred | Reviewed dep only |
+| Trust-tier ordering for hostful claims | Doctrine defined (see lar-uri.md) | Enforce at BFF layer |
+| Handle-to-DID resolution latency | Accepted | Async flow; never cache handles as identity |
+| OAuth session expiry in long-running sessions | Deferred | SDK refresh + BFF session extension |
+
+Implementation milestone: see `lar:///LARARIUM-NODE/ROADMAP` Milestone 4.
+No ATProto login implementation this milestone — doctrine only.
+
+<<~/ahu >>
+
+<<~ ahu #edges >>
+
+## Edges
+
+<<~ pranala #implements-meme ? -> lar:///ha.ka.ba/api/v0.1/pono/meme family:control role:implements >>
+<<~ pranala #implements-invariant ? -> lar:///ha.ka.ba/api/v0.1/pono/invariant family:control role:implements >>
+<<~ pranala #to-roadmap ? -> lar:///LARARIUM-NODE/ROADMAP family:relation role:documents >>
+<<~ pranala #to-crypto ? -> lar:///LARARIUM-NODE/CRYPTO family:relation role:sibling >>
+
+<<~/ahu >>
+
+<<~&#x0003; ahu #body-close >>
+LARARIUM-NODE/AUTH-ATPROTO closes.
+<<~/ahu >>
+
+<<~&#x0004; -> ? >>

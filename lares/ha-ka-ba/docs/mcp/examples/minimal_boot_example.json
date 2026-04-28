@@ -27,7 +27,7 @@
       ],
       "kind": "tuple-file",
       "role": "active language-discipline law (k\u0101n\u0101wai), certainty-pressure regulator, next-generation pressure surface, and secondary audit governor for outward text",
-      "uri": "lar:///ha.ka.ba/api/v0.1/pono/e-prime",
+      "uri": "lar:///ha.ka.ba/api/v0.1/mu/e-prime",
       "virtual": false
     },
     {
@@ -42,7 +42,7 @@
       ],
       "kind": "tuple-file",
       "role": "invariant OODA-HA loop law and loop-visibility slider",
-      "uri": "lar:///ha.ka.ba/api/v0.1/pono/ooda-ha",
+      "uri": "lar:///ha.ka.ba/api/v0.1/mu/ooda-ha",
       "virtual": false
     },
     {
@@ -57,7 +57,7 @@
       ],
       "kind": "tuple-file",
       "role": "invariant lar: URI scheme law (k\u0101n\u0101wai), canonical form authority, and grammar primitive",
-      "uri": "lar:///ha.ka.ba/api/v0.1/pono/lar-uri",
+      "uri": "lar:///ha.ka.ba/api/v0.1/lararium/lar-uri",
       "virtual": false
     },
     {

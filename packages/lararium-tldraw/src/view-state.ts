@@ -23,7 +23,7 @@
 // Types
 // ---------------------------------------------------------------------------
 
-export type LarViewKind = "story-river" | "meme-detail" | "graph";
+export type LarViewKind = "story-river" | "meme-detail" | "graph" | "room";
 
 /** Immutable navigation frame (one entry in history) */
 export interface LarNavFrame {
@@ -59,10 +59,10 @@ export const INITIAL_VIEW_STATE: LarViewState = {
 
 export type LarViewAction =
   | { type: "ZOOM_IN"; uri: string; fromRect?: LarNavFrame["fromRect"] }
-  | { type: "ZOOM_OUT" }
   | { type: "OPEN_GRAPH" }
   | { type: "CLOSE_GRAPH" }
-  | { type: "NAVIGATE_BACK" };
+  | { type: "NAVIGATE_BACK" }
+  | { type: "GO_TO_ROOM"; roomId: string };
 
 // ---------------------------------------------------------------------------
 // Reducer — pure function, no side effects
@@ -82,15 +82,6 @@ export function viewStateReducer(state: LarViewState, action: LarViewAction): La
         history: [...state.history, frame],
       };
     }
-    case "ZOOM_OUT": {
-      const prev = state.history.at(-1);
-      if (!prev) return { ...state, activeView: "story-river", focusUri: null };
-      return {
-        activeView: prev.view,
-        focusUri: prev.focusUri,
-        history: state.history.slice(0, -1),
-      };
-    }
     case "OPEN_GRAPH": {
       const frame: LarNavFrame = {
         view: state.activeView,
@@ -100,6 +91,18 @@ export function viewStateReducer(state: LarViewState, action: LarViewAction): La
       return {
         activeView: "graph",
         focusUri: state.focusUri,
+        history: [...state.history, frame],
+      };
+    }
+    case "GO_TO_ROOM": {
+      const frame: LarNavFrame = {
+        view: state.activeView,
+        focusUri: state.focusUri,
+        fromRect: null,
+      };
+      return {
+        activeView: "room",
+        focusUri: action.roomId,
         history: [...state.history, frame],
       };
     }

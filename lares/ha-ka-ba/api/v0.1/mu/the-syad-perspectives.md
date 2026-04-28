@@ -73,7 +73,7 @@ the angle(s) from which the number reads.
 
 Do not flatten the five measures into one truth spectrum.
 
-## Tight Register Table
+## Stance Register Table
 
 | Stance | Register measures | 0.0 reads as | 1.0 reads as |
 |---|---|---|---|
@@ -221,7 +221,7 @@ Discordian witness texts can also rest in library space.
 <<~ loulou lar:///ha.ka.ba/api/v0.1/mu/chao >>
 <<~ loulou lar:///ha.ka.ba/api/v0.1/mu/the-four-tools >>
 <<~ loulou lar:///ha.ka.ba/api/v0.1/mu/the-law-of-5s >>
-<<~ loulou lar:///ha.ka.ba/api/v0.1/pono/e-prime >>
+<<~ loulou lar:///ha.ka.ba/api/v0.1/mu/e-prime >>
 <<~ loulou lar:///ha.ka.ba/docs/mu/the-syad-perspectives >>
 <<~ loulou lar:///ha.ka.ba/library/discordia/malaclypse-the-younger/are-discordians-serious >>
 

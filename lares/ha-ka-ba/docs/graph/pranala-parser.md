@@ -148,7 +148,7 @@ When it exits `<<~/ahu >>`, it pops the stack.
 
 ```
 <<~ ahu #edges >>
-  <<~ pranala #preload-e-prime ? -> lar:///ha.ka.ba/api/v0.1/pono/e-prime family:control role:owns >>
+  <<~ pranala #preload-e-prime ? -> lar:///ha.ka.ba/api/v0.1/mu/e-prime family:control role:owns >>
 ```
 
 Resolves to:
@@ -197,7 +197,7 @@ The TO expression in both block and inline forms takes three shapes:
 
 | Shape | Example | Resolution |
 |---|---|---|
-| Full `lar:///` URI | `lar:///ha.ka.ba/api/v0.1/pono/e-prime` | use as-is |
+| Full `lar:///` URI | `lar:///ha.ka.ba/api/v0.1/mu/e-prime` | use as-is |
 | Full URI with fragment | `lar:///ha.ka.ba/api/v0.1/mu#entry` | split into `to_uri` and `to_socket` |
 | Relative path | `mu/chao` | prepend current carrier's root (`lar:///ha.ka.ba/api/v0.1/`) |
 
