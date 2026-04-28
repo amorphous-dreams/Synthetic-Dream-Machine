@@ -141,7 +141,9 @@ export function resolveLarUri(uri: string): LarResolution {
     return { uri, root, childPath, resourcePath, laresRelPath, kind: "tuple-file", virtual: false };
   }
 
-  // Adjacent tagspace dirs: grammars/... and lararium-node/... map directly to lares/ subdirs
+  // Adjacent tagspace dirs: map directly to lares/ subdirs
+  // grammars/... → lares/grammars/
+  // lararium-node/... → lares/lararium-node/
   if (root === "grammars" || root === "lararium-node") {
     const joined = childPath.length > 0 ? `${root}/${childPath.join("/")}` : root;
     const laresRelPath = withMdSuffix(joined);

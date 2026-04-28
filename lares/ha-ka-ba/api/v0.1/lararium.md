@@ -64,6 +64,7 @@ lararium opens
 <<~ pranala #hydrate-canon-promotion-boundary ? -> lar:///ha.ka.ba/api/v0.1/pono/hooponopono family:control role:owns >>
 <<~ pranala #hydrate-tagspace-trust ? -> lar:///ha.ka.ba/api/v0.1/lararium/tagspace-trust family:control role:owns >>
 <<~ pranala #hydrate-exchange-vector ? -> lar:///ha.ka.ba/api/v0.1/lararium/exchange-vector family:control role:owns >>
+<<~ pranala #hydrate-templates ? -> lar:///ha.ka.ba/api/v0.1/lararium/templates/index family:control role:owns >>
 
 <<~/ahu >>
 

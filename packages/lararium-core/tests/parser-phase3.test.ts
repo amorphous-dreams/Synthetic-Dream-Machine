@@ -180,3 +180,26 @@ describe("kau — pragma vs block scope", () => {
     expect(s?.attrs["scope"]).toBe("carrier");
   });
 });
+
+describe("kukali — reactive wait posture", () => {
+  test("kukali bare → SigilNode no attrs", () => {
+    const ast = parseMemeCarrier(BASE, `<<~ kukali >>`);
+    const s = ast.find((n) => n.kind === "Sigil") as SigilNode | undefined;
+    expect(s?.sigilName).toBe("kukali");
+    expect(s?.attrs).toEqual({});
+  });
+
+  test("kukali with trigger → SigilNode attrs.trigger", () => {
+    const ast = parseMemeCarrier(BASE, `<<~ kukali trigger:sensor.OnFire >>`);
+    const s = ast.find((n) => n.kind === "Sigil") as SigilNode | undefined;
+    expect(s?.sigilName).toBe("kukali");
+    expect(s?.attrs["trigger"]).toBe("sensor.OnFire");
+  });
+
+  test("\\suspends alias → SigilNode sigilName=kukali", () => {
+    const ast = parseMemeCarrier(BASE, `<<~ \\suspends trigger:portal.OnActivate >>`);
+    const s = ast.find((n) => n.kind === "Sigil") as SigilNode | undefined;
+    expect(s?.sigilName).toBe("kukali");
+    expect(s?.attrs["trigger"]).toBe("portal.OnActivate");
+  });
+});

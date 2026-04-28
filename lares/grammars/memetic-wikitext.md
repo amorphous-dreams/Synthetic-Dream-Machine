@@ -477,6 +477,22 @@ pattern        = '<<~\s*papalohe\s+(#[\w-]+\s+)?(\S+)\s*->\s*(\S+)(?:\s+trigger:
 default_family = "reaction"
 render_mode    = "reaction-wire"
 description    = "reaction family edge sugar; Lua: pāpālohe — warrior body-listening reflex; full UEFN wire: DeviceA -> DeviceB trigger:OnEliminated fn:ShowScore; trigger = source event name (DeviceA.EventX); fn = target function name (DeviceB.FunctionY); compile: pranala family:reaction renderMode:reaction-wire; render: arrow with trigger label at source, fn label at target; canonical roles: subscription | handler | callback; [SC]"
+
+[[sigils]]
+name          = "kukali"
+kind          = "leaf"
+layer         = "both"
+inline_pattern = '<<~\s*kukali(?:\s+trigger:([\w.-]+))?\s*>>'
+attrs         = ["trigger"]
+description   = "reactive wait posture inside a causal island; Verse `suspends` analogue; execution yields until the named papalohe trigger fires; trigger attr is optional papalohe slot name; OODA-HA: Act phase (paired with papalohe at Orient phase); emits SigilNode { sigilName:kukali, attrs:{trigger?} }; [SC]"
+
+[[sigils]]
+name          = "\\suspends"
+kind          = "leaf"
+layer         = "both"
+alias_for     = "kukali"
+inline_pattern = '<<~\s*\\suspends(?:\s+trigger:([\w.-]+))?\s*>>'
+description   = "English alias for kukali; Verse `suspends` keyword; parser maps to kukali before evaluation"
 ```
 
 <<~/ahu >>

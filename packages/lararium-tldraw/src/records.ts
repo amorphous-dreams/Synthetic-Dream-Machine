@@ -98,14 +98,16 @@ function parseTemplateTOML(toml: string, fallback: MemeTemplateProps): MemeTempl
     const v = get(key); return v !== undefined ? v === "true" : def;
   };
   return {
-    w:           num("w",           fallback.w),
-    h:           num("h",           fallback.h),
-    color:       get("color")    ?? fallback.color,
-    label:       get("label")    ?? fallback.label,
+    w:           num("w",             fallback.w),
+    h:           num("h",             fallback.h),
+    color:       get("color")      ?? fallback.color,
+    label:       get("label")      ?? fallback.label,
     includeAhu:  bool("include-ahu",  fallback.includeAhu),
     showNotes:   bool("show-notes",   fallback.showNotes),
     showCarrier: bool("show-carrier", fallback.showCarrier),
     opacity:     num("opacity",       fallback.opacity),
+    zoomLevel:   get("zoom-level") ?? fallback.zoomLevel,
+    cascade:     get("cascade")    ?? fallback.cascade,
   };
 }
 
@@ -172,6 +174,10 @@ export interface LarTLFrame {
  * Canvas rendering props for one zoom-level template.
  * Seeded into shape.meta.templateProps at projection time.
  * Zoom listener applies the right set on threshold crossings.
+ *
+ * cascade: the filter predicate string from the carrier TOML (e.g. "zoom < 0.15").
+ *   Stored in meta for the future filter-expression path; current switching uses classifyZoom().
+ * zoomLevel: self-declared level name from the carrier (e.g. "strategic").
  */
 export interface MemeTemplateProps {
   w:             number;
@@ -184,6 +190,10 @@ export interface MemeTemplateProps {
   showNotes:     boolean;
   showCarrier:   boolean;
   opacity:       number;
+  /** Zoom level this template governs — from carrier TOML zoom-level field. */
+  zoomLevel:     string;
+  /** Filter predicate from carrier TOML cascade field (future: wikitext-filter expression). */
+  cascade:       string;
 }
 
 export type TemplatePropsByLevel = {
@@ -196,11 +206,11 @@ export type TemplatePropsByLevel = {
 
 /** Fallback props used when a template carrier is missing from the registry. */
 export const DEFAULT_TEMPLATE_PROPS: TemplatePropsByLevel = {
-  strategic:   { w: 60,  h: 28,  color: "grey",   label: "none", includeAhu: false, showNotes: false, showCarrier: false, opacity: 0.7 },
-  operational: { w: 120, h: 52,  color: "rating",  label: "slug", includeAhu: false, showNotes: false, showCarrier: false, opacity: 1.0 },
-  tactical:    { w: 220, h: 100, color: "rating",  label: "slug", includeAhu: false, showNotes: true,  showCarrier: false, opacity: 1.0 },
-  combat:      { w: 320, h: 160, color: "rating",  label: "full", includeAhu: true,  showNotes: true,  showCarrier: false, opacity: 1.0 },
-  action:      { w: 400, h: 220, color: "rating",  label: "full", includeAhu: true,  showNotes: true,  showCarrier: true,  opacity: 1.0 },
+  strategic:   { w: 60,  h: 28,  color: "grey",   label: "none", includeAhu: false, showNotes: false, showCarrier: false, opacity: 0.7, zoomLevel: "strategic",   cascade: "zoom < 0.15" },
+  operational: { w: 120, h: 52,  color: "rating", label: "slug", includeAhu: false, showNotes: false, showCarrier: false, opacity: 1.0, zoomLevel: "operational", cascade: "zoom < 0.35" },
+  tactical:    { w: 220, h: 100, color: "rating", label: "slug", includeAhu: false, showNotes: true,  showCarrier: false, opacity: 1.0, zoomLevel: "tactical",    cascade: "zoom < 0.80" },
+  combat:      { w: 320, h: 160, color: "rating", label: "full", includeAhu: true,  showNotes: true,  showCarrier: false, opacity: 1.0, zoomLevel: "combat",      cascade: "zoom < 1.50" },
+  action:      { w: 400, h: 220, color: "rating", label: "full", includeAhu: true,  showNotes: true,  showCarrier: true,  opacity: 1.0, zoomLevel: "action",      cascade: "true"        },
 };
 
 /** A projected arrow shape — one per PranaEdge. */

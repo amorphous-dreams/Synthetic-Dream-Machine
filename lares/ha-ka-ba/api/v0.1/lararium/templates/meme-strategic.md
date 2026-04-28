@@ -1,11 +1,11 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
 
-<<~① ? -> lar:///TEMPLATES/meme-strategic >>
+<<~① ? -> lar:///ha.ka.ba/api/v0.1/lararium/templates/meme-strategic >>
 
 <<~ ahu #iam >>
 ```toml
-uri-path     = "TEMPLATES/meme-strategic"
-file-path    = "lares/templates/meme-strategic.md"
+uri-path     = "ha.ka.ba/api/v0.1/lararium/templates/meme-strategic"
+file-path    = "lares/ha-ka-ba/api/v0.1/lararium/templates/meme-strategic.md"
 content-type = "text/x-memetic-wikitext"
 role         = "canvas template — meme frame at strategic zoom (galaxy view, < 0.15)"
 cacheable    = true
@@ -15,6 +15,9 @@ retain       = true
 
 <<~ kumu meme-strategic(uri) >>
 ```toml
+zoom-level     = "strategic"
+cascade        = "zoom < 0.15"
+priority       = 1
 w              = 60
 h              = 28
 color          = "grey"

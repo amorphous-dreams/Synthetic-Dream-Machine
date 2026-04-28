@@ -87,9 +87,9 @@ On first connection to a new room, the server:
 
 **Seeding is idempotent by design.** The SQLite file is the durable room state. Delete it to force a reseed from the current boot artifact. This is the canonical "clear and rebuild" operation.
 
-**Shape ID scoping:** Each view (story-river, meme-detail, graph) is a separate tldraw page in the same room. Shape IDs are scoped per-view with a `shape:${pageSlug}__` prefix to prevent collisions when all views merge into one store.
+**Shape ID scoping:** Single page per room. Shape IDs are URI-stable by construction (`memeFrameId(uri)` — no per-page prefix). The `pageOverride` contract in `emitTldrawRecords` is retained for multi-room projection use cases (e.g. seeding a meme-detail room from a sub-snapshot) but is not used by the boot room seed path.
 
-**The `pageOverride` contract:** `emitTldrawRecords(snapshot, layout, { pageOverride })` rewrites:
+**The `pageOverride` contract (retained, not active in boot):** `emitTldrawRecords(snapshot, layout, { pageOverride })` rewrites:
 - Page record `id` → `pageOverride`
 - Shape `parentId` for page-level shapes → `pageOverride`
 - Shape `id` → `shape:${pageSlug}__${rest}` (collision-free, still `shape:`-prefixed)
@@ -153,29 +153,23 @@ _Status: design only. Not yet implemented._
 
 <<~ ahu #views >>
 
-## Canvas Views — Three-Page Model with Zoom-Gated Auto-Switch
+## Canvas Views — Single-Page Zoom-Gated Model
 
-**Current implementation (milestone 5):** Three tldraw pages (`page:minimal-boot`, `page:meme-detail`, `page:graph`). Navigation via `LarViewState` reducer driving `setCurrentPage()`. Zoom-level auto-switch is live: `store.listen({ scope: "session" })` fires on camera change, classifies zoom via `classifyZoom()`, and auto-switches pages at threshold crossings.
+**Current implementation (shipped 2026-04-28):** One tldraw page per room (`page:boot`). View "modes" are zoom-level gates — shape props are batch-updated via `applyZoomTemplate()` on threshold crossings, not by switching pages. Five zoom levels correspond to five kumu template carriers (`meme-strategic` through `meme-action`); each meme frame carries `meta.templateProps` for all five levels, seeded at projection time from the `KumuRegistry`.
 
-**Zoom-page routing (active):**
+**Zoom-template routing (active):**
 
-| Zoom levels | Page |
-|---|---|
-| strategic + operational (< 0.35) | `page:graph` — compact frames, edge colors |
-| tactical (0.35–0.80) | `page:minimal-boot` — story river |
-| combat + action (> 0.80) | preserve current page — meme-detail driven by navState |
+| Level | Threshold | Template | Effect |
+|---|---|---|---|
+| strategic | < 0.15 | `meme-strategic` | 60×28px dots, grey, labels off |
+| operational | 0.15–0.35 | `meme-operational` | 120×52px, rating color, slug label |
+| tactical | 0.35–0.80 | `meme-tactical` | 220×100px, rating color, notes visible |
+| combat | 0.80–1.50 | `meme-combat` | 320×160px, ahu sub-frames visible |
+| action | ≥ 1.50 | `meme-action` | 400×220px, carrier text inline |
 
-**Target model (future):** Single tldraw page per room. View "modes" become zoom-level gates driving conditional shape visibility, not page switches. Blocked until the shape namespace collision problem is resolved — all memes on one page requires globally unique IDs without the per-view-prefix scoping `pageOverride` currently provides. The `pageOverride` contract in `emitTldrawRecords` is already designed to support this migration.
+Shape IDs are URI-stable (`memeFrameId(uri)` — no per-page prefix scoping). The `pageOverride` contract in `emitTldrawRecords` is retained for future multi-room projection but is not used by the boot room.
 
-**Current page layout:**
-
-| Page ID | View | Layout |
-|---------|------|--------|
-| `page:minimal-boot` | Story river | Meme frames at topo depth (X) × band (Y). 200×120px, 60px H-gap, 30px V-gap. Pranala arrows color-coded by family. |
-| `page:meme-detail` | Focus view | Single meme + ahu socket sub-frames + immediate neighbours. |
-| `page:graph` | Graph overview | 160px compact frames, denser layout, same edge color coding. |
-
-**Navigation:** `LarViewState` reducer (`ZOOM_IN`, `OPEN_GRAPH`, `CLOSE_GRAPH`, `NAVIGATE_BACK`, `GO_TO_ROOM`). `ZOOM_IN` drives `zoomToMeme()` camera animation. `OPEN_GRAPH` switches to graph page. `GO_TO_ROOM` switches to a room page by ID.
+**Navigation:** `LarViewState` reducer (`ZOOM_IN`, `OPEN_GRAPH`, `CLOSE_GRAPH`, `NAVIGATE_BACK`, `GO_TO_ROOM`). `ZOOM_IN` drives `zoomToMeme()` camera animation. `GO_TO_ROOM` switches WebSocket connection to a different room. No page-switching in the navigation path.
 
 **⌘K command palette:** Implemented and active. Replaces `SidePanel` as primary room/meme navigation. Two sections: **Spaces** (DEFAULT_ROOMS with chronometer glyphs) and **Memes** (URI filter). Arrow-key navigation, Enter to activate, Escape to dismiss.
 
@@ -554,33 +548,33 @@ The altar fire canvas seeds with portal shapes for all registered rooms at initi
 **Custom shape utils required (genuinely novel):**
 - None currently. `LarPortalShapeUtil` was planned but a `geo` + meta approach is sufficient for MVP. Add a custom shape only when the built-in props model is demonstrably insufficient.
 
-### TiddlyWiki Template Cascade — Target Rendering Model
+### TiddlyWiki Template Cascade — Implementation (shipped 2026-04-28)
 
-TW5's rendering pipeline: tiddler → `$:/core/ui/ViewTemplate` → type-specific sub-template cascade → widget tree → DOM. The key pattern is the **cascade**: for each tiddler being rendered, TW5 walks a priority-ordered list of template candidates and picks the first match.
+TW5's rendering pipeline: tiddler → `:cascade` filter run → first matching template title → widget tree → DOM. The cascade walks a priority-ordered list, evaluates each candidate's filter expression against the tiddler's full context, and returns the first non-empty result. Operators extend the cascade by authoring tiddlers — no core modification.
 
-**Lararium's equivalent cascade for meme frame rendering:**
+**Lararium's cascade (live):**
+
+Template carriers live at `lar:///ha.ka.ba/api/v0.1/lararium/templates/meme-*`. Each is a kumu definition carrier — a `<<~ kumu name(params) >>` sigil block whose body holds a TOML section declaring tldraw frame props for one zoom level.
 
 ```
-for each meme URI in boot closure:
-  1. check lares/templates/${uri-slug}.md       — meme-specific override
-  2. check lares/templates/type/${meme-type}.md — type template (invariant / docs / interface)
-  3. check lares/templates/default.md            — fallback template
-  → template defines: frame W×H, child shapes, color scheme, label format
+BootArtifact.kumuDefs  ←  collectKumuDefs() walks boot closure
+       ↓
+KumuRegistry.get("meme-strategic") ... .get("meme-action")
+       ↓
+buildTemplatePropsByLevel(registry) → TemplatePropsByLevel
+       ↓
+shape.meta.templateProps (seeded at projection time, stored in CRDT)
+       ↓
+applyZoomTemplate(editor, level) on threshold crossing → editor.updateShapes()
 ```
 
-A **template** is a carrier file that declares how to project a meme type onto tldraw shapes. It specifies:
-- Frame dimensions (W, H)
-- Which child shapes to emit (carrier text note, ahu socket sub-frames, edge label style)
-- Color scheme (background fill, border color)
-- Label format (URI slug vs. full URI vs. role field)
+Each template carrier's TOML body declares `zoom-level`, `cascade` (filter predicate string), `priority`, and tldraw frame props (`w`, `h`, `color`, `label`, `include-ahu`, etc.). The `cascade` field is stored in `MemeTemplateProps.cascade` for the future wikitext-filter expression path; current level switching uses `classifyZoom()`.
 
-Templates are `lares/` carriers, so they have `lar:` URIs, are part of the boot closure, and can be edited via canon-promotion. The `renderAllViews()` function becomes `renderWithCascade(artifact, templateStore)`.
+**Template namespace:** `lar:///ha.ka.ba/api/v0.1/lararium/templates/` — inside the stable tuple root, no adjacent namespace. `templates/index` owns control edges to all five carriers and is reachable from the `lararium` meme via `#hydrate-templates`.
 
-**Phase 1 (current):** Hard-coded template logic inside `tldraw-shapes.ts`. The shape emission rules are the implicit default template.
+**Parser addition:** `<<~ kumu name(params) >>` / `<<~/kumu >>` direct form added to `SIGIL_SCANS` alongside the `\\widget` alias. The `kumu` sigil is now parseable in canonical Hawaiian form.
 
-**Phase 2 (milestone 5):** Extract template logic into `LarTLTemplate` records, select via a `selectTemplate(meme, templateStore)` function (the cascade). Templates stored as in-memory objects derived from the boot closure.
-
-**Phase 3 (M8 target):** The three-tree pipeline: `parseMemeCarrier → MemeAstNode[]` → `resolveWidgetTree → WidgetNode[]` → render. `kumu` defines widget/device types. `kumu` instances are causal islands (see `#causal-islands`). Templates are lares/ carriers. Edit a template carrier → `/admin/reseed` → room reseeds with new visual style. The wiki edits its own renderer.
+**Phase 3 (next):** The three-tree pipeline: `parseMemeCarrier → MemeAstNode[]` → `resolveWidgetTree → WidgetNode[]` → render. `kumu` definitions are the widget type system. `kumu` instances are causal islands (see `#causal-islands`). Edit a template carrier → `/admin/reseed` → room reseeds with new visual style. The wiki edits its own renderer.
 
 ### Built-in tldraw UI Components to Reuse
 
@@ -719,15 +713,15 @@ const overrides: TLUiOverrides = {
 
 The Lararium zoom ontology — five levels mapped to chronometer scale positions — drives both page auto-switching and future render gating. Implemented in `packages/lararium-tldraw/src/zoom-levels.ts`.
 
-| Level | Glyph | Threshold | Current effect | Future (single-page) |
-|---|---|---|---|---|
-| strategic | 🗺️ | < 0.15 | switch to `page:graph` | labels-only galaxy |
-| operational | ⚙️ | 0.15–0.35 | switch to `page:graph` | compact frames, edge colors |
-| tactical | 🔍 | 0.35–0.80 | switch to `page:minimal-boot` | full frame name + URI slug |
-| combat | ⚔️ | 0.80–1.50 | preserve page (navState drives) | ahu socket sub-frames visible |
-| action | ⚡ | ≥ 1.50 | preserve page (navState drives) | full carrier text, edge labels |
+| Level | Glyph | Threshold | Effect |
+|---|---|---|---|
+| strategic | 🗺️ | < 0.15 | `meme-strategic` template: 60×28px dots, labels off |
+| operational | ⚙️ | 0.15–0.35 | `meme-operational` template: compact frames, rating color |
+| tactical | 🔍 | 0.35–0.80 | `meme-tactical` template: story river (default) |
+| combat | ⚔️ | 0.80–1.50 | `meme-combat` template: ahu sub-frames, full label |
+| action | ⚡ | ≥ 1.50 | `meme-action` template: carrier text inline |
 
-Auto-switching uses `store.listen({ scope: "session" })` — camera records are session-scoped, so this fires ~100× less than an unscoped listener. Page switch fires only on level boundary crossings (hysteresis via `lastLevel` ref).
+`store.listen({ scope: "session" })` — camera records are session-scoped, fires ~100× less than an unscoped listener. Template switch fires only on level boundary crossings (hysteresis via `lastLevel` ref). `applyZoomTemplate()` calls `editor.updateShapes()` with props from `shape.meta.templateProps[level]`.
 
 Footer glyph tracks zoom level live via `onZoomLevel` callback from `LarariumCanvas`.
 
@@ -821,7 +815,7 @@ State lives in `localStorage` (`lararium.theme`). Applied on mount before first 
 
 **Open:**
 
-1. **Zoom-gated single-page rendering:** Sub-frame geometry conditional on zoom level, one page per room. Blocked on shape namespace collision — current three-page + zoom-auto-switch model stays until resolved.
+1. ✓ **Zoom-gated single-page rendering + kumu template pipeline (shipped 2026-04-28):** Single `page:boot`. Five kumu template carriers at `lar:///ha.ka.ba/api/v0.1/lararium/templates/meme-*` — part of boot closure, parsed via `collectKumuDefs`, registered in `KumuRegistry`, stamped into `shape.meta.templateProps` at projection time. `applyZoomTemplate()` batch-updates frame props on zoom threshold crossings. `cascade` + `zoomLevel` fields stored in each `MemeTemplateProps` for future wikitext-filter path. `<<~ kumu name(params) >>` direct form added to parser. URI-stable shape IDs. See `#views` and `#tldraw-template-model`.
 
 1a. **Async `ReactionGraph`:** `fire()` must return `Promise<void>` before `hui`/`heihei`/`puka`/`kukali` have execution semantics. Zero structural changes required — this is a method signature change in `live-protocol.ts`. Fanout modes (`Promise.all`, `Promise.race`, `Promise.any` + cancel) follow immediately after. See `#causal-islands`.
 

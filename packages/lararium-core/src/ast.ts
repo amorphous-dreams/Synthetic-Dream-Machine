@@ -100,6 +100,7 @@ export interface TextNode extends AstBase {
 //                         qualifier may be a scope principle name to gate a block by scope
 //   toml / iam         → { content }  — iam is #iam ahu slot; toml is general data block
 //   hui / heihei / puka / mukuwai → {}
+//   kukali             → { trigger? }  — wait posture; trigger is optional papalohe slot name
 // ---------------------------------------------------------------------------
 
 export interface SigilNode extends AstBase {

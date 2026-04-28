@@ -82,34 +82,23 @@ describe("graphLayout", () => {
 });
 
 describe("renderAllViews", () => {
-  test("produces 3 pages (story-river, meme-detail, graph)", () => {
+  test("produces 1 page (single-page zoom-gated model)", () => {
     const artifact = makeArtifact();
     const emission = renderAllViews(artifact);
-    expect(emission.pages).toHaveLength(3);
-    const pageIds = emission.pages.map((p) => p.id);
-    expect(pageIds).toContain(pageId("boot"));
-    expect(pageIds).toContain(pageId("meme-detail"));
-    expect(pageIds).toContain(pageId("graph"));
+    expect(emission.pages).toHaveLength(1);
+    expect(emission.pages[0]!.id).toBe(pageId("boot"));
   });
 
-  test("all pages have meme frames", () => {
+  test("single page has all meme frames", () => {
     const artifact = makeArtifact();
     const emission = renderAllViews(artifact);
-    const shapesByPage = new Map<string, number>();
-    for (const shape of emission.shapes) {
-      if ("parentId" in shape) {
-        const pid = (shape as { parentId: string }).parentId;
-        shapesByPage.set(pid, (shapesByPage.get(pid) ?? 0) + 1);
-      }
-    }
-    // Each page should have at least the 3 meme shapes
-    for (const page of emission.pages) {
-      const count = shapesByPage.get(page.id) ?? 0;
-      expect(count).toBeGreaterThanOrEqual(1);
-    }
+    const bootPageShapes = emission.shapes.filter(
+      (s) => "parentId" in s && (s as { parentId: string }).parentId === pageId("boot"),
+    );
+    expect(bootPageShapes.length).toBeGreaterThanOrEqual(3);
   });
 
-  test("emitted shape IDs are unique across all pages", () => {
+  test("emitted shape IDs are unique", () => {
     const artifact = makeArtifact();
     const emission = renderAllViews(artifact);
     const ids = emission.shapes.map((shape) => shape.id);
@@ -117,24 +106,18 @@ describe("renderAllViews", () => {
     expect(uniqueIds.size).toBe(ids.length);
   });
 
-  test("graph page shapes use smaller frame dimensions", () => {
-    const artifact = makeArtifact();
-    const emission = renderAllViews(artifact);
-    const graphShapes = emission.shapes.filter(
-      (s) => "parentId" in s && (s as { parentId: string }).parentId === pageId("graph") && (s as { type: string }).type === "frame"
-    );
-    expect(graphShapes.length).toBeGreaterThan(0);
-    for (const s of graphShapes) {
-      const w = (s as { props: { w: number } }).props.w;
-      expect(w).toBeLessThan(220); // graph uses GRAPH_FRAME_W=160
-    }
-  });
-
-  test("meme-detail page uses focus entry by default", () => {
+  test("focusUri option is ignored (deprecated) — single page emitted regardless", () => {
     const artifact = makeArtifact();
     const emission = renderAllViews(artifact, { focusUri: "lar:///AGENTS" });
-    const detailPage = emission.pages.find((p) => p.id === pageId("meme-detail"));
-    expect(detailPage).toBeDefined();
-    expect(detailPage!.name).toContain("AGENTS");
+    expect(emission.pages).toHaveLength(1);
+    expect(emission.pages[0]!.id).toBe(pageId("boot"));
+  });
+
+  test("meme frame shapes have URI-stable IDs matching memeFrameId", () => {
+    const artifact = makeArtifact();
+    const emission = renderAllViews(artifact);
+    const frameIds = new Set(emission.shapes.filter((s) => (s as { type: string }).type === "frame").map((s) => s.id));
+    expect(frameIds.has(memeFrameId("lar:///AGENTS"))).toBe(true);
+    expect(frameIds.has(memeFrameId("lar:///LARES"))).toBe(true);
   });
 });

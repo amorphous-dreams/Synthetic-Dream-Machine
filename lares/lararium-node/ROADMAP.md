@@ -1296,7 +1296,37 @@ All three laws landed:
 
 <<~ ahu #milestone-8-scope >>
 
-## Milestone 8 — Grammar Phase 3 + Live Smoke (planned)
+## Milestone 8 — Single-Page Zoom + kumu Template Pipeline (Complete 2026-04-28)
+
+### Completed
+
+**Single-page zoom-gated rendering (replaces three-page model)**
+- ✓ `renderAllViews()` collapsed to one page (`page:boot`) — URI-stable shape IDs, no `pageOverride` scoping
+- ✓ `applyZoomTemplate(editor, level)` — batch `editor.updateShapes()` on zoom threshold crossings; reads `shape.meta.templateProps[level]`
+- ✓ `ratingFromShape()` helper — maps `meta.rating` → tldraw color string; used by `color="rating"` template prop
+- ✓ Five `ZoomTemplateKey` levels: `strategic/operational/tactical/combat/action`
+- ✓ Multi-view tests updated: 34/34 pass against single-page model
+- ✓ MULTIPLAYER and ROADMAP docs updated to reflect single-page model as shipped
+
+**kumu template pipeline — fully wikitext-native**
+- ✓ Five template carriers at `lar:///ha.ka.ba/api/v0.1/lararium/templates/meme-*` (in `ha.ka.ba/api` namespace — no adjacent namespace)
+- ✓ `lares/ha-ka-ba/api/v0.1/lararium/templates/index.md` — namespace index, owns control edges to all five; wired from `lararium` meme via `#hydrate-templates` (control:owns)
+- ✓ Each template TOML body carries: `zoom-level`, `cascade` (filter predicate string), `priority`, `w`, `h`, `color`, `label`, `include-ahu`, `show-notes`, `show-carrier`, `opacity`
+- ✓ `<<~ kumu name(params) >>` / `<<~/kumu >>` direct form added to `SIGIL_SCANS` in `parser.ts` (alongside `\\widget` alias)
+- ✓ `collectKumuDefs()` + `collectKumuDefsFromGraph()` — extract kumu defs from boot closure carriers
+- ✓ `buildKumuRegistry(artifact.kumuDefs)` → `KumuRegistry` → `buildTemplatePropsByLevel(registry)` → `TemplatePropsByLevel` seeded into `shape.meta.templateProps` at projection time
+- ✓ `MemeTemplateProps` extended with `zoomLevel` (self-declared level name) and `cascade` (predicate string) — stored in CRDT for future wikitext-filter path
+- ✓ `DEFAULT_TEMPLATE_PROPS` updated with `zoomLevel` + `cascade` fallback values
+- ✓ `CRDT-native carrier text` — `shape.meta.carrierText` seeded at projection; `MemeDetailPanel` reads from store
+- ✓ Boot closure now includes 25 memes (up from 19); all exist; `allExist: true`; 226/226 tests green
+
+**CRDT-native carrier text + Meme detail panel**
+- ✓ `shape.meta.carrierText` — carrier text seeded at projection time, stored in tldraw CRDT store; no HTTP fetch
+- ✓ `MemeDetailPanel` — slides up from viewport bottom on `meme-detail` view; reads carrier text from store via context editor; parses with `parseMemeCarrier`; Escape/backdrop dismisses
+
+**TW5 cascade + UEFN instance model research (2026-04-28)**
+- ✓ TW5 `:cascade` filter run prefix: priority-ordered list of tagged tiddlers; each evaluates arbitrary filter expression against tiddler context; first non-empty result is the template title. Cascade rules are authored as tiddlers — no core JS modification.
+- ✓ UEFN Verse `creative_device`: class definition in `.verse` source (shared code); per-instance `@editable` props stored as level data (serialized at editor time, hydrated at simulation start). The class/instance seam is the exact `kumu` definition / placed instance seam. Inter-device topology is flat, pre-baked into per-instance level data — no runtime scene graph traversal. Maps directly to pranala edges declared in carrier fields.
 
 ### Priority 1: Browser smoke testing (Playwright)
 
@@ -1312,11 +1342,9 @@ Verify all M5/M6 tactile behaviors in a running instance. These were code-comple
 
 Fix whatever breaks. Mark each item confirmed or filed as a bug.
 
-### Priority 2: Meme detail panel
+### Priority 2: Meme detail panel ✓ (shipped M8)
 
-Double-click a meme frame → detail panel slides in from bottom of viewport (Kinopio card-detail pattern). Shows: URI, `role` field from carrier metadata, ahu socket count, pranala edges in/out.
-
-Implementation: `ZOOM_IN` dispatch already routes to `meme-detail` view. Add a panel component rendered when `navState.activeView === "meme-detail" && navState.focusUri`. Read meme metadata from `editor.getShapes()` filtered by `meta.uri`. No server round-trip — CRDT-native.
+`MemeDetailPanel` implemented. CRDT-native: reads `meta.carrierText` from store, parses with `parseMemeCarrier`, renders AST. Slides from viewport bottom on `meme-detail` navState. Escape/backdrop dismisses. No server round-trip.
 
 ### Priority 3: Content-addressed room keys
 

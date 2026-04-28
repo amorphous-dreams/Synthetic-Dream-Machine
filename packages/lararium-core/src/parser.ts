@@ -94,10 +94,16 @@ const BOOTSTRAP_SCANS: SigilScan[] = [
   { sigilName: "\\let",     canonicalName: "kau",     regex: /<<~\/\\let\s*>>/g,                         eventType: "close"  },
   { sigilName: "\\var",     canonicalName: "kau",     regex: /<<~\s*\\var\s+([\w-]+)\s*=\s*([^\n>]+?)\s*>>/g,    eventType: "open"   },
   { sigilName: "\\var",     canonicalName: "kau",     regex: /<<~\/\\var\s*>>/g,                         eventType: "close"  },
+  { sigilName: "kumu",                                regex: /<<~\s*kumu\s+([\w-]+)(?:\(([^)]*)\))?\s*>>/g,     eventType: "open"  },
+  { sigilName: "kumu",                                regex: /<<~\/kumu\s*>>/g,                                   eventType: "close"  },
   { sigilName: "\\widget",  canonicalName: "kumu",    regex: /<<~!\s*\\widget\s+([\w-]+)(?:\(([^)]*)\))?\s*>>/g, eventType: "open"  },
-  { sigilName: "\\widget",  canonicalName: "kumu",    regex: /<<~\/\\widget\s*>>/g,                      eventType: "close"  },
+  { sigilName: "\\widget",  canonicalName: "kumu",    regex: /<<~\/\\widget\s*>>/g,                               eventType: "close"  },
   { sigilName: "\\task",    canonicalName: "hana",    regex: /<<~\s*\\task\s+([^\n>]+?)\s*>>/g,          eventType: "open"   },
   { sigilName: "\\task",    canonicalName: "hana",    regex: /<<~\/\\task\s*>>/g,                        eventType: "close"  },
+  // kukali — reactive wait posture inside a causal island (Verse `suspends` analogue)
+  // groups [full, trigger?] — trigger is optional papalohe slot name
+  { sigilName: "kukali",    regex: /<<~\s*kukali(?:\s+trigger:([\w.-]+))?\s*>>/g, eventType: "leaf" },
+  { sigilName: "\\suspends", canonicalName: "kukali", regex: /<<~\s*\\suspends(?:\s+trigger:([\w.-]+))?\s*>>/g, eventType: "leaf" },
 ];
 
 function buildScansFromGrammar(sigils: SigilRule[]): SigilScan[] {
@@ -206,6 +212,7 @@ function attrsFromGroups(
     case "kau":     return { name: g(1), value: g(2), scope };
     case "kapu":    return { qualifier: g(1), inline: scope === "carrier" ? "true" : "false" };
     case "ui":      return { filter: g(1) };
+    case "kukali":  return g(1) ? { trigger: g(1) } : {};
     case "toml":
     case "iam":     return { content: g(1) };
     default:        return {};
@@ -230,6 +237,7 @@ const CANONICAL_SIGILS = new Set([
   "wai", "mukuwai", "kahawai", "huli", "hana", "meme",
   "wehe", "helu", "kumu", "kau", "kapu", "hui", "heihei", "puka", "ui",
   "iam", "toml", "pranala-header",
+  "kukali",
 ]);
 
 export function buildAst(events: ParseEvent[], carrierUri: string, grammar?: GrammarRules): MemeAstNode[] {
