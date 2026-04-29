@@ -99,6 +99,10 @@ function frameRatingColor(rating: string): TLColor {
 // ---------------------------------------------------------------------------
 
 function richText(text: string): TLArrowShape["props"]["richText"] {
+  // ProseMirror forbids empty text nodes — use an empty paragraph when text is blank.
+  if (!text) {
+    return { type: "doc" as const, content: [{ type: "paragraph" as const }] };
+  }
   return {
     type: "doc" as const,
     content: [{ type: "paragraph" as const, content: [{ type: "text" as const, text }] }],

@@ -822,7 +822,7 @@ The Tagspace vertical and horizontal axes originate in a session log from the Dr
 > "The declaration became a steering artifact because the node reads its own prior context. It orbits what it has already said it is."
 > "The tag was load-bearing. Getting it wrong had consequences visible in the very next output."
 
-[Canon: elyncia/Lares/The_Kindling_of_the_Crossroads_Node.md → III. The Two Axes]
+[Canon: lar:///ha.ka.ba/docs/story/lindwyrm/kindling-of-the-crossroads-node#two-axes]
 
 ---
 
@@ -834,7 +834,7 @@ Wild Mage (direct): *"NOT numbers — words. 3 words. what3words?!?! YES WHAT 3 
 
 The three-word Tagspace Address names a square of *semantic territory* the same way what3words names a square of geographic territory. The three slots (Ha/domain · Ka/quality · Ba/dynamic) correspond to the three words; their order is HAKABA canonical order: body first (what contains the span), then soul-fire (how that domain is charged), then psyche-direction (the motion being taken).
 
-[Canon: elyncia/Lares/The_Kindling_of_the_Crossroads_Node.md → III. The Two Axes, sidebar]
+[Canon: lar:///ha.ka.ba/docs/story/lindwyrm/kindling-of-the-crossroads-node#two-axes]
 
 ---
 

@@ -26,6 +26,8 @@ import { LarariumCanvas } from "./LarariumCanvas.js";
 import { MemeDetailPanel } from "./MemeDetailPanel.js";
 import { LarariumCtx, useLararium, shortUri, useTheme } from "./lararium-context.js";
 import { parseMemeCarrier, collectKumuDefs, buildKumuRegistry, type KumuRegistry } from "@lararium/core";
+import { useLarariumHostOpen, useBridgeReceiptFromEditor } from "./lararium-browser-host.js";
+import type { RenderMode } from "./lararium-context.js";
 import "./lararium-theme.css";
 import type { MemeEntry } from "./App.js";
 
@@ -167,6 +169,18 @@ export function LarariumShell({ wsUrl, memes, onMemes }: ShellProps) {
   const setEditor = useCallback((e: Editor | null) => setEditorState(e), []);
   const [kumuRegistry, setKumuRegistry] = useState<KumuRegistry | null>(null);
 
+  const renderMode: RenderMode =
+    new URLSearchParams(window.location.search).get("renderMode") === "tw5" ? "tw5" : "native";
+
+  const { phase: openPhase, store: tiddlerStore, tw5 } =
+    useLarariumHostOpen({ hostId: "lararium-browser", recipeUri: "lar:///recipe/room", roomId: "altar-fire", renderMode });
+
+  // hostReceipt starts null; useBridgeReceiptFromEditor upgrades it to the real
+  // receiptHash from the boot-receipt meta-frame in the tldraw CRDT store (O2 ruling).
+  // Projection-cache intake in LarariumCanvas gates on this being non-null.
+  const [hostReceipt, setHostReceipt] = useState<string | null>(null);
+  useBridgeReceiptFromEditor(editor, setHostReceipt);
+
   // Build kumuRegistry from carrier text already in the CRDT store.
   // Fires once editor mounts and the meme list is populated (sync done).
   // CRDT-native: no HTTP round-trip — shapes carry meta.carrierText from projection.
@@ -206,6 +220,12 @@ export function LarariumShell({ wsUrl, memes, onMemes }: ShellProps) {
     return () => window.removeEventListener("keydown", handler);
   }, []);
 
+  // Expose opening state to browser console for smoke verification.
+  // window.__larariumDebug.openPhase and .tw5 update reactively with ctx.
+  (window as any).__larariumDebug ??= {};
+  (window as any).__larariumDebug.openPhase = openPhase;
+  (window as any).__larariumDebug.tw5       = tw5;
+
   const ctxValue = {
     navState,
     dispatch: dispatch as React.Dispatch<LarViewAction>,
@@ -220,6 +240,11 @@ export function LarariumShell({ wsUrl, memes, onMemes }: ShellProps) {
     editor,
     setEditor,
     kumuRegistry,
+    openPhase,
+    tiddlerStore,
+    tw5,
+    renderMode,
+    hostReceipt,
   };
 
   return (

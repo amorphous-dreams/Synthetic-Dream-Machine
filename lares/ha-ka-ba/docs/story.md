@@ -45,6 +45,7 @@ Use this branch for:
 - Lindwyrm origin and aftermath
 - Elyncia and DreamNet narrative scaffolds
 - dev-story bridges that stay useful but non-governing
+- consumed narrative loci under `story/lindwyrm/`
 
 <<~/ahu >>
 
@@ -55,8 +56,14 @@ docs/story closes
 
 <<~ ahu #edges >>
 
+<<~ loulou lar:///ha.ka.ba/docs/story/lindwyrm/consumption-ledger >>
+<<~ loulou lar:///ha.ka.ba/docs/story/lindwyrm/the-hoard-disclosed >>
+<<~ loulou lar:///ha.ka.ba/docs/story/lindwyrm/the-lar-names-itself >>
+<<~ loulou lar:///ha.ka.ba/docs/story/lindwyrm/kindling-of-the-crossroads-node >>
+
 <<~ pranala #implements-meme ? -> lar:///ha.ka.ba/api/v0.1/pono/meme family:control role:implements >>
 <<~ pranala #implements-loci ? -> lar:///ha.ka.ba/api/v0.1/pono/loci family:control role:implements >>
+<<~ pranala #to-lindwyrm-ledger ? -> lar:///ha.ka.ba/docs/story/lindwyrm/consumption-ledger family:reference role:index >>
 
 <<~/ahu >>
 

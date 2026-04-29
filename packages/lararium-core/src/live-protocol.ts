@@ -15,6 +15,90 @@
  */
 
 // ---------------------------------------------------------------------------
+// LarariumBootReceiptMeta — authority receipt carried in a hidden tldraw frame shape.
+//
+// Transitional metadata carrier: stored as shape.meta on a hidden frame (opacity:0,
+// isLocked:true, x/y far off-screen) so it travels with the room CRDT snapshot
+// without requiring a custom TLRecord schema.
+//
+// Brooklyn compatibility slots (reserved, not enforced this lap):
+//   issuer/subject → UCAN iss/aud + Keyhive Ed25519 principal
+//   capability     → UCAN cap { can, with, nb } + Orichalcum stub
+//   proofs         → UCAN prf CID chain + Keyhive membership op head
+//   graph          → Keyhive membershipHead + Beelay collectionHead/manifestHead
+//   receiptHash    → SHA-256 hex today; evolves to DAG-CBOR CIDv1 when crypto lands
+//
+// Hard rules:
+//   - Receipt does not carry full state. It authorizes graph opening.
+//   - Absent issuer/subject signals local-operator mode (no real principal yet).
+//   - Must migrate to a proper room-meta TLRecord during a schema-hardening lap.
+// ---------------------------------------------------------------------------
+
+export interface LarariumBootReceiptMeta {
+  readonly id:       "lararium:boot-receipt";
+  readonly typeName: "lararium:room-meta";
+
+  readonly roomId:        string;
+  readonly receiptHash:   string;   // SHA-256 hex → future: base32 CIDv1 sha2-256
+  readonly issuedAt:      string;   // ISO 8601
+  readonly authorityMode: "local-operator" | "ucan-delegated" | "keyhive";
+
+  /** UCAN iss / Keyhive Ed25519 principal — absent in local-operator mode. */
+  readonly issuer?: {
+    readonly kind: "did" | "ed25519" | "local";
+    readonly id:   string;
+  };
+
+  /** UCAN aud / Keyhive document-group principal — absent in local-operator mode. */
+  readonly subject?: {
+    readonly kind: "did" | "ed25519" | "local";
+    readonly id:   string;
+  };
+
+  /** Orichalcum capability envelope — UCAN can/with/nb analog. */
+  readonly capability?: {
+    readonly kind:      "orichalcum";
+    readonly abilities: readonly string[];
+    readonly resource:  string;
+    readonly caveats?:  Record<string, unknown>;
+  };
+
+  /** Proof chain — UCAN prf CIDs, Keyhive membership op heads. */
+  readonly proofs?: ReadonlyArray<{
+    readonly kind:   "ucan" | "keyhive" | "orichalcum";
+    readonly cid?:   string;    // base32 CIDv1 — present when crypto lands
+    readonly bytes?: string;    // base64url raw bytes — pre-CID phase
+    readonly hash?:  string;    // SHA-256 hex fallback
+  }>;
+
+  /** Authority graph heads — Keyhive membershipHead, Beelay collectionHead/manifestHead. */
+  readonly graph?: {
+    readonly membershipHead?:  string;
+    readonly manifestHead?:    string;
+    readonly collectionHead?:  string;
+  };
+}
+
+// ---------------------------------------------------------------------------
+// LarariumOpenPhase — async host opening sequence (authority-first ordering)
+// ---------------------------------------------------------------------------
+
+export type LarariumOpenPhase =
+  | { readonly kind: "host-opening";       readonly hostId:    string }
+  | { readonly kind: "authority-opening";  readonly hostId:    string }
+  | { readonly kind: "authority-ready";    readonly receipt:   string }
+  | { readonly kind: "manifest-opening";   readonly recipeUri: string }
+  | { readonly kind: "manifest-ready";     readonly titles:    readonly string[] }
+  | { readonly kind: "store-opening";      readonly recipeUri: string }
+  | { readonly kind: "store-ready";        readonly titleCount: number }
+  | { readonly kind: "tw5-opening";        readonly hostId:    string }
+  | { readonly kind: "tw5-ready";          readonly hostId:    string }
+  | { readonly kind: "projection-opening"; readonly roomId:    string }
+  | { readonly kind: "projection-ready";   readonly roomId:    string }
+  | { readonly kind: "live";              readonly offset:    number }
+  | { readonly kind: "error";             readonly message:   string };
+
+// ---------------------------------------------------------------------------
 // Carrier payload — one meme's parsed state
 // ---------------------------------------------------------------------------
 

@@ -12,7 +12,8 @@ import { createContext, useContext, useState, useCallback } from "react";
 import type { Editor } from "tldraw";
 import type { LarViewState, LarViewAction, ZoomLevel } from "@lararium/tldraw";
 import { DEFAULT_ROOMS, ROOM_SYSTEM } from "@lararium/tldraw";
-import type { KumuRegistry } from "@lararium/core";
+import type { KumuRegistry, LarariumOpenPhase } from "@lararium/core";
+import type { LarariumTW5, MemoryTiddlerStore } from "@lararium/tw5";
 import type { MemeEntry } from "./App.js";
 
 // ---------------------------------------------------------------------------
@@ -76,6 +77,8 @@ export { THEME_GLYPH, THEME_LABEL };
 // Context
 // ---------------------------------------------------------------------------
 
+export type RenderMode = "native" | "tw5";
+
 export interface LarariumCtxValue {
   navState:       LarViewState;
   dispatch:       React.Dispatch<LarViewAction>;
@@ -92,6 +95,16 @@ export interface LarariumCtxValue {
   setEditor:      (editor: Editor | null) => void;
   /** Kumu registry built from boot artifact — null until first fetch. */
   kumuRegistry:   KumuRegistry | null;
+  /** Current opening phase — null before host open begins. */
+  openPhase:      LarariumOpenPhase | null;
+  /** In-memory tiddler store — null until store-ready phase. */
+  tiddlerStore:   MemoryTiddlerStore | null;
+  /** Booted TW5 instance — null until tw5-ready phase. */
+  tw5:            LarariumTW5 | null;
+  /** Render mode: "native" (React adapter) or "tw5" (TW5 renderText). */
+  renderMode:     RenderMode;
+  /** Boot receipt from authority phase. */
+  hostReceipt:    string | null;
 }
 
 export const LarariumCtx = createContext<LarariumCtxValue | null>(null);

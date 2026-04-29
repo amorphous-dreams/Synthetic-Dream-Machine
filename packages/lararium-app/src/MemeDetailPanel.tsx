@@ -3,7 +3,7 @@
  *
  * This component owns: CRDT store read, parse/widget/execution pipeline,
  * and panel chrome (backdrop, header, close). Rendering delegates entirely
- * to the React render adapter (kumu-react-render.tsx).
+ * to the React render adapter (native-render.tsx).
  *
  * Pipeline (CRDT-native, no HTTP fetch):
  *   shape.meta.carrierText           ← seeded at projection from lares/ file
@@ -14,7 +14,7 @@
  *   renderCarrier(ast, widgetMap)    → React.ReactNode (React adapter)
  *
  * TW5 analogy: this component = the story river container.
- *   kumu-react-render.tsx = the WikiText widget renderer.
+ *   native-render.tsx = the WikiText widget renderer.
  *   The carrier text IS the template — no hardcoded layout here.
  */
 
@@ -27,7 +27,7 @@ import {
 import type { MemeAstNode, WidgetNode, KumuResult, KumuContext } from "@lararium/core";
 import { buildWidgetMap } from "@lararium/tldraw";
 import { useLararium } from "./lararium-context.js";
-import { renderCarrier } from "./kumu-react-render.js";
+import { renderCarrier } from "./native-render.js";
 
 // ---------------------------------------------------------------------------
 // useKumuExecution — async Verse-aligned causal island fanout
@@ -63,7 +63,7 @@ function useKumuExecution(
 // ---------------------------------------------------------------------------
 
 export function MemeDetailPanel() {
-  const { navState, dispatch, editor, kumuRegistry } = useLararium();
+  const { navState, dispatch, editor, kumuRegistry, tw5, tiddlerStore, renderMode } = useLararium();
   const visible = navState.activeView === "meme-detail" && !!navState.focusUri;
   const uri = visible ? navState.focusUri! : null;
 
@@ -97,6 +97,25 @@ export function MemeDetailPanel() {
     [widgetTree, kumuResults],
   );
 
+  // TW5 render branch — async store lookup, projection-cache fallback
+  const [tw5Html, setTw5Html] = useState<string | null>(null);
+  useEffect(() => {
+    if (renderMode !== "tw5" || !uri || !tw5) { setTw5Html(null); return; }
+    let cancelled = false;
+    async function resolveTw5() {
+      let text: string | null = null;
+      if (tiddlerStore) {
+        const rec = await tiddlerStore.get(uri!);
+        if (rec && !rec.deleted && rec.text !== undefined) text = rec.text;
+      }
+      // Fallback: projection-cache from shape.meta.carrierText (audit label only — not source truth)
+      if (text === null) text = carrierText;
+      if (!cancelled) setTw5Html(text !== null && tw5 ? tw5.renderText(text) : null);
+    }
+    resolveTw5();
+    return () => { cancelled = true; };
+  }, [renderMode, uri, tw5, tiddlerStore, carrierText]);
+
   const onClose = useCallback(() => dispatch({ type: "NAVIGATE_BACK" }), [dispatch]);
 
   useEffect(() => {
@@ -116,10 +135,20 @@ export function MemeDetailPanel() {
           <button style={css.closeBtn} onClick={onClose} aria-label="Close">✕</button>
         </div>
         <div style={css.body}>
-          {!carrierText && (
-            <div style={css.status}>No carrier text in store — reseed room to populate.</div>
+          {renderMode === "tw5" ? (
+            tw5 === null || tiddlerStore === null
+              ? <div style={css.status}>⟳ opening…</div>
+              : tw5Html === null
+                ? <div style={css.status}>No carrier text available.</div>
+                : <div dangerouslySetInnerHTML={{ __html: tw5Html }} />
+          ) : (
+            <>
+              {!carrierText && (
+                <div style={css.status}>No carrier text in store — reseed room to populate.</div>
+              )}
+              {ast && renderCarrier(ast, widgetMap)}
+            </>
           )}
-          {ast && renderCarrier(ast, widgetMap)}
         </div>
       </div>
     </div>
@@ -127,7 +156,7 @@ export function MemeDetailPanel() {
 }
 
 // ---------------------------------------------------------------------------
-// Panel chrome styles — layout only; wiki content styles live in kumu-react-render.tsx
+// Panel chrome styles — layout only; wiki content styles live in native-render.tsx
 // ---------------------------------------------------------------------------
 
 const css = {

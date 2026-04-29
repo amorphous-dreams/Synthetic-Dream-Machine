@@ -29,6 +29,9 @@ importers:
       '@lararium/tldraw':
         specifier: workspace:*
         version: link:../lararium-tldraw
+      '@lararium/tw5':
+        specifier: workspace:*
+        version: link:../lararium-tw5
       '@tldraw/sync':
         specifier: ^4.5.10
         version: 4.5.10(@floating-ui/dom@1.7.6)(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)

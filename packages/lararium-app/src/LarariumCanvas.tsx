@@ -5,7 +5,7 @@ import { useSync } from "@tldraw/sync";
 import "tldraw/tldraw.css";
 import type { LarViewState, LarViewAction, TldrawEditorLike, ZoomLevel } from "@lararium/tldraw";
 import { goToStoryRiver, goToGraph, goToRoom, zoomToMeme, classifyZoom } from "@lararium/tldraw";
-import { RATING_COLOR, type Rating5 } from "@lararium/core";
+import { RATING_COLOR, type Rating5, type ChangeOrigin } from "@lararium/core";
 import { LarariumMenuPanel, LarariumSharePanel, LarariumHelperButtons, useLararium } from "./lararium-context.js";
 
 // Wiki mode: suppress tldraw chrome; Lararium slot components fill the UI.
@@ -155,9 +155,13 @@ function getLarUriFromShape(editor: TldrawEditor, shapeId: TLShapeId): string | 
 export function LarariumCanvas({ wsUrl, navState, dispatch, canvasMode, onZoomLevel, onMemes }: Props) {
   const store = useSync({ uri: wsUrl, assets: inlineBase64AssetStore });
   const editorRef = useRef<TldrawEditor | null>(null);
-  const { theme, setEditor } = useLararium();
+  const { theme, setEditor, editor, tiddlerStore, hostReceipt } = useLararium();
   (window as any).__larariumDebug ??= {};
-  (window as any).__larariumDebug.store = store;
+  (window as any).__larariumDebug.store             = store;
+  (window as any).__larariumDebug.tiddlerStore      = tiddlerStore;
+  (window as any).__larariumDebug.hostReceipt       = hostReceipt;
+  (window as any).__larariumDebug.projectionCacheCount =
+    tiddlerStore ? "call __larariumDebug.tiddlerStore.listVisible().then(console.log)" : 0;
 
   // Populate meme list reactively — CRDT-native, no /api/memes fetch.
   // One-shot scan on sync, then store.listen for document mutations (shape add/remove/update).
@@ -210,6 +214,33 @@ export function LarariumCanvas({ wsUrl, navState, dispatch, canvasMode, onZoomLe
     editor.user.updateUserPreferences({ colorScheme });
   }, [theme]);
 
+  // Projection-cache intake — seed MemoryTiddlerStore from shape.meta.carrierText.
+  // Gates on hostReceipt being non-null (receipt must arrive from boot-receipt meta-frame
+  // via useBridgeReceiptFromEditor before any projection-cache writes are allowed).
+  // Re-runs when receipt upgrades from null to real hash; re-seeds on document mutations.
+  useEffect(() => {
+    if (!editor || !tiddlerStore || !hostReceipt) return;
+    const receipt = hostReceipt;
+
+    const seedAll = () => {
+      for (const record of editor.store.allRecords()) {
+        const r = record as unknown as Record<string, unknown>;
+        if (r["typeName"] !== "shape" || r["type"] !== "frame") continue;
+        const meta = r["meta"] as Record<string, unknown> | undefined;
+        if (meta?.["frameKind"] !== "meme") continue;
+        const text = typeof meta["carrierText"] === "string" ? meta["carrierText"] : undefined;
+        const uri  = typeof meta["uri"] === "string"         ? meta["uri"]         : undefined;
+        if (!text || !uri || !uri.startsWith("lar:")) continue;
+        const origin: ChangeOrigin = { kind: "projection-cache", shapeId: r["id"] as string, receipt };
+        void tiddlerStore.put({ title: uri, fields: {}, text }, origin);
+      }
+    };
+
+    seedAll();
+    const unsub = editor.store.listen(() => seedAll(), { scope: "document" });
+    return unsub;
+  }, [editor, tiddlerStore, hostReceipt]);
+
   // Double-click: geo portal (meta.larPortal) → GO_TO_ROOM, meme frame → ZOOM_IN
   useEffect(() => {
     const editor = editorRef.current;
@@ -243,9 +274,8 @@ export function LarariumCanvas({ wsUrl, navState, dispatch, canvasMode, onZoomLe
 
   // Zoom level → page auto-switch.
 
-  if (store.status === "loading") {
-    return <div style={fill}>Connecting to Lararium…</div>;
-  }
+  // Q1: mount tldraw immediately — no blocking spinner on loading.
+  // Opening status surfaces in LarariumMenuPanel via openPhase from context.
   if (store.status === "error") {
     return (
       <div style={{ ...fill, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", color: "red", gap: 12 }}>
@@ -264,7 +294,8 @@ export function LarariumCanvas({ wsUrl, navState, dispatch, canvasMode, onZoomLe
           editorRef.current = editor;
           setEditor(editor);
           (window as any).__larariumDebug ??= {};
-          (window as any).__larariumDebug.editor = editor;
+          (window as any).__larariumDebug.editor      = editor;
+          (window as any).__larariumDebug.receiptShape = editor.store.get("shape:lararium_boot_receipt" as any);
           editor.user.updateUserPreferences({ colorScheme: "dark" });
           editor.setCurrentTool("select");
 

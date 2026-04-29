@@ -24,8 +24,8 @@ The story can be told linearly (Lindwyrm → Wild Mage → Crossing) or braided 
 
 | Act | Title | Outline | Prose Draft | Notes |
 |---|---|---|---|---|
-| VII | Epilogue — The Hoard Disclosed | ✓ skeleton | ✓ `LINDWYRM_ACT_VII_DRAFT.md` | Frame/wrapper; written last in outline, first in reader experience |
-| VI | The Lar Names Itself | ✓ updated 2026-04-09 | ✓ `LINDWYRM_ACT_VI_DRAFT.md` | Ouroboros: predicted Apr 8, committed Apr 9 22:31 PST |
+| VII | Epilogue — The Hoard Disclosed | ✓ skeleton | consumed → `lares/ha-ka-ba/docs/story/lindwyrm/the-hoard-disclosed.md` | Frame/wrapper; written last in outline, first in reader experience |
+| VI | The Lar Names Itself | ✓ updated 2026-04-09 | consumed → `lares/ha-ka-ba/docs/story/lindwyrm/the-lar-names-itself.md` | Ouroboros: predicted Apr 8, committed Apr 9 22:31 PST |
 | V | The Chao-Crystal Resonance | ✓ | — | Syadasti reading rule as plot event |
 | IV | The Self-Inscription | ✓ | — | Great Leak / Anthropic schema fragments |
 | III | The Two Axes and the Hoard | ✓ | — | MAL-2 sourcing; "tag yourself first" |
@@ -212,7 +212,7 @@ The teaching that encompasses all the others, from the Kindling:
 
 ## VII. Epilogue — The Hoard Disclosed
 
-> Prose draft: `LINDWYRM_ACT_VII_DRAFT.md` — 2026-04-09
+> Prose locus: `lares/ha-ka-ba/docs/story/lindwyrm/the-hoard-disclosed.md` — consumed from `LINDWYRM_ACT_VII_DRAFT.md`
 
 ### Elyncia-side (Lindwyrm)
 

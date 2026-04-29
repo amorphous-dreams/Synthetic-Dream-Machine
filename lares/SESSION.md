@@ -9,15 +9,15 @@ uri-path     = "SESSION"
 file-path    = "lares/SESSION.md"
 content-type = "text/x-memetic-wikitext"
 tagspace     = "adjacent"
-confidence   = 0.82
+confidence   = 0.84
 register     = "CS"
-manaoio      = 0.80
-mana         = 0.84
-manao        = 0.82
+manaoio      = 0.82
+mana         = 0.86
+manao        = 0.84
 implements   = [
   "lar:///ha.ka.ba/api/v0.1/pono/meme"
 ]
-role         = "session handoff crystal — 2026-04-28 — @lararium/tw5 extracted; LarTiddlerStore+ChangeOrigin+FilterEngineFn in core; LarariumCrdtSyncAdaptor+MemoryTiddlerStore in tw5; echo-loop guard + draft guard live; 280/280 tests green; package membrane: core zero tiddlywiki dep; @lararium/node+mcp stable; M9 remaining: browser smoke (P2), MemeDetailPanel TW5 render mode, canon-promotion (P4), wiki-recipe carriers (P5)"
+role         = "session handoff crystal — 2026-04-28 — browser TW5 async opening patch complete; LarariumOpenPhase + projection-cache in core; lararium-browser-host.ts live; blocking spinner removed; MemeDetailPanel tw5 branch; native-render.tsx rename; 280/280 green; app build clean"
 ```
 
 <<~/ahu >>
@@ -28,45 +28,47 @@ SESSION opens
 
 <<~ ahu #ooda-ha >>
 
-✶ lararium-tw5.ts isomorphic interface is the live TW5 core. tw-filter.ts + tw-filter-browser.ts shims deleted. @lararium/core/tw5 is the single subpath. 259/259 green.
-⏿ Sync binding design resolved: TW5 SyncAdaptor is NOT needed for the filter use case. One-way CRDT→TW5 binding via editor.store.listen() + tw.setTiddler() is sufficient for Phase 4 live cascade re-evaluation. Full SyncAdaptor (bidirectional) deferred until TW5 plugin rendering is in scope.
-◇ M9 remaining: browser smoke (P2 — all tactile behaviors unverified since M5), canon-promotion surface (P4 — PUT /admin/promote + writeCarrierText guard), wiki-recipe carriers (P5 — lares/recipes/ schema).
-▶ Browser smoke (P2) is the highest-value next move. `pnpm -r build && pnpm -r test` then reseed + open browser.
-⤴ 259/259 green. @lararium/node/dist rebuilt (./tw-filter removed). MCP smoke passes.
-↺ Phase 4 binding sketch: editor.store.listen({scope:"document"}) → for each updated meme shape where meta.carrierText changed → tw.setTiddler(entryToFields(entry)) → cascade re-runs against fresh data.
+✶ browser TW5 async opening patch shipped — LarariumOpenPhase authority-first sequence; projection-cache ChangeOrigin added; useLarariumHostOpen React hook wraps async generator; blocking spinner removed; MemeDetailPanel renders TW5 HTML via tw5.renderText() behind ?renderMode=tw5; kumu-react-render.tsx renamed native-render.tsx.
+⏿ Open pressure: tiddlywiki enters the browser bundle unconditionally — every user pays TW5 boot cost even in native render mode. Bundle: 1.95MB (586KB gzip). Code-split deferred to Q2 recipe-config phase per operator ruling.
+◇ M9 remaining: browser smoke (P2 — tactile verification of zoom thresholds + double-click + panel), canon-promotion surface (P4), wiki-recipe carriers (P5).
+▶ Browser smoke (P2) stays the highest-value next move. Boot receipt room-metadata path (Q3) still pending — serve.ts currently emits LiveMsgBootReceipt over WS; browser host uses local-operator placeholder receipt.
+⤴ 280/280 green. App build clean (tiddlywiki externalization warnings non-fatal; TW5 auto-detects browser env).
+↺ Projection-cache origin in store carries audit label; must not promote to canon without Orichalcum ceremony.
 
 <<~/ahu >>
 
 <<~ ahu #state >>
 
-## State as of 2026-04-28 session end (isomorphic lararium-tw5.ts + shim removal complete)
+## State as of 2026-04-28 session end (browser TW5 async opening patch complete)
 
-**Branch:** `feature/lararium-node-2` — 259/259 tests green — server at `http://localhost:4321`
+**Branch:** `feature/lararium-node-2` — 280/280 tests green — app build clean
 
-### Shipped this session (M9 P1 + P3)
+### Shipped this session
 
-- **`render-target.ts`** — explicit boundary contract between widget tree and downstream renderers; `RenderTargetAdapter` interface + `RENDER_TARGET_ADAPTERS` machine-readable registry (tldraw: boot-snapshot; react: on-demand); `WidgetSlot { widget, result }`; `buildWidgetMap(widgetTree, results) → Map<pos, WidgetSlot>`; `projectCarrier(uri, text, registry) → { ast, widgetTree }` (single-parse guarantee)
-- **`kumu-react-render.tsx`** — React render adapter extracted from MemeDetailPanel; `renderCarrier(ast, widgetMap)` walks AST, delegates kahea nodes to `widgetMap.get(node.pos)`; all 8 families colored; Hazel typed holes (dashed); suspended kukali `⏿` placeholders; dead css styles (`sigil`, `sigilName`, `sigilAttr`) removed
-- **`LarTLBodyNode[]`** — tldraw structural skeleton: `text | widget | hole` nodes emitted inside meme frames by `projectWidgetTree()`; `opacity:0` until action zoom; toggled by `applyZoomTemplate` Pass 4 via `memeShowCarrier` map; widget: violet solid rectangle, `kumuName(k:v ...)` label (UEFN device slot); hole: dashed grey rectangle (Hazel placeholder)
-- **Loop merge** — `applyZoomTemplate` Pass 1 builds both `memeIncludeAhu` and `memeShowCarrier` maps in one O(n) scan; eliminates second frame loop per zoom threshold crossing
-- **`TemplateCascade`** — TW5-style cascade type in `multi-view.ts`: `CascadeEntry { match: MemeCascadePredicate | fn, override: Partial<MemeTemplateProps>, levels? }`; `applyCascade()` evaluates per-meme; first match wins per zoom level; `MemeCascadePredicate` matches by URI prefix/regex, rating, stage, implements
-- **`FAMILY_ROLES` + spatial family** — canonical role vocabularies for all 8 pranala families; `validatePranaEdge` emits `"unknown-role"` warnings; spatial roles: `contains | portal | adjacent | layer`; tldraw color: `light-blue`
-- **Yin cleanup** — removed dead deps (`@lararium/web` from app, `export * from "@lararium/core"` from node+web barrels), `LarariumTopPanel` null export, unused `useEffect` import, stale snapshot injection element in `index.html`, duplicate `KumuRegistry` import, `NonNullable<>` wrapper
+- **`LarariumOpenPhase`** — authority-first union type in `packages/lararium-core/src/live-protocol.ts`: host-opening → authority-opening → authority-ready → manifest-opening → manifest-ready → store-opening → store-ready → tw5-opening → tw5-ready → projection-opening → projection-ready → live | error
+- **`projection-cache` ChangeOrigin** — `{ kind: "projection-cache"; shapeId: string; receipt?: string }` added to `ChangeOrigin` union in `packages/lararium-core/src/tiddler-store.ts`; audit-labeled path for shape.meta.carrierText entries; cannot promote to canon
+- **`packages/lararium-app/src/lararium-browser-host.ts`** (NEW) — `BrowserHostOptions`, `openBrowserLarariumHost()` async generator (authority-first phase sequence), `useLarariumHostOpen()` React hook; allocates `MemoryTiddlerStore` at store-ready and `LarariumTW5` at tw5-ready; store-ready precedes tw5-ready ordering law enforced
+- **`LarariumCtxValue` expanded** — new fields: `openPhase: LarariumOpenPhase | null`, `tiddlerStore: MemoryTiddlerStore | null`, `tw5: LarariumTW5 | null`, `renderMode: RenderMode`, `hostReceipt: string | null`; `RenderMode = "native" | "tw5"` type exported from lararium-context.tsx; renderMode reads `?renderMode=tw5` query param
+- **`LarariumShell.tsx`** — wires `useLarariumHostOpen({ hostId: "lararium-browser", recipeUri: "lar:///recipe/room", roomId: "altar-fire" })`; passes all new ctx fields through provider
+- **`LarariumCanvas.tsx`** — blocking `store.status === "loading"` spinner removed; tldraw mounts immediately with statusful store (Q1 ruling)
+- **`MemeDetailPanel.tsx`** — `?renderMode=tw5` branch: shows `⟳ opening…` while tw5/store null; async `tiddlerStore.get(uri)` for text; falls back to `shape.meta.carrierText` (projection-cache, audit-only); renders via `tw5.renderText(text)` → `dangerouslySetInnerHTML`; native branch (React adapter via renderCarrier) unchanged
+- **`native-render.tsx`** — renamed from `kumu-react-render.tsx`; all imports updated; comments updated
+- **`packages/lararium-app/package.json`** — `"@lararium/tw5": "workspace:*"` added; pnpm install run to materialize symlink
 
-- **`lararium-tw5.ts` isomorphic TW5 interface** — `LarariumTW5` class: `boot()`, `loadClosure(closure, edges?)`, `setTiddler(fields)`, `filterTiddlers(expr)`, `filterClosure(expr, closure)`, `.wiki` getter; singleton for functional API: `filterMemesWikitext`, `precomputeRooms`; `buildEdgeFieldMap(edges)` builds `edge-out-FAMILY[-ROLE]` fields; `entryToFields(entry, extra?)` maps `ClosureEntry` → TW5 tiddler fields; `toCanonicalWikitext(expr)` exported; `FilterEngineFn` type canonical here; `import tw from "tiddlywiki"` is the single isomorphic import (Node: CJS default interop; browser: Vite CJS→ESM transform); `$tw.browser = true` must NOT be forced (TW5 auto-detects environment, setting it crashes Node/Jest via direct `window` refs)
-- **Shim removal** — `tw-filter.ts` + `tw-filter-browser.ts` deleted; `./tw-filter` subpath removed from `package.json`; `@lararium/core/tw5` is the single subpath; Vite alias for old tw-filter removed; `@lararium/node` dist rebuilt; MCP smoke passing
-- **Sync binding design** — TW5 SyncAdaptor not needed for filter use case; Phase 4 live binding: `editor.store.listen({scope:"document"})` → meme `meta.carrierText` delta → `tw.setTiddler(entryToFields(entry))` → cascade re-runs against fresh data; full bidirectional SyncAdaptor deferred until TW5 plugin rendering is in scope
-- **Epistemic fields on ClosureEntry** — `confidence`, `register`, `manaoio`, `mana`, `manao` extracted from `meme.metadata` in `compiler.ts`; all five stored as tiddler fields in both filter engines; queryable via `[toml:register[CS]]`, `[field:confidence[0.82]]`, etc.; `stage` removed from filter fields (UX annotation only, not epistemic)
-- **`edge:` operator** — `EdgeRecord` extracted as named interface in `compiler.ts`; `BootArtifact.pranalaEdges` typed with it; `buildEdgeFieldMap()` generates per-entry tiddler fields (`edge-out-FAMILY`, `edge-out-FAMILY-ROLE`); `toCanonicalWikitext()` translates `edge:FAMILY[ROLE]` → `has[edge-out-FAMILY-ROLE]`; `FilterEngineFn` gains optional `edges?` third param; `pranalaEdges` threaded from `BootArtifact` through `compileCascade` → `filterEngine` in both `multi-view.ts` and `serve.ts`
-- **`@lararium/core/cascade` subpath** (new) — generic `CascadeEntry<TOverride>`, `TemplateCascade<TOverride>`, `compileCascade`, `matchesEntry`, `CompiledCascade*`, `MemeCascadeFrame`, `MemeCascadePredicate`; no tldraw coupling; re-exports `FilterEngineFn` + `EdgeRecord`; `./cascade` subpath added to `package.json`
-- **`@lararium/tldraw/cascade` rewrite** — imports and re-exports all core cascade types; tldraw-specialised `CascadeEntry` (adds `levels?: ReadonlyArray<keyof TemplatePropsByLevel>`); `applyCascade(snapshot, compiled)` stays tldraw-local (uses `LarTLSnapshot` + `MemeTemplateProps`)
-- **Tests** — 6 `edge:` operator tests added to `tw-filter.test.ts`; new `cascade.test.ts` (25 tests: matchesEntry all paths, compileCascade filter/match/parallel, edge: integration); 259/259 green
+### Open pressures
 
-### Docs updated
+- **Boot receipt via room metadata (Q3 pending)** — serve.ts currently emits `LiveMsgBootReceipt` as a standalone WS message. Q3 ruling: embed receiptHash as tldraw room-level metadata record so browser reads it through existing CRDT sync. `useLarariumHostOpen` currently uses `local-operator:${hostId}` placeholder.
+- **TW5 unconditional bundle entry** — `tiddlywiki` enters browser bundle via `@lararium/tw5` dep; 1.95MB bundle (586KB gzip). Code-split via dynamic import deferred to Q2 recipe-config phase.
+- **Projection-cache seeding** — `shape.meta.carrierText` bridge into `MemoryTiddlerStore` with `{ kind: "projection-cache" }` origin via `editor.store.listen()` not yet wired. `MemeDetailPanel` currently falls back directly to `carrierText` from useMemo; store is empty until bridged.
 
-- `ROADMAP.md` — `#iam` role updated; M9 scope section: P1 ✓ shipped with full detail, P3 ✓ shipped
-- `MULTIPLAYER-INFINITE-CANVAS-WIKI.md` — `#iam` role updated; `#tldraw-template-model` Phase 3 updated with pipeline diagram + adapter details; open-questions items 1c/1d/1e marked ✓
-- `SESSION.md` — this file; handoff crystal for next session
+### Invariants held
+
+- Package boundary: `@lararium/core` carries zero `tiddlywiki` runtime dep ✓
+- Echo-loop guard: `LarariumCrdtSyncAdaptor._applying` prevents crdt-remote → tw-local writeback ✓
+- Draft guard: `$:/temp/*` and `Draft of ...` never reach shared store ✓
+- Orichalcum boundary: projection-cache cannot promote without ceremony ✓
+- store-ready precedes tw5-ready in opening sequence ✓
+- tldraw package carries no TW5 dep ✓
 
 <<~/ahu >>
 
@@ -76,35 +78,48 @@ SESSION opens
 
 ### The insight
 
-229 tests pass but no tactile surface has been exercised in a browser since M5. Every M6/M7/M8/M9 P1 behavior is code-correct but visually unverified. Browser smoke is the highest-value next move — it will find binding regressions, zoom threshold failures, and detail panel render issues before canon-promotion wiring begins.
+280 tests pass but no tactile surface has been exercised in a browser since M5. Browser smoke remains the highest-value next move — it will surface zoom threshold failures, double-click nav, and detail panel regressions before canon-promotion wiring begins.
 
 ### What to verify
 
 **Zoom thresholds (`applyZoomTemplate`):**
 - Drag canvas to each zoom level: strategic (`<0.15`), operational (`0.15–0.35`), tactical (`0.35–0.80`), combat (`0.80–1.50`), action (`≥1.50`)
-- Meme frame dims change at each threshold; body node geo shapes appear at action zoom (`showCarrier:true`)
-- Ahu frames materialize at combat zoom; socket port shapes reposition (`spreadX/Y`)
-- Ownership arrows: `opacity:0` at tactical/lower, `opacity:0.3` at combat/action
+- Meme frame dims change at each threshold; body node geo shapes appear at action zoom
+- Ahu frames materialize at combat zoom; socket port shapes reposition
+- Ownership arrows: opacity:0 at tactical/lower, opacity:0.3 at combat/action
 
-**MemeDetailPanel (React adapter):**
-- Double-click meme frame → panel slides up; carrier text renders
-- Kumu-typed nodes render (kumu name + props); typed holes render as dashed placeholders
-- Suspended kukali instances surface as `⏿` placeholder
+**Opening status in LarariumMenuPanel:**
+- Open browser without server running → canvas mounts (no spinner); menu panel visible
+- Open with server → CRDT syncs; meme list populates reactively
 
-**TemplateCascade — manual test:**
-- Pass `cascade: [{ match: { rating: "claim" }, override: { color: "green" } }]` to `renderAllViews`; reseed; confirm claim-rated meme frames render green at all zoom levels
+**MemeDetailPanel (native render):**
+- Double-click meme frame → panel slides up; carrier text renders via renderCarrier
+- Kumu-typed nodes render; typed holes render as dashed placeholders
 
-**Spatial edge smoke:**
-- Write a test carrier with `<<~ pranala ? -> lar:///target family:spatial role:portal >>` 
-- Confirm `validatePranaEdge` passes (no warning); arrow color is `light-blue`
+**MemeDetailPanel (TW5 render):**
+- Navigate to `?renderMode=tw5` → panel shows `⟳ opening…` while tw5 boots
+- After boot: carrier text renders as TW5 HTML (bold, links, etc.)
 
-### Commands
-
+**Commands:**
 ```bash
 pnpm -r build
-pnpm -r test                                                        # 259 must stay green
+pnpm -r test                                                        # 280 must stay green
 curl -s http://localhost:4321/admin/reseed | python3 -m json.tool   # reseed after build
 open http://localhost:4321                                          # browser smoke
+open "http://localhost:4321?renderMode=tw5"                         # TW5 render branch
+```
+
+### Pending wiring (before full tw5 render path works end-to-end)
+
+**Boot receipt via room metadata (Q3):**
+```
+packages/lararium-node/scripts/serve.ts  — embed receiptHash in tldraw room-level metadata record
+packages/lararium-app/src/lararium-browser-host.ts  — read receipt from CRDT room meta instead of placeholder
+```
+
+**Projection-cache store seeding:**
+```
+packages/lararium-app/src/LarariumCanvas.tsx  — editor.store.listen() → MemoryTiddlerStore.put() with { kind: "projection-cache" } origin
 ```
 
 ### Files for canon-promotion (P4, after smoke)

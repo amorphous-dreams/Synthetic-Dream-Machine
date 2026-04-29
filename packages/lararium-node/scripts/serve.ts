@@ -32,6 +32,7 @@ import {
 } from "@tldraw/sync-core";
 import { createLarariumRuntime, LARES_ROOT } from "../src/node-host.js";
 import { buildSnapshot } from "./build-snapshot-lib.js";
+import { injectBootReceiptFrame, buildBootReceiptMeta } from "../src/boot-receipt.js";
 import {
   type BootArtifact,
   parsePranalaEdges,
@@ -39,9 +40,7 @@ import {
   ReactionGraph,
   type ReactionBinding,
   type LiveMsgEvent,
-  type LiveMsgBootReceipt,
   AuthorityFirstGuard,
-  makeEdgeIslandId,
   buildKumuRegistry,
 } from "@lararium/core";
 
@@ -160,6 +159,16 @@ async function buildBootProjection(
   for (const page of emission.pages) store[page.id] = page;
   for (const shape of emission.shapes) store[(shape as { id: string }).id] = shape;
   for (const binding of emission.bindings) store[binding.id] = binding;
+
+  // Inject boot-receipt meta-frame into the snapshot before sealing.
+  // Must arrive with the room substrate (O1 ruling) so browser can gate
+  // projection-cache intake on receipt readiness without a second WebSocket.
+  const firstPageId = emission.pages[0]?.id ?? "page:default";
+  const bootRoomId  = `boot-${receiptSha.slice(0, 16)}`;
+  injectBootReceiptFrame(store, {
+    pageId:  firstPageId,
+    receipt: buildBootReceiptMeta({ roomId: bootRoomId, receiptHash: receiptSha }),
+  });
 
   const ev = artifact.validation.edgeViolations ?? [];
   const evErrors = ev.filter((v: { severity: string }) => v.severity === "error").length;
@@ -291,23 +300,9 @@ async function main() {
     // For local-operator: all rooms are visible; skip to manifest
     guard.advance("sync-collection-manifest");
 
-    // Send boot receipt BEFORE handing off to tldraw CRDT room.
-    // This is the "join artifact" — the shape of the visible world at join time.
-    // Clients use receiptHash as a prompt cache key and offset for delta resumption.
-    if (bootProjection) {
-      const edgeIslandId = makeEdgeIslandId("lararium-node", sessionId.slice(0, 8), bootProjection.receiptSha.slice(0, 8));
-      const bootReceipt: LiveMsgBootReceipt = {
-        type:          "boot-receipt",
-        edgeIslandId,
-        issuedAt:      new Date().toISOString(),
-        visibleRooms:  ["system", "invariants", "graph", "entry"],
-        visibleMemes:  bootProjection.memeCount,
-        offset:        0,
-        receiptHash:   bootProjection.receiptSha,
-        authorityMode: "local-operator",
-      };
-      if (ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify(bootReceipt));
-    }
+    // Boot receipt travels as a hidden tldraw shape in the room snapshot (shape:lararium_boot_receipt),
+    // not as a separate WS message. A standalone JSON message with type="boot-receipt" would reach
+    // the tldraw sync client before it is ready and trigger an Unknown switch case error.
 
     const buffered: import("ws").RawData[] = [];
     const buffer = (msg: import("ws").RawData) => buffered.push(msg);
