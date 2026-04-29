@@ -17,7 +17,7 @@ manao        = 0.82
 implements   = [
   "lar:///ha.ka.ba/api/v0.1/pono/meme"
 ]
-role         = "session handoff crystal — 2026-04-28 — M9 P1+P3 complete; three-tree pipeline live for both adapters; render-target.ts boundary contract explicit; TemplateCascade TW5 cascade type wired; FAMILY_ROLES + spatial family locked; 229/229 tests green; M9 remaining: browser smoke (P2), canon-promotion surface (P4), wiki-recipe carriers (P5)"
+role         = "session handoff crystal — 2026-04-28 — isomorphic lararium-tw5.ts complete; tw-filter.ts + tw-filter-browser.ts shims deleted; @lararium/core/tw5 subpath canonical; @lararium/node/dist rebuilt (./tw-filter subpath removed); 259/259 tests green; LarariumSyncAdaptor design: one-way CRDT→TW5 via editor.store.listen() + tw.setTiddler() for Phase 4; M9 remaining: browser smoke (P2), canon-promotion surface (P4), wiki-recipe carriers (P5)"
 ```
 
 <<~/ahu >>
@@ -28,20 +28,20 @@ SESSION opens
 
 <<~ ahu #ooda-ha >>
 
-✶ Read ROADMAP `#milestone-9-scope` and WIKI `#tldraw-template-model`. Confirm 229/229 tests green. Confirm server at `http://localhost:4321`.
-⏿ Three-tree pipeline complete for both adapters. Render-target.ts owns the boundary contract. TemplateCascade wired. FAMILY_ROLES locked. The widget tree IS the kumu-typed intermediate layer — kahea sigil nodes resolve to WidgetNode via registry, then delegate to executed output (React) or structural skeleton (tldraw). TW5 selective refresh law: re-resolve only when `meta.carrierText` changes in CRDT delta.
-◇ M9 remaining: browser smoke (P2 — all tactile behaviors unverified), canon-promotion surface (P4 — `PUT /admin/promote`), wiki-recipe carriers (P5 — `lares/recipes/` schema). Wehe executor (future — Verse procedure call, depends on async ReactionGraph).
-▶ Browser smoke is the highest-value unverified surface. Start Playwright baseline: zoom thresholds, body node visibility at action zoom, socket repositioning, detail panel kumu-typed render, TemplateCascade applied to specific meme URIs.
-⤴ Verify 229/229 still green after browser smoke scaffold. Confirm body nodes visible at action zoom, hidden at tactical. Confirm cascade override changes frame color for matching memes.
-↺ Update SESSION.md as items complete. Canon-promotion surface is the next structural advance.
+✶ lararium-tw5.ts isomorphic interface is the live TW5 core. tw-filter.ts + tw-filter-browser.ts shims deleted. @lararium/core/tw5 is the single subpath. 259/259 green.
+⏿ Sync binding design resolved: TW5 SyncAdaptor is NOT needed for the filter use case. One-way CRDT→TW5 binding via editor.store.listen() + tw.setTiddler() is sufficient for Phase 4 live cascade re-evaluation. Full SyncAdaptor (bidirectional) deferred until TW5 plugin rendering is in scope.
+◇ M9 remaining: browser smoke (P2 — all tactile behaviors unverified since M5), canon-promotion surface (P4 — PUT /admin/promote + writeCarrierText guard), wiki-recipe carriers (P5 — lares/recipes/ schema).
+▶ Browser smoke (P2) is the highest-value next move. `pnpm -r build && pnpm -r test` then reseed + open browser.
+⤴ 259/259 green. @lararium/node/dist rebuilt (./tw-filter removed). MCP smoke passes.
+↺ Phase 4 binding sketch: editor.store.listen({scope:"document"}) → for each updated meme shape where meta.carrierText changed → tw.setTiddler(entryToFields(entry)) → cascade re-runs against fresh data.
 
 <<~/ahu >>
 
 <<~ ahu #state >>
 
-## State as of 2026-04-28 session end (M9 P1+P3 complete)
+## State as of 2026-04-28 session end (isomorphic lararium-tw5.ts + shim removal complete)
 
-**Branch:** `feature/lararium-node-2` — 229/229 tests green — server at `http://localhost:4321`
+**Branch:** `feature/lararium-node-2` — 259/259 tests green — server at `http://localhost:4321`
 
 ### Shipped this session (M9 P1 + P3)
 
@@ -52,6 +52,15 @@ SESSION opens
 - **`TemplateCascade`** — TW5-style cascade type in `multi-view.ts`: `CascadeEntry { match: MemeCascadePredicate | fn, override: Partial<MemeTemplateProps>, levels? }`; `applyCascade()` evaluates per-meme; first match wins per zoom level; `MemeCascadePredicate` matches by URI prefix/regex, rating, stage, implements
 - **`FAMILY_ROLES` + spatial family** — canonical role vocabularies for all 8 pranala families; `validatePranaEdge` emits `"unknown-role"` warnings; spatial roles: `contains | portal | adjacent | layer`; tldraw color: `light-blue`
 - **Yin cleanup** — removed dead deps (`@lararium/web` from app, `export * from "@lararium/core"` from node+web barrels), `LarariumTopPanel` null export, unused `useEffect` import, stale snapshot injection element in `index.html`, duplicate `KumuRegistry` import, `NonNullable<>` wrapper
+
+- **`lararium-tw5.ts` isomorphic TW5 interface** — `LarariumTW5` class: `boot()`, `loadClosure(closure, edges?)`, `setTiddler(fields)`, `filterTiddlers(expr)`, `filterClosure(expr, closure)`, `.wiki` getter; singleton for functional API: `filterMemesWikitext`, `precomputeRooms`; `buildEdgeFieldMap(edges)` builds `edge-out-FAMILY[-ROLE]` fields; `entryToFields(entry, extra?)` maps `ClosureEntry` → TW5 tiddler fields; `toCanonicalWikitext(expr)` exported; `FilterEngineFn` type canonical here; `import tw from "tiddlywiki"` is the single isomorphic import (Node: CJS default interop; browser: Vite CJS→ESM transform); `$tw.browser = true` must NOT be forced (TW5 auto-detects environment, setting it crashes Node/Jest via direct `window` refs)
+- **Shim removal** — `tw-filter.ts` + `tw-filter-browser.ts` deleted; `./tw-filter` subpath removed from `package.json`; `@lararium/core/tw5` is the single subpath; Vite alias for old tw-filter removed; `@lararium/node` dist rebuilt; MCP smoke passing
+- **Sync binding design** — TW5 SyncAdaptor not needed for filter use case; Phase 4 live binding: `editor.store.listen({scope:"document"})` → meme `meta.carrierText` delta → `tw.setTiddler(entryToFields(entry))` → cascade re-runs against fresh data; full bidirectional SyncAdaptor deferred until TW5 plugin rendering is in scope
+- **Epistemic fields on ClosureEntry** — `confidence`, `register`, `manaoio`, `mana`, `manao` extracted from `meme.metadata` in `compiler.ts`; all five stored as tiddler fields in both filter engines; queryable via `[toml:register[CS]]`, `[field:confidence[0.82]]`, etc.; `stage` removed from filter fields (UX annotation only, not epistemic)
+- **`edge:` operator** — `EdgeRecord` extracted as named interface in `compiler.ts`; `BootArtifact.pranalaEdges` typed with it; `buildEdgeFieldMap()` generates per-entry tiddler fields (`edge-out-FAMILY`, `edge-out-FAMILY-ROLE`); `toCanonicalWikitext()` translates `edge:FAMILY[ROLE]` → `has[edge-out-FAMILY-ROLE]`; `FilterEngineFn` gains optional `edges?` third param; `pranalaEdges` threaded from `BootArtifact` through `compileCascade` → `filterEngine` in both `multi-view.ts` and `serve.ts`
+- **`@lararium/core/cascade` subpath** (new) — generic `CascadeEntry<TOverride>`, `TemplateCascade<TOverride>`, `compileCascade`, `matchesEntry`, `CompiledCascade*`, `MemeCascadeFrame`, `MemeCascadePredicate`; no tldraw coupling; re-exports `FilterEngineFn` + `EdgeRecord`; `./cascade` subpath added to `package.json`
+- **`@lararium/tldraw/cascade` rewrite** — imports and re-exports all core cascade types; tldraw-specialised `CascadeEntry` (adds `levels?: ReadonlyArray<keyof TemplatePropsByLevel>`); `applyCascade(snapshot, compiled)` stays tldraw-local (uses `LarTLSnapshot` + `MemeTemplateProps`)
+- **Tests** — 6 `edge:` operator tests added to `tw-filter.test.ts`; new `cascade.test.ts` (25 tests: matchesEntry all paths, compileCascade filter/match/parallel, edge: integration); 259/259 green
 
 ### Docs updated
 
@@ -93,7 +102,7 @@ SESSION opens
 
 ```bash
 pnpm -r build
-pnpm -r test                                                        # 229 must stay green
+pnpm -r test                                                        # 259 must stay green
 curl -s http://localhost:4321/admin/reseed | python3 -m json.tool   # reseed after build
 open http://localhost:4321                                          # browser smoke
 ```

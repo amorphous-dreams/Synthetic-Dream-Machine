@@ -71,7 +71,8 @@ export async function renderAllViews(artifact: BootArtifact, opts: MultiViewOpti
   let snapshot = baseSnapshot;
   if (cascade && cascade.length > 0) {
     const engine: FilterEngineFn = filterEngine ?? (async () => []);
-    const compiled = await compileCascade(cascade, artifact.closure, engine);
+    const edges = artifact.pranalaEdges ?? [];
+    const compiled = await compileCascade(cascade, artifact.closure, engine, edges);
     snapshot = applyCascade(baseSnapshot, compiled);
   }
 

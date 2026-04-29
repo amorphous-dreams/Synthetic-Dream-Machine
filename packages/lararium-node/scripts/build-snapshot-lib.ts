@@ -8,7 +8,7 @@
 import { readFileSync, existsSync } from "fs";
 import { join } from "path";
 import { resolveLarUri } from "@lararium/core";
-import { precomputeRooms } from "../../lararium-core/src/tw-filter.js";
+import { precomputeRooms } from "@lararium/core/tw5";
 import { DEFAULT_ROOMS } from "@lararium/tldraw";
 import { compileCarrierIndex, LARES_ROOT, type LarariumRuntime } from "../src/node-host.js";
 

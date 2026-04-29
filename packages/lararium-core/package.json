@@ -8,9 +8,13 @@
       "import": "./dist/index.js",
       "types": "./dist/index.d.ts"
     },
-    "./tw-filter": {
-      "import": "./dist/tw-filter.js",
-      "types": "./dist/tw-filter.d.ts"
+    "./tw5": {
+      "import": "./dist/lararium-tw5.js",
+      "types": "./dist/lararium-tw5.d.ts"
+    },
+    "./cascade": {
+      "import": "./dist/cascade.js",
+      "types": "./dist/cascade.d.ts"
     }
   },
   "main": "./dist/index.js",
@@ -19,8 +23,7 @@
     "build": "tsc",
     "typecheck": "tsc --noEmit",
     "test": "NODE_OPTIONS=--experimental-vm-modules pnpm exec jest --config jest.config.cjs",
-    "dev": "tsx src/index.ts",
-    "tw:build-browser": "node ../../scripts/build-tw-browser-filter.mjs"
+    "dev": "tsx src/index.ts"
   },
   "devDependencies": {
     "@jest/globals": "^29.7.0",

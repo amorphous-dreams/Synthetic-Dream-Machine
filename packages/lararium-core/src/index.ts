@@ -12,8 +12,8 @@ export * from "./crypto.js";
 export * from "./live-protocol.js";
 export * from "./widget-tree.js";
 export * from "./kumu-executor.js";
-// Note: tw-filter.ts (Node-only) and tw-filter-browser.ts (browser) are NOT re-exported
-// from the main package. Import them directly from their source files:
-//   Node:    import { filterMemesTW, precomputeRooms } from "@lararium/core/src/tw-filter.js"
-//   Browser: import { filterMemesTW } from "@lararium/core/src/tw-filter-browser.js"
-// This keeps lararium-core's browser bundle free of Node-only crypto APIs.
+// LarariumTW5 and filter helpers are NOT barrel-exported — import from the subpath:
+//   import { filterMemesWikitext, LarariumTW5 } from "@lararium/core/tw5";
+//   import { filterMemesWikitext } from "@lararium/core/tw-filter";  // backward compat shim
+// Both subpaths resolve to lararium-tw5.ts — isomorphic, no Node/browser split.
+// Kept out of the main barrel to avoid pulling tiddlywiki into bundles that don't need it.

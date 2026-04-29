@@ -12,7 +12,7 @@ register    = "S"
 manaoio     = 0.84
 mana        = 0.90
 manao       = 0.86
-role        = "canonical design constitution for the Lararium multiplayer infinite-canvas wiki system — Kinopio-feel UX shell wrapping tldraw; socket port shapes + hidden ownership skeleton + three-tree pipeline shipped; render-target.ts explicit boundary contract (tldraw adapter: LarTLBodyNode structural skeleton; React adapter: full kumu execution via kumu-react-render.tsx); TW5-style TemplateCascade type wired in multi-view.ts; spatial family (contains/portal/adjacent/layer) locked; TW5/Verse re-render synthesis integrated"
+role        = "canonical design constitution for the Lararium multiplayer infinite-canvas wiki system — Kinopio-feel UX shell wrapping tldraw; socket port shapes + hidden ownership skeleton + three-tree pipeline shipped; render-target.ts explicit boundary contract (tldraw adapter: LarTLBodyNode structural skeleton; React adapter: full kumu execution via kumu-react-render.tsx); TW5-style TemplateCascade type wired in multi-view.ts; spatial family (contains/portal/adjacent/layer) locked; wikitext-filter fully integrated into @lararium/core: FilterEngineFn canonical in tw-filter subpath, Vite alias + package.json browser conditional wired, epistemic fields (confidence/register/manaoio/mana/manao) on ClosureEntry and as filter tiddler fields; operator parity table for wikitext-filter operators"
 cacheable   = true
 retain      = true
 invariant   = false
@@ -631,7 +631,50 @@ Rating encodes structural quality: a `Noise` carrier renders with a dashed borde
 
 Stage encodes authority level: a `GR` meme renders muted/greyed (local, unratified). A `DS` meme renders with full color and full ownership arrow opacity. `CS` is the default visible rendering tier in the boot room.
 
-These are seeded into `shape.meta.templateProps` alongside zoom-level props at projection time. The `cascade` filter predicate can gate by rating or stage — `rating:Meme`, `stage:CS` are valid filter atoms in the wikitext-filter dialect.
+These are seeded into `shape.meta.templateProps` alongside zoom-level props at projection time.
+
+**Epistemic fields on ClosureEntry (shipped 2026-04-28):** `confidence` (float scalar), `register` (operator confidence-register: C/SC/S/PS/P), `manaoio` (observability/interop score), `mana`, `manao` — all stored as tiddler fields in the wikitext-filter engine and queryable via `[toml:key[value]]` or `[field:key[value]]`. `stage` is a UX rendering annotation only — it is NOT a filter field.
+
+**wikitext-filter dialect — operator parity table (as of 2026-04-28):**
+
+| Operator | Status | Example |
+|---|---|---|
+| `all[memes]` | ✓ shipped | `[all[memes]]` → all ClosureEntry objects |
+| `field:key[value]` | ✓ shipped | `[field:rating[meme]]` |
+| `tag[uri]` | ✓ shipped | `[tag[lar:///ha.ka.ba/api/v0.1/pono/invariant]]` |
+| `nsort[field]` | ✓ shipped | `[nsort[depth]]` |
+| `limit[n]` | ✓ shipped | `[limit[5]]` |
+| `prefix[str]` | ✓ shipped | `[prefix[lar:///ha.ka.ba/api/v0.1]]` |
+| `toml:key[value]` | ✓ shipped | `[toml:register[CS]]` — translates → `field:key[value]` |
+| `edge:FAMILY[ROLE]` | ✓ shipped | `[edge:control[owns]]` → `has[edge-out-control-owns]`; edges pre-loaded from `BootArtifact.pranalaEdges` |
+| `edge:FAMILY[]` | ✓ shipped | `[edge:spatial[]]` → `has[edge-out-spatial]` (any role) |
+| `self[]` | ○ future | requires rendering context URI injection |
+| `ahu:id[X]` | ○ future | requires ahu index pre-loading |
+
+**FilterEngineFn — isomorphic injection (shipped 2026-04-28):**
+
+`FilterEngineFn` is the canonical async filter engine type, defined in `@lararium/core/tw-filter` and re-exported from `@lararium/core/cascade`. Signature: `(expr: string, closure: readonly ClosureEntry[], edges?: readonly EdgeRecord[]) => Promise<ClosureEntry[]>`. Package.json `browser` conditional + Vite alias ensure bundlers resolve to the correct runtime.
+
+**`@lararium/core/cascade` — generic cascade engine (shipped 2026-04-28):**
+
+`CascadeEntry<TOverride>`, `TemplateCascade<TOverride>`, `compileCascade`, `matchesEntry` are now core primitives — no tldraw coupling. Render-target adapters specialise `TOverride`:
+- tldraw: `CascadeEntry extends CoreCascadeEntry<MemeTemplateProps>` (adds `levels?`)
+- React: future — `CascadeEntry<KumuRenderProps>` (same compile path, different apply)
+
+`compileCascade(cascade, closure, filterEngine, edges?)` parallelises filter evaluation via `Promise.all`. `matchesEntry` is exported so all apply passes share one match implementation.
+
+**`edge:` operator — pranala edge pre-loading (shipped 2026-04-28):**
+
+`BootArtifact.pranalaEdges` (typed `EdgeRecord[]`) flows through `compileCascade` → `filterEngine` → `filterMemesWikitext`. `buildEdgeFieldMap()` builds per-entry tiddler fields (`edge-out-FAMILY`, `edge-out-FAMILY-ROLE`). `toCanonicalWikitext()` translates `edge:FAMILY[ROLE]` → `has[edge-out-FAMILY-ROLE]` before TW5 sees the expression.
+
+```typescript
+// Query all memes with a control:owns outgoing edge
+await filterMemesWikitext(closure, "[all[memes]edge:control[owns]]", artifact.pranalaEdges);
+
+// Cascade: highlight memes that own others
+const cascade = [{ filter: "[all[memes]edge:control[owns]]", override: { color: "violet" } }];
+const compiled = await compileCascade(cascade, closure, filterEngine, artifact.pranalaEdges);
+```
 
 **Template namespace:** `lar:///ha.ka.ba/api/v0.1/lararium/templates/` — inside the stable tuple root, no adjacent namespace. `templates/index` owns control edges to all five carriers and is reachable from the `lararium` meme via `#hydrate-templates`.
 

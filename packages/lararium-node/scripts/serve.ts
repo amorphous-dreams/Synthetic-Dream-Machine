@@ -138,7 +138,7 @@ async function buildBootProjection(
   snapshotMemes: SnapshotData,
 ): Promise<{ snapshot: unknown; roomId: string; receiptSha: string; memeCount: number; kumuDefs: import("@lararium/core").KumuDef[] }> {
   const { renderAllViews } = await import("@lararium/tldraw");
-  const { filterMemesWikitext } = await import("@lararium/core/tw-filter");
+  const { filterMemesWikitext } = await import("@lararium/core/tw5");
   const artifact: BootArtifact = runtime.compileBoot();
   const receipt = await runtime.compileBootReceipt(artifact);
   const receiptSha = receipt.sha256.replace(/^sha256:/, "");
@@ -153,7 +153,7 @@ async function buildBootProjection(
     },
     includeAhuFrames: true,
     registry,
-    filterEngine: (expr: string, closure: readonly import("@lararium/core").ClosureEntry[]) => filterMemesWikitext(closure, expr),
+    filterEngine: (expr, closure, edges) => filterMemesWikitext(closure, expr, edges),
   });
 
   const store: Record<string, unknown> = {};

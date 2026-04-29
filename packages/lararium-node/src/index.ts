@@ -1,2 +1,2 @@
 export * from "./node-host.js";
-export { filterMemesWikitext, filterMemesTW, precomputeRooms } from "@lararium/core/tw-filter";
+export { filterMemesWikitext, filterMemesTW, precomputeRooms, LarariumTW5 } from "@lararium/core/tw5";

@@ -47,6 +47,15 @@ export interface ValidationResult {
   edgeViolations: PranaEdgeViolation[];
 }
 
+/** Serialised edge record — subset of PranaEdge safe for JSON transport. */
+export interface EdgeRecord {
+  readonly fromUri:    string;
+  readonly fromSocket: string;
+  readonly toUri:      string;
+  readonly family:     string;
+  readonly role:       string | null;
+}
+
 export interface BootArtifact {
   artifact: "boot";
   compiledAt: string;
@@ -58,7 +67,7 @@ export interface BootArtifact {
   invariantIndex: Record<string, number | string[]>;
   validation: ValidationResult;
   edgeCount?: number;
-  pranalaEdges?: { fromUri: string; fromSocket: string; toUri: string; family: string; role: string | null }[];
+  pranalaEdges?: EdgeRecord[];
   /** kumu type definitions collected from the boot closure — Phase 3 widget tree. */
   kumuDefs?: import("./ast.js").KumuDef[];
 }
