@@ -27,7 +27,6 @@ import { MemeDetailPanel } from "./MemeDetailPanel.js";
 import { LarariumCtx, useLararium, shortUri, useTheme } from "./lararium-context.js";
 import { parseMemeCarrier, collectKumuDefs, buildKumuRegistry, type KumuRegistry } from "@lararium/core";
 import { useLarariumHostOpen, useBridgeReceiptFromEditor } from "./lararium-browser-host.js";
-import type { RenderMode } from "./lararium-context.js";
 import "./lararium-theme.css";
 import type { MemeEntry } from "./App.js";
 
@@ -178,11 +177,8 @@ export function LarariumShell({ wsUrl, memes, onMemes }: ShellProps) {
   const setEditor = useCallback((e: Editor | null) => setEditorState(e), []);
   const [kumuRegistry, setKumuRegistry] = useState<KumuRegistry | null>(null);
 
-  const renderMode: RenderMode =
-    new URLSearchParams(window.location.search).get("renderMode") === "tw5" ? "tw5" : "native";
-
   const { phase: openPhase, store: tiddlerStore, tw5 } =
-    useLarariumHostOpen({ hostId: "lararium-browser", recipeUri: "lar:///recipe/room", roomId: "altar-fire", renderMode });
+    useLarariumHostOpen({ hostId: "lararium-browser", recipeUri: "lar:///recipe/room", roomId: "altar-fire" });
 
   // hostReceipt starts null; useBridgeReceiptFromEditor upgrades it to the real
   // receiptHash from the boot-receipt meta-frame in the tldraw CRDT store (O2 ruling).
@@ -252,7 +248,6 @@ export function LarariumShell({ wsUrl, memes, onMemes }: ShellProps) {
     openPhase,
     tiddlerStore,
     tw5,
-    renderMode,
     hostReceipt,
   };
 

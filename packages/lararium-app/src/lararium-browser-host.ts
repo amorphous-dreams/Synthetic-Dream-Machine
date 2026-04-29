@@ -30,12 +30,10 @@ const BOOT_RECEIPT_SHAPE_ID = "shape:lararium_boot_receipt";
 // ---------------------------------------------------------------------------
 
 export interface BrowserHostOptions {
-  hostId:     string;
-  recipeUri:  string;
+  hostId:    string;
+  recipeUri: string;
   /** Room ID used for projection phase label. */
-  roomId:     string;
-  /** Only boot TW5 when renderMode === "tw5". Native mode skips TW5 entirely. */
-  renderMode: "native" | "tw5";
+  roomId:    string;
 }
 
 // ---------------------------------------------------------------------------
@@ -141,21 +139,15 @@ export function useLarariumHostOpen(options: BrowserHostOptions): HostOpenState 
       if (!cancelled) { setStore(s); setPhase({ kind: "store-ready", titleCount: 0 }); }
 
       if (!cancelled) setPhase({ kind: "tw5-opening", hostId });
-      if (opts.renderMode === "tw5") {
-        const t = new LarariumTW5();
-        try {
-          await t.boot();
-          tw5Ref.current = t;
-          if (!cancelled) { setTw5(t); setPhase({ kind: "tw5-ready", hostId }); }
-        } catch (err: unknown) {
-          // TW5 browser boot may fail in environments where Node built-ins are stubbed.
-          console.warn("[lararium-browser-host] TW5 boot failed:", err);
-          if (!cancelled) setPhase({ kind: "error", message: `TW5 boot failed: ${String(err)}` });
-          return;
-        }
-      } else {
-        // Native mode — skip TW5 boot entirely.
-        if (!cancelled) setPhase({ kind: "tw5-ready", hostId });
+      const t = new LarariumTW5();
+      try {
+        await t.boot();
+        tw5Ref.current = t;
+        if (!cancelled) { setTw5(t); setPhase({ kind: "tw5-ready", hostId }); }
+      } catch (err: unknown) {
+        console.warn("[lararium-browser-host] TW5 boot failed:", err);
+        if (!cancelled) setPhase({ kind: "error", message: `TW5 boot failed: ${String(err)}` });
+        return;
       }
 
       if (!cancelled) setPhase({ kind: "projection-opening", roomId });

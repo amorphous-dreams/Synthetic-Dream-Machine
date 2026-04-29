@@ -77,8 +77,6 @@ export { THEME_GLYPH, THEME_LABEL };
 // Context
 // ---------------------------------------------------------------------------
 
-export type RenderMode = "native" | "tw5";
-
 export interface LarariumCtxValue {
   navState:       LarViewState;
   dispatch:       React.Dispatch<LarViewAction>;
@@ -101,8 +99,6 @@ export interface LarariumCtxValue {
   tiddlerStore:   MemoryTiddlerStore | null;
   /** Booted TW5 instance — null until tw5-ready phase. */
   tw5:            LarariumTW5 | null;
-  /** Render mode: "native" (React adapter) or "tw5" (TW5 renderText). */
-  renderMode:     RenderMode;
   /** Boot receipt from authority phase. */
   hostReceipt:    string | null;
 }

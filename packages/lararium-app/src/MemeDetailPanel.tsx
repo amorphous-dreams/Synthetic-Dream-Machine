@@ -1,120 +1,67 @@
 /**
- * MemeDetailPanel — story river panel for a single meme carrier.
+ * MemeDetailPanel — TW5-rendered meme carrier panel.
  *
- * This component owns: CRDT store read, parse/widget/execution pipeline,
- * and panel chrome (backdrop, header, close). Rendering delegates entirely
- * to the React render adapter (native-render.tsx).
+ * Pipeline (TW5 cascade, single mode):
+ *   shape.meta.carrierText  ← CRDT projection from lares/ file
+ *   tw5.setTiddler(uri, text)  → loaded into TW5 wiki store
+ *   tw5.renderTiddler(uri)     → HTML string (TW5 cascade renderer)
+ *   dangerouslySetInnerHTML    → browser DOM
  *
- * Pipeline (CRDT-native, no HTTP fetch):
- *   shape.meta.carrierText           ← seeded at projection from lares/ file
- *   parseMemeCarrier()               → MemeAstNode[]   (parse tree)
- *   resolveWidgetTree(ast, registry) → WidgetNode[]    (widget tree)
- *   useKumuExecution()               → KumuResult[]    (async island fanout)
- *   buildWidgetMap()                 → Map<pos, slot>  (O(1) lookup index)
- *   renderCarrier(ast, widgetMap)    → React.ReactNode (React adapter)
- *
- * TW5 analogy: this component = the story river container.
- *   native-render.tsx = the WikiText widget renderer.
- *   The carrier text IS the template — no hardcoded layout here.
+ * TW5 is the authoritative rendering pipeline. The MemoryTiddlerStore
+ * feeds TW5's wiki directly so all filter expressions resolve correctly.
+ * No native-render.tsx branch; no renderMode gate.
  */
 
-import { useEffect, useMemo, useCallback, useState } from "react";
-import {
-  parseMemeCarrier,
-  resolveWidgetTree,
-  executeBatch,
-} from "@lararium/core";
-import type { MemeAstNode, WidgetNode, KumuResult, KumuContext } from "@lararium/core";
-import { buildWidgetMap } from "@lararium/tldraw";
+import { useEffect, useCallback, useState } from "react";
 import { useLararium } from "./lararium-context.js";
-import { renderCarrier } from "./native-render.js";
-
-// ---------------------------------------------------------------------------
-// useKumuExecution — async Verse-aligned causal island fanout
-//
-// Suspended instances (kukali yield point) surface as {ok:false, error:"suspended"}.
-// Re-executes when carrierText changes in the CRDT delta (TW5 selective refresh model).
-// ---------------------------------------------------------------------------
-
-function useKumuExecution(
-  widgetTree: WidgetNode[] | null,
-  kumuRegistry: ReturnType<typeof useLararium>["kumuRegistry"],
-): KumuResult[] | null {
-  const [results, setResults] = useState<KumuResult[] | null>(null);
-
-  useEffect(() => {
-    if (!widgetTree || !kumuRegistry || widgetTree.length === 0) {
-      setResults(null);
-      return;
-    }
-    let cancelled = false;
-    const ctx: KumuContext = { props: {}, depth: 0, registry: kumuRegistry };
-    executeBatch(widgetTree, ctx).then((r) => {
-      if (!cancelled) setResults(r);
-    });
-    return () => { cancelled = true; };
-  }, [widgetTree, kumuRegistry]);
-
-  return results;
-}
-
-// ---------------------------------------------------------------------------
-// Panel
-// ---------------------------------------------------------------------------
 
 export function MemeDetailPanel() {
-  const { navState, dispatch, editor, kumuRegistry, tw5, tiddlerStore, renderMode } = useLararium();
+  const { navState, dispatch, editor, tw5, tiddlerStore } = useLararium();
   const visible = navState.activeView === "meme-detail" && !!navState.focusUri;
   const uri = visible ? navState.focusUri! : null;
 
-  // Read carrier text from CRDT store — seeded into shape.meta.carrierText at projection.
-  const carrierText = useMemo<string | null>(() => {
+  // Read carrier text from CRDT shape meta — seeded at projection time.
+  const carrierText: string | null = (() => {
     if (!uri || !editor) return null;
     const shape = editor.getCurrentPageShapes().find(
-      (s) => (s.meta as Record<string, unknown>)?.uri === uri
-        && (s.meta as Record<string, unknown>)?.frameKind === "meme",
+      (s) =>
+        (s.meta as Record<string, unknown>)?.uri === uri &&
+        (s.meta as Record<string, unknown>)?.frameKind === "meme",
     );
-    return typeof (shape?.meta as Record<string, unknown>)?.carrierText === "string"
-      ? (shape!.meta as Record<string, unknown>).carrierText as string
-      : null;
-  }, [uri, editor]);
+    const ct = (shape?.meta as Record<string, unknown>)?.carrierText;
+    return typeof ct === "string" ? ct : null;
+  })();
 
-  const ast = useMemo<MemeAstNode[] | null>(() => {
-    if (!uri || !carrierText) return null;
-    return parseMemeCarrier(uri, carrierText);
-  }, [uri, carrierText]);
-
-  const widgetTree = useMemo<WidgetNode[] | null>(() => {
-    if (!ast || !kumuRegistry) return null;
-    return resolveWidgetTree(ast, kumuRegistry);
-  }, [ast, kumuRegistry]);
-
-  const kumuResults = useKumuExecution(widgetTree, kumuRegistry);
-
-  // pos→slot index for O(1) lookup during the React adapter's AST walk
-  const widgetMap = useMemo(
-    () => buildWidgetMap(widgetTree ?? [], kumuResults),
-    [widgetTree, kumuResults],
-  );
-
-  // TW5 render branch — async store lookup, projection-cache fallback
-  const [tw5Html, setTw5Html] = useState<string | null>(null);
+  // Bridge carrier text into TW5 wiki store so renderTiddler resolves tiddler fields.
   useEffect(() => {
-    if (renderMode !== "tw5" || !uri || !tw5) { setTw5Html(null); return; }
+    if (!tw5 || !uri || !carrierText) return;
+    tw5.setTiddler({ title: uri, text: carrierText, type: "text/vnd.tiddlywiki" });
+  }, [tw5, uri, carrierText]);
+
+  // TW5 rendering — async because tiddlerStore.get is async.
+  const [html, setHtml] = useState<string | null>(null);
+  useEffect(() => {
+    if (!visible || !uri) { setHtml(null); return; }
+    if (!tw5) { setHtml(null); return; }
+
     let cancelled = false;
-    async function resolveTw5() {
-      let text: string | null = null;
+    async function render() {
+      // Prefer tiddlerStore text (may differ from shape meta after canon promotion).
+      let text = carrierText;
       if (tiddlerStore) {
         const rec = await tiddlerStore.get(uri!);
         if (rec && !rec.deleted && rec.text !== undefined) text = rec.text;
       }
-      // Fallback: projection-cache from shape.meta.carrierText (audit label only — not source truth)
-      if (text === null) text = carrierText;
-      if (!cancelled) setTw5Html(text !== null && tw5 ? tw5.renderText(text) : null);
+      if (!text) { if (!cancelled) setHtml(null); return; }
+
+      // Ensure TW5 has the latest text before rendering.
+      tw5!.setTiddler(uri!, { text, type: "text/vnd.tiddlywiki" });
+      const rendered = tw5!.renderTiddler(uri!);
+      if (!cancelled) setHtml(rendered || null);
     }
-    resolveTw5();
+    render();
     return () => { cancelled = true; };
-  }, [renderMode, uri, tw5, tiddlerStore, carrierText]);
+  }, [visible, uri, tw5, tiddlerStore, carrierText]);
 
   const onClose = useCallback(() => dispatch({ type: "NAVIGATE_BACK" }), [dispatch]);
 
@@ -135,29 +82,20 @@ export function MemeDetailPanel() {
           <button style={css.closeBtn} onClick={onClose} aria-label="Close">✕</button>
         </div>
         <div style={css.body}>
-          {renderMode === "tw5" ? (
-            tw5 === null || tiddlerStore === null
-              ? <div style={css.status}>⟳ opening…</div>
-              : tw5Html === null
-                ? <div style={css.status}>No carrier text available.</div>
-                : <div dangerouslySetInnerHTML={{ __html: tw5Html }} />
+          {!tw5 ? (
+            <div style={css.status}>⟳ TW5 booting…</div>
+          ) : !carrierText ? (
+            <div style={css.status}>No carrier text in store — reseed room to populate.</div>
+          ) : html === null ? (
+            <div style={css.status}>⟳ rendering…</div>
           ) : (
-            <>
-              {!carrierText && (
-                <div style={css.status}>No carrier text in store — reseed room to populate.</div>
-              )}
-              {ast && renderCarrier(ast, widgetMap)}
-            </>
+            <div className="tw5-render" dangerouslySetInnerHTML={{ __html: html }} />
           )}
         </div>
       </div>
     </div>
   );
 }
-
-// ---------------------------------------------------------------------------
-// Panel chrome styles — layout only; wiki content styles live in native-render.tsx
-// ---------------------------------------------------------------------------
 
 const css = {
   backdrop: {
