@@ -6,7 +6,7 @@
 
 ```toml
 uri-path     = "ha.ka.ba/api/v0.1/lararium/palette/gruvbox-light"
-file-path    = "lares/ha.ka.ba/api/v0.1/lararium/palette/gruvbox-light.md"
+file-path    = "lares/ha-ka-ba/api/v0.1/lararium/palette/gruvbox-light.md"
 content-type = "text/plain"
 tagspace     = "adjacent"
 confidence   = 1.0
@@ -18,6 +18,8 @@ role         = "Gruvbox Light color palette for TW5 theme engine"
 <<~/ahu >>
 
 <<~&#x0002; ahu #meme-body-open >>
+lararium/palette/gruvbox-light opens
+<<~/ahu >>
 background: #fbf1c7
 foreground: #3c3836
 primary: #b57614
@@ -106,6 +108,8 @@ wikilist-border: #d5c4a1
 wikilist-item: #ebdbb2
 wikilist-toolbar-background: #f2e5bc
 wikilist-toolbar-foreground: #3c3836
+<<~&#x0003; ahu #body-close >>
+lararium/palette/gruvbox-light closes
 <<~/ahu >>
 
 <<~&#x0004; -> ? >>

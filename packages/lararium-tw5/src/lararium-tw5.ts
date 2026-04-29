@@ -34,10 +34,6 @@ import type { ClosureEntry, EdgeRecord, FilterEngineFn, KumuDef, LarTiddlerStore
 import { parsePranalaEdges, extractReactionBindings, ReactionGraph, collectKumuDefs } from "@lararium/core";
 import { splitCarrierToTiddlers } from "./carrier-split.js";
 import { createLarariumWidgets, LARARIUM_WIDGETS_TIDDLER } from "./tw5-widgets.js";
-import { parseCarrierToTw5 } from "./memetic-parser.js";
-import type { TW5ParseNode } from "./memetic-parser.js";
-import { tw5ElementToVdom } from "./fake-dom.js";
-import type { VDomNode } from "./fake-dom.js";
 
 // Re-export so callers can get FilterEngineFn from @lararium/tw5 directly.
 export type { FilterEngineFn };
@@ -252,51 +248,9 @@ exports.startup = function() {
 `,
       });
 
-      // -----------------------------------------------------------------------
-      // Stylesheet redirect startup — TW5's core stylesheet.js injects <style>
-      // into document.head. We replace it so styles land in the panel shadow
-      // root ($tw.lararium.styleTarget) when set, falling back to document.head
-      // for server-side (no shadow root available).
-      // -----------------------------------------------------------------------
-      instance.preloadTiddlers.push({
-        title:          "$:/core/modules/startup/stylesheet.js",
-        type:           "application/javascript",
-        "module-type":  "startup",
-        text: `
-exports.name = "stylesheet";
-exports.platforms = ["browser"];
-exports.after = ["startup"];
-exports.synchronous = true;
-exports.startup = function() {
-  var styleTarget = ($tw.lararium && $tw.lararium.styleTarget) || document.head;
-  // Patch utils.domMaker calls that inject style elements so they target our container.
-  var origAddStylesheet = $tw.utils.updateStylesheets;
-  $tw.utils.updateStylesheets = function() {
-    // Collect all stylesheet tiddlers and build one <style> block.
-    var stylesheetTitles = $tw.wiki.filterTiddlers("[all[shadows+tiddlers]tag[$:/tags/Stylesheet]!has[draft.of]]");
-    var css = stylesheetTitles.map(function(title) {
-      return $tw.wiki.renderTiddler("text/plain", title);
-    }).join("\\n");
-    // Reuse or create our <style> element inside styleTarget.
-    var el = styleTarget.querySelector && styleTarget.querySelector("#lararium-tw5-styles");
-    if (!el) {
-      el = document.createElement("style");
-      el.id = "lararium-tw5-styles";
-      styleTarget.appendChild(el);
-    }
-    el.textContent = css;
-  };
-  $tw.utils.updateStylesheets();
-  // Refresh on wiki change (palette swap, theme change, etc.)
-  $tw.wiki.addEventListener("change", function(changes) {
-    var stylesheetTitles = $tw.wiki.filterTiddlers("[all[shadows+tiddlers]tag[$:/tags/Stylesheet]!has[draft.of]]");
-    var needsUpdate = stylesheetTitles.some(function(t) { return !!changes[t]; }) ||
-      changes["$:/palette"] || changes["$:/language"];
-    if (needsUpdate) $tw.utils.updateStylesheets();
-  });
-};
-`,
-      });
+      // stylesheet.js startup left at default — it runs but targets document.head.
+      // mountPanel() creates its own style widget scoped to the shadow root,
+      // so panel styles never reach document.head. Canvas is unaffected.
 
       instance.boot.boot(() => {
         restoreStdout?.();
@@ -313,50 +267,67 @@ exports.startup = function() {
   /**
    * Mount the full TW5 story river into a React-provided container element.
    *
-   * Creates a shadow root on the container so TW5's injected <style> tags are
-   * scoped to the panel and cannot leak into the canvas or React tree.
-   * Sets $tw.lararium.styleTarget to the shadow root before rendering so the
-   * preloaded stylesheet startup injects styles there.
+   * Mirrors TW5's render.js startup — uses makeTranscludeWidget for both
+   * the page (RootTemplate) and the stylesheet (PageStylesheet), so TW5's
+   * full widget refresh cascade covers both. Styles are scoped to a shadow
+   * root on the container so they cannot leak into the canvas or React tree.
    *
-   * rootWidget renders $:/core/ui/PageTemplate — the full TW5 story river,
-   * sidebar, toolbar — into the shadow root's inner div.
-   *
-   * After mount, wiki.addEventListener("change") → rootWidget.refresh() drives
-   * all updates. Call unmountPanel() to detach and release.
-   *
-   * Requires boot() to have resolved. Safe to call once per panel lifecycle.
+   * Safe to call once per container. Returns a cleanup function.
+   * Requires boot() to have resolved.
    */
   mountPanel(container: HTMLElement): () => void {
     if (!this._tw) throw new Error("LarariumTW5: call boot() before mountPanel()");
-    const tw = this._tw;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const tw = this._tw as any;
 
-    // Shadow root scopes TW5's CSS to the panel — no canvas leakage.
-    const shadow = container.attachShadow({ mode: "open" });
-    const inner  = document.createElement("div");
-    inner.className = "tc-page-container";
-    shadow.appendChild(inner);
+    // Shadow root — reuse if already attached (guard against double-mount).
+    const shadow = container.shadowRoot ?? container.attachShadow({ mode: "open" });
 
-    // Tell the stylesheet startup where to inject <style> blocks.
-    tw.lararium ??= {};
-    tw.lararium.styleTarget = shadow;
+    // ── Styles ────────────────────────────────────────────────────────────────
+    // Mirrors TW5's render.js: makeTranscludeWidget("$:/core/ui/PageStylesheet")
+    // into fakeDocument, then copy textContent into a real <style> in shadow root.
+    const styleWidget = tw.wiki.makeTranscludeWidget("$:/core/ui/PageStylesheet", {
+      document:     tw.fakeDocument,
+      parentWidget: tw.rootWidget,
+    });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const styleContainer: any = tw.fakeDocument.createElement("style");
+    styleWidget.render(styleContainer, null);
 
-    // Fire the stylesheet startup now that styleTarget is set.
-    // (It ran during boot() with no styleTarget → document.head fallback;
-    // re-running it here moves styles into the shadow root.)
-    tw.utils.updateStylesheets?.();
+    const styleEl = shadow.querySelector("#lar-tw5-styles") as HTMLStyleElement | null
+      ?? (() => { const el = document.createElement("style"); el.id = "lar-tw5-styles"; shadow.insertBefore(el, shadow.firstChild); return el; })();
+    styleEl.textContent = styleContainer.textContent ?? "";
 
-    // rootWidget renders the full TW5 page template into the shadow DOM.
-    tw.rootWidget.render(inner, null);
+    // ── Page ──────────────────────────────────────────────────────────────────
+    // Mirrors TW5's render.js: makeTranscludeWidget("$:/core/ui/RootTemplate")
+    // into real document, parented to rootWidget, rendered into inner div.
+    const inner = shadow.querySelector(".tc-page-container-wrapper") as HTMLElement | null
+      ?? (() => { const el = document.createElement("div"); el.className = "tc-page-container-wrapper"; shadow.appendChild(el); return el; })();
 
-    // Wire the refresh cascade — wiki changes update both panel and canvas widgets.
+    const pageWidget = tw.wiki.makeTranscludeWidget("$:/core/ui/RootTemplate", {
+      document:         document,
+      parentWidget:     tw.rootWidget,
+      recursionMarker:  "no",
+    });
+    pageWidget.render(inner, null);
+
+    // Wire rootWidget → pageWidget so TW5's internal bookkeeping is consistent.
+    tw.rootWidget.domNodes = [inner];
+    tw.rootWidget.children = [pageWidget];
+
+    // ── Refresh cascade ───────────────────────────────────────────────────────
     const handler = (changes: Record<string, unknown>) => {
-      tw.rootWidget.refresh(changes);
+      if (styleWidget.refresh(changes, styleContainer, null)) {
+        styleEl.textContent = styleContainer.textContent ?? "";
+      }
+      pageWidget.refresh(changes);
     };
     tw.wiki.addEventListener("change", handler);
 
     return () => {
       tw.wiki.removeEventListener("change", handler);
-      tw.rootWidget.domNodes?.forEach((n: Node) => n.parentNode?.removeChild(n));
+      // Remove page widget DOM nodes; leave shadow root intact for potential remount.
+      pageWidget.domNodes?.forEach((n: Node) => n.parentNode?.removeChild(n));
     };
   }
 
@@ -432,17 +403,8 @@ exports.startup = function() {
    *
    * Requires boot() to have resolved.
    */
-  renderCarrierVDom(uri: string, text: string): VDomNode[] {
-    if (!this._tw) throw new Error("LarariumTW5: call boot() before renderCarrierVDom()");
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const tw = this._tw as any;
-    const parseTree = { tree: parseCarrierToTw5(uri, text) };
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const container: any = tw.fakeDocument.createElement("div");
-    container.setAttribute("data-lar-uri", uri);
-    tw.wiki.makeWidget(parseTree, { document: tw.fakeDocument }).render(container, null);
-    return tw5ElementToVdom(container);
-  }
+  // renderCarrierVDom removed — TW5 panel (mountPanel) and canvas fakeDOM
+  // widgets own rendering. Ephemeral VDom pipeline superseded.
 
   /** True after boot() resolves. */
   get ready(): boolean { return this._tw !== null; }
@@ -727,170 +689,13 @@ exports.startup = function() {
     return g;
   }
 
-  /**
-   * Render wikitext to HTML using TW5's native renderer.
-   * Use for MemeDetailPanel TW5 render mode.
-   * Returns an empty string before boot() resolves.
-   */
-  /**
-   * Read zoom-level layout props from a kumu def tiddler (`lar:///kumu/meme-<level>`).
-   *
-   * The kumu def body may contain a TOML block with layout keys:
-   *   w, h, color, include-ahu, show-carrier, opacity
-   *
-   * Returns null when TW5 is not booted or the tiddler has no TOML block.
-   * Callers (applyZoomTemplate) fall back to their own hardcoded defaults.
-   */
+  /** Read zoom-level layout props from a kumu def tiddler (`lar:///kumu/meme-<level>`). */
   getZoomLayout(level: string): ZoomLayout | null {
     if (!this._tw) return null;
     const text: string | undefined = this._tw.wiki.getTiddlerText(`lar:///kumu/meme-${level}`);
     if (!text) return null;
     return parseZoomLayoutTOML(text);
   }
-
-  renderText(wikitext: string, type = "text/vnd.tiddlywiki"): string {
-    if (!this._tw) return "";
-    return this._tw.wiki.renderText("text/html", type, wikitext) as string;
-  }
-
-  /**
-   * Render a loaded tiddler by title to HTML.
-   * Returns an empty string if the title does not exist or boot() has not run.
-   */
-  renderTiddler(title: string): string {
-    if (!this._tw) return "";
-    return (this._tw.wiki.renderTiddler("text/html", title) as string | undefined) ?? "";
-  }
-
-  /**
-   * Inject cascade rules as shadow tiddlers in the TW5 wiki.
-   *
-   * Each rule becomes a `$:/lararium/cascade/<n>` shadow tiddler with:
-   *   filter   — wikitext-filter expression (evaluated by wiki.filterTiddlers)
-   *   template — tiddler title of the view template to apply on match
-   *   priority — rule index (lower = higher priority, first match wins)
-   *
-   * Call at boot after boot(), before renderMeme() is invoked.
-   * Rules are evaluated by resolveCascadeTemplate() using native TW5 filter evaluation.
-   */
-  injectCascadeRules(rules: readonly { filter: string; template: string }[]): void {
-    if (!this._tw) throw new Error("LarariumTW5: call boot() before injectCascadeRules()");
-    for (let i = 0; i < rules.length; i++) {
-      this._tw.wiki.addTiddler(new this._tw.Tiddler({
-        title:    `$:/lararium/cascade/${i}`,
-        tags:     ["$:/tags/LarariumCascade"],
-        filter:   rules[i]!.filter,
-        template: rules[i]!.template,
-        priority: String(i),
-      }));
-    }
-  }
-
-  /**
-   * Resolve which view template applies to a given meme URI.
-   *
-   * Evaluates cascade rules (shadow tiddlers tagged $:/tags/LarariumCascade,
-   * sorted by priority) against the current wiki state using native
-   * wiki.filterTiddlers(). First matching rule wins — TW5 cascade semantics.
-   *
-   * Returns the template tiddler title, or null if no rule matches.
-   * Callers fall back to AST-derived view classification when null.
-   */
-  resolveCascadeTemplate(uri: string): string | null {
-    if (!this._tw) return null;
-    const wiki = this._tw.wiki;
-    const rules: string[] = wiki.filterTiddlers(
-      "[all[shadows+tiddlers]tag[$:/tags/LarariumCascade]sort[priority]]"
-    );
-    for (const ruleTitle of rules) {
-      const tiddler = wiki.getTiddler(ruleTitle);
-      if (!tiddler) continue;
-      const filterExpr: string = tiddler.fields["filter"] as string ?? "";
-      if (!filterExpr) continue;
-      // Scope the filter to just this URI: add a title-exact prefix so the
-      // expression is evaluated with the meme as the current tiddler context.
-      const scoped = `[[${uri}]${toCanonicalWikitext(filterExpr)}]`;
-      const matched: string[] = wiki.filterTiddlers(scoped);
-      if (matched.includes(uri)) {
-        return (tiddler.fields["template"] as string | undefined) ?? null;
-      }
-    }
-    return null;
-  }
-
-  /**
-   * renderMeme — ViewTemplate cascade for a single meme URI.
-   *
-   * Cascade pipeline (TW5-native):
-   *   resolveCascadeTemplate(uri) → template tiddler title (from $:/tags/LarariumCascade rules)
-   *   If a template tiddler is found, renderTiddler(template) → VDomNode[]
-   *   Otherwise: AST-derived view classification → renderCarrierVDom(uri, text) → VDomNode[]
-   *
-   * View kinds (for callers to branch on):
-   *   "kumu-view"     — carrier contains kumu device instances
-   *   "reaction-view" — carrier contains papalohe wires only
-   *   "meme-view"     — standard meme prose / worksite content (default)
-   *   "cascade-view"  — view selected by an injected cascade rule
-   *
-   * Cascade results flow: wiki filterTiddlers → template render → VDomNode[] → canvas.
-   * No tldraw shape-meta stamping involved.
-   */
-  renderMeme(uri: string, text: string): {
-    view: "kumu-view" | "reaction-view" | "meme-view" | "cascade-view";
-    vdom: VDomNode[];
-    kumuInstances: { name: string; props: string; el: unknown }[];
-  } {
-    if (!this._tw) throw new Error("LarariumTW5: call boot() before renderMeme()");
-    const wiki = this._tw.wiki as { _larKumuInstances?: { name: string; props: string; el: unknown }[] };
-
-    // Clear instance accumulator before render so each call gets a clean slate.
-    wiki._larKumuInstances = [];
-
-    // Check cascade rules first — TW5 shadow tiddler filter evaluation.
-    const cascadeTemplate = this.resolveCascadeTemplate(uri);
-    if (cascadeTemplate) {
-      const vdom = this._renderTiddlerVDom(cascadeTemplate);
-      const kumuInstances = wiki._larKumuInstances ?? [];
-      wiki._larKumuInstances = [];
-      return { view: "cascade-view", vdom, kumuInstances };
-    }
-
-    // AST-derived view classification (no cascade rule matched).
-    const tw5Tree = parseCarrierToTw5(uri, text);
-    const hasKumu     = tw5Tree.some((n) => containsType(n, "lararium-kumu"));
-    const hasPapalohe = tw5Tree.some((n) => containsType(n, "lararium-papalohe"));
-    const view = hasKumu ? "kumu-view" : hasPapalohe ? "reaction-view" : "meme-view";
-
-    // TW5 widget pipeline: parseTree → widgetTree (KumuWidget.render records instances)
-    // → fakeDOM → VDomNode[]
-    const vdom = this.renderCarrierVDom(uri, text);
-
-    // Harvest kumu instances recorded by KumuWidget during render.
-    const kumuInstances = wiki._larKumuInstances ?? [];
-    wiki._larKumuInstances = [];
-
-    return { view, vdom, kumuInstances };
-  }
-
-  /** Render a tiddler by title through the fakeDOM pipeline → VDomNode[]. */
-  private _renderTiddlerVDom(title: string): VDomNode[] {
-    if (!this._tw) return [];
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const tw = this._tw as any;
-    const tiddler = tw.wiki.getTiddler(title);
-    if (!tiddler) return [];
-    const parseTree = tw.wiki.parseTiddler(title);
-    if (!parseTree) return [];
-    const container = tw.fakeDocument.createElement("div");
-    container.setAttribute("data-lar-cascade-template", title);
-    tw.wiki.makeWidget(parseTree, { document: tw.fakeDocument }).render(container, null);
-    return tw5ElementToVdom(container);
-  }
-}
-
-function containsType(node: TW5ParseNode, type: string): boolean {
-  if (node.type === type) return true;
-  return (node.children ?? []).some((c: TW5ParseNode) => containsType(c, type));
 }
 
 // ---------------------------------------------------------------------------
