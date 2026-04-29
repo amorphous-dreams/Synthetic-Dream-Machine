@@ -138,7 +138,7 @@ async function buildBootProjection(
   snapshotMemes: SnapshotData,
 ): Promise<{ snapshot: unknown; roomId: string; receiptSha: string; memeCount: number; kumuDefs: import("@lararium/core").KumuDef[] }> {
   const { renderAllViews } = await import("@lararium/tldraw");
-  const { filterMemesWikitext } = await import("@lararium/core/tw5");
+  const { filterMemesWikitext } = await import("@lararium/tw5");
   const artifact: BootArtifact = runtime.compileBoot();
   const receipt = await runtime.compileBootReceipt(artifact);
   const receiptSha = receipt.sha256.replace(/^sha256:/, "");

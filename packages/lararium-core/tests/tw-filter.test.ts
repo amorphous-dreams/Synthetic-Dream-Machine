@@ -7,7 +7,7 @@
  * These tests exercise the TW5 engine with wikitext-filter pre-processing applied.
  */
 import { describe, test, expect } from "@jest/globals";
-import { filterMemesWikitext } from "../src/lararium-tw5.js";
+import { filterMemesWikitext } from "@lararium/tw5";
 import type { ClosureEntry, EdgeRecord } from "../src/compiler.js";
 
 function makeEntry(overrides: Partial<ClosureEntry>): ClosureEntry {

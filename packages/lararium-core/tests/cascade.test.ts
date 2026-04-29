@@ -4,7 +4,7 @@
  */
 import { describe, test, expect } from "@jest/globals";
 import { compileCascade, matchesEntry } from "../src/cascade.js";
-import { filterMemesWikitext } from "../src/lararium-tw5.js";
+import { filterMemesWikitext } from "@lararium/tw5";
 import type { ClosureEntry, EdgeRecord } from "../src/compiler.js";
 import type { CascadeEntry, MemeCascadeFrame } from "../src/cascade.js";
 

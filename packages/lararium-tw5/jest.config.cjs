@@ -8,7 +8,8 @@ module.exports = {
   },
   moduleNameMapper: {
     "^(\\.{1,2}/.*)\\.js$": "$1",
-    "^@lararium/tw5$": "<rootDir>/../lararium-tw5/src/index.ts",
+    "^@lararium/core$": "<rootDir>/../lararium-core/src/index.ts",
+    "^@lararium/core/(.*)$": "<rootDir>/../lararium-core/src/$1.ts",
   },
   transform: {
     "^.+\\.tsx?$": [

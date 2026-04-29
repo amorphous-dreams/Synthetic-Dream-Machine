@@ -1,24 +1,24 @@
 /**
  * lararium-tw5 — isomorphic TW5 interface for Lararium.
- * Subpath: @lararium/core/tw5
+ * Home: @lararium/tw5
  *
  * Architecture law:
  *   The live lar:/// CRDT documents ARE the source of truth — parse tree,
- *   widget tree, render tree all derive from them. TW5 is a helper, not the
- *   runtime. This module boots TW5 as a pure in-memory wiki seeded entirely
- *   from the live ClosureEntry[] — no disk reads, no pre-seeded static bundles,
- *   no stale pre-built artifacts.
+ *   widget tree, render tree all derive from them. TW5 acts as a guest
+ *   interpreter: it owns TW-compatible interpretation of authorized tiddler
+ *   state, but it does not own Lararium state, identity, or canon.
  *
  * Boot model:
- *   $tw.browser = true  →  prevents all filesystem access in both Node and browser
- *   preloadTiddlerArray  →  injects lar:/// documents before boot completes
- *   TW5 plugin tiddlers authored as lar:/// memes (type: application/javascript,
- *   module-type: filteroperator etc.) are loaded via the same mechanism.
- *
- * Isomorphic:
  *   import tw from "tiddlywiki"  →  Node: CJS default import via ESM interop
  *                                    Browser: Vite CJS→ESM transform at build time
- *   No createRequire. No pre-built browser bundle. No env-split files.
+ *   argv = []  →  TW5 boots its core modules from node_modules without
+ *                 reading any wiki directory.
+ *   $tw.browser detection  →  TW5 auto-detects its environment via
+ *                              typeof window !== "undefined". We do NOT force
+ *                              $tw.browser = true — forcing it in Node causes
+ *                              TW5 to execute browser code paths that reference
+ *                              window directly, breaking the Node runtime.
+ *   preloadTiddlerArray  →  seeds lar:/// documents before boot completes.
  *
  * wikitext-filter pre-processing (lar:///grammars/wikitext-filter):
  *   all[memes]         → all[tiddlers]
@@ -46,7 +46,10 @@
 // module.exports as the default export, giving us { TiddlyWiki: [Function] }.
 import tw from "tiddlywiki";
 
-import type { ClosureEntry, EdgeRecord } from "./compiler.js";
+import type { ClosureEntry, EdgeRecord, FilterEngineFn } from "@lararium/core";
+
+// Re-export so callers can get FilterEngineFn from @lararium/tw5 directly.
+export type { FilterEngineFn };
 
 // ---------------------------------------------------------------------------
 // wikitext-filter pre-processor
@@ -64,7 +67,7 @@ export function toCanonicalWikitext(expr: string): string {
 // ClosureEntry → tiddler field mapping
 // ---------------------------------------------------------------------------
 
-function entryToFields(
+export function entryToFields(
   entry: ClosureEntry,
   extra?: Record<string, string>,
 ): Record<string, string | string[]> {
@@ -90,7 +93,7 @@ function entryToFields(
 // Edge field pre-loading
 // ---------------------------------------------------------------------------
 
-function buildEdgeFieldMap(edges: readonly EdgeRecord[]): Map<string, Record<string, string>> {
+export function buildEdgeFieldMap(edges: readonly EdgeRecord[]): Map<string, Record<string, string>> {
   const byUri = new Map<string, Record<string, string[]>>();
   for (const e of edges) {
     let fields = byUri.get(e.fromUri);
@@ -125,12 +128,9 @@ function buildEdgeFieldMap(edges: readonly EdgeRecord[]): Map<string, Record<str
  *   const titles = ltw.filterTiddlers("[all[memes]toml:register[CS]]");
  *   const entries = ltw.filterClosure(expr, closure);  // titles → ClosureEntry[]
  *
- * TW5 plugin tiddlers:
- *   Any ClosureEntry whose fields include TW5 plugin metadata
- *   (type: "application/javascript", module-type: "filteroperator", etc.)
- *   will be loaded by TW5 as a plugin during boot when included in the
- *   initial preloadTiddlerArray. For post-boot plugin loading, use
- *   ltw.loadPlugin(fields) — this triggers wiki.addTiddler with the plugin data.
+ * renderText / renderTiddler:
+ *   After boot(), ltw.wiki.renderText("text/html", "text/vnd.tiddlywiki", wikitext)
+ *   produces clean HTML. Use for MemeDetailPanel TW5 render mode.
  */
 export class LarariumTW5 {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -140,22 +140,17 @@ export class LarariumTW5 {
 
   /**
    * Boot the TW5 wiki. Idempotent — multiple calls return the same promise.
-   * Sets $tw.browser = true to prevent all filesystem access.
+   *
+   * TW5 auto-detects its environment via typeof window !== "undefined".
+   * We do NOT set $tw.browser = true manually — forcing it in Node causes
+   * TW5 to execute browser code paths that reference window directly,
+   * crashing the Node runtime. argv=[] is sufficient for in-memory boot.
    */
   boot(): Promise<void> {
     if (this._bootPromise) return this._bootPromise;
     this._bootPromise = new Promise<void>((resolve) => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const instance = (tw as any).TiddlyWiki();
-
-      // TW5 auto-detects its environment: it sets $tw.browser = true itself
-      // when typeof window !== "undefined". We do NOT force it — forcing
-      // browser=true in Node causes TW5 to execute browser code paths that
-      // reference window directly, breaking the Node runtime.
-      //
-      // With argv=[], TW5 boots its core modules from node_modules without
-      // reading from any wiki directory. preloadTiddlerArray() seeds our
-      // lar:/// documents before boot completes — no disk reads needed.
       instance.boot.argv = [];
 
       // Suppress TW5's boot banner (Node only — process.stdout is undefined in browser).
@@ -181,8 +176,8 @@ export class LarariumTW5 {
 
   /**
    * The raw TW5 $tw instance. Available after boot().
-   * Exposes the full TW5 API: $tw.wiki.filterTiddlers, $tw.wiki.renderTiddler, etc.
-   * Use for advanced TW5 operations not yet surfaced in this interface.
+   * Exposes the full TW5 API: $tw.wiki.filterTiddlers, $tw.wiki.renderText,
+   * $tw.wiki.renderTiddler, $tw.wiki.addTiddler, etc.
    */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   get wiki(): any {
@@ -201,12 +196,10 @@ export class LarariumTW5 {
     const edgeFieldMap = edges && edges.length > 0 ? buildEdgeFieldMap(edges) : null;
     const newUris = new Set(closure.map((e) => e.uri));
 
-    // Remove tiddlers for URIs dropped from the closure.
     for (const uri of this._loadedUris) {
       if (!newUris.has(uri)) this._tw.wiki.deleteTiddler(uri);
     }
 
-    // Add or update current closure entries.
     for (const entry of closure) {
       const extra = edgeFieldMap?.get(entry.uri);
       this._tw.wiki.addTiddler(new this._tw.Tiddler(entryToFields(entry, extra)));
@@ -217,11 +210,20 @@ export class LarariumTW5 {
 
   /**
    * Add or update a single tiddler by field map.
-   * Use for TW5 plugin tiddlers authored as lar:/// memes.
+   * Use for TW5 plugin tiddlers and LarTiddlerStore-backed updates.
    */
   setTiddler(fields: Record<string, string | string[]>): void {
     if (!this._tw) throw new Error("LarariumTW5: call boot() before setTiddler()");
     this._tw.wiki.addTiddler(new this._tw.Tiddler(fields));
+  }
+
+  /**
+   * Remove a single tiddler by title.
+   * Used by LarariumCrdtSyncAdaptor for tombstone propagation.
+   */
+  removeTiddler(title: string): void {
+    if (!this._tw) throw new Error("LarariumTW5: call boot() before removeTiddler()");
+    this._tw.wiki.deleteTiddler(title);
   }
 
   /**
@@ -243,22 +245,26 @@ export class LarariumTW5 {
     const byUri = new Map(closure.map((e) => [e.uri, e]));
     return titles.map((t) => byUri.get(t)).filter((e): e is ClosureEntry => e !== undefined);
   }
+
+  /**
+   * Render wikitext to HTML using TW5's native renderer.
+   * Use for MemeDetailPanel TW5 render mode.
+   * Returns an empty string before boot() resolves.
+   */
+  renderText(wikitext: string, type = "text/vnd.tiddlywiki"): string {
+    if (!this._tw) return "";
+    return this._tw.wiki.renderText("text/html", type, wikitext) as string;
+  }
+
+  /**
+   * Render a loaded tiddler by title to HTML.
+   * Returns an empty string if the title does not exist or boot() has not run.
+   */
+  renderTiddler(title: string): string {
+    if (!this._tw) return "";
+    return (this._tw.wiki.renderTiddler("text/html", title) as string | undefined) ?? "";
+  }
 }
-
-// ---------------------------------------------------------------------------
-// FilterEngineFn — isomorphic injectable type
-// ---------------------------------------------------------------------------
-
-/**
- * Injectable async filter engine — used by @lararium/core/cascade.
- * The singleton LarariumTW5 instance satisfies this contract.
- * edges enables the edge: operator (pranala edge pre-loading).
- */
-export type FilterEngineFn = (
-  expr:    string,
-  closure: readonly ClosureEntry[],
-  edges?:  readonly EdgeRecord[],
-) => Promise<ClosureEntry[]>;
 
 // ---------------------------------------------------------------------------
 // Singleton — for functional API and serve.ts / MCP call sites
@@ -279,16 +285,12 @@ async function getSingleton(): Promise<LarariumTW5> {
 }
 
 // ---------------------------------------------------------------------------
-// Functional API — backward-compatible with @lararium/core/tw-filter
+// Functional API — stable surface for @lararium/node / MCP call sites
 // ---------------------------------------------------------------------------
 
 /**
  * Filter ClosureEntry objects using the wikitext-filter dialect.
  * Boots TW5 on first call (~10ms), then instant on subsequent calls.
- *
- * @param allEntries  Full closure from BootArtifact
- * @param expr        wikitext-filter expression
- * @param edges       Optional pranala edges — enables edge: operator
  */
 export async function filterMemesWikitext(
   allEntries: readonly ClosureEntry[],
@@ -309,10 +311,6 @@ export const filterMemesBrowser = filterMemesWikitext;
 /**
  * Pre-compute multiple named filter results in a single boot cycle.
  * Used by the snapshot builder.
- *
- * @param allEntries  Full closure
- * @param rooms       Map of roomId → wikitext-filter expression
- * @param edges       Optional pranala edges — enables edge: operator
  */
 export async function precomputeRooms(
   allEntries: readonly ClosureEntry[],

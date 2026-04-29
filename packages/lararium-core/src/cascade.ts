@@ -21,10 +21,10 @@
  */
 
 import type { ClosureEntry, EdgeRecord } from "./compiler.js";
-import type { FilterEngineFn } from "./lararium-tw5.js"; // canonical engine lives in @lararium/core/tw5
+import type { FilterEngineFn } from "./tiddler-store.js";
 
 // Re-export so callers get both types from one subpath.
-export type { FilterEngineFn } from "./lararium-tw5.js";
+export type { FilterEngineFn } from "./tiddler-store.js";
 export type { EdgeRecord } from "./compiler.js";
 
 // ---------------------------------------------------------------------------

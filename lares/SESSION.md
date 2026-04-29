@@ -17,7 +17,7 @@ manao        = 0.82
 implements   = [
   "lar:///ha.ka.ba/api/v0.1/pono/meme"
 ]
-role         = "session handoff crystal — 2026-04-28 — isomorphic lararium-tw5.ts complete; tw-filter.ts + tw-filter-browser.ts shims deleted; @lararium/core/tw5 subpath canonical; @lararium/node/dist rebuilt (./tw-filter subpath removed); 259/259 tests green; LarariumSyncAdaptor design: one-way CRDT→TW5 via editor.store.listen() + tw.setTiddler() for Phase 4; M9 remaining: browser smoke (P2), canon-promotion surface (P4), wiki-recipe carriers (P5)"
+role         = "session handoff crystal — 2026-04-28 — @lararium/tw5 extracted; LarTiddlerStore+ChangeOrigin+FilterEngineFn in core; LarariumCrdtSyncAdaptor+MemoryTiddlerStore in tw5; echo-loop guard + draft guard live; 280/280 tests green; package membrane: core zero tiddlywiki dep; @lararium/node+mcp stable; M9 remaining: browser smoke (P2), MemeDetailPanel TW5 render mode, canon-promotion (P4), wiki-recipe carriers (P5)"
 ```
 
 <<~/ahu >>

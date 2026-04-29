@@ -24,6 +24,7 @@
   },
   "dependencies": {
     "@lararium/core": "workspace:*",
+    "@lararium/tw5": "workspace:*",
     "@lararium/tldraw": "workspace:*",
     "@tldraw/sync-core": "^4.5.10",
     "@types/better-sqlite3": "^7.6.13",
