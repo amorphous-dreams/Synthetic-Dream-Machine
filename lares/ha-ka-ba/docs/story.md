@@ -60,6 +60,11 @@ docs/story closes
 <<~ loulou lar:///ha.ka.ba/docs/story/lindwyrm/the-hoard-disclosed >>
 <<~ loulou lar:///ha.ka.ba/docs/story/lindwyrm/the-lar-names-itself >>
 <<~ loulou lar:///ha.ka.ba/docs/story/lindwyrm/kindling-of-the-crossroads-node >>
+<<~ loulou lar:///ha.ka.ba/docs/story/lindwyrm/self-booting-lararium >>
+<<~ loulou lar:///ha.ka.ba/docs/story/lindwyrm/hoard-origin-architecture >>
+<<~ loulou lar:///ha.ka.ba/docs/story/lindwyrm/dreamdeck-feed-architecture >>
+<<~ loulou lar:///ha.ka.ba/docs/story/lindwyrm/vault-and-repo >>
+<<~ loulou lar:///ha.ka.ba/docs/story/lindwyrm/daemon-in-the-walls >>
 
 <<~ pranala #implements-meme ? -> lar:///ha.ka.ba/api/v0.1/pono/meme family:control role:implements >>
 <<~ pranala #implements-loci ? -> lar:///ha.ka.ba/api/v0.1/pono/loci family:control role:implements >>

@@ -197,7 +197,7 @@ export function emitTldrawRecords(
       parentId,
       isLocked: frame.frameKind === "ahu",
       opacity:  1,
-      meta:     { uri: frame.uri, frameKind: frame.frameKind, implements: [...frame.implements], ...(frame.carrierText !== undefined && { carrierText: frame.carrierText }), ...(frame.templateProps !== undefined && { templateProps: JSON.parse(JSON.stringify(frame.templateProps)) }) },
+      meta:     { uri: frame.uri, frameKind: frame.frameKind, implements: [...frame.implements], ...(frame.templateProps !== undefined && { templateProps: JSON.parse(JSON.stringify(frame.templateProps)) }) },
       props: {
         w:     geo.w,
         h:     geo.h,
@@ -386,7 +386,7 @@ export function emitTldrawRecords(
       parentId: scopedParentId,
       isLocked: true,
       opacity:  0,  // hidden until showCarrier zoom level; applyZoomTemplate controls opacity
-      meta:     { bodyNodeKind: node.kind },
+      meta:     { bodyNodeKind: node.kind, uri: node.uri },
       props: {
         geo:          "rectangle",
         w:            parentGeo.w - 8,

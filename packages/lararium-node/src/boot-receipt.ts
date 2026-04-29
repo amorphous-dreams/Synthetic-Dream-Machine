@@ -71,9 +71,10 @@ export function injectBootReceiptFrame(
  * Build a LarariumBootReceiptMeta from serve-time values.
  */
 export function buildBootReceiptMeta(opts: {
-  roomId:      string;
-  receiptHash: string;
-  issuedAt?:   string;
+  roomId:        string;
+  receiptHash:   string;
+  issuedAt?:     string;
+  operatorDid?:  string;   // did:key of the node operator — absent in anonymous local-operator mode
 }): LarariumBootReceiptMeta {
   return {
     id:            "lararium:boot-receipt",
@@ -82,5 +83,8 @@ export function buildBootReceiptMeta(opts: {
     receiptHash:   opts.receiptHash,
     issuedAt:      opts.issuedAt ?? new Date().toISOString(),
     authorityMode: "local-operator",
+    ...(opts.operatorDid && {
+      issuer: { kind: "did", id: opts.operatorDid },
+    }),
   };
 }

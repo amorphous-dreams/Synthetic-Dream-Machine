@@ -76,72 +76,6 @@ export function pageId(artifactType: string): LarProjectionId {
 }
 
 // ---------------------------------------------------------------------------
-// Template prop extraction — parse a kumu def body TOML into MemeTemplateProps
-// ---------------------------------------------------------------------------
-
-import type { KumuDef } from "@lararium/core";
-
-/**
- * Extract MemeTemplateProps from a kumu definition whose body contains a TOML block.
- * Falls back to the provided default when the TOML is absent or unparseable.
- */
-export function templatePropsFromKumuDef(
-  def: KumuDef,
-  fallback: MemeTemplateProps,
-): MemeTemplateProps {
-  for (const node of def.body) {
-    if (node.kind === "Sigil" && (node.sigilName === "toml" || node.sigilName === "iam")) {
-      const content = node.attrs["content"] ?? "";
-      return parseTemplateTOML(content, fallback);
-    }
-  }
-  return fallback;
-}
-
-function parseTemplateTOML(toml: string, fallback: MemeTemplateProps): MemeTemplateProps {
-  const get = (key: string): string | undefined => {
-    const m = new RegExp(`^${key}\\s*=\\s*(.+)$`, "m").exec(toml);
-    if (!m) return undefined;
-    return m[1]!.trim().replace(/^["']|["']$/g, "");
-  };
-  const num = (key: string, def: number): number => {
-    const v = get(key); return v ? (parseFloat(v) || def) : def;
-  };
-  const bool = (key: string, def: boolean): boolean => {
-    const v = get(key); return v !== undefined ? v === "true" : def;
-  };
-  return {
-    w:           num("w",             fallback.w),
-    h:           num("h",             fallback.h),
-    color:       get("color")      ?? fallback.color,
-    label:       get("label")      ?? fallback.label,
-    includeAhu:  bool("include-ahu",  fallback.includeAhu),
-    showNotes:   bool("show-notes",   fallback.showNotes),
-    showCarrier: bool("show-carrier", fallback.showCarrier),
-    opacity:     num("opacity",       fallback.opacity),
-    zoomLevel:   get("zoom-level") ?? fallback.zoomLevel,
-    cascade:     get("cascade")    ?? fallback.cascade,
-  };
-}
-
-/**
- * Build a TemplatePropsByLevel from a KumuRegistry.
- * Falls back to DEFAULT_TEMPLATE_PROPS for any missing template.
- */
-export function buildTemplatePropsByLevel(
-  registry: { get(name: string): KumuDef | undefined },
-): TemplatePropsByLevel {
-  const d = DEFAULT_TEMPLATE_PROPS;
-  return {
-    strategic:   registry.get("meme-strategic")   ? templatePropsFromKumuDef(registry.get("meme-strategic")!,   d.strategic)   : d.strategic,
-    operational: registry.get("meme-operational") ? templatePropsFromKumuDef(registry.get("meme-operational")!, d.operational) : d.operational,
-    tactical:    registry.get("meme-tactical")    ? templatePropsFromKumuDef(registry.get("meme-tactical")!,    d.tactical)    : d.tactical,
-    combat:      registry.get("meme-combat")      ? templatePropsFromKumuDef(registry.get("meme-combat")!,      d.combat)      : d.combat,
-    action:      registry.get("meme-action")      ? templatePropsFromKumuDef(registry.get("meme-action")!,      d.action)      : d.action,
-  };
-}
-
-// ---------------------------------------------------------------------------
 // Projection record types (tldraw-shaped, no tldraw import)
 // ---------------------------------------------------------------------------
 
@@ -185,54 +119,7 @@ export interface LarTLFrame {
   readonly stage: string;
   /** implements list from carrier */
   readonly implements: readonly string[];
-  /** Full carrier text — stored in tldraw meta so the CRDT carries it natively. */
-  readonly carrierText?: string;
-  /** Template props for all 5 zoom levels — seeded from lares/templates/ kumu defs. */
-  readonly templateProps?: TemplatePropsByLevel;
 }
-
-/**
- * Canvas rendering props for one zoom-level template.
- * Seeded into shape.meta.templateProps at projection time.
- * Zoom listener applies the right set on threshold crossings.
- *
- * cascade: the filter predicate string from the carrier TOML (e.g. "zoom < 0.15").
- *   Stored in meta for the future filter-expression path; current switching uses classifyZoom().
- * zoomLevel: self-declared level name from the carrier (e.g. "strategic").
- */
-export interface MemeTemplateProps {
-  w:             number;
-  h:             number;
-  /** "rating" = use meme's own rating color; otherwise a tldraw color name. */
-  color:         string;
-  /** "slug" | "full" | "none" */
-  label:         string;
-  includeAhu:    boolean;
-  showNotes:     boolean;
-  showCarrier:   boolean;
-  opacity:       number;
-  /** Zoom level this template governs — from carrier TOML zoom-level field. */
-  zoomLevel:     string;
-  /** Filter predicate from carrier TOML cascade field (future: wikitext-filter expression). */
-  cascade:       string;
-}
-
-export type TemplatePropsByLevel = {
-  strategic:   MemeTemplateProps;
-  operational: MemeTemplateProps;
-  tactical:    MemeTemplateProps;
-  combat:      MemeTemplateProps;
-  action:      MemeTemplateProps;
-};
-
-/** Fallback props used when a template carrier is missing from the registry. */
-export const DEFAULT_TEMPLATE_PROPS: TemplatePropsByLevel = {
-  strategic:   { w: 60,  h: 28,  color: "grey",   label: "none", includeAhu: false, showNotes: false, showCarrier: false, opacity: 0.7, zoomLevel: "strategic",   cascade: "zoom < 0.15" },
-  operational: { w: 120, h: 52,  color: "rating", label: "slug", includeAhu: false, showNotes: false, showCarrier: false, opacity: 1.0, zoomLevel: "operational", cascade: "zoom < 0.35" },
-  tactical:    { w: 220, h: 100, color: "rating", label: "slug", includeAhu: false, showNotes: true,  showCarrier: false, opacity: 1.0, zoomLevel: "tactical",    cascade: "zoom < 0.80" },
-  combat:      { w: 320, h: 160, color: "rating", label: "full", includeAhu: true,  showNotes: true,  showCarrier: false, opacity: 1.0, zoomLevel: "combat",      cascade: "zoom < 1.50" },
-  action:      { w: 400, h: 220, color: "rating", label: "full", includeAhu: true,  showNotes: true,  showCarrier: true,  opacity: 1.0, zoomLevel: "action",      cascade: "true"        },
-};
 
 /**
  * A socket port shape — stable arrow binding target, child of meme frame.
@@ -270,6 +157,10 @@ export interface LarTLArrow {
   readonly label: string;
   /** True for structural control:owns skeleton arrows; false/absent for pranala semantic arrows. */
   readonly isOwnership?: boolean;
+  /** papalohe reaction wire: source event name (DeviceA.EventX) */
+  readonly trigger?: string | null;
+  /** papalohe reaction wire: target function name (DeviceB.FunctionY) */
+  readonly fn?: string | null;
 }
 
 /** A projected note shape — IAM block metadata summary inside a meme frame. */
@@ -295,9 +186,9 @@ export interface LarTLNote {
  * The tldraw adapter shows structure; the React detail panel shows rendered content.
  */
 export type LarTLBodyNode =
-  | { readonly kind: "text";   readonly parentFrameId: LarProjectionId; readonly text: string }
-  | { readonly kind: "widget"; readonly parentFrameId: LarProjectionId; readonly kumuName: string; readonly props: Record<string, string> }
-  | { readonly kind: "hole";   readonly parentFrameId: LarProjectionId; readonly kumuName: string };
+  | { readonly kind: "text";   readonly uri: string; readonly parentFrameId: LarProjectionId; readonly text: string }
+  | { readonly kind: "widget"; readonly uri: string; readonly parentFrameId: LarProjectionId; readonly kumuName: string; readonly props: Record<string, string> }
+  | { readonly kind: "hole";   readonly uri: string; readonly parentFrameId: LarProjectionId; readonly kumuName: string };
 
 /** Union of all lararium projection record types. */
 export type LarProjectionRecord = LarTLPage | LarTLFrame | LarTLSocket | LarTLArrow | LarTLNote;

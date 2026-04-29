@@ -132,17 +132,11 @@ export type LarariumAuthorityEnvelope =
     };
 
 // ---------------------------------------------------------------------------
-// canPromoteToCanon — projection-cache authority policy guard.
+// canPromoteToCanon — authority policy guard for canon-promotion ceremony.
 //
-// Invariant (target invariant, unconditional):
-//   projection-cache may render
-//   projection-cache may inform
-//   projection-cache may propose
-//   projection-cache may NOT canon-promote
-//
-// Returns { ok: false, reason } whenever the origin is "projection-cache",
-// regardless of authorityMode. Canon promotion requires a separate Orichalcum
-// ceremony that has not landed yet; this function is the enforcement point.
+// Only operator-import with local-operator mode may promote to canon.
+// All live-edit origins (tw-local, crdt-remote, canvas-draft, mcp-draft)
+// require the explicit PUT /admin/promote ceremony to reach lares/.
 // ---------------------------------------------------------------------------
 
 export interface CanPromoteInput {
@@ -157,9 +151,6 @@ export interface CanPromoteResult {
 }
 
 export function canPromoteToCanon(input: CanPromoteInput): CanPromoteResult {
-  if (input.origin.kind === "projection-cache") {
-    return { ok: false, reason: "projection-cache-origin-cannot-promote-canon" };
-  }
   if (input.origin.kind === "canvas-draft") {
     // Canvas edits accumulate in SQLite room state (branch commit).
     // They require the explicit PUT /admin/promote ceremony to reach canon.

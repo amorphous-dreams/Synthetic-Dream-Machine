@@ -81,6 +81,18 @@ function nodeToTw5(node: MemeAstNode): TW5ParseNode {
         } };
 
     case "EdgeSugar":
+      // papalohe gets its own widget so trigger/fn labels render visually.
+      // All other edge-sugar sigils (loulou, aka, pono, kahea) stay as lararium-edge.
+      if (node.sigil === "papalohe") {
+        return { type: "lararium-papalohe", _ast: node, children: [],
+          attributes: {
+            from:    attr(node.fromRaw ?? ""),
+            to:      attr(node.toRaw),
+            ...(node.trigger ? { trigger: attr(node.trigger) } : {}),
+            ...(node.fn      ? { fn:      attr(node.fn) }      : {}),
+            ...(node.slot    ? { slot:    attr(node.slot) }    : {}),
+          } };
+      }
       return { type: "lararium-edge", _ast: node, children: [],
         attributes: {
           sigil:  attr(node.sigil),
@@ -100,6 +112,20 @@ function nodeToTw5(node: MemeAstNode): TW5ParseNode {
       if (node.sigilName === "toml" || node.sigilName === "iam") {
         return { type: "lararium-toml", _ast: node, children: [],
           attributes: { content: attr(node.attrs["content"] ?? "") } };
+      }
+      if (node.sigilName === "kukali") {
+        return { type: "lararium-kukali", _ast: node, children: [],
+          attributes: { ...(node.attrs["trigger"] ? { trigger: attr(node.attrs["trigger"]) } : {}) } };
+      }
+      // kahea-call → kumu device instance (name + resolved props, body rendered as children)
+      if (node.sigilName === "kahea") {
+        return { type: "lararium-kumu", _ast: node,
+          attributes: {
+            name:     attr(node.attrs["name"] ?? ""),
+            props:    attr(node.attrs["args"] ?? ""),
+            resolved: attr("unknown"), // registry not available at parse time; kumu-executor resolves
+          },
+          children: node.body.map(nodeToTw5) };
       }
       return { type: "lararium-sigil", _ast: node,
         tag: node.sigilName,

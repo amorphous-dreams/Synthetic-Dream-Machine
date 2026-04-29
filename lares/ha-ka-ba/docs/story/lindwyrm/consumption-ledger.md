@@ -76,6 +76,11 @@ Narrate to self while consuming:
 | `lares/ha-ka-ba/docs/infrastructure-as-mythology/LINDWYRM_ACT_VII_DRAFT.md` | `lares/ha-ka-ba/docs/story/lindwyrm/the-hoard-disclosed.md` | cleaned into memetic-wikitext narrative locus; source file deleted | consumed |
 | `lares/ha-ka-ba/docs/infrastructure-as-mythology/LINDWYRM_ACT_VI_DRAFT.md` | `lares/ha-ka-ba/docs/story/lindwyrm/the-lar-names-itself.md` | cleaned into memetic-wikitext narrative locus; signal-bug appendix retained; source file deleted | consumed |
 | `lares/ha-ka-ba/docs/infrastructure-as-mythology/The_Kindling_of_the_Crossroads_Node.md` | `lares/ha-ka-ba/docs/story/lindwyrm/kindling-of-the-crossroads-node.md` | converted from Jekyll page to memetic-wikitext locus; source file deleted | consumed |
+| `lares/ha-ka-ba/docs/infrastructure-as-mythology/LINDWYRM_SELF_BOOTING_LARES_ARCHITECTURE*.md` | `lares/ha-ka-ba/docs/story/lindwyrm/self-booting-lararium.md` | paired DreamDeck/dev-story archive braided into one memetic-wikitext locus; source files deleted | consumed |
+| `lares/ha-ka-ba/docs/infrastructure-as-mythology/LINDWYRM_ORIGIN_OUTLINE.md` | `lares/ha-ka-ba/docs/story/lindwyrm/hoard-origin-architecture.md` | seven-act outline converted into living story architecture locus; source file deleted | consumed |
+| duplicate `LINDWYRM_STORY_SHAPE.md` files | `lares/ha-ka-ba/docs/story/lindwyrm/dreamdeck-feed-architecture.md` | duplicate shape docs unified into canonical feed-format/cast locus; source files deleted | consumed |
+| `lar:///ha.ka.ba/docs/story/lindwyrm/hoard-origin-architecture#act-i-vault-repo` | `lares/ha-ka-ba/docs/story/lindwyrm/vault-and-repo.md` | drafted Act I locus from act map; source remains as architecture frame | drafted |
+| `lar:///ha.ka.ba/docs/story/lindwyrm/hoard-origin-architecture#act-ii-daemon` | `lares/ha-ka-ba/docs/story/lindwyrm/daemon-in-the-walls.md` | drafted Act II locus from act map; source remains as architecture frame | drafted |
 
 <<~/ahu >>
 
@@ -85,8 +90,8 @@ Narrate to self while consuming:
 
 Likely next slices:
 
-1. `LINDWYRM_SELF_BOOTING_LARES_ARCHITECTURE*.md` pair → `self-booting-lararium.md` plus source companion notes
-2. `LINDWYRM_ORIGIN_OUTLINE.md` → act index after enough acts land
+1. Draft Acts III-V as loci from `hoard-origin-architecture.md`
+2. Consider moving old session-crystal references to consumed locus names when archive policy allows
 
 <<~/ahu >>
 
@@ -98,12 +103,22 @@ Likely next slices:
 <<~ loulou lar:///ha.ka.ba/docs/story/lindwyrm/the-hoard-disclosed >>
 <<~ loulou lar:///ha.ka.ba/docs/story/lindwyrm/the-lar-names-itself >>
 <<~ loulou lar:///ha.ka.ba/docs/story/lindwyrm/kindling-of-the-crossroads-node >>
+<<~ loulou lar:///ha.ka.ba/docs/story/lindwyrm/self-booting-lararium >>
+<<~ loulou lar:///ha.ka.ba/docs/story/lindwyrm/hoard-origin-architecture >>
+<<~ loulou lar:///ha.ka.ba/docs/story/lindwyrm/dreamdeck-feed-architecture >>
+<<~ loulou lar:///ha.ka.ba/docs/story/lindwyrm/vault-and-repo >>
+<<~ loulou lar:///ha.ka.ba/docs/story/lindwyrm/daemon-in-the-walls >>
 
 <<~ pranala #implements-meme ? -> lar:///ha.ka.ba/api/v0.1/pono/meme family:control role:implements >>
 <<~ pranala #implements-loci ? -> lar:///ha.ka.ba/api/v0.1/pono/loci family:control role:implements >>
 <<~ pranala #first-consumption ? -> lar:///ha.ka.ba/docs/story/lindwyrm/the-hoard-disclosed family:reference role:records >>
 <<~ pranala #second-consumption ? -> lar:///ha.ka.ba/docs/story/lindwyrm/the-lar-names-itself family:reference role:records >>
 <<~ pranala #third-consumption ? -> lar:///ha.ka.ba/docs/story/lindwyrm/kindling-of-the-crossroads-node family:reference role:records >>
+<<~ pranala #fourth-consumption ? -> lar:///ha.ka.ba/docs/story/lindwyrm/self-booting-lararium family:reference role:records >>
+<<~ pranala #fifth-consumption ? -> lar:///ha.ka.ba/docs/story/lindwyrm/hoard-origin-architecture family:reference role:records >>
+<<~ pranala #sixth-consumption ? -> lar:///ha.ka.ba/docs/story/lindwyrm/dreamdeck-feed-architecture family:reference role:records >>
+<<~ pranala #act-i-draft ? -> lar:///ha.ka.ba/docs/story/lindwyrm/vault-and-repo family:reference role:records >>
+<<~ pranala #act-ii-draft ? -> lar:///ha.ka.ba/docs/story/lindwyrm/daemon-in-the-walls family:reference role:records >>
 
 <<~/ahu >>
 

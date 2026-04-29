@@ -50,15 +50,6 @@ describe("PUT /admin/promote — guard composition", () => {
     expect(result.laresRelPath).toBeTruthy();
   });
 
-  test("projection-cache origin is blocked at the guard", () => {
-    const result = simulatePromote({
-      originKind: "projection-cache",
-      uri: "lar:///AGENTS",
-    });
-    expect(result.ok).toBe(false);
-    expect(result.reason).toBe("projection-cache-origin-cannot-promote-canon");
-  });
-
   test("tw-local origin is blocked at the guard", () => {
     const result = simulatePromote({
       originKind: "tw-local",

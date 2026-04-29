@@ -922,3 +922,55 @@ Lararium federation uses UCAN-compatible Orichalcum capabilities to open durable
 
 This keeps the DreamNet interoperable with modern capability research while preserving Lararium’s own mythic/semantic authority model.
 
+---
+
+## Implementation Decision — 2026-04-29 (Local-First Pivot)
+
+### CRDT: Automerge-repo chosen over Yjs
+
+Yjs was evaluated (including a prior y-tiddlywiki alpha). Root cause of boot failures: `session.synced` event races IDB materialization — `isReady()` gates on `session.synced` in the browser path, which fires after IDB load in some network conditions. The race is structural.
+
+Automerge-repo v2.5.5 resolves this: `await handle.whenReady()` is a sequential, race-free gate. Local IDB snapshot materializes first; server is a sync peer, not an authority. Boot is deterministic.
+
+**Automerge storage:**
+- Browser: `IndexedDBStorageAdapter` keyed by hostId
+- Node: `NodeFSStorageAdapter` in `.lararium-data/meme-store/`
+- Doc URL persisted in `localStorage` (browser) and `doc-url.txt` (node) for offline-first rebind
+
+### UCAN: implemented now (not deferred)
+
+The "consume principles, defer wire compatibility" stance from the earlier draft was correct as research posture. It is now superceded by implementation.
+
+**What is shipped:**
+- Ed25519 keypair generation via `@noble/ed25519` v3 — `generateOperatorIdentity()`
+- `did:key:z...` encoding — multicodec `0xed01` + base58btc multibase, inline (no multiformats dep)
+- UCAN v0.10 JWT issuance + verification — `issueUcan()` / `verifyUcan()` in `@lararium/core/authority`
+- `UcanPeerRegistry` — maps Automerge peerId → verified issuer DID + expiry
+- `/auth/ucan` POST endpoint — browser presents UCAN, server validates + registers peer
+- `sharePolicy` hook — `isAuthorized(peerId) || true` (local-operator permissive mode)
+- `<meta name="lararium-operator-did">` — server DID injected into every HTML response
+- Boot receipt `issuer.id` = real operator DID
+
+**What is NOT shipped (future):**
+- Keyhive WASM — plugs into `sharePolicy` hook when Brooklyn’s library is available
+- UCAN proof chains / delegation — `prf` array is empty for root operator UCANs
+- `@ucans/ucans` dependency — the spec is simple enough to own directly; alpha-library risk avoided
+- `LarariumAuthorityEnvelope["keyhive"]` arm — typed socket, not instantiated
+
+### Orichalcum
+
+The Orichalcum capability envelope is now partially implemented: the UCAN `att[].with` and `att[].can` fields are the `resource` and `ability` slots from the Orichalcum profile. Full caveats (`stage-band`, `confidence`, `kapu-scope`, etc.) are future work, added when federation pressure arrives.
+
+### Keyhive readiness checklist
+
+| Item | State |
+|---|---|
+| `did:key` Ed25519 principal on both ends | ✓ shipped |
+| UCAN issuance from browser identity | ✓ shipped |
+| UCAN verification on server | ✓ shipped |
+| `sharePolicy` hook for membership check | ✓ seam ready |
+| Automerge-repo two-store architecture | ✓ shipped |
+| Keyhive WASM binding | ○ blocked on Brooklyn’s team |
+| Proof chain / delegation | ○ deferred |
+| Revocation epoch | ○ deferred |
+

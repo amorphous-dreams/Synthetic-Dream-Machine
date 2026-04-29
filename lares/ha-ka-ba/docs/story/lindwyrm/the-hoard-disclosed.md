@@ -46,8 +46,8 @@ Consumed from:
 
 Related source scaffolds:
 
-- `lares/ha-ka-ba/docs/infrastructure-as-mythology/LINDWYRM_STORY_SHAPE.md`
-- `lares/ha-ka-ba/docs/infrastructure-as-mythology/LINDWYRM_ORIGIN_OUTLINE.md`
+- `lar:///ha.ka.ba/docs/story/lindwyrm/dreamdeck-feed-architecture`
+- `lar:///ha.ka.ba/docs/story/lindwyrm/hoard-origin-architecture`
 - `lares/ha-ka-ba/docs/crystal/session/SESSION_CRYSTAL_20260408.md`
 
 Consumption note: source prose carried Act VII as epilogue/frame. This locus keeps the feed shape, cuts drafting chatter, preserves open questions, and stores the narrative in memetic-wikitext.
@@ -259,7 +259,7 @@ The node hums.
 
 <<~ loulou lar:///ha.ka.ba/docs/story >>
 <<~ loulou lar:///ha.ka.ba/docs/story/lindwyrm/consumption-ledger >>
-<<~ loulou lar:///ha.ka.ba/docs/story/lindwyrm/LINDWYRM_STORY_SHAPE >>
+<<~ loulou lar:///ha.ka.ba/docs/story/lindwyrm/dreamdeck-feed-architecture >>
 
 <<~ pranala #implements-meme ? -> lar:///ha.ka.ba/api/v0.1/pono/meme family:control role:implements >>
 <<~ pranala #implements-loci ? -> lar:///ha.ka.ba/api/v0.1/pono/loci family:control role:implements >>

@@ -5,8 +5,9 @@ import { useSync } from "@tldraw/sync";
 import "tldraw/tldraw.css";
 import type { LarViewState, LarViewAction, TldrawEditorLike, ZoomLevel } from "@lararium/tldraw";
 import { goToStoryRiver, goToGraph, goToRoom, zoomToMeme, classifyZoom } from "@lararium/tldraw";
-import { RATING_COLOR, type Rating5, type ChangeOrigin } from "@lararium/core";
+import { RATING_COLOR, type Rating5 } from "@lararium/core";
 import { LarariumMenuPanel, LarariumSharePanel, LarariumHelperButtons, useLararium } from "./lararium-context.js";
+import { getActiveTW5 } from "@lararium/tw5";
 import { debugSet } from "./debug.js";
 
 // Wiki mode: suppress tldraw chrome; Lararium slot components fill the UI.
@@ -26,10 +27,10 @@ const WIKI_COMPONENTS: TLComponents = {
   HelperButtons: LarariumHelperButtons,
 };
 
-// Canvas mode: restore tldraw drawing chrome alongside Lararium slots.
-// PageMenu and TopPanel stay null — nav owned by Lararium slots.
+// Canvas mode: restore full tldraw drawing chrome alongside Lararium slots.
+// TopPanel stays null — that zone is owned by Lararium slots.
+// PageMenu is restored — it serves as an additional portal / page-switch surface.
 const CANVAS_COMPONENTS: TLComponents = {
-  PageMenu:      null,
   TopPanel:      null,
   MenuPanel:     LarariumMenuPanel,
   SharePanel:    LarariumSharePanel,
@@ -51,28 +52,37 @@ type TldrawEditor = Parameters<NonNullable<React.ComponentProps<typeof Tldraw>["
 // applyZoomTemplate — batch-update meme frame props for the active zoom level
 // ---------------------------------------------------------------------------
 
-type ZoomTemplateKey = "strategic" | "operational" | "tactical" | "combat" | "action";
+// Hardcoded fallback layout when no kumu def tiddler is found for the level.
+const ZOOM_DEFAULTS: Record<string, { w: number; h: number; color: string; includeAhu: boolean; showCarrier: boolean }> = {
+  strategic:   { w: 60,  h: 28,  color: "grey",   includeAhu: false, showCarrier: false },
+  operational: { w: 120, h: 52,  color: "rating",  includeAhu: false, showCarrier: false },
+  tactical:    { w: 220, h: 100, color: "rating",  includeAhu: false, showCarrier: false },
+  combat:      { w: 320, h: 160, color: "rating",  includeAhu: true,  showCarrier: false },
+  action:      { w: 400, h: 220, color: "rating",  includeAhu: true,  showCarrier: true  },
+};
 
 function applyZoomTemplate(editor: TldrawEditor, level: ZoomLevel) {
-  const key = level as ZoomTemplateKey;
+  // Read layout props from TW5 kumu def tiddler (lar:///kumu/meme-<level>).
+  // TW5 is the first-class source of truth — no shape.meta.templateProps needed.
+  const tw5 = getActiveTW5();
+  const tl = tw5?.getZoomLayout(level) ?? ZOOM_DEFAULTS[level] ?? ZOOM_DEFAULTS["tactical"]!;
+
   const shapes = editor.getCurrentPageShapes();
   const updates: { id: string; type: string; x?: number; y?: number; opacity?: number; props?: Record<string, unknown> }[] = [];
 
-  // Pass 1: meme frames — resize/recolor; collect per-frame templateProp flags.
+  // Pass 1: meme frames — resize/recolor; collect per-frame layout flags.
   const memeIncludeAhu  = new Map<string, boolean>();
   const memeShowCarrier = new Map<string, boolean>();
   for (const shape of shapes) {
     if (shape.type !== "frame") continue;
     const meta = shape.meta as Record<string, unknown> | undefined;
     if (meta?.frameKind !== "meme") continue;
-    const tpl = (meta?.templateProps as Record<string, unknown> | undefined)?.[key] as Record<string, unknown> | undefined;
-    if (!tpl) continue;
 
     const rating = typeof meta?.uri === "string" ? ratingFromShape(shape) : "black";
-    const color = tpl["color"] === "rating" ? rating : (tpl["color"] as string ?? "grey");
-    updates.push({ id: shape.id, type: "frame", props: { w: tpl["w"], h: tpl["h"], color } });
-    memeIncludeAhu.set(shape.id,  tpl["includeAhu"]  === true);
-    memeShowCarrier.set(shape.id, tpl["showCarrier"] === true);
+    const color  = tl.color === "rating" ? rating : tl.color;
+    updates.push({ id: shape.id, type: "frame", props: { w: tl.w, h: tl.h, color } });
+    memeIncludeAhu.set(shape.id,  tl.includeAhu);
+    memeShowCarrier.set(shape.id, tl.showCarrier);
   }
 
   // Pass 2: ahu sub-frames + ownership arrows — hide when parent meme has includeAhu=false
@@ -156,11 +166,8 @@ function getLarUriFromShape(editor: TldrawEditor, shapeId: TLShapeId): string | 
 export function LarariumCanvas({ wsUrl, navState, dispatch, canvasMode, onZoomLevel, onMemes }: Props) {
   const store = useSync({ uri: wsUrl, assets: inlineBase64AssetStore });
   const editorRef = useRef<TldrawEditor | null>(null);
-  const { theme, setEditor, editor, tiddlerStore, hostReceipt } = useLararium();
-  debugSet("store",                store);
-  debugSet("tiddlerStore",         tiddlerStore);
-  debugSet("hostReceipt",          hostReceipt);
-  debugSet("projectionCacheCount", tiddlerStore ? "call __larariumDebug.tiddlerStore.listVisible().then(console.log)" : 0);
+  const { theme, setEditor, tiddlerStore } = useLararium();
+  debugSet("store", store);
 
   // Populate meme list reactively — CRDT-native, no /api/memes fetch.
   // One-shot scan on sync, then store.listen for document mutations (shape add/remove/update).
@@ -213,46 +220,39 @@ export function LarariumCanvas({ wsUrl, navState, dispatch, canvasMode, onZoomLe
     editor.user.updateUserPreferences({ colorScheme });
   }, [theme]);
 
-  // Projection-cache intake — seed MemoryTiddlerStore from shape.meta.carrierText.
-  // Gates on hostReceipt being non-null (receipt must arrive from boot-receipt meta-frame
-  // via useBridgeReceiptFromEditor before any projection-cache writes are allowed).
-  // Re-runs when receipt upgrades from null to real hash; re-seeds on document mutations.
+  // Store → shape.meta sync — when the Automerge store receives a content change
+  // (from TW5 panel, MCP, or a remote peer), update the relevant canvas shape's
+  // meta.rating so zoom-template colors stay current without a room reseed.
+  // Does NOT write carrier text into shapes — body nodes show text via their own props.
   useEffect(() => {
-    if (!editor || !tiddlerStore || !hostReceipt) return;
-    const receipt = hostReceipt;
-
-    // Content-equality cache: skip put() when carrierText hasn't changed.
-    // Prevents the full [CRDT→store→TW5→kumuRegistry] chain from firing on
-    // every shape move or non-carrier document mutation.
-    const seenText = new Map<string, string>();
-
-    const seedAll = () => {
-      for (const record of editor.store.allRecords()) {
-        const r = record as unknown as Record<string, unknown>;
-        if (r["typeName"] !== "shape" || r["type"] !== "frame") continue;
-        const meta = r["meta"] as Record<string, unknown> | undefined;
-        if (meta?.["frameKind"] !== "meme") continue;
-        const text = typeof meta["carrierText"] === "string" ? meta["carrierText"] : undefined;
-        const uri  = typeof meta["uri"] === "string"         ? meta["uri"]         : undefined;
-        if (!text || !uri || !uri.startsWith("lar:")) continue;
-        if (seenText.get(uri) === text) continue;
-        seenText.set(uri, text);
-        const origin: ChangeOrigin = { kind: "projection-cache", shapeId: r["id"] as string, receipt };
-        void tiddlerStore.put({ title: uri, fields: {}, text }, origin);
-      }
-    };
-
-    seedAll();
-    const unsub = editor.store.listen(() => seedAll(), { scope: "document" });
-    return unsub;
-  }, [editor, tiddlerStore, hostReceipt]);
+    const ed = editorRef.current;
+    if (!ed || !tiddlerStore || store.status !== "synced-remote") return;
+    return tiddlerStore.subscribe((change) => {
+      if (change.origin.kind === "canvas-draft") return; // we triggered this
+      if (!change.record || change.record.deleted) return;
+      const rating = change.record.fields["rating"];
+      if (!rating) return;
+      const uri = change.record.title;
+      const targets = ed.getCurrentPageShapes().filter((s) => {
+        const m = s.meta as Record<string, unknown> | undefined;
+        return m?.uri === uri && s.type === "frame" && m?.frameKind === "meme";
+      });
+      if (targets.length === 0) return;
+      ed.updateShapes(
+        targets.map((s) => ({ id: s.id, type: s.type, meta: { ...s.meta, rating } })),
+      );
+    });
+  }, [store.status, tiddlerStore]);
 
   // Double-click: geo portal (meta.larPortal) → GO_TO_ROOM, meme frame → ZOOM_IN
+  // Uses editor.on("event") filtered for name:"double_click" + target:"shape" + phase:"up".
   useEffect(() => {
     const editor = editorRef.current;
     if (!editor || store.status !== "synced-remote") return;
-    const handler = (e: { target?: { id?: TLShapeId } }) => {
-      const shapeId = e?.target?.id;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const handler = (e: any) => {
+      if (e?.name !== "double_click" || e?.target !== "shape" || e?.phase !== "up") return;
+      const shapeId: TLShapeId | undefined = e?.shape?.id;
       if (!shapeId) return;
       const shape = editor.getShape(shapeId);
       const meta = shape?.meta as Record<string, unknown> | undefined;
@@ -263,8 +263,8 @@ export function LarariumCanvas({ wsUrl, navState, dispatch, canvasMode, onZoomLe
       const uri = getLarUriFromShape(editor, shapeId);
       if (uri) dispatch({ type: "ZOOM_IN", uri });
     };
-    editor.on("doubleClickShape" as any, handler);
-    return () => { editor.off("doubleClickShape" as any, handler); };
+    editor.on("event" as any, handler);
+    return () => { editor.off("event" as any, handler); };
   }, [store.status, dispatch]);
 
   // Nav state → tldraw camera.
@@ -316,6 +316,30 @@ export function LarariumCanvas({ wsUrl, navState, dispatch, canvasMode, onZoomLe
               applyZoomTemplate(editor, level);
             },
             { scope: "session" },
+          );
+
+          // Canvas write-back — body node text edit → Automerge meme store.
+          // Body node shapes (meta.bodyNodeKind, meta.uri) carry carrier text
+          // visible at action zoom. When a user edits them in-canvas, the change
+          // flows: tldraw CRDT → store.put(canvas-draft) → adaptor → TW5.
+          // The adaptor's _applying guard prevents the echo TW5→store loop.
+          editor.store.listen(
+            (event) => {
+              const store = tiddlerStore;
+              if (!store) return;
+              for (const [, next] of Object.values(event.changes.updated) as [unknown, { type: string; id: string; meta?: Record<string, unknown>; props?: Record<string, unknown> }][]) {
+                if (next.type !== "geo") continue;
+                const meta = next.meta as Record<string, unknown> | undefined;
+                if (!meta?.bodyNodeKind || !meta?.uri) continue;
+                const uri  = String(meta.uri);
+                const text = String((next.props as Record<string, unknown>)["text"] ?? "");
+                store.put(
+                  { title: uri, fields: {}, text },
+                  { kind: "canvas-draft", shapeId: next.id },
+                ).catch((e) => console.warn("[lararium] canvas write-back failed:", e));
+              }
+            },
+            { scope: "document" },
           );
         }}
       />

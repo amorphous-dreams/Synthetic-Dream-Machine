@@ -8,8 +8,11 @@
  * the lararium-* TW5 widget classes:
  *   worksite  → <span data-lar-kind="worksite" data-lar-slot="#x" data-lar-uri="lar:///...">
  *   edge      → <meta data-lar-kind="edge" data-lar-from data-lar-to data-lar-family data-lar-role>
+ *   papalohe  → <meta data-lar-kind="papalohe" data-lar-from data-lar-to data-lar-trigger data-lar-fn>
+ *   kukali    → <span data-lar-kind="kukali" data-lar-trigger?>
+ *   kumu      → <div  data-lar-kind="kumu" data-lar-name data-lar-props data-lar-resolved>
  *   toml      → <script type="application/toml" data-lar-kind="toml">
- *   sigil     → <span data-lar-kind="sigil" data-lar-sigil="kukali|...">
+ *   sigil     → <span data-lar-kind="sigil" data-lar-sigil="...">
  *   dynamic   → <span data-lar-kind="dynamic" data-lar-sigil="...">
  *   header    → <meta data-lar-kind="header">   (suppressed)
  *   dispatch  → <meta data-lar-kind="dispatch"> (suppressed)
@@ -59,14 +62,17 @@ function renderNode(node: VDomNode, key: string): React.ReactNode {
   const kind = node.attrs?.["data-lar-kind"];
 
   switch (kind) {
-    case "worksite": return renderWorksite(node, key);
-    case "edge":     return renderEdge(node, key);
-    case "toml":     return renderToml(node, key);
-    case "sigil":    return renderSigil(node, key);
-    case "dynamic":  return renderChildren(node.children, key);
+    case "worksite":  return renderWorksite(node, key);
+    case "edge":      return renderEdge(node, key);
+    case "papalohe":  return renderPapalohe(node, key);
+    case "kukali":    return renderKukali(node, key);
+    case "kumu":      return renderKumu(node, key);
+    case "toml":      return renderToml(node, key);
+    case "sigil":     return renderSigil(node, key);
+    case "dynamic":   return renderChildren(node.children, key);
     case "header":
-    case "dispatch": return null;  // metadata only
-    default:         return renderChildren(node.children, key);
+    case "dispatch":  return null;  // metadata only
+    default:          return renderChildren(node.children, key);
   }
 }
 
@@ -128,6 +134,66 @@ function renderEdge(node: VDomNode, key: string): React.ReactNode {
 }
 
 // ---------------------------------------------------------------------------
+// Papalohe — reaction wire (DeviceA.trigger → DeviceB.fn)
+// ---------------------------------------------------------------------------
+
+function renderPapalohe(node: VDomNode, key: string): React.ReactNode {
+  const from    = node.attrs?.["data-lar-from"]    ?? "";
+  const to      = node.attrs?.["data-lar-to"]      ?? "";
+  const trigger = node.attrs?.["data-lar-trigger"]  ?? "";
+  const fn      = node.attrs?.["data-lar-fn"]       ?? "";
+
+  const shorten = (u: string) => u.replace("lar:///", "").replace(/^ha\.ka\.ba\/api\/v0\.1\//, "");
+
+  return (
+    <div key={key} style={css.papalohe}>
+      <span style={css.papaloheLabel}>papalohe</span>
+      <span style={css.papaloheFrom} title={from}>{shorten(from) || "self"}</span>
+      {trigger && <span style={css.papaloheEvent}>.{trigger}</span>}
+      <span style={css.papaloheArrow}>→</span>
+      <span style={css.papaloheFrom} title={to}>{shorten(to)}</span>
+      {fn && <span style={css.papaloheEvent}>.{fn}</span>}
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Kukali — reactive wait posture (Verse `suspends` analogue)
+// ---------------------------------------------------------------------------
+
+function renderKukali(node: VDomNode, key: string): React.ReactNode {
+  const trigger = node.attrs?.["data-lar-trigger"] ?? "";
+  return (
+    <div key={key} style={css.kukali}>
+      <span style={css.kukaliLabel}>⏿ kukali</span>
+      {trigger && <span style={css.kukaliTrigger}> trigger:{trigger}</span>}
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Kumu — device instance (name + resolved props + body slot)
+// ---------------------------------------------------------------------------
+
+function renderKumu(node: VDomNode, key: string): React.ReactNode {
+  const name     = node.attrs?.["data-lar-name"]     ?? "?";
+  const props    = node.attrs?.["data-lar-props"]     ?? "";
+  const resolved = node.attrs?.["data-lar-resolved"]  !== "false";
+  const children = node.children.map((c, i) => renderNode(c, `${key}.${i}`));
+
+  return (
+    <div key={key} style={{ ...css.kumu, ...(resolved ? {} : css.kumuHole) }}>
+      <div style={css.kumuHeader}>
+        <span style={css.kumuName}>{name}</span>
+        {props && <span style={css.kumuProps}>({props})</span>}
+        {!resolved && <span style={css.kumuHoleLabel}>? hole</span>}
+      </div>
+      {children.length > 0 && <div style={css.kumuBody}>{children}</div>}
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Toml — data block (iam identity + general toml blocks)
 // ---------------------------------------------------------------------------
 
@@ -155,16 +221,6 @@ function renderSigil(node: VDomNode, key: string): React.ReactNode {
   const name = node.attrs?.["data-lar-sigil"] ?? "sigil";
   const children = node.children.map((c, i) => renderNode(c, `${key}.${i}`));
   const hasChildren = node.children.length > 0;
-
-  // kukali — suspension point: render as a distinct visual marker
-  if (name === "kukali") {
-    return (
-      <div key={key} style={css.kukali}>
-        <span style={css.kukaliLabel}>⏿ kukali</span>
-        {hasChildren && <div style={css.kukaliBody}>{children}</div>}
-      </div>
-    );
-  }
 
   // Other sigils: transparent container if they have children
   if (hasChildren) return <div key={key}>{children}</div>;
@@ -323,16 +379,51 @@ const css = {
     textOverflow: "ellipsis",
     whiteSpace: "nowrap" as const,
   },
+  // papalohe
+  papalohe: {
+    display: "flex",
+    alignItems: "center",
+    gap: 5,
+    margin: "3px 0",
+    fontSize: 11,
+    fontFamily: "monospace",
+    padding: "3px 6px",
+    background: "#0d1a10",
+    borderLeft: "2px solid #56d364",
+    borderRadius: "0 3px 3px 0",
+  },
+  papaloheLabel: { color: "#484f58", fontSize: 10, flexShrink: 0 },
+  papaloheFrom:  { color: "#79c0ff", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const },
+  papaloheEvent: { color: "#56d364", flexShrink: 0 },
+  papaloheArrow: { color: "#484f58", flexShrink: 0 },
+  // kukali
   kukali: {
+    display: "flex",
+    alignItems: "center",
+    gap: 6,
     margin: "4px 0",
     padding: "4px 8px",
     borderLeft: "2px solid #f0a04b",
     background: "#1a1200",
+    borderRadius: "0 3px 3px 0",
   },
-  kukaliLabel: {
-    fontSize: 11,
-    fontFamily: "monospace",
-    color: "#f0a04b",
+  kukaliLabel:   { fontSize: 11, fontFamily: "monospace", color: "#f0a04b" },
+  kukaliTrigger: { fontSize: 11, fontFamily: "monospace", color: "#8b949e" },
+  // kumu
+  kumu: {
+    margin: "4px 0",
+    padding: "6px 10px",
+    background: "#0d1117",
+    border: "1px solid #30363d",
+    borderRadius: 4,
   },
-  kukaliBody: { marginTop: 4 },
+  kumuHole: {
+    border: "1px dashed #484f58",
+    background: "#0a0d10",
+  },
+  kumuHeader: { display: "flex", alignItems: "baseline", gap: 6, marginBottom: 4 },
+  kumuName:   { fontSize: 12, fontWeight: 700, fontFamily: "monospace", color: "#d2a8ff" },
+  kumuProps:  { fontSize: 11, fontFamily: "monospace", color: "#8b949e" },
+  kumuHoleLabel: { fontSize: 10, color: "#484f58", marginLeft: "auto" as const },
+  kumuBody:   { paddingLeft: 8, borderLeft: "1px solid #21262d" },
 } as const;

@@ -1,6 +1,6 @@
 import { createLarariumRuntime, LARES_ROOT, compileCarrierIndex } from "./src/node-host.js";
 import { renderAllViews } from "@lararium/tldraw";
-import { buildKumuRegistry, parsePranalaEdges } from "@lararium/core";
+import { parsePranalaEdges } from "@lararium/core";
 import { readFileSync, existsSync } from "fs";
 import { join } from "path";
 import { resolveLarUri } from "@lararium/core";
@@ -21,15 +21,13 @@ for (const carrier of carriers) {
 console.log("snapshot meme count:", Object.keys(memes).length);
 console.log("closure count:", artifact.closure.length);
 
-const registry = buildKumuRegistry(artifact.kumuDefs ?? []);
-const emission = renderAllViews(artifact, {
+const emission = await renderAllViews(artifact, {
   readText: (uri: string) => {
     const m = memes[uri];
     if (!m) { console.warn("MISSING:", uri); return null; }
     return m.text;
   },
   includeAhuFrames: true,
-  registry,
 });
 
 const arrows = emission.shapes.filter((s: any) => s.type === "arrow");

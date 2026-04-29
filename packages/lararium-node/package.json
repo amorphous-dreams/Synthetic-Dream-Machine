@@ -23,9 +23,13 @@
     "serve": "tsx scripts/serve.ts"
   },
   "dependencies": {
+    "@automerge/automerge": "^3.2.6",
+    "@automerge/automerge-repo": "^2.5.5",
+    "@automerge/automerge-repo-network-websocket": "^2.5.5",
+    "@automerge/automerge-repo-storage-nodefs": "^2.5.5",
     "@lararium/core": "workspace:*",
-    "@lararium/tw5": "workspace:*",
     "@lararium/tldraw": "workspace:*",
+    "@lararium/tw5": "workspace:*",
     "@tldraw/sync-core": "^4.5.10",
     "@types/better-sqlite3": "^7.6.13",
     "@types/ws": "^8.18.1",

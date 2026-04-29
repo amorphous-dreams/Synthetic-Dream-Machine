@@ -390,16 +390,12 @@ export const REACTION_ROLES = ["subscription", "handler", "callback"] as const;
 export type ReactionRole = typeof REACTION_ROLES[number];
 
 // ---------------------------------------------------------------------------
-// Widget tree — Phase 3 self-hosting
+// KumuDef — compiled form of <<~! kumu name(params) >>...<<~/kumu >>
 //
-// parseTree (MemeAstNode[])  →  resolveWidgetTree()  →  WidgetNode[]  →  render
-//
-// KumuDef: the compiled form of <<~! kumu name(params) >>...<<~/kumu >>
-//   Equivalent to TW5 \widget $name / UEFN creative_device type definition.
-//   Each kumu instance at render time is a causal island (async boundary).
-//
-// WidgetNode: the re-typed parse node that names its kumu handler.
-//   def === null → Hazel typed hole (unresolved kumu name — partial edits stay live).
+// Equivalent to TW5 \widget $name / UEFN creative_device type definition.
+// Extracted by collectKumuDefs() in widget-tree.ts; injected into TW5 as
+// tiddlers (type: text/x-memetic-wikitext, tag: $:/tags/LarariumKumu) so
+// TW5 can resolve them natively at render time via KumuWidget.
 // ---------------------------------------------------------------------------
 
 export interface KumuDef {
@@ -407,17 +403,6 @@ export interface KumuDef {
   readonly params: readonly string[];
   readonly carrierUri: string;
   readonly body: readonly MemeAstNode[];
-}
-
-export interface WidgetNode {
-  readonly kind: "Widget";
-  readonly kumuName: string;
-  /** null when kumu type is not in registry — typed hole; edit stays live */
-  readonly def: KumuDef | null;
-  readonly resolvedProps: Readonly<Record<string, string>>;
-  readonly body: readonly WidgetNode[];
-  readonly pos: number;
-  readonly raw: string;
 }
 
 // ---------------------------------------------------------------------------

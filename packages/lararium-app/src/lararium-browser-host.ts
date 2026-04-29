@@ -1,221 +1,147 @@
 /**
- * lararium-browser-host — async host opening sequence for the browser.
+ * lararium-browser-host — local-first host opening sequence for the browser.
  *
- * Opening law (authority-first, mirrors Keyhive/Beelay sync ordering):
+ * Boot law (Zelenka capability-scoped storage model):
  *   host-opening → authority-opening → authority-ready
- *   → manifest-opening → manifest-ready
- *   → store-opening → store-ready   ← seeds from IDB snapshot (local-first)
+ *   → store-opening → store-ready    ← Automerge IDB first, server is peer
  *   → tw5-opening → tw5-ready
- *   → projection-opening → projection-ready
  *   → live
  *
+ * Scoping model — ONE TW5 instance per room (collaboration space):
+ *   Each roomId maps to one Automerge document and one LarariumTW5 wiki.
+ *   The TW5 wiki is the capability boundary — kumu defs, filters, and the
+ *   CRDT sync adaptor are all scoped to the room, never shared globally.
+ *   tldraw page switches (ROOM_SYSTEM → ROOM_INVARIANTS) do NOT create new
+ *   TW5 instances — those are filter views of the same corpus doc.
+ *   A room change (different roomId) tears down the old adaptor + wiki and
+ *   boots fresh, ensuring clean capability isolation per space.
+ *
  * Hard rules:
- *   - No full-page blocking; caller mounts tldraw immediately.
- *   - No second WebSocket; boot receipt arrives through tldraw room metadata.
- *   - MemoryTiddlerStore receives projection-cache origin when seeded from shape.meta.
- *   - projection-cache origin must never be promoted to canon.
- *   - TW5 boots AFTER store-ready; store-ready precedes tw5-ready.
- *   - Local-first: store is seeded from IndexedDB before canvas shapes arrive.
- *     Server CRDT sync is a background delta reconciliation, not the boot source.
+ *   - Local store boots from IndexedDB before any server contact.
+ *   - await handle.doc() is the ONLY readiness gate — no synced-event race.
+ *   - Server injects Automerge doc URL via <meta name="lararium-meme-store">.
+ *   - URL is cached in localStorage for offline subsequent boots.
+ *   - No second WebSocket for boot receipt — arrives via tldraw room shape.
+ *   - TW5 boots AFTER store-ready.
+ *   - getSingleton() in @lararium/tw5 is server-side only; never used here.
  */
 
 import { useState, useEffect, useRef } from "react";
 import type { Editor } from "tldraw";
 import type { LarariumOpenPhase } from "@lararium/core";
-import type { LarTiddlerRecord } from "@lararium/core";
-import { LarariumTW5, MemoryTiddlerStore, LarariumCrdtSyncAdaptor } from "@lararium/tw5";
+import { LarariumTW5, LarariumCrdtSyncAdaptor, setActiveTW5 } from "@lararium/tw5";
+import { initMemeRepo, readMemeStoreUrl, type MemeRepoResult } from "./automerge-store.js";
+import type { AutomergeMemeStore } from "./automerge-store.js";
+import { getOrCreateBrowserIdentity } from "./operator-key.js";
+import type { Repo } from "@automerge/automerge-repo";
 
 // Stable shape ID for the boot-receipt meta-frame emitted by serve.ts.
 const BOOT_RECEIPT_SHAPE_ID = "shape:lararium_boot_receipt";
 
 // ---------------------------------------------------------------------------
-// IdbStoreCache — local-first IndexedDB snapshot for MemoryTiddlerStore.
-//
-// Schema: one IDB database per hostId, one object-store "records", keyed by
-// LarTiddlerRecord.title. Tombstoned records (deleted: true) are removed so
-// the snapshot stays clean.
-//
-// Boot path: openIdb → getAll → _seed each record into MemoryTiddlerStore.
-// Write path: store.subscribe → debounced IDB sync (50ms trailing edge).
-// ---------------------------------------------------------------------------
-
-const IDB_VERSION = 1;
-
-function openIdb(hostId: string): Promise<IDBDatabase | null> {
-  if (typeof indexedDB === "undefined") return Promise.resolve(null);
-  return new Promise((resolve) => {
-    const req = indexedDB.open(`lararium:store:${hostId}`, IDB_VERSION);
-    req.onupgradeneeded = () => {
-      req.result.createObjectStore("records", { keyPath: "title" });
-    };
-    req.onsuccess = () => resolve(req.result);
-    req.onerror   = () => resolve(null); // degrade gracefully
-  });
-}
-
-async function idbGetAll(db: IDBDatabase): Promise<LarTiddlerRecord[]> {
-  return new Promise((resolve) => {
-    const tx  = db.transaction("records", "readonly");
-    const req = tx.objectStore("records").getAll();
-    req.onsuccess = () => resolve(req.result as LarTiddlerRecord[]);
-    req.onerror   = () => resolve([]);
-  });
-}
-
-function idbPutRecord(db: IDBDatabase, record: LarTiddlerRecord): void {
-  const tx = db.transaction("records", "readwrite");
-  const os = tx.objectStore("records");
-  if (record.deleted) {
-    os.delete(record.title);
-  } else {
-    os.put(record);
-  }
-}
-
-/** Wire IDB write-back to store. Returns unsubscribe fn. */
-function bindIdbWriteback(db: IDBDatabase, store: MemoryTiddlerStore): () => void {
-  return store.subscribe((change) => {
-    if (change.record) {
-      idbPutRecord(db, change.record);
-    } else {
-      // tombstone — delete from IDB
-      const tx = db.transaction("records", "readwrite");
-      tx.objectStore("records").delete(change.title);
-    }
-  });
-}
-
-// ---------------------------------------------------------------------------
-// Options
+// BrowserHostOptions
 // ---------------------------------------------------------------------------
 
 export interface BrowserHostOptions {
   hostId:    string;
   recipeUri: string;
-  /** Room ID used for projection phase label. */
   roomId:    string;
 }
 
 // ---------------------------------------------------------------------------
-// openBrowserLarariumHost — async generator yielding opening phases
-// ---------------------------------------------------------------------------
-
-export async function* openBrowserLarariumHost(
-  options: BrowserHostOptions,
-): AsyncGenerator<LarariumOpenPhase> {
-  const { hostId, recipeUri, roomId } = options;
-
-  yield { kind: "host-opening", hostId };
-
-  // Authority phase — in development: local-operator, no Orichalcum round-trip.
-  yield { kind: "authority-opening", hostId };
-  // Boot receipt is delivered through the tldraw room metadata record (Q3 ruling).
-  // The generator does not wait for WS here; caller feeds receipt when available.
-  const receipt = `local-operator:${hostId}`;
-  yield { kind: "authority-ready", receipt };
-
-  // Manifest phase — enumerate visible tiddler titles (empty until store loads).
-  yield { kind: "manifest-opening", recipeUri };
-  yield { kind: "manifest-ready", titles: [] };
-
-  // Store phase — MemoryTiddlerStore opens immediately; projection-cache seeding
-  // happens separately via bridgeProjectionCache() after editor mounts.
-  yield { kind: "store-opening", recipeUri };
-  const store = new MemoryTiddlerStore();
-  yield { kind: "store-ready", titleCount: 0 };
-
-  // TW5 phase — boot AFTER store-ready (store-ready → tw5-opening ordering law).
-  yield { kind: "tw5-opening", hostId };
-  const tw5 = new LarariumTW5();
-  await tw5.boot();
-  yield { kind: "tw5-ready", hostId };
-
-  // Projection phase — canvas shapes will be bridged by useLarariumHostOpen effect.
-  yield { kind: "projection-opening", roomId };
-  yield { kind: "projection-ready", roomId };
-
-  yield { kind: "live", offset: 0 };
-
-  // Yield store and tw5 as a sentinel so the caller can extract them.
-  // Convention: the generator ends with { kind: "live" }; caller reads store/tw5 from hook state.
-  (openBrowserLarariumHost as unknown as Record<string, unknown>)["__last_store"] = store;
-  (openBrowserLarariumHost as unknown as Record<string, unknown>)["__last_tw5"]   = tw5;
-}
-
-// ---------------------------------------------------------------------------
-// useLarariumHostOpen — React hook wrapping the async generator
+// HostOpenState
 // ---------------------------------------------------------------------------
 
 export interface HostOpenState {
   phase:      LarariumOpenPhase | null;
-  store:      MemoryTiddlerStore | null;
+  store:      AutomergeMemeStore | null;
   tw5:        LarariumTW5 | null;
   receipt:    string | null;
   isLive:     boolean;
 }
 
+// ---------------------------------------------------------------------------
+// useLarariumHostOpen — React hook: sequential local-first boot
+// ---------------------------------------------------------------------------
+
 export function useLarariumHostOpen(options: BrowserHostOptions): HostOpenState {
   const [phase,   setPhase]   = useState<LarariumOpenPhase | null>(null);
-  const [store,   setStore]   = useState<MemoryTiddlerStore | null>(null);
+  const [store,   setStore]   = useState<AutomergeMemeStore | null>(null);
   const [tw5,     setTw5]     = useState<LarariumTW5 | null>(null);
   const [receipt, setReceipt] = useState<string | null>(null);
   const [isLive,  setIsLive]  = useState(false);
 
-  // Refs for objects allocated inside the async run() — needed for effect cleanup.
-  const storeRef       = useRef<MemoryTiddlerStore | null>(null);
-  const tw5Ref         = useRef<LarariumTW5 | null>(null);
-  const stopAdaptorRef = useRef<(() => void) | null>(null);
-
-  const optionsRef = useRef(options);
-  optionsRef.current = options;
+  const repoRef         = useRef<Repo | null>(null);
+  const tw5Ref          = useRef<LarariumTW5 | null>(null);
+  const stopAdaptorRef  = useRef<(() => void) | null>(null);
+  const optionsRef      = useRef(options);
+  optionsRef.current    = options;
 
   useEffect(() => {
     let cancelled = false;
-    const opts = optionsRef.current;
+    // Snapshot roomId at effect start — this is the capability scope for this boot cycle.
+    const { hostId, recipeUri, roomId } = optionsRef.current;
+
+    // Reset derived state for the new room before kicking off the async boot.
+    setPhase(null); setStore(null); setTw5(null); setIsLive(false);
 
     async function run() {
-      // We need access to store/tw5 allocated inside the generator.
-      // Re-implement inline to capture them without the side-channel hack.
-      const { hostId, recipeUri, roomId } = opts;
-
-      const phases: LarariumOpenPhase[] = [
-        { kind: "host-opening",      hostId },
-        { kind: "authority-opening", hostId },
-      ];
-
-      for (const p of phases) {
-        if (cancelled) return;
-        setPhase(p);
-      }
-
+      // ── Authority ──────────────────────────────────────────────────────────
+      if (!cancelled) setPhase({ kind: "host-opening", hostId });
+      if (!cancelled) setPhase({ kind: "authority-opening", hostId });
       const r = `local-operator:${hostId}`;
       if (!cancelled) { setPhase({ kind: "authority-ready", receipt: r }); setReceipt(r); }
 
-      if (!cancelled) setPhase({ kind: "manifest-opening", recipeUri });
-      if (!cancelled) setPhase({ kind: "manifest-ready", titles: [] });
-
+      // ── Store (local-first) ───────────────────────────────────────────────
+      // Derive /meme-sync WS URL from the tldraw WS meta tag — same host,
+      // different path.  Falls back to relative URL for same-origin serving.
       if (!cancelled) setPhase({ kind: "store-opening", recipeUri });
-      const s = new MemoryTiddlerStore();
-      storeRef.current = s;
 
-      // Local-first: seed store from IDB snapshot before canvas shapes arrive.
-      const db = await openIdb(hostId);
-      let seedCount = 0;
-      if (db) {
-        const cached = await idbGetAll(db);
-        for (const rec of cached) {
-          if (!rec.deleted) { s._seed(rec); seedCount++; }
+      const tldrawWsMeta = typeof document !== "undefined"
+        ? document.querySelector('meta[name="lararium-ws"]')?.getAttribute("content") ?? null
+        : null;
+
+      const syncWsUrl: string = (() => {
+        if (tldrawWsMeta) {
+          const u = new URL(tldrawWsMeta);
+          u.pathname = "/meme-sync";
+          u.search   = "";
+          return u.toString();
         }
-        stopAdaptorRef.current = bindIdbWriteback(db, s);
+        // Relative fallback — Vite dev proxy or same-origin serve
+        const proto = location.protocol === "https:" ? "wss:" : "ws:";
+        return `${proto}//${location.host}/meme-sync`;
+      })();
+
+      const storeUrl  = readMemeStoreUrl(hostId);
+      const identity  = await getOrCreateBrowserIdentity();
+      const serverDid = (typeof document !== "undefined"
+        ? document.querySelector('meta[name="lararium-operator-did"]')?.getAttribute("content")
+        : undefined) ?? undefined;
+
+      let repoResult: MemeRepoResult;
+      try {
+        repoResult = await initMemeRepo({ hostId, syncWsUrl, storeUrl, identity, ...(serverDid && { serverDid }) });
+      } catch (err: unknown) {
+        if (!cancelled) setPhase({ kind: "error", message: `Meme store init failed: ${String(err)}` });
+        return;
       }
+      if (cancelled) { return; }
 
-      if (!cancelled) { setStore(s); setPhase({ kind: "store-ready", titleCount: seedCount }); }
+      repoRef.current = repoResult.repo;
+      const s = repoResult.store;
 
+      const seedCount = (await s.listVisible()).length;
+      setStore(s);
+      setPhase({ kind: "store-ready", titleCount: seedCount });
+
+      // ── TW5 ───────────────────────────────────────────────────────────────
       if (!cancelled) setPhase({ kind: "tw5-opening", hostId });
       const t = new LarariumTW5();
       try {
         await t.boot();
         tw5Ref.current = t;
+        setActiveTW5(t);
         if (!cancelled) { setTw5(t); setPhase({ kind: "tw5-ready", hostId }); }
       } catch (err: unknown) {
         console.warn("[lararium-browser-host] TW5 boot failed:", err);
@@ -223,16 +149,17 @@ export function useLarariumHostOpen(options: BrowserHostOptions): HostOpenState 
         return;
       }
 
-      // Bind TW5 virtual server to the MemoryTiddlerStore via CRDT sync adaptor.
-      // Echo-loop guard: crdt-remote changes flow TW5-ward only; tw-local changes
-      // flow store-ward only. Canon guard: saveTiddler never writes to lares/.
-      const adaptor = new LarariumCrdtSyncAdaptor(t, s, `${hostId}:browser`);
-      const stopCrdt = adaptor.start();
-      const stopIdb  = stopAdaptorRef.current; // captured from IDB writeback bind above
-      stopAdaptorRef.current = () => { stopCrdt(); stopIdb?.(); };
+      // Seed TW5 wiki from the Automerge store — one-time initial population.
+      // Also scans carrier texts for kumu defs and injects them as tiddlers.
+      // After this, LarariumCrdtSyncAdaptor keeps the wiki live via setTiddler/removeTiddler.
+      await t.loadFromStore(s);
 
-      if (!cancelled) setPhase({ kind: "projection-opening", roomId });
-      if (!cancelled) setPhase({ kind: "projection-ready", roomId });
+      // Bind TW5 to the AutomergeMemeStore via CRDT sync adaptor.
+      // crdt-remote changes (from Automerge peers) apply to TW5 wiki.
+      // tw-local changes (TW5 edits) write back to the Automerge doc.
+      const adaptor = new LarariumCrdtSyncAdaptor(t, s, `${hostId}:${roomId}`);
+      stopAdaptorRef.current = adaptor.start();
+
       if (!cancelled) { setPhase({ kind: "live", offset: 0 }); setIsLive(true); }
     }
 
@@ -244,8 +171,13 @@ export function useLarariumHostOpen(options: BrowserHostOptions): HostOpenState 
       cancelled = true;
       stopAdaptorRef.current?.();
       stopAdaptorRef.current = null;
+      setActiveTW5(null);
+      // Note: Repo does not need explicit teardown — IndexedDB adapter flushes on close.
     };
-  }, []); // intentionally empty — opens once per mount
+  // roomId is the capability scope boundary — a room change tears down the
+  // old adaptor + TW5 wiki and boots a fresh isolated instance for the new space.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [options.roomId]);
 
   return { phase, store, tw5, receipt, isLive };
 }
@@ -255,15 +187,8 @@ export function useLarariumHostOpen(options: BrowserHostOptions): HostOpenState 
 // ---------------------------------------------------------------------------
 
 /**
- * Two-hook split (O2 ruling):
- *   useLarariumHostOpen — owns store/TW5 opening; returns placeholder receipt
- *   useBridgeReceiptFromEditor — owns editor timing + real receipt discovery
- *
- * When the boot-receipt meta-frame arrives in the tldraw CRDT store (either
- * already present at editor mount or via late delta), calls onReceipt with
- * the real receiptHash, upgrading hostReceipt from null to the artifact hash.
- *
- * Projection-cache intake (in LarariumCanvas) gates on hostReceipt being non-null.
+ * Reads the real boot-receipt hash from the tldraw CRDT store (shape:lararium_boot_receipt).
+ * Separate from the tiddler store boot — the receipt just gates canon-promotion guards.
  */
 export function useBridgeReceiptFromEditor(
   editor:    Editor | null,
@@ -292,7 +217,7 @@ export function useBridgeReceiptFromEditor(
         }
       }
 
-      // Fallback: full scan (handles non-standard IDs or future schema)
+      // Fallback: full scan
       for (const record of editor!.store.allRecords()) {
         const r = record as unknown as Record<string, unknown>;
         if (r["typeName"] !== "shape") continue;
@@ -306,10 +231,8 @@ export function useBridgeReceiptFromEditor(
       return false;
     }
 
-    // Check at mount — receipt may already be present (O1 ruling: snapshot arrival)
     if (tryFindReceipt()) return;
 
-    // Subscribe for late arrival — delta may carry receipt after initial sync
     const unsub = editor.store.listen(() => { tryFindReceipt(); }, { scope: "document" });
     return unsub;
   }, [editor]);

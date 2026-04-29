@@ -127,7 +127,7 @@ export function roomPageId(room: LarRoom): LarProjectionId {
   return (room.tlPageId ?? pageId(room.id)) as LarProjectionId;
 }
 
-/** Filter function signature — provided by caller (Node: filterMemesTW; browser: filterMemesBrowser). */
+/** Filter function signature — inject filterMemesWikitext from @lararium/tw5. */
 export type MemeFilter = (entries: readonly ClosureEntry[], expr: string) => Promise<ClosureEntry[]>;
 
 /**

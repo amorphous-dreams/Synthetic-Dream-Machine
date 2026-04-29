@@ -17,7 +17,7 @@
  * All tap targets ≥ 44×44px. No hover-only affordances.
  */
 
-import { useReducer, useEffect, useState, useRef, useCallback, useMemo } from "react";
+import { useReducer, useEffect, useState, useRef, useCallback } from "react";
 import type { Editor } from "tldraw";
 import { createPortal } from "react-dom";
 import { INITIAL_VIEW_STATE, viewStateReducer } from "@lararium/tldraw";
@@ -25,7 +25,7 @@ import type { LarViewAction, ZoomLevel } from "@lararium/tldraw";
 import { LarariumCanvas } from "./LarariumCanvas.js";
 import { MemeDetailPanel } from "./MemeDetailPanel.js";
 import { LarariumCtx, useLararium, shortUri, useTheme } from "./lararium-context.js";
-import type { FilterEngineFn } from "@lararium/core";
+import type { ReactionGraph } from "@lararium/core";
 import { useLarariumHostOpen, useBridgeReceiptFromEditor } from "./lararium-browser-host.js";
 import { debugSet } from "./debug.js";
 import "./lararium-theme.css";
@@ -190,6 +190,29 @@ export function LarariumShell({ wsUrl, memes, onMemes }: ShellProps) {
   const [hostReceipt, setHostReceipt] = useState<string | null>(null);
   useBridgeReceiptFromEditor(editor, setHostReceipt);
 
+  // ReactionGraph — built by TW5 from wiki tiddler texts; rebuilt on every wiki change.
+  // tw5.buildReactionGraph() reads getTiddlerText() per URI — no Automerge round-trip.
+  const [reactionGraph, setReactionGraph] = useState<ReactionGraph | null>(null);
+  const wsUrlRef = useRef(wsUrl);
+  wsUrlRef.current = wsUrl;
+
+  useEffect(() => {
+    if (!tw5) return;
+    // Initial build.
+    setReactionGraph(tw5.buildReactionGraph());
+    // Reactive rebuild on every wiki change (CRDT sync, local edit).
+    return tw5.onWikiChange(() => setReactionGraph(tw5.buildReactionGraph()));
+  }, [tw5]);
+
+  // fireMeme — sends LiveMsgFire over the tldraw room WS.
+  const fireMeme = useCallback((fromUri: string, trigger: string, payload: unknown = {}) => {
+    const ws = new WebSocket(wsUrlRef.current);
+    ws.addEventListener("open", () => {
+      ws.send(JSON.stringify({ type: "fire", fromUri, trigger, payload }));
+      ws.close();
+    });
+  }, []);
+
 
   // ⌘K / Ctrl+K → palette   |   ` (backtick) → canvas mode toggle
   useEffect(() => {
@@ -212,15 +235,6 @@ export function LarariumShell({ wsUrl, memes, onMemes }: ShellProps) {
     return () => window.removeEventListener("keydown", handler);
   }, []);
 
-  // TW5-backed FilterEngineFn — injected into compileCascade for wikitext-filter
-  // expression evaluation in the browser (room recipes, template cascade, palette search).
-  const filterEngine = useMemo<FilterEngineFn | null>(() => {
-    if (!tw5) return null;
-    return async (expr, closure, edges) => {
-      tw5.loadClosure(closure, edges);
-      return tw5.filterClosure(expr, closure);
-    };
-  }, [tw5]);
 
   // Expose opening state to browser console for smoke verification.
   // window.__larariumDebug.openPhase and .tw5 update reactively with ctx.
@@ -245,8 +259,9 @@ export function LarariumShell({ wsUrl, memes, onMemes }: ShellProps) {
     openPhase,
     tiddlerStore,
     tw5,
-    filterEngine,
     hostReceipt,
+    reactionGraph,
+    fireMeme,
   };
 
   return (

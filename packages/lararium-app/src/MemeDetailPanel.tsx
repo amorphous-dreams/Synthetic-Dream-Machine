@@ -2,14 +2,10 @@
  * MemeDetailPanel — renders a focused meme carrier through the TW5 pipeline.
  *
  * Read path (local-first):
- *   tiddlerStore.get(uri)         — live store authority (seed from CRDT projection)
- *   tiddlerStore.subscribe(uri)   — reactive updates without panel close/reopen
- *   tw5.renderCarrierVDom(uri, text)  → VDomNode[]   (TW5 fake DOM render)
+ *   tiddlerStore.get(uri)         — Automerge source of truth for carrier text
+ *   tiddlerStore.subscribe()      — reactive updates without panel close/reopen
+ *   tw5.renderMeme(uri, text)     → { view, vdom }  (ViewTemplate dispatch + TW5 render)
  *   renderVDom(vdom)              → React.ReactNode  (vdom-to-react adapter)
- *
- * Cold-start: if the store has no record yet, shape.meta.carrierText is the
- * seed (CRDT projection value present at panel mount). The subscription fires
- * immediately when seedAll() writes the store record.
  *
  * tw5 must be booted (tw5-ready phase) before the panel renders content.
  * While tw5 is null the panel shows a loading state.
@@ -25,62 +21,38 @@ import { renderVDom } from "./vdom-to-react.js";
 // ---------------------------------------------------------------------------
 
 function useCarrierText(uri: string | null): string | null {
-  const { editor, tiddlerStore } = useLararium();
-
-  // Cold-start seed from CRDT projection in shape.meta — present at mount.
-  const shapeSeed = useMemo<string | null>(() => {
-    if (!uri || !editor) return null;
-    const shape = editor.getCurrentPageShapes().find(
-      (s) =>
-        (s.meta as Record<string, unknown>)?.uri === uri &&
-        (s.meta as Record<string, unknown>)?.frameKind === "meme",
-    );
-    const ct = (shape?.meta as Record<string, unknown>)?.carrierText;
-    return typeof ct === "string" ? ct : null;
-  }, [uri, editor]);
-
+  const { tiddlerStore } = useLararium();
   const [carrierText, setCarrierText] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!uri) { setCarrierText(null); return; }
+    if (!uri || !tiddlerStore) { setCarrierText(null); return; }
 
-    if (tiddlerStore) {
-      tiddlerStore.get(uri).then((record) => {
-        setCarrierText(record?.text ?? shapeSeed ?? null);
-      });
-    } else {
-      setCarrierText(shapeSeed);
-    }
-
-    if (!tiddlerStore) return;
+    tiddlerStore.get(uri).then((record) => setCarrierText(record?.text ?? null));
 
     return tiddlerStore.subscribe((change) => {
       if (change.title !== uri) return;
       setCarrierText(change.record?.text ?? null);
     });
-  // shapeSeed seeds once on uri change; subscription owns subsequent updates.
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [uri, tiddlerStore]);
 
   return carrierText;
 }
 
 // ---------------------------------------------------------------------------
-// useCarrierVDom — TW5 render of carrier text → VDomNode[]
-//
-// Synchronous once tw5 is booted. Re-runs when carrierText changes.
-// Returns null while tw5 is loading or text is absent.
+// useMemeRender — Automerge text → tw5.renderMeme → { view, vdom }
 // ---------------------------------------------------------------------------
 
-function useCarrierVDom(
+type MemeView = "kumu-view" | "reaction-view" | "meme-view";
+
+function useMemeRender(
   uri: string | null,
   carrierText: string | null,
-): VDomNode[] | null {
+): { view: MemeView; vdom: VDomNode[]; kumuInstances: { name: string; props: string; el: unknown }[] } | null {
   const { tw5 } = useLararium();
-  return useMemo<VDomNode[] | null>(() => {
+  return useMemo(() => {
     if (!uri || !carrierText || !tw5) return null;
     try {
-      return tw5.renderCarrierVDom(uri, carrierText);
+      return tw5.renderMeme(uri, carrierText);
     } catch {
       return null;
     }
@@ -97,7 +69,7 @@ export function MemeDetailPanel() {
   const uri      = visible ? navState.focusUri! : null;
 
   const carrierText = useCarrierText(uri);
-  const vdom        = useCarrierVDom(uri, carrierText);
+  const rendered    = useMemeRender(uri, carrierText);
 
   const onClose = useCallback(
     () => dispatch({ type: "NAVIGATE_BACK" }),
@@ -116,15 +88,28 @@ export function MemeDetailPanel() {
   const body = (() => {
     if (!tw5)         return <div style={css.status}>⏿ tw5 booting…</div>;
     if (!carrierText) return <div style={css.status}>No carrier text — reseed room to populate.</div>;
-    if (!vdom)        return <div style={css.status}>Render error — check carrier syntax.</div>;
-    return renderVDom(vdom);
+    if (!rendered)    return <div style={css.status}>Render error — check carrier syntax.</div>;
+    return renderVDom(rendered.vdom);
   })();
+
+  const viewBadgeStyle: React.CSSProperties = {
+    fontSize: 9, fontFamily: "monospace", fontWeight: 700, letterSpacing: "0.08em",
+    padding: "1px 5px", borderRadius: 3, flexShrink: 0,
+    background: rendered?.view === "kumu-view" ? "#3d1f6b" : "#1a3d20",
+    color:      rendered?.view === "kumu-view" ? "#d2a8ff" : "#56d364",
+  };
+  const viewBadge = rendered?.view === "kumu-view"
+    ? <span style={viewBadgeStyle}>kumu</span>
+    : rendered?.view === "reaction-view"
+      ? <span style={viewBadgeStyle}>reaction</span>
+      : null;
 
   return (
     <div style={css.backdrop} onClick={onClose} aria-modal="true" role="dialog">
       <div style={css.panel} onClick={(e) => e.stopPropagation()}>
         <div style={css.header}>
           <span style={css.uri}>{uri}</span>
+          {viewBadge}
           <button style={css.closeBtn} onClick={onClose} aria-label="Close">✕</button>
         </div>
         <div style={css.body}>{body}</div>

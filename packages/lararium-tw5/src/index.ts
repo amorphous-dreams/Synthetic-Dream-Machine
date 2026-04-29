@@ -1,36 +1,46 @@
 /**
- * @lararium/tw5 — hosted TW5 implementation for Lararium.
+ * @lararium/tw5 — TW5 as the active isomorphic render engine for Lararium.
  *
  * Carries:
- *   LarariumTW5          — isomorphic TW5 boot/filter/render interface
- *   LarariumCrdtSyncAdaptor — TW5 SyncAdaptor backed by LarTiddlerStore
- *   MemoryTiddlerStore   — in-memory LarTiddlerStore (tests / fixtures)
- *   filterMemesWikitext  — functional API (backward compat with @lararium/node)
- *   toCanonicalWikitext  — wikitext-filter pre-processor (exported for @lararium/core/cascade)
- *   FilterEngineFn       — injectable filter engine type
- *   entryToFields        — ClosureEntry → TW5 tiddler fields
- *   buildEdgeFieldMap    — pranala edges → TW5 edge-out-* fields
+ *   LarariumTW5             — boot/filter/render interface; owns the widget pipeline
+ *   LarariumCrdtSyncAdaptor — TW5 SyncAdaptor backed by LarTiddlerStore (Automerge)
+ *   MemoryTiddlerStore      — in-memory LarTiddlerStore (tests / fixtures)
+ *   filterMemesWikitext     — functional filter API used by @lararium/node + MCP
+ *   precomputeRooms         — batch filter for snapshot builder
+ *   toCanonicalWikitext     — wikitext-filter pre-processor
+ *   entryToFields           — ClosureEntry → TW5 tiddler fields
+ *   buildEdgeFieldMap       — pranala edges → TW5 edge-out-* fields
  *
- * Architecture law:
- *   This package owns TW5-compatible interpretation of authorized tiddler state.
- *   It does not own Lararium state, lar:/// identity, Orichalcum authority,
- *   graph law, causal-island law, or canon-promotion ceremony.
- *   @lararium/core owns those contracts. @lararium/node and @lararium/app
- *   bind this package to their respective runtime environments.
+ * Widget tree ownership:
+ *   Messaging (papalohe/kukali/lele) and kumu device instances are native
+ *   TW5 widgets registered via createLarariumWidgets(). The active TW5 instance
+ *   builds the widgetTree and fakeDOM on each renderMeme() call — no parallel
+ *   render path needed.
  */
 
 export {
   LarariumTW5,
   filterMemesWikitext,
-  filterMemesTW,
-  filterMemesBrowser,
   precomputeRooms,
   toCanonicalWikitext,
   entryToFields,
   buildEdgeFieldMap,
 } from "./lararium-tw5.js";
 
-export type { FilterEngineFn } from "./lararium-tw5.js";
+export type { FilterEngineFn, ZoomLayout } from "./lararium-tw5.js";
+
+// ---------------------------------------------------------------------------
+// Active TW5 accessor — module-level, React-free.
+//
+// TW5 is a first-class citizen, not a React dependency.
+// Any code (tldraw callbacks, MCP handlers, tests) calls getActiveTW5()
+// without needing React context or prop threading.
+//
+// lararium-browser-host calls setActiveTW5(instance) after boot and
+// setActiveTW5(null) on room teardown.
+// ---------------------------------------------------------------------------
+
+export { setActiveTW5, getActiveTW5 } from "./active-tw5.js";
 
 export { LarariumCrdtSyncAdaptor } from "./sync-adaptor.js";
 export { MemoryTiddlerStore }      from "./memory-store.js";

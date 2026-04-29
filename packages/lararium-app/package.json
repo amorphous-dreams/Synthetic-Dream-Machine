@@ -11,6 +11,10 @@
     "test:e2e": "playwright test"
   },
   "dependencies": {
+    "@automerge/automerge": "^3.2.6",
+    "@automerge/automerge-repo": "^2.5.5",
+    "@automerge/automerge-repo-network-websocket": "^2.5.5",
+    "@automerge/automerge-repo-storage-indexeddb": "^2.5.5",
     "@lararium/core": "workspace:*",
     "@lararium/tldraw": "workspace:*",
     "@lararium/tw5": "workspace:*",

@@ -21,14 +21,6 @@ import { emitTldrawRecords, type TldrawEmission } from "./tldraw-shapes.js";
 import { pageId } from "./records.js";
 import { DEFAULT_PORTALS } from "./room.js";
 import { getIndicesAbove, type IndexKey } from "@tldraw/utils";
-import {
-  compileCascade, applyCascade,
-  type TemplateCascade, type FilterEngineFn,
-} from "./cascade.js";
-
-// Re-export cascade types so callers only need to import from @lararium/tldraw
-export type { TemplateCascade, CascadeEntry, MemeCascadePredicate, MemeCascadeFrame, FilterEngineFn, CompiledCascade, CompiledCascadeEntry } from "./cascade.js";
-
 // ---------------------------------------------------------------------------
 // Options
 // ---------------------------------------------------------------------------
@@ -36,46 +28,16 @@ export type { TemplateCascade, CascadeEntry, MemeCascadePredicate, MemeCascadeFr
 export interface MultiViewOptions extends ProjectOptions {
   /** @deprecated — single-page model has no per-view focus. Ignored. */
   focusUri?: string;
-  /**
-   * TW5-style template cascade — per-meme templateProps overrides.
-   * Entries are evaluated in order; first matching entry wins per meme per zoom level.
-   *
-   * Each entry may carry a `filter` (TW5 wikitext-filter expression evaluated against
-   * the full closure) or a structural `match` predicate. Filter entries require
-   * `filterEngine` to be provided; match-only entries work without it.
-   *
-   * Applied after registry-derived templateProps are computed.
-   */
-  cascade?: TemplateCascade;
-  /**
-   * Async filter engine for cascade `filter` expressions.
-   *
-   * Dialect: wikitext-filter (lar:///grammars/wikitext-filter).
-   * Node:    inject filterMemesWikitext from "@lararium/core/tw-filter"
-   * Browser: inject filterMemesWikitext from "@lararium/core/tw-filter" (Vite alias → browser bundle)
-   *
-   * Required when any cascade entry uses `filter`; ignored otherwise.
-   */
-  filterEngine?: FilterEngineFn;
 }
 
 // ---------------------------------------------------------------------------
-// renderAllViews — single-page emission (async: cascade filter compilation)
+// renderAllViews — single-page emission
 // ---------------------------------------------------------------------------
 
 export async function renderAllViews(artifact: BootArtifact, opts: MultiViewOptions = {}): Promise<TldrawEmission> {
-  const { focusUri: _ignored, cascade, filterEngine, ...projOpts } = opts;
+  const { focusUri: _ignored, ...projOpts } = opts;
 
-  const baseSnapshot = projectToTldraw(artifact, projOpts);
-
-  let snapshot = baseSnapshot;
-  if (cascade && cascade.length > 0) {
-    const engine: FilterEngineFn = filterEngine ?? (async () => []);
-    const edges = artifact.pranalaEdges ?? [];
-    const compiled = await compileCascade(cascade, artifact.closure, engine, edges);
-    snapshot = applyCascade(baseSnapshot, compiled);
-  }
-
+  const snapshot = projectToTldraw(artifact, projOpts);
   const layout = storyRiverLayout(snapshot);
 
   // Single page, no pageOverride — shape IDs are URI-stable by construction.

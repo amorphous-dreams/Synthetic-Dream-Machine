@@ -8,8 +8,7 @@
 
 import { type BootArtifact, scalarToStageBand } from "@lararium/core";
 import { parsePranalaEdges } from "@lararium/core";
-import type { MemeAstNode, WorksiteNode, TextNode, KumuRegistry } from "@lararium/core";
-import { projectCarrier } from "./render-target.js";
+import type { MemeAstNode, WorksiteNode, TextNode } from "@lararium/core";
 
 import {
   type LarTLSnapshot,
@@ -20,27 +19,13 @@ import {
   type LarTLNote,
   type LarTLBodyNode,
   type LarProjectionId,
-  type TemplatePropsByLevel,
   memeFrameId,
   ahuFrameId,
   socketShapeId,
   edgeArrowId,
   ownsArrowId,
   pageId,
-  buildTemplatePropsByLevel,
 } from "./records.js";
-
-// ---------------------------------------------------------------------------
-// projectWidgetTree — carrier text → LarTLBodyNode[] (sync, no execution)
-//
-// TW5 analogy: parse tree → widget tree, but stops before DOM render.
-// UEFN analogy: device definition snapshot — type + declared props, not runtime state.
-//
-// Produces three node kinds:
-//   text   — collapsed prose from Worksite/Text nodes (suppresses IAM/edges worksites)
-//   widget — resolved kumu instance: type + props known, body NOT executed
-//   hole   — typed hole: kahea call with no registry match (Hazel live placeholder)
-// ---------------------------------------------------------------------------
 
 const SUPPRESSED_WORKSITES = new Set(["iam", "meme-body-open", "body-close", "edges"]);
 
@@ -61,42 +46,6 @@ function collectText(nodes: readonly MemeAstNode[]): string {
   return parts.join("\n");
 }
 
-function projectWidgetTree(
-  uri: string,
-  carrierText: string,
-  registry: KumuRegistry,
-  parentFrameId: LarProjectionId,
-): LarTLBodyNode[] {
-  const { ast, widgetTree } = projectCarrier(uri, carrierText, registry);
-  const result: LarTLBodyNode[] = [];
-
-  // Text content: flatten prose from non-structural worksites
-  const prose = collectText(ast);
-  if (prose.trim()) {
-    result.push({ kind: "text", parentFrameId, text: prose.trim() });
-  }
-
-  // Widget skeleton: one body node per widget call in source order
-  for (const widget of widgetTree) {
-    if (widget.def) {
-      result.push({
-        kind: "widget",
-        parentFrameId,
-        kumuName: widget.kumuName,
-        props: widget.resolvedProps,
-      });
-    } else {
-      result.push({
-        kind: "hole",
-        parentFrameId,
-        kumuName: widget.kumuName,
-      });
-    }
-  }
-
-  return result;
-}
-
 // ---------------------------------------------------------------------------
 // projectToTldraw
 // ---------------------------------------------------------------------------
@@ -108,8 +57,6 @@ export interface ProjectOptions {
   includeNotes?: boolean;
   /** Read carrier text for edge extraction (uri → text). Required for arrows. */
   readText?: (uri: string) => string | null;
-  /** KumuRegistry — when provided, builds templateProps AND projects widget tree body nodes. */
-  registry?: KumuRegistry;
 }
 
 export function projectToTldraw(artifact: BootArtifact, opts: ProjectOptions = {}): LarTLSnapshot {
@@ -117,12 +64,7 @@ export function projectToTldraw(artifact: BootArtifact, opts: ProjectOptions = {
     includeAhuFrames = true,
     includeNotes = false,
     readText,
-    registry,
   } = opts;
-
-  const templateProps: TemplatePropsByLevel | undefined = registry
-    ? buildTemplatePropsByLevel(registry)
-    : undefined;
 
   const page: LarTLPage = {
     type: "page",
@@ -145,7 +87,7 @@ export function projectToTldraw(artifact: BootArtifact, opts: ProjectOptions = {
   const sockets:    LarTLSocket[]    = [];
   const notes:      LarTLNote[]      = [];
   const arrows:     LarTLArrow[]     = [];
-  const bodyNodes:  LarTLBodyNode[]  = [];
+  const bodyNodes:  LarTLBodyNode[]  = []; // populated by canvas layout; carrier text lives in Automerge
 
   // Build meme frames
   for (const [depth, band] of [...byDepth.entries()].sort((a, b) => a[0] - b[0])) {
@@ -153,7 +95,6 @@ export function projectToTldraw(artifact: BootArtifact, opts: ProjectOptions = {
       const fid = memeFrameId(entry.uri);
       const lastSegment = entry.uri.split("/").at(-1) ?? entry.uri;
 
-      const carrierText = readText ? (readText(entry.uri) ?? undefined) : undefined;
       frames.push({
         type: "frame",
         id: fid,
@@ -170,14 +111,7 @@ export function projectToTldraw(artifact: BootArtifact, opts: ProjectOptions = {
         manaoio:    entry.manaoio,
         stage:      scalarToStageBand(entry.confidence),
         implements: entry.implements,
-        ...(carrierText !== undefined && { carrierText }),
-        ...(templateProps !== undefined && { templateProps }),
       });
-
-      // Widget tree body nodes — structural skeleton (no kumu execution)
-      if (carrierText && registry) {
-        bodyNodes.push(...projectWidgetTree(entry.uri, carrierText, registry, fid));
-      }
 
       // Metadata note inside frame
       if (includeNotes && entry.exists) {

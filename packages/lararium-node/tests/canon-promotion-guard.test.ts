@@ -1,40 +1,13 @@
 /**
- * P3 guard: projection-cache-origin-cannot-promote-canon
+ * canPromoteToCanon policy guard tests.
  *
- * Verifies the canPromoteToCanon policy in @lararium/core refuses every
- * projection-cache origin, regardless of authorityMode or target.
- * Also verifies that operator-trusted origins are allowed through.
+ * projection-cache origin is removed — content now lives in the Automerge
+ * meme store; canvas shapes carry layout only, not carrier text.
  */
 
 import { canPromoteToCanon } from "@lararium/core";
 
-describe("canPromoteToCanon — projection-cache guard", () => {
-  const receiptHash = "abc123";
-
-  it("blocks projection-cache origin in local-operator mode", () => {
-    expect(canPromoteToCanon({
-      origin:        { kind: "projection-cache" },
-      authorityMode: "local-operator",
-      target:        "hostless-invariant-meme",
-    })).toEqual({ ok: false, reason: "projection-cache-origin-cannot-promote-canon" });
-  });
-
-  it("blocks projection-cache origin in ucan-delegated mode", () => {
-    expect(canPromoteToCanon({
-      origin:        { kind: "projection-cache" },
-      authorityMode: "ucan-delegated",
-      target:        "lar:///some/meme",
-    })).toEqual({ ok: false, reason: "projection-cache-origin-cannot-promote-canon" });
-  });
-
-  it("blocks projection-cache origin in keyhive mode", () => {
-    expect(canPromoteToCanon({
-      origin:        { kind: "projection-cache" },
-      authorityMode: "keyhive",
-      target:        "lar:///group/doc",
-    })).toEqual({ ok: false, reason: "projection-cache-origin-cannot-promote-canon" });
-  });
-
+describe("canPromoteToCanon — origin policy", () => {
   it("blocks tw-local origin (live edits require ceremony)", () => {
     expect(canPromoteToCanon({
       origin:        { kind: "tw-local" },

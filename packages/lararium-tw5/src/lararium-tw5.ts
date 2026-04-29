@@ -1,44 +1,28 @@
 /**
- * lararium-tw5 — isomorphic TW5 interface for Lararium.
+ * lararium-tw5 — TW5 as the active isomorphic render engine for Lararium.
  * Home: @lararium/tw5
  *
- * Architecture law:
- *   The live lar:/// CRDT documents ARE the source of truth — parse tree,
- *   widget tree, render tree all derive from them. TW5 acts as a guest
- *   interpreter: it owns TW-compatible interpretation of authorized tiddler
- *   state, but it does not own Lararium state, identity, or canon.
+ * Model: local-first async quine-wiki on a tldraw canvas.
+ *   Automerge (AutomergeMemeStore) is the source of truth for carrier text.
+ *   TW5 is the active render engine: parseTree → widgetTree → fakeDOM → VDomNode[].
+ *   tldraw is the canvas shell: layout, navigation, CRDT shape sync.
+ *   The three are independent stores; content flows through renderMeme().
  *
- * Boot model:
- *   import tw from "tiddlywiki"  →  Node: CJS default import via ESM interop
- *                                    Browser: Vite CJS→ESM transform at build time
- *   argv = []  →  TW5 boots its core modules from node_modules without
- *                 reading any wiki directory.
- *   $tw.browser detection  →  TW5 auto-detects its environment via
- *                              typeof window !== "undefined". We do NOT force
- *                              $tw.browser = true — forcing it in Node causes
- *                              TW5 to execute browser code paths that reference
- *                              window directly, breaking the Node runtime.
- *   preloadTiddlerArray  →  seeds lar:/// documents before boot completes.
+ * Three-tree pipeline:
+ *   MemeticParser  →  TW5ParseNode[]  (lararium-* tagged nodes)
+ *   TW5 makeWidget →  Widget instances (internal TW5 widgetTree, lararium-* classes)
+ *   render()       →  TW_Element tree  →  VDomNode[]  →  React
  *
- * wikitext-filter pre-processing (lar:///grammars/wikitext-filter):
+ * wikitext-filter dialect (toCanonicalWikitext):
  *   all[memes]         → all[tiddlers]
  *   toml:key[value]    → field:key[value]
  *   edge:FAMILY[ROLE]  → has[edge-out-FAMILY-ROLE]
  *   edge:FAMILY[]      → has[edge-out-FAMILY]
  *
- * ClosureEntry → tiddler field mapping:
- *   title        uri           — primary key
- *   tags         implements    — [tag[X]] = implement-set membership
- *   depth        String(depth) — [nsort[depth]]
- *   rating       kind          — [field:rating[meme]]
- *   confidence   String        — [toml:confidence[0.82]]
- *   register     register      — [toml:register[CS]]
- *   manaoio      String        — [toml:manaoio[0.78]]
- *   mana / manao String        — [toml:mana[0.9]]
- *   role         role          — [toml:role[...]]
- *   exists       String(bool)  — [field:exists[true]]
- *   edge-out-FAMILY          space-separated toUri list (any role)
- *   edge-out-FAMILY-ROLE     space-separated toUri list (specific role)
+ * ClosureEntry → tiddler field mapping (entryToFields):
+ *   title uri / tags implements / depth / rating (kind) / confidence / register
+ *   manaoio / mana / manao / role / exists / laresRelPath / contentHash
+ *   edge-out-FAMILY / edge-out-FAMILY-ROLE  (space-separated toUri lists)
  */
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -46,14 +30,54 @@
 // module.exports as the default export, giving us { TiddlyWiki: [Function] }.
 import tw from "tiddlywiki";
 
-import type { ClosureEntry, EdgeRecord, FilterEngineFn } from "@lararium/core";
+import type { ClosureEntry, EdgeRecord, FilterEngineFn, KumuDef, LarTiddlerStore } from "@lararium/core";
+import { parsePranalaEdges, extractReactionBindings, ReactionGraph, collectKumuDefs } from "@lararium/core";
 import { createLarariumWidgets, LARARIUM_WIDGETS_TIDDLER } from "./tw5-widgets.js";
 import { parseCarrierToTw5 } from "./memetic-parser.js";
+import type { TW5ParseNode } from "./memetic-parser.js";
 import { tw5ElementToVdom } from "./fake-dom.js";
 import type { VDomNode } from "./fake-dom.js";
 
 // Re-export so callers can get FilterEngineFn from @lararium/tw5 directly.
 export type { FilterEngineFn };
+
+// ---------------------------------------------------------------------------
+// ZoomLayout — tldraw canvas layout props for a zoom level, read from kumu def TOML
+// ---------------------------------------------------------------------------
+
+export interface ZoomLayout {
+  w:           number;
+  h:           number;
+  color:       string;
+  includeAhu:  boolean;
+  showCarrier: boolean;
+  opacity:     number;
+}
+
+function parseZoomLayoutTOML(text: string): ZoomLayout | null {
+  // Find a TOML block inside the carrier text (<<~ iam >> or <<~ toml >>).
+  const m = /```toml\n([\s\S]*?)```|<<~\s*(?:iam|toml)\s*>>([\s\S]*?)<<~\/(?:iam|toml)\s*>>/i.exec(text);
+  const toml = m ? (m[1] ?? m[2] ?? "") : text; // fall back to treating whole text as TOML
+
+  const get = (key: string): string | undefined => {
+    const r = new RegExp(`^${key}\\s*=\\s*(.+)$`, "m").exec(toml);
+    return r ? r[1]!.trim().replace(/^["']|["']$/g, "") : undefined;
+  };
+  const num  = (k: string, d: number): number  => { const v = get(k); return v ? (parseFloat(v) || d) : d; };
+  const bool = (k: string, d: boolean): boolean => { const v = get(k); return v !== undefined ? v === "true" : d; };
+
+  // If none of the layout keys are present, return null — not a layout tiddler.
+  if (!get("w") && !get("h") && !get("color")) return null;
+
+  return {
+    w:           num("w",             220),
+    h:           num("h",             100),
+    color:       get("color")      ?? "rating",
+    includeAhu:  bool("include-ahu",  false),
+    showCarrier: bool("show-carrier", false),
+    opacity:     num("opacity",       1.0),
+  };
+}
 
 // ---------------------------------------------------------------------------
 // wikitext-filter pre-processor
@@ -167,9 +191,22 @@ export class LarariumTW5 {
         restoreStdout = () => { proc.stdout.write = orig; };
       }
 
-      // Pre-load the widget tiddler (lar:/// URI) so it lives in the corpus graph.
+      // Pre-load plugin tiddlers before boot so TW5 discovers them at startup.
       instance.preloadTiddlers = instance.preloadTiddlers ?? [];
+      // Widget module marker — prototype chain wired by _registerWidgets() after boot.
       instance.preloadTiddlers.push(LARARIUM_WIDGETS_TIDDLER);
+      // Content-type config — maps text/x-memetic-wikitext to our parser in TW5's MIME registry.
+      instance.preloadTiddlers.push({
+        title: "$:/config/FileTypeMappings/text/x-memetic-wikitext",
+        text:  "text/x-memetic-wikitext",
+        tags:  [],
+      });
+      // Kumu def tag shadow — gives [[all[shadows]tag[$:/tags/LarariumKumu]]] a stable home.
+      instance.preloadTiddlers.push({
+        title: "$:/tags/LarariumKumu",
+        text:  "Lararium kumu device type definitions.",
+        tags:  ["$:/tags/Global"],
+      });
 
       instance.boot.boot(() => {
         restoreStdout?.();
@@ -303,6 +340,38 @@ export class LarariumTW5 {
   }
 
   /**
+   * Inject kumu device type definitions as TW5 tiddlers.
+   *
+   * Each KumuDef becomes a tiddler with:
+   *   title:  lar:///kumu/<name>  (stable URI, addressable by TW5 filter)
+   *   type:   text/x-memetic-wikitext
+   *   tags:   $:/tags/LarariumKumu
+   *   text:   the kumu carrier body (params + body nodes serialised as wikitext)
+   *
+   * KumuWidget.render() resolves defs by calling this.wiki.getTiddler(name) so
+   * TW5 is the single registry — no parallel KumuRegistry class needed.
+   *
+   * Call after boot() and before any renderMeme() that uses kumu instances.
+   * loadClosure() does NOT call this automatically — kumu defs arrive via the
+   * compiler artifact (BootArtifact.kumuDefs), not the tiddler closure.
+   */
+  injectKumuDefs(defs: readonly KumuDef[]): void {
+    if (!this._tw) throw new Error("LarariumTW5: call boot() before injectKumuDefs()");
+    for (const def of defs) {
+      this._tw.wiki.addTiddler(new this._tw.Tiddler({
+        title:  `lar:///kumu/${def.name}`,
+        type:   "text/x-memetic-wikitext",
+        tags:   ["$:/tags/LarariumKumu"],
+        text:   def.body.map((n) => ("content" in n ? (n as { content: string }).content : "")).join("\n"),
+        // Structured fields for filter queries: [[$:/tags/LarariumKumu]has[kumu-name]]
+        "kumu-name":       def.name,
+        "kumu-params":     def.params.join(" "),
+        "kumu-source-uri": def.carrierUri,
+      }));
+    }
+  }
+
+  /**
    * Remove a single tiddler by title.
    * Used by LarariumCrdtSyncAdaptor for tombstone propagation.
    */
@@ -332,10 +401,111 @@ export class LarariumTW5 {
   }
 
   /**
+   * One-time initial population of the TW5 wiki from a LarTiddlerStore.
+   *
+   * Call once after boot() and after the store reaches store-ready phase.
+   * The LarariumCrdtSyncAdaptor keeps TW5 live after this — do NOT call
+   * loadClosure() on every filter request (that wipes all tiddlers).
+   *
+   * Also scans carrier texts for kumu defs and injects them via injectKumuDefs().
+   */
+  async loadFromStore(store: LarTiddlerStore): Promise<void> {
+    if (!this._tw) throw new Error("LarariumTW5: call boot() before loadFromStore()");
+    const uris = await store.listVisible();
+    const kumuDefs: KumuDef[] = [];
+
+    await Promise.all(uris.map(async (uri) => {
+      const rec = await store.get(uri);
+      if (!rec || rec.deleted) return;
+      const fields: Record<string, string | string[]> = { title: rec.title, ...rec.fields };
+      if (rec.text !== undefined) fields["text"] = rec.text;
+      this._tw.wiki.addTiddler(new this._tw.Tiddler(fields));
+      if (rec.text) {
+        const { parseMemeCarrier } = await import("@lararium/core");
+        const ast = parseMemeCarrier(uri, rec.text);
+        kumuDefs.push(...collectKumuDefs(uri, ast));
+      }
+    }));
+
+    this._loadedUris = new Set(uris);
+    if (kumuDefs.length > 0) this.injectKumuDefs(kumuDefs);
+  }
+
+  /**
+   * Subscribe to TW5 wiki change events.
+   *
+   * The callback fires whenever tiddlers are added, updated, or deleted in the
+   * TW5 wiki — including changes applied by LarariumCrdtSyncAdaptor. Use to
+   * rebuild derived state (ReactionGraph, kumu def index) reactively.
+   *
+   * Returns an unsubscribe function. Call it on component unmount.
+   */
+  onWikiChange(cb: (changes: Record<string, unknown>) => void): () => void {
+    if (!this._tw) throw new Error("LarariumTW5: call boot() before onWikiChange()");
+    const wiki = this._tw.wiki;
+    // TW5 wiki emits "change" with a map of modified titles → change descriptor.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const handler = (changes: any) => cb(changes as Record<string, unknown>);
+    wiki.addEventListener("change", handler);
+    return () => wiki.removeEventListener("change", handler);
+  }
+
+  /**
+   * Build a ReactionGraph from all pranala edges currently in the TW5 wiki.
+   *
+   * Reads carrier text for every non-system tiddler via getTiddlerText(),
+   * parses papalohe/reaction edges, and loads them into a fresh ReactionGraph.
+   * Cheap enough to call on every wiki change event (no Automerge round-trip).
+   *
+   * Returns null if TW5 is not yet booted.
+   */
+  buildReactionGraph(): ReactionGraph | null {
+    if (!this._tw) return null;
+    const wiki = this._tw.wiki;
+    const titles: string[] = wiki.filterTiddlers("[all[tiddlers]!prefix[$:/]]");
+    const allEdges: { fromUri: string; toUri: string; family: string; role: string | null; payload: Record<string, unknown> }[] = [];
+
+    for (const uri of titles) {
+      const text: string | undefined = wiki.getTiddlerText(uri);
+      if (!text) continue;
+      try {
+        const edges = parsePranalaEdges(uri, text);
+        for (const e of edges) {
+          allEdges.push({
+            fromUri: e.fromUri, toUri: e.toUri,
+            family: e.family, role: e.role,
+            payload: (e as unknown as { payload?: Record<string, unknown> }).payload ?? {},
+          });
+        }
+      } catch { /* malformed carrier — skip */ }
+    }
+
+    const g = new ReactionGraph();
+    g.load(extractReactionBindings(allEdges));
+    return g;
+  }
+
+  /**
    * Render wikitext to HTML using TW5's native renderer.
    * Use for MemeDetailPanel TW5 render mode.
    * Returns an empty string before boot() resolves.
    */
+  /**
+   * Read zoom-level layout props from a kumu def tiddler (`lar:///kumu/meme-<level>`).
+   *
+   * The kumu def body may contain a TOML block with layout keys:
+   *   w, h, color, include-ahu, show-carrier, opacity
+   *
+   * Returns null when TW5 is not booted or the tiddler has no TOML block.
+   * Callers (applyZoomTemplate) fall back to their own hardcoded defaults.
+   */
+  getZoomLayout(level: string): ZoomLayout | null {
+    if (!this._tw) return null;
+    const text: string | undefined = this._tw.wiki.getTiddlerText(`lar:///kumu/meme-${level}`);
+    if (!text) return null;
+    return parseZoomLayoutTOML(text);
+  }
+
   renderText(wikitext: string, type = "text/vnd.tiddlywiki"): string {
     if (!this._tw) return "";
     return this._tw.wiki.renderText("text/html", type, wikitext) as string;
@@ -349,24 +519,165 @@ export class LarariumTW5 {
     if (!this._tw) return "";
     return (this._tw.wiki.renderTiddler("text/html", title) as string | undefined) ?? "";
   }
+
+  /**
+   * Inject cascade rules as shadow tiddlers in the TW5 wiki.
+   *
+   * Each rule becomes a `$:/lararium/cascade/<n>` shadow tiddler with:
+   *   filter   — wikitext-filter expression (evaluated by wiki.filterTiddlers)
+   *   template — tiddler title of the view template to apply on match
+   *   priority — rule index (lower = higher priority, first match wins)
+   *
+   * Call at boot after boot(), before renderMeme() is invoked.
+   * Rules are evaluated by resolveCascadeTemplate() using native TW5 filter evaluation.
+   */
+  injectCascadeRules(rules: readonly { filter: string; template: string }[]): void {
+    if (!this._tw) throw new Error("LarariumTW5: call boot() before injectCascadeRules()");
+    for (let i = 0; i < rules.length; i++) {
+      this._tw.wiki.addTiddler(new this._tw.Tiddler({
+        title:    `$:/lararium/cascade/${i}`,
+        tags:     ["$:/tags/LarariumCascade"],
+        filter:   rules[i]!.filter,
+        template: rules[i]!.template,
+        priority: String(i),
+      }));
+    }
+  }
+
+  /**
+   * Resolve which view template applies to a given meme URI.
+   *
+   * Evaluates cascade rules (shadow tiddlers tagged $:/tags/LarariumCascade,
+   * sorted by priority) against the current wiki state using native
+   * wiki.filterTiddlers(). First matching rule wins — TW5 cascade semantics.
+   *
+   * Returns the template tiddler title, or null if no rule matches.
+   * Callers fall back to AST-derived view classification when null.
+   */
+  resolveCascadeTemplate(uri: string): string | null {
+    if (!this._tw) return null;
+    const wiki = this._tw.wiki;
+    const rules: string[] = wiki.filterTiddlers(
+      "[all[shadows+tiddlers]tag[$:/tags/LarariumCascade]sort[priority]]"
+    );
+    for (const ruleTitle of rules) {
+      const tiddler = wiki.getTiddler(ruleTitle);
+      if (!tiddler) continue;
+      const filterExpr: string = tiddler.fields["filter"] as string ?? "";
+      if (!filterExpr) continue;
+      // Scope the filter to just this URI: add a title-exact prefix so the
+      // expression is evaluated with the meme as the current tiddler context.
+      const scoped = `[[${uri}]${toCanonicalWikitext(filterExpr)}]`;
+      const matched: string[] = wiki.filterTiddlers(scoped);
+      if (matched.includes(uri)) {
+        return (tiddler.fields["template"] as string | undefined) ?? null;
+      }
+    }
+    return null;
+  }
+
+  /**
+   * renderMeme — ViewTemplate cascade for a single meme URI.
+   *
+   * Cascade pipeline (TW5-native):
+   *   resolveCascadeTemplate(uri) → template tiddler title (from $:/tags/LarariumCascade rules)
+   *   If a template tiddler is found, renderTiddler(template) → VDomNode[]
+   *   Otherwise: AST-derived view classification → renderCarrierVDom(uri, text) → VDomNode[]
+   *
+   * View kinds (for callers to branch on):
+   *   "kumu-view"     — carrier contains kumu device instances
+   *   "reaction-view" — carrier contains papalohe wires only
+   *   "meme-view"     — standard meme prose / worksite content (default)
+   *   "cascade-view"  — view selected by an injected cascade rule
+   *
+   * Cascade results flow: wiki filterTiddlers → template render → VDomNode[] → canvas.
+   * No tldraw shape-meta stamping involved.
+   */
+  renderMeme(uri: string, text: string): {
+    view: "kumu-view" | "reaction-view" | "meme-view" | "cascade-view";
+    vdom: VDomNode[];
+    kumuInstances: { name: string; props: string; el: unknown }[];
+  } {
+    if (!this._tw) throw new Error("LarariumTW5: call boot() before renderMeme()");
+    const wiki = this._tw.wiki as { _larKumuInstances?: { name: string; props: string; el: unknown }[] };
+
+    // Clear instance accumulator before render so each call gets a clean slate.
+    wiki._larKumuInstances = [];
+
+    // Check cascade rules first — TW5 shadow tiddler filter evaluation.
+    const cascadeTemplate = this.resolveCascadeTemplate(uri);
+    if (cascadeTemplate) {
+      const vdom = this._renderTiddlerVDom(cascadeTemplate);
+      const kumuInstances = wiki._larKumuInstances ?? [];
+      wiki._larKumuInstances = [];
+      return { view: "cascade-view", vdom, kumuInstances };
+    }
+
+    // AST-derived view classification (no cascade rule matched).
+    const tw5Tree = parseCarrierToTw5(uri, text);
+    const hasKumu     = tw5Tree.some((n) => containsType(n, "lararium-kumu"));
+    const hasPapalohe = tw5Tree.some((n) => containsType(n, "lararium-papalohe"));
+    const view = hasKumu ? "kumu-view" : hasPapalohe ? "reaction-view" : "meme-view";
+
+    // TW5 widget pipeline: parseTree → widgetTree (KumuWidget.render records instances)
+    // → fakeDOM → VDomNode[]
+    const vdom = this.renderCarrierVDom(uri, text);
+
+    // Harvest kumu instances recorded by KumuWidget during render.
+    const kumuInstances = wiki._larKumuInstances ?? [];
+    wiki._larKumuInstances = [];
+
+    return { view, vdom, kumuInstances };
+  }
+
+  /** Render a tiddler by title through the fakeDOM pipeline → VDomNode[]. */
+  private _renderTiddlerVDom(title: string): VDomNode[] {
+    if (!this._tw) return [];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const tw = this._tw as any;
+    const tiddler = tw.wiki.getTiddler(title);
+    if (!tiddler) return [];
+    const parseTree = tw.wiki.parseTiddler(title);
+    if (!parseTree) return [];
+    const container = tw.fakeDocument.createElement("div");
+    container.setAttribute("data-lar-cascade-template", title);
+    tw.wiki.makeWidget(parseTree, { document: tw.fakeDocument }).render(container, null);
+    return tw5ElementToVdom(container);
+  }
+}
+
+function containsType(node: TW5ParseNode, type: string): boolean {
+  if (node.type === type) return true;
+  return (node.children ?? []).some((c: TW5ParseNode) => containsType(c, type));
 }
 
 // ---------------------------------------------------------------------------
-// Singleton — for functional API and serve.ts / MCP call sites
+// Server-side process singleton — used ONLY by the functional filter API.
+//
+// NEVER import or call getServerSingleton() from browser code. Each room (collaboration
+// space) must own its own LarariumTW5 instance: new LarariumTW5() → boot() →
+// injectKumuDefs() → loadClosure(). The singleton exists only so that Node.js
+// CLI tools (MCP, serve.ts filter calls) don't re-boot TW5 on every invocation.
 // ---------------------------------------------------------------------------
 
-let _singleton: LarariumTW5 | null = null;
-let _singletonReady: Promise<LarariumTW5> | null = null;
+let _serverSingleton: LarariumTW5 | null = null;
+let _serverSingletonReady: Promise<LarariumTW5> | null = null;
 
-async function getSingleton(): Promise<LarariumTW5> {
-  if (_singleton?.ready) return _singleton;
-  if (_singletonReady) return _singletonReady;
-  _singletonReady = (async () => {
-    _singleton = new LarariumTW5();
-    await _singleton.boot();
-    return _singleton;
+async function getServerSingleton(): Promise<LarariumTW5> {
+  if (typeof window !== "undefined") {
+    throw new Error(
+      "LarariumTW5 getServerSingleton() called in browser context. " +
+      "Use new LarariumTW5() scoped to the room instead.",
+    );
+  }
+  if (_serverSingleton?.ready) return _serverSingleton;
+  if (_serverSingletonReady) return _serverSingletonReady;
+  _serverSingletonReady = (async () => {
+    _serverSingleton = new LarariumTW5();
+    await _serverSingleton.boot();
+    return _serverSingleton;
   })();
-  return _singletonReady;
+  return _serverSingletonReady;
 }
 
 // ---------------------------------------------------------------------------
@@ -382,16 +693,11 @@ export async function filterMemesWikitext(
   expr: string,
   edges?: readonly EdgeRecord[],
 ): Promise<ClosureEntry[]> {
-  const inst = await getSingleton();
+  const inst = await getServerSingleton();
   inst.loadClosure(allEntries, edges);
   return inst.filterClosure(expr, allEntries);
 }
 
-/** Backward-compat alias — prefer filterMemesWikitext for new code. */
-export const filterMemesTW = filterMemesWikitext;
-
-/** Legacy browser alias — backward compat. */
-export const filterMemesBrowser = filterMemesWikitext;
 
 /**
  * Pre-compute multiple named filter results in a single boot cycle.
@@ -402,13 +708,13 @@ export async function precomputeRooms(
   rooms: Record<string, string>,
   edges?: readonly EdgeRecord[],
 ): Promise<Record<string, string[]>> {
-  const inst = await getSingleton();
+  const inst = await getServerSingleton();
   inst.loadClosure(allEntries, edges);
   const byUri = new Map(allEntries.map((e) => [e.uri, e]));
   const result: Record<string, string[]> = {};
   for (const [roomId, expr] of Object.entries(rooms)) {
     const titles = inst.filterTiddlers(expr);
-    result[roomId] = titles.filter((t) => byUri.has(t));
+    result[roomId] = titles.filter((title: string) => byUri.has(title));
   }
   return result;
 }

@@ -11,6 +11,3 @@ export * from "./room.js";
 // Convenience: project + layout + emit in one call
 export { renderToTldraw } from "./render.js";
 
-// Render target boundary — shared contract between tldraw and React adapters
-export { buildWidgetMap, projectCarrier, RENDER_TARGET_ADAPTERS } from "./render-target.js";
-export type { WidgetSlot, RenderTargetAdapter, RenderTargetId, RenderTargetRefresh, CarrierProjection } from "./render-target.js";

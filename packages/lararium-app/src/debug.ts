@@ -6,7 +6,8 @@
  * Access via: window.__larariumDebug.<key>
  */
 
-import type { LarariumTW5, MemoryTiddlerStore } from "@lararium/tw5";
+import type { LarariumTW5 } from "@lararium/tw5";
+import type { AutomergeMemeStore } from "./automerge-store.js";
 import type { LarariumOpenPhase } from "@lararium/core";
 import type { LarViewAction } from "@lararium/tldraw";
 import type React from "react";
@@ -14,7 +15,7 @@ import type React from "react";
 export interface LarariumDebug {
   store?:                unknown;       // tldraw useSync store object
   editor?:               unknown;       // tldraw Editor instance
-  tiddlerStore?:         MemoryTiddlerStore | null;
+  tiddlerStore?:         AutomergeMemeStore | null;
   hostReceipt?:          string | null;
   receiptShape?:         unknown;       // boot-receipt meta-frame shape record
   openPhase?:            LarariumOpenPhase | null;

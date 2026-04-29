@@ -287,8 +287,8 @@ Research substrate (informs but does not constrain S0):
 | 5 | Document map (updated) | "Where do I start" -> seconds | AGENTS.md |
 | 6 | HAKABA word-count constraint + optional sub-path (§3.4) | Eliminates slot-cardinality ambiguity; enables within-territory routing | URI_SCHEMA.md |
 | 7 | Provisionality marker taxonomy `~` (§3.5) | Three-type provisionality surfaces named and differentiated | URI_SCHEMA.md |
-| 8 | Kowloon/AP handle form + render target taxonomy (§3.3.1) | Social-layer identity canonized; three render surfaces named | URI_SCHEMA.md, LINDWYRM_STORY_SHAPE.md |
-| 9 | Stance amplitude modifiers `++`/`+`/(none)/`-`/`--` (§3.3.1) | Amplitude disambiguation independent of stance-count fuzz | URI_SCHEMA.md, LINDWYRM_STORY_SHAPE.md |
+| 8 | Kowloon/AP handle form + render target taxonomy (§3.3.1) | Social-layer identity canonized; three render surfaces named | URI_SCHEMA.md, `lar:///ha.ka.ba/docs/story/lindwyrm/dreamdeck-feed-architecture` |
+| 9 | Stance amplitude modifiers `++`/`+`/(none)/`-`/`--` (§3.3.1) | Amplitude disambiguation independent of stance-count fuzz | URI_SCHEMA.md, `lar:///ha.ka.ba/docs/story/lindwyrm/dreamdeck-feed-architecture` |
 
 Items 1–5 were additive (no existing content modified). Items 6–9 emerged from story-format work in ticks 34–46 and were applied as schema patches on the same session day. All nine are incorporated in URI_SCHEMA.md; operator confirmation converts to sprint promotion.
 

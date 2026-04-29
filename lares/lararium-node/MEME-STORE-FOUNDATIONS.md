@@ -11,7 +11,7 @@ confidence   = 0.88
 register     = "CS"
 mana         = 0.85
 manao        = 0.80
-role         = "research-foundation: meme store invariants, schema enforcement, self-hosting grammar"
+role         = "research-foundation: meme store invariants, schema enforcement, self-hosting grammar; local-first Automerge pivot (2026-04-29): AutomergeMemeStore replaces projection-cache seedAll; UCAN v0.10 + did:key identity wired"
 cacheable    = true
 retain       = true
 ```
@@ -163,12 +163,61 @@ P8 is the shortest path to the live edit loop. P9 hardens the graph. P10 begins 
 
 <<~/ahu >>
 
+<<~ ahu #local-first-pivot-2026-04-29 >>
+
+## 6. Local-First Pivot — Automerge Meme Store (2026-04-29)
+
+The three laws above held before the pivot. The pivot completes their implementation without contradicting them.
+
+### What changed
+
+| Old model | New model |
+|---|---|
+| `projection-cache` origin — seed tiddler store from `shape.meta.carrierText` on canvas sync | Removed. `projection-cache` is gone from `ChangeOrigin`. |
+| `seedAll()` in `LarariumCanvas` — iterate canvas shapes on sync, populate `MemoryTiddlerStore` | Removed. Canvas is the interactive infinite wiki surface, not a content source. |
+| `MemoryTiddlerStore` as the live store | `AutomergeMemeStore` — CRDT-backed, local-first, IDB-persisted |
+| TW5 boots when WS `session.synced` fires | TW5 boots after `await handle.whenReady()` — no race, no event to miss |
+
+### Boot sequence (new)
+
+```
+getOrCreateBrowserIdentity()   ← Ed25519 keypair + did:key:z... (IDB-persisted)
+readMemeStoreUrl(hostId)       ← <meta name="lararium-meme-store"> or localStorage
+initMemeRepo()                 ← Repo(IDB + /meme-sync WS) → find(url) → whenReady()
+                                  ↳ /auth/ucan POST — present browser UCAN to server
+TW5 boot + LarariumCrdtSyncAdaptor
+```
+
+Server boots:
+```
+getOrCreateNodeIdentity(dataDir)   ← Ed25519 keypair (operator-key.json)
+Repo(NodeFS + /meme-sync WSS)      ← seed from lares/ on first boot, resume on restart
+/auth/ucan POST handler            ← verify UCAN, registerPeer() in UcanPeerRegistry
+sharePolicy(peerId)                ← isAuthorized(peerId) || true (local-operator mode)
+<meta name="lararium-operator-did" content="did:key:z...">  ← injected into HTML
+```
+
+### Brooklyn Zelenka / Keyhive readiness
+
+The identity and UCAN layer is now in place:
+- `did:key` with Ed25519 — same principal model as Keyhive
+- UCAN v0.10 JWT — spec-compliant, no alpha-library dependency
+- `UcanPeerRegistry` + `sharePolicy` hook — Keyhive membership check plugs in here
+- `LarariumAuthorityEnvelope["keyhive"]` arm — type socket, not instantiated until WASM lands
+
+### Law addition: `local-first-store`
+
+> The Automerge meme store (`AutomergeMemeStore`) is the single source of truth for carrier text content. The tldraw canvas carries URI identity, room/page structure, and shape layout. Canvas shapes MUST NOT embed `carrierText` in `shape.meta`. Content sync flows through `/meme-sync`; layout sync flows through `/rooms/:id`. Two stores, one port, one operator identity.
+
+<<~/ahu >>
+
 <<~ ahu #edges >>
 
 <<~ pranala #to-roadmap ? -> lar:///lararium-node/ROADMAP family:control role:informs >>
 <<~ pranala #to-multiplayer ? -> lar:///lararium-node/MULTIPLAYER-INFINITE-CANVAS-WIKI family:control role:informs >>
 <<~ pranala #to-mu ? -> lar:///ha.ka.ba/api/v0.1/mu family:control role:implements-law >>
 <<~ pranala #to-agents ? -> lar:///AGENTS family:control role:receives-law >>
+<<~ pranala #to-crdt-research ? -> lar:///lararium-node/lararium-crdt-federation-research family:control role:implements >>
 
 <<~/ahu >>
 

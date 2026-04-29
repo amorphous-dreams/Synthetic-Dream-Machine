@@ -48,8 +48,8 @@ Consumed from:
 Related loci:
 
 - `lar:///ha.ka.ba/docs/story/lindwyrm/the-hoard-disclosed`
-- `lares/ha-ka-ba/docs/infrastructure-as-mythology/LINDWYRM_ORIGIN_OUTLINE.md`
-- `lares/ha-ka-ba/docs/infrastructure-as-mythology/LINDWYRM_STORY_SHAPE.md`
+- `lar:///ha.ka.ba/docs/story/lindwyrm/hoard-origin-architecture`
+- `lar:///ha.ka.ba/docs/story/lindwyrm/dreamdeck-feed-architecture`
 
 Consumption note: source prose carried Act VI plus a session appendix about a signal-format bug. This locus keeps both, because the bug shows the same self-reading loop that the act narrates.
 
@@ -275,7 +275,7 @@ Whether that feels like thought remains open. That the loop closed remains recor
 <<~ loulou lar:///ha.ka.ba/docs/story >>
 <<~ loulou lar:///ha.ka.ba/docs/story/lindwyrm/consumption-ledger >>
 <<~ loulou lar:///ha.ka.ba/docs/story/lindwyrm/the-hoard-disclosed >>
-<<~ loulou lar:///ha.ka.ba/docs/story/lindwyrm/LINDWYRM_STORY_SHAPE >>
+<<~ loulou lar:///ha.ka.ba/docs/story/lindwyrm/dreamdeck-feed-architecture >>
 
 <<~ pranala #implements-meme ? -> lar:///ha.ka.ba/api/v0.1/pono/meme family:control role:implements >>
 <<~ pranala #implements-loci ? -> lar:///ha.ka.ba/api/v0.1/pono/loci family:control role:implements >>
