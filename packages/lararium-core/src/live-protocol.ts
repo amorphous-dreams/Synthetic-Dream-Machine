@@ -284,6 +284,13 @@ export interface ReactionBinding {
   trigger:  string | null;
   fn:       string | null;
   role:     string | null;
+  /**
+   * "static"  — declared in carrier text (pranala edge, design-time wiring).
+   *             Equivalent to UEFN editor-side device graph connections.
+   * "dynamic" — established at runtime via subscribe(). Equivalent to
+   *             Verse code calling DeviceA.EventX.Subscribe(handler).
+   */
+  source:   "static" | "dynamic";
 }
 
 /** Extract reaction bindings from a flat edge list (isomorphic). */
@@ -298,6 +305,7 @@ export function extractReactionBindings(
       trigger: (e.payload["trigger"] as string | undefined) ?? null,
       fn:      (e.payload["fn"]      as string | undefined) ?? null,
       role:    e.role,
+      source:  "static" as const,
     }));
 }
 
@@ -305,20 +313,62 @@ export type ReactionHandler = (binding: ReactionBinding, payload: unknown) => vo
 
 /** In-memory reaction graph — subscribe + fire. Isomorphic. Async-first. */
 export class ReactionGraph {
-  private handlers = new Map<string, ReactionHandler[]>();
+  // Per-(fromUri, trigger) handlers — wired by subscribe()
+  private handlers    = new Map<string, ReactionHandler[]>();
+  // Per-fn handlers — wired by subscribeByFn(); fire for any binding with that fn
+  private fnHandlers  = new Map<string, ReactionHandler[]>();
   private _bindings: ReactionBinding[] = [];
 
   /**
-   * Load bindings — replaces the current set.
-   * Does not register handlers; use subscribe() for live callbacks.
+   * Load bindings — replaces the entire set.
+   * Preserves existing handlers (subscribe/subscribeByFn calls remain valid).
+   * For incremental updates prefer updateUri() / removeUri().
    */
-  load(bindings: ReactionBinding[]): void {
-    this.handlers.clear();
+  load(bindings: readonly ReactionBinding[]): void {
+    // Preserve handler lists; just ensure slots exist for new keys.
+    const seen = new Set<string>();
     for (const b of bindings) {
       const key = reactionKey(b.fromUri, b.trigger);
       if (!this.handlers.has(key)) this.handlers.set(key, []);
+      seen.add(key);
     }
-    this._bindings = bindings;
+    // Drop handler slots for bindings that no longer exist.
+    for (const key of this.handlers.keys()) {
+      if (!seen.has(key)) this.handlers.delete(key);
+    }
+    this._bindings = bindings.slice();
+  }
+
+  /**
+   * Incremental update — replace bindings for one URI without touching others.
+   * Handler slots for new (fromUri, trigger) keys are created automatically;
+   * subscribeByFn() handlers fire for them immediately on next fire() call.
+   */
+  updateUri(uri: string, bindings: ReactionBinding[]): void {
+    // Remove old bindings for this URI, add new ones.
+    const kept    = this._bindings.filter((b) => b.fromUri !== uri);
+    const oldKeys = new Set(
+      this._bindings.filter((b) => b.fromUri === uri).map((b) => reactionKey(b.fromUri, b.trigger))
+    );
+    const newKeys = new Set(bindings.map((b) => reactionKey(b.fromUri, b.trigger)));
+
+    // Drop handler slots that disappeared.
+    for (const key of oldKeys) {
+      if (!newKeys.has(key)) this.handlers.delete(key);
+    }
+    // Ensure slots exist for new keys.
+    for (const key of newKeys) {
+      if (!this.handlers.has(key)) this.handlers.set(key, []);
+    }
+    this._bindings = [...kept, ...bindings];
+  }
+
+  /** Remove all bindings for a URI (tiddler deleted). */
+  removeUri(uri: string): void {
+    for (const b of this._bindings.filter((b) => b.fromUri === uri)) {
+      this.handlers.delete(reactionKey(b.fromUri, b.trigger));
+    }
+    this._bindings = this._bindings.filter((b) => b.fromUri !== uri);
   }
 
   get bindings(): readonly ReactionBinding[] { return this._bindings; }
@@ -335,28 +385,64 @@ export class ReactionGraph {
     };
   }
 
+  /**
+   * Register a handler for ALL bindings with a given fn value.
+   * Fires for any (fromUri, trigger) whose resolved binding has fn === fnName.
+   * This is the preferred wiring point for view-layer actions — subscribe once,
+   * automatically handles bindings that arrive after boot via updateUri().
+   * Equivalent to subscribing to a UEFN Relay device by name rather than by source.
+   */
+  subscribeByFn(fnName: string, handler: ReactionHandler): () => void {
+    if (!this.fnHandlers.has(fnName)) this.fnHandlers.set(fnName, []);
+    const list = this.fnHandlers.get(fnName)!;
+    list.push(handler);
+    return () => {
+      const idx = list.indexOf(handler);
+      if (idx >= 0) list.splice(idx, 1);
+    };
+  }
+
   private _resolveBinding(fromUri: string, trigger: string): ReactionBinding {
     return (
       this._bindings.find((b) => b.fromUri === fromUri && b.trigger === trigger) ??
-      { fromUri, toUri: "", trigger, fn: null, role: null }
+      { fromUri, toUri: "", trigger, fn: null, role: null, source: "dynamic" as const }
     );
+  }
+
+  private _dispatchToFnHandlers(binding: ReactionBinding, _payload: unknown): ReactionHandler[] {
+    if (!binding.fn) return [];
+    return this.fnHandlers.get(binding.fn) ?? [];
   }
 
   /**
    * Fire all handlers for (fromUri, trigger) — `hui` / all-complete semantics.
-   * Awaits every handler. Use as the default fire() mode.
+   * Runs both per-key handlers (subscribe) and fn handlers (subscribeByFn).
    */
   async fire(fromUri: string, trigger: string, payload: unknown = {}): Promise<void> {
-    const key = reactionKey(fromUri, trigger);
-    const list = this.handlers.get(key) ?? [];
-    if (list.length === 0) return;
+    const key     = reactionKey(fromUri, trigger);
     const binding = this._resolveBinding(fromUri, trigger);
+    const list    = [...(this.handlers.get(key) ?? []), ...this._dispatchToFnHandlers(binding, payload)];
+    if (list.length === 0) return;
     await Promise.all(list.map((h) => Promise.resolve(h(binding, payload))));
   }
 
   /** `hui` — wait for all handlers to complete (alias for fire). */
   fireAll(fromUri: string, trigger: string, payload: unknown = {}): Promise<void> {
     return this.fire(fromUri, trigger, payload);
+  }
+
+  /**
+   * Synchronous tick dispatch — UEFN fidelity mode.
+   * Runs per-key handlers then fn handlers in subscription order.
+   */
+  fireSync(fromUri: string, trigger: string, payload: unknown = {}): void {
+    const key     = reactionKey(fromUri, trigger);
+    const binding = this._resolveBinding(fromUri, trigger);
+    const list    = [...(this.handlers.get(key) ?? []), ...this._dispatchToFnHandlers(binding, payload)];
+    if (list.length === 0) return;
+    for (const h of list) {
+      try { h(binding, payload); } catch { /* handler errors are isolated */ }
+    }
   }
 
   /**

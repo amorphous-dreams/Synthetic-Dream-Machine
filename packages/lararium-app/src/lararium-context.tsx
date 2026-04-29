@@ -102,7 +102,7 @@ export interface LarariumCtxValue {
   hostReceipt:    string | null;
   /** Reaction graph built from Automerge store — null until store-ready + scan complete. */
   reactionGraph:  ReactionGraph | null;
-  /** Fire a reaction trigger — sends LiveMsgFire over the room WS. */
+  /** Fire a reaction trigger locally through the reaction graph. No WS round-trip. */
   fireMeme:       (fromUri: string, trigger: string, payload?: unknown) => void;
 }
 

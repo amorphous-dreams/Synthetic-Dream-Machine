@@ -30,7 +30,7 @@
 // module.exports as the default export, giving us { TiddlyWiki: [Function] }.
 import tw from "tiddlywiki";
 
-import type { ClosureEntry, EdgeRecord, FilterEngineFn, KumuDef, LarTiddlerStore } from "@lararium/core";
+import type { ClosureEntry, EdgeRecord, FilterEngineFn, KumuDef, LarTiddlerStore, ReactionBinding } from "@lararium/core";
 import { parsePranalaEdges, extractReactionBindings, ReactionGraph, collectKumuDefs } from "@lararium/core";
 import { createLarariumWidgets, LARARIUM_WIDGETS_TIDDLER } from "./tw5-widgets.js";
 import { parseCarrierToTw5 } from "./memetic-parser.js";
@@ -512,6 +512,28 @@ export class LarariumTW5 {
    * Cheap enough to call on every wiki change event (no Automerge round-trip).
    *
    * Returns null if TW5 is not yet booted.
+   */
+  /** Parse reaction bindings for a single URI from its current tiddler text. */
+  bindingsForUri(uri: string): ReactionBinding[] {
+    if (!this._tw) return [];
+    const text: string | undefined = this._tw.wiki.getTiddlerText(uri);
+    if (!text) return [];
+    try {
+      const edges = parsePranalaEdges(uri, text);
+      return extractReactionBindings(
+        edges.map((e) => ({
+          fromUri: e.fromUri, toUri: e.toUri,
+          family:  e.family,  role:  e.role,
+          payload: (e as unknown as { payload?: Record<string, unknown> }).payload ?? {},
+        }))
+      );
+    } catch { return []; }
+  }
+
+  /**
+   * Build a full ReactionGraph from all tiddlers.
+   * Use once at boot to populate the graph; after that prefer
+   * graph.updateUri(uri, tw5.bindingsForUri(uri)) on wiki changes.
    */
   buildReactionGraph(): ReactionGraph | null {
     if (!this._tw) return null;

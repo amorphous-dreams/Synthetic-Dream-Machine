@@ -22,10 +22,10 @@ import type { Editor } from "tldraw";
 import { createPortal } from "react-dom";
 import { INITIAL_VIEW_STATE, viewStateReducer } from "@lararium/tldraw";
 import type { LarViewAction, ZoomLevel } from "@lararium/tldraw";
+import { ReactionGraph } from "@lararium/core";
 import { LarariumCanvas } from "./LarariumCanvas.js";
 import { MemeDetailPanel } from "./MemeDetailPanel.js";
 import { LarariumCtx, useLararium, shortUri, useTheme } from "./lararium-context.js";
-import type { ReactionGraph } from "@lararium/core";
 import { useLarariumHostOpen } from "./lararium-browser-host.js";
 import { debugSet } from "./debug.js";
 import "./lararium-theme.css";
@@ -192,27 +192,60 @@ export function LarariumShell({ wsUrl, memes, onMemes }: ShellProps) {
       : null
   );
 
-  // ReactionGraph — built by TW5 from wiki tiddler texts; rebuilt on every wiki change.
-  // tw5.buildReactionGraph() reads getTiddlerText() per URI — no Automerge round-trip.
-  const [reactionGraph, setReactionGraph] = useState<ReactionGraph | null>(null);
-  const wsUrlRef = useRef(wsUrl);
-  wsUrlRef.current = wsUrl;
+  // ReactionGraph — one stable instance for the session lifetime.
+  // Never recreated; bindings are patched incrementally via updateUri().
+  // subscribeByFn() handlers are registered once and automatically apply
+  // to bindings that arrive after boot — no teardown/re-subscription needed.
+  const graphRef = useRef<ReactionGraph>(new ReactionGraph());
+  const [graphReady, setGraphReady] = useState(false);
 
+  const dispatchRef = useRef(dispatch);
+  dispatchRef.current = dispatch;
+
+  // Register fn-based view-action handlers once.
+  // fn:"navigate" → GO_TO_ROOM  (toUri carries the roomId)
+  // fn:"zoom"     → ZOOM_IN     (toUri carries the meme URI)
+  // fn:"relay"    → Relay Device: re-fires trigger on toUri (signal bus pattern)
+  useEffect(() => {
+    const g = graphRef.current;
+    const unsubs = [
+      g.subscribeByFn("navigate", (b) => {
+        dispatchRef.current({ type: "GO_TO_ROOM", roomId: b.toUri });
+      }),
+      g.subscribeByFn("zoom", (b) => {
+        dispatchRef.current({ type: "ZOOM_IN", uri: b.toUri });
+      }),
+      g.subscribeByFn("relay", (b, payload) => {
+        if (b.trigger) graphRef.current.fireSync(b.toUri, b.trigger, payload);
+      }),
+    ];
+    return () => { unsubs.forEach((u) => u()); };
+  }, []); // stable — never re-runs
+
+  // Boot: full load from TW5, then incremental updateUri on wiki changes.
   useEffect(() => {
     if (!tw5) return;
-    // Initial build.
-    setReactionGraph(tw5.buildReactionGraph());
-    // Reactive rebuild on every wiki change (CRDT sync, local edit).
-    return tw5.onWikiChange(() => setReactionGraph(tw5.buildReactionGraph()));
+    const initial = tw5.buildReactionGraph();
+    if (initial) {
+      graphRef.current.load(initial.bindings);
+      setGraphReady(true);
+    }
+    return tw5.onWikiChange((changes: Record<string, unknown>) => {
+      for (const uri of Object.keys(changes)) {
+        if (!uri.startsWith("lar:")) continue;
+        const bindings = tw5.bindingsForUri(uri);
+        if (bindings.length > 0) graphRef.current.updateUri(uri, bindings);
+        else graphRef.current.removeUri(uri);
+      }
+    });
   }, [tw5]);
 
-  // fireMeme — sends LiveMsgFire over the tldraw room WS.
+  // Expose graph via context once ready; ref is stable so no churn after boot.
+  const reactionGraph = graphReady ? graphRef.current : null;
+
+  // fireMeme — synchronous local dispatch. UEFN within-tick fidelity.
   const fireMeme = useCallback((fromUri: string, trigger: string, payload: unknown = {}) => {
-    const ws = new WebSocket(wsUrlRef.current);
-    ws.addEventListener("open", () => {
-      ws.send(JSON.stringify({ type: "fire", fromUri, trigger, payload }));
-      ws.close();
-    });
+    graphRef.current.fireSync(fromUri, trigger, payload);
   }, []);
 
 

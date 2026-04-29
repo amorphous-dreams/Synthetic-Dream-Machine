@@ -64,7 +64,7 @@ function useMemeRender(
 // ---------------------------------------------------------------------------
 
 export function MemeDetailPanel() {
-  const { navState, dispatch, tw5 } = useLararium();
+  const { navState, dispatch, tw5, reactionGraph, fireMeme } = useLararium();
   const visible  = navState.activeView === "meme-detail" && !!navState.focusUri;
   const uri      = visible ? navState.focusUri! : null;
 
@@ -75,6 +75,18 @@ export function MemeDetailPanel() {
     () => dispatch({ type: "NAVIGATE_BACK" }),
     [dispatch],
   );
+
+  // Fire "activate" on the meme and "begin" on each of its kumu device instances
+  // when the panel opens. Matches UEFN lifecycle: meme activation → device OnBegin.
+  // Handlers wired in LarariumShell translate these triggers to view dispatch.
+  useEffect(() => {
+    if (!uri || !reactionGraph) return;
+    fireMeme(uri, "activate");
+    for (const inst of (rendered?.kumuInstances ?? [])) {
+      fireMeme(`lar:///kumu/${inst.name}`, "begin", { props: inst.props, sourceUri: uri });
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [uri]);
 
   useEffect(() => {
     if (!visible) return;
