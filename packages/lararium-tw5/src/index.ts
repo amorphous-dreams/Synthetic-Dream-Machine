@@ -46,6 +46,9 @@ export { LarariumCrdtSyncAdaptor } from "./sync-adaptor.js";
 export { LarDiskSyncAdaptor }      from "./disk-sync-adaptor.js";
 export { MemoryTiddlerStore }      from "./memory-store.js";
 
+export { splitCarrierToTiddlers, serializeCarrier } from "./carrier-split.js";
+export type { CarrierSplit, ParentTiddler, ChildTiddler } from "./carrier-split.js";
+
 export { tw5ElementToVdom, tw5ElementToHtml } from "./fake-dom.js";
 export type { VDomNode, TW5FakeElement, TW5FakeTextNode, TW5FakeNode } from "./fake-dom.js";
 

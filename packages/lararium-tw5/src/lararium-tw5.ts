@@ -32,6 +32,7 @@ import tw from "tiddlywiki";
 
 import type { ClosureEntry, EdgeRecord, FilterEngineFn, KumuDef, LarTiddlerStore, ReactionBinding } from "@lararium/core";
 import { parsePranalaEdges, extractReactionBindings, ReactionGraph, collectKumuDefs } from "@lararium/core";
+import { splitCarrierToTiddlers } from "./carrier-split.js";
 import { createLarariumWidgets, LARARIUM_WIDGETS_TIDDLER } from "./tw5-widgets.js";
 import { parseCarrierToTw5 } from "./memetic-parser.js";
 import type { TW5ParseNode } from "./memetic-parser.js";
@@ -572,14 +573,34 @@ exports.startup = function() {
     await Promise.all(uris.map(async (uri) => {
       const rec = await store.get(uri);
       if (!rec || rec.deleted) { loaded++; onProgress?.(loaded, total); return; }
-      const fields: Record<string, string | string[]> = { title: rec.title, ...rec.fields };
-      if (rec.text !== undefined) fields["text"] = rec.text;
-      this._tw.wiki.addTiddler(new this._tw.Tiddler(fields));
-      if (rec.text) {
+
+      if (rec.text && (rec.fields["content-type"] === "text/x-memetic-wikitext" || !rec.fields["content-type"])) {
+        // Carrier text — split into parent tiddler + ahu child tiddlers.
+        const split = splitCarrierToTiddlers(uri, rec.text);
+        const parentFields: Record<string, string | string[]> = {
+          title: rec.title,
+          ...rec.fields,          // store-level fields (revision, bag, etc.)
+          ...split.parent.fields, // #iam-derived fields win over store metadata
+          text: rec.text,         // raw carrier text kept for MemeticParser
+        };
+        this._tw.wiki.addTiddler(new this._tw.Tiddler(parentFields));
+        for (const child of split.children) {
+          this._tw.wiki.addTiddler(new this._tw.Tiddler({ ...child.fields, title: child.title, text: child.text }));
+        }
+        if (split.warnings.length > 0) {
+          console.warn(`[lararium] carrier parse warnings for ${uri}:`, split.warnings);
+        }
+        // Collect kumu defs from the parsed AST.
         const { parseMemeCarrier } = await import("@lararium/core");
         const ast = parseMemeCarrier(uri, rec.text);
         kumuDefs.push(...collectKumuDefs(uri, ast));
+      } else {
+        // Non-carrier tiddler (text/plain palette, etc.) — load fields as-is.
+        const fields: Record<string, string | string[]> = { title: rec.title, ...rec.fields };
+        if (rec.text !== undefined) fields["text"] = rec.text;
+        this._tw.wiki.addTiddler(new this._tw.Tiddler(fields));
       }
+
       loaded++;
       onProgress?.(loaded, total);
     }));

@@ -23,6 +23,15 @@
 
 import type { LarTiddlerStore, LarTiddlerRecord, ChangeOrigin } from "@lararium/core";
 import type { LarariumTW5 } from "./lararium-tw5.js";
+import { splitCarrierToTiddlers, serializeCarrier } from "./carrier-split.js";
+
+type SaveStrategy = "skip" | "direct" | "child-carrier";
+type SaveHandler  = (
+  title:    string,
+  fields:   Record<string, string>,
+  revision: string,
+  origin:   ChangeOrigin,
+) => Promise<void>;
 
 // ---------------------------------------------------------------------------
 // Internal helpers
@@ -90,15 +99,36 @@ export class LarariumCrdtSyncAdaptor {
       this._applying = change.origin;
       try {
         if (change.record === null || change.record.deleted) {
+          // Remove parent tiddler + all ahu children (tagged with parent URI).
           this.tw5.removeTiddler(change.title);
+          const childTitles: string[] = this.tw5.filterTiddlers(`[tag[${change.title}]has[ahu-slot]]`);
+          for (const t of childTitles) this.tw5.removeTiddler(t);
           this._pendingDeletions.add(change.title);
         } else {
-          const fields: Record<string, string | string[]> = {
-            title: change.record.title,
-            ...change.record.fields,
-          };
-          if (change.record.text !== undefined) fields["text"] = change.record.text;
-          this.tw5.setTiddler(fields);
+          const rec = change.record;
+          const isCarrier = rec.text !== undefined &&
+            (rec.fields["content-type"] === "text/x-memetic-wikitext" || !rec.fields["content-type"]);
+
+          if (isCarrier && rec.text) {
+            const split = splitCarrierToTiddlers(change.title, rec.text);
+            // Remove stale children before adding new ones.
+            const staleChildren: string[] = this.tw5.filterTiddlers(`[tag[${change.title}]has[ahu-slot]]`);
+            for (const t of staleChildren) this.tw5.removeTiddler(t);
+            // Add parent.
+            this.tw5.setTiddler({ title: rec.title, ...rec.fields, ...split.parent.fields, text: rec.text });
+            // Add children.
+            for (const child of split.children) {
+              this.tw5.setTiddler({ ...child.fields, title: child.title, text: child.text });
+            }
+            if (split.warnings.length > 0) {
+              console.warn(`[lararium] sync carrier warnings for ${change.title}:`, split.warnings);
+            }
+          } else {
+            const fields: Record<string, string | string[]> = { title: rec.title, ...rec.fields };
+            if (rec.text !== undefined) fields["text"] = rec.text;
+            this.tw5.setTiddler(fields);
+          }
+
           this._pendingModifications.add(change.title);
           if (change.revision) this._revisions.set(change.title, change.revision);
         }
@@ -163,38 +193,110 @@ export class LarariumCrdtSyncAdaptor {
     tiddler: unknown,
     callback: (err: Error | null, adaptorInfo: unknown, revision: string) => void,
   ): void {
-    // Echo-loop guard: if we're currently applying a remote change, suppress writeback.
-    if (this._applying !== null) {
-      callback(null, {}, this._revisions.get("") ?? "0");
-      return;
-    }
+    if (this._applying !== null) { callback(null, {}, "0"); return; }
 
     const fields = extractFields(tiddler);
-    const title = fields["title"] ?? "";
+    const title  = fields["title"] ?? "";
+    const strategy = this._resolveSaveStrategy(title);
 
-    // Draft guard: never write session-local tiddlers to shared store.
-    if (isSessionLocal(title) || isTW5System(title)) {
-      callback(null, {}, "0");
-      return;
-    }
+    if (strategy === "skip") { callback(null, {}, "0"); return; }
 
     const revision = String(Date.now());
-    this._revisions.set(title, revision);
-
-    const textVal = fields["text"];
-    const record: LarTiddlerRecord = {
-      title,
-      fields: Object.fromEntries(Object.entries(fields).filter(([k]) => k !== "text")),
-      ...(textVal !== undefined ? { text: textVal } : {}),
-      revision,
-      bag: "room",
-    };
-
     const origin: ChangeOrigin = { kind: "tw-local", instanceId: this.instanceId };
-    this.store.put(record, origin).then(() => {
-      callback(null, {}, revision);
-    }).catch((err: Error) => callback(err, {}, revision));
+
+    this._saveHandlers[strategy](title, fields, revision, origin)
+      .then(() => callback(null, {}, revision))
+      .catch((err: Error) => callback(err, {}, revision));
   }
+
+  // ---------------------------------------------------------------------------
+  // Save cascade — ordered filter rules, first match wins.
+  //
+  // Each rule is a TW5 filter expression evaluated against the tiddler title.
+  // [[title]<filter>] returning a non-empty list means the rule matches.
+  //
+  // Extend by adding rules before the catch-all "direct" entry.
+  // ---------------------------------------------------------------------------
+
+  private static readonly SAVE_CASCADE: Array<{ filter: string; strategy: SaveStrategy }> = [
+    { filter: "[is[system]]",   strategy: "skip"          }, // $:/ system tiddlers
+    { filter: "[prefix[$:/temp/]]", strategy: "skip"       }, // session drafts
+    { filter: "[prefix[Draft of ]]", strategy: "skip"      }, // TW5 draft tiddlers
+    { filter: "[has[ahu-parent]]",   strategy: "child-carrier" }, // ahu child → reconstruct parent carrier
+    { filter: "[prefix[lar:]]",      strategy: "direct"    }, // canonical meme → write as-is
+  ];
+
+  private _resolveSaveStrategy(title: string): SaveStrategy {
+    const wiki = this.tw5.wiki;
+    for (const { filter, strategy } of LarariumCrdtSyncAdaptor.SAVE_CASCADE) {
+      try {
+        const result: string[] = wiki.filterTiddlers(`[[${title}]${filter}]`);
+        if (result.length > 0) return strategy;
+      } catch { /* malformed filter — skip rule */ }
+    }
+    return "skip"; // default: unknown tiddler types are not synced
+  }
+
+  private readonly _saveHandlers: Record<SaveStrategy, SaveHandler> = {
+    skip: async () => { /* no-op */ },
+
+    direct: async (title, fields, revision, origin) => {
+      this._revisions.set(title, revision);
+      const textVal = fields["text"];
+      const record: LarTiddlerRecord = {
+        title,
+        fields: Object.fromEntries(
+          Object.entries(fields)
+            .filter(([k]) => k !== "text" && k !== "title")
+            .map(([k, v]) => [k, String(v)])
+        ),
+        ...(textVal !== undefined ? { text: textVal } : {}),
+        revision,
+        bag: "room",
+      };
+      await this.store.put(record, origin);
+    },
+
+    "child-carrier": async (title, fields, revision, origin) => {
+      const parentUri = fields["ahu-parent"] ?? "";
+      if (!parentUri) return;
+
+      const wiki = this.tw5.wiki;
+      const parentTiddler = wiki.getTiddler?.(parentUri);
+      const parentFields: Record<string, string | string[]> = parentTiddler?.fields ?? {};
+      const parentText: string = String(parentFields["text"] ?? "");
+
+      const childTitles: string[] = this.tw5.filterTiddlers(`[tag[${parentUri}]has[ahu-slot]]`);
+      const children = childTitles.map((ct) => {
+        const ct5 = wiki.getTiddler?.(ct);
+        const cf  = ct5?.fields ?? {};
+        return {
+          title: ct,
+          fields: { ...cf, "ahu-slot": cf["ahu-slot"] ?? "", "ahu-parent": parentUri, tags: [parentUri] },
+          text: String(cf["text"] ?? ""),
+        };
+      });
+
+      const reconstructed = serializeCarrier(
+        { title: parentUri, fields: parentFields, text: parentText },
+        children,
+      );
+
+      this._revisions.set(parentUri, revision);
+      const record: LarTiddlerRecord = {
+        title: parentUri,
+        fields: Object.fromEntries(
+          Object.entries(parentFields)
+            .filter(([k]) => k !== "text" && k !== "title")
+            .map(([k, v]) => [k, Array.isArray(v) ? v.join(" ") : String(v)])
+        ),
+        text: reconstructed,
+        revision,
+        bag: "room",
+      };
+      await this.store.put(record, origin);
+    },
+  };
 
   deleteTiddler(
     title: string,
