@@ -138,17 +138,20 @@ export function useLarariumHostOpen(options: BrowserHostOptions): HostOpenState 
         await t.boot();
         tw5Ref.current = t;
         setActiveTW5(t);
-        if (!cancelled) { setTw5(t); setPhase({ kind: "tw5-ready", hostId }); }
       } catch (err: unknown) {
         console.warn("[lararium-browser-host] TW5 boot failed:", err);
         if (!cancelled) setPhase({ kind: "error", message: `TW5 boot failed: ${String(err)}` });
         return;
       }
 
-      // Seed TW5 wiki from the Automerge store — one-time initial population.
-      // Also scans carrier texts for kumu defs and injects them as tiddlers.
-      // After this, LarariumCrdtSyncAdaptor keeps the wiki live via setTiddler/removeTiddler.
-      await t.loadFromStore(s);
+      // Seed TW5 wiki from the Automerge store before signaling tw5-ready.
+      // buildReactionGraph() fires as soon as tw5 state is set, so the wiki
+      // must be populated first — otherwise the reaction graph sees an empty store.
+      await t.loadFromStore(s, (loaded, total) => {
+        if (!cancelled) setPhase({ kind: "tw5-hydrating", loaded, total });
+      });
+
+      if (!cancelled) { setTw5(t); setPhase({ kind: "tw5-ready", hostId }); }
 
       // Bind TW5 to the AutomergeMemeStore via CRDT sync adaptor.
       // crdt-remote changes (Automerge → TW5): adaptor.start() subscribes to store.

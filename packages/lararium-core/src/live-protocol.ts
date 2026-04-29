@@ -92,6 +92,7 @@ export type LarariumOpenPhase =
   | { readonly kind: "store-opening";      readonly recipeUri: string }
   | { readonly kind: "store-ready";        readonly titleCount: number }
   | { readonly kind: "tw5-opening";        readonly hostId:    string }
+  | { readonly kind: "tw5-hydrating";      readonly loaded:    number; readonly total: number }
   | { readonly kind: "tw5-ready";          readonly hostId:    string }
   | { readonly kind: "projection-opening"; readonly roomId:    string }
   | { readonly kind: "projection-ready";   readonly roomId:    string }
@@ -332,9 +333,12 @@ export class ReactionGraph {
       if (!this.handlers.has(key)) this.handlers.set(key, []);
       seen.add(key);
     }
-    // Drop handler slots for bindings that no longer exist.
+    // Drop handler slots for bindings that no longer exist AND are unoccupied.
+    // Occupied slots (subscribeOnce, kukali suspensions) must survive graph rebuilds.
     for (const key of this.handlers.keys()) {
-      if (!seen.has(key)) this.handlers.delete(key);
+      if (!seen.has(key) && (this.handlers.get(key)?.length ?? 0) === 0) {
+        this.handlers.delete(key);
+      }
     }
     this._bindings = bindings.slice();
   }
@@ -400,6 +404,29 @@ export class ReactionGraph {
       const idx = list.indexOf(handler);
       if (idx >= 0) list.splice(idx, 1);
     };
+  }
+
+  /**
+   * Verse `suspends` bridge primitive — resolves when (fromUri, trigger) fires once.
+   * Returns a Promise augmented with a `cancel()` method; cancel() rejects the Promise.
+   */
+  subscribeOnce(fromUri: string, trigger: string): Promise<unknown> & { cancel(): void } {
+    let unsub: (() => void) | null = null;
+    let reject_: ((reason?: unknown) => void) | null = null;
+    const p = new Promise<unknown>((resolve, reject) => {
+      reject_ = reject;
+      unsub = this.subscribe(fromUri, trigger, (_binding, payload) => {
+        unsub!();
+        unsub = null;
+        resolve(payload);
+      });
+    }) as Promise<unknown> & { cancel(): void };
+    p.cancel = () => {
+      unsub?.();
+      unsub = null;
+      reject_?.(new Error("subscribeOnce cancelled"));
+    };
+    return p;
   }
 
   private _resolveBinding(fromUri: string, trigger: string): ReactionBinding {

@@ -36,6 +36,23 @@ export function renderVDom(nodes: readonly VDomNode[]): React.ReactNode {
   );
 }
 
+/** Collect all dispatch nodes from a vdom tree for imperative firing via useEffect. */
+export function collectDispatchNodes(
+  nodes: readonly VDomNode[],
+): Array<{ target: string; trigger: string }> {
+  const result: Array<{ target: string; trigger: string }> = [];
+  function walk(node: VDomNode) {
+    if (node.type === "element" && node.attrs?.["data-lar-kind"] === "dispatch") {
+      const target  = node.attrs["data-lar-target"]  ?? "";
+      const trigger = node.attrs["data-lar-trigger"] ?? "";
+      if (target && trigger) result.push({ target, trigger });
+    }
+    if (node.type === "element") node.children.forEach(walk);
+  }
+  nodes.forEach(walk);
+  return result;
+}
+
 // ---------------------------------------------------------------------------
 // Node dispatch
 // ---------------------------------------------------------------------------
@@ -70,8 +87,8 @@ function renderNode(node: VDomNode, key: string): React.ReactNode {
     case "toml":      return renderToml(node, key);
     case "sigil":     return renderSigil(node, key);
     case "dynamic":   return renderChildren(node.children, key);
-    case "header":
-    case "dispatch":  return null;  // metadata only
+    case "header":    return null;  // metadata only
+    case "dispatch":  return null;  // fired via collectDispatchNodes, not rendered
     default:          return renderChildren(node.children, key);
   }
 }

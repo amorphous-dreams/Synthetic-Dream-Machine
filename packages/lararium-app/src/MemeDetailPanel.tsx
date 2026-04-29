@@ -11,10 +11,10 @@
  * While tw5 is null the panel shows a loading state.
  */
 
-import { useEffect, useMemo, useCallback, useState } from "react";
+import { useEffect, useMemo, useCallback, useState, useRef } from "react";
 import type { VDomNode } from "@lararium/tw5";
 import { useLararium } from "./lararium-context.js";
-import { renderVDom } from "./vdom-to-react.js";
+import { renderVDom, collectDispatchNodes } from "./vdom-to-react.js";
 
 // ---------------------------------------------------------------------------
 // useCarrierText — tiddlerStore-subscribed carrier text for focused URI
@@ -87,6 +87,19 @@ export function MemeDetailPanel() {
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [uri]);
+
+  // Fire dispatch nodes (lele / DispatchWidget) once per uri activation.
+  // Verse spawn model: fire-and-forget on activation, not on peer-edit re-renders.
+  // Gate: track last uri dispatched so content updates don't re-trigger.
+  const dispatchFiredForUri = useRef<string | null>(null);
+  useEffect(() => {
+    if (!rendered?.vdom || !fireMeme || !uri) return;
+    if (dispatchFiredForUri.current === uri) return;
+    dispatchFiredForUri.current = uri;
+    for (const { target, trigger } of collectDispatchNodes(rendered.vdom)) {
+      fireMeme(target, trigger);
+    }
+  }, [rendered?.vdom, fireMeme, uri]);
 
   useEffect(() => {
     if (!visible) return;

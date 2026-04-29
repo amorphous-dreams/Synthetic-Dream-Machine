@@ -421,14 +421,19 @@ export class LarariumTW5 {
    *
    * Also scans carrier texts for kumu defs and injects them via injectKumuDefs().
    */
-  async loadFromStore(store: LarTiddlerStore): Promise<void> {
+  async loadFromStore(
+    store: LarTiddlerStore,
+    onProgress?: (loaded: number, total: number) => void,
+  ): Promise<void> {
     if (!this._tw) throw new Error("LarariumTW5: call boot() before loadFromStore()");
     const uris = await store.listVisible();
     const kumuDefs: KumuDef[] = [];
+    const total = uris.length;
+    let loaded = 0;
 
     await Promise.all(uris.map(async (uri) => {
       const rec = await store.get(uri);
-      if (!rec || rec.deleted) return;
+      if (!rec || rec.deleted) { loaded++; onProgress?.(loaded, total); return; }
       const fields: Record<string, string | string[]> = { title: rec.title, ...rec.fields };
       if (rec.text !== undefined) fields["text"] = rec.text;
       this._tw.wiki.addTiddler(new this._tw.Tiddler(fields));
@@ -437,6 +442,8 @@ export class LarariumTW5 {
         const ast = parseMemeCarrier(uri, rec.text);
         kumuDefs.push(...collectKumuDefs(uri, ast));
       }
+      loaded++;
+      onProgress?.(loaded, total);
     }));
 
     this._loadedUris = new Set(uris);

@@ -25,6 +25,7 @@ import type { LarViewAction, ZoomLevel } from "@lararium/tldraw";
 import { ReactionGraph } from "@lararium/core";
 import { LarariumCanvas } from "./LarariumCanvas.js";
 import { MemeDetailPanel } from "./MemeDetailPanel.js";
+import { BootSplash } from "./BootSplash.js";
 import { LarariumCtx, useLararium, shortUri, useTheme } from "./lararium-context.js";
 import { useLarariumHostOpen } from "./lararium-browser-host.js";
 import { debugSet } from "./debug.js";
@@ -316,6 +317,7 @@ export function LarariumShell({ wsUrl, memes, onMemes }: ShellProps) {
           document.body
         )}
         {createPortal(<MemeDetailPanel />, document.body)}
+        {createPortal(<BootSplash phase={openPhase} />, document.body)}
       </div>
     </LarariumCtx.Provider>
   );
