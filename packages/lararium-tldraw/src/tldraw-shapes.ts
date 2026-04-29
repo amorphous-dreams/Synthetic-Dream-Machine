@@ -73,11 +73,16 @@ type TLColor =
   | "black" | "grey" | "light-violet" | "violet" | "blue" | "light-blue"
   | "yellow" | "orange" | "green" | "light-green" | "light-red" | "red" | "white";
 
+// All eight pranala families — matches KNOWN_FAMILIES in pranala-parser.ts.
 const FAMILY_COLORS: Record<string, TLColor> = {
-  control:  "blue",
-  relation: "grey",
-  observe:  "green",
-  dataflow: "orange",
+  control:    "blue",
+  relation:   "grey",
+  observe:    "green",
+  dataflow:   "orange",
+  message:    "yellow",
+  constraint: "red",
+  reaction:   "light-green",
+  spatial:    "light-blue",
 };
 
 function familyColor(family: string): TLColor {

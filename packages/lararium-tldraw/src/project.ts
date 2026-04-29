@@ -7,8 +7,9 @@
  */
 
 import { type BootArtifact, scalarToStageBand } from "@lararium/core";
-import { parsePranalaEdges, parseMemeCarrier, resolveWidgetTree } from "@lararium/core";
+import { parsePranalaEdges } from "@lararium/core";
 import type { MemeAstNode, WorksiteNode, TextNode, KumuRegistry } from "@lararium/core";
+import { projectCarrier } from "./render-target.js";
 
 import {
   type LarTLSnapshot,
@@ -66,8 +67,7 @@ function projectWidgetTree(
   registry: NonNullable<ProjectOptions["registry"]>,
   parentFrameId: LarProjectionId,
 ): LarTLBodyNode[] {
-  const ast = parseMemeCarrier(uri, carrierText);
-  const widgetTree = resolveWidgetTree(ast, registry);
+  const { ast, widgetTree } = projectCarrier(uri, carrierText, registry);
   const result: LarTLBodyNode[] = [];
 
   // Text content: flatten prose from non-structural worksites

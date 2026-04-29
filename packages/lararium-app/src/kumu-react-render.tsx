@@ -183,12 +183,17 @@ function renderWidgetSkeleton(node: WidgetNode, key: string): React.ReactNode {
   );
 }
 
+// All eight pranala families — matches KNOWN_FAMILIES in pranala-parser.ts.
 function familyColor(family: string): React.CSSProperties {
   const map: Record<string, string> = {
-    control:  "#58a6ff",
-    relation: "#7ee787",
-    observe:  "#f0a04b",
-    dataflow: "#bb8bfc",
+    control:    "#58a6ff",
+    relation:   "#7ee787",
+    observe:    "#f0a04b",
+    dataflow:   "#bb8bfc",
+    message:    "#e3b341",
+    constraint: "#f85149",
+    reaction:   "#56d364",
+    spatial:    "#79c0ff",
   };
   return { background: map[family] ?? "#444d56" };
 }

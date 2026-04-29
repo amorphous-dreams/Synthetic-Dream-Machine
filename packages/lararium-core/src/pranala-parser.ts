@@ -33,6 +33,20 @@ interface FamilyContract {
 }
 
 export const KNOWN_FAMILIES = ["control", "relation", "observe", "dataflow", "message", "constraint", "reaction", "spatial"] as const;
+export type PranalaFamily = typeof KNOWN_FAMILIES[number];
+
+/**
+ * Canonical role vocabularies per family.
+ * roleRecommended families should use these roles; others accept free-form.
+ * spatial roles unblock portals-as-graph-edges and multi-level room navigation.
+ */
+export const FAMILY_ROLES: Partial<Record<PranalaFamily, readonly string[]>> = {
+  control:    ["owns", "implements", "extends", "configures", "delegates"],
+  dataflow:   ["reads", "writes", "streams", "buffers", "pipes"],
+  message:    ["sends", "receives", "publishes", "subscribes", "replies"],
+  reaction:   ["triggers", "handles", "observes", "throttles", "debounces", "subscription"],
+  spatial:    ["contains", "portal", "adjacent", "layer"],
+};
 
 export const FAMILY_CONTRACTS: Record<string, Omit<FamilyContract, "knownFamilies">> = {
   control:    { roleRecommended: true,  confidenceBounded: false },
@@ -64,6 +78,12 @@ export function validatePranaEdge(edge: PranaEdge, grammar?: GrammarRules): Pran
   if (contract.roleRecommended && !edge.role) {
     violations.push({ ...base, severity: "warning", rule: "role-recommended",
       message: `${edge.family} edge missing role (from ${edge.fromUri} → ${edge.toUri})` });
+  }
+
+  const knownRoles = FAMILY_ROLES[edge.family as PranalaFamily];
+  if (knownRoles && edge.role && !knownRoles.includes(edge.role)) {
+    violations.push({ ...base, severity: "warning", rule: "unknown-role",
+      message: `role "${edge.role}" not in ${edge.family} vocabulary [${knownRoles.join(", ")}]` });
   }
 
   if (contract.confidenceBounded && edge.confidence !== null) {
