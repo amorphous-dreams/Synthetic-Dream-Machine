@@ -138,13 +138,14 @@ async function buildBootProjection(
   snapshotMemes: SnapshotData,
 ): Promise<{ snapshot: unknown; roomId: string; receiptSha: string; memeCount: number; kumuDefs: import("@lararium/core").KumuDef[] }> {
   const { renderAllViews } = await import("@lararium/tldraw");
+  const { filterMemesWikitext } = await import("@lararium/core/tw-filter");
   const artifact: BootArtifact = runtime.compileBoot();
   const receipt = await runtime.compileBootReceipt(artifact);
   const receiptSha = receipt.sha256.replace(/^sha256:/, "");
 
   const registry = buildKumuRegistry(artifact.kumuDefs ?? []);
 
-  const emission = renderAllViews(artifact, {
+  const emission = await renderAllViews(artifact, {
     readText: (uri: string) => {
       const meme = snapshotMemes.memes[uri];
       if (!meme) throw new Error(`${uri} not in snapshot`);
@@ -152,6 +153,7 @@ async function buildBootProjection(
     },
     includeAhuFrames: true,
     registry,
+    filterEngine: (expr: string, closure: readonly import("@lararium/core").ClosureEntry[]) => filterMemesWikitext(closure, expr),
   });
 
   const store: Record<string, unknown> = {};

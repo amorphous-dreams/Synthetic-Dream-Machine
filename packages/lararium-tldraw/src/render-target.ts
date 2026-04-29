@@ -38,7 +38,7 @@
  * Future adapters (ActivityPub, Obsidian canvas, PDF, CLI) follow the same contract.
  */
 
-import type { MemeAstNode, WidgetNode, KumuResult } from "@lararium/core";
+import type { MemeAstNode, WidgetNode, KumuResult, KumuRegistry } from "@lararium/core";
 
 // ---------------------------------------------------------------------------
 // Adapter descriptor — machine-readable contract for each render target
@@ -121,7 +121,6 @@ export function buildWidgetMap(
 // ---------------------------------------------------------------------------
 
 import { parseMemeCarrier, resolveWidgetTree } from "@lararium/core";
-import type { KumuRegistry } from "@lararium/core";
 
 export interface CarrierProjection {
   readonly ast:        readonly MemeAstNode[];

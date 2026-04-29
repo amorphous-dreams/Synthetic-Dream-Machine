@@ -77,6 +77,11 @@ function entryToFields(entry: ClosureEntry): Record<string, string | string[]> {
     tags:         entry.implements,
     depth:        String(entry.depth),
     rating:       entry.kind,
+    confidence:   String(entry.confidence),
+    register:     entry.register,
+    manaoio:      String(entry.manaoio),
+    mana:         String(entry.mana),
+    manao:        String(entry.manao),
     role:         entry.role ?? "",
     exists:       String(entry.exists),
     laresRelPath: entry.laresRelPath ?? "",
@@ -85,11 +90,31 @@ function entryToFields(entry: ClosureEntry): Record<string, string | string[]> {
 }
 
 // ---------------------------------------------------------------------------
-// Expression pre-processing: Lararium dialect → TW5 canonical
+// Expression pre-processing: wikitext-filter dialect → TW5 canonical
+//
+// wikitext-filter is a superset of x-tiddlywiki-filter (lar:///grammars/wikitext-filter).
+// Key translations applied before the TW5 engine sees the expression:
+//
+//   all[memes]       → all[tiddlers]       (noun alias)
+//   toml:key[value]  → field:key[value]    (#iam TOML keys ARE tiddler fields in the engine)
+//
+// Operators handled in a future pass (require graph data injected as tiddler fields):
+//   edge:family[X]role[Y]   pranala edge query — planned; see entryToFields for edge prep
+//   self[]                  current-meme URI context — planned
+//   ahu:id[X]               ahu block presence query — planned
+//
+// Deprecated TW5 forms (!!field, ##index, currentTiddler) are passed through as-is;
+// they may work via the underlying TW engine but emit no special handling here.
 // ---------------------------------------------------------------------------
 
-function toCanonicalTW(expr: string): string {
-  return expr.replace(/\ball\[memes\]/g, "all[tiddlers]");
+function toCanonicalWikitext(expr: string): string {
+  return expr
+    // Noun alias: memes = tiddlers in TW5 engine
+    .replace(/\ball\[memes\]/g, "all[tiddlers]")
+    // toml:key[value] → field:key[value]
+    // #iam TOML keys (rating, register, confidence, manaoio, role, depth, …) are
+    // stored as tiddler fields in entryToFields(), so field: queries work directly.
+    .replace(/\btoml:([\w-]+)\[/g, "field:$1[");
 }
 
 // ---------------------------------------------------------------------------
@@ -97,27 +122,32 @@ function toCanonicalTW(expr: string): string {
 // ---------------------------------------------------------------------------
 
 /**
- * Filter ClosureEntry objects using TW5's filter engine.
+ * Filter ClosureEntry objects using the wikitext-filter dialect.
  *
- * Async because TW boots on first call (singleton, ~10ms; subsequent calls instant).
+ * Dialect: lar:///grammars/wikitext-filter — superset of x-tiddlywiki-filter.
+ * Engine: TW5 wiki.filterTiddlers() with wikitext-filter pre-processing.
+ * Async: TW boots on first call (~10ms singleton); subsequent calls instant.
  *
  * @param allEntries  Full closure to filter from
- * @param expr        TW5 filter expression — use [all[memes]] as the entry-point source
+ * @param expr        wikitext-filter expression
  *
  * @example
- *   // All invariant memes
- *   await filterMemesTW(closure, "[all[memes]tag[lar:///ha.ka.ba/api/v0.1/pono/invariant]]");
+ *   // Invariant memes
+ *   await filterMemesWikitext(closure, "[all[memes]tag[lar:///ha.ka.ba/api/v0.1/pono/invariant]]");
  *
- *   // First 5 memes by depth (numeric sort)
- *   await filterMemesTW(closure, "[all[memes]nsort[depth]limit[5]]");
+ *   // CS-register memes (toml: operator)
+ *   await filterMemesWikitext(closure, "[all[memes]toml:register[CS]]");
  *
- *   // Memes at depth 0 (the boot entry)
- *   await filterMemesTW(closure, "[all[memes]field:depth[0]]");
+ *   // Memes by confidence register + rating
+ *   await filterMemesWikitext(closure, "[all[memes]toml:register[SC]field:rating[meme]]");
  *
- *   // Memes with data rating, sorted by URI
- *   await filterMemesTW(closure, "[all[memes]field:rating[data]sort[title]]");
+ *   // First 5 by depth
+ *   await filterMemesWikitext(closure, "[all[memes]nsort[depth]limit[5]]");
+ *
+ *   // URI prefix
+ *   await filterMemesWikitext(closure, "[prefix[lar:///ha.ka.ba/api/v0.1]]");
  */
-export async function filterMemesTW(
+export async function filterMemesWikitext(
   allEntries: readonly ClosureEntry[],
   expr: string,
 ): Promise<ClosureEntry[]> {
@@ -127,12 +157,15 @@ export async function filterMemesTW(
     $tw.wiki.addTiddler(new $tw.Tiddler(entryToFields(entry)));
   }
 
-  const titles: string[] = $tw.wiki.filterTiddlers(toCanonicalTW(expr));
+  const titles: string[] = $tw.wiki.filterTiddlers(toCanonicalWikitext(expr));
 
   // Return only entries that match (exclude TW system tiddlers like $:/boot/*)
   const byUri = new Map(allEntries.map((e) => [e.uri, e]));
   return titles.map((t) => byUri.get(t)).filter((e): e is ClosureEntry => e !== undefined);
 }
+
+/** Backward-compat alias — prefer filterMemesWikitext for new code. */
+export const filterMemesTW = filterMemesWikitext;
 
 /**
  * Pre-compute multiple named filter results in a single TW boot cycle.
@@ -156,7 +189,7 @@ export async function precomputeRooms(
   const byUri = new Map(allEntries.map((e) => [e.uri, e]));
 
   for (const [roomId, expr] of Object.entries(rooms)) {
-    const titles: string[] = $tw.wiki.filterTiddlers(toCanonicalTW(expr));
+    const titles: string[] = $tw.wiki.filterTiddlers(toCanonicalWikitext(expr));
     result[roomId] = titles.filter((t) => byUri.has(t));
   }
 

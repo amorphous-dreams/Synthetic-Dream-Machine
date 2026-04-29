@@ -64,7 +64,7 @@ function collectText(nodes: readonly MemeAstNode[]): string {
 function projectWidgetTree(
   uri: string,
   carrierText: string,
-  registry: NonNullable<ProjectOptions["registry"]>,
+  registry: KumuRegistry,
   parentFrameId: LarProjectionId,
 ): LarTLBodyNode[] {
   const { ast, widgetTree } = projectCarrier(uri, carrierText, registry);
@@ -164,8 +164,11 @@ export function projectToTldraw(artifact: BootArtifact, opts: ProjectOptions = {
         name: lastSegment,
         depth,
         frameKind: "meme",
-        rating: entry.kind,
-        stage: scalarToStageBand(entry.confidence),
+        rating:     entry.kind,
+        confidence: entry.confidence,
+        register:   entry.register,
+        manaoio:    entry.manaoio,
+        stage:      scalarToStageBand(entry.confidence),
         implements: entry.implements,
         ...(carrierText !== undefined && { carrierText }),
         ...(templateProps !== undefined && { templateProps }),
@@ -217,9 +220,12 @@ export function projectToTldraw(artifact: BootArtifact, opts: ProjectOptions = {
               uri: slot,
               name: `#${slotName}`,
               depth: depth + 0.5,
-              frameKind: "ahu",
-              rating: "socket",
-              stage: scalarToStageBand(entry.confidence),
+              frameKind:  "ahu",
+              rating:     "socket",
+              confidence: entry.confidence,
+              register:   entry.register,
+              manaoio:    entry.manaoio,
+              stage:      scalarToStageBand(entry.confidence),
               implements: [],
             });
             // Socket port shape: stable arrow binding target, repositioned by applyZoomTemplate

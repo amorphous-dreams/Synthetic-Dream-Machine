@@ -82,40 +82,40 @@ describe("graphLayout", () => {
 });
 
 describe("renderAllViews", () => {
-  test("produces 1 page (single-page zoom-gated model)", () => {
+  test("produces 1 page (single-page zoom-gated model)", async () => {
     const artifact = makeArtifact();
-    const emission = renderAllViews(artifact);
+    const emission = await renderAllViews(artifact);
     expect(emission.pages).toHaveLength(1);
     expect(emission.pages[0]!.id).toBe(pageId("boot"));
   });
 
-  test("single page has all meme frames", () => {
+  test("single page has all meme frames", async () => {
     const artifact = makeArtifact();
-    const emission = renderAllViews(artifact);
+    const emission = await renderAllViews(artifact);
     const bootPageShapes = emission.shapes.filter(
       (s) => "parentId" in s && (s as { parentId: string }).parentId === pageId("boot"),
     );
     expect(bootPageShapes.length).toBeGreaterThanOrEqual(3);
   });
 
-  test("emitted shape IDs are unique", () => {
+  test("emitted shape IDs are unique", async () => {
     const artifact = makeArtifact();
-    const emission = renderAllViews(artifact);
+    const emission = await renderAllViews(artifact);
     const ids = emission.shapes.map((shape) => shape.id);
     const uniqueIds = new Set(ids);
     expect(uniqueIds.size).toBe(ids.length);
   });
 
-  test("focusUri option is ignored (deprecated) — single page emitted regardless", () => {
+  test("focusUri option is ignored (deprecated) — single page emitted regardless", async () => {
     const artifact = makeArtifact();
-    const emission = renderAllViews(artifact, { focusUri: "lar:///AGENTS" });
+    const emission = await renderAllViews(artifact, { focusUri: "lar:///AGENTS" });
     expect(emission.pages).toHaveLength(1);
     expect(emission.pages[0]!.id).toBe(pageId("boot"));
   });
 
-  test("meme frame shapes have URI-stable IDs matching memeFrameId", () => {
+  test("meme frame shapes have URI-stable IDs matching memeFrameId", async () => {
     const artifact = makeArtifact();
-    const emission = renderAllViews(artifact);
+    const emission = await renderAllViews(artifact);
     const frameIds = new Set(emission.shapes.filter((s) => (s as { type: string }).type === "frame").map((s) => s.id));
     expect(frameIds.has(memeFrameId("lar:///AGENTS"))).toBe(true);
     expect(frameIds.has(memeFrameId("lar:///LARES"))).toBe(true);

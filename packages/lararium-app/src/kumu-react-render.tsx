@@ -202,7 +202,7 @@ function familyColor(family: string): React.CSSProperties {
 // Styles — wiki content visual language
 // ---------------------------------------------------------------------------
 
-export const css = {
+const css = {
   worksite: {
     marginBottom: 16,
     borderLeft: "2px solid #21262d",
@@ -290,23 +290,5 @@ export const css = {
     fontSize: 11,
     fontFamily: "monospace",
     color: "#6e7681",
-  },
-  sigil: {
-    marginBottom: 8,
-    padding: "4px 8px",
-    background: "#0d1117",
-    border: "1px dashed #21262d",
-    borderRadius: 4,
-  },
-  sigilName: {
-    fontSize: 10,
-    fontFamily: "monospace",
-    color: "#bb8bfc",
-    marginRight: 6,
-  },
-  sigilAttr: {
-    fontSize: 11,
-    fontFamily: "monospace",
-    color: "#f0a04b",
   },
 } as const;

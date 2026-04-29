@@ -175,7 +175,13 @@ export interface LarTLFrame {
   readonly frameKind: "meme" | "ahu";
   /** carrier rating: kapu | ano | meme | data | noise */
   readonly rating: string;
-  /** UX stage band derived from carrier confidence scalar — GR | OS | US | CS | DS (rendering annotation only, not a gate condition) */
+  /** Operator-set confidence scalar from carrier TOML #iam block. 0 if absent. */
+  readonly confidence: number;
+  /** Operator-assigned confidence register code (e.g. "CS", "GR", "S"). */
+  readonly register: string;
+  /** Operator-set observability/interoperability score. 0 if absent. */
+  readonly manaoio: number;
+  /** UX stage band derived from confidence — GR | OS | US | CS | DS (rendering annotation; not an epistemic gate). */
   readonly stage: string;
   /** implements list from carrier */
   readonly implements: readonly string[];

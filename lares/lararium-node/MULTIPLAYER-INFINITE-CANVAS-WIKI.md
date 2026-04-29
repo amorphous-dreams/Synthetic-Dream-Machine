@@ -12,7 +12,7 @@ register    = "S"
 manaoio     = 0.84
 mana        = 0.90
 manao       = 0.86
-role        = "canonical design constitution for the Lararium multiplayer infinite-canvas wiki system — Kinopio-feel UX shell wrapping tldraw; socket port shapes + hidden ownership skeleton shipped; TW5/Verse re-render synthesis integrated; three-tree pipeline (parseTree→widgetTree→renderTree) is M9 target"
+role        = "canonical design constitution for the Lararium multiplayer infinite-canvas wiki system — Kinopio-feel UX shell wrapping tldraw; socket port shapes + hidden ownership skeleton + three-tree pipeline shipped; render-target.ts explicit boundary contract (tldraw adapter: LarTLBodyNode structural skeleton; React adapter: full kumu execution via kumu-react-render.tsx); TW5-style TemplateCascade type wired in multi-view.ts; spatial family (contains/portal/adjacent/layer) locked; TW5/Verse re-render synthesis integrated"
 cacheable   = true
 retain      = true
 invariant   = false
@@ -637,7 +637,30 @@ These are seeded into `shape.meta.templateProps` alongside zoom-level props at p
 
 **Parser addition:** `<<~ kumu name(params) >>` / `<<~/kumu >>` direct form added to `SIGIL_SCANS` alongside the `\\widget` alias. The `kumu` sigil is now parseable in canonical Hawaiian form.
 
-**Phase 3 (next):** The three-tree pipeline: `parseMemeCarrier → MemeAstNode[]` → `resolveWidgetTree → WidgetNode[]` → render. `kumu` definitions are the widget type system. `kumu` instances are causal islands (see `#causal-islands`). Edit a template carrier → `/admin/reseed` → room reseeds with new visual style. The wiki edits its own renderer.
+**Phase 3 ✓ shipped (2026-04-28):** The three-tree pipeline is complete for both render targets:
+
+```
+carrier text
+  ↓ parseMemeCarrier()                      @lararium/core
+MemeAstNode[]                               parse tree — agnostic
+  ↓ resolveWidgetTree(ast, registry)        @lararium/core
+WidgetNode[]                                widget tree — agnostic
+  ↓                       ↓                adapter boundary (render-target.ts)
+tldraw adapter             React adapter
+(project.ts)               (kumu-react-render.tsx)
+  ↓                       ↓
+LarTLBodyNode[]            React.ReactNode
+  ↓ emitTldrawRecords()   ↓ renderCarrier()
+→ tldraw store             → MemeDetailPanel DOM
+```
+
+**tldraw adapter** — structural skeleton: `text | widget | hole` body nodes inside meme frames. `opacity:0` until action zoom (`showCarrier:true`). Widget nodes show `kumuName(k:v ...)` label — type + declared props, not executed (UEFN device slot model). `applyZoomTemplate` Pass 4 toggles visibility via `memeShowCarrier` map (built in Pass 1 alongside `memeIncludeAhu` — single O(n) scan).
+
+**React adapter** — full kumu execution: `kumu-react-render.tsx` exports `renderCarrier(ast, widgetMap)`. `widgetMap` is `Map<number, WidgetSlot>` keyed on `node.pos` (byte offset) for O(1) lookup during AST walk. Kahea sigil nodes delegate to their executed `KumuResult`. Suspended kukali instances surface as `⏿` placeholders. Typed holes (no registry match) render as dashed Hazel-style placeholders.
+
+**Single-parse guarantee:** `projectCarrier(uri, carrierText, registry)` in `render-target.ts` calls `parseMemeCarrier` + `resolveWidgetTree` exactly once. Both adapters consume the `CarrierProjection { ast, widgetTree }` result — no double-parse.
+
+**Phase 4 (next):** Live CRDT delta → body node shape update without reseed. Currently `boot-snapshot` refresh only — changing a carrier requires `/admin/reseed`. Phase 4 target: `changedTiddlers`-style selective refresh where only the affected meme's body nodes update when its `meta.carrierText` changes in the CRDT delta.
 
 ### Built-in tldraw UI Components to Reuse
 
@@ -882,9 +905,13 @@ State lives in `localStorage` (`lararium.theme`). Applied on mount before first 
 
 1a. **Async `ReactionGraph`:** `fire()` must return `Promise<void>` before `hui`/`heihei`/`puka`/`kukali` have execution semantics. Zero structural changes required — this is a method signature change in `live-protocol.ts`. Fanout modes (`Promise.all`, `Promise.race`, `Promise.any` + cancel) follow immediately after. See `#causal-islands`.
 
-1b. **Wehe executor:** bind `SigilNode { sigilName:"kahea", attrs:{name,args} }` name-form calls against registered `wehe` definitions at render time. Closes TW5 template transclusion + Verse procedure call simultaneously. Depends on `KumuRegistry` (Phase 3 widget tree).
+1b. **Wehe executor:** bind `SigilNode { sigilName:"kahea", attrs:{name,args} }` name-form calls against registered `wehe` definitions at render time. Closes TW5 template transclusion + Verse procedure call simultaneously. Depends on `KumuRegistry` (now complete).
 
-1c. **kumu/widget-tree resolution pass:** `resolveWidgetTree(ast, registry)` builds the intermediate `WidgetNode[]` tree between `parseMemeCarrier` output and tldraw shape emission. `kumu` definitions are the widget type system. See `#causal-islands`.
+1c. ✓ **kumu/widget-tree resolution pass (shipped 2026-04-28):** `resolveWidgetTree(ast, registry)` builds the intermediate `WidgetNode[]` tree. Both render adapters consume it — React adapter (full execution via `kumu-react-render.tsx`) and tldraw adapter (structural skeleton via `LarTLBodyNode[]` in `project.ts`). `render-target.ts` owns the boundary contract: `RenderTargetAdapter` registry, `WidgetSlot`, `buildWidgetMap`, `projectCarrier`. See `#tldraw-template-model`.
+
+1d. ✓ **TW5 TemplateCascade type wired (shipped 2026-04-28):** `CascadeEntry { match: MemeCascadePredicate | fn, override: Partial<MemeTemplateProps>, levels? }` in `multi-view.ts`. `applyCascade()` evaluates per-meme at `renderAllViews` time — first match wins per zoom level. `MemeTemplateProps.cascade` string field (predicate stored in shape meta) maps to this runtime type. Future: thread wikitext-filter expression evaluation as `match` predicate.
+
+1e. ✓ **Spatial family + FAMILY_ROLES (shipped 2026-04-28):** All 8 pranala families have canonical role vocabularies in `FAMILY_ROLES` (pranala-parser.ts). `validatePranaEdge` now emits `"unknown-role"` warnings for out-of-vocabulary roles across all `roleRecommended` families. Spatial roles: `contains | portal | adjacent | layer`. Unblocks portals-as-graph-edges (not just geo shapes with `meta.larPortal`).
 
 2. ✓ **Meme count reactive subscription (shipped 2026-04-27):** `store.listen` with `scope: "document"` + 150ms debounce added to `LarariumCanvas`. One-shot scan on `synced-remote`, live re-scan on any shape mutation. `MenuPanel` now reflects live meme count.
 

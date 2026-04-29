@@ -22,7 +22,7 @@ import { z } from "zod";
 import { writeFileSync, readFileSync, existsSync } from "node:fs";
 import { join } from "node:path";
 
-import { createLarariumRuntime, LARES_ROOT, filterMemesTW } from "@lararium/node";
+import { createLarariumRuntime, LARES_ROOT, filterMemesWikitext } from "@lararium/node";
 import { resolveLarUri } from "@lararium/core";
 
 const runtime = createLarariumRuntime({ writeback: false });
@@ -277,8 +277,8 @@ server.registerTool(
   async ({ expr }) => {
     try {
       const artifact = runtime.compileBoot();
-      const matched = await filterMemesTW(artifact.closure, expr);
-      const lines = matched.map((e) => `${e.uri}  depth:${e.depth}  kind:${e.kind}  role:${e.role || "—"}`);
+      const matched = await filterMemesWikitext(artifact.closure, expr);
+      const lines = matched.map((e: import("@lararium/core").ClosureEntry) => `${e.uri}  depth:${e.depth}  kind:${e.kind}  role:${e.role || "—"}`);
       return { content: [{ type: "text" as const, text: lines.join("\n") || "(no matches)" }] };
     } catch (e) {
       return { content: [{ type: "text" as const, text: String(e) }], isError: true };

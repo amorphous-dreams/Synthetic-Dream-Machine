@@ -38,6 +38,11 @@ function entryToTiddler(entry: ClosureEntry): { fields: Record<string, string | 
       tags:         entry.implements,
       depth:        String(entry.depth),
       rating:       entry.kind,
+      confidence:   String(entry.confidence),
+      register:     entry.register,
+      manaoio:      String(entry.manaoio),
+      mana:         String(entry.mana),
+      manao:        String(entry.manao),
       role:         entry.role ?? "",
       exists:       String(entry.exists),
       laresRelPath: entry.laresRelPath ?? "",
@@ -46,8 +51,11 @@ function entryToTiddler(entry: ClosureEntry): { fields: Record<string, string | 
   };
 }
 
-function toCanonicalTW(expr: string): string {
-  return expr.replace(/\ball\[memes\]/g, "all[tiddlers]");
+// wikitext-filter → TW5 canonical (mirrors Node tw-filter.ts logic)
+function toCanonicalWikitext(expr: string): string {
+  return expr
+    .replace(/\ball\[memes\]/g, "all[tiddlers]")
+    .replace(/\btoml:([\w-]+)\[/g, "field:$1[");
 }
 
 // ---------------------------------------------------------------------------
@@ -55,32 +63,24 @@ function toCanonicalTW(expr: string): string {
 // ---------------------------------------------------------------------------
 
 /**
- * Filter ClosureEntry objects using TW5's filter engine (browser-side).
- * Synchronous — no async boot needed in browser (bundle is pre-initialized).
- *
- * Accepts TW5 filter expressions identically to the Node filterMemesTW().
- * [all[memes]] alias works the same way.
+ * Filter ClosureEntry objects using the wikitext-filter dialect (browser-side).
+ * Async — uniform contract with the Node filterMemesWikitext() path.
  */
-export function filterMemesBrowser(
+export async function filterMemesWikitext(
   allEntries: readonly ClosureEntry[],
   expr: string,
-): ClosureEntry[] {
+): Promise<ClosureEntry[]> {
   const wiki = getWiki(allEntries);
-  const titles = wiki.filterTiddlers(toCanonicalTW(expr));
+  const titles = wiki.filterTiddlers(toCanonicalWikitext(expr));
   const byUri = new Map(allEntries.map((e) => [e.uri, e]));
   return titles.map((t) => byUri.get(t)).filter((e): e is ClosureEntry => e !== undefined);
 }
 
-/**
- * Async wrapper matching the Node filterMemesTW() signature.
- * Enables isomorphic code that uses the same call signature in both environments.
- */
-export async function filterMemesTW(
-  allEntries: readonly ClosureEntry[],
-  expr: string,
-): Promise<ClosureEntry[]> {
-  return filterMemesBrowser(allEntries, expr);
-}
+/** Backward-compat alias — prefer filterMemesWikitext for new code. */
+export const filterMemesTW = filterMemesWikitext;
+
+/** Legacy name — backward compat. */
+export const filterMemesBrowser = filterMemesWikitext;
 
 /**
  * Pre-compute multiple named filter results (browser sync version).
@@ -93,7 +93,7 @@ export async function precomputeRooms(
   const result: Record<string, string[]> = {};
   const byUri = new Map(allEntries.map((e) => [e.uri, e]));
   for (const [roomId, expr] of Object.entries(rooms)) {
-    const titles = wiki.filterTiddlers(toCanonicalTW(expr));
+    const titles = wiki.filterTiddlers(toCanonicalWikitext(expr));
     result[roomId] = titles.filter((t) => byUri.has(t));
   }
   return result;

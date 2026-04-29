@@ -17,7 +17,7 @@ manao        = 0.82
 implements   = [
   "lar:///ha.ka.ba/api/v0.1/pono/meme"
 ]
-role         = "session handoff crystal — 2026-04-28 — M8 complete; socket skeleton + ownership arrows + kumuDefs pipeline shipped; M9 target is resolveWidgetTree render pass in MemeDetailPanel"
+role         = "session handoff crystal — 2026-04-28 — M9 P1+P3 complete; three-tree pipeline live for both adapters; render-target.ts boundary contract explicit; TemplateCascade TW5 cascade type wired; FAMILY_ROLES + spatial family locked; 229/229 tests green; M9 remaining: browser smoke (P2), canon-promotion surface (P4), wiki-recipe carriers (P5)"
 ```
 
 <<~/ahu >>
@@ -28,76 +28,66 @@ SESSION opens
 
 <<~ ahu #ooda-ha >>
 
-✶ Read ROADMAP `#milestone-9-scope` and WIKI `#hidden-skeleton` + `#causal-islands`. Confirm 229/229 tests green. Confirm server at `http://localhost:4321`.
-⏿ The tldraw ownership skeleton (meme→ahu→socket `control:owns` arrows) IS the widget tree binding surface. Render targets for tldraw DOM must obey TW5 selective refresh (changedTiddlers) and Verse pull-on-demand (explicit per-island update). No cascading re-renders outside declared papalohe ports.
-◇ M9 Priority 1: wire `resolveWidgetTree(ast, registry)` into `MemeDetailPanel` — walk `WidgetNode[]` not raw `MemeAstNode[]`; kumu-typed nodes render via template; unresolved names render as typed holes (Hazel). Priority 2: browser smoke. Priority 3: spatial family. Priority 4: canon-promotion surface.
-▶ Start with `MemeDetailPanel.tsx` + `widget-tree.ts`. Build the render pass. Keep TW5 selective refresh law: only re-resolve when `meta.carrierText` changes in CRDT delta.
-⤴ Verify 229/229 still green. Visual check: double-click meme at action zoom → detail panel renders kumu-typed nodes. Reseed and confirm.
-↺ Update ROADMAP `#milestone-9-scope` as items complete. Note what still crowds: browser smoke, spatial family, canon-promotion.
+✶ Read ROADMAP `#milestone-9-scope` and WIKI `#tldraw-template-model`. Confirm 229/229 tests green. Confirm server at `http://localhost:4321`.
+⏿ Three-tree pipeline complete for both adapters. Render-target.ts owns the boundary contract. TemplateCascade wired. FAMILY_ROLES locked. The widget tree IS the kumu-typed intermediate layer — kahea sigil nodes resolve to WidgetNode via registry, then delegate to executed output (React) or structural skeleton (tldraw). TW5 selective refresh law: re-resolve only when `meta.carrierText` changes in CRDT delta.
+◇ M9 remaining: browser smoke (P2 — all tactile behaviors unverified), canon-promotion surface (P4 — `PUT /admin/promote`), wiki-recipe carriers (P5 — `lares/recipes/` schema). Wehe executor (future — Verse procedure call, depends on async ReactionGraph).
+▶ Browser smoke is the highest-value unverified surface. Start Playwright baseline: zoom thresholds, body node visibility at action zoom, socket repositioning, detail panel kumu-typed render, TemplateCascade applied to specific meme URIs.
+⤴ Verify 229/229 still green after browser smoke scaffold. Confirm body nodes visible at action zoom, hidden at tactical. Confirm cascade override changes frame color for matching memes.
+↺ Update SESSION.md as items complete. Canon-promotion surface is the next structural advance.
 
 <<~/ahu >>
 
 <<~ ahu #state >>
 
-## State as of 2026-04-28 session end
+## State as of 2026-04-28 session end (M9 P1+P3 complete)
 
 **Branch:** `feature/lararium-node-2` — 229/229 tests green — server at `http://localhost:4321`
 
-### Shipped this session
+### Shipped this session (M9 P1 + P3)
 
-- **Socket port shapes** — `LarTLSocket`, hidden `TLGeoShape` ellipses (8×8, opacity:0) per ahu slot; pranala arrows bind to sockets permanently; `applyZoomTemplate` repositions sockets between `centerX/Y` (meme header, low zoom) and `spreadX/Y` (ahu center, combat/action)
-- **Ownership skeleton** — 14 `control:owns` arrows per boot (7 meme→ahu + 7 meme→socket); `isOwnership:true`, `isLocked:true`, `opacity:0` at low zoom → `0.3` at combat/action; `meta.ownsMemeId` for zoom toggle; queryable as graph facts independent of tldraw `parentId`
-- **Ahu detachment fix** — ahu frames `isLocked:true` in emission + `opacity:0` at low zoom; prevents tldraw reparenting when meme frame shrinks below ahu bounds
-- **kumuDefs pipeline** — `collectKumuDefsFromGraph()` in `node-host.ts` populates `artifact.kumuDefs` (5 defs: meme-strategic → meme-action); `buildKumuRegistry()` live at boot; `templateProps` seeded from lares carriers, not hardcoded defaults
-- **kukali / `\suspends`** — parser + grammar meme + 3 tests; depends on `ReactionGraph.fire()` async (already shipped prior session)
-- **TW5 / Verse research** — integrated into WIKI `#causal-islands`: TW5 = push-on-change (`changedTiddlers`); Verse = pull-on-demand (`SetText()`); socket repositioning IS TW5 selective refresh
+- **`render-target.ts`** — explicit boundary contract between widget tree and downstream renderers; `RenderTargetAdapter` interface + `RENDER_TARGET_ADAPTERS` machine-readable registry (tldraw: boot-snapshot; react: on-demand); `WidgetSlot { widget, result }`; `buildWidgetMap(widgetTree, results) → Map<pos, WidgetSlot>`; `projectCarrier(uri, text, registry) → { ast, widgetTree }` (single-parse guarantee)
+- **`kumu-react-render.tsx`** — React render adapter extracted from MemeDetailPanel; `renderCarrier(ast, widgetMap)` walks AST, delegates kahea nodes to `widgetMap.get(node.pos)`; all 8 families colored; Hazel typed holes (dashed); suspended kukali `⏿` placeholders; dead css styles (`sigil`, `sigilName`, `sigilAttr`) removed
+- **`LarTLBodyNode[]`** — tldraw structural skeleton: `text | widget | hole` nodes emitted inside meme frames by `projectWidgetTree()`; `opacity:0` until action zoom; toggled by `applyZoomTemplate` Pass 4 via `memeShowCarrier` map; widget: violet solid rectangle, `kumuName(k:v ...)` label (UEFN device slot); hole: dashed grey rectangle (Hazel placeholder)
+- **Loop merge** — `applyZoomTemplate` Pass 1 builds both `memeIncludeAhu` and `memeShowCarrier` maps in one O(n) scan; eliminates second frame loop per zoom threshold crossing
+- **`TemplateCascade`** — TW5-style cascade type in `multi-view.ts`: `CascadeEntry { match: MemeCascadePredicate | fn, override: Partial<MemeTemplateProps>, levels? }`; `applyCascade()` evaluates per-meme; first match wins per zoom level; `MemeCascadePredicate` matches by URI prefix/regex, rating, stage, implements
+- **`FAMILY_ROLES` + spatial family** — canonical role vocabularies for all 8 pranala families; `validatePranaEdge` emits `"unknown-role"` warnings; spatial roles: `contains | portal | adjacent | layer`; tldraw color: `light-blue`
+- **Yin cleanup** — removed dead deps (`@lararium/web` from app, `export * from "@lararium/core"` from node+web barrels), `LarariumTopPanel` null export, unused `useEffect` import, stale snapshot injection element in `index.html`, duplicate `KumuRegistry` import, `NonNullable<>` wrapper
 
 ### Docs updated
 
-- `ROADMAP.md` — M8 critical path items 4+5 marked ✓; "Also completed" block; M9 scope section opened; Track D federation status added to `#iam` role
-- `MULTIPLAYER-INFINITE-CANVAS-WIKI.md` — `#views` table extended (ahu visibility + ownership cols); `#hidden-skeleton` ahu added; `#causal-islands` TW5/Verse synthesis section added; `#trust-tiers` rewritten from UCAN-direct to Orichalcum-gated; `#federation` ahu added (Tier 3 law, three-tier map, sync order, lifecycle, visibility gate, relay law, implementation path); open-questions items 10+11 updated
-- **Created** `lares/ha-ka-ba/api/v0.1/pono/federated-causal-islands.md` — invariant law: edge islands, authority-first sync, lifecycle, relay law, tier map, causal island doctrine
-- **Created** `lares/ha-ka-ba/api/v0.1/pono/orichalcum-capabilities.md` — invariant law: capability shape, principal kinds, ability ladder, caveats + federation defaults, gate points, documents-as-groups, UCAN posture
+- `ROADMAP.md` — `#iam` role updated; M9 scope section: P1 ✓ shipped with full detail, P3 ✓ shipped
+- `MULTIPLAYER-INFINITE-CANVAS-WIKI.md` — `#iam` role updated; `#tldraw-template-model` Phase 3 updated with pipeline diagram + adapter details; open-questions items 1c/1d/1e marked ✓
+- `SESSION.md` — this file; handoff crystal for next session
 
 <<~/ahu >>
 
 <<~ ahu #next-build >>
 
-## M9 Priority 1 — resolveWidgetTree render pass
+## M9 Priority 2 — Browser Smoke Testing
 
 ### The insight
 
-The tldraw skeleton acts as the visual binding of the widget tree and the first working template model. The rendered tldraw DOM should obey TW5 and Verse render target best practices:
+229 tests pass but no tactile surface has been exercised in a browser since M5. Every M6/M7/M8/M9 P1 behavior is code-correct but visually unverified. Browser smoke is the highest-value next move — it will find binding regressions, zoom threshold failures, and detail panel render issues before canon-promotion wiring begins.
 
-- **TW5 law:** each widget self-checks `changedTiddlers` before re-rendering — don't rebuild the whole tree. In Lararium: only re-resolve widget tree when `meta.carrierText` of the focal meme changes in the CRDT delta.
-- **Verse law:** each kumu instance = a causal island; render updates cross island boundaries only via declared `papalohe` edges, not by walking tldraw shape hierarchy. The render pass reads `WidgetNode[]`, not `MemeAstNode[]`.
+### What to verify
 
-### What to build
+**Zoom thresholds (`applyZoomTemplate`):**
+- Drag canvas to each zoom level: strategic (`<0.15`), operational (`0.15–0.35`), tactical (`0.35–0.80`), combat (`0.80–1.50`), action (`≥1.50`)
+- Meme frame dims change at each threshold; body node geo shapes appear at action zoom (`showCarrier:true`)
+- Ahu frames materialize at combat zoom; socket port shapes reposition (`spreadX/Y`)
+- Ownership arrows: `opacity:0` at tactical/lower, `opacity:0.3` at combat/action
 
-`MemeDetailPanel.tsx` currently renders raw `MemeAstNode[]`. Upgrade:
+**MemeDetailPanel (React adapter):**
+- Double-click meme frame → panel slides up; carrier text renders
+- Kumu-typed nodes render (kumu name + props); typed holes render as dashed placeholders
+- Suspended kukali instances surface as `⏿` placeholder
 
-1. Call `resolveWidgetTree(ast, registry): WidgetNode[]` after `parseMemeCarrier`
-2. `registry` reconstructed from `artifact.kumuDefs` already seeded in boot store — read from `editor.store` or pass through `LarariumContext`
-3. Walk `WidgetNode[]`:
-   - `{ def: KumuDef }` → render kumu template body (TOML props → shape props)
-   - `{ def: null }` → render placeholder: `"unknown kumu: name"` (Hazel typed hole)
-4. TW5 selective refresh: memoize on `meta.carrierText`; only re-resolve when the meme's carrier text changes in the store listener
+**TemplateCascade — manual test:**
+- Pass `cascade: [{ match: { rating: "claim" }, override: { color: "green" } }]` to `renderAllViews`; reseed; confirm claim-rated meme frames render green at all zoom levels
 
-### Files
-
-```
-packages/lararium-core/src/widget-tree.ts     — resolveWidgetTree, KumuRegistry, WidgetNode
-packages/lararium-app/src/MemeDetailPanel.tsx  — current raw AST renderer → upgrade target
-packages/lararium-app/src/lararium-context.tsx — LarariumContext, useLararium, editor ref
-packages/lararium-tldraw/src/records.ts        — LarTLSocket, LarTLArrow.isOwnership, ownsArrowId
-packages/lararium-tldraw/src/project.ts        — ownership arrow emission, socket projection
-packages/lararium-tldraw/src/layout.ts         — SocketGeometry, ownership arrow geometry
-packages/lararium-tldraw/src/tldraw-shapes.ts  — socket geo emission, isOwnership opacity/lock
-packages/lararium-node/src/node-host.ts        — collectKumuDefsFromGraph
-packages/lararium-node/scripts/serve.ts        — buildBootProjection, buildKumuRegistry
-lares/lararium-node/ROADMAP.md                 — #milestone-9-scope
-lares/lararium-node/MULTIPLAYER-INFINITE-CANVAS-WIKI.md — #hidden-skeleton, #views
-```
+**Spatial edge smoke:**
+- Write a test carrier with `<<~ pranala ? -> lar:///target family:spatial role:portal >>` 
+- Confirm `validatePranaEdge` passes (no warning); arrow color is `light-blue`
 
 ### Commands
 
@@ -105,6 +95,16 @@ lares/lararium-node/MULTIPLAYER-INFINITE-CANVAS-WIKI.md — #hidden-skeleton, #v
 pnpm -r build
 pnpm -r test                                                        # 229 must stay green
 curl -s http://localhost:4321/admin/reseed | python3 -m json.tool   # reseed after build
+open http://localhost:4321                                          # browser smoke
+```
+
+### Files for canon-promotion (P4, after smoke)
+
+```
+packages/lararium-node/scripts/serve.ts        — add PUT /admin/promote route
+packages/lararium-node/src/node-host.ts        — writeCarrierText(uri, text) guard
+packages/lararium-app/src/MemeDetailPanel.tsx  — promote button in panel chrome
+lares/ha-ka-ba/api/v0.1/pono/hooponopono.md    — canon-promotion ceremony invariant
 ```
 
 <<~/ahu >>

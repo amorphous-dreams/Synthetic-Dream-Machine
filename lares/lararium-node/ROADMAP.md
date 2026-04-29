@@ -12,7 +12,7 @@ register = "S"
 manaoio = 0.82
 mana = 0.88
 manao = 0.86
-role = "docs meme — migration roadmap and milestone log for Lararium Node; Milestones 1–8 complete; 229/229 tests green; socket port shapes + ownership skeleton + kukali + kumuDefs pipeline + resolveWidgetTree all shipped; M9 planned (widget tree render pass, browser smoke, spatial family, canon-promotion surface, wiki-recipe carriers); Track D federation research complete — Orichalcum capability model + federated causal island law locked as invariant pono memes; Orichalcum Phase 1 implementation deferred until after M9"
+role = "docs meme — migration roadmap and milestone log for Lararium Node; Milestones 1–9 (P1+P3) substantially complete; 229/229 tests green; three-tree pipeline complete for both adapters (React: full kumu execution via kumu-react-render.tsx; tldraw: LarTLBodyNode structural skeleton zoom-gated by showCarrier); render-target.ts explicit boundary contract; TemplateCascade TW5-style cascade type wired in multi-view.ts; FAMILY_ROLES + spatial family (contains/portal/adjacent/layer) locked; loop merge in applyZoomTemplate (Pass1 builds memeIncludeAhu+memeShowCarrier in one scan); M9 remaining: browser smoke (P2), canon-promotion surface (P4), wiki-recipe carriers (P5), wehe executor (future); Track D federation research complete — Orichalcum capability model + federated causal island law locked as invariant pono memes; Orichalcum Phase 1 implementation deferred until after M9"
 cacheable = false
 retain = true
 invariant = false
@@ -1614,36 +1614,35 @@ Required context now present in-document:
 
 <<~ ahu #milestone-9-scope >>
 
-## Milestone 9 — Widget Tree Render Pass + Canon Surface (Planned)
+## Milestone 9 — Widget Tree Render Pass + Canon Surface (Active)
 
 M8 delivered the full kumu type pipeline bottom-up: AST → kumuDefs → KumuRegistry → templateProps → tldraw shapes. M9 closes the loop top-down: widget tree resolution feeds the render pass directly, grammar meme drives the parser dispatch table, and canon-promotion has a write-back surface.
 
-### Priority 1: resolveWidgetTree render pass
+### Priority 1: resolveWidgetTree render pass ✓ (shipped 2026-04-28)
 
-`resolveWidgetTree(ast, registry)` already exists and passes tests. M9 wires it into the tldraw render path:
+**Shipped:**
+- `kumu-react-render.tsx` — React render adapter extracted from `MemeDetailPanel`; pure function `renderCarrier(ast, widgetMap)` walks `WidgetNode[]` not raw `MemeAstNode[]`; kahea sigil nodes delegate to `widgetMap.get(node.pos)` for O(1) slot lookup; typed holes (no registry match) render as Hazel-style dashed placeholders; all 8 pranala families colored
+- `render-target.ts` — explicit boundary contract: `RenderTargetAdapter` interface, `RENDER_TARGET_ADAPTERS` machine-readable registry, `WidgetSlot`, `buildWidgetMap`, `projectCarrier` (single-parse guarantee: one `parseMemeCarrier` + `resolveWidgetTree` per carrier; both adapters consume the result)
+- `LarTLBodyNode[]` — tldraw structural skeleton: `text | widget | hole` body nodes emitted inside meme frames; opacity:0 until action zoom; toggled by `applyZoomTemplate` Pass 4 via `memeShowCarrier` map; widget nodes show `kumuName(k:v ...)` label (UEFN device slot — not executed); hole nodes render dashed grey
+- `applyZoomTemplate` loop merge — Pass 1 builds both `memeIncludeAhu` and `memeShowCarrier` maps in one O(n) shapes scan; eliminates second meme-frame loop per zoom threshold crossing
+- `TemplateCascade` type wired in `multi-view.ts` — TW5-style priority-ordered cascade: `CascadeEntry { match: MemeCascadePredicate | fn, override: Partial<MemeTemplateProps>, levels? }` evaluated per-meme against frame properties; `applyCascade()` called at `renderAllViews` time; first match wins per zoom level
 
-- Walk `WidgetNode[]` instead of raw `MemeAstNode[]` in the meme detail panel renderer
-- Each `WidgetNode { def: KumuDef }` maps to a named render slot (kumu type → tldraw shape kind)
-- `WidgetNode { def: null }` (typed hole) renders as a placeholder shape — Hazel semantics
-- Initial scope: meme detail panel only; full projection render pass is Phase 4
+### Priority 2: Browser smoke testing (pending)
 
-This makes carrier editing visible as canvas shape changes without TypeScript rebuild.
-
-### Priority 2: Browser smoke testing
-
-All M5/M6/M7/M8 tactile behaviors unverified. Playwright baseline:
+All M5/M6/M7/M8/M9 tactile behaviors unverified. Playwright baseline:
 
 - Drag meme frame → socket shapes follow (binding records verify); ahu frames stay locked
 - Zoom threshold crossings → `applyZoomTemplate` fires; meme frame dims correct at each level
 - Ownership arrows invisible at tactical/lower; visible (opacity 0.3) at combat/action
-- Double-click meme frame → `MemeDetailPanel` slides up; carrier text renders from store
+- Double-click meme frame → `MemeDetailPanel` slides up; carrier text renders from store with kumu-typed nodes
 - ⌘K → Spaces + Memes sections; Enter navigates; Escape dismisses
 - Canvas mode toggle → tldraw toolbar appears; Lararium chrome dims
 - `/admin/reseed` → grammar carrier change takes effect without restart; lares/ watcher fires
+- Action zoom → body node geo shapes appear inside meme frames (showCarrier gate)
 
-### Priority 3: Spatial family registration
+### Priority 3: Spatial family registration ✓ (shipped 2026-04-28)
 
-8th pranala family (`spatial`): roles `contains`, `portal`, `adjacent`, `layer`. Load-bearing for RPG battlemap, multi-level rooms, and interlinked area navigation. Unblocks portals-as-graph-edges (not just geo shapes with `meta.larPortal`).
+8th pranala family (`spatial`): roles `contains`, `portal`, `adjacent`, `layer` locked in `FAMILY_ROLES` (pranala-parser.ts). `validatePranaEdge` now emits `unknown-role` warning for out-of-vocabulary roles across all `roleRecommended` families. Color `"light-blue"` in tldraw `FAMILY_COLORS`. Unblocks portals-as-graph-edges (not just geo shapes with `meta.larPortal`).
 
 ### Priority 4: Canon-promotion surface
 

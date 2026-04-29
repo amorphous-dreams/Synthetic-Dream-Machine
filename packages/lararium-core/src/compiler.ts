@@ -28,6 +28,14 @@ export interface ClosureEntry {
   depth: number;
   /** Operator-set confidence scalar from carrier TOML #iam block. 0 if absent. */
   confidence: number;
+  /** Operator-assigned confidence register code (e.g. "CS", "GR", "OS", "US", "DS", "S"). */
+  register: string;
+  /** Operator-set observability/interoperability score. 0 if absent. */
+  manaoio: number;
+  /** Operator-set mana (epistemic authority weight). 0 if absent. */
+  mana: number;
+  /** Operator-set manao (relational trust weight). 0 if absent. */
+  manao: number;
 }
 
 export interface ValidationResult {
@@ -97,8 +105,9 @@ function buildSocketMap(graph: MemeGraph, topoUris: string[]): Map<string, strin
 
 function closureEntry(graph: MemeGraph, uri: string, depth: number, hydrationSocket: string): ClosureEntry {
   const meme = graph.memes.get(uri);
+  const num = (key: string) => typeof meme?.metadata[key] === "number" ? (meme.metadata[key] as number) : 0;
   if (!meme) {
-    return Object.freeze({ uri, laresRelPath: null, kind: "unknown", virtual: false, exists: false, role: "", hydrationSocket, implements: [], contentHash: "", depth, confidence: 0 });
+    return Object.freeze({ uri, laresRelPath: null, kind: "unknown", virtual: false, exists: false, role: "", hydrationSocket, implements: [], contentHash: "", depth, confidence: 0, register: "", manaoio: 0, mana: 0, manao: 0 });
   }
   return Object.freeze({
     uri,
@@ -106,12 +115,16 @@ function closureEntry(graph: MemeGraph, uri: string, depth: number, hydrationSoc
     kind: meme.virtual ? "caps-virtual" : meme.laresRelPath?.includes("-") ? "tuple-file" : "caps-file",
     virtual: meme.virtual,
     exists: meme.exists,
-    role: (meme.metadata["role"] as string | undefined) ?? "",
+    role:     (meme.metadata["role"]     as string | undefined) ?? "",
+    register: (meme.metadata["register"] as string | undefined) ?? "",
     hydrationSocket,
     implements: memeImplements(meme),
     contentHash: meme.contentHash,
     depth,
-    confidence: typeof meme.metadata["confidence"] === "number" ? meme.metadata["confidence"] : 0,
+    confidence: num("confidence"),
+    manaoio:    num("manaoio"),
+    mana:       num("mana"),
+    manao:      num("manao"),
   });
 }
 
