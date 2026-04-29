@@ -160,6 +160,11 @@ export function canPromoteToCanon(input: CanPromoteInput): CanPromoteResult {
   if (input.origin.kind === "projection-cache") {
     return { ok: false, reason: "projection-cache-origin-cannot-promote-canon" };
   }
+  if (input.origin.kind === "canvas-draft") {
+    // Canvas edits accumulate in SQLite room state (branch commit).
+    // They require the explicit PUT /admin/promote ceremony to reach canon.
+    return { ok: false, reason: "canvas-draft-requires-promote-ceremony" };
+  }
   if (input.origin.kind === "tw-local" || input.origin.kind === "crdt-remote") {
     return { ok: false, reason: "live-edit-origin-cannot-promote-canon-without-ceremony" };
   }

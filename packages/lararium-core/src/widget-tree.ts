@@ -13,7 +13,7 @@
  * events cross via papalohe edges only.
  */
 
-import type { MemeAstNode, KumuDef, WidgetNode } from "./ast.js";
+import type { MemeAstNode, KumuDef, WidgetNode, CarrierNode } from "./ast.js";
 
 // ---------------------------------------------------------------------------
 // KumuRegistry
@@ -110,6 +110,39 @@ export function resolveWidgetTree(
   }
 
   return result;
+}
+
+// ---------------------------------------------------------------------------
+// CarrierWidget — root of the widget tree for one carrier document.
+//
+// Analogues:
+//   TW5  — the widget root produced by $tw.wiki.parseText(); every rendered
+//           tiddler is a tree of widgets rooted at a TranscludeWidget.
+//   UEFN — the VerseDevice island root; kumu instances are child devices.
+//
+// suspensionState: null until first executeBatch() run; thereafter the last
+// batch result array for incremental patching. See kumu-executor.ts kukali.
+// ---------------------------------------------------------------------------
+
+export interface CarrierWidget {
+  readonly kind: "CarrierWidget";
+  readonly uri: string;
+  readonly body: readonly WidgetNode[];
+  /** Last kumu execution results — null before first executeBatch() run. */
+  suspensionState: null | import("./kumu-executor.js").KumuResult[];
+}
+
+/**
+ * Parse a carrier's body AST into a rooted CarrierWidget.
+ * Equivalent to: new CarrierWidget(uri, resolveWidgetTree(carrier.body, registry))
+ */
+export function resolveCarrier(carrier: CarrierNode, registry: KumuRegistry): CarrierWidget {
+  return {
+    kind: "CarrierWidget",
+    uri: carrier.uri,
+    body: resolveWidgetTree(carrier.body, registry),
+    suspensionState: null,
+  };
 }
 
 // ---------------------------------------------------------------------------

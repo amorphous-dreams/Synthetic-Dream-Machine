@@ -240,19 +240,30 @@ const CANONICAL_SIGILS = new Set([
   "kukali",
 ]);
 
-export function buildAst(events: ParseEvent[], carrierUri: string, grammar?: GrammarRules): MemeAstNode[] {
+export function buildAst(events: ParseEvent[], carrierUri: string, grammar?: GrammarRules, sourceText?: string): MemeAstNode[] {
   const root: MemeAstNode[] = [];
   const stack: Frame[] = [];
   const ahuStack: string[] = [];
+  let cursor = 0;
 
   const top = (): MemeAstNode[] => stack.length > 0 ? stack[stack.length - 1]!.children : root;
 
+  const emitTextGap = (upTo: number) => {
+    if (!sourceText || upTo <= cursor) return;
+    const span = sourceText.slice(cursor, upTo);
+    if (span.trim()) {
+      top().push({ kind: "Text", pos: cursor, raw: span, content: span } as import("./ast.js").TextNode);
+    }
+  };
+
   for (const evt of events) {
     const { sigilName, eventType, pos, end, raw, groups } = evt;
+    emitTextGap(pos);
 
     if (eventType === "open") {
       stack.push({ sigilName, pos, raw, groups, children: [] });
       if (sigilName === "ahu") ahuStack.push(carrierUri + (groups[1] ?? "").trim());
+      cursor = end;
       continue;
     }
 
@@ -260,7 +271,7 @@ export function buildAst(events: ParseEvent[], carrierUri: string, grammar?: Gra
       // Walk back to matching open, orphan anything above it
       let i = stack.length - 1;
       while (i >= 0 && stack[i]!.sigilName !== sigilName) i--;
-      if (i < 0) continue;
+      if (i < 0) { cursor = end; continue; }
       while (stack.length - 1 > i) {
         const orphan = stack.pop()!;
         top().push(closeFrame(orphan, carrierUri, "block", grammar));
@@ -268,11 +279,21 @@ export function buildAst(events: ParseEvent[], carrierUri: string, grammar?: Gra
       const frame = stack.pop()!;
       if (sigilName === "ahu") ahuStack.pop();
       top().push(closeFrame(frame, carrierUri, "block", grammar));
+      cursor = end;
       continue;
     }
 
     // leaf or pragma
     top().push(makeLeaf(sigilName, eventType, pos, end, raw, groups, carrierUri, ahuStack, grammar));
+    cursor = end;
+  }
+
+  // Trailing text after last event
+  if (sourceText && cursor < sourceText.length) {
+    const span = sourceText.slice(cursor);
+    if (span.trim()) {
+      top().push({ kind: "Text", pos: cursor, raw: span, content: span } as import("./ast.js").TextNode);
+    }
   }
 
   // Unclosed frames
@@ -496,5 +517,22 @@ export function parseMemeCarrier(
   text: string,
   grammar?: GrammarRules,
 ): MemeAstNode[] {
-  return buildAst(collectEvents(text, grammar), carrierUri, grammar);
+  return buildAst(collectEvents(text, grammar), carrierUri, grammar, text);
+}
+
+/**
+ * Parse a carrier text into a rooted CarrierNode — the island boundary unit.
+ * Prefer this over parseMemeCarrier when building the full widget pipeline;
+ * pass the result to resolveCarrier() to get a CarrierWidget.
+ */
+export function parseCarrierNode(
+  uri: string,
+  text: string,
+  grammar?: GrammarRules,
+): import("./ast.js").CarrierNode {
+  return {
+    kind: "Carrier",
+    uri,
+    body: parseMemeCarrier(uri, text, grammar),
+  };
 }

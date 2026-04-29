@@ -65,6 +65,7 @@ export type ChangeOrigin =
   | { readonly kind: "canon-hydrate";     readonly receipt:    string }
   | { readonly kind: "mcp-draft";         readonly toolCallId: string }
   | { readonly kind: "operator-import";   readonly sessionId:  string }
+  | { readonly kind: "canvas-draft";      readonly shapeId:    string }
   | { readonly kind: "projection-cache";  readonly shapeId:    string; readonly receipt?: string };
 
 // ---------------------------------------------------------------------------

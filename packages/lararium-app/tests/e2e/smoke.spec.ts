@@ -12,6 +12,10 @@
  *   N6  __larariumDebug.hostReceipt upgrades from null to a string
  *   N4  shape.meta has no "id" or "typeName" keys
  *   T1  __larariumDebug.tw5 is non-null (TW5 always boots)
+ *
+ * Arc A — store-authority carrierText (MemeDetailPanel):
+ *   A1  tiddlerStore.get(uri) returns text after sync (store has carrier text)
+ *   A2  tiddlerStore.subscribe fires when store record changes (live update path present)
  */
 
 import { test, expect, type Page } from "@playwright/test";
@@ -112,6 +116,66 @@ test.describe("Lararium smoke — N1–N6, T1", () => {
     expect(metaKeys).not.toBeNull();
     expect(metaKeys).not.toContain("id");
     expect(metaKeys).not.toContain("typeName");
+  });
+
+  // ---------------------------------------------------------------------------
+  // Arc A — tiddlerStore as live carrierText authority
+  // ---------------------------------------------------------------------------
+
+  test("A1: tiddlerStore.get returns carrier text for at least one meme after sync", async ({ page }) => {
+    await page.goto("/");
+    await waitForSync(page);
+    // Wait for tiddlerStore to be seeded (hostReceipt must land first)
+    await waitForDebugKey(page, "hostReceipt");
+    await page.waitForTimeout(500); // allow seedAll debounce to fire
+
+    const result = await page.evaluate(async () => {
+      const dbg = (window as unknown as Record<string, unknown>)["__larariumDebug"] as Record<string, unknown>;
+      const store = dbg?.["tiddlerStore"] as { listVisible: () => Promise<string[]>; get: (t: string) => Promise<{ text?: string } | null> } | undefined;
+      if (!store) return null;
+      const titles = await store.listVisible();
+      const memes = titles.filter((t: string) => t.startsWith("lar:"));
+      if (memes.length === 0) return { memeCount: 0, hasText: false };
+      const first = await store.get(memes[0]!);
+      return { memeCount: memes.length, hasText: typeof first?.text === "string" && first.text.length > 0 };
+    });
+
+    expect(result).not.toBeNull();
+    expect(result?.memeCount).toBeGreaterThan(0);
+    expect(result?.hasText).toBe(true);
+  });
+
+  test("A2: tiddlerStore.subscribe delivers change when put is called", async ({ page }) => {
+    await page.goto("/");
+    await waitForSync(page);
+    await waitForDebugKey(page, "hostReceipt");
+    await page.waitForTimeout(500);
+
+    const fired = await page.evaluate(async () => {
+      const dbg = (window as unknown as Record<string, unknown>)["__larariumDebug"] as Record<string, unknown>;
+      const store = dbg?.["tiddlerStore"] as {
+        subscribe: (fn: (c: { title: string; record: { text?: string } | null }) => void) => () => void;
+        put: (r: { title: string; fields: Record<string, string>; text: string }, o: { kind: string }) => Promise<void>;
+      } | undefined;
+      if (!store) return null;
+
+      let received: string | null = null;
+      const unsub = store.subscribe((change) => {
+        if (change.title === "lar:///test-arc-a") received = change.record?.text ?? null;
+      });
+
+      await store.put(
+        { title: "lar:///test-arc-a", fields: {}, text: "arc-a-sentinel" },
+        { kind: "canvas-draft", shapeId: "test-shape" },
+      );
+
+      // Give subscriber one microtask to fire (it's synchronous in MemoryTiddlerStore)
+      await Promise.resolve();
+      unsub();
+      return received;
+    });
+
+    expect(fired).toBe("arc-a-sentinel");
   });
 
   test("T1: __larariumDebug.tw5 is non-null (TW5 always boots)", async ({ page }) => {

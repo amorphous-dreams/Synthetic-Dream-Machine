@@ -1,66 +1,34 @@
 /**
- * MemeDetailPanel — three-tree pipeline for meme carrier rendering.
+ * MemeDetailPanel — renders a focused meme carrier through the TW5 pipeline.
  *
- * Pipeline:
- *   shape.meta.carrierText           ← CRDT projection from lares/ file
- *   parseMemeCarrier()               → MemeAstNode[]   (parse tree — agnostic)
- *   resolveWidgetTree(ast, registry) → WidgetNode[]    (widget tree — kumu-typed)
- *   buildWidgetMap() + executeKumu() → Map<pos, slot>  (causal island fanout)
- *   renderCarrier(ast, widgetMap)    → React.ReactNode (React render adapter)
+ * Read path (local-first):
+ *   tiddlerStore.get(uri)         — live store authority (seed from CRDT projection)
+ *   tiddlerStore.subscribe(uri)   — reactive updates without panel close/reopen
+ *   tw5.renderCarrierVDom(uri, text)  → VDomNode[]   (TW5 fake DOM render)
+ *   renderVDom(vdom)              → React.ReactNode  (vdom-to-react adapter)
  *
- * TW5 instance: available via context for filter expressions and recipe cascade
- * evaluation — NOT used to render carrier text (carrier text is our sigil grammar,
- * not standard TW5 wikitext).
+ * Cold-start: if the store has no record yet, shape.meta.carrierText is the
+ * seed (CRDT projection value present at panel mount). The subscription fires
+ * immediately when seedAll() writes the store record.
+ *
+ * tw5 must be booted (tw5-ready phase) before the panel renders content.
+ * While tw5 is null the panel shows a loading state.
  */
 
 import { useEffect, useMemo, useCallback, useState } from "react";
-import {
-  parseMemeCarrier,
-  resolveWidgetTree,
-  executeBatch,
-} from "@lararium/core";
-import type { MemeAstNode, WidgetNode, KumuResult, KumuContext } from "@lararium/core";
-import { buildWidgetMap } from "@lararium/tldraw";
+import type { VDomNode } from "@lararium/tw5";
 import { useLararium } from "./lararium-context.js";
-import { renderCarrier } from "./native-render.js";
+import { renderVDom } from "./vdom-to-react.js";
 
 // ---------------------------------------------------------------------------
-// useKumuExecution — async Verse-aligned causal island fanout
+// useCarrierText — tiddlerStore-subscribed carrier text for focused URI
 // ---------------------------------------------------------------------------
 
-function useKumuExecution(
-  widgetTree: WidgetNode[] | null,
-  kumuRegistry: ReturnType<typeof useLararium>["kumuRegistry"],
-): KumuResult[] | null {
-  const [results, setResults] = useState<KumuResult[] | null>(null);
+function useCarrierText(uri: string | null): string | null {
+  const { editor, tiddlerStore } = useLararium();
 
-  useEffect(() => {
-    if (!widgetTree || !kumuRegistry || widgetTree.length === 0) {
-      setResults(null);
-      return;
-    }
-    let cancelled = false;
-    const ctx: KumuContext = { props: {}, depth: 0, registry: kumuRegistry };
-    executeBatch(widgetTree, ctx).then((r) => {
-      if (!cancelled) setResults(r);
-    });
-    return () => { cancelled = true; };
-  }, [widgetTree, kumuRegistry]);
-
-  return results;
-}
-
-// ---------------------------------------------------------------------------
-// Panel
-// ---------------------------------------------------------------------------
-
-export function MemeDetailPanel() {
-  const { navState, dispatch, editor, kumuRegistry } = useLararium();
-  const visible = navState.activeView === "meme-detail" && !!navState.focusUri;
-  const uri = visible ? navState.focusUri! : null;
-
-  // Read carrier text from CRDT shape meta — seeded at projection time.
-  const carrierText = useMemo<string | null>(() => {
+  // Cold-start seed from CRDT projection in shape.meta — present at mount.
+  const shapeSeed = useMemo<string | null>(() => {
     if (!uri || !editor) return null;
     const shape = editor.getCurrentPageShapes().find(
       (s) =>
@@ -71,28 +39,70 @@ export function MemeDetailPanel() {
     return typeof ct === "string" ? ct : null;
   }, [uri, editor]);
 
-  // parse tree — agnostic
-  const ast = useMemo<MemeAstNode[] | null>(() => {
-    if (!uri || !carrierText) return null;
-    return parseMemeCarrier(uri, carrierText);
-  }, [uri, carrierText]);
+  const [carrierText, setCarrierText] = useState<string | null>(null);
 
-  // widget tree — kumu-typed; null until registry arrives
-  const widgetTree = useMemo<WidgetNode[] | null>(() => {
-    if (!ast || !kumuRegistry) return null;
-    return resolveWidgetTree(ast, kumuRegistry);
-  }, [ast, kumuRegistry]);
+  useEffect(() => {
+    if (!uri) { setCarrierText(null); return; }
 
-  // causal island fanout — async kumu execution
-  const kumuResults = useKumuExecution(widgetTree, kumuRegistry);
+    if (tiddlerStore) {
+      tiddlerStore.get(uri).then((record) => {
+        setCarrierText(record?.text ?? shapeSeed ?? null);
+      });
+    } else {
+      setCarrierText(shapeSeed);
+    }
 
-  // pos→slot index for O(1) lookup in renderCarrier
-  const widgetMap = useMemo(
-    () => buildWidgetMap(widgetTree ?? [], kumuResults),
-    [widgetTree, kumuResults],
+    if (!tiddlerStore) return;
+
+    return tiddlerStore.subscribe((change) => {
+      if (change.title !== uri) return;
+      setCarrierText(change.record?.text ?? null);
+    });
+  // shapeSeed seeds once on uri change; subscription owns subsequent updates.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [uri, tiddlerStore]);
+
+  return carrierText;
+}
+
+// ---------------------------------------------------------------------------
+// useCarrierVDom — TW5 render of carrier text → VDomNode[]
+//
+// Synchronous once tw5 is booted. Re-runs when carrierText changes.
+// Returns null while tw5 is loading or text is absent.
+// ---------------------------------------------------------------------------
+
+function useCarrierVDom(
+  uri: string | null,
+  carrierText: string | null,
+): VDomNode[] | null {
+  const { tw5 } = useLararium();
+  return useMemo<VDomNode[] | null>(() => {
+    if (!uri || !carrierText || !tw5) return null;
+    try {
+      return tw5.renderCarrierVDom(uri, carrierText);
+    } catch {
+      return null;
+    }
+  }, [uri, carrierText, tw5]);
+}
+
+// ---------------------------------------------------------------------------
+// Panel
+// ---------------------------------------------------------------------------
+
+export function MemeDetailPanel() {
+  const { navState, dispatch, tw5 } = useLararium();
+  const visible  = navState.activeView === "meme-detail" && !!navState.focusUri;
+  const uri      = visible ? navState.focusUri! : null;
+
+  const carrierText = useCarrierText(uri);
+  const vdom        = useCarrierVDom(uri, carrierText);
+
+  const onClose = useCallback(
+    () => dispatch({ type: "NAVIGATE_BACK" }),
+    [dispatch],
   );
-
-  const onClose = useCallback(() => dispatch({ type: "NAVIGATE_BACK" }), [dispatch]);
 
   useEffect(() => {
     if (!visible) return;
@@ -103,6 +113,13 @@ export function MemeDetailPanel() {
 
   if (!visible) return null;
 
+  const body = (() => {
+    if (!tw5)         return <div style={css.status}>⏿ tw5 booting…</div>;
+    if (!carrierText) return <div style={css.status}>No carrier text — reseed room to populate.</div>;
+    if (!vdom)        return <div style={css.status}>Render error — check carrier syntax.</div>;
+    return renderVDom(vdom);
+  })();
+
   return (
     <div style={css.backdrop} onClick={onClose} aria-modal="true" role="dialog">
       <div style={css.panel} onClick={(e) => e.stopPropagation()}>
@@ -110,17 +127,15 @@ export function MemeDetailPanel() {
           <span style={css.uri}>{uri}</span>
           <button style={css.closeBtn} onClick={onClose} aria-label="Close">✕</button>
         </div>
-        <div style={css.body}>
-          {!carrierText ? (
-            <div style={css.status}>No carrier text in store — reseed room to populate.</div>
-          ) : (
-            ast && renderCarrier(ast, widgetMap)
-          )}
-        </div>
+        <div style={css.body}>{body}</div>
       </div>
     </div>
   );
 }
+
+// ---------------------------------------------------------------------------
+// Styles
+// ---------------------------------------------------------------------------
 
 const css = {
   backdrop: {

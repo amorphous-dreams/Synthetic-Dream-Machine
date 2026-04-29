@@ -4,7 +4,7 @@
  * Opening law (authority-first, mirrors Keyhive/Beelay sync ordering):
  *   host-opening → authority-opening → authority-ready
  *   → manifest-opening → manifest-ready
- *   → store-opening → store-ready
+ *   → store-opening → store-ready   ← seeds from IDB snapshot (local-first)
  *   → tw5-opening → tw5-ready
  *   → projection-opening → projection-ready
  *   → live
@@ -15,15 +15,75 @@
  *   - MemoryTiddlerStore receives projection-cache origin when seeded from shape.meta.
  *   - projection-cache origin must never be promoted to canon.
  *   - TW5 boots AFTER store-ready; store-ready precedes tw5-ready.
+ *   - Local-first: store is seeded from IndexedDB before canvas shapes arrive.
+ *     Server CRDT sync is a background delta reconciliation, not the boot source.
  */
 
 import { useState, useEffect, useRef } from "react";
 import type { Editor } from "tldraw";
 import type { LarariumOpenPhase } from "@lararium/core";
+import type { LarTiddlerRecord } from "@lararium/core";
 import { LarariumTW5, MemoryTiddlerStore, LarariumCrdtSyncAdaptor } from "@lararium/tw5";
 
 // Stable shape ID for the boot-receipt meta-frame emitted by serve.ts.
 const BOOT_RECEIPT_SHAPE_ID = "shape:lararium_boot_receipt";
+
+// ---------------------------------------------------------------------------
+// IdbStoreCache — local-first IndexedDB snapshot for MemoryTiddlerStore.
+//
+// Schema: one IDB database per hostId, one object-store "records", keyed by
+// LarTiddlerRecord.title. Tombstoned records (deleted: true) are removed so
+// the snapshot stays clean.
+//
+// Boot path: openIdb → getAll → _seed each record into MemoryTiddlerStore.
+// Write path: store.subscribe → debounced IDB sync (50ms trailing edge).
+// ---------------------------------------------------------------------------
+
+const IDB_VERSION = 1;
+
+function openIdb(hostId: string): Promise<IDBDatabase | null> {
+  if (typeof indexedDB === "undefined") return Promise.resolve(null);
+  return new Promise((resolve) => {
+    const req = indexedDB.open(`lararium:store:${hostId}`, IDB_VERSION);
+    req.onupgradeneeded = () => {
+      req.result.createObjectStore("records", { keyPath: "title" });
+    };
+    req.onsuccess = () => resolve(req.result);
+    req.onerror   = () => resolve(null); // degrade gracefully
+  });
+}
+
+async function idbGetAll(db: IDBDatabase): Promise<LarTiddlerRecord[]> {
+  return new Promise((resolve) => {
+    const tx  = db.transaction("records", "readonly");
+    const req = tx.objectStore("records").getAll();
+    req.onsuccess = () => resolve(req.result as LarTiddlerRecord[]);
+    req.onerror   = () => resolve([]);
+  });
+}
+
+function idbPutRecord(db: IDBDatabase, record: LarTiddlerRecord): void {
+  const tx = db.transaction("records", "readwrite");
+  const os = tx.objectStore("records");
+  if (record.deleted) {
+    os.delete(record.title);
+  } else {
+    os.put(record);
+  }
+}
+
+/** Wire IDB write-back to store. Returns unsubscribe fn. */
+function bindIdbWriteback(db: IDBDatabase, store: MemoryTiddlerStore): () => void {
+  return store.subscribe((change) => {
+    if (change.record) {
+      idbPutRecord(db, change.record);
+    } else {
+      // tombstone — delete from IDB
+      const tx = db.transaction("records", "readwrite");
+      tx.objectStore("records").delete(change.title);
+    }
+  });
+}
 
 // ---------------------------------------------------------------------------
 // Options
@@ -137,7 +197,19 @@ export function useLarariumHostOpen(options: BrowserHostOptions): HostOpenState 
       if (!cancelled) setPhase({ kind: "store-opening", recipeUri });
       const s = new MemoryTiddlerStore();
       storeRef.current = s;
-      if (!cancelled) { setStore(s); setPhase({ kind: "store-ready", titleCount: 0 }); }
+
+      // Local-first: seed store from IDB snapshot before canvas shapes arrive.
+      const db = await openIdb(hostId);
+      let seedCount = 0;
+      if (db) {
+        const cached = await idbGetAll(db);
+        for (const rec of cached) {
+          if (!rec.deleted) { s._seed(rec); seedCount++; }
+        }
+        stopAdaptorRef.current = bindIdbWriteback(db, s);
+      }
+
+      if (!cancelled) { setStore(s); setPhase({ kind: "store-ready", titleCount: seedCount }); }
 
       if (!cancelled) setPhase({ kind: "tw5-opening", hostId });
       const t = new LarariumTW5();
@@ -155,7 +227,9 @@ export function useLarariumHostOpen(options: BrowserHostOptions): HostOpenState 
       // Echo-loop guard: crdt-remote changes flow TW5-ward only; tw-local changes
       // flow store-ward only. Canon guard: saveTiddler never writes to lares/.
       const adaptor = new LarariumCrdtSyncAdaptor(t, s, `${hostId}:browser`);
-      stopAdaptorRef.current = adaptor.start();
+      const stopCrdt = adaptor.start();
+      const stopIdb  = stopAdaptorRef.current; // captured from IDB writeback bind above
+      stopAdaptorRef.current = () => { stopCrdt(); stopIdb?.(); };
 
       if (!cancelled) setPhase({ kind: "projection-opening", roomId });
       if (!cancelled) setPhase({ kind: "projection-ready", roomId });

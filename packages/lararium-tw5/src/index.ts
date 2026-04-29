@@ -34,3 +34,14 @@ export type { FilterEngineFn } from "./lararium-tw5.js";
 
 export { LarariumCrdtSyncAdaptor } from "./sync-adaptor.js";
 export { MemoryTiddlerStore }      from "./memory-store.js";
+
+export { tw5ElementToVdom, tw5ElementToHtml } from "./fake-dom.js";
+export type { VDomNode, TW5FakeElement, TW5FakeTextNode, TW5FakeNode } from "./fake-dom.js";
+
+export {
+  MemeticParser,
+  parseCarrierToTw5,
+  buildCarrierAndTw5Tree,
+  astToTw5Tree,
+} from "./memetic-parser.js";
+export type { TW5ParseNode } from "./memetic-parser.js";

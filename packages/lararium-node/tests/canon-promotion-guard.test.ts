@@ -75,6 +75,16 @@ describe("canPromoteToCanon — projection-cache guard", () => {
     })).toEqual({ ok: true });
   });
 
+  it("blocks canvas-draft origin — requires PUT /admin/promote ceremony", () => {
+    const result = canPromoteToCanon({
+      origin:        { kind: "canvas-draft", shapeId: "shape:test-arc-b" },
+      authorityMode: "local-operator",
+      target:        "lar:///lares/draft-meme",
+    });
+    expect(result.ok).toBe(false);
+    expect(result.reason).toBe("canvas-draft-requires-promote-ceremony");
+  });
+
   it("rejects unknown origin kind", () => {
     const result = canPromoteToCanon({
       origin:        { kind: "unexpected-future-kind" },

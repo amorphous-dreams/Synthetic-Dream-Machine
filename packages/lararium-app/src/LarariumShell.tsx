@@ -25,7 +25,7 @@ import type { LarViewAction, ZoomLevel } from "@lararium/tldraw";
 import { LarariumCanvas } from "./LarariumCanvas.js";
 import { MemeDetailPanel } from "./MemeDetailPanel.js";
 import { LarariumCtx, useLararium, shortUri, useTheme } from "./lararium-context.js";
-import { parseMemeCarrier, collectKumuDefs, buildKumuRegistry, type KumuRegistry, type FilterEngineFn } from "@lararium/core";
+import type { FilterEngineFn } from "@lararium/core";
 import { useLarariumHostOpen, useBridgeReceiptFromEditor } from "./lararium-browser-host.js";
 import { debugSet } from "./debug.js";
 import "./lararium-theme.css";
@@ -181,8 +181,6 @@ export function LarariumShell({ wsUrl, memes, onMemes }: ShellProps) {
   const [theme, cycleTheme] = useTheme();
   const [editor, setEditorState] = useState<Editor | null>(null);
   const setEditor = useCallback((e: Editor | null) => setEditorState(e), []);
-  const [kumuRegistry, setKumuRegistry] = useState<KumuRegistry | null>(null);
-
   const { phase: openPhase, store: tiddlerStore, tw5 } =
     useLarariumHostOpen({ hostId: "lararium-browser", recipeUri: "lar:///recipe/room", roomId: "altar-fire" });
 
@@ -192,38 +190,6 @@ export function LarariumShell({ wsUrl, memes, onMemes }: ShellProps) {
   const [hostReceipt, setHostReceipt] = useState<string | null>(null);
   useBridgeReceiptFromEditor(editor, setHostReceipt);
 
-  // kumuRegistry — computed view over tiddlerStore (SyncAdaptor-driven).
-  // Rebuilds on every store change; only meme tiddlers (lar: URI + text) contribute.
-  // Replaces the old editor-shape scan: TW5 is the source of truth, not shape.meta.
-  useEffect(() => {
-    if (!tiddlerStore) return;
-
-    const defsMap = new Map<string, ReturnType<typeof collectKumuDefs>>();
-
-    const rebuild = (uri: string, text: string | undefined) => {
-      if (!text) { defsMap.delete(uri); return; }
-      defsMap.set(uri, collectKumuDefs(uri, parseMemeCarrier(uri, text)));
-      const all = Array.from(defsMap.values()).flat();
-      setKumuRegistry(all.length > 0 ? buildKumuRegistry(all) : null);
-    };
-
-    // Seed from all currently visible tiddlers.
-    tiddlerStore.listVisible().then((titles) => {
-      Promise.all(
-        titles
-          .filter((t) => t.startsWith("lar:"))
-          .map((t) => tiddlerStore.get(t).then((r) => ({ uri: t, text: r?.text }))),
-      ).then((entries) => {
-        for (const { uri, text } of entries) rebuild(uri, text);
-      });
-    });
-
-    // Incremental update on each store change.
-    return tiddlerStore.subscribe((change) => {
-      if (!change.title.startsWith("lar:")) return;
-      rebuild(change.title, change.record?.text);
-    });
-  }, [tiddlerStore]);
 
   // ⌘K / Ctrl+K → palette   |   ` (backtick) → canvas mode toggle
   useEffect(() => {
@@ -260,6 +226,8 @@ export function LarariumShell({ wsUrl, memes, onMemes }: ShellProps) {
   // window.__larariumDebug.openPhase and .tw5 update reactively with ctx.
   debugSet("openPhase", openPhase);
   debugSet("tw5",       tw5);
+  debugSet("dispatch",  dispatch);
+  debugSet("store",     tiddlerStore);
 
   const ctxValue = {
     navState,
@@ -274,7 +242,6 @@ export function LarariumShell({ wsUrl, memes, onMemes }: ShellProps) {
     cycleTheme,
     editor,
     setEditor,
-    kumuRegistry,
     openPhase,
     tiddlerStore,
     tw5,

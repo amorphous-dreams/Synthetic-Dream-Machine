@@ -12,7 +12,7 @@ import { createContext, useContext, useState, useCallback } from "react";
 import type { Editor } from "tldraw";
 import type { LarViewState, LarViewAction, ZoomLevel } from "@lararium/tldraw";
 import { DEFAULT_ROOMS, ROOM_SYSTEM } from "@lararium/tldraw";
-import type { KumuRegistry, LarariumOpenPhase } from "@lararium/core";
+import type { LarariumOpenPhase } from "@lararium/core";
 import type { LarariumTW5, MemoryTiddlerStore } from "@lararium/tw5";
 import type { FilterEngineFn } from "@lararium/core";
 import type { MemeEntry } from "./App.js";
@@ -92,8 +92,6 @@ export interface LarariumCtxValue {
   /** Live tldraw editor — set by LarariumCanvas on mount, null before sync. */
   editor:         Editor | null;
   setEditor:      (editor: Editor | null) => void;
-  /** Kumu registry built from boot artifact — null until first fetch. */
-  kumuRegistry:   KumuRegistry | null;
   /** Current opening phase — null before host open begins. */
   openPhase:      LarariumOpenPhase | null;
   /** In-memory tiddler store — null until store-ready phase. */

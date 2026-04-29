@@ -47,6 +47,10 @@
 import tw from "tiddlywiki";
 
 import type { ClosureEntry, EdgeRecord, FilterEngineFn } from "@lararium/core";
+import { createLarariumWidgets, LARARIUM_WIDGETS_TIDDLER } from "./tw5-widgets.js";
+import { parseCarrierToTw5 } from "./memetic-parser.js";
+import { tw5ElementToVdom } from "./fake-dom.js";
+import type { VDomNode } from "./fake-dom.js";
 
 // Re-export so callers can get FilterEngineFn from @lararium/tw5 directly.
 export type { FilterEngineFn };
@@ -153,22 +157,103 @@ export class LarariumTW5 {
       const instance = (tw as any).TiddlyWiki();
       instance.boot.argv = [];
 
-      // Suppress TW5's boot banner (Node only — process.stdout is undefined in browser).
+      // Suppress TW5's boot banner (Node only — globalThis.process is undefined in browser).
       let restoreStdout: (() => void) | null = null;
-      if (typeof process !== "undefined" && process.stdout?.write) {
-        const orig = process.stdout.write.bind(process.stdout);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (process.stdout as any).write = () => true;
-        restoreStdout = () => { (process.stdout as any).write = orig; }; // eslint-disable-line
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const proc = (globalThis as any).process;
+      if (proc?.stdout?.write) {
+        const orig = proc.stdout.write.bind(proc.stdout);
+        proc.stdout.write = () => true;
+        restoreStdout = () => { proc.stdout.write = orig; };
       }
+
+      // Pre-load the widget tiddler (lar:/// URI) so it lives in the corpus graph.
+      instance.preloadTiddlers = instance.preloadTiddlers ?? [];
+      instance.preloadTiddlers.push(LARARIUM_WIDGETS_TIDDLER);
 
       instance.boot.boot(() => {
         restoreStdout?.();
         this._tw = instance;
+        // Register content-type parser + widget classes synchronously after boot.
+        this._registerMemeticParser();
+        this._registerWidgets();
         resolve();
       });
     });
     return this._bootPromise;
+  }
+
+  /**
+   * Register MemeticParser into TW5's parser registry for text/x-memetic-wikitext.
+   * Called automatically after boot(). Safe to call again to re-register.
+   */
+  private _registerMemeticParser(): void {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const parsers: Record<string, unknown> = (this._tw as any)?.Wiki?.parsers ?? {};
+    import("./memetic-parser.js").then(({ MemeticParser }) => {
+      parsers["text/x-memetic-wikitext"] = MemeticParser;
+    }).catch(() => { /* parser not critical for boot */ });
+  }
+
+  /**
+   * Register lararium-* widget classes into Widget.prototype.widgetClasses.
+   * Called synchronously in the boot callback — no async required.
+   *
+   * Widget base class: $:/core/modules/widgets/widget.js → exports.widget
+   * widgetClasses is lazily built by applyMethods("widget") on first render.
+   * We trigger it once here so our patch sticks on the singleton map.
+   */
+  private _registerWidgets(): void {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const tw = this._tw as any;
+
+    // Get the canonical Widget base class.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const WidgetCtor: any =
+      tw.modules?.types?.widget?.["$:/core/modules/widgets/widget.js"]?.exports?.widget;
+    if (!WidgetCtor) return;
+
+    // Trigger lazy widgetClasses population so we can patch the singleton.
+    if (!WidgetCtor.prototype.widgetClasses) {
+      tw.modules.applyMethods("widget", {});
+    }
+
+    const widgetClasses = createLarariumWidgets(tw);
+
+    for (const [name, cls] of Object.entries(widgetClasses)) {
+      // Wire prototype chain so renderChildren / makeChildWidgets / initialise work.
+      Object.setPrototypeOf(
+        (cls as { prototype: object }).prototype,
+        WidgetCtor.prototype,
+      );
+      // Patch the singleton widgetClasses map directly — picked up by makeChildWidgets.
+      WidgetCtor.prototype.widgetClasses ??= {};
+      WidgetCtor.prototype.widgetClasses[name] = cls;
+    }
+  }
+
+  /**
+   * Render a carrier document through the full TW5 widget pipeline.
+   *
+   * Flow:
+   *   parseMemeCarrier → TW5ParseNode[] → TW5 widget tree → $tw.fakeDocument
+   *   → TW_Element tree → VDomNode[] (via tw5ElementToVdom)
+   *
+   * The TW5 widget pipeline fires through our lararium-* widget classes,
+   * so worksite boundaries become <span data-lar-slot="..."> nodes in the output.
+   *
+   * Requires boot() to have resolved.
+   */
+  renderCarrierVDom(uri: string, text: string): VDomNode[] {
+    if (!this._tw) throw new Error("LarariumTW5: call boot() before renderCarrierVDom()");
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const tw = this._tw as any;
+    const parseTree = { tree: parseCarrierToTw5(uri, text) };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const container: any = tw.fakeDocument.createElement("div");
+    container.setAttribute("data-lar-uri", uri);
+    tw.wiki.makeWidget(parseTree, { document: tw.fakeDocument }).render(container, null);
+    return tw5ElementToVdom(container);
   }
 
   /** True after boot() resolves. */

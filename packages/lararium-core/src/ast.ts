@@ -137,6 +137,27 @@ export type MemeAstNode =
   | DynamicNode;
 
 // ---------------------------------------------------------------------------
+// CarrierNode — root of every parsed carrier document.
+//
+// The island boundary at the parse layer: every lar:/// URI maps to exactly
+// one CarrierNode. body holds the flat MemeAstNode[] that parseMemeCarrier
+// previously returned directly.
+//
+// Analogues:
+//   TW5   — the wiki tiddler itself (title = uri, text = source)
+//   UEFN  — a VerseDevice type definition (uri = device type path, body = island)
+//
+// Authority context: uri is the canonical key; authority checking (Orichalcum
+// ceremony) is scoped to this node before any render pass runs.
+// ---------------------------------------------------------------------------
+
+export interface CarrierNode {
+  readonly kind: "Carrier";
+  readonly uri: string;
+  readonly body: readonly MemeAstNode[];
+}
+
+// ---------------------------------------------------------------------------
 // PranaEdge — compiled edge record (output of edgesFromAst / parsePranalaEdges)
 // ---------------------------------------------------------------------------
 

@@ -30,9 +30,11 @@ describe("LarariumTW5 — boot and filter", () => {
     expect(tw.ready).toBe(true);
   });
 
-  test("filterTiddlers on empty wiki returns no lar:/// titles", () => {
+  test("filterTiddlers on empty wiki contains only built-in lar:/// system tiddlers", () => {
     const titles = tw.filterTiddlers("[all[tiddlers]]");
-    expect(titles.every((t) => !t.startsWith("lar://"))).toBe(true);
+    const larTitles = titles.filter((t) => t.startsWith("lar://"));
+    // lar:///lararium-node/tw5/widgets is preloaded at boot as the widget module tiddler.
+    expect(larTitles).toEqual(["lar:///lararium-node/tw5/widgets"]);
   });
 
   test("setTiddler + filterTiddlers resolves the added title", () => {
