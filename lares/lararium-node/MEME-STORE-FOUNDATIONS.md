@@ -49,7 +49,7 @@ A `CarrierRecord` is immutable by construction (`Object.freeze` at compiler boun
 **Law:** `meme-immutability`
 > A meme object, once admitted to the confirmed layer, is never mutated. The only valid write is a full replacement producing a new URI. Pending edits accumulate in the hostful tier; they do not touch confirmed state. Canon-promotion is the atomic transition between tiers.
 
-**Re-seeding corollary:** `/admin/reseed?roomId=boot` is valid only because it replaces the entire room snapshot — not individual shapes. Shape-level mutation outside CRDT merge is always illegal.
+**Refresh corollary:** after the Automerge pivot, ordinary carrier refresh is disk → Automerge → TW5, followed by projection diffing in the browser. `/admin/reseed` remains only a legacy tldraw layout reset / receipt recompute path. Shape-level mutation outside the authorized store/projection path is always illegal.
 
 <<~/ahu >>
 
@@ -141,7 +141,7 @@ These are not features. They are the substrate. Once all three hold:
 
 - **Re-seeding** is safe: replace the full room snapshot, not individual shapes. No shape-level mutation outside CRDT. The room reload is a tiddler replacement — triggers full projection cascade.
 - **Schema enforcement** is self-describing: pranala families are defined in lares/, readable by agents and humans. Operators extend the schema by writing memes, not TypeScript.
-- **Self-hosting** becomes tractable: the parser reads its own grammar from the boot closure. Editing `lares/grammars/memetic-wikitext.md` changes parsing behavior after the next `/admin/reseed`.
+- **Self-hosting** becomes tractable: the parser reads its own grammar from the boot closure. Editing `lares/grammars/memetic-wikitext.md` should propagate through disk → Automerge → TW5; parser-rule hot-reload may still require explicit rebuild/restart until the grammar interpreter is fully live.
 
 **Convergence point:** `lares/` IS the operating system. The TypeScript packages are its kernel — thin, stable, fast. The memes are the userland — editable, extensible, self-describing. The tldraw canvas is the shell — the UI over the OS.
 
@@ -155,7 +155,7 @@ This is the Lararium architecture thesis. Everything else is implementation deta
 
 | Pull | Work | Unlocks |
 |---|---|---|
-| P8 | `/admin/reseed` endpoint — kill SQLite room + re-seed from `renderAllViews` on next connect | lares/ edit → live canvas loop |
+| P8 | `/admin/reseed` endpoint — legacy SQLite layout reset + receipt recompute | no longer primary content loop; disk→Automerge→TW5 is primary |
 | P9 | Pranala family property contracts + parse-time validator in `pranala-parser.ts` | schema enforcement law; blocks bad edges at source |
 | P10 | Extract grammar rules to `lares/grammars/memetic-wikitext.md`; parser reads from boot closure | Phase 2 self-hosting; grammar becomes a meme |
 
@@ -207,7 +207,7 @@ The identity and UCAN layer is now in place:
 
 ### Law addition: `local-first-store`
 
-> The Automerge meme store (`AutomergeMemeStore`) is the single source of truth for carrier text content. The tldraw canvas carries URI identity, room/page structure, and shape layout. Canvas shapes MUST NOT embed `carrierText` in `shape.meta`. Content sync flows through `/meme-sync`; layout sync flows through `/rooms/:id`. Two stores, one port, one operator identity.
+> The Automerge meme store (`AutomergeMemeStore`) is the live source of truth for carrier text content. The tldraw canvas carries URI identity, projection records, and optional layout overlays. Canvas shapes MUST NOT embed `carrierText` in `shape.meta`. Content sync flows through `/meme-sync`; `/rooms/:id` is a legacy/shared-layout channel, not the active meme-content path. Two stores may coexist, but Automerge/TW5 owns content.
 
 <<~/ahu >>
 

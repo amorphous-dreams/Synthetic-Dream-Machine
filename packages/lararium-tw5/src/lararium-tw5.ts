@@ -99,6 +99,7 @@ export function toCanonicalWikitext(expr: string): string {
   return expr
     .replace(/\ball\[memes\]/g, "all[tiddlers]")
     .replace(/\btoml:([\w-]+)\[/g, "field:$1[")
+    .replace(/\bimplements\[([\w:/.-]+)\]/g, "field:implements[$1]")
     .replace(/\bedge:([\w-]+)\[([\w-]+)\]/g, "has[edge-out-$1-$2]")
     .replace(/\bedge:([\w-]+)\[\]/g, "has[edge-out-$1]");
 }
@@ -113,7 +114,8 @@ export function entryToFields(
 ): Record<string, string | string[]> {
   return {
     title:        entry.uri,
-    tags:         entry.implements,
+    tags:         entry.tags,
+    implements:   entry.implements.join(" "),
     depth:        String(entry.depth),
     rating:       entry.kind,
     confidence:   String(entry.confidence),
@@ -220,6 +222,81 @@ export class LarariumTW5 {
         tags:  ["$:/tags/Global"],
       });
 
+      // Palette pointer — $:/palette is a TW5 system tiddler (can't be a lar: URI).
+      // The actual palette data lives in lares/ha.ka.ba/api/v0.1/lararium/palette/
+      // and arrives via the normal disk → Automerge → TW5 pipeline.
+      // This pointer defaults to dark; setPalette() updates it on theme toggle.
+      instance.preloadTiddlers.push({
+        title: "$:/palette",
+        text:  "lar:///ha.ka.ba/api/v0.1/lararium/palette/gruvbox-dark",
+        tags:  [],
+      });
+
+      // -----------------------------------------------------------------------
+      // No-op render startup — prevents TW5 from planting rootWidget in
+      // document.body. mountPanel(container) calls rootWidget.render() instead.
+      // -----------------------------------------------------------------------
+      instance.preloadTiddlers.push({
+        title:          "$:/core/modules/startup/render.js",
+        type:           "application/javascript",
+        "module-type":  "startup",
+        text: `
+exports.name = "render";
+exports.platforms = ["browser"];
+exports.after = ["startup"];
+exports.synchronous = true;
+exports.startup = function() {
+  // Lararium mounts rootWidget via mountPanel(). No render to document.body.
+};
+`,
+      });
+
+      // -----------------------------------------------------------------------
+      // Stylesheet redirect startup — TW5's core stylesheet.js injects <style>
+      // into document.head. We replace it so styles land in the panel shadow
+      // root ($tw.lararium.styleTarget) when set, falling back to document.head
+      // for server-side (no shadow root available).
+      // -----------------------------------------------------------------------
+      instance.preloadTiddlers.push({
+        title:          "$:/core/modules/startup/stylesheet.js",
+        type:           "application/javascript",
+        "module-type":  "startup",
+        text: `
+exports.name = "stylesheet";
+exports.platforms = ["browser"];
+exports.after = ["startup"];
+exports.synchronous = true;
+exports.startup = function() {
+  var styleTarget = ($tw.lararium && $tw.lararium.styleTarget) || document.head;
+  // Patch utils.domMaker calls that inject style elements so they target our container.
+  var origAddStylesheet = $tw.utils.updateStylesheets;
+  $tw.utils.updateStylesheets = function() {
+    // Collect all stylesheet tiddlers and build one <style> block.
+    var stylesheetTitles = $tw.wiki.filterTiddlers("[all[shadows+tiddlers]tag[$:/tags/Stylesheet]!has[draft.of]]");
+    var css = stylesheetTitles.map(function(title) {
+      return $tw.wiki.renderTiddler("text/plain", title);
+    }).join("\\n");
+    // Reuse or create our <style> element inside styleTarget.
+    var el = styleTarget.querySelector && styleTarget.querySelector("#lararium-tw5-styles");
+    if (!el) {
+      el = document.createElement("style");
+      el.id = "lararium-tw5-styles";
+      styleTarget.appendChild(el);
+    }
+    el.textContent = css;
+  };
+  $tw.utils.updateStylesheets();
+  // Refresh on wiki change (palette swap, theme change, etc.)
+  $tw.wiki.addEventListener("change", function(changes) {
+    var stylesheetTitles = $tw.wiki.filterTiddlers("[all[shadows+tiddlers]tag[$:/tags/Stylesheet]!has[draft.of]]");
+    var needsUpdate = stylesheetTitles.some(function(t) { return !!changes[t]; }) ||
+      changes["$:/palette"] || changes["$:/language"];
+    if (needsUpdate) $tw.utils.updateStylesheets();
+  });
+};
+`,
+      });
+
       instance.boot.boot(() => {
         restoreStdout?.();
         this._tw = instance;
@@ -230,6 +307,67 @@ export class LarariumTW5 {
       });
     });
     return this._bootPromise;
+  }
+
+  /**
+   * Mount the full TW5 story river into a React-provided container element.
+   *
+   * Creates a shadow root on the container so TW5's injected <style> tags are
+   * scoped to the panel and cannot leak into the canvas or React tree.
+   * Sets $tw.lararium.styleTarget to the shadow root before rendering so the
+   * preloaded stylesheet startup injects styles there.
+   *
+   * rootWidget renders $:/core/ui/PageTemplate — the full TW5 story river,
+   * sidebar, toolbar — into the shadow root's inner div.
+   *
+   * After mount, wiki.addEventListener("change") → rootWidget.refresh() drives
+   * all updates. Call unmountPanel() to detach and release.
+   *
+   * Requires boot() to have resolved. Safe to call once per panel lifecycle.
+   */
+  mountPanel(container: HTMLElement): () => void {
+    if (!this._tw) throw new Error("LarariumTW5: call boot() before mountPanel()");
+    const tw = this._tw;
+
+    // Shadow root scopes TW5's CSS to the panel — no canvas leakage.
+    const shadow = container.attachShadow({ mode: "open" });
+    const inner  = document.createElement("div");
+    inner.className = "tc-page-container";
+    shadow.appendChild(inner);
+
+    // Tell the stylesheet startup where to inject <style> blocks.
+    tw.lararium ??= {};
+    tw.lararium.styleTarget = shadow;
+
+    // Fire the stylesheet startup now that styleTarget is set.
+    // (It ran during boot() with no styleTarget → document.head fallback;
+    // re-running it here moves styles into the shadow root.)
+    tw.utils.updateStylesheets?.();
+
+    // rootWidget renders the full TW5 page template into the shadow DOM.
+    tw.rootWidget.render(inner, null);
+
+    // Wire the refresh cascade — wiki changes update both panel and canvas widgets.
+    const handler = (changes: Record<string, unknown>) => {
+      tw.rootWidget.refresh(changes);
+    };
+    tw.wiki.addEventListener("change", handler);
+
+    return () => {
+      tw.wiki.removeEventListener("change", handler);
+      tw.rootWidget.domNodes?.forEach((n: Node) => n.parentNode?.removeChild(n));
+    };
+  }
+
+  /**
+   * Switch the active TW5 palette. Triggers stylesheet recompile automatically
+   * via the wiki "change" event wired in the stylesheet startup.
+   *
+   * paletteName: "lar:///ha.ka.ba/api/v0.1/lararium/palette/gruvbox-dark" | "...gruvbox-light"
+   */
+  setPalette(paletteName: string): void {
+    if (!this._tw) return;
+    this._tw.wiki.addTiddler(new this._tw.Tiddler({ title: "$:/palette", text: paletteName, tags: [] }));
   }
 
   /**

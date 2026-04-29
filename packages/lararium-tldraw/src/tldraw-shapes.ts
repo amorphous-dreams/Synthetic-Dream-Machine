@@ -5,7 +5,8 @@
  * so dragging a meme frame automatically moves all connected pranala arrows —
  * Kinopio-style live-connected graph behaviour via tldraw's native binding system.
  *
- * Records feed TLSocketRoom via the bootSnapshot seed path in serve.ts.
+ * Records feed a tldraw editor store. The active browser path derives them from
+ * TW5 via projectFromTw5(); the older TLSocketRoom boot-snapshot path is legacy.
  */
 
 import type {

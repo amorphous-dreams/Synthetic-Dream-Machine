@@ -1,106 +1,55 @@
 /**
- * MemeDetailPanel — renders a focused meme carrier through the TW5 pipeline.
+ * MemeDetailPanel — TW5 story river panel floating over the canvas.
  *
- * Read path (local-first):
- *   tiddlerStore.get(uri)         — Automerge source of truth for carrier text
- *   tiddlerStore.subscribe()      — reactive updates without panel close/reopen
- *   tw5.renderMeme(uri, text)     → { view, vdom }  (ViewTemplate dispatch + TW5 render)
- *   renderVDom(vdom)              → React.ReactNode  (vdom-to-react adapter)
+ * React owns: container position, visibility, close gesture, Escape key.
+ * TW5 owns:   everything inside the container — story river, sidebar, styles.
  *
- * tw5 must be booted (tw5-ready phase) before the panel renders content.
- * While tw5 is null the panel shows a loading state.
+ * tw5.mountPanel(containerRef.current) attaches TW5's rootWidget to the
+ * container's shadow root. TW5's native refresh cascade handles all content
+ * updates — no VDom interpreter, no tiddlerStore subscription in React.
+ *
+ * Navigation into the panel: LarariumShell sets $:/StoryList via tw5.setTiddler()
+ * when navState.focusUri changes, which TW5's story river widget handles natively.
  */
 
-import { useEffect, useMemo, useCallback, useState, useRef } from "react";
-import type { VDomNode } from "@lararium/tw5";
+import { useEffect, useRef, useCallback } from "react";
 import { useLararium } from "./lararium-context.js";
-import { renderVDom, collectDispatchNodes } from "./vdom-to-react.js";
-
-// ---------------------------------------------------------------------------
-// useCarrierText — tiddlerStore-subscribed carrier text for focused URI
-// ---------------------------------------------------------------------------
-
-function useCarrierText(uri: string | null): string | null {
-  const { tiddlerStore } = useLararium();
-  const [carrierText, setCarrierText] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!uri || !tiddlerStore) { setCarrierText(null); return; }
-
-    tiddlerStore.get(uri).then((record) => setCarrierText(record?.text ?? null));
-
-    return tiddlerStore.subscribe((change) => {
-      if (change.title !== uri) return;
-      setCarrierText(change.record?.text ?? null);
-    });
-  }, [uri, tiddlerStore]);
-
-  return carrierText;
-}
-
-// ---------------------------------------------------------------------------
-// useMemeRender — Automerge text → tw5.renderMeme → { view, vdom }
-// ---------------------------------------------------------------------------
-
-type MemeView = "kumu-view" | "reaction-view" | "meme-view" | "cascade-view";
-
-function useMemeRender(
-  uri: string | null,
-  carrierText: string | null,
-): { view: MemeView; vdom: VDomNode[]; kumuInstances: { name: string; props: string; el: unknown }[] } | null {
-  const { tw5 } = useLararium();
-  return useMemo(() => {
-    if (!uri || !carrierText || !tw5) return null;
-    try {
-      return tw5.renderMeme(uri, carrierText);
-    } catch {
-      return null;
-    }
-  }, [uri, carrierText, tw5]);
-}
-
-// ---------------------------------------------------------------------------
-// Panel
-// ---------------------------------------------------------------------------
 
 export function MemeDetailPanel() {
-  const { navState, dispatch, tw5, reactionGraph, fireMeme } = useLararium();
-  const visible  = navState.activeView === "meme-detail" && !!navState.focusUri;
-  const uri      = visible ? navState.focusUri! : null;
+  const { navState, dispatch, tw5, fireMeme } = useLararium();
+  const visible = navState.activeView === "meme-detail" && !!navState.focusUri;
+  const uri     = visible ? navState.focusUri! : null;
 
-  const carrierText = useCarrierText(uri);
-  const rendered    = useMemeRender(uri, carrierText);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const unmountRef   = useRef<(() => void) | null>(null);
 
   const onClose = useCallback(
     () => dispatch({ type: "NAVIGATE_BACK" }),
     [dispatch],
   );
 
-  // Fire "activate" on the meme and "begin" on each of its kumu device instances
-  // when the panel opens. Matches UEFN lifecycle: meme activation → device OnBegin.
-  // Handlers wired in LarariumShell translate these triggers to view dispatch.
+  // Mount TW5's story river into the container on first render.
+  // mountPanel() returns a cleanup fn; we hold it in a ref for unmount.
   useEffect(() => {
-    if (!uri || !reactionGraph) return;
-    fireMeme(uri, "activate");
-    for (const inst of (rendered?.kumuInstances ?? [])) {
-      fireMeme(`lar:///kumu/${inst.name}`, "begin", { props: inst.props, sourceUri: uri });
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [uri]);
+    if (!containerRef.current || !tw5) return;
+    if (unmountRef.current) return; // already mounted
+    unmountRef.current = tw5.mountPanel(containerRef.current);
+    return () => {
+      unmountRef.current?.();
+      unmountRef.current = null;
+    };
+  }, [tw5]);
 
-  // Fire dispatch nodes (lele / DispatchWidget) once per uri activation.
-  // Verse spawn model: fire-and-forget on activation, not on peer-edit re-renders.
-  // Gate: track last uri dispatched so content updates don't re-trigger.
-  const dispatchFiredForUri = useRef<string | null>(null);
+  // Navigate TW5's story river to the focused meme URI.
+  // $:/StoryList is TW5's native "open tiddlers" list — setting it focuses the meme.
   useEffect(() => {
-    if (!rendered?.vdom || !fireMeme || !uri) return;
-    if (dispatchFiredForUri.current === uri) return;
-    dispatchFiredForUri.current = uri;
-    for (const { target, trigger } of collectDispatchNodes(rendered.vdom)) {
-      fireMeme(target, trigger);
-    }
-  }, [rendered?.vdom, fireMeme, uri]);
+    if (!uri || !tw5) return;
+    tw5.setTiddler({ title: "$:/StoryList", text: uri, tags: [] });
+    // Activation signal — ReactionGraph handlers respond to this.
+    fireMeme?.(uri, "activate");
+  }, [uri, tw5, fireMeme]);
 
+  // Escape to close.
   useEffect(() => {
     if (!visible) return;
     const handler = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
@@ -108,44 +57,23 @@ export function MemeDetailPanel() {
     return () => window.removeEventListener("keydown", handler);
   }, [visible, onClose]);
 
-  if (!visible) return null;
-
-  const body = (() => {
-    if (!tw5)         return <div style={css.status}>⏿ tw5 booting…</div>;
-    if (!carrierText) return <div style={css.status}>No carrier text — reseed room to populate.</div>;
-    if (!rendered)    return <div style={css.status}>Render error — check carrier syntax.</div>;
-    return renderVDom(rendered.vdom);
-  })();
-
-  const viewBadgeStyle: React.CSSProperties = {
-    fontSize: 9, fontFamily: "monospace", fontWeight: 700, letterSpacing: "0.08em",
-    padding: "1px 5px", borderRadius: 3, flexShrink: 0,
-    background: rendered?.view === "kumu-view" ? "#3d1f6b" : "#1a3d20",
-    color:      rendered?.view === "kumu-view" ? "#d2a8ff" : "#56d364",
-  };
-  const viewBadge = rendered?.view === "kumu-view"
-    ? <span style={viewBadgeStyle}>kumu</span>
-    : rendered?.view === "reaction-view"
-      ? <span style={viewBadgeStyle}>reaction</span>
-      : null;
-
   return (
-    <div style={css.backdrop} onClick={onClose} aria-modal="true" role="dialog">
+    <div
+      style={{ ...css.backdrop, display: visible ? "flex" : "none" }}
+      onClick={onClose}
+      aria-modal="true"
+      role="dialog"
+    >
       <div style={css.panel} onClick={(e) => e.stopPropagation()}>
-        <div style={css.header}>
-          <span style={css.uri}>{uri}</span>
-          {viewBadge}
+        <div style={css.handleBar}>
           <button style={css.closeBtn} onClick={onClose} aria-label="Close">✕</button>
         </div>
-        <div style={css.body}>{body}</div>
+        {/* TW5 renders its full story river into this div via shadow DOM */}
+        <div ref={containerRef} style={css.tw5Root} />
       </div>
     </div>
   );
 }
-
-// ---------------------------------------------------------------------------
-// Styles
-// ---------------------------------------------------------------------------
 
 const css = {
   backdrop: {
@@ -153,40 +81,29 @@ const css = {
     inset: 0,
     zIndex: 700,
     background: "rgba(0,0,0,0.45)",
-    display: "flex",
     alignItems: "flex-end",
   },
   panel: {
     width: "100%",
-    maxHeight: "60vh",
-    background: "#161b22",
-    borderTop: "1px solid #30363d",
+    maxHeight: "70vh",
     borderRadius: "12px 12px 0 0",
     display: "flex",
     flexDirection: "column" as const,
     overflow: "hidden",
+    // No background/border — TW5's CSS owns the panel interior.
   },
-  header: {
+  handleBar: {
     display: "flex",
-    alignItems: "center",
-    gap: 8,
-    padding: "10px 16px",
-    borderBottom: "1px solid #21262d",
+    justifyContent: "flex-end",
+    padding: "6px 12px",
     flexShrink: 0,
-  },
-  uri: {
-    flex: 1,
-    fontSize: 12,
-    fontFamily: "monospace",
-    color: "#58a6ff",
-    overflow: "hidden",
-    textOverflow: "ellipsis",
-    whiteSpace: "nowrap" as const,
+    background: "rgba(0,0,0,0.3)",
+    backdropFilter: "blur(4px)",
   },
   closeBtn: {
     background: "none",
     border: "none",
-    color: "#6e7681",
+    color: "#ebdbb2",
     cursor: "pointer",
     fontSize: 16,
     lineHeight: 1,
@@ -194,17 +111,9 @@ const css = {
     borderRadius: 4,
     flexShrink: 0,
   },
-  body: {
+  tw5Root: {
     flex: 1,
-    overflowY: "auto" as const,
-    padding: "12px 16px",
-    fontFamily: "system-ui, sans-serif",
-    fontSize: 13,
-    color: "#e6edf3",
-    lineHeight: 1.6,
-  },
-  status: {
-    color: "#6e7681",
-    fontStyle: "italic",
+    overflow: "hidden",
+    // Shadow DOM boundary — TW5 styles stay inside.
   },
 } as const;

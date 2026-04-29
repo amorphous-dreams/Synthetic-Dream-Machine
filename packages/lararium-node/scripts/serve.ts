@@ -1,9 +1,9 @@
 /**
- * Lararium sync server — tldraw canvas CRDT + Automerge meme-sync peer.
+ * Lararium sync server — Automerge meme-sync peer + legacy tldraw layout room.
  *
  * Architecture:
- *   - One TLSocketRoom per named room (tldraw canvas layout, positions, pages)
  *   - Automerge Repo — meme content store (carrier text, edges, metadata)
+ *   - Optional/legacy TLSocketRoom per named room (tldraw canvas layout, positions, pages)
  *   - Two WebSocket paths on one HTTP server, split by upgrade routing:
  *       /rooms/:roomId  → tldraw TLSocketRoom (layout CRDT)
  *       /meme-sync      → Automerge NodeWSServerAdapter (content CRDT)
@@ -17,8 +17,9 @@
  *
  * Local-first contract:
  *   - Meme content lives in the Automerge doc (IndexedDB on client, NodeFS on server).
- *   - Server is a sync peer — it cannot promote content to canon or modify lares/.
- *   - tldraw CRDT handles canvas layout; Automerge handles meme content. Two stores, one port.
+ *   - Server is a sync peer for normal browser edits; localhost/admin ceremony may promote to lares/.
+ *   - Active browser content path uses Automerge + TW5 + local tldraw projection.
+ *   - Legacy tldraw CRDT may handle shared layout/reaction socket experiments. Two WS paths, one port.
  *
  * Usage:
  *   pnpm --filter @lararium/node serve
@@ -183,8 +184,9 @@ async function main() {
     console.warn("[lararium-serve] receipt compute failed:", e);
   }
 
-  // Rooms are stable opaque strings — clients self-layout from the Automerge store.
-  // Any roomId is valid; the default room is "main". Multi-room: /room/:id routes.
+  // Rooms are stable opaque strings for the legacy layout channel. Active clients
+  // self-layout from the Automerge/TW5 corpus. Any roomId is valid; the default
+  // route room is "main". Multi-room HTTP: /room/:id routes.
   const DEFAULT_ROOM = "main";
   getOrCreateRoom(DEFAULT_ROOM);
 
@@ -224,7 +226,7 @@ async function main() {
       return json(res, { defaultRoom: DEFAULT_ROOM, rooms: [...rooms.keys()] });
     }
 
-    // Admin: force-reseed — evict SQLite + rebuild Automerge snapshot from lares/
+    // Admin: force-reseed — evict legacy SQLite layout room + rebuild snapshot/receipt from lares/
     if (pathname === "/admin/reseed") {
       const remoteAddr = (req.socket.remoteAddress ?? "").replace("::ffff:", "");
       if (remoteAddr !== "127.0.0.1" && remoteAddr !== "::1") {
@@ -395,7 +397,7 @@ async function main() {
     }
   });
 
-  // tldraw WS — formerly `wss`
+  // tldraw WS — legacy/shared-layout channel
   const wss = tlWss;
 
   wss.on("connection", (ws: WebSocket, req: IncomingMessage) => {
@@ -564,8 +566,9 @@ async function main() {
   // message type "fire"), the server validates the binding, executes handlers,
   // and broadcasts the event as a "event" message to all room members.
   //
-  // The CRDT room handles canvas state. The reaction graph handles Verse-style
-  // event wiring on top of it — two layers, one transport.
+  // Automerge/TW5 handles meme content in the active browser path. The legacy
+  // tldraw room can still carry canvas layout/socket messages. The reaction graph
+  // handles Verse-style event wiring on top of the room socket where used.
   // ---------------------------------------------------------------------------
 
   let reactionGraph = buildReactionGraph(runtime);
@@ -602,9 +605,9 @@ async function main() {
   // ---------------------------------------------------------------------------
   // lares/ file watcher — UEFN operational model
   //
-  // Carrier changes re-project the boot room via evict + reseed. The CRDT room
-  // starts fresh from the new projection; clients reconnect to the stable "boot"
-  // alias and get the updated state. No snapshot+delta, no patch-over-stale-base.
+  // Historical note: carrier changes once re-projected the boot room via evict +
+  // reseed. Active local-first content refresh is disk → Automerge → TW5; tldraw
+  // projection diffing in the browser is the remaining M11 step.
   //
   // Debounced 400ms — batch rapid saves (editor auto-save bursts).
   // ---------------------------------------------------------------------------

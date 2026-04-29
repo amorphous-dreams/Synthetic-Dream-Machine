@@ -12,7 +12,7 @@ register = "S"
 manaoio = 0.82
 mana = 0.88
 manao = 0.86
-role = "docs meme — migration roadmap and milestone log for Lararium Node; M10 LOCAL-FIRST PIVOT complete (2026-04-29): 301 checks green (157 core + 41 tw5 + 34 tldraw + 62 node + 7 mcp); Automerge-repo meme store (AutomergeMemeStore + /meme-sync WS); receipt via HTML meta tag (no hidden tldraw frame shape); LarDiskSyncAdaptor with resolveLarUri() + echo-loop guard; ReactionGraph stable-ref (subscribeByFn, updateUri, fireSync, subscribeOnce); tw5-hydrating boot phase + BootSplash overlay; lele wire (DispatchWidget → fireMeme via collectDispatchNodes); dispatch gate keyed on uri not vdom-identity; load() preserves occupied handler slots across graph rebuilds; design docs aligned to shipped architecture; M11 opens: Playwright e2e, canvas write-back, second-node federation, KumuExecutor"
+role = "docs meme — migration roadmap and milestone log for Lararium Node; M10 LOCAL-FIRST PIVOT complete (2026-04-29): Automerge-repo meme store (AutomergeMemeStore + /meme-sync WS); LarariumTW5 is now the isomorphic room-scoped semantic VM; browser tldraw canvas is projected from TW5 via projectFromTw5(), not useSync server shape authority; legacy TLSocketRoom+SQLite remains in serve.ts as layout/reaction compatibility surface; receipt via HTML meta tag (no hidden tldraw frame shape); LarDiskSyncAdaptor with resolveLarUri() + echo-loop guard; ReactionGraph stable-ref (subscribeByFn, updateUri, fireSync, subscribeOnce); tw5-hydrating boot phase + BootSplash overlay; lele wire (DispatchWidget → fireMeme via collectDispatchNodes); M11 opens: projection diffing, body-node canvas write-back, Playwright e2e, second-node federation, KumuExecutor"
 cacheable = false
 retain = true
 invariant = false
@@ -51,7 +51,7 @@ There is also an important repo-state nuance: the Python package on the branch y
 
 For the MCP adapter specifically, the safest near-term choice is to treat the official TypeScript SDK as a moving boundary and pin to the stable generation that fits your delivery horizon. The official SDK docs still show the current production package shape around `@modelcontextprotocol/sdk` with `McpServer`, stdio transport, resources/tools/prompts, and Streamable HTTP support, while the official SDK repository also states that its `main` branch is a v2 line still labeled pre-alpha and that v1.x remains the recommended production line until v2 fully settles. That is exactly why the MCP-facing code should live in `packages/lararium-mcp`, not in `lararium-core` or even `lararium-node`. 
 
-My recommendation is therefore: preserve all current Lararium URIs, resource names, tool names, prompt names, and read-only behavior; port resolver/carrier/index/compiler logic into `lararium-core`; add Node-only file-system adapters, watchers, and CLI/bootstrap in `lararium-node`; add a thin MCP transport/reporting layer in `lararium-mcp`; and defer write-back, full TiddlyWiki runtime embedding, and direct tldraw/Kowloon mutation until after parity, golden fixtures, and rollout hardening are complete.
+Status correction (2026-04-29): the original migration recommendation has been overtaken by implementation. Resolver/carrier/index/compiler logic is in TypeScript packages; TW5 runtime embedding is active as the isomorphic filter/render/sync layer; `PUT /admin/promote` and disk↔Automerge sync are live. The remaining caution still stands: keep canon promotion explicit, keep `lararium-core` isomorphic, and do not let tldraw/Kowloon adapter records become Lararium ontology.
 
 ### Lararium Context Integration
 
@@ -94,9 +94,9 @@ This implies `lararium-core` should produce canonical records and projection-rea
 TW5 is a **first-class binding layer**, not an optional guest. It is summoned wherever the CRDT store lives — Node, browser, edge — and provides:
 
 - **Filter engine** — wikitext-filter expressions over the tiddler corpus; `filterClosure()` evaluates room recipes, template cascades, and palette search
-- **Virtual server** — `LarariumCrdtSyncAdaptor` binds `MemoryTiddlerStore` to TW5’s wiki; CRDT deltas propagate into TW5 tiddlers; TW5 tiddler saves propagate back to the store (echo-loop guarded)
+- **Virtual server** — `LarariumCrdtSyncAdaptor` binds `AutomergeMemeStore` / `LarTiddlerStore` to TW5’s wiki; CRDT deltas propagate into TW5 tiddlers; TW5 tiddler saves propagate back to the store (echo-loop guarded). `MemoryTiddlerStore` is now tests/fixtures only.
 - **Parse bridge** — a registered `text/x-memetic-wikitext` TW5 parser module delegates to `parseMemeCarrier()` in `@lararium/core`; TW5’s render pipeline can then produce HTML from carrier tiddlers without being the canonical parser
-- **Draft surface** — carrier text edits flow: canvas edit → TW5 wiki tiddler (draft) → `MemoryTiddlerStore.put(origin: "canvas-draft")` → SQLite room state (branch commit) → `PUT /admin/promote` ceremony → `lares/` file (canon)
+- **Draft surface** — target flow is canvas/TW5 edit → `AutomergeMemeStore.put(origin: "canvas-draft" | "tw-local")` → live room state → `PUT /admin/promote` ceremony → `lares/` file (canon). The tldraw body-node draft listener exists, but body nodes are not emitted yet.
 
 The three-tree pipeline remains:
 
@@ -233,7 +233,7 @@ Do not:
 
 This report prioritizes the GitHub connector evidence from `amorphous-dreams/Synthetic-Dream-Machine` and then uses primary/official web documentation for MCP, TiddlyWiki, and tldraw. I also treated the graph/compiler branch you identified as materially relevant because it contains concrete code and tests that expand the migration target.   
 
-The following assumptions are explicit, because several of them materially affect the recommendation. You have full repo access. The target runtime and deployment environment are unspecified. The target host may remain local-only initially. Lararium names and URI contracts should be preserved unless there is a formal breaking-change memo. `lararium-core` must stay isomorphic and therefore must not import `fs`, `path`, `process`, `window`, or `document`. TiddlyWiki should be used as precedent and fixture/comparison corpus, not as a required runtime dependency. Write-back should stay blocked until policy and tests land. These assumptions are consistent with your prompt and with the repository’s own TW boundary and projection documents.  
+The following assumptions are explicit, because several of them materially affect the recommendation. You have full repo access. The target runtime and deployment environment are unspecified. The target host may remain local-only initially. Lararium names and URI contracts should be preserved unless there is a formal breaking-change memo. `lararium-core` must stay isomorphic and therefore must not import `fs`, `path`, `process`, `window`, or `document`. TiddlyWiki is now an intentional runtime dependency of `@lararium/tw5` and the browser host; it remains outside `@lararium/core`. Write-back is no longer fully blocked: `/admin/promote` and disk↔Automerge sync are live, while general canvas body-node write-back still waits on projection and UX tests. These assumptions are consistent with your prompt and with the repository’s own TW boundary and projection documents.  
 
 One major limitation is that I did **not** find public, official documentation for a finished `lares/lararium-node` package. In this report, “lararium-node” therefore means a proposed Node-based target derived from your migration brief, the repo’s own architectural documents, and official MCP/TiddlyWiki/tldraw sources. Where a `lararium-node` behavior is not directly documented, I mark it as recommended or inferred rather than existing fact.  
 
@@ -242,7 +242,7 @@ One major limitation is that I did **not** find public, official documentation f
 Additional assumptions now bind this roadmap:
 
 - `meme`, `loci meme`, `invariant meme`, `meme graph`, and `memetic-wikitext` remain the preferred Lararium terms.
-- “Tiddler” may appear only when discussing TiddlyWiki as an external reference system.
+- “Tiddler” is now acceptable when naming the TW5/Automerge store contract; `meme` remains the Lararium ontology term.
 - Hostful `lar:` URIs must preserve the ordered authority grammar `alias:tier@host`.
 - Trust tier and speaker tier remain distinct; `alias:tier@host` names who speaks, not whether the claim overrides law.
 - Live-session material enters the same tagspace as system files, but carries lower override authority than hostless invariant/control memes.
@@ -810,6 +810,8 @@ All target outcomes delivered:
 
 ## tldraw Sync Architecture Decision (2026-04-26)
 
+> **2026-04-29 supersession:** this section is preserved as historical design archaeology. The active browser path no longer uses `useSync` as meme-content authority. `serve.ts` still exposes `/rooms/:roomId` backed by `TLSocketRoom` + `SQLiteSyncStorage`, but the browser canvas now opens Automerge `/meme-sync`, hydrates a room-scoped `LarariumTW5`, and projects tldraw records locally via `projectFromTw5()`. Read the TLSocketRoom plan below as the M5/M9 layout-sync path, not the current content model.
+
 ### Problem Identified
 
 The snapshot-injection model (inject `LarSnapshot` JSON into HTML `<script>` tag, browser calls `loadSnapshot()`) creates a race condition under multiplayer use. Two surfaces boot from the same frozen blob, diverge in session state, and have no authority model for reconciliation. TiddlyWiki's single-file multiplayer history and IPFS's content-addressed design both demonstrate that getting this wrong at the base level is expensive to fix later.
@@ -1308,7 +1310,7 @@ All three laws landed:
 
 **Single-page zoom-gated rendering (replaces three-page model)**
 - ✓ `renderAllViews()` collapsed to one page (`page:boot`) — URI-stable shape IDs, no `pageOverride` scoping
-- ✓ `applyZoomTemplate(editor, level)` — batch `editor.updateShapes()` on zoom threshold crossings; reads `shape.meta.templateProps[level]`
+- ✓/⚠ `applyZoomTemplate(editor, level)` — batch `editor.updateShapes()` on zoom threshold crossings; active code reads TW5 `getZoomLayout(level)` with fallback defaults, not `shape.meta.templateProps[level]`
 - ✓ `ratingFromShape()` helper — maps `meta.rating` → tldraw color string; used by `color="rating"` template prop
 - ✓ Five `ZoomTemplateKey` levels: `strategic/operational/tactical/combat/action`
 - ✓ Multi-view tests updated: 34/34 pass against single-page model
@@ -1320,7 +1322,7 @@ All three laws landed:
 - ✓ Each template TOML body carries: `zoom-level`, `cascade` (filter predicate string), `priority`, `w`, `h`, `color`, `label`, `include-ahu`, `show-notes`, `show-carrier`, `opacity`
 - ✓ `<<~ kumu name(params) >>` / `<<~/kumu >>` direct form added to `SIGIL_SCANS` in `parser.ts` (alongside `\\widget` alias)
 - ✓ `collectKumuDefs()` + `collectKumuDefsFromGraph()` — extract kumu defs from boot closure carriers
-- ✓ `buildKumuRegistry(artifact.kumuDefs)` → `KumuRegistry` → `buildTemplatePropsByLevel(registry)` → `TemplatePropsByLevel` seeded into `shape.meta.templateProps` at projection time
+- ⚠ Historical: `buildKumuRegistry(artifact.kumuDefs)` → `TemplatePropsByLevel` → `shape.meta.templateProps`; active zoom layout now flows through TW5 `lar:///kumu/meme-*` tiddlers and `getZoomLayout(level)`
 - ✓ `MemeTemplateProps` extended with `zoomLevel` (self-declared level name) and `cascade` (predicate string) — stored in CRDT for future wikitext-filter path
 - ✓ `DEFAULT_TEMPLATE_PROPS` updated with `zoomLevel` + `cascade` fallback values
 - ✓ `CRDT-native carrier text` — `shape.meta.carrierText` seeded at projection; `MemeDetailPanel` reads from store
@@ -1622,7 +1624,7 @@ Required context now present in-document:
 
 ## Milestone 9 — Widget Tree Render Pass + Canon Surface (Active)
 
-M8 delivered the full kumu type pipeline bottom-up: AST → kumuDefs → KumuRegistry → templateProps → tldraw shapes. M9 closes the loop top-down: widget tree resolution feeds the render pass directly, grammar meme drives the parser dispatch table, and canon-promotion has a write-back surface.
+M8 delivered the first kumu type pipeline bottom-up: AST → kumuDefs → KumuRegistry → templateProps → tldraw shapes; M10 pivoted active zoom layout to TW5 tiddlers via `getZoomLayout(level)`. M9 closes the loop top-down: widget tree resolution feeds the render pass directly, grammar meme drives the parser dispatch table, and canon-promotion has a write-back surface.
 
 ### Priority 1: resolveWidgetTree render pass ✓ (shipped 2026-04-28)
 
@@ -1666,13 +1668,13 @@ All M5/M6/M7/M8/M9 tactile behaviors unverified by automated browser. Manual smo
 
 ## Milestone 10 — Authority Ceremony + Playwright + Wiki-Recipes (Active)
 
-M9 closed the projection-cache authority arc and browser opening sequence. M10 opens the write-back ceremony, automated browser testing, and per-room recipe seeding.
+M9 closed the projection-cache authority arc and browser opening sequence. M10 then pivoted to Automerge/TW5 local-first content. M11 opens projection diffing, body-node canvas write-back, automated browser testing, and per-room recipe partitioning.
 
 ### M10 Priority 1: Playwright baseline expansion
 
 8-test baseline shipped at `packages/lararium-app/tests/e2e/smoke.spec.ts` (N1–N8 native mode, T1–T2 TW5 mode). All 8 pass against fresh server.
 
-**Next:** zoom threshold crossings (`applyZoomTemplate`), double-click → `MemeDetailPanel`, ⌘K navigation, canvas mode toggle, `/admin/reseed` hot-reload.
+**Next:** projection diffing on `tw5.onWikiChange`, body-node emission/write-back, double-click → `MemeDetailPanel` coverage, ⌘K navigation coverage, canvas mode coverage, and disk→Automerge→TW5 hot-reload assertions.
 
 **Operator note:** Server process must restart after `@lararium/tldraw` rebuild before reseed takes effect (Node module cache). `strings <room>.sqlite | grep '"text":""'` verifies clean state.
 

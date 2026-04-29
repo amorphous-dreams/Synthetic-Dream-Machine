@@ -188,7 +188,4 @@ export function useLarariumHostOpen(options: BrowserHostOptions): HostOpenState 
   return { phase, store, tw5, receipt, isLive };
 }
 
-// ---------------------------------------------------------------------------
-// useBridgeReceiptFromEditor — discovers boot-receipt meta-frame in tldraw store
-// ---------------------------------------------------------------------------
 

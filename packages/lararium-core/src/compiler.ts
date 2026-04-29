@@ -24,6 +24,8 @@ export interface ClosureEntry {
   role: string;
   hydrationSocket: string;
   implements: string[];
+  /** TW5 UI tags (e.g. $:/tags/Palette) — stored as native TW5 tags, not meme relations. */
+  tags: string[];
   contentHash: string;
   depth: number;
   /** Operator-set confidence scalar from carrier TOML #iam block. 0 if absent. */
@@ -116,8 +118,12 @@ function closureEntry(graph: MemeGraph, uri: string, depth: number, hydrationSoc
   const meme = graph.memes.get(uri);
   const num = (key: string) => typeof meme?.metadata[key] === "number" ? (meme.metadata[key] as number) : 0;
   if (!meme) {
-    return Object.freeze({ uri, laresRelPath: null, kind: "unknown", virtual: false, exists: false, role: "", hydrationSocket, implements: [], contentHash: "", depth, confidence: 0, register: "", manaoio: 0, mana: 0, manao: 0 });
+    return Object.freeze({ uri, laresRelPath: null, kind: "unknown", virtual: false, exists: false, role: "", hydrationSocket, implements: [], tags: [], contentHash: "", depth, confidence: 0, register: "", manaoio: 0, mana: 0, manao: 0 });
   }
+  const rawTags = meme.metadata["tags"];
+  const tags: string[] = Array.isArray(rawTags)
+    ? (rawTags as unknown[]).map(String)
+    : typeof rawTags === "string" ? (rawTags as string).split(/\s+/).filter(Boolean) : [];
   return Object.freeze({
     uri,
     laresRelPath: meme.laresRelPath,
@@ -128,6 +134,7 @@ function closureEntry(graph: MemeGraph, uri: string, depth: number, hydrationSoc
     register: (meme.metadata["register"] as string | undefined) ?? "",
     hydrationSocket,
     implements: memeImplements(meme),
+    tags,
     contentHash: meme.contentHash,
     depth,
     confidence: num("confidence"),

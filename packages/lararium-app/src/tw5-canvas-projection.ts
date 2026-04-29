@@ -26,12 +26,11 @@ import type { BootArtifact, ClosureEntry } from "@lararium/core";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function closureEntryFromTiddler(uri: string, fields: Record<string, any>): ClosureEntry {
-  // implements: stored as tiddler tags (entryToFields adds them alongside "lar:meme")
-  const rawTags: string | string[] = fields.tags ?? [];
-  const tags = Array.isArray(rawTags)
-    ? rawTags
-    : String(rawTags).split(" ").filter(Boolean);
-  const implements_ = tags.filter((t: string) => t.startsWith("lar:") && t !== "lar:meme");
+  const splitField = (v: unknown): string[] => {
+    if (Array.isArray(v)) return (v as unknown[]).map(String).filter(Boolean);
+    if (typeof v === "string") return v.split(/\s+/).filter(Boolean);
+    return [];
+  };
 
   return {
     uri,
@@ -41,7 +40,8 @@ function closureEntryFromTiddler(uri: string, fields: Record<string, any>): Clos
     exists:          true,
     role:            String(fields.role      ?? ""),
     hydrationSocket: "",
-    implements:      implements_,
+    implements:      splitField(fields.implements),
+    tags:            splitField(fields.tags),
     contentHash:     "",
     depth:           Number(fields.depth      ?? 0),
     confidence:      Number(fields.confidence ?? 0),

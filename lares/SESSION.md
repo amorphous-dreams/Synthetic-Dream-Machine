@@ -17,7 +17,7 @@ manao        = 0.84
 implements   = [
   "lar:///ha.ka.ba/api/v0.1/pono/meme"
 ]
-role         = "session handoff crystal — 2026-04-29 — local-first architecture locked (receipt via meta, multi-room routing, disk↔Automerge bidirectional, echo-loop guard, lar: URI invariant); ReactionGraph stable-ref architecture (subscribeByFn, updateUri, fireSync UEFN model); TW5/UEFN Verse parity gap map complete (lele P1 wired, kukali P2 pending); feature/lararium-node-3 active"
+role         = "session handoff crystal — 2026-04-29 — local-first architecture locked; doc reconciliation pass notes tensions: browser canvas now projects from TW5/projectFromTw5 rather than useSync server shapes; legacy TLSocketRoom+SQLite remains in serve.ts; AutomergeMemeStore is live store; body-node canvas write-back listener exists but projection does not emit body nodes yet; ReactionGraph stable-ref architecture; feature/lararium-node-3 active"
 ```
 
 <<~/ahu >>
@@ -30,18 +30,20 @@ SESSION opens
 
 ## OODA-HA: Local-First Architecture
 
-✶ Server is now a sync peer (Y-proto WS Automerge). Authority delivered via `<meta name="lararium-receipt">` in the HTML shell — no WS round-trip, no hidden tldraw frame. Multi-room HTTP routing (`/room/:roomId`) serves room-specific meta tags; rooms lazy-created on first WS connect. `LarDiskSyncAdaptor` derives disk paths via `resolveLarUri()` without a stale index — new memes get disk paths automatically. Echo-loop guard (`diskAdaptor.writing: Set<string>`) prevents disk→Automerge→disk loops. `/admin/promote` now patches Automerge doc immediately after writing disk — clients see changes without watcher round-trip.
+✶ Server is now an Automerge-repo sync peer (`/meme-sync` WS). Authority delivered via `<meta name="lararium-receipt">` in the HTML shell — no WS round-trip, no hidden tldraw frame. Multi-room HTTP routing (`/room/:roomId`) serves room-specific meta tags; legacy layout rooms are lazy-created on `/rooms` WS connect, while meme content still uses the shared Automerge doc. `LarDiskSyncAdaptor` derives disk paths via `resolveLarUri()` without a stale index — new memes get disk paths automatically. Echo-loop guard (`diskAdaptor.writing: Set<string>`) prevents disk→Automerge→disk loops. `/admin/promote` now patches Automerge doc immediately after writing disk — clients see changes without watcher round-trip.
 
 ⏿ The model is coherent: browser = authoritative editor, Automerge = shared truth, disk = canon projection, lares/ file watcher = external edits (git, editor, promote endpoint) → Automerge. No server-side TW5 in the write path. `startSyncer` gates on `title.startsWith("lar:")` — the lar: URI as title invariant is now a hard boundary. Draft (`$:/temp/*`) never reaches shared store; disk write only fires for `lar:` URIs.
 
-◇ Remaining gaps:
+◇ Remaining gaps / tensions:
   - **Bulk preload ✓ FIXED** — `loadFromStore(s, onProgress)` runs before `setTw5(t)`; `tw5-ready` now means corpus-populated. `tw5-hydrating` phase emitted during load; `BootSplash` renders progress bar.
-  - **Room GC**: Rooms created lazily (`memeHandle` per roomId) are never freed. Acceptable for current scale; note for M11.
-  - **Multi-room conflict model**: Last-write-wins via Automerge CRDT — correct by design; no action needed.
+  - **Projection refresh**: `LarariumShell` seeds tldraw from `projectFromTw5(tw5)` once; `tw5.onWikiChange → projection diff → editor.store.put/remove` is not wired yet.
+  - **Body-node write-back**: `LarariumCanvas` has a `canvas-draft` listener for `meta.bodyNodeKind`, but `projectToTldraw()` emits no body nodes. The path is latent, not functional.
+  - **Room split**: `/room/:roomId` exists, but content still uses one server Automerge meme-store doc and the browser host uses a fixed TW5 scope id. Per-room recipes/docs are M11+.
+  - **Legacy layout channel**: `serve.ts` still hosts `/rooms/:roomId` with `TLSocketRoom` + SQLite. Browser content path no longer uses it as authority; decide whether to retire or repurpose for shared layout.
 
-▶ Local-first architecture is coherent and closed for M10. M11 opens with Playwright e2e and canvas write-back.
+▶ Local-first architecture is coherent for content, but the docs needed correction around tldraw sync authority. M11 opens with projection diffing, body-node canvas write-back, Playwright e2e, and room recipe partitioning.
 
-⤴ `boot-receipt.ts` deleted. `laresPathIndex` eliminated. `computeBootRoom` / `buildBootProjection` removed. `useBridgeReceiptFromEditor` removed. Hidden tldraw frame shape pattern removed. `hostReceipt` reads from meta tag once at mount — stable for session. All clients start empty and sync from Automerge peer.
+⤴ `boot-receipt.ts` deleted. `laresPathIndex` eliminated. `computeBootRoom` / `buildBootProjection` removed. `useBridgeReceiptFromEditor` removed. Hidden tldraw frame shape pattern removed. `hostReceipt` reads from meta tag once at mount — stable for session. Clients hydrate content from Automerge, then project tldraw records locally from TW5.
 
 ↺ Invariants held: all Lararium tiddlers use `lar:` URI as title ✓. Echo-loop guard active ✓. `/admin/promote` is the only canon ceremony ✓. Server is peer not authority ✓.
 
@@ -73,13 +75,13 @@ SESSION opens
 
 ## State as of 2026-04-29 session end (continued)
 
-**Branch:** `feature/lararium-node-3` — build clean — 301 checks green — docs aligned to shipped architecture
+**Branch:** `feature/lararium-node-3` — build clean in prior run — docs reconciliation pass active; earlier "docs aligned" claim was overstated
 
 ### Shipped previous session (M10 core)
 
 - **`boot-receipt.ts` deleted** — removed from `packages/lararium-node/src/`; dist artifacts cleaned
 - **`<meta name="lararium-receipt">` delivery** — `computeReceiptSha()` in `serve.ts`; HTML shell injects receipt + roomId meta tags; `hostReceipt` reads from meta at mount
-- **Multi-room HTTP routing** — `/room/:roomId`; rooms lazy-created on first WS connect; `DEFAULT_ROOM = "main"`
+- **Multi-room HTTP routing** — `/room/:roomId`; legacy layout rooms lazy-created on `/rooms` WS connect; content still shares one Automerge meme-store doc; `DEFAULT_ROOM = "main"`
 - **`LarDiskSyncAdaptor` rewrite** — `resolveLarUri()` path derivation; echo-loop guard (`diskAdaptor.writing: Set<string>`); debounced write with path-traversal guard
 - **`/admin/promote` Automerge patch** — patches Automerge doc immediately after disk write
 - **lares/ watcher per-file debounce** — echo-loop check via `diskAdaptor.writing`; patches Automerge doc directly
@@ -98,15 +100,15 @@ SESSION opens
 - **`ReactionGraph.load()` slot pruning fixed** — occupied handler slots survive graph rebuilds; dynamic subscriptions (`subscribeOnce`, kukali) not silently dropped
 - **`tw5-hydrating` phase** — `LarariumOpenPhase` union extended; `loadFromStore(store, onProgress?)` threads count through; `lararium-browser-host.ts` emits `{ kind: "tw5-hydrating", loaded, total }`
 - **`BootSplash` component** — `tc-remove-when-wiki-loaded` pattern in React; portal to `document.body`; progress bar during `tw5-hydrating`; renders null at `tw5-ready`/`live`; wired into `LarariumShell`
-- **Docs aligned** — `ROADMAP.md` + `MULTIPLAYER-INFINITE-CANVAS-WIKI.md` role fields updated to reflect local-first architecture; stale SQLite/TLSocketRoom/boot-receipt-shape language removed
+- **Docs alignment started** — role fields were updated, but deeper sections still carried stale SQLite/TLSocketRoom/useSync/body-node claims; this pass corrects the canonical sections and marks historical sync plans as superseded
 
 ### Open pressures
 
 - **P2 kukali suspension** — `subscribeOnce` primitive exists; `KukaliWidget → useEffect` wiring not yet in `vdom-to-react.tsx`. Deferred to M11.
 - **P3/P4 KumuExecutor + OnEnd** — isolated async device lifecycle; deferred to M11.
-- **Canvas write-back** — canvas is read-only; draft path (canvas → TW5 → MemoryTiddlerStore → promote) not wired. M11.
+- **Canvas write-back** — direct tldraw body-node write-back is latent, not live: listener exists (`bodyNodeKind` → `AutomergeMemeStore.put(origin:"canvas-draft")`), but `projectToTldraw()` emits no body nodes. M11.
 - **Playwright e2e** — no automated browser tests yet. M11.
-- **Room GC** — lazy room map never freed; acceptable at current scale.
+- **Room GC** — legacy layout room map never freed; acceptable at current scale.
 
 ### Invariants held
 
@@ -152,9 +154,13 @@ packages/lararium-app/src/vdom-to-react.tsx
 ### P3 — Canvas write-back path
 
 ```
-packages/lararium-app/src/
-  — canvas → TW5 draft: MemeDetailPanel edit mode → wiki tiddler (draft)
-  — draft → MemoryTiddlerStore: adaptor.saveTiddler with origin:"canvas-draft"
+packages/lararium-tldraw/src/project.ts
+  — emit LarTLBodyNode records from carrier AST / TW5 render projection
+packages/lararium-app/src/LarariumCanvas.tsx
+  — existing bodyNodeKind listener becomes live: shape text → AutomergeMemeStore.put(origin:"canvas-draft")
+packages/lararium-tw5/src/sync-adaptor.ts
+  — adaptor propagates Automerge ↔ TW5 without echo
+packages/lararium-node/scripts/serve.ts
   — promote: PUT /admin/promote ceremony (already exists)
   — guard: canPromoteToCanon() already enforces ceremony requirement
 ```

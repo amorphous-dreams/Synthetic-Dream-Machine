@@ -13,14 +13,14 @@ import type { LarViewAction } from "@lararium/tldraw";
 import type React from "react";
 
 export interface LarariumDebug {
-  store?:                unknown;       // tldraw useSync store object
+  store?:                unknown;       // legacy/debug store slot; active content store is tiddlerStore
   editor?:               unknown;       // tldraw Editor instance
   tiddlerStore?:         AutomergeMemeStore | null;
   hostReceipt?:          string | null;
-  receiptShape?:         unknown;       // boot-receipt meta-frame shape record
+  receiptShape?:         unknown;       // deprecated hidden-shape receipt debug slot
   openPhase?:            LarariumOpenPhase | null;
   tw5?:                  LarariumTW5 | null;
-  projectionCacheCount?: unknown;
+  projectionCacheCount?: unknown;       // deprecated projection-cache debug slot
   dispatch?:             React.Dispatch<LarViewAction> | null;
 }
 

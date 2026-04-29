@@ -12,7 +12,7 @@ register    = "S"
 manaoio     = 0.84
 mana        = 0.90
 manao       = 0.86
-role        = "canonical design constitution for the Lararium multiplayer infinite-canvas wiki system — LOCAL-FIRST PIVOT complete (M10, 2026-04-29): SQLite/TLSocketRoom room model superseded; Automerge-repo (@automerge/automerge-repo) is the shared CRDT store; authority delivered via <meta name='lararium-receipt'> in HTML shell (no WS round-trip, no hidden tldraw frame shape); boot-receipt shape pattern deleted; useBridgeReceiptFromEditor deleted; projection-cache deleted; LarDiskSyncAdaptor derives disk paths via resolveLarUri() with no pathIndex; echo-loop guard (diskAdaptor.writing Set) active; /meme-sync WS endpoint for Automerge peer sync; multi-room HTTP routing (/room/:roomId); canPromoteToCanon() policy guard + PUT /admin/promote endpoint; 301 checks green; M11 open: Playwright e2e, canvas write-back path (canvas → TW5 draft → MemoryTiddlerStore → promote), second-node federation, KumuExecutor async device lifecycle"
+role        = "canonical design constitution for the Lararium multiplayer infinite-canvas wiki system — LOCAL-FIRST PIVOT complete (M10, 2026-04-29): Automerge-repo (@automerge/automerge-repo) is the shared meme/tiddler CRDT store; browser opens IndexedDB first and syncs via /meme-sync; LarariumTW5 is now the room-scoped semantic/filter/render VM; tldraw is a browser projection from TW5 via projectFromTw5(), not the meme-content authority; legacy /rooms TLSocketRoom+SQLite remains as layout/reaction compatibility surface only; authority delivered via <meta name='lararium-receipt'> in HTML shell (no hidden tldraw frame shape); projection-cache deleted; LarDiskSyncAdaptor derives disk paths via resolveLarUri() with echo-loop guard; multi-room HTTP routing (/room/:roomId) exists while content still uses one server meme-store doc; PUT /admin/promote writes lares/ and patches Automerge immediately; M11 open: projection diffing, real canvas body-node write-back, second-node federation, KumuExecutor"
 cacheable   = true
 retain      = true
 invariant   = false
@@ -27,22 +27,23 @@ MULTIPLAYER-INFINITE-CANVAS-WIKI opens
 
 # Lararium Multiplayer Infinite-Canvas Wiki
 
-Lararium is a **memetic wiki** rendered as a multiplayer infinite canvas.
+Lararium is a **local-first memetic wiki** with two live UX projections over the same tiddler corpus: TW5 wiki UX and tldraw infinite-canvas UX.
 
-`lares/` is the canonical source. It is immutable from the canvas. The canvas is the *reading and editing surface* — a live, multiplayer projection of the Lararium boot graph onto tldraw rooms.
+`lares/` is canon. The live room corpus is an Automerge document synced through `/meme-sync` and materialized into a room-scoped `LarariumTW5` instance. The canvas is a projection/edit lens over that TW5-backed corpus, not an independent source of meme truth.
 
-What this system is:
-- A tldraw multiplayer server (`TLSocketRoom` + `SQLiteSyncStorage`) that seeds rooms from boot projections
-- A pure projection layer (`@lararium/tldraw`) that converts `BootArtifact → tldraw store records`
-- A canon-promotion boundary: edits flow inward from canvas → `lares/` by explicit operator action only (with git-like commit tiers: live session → branch commit → deep save / canon)
-- A multi-room canvas: `the-altar-fire` is the main entry room; portals navigate to book rooms, user rooms, and chat rooms
-- An MCP server surface: Claude reads and acts on the canvas through declared tools
-- An identity-addressed content store: every persistent content unit (meme, import, chat turn) receives a `lar:` URI
+What this system is now:
+- An Automerge meme/tiddler store (`AutomergeMemeStore`) with IndexedDB on the browser, NodeFS on the server, and `/meme-sync` peer sync.
+- A room-scoped TW5 semantic VM: filters, cascade rules, parser bridge, render previews, and the TW5 sync adaptor all operate over the same CRDT-backed tiddlers.
+- A tldraw projection layer (`@lararium/tldraw` + `projectFromTw5()`) that derives pages/shapes/bindings from the TW5 corpus in the browser.
+- A canon-promotion boundary: live edits may update Automerge/TW5, but `lares/` changes require explicit operator ceremony (`PUT /admin/promote` today, Orichalcum gate target).
+- A multi-room HTTP shell (`/room/:roomId`) for route/capability/view scope. Current content storage is still one server meme-store document; per-room recipes are the next partitioning layer.
+- A legacy/layout WebSocket surface (`/rooms/:roomId`, `TLSocketRoom` + `SQLiteSyncStorage`) still present in `serve.ts`, but no longer the primary meme-content path used by the browser canvas.
+- An identity-addressed content model: persistent corpus units use `lar:` URI titles.
 
 What this system is not:
-- A general-purpose wiki editor (TiddlyWiki is a reference system, not the runtime)
-- A source-of-truth store (SQLite rooms are projections; `lares/` is truth)
-- A public-write surface (canvas edits are pending until promoted through the canon-promotion ceremony)
+- A TW5 shadow-tiddler overwrite system. TW5 is a first-class semantic binding layer, but canonical carrier law remains in Lararium parser/store/promotion contracts.
+- A tldraw/SQLite source-of-truth store for meme content. tldraw records are projections and layout overlays; Automerge carries live meme/tiddler content; `lares/` carries promoted canon.
+- A public unceremonied canon-write surface. Remote/live edits may sync into room state only under the current authority model; canon promotion remains explicit.
 
 <<~/ahu >>
 
@@ -50,76 +51,88 @@ What this system is not:
 
 ## Room Model
 
-**Core invariant: a room is a temporary filtered view on the whole wiki.**
+**Core invariant: a room is a capability/filter/view scope over the shared memetic wiki corpus.**
 
-The full tiddler corpus lives in the store. A room's shapes are the CRDT projection of whichever tiddlers match the room's filter expression at seeding time. When the filter changes (navigation, zoom level, camera move) the projection updates — tiddlers entering the filter result get shapes emitted; tiddlers leaving get shapes evicted. The CRDT carries only what is *currently in view*, not the whole corpus.
-
-This is the same model as TW5's lazy filter: run a filter expression → get a title list → demand-load tiddler bodies as needed. The wiki index stays small; the bodies are paged in.
-
-Each **room** is a `TLSocketRoom` backed by `SQLiteSyncStorage` (better-sqlite3).
+The live corpus is a CRDT-backed tiddler document. Browser boot is local-first:
 
 ```
-room key  →  SQLite file at .lararium-data/${roomId}.sqlite
+IndexedDB Automerge snapshot
+  ↕ /meme-sync
+NodeFS Automerge peer seeded from lares/
+  ↕
+LarariumCrdtSyncAdaptor
+  ↕
+room-scoped LarariumTW5 wiki
+  ↙                         ↘
+TW5 UX/filter/render          tldraw projection UX
 ```
 
-One room per logical document. Current rooms:
+Current implementation details:
 
-| Room ID | Content | Seeded from |
-|---------|---------|-------------|
-| `boot`  | Minimal boot closure — all memes, 3 views | `compileMinimalBoot()` |
-| _(future)_ `full` | Full boot closure | `compileFullBoot()` |
-| _(future)_ `meme:${uri}` | Single meme deep-dive | per-meme projection |
+| Layer | Current code | Authority role |
+|---|---|---|
+| Canon | `lares/` files | Promoted source; changed only by ceremony/editor/git/MCP trusted writes |
+| Live corpus | One server Automerge doc, browser IndexedDB cache, `/meme-sync` | Shared room/tiddler content; local-first materialization |
+| Semantic VM | One `LarariumTW5` instance per browser room scope | Filters, render previews, reaction binding extraction, sync adaptor |
+| Canvas | Local `<Tldraw>` store populated by `projectFromTw5(tw5)` | Projection/edit lens; not the content authority |
+| Legacy layout channel | `/rooms/:roomId` `TLSocketRoom` + SQLite in `serve.ts` | Compatibility/layout/reaction WS surface; not the primary browser content path |
 
-**Room identity** is a string key today. The target model is content-addressed: room key = BootReceipt SHA, so re-seeding from the same artifact is structurally idempotent and room keys are collision-free across versions.
+The desired room-as-filter model still stands: a room recipe should run a TW5 filter expression, project only matching tiddlers into canvas shapes, and evict shapes that leave the filter. The code has the ingredients (`filterTiddlers`, `projectFromTw5`, `LarariumCrdtSyncAdaptor`) but the browser projection is currently a full initial projection with incremental update as M11 work.
 
-**Session identity:** Each browser tab sends `?sessionId=<UUID>` on WebSocket connect (generated by tldraw's `useSync`). The server reads this from the URL query param and passes it to `handleSocketConnect`. Sessions are not persisted — they are ephemeral per-connection.
+**Room identity today:** `/room/:roomId` serves room-specific HTML meta tags and is the capability/view-routing seam. The meme content doc is still global per server process; per-room recipes and per-room Automerge docs are not yet split. `DEFAULT_ROOM = "main"` in `serve.ts`; the browser host currently uses a fixed TW5 scope id for the open session.
 
-**Multi-session, single user:** Multiple tabs connecting with different session IDs to the same room are treated as independent peers. The CRDT handles concurrent edits identically. No special-casing needed.
+**Session identity today:** Automerge peer identity + UCAN handshake is the content-sync identity path. The old tldraw `?sessionId=` path applies only to the legacy `/rooms/:roomId` socket.
 
-### Scale laws — room-as-view model
+### Scale laws — room-as-view target
 
-Prior art from YJS 3D spaces (Mozilla Hubs, Three.js + YJS infinite rooms) and TW5 large instances (100k+ tiddlers):
+Prior art from YJS 3D spaces and TW5 large instances still informs the target, but the mapping changed after the local-first pivot:
 
 | Problem | Prior art solution | Lararium mapping |
 |---|---|---|
-| Full corpus too large for CRDT | YJS: only sync objects near camera | Room filter: only shapes matching recipe in CRDT |
-| Filter index vs body payload | TW5: small index, demand-load bodies | `LarSnapshot.rooms` = index; `carrierText` demand-loaded per shape |
-| Camera-driven LOD | YJS 3D: coarser geometry at distance | Zoom-level template: smaller `w/h`, hidden ahu at strategic zoom |
-| Presence vs document sync | YJS awareness (ephemeral) vs document (persistent) | tldraw `scope:"presence"` vs `scope:"document"` — already separate |
-| Eviction when leaving view | 3D frustum culling | Room navigation: old SQLite room stays; new room seeded fresh; shape eviction on filter change (target) |
-| Write amplification | TW5 `changedTiddlers` selective refresh | `seenText` cache in `seedAll()` (shipped); kumuRegistry incremental update from `tiddlerStore.subscribe()` (shipped) |
+| Full corpus too large for canvas | YJS: sync nearby objects only | TW5 room recipe filters decide which tiddlers project into tldraw |
+| Filter index vs body payload | TW5: small index, demand-load bodies | Automerge materializes tiddlers; TW5 filters/indexes; bodies can be projected lazily later |
+| Camera-driven LOD | 3D engines: coarser geometry at distance | `applyZoomTemplate()` reads TW5 kumu layout tiddlers and updates shape props |
+| Presence vs document sync | Awareness vs document CRDT | Automerge content state separated from tldraw session/presence/layout state |
+| Eviction when leaving view | Frustum culling | Target: projection diff removes shapes no longer in the room filter |
+| Write amplification | TW5 `changedTiddlers` selective refresh | `tiddlerStore.subscribe()` + `tw5.onWikiChange()` + future projection diffing |
 
-**Target shape budget per room view:** ≤ 500 shapes in CRDT at any time. Larger corpora are navigated via room transitions (portals) and zoom-level eviction, not by loading everything at once.
+**Target shape budget per room view:** ≤ 500 projected shapes at any time. Larger corpora should be navigated via TW5 recipes, portals, and zoom-level detail gates rather than by drawing the entire corpus.
 
 <<~/ahu >>
 
 <<~ ahu #seeding >>
 
-## Boot Projection and Room Seeding
+## Boot Projection and Room Opening
 
-On first connection to a new room, the server:
+Current M10 opening path is local-first and TW5-centered:
 
-1. Calls `runtime.compileMinimalBoot()` → `BootArtifact`
-2. Calls `renderAllViews(artifact, { readText, includeAhuFrames: true })` → `TldrawEmission`
-3. Builds a `TLStoreSnapshot`: `{ store: Record<id, record>, schema: DEFAULT_INITIAL_SNAPSHOT.schema }`
-4. **Injects the boot-receipt meta-frame** via `injectBootReceiptFrame(store, { pageId, receipt })` — a hidden tldraw frame at `(-999999,-999999)`, `opacity:0`, `isLocked:true`, stable ID `shape:lararium_boot_receipt`, carrying `LarariumBootReceiptMeta` in `shape.meta` (shipped M9+).
-5. Passes the snapshot to `getOrCreateRoom(roomId, bootSnapshot)`
-6. `SQLiteSyncStorage.hasBeenInitialized()` is false → seeds from snapshot
-7. Subsequent connections: `hasBeenInitialized()` is true → resume from SQLite, snapshot ignored
+1. Server starts `Repo` with `NodeFSStorageAdapter` at `.lararium-data/meme-store/`.
+2. If no Automerge meme-store doc exists, server builds `snapshotMemes` from `lares/` and seeds the doc with `{ title, fields, text }` records.
+3. Server injects HTML meta tags: `lararium-meme-store`, `lararium-meme-sync`, `lararium-operator-did`, `lararium-receipt`, and route room id.
+4. Browser opens `Repo` with `IndexedDBStorageAdapter` first, then connects to `/meme-sync` as a peer.
+5. Browser creates a room-scoped `LarariumTW5`, runs `loadFromStore()` before `tw5-ready`, and starts `LarariumCrdtSyncAdaptor` both directions.
+6. `LarariumShell` seeds local tldraw from `projectFromTw5(tw5)` by putting emitted page/shape/binding records into the editor store.
 
-**Seeding is idempotent by design.** The SQLite file is the durable room state. Delete it to force a reseed from the current boot artifact. This is the canonical "clear and rebuild" operation.
+**Receipt delivery:** The receipt SHA now travels as `<meta name="lararium-receipt">` in the HTML shell. The hidden tldraw boot-receipt shape and `useBridgeReceiptFromEditor` pattern are deleted from the active path. `LarariumBootReceiptMeta` remains only as a deprecated compatibility type until the protocol surface is cleaned.
 
-**Boot receipt delivery (O1 ruling):** The receipt travels as a hidden tldraw shape in the room CRDT snapshot — NOT as a standalone WebSocket message. A standalone `type:"boot-receipt"` WS JSON message would reach `TLSyncClient.handleServerEvent` before tldraw is ready and trigger `Unknown switch case`. `useBridgeReceiptFromEditor` discovers the receipt by scanning the CRDT store after editor mount (fast path: stable ID lookup; fallback: full `allRecords()` scan). See `packages/lararium-core/src/live-protocol.ts` for `LarariumBootReceiptMeta` and `LarariumAuthorityEnvelope`.
+**Reseed semantics changed:** `/admin/reseed` still evicts the legacy tldraw SQLite room and recomputes snapshot/receipt, but normal corpus changes now flow through disk ↔ Automerge:
 
-**Server restart required after tldraw rebuild:** `GET /admin/reseed` rebuilds the projection in-process. If `@lararium/tldraw` has been rebuilt since the server started, the running process holds the old module in its Node cache. A process restart is required to load the new dist before reseed takes effect. Symptom of stale module: `strings <room>.sqlite | grep '"text":""'` returns non-zero count.
+```
+lares/ editor/git/MCP write
+  → lares/ watcher
+  → Automerge doc patch
+  → browser Automerge sync
+  → LarariumCrdtSyncAdaptor
+  → TW5 change event
+  → ReactionGraph / meme list update
+  → future: projection diff into tldraw
+```
 
-**Shape ID scoping:** Single page per room. Shape IDs are URI-stable by construction (`memeFrameId(uri)` — no per-page prefix). The `pageOverride` contract in `emitTldrawRecords` is retained for multi-room projection use cases (e.g. seeding a meme-detail room from a sub-snapshot) but is not used by the boot room seed path.
+`/admin/promote` writes `lares/` and patches Automerge immediately, so connected clients do not wait for a room reseed to see promoted text.
 
-**The `pageOverride` contract (retained, not active in boot):** `emitTldrawRecords(snapshot, layout, { pageOverride })` rewrites:
-- Page record `id` → `pageOverride`
-- Shape `parentId` for page-level shapes → `pageOverride`
-- Shape `id` → `shape:${pageSlug}__${rest}` (collision-free, still `shape:`-prefixed)
-- Ahu sub-frame `parentId` → scoped meme frame ID (shape-to-shape, not page-relative)
+**Projection status:** `projectFromTw5()` performs a full TW5 → tldraw emission. Incremental `tw5.onWikiChange → project affected URI → editor.store.put/remove` is the M11 shape-refresh target.
+
+**Shape ID scoping:** Shape IDs remain URI-stable (`memeFrameId(uri)`). `emitTldrawRecords(..., { pageOverride })` still exists as a library option for multi-page/multi-room emission, but the active browser path does not seed the canvas from a server boot snapshot.
 
 <<~/ahu >>
 
@@ -158,41 +171,42 @@ _Status: design only (trust tiers + Orichalcum gate). Authority seam (`LarariumA
 
 ## Canon-Promotion Boundary
 
-`lares/` is the **immutable source of truth**. The canvas is a projection surface.
+`lares/` is promoted canon. The browser/TW5/Automerge ring is live room state.
 
-**The two-layer model:**
-- **Confirmed layer:** What `lares/` declares. Seeded into SQLite at room creation. Read-only from the canvas.
-- **Pending layer:** Canvas edits by operators. Stored in SQLite room state. Visible to all peers. Not yet canonical.
+**Current two-layer model:**
+- **Canon layer:** `lares/` carrier files, git-trackable, hostless `lar:///...` addresses.
+- **Live room layer:** Automerge meme/tiddler records, materialized into TW5 and projected into tldraw. This layer may diverge locally/offline and sync later.
+
+The old "confirmed SQLite vs pending tldraw" model is no longer the content authority model. SQLite/TLSocketRoom may still carry legacy layout state, but meme content promotion is governed by Automerge origins plus the explicit promote endpoint.
 
 **Promotion path (shipped M10 — local-operator only):**
-1. Operator calls `PUT /admin/promote` with `{ uri, carrierText, shapeId? }` (localhost-only)
-2. `canPromoteToCanon({ origin: "operator-import", authorityMode: "local-operator", target: uri })` executes as policy gate — returns `{ ok: false }` for any `projection-cache`, `tw-local`, or `crdt-remote` origin
-3. `resolveLarUri(uri)` resolves to `laresRelPath`; path-traversal guard ensures path stays within `LARES_ROOT`
-4. `writeFileSync(filePath, carrierText)` writes to `lares/`
-5. lares/ file watcher detects the change → evicts room → `buildBootProjection` → reseeds automatically
+1. Operator calls `PUT /admin/promote` with `{ uri, carrierText, shapeId? }` (localhost-only today).
+2. `canPromoteToCanon({ origin: "operator-import", authorityMode: "local-operator", target: uri })` executes as policy gate.
+3. `resolveLarUri(uri)` resolves to `laresRelPath`; path-traversal guard ensures path stays within `LARES_ROOT`.
+4. `writeFileSync(filePath, carrierText)` writes to `lares/`.
+5. Server patches the Automerge meme-store doc immediately; the lares/ watcher remains the external disk→Automerge path and echo-loop guard seam.
 
-**Target design (M10+ ceremony):**
-- Canvas editor triggers "promote" from shape selection (⌘↩ or action menu)
-- Server validates proposed carrier text against pranala schema before writing
-- Full Orichalcum capability gate replaces localhost guard
-- Scope: metadata-only edits (IAM block fields) initially; full carrier authoring after ceremony lands
+**Target ceremony:**
+- Canvas or TW5 detail editor triggers "promote" from selected/focused URI.
+- Server validates proposed carrier text against parser/pranala schema before writing.
+- Full Orichalcum/UCAN capability gate replaces localhost guard.
+- Git/file backend commit metadata records operator identity.
 
-**Policy invariant (`canPromoteToCanon`) — permanent:**
+**Policy invariant (`canPromoteToCanon`) — current active origins:**
 
 | Origin kind | Result |
 |-------------|--------|
-| `projection-cache` | ✗ blocked — may render/inform/propose, never promote |
-| `tw-local` | ✗ blocked — live edits require ceremony |
-| `crdt-remote` | ✗ blocked — live edits require ceremony |
+| `canvas-draft` | ✗ blocked — requires explicit promote ceremony |
+| `tw-local` | ✗ blocked — live TW5 edits cannot self-promote |
+| `crdt-remote` | ✗ blocked — remote CRDT deltas cannot self-promote |
 | `canon-hydrate` | ✓ allowed |
 | `mcp-draft` | ✓ allowed (operator-trusted) |
 | `operator-import` | ✓ allowed (operator-trusted) |
+| `projection-cache` | retired — no longer a `ChangeOrigin` |
 
-**Structural enforcement:** The tldraw sync model's two-layer architecture (confirmed/pending) maps directly onto the Lararium trust model. This is not incidental — it is the canonical enforcement mechanism. Canvas edits that have not been promoted are structurally isolated from `lares/`.
+**Canvas write-back status:** `LarariumCanvas` contains a latent body-node text listener that writes `canvas-draft` changes to `AutomergeMemeStore`, but `projectToTldraw()` currently emits no `LarTLBodyNode` records. Therefore direct text editing on canvas is not functionally wired yet. TW5/detail-panel edits and promote ceremony are the near-term write path.
 
-**What operators can edit on canvas today:** Shape position, size, name (cosmetic). These do not affect `lares/` and do not require promotion.
-
-**What requires promotion:** New memes, new pranala edges, changes to ahu structure, changes to carrier text.
+**What requires promotion:** new memes, new pranala edges, ahu structure changes, and carrier text changes that should become `lares/` canon.
 
 <<~/ahu >>
 
@@ -200,7 +214,7 @@ _Status: design only (trust tiers + Orichalcum gate). Authority seam (`LarariumA
 
 ## Canvas Views — Single-Page Zoom-Gated Model
 
-**Current implementation (shipped 2026-04-28):** One tldraw page per room (`page:boot`). View "modes" are zoom-level gates — shape props are batch-updated via `applyZoomTemplate()` on threshold crossings, not by switching pages. Five zoom levels correspond to five kumu template carriers (`meme-strategic` through `meme-action`); each meme frame carries `meta.templateProps` for all five levels, seeded at projection time from the `KumuRegistry`.
+**Current implementation (M10 local-first path):** The browser owns a local tldraw editor store and seeds it from `projectFromTw5(tw5)`. View "modes" are zoom-level gates — shape props are batch-updated via `applyZoomTemplate()` on threshold crossings, not by switching pages. Five zoom levels correspond to TW5 kumu layout tiddlers (`lar:///kumu/meme-strategic` through `lar:///kumu/meme-action`), read at runtime via `getActiveTW5().getZoomLayout(level)`. The older `shape.meta.templateProps` / `KumuRegistry` stamping path is superseded for active zoom layout.
 
 **Zoom-template routing (active) — Law of Fives axis 1:**
 
@@ -232,15 +246,15 @@ Rating (structural quality) and stage (authority level) are seeded per-meme at p
 | CS | standard | (none) | 0.2 | center-stage — operator-ratified |
 | DS | vivid | ✦ | 0.3 | downstage — public, fully committed |
 
-These properties travel in `shape.meta.templateProps` alongside zoom-level props. The `cascade` filter predicate in the wikitext-filter dialect accepts `rating:Meme`, `stage:CS` as filter atoms.
+Rating and register/stage-like fields travel in shape metadata and are recomputed from TW5 tiddler fields during projection. Zoom layout props now come from TW5 kumu layout tiddlers rather than pre-stamped `shape.meta.templateProps`. The wikitext-filter cascade target remains: filters should be able to select by rating/register/stage atoms once the recipe layer is complete.
 
 **Socket port shapes (active):** Each ahu slot emits a hidden `TLGeoShape` ellipse (8×8, `opacity:0`) as a stable arrow binding target. Pranala arrows bind permanently to socket shapes — not to ahu frames. `applyZoomTemplate` repositions sockets between two positions: `centerX/Y` (meme header zone, all zoom levels) and `spreadX/Y` (ahu frame center, combat/action only). Bindings never change; only socket position changes. This is the TW5-style selective refresh: the binding graph is stable, only rendering state moves.
 
 **Ahu frame safety:** Ahu sub-frames are `isLocked:true` in projection emission to prevent tldraw from reparenting them when the operator drags a meme frame. At low zoom (meme frame shrunk to 60×28px), ahu frames at `y=108+` would escape parent bounds — the `opacity:0` hide prevents visual detachment and the lock prevents CRDT reparent.
 
-Shape IDs are URI-stable (`memeFrameId(uri)` — no per-page prefix scoping). The `pageOverride` contract in `emitTldrawRecords` is retained for future multi-room projection but is not used by the boot room.
+Shape IDs are URI-stable (`memeFrameId(uri)` — no per-page prefix scoping). The `pageOverride` contract in `emitTldrawRecords` is retained for future multi-room projection but is not used by the active browser projection.
 
-**Navigation:** `LarViewState` reducer (`ZOOM_IN`, `OPEN_GRAPH`, `CLOSE_GRAPH`, `NAVIGATE_BACK`, `GO_TO_ROOM`). `ZOOM_IN` drives `zoomToMeme()` camera animation. `GO_TO_ROOM` switches WebSocket connection to a different room. No page-switching in the navigation path.
+**Navigation:** `LarViewState` reducer (`ZOOM_IN`, `OPEN_GRAPH`, `CLOSE_GRAPH`, `NAVIGATE_BACK`, `GO_TO_ROOM`). `ZOOM_IN` drives `zoomToMeme()` camera animation. `GO_TO_ROOM` is currently a view/navigation action, not an active `useSync` WebSocket room switch in the browser path.
 
 **⌘K command palette:** Implemented and active. Replaces `SidePanel` as primary room/meme navigation. Two sections: **Spaces** (DEFAULT_ROOMS with chronometer glyphs) and **Memes** (URI filter). Arrow-key navigation, Enter to activate, Escape to dismiss.
 
@@ -286,7 +300,7 @@ The Lararium node server will expose an MCP server alongside the HTTP/WS server.
 | `lararium/edge/list` | List pranala edges for a given meme URI |
 | `lararium/snapshot/export` | Export a room's current tldraw store as a snapshot JSON |
 
-**MCP server placement:** Co-located with the HTTP/WS server in `packages/lararium-node`. Shares the `runtime` singleton and the `rooms` Map. The MCP server does not create its own room instances — it reads from and writes to the same `TLSocketRoom` instances that browser clients use.
+**MCP server placement:** Current MCP code lives in `packages/lararium-mcp` as a stdio adapter. It can call the node HTTP surface (for example `/admin/reseed`) when `LARARIUM_HTTP_URL` is configured, but it does not share a `TLSocketRoom` instance with browser clients in-process. Future MCP-over-HTTP can colocate with `packages/lararium-node`, but the active bridge is process/HTTP based.
 
 **MCP transport:** stdio (for Claude Desktop / Claude Code direct integration) or HTTP SSE (for networked Claude access). Both transports should be supported; stdio is the default for local development.
 
@@ -321,7 +335,7 @@ claude   → HTTP SSE MCP endpoint (authenticated)
 - WebSocket URL injected into `index.html` is derived from the request `Host` header (not hardcoded `HOST:PORT`) so it works behind reverse proxies.
 - `x-forwarded-proto` is respected for `ws:` vs `wss:` selection.
 
-**Data directory:** `.lararium-data/` — contains per-room SQLite files and the server DID keypair. Not committed to git. Excluded via `.gitignore`.
+**Data directory:** `.lararium-data/` — contains the Automerge meme-store (`meme-store/`), the operator/server DID keypair, and any legacy per-room tldraw SQLite layout files. Not committed to git. Excluded via `.gitignore`.
 
 <<~/ahu >>
 
@@ -356,7 +370,7 @@ This is an **invariant meme** (to be authored). It owns the room contract, porta
 
 ## Room Model — Extended
 
-A **room** is a named, persistent, multiplayer canvas backed by a `TLSocketRoom`. Rooms are organized under a namespace hierarchy that mirrors the `lar:` URI structure.
+A **room** is a named capability/view scope over the live meme corpus. The legacy layout channel may back a room with `TLSocketRoom`, but current meme content is shared through the Automerge store and projected locally into tldraw. Rooms are organized under a namespace hierarchy that mirrors the `lar:` URI structure.
 
 ### Room naming
 
@@ -433,14 +447,14 @@ TW5 is summoned wherever the CRDT store lives. It is not optional and not a lega
 
 ```
 CRDT store (tldraw, YJS)
-    ↓  projection-cache intake (shape.meta.carrierText → tiddler)
-MemoryTiddlerStore
+    ↓  AutomergeMemeStore intake (lar: title → tiddler)
+AutomergeMemeStore / LarTiddlerStore
     ↓  LarariumCrdtSyncAdaptor (echo-loop guarded)
 TW5 wiki (virtual server, isomorphic)
     ├─ filter engine   →  filterClosure(expr, closure)  →  FilterEngineFn in context
     ├─ parse bridge    →  text/x-memetic-wikitext parser delegates to parseMemeCarrier()
     ├─ kumuRegistry    →  computed view via tiddlerStore.subscribe() (reactive, incremental)
-    └─ draft surface   →  canvas edit → TW5 tiddler (draft) → MemoryTiddlerStore → SQLite → lares/
+    └─ draft surface   →  canvas/TW5 edit → AutomergeMemeStore → promote ceremony → lares/
 ```
 
 **Isomorphic law:** `LarariumTW5` boots on Node (server, MCP) and in the browser (browser host). The SyncAdaptor wiring is identical in both environments. You do not need to know which environment you're in to use TW5's filter or draft APIs.
@@ -454,7 +468,7 @@ canvas edit (shape text field updated)
     ↓  SyncAdaptor → TW5 wiki tiddler updated (draft state)
     ↓  TW5 renderTree refresh (filter/widget re-evaluation)
     ↓  operator confirms: "Save as draft"
-    ↓  tiddlerStore.put(origin:"canvas-draft") → SQLite room state (branch commit — durable)
+    ↓  tiddlerStore.put(origin:"canvas-draft") → Automerge room state (durable local-first draft)
     ↓  operator confirms: "Promote to canon"
     ↓  PUT /admin/promote → canPromoteToCanon() gate → lares/ file written → git commit
     ↓  server reseed → new room snapshot with hostless URI
@@ -470,7 +484,7 @@ canvas edit (shape text field updated)
 
 ## Write-Back Architecture
 
-**Current state:** Read-only for canon. Pending edits accumulate in SQLite room state. `PUT /admin/promote` ships (M10). Full draft→canon pipeline is the M11 target.
+**Current state:** Read-only for canon unless `PUT /admin/promote` is called. Live edits accumulate in Automerge room state. The direct tldraw body-node draft path is latent because body-node projection is not emitted yet; full draft→canon UX is the M11 target.
 
 ### The commit model — git-like confidence tiers
 
@@ -481,7 +495,7 @@ Canvas edits live in one of three tiers before reaching permanent storage:
 │  LIVE SESSION (room state, tldraw pending layer)        │
 │  Volatile. Lost on disconnect if not saved. Hostful.    │
 ├─────────────────────────────────────────────────────────┤
-│  BRANCH / ROOM COMMIT (SQLite room state, persisted)    │
+│  BRANCH / ROOM COMMIT (Automerge room state, persisted) │
 │  Durable across reconnects. Visible to all room peers.  │
 │  Not yet canonical. Like a git branch commit.           │
 ├─────────────────────────────────────────────────────────┤
@@ -493,7 +507,7 @@ Canvas edits live in one of three tiers before reaching permanent storage:
 
 This maps directly onto:
 - tldraw's pending client state → live session
-- tldraw's confirmed server state (SQLite) → branch commit
+- Automerge room document → branch/live room commit
 - `lares/` tree + git → deep save / canon
 
 ### Storage backend abstraction
@@ -680,27 +694,25 @@ The altar fire canvas seeds with portal shapes for all registered rooms at initi
 **Custom shape utils required (genuinely novel):**
 - None currently. `LarPortalShapeUtil` was planned but a `geo` + meta approach is sufficient for MVP. Add a custom shape only when the built-in props model is demonstrably insufficient.
 
-### TiddlyWiki Template Cascade — Implementation (shipped 2026-04-28)
+### TiddlyWiki Template / Layout Cascade — Current Correction (2026-04-29)
 
-TW5's rendering pipeline: tiddler → `:cascade` filter run → first matching template title → widget tree → DOM. The cascade walks a priority-ordered list, evaluates each candidate's filter expression against the tiddler's full context, and returns the first non-empty result. Operators extend the cascade by authoring tiddlers — no core modification.
+TW5's rendering pipeline remains the model: tiddler → cascade/filter → template/widget tree → DOM/projection. Operators should extend view behavior by authoring tiddlers, not by stamping one-off shape metadata.
 
-**Lararium's cascade (live):**
+**Active zoom layout path:**
 
-Template carriers live at `lar:///ha.ka.ba/api/v0.1/lararium/templates/meme-*`. Each is a kumu definition carrier — a `<<~ kumu name(params) >>` sigil block whose body holds a TOML section declaring tldraw frame props for one zoom level.
+Template/layout carriers are loaded into the room-scoped TW5 wiki as `lar:///kumu/meme-*` tiddlers. `applyZoomTemplate()` does not read `shape.meta.templateProps`; it calls `getActiveTW5().getZoomLayout(level)` and then batch-updates frames, socket ports, ownership arrows, and future body nodes.
 
 ```
-BootArtifact.kumuDefs  ←  collectKumuDefs() walks boot closure
+Automerge tiddlers / lares carriers
+       ↓ loadFromStore() + collectKumuDefs()
+LarariumTW5 wiki tiddlers: lar:///kumu/meme-<level>
+       ↓ getZoomLayout(level)
+applyZoomTemplate(editor, level)
        ↓
-KumuRegistry.get("meme-strategic") ... .get("meme-action")
-       ↓
-buildTemplatePropsByLevel(registry) → TemplatePropsByLevel
-       ↓
-shape.meta.templateProps (seeded at projection time, stored in CRDT)
-       ↓
-applyZoomTemplate(editor, level) on threshold crossing → editor.updateShapes()
+editor.updateShapes(frame/socket/body-node props)
 ```
 
-Each template carrier's TOML body declares `zoom-level`, `cascade` (filter predicate string), `priority`, and tldraw frame props (`w`, `h`, `color`, `label`, `include-ahu`, etc.). The `cascade` field is stored in `MemeTemplateProps.cascade` for the future wikitext-filter expression path; current level switching uses `classifyZoom()`.
+Each zoom layout tiddler may declare TOML keys such as `w`, `h`, `color`, `include-ahu`, and `show-carrier`. The older `KumuRegistry → buildTemplatePropsByLevel → shape.meta.templateProps` path is historical and should not be used as the active source of zoom truth.
 
 **Rating and stage band rendering (Law of Fives):**
 
@@ -715,7 +727,7 @@ Rating encodes structural quality: a `Noise` carrier renders with a dashed borde
 
 Stage encodes authority level: a `GR` meme renders muted/greyed (local, unratified). A `DS` meme renders with full color and full ownership arrow opacity. `CS` is the default visible rendering tier in the boot room.
 
-These are seeded into `shape.meta.templateProps` alongside zoom-level props at projection time.
+These fields are projected into shape metadata or read from TW5 tiddler fields. Zoom-level props are read from TW5 layout tiddlers at runtime, not from `shape.meta.templateProps`.
 
 **Epistemic fields on ClosureEntry (shipped 2026-04-28):** `confidence` (float scalar), `register` (operator confidence-register: C/SC/S/PS/P), `manaoio` (observability/interop score), `mana`, `manao` — all stored as tiddler fields in the wikitext-filter engine and queryable via `[toml:key[value]]` or `[field:key[value]]`. `stage` is a UX rendering annotation only — it is NOT a filter field.
 
@@ -764,30 +776,26 @@ const compiled = await compileCascade(cascade, closure, filterEngine, artifact.p
 
 **Parser addition:** `<<~ kumu name(params) >>` / `<<~/kumu >>` direct form added to `SIGIL_SCANS` alongside the `\\widget` alias. The `kumu` sigil is now parseable in canonical Hawaiian form.
 
-**Phase 3 ✓ shipped (2026-04-28):** The three-tree pipeline is complete for both render targets:
+**Phase 3 status correction (2026-04-29):** The three-tree target remains correct, but implementation is partial. Current code has the canonical parser and TW5 render bridge; `LarTLBodyNode` types and emission support exist, but `projectToTldraw()` still leaves `bodyNodes` empty. Therefore the tldraw structural skeleton and direct canvas body-node write-back are not shipped yet.
 
 ```
 carrier text
   ↓ parseMemeCarrier()                      @lararium/core
-MemeAstNode[]                               parse tree — agnostic
-  ↓ resolveWidgetTree(ast, registry)        @lararium/core
-WidgetNode[]                                widget tree — agnostic
-  ↓                       ↓                adapter boundary (render-target.ts)
-tldraw adapter             React adapter
-(project.ts)               (kumu-react-render.tsx)
+MemeAstNode[]                               parse tree — canonical
+  ↓ TW5 parser/widget bridge                @lararium/tw5
+TW5 fakeDOM / VDOM                          render/detail path
   ↓                       ↓
-LarTLBodyNode[]            React.ReactNode
-  ↓ emitTldrawRecords()   ↓ renderCarrier()
-→ tldraw store             → MemeDetailPanel DOM
+TW5 UX/detail panel         tldraw projection
+(renderMeme/renderText)     (projectFromTw5 → frames/sockets/arrows today)
 ```
 
-**tldraw adapter** — structural skeleton: `text | widget | hole` body nodes inside meme frames. `opacity:0` until action zoom (`showCarrier:true`). Widget nodes show `kumuName(k:v ...)` label — type + declared props, not executed (UEFN device slot model). `applyZoomTemplate` Pass 4 toggles visibility via `memeShowCarrier` map (built in Pass 1 alongside `memeIncludeAhu` — single O(n) scan).
+**tldraw adapter today** — meme frames, ahu/socket structures, ownership arrows, pranala arrows. `LarTLBodyNode` is reserved for the action-zoom body skeleton, but no body nodes are currently projected.
 
-**React adapter** — full kumu execution: `kumu-react-render.tsx` exports `renderCarrier(ast, widgetMap)`. `widgetMap` is `Map<number, WidgetSlot>` keyed on `node.pos` (byte offset) for O(1) lookup during AST walk. Kahea sigil nodes delegate to their executed `KumuResult`. Suspended kukali instances surface as `⏿` placeholders. Typed holes (no registry match) render as dashed Hazel-style placeholders.
+**React/TW5 adapter today** — `renderCarrierVDom()` and `renderMeme()` route carrier text through the TW5 widget pipeline for detail rendering and dispatch-node extraction. Kumu execution remains limited; full `KumuExecutor` lifecycle is M11.
 
-**Single-parse guarantee:** `projectCarrier(uri, carrierText, registry)` in `render-target.ts` calls `parseMemeCarrier` + `resolveWidgetTree` exactly once. Both adapters consume the `CarrierProjection { ast, widgetTree }` result — no double-parse.
+**M11 target:** one parse/projection boundary should feed both the React/TW5 detail surface and the tldraw action-zoom body skeleton, after which the existing `canvas-draft` listener can become functional.
 
-**Phase 4 (next):** Live CRDT delta → body node shape update without reseed. Currently `boot-snapshot` refresh only — changing a carrier requires `/admin/reseed`. Phase 4 target: `changedTiddlers`-style selective refresh where only the affected meme's body nodes update when its `meta.carrierText` changes in the CRDT delta.
+**Phase 4 (next):** Live Automerge/TW5 delta → projection diff into tldraw without full canvas rebuild. Carrier changes already reach TW5 through the adaptor; the missing piece is selective shape/body-node put/remove for affected URIs.
 
 ### Built-in tldraw UI Components to Reuse
 
@@ -934,7 +942,7 @@ The Lararium zoom ontology — five levels mapped to chronometer scale positions
 | combat | ⚔️ | 0.80–1.50 | `meme-combat` template: ahu sub-frames, full label |
 | action | ⚡ | ≥ 1.50 | `meme-action` template: carrier text inline |
 
-`store.listen({ scope: "session" })` — camera records are session-scoped, fires ~100× less than an unscoped listener. Template switch fires only on level boundary crossings (hysteresis via `lastLevel` ref). `applyZoomTemplate()` calls `editor.updateShapes()` with props from `shape.meta.templateProps[level]`.
+`editor.store.listen(..., { scope: "session" })` watches camera/zoom state. Template switch fires only on level boundary crossings (hysteresis via `lastLevel` ref). `applyZoomTemplate()` calls `editor.updateShapes()` with props from `LarariumTW5.getZoomLayout(level)` plus hardcoded fallback defaults.
 
 Footer glyph tracks zoom level live via `onZoomLevel` callback from `LarariumCanvas`.
 
@@ -1028,13 +1036,13 @@ State lives in `localStorage` (`lararium.theme`). Applied on mount before first 
 
 **Open:**
 
-1. ✓ **Zoom-gated single-page rendering + kumu template pipeline (shipped 2026-04-28):** Single `page:boot`. Five kumu template carriers at `lar:///ha.ka.ba/api/v0.1/lararium/templates/meme-*` — part of boot closure, parsed via `collectKumuDefs`, registered in `KumuRegistry`, stamped into `shape.meta.templateProps` at projection time. `applyZoomTemplate()` batch-updates frame props on zoom threshold crossings. `cascade` + `zoomLevel` fields stored in each `MemeTemplateProps` for future wikitext-filter path. `<<~ kumu name(params) >>` direct form added to parser. URI-stable shape IDs. See `#views` and `#tldraw-template-model`.
+1. ✓/⚠ **Zoom-gated rendering shipped; template source pivoted (2026-04-29 correction):** `applyZoomTemplate()` batch-updates frame/socket/body-node props on zoom threshold crossings. Active layout truth is TW5 `lar:///kumu/meme-*` tiddlers read via `getZoomLayout(level)`, with fallback defaults. Older `KumuRegistry` / `shape.meta.templateProps` stamping is historical. URI-stable shape IDs remain. See `#views` and `#tldraw-template-model`.
 
 1a. **Async `ReactionGraph`:** `fire()` must return `Promise<void>` before `hui`/`heihei`/`puka`/`kukali` have execution semantics. Zero structural changes required — this is a method signature change in `live-protocol.ts`. Fanout modes (`Promise.all`, `Promise.race`, `Promise.any` + cancel) follow immediately after. See `#causal-islands`.
 
-1b. **Wehe executor:** bind `SigilNode { sigilName:"kahea", attrs:{name,args} }` name-form calls against registered `wehe` definitions at render time. Closes TW5 template transclusion + Verse procedure call simultaneously. Depends on `KumuRegistry` (now complete).
+1b. **Wehe executor:** bind `SigilNode { sigilName:"kahea", attrs:{name,args} }` name-form calls against registered `wehe` definitions at render time. Closes TW5 template transclusion + Verse procedure call simultaneously. Depends on the TW5/kumu registry path, not the retired shape-meta template cache.
 
-1c. ✓ **kumu/widget-tree resolution pass (shipped 2026-04-28):** `resolveWidgetTree(ast, registry)` builds the intermediate `WidgetNode[]` tree. Both render adapters consume it — React adapter (full execution via `kumu-react-render.tsx`) and tldraw adapter (structural skeleton via `LarTLBodyNode[]` in `project.ts`). `render-target.ts` owns the boundary contract: `RenderTargetAdapter` registry, `WidgetSlot`, `buildWidgetMap`, `projectCarrier`. See `#tldraw-template-model`.
+1c. ⚠ **kumu/widget-tree resolution pass (partial):** TW5 widget parsing/rendering is active for detail UX. The tldraw body-node structural skeleton is typed but not emitted (`projectToTldraw()` leaves `bodyNodes` empty). M11 should wire the single parse/projection boundary into `LarTLBodyNode[]`.
 
 1d. ✓ **TW5 TemplateCascade type wired (shipped 2026-04-28):** `CascadeEntry { match: MemeCascadePredicate | fn, override: Partial<MemeTemplateProps>, levels? }` in `multi-view.ts`. `applyCascade()` evaluates per-meme at `renderAllViews` time — first match wins per zoom level. `MemeTemplateProps.cascade` string field (predicate stored in shape meta) maps to this runtime type. Future: thread wikitext-filter expression evaluation as `match` predicate.
 
@@ -1046,7 +1054,7 @@ State lives in `localStorage` (`lararium.theme`). Applied on mount before first 
 
 5. **User home rooms (`user:${did}`) with altar-fire transclusion:** Seed logic for per-user rooms. Altar-fire memes projected as locked cluster in corner of user room canvas. Depends on UCAN/identity.
 
-6. ✓ **Room reseeding (`/admin/reseed`) — shipped M5.** `GET /admin/reseed?roomId=boot` kills SQLite + evicts from rooms Map, reseeds on next connection. Grammar hot-reload path: edit `lares/grammars/memetic-wikitext.md` → `/admin/reseed` → parsing behavior changes without TypeScript rebuild. **Operator note:** process restart required after `@lararium/tldraw` rebuild before reseed takes effect (Node module cache).
+6. ⚠ **Room reseeding (`/admin/reseed`) — superseded semantics.** The endpoint still evicts the legacy tldraw SQLite room and recomputes receipt/snapshot state, but normal grammar/carrier hot reload now flows disk → Automerge → TW5. Use `/admin/reseed` for legacy layout reset or receipt refresh, not as the primary content update path.
 
 7. **Content-addressed room keys:** `boot-${receipt.sha.slice(0,16)}` for boot/full rooms. Named rooms use stable slugs. Transition path from `"boot"` needs client redirect.
 
@@ -1086,9 +1094,10 @@ The `ReactionGraph` is the causal island manager. `fire(fromUri, trigger, payloa
 
 ### Why this matters for the canvas
 
-The CRDT room (tldraw `TLSocketRoom`) handles canvas *state* synchronization. Causal islands handle *event execution*. These are two separate layers:
+The live corpus CRDT (Automerge) handles meme/tiddler synchronization. The tldraw editor currently renders a local projection of that corpus; the legacy `TLSocketRoom` may still handle layout/reaction socket experiments. Causal islands handle *event execution*. These are separate layers:
 
-- CRDT room: who moved what shape, what color is it, who is online — CvRDT semantics, no ordering required
+- Automerge/TW5 content state: which carrier text, fields, and bindings exist — CRDT semantics
+- tldraw projection/layout state: where projected shapes appear and how zoom templates render them
 - Causal islands: DoorTrigger fires → LightPanel activates → player gains 10 points — causal ordering required
 
 The canvas shows both: shape positions are CRDT-merged; event wires (`papalohe` edges) and their execution state (active/inactive island indicators) are rendered as reaction arrows.
@@ -1129,14 +1138,16 @@ The UEFN operational model (file watcher → evict → reseed) is already live. 
 ```
 lares/ (canon)               — immutable truth
   ↓ compile + reseed
-CRDT room (TLSocketRoom)     — canvas state, multiplayer, confirmed/pending
-  ↓ event wire
-ReactionGraph (causal)       — async event routing between kumu islands
+Automerge meme store       — live content/tiddler CRDT
+  ↓ TW5 adaptor
+LarariumTW5                 — filters, render bridge, reaction bindings
+  ↓ projection / event wire
+ReactionGraph (causal)       — async/local event routing between kumu islands
   ↓ render
-tldraw shapes                — visual output
+tldraw shapes                — visual projection output
 ```
 
-**Tier 3 note:** Cross-node federation edges (Tier 3) sit *above* lares/ in the authority hierarchy and *outside* the CRDT room. They are not TLSocketRoom connections. They are named edge islands with their own lifecycle, governed by Orichalcum capabilities. See `#federation` and `lar:///ha.ka.ba/api/v0.1/pono/federated-causal-islands`.
+**Tier 3 note:** Cross-node federation edges (Tier 3) sit *above* lares/ in the authority hierarchy and *outside* the local Automerge/tldraw room machinery. They are not TLSocketRoom connections. They are named edge islands with their own lifecycle, governed by Orichalcum capabilities. See `#federation` and `lar:///ha.ka.ba/api/v0.1/pono/federated-causal-islands`.
 
 <<~/ahu >>
 
@@ -1150,7 +1161,7 @@ Research foundation: `lares/lararium-node/MEME-STORE-FOUNDATIONS.md`. Three laws
 
 A meme object, once admitted to the confirmed layer (`lares/` hostless URIs), is never mutated. The only valid write is a full replacement producing a new URI. Session edits accumulate in the hostful tier (`lar://alias:tier@host/path`). Canon-promotion is the atomic transition.
 
-**Re-seeding corollary:** `/admin/reseed` is valid only because it replaces the full room snapshot — equivalent to TW5's tiddler replacement triggering the full widget cascade. Shape-level mutation outside CRDT merge is illegal.
+**Refresh corollary:** after the local-first pivot, ordinary carrier refresh should be disk/Automerge/TW5 change propagation plus selective projection diffing. `/admin/reseed` is now a legacy layout reset / receipt recompute tool, not the primary content-refresh mechanism. Shape-level mutation outside the authorized store/projection path remains illegal.
 
 ### Law 2: `pranala-schema-binding`
 

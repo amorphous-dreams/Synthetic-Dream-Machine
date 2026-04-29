@@ -286,7 +286,18 @@ export function LarariumShell({ wsUrl, memes, onMemes }: ShellProps) {
   }, []);
 
 
-  // ⌘K / Ctrl+K → palette   |   ` (backtick) → canvas mode toggle
+  // Sync TW5 palette when Lararium theme cycles.
+  useEffect(() => {
+    if (!tw5) return;
+    const paletteName = theme === "gruvbox-light"
+      ? "lar:///ha.ka.ba/api/v0.1/lararium/palette/gruvbox-light"
+      : "lar:///ha.ka.ba/api/v0.1/lararium/palette/gruvbox-dark";
+    tw5.setPalette(paletteName);
+  }, [theme, tw5]);
+
+  // ⌘K / Ctrl+K       → command palette
+  // ` (backtick)       → canvas mode toggle
+  // Ctrl+Shift+W       → TW5 wiki panel toggle
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       const tag = (e.target as HTMLElement)?.tagName;
@@ -294,6 +305,15 @@ export function LarariumShell({ wsUrl, memes, onMemes }: ShellProps) {
       if ((e.metaKey || e.ctrlKey) && e.key === "k") {
         e.preventDefault();
         setPaletteOpen((v) => !v);
+        return;
+      }
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === "W") {
+        e.preventDefault();
+        if (navState.activeView === "meme-detail") {
+          dispatch({ type: "NAVIGATE_BACK" });
+        } else if (navState.focusUri) {
+          dispatch({ type: "ZOOM_IN", uri: navState.focusUri });
+        }
         return;
       }
       if (e.key === "`") {
@@ -305,7 +325,7 @@ export function LarariumShell({ wsUrl, memes, onMemes }: ShellProps) {
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, []);
+  }, [navState.activeView, dispatch]);
 
 
   // Expose opening state to browser console for smoke verification.

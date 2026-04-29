@@ -89,8 +89,8 @@ Portal positions are expressed as `{ x: number, y: number }` relative to the can
 Content on the altar fire canvas exists at one of three confidence tiers:
 
 ```
-LIVE SESSION    — tldraw pending layer; volatile; lost on disconnect if not saved
-BRANCH COMMIT   — SQLite room state; durable across reconnects; visible to peers; not canon
+LIVE SESSION    — browser/TW5/tldraw draft surface; local-first, not canon
+BRANCH COMMIT   — Automerge room state; durable across reconnects; visible to authorized peers; not canon
 DEEP SAVE       — lares/ carrier file; git-tracked; hostless lar URI; permanent
 ```
 
@@ -99,8 +99,8 @@ The visual distinction:
 - **Branch-committed** shapes: solid border, muted color
 - **Deep-saved / canon** shapes: solid border, full color, lock icon
 
-Promotion from live → branch requires explicit "Save to room" action.
-Promotion from branch → deep save requires explicit "Promote to canon" ceremony (operator+).
+Live → branch currently means writing the shared Automerge meme store through the TW5/store adaptor.
+Branch → deep save requires explicit "Promote to canon" ceremony (operator+).
 Invariant meme edits require admin tier and a separate confirmation ceremony.
 
 <<~/ahu >>

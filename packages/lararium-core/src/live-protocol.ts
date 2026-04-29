@@ -15,11 +15,12 @@
  */
 
 // ---------------------------------------------------------------------------
-// LarariumBootReceiptMeta — authority receipt carried in a hidden tldraw frame shape.
+// LarariumBootReceiptMeta — deprecated hidden-shape receipt metadata.
 //
-// Transitional metadata carrier: stored as shape.meta on a hidden frame (opacity:0,
-// isLocked:true, x/y far off-screen) so it travels with the room CRDT snapshot
-// without requiring a custom TLRecord schema.
+// Historical M9 carrier: this used to be stored as shape.meta on a hidden
+// tldraw frame. The active M10 path delivers the receipt SHA through the HTML
+// shell meta tag (`<meta name="lararium-receipt">`). Keep this interface only
+// for compatibility until all old references are removed.
 //
 // Brooklyn compatibility slots (reserved, not enforced this lap):
 //   issuer/subject → UCAN iss/aud + Keyhive Ed25519 principal
@@ -153,7 +154,7 @@ export interface CanPromoteResult {
 
 export function canPromoteToCanon(input: CanPromoteInput): CanPromoteResult {
   if (input.origin.kind === "canvas-draft") {
-    // Canvas edits accumulate in SQLite room state (branch commit).
+    // Canvas/TW5 edits accumulate in Automerge room state (branch/live commit).
     // They require the explicit PUT /admin/promote ceremony to reach canon.
     return { ok: false, reason: "canvas-draft-requires-promote-ceremony" };
   }
