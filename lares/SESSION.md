@@ -17,7 +17,7 @@ manao        = 0.84
 implements   = [
   "lar:///ha.ka.ba/api/v0.1/pono/meme"
 ]
-role         = "session handoff crystal — 2026-04-28 — browser TW5 async opening patch complete; LarariumOpenPhase + projection-cache in core; lararium-browser-host.ts live; blocking spinner removed; MemeDetailPanel tw5 branch; native-render.tsx rename; 280/280 green; app build clean"
+role         = "session handoff crystal — 2026-04-28 — boot-receipt authority arc complete; Brooklyn-compat LarariumBootReceiptMeta + LarariumAuthorityEnvelope in core; useBridgeReceiptFromEditor two-hook split; canPromoteToCanon policy guard; carrier-text intake arc tested; 315/315 green; branch feature/lararium-node-3 pushed; PR ready"
 ```
 
 <<~/ahu >>
@@ -28,12 +28,12 @@ SESSION opens
 
 <<~ ahu #ooda-ha >>
 
-✶ browser TW5 async opening patch shipped — LarariumOpenPhase authority-first sequence; projection-cache ChangeOrigin added; useLarariumHostOpen React hook wraps async generator; blocking spinner removed; MemeDetailPanel renders TW5 HTML via tw5.renderText() behind ?renderMode=tw5; kumu-react-render.tsx renamed native-render.tsx.
-⏿ Open pressure: tiddlywiki enters the browser bundle unconditionally — every user pays TW5 boot cost even in native render mode. Bundle: 1.95MB (586KB gzip). Code-split deferred to Q2 recipe-config phase per operator ruling.
-◇ M9 remaining: browser smoke (P2 — tactile verification of zoom thresholds + double-click + panel), canon-promotion surface (P4), wiki-recipe carriers (P5).
-▶ Browser smoke (P2) stays the highest-value next move. Boot receipt room-metadata path (Q3) still pending — serve.ts currently emits LiveMsgBootReceipt over WS; browser host uses local-operator placeholder receipt.
-⤴ 280/280 green. App build clean (tiddlywiki externalization warnings non-fatal; TW5 auto-detects browser env).
-↺ Projection-cache origin in store carries audit label; must not promote to canon without Orichalcum ceremony.
+✶ boot-receipt authority arc ships — Brooklyn-compat LarariumBootReceiptMeta + LarariumAuthorityEnvelope in @lararium/core; receipt travels as hidden tldraw frame in CRDT snapshot (O1); two-hook split useLarariumHostOpen + useBridgeReceiptFromEditor (O2); projection-cache intake gates on hostReceipt; canPromoteToCanon policy guard enforces projection-cache invariant; carrier-text intake arc tested end-to-end.
+⏿ Three browser errors fixed: (F1) standalone WS boot-receipt message removed; (F2) receipt meta excludes id/typeName; (F3) richText("") returns empty paragraph not empty text node. TW5 bundle still unconditional — code-split deferred to Q2.
+◇ M9 state at PR: P1 ✓ P2 smoke-script-written P3 ✓ (canPromoteToCanon + 9 tests) P4 ✓ (carrier-text intake arc) P5 deferred to M10. Canon-promotion ceremony (PUT /admin/promote) deferred to M10.
+▶ PR ready. M10 opens with: wiki-recipe carriers, Playwright baseline, PUT /admin/promote endpoint with canPromoteToCanon gate.
+⤴ 315/315 green (169 core + 31 tw5 + 74 node + 41 tldraw). App build clean.
+↺ canPromoteToCanon() is the enforcement point for future PUT /admin/promote. LarariumAuthorityEnvelope carries ucan-delegated and keyhive arms as protocol sockets only — not instantiated until crypto lands.
 
 <<~/ahu >>
 

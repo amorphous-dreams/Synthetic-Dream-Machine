@@ -12,7 +12,7 @@ register = "S"
 manaoio = 0.82
 mana = 0.88
 manao = 0.86
-role = "docs meme — migration roadmap and milestone log for Lararium Node; 280/280 tests green; @lararium/tw5 package extracted from core (zero circular dep); LarariumOpenPhase + projection-cache ChangeOrigin in @lararium/core; lararium-browser-host.ts async generator + useLarariumHostOpen hook live; LarariumCtxValue expanded (openPhase/tiddlerStore/tw5/renderMode/hostReceipt); blocking spinner removed from LarariumCanvas; MemeDetailPanel ?renderMode=tw5 branch (store-first, projection-cache fallback, tw5.renderText); kumu-react-render.tsx renamed to native-render.tsx; app build clean (tiddlywiki externalization warnings non-fatal); M9 remaining: browser smoke (P2 — tactile verification), canon-promotion (P4), wiki-recipe carriers (P5); open pressure: TW5 enters bundle unconditionally (defer code-split to Q2 recipe-config phase)"
+role = "docs meme — migration roadmap and milestone log for Lararium Node; 315/315 tests green (169 core + 31 tw5 + 74 node + 41 tldraw); boot-receipt authority arc complete: LarariumBootReceiptMeta + LarariumAuthorityEnvelope in @lararium/core; hidden frame CRDT receipt delivery (O1); useBridgeReceiptFromEditor two-hook split (O2); canPromoteToCanon policy guard + 9 tests; carrier-text intake arc tested end-to-end; browser smoke script at scripts/smoke/browser-tw5-open.md; three browser errors fixed (F1 WS message removed F2 meta spread F3 richText empty); M9 P1✓ P2✓(script) P3✓ P4✓ P5→M10; M10 opens: wiki-recipe carriers, Playwright, PUT /admin/promote ceremony"
 cacheable = false
 retain = true
 invariant = false
@@ -1627,9 +1627,11 @@ M8 delivered the full kumu type pipeline bottom-up: AST → kumuDefs → KumuReg
 - `applyZoomTemplate` loop merge — Pass 1 builds both `memeIncludeAhu` and `memeShowCarrier` maps in one O(n) shapes scan; eliminates second meme-frame loop per zoom threshold crossing
 - `TemplateCascade` type wired in `multi-view.ts` — TW5-style priority-ordered cascade: `CascadeEntry { match: MemeCascadePredicate | fn, override: Partial<MemeTemplateProps>, levels? }` evaluated per-meme against frame properties; `applyCascade()` called at `renderAllViews` time; first match wins per zoom level
 
-### Priority 2: Browser smoke testing (pending)
+### Priority 2: Browser smoke testing ✓ script (tactile pending)
 
-All M5/M6/M7/M8/M9 tactile behaviors unverified. Playwright baseline:
+Manual smoke script written at `scripts/smoke/browser-tw5-open.md`. Covers native mode (N1–N10), TW5 mode (T1–T5), and canon guard (P3). Playwright baseline remains a M10 deliverable.
+
+All M5/M6/M7/M8/M9 tactile behaviors unverified by automated browser. Manual smoke checklist:
 
 - Drag meme frame → socket shapes follow (binding records verify); ahu frames stay locked
 - Zoom threshold crossings → `applyZoomTemplate` fires; meme frame dims correct at each level
@@ -1644,13 +1646,15 @@ All M5/M6/M7/M8/M9 tactile behaviors unverified. Playwright baseline:
 
 8th pranala family (`spatial`): roles `contains`, `portal`, `adjacent`, `layer` locked in `FAMILY_ROLES` (pranala-parser.ts). `validatePranaEdge` now emits `unknown-role` warning for out-of-vocabulary roles across all `roleRecommended` families. Color `"light-blue"` in tldraw `FAMILY_COLORS`. Unblocks portals-as-graph-edges (not just geo shapes with `meta.larPortal`).
 
-### Priority 4: Canon-promotion surface
+### Priority 4: Canon-promotion surface ✓ guard landed (ceremony deferred to M10)
 
-Write-back path: operator triggers "promote" from canvas → server validates against pranala schema → writes to `lares/` → recompile → reseed. Entry point: `PUT /admin/promote` with shape ID + proposed carrier text. Requires UCAN trust tier gate (operator+). Initial scope: metadata-only edits (name, IAM block fields), not full carrier authoring.
+`canPromoteToCanon(input)` policy function shipped in `@lararium/core/live-protocol.ts`. Enforces the target invariant: projection-cache may render/inform/propose but may NOT canon-promote. 9 tests in `packages/lararium-node/tests/canon-promotion-guard.test.ts` cover all origin × mode combinations. `LarariumAuthorityEnvelope` discriminated union carries local-operator/ucan-delegated/keyhive arms; only local-operator executes today.
 
-### Priority 5: Wiki-recipe carriers
+**M10 scope:** `PUT /admin/promote` endpoint in serve.ts calls `canPromoteToCanon()` as gate; writes to `lares/` → recompile → reseed. Requires UCAN trust tier for operator+ authority. Initial scope: metadata-only edits (IAM block fields), not full carrier authoring.
 
-`lares/recipes/` schema. Seed per-room canvases from recipe files. Format: `[[memes]]` TOML array with filter expression + seed layout. Unblocks `ftls`, `wtf`, and other RPG rooms.
+### Priority 5: Wiki-recipe carriers → deferred to M10
+
+`lares/recipes/` schema. Seed per-room canvases from recipe files. Format: `[[memes]]` TOML array with filter expression + seed layout. Unblocks `ftls`, `wtf`, and other RPG rooms. Requires P4 ceremony before write-back is safe.
 
 <<~/ahu >>
 
