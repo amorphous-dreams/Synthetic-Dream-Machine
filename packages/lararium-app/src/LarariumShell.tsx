@@ -192,23 +192,38 @@ export function LarariumShell({ wsUrl, memes, onMemes }: ShellProps) {
   const [hostReceipt, setHostReceipt] = useState<string | null>(null);
   useBridgeReceiptFromEditor(editor, setHostReceipt);
 
-  // Build kumuRegistry from carrier text already in the CRDT store.
-  // Fires once editor mounts and the meme list is populated (sync done).
-  // CRDT-native: no HTTP round-trip — shapes carry meta.carrierText from projection.
+  // kumuRegistry — computed view over tiddlerStore (SyncAdaptor-driven).
+  // Rebuilds on every store change; only meme tiddlers (lar: URI + text) contribute.
+  // Replaces the old editor-shape scan: TW5 is the source of truth, not shape.meta.
   useEffect(() => {
-    if (!editor || memes.length === 0) return;
-    const shapes = editor.getCurrentPageShapes();
-    const allDefs: ReturnType<typeof collectKumuDefs> = [];
-    for (const shape of shapes) {
-      const meta = shape.meta as Record<string, unknown> | undefined;
-      if (meta?.frameKind !== "meme") continue;
-      const uri   = meta.uri as string | undefined;
-      const text  = meta.carrierText as string | undefined;
-      if (!uri || !text) continue;
-      allDefs.push(...collectKumuDefs(uri, parseMemeCarrier(uri, text)));
-    }
-    if (allDefs.length > 0) setKumuRegistry(buildKumuRegistry(allDefs));
-  }, [editor, memes.length]);
+    if (!tiddlerStore) return;
+
+    const defsMap = new Map<string, ReturnType<typeof collectKumuDefs>>();
+
+    const rebuild = (uri: string, text: string | undefined) => {
+      if (!text) { defsMap.delete(uri); return; }
+      defsMap.set(uri, collectKumuDefs(uri, parseMemeCarrier(uri, text)));
+      const all = Array.from(defsMap.values()).flat();
+      setKumuRegistry(all.length > 0 ? buildKumuRegistry(all) : null);
+    };
+
+    // Seed from all currently visible tiddlers.
+    tiddlerStore.listVisible().then((titles) => {
+      Promise.all(
+        titles
+          .filter((t) => t.startsWith("lar:"))
+          .map((t) => tiddlerStore.get(t).then((r) => ({ uri: t, text: r?.text }))),
+      ).then((entries) => {
+        for (const { uri, text } of entries) rebuild(uri, text);
+      });
+    });
+
+    // Incremental update on each store change.
+    return tiddlerStore.subscribe((change) => {
+      if (!change.title.startsWith("lar:")) return;
+      rebuild(change.title, change.record?.text);
+    });
+  }, [tiddlerStore]);
 
   // ⌘K / Ctrl+K → palette   |   ` (backtick) → canvas mode toggle
   useEffect(() => {

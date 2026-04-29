@@ -17,7 +17,7 @@ manao        = 0.84
 implements   = [
   "lar:///ha.ka.ba/api/v0.1/pono/meme"
 ]
-role         = "session handoff crystal — 2026-04-28 — boot-receipt authority arc complete; Brooklyn-compat LarariumBootReceiptMeta + LarariumAuthorityEnvelope in core; useBridgeReceiptFromEditor two-hook split; canPromoteToCanon policy guard; carrier-text intake arc tested; 315/315 green; branch feature/lararium-node-3 pushed; PR ready"
+role         = "session handoff crystal — 2026-04-28 — architecture clarification: TW5 is core VerseGraph binding (not optional guest); room = filtered view on whole wiki; full read/write pipeline locked (canvas edit → draft → branch commit → canon promotion → hostless URI); scale laws from YJS 3D + TW5 large-instance prior art added to MULTIPLAYER doc; kumuRegistry wired as computed view over tiddlerStore; seenText cache stops hot-path CRDT→TW5→kumuRegistry chain from firing on shape moves; ROADMAP TW5 avoid-list superseded; feature/lararium-node-3 active"
 ```
 
 <<~/ahu >>
@@ -28,12 +28,12 @@ SESSION opens
 
 <<~ ahu #ooda-ha >>
 
-✶ boot-receipt authority arc ships — Brooklyn-compat LarariumBootReceiptMeta + LarariumAuthorityEnvelope in @lararium/core; receipt travels as hidden tldraw frame in CRDT snapshot (O1); two-hook split useLarariumHostOpen + useBridgeReceiptFromEditor (O2); projection-cache intake gates on hostReceipt; canPromoteToCanon policy guard enforces projection-cache invariant; carrier-text intake arc tested end-to-end.
-⏿ Three browser errors fixed: (F1) standalone WS boot-receipt message removed; (F2) receipt meta excludes id/typeName; (F3) richText("") returns empty paragraph not empty text node. TW5 bundle still unconditional — code-split deferred to Q2.
-◇ M9 state at PR: P1 ✓ P2 smoke-script-written P3 ✓ (canPromoteToCanon + 9 tests) P4 ✓ (carrier-text intake arc) P5 deferred to M10. Canon-promotion ceremony (PUT /admin/promote) deferred to M10.
-▶ PR ready. M10 opens with: wiki-recipe carriers, Playwright baseline, PUT /admin/promote endpoint with canPromoteToCanon gate.
-⤴ 315/315 green (169 core + 31 tw5 + 74 node + 41 tldraw). App build clean.
-↺ canPromoteToCanon() is the enforcement point for future PUT /admin/promote. LarariumAuthorityEnvelope carries ucan-delegated and keyhive arms as protocol sockets only — not instantiated until crypto lands.
+✶ Architecture clarification lands: TW5 is the isomorphic VerseGraph core — summoned anywhere the CRDT store lives; not a guest grammar, not optional. Room = temporary filtered view on the whole wiki (lazy filter model, TW5 large-instance pattern). Full read/write pipeline locked: canvas edit → draft → branch commit → canon promotion → hostless URI assignment.
+⏿ kumuRegistry is now a computed view over tiddlerStore.subscribe() (not a parallel editor shape scan). seenText cache stops the CRDT→TW5→kumuRegistry rebuild chain from firing on every shape move. Three memory layers identified (tldraw CRDT, MemoryTiddlerStore, TW5 wiki) — all load-bearing, gates correct.
+◇ ROADMAP TW5 "Avoid" list superseded: TW5 runtime as carrier-law dependency ruling flipped to required binding. MULTIPLAYER doc updated with TW5 VerseGraph section + room-as-view model + scale laws (YJS 3D + TW5 large-instance prior art).
+▶ M10 active: TW5 memetic-wikitext parser bridge, lares/ tiddler seeding via /api/tiddlers, full memes with content on canvas. Read/write pipeline (draft → canon) is now a first-class M10 concern alongside projection completeness.
+⤴ 330 checks green (last known state). App build clean. kumuRegistry and seenText cache changes are type-clean.
+↺ Scale law: ≤500 shapes per room in CRDT at any time. Larger corpora paged via room transitions and zoom-level eviction. TW5 filter index stays small; tiddler bodies demand-loaded via tiddlerStore.get(). Canon-promotion ceremony assigns hostless URI — the only moment a shape URI changes.
 
 <<~/ahu >>
 

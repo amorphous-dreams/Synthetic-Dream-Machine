@@ -221,6 +221,11 @@ export function LarariumCanvas({ wsUrl, navState, dispatch, canvasMode, onZoomLe
     if (!editor || !tiddlerStore || !hostReceipt) return;
     const receipt = hostReceipt;
 
+    // Content-equality cache: skip put() when carrierText hasn't changed.
+    // Prevents the full [CRDT→store→TW5→kumuRegistry] chain from firing on
+    // every shape move or non-carrier document mutation.
+    const seenText = new Map<string, string>();
+
     const seedAll = () => {
       for (const record of editor.store.allRecords()) {
         const r = record as unknown as Record<string, unknown>;
@@ -230,6 +235,8 @@ export function LarariumCanvas({ wsUrl, navState, dispatch, canvasMode, onZoomLe
         const text = typeof meta["carrierText"] === "string" ? meta["carrierText"] : undefined;
         const uri  = typeof meta["uri"] === "string"         ? meta["uri"]         : undefined;
         if (!text || !uri || !uri.startsWith("lar:")) continue;
+        if (seenText.get(uri) === text) continue;
+        seenText.set(uri, text);
         const origin: ChangeOrigin = { kind: "projection-cache", shapeId: r["id"] as string, receipt };
         void tiddlerStore.put({ title: uri, fields: {}, text }, origin);
       }

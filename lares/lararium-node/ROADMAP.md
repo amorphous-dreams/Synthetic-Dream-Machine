@@ -89,27 +89,33 @@ The existing signal/render layer already suggests projection architecture:
 
 This implies `lararium-core` should produce canonical records and projection-ready data, while adapter packages render those into HUD exchange pairs, chat-log post headers, tiddler headers, print margins, trace views, tldraw records, or Kowloon/DreamDeck feed payloads.
 
-### TiddlyWiki Patterns: Copy Shape, Not Runtime
+### TiddlyWiki as VerseGraph Core — Isomorphic Helper
 
-Useful TiddlyWiki precedents:
+TW5 is a **first-class binding layer**, not an optional guest. It is summoned wherever the CRDT store lives — Node, browser, edge — and provides:
 
-- microkernel that loads higher layers
-- universal content unit
-- plugin/bundle projection pattern
-- Node folder storage
-- single-file browser distribution
-- parse tree → render projection pipeline
+- **Filter engine** — wikitext-filter expressions over the tiddler corpus; `filterClosure()` evaluates room recipes, template cascades, and palette search
+- **Virtual server** — `LarariumCrdtSyncAdaptor` binds `MemoryTiddlerStore` to TW5’s wiki; CRDT deltas propagate into TW5 tiddlers; TW5 tiddler saves propagate back to the store (echo-loop guarded)
+- **Parse bridge** — a registered `text/x-memetic-wikitext` TW5 parser module delegates to `parseMemeCarrier()` in `@lararium/core`; TW5’s render pipeline can then produce HTML from carrier tiddlers without being the canonical parser
+- **Draft surface** — carrier text edits flow: canvas edit → TW5 wiki tiddler (draft) → `MemoryTiddlerStore.put(origin: "canvas-draft")` → SQLite room state (branch commit) → `PUT /admin/promote` ceremony → `lares/` file (canon)
 
-Avoid:
+The three-tree pipeline remains:
 
-- DOM widget tree as canonical execution model
-- TiddlyWiki runtime as carrier-law dependency
-- editable executable JS as first-class content primitive
-- shadow-tiddler override semantics as mutation model
+```
+parseMemeCarrier() → MemeAstNode[]        (parse tree — @lararium/core, canonical)
+resolveWidgetTree() → WidgetNode[]        (widget tree — @lararium/tldraw + kumu)
+renderCarrier() → React.ReactNode         (render tree — @lararium/app, view-only)
+```
 
-Lararium’s equivalent should remain:
+TW5 binds across all three trees as a **projection accelerator and filter host**, not as the canonical parser or render runtime. The canonical parser is `parseMemeCarrier()`. TW5’s renderer is used for HTML preview output (MemeDetailPanel rich mode) but does not produce CRDT shapes.
 
-meme → parsed carrier → AST / graph → compiler artifact → projection
+Previously-listed avoids, revised:
+
+| Old "Avoid" | Revised ruling |
+|---|---|
+| DOM widget tree as canonical execution model | Still avoid — the three-tree pipeline is canonical; TW5 DOM is view output only |
+| TiddlyWiki runtime as carrier-law dependency | **Superseded** — TW5 is the isomorphic filter host and virtual server; it IS the binding layer |
+| editable executable JS as first-class content primitive | Still avoid — JS-as-tiddler is TW5 internals; Lararium carriers are wikitext only |
+| shadow-tiddler override semantics as mutation model | Still avoid — mutation goes through the canon-promotion ceremony, not tiddler shadowing |
 
 ### Browser Host and Bundle Path
 
