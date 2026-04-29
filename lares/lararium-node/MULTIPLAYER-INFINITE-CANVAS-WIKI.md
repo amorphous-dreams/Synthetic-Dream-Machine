@@ -12,7 +12,7 @@ register    = "S"
 manaoio     = 0.84
 mana        = 0.90
 manao       = 0.86
-role        = "canonical design constitution for the Lararium multiplayer infinite-canvas wiki system — Kinopio-feel UX shell wrapping tldraw; socket port shapes + hidden ownership skeleton + three-tree pipeline shipped; render-target.ts explicit boundary contract (tldraw adapter: LarTLBodyNode structural skeleton; React adapter: full kumu execution via kumu-react-render.tsx); TW5-style TemplateCascade type wired in multi-view.ts; spatial family (contains/portal/adjacent/layer) locked; wikitext-filter fully integrated into @lararium/core: FilterEngineFn canonical in tw-filter subpath, Vite alias + package.json browser conditional wired, epistemic fields (confidence/register/manaoio/mana/manao) on ClosureEntry and as filter tiddler fields; operator parity table for wikitext-filter operators"
+role        = "canonical design constitution for the Lararium multiplayer infinite-canvas wiki system — boot-receipt authority arc complete (M9+M10): LarariumBootReceiptMeta + LarariumAuthorityEnvelope in @lararium/core (local-operator/ucan-delegated/keyhive arms); receipt travels as hidden tldraw frame shape:lararium_boot_receipt in room snapshot (O1); useBridgeReceiptFromEditor two-hook split (O2); canPromoteToCanon() policy guard + PUT /admin/promote endpoint gated by it; projection-cache intake gated on hostReceipt; carrier-text round-trip tested; 8-test Playwright e2e baseline (N1–N8 native, T1–T2 tw5); richText empty-paragraph fix; 330 checks green; M10 open: wiki-recipe carriers, Orichalcum ceremony, Playwright expansion"
 cacheable   = true
 retain      = true
 invariant   = false
@@ -81,11 +81,16 @@ On first connection to a new room, the server:
 1. Calls `runtime.compileMinimalBoot()` → `BootArtifact`
 2. Calls `renderAllViews(artifact, { readText, includeAhuFrames: true })` → `TldrawEmission`
 3. Builds a `TLStoreSnapshot`: `{ store: Record<id, record>, schema: DEFAULT_INITIAL_SNAPSHOT.schema }`
-4. Passes the snapshot to `getOrCreateRoom(roomId, bootSnapshot)`
-5. `SQLiteSyncStorage.hasBeenInitialized()` is false → seeds from snapshot
-6. Subsequent connections: `hasBeenInitialized()` is true → resume from SQLite, snapshot ignored
+4. **Injects the boot-receipt meta-frame** via `injectBootReceiptFrame(store, { pageId, receipt })` — a hidden tldraw frame at `(-999999,-999999)`, `opacity:0`, `isLocked:true`, stable ID `shape:lararium_boot_receipt`, carrying `LarariumBootReceiptMeta` in `shape.meta` (shipped M9+).
+5. Passes the snapshot to `getOrCreateRoom(roomId, bootSnapshot)`
+6. `SQLiteSyncStorage.hasBeenInitialized()` is false → seeds from snapshot
+7. Subsequent connections: `hasBeenInitialized()` is true → resume from SQLite, snapshot ignored
 
 **Seeding is idempotent by design.** The SQLite file is the durable room state. Delete it to force a reseed from the current boot artifact. This is the canonical "clear and rebuild" operation.
+
+**Boot receipt delivery (O1 ruling):** The receipt travels as a hidden tldraw shape in the room CRDT snapshot — NOT as a standalone WebSocket message. A standalone `type:"boot-receipt"` WS JSON message would reach `TLSyncClient.handleServerEvent` before tldraw is ready and trigger `Unknown switch case`. `useBridgeReceiptFromEditor` discovers the receipt by scanning the CRDT store after editor mount (fast path: stable ID lookup; fallback: full `allRecords()` scan). See `packages/lararium-core/src/live-protocol.ts` for `LarariumBootReceiptMeta` and `LarariumAuthorityEnvelope`.
+
+**Server restart required after tldraw rebuild:** `GET /admin/reseed` rebuilds the projection in-process. If `@lararium/tldraw` has been rebuilt since the server started, the running process holds the old module in its Node cache. A process restart is required to load the new dist before reseed takes effect. Symptom of stale module: `strings <room>.sqlite | grep '"text":""'` returns non-zero count.
 
 **Shape ID scoping:** Single page per room. Shape IDs are URI-stable by construction (`memeFrameId(uri)` — no per-page prefix). The `pageOverride` contract in `emitTldrawRecords` is retained for multi-room projection use cases (e.g. seeding a meme-detail room from a sub-snapshot) but is not used by the boot room seed path.
 
@@ -124,7 +129,7 @@ Server principal is stable (Ed25519 keypair, generated once, stored in `.larariu
 
 **Room WebSocket connections are NOT edge islands.** A room connection is session-scoped and ephemeral. An edge island is a named, capability-gated, durable-offset causal boundary between two Lares nodes — a different architectural layer (see `lar:///ha.ka.ba/api/v0.1/pono/federated-causal-islands`).
 
-_Status: design only. Not yet implemented._
+_Status: design only (trust tiers + Orichalcum gate). Authority seam (`LarariumAuthorityEnvelope`, `AuthorityFirstGuard`) shipped M9+. `PUT /admin/promote` local-operator path shipped M10._
 
 <<~/ahu >>
 
@@ -138,12 +143,29 @@ _Status: design only. Not yet implemented._
 - **Confirmed layer:** What `lares/` declares. Seeded into SQLite at room creation. Read-only from the canvas.
 - **Pending layer:** Canvas edits by operators. Stored in SQLite room state. Visible to all peers. Not yet canonical.
 
-**Promotion path (target design):**
-1. Operator edits a shape on the canvas (pending layer)
-2. Operator triggers "promote" action (explicit, not automatic)
-3. Server validates the edit against Lararium schema (pranala edges, ahu structure)
-4. Server writes the change back to `lares/` as a new carrier file or patch
-5. Server triggers a recompile → new boot artifact → room is reseeded (or diff-patched)
+**Promotion path (shipped M10 — local-operator only):**
+1. Operator calls `PUT /admin/promote` with `{ uri, carrierText, shapeId? }` (localhost-only)
+2. `canPromoteToCanon({ origin: "operator-import", authorityMode: "local-operator", target: uri })` executes as policy gate — returns `{ ok: false }` for any `projection-cache`, `tw-local`, or `crdt-remote` origin
+3. `resolveLarUri(uri)` resolves to `laresRelPath`; path-traversal guard ensures path stays within `LARES_ROOT`
+4. `writeFileSync(filePath, carrierText)` writes to `lares/`
+5. lares/ file watcher detects the change → evicts room → `buildBootProjection` → reseeds automatically
+
+**Target design (M10+ ceremony):**
+- Canvas editor triggers "promote" from shape selection (⌘↩ or action menu)
+- Server validates proposed carrier text against pranala schema before writing
+- Full Orichalcum capability gate replaces localhost guard
+- Scope: metadata-only edits (IAM block fields) initially; full carrier authoring after ceremony lands
+
+**Policy invariant (`canPromoteToCanon`) — permanent:**
+
+| Origin kind | Result |
+|-------------|--------|
+| `projection-cache` | ✗ blocked — may render/inform/propose, never promote |
+| `tw-local` | ✗ blocked — live edits require ceremony |
+| `crdt-remote` | ✗ blocked — live edits require ceremony |
+| `canon-hydrate` | ✓ allowed |
+| `mcp-draft` | ✓ allowed (operator-trusted) |
+| `operator-import` | ✓ allowed (operator-trusted) |
 
 **Structural enforcement:** The tldraw sync model's two-layer architecture (confirmed/pending) maps directly onto the Lararium trust model. This is not incidental — it is the canonical enforcement mechanism. Canvas edits that have not been promoted are structurally isolated from `lares/`.
 
@@ -962,15 +984,15 @@ State lives in `localStorage` (`lararium.theme`). Applied on mount before first 
 
 5. **User home rooms (`user:${did}`) with altar-fire transclusion:** Seed logic for per-user rooms. Altar-fire memes projected as locked cluster in corner of user room canvas. Depends on UCAN/identity.
 
-6. ✓ **Room reseeding (`/admin/reseed`) — shipped M5.** `GET /admin/reseed?roomId=boot` kills SQLite + evicts from rooms Map, reseeds on next connection. Grammar hot-reload path: edit `lares/grammars/memetic-wikitext.md` → `/admin/reseed` → parsing behavior changes without TypeScript rebuild.
+6. ✓ **Room reseeding (`/admin/reseed`) — shipped M5.** `GET /admin/reseed?roomId=boot` kills SQLite + evicts from rooms Map, reseeds on next connection. Grammar hot-reload path: edit `lares/grammars/memetic-wikitext.md` → `/admin/reseed` → parsing behavior changes without TypeScript rebuild. **Operator note:** process restart required after `@lararium/tldraw` rebuild before reseed takes effect (Node module cache).
 
 7. **Content-addressed room keys:** `boot-${receipt.sha.slice(0,16)}` for boot/full rooms. Named rooms use stable slugs. Transition path from `"boot"` needs client redirect.
 
 8. **Offline / IndexedDB persistence:** `@tldraw/store` persistence adapter for IndexedDB. Mirror Kinopio's dual-load: restore IndexedDB immediately, merge remote deltas after WS connect.
 
-9. **Wiki-recipe carriers:** `lares/recipes/` schema. RPG rooms (`ftls`, `wtf`) depend on this.
+9. **Wiki-recipe carriers (M10):** `lares/recipes/` schema. RPG rooms (`ftls`, `wtf`) depend on this. Seeding path: `PUT /admin/promote` plumbing exists; recipe schema and per-room seed loop are the remaining deliverable.
 
-10. **Write-back gate + `LarStorageBackend`:** File backend wrapping `fs.writeFileSync` + git. Blocked until trust-tier UI + Orichalcum capability gate land.
+10. ✓ **Write-back gate (`PUT /admin/promote`) — shipped M10 (local-operator).** `writeFileSync` + lares/ watcher reseed. Full `LarStorageBackend` (file backend + git) deferred until Orichalcum ceremony lands.
 
 11. **Orichalcum capability implementation:** Principal identity (Ed25519 device key), Orichalcum capability type + caveat validator, UCAN-compatible wire proof. Server principal stable keypair. Room join gate. See `lar:///ha.ka.ba/api/v0.1/pono/orichalcum-capabilities`.
 

@@ -59,6 +59,7 @@ export interface TldrawEditorLike {
   setCurrentPage(pageId: string): void;
   getCurrentPageId(): string;
   zoomToFit(opts?: { animation?: { duration?: number } }): void;
+  getPages(): { id: string }[];
 }
 
 // ---------------------------------------------------------------------------
@@ -103,9 +104,10 @@ export function zoomToFitAll(editor: TldrawEditorLike): void {
  * Equivalent to TW's story-river template switch.
  */
 export function switchToPage(editor: TldrawEditorLike, pageId: string): void {
-  if (editor.getCurrentPageId() !== pageId) {
-    editor.setCurrentPage(pageId);
-  }
+  if (editor.getCurrentPageId() === pageId) return;
+  const exists = editor.getPages().some((p) => p.id === pageId);
+  if (!exists) return;
+  editor.setCurrentPage(pageId);
 }
 
 /**

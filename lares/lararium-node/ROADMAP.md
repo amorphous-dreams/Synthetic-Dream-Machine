@@ -1646,15 +1646,41 @@ All M5/M6/M7/M8/M9 tactile behaviors unverified by automated browser. Manual smo
 
 8th pranala family (`spatial`): roles `contains`, `portal`, `adjacent`, `layer` locked in `FAMILY_ROLES` (pranala-parser.ts). `validatePranaEdge` now emits `unknown-role` warning for out-of-vocabulary roles across all `roleRecommended` families. Color `"light-blue"` in tldraw `FAMILY_COLORS`. Unblocks portals-as-graph-edges (not just geo shapes with `meta.larPortal`).
 
-### Priority 4: Canon-promotion surface ✓ guard landed (ceremony deferred to M10)
+### Priority 4: Canon-promotion surface ✓ guard + endpoint shipped (ceremony deferred to M10)
 
-`canPromoteToCanon(input)` policy function shipped in `@lararium/core/live-protocol.ts`. Enforces the target invariant: projection-cache may render/inform/propose but may NOT canon-promote. 9 tests in `packages/lararium-node/tests/canon-promotion-guard.test.ts` cover all origin × mode combinations. `LarariumAuthorityEnvelope` discriminated union carries local-operator/ucan-delegated/keyhive arms; only local-operator executes today.
+`canPromoteToCanon(input)` policy function shipped in `@lararium/core/live-protocol.ts`. Enforces the target invariant: projection-cache may render/inform/propose but may NOT canon-promote. 9 tests in `packages/lararium-node/tests/canon-promotion-guard.test.ts`. `LarariumAuthorityEnvelope` discriminated union: local-operator/ucan-delegated/keyhive arms; only local-operator executes today.
 
-**M10 scope:** `PUT /admin/promote` endpoint in serve.ts calls `canPromoteToCanon()` as gate; writes to `lares/` → recompile → reseed. Requires UCAN trust tier for operator+ authority. Initial scope: metadata-only edits (IAM block fields), not full carrier authoring.
+`PUT /admin/promote` endpoint shipped in `serve.ts` (M10): localhost-only, reads `{ uri, carrierText, shapeId? }`, calls `canPromoteToCanon` as gate, resolves via `resolveLarUri`, path-traversal guard, writes to `lares/`, lares/ watcher triggers reseed. 7 integration tests in `promote-guard.test.ts`.
 
-### Priority 5: Wiki-recipe carriers → deferred to M10
+**M10 ceremony scope:** Full Orichalcum capability gate replaces localhost guard. Canvas-side "promote" action (⌘↩). Schema validation before write.
 
-`lares/recipes/` schema. Seed per-room canvases from recipe files. Format: `[[memes]]` TOML array with filter expression + seed layout. Unblocks `ftls`, `wtf`, and other RPG rooms. Requires P4 ceremony before write-back is safe.
+### Priority 5: Wiki-recipe carriers → M10
+
+`lares/recipes/` schema. Seed per-room canvases from recipe files. Format: `[[memes]]` TOML array with filter expression + seed layout. Unblocks `ftls`, `wtf`, and other RPG rooms. `PUT /admin/promote` plumbing exists; recipe schema and per-room seed loop are the remaining deliverable.
+
+## Milestone 10 — Authority Ceremony + Playwright + Wiki-Recipes (Active)
+
+M9 closed the projection-cache authority arc and browser opening sequence. M10 opens the write-back ceremony, automated browser testing, and per-room recipe seeding.
+
+### M10 Priority 1: Playwright baseline expansion
+
+8-test baseline shipped at `packages/lararium-app/tests/e2e/smoke.spec.ts` (N1–N8 native mode, T1–T2 TW5 mode). All 8 pass against fresh server.
+
+**Next:** zoom threshold crossings (`applyZoomTemplate`), double-click → `MemeDetailPanel`, ⌘K navigation, canvas mode toggle, `/admin/reseed` hot-reload.
+
+**Operator note:** Server process must restart after `@lararium/tldraw` rebuild before reseed takes effect (Node module cache). `strings <room>.sqlite | grep '"text":""'` verifies clean state.
+
+### M10 Priority 2: Orichalcum ceremony surface
+
+`PUT /admin/promote` (local-operator) is live. Next: replace localhost guard with Orichalcum capability gate (Ed25519 principal, UCAN-shaped capability proof, room join WS gate at code 4003). See `lar:///ha.ka.ba/api/v0.1/pono/orichalcum-capabilities`.
+
+### M10 Priority 3: Wiki-recipe carriers
+
+`lares/recipes/` schema. `[[memes]]` TOML array with filter expression + seed layout. Per-room seeding loop in `serve.ts`. Unblocks RPG rooms.
+
+### M10 Priority 4: TW5 code-split
+
+TW5 enters bundle unconditionally (1.95MB / 586KB gzip). Dynamic `import()` split behind `?renderMode=tw5` gate. Deferred to Q2 recipe-config phase.
 
 <<~/ahu >>
 
