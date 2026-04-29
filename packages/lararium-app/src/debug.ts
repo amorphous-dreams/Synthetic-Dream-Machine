@@ -1,0 +1,35 @@
+/**
+ * __larariumDebug — browser console inspection surface.
+ *
+ * Typed window augmentation replaces scattered `(window as any)` casts.
+ * All fields are optional — they populate progressively as the host opens.
+ * Access via: window.__larariumDebug.<key>
+ */
+
+import type { LarariumTW5 } from "@lararium/tw5";
+import type { LarariumOpenPhase } from "@lararium/core";
+
+export interface LarariumDebug {
+  store?:                unknown;       // tldraw useSync store object
+  editor?:               unknown;       // tldraw Editor instance
+  tiddlerStore?:         unknown;       // MemoryTiddlerStore
+  hostReceipt?:          string | null;
+  receiptShape?:         unknown;       // boot-receipt meta-frame shape record
+  openPhase?:            LarariumOpenPhase | null;
+  tw5?:                  LarariumTW5 | null;
+  projectionCacheCount?: unknown;
+}
+
+declare global {
+  interface Window {
+    __larariumDebug: LarariumDebug;
+  }
+}
+
+export function debugSet<K extends keyof LarariumDebug>(
+  key: K,
+  value: LarariumDebug[K],
+): void {
+  window.__larariumDebug ??= {};
+  window.__larariumDebug[key] = value;
+}

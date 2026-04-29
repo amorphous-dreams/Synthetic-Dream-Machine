@@ -7,6 +7,7 @@ import type { LarViewState, LarViewAction, TldrawEditorLike, ZoomLevel } from "@
 import { goToStoryRiver, goToGraph, goToRoom, zoomToMeme, classifyZoom } from "@lararium/tldraw";
 import { RATING_COLOR, type Rating5, type ChangeOrigin } from "@lararium/core";
 import { LarariumMenuPanel, LarariumSharePanel, LarariumHelperButtons, useLararium } from "./lararium-context.js";
+import { debugSet } from "./debug.js";
 
 // Wiki mode: suppress tldraw chrome; Lararium slot components fill the UI.
 // All slot components are stable module-level refs — tldraw won't remount them.
@@ -156,12 +157,10 @@ export function LarariumCanvas({ wsUrl, navState, dispatch, canvasMode, onZoomLe
   const store = useSync({ uri: wsUrl, assets: inlineBase64AssetStore });
   const editorRef = useRef<TldrawEditor | null>(null);
   const { theme, setEditor, editor, tiddlerStore, hostReceipt } = useLararium();
-  (window as any).__larariumDebug ??= {};
-  (window as any).__larariumDebug.store             = store;
-  (window as any).__larariumDebug.tiddlerStore      = tiddlerStore;
-  (window as any).__larariumDebug.hostReceipt       = hostReceipt;
-  (window as any).__larariumDebug.projectionCacheCount =
-    tiddlerStore ? "call __larariumDebug.tiddlerStore.listVisible().then(console.log)" : 0;
+  debugSet("store",                store);
+  debugSet("tiddlerStore",         tiddlerStore);
+  debugSet("hostReceipt",          hostReceipt);
+  debugSet("projectionCacheCount", tiddlerStore ? "call __larariumDebug.tiddlerStore.listVisible().then(console.log)" : 0);
 
   // Populate meme list reactively — CRDT-native, no /api/memes fetch.
   // One-shot scan on sync, then store.listen for document mutations (shape add/remove/update).
@@ -293,9 +292,8 @@ export function LarariumCanvas({ wsUrl, navState, dispatch, canvasMode, onZoomLe
         onMount={(editor) => {
           editorRef.current = editor;
           setEditor(editor);
-          (window as any).__larariumDebug ??= {};
-          (window as any).__larariumDebug.editor      = editor;
-          (window as any).__larariumDebug.receiptShape = editor.store.get("shape:lararium_boot_receipt" as any);
+          debugSet("editor",       editor);
+          debugSet("receiptShape", editor.store.get("shape:lararium_boot_receipt" as Parameters<typeof editor.store.get>[0]));
           editor.user.updateUserPreferences({ colorScheme: "dark" });
           editor.setCurrentTool("select");
 

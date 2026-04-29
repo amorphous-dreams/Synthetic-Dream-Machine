@@ -27,6 +27,7 @@ import { MemeDetailPanel } from "./MemeDetailPanel.js";
 import { LarariumCtx, useLararium, shortUri, useTheme } from "./lararium-context.js";
 import { parseMemeCarrier, collectKumuDefs, buildKumuRegistry, type KumuRegistry, type FilterEngineFn } from "@lararium/core";
 import { useLarariumHostOpen, useBridgeReceiptFromEditor } from "./lararium-browser-host.js";
+import { debugSet } from "./debug.js";
 import "./lararium-theme.css";
 import type { MemeEntry } from "./App.js";
 
@@ -116,20 +117,25 @@ function LarariumCommandPalette({ onClose }: { onClose: () => void }) {
           {spaceItems.length > 0 && (
             <>
               <div style={css.paletteSectionLabel}>Spaces</div>
-              {spaceItems.map((item, i) => (
-                <button
-                  key={item.kind === "home" ? "__home__" : item.pageId}
-                  role="option"
-                  aria-selected={i === cursor}
-                  style={{ ...css.paletteItem, ...(i === cursor ? css.paletteItemActive : {}) }}
-                  onClick={() => activate(item)}
-                  onMouseEnter={() => setCursor(i)}
-                >
-                  <span style={css.paletteRoomGlyph}>{item.kind === "home" ? "⬡" : "◻"}</span>
-                  <span style={css.paletteItemLabel}>{item.kind === "home" ? "Story River (boot)" : item.name}</span>
-                  <span style={css.paletteItemKind}>space</span>
-                </button>
-              ))}
+              {spaceItems.map((item, i) => {
+                const isHome = item.kind === "home";
+                const key    = isHome ? "__home__" : (item as Extract<PaletteItem, { kind: "page" }>).pageId;
+                const label  = isHome ? "Story River (boot)" : (item as Extract<PaletteItem, { kind: "page" }>).name;
+                return (
+                  <button
+                    key={key}
+                    role="option"
+                    aria-selected={i === cursor}
+                    style={{ ...css.paletteItem, ...(i === cursor ? css.paletteItemActive : {}) }}
+                    onClick={() => activate(item)}
+                    onMouseEnter={() => setCursor(i)}
+                  >
+                    <span style={css.paletteRoomGlyph}>{isHome ? "⬡" : "◻"}</span>
+                    <span style={css.paletteItemLabel}>{label}</span>
+                    <span style={css.paletteItemKind}>space</span>
+                  </button>
+                );
+              })}
             </>
           )}
           {memeItems.length > 0 && (
@@ -237,9 +243,8 @@ export function LarariumShell({ wsUrl, memes, onMemes }: ShellProps) {
 
   // Expose opening state to browser console for smoke verification.
   // window.__larariumDebug.openPhase and .tw5 update reactively with ctx.
-  (window as any).__larariumDebug ??= {};
-  (window as any).__larariumDebug.openPhase = openPhase;
-  (window as any).__larariumDebug.tw5       = tw5;
+  debugSet("openPhase", openPhase);
+  debugSet("tw5",       tw5);
 
   const ctxValue = {
     navState,
