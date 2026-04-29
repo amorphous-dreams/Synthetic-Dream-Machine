@@ -9,9 +9,12 @@
  *   - Static assets from lararium-app/dist/ served over HTTP on the same port
  *
  * API routes:
- *   GET /api/rooms          — live room registry (MCP canvas bridge)
- *   GET /admin/reseed       — force-evict + delete SQLite for a room, reseed on next WS connect
+ *   GET  /api/rooms          — live room registry (MCP canvas bridge)
+ *   GET  /admin/reseed      — force-evict + delete SQLite for a room, reseed on next WS connect
  *                             ?roomId=boot (default: current boot room alias)
+ *   PUT  /admin/promote     — canon-promotion: write carrierText to lares/ file; watcher reseeds
+ *                             body: { uri: string, carrierText: string, shapeId?: string }
+ *                             localhost-only; calls canPromoteToCanon() guard before write
  *
  * Usage:
  *   pnpm --filter @lararium/node serve
@@ -19,7 +22,7 @@
  */
 
 import { createServer, type IncomingMessage, type ServerResponse } from "http";
-import { readFileSync, existsSync, statSync, mkdirSync, unlinkSync, watch } from "fs";
+import { readFileSync, existsSync, statSync, mkdirSync, unlinkSync, watch, writeFileSync } from "fs";
 import { join, extname, resolve } from "path";
 import { fileURLToPath } from "url";
 import Database from "better-sqlite3";
@@ -42,6 +45,8 @@ import {
   type LiveMsgEvent,
   AuthorityFirstGuard,
   buildKumuRegistry,
+  canPromoteToCanon,
+  resolveLarUri,
 } from "@lararium/core";
 
 const __dirname = fileURLToPath(new URL(".", import.meta.url));
@@ -256,6 +261,64 @@ async function main() {
       return json(res, { reseeded: targetId, deleted });
     }
 
+    // Admin: canon-promotion (localhost-only, POST body: { uri, carrierText, shapeId? })
+    if (pathname === "/admin/promote" && req.method === "PUT") {
+      const remoteAddr = (req.socket.remoteAddress ?? "").replace("::ffff:", "");
+      if (remoteAddr !== "127.0.0.1" && remoteAddr !== "::1") {
+        return json(res, { error: "forbidden" }, 403);
+      }
+
+      // Read + parse request body
+      let body: { uri?: string; carrierText?: string; shapeId?: string };
+      try {
+        const raw = await new Promise<string>((ok, fail) => {
+          const chunks: Buffer[] = [];
+          req.on("data", (c: Buffer) => chunks.push(c));
+          req.on("end", () => ok(Buffer.concat(chunks).toString("utf-8")));
+          req.on("error", fail);
+        });
+        body = JSON.parse(raw) as typeof body;
+      } catch {
+        return json(res, { error: "invalid-json-body" }, 400);
+      }
+
+      const { uri, carrierText, shapeId = "unknown" } = body;
+      if (!uri || !carrierText) {
+        return json(res, { error: "uri and carrierText are required" }, 400);
+      }
+
+      // Canon-promotion policy guard
+      const guard = canPromoteToCanon({
+        origin:        { kind: "operator-import" },
+        authorityMode: "local-operator",
+        target:        uri,
+      });
+      if (!guard.ok) {
+        return json(res, { error: guard.reason }, 403);
+      }
+
+      // Resolve URI → lares/ file path
+      const resolution = resolveLarUri(uri);
+      if (!resolution.laresRelPath) {
+        return json(res, { error: `uri-not-resolvable:${uri}` }, 400);
+      }
+      const filePath = join(LARES_ROOT, resolution.laresRelPath);
+
+      // Path traversal guard: resolved path must stay within LARES_ROOT
+      if (!resolve(filePath).startsWith(resolve(LARES_ROOT) + "/")) {
+        return json(res, { error: "path-traversal-rejected" }, 403);
+      }
+
+      try {
+        writeFileSync(filePath, carrierText, "utf-8");
+        console.log(`[lararium-serve] promote: wrote ${filePath} (shape: ${shapeId})`);
+        // lares/ watcher fires rebuild automatically; return immediately
+        return json(res, { promoted: uri, path: resolution.laresRelPath });
+      } catch (e) {
+        return json(res, { error: String(e) }, 500);
+      }
+    }
+
     // ── Static ─────────────────────────────────────────────────────────────
     const isAsset = pathname !== "/" && /\.[a-z0-9]+$/i.test(pathname);
     if (isAsset) {
@@ -351,6 +414,7 @@ async function main() {
     console.log(`[lararium-serve] http://${HOST}:${PORT}`);
     console.log(`[lararium-serve] boot room: ${activeBootRoomId}`);
     console.log(`[lararium-serve] reseed:    curl http://${HOST}:${PORT}/admin/reseed`);
+    console.log(`[lararium-serve] promote:   curl -X PUT http://${HOST}:${PORT}/admin/promote -H 'Content-Type: application/json' -d '{"uri":"lar:///...","carrierText":"..."}'`);
     console.log(`[lararium-serve] data dir:  ${DATA_DIR}`);
   });
 
