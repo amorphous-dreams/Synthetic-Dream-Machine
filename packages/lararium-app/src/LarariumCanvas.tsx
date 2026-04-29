@@ -1,7 +1,6 @@
 import { useEffect, useRef } from "react";
-import { Tldraw, inlineBase64AssetStore } from "tldraw";
+import { Tldraw } from "tldraw";
 import type { TLShapeId, TLComponents } from "tldraw";
-import { useSync } from "@tldraw/sync";
 import "tldraw/tldraw.css";
 import type { LarViewState, LarViewAction, TldrawEditorLike, ZoomLevel } from "@lararium/tldraw";
 import { goToStoryRiver, goToGraph, goToRoom, zoomToMeme, classifyZoom } from "@lararium/tldraw";
@@ -43,7 +42,6 @@ interface Props {
   dispatch: React.Dispatch<LarViewAction>;
   canvasMode: boolean;
   onZoomLevel?: (level: ZoomLevel) => void;
-  onMemes?: (memes: { uri: string; depth: number; kind: string }[]) => void;
 }
 
 type TldrawEditor = Parameters<NonNullable<React.ComponentProps<typeof Tldraw>["onMount"]>>[0];
@@ -163,54 +161,9 @@ function getLarUriFromShape(editor: TldrawEditor, shapeId: TLShapeId): string | 
   return null;
 }
 
-export function LarariumCanvas({ wsUrl, navState, dispatch, canvasMode, onZoomLevel, onMemes }: Props) {
-  const store = useSync({ uri: wsUrl, assets: inlineBase64AssetStore });
+export function LarariumCanvas({ wsUrl: _wsUrl, navState, dispatch, canvasMode, onZoomLevel }: Props) {
   const editorRef = useRef<TldrawEditor | null>(null);
   const { theme, setEditor, tiddlerStore } = useLararium();
-  debugSet("store", store);
-
-  // Populate meme list reactively — CRDT-native, no /api/memes fetch.
-  // One-shot scan on sync, then store.listen for document mutations (shape add/remove/update).
-  useEffect(() => {
-    const editor = editorRef.current;
-    if (!editor || store.status !== "synced-remote" || !onMemes) return;
-
-    const scanMemes = () => {
-      const memes = editor.getCurrentPageShapes()
-        .filter((s) => {
-          const meta = s.meta as Record<string, unknown> | undefined;
-          return s.type === "frame" && meta?.frameKind === "meme";
-        })
-        .map((s) => {
-          const meta = s.meta as Record<string, unknown>;
-          return {
-            uri:   String(meta.uri ?? ""),
-            depth: Number(meta.depth ?? 0),
-            kind:  String(meta.kind ?? "meme"),
-          };
-        })
-        .filter((m) => m.uri.startsWith("lar:"));
-      onMemes(memes);
-    };
-
-    scanMemes();
-
-    // Re-scan on any document mutation (shape add/remove/meta change).
-    // scope:'document' skips camera/presence records — fires ~100x less than default.
-    let debounce: ReturnType<typeof setTimeout> | null = null;
-    const unsub = editor.store.listen(
-      () => {
-        if (debounce) clearTimeout(debounce);
-        debounce = setTimeout(scanMemes, 150);
-      },
-      { scope: "document" },
-    );
-
-    return () => {
-      unsub();
-      if (debounce) clearTimeout(debounce);
-    };
-  }, [store.status, onMemes]);
 
   // Sync tldraw colorScheme when Lararium theme changes
   useEffect(() => {
@@ -220,15 +173,13 @@ export function LarariumCanvas({ wsUrl, navState, dispatch, canvasMode, onZoomLe
     editor.user.updateUserPreferences({ colorScheme });
   }, [theme]);
 
-  // Store → shape.meta sync — when the Automerge store receives a content change
-  // (from TW5 panel, MCP, or a remote peer), update the relevant canvas shape's
-  // meta.rating so zoom-template colors stay current without a room reseed.
-  // Does NOT write carrier text into shapes — body nodes show text via their own props.
+  // Store → shape.meta sync — when the Automerge store receives a content change,
+  // update the relevant canvas shape's meta.rating so zoom-template colors stay current.
   useEffect(() => {
     const ed = editorRef.current;
-    if (!ed || !tiddlerStore || store.status !== "synced-remote") return;
+    if (!ed || !tiddlerStore) return;
     return tiddlerStore.subscribe((change) => {
-      if (change.origin.kind === "canvas-draft") return; // we triggered this
+      if (change.origin.kind === "canvas-draft") return;
       if (!change.record || change.record.deleted) return;
       const rating = change.record.fields["rating"];
       if (!rating) return;
@@ -242,13 +193,12 @@ export function LarariumCanvas({ wsUrl, navState, dispatch, canvasMode, onZoomLe
         targets.map((s) => ({ id: s.id, type: s.type, meta: { ...s.meta, rating } })),
       );
     });
-  }, [store.status, tiddlerStore]);
+  }, [tiddlerStore]);
 
-  // Double-click: geo portal (meta.larPortal) → GO_TO_ROOM, meme frame → ZOOM_IN
-  // Uses editor.on("event") filtered for name:"double_click" + target:"shape" + phase:"up".
+  // Double-click: geo portal → GO_TO_ROOM, meme frame → ZOOM_IN.
   useEffect(() => {
     const editor = editorRef.current;
-    if (!editor || store.status !== "synced-remote") return;
+    if (!editor) return;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const handler = (e: any) => {
       if (e?.name !== "double_click" || e?.target !== "shape" || e?.phase !== "up") return;
@@ -265,36 +215,18 @@ export function LarariumCanvas({ wsUrl, navState, dispatch, canvasMode, onZoomLe
     };
     editor.on("event" as any, handler);
     return () => { editor.off("event" as any, handler); };
-  }, [store.status, dispatch]);
+  }, [dispatch]);
 
   // Nav state → tldraw camera.
-  // Only execute navState commands — do NOT push a page on sync.
-  // Page ordering (page:boot has index a1) makes tldraw default to the right page
-  // on first connect without an imperative setCurrentPage override that fights
-  // with in-progress navigation.
   useEffect(() => {
     const editor = editorRef.current;
-    if (!editor || store.status !== "synced-remote") return;
+    if (!editor) return;
     syncNavState(editor, navState);
   }, [navState]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  // Zoom level → page auto-switch.
-
-  // Q1: mount tldraw immediately — no blocking spinner on loading.
-  // Opening status surfaces in LarariumMenuPanel via openPhase from context.
-  if (store.status === "error") {
-    return (
-      <div style={{ ...fill, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", color: "red", gap: 12 }}>
-        <span>Sync error: {store.error?.message ?? "unknown"}</span>
-        <button onClick={() => window.location.reload()} style={{ padding: "6px 16px", cursor: "pointer" }}>Reload</button>
-      </div>
-    );
-  }
 
   return (
     <div style={fill}>
       <Tldraw
-        store={store.store}
         components={canvasMode ? CANVAS_COMPONENTS : WIKI_COMPONENTS}
         onMount={(editor) => {
           editorRef.current = editor;

@@ -28,6 +28,7 @@ import { MemeDetailPanel } from "./MemeDetailPanel.js";
 import { BootSplash } from "./BootSplash.js";
 import { LarariumCtx, useLararium, shortUri, useTheme } from "./lararium-context.js";
 import { useLarariumHostOpen } from "./lararium-browser-host.js";
+import { projectFromTw5 } from "./tw5-canvas-projection.js";
 import { debugSet } from "./debug.js";
 import "./lararium-theme.css";
 import type { MemeEntry } from "./App.js";
@@ -223,7 +224,26 @@ export function LarariumShell({ wsUrl, memes, onMemes }: ShellProps) {
     return () => { unsubs.forEach((u) => u()); };
   }, []); // stable — never re-runs
 
+  // Derive meme list from TW5 filter — no tldraw shape scan needed.
+  // Available at tw5-ready (corpus loaded); updates reactively on wiki change.
+  const scanMemesFromTw5 = useCallback(() => {
+    if (!tw5) return;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const wiki = tw5.wiki as any;
+    const uris: string[] = tw5.filterTiddlers("[all[tiddlers]prefix[lar:]]");
+    const entries = uris.map((uri) => {
+      const t = wiki.getTiddler?.(uri);
+      return {
+        uri,
+        depth: Number(t?.fields?.depth ?? 0),
+        kind:  String(t?.fields?.rating ?? "meme"),
+      };
+    }).filter((e) => e.uri.startsWith("lar:"));
+    onMemes(entries);
+  }, [tw5, onMemes]);
+
   // Boot: full load from TW5, then incremental updateUri on wiki changes.
+  // Also drives the meme list from TW5 filter — single onWikiChange subscription.
   useEffect(() => {
     if (!tw5) return;
     const initial = tw5.buildReactionGraph();
@@ -231,15 +251,31 @@ export function LarariumShell({ wsUrl, memes, onMemes }: ShellProps) {
       graphRef.current.load(initial.bindings);
       setGraphReady(true);
     }
+    // Initial meme list scan from TW5 corpus (corpus already loaded at tw5-ready).
+    scanMemesFromTw5();
     return tw5.onWikiChange((changes: Record<string, unknown>) => {
+      let memesChanged = false;
       for (const uri of Object.keys(changes)) {
         if (!uri.startsWith("lar:")) continue;
         const bindings = tw5.bindingsForUri(uri);
         if (bindings.length > 0) graphRef.current.updateUri(uri, bindings);
         else graphRef.current.removeUri(uri);
+        memesChanged = true;
       }
+      if (memesChanged) scanMemesFromTw5();
     });
-  }, [tw5]);
+  }, [tw5, scanMemesFromTw5]);
+
+  // Seed tldraw canvas from TW5 projection (local-first: no useSync, no server shapes).
+  // Runs when both editor and tw5 are ready; re-runs if either changes (room switch).
+  // TW5 wiki is the authoritative corpus; tldraw store is a derived projection of it.
+  useEffect(() => {
+    if (!editor || !tw5) return;
+    const { pages, shapes, bindings } = projectFromTw5(tw5);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const store = (editor as any).store;
+    store.put([...pages, ...shapes, ...bindings]);
+  }, [editor, tw5]);
 
   // Expose graph via context once ready; ref is stable so no churn after boot.
   const reactionGraph = graphReady ? graphRef.current : null;
@@ -309,7 +345,6 @@ export function LarariumShell({ wsUrl, memes, onMemes }: ShellProps) {
           dispatch={dispatch as React.Dispatch<LarViewAction>}
           canvasMode={canvasMode}
           onZoomLevel={setZoomLevel}
-          onMemes={onMemes}
         />
 
         {paletteOpen && createPortal(
