@@ -38,3 +38,4 @@ packages/*/node_modules/
 
 # Playwright CLI
 .playwright-cli/
+packages/lararium-app/test-results
