@@ -43,6 +43,9 @@ Without the ceremony, promotion collapses into silent accumulation — a named f
 ↺ release prior state with forgiveness; leave unpromoted residue as named session records with forward pressure.
 <<~/ahu >>
 
+<<~&#x0002;>>
+
+
 <<~ ahu #ceremony >>
 
 ## The Ceremony
@@ -121,4 +124,5 @@ Boundary event fields:
 
 <<~/ahu >>
 
+<<~&#x0003;>>
 <<~⊙&#x0004; -> ? >>

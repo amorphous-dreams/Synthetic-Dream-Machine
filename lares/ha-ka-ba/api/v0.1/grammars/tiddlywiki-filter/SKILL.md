@@ -53,6 +53,9 @@ Keep these points active when the skill loads:
 
 <<~/ahu >>
 
+<<~&#x0002;>>
+
+
 <<~ ahu #phase-admit >>
 
 ## Phase: Admit
@@ -163,4 +166,5 @@ Surface, AST, widget, and landed output stay distinct at each layer.
 <<~/ahu >>
 
 
+<<~&#x0003;>>
 <<~&#x0004; -> ? >>

@@ -20,6 +20,9 @@ invariant = false
 ```
 <<~/ahu >>
 
+<<~&#x0002;>>
+
+
 <<~ ahu #meme-header >>
 # Live-Session Overwrite — Docs Sister
 
@@ -102,4 +105,5 @@ A passing test records the jello claim as session evidence and refuses silent ca
 <<~ pranala #implements-loci ? -> lar:///ha.ka.ba/api/v0.1/pono/loci family:control role:implements >>
 <<~/ahu >>
 
+<<~&#x0003;>>
 <<~&#x0004; -> ? >>

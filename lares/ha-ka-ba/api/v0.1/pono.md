@@ -17,6 +17,8 @@ cacheable = true
 ```
 <<~/ahu >>
 
+<<~&#x0002;>>
+
 # Pono
 
 A core invariant example of a pono meme.
@@ -54,4 +56,5 @@ This folder already shows the family shape around it: `meme`, `invariant`, `meme
 <<~/ahu >>
 
 
+<<~&#x0003;>>
 <<~&#x0004; -> ? >>

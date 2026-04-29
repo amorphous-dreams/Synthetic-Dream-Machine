@@ -44,6 +44,9 @@ Parser, render, and pono detail move outward.
 
 <<~/ahu >>
 
+<<~&#x0002;>>
+
+
 <<~ ahu #admission-law >>
 
 ## Admission Law
@@ -143,4 +146,5 @@ Schema detail, fixture families, and execution procedure belong in the sidecars.
 <<~ pranala #implements-invariant ? -> lar:///ha.ka.ba/api/v0.1/pono/invariant family:control role:implements >>
 <<~/ahu >>
 
+<<~&#x0003;>>
 <<~&#x0004; -> ? >>

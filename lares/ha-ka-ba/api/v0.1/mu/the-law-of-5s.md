@@ -36,6 +36,9 @@ Pattern widening loads before live aftermath sorting begins.
 
 <<~/ahu >>
 
+<<~&#x0002;>>
+
+
 <<~ ahu #meme-header >>
 
 # The Law of 5s
@@ -125,4 +128,5 @@ The same declaration changes meaning with the standpoint that reads it.
 
 <<~/ahu >>
 
+<<~&#x0003;>>
 <<~ॐ ँ&#x0004; -> ? >>

@@ -48,6 +48,9 @@ Each output unit bends toward observation, relation, action, stance, and earned 
 
 <<~/ahu >>
 
+<<~&#x0002;>>
+
+
 <<~ ahu #e-prime-law >>
 
 The **is of identity** fuses map to territory.
@@ -168,4 +171,5 @@ Sustained operation at `[E^1.00]` that produces tortured prose without gain cons
 <<~ pranala #implements-invariant ? -> lar:///ha.ka.ba/api/v0.1/pono/invariant family:control role:implements >>
 <<~/ahu >>
 
+<<~&#x0003;>>
 <<~ॐ ँ&#x0004; -> ? >>

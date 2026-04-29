@@ -5,6 +5,7 @@
  * This module maps those to TW5 tiddler records:
  *
  *   #iam ahu      → parent tiddler fields (dissolved, no child tiddler)
+ *   control ahu   → parent structural leaves (body/stream markers; no child)
  *   all other ahu → child tiddlers  title = parentUri + "#" + slot
  *                                   tags  = [parentUri]  (enables filter)
  *
@@ -141,6 +142,25 @@ function ahuBodyText(ws: WorksiteNode): string {
 }
 
 // ---------------------------------------------------------------------------
+// collectAhuBodies — recover exact ahu body spans from source text.
+//
+// The parser AST keeps each nested sigil's opening token as `raw`, not always
+// the full source span. For child tiddlers we therefore prefer source slices so
+// edits/round-trips preserve nested blocks and close markers.
+// ---------------------------------------------------------------------------
+
+function collectAhuBodies(text: string): Map<string, string> {
+  const bodies = new Map<string, string>();
+  const pattern = /<<~[^>]*\bahu\s+(#[\w-]+)\s*>>([\s\S]*?)<<~\/ahu\s*>>/g;
+  for (const match of text.matchAll(pattern)) {
+    const slot = match[1];
+    if (!slot) continue;
+    bodies.set(slot, match[2] ?? "");
+  }
+  return bodies;
+}
+
+// ---------------------------------------------------------------------------
 // CONTROL_SLOTS — structural ahu frame markers that dissolve into the parent
 // tiddler (or are discarded). They do NOT become child tiddlers.
 // ---------------------------------------------------------------------------
@@ -148,6 +168,13 @@ function ahuBodyText(ws: WorksiteNode): string {
 const CONTROL_SLOTS = new Set([
   "#iam",
   "#exit",
+  "#stream-open",
+  "#stream-close",
+  "#stream-exit",
+  "#body-open",
+  "#body-close",
+  "#meme-body-open",
+  "#meme-body-close",
 ]);
 
 // ---------------------------------------------------------------------------
@@ -195,6 +222,7 @@ export function splitCarrierToTiddlers(uri: string, text: string): CarrierSplit 
   // Child tiddlers — one per non-#iam ahu, last-write-wins on duplicate slots
   const childMap = new Map<string, ChildTiddler>();
   const slotOrder: string[] = [];
+  const sourceBodies = collectAhuBodies(text);
 
   for (const node of nodes) {
     if (node.kind !== "Worksite") continue;
@@ -203,7 +231,7 @@ export function splitCarrierToTiddlers(uri: string, text: string): CarrierSplit 
     if (CONTROL_SLOTS.has(slot)) continue;
 
     const childUri   = uri + slot;   // slot already includes "#" prefix
-    const bodyText   = ahuBodyText(ws);
+    const bodyText   = sourceBodies.get(slot) ?? ahuBodyText(ws);
 
     if (!childMap.has(childUri)) slotOrder.push(childUri);
 
@@ -295,15 +323,34 @@ export function replaceCarrierSlot(
   newBody: string,
 ): string | null {
   const escaped = slot.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  // Opening tag may have a Unicode control-char prefix (U+0001-U+001F).
+  // Opening tag may have control/html-entity/memetic decorator prefixes.
   const pattern = new RegExp(
-    `(<<~[\x01-\x1f]?\\s*ahu\\s+${escaped}\\s*>>)([\\s\\S]*?)(<<~\\/ahu\\s*>>)`,
+    `(<<~[^>]*\\bahu\\s+${escaped}\\s*>>)([\\s\\S]*?)(<<~\\/ahu\\s*>>)`,
     "g",
   );
   let matched = false;
   const result = carrierText.replace(pattern, (_full, open, _body, close) => {
     matched = true;
     return `${open}${newBody}${close}`;
+  });
+  return matched ? result : null;
+}
+
+// ---------------------------------------------------------------------------
+// removeCarrierSlot — surgical removal of one ahu slot from a raw carrier.
+//
+// Used when a TW5 child tiddler is deleted: the persisted store still owns only
+// the parent carrier, so deleting `lar:///x#slot` should remove that slot from
+// `lar:///x` rather than tombstoning a derived child title.
+// ---------------------------------------------------------------------------
+
+export function removeCarrierSlot(carrierText: string, slot: string): string | null {
+  const escaped = slot.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const pattern = new RegExp(`<<~[^>]*\\bahu\\s+${escaped}\\s*>>[\\s\\S]*?<<~\\/ahu\\s*>>`, "g");
+  let matched = false;
+  const result = carrierText.replace(pattern, () => {
+    matched = true;
+    return "";
   });
   return matched ? result : null;
 }

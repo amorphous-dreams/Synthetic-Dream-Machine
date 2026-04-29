@@ -36,6 +36,9 @@ The coordinators receive rooms before session masks or task routing begin.
 
 <<~/ahu >>
 
+<<~&#x0002;>>
+
+
 <<~ ahu #meme-header >>
 
 # Lararium Voices
@@ -377,4 +380,5 @@ payload = { priority = "support", retain = false }
 <<~/ahu >>
 
 
+<<~&#x0003;>>
 <<~ॐ ँ&#x0004; -> ? >>

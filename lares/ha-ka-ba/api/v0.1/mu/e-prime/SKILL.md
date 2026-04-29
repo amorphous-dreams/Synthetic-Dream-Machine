@@ -43,6 +43,9 @@ This skill does not weaken or reinterpret the loci.
 E-Prime auditor opens the settled-text correction stream here.
 <<~/ahu >>
 
+<<~&#x0002;>>
+
+
 <<~ ahu #load-contract >>
 
 ## Load Contract
@@ -268,4 +271,5 @@ Residue stays named honestly:
 <<~/ahu >>
 
 
+<<~&#x0003;>>
 <<~&#x0004; -> ? >>

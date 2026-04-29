@@ -20,6 +20,9 @@ invariant = false
 ```
 <<~/ahu >>
 
+<<~&#x0002;>>
+
+
 <<~ ahu #meme-header >>
 # Canon Promotion Boundary — Docs Sister
 
@@ -134,4 +137,5 @@ If the answers remain vague, the claim should stay as session pressure.
 <<~ pranala #implements-loci ? -> lar:///ha.ka.ba/api/v0.1/pono/loci family:control role:implements >>
 <<~/ahu >>
 
+<<~&#x0003;>>
 <<~&#x0004; -> ? >>

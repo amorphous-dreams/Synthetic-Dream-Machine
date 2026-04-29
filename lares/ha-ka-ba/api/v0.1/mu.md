@@ -74,6 +74,9 @@ The grammar appears as Mu performing itself.
 
 <<~/ahu >>
 
+<<~&#x0002;>>
+
+
 <<~ ahu #ooda-ha >>
 
 ✶ read the arriving meme outside-in.
@@ -119,4 +122,5 @@ Mu does not hold:
 
 <<~/ahu >>
 
+<<~&#x0003;>>
 <<~ॐ ँ&#x0004; -> ? >>

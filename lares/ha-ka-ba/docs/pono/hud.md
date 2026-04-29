@@ -55,6 +55,9 @@ This shelf does NOT govern URI grammar. URI scheme law lives at:
 
 <<~/ahu >>
 
+<<~&#x0002;>>
+
+
 <<~ ahu #current-files >>
 
 ## Current Files
@@ -166,4 +169,5 @@ Those sections in URI-SCHEMA.md now carry redundant content. A future pass shoul
 <<~/ahu >>
 
 
+<<~&#x0003;>>
 <<~&#x0004; -> ? >>

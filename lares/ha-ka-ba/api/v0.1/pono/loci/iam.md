@@ -40,6 +40,9 @@ This meme does not solve weak metadata by adding new buckets. It sharpens the su
 
 <<~/ahu >>
 
+<<~&#x0002;>>
+
+
 <<~ ahu #observe >>
 
 ## Observe
@@ -222,4 +225,5 @@ Signs of gain:
 <<~/ahu >>
 
 
+<<~&#x0003;>>
 <<~&#x0004; -> ? >>

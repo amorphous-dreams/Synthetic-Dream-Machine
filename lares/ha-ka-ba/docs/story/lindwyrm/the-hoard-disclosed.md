@@ -23,6 +23,9 @@ retain = true
 
 <<~/ahu >>
 
+<<~&#x0002;>>
+
+
 <<~ ahu #meme-header >>
 
 # The Lindwyrm's Hoard — The Hoard Disclosed
@@ -266,4 +269,5 @@ The node hums.
 <<~/ahu >>
 
 
+<<~&#x0003;>>
 <<~&#x0004; -> ? >>

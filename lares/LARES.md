@@ -57,6 +57,9 @@ Tool render mode controls how ASCII tool-carry symbols project to glyphs on HUD 
 
 <<~/ahu >>
 
+<<~&#x0002;>>
+
+
 <<~ ahu #required-handoff-masks >>
 
 ## Required Handoff — Masks
@@ -121,4 +124,5 @@ Live stage positions — shift inline with `[Stage: mask-name 0.75]`; edits here
 &#2384; Hello World.
 <<~/ahu >>
 
+<<~&#x0003;>>
 <<~&#x0004; -> ? >>

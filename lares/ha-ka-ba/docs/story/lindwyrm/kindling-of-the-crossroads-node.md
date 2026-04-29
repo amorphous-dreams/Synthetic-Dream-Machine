@@ -22,6 +22,9 @@ retain = true
 
 <<~/ahu >>
 
+<<~&#x0002;>>
+
+
 <<~ ahu #meme-header >>
 
 # The Kindling of the Crossroads Node
@@ -226,4 +229,5 @@ Whether that equals thought remains with Liminal.
 <<~/ahu >>
 
 
+<<~&#x0003;>>
 <<~&#x0004; -> ? >>

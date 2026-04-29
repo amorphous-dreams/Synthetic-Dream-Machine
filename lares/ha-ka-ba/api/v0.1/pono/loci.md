@@ -55,6 +55,9 @@ Root path segments outside `\w\.\w\.\w` MAY NOT implement `loci`.
 
 <<~/ahu >>
 
+<<~&#x0002;>>
+
+
 <<~ ahu #promotion-path >>
 
 ## Promotion Path
@@ -190,4 +193,5 @@ Convention fails when:
 <<~ pranala #implements-loci ? -> lar:///ha.ka.ba/api/v0.1/pono/loci family:control role:implements >>
 <<~/ahu >>
 
+<<~&#x0003;>>
 <<~⊙&#x0004; -> ? >>

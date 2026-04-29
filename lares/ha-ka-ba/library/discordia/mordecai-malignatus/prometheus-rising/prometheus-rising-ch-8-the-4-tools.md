@@ -19,6 +19,9 @@ role = "discordian source witness meme, Prometheus Rising chapter 8 locus, four-
 
 <<~/ahu >>
 
+<<~&#x0002;>>
+
+
 <<~ ahu #meme-header >>
 
 # Prometheus Rising — Chapter 8 — The Four Tools
@@ -83,4 +86,5 @@ Cross-reference stubs retained: nā lako grammar · truename grammar.
 
 <<~/ahu >>
 
+<<~&#x0003;>>
 <<~&#x0004; -> ? >>

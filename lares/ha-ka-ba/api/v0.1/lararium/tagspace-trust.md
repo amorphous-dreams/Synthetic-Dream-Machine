@@ -41,6 +41,9 @@ Hostless canonical memes carry stable law; hostful exchange records carry situat
 ↺ leave promotion pressure visible when a session claim wants durable placement.
 <<~/ahu >>
 
+<<~&#x0002;>>
+
+
 <<~ ahu #law >>
 
 Hostless `lar:///` memes MAY carry stable law, interface shape, data, docs, or file-backed source truth.
@@ -90,4 +93,5 @@ Explicit operator-mediated promotion MAY move content upward by creating or revi
 <<~ pranala #implements-invariant ? -> lar:///ha.ka.ba/api/v0.1/pono/invariant family:control role:implements >>
 <<~/ahu >>
 
+<<~&#x0003;>>
 <<~ॐ ँ&#x0004; -> ? >>

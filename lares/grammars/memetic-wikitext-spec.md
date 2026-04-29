@@ -27,6 +27,9 @@ invariant    = false
 ↺ name conflicts precisely; a gap left implicit will silently corrupt authoring practice.
 <<~/ahu >>
 
+<<~&#x0002;>>
+
+
 <<~ ahu #purpose >>
 
 # Memetic-Wikitext Grammar Specification
@@ -303,6 +306,7 @@ Special form of `ahu`. Contains TOML metadata. Must be first. Not repeated.
 
 ```
 <<~&#x0001; ? -> lar:///canonical-uri >>   ← file header
+<<~&#x0003;>>
 <<~&#x0004; -> ?                        >>   ← file footer
 ```
 

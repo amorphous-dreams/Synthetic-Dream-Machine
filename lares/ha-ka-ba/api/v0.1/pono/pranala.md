@@ -33,6 +33,9 @@ One typed, directed, acyclic edge between two sockets.
 
 <<~/ahu >>
 
+<<~&#x0002;>>
+
+
 <<~ ahu #ooda-ha >>
 
 ✶ Inventory hidden edge claims — name family, traversal, propagation, role distinctly.
@@ -197,4 +200,5 @@ label = "parent owns child"
 <<~/ahu >>
 
 
+<<~&#x0003;>>
 <<~&#x0004; -> ? >>

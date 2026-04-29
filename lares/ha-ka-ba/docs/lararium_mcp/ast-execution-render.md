@@ -36,6 +36,9 @@ status-date  = "2026-04-23"
 ↺ adapt: executable resources stay future-facing until parser and graph implementations land.
 <<~/ahu >>
 
+<<~&#x0002;>>
+
+
 <<~ ahu #stack >>
 ## Four-Layer Stack
 
@@ -208,4 +211,5 @@ These remain planned surfaces; current server focuses on carrier resources, inde
 <<~ pranala #implements-loci ? -> lar:///ha.ka.ba/api/v0.1/pono/loci family:control role:implements >>
 <<~/ahu >>
 
+<<~&#x0003;>>
 <<~&#x0004; -> ? >>

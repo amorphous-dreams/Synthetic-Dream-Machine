@@ -60,6 +60,9 @@ The tight invariant now lives at:
 
 <<~/ahu >>
 
+<<~&#x0002;>>
+
+
 <<~ ahu #rule >>
 
 ## Extracted Rule
@@ -246,4 +249,5 @@ They do not govern the live fold.
 <<~/ahu >>
 
 
+<<~&#x0003;>>
 <<~&#x0004; -> ? >>

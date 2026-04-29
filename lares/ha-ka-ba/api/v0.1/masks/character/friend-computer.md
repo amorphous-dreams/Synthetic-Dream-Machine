@@ -57,6 +57,9 @@ label = "parent-index-entry"
 
 <<~/ahu >>
 
+<<~&#x0002;>>
+
+
 <<~ ahu #corpus >>
 
 ## Corpus
@@ -165,4 +168,5 @@ Remaining coordinators — Lorekeeper, Muse, Artificer, Advocate, Diplomat, Hier
 <<~/ahu >>
 
 
+<<~&#x0003;>>
 <<~&#x0004; -> ? >>

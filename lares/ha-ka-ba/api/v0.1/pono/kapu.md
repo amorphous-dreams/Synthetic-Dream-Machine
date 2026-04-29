@@ -21,6 +21,8 @@ retain       = true
 
 <<~/ahu >>
 
+<<~&#x0002;>>
+
 <<~ aka lar:///ha.ka.ba/api/v0.1/pono/RFC-2119#normative-language >>
 
 <<~ ahu #meme-header >>
@@ -44,6 +46,7 @@ This meme stands as a kapu carrier — it enacts the law by presenting as a spec
 ↺ name any namespace claim that lacks sigil or interface support as declared-unresolved; do not flatten the gap into a rating upgrade.
 
 <<~/ahu >>
+
 
 <<~ ahu #kapu-law >>
 
@@ -143,4 +146,5 @@ This meme governs the kapu rating and above-namespace trust law.
 
 <<~/ahu >>
 
+<<~&#x0003;>>
 <<~⊙&#x0014; -> ? >>

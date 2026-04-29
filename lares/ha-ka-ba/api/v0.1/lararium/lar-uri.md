@@ -55,6 +55,9 @@ Session form MUST NOT appear in storage, stable graph addresses, or system resou
 
 <<~/ahu >>
 
+<<~&#x0002;>>
+
+
 <<~ ahu #path-taxonomy >>
 
 ## Path Taxonomy
@@ -130,4 +133,5 @@ WHERE (path) → HOW (query: stances, confidence, p, ffz) → SECTION (fragment)
 <<~ pranala #implements-invariant ? -> lar:///ha.ka.ba/api/v0.1/pono/invariant family:control role:implements >>
 <<~/ahu >>
 
+<<~&#x0003;>>
 <<~ॐ ँ&#x0004; -> ? >>

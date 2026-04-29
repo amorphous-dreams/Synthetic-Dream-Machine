@@ -22,6 +22,9 @@ retain = true
 
 <<~/ahu >>
 
+<<~&#x0002;>>
+
+
 <<~ ahu #meme-header >>
 
 # Lindwyrm Narrative Consumption Ledger
@@ -120,4 +123,5 @@ Likely next slices:
 <<~/ahu >>
 
 
+<<~&#x0003;>>
 <<~&#x0004; -> ? >>

@@ -62,6 +62,9 @@ label = "parent-index-entry"
 
 <<~/ahu >>
 
+<<~&#x0002;>>
+
+
 <<~ ahu #corpus >>
 
 ## Corpus
@@ -173,4 +176,5 @@ How Tide-Caller colors each coordinator register when they speak through her fra
 <<~/ahu >>
 
 
+<<~&#x0003;>>
 <<~&#x0004; -> ? >>

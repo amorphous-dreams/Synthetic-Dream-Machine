@@ -36,6 +36,9 @@ The instrument panel belongs to the mechanics house, not the threshold.
 
 <<~/ahu >>
 
+<<~&#x0002;>>
+
+
 <<~ ahu #meme-header >>
 
 # Lararium HUD
@@ -93,4 +96,5 @@ This child meme stays small enough to hydrate on every cold start.
 <<~/ahu >>
 
 
+<<~&#x0003;>>
 <<~ॐ ँ&#x0004; -> ? >>

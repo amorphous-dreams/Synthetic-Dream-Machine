@@ -21,6 +21,9 @@ retain = false
 
 <<~/ahu >>
 
+<<~&#x0002;>>
+
+
 <<~ ahu #meme-header >>
 
 # Lararium Preferences — Degraded Node States
@@ -86,4 +89,5 @@ A fuller future recovery may sort the old failure lexicon by domain.
 <<~ pranala #implements-loci ? -> lar:///ha.ka.ba/api/v0.1/pono/loci family:control role:implements >>
 <<~/ahu >>
 
+<<~&#x0003;>>
 <<~&#x0004; -> ? >>

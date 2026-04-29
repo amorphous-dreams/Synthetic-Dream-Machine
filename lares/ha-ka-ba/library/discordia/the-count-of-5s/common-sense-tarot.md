@@ -19,6 +19,9 @@ role = "discordian book witness meme, Common Sense Tarot locus, suit-grammar pro
 
 <<~/ahu >>
 
+<<~&#x0002;>>
+
+
 <<~ ahu #meme-header >>
 
 # Common Sense Tarot
@@ -3246,4 +3249,5 @@ Cover design: Michele Lanci-Altomare
 
 <<~/ahu >>
 
+<<~&#x0003;>>
 <<~&#x0004; -> ? >>

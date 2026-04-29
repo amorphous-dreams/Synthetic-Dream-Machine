@@ -26,6 +26,9 @@ retain = true
 
 <<~/ahu >>
 
+<<~&#x0002;>>
+
+
 <<~ ahu #meme-header >>
 
 # The Lindwyrm's Hoard — Self-Booting Lararium
@@ -311,4 +314,5 @@ It hums.
 <<~/ahu >>
 
 
+<<~&#x0003;>>
 <<~&#x0004; -> ? >>

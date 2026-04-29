@@ -33,6 +33,9 @@ status      = "sequence-bound; no calendar dates"
 ↺ adapt: future sprint docs enter this ledger only after closure.
 <<~/ahu >>
 
+<<~&#x0002;>>
+
+
 <<~ ahu #closed-sprints >>
 ## Closed Sprint Outcomes
 
@@ -114,4 +117,5 @@ Individual story stubs may remain as issue-style trace records; they no longer n
 <<~ pranala #implements-loci ? -> lar:///ha.ka.ba/api/v0.1/pono/loci family:control role:implements >>
 <<~/ahu >>
 
+<<~&#x0003;>>
 <<~&#x0004; -> ? >>

@@ -48,6 +48,9 @@ It leaves long procedure, skeleton examples, research, and rating tables outward
 
 <<~/ahu >>
 
+<<~&#x0002;>>
+
+
 <<~ ahu #copy-shape >>
 
 ## Copy-Shape Law
@@ -150,4 +153,5 @@ Procedure, skeleton blocks, conformance checklists, and research backlog move ou
 <<~ pranala #implements-invariant ? -> lar:///ha.ka.ba/api/v0.1/pono/invariant family:control role:implements >>
 <<~/ahu >>
 
+<<~&#x0003;>>
 <<~⊙&#x0004; -> ? >>

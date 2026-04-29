@@ -48,6 +48,9 @@ When a session context declares "action inside a lararium node," the thirteen co
 
 <<~/ahu >>
 
+<<~&#x0002;>>
+
+
 <<~ ahu #anatomy >>
 
 ## Mask Anatomy
@@ -399,4 +402,5 @@ The mask layer spec defines what `lar:///ha.ka.ba/api/v0.1/lararium/voices` MUST
 <<~/ahu >>
 
 
+<<~&#x0003;>>
 <<~&#x0004; -> ? >>

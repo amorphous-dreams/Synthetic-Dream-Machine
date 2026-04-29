@@ -62,6 +62,9 @@ label = "parent-index-entry"
 
 <<~/ahu >>
 
+<<~&#x0002;>>
+
+
 <<~ ahu #corpus >>
 
 ## Corpus
@@ -209,4 +212,5 @@ These notes require live session observation before they can be written with con
 <<~/ahu >>
 
 
+<<~&#x0003;>>
 <<~&#x0004; -> ? >>

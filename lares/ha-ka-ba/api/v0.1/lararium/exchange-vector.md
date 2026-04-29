@@ -40,6 +40,9 @@ The vector declares the node's reading of operator intent and the node's intende
 ↺ close with a trajectory URI only when the next state matters.
 <<~/ahu >>
 
+<<~&#x0002;>>
+
+
 <<~ ahu #law >>
 
 Canonical exchange order:
@@ -95,4 +98,5 @@ A compact HUD line SHOULD follow this field order:
 <<~ pranala #implements-invariant ? -> lar:///ha.ka.ba/api/v0.1/pono/invariant family:control role:implements >>
 <<~/ahu >>
 
+<<~&#x0003;>>
 <<~ॐ ँ&#x0004; -> ? >>

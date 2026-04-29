@@ -36,6 +36,9 @@ Register reading loads as core, not as an optional later flourish.
 
 <<~/ahu >>
 
+<<~&#x0002;>>
+
+
 <<~ ahu #meme-header >>
 
 # The Syad Perspectives
@@ -225,4 +228,5 @@ Discordian witness texts can also rest in library space.
 <<~/ahu >>
 
 
+<<~&#x0003;>>
 <<~ॐ ँ&#x0004; -> ? >>

@@ -34,6 +34,9 @@ It adds explicit ahu markers around the major research sections so the file can 
 ↺ keep residue visible: MCP SDK churn, protocol-version drift, FFZ semantics, hostful session resolution, write-back gates, and missing formal lararium-node spec
 <<~/ahu >>
 
+<<~&#x0002;>>
+
+
 <<~ ahu #executive-summary >>
 
 # Migrating Lararium MCP to Lararium Node
@@ -1792,4 +1795,5 @@ Steps 1–2 are pure `live-protocol.ts` changes. Steps 3–5 are the Phase 3 sel
 <<~/ahu >>
 
 
+<<~&#x0003;>>
 <<~&#x0004; -> ? >>

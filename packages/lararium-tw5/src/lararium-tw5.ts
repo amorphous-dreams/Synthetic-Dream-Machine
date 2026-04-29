@@ -255,9 +255,8 @@ exports.startup = function() {
       instance.boot.boot(() => {
         restoreStdout?.();
         this._tw = instance;
-        // Register content-type parser + widget classes synchronously after boot.
-        this._registerMemeticParser();
-        this._registerWidgets();
+        // Inject parser + widget modules — corpus-gated path with imperative fallback.
+        this._bootModules();
         resolve();
       });
     });
@@ -342,50 +341,84 @@ exports.startup = function() {
     this._tw.wiki.addTiddler(new this._tw.Tiddler({ title: "$:/palette", text: paletteName, tags: [] }));
   }
 
-  /**
-   * Register MemeticParser into TW5's parser registry for text/x-memetic-wikitext.
-   * Called automatically after boot(). Safe to call again to re-register.
-   */
-  private _registerMemeticParser(): void {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const parsers: Record<string, unknown> = (this._tw as any)?.Wiki?.parsers ?? {};
-    import("./memetic-parser.js").then(({ MemeticParser }) => {
-      parsers["text/x-memetic-wikitext"] = MemeticParser;
-    }).catch(() => { /* parser not critical for boot */ });
-  }
+  // ---------------------------------------------------------------------------
+  // Module injection — capability-gated corpus path with imperative fallback.
+  //
+  // After boot, query the wiki for all implementors of the tw5-module interface.
+  // Each passing meme's body is injected as a TW5 shadow tiddler so TW5's module
+  // system picks it up on next render. Falls back to imperative registration if
+  // no memes pass the threshold (cold boot / corpus not yet loaded).
+  //
+  // Threshold: mana ≥ 0.90, manaoio ≥ 0.85, confidence ≥ 0.90
+  // Gate: kernel holds $tw.wiki; only threshold-passing memes receive it.
+  // ---------------------------------------------------------------------------
 
-  /**
-   * Register lararium-* widget classes into Widget.prototype.widgetClasses.
-   * Called synchronously in the boot callback — no async required.
-   *
-   * Widget base class: $:/core/modules/widgets/widget.js → exports.widget
-   * widgetClasses is lazily built by applyMethods("widget") on first render.
-   * We trigger it once here so our patch sticks on the singleton map.
-   */
-  private _registerWidgets(): void {
+  private static readonly MODULE_MANA_THRESHOLD    = 0.90;
+  private static readonly MODULE_MANAOIO_THRESHOLD = 0.85;
+  private static readonly MODULE_CONFIDENCE_THRESHOLD = 0.90;
+
+  private _bootModules(): void {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const tw = this._tw as any;
+    const wiki = tw?.wiki;
 
-    // Get the canonical Widget base class.
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // --- Corpus-gated path ---------------------------------------------------
+    // Query for all memes that implement the tw5-module interface.
+    let injected = 0;
+    try {
+      const titles: string[] = wiki.filterTiddlers(
+        "[[lar:///ha.ka.ba/api/v0.1/lararium/tw5-module]implementors[]]"
+      ) ?? [];
+      for (const title of titles) {
+        const t = wiki.getTiddler(title);
+        if (!t) continue;
+        const f = t.fields as Record<string, string>;
+        const mana       = parseFloat(f["mana"]       ?? "0");
+        const manaoio    = parseFloat(f["manaoio"]    ?? "0");
+        const confidence = parseFloat(f["confidence"] ?? "0");
+        if (
+          mana       < LarariumTW5.MODULE_MANA_THRESHOLD    ||
+          manaoio    < LarariumTW5.MODULE_MANAOIO_THRESHOLD ||
+          confidence < LarariumTW5.MODULE_CONFIDENCE_THRESHOLD
+        ) continue;
+        const body = f["text"] ?? "";
+        if (!body.trim() || body.startsWith("// Body injected")) continue;
+        // Inject as shadow tiddler — TW5's module system picks it up.
+        wiki.addTiddler(new tw.Tiddler({
+          title,
+          type:            "application/javascript",
+          "module-type":   f["module-type"] ?? "library",
+          text:            body,
+          tags:            [],
+        }));
+        injected++;
+      }
+    } catch { /* filter not available yet — fall through to imperative path */ }
+
+    if (injected > 0) {
+      // Corpus path succeeded — run module IIFE now that tiddler is in the wiki.
+      try { tw.modules.define(wiki.getTiddler("lar:///ha.ka.ba/api/v0.1/lararium/modules/tw5-modules")?.fields?.["text"] ?? "", "library", "lararium-tw5-modules"); } catch { /* no-op */ }
+      return;
+    }
+
+    // --- Imperative fallback -------------------------------------------------
+    // No corpus module memes passed the threshold. Register directly from the
+    // compiled-in classes. This path is permanent for offline/cold-boot and
+    // during the transition before pnpm bundle has run.
+    const parsers: Record<string, unknown> = tw?.Wiki?.parsers ?? {};
+    import("./memetic-parser.js").then(({ MemeticParser }) => {
+      parsers["text/x-memetic-wikitext"] = MemeticParser;
+    }).catch(() => { /* not critical */ });
+
     const WidgetCtor: any =
       tw.modules?.types?.widget?.["$:/core/modules/widgets/widget.js"]?.exports?.widget;
     if (!WidgetCtor) return;
-
-    // Trigger lazy widgetClasses population so we can patch the singleton.
     if (!WidgetCtor.prototype.widgetClasses) {
       tw.modules.applyMethods("widget", {});
     }
-
     const widgetClasses = createLarariumWidgets(tw);
-
     for (const [name, cls] of Object.entries(widgetClasses)) {
-      // Wire prototype chain so renderChildren / makeChildWidgets / initialise work.
-      Object.setPrototypeOf(
-        (cls as { prototype: object }).prototype,
-        WidgetCtor.prototype,
-      );
-      // Patch the singleton widgetClasses map directly — picked up by makeChildWidgets.
+      Object.setPrototypeOf((cls as { prototype: object }).prototype, WidgetCtor.prototype);
       WidgetCtor.prototype.widgetClasses ??= {};
       WidgetCtor.prototype.widgetClasses[name] = cls;
     }
@@ -450,6 +483,27 @@ exports.startup = function() {
   setTiddler(fields: Record<string, string | string[]>): void {
     if (!this._tw) throw new Error("LarariumTW5: call boot() before setTiddler()");
     this._tw.wiki.addTiddler(new this._tw.Tiddler(fields));
+  }
+
+  /** Render raw TW5 wikitext to HTML. Returns "" before boot or on render failure. */
+  renderText(text: string): string {
+    if (!this._tw) return "";
+    try {
+      return this._tw.wiki.renderText("text/html", "text/vnd.tiddlywiki", text) ?? "";
+    } catch {
+      return "";
+    }
+  }
+
+  /** Render a loaded TW5 tiddler to HTML. Returns "" for unknown titles or failures. */
+  renderTiddler(title: string): string {
+    if (!this._tw) return "";
+    if (!this._tw.wiki.getTiddler(title)) return "";
+    try {
+      return this._tw.wiki.renderTiddler("text/html", title) ?? "";
+    } catch {
+      return "";
+    }
   }
 
   /**
@@ -552,10 +606,16 @@ exports.startup = function() {
         if (split.warnings.length > 0) {
           console.warn(`[lararium] carrier parse warnings for ${uri}:`, split.warnings);
         }
-        // Collect kumu defs from the parsed AST.
-        const { parseMemeCarrier } = await import("@lararium/core");
-        const ast = parseMemeCarrier(uri, rec.text);
-        kumuDefs.push(...collectKumuDefs(uri, ast));
+        // Collect kumu defs from the parsed AST. This is a secondary index; a
+        // malformed carrier should still appear in TW5 as a raw parent tiddler
+        // via splitCarrierToTiddlers()' graceful fallback.
+        try {
+          const { parseMemeCarrier } = await import("@lararium/core");
+          const ast = parseMemeCarrier(uri, rec.text);
+          kumuDefs.push(...collectKumuDefs(uri, ast));
+        } catch (e) {
+          console.warn(`[lararium] skipping kumu extraction for malformed carrier ${uri}:`, e);
+        }
       } else {
         // Non-carrier tiddler (text/plain palette, etc.) — load fields as-is.
         const fields: Record<string, string | string[]> = { title: rec.title, ...rec.fields };

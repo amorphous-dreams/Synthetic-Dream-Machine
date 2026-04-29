@@ -36,6 +36,9 @@ The instrument panel loads before Chapel Perilous pressure spikes.
 
 <<~/ahu >>
 
+<<~&#x0002;>>
+
+
 <<~ ahu #meme-header >>
 
 # The Four Tools of Chapel Perilous
@@ -260,4 +263,5 @@ The agent MUST treat totalized pattern-lock as confidence register collapse.
 <<~/ahu >>
 
 
+<<~&#x0003;>>
 <<~ॐ ँ&#x0004; -> ? >>

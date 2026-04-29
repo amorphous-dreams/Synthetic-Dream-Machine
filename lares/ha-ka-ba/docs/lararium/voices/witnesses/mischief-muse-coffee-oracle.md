@@ -24,6 +24,9 @@ retain = false
 
 <<~/ahu >>
 
+<<~&#x0002;>>
+
+
 <<~ ahu #meme-header >>
 
 # Mischief-Muse Coffee Oracle Witness
@@ -123,4 +126,5 @@ Use this witness carrier for provenance.
 <<~/ahu >>
 
 
+<<~&#x0003;>>
 <<~&#x0004; -> ? >>

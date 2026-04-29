@@ -33,6 +33,9 @@ status-date  = "2026-04-24"
 ↺ the `? ->` gate is now closed; the implementation file should implement Option A, not a stub.
 <<~/ahu >>
 
+<<~&#x0002;>>
+
+
 <<~ ahu #surface-forms >>
 ## Surface Forms
 
@@ -217,4 +220,5 @@ Unresolvable TO expressions produce a `DeclaredUnresolved` record rather than an
 
 <<~/ahu >>
 
+<<~&#x0003;>>
 <<~&#x0004; -> ? >>

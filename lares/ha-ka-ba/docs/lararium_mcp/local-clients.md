@@ -36,6 +36,9 @@ status-date  = "2026-04-23"
 ↺ adapt: remote examples remain Sprint-03 residue even though local Codex config closed.
 <<~/ahu >>
 
+<<~&#x0002;>>
+
+
 <<~ ahu #server-start >>
 ## Server Start
 
@@ -131,4 +134,5 @@ Tool annotations: `readOnlyHint: true`, `destructiveHint: false`, `idempotentHin
 <<~ pranala #implements-loci ? -> lar:///ha.ka.ba/api/v0.1/pono/loci family:control role:implements >>
 <<~/ahu >>
 
+<<~&#x0003;>>
 <<~&#x0004; -> ? >>

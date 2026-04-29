@@ -32,7 +32,7 @@
  */
 
 import { parseMemeCarrier } from "@lararium/core";
-import type { MemeAstNode, CarrierNode } from "@lararium/core";
+import type { MemeAstNode, CarrierNode, ControlNode } from "@lararium/core";
 
 // ---------------------------------------------------------------------------
 // TW5ParseNode — minimal type for TW5's parse tree nodes
@@ -56,20 +56,43 @@ function attr(value: string): { type: "string"; value: string } {
   return { type: "string", value };
 }
 
-function nodeToTw5(node: MemeAstNode): TW5ParseNode {
+type TW5Wiki = {
+  parseText(type: string, text: string, opts?: unknown): { tree: TW5ParseNode[] };
+};
+
+function nodeToTw5(node: MemeAstNode, wiki?: TW5Wiki): TW5ParseNode {
   switch (node.kind) {
     case "CarrierHeader":
       return { type: "lararium-header", _ast: node, children: [],
         attributes: { uri: attr(node.toUri) } };
 
+    case "Control":
+      // Phase boundary markers are structurally significant but invisible in rendered output.
+      return { type: "lararium-control", _ast: node, children: [],
+        attributes: {
+          phase: attr((node as ControlNode).phase),
+          ...((node as ControlNode).toUri ? { uri: attr((node as ControlNode).toUri!) } : {}),
+        } };
+
     case "Worksite":
       return { type: "lararium-worksite", _ast: node,
         attributes: { slot: attr(node.slot), uri: attr(node.uri) },
-        children: node.body.map(nodeToTw5) };
+        children: node.body.map((n) => nodeToTw5(n, wiki)) };
 
-    case "Text":
-      // TW5 native text node — TW5 renders these directly.
+    case "Text": {
+      // When a wiki context is available, pipe prose through TW5's own wikitext
+      // parser so markdown headings, lists, and formatting render correctly in
+      // mixed-body carriers (plain text interleaved with ahu slots).
+      if (wiki && node.content.trim()) {
+        try {
+          const parsed = wiki.parseText("text/vnd.tiddlywiki", node.content, {});
+          if (parsed?.tree?.length) {
+            return { type: "element", tag: "span", _ast: node, children: parsed.tree };
+          }
+        } catch { /* fall through */ }
+      }
       return { type: "text", text: node.content, _ast: node, children: [] };
+    }
 
     case "Edge":
       return { type: "lararium-edge", _ast: node, children: [],
@@ -125,20 +148,20 @@ function nodeToTw5(node: MemeAstNode): TW5ParseNode {
             props:    attr(node.attrs["args"] ?? ""),
             resolved: attr("unknown"), // registry not available at parse time; kumu-executor resolves
           },
-          children: node.body.map(nodeToTw5) };
+          children: node.body.map((n) => nodeToTw5(n, wiki)) };
       }
       return { type: "lararium-sigil", _ast: node,
         tag: node.sigilName,
         attributes: Object.fromEntries(
           Object.entries(node.attrs).map(([k, v]) => [k, attr(v)])
         ),
-        children: node.body.map(nodeToTw5) };
+        children: node.body.map((n) => nodeToTw5(n, wiki)) };
 
     case "Dynamic":
       return { type: "lararium-dynamic", _ast: node,
         tag: node.sigilName,
         attributes: {},
-        children: node.body.map(nodeToTw5) };
+        children: node.body.map((n) => nodeToTw5(n, wiki)) };
 
     default:
       // Unknown node kind — emit as opaque text fallback.
@@ -146,8 +169,8 @@ function nodeToTw5(node: MemeAstNode): TW5ParseNode {
   }
 }
 
-export function astToTw5Tree(ast: readonly MemeAstNode[]): TW5ParseNode[] {
-  return ast.map(nodeToTw5);
+export function astToTw5Tree(ast: readonly MemeAstNode[], wiki?: TW5Wiki): TW5ParseNode[] {
+  return ast.map((n) => nodeToTw5(n, wiki));
 }
 
 // ---------------------------------------------------------------------------
@@ -168,11 +191,11 @@ export class MemeticParser {
   constructor(
     _type: string,
     text: string,
-    options: { tiddler?: { fields?: { title?: string } }; parseAsInline?: boolean } = {},
+    options: { tiddler?: { fields?: { title?: string } }; parseAsInline?: boolean; wiki?: unknown } = {},
   ) {
     const uri = options.tiddler?.fields?.title ?? "lar:///unknown";
     const ast = parseMemeCarrier(uri, text);
-    this.tree = astToTw5Tree(ast);
+    this.tree = astToTw5Tree(ast, options.wiki as TW5Wiki | undefined);
   }
 }
 
@@ -180,8 +203,8 @@ export class MemeticParser {
 // parseCarrierToTw5 — convenience: text → TW5ParseNode[] without a wiki context
 // ---------------------------------------------------------------------------
 
-export function parseCarrierToTw5(uri: string, text: string): TW5ParseNode[] {
-  return astToTw5Tree(parseMemeCarrier(uri, text));
+export function parseCarrierToTw5(uri: string, text: string, wiki?: TW5Wiki): TW5ParseNode[] {
+  return astToTw5Tree(parseMemeCarrier(uri, text), wiki);
 }
 
 // ---------------------------------------------------------------------------

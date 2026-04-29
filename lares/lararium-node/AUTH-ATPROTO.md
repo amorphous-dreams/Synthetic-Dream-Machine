@@ -20,6 +20,9 @@ retain       = true
 
 <<~/ahu >>
 
+<<~&#x0002;>>
+
+
 <<~ ahu #oauth-position >>
 
 ## ATProto OAuth Position
@@ -214,4 +217,5 @@ No ATProto login implementation this milestone — doctrine only.
 <<~/ahu >>
 
 
+<<~&#x0003;>>
 <<~&#x0004; -> ? >>

@@ -58,6 +58,9 @@ Output rooms:
 
 <<~/ahu >>
 
+<<~&#x0002;>>
+
+
 <<~ ahu #observe >>
 
 ## ✶ Observe
@@ -369,4 +372,5 @@ MASKS.md converted from stub to forward-route to `lar:///LARES#session-masks`.
 <<~/ahu >>
 
 
+<<~&#x0003;>>
 <<~&#x0004; -> ? >>

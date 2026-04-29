@@ -21,6 +21,9 @@ retain = false
 
 <<~/ahu >>
 
+<<~&#x0002;>>
+
+
 <<~ ahu #meme-header >>
 
 # Lararium Signal — Render Targets
@@ -428,4 +431,5 @@ Before emitting any stance block on any surface:
 <<~/ahu >>
 
 
+<<~&#x0003;>>
 <<~&#x0004; -> ? >>

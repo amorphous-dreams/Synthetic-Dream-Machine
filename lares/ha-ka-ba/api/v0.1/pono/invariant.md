@@ -23,6 +23,8 @@ retain = true
 
 <<~/ahu >>
 
+<<~&#x0002;>>
+
 <<~ aka lar:///ha.ka.ba/api/v0.1/pono/RFC-2119#normative-language >>
 
 <<~ ahu #meme-header >>
@@ -98,8 +100,6 @@ Invariant-compliant memes MUST fill the OODA-HA phase line with their own pressu
 
 <<~/ahu >>
 
-<<~/ahu >>
-
 
 <<~ ahu #edges >>
 
@@ -112,4 +112,5 @@ Invariant-compliant memes MUST fill the OODA-HA phase line with their own pressu
 <<~ pranala #implements-invariant ? -> lar:///ha.ka.ba/api/v0.1/pono/invariant family:control role:implements >>
 <<~/ahu >>
 
+<<~&#x0003;>>
 <<~⊙&#x0004; -> ? >>

@@ -21,6 +21,9 @@ retain = false
 
 <<~/ahu >>
 
+<<~&#x0002;>>
+
+
 <<~ ahu #meme-header >>
 
 # Lararium Signal — Micro-trace
@@ -279,4 +282,5 @@ Key operator ruling confirmed: **sub-agent dispatches require URI → URI pair**
 <<~/ahu >>
 
 
+<<~&#x0003;>>
 <<~&#x0004; -> ? >>

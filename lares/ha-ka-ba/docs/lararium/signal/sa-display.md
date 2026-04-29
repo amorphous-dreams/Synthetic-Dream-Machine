@@ -21,6 +21,9 @@ retain = false
 
 <<~/ahu >>
 
+<<~&#x0002;>>
+
+
 <<~ ahu #meme-header >>
 
 # Lararium Signal — SA Display
@@ -128,4 +131,5 @@ Per-position stance modifier glyph design remains in motion; current record-form
 <<~/ahu >>
 
 
+<<~&#x0003;>>
 <<~&#x0004; -> ? >>

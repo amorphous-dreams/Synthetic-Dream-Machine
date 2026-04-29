@@ -46,6 +46,9 @@ role         = "session handoff crystal — 2026-04-29 — local-first architect
 
 <<~/ahu >>
 
+<<~&#x0002;>>
+
+
 <<~ ahu #ooda-ha-tw5-uefn >>
 
 ## OODA-HA: TW5 / UEFN Verse Parity
@@ -185,4 +188,5 @@ packages/lararium-app/src/KumuExecutor.ts  [new]
 
 <<~/ahu >>
 
+<<~&#x0003;>>
 <<~&#x0004; -> ? >>

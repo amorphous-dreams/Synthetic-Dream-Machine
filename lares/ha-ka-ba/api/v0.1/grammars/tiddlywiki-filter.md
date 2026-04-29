@@ -48,6 +48,9 @@ Guest enters through `hana`. Host metaphysics translate explicitly. Parser and r
 
 <<~/ahu >>
 
+<<~&#x0002;>>
+
+
 <<~ ahu #constitutional-charge >>
 
 ## Constitutional Charge
@@ -184,4 +187,5 @@ This imported grammar does not force the render target to become the constitutio
 <<~/ahu >>
 
 
+<<~&#x0003;>>
 <<~&#x0004; -> ? >>

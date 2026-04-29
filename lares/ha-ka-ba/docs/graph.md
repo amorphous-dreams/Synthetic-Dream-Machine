@@ -38,6 +38,9 @@ status-date  = "2026-04-24"
 ↺ surface one open question — `? ->` socket resolution depth — before implementing the parser.
 <<~/ahu >>
 
+<<~&#x0002;>>
+
+
 <<~ ahu #core-proposition >>
 
 ## Core Proposition
@@ -176,4 +179,5 @@ Phases 1, 3, and 4 may proceed independently.
 <<~ pranala #implements-invariant ? -> lar:///ha.ka.ba/api/v0.1/pono/invariant family:control role:implements >>
 <<~/ahu >>
 
+<<~&#x0003;>>
 <<~&#x0004; -> ? >>

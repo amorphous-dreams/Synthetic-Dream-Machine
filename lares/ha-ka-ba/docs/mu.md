@@ -47,6 +47,9 @@ Use this branch for:
 
 <<~/ahu >>
 
+<<~&#x0002;>>
+
+
 <<~ ahu #sigil-arrival >>
 
 ## The Sigils Teach by Arrival
@@ -79,4 +82,5 @@ AST reader: read the sockets, then route.
 <<~/ahu >>
 
 
+<<~&#x0003;>>
 <<~&#x0004; -> ? >>

@@ -42,6 +42,9 @@ Naming a failure mode carries no condemnation. The name itself opens the ceremon
 ↺ release without accumulating the failure as residue; the name discharges the pressure.
 <<~/ahu >>
 
+<<~&#x0002;>>
+
+
 <<~ ahu #index >>
 
 ## Failure State Index
@@ -63,4 +66,5 @@ Naming a failure mode carries no condemnation. The name itself opens the ceremon
 
 <<~/ahu >>
 
+<<~&#x0003;>>
 <<~⊙&#x0004; -> ? >>

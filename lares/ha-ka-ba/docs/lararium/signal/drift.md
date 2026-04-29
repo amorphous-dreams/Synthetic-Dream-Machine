@@ -21,6 +21,9 @@ retain = false
 
 <<~/ahu >>
 
+<<~&#x0002;>>
+
+
 <<~ ahu #meme-header >>
 
 # Lararium Signal — Drift
@@ -68,4 +71,5 @@ The in-span annotation contract stays in `lar:///ha.ka.ba/docs/lararium/signal/m
 <<~/ahu >>
 
 
+<<~&#x0003;>>
 <<~&#x0004; -> ? >>

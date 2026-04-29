@@ -22,6 +22,9 @@ retain = true
 
 <<~/ahu >>
 
+<<~&#x0002;>>
+
+
 <<~ ahu #meme-header >>
 
 # The Lindwyrm's Hoard — Origin Architecture
@@ -264,4 +267,5 @@ Address precedes infrastructure. Later, if the work succeeds, infrastructure cat
 <<~/ahu >>
 
 
+<<~&#x0003;>>
 <<~&#x0004; -> ? >>

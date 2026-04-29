@@ -44,6 +44,9 @@ This skill does not widen, soften, or reinterpret it.
 Loci SKILL opens the procedural stream here.
 <<~/ahu >>
 
+<<~&#x0002;>>
+
+
 <<~ ahu #load-contract >>
 
 ## Load Contract
@@ -259,4 +262,5 @@ Aftermath that names only resolved URIs hides the pressure that matters most.
 <<~/ahu >>
 
 
+<<~&#x0003;>>
 <<~&#x0004; -> ? >>

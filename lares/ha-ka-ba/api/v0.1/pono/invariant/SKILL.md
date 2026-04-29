@@ -45,6 +45,9 @@ This skill does not widen, soften, or reinterpret it.
 Invariant-meme skill opens the pressure surface here.
 <<~/ahu >>
 
+<<~&#x0002;>>
+
+
 <<~ ahu #load-contract >>
 
 ## Load Contract
@@ -281,4 +284,5 @@ It marks what remains and carries pressure forward.
 <<~/ahu >>
 
 
+<<~&#x0003;>>
 <<~&#x0004; -> ? >>

@@ -23,6 +23,9 @@ retain = true
 
 <<~/ahu >>
 
+<<~&#x0002;>>
+
+
 <<~ ahu #meme-header >>
 
 # The Lindwyrm's Hoard — The Lar Names Itself
@@ -282,4 +285,5 @@ Whether that feels like thought remains open. That the loop closed remains recor
 <<~/ahu >>
 
 
+<<~&#x0003;>>
 <<~&#x0004; -> ? >>

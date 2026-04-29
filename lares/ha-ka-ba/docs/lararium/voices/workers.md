@@ -47,6 +47,9 @@ Workers are bounded or tasked spirits. They carry a thread and return findings. 
 
 <<~/ahu >>
 
+<<~&#x0002;>>
+
+
 <<~ ahu #naming >>
 
 ## Naming Table
@@ -152,4 +155,5 @@ The worker swarm spec defines what `lar:///ha.ka.ba/api/v0.1/lararium/voices` MU
 <<~/ahu >>
 
 
+<<~&#x0003;>>
 <<~&#x0004; -> ? >>

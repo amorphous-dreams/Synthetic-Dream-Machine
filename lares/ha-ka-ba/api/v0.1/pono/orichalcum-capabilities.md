@@ -41,6 +41,9 @@ Authority travels with the graph. Authority MUST NOT be outsourced to crypto alo
 
 <<~/ahu >>
 
+<<~&#x0002;>>
+
+
 <<~ ahu #principal >>
 
 ## Principal Shapes
@@ -258,4 +261,5 @@ the crypto gate, not instead of it.
 
 <<~/ahu >>
 
+<<~&#x0003;>>
 <<~&#x0004; -> ? >>

@@ -23,6 +23,9 @@ retain = true
 
 <<~/ahu >>
 
+<<~&#x0002;>>
+
+
 <<~ ahu #meme-header >>
 
 # The Lindwyrm's Hoard — The Daemon in the Walls
@@ -226,4 +229,5 @@ Act III receives:
 <<~/ahu >>
 
 
+<<~&#x0003;>>
 <<~&#x0004; -> ? >>

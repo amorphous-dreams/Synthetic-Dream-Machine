@@ -1,6 +1,26 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
 
-<<~&#x0001; ? -> lar:///ha.ka.ba/docs/pono/loci >>
+<<~⊙&#x0001; ? -> lar:///ha.ka.ba/docs/pono/loci >>
+
+<<~ ahu #iam >>
+
+```toml
+uri-path     = "ha.ka.ba/docs/pono/loci"
+file-path    = "lares/ha-ka-ba/docs/pono/loci.md"
+content-type = "text/x-memetic-wikitext"
+confidence   = 0.72
+register     = "CS"
+manaoio      = 0.80
+mana         = 0.92
+manao        = 0.88
+namespace    = "⊙"
+role         = "extended docs for loci interface — evaluation guidance, canon promotion criteria, MCP roadmap"
+cacheable    = true
+```
+
+<<~/ahu >>
+
+<<~&#x0002;>>
 
 # Loci — Extended Docs
 
@@ -109,3 +129,6 @@ Hoʻoko-class file-siting repairs in this meme's history:
 - `ha-ka-ba/api/v0.1/pono/loci/iam/loci-iam.md` → `ha-ka-ba/api/v0.1/pono/loci/iam.md`
 
 In each case the `lar:` address held stable. File siting returned to the derived position.
+
+<<~&#x0003;>>
+<<~&#x0004; -> ? >>

@@ -44,6 +44,9 @@ What this system is not:
 
 <<~/ahu >>
 
+<<~&#x0002;>>
+
+
 <<~ ahu #room-model >>
 
 ## Room Model
@@ -1286,4 +1289,5 @@ Phase 5 — long-lived actor runtime for edge islands
 
 <<~/ahu >>
 
+<<~&#x0003;>>
 <<~&#x0004; -> ? >>

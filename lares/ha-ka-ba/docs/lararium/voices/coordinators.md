@@ -50,6 +50,9 @@ Anonymous outputs constitute a minor degraded-node state.
 
 <<~/ahu >>
 
+<<~&#x0002;>>
+
+
 <<~ ahu #naming-law >>
 
 ## Naming Law
@@ -209,4 +212,5 @@ The coordinator house spec defines what `lar:///ha.ka.ba/api/v0.1/lararium/voice
 <<~/ahu >>
 
 
+<<~&#x0003;>>
 <<~&#x0004; -> ? >>

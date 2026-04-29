@@ -62,6 +62,9 @@ label = "parent-index-entry"
 
 <<~/ahu >>
 
+<<~&#x0002;>>
+
+
 <<~ ahu #corpus >>
 
 ## Corpus
@@ -175,4 +178,5 @@ How Map-Wisp colors each coordinator register when they speak through her struct
 <<~/ahu >>
 
 
+<<~&#x0003;>>
 <<~&#x0004; -> ? >>

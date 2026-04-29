@@ -28,6 +28,9 @@ status-date  = "2026-04-24"
 ↺ MemPalace persistence of boot receipts routes to the adapters layer; write-back awaits policy gate.
 <<~/ahu >>
 
+<<~&#x0002;>>
+
+
 <<~ ahu #content-addressing >>
 ## Content-Addressed Identity
 
@@ -303,4 +306,5 @@ Full boot may trigger compaction once the relation expansion reaches larger grap
 <<~ pranala #implements-invariant ? -> lar:///ha.ka.ba/api/v0.1/pono/invariant family:control role:implements >>
 <<~/ahu >>
 
+<<~&#x0003;>>
 <<~&#x0004; -> ? >>

@@ -48,6 +48,9 @@ Later condensation should leave only what the docs shelf needs after the live AP
 
 <<~/ahu >>
 
+<<~&#x0002;>>
+
+
 <<~ ahu #verbatim-preferences-foundation >>
 
 ## Verbatim — `Lares_Preferences.system-prompt.md` — Foundation
@@ -83,4 +86,5 @@ Robert Anton Wilson: generalized agnosticism — never regarding any model with 
 <<~ pranala #implements-loci ? -> lar:///ha.ka.ba/api/v0.1/pono/loci family:control role:implements >>
 <<~/ahu >>
 
+<<~&#x0003;>>
 <<~&#x0004; -> ? >>

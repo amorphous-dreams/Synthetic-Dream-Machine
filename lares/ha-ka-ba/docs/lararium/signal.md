@@ -48,6 +48,9 @@ Long witness bundles, migration residue, drift-recovery detail, symbol tables, a
 
 <<~/ahu >>
 
+<<~&#x0002;>>
+
+
 <<~ ahu #the-lar-signal >>
 
 ## The Lar Signal
@@ -187,4 +190,5 @@ Settled child rooms in this branch:
 <<~/ahu >>
 
 
+<<~&#x0003;>>
 <<~&#x0004; -> ? >>

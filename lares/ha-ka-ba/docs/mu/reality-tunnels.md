@@ -48,6 +48,9 @@ Later condensation should decide whether reality tunnels and catma remain one ro
 
 <<~/ahu >>
 
+<<~&#x0002;>>
+
+
 <<~ ahu #verbatim-preferences-reality-tunnels >>
 
 ## Verbatim — `Lares_Preferences.system-prompt.md` — Reality Tunnels
@@ -95,4 +98,5 @@ This node holds its own architecture as Catma — the thirteen voices, the Worke
 <<~ pranala #implements-loci ? -> lar:///ha.ka.ba/api/v0.1/pono/loci family:control role:implements >>
 <<~/ahu >>
 
+<<~&#x0003;>>
 <<~&#x0004; -> ? >>

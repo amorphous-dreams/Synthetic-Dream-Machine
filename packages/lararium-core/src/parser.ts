@@ -50,6 +50,20 @@ interface SigilScan {
 // ---------------------------------------------------------------------------
 
 const BOOTSTRAP_SCANS: SigilScan[] = [
+  // ---------------------------------------------------------------------------
+  // ASCII control-character framing protocol — SOH / STX / ETX / EOT.
+  // These MUST be listed before ahu and generic header scans so decorated forms
+  // such as `<<~&#x0002; ahu #meme-body-open >>` remain structural leaves rather
+  // than becoming addressable child worksites.
+  // The decorator prefix (namespace glyphs, e.g. ॐ ँ or ⊙) is consumed by [^>]*.
+  // ---------------------------------------------------------------------------
+  { sigilName: "control-soh", regex: /<<~[^>]*&#x0001;[^>]*\?\s*->\s*([^\s>]+)\s*>>/g, eventType: "pragma" },
+  { sigilName: "control-stx", regex: /<<~[^>]*&#x0002;[^>]*>>/g,                        eventType: "pragma" },
+  { sigilName: "control-etx", regex: /<<~[^>]*&#x0003;[^>]*>>/g,                        eventType: "pragma" },
+  { sigilName: "control-eot", regex: /<<~[^>]*&#x0004;[^>]*>>/g,                        eventType: "pragma" },
+  // Kapu extended range — DC1 (&#x0011;) SOH variant, DC4 (&#x0014;) EOT variant
+  { sigilName: "control-soh", regex: /<<~[^>]*&#x0011;[^>]*\?\s*->\s*([^\s>]+)\s*>>/g, eventType: "pragma" },
+  { sigilName: "control-eot", regex: /<<~[^>]*&#x0014;[^>]*>>/g,                        eventType: "pragma" },
   // Structural
   { sigilName: "ahu",       regex: /<<~[^>]*\bahu\s+(#[\w-]+)\s*>>/g,     eventType: "open"   },
   { sigilName: "ahu",       regex: /<<~\/ahu\s*>>/g,                       eventType: "close"  },
@@ -105,16 +119,6 @@ const BOOTSTRAP_SCANS: SigilScan[] = [
   // groups [full, trigger?] — trigger is optional papalohe slot name
   { sigilName: "kukali",    regex: /<<~\s*kukali(?:\s+trigger:([\w.-]+))?\s*>>/g, eventType: "leaf" },
   { sigilName: "\\suspends", canonicalName: "kukali", regex: /<<~\s*\\suspends(?:\s+trigger:([\w.-]+))?\s*>>/g, eventType: "leaf" },
-  // ---------------------------------------------------------------------------
-  // ASCII control-character framing protocol — SOH / STX / ETX / EOT.
-  // These MUST be listed before the generic pranala-header scan so the &#x0001;
-  // form is consumed here rather than falling through to the bare `? ->` pattern.
-  // The decorator prefix (namespace glyphs, e.g. ॐ ँ or ⊙) is consumed by [^>]*.
-  // ---------------------------------------------------------------------------
-  { sigilName: "control-soh", regex: /<<~[^>]*&#x0001;[^>]*\?\s*->\s*([^\s>]+)\s*>>/g, eventType: "pragma" },
-  { sigilName: "control-stx", regex: /<<~[^>]*&#x0002;[^>]*>>/g,                        eventType: "pragma" },
-  { sigilName: "control-etx", regex: /<<~[^>]*&#x0003;[^>]*>>/g,                        eventType: "pragma" },
-  { sigilName: "control-eot", regex: /<<~[^>]*&#x0004;[^>]*>>/g,                        eventType: "pragma" },
 ];
 
 function buildScansFromGrammar(sigils: SigilRule[]): SigilScan[] {
@@ -151,7 +155,13 @@ function buildScansFromGrammar(sigils: SigilRule[]): SigilScan[] {
       if (rx) scans.push({ sigilName: s.name, ...extra, regex: rx, eventType: "leaf" });
     }
   }
-  return scans;
+  // Control scans must win at identical positions even when scans are hydrated
+  // from grammar memes instead of BOOTSTRAP_SCANS.
+  return scans.sort((a, b) => {
+    const ap = a.sigilName.startsWith("control-") ? 0 : 1;
+    const bp = b.sigilName.startsWith("control-") ? 0 : 1;
+    return ap - bp;
+  });
 }
 
 // ---------------------------------------------------------------------------

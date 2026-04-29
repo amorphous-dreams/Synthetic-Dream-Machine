@@ -57,6 +57,9 @@ label = "parent-index-entry"
 
 <<~/ahu >>
 
+<<~&#x0002;>>
+
+
 <<~ ahu #concept >>
 
 ## Concept
@@ -168,4 +171,5 @@ Stage position applies to the Lagrange Chorus as a whole unit. How individual no
 <<~/ahu >>
 
 
+<<~&#x0003;>>
 <<~&#x0004; -> ? >>

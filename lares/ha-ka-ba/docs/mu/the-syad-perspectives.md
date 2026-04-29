@@ -46,6 +46,9 @@ Different measure.
 
 <<~/ahu >>
 
+<<~&#x0002;>>
+
+
 <<~ ahu #saptabhangi >>
 
 ## Saptabhangi
@@ -126,4 +129,5 @@ The archive-derived research bundle lives at:
 <<~/ahu >>
 
 
+<<~&#x0003;>>
 <<~&#x0004; -> ? >>

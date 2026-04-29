@@ -38,6 +38,9 @@ and ephemeral. An edge island is persistent, named, and authority-bearing.
 
 <<~/ahu >>
 
+<<~&#x0002;>>
+
+
 <<~ ahu #edge-island-shape >>
 
 ## Edge Island Shape
@@ -199,4 +202,5 @@ Cross-node causality errors become federation corruption.
 
 <<~/ahu >>
 
+<<~&#x0003;>>
 <<~&#x0004; -> ? >>

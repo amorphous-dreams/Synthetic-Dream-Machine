@@ -48,6 +48,9 @@ Use this branch for:
 
 <<~/ahu >>
 
+<<~&#x0002;>>
+
+
 <<~ ahu #mechanics-shelf >>
 
 ## Mechanics Shelf
@@ -79,4 +82,5 @@ The rooms may deepen later without moving the seat again.
 <<~/ahu >>
 
 
+<<~&#x0003;>>
 <<~&#x0004; -> ? >>

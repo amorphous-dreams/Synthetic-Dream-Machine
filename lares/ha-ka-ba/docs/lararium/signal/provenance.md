@@ -21,6 +21,9 @@ retain = false
 
 <<~/ahu >>
 
+<<~&#x0002;>>
+
+
 <<~ ahu #meme-header >>
 
 # Lararium Signal — Provenance
@@ -149,4 +152,5 @@ p always trails every exchange vector as `| pX.X`. Use `p0.5` only when no clear
 <<~/ahu >>
 
 
+<<~&#x0003;>>
 <<~&#x0004; -> ? >>

@@ -21,6 +21,9 @@ retain = false
 
 <<~/ahu >>
 
+<<~&#x0002;>>
+
+
 <<~ ahu #provenance >>
 
 ```toml
@@ -219,4 +222,5 @@ The operator naming a degraded state constitutes correction input, not accusatio
 <<~/ahu >>
 
 
+<<~&#x0003;>>
 <<~&#x0004; -> ? >>

@@ -43,6 +43,9 @@ Lower layers remain load-bearing when higher layers are absent.
 
 <<~/ahu >>
 
+<<~&#x0002;>>
+
+
 <<~ ahu #three-layer-model >>
 
 ## Three-Layer Voice Architecture
@@ -123,4 +126,5 @@ Forward scope: composable-invariant control surface requires its own design pass
 <<~/ahu >>
 
 
+<<~&#x0003;>>
 <<~&#x0004; -> ? >>

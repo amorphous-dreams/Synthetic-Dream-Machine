@@ -33,6 +33,9 @@ locus-subtype     = "Locus remains valid as the subtype name for memes that impl
 
 <<~/ahu >>
 
+<<~&#x0002;>>
+
+
 <<~ ahu #ooda-ha >>
 ✶ observe: the compiler needs three types — an edge, a meme, and a graph — before any walk can proceed.
 ⏿ orient: Bazel's depset pattern informs meme structure; canonical pranala kānāwai (`lar:///ha.ka.ba/api/v0.1/pono/pranala`) governs the full PranaEdge field set and independence law.
@@ -252,4 +255,5 @@ This lets a client verify the complete minimal-boot prefix byte-for-byte without
 <<~ pranala #implements-loci ? -> lar:///ha.ka.ba/api/v0.1/pono/loci family:control role:implements >>
 <<~/ahu >>
 
+<<~&#x0003;>>
 <<~&#x0004; -> ? >>

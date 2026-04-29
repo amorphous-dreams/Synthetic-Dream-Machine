@@ -22,6 +22,9 @@ invariant = false
 
 <<~/ahu >>
 
+<<~&#x0002;>>
+
+
 <<~ ahu #meme-header >>
 
 # Memetic Wikitext — Extended Docs
@@ -86,6 +89,7 @@ name = "example"
 
 
 
+<<~&#x0003;>>
 <<~&#x0004; -> ? >>
 ````
 

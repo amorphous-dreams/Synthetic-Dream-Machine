@@ -88,7 +88,7 @@ export class AutomergeMemeStore implements LarTiddlerStore {
     return raw ? this._freeze(raw) : null;
   }
 
-  async put(record: LarTiddlerRecord, _origin: ChangeOrigin): Promise<void> {
+  async put(record: LarTiddlerRecord, origin: ChangeOrigin): Promise<void> {
     this.handle.change((doc) => {
       doc[record.title] = {
         title:       record.title,
@@ -104,11 +104,10 @@ export class AutomergeMemeStore implements LarTiddlerStore {
       };
     });
     // Fire local subscribers immediately (Automerge fires "change" only for remote deltas)
-    const origin: ChangeOrigin = { kind: "tw-local", instanceId: "automerge-local" };
     for (const fn of this.subs) fn({ title: record.title, record, origin });
   }
 
-  async tombstone(title: string, _origin: ChangeOrigin): Promise<void> {
+  async tombstone(title: string, origin: ChangeOrigin): Promise<void> {
     this.handle.change((doc) => {
       const existing = doc[title];
       if (existing) {
@@ -117,7 +116,6 @@ export class AutomergeMemeStore implements LarTiddlerStore {
         doc[title] = { title, fields: {}, deleted: true };
       }
     });
-    const origin: ChangeOrigin = { kind: "tw-local", instanceId: "automerge-local" };
     for (const fn of this.subs) fn({ title, record: null, origin });
   }
 

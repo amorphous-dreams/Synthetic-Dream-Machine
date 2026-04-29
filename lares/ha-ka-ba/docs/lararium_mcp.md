@@ -34,6 +34,9 @@ test-count   = 77
 
 <<~/ahu >>
 
+<<~&#x0002;>>
+
+
 <<~ ahu #running >>
 
 ## Running the Server
@@ -342,4 +345,5 @@ class MyAdapter:
 <<~ pranala #implements-meme ? -> lar:///ha.ka.ba/api/v0.1/pono/meme family:control role:implements >>
 <<~/ahu >>
 
+<<~&#x0003;>>
 <<~&#x0004; -> ? >>
