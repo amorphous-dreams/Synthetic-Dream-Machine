@@ -297,13 +297,30 @@ async function main() {
         mkdirSync(resolve(filePath, ".."), { recursive: true });
         writeFileSync(filePath, carrierText, "utf-8");
         console.log(`[lararium-serve] promote: wrote ${filePath} (shape: ${shapeId})`);
+
+        const promotedAt = new Date().toISOString();
+        const promotedBy = `lararium-node:${HOST}:${PORT}`;
+
         // Mirror into Automerge so connected clients see the change immediately
         // without waiting for the lares/ watcher round-trip.
+        // Module memes (content-type: application/javascript) receive ceremony
+        // stamps — promoted-at and promoted-by — which the client kernel requires
+        // before injecting the meme body into TW5 ($tw.wiki capability gate).
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (memeHandle as any).change((doc: any) => {
-          doc[uri] = { title: uri, text: carrierText };
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const existing: Record<string, string> = (doc[uri] as any) ?? {};
+          const isModule = existing["content-type"] === "application/javascript"
+            || carrierText.includes('content-type    = "application/javascript"')
+            || carrierText.includes("content-type = \"application/javascript\"");
+          doc[uri] = {
+            ...existing,
+            title: uri,
+            text:  carrierText,
+            ...(isModule ? { "promoted-at": promotedAt, "promoted-by": promotedBy } : {}),
+          };
         });
-        return json(res, { promoted: uri, path: resolution.laresRelPath });
+        return json(res, { promoted: uri, path: resolution.laresRelPath, promotedAt });
       } catch (e) {
         return json(res, { error: String(e) }, 500);
       }

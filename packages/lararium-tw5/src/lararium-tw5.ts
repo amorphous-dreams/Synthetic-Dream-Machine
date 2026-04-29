@@ -33,7 +33,8 @@ import tw from "tiddlywiki";
 import type { ClosureEntry, EdgeRecord, FilterEngineFn, KumuDef, LarTiddlerStore, ReactionBinding } from "@lararium/core";
 import { parsePranalaEdges, extractReactionBindings, ReactionGraph, collectKumuDefs } from "@lararium/core";
 import { splitCarrierToTiddlers } from "./carrier-split.js";
-import { createLarariumWidgets, LARARIUM_WIDGETS_TIDDLER } from "./tw5-widgets.js";
+import { createLarariumWidgets, registerImplementorsOperator, LARARIUM_WIDGETS_TIDDLER } from "./tw5-widgets.js";
+import { UI_PRELOAD_TIDDLERS } from "./generated-ui-preloads.js";
 
 // Re-export so callers can get FilterEngineFn from @lararium/tw5 directly.
 export type { FilterEngineFn };
@@ -219,6 +220,13 @@ export class LarariumTW5 {
         tags:  ["$:/tags/Global"],
       });
 
+      // UI preloads — ViewTemplate tab + iam-panel character sheet template.
+      // Generated from lares/ha-ka-ba/api/v0.1/lararium/ui/ by scripts/write-ui-preloads.ts.
+      // Must be present before first render so the Metadata tab appears immediately.
+      for (const t of UI_PRELOAD_TIDDLERS) {
+        instance.preloadTiddlers.push(t as Record<string, unknown>);
+      }
+
       // Palette pointer — $:/palette is a TW5 system tiddler (can't be a lar: URI).
       // The actual palette data lives in lares/ha.ka.ba/api/v0.1/lararium/palette/
       // and arrives via the normal disk → Automerge → TW5 pipeline.
@@ -256,8 +264,7 @@ exports.startup = function() {
         restoreStdout?.();
         this._tw = instance;
         // Inject parser + widget modules — corpus-gated path with imperative fallback.
-        this._bootModules();
-        resolve();
+        this._bootModules().then(resolve).catch(() => resolve());
       });
     });
     return this._bootPromise;
@@ -342,62 +349,86 @@ exports.startup = function() {
   }
 
   // ---------------------------------------------------------------------------
-  // Module injection — capability-gated corpus path with imperative fallback.
+  // Module injection — three-layer capability gate with imperative fallback.
   //
-  // After boot, query the wiki for all implementors of the tw5-module interface.
-  // Each passing meme's body is injected as a TW5 shadow tiddler so TW5's module
-  // system picks it up on next render. Falls back to imperative registration if
-  // no memes pass the threshold (cold boot / corpus not yet loaded).
+  // Gate layers (all three must pass):
+  //   1. Threshold  — mana ≥ 0.90, manao ≥ 0.85, manaoio ≥ 0.85, confidence ≥ 0.90
+  //   2. Hash       — sha256(body) === fields["body-sha256"] (set at build time)
+  //   3. Ceremony   — fields["promoted-at"] present (set by /admin/promote)
   //
-  // Threshold: mana ≥ 0.90, manaoio ≥ 0.85, confidence ≥ 0.90
-  // Gate: kernel holds $tw.wiki; only threshold-passing memes receive it.
+  // Falls back to imperative registration if no memes pass all three layers.
+  // Memes that fail any layer never receive the $tw.wiki reference.
   // ---------------------------------------------------------------------------
 
-  private static readonly MODULE_MANA_THRESHOLD    = 0.90;
-  private static readonly MODULE_MANAOIO_THRESHOLD = 0.85;
+  private static readonly MODULE_MANA_THRESHOLD       = 0.90;
+  private static readonly MODULE_MANAO_THRESHOLD      = 0.85;
+  private static readonly MODULE_MANAOIO_THRESHOLD    = 0.85;
   private static readonly MODULE_CONFIDENCE_THRESHOLD = 0.90;
+  private static readonly MODULE_INTERFACE_URI =
+    "lar:///ha.ka.ba/api/v0.1/lararium/tw5-module";
 
-  private _bootModules(): void {
+  private async _bootModules(): Promise<void> {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const tw = this._tw as any;
     const wiki = tw?.wiki;
 
     // --- Corpus-gated path ---------------------------------------------------
-    // Query for all memes that implement the tw5-module interface.
+    // Register implementors filter operator first so the query below works.
+    // Safe to call before corpus load — only needs tw.filterOperators map.
+    registerImplementorsOperator(tw);
+
     let injected = 0;
     try {
+      const iface = LarariumTW5.MODULE_INTERFACE_URI;
       const titles: string[] = wiki.filterTiddlers(
-        "[[lar:///ha.ka.ba/api/v0.1/lararium/tw5-module]implementors[]]"
+        `[all[tiddlers]implementors[${iface}]]`
       ) ?? [];
       for (const title of titles) {
         const t = wiki.getTiddler(title);
         if (!t) continue;
         const f = t.fields as Record<string, string>;
+
+        // Layer 1 — threshold
         const mana       = parseFloat(f["mana"]       ?? "0");
+        const manao      = parseFloat(f["manao"]      ?? "0");
         const manaoio    = parseFloat(f["manaoio"]    ?? "0");
         const confidence = parseFloat(f["confidence"] ?? "0");
         if (
-          mana       < LarariumTW5.MODULE_MANA_THRESHOLD    ||
-          manaoio    < LarariumTW5.MODULE_MANAOIO_THRESHOLD ||
+          mana       < LarariumTW5.MODULE_MANA_THRESHOLD       ||
+          manao      < LarariumTW5.MODULE_MANAO_THRESHOLD       ||
+          manaoio    < LarariumTW5.MODULE_MANAOIO_THRESHOLD     ||
           confidence < LarariumTW5.MODULE_CONFIDENCE_THRESHOLD
         ) continue;
+
         const body = f["text"] ?? "";
         if (!body.trim() || body.startsWith("// Body injected")) continue;
-        // Inject as shadow tiddler — TW5's module system picks it up.
+
+        // Layer 2 — content hash
+        const claimedHash = f["body-sha256"] ?? "";
+        if (!claimedHash || !(await LarariumTW5._verifySha256(body, claimedHash))) continue;
+
+        // Layer 3 — ceremony stamp
+        if (!f["promoted-at"]) continue;
+
+        // All three layers passed — hand $tw.wiki to this meme.
         wiki.addTiddler(new tw.Tiddler({
           title,
-          type:            "application/javascript",
-          "module-type":   f["module-type"] ?? "library",
-          text:            body,
-          tags:            [],
+          type:           "application/javascript",
+          "module-type":  f["module-type"] ?? "library",
+          text:           body,
+          tags:           [],
         }));
         injected++;
       }
-    } catch { /* filter not available yet — fall through to imperative path */ }
+    } catch { /* filter unavailable — fall through to imperative path */ }
 
     if (injected > 0) {
-      // Corpus path succeeded — run module IIFE now that tiddler is in the wiki.
-      try { tw.modules.define(wiki.getTiddler("lar:///ha.ka.ba/api/v0.1/lararium/modules/tw5-modules")?.fields?.["text"] ?? "", "library", "lararium-tw5-modules"); } catch { /* no-op */ }
+      try {
+        const moduleText = wiki.getTiddler(
+          "lar:///ha.ka.ba/api/v0.1/lararium/modules/tw5-modules"
+        )?.fields?.["text"] ?? "";
+        tw.modules.define(moduleText, "library", "lararium-tw5-modules");
+      } catch { /* no-op */ }
       return;
     }
 
@@ -405,6 +436,7 @@ exports.startup = function() {
     // No corpus module memes passed the threshold. Register directly from the
     // compiled-in classes. This path is permanent for offline/cold-boot and
     // during the transition before pnpm bundle has run.
+    // implementors operator already registered above; no-op to call again.
     const parsers: Record<string, unknown> = tw?.Wiki?.parsers ?? {};
     import("./memetic-parser.js").then(({ MemeticParser }) => {
       parsers["text/x-memetic-wikitext"] = MemeticParser;
@@ -421,6 +453,24 @@ exports.startup = function() {
       Object.setPrototypeOf((cls as { prototype: object }).prototype, WidgetCtor.prototype);
       WidgetCtor.prototype.widgetClasses ??= {};
       WidgetCtor.prototype.widgetClasses[name] = cls;
+    }
+  }
+
+  // SHA-256 of body text, compared against the claimed hex digest in #iam.
+  // Uses globalThis.crypto.subtle (Node 19+ and all modern browsers, no imports).
+  // Returns false if subtle is unavailable — causing graceful fallback to the
+  // imperative path rather than injecting unverified code.
+  private static async _verifySha256(body: string, claimedHex: string): Promise<boolean> {
+    try {
+      const subtle = globalThis.crypto?.subtle;
+      if (!subtle) return false;
+      const buf    = await subtle.digest("SHA-256", new TextEncoder().encode(body));
+      const actual = Array.from(new Uint8Array(buf))
+        .map((b) => b.toString(16).padStart(2, "0"))
+        .join("");
+      return actual === claimedHex;
+    } catch {
+      return false;
     }
   }
 

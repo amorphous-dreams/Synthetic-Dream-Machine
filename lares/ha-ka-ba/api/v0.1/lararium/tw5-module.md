@@ -36,9 +36,12 @@ corpus load.
 | `content-type` | MUST be `"application/javascript"` |
 | `module-type` | MUST be one of `"parser"`, `"widget"`, `"library"`, `"startup"` |
 | `tw5-module-name` | The string key TW5 registers the module under (e.g. `"text/x-memetic-wikitext"` for parsers) |
-| `mana` | MUST be ≥ 0.90 to pass the injection gate |
-| `manaoio` | MUST be ≥ 0.85 to pass the injection gate |
-| `confidence` | MUST be ≥ 0.90 to pass the injection gate |
+| `mana` | MUST be ≥ 0.90 to pass gate layer 1 (threshold) |
+| `manao` | MUST be ≥ 0.85 to pass gate layer 1 (threshold) |
+| `manaoio` | MUST be ≥ 0.85 to pass gate layer 1 (threshold) |
+| `confidence` | MUST be ≥ 0.90 to pass gate layer 1 (threshold) |
+| `body-sha256` | SHA-256 hex digest of the body text; MUST match at inject time (gate layer 2 — content integrity); written by `scripts/write-module-meme.ts` at build time |
+| `promoted-at` | ISO 8601 timestamp written by `/admin/promote` ceremony; MUST be present (gate layer 3 — operator authorization); memes without this field are never injected regardless of threshold or hash |
 
 ### Body
 
@@ -49,12 +52,16 @@ TW5 instance provides it at injection time.
 ### Capability Model
 
 The kernel holds the `$tw.wiki` reference. Injecting a module meme into TW5 hands that reference
-to the bundle's execution context. The threshold fields (`mana`, `manaoio`, `confidence`) are the
-UCAN-style capability attenuation gate — a meme that fails the threshold is never handed the wiki
-reference, regardless of what its body claims.
+to the bundle's execution context. Three gate layers must all pass before the kernel hands `$tw.wiki`
+to any meme body:
 
-The kernel MUST NOT inject a module meme promoted from a lower-trust peer without operator
-confirmation via the `/admin/promote` ceremony.
+1. **Threshold** (`mana` ≥ 0.90, `manao` ≥ 0.85, `manaoio` ≥ 0.85, `confidence` ≥ 0.90) — declared intent
+2. **Content hash** (`body-sha256` matches `sha256(text)`) — body integrity; set at build time by `pnpm bundle`, verified at inject time; a tampered or stale body fails here
+3. **Ceremony stamp** (`promoted-at` present) — operator authorization; written only by `/admin/promote` on localhost; peer-synced memes without this field are never injected
+
+A meme that fails any layer falls through to the imperative fallback path and is not executed.
+The build process (`pnpm bundle`) is the trust anchor for layers 1–2; the operator is the trust
+anchor for layer 3.
 
 ### Fallback
 

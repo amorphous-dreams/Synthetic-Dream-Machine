@@ -306,6 +306,36 @@ export function createLarariumWidgets(_tw: any): Record<string, WidgetCtor> {
 // module-type: widget enables future plugin-mode distribution.
 // ---------------------------------------------------------------------------
 
+// ---------------------------------------------------------------------------
+// implementors filter operator — exact-token match on a space-separated list field.
+//
+// Usage: [all[tiddlers]implementors[lar:///ha.ka.ba/api/v0.1/lararium/tw5-module]]
+//
+// TW5's built-in field: operator does substring matching, which breaks when one
+// URI is a prefix of another. This operator uses $tw.utils.parseStringArray for
+// exact token matching, making implements lists safe regardless of URI structure.
+//
+// Registered as module-type: "filteroperator" via the IIFE bundle at boot.
+// ---------------------------------------------------------------------------
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function registerImplementorsOperator(tw: any): void {
+  if (!tw?.filterOperators) return;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  tw.filterOperators["implementors"] = function (source: any, operator: any) {
+    const target  = operator.operand ?? "";
+    const results: string[] = [];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    source(function (tiddler: any, title: string) {
+      if (!tiddler) return;
+      const raw: string = tiddler.fields?.["implements"] ?? "";
+      const tokens: string[] = tw.utils.parseStringArray(raw) ?? [];
+      if (tokens.includes(target)) results.push(title);
+    });
+    return results;
+  };
+}
+
 export const LARARIUM_WIDGETS_TIDDLER = {
   title:         "lar:///lararium-node/tw5/widgets",
   type:          "application/javascript",

@@ -32,9 +32,14 @@ describe("LarariumTW5 — boot and filter", () => {
 
   test("filterTiddlers on empty wiki contains only built-in lar:/// system tiddlers", () => {
     const titles = tw.filterTiddlers("[all[tiddlers]]");
-    const larTitles = titles.filter((t) => t.startsWith("lar://"));
-    // lar:///lararium-node/tw5/widgets is preloaded at boot as the widget module tiddler.
-    expect(larTitles).toEqual(["lar:///lararium-node/tw5/widgets"]);
+    const larTitles = titles.filter((t) => t.startsWith("lar://")).sort();
+    // Preloaded at boot: widget module marker + two UI preload tiddlers (iam-panel, iam-viewtemplate-tab).
+    expect(larTitles).toEqual([
+      "lar:///ha.ka.ba/api/v0.1/lararium/ui/iam-panel",
+      "lar:///ha.ka.ba/api/v0.1/lararium/ui/iam-startup-action",
+      "lar:///ha.ka.ba/api/v0.1/lararium/ui/iam-viewtemplate-tab",
+      "lar:///lararium-node/tw5/widgets",
+    ]);
   });
 
   test("setTiddler + filterTiddlers resolves the added title", () => {

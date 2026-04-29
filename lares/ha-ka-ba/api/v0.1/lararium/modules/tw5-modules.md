@@ -19,6 +19,7 @@ role            = "kernel-injectable TW5 module bundle: MemeticParser + lararium
 cacheable       = true
 retain          = true
 implements      = ["lar:///ha.ka.ba/api/v0.1/lararium/tw5-module"]
+body-sha256 = "357a8fc84e48c481bf8f2c18b0e4dc6f761d27e60c82d89209757115df16e76b"
 ```
 
 <<~/ahu >>
