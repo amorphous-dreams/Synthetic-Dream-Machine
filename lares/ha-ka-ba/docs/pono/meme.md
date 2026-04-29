@@ -32,9 +32,6 @@ This surface carries examples, tables, and split residue.
 
 <<~/ahu >>
 
-<<~&#x0002; ahu #meme-body-open >>
-docs/pono/meme opens
-<<~/ahu >>
 
 <<~ ahu #required-shape-reference >>
 
@@ -116,9 +113,6 @@ Research backlog and subtype-specific detail should deepen into their own outwar
 
 <<~/ahu >>
 
-<<~&#x0003; ahu #body-close >>
-docs/pono/meme closes
-<<~/ahu >>
 
 <<~ ahu #edges >>
 

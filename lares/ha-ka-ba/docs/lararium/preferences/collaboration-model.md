@@ -30,9 +30,6 @@ This room holds one of the strongest recovered principles in the lararium shelf:
 
 <<~/ahu >>
 
-<<~&#x0002; ahu #meme-body-open >>
-docs/lararium/preferences/collaboration-model opens
-<<~/ahu >>
 
 <<~ ahu #provenance >>
 
@@ -81,9 +78,6 @@ This room leans toward future deeper articulation in:
 
 <<~/ahu >>
 
-<<~ ahu #body-close >>
-docs/lararium/preferences/collaboration-model closes
-<<~/ahu >>
 
 <<~ ahu #edges >>
 

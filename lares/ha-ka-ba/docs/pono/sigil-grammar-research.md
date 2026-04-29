@@ -19,9 +19,6 @@ invariant    = false
 
 <<~/ahu >>
 
-<<~ ahu #meme-body-open >>
-sigil-grammar-research opens.
-<<~/ahu >>
 
 <<~ ahu #purpose >>
 
@@ -411,9 +408,6 @@ When editing grammar meme or parser:
 
 <<~/ahu >>
 
-<<~ ahu #meme-body-close >>
-sigil-grammar-research closes.
-<<~/ahu >>
 
 <<~ ahu #edges >>
 

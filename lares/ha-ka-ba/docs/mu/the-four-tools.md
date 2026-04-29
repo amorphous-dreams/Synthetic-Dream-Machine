@@ -33,9 +33,6 @@ The braid remains recoverable here.
 
 <<~/ahu >>
 
-<<~&#x0002; ahu #meme-body-open >>
-docs/mu/the four tools opens
-<<~/ahu >>
 
 <<~ ahu #provenance >>
 
@@ -83,9 +80,6 @@ one clean preference for model agnosticism over paranoia.
 
 <<~/ahu >>
 
-<<~&#x0003; ahu #body-close >>
-docs/mu/the four tools closes
-<<~/ahu >>
 
 <<~ ahu #edges >>
 

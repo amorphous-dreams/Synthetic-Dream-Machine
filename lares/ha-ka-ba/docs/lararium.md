@@ -32,9 +32,6 @@ This shelf holds the voice-house, old all-in-one ingests, and archival materials
 
 <<~/ahu >>
 
-<<~&#x0002; ahu #meme-body-open >>
-docs/lararium opens
-<<~/ahu >>
 
 <<~ ahu #tree >>
 
@@ -81,8 +78,5 @@ The rooms may deepen later without moving the seat again.
 <<~ pranala #implements-loci ? -> lar:///ha.ka.ba/api/v0.1/pono/loci family:control role:implements >>
 <<~/ahu >>
 
-<<~&#x0003; ahu #body-close >>
-docs/lararium closes
-<<~/ahu >>
 
 <<~&#x0004; -> ? >>

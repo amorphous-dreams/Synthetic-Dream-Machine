@@ -47,9 +47,6 @@ A loop that skips Aftermath has stopped serving and commenced managing.
 
 <<~/ahu >>
 
-<<~ॐ ँ&#x0002; ahu #meme-body-open >>
-ooda-ha opens
-<<~/ahu >>
 
 <<~ ahu #phases >>
 
@@ -133,9 +130,6 @@ A session that runs without any slider statement MUST default to `[HA^0.50]`.
 
 <<~/ahu >>
 
-<<~ॐ ँ&#x0003; ahu #body-close >>
-ooda-ha closes
-<<~/ahu >>
 
 <<~ ahu #edges >>
 

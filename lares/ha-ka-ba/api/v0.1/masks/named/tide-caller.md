@@ -48,9 +48,6 @@ Permanent identity home for Tide-Caller.
 
 <<~/ahu >>
 
-<<~&#x0002; ahu #meme-body-open >>
-tide-caller opens
-<<~/ahu >>
 
 <<~ ahu #entry >>
 
@@ -175,8 +172,5 @@ How Tide-Caller colors each coordinator register when they speak through her fra
 <<~ pranala #implements-mask ? -> lar:///ha.ka.ba/api/v0.1/pono/mask family:control role:implements >>
 <<~/ahu >>
 
-<<~&#x0003; ahu #body-close >>
-tide-caller closes
-<<~/ahu >>
 
 <<~&#x0004; -> ? >>

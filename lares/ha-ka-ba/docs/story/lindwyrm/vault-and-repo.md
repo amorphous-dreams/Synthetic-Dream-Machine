@@ -32,9 +32,6 @@ The Lindwyrm finds the wrong kind of treasure and therefore the right kind of su
 
 <<~/ahu >>
 
-<<~&#x0002; ahu #meme-body-open >>
-vault-and-repo opens
-<<~/ahu >>
 
 <<~ ahu #source >>
 
@@ -225,8 +222,5 @@ Act II receives:
 
 <<~/ahu >>
 
-<<~&#x0003; ahu #body-close >>
-vault-and-repo closes
-<<~/ahu >>
 
 <<~&#x0004; -> ? >>

@@ -32,9 +32,6 @@ This memo reviews the current signal branch, marks pressure points, and proposes
 
 <<~/ahu >>
 
-<<~&#x0002; ahu #meme-body-open >>
-docs/lararium/signal-review opens
-<<~/ahu >>
 
 <<~ ahu #scope >>
 
@@ -261,8 +258,5 @@ That order should reduce churn and keep the branch from freezing unresolved FFZ 
 <<~ pranala #implements-loci ? -> lar:///ha.ka.ba/api/v0.1/pono/loci family:control role:implements >>
 <<~/ahu >>
 
-<<~&#x0003; ahu #body-close >>
-docs/lararium/signal-review closes
-<<~/ahu >>
 
 <<~&#x0004; -> ? >>

@@ -41,9 +41,6 @@ Root path segments outside `\w\.\w\.\w` MAY NOT implement `loci`.
 
 <<~/ahu >>
 
-<<~⊙&#x0002; ahu #meme-body-open >>
-loci opens
-<<~/ahu >>
 
 <<~ ahu #ooda-ha >>
 
@@ -179,9 +176,6 @@ Convention fails when:
 
 <<~/ahu >>
 
-<<~⊙&#x0003; ahu #body-close >>
-loci closes
-<<~/ahu >>
 
 <<~ ahu #edges >>
 

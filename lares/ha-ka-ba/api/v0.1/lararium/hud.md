@@ -46,9 +46,6 @@ Session-facing status surface belongs here.
 
 <<~/ahu >>
 
-<<~ॐ ँ&#x0002; ahu #meme-body-open >>
-lararium/hud opens
-<<~/ahu >>
 
 <<~ ahu #contract >>
 
@@ -95,8 +92,5 @@ This child meme stays small enough to hydrate on every cold start.
 
 <<~/ahu >>
 
-<<~ॐ ँ&#x0003; ahu #body-close >>
-lararium/hud closes
-<<~/ahu >>
 
 <<~ॐ ँ&#x0004; -> ? >>

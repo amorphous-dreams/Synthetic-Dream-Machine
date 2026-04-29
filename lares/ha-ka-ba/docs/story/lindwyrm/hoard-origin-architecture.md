@@ -31,9 +31,6 @@ This locus carries the story map, act status, crossing threads, and drafting con
 
 <<~/ahu >>
 
-<<~&#x0002; ahu #meme-body-open >>
-hoard-origin-architecture opens
-<<~/ahu >>
 
 <<~ ahu #source >>
 
@@ -266,8 +263,5 @@ Address precedes infrastructure. Later, if the work succeeds, infrastructure cat
 
 <<~/ahu >>
 
-<<~&#x0003; ahu #body-close >>
-hoard-origin-architecture closes
-<<~/ahu >>
 
 <<~&#x0004; -> ? >>

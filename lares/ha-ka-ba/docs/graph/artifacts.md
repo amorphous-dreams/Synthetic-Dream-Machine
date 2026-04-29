@@ -18,9 +18,6 @@ status-date  = "2026-04-24"
 ```
 <<~/ahu >>
 
-<<~&#x0002; ahu #meme-body-open >>
-graph/artifacts opens
-<<~/ahu >>
 
 <<~ ahu #ooda-ha >>
 ✶ observe: the current boot receipt uses a compilation timestamp as its identity — not content addressing.
@@ -291,9 +288,6 @@ Full boot may trigger compaction once the relation expansion reaches larger grap
 
 <<~/ahu >>
 
-<<~&#x0003; ahu #body-close >>
-graph/artifacts closes
-<<~/ahu >>
 
 <<~ ahu #edges >>
 ## Edges

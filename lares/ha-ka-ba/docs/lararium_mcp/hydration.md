@@ -23,9 +23,6 @@ status-date  = "2026-04-23"
 ```
 <<~/ahu >>
 
-<<~&#x0002; ahu #meme-body-open >>
-lararium_mcp/hydration opens
-<<~/ahu >>
 
 <<~ ahu #ooda-ha >>
 ✶ observe: AGENTS names a 14-meme required-core closure through control/owns edges.
@@ -155,9 +152,6 @@ Minimal boot should remain small enough to avoid compaction.
 
 <<~/ahu >>
 
-<<~&#x0003; ahu #body-close >>
-lararium_mcp/hydration closes
-<<~/ahu >>
 
 <<~ ahu #edges >>
 ## Edges

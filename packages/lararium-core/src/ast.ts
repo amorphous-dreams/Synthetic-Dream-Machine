@@ -13,7 +13,8 @@ export type MemeAstKind =
   | "Edge"          // pranala (block or inline)
   | "EdgeSugar"     // loulou / aka / kahea / pono / papalohe
   | "Dispatch"      // lele — fire-and-forget message edge
-  | "CarrierHeader" // <<~ ? -> URI >>
+  | "CarrierHeader" // <<~ ? -> URI >>  (legacy; superseded by Control "soh")
+  | "Control"       // <<~&#x0001;>> SOH / <<~&#x0002;>> STX / <<~&#x0003;>> ETX / <<~&#x0004;>> EOT
   | "Text"          // raw wikitext span
   | "Sigil"         // all canonical sigils incl. toml (attrs bag carries content)
   | "Dynamic";      // grammar-meme-registered sigil not in canonical set
@@ -66,6 +67,31 @@ export interface DispatchNode extends AstBase {
 export interface CarrierHeaderNode extends AstBase {
   kind: "CarrierHeader";
   toUri: string;
+}
+
+// ---------------------------------------------------------------------------
+// ControlNode — ASCII framing protocol (SOH/STX/ETX/EOT).
+//
+// Maps the four classic teletype control characters onto carrier lifecycle:
+//   soh — Start Of Heading  <<~&#x0001; ? -> lar:///URI >>  (self-declaration)
+//   stx — Start of Text     <<~&#x0002;>>                   (identity done; content begins)
+//   etx — End of Text       <<~&#x0003;>>                   (content done; trailer begins)
+//   eot — End of Transmission <<~&#x0004; -> ? >>           (transmission complete)
+//
+// Streaming consumers can update incrementally on each phase boundary:
+//   soh → open stub card for URI
+//   stx → #iam dissolved; render identity panel
+//   etx → content ahus committed; fire activate
+//   eot → edges committed; update graph
+// ---------------------------------------------------------------------------
+
+export type ControlPhase = "soh" | "stx" | "etx" | "eot";
+
+export interface ControlNode extends AstBase {
+  kind: "Control";
+  phase: ControlPhase;
+  /** Present on soh (declared URI) and eot (return-to-caller marker). */
+  toUri?: string;
 }
 
 // MetadataNode removed — TOML is a general data carrier.
@@ -132,6 +158,7 @@ export type MemeAstNode =
   | EdgeSugarNode
   | DispatchNode
   | CarrierHeaderNode
+  | ControlNode
   | TextNode
   | SigilNode
   | DynamicNode;

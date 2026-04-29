@@ -22,9 +22,6 @@ test-count   = 77
 ```
 <<~/ahu >>
 
-<<~&#x0002; ahu #meme-body-open >>
-lararium_mcp docs-spec opens
-<<~/ahu >>
 
 <<~ ahu #ooda-ha >>
 
@@ -327,9 +324,6 @@ class MyAdapter:
 
 <<~/ahu >>
 
-<<~&#x0003; ahu #body-close >>
-lararium_mcp docs-spec closes
-<<~/ahu >>
 
 <<~ ahu #edges >>
 

@@ -268,9 +268,6 @@ It marks what remains and carries pressure forward.
 
 <<~/ahu >>
 
-<<~&#x0003; ahu #body-close >>
-Invariant-meme operator closes here.
-<<~/ahu >>
 
 <<~ ahu #edges >>
 

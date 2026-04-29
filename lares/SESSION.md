@@ -22,9 +22,6 @@ role         = "session handoff crystal — 2026-04-29 — local-first architect
 
 <<~/ahu >>
 
-<<~&#x0002; ahu #meme-body-open >>
-SESSION opens
-<<~/ahu >>
 
 <<~ ahu #ooda-ha-local-first >>
 
@@ -177,9 +174,6 @@ packages/lararium-app/src/KumuExecutor.ts  [new]
 
 <<~/ahu >>
 
-<<~&#x0003; ahu #body-close >>
-SESSION closes
-<<~/ahu >>
 
 <<~ ahu #edges >>
 

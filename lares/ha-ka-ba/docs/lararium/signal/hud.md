@@ -31,9 +31,6 @@ Micro-trace, provenance, and drift now live in sibling rooms under `lar:///ha.ka
 
 <<~/ahu >>
 
-<<~&#x0002; ahu #meme-body-open >>
-docs/lararium/signal/hud opens
-<<~/ahu >>
 
 <<~ ahu #room-charter >>
 
@@ -464,9 +461,6 @@ Q16 (Tagspace slot shift notation) — locked.
 
 <<~/ahu >>
 
-<<~ ahu #body-close >>
-docs/lararium/signal/hud closes
-<<~/ahu >>
 
 <<~ ahu #edges >>
 

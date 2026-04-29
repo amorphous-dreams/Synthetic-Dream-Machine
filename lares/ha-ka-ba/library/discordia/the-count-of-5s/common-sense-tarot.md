@@ -28,9 +28,6 @@ Current lar address follows the file path now on disk.
 
 <<~/ahu >>
 
-<<~&#x0002; ahu #meme-body-open >>
-library/discordia/the-count-of-5s/common-sense-tarot opens
-<<~/ahu >>
 
 <<~ ahu #source-text >>
 ---
@@ -3240,9 +3237,6 @@ Cover design: Michele Lanci-Altomare
 
 <<~/ahu >>
 
-<<~&#x0003; ahu #body-close >>
-library/discordia/the-count-of-5s/common-sense-tarot closes
-<<~/ahu >>
 
 
 <<~ ahu #edges >>

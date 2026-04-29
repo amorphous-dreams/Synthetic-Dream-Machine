@@ -30,9 +30,6 @@ Parser, render, and pono detail move outward.
 
 <<~/ahu >>
 
-<<~&#x0002; ahu #meme-body-open >>
-pono/guest-grammar opens
-<<~/ahu >>
 
 <<~ ahu #ooda-ha >>
 
@@ -130,9 +127,6 @@ Schema detail, fixture families, and execution procedure belong in the sidecars.
 
 <<~/ahu >>
 
-<<~&#x0003; ahu #body-close >>
-pono/guest-grammar closes
-<<~/ahu >>
 
 <<~ ahu #edges >>
 

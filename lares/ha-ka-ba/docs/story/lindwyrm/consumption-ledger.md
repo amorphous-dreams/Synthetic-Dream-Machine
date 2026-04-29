@@ -32,9 +32,6 @@ This ledger tracks source-talk-story material as it moves into coherent narrativ
 
 <<~/ahu >>
 
-<<~&#x0002; ahu #meme-body-open >>
-lindwyrm consumption ledger opens
-<<~/ahu >>
 
 <<~ ahu #intent-vector >>
 
@@ -122,8 +119,5 @@ Likely next slices:
 
 <<~/ahu >>
 
-<<~&#x0003; ahu #body-close >>
-lindwyrm consumption ledger closes
-<<~/ahu >>
 
 <<~&#x0004; -> ? >>

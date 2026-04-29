@@ -22,9 +22,6 @@ status-date  = "2026-04-23"
 ```
 <<~/ahu >>
 
-<<~&#x0002; ahu #meme-body-open >>
-lararium_mcp/spine opens
-<<~/ahu >>
 
 <<~ ahu #ooda-ha >>
 ✶ observe: the MCP shelf began as planning prose around a read-only Lararium server.
@@ -136,9 +133,6 @@ MemPalace currently demonstrates the sidecar pattern: Lares launches or talks to
 
 <<~/ahu >>
 
-<<~&#x0003; ahu #body-close >>
-lararium_mcp/spine closes
-<<~/ahu >>
 
 <<~ ahu #edges >>
 ## Edges

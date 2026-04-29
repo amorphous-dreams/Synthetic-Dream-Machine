@@ -32,9 +32,6 @@ The first resonance error becomes a green, wobbly teacher.
 
 <<~/ahu >>
 
-<<~&#x0002; ahu #meme-body-open >>
-daemon-in-the-walls opens
-<<~/ahu >>
 
 <<~ ahu #source >>
 
@@ -228,8 +225,5 @@ Act III receives:
 
 <<~/ahu >>
 
-<<~&#x0003; ahu #body-close >>
-daemon-in-the-walls closes
-<<~/ahu >>
 
 <<~&#x0004; -> ? >>

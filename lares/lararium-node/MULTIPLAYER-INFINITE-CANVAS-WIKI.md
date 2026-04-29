@@ -19,9 +19,6 @@ invariant   = false
 ```
 <<~/ahu >>
 
-<<~&#x0002; ahu #body-open >>
-MULTIPLAYER-INFINITE-CANVAS-WIKI opens
-<<~/ahu >>
 
 <<~ ahu #system-role >>
 
@@ -1277,9 +1274,6 @@ Phase 5 — long-lived actor runtime for edge islands
 
 <<~/ahu >>
 
-<<~&#x0003; ahu #body-close >>
-MULTIPLAYER-INFINITE-CANVAS-WIKI closes
-<<~/ahu >>
 
 <<~ ahu #edges >>
 

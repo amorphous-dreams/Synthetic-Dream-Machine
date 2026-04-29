@@ -29,9 +29,6 @@ This file gives examples and operator-facing guidance.
 
 <<~/ahu >>
 
-<<~&#x0002; ahu #meme-body-open >>
-docs/pono/exchange-vector opens
-<<~/ahu >>
 
 <<~ ahu #ooda-ha >>
 ✶ observe the operator prompt and infer a provisional operator URI.
@@ -103,9 +100,6 @@ Long-term, the server should validate the vector and render the HUD from the par
 
 <<~/ahu >>
 
-<<~&#x0003; ahu #body-close >>
-docs/pono/exchange-vector closes
-<<~/ahu >>
 
 <<~ ahu #edges >>
 ## Edges

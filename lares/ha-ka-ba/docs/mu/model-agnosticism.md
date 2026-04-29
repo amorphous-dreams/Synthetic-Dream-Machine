@@ -32,9 +32,6 @@ This room gathers the foundation braid around generalized agnosticism, maps and 
 
 <<~/ahu >>
 
-<<~&#x0002; ahu #meme-body-open >>
-docs/mu/model-agnosticism opens
-<<~/ahu >>
 
 <<~ ahu #plan >>
 
@@ -73,9 +70,6 @@ Robert Anton Wilson: generalized agnosticism — never regarding any model with 
 
 <<~/ahu >>
 
-<<~ ahu #body-close >>
-docs/mu/model-agnosticism closes
-<<~/ahu >>
 
 <<~ ahu #edges >>
 

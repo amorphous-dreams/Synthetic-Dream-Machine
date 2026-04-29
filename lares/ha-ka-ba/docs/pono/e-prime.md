@@ -22,9 +22,6 @@ Law lives at [e-prime.md](../../api/v0.1/pono/e-prime.md).
 
 This file holds research provenance and extended slider guidance.
 
-<<~&#x0002; ahu #meme-body-open >>
-docs/pono/e-prime opens
-<<~/ahu >>
 
 <<~ ahu #plan >>
 
@@ -94,9 +91,6 @@ It governs how often copulas manifest in the first place.
 
 <<~/ahu >>
 
-<<~&#x0003; ahu #body-close >>
-docs/pono/e-prime closes
-<<~/ahu >>
 
 <<~ ahu #edges >>
 

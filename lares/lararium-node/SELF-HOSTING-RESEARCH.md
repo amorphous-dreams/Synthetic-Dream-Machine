@@ -18,9 +18,6 @@ retain       = true
 
 <<~/ahu >>
 
-<<~ ahu #meme-body-open >>
-SELF-HOSTING-RESEARCH opens the research stream here.
-<<~/ahu >>
 
 <<~ ahu #question >>
 

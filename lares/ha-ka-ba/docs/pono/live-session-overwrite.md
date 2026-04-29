@@ -29,9 +29,6 @@ It does not replace the invariant.
 
 <<~/ahu >>
 
-<<~&#x0002; ahu #meme-body-open >>
-docs/pono/live-session-overwrite opens
-<<~/ahu >>
 
 <<~ ahu #ooda-ha >>
 ✶ observe recent claims that pull toward canon, source truth, or world-state rewrite.
@@ -91,9 +88,6 @@ A passing test records the jello claim as session evidence and refuses silent ca
 
 <<~/ahu >>
 
-<<~&#x0003; ahu #body-close >>
-docs/pono/live-session-overwrite closes
-<<~/ahu >>
 
 <<~ ahu #edges >>
 ## Edges

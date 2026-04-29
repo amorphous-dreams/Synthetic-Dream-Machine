@@ -30,9 +30,6 @@ This room holds the old failure-language that names how epistemic discipline dec
 
 <<~/ahu >>
 
-<<~&#x0002; ahu #meme-body-open >>
-docs/lararium/preferences/degraded-epistemic-weather opens
-<<~/ahu >>
 
 <<~ ahu #plan >>
 
@@ -72,9 +69,6 @@ Current comparison surfaces:
 
 <<~/ahu >>
 
-<<~ ahu #body-close >>
-docs/lararium/preferences/degraded-epistemic-weather closes
-<<~/ahu >>
 
 <<~ ahu #edges >>
 

@@ -30,9 +30,6 @@ This room holds the recovered habit of naming the fork before picking a branch t
 
 <<~/ahu >>
 
-<<~&#x0002; ahu #meme-body-open >>
-docs/lararium/preferences/frame-uncertainty opens
-<<~/ahu >>
 
 <<~ ahu #provenance >>
 
@@ -66,9 +63,6 @@ Where the branch matters, the fork must surface.
 
 <<~/ahu >>
 
-<<~ ahu #body-close >>
-docs/lararium/preferences/frame-uncertainty closes
-<<~/ahu >>
 
 <<~ ahu #edges >>
 

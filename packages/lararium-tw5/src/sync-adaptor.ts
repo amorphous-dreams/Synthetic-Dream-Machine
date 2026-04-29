@@ -23,7 +23,7 @@
 
 import type { LarTiddlerStore, LarTiddlerRecord, ChangeOrigin } from "@lararium/core";
 import type { LarariumTW5 } from "./lararium-tw5.js";
-import { splitCarrierToTiddlers, serializeCarrier } from "./carrier-split.js";
+import { splitCarrierToTiddlers, serializeCarrier, replaceCarrierSlot } from "./carrier-split.js";
 
 type SaveStrategy = "skip" | "direct" | "child-carrier";
 type SaveHandler  = (
@@ -47,17 +47,19 @@ function isTW5System(title: string): boolean {
 
 function extractFields(tiddler: unknown): Record<string, string> {
   if (!tiddler || typeof tiddler !== "object") return {};
-  // TW5 tiddler objects expose fields directly on the object
   const t = tiddler as Record<string, unknown>;
   const out: Record<string, string> = {};
+  const flatten = (k: string, v: unknown) => {
+    if (typeof v === "string") { out[k] = v; }
+    else if (Array.isArray(v)) { out[k] = (v as unknown[]).map(String).join(" "); }
+    // other types (number, boolean) intentionally omitted — not valid tiddler fields
+  };
   for (const [k, v] of Object.entries(t)) {
     if (k === "fields" && typeof v === "object" && v !== null) {
       // Some TW5 versions nest fields inside .fields
-      for (const [fk, fv] of Object.entries(v as Record<string, unknown>)) {
-        out[fk] = String(fv);
-      }
-    } else if (typeof v === "string") {
-      out[k] = v;
+      for (const [fk, fv] of Object.entries(v as Record<string, unknown>)) flatten(fk, fv);
+    } else {
+      flatten(k, v);
     }
   }
   return out;
@@ -107,7 +109,8 @@ export class LarariumCrdtSyncAdaptor {
         } else {
           const rec = change.record;
           const isCarrier = rec.text !== undefined &&
-            (rec.fields["content-type"] === "text/x-memetic-wikitext" || !rec.fields["content-type"]);
+            (rec.fields["content-type"] === "text/x-memetic-wikitext" ||
+              (!rec.fields["content-type"] && change.title.startsWith("lar:")));
 
           if (isCarrier && rec.text) {
             const split = splitCarrierToTiddlers(change.title, rec.text);
@@ -264,23 +267,47 @@ export class LarariumCrdtSyncAdaptor {
       const wiki = this.tw5.wiki;
       const parentTiddler = wiki.getTiddler?.(parentUri);
       const parentFields: Record<string, string | string[]> = parentTiddler?.fields ?? {};
-      const parentText: string = String(parentFields["text"] ?? "");
+      const rawCarrierText: string = String(parentFields["text"] ?? "");
 
-      const childTitles: string[] = this.tw5.filterTiddlers(`[tag[${parentUri}]has[ahu-slot]]`);
-      const children = childTitles.map((ct) => {
-        const ct5 = wiki.getTiddler?.(ct);
-        const cf  = ct5?.fields ?? {};
-        return {
-          title: ct,
-          fields: { ...cf, "ahu-slot": cf["ahu-slot"] ?? "", "ahu-parent": parentUri, tags: [parentUri] },
-          text: String(cf["text"] ?? ""),
-        };
-      });
+      // Determine the slot that changed (child title = parentUri + "#slot").
+      const slot = title.startsWith(parentUri) ? title.slice(parentUri.length) : null;
+      const newSlotBody = fields["text"] ?? "";
 
-      const reconstructed = serializeCarrier(
-        { title: parentUri, fields: parentFields, text: parentText },
-        children,
-      );
+      // Prefer surgical replacement to preserve decorators and all other slots.
+      // Fall back to full reconstruction if the slot pattern isn't found in the raw text.
+      let reconstructed: string;
+      if (slot && rawCarrierText) {
+        const spliced = replaceCarrierSlot(rawCarrierText, slot, newSlotBody);
+        if (spliced !== null) {
+          reconstructed = spliced;
+        } else {
+          // Slot not found in raw text — full reconstruct from all sibling children.
+          const childTitles: string[] = this.tw5.filterTiddlers(`[tag[${parentUri}]has[ahu-slot]]`);
+          const children = childTitles.map((ct) => {
+            const ct5 = wiki.getTiddler?.(ct);
+            const cf  = ct5?.fields ?? {};
+            return {
+              title: ct,
+              fields: { ...cf, "ahu-slot": cf["ahu-slot"] ?? "", "ahu-parent": parentUri, tags: [parentUri] },
+              text: String(cf["text"] ?? ""),
+            };
+          });
+          reconstructed = serializeCarrier({ title: parentUri, fields: parentFields, text: "" }, children);
+        }
+      } else {
+        // No raw text (new carrier) — reconstruct from all sibling children.
+        const childTitles: string[] = this.tw5.filterTiddlers(`[tag[${parentUri}]has[ahu-slot]]`);
+        const children = childTitles.map((ct) => {
+          const ct5 = wiki.getTiddler?.(ct);
+          const cf  = ct5?.fields ?? {};
+          return {
+            title: ct,
+            fields: { ...cf, "ahu-slot": cf["ahu-slot"] ?? "", "ahu-parent": parentUri, tags: [parentUri] },
+            text: String(cf["text"] ?? ""),
+          };
+        });
+        reconstructed = serializeCarrier({ title: parentUri, fields: parentFields, text: "" }, children);
+      }
 
       this._revisions.set(parentUri, revision);
       const record: LarTiddlerRecord = {

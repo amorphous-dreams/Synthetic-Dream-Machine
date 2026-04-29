@@ -33,9 +33,6 @@ Guest enters through `hana`. Host metaphysics translate explicitly. Parser and r
 
 <<~/ahu >>
 
-<<~&#x0002; ahu #meme-body-open >>
-x-tiddlywiki-filter opens
-<<~/ahu >>
 
 <<~ ahu #ooda-ha >>
 
@@ -171,9 +168,6 @@ This imported grammar does not force the render target to become the constitutio
 
 <<~/ahu >>
 
-<<~&#x0003; ahu #body-close >>
-x-tiddlywiki-filter closes
-<<~/ahu >>
 
 <<~ ahu #edges >>
 

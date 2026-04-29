@@ -32,9 +32,6 @@ Naming a failure mode carries no condemnation. The name itself opens the ceremon
 
 <<~/ahu >>
 
-<<~⊙&#x0002; ahu #meme-body-open >>
-failure-states opens
-<<~/ahu >>
 
 <<~ ahu #ooda-ha >>
 ✶ detect the pattern — compare incoming pressure against the named failure-state index.
@@ -53,9 +50,6 @@ failure-states opens
 
 <<~/ahu >>
 
-<<~⊙&#x0003; ahu #body-close >>
-failure-states closes
-<<~/ahu >>
 
 <<~ ahu #edges >>
 

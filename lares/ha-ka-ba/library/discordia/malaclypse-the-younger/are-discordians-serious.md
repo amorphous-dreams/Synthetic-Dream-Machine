@@ -27,9 +27,6 @@ Mal-2 unasks the question.
 
 <<~/ahu >>
 
-<<~&#x0002; ahu #meme-body-open >>
-library/discordia/malaclypse-the-younger/are-discordians-serious opens
-<<~/ahu >>
 
 <<~ ahu #provenance >>
 
@@ -128,8 +125,5 @@ meaning changes with the reading-standpoint that receives the declaration.
 <<~ pranala #implements-loci ? -> lar:///ha.ka.ba/api/v0.1/pono/loci family:control role:implements >>
 <<~/ahu >>
 
-<<~&#x0003; ahu #body-close >>
-library/discordia/malaclypse-the-younger/are-discordians-serious closes
-<<~/ahu >>
 
 <<~&#x0004; -> ? >>

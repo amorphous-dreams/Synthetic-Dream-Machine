@@ -32,9 +32,6 @@ This surface carries examples, ownership notes, and split residue.
 
 <<~/ahu >>
 
-<<~&#x0002; ahu #meme-body-open >>
-docs/pono/guest-grammar opens
-<<~/ahu >>
 
 <<~ ahu #ownership-notes >>
 
@@ -94,9 +91,6 @@ The current shape keeps:
 
 <<~/ahu >>
 
-<<~&#x0003; ahu #body-close >>
-docs/pono/guest-grammar closes
-<<~/ahu >>
 
 <<~ ahu #edges >>
 

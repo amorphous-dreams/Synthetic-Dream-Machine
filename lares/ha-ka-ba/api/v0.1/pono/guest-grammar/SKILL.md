@@ -39,9 +39,6 @@ retain = true
 [guest-grammar.md](../guest-grammar.md) holds the law.
 This skill carries the working procedure.
 
-<<~&#x0002; ahu #meme-body-open >>
-pono/guest-grammar/SKILL opens
-<<~/ahu >>
 
 <<~ ahu #load-contract >>
 
@@ -244,9 +241,6 @@ Close by naming:
 
 <<~/ahu >>
 
-<<~&#x0003; ahu #body-close >>
-pono/guest-grammar/SKILL closes
-<<~/ahu >>
 
 <<~ ahu #edges >>
 

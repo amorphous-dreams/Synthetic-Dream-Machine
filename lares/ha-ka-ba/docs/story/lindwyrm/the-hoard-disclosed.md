@@ -32,9 +32,6 @@ The frame opens the public thread, then closes after the contained acts.
 
 <<~/ahu >>
 
-<<~&#x0002; ahu #meme-body-open >>
-the-hoard-disclosed opens
-<<~/ahu >>
 
 <<~ ahu #source >>
 
@@ -268,8 +265,5 @@ The node hums.
 
 <<~/ahu >>
 
-<<~&#x0003; ahu #body-close >>
-the-hoard-disclosed closes
-<<~/ahu >>
 
 <<~&#x0004; -> ? >>

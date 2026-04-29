@@ -32,9 +32,6 @@ HUD witness and annotation behavior stay at `lar:///ha.ka.ba/docs/lararium/signa
 
 <<~/ahu >>
 
-<<~&#x0002; ahu #meme-body-open >>
-docs/lararium/signal/sa-display opens
-<<~/ahu >>
 
 <<~ ahu #room-charter >>
 
@@ -130,8 +127,5 @@ Per-position stance modifier glyph design remains in motion; current record-form
 <<~ pranala #implements-loci ? -> lar:///ha.ka.ba/api/v0.1/pono/loci family:control role:implements >>
 <<~/ahu >>
 
-<<~&#x0003; ahu #body-close >>
-docs/lararium/signal/sa-display closes
-<<~/ahu >>
 
 <<~&#x0004; -> ? >>

@@ -32,9 +32,6 @@ It leaves parse machinery, render machinery, and long teaching matter outward.
 
 <<~/ahu >>
 
-<<~&#x0002; ahu #meme-body-open >>
-pono/memetic-wikitext opens
-<<~/ahu >>
 
 <<~ ahu #ooda-ha >>
 
@@ -174,9 +171,6 @@ Examples, profile guidance, and extended bridge notes belong in the sidecars.
 
 <<~/ahu >>
 
-<<~&#x0003; ahu #body-close >>
-pono/memetic-wikitext closes
-<<~/ahu >>
 
 <<~ ahu #edges >>
 

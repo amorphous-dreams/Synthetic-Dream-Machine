@@ -38,9 +38,6 @@ The lararium prepares the handoff to `lar:///LARES` by hydrating the smallest li
 
 <<~/ahu >>
 
-<<~ॐ ँ&#x0002; ahu #meme-body-open >>
-lararium opens
-<<~/ahu >>
 
 <<~ ahu #ooda-ha >>
 
@@ -68,9 +65,6 @@ lararium opens
 
 <<~/ahu >>
 
-<<~ॐ ँ&#x0003; ahu #body-close >>
-lararium closes
-<<~/ahu >>
 
 <<~ ahu #edges >>
 

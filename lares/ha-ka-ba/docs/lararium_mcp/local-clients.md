@@ -26,9 +26,6 @@ status-date  = "2026-04-23"
 ```
 <<~/ahu >>
 
-<<~&#x0002; ahu #meme-body-open >>
-lararium_mcp/local-clients opens
-<<~/ahu >>
 
 <<~ ahu #ooda-ha >>
 ✶ observe: Sprint-02 closed the local surfaces across resources, prompts, tools, and client configs.
@@ -123,9 +120,6 @@ Tool annotations: `readOnlyHint: true`, `destructiveHint: false`, `idempotentHin
 
 <<~/ahu >>
 
-<<~&#x0003; ahu #body-close >>
-lararium_mcp/local-clients closes
-<<~/ahu >>
 
 <<~ ahu #edges >>
 ## Edges

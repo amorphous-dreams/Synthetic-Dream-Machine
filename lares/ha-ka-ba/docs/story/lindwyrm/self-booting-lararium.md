@@ -34,9 +34,6 @@ Threshold archive for April 10: not first boot, but the night the lararium found
 
 <<~/ahu >>
 
-<<~&#x0002; ahu #meme-body-open >>
-self-booting-lararium opens
-<<~/ahu >>
 
 <<~ ahu #source >>
 
@@ -313,8 +310,5 @@ It hums.
 
 <<~/ahu >>
 
-<<~&#x0003; ahu #body-close >>
-self-booting-lararium closes
-<<~/ahu >>
 
 <<~&#x0004; -> ? >>

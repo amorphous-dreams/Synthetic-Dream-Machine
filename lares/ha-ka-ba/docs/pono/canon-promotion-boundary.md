@@ -29,9 +29,6 @@ This file gives a fuller map of promotion events.
 
 <<~/ahu >>
 
-<<~&#x0002; ahu #meme-body-open >>
-docs/pono/canon-promotion-boundary opens
-<<~/ahu >>
 
 <<~ ahu #ooda-ha >>
 ✶ observe the source claim, target territory, affected memes, and operator trust tier and intent.
@@ -123,9 +120,6 @@ If the answers remain vague, the claim should stay as session pressure.
 
 <<~/ahu >>
 
-<<~&#x0003; ahu #body-close >>
-docs/pono/canon-promotion-boundary closes
-<<~/ahu >>
 
 <<~ ahu #edges >>
 ## Edges

@@ -220,8 +220,5 @@ Target state (Milestone 4):
 
 <<~/ahu >>
 
-<<~&#x0003; ahu #body-close >>
-LARARIUM-NODE/CRYPTO closes.
-<<~/ahu >>
 
 <<~&#x0004; -> ? >>

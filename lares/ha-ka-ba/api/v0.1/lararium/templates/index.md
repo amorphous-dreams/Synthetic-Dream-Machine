@@ -14,9 +14,6 @@ invariant    = false
 ```
 <<~/ahu >>
 
-<<~② ahu #body-open >>
-TEMPLATES opens
-<<~/ahu >>
 
 <<~ ahu #system-role >>
 
@@ -42,9 +39,6 @@ Future: predicates will support full wikitext-filter expressions evaluated again
 
 <<~/ahu >>
 
-<<~③ ahu #body-close >>
-TEMPLATES closes
-<<~/ahu >>
 
 <<~ ahu #edges >>
 

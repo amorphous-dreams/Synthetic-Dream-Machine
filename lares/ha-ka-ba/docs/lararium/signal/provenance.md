@@ -30,9 +30,6 @@ This room holds the witness and lineage matter behind the current lararium signa
 
 <<~/ahu >>
 
-<<~&#x0002; ahu #meme-body-open >>
-docs/lararium/signal/provenance opens
-<<~/ahu >>
 
 <<~ ahu #room-charter >>
 
@@ -151,8 +148,5 @@ p always trails every exchange vector as `| pX.X`. Use `p0.5` only when no clear
 <<~ pranala #implements-loci ? -> lar:///ha.ka.ba/api/v0.1/pono/loci family:control role:implements >>
 <<~/ahu >>
 
-<<~&#x0003; ahu #body-close >>
-docs/lararium/signal/provenance closes
-<<~/ahu >>
 
 <<~&#x0004; -> ? >>

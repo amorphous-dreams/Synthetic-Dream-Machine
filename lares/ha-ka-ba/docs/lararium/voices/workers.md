@@ -32,9 +32,6 @@ Coordinators hold the house. Workers hold the thread.
 
 <<~/ahu >>
 
-<<~&#x0002; ahu #meme-body-open >>
-voices/workers opens
-<<~/ahu >>
 
 <<~ ahu #distinction >>
 
@@ -154,8 +151,5 @@ The worker swarm spec defines what `lar:///ha.ka.ba/api/v0.1/lararium/voices` MU
 <<~ pranala #implements-loci ? -> lar:///ha.ka.ba/api/v0.1/pono/loci family:control role:implements >>
 <<~/ahu >>
 
-<<~&#x0003; ahu #body-close >>
-voices/workers closes
-<<~/ahu >>
 
 <<~&#x0004; -> ? >>

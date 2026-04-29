@@ -32,9 +32,6 @@ This surface carries guidance, examples, and split residue.
 
 <<~/ahu >>
 
-<<~&#x0002; ahu #meme-body-open >>
-docs/pono/memetic-wikitext opens
-<<~/ahu >>
 
 <<~ ahu #primitive-reading-guide >>
 
@@ -87,13 +84,7 @@ name = "example"
 ```
 <<~/ahu >>
 
-<<~&#x0002; ahu #body-open >>
-Body opens.
-<<~/ahu >>
 
-<<~&#x0003; ahu #body-close >>
-Body closes.
-<<~/ahu >>
 
 <<~&#x0004; -> ? >>
 ````
@@ -149,9 +140,6 @@ The current shape keeps:
 
 <<~/ahu >>
 
-<<~&#x0003; ahu #body-close >>
-docs/pono/memetic-wikitext closes
-<<~/ahu >>
 
 <<~ ahu #edges >>
 

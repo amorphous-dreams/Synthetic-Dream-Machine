@@ -28,9 +28,6 @@ Current lar address follows the file path now on disk.
 
 <<~/ahu >>
 
-<<~&#x0002; ahu #meme-body-open >>
-library/discordia/mordecai-malignatus/cosmic-trigger-i/cosmic-trigger-i-chapel-perilous-prologue opens
-<<~/ahu >>
 
 <<~ ahu #source-text >>
 
@@ -310,9 +307,6 @@ stubbornness, dumb luck") describes how he personally navigated — not the form
 
 <<~/ahu >>
 
-<<~&#x0003; ahu #body-close >>
-library/discordia/mordecai-malignatus/cosmic-trigger-i/cosmic-trigger-i-chapel-perilous-prologue closes
-<<~/ahu >>
 
 
 <<~ ahu #edges >>

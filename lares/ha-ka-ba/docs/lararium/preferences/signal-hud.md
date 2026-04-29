@@ -31,9 +31,6 @@ The signal / HUD docs promoted to the lararium signal branch.
 
 <<~/ahu >>
 
-<<~&#x0002; ahu #meme-body-open >>
-docs/lararium/preferences/signal-hud opens
-<<~/ahu >>
 
 <<~ ahu #relocation >>
 
@@ -49,9 +46,6 @@ The new branch root lives at:
 
 <<~/ahu >>
 
-<<~ ahu #body-close >>
-docs/lararium/preferences/signal-hud closes
-<<~/ahu >>
 
 <<~ ahu #edges >>
 

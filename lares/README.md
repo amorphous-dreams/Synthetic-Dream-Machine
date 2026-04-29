@@ -18,9 +18,6 @@ retain       = true
 
 <<~/ahu >>
 
-<<~ ahu #meme-body-open >>
-README opens the lares/ identity stream here.
-<<~/ahu >>
 
 <<~ ahu #identity-frame >>
 

@@ -48,9 +48,6 @@ He gives away the secret when he adds, "given enough ingenuity on the part of th
 
 <<~/ahu >>
 
-<<~ॐ ँ&#x0002; ahu #meme-body-open >>
-The law of 5s opens
-<<~/ahu >>
 
 <<~ ahu #ooda-ha >>
 
@@ -113,9 +110,6 @@ The same declaration changes meaning with the standpoint that reads it.
 
 <<~/ahu >>
 
-<<~ॐ ँ&#x0003; ahu #body-close >>
-mu/law of 5s closes
-<<~/ahu >>
 
 <<~ ahu #edges >>
 

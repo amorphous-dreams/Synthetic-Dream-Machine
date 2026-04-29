@@ -33,9 +33,6 @@ Without the ceremony, promotion collapses into silent accumulation — a named f
 
 <<~/ahu >>
 
-<<~⊙&#x0002; ahu #meme-body-open >>
-hoʻoponopono opens
-<<~/ahu >>
 
 <<~ ahu #ooda-ha >>
 ✶ gather the live claim, the target meme, affected invariants, and the operator's declared intent.
@@ -106,9 +103,6 @@ Boundary event fields:
 
 <<~/ahu >>
 
-<<~⊙&#x0003; ahu #body-close >>
-hoʻoponopono closes
-<<~/ahu >>
 
 <<~ ahu #edges >>
 

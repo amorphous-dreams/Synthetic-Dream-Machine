@@ -33,9 +33,6 @@ This meme stands as a kapu carrier — it enacts the law by presenting as a spec
 
 <<~/ahu >>
 
-<<~⊙&#x0012; ahu #meme-body-open >>
-kapu opens
-<<~/ahu >>
 
 <<~ ahu #ooda-ha >>
 
@@ -127,9 +124,6 @@ This meme governs the kapu rating and above-namespace trust law.
 
 <<~/ahu >>
 
-<<~⊙&#x0013; ahu #body-close >>
-kapu closes
-<<~/ahu >>
 
 <<~ ahu #edges >>
 

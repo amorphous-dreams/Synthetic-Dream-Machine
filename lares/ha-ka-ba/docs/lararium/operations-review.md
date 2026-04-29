@@ -51,9 +51,6 @@ undergoes inventory and classification here.
 
 <<~/ahu >>
 
-<<~&#x0002; ahu #meme-body-open >>
-operations-review opens
-<<~/ahu >>
 
 <<~ ahu #observe >>
 
@@ -305,8 +302,5 @@ After the extraction pass closes, these questions remain for a future consolidat
 <<~ pranala #implements-loci ? -> lar:///ha.ka.ba/api/v0.1/pono/loci family:control role:implements >>
 <<~/ahu >>
 
-<<~&#x0003; ahu #body-close >>
-operations-review closes
-<<~/ahu >>
 
 <<~&#x0004; -> ? >>

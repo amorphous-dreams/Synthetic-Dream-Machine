@@ -32,9 +32,6 @@ HUD instrument reading stays at `lar:///ha.ka.ba/docs/lararium/signal/hud`.
 
 <<~/ahu >>
 
-<<~&#x0002; ahu #meme-body-open >>
-docs/lararium/signal/render-targets opens
-<<~/ahu >>
 
 <<~ ahu #room-charter >>
 
@@ -430,8 +427,5 @@ Before emitting any stance block on any surface:
 <<~ pranala #implements-loci ? -> lar:///ha.ka.ba/api/v0.1/pono/loci family:control role:implements >>
 <<~/ahu >>
 
-<<~&#x0003; ahu #body-close >>
-docs/lararium/signal/render-targets closes
-<<~/ahu >>
 
 <<~&#x0004; -> ? >>

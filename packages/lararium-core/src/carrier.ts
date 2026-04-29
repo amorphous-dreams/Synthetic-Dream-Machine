@@ -20,8 +20,11 @@ const KERNEL_PREFIX = /(?:[^&<>\n]*&#x(?:000[1-9a-fA-F]|001[1-4]);\s*)?/;
 const OPENER_RE    = new RegExp(`<<~${KERNEL_PREFIX.source}\\?\\s*->\\s*(lar:\\/\\/\\/[^\\s>]+)\\s*>>`);
 const IAM_BLOCK_RE = /<<~\s*ahu\s+#iam\s*>>([\s\S]*?)<<~\/ahu\s*>>/;
 const TOML_FENCE_RE = /```toml\s*([\s\S]*?)```/;
-const BODY_OPEN_RE  = new RegExp(`<<~${KERNEL_PREFIX.source}ahu\\s+#(?:meme-)?body-open\\s*>>`);
-const BODY_CLOSE_RE = new RegExp(`<<~${KERNEL_PREFIX.source}ahu\\s+#body-close\\s*>>`);
+// STX / ETX — bare control-character pragmas, no ahu content.
+// Matches the new form <<~[prefix?]&#x0002;>> / <<~[prefix?]&#x0003;>>
+// as well as legacy ahu form for backward compat during migration.
+const STX_RE = /<<~[^>]*&#x0002;[^>]*>>/;
+const ETX_RE = /<<~[^>]*&#x0003;[^>]*>>/;
 const RETURN_THROAT_RE = new RegExp(`<<~${KERNEL_PREFIX.source}->\\s*\\?\\s*>>`);
 const OODA_GLYPHS = ["✶", "⏿", "◇", "▶", "⤴", "↺"] as const;
 
@@ -146,11 +149,11 @@ export function validateCarrierShape(
     }
   }
 
-  if (!BODY_OPEN_RE.test(text)) {
-    diagnostics.push(makeDiagnostic("carrier.body_open.missing", "body-open threshold missing"));
+  if (!STX_RE.test(text)) {
+    diagnostics.push(makeDiagnostic("carrier.stx.missing", "STX marker &#x0002; missing — content boundary not declared"));
   }
-  if (!BODY_CLOSE_RE.test(text)) {
-    diagnostics.push(makeDiagnostic("carrier.body_close.missing", "body-close threshold missing"));
+  if (!ETX_RE.test(text)) {
+    diagnostics.push(makeDiagnostic("carrier.etx.missing", "ETX marker &#x0003; missing — end-of-text boundary not declared"));
   }
   if (!RETURN_THROAT_RE.test(text)) {
     diagnostics.push(makeDiagnostic("carrier.return_throat.missing", "honest return throat `-> ?` missing"));

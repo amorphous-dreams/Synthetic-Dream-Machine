@@ -44,9 +44,6 @@ One typed, directed, acyclic edge between two sockets.
 
 <<~/ahu >>
 
-<<~&#x0002; ahu #meme-body-open >>
-pranala opens
-<<~/ahu >>
 
 <<~ ahu #law >>
 
@@ -199,8 +196,5 @@ label = "parent owns child"
 
 <<~/ahu >>
 
-<<~&#x0003; ahu #body-close >>
-pranala closes
-<<~/ahu >>
 
 <<~&#x0004; -> ? >>

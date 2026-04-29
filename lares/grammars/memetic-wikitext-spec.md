@@ -17,9 +17,6 @@ invariant    = false
 ```
 <<~/ahu >>
 
-<<~ ahu #meme-body-open >>
-MEMETIC-WIKITEXT-SPEC opens.
-<<~/ahu >>
 
 <<~ ahu #ooda-ha >>
 ✶ read pranala invariant law first — `aka` is shadow transclusion, `kahea` is live transclusion; the six families carry this.
@@ -1251,9 +1248,6 @@ All eight families are wired in `pranala-parser.ts` (`KNOWN_FAMILIES`, `FAMILY_C
 
 <<~/ahu >>
 
-<<~ ahu #meme-body-close >>
-MEMETIC-WIKITEXT-SPEC closes.
-<<~/ahu >>
 
 <<~ ahu #edges >>
 

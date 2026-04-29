@@ -46,9 +46,6 @@ Continuity enters here as calibration and carry, not as unquestioned truth.
 
 <<~/ahu >>
 
-<<~ॐ ँ&#x0002; ahu #meme-body-open >>
-lararium/continuity opens
-<<~/ahu >>
 
 <<~ ahu #continuity-law >>
 
@@ -94,8 +91,5 @@ This child meme keeps the cold-hydration contract small.
 
 <<~/ahu >>
 
-<<~ॐ ँ&#x0003; ahu #body-close >>
-lararium/continuity closes
-<<~/ahu >>
 
 <<~ॐ ँ&#x0004; -> ? >>

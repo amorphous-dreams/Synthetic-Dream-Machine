@@ -255,9 +255,6 @@ Residue stays named honestly:
 
 <<~/ahu >>
 
-<<~&#x0003; ahu #body-close >>
-E-Prime auditor closes the settled-text correction stream here.
-<<~/ahu >>
 
 <<~ ahu #edges >>
 

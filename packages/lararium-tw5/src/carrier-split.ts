@@ -141,6 +141,16 @@ function ahuBodyText(ws: WorksiteNode): string {
 }
 
 // ---------------------------------------------------------------------------
+// CONTROL_SLOTS — structural ahu frame markers that dissolve into the parent
+// tiddler (or are discarded). They do NOT become child tiddlers.
+// ---------------------------------------------------------------------------
+
+const CONTROL_SLOTS = new Set([
+  "#iam",
+  "#exit",
+]);
+
+// ---------------------------------------------------------------------------
 // splitCarrierToTiddlers — main export
 // ---------------------------------------------------------------------------
 
@@ -190,7 +200,7 @@ export function splitCarrierToTiddlers(uri: string, text: string): CarrierSplit 
     if (node.kind !== "Worksite") continue;
     const ws    = node as WorksiteNode;
     const slot  = ws.slot;
-    if (slot === "#iam") continue;
+    if (CONTROL_SLOTS.has(slot)) continue;
 
     const childUri   = uri + slot;   // slot already includes "#" prefix
     const bodyText   = ahuBodyText(ws);
@@ -269,4 +279,31 @@ export function serializeCarrier(
 
   lines.push(`<<~ -> ? >>`);
   return lines.join("\n");
+}
+
+// ---------------------------------------------------------------------------
+// replaceCarrierSlot — surgical in-place replacement of one ahu slot's body.
+//
+// Finds the <<~ ahu #slot >> ... <<~/ahu >> span in the raw carrier text and
+// replaces only the body content, preserving all other slots and decorators.
+// Returns null if the slot is not found (caller should fall back to full reconstruct).
+// ---------------------------------------------------------------------------
+
+export function replaceCarrierSlot(
+  carrierText: string,
+  slot: string,         // e.g. "#ooda-ha"
+  newBody: string,
+): string | null {
+  const escaped = slot.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  // Opening tag may have a Unicode control-char prefix (U+0001-U+001F).
+  const pattern = new RegExp(
+    `(<<~[\x01-\x1f]?\\s*ahu\\s+${escaped}\\s*>>)([\\s\\S]*?)(<<~\\/ahu\\s*>>)`,
+    "g",
+  );
+  let matched = false;
+  const result = carrierText.replace(pattern, (_full, open, _body, close) => {
+    matched = true;
+    return `${open}${newBody}${close}`;
+  });
+  return matched ? result : null;
 }

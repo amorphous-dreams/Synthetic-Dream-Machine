@@ -30,9 +30,6 @@ This room holds definitional docs for `lar` URI tagspace.
 
 <<~/ahu >>
 
-<<~&#x0002; ahu #meme-body-open >>
-docs/lararium/signal/tagspace opens
-<<~/ahu >>
 
 <<~ ahu #tagspace-definition >>
 
@@ -70,9 +67,6 @@ Working definition:
 <<~/ahu >>
 
 
-<<~ ahu #body-close >>
-docs/lararium/signal/tagspace closes
-<<~/ahu >>
 
 <<~ ahu #edges >>
 

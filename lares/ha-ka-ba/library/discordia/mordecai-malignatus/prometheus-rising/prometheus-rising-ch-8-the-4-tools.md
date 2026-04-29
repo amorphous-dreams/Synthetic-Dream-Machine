@@ -28,9 +28,6 @@ Current lar address follows the file path now on disk.
 
 <<~/ahu >>
 
-<<~&#x0002; ahu #meme-body-open >>
-library/discordia/mordecai-malignatus/prometheus-rising/prometheus-rising-ch-8-the-4-tools opens
-<<~/ahu >>
 
 <<~ ahu #source-text >>
 
@@ -77,9 +74,6 @@ Cross-reference stubs retained: nā lako grammar · truename grammar.
 
 <<~/ahu >>
 
-<<~&#x0003; ahu #body-close >>
-library/discordia/mordecai-malignatus/prometheus-rising/prometheus-rising-ch-8-the-4-tools closes
-<<~/ahu >>
 
 
 <<~ ahu #edges >>

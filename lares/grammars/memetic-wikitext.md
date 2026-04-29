@@ -18,9 +18,6 @@ retain       = true
 
 <<~/ahu >>
 
-<<~ ahu #meme-body-open >>
-Grammar kernel opens here. All sigil patterns authoritative.
-<<~/ahu >>
 
 <<~ ahu #sigil-registry >>
 

@@ -33,9 +33,6 @@ skeleton meme-loci ready for talk-story-dev fill passes.
 
 <<~/ahu >>
 
-<<~&#x0002; ahu #meme-body-open >>
-masks-tree-plan opens
-<<~/ahu >>
 
 <<~ ahu #observe >>
 
@@ -272,8 +269,5 @@ The tree deepens incrementally — each talk-story session fills one section of 
 <<~ pranala #implements-loci ? -> lar:///ha.ka.ba/api/v0.1/pono/loci family:control role:implements >>
 <<~/ahu >>
 
-<<~&#x0003; ahu #body-close >>
-masks-tree-plan closes
-<<~/ahu >>
 
 <<~&#x0004; -> ? >>

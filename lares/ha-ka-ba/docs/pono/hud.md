@@ -33,9 +33,6 @@ HUD rendering, exchange protocol, and sigilization live here.
 
 <<~/ahu >>
 
-<<~&#x0002; ahu #meme-body-open >>
-docs/pono/hud opens
-<<~/ahu >>
 
 <<~ ahu #purpose >>
 
@@ -168,8 +165,5 @@ Those sections in URI-SCHEMA.md now carry redundant content. A future pass shoul
 <<~ pranala #implements-loci ? -> lar:///ha.ka.ba/api/v0.1/pono/loci family:control role:implements >>
 <<~/ahu >>
 
-<<~&#x0003; ahu #body-close >>
-docs/pono/hud closes
-<<~/ahu >>
 
 <<~&#x0004; -> ? >>

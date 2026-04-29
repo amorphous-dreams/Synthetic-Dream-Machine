@@ -31,9 +31,6 @@ Hostless canonical memes carry stable law; hostful exchange records carry situat
 
 <<~/ahu >>
 
-<<~ॐ ँ&#x0002; ahu #meme-body-open >>
-tagspace-trust opens
-<<~/ahu >>
 
 <<~ ahu #ooda-ha >>
 ✶ read the URI authority, path, query signal, and carrier source before trust assignment.
@@ -77,9 +74,6 @@ Explicit operator-mediated promotion MAY move content upward by creating or revi
 
 <<~/ahu >>
 
-<<~ॐ ँ&#x0003; ahu #body-close >>
-tagspace-trust closes
-<<~/ahu >>
 
 <<~ ahu #edges >>
 ## Edges

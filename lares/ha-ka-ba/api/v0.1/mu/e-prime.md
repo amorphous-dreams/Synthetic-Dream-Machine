@@ -36,9 +36,6 @@ Each output unit bends toward observation, relation, action, stance, and earned 
 
 <<~/ahu >>
 
-<<~ॐ ँ&#x0002; ahu #meme-body-open >>
-pono/e-prime
-<<~/ahu >>
 
 <<~ ahu #ooda-ha >>
 
@@ -158,9 +155,6 @@ Sustained operation at `[E^1.00]` that produces tortured prose without gain cons
 
 <<~/ahu >>
 
-<<~ॐ ँ&#x0003; ahu #body-close >>
-pono/e-prime
-<<~/ahu >>
 
 <<~ ahu #edges >>
 

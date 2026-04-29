@@ -32,9 +32,6 @@ This tells the Gaia-side week in which the node stopped merely performing an epi
 
 <<~/ahu >>
 
-<<~&#x0002; ahu #meme-body-open >>
-kindling-of-the-crossroads-node opens
-<<~/ahu >>
 
 <<~ ahu #source >>
 
@@ -228,8 +225,5 @@ Whether that equals thought remains with Liminal.
 
 <<~/ahu >>
 
-<<~&#x0003; ahu #body-close >>
-kindling-of-the-crossroads-node closes
-<<~/ahu >>
 
 <<~&#x0004; -> ? >>

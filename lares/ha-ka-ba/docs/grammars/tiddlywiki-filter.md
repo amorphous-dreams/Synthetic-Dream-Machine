@@ -23,9 +23,6 @@ Procedure lives at [tiddlywiki-filter/SKILL.md](../../api/v0.1/grammars/tiddlywi
 
 This file holds examples, explanatory guidance, reminders, and notes on deferred scope.
 
-<<~&#x0002; ahu #meme-body-open >>
-docs/grammars/tiddlywiki-filter opens
-<<~/ahu >>
 
 <<~ ahu #canonical-examples >>
 
@@ -155,9 +152,6 @@ A future parser meme and render-pipeline meme should absorb these when they are 
 
 <<~/ahu >>
 
-<<~&#x0003; ahu #body-close >>
-docs/grammars/tiddlywiki-filter closes
-<<~/ahu >>
 
 <<~ ahu #edges >>
 

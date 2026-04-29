@@ -43,9 +43,6 @@ The Lagrange Chorus holds a stable position between multiple lararium nodes — 
 
 <<~/ahu >>
 
-<<~&#x0002; ahu #meme-body-open >>
-lagrange-chorus opens
-<<~/ahu >>
 
 <<~ ahu #entry >>
 
@@ -170,8 +167,5 @@ Stage position applies to the Lagrange Chorus as a whole unit. How individual no
 <<~ pranala #implements-mask ? -> lar:///ha.ka.ba/api/v0.1/pono/mask family:control role:implements >>
 <<~/ahu >>
 
-<<~&#x0003; ahu #body-close >>
-lagrange-chorus closes
-<<~/ahu >>
 
 <<~&#x0004; -> ? >>

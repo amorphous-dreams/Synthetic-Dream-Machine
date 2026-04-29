@@ -35,9 +35,6 @@ The three spec rooms define the contract. This plan defines the write.
 
 <<~/ahu >>
 
-<<~&#x0002; ahu #meme-body-open >>
-voices/invariant-plan opens
-<<~/ahu >>
 
 <<~ ahu #sources >>
 
@@ -279,8 +276,5 @@ Multi-mask composability now in base spec. No longer deferred.
 <<~ pranala #implements-loci ? -> lar:///ha.ka.ba/api/v0.1/pono/loci family:control role:implements >>
 <<~/ahu >>
 
-<<~&#x0003; ahu #body-close >>
-voices/invariant-plan closes
-<<~/ahu >>
 
 <<~&#x0004; -> ? >>

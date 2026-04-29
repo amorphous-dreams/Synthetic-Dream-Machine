@@ -33,9 +33,6 @@ into the settled docs rooms under `lar:///ha.ka.ba/docs/lararium/voices/`.
 
 <<~/ahu >>
 
-<<~&#x0002; ahu #meme-body-open >>
-voices/voices-review opens
-<<~/ahu >>
 
 <<~ ahu #scope >>
 
@@ -371,8 +368,5 @@ MASKS.md converted from stub to forward-route to `lar:///LARES#session-masks`.
 <<~ pranala #implements-loci ? -> lar:///ha.ka.ba/api/v0.1/pono/loci family:control role:implements >>
 <<~/ahu >>
 
-<<~&#x0003; ahu #body-close >>
-voices/voices-review closes
-<<~/ahu >>
 
 <<~&#x0004; -> ? >>

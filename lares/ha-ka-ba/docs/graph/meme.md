@@ -24,9 +24,6 @@ locus-subtype     = "Locus remains valid as the subtype name for memes that impl
 ```
 <<~/ahu >>
 
-<<~&#x0002; ahu #meme-body-open >>
-graph/meme opens
-<<~/ahu >>
 
 <<~ ahu #terminology-note>>
 
@@ -241,9 +238,6 @@ This lets a client verify the complete minimal-boot prefix byte-for-byte without
 
 <<~/ahu >>
 
-<<~&#x0003; ahu #body-close >>
-graph/meme closes
-<<~/ahu >>
 
 <<~ ahu #edges >>
 ## Edges

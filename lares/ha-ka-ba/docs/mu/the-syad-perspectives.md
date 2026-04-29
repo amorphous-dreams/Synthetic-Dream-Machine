@@ -33,9 +33,6 @@ The deeper archive bundle stays adjacent.
 
 <<~/ahu >>
 
-<<~&#x0002; ahu #meme-body-open >>
-docs/mu/the-syad-perspectives opens
-<<~/ahu >>
 
 <<~ ahu #reading-question >>
 
@@ -128,8 +125,5 @@ The archive-derived research bundle lives at:
 <<~ pranala #implements-loci ? -> lar:///ha.ka.ba/api/v0.1/pono/loci family:control role:implements >>
 <<~/ahu >>
 
-<<~&#x0003; ahu #body-close >>
-docs/mu/the-syad-perspectives closes
-<<~/ahu >>
 
 <<~&#x0004; -> ? >>

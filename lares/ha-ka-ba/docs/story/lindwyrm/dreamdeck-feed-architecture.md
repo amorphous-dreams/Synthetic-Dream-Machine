@@ -34,9 +34,6 @@ Container, cast, format conventions, and tone laws for the Lindwyrm hoard story.
 
 <<~/ahu >>
 
-<<~&#x0002; ahu #meme-body-open >>
-dreamdeck-feed-architecture opens
-<<~/ahu >>
 
 <<~ ahu #source >>
 
@@ -263,8 +260,5 @@ The Lindwyrm did not build the DreamNet from destiny. She wanted to watch *The F
 
 <<~/ahu >>
 
-<<~&#x0003; ahu #body-close >>
-dreamdeck-feed-architecture closes
-<<~/ahu >>
 
 <<~&#x0004; -> ? >>

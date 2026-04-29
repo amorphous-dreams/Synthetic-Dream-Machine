@@ -22,9 +22,6 @@ invariant    = true
 
 <<~/ahu >>
 
-<<~&#x0002; ahu #meme-body-open >>
-orichalcum-capabilities opens
-<<~/ahu >>
 
 <<~ ahu #law >>
 
@@ -253,9 +250,6 @@ the crypto gate, not instead of it.
 
 <<~/ahu >>
 
-<<~&#x0003; ahu #body-close >>
-orichalcum-capabilities closes
-<<~/ahu >>
 
 <<~ ahu #edges >>
 

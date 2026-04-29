@@ -30,9 +30,6 @@ This room holds a specific recovered operational principle: trust should checkpo
 
 <<~/ahu >>
 
-<<~&#x0002; ahu #meme-body-open >>
-docs/lararium/preferences/workspace-trust-gate opens
-<<~/ahu >>
 
 <<~ ahu #provenance >>
 
@@ -67,9 +64,6 @@ The workspace trust gate explains when the node must pause anyway.
 
 <<~/ahu >>
 
-<<~ ahu #body-close >>
-docs/lararium/preferences/workspace-trust-gate closes
-<<~/ahu >>
 
 <<~ ahu #edges >>
 

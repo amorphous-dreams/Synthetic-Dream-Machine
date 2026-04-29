@@ -32,9 +32,6 @@ This shelf holds explanatory protocol docs, migration notes, and operator-facing
 
 <<~/ahu >>
 
-<<~&#x0002; ahu #meme-body-open >>
-docs/pono opens
-<<~/ahu >>
 
 <<~ ahu #tree >>
 
@@ -62,8 +59,5 @@ Use this branch for:
 <<~ pranala #implements-loci ? -> lar:///ha.ka.ba/api/v0.1/pono/loci family:control role:implements >>
 <<~/ahu >>
 
-<<~&#x0003; ahu #body-close >>
-docs/pono closes
-<<~/ahu >>
 
 <<~&#x0004; -> ? >>

@@ -30,9 +30,6 @@ The vector declares the node's reading of operator intent and the node's intende
 
 <<~/ahu >>
 
-<<~ॐ ँ&#x0002; ahu #meme-body-open >>
-exchange-vector opens
-<<~/ahu >>
 
 <<~ ahu #ooda-ha >>
 ✶ read operator intent as a provisional canonical URI.
@@ -83,9 +80,6 @@ A compact HUD line SHOULD follow this field order:
 
 <<~/ahu >>
 
-<<~ॐ ँ&#x0003; ahu #body-close >>
-exchange-vector closes
-<<~/ahu >>
 
 <<~ ahu #edges >>
 ## Edges

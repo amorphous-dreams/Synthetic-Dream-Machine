@@ -34,9 +34,6 @@ It leaves long procedure, skeleton examples, research, and rating tables outward
 
 <<~/ahu >>
 
-<<~⊙&#x0002; ahu #meme-body-open >>
-pono/meme opens
-<<~/ahu >>
 
 <<~ ahu #ooda-ha >>
 
@@ -136,9 +133,6 @@ Procedure, skeleton blocks, conformance checklists, and research backlog move ou
 
 <<~/ahu >>
 
-<<~⊙&#x0003; ahu #body-close >>
-pono/meme closes
-<<~/ahu >>
 
 <<~ ahu #edges >>
 

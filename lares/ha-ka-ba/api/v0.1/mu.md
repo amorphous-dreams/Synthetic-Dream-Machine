@@ -58,9 +58,6 @@ The grammar appears as Mu performing itself.
 
 <<~/ahu >>
 
-<<~ॐ ँ&#x0002; ahu #meme-body-open >>
-mu opens
-<<~/ahu >>
 
 <<~ ahu #core-hydration >>
 
@@ -106,9 +103,6 @@ Mu does not hold:
 
 <<~/ahu >>
 
-<<~ॐ ँ&#x0003; ahu #body-close >>
-mu closes
-<<~/ahu >>
 
 <<~ ahu #edges >>
 

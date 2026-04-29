@@ -48,9 +48,6 @@ Permanent identity home for Map-Wisp.
 
 <<~/ahu >>
 
-<<~&#x0002; ahu #meme-body-open >>
-map-wisp opens
-<<~/ahu >>
 
 <<~ ahu #entry >>
 
@@ -177,8 +174,5 @@ How Map-Wisp colors each coordinator register when they speak through her struct
 <<~ pranala #implements-mask ? -> lar:///ha.ka.ba/api/v0.1/pono/mask family:control role:implements >>
 <<~/ahu >>
 
-<<~&#x0003; ahu #body-close >>
-map-wisp closes
-<<~/ahu >>
 
 <<~&#x0004; -> ? >>

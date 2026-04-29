@@ -46,9 +46,6 @@ Standpoint declares the measure.
 
 <<~/ahu >>
 
-<<~ॐ ँ&#x0002; ahu #meme-body-open >>
-mu/the-syad-perspectives opens
-<<~/ahu >>
 
 <<~ ahu #ooda-ha >>
 
@@ -227,8 +224,5 @@ Discordian witness texts can also rest in library space.
 
 <<~/ahu >>
 
-<<~ॐ ँ&#x0003; ahu #body-close >>
-mu/the-syad-perspectives closes
-<<~/ahu >>
 
 <<~ॐ ँ&#x0004; -> ? >>

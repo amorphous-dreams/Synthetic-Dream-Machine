@@ -34,9 +34,6 @@ Every `lar:` URI in the system answers to these rules.
 
 <<~/ahu >>
 
-<<~ॐ ँ&#x0002; ahu #meme-body-open >>
-pono/lar-uri
-<<~/ahu >>
 
 <<~ ahu #scheme-law >>
 
@@ -118,9 +115,6 @@ WHERE (path) → HOW (query: stances, confidence, p, ffz) → SECTION (fragment)
 
 <<~/ahu >>
 
-<<~ॐ ँ&#x0003; ahu #body-close >>
-pono/lar-uri
-<<~/ahu >>
 
 <<~ ahu #edges >>
 

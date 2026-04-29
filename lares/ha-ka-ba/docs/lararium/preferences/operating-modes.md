@@ -30,9 +30,6 @@ This room holds the old mode grammar as recovered operational pressure.
 
 <<~/ahu >>
 
-<<~&#x0002; ahu #meme-body-open >>
-docs/lararium/preferences/operating-modes opens
-<<~/ahu >>
 
 <<~ ahu #provenance >>
 
@@ -81,9 +78,6 @@ This shelf preserves the heavier runtime choreography once wrapped around them.
 
 <<~/ahu >>
 
-<<~ ahu #body-close >>
-docs/lararium/preferences/operating-modes closes
-<<~/ahu >>
 
 <<~ ahu #edges >>
 

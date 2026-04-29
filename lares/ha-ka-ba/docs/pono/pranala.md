@@ -22,9 +22,6 @@ Law lives at [pranala.md](../../api/v0.1/pono/pranala.md).
 
 This file holds examples, sigil-sugar long-forms, and reciprocal-edge guidance.
 
-<<~&#x0002; ahu #meme-body-open >>
-docs/pono/pranala opens
-<<~/ahu >>
 
 <<~ ahu #examples >>
 
@@ -104,9 +101,6 @@ This is the correct pattern for genuinely symmetric semantics — model it expli
 
 <<~/ahu >>
 
-<<~&#x0003; ahu #body-close >>
-docs/pono/pranala closes
-<<~/ahu >>
 
 <<~ ahu #edges >>
 

@@ -245,9 +245,6 @@ Aftermath that names only resolved URIs hides the pressure that matters most.
 
 <<~/ahu >>
 
-<<~&#x0003; ahu #body-close >>
-Loci SKILL closes the procedural stream here.
-<<~/ahu >>
 
 <<~ ahu #edges >>
 

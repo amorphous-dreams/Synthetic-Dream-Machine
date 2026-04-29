@@ -34,9 +34,6 @@ The concepts can now stand on their own feet.
 
 <<~/ahu >>
 
-<<~&#x0002; ahu #meme-body-open >>
-docs/lararium/preferences opens
-<<~/ahu >>
 
 <<~ ahu #source >>
 
@@ -78,9 +75,6 @@ This pass only promotes concepts that recur strongly enough to feel load-bearing
 
 <<~/ahu >>
 
-<<~ ahu #body-close >>
-docs/lararium/preferences closes
-<<~/ahu >>
 
 <<~ ahu #edges >>
 

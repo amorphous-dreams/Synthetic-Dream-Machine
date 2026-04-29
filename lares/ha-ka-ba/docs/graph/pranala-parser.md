@@ -23,9 +23,6 @@ status-date  = "2026-04-24"
 ```
 <<~/ahu >>
 
-<<~&#x0002; ahu #meme-body-open >>
-graph/pranala-parser opens
-<<~/ahu >>
 
 <<~ ahu #ooda-ha >>
 ✶ observe: carrier files carry pranala edges in block and inline forms; `loulou`, `aka`, `kahea` sugar collapses to edges too.
@@ -207,9 +204,6 @@ Unresolvable TO expressions produce a `DeclaredUnresolved` record rather than an
 
 <<~/ahu >>
 
-<<~&#x0003; ahu #body-close >>
-graph/pranala-parser closes
-<<~/ahu >>
 
 <<~ ahu #edges >>
 ## Edges

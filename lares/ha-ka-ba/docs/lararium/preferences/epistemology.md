@@ -32,9 +32,6 @@ This shelf now holds what remains unsettled, cross-cutting, or not yet promoted.
 
 <<~/ahu >>
 
-<<~&#x0002; ahu #meme-body-open >>
-docs/lararium/preferences/epistemology opens
-<<~/ahu >>
 
 <<~ ahu #provenance >>
 
@@ -228,9 +225,6 @@ It still needs to witness what has already promoted, what remains braided, and w
 
 <<~/ahu >>
 
-<<~ ahu #body-close >>
-docs/lararium/preferences/epistemology closes
-<<~/ahu >>
 
 <<~ ahu #edges >>
 

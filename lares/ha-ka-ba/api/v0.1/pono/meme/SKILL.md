@@ -39,9 +39,6 @@ retain = true
 [meme.md](../meme.md) holds the law.
 This skill carries the working procedure.
 
-<<~&#x0002; ahu #meme-body-open >>
-pono/meme/SKILL opens
-<<~/ahu >>
 
 <<~ ahu #load-contract >>
 
@@ -225,9 +222,6 @@ role = "[role]"
 
 [One to three sentences naming scope and boundary.]
 
-<<~&#x0002; ahu #meme-body-open >>
-[PATH] opens
-<<~/ahu >>
 
 <<~ ahu #ooda-ha >>
 ✶ [observe pressure]
@@ -238,9 +232,6 @@ role = "[role]"
 ↺ [aftermath pressure]
 <<~/ahu >>
 
-<<~&#x0003; ahu #body-close >>
-[PATH] closes
-<<~/ahu >>
 
 <<~ ahu #edges >>
 ## Edges
@@ -285,9 +276,6 @@ Close by naming:
 
 <<~/ahu >>
 
-<<~&#x0003; ahu #body-close >>
-pono/meme/SKILL closes
-<<~/ahu >>
 
 <<~ ahu #edges >>
 

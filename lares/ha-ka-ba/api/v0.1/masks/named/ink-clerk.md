@@ -48,9 +48,6 @@ Permanent identity home for Ink-Clerk.
 
 <<~/ahu >>
 
-<<~&#x0002; ahu #meme-body-open >>
-ink-clerk opens
-<<~/ahu >>
 
 <<~ ahu #entry >>
 
@@ -177,8 +174,5 @@ How Ink-Clerk colors each coordinator register when they speak through her archi
 <<~ pranala #implements-mask ? -> lar:///ha.ka.ba/api/v0.1/pono/mask family:control role:implements >>
 <<~/ahu >>
 
-<<~&#x0003; ahu #body-close >>
-ink-clerk closes
-<<~/ahu >>
 
 <<~&#x0004; -> ? >>

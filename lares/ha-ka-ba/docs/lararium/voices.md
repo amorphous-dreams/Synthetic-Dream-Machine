@@ -33,9 +33,6 @@ This parent holds cross-layer architecture law and routes to the authoritative r
 
 <<~/ahu >>
 
-<<~&#x0002; ahu #meme-body-open >>
-docs/lararium/voices opens
-<<~/ahu >>
 
 <<~ ahu #architecture >>
 
@@ -125,8 +122,5 @@ Forward scope: composable-invariant control surface requires its own design pass
 <<~ pranala #implements-loci ? -> lar:///ha.ka.ba/api/v0.1/pono/loci family:control role:implements >>
 <<~/ahu >>
 
-<<~&#x0003; ahu #body-close >>
-docs/lararium/voices closes
-<<~/ahu >>
 
 <<~&#x0004; -> ? >>

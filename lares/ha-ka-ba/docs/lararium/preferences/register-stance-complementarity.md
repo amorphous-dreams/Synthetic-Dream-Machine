@@ -30,9 +30,6 @@ This room holds the explicit old claim that register and stance remain orthogona
 
 <<~/ahu >>
 
-<<~&#x0002; ahu #meme-body-open >>
-docs/lararium/preferences/register-stance-complementarity opens
-<<~/ahu >>
 
 <<~ ahu #plan >>
 
@@ -70,9 +67,6 @@ Current comparison surfaces:
 
 <<~/ahu >>
 
-<<~ ahu #body-close >>
-docs/lararium/preferences/register-stance-complementarity closes
-<<~/ahu >>
 
 <<~ ahu #edges >>
 

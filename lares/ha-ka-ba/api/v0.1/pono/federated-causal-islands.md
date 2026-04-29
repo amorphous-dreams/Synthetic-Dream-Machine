@@ -22,9 +22,6 @@ invariant    = true
 
 <<~/ahu >>
 
-<<~&#x0002; ahu #meme-body-open >>
-federated-causal-islands opens
-<<~/ahu >>
 
 <<~ ahu #law >>
 
@@ -193,9 +190,6 @@ Cross-node causality errors become federation corruption.
 
 <<~/ahu >>
 
-<<~&#x0003; ahu #body-close >>
-federated-causal-islands closes
-<<~/ahu >>
 
 <<~ ahu #edges >>
 

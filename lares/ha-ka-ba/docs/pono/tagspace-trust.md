@@ -29,9 +29,6 @@ It gives agents and operators examples for keeping all system files, data blobs,
 
 <<~/ahu >>
 
-<<~&#x0002; ahu #meme-body-open >>
-docs/pono/tagspace-trust opens
-<<~/ahu >>
 
 <<~ ahu #ooda-ha >>
 ✶ observe which record speaks: hostless meme, hostful exchange, data meme, branch artifact, or generated trajectory.
@@ -140,9 +137,6 @@ Speaker role and truth tier must stay separate.
 
 <<~/ahu >>
 
-<<~&#x0003; ahu #body-close >>
-docs/pono/tagspace-trust closes
-<<~/ahu >>
 
 <<~ ahu #edges >>
 ## Edges

@@ -32,9 +32,6 @@ Source-backed witness carrier for the first Coffee Oracle extraction into the Mi
 
 <<~/ahu >>
 
-<<~&#x0002; ahu #meme-body-open >>
-mischief-muse-coffee-oracle witness opens
-<<~/ahu >>
 
 <<~ ahu #source >>
 
@@ -125,8 +122,5 @@ Use this witness carrier for provenance.
 
 <<~/ahu >>
 
-<<~&#x0003; ahu #body-close >>
-mischief-muse-coffee-oracle witness closes
-<<~/ahu >>
 
 <<~&#x0004; -> ? >>

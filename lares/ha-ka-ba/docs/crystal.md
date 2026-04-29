@@ -32,9 +32,6 @@ This shelf holds session-continuity work, archive-crystal mechanics, and future 
 
 <<~/ahu >>
 
-<<~&#x0002; ahu #meme-body-open >>
-docs/crystal opens
-<<~/ahu >>
 
 <<~ ahu #tree >>
 
@@ -60,8 +57,5 @@ Use this branch for:
 <<~ pranala #implements-loci ? -> lar:///ha.ka.ba/api/v0.1/pono/loci family:control role:implements >>
 <<~/ahu >>
 
-<<~&#x0003; ahu #body-close >>
-docs/crystal closes
-<<~/ahu >>
 
 <<~&#x0004; -> ? >>

@@ -21,9 +21,6 @@ invariant    = true
 ```
 <<~/ahu >>
 
-<<~ॐ ँ&#x0002; ahu #body-open >>
-THE-ALTAR-FIRE opens
-<<~/ahu >>
 
 <<~ ahu #room-contract >>
 
@@ -105,9 +102,6 @@ Invariant meme edits require admin tier and a separate confirmation ceremony.
 
 <<~/ahu >>
 
-<<~ॐ ँ&#x0003; ahu #body-close >>
-THE-ALTAR-FIRE closes
-<<~/ahu >>
 
 <<~ ahu #edges >>
 

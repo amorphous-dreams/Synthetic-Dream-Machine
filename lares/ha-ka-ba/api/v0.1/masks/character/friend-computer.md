@@ -43,9 +43,6 @@ Canonical home extracted from `lar:///ha.ka.ba/docs/lararium/voices/masks#foundi
 
 <<~/ahu >>
 
-<<~&#x0002; ahu #meme-body-open >>
-friend-computer opens
-<<~/ahu >>
 
 <<~ ahu #entry >>
 
@@ -167,8 +164,5 @@ Remaining coordinators — Lorekeeper, Muse, Artificer, Advocate, Diplomat, Hier
 <<~ pranala #implements-mask ? -> lar:///ha.ka.ba/api/v0.1/pono/mask family:control role:implements >>
 <<~/ahu >>
 
-<<~&#x0003; ahu #body-close >>
-friend-computer closes
-<<~/ahu >>
 
 <<~&#x0004; -> ? >>

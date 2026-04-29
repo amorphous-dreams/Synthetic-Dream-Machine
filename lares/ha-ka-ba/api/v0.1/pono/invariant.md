@@ -50,9 +50,6 @@ loulou links bind invariant -> documentation.
 
 <<~/ahu >>
 
-<<~⊙&#x0002; ahu #meme-body-open >>
-invariant opens
-<<~/ahu >>
 
 <<~ ahu #invariant-law >>
 
@@ -103,9 +100,6 @@ Invariant-compliant memes MUST fill the OODA-HA phase line with their own pressu
 
 <<~/ahu >>
 
-<<~⊙&#x0003; ahu #body-close >>
-invariant closes
-<<~/ahu >>
 
 <<~ ahu #edges >>
 

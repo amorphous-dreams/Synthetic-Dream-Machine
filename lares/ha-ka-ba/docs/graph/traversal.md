@@ -18,9 +18,6 @@ status-date  = "2026-04-24"
 ```
 <<~/ahu >>
 
-<<~&#x0002; ahu #meme-body-open >>
-graph/traversal opens
-<<~/ahu >>
 
 <<~ ahu #ooda-ha >>
 ✶ observe: current compiler walks no edges — it enumerates a static list, then scans a carrier index.
@@ -225,9 +222,6 @@ The boot receipt hash changes to reflect the newly resolved carrier.
 
 <<~/ahu >>
 
-<<~&#x0003; ahu #body-close >>
-graph/traversal closes
-<<~/ahu >>
 
 <<~ ahu #edges >>
 ## Edges

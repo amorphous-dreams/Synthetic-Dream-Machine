@@ -21,9 +21,6 @@ status-date  = "2026-04-23"
 ```
 <<~/ahu >>
 
-<<~&#x0002; ahu #meme-body-open >>
-lararium_mcp/carrier-law opens
-<<~/ahu >>
 
 <<~ ahu #ooda-ha >>
 ✶ observe: source law already names meme, invariant, memetic-wikitext, loci, and implements lanes.
@@ -150,9 +147,6 @@ Carrier truth stays ahead of syntax swell.
 
 <<~/ahu >>
 
-<<~&#x0003; ahu #body-close >>
-lararium_mcp/carrier-law closes
-<<~/ahu >>
 
 <<~ ahu #edges >>
 ## Edges

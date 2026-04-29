@@ -48,9 +48,6 @@ Permanent identity home for Breach-Watch.
 
 <<~/ahu >>
 
-<<~&#x0002; ahu #meme-body-open >>
-breach-watch opens
-<<~/ahu >>
 
 <<~ ahu #entry >>
 
@@ -177,8 +174,5 @@ How Breach-Watch colors each coordinator register when they speak through her in
 <<~ pranala #implements-mask ? -> lar:///ha.ka.ba/api/v0.1/pono/mask family:control role:implements >>
 <<~/ahu >>
 
-<<~&#x0003; ahu #body-close >>
-breach-watch closes
-<<~/ahu >>
 
 <<~&#x0004; -> ? >>

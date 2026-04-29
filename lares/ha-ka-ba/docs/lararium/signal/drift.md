@@ -30,9 +30,6 @@ This room holds mismatch-recovery pressure where declared signal diverges from a
 
 <<~/ahu >>
 
-<<~&#x0002; ahu #meme-body-open >>
-docs/lararium/signal/drift opens
-<<~/ahu >>
 
 <<~ ahu #room-charter >>
 
@@ -70,8 +67,5 @@ The in-span annotation contract stays in `lar:///ha.ka.ba/docs/lararium/signal/m
 <<~ pranala #implements-loci ? -> lar:///ha.ka.ba/api/v0.1/pono/loci family:control role:implements >>
 <<~/ahu >>
 
-<<~&#x0003; ahu #body-close >>
-docs/lararium/signal/drift closes
-<<~/ahu >>
 
 <<~&#x0004; -> ? >>

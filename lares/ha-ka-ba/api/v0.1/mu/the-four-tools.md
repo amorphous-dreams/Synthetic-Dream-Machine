@@ -51,9 +51,6 @@ The agent and operator MUST carry four Minor Arcana weapons and one Major Arcana
 
 <<~/ahu >>
 
-<<~ॐ ँ&#x0002; ahu #meme-body-open >>
-mu/the four tools opens
-<<~/ahu >>
 
 <<~ ahu #ooda-ha >>
 
@@ -247,9 +244,6 @@ The agent MUST treat totalized pattern-lock as confidence register collapse.
 
 <<~/ahu >>
 
-<<~ॐ ँ&#x0003; ahu #body-close >>
-mu/the four tools closes
-<<~/ahu >>
 
 <<~ ahu #edges >>
 

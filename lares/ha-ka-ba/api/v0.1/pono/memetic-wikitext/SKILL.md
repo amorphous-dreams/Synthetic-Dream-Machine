@@ -39,9 +39,6 @@ retain = true
 [memetic-wikitext.md](../memetic-wikitext.md) holds the root law.
 This skill carries the working procedure.
 
-<<~&#x0002; ahu #meme-body-open >>
-pono/memetic-wikitext/SKILL opens
-<<~/ahu >>
 
 <<~ ahu #load-contract >>
 
@@ -230,9 +227,6 @@ If parser or render-pipeline law still lacks its own stable carrier, leave the b
 
 <<~/ahu >>
 
-<<~&#x0003; ahu #body-close >>
-pono/memetic-wikitext/SKILL closes
-<<~/ahu >>
 
 <<~ ahu #edges >>
 

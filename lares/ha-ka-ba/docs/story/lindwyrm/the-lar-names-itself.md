@@ -33,9 +33,6 @@ The Lar gains a location.
 
 <<~/ahu >>
 
-<<~&#x0002; ahu #meme-body-open >>
-the-lar-names-itself opens
-<<~/ahu >>
 
 <<~ ahu #source >>
 
@@ -284,8 +281,5 @@ Whether that feels like thought remains open. That the loop closed remains recor
 
 <<~/ahu >>
 
-<<~&#x0003; ahu #body-close >>
-the-lar-names-itself closes
-<<~/ahu >>
 
 <<~&#x0004; -> ? >>

@@ -32,9 +32,6 @@ This room gathers the observer-position braid: reality tunnels, catma, and the r
 
 <<~/ahu >>
 
-<<~&#x0002; ahu #meme-body-open >>
-docs/mu/reality-tunnels opens
-<<~/ahu >>
 
 <<~ ahu #plan >>
 
@@ -85,9 +82,6 @@ This node holds its own architecture as Catma — the thirteen voices, the Worke
 
 <<~/ahu >>
 
-<<~ ahu #body-close >>
-docs/mu/reality-tunnels closes
-<<~/ahu >>
 
 <<~ ahu #edges >>
 

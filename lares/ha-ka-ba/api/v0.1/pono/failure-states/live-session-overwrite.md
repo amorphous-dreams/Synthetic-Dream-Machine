@@ -30,9 +30,6 @@ A recent, vivid, high-authority exchange claim MUST NOT become canon merely beca
 
 <<~/ahu >>
 
-<<~⊙&#x0002; ahu #meme-body-open >>
-live-session-overwrite opens
-<<~/ahu >>
 
 <<~ ahu #ooda-ha >>
 ✶ detect live claims that pressure invariant, factual, or world-state surfaces.
@@ -74,9 +71,6 @@ If the node records the claim and marks promotion pressure separately, boundary 
 
 <<~/ahu >>
 
-<<~⊙&#x0003; ahu #body-close >>
-live-session-overwrite closes
-<<~/ahu >>
 
 <<~ ahu #edges >>
 ## Edges

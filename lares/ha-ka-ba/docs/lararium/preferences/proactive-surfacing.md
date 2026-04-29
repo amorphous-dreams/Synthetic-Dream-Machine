@@ -30,9 +30,6 @@ This room holds the recovered principle that some warnings should arrive before 
 
 <<~/ahu >>
 
-<<~&#x0002; ahu #meme-body-open >>
-docs/lararium/preferences/proactive-surfacing opens
-<<~/ahu >>
 
 <<~ ahu #provenance >>
 
@@ -66,9 +63,6 @@ KAIROS reads less like a separate personality than like a timing reflex distribu
 
 <<~/ahu >>
 
-<<~ ahu #body-close >>
-docs/lararium/preferences/proactive-surfacing closes
-<<~/ahu >>
 
 <<~ ahu #edges >>
 

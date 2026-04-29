@@ -24,9 +24,6 @@ invariant = false
 This docs meme preserves the full research-roadmap detail for migrating Lararium MCP to Lararium Node.
 It adds explicit ahu markers around the major research sections so the file can act as a navigable docs meme rather than a compressed summary.
 
-<<~&#x0002; ahu #meme-body-open >>
-LARARIUM-NODE/ROADMAP opens
-<<~/ahu >>
 
 <<~ ahu #ooda-ha >>
 ✶ inventory the Python MCP surface, branch-local graph/compiler work, launcher configs, tests, and architecture docs before porting
@@ -1794,8 +1791,5 @@ Steps 1–2 are pure `live-protocol.ts` changes. Steps 3–5 are the Phase 3 sel
 <<~ pranala #to-canvas-wiki ? -> lar:///LARARIUM-NODE/MULTIPLAYER-INFINITE-CANVAS-WIKI family:relation role:companion >>
 <<~/ahu >>
 
-<<~&#x0003; ahu #body-close >>
-LARARIUM-NODE/ROADMAP closes
-<<~/ahu >>
 
 <<~&#x0004; -> ? >>

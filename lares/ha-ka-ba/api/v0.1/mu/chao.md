@@ -56,9 +56,6 @@ The Chao spins at a level of abstraction above the Hodge and the Podge.
 
 <<~/ahu >>
 
-<<~ॐ ँ&#x0002; ahu #meme-body-open >>
-mu/chao opens
-<<~/ahu >>
 
 <<~ ahu #ooda-ha >>
 
@@ -163,9 +160,6 @@ A lar URI with all three slots aligned reads the address back at the Chao's rota
 
 <<~/ahu >>
 
-<<~ॐ ँ&#x0003; ahu #body-close >>
-mu/chao closes
-<<~/ahu >>
 
 <<~ ahu #edges >>
 

@@ -30,9 +30,6 @@ This room holds the recovered authority grammar behind the old prompt stack.
 
 <<~/ahu >>
 
-<<~&#x0002; ahu #meme-body-open >>
-docs/lararium/preferences/identity-permissions opens
-<<~/ahu >>
 
 <<~ ahu #provenance >>
 
@@ -81,9 +78,6 @@ This shelf keeps the older bundle intact for now.
 
 <<~/ahu >>
 
-<<~ ahu #body-close >>
-docs/lararium/preferences/identity-permissions closes
-<<~/ahu >>
 
 <<~ ahu #edges >>
 

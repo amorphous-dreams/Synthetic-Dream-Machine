@@ -24,9 +24,6 @@ status-date  = "2026-04-23"
 ```
 <<~/ahu >>
 
-<<~&#x0002; ahu #meme-body-open >>
-lararium_mcp/adapters opens
-<<~/ahu >>
 
 <<~ ahu #ooda-ha >>
 ✶ observe: every submodule needs a named lane, but direct imports would couple source truths too tightly.
@@ -164,9 +161,6 @@ The following remain blocked until explicit policy lands:
 
 <<~/ahu >>
 
-<<~&#x0003; ahu #body-close >>
-lararium_mcp/adapters closes
-<<~/ahu >>
 
 <<~ ahu #edges >>
 ## Edges

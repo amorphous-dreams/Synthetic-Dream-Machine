@@ -30,9 +30,6 @@ This room holds the in-span annotation layer that sits beneath the governing HUD
 
 <<~/ahu >>
 
-<<~&#x0002; ahu #meme-body-open >>
-docs/lararium/signal/micro-trace opens
-<<~/ahu >>
 
 <<~ ahu #room-charter >>
 
@@ -281,8 +278,5 @@ Key operator ruling confirmed: **sub-agent dispatches require URI → URI pair**
 <<~ pranala #implements-loci ? -> lar:///ha.ka.ba/api/v0.1/pono/loci family:control role:implements >>
 <<~/ahu >>
 
-<<~&#x0003; ahu #body-close >>
-docs/lararium/signal/micro-trace closes
-<<~/ahu >>
 
 <<~&#x0004; -> ? >>

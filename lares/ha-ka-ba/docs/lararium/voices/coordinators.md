@@ -35,9 +35,6 @@ The coordinator house persists unchanged beneath mask overlays and across sessio
 
 <<~/ahu >>
 
-<<~&#x0002; ahu #meme-body-open >>
-voices/coordinators opens
-<<~/ahu >>
 
 <<~ ahu #hard-gate >>
 
@@ -211,8 +208,5 @@ The coordinator house spec defines what `lar:///ha.ka.ba/api/v0.1/lararium/voice
 <<~ pranala #implements-loci ? -> lar:///ha.ka.ba/api/v0.1/pono/loci family:control role:implements >>
 <<~/ahu >>
 
-<<~&#x0003; ahu #body-close >>
-voices/coordinators closes
-<<~/ahu >>
 
 <<~&#x0004; -> ? >>

@@ -33,9 +33,6 @@ The tagspace definition, HUD, micro-trace, drift, provenance, and render-target 
 
 <<~/ahu >>
 
-<<~&#x0002; ahu #meme-body-open >>
-docs/lararium/signal opens
-<<~/ahu >>
 
 <<~ ahu #room-charter >>
 
@@ -189,8 +186,5 @@ Settled child rooms in this branch:
 <<~ pranala #implements-loci ? -> lar:///ha.ka.ba/api/v0.1/pono/loci family:control role:implements >>
 <<~/ahu >>
 
-<<~&#x0003; ahu #body-close >>
-docs/lararium/signal closes
-<<~/ahu >>
 
 <<~&#x0004; -> ? >>

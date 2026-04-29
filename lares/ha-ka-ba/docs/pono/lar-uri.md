@@ -34,9 +34,6 @@ This surface carries the explanation.
 
 <<~/ahu >>
 
-<<~&#x0002; ahu #meme-body-open >>
-docs/pono/lar-uri opens
-<<~/ahu >>
 
 <<~ ahu #design-intent >>
 
@@ -1144,8 +1141,5 @@ This does **not** mean "truth-confidence 0.60" universally. It means a `0.60` re
 <<~ pranala #implements-lar-uri ? -> lar:///ha.ka.ba/api/v0.1/lararium/lar-uri family:control role:implements >>
 <<~/ahu >>
 
-<<~&#x0003; ahu #body-close >>
-docs/pono/lar-uri closes
-<<~/ahu >>
 
 <<~&#x0004; -> ? >>

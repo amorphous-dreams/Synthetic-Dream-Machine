@@ -18,9 +18,6 @@ retain       = true
 
 <<~/ahu >>
 
-<<~ ahu #meme-body-open >>
-MEME-STORE-FOUNDATIONS opens the research stream here.
-<<~/ahu >>
 
 <<~ ahu #research-pressure >>
 

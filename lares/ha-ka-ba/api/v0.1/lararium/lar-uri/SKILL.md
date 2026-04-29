@@ -39,9 +39,6 @@ retain = true
 [lar-uri.md](./lar-uri.md) holds the law.
 This surface carries the operational detail.
 
-<<~&#x0002; ahu #meme-body-open >>
-pono/lar-uri/SKILL opens
-<<~/ahu >>
 
 <<~ ahu #canonical-form >>
 
@@ -183,9 +180,6 @@ Provisional URIs MUST NOT be stored as stable addresses. They MAY appear in exch
 
 <<~/ahu >>
 
-<<~&#x0003; ahu #body-close >>
-pono/lar-uri/SKILL closes
-<<~/ahu >>
 
 <<~ ahu #edges >>
 

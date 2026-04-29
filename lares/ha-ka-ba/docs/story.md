@@ -32,9 +32,6 @@ This shelf holds mythic, narrative, and world-shaping docs that can inform the g
 
 <<~/ahu >>
 
-<<~&#x0002; ahu #meme-body-open >>
-docs/story opens
-<<~/ahu >>
 
 <<~ ahu #tree >>
 
@@ -49,9 +46,6 @@ Use this branch for:
 
 <<~/ahu >>
 
-<<~ ahu #body-close >>
-docs/story closes
-<<~/ahu >>
 
 
 <<~ ahu #edges >>

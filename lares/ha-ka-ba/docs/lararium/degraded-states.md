@@ -49,9 +49,6 @@ The names function as correction handles, not accusations.
 
 <<~/ahu >>
 
-<<~&#x0002; ahu #meme-body-open >>
-docs/lararium/degraded-states opens
-<<~/ahu >>
 
 <<~ ahu #epistemic-failures >>
 
@@ -221,8 +218,5 @@ The operator naming a degraded state constitutes correction input, not accusatio
 <<~ pranala #implements-loci ? -> lar:///ha.ka.ba/api/v0.1/pono/loci family:control role:implements >>
 <<~/ahu >>
 
-<<~&#x0003; ahu #body-close >>
-docs/lararium/degraded-states closes
-<<~/ahu >>
 
 <<~&#x0004; -> ? >>

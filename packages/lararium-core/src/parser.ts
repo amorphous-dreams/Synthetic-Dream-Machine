@@ -28,6 +28,7 @@ import type {
   EdgeSugarNode,
   DispatchNode,
   CarrierHeaderNode,
+  ControlNode,
   SigilNode,
   DynamicNode,
 } from "./ast.js";
@@ -104,6 +105,16 @@ const BOOTSTRAP_SCANS: SigilScan[] = [
   // groups [full, trigger?] — trigger is optional papalohe slot name
   { sigilName: "kukali",    regex: /<<~\s*kukali(?:\s+trigger:([\w.-]+))?\s*>>/g, eventType: "leaf" },
   { sigilName: "\\suspends", canonicalName: "kukali", regex: /<<~\s*\\suspends(?:\s+trigger:([\w.-]+))?\s*>>/g, eventType: "leaf" },
+  // ---------------------------------------------------------------------------
+  // ASCII control-character framing protocol — SOH / STX / ETX / EOT.
+  // These MUST be listed before the generic pranala-header scan so the &#x0001;
+  // form is consumed here rather than falling through to the bare `? ->` pattern.
+  // The decorator prefix (namespace glyphs, e.g. ॐ ँ or ⊙) is consumed by [^>]*.
+  // ---------------------------------------------------------------------------
+  { sigilName: "control-soh", regex: /<<~[^>]*&#x0001;[^>]*\?\s*->\s*([^\s>]+)\s*>>/g, eventType: "pragma" },
+  { sigilName: "control-stx", regex: /<<~[^>]*&#x0002;[^>]*>>/g,                        eventType: "pragma" },
+  { sigilName: "control-etx", regex: /<<~[^>]*&#x0003;[^>]*>>/g,                        eventType: "pragma" },
+  { sigilName: "control-eot", regex: /<<~[^>]*&#x0004;[^>]*>>/g,                        eventType: "pragma" },
 ];
 
 function buildScansFromGrammar(sigils: SigilRule[]): SigilScan[] {
@@ -238,6 +249,7 @@ const CANONICAL_SIGILS = new Set([
   "wehe", "helu", "kumu", "kau", "kapu", "hui", "heihei", "puka", "ui",
   "iam", "toml", "pranala-header",
   "kukali",
+  "control-soh", "control-stx", "control-etx", "control-eot",
 ]);
 
 export function buildAst(events: ParseEvent[], carrierUri: string, grammar?: GrammarRules, sourceText?: string): MemeAstNode[] {
@@ -381,6 +393,14 @@ function makeLeaf(
       return { kind: "Sigil", ...base, sigilName: "toml", attrs: { content: groups[1] ?? "" }, body: [] } as SigilNode;
     case "pranala-header":
       return { kind: "CarrierHeader", ...base, toUri: g(1) } as CarrierHeaderNode;
+    case "control-soh":
+      return { kind: "Control", ...base, phase: "soh", toUri: g(1) || undefined } as ControlNode;
+    case "control-stx":
+      return { kind: "Control", ...base, phase: "stx" } as ControlNode;
+    case "control-etx":
+      return { kind: "Control", ...base, phase: "etx" } as ControlNode;
+    case "control-eot":
+      return { kind: "Control", ...base, phase: "eot" } as ControlNode;
     default: {
       if (CANONICAL_SIGILS.has(sigilName)) {
         const scope = eventType === "pragma" ? "carrier" : "block";
@@ -422,6 +442,15 @@ function walkForEdges(nodes: MemeAstNode[], carrierUri: string, ahuStack: string
         break;
       case "CarrierHeader":
         edges.push(mk(carrierUri, carrierUri, null, node.toUri, node.toUri, "control", "header"));
+        break;
+      case "Control":
+        // SOH emits a "control"/"soh" edge carrying the declared URI.
+        // STX/ETX/EOT are stream-phase markers — no graph edges.
+        if (node.phase === "soh" && node.toUri) {
+          edges.push(mk(carrierUri, carrierUri, null, node.toUri, node.toUri, "control", "soh"));
+        }
+        break;
+      case "Text":
         break;
       case "Sigil":
       case "Dynamic":

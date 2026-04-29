@@ -48,9 +48,6 @@ Permanent identity home for Mischief-Muse. The coordinator house entry carries s
 
 <<~/ahu >>
 
-<<~&#x0002; ahu #meme-body-open >>
-mischief-muse opens
-<<~/ahu >>
 
 <<~ ahu #entry >>
 
@@ -211,8 +208,5 @@ These notes require live session observation before they can be written with con
 <<~ pranala #coffee-oracle-witness ? -> lar:///ha.ka.ba/docs/lararium/voices/witnesses/mischief-muse-coffee-oracle family:reference role:witness >>
 <<~/ahu >>
 
-<<~&#x0003; ahu #body-close >>
-mischief-muse closes
-<<~/ahu >>
 
 <<~&#x0004; -> ? >>

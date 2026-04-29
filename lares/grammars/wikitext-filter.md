@@ -21,9 +21,6 @@ invariant    = false
 
 <<~/ahu >>
 
-<<~ ahu #meme-body-open >>
-wikitext-filter opens.
-<<~/ahu >>
 
 <<~ ahu #purpose >>
 
@@ -227,9 +224,6 @@ Systematic find-replace for authors migrating TW5 content:
 
 <<~/ahu >>
 
-<<~ ahu #meme-body-close >>
-wikitext-filter closes.
-<<~/ahu >>
 
 <<~ ahu #edges >>
 

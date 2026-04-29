@@ -32,9 +32,6 @@ This shelf holds interpretive docs, witness bundles, and condensed research behi
 
 <<~/ahu >>
 
-<<~&#x0002; ahu #meme-body-open >>
-docs/mu opens
-<<~/ahu >>
 
 <<~ ahu #tree >>
 
@@ -81,8 +78,5 @@ AST reader: read the sockets, then route.
 <<~ pranala #implements-loci ? -> lar:///ha.ka.ba/api/v0.1/pono/loci family:control role:implements >>
 <<~/ahu >>
 
-<<~&#x0003; ahu #body-close >>
-docs/mu closes
-<<~/ahu >>
 
 <<~&#x0004; -> ? >>

@@ -26,9 +26,6 @@ status-date  = "2026-04-23"
 ```
 <<~/ahu >>
 
-<<~&#x0002; ahu #meme-body-open >>
-lararium_mcp/ast-execution-render opens
-<<~/ahu >>
 
 <<~ ahu #ooda-ha >>
 ✶ observe: the design stack separates identity, AST, execution, render, and inspection planes.
@@ -198,9 +195,6 @@ These remain planned surfaces; current server focuses on carrier resources, inde
 
 <<~/ahu >>
 
-<<~&#x0003; ahu #body-close >>
-lararium_mcp/ast-execution-render closes
-<<~/ahu >>
 
 <<~ ahu #edges >>
 ## Edges

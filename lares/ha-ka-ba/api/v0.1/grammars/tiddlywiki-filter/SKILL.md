@@ -37,9 +37,6 @@ cacheable = true
 [tiddlywiki-filter.md](../tiddlywiki-filter.md) holds the invariant law.
 This skill carries the working procedure.
 
-<<~&#x0002; ahu #meme-body-open >>
-x-tiddlywiki-filter/SKILL opens
-<<~/ahu >>
 
 <<~ ahu #load-contract >>
 
@@ -152,9 +149,6 @@ Surface, AST, widget, and landed output stay distinct at each layer.
 
 <<~/ahu >>
 
-<<~&#x0003; ahu #body-close >>
-x-tiddlywiki-filter/SKILL closes
-<<~/ahu >>
 
 <<~ ahu #edges >>
 

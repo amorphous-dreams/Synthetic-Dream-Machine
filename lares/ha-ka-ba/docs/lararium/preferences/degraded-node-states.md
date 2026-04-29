@@ -30,9 +30,6 @@ This room holds the old stack's habit of naming failure modes so they can be rec
 
 <<~/ahu >>
 
-<<~&#x0002; ahu #meme-body-open >>
-docs/lararium/preferences/degraded-node-states opens
-<<~/ahu >>
 
 <<~ ahu #provenance >>
 
@@ -76,9 +73,6 @@ A fuller future recovery may sort the old failure lexicon by domain.
 
 <<~/ahu >>
 
-<<~ ahu #body-close >>
-docs/lararium/preferences/degraded-node-states closes
-<<~/ahu >>
 
 <<~ ahu #edges >>
 

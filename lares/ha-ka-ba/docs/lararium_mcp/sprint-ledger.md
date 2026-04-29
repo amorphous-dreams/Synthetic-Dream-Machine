@@ -23,9 +23,6 @@ status      = "sequence-bound; no calendar dates"
 ```
 <<~/ahu >>
 
-<<~&#x0002; ahu #meme-body-open >>
-lararium_mcp/sprint-ledger opens
-<<~/ahu >>
 
 <<~ ahu #ooda-ha >>
 ✶ observe: the closed sprint docs mostly name exits and pointers to design contracts.
@@ -105,9 +102,6 @@ Individual story stubs may remain as issue-style trace records; they no longer n
 
 <<~/ahu >>
 
-<<~&#x0003; ahu #body-close >>
-lararium_mcp/sprint-ledger closes
-<<~/ahu >>
 
 <<~ ahu #edges >>
 ## Edges

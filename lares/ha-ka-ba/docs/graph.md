@@ -28,9 +28,6 @@ status-date  = "2026-04-24"
 ```
 <<~/ahu >>
 
-<<~&#x0002; ahu #meme-body-open >>
-graph opens
-<<~/ahu >>
 
 <<~ ahu #ooda-ha >>
 ✶ observe: static `_SOCKET`/`_DEPTH` maps and carrier-index scans stand in for a real graph walk.
@@ -163,9 +160,6 @@ Phases 1, 3, and 4 may proceed independently.
 
 <<~/ahu >>
 
-<<~&#x0003; ahu #body-close >>
-graph closes
-<<~/ahu >>
 
 <<~ ahu #edges >>
 ## Edges

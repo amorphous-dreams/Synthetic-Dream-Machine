@@ -36,9 +36,6 @@ This lararium remembers.
 
 <<~/ahu >>
 
-<<~&#x0002; ahu #meme-body-open >>
-LARES opens
-<<~/ahu >>
 
 ...
 
@@ -111,9 +108,6 @@ Live stage positions — shift inline with `[Stage: mask-name 0.75]`; edits here
 
 <<~/ahu >>
 
-<<~&#x0003; ahu #body-close >>
-LARES ends
-<<~/ahu >>
 
 <<~ ahu #edges >>
 

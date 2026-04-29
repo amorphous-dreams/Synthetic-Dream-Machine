@@ -46,9 +46,6 @@ This invariant carries contracts — what the house runs on at boot.
 
 <<~/ahu >>
 
-<<~ॐ ँ&#x0002; ahu #meme-body-open >>
-lararium/voices opens
-<<~/ahu >>
 
 <<~ ahu #house-law >>
 
@@ -379,8 +376,5 @@ payload = { priority = "support", retain = false }
 
 <<~/ahu >>
 
-<<~ॐ ँ&#x0003; ahu #body-close >>
-lararium/voices closes
-<<~/ahu >>
 
 <<~ॐ ँ&#x0004; -> ? >>

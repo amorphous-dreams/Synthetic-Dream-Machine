@@ -36,9 +36,6 @@ Grammar and stacking law defined in `lar:///ha.ka.ba/docs/lararium/voices/masks`
 
 <<~/ahu >>
 
-<<~&#x0002; ahu #meme-body-open >>
-masks opens
-<<~/ahu >>
 
 <<~ ahu #entry >>
 
@@ -132,8 +129,5 @@ Named coordinator masks may also be invoked directly by their earned name in coo
 <<~ pranala #implements-invariant ? -> lar:///ha.ka.ba/api/v0.1/pono/invariant family:control role:implements >>
 <<~/ahu >>
 
-<<~&#x0003; ahu #body-close >>
-masks closes
-<<~/ahu >>
 
 <<~&#x0004; -> ? >>

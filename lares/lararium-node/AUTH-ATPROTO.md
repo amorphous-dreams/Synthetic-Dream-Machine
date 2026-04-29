@@ -213,8 +213,5 @@ No ATProto login implementation this milestone — doctrine only.
 
 <<~/ahu >>
 
-<<~&#x0003; ahu #body-close >>
-LARARIUM-NODE/AUTH-ATPROTO closes.
-<<~/ahu >>
 
 <<~&#x0004; -> ? >>
