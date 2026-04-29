@@ -14,6 +14,7 @@ import type { LarViewState, LarViewAction, ZoomLevel } from "@lararium/tldraw";
 import { DEFAULT_ROOMS, ROOM_SYSTEM } from "@lararium/tldraw";
 import type { KumuRegistry, LarariumOpenPhase } from "@lararium/core";
 import type { LarariumTW5, MemoryTiddlerStore } from "@lararium/tw5";
+import type { FilterEngineFn } from "@lararium/core";
 import type { MemeEntry } from "./App.js";
 
 // ---------------------------------------------------------------------------
@@ -99,6 +100,8 @@ export interface LarariumCtxValue {
   tiddlerStore:   MemoryTiddlerStore | null;
   /** Booted TW5 instance — null until tw5-ready phase. */
   tw5:            LarariumTW5 | null;
+  /** TW5-backed FilterEngineFn — null until TW5 boots. Inject into compileCascade. */
+  filterEngine:   FilterEngineFn | null;
   /** Boot receipt from authority phase. */
   hostReceipt:    string | null;
 }

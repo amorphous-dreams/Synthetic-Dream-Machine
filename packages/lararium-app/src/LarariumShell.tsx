@@ -17,7 +17,7 @@
  * All tap targets ≥ 44×44px. No hover-only affordances.
  */
 
-import { useReducer, useEffect, useState, useRef, useCallback } from "react";
+import { useReducer, useEffect, useState, useRef, useCallback, useMemo } from "react";
 import type { Editor } from "tldraw";
 import { createPortal } from "react-dom";
 import { INITIAL_VIEW_STATE, viewStateReducer } from "@lararium/tldraw";
@@ -25,7 +25,7 @@ import type { LarViewAction, ZoomLevel } from "@lararium/tldraw";
 import { LarariumCanvas } from "./LarariumCanvas.js";
 import { MemeDetailPanel } from "./MemeDetailPanel.js";
 import { LarariumCtx, useLararium, shortUri, useTheme } from "./lararium-context.js";
-import { parseMemeCarrier, collectKumuDefs, buildKumuRegistry, type KumuRegistry } from "@lararium/core";
+import { parseMemeCarrier, collectKumuDefs, buildKumuRegistry, type KumuRegistry, type FilterEngineFn } from "@lararium/core";
 import { useLarariumHostOpen, useBridgeReceiptFromEditor } from "./lararium-browser-host.js";
 import "./lararium-theme.css";
 import type { MemeEntry } from "./App.js";
@@ -225,6 +225,16 @@ export function LarariumShell({ wsUrl, memes, onMemes }: ShellProps) {
     return () => window.removeEventListener("keydown", handler);
   }, []);
 
+  // TW5-backed FilterEngineFn — injected into compileCascade for wikitext-filter
+  // expression evaluation in the browser (room recipes, template cascade, palette search).
+  const filterEngine = useMemo<FilterEngineFn | null>(() => {
+    if (!tw5) return null;
+    return async (expr, closure, edges) => {
+      tw5.loadClosure(closure, edges);
+      return tw5.filterClosure(expr, closure);
+    };
+  }, [tw5]);
+
   // Expose opening state to browser console for smoke verification.
   // window.__larariumDebug.openPhase and .tw5 update reactively with ctx.
   (window as any).__larariumDebug ??= {};
@@ -248,6 +258,7 @@ export function LarariumShell({ wsUrl, memes, onMemes }: ShellProps) {
     openPhase,
     tiddlerStore,
     tw5,
+    filterEngine,
     hostReceipt,
   };
 

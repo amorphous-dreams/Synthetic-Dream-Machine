@@ -20,7 +20,7 @@
 import { useState, useEffect, useRef } from "react";
 import type { Editor } from "tldraw";
 import type { LarariumOpenPhase } from "@lararium/core";
-import { LarariumTW5, MemoryTiddlerStore } from "@lararium/tw5";
+import { LarariumTW5, MemoryTiddlerStore, LarariumCrdtSyncAdaptor } from "@lararium/tw5";
 
 // Stable shape ID for the boot-receipt meta-frame emitted by serve.ts.
 const BOOT_RECEIPT_SHAPE_ID = "shape:lararium_boot_receipt";
@@ -101,9 +101,10 @@ export function useLarariumHostOpen(options: BrowserHostOptions): HostOpenState 
   const [receipt, setReceipt] = useState<string | null>(null);
   const [isLive,  setIsLive]  = useState(false);
 
-  // Store and tw5 accumulate inside the generator; we extract them on specific phases.
-  const storeRef = useRef<MemoryTiddlerStore | null>(null);
-  const tw5Ref   = useRef<LarariumTW5 | null>(null);
+  // Refs for objects allocated inside the async run() — needed for effect cleanup.
+  const storeRef       = useRef<MemoryTiddlerStore | null>(null);
+  const tw5Ref         = useRef<LarariumTW5 | null>(null);
+  const stopAdaptorRef = useRef<(() => void) | null>(null);
 
   const optionsRef = useRef(options);
   optionsRef.current = options;
@@ -150,6 +151,12 @@ export function useLarariumHostOpen(options: BrowserHostOptions): HostOpenState 
         return;
       }
 
+      // Bind TW5 virtual server to the MemoryTiddlerStore via CRDT sync adaptor.
+      // Echo-loop guard: crdt-remote changes flow TW5-ward only; tw-local changes
+      // flow store-ward only. Canon guard: saveTiddler never writes to lares/.
+      const adaptor = new LarariumCrdtSyncAdaptor(t, s, `${hostId}:browser`);
+      stopAdaptorRef.current = adaptor.start();
+
       if (!cancelled) setPhase({ kind: "projection-opening", roomId });
       if (!cancelled) setPhase({ kind: "projection-ready", roomId });
       if (!cancelled) { setPhase({ kind: "live", offset: 0 }); setIsLive(true); }
@@ -159,7 +166,11 @@ export function useLarariumHostOpen(options: BrowserHostOptions): HostOpenState 
       if (!cancelled) setPhase({ kind: "error", message: String(err) });
     });
 
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+      stopAdaptorRef.current?.();
+      stopAdaptorRef.current = null;
+    };
   }, []); // intentionally empty — opens once per mount
 
   return { phase, store, tw5, receipt, isLive };
