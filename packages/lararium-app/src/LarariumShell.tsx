@@ -20,7 +20,7 @@
 import { useReducer, useEffect, useState, useRef, useCallback } from "react";
 import type { Editor } from "tldraw";
 import { createPortal } from "react-dom";
-import { INITIAL_VIEW_STATE, viewStateReducer, DEFAULT_ROOMS } from "@lararium/tldraw";
+import { INITIAL_VIEW_STATE, viewStateReducer } from "@lararium/tldraw";
 import type { LarViewAction, ZoomLevel } from "@lararium/tldraw";
 import { LarariumCanvas } from "./LarariumCanvas.js";
 import { MemeDetailPanel } from "./MemeDetailPanel.js";
@@ -44,39 +44,48 @@ interface ShellProps {
 
 // Flat item list for unified keyboard nav across sections
 type PaletteItem =
-  | { kind: "room"; id: string; name: string; glyph: string }
+  | { kind: "home" }
+  | { kind: "page"; pageId: string; name: string }
   | { kind: "meme"; uri: string; depth: number; memeKind: string };
 
-const ROOM_GLYPH: Record<string, string> = {
-  system:     "🔍",
-  invariants: "⬡",
-  graph:      "⚙️",
-  entry:      "⚡",
-};
-
 function LarariumCommandPalette({ onClose }: { onClose: () => void }) {
-  const { memes, dispatch } = useLararium();
+  const { memes, dispatch, editor } = useLararium();
   const [query, setQuery] = useState("");
   const [cursor, setCursor] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => { inputRef.current?.focus(); }, []);
 
-  // Build flat unified item list: rooms first (always shown when no query), then memes
-  const roomItems: Extract<PaletteItem, { kind: "room" }>[] = DEFAULT_ROOMS
-    .filter((r) => !query || r.name.toLowerCase().includes(query.toLowerCase()) || r.id.includes(query.toLowerCase()))
-    .map((r) => ({ kind: "room" as const, id: r.id, name: r.name, glyph: ROOM_GLYPH[r.id] ?? "⬡" }));
+  // Live pages from the editor — only pages that actually exist in the CRDT store.
+  const livePages: { pageId: string; name: string }[] = editor
+    ? editor.getPages()
+        .filter((p) => p.id !== "page:boot") // boot is "home" below
+        .map((p) => ({ pageId: p.id, name: (p as unknown as Record<string,unknown>).name as string ?? p.id }))
+    : [];
+
+  const homeItem: Extract<PaletteItem, { kind: "home" }> = { kind: "home" };
+
+  const pageItems: Extract<PaletteItem, { kind: "page" }>[] = livePages
+    .filter((p) => !query || p.name.toLowerCase().includes(query.toLowerCase()) || p.pageId.includes(query.toLowerCase()))
+    .map((p) => ({ kind: "page" as const, ...p }));
+
+  const spaceItems: PaletteItem[] = [
+    ...(!query || "story river".includes(query.toLowerCase()) || "boot".includes(query.toLowerCase()) ? [homeItem] : []),
+    ...pageItems,
+  ];
 
   const memeItems: Extract<PaletteItem, { kind: "meme" }>[] = (query
     ? memes.filter((m) => m.uri.toLowerCase().includes(query.toLowerCase()))
     : memes
   ).slice(0, 12).map((m) => ({ kind: "meme" as const, uri: m.uri, depth: m.depth, memeKind: m.kind }));
 
-  const items: PaletteItem[] = [...roomItems, ...memeItems];
+  const items: PaletteItem[] = [...spaceItems, ...memeItems];
 
   const activate = useCallback((item: PaletteItem) => {
-    if (item.kind === "room") {
-      dispatch({ type: "GO_TO_ROOM", roomId: item.id });
+    if (item.kind === "home") {
+      dispatch({ type: "GO_TO_ROOM", roomId: "boot" });
+    } else if (item.kind === "page") {
+      dispatch({ type: "GO_TO_ROOM", roomId: item.pageId.replace(/^page:/, "") });
     } else {
       dispatch({ type: "ZOOM_IN", uri: item.uri });
     }
@@ -105,20 +114,20 @@ function LarariumCommandPalette({ onClose }: { onClose: () => void }) {
           spellCheck={false}
         />
         <div style={css.paletteList} role="listbox">
-          {roomItems.length > 0 && (
+          {spaceItems.length > 0 && (
             <>
               <div style={css.paletteSectionLabel}>Spaces</div>
-              {roomItems.map((item, i) => (
+              {spaceItems.map((item, i) => (
                 <button
-                  key={item.id}
+                  key={item.kind === "home" ? "__home__" : item.pageId}
                   role="option"
                   aria-selected={i === cursor}
                   style={{ ...css.paletteItem, ...(i === cursor ? css.paletteItemActive : {}) }}
                   onClick={() => activate(item)}
                   onMouseEnter={() => setCursor(i)}
                 >
-                  <span style={css.paletteRoomGlyph}>{item.glyph}</span>
-                  <span style={css.paletteItemLabel}>{item.name}</span>
+                  <span style={css.paletteRoomGlyph}>{item.kind === "home" ? "⬡" : "◻"}</span>
+                  <span style={css.paletteItemLabel}>{item.kind === "home" ? "Story River (boot)" : item.name}</span>
                   <span style={css.paletteItemKind}>space</span>
                 </button>
               ))}
@@ -128,7 +137,7 @@ function LarariumCommandPalette({ onClose }: { onClose: () => void }) {
             <>
               <div style={css.paletteSectionLabel}>Memes</div>
               {memeItems.map((item, i) => {
-                const idx = roomItems.length + i;
+                const idx = spaceItems.length + i;
                 return (
                   <button
                     key={item.uri}
