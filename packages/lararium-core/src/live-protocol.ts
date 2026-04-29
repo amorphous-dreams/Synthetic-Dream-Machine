@@ -99,6 +99,81 @@ export type LarariumOpenPhase =
   | { readonly kind: "error";             readonly message:   string };
 
 // ---------------------------------------------------------------------------
+// LarariumAuthorityEnvelope — discriminated union for the three authority modes.
+//
+// local-operator: development and single-operator rooms — no crypto required.
+// ucan-delegated: public-key-verifiable capability chain (Brooklyn / Fission model).
+// keyhive:        encrypted group sync with membership graph (Brooklyn / Beelay model).
+//
+// Only "local-operator" executes today. The other two arms are type-only protocol
+// sockets — not instantiated in any runtime path until crypto lands.
+// ---------------------------------------------------------------------------
+
+export type LarariumAuthorityEnvelope =
+  | {
+      readonly mode:        "local-operator";
+      readonly roomId:      string;
+      readonly receiptHash: string;
+      readonly issuedAt:    string;
+    }
+  | {
+      readonly mode:       "ucan-delegated";
+      readonly issuer:     string;
+      readonly subject:    string;
+      readonly capability: unknown;
+      readonly proofs?:    readonly unknown[];
+    }
+  | {
+      readonly mode:      "keyhive";
+      readonly graph:     unknown;
+      readonly peer?:     string;
+      readonly group?:    string;
+      readonly document?: string;
+    };
+
+// ---------------------------------------------------------------------------
+// canPromoteToCanon — projection-cache authority policy guard.
+//
+// Invariant (target invariant, unconditional):
+//   projection-cache may render
+//   projection-cache may inform
+//   projection-cache may propose
+//   projection-cache may NOT canon-promote
+//
+// Returns { ok: false, reason } whenever the origin is "projection-cache",
+// regardless of authorityMode. Canon promotion requires a separate Orichalcum
+// ceremony that has not landed yet; this function is the enforcement point.
+// ---------------------------------------------------------------------------
+
+export interface CanPromoteInput {
+  readonly origin:        { readonly kind: string };
+  readonly authorityMode: LarariumAuthorityEnvelope["mode"];
+  readonly target:        string;
+}
+
+export interface CanPromoteResult {
+  readonly ok:     boolean;
+  readonly reason?: string;
+}
+
+export function canPromoteToCanon(input: CanPromoteInput): CanPromoteResult {
+  if (input.origin.kind === "projection-cache") {
+    return { ok: false, reason: "projection-cache-origin-cannot-promote-canon" };
+  }
+  if (input.origin.kind === "tw-local" || input.origin.kind === "crdt-remote") {
+    return { ok: false, reason: "live-edit-origin-cannot-promote-canon-without-ceremony" };
+  }
+  if (input.origin.kind === "canon-hydrate") {
+    return { ok: true };
+  }
+  if (input.origin.kind === "mcp-draft" || input.origin.kind === "operator-import") {
+    // Operator-trusted paths — allowed but should pass through review ceremony in production.
+    return { ok: true };
+  }
+  return { ok: false, reason: `unknown-origin-kind:${input.origin.kind}` };
+}
+
+// ---------------------------------------------------------------------------
 // Carrier payload — one meme's parsed state
 // ---------------------------------------------------------------------------
 
