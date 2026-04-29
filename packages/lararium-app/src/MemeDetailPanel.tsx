@@ -42,7 +42,7 @@ function useCarrierText(uri: string | null): string | null {
 // useMemeRender — Automerge text → tw5.renderMeme → { view, vdom }
 // ---------------------------------------------------------------------------
 
-type MemeView = "kumu-view" | "reaction-view" | "meme-view";
+type MemeView = "kumu-view" | "reaction-view" | "meme-view" | "cascade-view";
 
 function useMemeRender(
   uri: string | null,

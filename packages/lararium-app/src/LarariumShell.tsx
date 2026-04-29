@@ -26,7 +26,7 @@ import { LarariumCanvas } from "./LarariumCanvas.js";
 import { MemeDetailPanel } from "./MemeDetailPanel.js";
 import { LarariumCtx, useLararium, shortUri, useTheme } from "./lararium-context.js";
 import type { ReactionGraph } from "@lararium/core";
-import { useLarariumHostOpen, useBridgeReceiptFromEditor } from "./lararium-browser-host.js";
+import { useLarariumHostOpen } from "./lararium-browser-host.js";
 import { debugSet } from "./debug.js";
 import "./lararium-theme.css";
 import type { MemeEntry } from "./App.js";
@@ -184,11 +184,13 @@ export function LarariumShell({ wsUrl, memes, onMemes }: ShellProps) {
   const { phase: openPhase, store: tiddlerStore, tw5 } =
     useLarariumHostOpen({ hostId: "lararium-browser", recipeUri: "lar:///recipe/room", roomId: "altar-fire" });
 
-  // hostReceipt starts null; useBridgeReceiptFromEditor upgrades it to the real
-  // receiptHash from the boot-receipt meta-frame in the tldraw CRDT store (O2 ruling).
-  // Projection-cache intake in LarariumCanvas gates on this being non-null.
-  const [hostReceipt, setHostReceipt] = useState<string | null>(null);
-  useBridgeReceiptFromEditor(editor, setHostReceipt);
+  // Receipt SHA from server — delivered via <meta name="lararium-receipt"> in the HTML
+  // shell. Read once at mount; stable for the session.
+  const [hostReceipt] = useState<string | null>(() =>
+    typeof document !== "undefined"
+      ? document.querySelector('meta[name="lararium-receipt"]')?.getAttribute("content") ?? null
+      : null
+  );
 
   // ReactionGraph — built by TW5 from wiki tiddler texts; rebuilt on every wiki change.
   // tw5.buildReactionGraph() reads getTiddlerText() per URI — no Automerge round-trip.

@@ -27,16 +27,12 @@
  */
 
 import { useState, useEffect, useRef } from "react";
-import type { Editor } from "tldraw";
 import type { LarariumOpenPhase } from "@lararium/core";
 import { LarariumTW5, LarariumCrdtSyncAdaptor, setActiveTW5 } from "@lararium/tw5";
 import { initMemeRepo, readMemeStoreUrl, type MemeRepoResult } from "./automerge-store.js";
 import type { AutomergeMemeStore } from "./automerge-store.js";
 import { getOrCreateBrowserIdentity } from "./operator-key.js";
 import type { Repo } from "@automerge/automerge-repo";
-
-// Stable shape ID for the boot-receipt meta-frame emitted by serve.ts.
-const BOOT_RECEIPT_SHAPE_ID = "shape:lararium_boot_receipt";
 
 // ---------------------------------------------------------------------------
 // BrowserHostOptions
@@ -155,10 +151,17 @@ export function useLarariumHostOpen(options: BrowserHostOptions): HostOpenState 
       await t.loadFromStore(s);
 
       // Bind TW5 to the AutomergeMemeStore via CRDT sync adaptor.
-      // crdt-remote changes (from Automerge peers) apply to TW5 wiki.
-      // tw-local changes (TW5 edits) write back to the Automerge doc.
-      const adaptor = new LarariumCrdtSyncAdaptor(t, s, `${hostId}:${roomId}`);
-      stopAdaptorRef.current = adaptor.start();
+      // crdt-remote changes (Automerge → TW5): adaptor.start() subscribes to store.
+      // tw-local changes (TW5 → Automerge): onWikiChange wires TW5 wiki edits back
+      // to the store via adaptor.saveTiddler — completing the local-first write ring.
+      // Two-direction sync via adaptor + isomorphic TW5 syncer:
+      //   adaptor.start()   → Automerge → TW5  (crdt-remote changes apply to wiki)
+      //   t.startSyncer()   → TW5 → Automerge  (wiki edits write back to store)
+      const adaptor   = new LarariumCrdtSyncAdaptor(t, s, `${hostId}:${roomId}`);
+      const stopStore  = adaptor.start();
+      const stopSyncer = t.startSyncer(adaptor);
+
+      stopAdaptorRef.current = () => { stopStore(); stopSyncer(); };
 
       if (!cancelled) { setPhase({ kind: "live", offset: 0 }); setIsLive(true); }
     }
@@ -186,54 +189,3 @@ export function useLarariumHostOpen(options: BrowserHostOptions): HostOpenState 
 // useBridgeReceiptFromEditor — discovers boot-receipt meta-frame in tldraw store
 // ---------------------------------------------------------------------------
 
-/**
- * Reads the real boot-receipt hash from the tldraw CRDT store (shape:lararium_boot_receipt).
- * Separate from the tiddler store boot — the receipt just gates canon-promotion guards.
- */
-export function useBridgeReceiptFromEditor(
-  editor:    Editor | null,
-  onReceipt: (receiptHash: string) => void,
-): void {
-  const onReceiptRef = useRef(onReceipt);
-  onReceiptRef.current = onReceipt;
-
-  useEffect(() => {
-    if (!editor) return;
-
-    let found = false;
-
-    function tryFindReceipt(): boolean {
-      if (found) return true;
-
-      // Fast path: stable shape ID lookup
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const byId = editor!.store.get(BOOT_RECEIPT_SHAPE_ID as any) as Record<string, unknown> | null | undefined;
-      if (byId) {
-        const m = byId["meta"] as Record<string, unknown> | undefined;
-        if (m?.["metaKind"] === "boot-receipt" && typeof m["receiptHash"] === "string") {
-          found = true;
-          onReceiptRef.current(m["receiptHash"] as string);
-          return true;
-        }
-      }
-
-      // Fallback: full scan
-      for (const record of editor!.store.allRecords()) {
-        const r = record as unknown as Record<string, unknown>;
-        if (r["typeName"] !== "shape") continue;
-        const m = r["meta"] as Record<string, unknown> | undefined;
-        if (m?.["metaKind"] === "boot-receipt" && typeof m["receiptHash"] === "string") {
-          found = true;
-          onReceiptRef.current(m["receiptHash"] as string);
-          return true;
-        }
-      }
-      return false;
-    }
-
-    if (tryFindReceipt()) return;
-
-    const unsub = editor.store.listen(() => { tryFindReceipt(); }, { scope: "document" });
-    return unsub;
-  }, [editor]);
-}

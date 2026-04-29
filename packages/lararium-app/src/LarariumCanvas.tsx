@@ -300,8 +300,7 @@ export function LarariumCanvas({ wsUrl, navState, dispatch, canvasMode, onZoomLe
           editorRef.current = editor;
           setEditor(editor);
           debugSet("editor",       editor);
-          debugSet("receiptShape", editor.store.get("shape:lararium_boot_receipt" as Parameters<typeof editor.store.get>[0]));
-          editor.user.updateUserPreferences({ colorScheme: "dark" });
+editor.user.updateUserPreferences({ colorScheme: "dark" });
           editor.setCurrentTool("select");
 
           let lastLevel = classifyZoom(editor.getZoomLevel());

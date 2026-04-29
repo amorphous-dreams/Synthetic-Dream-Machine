@@ -27,7 +27,7 @@ export {
   buildEdgeFieldMap,
 } from "./lararium-tw5.js";
 
-export type { FilterEngineFn, ZoomLayout } from "./lararium-tw5.js";
+export type { FilterEngineFn, ZoomLayout, TW5SyncAdaptor } from "./lararium-tw5.js";
 
 // ---------------------------------------------------------------------------
 // Active TW5 accessor — module-level, React-free.
@@ -43,6 +43,7 @@ export type { FilterEngineFn, ZoomLayout } from "./lararium-tw5.js";
 export { setActiveTW5, getActiveTW5 } from "./active-tw5.js";
 
 export { LarariumCrdtSyncAdaptor } from "./sync-adaptor.js";
+export { LarDiskSyncAdaptor }      from "./disk-sync-adaptor.js";
 export { MemoryTiddlerStore }      from "./memory-store.js";
 
 export { tw5ElementToVdom, tw5ElementToHtml } from "./fake-dom.js";

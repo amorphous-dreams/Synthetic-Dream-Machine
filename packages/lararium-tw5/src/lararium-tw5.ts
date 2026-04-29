@@ -41,6 +41,18 @@ import type { VDomNode } from "./fake-dom.js";
 // Re-export so callers can get FilterEngineFn from @lararium/tw5 directly.
 export type { FilterEngineFn };
 
+/**
+ * TW5SyncAdaptor — minimal interface startSyncer() requires from an adaptor.
+ *
+ * Matches the subset of the TW5 SyncAdaptor contract that the isomorphic
+ * syncer drives. Backends implement the full contract; startSyncer() only
+ * needs these two write methods.
+ */
+export interface TW5SyncAdaptor {
+  saveTiddler(tiddler: unknown, callback: (err: Error | null, adaptorInfo: unknown, revision: string) => void): void;
+  deleteTiddler(title: string, callback: (err: Error | null) => void, options?: unknown): void;
+}
+
 // ---------------------------------------------------------------------------
 // ZoomLayout — tldraw canvas layout props for a zoom level, read from kumu def TOML
 // ---------------------------------------------------------------------------
@@ -448,6 +460,48 @@ export class LarariumTW5 {
     const handler = (changes: any) => cb(changes as Record<string, unknown>);
     wiki.addEventListener("change", handler);
     return () => wiki.removeEventListener("change", handler);
+  }
+
+  /**
+   * Start an async syncer bound to a TW5SyncAdaptor implementation.
+   *
+   * This is the isomorphic TW5 syncer — it replaces $tw.syncer for the
+   * local-first model where the adaptor backend varies by context:
+   *   browser → LarariumCrdtSyncAdaptor (TW5 ↔ Automerge IndexedDB)
+   *   server  → LarDiskSyncAdaptor      (TW5 ↔ lares/ files)
+   *
+   * Drives the TW5 → adaptor write direction:
+   *   wiki change event fires
+   *   → non-system tiddler added/updated → adaptor.saveTiddler(tiddler)
+   *   → non-system tiddler deleted       → adaptor.deleteTiddler(title)
+   *
+   * The adaptor owns the reverse direction (adaptor → TW5) via its own
+   * subscription mechanism (e.g. store.subscribe in LarariumCrdtSyncAdaptor).
+   * The adaptor's echo-loop guard (_applying flag) prevents re-entrant writes
+   * when a change originated from the adaptor itself.
+   *
+   * Returns a stop function. Call it to unsubscribe and halt the syncer.
+   */
+  startSyncer(adaptor: TW5SyncAdaptor): () => void {
+    if (!this._tw) throw new Error("LarariumTW5: call boot() before startSyncer()");
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const wiki = this._tw.wiki as any;
+
+    // All Lararium memes have `lar:` URI titles — system tiddlers use `$:` and
+    // are TW5-internal. Only sync lar: titles; everything else is TW5 housekeeping.
+    return this.onWikiChange((changes) => {
+      for (const title of Object.keys(changes)) {
+        if (!title.startsWith("lar:")) continue;
+
+        const tiddler = wiki.getTiddler?.(title);
+        if (tiddler) {
+          adaptor.saveTiddler(tiddler, () => { /* fire-and-forget */ });
+        } else {
+          adaptor.deleteTiddler(title, () => { /* fire-and-forget */ });
+        }
+      }
+    });
   }
 
   /**

@@ -38,14 +38,11 @@ import {
   TLSocketRoom,
   SQLiteSyncStorage,
   NodeSqliteWrapper,
-  DEFAULT_INITIAL_SNAPSHOT,
 } from "@tldraw/sync-core";
 import { createLarariumRuntime, LARES_ROOT } from "../src/node-host.js";
 import { buildSnapshot } from "./build-snapshot-lib.js";
-import { injectBootReceiptFrame, buildBootReceiptMeta } from "../src/boot-receipt.js";
 import {
   type BootArtifact,
-  parsePranalaEdges,
   extractReactionBindings,
   ReactionGraph,
   type ReactionBinding,
@@ -53,6 +50,7 @@ import {
   AuthorityFirstGuard,
   canPromoteToCanon,
   resolveLarUri,
+  laresRelPathToLarUri,
   UcanPeerRegistry,
   verifyUcan,
 } from "@lararium/core";
@@ -141,63 +139,16 @@ function evictRoom(roomId: string): boolean {
 }
 
 // ---------------------------------------------------------------------------
-// Boot projection
+// Boot receipt — SHA delivered via HTML meta tag, not a hidden tldraw shape.
+// Rooms are stable opaque strings; clients self-layout from Automerge.
 // ---------------------------------------------------------------------------
 
-type SnapshotData = Awaited<ReturnType<typeof buildSnapshot>>;
-
-async function buildBootProjection(
+async function computeReceiptSha(
   runtime: ReturnType<typeof createLarariumRuntime>,
-  snapshotMemes: SnapshotData,
-): Promise<{ snapshot: unknown; roomId: string; receiptSha: string; memeCount: number; kumuDefs: import("@lararium/core").KumuDef[] }> {
-  const { renderAllViews } = await import("@lararium/tldraw");
-  const { LarariumTW5 } = await import("@lararium/tw5");
-  const artifact: BootArtifact = runtime.compileBoot();
-
-  // Inject kumu defs into the TW5 singleton so filterTiddlers and KumuWidget
-  // can resolve them natively without a separate KumuRegistry.
-  const tw5 = new LarariumTW5();
-  await tw5.boot();
-  tw5.injectKumuDefs(artifact.kumuDefs ?? []);
-  const receipt = await runtime.compileBootReceipt(artifact);
-  const receiptSha = receipt.sha256.replace(/^sha256:/, "");
-
-  const emission = await renderAllViews(artifact, {
-    readText: (uri: string) => {
-      const meme = snapshotMemes.memes[uri];
-      if (!meme) throw new Error(`${uri} not in snapshot`);
-      return meme.text;
-    },
-    includeAhuFrames: true,
-  });
-
-  const store: Record<string, unknown> = {};
-  for (const page of emission.pages) store[page.id] = page;
-  for (const shape of emission.shapes) store[(shape as { id: string }).id] = shape;
-  for (const binding of emission.bindings) store[binding.id] = binding;
-
-  // Inject boot-receipt meta-frame into the snapshot before sealing.
-  // Must arrive with the room substrate (O1 ruling) so browser can gate
-  // projection-cache intake on receipt readiness without a second WebSocket.
-  const firstPageId = emission.pages[0]?.id ?? "page:default";
-  const bootRoomId  = `boot-${receiptSha.slice(0, 16)}`;
-  injectBootReceiptFrame(store, {
-    pageId:  firstPageId,
-    receipt: buildBootReceiptMeta({ roomId: bootRoomId, receiptHash: receiptSha, operatorDid: operatorIdentity.did }),
-  });
-
-  const ev = artifact.validation.edgeViolations ?? [];
-  const evErrors = ev.filter((v: { severity: string }) => v.severity === "error").length;
-  if (ev.length > 0)
-    console.warn(`[lararium-serve] edge violations: ${ev.length} (${evErrors} errors, ${ev.length - evErrors} warnings)`);
-  console.log(`[lararium-serve] projection ready: ${emission.pages.length} pages, ${emission.shapes.length} shapes`);
-  return {
-    snapshot: { store, schema: DEFAULT_INITIAL_SNAPSHOT.schema },
-    roomId: `boot-${receiptSha.slice(0, 16)}`,
-    receiptSha,
-    memeCount: artifact.memeCount,
-    kumuDefs: artifact.kumuDefs ?? [],
-  };
+): Promise<string> {
+  const artifact = runtime.compileBoot();
+  const receipt  = await runtime.compileBootReceipt(artifact);
+  return receipt.sha256.replace(/^sha256:/, "");
 }
 
 // ---------------------------------------------------------------------------
@@ -219,19 +170,23 @@ async function main() {
     process.exit(1);
   }
 
-  // Build tldraw projection and content-addressed room key
-  let bootProjection: Awaited<ReturnType<typeof buildBootProjection>> | null = null;
+  // Operator identity — Ed25519 keypair persisted in <dataDir>/operator-key.json.
+  const operatorIdentity = await getOrCreateNodeIdentity(DATA_DIR);
+  console.log(`[lararium-serve] operator DID: ${operatorIdentity.did}`);
+
+  // Receipt SHA — delivered to clients via <meta name="lararium-receipt"> in the HTML
+  // shell; no hidden tldraw shape needed. Recomputed on reseed.
+  let receiptSha = "";
   try {
-    bootProjection = await buildBootProjection(runtime, snapshotMemes);
+    receiptSha = await computeReceiptSha(runtime);
   } catch (e) {
-    console.warn("[lararium-serve] projection failed — rooms will start empty:", e);
+    console.warn("[lararium-serve] receipt compute failed:", e);
   }
 
-  const activeBootRoomId = bootProjection?.roomId ?? "boot";
-  const bootSnapshot = bootProjection?.snapshot;
-
-  // Seed tldraw canvas layout room
-  getOrCreateRoom(activeBootRoomId, bootSnapshot);
+  // Rooms are stable opaque strings — clients self-layout from the Automerge store.
+  // Any roomId is valid; the default room is "main". Multi-room: /room/:id routes.
+  const DEFAULT_ROOM = "main";
+  getOrCreateRoom(DEFAULT_ROOM);
 
   // ---------------------------------------------------------------------------
   // Automerge meme-sync peer — content CRDT (separate from tldraw layout CRDT)
@@ -246,10 +201,6 @@ async function main() {
   const MEME_STORE_DIR = join(DATA_DIR, "meme-store");
   mkdirSync(MEME_STORE_DIR, { recursive: true });
 
-  // Operator identity — Ed25519 keypair persisted in <dataDir>/operator-key.json.
-  // did is injected into HTML + boot receipt so browsers can issue valid UCANs.
-  const operatorIdentity = await getOrCreateNodeIdentity(DATA_DIR);
-  console.log(`[lararium-serve] operator DID: ${operatorIdentity.did}`);
 
   // Peer authorization registry — populated by /auth/ucan, consumed by sharePolicy.
   const peerRegistry = new UcanPeerRegistry();
@@ -270,34 +221,26 @@ async function main() {
 
     // ── API ────────────────────────────────────────────────────────────────
     if (pathname === "/api/rooms") {
-      return json(res, {
-        activeBootRoomId,
-        rooms: [...rooms.keys()],
-      });
+      return json(res, { defaultRoom: DEFAULT_ROOM, rooms: [...rooms.keys()] });
     }
 
-    // Admin: force-reseed a room (localhost-only guard)
+    // Admin: force-reseed — evict SQLite + rebuild Automerge snapshot from lares/
     if (pathname === "/admin/reseed") {
       const remoteAddr = (req.socket.remoteAddress ?? "").replace("::ffff:", "");
       if (remoteAddr !== "127.0.0.1" && remoteAddr !== "::1") {
         return json(res, { error: "forbidden" }, 403);
       }
-      const targetId = params.get("roomId") ?? activeBootRoomId;
+      const targetId = params.get("roomId") ?? DEFAULT_ROOM;
       const deleted = evictRoom(targetId);
-      console.log(`[lararium-serve] reseed requested for ${targetId} — sqlite ${deleted ? "deleted" : "not found"}`);
-
-      // Rebuild projection for the boot room — refresh snapshot from disk first
-      if (targetId === activeBootRoomId || targetId === "boot") {
-        try {
-          snapshotMemes = await buildSnapshot(runtime);
-          const fresh = await buildBootProjection(runtime, snapshotMemes);
-          getOrCreateRoom(fresh.roomId, fresh.snapshot);
-          return json(res, { reseeded: fresh.roomId, sha: fresh.receiptSha, deleted });
-        } catch (e) {
-          return json(res, { error: String(e) }, 500);
-        }
+      console.log(`[lararium-serve] reseed: ${targetId} sqlite ${deleted ? "deleted" : "not found"}`);
+      try {
+        snapshotMemes = await buildSnapshot(runtime);
+        receiptSha    = await computeReceiptSha(runtime);
+        getOrCreateRoom(targetId);
+        return json(res, { reseeded: targetId, sha: receiptSha, deleted });
+      } catch (e) {
+        return json(res, { error: String(e) }, 500);
       }
-      return json(res, { reseeded: targetId, deleted });
     }
 
     // Admin: canon-promotion (localhost-only, POST body: { uri, carrierText, shapeId? })
@@ -349,9 +292,15 @@ async function main() {
       }
 
       try {
+        mkdirSync(resolve(filePath, ".."), { recursive: true });
         writeFileSync(filePath, carrierText, "utf-8");
         console.log(`[lararium-serve] promote: wrote ${filePath} (shape: ${shapeId})`);
-        // lares/ watcher fires rebuild automatically; return immediately
+        // Mirror into Automerge so connected clients see the change immediately
+        // without waiting for the lares/ watcher round-trip.
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (memeHandle as any).change((doc: any) => {
+          doc[uri] = { title: uri, text: carrierText };
+        });
         return json(res, { promoted: uri, path: resolution.laresRelPath });
       } catch (e) {
         return json(res, { error: String(e) }, 500);
@@ -404,18 +353,23 @@ async function main() {
       if (serveStatic(res, join(APP_DIST, pathname))) return;
     }
 
+    // Multi-room routing: /room/:roomId serves the app pointed at that room.
+    // Any other path (including /) serves the default room.
+    // Room IDs are opaque strings — they're lazy-created on first WS connect.
+    const roomRouteMatch = pathname.match(/^\/room\/([a-zA-Z0-9_-]{1,64})$/);
+    const serveRoomId = roomRouteMatch ? roomRouteMatch[1]! : DEFAULT_ROOM;
+
     // App shell — inject WS + meme-store URLs so clients boot local-first.
-    // lararium-ws      → tldraw canvas CRDT (layout/positions)
-    // lararium-meme-sync → Automerge /meme-sync WS (content CRDT)
-    // lararium-meme-store → Automerge doc URL (client caches in localStorage)
-    const host = req.headers["host"] ?? `${HOST}:${PORT}`;
+    const host    = req.headers["host"] ?? `${HOST}:${PORT}`;
     const wsProto = req.headers["x-forwarded-proto"] === "https" ? "wss" : "ws";
     let html = readFileSync(join(APP_DIST, "index.html"), "utf-8");
     const metaTags = [
-      `<meta name="lararium-ws"           content="${wsProto}://${host}/rooms/${activeBootRoomId}">`,
+      `<meta name="lararium-room"         content="${serveRoomId}">`,
+      `<meta name="lararium-ws"           content="${wsProto}://${host}/rooms/${serveRoomId}">`,
       `<meta name="lararium-meme-sync"    content="${wsProto}://${host}/meme-sync">`,
       `<meta name="lararium-meme-store"   content="${memeStoreUrl}">`,
       `<meta name="lararium-operator-did" content="${operatorIdentity.did}">`,
+      `<meta name="lararium-receipt"      content="${receiptSha}">`,
     ].join("\n  ");
     html = html.replace("</head>", `  ${metaTags}\n</head>`);
     res.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
@@ -451,7 +405,7 @@ async function main() {
 
     // Redirect stable alias "boot" → current content-addressed room
     const rawRoomId = match[1]!;
-    const roomId = rawRoomId === "boot" ? activeBootRoomId : rawRoomId;
+    const roomId = rawRoomId === "boot" ? DEFAULT_ROOM : rawRoomId;
     const sessionId = wsUrl.searchParams.get("sessionId") ?? crypto.randomUUID();
 
     // Tag socket for reaction-graph broadcast targeting
@@ -468,15 +422,11 @@ async function main() {
     // For local-operator: all rooms are visible; skip to manifest
     guard.advance("sync-collection-manifest");
 
-    // Boot receipt travels as a hidden tldraw shape in the room snapshot (shape:lararium_boot_receipt),
-    // not as a separate WS message. A standalone JSON message with type="boot-receipt" would reach
-    // the tldraw sync client before it is ready and trigger an Unknown switch case error.
-
     const buffered: import("ws").RawData[] = [];
     const buffer = (msg: import("ws").RawData) => buffered.push(msg);
     ws.on("message", buffer);
 
-    const room = getOrCreateRoom(roomId, bootSnapshot);
+    const room = getOrCreateRoom(roomId);
     room.handleSocketConnect({
       sessionId,
       socket: ws as unknown as Parameters<typeof room.handleSocketConnect>[0]["socket"],
@@ -518,7 +468,8 @@ async function main() {
   // ---------------------------------------------------------------------------
   // Automerge Repo — wire memeWss adapter and seed meme content store
   // ---------------------------------------------------------------------------
-  const memeAdapter = new NodeWSServerAdapter(memeWss);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const memeAdapter = new NodeWSServerAdapter(memeWss as any);
   const memeRepo    = new Repo({
     storage: new NodeFSStorageAdapter(MEME_STORE_DIR),
     network: [memeAdapter],
@@ -539,7 +490,8 @@ async function main() {
     writeFileSync(URL_FILE, memeHandle.url, "utf8");
     console.log(`[lararium-serve] meme store created: ${memeHandle.url}`);
 
-    memeHandle.change((doc: Record<string, unknown>) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    memeHandle.change((doc: any) => {
       for (const [uri, meme] of Object.entries(snapshotMemes.memes)) {
         if (!uri.startsWith("lar:") || !meme.text) continue;
         doc[uri] = { title: uri, fields: {}, text: meme.text };
@@ -552,14 +504,57 @@ async function main() {
 
   memeStoreUrl = memeHandle.url;
 
+  // ---------------------------------------------------------------------------
+  // Disk write-back — UCAN-trusted peers → lares/ files
+  //
+  // Changes that reach the Automerge doc already passed sharePolicy
+  // (peerRegistry.isAuthorized). Trusted peer edits survive restarts.
+  // Anonymous/untrusted peers are excluded by sharePolicy — no doc access.
+  //
+  // Uses LarDiskSyncAdaptor (debounced, path-traversal-guarded).
+  // Seeding guard prevents writing during initial doc population.
+  // ---------------------------------------------------------------------------
+  // Disk write-back — Automerge → lares/ files
+  //
+  // All changes that reach the Automerge doc have already passed sharePolicy
+  // (UCAN gate). Every surviving lar: URI write is trusted and written to disk.
+  // resolveLarUri() derives the lares/ path from the URI — no pre-built index.
+  // Virtual caps URIs (laresRelPath: null) are silently skipped.
+  //
+  // Echo-loop guard: diskAdaptor.writing tracks URIs pending a debounced write.
+  // The lares/ watcher checks this before reflecting disk changes back into
+  // Automerge, preventing disk→Automerge→TW5→saveTiddler→disk loops.
+  // ---------------------------------------------------------------------------
+  const { LarDiskSyncAdaptor } = await import("@lararium/tw5");
+  const diskAdaptor = new LarDiskSyncAdaptor(LARES_ROOT);
+
+  let diskSyncSeeding = true;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (memeHandle as any).on("change", ({ doc, patches }: { doc: Record<string, unknown>; patches: { path: unknown[] }[] }) => {
+    if (diskSyncSeeding) return;
+    const changedUris = new Set<string>();
+    for (const patch of patches) {
+      const uri = patch.path[0];
+      if (typeof uri === "string" && uri.startsWith("lar:")) changedUris.add(uri);
+    }
+    for (const uri of changedUris) {
+      const entry = doc[uri] as { text?: string } | undefined;
+      if (typeof entry?.text === "string") {
+        diskAdaptor.saveTiddler({ title: uri, text: entry.text }, () => { /* fire-and-forget */ });
+      }
+    }
+  });
+  diskSyncSeeding = false;
+
   httpServer.listen(PORT, HOST, () => {
     console.log(`[lararium-serve] http://${HOST}:${PORT}`);
-    console.log(`[lararium-serve] boot room:   ${activeBootRoomId}`);
-    console.log(`[lararium-serve] meme-store:  ${memeStoreUrl}`);
-    console.log(`[lararium-serve] meme-sync:   ws://${HOST}:${PORT}/meme-sync`);
-    console.log(`[lararium-serve] reseed:      curl http://${HOST}:${PORT}/admin/reseed`);
-    console.log(`[lararium-serve] promote:     curl -X PUT http://${HOST}:${PORT}/admin/promote -H 'Content-Type: application/json' -d '{"uri":"lar:///...","carrierText":"..."}'`);
-    console.log(`[lararium-serve] data dir:    ${DATA_DIR}`);
+    console.log(`[lararium-serve] default room: /room/${DEFAULT_ROOM}  (or /room/<any-id>)`);
+    console.log(`[lararium-serve] receipt:      ${receiptSha.slice(0, 16) || "(none)"}`);
+    console.log(`[lararium-serve] meme-store:   ${memeStoreUrl}`);
+    console.log(`[lararium-serve] meme-sync:    ws://${HOST}:${PORT}/meme-sync`);
+    console.log(`[lararium-serve] reseed:       curl http://${HOST}:${PORT}/admin/reseed`);
+    console.log(`[lararium-serve] promote:      curl -X PUT http://${HOST}:${PORT}/admin/promote -H 'Content-Type: application/json' -d '{"uri":"lar:///...","carrierText":"..."}'`);
+    console.log(`[lararium-serve] data dir:     ${DATA_DIR}`);
   });
 
   // ---------------------------------------------------------------------------
@@ -614,29 +609,63 @@ async function main() {
   // Debounced 400ms — batch rapid saves (editor auto-save bursts).
   // ---------------------------------------------------------------------------
 
-  let reloadDebounce: ReturnType<typeof setTimeout> | null = null;
+  // ---------------------------------------------------------------------------
+  // lares/ file watcher — disk → Automerge (trusted, one direction)
+  //
+  // When a carrier file changes on disk (editor save, MCP write, git pull),
+  // read the new text and patch the Automerge doc directly. Connected clients
+  // pick it up via their Automerge sync session; their TW5 wikis update through
+  // LarariumCrdtSyncAdaptor (Automerge → TW5 direction).
+  //
+  // Echo-loop guard: diskAdaptor.writing contains URIs currently being written
+  // from Automerge → disk. Skip those files to break the loop.
+  //
+  // After patching Automerge, recompute the receipt SHA and reaction graph so
+  // the server's in-memory view stays consistent with the corpus.
+  // ---------------------------------------------------------------------------
 
-  watch(LARES_ROOT, { recursive: true }, (event, filename) => {
+  const fileDebounces = new Map<string, ReturnType<typeof setTimeout>>();
+
+  watch(LARES_ROOT, { recursive: true }, (_event, filename) => {
     if (!filename) return;
     if (filename.includes("node_modules") || filename.endsWith(".sqlite")) return;
+    if (!filename.endsWith(".md")) return;
 
-    if (reloadDebounce) clearTimeout(reloadDebounce);
-    reloadDebounce = setTimeout(async () => {
-      reloadDebounce = null;
-      console.log(`[lararium-serve] lares/ changed (${filename}) — reseeding boot room`);
+    // Derive URI from the changed file path; skip files with no known mapping.
+    let uri: string;
+    try {
+      uri = laresRelPathToLarUri(filename.replace(/\\/g, "/"));
+    } catch {
+      return; // unrecognised path structure — not a meme carrier
+    }
+
+    // Echo-loop guard: skip if this write originated from Automerge→disk.
+    if (diskAdaptor.writing.has(uri)) return;
+
+    const existing = fileDebounces.get(filename);
+    if (existing) clearTimeout(existing);
+
+    fileDebounces.set(filename, setTimeout(async () => {
+      fileDebounces.delete(filename);
+      // Re-check echo guard after debounce — write may have completed by now.
+      if (diskAdaptor.writing.has(uri)) return;
+
       try {
-        snapshotMemes = await buildSnapshot(runtime);
-        const fresh = await buildBootProjection(runtime, snapshotMemes);
-        evictRoom(activeBootRoomId);
-        getOrCreateRoom(fresh.roomId, fresh.snapshot);
+        const text = readFileSync(join(LARES_ROOT, filename), "utf-8");
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (memeHandle as any).change((doc: any) => {
+          doc[uri] = { title: uri, text };
+        });
+        console.log(`[lararium-serve] lares/ → automerge: ${filename}`);
+
+        // Keep server-side receipt and reaction graph consistent.
+        receiptSha    = await computeReceiptSha(runtime);
         reactionGraph = buildReactionGraph(runtime);
-        console.log(`[lararium-serve] reseeded → ${fresh.roomId}`);
-        // Notify connected clients via reaction graph broadcast — they refresh to new room
-        broadcastToRoom(activeBootRoomId, { type: "reseed", roomId: fresh.roomId });
+        broadcastToRoom(DEFAULT_ROOM, { type: "reseed" });
       } catch (e) {
-        console.error("[lararium-serve] reseed failed:", e);
+        console.error(`[lararium-serve] lares/ watcher error (${filename}):`, e);
       }
-    }, 400);
+    }, 400));
   });
 
   console.log(`[lararium-serve] watching lares/ for changes`);
