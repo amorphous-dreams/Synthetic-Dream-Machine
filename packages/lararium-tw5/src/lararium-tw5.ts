@@ -487,12 +487,24 @@ exports.startup = function() {
       tw.Wiki.tiddlerDeserializerModules["text/x-memetic-wikitext"] = function(text: string, fields: any) {
         const uri: string = (fields?.title as string) ?? "";
         const split = splitCarrierToTiddlers(uri, text);
-        if (split.warnings.length > 0) {
-          console.warn(`[lararium] deserializer warnings for ${uri}:`, split.warnings);
-        }
         const parent = { title: uri, ...fields, ...split.parent.fields, text };
         const children = split.children.map((c) => ({ ...c.fields, title: c.title, text: c.text }));
-        return [parent, ...children];
+        const result: object[] = [parent, ...children];
+        if (split.warnings.length > 0) {
+          // Surface parse warnings as a TW5 tiddler so the operator can review
+          // and acknowledge them. The carrier text is always preserved in parent.text
+          // above — this tiddler is informational only.
+          const safeSlug = uri.replace(/[^a-zA-Z0-9._-]/g, "_");
+          result.push({
+            title: `$:/lararium/parse-warning/${safeSlug}`,
+            tags: "$:/lararium/parse-warnings",
+            "carrier-uri": uri,
+            "warning-count": String(split.warnings.length),
+            text: split.warnings.join("\n"),
+            modified: new Date().toISOString().replace(/[:.]/g, "-"),
+          });
+        }
+        return result;
       };
     }
 

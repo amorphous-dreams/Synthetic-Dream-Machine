@@ -23,7 +23,7 @@
 
 import type { LarTiddlerStore, LarTiddlerRecord, ChangeOrigin } from "@lararium/core";
 import type { LarariumTW5 } from "./lararium-tw5.js";
-import { serializeCarrier, replaceCarrierSlot, removeCarrierSlot } from "./carrier-split.js";
+import { serializeCarrier, replaceCarrierSlot, removeCarrierSlot, composeCarrierSlotBody } from "./carrier-split.js";
 
 type SaveStrategy = "skip" | "direct" | "child-carrier";
 type SaveHandler  = (
@@ -280,7 +280,7 @@ export class LarariumCrdtSyncAdaptor {
 
       // Determine the slot that changed (child title = parentUri + "#slot").
       const slot = title.startsWith(parentUri) ? title.slice(parentUri.length) : (inferred?.slot ?? null);
-      const newSlotBody = fields["text"] ?? "";
+      const newSlotBody = composeCarrierSlotBody(fields, fields["text"] ?? "");
 
       // Prefer surgical replacement to preserve decorators and all other slots.
       // Fall back to full reconstruction if the slot pattern isn't found in the raw text.

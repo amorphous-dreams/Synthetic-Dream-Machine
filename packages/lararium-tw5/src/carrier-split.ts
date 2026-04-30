@@ -23,6 +23,7 @@
 
 import { parseMemeCarrier } from "@lararium/core";
 import type { MemeAstNode, WorksiteNode, SigilNode, MemeStreamEvent, ControlNode, TextNode } from "@lararium/core";
+import { parseTaploFields } from "./toml-ast.js";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -47,59 +48,6 @@ export interface CarrierSplit {
   warnings: string[];
 }
 
-// ---------------------------------------------------------------------------
-// TOML field extractor — handles the subset used in #iam blocks
-// ---------------------------------------------------------------------------
-
-function parseIamToml(content: string): Record<string, string | string[]> {
-  const fields: Record<string, string | string[]> = {};
-  const lines = content.split("\n");
-
-  let i = 0;
-  while (i < lines.length) {
-    const line = lines[i]!.trim();
-    i++;
-
-    // Skip blank lines and comments
-    if (!line || line.startsWith("#")) continue;
-
-    const eq = line.indexOf("=");
-    if (eq === -1) continue;
-
-    const key   = line.slice(0, eq).trim();
-    const rest  = line.slice(eq + 1).trim();
-
-    if (!key) continue;
-
-    // Inline array: key = ["a", "b", "c"]
-    if (rest.startsWith("[")) {
-      // Collect until closing ] (handles multi-line arrays)
-      let accum = rest;
-      while (!accum.includes("]") && i < lines.length) {
-        accum += " " + lines[i]!.trim();
-        i++;
-      }
-      const inner = accum.match(/\[([\s\S]*?)\]/)?.[1] ?? "";
-      const items = inner
-        .split(",")
-        .map((s) => s.trim().replace(/^["']|["']$/g, ""))
-        .filter(Boolean);
-      fields[key] = items;
-      continue;
-    }
-
-    // Quoted string
-    if (rest.startsWith('"') || rest.startsWith("'")) {
-      fields[key] = rest.replace(/^["']|["']$/g, "");
-      continue;
-    }
-
-    // Bare value (number, bool, unquoted string)
-    fields[key] = rest;
-  }
-
-  return fields;
-}
 
 // ---------------------------------------------------------------------------
 // extractIamFields — find #iam ahu and dissolve its TOML into parent fields
@@ -118,16 +66,7 @@ function extractIamFields(
       if (child.kind === "Sigil") {
         const sig = child as SigilNode;
         if (sig.sigilName === "toml" || sig.sigilName === "iam") {
-          try {
-            return parseIamToml(sig.attrs["content"] ?? "");
-          } catch (e) {
-            const raw = sig.attrs["content"] ?? "";
-            const firstBadLine = raw.split("\n").find(l => {
-              try { parseIamToml(l); return false; } catch { return l.trim() && !l.startsWith("#"); }
-            }) ?? "(unknown line)";
-            warnings.push(`#iam TOML parse error near: ${JSON.stringify(firstBadLine)} — ${e}`);
-            return {};
-          }
+          return parseTaploFields(sig.attrs["content"] ?? "", warnings, "#iam");
         }
       }
     }
@@ -295,13 +234,13 @@ export function splitCarrierToTiddlers(uri: string, text: string): CarrierSplit 
     const tomlFence = /^```toml\s*\n([\s\S]*?)```[ \t]*\n?/m.exec(bodyText);
     let displayText = bodyText;
     if (tomlFence) {
-      const toml = tomlFence[1] ?? "";
-      for (const line of toml.split("\n")) {
-        const kv = line.match(/^\s*([\w-]+)\s*=\s*(?:"([^"]*)"|'([^']*)'|([\w/+-]+))/);
-        if (kv) childFields[kv[1]!] = kv[2] ?? kv[3] ?? kv[4] ?? "";
-      }
-      // Strip fence from display body; keep raw body for round-trip write-back
-      displayText = bodyText.slice(tomlFence.index + tomlFence[0].length).trimStart();
+      const fenceFields = parseTaploFields(tomlFence[1] ?? "", warnings, `child-fence:${slot}`);
+      for (const [k, v] of Object.entries(fenceFields)) childFields[k] = v;
+      // Strip fence from display body; keep the exact prefix as a hidden field
+      // so child slot edits can write back display text without losing
+      // law-bearing metadata from the carrier body.
+      childFields["ahu-body-prefix"] = tomlFence[0];
+      displayText = bodyText.slice(tomlFence.index! + tomlFence[0].length).trimStart();
     }
 
     childMap.set(childUri, {
@@ -457,6 +396,24 @@ export function replaceCarrierSlot(
     return `${open}${newBody}${close}`;
   });
   return matched ? result : null;
+}
+
+// ---------------------------------------------------------------------------
+// composeCarrierSlotBody — rebuild a carrier slot body from tiddler fields.
+//
+// Child tiddlers display editable body text with any leading ```toml fence
+// stripped. The stripped fence lives in ahu-body-prefix, which lets write-back
+// preserve metadata while keeping TW5 view/edit surfaces clean.
+// ---------------------------------------------------------------------------
+
+export function composeCarrierSlotBody(
+  fields: Record<string, string | string[] | undefined>,
+  text: string,
+): string {
+  const prefix = fields["ahu-body-prefix"];
+  if (typeof prefix !== "string" || prefix.length === 0) return text;
+  if (text.startsWith(prefix)) return text;
+  return `${prefix}${text}`;
 }
 
 // ---------------------------------------------------------------------------

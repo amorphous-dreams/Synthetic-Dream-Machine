@@ -28,7 +28,7 @@ import { writeFileSync, readFileSync, mkdirSync } from "fs";
 import { resolve, join } from "path";
 import { resolveLarUri } from "@lararium/core";
 import type { LarTiddlerStore } from "@lararium/core";
-import { replaceCarrierSlot } from "./carrier-split.js";
+import { composeCarrierSlotBody, replaceCarrierSlot } from "./carrier-split.js";
 
 // ---------------------------------------------------------------------------
 // LarDiskProjector
@@ -36,6 +36,7 @@ import { replaceCarrierSlot } from "./carrier-split.js";
 
 export class LarDiskProjector {
   private readonly _timers = new Map<string, ReturnType<typeof setTimeout>>();
+  private readonly _pendingSlots = new Map<string, Map<string, string>>();
   private _unsubscribe: (() => void) | null = null;
 
   /**
@@ -73,7 +74,7 @@ export class LarDiskProjector {
 
       if (ahuSlot && ahuParent) {
         // Child slot: surgical write-back to parent carrier file.
-        this._writeSlot(ahuParent, ahuSlot, record.text ?? "");
+        this._writeSlot(ahuParent, ahuSlot, composeCarrierSlotBody(fields, record.text ?? ""));
       } else if (carrierText) {
         // Parent or plain lar: tiddler: write carrier-text (or text) to disk.
         this._writeDirect(title, carrierText);
@@ -87,6 +88,7 @@ export class LarDiskProjector {
     this._unsubscribe = null;
     for (const [, t] of this._timers) clearTimeout(t);
     this._timers.clear();
+    this._pendingSlots.clear();
     this.writing.clear();
   }
 
@@ -132,6 +134,13 @@ export class LarDiskProjector {
     if (!filePath) return;
 
     // Debounce keyed on parent URI — coalesces multiple slot edits in one write.
+    let pending = this._pendingSlots.get(parentUri);
+    if (!pending) {
+      pending = new Map<string, string>();
+      this._pendingSlots.set(parentUri, pending);
+    }
+    pending.set(slot, slotBody);
+
     this.writing.add(parentUri);
     const existing = this._timers.get(parentUri);
     if (existing) clearTimeout(existing);
@@ -139,15 +148,26 @@ export class LarDiskProjector {
     this._timers.set(parentUri, setTimeout(() => {
       this._timers.delete(parentUri);
       try {
-        const current = readFileSync(filePath, "utf-8");
-        const updated = replaceCarrierSlot(current, slot, slotBody);
-        if (updated === null) {
-          console.warn(`[disk] slot ${slot} not found in ${parentUri} — skipped`);
-          return;
+        const queued = this._pendingSlots.get(parentUri);
+        this._pendingSlots.delete(parentUri);
+        if (!queued || queued.size === 0) return;
+
+        let updated = readFileSync(filePath, "utf-8");
+        const writtenSlots: string[] = [];
+        for (const [queuedSlot, queuedBody] of queued) {
+          const next = replaceCarrierSlot(updated, queuedSlot, queuedBody);
+          if (next === null) {
+            console.warn(`[disk] slot ${queuedSlot} not found in ${parentUri} — skipped`);
+            continue;
+          }
+          updated = next;
+          writtenSlots.push(queuedSlot);
         }
+        if (writtenSlots.length === 0) return;
+
         mkdirSync(resolve(filePath, ".."), { recursive: true });
         writeFileSync(filePath, updated, "utf-8");
-        console.log(`[disk] ← ${parentUri} (slot ${slot})`);
+        console.log(`[disk] ← ${parentUri} (slots ${writtenSlots.join(", ")})`);
       } catch (err) {
         console.error(`[disk] slot write failed for ${parentUri}:`, err);
       } finally {

@@ -61,3 +61,5 @@ export {
 export type { TW5ParseNode } from "./memetic-parser.js";
 
 export { TW5_VERSION, TW5_CORE_SCRIPT_FILENAME, TW5_CORE_SCRIPT_URL } from "./generated-tw5-version.js";
+
+export { parseTaploFields, patchTomlKey, lintToml } from "./toml-ast.js";

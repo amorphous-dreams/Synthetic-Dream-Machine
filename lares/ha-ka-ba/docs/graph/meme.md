@@ -17,10 +17,9 @@ role         = "PranaEdge, Meme, and MemeGraph data model contracts for the pran
 status-date  = "2026-04-24"
 renamed-from = "ha.ka.ba/docs/graph/loci"
 
-[uncertainty]
-meme-class-name   = "Meme preferred over CarrierMeme or Locus; not yet ratified in code"
-graph-class-name  = "MemeGraph preferred over LociGraph, CarrierGraph, or Graph; not yet ratified in code"
-locus-subtype     = "Locus remains valid as the subtype name for memes that implement the pono loci interface; distinct from graph node terminology"
+uncertainty-meme-class-name   = "Meme preferred over CarrierMeme or Locus; not yet ratified in code"
+uncertainty-graph-class-name  = "MemeGraph preferred over LociGraph, CarrierGraph, or Graph; not yet ratified in code"
+uncertainty-locus-subtype     = "Locus remains valid as the subtype name for memes that implement the pono loci interface; distinct from graph node terminology"
 ```
 <<~/ahu >>
 

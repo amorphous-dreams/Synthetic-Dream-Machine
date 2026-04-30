@@ -83,10 +83,9 @@ const MIME: Record<string, string> = {
   ".woff2": "font/woff2",
 };
 
-function serveStatic(res: ServerResponse, filePath: string): boolean {
-  // Path traversal guard: resolved path must stay within APP_DIST
+function serveStatic(res: ServerResponse, filePath: string, root: string): boolean {
   const resolved = resolve(filePath);
-  if (!resolved.startsWith(APP_DIST + "/") && resolved !== APP_DIST) {
+  if (!resolved.startsWith(root + "/") && resolved !== root) {
     res.writeHead(403); res.end(); return true;
   }
   if (!existsSync(resolved) || statSync(resolved).isDirectory()) return false;
@@ -327,8 +326,8 @@ async function main() {
     const isAsset = pathname !== "/" && /\.[a-z0-9]+$/i.test(pathname);
     if (isAsset) {
       // Check public/ first (vendored assets like tiddlywikicore-*.js) then dist/
-      if (serveStatic(res, join(APP_PUBLIC, pathname))) return;
-      if (serveStatic(res, join(APP_DIST, pathname))) return;
+      if (serveStatic(res, join(APP_PUBLIC, pathname), APP_PUBLIC)) return;
+      if (serveStatic(res, join(APP_DIST, pathname), APP_DIST)) return;
     }
 
     // Multi-room routing: /room/:roomId serves the app pointed at that room.
