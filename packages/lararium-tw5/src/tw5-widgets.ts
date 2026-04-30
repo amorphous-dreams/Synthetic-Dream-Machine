@@ -303,7 +303,16 @@ KumuWidget.prototype.render = function (parent: any, _nextSibling: any) {
     el.appendChild(hole);
   }
 };
-KumuWidget.prototype.execute = function () { this.makeChildWidgets(); };
+KumuWidget.prototype.execute = function () { /* children managed in render */ };
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+KumuWidget.prototype.refresh = function (changedTiddlers: any): boolean {
+  // Delegate refresh to the transclude child so def tiddler edits propagate.
+  let changed = false;
+  for (const child of (this.children ?? [])) {
+    if (child.refresh(changedTiddlers)) changed = true;
+  }
+  return changed;
+};
 
 // ---------------------------------------------------------------------------
 // Factory — returns all widget constructors, no prototype wiring.

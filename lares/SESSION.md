@@ -17,7 +17,7 @@ manao        = 0.84
 implements   = [
   "lar:///ha.ka.ba/api/v0.1/pono/meme"
 ]
-role         = "session handoff crystal — 2026-04-29 (session 2) — Track A dead code removal complete; Fuller-Zelenka non-simultaneous apprehension doctrine landed in causal-island.ts + federated-causal-islands.md; Track B source-meme pipeline scaffolded (source-memes.ts + build-snapshot-lib wiring + source-module.md + reaction-graph.md pono memes); LarariumPanel HUD enacted; wikiOpen/drawingMode decoupled; feature/lararium-node-3 active"
+role         = "session handoff crystal — 2026-04-29 (session 3) — TLSocketRoom tombstoned; P3 body-node emission; M11 incremental canvas projection diff; P4 KumuWidget local-first TW5 transclusion; KumuWidget.refresh delegated; parseMemeCarrier static import; feature/lararium-node-3 active"
 ```
 
 <<~/ahu >>
@@ -118,19 +118,26 @@ All 62 unit tests green after removal.
 
 <<~ ahu #state >>
 
-## State as of 2026-04-29 (session 2 end)
+## State as of 2026-04-29 (session 3 end)
 
 **Branch:** `feature/lararium-node-3` — build clean — 62/62 tests pass
 
-### Open pressures (M11)
+### Closed this session
 
-- **P1 — Playwright e2e** — smoke.spec.ts exists but hits Jest/Playwright isolation error (test.describe called inside Jest). Needs its own pnpm script outside Jest, or a separate Playwright config that Jest doesn't pick up.
-- **P2 — kukali suspension wire** — `subscribeOnce` primitive exists on `ReactionGraph`; `KukaliWidget → useEffect` wiring in `vdom-to-react.tsx` not yet done.
-- **P3 — Canvas write-back path** — `projectToTldraw()` must emit body-node shapes; then the existing `bodyNodeKind` listener in `LarariumCanvas` becomes live.
-- **P4 — KumuExecutor async device lifecycle** — isolated async executor per kumu instance (OnBegin/OnEnd loop). After P2 kukali is wired.
-- **Track C — `lararium-tw5.ts` simplification** — 876 lines; single large class. Profile then split into focused modules.
-- **TLSocketRoom tombstone** — legacy `/rooms/:roomId` WS endpoint still active in serve.ts; content path no longer depends on it. Retirement decision deferred.
-- **Source meme expansion** — `source-memes.ts` priority list currently 7 files. Can grow as agents begin navigating source through the graph.
+- **TLSocketRoom tombstone** — `serve.ts` now pure Automerge-repo + file watcher; `better-sqlite3`, `@tldraw/sync-core`, `TLSocketRoom`, `SQLiteSyncStorage` all removed from deps ✓
+- **P1 — Jest/Playwright isolation** — `testPathIgnorePatterns: ["/tests/e2e/"]` in `jest.config.cjs` ✓
+- **P2 — kukali suspension wire** — `KukaliWidget` calls `wiki._larKukaliHook`; `LarariumPanel` bridges to `reactionGraph.subscribeOnce()`; `touchTiddler` triggers TW5 refresh ✓
+- **P3 — body-node emission** — `projectToTldraw()` now emits `LarTLBodyNode` records from carrier wikitext via `parseMemeCarrier` + `collectText` ✓
+- **P4 — KumuWidget local-first** — `KumuWidget.render()` transclubes `lar:///kumu/<name>` via TW5-native `makeTranscludeWidget`; props injected as TW5 variables; `refresh()` delegated to child transclude ✓
+- **M11 incremental canvas diff** — `onWikiChange` re-projects and diffs shape IDs: puts new/updated, removes deleted ✓
+- **Track C: parseMemeCarrier** — promoted from dynamic `await import()` to static import in `lararium-tw5.ts` ✓
+
+### Open pressures
+
+- **Track C — `lararium-tw5.ts` simplification** — 895 lines; split deferred until next session
+- **e2e Playwright smoke** — isolation fixed; tests not yet run against live server
+- **Source meme expansion** — priority list at 7 files; expand as agent navigation matures
+- **Per-room Automerge docs** — all clients share one doc; room recipe partitioning is M12
 
 ### Invariants held
 
@@ -139,13 +146,11 @@ All 62 unit tests green after removal.
 - lar: URI invariant: all Lararium tiddlers use `lar:` URI as title ✓
 - Draft guard: `$:/temp/*` never reaches shared store ✓
 - Server is sync peer, not authority ✓
-- Receipt delivered via HTML meta tag — no WS round-trip, no hidden frame shape ✓
+- KumuWidget is TW5-native: def lookup → variable injection → makeTranscludeWidget ✓
+- KumuWidget.execute no-op; children managed in render; refresh delegated ✓
 - `ReactionGraph` stable-ref: `subscribeByFn` handlers never re-subscribed ✓
 - `fireMeme` is local-only synchronous — no WS round-trip for local reactions ✓
 - `tw5-ready` means corpus-populated ✓
-- `ReactionGraph.load()` does not drop occupied handler slots ✓
-- Dispatch nodes fire once per uri activation, not per vdom re-render ✓
-- Dead code: `LarariumBootReceiptMeta`, `LiveServerMsg`, `LiveClientMsg` and all unused `LiveMsg*` types removed ✓
 - Causal island doctrine: Fuller-Zelenka basis + four-tier model canonical in both TS and meme ✓
 - Source memes: 7 priority modules seeded into Automerge store at first boot ✓
 
@@ -165,39 +170,23 @@ packages/lararium-node/
   — verify: lararium-receipt non-null, openPhase === "live", no console errors
 ```
 
-### P2 — kukali suspension wire
+### P5 — Track C: lararium-tw5.ts split
 
 ```
-packages/lararium-app/src/vdom-to-react.tsx
-  — detect data-lar-kind="kukali" in renderVDom
-  — mount useEffect per node: reactionGraph.subscribeOnce(uri, trigger)
-  — cleanup: cancel() on unmount or uri change
+packages/lararium-tw5/src/lararium-tw5.ts  (895 lines, single class)
+  — profile: which methods are external surface vs. internal only
+  — candidate split: boot/mount surface | tiddler-store sync | kumu/filter
+  — constraint: LarariumTW5 class must remain the public export (callers import it)
+  — approach: extract helpers into sibling modules; keep class thin
 ```
 
-### P3 — Canvas write-back path
+### P6 — Playwright e2e smoke run
 
 ```
-packages/lararium-tldraw/src/project.ts
-  — emit LarTLBodyNode records from carrier AST / TW5 projection
-packages/lararium-app/src/LarariumCanvas.tsx
-  — existing bodyNodeKind listener becomes live (no code change needed)
-```
-
-### P4 — KumuExecutor async device lifecycle
-
-```
-packages/lararium-app/src/KumuExecutor.ts  [new]
-  — one executor per kumu instance; runs OnBegin; awaits kukali suspensions
-  — torn down on OnEnd ("deactivate" trigger from panel close)
-```
-
-### Track C — lararium-tw5.ts simplification
-
-```
-packages/lararium-tw5/src/lararium-tw5.ts  (876 lines, single class)
-  — profile: which methods are called from outside vs. internal only
-  — split: boot/mount/navigation surface | tiddler-store sync | kumu defs | filters
-  — defer until M11 P1–P2 are stable
+packages/lararium-node/
+  — pnpm run e2e against live server
+  — verify: meta tags present, BootSplash clears, openPhase === "live"
+  — gate: server starts clean on the WSL2 host
 ```
 
 <<~/ahu >>
