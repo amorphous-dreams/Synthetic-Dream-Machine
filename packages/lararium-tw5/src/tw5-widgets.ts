@@ -18,12 +18,11 @@
  *   lararium-header    → HeaderWidget     carrier header (<meta data-lar-uri>)
  *   lararium-dispatch  → DispatchWidget   lele fire-and-forget (<meta data-lar-target>)
  *
- * KumuWidget execution model:
- *   On render, KumuWidget reads the kumu def name from its parse tree node,
- *   emits a structural div, and records the instance in a wiki variable
- *   ("$lar-kumu-instances") for downstream KumuExecutor wiring. The actual
- *   async execution (kukali suspensions, reaction subscriptions) is driven by
- *   the ReactionGraph injected via the "lararium-reaction-graph" wiki variable.
+ * KumuWidget execution model (local-first Zelenka):
+ *   On render, KumuWidget looks up lar:///kumu/<name> in the TW5 wiki (injected
+ *   by injectKumuDefs at boot), sets props as TW5 variables, then calls
+ *   makeTranscludeWidget to render the def body inline. No external executor.
+ *   TW5 is the runtime — kumu execution IS TW5 transclusion.
  */
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -263,32 +262,45 @@ function KumuWidget(this: any, parseTreeNode: any, options: any) {
   this.initialise(parseTreeNode, options);
 }
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-KumuWidget.prototype.render = function (parent: any, nextSibling: any) {
+KumuWidget.prototype.render = function (parent: any, _nextSibling: any) {
   this.parentDomNode = parent;
   this.computeAttributes();
   this.execute();
-  const name  = this.getAttribute("name", "");
-  const props = this.getAttribute("props", "");
-  // Resolve kumu def from TW5 wiki — injected by LarariumTW5.injectKumuDefs().
+  const name   = this.getAttribute("name", "");
+  const args   = this.getAttribute("props", "");
+  const defUri = `lar:///kumu/${name}`;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const defTiddler = (this.wiki as any)?.getTiddler?.(`lar:///kumu/${name}`);
-  const resolved   = defTiddler ? "true" : "false";
+  const defTiddler = (this.wiki as any)?.getTiddler?.(defUri);
 
   const el = this.document.createElement("div");
   el.setAttribute("data-lar-kind",     "kumu");
   el.setAttribute("data-lar-name",     name);
-  el.setAttribute("data-lar-props",    props);
-  el.setAttribute("data-lar-resolved", resolved);
+  el.setAttribute("data-lar-resolved", defTiddler ? "true" : "false");
   parent.appendChild(el);
   this.domNodes = [el];
-  this.renderChildren(el, nextSibling);
 
-  // Record this instance for KumuExecutor wiring after render completes.
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const wiki = (this.wiki as any);
-  if (wiki) {
-    wiki._larKumuInstances ??= [];
-    wiki._larKumuInstances.push({ name, props, el });
+  if (defTiddler) {
+    // Parse "key:value key:value" args string into TW5 variables.
+    // Prop names shadow any kumu-name collision per prop-shadow rule.
+    const propRe = /([\w-]+):(\S+)/g;
+    let m: RegExpExecArray | null;
+    while ((m = propRe.exec(args)) !== null) {
+      this.setVariable(m[1], m[2]);
+    }
+    // Transclude the kumu def tiddler — TW5 renders its body as child widgets.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const transclude = (this.wiki as any).makeTranscludeWidget(defUri, {
+      document:     this.document,
+      parentWidget: this,
+    });
+    transclude.render(el, null);
+    this.children = [transclude];
+  } else {
+    // Typed hole — render label (unresolved kumu def).
+    const hole = this.document.createElement("span");
+    hole.setAttribute("data-lar-kind", "hole");
+    hole.textContent = `? ${name}`;
+    el.appendChild(hole);
   }
 };
 KumuWidget.prototype.execute = function () { this.makeChildWidgets(); };
