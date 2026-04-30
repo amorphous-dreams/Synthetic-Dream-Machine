@@ -50,7 +50,8 @@ export function LarariumShell({ memes, onMemes }: ShellProps) {
   const [zoomLevel,   setZoomLevel]   = useState<ZoomLevel>("tactical");
   const [theme, cycleTheme] = useTheme();
   const [editor, setEditorState] = useState<Editor | null>(null);
-  const setEditor = useCallback((e: Editor | null) => setEditorState(e), []);
+  const editorRef = useRef<Editor | null>(null);
+  const setEditor = useCallback((e: Editor | null) => { setEditorState(e); editorRef.current = e; }, []);
   const { phase: openPhase, store: tiddlerStore, tw5 } =
     useLarariumHostOpen({ hostId: "lararium-browser", recipeUri: "lar:///recipe/room", roomId: "altar-fire" });
 
@@ -62,6 +63,7 @@ export function LarariumShell({ memes, onMemes }: ShellProps) {
 
   const graphRef = useRef<ReactionGraph>(new ReactionGraph());
   const [graphReady, setGraphReady] = useState(false);
+  const projectedIdsRef = useRef<Set<string>>(new Set());
 
   const dispatchRef = useRef(dispatch);
   dispatchRef.current = dispatch;
@@ -113,15 +115,31 @@ export function LarariumShell({ memes, onMemes }: ShellProps) {
         else graphRef.current.removeUri(uri);
         changed = true;
       }
-      if (changed) scanMemesFromTw5();
+      if (!changed) return;
+      scanMemesFromTw5();
+      // Incremental canvas re-projection: diff shape IDs, put new/updated, remove deleted.
+      const ed = editorRef.current;
+      if (!ed) return;
+      const { pages, shapes, bindings: newBindings } = projectFromTw5(tw5);
+      const newRecords = [...pages, ...shapes, ...newBindings];
+      const newIds = new Set(newRecords.map((r) => r.id));
+      const prevIds = projectedIdsRef.current;
+      const removed = [...prevIds].filter((id) => !newIds.has(id));
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (ed as any).store.put(newRecords);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      if (removed.length > 0) (ed as any).store.remove(removed);
+      projectedIdsRef.current = newIds;
     });
   }, [tw5, scanMemesFromTw5]);
 
   useEffect(() => {
     if (!editor || !tw5) return;
     const { pages, shapes, bindings } = projectFromTw5(tw5);
+    const records = [...pages, ...shapes, ...bindings];
+    projectedIdsRef.current = new Set(records.map((r) => r.id));
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (editor as any).store.put([...pages, ...shapes, ...bindings]);
+    (editor as any).store.put(records);
   }, [editor, tw5]);
 
   const reactionGraph = graphReady ? graphRef.current : null;
