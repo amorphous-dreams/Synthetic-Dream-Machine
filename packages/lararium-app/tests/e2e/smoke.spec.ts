@@ -13,7 +13,7 @@
  *   N4  shape.meta has no "id" or "typeName" keys
  *   T1  __larariumDebug.tw5 is non-null (TW5 always boots)
  *
- * Arc A — store-authority carrierText (MemeDetailPanel):
+ * Arc A — store-authority carrierText (LarariumPanel):
  *   A1  tiddlerStore.get(uri) returns text after sync (store has carrier text)
  *   A2  tiddlerStore.subscribe fires when store record changes (live update path present)
  */

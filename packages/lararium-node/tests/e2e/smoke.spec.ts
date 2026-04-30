@@ -184,11 +184,11 @@ test.describe("Canvas", () => {
 });
 
 // ---------------------------------------------------------------------------
-// MemeDetailPanel
+// LarariumPanel
 // ---------------------------------------------------------------------------
 
-test.describe("MemeDetailPanel", () => {
-  test("clicking a canvas shape or lar: link opens MemeDetailPanel", async ({ page }) => {
+test.describe("LarariumPanel", () => {
+  test("clicking a canvas shape or lar: link opens LarariumPanel", async ({ page }) => {
     await page.goto("/");
     await waitForLive(page);
     await page.waitForTimeout(1500);
@@ -200,8 +200,8 @@ test.describe("MemeDetailPanel", () => {
       await page.waitForTimeout(800);
     }
 
-    const panel = await page.$(".lar-meme-detail, [data-testid='meme-detail'], .MemeDetailPanel");
-    console.log(`[smoke] MemeDetailPanel found after click: ${!!panel}`);
+    const panel = await page.$(".lar-panel, [data-testid='lar-panel'], .LarariumPanel");
+    console.log(`[smoke] LarariumPanel found after click: ${!!panel}`);
   });
 });
 

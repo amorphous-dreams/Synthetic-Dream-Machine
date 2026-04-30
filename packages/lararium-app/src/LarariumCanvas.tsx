@@ -40,7 +40,7 @@ interface Props {
   wsUrl: string;
   navState: LarViewState;
   dispatch: React.Dispatch<LarViewAction>;
-  canvasMode: boolean;
+  drawingMode: boolean;
   onZoomLevel?: (level: ZoomLevel) => void;
 }
 
@@ -161,7 +161,7 @@ function getLarUriFromShape(editor: TldrawEditor, shapeId: TLShapeId): string | 
   return null;
 }
 
-export function LarariumCanvas({ wsUrl: _wsUrl, navState, dispatch, canvasMode, onZoomLevel }: Props) {
+export function LarariumCanvas({ wsUrl: _wsUrl, navState, dispatch, drawingMode, onZoomLevel }: Props) {
   const editorRef = useRef<TldrawEditor | null>(null);
   const { theme, setEditor, tiddlerStore } = useLararium();
 
@@ -227,7 +227,7 @@ export function LarariumCanvas({ wsUrl: _wsUrl, navState, dispatch, canvasMode, 
   return (
     <div style={fill}>
       <Tldraw
-        components={canvasMode ? CANVAS_COMPONENTS : WIKI_COMPONENTS}
+        components={drawingMode ? CANVAS_COMPONENTS : WIKI_COMPONENTS}
         onMount={(editor) => {
           editorRef.current = editor;
           setEditor(editor);

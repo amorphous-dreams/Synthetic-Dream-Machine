@@ -79,13 +79,13 @@ export { THEME_GLYPH, THEME_LABEL };
 // ---------------------------------------------------------------------------
 
 export interface LarariumCtxValue {
-  navState:       LarViewState;
-  dispatch:       React.Dispatch<LarViewAction>;
-  memes:          MemeEntry[];
-  paletteOpen:    boolean;
-  setPaletteOpen: React.Dispatch<React.SetStateAction<boolean>>;
-  canvasMode:     boolean;
-  setCanvasMode:  React.Dispatch<React.SetStateAction<boolean>>;
+  navState:      LarViewState;
+  dispatch:      React.Dispatch<LarViewAction>;
+  memes:         MemeEntry[];
+  wikiOpen:       boolean;
+  setWikiOpen:    React.Dispatch<React.SetStateAction<boolean>>;
+  drawingMode:    boolean;
+  setDrawingMode: React.Dispatch<React.SetStateAction<boolean>>;
   zoomLevel:      ZoomLevel;
   theme:          LarTheme;
   cycleTheme:     () => void;
@@ -166,12 +166,6 @@ const slotBtn: React.CSSProperties = {
   whiteSpace:     "nowrap",
 };
 
-const slotBtnAccent: React.CSSProperties = {
-  ...slotBtn,
-  color:      "var(--tl-color-primary)",
-  fontFamily: "monospace, system-ui",
-  fontWeight: 700,
-};
 
 
 // MenuPanel: room label + live status — top-left, always visible in both modes.
@@ -277,11 +271,11 @@ const crumbSpan: React.CSSProperties = {
 
 
 // ---------------------------------------------------------------------------
-// LarariumSharePanel — ⌘K trigger + (future) theme toggle   (tldraw SharePanel slot)
+// LarariumSharePanel — theme toggle   (tldraw SharePanel slot)
 // ---------------------------------------------------------------------------
 
 export function LarariumSharePanel() {
-  const { setPaletteOpen, theme, cycleTheme } = useLararium();
+  const { theme, cycleTheme } = useLararium();
 
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "0 4px" }}>
@@ -293,28 +287,17 @@ export function LarariumSharePanel() {
       >
         {THEME_GLYPH[theme]}
       </button>
-      <button
-        style={slotBtnAccent}
-        onClick={() => setPaletteOpen(true)}
-        aria-label="Open command palette (⌘K)"
-        title="⌘K"
-      >
-        ⌘K
-      </button>
     </div>
   );
 }
 
 // ---------------------------------------------------------------------------
-// LarariumHelperButtons — canvas mode toggle + zoom glyph   (tldraw HelperButtons slot)
+// LarariumHelperButtons — back + graph toggle   (tldraw HelperButtons slot)
 // ---------------------------------------------------------------------------
 
-// HelperButtons: horizontal row at bottom-right.
-// Holds Back, Graph toggle, canvas mode toggle, zoom glyph — all in one stable row.
-// In wiki mode this row is the only interactive chrome visible. In canvas mode
-// tldraw's toolbar appears above/beside it; the row stays put.
+// Contextual navigation only — wiki and drawing mode live in LarariumPanel.
 export function LarariumHelperButtons() {
-  const { navState, dispatch, canvasMode, setCanvasMode, zoomLevel } = useLararium();
+  const { navState, dispatch } = useLararium();
   const isGraph = navState.activeView === "graph";
 
   return (
@@ -328,7 +311,6 @@ export function LarariumHelperButtons() {
           ← Back
         </button>
       )}
-
       <button
         style={slotBtn}
         onClick={() => dispatch({ type: isGraph ? "CLOSE_GRAPH" : "OPEN_GRAPH" })}
@@ -336,33 +318,15 @@ export function LarariumHelperButtons() {
       >
         {isGraph ? "✕ Graph" : "⬡ Graph"}
       </button>
-
-      <button
-        style={{
-          ...slotBtn,
-          ...(canvasMode ? { color: "var(--tl-color-primary)", borderColor: "var(--tl-color-primary)" } : {}),
-        }}
-        onClick={() => setCanvasMode((v) => !v)}
-        aria-pressed={canvasMode}
-        title="` — toggle canvas mode"
-      >
-        {canvasMode ? "✏ Canvas" : "Wiki"}
-      </button>
-
-      <span
-        style={{ fontSize: 16, lineHeight: 1, userSelect: "none", cursor: "default", padding: "0 4px", fontFamily: "system-ui, sans-serif" }}
-        title={`Zoom: ${zoomLevel}`}
-      >
-        {ZOOM_GLYPH[zoomLevel]}
-      </span>
     </div>
   );
 }
 
 const helperRow: React.CSSProperties = {
-  display:    "flex",
+  display:       "flex",
   flexDirection: "row",
-  alignItems: "center",
-  gap:        6,
-  padding:    "0 4px 4px",
+  alignItems:    "center",
+  gap:           6,
+  padding:       "0 4px 4px",
 };
+

@@ -169,7 +169,7 @@ export function buildEdgeFieldMap(edges: readonly EdgeRecord[]): Map<string, Rec
  *
  * renderText / renderTiddler:
  *   After boot(), ltw.wiki.renderText("text/html", "text/vnd.tiddlywiki", wikitext)
- *   produces clean HTML. Use for MemeDetailPanel TW5 render mode.
+ *   produces clean HTML. Use for WikiCommandPalette TW5 render mode.
  */
 export class LarariumTW5 {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
