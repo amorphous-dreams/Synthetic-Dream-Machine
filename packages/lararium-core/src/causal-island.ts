@@ -1,15 +1,32 @@
 /**
- * Causal Island primitives — law-level types from federated-causal-islands.md
+ * Causal Island primitives — ontological law and protocol types.
  *
- * Law: A node-to-node pranala connection IS a causal island.
- * Not a transport. Not a socket. A named, capability-gated causal boundary
- * carrying its own identity, durable offset, stream log, reconciliation state,
- * visibility predicate, revocation epoch, and receipt history.
+ * Ontological basis (Fuller-Zelenka):
+ *   Events in Universe are not simultaneously apprehended by any observer.
+ *   A node never holds the full state of a distributed system "at once" —
+ *   it holds a snapshot of what it has synchronized so far.
+ *   This is not a limitation. It IS the topology.
  *
- * Three tiers:
- *   Tier 1 — kumu instances (inside a carrier): papalohe-declared causal islands
- *   Tier 2 — memes inside rooms (inside a Lares node): CRDT document islands
- *   Tier 3 — Lares nodes (the federated layer): node-to-node edge islands (THIS LAW)
+ * Simultaneously apprehended: your local Automerge doc snapshot, right now.
+ * Non-simultaneously apprehended: everything else —
+ *   - other peers syncing the same doc (you see their state at last sync)
+ *   - other Automerge Realms reachable from this one on the network
+ *   - tiddlers not yet hydrated in the local TW5 instance
+ *   - kumu/active-meme instances whose event horizon is their own
+ *
+ * Law: Any boundary across which causality cannot be guaranteed simultaneously
+ *      IS a causal island boundary.
+ *
+ * Four tiers (inner → outer):
+ *   Tier 0 — active memes (kumu/UEFN device instances): MAY become islands —
+ *            they own their own event horizon, params, and trigger surface.
+ *            promotion is optional; correction is local.
+ *   Tier 1 — memes inside a room (within your Automerge doc window):
+ *            simultaneously apprehended, but peer state of same doc is not.
+ *   Tier 2 — Automerge Realms: other Automerge docs reachable from this one,
+ *            no matter where first encountered. Always non-simultaneous.
+ *   Tier 3 — Lares nodes (federation layer): node-to-node edge islands.
+ *            A pranala connection between nodes IS a causal island. MUST.
  */
 
 // ---------------------------------------------------------------------------
@@ -134,11 +151,13 @@ export type EdgeIslandLifecycle =
   | "revoked";       // epoch rolled; no future live-tail frames for this principal
 
 // ---------------------------------------------------------------------------
-// Edge Island Shape
+// Edge Island Shape (Tier 3 — node-to-node federation boundary)
 //
 // Every edge island MUST carry these fields.
 // The offset belongs to the edge island — NOT to the remote node.
 // An edge island that reconnects resumes from its last known offset.
+// Peer-sync-state (Tier 1/2) is always non-simultaneously apprehended;
+// the edge island is the named, capability-gated record of that horizon.
 // ---------------------------------------------------------------------------
 
 export interface EdgeIslandShape {
@@ -319,6 +338,15 @@ export type CausalIslandMust = typeof CAUSAL_ISLAND_MUST[number];
 /**
  * Things that MAY become causal islands (local causality errors can be
  * corrected inside a node; promotion to causal island is optional).
+ *
+ * Tier 0 candidates (active programming memes) are prime for island promotion:
+ * a kumu instance, kahea invocation, or UEFN device analogue has its own
+ * trigger surface, params, and event horizon — making it a natural island.
+ *
+ * "automerge-realm" and "peer-sync-state" are always non-simultaneously
+ * apprehended (Fuller-Zelenka); they are listed here to make the doctrine
+ * explicit even though they aren't promoted by ceremony — they ARE islands
+ * by topology.
  */
 export const CAUSAL_ISLAND_MAY = [
   "room",
@@ -328,6 +356,8 @@ export const CAUSAL_ISLAND_MAY = [
   "kahea-invocation",
   "local-room-projection",
   "long-lived-runtime-actor",
+  "automerge-realm",
+  "peer-sync-state",
 ] as const;
 
 export type CausalIslandMay = typeof CAUSAL_ISLAND_MAY[number];

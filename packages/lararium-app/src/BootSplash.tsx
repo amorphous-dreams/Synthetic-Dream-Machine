@@ -37,15 +37,12 @@ export function BootSplash({ phase }: BootSplashProps): React.ReactElement | nul
     case "tw5-hydrating":
       return <Overlay label={`loading memes…`} loaded={phase.loaded} total={phase.total} />;
     case "tw5-ready":
-    case "projection-opening":
-    case "projection-ready":
     case "live":
       return null;
-    case "manifest-opening":
-    case "manifest-ready":
-      return <Overlay label="loading manifest…" />;
     case "error":
       return <Overlay label={`error: ${phase.message}`} isError />;
+    default:
+      return null;
   }
 }
 

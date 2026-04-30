@@ -16,11 +16,13 @@ import { resolveLarUri } from "@lararium/core";
 import { precomputeRooms } from "@lararium/tw5";
 import { DEFAULT_ROOMS } from "@lararium/tldraw";
 import { compileCarrierIndex, LARES_ROOT, type LarariumRuntime } from "../src/node-host.js";
+import { buildSourceMemes } from "./source-memes.js";
 
 export interface BuiltSnapshot {
   version: 1;
   compiledAt: string;
-  memes: Record<string, { text: string; laresRelPath: string }>;
+  /** lares/ memes (laresRelPath set) + source memes (laresRelPath null). */
+  memes: Record<string, { text: string; laresRelPath: string | null; fields?: Record<string, string> }>;
   rooms: Record<string, string[]>;
   bootMemeCount: number;
   memeCount: number;
@@ -28,15 +30,21 @@ export interface BuiltSnapshot {
 }
 
 export async function buildSnapshot(runtime: LarariumRuntime): Promise<BuiltSnapshot> {
+  const compiledAt = new Date().toISOString();
   const carriers = compileCarrierIndex();
 
-  const memes: Record<string, { text: string; laresRelPath: string }> = {};
+  const memes: BuiltSnapshot["memes"] = {};
   for (const carrier of carriers) {
     const resolution = resolveLarUri(carrier.uri);
     if (!resolution.laresRelPath) continue;
     const abs = join(LARES_ROOT, resolution.laresRelPath);
     if (!existsSync(abs)) continue;
     memes[carrier.uri] = { text: readFileSync(abs, "utf8"), laresRelPath: resolution.laresRelPath };
+  }
+
+  // Source module memes — verbatim TS/TSX source seeded into the store for graph navigation.
+  for (const sm of buildSourceMemes(compiledAt)) {
+    memes[sm.uri] = { text: sm.text, laresRelPath: null, fields: sm.fields };
   }
 
   const artifact = runtime.compileBoot();
@@ -48,7 +56,7 @@ export async function buildSnapshot(runtime: LarariumRuntime): Promise<BuiltSnap
 
   return {
     version: 1,
-    compiledAt: new Date().toISOString(),
+    compiledAt,
     memes,
     rooms,
     bootMemeCount: artifact.memeCount,

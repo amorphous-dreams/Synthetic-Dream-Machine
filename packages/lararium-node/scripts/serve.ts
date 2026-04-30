@@ -524,7 +524,7 @@ async function main() {
     memeHandle.change((doc: any) => {
       for (const [uri, meme] of Object.entries(snapshotMemes.memes)) {
         if (!uri.startsWith("lar:") || !meme.text) continue;
-        doc[uri] = { title: uri, fields: {}, text: meme.text };
+        doc[uri] = { title: uri, fields: meme.fields ?? {}, text: meme.text };
       }
     });
     console.log(`[lararium-serve] meme store seeded: ${Object.keys(snapshotMemes.memes).length} memes`);

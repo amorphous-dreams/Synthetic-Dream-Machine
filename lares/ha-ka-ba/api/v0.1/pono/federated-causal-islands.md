@@ -14,7 +14,7 @@ register     = "CS"
 manaoio      = 0.80
 mana         = 0.84
 manao        = 0.82
-role         = "invariant law: node-to-node pranala connections are causal islands; authority-first sync order; edge-island identity, lifecycle, relay semantics"
+role         = "invariant law: Fuller-Zelenka non-simultaneous apprehension as ontological basis; causal island tiers 0–3; authority-first sync order; edge-island identity, lifecycle, relay semantics"
 cacheable    = true
 retain       = true
 invariant    = true
@@ -24,6 +24,23 @@ invariant    = true
 
 
 <<~ ahu #law >>
+
+## Ontological Basis (Fuller-Zelenka)
+
+Events in Universe are not simultaneously apprehended by any observer.
+A node never holds the full state of a distributed system "at once."
+It holds a snapshot of what it has synchronized so far.
+This is not a limitation. It IS the topology.
+
+Simultaneously apprehended: your local Automerge doc snapshot, right now.
+Non-simultaneously apprehended: everything else —
+- other peers syncing the same doc (you see their state at last sync)
+- other Automerge Realms reachable from this one on the network
+- tiddlers not yet hydrated in the local TW5 instance
+- kumu/active-meme instances whose trigger surface is their own event horizon
+
+Any boundary across which causality cannot be guaranteed simultaneously IS a causal island boundary.
+The tier map below names these boundaries from innermost to outermost.
 
 ## Law
 
@@ -35,6 +52,9 @@ log, reconciliation state, visibility predicate, revocation epoch, and receipt h
 
 A room WebSocket connection is NOT an edge island. A room connection is session-scoped
 and ephemeral. An edge island is persistent, named, and authority-bearing.
+
+An Automerge Realm (a distinct Automerge doc) is ALWAYS non-simultaneously apprehended,
+regardless of where it was first encountered on the network.
 
 <<~/ahu >>
 
@@ -152,15 +172,23 @@ The altar does not require the relay to comprehend the offering to carry it.
 ## Tier Map
 
 ```
-Tier 1 — kumu instances (inside a carrier)
-  Each kahea invocation of a kumu sigil with declared papalohe ports MAY be a causal island.
+Tier 0 — active programming memes (kumu instances, UEFN device analogues, kahea invocations)
+  MAY become causal islands. Each has its own trigger surface, params, and event horizon.
+  A kumu instance with declared papalohe ports is a natural island candidate.
   Events cross only via papalohe edges. kukali is the yield point inside the island.
   Instance identity provisioned on first papalohe edge declaration, not on kahea invocation.
+  Promotion to island is optional; local causality errors correctable inside the node.
 
-Tier 2 — memes inside rooms (inside a Lares node)
+Tier 1 — memes inside rooms (within your local Automerge doc window)
+  Simultaneously apprehended within your local doc snapshot.
   A room is a filter recipe over the meme graph — not a data partition.
-  A meme is a CRDT document or projection root within the room.
   Rating (≥Meme) gates which room recipes include a meme. Stage band is a rendering annotation only.
+  Peer state of the SAME doc is NOT simultaneously apprehended — you see their last sync.
+
+Tier 2 — Automerge Realms (distinct Automerge docs)
+  A separate Automerge doc reached from this one — no matter where first encountered.
+  ALWAYS non-simultaneously apprehended by topology, not by policy.
+  "automerge-realm" and "peer-sync-state" MAY be named causal islands for protocol tracking.
 
 Tier 3 — Lares nodes (the federated layer)
   A federation edge IS a causal island (this law).
@@ -176,8 +204,10 @@ Tier 3 — Lares nodes (the federated layer)
 
 ### MAY become causal islands
 
-- rooms, memes, sigils, kumu instances, kahea invocations,
-  local room projections, long-lived runtime actors
+- rooms, memes, sigils
+- kumu instances, kahea invocations (Tier 0 prime candidates)
+- local room projections, long-lived runtime actors
+- automerge-realm, peer-sync-state (non-simultaneous by topology)
 
 ### MUST become causal islands
 

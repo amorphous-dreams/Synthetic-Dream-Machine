@@ -473,21 +473,6 @@ exports.startup = function() {
     }
   }
 
-  /**
-   * Render a carrier document through the full TW5 widget pipeline.
-   *
-   * Flow:
-   *   parseMemeCarrier → TW5ParseNode[] → TW5 widget tree → $tw.fakeDocument
-   *   → TW_Element tree → VDomNode[] (via tw5ElementToVdom)
-   *
-   * The TW5 widget pipeline fires through our lararium-* widget classes,
-   * so worksite boundaries become <span data-lar-slot="..."> nodes in the output.
-   *
-   * Requires boot() to have resolved.
-   */
-  // renderCarrierVDom removed — TW5 panel (mountPanel) and canvas fakeDOM
-  // widgets own rendering. Ephemeral VDom pipeline superseded.
-
   /** True after boot() resolves. */
   get ready(): boolean { return this._tw !== null; }
 
@@ -567,7 +552,7 @@ exports.startup = function() {
    * KumuWidget.render() resolves defs by calling this.wiki.getTiddler(name) so
    * TW5 is the single registry — no parallel KumuRegistry class needed.
    *
-   * Call after boot() and before any renderMeme() that uses kumu instances.
+   * Call after boot() and before any kumu widgets render.
    * loadClosure() does NOT call this automatically — kumu defs arrive via the
    * compiler artifact (BootArtifact.kumuDefs), not the tiddler closure.
    */

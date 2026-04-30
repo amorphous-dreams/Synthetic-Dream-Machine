@@ -15,72 +15,6 @@
  */
 
 // ---------------------------------------------------------------------------
-// LarariumBootReceiptMeta — deprecated hidden-shape receipt metadata.
-//
-// Historical M9 carrier: this used to be stored as shape.meta on a hidden
-// tldraw frame. The active M10 path delivers the receipt SHA through the HTML
-// shell meta tag (`<meta name="lararium-receipt">`). Keep this interface only
-// for compatibility until all old references are removed.
-//
-// Brooklyn compatibility slots (reserved, not enforced this lap):
-//   issuer/subject → UCAN iss/aud + Keyhive Ed25519 principal
-//   capability     → UCAN cap { can, with, nb } + Orichalcum stub
-//   proofs         → UCAN prf CID chain + Keyhive membership op head
-//   graph          → Keyhive membershipHead + Beelay collectionHead/manifestHead
-//   receiptHash    → SHA-256 hex today; evolves to DAG-CBOR CIDv1 when crypto lands
-//
-// Hard rules:
-//   - Receipt does not carry full state. It authorizes graph opening.
-//   - Absent issuer/subject signals local-operator mode (no real principal yet).
-//   - Must migrate to a proper room-meta TLRecord during a schema-hardening lap.
-// ---------------------------------------------------------------------------
-
-export interface LarariumBootReceiptMeta {
-  readonly id:       "lararium:boot-receipt";
-  readonly typeName: "lararium:room-meta";
-
-  readonly roomId:        string;
-  readonly receiptHash:   string;   // SHA-256 hex → future: base32 CIDv1 sha2-256
-  readonly issuedAt:      string;   // ISO 8601
-  readonly authorityMode: "local-operator" | "ucan-delegated" | "keyhive";
-
-  /** UCAN iss / Keyhive Ed25519 principal — absent in local-operator mode. */
-  readonly issuer?: {
-    readonly kind: "did" | "ed25519" | "local";
-    readonly id:   string;
-  };
-
-  /** UCAN aud / Keyhive document-group principal — absent in local-operator mode. */
-  readonly subject?: {
-    readonly kind: "did" | "ed25519" | "local";
-    readonly id:   string;
-  };
-
-  /** Orichalcum capability envelope — UCAN can/with/nb analog. */
-  readonly capability?: {
-    readonly kind:      "orichalcum";
-    readonly abilities: readonly string[];
-    readonly resource:  string;
-    readonly caveats?:  Record<string, unknown>;
-  };
-
-  /** Proof chain — UCAN prf CIDs, Keyhive membership op heads. */
-  readonly proofs?: ReadonlyArray<{
-    readonly kind:   "ucan" | "keyhive" | "orichalcum";
-    readonly cid?:   string;    // base32 CIDv1 — present when crypto lands
-    readonly bytes?: string;    // base64url raw bytes — pre-CID phase
-    readonly hash?:  string;    // SHA-256 hex fallback
-  }>;
-
-  /** Authority graph heads — Keyhive membershipHead, Beelay collectionHead/manifestHead. */
-  readonly graph?: {
-    readonly membershipHead?:  string;
-    readonly manifestHead?:    string;
-    readonly collectionHead?:  string;
-  };
-}
-
-// ---------------------------------------------------------------------------
 // LarariumOpenPhase — async host opening sequence (authority-first ordering)
 // ---------------------------------------------------------------------------
 
@@ -88,15 +22,11 @@ export type LarariumOpenPhase =
   | { readonly kind: "host-opening";       readonly hostId:    string }
   | { readonly kind: "authority-opening";  readonly hostId:    string }
   | { readonly kind: "authority-ready";    readonly receipt:   string }
-  | { readonly kind: "manifest-opening";   readonly recipeUri: string }
-  | { readonly kind: "manifest-ready";     readonly titles:    readonly string[] }
   | { readonly kind: "store-opening";      readonly recipeUri: string }
   | { readonly kind: "store-ready";        readonly titleCount: number }
   | { readonly kind: "tw5-opening";        readonly hostId:    string }
   | { readonly kind: "tw5-hydrating";      readonly loaded:    number; readonly total: number }
   | { readonly kind: "tw5-ready";          readonly hostId:    string }
-  | { readonly kind: "projection-opening"; readonly roomId:    string }
-  | { readonly kind: "projection-ready";   readonly roomId:    string }
   | { readonly kind: "live";              readonly offset:    number }
   | { readonly kind: "error";             readonly message:   string };
 
@@ -186,24 +116,6 @@ export interface LiveCarrier {
 // Server → Client messages
 // ---------------------------------------------------------------------------
 
-/** Full initial state — sent once on WebSocket connect. */
-export interface LiveMsgSnapshot {
-  type: "snapshot";
-  compiledAt: string;
-  carriers: LiveCarrier[];
-  /** Pre-computed room filter results (server-side TW engine). */
-  rooms?: Record<string, string[]>;
-}
-
-/** Incremental update — sent whenever lares/ files change. */
-export interface LiveMsgDelta {
-  type: "delta";
-  timestamp: string;
-  added:    LiveCarrier[];
-  modified: LiveCarrier[];
-  removed:  string[];   // URIs only
-}
-
 /** Reaction event broadcast — fan-out from a fire() call. */
 export interface LiveMsgEvent {
   type: "event";
@@ -214,67 +126,6 @@ export interface LiveMsgEvent {
   timestamp: string;
 }
 
-/** Server error / diagnostic. */
-export interface LiveMsgError {
-  type: "error";
-  code: string;
-  message: string;
-}
-
-/**
- * Boot receipt — causal island join artifact.
- *
- * Sent by the server BEFORE any CRDT frames flow. This is the "shape of the
- * visible world at join time" (federated-causal-islands lifecycle law).
- * Not a full CRDT sync — a snapshot of what this peer is currently authorized to see.
- *
- * Usable as a prompt cache key via receiptHash.
- * The offset belongs to the edge island: reconnect resumes from here, not from zero.
- */
-export interface LiveMsgBootReceipt {
-  type:          "boot-receipt";
-  /** Edge island ID for this connection: "edge:${sourceNode}:${targetNode}:${epoch}" */
-  edgeIslandId:  string;
-  /** ISO timestamp when this receipt was issued. */
-  issuedAt:      string;
-  /** Visible room IDs at join time (derived from Orichalcum authority graph). */
-  visibleRooms:  string[];
-  /** Meme count visible to this peer at join time. */
-  visibleMemes:  number;
-  /** Monotonic offset — resume from here on reconnect (not from zero). */
-  offset:        number;
-  /** SHA-256 of the boot artifact receipt — prompt cache key. */
-  receiptHash:   string;
-  /** Authority mode for this session. "local-operator" in development. */
-  authorityMode: "local-operator" | "ucan-delegated";
-}
-
-export type LiveServerMsg =
-  | LiveMsgSnapshot
-  | LiveMsgDelta
-  | LiveMsgEvent
-  | LiveMsgError
-  | LiveMsgBootReceipt;
-
-// ---------------------------------------------------------------------------
-// Client → Server messages
-// ---------------------------------------------------------------------------
-
-/** Fire a reaction trigger — broadcasts as LiveMsgEvent to all clients. */
-export interface LiveMsgFire {
-  type: "fire";
-  fromUri:  string;
-  trigger:  string;
-  payload?: unknown;
-}
-
-/** Subscribe to events from a specific URI (future: presence, cursors). */
-export interface LiveMsgSubscribe {
-  type: "subscribe";
-  uri: string;
-}
-
-export type LiveClientMsg = LiveMsgFire | LiveMsgSubscribe;
 
 // ---------------------------------------------------------------------------
 // Reaction graph — built from PranaEdge[] on both sides

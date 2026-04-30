@@ -17,7 +17,7 @@ manao        = 0.84
 implements   = [
   "lar:///ha.ka.ba/api/v0.1/pono/meme"
 ]
-role         = "session handoff crystal — 2026-04-29 — local-first architecture locked; doc reconciliation pass notes tensions: browser canvas now projects from TW5/projectFromTw5 rather than useSync server shapes; legacy TLSocketRoom+SQLite remains in serve.ts; AutomergeMemeStore is live store; body-node canvas write-back listener exists but projection does not emit body nodes yet; ReactionGraph stable-ref architecture; feature/lararium-node-3 active"
+role         = "session handoff crystal — 2026-04-29 (session 2) — Track A dead code removal complete; Fuller-Zelenka non-simultaneous apprehension doctrine landed in causal-island.ts + federated-causal-islands.md; Track B source-meme pipeline scaffolded (source-memes.ts + build-snapshot-lib wiring + source-module.md + reaction-graph.md pono memes); LarariumPanel HUD enacted; wikiOpen/drawingMode decoupled; feature/lararium-node-3 active"
 ```
 
 <<~/ahu >>
@@ -32,147 +32,172 @@ role         = "session handoff crystal — 2026-04-29 — local-first architect
 ⏿ The model is coherent: browser = authoritative editor, Automerge = shared truth, disk = canon projection, lares/ file watcher = external edits (git, editor, promote endpoint) → Automerge. No server-side TW5 in the write path. `startSyncer` gates on `title.startsWith("lar:")` — the lar: URI as title invariant is now a hard boundary. Draft (`$:/temp/*`) never reaches shared store; disk write only fires for `lar:` URIs.
 
 ◇ Remaining gaps / tensions:
-  - **Bulk preload ✓ FIXED** — `loadFromStore(s, onProgress)` runs before `setTw5(t)`; `tw5-ready` now means corpus-populated. `tw5-hydrating` phase emitted during load; `BootSplash` renders progress bar.
-  - **Projection refresh**: `LarariumShell` seeds tldraw from `projectFromTw5(tw5)` once; `tw5.onWikiChange → projection diff → editor.store.put/remove` is not wired yet.
-  - **Body-node write-back**: `LarariumCanvas` has a `canvas-draft` listener for `meta.bodyNodeKind`, but `projectToTldraw()` emits no body nodes. The path is latent, not functional.
-  - **Room split**: `/room/:roomId` exists, but content still uses one server Automerge meme-store doc and the browser host uses a fixed TW5 scope id. Per-room recipes/docs are M11+.
-  - **Legacy layout channel**: `serve.ts` still hosts `/rooms/:roomId` with `TLSocketRoom` + SQLite. Browser content path no longer uses it as authority; decide whether to retire or repurpose for shared layout.
+  - **Projection refresh**: `LarariumShell` seeds tldraw from `projectFromTw5(tw5)` once; `tw5.onWikiChange → projection diff → editor.store.put/remove` not wired.
+  - **Body-node write-back**: `LarariumCanvas` has a `canvas-draft` listener for `meta.bodyNodeKind`, but `projectToTldraw()` emits no body nodes. Latent, not functional.
+  - **Room split**: `/room/:roomId` exists, but content still uses one Automerge meme-store doc. Per-room recipes/docs are M11+.
+  - **Legacy layout channel**: `serve.ts` still hosts `/rooms/:roomId` with `TLSocketRoom` + SQLite. Browser content path no longer uses it as authority; decide whether to retire or repurpose.
 
-▶ Local-first architecture is coherent for content, but the docs needed correction around tldraw sync authority. M11 opens with projection diffing, body-node canvas write-back, Playwright e2e, and room recipe partitioning.
+▶ Local-first architecture coherent for content. M11 opens with projection diffing, body-node canvas write-back, Playwright e2e, room recipe partitioning.
 
-⤴ `boot-receipt.ts` deleted. `laresPathIndex` eliminated. `computeBootRoom` / `buildBootProjection` removed. `useBridgeReceiptFromEditor` removed. Hidden tldraw frame shape pattern removed. `hostReceipt` reads from meta tag once at mount — stable for session. Clients hydrate content from Automerge, then project tldraw records locally from TW5.
+⤴ Receipt via HTML meta tag. Hidden tldraw frame shape pattern removed. `hostReceipt` reads from meta tag once at mount. Clients hydrate content from Automerge, project tldraw records locally from TW5.
 
-↺ Invariants held: all Lararium tiddlers use `lar:` URI as title ✓. Echo-loop guard active ✓. `/admin/promote` is the only canon ceremony ✓. Server is peer not authority ✓.
+↺ All Lararium tiddlers use `lar:` URI as title ✓. Echo-loop guard active ✓. `/admin/promote` is the only canon ceremony ✓. Server is peer not authority ✓.
 
 <<~/ahu >>
 
 <<~&#x0002;>>
 
 
-<<~ ahu #ooda-ha-tw5-uefn >>
+<<~ ahu #ooda-ha-hud >>
 
-## OODA-HA: TW5 / UEFN Verse Parity
+## OODA-HA: LarariumPanel / HUD Architecture
 
-✶ Widget infrastructure is complete: `DispatchWidget` (lele), `KukaliWidget` (kukali), `KumuWidget` all render structural DOM with correct `data-lar-*` attributes. `ReactionGraph` has `fireSync()` (UEFN within-tick model), `subscribeByFn()` (fn-based wildcard handlers stable across `updateUri` calls), and `fireRace`/`fireRush`. Relay Device pattern wired (`fn:"relay"` in `subscribeByFn`). `MemeDetailPanel` fires `"activate"` + `"begin"` on kumu instances at panel-open. `bindingsForUri()` on `LarariumTW5` enables incremental wiki→graph patching.
+✶ `LarariumPanel` (new file) merges the HUD chip and TW5 wiki panel into a single always-mounted floating component. `wikiOpen` and `drawingMode` are independent booleans in `LarariumShell` state — replacing the old `paletteOpen`/`canvasMode` coupling. ⌘K toggles wiki panel; `` ` `` toggles full tldraw drawing chrome. Both have hotkeys wired in `LarariumShell` keyboard handler.
 
-⏿ The gap is structural vs. behavioral: grammar and type system complete, runtime execution layer absent. `DispatchWidget` renders `<meta data-lar-target>` — nothing reads it to call `fireMeme()`. `KukaliWidget` renders `<span data-lar-kind="kukali">` — no execution suspension (Verse `suspends`). `KumuWidget` pushes to `_larKumuInstances` and React fires "begin" on them — but there is no isolated async executor that owns the device lifecycle.
+⏿ TW5 shadow root mounts once (`mountPanel()`) and survives wiki open/close via `display: none`. Pointer-capture drag, edge-snap (`SNAP_PX=28`), and corner resize handle. `drawingMode` auto-collapses on wiki open (snapshot in `prevDrawRef`), restores on wiki close. Capture-phase keyboard guard blocks single-char tldraw tool keys when shadow root has focus. Escape closes panel.
 
-◇ Priority ordering:
-  - **P1 — lele wire ✓ SHIPPED** — `collectDispatchNodes()` in `vdom-to-react.tsx`; `MemeDetailPanel` fires via `useEffect` gated on uri (not vdom-identity); dispatch nodes fire once per activation.
-  - **P2 — kukali suspension** — `subscribeOnce(uri, trigger): Promise<unknown> & { cancel() }` ✓ SHIPPED on `ReactionGraph`. `KukaliWidget → useEffect` wiring in `vdom-to-react.tsx` not yet done — M11 P2.
-  - **P3 — KumuExecutor (OnBegin async loop)** — deferred to M11 P4.
-  - **P4 — OnEnd lifecycle** — deferred alongside P3.
+◇ ZOOM_IN action no longer opens the wiki panel — zoom activates other UX (planned). WikiCommandPalette rename completed → LarariumPanel. Old `LarariumCommandPalette` (quick-jump) deleted — superseded by TW5 story river. `LarariumHUD` slot deleted — absorbed into LarariumPanel.
 
-▶ `subscribeOnce` is the foundation for kukali suspension. The next execution step is wiring `data-lar-kind="kukali"` nodes in `vdom-to-react.tsx` to mount `useEffect` per node calling `reactionGraph.subscribeOnce(uri, trigger)` with cleanup on `cancel()`.
+▶ UX surface: HUD chip (collapsed, bottom-right) expands to TW5 wiki panel. `⌘K` + `◻/✏` buttons in handle bar. Theme toggle in SharePanel. Back+Graph in HelperButtons. All slot components are stable module-level refs.
 
-⤴ `fireSync()` is the correct primitive — synchronous, within-tick, matching UEFN OnActivated handler model. `subscribeByFn()` handlers registered once at shell boot cover all future bindings without re-subscription. Relay Device pattern functional end-to-end.
+↺ `wikiOpen` ≠ `navState.activeView === "meme-detail"` — wiki panel open state is independent of nav focus. ZOOM_IN fires reaction; panel opening is a separate user action.
 
-↺ `fireRace`/`fireRush` exist but no corpus paths produce `heihei`/`puka` semantics yet. Phase 2 grammar (rule-interpreter from grammar tiddlers) not yet implemented — parser still hardcoded. Both deferred.
+<<~/ahu >>
+
+<<~ ahu #ooda-ha-causal-island >>
+
+## OODA-HA: Causal Island Doctrine (Fuller-Zelenka)
+
+✶ Fuller-Zelenka non-simultaneous apprehension is now the ontological basis for the causal island model. Events in Universe are not simultaneously apprehended by any observer. In a local-first Automerge model: your local doc snapshot = simultaneously apprehended. Everything else (peer states, other Automerge Realms, un-hydrated tiddlers, kumu event horizons) = non-simultaneously apprehended by topology.
+
+⏿ Four tiers named (inner → outer):
+  - Tier 0 — active programming memes (kumu/UEFN device instances, kahea invocations): MAY become islands. Own their trigger surface, params, and event horizon.
+  - Tier 1 — memes inside rooms (local Automerge doc window): simultaneously apprehended; peer state of same doc is not.
+  - Tier 2 — Automerge Realms (distinct Automerge docs): ALWAYS non-simultaneously apprehended, no matter where first encountered on the network.
+  - Tier 3 — Lares nodes (federation layer): node-to-node edge islands. MUST be causal islands.
+
+◇ `CAUSAL_ISLAND_MAY` gains `"automerge-realm"` and `"peer-sync-state"` — non-simultaneous by topology, named to make the doctrine explicit.
+
+▶ `causal-island.ts` updated. `federated-causal-islands.md` updated. New pono memes: `reaction-graph.md` (live Tier 0 dispatch interface law), `source-module.md` (Track B source carrier pipeline interface).
+
+↺ `AuthorityFirstGuard` live in `serve.ts`. Doctrine is the law; TypeScript is its runtime projection.
+
+<<~/ahu >>
+
+<<~ ahu #ooda-ha-source-memes >>
+
+## OODA-HA: Track B — Source Meme Pipeline
+
+✶ Priority TypeScript/TSX source files now seed into the Automerge store as navigable memes at boot. URI scheme: `lar:///source/<package-name>/src/<relative-path>`. Body = verbatim source text. Fields carry `package`, `src-path`, `lang`, `built-at`, `content-hash`.
+
+⏿ Implementation: `scripts/source-memes.ts` reads 7 priority files from packages/. `build-snapshot-lib.ts` calls `buildSourceMemes()` and merges results into `BuiltSnapshot.memes` with `laresRelPath: null`. `serve.ts` seeding loop passes `fields` through to the Automerge doc. Interface law: `lares/ha-ka-ba/api/v0.1/pono/source-module.md`.
+
+◇ Priority modules: `parser.ts`, `ast.ts`, `causal-island.ts`, `live-protocol.ts` (lararium-core); `lararium-tw5.ts` (lararium-tw5); `LarariumPanel.tsx`, `LarariumShell.tsx` (lararium-app). All readable through the meme graph as `lar:///source/...` URIs.
+
+▶ Source memes are seeded at first boot only (meme-store doc created fresh). Existing store resumed without re-seeding. Track B infrastructure complete; future laps can expand the priority module list.
+
+↺ `BuiltSnapshot.memes` type updated to `laresRelPath: string | null`. Disk write-back guard in serve.ts already skips virtual caps URIs (laresRelPath null) — source memes correctly excluded from disk write-back.
+
+<<~/ahu >>
+
+<<~ ahu #track-a >>
+
+## Track A: Dead Code Removal (complete)
+
+Removed this session:
+- `LarariumBootReceiptMeta` interface (was M9 hidden-shape carrier, superseded by HTML meta tag)
+- `LiveMsgBootReceipt`, `LiveMsgSnapshot`, `LiveMsgDelta`, `LiveMsgError`, `LiveMsgFire`, `LiveMsgSubscribe`, `LiveServerMsg`, `LiveClientMsg` — all unused; only `LiveMsgEvent` used in serve.ts
+- Dead `LarariumOpenPhase` variants: `manifest-opening`, `manifest-ready`, `projection-opening`, `projection-ready` — never emitted
+- Corresponding dead `BootSplash.tsx` switch cases
+- Orphaned `renderCarrierVDom` JSDoc block in `lararium-tw5.ts` (method was removed; stale JSDoc persisted)
+- Stale `renderMeme()` reference in `injectKumuDefs` doc
+
+All 62 unit tests green after removal.
 
 <<~/ahu >>
 
 <<~ ahu #state >>
 
-## State as of 2026-04-29 session end (continued)
+## State as of 2026-04-29 (session 2 end)
 
-**Branch:** `feature/lararium-node-3` — build clean — docs reconciliation pass complete
+**Branch:** `feature/lararium-node-3` — build clean — 62/62 tests pass
 
-### Shipped previous session (M10 core)
+### Open pressures (M11)
 
-- **`boot-receipt.ts` deleted** — removed from `packages/lararium-node/src/`; dist artifacts cleaned
-- **`<meta name="lararium-receipt">` delivery** — `computeReceiptSha()` in `serve.ts`; HTML shell injects receipt + roomId meta tags; `hostReceipt` reads from meta at mount
-- **Multi-room HTTP routing** — `/room/:roomId`; legacy layout rooms lazy-created on `/rooms` WS connect; content still shares one Automerge meme-store doc; `DEFAULT_ROOM = "main"`
-- **`LarDiskSyncAdaptor` rewrite** — `resolveLarUri()` path derivation; echo-loop guard (`diskAdaptor.writing: Set<string>`); debounced write with path-traversal guard
-- **`/admin/promote` Automerge patch** — patches Automerge doc immediately after disk write
-- **lares/ watcher per-file debounce** — echo-loop check via `diskAdaptor.writing`; patches Automerge doc directly
-- **lar: URI invariant enforced** — `startSyncer` gates on `lar:` prefix
-- **`ReactionGraph` stable-ref** — `useRef<ReactionGraph>`; `load()`/`updateUri()`/`removeUri()`; `subscribeByFn()`; `fireSync()`
-- **Relay Device pattern** — `fn:"relay"` handler re-fires trigger on `toUri`
-- **`fireMeme` local dispatch** — `useCallback` over `graphRef.current.fireSync()`
-- **`bindingsForUri(uri)`** + **`onWikiChange` → incremental graph** — no full rebuild on wiki change
-- **`MemeDetailPanel` device lifecycle** — `"activate"` + `"begin"` on panel-open
-
-### Shipped this session (M10 close)
-
-- **Bulk preload race fixed** — `loadFromStore(s)` now runs before `setTw5(t)`; `buildReactionGraph()` sees full corpus at tw5-ready
-- **lele wire complete** — `collectDispatchNodes()` in `vdom-to-react.tsx`; `MemeDetailPanel` fires dispatch nodes via `useEffect` gated on `(uri, vdom)`; uri-keyed ref prevents re-fire on peer-edit re-renders
-- **`subscribeOnce(uri, trigger)`** — added to `ReactionGraph`; returns `Promise<unknown> & { cancel() }` — Verse `suspends` bridge primitive
-- **`ReactionGraph.load()` slot pruning fixed** — occupied handler slots survive graph rebuilds; dynamic subscriptions (`subscribeOnce`, kukali) not silently dropped
-- **`tw5-hydrating` phase** — `LarariumOpenPhase` union extended; `loadFromStore(store, onProgress?)` threads count through; `lararium-browser-host.ts` emits `{ kind: "tw5-hydrating", loaded, total }`
-- **`BootSplash` component** — `tc-remove-when-wiki-loaded` pattern in React; portal to `document.body`; progress bar during `tw5-hydrating`; renders null at `tw5-ready`/`live`; wired into `LarariumShell`
-- **Docs alignment complete** — role fields updated; all stale SQLite/TLSocketRoom/useSync/body-node claims corrected or marked as archaeology; `build-snapshot-lib.ts` header clarified; duplicate comment block in `serve.ts` removed; deprecated `store`/`receiptShape`/`projectionCacheCount` slots removed from `LarariumDebug`; `debugSet("store")` → `debugSet("tiddlerStore")`; `computeReceiptSha` verified working (returns valid SHA256 when called directly)
-
-### Open pressures
-
-- **P2 kukali suspension** — `subscribeOnce` primitive exists; `KukaliWidget → useEffect` wiring not yet in `vdom-to-react.tsx`. Deferred to M11.
-- **P3/P4 KumuExecutor + OnEnd** — isolated async device lifecycle; deferred to M11.
-- **Canvas write-back** — direct tldraw body-node write-back is latent, not live: listener exists (`bodyNodeKind` → `AutomergeMemeStore.put(origin:"canvas-draft")`), but `projectToTldraw()` emits no body nodes. M11.
-- **Playwright e2e** — no automated browser tests yet. M11.
-- **Room GC** — legacy layout room map never freed; acceptable at current scale.
+- **P1 — Playwright e2e** — smoke.spec.ts exists but hits Jest/Playwright isolation error (test.describe called inside Jest). Needs its own pnpm script outside Jest, or a separate Playwright config that Jest doesn't pick up.
+- **P2 — kukali suspension wire** — `subscribeOnce` primitive exists on `ReactionGraph`; `KukaliWidget → useEffect` wiring in `vdom-to-react.tsx` not yet done.
+- **P3 — Canvas write-back path** — `projectToTldraw()` must emit body-node shapes; then the existing `bodyNodeKind` listener in `LarariumCanvas` becomes live.
+- **P4 — KumuExecutor async device lifecycle** — isolated async executor per kumu instance (OnBegin/OnEnd loop). After P2 kukali is wired.
+- **Track C — `lararium-tw5.ts` simplification** — 876 lines; single large class. Profile then split into focused modules.
+- **TLSocketRoom tombstone** — legacy `/rooms/:roomId` WS endpoint still active in serve.ts; content path no longer depends on it. Retirement decision deferred.
+- **Source meme expansion** — `source-memes.ts` priority list currently 7 files. Can grow as agents begin navigating source through the graph.
 
 ### Invariants held
 
 - Package boundary: `@lararium/core` carries zero `tiddlywiki` runtime dep ✓
 - Echo-loop guard: `diskAdaptor.writing` prevents disk→Automerge→disk loops ✓
-- lar: URI invariant: all Lararium tiddlers use `lar:` URI as title; `startSyncer` gates on this ✓
-- Draft guard: `$:/temp/*` and `Draft of ...` never reach shared store ✓
+- lar: URI invariant: all Lararium tiddlers use `lar:` URI as title ✓
+- Draft guard: `$:/temp/*` never reaches shared store ✓
 - Server is sync peer, not authority ✓
 - Receipt delivered via HTML meta tag — no WS round-trip, no hidden frame shape ✓
 - `ReactionGraph` stable-ref: `subscribeByFn` handlers never re-subscribed ✓
 - `fireMeme` is local-only synchronous — no WS round-trip for local reactions ✓
-- `tw5-ready` means corpus-populated (loadFromStore complete before signal) ✓
+- `tw5-ready` means corpus-populated ✓
 - `ReactionGraph.load()` does not drop occupied handler slots ✓
 - Dispatch nodes fire once per uri activation, not per vdom re-render ✓
+- Dead code: `LarariumBootReceiptMeta`, `LiveServerMsg`, `LiveClientMsg` and all unused `LiveMsg*` types removed ✓
+- Causal island doctrine: Fuller-Zelenka basis + four-tier model canonical in both TS and meme ✓
+- Source memes: 7 priority modules seeded into Automerge store at first boot ✓
 
 <<~/ahu >>
 
-<<~ ahu #next-build >>
+<<~ ahu #m11-priorities >>
 
 ## M11 Priorities
 
-### P1 — Playwright e2e (browser smoke → automated)
+### P1 — Playwright e2e (fix isolation, write smoke tests)
 
 ```
-packages/lararium-node/tests/e2e/
-  — pnpm add -D @playwright/test --filter @lararium/node
-  — test: server starts, meta tags present, BootSplash disappears, MemeDetailPanel opens
-  — verify: document.querySelector('meta[name="lararium-receipt"]').content non-null
-  — verify: window.__larariumDebug.openPhase === "live"
-  — verify: no console errors matching "Unknown switch case" or "Empty text nodes"
+packages/lararium-node/
+  — separate playwright.config.ts from jest.config.cjs
+  — pnpm script: "test:e2e": "playwright test"
+  — smoke: server starts, meta tags present, BootSplash disappears
+  — verify: lararium-receipt non-null, openPhase === "live", no console errors
 ```
 
-### P2 — kukali suspension wire (KukaliWidget → useEffect)
+### P2 — kukali suspension wire
 
 ```
 packages/lararium-app/src/vdom-to-react.tsx
-  — detect data-lar-kind="kukali" nodes in renderVDom
-  — mount useEffect per kukali node: reactionGraph.subscribeOnce(uri, trigger)
-  — cleanup: cancel on unmount or uri change
-  — subscribeOnce() already exists in ReactionGraph (live-protocol.ts)
+  — detect data-lar-kind="kukali" in renderVDom
+  — mount useEffect per node: reactionGraph.subscribeOnce(uri, trigger)
+  — cleanup: cancel() on unmount or uri change
 ```
 
 ### P3 — Canvas write-back path
 
 ```
 packages/lararium-tldraw/src/project.ts
-  — emit LarTLBodyNode records from carrier AST / TW5 render projection
+  — emit LarTLBodyNode records from carrier AST / TW5 projection
 packages/lararium-app/src/LarariumCanvas.tsx
-  — existing bodyNodeKind listener becomes live: shape text → AutomergeMemeStore.put(origin:"canvas-draft")
-packages/lararium-tw5/src/sync-adaptor.ts
-  — adaptor propagates Automerge ↔ TW5 without echo
-packages/lararium-node/scripts/serve.ts
-  — promote: PUT /admin/promote ceremony (already exists)
-  — guard: canPromoteToCanon() already enforces ceremony requirement
+  — existing bodyNodeKind listener becomes live (no code change needed)
 ```
 
-### P4 — KumuExecutor async device lifecycle (OnBegin loop)
+### P4 — KumuExecutor async device lifecycle
 
 ```
 packages/lararium-app/src/KumuExecutor.ts  [new]
-  — one executor per kumu instance (keyed by instanceId)
-  — runs OnBegin: sets up kukali suspensions, awaits triggers
-  — torn down on OnEnd (panel close → "deactivate" trigger)
-  — uses subscribeOnce() for each kukali suspension point
+  — one executor per kumu instance; runs OnBegin; awaits kukali suspensions
+  — torn down on OnEnd ("deactivate" trigger from panel close)
+```
+
+### Track C — lararium-tw5.ts simplification
+
+```
+packages/lararium-tw5/src/lararium-tw5.ts  (876 lines, single class)
+  — profile: which methods are called from outside vs. internal only
+  — split: boot/mount/navigation surface | tiddler-store sync | kumu defs | filters
+  — defer until M11 P1–P2 are stable
 ```
 
 <<~/ahu >>
