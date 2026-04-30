@@ -519,6 +519,40 @@ exports.startup = function() {
     this._tw.wiki.addTiddler(new this._tw.Tiddler(fields));
   }
 
+  /**
+   * Force TW5 to emit a change notification for a tiddler, triggering widget refresh.
+   * Used by the kukali suspension wire: when a subscribeOnce trigger fires,
+   * call touchTiddler(uri) to re-render the tiddler in the story river.
+   */
+  touchTiddler(uri: string): void {
+    if (!this._tw) return;
+    const existing = this._tw.wiki.getTiddler(uri);
+    if (!existing) return;
+    // Re-adding the same tiddler triggers TW5's change notification machinery.
+    this._tw.wiki.addTiddler(new this._tw.Tiddler(existing.fields));
+  }
+
+  /**
+   * Register a kukali suspension hook — called by KukaliWidget at render time.
+   *
+   * The hook receives (uri, trigger) and should call reactionGraph.subscribeOnce().
+   * When the trigger fires, the handler should call touchTiddler(uri) to refresh.
+   * Returns an unsub function that removes the hook.
+   *
+   * Only one hook is active at a time (last-write-wins). The hook is stored on
+   * the live TW5 wiki object so KukaliWidget can call it without a React import.
+   */
+  registerKukaliHook(fn: (uri: string, trigger: string) => (() => void) | void): () => void {
+    if (!this._tw) return () => {};
+    // Store on $tw.wiki — same object KukaliWidget sees as `this.wiki`.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (this._tw.wiki as any)._larKukaliHook = fn;
+    return () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      if ((this._tw?.wiki as any)?._larKukaliHook === fn) delete (this._tw.wiki as any)._larKukaliHook;
+    };
+  }
+
   /** Render raw TW5 wikitext to HTML. Returns "" before boot or on render failure. */
   renderText(text: string): string {
     if (!this._tw) return "";

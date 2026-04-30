@@ -49,6 +49,7 @@ export function LarariumPanel() {
     wikiOpen, setWikiOpen,
     drawingMode, setDrawingMode,
     tw5, fireMeme,
+    reactionGraph,
   } = useLararium();
 
   const uri = navState.focusUri ?? null;
@@ -97,6 +98,21 @@ export function LarariumPanel() {
     unmountRef.current = tw5.mountPanel(tw5HostRef.current);
     return () => { unmountRef.current?.(); unmountRef.current = null; };
   }, [tw5]);
+
+  // ---------------------------------------------------------------------------
+  // Kukali suspension wire — local-first, no React MutationObserver.
+  // KukaliWidget calls wiki._larKukaliHook(uri, trigger) at render time.
+  // We subscribe once via reactionGraph; when the trigger fires, touch the
+  // tiddler to force TW5 to re-render it in the story river.
+  // ---------------------------------------------------------------------------
+  useEffect(() => {
+    if (!tw5 || !reactionGraph) return;
+    return tw5.registerKukaliHook((kukaliUri, trigger) => {
+      const p = reactionGraph.subscribeOnce(kukaliUri, trigger);
+      p.then(() => tw5.touchTiddler(kukaliUri)).catch(() => {});
+      return () => p.cancel();
+    });
+  }, [tw5, reactionGraph]);
 
   // ---------------------------------------------------------------------------
   // Navigate TW5 when panel opens or focusUri changes.

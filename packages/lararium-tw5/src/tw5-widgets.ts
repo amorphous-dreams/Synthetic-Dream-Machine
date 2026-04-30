@@ -223,11 +223,24 @@ KukaliWidget.prototype.render = function (parent: any, _nextSibling: any) {
   this.parentDomNode = parent;
   this.computeAttributes();
   this.execute();
+  const trigger = this.getAttribute("trigger", "");
   const el = this.document.createElement("span");
   el.setAttribute("data-lar-kind",    "kukali");
-  el.setAttribute("data-lar-trigger", this.getAttribute("trigger", ""));
+  el.setAttribute("data-lar-trigger", trigger);
   parent.appendChild(el);
   this.domNodes = [el];
+
+  // Call the kukali hook if registered — bridges to reactionGraph.subscribeOnce().
+  // Hook is stored on $tw.wiki (same object as this.wiki in widget context)
+  // by LarariumTW5.registerKukaliHook(), keeping the bridge import-free.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const hook = (this.wiki as any)?._larKukaliHook;
+  const uri  = this.getVariable?.("currentTiddler") ?? "";
+  if (hook && uri && trigger) {
+    const cancel = hook(uri, trigger);
+    // Store cancel ref on element for potential future cleanup.
+    if (typeof cancel === "function") (el as any)._larKukaliCancel = cancel;
+  }
 };
 KukaliWidget.prototype.execute = function () { this.makeChildWidgets(); };
 
