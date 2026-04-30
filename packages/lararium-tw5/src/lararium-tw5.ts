@@ -733,6 +733,32 @@ exports.startup = function() {
   }
 
   /**
+   * Ingest a remote Realm's meme stream into the local TW5 wiki.
+   *
+   * Drives MemeStreamParser over an AsyncIterable<string> of text chunks
+   * (HTTP chunked transfer, WebSocket frames, CRDT patch stream, etc.).
+   * Each carrier-close event produces a [parent, ...children] batch that
+   * is loaded into the wiki with `realm-origin` provenance set to realmUri.
+   *
+   * Foreign memes are queryable by:
+   *   [all[memes]field:realm-origin[lar:///remote-realm-uri]]
+   *
+   * The caller owns transport and reconnect. This method completes when the
+   * iterable ends or a realm-done event is received.
+   */
+  async loadFromRealmStream(
+    realmUri: string,
+    chunks: AsyncIterable<string>,
+  ): Promise<void> {
+    if (!this._tw) throw new Error("LarariumTW5: call boot() before loadFromRealmStream()");
+    for await (const batch of this.streamDeserializeCarrier(chunks, { realmOrigin: realmUri })) {
+      for (const fields of batch) {
+        this._tw.wiki.addTiddler(new this._tw.Tiddler(fields));
+      }
+    }
+  }
+
+  /**
    * Subscribe to TW5 wiki change events.
    *
    * The callback fires whenever tiddlers are added, updated, or deleted in the
