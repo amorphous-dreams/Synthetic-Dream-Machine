@@ -6,7 +6,7 @@
  * separately by layout.ts, which reads the snapshot and returns a LarTLLayout.
  */
 
-import { type BootArtifact, scalarToStageBand } from "@lararium/core";
+import { type BootArtifact, scalarToStageBand, parseMemeCarrier } from "@lararium/core";
 import { parsePranalaEdges } from "@lararium/core";
 import type { MemeAstNode, WorksiteNode, TextNode } from "@lararium/core";
 
@@ -129,6 +129,19 @@ export function projectToTldraw(artifact: BootArtifact, opts: ProjectOptions = {
           parentFrameId: fid,
           text: noteLines,
         });
+      }
+
+      // Body node — carrier text extracted from wikitext body, emitted as a single text node.
+      // Visible only at action zoom (applyZoomTemplate gates opacity via showCarrier).
+      if (readText) {
+        const raw = readText(entry.uri);
+        if (raw) {
+          const ast = parseMemeCarrier(entry.uri, raw);
+          const bodyText = collectText(ast).trim();
+          if (bodyText) {
+            bodyNodes.push({ kind: "text", uri: entry.uri, parentFrameId: fid, text: bodyText });
+          }
+        }
       }
 
       // Ahu socket sub-frames + socket port shapes from pranala edges if readText provided

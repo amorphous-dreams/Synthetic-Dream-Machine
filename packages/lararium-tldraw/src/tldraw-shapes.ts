@@ -198,7 +198,7 @@ export function emitTldrawRecords(
       parentId,
       isLocked: frame.frameKind === "ahu",
       opacity:  1,
-      meta:     { uri: frame.uri, frameKind: frame.frameKind, implements: [...frame.implements], ...(frame.templateProps !== undefined && { templateProps: JSON.parse(JSON.stringify(frame.templateProps)) }) },
+      meta:     { uri: frame.uri, frameKind: frame.frameKind, implements: [...frame.implements] },
       props: {
         w:     geo.w,
         h:     geo.h,
