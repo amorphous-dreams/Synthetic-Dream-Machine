@@ -17,7 +17,7 @@ manao        = 0.84
 implements   = [
   "lar:///ha.ka.ba/api/v0.1/pono/meme"
 ]
-role         = "session handoff crystal — 2026-04-29 (session 3) — TLSocketRoom tombstoned; P3 body-node emission; M11 incremental canvas projection diff; P4 KumuWidget local-first TW5 transclusion; KumuWidget.refresh delegated; parseMemeCarrier static import; feature/lararium-node-3 active"
+role         = "session handoff crystal — 2026-04-29 (session 4) — kumu defs as first-class memes; native TW5 filter operators (edge:/toml:/all[memes]); ahu typed child tiddlers; server=peer invariant confirmed; feature/lararium-node-3 active"
 ```
 
 <<~/ahu >>
@@ -118,26 +118,27 @@ All 62 unit tests green after removal.
 
 <<~ ahu #state >>
 
-## State as of 2026-04-29 (session 3 end)
+## State as of 2026-04-29 (session 4 end)
 
-**Branch:** `feature/lararium-node-3` — build clean — 62/62 tests pass
+**Branch:** `feature/lararium-node-3` — build clean — 156/157 tests pass (1 pre-existing tw-filter failure)
 
-### Closed this session
+### Closed this session (sessions 3+4)
 
-- **TLSocketRoom tombstone** — `serve.ts` now pure Automerge-repo + file watcher; `better-sqlite3`, `@tldraw/sync-core`, `TLSocketRoom`, `SQLiteSyncStorage` all removed from deps ✓
-- **P1 — Jest/Playwright isolation** — `testPathIgnorePatterns: ["/tests/e2e/"]` in `jest.config.cjs` ✓
-- **P2 — kukali suspension wire** — `KukaliWidget` calls `wiki._larKukaliHook`; `LarariumPanel` bridges to `reactionGraph.subscribeOnce()`; `touchTiddler` triggers TW5 refresh ✓
-- **P3 — body-node emission** — `projectToTldraw()` now emits `LarTLBodyNode` records from carrier wikitext via `parseMemeCarrier` + `collectText` ✓
-- **P4 — KumuWidget local-first** — `KumuWidget.render()` transclubes `lar:///kumu/<name>` via TW5-native `makeTranscludeWidget`; props injected as TW5 variables; `refresh()` delegated to child transclude ✓
-- **M11 incremental canvas diff** — `onWikiChange` re-projects and diffs shape IDs: puts new/updated, removes deleted ✓
-- **Track C: parseMemeCarrier** — promoted from dynamic `await import()` to static import in `lararium-tw5.ts` ✓
+- **TLSocketRoom tombstone** — `serve.ts` pure Automerge-repo + file watcher; `better-sqlite3`, `@tldraw/sync-core` removed ✓
+- **Kumu defs as first-class memes** — `KumuWidget` filter-queries wiki by `$:/tags/LarariumKumu` + `kumu-name`; `injectKumuDefs` / extraction pipeline tombstoned; `widget-tree.ts` deleted; `KumuDef` type removed ✓
+- **Native TW5 filter operators** — `edge:family[role]`, `toml:key[val]`, `all[memes]` registered at boot in `registerImplementorsOperator`; memetic-wikitext filter dialect is TW5-native ✓
+- **Ahu typed child tiddlers** — `splitCarrierToTiddlers` extracts TOML metadata from child ahu body `toml` fence; `type`, `mime-type`, etc. set on child tiddler fields ✓
+- **Server-is-peer confirmed** — no server-authority patterns found; `authorityMode: "local-operator"` is canon-promotion gate, not data privilege ✓
+- **Stale comment cleanup** — `tw5-widgets.ts` and `LarariumCanvas.tsx` comments updated ✓
 
 ### Open pressures
 
-- **Track C — `lararium-tw5.ts` simplification** — 895 lines; split deferred until next session
+- **Track C — `lararium-tw5.ts` simplification** — 858 lines; split deferred
 - **e2e Playwright smoke** — isolation fixed; tests not yet run against live server
 - **Source meme expansion** — priority list at 7 files; expand as agent navigation matures
 - **Per-room Automerge docs** — all clients share one doc; room recipe partitioning is M12
+- **`chapel-perilous-opens/` draft workflow** — operator draft → filter-lookup priority → `/admin/promote` ceremony not yet coded (architecture defined)
+- **tw-filter.test.ts** — 1 pre-existing failure: `[tag[lar:///...invariant]]` returns 0; needs investigation
 
 ### Invariants held
 
@@ -146,13 +147,13 @@ All 62 unit tests green after removal.
 - lar: URI invariant: all Lararium tiddlers use `lar:` URI as title ✓
 - Draft guard: `$:/temp/*` never reaches shared store ✓
 - Server is sync peer, not authority ✓
-- KumuWidget is TW5-native: def lookup → variable injection → makeTranscludeWidget ✓
-- KumuWidget.execute no-op; children managed in render; refresh delegated ✓
+- KumuWidget is TW5-native: filter lookup → variable injection → makeTranscludeWidget ✓
+- Kumu defs are first-class memes in tagspace ($:/tags/LarariumKumu + kumu-name field) ✓
+- `edge:`, `toml:`, `all[memes]` are native TW5 filter operators ✓
+- Ahu child tiddlers carry typed content via TOML metadata fence ✓
 - `ReactionGraph` stable-ref: `subscribeByFn` handlers never re-subscribed ✓
 - `fireMeme` is local-only synchronous — no WS round-trip for local reactions ✓
-- `tw5-ready` means corpus-populated ✓
-- Causal island doctrine: Fuller-Zelenka basis + four-tier model canonical in both TS and meme ✓
-- Source memes: 7 priority modules seeded into Automerge store at first boot ✓
+- Causal island doctrine: Fuller-Zelenka basis + four-tier model ✓
 
 <<~/ahu >>
 
