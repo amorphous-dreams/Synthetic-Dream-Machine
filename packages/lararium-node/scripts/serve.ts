@@ -36,19 +36,13 @@
  */
 
 import { createServer, type IncomingMessage, type ServerResponse } from "http";
-import { readFileSync, existsSync, statSync, mkdirSync, unlinkSync, watch, writeFileSync } from "fs";
+import { readFileSync, existsSync, statSync, mkdirSync, watch, writeFileSync } from "fs";
 import { join, extname, resolve } from "path";
 import { fileURLToPath } from "url";
-import Database from "better-sqlite3";
-import { WebSocketServer, WebSocket } from "ws";
+import { WebSocketServer } from "ws";
 import { Repo } from "@automerge/automerge-repo";
 import { NodeWSServerAdapter } from "@automerge/automerge-repo-network-websocket";
 import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
-import {
-  TLSocketRoom,
-  SQLiteSyncStorage,
-  NodeSqliteWrapper,
-} from "@tldraw/sync-core";
 import { createLarariumRuntime, LARES_ROOT } from "../src/node-host.js";
 import { buildSnapshot } from "./build-snapshot-lib.js";
 import {
@@ -56,8 +50,6 @@ import {
   extractReactionBindings,
   ReactionGraph,
   type ReactionBinding,
-  type LiveMsgEvent,
-  AuthorityFirstGuard,
   canPromoteToCanon,
   resolveLarUri,
   laresRelPathToLarUri,
@@ -108,45 +100,6 @@ function json(res: ServerResponse, body: unknown, status = 200) {
   res.end(JSON.stringify(body));
 }
 
-// ---------------------------------------------------------------------------
-// Room registry
-// ---------------------------------------------------------------------------
-
-const rooms = new Map<string, TLSocketRoom>();
-
-function getOrCreateRoom(roomId: string, initialSnapshot?: unknown): TLSocketRoom {
-  const existing = rooms.get(roomId);
-  if (existing) return existing;
-
-  const dbPath = join(DATA_DIR, `${roomId}.sqlite`);
-  const db = new Database(dbPath);
-  const sql = new NodeSqliteWrapper(db);
-  const isNew = !SQLiteSyncStorage.hasBeenInitialized(sql);
-
-  const storage = new SQLiteSyncStorage({
-    sql,
-    ...(isNew && initialSnapshot
-      ? { snapshot: initialSnapshot as ConstructorParameters<typeof SQLiteSyncStorage>[0]["snapshot"] }
-      : {}),
-  });
-
-  const room = new TLSocketRoom({ storage });
-  rooms.set(roomId, room);
-  console.log(`[lararium-serve] room ${roomId} ${isNew ? "(seeded)" : "(resumed)"}`);
-  return room;
-}
-
-/** Evict a room from memory and delete its SQLite file so next connect reseeds. */
-function evictRoom(roomId: string): boolean {
-  const room = rooms.get(roomId);
-  if (room) {
-    try { room.close(); } catch { /* ignore */ }
-    rooms.delete(roomId);
-  }
-  const dbPath = join(DATA_DIR, `${roomId}.sqlite`);
-  if (existsSync(dbPath)) { unlinkSync(dbPath); return true; }
-  return false;
-}
 
 // ---------------------------------------------------------------------------
 // Boot receipt — SHA delivered via HTML meta tag, not a hidden tldraw shape.
@@ -195,11 +148,9 @@ async function main() {
     console.error("[lararium-serve] ⚠ receipt compute failed — clients will boot without corpus verification:", e);
   }
 
-  // Rooms are stable opaque strings for the legacy layout channel. Active clients
-  // self-layout from the Automerge/TW5 corpus. Any roomId is valid; the default
-  // route room is "main". Multi-room HTTP: /room/:id routes.
+  // DEFAULT_ROOM — stable room ID for meta tag injection and /api/rooms.
+  // Multi-room HTTP: /room/:id routes all serve the same Automerge doc.
   const DEFAULT_ROOM = "main";
-  getOrCreateRoom(DEFAULT_ROOM);
 
   // ---------------------------------------------------------------------------
   // Automerge meme-sync peer — content CRDT (separate from tldraw layout CRDT)
@@ -230,27 +181,21 @@ async function main() {
   const httpServer = createServer(async (req: IncomingMessage, res: ServerResponse) => {
     const url = req.url ?? "/";
     const pathname = url.split("?")[0] ?? "/";
-    const params = new URL(url, `http://${HOST}:${PORT}`).searchParams;
-
     // ── API ────────────────────────────────────────────────────────────────
     if (pathname === "/api/rooms") {
-      return json(res, { defaultRoom: DEFAULT_ROOM, rooms: [...rooms.keys()] });
+      return json(res, { defaultRoom: DEFAULT_ROOM });
     }
 
-    // Admin: force-reseed — evict legacy SQLite layout room + rebuild snapshot/receipt from lares/
+    // Admin: force-reseed — rebuild snapshot/receipt from lares/ and patch Automerge
     if (pathname === "/admin/reseed") {
       const remoteAddr = (req.socket.remoteAddress ?? "").replace("::ffff:", "");
       if (remoteAddr !== "127.0.0.1" && remoteAddr !== "::1") {
         return json(res, { error: "forbidden" }, 403);
       }
-      const targetId = params.get("roomId") ?? DEFAULT_ROOM;
-      const deleted = evictRoom(targetId);
-      console.log(`[lararium-serve] reseed: ${targetId} sqlite ${deleted ? "deleted" : "not found"}`);
       try {
         snapshotMemes = await buildSnapshot(runtime);
         receiptSha    = await computeReceiptSha(runtime);
-        getOrCreateRoom(targetId);
-        return json(res, { reseeded: targetId, sha: receiptSha, deleted });
+        return json(res, { reseeded: DEFAULT_ROOM, sha: receiptSha });
       } catch (e) {
         return json(res, { error: String(e) }, 500);
       }
@@ -406,92 +351,18 @@ async function main() {
   });
 
   // ---------------------------------------------------------------------------
-  // WebSocket routing — noServer mode, split by path on the upgrade event.
-  //   /rooms/:roomId  → tldraw TLSocketRoom
-  //   /meme-sync      → Automerge NodeWSServerAdapter
+  // WebSocket routing — noServer mode.
+  //   /meme-sync  → Automerge NodeWSServerAdapter (content CRDT, sole WS path)
   // ---------------------------------------------------------------------------
-  const tlWss    = new WebSocketServer({ noServer: true });
-  const memeWss  = new WebSocketServer({ noServer: true });
+  const memeWss = new WebSocketServer({ noServer: true });
 
   httpServer.on("upgrade", (req: IncomingMessage, socket, head) => {
     const pathname = new URL(req.url ?? "/", `ws://${HOST}:${PORT}`).pathname;
     if (pathname.startsWith("/meme-sync")) {
       memeWss.handleUpgrade(req, socket, head, (ws) => memeWss.emit("connection", ws, req));
-    } else if (pathname.startsWith("/rooms")) {
-      tlWss.handleUpgrade(req, socket, head, (ws) => tlWss.emit("connection", ws, req));
     } else {
       socket.destroy();
     }
-  });
-
-  // tldraw WS — legacy/shared-layout channel
-  const wss = tlWss;
-
-  wss.on("connection", (ws: WebSocket, req: IncomingMessage) => {
-    const wsUrl = new URL(req.url ?? "/", `ws://${HOST}:${PORT}`);
-    const match = wsUrl.pathname.match(/^\/rooms\/([^/?#]+)/);
-    if (!match) { ws.close(1008, "Invalid room path"); return; }
-
-    // Redirect stable alias "boot" → current content-addressed room
-    const rawRoomId = match[1]!;
-    const roomId = rawRoomId === "boot" ? DEFAULT_ROOM : rawRoomId;
-    const sessionId = wsUrl.searchParams.get("sessionId") ?? crypto.randomUUID();
-
-    // Tag socket for reaction-graph broadcast targeting
-    (ws as WebSocket & { _larariumRoomId?: string })._larariumRoomId = roomId;
-
-    // Authority-first sync order — step 1: authenticate peer (bootstrap local-operator)
-    const guard = new AuthorityFirstGuard();
-    guard.advance("authenticate-peer");
-
-    // Step 2: Orichalcum authority graph — in dev, local-operator passes immediately
-    guard.advance("sync-authority-graph");
-
-    // Step 3: derive visible rooms + step 4: manifest
-    // For local-operator: all rooms are visible; skip to manifest
-    guard.advance("sync-collection-manifest");
-
-    const buffered: import("ws").RawData[] = [];
-    const buffer = (msg: import("ws").RawData) => buffered.push(msg);
-    ws.on("message", buffer);
-
-    const room = getOrCreateRoom(roomId);
-    room.handleSocketConnect({
-      sessionId,
-      socket: ws as unknown as Parameters<typeof room.handleSocketConnect>[0]["socket"],
-    });
-
-    ws.off("message", buffer);
-    for (const msg of buffered) ws.emit("message", msg);
-
-    // Reaction graph "fire" messages — guard: only allowed in "live" state
-    // (guard reached "live" after step 4 above; this is the delta streaming phase)
-    ws.on("message", (raw) => {
-      let msg: unknown;
-      try { msg = JSON.parse(raw.toString()); } catch { return; }
-      if (!msg || typeof msg !== "object") return;
-      const m = msg as Record<string, unknown>;
-      if (m["type"] !== "fire") return;
-      const fromUri = typeof m["fromUri"] === "string" ? m["fromUri"] : null;
-      const trigger = typeof m["trigger"] === "string" ? m["trigger"] : null;
-      if (!fromUri || !trigger) return;
-
-      reactionGraph.fire(fromUri, trigger, m["payload"] ?? {}).then(() => {
-        const event: LiveMsgEvent = {
-          type: "event",
-          fromUri,
-          trigger,
-          targetFn: null,
-          payload: m["payload"] ?? {},
-          timestamp: new Date().toISOString(),
-        };
-        broadcastToRoom(roomId, event);
-      }).catch((e: unknown) => {
-        console.error(`[lararium-serve] reaction fire error ${fromUri}#${trigger}:`, e);
-      });
-    });
-
-    console.log(`[lararium-serve] + ${sessionId.slice(0, 8)} room=${roomId}`);
   });
 
   // ---------------------------------------------------------------------------
@@ -612,18 +483,6 @@ async function main() {
     return g;
   }
 
-  // Broadcast to all WebSocket clients connected to a room
-  function broadcastToRoom(roomId: string, msg: object): void {
-    const text = JSON.stringify(msg);
-    for (const ws of wss.clients) {
-      // tag sockets with their roomId on connection — see wss.on("connection") above
-      const tagged = ws as WebSocket & { _larariumRoomId?: string };
-      if (tagged._larariumRoomId === roomId && ws.readyState === WebSocket.OPEN) {
-        ws.send(text);
-      }
-    }
-  }
-
   // ---------------------------------------------------------------------------
   // lares/ file watcher — UEFN operational model
   //
@@ -686,7 +545,6 @@ async function main() {
         // Keep server-side receipt and reaction graph consistent.
         receiptSha    = await computeReceiptSha(runtime);
         reactionGraph = buildReactionGraph(runtime);
-        broadcastToRoom(DEFAULT_ROOM, { type: "reseed" });
       } catch (e) {
         console.error(`[lararium-serve] lares/ watcher error (${filename}):`, e);
       }
