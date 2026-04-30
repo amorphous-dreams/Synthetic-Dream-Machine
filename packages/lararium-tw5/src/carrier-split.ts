@@ -239,13 +239,25 @@ export function splitCarrierToTiddlers(uri: string, text: string): CarrierSplit 
 
     if (!childMap.has(childUri)) slotOrder.push(childUri);
 
+    // Extract optional TOML metadata from the child body — first ```toml ... ``` fence.
+    // Enables child ahu sections to declare TW5-native fields (type, mime-type, etc.).
+    const childFields: Record<string, string | string[]> = {
+      "ahu-slot":   slot,
+      "ahu-parent": uri,
+      tags:         [uri],          // parent URI as tag → [tag[lar:///SESSION]] filter
+    };
+    const tomlFence = /^```toml\s*\n([\s\S]*?)```/m.exec(bodyText);
+    if (tomlFence) {
+      const toml = tomlFence[1] ?? "";
+      for (const line of toml.split("\n")) {
+        const kv = line.match(/^\s*([\w-]+)\s*=\s*(?:"([^"]*)"|'([^']*)'|([\w/+-]+))/);
+        if (kv) childFields[kv[1]!] = kv[2] ?? kv[3] ?? kv[4] ?? "";
+      }
+    }
+
     childMap.set(childUri, {
       title: childUri,
-      fields: {
-        "ahu-slot":   slot,
-        "ahu-parent": uri,
-        tags:         [uri],          // parent URI as tag → [tag[lar:///SESSION]] filter
-      },
+      fields: childFields,
       text: bodyText,
     });
   }
