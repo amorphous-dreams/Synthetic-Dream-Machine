@@ -54,6 +54,7 @@ import {
   laresRelPathToLarUri,
   UcanPeerRegistry,
   verifyUcan,
+  MemeProvider,
 } from "@lararium/core";
 import { getOrCreateNodeIdentity } from "../src/operator-key.js";
 import { TW5_CORE_SCRIPT_FILENAME, TW5_CORE_SCRIPT_URL } from "@lararium/tw5";
@@ -431,23 +432,32 @@ async function main() {
   const { LarDiskSyncAdaptor } = await import("@lararium/tw5");
   const diskAdaptor = new LarDiskSyncAdaptor(LARES_ROOT);
 
-  let diskSyncSeeding = true;
+  // MemeProvider sits between the Automerge DocHandle and all downstream
+  // integrations. It coalesces rapid same-URI patches (40 ms window) so the
+  // disk write-back only fires once per logical change rather than once per
+  // Automerge patch — critical during initial peer sync replay.
+  const memeProvider = new MemeProvider(
+    () => (memeHandle as any).doc() ?? {},
+  );
+
+  // Disk write-back: register the projector directly on the MemeProvider.
+  // LarDiskProjector implements MemeProjection — onUriChanged handles the
+  // carrier-text / ahu-slot write-back logic; the echo-loop guard lives in
+  // the lares/ file watcher (diskAdaptor.writing.has(uri)).
+  memeProvider.addProjection(diskAdaptor);
+
+  // Feed Automerge patches into the provider. Remote-only: local writes
+  // (promote, reseed) go through memeHandle.change() which fires "change"
+  // only for the delta, so the seeding guard is now handled by markSyncComplete.
+  const remoteOrigin = { kind: "crdt-remote" as const, edgeIsland: "automerge" };
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  (memeHandle as any).on("change", ({ doc, patches }: { doc: Record<string, unknown>; patches: { path: unknown[] }[] }) => {
-    if (diskSyncSeeding) return;
-    const changedUris = new Set<string>();
-    for (const patch of patches) {
-      const uri = patch.path[0];
-      if (typeof uri === "string" && uri.startsWith("lar:")) changedUris.add(uri);
-    }
-    for (const uri of changedUris) {
-      const entry = doc[uri] as { text?: string } | undefined;
-      if (typeof entry?.text === "string") {
-        diskAdaptor.saveTiddler({ title: uri, text: entry.text }, () => { /* fire-and-forget */ });
-      }
-    }
+  (memeHandle as any).on("change", ({ patches }: { patches: { path: unknown[] }[] }) => {
+    memeProvider.handleChange(patches ?? [], remoteOrigin);
   });
-  diskSyncSeeding = false;
+
+  // Seeding complete — mark sync so the disk projection activates and
+  // onSyncComplete fires on all registered projections.
+  memeProvider.markSyncComplete();
 
   httpServer.listen(PORT, HOST, () => {
     console.log(`[lararium-serve] http://${HOST}:${PORT}`);

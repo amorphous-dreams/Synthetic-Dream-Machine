@@ -27,14 +27,14 @@
 import { writeFileSync, readFileSync, mkdirSync } from "fs";
 import { resolve, join } from "path";
 import { resolveLarUri } from "@lararium/core";
-import type { LarTiddlerStore } from "@lararium/core";
+import type { LarTiddlerStore, LarTiddlerChange, MemeProjection } from "@lararium/core";
 import { composeCarrierSlotBody, replaceCarrierSlot } from "./carrier-split.js";
 
 // ---------------------------------------------------------------------------
 // LarDiskProjector
 // ---------------------------------------------------------------------------
 
-export class LarDiskProjector {
+export class LarDiskProjector implements MemeProjection {
   private readonly _timers = new Map<string, ReturnType<typeof setTimeout>>();
   private readonly _pendingSlots = new Map<string, Map<string, string>>();
   private _unsubscribe: (() => void) | null = null;
@@ -57,29 +57,34 @@ export class LarDiskProjector {
    * Start projecting store changes to disk.
    * Call once after the store is ready. Returns an unsubscribe/stop function.
    */
+  // MemeProjection.onUriChanged — shared handler for both store.subscribe and
+  // MemeProvider.addProjection paths. Extracted so serve.ts can register this
+  // projector directly on a MemeProvider without going through LarTiddlerStore.
+  onUriChanged(change: LarTiddlerChange): void {
+    const { title, record } = change;
+    if (!title.startsWith("lar:")) return;
+    if (record === null || record.deleted) {
+      // Deletion: skip disk removal — carrier files are versioned in git;
+      // removal requires explicit canon demotion, not automatic deletion.
+      return;
+    }
+    const fields = record.fields as Record<string, string | undefined>;
+    const ahuSlot    = fields["ahu-slot"];
+    const ahuParent  = fields["ahu-parent"];
+    const carrierText = fields["carrier-text"] ?? record.text;
+    if (ahuSlot && ahuParent) {
+      this._writeSlot(ahuParent, ahuSlot, composeCarrierSlotBody(fields, record.text ?? ""));
+    } else if (carrierText) {
+      this._writeDirect(title, carrierText);
+    }
+  }
+
+  /**
+   * Start projecting store changes to disk via a LarTiddlerStore subscription.
+   * Returns an unsubscribe/stop function.
+   */
   start(store: LarTiddlerStore): () => void {
-    this._unsubscribe = store.subscribe((change) => {
-      const { title, record } = change;
-      if (!title.startsWith("lar:")) return;
-      if (record === null || record.deleted) {
-        // Deletion: skip disk removal — carrier files are versioned in git;
-        // removal requires explicit canon demotion, not automatic deletion.
-        return;
-      }
-
-      const fields = record.fields as Record<string, string | undefined>;
-      const ahuSlot   = fields["ahu-slot"];
-      const ahuParent = fields["ahu-parent"];
-      const carrierText = fields["carrier-text"] ?? record.text;
-
-      if (ahuSlot && ahuParent) {
-        // Child slot: surgical write-back to parent carrier file.
-        this._writeSlot(ahuParent, ahuSlot, composeCarrierSlotBody(fields, record.text ?? ""));
-      } else if (carrierText) {
-        // Parent or plain lar: tiddler: write carrier-text (or text) to disk.
-        this._writeDirect(title, carrierText);
-      }
-    });
+    this._unsubscribe = store.subscribe((change) => this.onUriChanged(change));
     return () => this.stop();
   }
 

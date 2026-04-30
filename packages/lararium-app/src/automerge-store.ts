@@ -25,8 +25,9 @@ import type {
   LarTiddlerChange,
   ChangeOrigin,
   LarOperatorIdentity,
+  MemeProjection,
 } from "@lararium/core";
-import { issueUcan } from "@lararium/core";
+import { issueUcan, MemeProvider } from "@lararium/core";
 
 // ---------------------------------------------------------------------------
 // Doc schema — mutable counterpart of LarTiddlerRecord for Automerge proxy
@@ -52,26 +53,30 @@ export type MemeStoreDoc = Record<string, MutableLarRecord>;
 // ---------------------------------------------------------------------------
 
 export class AutomergeMemeStore implements LarTiddlerStore {
-  private handle:  DocHandle<MemeStoreDoc>;
-  private subs:    ((change: LarTiddlerChange) => void)[] = [];
+  private handle:   DocHandle<MemeStoreDoc>;
+  readonly provider: MemeProvider;
 
   constructor(handle: DocHandle<MemeStoreDoc>) {
     this.handle = handle;
+    this.provider = new MemeProvider(() => (handle.doc() ?? {}) as Record<string, unknown>);
 
-    // Fire subscribers when remote peers push changes into the doc.
-    handle.on("change", ({ doc, patches }) => {
-      const changed = new Set<string>();
-      for (const patch of patches ?? []) {
-        // patch.path[0] is the tiddler title (top-level key)
-        if (patch.path.length >= 1) changed.add(String(patch.path[0]));
-      }
-      const origin: ChangeOrigin = { kind: "crdt-remote", edgeIsland: "automerge" };
-      for (const title of changed) {
-        const raw  = doc[title];
-        const record: LarTiddlerRecord | null = raw ? this._freeze(raw) : null;
-        for (const fn of this.subs) fn({ title, record, origin });
-      }
+    // Feed remote Automerge patches into the provider for coalesced fan-out.
+    const remoteOrigin: ChangeOrigin = { kind: "crdt-remote", edgeIsland: "automerge" };
+    handle.on("change", ({ patches }) => {
+      this.provider.handleChange(patches ?? [], remoteOrigin);
     });
+  }
+
+  /** Expose projection registration so callers outside the store (e.g. canvas,
+   *  MCP) can receive coalesced change events without going through subscribe(). */
+  addProjection(p: MemeProjection): () => void {
+    return this.provider.addProjection(p);
+  }
+
+  /** Signal that initial Automerge sync has settled. Flushes pending debounces
+   *  and fires onSyncComplete on all projections. Call after handle.whenReady(). */
+  markSyncComplete(): void {
+    this.provider.markSyncComplete();
   }
 
   async listVisible(): Promise<string[]> {
@@ -103,8 +108,8 @@ export class AutomergeMemeStore implements LarTiddlerStore {
         ...(record.recipe      !== undefined && { recipe:     record.recipe }),
       };
     });
-    // Fire local subscribers immediately (Automerge fires "change" only for remote deltas)
-    for (const fn of this.subs) fn({ title: record.title, record, origin });
+    // Local writes bypass the debounce — echo-loop guards need synchronous delivery.
+    this.provider.fireImmediate({ title: record.title, record, origin });
   }
 
   async tombstone(title: string, origin: ChangeOrigin): Promise<void> {
@@ -116,15 +121,11 @@ export class AutomergeMemeStore implements LarTiddlerStore {
         doc[title] = { title, fields: {}, deleted: true };
       }
     });
-    for (const fn of this.subs) fn({ title, record: null, origin });
+    this.provider.fireImmediate({ title, record: null, origin });
   }
 
   subscribe(fn: (change: LarTiddlerChange) => void): () => void {
-    this.subs.push(fn);
-    return () => {
-      const i = this.subs.indexOf(fn);
-      if (i >= 0) this.subs.splice(i, 1);
-    };
+    return this.provider.addProjection({ onUriChanged: fn });
   }
 
   // Freeze Automerge proxy to a plain LarTiddlerRecord
@@ -206,7 +207,12 @@ export async function initMemeRepo(opts: {
     );
   }
 
-  return { repo, store: new AutomergeMemeStore(handle), storeUrl: handle.url };
+  const store = new AutomergeMemeStore(handle);
+  // Signal projections that the initial replay has settled — flushes debounce
+  // timers and fires onSyncComplete so TW5 can do one bulk refresh instead of
+  // one refresh per tiddler during boot.
+  store.markSyncComplete();
+  return { repo, store, storeUrl: handle.url };
 }
 
 async function performUcanHandshake(opts: {
