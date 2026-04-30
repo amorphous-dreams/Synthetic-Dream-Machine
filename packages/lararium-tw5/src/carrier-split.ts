@@ -279,44 +279,29 @@ export function splitCarrierToTiddlers(uri: string, text: string): CarrierSplit 
 }
 
 // ---------------------------------------------------------------------------
-// streamEventsToTiddlers — convert MemeStreamEvents to TW5 tiddler field objects.
+// streamEventsToTiddlers — convert MemeStreamEvents to TW5 tiddler field batches.
 //
-// Designed for the streaming ingestion path: ahu-child events yield child
-// tiddlers immediately; carrier-close yields the parent tiddler (via a full
-// splitCarrierToTiddlers pass so #iam TOML fields are resolved).
+// Only carrier-close events produce tiddlers — one batch of [parent, ...children]
+// per carrier, fully resolved via splitCarrierToTiddlers (#iam TOML included).
 //
-// realmOrigin — optional lar URI of the source Realm. When set, injected as
-// "realm-origin" on every emitted tiddler so local filters can query by source:
-//   [all[memes]field:realm-origin[lar:///remote]]
-// OS memes (ha.ka.ba tagspace) are intentionally NOT excluded here — the
-// caller decides deduplication policy at ingestion time.
+// ahu-child events are intentionally skipped here: they carry incomplete fields
+// (no #iam resolution) and would produce duplicate child tiddlers that the
+// carrier-close batch overwrites. Callers that want progressive/incremental
+// rendering should consume MemeStreamEvent.ahu-child directly.
+//
+// realmOrigin — lar URI of the source Realm. Injected as "realm-origin" on every
+// tiddler for multi-Realm provenance: [all[memes]field:realm-origin[lar:///remote]]
 // ---------------------------------------------------------------------------
 
 export type TiddlerFields = Record<string, string | string[]>;
 
 export function streamEventsToTiddlers(
-  events:      readonly MemeStreamEvent[],
+  events:       readonly MemeStreamEvent[],
   realmOrigin?: string,
 ): TiddlerFields[][] {
   const batches: TiddlerFields[][] = [];
 
   for (const ev of events) {
-    if (ev.kind === "ahu-child") {
-      // Lightweight child tiddler from incremental stream event.
-      // Full #iam extraction happens in the carrier-close pass; this gives
-      // the child body early for progressive rendering.
-      const childUri = ev.uri + ev.slot;
-      const fields: TiddlerFields = {
-        title:       childUri,
-        "ahu-slot":  ev.slot,
-        "ahu-parent": ev.uri,
-        tags:        [ev.uri],
-        text:        ev.bodyText,
-      };
-      if (realmOrigin) fields["realm-origin"] = realmOrigin;
-      batches.push([fields]);
-    }
-
     if (ev.kind === "carrier-close") {
       // Full split — resolves #iam TOML into parent fields + re-derives children.
       const split = splitCarrierToTiddlers(ev.uri, ev.fullText);

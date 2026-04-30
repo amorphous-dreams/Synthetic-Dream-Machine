@@ -111,7 +111,9 @@ export function entryToFields(
 ): Record<string, string | string[]> {
   return {
     title:        entry.uri,
-    tags:         entry.tags,
+    // implements URIs + UI tags both live in TW5 tags — interface membership IS tag membership.
+    // [tag[lar:///pono/invariant]] and [tag[$:/tags/LarariumKumu]] both work.
+    tags:         [...(entry.implements ?? []), ...(entry.tags ?? [])],
     implements:   entry.implements.join(" "),
     depth:        String(entry.depth),
     rating:       entry.kind,
