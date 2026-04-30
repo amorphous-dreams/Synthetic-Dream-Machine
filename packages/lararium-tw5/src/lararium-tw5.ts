@@ -587,6 +587,31 @@ exports.startup = function() {
   }
 
   /**
+   * Apply a batch of tiddler field maps in a single TW5 transaction.
+   *
+   * Uses wiki.transact() when available (TW5 5.3+) so all addTiddler calls
+   * emit one aggregated "change" event instead of one per tiddler. This is
+   * the flush path for MemeProvider's onSyncComplete gate — turns hundreds of
+   * per-tiddler widget refreshes during initial Automerge replay into one.
+   *
+   * Falls back gracefully to sequential addTiddler calls on older TW5 builds.
+   */
+  bulkSetTiddlers(batch: Array<Record<string, string | string[]>>): void {
+    if (!this._tw) throw new Error("LarariumTW5: call boot() before bulkSetTiddlers()");
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const wiki = this._tw.wiki as any;
+    const Tiddler = this._tw.Tiddler;
+    const apply = () => {
+      for (const fields of batch) wiki.addTiddler(new Tiddler(fields));
+    };
+    if (typeof wiki.transact === "function") {
+      wiki.transact(apply, batch.length);
+    } else {
+      apply();
+    }
+  }
+
+  /**
    * Force TW5 to emit a change notification for a tiddler, triggering widget refresh.
    * Used by the kukali suspension wire: when a subscribeOnce trigger fires,
    * call touchTiddler(uri) to re-render the tiddler in the story river.

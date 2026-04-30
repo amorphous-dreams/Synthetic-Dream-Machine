@@ -74,9 +74,22 @@ export class MemeProvider {
   // Registration
   // ---------------------------------------------------------------------------
 
-  /** Register a projection. Returns an unsubscribe function. */
+  /** True after markSyncComplete() has been called. */
+  get syncComplete(): boolean { return this._syncComplete; }
+
+  /**
+   * Register a projection. Returns an unsubscribe function.
+   *
+   * If markSyncComplete() has already fired (late registration — e.g. an adaptor
+   * created after initMemeRepo returns), onSyncComplete is called immediately so
+   * the projection enters its live state rather than buffering indefinitely.
+   */
   addProjection(p: MemeProjection): () => void {
     this._projections.add(p);
+    if (this._syncComplete) {
+      try { p.onSyncComplete?.(); }
+      catch (e) { console.error("[MemeProvider] projection error in late onSyncComplete:", e); }
+    }
     return () => this._projections.delete(p);
   }
 

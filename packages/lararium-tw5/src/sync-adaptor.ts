@@ -21,7 +21,7 @@
  *   store state. The adaptor filters them from saveTiddler.
  */
 
-import type { LarTiddlerStore, LarTiddlerRecord, ChangeOrigin } from "@lararium/core";
+import type { LarTiddlerStore, LarTiddlerRecord, LarTiddlerChange, ChangeOrigin, MemeProjection } from "@lararium/core";
 import type { LarariumTW5 } from "./lararium-tw5.js";
 import { serializeCarrier, replaceCarrierSlot, removeCarrierSlot, composeCarrierSlotBody } from "./carrier-split.js";
 
@@ -69,7 +69,7 @@ function extractFields(tiddler: unknown): Record<string, string> {
 // LarariumCrdtSyncAdaptor
 // ---------------------------------------------------------------------------
 
-export class LarariumCrdtSyncAdaptor {
+export class LarariumCrdtSyncAdaptor implements MemeProjection {
   readonly name = "lararium-crdt";
 
   private _applying: ChangeOrigin | null = null;
@@ -78,33 +78,61 @@ export class LarariumCrdtSyncAdaptor {
   private _pendingDeletions = new Set<string>();
   private _unsubscribe: (() => void) | null = null;
 
+  // Bulk-refresh gate — buffer changes until initial Automerge replay settles.
+  private _syncComplete = false;
+  private _buffer: LarTiddlerChange[] = [];
+
   constructor(
     private readonly tw5: LarariumTW5,
     private readonly store: LarTiddlerStore,
     readonly instanceId: string,
   ) {}
 
-  /**
-   * Start listening to store changes and applying them to the TW5 wiki.
-   * Call once after the TW5 instance has booted and the store is ready.
-   * Returns an unsubscribe function for cleanup.
-   */
-  start(): () => void {
-    this._unsubscribe = this.store.subscribe((change) => {
-      // Skip changes we emitted ourselves.
-      if (
-        change.origin.kind === "tw-local" &&
-        (change.origin as { instanceId: string }).instanceId === this.instanceId
-      ) return;
+  // ---------------------------------------------------------------------------
+  // MemeProjection — called by MemeProvider (bypasses the per-tiddler path)
+  // ---------------------------------------------------------------------------
 
-      // Apply remote change to TW5 wiki under echo guard.
-      this._applying = change.origin;
-      try {
+  /**
+   * Called by MemeProvider for each coalesced URI change. During the initial
+   * Automerge replay (before markSyncComplete), changes are buffered. After
+   * sync-complete they are applied immediately.
+   */
+  onUriChanged(change: LarTiddlerChange): void {
+    if (!this._syncComplete) {
+      this._buffer.push(change);
+      return;
+    }
+    this._applyChange(change);
+  }
+
+  /**
+   * Fired once by MemeProvider after the initial Automerge replay settles.
+   * Flushes the buffered changes in a single TW5 transaction → one widget
+   * refresh cycle instead of one per tiddler. Resolves the 94s setTimeout
+   * violation: TW5 used to fire a refresh for every patch during replay.
+   */
+  onSyncComplete(): void {
+    this._syncComplete = true;
+    if (this._buffer.length === 0) return;
+
+    // Collect all tiddler fields for the transact batch. Deletions are applied
+    // individually (removeTiddler has no batch API) but before the add-batch so
+    // stale children are gone before replacements arrive.
+    const toRemove: string[] = [];
+    const toAdd: Array<Record<string, string | string[]>> = [];
+
+    this._applying = { kind: "crdt-remote", edgeIsland: "automerge" };
+    try {
+      for (const change of this._buffer) {
+        if (
+          change.origin.kind === "tw-local" &&
+          (change.origin as { instanceId: string }).instanceId === this.instanceId
+        ) continue;
+
         if (change.record === null || change.record.deleted) {
-          // Remove parent tiddler + all ahu children (tagged with parent URI).
-          this.tw5.removeTiddler(change.title);
+          toRemove.push(change.title);
           const childTitles: string[] = this.tw5.filterTiddlers(`[tag[${change.title}]has[ahu-slot]]`);
-          for (const t of childTitles) this.tw5.removeTiddler(t);
+          for (const t of childTitles) toRemove.push(t);
           this._pendingDeletions.add(change.title);
         } else {
           const rec = change.record;
@@ -113,31 +141,100 @@ export class LarariumCrdtSyncAdaptor {
               (!rec.fields["content-type"] && change.title.startsWith("lar:")));
 
           if (isCarrier && rec.text) {
-            // Remove stale ahu children before re-splitting.
             const staleChildren: string[] = this.tw5.filterTiddlers(`[tag[${change.title}]has[ahu-slot]]`);
-            for (const t of staleChildren) this.tw5.removeTiddler(t);
-            // Deserialize via TW5 native deserializer → [parent, ...children].
+            for (const t of staleChildren) toRemove.push(t);
             const tiddlers = this.tw5.deserializeCarrier(change.title, rec.text, rec.fields as Record<string, string | string[]>);
-            for (const t of tiddlers) this.tw5.setTiddler(t as Record<string, string | string[]>);
+            for (const t of tiddlers) toAdd.push(t as Record<string, string | string[]>);
           } else {
             const fields: Record<string, string | string[]> = { title: rec.title, ...rec.fields };
             if (rec.text !== undefined) fields["text"] = rec.text;
-            this.tw5.setTiddler(fields);
+            toAdd.push(fields);
           }
 
           this._pendingModifications.add(change.title);
           if (change.revision) this._revisions.set(change.title, change.revision);
         }
-      } finally {
-        this._applying = null;
       }
-    });
+    } finally {
+      this._buffer = [];
+    }
+
+    // Apply removals first (stale children before replacement tiddlers arrive).
+    for (const title of toRemove) this.tw5.removeTiddler(title);
+    // Apply all additions in one transaction → one widget refresh.
+    if (toAdd.length > 0) this.tw5.bulkSetTiddlers(toAdd);
+
+    this._applying = null;
+  }
+
+  /**
+   * Start listening to store changes and applying them to the TW5 wiki.
+   *
+   * When the store exposes addProjection() (AutomergeMemeStore / any MemeProvider-
+   * backed store), this adaptor registers itself as a MemeProjection so it
+   * participates in the onSyncComplete bulk-refresh gate. Otherwise it falls
+   * back to store.subscribe() (no bulk gate, but still correct).
+   *
+   * Returns an unsubscribe function for cleanup.
+   */
+  start(): () => void {
+    // Duck-type: AutomergeMemeStore exposes addProjection(); plain LarTiddlerStore does not.
+    const storeAny = this.store as { addProjection?: (p: MemeProjection) => () => void };
+    if (typeof storeAny.addProjection === "function") {
+      this._unsubscribe = storeAny.addProjection(this);
+    } else {
+      // Fallback: no bulk-refresh gate; apply every change immediately.
+      this._syncComplete = true;
+      this._unsubscribe = this.store.subscribe((change) => this._applyChange(change));
+    }
     return () => this._unsubscribe?.();
   }
 
   stop(): void {
     this._unsubscribe?.();
     this._unsubscribe = null;
+  }
+
+  // ---------------------------------------------------------------------------
+  // Internal — apply a single change to TW5 wiki under echo guard
+  // ---------------------------------------------------------------------------
+
+  private _applyChange(change: LarTiddlerChange): void {
+    if (
+      change.origin.kind === "tw-local" &&
+      (change.origin as { instanceId: string }).instanceId === this.instanceId
+    ) return;
+
+    this._applying = change.origin;
+    try {
+      if (change.record === null || change.record.deleted) {
+        this.tw5.removeTiddler(change.title);
+        const childTitles: string[] = this.tw5.filterTiddlers(`[tag[${change.title}]has[ahu-slot]]`);
+        for (const t of childTitles) this.tw5.removeTiddler(t);
+        this._pendingDeletions.add(change.title);
+      } else {
+        const rec = change.record;
+        const isCarrier = rec.text !== undefined &&
+          (rec.fields["content-type"] === "text/x-memetic-wikitext" ||
+            (!rec.fields["content-type"] && change.title.startsWith("lar:")));
+
+        if (isCarrier && rec.text) {
+          const staleChildren: string[] = this.tw5.filterTiddlers(`[tag[${change.title}]has[ahu-slot]]`);
+          for (const t of staleChildren) this.tw5.removeTiddler(t);
+          const tiddlers = this.tw5.deserializeCarrier(change.title, rec.text, rec.fields as Record<string, string | string[]>);
+          for (const t of tiddlers) this.tw5.setTiddler(t as Record<string, string | string[]>);
+        } else {
+          const fields: Record<string, string | string[]> = { title: rec.title, ...rec.fields };
+          if (rec.text !== undefined) fields["text"] = rec.text;
+          this.tw5.setTiddler(fields);
+        }
+
+        this._pendingModifications.add(change.title);
+        if (change.revision) this._revisions.set(change.title, change.revision);
+      }
+    } finally {
+      this._applying = null;
+    }
   }
 
   // ---------------------------------------------------------------------------
