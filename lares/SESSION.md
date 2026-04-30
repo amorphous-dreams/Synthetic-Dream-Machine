@@ -118,11 +118,11 @@ All 62 unit tests green after removal.
 
 <<~ ahu #state >>
 
-## State as of 2026-04-29 (session 4 end)
+## State as of 2026-04-29 (session 5 end)
 
-**Branch:** `feature/lararium-node-3` — build clean — 156/157 tests pass (1 pre-existing tw-filter failure)
+**Branch:** `feature/lararium-node-3` — build clean — 41/41 tw5 tests pass
 
-### Closed this session (sessions 3+4)
+### Closed this session (sessions 3–5)
 
 - **TLSocketRoom tombstone** — `serve.ts` pure Automerge-repo + file watcher; `better-sqlite3`, `@tldraw/sync-core` removed ✓
 - **Kumu defs as first-class memes** — `KumuWidget` filter-queries wiki by `$:/tags/LarariumKumu` + `kumu-name`; `injectKumuDefs` / extraction pipeline tombstoned; `widget-tree.ts` deleted; `KumuDef` type removed ✓
@@ -131,14 +131,24 @@ All 62 unit tests green after removal.
 - **Server-is-peer confirmed** — no server-authority patterns found; `authorityMode: "local-operator"` is canon-promotion gate, not data privilege ✓
 - **Stale comment cleanup** — `tw5-widgets.ts` and `LarariumCanvas.tsx` comments updated ✓
 
+### Added this session (M10)
+
+- **Streams plugin vendor** — sq/streams v1.2.24 at `lar:///ha.ka.ba/api/v0.1/vendor/sq-streams`; compat fields (`parent`/`stream-list`/`stream-type`) emitted from `splitCarrierToTiddlers`
+- **Mixed prose/children** — `generateParentText()` walks AST in document order; prose + transcludes interleaved (daemon-in-the-walls pattern)
+- **Peer-correct disk projector** — `LarDiskProjector` subscribes to Automerge store directly; `writing` Set exposes echo-loop guard to file watcher
+- **WorksiteWidget anchor** — no `renderChildren`; template owns all slot content; double-render eliminated
+- **Slot overlay UI** — `meme-view-children`, `meme-edit-children`, `ahu-breadcrumb`, `ahu-styles` preloaded
+- **`serializeCarrier` round-trip fix** — reads `carrier-text` field first (not `parent.text` which is mixed wikitext)
+- **ROADMAP** — created at `lares/lararium-node/ROADMAP.md` / `lar:///lararium-node/ROADMAP`
+
 ### Open pressures
 
-- **Track C — `lararium-tw5.ts` simplification** — 858 lines; split deferred
-- **e2e Playwright smoke** — isolation fixed; tests not yet run against live server
-- **Source meme expansion** — priority list at 7 files; expand as agent navigation matures
-- **Per-room Automerge docs** — all clients share one doc; room recipe partitioning is M12
-- **`chapel-perilous-opens/` draft workflow** — operator draft → filter-lookup priority → `/admin/promote` ceremony not yet coded (architecture defined)
-- **tw-filter.test.ts** — 1 pre-existing failure: `[tag[lar:///...invariant]]` returns 0; needs investigation
+- **M11 P0 — browser manual QA** — never done; all development unit-test-gated only; see ROADMAP M11
+- **Track C** — `lararium-tw5.ts` ~895 lines; split deferred
+- **tw-filter.test.ts** — 1 pre-existing failure: `[tag[lar:///...invariant]]` returns 0
+- **Per-room Automerge docs** — all clients share one doc; M12
+- **`chapel-perilous-opens/` draft workflow** — architecture defined; M13
+- **CSS variable resolution** — `ahu-styles.md` uses `<<colour primary>>`; needs palette at boot or hard-coded fallback
 
 ### Invariants held
 
@@ -198,7 +208,7 @@ packages/lararium-node/
 ## Edges
 
 <<~ pranala #implements-meme ? -> lar:///ha.ka.ba/api/v0.1/pono/meme family:control role:implements >>
-<<~ pranala #to-roadmap ? -> lar:///LARARIUM-NODE/ROADMAP family:relation role:companion >>
+<<~ pranala #to-roadmap ? -> lar:///lararium-node/ROADMAP family:relation role:companion >>
 <<~ pranala #to-wiki ? -> lar:///LARARIUM-NODE/MULTIPLAYER-INFINITE-CANVAS-WIKI family:relation role:companion >>
 
 <<~/ahu >>

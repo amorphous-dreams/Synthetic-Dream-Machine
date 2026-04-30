@@ -382,17 +382,21 @@ export function streamEventsToTiddlers(
 }
 
 // ---------------------------------------------------------------------------
-// serializeCarrier — reconstruct single-file format from parent + children.
-// Used by the promote / write-back path in LarDiskSyncAdaptor.
+// serializeCarrier — reconstruct single-file carrier format from parent + children.
+// Used by the promote / write-back path. Prefers carrier-text field (raw on-disk
+// format) over parent.text (which is mixed TW5 wikitext, not carrier).
 // ---------------------------------------------------------------------------
 
 export function serializeCarrier(
   parent: ParentTiddler,
   children: ChildTiddler[],
 ): string {
-  // If the parent carries the original raw text, return it verbatim.
-  // The raw text is authoritative; child bodies are derived views.
-  if (parent.text) return parent.text;
+  // carrier-text holds the raw on-disk carrier format. parent.text is the
+  // mixed wikitext (transcludes + prose) used by the TW5 VM — not suitable
+  // for disk round-trips.
+  const carrierText = (parent.fields as Record<string, unknown>)["carrier-text"];
+  if (typeof carrierText === "string" && carrierText) return carrierText;
+  if (parent.text && !parent.text.includes("<$transclude")) return parent.text;
 
   // Fallback: reconstruct from fields + children (lossy — no sigil decorations)
   const lines: string[] = [
