@@ -30,8 +30,8 @@
 import tw from "tiddlywiki";
 
 import type { ClosureEntry, EdgeRecord, FilterEngineFn, LarTiddlerStore, ReactionBinding } from "@lararium/core";
-import { parsePranalaEdges, extractReactionBindings, ReactionGraph } from "@lararium/core";
-import { splitCarrierToTiddlers } from "./carrier-split.js";
+import { parsePranalaEdges, extractReactionBindings, ReactionGraph, MemeStreamParser } from "@lararium/core";
+import { splitCarrierToTiddlers, streamEventsToTiddlers, type TiddlerFields } from "./carrier-split.js";
 import { createLarariumWidgets, registerImplementorsOperator, LARARIUM_WIDGETS_TIDDLER } from "./tw5-widgets.js";
 import { UI_PRELOAD_TIDDLERS } from "./generated-ui-preloads.js";
 
@@ -586,18 +586,66 @@ exports.startup = function() {
    * Delegates to $tw.wiki.deserializeTiddlers — the registered tiddlerdeserializer
    * for text/x-memetic-wikitext splits the carrier into [parent, ...children].
    * Falls back to splitCarrierToTiddlers for the pre-boot window.
+   *
+   * realmOrigin — lar URI of the source Realm. When set, injected as
+   * "realm-origin" on every emitted tiddler for multi-Realm provenance queries:
+   *   [all[memes]field:realm-origin[lar:///remote-realm-uri]]
    */
-  deserializeCarrier(uri: string, text: string, extraFields?: Record<string, string | string[]>): Record<string, unknown>[] {
-    const base = { title: uri, ...extraFields };
+  deserializeCarrier(
+    uri:        string,
+    text:       string,
+    extraFields?: Record<string, string | string[]>,
+    opts?:      { realmOrigin?: string },
+  ): TiddlerFields[] {
+    const base: TiddlerFields = { title: uri, ...extraFields };
+    let tiddlers: TiddlerFields[];
+
     if (this._tw) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      return (this._tw as any).wiki.deserializeTiddlers("text/x-memetic-wikitext", text, base) ?? [];
+      tiddlers = (this._tw as any).wiki.deserializeTiddlers("text/x-memetic-wikitext", text, base) ?? [];
+    } else {
+      // Pre-boot fallback
+      const split = splitCarrierToTiddlers(uri, text);
+      const parent: TiddlerFields = { ...base, ...split.parent.fields, text };
+      tiddlers = [parent, ...split.children.map((c) => ({ ...c.fields, title: c.title, text: c.text }))];
     }
-    // Pre-boot fallback — same result, direct call
-    const split = splitCarrierToTiddlers(uri, text);
-    const parent = { ...base, ...split.parent.fields, text };
-    const children = split.children.map((c) => ({ ...c.fields, title: c.title, text: c.text }));
-    return [parent, ...children];
+
+    if (opts?.realmOrigin) {
+      const ro = opts.realmOrigin;
+      tiddlers = tiddlers.map((t) => ({ ...t, "realm-origin": ro }));
+    }
+    return tiddlers;
+  }
+
+  /**
+   * Streaming variant — ingests a carrier (or a multi-carrier Realm stream)
+   * arriving as async string chunks. Yields tiddler-field batches as each ahu
+   * section and carrier closes, rather than buffering the full text first.
+   *
+   * Each yielded batch is [parent, ...children] for a carrier-close, or a
+   * single [childFields] for an incremental ahu-child event.
+   *
+   * Designed for:
+   *   - Automerge CRDT patch streams (large carrier arriving in increments)
+   *   - Multi-Realm ingestion: connect to a remote Realm's meme stream,
+   *     yield tiddler batches, apply to local wiki with realm-origin provenance.
+   */
+  async *streamDeserializeCarrier(
+    chunks:  AsyncIterable<string>,
+    opts?:   { realmOrigin?: string },
+  ): AsyncGenerator<TiddlerFields[]> {
+    const parser = new MemeStreamParser();
+    for await (const chunk of chunks) {
+      const events = parser.push(chunk);
+      for (const batch of streamEventsToTiddlers(events, opts?.realmOrigin)) {
+        yield batch;
+      }
+    }
+    // Flush any incomplete carrier at stream end
+    const tail = parser.flush();
+    for (const batch of streamEventsToTiddlers(tail, opts?.realmOrigin)) {
+      yield batch;
+    }
   }
 
   /** Render a loaded TW5 tiddler to HTML. Returns "" for unknown titles or failures. */

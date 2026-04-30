@@ -1,4 +1,5 @@
 export * from "./tiddler-store.js";
+export * from "./meme-stream.js";
 export * from "./authority.js";
 export * from "./resolver.js";
 export * from "./ast.js";
