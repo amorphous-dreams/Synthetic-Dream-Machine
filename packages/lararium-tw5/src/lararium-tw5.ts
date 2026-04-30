@@ -30,7 +30,7 @@
 import tw from "tiddlywiki";
 
 import type { ClosureEntry, EdgeRecord, FilterEngineFn, KumuDef, LarTiddlerStore, ReactionBinding } from "@lararium/core";
-import { parsePranalaEdges, extractReactionBindings, ReactionGraph, collectKumuDefs } from "@lararium/core";
+import { parsePranalaEdges, parseMemeCarrier, extractReactionBindings, ReactionGraph, collectKumuDefs } from "@lararium/core";
 import { splitCarrierToTiddlers } from "./carrier-split.js";
 import { createLarariumWidgets, registerImplementorsOperator, LARARIUM_WIDGETS_TIDDLER } from "./tw5-widgets.js";
 import { UI_PRELOAD_TIDDLERS } from "./generated-ui-preloads.js";
@@ -678,7 +678,6 @@ exports.startup = function() {
         // malformed carrier should still appear in TW5 as a raw parent tiddler
         // via splitCarrierToTiddlers()' graceful fallback.
         try {
-          const { parseMemeCarrier } = await import("@lararium/core");
           const ast = parseMemeCarrier(uri, rec.text);
           kumuDefs.push(...collectKumuDefs(uri, ast));
         } catch (e) {

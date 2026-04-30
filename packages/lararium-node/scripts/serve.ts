@@ -25,8 +25,7 @@
  *   3. All subsequent client loads receive receipt + Automerge doc URL via <meta> tags
  *   4. lares/ file watcher patches Automerge on external file changes (git, editor, promote)
  *
- * Known gaps (M11):
- *   - Legacy TLSocketRoom write-back is not wired to Automerge or lares/
+ * Known gaps:
  *   - Per-room Automerge docs not yet implemented (all clients share one doc)
  *   - Playwright e2e tests wired but Automerge doc ready-timeout is the primary boot gate
  *
