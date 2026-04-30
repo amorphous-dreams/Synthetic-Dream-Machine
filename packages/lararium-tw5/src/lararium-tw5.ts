@@ -441,9 +441,10 @@ exports.startup = function() {
       parsers["text/x-memetic-wikitext"] = MemeticParser;
     }).catch(() => { /* not critical */ });
 
-    // Register memetic carrier deserializer — splits one carrier text into
-    // [parent, ...children] tiddler field objects. Enables $tw.wiki.deserializeTiddlers()
-    // and TW5's native import/dropzone to handle .md carrier files correctly.
+    // Register the markdown-meme deserializer for text/x-memetic-wikitext.
+    // Splits one .md carrier into [parent, ...children] tiddler field objects.
+    // Key = content-type; other source formats (JSON meme, etc.) may register
+    // their own deserializers the same way.
     if (tw?.Wiki?.tiddlerDeserializerModules) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       tw.Wiki.tiddlerDeserializerModules["text/x-memetic-wikitext"] = function(text: string, fields: any) {
