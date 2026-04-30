@@ -46,7 +46,7 @@ export { LarariumCrdtSyncAdaptor } from "./sync-adaptor.js";
 export { LarDiskSyncAdaptor }      from "./disk-sync-adaptor.js";
 export { MemoryTiddlerStore }      from "./memory-store.js";
 
-export { splitCarrierToTiddlers, serializeCarrier, replaceCarrierSlot, streamEventsToTiddlers } from "./carrier-split.js";
+export { splitCarrierToTiddlers, serializeCarrier, replaceCarrierSlot, composeCarrierSlotBody, streamEventsToTiddlers } from "./carrier-split.js";
 export type { CarrierSplit, ParentTiddler, ChildTiddler, TiddlerFields } from "./carrier-split.js";
 
 export { tw5ElementToVdom, tw5ElementToHtml } from "./fake-dom.js";
@@ -59,3 +59,5 @@ export {
   astToTw5Tree,
 } from "./memetic-parser.js";
 export type { TW5ParseNode } from "./memetic-parser.js";
+
+export { TW5_VERSION, TW5_CORE_SCRIPT_FILENAME, TW5_CORE_SCRIPT_URL } from "./generated-tw5-version.js";

@@ -56,10 +56,12 @@ import {
   verifyUcan,
 } from "@lararium/core";
 import { getOrCreateNodeIdentity } from "../src/operator-key.js";
+import { TW5_CORE_SCRIPT_FILENAME, TW5_CORE_SCRIPT_URL } from "@lararium/tw5";
 
 const __dirname = fileURLToPath(new URL(".", import.meta.url));
 const REPO_ROOT = resolve(__dirname, "../../../");
-const APP_DIST = join(REPO_ROOT, "packages/lararium-app/dist");
+const APP_DIST  = join(REPO_ROOT, "packages/lararium-app/dist");
+const APP_PUBLIC = join(REPO_ROOT, "packages/lararium-app/public");
 const DATA_DIR = join(REPO_ROOT, ".lararium-data");
 
 const PORT = parseInt(process.env["LARARIUM_PORT"] ?? "4321", 10);
@@ -324,6 +326,8 @@ async function main() {
     // ── Static ─────────────────────────────────────────────────────────────
     const isAsset = pathname !== "/" && /\.[a-z0-9]+$/i.test(pathname);
     if (isAsset) {
+      // Check public/ first (vendored assets like tiddlywikicore-*.js) then dist/
+      if (serveStatic(res, join(APP_PUBLIC, pathname))) return;
       if (serveStatic(res, join(APP_DIST, pathname))) return;
     }
 
@@ -344,7 +348,13 @@ async function main() {
       `<meta name="lararium-operator-did" content="${operatorIdentity.did}">`,
       `<meta name="lararium-receipt"      content="${receiptSha}">`,
     ].join("\n  ");
-    html = html.replace("</head>", `  ${metaTags}\n</head>`);
+    // External core script — suppress auto-boot so LarariumTW5 controls the
+    // boot sequence (preloadTiddlers injected before boot() is called).
+    const tw5Scripts = [
+      `<script>window.$tw = window.$tw || {}; window.$tw.boot = window.$tw.boot || {}; window.$tw.boot.suppressBoot = true;</script>`,
+      `<script src="${TW5_CORE_SCRIPT_URL}"></script>`,
+    ].join("\n  ");
+    html = html.replace("</head>", `  ${metaTags}\n  ${tw5Scripts}\n</head>`);
     res.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
     res.end(html);
   });
