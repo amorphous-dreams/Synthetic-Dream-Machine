@@ -19,10 +19,11 @@
  *   lararium-dispatch  → DispatchWidget   lele fire-and-forget (<meta data-lar-target>)
  *
  * KumuWidget execution model (local-first Zelenka):
- *   On render, KumuWidget looks up lar:///kumu/<name> in the TW5 wiki (injected
- *   by injectKumuDefs at boot), sets props as TW5 variables, then calls
- *   makeTranscludeWidget to render the def body inline. No external executor.
- *   TW5 is the runtime — kumu execution IS TW5 transclusion.
+ *   On render, KumuWidget filters the wiki for tiddlers tagged $:/tags/LarariumKumu
+ *   with field kumu-name matching the invocation name. Sets props as TW5 variables,
+ *   then calls makeTranscludeWidget to render the def body inline. No external
+ *   executor, no synthetic namespace. TW5 is the runtime — kumu execution IS
+ *   TW5 transclusion. Kumu defs live as first-class memes in the tagspace.
  */
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -361,6 +362,8 @@ export function createLarariumWidgets(_tw: any): Record<string, WidgetCtor> {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function registerImplementorsOperator(tw: any): void {
   if (!tw?.filterOperators) return;
+
+  // implementors[uri] — exact-token match on space-separated implements field
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   tw.filterOperators["implementors"] = function (source: any, operator: any) {
     const target  = operator.operand ?? "";
@@ -374,6 +377,55 @@ export function registerImplementorsOperator(tw: any): void {
     });
     return results;
   };
+
+  // edge:family[role] — filter tiddlers that have an edge-out field for family+role.
+  // Translates the memetic-wikitext edge: filter syntax into a TW5-native operator.
+  // edge:control[owns] → has[edge-out-control-owns]
+  // edge:control[]     → any tiddler with any edge-out-control-* field
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  tw.filterOperators["edge"] = function (source: any, operator: any) {
+    const family = operator.suffix ?? "";
+    const role   = operator.operand ?? "";
+    const results: string[] = [];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    source(function (tiddler: any, title: string) {
+      if (!tiddler) return;
+      if (role) {
+        if (tiddler.fields?.[`edge-out-${family}-${role}`] !== undefined) results.push(title);
+      } else {
+        const prefix = `edge-out-${family}-`;
+        if (Object.keys(tiddler.fields ?? {}).some((k) => k.startsWith(prefix))) results.push(title);
+      }
+    });
+    return results;
+  };
+
+  // toml:key[val] — sugar for field:key[val]; lets memetic-wikitext filters use TOML
+  // field names directly without renaming them or going through the preprocessor.
+  // toml:register[CS] → tiddlers where the "register" field equals "CS"
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  tw.filterOperators["toml"] = function (source: any, operator: any) {
+    const fieldName = operator.suffix ?? "";
+    const value     = operator.operand ?? "";
+    const results: string[] = [];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    source(function (tiddler: any, title: string) {
+      if (!tiddler) return;
+      const fv: string = String(tiddler.fields?.[fieldName] ?? "");
+      if (fv === value) results.push(title);
+    });
+    return results;
+  };
+
+  // all[memes] — alias for all[tiddlers]; registers via TW5's allfilteroperator module type.
+  // TW5's all.js uses applyMethods("allfilteroperator") lazily — inject before first use.
+  if (tw?.modules?.types) {
+    tw.modules.types["allfilteroperator"] = tw.modules.types["allfilteroperator"] ?? {};
+    if (!tw.modules.types["allfilteroperator"]["memes"]) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      tw.modules.types["allfilteroperator"]["memes"] = { exports: { memes: function(_source: any, _prefix: any, options: any) { return options.wiki.each; } } };
+    }
+  }
 }
 
 export const LARARIUM_WIDGETS_TIDDLER = {

@@ -59,7 +59,7 @@ const ZOOM_DEFAULTS: Record<string, { w: number; h: number; color: string; inclu
 };
 
 function applyZoomTemplate(editor: TldrawEditor, level: ZoomLevel) {
-  // Read layout props from TW5 kumu def tiddler (lar:///kumu/meme-<level>).
+  // Read layout props from TW5 wiki: filter by $:/tags/LarariumKumu + kumu-name field.
   // TW5 is the first-class source of truth — no shape.meta.templateProps needed.
   const tw5 = getActiveTW5();
   const tl = tw5?.getZoomLayout(level) ?? ZOOM_DEFAULTS[level] ?? ZOOM_DEFAULTS["tactical"]!;
