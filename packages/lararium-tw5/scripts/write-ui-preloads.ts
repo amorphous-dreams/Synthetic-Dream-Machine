@@ -20,7 +20,8 @@ import { fileURLToPath } from "url";
 
 const __dirname  = dirname(fileURLToPath(import.meta.url));
 const root       = resolve(__dirname, "../../..");
-const uiDir      = resolve(root, "lares/ha-ka-ba/api/v0.1/lararium/ui");
+const laraUiRoot = resolve(root, "lares/ha-ka-ba/api/v0.1/lararium");
+const uiDirs     = ["ui", "templates"].map((d) => resolve(laraUiRoot, d));
 const outPath    = resolve(__dirname, "../src/generated-ui-preloads.ts");
 
 const STX_RE = /<<~[^>]*&#x0002;[^>]*>>/;
@@ -49,8 +50,17 @@ type TiddlerFields = Record<string, string | string[]>;
 
 const tiddlers: TiddlerFields[] = [];
 
-for (const file of readdirSync(uiDir).filter((f) => f.endsWith(".md"))) {
-  const text = readFileSync(resolve(uiDir, file), "utf8");
+const allFiles: Array<{ dir: string; file: string }> = [];
+for (const dir of uiDirs) {
+  try {
+    for (const file of readdirSync(dir).filter((f) => f.endsWith(".md"))) {
+      allFiles.push({ dir, file });
+    }
+  } catch { /* directory may not exist yet */ }
+}
+
+for (const { dir, file } of allFiles) {
+  const text = readFileSync(resolve(dir, file), "utf8");
 
   // Extract URI from SOH
   const uriMatch = SOH_URI_RE.exec(text);

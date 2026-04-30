@@ -13,7 +13,7 @@ confidence   = 0.88
 mana         = 0.88
 manao        = 0.85
 manaoio      = 0.82
-role         = "ViewTemplate: renders non-body ahu slots as named sections; double-click inline edit per slot"
+role         = "ViewTemplate: slot-name headers + inline-edit overlay for non-body ahu sections"
 cacheable    = true
 retain       = true
 tags         = ["$:/tags/ViewTemplate"]
@@ -28,56 +28,42 @@ list-after   = "$:/core/ui/ViewTemplate/body"
 
 \define ahu-edit-state(childUri) $:/state/lar-ahu-edit/$(childUri)$
 
-\define ahu-section-slot(childUri, slot)
-<div class="tc-lararium-ahu-section" data-ahu-slot="""$slot$""">
-  <div class="tc-lararium-ahu-slot-header">
-    <code class="tc-ahu-slot-name">$slot$</code>
-    <$button class="tc-ahu-edit-btn tc-btn-invisible" tooltip="Edit slot inline">
-      <$action-setfield $tiddler=<<ahu-edit-state "$childUri$">> text="yes"/>
-      ✎
-    </$button>
-    <$link to="""$childUri$""" tooltip="Open as tiddler">↗</$link>
-  </div>
-  <$reveal type="nomatch" stateTitle=<<ahu-edit-state "$childUri$">> text="yes">
-    <div class="tc-lararium-ahu-body">
-      <$transclude tiddler="""$childUri$""" mode="block"/>
-    </div>
-  </$reveal>
+\define ahu-slot-controls(childUri, slot)
+<div class="tc-lararium-ahu-slot-controls" data-ahu-slot="""$slot$""">
+  <code class="tc-ahu-slot-name">$slot$</code>
+  <$button class="tc-ahu-edit-btn tc-btn-invisible" tooltip="Edit slot inline">
+    <$action-setfield $tiddler=<<ahu-edit-state "$childUri$">> text="yes"/>
+    ✎
+  </$button>
+  <$link to="""$childUri$""" tooltip="Open as tiddler">↗</$link>
   <$reveal type="match" stateTitle=<<ahu-edit-state "$childUri$">> text="yes">
-    <div class="tc-lararium-ahu-edit-inline">
-      <$edit-text tiddler="""$childUri$""" field="text" tag="textarea"
-        class="tc-edit-texteditor tc-ahu-edit-inline-area" rows="6"/>
-      <$button class="tc-btn-invisible tc-ahu-done-btn" tooltip="Done editing">
-        <$action-deletefield $tiddler=<<ahu-edit-state "$childUri$">> text/>
-        ✓ done
-      </$button>
-    </div>
+    <$edit-text tiddler="""$childUri$""" field="text" tag="textarea"
+      class="tc-edit-texteditor tc-ahu-edit-inline-area" rows="6"/>
+    <$button class="tc-btn-invisible tc-ahu-done-btn">
+      <$action-deletefield $tiddler=<<ahu-edit-state "$childUri$">> text/>
+      ✓ done
+    </$button>
   </$reveal>
 </div>
 \end
 
-<!-- Only render for parent memes that have ahu slots -->
+<!-- The meme template ({{||lar:///...templates/meme}}) already renders all slot content.
+     This ViewTemplate adds slot-name labels and inline-edit controls for non-body slots. -->
 <$list filter="[all[current]has[ahu-slots]]" variable="_" emptyMessage="">
 
-<!-- Slots to suppress: control/structural slots that carry no user-facing prose -->
-<!-- #body is rendered by MemeticParser via ViewTemplate/body — don't double-render -->
-<!-- #iam #exit #edges #stream-* are structural; render nothing to the user -->
-<$set name="suppressedSuffix" value="#body #iam #exit #edges #stream-open #stream-close #stream-exit #body-open #body-close #meme-body-open #meme-body-close">
-
-<div class="tc-lararium-ahu-sections">
+<div class="tc-lararium-ahu-slot-overlays">
 <$list filter="[enlist{!!ahu-slots}]" variable="childUri">
 <$set name="slotName" value={{{[<childUri>get[ahu-slot]]}}}>
 
-<!-- Skip body + all control slots -->
+<!-- Controls only for named user-facing slots (not body, not control/structural) -->
 <$list filter="[<slotName>!matchregexp[^#(body|iam|exit|edges|stream-open|stream-close|stream-exit|body-open|body-close|meme-body-open|meme-body-close)$]]" variable="_" emptyMessage="">
-<<ahu-section-slot childUri:<<childUri>> slot:<<slotName>>>>
+<<ahu-slot-controls childUri:<<childUri>> slot:<<slotName>>>>
 </$list>
 
 </$set>
 </$list>
 </div>
 
-</$set>
 </$list>
 
 <<~&#x0003;>>

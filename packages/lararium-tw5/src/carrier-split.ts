@@ -249,19 +249,24 @@ export function splitCarrierToTiddlers(uri: string, text: string): CarrierSplit 
       "parent":      uri,
       "stream-type": "default",
     };
-    const tomlFence = /^```toml\s*\n([\s\S]*?)```/m.exec(bodyText);
+    // Extract leading TOML fence — sets child fields AND strips the fence from
+    // display text so it doesn't render as a visible code block in TW5 view mode.
+    const tomlFence = /^```toml\s*\n([\s\S]*?)```[ \t]*\n?/m.exec(bodyText);
+    let displayText = bodyText;
     if (tomlFence) {
       const toml = tomlFence[1] ?? "";
       for (const line of toml.split("\n")) {
         const kv = line.match(/^\s*([\w-]+)\s*=\s*(?:"([^"]*)"|'([^']*)'|([\w/+-]+))/);
         if (kv) childFields[kv[1]!] = kv[2] ?? kv[3] ?? kv[4] ?? "";
       }
+      // Strip fence from display body; keep raw body for round-trip write-back
+      displayText = bodyText.slice(tomlFence.index + tomlFence[0].length).trimStart();
     }
 
     childMap.set(childUri, {
-      title: childUri,
+      title:  childUri,
       fields: childFields,
-      text: bodyText,
+      text:   displayText,
     });
   }
 
@@ -273,11 +278,17 @@ export function splitCarrierToTiddlers(uri: string, text: string): CarrierSplit 
     parentFields["stream-type"]  = "stream";
   }
 
+  // Parent text is a TW5 template delegate — renders all slots via the meme template.
+  // Raw carrier text is preserved in carrier-text for disk write-back (replaceCarrierSlot).
+  // This separates the on-disk format (carrier) from the TW5 VM representation (wikitext).
+  const MEME_TEMPLATE = "lar:///ha.ka.ba/api/v0.1/lararium/templates/meme";
+  parentFields["carrier-text"] = text;
+
   return {
     parent: {
       title:  uri,
       fields: parentFields,
-      text,   // raw carrier text kept for MemeticParser
+      text:   `{{||${MEME_TEMPLATE}}}`,
     },
     children: slotOrder.map((t) => childMap.get(t)!),
     warnings,

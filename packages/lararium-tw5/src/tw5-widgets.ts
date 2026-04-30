@@ -32,6 +32,12 @@ type WidgetCtor = AnyFn & { prototype: object };
 
 // ---------------------------------------------------------------------------
 // WorksiteWidget — <<~ ahu #slot >> container
+//
+// Rendering policy: WorksiteWidget is a pure structural metadata anchor.
+// Parent tiddler text = `{{||lar:///ha.ka.ba/.../templates/meme}}` — the template
+// drives all slot rendering via $transclude on child tiddlers. WorksiteWidget
+// emits only a data-attr span so CSS/JS can query slot boundaries; no children
+// are rendered inline. This prevents double-render with the meme template.
 // ---------------------------------------------------------------------------
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -39,7 +45,7 @@ function WorksiteWidget(this: any, parseTreeNode: any, options: any) {
   this.initialise(parseTreeNode, options);
 }
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-WorksiteWidget.prototype.render = function (parent: any, nextSibling: any) {
+WorksiteWidget.prototype.render = function (parent: any, _nextSibling: any) {
   this.parentDomNode = parent;
   this.computeAttributes();
   this.execute();
@@ -49,7 +55,7 @@ WorksiteWidget.prototype.render = function (parent: any, nextSibling: any) {
   el.setAttribute("data-lar-uri",  this.getAttribute("uri", ""));
   parent.appendChild(el);
   this.domNodes = [el];
-  this.renderChildren(el, nextSibling);
+  // No renderChildren — template handles all slot content.
 };
 WorksiteWidget.prototype.execute = function () { this.makeChildWidgets(); };
 

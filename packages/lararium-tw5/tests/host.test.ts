@@ -35,7 +35,9 @@ describe("LarariumTW5 — boot and filter", () => {
     const larTitles = titles.filter((t) => t.startsWith("lar://")).sort();
     // Preloaded at boot: widget module marker + UI preload tiddlers.
     expect(larTitles).toEqual([
+      "lar:///ha.ka.ba/api/v0.1/lararium/templates/meme",
       "lar:///ha.ka.ba/api/v0.1/lararium/ui/ahu-breadcrumb",
+      "lar:///ha.ka.ba/api/v0.1/lararium/ui/ahu-styles",
       "lar:///ha.ka.ba/api/v0.1/lararium/ui/iam-panel",
       "lar:///ha.ka.ba/api/v0.1/lararium/ui/iam-startup-action",
       "lar:///ha.ka.ba/api/v0.1/lararium/ui/iam-viewtemplate-tab",
@@ -188,7 +190,7 @@ describe("LarariumCrdtSyncAdaptor — store bridge", () => {
     store.put = async () => { putCalled = true; };
 
     await new Promise<void>((resolve) => {
-      adaptor.saveTiddler({ title: "$:/temp/draft" }, (err) => resolve());
+      adaptor.saveTiddler({ title: "$:/temp/draft" }, (_err) => resolve());
     });
     expect(putCalled).toBe(false);
   });
@@ -268,13 +270,13 @@ describe("LarariumCrdtSyncAdaptor — store bridge", () => {
     await new Promise((r) => setTimeout(r, 0));
 
     const updates = await new Promise<{ modifications: string[]; deletions: string[] }>((resolve) => {
-      adaptor.getUpdatedTiddlers({}, (err, u) => resolve(u));
+      adaptor.getUpdatedTiddlers({}, (_err, u) => resolve(u));
     });
     expect(updates.modifications).toContain("lar:///UPD");
 
     // Second call should be empty (cleared)
     const updates2 = await new Promise<{ modifications: string[]; deletions: string[] }>((resolve) => {
-      adaptor.getUpdatedTiddlers({}, (err, u) => resolve(u));
+      adaptor.getUpdatedTiddlers({}, (_err, u) => resolve(u));
     });
     expect(updates2.modifications).toHaveLength(0);
 
