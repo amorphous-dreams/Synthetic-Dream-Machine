@@ -52,14 +52,8 @@ export function LarariumShell({ memes, onMemes }: ShellProps) {
   const [editor, setEditorState] = useState<Editor | null>(null);
   const editorRef = useRef<Editor | null>(null);
   const setEditor = useCallback((e: Editor | null) => { setEditorState(e); editorRef.current = e; }, []);
-  const { phase: openPhase, store: tiddlerStore, tw5 } =
+  const { phase: openPhase, store: tiddlerStore, tw5, receipt: hostReceipt } =
     useLarariumHostOpen({ hostId: "lararium-browser", recipeUri: "lar:///recipe/room", roomId: "altar-fire" });
-
-  const [hostReceipt] = useState<string | null>(() =>
-    typeof document !== "undefined"
-      ? document.querySelector('meta[name="lararium-receipt"]')?.getAttribute("content") ?? null
-      : null
-  );
 
   const graphRef = useRef<ReactionGraph>(new ReactionGraph());
   const [graphReady, setGraphReady] = useState(false);
@@ -180,6 +174,7 @@ export function LarariumShell({ memes, onMemes }: ShellProps) {
   debugSet("tw5",          tw5);
   debugSet("dispatch",     dispatch);
   debugSet("tiddlerStore", tiddlerStore);
+  debugSet("hostReceipt",  hostReceipt);
 
   const ctxValue = {
     navState,

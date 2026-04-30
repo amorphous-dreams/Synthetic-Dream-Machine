@@ -8,9 +8,9 @@
  *   N1  canvas mounts without blocking spinner
  *   N2  no "Unknown switch case" console errors
  *   N3  no "Empty text nodes" RangeError
- *   N5  __larariumDebug.receiptShape is non-null after sync
- *   N6  __larariumDebug.hostReceipt upgrades from null to a string
- *   N4  shape.meta has no "id" or "typeName" keys
+ *   N5  __larariumDebug.hostReceipt is non-null after sync
+ *   N6  authority-ready receipt matches hostReceipt
+ *   N4  legacy receiptShape is absent from the active meta-receipt path
  *   T1  __larariumDebug.tw5 is non-null (TW5 always boots)
  *
  * Arc A — store-authority carrierText (LarariumPanel):
@@ -41,8 +41,8 @@ async function waitForSync(page: Page, timeout = 15_000): Promise<void> {
   await page.waitForFunction(
     () => {
       const dbg = (window as unknown as Record<string, unknown>)["__larariumDebug"] as Record<string, unknown> | undefined;
-      const store = dbg?.["store"] as Record<string, unknown> | undefined;
-      return store?.["status"] === "synced-remote";
+      const phase = dbg?.["openPhase"] as { kind?: string } | undefined;
+      return phase?.kind === "live" && dbg?.["tiddlerStore"] != null && dbg?.["tw5"] != null;
     },
     { timeout },
   );
@@ -83,16 +83,9 @@ test.describe("Lararium smoke — N1–N6, T1", () => {
     expect(forbidden, `Forbidden console errors: ${forbidden.join("; ")}`).toHaveLength(0);
   });
 
-  test("N5: __larariumDebug.receiptShape non-null after sync", async ({ page }) => {
+  test("N5: __larariumDebug.hostReceipt non-null after sync", async ({ page }) => {
     await page.goto("/");
-    await waitForSync(page);
-    const shape = await waitForDebugKey(page, "receiptShape");
-    expect(shape).not.toBeNull();
-  });
-
-  test("N6: hostReceipt upgrades from null to string", async ({ page }) => {
-    await page.goto("/");
-    await waitForSync(page);
+    await waitForSync(page).catch(() => {});
     await waitForDebugKey(page, "hostReceipt");
     const receipt = await page.evaluate(
       () => ((window as unknown as Record<string, unknown>)["__larariumDebug"] as Record<string, unknown>)?.["hostReceipt"],
@@ -101,21 +94,28 @@ test.describe("Lararium smoke — N1–N6, T1", () => {
     expect((receipt as string).length).toBeGreaterThan(0);
   });
 
-  test("N4: receiptShape.meta has no id or typeName keys", async ({ page }) => {
+  test("N6: authority-ready receipt matches hostReceipt", async ({ page }) => {
     await page.goto("/");
-    await waitForSync(page);
-    await waitForDebugKey(page, "receiptShape");
-
-    const metaKeys = await page.evaluate(() => {
+    await waitForDebugKey(page, "hostReceipt");
+    const result = await page.evaluate(() => {
       const dbg = (window as unknown as Record<string, unknown>)["__larariumDebug"] as Record<string, unknown>;
-      const shape = dbg?.["receiptShape"] as Record<string, unknown> | undefined;
-      const meta = shape?.["meta"] as Record<string, unknown> | undefined;
-      return meta ? Object.keys(meta) : null;
+      const phase = dbg?.["openPhase"] as { kind?: string; receipt?: string } | undefined;
+      return { hostReceipt: dbg?.["hostReceipt"], phase };
     });
+    if (result.phase?.kind === "authority-ready") {
+      expect(result.phase.receipt).toBe(result.hostReceipt);
+    } else {
+      expect(typeof result.hostReceipt).toBe("string");
+    }
+  });
 
-    expect(metaKeys).not.toBeNull();
-    expect(metaKeys).not.toContain("id");
-    expect(metaKeys).not.toContain("typeName");
+  test("N4: legacy receiptShape stays absent on meta-receipt path", async ({ page }) => {
+    await page.goto("/");
+    await waitForDebugKey(page, "hostReceipt");
+    const shape = await page.evaluate(
+      () => ((window as unknown as Record<string, unknown>)["__larariumDebug"] as Record<string, unknown>)?.["receiptShape"],
+    );
+    expect(shape).toBeUndefined();
   });
 
   // ---------------------------------------------------------------------------

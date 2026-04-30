@@ -21,7 +21,7 @@
  *   - await handle.doc() is the ONLY readiness gate — no synced-event race.
  *   - Server injects Automerge doc URL via <meta name="lararium-meme-store">.
  *   - URL is cached in localStorage for offline subsequent boots.
- *   - No second WebSocket for boot receipt — arrives via tldraw room shape.
+ *   - No second WebSocket for boot receipt — server injects it via HTML meta.
  *   - TW5 boots AFTER store-ready.
  *   - getSingleton() in @lararium/tw5 is server-side only; never used here.
  */
@@ -60,6 +60,14 @@ export interface HostOpenState {
 // useLarariumHostOpen — React hook: sequential local-first boot
 // ---------------------------------------------------------------------------
 
+function readBootReceipt(hostId: string): string {
+  if (typeof document !== "undefined") {
+    const receipt = document.querySelector('meta[name="lararium-receipt"]')?.getAttribute("content")?.trim();
+    if (receipt) return receipt;
+  }
+  return `local-operator:${hostId}`;
+}
+
 export function useLarariumHostOpen(options: BrowserHostOptions): HostOpenState {
   const [phase,   setPhase]   = useState<LarariumOpenPhase | null>(null);
   const [store,   setStore]   = useState<AutomergeMemeStore | null>(null);
@@ -85,7 +93,7 @@ export function useLarariumHostOpen(options: BrowserHostOptions): HostOpenState 
       // ── Authority ──────────────────────────────────────────────────────────
       if (!cancelled) setPhase({ kind: "host-opening", hostId });
       if (!cancelled) setPhase({ kind: "authority-opening", hostId });
-      const r = `local-operator:${hostId}`;
+      const r = readBootReceipt(hostId);
       if (!cancelled) { setPhase({ kind: "authority-ready", receipt: r }); setReceipt(r); }
 
       // ── Store (local-first) ───────────────────────────────────────────────
