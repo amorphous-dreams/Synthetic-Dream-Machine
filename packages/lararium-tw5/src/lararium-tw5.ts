@@ -28,8 +28,7 @@ import type { ClosureEntry, EdgeRecord, FilterEngineFn, LarTiddlerStore, Reactio
 import { parsePranalaEdges, extractReactionBindings, ReactionGraph, MemeStreamParser } from "@lararium/core";
 import { splitCarrierToTiddlers, streamEventsToTiddlers, type TiddlerFields } from "./carrier-split.js";
 import { createLarariumWidgets, registerImplementorsOperator, LARARIUM_WIDGETS_TIDDLER } from "./tw5-widgets.js";
-import { UI_PRELOAD_TIDDLERS }         from "./generated-ui-preloads.js";
-import { VENDOR_PLUGIN_TIDDLERS }      from "./generated-vendor-plugins.js";
+import { loadUiTiddlers, loadVendorTiddlers } from "./lares-preloads.js";
 
 // Re-export so callers can get FilterEngineFn from @lararium/tw5 directly.
 export type { FilterEngineFn };
@@ -227,6 +226,11 @@ export class LarariumTW5 {
 
       if (!isBrowser) instance.boot.argv = [];
 
+      // Load UI and vendor tiddlers before entering the Promise executor
+      // (Promise constructors can't be async).
+      const uiTiddlers     = await loadUiTiddlers();
+      const vendorTiddlers = await loadVendorTiddlers();
+
       await new Promise<void>((resolve) => {
 
       // Suppress TW5's boot banner (Node only — process.stdout not in browser).
@@ -242,61 +246,21 @@ export class LarariumTW5 {
       instance.preloadTiddlers = instance.preloadTiddlers ?? [];
       // Widget module marker — prototype chain wired by _registerWidgets() after boot.
       instance.preloadTiddlers.push(LARARIUM_WIDGETS_TIDDLER);
-      // Content-type config — maps text/x-memetic-wikitext to our parser in TW5's MIME registry.
-      instance.preloadTiddlers.push({
-        title: "$:/config/FileTypeMappings/text/x-memetic-wikitext",
-        text:  "text/x-memetic-wikitext",
-        tags:  [],
-      });
-      // Kumu def tag shadow — gives [[all[shadows]tag[$:/tags/LarariumKumu]]] a stable home.
-      instance.preloadTiddlers.push({
-        title: "$:/tags/LarariumKumu",
-        text:  "Lararium kumu device type definitions.",
-        tags:  ["$:/tags/Global"],
-      });
 
-      // UI preloads — ViewTemplate tab + iam-panel character sheet template.
-      // Generated from lares/ha-ka-ba/api/v0.1/lararium/ui/ by scripts/write-ui-preloads.ts.
+      // UI tiddlers — ViewTemplate tab + iam-panel character sheet template.
+      // Loaded at runtime from lares/ha-ka-ba/api/v0.1/lararium/{ui,templates}/*.md.
       // Must be present before first render so the Metadata tab appears immediately.
-      for (const t of UI_PRELOAD_TIDDLERS) {
+      for (const t of uiTiddlers) {
         instance.preloadTiddlers.push(t as Record<string, unknown>);
       }
 
-      // Vendored third-party TW5 plugins — generated from lares/ha-ka-ba/.../vendor/tw5-plugins/
-      // by scripts/write-vendor-plugins.ts. Loaded before boot so plugins are
-      // available during the first render pass.
-      for (const t of VENDOR_PLUGIN_TIDDLERS) {
+      // Boot shadows + vendored third-party TW5 plugins — loaded at runtime from
+      // lares/ha-ka-ba/api/v0.1/tw5-plugins/*.json.
+      // Includes: MIME config, LarariumKumu tag, $:/palette pointer, render no-op,
+      // and sq/streams vendor plugin.
+      for (const t of vendorTiddlers) {
         instance.preloadTiddlers.push(t as Record<string, unknown>);
       }
-
-      // Palette pointer — $:/palette is a TW5 system tiddler (can't be a lar: URI).
-      // The actual palette data lives in lares/ha.ka.ba/api/v0.1/lararium/palette/
-      // and arrives via the normal disk → Automerge → TW5 pipeline.
-      // This pointer defaults to dark; setPalette() updates it on theme toggle.
-      instance.preloadTiddlers.push({
-        title: "$:/palette",
-        text:  "lar:///ha.ka.ba/api/v0.1/lararium/palette/gruvbox-dark",
-        tags:  [],
-      });
-
-      // -----------------------------------------------------------------------
-      // No-op render startup — prevents TW5 from planting rootWidget in
-      // document.body. mountPanel(container) calls rootWidget.render() instead.
-      // -----------------------------------------------------------------------
-      instance.preloadTiddlers.push({
-        title:          "$:/core/modules/startup/render.js",
-        type:           "application/javascript",
-        "module-type":  "startup",
-        text: `
-exports.name = "render";
-exports.platforms = ["browser"];
-exports.after = ["startup"];
-exports.synchronous = true;
-exports.startup = function() {
-  // Lararium mounts rootWidget via mountPanel(). No render to document.body.
-};
-`,
-      });
 
       // stylesheet.js startup left at default — it runs but targets document.head.
       // mountPanel() creates its own style widget scoped to the shadow root,
@@ -485,36 +449,41 @@ exports.startup = function() {
       parsers["text/x-memetic-wikitext"] = MemeticParser;
     }).catch(() => { /* not critical */ });
 
-    // Register the markdown-meme deserializer for text/x-memetic-wikitext.
-    // Splits one .md carrier into [parent, ...children] tiddler field objects.
-    // Key = content-type; other source formats (JSON meme, etc.) may register
-    // their own deserializers the same way.
-    if (tw?.Wiki?.tiddlerDeserializerModules) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      tw.Wiki.tiddlerDeserializerModules["text/x-memetic-wikitext"] = function(text: string, fields: any) {
-        const uri: string = (fields?.title as string) ?? "";
-        const split = splitCarrierToTiddlers(uri, text);
-        const parent = { title: uri, ...fields, ...split.parent.fields, text };
-        const children = split.children.map((c) => ({ ...c.fields, title: c.title, text: c.text }));
-        const result: object[] = [parent, ...children];
-        if (split.warnings.length > 0) {
-          // Surface parse warnings as a TW5 tiddler so the operator can review
-          // and acknowledge them. The carrier text is always preserved in parent.text
-          // above — this tiddler is informational only.
-          const safeSlug = uri.replace(/[^a-zA-Z0-9._-]/g, "_");
-          result.push({
-            title: `$:/lararium/parse-warning/${safeSlug}`,
-            tags: "$:/lararium/parse-warnings",
-            "carrier-uri": uri,
-            "warning-count": String(split.warnings.length),
-            text: split.warnings.join("\n"),
-            modified: new Date().toISOString().replace(/[:.]/g, "-"),
-          });
-        }
-        return result;
-      };
-    }
+    LarariumTW5._registerDeserializer(tw);
+    LarariumTW5._registerWidgets(tw);
+  }
 
+  // Heleuma: register the text/x-memetic-wikitext tiddler deserializer.
+  // Canonical source copy lives at lar:///ha.ka.ba/api/v0.1/lararium/modules/deserializer.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private static _registerDeserializer(tw: any): void {
+    if (!tw?.Wiki?.tiddlerDeserializerModules) return;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    tw.Wiki.tiddlerDeserializerModules["text/x-memetic-wikitext"] = function(text: string, fields: any) {
+      const uri: string = (fields?.title as string) ?? "";
+      const split = splitCarrierToTiddlers(uri, text);
+      const parent = { title: uri, ...fields, ...split.parent.fields, text };
+      const children = split.children.map((c) => ({ ...c.fields, title: c.title, text: c.text }));
+      const result: object[] = [parent, ...children];
+      if (split.warnings.length > 0) {
+        const safeSlug = uri.replace(/[^a-zA-Z0-9._-]/g, "_");
+        result.push({
+          title: `$:/lararium/parse-warning/${safeSlug}`,
+          tags: "$:/lararium/parse-warnings",
+          "carrier-uri": uri,
+          "warning-count": String(split.warnings.length),
+          text: split.warnings.join("\n"),
+          modified: new Date().toISOString().replace(/[:.]/g, "-"),
+        });
+      }
+      return result;
+    };
+  }
+
+  // Heleuma: wire compiled widget classes into the TW5 prototype chain.
+  // Canonical source copy lives at lar:///ha.ka.ba/api/v0.1/lararium/modules/widget-wiring.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private static _registerWidgets(tw: any): void {
     const WidgetCtor: any =
       tw.modules?.types?.widget?.["$:/core/modules/widgets/widget.js"]?.exports?.widget;
     if (!WidgetCtor) return;
