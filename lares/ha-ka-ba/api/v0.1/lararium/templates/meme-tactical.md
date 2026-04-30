@@ -8,6 +8,9 @@ uri-path     = "ha.ka.ba/api/v0.1/lararium/templates/meme-tactical"
 file-path    = "lares/ha-ka-ba/api/v0.1/lararium/templates/meme-tactical.md"
 content-type = "text/x-memetic-wikitext"
 role         = "canvas template — meme frame at tactical zoom (0.35–0.80, story river default)"
+kumu-name    = "meme-tactical"
+kumu-params  = "uri"
+tags         = ["$:/tags/LarariumKumu"]
 cacheable    = true
 retain       = true
 ```

@@ -29,8 +29,8 @@
 // module.exports as the default export, giving us { TiddlyWiki: [Function] }.
 import tw from "tiddlywiki";
 
-import type { ClosureEntry, EdgeRecord, FilterEngineFn, KumuDef, LarTiddlerStore, ReactionBinding } from "@lararium/core";
-import { parsePranalaEdges, parseMemeCarrier, extractReactionBindings, ReactionGraph, collectKumuDefs } from "@lararium/core";
+import type { ClosureEntry, EdgeRecord, FilterEngineFn, LarTiddlerStore, ReactionBinding } from "@lararium/core";
+import { parsePranalaEdges, extractReactionBindings, ReactionGraph } from "@lararium/core";
 import { splitCarrierToTiddlers } from "./carrier-split.js";
 import { createLarariumWidgets, registerImplementorsOperator, LARARIUM_WIDGETS_TIDDLER } from "./tw5-widgets.js";
 import { UI_PRELOAD_TIDDLERS } from "./generated-ui-preloads.js";
@@ -575,38 +575,6 @@ exports.startup = function() {
   }
 
   /**
-   * Inject kumu device type definitions as TW5 tiddlers.
-   *
-   * Each KumuDef becomes a tiddler with:
-   *   title:  lar:///kumu/<name>  (stable URI, addressable by TW5 filter)
-   *   type:   text/x-memetic-wikitext
-   *   tags:   $:/tags/LarariumKumu
-   *   text:   the kumu carrier body (params + body nodes serialised as wikitext)
-   *
-   * KumuWidget.render() resolves defs by calling this.wiki.getTiddler(name) so
-   * TW5 is the single registry — no parallel KumuRegistry class needed.
-   *
-   * Call after boot() and before any kumu widgets render.
-   * loadClosure() does NOT call this automatically — kumu defs arrive via the
-   * compiler artifact (BootArtifact.kumuDefs), not the tiddler closure.
-   */
-  injectKumuDefs(defs: readonly KumuDef[]): void {
-    if (!this._tw) throw new Error("LarariumTW5: call boot() before injectKumuDefs()");
-    for (const def of defs) {
-      this._tw.wiki.addTiddler(new this._tw.Tiddler({
-        title:  `lar:///kumu/${def.name}`,
-        type:   "text/x-memetic-wikitext",
-        tags:   ["$:/tags/LarariumKumu"],
-        text:   def.body.map((n) => ("content" in n ? (n as { content: string }).content : "")).join("\n"),
-        // Structured fields for filter queries: [[$:/tags/LarariumKumu]has[kumu-name]]
-        "kumu-name":       def.name,
-        "kumu-params":     def.params.join(" "),
-        "kumu-source-uri": def.carrierUri,
-      }));
-    }
-  }
-
-  /**
    * Remove a single tiddler by title.
    * Used by LarariumCrdtSyncAdaptor for tombstone propagation.
    */
@@ -642,7 +610,9 @@ exports.startup = function() {
    * The LarariumCrdtSyncAdaptor keeps TW5 live after this — do NOT call
    * loadClosure() on every filter request (that wipes all tiddlers).
    *
-   * Also scans carrier texts for kumu defs and injects them via injectKumuDefs().
+   * Kumu defs are first-class memes in the tagspace (tag $:/tags/LarariumKumu,
+   * field kumu-name) — no secondary extraction needed. They load here like any
+   * other carrier and are resolved at render time via TW5 filter.
    */
   async loadFromStore(
     store: LarTiddlerStore,
@@ -650,7 +620,6 @@ exports.startup = function() {
   ): Promise<void> {
     if (!this._tw) throw new Error("LarariumTW5: call boot() before loadFromStore()");
     const uris = await store.listVisible();
-    const kumuDefs: KumuDef[] = [];
     const total = uris.length;
     let loaded = 0;
 
@@ -659,13 +628,12 @@ exports.startup = function() {
       if (!rec || rec.deleted) { loaded++; onProgress?.(loaded, total); return; }
 
       if (rec.text && (rec.fields["content-type"] === "text/x-memetic-wikitext" || !rec.fields["content-type"])) {
-        // Carrier text — split into parent tiddler + ahu child tiddlers.
         const split = splitCarrierToTiddlers(uri, rec.text);
         const parentFields: Record<string, string | string[]> = {
           title: rec.title,
-          ...rec.fields,          // store-level fields (revision, bag, etc.)
-          ...split.parent.fields, // #iam-derived fields win over store metadata
-          text: rec.text,         // raw carrier text kept for MemeticParser
+          ...rec.fields,
+          ...split.parent.fields,
+          text: rec.text,
         };
         this._tw.wiki.addTiddler(new this._tw.Tiddler(parentFields));
         for (const child of split.children) {
@@ -674,17 +642,7 @@ exports.startup = function() {
         if (split.warnings.length > 0) {
           console.warn(`[lararium] carrier parse warnings for ${uri}:`, split.warnings);
         }
-        // Collect kumu defs from the parsed AST. This is a secondary index; a
-        // malformed carrier should still appear in TW5 as a raw parent tiddler
-        // via splitCarrierToTiddlers()' graceful fallback.
-        try {
-          const ast = parseMemeCarrier(uri, rec.text);
-          kumuDefs.push(...collectKumuDefs(uri, ast));
-        } catch (e) {
-          console.warn(`[lararium] skipping kumu extraction for malformed carrier ${uri}:`, e);
-        }
       } else {
-        // Non-carrier tiddler (text/plain palette, etc.) — load fields as-is.
         const fields: Record<string, string | string[]> = { title: rec.title, ...rec.fields };
         if (rec.text !== undefined) fields["text"] = rec.text;
         this._tw.wiki.addTiddler(new this._tw.Tiddler(fields));
@@ -695,7 +653,6 @@ exports.startup = function() {
     }));
 
     this._loadedUris = new Set(uris);
-    if (kumuDefs.length > 0) this.injectKumuDefs(kumuDefs);
   }
 
   /**
@@ -816,10 +773,17 @@ exports.startup = function() {
     return g;
   }
 
-  /** Read zoom-level layout props from a kumu def tiddler (`lar:///kumu/meme-<level>`). */
+  /** Read zoom-level layout props from the kumu def meme for this zoom level.
+   *  Resolved via TW5 filter on $:/tags/LarariumKumu + kumu-name field — works
+   *  across tagspaces (ha.ka.ba stable or chapel-perilous-opens draft). */
   getZoomLayout(level: string): ZoomLayout | null {
     if (!this._tw) return null;
-    const text: string | undefined = this._tw.wiki.getTiddlerText(`lar:///kumu/meme-${level}`);
+    const name = `meme-${level}`;
+    const results: string[] = this._tw.wiki.filterTiddlers(
+      `[all[tiddlers]tag[$:/tags/LarariumKumu]field:kumu-name[${name}]]`
+    ) ?? [];
+    if (!results[0]) return null;
+    const text: string | undefined = this._tw.wiki.getTiddlerText(results[0]);
     if (!text) return null;
     return parseZoomLayoutTOML(text);
   }

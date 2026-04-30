@@ -14,13 +14,11 @@ import {
   resolveLarUri,
   parseCarrier,
   parsePranalaEdges,
-  parseMemeCarrier,
   MemeGraph,
   Meme,
   laresRelPathToLarUri,
   compileBoot,
   compileBootReceipt,
-  collectKumuDefs,
   ENTRY_URI,
   type BootArtifact,
   type BootReceipt,
@@ -28,7 +26,6 @@ import {
   type GrammarRules,
   type SigilRule,
   type FamilyRule,
-  type KumuDef,
 } from "@lararium/core";
 
 // Sync SHA-256 content hash — Node-only. Same algorithm and output format as the
@@ -289,27 +286,6 @@ export function compileCarrierIndex(): CarrierRecord[] {
 }
 
 // ---------------------------------------------------------------------------
-// KumuDef collection — walks the loaded meme graph and extracts kumu type
-// definitions from carrier text. Called after the closure BFS is complete.
-// Each carrier is re-read once here; the AST parse is cheap relative to I/O.
-// ---------------------------------------------------------------------------
-
-function collectKumuDefsFromGraph(graph: MemeGraph, uris: string[]): KumuDef[] {
-  const result: KumuDef[] = [];
-  for (const uri of uris) {
-    const meme = graph.memes.get(uri);
-    if (!meme?.laresRelPath || !meme.exists) continue;
-    const abs = join(LARES_ROOT, meme.laresRelPath);
-    try {
-      const text = readFileSync(abs, "utf8");
-      const ast = parseMemeCarrier(uri, text);
-      result.push(...collectKumuDefs(uri, ast));
-    } catch { continue; }
-  }
-  return result;
-}
-
-// ---------------------------------------------------------------------------
 // Public runtime API
 // ---------------------------------------------------------------------------
 
@@ -330,8 +306,7 @@ export function createLarariumRuntime(_opts?: { writeback?: boolean }): Lararium
     compileBoot(): BootArtifact {
       const { graph, topoUris, violations, grammar } = buildControlClosure(ENTRY_URI);
       loadInterfaces(graph, grammar);
-      const kumuDefs = collectKumuDefsFromGraph(graph, topoUris);
-      return compileBoot(graph, topoUris, violations, kumuDefs);
+      return compileBoot(graph, topoUris, violations);
     },
 
     compileBootReceipt,

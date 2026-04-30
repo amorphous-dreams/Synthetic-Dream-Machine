@@ -8,6 +8,9 @@ uri-path     = "ha.ka.ba/api/v0.1/lararium/templates/meme-operational"
 file-path    = "lares/ha-ka-ba/api/v0.1/lararium/templates/meme-operational.md"
 content-type = "text/x-memetic-wikitext"
 role         = "canvas template — meme frame at operational zoom (0.15–0.35, edge topology readable)"
+kumu-name    = "meme-operational"
+kumu-params  = "uri"
+tags         = ["$:/tags/LarariumKumu"]
 cacheable    = true
 retain       = true
 ```

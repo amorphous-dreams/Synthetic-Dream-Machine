@@ -268,18 +268,24 @@ KumuWidget.prototype.render = function (parent: any, _nextSibling: any) {
   this.execute();
   const name   = this.getAttribute("name", "");
   const args   = this.getAttribute("props", "");
-  const defUri = `lar:///kumu/${name}`;
+  // Resolve kumu def by name from the meme tagspace — any three-word-root space
+  // with tag $:/tags/LarariumKumu and field kumu-name matching the invoked name.
+  // Stable defs live at lar:///ha.ka.ba/...; drafts in chapel-perilous-opens/...
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const defTiddler = (this.wiki as any)?.getTiddler?.(defUri);
+  const wiki    = this.wiki as any;
+  const results: string[] = wiki?.filterTiddlers?.(
+    `[all[tiddlers]tag[$:/tags/LarariumKumu]field:kumu-name[${name}]]`
+  ) ?? [];
+  const defUri = results[0] ?? "";
 
   const el = this.document.createElement("div");
   el.setAttribute("data-lar-kind",     "kumu");
   el.setAttribute("data-lar-name",     name);
-  el.setAttribute("data-lar-resolved", defTiddler ? "true" : "false");
+  el.setAttribute("data-lar-resolved", defUri ? "true" : "false");
   parent.appendChild(el);
   this.domNodes = [el];
 
-  if (defTiddler) {
+  if (defUri) {
     // Parse "key:value key:value" args string into TW5 variables.
     // Prop names shadow any kumu-name collision per prop-shadow rule.
     const propRe = /([\w-]+):(\S+)/g;

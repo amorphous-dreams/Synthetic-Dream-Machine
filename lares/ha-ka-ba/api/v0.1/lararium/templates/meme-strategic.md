@@ -8,6 +8,9 @@ uri-path     = "ha.ka.ba/api/v0.1/lararium/templates/meme-strategic"
 file-path    = "lares/ha-ka-ba/api/v0.1/lararium/templates/meme-strategic.md"
 content-type = "text/x-memetic-wikitext"
 role         = "canvas template — meme frame at strategic zoom (galaxy view, < 0.15)"
+kumu-name    = "meme-strategic"
+kumu-params  = "uri"
+tags         = ["$:/tags/LarariumKumu"]
 cacheable    = true
 retain       = true
 ```

@@ -417,22 +417,6 @@ export const REACTION_ROLES = ["subscription", "handler", "callback"] as const;
 export type ReactionRole = typeof REACTION_ROLES[number];
 
 // ---------------------------------------------------------------------------
-// KumuDef — compiled form of <<~! kumu name(params) >>...<<~/kumu >>
-//
-// Equivalent to TW5 \widget $name / UEFN creative_device type definition.
-// Extracted by collectKumuDefs() in widget-tree.ts; injected into TW5 as
-// tiddlers (type: text/x-memetic-wikitext, tag: $:/tags/LarariumKumu) so
-// TW5 can resolve them natively at render time via KumuWidget.
-// ---------------------------------------------------------------------------
-
-export interface KumuDef {
-  readonly name: string;
-  readonly params: readonly string[];
-  readonly carrierUri: string;
-  readonly body: readonly MemeAstNode[];
-}
-
-// ---------------------------------------------------------------------------
 // GrammarRules — external grammar interface (Phase 2+)
 //
 // Loaded from lares/grammars/memetic-wikitext.md; overrides built-in patterns

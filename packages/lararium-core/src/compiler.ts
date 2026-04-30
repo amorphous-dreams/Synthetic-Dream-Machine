@@ -71,7 +71,6 @@ export interface BootArtifact {
   edgeCount?: number;
   pranalaEdges?: EdgeRecord[];
   /** kumu type definitions collected from the boot closure — Phase 3 widget tree. */
-  kumuDefs?: import("./ast.js").KumuDef[];
 }
 
 export interface BootReceipt {
@@ -228,7 +227,6 @@ export function compileBoot(
   graph: MemeGraph,
   topoUris: string[],
   violations: string[][],
-  kumuDefs?: import("./ast.js").KumuDef[],
 ): BootArtifact {
   const socketMap = buildSocketMap(graph, topoUris);
   const depthMap = buildDepthMap(graph, topoUris);
@@ -254,7 +252,6 @@ export function compileBoot(
     interfaceIndex: Object.fromEntries([...interfaceIndex.entries()].map(([k, v]) => [k, v.length])),
     invariantIndex: Object.fromEntries([...invariantIndex.entries()].map(([k, v]) => [k, v.length])),
     validation: validateClosure(closure, violations, graph),
-    ...(kumuDefs !== undefined && { kumuDefs }),
   };
 }
 

@@ -8,6 +8,9 @@ uri-path     = "ha.ka.ba/api/v0.1/lararium/templates/meme-combat"
 file-path    = "lares/ha-ka-ba/api/v0.1/lararium/templates/meme-combat.md"
 content-type = "text/x-memetic-wikitext"
 role         = "canvas template — meme frame at combat zoom (0.80–1.50, ahu sub-frames materialise)"
+kumu-name    = "meme-combat"
+kumu-params  = "uri"
+tags         = ["$:/tags/LarariumKumu"]
 cacheable    = true
 retain       = true
 ```
