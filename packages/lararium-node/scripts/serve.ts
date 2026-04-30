@@ -395,7 +395,6 @@ async function main() {
     let html = readFileSync(join(APP_DIST, "index.html"), "utf-8");
     const metaTags = [
       `<meta name="lararium-room"         content="${serveRoomId}">`,
-      `<meta name="lararium-ws"           content="${wsProto}://${host}/rooms/${serveRoomId}">`,
       `<meta name="lararium-meme-sync"    content="${wsProto}://${host}/meme-sync">`,
       `<meta name="lararium-meme-store"   content="${memeStoreUrl}">`,
       `<meta name="lararium-operator-did" content="${operatorIdentity.did}">`,

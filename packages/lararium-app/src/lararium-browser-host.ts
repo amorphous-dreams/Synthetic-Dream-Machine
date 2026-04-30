@@ -89,25 +89,16 @@ export function useLarariumHostOpen(options: BrowserHostOptions): HostOpenState 
       if (!cancelled) { setPhase({ kind: "authority-ready", receipt: r }); setReceipt(r); }
 
       // ── Store (local-first) ───────────────────────────────────────────────
-      // Derive /meme-sync WS URL from the tldraw WS meta tag — same host,
-      // different path.  Falls back to relative URL for same-origin serving.
       if (!cancelled) setPhase({ kind: "store-opening", recipeUri });
 
-      const tldrawWsMeta = typeof document !== "undefined"
-        ? document.querySelector('meta[name="lararium-ws"]')?.getAttribute("content") ?? null
-        : null;
-
-      const syncWsUrl: string = (() => {
-        if (tldrawWsMeta) {
-          const u = new URL(tldrawWsMeta);
-          u.pathname = "/meme-sync";
-          u.search   = "";
-          return u.toString();
-        }
-        // Relative fallback — Vite dev proxy or same-origin serve
-        const proto = location.protocol === "https:" ? "wss:" : "ws:";
-        return `${proto}//${location.host}/meme-sync`;
-      })();
+      // /meme-sync WS — read from explicit meta tag; fall back to same-origin derivation.
+      const syncWsUrl: string = (typeof document !== "undefined"
+        ? document.querySelector('meta[name="lararium-meme-sync"]')?.getAttribute("content")
+        : null)
+        ?? (() => {
+          const proto = typeof location !== "undefined" && location.protocol === "https:" ? "wss:" : "ws:";
+          return `${proto}//${typeof location !== "undefined" ? location.host : "localhost:4321"}/meme-sync`;
+        })();
 
       const storeUrl  = readMemeStoreUrl(hostId);
       const identity  = await getOrCreateBrowserIdentity();

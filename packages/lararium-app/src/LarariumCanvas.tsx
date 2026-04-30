@@ -37,7 +37,6 @@ const CANVAS_COMPONENTS: TLComponents = {
 };
 
 interface Props {
-  wsUrl: string;
   navState: LarViewState;
   dispatch: React.Dispatch<LarViewAction>;
   drawingMode: boolean;
@@ -161,7 +160,7 @@ function getLarUriFromShape(editor: TldrawEditor, shapeId: TLShapeId): string | 
   return null;
 }
 
-export function LarariumCanvas({ wsUrl: _wsUrl, navState, dispatch, drawingMode, onZoomLevel }: Props) {
+export function LarariumCanvas({ navState, dispatch, drawingMode, onZoomLevel }: Props) {
   const editorRef = useRef<TldrawEditor | null>(null);
   const { theme, setEditor, tiddlerStore } = useLararium();
 

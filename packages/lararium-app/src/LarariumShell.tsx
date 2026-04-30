@@ -35,7 +35,6 @@ import type { MemeEntry } from "./App.js";
 
 
 interface ShellProps {
-  wsUrl: string;
   memes: MemeEntry[];
   onMemes: (memes: MemeEntry[]) => void;
 }
@@ -44,7 +43,7 @@ interface ShellProps {
 // Shell root
 // ---------------------------------------------------------------------------
 
-export function LarariumShell({ wsUrl, memes, onMemes }: ShellProps) {
+export function LarariumShell({ memes, onMemes }: ShellProps) {
   const [navState, dispatch] = useReducer(viewStateReducer, INITIAL_VIEW_STATE);
   const [wikiOpen,    setWikiOpen]    = useState(false);
   const [drawingMode, setDrawingMode] = useState(false);
@@ -185,7 +184,6 @@ export function LarariumShell({ wsUrl, memes, onMemes }: ShellProps) {
     <LarariumCtx.Provider value={ctxValue}>
       <div style={css.shellRoot}>
         <LarariumCanvas
-          wsUrl={wsUrl}
           navState={navState}
           dispatch={dispatch as React.Dispatch<LarViewAction>}
           drawingMode={drawingMode}
