@@ -4,6 +4,15 @@
 export const UI_PRELOAD_TIDDLERS: Array<Record<string, string | string[]>> = 
 [
   {
+    "title": "lar:///ha.ka.ba/api/v0.1/lararium/ui/ahu-breadcrumb",
+    "text": "\\whitespace trim\n<$list filter=\"[all[current]has[ahu-slot]]\" variable=\"_\" emptyMessage=\"\">\n\n<div class=\"tc-lararium-ahu-breadcrumb\">\n<span class=\"tc-ahu-label\">ahu</span>\n<code class=\"tc-ahu-slot-badge\"><$text text={{{[all[current]get[ahu-slot]]}}}/></code>\n<span class=\"tc-ahu-sep\">in</span>\n<$link to={{{[all[current]get[ahu-parent]]}}}>\n<code><$text text={{{[all[current]get[ahu-parent]]}}}/></code>\n</$link>\n</div>\n\n</$list>",
+    "type": "text/vnd.tiddlywiki",
+    "tags": [
+      "$:/tags/ViewTemplate"
+    ],
+    "list-before": "$:/core/ui/ViewTemplate/body"
+  },
+  {
     "title": "lar:///ha.ka.ba/api/v0.1/lararium/ui/iam-panel",
     "text": "<<~ ahu #hud-fields >>\n\n```toml\n# Canonical field ordering for iam-panel render and MCP hud tool.\n# Tier 1 — stat bars (always visible, compact)\ntier1 = [\"mana\", \"manao\", \"manaoio\", \"confidence\"]\n# Tier 2 — identity block\ntier2 = [\"role\", \"implements\", \"namespace\", \"register\", \"tagspace\"]\n# Tier 3 — technical fields (details disclosure)\ntier3 = [\"content-type\", \"module-type\", \"tw5-module-name\", \"body-sha256\", \"promoted-at\", \"promoted-by\", \"cacheable\", \"retain\", \"hydrate\"]\n# Fields always excluded from tier 4 (raw fallback)\nexclude = [\"title\", \"text\", \"tags\", \"bag\", \"revision\", \"created\", \"modified\", \"creator\", \"modifier\"]\n```\n\n<<~/ahu >>\n\n\\procedure lar-stat-bar(field, value, threshold:\"0.80\")\n<div class=\"lar-stat-row\">\n  <span class=\"lar-stat-label\"><<field>></span>\n  <span class=\"lar-stat-value\" data-value=<<value>>\n    data-threshold=<<threshold>>><<value>></span>\n  <span class=\"lar-stat-pip\" style=\"width:<<value>>em; max-width:1em; display:inline-block;\n    height:0.5em; background: <<colorFromValue value threshold>>; border-radius:2px;\"></span>\n</div>\n\\end\n\n\\procedure lar-iam-panel()\n<div class=\"lar-iam-panel\">\n\n!! Tier 1 — Signal Strength\n\n<div class=\"lar-stat-block\">\n<$list filter=\"mana manao manaoio confidence\" variable=\"f\">\n<$set name=\"v\" value={{{ [{!!$(f)$}] }}}>\n<$reveal type=\"nomatch\" state=\"\" text=\"\">\n<div class=\"lar-stat-row\">\n  <code class=\"lar-stat-label\"><<f>></code>\n  <span class=\"lar-stat-bar\">\n    <span class=\"lar-stat-fill\" style={{{ [<v>multiply[100]format:integer[]] +[addprefix[width:]] +[addsuffix[%]] +[addprefix[]] }}}>\n    </span>\n  </span>\n  <code class=\"lar-stat-value\"><<v>></code>\n</div>\n</$reveal>\n</$set>\n</$list>\n</div>\n\n!! Tier 2 — Identity\n\n<table class=\"lar-iam-table\">\n<$list filter=\"role implements namespace register tagspace\" variable=\"f\">\n<$set name=\"v\" value={{{ [{!!$(f)$}] }}}>\n<$reveal type=\"nomatch\" state=\"\" text=\"\">\n<tr><th><code><<f>></code></th><td><<v>></td></tr>\n</$reveal>\n</$set>\n</$list>\n</table>\n\n!! Tier 3 — Technical\n\n<details class=\"lar-iam-details\">\n<summary>Technical fields</summary>\n<table class=\"lar-iam-table\">\n<$list filter=\"content-type module-type tw5-module-name body-sha256 promoted-at promoted-by cacheable retain hydrate\" variable=\"f\">\n<$set name=\"v\" value={{{ [{!!$(f)$}] }}}>\n<$reveal type=\"nomatch\" state=\"\" text=\"\">\n<tr><th><code><<f>></code></th><td><code><<v>></code></td></tr>\n</$reveal>\n</$set>\n</$list>\n</table>\n</details>\n\n!! Tier 4 — All Other Fields\n\n<details class=\"lar-iam-details\">\n<summary>Raw fields</summary>\n<table class=\"lar-iam-table\">\n<$list filter=\"[fields[]!match[title]!match[text]!match[tags]!match[bag]!match[revision]!match[created]!match[modified]!match[creator]!match[modifier]!match[mana]!match[manao]!match[manaoio]!match[confidence]!match[role]!match[implements]!match[namespace]!match[register]!match[tagspace]!match[content-type]!match[module-type]!match[tw5-module-name]!match[body-sha256]!match[promoted-at]!match[promoted-by]!match[cacheable]!match[retain]!match[hydrate]]\" variable=\"f\">\n<$set name=\"v\" value={{{ [{!!$(f)$}] }}}>\n<$reveal type=\"nomatch\" state=\"\" text=\"\">\n<tr><th><code><<f>></code></th><td><<v>></td></tr>\n</$reveal>\n</$set>\n</$list>\n</table>\n</details>\n\n</div>\n\\end\n\n<<~/ahu >>\n\n<<~ ahu #edges >>\n\n<<~ pranala #implements-meme ? -> lar:///ha.ka.ba/api/v0.1/pono/meme family:control role:implements >>\n<<~ loulou lar:///ha.ka.ba/api/v0.1/lararium/ui/iam-viewtemplate-tab >>\n<<~ loulou lar:///ha.ka.ba/api/v0.1/lararium/hud >>\n\n<<~/ahu >>",
     "type": "text/vnd.tiddlywiki",
@@ -23,6 +32,24 @@ export const UI_PRELOAD_TIDDLERS: Array<Record<string, string | string[]>> =
   {
     "title": "lar:///ha.ka.ba/api/v0.1/lararium/ui/iam-viewtemplate-tab",
     "text": "<$reveal type=\"match\" state=\"$:/state/tab/view-1-$(currentTiddler)$\" default=\"iam\" text=\"iam\">\n<$list filter=\"[<currentTiddler>prefix[lar:]]\" variable=\"ignore\">\n<$transclude tiddler=\"lar:///ha.ka.ba/api/v0.1/lararium/ui/iam-panel\" mode=\"block\" />\n</$list>\n</$reveal>",
+    "type": "text/vnd.tiddlywiki",
+    "tags": [
+      "$:/tags/ViewTemplate"
+    ],
+    "list-after": "$:/core/ui/ViewTemplate/body"
+  },
+  {
+    "title": "lar:///ha.ka.ba/api/v0.1/lararium/ui/meme-edit-children",
+    "text": "\\whitespace trim\n<$list filter=\"[all[current]has[ahu-slots]]\" variable=\"_\" emptyMessage=\"\">\n\n<div class=\"tc-lararium-ahu-edit-sections\">\n<$list filter=\"[enlist{!!ahu-slots}]\" variable=\"childUri\">\n\n<div class=\"tc-lararium-ahu-edit-section\">\n<div class=\"tc-lararium-ahu-slot-header\">\n<code class=\"tc-ahu-slot-name\"><$text text={{{[<childUri>get[ahu-slot]]}}}/></code>\n<$link to=<<childUri>> tooltip=\"Open slot tiddler\">↗</$link>\n</div>\n<$edit-text tiddler=<<childUri>> field=\"text\" tag=\"textarea\" class=\"tc-edit-texteditor tc-ahu-edit-body\"/>\n</div>\n\n</$list>\n</div>\n\n</$list>",
+    "type": "text/vnd.tiddlywiki",
+    "tags": [
+      "$:/tags/EditTemplate"
+    ],
+    "list-after": "$:/core/ui/EditTemplate/body"
+  },
+  {
+    "title": "lar:///ha.ka.ba/api/v0.1/lararium/ui/meme-view-children",
+    "text": "\\whitespace trim\n<$list filter=\"[all[current]has[ahu-slots]]\" variable=\"_\" emptyMessage=\"\">\n\n<div class=\"tc-lararium-ahu-sections\">\n<$list filter=\"[enlist{!!ahu-slots}]\" variable=\"childUri\">\n\n<div class=\"tc-lararium-ahu-section\">\n<div class=\"tc-lararium-ahu-slot-header\">\n<code class=\"tc-ahu-slot-name\"><$text text={{{[<childUri>get[ahu-slot]]}}}/></code>\n<$link to=<<childUri>> tooltip=\"Open slot tiddler\">↗</$link>\n</div>\n<$transclude tiddler=<<childUri>> mode=\"block\"/>\n</div>\n\n</$list>\n</div>\n\n</$list>",
     "type": "text/vnd.tiddlywiki",
     "tags": [
       "$:/tags/ViewTemplate"

@@ -33,7 +33,8 @@ import type { ClosureEntry, EdgeRecord, FilterEngineFn, LarTiddlerStore, Reactio
 import { parsePranalaEdges, extractReactionBindings, ReactionGraph, MemeStreamParser } from "@lararium/core";
 import { splitCarrierToTiddlers, streamEventsToTiddlers, type TiddlerFields } from "./carrier-split.js";
 import { createLarariumWidgets, registerImplementorsOperator, LARARIUM_WIDGETS_TIDDLER } from "./tw5-widgets.js";
-import { UI_PRELOAD_TIDDLERS } from "./generated-ui-preloads.js";
+import { UI_PRELOAD_TIDDLERS }    from "./generated-ui-preloads.js";
+import { VENDOR_PLUGIN_TIDDLERS } from "./generated-vendor-plugins.js";
 
 // Re-export so callers can get FilterEngineFn from @lararium/tw5 directly.
 export type { FilterEngineFn };
@@ -225,6 +226,13 @@ export class LarariumTW5 {
       // Generated from lares/ha-ka-ba/api/v0.1/lararium/ui/ by scripts/write-ui-preloads.ts.
       // Must be present before first render so the Metadata tab appears immediately.
       for (const t of UI_PRELOAD_TIDDLERS) {
+        instance.preloadTiddlers.push(t as Record<string, unknown>);
+      }
+
+      // Vendored third-party TW5 plugins — generated from lares/ha-ka-ba/.../vendor/tw5-plugins/
+      // by scripts/write-vendor-plugins.ts. Loaded before boot so plugins are
+      // available during the first render pass.
+      for (const t of VENDOR_PLUGIN_TIDDLERS) {
         instance.preloadTiddlers.push(t as Record<string, unknown>);
       }
 
@@ -755,6 +763,31 @@ exports.startup = function() {
       for (const fields of batch) {
         this._tw.wiki.addTiddler(new this._tw.Tiddler(fields));
       }
+    }
+  }
+
+  /**
+   * Fetch and install a hosted TW5 plugin from a URL (GitHub CDN, gh-pages, etc.).
+   *
+   * The URL should point to a TW5 plugin JSON bundle — a tiddler with
+   * `type: "application/json"` and `plugin-type: "plugin"`. The fetched
+   * tiddler is added to the wiki under its declared title (e.g. "$:/plugins/sq/streams").
+   *
+   * The `source` field in the plugin JSON is preserved so TW5 upgrade UI can
+   * find and refresh it. Caller owns caching: call once at boot; re-call to upgrade.
+   *
+   * Fetch is isomorphic — uses globalThis.fetch (Node 18+, all modern browsers).
+   */
+  async loadHostedPlugin(url: string): Promise<void> {
+    if (!this._tw) throw new Error("LarariumTW5: call boot() before loadHostedPlugin()");
+    const res = await globalThis.fetch(url);
+    if (!res.ok) throw new Error(`loadHostedPlugin: HTTP ${res.status} fetching ${url}`);
+    const json = await res.json() as Record<string, unknown>;
+    // Plugin bundle: either a bare tiddler object or a TiddlyWiki export array
+    const tiddlers: Array<Record<string, unknown>> = Array.isArray(json) ? json : [json];
+    for (const t of tiddlers) {
+      if (!t["title"]) continue;
+      this._tw.wiki.addTiddler(new this._tw.Tiddler({ ...t, "plugin-source": url }));
     }
   }
 

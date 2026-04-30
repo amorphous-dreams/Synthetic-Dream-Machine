@@ -242,9 +242,12 @@ export function splitCarrierToTiddlers(uri: string, text: string): CarrierSplit 
     // Extract optional TOML metadata from the child body — first ```toml ... ``` fence.
     // Enables child ahu sections to declare TW5-native fields (type, mime-type, etc.).
     const childFields: Record<string, string | string[]> = {
-      "ahu-slot":   slot,
-      "ahu-parent": uri,
-      tags:         [uri],          // parent URI as tag → [tag[lar:///SESSION]] filter
+      "ahu-slot":    slot,
+      "ahu-parent":  uri,
+      tags:          [uri],   // parent URI as tag → [tag[lar:///SESSION]] filter
+      // Streams plugin (sq/streams) compatibility aliases
+      "parent":      uri,
+      "stream-type": "default",
     };
     const tomlFence = /^```toml\s*\n([\s\S]*?)```/m.exec(bodyText);
     if (tomlFence) {
@@ -262,9 +265,12 @@ export function splitCarrierToTiddlers(uri: string, text: string): CarrierSplit 
     });
   }
 
-  // Record slot order on parent for round-trip serialisation
+  // Record slot order on parent for round-trip serialisation.
+  // stream-list mirrors ahu-slots for Streams plugin (sq/streams) compatibility.
   if (slotOrder.length > 0) {
-    parentFields["ahu-slots"] = slotOrder.join(" ");
+    parentFields["ahu-slots"]    = slotOrder.join(" ");
+    parentFields["stream-list"]  = slotOrder.join(" ");
+    parentFields["stream-type"]  = "stream";
   }
 
   return {

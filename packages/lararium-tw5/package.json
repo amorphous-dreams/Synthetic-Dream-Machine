@@ -12,8 +12,9 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "scripts": {
-    "build": "tsx scripts/write-ui-preloads.ts && tsc",
+    "build": "tsx scripts/write-ui-preloads.ts && tsx scripts/write-vendor-plugins.ts && tsc",
     "build:ui": "tsx scripts/write-ui-preloads.ts",
+    "build:vendors": "tsx scripts/write-vendor-plugins.ts",
     "bundle": "vite build --config vite.bundle.config.ts && tsx scripts/write-module-meme.ts",
     "typecheck": "tsc --noEmit",
     "test": "NODE_OPTIONS=--experimental-vm-modules pnpm exec jest --config jest.config.cjs"
