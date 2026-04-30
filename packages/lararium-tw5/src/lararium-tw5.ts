@@ -782,24 +782,33 @@ exports.startup = function() {
     const total = uris.length;
     let loaded = 0;
 
-    await Promise.all(uris.map(async (uri) => {
-      const rec = await store.get(uri);
-      if (!rec || rec.deleted) { loaded++; onProgress?.(loaded, total); return; }
+    // Process sequentially in chunks of 50, yielding to the event loop between
+    // chunks so Playwright and browser animations don't starve. Promise.all on
+    // 300+ microtasks blocks the event loop for the entire duration — yielding
+    // allows waitForFunction polls and progress renders to sneak through.
+    const CHUNK = 50;
+    for (let i = 0; i < uris.length; i += CHUNK) {
+      const chunk = uris.slice(i, i + CHUNK);
+      await Promise.all(chunk.map(async (uri) => {
+        const rec = await store.get(uri);
+        if (!rec || rec.deleted) { loaded++; onProgress?.(loaded, total); return; }
 
-      const contentType = (rec.fields["content-type"] as string | undefined) ?? "";
-      if (rec.text !== undefined && (contentType === "text/x-memetic-wikitext" || (!contentType && uri.startsWith("lar:")))) {
-        // Carrier — deserialize into [parent, ...children] via TW5 native deserializer.
-        const tiddlers = this.deserializeCarrier(uri, rec.text, rec.fields as Record<string, string | string[]>);
-        for (const t of tiddlers) this._tw.wiki.addTiddler(new this._tw.Tiddler(t));
-      } else {
-        const fields: Record<string, string | string[]> = { title: rec.title, ...rec.fields };
-        if (rec.text !== undefined) fields["text"] = rec.text;
-        this._tw.wiki.addTiddler(new this._tw.Tiddler(fields));
-      }
+        const contentType = (rec.fields["content-type"] as string | undefined) ?? "";
+        if (rec.text !== undefined && (contentType === "text/x-memetic-wikitext" || (!contentType && uri.startsWith("lar:")))) {
+          const tiddlers = this.deserializeCarrier(uri, rec.text, rec.fields as Record<string, string | string[]>);
+          for (const t of tiddlers) this._tw.wiki.addTiddler(new this._tw.Tiddler(t));
+        } else {
+          const fields: Record<string, string | string[]> = { title: rec.title, ...rec.fields };
+          if (rec.text !== undefined) fields["text"] = rec.text;
+          this._tw.wiki.addTiddler(new this._tw.Tiddler(fields));
+        }
 
-      loaded++;
-      onProgress?.(loaded, total);
-    }));
+        loaded++;
+        onProgress?.(loaded, total);
+      }));
+      // Yield: hand control back to the event loop between chunks.
+      await new Promise<void>((r) => setTimeout(r, 0));
+    }
 
     this._loadedUris = new Set(uris);
   }
