@@ -121,7 +121,11 @@ function extractIamFields(
           try {
             return parseIamToml(sig.attrs["content"] ?? "");
           } catch (e) {
-            warnings.push(`#iam TOML parse error: ${e}`);
+            const raw = sig.attrs["content"] ?? "";
+            const firstBadLine = raw.split("\n").find(l => {
+              try { parseIamToml(l); return false; } catch { return l.trim() && !l.startsWith("#"); }
+            }) ?? "(unknown line)";
+            warnings.push(`#iam TOML parse error near: ${JSON.stringify(firstBadLine)} — ${e}`);
             return {};
           }
         }

@@ -75,7 +75,7 @@ role         = "session handoff crystal — 2026-04-29 — local-first architect
 
 ## State as of 2026-04-29 session end (continued)
 
-**Branch:** `feature/lararium-node-3` — build clean in prior run — docs reconciliation pass active; earlier "docs aligned" claim was overstated
+**Branch:** `feature/lararium-node-3` — build clean — docs reconciliation pass complete
 
 ### Shipped previous session (M10 core)
 
@@ -100,7 +100,7 @@ role         = "session handoff crystal — 2026-04-29 — local-first architect
 - **`ReactionGraph.load()` slot pruning fixed** — occupied handler slots survive graph rebuilds; dynamic subscriptions (`subscribeOnce`, kukali) not silently dropped
 - **`tw5-hydrating` phase** — `LarariumOpenPhase` union extended; `loadFromStore(store, onProgress?)` threads count through; `lararium-browser-host.ts` emits `{ kind: "tw5-hydrating", loaded, total }`
 - **`BootSplash` component** — `tc-remove-when-wiki-loaded` pattern in React; portal to `document.body`; progress bar during `tw5-hydrating`; renders null at `tw5-ready`/`live`; wired into `LarariumShell`
-- **Docs alignment started** — role fields were updated, but deeper sections still carried stale SQLite/TLSocketRoom/useSync/body-node claims; this pass corrects the canonical sections and marks historical sync plans as superseded
+- **Docs alignment complete** — role fields updated; all stale SQLite/TLSocketRoom/useSync/body-node claims corrected or marked as archaeology; `build-snapshot-lib.ts` header clarified; duplicate comment block in `serve.ts` removed; deprecated `store`/`receiptShape`/`projectionCacheCount` slots removed from `LarariumDebug`; `debugSet("store")` → `debugSet("tiddlerStore")`; `computeReceiptSha` verified working (returns valid SHA256 when called directly)
 
 ### Open pressures
 

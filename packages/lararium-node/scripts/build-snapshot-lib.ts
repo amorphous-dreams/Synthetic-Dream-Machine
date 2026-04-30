@@ -1,8 +1,13 @@
 /**
  * Core snapshot builder — shared between the build-snapshot script and the serve server.
  *
- * Reads the live lares/ tree, compiles a minimal boot artifact, pre-computes room
- * filter results via TW5, and returns a LarSnapshot-compatible object.
+ * Reads the live lares/ tree, compiles a boot artifact, pre-computes room filter
+ * results via TW5, and returns a BuiltSnapshot. The snapshot is used to:
+ *   1. Seed the Automerge meme-store doc on first server boot.
+ *   2. Recompute the boot receipt SHA after reseed/promote.
+ *
+ * This module is Node-only (reads lares/ from disk). No TW5 runtime is started here;
+ * precomputeRooms runs TW5 in a transient context.
  */
 
 import { readFileSync, existsSync } from "fs";

@@ -33,9 +33,17 @@ lares/lararium-node/fixtures.current.json
 # pnpm/Node
 node_modules/
 packages/*/dist/
+packages/*/dist-bundle/
 packages/*/node_modules/
 .lararium-data/
 
-# Playwright CLI
+# Generated source files (rebuilt by build scripts)
+packages/lararium-tw5/src/generated-ui-preloads.ts
+
+# Playwright CLI + test artifacts
 .playwright-cli/
 packages/lararium-app/test-results
+packages/lararium-node/test-results
+packages/lararium-node/playwright-report
+**/playwright-report/
+**/test-results/

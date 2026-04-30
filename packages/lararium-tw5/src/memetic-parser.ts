@@ -89,7 +89,9 @@ function nodeToTw5(node: MemeAstNode, wiki?: TW5Wiki): TW5ParseNode {
           if (parsed?.tree?.length) {
             return { type: "element", tag: "span", _ast: node, children: parsed.tree };
           }
-        } catch { /* fall through */ }
+        } catch (e) {
+          console.warn("[lararium] wiki.parseText failed for prose node — falling back to raw text:", e);
+        }
       }
       return { type: "text", text: node.content, _ast: node, children: [] };
     }

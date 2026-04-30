@@ -119,7 +119,9 @@ export function useLarariumHostOpen(options: BrowserHostOptions): HostOpenState 
       try {
         repoResult = await initMemeRepo({ hostId, syncWsUrl, storeUrl, identity, ...(serverDid && { serverDid }) });
       } catch (err: unknown) {
-        if (!cancelled) setPhase({ kind: "error", message: `Meme store init failed: ${String(err)}` });
+        const msg = err instanceof Error ? `${err.message}` : String(err);
+        console.error("[lararium] meme store init failed:", err);
+        if (!cancelled) setPhase({ kind: "error", message: `Meme store init failed: ${msg}` });
         return;
       }
       if (cancelled) { return; }

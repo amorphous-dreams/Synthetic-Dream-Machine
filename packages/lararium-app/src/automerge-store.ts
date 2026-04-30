@@ -182,8 +182,20 @@ export async function initMemeRepo(opts: {
     ? await repo.find<MemeStoreDoc>(storeUrl as AutomergeUrl)
     : repo.create<MemeStoreDoc>({});
 
-  // whenReady() resolves when doc is materialized from IDB or network — no sync-event race.
-  await handle.whenReady();
+  // whenReady() resolves when doc is materialized from IDB or network.
+  // Hard timeout: if the Automerge doc hasn't resolved in 20s (network down, IDB
+  // corrupt, server unreachable), throw so the caller can surface an error phase
+  // instead of hanging the BootSplash indefinitely.
+  const READY_TIMEOUT_MS = 20_000;
+  await Promise.race([
+    handle.whenReady(),
+    new Promise<never>((_, reject) =>
+      setTimeout(
+        () => reject(new Error(`Automerge doc not ready after ${READY_TIMEOUT_MS / 1000}s — server unreachable or IndexedDB corrupt`)),
+        READY_TIMEOUT_MS,
+      )
+    ),
+  ]);
 
   // /auth/ucan handshake — present browser identity to the server so it can
   // register this peer in its UcanPeerRegistry. Fire-and-forget: failure is

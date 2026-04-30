@@ -330,10 +330,10 @@ export function LarariumShell({ wsUrl, memes, onMemes }: ShellProps) {
 
   // Expose opening state to browser console for smoke verification.
   // window.__larariumDebug.openPhase and .tw5 update reactively with ctx.
-  debugSet("openPhase", openPhase);
-  debugSet("tw5",       tw5);
-  debugSet("dispatch",  dispatch);
-  debugSet("store",     tiddlerStore);
+  debugSet("openPhase",    openPhase);
+  debugSet("tw5",          tw5);
+  debugSet("dispatch",     dispatch);
+  debugSet("tiddlerStore", tiddlerStore);
 
   const ctxValue = {
     navState,

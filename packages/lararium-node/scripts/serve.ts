@@ -1,25 +1,34 @@
 /**
- * Lararium sync server — Automerge meme-sync peer + legacy tldraw layout room.
+ * Lararium sync server — local-first Automerge peer + legacy tldraw layout channel.
  *
  * Architecture:
- *   - Automerge Repo — meme content store (carrier text, edges, metadata)
- *   - Optional/legacy TLSocketRoom per named room (tldraw canvas layout, positions, pages)
- *   - Two WebSocket paths on one HTTP server, split by upgrade routing:
- *       /rooms/:roomId  → tldraw TLSocketRoom (layout CRDT)
- *       /meme-sync      → Automerge NodeWSServerAdapter (content CRDT)
- *   - Static assets from lararium-app/dist/ served over HTTP on the same port
+ *   - Server is a local-first PEER, not an authority. Automerge is source of truth.
+ *   - Automerge Repo (NodeFS storage) syncs meme content with all connected clients.
+ *   - TW5 runs on client; server does NOT render TW5. Server manages lares/ on disk.
+ *   - Two WebSocket paths on one HTTP server:
+ *       /meme-sync      → Automerge NodeWSServerAdapter (content CRDT, primary)
+ *       /rooms/:roomId  → TLSocketRoom (legacy tldraw layout CRDT, shared canvas state)
+ *   - Static assets from lararium-app/dist/ served over HTTP on the same port.
+ *
+ * Canon promotion:
+ *   PUT /admin/promote  — localhost-only; writes carrier text to lares/, patches Automerge,
+ *                         stamps promoted-at/promoted-by on module memes (capability gate).
  *
  * API routes:
- *   GET  /api/rooms          — live tldraw room registry (MCP canvas bridge)
- *   GET  /api/meme-store     — Automerge doc URL for the meme content store
- *   GET  /admin/reseed      — force-evict + delete SQLite for a room, reseed on next WS connect
- *   PUT  /admin/promote     — canon-promotion: write carrierText to lares/ file
+ *   GET  /api/rooms      — live tldraw room registry (MCP canvas bridge)
+ *   GET  /api/meme-store — Automerge doc URL for the meme content store
+ *   GET  /admin/reseed   — force-evict SQLite room + rebuild snapshot/receipt from lares/
  *
- * Local-first contract:
- *   - Meme content lives in the Automerge doc (IndexedDB on client, NodeFS on server).
- *   - Server is a sync peer for normal browser edits; localhost/admin ceremony may promote to lares/.
- *   - Active browser content path uses Automerge + TW5 + local tldraw projection.
- *   - Legacy tldraw CRDT may handle shared layout/reaction socket experiments. Two WS paths, one port.
+ * Boot contract:
+ *   1. Build lares/ snapshot → seed Automerge doc
+ *   2. Compute boot receipt SHA (corpus integrity fingerprint) → inject into HTML <meta>
+ *   3. All subsequent client loads receive receipt + Automerge doc URL via <meta> tags
+ *   4. lares/ file watcher patches Automerge on external file changes (git, editor, promote)
+ *
+ * Known gaps (M11):
+ *   - Legacy TLSocketRoom write-back is not wired to Automerge or lares/
+ *   - Per-room Automerge docs not yet implemented (all clients share one doc)
+ *   - Playwright e2e tests wired but Automerge doc ready-timeout is the primary boot gate
  *
  * Usage:
  *   pnpm --filter @lararium/node serve
@@ -181,7 +190,9 @@ async function main() {
   try {
     receiptSha = await computeReceiptSha(runtime);
   } catch (e) {
-    console.warn("[lararium-serve] receipt compute failed:", e);
+    // Log loudly — empty receipt means clients boot without corpus verification.
+    // Server continues; operators should investigate lares/ state.
+    console.error("[lararium-serve] ⚠ receipt compute failed — clients will boot without corpus verification:", e);
   }
 
   // Rooms are stable opaque strings for the legacy layout channel. Active clients
@@ -524,25 +535,20 @@ async function main() {
   memeStoreUrl = memeHandle.url;
 
   // ---------------------------------------------------------------------------
-  // Disk write-back — UCAN-trusted peers → lares/ files
-  //
-  // Changes that reach the Automerge doc already passed sharePolicy
-  // (peerRegistry.isAuthorized). Trusted peer edits survive restarts.
-  // Anonymous/untrusted peers are excluded by sharePolicy — no doc access.
-  //
-  // Uses LarDiskSyncAdaptor (debounced, path-traversal-guarded).
-  // Seeding guard prevents writing during initial doc population.
-  // ---------------------------------------------------------------------------
   // Disk write-back — Automerge → lares/ files
   //
   // All changes that reach the Automerge doc have already passed sharePolicy
-  // (UCAN gate). Every surviving lar: URI write is trusted and written to disk.
-  // resolveLarUri() derives the lares/ path from the URI — no pre-built index.
-  // Virtual caps URIs (laresRelPath: null) are silently skipped.
+  // (peerRegistry.isAuthorized / UCAN gate). Every surviving lar: URI write
+  // is trusted and written to disk. resolveLarUri() derives the lares/ path
+  // from the URI — no pre-built index. Virtual caps URIs (laresRelPath: null)
+  // are silently skipped.
   //
   // Echo-loop guard: diskAdaptor.writing tracks URIs pending a debounced write.
   // The lares/ watcher checks this before reflecting disk changes back into
   // Automerge, preventing disk→Automerge→TW5→saveTiddler→disk loops.
+  //
+  // Seeding guard: diskSyncSeeding blocks write-back during initial doc
+  // population so lares/ files are not redundantly re-written on first boot.
   // ---------------------------------------------------------------------------
   const { LarDiskSyncAdaptor } = await import("@lararium/tw5");
   const diskAdaptor = new LarDiskSyncAdaptor(LARES_ROOT);

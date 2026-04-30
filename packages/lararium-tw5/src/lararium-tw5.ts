@@ -1,23 +1,22 @@
 /**
- * lararium-tw5 — TW5 as the active isomorphic render engine for Lararium.
+ * lararium-tw5 — TW5 as the isomorphic wiki engine for Lararium (client + server peer).
  * Home: @lararium/tw5
  *
- * Model: local-first async quine-wiki on a tldraw canvas.
- *   Automerge (AutomergeMemeStore) is the source of truth for carrier text.
- *   TW5 is the active render engine: parseTree → widgetTree → fakeDOM → VDomNode[].
- *   tldraw is the canvas shell: layout, navigation, CRDT shape sync.
- *   The three are independent stores; content flows through renderMeme().
+ * Model: local-first. Automerge is source of truth. TW5 is the wiki engine on both
+ * client and server. Server is a sync peer, not an authority.
  *
- * Three-tree pipeline:
+ * Boot sequence:
+ *   boot() → preloadTiddlers (UI, palette, system) → TW5 boot callback
+ *          → _bootModules() [3-layer gate: threshold → body-sha256 → promoted-at]
+ *          → fallback: imperative registration of MemeticParser + lararium-* widgets
+ *
+ * Content pipeline (TW5 story river path):
  *   MemeticParser  →  TW5ParseNode[]  (lararium-* tagged nodes)
- *   TW5 makeWidget →  Widget instances (internal TW5 widgetTree, lararium-* classes)
- *   render()       →  TW_Element tree  →  VDomNode[]  →  React
+ *   TW5 makeWidget →  Widget instances (lararium-* widget classes)
+ *   mountPanel()   →  shadow DOM render (scoped styles, no document.body leak)
  *
- * wikitext-filter dialect (toCanonicalWikitext):
- *   all[memes]         → all[tiddlers]
- *   toml:key[value]    → field:key[value]
- *   edge:FAMILY[ROLE]  → has[edge-out-FAMILY-ROLE]
- *   edge:FAMILY[]      → has[edge-out-FAMILY]
+ * Filter extensions:
+ *   implementors[uri]  — exact token match on space-separated implements field
  *
  * ClosureEntry → tiddler field mapping (entryToFields):
  *   title uri / tags implements / depth / rating (kind) / confidence / register
