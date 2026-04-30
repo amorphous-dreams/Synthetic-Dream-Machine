@@ -3,9 +3,6 @@ module.exports = {
   preset: "ts-jest/presets/default-esm",
   testEnvironment: "node",
   testMatch: ["<rootDir>/tests/**/*.test.ts"],
-  extensionsToFileExtensions: {
-    ts: "ts",
-  },
   moduleNameMapper: {
     "^(\\.{1,2}/.*)\\.js$": "$1",
     "^@lararium/tw5$": "<rootDir>/../lararium-tw5/src/index.ts",

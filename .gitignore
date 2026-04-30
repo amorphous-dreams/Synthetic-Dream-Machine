@@ -46,4 +46,4 @@ packages/lararium-app/test-results
 packages/lararium-node/test-results
 packages/lararium-node/playwright-report
 **/playwright-report/
-**/test-results/
+**/test-results/**/tests/.playwright-userdata/

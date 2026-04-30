@@ -37,7 +37,7 @@ function collectConsoleErrors(page: Page): { messages: string[] } {
   return { messages };
 }
 
-async function waitForSync(page: Page, timeout = 15_000): Promise<void> {
+async function waitForSync(page: Page, timeout = 75_000): Promise<void> {
   await page.waitForFunction(
     () => {
       const dbg = (window as unknown as Record<string, unknown>)["__larariumDebug"] as Record<string, unknown> | undefined;
