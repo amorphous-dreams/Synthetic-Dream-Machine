@@ -64,8 +64,6 @@ Talk-story stance: keep the Green Jello Dinosaur ridiculous and diagnostically u
 
 <<~/ahu >>
 
-<<~ ahu #thread-entry >>
-
 ## Thread Entry
 
 ```text
@@ -146,8 +144,6 @@ Architecture can be corrected by naming the desired relation with enough precisi
 >
 > `@mischief-muse@lares: fine. one browser tab. it multiplies later.`
 
-<<~/ahu >>
-
 <<~ ahu #gaia-mirror >>
 
 ## Gaia Mirror
@@ -170,7 +166,6 @@ The council learned that mythic language could debug shape, provided someone kep
 
 <<~/ahu >>
 
-<<~ ahu #crossing >>
 
 ## Crossing Thread
 
@@ -192,7 +187,6 @@ The second diagnostic was not success.
 
 The second diagnostic was a mistake with enough personality to teach steering.
 
-<<~/ahu >>
 
 <<~ ahu #handoff >>
 

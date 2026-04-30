@@ -22,7 +22,7 @@
  */
 
 import { parseMemeCarrier } from "@lararium/core";
-import type { MemeAstNode, WorksiteNode, SigilNode, MemeStreamEvent } from "@lararium/core";
+import type { MemeAstNode, WorksiteNode, SigilNode, MemeStreamEvent, ControlNode, TextNode } from "@lararium/core";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -182,6 +182,47 @@ const CONTROL_SLOTS = new Set([
 ]);
 
 // ---------------------------------------------------------------------------
+// generateParentText — mixed wikitext for the parent tiddler's text field.
+//
+// Walks the top-level AST in document order (after STX, before ETX/EOT):
+//   WorksiteNode (non-control) → <$transclude tiddler="uri#slot" mode="block"/>
+//   TextNode with content      → prose inline (wikitext passthrough)
+//   Everything else            → suppressed
+//
+// This preserves interleaved prose between named ahu slots — the on-disk
+// format (carrier) and TW5 VM format (wikitext with transcludes) differ
+// intentionally. Disk write-back uses carrier-text; TW5 renders the mix.
+// ---------------------------------------------------------------------------
+
+function generateParentText(uri: string, nodes: MemeAstNode[]): string {
+  const parts: string[] = [];
+  let inBody = false;
+
+  for (const node of nodes) {
+    if (node.kind === "Control") {
+      const phase = (node as ControlNode).phase;
+      if (phase === "stx") { inBody = true; continue; }
+      if (phase === "etx" || phase === "eot") break;
+      continue;
+    }
+    if (!inBody) continue;
+
+    if (node.kind === "Worksite") {
+      const ws = node as WorksiteNode;
+      if (!CONTROL_SLOTS.has(ws.slot)) {
+        parts.push(`<$transclude tiddler="${uri}${ws.slot}" mode="block"/>`);
+      }
+    } else if (node.kind === "Text") {
+      const prose = (node as TextNode).content.trim();
+      if (prose) parts.push(prose);
+    }
+    // Edges, Sigils, CarrierHeader at body level → suppressed
+  }
+
+  return parts.join("\n\n");
+}
+
+// ---------------------------------------------------------------------------
 // splitCarrierToTiddlers — main export
 // ---------------------------------------------------------------------------
 
@@ -278,17 +319,17 @@ export function splitCarrierToTiddlers(uri: string, text: string): CarrierSplit 
     parentFields["stream-type"]  = "stream";
   }
 
-  // Parent text is a TW5 template delegate — renders all slots via the meme template.
-  // Raw carrier text is preserved in carrier-text for disk write-back (replaceCarrierSlot).
-  // This separates the on-disk format (carrier) from the TW5 VM representation (wikitext).
-  const MEME_TEMPLATE = "lar:///ha.ka.ba/api/v0.1/lararium/templates/meme";
+  // Parent text is mixed wikitext: inline prose interleaved with $transclude blocks
+  // for each named ahu slot — document order preserved. Raw carrier is kept in
+  // carrier-text for disk write-back. On-disk format (carrier) and TW5 VM format
+  // (wikitext) differ intentionally; the user edits prose via carrier, slots via TW5.
   parentFields["carrier-text"] = text;
 
   return {
     parent: {
       title:  uri,
       fields: parentFields,
-      text:   `{{||${MEME_TEMPLATE}}}`,
+      text:   generateParentText(uri, nodes),
     },
     children: slotOrder.map((t) => childMap.get(t)!),
     warnings,
