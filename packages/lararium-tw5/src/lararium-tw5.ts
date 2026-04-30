@@ -24,11 +24,6 @@
  *   edge-out-FAMILY / edge-out-FAMILY-ROLE  (space-separated toUri lists)
  */
 
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore — tiddlywiki is CJS; Node ESM interop and Vite CJS→ESM both expose
-// module.exports as the default export, giving us { TiddlyWiki: [Function] }.
-import tw from "tiddlywiki";
-
 import type { ClosureEntry, EdgeRecord, FilterEngineFn, LarTiddlerStore, ReactionBinding } from "@lararium/core";
 import { parsePranalaEdges, extractReactionBindings, ReactionGraph, MemeStreamParser } from "@lararium/core";
 import { splitCarrierToTiddlers, streamEventsToTiddlers, type TiddlerFields } from "./carrier-split.js";
@@ -156,6 +151,15 @@ export function buildEdgeFieldMap(edges: readonly EdgeRecord[]): Map<string, Rec
   return result;
 }
 
+
+async function loadNodeTiddlyWiki(): Promise<{ TiddlyWiki: () => unknown }> {
+  // Browser uses the vendored public/tiddlywikicore-*.js script and global $tw.
+  // Keep the npm tiddlywiki package out of browser analysis/bundles.
+  // @ts-ignore — tiddlywiki has no local ESM declaration; Node path only.
+  const mod = await import(/* @vite-ignore */ "tiddlywiki");
+  return ((mod as { default?: unknown }).default ?? mod) as { TiddlyWiki: () => unknown };
+}
+
 // ---------------------------------------------------------------------------
 // LarariumTW5 — primary isomorphic TW5 interface
 // ---------------------------------------------------------------------------
@@ -185,9 +189,9 @@ export class LarariumTW5 {
    *
    * Isomorphic boot path (Jeremy Ruston lambda pattern):
    *   1. In browser: $tw.browser is auto-detected as truthy (window/document exist).
-   *      TW5 uses Function() for module execution — no vm/fs needed.
-   *      Core modules (wiki.js, fakedom.js, etc.) are preloaded as tiddlers so
-   *      they are available without filesystem access.
+   *      The vendored tiddlywikicore-<ver>.js script has already populated
+   *      $tw.modules; Lararium reuses that VM and never imports npm tiddlywiki
+   *      in the browser bundle.
    *   2. In Node: $tw.node is auto-detected. TW5 reads core modules from
    *      $tw.boot.bootPath via fs. Core module tiddlers are redundant but harmless.
    *
@@ -196,7 +200,7 @@ export class LarariumTW5 {
    */
   boot(): Promise<void> {
     if (this._bootPromise) return this._bootPromise;
-    this._bootPromise = new Promise<void>((resolve) => {
+    this._bootPromise = (async () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const g = globalThis as any;
 
@@ -204,8 +208,8 @@ export class LarariumTW5 {
       //   Browser — tiddlywikicore-<ver>.js is loaded as a <script> before React
       //             mounts. suppressBoot was set so $tw exists with all modules
       //             defined but boot() not yet called. We reuse that instance.
-      //   Node    — no external script; create a fresh instance via TiddlyWiki().
-      //             TW5 reads core modules from $tw.boot.bootPath via fs.
+      //   Node    — no external script; load npm tiddlywiki dynamically only on
+      //             this branch. TW5 reads core modules from bootPath via fs.
       const isBrowser = typeof window !== "undefined" && typeof document !== "undefined";
       const instance: any = isBrowser
         ? (() => {
@@ -219,9 +223,11 @@ export class LarariumTW5 {
             g.$tw.boot.argv = g.$tw.boot.argv ?? [];
             return g.$tw;
           })()
-        : (tw as any).TiddlyWiki();
+        : (await loadNodeTiddlyWiki()).TiddlyWiki();
 
       if (!isBrowser) instance.boot.argv = [];
+
+      await new Promise<void>((resolve) => {
 
       // Suppress TW5's boot banner (Node only — process.stdout not in browser).
       let restoreStdout: (() => void) | null = null;
@@ -302,7 +308,8 @@ exports.startup = function() {
         // Inject parser + widget modules — corpus-gated path with imperative fallback.
         this._bootModules().then(resolve).catch(() => resolve());
       });
-    });
+      });
+    })();
     return this._bootPromise;
   }
 

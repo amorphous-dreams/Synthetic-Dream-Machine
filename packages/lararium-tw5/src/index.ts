@@ -43,7 +43,6 @@ export type { FilterEngineFn, ZoomLayout, TW5SyncAdaptor } from "./lararium-tw5.
 export { setActiveTW5, getActiveTW5 } from "./active-tw5.js";
 
 export { LarariumCrdtSyncAdaptor } from "./sync-adaptor.js";
-export { LarDiskSyncAdaptor }      from "./disk-sync-adaptor.js";
 export { MemoryTiddlerStore }      from "./memory-store.js";
 
 export { splitCarrierToTiddlers, serializeCarrier, replaceCarrierSlot, composeCarrierSlotBody, streamEventsToTiddlers } from "./carrier-split.js";

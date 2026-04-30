@@ -429,7 +429,7 @@ async function main() {
   // Seeding guard: diskSyncSeeding blocks write-back during initial doc
   // population so lares/ files are not redundantly re-written on first boot.
   // ---------------------------------------------------------------------------
-  const { LarDiskSyncAdaptor } = await import("@lararium/tw5");
+  const { LarDiskSyncAdaptor } = await import("@lararium/tw5/node");
   const diskAdaptor = new LarDiskSyncAdaptor(LARES_ROOT);
 
   // MemeProvider sits between the Automerge DocHandle and all downstream
