@@ -23,7 +23,7 @@
  *   1. Build lares/ snapshot → seed Automerge doc
  *   2. Compute boot receipt SHA (corpus integrity fingerprint) → inject into HTML <meta>
  *   3. All subsequent client loads receive receipt + Automerge doc URL via <meta> tags
- *   4. lares/ file watcher patches Automerge on external file changes (git, editor, promote)
+ *   4. lares/ file watcher removed — file sync refactor in progress
  *
  * Known gaps:
  *   - Per-room Automerge docs not yet implemented (all clients share one doc)
@@ -35,7 +35,7 @@
  */
 
 import { createServer, type IncomingMessage, type ServerResponse } from "http";
-import { readFileSync, existsSync, statSync, mkdirSync, watch, writeFileSync } from "fs";
+import { readFileSync, existsSync, statSync, mkdirSync, writeFileSync } from "fs";
 import { join, extname, resolve } from "path";
 import { fileURLToPath } from "url";
 import { WebSocketServer } from "ws";
@@ -51,10 +51,8 @@ import {
   type ReactionBinding,
   canPromoteToCanon,
   resolveLarUri,
-  laresRelPathToLarUri,
   UcanPeerRegistry,
   verifyUcan,
-  MemeProvider,
 } from "@lararium/core";
 import { getOrCreateNodeIdentity } from "../src/operator-key.js";
 import { TW5_CORE_SCRIPT_FILENAME, TW5_CORE_SCRIPT_URL } from "@lararium/tw5";
@@ -413,51 +411,7 @@ async function main() {
 
   memeStoreUrl = memeHandle.url;
 
-  // ---------------------------------------------------------------------------
-  // Disk write-back — Automerge → lares/ files
-  //
-  // All changes that reach the Automerge doc have already passed sharePolicy
-  // (peerRegistry.isAuthorized / UCAN gate). Every surviving lar: URI write
-  // is trusted and written to disk. resolveLarUri() derives the lares/ path
-  // from the URI — no pre-built index. Virtual caps URIs (laresRelPath: null)
-  // are silently skipped.
-  //
-  // Echo-loop guard: diskAdaptor.writing tracks URIs pending a debounced write.
-  // The lares/ watcher checks this before reflecting disk changes back into
-  // Automerge, preventing disk→Automerge→TW5→saveTiddler→disk loops.
-  //
-  // Seeding guard: diskSyncSeeding blocks write-back during initial doc
-  // population so lares/ files are not redundantly re-written on first boot.
-  // ---------------------------------------------------------------------------
-  const { LarDiskSyncAdaptor } = await import("@lararium/tw5/node");
-  const diskAdaptor = new LarDiskSyncAdaptor(LARES_ROOT);
-
-  // MemeProvider sits between the Automerge DocHandle and all downstream
-  // integrations. It coalesces rapid same-URI patches (40 ms window) so the
-  // disk write-back only fires once per logical change rather than once per
-  // Automerge patch — critical during initial peer sync replay.
-  const memeProvider = new MemeProvider(
-    () => (memeHandle as any).doc() ?? {},
-  );
-
-  // Disk write-back: register the projector directly on the MemeProvider.
-  // LarDiskProjector implements MemeProjection — onUriChanged handles the
-  // carrier-text / ahu-slot write-back logic; the echo-loop guard lives in
-  // the lares/ file watcher (diskAdaptor.writing.has(uri)).
-  memeProvider.addProjection(diskAdaptor);
-
-  // Feed Automerge patches into the provider. Remote-only: local writes
-  // (promote, reseed) go through memeHandle.change() which fires "change"
-  // only for the delta, so the seeding guard is now handled by markSyncComplete.
-  const remoteOrigin = { kind: "crdt-remote" as const, edgeIsland: "automerge" };
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  (memeHandle as any).on("change", ({ patches }: { patches: { path: unknown[] }[] }) => {
-    memeProvider.handleChange(patches ?? [], remoteOrigin);
-  });
-
-  // Seeding complete — mark sync so the disk projection activates and
-  // onSyncComplete fires on all registered projections.
-  memeProvider.markSyncComplete();
+  // Disk write-back and lares/ file watcher removed — file sync refactor in progress.
 
   httpServer.listen(PORT, HOST, () => {
     console.log(`[lararium-serve] http://${HOST}:${PORT}`);
@@ -501,75 +455,7 @@ async function main() {
     return g;
   }
 
-  // ---------------------------------------------------------------------------
-  // lares/ file watcher — UEFN operational model
-  //
-  // Historical note: carrier changes once re-projected the boot room via evict +
-  // reseed. Active local-first content refresh is disk → Automerge → TW5; tldraw
-  // projection diffing in the browser is the remaining M11 step.
-  //
-  // Debounced 400ms — batch rapid saves (editor auto-save bursts).
-  // ---------------------------------------------------------------------------
-
-  // ---------------------------------------------------------------------------
-  // lares/ file watcher — disk → Automerge (trusted, one direction)
-  //
-  // When a carrier file changes on disk (editor save, MCP write, git pull),
-  // read the new text and patch the Automerge doc directly. Connected clients
-  // pick it up via their Automerge sync session; their TW5 wikis update through
-  // LarariumCrdtSyncAdaptor (Automerge → TW5 direction).
-  //
-  // Echo-loop guard: diskAdaptor.writing contains URIs currently being written
-  // from Automerge → disk. Skip those files to break the loop.
-  //
-  // After patching Automerge, recompute the receipt SHA and reaction graph so
-  // the server's in-memory view stays consistent with the corpus.
-  // ---------------------------------------------------------------------------
-
-  const fileDebounces = new Map<string, ReturnType<typeof setTimeout>>();
-
-  watch(LARES_ROOT, { recursive: true }, (_event, filename) => {
-    if (!filename) return;
-    if (filename.includes("node_modules") || filename.endsWith(".sqlite")) return;
-    if (!filename.endsWith(".md")) return;
-
-    // Derive URI from the changed file path; skip files with no known mapping.
-    let uri: string;
-    try {
-      uri = laresRelPathToLarUri(filename.replace(/\\/g, "/"));
-    } catch {
-      return; // unrecognised path structure — not a meme carrier
-    }
-
-    // Echo-loop guard: skip if this write originated from Automerge→disk.
-    if (diskAdaptor.writing.has(uri)) return;
-
-    const existing = fileDebounces.get(filename);
-    if (existing) clearTimeout(existing);
-
-    fileDebounces.set(filename, setTimeout(async () => {
-      fileDebounces.delete(filename);
-      // Re-check echo guard after debounce — write may have completed by now.
-      if (diskAdaptor.writing.has(uri)) return;
-
-      try {
-        const text = readFileSync(join(LARES_ROOT, filename), "utf-8");
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (memeHandle as any).change((doc: any) => {
-          doc[uri] = { title: uri, text };
-        });
-        console.log(`[lararium-serve] lares/ → automerge: ${filename}`);
-
-        // Keep server-side receipt and reaction graph consistent.
-        receiptSha    = await computeReceiptSha(runtime);
-        reactionGraph = buildReactionGraph(runtime);
-      } catch (e) {
-        console.error(`[lararium-serve] lares/ watcher error (${filename}):`, e);
-      }
-    }, 400));
-  });
-
-  console.log(`[lararium-serve] watching lares/ for changes`);
+  // lares/ file watcher removed — file sync refactor in progress.
 }
 
 main().catch((e) => { console.error(e); process.exit(1); });

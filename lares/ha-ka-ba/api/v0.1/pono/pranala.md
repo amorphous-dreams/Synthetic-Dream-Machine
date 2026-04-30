@@ -185,6 +185,70 @@ label = "parent owns child"
 
 <<~/ahu >>
 
+<<~ ahu #vocab >>
+
+## Vocabulary (machine-readable)
+
+Canonical TOML form. Source of truth for `KNOWN_FAMILIES`, `FAMILY_ROLES`, `FAMILY_CONTRACTS`,
+`RENDER_MODES`, and `REACTION_ROLES` in `packages/lararium-core/src/pranala-parser.ts` and `ast.ts`.
+
+```toml
+# Edge family names — parser rejects any family not in this list
+known-families = ["control", "relation", "observe", "dataflow", "message", "constraint", "reaction", "spatial"]
+
+# Canonical role vocabularies per family (roleRecommended families SHOULD use these)
+[family-roles]
+control  = ["owns", "implements", "extends", "configures", "delegates"]
+dataflow = ["reads", "writes", "streams", "buffers", "pipes"]
+message  = ["sends", "receives", "publishes", "subscribes", "replies"]
+reaction = ["triggers", "handles", "observes", "throttles", "debounces", "subscription"]
+spatial  = ["contains", "portal", "adjacent", "layer"]
+
+# Family contracts — scanner alias (keyed form for constant recognition)
+family-contracts = ["control", "relation", "observe", "dataflow", "message", "constraint", "reaction", "spatial"]
+
+# Family contracts — roleRecommended + confidenceBounded flags
+[family-contracts.control]
+role-recommended    = true
+confidence-bounded  = false
+
+[family-contracts.relation]
+role-recommended    = false
+confidence-bounded  = false
+
+[family-contracts.observe]
+role-recommended    = false
+confidence-bounded  = true
+
+[family-contracts.dataflow]
+role-recommended    = true
+confidence-bounded  = false
+
+[family-contracts.message]
+role-recommended    = true
+confidence-bounded  = false
+
+[family-contracts.constraint]
+role-recommended    = false
+confidence-bounded  = false
+
+[family-contracts.reaction]
+role-recommended    = true
+confidence-bounded  = false
+
+[family-contracts.spatial]
+role-recommended    = true
+confidence-bounded  = false
+
+# PranaEdge render modes — render layer switches on these; null = default arrow
+render-modes = ["reaction-wire"]
+
+# Canonical reaction roles (informational; not exhaustive)
+reaction-roles = ["subscription", "handler", "callback"]
+```
+
+<<~/ahu >>
+
 <<~ ahu #edges >>
 
 <<~ pranala #implements-meme ? -> lar:///ha.ka.ba/api/v0.1/pono/meme family:control role:implements >>

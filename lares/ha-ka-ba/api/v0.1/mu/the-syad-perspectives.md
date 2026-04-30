@@ -210,6 +210,43 @@ Discordian witness texts can also rest in library space.
 
 <<~/ahu >>
 
+<<~ ahu #vocab >>
+
+## Vocabulary (machine-readable)
+
+Canonical TOML form. Source of truth for `STANCES`, `SYAD_7`, `STANCE_SYAD`, `SATIRIST_OPERATIONAL`
+in `packages/lararium-core/src/ast.ts`.
+
+```toml
+# Five epistemic standpoints — order is fixed: Philosopher · Poet · Satirist · Humorist · Private
+stances = ["philosopher", "poet", "satirist", "humorist", "private"]
+
+# Jaina Saptabhangi — 7 truth-value compounds from primitives T / F / M (avaktavya)
+# P5/P6 are threshold crossings; P7 maps to Arcana only
+syad-7 = [
+  "asti",                   # P1 T     — Philosopher
+  "nasti",                  # P2 F     — Satirist (stated)
+  "avaktavya",              # P3 M     — Poet (outward) / Private (inward)
+  "asti-nasti",             # P4 T+F   — Humorist
+  "asti-avaktavya",         # P5 T+M   — threshold: Philosopher past boundary
+  "nasti-avaktavya",        # P6 F+M   — threshold / Satirist operational
+  "asti-nasti-avaktavya",   # P7 T+F+M — Arcana only
+]
+
+# Primary Syad predicate per stance (stated posture)
+[stance-syad]
+philosopher = "asti"
+poet        = "avaktavya"
+satirist    = "nasti"
+humorist    = "asti-nasti"
+private     = "avaktavya"
+
+# Satirist operational predicate — held when stable, not just stated
+satirist-operational = "nasti-avaktavya"
+```
+
+<<~/ahu >>
+
 <<~ ahu #edges >>
 
 ## Edges

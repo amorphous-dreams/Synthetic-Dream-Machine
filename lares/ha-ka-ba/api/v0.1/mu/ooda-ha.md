@@ -134,6 +134,23 @@ A session that runs without any slider statement MUST default to `[HA^0.50]`.
 <<~/ahu >>
 
 
+<<~ ahu #vocab >>
+
+## Vocabulary (machine-readable)
+
+Canonical TOML form. Source of truth for `OODA_HA_5` in `packages/lararium-core/src/ast.ts`.
+
+```toml
+# OODA-HA phase cycle — active (act) → reflective (aftermath)
+# Ordered finest-to-coarsest: act maps to "action" on ladder-5
+ooda-ha-5 = ["act", "decide", "orient", "observe", "aftermath"]
+
+# OODA glyph sequence — maps phase index to control sigil
+ooda-glyphs = ["✶", "⏿", "◇", "▶", "⤴", "↺"]
+```
+
+<<~/ahu >>
+
 <<~ ahu #edges >>
 
 <<~ loulou lar:///ha.ka.ba/api/v0.1/mu/the-law-of-5s >>

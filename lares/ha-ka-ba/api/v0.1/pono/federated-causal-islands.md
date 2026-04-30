@@ -224,6 +224,52 @@ Cross-node causality errors become federation corruption.
 <<~/ahu >>
 
 
+<<~ ahu #vocab >>
+
+## Vocabulary (machine-readable)
+
+Canonical TOML form. Source of truth for `AUTHORITY_FIRST_ORDER`, `CAUSAL_ISLAND_MUST`, `CAUSAL_ISLAND_MAY`
+in `packages/lararium-core/src/causal-island.ts`.
+
+```toml
+# Authority-first sync step order — gate failures at steps 1–3 close the connection
+authority-first-order = [
+  "authenticate-peer",
+  "sync-authority-graph",
+  "derive-visible-rooms",
+  "sync-collection-manifest",
+  "capability-epoch-ops",
+  "sync-crdt-heads",
+  "sync-delta-payloads",
+  "sync-projection-receipts",
+]
+
+# MUST become causal islands — cross-node causality errors = federation corruption
+causal-island-must = [
+  "node-to-node-federation-edge",
+  "cross-node-pranala-connection",
+  "canon-promotion-ceremony",
+  "revocation-epoch-change",
+  "encrypted-sync-membership-change",
+  "live-hostful-record-proposing-hostless-canon-mutation",
+]
+
+# MAY become causal islands — local errors correctable inside node; promotion optional
+causal-island-may = [
+  "room",
+  "meme",
+  "sigil",
+  "kumu-instance",
+  "kahea-invocation",
+  "local-room-projection",
+  "long-lived-runtime-actor",
+  "automerge-realm",
+  "peer-sync-state",
+]
+```
+
+<<~/ahu >>
+
 <<~ ahu #edges >>
 
 <<~ pranala #implements-invariant ? -> lar:///ha.ka.ba/api/v0.1/pono/invariant family:control role:implements >>

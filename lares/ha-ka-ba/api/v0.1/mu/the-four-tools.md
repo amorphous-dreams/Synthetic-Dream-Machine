@@ -248,6 +248,44 @@ The agent MUST treat totalized pattern-lock as confidence register collapse.
 <<~/ahu >>
 
 
+<<~ ahu #vocab >>
+
+## Vocabulary (machine-readable)
+
+Canonical TOML form. Source of truth for `TOOLS`, `TOOL_ASCII`, `TOOL_FEED`, `TOOL_APERTURE`
+in `packages/lararium-core/src/ast.ts`.
+
+```toml
+# Five orientation postures — Minor Arcana + Major Arcana (Arcana = Stone / empty hand)
+tools = ["wand", "cup", "sword", "pentacle", "arcana"]
+
+# ASCII sigil for each tool — URI-safe invariant
+[tool-ascii]
+wand     = "*"
+cup      = "?"
+sword    = "!"
+pentacle = "~"
+arcana   = "-"
+
+# Feed axis — external (wand/cup/sword) · internal (pentacle) · release (arcana)
+[tool-feed]
+wand     = "external"
+cup      = "external"
+sword    = "external"
+pentacle = "internal"
+arcana   = "release"
+
+# Aperture axis — wide (wand/cup) · narrow (sword/pentacle) · release (arcana)
+[tool-aperture]
+wand     = "wide"
+cup      = "wide"
+sword    = "narrow"
+pentacle = "narrow"
+arcana   = "release"
+```
+
+<<~/ahu >>
+
 <<~ ahu #edges >>
 
 ## Edges

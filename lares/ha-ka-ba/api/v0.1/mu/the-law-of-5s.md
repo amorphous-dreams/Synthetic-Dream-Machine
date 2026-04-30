@@ -114,6 +114,54 @@ The same declaration changes meaning with the standpoint that reads it.
 <<~/ahu >>
 
 
+<<~ ahu #vocab >>
+
+## Vocabulary (machine-readable)
+
+Canonical TOML form. Source of truth for `LADDER_5`, `SCOPE_5`, `RATING_5`, `STAGE_5` and
+their associated maps in `packages/lararium-core/src/ast.ts`.
+
+```toml
+# Temporal / spatial scale ladder — finest → coarsest
+ladder-5 = ["action", "round", "turn", "watch", "week"]
+
+# Scope principle ladder — maps 1:1 onto ladder-5
+scope-5 = ["ephemeral", "personal", "consensual", "collective", "universal"]
+
+# Scope → ladder projection
+[scope-to-ladder]
+ephemeral  = "action"
+personal   = "round"
+consensual = "turn"
+collective = "watch"
+universal  = "week"
+
+# Structural quality ladder — federation gate: ≥ meme to federate
+rating-5 = ["noise", "data", "meme", "ano", "kapu"]
+
+# UX stage ladder — rendering annotation only, NOT a federation gate
+# Maps onto confidence scalar: GR 0.01–0.19 · OS 0.20–0.39 · US 0.40–0.59 · CS 0.60–0.79 · DS 0.80–1.00
+stage-5 = ["GR", "OS", "US", "CS", "DS"]
+
+# Stage → representative scalar midpoint (display / defaults)
+[stage-band-mid]
+GR = 0.10
+OS = 0.30
+US = 0.50
+CS = 0.70
+DS = 0.90
+
+# Rating → canonical tldraw color name
+[rating-color]
+noise = "grey"
+data  = "blue"
+meme  = "green"
+ano   = "orange"
+kapu  = "violet"
+```
+
+<<~/ahu >>
+
 <<~ ahu #edges >>
 
 ## Edges
