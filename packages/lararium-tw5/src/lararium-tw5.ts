@@ -441,6 +441,23 @@ exports.startup = function() {
       parsers["text/x-memetic-wikitext"] = MemeticParser;
     }).catch(() => { /* not critical */ });
 
+    // Register memetic carrier deserializer — splits one carrier text into
+    // [parent, ...children] tiddler field objects. Enables $tw.wiki.deserializeTiddlers()
+    // and TW5's native import/dropzone to handle .md carrier files correctly.
+    if (tw?.Wiki?.tiddlerDeserializerModules) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      tw.Wiki.tiddlerDeserializerModules["text/x-memetic-wikitext"] = function(text: string, fields: any) {
+        const uri: string = (fields?.title as string) ?? "";
+        const split = splitCarrierToTiddlers(uri, text);
+        if (split.warnings.length > 0) {
+          console.warn(`[lararium] deserializer warnings for ${uri}:`, split.warnings);
+        }
+        const parent = { title: uri, ...fields, ...split.parent.fields, text };
+        const children = split.children.map((c) => ({ ...c.fields, title: c.title, text: c.text }));
+        return [parent, ...children];
+      };
+    }
+
     const WidgetCtor: any =
       tw.modules?.types?.widget?.["$:/core/modules/widgets/widget.js"]?.exports?.widget;
     if (!WidgetCtor) return;
@@ -563,6 +580,25 @@ exports.startup = function() {
     }
   }
 
+  /**
+   * Deserialize carrier text into an array of tiddler field objects.
+   * Delegates to $tw.wiki.deserializeTiddlers — the registered tiddlerdeserializer
+   * for text/x-memetic-wikitext splits the carrier into [parent, ...children].
+   * Falls back to splitCarrierToTiddlers for the pre-boot window.
+   */
+  deserializeCarrier(uri: string, text: string, extraFields?: Record<string, string | string[]>): Record<string, unknown>[] {
+    const base = { title: uri, ...extraFields };
+    if (this._tw) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      return (this._tw as any).wiki.deserializeTiddlers("text/x-memetic-wikitext", text, base) ?? [];
+    }
+    // Pre-boot fallback — same result, direct call
+    const split = splitCarrierToTiddlers(uri, text);
+    const parent = { ...base, ...split.parent.fields, text };
+    const children = split.children.map((c) => ({ ...c.fields, title: c.title, text: c.text }));
+    return [parent, ...children];
+  }
+
   /** Render a loaded TW5 tiddler to HTML. Returns "" for unknown titles or failures. */
   renderTiddler(title: string): string {
     if (!this._tw) return "";
@@ -627,21 +663,11 @@ exports.startup = function() {
       const rec = await store.get(uri);
       if (!rec || rec.deleted) { loaded++; onProgress?.(loaded, total); return; }
 
-      if (rec.text && (rec.fields["content-type"] === "text/x-memetic-wikitext" || !rec.fields["content-type"])) {
-        const split = splitCarrierToTiddlers(uri, rec.text);
-        const parentFields: Record<string, string | string[]> = {
-          title: rec.title,
-          ...rec.fields,
-          ...split.parent.fields,
-          text: rec.text,
-        };
-        this._tw.wiki.addTiddler(new this._tw.Tiddler(parentFields));
-        for (const child of split.children) {
-          this._tw.wiki.addTiddler(new this._tw.Tiddler({ ...child.fields, title: child.title, text: child.text }));
-        }
-        if (split.warnings.length > 0) {
-          console.warn(`[lararium] carrier parse warnings for ${uri}:`, split.warnings);
-        }
+      const contentType = (rec.fields["content-type"] as string | undefined) ?? "";
+      if (rec.text !== undefined && (contentType === "text/x-memetic-wikitext" || (!contentType && uri.startsWith("lar:")))) {
+        // Carrier — deserialize into [parent, ...children] via TW5 native deserializer.
+        const tiddlers = this.deserializeCarrier(uri, rec.text, rec.fields as Record<string, string | string[]>);
+        for (const t of tiddlers) this._tw.wiki.addTiddler(new this._tw.Tiddler(t));
       } else {
         const fields: Record<string, string | string[]> = { title: rec.title, ...rec.fields };
         if (rec.text !== undefined) fields["text"] = rec.text;

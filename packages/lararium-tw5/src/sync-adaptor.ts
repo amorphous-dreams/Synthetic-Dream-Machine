@@ -23,7 +23,7 @@
 
 import type { LarTiddlerStore, LarTiddlerRecord, ChangeOrigin } from "@lararium/core";
 import type { LarariumTW5 } from "./lararium-tw5.js";
-import { splitCarrierToTiddlers, serializeCarrier, replaceCarrierSlot, removeCarrierSlot } from "./carrier-split.js";
+import { serializeCarrier, replaceCarrierSlot, removeCarrierSlot } from "./carrier-split.js";
 
 type SaveStrategy = "skip" | "direct" | "child-carrier";
 type SaveHandler  = (
@@ -113,19 +113,12 @@ export class LarariumCrdtSyncAdaptor {
               (!rec.fields["content-type"] && change.title.startsWith("lar:")));
 
           if (isCarrier && rec.text) {
-            const split = splitCarrierToTiddlers(change.title, rec.text);
-            // Remove stale children before adding new ones.
+            // Remove stale ahu children before re-splitting.
             const staleChildren: string[] = this.tw5.filterTiddlers(`[tag[${change.title}]has[ahu-slot]]`);
             for (const t of staleChildren) this.tw5.removeTiddler(t);
-            // Add parent.
-            this.tw5.setTiddler({ title: rec.title, ...rec.fields, ...split.parent.fields, text: rec.text });
-            // Add children.
-            for (const child of split.children) {
-              this.tw5.setTiddler({ ...child.fields, title: child.title, text: child.text });
-            }
-            if (split.warnings.length > 0) {
-              console.warn(`[lararium] sync carrier warnings for ${change.title}:`, split.warnings);
-            }
+            // Deserialize via TW5 native deserializer → [parent, ...children].
+            const tiddlers = this.tw5.deserializeCarrier(change.title, rec.text, rec.fields as Record<string, string | string[]>);
+            for (const t of tiddlers) this.tw5.setTiddler(t as Record<string, string | string[]>);
           } else {
             const fields: Record<string, string | string[]> = { title: rec.title, ...rec.fields };
             if (rec.text !== undefined) fields["text"] = rec.text;
