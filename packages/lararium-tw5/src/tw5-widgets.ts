@@ -15,7 +15,7 @@
  *   lararium-toml      → TomlWidget       data block (<script type=application/toml>)
  *   lararium-sigil     → SigilWidget      generic sigil container
  *   lararium-dynamic   → DynamicWidget    grammar-meme extension
- *   lararium-header    → HeaderWidget     carrier header (<meta data-lar-uri>)
+ *   lararium-control   → ControlWidget    phase boundary marker (no visible output)
  *   lararium-dispatch  → DispatchWidget   lele fire-and-forget (<meta data-lar-target>)
  *
  * KumuWidget execution model (local-first Zelenka):
@@ -55,16 +55,17 @@ function WorksiteWidget(this: TW5WidgetInstance, parseTreeNode: TW5ParseTreeNode
 WorksiteWidget.prototype.render = function (this: TW5WidgetInstance, parent: TW5FakeElement, _nextSibling: TW5FakeElement | null) {
   this.parentDomNode = parent;
   this.computeAttributes();
-  this.execute();
   const el = this.document.createElement("span");
   el.setAttribute("data-lar-kind", "worksite");
   el.setAttribute("data-lar-slot", this.getAttribute("slot", ""));
   el.setAttribute("data-lar-uri",  this.getAttribute("uri", ""));
+  const delegate = this.getAttribute("delegate", "");
+  if (delegate) el.setAttribute("data-lar-delegate", delegate);
   parent.appendChild(el);
   this.domNodes = [el];
   // No renderChildren — template handles all slot content.
 };
-WorksiteWidget.prototype.execute = function (this: TW5WidgetInstance) { this.makeChildWidgets(); };
+WorksiteWidget.prototype.execute = function (this: TW5WidgetInstance) { /* no children */ };
 
 // ---------------------------------------------------------------------------
 // EdgeWidget — pranala / edge-sugar (metadata; no visible output)
@@ -149,23 +150,18 @@ DynamicWidget.prototype.render = function (this: TW5WidgetInstance, parent: TW5F
 DynamicWidget.prototype.execute = function (this: TW5WidgetInstance) { this.makeChildWidgets(); };
 
 // ---------------------------------------------------------------------------
-// HeaderWidget — <<~ ? -> lar:///URI >> (no visible output)
+// ControlWidget — SOH/STX/ETX/EOT phase boundary markers (no visible output)
 // ---------------------------------------------------------------------------
 
-function HeaderWidget(this: TW5WidgetInstance, parseTreeNode: TW5ParseTreeNode, options: Record<string, unknown>) {
+function ControlWidget(this: TW5WidgetInstance, parseTreeNode: TW5ParseTreeNode, options: Record<string, unknown>) {
   this.initialise(parseTreeNode, options);
 }
-HeaderWidget.prototype.render = function (this: TW5WidgetInstance, parent: TW5FakeElement, _nextSibling: TW5FakeElement | null) {
+ControlWidget.prototype.render = function (this: TW5WidgetInstance, parent: TW5FakeElement, _nextSibling: TW5FakeElement | null) {
   this.parentDomNode = parent;
-  this.computeAttributes();
-  this.execute();
-  const el = this.document.createElement("meta");
-  el.setAttribute("data-lar-kind", "header");
-  el.setAttribute("data-lar-uri",  this.getAttribute("uri", ""));
-  parent.appendChild(el);
-  this.domNodes = [el];
+  this.domNodes = [];
+  // Phase markers carry no visible output — phase metadata lives in the AST.
 };
-HeaderWidget.prototype.execute = function (this: TW5WidgetInstance) { this.makeChildWidgets(); };
+ControlWidget.prototype.execute = function (this: TW5WidgetInstance) { /* no children */ };
 
 // ---------------------------------------------------------------------------
 // DispatchWidget — lele fire-and-forget (no visible output)
@@ -326,7 +322,7 @@ export function createLarariumWidgets(_tw: TW5Instance): Record<string, WidgetCt
     "lararium-toml":      TomlWidget      as unknown as WidgetCtorWithProto,
     "lararium-sigil":     SigilWidget     as unknown as WidgetCtorWithProto,
     "lararium-dynamic":   DynamicWidget   as unknown as WidgetCtorWithProto,
-    "lararium-header":    HeaderWidget    as unknown as WidgetCtorWithProto,
+    "lararium-control":   ControlWidget   as unknown as WidgetCtorWithProto,
     "lararium-dispatch":  DispatchWidget  as unknown as WidgetCtorWithProto,
     "lararium-papalohe":  PapaloheWidget  as unknown as WidgetCtorWithProto,
     "lararium-kukali":    KukaliWidget    as unknown as WidgetCtorWithProto,
@@ -378,7 +374,8 @@ export function registerImplementorsOperator(tw: TW5Instance): void {
     source(function (tiddler, title: string) {
       if (!tiddler) return;
       if (role) {
-        if (tiddler.fields?.[`edge-out-${family}-${role}`] !== undefined) results.push(title);
+        const v = tiddler.fields?.[`edge-out-${family}-${role}`];
+        if (v !== undefined && v !== "") results.push(title);
       } else {
         const prefix = `edge-out-${family}-`;
         if (Object.keys(tiddler.fields ?? {}).some((k) => k.startsWith(prefix))) results.push(title);

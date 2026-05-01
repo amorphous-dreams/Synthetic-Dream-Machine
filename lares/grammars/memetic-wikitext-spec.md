@@ -370,8 +370,10 @@ Does not replace the act it qualifies — it marks the act's threshold.
 
 ```
 <<~ pono #slot ? -> lar:///uri >>
-<<~ pono required:boot-critical target:lar:///core >>
+<<~ pono ? -> lar:///uri role:must-hold >>
 ```
+
+Keyword-arg form (`required:` / `target:`) is not yet implemented; use positional `FROM -> TO role:R` form.
 
 Declares a structural rule or invariant that must hold — no execution pulse.
 Wires as `family:constraint` pranala at compile time.

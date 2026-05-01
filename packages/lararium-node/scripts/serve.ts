@@ -21,12 +21,10 @@
  *   rooms    — one per roomId; durable room content (pins, notes, recipe overrides)
  *   corpora  — one per corpus bag; content from lares/ carriers or projection codec
  *
- * Canon promotion: disabled. POST /keyhive/promotions is a future Keyhive seam.
- *
  * API routes:
  *   GET  /api/rooms      — room registry
  *   GET  /api/catalog    — catalog Automerge doc URL (rendezvous hint for new peers)
- *   GET  /admin/reseed   — re-run seed capability from lares/ into docs
+ *   POST /keyhive/promotions — future Keyhive authority seam (501 stub)
  *
  * Usage:
  *   pnpm --filter @lararium/node serve
@@ -34,6 +32,7 @@
  */
 
 import { createServer, type IncomingMessage, type ServerResponse } from "http";
+import { createHash }                                              from "crypto";
 import { readFileSync, existsSync, statSync, mkdirSync, writeFileSync } from "fs";
 import { join, extname, resolve } from "path";
 import { fileURLToPath } from "url";
@@ -54,20 +53,37 @@ import {
   emptyCatalogDoc,
   type MemeStoreDoc,
 } from "@lararium/core";
-import { loadCorpusSources } from "../src/node-host.js";
+import { loadCorpusSources, corpusAbsPath, larUriToLaresAbsPath } from "../src/node-host.js";
+import type { CorpusSource } from "../src/node-host.js";
 import { getGhCliOperatorReceipt } from "../src/github-cli-auth.js";
 import type { AutomergeUrl, DocHandle } from "@automerge/automerge-repo";
 import { getOrCreateNodeAuthReceipt } from "../src/operator-key.js";
 import { TW5_CORE_SCRIPT_URL } from "@lararium/tw5";
 
 const __dirname = fileURLToPath(new URL(".", import.meta.url));
-const REPO_ROOT = resolve(__dirname, "../../../");
+
+// Walk up until pnpm-workspace.yaml — works from scripts/ (tsx) and dist/scripts/ (compiled).
+function findRepoRoot(start: string): string {
+  let dir = start;
+  for (let i = 0; i < 10; i++) {
+    if (existsSync(join(dir, "pnpm-workspace.yaml"))) return dir;
+    const parent = resolve(dir, "..");
+    if (parent === dir) break;
+    dir = parent;
+  }
+  throw new Error(`[lararium-serve] cannot locate repo root from ${start}`);
+}
+
+const REPO_ROOT = findRepoRoot(__dirname);
 const APP_DIST  = join(REPO_ROOT, "packages/lararium-app/dist");
 const APP_PUBLIC = join(REPO_ROOT, "packages/lararium-app/public");
 const DATA_DIR = join(REPO_ROOT, ".lararium-data");
 
 const PORT = parseInt(process.env["LARARIUM_PORT"] ?? "4321", 10);
 const HOST = process.env["LARARIUM_HOST"] ?? "127.0.0.1";
+// Disk write-back disabled by default — filewatch loop bug (Automerge change → writeFileSync → watcher → change).
+// Enable with LARARIUM_WRITEBACK=1 once the loop guard (projector.writing set) is wired.
+const WRITEBACK_ENABLED = process.env["LARARIUM_WRITEBACK"] === "1";
 
 // ---------------------------------------------------------------------------
 // Static file serving
@@ -104,16 +120,26 @@ function json(res: ServerResponse, body: unknown, status = 200) {
 
 
 // ---------------------------------------------------------------------------
-// Boot receipt — SHA delivered via HTML meta tag, not a hidden tldraw shape.
-// Rooms are stable opaque strings; clients self-layout from Automerge.
+// Receipt from automerge corpus state — hash of sorted (uri, text) pairs.
+// Used on subsequent boots when the corpus doc already lives in NodeFS.
+// On first boot the disk-based receipt is used (see computeDiskReceiptSha).
 // ---------------------------------------------------------------------------
 
-async function computeReceiptSha(
+async function computeDiskReceiptSha(
   runtime: ReturnType<typeof createLarariumRuntime>,
 ): Promise<string> {
   const artifact = runtime.compileBoot();
   const receipt  = await runtime.compileBootReceipt(artifact);
   return receipt.sha256.replace(/^sha256:/, "");
+}
+
+function computeCorpusReceiptSha(doc: MemeStoreDoc): string {
+  const pairs = Object.entries(doc)
+    .filter(([uri, rec]) => uri.startsWith("lar:") && rec?.text && !rec.deleted)
+    .sort(([a], [b]) => a.localeCompare(b));
+  const h = createHash("sha256");
+  for (const [uri, rec] of pairs) { h.update(uri); h.update("\0"); h.update(rec!.text!); h.update("\0"); }
+  return h.digest("hex");
 }
 
 // ---------------------------------------------------------------------------
@@ -122,10 +148,6 @@ async function computeReceiptSha(
 
 async function main() {
   mkdirSync(DATA_DIR, { recursive: true });
-
-  const runtime = createLarariumRuntime();
-  // let so the reseed handler can rebuild from fresh lares/ reads
-  let snapshotMemes = await buildSnapshot(runtime);
 
   if (!existsSync(join(APP_DIST, "index.html"))) {
     console.error(
@@ -142,17 +164,6 @@ async function main() {
   // base64-encode for meta tag injection; browser reads via readServerInjectedReceipt()
   const operatorReceiptB64 = Buffer.from(JSON.stringify(nodeAuthReceipt)).toString("base64");
 
-  // Receipt SHA — delivered to clients via <meta name="lararium-receipt"> in the HTML
-  // shell; no hidden tldraw shape needed. Recomputed on reseed.
-  let receiptSha = "";
-  try {
-    receiptSha = await computeReceiptSha(runtime);
-  } catch (e) {
-    // Log loudly — empty receipt means clients boot without corpus verification.
-    // Server continues; operators should investigate lares/ state.
-    console.error("[lararium-serve] ⚠ receipt compute failed — clients will boot without corpus verification:", e);
-  }
-
   const DEFAULT_ROOM = "altar-fire";
 
   // One Repo, one storage dir — all island docs (catalog, rooms, corpora) inside.
@@ -161,6 +172,27 @@ async function main() {
   const ISLANDS_DIR   = join(DATA_DIR, "islands");
   mkdirSync(AUTOMERGE_DIR, { recursive: true });
   mkdirSync(ISLANDS_DIR,   { recursive: true });
+
+  // Detect quine corpus first-boot before touching disk.
+  // Automerge NodeFS is canonical after first boot — only read lares/ to bootstrap.
+  const corpusSources    = loadCorpusSources();
+  const quineSource      = corpusSources.find((c) => c.quine);
+  const quinePath        = quineSource ? join(ISLANDS_DIR, "corpora", quineSource.bag, "doc-url.txt") : null;
+  const quineIsFirstBoot = quinePath ? !existsSync(quinePath) : false;
+
+  // Disk read — only on first boot of the quine corpus.
+  type SnapshotMemes = Awaited<ReturnType<typeof buildSnapshot>>;
+  let snapshotMemes: SnapshotMemes | null = null;
+  let receiptSha = "";
+  if (quineIsFirstBoot) {
+    try {
+      const runtime = createLarariumRuntime();
+      snapshotMemes = await buildSnapshot(runtime);
+      receiptSha    = await computeDiskReceiptSha(runtime);
+    } catch (e) {
+      console.error("[lararium-serve] ⚠ first-boot seed failed:", e);
+    }
+  }
 
   // Peer authorization registry — populated by /auth/session, consumed by sharePolicy.
   const peerRegistry = new LarAuthSessionRegistry();
@@ -182,38 +214,8 @@ async function main() {
       return json(res, { defaultRoom: DEFAULT_ROOM });
     }
 
-    // Admin: force-reseed — rebuild snapshot/receipt from lares/ and patch Automerge
-    if (pathname === "/admin/reseed") {
-      const remoteAddr = (req.socket.remoteAddress ?? "").replace("::ffff:", "");
-      if (remoteAddr !== "127.0.0.1" && remoteAddr !== "::1") {
-        return json(res, { error: "forbidden" }, 403);
-      }
-      try {
-        snapshotMemes = await buildSnapshot(runtime);
-        receiptSha    = await computeReceiptSha(runtime);
-        // Reseed lares corpus island only — room doc stays untouched (island law).
-        const corpusDir = join(ISLANDS_DIR, "corpora", "lares");
-        const urlFile   = join(corpusDir, "doc-url.txt");
-        if (existsSync(urlFile)) {
-          const corpusUrl    = readFileSync(urlFile, "utf8").trim() as AutomergeUrl;
-          const corpusHandle = await memeRepo.find<MemeStoreDoc>(corpusUrl);
-          corpusHandle.change((doc) => {
-            for (const [uri, meme] of Object.entries(snapshotMemes.memes)) {
-              if (!uri.startsWith("lar:") || !meme.text) continue;
-              doc[uri] = { title: uri, fields: meme.fields ?? {}, text: meme.text, bag: "lares" };
-            }
-          });
-        }
-        return json(res, { reseeded: "corpus:lares", sha: receiptSha });
-      } catch (e) {
-        return json(res, { error: String(e) }, 500);
-      }
-    }
-
-    // Canon promotion stub — the old localhost mutation path is gone.
-    // Future flow: POST proposal to a Keyhive-backed authority graph, receive a
-    // promotion receipt, then let a separate projection/write-back worker touch
-    // disk. This endpoint only marks the territory; it performs no mutation.
+    // Keyhive authority seam — promotion proposals land here once Keyhive membership
+    // and receipt signing exist. Stub only; performs no mutation.
     if (pathname === "/keyhive/promotions" && req.method === "POST") {
       return json(res, {
         error: "keyhive-promotion-graph-not-wired",
@@ -492,7 +494,8 @@ async function main() {
   // travels through the projection codec (separate M12 sub-task).
   // The catalog entry is written immediately so browsers can resolve the doc URL.
   // ---------------------------------------------------------------------------
-  async function openOrCreateCorpus(bagId: string): Promise<DocHandle<MemeStoreDoc>> {
+  async function openOrCreateCorpus(source: CorpusSource): Promise<DocHandle<MemeStoreDoc>> {
+    const { bag: bagId } = source;
     const corpusDir = join(ISLANDS_DIR, "corpora", bagId);
     mkdirSync(corpusDir, { recursive: true });
     const urlFile  = join(corpusDir, "doc-url.txt");
@@ -501,14 +504,13 @@ async function main() {
     const handle = await openOrCreate<MemeStoreDoc>(urlFile, () => ({}));
 
     if (firstBoot) {
-      console.log(`[lararium-serve] corpus ${bagId} created: ${handle.url}`);
-      // Content seeding from lares/ carriers for the quine corpus only.
-      // Non-quine corpora (elyncia, ftls, sdm, wtf) seed via projection codec — pending.
-      if (bagId === "lares") {
+      console.log(`[lararium-serve] corpus ${bagId} created: ${handle.url}  (src: ${corpusAbsPath(source)})`);
+      // Quine corpus seeds from lares/ carriers (compiled meme snapshot).
+      // Non-quine corpora (elyncia, ftls, sdm, wtf) seed via projection codec — pending M12.
+      if (source.quine && snapshotMemes) {
         handle.change((doc) => {
           for (const [uri, meme] of Object.entries(snapshotMemes.memes)) {
             if (!uri.startsWith("lar:") || !meme.text) continue;
-            // Top-level bag field stamps the recipe layer for CompositeStore._freeze().
             doc[uri] = { title: uri, fields: meme.fields ?? {}, text: meme.text, bag: bagId };
           }
         });
@@ -536,10 +538,40 @@ async function main() {
   await openOrCreateRoom(DEFAULT_ROOM);
 
   // Warm all corpus islands from the registry.
-  const corpusSources = loadCorpusSources();
-  await Promise.all(corpusSources.map((c) => openOrCreateCorpus(c.bag)));
+  // For the quine corpus, attach a write-back subscriber: automerge change → lares/ file.
+  // This closes the quine loop: browser edit → automerge → disk → git history.
+  await Promise.all(corpusSources.map(async (source) => {
+    const handle = await openOrCreateCorpus(source);
+    if (!source.quine) return;
 
-  // Disk write-back and lares/ file watcher removed — file sync refactor in progress.
+    // On subsequent boots: receipt derives from automerge corpus state, not disk.
+    if (!quineIsFirstBoot) {
+      const doc = handle.doc() as MemeStoreDoc | undefined;
+      if (doc) receiptSha = computeCorpusReceiptSha(doc);
+    }
+
+    // Write-back: disabled by default (LARARIUM_WRITEBACK=1 to enable).
+    // Bug: Automerge change → writeFileSync → file watcher → Automerge change → loop.
+    // Fix requires wiring LarDiskProjector.writing guard before re-enabling.
+    if (!WRITEBACK_ENABLED) return;
+
+    handle.on("change", ({ doc, patches }: { doc: MemeStoreDoc; patches: { path: (string | number)[] }[] }) => {
+      const touched = new Set<string>(
+        patches.map((p) => String(p.path[0])).filter((k) => k.startsWith("lar:"))
+      );
+      for (const uri of touched) {
+        const rec = doc[uri];
+        if (!rec?.text || rec.deleted) continue;
+        const absPath = larUriToLaresAbsPath(uri);
+        if (!absPath) continue;
+        try {
+          writeFileSync(absPath, rec.text, "utf8");
+        } catch (e) {
+          console.warn(`[lararium] write-back failed for ${uri}:`, e);
+        }
+      }
+    });
+  }));
 
   httpServer.listen(PORT, HOST, () => {
     console.log(`[lararium-serve] http://${HOST}:${PORT}`);
@@ -548,8 +580,6 @@ async function main() {
     console.log(`[lararium-serve] catalog:      ${catalogUrl}`);
     console.log(`[lararium-serve] corpora:      ${corpusSources.map((c) => c.bag).join(", ")}`);
     console.log(`[lararium-serve] meme-sync:    ws://${HOST}:${PORT}/meme-sync`);
-    console.log(`[lararium-serve] reseed:       curl http://${HOST}:${PORT}/admin/reseed`);
-    console.log(`[lararium-serve] promote:      disabled; future stub POST /keyhive/promotions`);
     console.log(`[lararium-serve] data dir:     ${DATA_DIR}`);
   });
 

@@ -1,6 +1,6 @@
 # Lararium Node — Tasked Spirits Research Packet
 
-**Date:** 2026-05-01  
+**Date:** 2026-05-01 (updated 2026-05-01)
 **Voice:** Lares (Scryer/Council)  
 **Topic:** Automerge sync cost, internal causal islands, TW5 recipe/bag composition, room/corpus/presence/draft/projection architecture, authorization readiness, and prior art.
 
@@ -8,21 +8,39 @@
 
 ## 0. Operator problem statement
 
-Current QA state:
+### Current milestone state (updated 2026-05-01)
 
-| Issue | Root cause | Fix / current posture |
+| Milestone | Status |
+|---|---|
+| A — Readiness Map | `ReadinessMap` in `@lararium/core`. All 10 keys declared. Browser marks: `auth`, `catalog`, `room-content`, `corpus:*`, `tw-vm`. `snapshot`, `room-presence`, `tldraw-doc`, `mcp-index`, `disk-projector`, `kowloon-feed` declared but not yet lit. ~60% |
+| B — Catalog Island | `CatalogDoc` fully wired. Server creates, browser opens via `openOrCreateCatalog`. ~95% |
+| C — First-paint projection | NOT started. See §9 law annotation. |
+| D — Recipe/bag live surface | `CompositeStore` + per-recipe TW5 VMs done. System and projection bags not yet wired. ~70% |
+| E — Draft promotion ceremony | Draft suppressed (M-E guard), aspirational tests written. No ceremony. ~10% |
+| F — Presence split | Not started. ~0% |
+
+### Auth state (updated 2026-05-01)
+
+| Provider | Status |
+|---|---|
+| `gh` CLI auto-auth | Wired. Server reads `gh auth token` on startup; injects `LarAuthReceipt` as `<meta name="lararium-operator-receipt">`. Developer path: zero browser interaction. |
+| Bluesky AT Proto OAuth | Browser client wired via `@atproto/oauth-client-browser`. Server serves `/oauth/client-metadata.json`. Localhost loopback client works without public domain. Primary path for end users. |
+| GitHub web OAuth | Scaffolded and env-var-gated (`GITHUB_CLIENT_ID` + `GITHUB_CLIENT_SECRET`). Returns 501 until an OAuth App is registered. |
+| `local-dev` | Fallback when `gh` CLI is unavailable (container path). |
+
+### Prior QA issues
+
+| Issue | Root cause | Current posture |
 |---|---|---|
-| 403 static assets | Pre-existing, already fixed | Resolved |
-| E2E tests all timing out | `handle.whenReady()` takes ~50s cold because Automerge WASM decodes a ~760KB snapshot | Persistent `userDataDir` warms IndexedDB; subsequent runs boot in <5s |
+| 403 static assets | Pre-existing | Resolved |
+| E2E cold boot ~50s | `handle.whenReady()` decodes ~760KB single Automerge doc | Island split: room doc starts empty (instant); lares corpus doc carries memes. Warm IDB returns <5s. Cold first-visit cost has moved to the lares corpus doc size. Milestone C (static projection lane) is the correct long-term fix. |
 | E2E `waitForFunction` hangs | `Promise.all(331 microtasks)` starves event loop | Chunked 50-at-a-time with `setTimeout(0)` yield |
 | `TimeoutNegativeWarning` | Upstream `automerge-repo` `throttle.js` bug | Known upstream issue |
-| `'message' handler 210ms violation` | Automerge WASM CRDT merge per WebSocket message | Architectural; warm IndexedDB eliminates return-visit pain |
+| `'message' handler 210ms` | Automerge WASM CRDT merge per WS message | Architectural; warm IDB eliminates return-visit pain |
 
-Smoke state: **8/8 smoke tests green in 34s** on warm IndexedDB. Cold first-visit boot remains ~50s, which points toward **snapshot-over-HTTP / projection-first boot** rather than more waiting on one giant live Automerge doc.
+Primary concern resolved: the single cosmological Automerge doc has been split into catalog + room + corpus islands. `CompositeStore` composes them via TW5 recipe order. Auth gate precedes content sync.
 
-Primary concern: the current single Automerge document has become the virtual server, corpus store, room store, projection substrate, and readiness gate. That is elegant in prototype form, but it risks becoming a forever-growing TiddlyWiki-style wiki document with one causal history and one cold-start cost.
-
-Desired direction: **internal causal islands** of Automerge docs and projections, composed through TW5 recipes/bags into a live surface, with authorization readiness split from document readiness.
+Remaining concern: first cold-visit boot cost lives in the lares corpus doc. Milestone C closes this.
 
 ---
 
@@ -586,6 +604,15 @@ static shell → auth/catalog → snapshot/projection → live Automerge catch-u
 
 A user should see a fossilized projection quickly, then watch it become live once sync catches up.
 
+**Fontany-Fuller-Zelenka island law (do not violate):**
+
+The snapshot/projection lane is a **read artifact** served over HTTP. It is rendered from a corpus island at build or request time, then served as static HTML. It MUST NOT seed or bootstrap any Automerge doc. Each causal island starts from its own history — the room doc starts empty; the corpus doc carries its own seeded content. The static projection is a window, not the source. Seeding a CRDT doc from an HTTP snapshot violates the causal-island boundary and reintroduces server authority over local state.
+
+Correct Milestone C implementation:
+- Server: `GET /snapshot/:roomId` renders a static TW5/tldraw projection from the lares corpus doc and serves it as HTML
+- Browser: shows this HTML as first paint, then `whenReady()` for the live islands proceeds in background
+- When live islands are ready, the static projection is replaced — never merged back in
+
 ### 3. Docs follow collaboration + authority + loading boundaries
 
 Automerge doc boundaries should be chosen where at least one of these changes:
@@ -822,9 +849,18 @@ latest known heads
 projection receipt ids
 ```
 
-### Milestone C — first-paint snapshot
+### Milestone C — first-paint projection
 
-For one room + one corpus, provide a snapshot/projection that can render before live Automerge readiness.
+For one room + one corpus, provide a **static HTML projection** that can render before live Automerge readiness.
+
+Island law (Fontany-Fuller-Zelenka): the projection is a read artifact. It MUST NOT seed or hydrate any Automerge doc. The causal islands own their own history. The projection is a window.
+
+Implementation path:
+- `GET /snapshot/:roomId` — server renders TW5 tiddler bundle → static HTML, tagged with source doc heads and a projection receipt
+- Browser: show static HTML immediately, start Automerge islands in background
+- When `room-content.ready` fires, swap static for live — never merge projection back into CRDT
+- `snapshot.ready` readiness key lights when static HTML is present in the DOM
+- `room-content.ready` fires when Automerge `whenReady()` completes, regardless of snapshot
 
 ### Milestone D — recipe/bag live surface
 

@@ -30,8 +30,8 @@
  * into $tw.Wiki.parsers after boot.
  */
 
-import { parseMemeCarrier } from "@lararium/core";
-import type { MemeAstNode, CarrierNode, ControlNode } from "@lararium/core";
+import { parseMemeCarrier, grammarRulesFromText } from "@lararium/core";
+import type { MemeAstNode, CarrierNode, ControlNode, GrammarRules } from "@lararium/core";
 
 // ---------------------------------------------------------------------------
 // TW5ParseNode — minimal type for TW5's parse tree nodes
@@ -71,7 +71,11 @@ function nodeToTw5(node: MemeAstNode, wiki?: TW5Wiki): TW5ParseNode {
 
     case "Worksite":
       return { type: "lararium-worksite", _ast: node,
-        attributes: { slot: attr(node.slot), uri: attr(node.uri) },
+        attributes: {
+          slot: attr(node.slot),
+          uri:  attr(node.uri),
+          ...(node.delegate ? { delegate: attr(node.delegate) } : {}),
+        },
         children: node.body.map((n) => nodeToTw5(n, wiki)) };
 
     case "Text": {
@@ -187,6 +191,26 @@ export function astToTw5Tree(ast: readonly MemeAstNode[], wiki?: TW5Wiki): TW5Pa
  *   new MemeticParser(type, text, options)
  * where options may carry { parseAsInline, wiki, tiddler }.
  */
+const GRAMMAR_URI = "lar:///lares/grammars/memetic-wikitext";
+
+type AstCache = Map<string, { text: string; grammarText: string; ast: ReturnType<typeof parseMemeCarrier> }>;
+type WikiWithCache = TW5Wiki & {
+  _larAstCache?:  AstCache;
+  _larGrammar?:   { text: string; rules: GrammarRules | null };
+  getTiddlerText?(title: string, defaultText?: string): string | undefined;
+};
+
+function resolveGrammar(wiki: WikiWithCache | undefined): GrammarRules | null {
+  if (!wiki) return null;
+  const text = wiki.getTiddlerText?.(GRAMMAR_URI) ?? "";
+  if (!text) return null;
+  // Cache grammar rules on the wiki instance; invalidate when the carrier text changes.
+  if (!wiki._larGrammar || wiki._larGrammar.text !== text) {
+    wiki._larGrammar = { text, rules: grammarRulesFromText(GRAMMAR_URI, text) };
+  }
+  return wiki._larGrammar.rules;
+}
+
 export class MemeticParser {
   tree: TW5ParseNode[];
 
@@ -195,9 +219,25 @@ export class MemeticParser {
     text: string,
     options: { tiddler?: { fields?: { title?: string } }; parseAsInline?: boolean; wiki?: unknown } = {},
   ) {
-    const uri = options.tiddler?.fields?.title ?? "lar:///unknown";
-    const ast = parseMemeCarrier(uri, text);
-    this.tree = astToTw5Tree(ast, options.wiki as TW5Wiki | undefined);
+    const uri  = options.tiddler?.fields?.title ?? "lar:///unknown";
+    const wiki = options.wiki as WikiWithCache | undefined;
+
+    const grammar     = resolveGrammar(wiki);
+    const grammarText = wiki?._larGrammar?.text ?? "";
+
+    // Per-wiki AST cache keyed by URI; invalidated when text or grammar changes.
+    if (wiki && !wiki._larAstCache) wiki._larAstCache = new Map();
+    const cache  = wiki?._larAstCache;
+    const cached = cache?.get(uri);
+    const ast = (cached?.text === text && cached?.grammarText === grammarText)
+      ? cached.ast
+      : (() => {
+          const a = parseMemeCarrier(uri, text, grammar ?? undefined);
+          cache?.set(uri, { text, grammarText, ast: a });
+          return a;
+        })();
+
+    this.tree = astToTw5Tree(ast, wiki);
   }
 }
 

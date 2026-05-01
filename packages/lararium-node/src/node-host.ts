@@ -14,6 +14,7 @@ import {
   resolveLarUri,
   parseCarrier,
   parsePranalaEdges,
+  grammarRulesFromText,
   MemeGraph,
   Meme,
   laresRelPathToLarUri,
@@ -24,8 +25,6 @@ import {
   type BootReceipt,
   type CarrierRecord,
   type GrammarRules,
-  type SigilRule,
-  type FamilyRule,
 } from "@lararium/core";
 
 // Sync SHA-256 content hash — Node-only. Same algorithm and output format as the
@@ -41,9 +40,22 @@ function makeMemeHashSync(uri: string, fileBytes: Uint8Array | null): string {
 // ---------------------------------------------------------------------------
 
 const __dirname = fileURLToPath(new URL(".", import.meta.url));
-// Schema: lar:///ha.ka.ba/api/v0.1/lararium/modules/node-host
-// packages/lararium-node/dist/ → ../../lares/
-export const LARES_ROOT = resolve(__dirname, "..", "..", "..", "lares");
+
+// Walk up from __dirname until we find pnpm-workspace.yaml — works from both
+// src/ (tsx) and dist/src/ (compiled) without hardcoding depth.
+function findRepoRoot(start: string): string {
+  let dir = start;
+  for (let i = 0; i < 10; i++) {
+    if (existsSync(join(dir, "pnpm-workspace.yaml"))) return dir;
+    const parent = resolve(dir, "..");
+    if (parent === dir) break;
+    dir = parent;
+  }
+  throw new Error(`[lararium] cannot locate repo root from ${start}`);
+}
+
+export const REPO_ROOT  = findRepoRoot(__dirname);
+export const LARES_ROOT = join(REPO_ROOT, "lares");
 
 // ---------------------------------------------------------------------------
 // Grammar rules reader — Phase 2 scaffolding
@@ -56,65 +68,8 @@ export const LARES_ROOT = resolve(__dirname, "..", "..", "..", "lares");
 export function loadGrammarRules(): GrammarRules | null {
   const grammarPath = join(LARES_ROOT, "grammars", "memetic-wikitext.md");
   if (!existsSync(grammarPath)) return null;
-
   const text = readFileSync(grammarPath, "utf8");
-
-  // Extract all ```toml ... ``` fences
-  const fences: string[] = [];
-  for (const m of text.matchAll(/```toml\s*([\s\S]*?)```/g)) {
-    fences.push(m[1] ?? "");
-  }
-  const combined = fences.join("\n");
-
-  // Minimal TOML array-of-tables parser for [[sigils]] and [[families]]
-  function parseArrayOfTables(src: string, tableName: string): Record<string, string>[] {
-    const entries: Record<string, string>[] = [];
-    const tableRe = new RegExp(`\\[\\[${tableName}\\]\\]([\\s\\S]*?)(?=\\[\\[|$)`, "g");
-    for (const m of src.matchAll(tableRe)) {
-      const block = m[1] ?? "";
-      const entry: Record<string, string> = {};
-      for (const line of block.split("\n")) {
-        // Match quoted strings first (self-terminating); bare true/false for booleans.
-        // No end-of-line anchor — avoids stripping # inside regex patterns stored in TOML strings.
-        const kv = line.match(/^\s*([\w_]+)\s*=\s*(?:'([^']*)'|"([^"]*)"|(true|false)(?=[\s#]|$))/);
-        if (kv) {
-          const key = kv[1]!;
-          const val = kv[2] ?? kv[3] ?? kv[4] ?? "";
-          entry[key] = val;
-        }
-      }
-      if (Object.keys(entry).length > 0) entries.push(entry);
-    }
-    return entries;
-  }
-
-  const rawSigils = parseArrayOfTables(combined, "sigils");
-  const rawFamilies = parseArrayOfTables(combined, "families");
-
-  const sigils: SigilRule[] = rawSigils.map((r): SigilRule => ({
-    name: r["name"] ?? "",
-    kind: (r["kind"] ?? "edge") as SigilRule["kind"],
-    ...(r["inline_pattern"]      !== undefined && { inlinePattern:      r["inline_pattern"] }),
-    ...(r["block_pattern"]       !== undefined && { blockPattern:       r["block_pattern"] }),
-    ...(r["open_pattern"]        !== undefined && { openPattern:        r["open_pattern"] }),
-    ...(r["close_pattern"]       !== undefined && { closePattern:       r["close_pattern"] }),
-    ...(r["pattern"]             !== undefined && { pattern:            r["pattern"] }),
-    ...(r["default_family"]      !== undefined && { defaultFamily:      r["default_family"] }),
-    ...(r["default_propagation"] !== undefined && { defaultPropagation: r["default_propagation"] }),
-    ...(r["pragma_pattern"]      !== undefined && { pragmaPattern:      r["pragma_pattern"] }),
-    ...(r["alias_for"]           !== undefined && { aliasFor:           r["alias_for"] }),
-    ...(r["layer"] === "compile" || r["layer"] === "render" || r["layer"] === "both"
-      ? { layer: r["layer"] as "compile" | "render" | "both" } : {}),
-  }));
-
-  const families: FamilyRule[] = rawFamilies.map((r) => ({
-    name: r["name"] ?? "",
-    dagRequired: r["dag_required"] === "true",
-    roleRecommended: r["role_recommended"] === "true",
-    confidenceBounded: r["confidence_bounded"] === "true",
-  }));
-
-  return { sigils, families };
+  return grammarRulesFromText("lar:///lares/grammars/memetic-wikitext", text);
 }
 
 // ---------------------------------------------------------------------------
@@ -169,6 +124,25 @@ export function loadLaresCorpus(): CorpusSource {
   const lares = all.find((c) => c.quine);
   if (!lares) throw new Error("corpus-sources meme has no quine-corpus entry");
   return lares;
+}
+
+/** Resolve a corpus source's path to an absolute filesystem path. */
+export function corpusAbsPath(source: CorpusSource): string {
+  return join(REPO_ROOT, source.path);
+}
+
+/**
+ * Map a lar: URI back to an absolute disk path under lares/.
+ * Returns null if the URI is virtual (no file backing) or unresolvable.
+ */
+export function larUriToLaresAbsPath(uri: string): string | null {
+  try {
+    const resolution = resolveLarUri(uri);
+    if (!resolution.laresRelPath) return null;
+    return join(LARES_ROOT, resolution.laresRelPath);
+  } catch {
+    return null;
+  }
 }
 
 // ---------------------------------------------------------------------------

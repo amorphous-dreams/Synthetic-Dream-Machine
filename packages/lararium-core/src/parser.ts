@@ -82,8 +82,9 @@ const BOOTSTRAP_SCANS: SigilScan[] = [
   // Name form: identifier optionally followed by (key:val ...) args block.
   { sigilName: "kahea",      regex: /<<~\s*kahea\s+(lar:[^\s>]+|[^\s>(]+\/[^\s>]*|[^\s>(]+#[^\s>]*)\s*>>/g, eventType: "leaf" },
   { sigilName: "kahea-call", regex: /<<~\s*kahea\s+([\w][\w.-]*)\s*(?:\(([^)]*)\))?\s*>>/g,                  eventType: "leaf" },
-  { sigilName: "pono",      regex: /<<~\s*pono\s+(#[\w-]+\s+)?(\S+)\s*->\s*(\S+)(?:\s+role:([\w-]+))?\s*>>/g, eventType: "leaf" },
-  { sigilName: "lele",      regex: /<<~\s*lele\s+(\S+)\s*>>/g,             eventType: "leaf"   },
+  { sigilName: "pono",        regex: /<<~\s*pono\s+(#[\w-]+\s+)?(\S+)\s*->\s*(\S+)(?:\s+role:([\w-]+))?\s*>>/g, eventType: "leaf" },
+  { sigilName: "\\constraint", canonicalName: "pono", regex: /<<~\s*\\constraint\s+(#[\w-]+\s+)?(\S+)\s*->\s*(\S+)(?:\s+role:([\w-]+))?\s*>>/g, eventType: "leaf" },
+  { sigilName: "lele",        regex: /<<~\s*lele\s+(\S+)\s*>>/g,           eventType: "leaf"   },
   // papalohe: groups [full, #slot?, FROM, TO, trigger?, fn?]
   // Full UEFN wire: <<~ papalohe DeviceA -> DeviceB trigger:OnEliminated fn:ShowScore >>
   { sigilName: "papalohe",  regex: /<<~\s*papalohe\s+(#[\w-]+\s+)?(\S+)\s*->\s*(\S+)(?:\s+trigger:([\w.-]+))?(?:\s+fn:([\w.-]+))?\s*>>/g, eventType: "leaf" },
