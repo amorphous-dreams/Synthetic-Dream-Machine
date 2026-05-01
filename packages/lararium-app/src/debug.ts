@@ -7,14 +7,13 @@
  */
 
 import type { LarariumTW5 } from "@lararium/tw5";
-import type { AutomergeMemeStore } from "./automerge-store.js";
-import type { LarariumOpenPhase } from "@lararium/core";
+import type { LarariumOpenPhase, CompositeStore } from "@lararium/core";
 import type { LarViewAction } from "@lararium/tldraw";
 import type React from "react";
 
 export interface LarariumDebug {
   editor?:       unknown;                       // tldraw Editor instance
-  tiddlerStore?: AutomergeMemeStore | null;
+  tiddlerStore?: CompositeStore | null;
   hostReceipt?:  string | null;
   openPhase?:    LarariumOpenPhase | null;
   tw5?:          LarariumTW5 | null;

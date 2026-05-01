@@ -12,9 +12,8 @@ import { createContext, useContext, useState, useCallback } from "react";
 import type { Editor } from "tldraw";
 import type { LarViewState, LarViewAction, ZoomLevel } from "@lararium/tldraw";
 import { DEFAULT_ROOMS, ROOM_SYSTEM } from "@lararium/tldraw";
-import type { LarariumOpenPhase, ReactionGraph } from "@lararium/core";
+import type { LarariumOpenPhase, ReactionGraph, CompositeStore } from "@lararium/core";
 import type { LarariumTW5 } from "@lararium/tw5";
-import type { AutomergeMemeStore } from "./automerge-store.js";
 import type { MemeEntry } from "./App.js";
 
 // ---------------------------------------------------------------------------
@@ -94,8 +93,8 @@ export interface LarariumCtxValue {
   setEditor:      (editor: Editor | null) => void;
   /** Current opening phase — null before host open begins. */
   openPhase:      LarariumOpenPhase | null;
-  /** Automerge-backed meme store — null until store-ready phase. */
-  tiddlerStore:   AutomergeMemeStore | null;
+  /** Composite store (corpus layers + room layer) — null until store-ready phase. */
+  tiddlerStore:   CompositeStore | null;
   /** Booted TW5 instance — null until tw5-ready phase. */
   tw5:            LarariumTW5 | null;
   /** Boot receipt from authority phase. */

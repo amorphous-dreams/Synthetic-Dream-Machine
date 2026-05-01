@@ -4,9 +4,9 @@
  * Authority-first-sync-order (Zelenka / causal-island law):
  *   auth.ready
  *     → openLarariumRepo          (IDB + WS peer created)
- *       → repo.openCatalog        → catalog.ready
+ *       → repo.openOrCreateCatalog  → catalog.ready
  *         → repo.resolveRoomDocUrl
- *           → repo.openRoomDoc    → room-content.ready
+ *           → repo.openOrCreateRoomDoc → room-content.ready
  *             → TW5 boots from store
  *               → live
  *
@@ -19,8 +19,8 @@
  */
 
 import { useState, useEffect, useRef } from "react";
-import type { LarariumOpenPhase } from "@lararium/core";
-import { ReadinessMap } from "@lararium/core";
+import type { LarariumOpenPhase, LarTiddlerStore } from "@lararium/core";
+import { ReadinessMap, CompositeStore } from "@lararium/core";
 import { LarariumTW5, LarariumCrdtSyncAdaptor, setActiveTW5 } from "@lararium/tw5";
 import { openLarariumRepo, readCatalogUrl, type LarariumRepo } from "./automerge-store.js";
 import type { AutomergeMemeStore } from "./automerge-store.js";
@@ -42,7 +42,8 @@ export interface BrowserHostOptions {
 export interface HostOpenState {
   phase:     LarariumOpenPhase | null;
   repo:      LarariumRepo | null;
-  store:     AutomergeMemeStore | null;
+  /** Composite store: corpus layers (read-only) + room layer (writable). */
+  store:     CompositeStore | null;
   tw5:       LarariumTW5 | null;
   receipt:   string | null;
   isLive:    boolean;
@@ -74,7 +75,7 @@ function readSyncWsUrl(): string {
 export function useLarariumHostOpen(options: BrowserHostOptions): HostOpenState {
   const [phase,   setPhase]   = useState<LarariumOpenPhase | null>(null);
   const [repo,    setRepo]    = useState<LarariumRepo | null>(null);
-  const [store,   setStore]   = useState<AutomergeMemeStore | null>(null);
+  const [store,   setStore]   = useState<CompositeStore | null>(null);
   const [tw5,     setTw5]     = useState<LarariumTW5 | null>(null);
   const [receipt, setReceipt] = useState<string | null>(null);
   const [isLive,  setIsLive]  = useState(false);
@@ -125,33 +126,50 @@ export function useLarariumHostOpen(options: BrowserHostOptions): HostOpenState 
         return;
       }
 
-      // Open catalog → resolve room doc URL → light catalog.ready
-      let roomDocUrl: string | null = null;
-      if (catalogUrl) {
-        try {
-          const catalogHandle = await larariumRepo.openCatalog(catalogUrl);
-          if (cancelled) return;
-          roomDocUrl = larariumRepo.resolveRoomDocUrl(catalogHandle, roomId);
-        } catch (err: unknown) {
-          console.warn("[lararium] catalog open failed (continuing without catalog):", err);
-        }
+      // Open (or create offline) catalog → resolve room doc URL → light catalog.ready
+      let catalogHandle;
+      try {
+        catalogHandle = await larariumRepo.openOrCreateCatalog(catalogUrl);
+        if (cancelled) return;
+      } catch (err: unknown) {
+        if (!cancelled) setPhase({ kind: "error", message: `Catalog failed: ${String(err)}` });
+        return;
       }
+      const roomDocUrl    = larariumRepo.resolveRoomDocUrl(catalogHandle, roomId);
+      const corpusDocUrls = larariumRepo.resolveCorpusDocUrls(catalogHandle);
       if (!cancelled) readiness.mark("catalog");
 
       // ── Room content doc ──────────────────────────────────────────────────
-      let s: AutomergeMemeStore;
+      let roomStore: AutomergeMemeStore;
       try {
-        s = await larariumRepo.openRoomDoc(roomDocUrl);
+        roomStore = await larariumRepo.openOrCreateRoomDoc(catalogHandle, roomId, roomDocUrl);
         if (cancelled) return;
       } catch (err: unknown) {
         if (!cancelled) setPhase({ kind: "error", message: `Room doc failed: ${String(err)}` });
         return;
       }
 
-      const seedCount = (await s.listVisible()).length;
-      setStore(s);
+      // Build composite: room is the writable top layer.
+      const composite = new CompositeStore();
+      composite.addLayer({ bagId: "room", store: roomStore, writable: true });
+
+      const seedCount = (await composite.listVisible()).length;
+      setStore(composite);
       setPhase({ kind: "store-ready", titleCount: seedCount });
       readiness.mark("room-content");
+
+      // ── Corpus islands — parallel, non-blocking ───────────────────────────
+      // Each corpus doc opens and inserts below the room layer as it arrives.
+      for (const [bagId, docUrl] of Object.entries(corpusDocUrls)) {
+        larariumRepo.openCorpusDoc(bagId, docUrl).then((corpusStore) => {
+          if (cancelled) return;
+          // Insert corpus layer below room (prepend = lower priority).
+          composite.addLayer({ bagId, store: corpusStore, writable: false });
+          readiness.mark(`corpus:${bagId}` as Parameters<typeof readiness.mark>[0]);
+        }).catch((err: unknown) => {
+          console.warn(`[lararium] corpus ${bagId} open failed (non-fatal):`, err);
+        });
+      }
 
       // ── TW5 ───────────────────────────────────────────────────────────────
       if (!cancelled) setPhase({ kind: "tw5-opening", hostId });
@@ -165,13 +183,13 @@ export function useLarariumHostOpen(options: BrowserHostOptions): HostOpenState 
         return;
       }
 
-      await t.loadFromStore(s, (loaded, total) => {
+      await t.loadFromStore(composite, (loaded, total) => {
         if (!cancelled) setPhase({ kind: "tw5-hydrating", loaded, total });
       });
 
       if (!cancelled) { setTw5(t); setPhase({ kind: "tw5-ready", hostId }); readiness.mark("tw-vm"); }
 
-      const adaptor   = new LarariumCrdtSyncAdaptor(t, s, `${hostId}:${roomId}`);
+      const adaptor   = new LarariumCrdtSyncAdaptor(t, roomStore, `${hostId}:${roomId}`);
       const stopStore  = adaptor.start();
       const stopSyncer = t.startSyncer(adaptor);
       stopAdaptorRef.current = () => { stopStore(); stopSyncer(); };
