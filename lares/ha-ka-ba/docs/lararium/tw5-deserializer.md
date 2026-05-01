@@ -1,12 +1,10 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
 
 <<~&#x0001; ? -> lar:///ha.ka.ba/docs/lararium/tw5-deserializer >>
-
-<<~ ahu #iam >>
-```toml
+```toml iam
 uri-path     = "ha.ka.ba/docs/lararium/tw5-deserializer"
 file-path    = "lares/ha-ka-ba/docs/lararium/tw5-deserializer.md"
-content-type = "text/x-memetic-wikitext"
+type = "text/x-memetic-wikitext"
 register     = "CS"
 confidence   = 0.86
 mana         = 0.85
@@ -16,7 +14,8 @@ role         = "design doc: TW5 tiddlerDeserializerModules registration for text
 status-date  = "2026-04-30"
 source       = "lar:///ha.ka.ba/api/v0.1/lararium/modules/deserializer"
 ```
-<<~/ahu >>
+
+
 
 <<~&#x0002;>>
 

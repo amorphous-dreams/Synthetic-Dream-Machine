@@ -1,13 +1,10 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
 
 <<~&#x0001; ? -> lar:///ha.ka.ba/api/v0.1/pono/source-module >>
-
-<<~ ahu #iam >>
-
-```toml
+```toml iam
 uri-path     = "ha.ka.ba/api/v0.1/pono/source-module"
 file-path    = "lares/ha-ka-ba/api/v0.1/pono/source-module.md"
-content-type = "text/x-memetic-wikitext"
+type = "text/x-memetic-wikitext"
 tagspace     = "invariant"
 confidence   = 0.78
 register     = "CS"
@@ -19,7 +16,7 @@ cacheable    = true
 retain       = true
 ```
 
-<<~/ahu >>
+
 
 <<~ ahu #head >>
 

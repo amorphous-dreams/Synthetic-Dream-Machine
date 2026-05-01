@@ -1,25 +1,30 @@
 /**
- * lararium-browser-host — local-first boot sequence for the browser.
+ * lararium-browser-host — local-first Automerge-native boot sequence.
  *
  * Authority-first-sync-order (Zelenka / causal-island law):
  *   auth.ready
- *     → openLarariumRepo          (IDB + WS peer created)
+ *     → openLarariumRepo            (IDB + WS peer — IndexedDB is the first-paint store)
  *       → repo.openOrCreateCatalog  → catalog.ready
  *         → repo.resolveRoomDocUrl
  *           → repo.openOrCreateRoomDoc → room-content.ready
- *             → TW5 boots from store
+ *             → TW5 boots from CompositeStore
  *               → live
+ *
+ * Cold-start performance: IndexedDB warms the Automerge doc on return visits (<5s).
+ * First-visit cold start is addressed by keeping each island doc small — island split
+ * (catalog + room + corpus) is the correct gate, not HTTP JSON fossils.
+ *
+ * CompositeStore layers (lowest → highest priority):
+ *   corpus islands (bag: corpus slug, read-only) — arrive async, non-blocking
+ *   room island    (bag: "room",  writable)  — primary content gate
  *
  * One LarariumRepo per browser session.
  * One TW5 instance per roomId (capability/collaboration scope).
- * A roomId change tears down TW5 + adaptor and reboots for the new scope.
- *
- * Presence (room-presence.ready) lights independently — never blocks content.
- * Corpus islands (corpus:<id>.ready) land in M12.
+ * roomId change triggers clean teardown + reboot.
  */
 
 import { useState, useEffect, useRef } from "react";
-import type { LarariumOpenPhase, LarTiddlerStore } from "@lararium/core";
+import type { LarariumOpenPhase } from "@lararium/core";
 import { ReadinessMap, CompositeStore } from "@lararium/core";
 import { LarariumTW5, LarariumCrdtSyncAdaptor, setActiveTW5 } from "@lararium/tw5";
 import { openLarariumRepo, readCatalogUrl, type LarariumRepo } from "./automerge-store.js";
@@ -27,22 +32,15 @@ import type { AutomergeMemeStore } from "./automerge-store.js";
 import { getOrCreateBrowserAuthReceipt } from "./operator-key.js";
 
 // ---------------------------------------------------------------------------
-// BrowserHostOptions
+// Types
 // ---------------------------------------------------------------------------
 
-export interface BrowserHostOptions {
-  hostId: string;
-  roomId: string;
-}
-
-// ---------------------------------------------------------------------------
-// HostOpenState
-// ---------------------------------------------------------------------------
+export interface BrowserHostOptions { hostId: string; roomId: string; }
 
 export interface HostOpenState {
   phase:     LarariumOpenPhase | null;
   repo:      LarariumRepo | null;
-  /** Composite store: corpus layers (read-only) + room layer (writable). */
+  /** Composite store: corpus layers (canon, read-only) + room layer (writable). */
   store:     CompositeStore | null;
   tw5:       LarariumTW5 | null;
   receipt:   string | null;
@@ -51,7 +49,7 @@ export interface HostOpenState {
 }
 
 // ---------------------------------------------------------------------------
-// useLarariumHostOpen — React hook: sequential local-first boot
+// Meta tag helpers
 // ---------------------------------------------------------------------------
 
 function readBootReceipt(hostId: string): string {
@@ -72,6 +70,10 @@ function readSyncWsUrl(): string {
   return `${proto}//${host}/meme-sync`;
 }
 
+// ---------------------------------------------------------------------------
+// useLarariumHostOpen
+// ---------------------------------------------------------------------------
+
 export function useLarariumHostOpen(options: BrowserHostOptions): HostOpenState {
   const [phase,   setPhase]   = useState<LarariumOpenPhase | null>(null);
   const [repo,    setRepo]    = useState<LarariumRepo | null>(null);
@@ -80,11 +82,11 @@ export function useLarariumHostOpen(options: BrowserHostOptions): HostOpenState 
   const [receipt, setReceipt] = useState<string | null>(null);
   const [isLive,  setIsLive]  = useState(false);
 
-  const readinessRef    = useRef<ReadinessMap>(new ReadinessMap());
-  const tw5Ref          = useRef<LarariumTW5 | null>(null);
-  const stopAdaptorRef  = useRef<(() => void) | null>(null);
-  const optionsRef      = useRef(options);
-  optionsRef.current    = options;
+  const readinessRef   = useRef<ReadinessMap>(new ReadinessMap());
+  const tw5Ref         = useRef<LarariumTW5 | null>(null);
+  const stopAdaptorRef = useRef<(() => void) | null>(null);
+  const optionsRef     = useRef(options);
+  optionsRef.current   = options;
 
   useEffect(() => {
     let cancelled = false;
@@ -96,19 +98,18 @@ export function useLarariumHostOpen(options: BrowserHostOptions): HostOpenState 
 
     async function run() {
       // ── Authority ─────────────────────────────────────────────────────────
-      if (!cancelled) setPhase({ kind: "host-opening", hostId });
-      if (!cancelled) setPhase({ kind: "authority-opening", hostId });
+      setPhase({ kind: "host-opening",     hostId });
+      setPhase({ kind: "authority-opening", hostId });
 
       const authReceipt = await getOrCreateBrowserAuthReceipt();
+      if (cancelled) return;
       const r = readBootReceipt(hostId);
-      if (!cancelled) {
-        setPhase({ kind: "authority-ready", receipt: r });
-        setReceipt(r);
-        readiness.mark("auth");
-      }
+      setPhase({ kind: "authority-ready", receipt: r });
+      setReceipt(r);
+      readiness.mark("auth");
 
-      // ── Repo + Catalog ────────────────────────────────────────────────────
-      if (!cancelled) setPhase({ kind: "store-opening", recipeUri: roomId });
+      // ── Repo ──────────────────────────────────────────────────────────────
+      setPhase({ kind: "store-opening", recipeUri: roomId });
 
       const syncWsUrl  = readSyncWsUrl();
       const catalogUrl = readCatalogUrl(hostId);
@@ -122,22 +123,22 @@ export function useLarariumHostOpen(options: BrowserHostOptions): HostOpenState 
         if (cancelled) return;
         setRepo(larariumRepo);
       } catch (err: unknown) {
-        if (!cancelled) setPhase({ kind: "error", message: `Repo init failed: ${String(err)}` });
+        setPhase({ kind: "error", message: `Repo init failed: ${String(err)}` });
         return;
       }
 
-      // Open (or create offline) catalog → resolve room doc URL → light catalog.ready
+      // ── Catalog ───────────────────────────────────────────────────────────
       let catalogHandle;
       try {
         catalogHandle = await larariumRepo.openOrCreateCatalog(catalogUrl);
         if (cancelled) return;
       } catch (err: unknown) {
-        if (!cancelled) setPhase({ kind: "error", message: `Catalog failed: ${String(err)}` });
+        setPhase({ kind: "error", message: `Catalog failed: ${String(err)}` });
         return;
       }
       const roomDocUrl    = larariumRepo.resolveRoomDocUrl(catalogHandle, roomId);
       const corpusDocUrls = larariumRepo.resolveCorpusDocUrls(catalogHandle);
-      if (!cancelled) readiness.mark("catalog");
+      readiness.mark("catalog");
 
       // ── Room content doc ──────────────────────────────────────────────────
       let roomStore: AutomergeMemeStore;
@@ -145,7 +146,7 @@ export function useLarariumHostOpen(options: BrowserHostOptions): HostOpenState 
         roomStore = await larariumRepo.openOrCreateRoomDoc(catalogHandle, roomId, roomDocUrl);
         if (cancelled) return;
       } catch (err: unknown) {
-        if (!cancelled) setPhase({ kind: "error", message: `Room doc failed: ${String(err)}` });
+        setPhase({ kind: "error", message: `Room doc failed: ${String(err)}` });
         return;
       }
 
@@ -159,11 +160,10 @@ export function useLarariumHostOpen(options: BrowserHostOptions): HostOpenState 
       readiness.mark("room-content");
 
       // ── Corpus islands — parallel, non-blocking ───────────────────────────
-      // Each corpus doc opens and inserts below the room layer as it arrives.
+      // Each corpus doc opens below room layer; shrine-lights as they arrive.
       for (const [bagId, docUrl] of Object.entries(corpusDocUrls)) {
         larariumRepo.openCorpusDoc(bagId, docUrl).then((corpusStore) => {
           if (cancelled) return;
-          // Insert corpus layer below room (prepend = lower priority).
           composite.addLayer({ bagId, store: corpusStore, writable: false });
           readiness.mark(`corpus:${bagId}` as Parameters<typeof readiness.mark>[0]);
         }).catch((err: unknown) => {
@@ -172,29 +172,35 @@ export function useLarariumHostOpen(options: BrowserHostOptions): HostOpenState 
       }
 
       // ── TW5 ───────────────────────────────────────────────────────────────
-      if (!cancelled) setPhase({ kind: "tw5-opening", hostId });
+      setPhase({ kind: "tw5-opening", hostId });
       const t = new LarariumTW5();
       try {
         await t.boot();
         tw5Ref.current = t;
         setActiveTW5(t);
       } catch (err: unknown) {
-        if (!cancelled) setPhase({ kind: "error", message: `TW5 boot failed: ${String(err)}` });
+        setPhase({ kind: "error", message: `TW5 boot failed: ${String(err)}` });
         return;
       }
 
       await t.loadFromStore(composite, (loaded, total) => {
         if (!cancelled) setPhase({ kind: "tw5-hydrating", loaded, total });
       });
+      if (cancelled) return;
 
-      if (!cancelled) { setTw5(t); setPhase({ kind: "tw5-ready", hostId }); readiness.mark("tw-vm"); }
+      setTw5(t);
+      setPhase({ kind: "tw5-ready", hostId });
+      readiness.mark("tw-vm");
 
-      const adaptor   = new LarariumCrdtSyncAdaptor(t, roomStore, `${hostId}:${roomId}`);
+      // Adaptor: composite.subscribe() fans out to all layers;
+      // composite.put() routes to room layer only.
+      const adaptor    = new LarariumCrdtSyncAdaptor(t, composite, `${hostId}:${roomId}`);
       const stopStore  = adaptor.start();
       const stopSyncer = t.startSyncer(adaptor);
       stopAdaptorRef.current = () => { stopStore(); stopSyncer(); };
 
-      if (!cancelled) { setPhase({ kind: "live", offset: 0 }); setIsLive(true); }
+      setPhase({ kind: "live", offset: 0 });
+      setIsLive(true);
     }
 
     run().catch((err: unknown) => {

@@ -1,12 +1,10 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
 
 <<~ॐ ँ&#x0001; ? -> lar:///ha.ka.ba/api/v0.1/lararium/the-altar-fire >>
-
-<<~ ahu #iam >>
-```toml
+```toml iam
 uri-path  = "ha.ka.ba/api/v0.1/lararium/the-altar-fire"
 file-path = "lares/ha-ka-ba/api/v0.1/lararium/the-altar-fire.md"
-content-type = "text/x-memetic-wikitext"
+type = "text/x-memetic-wikitext"
 confidence   = 0.88
 register     = "CS"
 manaoio      = 0.82
@@ -19,7 +17,8 @@ hydrate      = true
 retain       = true
 invariant    = true
 ```
-<<~/ahu >>
+
+
 
 
 <<~ ahu #room-contract >>

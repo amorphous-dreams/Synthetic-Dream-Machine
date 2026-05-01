@@ -1,12 +1,10 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
 
 <<~⊙&#x0001; ? -> lar:///ha.ka.ba/api/v0.1/pono/heleuma/ba >>
-
-<<~ ahu #iam >>
-```toml
+```toml iam
 uri-path     = "ha.ka.ba/api/v0.1/pono/heleuma/ba"
 file-path    = "lares/ha-ka-ba/api/v0.1/pono/heleuma/ba.md"
-content-type = "text/x-memetic-wikitext"
+type = "text/x-memetic-wikitext"
 namespace    = "⊙"
 register     = "CS"
 confidence   = 0.90
@@ -17,7 +15,8 @@ cacheable    = true
 retain       = true
 role         = "invariant interface: heleuma-ba — psyche/path anchor; quine-only trace record with no runtime corpus path"
 ```
-<<~/ahu >>
+
+
 
 <<~&#x0002;>>
 

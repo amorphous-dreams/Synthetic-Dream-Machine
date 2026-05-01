@@ -1,13 +1,10 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
 
 <<~&#x0001; ? -> lar:///ha.ka.ba/api/v0.1/lararium/ui/iam-startup-action >>
-
-<<~ ahu #iam >>
-
-```toml
+```toml iam
 uri-path     = "ha.ka.ba/api/v0.1/lararium/ui/iam-startup-action"
 file-path    = "lares/ha-ka-ba/api/v0.1/lararium/ui/iam-startup-action.md"
-content-type = "text/vnd.tiddlywiki"
+type = "text/vnd.tiddlywiki"
 register     = "CS"
 confidence   = 0.88
 mana         = 0.88
@@ -20,7 +17,7 @@ tags         = ["$:/tags/StartupAction"]
 list-after   = "$:/core/ui/StartupActions/DefaultTiddlers"
 ```
 
-<<~/ahu >>
+
 
 <<~&#x0002;>>
 

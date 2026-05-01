@@ -1,12 +1,10 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
 
 <<~&#x0001; ? -> lar:///ha.ka.ba/api/v0.1/pono/guest-grammar >>
-
-<<~ ahu #iam >>
-```toml
+```toml iam
 uri-path = "ha.ka.ba/api/v0.1/pono/guest-grammar"
 file-path = "lares/ha-ka-ba/api/v0.1/pono/guest-grammar.md"
-content-type = "text/x-memetic-wikitext"
+type = "text/x-memetic-wikitext"
 confidence = 0.70
 register = "CS"
 manaoio = 0.68
@@ -16,7 +14,8 @@ role = "guest-grammar invariant law for explicit admission, hana worksite use, a
 cacheable=true
 retain = true
 ```
-<<~/ahu >>
+
+
 
 <<~ aka lar:///ha.ka.ba/api/v0.1/pono/RFC-2119#normative-language >>
 

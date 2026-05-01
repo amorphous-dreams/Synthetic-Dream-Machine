@@ -1,12 +1,10 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
 
 <<~&#x0001; ? -> lar:///ha.ka.ba/docs/lararium/meme-provider >>
-
-<<~ ahu #iam >>
-```toml
+```toml iam
 uri-path    = "ha.ka.ba/docs/lararium/meme-provider"
 file-path   = "lares/ha-ka-ba/docs/lararium/meme-provider.md"
-content-type = "text/x-memetic-wikitext"
+type = "text/x-memetic-wikitext"
 register    = "CS"
 confidence  = 0.86
 mana        = 0.88
@@ -16,7 +14,8 @@ role        = "design doc: MemeProvider contract, invariants, prior art, and pro
 status-date = "2026-04-30"
 source      = "lar:///ha.ka.ba/api/v0.1/lararium/meme-provider"
 ```
-<<~/ahu >>
+
+
 
 <<~&#x0002;>>
 

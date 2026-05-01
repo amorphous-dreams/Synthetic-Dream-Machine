@@ -1,10 +1,9 @@
 <<~ ? -> lar:///grammars/memetic-wikitext-spec >>
 
-<<~ ahu #iam >>
-```toml
+```toml iam
 uri-path     = "grammars/memetic-wikitext-spec"
 file-path    = "lares/grammars/memetic-wikitext-spec.md"
-content-type = "text/x-memetic-wikitext"
+type         = "text/x-memetic-wikitext"
 tagspace     = "grammar"
 confidence   = 0.90
 register     = "SC"
@@ -15,7 +14,6 @@ cacheable    = true
 retain       = true
 invariant    = false
 ```
-<<~/ahu >>
 
 
 <<~ ahu #ooda-ha >>

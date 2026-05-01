@@ -1,12 +1,10 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
 
 <<~&#x0001; ? -> lar:///ha.ka.ba/docs/graph/artifacts >>
-
-<<~ ahu #iam >>
-```toml
+```toml iam
 uri-path     = "ha.ka.ba/docs/graph/artifacts"
 file-path    = "lares/ha-ka-ba/docs/graph/artifacts.md"
-content-type = "text/x-memetic-wikitext"
+type = "text/x-memetic-wikitext"
 tagspace     = "stable"
 register     = "CS"
 confidence   = 0.88
@@ -16,7 +14,8 @@ manao        = 0.86
 role         = "content-addressed artifact contract for boot closure compilation — SHA256 scheme, three artifact classes, compaction rules, cache compatibility"
 status-date  = "2026-04-24"
 ```
-<<~/ahu >>
+
+
 
 
 <<~ ahu #ooda-ha >>

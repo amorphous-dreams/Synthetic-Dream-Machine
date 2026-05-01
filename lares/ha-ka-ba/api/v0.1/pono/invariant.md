@@ -1,13 +1,10 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
 
 <<~⊙&#x0001; ? -> lar:///ha.ka.ba/api/v0.1/pono/invariant >>
-
-<<~ ahu #iam >>
-
-```toml
+```toml iam
 uri-path = "ha.ka.ba/api/v0.1/pono/invariant"
 file-path = "lares/ha-ka-ba/api/v0.1/pono/invariant.md"
-content-type = "text/x-memetic-wikitext"
+type = "text/x-memetic-wikitext"
 confidence = 0.7
 register = "SC"
 manaoio = 0.5
@@ -21,7 +18,7 @@ retain = true
 # implement = ["lar:///ha.ka.ba/api/v0.1/pono/invariant"]
 ```
 
-<<~/ahu >>
+
 
 <<~ aka lar:///ha.ka.ba/api/v0.1/pono/RFC-2119#normative-language >>
 

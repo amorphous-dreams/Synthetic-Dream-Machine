@@ -1,19 +1,18 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
 
 <<~&#x0001; ? -> lar:///ha.ka.ba/docs/pono/pranala >>
-
-<<~ ahu #iam >>
-```toml
+```toml iam
 uri-path     = "ha.ka.ba/docs/pono/pranala"
 file-path    = "lares/ha-ka-ba/docs/pono/pranala.md"
-content-type = "text/x-memetic-wikitext"
+type = "text/x-memetic-wikitext"
 confidence   = 0.78
 register     = "S"
 role = "docs companion for pranala: examples, sugar long-forms, and reciprocal-edge guidance"
 cacheable = false
 retain = false
 ```
-<<~/ahu >>
+
+
 
 # Pranala — Docs
 

@@ -1,12 +1,10 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
 
 <<~&#x0001; ? -> lar:///ha.ka.ba/api/v0.1/lararium/canvas/layout-geometry >>
-
-<<~ ahu #iam >>
-```toml
+```toml iam
 uri-path      = "ha.ka.ba/api/v0.1/lararium/canvas/layout-geometry"
 file-path     = "lares/ha-ka-ba/api/v0.1/lararium/canvas/layout-geometry.md"
-content-type  = "text/x-memetic-wikitext"
+type  = "text/x-memetic-wikitext"
 register      = "CS"
 confidence    = 0.84
 mana          = 0.84
@@ -20,7 +18,8 @@ status-date   = "2026-04-30"
 source-file   = "packages/lararium-tldraw/src/layout.ts"
 source-symbol = "FRAME_W FRAME_H AHU_W AHU_H DETAIL_FRAME_W GRAPH_FRAME_W LAYOUT_CASCADE CANVAS_TYPES"
 ```
-<<~/ahu >>
+
+
 
 <<~ ahu #head >>
 

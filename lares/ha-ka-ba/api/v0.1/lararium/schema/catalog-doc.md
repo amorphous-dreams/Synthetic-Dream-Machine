@@ -1,12 +1,10 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
 
 <<~&#x0001; ? -> lar:///ha.ka.ba/api/v0.1/lararium/schema/catalog-doc >>
-
-<<~ ahu #iam >>
-```toml
+```toml iam
 uri-path      = "ha.ka.ba/api/v0.1/lararium/schema/catalog-doc"
 file-path     = "lares/ha-ka-ba/api/v0.1/lararium/schema/catalog-doc.md"
-content-type  = "text/x-memetic-wikitext"
+type  = "text/x-memetic-wikitext"
 register      = "CS"
 confidence    = 0.88
 mana          = 0.88
@@ -20,7 +18,8 @@ status-date   = "2026-05-01"
 source-file   = "packages/lararium-core/src/catalog.ts"
 source-symbol = "CatalogDoc"
 ```
-<<~/ahu >>
+
+
 
 <<~ ahu #head >>
 

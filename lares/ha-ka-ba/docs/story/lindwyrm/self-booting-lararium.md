@@ -1,13 +1,10 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
 
 <<~&#x0001; ? -> lar:///ha.ka.ba/docs/story/lindwyrm/self-booting-lararium >>
-
-<<~ ahu #iam >>
-
-```toml
+```toml iam
 uri-path = "ha.ka.ba/docs/story/lindwyrm/self-booting-lararium"
 file-path = "lares/ha-ka-ba/docs/story/lindwyrm/self-booting-lararium.md"
-content-type = "text/x-memetic-wikitext"
+type = "text/x-memetic-wikitext"
 tagspace = "adjacent"
 confidence = 0.70
 register = "S"
@@ -24,7 +21,7 @@ cacheable = false
 retain = true
 ```
 
-<<~/ahu >>
+
 
 <<~&#x0002;>>
 

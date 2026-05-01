@@ -1,11 +1,8 @@
 <<~&#x0001; ? -> lar:///LARARIUM-NODE/CRYPTO >>
-
-<<~ ahu #iam >>
-
-```toml
+```toml iam
 uri-path     = "LARARIUM-NODE/CRYPTO"
 file-path    = "lares/lararium-node/CRYPTO.md"
-content-type = "text/x-memetic-wikitext"
+type = "text/x-memetic-wikitext"
 tagspace     = "adjacent"
 confidence   = 0.94
 register     = "CS"
@@ -18,7 +15,7 @@ hydrate      = true
 retain       = true
 ```
 
-<<~/ahu >>
+
 
 <<~&#x0002;>>
 

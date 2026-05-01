@@ -1,12 +1,10 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
 
 <<~&#x0001; ? -> lar:///ha.ka.ba/api/v0.1/lararium/modules/tw5-widgets >>
-
-<<~ ahu #iam >>
-```toml
+```toml iam
 uri-path      = "ha.ka.ba/api/v0.1/lararium/modules/tw5-widgets"
 file-path     = "lares/ha-ka-ba/api/v0.1/lararium/modules/tw5-widgets.md"
-content-type  = "text/x-memetic-wikitext"
+type  = "text/x-memetic-wikitext"
 register      = "CS"
 confidence    = 0.86
 mana          = 0.86
@@ -20,7 +18,8 @@ status-date   = "2026-04-30"
 source-file   = "packages/lararium-tw5/src/tw5-widgets.ts packages/lararium-tw5/src/memetic-parser.ts"
 source-symbol = "LARARIUM_WIDGETS_TIDDLER WorksiteWidget EdgeWidget TomlWidget SigilWidget DynamicWidget HeaderWidget DispatchWidget PapaloheWidget KukaliWidget KumuWidget TW5ParseNode"
 ```
-<<~/ahu >>
+
+
 
 <<~ ahu #head >>
 

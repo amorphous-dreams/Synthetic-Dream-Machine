@@ -1,12 +1,10 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
 
 <<~&#x0001; ? -> lar:///ha.ka.ba/api/v0.1/pono/heleuma >>
-
-<<~ ahu #iam >>
-```toml
+```toml iam
 uri-path     = "ha.ka.ba/api/v0.1/pono/heleuma"
 file-path    = "lares/ha-ka-ba/api/v0.1/pono/heleuma.md"
-content-type = "text/x-memetic-wikitext"
+type = "text/x-memetic-wikitext"
 register     = "CS"
 confidence   = 0.92
 mana         = 0.90
@@ -16,7 +14,8 @@ cacheable    = true
 retain       = true
 role         = "invariant: heleuma anchor pattern — compiled-side artifacts held in the meme graph by necessity"
 ```
-<<~/ahu >>
+
+
 
 <<~ ahu #head >>
 

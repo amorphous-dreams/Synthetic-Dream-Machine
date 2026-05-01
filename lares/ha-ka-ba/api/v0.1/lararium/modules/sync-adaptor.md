@@ -1,12 +1,10 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
 
 <<~&#x0001; ? -> lar:///ha.ka.ba/api/v0.1/lararium/modules/sync-adaptor >>
-
-<<~ ahu #iam >>
-```toml
+```toml iam
 uri-path     = "ha.ka.ba/api/v0.1/lararium/modules/sync-adaptor"
 file-path    = "lares/ha-ka-ba/api/v0.1/lararium/modules/sync-adaptor.md"
-content-type = "text/x-memetic-wikitext"
+type = "text/x-memetic-wikitext"
 register     = "CS"
 confidence   = 0.87
 mana         = 0.88
@@ -19,7 +17,8 @@ source-file  = "packages/lararium-tw5/src/sync-adaptor.ts"
 source-symbol = "_applyChange"
 implements   = ["lar:///ha.ka.ba/api/v0.1/pono/heleuma/ha"]
 ```
-<<~/ahu >>
+
+
 
 <<~&#x0002;>>
 

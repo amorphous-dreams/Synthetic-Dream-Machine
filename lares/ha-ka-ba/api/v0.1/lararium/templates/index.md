@@ -1,18 +1,17 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
 
 <<~① ? -> lar:///ha.ka.ba/api/v0.1/lararium/templates/index >>
-
-<<~ ahu #iam >>
-```toml
+```toml iam
 uri-path     = "ha.ka.ba/api/v0.1/lararium/templates/index"
 file-path    = "lares/ha-ka-ba/api/v0.1/lararium/templates/index.md"
-content-type = "text/x-memetic-wikitext"
+type = "text/x-memetic-wikitext"
 role         = "namespace index — canvas render templates for tldraw meme frames; one kumu def per zoom level"
 cacheable    = true
 retain       = true
 invariant    = false
 ```
-<<~/ahu >>
+
+
 
 
 <<~ ahu #system-role >>

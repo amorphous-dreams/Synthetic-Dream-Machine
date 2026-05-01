@@ -2,12 +2,10 @@
 
 <<~&#x0001; ? -> lar:///SESSION >>
 
-<<~ ahu #iam >>
-
-```toml
+```toml iam
 uri-path     = "SESSION"
 file-path    = "lares/SESSION.md"
-content-type = "text/x-memetic-wikitext"
+type         = "text/x-memetic-wikitext"
 tagspace     = "adjacent"
 confidence   = 0.84
 register     = "CS"
@@ -20,8 +18,7 @@ implements   = [
 role         = "session handoff crystal — 2026-04-29 (session 4) — kumu defs as first-class memes; native TW5 filter operators (edge:/toml:/all[memes]); ahu typed child tiddlers; server=peer invariant confirmed; feature/lararium-node-3 active"
 ```
 
-<<~/ahu >>
-
+<<~&#x0002;>>
 
 <<~ ahu #ooda-ha-local-first >>
 
@@ -44,9 +41,6 @@ role         = "session handoff crystal — 2026-04-29 (session 4) — kumu defs
 ↺ All Lararium tiddlers use `lar:` URI as title ✓. Echo-loop guard active ✓. `/admin/promote` is the only canon ceremony ✓. Server is peer not authority ✓.
 
 <<~/ahu >>
-
-<<~&#x0002;>>
-
 
 <<~ ahu #ooda-ha-hud >>
 

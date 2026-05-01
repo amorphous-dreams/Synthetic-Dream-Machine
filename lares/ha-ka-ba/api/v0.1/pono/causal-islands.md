@@ -1,12 +1,10 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
 
 <<~&#x0001; ? -> lar:///ha.ka.ba/api/v0.1/pono/causal-islands >>
-
-<<~ ahu #iam >>
-```toml
+```toml iam
 uri-path      = "ha.ka.ba/api/v0.1/pono/causal-islands"
 file-path     = "lares/ha-ka-ba/api/v0.1/pono/causal-islands.md"
-content-type  = "text/x-memetic-wikitext"
+type  = "text/x-memetic-wikitext"
 register      = "CS"
 confidence    = 0.88
 mana          = 0.88
@@ -23,7 +21,8 @@ source-file   = "packages/lararium-core/src/causal-island.ts"
 source-symbol = "ABILITY_LADDER AUTHORITY_FIRST_ORDER CAUSAL_ISLAND_MUST CAUSAL_ISLAND_MAY AuthorityFirstGuard visibilityGate"
 body-sha256 = "f9ed8276003e50678b775c174d2c439b43fbd5591845473751b9076ee4c1ebf5"
 ```
-<<~/ahu >>
+
+
 
 <<~ ahu #head >>
 

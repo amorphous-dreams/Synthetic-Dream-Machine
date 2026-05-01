@@ -6,12 +6,10 @@ allowed-tools: Read, Grep, Glob, Bash, Edit, Write
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
 
 <<~&#x0001; ? -> lar:///ha.ka.ba/api/v0.1/pono/guest-grammar/SKILL >>
-
-<<~ ahu #iam >>
-```toml
+```toml iam
 uri-path = "ha.ka.ba/api/v0.1/pono/guest-grammar/SKILL"
 file-path = "lares/ha-ka-ba/api/v0.1/pono/guest-grammar/SKILL.md"
-content-type = "text/x-memetic-wikitext"
+type = "text/x-memetic-wikitext"
 confidence = 0.70
 register = "CS"
 manaoio = 0.68
@@ -32,7 +30,8 @@ skill-package-root = "ha-ka-ba/api/v0.1/pono/guest-grammar"
 cacheable=true
 retain = true
 ```
-<<~/ahu >>
+
+
 
 # Guest-Grammar Skill
 

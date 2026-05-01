@@ -1,13 +1,10 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
 
 <<~&#x0001; ? -> lar:///ha.ka.ba/docs/lararium/preferences/identity-permissions >>
-
-<<~ ahu #iam >>
-
-```toml
+```toml iam
 uri-path = "ha.ka.ba/docs/lararium/preferences/identity-permissions"
 file-path = "lares/ha-ka-ba/docs/lararium/preferences/identity-permissions.md"
-content-type = "text/x-memetic-wikitext"
+type = "text/x-memetic-wikitext"
 tagspace = "stable"
 confidence = 0.88
 register = "S"
@@ -19,7 +16,7 @@ cacheable = false
 retain = false
 ```
 
-<<~/ahu >>
+
 
 <<~&#x0002;>>
 

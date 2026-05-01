@@ -1,12 +1,10 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
 
 <<~&#x0001; ? -> lar:///ha.ka.ba/docs/lararium_mcp/spine >>
-
-<<~ ahu #iam >>
-```toml
+```toml iam
 uri-path     = "ha.ka.ba/docs/lararium_mcp/spine"
 file-path    = "lares/ha-ka-ba/docs/lararium_mcp/spine.md"
-content-type = "text/x-memetic-wikitext"
+type = "text/x-memetic-wikitext"
 tagspace     = "stable"
 register     = "CS"
 confidence   = 0.86
@@ -20,7 +18,8 @@ source-consumes = [
 ]
 status-date  = "2026-04-23"
 ```
-<<~/ahu >>
+
+
 
 
 <<~ ahu #ooda-ha >>

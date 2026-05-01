@@ -1,13 +1,10 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
 
 <<~&#x0001; ? -> lar:///ha.ka.ba/api/v0.1/lararium/ui/ahu-styles >>
-
-<<~ ahu #iam >>
-
-```toml
+```toml iam
 uri-path     = "ha.ka.ba/api/v0.1/lararium/ui/ahu-styles"
 file-path    = "lares/ha-ka-ba/api/v0.1/lararium/ui/ahu-styles.md"
-content-type = "text/vnd.tiddlywiki"
+type = "text/vnd.tiddlywiki"
 register     = "CS"
 confidence   = 0.88
 mana         = 0.88
@@ -19,7 +16,7 @@ retain       = true
 tags         = ["$:/tags/Stylesheet"]
 ```
 
-<<~/ahu >>
+
 
 <<~&#x0002;>>
 

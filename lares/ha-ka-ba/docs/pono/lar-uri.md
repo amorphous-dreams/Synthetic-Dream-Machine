@@ -1,13 +1,10 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
 
 <<~&#x0001; ? -> lar:///ha.ka.ba/docs/pono/lar-uri >>
-
-<<~ ahu #iam >>
-
-```toml
+```toml iam
 uri-path = "ha.ka.ba/docs/pono/lar-uri"
 file-path = "lares/ha-ka-ba/docs/pono/lar-uri.md"
-content-type = "text/x-memetic-wikitext"
+type = "text/x-memetic-wikitext"
 tagspace = "stable"
 confidence = 0.88
 register = "CS"
@@ -20,7 +17,7 @@ retain = false
 invariant = false
 ```
 
-<<~/ahu >>
+
 
 <<~ aka lar:///ha.ka.ba/api/v0.1/pono/RFC-2119#normative-language >>
 

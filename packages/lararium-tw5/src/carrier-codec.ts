@@ -33,6 +33,9 @@
 import { parseMemeCarrier } from "@lararium/core";
 import type { MemeAstNode, WorksiteNode, SigilNode, MemeStreamEvent, ControlNode, TextNode } from "@lararium/core";
 import { parseTaploFields } from "./toml-ast.js";
+// splitCarrierToTiddlers — re-exported from carrier-split.ts (new toml iam prelude format)
+export { splitCarrierToTiddlers } from "./carrier-split.js";
+import { splitCarrierToTiddlers } from "./carrier-split.js";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -171,10 +174,11 @@ function generateParentText(uri: string, nodes: MemeAstNode[]): string {
 }
 
 // ---------------------------------------------------------------------------
-// splitCarrierToTiddlers — main export
+// splitCarrierToTiddlersLegacy — legacy implementation kept for reference
+// (splitCarrierToTiddlers is now re-exported from carrier-split.ts)
 // ---------------------------------------------------------------------------
 
-export function splitCarrierToTiddlers(uri: string, text: string): CarrierSplit {
+function splitCarrierToTiddlersLegacy(uri: string, text: string): CarrierSplit {
   const warnings: string[] = [];
   let nodes: MemeAstNode[] = [];
 
@@ -350,9 +354,7 @@ export function serializeCarrier(
   const lines: string[] = [
     `<<~ ? -> ${parent.title} >>`,
     "",
-    "<<~ ahu #iam >>",
-    "",
-    "```toml",
+    "```toml iam",
   ];
 
   for (const [k, v] of Object.entries(parent.fields)) {
@@ -369,7 +371,7 @@ export function serializeCarrier(
     const arr = Array.isArray(tags) ? tags : String(tags).split(" ").filter(Boolean);
     lines.push(`tags = [${arr.map((s) => `"${s}"`).join(", ")}]`);
   }
-  lines.push("```", "", "<<~/ahu >>", "");
+  lines.push("```", "");
 
   for (const child of children) {
     const slot = String(child.fields["ahu-slot"] ?? "");
@@ -419,7 +421,8 @@ export function composeCarrierSlotBody(
   fields: Record<string, string | string[] | undefined>,
   text: string,
 ): string {
-  const prefix = fields["ahu-body-prefix"];
+  // Check both new and legacy prefix field names
+  const prefix = fields["fragment-body-prefix"] ?? fields["ahu-body-prefix"];
   if (typeof prefix !== "string" || prefix.length === 0) return text;
   if (text.startsWith(prefix)) return text;
   return `${prefix}${text}`;
@@ -449,5 +452,5 @@ export function removeCarrierSlot(carrierText: string, slot: string): string | n
 // ---------------------------------------------------------------------------
 
 /** Canonical import-path entry: disk carrier text → individual tiddler records. */
-export { splitCarrierToTiddlers as parseCarrier };
+export { splitCarrierToTiddlers as parseCarrier } from "./carrier-split.js";
 

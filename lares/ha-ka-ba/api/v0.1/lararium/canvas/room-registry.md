@@ -1,12 +1,10 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
 
 <<~&#x0001; ? -> lar:///ha.ka.ba/api/v0.1/lararium/canvas/room-registry >>
-
-<<~ ahu #iam >>
-```toml
+```toml iam
 uri-path      = "ha.ka.ba/api/v0.1/lararium/canvas/room-registry"
 file-path     = "lares/ha-ka-ba/api/v0.1/lararium/canvas/room-registry.md"
-content-type  = "text/x-memetic-wikitext"
+type  = "text/x-memetic-wikitext"
 register      = "CS"
 confidence    = 0.86
 mana          = 0.86
@@ -20,7 +18,8 @@ status-date   = "2026-04-30"
 source-file   = "packages/lararium-tldraw/src/room.ts packages/lararium-tldraw/src/view-state.ts"
 source-symbol = "DEFAULT_ROOMS DEFAULT_PORTALS ROOM_SYSTEM ROOM_INVARIANTS ROOM_ENTRY ROOM_GRAPH INITIAL_VIEW_STATE LarViewAction"
 ```
-<<~/ahu >>
+
+
 
 <<~ ahu #head >>
 

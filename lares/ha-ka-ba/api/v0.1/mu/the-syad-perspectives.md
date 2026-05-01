@@ -1,13 +1,10 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
 
 <<~ॐ ँ&#x0001; ? -> lar:///ha.ka.ba/api/v0.1/mu/the-syad-perspectives >>
-
-<<~ ahu #iam >>
-
-```toml
+```toml iam
 uri-path = "ha.ka.ba/api/v0.1/mu/the-syad-perspectives"
 file-path = "lares/ha-ka-ba/api/v0.1/mu/the-syad-perspectives.md"
-content-type = "text/x-memetic-wikitext"
+type = "text/x-memetic-wikitext"
 tagspace = "stable"
 confidence = 0.86
 register = "CS"
@@ -23,7 +20,7 @@ source-file   = "packages/lararium-core/src/ast.ts"
 source-symbol = "STANCES SYAD_7 STANCE_SYAD SATIRIST_OPERATIONAL"
 ```
 
-<<~/ahu >>
+
 
 <<~ aka lar:///ha.ka.ba/api/v0.1/pono/RFC-2119#normative-language >>
 

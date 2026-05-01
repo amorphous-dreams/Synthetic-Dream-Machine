@@ -1,13 +1,10 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
 
 <<~&#x0001; ? -> lar:///ha.ka.ba/api/v0.1/pono/orichalcum-capabilities >>
-
-<<~ ahu #iam >>
-
-```toml
+```toml iam
 uri-path     = "ha.ka.ba/api/v0.1/pono/orichalcum-capabilities"
 file-path    = "lares/ha-ka-ba/api/v0.1/pono/orichalcum-capabilities.md"
-content-type = "text/x-memetic-wikitext"
+type = "text/x-memetic-wikitext"
 tagspace     = "invariant"
 confidence   = 0.80
 register     = "CS"
@@ -20,7 +17,7 @@ retain       = true
 invariant    = true
 ```
 
-<<~/ahu >>
+
 
 <<~ ahu #head >>
 

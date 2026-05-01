@@ -1,12 +1,10 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
 
 <<~ॐ ँ&#x0001; ? -> lar:///ha.ka.ba/api/v0.1/mu/e-prime >>
-
-<<~ ahu #iam >>
-```toml
+```toml iam
 uri-path  = "ha.ka.ba/api/v0.1/mu/e-prime"
 file-path = "lares/ha-ka-ba/api/v0.1/mu/e-prime.md"
-content-type = "text/x-memetic-wikitext"
+type = "text/x-memetic-wikitext"
 confidence = 0.72
 register = "SC"
 manaoio = 0.76
@@ -19,7 +17,7 @@ retain = true
 e-prime-default = 0.50
 ```
 
-<<~/ahu >>
+
 
 <<~ aka lar:///ha.ka.ba/api/v0.1/pono/RFC-2119#normative-language >>
 

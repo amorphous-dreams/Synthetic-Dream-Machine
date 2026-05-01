@@ -45,8 +45,15 @@ export interface LarTiddlerRecord {
   readonly revision?:    string;
   /** Orichalcum authority context that authorized this record. */
   readonly authority?:   string;
-  /** Bag this record belongs to. */
-  readonly bag?:         "core" | "canon" | "room" | "user" | "session";
+  /**
+   * Bag this record belongs to.
+   *
+   * Well-known priority tiers: "core" < "canon" < "room" < "user" < "session"
+   * Corpus islands use their own bag name (e.g. "lares", "elyncia", "ftls", "sdm", "wtf").
+   * Corpus bag names sort below "room" in recipe order; the recipe is authoritative.
+   * Open string so user corpora (e.g. a custom dir) can register any slug.
+   */
+  readonly bag?:         string;
   /** Recipe URI that resolved this record. */
   readonly recipe?:      string;
 }

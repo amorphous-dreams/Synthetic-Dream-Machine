@@ -1,12 +1,10 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
 
 <<~&#x0001; ? -> lar:///ha.ka.ba/api/v0.1/lararium/modules/ability-implies >>
-
-<<~ ahu #iam >>
-```toml
+```toml iam
 uri-path      = "ha.ka.ba/api/v0.1/lararium/modules/ability-implies"
 file-path     = "lares/ha-ka-ba/api/v0.1/lararium/modules/ability-implies.md"
-content-type  = "text/x-memetic-wikitext"
+type  = "text/x-memetic-wikitext"
 register      = "CS"
 confidence    = 0.90
 mana          = 0.89
@@ -20,7 +18,8 @@ source-symbol = "abilityImplies"
 implements    = ["lar:///ha.ka.ba/api/v0.1/pono/heleuma/ka"]
 body-sha256 = "4eb7fd5da26c4cb5097ed713b105a0e0f8570f390a4ee7882ec7a98064faea68"
 ```
-<<~/ahu >>
+
+
 
 <<~&#x0002;>>
 

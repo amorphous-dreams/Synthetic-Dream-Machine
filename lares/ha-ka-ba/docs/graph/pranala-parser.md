@@ -5,12 +5,10 @@
 
 
 <<~&#x0001; ? -> lar:///ha.ka.ba/docs/graph/pranala-parser >>
-
-<<~ ahu #iam >>
-```toml
+```toml iam
 uri-path     = "ha.ka.ba/docs/graph/pranala-parser"
 file-path    = "lares/ha-ka-ba/docs/graph/pranala-parser.md"
-content-type = "text/x-memetic-wikitext"
+type = "text/x-memetic-wikitext"
 tagspace     = "stable"
 register     = "CS"
 confidence   = 0.86
@@ -21,7 +19,8 @@ role         = "parser design for pranala block and inline forms, sugar expansio
 open-gate    = "closed: fragment-level resolution (Option A) confirmed by canonical pranala kānāwai"
 status-date  = "2026-04-24"
 ```
-<<~/ahu >>
+
+
 
 
 <<~ ahu #ooda-ha >>

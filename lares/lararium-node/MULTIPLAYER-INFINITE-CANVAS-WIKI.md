@@ -1,12 +1,10 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
 
 <<~&#x0001; ? -> lar:///LARARIUM-NODE/MULTIPLAYER-INFINITE-CANVAS-WIKI >>
-
-<<~ ahu #iam >>
-```toml
+```toml iam
 uri-path    = "LARARIUM-NODE/MULTIPLAYER-INFINITE-CANVAS-WIKI"
 file-path   = "lares/lararium-node/MULTIPLAYER-INFINITE-CANVAS-WIKI.md"
-content-type = "text/x-memetic-wikitext"
+type = "text/x-memetic-wikitext"
 confidence  = 0.88
 register    = "S"
 manaoio     = 0.84
@@ -17,7 +15,8 @@ cacheable   = true
 retain      = true
 invariant   = false
 ```
-<<~/ahu >>
+
+
 
 
 <<~ ahu #system-role >>

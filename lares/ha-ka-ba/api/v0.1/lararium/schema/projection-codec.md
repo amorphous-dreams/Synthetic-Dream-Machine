@@ -1,12 +1,10 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
 
 <<~&#x0001; ? -> lar:///ha.ka.ba/api/v0.1/lararium/schema/projection-codec >>
-
-<<~ ahu #iam >>
-```toml
+```toml iam
 uri-path     = "ha.ka.ba/api/v0.1/lararium/schema/projection-codec"
 file-path    = "lares/ha-ka-ba/api/v0.1/lararium/schema/projection-codec.md"
-content-type = "text/x-memetic-wikitext"
+type = "text/x-memetic-wikitext"
 register     = "CS"
 confidence   = 0.90
 mana         = 0.90
@@ -20,7 +18,8 @@ invariant    = true
 status-date  = "2026-04-30"
 source-file  = "packages/lararium-tw5/src/carrier-codec.ts"
 ```
-<<~/ahu >>
+
+
 
 <<~ ahu #head >>
 

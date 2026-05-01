@@ -1,12 +1,10 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
 
 <<~&#x0001; ? -> lar:///ha.ka.ba/api/v0.1/lararium/meme-provider >>
-
-<<~ ahu #iam >>
-```toml
+```toml iam
 uri-path     = "ha.ka.ba/api/v0.1/lararium/meme-provider"
 file-path    = "lares/ha-ka-ba/api/v0.1/lararium/meme-provider.md"
-content-type = "text/x-typescript"
+type = "text/x-typescript"
 register     = "CS"
 confidence   = 0.86
 mana         = 0.88
@@ -19,7 +17,8 @@ source-file  = "packages/lararium-core/src/meme-provider.ts"
 body-sha256  = "0d482f4f018ba241ba5d582c02b282741306053d9a2fed9c8614bb7a0d6036b1"
 docs         = "lar:///ha.ka.ba/docs/lararium/meme-provider"
 ```
-<<~/ahu >>
+
+
 
 <<~&#x0002;>>
 

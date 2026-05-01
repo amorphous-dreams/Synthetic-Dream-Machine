@@ -1,12 +1,10 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
 
 <<~&#x0001; ? -> lar:///ha.ka.ba/api/v0.1/lararium/modules/carrier-parse >>
-
-<<~ ahu #iam >>
-```toml
+```toml iam
 uri-path      = "ha.ka.ba/api/v0.1/lararium/modules/carrier-parse"
 file-path     = "lares/ha-ka-ba/api/v0.1/lararium/modules/carrier-parse.md"
-content-type  = "text/x-memetic-wikitext"
+type  = "text/x-memetic-wikitext"
 register      = "CS"
 confidence    = 0.88
 mana          = 0.87
@@ -20,7 +18,8 @@ source-symbol = "parseCarrier"
 implements    = ["lar:///ha.ka.ba/api/v0.1/pono/heleuma/ka"]
 body-sha256 = "de5ced103cad1f1a5e414cabe57a2052578fa69e190baf2e2dc06fb458db9ceb"
 ```
-<<~/ahu >>
+
+
 
 <<~&#x0002;>>
 

@@ -1,11 +1,8 @@
 <<~ ? -> lar:///lararium-node/SELF-HOSTING-RESEARCH >>
-
-<<~ ahu #iam >>
-
-```toml
+```toml iam
 uri-path     = "lararium-node/SELF-HOSTING-RESEARCH"
 file-path    = "lares/lararium-node/SELF-HOSTING-RESEARCH.md"
-content-type = "text/x-memetic-wikitext"
+type = "text/x-memetic-wikitext"
 tagspace     = "adjacent"
 confidence   = 0.91
 register     = "CS"
@@ -16,7 +13,7 @@ cacheable    = true
 retain       = true
 ```
 
-<<~/ahu >>
+
 
 
 <<~ ahu #question >>

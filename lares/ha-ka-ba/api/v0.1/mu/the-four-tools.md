@@ -1,13 +1,10 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
 
 <<~ॐ ँ&#x0001; ? -> lar:///ha.ka.ba/api/v0.1/mu/the-four-tools >>
-
-<<~ ahu #iam >>
-
-```toml
+```toml iam
 uri-path = "ha.ka.ba/api/v0.1/mu/the-four-tools"
 file-path    = "lares/ha-ka-ba/api/v0.1/mu/the-four-tools.md"
-content-type = "text/x-memetic-wikitext"
+type = "text/x-memetic-wikitext"
 tagspace     = "stable"
 confidence = 0.84
 register   = "CS"
@@ -23,7 +20,7 @@ source-file   = "packages/lararium-core/src/ast.ts"
 source-symbol = "TOOLS TOOL_ASCII TOOL_FEED TOOL_APERTURE"
 ```
 
-<<~/ahu >>
+
 
 <<~ aka lar:///ha.ka.ba/api/v0.1/pono/RFC-2119#normative-language >>
 

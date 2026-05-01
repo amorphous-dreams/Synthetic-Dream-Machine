@@ -1,11 +1,8 @@
 <<~ ? -> lar:///README >>
-
-<<~ ahu #iam >>
-
-```toml
+```toml iam
 uri-path     = "README"
 file-path    = "lares/README.md"
-content-type = "text/x-memetic-wikitext"
+type = "text/x-memetic-wikitext"
 tagspace     = "adjacent"
 confidence   = 0.90
 register     = "CS"
@@ -16,7 +13,7 @@ cacheable    = true
 retain       = true
 ```
 
-<<~/ahu >>
+
 
 
 <<~ ahu #identity-frame >>

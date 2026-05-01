@@ -1,12 +1,10 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
 
 <<~&#x0001; ? -> lar:///ha.ka.ba/api/v0.1/lararium/canvas/projection-records >>
-
-<<~ ahu #iam >>
-```toml
+```toml iam
 uri-path      = "ha.ka.ba/api/v0.1/lararium/canvas/projection-records"
 file-path     = "lares/ha-ka-ba/api/v0.1/lararium/canvas/projection-records.md"
-content-type  = "text/x-memetic-wikitext"
+type  = "text/x-memetic-wikitext"
 register      = "CS"
 confidence    = 0.86
 mana          = 0.86
@@ -20,7 +18,8 @@ status-date   = "2026-04-30"
 source-file   = "packages/lararium-tldraw/src/records.ts"
 source-symbol = "LarTLPage LarTLFrame LarTLSocket LarTLArrow LarTLNote LarProjectionId memeFrameId ahuFrameId edgeArrowId pageId"
 ```
-<<~/ahu >>
+
+
 
 <<~ ahu #head >>
 

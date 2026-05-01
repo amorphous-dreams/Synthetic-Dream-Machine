@@ -1,11 +1,8 @@
 <<~ ? -> lar:///ha.ka.ba/docs/pono/sigil-grammar-research >>
-
-<<~ ahu #iam >>
-
-```toml
+```toml iam
 uri-path     = "ha.ka.ba/docs/pono/sigil-grammar-research"
 file-path    = "lares/ha-ka-ba/docs/pono/sigil-grammar-research.md"
-content-type = "text/x-memetic-wikitext"
+type = "text/x-memetic-wikitext"
 tagspace     = "stable"
 confidence   = 0.82
 register     = "CS"
@@ -17,7 +14,7 @@ retain       = false
 invariant    = false
 ```
 
-<<~/ahu >>
+
 
 
 <<~ ahu #purpose >>

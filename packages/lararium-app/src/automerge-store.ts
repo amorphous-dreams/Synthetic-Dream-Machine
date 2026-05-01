@@ -132,6 +132,11 @@ export class AutomergeMemeStore implements LarTiddlerStore {
   get url(): AutomergeUrl { return this.handle.url; }
 
   private _freeze(raw: MutableLarRecord): LarTiddlerRecord {
+    // Stamp bag from stored field first; fall back to store's island name.
+    // Corpus islands use their own name (e.g. "lares", "elyncia") — provenance preserved.
+    const effectiveBag: string | undefined =
+      (raw.bag as string | undefined) ?? this.bagId ?? undefined;
+
     return Object.freeze({
       title:  raw.title,
       fields: Object.freeze({ ...raw.fields }),
@@ -141,7 +146,7 @@ export class AutomergeMemeStore implements LarTiddlerStore {
       ...(raw.contentHash !== undefined && { contentHash: raw.contentHash }),
       ...(raw.revision    !== undefined && { revision:    raw.revision }),
       ...(raw.authority   !== undefined && { authority:   raw.authority }),
-      ...(raw.bag         !== undefined && { bag:         raw.bag as LarTiddlerRecord["bag"] }),
+      ...(effectiveBag    !== undefined && { bag: effectiveBag }),
     }) as LarTiddlerRecord;
   }
 }
@@ -236,7 +241,7 @@ export class LarariumRepo {
       });
     }
 
-    const store = new AutomergeMemeStore(handle);
+    const store = new AutomergeMemeStore(handle, "room");
     store.markSyncComplete();
     return store;
   }

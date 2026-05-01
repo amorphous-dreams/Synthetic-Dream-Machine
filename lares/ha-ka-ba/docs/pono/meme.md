@@ -1,13 +1,10 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
 
 <<~&#x0001; ? -> lar:///ha.ka.ba/docs/pono/meme >>
-
-<<~ ahu #iam >>
-
-```toml
+```toml iam
 uri-path = "ha.ka.ba/docs/pono/meme"
 file-path = "lares/ha-ka-ba/docs/pono/meme.md"
-content-type = "text/x-memetic-wikitext"
+type = "text/x-memetic-wikitext"
 tagspace = "stable"
 confidence = 0.74
 register = "CS"
@@ -20,7 +17,7 @@ retain = false
 invariant = false
 ```
 
-<<~/ahu >>
+
 
 <<~&#x0002;>>
 

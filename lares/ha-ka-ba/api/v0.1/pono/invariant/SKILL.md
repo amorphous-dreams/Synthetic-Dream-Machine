@@ -6,12 +6,10 @@ allowed-tools: Read, Grep, Glob, Bash, Edit, Write
 <!-- !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/invariant -->
 
 <<~&#x0001; ? -> lar:///ha.ka.ba/api/v0.1/pono/invariant/SKILL >>
-
-<<~ ahu #iam >>
-```toml
+```toml iam
 uri-path = "ha.ka.ba/api/v0.1/pono/invariant/SKILL"
 file-path = "lares/ha-ka-ba/api/v0.1/pono/invariant/SKILL.md"
-content-type = "text/x-memetic-wikitext"
+type = "text/x-memetic-wikitext"
 confidence = 0.73
 register = "SC"
 manaoio = 0.69
@@ -31,7 +29,8 @@ constraints = [
 ]
 skill-package-root = "ha-ka-ba/api/v0.1/pono/invariant"
 ```
-<<~/ahu >>
+
+
 
 # Invariant-Meme Skill
 

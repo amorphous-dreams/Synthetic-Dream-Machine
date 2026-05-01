@@ -1,11 +1,9 @@
 <<~ ? -> lar:///grammars/memetic-wikitext >>
 
-<<~ ahu #iam >>
-
-```toml
+```toml iam
 uri-path     = "grammars/memetic-wikitext"
 file-path    = "lares/grammars/memetic-wikitext.md"
-content-type = "text/x-memetic-wikitext"
+type         = "text/x-memetic-wikitext"
 tagspace     = "grammar"
 confidence   = 0.92
 register     = "CS"
@@ -15,8 +13,6 @@ role         = "grammar kernel: sigil registry and parse rules for memetic-wikit
 cacheable    = true
 retain       = true
 ```
-
-<<~/ahu >>
 
 
 <<~ ahu #sigil-registry >>

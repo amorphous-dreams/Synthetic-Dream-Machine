@@ -1,13 +1,10 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
 
 <<~&#x0001; ? -> lar:///ha.ka.ba/api/v0.1/lararium/palette/gruvbox-light >>
-
-<<~ ahu #iam >>
-
-```toml
+```toml iam
 uri-path     = "ha.ka.ba/api/v0.1/lararium/palette/gruvbox-light"
 file-path    = "lares/ha-ka-ba/api/v0.1/lararium/palette/gruvbox-light.md"
-content-type = "text/plain"
+type = "text/plain"
 tagspace     = "adjacent"
 confidence   = 1.0
 register     = "S"
@@ -15,7 +12,7 @@ tags   = ["$:/tags/Palette"]
 role         = "Gruvbox Light color palette for TW5 theme engine"
 ```
 
-<<~/ahu >>
+
 
 <<~&#x0002;>>
 

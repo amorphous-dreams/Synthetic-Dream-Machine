@@ -1,12 +1,10 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
 
 <<~&#x0001; ? -> lar:///ha.ka.ba/docs/pono/exchange-vector >>
-
-<<~ ahu #iam >>
-```toml
+```toml iam
 uri-path = "ha.ka.ba/docs/pono/exchange-vector"
 file-path = "lares/ha-ka-ba/docs/pono/exchange-vector.md"
-content-type = "text/x-memetic-wikitext"
+type = "text/x-memetic-wikitext"
 tagspace = "stable"
 confidence = 0.70
 register = "CS"
@@ -18,7 +16,8 @@ cacheable = false
 retain = false
 invariant = false
 ```
-<<~/ahu >>
+
+
 
 <<~&#x0002;>>
 

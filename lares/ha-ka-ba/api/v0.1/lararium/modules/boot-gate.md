@@ -1,12 +1,10 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
 
 <<~&#x0001; ? -> lar:///ha.ka.ba/api/v0.1/lararium/modules/boot-gate >>
-
-<<~ ahu #iam >>
-```toml
+```toml iam
 uri-path     = "ha.ka.ba/api/v0.1/lararium/modules/boot-gate"
 file-path    = "lares/ha-ka-ba/api/v0.1/lararium/modules/boot-gate.md"
-content-type = "text/x-memetic-wikitext"
+type = "text/x-memetic-wikitext"
 register     = "CS"
 confidence   = 0.87
 mana         = 0.86
@@ -19,7 +17,8 @@ source-file   = "packages/lararium-tw5/src/lararium-tw5.ts"
 source-symbol = "_bootModules"
 implements    = ["lar:///ha.ka.ba/api/v0.1/pono/heleuma/ha"]
 ```
-<<~/ahu >>
+
+
 
 <<~&#x0002;>>
 

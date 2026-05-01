@@ -6,12 +6,10 @@ allowed-tools: Read, Grep, Glob, Bash, Edit, Write
 <!-- !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext -->
 
 <<~&#x0001; ? -> lar:///ha.ka.ba/api/v0.1/mu/e-prime/SKILL >>
-
-<<~ ahu #iam >>
-```toml
+```toml iam
 uri-path = "ha.ka.ba/api/v0.1/pono/e-prime/SKILL"
 file-path = "lares/ha-ka-ba/api/v0.1/pono/e-prime/SKILL.md"
-content-type = "text/x-memetic-wikitext"
+type = "text/x-memetic-wikitext"
 confidence = 0.68
 register = "SC"
 manaoio = 0.63
@@ -29,7 +27,8 @@ constraints = [
 ]
 skill-package-root = "ha-ka-ba/api/v0.1/pono/e-prime"
 ```
-<<~/ahu >>
+
+
 
 # E-Prime Auditor
 

@@ -1,11 +1,9 @@
 <<~&#x0001; ? -> lar:///LARARIUM-NODE/AUTH-ATPROTO >>
 
-<<~ ahu #iam >>
-
-```toml
+```toml iam
 uri-path     = "LARARIUM-NODE/AUTH-ATPROTO"
 file-path    = "lares/lararium-node/AUTH-ATPROTO.md"
-content-type = "text/x-memetic-wikitext"
+type         = "text/x-memetic-wikitext"
 tagspace     = "adjacent"
 confidence   = 0.91
 register     = "CS"
@@ -17,8 +15,6 @@ cacheable    = true
 hydrate      = true
 retain       = true
 ```
-
-<<~/ahu >>
 
 <<~&#x0002;>>
 

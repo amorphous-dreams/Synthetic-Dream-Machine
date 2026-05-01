@@ -1,11 +1,9 @@
 <<~ ? -> lar:///grammars/wikitext-filter >>
 
-<<~ ahu #iam >>
-
-```toml
+```toml iam
 uri-path     = "grammars/wikitext-filter"
 file-path    = "lares/grammars/wikitext-filter.md"
-content-type = "text/x-memetic-wikitext"
+type         = "text/x-memetic-wikitext"
 tagspace     = "grammar"
 confidence   = 0.88
 register     = "SC"
@@ -18,8 +16,6 @@ cacheable    = true
 retain       = true
 invariant    = false
 ```
-
-<<~/ahu >>
 
 
 <<~ ahu #purpose >>

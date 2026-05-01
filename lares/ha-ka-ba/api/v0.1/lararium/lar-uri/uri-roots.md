@@ -1,12 +1,10 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
 
 <<~&#x0001; ? -> lar:///ha.ka.ba/api/v0.1/lararium/lar-uri/uri-roots >>
-
-<<~ ahu #iam >>
-```toml
+```toml iam
 uri-path      = "ha.ka.ba/api/v0.1/lararium/lar-uri/uri-roots"
 file-path     = "lares/ha-ka-ba/api/v0.1/lararium/lar-uri/uri-roots.md"
-content-type  = "text/x-memetic-wikitext"
+type  = "text/x-memetic-wikitext"
 register      = "CS"
 confidence    = 0.88
 mana          = 0.88
@@ -21,7 +19,8 @@ status-date   = "2026-04-30"
 source-file   = "packages/lararium-core/src/resolver.ts"
 source-symbol = "CAPS_FILE_ROOTS VIRTUAL_CAPS_ROOTS STABLE_TUPLE_ROOT"
 ```
-<<~/ahu >>
+
+
 
 <<~ ahu #head >>
 

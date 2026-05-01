@@ -1,13 +1,10 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
 
 <<~&#x0001; ? -> lar:///ha.ka.ba/api/v0.1/lararium/modules/tw5-modules >>
-
-<<~ ahu #iam >>
-
-```toml
+```toml iam
 uri-path        = "ha.ka.ba/api/v0.1/lararium/modules/tw5-modules"
 file-path       = "lares/ha-ka-ba/api/v0.1/lararium/modules/tw5-modules.md"
-content-type    = "application/javascript"
+type    = "application/javascript"
 module-type     = "library"
 tw5-module-name = "lararium-tw5-modules"
 register        = "CS"
@@ -22,7 +19,7 @@ implements      = ["lar:///ha.ka.ba/api/v0.1/lararium/tw5-module"]
 body-sha256 = "357a8fc84e48c481bf8f2c18b0e4dc6f761d27e60c82d89209757115df16e76b"
 ```
 
-<<~/ahu >>
+
 
 <<~&#x0002;>>
 

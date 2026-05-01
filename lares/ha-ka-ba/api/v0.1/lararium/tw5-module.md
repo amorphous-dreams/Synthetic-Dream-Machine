@@ -1,13 +1,10 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
 
 <<~&#x0001; ? -> lar:///ha.ka.ba/api/v0.1/lararium/tw5-module >>
-
-<<~ ahu #iam >>
-
-```toml
+```toml iam
 uri-path     = "ha.ka.ba/api/v0.1/lararium/tw5-module"
 file-path    = "lares/ha-ka-ba/api/v0.1/lararium/tw5-module.md"
-content-type = "text/x-memetic-wikitext"
+type = "text/x-memetic-wikitext"
 register     = "CS"
 confidence   = 0.90
 mana         = 0.90
@@ -18,7 +15,7 @@ cacheable    = true
 retain       = true
 ```
 
-<<~/ahu >>
+
 
 <<~&#x0002;>>
 

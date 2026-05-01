@@ -1,11 +1,8 @@
 <<~ ? -> lar:///lararium-node/MEME-STORE-FOUNDATIONS >>
-
-<<~ ahu #iam >>
-
-```toml
+```toml iam
 uri-path     = "lararium-node/MEME-STORE-FOUNDATIONS"
 file-path    = "lares/lararium-node/MEME-STORE-FOUNDATIONS.md"
-content-type = "text/x-memetic-wikitext"
+type = "text/x-memetic-wikitext"
 tagspace     = "adjacent"
 confidence   = 0.88
 register     = "CS"
@@ -16,7 +13,7 @@ cacheable    = true
 retain       = true
 ```
 
-<<~/ahu >>
+
 
 
 <<~ ahu #research-pressure >>

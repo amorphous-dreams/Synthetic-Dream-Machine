@@ -1,19 +1,18 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
 
 <<~&#x0001; ? -> lar:///ha.ka.ba/docs/pono/e-prime >>
-
-<<~ ahu #iam >>
-```toml
+```toml iam
 uri-path     = "ha.ka.ba/docs/pono/e-prime"
 file-path    = "lares/ha-ka-ba/docs/pono/e-prime.md"
-content-type = "text/x-memetic-wikitext"
+type = "text/x-memetic-wikitext"
 confidence   = 0.70
 register     = "S"
 role = "docs companion for e-prime: research provenance, braid notes, and slider guidance"
 cacheable = false
 retain = false
 ```
-<<~/ahu >>
+
+
 
 # E-Prime — Docs
 

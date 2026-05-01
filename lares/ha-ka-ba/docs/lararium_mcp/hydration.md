@@ -1,12 +1,10 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
 
 <<~&#x0001; ? -> lar:///ha.ka.ba/docs/lararium_mcp/hydration >>
-
-<<~ ahu #iam >>
-```toml
+```toml iam
 uri-path     = "ha.ka.ba/docs/lararium_mcp/hydration"
 file-path    = "lares/ha-ka-ba/docs/lararium_mcp/hydration.md"
-content-type = "text/x-memetic-wikitext"
+type = "text/x-memetic-wikitext"
 tagspace     = "stable"
 register     = "CS"
 confidence   = 0.87
@@ -21,7 +19,8 @@ source-consumes = [
 ]
 status-date  = "2026-04-23"
 ```
-<<~/ahu >>
+
+
 
 
 <<~ ahu #ooda-ha >>

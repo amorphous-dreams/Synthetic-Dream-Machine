@@ -1,12 +1,10 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
 
 <<~① ? -> lar:///ha.ka.ba/api/v0.1/lararium/templates/meme-operational >>
-
-<<~ ahu #iam >>
-```toml
+```toml iam
 uri-path     = "ha.ka.ba/api/v0.1/lararium/templates/meme-operational"
 file-path    = "lares/ha-ka-ba/api/v0.1/lararium/templates/meme-operational.md"
-content-type = "text/x-memetic-wikitext"
+type = "text/x-memetic-wikitext"
 role         = "canvas template — meme frame at operational zoom (0.15–0.35, edge topology readable)"
 kumu-name    = "meme-operational"
 kumu-params  = "uri"
@@ -14,7 +12,8 @@ tags         = ["$:/tags/LarariumKumu"]
 cacheable    = true
 retain       = true
 ```
-<<~/ahu >>
+
+
 
 <<~ kumu meme-operational(uri) >>
 ```toml

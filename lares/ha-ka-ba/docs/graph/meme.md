@@ -1,12 +1,10 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
 
 <<~&#x0001; ? -> lar:///ha.ka.ba/docs/graph/meme >>
-
-<<~ ahu #iam >>
-```toml
+```toml iam
 uri-path     = "ha.ka.ba/docs/graph/meme"
 file-path    = "lares/ha-ka-ba/docs/graph/meme.md"
-content-type = "text/x-memetic-wikitext"
+type = "text/x-memetic-wikitext"
 tagspace     = "stable"
 register     = "CS"
 confidence   = 0.86
@@ -21,7 +19,8 @@ uncertainty-meme-class-name   = "Meme preferred over CarrierMeme or Locus; not y
 uncertainty-graph-class-name  = "MemeGraph preferred over LociGraph, CarrierGraph, or Graph; not yet ratified in code"
 uncertainty-locus-subtype     = "Locus remains valid as the subtype name for memes that implement the pono loci interface; distinct from graph node terminology"
 ```
-<<~/ahu >>
+
+
 
 
 <<~ ahu #terminology-note>>

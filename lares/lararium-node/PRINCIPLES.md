@@ -2,11 +2,10 @@
 
 <<~&#x0001; ? -> lar:///lararium-node/PRINCIPLES >>
 
-<<~ ahu #iam >>
-```toml
+```toml iam
 uri-path = "lararium-node/PRINCIPLES"
 file-path = "lares/lararium-node/PRINCIPLES.md"
-content-type = "text/x-memetic-wikitext"
+type = "text/x-memetic-wikitext"
 confidence = 0.99
 register = "CS"
 manaoio = 0.92
@@ -17,7 +16,6 @@ cacheable = true
 retain = true
 invariant = true
 ```
-<<~/ahu >>
 
 <<~&#x0002;>>
 

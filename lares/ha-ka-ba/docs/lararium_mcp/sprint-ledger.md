@@ -1,12 +1,10 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
 
 <<~&#x0001; ? -> lar:///ha.ka.ba/docs/lararium_mcp/sprint-ledger >>
-
-<<~ ahu #iam >>
-```toml
+```toml iam
 uri-path     = "ha.ka.ba/docs/lararium_mcp/sprint-ledger"
 file-path    = "lares/ha-ka-ba/docs/lararium_mcp/sprint-ledger.md"
-content-type = "text/x-memetic-wikitext"
+type = "text/x-memetic-wikitext"
 tagspace     = "stable"
 register     = "CS"
 confidence   = 0.84
@@ -21,7 +19,8 @@ source-consumes = [
 ]
 status      = "sequence-bound; no calendar dates"
 ```
-<<~/ahu >>
+
+
 
 
 <<~ ahu #ooda-ha >>

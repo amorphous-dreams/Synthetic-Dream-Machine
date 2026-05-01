@@ -1,12 +1,10 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
 
 <<~&#x0001; ? -> lar:///ha.ka.ba/api/v0.1/pono >>
-
-<<~ ahu #iam >>
-```toml
+```toml iam
 uri-path = "ha.ka.ba/api/v0.1/pono"
 file-path = "lares/ha-ka-ba/api/v0.1/pono.md"
-content-type = "text/x-memetic-wikitext"
+type = "text/x-memetic-wikitext"
 confidence = 0.65
 register = "CS"
 manaoio = 0.60
@@ -15,7 +13,8 @@ manao = 0.70
 role = "core invariant example of a pono meme: right-sized law surface, bounded self-description, and outward routing pressure"
 cacheable = true
 ```
-<<~/ahu >>
+
+
 
 <<~&#x0002;>>
 

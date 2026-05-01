@@ -1,13 +1,10 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
 
 <<~&#x0001; ? -> lar:///ha.ka.ba/api/v0.1/lararium/ui/meme-view-children >>
-
-<<~ ahu #iam >>
-
-```toml
+```toml iam
 uri-path     = "ha.ka.ba/api/v0.1/lararium/ui/meme-view-children"
 file-path    = "lares/ha-ka-ba/api/v0.1/lararium/ui/meme-view-children.md"
-content-type = "text/vnd.tiddlywiki"
+type = "text/vnd.tiddlywiki"
 register     = "CS"
 confidence   = 0.88
 mana         = 0.88
@@ -20,7 +17,7 @@ tags         = ["$:/tags/ViewTemplate"]
 list-after   = "$:/core/ui/ViewTemplate/body"
 ```
 
-<<~/ahu >>
+
 
 <<~&#x0002;>>
 

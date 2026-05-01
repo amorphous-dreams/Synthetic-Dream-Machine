@@ -1,13 +1,10 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
 
 <<~⊙&#x0001; ? -> lar:///ha.ka.ba/docs/pono/loci >>
-
-<<~ ahu #iam >>
-
-```toml
+```toml iam
 uri-path     = "ha.ka.ba/docs/pono/loci"
 file-path    = "lares/ha-ka-ba/docs/pono/loci.md"
-content-type = "text/x-memetic-wikitext"
+type = "text/x-memetic-wikitext"
 confidence   = 0.72
 register     = "CS"
 manaoio      = 0.80
@@ -18,7 +15,7 @@ role         = "extended docs for loci interface — evaluation guidance, canon 
 cacheable    = true
 ```
 
-<<~/ahu >>
+
 
 <<~&#x0002;>>
 

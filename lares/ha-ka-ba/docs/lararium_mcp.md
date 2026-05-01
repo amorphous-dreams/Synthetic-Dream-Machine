@@ -1,12 +1,10 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
 
 <<~&#x0001; ? -> lar:///ha.ka.ba/docs/lararium_mcp >>
-
-<<~ ahu #iam >>
-```toml
+```toml iam
 uri-path     = "ha.ka.ba/docs/lararium_mcp"
 file-path    = "lares/ha-ka-ba/docs/lararium_mcp.md"
-content-type = "text/x-memetic-wikitext"
+type = "text/x-memetic-wikitext"
 register     = "CS"
 confidence   = 0.88
 mana         = 0.80
@@ -20,7 +18,8 @@ entry-point  = "python3 -m lares.lararium_mcp"
 test-suite   = "python3 -m unittest discover -s lares/lararium_mcp/tests"
 test-count   = 77
 ```
-<<~/ahu >>
+
+
 
 
 <<~ ahu #ooda-ha >>

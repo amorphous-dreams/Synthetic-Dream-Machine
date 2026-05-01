@@ -1,12 +1,10 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
 
 <<~&#x0001; ? -> lar:///ha.ka.ba/api/v0.1/lararium/modules/widget-module >>
-
-<<~ ahu #iam >>
-```toml
+```toml iam
 uri-path     = "ha.ka.ba/api/v0.1/lararium/modules/widget-module"
 file-path    = "lares/ha-ka-ba/api/v0.1/lararium/modules/widget-module.md"
-content-type = "text/x-memetic-wikitext"
+type = "text/x-memetic-wikitext"
 register     = "CS"
 confidence   = 0.86
 mana         = 0.85
@@ -18,7 +16,8 @@ heleuma      = true
 source-file  = "packages/lararium-tw5/src/tw5-widgets.ts"
 source-symbol = "createLarariumWidgets"
 ```
-<<~/ahu >>
+
+
 
 <<~&#x0002;>>
 

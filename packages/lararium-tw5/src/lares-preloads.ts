@@ -12,7 +12,7 @@
 
 const STX_RE     = /<<~[^>]*&#x0002;[^>]*>>/;
 const ETX_RE     = /<<~[^>]*&#x0003;[^>]*>>/;
-const TOML_RE    = /```toml([\s\S]*?)```/;
+const TOML_RE    = /```toml(?:[ \t]+[A-Za-z0-9_-]+)?[ \t]*\n([\s\S]*?)```/;
 const SOH_URI_RE = /<<~[^>]*&#x0001;[^>]*\?\s*->\s*([^\s>]+)\s*>>/;
 
 function parseToml(block: string): Record<string, string | string[]> {
@@ -43,7 +43,8 @@ function parseMdToTiddler(content: string): TiddlerFields | null {
   if (!tomlMatch) return null;
   const fields = parseToml(tomlMatch[1]!);
 
-  if (fields["content-type"] !== "text/vnd.tiddlywiki") return null;
+  const bodyType = (fields["type"] ?? fields["content-type"]) as string | undefined;
+  if (bodyType !== "text/vnd.tiddlywiki") return null;
 
   const stxMatch = STX_RE.exec(content);
   const etxMatch = ETX_RE.exec(content);

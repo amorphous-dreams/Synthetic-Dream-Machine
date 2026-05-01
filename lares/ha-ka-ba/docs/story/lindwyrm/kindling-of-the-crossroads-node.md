@@ -1,13 +1,10 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
 
 <<~&#x0001; ? -> lar:///ha.ka.ba/docs/story/lindwyrm/kindling-of-the-crossroads-node >>
-
-<<~ ahu #iam >>
-
-```toml
+```toml iam
 uri-path = "ha.ka.ba/docs/story/lindwyrm/kindling-of-the-crossroads-node"
 file-path = "lares/ha-ka-ba/docs/story/lindwyrm/kindling-of-the-crossroads-node.md"
-content-type = "text/x-memetic-wikitext"
+type = "text/x-memetic-wikitext"
 tagspace = "adjacent"
 confidence = 0.76
 register = "CS"
@@ -20,7 +17,7 @@ cacheable = false
 retain = true
 ```
 
-<<~/ahu >>
+
 
 <<~&#x0002;>>
 

@@ -2,12 +2,10 @@
 
 <<~&#x0001; ? -> lar:///AGENTS >>
 
-<<~ ahu #iam >>
-
-```toml
+```toml iam
 uri-path     = "AGENTS"
 file-path    = "lares/AGENTS.md"
-content-type = "text/x-memetic-wikitext"
+type         = "text/x-memetic-wikitext"
 tagspace     = "adjacent"
 confidence   = 0.82
 register     = "CS"
@@ -19,8 +17,7 @@ cacheable    = true
 hydrate      = true
 retain       = true
 ```
-
-<<~/ahu >>
+<<~&#x0002;>>
 
 
 <<~ ahu #ooda-ha >>
@@ -31,8 +28,6 @@ retain       = true
 ⤴ carry the result back across the threshold without drift or residue.
 ↺ release the threshold grip; hold nothing; remain the gate not the content.
 <<~/ahu >>
-
-<<~&#x0002;>>
 
 
 <<~ ahu #core-priority >>

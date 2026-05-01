@@ -1,12 +1,10 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
 
 <<~&#x0001; ? -> lar:///ha.ka.ba/api/v0.1/lararium/modules/receipt-allows >>
-
-<<~ ahu #iam >>
-```toml
+```toml iam
 uri-path      = "ha.ka.ba/api/v0.1/lararium/modules/receipt-allows"
 file-path     = "lares/ha-ka-ba/api/v0.1/lararium/modules/receipt-allows.md"
-content-type  = "text/x-memetic-wikitext"
+type  = "text/x-memetic-wikitext"
 register      = "CS"
 confidence    = 0.88
 mana          = 0.87
@@ -20,7 +18,8 @@ source-symbol = "receiptAllows"
 implements    = ["lar:///ha.ka.ba/api/v0.1/pono/heleuma/ka"]
 body-sha256 = "902384bddf7a2475d207b38cfe20e7268479741326db46c8a4ef252b747b4e97"
 ```
-<<~/ahu >>
+
+
 
 <<~&#x0002;>>
 

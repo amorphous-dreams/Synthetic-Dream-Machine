@@ -1,13 +1,10 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
 
 <<~ॐ ँ&#x0001; ? -> lar:///ha.ka.ba/api/v0.1/mu/ooda-ha >>
-
-<<~ ahu #iam >>
-
-```toml
+```toml iam
 uri-path  = "ha.ka.ba/api/v0.1/mu/ooda-ha"
 file-path = "lares/ha-ka-ba/api/v0.1/mu/ooda-ha.md"
-content-type = "text/x-memetic-wikitext"
+type = "text/x-memetic-wikitext"
 confidence = 0.90
 register = "CS"
 manaoio = 0.88
@@ -20,7 +17,7 @@ retain = true
 ooda-ha-default = 0.50
 ```
 
-<<~/ahu >>
+
 
 <<~ aka lar:///ha.ka.ba/api/v0.1/pono/RFC-2119#normative-language >>
 

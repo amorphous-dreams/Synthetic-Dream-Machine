@@ -1,12 +1,10 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
 
 <<~&#x0001; ? -> lar:///ha.ka.ba/api/v0.1/pono/carrier-sigils >>
-
-<<~ ahu #iam >>
-```toml
+```toml iam
 uri-path      = "ha.ka.ba/api/v0.1/pono/carrier-sigils"
 file-path     = "lares/ha-ka-ba/api/v0.1/pono/carrier-sigils.md"
-content-type  = "text/x-memetic-wikitext"
+type  = "text/x-memetic-wikitext"
 register      = "CS"
 confidence    = 0.90
 mana          = 0.90
@@ -21,7 +19,8 @@ status-date   = "2026-04-30"
 source-file   = "packages/lararium-core/src/carrier.ts packages/lararium-core/src/pranala-parser.ts packages/lararium-core/src/meme-stream.ts"
 source-symbol = "OODA_GLYPHS CarrierRating CarrierShape CarrierRecord BUILTIN_AHU_OPEN BUILTIN_BLOCK_RE BUILTIN_INLINE_RE BUILTIN_PAPALOHE_RE MemeStreamEvent"
 ```
-<<~/ahu >>
+
+
 
 <<~ ahu #head >>
 

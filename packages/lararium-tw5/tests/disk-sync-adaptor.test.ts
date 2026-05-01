@@ -89,7 +89,7 @@ describe("LarDiskProjector", () => {
     const split = splitCarrierToTiddlers(parentUri, carrier);
     const child = split.children.find((c) => c.title === `${parentUri}#panel`)!;
     expect(child.text).toBe("original body\n");
-    expect(child.fields["ahu-body-prefix"]).toBe("```toml\ntype = \"text/vnd.tiddlywiki\"\n```\n");
+    expect(child.fields["fragment-body-prefix"]).toBe("```toml\ntype = \"text/vnd.tiddlywiki\"\n```\n");
 
     const store = new MemoryTiddlerStore();
     const projector = new LarDiskProjector(root, 20);

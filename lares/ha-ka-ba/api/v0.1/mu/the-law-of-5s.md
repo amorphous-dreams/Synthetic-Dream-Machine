@@ -1,13 +1,10 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
 
 <<~ॐ ँ&#x0001; ? -> lar:///ha.ka.ba/api/v0.1/mu/the-law-of-5s >>
-
-<<~ ahu #iam >>
-
-```toml
+```toml iam
 uri-path = "ha.ka.ba/api/v0.1/mu/the-law-of-5s"
 file-path    = "lares/ha-ka-ba/api/v0.1/mu/the-law-of-5s.md"
-content-type = "text/x-memetic-wikitext"
+type = "text/x-memetic-wikitext"
 tagspace     = "stable"
 confidence = 0.82
 register   = "CS"
@@ -25,7 +22,7 @@ source-symbol = "LADDER_5 OODA_HA_5 SCOPE_5 SCOPE_TO_LADDER RATING_5 STAGE_5 STA
 body-sha256 = "19f27816a8ab295a4bb00080242f0b0592d078c3d2b514cd946da1f396a5454e"
 ```
 
-<<~/ahu >>
+
 
 <<~ aka lar:///ha.ka.ba/api/v0.1/pono/RFC-2119#normative-language >>
 

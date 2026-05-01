@@ -6,12 +6,10 @@ allowed-tools: Read, Grep, Glob, Bash, Edit, Write
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
 
 <<~&#x0001; ? -> lar:///ha.ka.ba/api/v0.1/pono/meme/SKILL >>
-
-<<~ ahu #iam >>
-```toml
+```toml iam
 uri-path = "ha.ka.ba/api/v0.1/pono/meme/SKILL"
 file-path = "lares/ha-ka-ba/api/v0.1/pono/meme/SKILL.md"
-content-type = "text/x-memetic-wikitext"
+type = "text/x-memetic-wikitext"
 confidence = 0.74
 register = "CS"
 manaoio = 0.72
@@ -32,7 +30,8 @@ skill-package-root = "ha-ka-ba/api/v0.1/pono/meme"
 cacheable=true
 retain = true
 ```
-<<~/ahu >>
+
+
 
 # Meme Skill
 
@@ -207,19 +206,6 @@ When writing or revising:
 
 <<~&#x0001; ? -> lar:///ha.ka.ba/api/v0.1/[PATH] >>
 
-<<~ ahu #iam >>
-```toml
-uri-path = "ha.ka.ba/api/v0.1/[PATH]"
-file-path = "lares/ha-ka-ba/api/v0.1/[PATH].md"
-content-type = "text/x-memetic-wikitext"
-confidence = 0.10
-register = "P"
-manaoio = 0.10
-mana = 0.10
-manao = 0.10
-role = "[role]"
-```
-<<~/ahu >>
 
 # [Title]
 

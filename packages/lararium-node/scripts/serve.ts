@@ -187,21 +187,21 @@ async function main() {
       try {
         snapshotMemes = await buildSnapshot(runtime);
         receiptSha    = await computeReceiptSha(runtime);
-        // Re-seed all known room docs from the fresh snapshot.
-        const roomDir = join(ISLANDS_DIR, "rooms", DEFAULT_ROOM);
-        const urlFile = join(roomDir, "doc-url.txt");
+        // Reseed lares corpus island only — room doc stays untouched (island law).
+        const corpusDir = join(ISLANDS_DIR, "corpora", "lares");
+        const urlFile   = join(corpusDir, "doc-url.txt");
         if (existsSync(urlFile)) {
-          const roomUrl = readFileSync(urlFile, "utf8").trim() as AutomergeUrl;
-          const roomHandle = await memeRepo.find<Record<string, unknown>>(roomUrl);
+          const corpusUrl    = readFileSync(urlFile, "utf8").trim() as AutomergeUrl;
+          const corpusHandle = await memeRepo.find<Record<string, unknown>>(corpusUrl);
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          roomHandle.change((doc: any) => {
+          corpusHandle.change((doc: any) => {
             for (const [uri, meme] of Object.entries(snapshotMemes.memes)) {
               if (!uri.startsWith("lar:") || !meme.text) continue;
-              doc[uri] = { title: uri, fields: meme.fields ?? {}, text: meme.text };
+              doc[uri] = { title: uri, fields: meme.fields ?? {}, text: meme.text, bag: "lares" };
             }
           });
         }
-        return json(res, { reseeded: DEFAULT_ROOM, sha: receiptSha });
+        return json(res, { reseeded: "corpus:lares", sha: receiptSha });
       } catch (e) {
         return json(res, { error: String(e) }, 500);
       }
@@ -222,6 +222,7 @@ async function main() {
     if (pathname === "/api/catalog") {
       return json(res, { url: catalogUrl });
     }
+
 
     // ── /auth/session — provider-neutral auth claim (browser/editor → server) ───
     // Browser/local UX posts: { peerId, provider, receipt?, proof? }
@@ -354,7 +355,13 @@ async function main() {
   console.log(`[lararium-serve] catalog: ${catalogUrl}`);
 
   // ---------------------------------------------------------------------------
-  // Helper: open or create a room content doc, seed on first boot, register in catalog
+  // Helper: open or create a room content doc, register in catalog.
+  //
+  // Island law: room doc starts EMPTY. Corpus content lives in corpus islands
+  // (openOrCreateCorpus). CompositeStore recipe on the browser merges
+  // corpus (canon, read-only) below room (writable) — no duplication.
+  // Seeding the room doc with corpus content would bloat the room island and
+  // defeat the causal-island split.
   // ---------------------------------------------------------------------------
   async function openOrCreateRoom(roomId: string): Promise<DocHandle<Record<string, unknown>>> {
     const roomDir = join(ISLANDS_DIR, "rooms", roomId);
@@ -365,15 +372,7 @@ async function main() {
     const handle = await openOrCreate<Record<string, unknown>>(urlFile, () => ({}));
 
     if (firstBoot) {
-      console.log(`[lararium-serve] room ${roomId} created: ${handle.url}`);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      handle.change((doc: any) => {
-        for (const [uri, meme] of Object.entries(snapshotMemes.memes)) {
-          if (!uri.startsWith("lar:") || !meme.text) continue;
-          doc[uri] = { title: uri, fields: meme.fields ?? {}, text: meme.text };
-        }
-      });
-      console.log(`[lararium-serve] room ${roomId} seeded: ${Object.keys(snapshotMemes.memes).length} memes`);
+      console.log(`[lararium-serve] room ${roomId} created (empty): ${handle.url}`);
     } else {
       console.log(`[lararium-serve] room ${roomId} resumed: ${handle.url}`);
     }
@@ -418,7 +417,8 @@ async function main() {
         handle.change((doc: any) => {
           for (const [uri, meme] of Object.entries(snapshotMemes.memes)) {
             if (!uri.startsWith("lar:") || !meme.text) continue;
-            doc[uri] = { title: uri, fields: { ...(meme.fields ?? {}), bag: "lares" }, text: meme.text };
+            // Top-level bag field stamps the recipe layer for CompositeStore._freeze().
+            doc[uri] = { title: uri, fields: meme.fields ?? {}, text: meme.text, bag: bagId };
           }
         });
         console.log(`[lararium-serve] corpus lares seeded: ${Object.keys(snapshotMemes.memes).length} memes`);

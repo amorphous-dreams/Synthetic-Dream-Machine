@@ -1,12 +1,10 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
 
 <<~&#x0001; ? -> lar:///ha.ka.ba/api/v0.1/lararium/modules/deserializer >>
-
-<<~ ahu #iam >>
-```toml
+```toml iam
 uri-path     = "ha.ka.ba/api/v0.1/lararium/modules/deserializer"
 file-path    = "lares/ha-ka-ba/api/v0.1/lararium/modules/deserializer.md"
-content-type = "text/x-memetic-wikitext"
+type = "text/x-memetic-wikitext"
 register     = "CS"
 confidence   = 0.86
 mana         = 0.85
@@ -20,7 +18,8 @@ source-symbol = "_registerDeserializer"
 implements    = ["lar:///ha.ka.ba/api/v0.1/pono/heleuma/ka"]
 body-sha256 = "b663614ec42d32d34974eb52e9e2b1774134b1aca8698a6b1733715f1d96000b"
 ```
-<<~/ahu >>
+
+
 
 <<~&#x0002;>>
 

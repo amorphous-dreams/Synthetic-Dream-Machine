@@ -1,13 +1,10 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
 
 <<~&#x0001; ? -> lar:///ha.ka.ba/api/v0.1/vendor/sq-streams >>
-
-<<~ ahu #iam >>
-
-```toml
+```toml iam
 uri-path     = "ha.ka.ba/api/v0.1/vendor/sq-streams"
 file-path    = "lares/ha-ka-ba/api/v0.1/lararium/plugins/sq-streams.md"
-content-type = "text/x-memetic-wikitext"
+type = "text/x-memetic-wikitext"
 register     = "CS"
 confidence   = 0.92
 mana         = 0.90
@@ -20,7 +17,7 @@ tw5-plugin-id = "$:/plugins/sq/streams"
 tw5-plugin-version = "1.2.24"
 ```
 
-<<~/ahu >>
+
 
 <<~&#x0002;>>
 

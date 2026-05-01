@@ -2,11 +2,10 @@
 
 <<~&#x0001; ? -> lar:///LARARIUM-NODE/ROADMAP >>
 
-<<~ ahu #iam >>
-```toml
+```toml iam
 uri-path = "LARARIUM-NODE/ROADMAP"
 file-path = "lares/lararium-node/ROADMAP.md"
-content-type = "text/x-memetic-wikitext"
+type = "text/x-memetic-wikitext"
 confidence = 0.88
 register = "S"
 manaoio = 0.82
@@ -17,7 +16,6 @@ cacheable = false
 retain = true
 invariant = false
 ```
-<<~/ahu >>
 
 # Lararium Node — Roadmap
 

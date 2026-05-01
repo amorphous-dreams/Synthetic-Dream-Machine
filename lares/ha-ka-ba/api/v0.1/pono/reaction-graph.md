@@ -1,13 +1,10 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
 
 <<~&#x0001; ? -> lar:///ha.ka.ba/api/v0.1/pono/reaction-graph >>
-
-<<~ ahu #iam >>
-
-```toml
+```toml iam
 uri-path     = "ha.ka.ba/api/v0.1/pono/reaction-graph"
 file-path    = "lares/ha-ka-ba/api/v0.1/pono/reaction-graph.md"
-content-type = "text/x-memetic-wikitext"
+type = "text/x-memetic-wikitext"
 tagspace     = "invariant"
 confidence   = 0.84
 register     = "CS"
@@ -22,7 +19,7 @@ source-file   = "packages/lararium-core/src/reaction-graph.ts"
 source-symbol = "ReactionGraph RENDER_MODES REACTION_ROLES"
 ```
 
-<<~/ahu >>
+
 
 <<~ ahu #head >>
 
