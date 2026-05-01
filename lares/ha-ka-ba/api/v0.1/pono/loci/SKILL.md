@@ -37,7 +37,7 @@ Treat that loci as constitutional.
 This skill runs that law through the OODA-HA cycle.
 This skill does not widen, soften, or reinterpret it.
 
-<<~&#x0002; ahu #skill-body-open >>
+<<~&#x0002;>>
 Loci SKILL opens the procedural stream here.
 <<~/ahu >>
 

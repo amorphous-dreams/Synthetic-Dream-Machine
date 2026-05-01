@@ -43,11 +43,12 @@ export type MemeStreamEvent =
 // ---------------------------------------------------------------------------
 
 // SOH: both standard &#x0001; and Kapu DC1 &#x0011;
-const SOH_RE  = /<<~[^>]*&#x(?:0001|0011);[^>]*\?\s*->\s*([^\s>]+)\s*>>/;
-const STX_RE  = /<<~[^>]*&#x0002;[^>]*>>/;
-const ETX_RE  = /<<~[^>]*&#x0003;[^>]*>>/;
+// All control sigils use (?:[^>]|->) to allow resonance markers (ॐ, ⊙, etc.) and -> sequences.
+const SOH_RE  = /<<~(?:[^>]|->)*&#x(?:0001|0011);(?:[^>]|->)*\?\s*->\s*([^\s>]+)\s*>>/;
+const STX_RE  = /<<~(?:[^>]|->)*&#x0002;(?:[^>]|->)*>>/;
+const ETX_RE  = /<<~(?:[^>]|->)*&#x0003;(?:[^>]|->)*>>/;
 // EOT: entity form (&#x0004;/&#x0014;) OR return-throat (<<~ -> ? >>)
-const EOT_RE  = /<<~(?:[^>]*&#x(?:0004|0014);[^>]*|\s*->\s*\?)\s*>>/;
+const EOT_RE  = /<<~(?:(?:[^>]|->)*&#x(?:0004|0014);(?:[^>]|->)*|\s*->\s*\?)\s*>>/;
 const AHU_OPEN_RE  = /<<~[^>]*\bahu\s+(#[\w-]+)\s*>>/;
 const AHU_CLOSE_RE = /<<~\/ahu\s*>>/;
 

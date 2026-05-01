@@ -725,31 +725,6 @@ export class LarariumTW5 {
   }
 
   /**
-   * Fetch and install a hosted TW5 plugin from a URL (GitHub CDN, gh-pages, etc.).
-   *
-   * The URL should point to a TW5 plugin JSON bundle — a tiddler with
-   * `type: "application/json"` and `plugin-type: "plugin"`. The fetched
-   * tiddler is added to the wiki under its declared title (e.g. "$:/plugins/sq/streams").
-   *
-   * The `source` field in the plugin JSON is preserved so TW5 upgrade UI can
-   * find and refresh it. Caller owns caching: call once at boot; re-call to upgrade.
-   *
-   * Fetch is isomorphic — uses globalThis.fetch (Node 18+, all modern browsers).
-   */
-  async loadHostedPlugin(url: string): Promise<void> {
-    if (!this._tw) throw new Error("LarariumTW5: call boot() before loadHostedPlugin()");
-    const res = await globalThis.fetch(url);
-    if (!res.ok) throw new Error(`loadHostedPlugin: HTTP ${res.status} fetching ${url}`);
-    const json = await res.json() as Record<string, unknown>;
-    // Plugin bundle: either a bare tiddler object or a TiddlyWiki export array
-    const tiddlers: Array<Record<string, unknown>> = Array.isArray(json) ? json : [json];
-    for (const t of tiddlers) {
-      if (!t["title"]) continue;
-      this._tw.wiki.addTiddler(new this._tw.Tiddler({ ...t, "plugin-source": url }));
-    }
-  }
-
-  /**
    * Subscribe to TW5 wiki change events.
    *
    * The callback fires whenever tiddlers are added, updated, or deleted in the

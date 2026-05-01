@@ -40,7 +40,7 @@ It enacts a self-describing law and self-executing template.
 This skill operationalizes that compact invariant.
 This skill does not widen, soften, or reinterpret it.
 
-<<~&#x0002; ahu #skill-body-open >>
+<<~&#x0002;>>
 Invariant-meme skill opens the pressure surface here.
 <<~/ahu >>
 

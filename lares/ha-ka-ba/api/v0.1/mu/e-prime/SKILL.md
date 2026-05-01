@@ -38,7 +38,7 @@ Settled wording only.
 This skill arrives when wording has already settled and needs inspection, marking, or correction.
 This skill does not weaken or reinterpret the loci.
 
-<<~&#x0002; ahu #skill-body-open >>
+<<~&#x0002;>>
 E-Prime auditor opens the settled-text correction stream here.
 <<~/ahu >>
 

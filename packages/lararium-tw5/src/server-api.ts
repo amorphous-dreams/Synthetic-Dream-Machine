@@ -1,62 +1,100 @@
 /**
- * server-api — Node.js server singleton and functional filter API.
+ * server-api — Node.js per-recipe TW5 VM registry and functional filter API.
  *
- * NEVER import from browser code. Each room owns its own LarariumTW5 instance.
- * The singleton exists so Node CLI tools (MCP, serve.ts) avoid re-booting TW5
- * on every invocation.
+ * Fontany-Fuller-Zelenka local-first law:
+ *   Each recipe (ordered bag stack) gets its own LarariumTW5 VM.
+ *   A recipe = a CompositeStore layer order. Different rooms or corpus views
+ *   can compose different subsets of bags — each needs its own isolated VM.
+ *   No shared global state. No seed-and-hydrate over HTTP.
  *
- * Milestone D note (research-packet §9): once the recipe/bag live surface lands,
- * filterMemesWikitext and precomputeRooms will drive corpus bag composition
- * rather than a flat closure load. getServerSingleton becomes per-corpus-island.
+ * NEVER import from browser code. Browser rooms own their VMs via
+ * useLarariumHostOpen → LarariumTW5 scoped to the room.
+ *
+ * recipeId convention: sorted bag slugs joined by "+" e.g. "lares+ftls+room"
+ * Use makeRecipeId(bagIds) to produce a canonical key.
  */
 
 import type { ClosureEntry, EdgeRecord } from "@lararium/core";
 import { LarariumTW5 } from "./lararium-tw5.js";
 
-let _serverSingleton: LarariumTW5 | null = null;
-let _serverSingletonReady: Promise<LarariumTW5> | null = null;
+if (typeof window !== "undefined") {
+  throw new Error("server-api must not be imported in browser bundles.");
+}
 
-export async function getServerSingleton(): Promise<LarariumTW5> {
-  if (typeof window !== "undefined") {
-    throw new Error(
-      "LarariumTW5 getServerSingleton() called in browser context. " +
-      "Use new LarariumTW5() scoped to the room instead.",
-    );
-  }
-  if (_serverSingleton?.ready) return _serverSingleton;
-  if (_serverSingletonReady) return _serverSingletonReady;
-  _serverSingletonReady = (async () => {
-    _serverSingleton = new LarariumTW5();
-    await _serverSingleton.boot();
-    return _serverSingleton;
-  })();
-  return _serverSingletonReady;
+// ---------------------------------------------------------------------------
+// Per-recipe VM registry
+// ---------------------------------------------------------------------------
+
+const _vms = new Map<string, Promise<LarariumTW5>>();
+
+/** Canonical recipe key from an ordered list of bag slugs. */
+export function makeRecipeId(bagIds: readonly string[]): string {
+  return [...bagIds].sort().join("+");
 }
 
 /**
+ * Get or boot a TW5 VM for the given recipe.
+ *
+ * First call for a recipeId boots a fresh VM (~10ms). Subsequent calls return
+ * the same instance. Call releaseRecipeVm() to tear down when a room closes.
+ */
+export async function getRecipeVm(recipeId: string): Promise<LarariumTW5> {
+  const existing = _vms.get(recipeId);
+  if (existing) return existing;
+  const boot = (async () => {
+    const vm = new LarariumTW5();
+    await vm.boot();
+    return vm;
+  })();
+  _vms.set(recipeId, boot);
+  return boot;
+}
+
+/**
+ * Release a VM when its recipe/room is torn down.
+ * Safe to call with an unknown recipeId (no-op).
+ */
+export function releaseRecipeVm(recipeId: string): void {
+  _vms.delete(recipeId);
+}
+
+/** Number of live VM instances — useful for diagnostics. */
+export function liveVmCount(): number { return _vms.size; }
+
+// ---------------------------------------------------------------------------
+// Functional filter API — used by @lararium/node + MCP server
+//
+// Callers must supply an explicit recipeId. No implicit global VM.
+// ---------------------------------------------------------------------------
+
+/**
  * Filter ClosureEntry objects using the wikitext-filter dialect.
- * Boots TW5 on first call (~10ms), then instant on subsequent calls.
+ *
+ * recipeId must be produced by makeRecipeId(bagIds) — the ordered bag stack
+ * that defines this VM's corpus view. Different recipes run in separate VMs.
  */
 export async function filterMemesWikitext(
   allEntries: readonly ClosureEntry[],
   expr: string,
   edges?: readonly EdgeRecord[],
+  recipeId = makeRecipeId(["lares"]),
 ): Promise<ClosureEntry[]> {
-  const inst = await getServerSingleton();
+  const inst = await getRecipeVm(recipeId);
   inst.loadClosure(allEntries, edges);
   return inst.filterClosure(expr, allEntries);
 }
 
 /**
  * Pre-compute multiple named filter results in a single boot cycle.
- * Used by the snapshot builder.
+ * Used by the snapshot builder and corpus projection tools.
  */
 export async function precomputeRooms(
   allEntries: readonly ClosureEntry[],
   rooms: Record<string, string>,
   edges?: readonly EdgeRecord[],
+  recipeId = makeRecipeId(["lares"]),
 ): Promise<Record<string, string[]>> {
-  const inst = await getServerSingleton();
+  const inst = await getRecipeVm(recipeId);
   inst.loadClosure(allEntries, edges);
   const byUri = new Map(allEntries.map((e) => [e.uri, e]));
   const result: Record<string, string[]> = {};

@@ -59,4 +59,4 @@ export { entryToFields, buildEdgeFieldMap } from "./closure-fields.js";
 export { parseZoomLayoutTOML, getZoomLayout } from "./zoom-layout.js";
 export type { ZoomLayout } from "./zoom-layout.js";
 export { bindingsForUri, buildReactionGraph } from "./reaction-query.js";
-export { filterMemesWikitext, precomputeRooms, getServerSingleton } from "./server-api.js";
+export { filterMemesWikitext, precomputeRooms, getRecipeVm, releaseRecipeVm, makeRecipeId, liveVmCount } from "./server-api.js";

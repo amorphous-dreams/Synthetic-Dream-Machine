@@ -55,15 +55,16 @@ const BOOTSTRAP_SCANS: SigilScan[] = [
   // These MUST be listed before ahu and generic header scans so decorated forms
   // such as `<<~&#x0002; ahu #meme-body-open >>` remain structural leaves rather
   // than becoming addressable child worksites.
-  // The decorator prefix (namespace glyphs, e.g. ॐ ँ or ⊙) is consumed by [^>]*.
+  // The decorator prefix (namespace glyphs, e.g. ॐ ँ or ⊙) plus any -> sequences
+  // are consumed by (?:[^>]|->)* — allows resonance markers and EOT return-throat form.
   // ---------------------------------------------------------------------------
-  { sigilName: "control-soh", regex: /<<~[^>]*&#x0001;[^>]*\?\s*->\s*([^\s>]+)\s*>>/g, eventType: "pragma" },
-  { sigilName: "control-stx", regex: /<<~[^>]*&#x0002;[^>]*>>/g,                        eventType: "pragma" },
-  { sigilName: "control-etx", regex: /<<~[^>]*&#x0003;[^>]*>>/g,                        eventType: "pragma" },
-  { sigilName: "control-eot", regex: /<<~[^>]*&#x0004;[^>]*>>/g,                        eventType: "pragma" },
+  { sigilName: "control-soh", regex: /<<~(?:[^>]|->)*&#x0001;(?:[^>]|->)*\?\s*->\s*([^\s>]+)\s*>>/g, eventType: "pragma" },
+  { sigilName: "control-stx", regex: /<<~(?:[^>]|->)*&#x0002;(?:[^>]|->)*>>/g,                        eventType: "pragma" },
+  { sigilName: "control-etx", regex: /<<~(?:[^>]|->)*&#x0003;(?:[^>]|->)*>>/g,                        eventType: "pragma" },
+  { sigilName: "control-eot", regex: /<<~(?:[^>]|->)*&#x0004;(?:[^>]|->)*>>/g,                        eventType: "pragma" },
   // Kapu extended range — DC1 (&#x0011;) SOH variant, DC4 (&#x0014;) EOT variant
-  { sigilName: "control-soh", regex: /<<~[^>]*&#x0011;[^>]*\?\s*->\s*([^\s>]+)\s*>>/g, eventType: "pragma" },
-  { sigilName: "control-eot", regex: /<<~[^>]*&#x0014;[^>]*>>/g,                        eventType: "pragma" },
+  { sigilName: "control-soh", regex: /<<~(?:[^>]|->)*&#x0011;(?:[^>]|->)*\?\s*->\s*([^\s>]+)\s*>>/g, eventType: "pragma" },
+  { sigilName: "control-eot", regex: /<<~(?:[^>]|->)*&#x0014;(?:[^>]|->)*>>/g,                        eventType: "pragma" },
   // Structural
   { sigilName: "ahu",       regex: /<<~[^>]*\bahu\s+(#[\w-]+)\s*>>/g,     eventType: "open"   },
   { sigilName: "ahu",       regex: /<<~\/ahu\s*>>/g,                       eventType: "close"  },
