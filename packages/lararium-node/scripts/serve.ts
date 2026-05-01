@@ -202,8 +202,16 @@ async function main() {
   // Evict expired auth sessions every 10 minutes.
   setInterval(() => peerRegistry.evictExpired(), 10 * 60 * 1000);
 
-  // catalogUrl declared here so the HTTP handler can reference it.
-  let catalogUrl = "";
+  // catalogUrl / catalogHandle / quineRecipeId declared before the HTTP handler
+  // so the snapshot endpoint can read them. All are assigned after Automerge setup.
+  let catalogUrl     = "";
+  // Assigned after Automerge setup, before httpServer.listen — never null when a request arrives.
+  let catalogHandle  = null as unknown as DocHandle<CatalogDoc>;
+  const quineRecipeId = makeRecipeId(
+    corpusSources.filter((c) => c.quine).map((c) => c.bag).filter(Boolean).length
+      ? corpusSources.filter((c) => c.quine).map((c) => c.bag)
+      : ["lares"],                                  // fallback: lares always quine
+  );
 
   // ---------------------------------------------------------------------------
   // HTTP server
@@ -227,6 +235,66 @@ async function main() {
     // ── /api/catalog ──────────────────────────────────────────────────────
     if (pathname === "/api/catalog") {
       return json(res, { url: catalogUrl });
+    }
+
+    // ── /snapshot/:roomId — Milestone C first-paint projection ─────────────
+    // Island law: this is a READ artifact. It MUST NOT write to any Automerge doc.
+    // The lares corpus VM is loaded once and kept warm; rendering is synchronous.
+    // The browser shows this HTML immediately, then swaps in the live CRDT surface.
+    const snapshotMatch = pathname.match(/^\/snapshot\/([a-zA-Z0-9_-]{1,64})$/);
+    if (snapshotMatch) {
+      try {
+        const vm = await getRecipeVm(quineRecipeId);
+        // Render stylesheet first — inline CSS so the snapshot is self-contained.
+        // PageTemplate renders the full TW5 UI; stylesheet makes it look right.
+        const cssHtml  = vm.renderText("{{$:/core/ui/PageStylesheet}}");
+        const bodyHtml = vm.renderText("{{$:/core/ui/PageTemplate}}");
+        // Projection receipt: source doc heads + timestamp (no Automerge mutation).
+        const laresCatalogEntry = catalogHandle.doc()?.corpora?.["lares"];
+        const snapshotReceipt = JSON.stringify({
+          roomId: snapshotMatch[1],
+          sourceDocUrl: laresCatalogEntry?.docUrl ?? "",
+          renderedAt: new Date().toISOString(),
+          receiptSha,
+        });
+        const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="lararium-snapshot-receipt" content="${Buffer.from(snapshotReceipt).toString("base64")}">
+<title>Lararium — ${snapshotMatch[1]}</title>
+<style>${cssHtml}</style>
+</head>
+<body>
+${bodyHtml}
+</body>
+</html>`;
+        res.writeHead(200, {
+          "Content-Type": "text/html; charset=utf-8",
+          "Cache-Control": "no-store",
+          "X-Lararium-Snapshot": "1",
+        });
+        res.end(html);
+      } catch (e) {
+        console.error("[lararium-serve] snapshot render failed:", e);
+        res.writeHead(503, { "Content-Type": "text/plain" });
+        res.end("snapshot not ready");
+      }
+      return;
+    }
+
+    // ── /snapshot-heads/:roomId — staleness probe ──────────────────────────
+    // Browser polls this to detect when the live corpus has advanced past the
+    // snapshot. When heads differ, the live surface replaces the static projection.
+    const headsMatch = pathname.match(/^\/snapshot-heads\/([a-zA-Z0-9_-]{1,64})$/);
+    if (headsMatch) {
+      const laresCatalogEntry = catalogHandle.doc()?.corpora?.["lares"];
+      return json(res, {
+        docUrl: laresCatalogEntry?.docUrl ?? "",
+        receiptSha,
+        ts: Date.now(),
+      });
     }
 
 
@@ -443,7 +511,7 @@ async function main() {
   // ---------------------------------------------------------------------------
   // Catalog doc — hallway; names all islands
   // ---------------------------------------------------------------------------
-  const catalogHandle = await openOrCreate<CatalogDoc>(
+  catalogHandle = await openOrCreate<CatalogDoc>(
     join(ISLANDS_DIR, "catalog.txt"),
     emptyCatalogDoc,
   );
@@ -554,7 +622,6 @@ async function main() {
     // Boot the quine recipe VM and seed it from the current doc state.
     // The VM is the server-side TW5 peer; it stays in sync with automerge
     // and is the canonical projection engine (exportCarrierText goes through it).
-    const quineRecipeId = makeRecipeId([source.bag]);
     const quineVm = await getRecipeVm(quineRecipeId);
     const seedDoc = handle.doc() as MemeStoreDoc | undefined;
     if (seedDoc) {
@@ -565,6 +632,9 @@ async function main() {
         quineVm.setTiddler(fields);
       }
     }
+
+    // Server VM stays in snapshot mode permanently — it only serves static projections.
+    quineVm.setSnapshotMode(true);
 
     // Write-back: disabled by default (LARARIUM_WRITEBACK=1 to enable).
     // Loop guard (projector.writing) not yet wired — enable only for dev.

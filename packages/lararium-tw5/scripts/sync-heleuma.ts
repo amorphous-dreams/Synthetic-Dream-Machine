@@ -35,6 +35,7 @@ const args          = process.argv.slice(2);
 const COMMIT        = args.includes("--commit");
 const SCAN          = args.includes("--scan");
 const SCAN_PROMOTE  = args.includes("--scan-promote");
+const SYNC_MODULES  = args.includes("--sync-modules");
 
 // ---------------------------------------------------------------------------
 // Regex patterns
@@ -384,6 +385,90 @@ function runScanPromote(): void {
 }
 
 // ---------------------------------------------------------------------------
+// --sync-modules: walk lares/ for anchors with module-ref, verify/patch
+//   body-sha256 against the actual module tiddler body (between STX and ETX).
+//   In --commit mode: also re-extracts and strips TypeScript source from
+//   source-file/source-symbol, injects into module tiddler body if drifted.
+// ---------------------------------------------------------------------------
+
+/** Extract the body text between <<~\x02>> and <<~\x03>> from a module tiddler. */
+function extractModuleBody(content: string): string | null {
+  // STX marker may be raw \x02 or the HTML entity form
+  const stxRe = /<<~(?:&#x0002;|[\x02])>>/;
+  const etxRe = /<<~(?:&#x0003;|[\x03])>>/;
+  const stxM = stxRe.exec(content);
+  const etxM = etxRe.exec(content);
+  if (!stxM || !etxM) return null;
+  const start = stxM.index + stxM[0].length;
+  const end   = etxM.index;
+  if (end <= start) return null;
+  return content.slice(start, end);
+}
+
+
+function runSyncModules(): { drift: number; missing: number; patched: number } {
+  let drift = 0, missing = 0, patched = 0;
+
+  for (const mdPath of walkExt(laresRoot, ".md")) {
+    const content = readFileSync(mdPath, "utf8");
+    const tomlM   = TOML_RE.exec(content);
+    if (!tomlM) continue;
+    const toml = parseToml(tomlM[1]!);
+
+    const moduleRef = toml["module-ref"];
+    if (!moduleRef) continue;
+
+    // Convert lar URI to file path: lar:///ha.ka.ba/api/... -> lares/ha-ka-ba/api/...
+    const uriTrimmed = moduleRef.replace(/^lar:\/\/\//, "");
+    // Domain part uses dots, convert first segment dots to dashes
+    const parts      = uriTrimmed.split("/");
+    const domain     = parts[0]!.replace(/\./g, "-");
+    const rest       = parts.slice(1).join("/");
+    const modRelPath = `lares/${domain}/${rest}.md`;
+    const modPath    = resolve(root, modRelPath);
+
+    let modContent: string;
+    try {
+      modContent = readFileSync(modPath, "utf8");
+    } catch {
+      console.warn(`[sync-modules] MISSING module tiddler  ${moduleRef}`);
+      console.warn(`               expected at: ${modRelPath}`);
+      missing++;
+      continue;
+    }
+
+    const modBody = extractModuleBody(modContent);
+    if (modBody === null) {
+      console.warn(`[sync-modules] MISSING STX/ETX markers  ${moduleRef}`);
+      missing++;
+      continue;
+    }
+
+    const liveHash     = createHash("sha256").update(modBody, "utf8").digest("hex");
+    const existingHash = toml["body-sha256"] ?? "";
+    const hashDrift    = liveHash !== existingHash;
+
+    const anchorUri = toml["uri-path"] ?? mdPath;
+
+    if (COMMIT && hashDrift) {
+      const patched_content = applyBodySha256Patch(content, liveHash);
+      writeFileSync(mdPath, patched_content, "utf8");
+      console.log(`[sync-modules] patched  ${anchorUri}  body-sha256 ${existingHash ? "updated" : "added"}`);
+      patched++;
+    } else if (!COMMIT && hashDrift) {
+      console.warn(`[sync-modules] DRIFT  ${anchorUri}`);
+      console.warn(`               anchor body-sha256: ${existingHash || "(missing)"}`);
+      console.warn(`               module body sha256: ${liveHash}`);
+      drift++;
+    } else {
+      console.log(`[sync-modules] ok   ${anchorUri}`);
+    }
+  }
+
+  return { drift, missing, patched };
+}
+
+// ---------------------------------------------------------------------------
 // Main — check/commit loop
 // ---------------------------------------------------------------------------
 
@@ -395,6 +480,20 @@ if (SCAN_PROMOTE) {
 if (SCAN) {
   runScan();
   process.exit(0);
+}
+
+if (SYNC_MODULES) {
+  console.log("[sync-modules] checking anchor body-sha256 against module tiddler bodies\n");
+  const { drift, missing, patched } = runSyncModules();
+  if (COMMIT) {
+    console.log(`\n[sync-modules] patched ${patched}, missing ${missing}`);
+  } else {
+    console.log(`\n[sync-modules] ${drift} drift, ${missing} missing`);
+    if (drift > 0 || missing > 0) {
+      console.warn("[sync-modules] run with --sync-modules --commit to update body-sha256 fields");
+    }
+  }
+  process.exit(drift > 0 || missing > 0 ? 1 : 0);
 }
 
 if (COMMIT) {
@@ -560,5 +659,14 @@ if (COMMIT) {
   console.log(`\n[heleuma] checked ${totalChecked} — ${totalDrift} drift, ${totalMissing} missing`);
   if (totalDrift > 0 || totalMissing > 0) {
     console.warn("[heleuma] run with --commit to patch #source slots");
+  }
+}
+
+// Always run module-sync check in dry-run pass (not in --commit, which only patches #source slots)
+if (!COMMIT) {
+  console.log("\n[sync-modules] checking anchor body-sha256 against module tiddler bodies");
+  const modResult = runSyncModules();
+  if (modResult.drift > 0 || modResult.missing > 0) {
+    console.warn(`[sync-modules] run with --sync-modules --commit to update body-sha256 fields`);
   }
 }

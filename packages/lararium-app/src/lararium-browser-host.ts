@@ -38,14 +38,15 @@ import { getOrCreateBrowserAuthReceipt } from "./operator-key.js";
 export interface BrowserHostOptions { hostId: string; roomId: string; }
 
 export interface HostOpenState {
-  phase:     LarariumOpenPhase | null;
-  repo:      LarariumRepo | null;
+  phase:        LarariumOpenPhase | null;
+  repo:         LarariumRepo | null;
   /** Composite store: corpus layers (canon, read-only) + room layer (writable). */
-  store:     CompositeStore | null;
-  tw5:       LarariumTW5 | null;
-  receipt:   string | null;
-  isLive:    boolean;
-  readiness: ReadinessMap;
+  store:        CompositeStore | null;
+  tw5:          LarariumTW5 | null;
+  receipt:      string | null;
+  isLive:       boolean;
+  readiness:    ReadinessMap;
+  snapshotHtml: string | null;
 }
 
 // ---------------------------------------------------------------------------
@@ -75,12 +76,13 @@ function readSyncWsUrl(): string {
 // ---------------------------------------------------------------------------
 
 export function useLarariumHostOpen(options: BrowserHostOptions): HostOpenState {
-  const [phase,   setPhase]   = useState<LarariumOpenPhase | null>(null);
-  const [repo,    setRepo]    = useState<LarariumRepo | null>(null);
-  const [store,   setStore]   = useState<CompositeStore | null>(null);
-  const [tw5,     setTw5]     = useState<LarariumTW5 | null>(null);
-  const [receipt, setReceipt] = useState<string | null>(null);
-  const [isLive,  setIsLive]  = useState(false);
+  const [phase,        setPhase]        = useState<LarariumOpenPhase | null>(null);
+  const [repo,         setRepo]         = useState<LarariumRepo | null>(null);
+  const [store,        setStore]        = useState<CompositeStore | null>(null);
+  const [tw5,          setTw5]          = useState<LarariumTW5 | null>(null);
+  const [receipt,      setReceipt]      = useState<string | null>(null);
+  const [isLive,       setIsLive]       = useState(false);
+  const [snapshotHtml, setSnapshotHtml] = useState<string | null>(null);
 
   const readinessRef   = useRef<ReadinessMap>(new ReadinessMap());
   const tw5Ref         = useRef<LarariumTW5 | null>(null);
@@ -93,8 +95,17 @@ export function useLarariumHostOpen(options: BrowserHostOptions): HostOpenState 
     const { hostId, roomId } = optionsRef.current;
 
     setPhase(null); setRepo(null); setStore(null); setTw5(null); setIsLive(false);
+    setSnapshotHtml(null);
 
     const readiness = readinessRef.current;
+
+    // ── Snapshot first-paint — fire before auth, display immediately ─────
+    // Island law: pure read. Never fed back into Automerge.
+    // Cleared when live TW5 surface is ready (room-content + tw-vm).
+    fetch(`/snapshot/${encodeURIComponent(roomId)}`)
+      .then((r) => (r.ok ? r.text() : null))
+      .then((html) => { if (html && !cancelled) { setSnapshotHtml(html); readiness.mark("snapshot"); } })
+      .catch(() => { /* snapshot is optional — degraded gracefully */ });
 
     async function run() {
       // ── Authority ─────────────────────────────────────────────────────────
@@ -188,6 +199,7 @@ export function useLarariumHostOpen(options: BrowserHostOptions): HostOpenState 
         return;
       }
 
+      t.setSnapshotMode(true);
       await t.loadFromStore(composite, (loaded, total) => {
         if (!cancelled) setPhase({ kind: "tw5-hydrating", loaded, total });
       });
@@ -204,6 +216,9 @@ export function useLarariumHostOpen(options: BrowserHostOptions): HostOpenState 
       const stopSyncer = t.startSyncer(adaptor);
       stopAdaptorRef.current = () => { stopStore(); stopSyncer(); };
 
+      // Live surface ready — release static projection and boot-splash from both surfaces.
+      t.setSnapshotMode(false);
+      setSnapshotHtml(null);
       setPhase({ kind: "live", offset: 0 });
       setIsLive(true);
     }
@@ -222,5 +237,5 @@ export function useLarariumHostOpen(options: BrowserHostOptions): HostOpenState 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [options.roomId]);
 
-  return { phase, repo, store, tw5, receipt, isLive, readiness: readinessRef.current };
+  return { phase, repo, store, tw5, receipt, isLive, readiness: readinessRef.current, snapshotHtml };
 }

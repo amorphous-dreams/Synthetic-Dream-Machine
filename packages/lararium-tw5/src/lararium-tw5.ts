@@ -530,6 +530,37 @@ export class LarariumTW5 {
     };
   }
 
+  /**
+   * Install or remove the Lararium boot-splash tiddlers.
+   *
+   * active=true  — inject styles + banner into the wiki; shown in both the
+   *                server-side snapshot render and the browser TW5 VM while
+   *                Automerge islands are still warming.
+   * active=false — remove them; called by the browser when the live surface mounts.
+   *
+   * Server VMs stay in snapshot mode permanently (they only render snapshots).
+   * Browser VMs call setSnapshotMode(false) when isLive fires.
+   */
+  /**
+   * Signal tiddler for the boot-splash.
+   *
+   * Styles and banner markup live in lares/ha-ka-ba/api/v0.1/lararium/ui/
+   * (boot-splash-styles.md, boot-splash-banner.md) and are auto-loaded via
+   * lares-preloads. The banner uses <$reveal> conditioned on this signal:
+   *   <$reveal type="nomatch" state="$:/lararium/boot-splash/active" text="">
+   *
+   * active=true  — set signal; banner visible in both snapshot HTML and live VM.
+   * active=false — remove signal; banner hides; called when live surface mounts.
+   */
+  setSnapshotMode(active: boolean): void {
+    if (!this._tw) return;
+    if (active) {
+      this.setTiddler({ title: "$:/lararium/boot-splash/active", text: "yes" });
+    } else {
+      this.removeTiddler("$:/lararium/boot-splash/active");
+    }
+  }
+
   /** Render raw TW5 wikitext to HTML. Returns "" before boot or on render failure. */
   renderText(text: string): string {
     if (!this._tw) return "";

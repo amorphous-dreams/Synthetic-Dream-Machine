@@ -53,7 +53,7 @@ export function LarariumShell({ memes, onMemes }: ShellProps) {
   const [editor, setEditorState] = useState<Editor | null>(null);
   const editorRef = useRef<Editor | null>(null);
   const setEditor = useCallback((e: Editor | null) => { setEditorState(e); editorRef.current = e; }, []);
-  const { phase: openPhase, store: tiddlerStore, tw5, receipt: hostReceipt, readiness } =
+  const { phase: openPhase, store: tiddlerStore, tw5, receipt: hostReceipt, readiness, snapshotHtml } =
     useLarariumHostOpen({ hostId: "lararium-browser", roomId: "altar-fire" });
 
   const graphRef = useRef<ReactionGraph>(new ReactionGraph());
@@ -208,6 +208,14 @@ export function LarariumShell({ memes, onMemes }: ShellProps) {
         />
         {createPortal(<LarariumPanel />,           document.body)}
         {createPortal(<BootSplash phase={openPhase} readiness={readiness} />, document.body)}
+        {snapshotHtml && createPortal(
+          <div
+            id="lararium-snapshot"
+            style={{ position: "fixed", inset: 0, zIndex: 10, overflow: "auto", background: "#fff" }}
+            dangerouslySetInnerHTML={{ __html: snapshotHtml }}
+          />,
+          document.body,
+        )}
         {openPhase?.kind === "authority-opening" && createPortal(
           <AuthGate githubOAuthEnabled={!!document.querySelector('meta[name="lararium-github-oauth"]')} onReceipt={() => window.location.reload()} />,
           document.body,

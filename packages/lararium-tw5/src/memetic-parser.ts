@@ -13,7 +13,7 @@
  * Node type mapping (MemeAstNode → TW5ParseNode):
  *   Worksite      → "ahu"         (maps to <<~ ahu #slot >> → <$ahu>)
  *   Text          → "text"       (TW5 native text node)
- *   Edge / EdgeSugar → "edge"   (<$edge>)
+ *   Pranala / PranalaSugar → "pranala"  (<$pranala>)
  *   Sigil(toml)   → "toml"      (<$toml>)
  *   Sigil(other)  → "sigil"     (<$sigil>)
  *   Dynamic       → "dynamic"   (<$dynamic>)
@@ -31,7 +31,7 @@
  */
 
 import { parseMemeCarrier, grammarRulesFromText } from "@lararium/core";
-import type { MemeAstNode, CarrierNode, ControlNode, GrammarRules } from "@lararium/core";
+import type { MemeAstNode, CarrierNode, PaeNode, GrammarRules } from "@lararium/core";
 
 // ---------------------------------------------------------------------------
 // TW5ParseNode — minimal type for TW5's parse tree nodes
@@ -61,12 +61,12 @@ type TW5Wiki = {
 
 function nodeToTw5(node: MemeAstNode, wiki?: TW5Wiki): TW5ParseNode {
   switch (node.kind) {
-    case "Control":
+    case "Pae":
       // Phase boundary markers are structurally significant but invisible in rendered output.
-      return { type: "control", _ast: node, children: [],
+      return { type: "pae", _ast: node, children: [],
         attributes: {
-          phase: attr((node as ControlNode).phase),
-          ...((node as ControlNode).toUri ? { uri: attr((node as ControlNode).toUri!) } : {}),
+          phase: attr((node as PaeNode).phase),
+          ...((node as PaeNode).toUri ? { uri: attr((node as PaeNode).toUri!) } : {}),
         } };
 
     case "Ahu":
@@ -96,7 +96,7 @@ function nodeToTw5(node: MemeAstNode, wiki?: TW5Wiki): TW5ParseNode {
     }
 
     case "Pranala":
-      return { type: "edge", _ast: node, children: [],
+      return { type: "pranala", _ast: node, children: [],
         attributes: {
           from:   attr(node.fromRaw),
           to:     attr(node.toRaw),
@@ -117,7 +117,7 @@ function nodeToTw5(node: MemeAstNode, wiki?: TW5Wiki): TW5ParseNode {
             ...(node.slot    ? { slot:    attr(node.slot) }    : {}),
           } };
       }
-      return { type: "edge", _ast: node, children: [],
+      return { type: "pranala", _ast: node, children: [],
         attributes: {
           sigil:  attr(node.sigil),
           to:     attr(node.toRaw),
@@ -129,7 +129,7 @@ function nodeToTw5(node: MemeAstNode, wiki?: TW5Wiki): TW5ParseNode {
         } };
 
     case "Lele":
-      return { type: "dispatch", _ast: node, children: [],
+      return { type: "lele", _ast: node, children: [],
         attributes: { target: attr(node.targetRaw) } };
 
     case "Sigil":

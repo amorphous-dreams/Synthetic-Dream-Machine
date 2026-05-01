@@ -8,7 +8,7 @@
  */
 
 import { parseMemeCarrier } from "@lararium/core";
-import type { MemeAstNode, AhuNode, SigilNode, ControlNode, TextNode } from "@lararium/core";
+import type { MemeAstNode, AhuNode, SigilNode, PaeNode, TextNode } from "@lararium/core";
 import { parseTaploFields } from "./toml-ast.js";
 
 // ---------------------------------------------------------------------------
@@ -167,8 +167,8 @@ function generateParentText(uri: string, nodes: MemeAstNode[]): string {
   let inBody = false;
 
   for (const node of nodes) {
-    if (node.kind === "Control") {
-      const phase = (node as ControlNode).phase;
+    if (node.kind === "Pae") {
+      const phase = (node as PaeNode).phase;
       if (phase === "stx") { inBody = true; continue; }
       if (phase === "etx" || phase === "eot") break;
       continue;

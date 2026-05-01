@@ -1746,23 +1746,23 @@ var __lararium_tw5_modules = (function(exports) {
 				toUri: g(1)
 			};
 			case "control-soh": return {
-				kind: "Control",
+				kind: "Pae",
 				...base,
 				phase: "soh",
 				toUri: g(1) || void 0
 			};
 			case "control-stx": return {
-				kind: "Control",
+				kind: "Pae",
 				...base,
 				phase: "stx"
 			};
 			case "control-etx": return {
-				kind: "Control",
+				kind: "Pae",
 				...base,
 				phase: "etx"
 			};
 			case "control-eot": return {
-				kind: "Control",
+				kind: "Pae",
 				...base,
 				phase: "eot"
 			};
@@ -1845,7 +1845,7 @@ var __lararium_tw5_modules = (function(exports) {
 				children: [],
 				attributes: { uri: attr(node.toUri) }
 			};
-			case "Control": return {
+			case "Pae": return {
 				type: "lararium-control",
 				_ast: node,
 				children: [],

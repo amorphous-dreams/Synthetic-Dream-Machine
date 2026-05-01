@@ -13,10 +13,10 @@ export type MemeAstKind =
   | "Pranala"       // pranala — explicit edge (block or inline)
   | "PranalaSugar"  // sugared pranala forms: loulou / aka / kahea / pono / papalohe
   | "Lele"          // lele — fire-and-forget dispatch
-  | "Control"       // <<~①>> SOH / <<~②>> STX / <<~③>> ETX / <<~④>> EOT (term TBD)
-  | "Text"          // raw wikitext prose span (term TBD)
-  | "Sigil"         // canonical sigil incl. toml (term TBD)
-  | "Dynamic";      // grammar-meme-registered extension (term TBD)
+  | "Pae"            // <<~①>> SOH / <<~②>> STX / <<~③>> ETX / <<~④>> EOT 
+  | "Text"          // raw wikitext prose span 
+  | "Sigil"         // canonical sigil incl. toml 
+  | "Dynamic";      // grammar-meme-registered extension 
 
 interface AstBase {
   kind: MemeAstKind;
@@ -65,7 +65,7 @@ export interface LeleNode extends AstBase {
 }
 
 // ---------------------------------------------------------------------------
-// ControlNode — ASCII framing protocol (SOH/STX/ETX/EOT).
+// PaeNode — ASCII framing protocol (SOH/STX/ETX/EOT).
 //
 // Maps the four classic teletype control characters onto carrier lifecycle:
 //   soh — Start Of Heading  <<~&#x0001; ? -> lar:///URI >>  (self-declaration)
@@ -80,11 +80,11 @@ export interface LeleNode extends AstBase {
 //   eot → edges committed; update graph
 // ---------------------------------------------------------------------------
 
-export type ControlPhase = "soh" | "stx" | "etx" | "eot";
+export type PaePhase = "soh" | "stx" | "etx" | "eot";
 
-export interface ControlNode extends AstBase {
-  kind: "Control";
-  phase: ControlPhase;
+export interface PaeNode extends AstBase {
+  kind: "Pae";
+  phase: PaePhase;
   /** Present on soh (declared URI) and eot (return-to-caller marker). */
   toUri?: string;
 }
@@ -152,7 +152,7 @@ export type MemeAstNode =
   | PranalaNode
   | PranalaSugarNode
   | LeleNode
-  | ControlNode
+  | PaeNode
   | TextNode
   | SigilNode
   | DynamicNode;

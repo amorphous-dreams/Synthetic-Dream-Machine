@@ -6,17 +6,16 @@
  * after boot, when the real Widget base class is available.
  *
  * Messaging + kumu are first-class TW5 widget citizens — not a parallel tree:
- *   ahu        → AhuWidget         <$ahu>       carrier slot — <<~ ahu #slot >> and <$ahu slot="#slot"> are equivalent
- *   edge       → EdgeWidget       <$edge>      pranala metadata
- *   papalohe   → PapaloheWidget   <$papalohe>  reaction wire metadata
- *   kukali     → KukaliWidget     <$kukali>    suspend posture
- *   kumu       → KumuWidget       <$kumu>      device instance (UEFN analogue)
- *   toml       → TomlWidget       <$toml>      data block
- *   sigil      → SigilWidget      <$sigil>     generic sigil container
- *   dynamic    → DynamicWidget    <$dynamic>   grammar-meme extension
- *   control    → ControlWidget    <$control>   phase boundary marker (no visible output)
- *   dispatch   → DispatchWidget   <$dispatch>  lele fire-and-forget
- *   ahu        → AhuWidget        <$ahu>       carrier slot — dual form of <<~ ahu #slot >>
+ *   ahu        → AhuWidget       <$ahu>       carrier slot — <<~ ahu #slot >> and <$ahu slot="#slot"> are equivalent
+ *   pranala    → PranalaWidget   <$pranala>   explicit edge (block or inline)
+ *   papalohe   → PapaloheWidget  <$papalohe>  reaction wire edge
+ *   lele       → LeleWidget      <$lele>      fire-and-forget dispatch
+ *   kukali     → KukaliWidget    <$kukali>    reactive wait posture
+ *   kumu       → KumuWidget      <$kumu>      device instance (UEFN analogue)
+ *   toml       → TomlWidget      <$toml>      data block
+ *   sigil      → SigilWidget     <$sigil>     generic sigil container
+ *   dynamic    → DynamicWidget   <$dynamic>   grammar-meme extension
+ *   pae        → PaeWidget      <$pae>   phase boundary marker (no visible output)
  *
  * KumuWidget execution model (local-first Zelenka):
  *   On render, KumuWidget filters the wiki for tiddlers tagged $:/tags/LarariumKumu
@@ -40,18 +39,18 @@ type WidgetCtor = (this: TW5WidgetInstance, parseTreeNode: TW5ParseTreeNode, opt
 type WidgetCtorWithProto = WidgetCtor & { prototype: Partial<TW5WidgetInstance> };
 
 // ---------------------------------------------------------------------------
-// EdgeWidget — pranala / edge-sugar (metadata; no visible output)
+// PranalaWidget — pranala / edge-sugar (metadata; no visible output)
 // ---------------------------------------------------------------------------
 
-function EdgeWidget(this: TW5WidgetInstance, parseTreeNode: TW5ParseTreeNode, options: Record<string, unknown>) {
+function PranalaWidget(this: TW5WidgetInstance, parseTreeNode: TW5ParseTreeNode, options: Record<string, unknown>) {
   this.initialise(parseTreeNode, options);
 }
-EdgeWidget.prototype.render = function (this: TW5WidgetInstance, parent: TW5FakeElement, _nextSibling: TW5FakeElement | null) {
+PranalaWidget.prototype.render = function (this: TW5WidgetInstance, parent: TW5FakeElement, _nextSibling: TW5FakeElement | null) {
   this.parentDomNode = parent;
   this.computeAttributes();
   this.execute();
   const el = this.document.createElement("meta");
-  el.setAttribute("data-lar-kind",   "edge");
+  el.setAttribute("data-lar-kind",   "pranala");
   el.setAttribute("data-lar-from",   this.getAttribute("from", ""));
   el.setAttribute("data-lar-to",     this.getAttribute("to", ""));
   el.setAttribute("data-lar-family", this.getAttribute("family", ""));
@@ -59,7 +58,7 @@ EdgeWidget.prototype.render = function (this: TW5WidgetInstance, parent: TW5Fake
   parent.appendChild(el);
   this.domNodes = [el];
 };
-EdgeWidget.prototype.execute = function (this: TW5WidgetInstance) { this.makeChildWidgets(); };
+PranalaWidget.prototype.execute = function (this: TW5WidgetInstance) { this.makeChildWidgets(); };
 
 // ---------------------------------------------------------------------------
 // TomlWidget — iam / toml data block (metadata; no visible output)
@@ -122,37 +121,37 @@ DynamicWidget.prototype.render = function (this: TW5WidgetInstance, parent: TW5F
 DynamicWidget.prototype.execute = function (this: TW5WidgetInstance) { this.makeChildWidgets(); };
 
 // ---------------------------------------------------------------------------
-// ControlWidget — SOH/STX/ETX/EOT phase boundary markers (no visible output)
+// PaeWidget — SOH/STX/ETX/EOT phase boundary markers (no visible output)
 // ---------------------------------------------------------------------------
 
-function ControlWidget(this: TW5WidgetInstance, parseTreeNode: TW5ParseTreeNode, options: Record<string, unknown>) {
+function PaeWidget(this: TW5WidgetInstance, parseTreeNode: TW5ParseTreeNode, options: Record<string, unknown>) {
   this.initialise(parseTreeNode, options);
 }
-ControlWidget.prototype.render = function (this: TW5WidgetInstance, parent: TW5FakeElement, _nextSibling: TW5FakeElement | null) {
+PaeWidget.prototype.render = function (this: TW5WidgetInstance, parent: TW5FakeElement, _nextSibling: TW5FakeElement | null) {
   this.parentDomNode = parent;
   this.domNodes = [];
   // Phase markers carry no visible output — phase metadata lives in the AST.
 };
-ControlWidget.prototype.execute = function (this: TW5WidgetInstance) { /* no children */ };
+PaeWidget.prototype.execute = function (this: TW5WidgetInstance) { /* no children */ };
 
 // ---------------------------------------------------------------------------
-// DispatchWidget — lele fire-and-forget (no visible output)
+// LeleWidget — lele fire-and-forget (no visible output)
 // ---------------------------------------------------------------------------
 
-function DispatchWidget(this: TW5WidgetInstance, parseTreeNode: TW5ParseTreeNode, options: Record<string, unknown>) {
+function LeleWidget(this: TW5WidgetInstance, parseTreeNode: TW5ParseTreeNode, options: Record<string, unknown>) {
   this.initialise(parseTreeNode, options);
 }
-DispatchWidget.prototype.render = function (this: TW5WidgetInstance, parent: TW5FakeElement, _nextSibling: TW5FakeElement | null) {
+LeleWidget.prototype.render = function (this: TW5WidgetInstance, parent: TW5FakeElement, _nextSibling: TW5FakeElement | null) {
   this.parentDomNode = parent;
   this.computeAttributes();
   this.execute();
   const el = this.document.createElement("meta");
-  el.setAttribute("data-lar-kind",   "dispatch");
+  el.setAttribute("data-lar-kind",   "lele");
   el.setAttribute("data-lar-target", this.getAttribute("target", ""));
   parent.appendChild(el);
   this.domNodes = [el];
 };
-DispatchWidget.prototype.execute = function (this: TW5WidgetInstance) { this.makeChildWidgets(); };
+LeleWidget.prototype.execute = function (this: TW5WidgetInstance) { this.makeChildWidgets(); };
 
 // ---------------------------------------------------------------------------
 // PapaloheWidget — reaction family edge (trigger label at source, fn at target)
@@ -351,12 +350,12 @@ AhuWidget.prototype.refresh = function (this: TW5WidgetInstance, changedTiddlers
 
 export function createLarariumWidgets(_tw: TW5Instance): Record<string, WidgetCtorWithProto> {
   return {
-    "edge":       EdgeWidget      as unknown as WidgetCtorWithProto,
+    "pranala":   PranalaWidget      as unknown as WidgetCtorWithProto,
     "toml":       TomlWidget      as unknown as WidgetCtorWithProto,
     "sigil":      SigilWidget     as unknown as WidgetCtorWithProto,
     "dynamic":    DynamicWidget   as unknown as WidgetCtorWithProto,
-    "control":    ControlWidget   as unknown as WidgetCtorWithProto,
-    "dispatch":   DispatchWidget  as unknown as WidgetCtorWithProto,
+    "pae":        PaeWidget   as unknown as WidgetCtorWithProto,
+    "lele":      LeleWidget  as unknown as WidgetCtorWithProto,
     "papalohe":   PapaloheWidget  as unknown as WidgetCtorWithProto,
     "kukali":     KukaliWidget    as unknown as WidgetCtorWithProto,
     "kumu":       KumuWidget      as unknown as WidgetCtorWithProto,

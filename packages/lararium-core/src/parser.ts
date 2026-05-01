@@ -27,7 +27,7 @@ import type {
   PranalaNode,
   PranalaSugarNode,
   LeleNode,
-  ControlNode,
+  PaeNode,
   SigilNode,
   DynamicNode,
 } from "./ast.js";
@@ -416,13 +416,13 @@ function makeLeaf(
         attrs: { profile: groups[2] !== undefined ? (groups[1] ?? "") : "",
                  content: groups[2] ?? groups[1] ?? "" }, body: [] } as SigilNode;
     case "control-soh":
-      return { kind: "Control", ...base, phase: "soh", toUri: g(1) || undefined } as ControlNode;
+      return { kind: "Pae", ...base, phase: "soh", toUri: g(1) || undefined } as PaeNode;
     case "control-stx":
-      return { kind: "Control", ...base, phase: "stx" } as ControlNode;
+      return { kind: "Pae", ...base, phase: "stx" } as PaeNode;
     case "control-etx":
-      return { kind: "Control", ...base, phase: "etx" } as ControlNode;
+      return { kind: "Pae", ...base, phase: "etx" } as PaeNode;
     case "control-eot":
-      return { kind: "Control", ...base, phase: "eot" } as ControlNode;
+      return { kind: "Pae", ...base, phase: "eot" } as PaeNode;
     default: {
       if (CANONICAL_SIGILS.has(sigilName)) {
         const scope = eventType === "pragma" ? "carrier" : "block";
@@ -462,7 +462,7 @@ function walkForEdges(nodes: MemeAstNode[], carrierUri: string, ahuStack: string
       case "Lele":
         edges.push(projectDispatch(node, carrierUri, ahuStack));
         break;
-      case "Control":
+      case "Pae":
         // SOH emits a "control"/"soh" edge carrying the declared URI.
         // STX/ETX/EOT are stream-phase markers — no graph edges.
         if (node.phase === "soh" && node.toUri) {
