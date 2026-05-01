@@ -55,11 +55,21 @@ fields = ["receipt: string"]
 
 [[open-phases]]
 kind   = "store-opening"
+# recipeUri carries the roomId as a human-readable scope label during this phase.
+# The actual doc URL resolves from the catalog island, not from this field.
 fields = ["recipeUri: string"]
 
 [[open-phases]]
 kind   = "store-ready"
 fields = ["titleCount: number"]
+
+# Boot sequence — authority-first-sync-order:
+#   host-opening
+#   → authority-opening → authority-ready   (auth.ready lights)
+#   → store-opening                         (Repo + catalog open; catalog.ready lights)
+#   → store-ready                           (room content doc open; room-content.ready lights)
+#   → tw5-opening → tw5-hydrating → tw5-ready  (tw-vm.ready lights)
+#   → live
 
 [[open-phases]]
 kind   = "tw5-opening"
@@ -105,6 +115,8 @@ status = "stub — pending encrypted group sync (Brooklyn/Beelay)"
 
 <<~ pranala #to-causal-islands ? -> lar:///ha.ka.ba/api/v0.1/pono/causal-islands family:control role:depends >>
 <<~ pranala #to-node-host ? -> lar:///ha.ka.ba/api/v0.1/lararium/modules/node-host family:control role:depends >>
+<<~ pranala #to-catalog-doc ? -> lar:///ha.ka.ba/api/v0.1/lararium/schema/catalog-doc family:control role:depends >>
+<<~ pranala #to-readiness-keys ? -> lar:///ha.ka.ba/api/v0.1/lararium/schema/readiness-keys family:control role:depends >>
 
 <<~/ahu >>
 

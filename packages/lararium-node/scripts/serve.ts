@@ -197,6 +197,20 @@ async function main() {
       try {
         snapshotMemes = await buildSnapshot(runtime);
         receiptSha    = await computeReceiptSha(runtime);
+        // Re-seed all known room docs from the fresh snapshot.
+        const roomDir = join(ROOMS_DIR, DEFAULT_ROOM);
+        const urlFile = join(roomDir, "doc-url.txt");
+        if (existsSync(urlFile)) {
+          const roomUrl = readFileSync(urlFile, "utf8").trim() as AutomergeUrl;
+          const roomHandle = await memeRepo.find<Record<string, unknown>>(roomUrl);
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          roomHandle.change((doc: any) => {
+            for (const [uri, meme] of Object.entries(snapshotMemes.memes)) {
+              if (!uri.startsWith("lar:") || !meme.text) continue;
+              doc[uri] = { title: uri, fields: meme.fields ?? {}, text: meme.text };
+            }
+          });
+        }
         return json(res, { reseeded: DEFAULT_ROOM, sha: receiptSha });
       } catch (e) {
         return json(res, { error: String(e) }, 500);
@@ -312,43 +326,85 @@ async function main() {
   });
 
   // ---------------------------------------------------------------------------
-  // Automerge Repo — wire memeWss adapter and seed meme content store
+  // Automerge Repo — one Repo, per-island docs inside
   // ---------------------------------------------------------------------------
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const memeAdapter = new NodeWSServerAdapter(memeWss as any);
   const memeRepo    = new Repo({
-    storage: new NodeFSStorageAdapter(MEME_STORE_DIR),
+    storage: new NodeFSStorageAdapter(CATALOG_DIR),
     network: [memeAdapter],
-    // Authorization hook — sync peers must hold a provider-neutral auth receipt.
-    // Policy remains coarse here; catalog/room/corpus checks will refine ability.
     sharePolicy: async (peerId: string) => peerRegistry.isAuthorized(peerId),
   });
 
-  // URL_FILE holds the Automerge doc URL so it survives process restarts.
-  const URL_FILE = join(MEME_STORE_DIR, "doc-url.txt");
-  let memeHandle = existsSync(URL_FILE)
-    ? await memeRepo.find(readFileSync(URL_FILE, "utf8").trim() as import("@automerge/automerge-repo").AutomergeUrl)
-    : null;
-
-  if (!memeHandle) {
-    // First boot — create doc and seed from lares/ carriers
-    memeHandle = memeRepo.create<Record<string, unknown>>({});
-    writeFileSync(URL_FILE, memeHandle.url, "utf8");
-    console.log(`[lararium-serve] meme store created: ${memeHandle.url}`);
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    memeHandle.change((doc: any) => {
-      for (const [uri, meme] of Object.entries(snapshotMemes.memes)) {
-        if (!uri.startsWith("lar:") || !meme.text) continue;
-        doc[uri] = { title: uri, fields: meme.fields ?? {}, text: meme.text };
-      }
-    });
-    console.log(`[lararium-serve] meme store seeded: ${Object.keys(snapshotMemes.memes).length} memes`);
-  } else {
-    console.log(`[lararium-serve] meme store resumed: ${memeHandle.url}`);
+  // ---------------------------------------------------------------------------
+  // Helper: open or create a persisted Automerge doc by URL file
+  // ---------------------------------------------------------------------------
+  async function openOrCreate<T extends Record<string, unknown>>(
+    urlFile: string,
+    init: () => T,
+  ): Promise<DocHandle<T>> {
+    if (existsSync(urlFile)) {
+      const url = readFileSync(urlFile, "utf8").trim() as AutomergeUrl;
+      return memeRepo.find<T>(url);
+    }
+    const handle = memeRepo.create<T>(init());
+    writeFileSync(urlFile, handle.url, "utf8");
+    return handle;
   }
 
-  memeStoreUrl = memeHandle.url;
+  // ---------------------------------------------------------------------------
+  // Catalog doc — hallway; names all islands
+  // ---------------------------------------------------------------------------
+  const catalogHandle = await openOrCreate<CatalogDoc>(
+    join(CATALOG_DIR, "catalog-url.txt"),
+    emptyCatalogDoc,
+  );
+  catalogUrl = catalogHandle.url;
+  console.log(`[lararium-serve] catalog: ${catalogUrl}`);
+
+  // ---------------------------------------------------------------------------
+  // Helper: open or create a room content doc, seed on first boot, register in catalog
+  // ---------------------------------------------------------------------------
+  async function openOrCreateRoom(roomId: string): Promise<DocHandle<Record<string, unknown>>> {
+    const roomDir = join(ROOMS_DIR, roomId);
+    mkdirSync(roomDir, { recursive: true });
+    const urlFile = join(roomDir, "doc-url.txt");
+    const firstBoot = !existsSync(urlFile);
+
+    const handle = await openOrCreate<Record<string, unknown>>(urlFile, () => ({}));
+
+    if (firstBoot) {
+      console.log(`[lararium-serve] room ${roomId} created: ${handle.url}`);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      handle.change((doc: any) => {
+        for (const [uri, meme] of Object.entries(snapshotMemes.memes)) {
+          if (!uri.startsWith("lar:") || !meme.text) continue;
+          doc[uri] = { title: uri, fields: meme.fields ?? {}, text: meme.text };
+        }
+      });
+      console.log(`[lararium-serve] room ${roomId} seeded: ${Object.keys(snapshotMemes.memes).length} memes`);
+    } else {
+      console.log(`[lararium-serve] room ${roomId} resumed: ${handle.url}`);
+    }
+
+    // Register room entry in catalog doc
+    const roomEntry: CatalogRoomEntry = {
+      id:             roomId,
+      contentDocUrl:  handle.url,
+      schemaVersion:  "0.1",
+    };
+    catalogHandle.change((doc) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (doc as any).rooms = (doc as any).rooms ?? {};
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (doc as any).rooms[roomId] = roomEntry;
+    });
+
+    return handle;
+  }
+
+  // Warm the default room at boot so its URL is in the catalog immediately.
+  await openOrCreateRoom(DEFAULT_ROOM);
 
   // Disk write-back and lares/ file watcher removed — file sync refactor in progress.
 
@@ -356,7 +412,7 @@ async function main() {
     console.log(`[lararium-serve] http://${HOST}:${PORT}`);
     console.log(`[lararium-serve] default room: /room/${DEFAULT_ROOM}  (or /room/<any-id>)`);
     console.log(`[lararium-serve] receipt:      ${receiptSha.slice(0, 16) || "(none)"}`);
-    console.log(`[lararium-serve] meme-store:   ${memeStoreUrl}`);
+    console.log(`[lararium-serve] catalog:      ${catalogUrl}`);
     console.log(`[lararium-serve] meme-sync:    ws://${HOST}:${PORT}/meme-sync`);
     console.log(`[lararium-serve] reseed:       curl http://${HOST}:${PORT}/admin/reseed`);
     console.log(`[lararium-serve] promote:      disabled; future stub POST /keyhive/promotions`);
