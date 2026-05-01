@@ -21,283 +21,37 @@
  * Graceful degradation:
  *   - Missing toml iam  → parent fields empty; parsing continues
  *   - Malformed TOML    → field ignored; warning recorded on parent
- *   - Unknown ahu kind   → child tiddler created with raw text; no crash
- *   - Duplicate slots    → last one wins (last-write-wins semantics)
- *   - Any thrown error   → caught; warning added; partial result returned
+ *   - Unknown ahu kind  → child tiddler created with raw text; no crash
+ *   - Duplicate slots   → last one wins (last-write-wins semantics)
+ *   - Any thrown error  → caught; warning added; partial result returned
  *
  * Round-trip invariant:
  *   serializeCarrier(parseCarrier(uri, text, {}).parent, children) ≈ text
  *   (whitespace and comment normalization permitted)
  */
 
-import { parseMemeCarrier } from "@lararium/core";
-import type { MemeAstNode, WorksiteNode, SigilNode, MemeStreamEvent, ControlNode, TextNode } from "@lararium/core";
-import { parseTaploFields } from "./toml-ast.js";
+import type { MemeStreamEvent } from "@lararium/core";
+
+// ---------------------------------------------------------------------------
+// Types — defined in carrier-split, re-exported here for compatibility
+// ---------------------------------------------------------------------------
+
+export type { ParentTiddler, ChildTiddler, CarrierSplit } from "./carrier-split.js";
+import type { ParentTiddler, ChildTiddler } from "./carrier-split.js";
+
 // splitCarrierToTiddlers — re-exported from carrier-split.ts (new toml iam prelude format)
 export { splitCarrierToTiddlers } from "./carrier-split.js";
 import { splitCarrierToTiddlers } from "./carrier-split.js";
 
 // ---------------------------------------------------------------------------
-// Types
-// ---------------------------------------------------------------------------
-
-export interface ParentTiddler {
-  title:    string;
-  fields:   Record<string, string | string[]>;
-  /** Raw carrier text — kept for MemeticParser and round-trip write-back. */
-  text:     string;
-}
-
-export interface ChildTiddler {
-  title:    string;                          // parentUri + "#" + slot
-  fields:   Record<string, string | string[]>;
-  text:     string;                          // raw ahu body text
-}
-
-export interface CarrierSplit {
-  parent:   ParentTiddler;
-  children: ChildTiddler[];
-  warnings: string[];
-}
-
-
-// ---------------------------------------------------------------------------
-// extractIamFields — find #iam ahu and dissolve its TOML into parent fields
-// ---------------------------------------------------------------------------
-
-function extractIamFields(
-  nodes: MemeAstNode[],
-  warnings: string[],
-): Record<string, string | string[]> {
-  for (const node of nodes) {
-    if (node.kind !== "Worksite") continue;
-    const ws = node as WorksiteNode;
-    if (ws.slot !== "#iam") continue;
-
-    for (const child of ws.body) {
-      if (child.kind === "Sigil") {
-        const sig = child as SigilNode;
-        if (sig.sigilName === "toml" || sig.sigilName === "iam") {
-          return parseTaploFields(sig.attrs["content"] ?? "", warnings, "#iam");
-        }
-      }
-    }
-    // #iam found but no TOML block inside
-    return {};
-  }
-  return {};
-}
-
-// ---------------------------------------------------------------------------
-// ahuBodyText — reconstruct raw body text from a WorksiteNode's children
-// ---------------------------------------------------------------------------
-
-function ahuBodyText(ws: WorksiteNode): string {
-  return ws.body.map((n) => n.raw).join("");
-}
-
-// ---------------------------------------------------------------------------
-// collectAhuBodies — recover exact ahu body spans from source text.
-//
-// The parser AST keeps each nested sigil's opening token as `raw`, not always
-// the full source span. For child tiddlers we therefore prefer source slices so
-// edits/round-trips preserve nested blocks and close markers.
-// ---------------------------------------------------------------------------
-
-function collectAhuBodies(text: string): Map<string, string> {
-  const bodies = new Map<string, string>();
-  const pattern = /<<~[^>]*\bahu\s+(#[\w-]+)\s*>>([\s\S]*?)<<~\/ahu\s*>>/g;
-  for (const match of text.matchAll(pattern)) {
-    const slot = match[1];
-    if (!slot) continue;
-    bodies.set(slot, match[2] ?? "");
-  }
-  return bodies;
-}
-
-// ---------------------------------------------------------------------------
-// CONTROL_SLOTS — structural ahu frame markers that dissolve into the parent
-// tiddler (or are discarded). They do NOT become child tiddlers.
-// ---------------------------------------------------------------------------
-
-const CONTROL_SLOTS = new Set([
-  "#iam",
-  "#exit",
-  "#stream-open",
-  "#stream-close",
-  "#stream-exit",
-  "#body-open",
-  "#body-close",
-  "#meme-body-open",
-  "#meme-body-close",
-]);
-
-// ---------------------------------------------------------------------------
-// generateParentText — mixed wikitext for the parent tiddler's text field.
-//
-// Walks the top-level AST in document order (after STX, before ETX/EOT):
-//   WorksiteNode (non-control) → <$transclude tiddler="uri#slot" mode="block"/>
-//   TextNode with content      → prose inline (wikitext passthrough)
-//   Everything else            → suppressed
-//
-// This preserves interleaved prose between named ahu slots — the on-disk
-// format (carrier) and TW5 VM format (wikitext with transcludes) differ
-// intentionally. Disk write-back uses carrier-text; TW5 renders the mix.
-// ---------------------------------------------------------------------------
-
-function generateParentText(uri: string, nodes: MemeAstNode[]): string {
-  const parts: string[] = [];
-  let inBody = false;
-
-  for (const node of nodes) {
-    if (node.kind === "Control") {
-      const phase = (node as ControlNode).phase;
-      if (phase === "stx") { inBody = true; continue; }
-      if (phase === "etx" || phase === "eot") break;
-      continue;
-    }
-    if (!inBody) continue;
-
-    if (node.kind === "Worksite") {
-      const ws = node as WorksiteNode;
-      if (!CONTROL_SLOTS.has(ws.slot)) {
-        parts.push(`<$transclude tiddler="${uri}${ws.slot}" mode="block"/>`);
-      }
-    } else if (node.kind === "Text") {
-      const prose = (node as TextNode).content.trim();
-      if (prose) parts.push(prose);
-    }
-    // Edges, Sigils, CarrierHeader at body level → suppressed
-  }
-
-  return parts.join("\n\n");
-}
-
-// ---------------------------------------------------------------------------
-// splitCarrierToTiddlersLegacy — legacy implementation kept for reference
-// (splitCarrierToTiddlers is now re-exported from carrier-split.ts)
-// ---------------------------------------------------------------------------
-
-function splitCarrierToTiddlersLegacy(uri: string, text: string): CarrierSplit {
-  const warnings: string[] = [];
-  let nodes: MemeAstNode[] = [];
-
-  try {
-    nodes = parseMemeCarrier(uri, text);
-  } catch (e) {
-    warnings.push(`parse failed: ${e}`);
-    return {
-      parent:   { title: uri, fields: {}, text },
-      children: [],
-      warnings,
-    };
-  }
-
-  // Dissolve #iam into parent fields
-  const iamFields = extractIamFields(nodes, warnings);
-
-  // Normalise implements and tags from TOML
-  const normaliseArray = (v: unknown): string[] => {
-    if (Array.isArray(v)) return (v as unknown[]).map(String).filter(Boolean);
-    if (typeof v === "string") return v.split(/\s+/).filter(Boolean);
-    return [];
-  };
-
-  const implements_ = normaliseArray(iamFields["implements"]);
-  const tags_       = normaliseArray(iamFields["tags"]);
-
-  // Build parent fields — scalar TOML values become string fields
-  const parentFields: Record<string, string | string[]> = {};
-  for (const [k, v] of Object.entries(iamFields)) {
-    if (k === "implements" || k === "tags") continue;  // handled separately
-    if (k === "uri-path" || k === "file-path") continue; // derived, not stored
-    parentFields[k] = Array.isArray(v) ? v : String(v);
-  }
-  parentFields["implements"] = implements_.join(" ");
-  parentFields["tags"]       = tags_;
-
-  // Child tiddlers — one per non-#iam ahu, last-write-wins on duplicate slots
-  const childMap = new Map<string, ChildTiddler>();
-  const slotOrder: string[] = [];
-  const sourceBodies = collectAhuBodies(text);
-
-  for (const node of nodes) {
-    if (node.kind !== "Worksite") continue;
-    const ws    = node as WorksiteNode;
-    const slot  = ws.slot;
-    if (CONTROL_SLOTS.has(slot)) continue;
-
-    const childUri   = uri + slot;   // slot already includes "#" prefix
-    const bodyText   = sourceBodies.get(slot) ?? ahuBodyText(ws);
-
-    if (!childMap.has(childUri)) slotOrder.push(childUri);
-
-    // Extract optional TOML metadata from the child body — first ```toml ... ``` fence.
-    // Enables child ahu sections to declare TW5-native fields (type, mime-type, etc.).
-    const childFields: Record<string, string | string[]> = {
-      "ahu-slot":    slot,
-      "ahu-parent":  uri,
-      tags:          [uri],   // parent URI as tag → [tag[lar:///SESSION]] filter
-      // Streams plugin (sq/streams) compatibility aliases
-      "parent":      uri,
-      "stream-type": "default",
-    };
-    // Extract leading TOML fence — sets child fields AND strips the fence from
-    // display text so it doesn't render as a visible code block in TW5 view mode.
-    const tomlFence = /^```toml\s*\n([\s\S]*?)```[ \t]*\n?/m.exec(bodyText);
-    let displayText = bodyText;
-    if (tomlFence) {
-      const fenceFields = parseTaploFields(tomlFence[1] ?? "", warnings, `child-fence:${slot}`);
-      for (const [k, v] of Object.entries(fenceFields)) childFields[k] = v;
-      // Strip fence from display body; keep the exact prefix as a hidden field
-      // so child slot edits can write back display text without losing
-      // law-bearing metadata from the carrier body.
-      childFields["ahu-body-prefix"] = tomlFence[0];
-      displayText = bodyText.slice(tomlFence.index! + tomlFence[0].length).trimStart();
-    }
-
-    childMap.set(childUri, {
-      title:  childUri,
-      fields: childFields,
-      text:   displayText,
-    });
-  }
-
-  // Record slot order on parent for round-trip serialisation.
-  // stream-list mirrors ahu-slots for Streams plugin (sq/streams) compatibility.
-  if (slotOrder.length > 0) {
-    parentFields["ahu-slots"]    = slotOrder.join(" ");
-    parentFields["stream-list"]  = slotOrder.join(" ");
-    parentFields["stream-type"]  = "stream";
-  }
-
-  // Parent text is mixed wikitext: inline prose interleaved with $transclude blocks
-  // for each named ahu slot — document order preserved. Raw carrier is kept in
-  // carrier-text for disk write-back. On-disk format (carrier) and TW5 VM format
-  // (wikitext) differ intentionally; the user edits prose via carrier, slots via TW5.
-  parentFields["carrier-text"] = text;
-
-  return {
-    parent: {
-      title:  uri,
-      fields: parentFields,
-      text:   generateParentText(uri, nodes),
-    },
-    children: slotOrder.map((t) => childMap.get(t)!),
-    warnings,
-  };
-}
-
-// ---------------------------------------------------------------------------
 // streamEventsToTiddlers — convert MemeStreamEvents to TW5 tiddler field batches.
 //
 // Only carrier-close events produce tiddlers — one batch of [parent, ...children]
-// per carrier, fully resolved via splitCarrierToTiddlers (#iam TOML included).
+// per carrier, fully resolved via splitCarrierToTiddlers (toml iam prelude included).
 //
 // ahu-child events are intentionally skipped here: they carry incomplete fields
-// (no #iam resolution) and would produce duplicate child tiddlers that the
-// carrier-close batch overwrites. Callers that want progressive/incremental
-// rendering should consume MemeStreamEvent.ahu-child directly.
+// and would produce duplicate child tiddlers that the carrier-close batch overwrites.
+// Callers that want progressive/incremental rendering should consume ahu-child directly.
 //
 // realmOrigin — lar URI of the source Realm. Injected as "realm-origin" on every
 // tiddler for multi-Realm provenance: [all[memes]field:realm-origin[lar:///remote]]
@@ -313,7 +67,6 @@ export function streamEventsToTiddlers(
 
   for (const ev of events) {
     if (ev.kind === "carrier-close") {
-      // Full split — resolves #iam TOML into parent fields + re-derives children.
       const split = splitCarrierToTiddlers(ev.uri, ev.fullText);
       const parent: TiddlerFields = {
         title: ev.uri,
@@ -321,7 +74,7 @@ export function streamEventsToTiddlers(
         text: ev.fullText,
       };
       if (realmOrigin) parent["realm-origin"] = realmOrigin;
-      const children: TiddlerFields[] = split.children.map((c) => {
+      const children: TiddlerFields[] = split.children.map((c: ChildTiddler) => {
         const f: TiddlerFields = { ...c.fields, title: c.title, text: c.text };
         if (realmOrigin) f["realm-origin"] = realmOrigin;
         return f;
@@ -352,7 +105,7 @@ export function serializeCarrier(
 
   // Fallback: reconstruct from fields + children (lossy — no sigil decorations)
   const lines: string[] = [
-    `<<~ ? -> ${parent.title} >>`,
+    `<<~ ? -> ${parent.title} >>`,
     "",
     "```toml iam",
   ];
@@ -378,7 +131,7 @@ export function serializeCarrier(
     lines.push(`<<~ ahu ${slot} >>`, child.text, `<<~/ahu >>`, "");
   }
 
-  lines.push(`<<~ -> ? >>`);
+  lines.push(`<<~ -> ? >>`);
   return lines.join("\n");
 }
 
@@ -412,9 +165,9 @@ export function replaceCarrierSlot(
 // ---------------------------------------------------------------------------
 // composeCarrierSlotBody — rebuild a carrier slot body from tiddler fields.
 //
-// Child tiddlers display editable body text with any leading ```toml fence
-// stripped. The stripped fence lives in ahu-body-prefix, which lets write-back
-// preserve metadata while keeping TW5 view/edit surfaces clean.
+// Child tiddlers display editable body text with any leading ```toml iam``` fence
+// stripped. The stripped fence lives in fragment-body-prefix, preserving metadata
+// for write-back while keeping TW5 view/edit surfaces clean.
 // ---------------------------------------------------------------------------
 
 export function composeCarrierSlotBody(
@@ -453,4 +206,3 @@ export function removeCarrierSlot(carrierText: string, slot: string): string | n
 
 /** Canonical import-path entry: disk carrier text → individual tiddler records. */
 export { splitCarrierToTiddlers as parseCarrier } from "./carrier-split.js";
-

@@ -12,11 +12,26 @@ import type { MemeAstNode, WorksiteNode, SigilNode, ControlNode, TextNode } from
 import { parseTaploFields } from "./toml-ast.js";
 
 // ---------------------------------------------------------------------------
-// Re-export shared types from carrier-codec for compatibility
+// Types
 // ---------------------------------------------------------------------------
 
-export type { ParentTiddler, ChildTiddler, CarrierSplit } from "./carrier-codec.js";
-import type { ParentTiddler, ChildTiddler, CarrierSplit } from "./carrier-codec.js";
+export interface ParentTiddler {
+  title:  string;
+  fields: Record<string, string | string[]>;
+  text:   string;
+}
+
+export interface ChildTiddler {
+  title:  string;
+  fields: Record<string, string | string[]>;
+  text:   string;
+}
+
+export interface CarrierSplit {
+  parent:   ParentTiddler;
+  children: ChildTiddler[];
+  warnings: string[];
+}
 
 // ---------------------------------------------------------------------------
 // Constants

@@ -134,9 +134,14 @@ function nodeToTw5(node: MemeAstNode, wiki?: TW5Wiki): TW5ParseNode {
         attributes: { target: attr(node.targetRaw) } };
 
     case "Sigil":
-      if (node.sigilName === "toml" || node.sigilName === "iam") {
+      if (node.sigilName === "toml") {
+        const profile = node.attrs["profile"] ?? "";
         return { type: "lararium-toml", _ast: node, children: [],
-          attributes: { content: attr(node.attrs["content"] ?? "") } };
+          attributes: {
+            content: attr(node.attrs["content"] ?? ""),
+            ...(profile ? { profile: attr(profile) } : {}),
+            ...(profile === "iam" ? { suppress: attr("true") } : {}),
+          } };
       }
       if (node.sigilName === "kukali") {
         return { type: "lararium-kukali", _ast: node, children: [],

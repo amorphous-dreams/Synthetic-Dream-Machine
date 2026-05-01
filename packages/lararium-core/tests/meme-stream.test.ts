@@ -9,13 +9,11 @@ const CARRIER = [
   ``,
   `<<~&#x0001; ? -> ${URI} >>`,
   ``,
-  `<<~ ahu #iam >>`,
-  "```toml",
+  "```toml iam",
   `uri-path     = "ha.ka.ba/api/v0.1/lararium/templates/meme-strategic"`,
-  `content-type = "text/x-memetic-wikitext"`,
+  `type         = "text/x-memetic-wikitext"`,
   `kumu-name    = "meme-strategic"`,
   "```",
-  `<<~/ahu >>`,
   ``,
   `<<~&#x0002;>>`,
   ``,
@@ -24,7 +22,7 @@ const CARRIER = [
   `<<~/ahu >>`,
   ``,
   `<<~&#x0003;>>`,
-  `<<~ -> ? >>`,
+  `<<~&#x0004; -> ? >>`,
 ].join("\n");
 
 describe("MemeStreamParser", () => {
@@ -36,7 +34,7 @@ describe("MemeStreamParser", () => {
     expect(open).toBeDefined();
     expect((open as any).uri).toBe(URI);
 
-    // #iam is in the header (before STX) — not emitted as ahu-child
+    // toml iam prelude is in the header (before STX) — not emitted as ahu-child
     // #body is in the body — should be emitted
     const children = events.filter((e) => e.kind === "ahu-child");
     expect(children.length).toBeGreaterThanOrEqual(1);
@@ -50,7 +48,7 @@ describe("MemeStreamParser", () => {
     expect((close as any).fullText).toContain("kumu-name");
   });
 
-  test("fullText in carrier-close spans SOH→ETX (includes #iam TOML)", () => {
+  test("fullText in carrier-close spans SOH→ETX (includes toml iam prelude)", () => {
     const parser = new MemeStreamParser();
     const events = parser.push(CARRIER);
     const close = events.find((e) => e.kind === "carrier-close") as any;

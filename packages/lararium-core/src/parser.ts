@@ -84,8 +84,9 @@ const BOOTSTRAP_SCANS: SigilScan[] = [
   // papalohe: groups [full, #slot?, FROM, TO, trigger?, fn?]
   // Full UEFN wire: <<~ papalohe DeviceA -> DeviceB trigger:OnEliminated fn:ShowScore >>
   { sigilName: "papalohe",  regex: /<<~\s*papalohe\s+(#[\w-]+\s+)?(\S+)\s*->\s*(\S+)(?:\s+trigger:([\w.-]+))?(?:\s+fn:([\w.-]+))?\s*>>/g, eventType: "leaf" },
-  // TOML data block — general carrier (```toml fence or sigil form)
-  { sigilName: "toml",      regex: /```toml\s*([\s\S]*?)```/g,              eventType: "leaf"   },
+  // TOML data block — captures optional profile name (group 1) and content (group 2).
+  // ```toml iam ...``` sets profile="iam"; bare ```toml ...``` has profile="".
+  { sigilName: "toml",      regex: /```toml(?:[ \t]+([A-Za-z0-9_-]+))?[ \t]*\n([\s\S]*?)```/g, eventType: "leaf" },
   { sigilName: "toml",      regex: /<<~\s*toml\s*>>([\s\S]*?)<<~\/toml\s*>>/g, eventType: "leaf" },
   // Variable binding (kau — core enough to bootstrap)
   { sigilName: "kau",       regex: /<<~!\s*kau\s+([\w-]+)\s*=\s*([^\n>]+?)\s*>>/g,  eventType: "pragma" },
@@ -234,8 +235,7 @@ function attrsFromGroups(
     case "kapu":    return { qualifier: g(1), inline: scope === "carrier" ? "true" : "false" };
     case "ui":      return { filter: g(1) };
     case "kukali":  return g(1) ? { trigger: g(1) } : {};
-    case "toml":
-    case "iam":     return { content: g(1) };
+    case "toml":    return { profile: g(1), content: g(2) };
     default:        return {};
   }
 }
@@ -257,7 +257,7 @@ const CANONICAL_SIGILS = new Set([
   "ahu", "pranala", "loulou", "aka", "kahea", "kahea-call", "pono", "lele", "papalohe",
   "wai", "mukuwai", "kahawai", "huli", "hana", "meme",
   "wehe", "helu", "kumu", "kau", "kapu", "hui", "heihei", "puka", "ui",
-  "iam", "toml", "pranala-header",
+  "toml", "pranala-header",
   "kukali",
   "control-soh", "control-stx", "control-etx", "control-eot",
 ]);
@@ -396,11 +396,8 @@ function makeLeaf(
     }
     case "lele":
       return { kind: "Dispatch", ...base, targetRaw: g(1), family: "message" } as DispatchNode;
-    case "iam":
-      // iam is a special ahu slot — emit as SigilNode so toml content is in attrs
-      return { kind: "Sigil", ...base, sigilName: "iam", attrs: { content: groups[1] ?? "" }, body: [] } as SigilNode;
     case "toml":
-      return { kind: "Sigil", ...base, sigilName: "toml", attrs: { content: groups[1] ?? "" }, body: [] } as SigilNode;
+      return { kind: "Sigil", ...base, sigilName: "toml", attrs: { profile: groups[1] ?? "", content: groups[2] ?? "" }, body: [] } as SigilNode;
     case "pranala-header":
       return { kind: "CarrierHeader", ...base, toUri: g(1) } as CarrierHeaderNode;
     case "control-soh":

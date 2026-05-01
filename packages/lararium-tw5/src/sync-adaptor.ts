@@ -73,7 +73,7 @@ const SAVE_CASCADE_URI = "lar:///ha.ka.ba/api/v0.1/lararium/sync/save-cascade";
  *
  * isTemp      — $:/temp/* only; session-local scratch, never synced.
  * isTW5System — $:/ namespace; TW5 internals, never synced.
- * isDraft     — "Draft of ..." titles; synced across user devices (identity-scoped).
+ * isDraft     — "Draft of ..." titles; suppressed until the draft island (M-E) is wired.
  */
 function isTemp(title: string): boolean {
   return title.startsWith("$:/temp/");
@@ -429,7 +429,7 @@ export class LarariumCrdtSyncAdaptor implements MemeProjection {
   private _resolveSaveStrategy(title: string): SaveStrategy {
     // Fast-path: the structural skip categories never route differently.
     if (isTemp(title) || isTW5System(title)) return "skip";
-    if (isDraft(title)) return "direct";
+    if (isDraft(title)) return "skip"; // draft island not yet wired (M-E)
 
     if (title.startsWith("lar:")) return "direct";
 
@@ -487,7 +487,7 @@ export class LarariumCrdtSyncAdaptor implements MemeProjection {
   ): void {
     if (this._isApplying()) { callback(null); return; }
     if (isTemp(title) || isTW5System(title)) { callback(null); return; }
-    if (!title.startsWith("lar:") && !isDraft(title)) { callback(null); return; }
+    if (!title.startsWith("lar:")) { callback(null); return; } // drafts suppressed until M-E
 
     const origin: ChangeOrigin = { kind: "tw-local", instanceId: this.instanceId };
 

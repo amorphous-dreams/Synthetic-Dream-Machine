@@ -285,6 +285,95 @@ describe("LarariumCrdtSyncAdaptor — store bridge", () => {
 });
 
 // ---------------------------------------------------------------------------
+// Draft island — aspirational spec (M-E)
+//
+// These tests describe the target behaviour once the draft Automerge island is
+// wired into LarariumCrdtSyncAdaptor. They are marked xtest so they accumulate
+// as todo pressure rather than noise. Remove xtest → test when the draft store
+// is passed to the adaptor constructor and the "skip" guards are lifted.
+// ---------------------------------------------------------------------------
+
+describe("draft island — aspirational spec (M-E)", () => {
+  xtest("saveTiddler writes 'Draft of ...' to the draft store (not the room store)", async () => {
+    // When the adaptor receives a draft store as a second store argument, it
+    // MUST route 'Draft of ...' titles there and MUST NOT touch the room store.
+    const roomStore  = new MemoryTiddlerStore();
+    const draftStore = new MemoryTiddlerStore();
+    const inst = new LarariumTW5();
+    await inst.boot();
+
+    // TODO: LarariumCrdtSyncAdaptor will gain a `draftStore` option.
+    // const adaptor = new LarariumCrdtSyncAdaptor(inst, roomStore, "test", { draftStore });
+    const adaptor = new LarariumCrdtSyncAdaptor(inst, roomStore, "test");
+
+    let roomPutCalled  = false;
+    let draftPutCalled = false;
+    roomStore.put  = async () => { roomPutCalled  = true; };
+    draftStore.put = async () => { draftPutCalled = true; };
+
+    await new Promise<void>((resolve) => {
+      adaptor.saveTiddler({ title: "Draft of lar:///some/meme", text: "wip" }, () => resolve());
+    });
+
+    expect(roomPutCalled).toBe(false);
+    expect(draftPutCalled).toBe(true);
+  });
+
+  xtest("draft store change applies to TW5 wiki without echo (identity-scoped)", async () => {
+    // A remote draft change (kind: crdt-remote, edgeIsland: "draft") must land
+    // in the TW5 wiki under the echo guard — no re-emit into the draft store.
+    const roomStore  = new MemoryTiddlerStore();
+    const draftStore = new MemoryTiddlerStore();
+    const inst = new LarariumTW5();
+    await inst.boot();
+
+    // TODO: same draftStore option
+    // const adaptor = new LarariumCrdtSyncAdaptor(inst, roomStore, "test", { draftStore });
+    const adaptor = new LarariumCrdtSyncAdaptor(inst, roomStore, "test");
+    const stop = adaptor.start();
+
+    let draftPutCount = 0;
+    const origDraftPut = draftStore.put.bind(draftStore);
+    draftStore.put = async (rec, origin) => { draftPutCount++; return origDraftPut(rec, origin); };
+
+    const draft: LarTiddlerRecord = {
+      title:  "Draft of lar:///some/meme",
+      fields: { bag: "draft" },
+      text:   "wip from peer",
+      bag:    "draft",
+    };
+    await origDraftPut(draft, { kind: "crdt-remote", edgeIsland: "draft" });
+    await new Promise((r) => setTimeout(r, 0));
+
+    const found = inst.filterTiddlers("[[Draft of lar:///some/meme]]");
+    expect(found).toContain("Draft of lar:///some/meme");
+    expect(draftPutCount).toBe(0); // no echo
+
+    stop();
+  });
+
+  xtest("deleteTiddler suppresses 'Draft of ...' until draft island is wired", async () => {
+    // Once the draft island is active, delete of a draft MUST tombstone in the
+    // draft store. Until then the guard keeps it as a no-op.
+    const draftStore = new MemoryTiddlerStore();
+    draftStore._seed({ title: "Draft of lar:///some/meme", fields: {} });
+    const inst = new LarariumTW5();
+    await inst.boot();
+
+    // TODO: same draftStore option
+    // const adaptor = new LarariumCrdtSyncAdaptor(inst, new MemoryTiddlerStore(), "test", { draftStore });
+    const adaptor = new LarariumCrdtSyncAdaptor(inst, new MemoryTiddlerStore(), "test");
+
+    await new Promise<void>((resolve, reject) => {
+      adaptor.deleteTiddler("Draft of lar:///some/meme", (err) => { if (err) reject(err); else resolve(); });
+    });
+
+    const rec = await draftStore.get("Draft of lar:///some/meme");
+    expect(rec?.deleted).toBe(true);
+  });
+});
+
+// ---------------------------------------------------------------------------
 // Package boundary — FilterEngineFn import from @lararium/core
 // ---------------------------------------------------------------------------
 

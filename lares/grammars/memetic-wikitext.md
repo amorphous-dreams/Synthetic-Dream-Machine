@@ -72,10 +72,10 @@ pattern       = '<<~\s*kahea\s+([\w][\w.-]*)\s*(?:\(([^)]*)\))?\s*>>'
 description   = "name form: definition invocation (render-only, no graph edge); matches plain identifier optionally followed by (args); emits SigilNode { sigilName:kahea, attrs:{name,args} }; used for wehe/helu lookup and wehe parameter interpolation; [SC]"
 
 [[sigils]]
-name         = "iam"
-kind         = "metadata"
-pattern      = '<<~\s*ahu\s+#iam\s*>>([\s\S]*?)<<~\/ahu\s*>>'
-description  = "carrier identity block; contains TOML metadata. Always the first ahu in a carrier."
+name         = "toml"
+kind         = "data"
+pattern      = '```toml(?:[ \t]+([A-Za-z0-9_-]+))?[ \t]*\n([\s\S]*?)```'
+description  = "TOML data fence; optional profile name (group 1) qualifies the block. Profile 'iam' marks the carrier identity prelude — appears before the first ahu or STX and supplies parent tiddler fields. Profile absent means a general-purpose data block."
 
 [[sigils]]
 name         = "pranala-header"
