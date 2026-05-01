@@ -24,6 +24,8 @@ tags         = ["$:/tags/Stylesheet"]
 <<~&#x0002;>>
 
 \rules only filteredtranscludeinline transcludeinline
+/* Depends on: a palette tiddler loaded before this stylesheet — <<colour X>> resolves
+   at TW5 stylesheet injection time. Palette preloaded via lares-preloads.ts. */
 
 /* ── ahu section layout ─────────────────────────────────────────────────── */
 

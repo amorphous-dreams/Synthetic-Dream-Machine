@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "@lararium/core": "workspace:*",
+    "@lararium/tw5": "workspace:*",
     "@tldraw/utils": "^4.5.10"
   },
   "devDependencies": {

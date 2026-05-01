@@ -25,6 +25,7 @@
  */
 
 import type { ClosureEntry, EdgeRecord, FilterEngineFn, LarTiddlerStore, ReactionBinding } from "@lararium/core";
+import type { TW5Instance, TW5Wiki, TW5ChangeRecord } from "./types/tiddlywiki.js";
 import { parsePranalaEdges, extractReactionBindings, ReactionGraph, MemeStreamParser } from "@lararium/core";
 import { splitCarrierToTiddlers, streamEventsToTiddlers, type TiddlerFields } from "./carrier-split.js";
 import { createLarariumWidgets, registerImplementorsOperator, LARARIUM_WIDGETS_TIDDLER } from "./tw5-widgets.js";

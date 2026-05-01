@@ -11,3 +11,5 @@ export * from "./room.js";
 // Convenience: project + layout + emit in one call
 export { renderToTldraw } from "./render.js";
 
+export { projectFromTw5 } from "./tw5-projection.js";
+

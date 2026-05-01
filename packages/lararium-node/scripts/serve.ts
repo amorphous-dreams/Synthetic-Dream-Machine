@@ -1,13 +1,15 @@
 /**
- * Lararium sync server — local-first Automerge peer + legacy tldraw layout channel.
+ * Lararium sync server — local-first Automerge peer.
  *
  * Architecture:
+ *   - Server plays two roles:
+ *     (1) Seeder: boots a TW5 wiki-engine instance at startup (and on /admin/reseed) to
+ *         compute the lares/ snapshot and seed the shared Automerge meme-store doc.
+ *     (2) Wiki-VM peer: MCP sidecar may invoke the server for live TW5 filter queries,
+ *         projections, and canonical receipt computation without a browser client.
  *   - Server is a local-first PEER, not an authority. Automerge is source of truth.
  *   - Automerge Repo (NodeFS storage) syncs meme content with all connected clients.
- *   - TW5 runs on client; server does NOT render TW5. Server manages lares/ on disk.
- *   - Two WebSocket paths on one HTTP server:
- *       /meme-sync      → Automerge NodeWSServerAdapter (content CRDT, primary)
- *       /rooms/:roomId  → TLSocketRoom (legacy tldraw layout CRDT, shared canvas state)
+ *   - One WebSocket path: /meme-sync → Automerge NodeWSServerAdapter (content CRDT).
  *   - Static assets from lararium-app/dist/ served over HTTP on the same port.
  *
  * Canon promotion:
@@ -15,19 +17,19 @@
  *                         stamps promoted-at/promoted-by on module memes (capability gate).
  *
  * API routes:
- *   GET  /api/rooms      — live tldraw room registry (MCP canvas bridge)
+ *   GET  /api/rooms      — room registry (MCP canvas bridge)
  *   GET  /api/meme-store — Automerge doc URL for the meme content store
- *   GET  /admin/reseed   — force-evict SQLite room + rebuild snapshot/receipt from lares/
+ *   GET  /admin/reseed   — rebuild snapshot/receipt from lares/ and reseed Automerge doc
  *
  * Boot contract:
- *   1. Build lares/ snapshot → seed Automerge doc
+ *   1. Build lares/ snapshot → seed Automerge doc (skipped if doc already exists on disk)
  *   2. Compute boot receipt SHA (corpus integrity fingerprint) → inject into HTML <meta>
  *   3. All subsequent client loads receive receipt + Automerge doc URL via <meta> tags
- *   4. lares/ file watcher removed — file sync refactor in progress
  *
  * Known gaps:
- *   - Per-room Automerge docs not yet implemented (all clients share one doc)
- *   - Playwright e2e tests wired but Automerge doc ready-timeout is the primary boot gate
+ *   - Per-room Automerge docs not yet implemented (all clients share one doc) — M12
+ *   - Disk↔Automerge sync loop (projector + watcher) being redesigned — M11+
+ *   - Browser e2e (Playwright smoke) not yet run against live server — M11 P0
  *
  * Usage:
  *   pnpm --filter @lararium/node serve
@@ -45,17 +47,13 @@ import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
 import { createLarariumRuntime, LARES_ROOT } from "../src/node-host.js";
 import { buildSnapshot } from "./build-snapshot-lib.js";
 import {
-  type BootArtifact,
-  extractReactionBindings,
-  ReactionGraph,
-  type ReactionBinding,
   canPromoteToCanon,
   resolveLarUri,
   UcanPeerRegistry,
   verifyUcan,
 } from "@lararium/core";
 import { getOrCreateNodeIdentity } from "../src/operator-key.js";
-import { TW5_CORE_SCRIPT_FILENAME, TW5_CORE_SCRIPT_URL } from "@lararium/tw5";
+import { TW5_CORE_SCRIPT_URL } from "@lararium/tw5";
 
 const __dirname = fileURLToPath(new URL(".", import.meta.url));
 const REPO_ROOT = resolve(__dirname, "../../../");
@@ -149,7 +147,7 @@ async function main() {
 
   // DEFAULT_ROOM — stable room ID for meta tag injection and /api/rooms.
   // Multi-room HTTP: /room/:id routes all serve the same Automerge doc.
-  const DEFAULT_ROOM = "main";
+  const DEFAULT_ROOM = "altar-fire";
 
   // ---------------------------------------------------------------------------
   // Automerge meme-sync peer — content CRDT (separate from tldraw layout CRDT)
@@ -425,37 +423,12 @@ async function main() {
   });
 
   // ---------------------------------------------------------------------------
-  // Reaction graph — Verse-style live event routing over the CRDT room
+  // Reaction graph (MCP wiki-VM peer role): compile pranala edges from the boot
+  // artifact into a ReactionGraph and wire into the MCP sidecar "fire"/projection
+  // handler when that endpoint lands. Import ReactionGraph, extractReactionBindings,
+  // BootArtifact, ReactionBinding from @lararium/core at that point.
   //
-  // The reaction graph runs server-side. When a client fires an event (WS
-  // message type "fire"), the server validates the binding, executes handlers,
-  // and broadcasts the event as a "event" message to all room members.
-  //
-  // Automerge/TW5 handles meme content in the active browser path. The legacy
-  // tldraw room can still carry canvas layout/socket messages. The reaction graph
-  // handles Verse-style event wiring on top of the room socket where used.
-  // ---------------------------------------------------------------------------
-
-  let reactionGraph = buildReactionGraph(runtime);
-
-  function buildReactionGraph(rt: ReturnType<typeof createLarariumRuntime>): ReactionGraph {
-    const artifact: BootArtifact = rt.compileBoot();
-    const edges = artifact.pranalaEdges ?? [];
-    const bindings: ReactionBinding[] = extractReactionBindings(
-      edges.map((e) => ({
-        fromUri:  e.fromUri,
-        toUri:    e.toUri,
-        family:   e.family,
-        role:     e.role,
-        payload:  (e as unknown as { payload?: Record<string, unknown> }).payload ?? {},
-      }))
-    );
-    const g = new ReactionGraph();
-    g.load(bindings);
-    return g;
-  }
-
-  // lares/ file watcher removed — file sync refactor in progress.
+  // Disk↔Automerge sync loop (projector + watcher) being redesigned — M11+.
 }
 
 main().catch((e) => { console.error(e); process.exit(1); });

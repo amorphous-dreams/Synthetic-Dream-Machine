@@ -189,6 +189,9 @@ importers:
       '@lararium/core':
         specifier: workspace:*
         version: link:../lararium-core
+      '@lararium/tw5':
+        specifier: workspace:*
+        version: link:../lararium-tw5
       '@tldraw/utils':
         specifier: ^4.5.10
         version: 4.5.10

@@ -6,7 +6,7 @@
 
 import { describe, test, expect } from "@jest/globals";
 import { resolveLarUri, parseHostfulLarUri, isHostfulLarUri } from "@lararium/core";
-import { readCarrier, createLarariumRuntime } from "../src/node-host.js";
+import { readCarrier, createLarariumRuntime, compileCarrierIndex } from "../src/node-host.js";
 
 const runtime = createLarariumRuntime({ writeback: false });
 
@@ -162,7 +162,7 @@ describe("boot receipt", () => {
 
 describe("carrier index", () => {
   test("carrier index is non-empty and all entries have uri + implements", () => {
-    const carriers = runtime.compileCarrierIndex();
+    const carriers = compileCarrierIndex();
     expect(carriers.length).toBeGreaterThan(0);
     for (const c of carriers) {
       expect(typeof c.uri).toBe("string");
@@ -171,14 +171,14 @@ describe("carrier index", () => {
   });
 
   test("AGENTS and mu are in the carrier index", () => {
-    const uris = new Set(runtime.compileCarrierIndex().map((c) => c.uri));
+    const uris = new Set(compileCarrierIndex().map((c) => c.uri));
     expect(uris.has("lar:///AGENTS")).toBe(true);
     expect(uris.has("lar:///ha.ka.ba/api/v0.1/mu")).toBe(true);
   });
 
   test("invariant index contains the four lararium law memes", () => {
     const INVARIANT_URI = "lar:///ha.ka.ba/api/v0.1/pono/invariant";
-    const carriers = runtime.compileCarrierIndex();
+    const carriers = compileCarrierIndex();
     const invariants = new Set(
       carriers.filter((c) => c.implements.includes(INVARIANT_URI)).map((c) => c.uri)
     );

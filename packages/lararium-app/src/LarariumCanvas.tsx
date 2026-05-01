@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import { Tldraw } from "tldraw";
-import type { TLShapeId, TLComponents } from "tldraw";
+import type { TLShapeId, TLComponents, TLEventInfo } from "tldraw";
 import "tldraw/tldraw.css";
 import type { LarViewState, LarViewAction, TldrawEditorLike, ZoomLevel } from "@lararium/tldraw";
 import { goToStoryRiver, goToGraph, goToRoom, zoomToMeme, classifyZoom } from "@lararium/tldraw";
@@ -198,10 +198,9 @@ export function LarariumCanvas({ navState, dispatch, drawingMode, onZoomLevel }:
   useEffect(() => {
     const editor = editorRef.current;
     if (!editor) return;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const handler = (e: any) => {
-      if (e?.name !== "double_click" || e?.target !== "shape" || e?.phase !== "up") return;
-      const shapeId: TLShapeId | undefined = e?.shape?.id;
+    const handler = (e: TLEventInfo) => {
+      if (e.name !== "double_click" || e.target !== "shape" || e.phase !== "up") return;
+      const shapeId: TLShapeId | undefined = (e as { shape?: { id?: TLShapeId } }).shape?.id;
       if (!shapeId) return;
       const shape = editor.getShape(shapeId);
       const meta = shape?.meta as Record<string, unknown> | undefined;
@@ -212,8 +211,8 @@ export function LarariumCanvas({ navState, dispatch, drawingMode, onZoomLevel }:
       const uri = getLarUriFromShape(editor, shapeId);
       if (uri) dispatch({ type: "ZOOM_IN", uri });
     };
-    editor.on("event" as any, handler);
-    return () => { editor.off("event" as any, handler); };
+    editor.on("event", handler);
+    return () => { editor.off("event", handler); };
   }, [dispatch]);
 
   // Nav state → tldraw camera.

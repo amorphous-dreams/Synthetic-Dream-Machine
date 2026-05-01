@@ -1,31 +1,29 @@
 #!/usr/bin/env node
 /**
- * lararium-mcp stdio adapter — operator-agent HUD alignment surface.
+ * lararium-mcp stdio adapter — STUB.
  *
- * Design principle: the agent inhabits the same space as the operator.
+ * Intent: operator-agent alignment surface over MCP stdio transport.
  * Every tool maps to something the operator can see or do on the canvas.
  *
- * OODA-HA tool surface:
+ * OODA-HA tool surface (names and descriptions preserved; implementations pending):
  *   ✶ Observe  — lararium-hud, lararium-canvas
  *   ⏿ Orient   — lararium-read, lararium-inspect, lararium-query, lararium-edges
  *   ◇ Decide   — lararium-draft
  *   ▶ Act      — lararium-write, lararium-fire
  *   ⤴ Aftermath — lararium-receipt
  *
+ * Redesign target: implementations should route through the live Automerge
+ * meme-store (via LARARIUM_HTTP_URL) rather than reading lares/ directly.
+ * The canvas bridge (fetchCanvas) and write gate (LARARIUM_WRITE_MODE) patterns
+ * remain valid; the runtime backing changes.
+ *
  * Live canvas bridge: set LARARIUM_HTTP_URL=http://127.0.0.1:4321
  * Write gate:        set LARARIUM_WRITE_MODE=enabled  (default: dry-run only)
  */
 
-import { McpServer, ResourceTemplate } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
-import { writeFileSync, readFileSync, existsSync } from "node:fs";
-import { join } from "node:path";
-
-import { createLarariumRuntime, LARES_ROOT, filterMemesWikitext } from "@lararium/node";
-import { resolveLarUri } from "@lararium/core";
-
-const runtime = createLarariumRuntime({ writeback: false });
 
 // ---------------------------------------------------------------------------
 // Canvas bridge — optional live server connection
@@ -34,21 +32,10 @@ const runtime = createLarariumRuntime({ writeback: false });
 const CANVAS_HTTP = process.env["LARARIUM_HTTP_URL"]?.replace(/\/$/, "") ?? null;
 const WRITE_ENABLED = process.env["LARARIUM_WRITE_MODE"] === "enabled";
 
-async function fetchCanvas<T = unknown>(path: string, opts?: RequestInit): Promise<T> {
+// stub fetch — real implementation routes through live Automerge server
+async function fetchCanvas<T = unknown>(_path: string, _opts?: RequestInit): Promise<T> {
   if (!CANVAS_HTTP) throw new Error("LARARIUM_HTTP_URL not set");
-  const res = await fetch(`${CANVAS_HTTP}${path}`, opts);
-  if (!res.ok) throw new Error(`canvas ${path} → ${res.status}`);
-  return res.json() as Promise<T>;
-}
-
-async function canvasStatus(): Promise<{ url: string; rooms: string[]; status: "live" | "unreachable" }> {
-  if (!CANVAS_HTTP) return { url: "(not configured)", rooms: [], status: "unreachable" };
-  try {
-    const data = await fetchCanvas<{ rooms: string[] }>("/api/rooms");
-    return { url: CANVAS_HTTP, rooms: data.rooms, status: "live" };
-  } catch {
-    return { url: CANVAS_HTTP, rooms: [], status: "unreachable" };
-  }
+  throw new Error("fetchCanvas: not implemented — pending Automerge-native MCP redesign");
 }
 
 // ---------------------------------------------------------------------------
@@ -58,47 +45,42 @@ async function canvasStatus(): Promise<{ url: string; rooms: string[]; status: "
 const server = new McpServer({ name: "lararium", version: "0.1.0" });
 
 // ---------------------------------------------------------------------------
-// Resources — always-fresh reads; use when you need the raw artifact or index
+// Resources
 // ---------------------------------------------------------------------------
 
 server.registerResource(
   "lar-resource",
-  new ResourceTemplate("lar:///{path}", { list: undefined }),
-  { title: "Lararium carrier" },
-  async (uri) => {
-    const text = runtime.readResource(uri.href);
-    return { contents: [{ uri: uri.href, text, mimeType: "text/markdown" }] };
+  "lar:///{path}",
+  { title: "Lararium carrier — raw memetic wikitext for a lar:/// URI" },
+  async (_uri) => {
+    throw new Error("lar-resource: not implemented — pending Automerge-native MCP redesign");
   },
 );
 
 server.registerResource(
   "lararium-boot",
   "lar:///boot",
-  { title: "Boot artifact — full closure JSON" },
+  { title: "Boot artifact — full boot closure JSON" },
   async () => {
-    const artifact = runtime.compileBoot();
-    return { contents: [{ uri: "lar:///boot", text: JSON.stringify(artifact, null, 2), mimeType: "application/json" }] };
+    throw new Error("lararium-boot: not implemented — pending Automerge-native MCP redesign");
   },
 );
 
 server.registerResource(
   "lararium-boot-receipt",
   "lar:///boot/receipt",
-  { title: "Boot receipt — SHA256 identity hash" },
+  { title: "Boot receipt — SHA256 identity hash of the live closure" },
   async () => {
-    const artifact = runtime.compileBoot();
-    const receipt = await runtime.compileBootReceipt(artifact);
-    return { contents: [{ uri: "lar:///boot/receipt", text: JSON.stringify(receipt, null, 2), mimeType: "application/json" }] };
+    throw new Error("lararium-boot-receipt: not implemented — pending Automerge-native MCP redesign");
   },
 );
 
 server.registerResource(
   "lararium-indexes-carriers",
   "lar:///INDEXES/carriers",
-  { title: "All carrier URIs in lares/" },
+  { title: "All carrier URIs in the meme store" },
   async () => {
-    const carriers = runtime.compileCarrierIndex();
-    return { contents: [{ uri: "lar:///INDEXES/carriers", text: carriers.map((c) => c.uri).join("\n"), mimeType: "text/plain" }] };
+    throw new Error("lararium-indexes-carriers: not implemented — pending Automerge-native MCP redesign");
   },
 );
 
@@ -107,20 +89,12 @@ server.registerResource(
   "lar:///INDEXES/interfaces",
   { title: "Interface → implementors index" },
   async () => {
-    const carriers = runtime.compileCarrierIndex();
-    const index: Record<string, string[]> = {};
-    for (const c of carriers) {
-      for (const iface of c.implements) (index[iface] ??= []).push(c.uri);
-    }
-    return { contents: [{ uri: "lar:///INDEXES/interfaces", text: JSON.stringify(index, null, 2), mimeType: "application/json" }] };
+    throw new Error("lararium-indexes-interfaces: not implemented — pending Automerge-native MCP redesign");
   },
 );
 
 // ---------------------------------------------------------------------------
 // ✶ Observe — lararium-hud
-//
-// Single-shot alignment snapshot. Call this first every session.
-// Returns: boot summary, validation status, invariant list, live canvas status.
 // ---------------------------------------------------------------------------
 
 server.registerTool(
@@ -133,58 +107,12 @@ server.registerTool(
     inputSchema: {},
   },
   async () => {
-    const artifact = runtime.compileBoot();
-    const receipt = await runtime.compileBootReceipt(artifact);
-    const canvas = await canvasStatus();
-
-    const INVARIANT_URI = "lar:///ha.ka.ba/api/v0.1/pono/invariant";
-    const invariants = artifact.closure
-      .filter((e) => e.implements.includes(INVARIANT_URI))
-      .map((e) => e.uri);
-
-    const v = artifact.validation;
-    // Exchange vector — canonical session anchor per exchange-vector law.
-    // The agent should emit this URI as the node-uri at its exchange boundary.
-    // Territory: the active canvas room URI if live, else the boot entry.
-    const activeRoomUri = canvas.rooms[0]
-      ? `lar:///rooms/${canvas.rooms[0]}`
-      : artifact.entry;
-    const exchangeVector = {
-      operatorUri: "(read from operator turn)",
-      nodeUri: activeRoomUri,
-      canonicalForm: `lar://agent:0@lararium/ha.ka.ba/?confidence=boot:${artifact.memeCount}&p=0`,
-      activeRoomUri,
-      law: "lar:///ha.ka.ba/api/v0.1/lararium/exchange-vector",
-    };
-
-    const hud = {
-      entry: artifact.entry,
-      memeCount: artifact.memeCount,
-      compiledAt: artifact.compiledAt,
-      receipt: { sha256: receipt.sha256, mode: receipt.mode },
-      validation: {
-        allExist: v.allExist,
-        missing: v.missing,
-        dagViolationCount: v.dagViolations.length,
-        edgeErrors: v.edgeViolations.filter((e) => e.severity === "error").length,
-        edgeWarnings: v.edgeViolations.filter((e) => e.severity === "warning").length,
-        declaredUnresolved: v.declaredUnresolved.length,
-      },
-      invariants,
-      canvas,
-      exchange: exchangeVector,
-      writeEnabled: WRITE_ENABLED,
-    };
-
-    return { content: [{ type: "text" as const, text: JSON.stringify(hud, null, 2) }] };
+    throw new Error("lararium-hud: not implemented — pending Automerge-native MCP redesign");
   },
 );
 
 // ---------------------------------------------------------------------------
 // ✶ Observe — lararium-canvas
-//
-// Live canvas state: active rooms, meme list, recent server activity.
-// Requires LARARIUM_HTTP_URL.
 // ---------------------------------------------------------------------------
 
 server.registerTool(
@@ -197,14 +125,7 @@ server.registerTool(
   },
   async () => {
     try {
-      const rooms = await fetchCanvas<{ rooms: string[]; activeBootRoomId: string }>("/api/rooms");
-      const artifact = runtime.compileBoot();
-      const text = JSON.stringify({
-        rooms: rooms.rooms,
-        activeBootRoomId: rooms.activeBootRoomId,
-        memeCount: artifact.memeCount,
-      }, null, 2);
-      return { content: [{ type: "text" as const, text }] };
+      return { content: [{ type: "text" as const, text: JSON.stringify(await fetchCanvas("/api/rooms"), null, 2) }] };
     } catch (e) {
       return { content: [{ type: "text" as const, text: `Canvas unreachable: ${String(e)}` }], isError: true };
     }
@@ -213,8 +134,6 @@ server.registerTool(
 
 // ---------------------------------------------------------------------------
 // ⏿ Orient — lararium-read
-//
-// Read the text content of any file-backed lar:/// carrier.
 // ---------------------------------------------------------------------------
 
 server.registerTool(
@@ -223,19 +142,13 @@ server.registerTool(
     description: "Read the raw text of a file-backed lar:/// carrier (memetic wikitext).",
     inputSchema: { uri: z.string().describe("lar:/// URI") },
   },
-  async ({ uri }) => {
-    try {
-      return { content: [{ type: "text" as const, text: runtime.readResource(uri) }] };
-    } catch (e) {
-      return { content: [{ type: "text" as const, text: String(e) }], isError: true };
-    }
+  async (_args) => {
+    throw new Error("lararium-read: not implemented — pending Automerge-native MCP redesign");
   },
 );
 
 // ---------------------------------------------------------------------------
 // ⏿ Orient — lararium-inspect
-//
-// Carrier metadata, shape, implements list, and outbound edges.
 // ---------------------------------------------------------------------------
 
 server.registerTool(
@@ -245,20 +158,13 @@ server.registerTool(
       "Inspect a lar:/// carrier: metadata (confidence, mana, role), shape, implements list, outbound pranala edges.",
     inputSchema: { uri: z.string().describe("lar:/// URI") },
   },
-  async ({ uri }) => {
-    try {
-      const record = runtime.readCarrier(uri);
-      return { content: [{ type: "text" as const, text: JSON.stringify(record, null, 2) }] };
-    } catch (e) {
-      return { content: [{ type: "text" as const, text: String(e) }], isError: true };
-    }
+  async (_args) => {
+    throw new Error("lararium-inspect: not implemented — pending Automerge-native MCP redesign");
   },
 );
 
 // ---------------------------------------------------------------------------
 // ⏿ Orient — lararium-query
-//
-// TW5 filter expression against the current boot closure.
 // ---------------------------------------------------------------------------
 
 server.registerTool(
@@ -274,23 +180,13 @@ server.registerTool(
       "  [all[memes]field:role[threshold constitution]]",
     inputSchema: { expr: z.string().describe("TW5 filter expression") },
   },
-  async ({ expr }) => {
-    try {
-      const artifact = runtime.compileBoot();
-      const matched = await filterMemesWikitext(artifact.closure, expr);
-      const lines = matched.map((e: import("@lararium/core").ClosureEntry) => `${e.uri}  depth:${e.depth}  kind:${e.kind}  role:${e.role || "—"}`);
-      return { content: [{ type: "text" as const, text: lines.join("\n") || "(no matches)" }] };
-    } catch (e) {
-      return { content: [{ type: "text" as const, text: String(e) }], isError: true };
-    }
+  async (_args) => {
+    throw new Error("lararium-query: not implemented — pending Automerge-native MCP redesign");
   },
 );
 
 // ---------------------------------------------------------------------------
 // ⏿ Orient — lararium-edges
-//
-// Pranala edge list from the boot closure's compiled edge table.
-// Direct — does not route through tldraw render.
 // ---------------------------------------------------------------------------
 
 server.registerTool(
@@ -307,27 +203,13 @@ server.registerTool(
       from: z.string().optional().describe("Filter edges whose fromUri contains this substring"),
     },
   },
-  async ({ family, from }) => {
-    try {
-      const artifact = runtime.compileBoot();
-      const edges = artifact.pranalaEdges ?? [];
-      const filtered = edges
-        .filter((e) => !family || e.family === family)
-        .filter((e) => !from || e.fromUri.includes(from));
-      const lines = filtered.map((e) =>
-        `${e.fromUri}  ${e.fromSocket.split("#")[1] ?? e.fromSocket} → ${e.toUri}  ${e.family}:${e.role ?? "—"}`
-      );
-      return { content: [{ type: "text" as const, text: lines.join("\n") || "(no edges)" }] };
-    } catch (e) {
-      return { content: [{ type: "text" as const, text: String(e) }], isError: true };
-    }
+  async (_args) => {
+    throw new Error("lararium-edges: not implemented — pending Automerge-native MCP redesign");
   },
 );
 
 // ---------------------------------------------------------------------------
 // ◇ Decide — lararium-draft
-//
-// Scaffold a new carrier without writing it. Returns the proposed text.
 // ---------------------------------------------------------------------------
 
 server.registerTool(
@@ -344,61 +226,13 @@ server.registerTool(
       body: z.string().optional().describe("Carrier body text (defaults to placeholder)"),
     },
   },
-  async ({ uri, role, implements: impls, body }) => {
-    try {
-      const resolution = resolveLarUri(uri);
-      const name = uri.split("/").at(-1) ?? uri;
-      const implEdges = (impls ?? ["lar:///ha.ka.ba/api/v0.1/pono/meme"]).map((i, idx) =>
-        `<<~ pranala #implements-${idx} ? -> ${i} family:control role:implements >>`
-      ).join("\n");
-
-      const draft = `<<~ ? -> ${uri} >>
-
-<<~ ahu #iam >>
-
-\`\`\`toml
-uri-path     = "${uri.replace("lar:///", "")}"
-content-type = "text/x-memetic-wikitext"
-confidence   = 0.70
-mana         = 0.70
-manao        = 0.70
-manaoio      = 0.70
-${role ? `role         = "${role}"` : `role         = ""`}
-\`\`\`
-
-<<~/ahu >>
-
-<<~ ahu #body >>
-${body ?? `${name} is defined here.`}
-<<~/ahu >>
-
-<<~ ahu #edges >>
-
-${implEdges}
-
-<<~/ahu >>
-
-<<~ -> ? >>
-`;
-
-      return {
-        content: [{
-          type: "text" as const,
-          text: `Draft carrier for ${uri}\nFile path: ${resolution.laresRelPath ?? "(unresolvable)"}\n\n---\n${draft}`,
-        }],
-      };
-    } catch (e) {
-      return { content: [{ type: "text" as const, text: String(e) }], isError: true };
-    }
+  async (_args) => {
+    throw new Error("lararium-draft: not implemented — pending Automerge-native MCP redesign");
   },
 );
 
 // ---------------------------------------------------------------------------
 // ▶ Act — lararium-write
-//
-// Write a carrier to lares/. dry_run (default true) previews without writing.
-// Requires LARARIUM_WRITE_MODE=enabled for actual writes.
-// After a successful write, pings canvas /admin/reseed if LARARIUM_HTTP_URL is set.
 // ---------------------------------------------------------------------------
 
 server.registerTool(
@@ -415,70 +249,19 @@ server.registerTool(
       dry_run: z.boolean().optional().default(true).describe("Preview without writing (default true)"),
     },
   },
-  async ({ uri, text, dry_run }) => {
-    try {
-      const resolution = resolveLarUri(uri);
-      if (resolution.virtual) {
-        return { content: [{ type: "text" as const, text: `${uri} is a virtual resource — cannot write` }], isError: true };
-      }
-      if (!resolution.laresRelPath) {
-        return { content: [{ type: "text" as const, text: `${uri} has no file path` }], isError: true };
-      }
-
-      const absPath = join(LARES_ROOT, resolution.laresRelPath);
-      const exists = existsSync(absPath);
-      const current = exists ? readFileSync(absPath, "utf8") : null;
-
-      if (dry_run !== false) {
-        const preview = [
-          `URI:       ${uri}`,
-          `File:      ${resolution.laresRelPath}`,
-          `Action:    ${exists ? "overwrite" : "create"}`,
-          `Write gate: ${WRITE_ENABLED ? "enabled" : "disabled (set LARARIUM_WRITE_MODE=enabled)"}`,
-          "",
-          exists ? `--- current (${current!.length} chars) ---` : "--- (file does not exist) ---",
-          exists ? current! : "",
-          "",
-          `+++ proposed (${text.length} chars) +++`,
-          text,
-        ].join("\n");
-        return { content: [{ type: "text" as const, text: preview }] };
-      }
-
-      if (!WRITE_ENABLED) {
-        return {
-          content: [{ type: "text" as const, text: "Write blocked: set LARARIUM_WRITE_MODE=enabled to allow writes" }],
-          isError: true,
-        };
-      }
-
-      writeFileSync(absPath, text, "utf8");
-
-      let reseedResult = "(canvas bridge not configured)";
-      try {
-        const data = await fetchCanvas<{ reseeded: string; sha: string }>(`/admin/reseed?roomId=boot`);
-        reseedResult = `canvas reseeded — room: ${data.reseeded}, sha: ${data.sha}`;
-      } catch (e) {
-        reseedResult = `canvas reseed skipped: ${String(e)}`;
-      }
-
-      return {
-        content: [{
-          type: "text" as const,
-          text: `Written: ${resolution.laresRelPath} (${text.length} chars)\n${reseedResult}`,
-        }],
-      };
-    } catch (e) {
-      return { content: [{ type: "text" as const, text: String(e) }], isError: true };
+  async ({ dry_run }) => {
+    if (dry_run !== false) {
+      return { content: [{ type: "text" as const, text: "dry_run: lararium-write not implemented — pending Automerge-native MCP redesign" }] };
     }
+    if (!WRITE_ENABLED) {
+      return { content: [{ type: "text" as const, text: "Write blocked: set LARARIUM_WRITE_MODE=enabled to allow writes" }], isError: true };
+    }
+    throw new Error("lararium-write: not implemented — pending Automerge-native MCP redesign");
   },
 );
 
 // ---------------------------------------------------------------------------
 // ▶ Act — lararium-fire
-//
-// Fire a named reaction event on the live canvas server.
-// Requires LARARIUM_HTTP_URL. The server broadcasts the event to connected clients.
 // ---------------------------------------------------------------------------
 
 server.registerTool(
@@ -496,7 +279,7 @@ server.registerTool(
   },
   async ({ fromUri, trigger, payload }) => {
     try {
-      const data = await fetchCanvas<{ fired: boolean; trigger: string }>("/api/fire", {
+      const data = await fetchCanvas("/api/fire", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ fromUri, trigger, payload: payload ?? {} }),
@@ -510,9 +293,6 @@ server.registerTool(
 
 // ---------------------------------------------------------------------------
 // ⤴ Aftermath — lararium-receipt
-//
-// Current boot receipt — SHA256 identity hash for the live closure.
-// Use this to verify alignment after a write or to detect drift.
 // ---------------------------------------------------------------------------
 
 server.registerTool(
@@ -525,9 +305,7 @@ server.registerTool(
     inputSchema: {},
   },
   async () => {
-    const artifact = runtime.compileBoot();
-    const receipt = await runtime.compileBootReceipt(artifact);
-    return { content: [{ type: "text" as const, text: JSON.stringify(receipt, null, 2) }] };
+    throw new Error("lararium-receipt: not implemented — pending Automerge-native MCP redesign");
   },
 );
 
@@ -539,31 +317,7 @@ server.registerPrompt(
   "lararium-align",
   { description: "Bootstrap operator-agent alignment — orient the agent to the current graph state" },
   async () => {
-    const artifact = runtime.compileBoot();
-    const receipt = await runtime.compileBootReceipt(artifact);
-    const canvas = await canvasStatus();
-    const INVARIANT_URI = "lar:///ha.ka.ba/api/v0.1/pono/invariant";
-    const invariants = artifact.closure.filter((e) => e.implements.includes(INVARIANT_URI)).map((e) => e.uri);
-    const closureLines = artifact.closure.map((e) => `  depth:${e.depth}  ${e.uri}`).join("\n");
-
-    return {
-      messages: [{
-        role: "user" as const,
-        content: {
-          type: "text" as const,
-          text: [
-            `Lararium boot closure — ${artifact.memeCount} memes (receipt: ${receipt.sha256})`,
-            "",
-            closureLines,
-            "",
-            `Invariants (${invariants.length}):`,
-            invariants.map((u) => `  ${u}`).join("\n"),
-            "",
-            `Canvas: ${canvas.status === "live" ? `live at ${canvas.url} — rooms: ${canvas.rooms.join(", ")}` : "not connected"}`,
-          ].join("\n"),
-        },
-      }],
-    };
+    throw new Error("lararium-align: not implemented — pending Automerge-native MCP redesign");
   },
 );
 
@@ -573,22 +327,8 @@ server.registerPrompt(
     description: "Explain the resolution and carrier metadata for a lar:/// URI",
     argsSchema: { uri: z.string().describe("A lar:/// URI to explain") },
   },
-  ({ uri }) => {
-    let text: string;
-    try {
-      const resolution = resolveLarUri(uri);
-      let carrierText = "";
-      try {
-        const record = runtime.readCarrier(uri);
-        carrierText = `\n\nCarrier metadata:\n${JSON.stringify(record.metadata, null, 2)}\n\nImplements: ${record.implements.join(", ")}\nRating: ${record.shape.rating}`;
-      } catch { /* virtual or unreadable */ }
-      text = `Resolution for ${uri}:\n${JSON.stringify(resolution, null, 2)}${carrierText}`;
-    } catch (e) {
-      text = `Failed to resolve ${uri}: ${String(e)}`;
-    }
-    return {
-      messages: [{ role: "user" as const, content: { type: "text" as const, text } }],
-    };
+  (_args) => {
+    throw new Error("lararium-explain_uri: not implemented — pending Automerge-native MCP redesign");
   },
 );
 
@@ -596,4 +336,5 @@ server.registerPrompt(
 // Connect
 // ---------------------------------------------------------------------------
 
-await server.connect(new StdioServerTransport());
+const transport = new StdioServerTransport();
+server.connect(transport).catch((e) => { console.error(e); process.exit(1); });

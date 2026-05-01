@@ -39,9 +39,10 @@ import type { Repo } from "@automerge/automerge-repo";
 // ---------------------------------------------------------------------------
 
 export interface BrowserHostOptions {
-  hostId:    string;
-  recipeUri: string;
-  roomId:    string;
+  hostId:     string;
+  roomId:     string;
+  /** @deprecated Phantom field — not consumed by routing. Will be removed in the multi-doc local-first refactor. */
+  recipeUri?: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -84,7 +85,7 @@ export function useLarariumHostOpen(options: BrowserHostOptions): HostOpenState 
   useEffect(() => {
     let cancelled = false;
     // Snapshot roomId at effect start — this is the capability scope for this boot cycle.
-    const { hostId, recipeUri, roomId } = optionsRef.current;
+    const { hostId, roomId, recipeUri = roomId } = optionsRef.current;
 
     // Reset derived state for the new room before kicking off the async boot.
     setPhase(null); setStore(null); setTw5(null); setIsLive(false);

@@ -1,27 +1,24 @@
 /**
- * Browser host for lararium-core.
+ * Browser host for lararium-core — STUB.
  *
- * Two boot modes:
- *   snapshot  — hydrate from an embedded or fetched JSON bundle (offline-capable)
- *   sync      — fetch a bundle from a URL, then merge with any locally available data
+ * Intent (pending Automerge-native redesign):
+ *   Two boot modes:
+ *     snapshot  — hydrate from an embedded or fetched JSON bundle (offline-capable)
+ *     sync      — receive meme content from the Automerge peer network (live)
  *
  * No Node APIs. No MCP SDK. No fs/path/process.
  * This module is the lararium-web host adapter — it does what lararium-node does
  * for the file system, but for the browser.
+ *
+ * Redesign target: replace snapshot-pull model with Automerge doc URL received
+ * from <meta name="lararium-meme-store"> and hydrated via automerge-store.ts.
+ * The BrowserRuntime interface below expresses the stable surface; implementation
+ * will switch from snapshot.json to Automerge doc hydration.
  */
-
-import {
-  resolveLarUri,
-  parseCarrier,
-  parsePranalaEdges,
-  MemeGraph,
-  makeMemeHash,
-  type CarrierRecord,
-  type LarResolution,
-} from "@lararium/core";
 
 // ---------------------------------------------------------------------------
 // Snapshot format — produced by lararium-node's snapshot builder
+// (used for offline/embedded mode; live mode uses Automerge doc URL)
 // ---------------------------------------------------------------------------
 
 export interface LarSnapshot {
@@ -30,12 +27,10 @@ export interface LarSnapshot {
   /** ISO timestamp when the snapshot was compiled */
   compiledAt: string;
   /** Carrier memes: uri → { text, laresRelPath } */
-  memes: Record<string, { text: string; laresRelPath: string }>;
+  memes: Record<string, { text: string; laresRelPath: string | null }>;
   /**
    * Pre-computed room filter results (TW5 engine, Node build-time).
    * roomId → ordered list of meme URIs matching the room's filter expression.
-   * The browser can use these directly OR re-filter dynamically via
-   * tw-filter-browser.ts (same TW5 grammar, pre-built browser bundle).
    */
   rooms?: Record<string, string[]>;
   /** Total meme count in the minimal boot closure */
@@ -43,76 +38,33 @@ export interface LarSnapshot {
 }
 
 // ---------------------------------------------------------------------------
-// Browser runtime
+// Browser runtime interface
 // ---------------------------------------------------------------------------
 
 export interface BrowserRuntime {
-  /** All carrier records hydrated from the snapshot */
-  carriers: CarrierRecord[];
   /** Resolve a lar:/// URI (pure — no I/O) */
-  resolve(uri: string): LarResolution;
-  /** Read carrier text from the snapshot */
+  resolve(uri: string): { laresRelPath: string | null; virtual: boolean };
+  /** Read carrier text from the hydrated store */
   readText(uri: string): string;
-  /** Read and parse a carrier from the snapshot */
-  readCarrier(uri: string): CarrierRecord;
-  /** The populated MemeGraph (read-only after boot) */
-  graph: MemeGraph;
-}
-
-export async function createBrowserRuntime(snapshot: LarSnapshot): Promise<BrowserRuntime> {
-  const textByUri = new Map<string, string>();
-  const recordByUri = new Map<string, CarrierRecord>();
-  const graph = new MemeGraph();
-
-  // Hydrate all memes from snapshot — async because makeMemeHash uses WebCrypto
-  for (const [uri, { text, laresRelPath }] of Object.entries(snapshot.memes)) {
-    textByUri.set(uri, text);
-    const record = parseCarrier(uri, text);
-    recordByUri.set(uri, record);
-
-    const fileBytes = new TextEncoder().encode(text);
-    const edges = parsePranalaEdges(uri, text);
-
-    graph.addMeme({
-      uri,
-      laresRelPath,
-      contentHash: await makeMemeHash(uri, fileBytes),
-      metadata: record.metadata,
-      edgesOut: edges,
-      virtual: false,
-      exists: true,
-      shape: record.shape,
-    });
-  }
-
-  return {
-    carriers: [...recordByUri.values()],
-    graph,
-    resolve: resolveLarUri,
-    readText(uri) {
-      const text = textByUri.get(uri);
-      if (!text) throw new Error(`${uri} not found in snapshot`);
-      return text;
-    },
-    readCarrier(uri) {
-      const record = recordByUri.get(uri);
-      if (!record) throw new Error(`${uri} not found in snapshot`);
-      return record;
-    },
-  };
+  /** The Automerge doc URL (if live), or null (if snapshot-only) */
+  memeStoreUrl: string | null;
 }
 
 // ---------------------------------------------------------------------------
-// Snapshot loader — fetch from URL or use embedded bundle
+// Stubs — pending Automerge-native redesign
 // ---------------------------------------------------------------------------
 
-export async function loadSnapshotFromUrl(url: string): Promise<LarSnapshot> {
-  const resp = await fetch(url);
-  if (!resp.ok) throw new Error(`Failed to fetch snapshot: ${resp.status} ${resp.statusText}`);
-  return resp.json() as Promise<LarSnapshot>;
+/** @stub Hydrate a BrowserRuntime from a pre-fetched snapshot object. */
+export async function createBrowserRuntime(_snapshot: LarSnapshot): Promise<BrowserRuntime> {
+  throw new Error("createBrowserRuntime: not implemented — pending Automerge-native browser host redesign");
 }
 
-export async function bootFromUrl(url: string): Promise<BrowserRuntime> {
-  const snapshot = await loadSnapshotFromUrl(url);
-  return createBrowserRuntime(snapshot);
+/** @stub Fetch a snapshot JSON from a URL and hydrate a BrowserRuntime. */
+export async function loadSnapshotFromUrl(_url: string): Promise<LarSnapshot> {
+  throw new Error("loadSnapshotFromUrl: not implemented — pending Automerge-native browser host redesign");
+}
+
+/** @stub Fetch snapshot from URL and boot a BrowserRuntime. */
+export async function bootFromUrl(_url: string): Promise<BrowserRuntime> {
+  throw new Error("bootFromUrl: not implemented — pending Automerge-native browser host redesign");
 }

@@ -4,7 +4,7 @@
  * Output: lares/lararium-node/snapshot.json
  */
 
-import { writeFileSync, join as _join } from "fs";
+import { writeFileSync } from "fs";
 import { join } from "path";
 import { createLarariumRuntime, LARES_ROOT } from "../src/node-host.js";
 import { buildSnapshot } from "./build-snapshot-lib.js";
@@ -17,4 +17,3 @@ writeFileSync(out, JSON.stringify(snapshot, null, 2));
 
 console.log(`Snapshot written: ${out}`);
 console.log(`  Memes: ${Object.keys(snapshot.memes).length}`);
-console.log(`  Rooms: ${Object.keys(snapshot.rooms).map((id) => `${id}(${snapshot.rooms[id]!.length})`).join(", ")}`);

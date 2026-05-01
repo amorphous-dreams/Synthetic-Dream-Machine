@@ -1,24 +1,23 @@
 /**
- * tw5-canvas-projection — derive tldraw shape records from TW5 wiki state.
+ * tw5-projection — derive tldraw shape records from TW5 wiki state.
  *
  * Local-first: TW5 wiki is the authoritative corpus. The canvas is a projection
  * of the wiki, not a separate CRDT synced from the server.
  *
- * Pipeline (same as server-side, now running in the browser):
+ * Pipeline (runs in browser against the live Automerge-backed TW5 instance):
  *   TW5 filterTiddlers()  →  uri list
  *   tiddler fields        →  ClosureEntry[]
- *   projectToTldraw()     →  LarTLSnapshot
- *   selectLayout()        →  LarTLLayout
- *   emitTldrawRecords()   →  { pages, shapes, bindings }
+ *   renderToTldraw()      →  { pages, shapes, bindings }
  *   editor.store.put()    →  live tldraw canvas
  *
- * Incremental updates: caller re-runs projectFromTw5 for changed URIs and
- * calls editor.store.put() / editor.store.remove() as needed.
+ * Incremental updates: re-run projectFromTw5 for changed URIs and call
+ * editor.store.put() / editor.store.remove() as needed.
  */
 
 import type { LarariumTW5 } from "@lararium/tw5";
-import { renderToTldraw, type TldrawEmission } from "@lararium/tldraw";
 import type { BootArtifact, ClosureEntry } from "@lararium/core";
+import { renderToTldraw } from "./render.js";
+import type { TldrawEmission } from "./tldraw-shapes.js";
 
 // ---------------------------------------------------------------------------
 // closureEntryFromTiddler — read a ClosureEntry from TW5 tiddler fields
@@ -72,7 +71,7 @@ export function projectFromTw5(tw5: LarariumTW5): TldrawEmission {
   const readText = (uri: string): string | null =>
     wiki.getTiddlerText?.(uri) ?? null;
 
-  // Minimal BootArtifact — projectToTldraw only reads artifact/closure/compiledAt/memeCount
+  // Minimal BootArtifact — renderToTldraw only reads artifact/closure/compiledAt/memeCount
   const artifact = {
     artifact:       "session",
     compiledAt:     new Date().toISOString(),

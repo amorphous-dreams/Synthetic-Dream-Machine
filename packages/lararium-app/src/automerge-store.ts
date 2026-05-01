@@ -42,8 +42,8 @@ interface MutableLarRecord {
   contentHash?: string;
   revision?:    string;
   authority?:   string;
-  bag?:         string;
-  recipe?:      string;
+  // bag / recipe intentionally omitted — multi-doc bags/recipe routing is pending
+  // the local-first multi-Automerge-doc refactor (M-bags). Wire them back then.
 }
 
 export type MemeStoreDoc = Record<string, MutableLarRecord>;
@@ -104,8 +104,6 @@ export class AutomergeMemeStore implements LarTiddlerStore {
         ...(record.contentHash !== undefined && { contentHash: record.contentHash }),
         ...(record.revision    !== undefined && { revision:   record.revision }),
         ...(record.authority   !== undefined && { authority:  record.authority }),
-        ...(record.bag         !== undefined && { bag:        record.bag }),
-        ...(record.recipe      !== undefined && { recipe:     record.recipe }),
       };
     });
     // Local writes bypass the debounce — echo-loop guards need synchronous delivery.
@@ -140,8 +138,6 @@ export class AutomergeMemeStore implements LarTiddlerStore {
       ...(raw.contentHash !== undefined && { contentHash: raw.contentHash }),
       ...(raw.revision    !== undefined && { revision:    raw.revision }),
       ...(raw.authority   !== undefined && { authority:   raw.authority }),
-      ...(raw.bag         !== undefined && { bag:         raw.bag as LarTiddlerRecord["bag"] }),
-      ...(raw.recipe      !== undefined && { recipe:      raw.recipe }),
     }) as LarTiddlerRecord;
   }
 }

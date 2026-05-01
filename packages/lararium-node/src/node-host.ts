@@ -294,14 +294,14 @@ export interface LarariumRuntime {
   readCarrier(uri: string): CarrierRecord;
   compileBoot(): BootArtifact;
   compileBootReceipt(artifact: BootArtifact): Promise<BootReceipt>;
-  compileCarrierIndex(): CarrierRecord[];
+  // compileCarrierIndex intentionally absent — filesystem scan is a build-time
+  // seeding tool, not a store query. Use compileCarrierIndex() from node-host directly.
 }
 
 export function createLarariumRuntime(_opts?: { writeback?: boolean }): LarariumRuntime {
   return {
     readResource: readLarResource,
     readCarrier,
-    compileCarrierIndex,
 
     compileBoot(): BootArtifact {
       const { graph, topoUris, violations, grammar } = buildControlClosure(ENTRY_URI);

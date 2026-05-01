@@ -28,7 +28,7 @@ import { LarariumPanel } from "./LarariumPanel.js";
 import { BootSplash } from "./BootSplash.js";
 import { LarariumCtx, useTheme } from "./lararium-context.js";
 import { useLarariumHostOpen } from "./lararium-browser-host.js";
-import { projectFromTw5 } from "./tw5-canvas-projection.js";
+import { projectFromTw5 } from "@lararium/tldraw";
 import { debugSet } from "./debug.js";
 import "./lararium-theme.css";
 import type { MemeEntry } from "./App.js";
@@ -53,7 +53,7 @@ export function LarariumShell({ memes, onMemes }: ShellProps) {
   const editorRef = useRef<Editor | null>(null);
   const setEditor = useCallback((e: Editor | null) => { setEditorState(e); editorRef.current = e; }, []);
   const { phase: openPhase, store: tiddlerStore, tw5, receipt: hostReceipt } =
-    useLarariumHostOpen({ hostId: "lararium-browser", recipeUri: "lar:///recipe/room", roomId: "altar-fire" });
+    useLarariumHostOpen({ hostId: "lararium-browser", roomId: "altar-fire" });
 
   const graphRef = useRef<ReactionGraph>(new ReactionGraph());
   const [graphReady, setGraphReady] = useState(false);
@@ -119,10 +119,12 @@ export function LarariumShell({ memes, onMemes }: ShellProps) {
       const newIds = new Set(newRecords.map((r) => r.id));
       const prevIds = projectedIdsRef.current;
       const removed = [...prevIds].filter((id) => !newIds.has(id));
+      // projectFromTw5 emits plain string IDs; tldraw store expects branded TLBindingId.
+      // Cast until the projection layer uses createBindingId() for arrow bindings.
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (ed as any).store.put(newRecords);
+      (ed.store as any).put(newRecords);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      if (removed.length > 0) (ed as any).store.remove(removed);
+      if (removed.length > 0) (ed.store as any).remove(removed);
       projectedIdsRef.current = newIds;
     });
   }, [tw5, scanMemesFromTw5]);
@@ -132,8 +134,9 @@ export function LarariumShell({ memes, onMemes }: ShellProps) {
     const { pages, shapes, bindings } = projectFromTw5(tw5);
     const records = [...pages, ...shapes, ...bindings];
     projectedIdsRef.current = new Set(records.map((r) => r.id));
+    // projectFromTw5 emits plain string IDs; tldraw store expects branded TLBindingId.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (editor as any).store.put(records);
+    (editor.store as any).put(records);
   }, [editor, tw5]);
 
   const reactionGraph = graphReady ? graphRef.current : null;
