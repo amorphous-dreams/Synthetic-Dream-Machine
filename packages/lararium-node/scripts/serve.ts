@@ -13,8 +13,8 @@
  *   - Static assets from lararium-app/dist/ served over HTTP on the same port.
  *
  * Canon promotion:
- *   PUT /admin/promote  — localhost-only; writes carrier text to lares/, patches Automerge,
- *                         stamps promoted-at/promoted-by on module memes (capability gate).
+ *   Removed from this server. Future promotion belongs to a Keyhive-backed
+ *   proposal/receipt graph plus a separate projection/write-back worker.
  *
  * API routes:
  *   GET  /api/rooms      — room registry (MCP canvas bridge)
@@ -44,15 +44,15 @@ import { WebSocketServer } from "ws";
 import { Repo } from "@automerge/automerge-repo";
 import { NodeWSServerAdapter } from "@automerge/automerge-repo-network-websocket";
 import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
-import { createLarariumRuntime, LARES_ROOT } from "../src/node-host.js";
+import { createLarariumRuntime } from "../src/node-host.js";
 import { buildSnapshot } from "./build-snapshot-lib.js";
 import {
-  canPromoteToCanon,
-  resolveLarUri,
-  UcanPeerRegistry,
-  verifyUcan,
+  LarAuthSessionRegistry,
+  verifyAuthClaim,
+  type LarAuthProvider,
+  type LarAuthReceipt,
 } from "@lararium/core";
-import { getOrCreateNodeIdentity } from "../src/operator-key.js";
+import { getOrCreateNodeAuthReceipt } from "../src/operator-key.js";
 import { TW5_CORE_SCRIPT_URL } from "@lararium/tw5";
 
 const __dirname = fileURLToPath(new URL(".", import.meta.url));
@@ -130,9 +130,10 @@ async function main() {
     process.exit(1);
   }
 
-  // Operator identity — Ed25519 keypair persisted in <dataDir>/operator-key.json.
-  const operatorIdentity = await getOrCreateNodeIdentity(DATA_DIR);
-  console.log(`[lararium-serve] operator DID: ${operatorIdentity.did}`);
+  // Local auth receipt — provider-neutral placeholder until BlueSky OAuth and
+  // GitHub VS Code claim verification land.
+  const nodeAuthReceipt = await getOrCreateNodeAuthReceipt(DATA_DIR);
+  console.log(`[lararium-serve] auth provider: ${nodeAuthReceipt.provider} (${nodeAuthReceipt.subject})`);
 
   // Receipt SHA — delivered to clients via <meta name="lararium-receipt"> in the HTML
   // shell; no hidden tldraw shape needed. Recomputed on reseed.
@@ -163,10 +164,11 @@ async function main() {
   mkdirSync(MEME_STORE_DIR, { recursive: true });
 
 
-  // Peer authorization registry — populated by /auth/ucan, consumed by sharePolicy.
-  const peerRegistry = new UcanPeerRegistry();
+  // Peer authorization registry — populated by /auth/session, consumed by sharePolicy.
+  const peerRegistry = new LarAuthSessionRegistry();
+  peerRegistry.registerPeer("server:self", nodeAuthReceipt);
 
-  // Evict expired UCAN registrations every 10 minutes.
+  // Evict expired auth sessions every 10 minutes.
   setInterval(() => peerRegistry.evictExpired(), 10 * 60 * 1000);
 
   // memeWss is declared below after httpServer; adapter is wired then.
@@ -198,85 +200,15 @@ async function main() {
       }
     }
 
-    // Admin: canon-promotion (localhost-only, POST body: { uri, carrierText, shapeId? })
-    if (pathname === "/admin/promote" && req.method === "PUT") {
-      const remoteAddr = (req.socket.remoteAddress ?? "").replace("::ffff:", "");
-      if (remoteAddr !== "127.0.0.1" && remoteAddr !== "::1") {
-        return json(res, { error: "forbidden" }, 403);
-      }
-
-      // Read + parse request body
-      let body: { uri?: string; carrierText?: string; shapeId?: string };
-      try {
-        const raw = await new Promise<string>((ok, fail) => {
-          const chunks: Buffer[] = [];
-          req.on("data", (c: Buffer) => chunks.push(c));
-          req.on("end", () => ok(Buffer.concat(chunks).toString("utf-8")));
-          req.on("error", fail);
-        });
-        body = JSON.parse(raw) as typeof body;
-      } catch {
-        return json(res, { error: "invalid-json-body" }, 400);
-      }
-
-      const { uri, carrierText, shapeId = "unknown" } = body;
-      if (!uri || !carrierText) {
-        return json(res, { error: "uri and carrierText are required" }, 400);
-      }
-
-      // Canon-promotion policy guard
-      const guard = canPromoteToCanon({
-        origin:        { kind: "operator-import" },
-        authorityMode: "local-operator",
-        target:        uri,
-      });
-      if (!guard.ok) {
-        return json(res, { error: guard.reason }, 403);
-      }
-
-      // Resolve URI → lares/ file path
-      const resolution = resolveLarUri(uri);
-      if (!resolution.laresRelPath) {
-        return json(res, { error: `uri-not-resolvable:${uri}` }, 400);
-      }
-      const filePath = join(LARES_ROOT, resolution.laresRelPath);
-
-      // Path traversal guard: resolved path must stay within LARES_ROOT
-      if (!resolve(filePath).startsWith(resolve(LARES_ROOT) + "/")) {
-        return json(res, { error: "path-traversal-rejected" }, 403);
-      }
-
-      try {
-        mkdirSync(resolve(filePath, ".."), { recursive: true });
-        writeFileSync(filePath, carrierText, "utf-8");
-        console.log(`[lararium-serve] promote: wrote ${filePath} (shape: ${shapeId})`);
-
-        const promotedAt = new Date().toISOString();
-        const promotedBy = `lararium-node:${HOST}:${PORT}`;
-
-        // Mirror into Automerge so connected clients see the change immediately
-        // without waiting for the lares/ watcher round-trip.
-        // Module memes (content-type: application/javascript) receive ceremony
-        // stamps — promoted-at and promoted-by — which the client kernel requires
-        // before injecting the meme body into TW5 ($tw.wiki capability gate).
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (memeHandle as any).change((doc: any) => {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const existing: Record<string, string> = (doc[uri] as any) ?? {};
-          const isModule = existing["content-type"] === "application/javascript"
-            || carrierText.includes('content-type    = "application/javascript"')
-            || carrierText.includes("content-type = \"application/javascript\"");
-          doc[uri] = {
-            ...existing,
-            title: uri,
-            text:  carrierText,
-            ...(isModule ? { "promoted-at": promotedAt, "promoted-by": promotedBy } : {}),
-          };
-        });
-        return json(res, { promoted: uri, path: resolution.laresRelPath, promotedAt });
-      } catch (e) {
-        return json(res, { error: String(e) }, 500);
-      }
+    // Canon promotion stub — the old localhost mutation path is gone.
+    // Future flow: POST proposal to a Keyhive-backed authority graph, receive a
+    // promotion receipt, then let a separate projection/write-back worker touch
+    // disk. This endpoint only marks the territory; it performs no mutation.
+    if (pathname === "/keyhive/promotions" && req.method === "POST") {
+      return json(res, {
+        error: "keyhive-promotion-graph-not-wired",
+        next: "Submit room/draft proposals here once Keyhive membership and promotion receipts exist.",
+      }, 501);
     }
 
     // ── /api/meme-store ────────────────────────────────────────────────────
@@ -284,16 +216,16 @@ async function main() {
       return json(res, { url: memeStoreUrl });
     }
 
-    // ── /auth/ucan — UCAN handshake (browser → server) ────────────────────
-    // Browser posts: { peerId, token }
-    //   peerId — Automerge-repo peerId assigned during /meme-sync handshake
-    //   token  — UCAN issued by browser operator, audience = server DID,
-    //            resource = "lararium:*" or specific doc URL
+    // ── /auth/session — provider-neutral auth claim (browser/editor → server) ───
+    // Browser/local UX posts: { peerId, provider, receipt?, proof? }
     //
-    // Server verifies signature + audience + expiry, then registers the peerId
-    // in peerRegistry so sharePolicy can authorize the doc sync session.
-    if (pathname === "/auth/ucan" && req.method === "POST") {
-      let body: { peerId?: string; token?: string };
+    // Provider plan:
+    //   bluesky-oauth  — web OAuth callback on elyncia.app materializes receipt.
+    //   github-vscode  — VS Code / Insiders extension signs in to GitHub and hands
+    //                    this local app a receipt over loopback or command bridge.
+    //   local-dev      — temporary permissive local receipt for current development.
+    if (pathname === "/auth/session" && req.method === "POST") {
+      let body: { peerId?: string; provider?: LarAuthProvider; receipt?: LarAuthReceipt; proof?: unknown };
       try {
         const raw = await new Promise<string>((ok, fail) => {
           const chunks: Buffer[] = [];
@@ -305,18 +237,25 @@ async function main() {
       } catch {
         return json(res, { error: "invalid-json-body" }, 400);
       }
-      const { peerId, token } = body;
-      if (!peerId || !token) return json(res, { error: "peerId and token are required" }, 400);
 
-      const result = await verifyUcan(token, {
-        audience: operatorIdentity.did,
-        ability:  "automerge/sync",
-      });
+      const { peerId, provider = "local-dev", receipt, proof } = body;
+      if (!peerId) return json(res, { error: "peerId is required" }, 400);
+
+      const result = await verifyAuthClaim({ provider, receipt, proof });
       if (!result.ok) return json(res, { error: result.reason }, 403);
 
-      peerRegistry.registerPeer(peerId, result.payload.iss, result.payload.exp);
-      console.log(`[lararium-serve] /auth/ucan: authorized peer ${peerId} (iss: ${result.payload.iss.slice(0, 30)}...)`);
-      return json(res, { ok: true, operatorDid: operatorIdentity.did });
+      peerRegistry.registerPeer(peerId, result.receipt);
+      console.log(`[lararium-serve] /auth/session: authorized peer ${peerId} via ${result.receipt.provider} (${result.receipt.subject})`);
+      return json(res, { ok: true, provider: result.receipt.provider, subject: result.receipt.subject });
+    }
+
+    // Future provider route placeholders. They intentionally return 501 until
+    // the OAuth metadata/callback and VS Code local UX exist.
+    if (pathname === "/auth/bluesky/start") {
+      return json(res, { error: "bluesky-oauth-not-implemented" }, 501);
+    }
+    if (pathname === "/auth/github-vscode/claim") {
+      return json(res, { error: "github-vscode-claim-not-implemented" }, 501);
     }
 
     // ── Static ─────────────────────────────────────────────────────────────
@@ -341,7 +280,6 @@ async function main() {
       `<meta name="lararium-room"         content="${serveRoomId}">`,
       `<meta name="lararium-meme-sync"    content="${wsProto}://${host}/meme-sync">`,
       `<meta name="lararium-meme-store"   content="${memeStoreUrl}">`,
-      `<meta name="lararium-operator-did" content="${operatorIdentity.did}">`,
       `<meta name="lararium-receipt"      content="${receiptSha}">`,
     ].join("\n  ");
     // External core script — suppress auto-boot so LarariumTW5 controls the
@@ -378,8 +316,8 @@ async function main() {
   const memeRepo    = new Repo({
     storage: new NodeFSStorageAdapter(MEME_STORE_DIR),
     network: [memeAdapter],
-    // Authorization hook — local-operator mode allows all registered peers plus self.
-    // Plug Keyhive/UCAN membership check here when federation arrives.
+    // Authorization hook — sync peers must hold a provider-neutral auth receipt.
+    // Policy remains coarse here; catalog/room/corpus checks will refine ability.
     sharePolicy: async (peerId: string) => peerRegistry.isAuthorized(peerId),
   });
 
@@ -418,7 +356,7 @@ async function main() {
     console.log(`[lararium-serve] meme-store:   ${memeStoreUrl}`);
     console.log(`[lararium-serve] meme-sync:    ws://${HOST}:${PORT}/meme-sync`);
     console.log(`[lararium-serve] reseed:       curl http://${HOST}:${PORT}/admin/reseed`);
-    console.log(`[lararium-serve] promote:      curl -X PUT http://${HOST}:${PORT}/admin/promote -H 'Content-Type: application/json' -d '{"uri":"lar:///...","carrierText":"..."}'`);
+    console.log(`[lararium-serve] promote:      disabled; future stub POST /keyhive/promotions`);
     console.log(`[lararium-serve] data dir:     ${DATA_DIR}`);
   });
 

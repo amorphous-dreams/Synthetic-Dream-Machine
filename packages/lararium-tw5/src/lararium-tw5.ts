@@ -7,7 +7,7 @@
  *
  * Boot sequence:
  *   boot() → preloadTiddlers (UI, palette, system) → TW5 boot callback
- *          → _bootModules() [3-layer gate: threshold → body-sha256 → promoted-at]
+ *          → _bootModules() [safety gate: threshold → body-sha256]
  *          → fallback: imperative registration of MemeticParser + lararium-* widgets
  *
  * Content pipeline (TW5 story river path):
@@ -25,7 +25,7 @@
  */
 
 import type { ClosureEntry, EdgeRecord, FilterEngineFn, LarTiddlerStore, ReactionBinding } from "@lararium/core";
-import type { TW5Instance, TW5Wiki, TW5ChangeRecord } from "./types/tiddlywiki.js";
+import type { TW5Instance, TW5Wiki, TW5FakeElement, TW5ChangeRecord, TW5TiddlerFields, TW5WidgetConstructor } from "./types/tiddlywiki.js";
 import { parsePranalaEdges, extractReactionBindings, ReactionGraph, MemeStreamParser } from "@lararium/core";
 import { splitCarrierToTiddlers, streamEventsToTiddlers, type TiddlerFields } from "./carrier-split.js";
 import { createLarariumWidgets, registerImplementorsOperator, LARARIUM_WIDGETS_TIDDLER } from "./tw5-widgets.js";
@@ -179,8 +179,7 @@ async function loadNodeTiddlyWiki(): Promise<{ TiddlyWiki: () => unknown }> {
  *   produces clean HTML. Use for WikiCommandPalette TW5 render mode.
  */
 export class LarariumTW5 {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private _tw: any = null;
+  private _tw: TW5Instance | null = null;
   private _bootPromise: Promise<void> | null = null;
   private _loadedUris = new Set<string>();
 
@@ -211,7 +210,7 @@ export class LarariumTW5 {
       //   Node    — no external script; load npm tiddlywiki dynamically only on
       //             this branch. TW5 reads core modules from bootPath via fs.
       const isBrowser = typeof window !== "undefined" && typeof document !== "undefined";
-      const instance: any = isBrowser
+      const instance: TW5Instance = isBrowser
         ? (() => {
             if (!g.$tw?.modules?.titles) {
               throw new Error(
@@ -291,8 +290,7 @@ export class LarariumTW5 {
    */
   mountPanel(container: HTMLElement): () => void {
     if (!this._tw) throw new Error("LarariumTW5: call boot() before mountPanel()");
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const tw = this._tw as any;
+    const tw = this._tw;
 
     // Shadow root — reuse if already attached (guard against double-mount).
     const shadow = container.shadowRoot ?? container.attachShadow({ mode: "open" });
@@ -304,8 +302,8 @@ export class LarariumTW5 {
       document:     tw.fakeDocument,
       parentWidget: tw.rootWidget,
     });
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const styleContainer: any = tw.fakeDocument.createElement("style");
+    // styleContainer is a TW5FakeElement from fakeDocument — used for stylesheet text extraction.
+    const styleContainer = tw.fakeDocument.createElement("style");
     styleWidget.render(styleContainer, null);
 
     const styleEl = shadow.querySelector("#lar-tw5-styles") as HTMLStyleElement | null
@@ -315,6 +313,7 @@ export class LarariumTW5 {
     // ── Page ──────────────────────────────────────────────────────────────────
     // Mirrors TW5's render.js: makeTranscludeWidget("$:/core/ui/RootTemplate")
     // into real document, parented to rootWidget, rendered into inner div.
+    // Cast: real browser Document is structurally compatible with TW5FakeDocument at runtime.
     const inner = shadow.querySelector(".tc-page-container-wrapper") as HTMLElement | null
       ?? (() => { const el = document.createElement("div"); el.className = "tc-page-container-wrapper"; shadow.appendChild(el); return el; })();
 
@@ -323,14 +322,15 @@ export class LarariumTW5 {
       parentWidget:     tw.rootWidget,
       recursionMarker:  "no",
     });
-    pageWidget.render(inner, null);
+    // Cast: TW5 widget.render accepts real DOM elements at runtime in the browser.
+    pageWidget.render(inner as unknown as TW5FakeElement, null);
 
     // Wire rootWidget → pageWidget so TW5's internal bookkeeping is consistent.
-    tw.rootWidget.domNodes = [inner];
+    tw.rootWidget.domNodes = [inner as unknown as TW5FakeElement];
     tw.rootWidget.children = [pageWidget];
 
     // ── Refresh cascade ───────────────────────────────────────────────────────
-    const handler = (changes: Record<string, unknown>) => {
+    const handler = (changes: Record<string, TW5ChangeRecord>) => {
       if (styleWidget.refresh(changes, styleContainer, null)) {
         styleEl.textContent = styleContainer.textContent ?? "";
       }
@@ -341,7 +341,7 @@ export class LarariumTW5 {
     return () => {
       tw.wiki.removeEventListener("change", handler);
       // Remove page widget DOM nodes; leave shadow root intact for potential remount.
-      pageWidget.domNodes?.forEach((n: Node) => n.parentNode?.removeChild(n));
+      pageWidget.domNodes?.forEach((n) => (n as unknown as Node).parentNode?.removeChild(n as unknown as Node));
     };
   }
 
@@ -357,12 +357,15 @@ export class LarariumTW5 {
   }
 
   // ---------------------------------------------------------------------------
-  // Module injection — three-layer capability gate with imperative fallback.
+  // Module injection — corpus-safety gate with imperative fallback.
   //
-  // Gate layers (all three must pass):
+  // Gate layers:
   //   1. Threshold  — mana ≥ 0.90, manao ≥ 0.85, manaoio ≥ 0.85, confidence ≥ 0.90
   //   2. Hash       — sha256(body) === fields["body-sha256"] (set at build time)
-  //   3. Ceremony   — fields["promoted-at"] present (set by /admin/promote)
+  //
+  // The old mutable promotion-stamp gate has been removed from runtime
+  // semantics. When Keyhive lands, module trust should key
+  // off a membership/capability receipt rather than a mutable tiddler field.
   //
   // Falls back to imperative registration if no memes pass all three layers.
   // Memes that fail any layer never receive the $tw.wiki reference.
@@ -376,9 +379,10 @@ export class LarariumTW5 {
     "lar:///ha.ka.ba/api/v0.1/lararium/tw5-module";
 
   private async _bootModules(): Promise<void> {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const tw = this._tw as any;
-    const wiki = tw?.wiki;
+    // Called only from the boot() callback after this._tw = instance — never null here.
+    if (!this._tw) return;
+    const tw   = this._tw;
+    const wiki = tw.wiki;
 
     // --- Corpus-gated path ---------------------------------------------------
     // Register implementors filter operator first so the query below works.
@@ -415,10 +419,7 @@ export class LarariumTW5 {
         const claimedHash = f["body-sha256"] ?? "";
         if (!claimedHash || !(await LarariumTW5._verifySha256(body, claimedHash))) continue;
 
-        // Layer 3 — ceremony stamp
-        if (!f["promoted-at"]) continue;
-
-        // All three layers passed — hand $tw.wiki to this meme.
+        // Threshold + hash passed — hand $tw.wiki to this meme.
         wiki.addTiddler(new tw.Tiddler({
           title,
           type:           "application/javascript",
@@ -456,16 +457,14 @@ export class LarariumTW5 {
 
   // Heleuma: register the text/x-memetic-wikitext tiddler deserializer.
   // Canonical source copy lives at lar:///ha.ka.ba/api/v0.1/lararium/modules/deserializer.
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private static _registerDeserializer(tw: any): void {
+  private static _registerDeserializer(tw: TW5Instance): void {
     if (!tw?.Wiki?.tiddlerDeserializerModules) return;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    tw.Wiki.tiddlerDeserializerModules["text/x-memetic-wikitext"] = function(text: string, fields: any) {
+    tw.Wiki.tiddlerDeserializerModules["text/x-memetic-wikitext"] = function(text: string, fields: Record<string, unknown>) {
       const uri: string = (fields?.title as string) ?? "";
       const split = splitCarrierToTiddlers(uri, text);
       const parent = { title: uri, ...fields, ...split.parent.fields, text };
       const children = split.children.map((c) => ({ ...c.fields, title: c.title, text: c.text }));
-      const result: object[] = [parent, ...children];
+      const result: TW5TiddlerFields[] = [parent, ...children];
       if (split.warnings.length > 0) {
         const safeSlug = uri.replace(/[^a-zA-Z0-9._-]/g, "_");
         result.push({
@@ -483,10 +482,9 @@ export class LarariumTW5 {
 
   // Heleuma: wire compiled widget classes into the TW5 prototype chain.
   // Canonical source copy lives at lar:///ha.ka.ba/api/v0.1/lararium/modules/widget-wiring.
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private static _registerWidgets(tw: any): void {
-    const WidgetCtor: any =
-      tw.modules?.types?.widget?.["$:/core/modules/widgets/widget.js"]?.exports?.widget;
+  private static _registerWidgets(tw: TW5Instance): void {
+    const WidgetCtor = tw.modules?.types?.widget?.["$:/core/modules/widgets/widget.js"]
+      ?.exports?.["widget"] as TW5WidgetConstructor | undefined;
     if (!WidgetCtor) return;
     if (!WidgetCtor.prototype.widgetClasses) {
       tw.modules.applyMethods("widget", {});
@@ -495,7 +493,8 @@ export class LarariumTW5 {
     for (const [name, cls] of Object.entries(widgetClasses)) {
       Object.setPrototypeOf((cls as { prototype: object }).prototype, WidgetCtor.prototype);
       WidgetCtor.prototype.widgetClasses ??= {};
-      WidgetCtor.prototype.widgetClasses[name] = cls;
+      // cls will satisfy TW5WidgetConstructor after prototype chain is set above.
+      WidgetCtor.prototype.widgetClasses[name] = cls as unknown as TW5WidgetConstructor;
     }
   }
 
@@ -525,8 +524,7 @@ export class LarariumTW5 {
    * Exposes the full TW5 API: $tw.wiki.filterTiddlers, $tw.wiki.renderText,
    * $tw.wiki.renderTiddler, $tw.wiki.addTiddler, etc.
    */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  get wiki(): any {
+  get wiki(): TW5Wiki {
     if (!this._tw) throw new Error("LarariumTW5: call boot() before accessing wiki");
     return this._tw.wiki;
   }
@@ -575,14 +573,13 @@ export class LarariumTW5 {
    */
   bulkSetTiddlers(batch: Array<Record<string, string | string[]>>): void {
     if (!this._tw) throw new Error("LarariumTW5: call boot() before bulkSetTiddlers()");
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const wiki = this._tw.wiki as any;
+    const wiki    = this._tw.wiki;
     const Tiddler = this._tw.Tiddler;
     const apply = () => {
       for (const fields of batch) wiki.addTiddler(new Tiddler(fields));
     };
     if (typeof wiki.transact === "function") {
-      wiki.transact(apply, batch.length);
+      wiki.transact(apply);
     } else {
       apply();
     }
@@ -614,11 +611,10 @@ export class LarariumTW5 {
   registerKukaliHook(fn: (uri: string, trigger: string) => (() => void) | void): () => void {
     if (!this._tw) return () => {};
     // Store on $tw.wiki — same object KukaliWidget sees as `this.wiki`.
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (this._tw.wiki as any)._larKukaliHook = fn;
+    this._tw.wiki._larKukaliHook = fn;
     return () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      if ((this._tw?.wiki as any)?._larKukaliHook === fn) delete (this._tw.wiki as any)._larKukaliHook;
+      const wiki = this._tw?.wiki;
+      if (wiki?._larKukaliHook === fn) delete wiki._larKukaliHook;
     };
   }
 
@@ -652,8 +648,7 @@ export class LarariumTW5 {
     let tiddlers: TiddlerFields[];
 
     if (this._tw) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      tiddlers = (this._tw as any).wiki.deserializeTiddlers("text/x-memetic-wikitext", text, base) ?? [];
+      tiddlers = (this._tw.wiki.deserializeTiddlers("text/x-memetic-wikitext", text, base) ?? []) as TiddlerFields[];
     } else {
       // Pre-boot fallback
       const split = splitCarrierToTiddlers(uri, text);
@@ -755,6 +750,7 @@ export class LarariumTW5 {
     onProgress?: (loaded: number, total: number) => void,
   ): Promise<void> {
     if (!this._tw) throw new Error("LarariumTW5: call boot() before loadFromStore()");
+    const tw = this._tw;
     const uris = await store.listVisible();
     const total = uris.length;
     let loaded = 0;
@@ -773,11 +769,11 @@ export class LarariumTW5 {
         const contentType = (rec.fields["content-type"] as string | undefined) ?? "";
         if (rec.text !== undefined && (contentType === "text/x-memetic-wikitext" || (!contentType && uri.startsWith("lar:")))) {
           const tiddlers = this.deserializeCarrier(uri, rec.text, rec.fields as Record<string, string | string[]>);
-          for (const t of tiddlers) this._tw.wiki.addTiddler(new this._tw.Tiddler(t));
+          for (const t of tiddlers) tw.wiki.addTiddler(new tw.Tiddler(t));
         } else {
           const fields: Record<string, string | string[]> = { title: rec.title, ...rec.fields };
           if (rec.text !== undefined) fields["text"] = rec.text;
-          this._tw.wiki.addTiddler(new this._tw.Tiddler(fields));
+          tw.wiki.addTiddler(new tw.Tiddler(fields));
         }
 
         loaded++;
@@ -854,8 +850,7 @@ export class LarariumTW5 {
     if (!this._tw) throw new Error("LarariumTW5: call boot() before onWikiChange()");
     const wiki = this._tw.wiki;
     // TW5 wiki emits "change" with a map of modified titles → change descriptor.
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const handler = (changes: any) => cb(changes as Record<string, unknown>);
+    const handler = (changes: Record<string, TW5ChangeRecord>) => cb(changes as Record<string, unknown>);
     wiki.addEventListener("change", handler);
     return () => wiki.removeEventListener("change", handler);
   }
@@ -883,8 +878,7 @@ export class LarariumTW5 {
   startSyncer(adaptor: TW5SyncAdaptor): () => void {
     if (!this._tw) throw new Error("LarariumTW5: call boot() before startSyncer()");
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const wiki = this._tw.wiki as any;
+    const wiki = this._tw.wiki;
 
     // All Lararium memes have `lar:` URI titles — system tiddlers use `$:` and
     // are TW5-internal. Only sync lar: titles; everything else is TW5 housekeeping.

@@ -1,27 +1,17 @@
 /**
- * Node operator identity — persists Ed25519 keypair as JSON on the filesystem.
+ * Node auth session seed.
  *
- * Stored at <dataDir>/operator-key.json. Created on first boot, reused thereafter.
- * Lost if the file is deleted (acceptable for local-operator mode; future: Keyhive backup).
+ * Slate-clean model: the node server no longer creates a did:key operator or
+ * verifies UCANs. It will host provider-specific auth edges instead:
+ *
+ * - BlueSky OAuth routes when elyncia.app can serve OAuth metadata/callbacks.
+ * - GitHub VS Code claim routes for the local editor-mediated workflow.
+ *
+ * For now local development receives a provider-neutral local-dev receipt.
  */
 
-import { readFileSync, writeFileSync, existsSync } from "node:fs";
-import { join } from "node:path";
-import {
-  generateOperatorIdentity,
-  deserializeIdentity,
-  serializeIdentity,
-  type LarOperatorIdentity,
-  type LarOperatorIdentityJson,
-} from "@lararium/core";
+import { createLocalDevReceipt, type LarAuthReceipt } from "@lararium/core";
 
-export async function getOrCreateNodeIdentity(dataDir: string): Promise<LarOperatorIdentity> {
-  const keyFile = join(dataDir, "operator-key.json");
-  if (existsSync(keyFile)) {
-    const raw = JSON.parse(readFileSync(keyFile, "utf-8")) as LarOperatorIdentityJson;
-    return deserializeIdentity(raw);
-  }
-  const identity = await generateOperatorIdentity();
-  writeFileSync(keyFile, JSON.stringify(serializeIdentity(identity), null, 2), "utf-8");
-  return identity;
+export async function getOrCreateNodeAuthReceipt(_dataDir: string): Promise<LarAuthReceipt> {
+  return createLocalDevReceipt("node-local-operator");
 }

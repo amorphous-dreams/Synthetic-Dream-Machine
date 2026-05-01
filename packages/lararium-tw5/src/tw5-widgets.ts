@@ -26,9 +26,18 @@
  *   TW5 transclusion. Kumu defs live as first-class memes in the tagspace.
  */
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type AnyFn = (...args: any[]) => any;
-type WidgetCtor = AnyFn & { prototype: object };
+import type {
+  TW5Instance,
+  TW5WidgetInstance,
+  TW5ParseTreeNode,
+  TW5FakeElement,
+  TW5FilterSource,
+  TW5FilterOperator,
+  TW5ChangeRecord,
+} from "./types/tiddlywiki.js";
+
+type WidgetCtor = (this: TW5WidgetInstance, parseTreeNode: TW5ParseTreeNode, options: Record<string, unknown>) => void;
+type WidgetCtorWithProto = WidgetCtor & { prototype: Partial<TW5WidgetInstance> };
 
 // ---------------------------------------------------------------------------
 // WorksiteWidget — <<~ ahu #slot >> container
@@ -40,12 +49,10 @@ type WidgetCtor = AnyFn & { prototype: object };
 // are rendered inline. This prevents double-render with the meme template.
 // ---------------------------------------------------------------------------
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function WorksiteWidget(this: any, parseTreeNode: any, options: any) {
+function WorksiteWidget(this: TW5WidgetInstance, parseTreeNode: TW5ParseTreeNode, options: Record<string, unknown>) {
   this.initialise(parseTreeNode, options);
 }
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-WorksiteWidget.prototype.render = function (parent: any, _nextSibling: any) {
+WorksiteWidget.prototype.render = function (this: TW5WidgetInstance, parent: TW5FakeElement, _nextSibling: TW5FakeElement | null) {
   this.parentDomNode = parent;
   this.computeAttributes();
   this.execute();
@@ -57,18 +64,16 @@ WorksiteWidget.prototype.render = function (parent: any, _nextSibling: any) {
   this.domNodes = [el];
   // No renderChildren — template handles all slot content.
 };
-WorksiteWidget.prototype.execute = function () { this.makeChildWidgets(); };
+WorksiteWidget.prototype.execute = function (this: TW5WidgetInstance) { this.makeChildWidgets(); };
 
 // ---------------------------------------------------------------------------
 // EdgeWidget — pranala / edge-sugar (metadata; no visible output)
 // ---------------------------------------------------------------------------
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function EdgeWidget(this: any, parseTreeNode: any, options: any) {
+function EdgeWidget(this: TW5WidgetInstance, parseTreeNode: TW5ParseTreeNode, options: Record<string, unknown>) {
   this.initialise(parseTreeNode, options);
 }
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-EdgeWidget.prototype.render = function (parent: any, _nextSibling: any) {
+EdgeWidget.prototype.render = function (this: TW5WidgetInstance, parent: TW5FakeElement, _nextSibling: TW5FakeElement | null) {
   this.parentDomNode = parent;
   this.computeAttributes();
   this.execute();
@@ -81,18 +86,16 @@ EdgeWidget.prototype.render = function (parent: any, _nextSibling: any) {
   parent.appendChild(el);
   this.domNodes = [el];
 };
-EdgeWidget.prototype.execute = function () { this.makeChildWidgets(); };
+EdgeWidget.prototype.execute = function (this: TW5WidgetInstance) { this.makeChildWidgets(); };
 
 // ---------------------------------------------------------------------------
 // TomlWidget — iam / toml data block (metadata; no visible output)
 // ---------------------------------------------------------------------------
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function TomlWidget(this: any, parseTreeNode: any, options: any) {
+function TomlWidget(this: TW5WidgetInstance, parseTreeNode: TW5ParseTreeNode, options: Record<string, unknown>) {
   this.initialise(parseTreeNode, options);
 }
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-TomlWidget.prototype.render = function (parent: any, _nextSibling: any) {
+TomlWidget.prototype.render = function (this: TW5WidgetInstance, parent: TW5FakeElement, _nextSibling: TW5FakeElement | null) {
   this.parentDomNode = parent;
   this.computeAttributes();
   this.execute();
@@ -103,18 +106,16 @@ TomlWidget.prototype.render = function (parent: any, _nextSibling: any) {
   parent.appendChild(el);
   this.domNodes = [el];
 };
-TomlWidget.prototype.execute = function () { this.makeChildWidgets(); };
+TomlWidget.prototype.execute = function (this: TW5WidgetInstance) { this.makeChildWidgets(); };
 
 // ---------------------------------------------------------------------------
 // SigilWidget — generic canonical sigil (renders children)
 // ---------------------------------------------------------------------------
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function SigilWidget(this: any, parseTreeNode: any, options: any) {
+function SigilWidget(this: TW5WidgetInstance, parseTreeNode: TW5ParseTreeNode, options: Record<string, unknown>) {
   this.initialise(parseTreeNode, options);
 }
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-SigilWidget.prototype.render = function (parent: any, nextSibling: any) {
+SigilWidget.prototype.render = function (this: TW5WidgetInstance, parent: TW5FakeElement, nextSibling: TW5FakeElement | null) {
   this.parentDomNode = parent;
   this.computeAttributes();
   this.execute();
@@ -125,18 +126,16 @@ SigilWidget.prototype.render = function (parent: any, nextSibling: any) {
   this.domNodes = [el];
   this.renderChildren(el, nextSibling);
 };
-SigilWidget.prototype.execute = function () { this.makeChildWidgets(); };
+SigilWidget.prototype.execute = function (this: TW5WidgetInstance) { this.makeChildWidgets(); };
 
 // ---------------------------------------------------------------------------
 // DynamicWidget — grammar-meme extension (renders children)
 // ---------------------------------------------------------------------------
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function DynamicWidget(this: any, parseTreeNode: any, options: any) {
+function DynamicWidget(this: TW5WidgetInstance, parseTreeNode: TW5ParseTreeNode, options: Record<string, unknown>) {
   this.initialise(parseTreeNode, options);
 }
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-DynamicWidget.prototype.render = function (parent: any, nextSibling: any) {
+DynamicWidget.prototype.render = function (this: TW5WidgetInstance, parent: TW5FakeElement, nextSibling: TW5FakeElement | null) {
   this.parentDomNode = parent;
   this.computeAttributes();
   this.execute();
@@ -147,18 +146,16 @@ DynamicWidget.prototype.render = function (parent: any, nextSibling: any) {
   this.domNodes = [el];
   this.renderChildren(el, nextSibling);
 };
-DynamicWidget.prototype.execute = function () { this.makeChildWidgets(); };
+DynamicWidget.prototype.execute = function (this: TW5WidgetInstance) { this.makeChildWidgets(); };
 
 // ---------------------------------------------------------------------------
 // HeaderWidget — <<~ ? -> lar:///URI >> (no visible output)
 // ---------------------------------------------------------------------------
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function HeaderWidget(this: any, parseTreeNode: any, options: any) {
+function HeaderWidget(this: TW5WidgetInstance, parseTreeNode: TW5ParseTreeNode, options: Record<string, unknown>) {
   this.initialise(parseTreeNode, options);
 }
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-HeaderWidget.prototype.render = function (parent: any, _nextSibling: any) {
+HeaderWidget.prototype.render = function (this: TW5WidgetInstance, parent: TW5FakeElement, _nextSibling: TW5FakeElement | null) {
   this.parentDomNode = parent;
   this.computeAttributes();
   this.execute();
@@ -168,18 +165,16 @@ HeaderWidget.prototype.render = function (parent: any, _nextSibling: any) {
   parent.appendChild(el);
   this.domNodes = [el];
 };
-HeaderWidget.prototype.execute = function () { this.makeChildWidgets(); };
+HeaderWidget.prototype.execute = function (this: TW5WidgetInstance) { this.makeChildWidgets(); };
 
 // ---------------------------------------------------------------------------
 // DispatchWidget — lele fire-and-forget (no visible output)
 // ---------------------------------------------------------------------------
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function DispatchWidget(this: any, parseTreeNode: any, options: any) {
+function DispatchWidget(this: TW5WidgetInstance, parseTreeNode: TW5ParseTreeNode, options: Record<string, unknown>) {
   this.initialise(parseTreeNode, options);
 }
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-DispatchWidget.prototype.render = function (parent: any, _nextSibling: any) {
+DispatchWidget.prototype.render = function (this: TW5WidgetInstance, parent: TW5FakeElement, _nextSibling: TW5FakeElement | null) {
   this.parentDomNode = parent;
   this.computeAttributes();
   this.execute();
@@ -189,18 +184,16 @@ DispatchWidget.prototype.render = function (parent: any, _nextSibling: any) {
   parent.appendChild(el);
   this.domNodes = [el];
 };
-DispatchWidget.prototype.execute = function () { this.makeChildWidgets(); };
+DispatchWidget.prototype.execute = function (this: TW5WidgetInstance) { this.makeChildWidgets(); };
 
 // ---------------------------------------------------------------------------
 // PapaloheWidget — reaction family edge (trigger label at source, fn at target)
 // ---------------------------------------------------------------------------
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function PapaloheWidget(this: any, parseTreeNode: any, options: any) {
+function PapaloheWidget(this: TW5WidgetInstance, parseTreeNode: TW5ParseTreeNode, options: Record<string, unknown>) {
   this.initialise(parseTreeNode, options);
 }
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-PapaloheWidget.prototype.render = function (parent: any, _nextSibling: any) {
+PapaloheWidget.prototype.render = function (this: TW5WidgetInstance, parent: TW5FakeElement, _nextSibling: TW5FakeElement | null) {
   this.parentDomNode = parent;
   this.computeAttributes();
   this.execute();
@@ -214,18 +207,16 @@ PapaloheWidget.prototype.render = function (parent: any, _nextSibling: any) {
   parent.appendChild(el);
   this.domNodes = [el];
 };
-PapaloheWidget.prototype.execute = function () { this.makeChildWidgets(); };
+PapaloheWidget.prototype.execute = function (this: TW5WidgetInstance) { this.makeChildWidgets(); };
 
 // ---------------------------------------------------------------------------
 // KukaliWidget — reactive wait posture (Verse `suspends` analogue)
 // ---------------------------------------------------------------------------
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function KukaliWidget(this: any, parseTreeNode: any, options: any) {
+function KukaliWidget(this: TW5WidgetInstance, parseTreeNode: TW5ParseTreeNode, options: Record<string, unknown>) {
   this.initialise(parseTreeNode, options);
 }
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-KukaliWidget.prototype.render = function (parent: any, _nextSibling: any) {
+KukaliWidget.prototype.render = function (this: TW5WidgetInstance, parent: TW5FakeElement, _nextSibling: TW5FakeElement | null) {
   this.parentDomNode = parent;
   this.computeAttributes();
   this.execute();
@@ -239,16 +230,15 @@ KukaliWidget.prototype.render = function (parent: any, _nextSibling: any) {
   // Call the kukali hook if registered — bridges to reactionGraph.subscribeOnce().
   // Hook is stored on $tw.wiki (same object as this.wiki in widget context)
   // by LarariumTW5.registerKukaliHook(), keeping the bridge import-free.
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const hook = (this.wiki as any)?._larKukaliHook;
+  const hook = this.wiki?._larKukaliHook;
   const uri  = this.getVariable?.("currentTiddler") ?? "";
   if (hook && uri && trigger) {
     const cancel = hook(uri, trigger);
     // Store cancel ref on element for potential future cleanup.
-    if (typeof cancel === "function") (el as any)._larKukaliCancel = cancel;
+    if (typeof cancel === "function") (el as unknown as Record<string, unknown>)["_larKukaliCancel"] = cancel;
   }
 };
-KukaliWidget.prototype.execute = function () { this.makeChildWidgets(); };
+KukaliWidget.prototype.execute = function (this: TW5WidgetInstance) { this.makeChildWidgets(); };
 
 // ---------------------------------------------------------------------------
 // KumuWidget — kumu device instance (name + resolved props + body slot)
@@ -264,12 +254,10 @@ KukaliWidget.prototype.execute = function () { this.makeChildWidgets(); };
 //   Props are encoded as the raw args string from the kahea-call sigil.
 // ---------------------------------------------------------------------------
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function KumuWidget(this: any, parseTreeNode: any, options: any) {
+function KumuWidget(this: TW5WidgetInstance, parseTreeNode: TW5ParseTreeNode, options: Record<string, unknown>) {
   this.initialise(parseTreeNode, options);
 }
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-KumuWidget.prototype.render = function (parent: any, _nextSibling: any) {
+KumuWidget.prototype.render = function (this: TW5WidgetInstance, parent: TW5FakeElement, _nextSibling: TW5FakeElement | null) {
   this.parentDomNode = parent;
   this.computeAttributes();
   this.execute();
@@ -278,9 +266,7 @@ KumuWidget.prototype.render = function (parent: any, _nextSibling: any) {
   // Resolve kumu def by name from the meme tagspace — any three-word-root space
   // with tag $:/tags/LarariumKumu and field kumu-name matching the invoked name.
   // Stable defs live at lar:///ha.ka.ba/...; drafts in chapel-perilous-opens/...
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const wiki    = this.wiki as any;
-  const results: string[] = wiki?.filterTiddlers?.(
+  const results: string[] = this.wiki?.filterTiddlers?.(
     `[all[tiddlers]tag[$:/tags/LarariumKumu]field:kumu-name[${name}]]`
   ) ?? [];
   const defUri = results[0] ?? "";
@@ -298,16 +284,17 @@ KumuWidget.prototype.render = function (parent: any, _nextSibling: any) {
     const propRe = /([\w-]+):(\S+)/g;
     let m: RegExpExecArray | null;
     while ((m = propRe.exec(args)) !== null) {
-      this.setVariable(m[1], m[2]);
+      this.setVariable(m[1]!, m[2]!);
     }
     // Transclude the kumu def tiddler — TW5 renders its body as child widgets.
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const transclude = (this.wiki as any).makeTranscludeWidget(defUri, {
+    const transclude = this.wiki?.makeTranscludeWidget(defUri, {
       document:     this.document,
       parentWidget: this,
     });
-    transclude.render(el, null);
-    this.children = [transclude];
+    if (transclude) {
+      transclude.render(el, null);
+      this.children = [transclude];
+    }
   } else {
     // Typed hole — render label (unresolved kumu def).
     const hole = this.document.createElement("span");
@@ -316,9 +303,8 @@ KumuWidget.prototype.render = function (parent: any, _nextSibling: any) {
     el.appendChild(hole);
   }
 };
-KumuWidget.prototype.execute = function () { /* children managed in render */ };
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-KumuWidget.prototype.refresh = function (changedTiddlers: any): boolean {
+KumuWidget.prototype.execute = function (this: TW5WidgetInstance) { /* children managed in render */ };
+KumuWidget.prototype.refresh = function (this: TW5WidgetInstance, changedTiddlers: Record<string, TW5ChangeRecord>): boolean {
   // Delegate refresh to the transclude child so def tiddler edits propagate.
   let changed = false;
   for (const child of (this.children ?? [])) {
@@ -332,19 +318,18 @@ KumuWidget.prototype.refresh = function (changedTiddlers: any): boolean {
 // Prototype chain is set by LarariumTW5._registerWidgets() after boot.
 // ---------------------------------------------------------------------------
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function createLarariumWidgets(_tw: any): Record<string, WidgetCtor> {
+export function createLarariumWidgets(_tw: TW5Instance): Record<string, WidgetCtorWithProto> {
   return {
-    "lararium-worksite":  WorksiteWidget  as WidgetCtor,
-    "lararium-edge":      EdgeWidget      as WidgetCtor,
-    "lararium-toml":      TomlWidget      as WidgetCtor,
-    "lararium-sigil":     SigilWidget     as WidgetCtor,
-    "lararium-dynamic":   DynamicWidget   as WidgetCtor,
-    "lararium-header":    HeaderWidget    as WidgetCtor,
-    "lararium-dispatch":  DispatchWidget  as WidgetCtor,
-    "lararium-papalohe":  PapaloheWidget  as WidgetCtor,
-    "lararium-kukali":    KukaliWidget    as WidgetCtor,
-    "lararium-kumu":      KumuWidget      as WidgetCtor,
+    "lararium-worksite":  WorksiteWidget  as unknown as WidgetCtorWithProto,
+    "lararium-edge":      EdgeWidget      as unknown as WidgetCtorWithProto,
+    "lararium-toml":      TomlWidget      as unknown as WidgetCtorWithProto,
+    "lararium-sigil":     SigilWidget     as unknown as WidgetCtorWithProto,
+    "lararium-dynamic":   DynamicWidget   as unknown as WidgetCtorWithProto,
+    "lararium-header":    HeaderWidget    as unknown as WidgetCtorWithProto,
+    "lararium-dispatch":  DispatchWidget  as unknown as WidgetCtorWithProto,
+    "lararium-papalohe":  PapaloheWidget  as unknown as WidgetCtorWithProto,
+    "lararium-kukali":    KukaliWidget    as unknown as WidgetCtorWithProto,
+    "lararium-kumu":      KumuWidget      as unknown as WidgetCtorWithProto,
   };
 }
 
@@ -365,19 +350,16 @@ export function createLarariumWidgets(_tw: any): Record<string, WidgetCtor> {
 // Registered as module-type: "filteroperator" via the IIFE bundle at boot.
 // ---------------------------------------------------------------------------
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function registerImplementorsOperator(tw: any): void {
+export function registerImplementorsOperator(tw: TW5Instance): void {
   if (!tw?.filterOperators) return;
 
   // implementors[uri] — exact-token match on space-separated implements field
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  tw.filterOperators["implementors"] = function (source: any, operator: any) {
+  tw.filterOperators["implementors"] = function (source: TW5FilterSource, operator: TW5FilterOperator) {
     const target  = operator.operand ?? "";
     const results: string[] = [];
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    source(function (tiddler: any, title: string) {
+    source(function (tiddler, title: string) {
       if (!tiddler) return;
-      const raw: string = tiddler.fields?.["implements"] ?? "";
+      const raw: string = String(tiddler.fields?.["implements"] ?? "");
       const tokens: string[] = tw.utils.parseStringArray(raw) ?? [];
       if (tokens.includes(target)) results.push(title);
     });
@@ -388,13 +370,11 @@ export function registerImplementorsOperator(tw: any): void {
   // Translates the memetic-wikitext edge: filter syntax into a TW5-native operator.
   // edge:control[owns] → has[edge-out-control-owns]
   // edge:control[]     → any tiddler with any edge-out-control-* field
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  tw.filterOperators["edge"] = function (source: any, operator: any) {
+  tw.filterOperators["edge"] = function (source: TW5FilterSource, operator: TW5FilterOperator) {
     const family = operator.suffix ?? "";
     const role   = operator.operand ?? "";
     const results: string[] = [];
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    source(function (tiddler: any, title: string) {
+    source(function (tiddler, title: string) {
       if (!tiddler) return;
       if (role) {
         if (tiddler.fields?.[`edge-out-${family}-${role}`] !== undefined) results.push(title);
@@ -409,13 +389,11 @@ export function registerImplementorsOperator(tw: any): void {
   // toml:key[val] — sugar for field:key[val]; lets memetic-wikitext filters use TOML
   // field names directly without renaming them or going through the preprocessor.
   // toml:register[CS] → tiddlers where the "register" field equals "CS"
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  tw.filterOperators["toml"] = function (source: any, operator: any) {
+  tw.filterOperators["toml"] = function (source: TW5FilterSource, operator: TW5FilterOperator) {
     const fieldName = operator.suffix ?? "";
     const value     = operator.operand ?? "";
     const results: string[] = [];
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    source(function (tiddler: any, title: string) {
+    source(function (tiddler, title: string) {
       if (!tiddler) return;
       const fv: string = String(tiddler.fields?.[fieldName] ?? "");
       if (fv === value) results.push(title);
@@ -428,8 +406,7 @@ export function registerImplementorsOperator(tw: any): void {
   if (tw?.modules?.types) {
     tw.modules.types["allfilteroperator"] = tw.modules.types["allfilteroperator"] ?? {};
     if (!tw.modules.types["allfilteroperator"]["memes"]) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      tw.modules.types["allfilteroperator"]["memes"] = { exports: { memes: function(_source: any, _prefix: any, options: any) { return options.wiki.each; } } };
+      tw.modules.types["allfilteroperator"]["memes"] = { moduleType: "allfilteroperator", definition: null, exports: { memes: function(_source: TW5FilterSource, _prefix: string, options: { wiki: { each: unknown } }) { return options.wiki.each; } } };
     }
   }
 }

@@ -1,62 +1,20 @@
 /**
- * Browser operator identity — persists Ed25519 keypair in IndexedDB.
+ * Browser auth session seed.
  *
- * One identity per Lararium host. Survives page reloads and browser restarts.
- * Lost if the user clears site data (acceptable for local-operator mode;
- * future: backup to Keyhive member keychain).
+ * Slate-clean model: the browser no longer mints Ed25519 / UCAN credentials.
+ * BlueSky OAuth will own public web identity once elyncia.app can serve the
+ * provider metadata and callback. GitHub sign-in belongs to the VS Code /
+ * VS Code Insiders local UX path, not this browser helper.
+ *
+ * For now this file only emits a local-dev receipt so the existing local app can
+ * keep booting while the real provider bridges land.
  */
 
-import {
-  generateOperatorIdentity,
-  deserializeIdentity,
-  serializeIdentity,
-  type LarOperatorIdentity,
-  type LarOperatorIdentityJson,
-} from "@lararium/core";
+import { createLocalDevReceipt, type LarAuthReceipt } from "@lararium/core";
 
-const DB_NAME  = "lararium:operator";
-const DB_VER   = 1;
-const STORE    = "identity";
-const KEY      = "operator-key";
+let _cached: LarAuthReceipt | null = null;
 
-function openDb(): Promise<IDBDatabase> {
-  return new Promise((resolve, reject) => {
-    const req = indexedDB.open(DB_NAME, DB_VER);
-    req.onupgradeneeded = () => req.result.createObjectStore(STORE);
-    req.onsuccess = () => resolve(req.result);
-    req.onerror   = () => reject(req.error);
-  });
-}
-
-async function idbGet(db: IDBDatabase): Promise<LarOperatorIdentityJson | null> {
-  return new Promise((resolve, reject) => {
-    const tx  = db.transaction(STORE, "readonly");
-    const req = tx.objectStore(STORE).get(KEY);
-    req.onsuccess = () => resolve((req.result as LarOperatorIdentityJson | undefined) ?? null);
-    req.onerror   = () => reject(req.error);
-  });
-}
-
-async function idbSet(db: IDBDatabase, value: LarOperatorIdentityJson): Promise<void> {
-  return new Promise((resolve, reject) => {
-    const tx  = db.transaction(STORE, "readwrite");
-    const req = tx.objectStore(STORE).put(value, KEY);
-    req.onsuccess = () => resolve();
-    req.onerror   = () => reject(req.error);
-  });
-}
-
-let _cached: LarOperatorIdentity | null = null;
-
-export async function getOrCreateBrowserIdentity(): Promise<LarOperatorIdentity> {
-  if (_cached) return _cached;
-  const db  = await openDb();
-  const raw = await idbGet(db);
-  if (raw) {
-    _cached = deserializeIdentity(raw);
-  } else {
-    _cached = await generateOperatorIdentity();
-    await idbSet(db, serializeIdentity(_cached));
-  }
+export async function getOrCreateBrowserAuthReceipt(): Promise<LarAuthReceipt> {
+  if (!_cached) _cached = createLocalDevReceipt("browser-local-operator");
   return _cached;
 }

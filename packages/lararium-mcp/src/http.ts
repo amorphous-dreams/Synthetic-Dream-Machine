@@ -46,11 +46,11 @@ function validateOrigin(req: IncomingMessage): boolean {
 }
 
 // ---------------------------------------------------------------------------
-// Auth stub — pending UCAN peer registry wiring
+// Auth stub — pending provider-neutral LarAuthReceipt wiring
 // ---------------------------------------------------------------------------
 
 async function authCheck(_req: IncomingMessage): Promise<boolean> {
-  // stub — wire UcanPeerRegistry from @lararium/core and validate bearer token
+  // stub — validate BlueSky OAuth or GitHub VS Code local auth receipt
   return true;
 }
 

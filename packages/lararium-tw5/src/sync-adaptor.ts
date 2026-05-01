@@ -13,17 +13,32 @@
  *
  * Canon guard (hard rule):
  *   saveTiddler MUST NOT write to lares/.
- *   Callers that need canon promotion must use the Orichalcum ceremony path
- *   (separate route, not this adaptor).
+ *   Callers that need canon promotion must submit a future Keyhive-backed
+ *   promotion proposal. No active promotion route exists in this adaptor.
  *
  * Draft guard:
  *   Session-local tiddlers ($:/temp/*, "Draft of ...") MUST NOT reach shared
  *   store state. The adaptor filters them from saveTiddler.
+ *
+ * Save cascade:
+ *   Write routing is corpus-driven — rules live in:
+ *   lar:///ha.ka.ba/api/v0.1/lararium/sync/save-cascade
+ *   Read from the wiki at first use and cached for the session.
  */
 
-import type { LarTiddlerStore, LarTiddlerRecord, LarTiddlerChange, ChangeOrigin, MemeProjection } from "@lararium/core";
+import type { LarTiddlerStore, LarTiddlerChange, ChangeOrigin, MemeProjection } from "@lararium/core";
 import type { LarariumTW5 } from "./lararium-tw5.js";
-import { serializeCarrier, replaceCarrierSlot, removeCarrierSlot, composeCarrierSlotBody } from "./carrier-split.js";
+import type { TW5TiddlerFields } from "./types/tiddlywiki.js";
+import {
+  inferChildCarrierTitle,
+  buildDirectRecord,
+  saveChildCarrierRecord,
+  saveParentAfterChildDelete,
+} from "./carrier-write.js";
+
+// ---------------------------------------------------------------------------
+// Save strategy types
+// ---------------------------------------------------------------------------
 
 type SaveStrategy = "skip" | "direct" | "child-carrier";
 type SaveHandler  = (
@@ -33,8 +48,11 @@ type SaveHandler  = (
   origin:   ChangeOrigin,
 ) => Promise<void>;
 
+/** URI of the corpus meme that declares the ordered save-routing rules. */
+const SAVE_CASCADE_URI = "lar:///ha.ka.ba/api/v0.1/lararium/sync/save-cascade";
+
 // ---------------------------------------------------------------------------
-// Internal helpers
+// Module-level helpers
 // ---------------------------------------------------------------------------
 
 function isSessionLocal(title: string): boolean {
@@ -45,6 +63,13 @@ function isTW5System(title: string): boolean {
   return title.startsWith("$:/");
 }
 
+/**
+ * Extract a flat Record<string, string> from a TW5 tiddler object.
+ *
+ * TW5 passes tiddler objects to saveTiddler in two shapes depending on
+ * context (Tiddler instance with .fields, or a raw fields object). Both
+ * shapes are normalised here. Array-valued fields are joined with spaces.
+ */
 function extractFields(tiddler: unknown): Record<string, string> {
   if (!tiddler || typeof tiddler !== "object") return {};
   const t = tiddler as Record<string, unknown>;
@@ -52,11 +77,9 @@ function extractFields(tiddler: unknown): Record<string, string> {
   const flatten = (k: string, v: unknown) => {
     if (typeof v === "string") { out[k] = v; }
     else if (Array.isArray(v)) { out[k] = (v as unknown[]).map(String).join(" "); }
-    // other types (number, boolean) intentionally omitted — not valid tiddler fields
   };
   for (const [k, v] of Object.entries(t)) {
     if (k === "fields" && typeof v === "object" && v !== null) {
-      // Some TW5 versions nest fields inside .fields
       for (const [fk, fv] of Object.entries(v as Record<string, unknown>)) flatten(fk, fv);
     } else {
       flatten(k, v);
@@ -81,6 +104,9 @@ export class LarariumCrdtSyncAdaptor implements MemeProjection {
   // Bulk-refresh gate — buffer changes until initial Automerge replay settles.
   private _syncComplete = false;
   private _buffer: LarTiddlerChange[] = [];
+
+  // Save cascade — read from wiki on first use, cached for the session.
+  private _cascadeCache: Array<{ filter: string; strategy: SaveStrategy }> | null = null;
 
   constructor(
     private readonly tw5: LarariumTW5,
@@ -115,9 +141,6 @@ export class LarariumCrdtSyncAdaptor implements MemeProjection {
     this._syncComplete = true;
     if (this._buffer.length === 0) return;
 
-    // Collect all tiddler fields for the transact batch. Deletions are applied
-    // individually (removeTiddler has no batch API) but before the add-batch so
-    // stale children are gone before replacements arrive.
     const toRemove: string[] = [];
     const toAdd: Array<Record<string, string | string[]>> = [];
 
@@ -137,16 +160,16 @@ export class LarariumCrdtSyncAdaptor implements MemeProjection {
         } else {
           const rec = change.record;
           const isCarrier = rec.text !== undefined &&
-            (rec.fields["content-type"] === "text/x-memetic-wikitext" ||
-              (!rec.fields["content-type"] && change.title.startsWith("lar:")));
+            (rec?.fields["content-type"] === "text/x-memetic-wikitext" ||
+              (!rec?.fields["content-type"] && change.title.startsWith("lar:")));
 
           if (isCarrier && rec.text) {
             const staleChildren: string[] = this.tw5.filterTiddlers(`[tag[${change.title}]has[ahu-slot]]`);
             for (const t of staleChildren) toRemove.push(t);
-            const tiddlers = this.tw5.deserializeCarrier(change.title, rec.text, rec.fields as Record<string, string | string[]>);
+            const tiddlers = this.tw5.deserializeCarrier(change.title, rec.text, rec?.fields as Record<string, string | string[]>);
             for (const t of tiddlers) toAdd.push(t as Record<string, string | string[]>);
           } else {
-            const fields: Record<string, string | string[]> = { title: rec.title, ...rec.fields };
+            const fields: Record<string, string | string[]> = { title: rec.title, ...rec?.fields };
             if (rec.text !== undefined) fields["text"] = rec.text;
             toAdd.push(fields);
           }
@@ -159,9 +182,7 @@ export class LarariumCrdtSyncAdaptor implements MemeProjection {
       this._buffer = [];
     }
 
-    // Apply removals first (stale children before replacement tiddlers arrive).
     for (const title of toRemove) this.tw5.removeTiddler(title);
-    // Apply all additions in one transaction → one widget refresh.
     if (toAdd.length > 0) this.tw5.bulkSetTiddlers(toAdd);
 
     this._applying = null;
@@ -174,20 +195,17 @@ export class LarariumCrdtSyncAdaptor implements MemeProjection {
    * backed store), this adaptor registers itself as a MemeProjection so it
    * participates in the onSyncComplete bulk-refresh gate. Otherwise it falls
    * back to store.subscribe() (no bulk gate, but still correct).
-   *
-   * Returns an unsubscribe function for cleanup.
    */
   start(): () => void {
-    // Duck-type: AutomergeMemeStore exposes addProjection(); plain LarTiddlerStore does not.
-    const storeAny = this.store as { addProjection?: (p: MemeProjection) => () => void };
-    if (typeof storeAny.addProjection === "function") {
-      this._unsubscribe = storeAny.addProjection(this);
+    const storeWithProjection = this.store as unknown as {
+      addProjection?: (p: MemeProjection) => () => void;
+    };
+    if (typeof storeWithProjection.addProjection === "function") {
+      this._unsubscribe = storeWithProjection.addProjection(this);
     } else {
-      // Fallback: no bulk-refresh gate; apply every change immediately.
-      this._syncComplete = true;
       this._unsubscribe = this.store.subscribe((change) => this._applyChange(change));
     }
-    return () => this._unsubscribe?.();
+    return () => this.stop();
   }
 
   stop(): void {
@@ -197,6 +215,7 @@ export class LarariumCrdtSyncAdaptor implements MemeProjection {
 
   // ---------------------------------------------------------------------------
   // Internal — apply a single change to TW5 wiki under echo guard
+  // Heleuma: lar:///ha.ka.ba/api/v0.1/lararium/modules/sync-adaptor #source
   // ---------------------------------------------------------------------------
 
   private _applyChange(change: LarTiddlerChange): void {
@@ -215,16 +234,16 @@ export class LarariumCrdtSyncAdaptor implements MemeProjection {
       } else {
         const rec = change.record;
         const isCarrier = rec.text !== undefined &&
-          (rec.fields["content-type"] === "text/x-memetic-wikitext" ||
-            (!rec.fields["content-type"] && change.title.startsWith("lar:")));
+          (rec?.fields["content-type"] === "text/x-memetic-wikitext" ||
+            (!rec?.fields["content-type"] && change.title.startsWith("lar:")));
 
         if (isCarrier && rec.text) {
           const staleChildren: string[] = this.tw5.filterTiddlers(`[tag[${change.title}]has[ahu-slot]]`);
           for (const t of staleChildren) this.tw5.removeTiddler(t);
-          const tiddlers = this.tw5.deserializeCarrier(change.title, rec.text, rec.fields as Record<string, string | string[]>);
+          const tiddlers = this.tw5.deserializeCarrier(change.title, rec.text, rec?.fields as Record<string, string | string[]>);
           for (const t of tiddlers) this.tw5.setTiddler(t as Record<string, string | string[]>);
         } else {
-          const fields: Record<string, string | string[]> = { title: rec.title, ...rec.fields };
+          const fields: Record<string, string | string[]> = { title: rec.title, ...rec?.fields };
           if (rec.text !== undefined) fields["text"] = rec.text;
           this.tw5.setTiddler(fields);
         }
@@ -276,7 +295,7 @@ export class LarariumCrdtSyncAdaptor implements MemeProjection {
   ): void {
     this.store.get(title).then((rec) => {
       if (!rec || rec.deleted) { callback(null, null); return; }
-      const fields: Record<string, unknown> = { title: rec.title, ...rec.fields };
+      const fields: Record<string, unknown> = { title: rec.title, ...rec?.fields };
       if (rec.text !== undefined) fields["text"] = rec.text;
       callback(null, fields);
     }).catch((err: Error) => callback(err, null));
@@ -303,31 +322,37 @@ export class LarariumCrdtSyncAdaptor implements MemeProjection {
   }
 
   // ---------------------------------------------------------------------------
-  // Save cascade — ordered filter rules, first match wins.
+  // Save cascade — corpus-driven write routing
   //
-  // Each rule is a TW5 filter expression evaluated against the tiddler title.
-  // [[title]<filter>] returning a non-empty list means the rule matches.
-  //
-  // Extend by adding rules before the catch-all "direct" entry.
+  // Rules live in lar:///ha.ka.ba/api/v0.1/lararium/sync/save-cascade.
+  // Read from the wiki on first call and cached for the session.
+  // Fast-path guards (isSessionLocal, isTW5System) avoid the filter call for
+  // the most common skip cases; they mirror cascade rules 1–3 exactly.
   // ---------------------------------------------------------------------------
 
-  private static readonly SAVE_CASCADE: Array<{ filter: string; strategy: SaveStrategy }> = [
-    { filter: "[is[system]]",   strategy: "skip"          }, // $:/ system tiddlers
-    { filter: "[prefix[$:/temp/]]", strategy: "skip"       }, // session drafts
-    { filter: "[prefix[Draft of ]]", strategy: "skip"      }, // TW5 draft tiddlers
-    { filter: "[has[ahu-parent]]",   strategy: "child-carrier" }, // ahu child → reconstruct parent carrier
-    { filter: "[prefix[lar:]]",      strategy: "direct"    }, // canonical meme → write as-is
-  ];
+  private _readSaveCascade(): Array<{ filter: string; strategy: SaveStrategy }> {
+    if (this._cascadeCache) return this._cascadeCache;
+    const ruleTitles: string[] = this.tw5.filterTiddlers(
+      `[tag[${SAVE_CASCADE_URI}]has[tw5-filter]sort[order]]`,
+    );
+    this._cascadeCache = ruleTitles.map((t) => {
+      const f: TW5TiddlerFields = this.tw5.wiki.getTiddler?.(t)?.fields ?? ({} as TW5TiddlerFields);
+      return {
+        filter:   String(f["tw5-filter"]    ?? ""),
+        strategy: String(f["save-strategy"] ?? "skip") as SaveStrategy,
+      };
+    });
+    return this._cascadeCache;
+  }
 
   private _resolveSaveStrategy(title: string, fields: Record<string, string> = {}): SaveStrategy {
+    // Fast-path: avoid filter call for the most common skip cases.
     if (isSessionLocal(title) || isTW5System(title)) return "skip";
 
-    // Prefer explicit field/title facts. TW5's filter engine only sees titles
-    // that are already in the wiki; saveTiddler can be called with a fresh
-    // tiddler object, so the cascade below is advisory rather than the only
-    // route.
+    // Explicit field/title facts take priority — saveTiddler can be called
+    // with a fresh tiddler not yet in the wiki, so cascade filters may miss it.
     if (fields["ahu-parent"]) return "child-carrier";
-    const currentFields = this.tw5.wiki.getTiddler?.(title)?.fields ?? {};
+    const currentFields = this.tw5.wiki.getTiddler?.(title)?.fields ?? ({} as TW5TiddlerFields);
     if (currentFields["ahu-parent"]) return "child-carrier";
     const hash = title.lastIndexOf("#");
     if (title.startsWith("lar:") && hash > 0 && this.tw5.wiki.getTiddler?.(title.slice(0, hash))) {
@@ -335,14 +360,15 @@ export class LarariumCrdtSyncAdaptor implements MemeProjection {
     }
     if (title.startsWith("lar:")) return "direct";
 
+    // Corpus cascade — first matching TW5 filter wins.
     const wiki = this.tw5.wiki;
-    for (const { filter, strategy } of LarariumCrdtSyncAdaptor.SAVE_CASCADE) {
+    for (const { filter, strategy } of this._readSaveCascade()) {
       try {
         const result: string[] = wiki.filterTiddlers(`[[${title}]${filter}]`);
         if (result.length > 0) return strategy;
       } catch { /* malformed filter — skip rule */ }
     }
-    return "skip"; // default: unknown tiddler types are not synced
+    return "skip";
   }
 
   private readonly _saveHandlers: Record<SaveStrategy, SaveHandler> = {
@@ -350,166 +376,17 @@ export class LarariumCrdtSyncAdaptor implements MemeProjection {
 
     direct: async (title, fields, revision, origin) => {
       this._revisions.set(title, revision);
-      const textVal = fields["text"];
-      const record: LarTiddlerRecord = {
-        title,
-        fields: Object.fromEntries(
-          Object.entries(fields)
-            .filter(([k]) => k !== "text" && k !== "title")
-            .map(([k, v]) => [k, String(v)])
-        ),
-        ...(textVal !== undefined ? { text: textVal } : {}),
-        revision,
-        bag: "room",
-      };
-      await this.store.put(record, origin);
+      await this.store.put(buildDirectRecord(title, fields, revision), origin);
     },
 
     "child-carrier": async (title, fields, revision, origin) => {
-      const inferred = this._inferChildCarrierTitle(title);
-      const parentUri = fields["ahu-parent"] ?? inferred?.parentUri ?? "";
-      if (!parentUri) return;
-
-      const wiki = this.tw5.wiki;
-      const parentTiddler = wiki.getTiddler?.(parentUri);
-      const parentFields: Record<string, string | string[]> = parentTiddler?.fields ?? {};
-      const rawCarrierText: string = String(parentFields["text"] ?? "");
-
-      // Determine the slot that changed (child title = parentUri + "#slot").
-      const slot = title.startsWith(parentUri) ? title.slice(parentUri.length) : (inferred?.slot ?? null);
-      const newSlotBody = composeCarrierSlotBody(fields, fields["text"] ?? "");
-
-      // Prefer surgical replacement to preserve decorators and all other slots.
-      // Fall back to full reconstruction if the slot pattern isn't found in the raw text.
-      let reconstructed: string;
-      if (slot && rawCarrierText) {
-        const spliced = replaceCarrierSlot(rawCarrierText, slot, newSlotBody);
-        if (spliced !== null) {
-          reconstructed = spliced;
-        } else {
-          // Slot not found in raw text — full reconstruct from all sibling children.
-          const childTitles: string[] = this.tw5.filterTiddlers(`[tag[${parentUri}]has[ahu-slot]]`);
-          const children = childTitles.map((ct) => {
-            const ct5 = wiki.getTiddler?.(ct);
-            const cf  = ct5?.fields ?? {};
-            return {
-              title: ct,
-              fields: { ...cf, "ahu-slot": cf["ahu-slot"] ?? "", "ahu-parent": parentUri, tags: [parentUri] },
-              text: String(cf["text"] ?? ""),
-            };
-          });
-          reconstructed = serializeCarrier({ title: parentUri, fields: parentFields, text: "" }, children);
-        }
-      } else {
-        // No raw text (new carrier) — reconstruct from all sibling children.
-        const childTitles: string[] = this.tw5.filterTiddlers(`[tag[${parentUri}]has[ahu-slot]]`);
-        const children = childTitles.map((ct) => {
-          const ct5 = wiki.getTiddler?.(ct);
-          const cf  = ct5?.fields ?? {};
-          return {
-            title: ct,
-            fields: { ...cf, "ahu-slot": cf["ahu-slot"] ?? "", "ahu-parent": parentUri, tags: [parentUri] },
-            text: String(cf["text"] ?? ""),
-          };
-        });
-        reconstructed = serializeCarrier({ title: parentUri, fields: parentFields, text: "" }, children);
-      }
-
-      this._revisions.set(parentUri, revision);
-      const record: LarTiddlerRecord = {
-        title: parentUri,
-        fields: Object.fromEntries(
-          Object.entries(parentFields)
-            .filter(([k]) => k !== "text" && k !== "title")
-            .map(([k, v]) => [k, Array.isArray(v) ? v.join(" ") : String(v)])
-        ),
-        text: reconstructed,
-        revision,
-        bag: "room",
-      };
-      await this.store.put(record, origin);
+      await saveChildCarrierRecord(this.tw5, this.store, this._revisions, title, fields, revision, origin);
     },
   };
 
-  private _inferChildCarrierTitle(title: string): { parentUri: string; slot: string } | null {
-    const wiki = this.tw5.wiki;
-    const tiddler = wiki.getTiddler?.(title);
-    const fields = tiddler?.fields ?? {};
-
-    const explicitParent = fields["ahu-parent"];
-    if (typeof explicitParent === "string" && explicitParent) {
-      const explicitSlot = fields["ahu-slot"];
-      const slot = typeof explicitSlot === "string" && explicitSlot
-        ? explicitSlot
-        : (title.startsWith(explicitParent) ? title.slice(explicitParent.length) : "");
-      if (slot) return { parentUri: explicitParent, slot };
-    }
-
-    // If TW5 has already removed the child tiddler, infer the parent from the
-    // fragment title and only accept it when the parent tiddler is still local.
-    // This avoids tombstoning derived child titles while still allowing direct
-    // lar: titles containing "#" to be deleted when no parent carrier exists.
-    const hash = title.lastIndexOf("#");
-    if (!title.startsWith("lar:") || hash < 0) return null;
-    const parentUri = title.slice(0, hash);
-    const slot = title.slice(hash);
-    if (!parentUri || !slot) return null;
-    if (!wiki.getTiddler?.(parentUri)) return null;
-    return { parentUri, slot };
-  }
-
-  private _carrierChildren(parentUri: string, excludeTitle?: string) {
-    const wiki = this.tw5.wiki;
-    const childTitles: string[] = this.tw5.filterTiddlers(`[tag[${parentUri}]has[ahu-slot]]`);
-    return childTitles
-      .filter((ct) => ct !== excludeTitle)
-      .map((ct) => {
-        const ct5 = wiki.getTiddler?.(ct);
-        const cf  = ct5?.fields ?? {};
-        return {
-          title: ct,
-          fields: { ...cf, "ahu-slot": cf["ahu-slot"] ?? "", "ahu-parent": parentUri, tags: [parentUri] },
-          text: String(cf["text"] ?? ""),
-        };
-      });
-  }
-
-  private async _saveParentAfterChildDelete(
-    childTitle: string,
-    parentUri: string,
-    slot: string,
-    revision: string,
-    origin: ChangeOrigin,
-  ): Promise<void> {
-    const wiki = this.tw5.wiki;
-    const parentTiddler = wiki.getTiddler?.(parentUri);
-    const parentFields: Record<string, string | string[]> = parentTiddler?.fields ?? {};
-    const rawCarrierText: string = String(parentFields["text"] ?? "");
-
-    let reconstructed = rawCarrierText ? removeCarrierSlot(rawCarrierText, slot) : null;
-    if (reconstructed === null) {
-      // Slot not found in raw text — full reconstruct from the remaining sibling
-      // children. This is lossy, but preferable to writing a child tombstone.
-      reconstructed = serializeCarrier(
-        { title: parentUri, fields: parentFields, text: "" },
-        this._carrierChildren(parentUri, childTitle),
-      );
-    }
-
-    this._revisions.set(parentUri, revision);
-    const record: LarTiddlerRecord = {
-      title: parentUri,
-      fields: Object.fromEntries(
-        Object.entries(parentFields)
-          .filter(([k]) => k !== "text" && k !== "title")
-          .map(([k, v]) => [k, Array.isArray(v) ? v.join(" ") : String(v)])
-      ),
-      text: reconstructed,
-      revision,
-      bag: "room",
-    };
-    await this.store.put(record, origin);
-  }
+  // ---------------------------------------------------------------------------
+  // Delete path
+  // ---------------------------------------------------------------------------
 
   private _removeLocalCarrierChildren(parentUri: string, origin: ChangeOrigin): void {
     const childTitles: string[] = this.tw5.filterTiddlers(`[tag[${parentUri}]has[ahu-slot]]`);
@@ -528,17 +405,19 @@ export class LarariumCrdtSyncAdaptor implements MemeProjection {
     callback: (err: Error | null) => void,
     _options?: unknown,
   ): void {
-    // Echo-loop guard.
     if (this._applying !== null) { callback(null); return; }
-    // Draft guard + lar: enforcement — only canonical lar: tiddlers reach the store.
     if (isSessionLocal(title) || isTW5System(title) || !title.startsWith("lar:")) { callback(null); return; }
 
     const origin: ChangeOrigin = { kind: "tw-local", instanceId: this.instanceId };
     const revision = String(Date.now());
-    const childCarrier = this._inferChildCarrierTitle(title);
+    const childCarrier = inferChildCarrierTitle(this.tw5, title);
 
     if (childCarrier) {
-      this._saveParentAfterChildDelete(title, childCarrier.parentUri, childCarrier.slot, revision, origin)
+      saveParentAfterChildDelete(
+        this.tw5, this.store, this._revisions,
+        title, childCarrier.parentUri, childCarrier.slot,
+        revision, origin,
+      )
         .then(() => callback(null))
         .catch(callback);
       return;

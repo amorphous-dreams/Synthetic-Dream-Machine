@@ -16,7 +16,8 @@
  * Hard rules:
  *   - room layer may override canon for live view; must not mutate canon.
  *   - session layer must not leak $:/temp/* or "Draft of ..." into shared state.
- *   - canon promotion requires Orichalcum ceremony (separate write path, not store.put).
+ *   - canon promotion is disabled until a Keyhive-backed proposal/receipt graph
+ *     exists; store.put() never writes to lares/.
  *   - tombstone() marks deletion in live room state; no hard delete by default.
  */
 
@@ -99,7 +100,8 @@ export interface LarTiddlerStore {
 
   /**
    * Write a record to live room state.
-   * Must NOT write to lares/ (canon path). Canon promotion requires Orichalcum ceremony.
+   * Must NOT write to lares/ (canon path). Future canon promotion must use a
+   * Keyhive-backed proposal/receipt graph outside this store.
    * origin carries the audit trail and echo-loop guard.
    */
   put(record: LarTiddlerRecord, origin: ChangeOrigin): Promise<void>;

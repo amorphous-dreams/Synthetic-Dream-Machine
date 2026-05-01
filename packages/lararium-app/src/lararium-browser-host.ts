@@ -31,7 +31,7 @@ import type { LarariumOpenPhase } from "@lararium/core";
 import { LarariumTW5, LarariumCrdtSyncAdaptor, setActiveTW5 } from "@lararium/tw5";
 import { initMemeRepo, readMemeStoreUrl, type MemeRepoResult } from "./automerge-store.js";
 import type { AutomergeMemeStore } from "./automerge-store.js";
-import { getOrCreateBrowserIdentity } from "./operator-key.js";
+import { getOrCreateBrowserAuthReceipt } from "./operator-key.js";
 import type { Repo } from "@automerge/automerge-repo";
 
 // ---------------------------------------------------------------------------
@@ -110,14 +110,11 @@ export function useLarariumHostOpen(options: BrowserHostOptions): HostOpenState 
         })();
 
       const storeUrl  = readMemeStoreUrl(hostId);
-      const identity  = await getOrCreateBrowserIdentity();
-      const serverDid = (typeof document !== "undefined"
-        ? document.querySelector('meta[name="lararium-operator-did"]')?.getAttribute("content")
-        : undefined) ?? undefined;
+      const authReceipt = await getOrCreateBrowserAuthReceipt();
 
       let repoResult: MemeRepoResult;
       try {
-        repoResult = await initMemeRepo({ hostId, syncWsUrl, storeUrl, identity, ...(serverDid && { serverDid }) });
+        repoResult = await initMemeRepo({ hostId, syncWsUrl, storeUrl, authReceipt });
       } catch (err: unknown) {
         const msg = err instanceof Error ? `${err.message}` : String(err);
         console.error("[lararium] meme store init failed:", err);

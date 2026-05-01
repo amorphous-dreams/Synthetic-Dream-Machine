@@ -301,10 +301,12 @@ export interface TW5Wiki {
   makeTranscludeWidget(
     title:   string,
     options: {
-      document:      TW5FakeDocument;
-      parentWidget?: TW5WidgetInstance | null;
-      field?:        string;
-      mode?:         "inline" | "block";
+      /** Accepts TW5FakeDocument (server/stylesheet) or real browser Document. */
+      document:         TW5FakeDocument | object;
+      parentWidget?:    TW5WidgetInstance | null;
+      field?:           string;
+      mode?:            "inline" | "block";
+      recursionMarker?: string;
     },
   ): TW5WidgetInstance;
 
@@ -431,7 +433,8 @@ export interface TW5WidgetInstance {
   initialise(parseTreeNode: TW5ParseTreeNode, options: Record<string, unknown>): void;
   execute(): void;
   render(parent: TW5FakeElement, nextSibling: TW5FakeElement | null): void;
-  refresh(changedTiddlers: Record<string, TW5ChangeRecord>): boolean;
+  /** Standard refresh. The stylesheet widget variant accepts optional DOM container args. */
+  refresh(changedTiddlers: Record<string, TW5ChangeRecord>, parentDomNode?: TW5FakeElement | null, nextSibling?: TW5FakeElement | null): boolean;
   refreshSelf(): void;
   refreshChildren(changedTiddlers: Record<string, TW5ChangeRecord>): boolean;
   destroy(options?: { removeDOMNodes?: boolean }): void;
@@ -649,7 +652,7 @@ export interface TW5Boot {
   tasks:        { trapErrors?: boolean; readBrowserTiddlers?: boolean };
   logMessages:  string[];
   log(str: string): void;
-  boot(): void;
+  boot(callback?: () => void): void;
 }
 
 // ---------------------------------------------------------------------------
@@ -775,6 +778,8 @@ export interface TW5Instance {
 
   // ── Boot subsystem ────────────────────────────────────────────────────────
 
+  /** Tiddlers queued before boot() runs — TW5 discovers them at startup. */
+  preloadTiddlers: Record<string, unknown>[];
   boot: TW5Boot;
 
   // ── Platform flags ────────────────────────────────────────────────────────

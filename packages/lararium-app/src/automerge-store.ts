@@ -24,10 +24,10 @@ import type {
   LarTiddlerStore,
   LarTiddlerChange,
   ChangeOrigin,
-  LarOperatorIdentity,
+  LarAuthReceipt,
   MemeProjection,
 } from "@lararium/core";
-import { issueUcan, MemeProvider } from "@lararium/core";
+import { MemeProvider } from "@lararium/core";
 
 // ---------------------------------------------------------------------------
 // Doc schema — mutable counterpart of LarTiddlerRecord for Automerge proxy
@@ -161,16 +161,15 @@ export async function initMemeRepo(opts: {
   hostId:     string;
   syncWsUrl:  string;
   storeUrl:   string | null;
-  identity?:  LarOperatorIdentity;  // browser Ed25519 keypair for /auth/ucan handshake
-  serverDid?: string;               // operator DID from <meta name="lararium-operator-did">
+  authReceipt?: LarAuthReceipt; // browser/provider receipt for /auth/session claim
 }): Promise<MemeRepoResult> {
-  const { hostId, syncWsUrl, storeUrl, identity, serverDid } = opts;
+  const { hostId, syncWsUrl, storeUrl, authReceipt } = opts;
 
   const storage = new IndexedDBStorageAdapter(`lararium:meme-store:${hostId}`);
   const network = new BrowserWebSocketClientAdapter(syncWsUrl);
 
-  // Authorization hook — local-operator allows all peers.
-  // When Keyhive lands, plug membership check here alongside verifyUcan.
+  // Authorization hook — browser accepts peers locally; server-side sharePolicy
+  // gates remote sync by provider-neutral /auth/session receipts.
   const repo = new Repo({ storage, network: [network], sharePolicy: async () => true });
 
   // repo.find is async (waits for the doc to be known); repo.create is sync.
@@ -194,12 +193,12 @@ export async function initMemeRepo(opts: {
     ),
   ]);
 
-  // /auth/ucan handshake — present browser identity to the server so it can
-  // register this peer in its UcanPeerRegistry. Fire-and-forget: failure is
-  // non-fatal in local-operator mode (sharePolicy still returns true).
-  if (identity && serverDid) {
-    performUcanHandshake({ identity, serverDid, syncWsUrl, peerId: repo.peerId }).catch(
-      (e) => console.warn("[lararium] /auth/ucan handshake failed (non-fatal):", e),
+  // /auth/session claim — provider-neutral replacement for the removed UCAN
+  // peer gate. Fire-and-forget while local-dev remains permissive; when provider
+  // verification lands this should complete before content doc sync.
+  if (authReceipt) {
+    performAuthSessionClaim({ authReceipt, syncWsUrl, peerId: repo.peerId }).catch(
+      (e) => console.warn("[lararium] /auth/session claim failed (non-fatal in local-dev):", e),
     );
   }
 
@@ -211,30 +210,22 @@ export async function initMemeRepo(opts: {
   return { repo, store, storeUrl: handle.url };
 }
 
-async function performUcanHandshake(opts: {
-  identity:   LarOperatorIdentity;
-  serverDid:  string;
-  syncWsUrl:  string;
-  peerId:     string | undefined;
+async function performAuthSessionClaim(opts: {
+  authReceipt: LarAuthReceipt;
+  syncWsUrl:    string;
+  peerId:       string | undefined;
 }): Promise<void> {
-  const { identity, serverDid, syncWsUrl, peerId } = opts;
+  const { authReceipt, syncWsUrl, peerId } = opts;
   if (!peerId) return; // peerId not yet assigned (no peers connected)
-
-  const ucan = await issueUcan({
-    issuer:   identity,
-    audience: serverDid,
-    resource: "lararium:*",
-    ability:  "automerge/sync",
-  });
 
   // Derive the HTTP base URL from the WS sync URL.
   const base = syncWsUrl.replace(/^wss?:/, (p) => (p === "wss:" ? "https:" : "http:"))
     .replace(/\/meme-sync.*$/, "");
 
-  await fetch(`${base}/auth/ucan`, {
+  await fetch(`${base}/auth/session`, {
     method:  "POST",
     headers: { "Content-Type": "application/json" },
-    body:    JSON.stringify({ peerId, token: ucan.token }),
+    body:    JSON.stringify({ peerId, provider: authReceipt.provider, receipt: authReceipt }),
   });
 }
 

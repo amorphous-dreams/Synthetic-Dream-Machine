@@ -31,29 +31,21 @@ export type LarariumOpenPhase =
   | { readonly kind: "error";             readonly message:   string };
 
 // ---------------------------------------------------------------------------
-// LarariumAuthorityEnvelope — discriminated union for the three authority modes.
+// LarariumAuthorityEnvelope — auth/session envelope for live protocol seams.
 //
-// local-operator: development and single-operator rooms — no crypto required.
-// ucan-delegated: public-key-verifiable capability chain (Brooklyn / Fission model).
-// keyhive:        encrypted group sync with membership graph (Brooklyn / Beelay model).
+// local-dev: provider-neutral development receipt; no cryptographic authority.
+// keyhive:   future encrypted group sync with membership graph (Brooklyn / Beelay).
 //
-// Only "local-operator" executes today. The other two arms are type-only protocol
-// sockets — not instantiated in any runtime path until crypto lands.
+// Only "local-dev" executes today. The Keyhive arm is a type-only socket until
+// the membership graph and encrypted sync layer land.
 // ---------------------------------------------------------------------------
 
 export type LarariumAuthorityEnvelope =
   | {
-      readonly mode:        "local-operator";
+      readonly mode:        "local-dev";
       readonly roomId:      string;
       readonly receiptHash: string;
       readonly issuedAt:    string;
-    }
-  | {
-      readonly mode:       "ucan-delegated";
-      readonly issuer:     string;
-      readonly subject:    string;
-      readonly capability: unknown;
-      readonly proofs?:    readonly unknown[];
     }
   | {
       readonly mode:      "keyhive";
@@ -64,41 +56,46 @@ export type LarariumAuthorityEnvelope =
     };
 
 // ---------------------------------------------------------------------------
-// canPromoteToCanon — authority policy guard for canon-promotion ceremony.
+// Keyhive promotion seam — stub only.
 //
-// Only operator-import with local-operator mode may promote to canon.
-// All live-edit origins (tw-local, crdt-remote, canvas-draft, mcp-draft)
-// require the explicit PUT /admin/promote ceremony to reach lares/.
+// The old localhost mutation ceremony has been removed. Future canon
+// crossing should not mutate lares/ directly from a live edit path. It should
+// submit a proposal to the Keyhive-backed authority graph:
+//
+//   draft/room record
+//     → promotion proposal
+//     → Keyhive membership/capability check
+//     → review/signature receipt
+//     → projection/write-back worker materializes canon
+//
+// This module only names the request/result shape so callers have a stable place
+// to aim. No runtime path calls this yet.
 // ---------------------------------------------------------------------------
 
-export interface CanPromoteInput {
-  readonly origin:        { readonly kind: string };
-  readonly authorityMode: LarariumAuthorityEnvelope["mode"];
-  readonly target:        string;
+export interface KeyhivePromotionRequest {
+  readonly fromUri:      string;
+  readonly targetUri:    string;
+  readonly roomId:       string;
+  readonly corpusId?:    string;
+  readonly proposedText?: string;
+  readonly reason?:      string;
 }
 
-export interface CanPromoteResult {
+export interface KeyhivePromotionResult {
   readonly ok:     boolean;
+  readonly status: "not-implemented" | "queued" | "rejected" | "accepted";
   readonly reason?: string;
+  readonly receipt?: unknown;
 }
 
-export function canPromoteToCanon(input: CanPromoteInput): CanPromoteResult {
-  if (input.origin.kind === "canvas-draft") {
-    // Canvas/TW5 edits accumulate in Automerge room state (branch/live commit).
-    // They require the explicit PUT /admin/promote ceremony to reach canon.
-    return { ok: false, reason: "canvas-draft-requires-promote-ceremony" };
-  }
-  if (input.origin.kind === "tw-local" || input.origin.kind === "crdt-remote") {
-    return { ok: false, reason: "live-edit-origin-cannot-promote-canon-without-ceremony" };
-  }
-  if (input.origin.kind === "canon-hydrate") {
-    return { ok: true };
-  }
-  if (input.origin.kind === "mcp-draft" || input.origin.kind === "operator-import") {
-    // Operator-trusted paths — allowed but should pass through review ceremony in production.
-    return { ok: true };
-  }
-  return { ok: false, reason: `unknown-origin-kind:${input.origin.kind}` };
+export async function requestKeyhivePromotion(
+  _request: KeyhivePromotionRequest,
+): Promise<KeyhivePromotionResult> {
+  return {
+    ok: false,
+    status: "not-implemented",
+    reason: "keyhive-promotion-graph-not-wired",
+  };
 }
 
 // ---------------------------------------------------------------------------
