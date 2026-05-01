@@ -173,8 +173,7 @@ export function composeCarrierSlotBody(
   fields: Record<string, string | string[] | undefined>,
   text: string,
 ): string {
-  // Check both new and legacy prefix field names
-  const prefix = fields["fragment-body-prefix"] ?? fields["ahu-body-prefix"];
+  const prefix = fields["fragment-body-prefix"];
   if (typeof prefix !== "string" || prefix.length === 0) return text;
   if (text.startsWith(prefix)) return text;
   return `${prefix}${text}`;

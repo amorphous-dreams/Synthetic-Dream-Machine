@@ -1,11 +1,11 @@
 /**
- * vite.widgets.config.ts — per-widget IIFE builds for lares/ module tiddler injection.
+ * vite.tiddlers.config.ts — per-tiddler IIFE builds for lares/ module tiddler injection.
  *
  * Builds each widget class and filter operator as an independent IIFE with no
  * external dependencies beyond the TW5 widget API (which is provided at runtime).
  * Outputs go to dist-widgets/{name}.iife.js.
  *
- * postbuild: scripts/write-widget-memes.ts reads each IIFE and splices it into
+ * postbuild: scripts/write-tiddler-memes.ts reads each IIFE and splices it into
  * the corresponding lares/.../widgets/{name}-tw5.md and .../filters/{name}-tw5.md.
  *
  * run:
@@ -40,10 +40,17 @@ export const FILTER_ENTRIES: Array<{ entry: string; exportKey: string; name: str
   { entry: "src/filters/toml-field.ts",   exportKey: "toml",         name: "toml-field"   },
 ];
 
+// Deserializer entry points — compiled to IIFE, exported as exports["content/type"]
+// module-type: tiddlerdeserializer in the corresponding lares/ module tiddler.
+export const DESERIALIZER_ENTRIES: Array<{ entry: string; exportKey: string; name: string }> = [
+  { entry: "src/deserializer.ts", exportKey: "memeticWikitextDeserializer", name: "deserializer" },
+];
+
 export async function buildAll(): Promise<void> {
   const all = [
     ...WIDGET_ENTRIES.map((e) => ({ ...e, kind: "widget" as const })),
     ...FILTER_ENTRIES.map((e) => ({ ...e, kind: "filter" as const })),
+    ...DESERIALIZER_ENTRIES.map((e) => ({ ...e, kind: "module" as const })),
   ];
 
   for (const { entry, name } of all) {

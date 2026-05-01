@@ -1,49 +1,44 @@
 /**
- * VmPool — isomorphic TW5 VM lifecycle manager.
+ * VmPool — isomorphic VM lifecycle manager.
  *
- * Manages LarariumTW5 instances keyed by recipe ID (sorted bag slugs).
- * Identical shape on server and browser — the only difference is isolation:
- *   Node:    each entry is a truly isolated TiddlyWiki() instance.
- *   Browser: the global $tw is shared; VmPool manages wrapper lifecycle but
- *            cannot provide hard tiddler isolation without iframe/worker boundaries.
+ * Generic over T so it can hold LarariumTW5, RecipeVm, TW5WorkerProxy, or
+ * any other disposable VM-shaped object. Same shape on server and browser.
  *
- * Usage (server):
- *   const pool = new VmPool();
- *   const vm = await pool.get("lares+room", () => { const v = new LarariumTW5(); return v.boot().then(() => v); });
- *   vm.setTiddler({ title: "lar:///foo", text: "bar" });
- *   pool.release("lares+room"); // dispose + remove
+ * Usage:
+ *   const pool = new VmPool<RecipeVm>();
+ *   const vm = await pool.get("lares", () => bootDirectVm(store));
+ *   await vm.filterTiddlers("[all[memes]]");
+ *   pool.release("lares"); // calls vm.dispose() + removes from pool
  *
  * recipeId convention: sorted bag slugs joined by "+"
  *   Use makeRecipeId(bagIds) from server-api to produce canonical keys.
  */
 
-import type { LarariumTW5 } from "./lararium-tw5.js";
-
-export class VmPool {
-  private readonly _entries = new Map<string, Promise<LarariumTW5>>();
+export class VmPool<T extends { dispose(): void }> {
+  private readonly _entries = new Map<string, Promise<T>>();
 
   /**
-   * Get a VM for the given key. If not yet booted, calls factory() once
-   * and caches the result. Subsequent calls for the same key return the
-   * cached promise without re-calling factory().
+   * Get a VM for the given key. If not yet booted, calls factory() once and
+   * caches the result. Concurrent calls for the same key during boot share
+   * the same Promise — factory is called exactly once.
    */
-  async get(key: string, factory: () => Promise<LarariumTW5>): Promise<LarariumTW5> {
+  async get(key: string, factory: () => Promise<T>): Promise<T> {
     const existing = this._entries.get(key);
     if (existing) return existing;
     const p = factory();
     this._entries.set(key, p);
-    // On factory rejection, clean up the map entry so a future call retries.
+    // On factory rejection, remove the entry so a future call retries.
     p.catch(() => { if (this._entries.get(key) === p) this._entries.delete(key); });
     return p;
   }
 
-  /** Returns true if a VM for this key is warmed (or currently booting). */
+  /** Returns true if a VM for this key is booted or currently booting. */
   has(key: string): boolean {
     return this._entries.has(key);
   }
 
   /**
-   * Release the VM for a key — disposes the instance and removes it from the pool.
+   * Release the VM — calls dispose() and removes from pool.
    * Safe to call with an unknown key (no-op).
    */
   release(key: string): void {
@@ -61,6 +56,6 @@ export class VmPool {
   /** Number of live (booting or ready) VM entries. */
   get size(): number { return this._entries.size; }
 
-  /** List all warmed keys — useful for diagnostics. */
+  /** All warmed keys — useful for diagnostics. */
   keys(): string[] { return [...this._entries.keys()]; }
 }

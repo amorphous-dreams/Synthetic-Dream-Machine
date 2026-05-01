@@ -1,104 +1,174 @@
 /**
- * server-api — Node.js per-recipe TW5 VM registry and functional filter API.
+ * server-api — Recipe VM registry for the Lararium node peer.
  *
- * Fontany-Fuller-Zelenka local-first law:
- *   Each recipe (ordered bag stack) gets its own LarariumTW5 VM.
- *   A recipe = a CompositeStore layer order. Different rooms or corpus views
- *   can compose different subsets of bags — each needs its own isolated VM.
- *   No shared global state. No seed-and-hydrate over HTTP.
+ * VmPool<RecipeVm> is the multi-peer backbone: the server holds one VM per
+ * recipe, N recipes simultaneously (N realms, N corpora, portals).
  *
- * NEVER import from browser code. Browser rooms own their VMs via
- * useLarariumHostOpen → LarariumTW5 scoped to the room.
+ * Each slot is a RecipeVm — the isomorphic orrery interface. Two backends:
+ *   DirectRecipeVm   — in-process LarariumTW5 (default; Node isolation free)
+ *   TW5WorkerProxy   — Worker Thread / Web Worker; swap via vmFactory param
  *
- * recipeId convention: sorted bag slugs joined by "+" e.g. "lares+ftls+room"
- * Use makeRecipeId(bagIds) to produce a canonical key.
+ * Boot sequence per recipe:
+ *   bootRecipeVm(recipeId, store)
+ *     → reads all records from store (main thread)
+ *     → vmFactory() → RecipeVm.boot() → RecipeVm.loadRecords(records)
+ *     → store.subscribe(incrementalSync) — VM stays live from here on
+ *
+ * The factory is the only seam between in-process and Worker backends.
+ * All filter/render call sites are backend-agnostic.
+ *
+ * Flows are isomorphic between server and browser peers:
+ *   server  — VmPool<RecipeVm>, N recipe slots, Worker Threads for isolation
+ *   browser — VmPool<RecipeVm>, 1+ recipe slots, Web Workers for $tw isolation
+ *
+ * recipeId: sorted bag slugs joined by "+"  e.g. "lares+room"
  */
 
-import type { ClosureEntry, EdgeRecord } from "@lararium/core";
+import type { LarTiddlerStore, LarTiddlerChange } from "@lararium/core";
 import { LarariumTW5 } from "./lararium-tw5.js";
 import { VmPool } from "./vm-pool.js";
+import { DirectRecipeVm, type RecipeVm, type SerializedRecord } from "./recipe-vm.js";
 
 if (typeof window !== "undefined") {
   throw new Error("server-api must not be imported in browser bundles.");
 }
 
 // ---------------------------------------------------------------------------
-// Per-recipe VM registry — backed by isomorphic VmPool
+// Registry
 // ---------------------------------------------------------------------------
 
-const _pool = new VmPool();
+const _pool = new VmPool<RecipeVm>();
+const _subs = new Map<string, () => void>();
 
 /** Canonical recipe key from an ordered list of bag slugs. */
 export function makeRecipeId(bagIds: readonly string[]): string {
   return [...bagIds].sort().join("+");
 }
 
+// ---------------------------------------------------------------------------
+// Store → serialized records (main-thread read, passed to any VM backend)
+// ---------------------------------------------------------------------------
+
+async function readAllFromStore(store: LarTiddlerStore): Promise<SerializedRecord[]> {
+  const uris = await store.listVisible();
+  const results = await Promise.all(
+    uris.map(async (uri) => {
+      const rec = await store.get(uri);
+      if (!rec || rec.deleted) return null;
+      const sr: SerializedRecord = {
+        title:  rec.title,
+        fields: rec.fields as Record<string, string | string[]>,
+      };
+      if (rec.text !== undefined) sr.text = rec.text;
+      return sr;
+    }),
+  );
+  return results.filter((r): r is SerializedRecord => r !== null);
+}
+
+// ---------------------------------------------------------------------------
+// Boot
+// ---------------------------------------------------------------------------
+
 /**
- * Get or boot a TW5 VM for the given recipe.
+ * Boot (or re-boot) a recipe VM for the given recipe.
  *
- * First call for a recipeId boots a fresh VM (~10ms). Subsequent calls return
- * the same instance. Call releaseRecipeVm() to tear down when a room closes.
+ * vmFactory — optional; defaults to DirectRecipeVm (in-process LarariumTW5).
+ * Swap for TW5WorkerProxy to run TW5 in a Worker Thread / Web Worker:
+ *
+ *   await bootRecipeVm(id, store, () => new TW5WorkerProxy(workerScriptUrl));
+ *
+ * Safe to call again to re-attach a recipe to a new store — releases first.
  */
-export async function getRecipeVm(recipeId: string): Promise<LarariumTW5> {
-  return _pool.get(recipeId, async () => {
-    const vm = new LarariumTW5();
-    await vm.boot();
-    return vm;
+export async function bootRecipeVm(
+  recipeId: string,
+  store: LarTiddlerStore,
+  vmFactory?: () => RecipeVm,
+): Promise<RecipeVm> {
+  releaseRecipeVm(recipeId);
+
+  const records = await readAllFromStore(store);
+
+  const vm = await _pool.get(recipeId, async () => {
+    const v = vmFactory
+      ? vmFactory()
+      : new DirectRecipeVm(await (async () => { const tw = new LarariumTW5(); await tw.boot(); return tw; })());
+    await v.loadRecords(records);
+    return v;
   });
+
+  // Incremental sync — fires synchronously on every store change so the VM
+  // is always current before a debounced renderCarrier call fires.
+  const unsub = store.subscribe((change: LarTiddlerChange) => {
+    const { title, record } = change;
+    if (!record || record.deleted) {
+      vm.removeTiddler(title);
+    } else {
+      const fields: Record<string, string | string[]> = { title, ...record.fields };
+      if (record.text !== undefined) fields["text"] = record.text;
+      vm.setTiddler(fields);
+    }
+  });
+
+  _subs.set(recipeId, unsub);
+  return vm;
 }
 
 /**
- * Release a VM when its recipe/room is torn down.
- * Calls vm.dispose() and removes from the pool.
+ * Release a recipe VM — unsubscribes from the store and disposes the VM.
  * Safe to call with an unknown recipeId (no-op).
  */
 export function releaseRecipeVm(recipeId: string): void {
+  _subs.get(recipeId)?.();
+  _subs.delete(recipeId);
   _pool.release(recipeId);
 }
 
-/** Number of live VM instances — useful for diagnostics. */
+/** Number of live recipe VM instances. */
 export function liveVmCount(): number { return _pool.size; }
 
 // ---------------------------------------------------------------------------
-// Functional filter API — used by @lararium/node + MCP server
-//
-// Callers must supply an explicit recipeId. No implicit global VM.
+// Filter — TW5 wikitext filter expressions against the live VM wiki state
 // ---------------------------------------------------------------------------
 
 /**
- * Filter ClosureEntry objects using the wikitext-filter dialect.
- *
- * recipeId must be produced by makeRecipeId(bagIds) — the ordered bag stack
- * that defines this VM's corpus view. Different recipes run in separate VMs.
+ * Run a TW5 wikitext filter expression against the recipe's loaded wiki.
+ * Returns matching tiddler titles. VM must be booted via bootRecipeVm first.
  */
-export async function filterMemesWikitext(
-  allEntries: readonly ClosureEntry[],
-  expr: string,
-  edges?: readonly EdgeRecord[],
-  recipeId = makeRecipeId(["lares"]),
-): Promise<ClosureEntry[]> {
-  const inst = await getRecipeVm(recipeId);
-  inst.loadClosure(allEntries, edges);
-  return inst.filterClosure(expr, allEntries);
+export async function filterRecipe(recipeId: string, expr: string): Promise<string[]> {
+  if (!_pool.has(recipeId)) return [];
+  const vm = await _pool.get(recipeId, async () => { throw new Error(`recipe ${recipeId} not booted`); });
+  return vm.filterTiddlers(expr);
 }
 
 /**
- * Pre-compute multiple named filter results in a single boot cycle.
- * Used by the snapshot builder and corpus projection tools.
+ * Pre-compute multiple named filter results in one pass against the live VM.
+ * Returns roomId → [tiddler titles].
  */
-export async function precomputeRooms(
-  allEntries: readonly ClosureEntry[],
+export async function precomputeRecipeRooms(
+  recipeId: string,
   rooms: Record<string, string>,
-  edges?: readonly EdgeRecord[],
-  recipeId = makeRecipeId(["lares"]),
 ): Promise<Record<string, string[]>> {
-  const inst = await getRecipeVm(recipeId);
-  inst.loadClosure(allEntries, edges);
-  const byUri = new Map(allEntries.map((e) => [e.uri, e]));
+  if (!_pool.has(recipeId)) return {};
+  const vm = await _pool.get(recipeId, async () => { throw new Error(`recipe ${recipeId} not booted`); });
   const result: Record<string, string[]> = {};
   for (const [roomId, expr] of Object.entries(rooms)) {
-    const titles = inst.filterTiddlers(expr);
-    result[roomId] = titles.filter((title: string) => byUri.has(title));
+    result[roomId] = await vm.filterTiddlers(expr);
   }
   return result;
+}
+
+// ---------------------------------------------------------------------------
+// Render — carrier projection through the live VM (fakeDOM pipeline)
+// ---------------------------------------------------------------------------
+
+/**
+ * Render a parent carrier URI to its disk format via the live recipe VM.
+ * VM is always current via subscription — no store scan on this call.
+ * Returns null if the recipe VM is not booted or render fails.
+ */
+export async function renderCarrier(recipeId: string, parentUri: string): Promise<string | null> {
+  if (!_pool.has(recipeId)) return null;
+  const vm = await _pool.get(recipeId, async () => { throw new Error(`recipe ${recipeId} not booted`); });
+  return vm.renderCarrier(parentUri);
 }

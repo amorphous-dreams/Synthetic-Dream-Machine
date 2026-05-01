@@ -4,7 +4,6 @@ import { join } from "path";
 import { tmpdir } from "os";
 import { LarDiskProjector } from "../src/disk-sync-adaptor.js";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
-import type { LarTiddlerStore } from "@lararium/core";
 
 function delay(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -23,7 +22,7 @@ afterEach(() => {
 
 function makeRenderFn(
   outputs: Map<string, () => string>,
-): (uri: string, _store: LarTiddlerStore) => Promise<string | null> {
+): (uri: string) => Promise<string | null> {
   return async (uri) => {
     const fn = outputs.get(uri);
     return fn ? fn() : null;

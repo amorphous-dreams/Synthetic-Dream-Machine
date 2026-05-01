@@ -5,4 +5,4 @@
  * barrel so Vite never sees fs/path through the app import graph.
  */
 
-export { LarDiskProjector, LarDiskSyncAdaptor } from "./disk-sync-adaptor.js";
+export { LarDiskProjector } from "./disk-sync-adaptor.js";

@@ -1,14 +1,18 @@
 /**
- * carrier-split — splitCarrierToTiddlers using new ```toml iam``` root prelude format.
+ * carrier-split — disk carrier text → tiddler fields.
  *
- * New format: root-level ```toml iam``` block instead of <<~ ahu #iam >> metadata block.
- * Fragment children use fragment-* structural fields instead of tags:[parentUri].
+ * Model:
+ *   Parent tiddler: title = URI, text = original carrier text, type = text/x-memetic-wikitext.
+ *   Child tiddlers: one per non-control ahu slot, text = ahu body (also memetic-wikitext).
  *
- * Import path: disk carrier text → CarrierSplit
+ * No AST→string reconstruction. The MemeticParser owns rendering for both levels.
+ * This module only projects TOML iam fields and fragment-* structural fields.
+ *
+ * Round-trip: disk file → splitCarrierToTiddlers → store → MemeticParser → TW5 render.
  */
 
 import { parseMemeCarrier } from "@lararium/core";
-import type { MemeAstNode, AhuNode, SigilNode, PaeNode, TextNode } from "@lararium/core";
+import type { MemeAstNode, AhuNode } from "@lararium/core";
 import { parseTaploFields } from "./toml-ast.js";
 
 // ---------------------------------------------------------------------------
@@ -49,8 +53,6 @@ const CONTROL_SLOTS = new Set([
   "#meme-body-close",
 ]);
 
-const MEMETIC_CHILD_SCAN_TYPES = new Set(["text/x-memetic-wikitext"]);
-
 // ---------------------------------------------------------------------------
 // extractRootTomlPrelude — find ```toml iam``` before first ahu/STX marker
 // ---------------------------------------------------------------------------
@@ -58,7 +60,6 @@ const MEMETIC_CHILD_SCAN_TYPES = new Set(["text/x-memetic-wikitext"]);
 export function extractRootTomlPrelude(
   text: string,
 ): { content: string; fullMatch: string } | null {
-  // Find position of first ahu open or STX marker
   const firstAhuIdx = text.search(/<<~[^>]*\bahu\s+#[\w-]+\s*>>/);
   const firstStxIdx = text.search(/<<~[^>]*&#x0002;/);
   let limitIdx = text.length;
@@ -73,20 +74,23 @@ export function extractRootTomlPrelude(
 }
 
 // ---------------------------------------------------------------------------
-// extractUnitTomlPrelude — find ```toml iam``` at start of ahu body
+// extractUnitTomlPrelude — find ```toml iam``` or plain ```toml``` at ahu body start
 // ---------------------------------------------------------------------------
 
 export function extractUnitTomlPrelude(
   bodyText: string,
-): { content: string; fullMatch: string } | null {
-  const regex = /^[ \t\n]*```toml[ \t]+iam[ \t]*\n([\s\S]*?)```[ \t]*\n?/;
-  const match = regex.exec(bodyText);
-  if (!match) return null;
-  return { content: match[1] ?? "", fullMatch: match[0] };
+): { content: string; fullMatch: string; isIam: boolean } | null {
+  const iamRe    = /^[ \t\n]*```toml[ \t]+iam[ \t]*\n([\s\S]*?)```[ \t]*\n?/;
+  const plainRe  = /^[ \t\n]*```toml[ \t]*\n([\s\S]*?)```[ \t]*\n?/;
+  const iamMatch = iamRe.exec(bodyText);
+  if (iamMatch) return { content: iamMatch[1] ?? "", fullMatch: iamMatch[0], isIam: true };
+  const plainMatch = plainRe.exec(bodyText);
+  if (plainMatch) return { content: plainMatch[1] ?? "", fullMatch: plainMatch[0], isIam: false };
+  return null;
 }
 
 // ---------------------------------------------------------------------------
-// sanitizeProjectedFields — drop title and text, warn
+// sanitizeProjectedFields — drop title and text, warn on collision
 // ---------------------------------------------------------------------------
 
 export function sanitizeProjectedFields(
@@ -114,16 +118,16 @@ export function sanitizeProjectedFields(
 }
 
 // ---------------------------------------------------------------------------
-// fragmentFields — build fragment-* structural fields for ahu children
+// fragmentFields — structural fields for ahu child tiddlers
 // ---------------------------------------------------------------------------
 
 export function fragmentFields(opts: {
-  kind: string;
-  rootUri: string;
-  parentTitle: string;
-  fragmentPath: string;
-  segment: string;
-  depth: number;
+  kind:          string;
+  rootUri:       string;
+  parentTitle:   string;
+  fragmentPath:  string;
+  segment:       string;
+  depth:         number;
 }): Record<string, string> {
   return {
     "fragment-kind":    opts.kind,
@@ -136,15 +140,7 @@ export function fragmentFields(opts: {
 }
 
 // ---------------------------------------------------------------------------
-// ahuBodyText — reconstruct raw body text from AhuNode children
-// ---------------------------------------------------------------------------
-
-function ahuBodyText(ws: AhuNode): string {
-  return ws.body.map((n) => n.raw).join("");
-}
-
-// ---------------------------------------------------------------------------
-// collectAhuBodies — recover exact ahu body spans from source text
+// collectAhuBodies — exact ahu body spans from source text (preserves whitespace)
 // ---------------------------------------------------------------------------
 
 function collectAhuBodies(text: string): Map<string, string> {
@@ -152,45 +148,19 @@ function collectAhuBodies(text: string): Map<string, string> {
   const pattern = /<<~[^>]*\bahu\s+(#[\w-]+)\s*>>([\s\S]*?)<<~\/ahu\s*>>/g;
   for (const match of text.matchAll(pattern)) {
     const slot = match[1];
-    if (!slot) continue;
-    bodies.set(slot, match[2] ?? "");
+    if (slot && !bodies.has(slot)) {
+      bodies.set(slot, match[2] ?? "");
+    }
   }
   return bodies;
 }
 
 // ---------------------------------------------------------------------------
-// generateParentText — mixed wikitext for parent tiddler text field
-// ---------------------------------------------------------------------------
-
-function generateParentText(uri: string, nodes: MemeAstNode[]): string {
-  const parts: string[] = [];
-  let inBody = false;
-
-  for (const node of nodes) {
-    if (node.kind === "Pae") {
-      const phase = (node as PaeNode).phase;
-      if (phase === "stx") { inBody = true; continue; }
-      if (phase === "etx" || phase === "eot") break;
-      continue;
-    }
-    if (!inBody) continue;
-
-    if (node.kind === "Ahu") {
-      const ws = node as AhuNode;
-      if (!CONTROL_SLOTS.has(ws.slot)) {
-        parts.push(`<$transclude tiddler="${uri}${ws.slot}" mode="block"/>`);
-      }
-    } else if (node.kind === "Text") {
-      const prose = (node as TextNode).content.trim();
-      if (prose) parts.push(prose);
-    }
-  }
-
-  return parts.join("\n\n");
-}
-
-// ---------------------------------------------------------------------------
-// splitCarrierToTiddlers — main export (new format with toml iam prelude)
+// splitCarrierToTiddlers — disk carrier text → CarrierSplit
+//
+// Parent tiddler text  = original carrier text (MemeticParser renders it).
+// Child tiddler text   = ahu body text (also memetic-wikitext).
+// No string reconstruction from AST. Field projection only.
 // ---------------------------------------------------------------------------
 
 export function splitCarrierToTiddlers(uri: string, text: string): CarrierSplit {
@@ -208,33 +178,14 @@ export function splitCarrierToTiddlers(uri: string, text: string): CarrierSplit 
     };
   }
 
-  // Extract root-level ```toml iam``` prelude for parent fields
+  // ── Root TOML iam → parent fields ─────────────────────────────────────────
   let iamFields: Record<string, string | string[]> = {};
   const rootPrelude = extractRootTomlPrelude(text);
   if (rootPrelude) {
     const raw = parseTaploFields(rootPrelude.content, warnings, "root-toml-iam");
     iamFields = sanitizeProjectedFields(raw, warnings, "root-toml-iam");
-  } else {
-    // Legacy fallback: look for #iam ahu block (for backwards compatibility)
-    for (const node of nodes) {
-      if (node.kind !== "Ahu") continue;
-      const ws = node as AhuNode;
-      if (ws.slot !== "#iam") continue;
-      for (const child of ws.body) {
-        if (child.kind === "Sigil") {
-          const sig = child as SigilNode;
-          if (sig.sigilName === "toml" || sig.sigilName === "iam") {
-            const raw = parseTaploFields(sig.attrs["content"] ?? "", warnings, "#iam");
-            iamFields = sanitizeProjectedFields(raw, warnings, "#iam");
-            break;
-          }
-        }
-      }
-      break;
-    }
   }
 
-  // Normalise implements and tags
   const normaliseArray = (v: unknown): string[] => {
     if (Array.isArray(v)) return (v as unknown[]).map(String).filter(Boolean);
     if (typeof v === "string") return v.split(/\s+/).filter(Boolean);
@@ -244,20 +195,21 @@ export function splitCarrierToTiddlers(uri: string, text: string): CarrierSplit 
   const implements_ = normaliseArray(iamFields["implements"]);
   const tags_       = normaliseArray(iamFields["tags"]);
 
-  // Build parent fields
   const parentFields: Record<string, string | string[]> = {};
   for (const [k, v] of Object.entries(iamFields)) {
     if (k === "implements" || k === "tags") continue;
-    if (k === "uri-path" || k === "file-path") continue; // derived, not stored
+    if (k === "uri-path" || k === "file-path") continue;
     parentFields[k] = Array.isArray(v) ? v : String(v);
   }
   parentFields["implements"] = implements_.join(" ");
   parentFields["tags"]       = tags_;
+  // Parent text = original carrier; type declares content-type for MemeticParser.
+  parentFields["type"]       = "text/x-memetic-wikitext";
 
-  // Child tiddlers — one per non-control ahu slot
-  const childMap = new Map<string, ChildTiddler>();
-  const slotOrder: string[] = [];
+  // ── Ahu children ──────────────────────────────────────────────────────────
   const sourceBodies = collectAhuBodies(text);
+  const childMap     = new Map<string, ChildTiddler>();
+  const slotOrder:     string[] = [];
 
   for (const node of nodes) {
     if (node.kind !== "Ahu") continue;
@@ -265,13 +217,11 @@ export function splitCarrierToTiddlers(uri: string, text: string): CarrierSplit 
     const slot = ws.slot;
     if (CONTROL_SLOTS.has(slot)) continue;
 
-    const childUri  = uri + slot;
-    const bodyText  = sourceBodies.get(slot) ?? ahuBodyText(ws);
+    const childUri = uri + slot;
+    if (childMap.has(childUri)) continue;
+    slotOrder.push(childUri);
 
-    if (!childMap.has(childUri)) slotOrder.push(childUri);
-
-    // Build fragment structural fields
-    const segment = slot.startsWith("#") ? slot.slice(1) : slot;
+    const segment   = slot.startsWith("#") ? slot.slice(1) : slot;
     const fragFields = fragmentFields({
       kind:          "ahu",
       rootUri:       uri,
@@ -283,49 +233,29 @@ export function splitCarrierToTiddlers(uri: string, text: string): CarrierSplit 
 
     const childFields: Record<string, string | string[]> = {
       ...fragFields,
-      // Ahu aliases
-      "ahu-slot":    slot,
-      "ahu-parent":  uri,
-      // Streams plugin compatibility
-      "parent":      uri,
-      "stream-type": "default",
+      "ahu-slot":   slot,
+      "ahu-parent": uri,
+      "type":       "text/x-memetic-wikitext",
     };
 
-    // Extract leading ```toml iam``` or plain ```toml``` fence from child body
-    const iamFence = extractUnitTomlPrelude(bodyText);
-    // Also try legacy plain toml fence
-    const plainFence = iamFence ? null : /^[ \t]*```toml[ \t]*\n([\s\S]*?)```[ \t]*\n?/.exec(bodyText.trimStart());
+    // Raw body text from source — ahu body IS memetic-wikitext.
+    const rawBody   = sourceBodies.get(slot) ?? ws.body.map((n) => n.raw).join("");
 
-    let displayText = bodyText;
-    if (iamFence) {
-      const fenceFields = parseTaploFields(iamFence.content, warnings, `child-fence:${slot}`);
-      const sanitized = sanitizeProjectedFields(fenceFields, warnings, `child-fence:${slot}`);
-      for (const [k, v] of Object.entries(sanitized)) {
-        // Preserve author-provided tags exactly; don't override fragment fields
-        if (!(k in fragFields) || k === "tags") {
-          childFields[k] = v;
-        }
-      }
-      childFields["fragment-body-prefix"] = iamFence.fullMatch;
-      const endIdx = bodyText.indexOf(iamFence.fullMatch) + iamFence.fullMatch.length;
-      displayText = bodyText.slice(endIdx).trimStart();
-    } else if (plainFence) {
-      const fenceFields = parseTaploFields(plainFence[1] ?? "", warnings, `child-fence:${slot}`);
-      const sanitized = sanitizeProjectedFields(fenceFields, warnings, `child-fence:${slot}`);
+    // Extract leading TOML fence (iam or plain) for additional projected fields.
+    const fence = extractUnitTomlPrelude(rawBody);
+    let displayText = rawBody;
+
+    if (fence) {
+      const fenceFields = parseTaploFields(fence.content, warnings, `child-fence:${slot}`);
+      const sanitized   = sanitizeProjectedFields(fenceFields, warnings, `child-fence:${slot}`);
       for (const [k, v] of Object.entries(sanitized)) {
         if (!(k in fragFields) || k === "tags") {
           childFields[k] = v;
         }
       }
-      childFields["fragment-body-prefix"] = plainFence[0];
-      const endIdx = plainFence.index! + plainFence[0].length;
-      displayText = bodyText.slice(endIdx).trimStart();
-    }
-
-    // Only scan child body for nested ahu if type is memetic-wikitext
-    const childType = typeof childFields["type"] === "string" ? childFields["type"] : "";
-    if (childType && !MEMETIC_CHILD_SCAN_TYPES.has(childType)) {
-      // Non-memetic body: don't nest-scan; use displayText as-is
+      // Strip the fence from displayText; the rest is the live memetic-wikitext body.
+      const endIdx = rawBody.indexOf(fence.fullMatch) + fence.fullMatch.length;
+      displayText  = rawBody.slice(endIdx).trimStart();
     }
 
     childMap.set(childUri, {
@@ -336,21 +266,14 @@ export function splitCarrierToTiddlers(uri: string, text: string): CarrierSplit 
   }
 
   if (slotOrder.length > 0) {
-    parentFields["ahu-slots"]   = slotOrder.join(" ");
-    parentFields["stream-list"] = slotOrder.join(" ");
-    parentFields["stream-type"] = "stream";
+    parentFields["ahu-slots"] = slotOrder.join(" ");
   }
-
-  // carrier-text is NOT stored in Automerge. The TW5 VM render pipeline
-  // (exportCarrierText via fakeDOM) is the canonical projection path — the same
-  // pipeline used to bootstrap the browser client over the wire.
-  // Round-trip: disk file → splitCarrierToTiddlers → store → VM render → disk file.
 
   return {
     parent: {
       title:  uri,
       fields: parentFields,
-      text:   generateParentText(uri, nodes),
+      text,              // original carrier text — MemeticParser owns rendering
     },
     children: slotOrder.map((t) => childMap.get(t)!),
     warnings,

@@ -1,2 +1,2 @@
 export * from "./node-host.js";
-export { filterMemesWikitext, precomputeRooms, LarariumTW5 } from "@lararium/tw5";
+export { bootRecipeVm, releaseRecipeVm, filterRecipe, renderCarrier, makeRecipeId, LarariumTW5 } from "@lararium/tw5";

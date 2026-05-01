@@ -1,24 +1,22 @@
-<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
-
 <<~&#x0001; ? -> lar:///ha.ka.ba/api/v0.1/lararium/modules/deserializer >>
 ```toml iam
 uri-path     = "ha.ka.ba/api/v0.1/lararium/modules/deserializer"
 file-path    = "lares/ha-ka-ba/api/v0.1/lararium/modules/deserializer.md"
-type = "text/x-memetic-wikitext"
+type         = "text/x-memetic-wikitext"
 register     = "CS"
-confidence   = 0.86
-mana         = 0.85
-manao        = 0.83
-manaoio      = 0.81
-role         = "canonical source copy: TW5 tiddler deserializer for text/x-memetic-wikitext — splits .md carrier into parent + child tiddlers"
-status-date  = "2026-04-30"
-heleuma       = "ka"
-source-file  = "packages/lararium-tw5/src/lararium-tw5.ts"
-source-symbol = "_registerDeserializer"
-implements    = ["lar:///ha.ka.ba/api/v0.1/pono/heleuma/ka"]
-body-sha256 = "b663614ec42d32d34974eb52e9e2b1774134b1aca8698a6b1733715f1d96000b"
+confidence   = 0.88
+mana         = 0.88
+manao        = 0.85
+manaoio      = 0.82
+role         = "heleuma ka: TW5 tiddlerdeserializer for text/x-memetic-wikitext"
+status-date  = "2026-05-01"
+heleuma      = "ka"
+source-file  = "packages/lararium-tw5/src/deserializer.ts"
+source-symbol = "memeticWikitextDeserializer"
+module-ref   = "lar:///ha.ka.ba/api/v0.1/lararium/modules/deserializer-tw5"
+implements   = ["lar:///ha.ka.ba/api/v0.1/pono/heleuma/ka"]
+body-sha256  = ""
 ```
-
 
 
 <<~&#x0002;>>
@@ -27,53 +25,33 @@ body-sha256 = "b663614ec42d32d34974eb52e9e2b1774134b1aca8698a6b1733715f1d96000b"
 
 ## Deserializer — Contract
 
-Registered in `TW5._bootModules()` imperative fallback as:
+TW5 `module-type = "tiddlerdeserializer"` module keyed to `text/x-memetic-wikitext`.
+
+When TW5 encounters a tiddler with that content-type, it calls:
 
 ```
-tw.Wiki.tiddlerDeserializerModules["text/x-memetic-wikitext"] = fn(text, fields) → object[]
+deserializer(text: string, fields: Record<string, unknown>) → TiddlerFields[]
 ```
 
-TW5 calls this when it encounters a tiddler with `type = "text/x-memetic-wikitext"`. The deserializer wraps `splitCarrierToTiddlers(uri, text)` to produce a parent tiddler and all ahu child slot tiddlers in one call. Parse warnings are surfaced as `$:/lararium/parse-warning/<slug>` tiddlers.
+Stream model:
+- **Multi-carrier**: MemeStreamParser emits one `carrier-close` per meme; each becomes `[parent, ...children]`.
+- **Partial carrier** (no ETX): `flush()` emits best-effort; no crash.
+- **Bare body** (no SOH framing): treated as a single carrier with `fields.title` as URI.
 
-**This code cannot be loaded from a meme.** It is a closure over the compiled `splitCarrierToTiddlers` function and must be registered imperatively against the live `tw.Wiki` class. It lives in `packages/lararium-tw5/src/lararium-tw5.ts`.
+Parent tiddler: `text = original carrier text`, `type = "text/x-memetic-wikitext"`.
+Child tiddlers (ahu slots): `text = ahu body text`, also `type = "text/x-memetic-wikitext"`.
+No AST→string reconstruction. MemeticParser owns all rendering for both levels.
 
-<<~/ahu >>
-
-<<~ ahu #source >>
-
-## Source (TypeScript — compiled-in)
-
-```typescript
-private static _registerDeserializer(tw: TW5Instance): void {
-    if (!tw?.Wiki?.tiddlerDeserializerModules) return;
-    tw.Wiki.tiddlerDeserializerModules["text/x-memetic-wikitext"] = function(text: string, fields: Record<string, unknown>) {
-      const uri: string = (fields?.title as string) ?? "";
-      const split = splitCarrierToTiddlers(uri, text);
-      const parent = { title: uri, ...fields, ...split.parent.fields, text };
-      const children = split.children.map((c) => ({ ...c.fields, title: c.title, text: c.text }));
-      const result: TW5TiddlerFields[] = [parent, ...children];
-      if (split.warnings.length > 0) {
-        const safeSlug = uri.replace(/[^a-zA-Z0-9._-]/g, "_");
-        result.push({
-          title: `$:/lararium/parse-warning/${safeSlug}`,
-          tags: "$:/lararium/parse-warnings",
-          "carrier-uri": uri,
-          "warning-count": String(split.warnings.length),
-          text: split.warnings.join("\n"),
-          modified: new Date().toISOString().replace(/[:.]/g, "-"),
-        });
-      }
-      return result;
-    };
-  }
-```
+Compiled artifact: `lares/ha-ka-ba/api/v0.1/lararium/modules/deserializer-tw5.md`
+Build: `pnpm --filter @lararium/tw5 build:modules`
 
 <<~/ahu >>
 
 <<~ ahu #edges >>
 
 <<~ pranala #splits ? -> lar:///ha.ka.ba/api/v0.1/lararium/carrier-split family:data role:uses >>
-<<~ pranala #gate ? -> lar:///ha.ka.ba/api/v0.1/lararium/modules/boot-gate family:control role:registered-by >>
+<<~ pranala #streams ? -> lar:///ha.ka.ba/api/v0.1/lararium/meme-stream family:data role:uses >>
+<<~ pranala #module ? -> lar:///ha.ka.ba/api/v0.1/lararium/modules/deserializer-tw5 family:control role:compiles-to >>
 
 <<~/ahu >>
 

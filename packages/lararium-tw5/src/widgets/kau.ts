@@ -11,6 +11,7 @@ export function registerKauCapabilityHook(hook: KauCapabilityHook): void {
 
 // Keyhive stub: UUID write-back. On first placement commit, write the generated
 // #fragment back into the carrier text so the instance has a stable URI.
+// Only fires on the placement path (attrs.fragment present or auto-generated).
 type KauWriteBackHook = (carrierUri: string, fragment: string) => void;
 let _kauWriteBackHook: KauWriteBackHook | null = null;
 export function registerKauWriteBackHook(hook: KauWriteBackHook): void {
@@ -28,56 +29,129 @@ KauWidget.prototype.render = function (this: TW5WidgetInstance, parent: TW5FakeE
 
   const fragment   = this.getAttribute("fragment", "");
   const name       = this.getAttribute("name", "");
+  const args       = this.getAttribute("args", "");
   const propsRaw   = this.getAttribute("propsRaw", "");
   const carrierUri = this.getVariable?.("currentTiddler") ?? "";
 
-  // Instance URI: carrierUri#fragment (auto-generate UUID stub if no fragment)
+  // Disambiguate by #fragment presence — same split the parser makes.
+  //
+  // Invocation path (no fragment): <<~ kau name(args) >>
+  //   Equivalent to TW5's <$tiddler tiddler="name"><$transclude/></$tiddler>
+  //   Renders the kumu def in caller's currentTiddler context (name-shifted, not instance-shifted).
+  //   No UUID, no write-back, no capability hook.
+  //
+  // Placement path (#fragment present or auto-generated): <<~ kau #frag Name props >>
+  //   Equivalent to <$tiddler tiddler="carrierUri#frag"><$transclude tiddler="name-def"/></$tiddler>
+  //   Renders the kumu def in the INSTANCE's identity (carrierUri#frag as currentTiddler).
+  //   UUID write-back fires if fragment was auto-generated.
+  //   Keyhive capability hook fires with instance URI as UCAN resource.
+
+  if (!fragment) {
+    // ── Invocation path ──────────────────────────────────────────────────────
+    // Equivalent to TW5's <$tiddler tiddler="name"><$transclude/></$tiddler>
+    // currentTiddler stays as the CALLER's context — no new identity, no UUID.
+    renderInvocation(this, parent, name, args);
+    return;
+  }
+
+  // ── Placement path ───────────────────────────────────────────────────────
   const instanceFrag = fragment || `inst-${Math.random().toString(36).slice(2, 10)}`;
   const instanceUri  = carrierUri ? `${carrierUri}#${instanceFrag}` : `#${instanceFrag}`;
 
-  // UUID write-back stub — fires hook on first render when fragment was absent
+  // UUID write-back: fires only when fragment was auto-generated (no explicit #frag in source)
   if (!fragment && _kauWriteBackHook && carrierUri) {
     _kauWriteBackHook(carrierUri, instanceFrag);
   }
 
-  // Keyhive capability stub — establishes instance-scoped authority
+  // Keyhive capability stub — instance URI becomes UCAN resource for per-instance grants
   if (_kauCapabilityHook) {
     _kauCapabilityHook(instanceUri);
   }
 
-  // Resolve kumu definition
-  const results: string[] = this.wiki?.filterTiddlers?.(
+  renderPlacement(this, parent, name, propsRaw, instanceUri);
+};
+
+function renderInvocation(
+  widget: TW5WidgetInstance,
+  parent: TW5FakeElement,
+  name: string,
+  args: string,
+) {
+  const results: string[] = widget.wiki?.filterTiddlers?.(
     `[all[tiddlers]tag[$:/tags/LarariumKumu]field:kumu-name[${name}]]`
   ) ?? [];
   const defUri = results[0] ?? "";
 
-  const el = this.document.createElement("div");
-  el.setAttribute("data-lar-kind",     "kau");
+  const el = widget.document.createElement("div");
+  el.setAttribute("data-lar-kind", "kau-invoke");
+  el.setAttribute("data-lar-name", name);
+  parent.appendChild(el);
+  widget.domNodes = [el];
+
+  if (defUri) {
+    // Parse "key:value" args — shadow into caller's context (not a new scope)
+    const argRe = /([\w-]+):(\S+)/g;
+    let m: RegExpExecArray | null;
+    while ((m = argRe.exec(args)) !== null) {
+      widget.setVariable(m[1]!, m[2]!);
+    }
+    // currentTiddler stays as the CALLER's — this is the invocation-in-caller-context path
+    const transclude = widget.wiki?.makeTranscludeWidget(defUri, {
+      document:     widget.document,
+      parentWidget: widget,
+    });
+    if (transclude) {
+      transclude.render(el, null);
+      widget.children = [transclude];
+    }
+  } else {
+    const hole = widget.document.createElement("span");
+    hole.setAttribute("data-lar-kind", "hole");
+    hole.textContent = `? kau ${name}`;
+    el.appendChild(hole);
+  }
+}
+
+function renderPlacement(
+  widget: TW5WidgetInstance,
+  parent: TW5FakeElement,
+  name: string,
+  propsRaw: string,
+  instanceUri: string,
+) {
+  const results: string[] = widget.wiki?.filterTiddlers?.(
+    `[all[tiddlers]tag[$:/tags/LarariumKumu]field:kumu-name[${name}]]`
+  ) ?? [];
+  const defUri = results[0] ?? "";
+
+  const el = widget.document.createElement("div");
+  el.setAttribute("data-lar-kind",     "kau-place");
   el.setAttribute("data-lar-name",     name);
   el.setAttribute("data-lar-instance", instanceUri);
   el.setAttribute("data-lar-resolved", defUri ? "true" : "false");
   parent.appendChild(el);
-  this.domNodes = [el];
+  widget.domNodes = [el];
 
   if (defUri) {
-    // Parse "key:value key:value" props into TW5 variables
+    // Parse "key:value" props — static wiring, equivalent to UEFN @editable panel
     const propRe = /([\w-]+):(\S+)/g;
     let m: RegExpExecArray | null;
     while ((m = propRe.exec(propsRaw)) !== null) {
-      this.setVariable(m[1]!, m[2]!);
+      widget.setVariable(m[1]!, m[2]!);
     }
-    // Inject instance URI as currentTiddler so kumu body sees its own address
-    this.setVariable("currentTiddler", instanceUri);
-    const transclude = this.wiki?.makeTranscludeWidget(defUri, {
-      document:     this.document,
-      parentWidget: this,
+    // Push instance URI as currentTiddler — the placement context shift.
+    // This is the <$tiddler tiddler="instanceUri"> wrapper in TW5 terms.
+    widget.setVariable("currentTiddler", instanceUri);
+    const transclude = widget.wiki?.makeTranscludeWidget(defUri, {
+      document:     widget.document,
+      parentWidget: widget,
     });
     if (transclude) {
       transclude.render(el, null);
-      this.children = [transclude];
+      widget.children = [transclude];
     }
   } else {
-    const hole = this.document.createElement("span");
+    const hole = widget.document.createElement("span");
     hole.setAttribute("data-lar-kind", "hole");
     hole.textContent = `? kau ${name}`;
     el.appendChild(hole);

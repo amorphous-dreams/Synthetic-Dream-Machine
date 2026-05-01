@@ -54,7 +54,7 @@ import {
   type MemeStoreDoc,
 } from "@lararium/core";
 import { seedEngineDoc } from "../src/engine-island.js";
-import { LarDiskProjector, exportCarrierText, getRecipeVm, makeRecipeId, TW5_VERSION, TW5_CORE_SCRIPT_URL } from "@lararium/tw5";
+import { LarDiskProjector, makeRecipeId, bootRecipeVm, renderCarrier, releaseRecipeVm, TW5_VERSION, TW5_CORE_SCRIPT_URL } from "@lararium/tw5";
 import { loadCorpusSources, corpusAbsPath } from "../src/node-host.js";
 import type { CorpusSource } from "../src/node-host.js";
 import { NodeMemeStore } from "../src/node-meme-store.js";
@@ -481,7 +481,7 @@ async function main() {
       if (source.quine) {
         try {
           const result = await voidBootCorpus(bagId, handle, { quine: true, includeSource: true });
-          receiptSha = computeCorpusReceiptSha(handle.doc() as MemeStoreDoc ?? {});
+          receiptSha = computeCorpusReceiptSha((handle.doc() ?? {}) as MemeStoreDoc);
           console.log(`[lararium-serve] void boot: ${result.memeCount} parents, ${result.childCount} children seeded`);
         } catch (e) {
           console.error("[lararium-serve] ⚠ void boot failed:", e);
@@ -568,46 +568,22 @@ async function main() {
     const bagId    = source.bag;
     const recipeId = makeRecipeId([bagId]);
 
-    // renderFn: called by the projector after debounce.
-    // Syncs the parent tiddler and its slot children into the corpus VM,
-    // then asks the VM to render the carrier (fakeDOM TW5 render pipeline).
-    async function renderFn(parentUri: string, store: import("@lararium/core").LarTiddlerStore): Promise<string | null> {
-      const vm = await getRecipeVm(recipeId);
-      // Sync parent and all fragment children into the VM from current store state.
-      const allTitles = await store.listVisible();
-      const prefix    = `${parentUri}#`;
-      const urisToSync = [parentUri, ...allTitles.filter((t) => t.startsWith(prefix))];
-      for (const uri of urisToSync) {
-        const rec = await store.get(uri);
-        if (!rec || rec.deleted) {
-          vm.removeTiddler(uri);
-        } else {
-          const fields: Record<string, string | string[]> = {
-            title: uri,
-            ...(rec.fields as Record<string, string | string[]> ?? {}),
-          };
-          if (rec.text !== undefined) fields["text"] = rec.text;
-          vm.setTiddler(fields);
-        }
-      }
-      try {
-        return exportCarrierText(vm, parentUri);
-      } catch (e) {
-        console.warn(`[lararium] render failed for ${parentUri}:`, e);
-        return null;
-      }
-    }
-
-    // Wrap the DocHandle in a LarTiddlerStore so LarDiskProjector can subscribe.
+    // One VM per recipe: boot, load full corpus, subscribe to changes.
+    // Answers both filter queries and disk renders from the same live wiki state.
     const corpusStore = new NodeMemeStore(handle, bagId);
-    const projector   = new LarDiskProjector(laresRoot, renderFn);
+    await bootRecipeVm(recipeId, corpusStore);
+
+    const projector = new LarDiskProjector(laresRoot, async (uri) => renderCarrier(recipeId, uri));
     projectors.push(projector);
     projector.start(corpusStore);
-    console.log(`[lararium-serve] disk projector started for corpus ${bagId} (TW5 VM render)`);
+    console.log(`[lararium-serve] recipe VM booted for corpus ${bagId}`);
   }));
 
-  // Graceful shutdown — stop projectors before process exit.
-  const shutdownProjectors = () => { for (const p of projectors) p.stop(); };
+  // Graceful shutdown — stop projectors and release recipe VMs.
+  const shutdownProjectors = () => {
+    for (const p of projectors) p.stop();
+    for (const source of corpusSources) releaseRecipeVm(makeRecipeId([source.bag]));
+  };
   process.once("SIGTERM", shutdownProjectors);
   process.once("SIGINT",  shutdownProjectors);
 

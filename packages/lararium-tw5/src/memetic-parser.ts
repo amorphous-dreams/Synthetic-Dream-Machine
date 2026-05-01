@@ -146,15 +146,43 @@ function nodeToTw5(node: MemeAstNode, wiki?: TW5Wiki): TW5ParseNode {
         return { type: "kukali", _ast: node, children: [],
           attributes: { ...(node.attrs["trigger"] ? { trigger: attr(node.attrs["trigger"]) } : {}) } };
       }
-      // kahea-call → kumu device instance (name + resolved props, body rendered as children)
-      if (node.sigilName === "kahea") {
-        return { type: "kumu", _ast: node,
+      // waiho — ephemeral variable binding; no visual output, scope-injected at render time.
+      // Emitted as "waiho" type so the waiho widget can shadow the variable into context.
+      if (node.sigilName === "waiho") {
+        return { type: "waiho", _ast: node,
           attributes: {
-            name:     attr(node.attrs["name"] ?? ""),
-            props:    attr(node.attrs["args"] ?? ""),
-            resolved: attr("unknown"), // registry not available at parse time; kumu-executor resolves
+            name:  attr(node.attrs["name"] ?? ""),
+            value: attr(node.attrs["value"] ?? ""),
+            scope: attr(node.attrs["scope"] ?? "block"),
           },
           children: node.body.map((n) => nodeToTw5(n, wiki)) };
+      }
+      // kau — invocation or placement, disambiguated by attrs.fragment presence.
+      //
+      // Invocation (no fragment): <<~ kau name(args) >>
+      //   Renders kumu def in caller's currentTiddler context.
+      //   Analogous to TW5's {{SomeTiddler}} = <$tiddler><$transclude/></$tiddler>.
+      //
+      // Placement (#fragment present): <<~ kau #frag Name props >>
+      //   Renders kumu def in instance's own URI (carrierUri#frag) as currentTiddler.
+      //   Creates a new persistent execution scope. UUID write-back fires on first commit.
+      if (node.sigilName === "kau") {
+        const fragment = node.attrs["fragment"] ?? "";
+        if (fragment) {
+          // Placement path — KauWidget will push instanceUri as currentTiddler
+          return { type: "kau", _ast: node, children: [],
+            attributes: {
+              fragment: attr(fragment),
+              name:     attr(node.attrs["name"] ?? ""),
+              propsRaw: attr(node.attrs["propsRaw"] ?? ""),
+            } };
+        }
+        // Invocation path — KauWidget renders in caller context
+        return { type: "kau", _ast: node, children: [],
+          attributes: {
+            name: attr(node.attrs["name"] ?? ""),
+            args: attr(node.attrs["args"] ?? ""),
+          } };
       }
       return { type: "sigil", _ast: node,
         tag: node.sigilName,

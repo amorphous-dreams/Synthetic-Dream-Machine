@@ -5,8 +5,10 @@
  *   LarariumTW5             — boot/filter/render interface; owns the widget pipeline
  *   LarariumCrdtSyncAdaptor — TW5 SyncAdaptor backed by LarTiddlerStore (Automerge)
  *   MemoryTiddlerStore      — in-memory LarTiddlerStore (tests / fixtures)
- *   filterMemesWikitext     — functional filter API used by @lararium/node + MCP
- *   precomputeRooms         — batch filter for snapshot builder
+ *   bootRecipeVm            — boot a recipe VM (one VM per recipe, all projections)
+ *   filterRecipe            — TW5 filter expression against loaded wiki state
+ *   renderCarrier           — disk projection via TW5 VM (fakeDOM pipeline)
+ *   filterMemesWikitext     — ClosureEntry filter utility (tests / CLI tools)
  *   toCanonicalWikitext     — wikitext-filter pre-processor
  *   entryToFields           — ClosureEntry → TW5 tiddler fields
  *   buildEdgeFieldMap       — pranala edges → TW5 edge-out-* fields
@@ -59,7 +61,11 @@ export { entryToFields, buildEdgeFieldMap } from "./closure-fields.js";
 export { parseZoomLayoutTOML, getZoomLayout } from "./zoom-layout.js";
 export type { ZoomLayout } from "./zoom-layout.js";
 export { bindingsForUri, buildReactionGraph } from "./reaction-query.js";
-export { filterMemesWikitext, precomputeRooms, getRecipeVm, releaseRecipeVm, makeRecipeId, liveVmCount } from "./server-api.js";
+export { bootRecipeVm, releaseRecipeVm, makeRecipeId, liveVmCount, filterRecipe, precomputeRecipeRooms, renderCarrier } from "./server-api.js";
+export type { RecipeVm, SerializedRecord } from "./recipe-vm.js";
+export { DirectRecipeVm } from "./recipe-vm.js";
+export { TW5WorkerProxy } from "./tw5-worker-proxy.js";
+export { VmPool } from "./vm-pool.js";
+export { filterMemesWikitext } from "./filter-compat.js";
 export { exportCarrierText, decompileCarrierRecord } from "./carrier-write.js";
-export { LarDiskProjector }                          from "./disk-sync-adaptor.js";
-export { VmPool }                                    from "./vm-pool.js";
+export { LarDiskProjector } from "./disk-sync-adaptor.js";

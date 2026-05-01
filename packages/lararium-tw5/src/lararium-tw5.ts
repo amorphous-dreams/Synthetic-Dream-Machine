@@ -367,29 +367,16 @@ export class LarariumTW5 {
     LarariumTW5._registerWidgets(tw);
   }
 
-  // Heleuma: register the text/x-memetic-wikitext tiddler deserializer.
-  // Canonical source copy lives at lar:///ha.ka.ba/api/v0.1/lararium/modules/deserializer.
+  // Heleuma ba: register the text/x-memetic-wikitext tiddler deserializer.
+  // Canonical source: lar:///ha.ka.ba/api/v0.1/lararium/modules/deserializer
+  // Compiled IIFE (module-type: tiddlerdeserializer) is the production path.
+  // This imperative registration is the server-side bridge during boot.
   private static _registerDeserializer(tw: TW5Instance): void {
     if (!tw?.Wiki?.tiddlerDeserializerModules) return;
-    tw.Wiki.tiddlerDeserializerModules["text/x-memetic-wikitext"] = function(text: string, fields: Record<string, unknown>) {
-      const uri: string = (fields?.title as string) ?? "";
-      const split = splitCarrierToTiddlers(uri, text);
-      const parent = { title: uri, ...fields, ...split.parent.fields, text: split.parent.text };
-      const children = split.children.map((c) => ({ ...c.fields, title: c.title, text: c.text }));
-      const result: TW5TiddlerFields[] = [parent, ...children];
-      if (split.warnings.length > 0) {
-        const safeSlug = uri.replace(/[^a-zA-Z0-9._-]/g, "_");
-        result.push({
-          title: `$:/lararium/parse-warning/${safeSlug}`,
-          tags: "$:/lararium/parse-warnings",
-          "carrier-uri": uri,
-          "warning-count": String(split.warnings.length),
-          text: split.warnings.join("\n"),
-          modified: new Date().toISOString().replace(/[:.]/g, "-"),
-        });
-      }
-      return result;
-    };
+    import("./deserializer.js").then(({ memeticWikitextDeserializer }) => {
+      tw.Wiki.tiddlerDeserializerModules["text/x-memetic-wikitext"] =
+        memeticWikitextDeserializer as unknown as (text: string, fields: Record<string, unknown>) => TW5TiddlerFields[];
+    }).catch(() => { /* not critical — MemeticParser still handles render */ });
   }
 
   // Heleuma: wire compiled widget classes into the TW5 prototype chain.
@@ -578,9 +565,9 @@ export class LarariumTW5 {
     if (this._tw) {
       tiddlers = (this._tw.wiki.deserializeTiddlers("text/x-memetic-wikitext", text, base) ?? []) as TiddlerFields[];
     } else {
-      // Pre-boot fallback
+      // Pre-boot fallback — same shape as _registerDeserializer
       const split = splitCarrierToTiddlers(uri, text);
-      const parent: TiddlerFields = { ...base, ...split.parent.fields, text };
+      const parent: TiddlerFields = { ...base, ...split.parent.fields, text: split.parent.text };
       tiddlers = [parent, ...split.children.map((c) => ({ ...c.fields, title: c.title, text: c.text }))];
     }
 
@@ -694,15 +681,9 @@ export class LarariumTW5 {
         const rec = await store.get(uri);
         if (!rec || rec.deleted) { loaded++; onProgress?.(loaded, total); return; }
 
-        const contentType = (rec.fields["type"] as string | undefined) ?? (rec.fields["content-type"] as string | undefined) ?? "";
-        if (rec.text !== undefined && (contentType === "text/x-memetic-wikitext" || (!contentType && uri.startsWith("lar:")))) {
-          const tiddlers = this.deserializeCarrier(uri, rec.text, rec.fields as Record<string, string | string[]>);
-          for (const t of tiddlers) tw.wiki.addTiddler(new tw.Tiddler(t));
-        } else {
-          const fields: Record<string, string | string[]> = { title: rec.title, ...rec.fields };
-          if (rec.text !== undefined) fields["text"] = rec.text;
-          tw.wiki.addTiddler(new tw.Tiddler(fields));
-        }
+        const fields: Record<string, string | string[]> = { title: rec.title, ...rec.fields };
+        if (rec.text !== undefined) fields["text"] = rec.text;
+        tw.wiki.addTiddler(new tw.Tiddler(fields));
 
         loaded++;
         onProgress?.(loaded, total);
