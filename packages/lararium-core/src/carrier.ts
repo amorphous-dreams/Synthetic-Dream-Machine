@@ -20,7 +20,9 @@ const DOCTYPE_RE   = /<!--\s*<<~\s*!DOCTYPE\s*=\s*lar:\/\/\/[^>]+>>\s*-->/;
 const KERNEL_PREFIX = /(?:[^&<>\n]*&#x(?:000[1-9a-fA-F]|001[1-4]);\s*)?/;
 const OPENER_RE    = new RegExp(`<<~${KERNEL_PREFIX.source}\\?\\s*->\\s*(lar:\\/\\/\\/[^\\s>]+)\\s*>>`);
 const IAM_BLOCK_RE = /<<~\s*ahu\s+#iam\s*>>([\s\S]*?)<<~\/ahu\s*>>/;
-const TOML_FENCE_RE = /```toml\s*([\s\S]*?)```/;
+// New format: root-level ```toml iam``` prelude before first ahu/STX
+const TOML_IAM_PRELUDE_RE = /```toml[ \t]+iam[ \t]*\n([\s\S]*?)```/;
+const TOML_FENCE_RE = /```toml(?:[ \t]+[A-Za-z0-9_-]+)?[ \t]*\n?([\s\S]*?)```/;
 // STX / ETX — bare control-character pragmas, no ahu content.
 // Matches the new form <<~[prefix?]&#x0002;>> / <<~[prefix?]&#x0003;>>
 // as well as legacy ahu form for backward compat during migration.
@@ -84,13 +86,26 @@ export function extractTomlFields(tomlText: string): Record<string, unknown> {
 // ---------------------------------------------------------------------------
 
 export function extractIamMetadata(text: string): { metadata: Record<string, unknown>; diagnostics: Diagnostic[] } {
+  // New format: root-level ```toml iam``` prelude (before first ahu/STX)
+  const firstAhuIdx = text.search(/<<~[^>]*\bahu\s+#[\w-]+\s*>>/);
+  const firstStxIdx = text.search(/<<~[^>]*&#x0002;/);
+  let limitIdx = text.length;
+  if (firstAhuIdx >= 0) limitIdx = Math.min(limitIdx, firstAhuIdx);
+  if (firstStxIdx >= 0) limitIdx = Math.min(limitIdx, firstStxIdx);
+  const prelMatch = TOML_IAM_PRELUDE_RE.exec(text.slice(0, limitIdx));
+  if (prelMatch) {
+    const metadata = extractTomlFields(prelMatch[1] ?? "");
+    return { metadata, diagnostics: [] };
+  }
+
+  // Legacy fallback: <<~ ahu #iam >> block
   const iamMatch = IAM_BLOCK_RE.exec(text);
   if (!iamMatch) {
-    return { metadata: {}, diagnostics: [makeDiagnostic("carrier.iam.missing", "carrier lacks `ahu #iam` metadata block")] };
+    return { metadata: {}, diagnostics: [makeDiagnostic("carrier.iam.missing", "carrier lacks metadata prelude (`toml iam` fence or `ahu #iam` block)")] };
   }
   const fenceMatch = TOML_FENCE_RE.exec(iamMatch[1] ?? "");
   if (!fenceMatch) {
-    return { metadata: {}, diagnostics: [makeDiagnostic("carrier.iam.toml_missing", "`ahu #iam` lacks a TOML fence")] };
+    return { metadata: {}, diagnostics: [makeDiagnostic("carrier.iam.toml_missing", "`ahu #iam` block lacks a TOML fence")] };
   }
   const metadata = extractTomlFields(fenceMatch[1] ?? "");
   return { metadata, diagnostics: [] };
@@ -143,10 +158,14 @@ export function validateCarrierShape(
   if (Object.keys(metadata).length === 0) {
     diagnostics.push(makeDiagnostic("carrier.iam.empty", "metadata could not be extracted"));
   } else {
-    for (const field of ["uri-path", "file-path", "content-type", "role"] as const) {
+    for (const field of ["uri-path", "file-path", "role"] as const) {
       if (!(field in metadata)) {
         diagnostics.push(makeDiagnostic("carrier.iam.field_missing", `metadata lacks \`${field}\``));
       }
+    }
+    // type and content-type are equivalent; accept either
+    if (!("type" in metadata) && !("content-type" in metadata)) {
+      diagnostics.push(makeDiagnostic("carrier.iam.field_missing", "metadata lacks `type` (body content type)"));
     }
   }
 

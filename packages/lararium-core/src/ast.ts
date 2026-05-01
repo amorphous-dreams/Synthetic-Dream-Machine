@@ -80,7 +80,7 @@ export interface CarrierHeaderNode extends AstBase {
 //
 // Streaming consumers can update incrementally on each phase boundary:
 //   soh → open stub card for URI
-//   stx → #iam dissolved; render identity panel
+//   stx → root toml iam prelude dissolved; render identity panel
 //   etx → content ahus committed; fire activate
 //   eot → edges committed; update graph
 // ---------------------------------------------------------------------------
@@ -95,9 +95,9 @@ export interface ControlNode extends AstBase {
 }
 
 // MetadataNode removed — TOML is a general data carrier.
-// ahu #iam → WorksiteNode(slot="#iam") containing SigilNode(sigilName="toml", attrs={content}).
-// Any <<~ toml >>...<<~/toml >> or ```toml``` fence elsewhere → same SigilNode shape.
-// The #iam identity contract is carried by the slot name, not a special node type.
+// New format: root-level ```toml iam``` prelude carries carrier identity fields.
+// Any <<~ toml >>...<<~/toml >> or ```toml [profile]``` fence → SigilNode(sigilName="toml", attrs={profile,content}).
+// Profile "iam" marks a metadata prelude; profile absent means general data block.
 
 export interface TextNode extends AstBase {
   kind: "Text";
@@ -124,7 +124,7 @@ export interface TextNode extends AstBase {
 //                         carrier/block are parse-time aliases for personal/collective (retained for compat)
 //   kapu               → { qualifier, inline: "true"|"false" }
 //                         qualifier may be a scope principle name to gate a block by scope
-//   toml / iam         → { content }  — iam is #iam ahu slot; toml is general data block
+//   toml               → { profile, content }  — profile "iam" = metadata prelude; absent = general data block
 //   hui / heihei / puka / mukuwai → {}
 //   kukali             → { trigger? }  — wait posture; trigger is optional papalohe slot name
 // ---------------------------------------------------------------------------

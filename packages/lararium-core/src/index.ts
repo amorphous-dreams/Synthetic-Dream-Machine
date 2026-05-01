@@ -16,6 +16,7 @@ export * from "./live-protocol.js";
 export * from "./meme-provider.js";
 export * from "./readiness.js";
 export * from "./catalog.js";
+export * from "./meme-store-doc.js";
 export * from "./composite-store.js";
 // LarariumTW5 and filter helpers live in @lararium/tw5 — import from there:
 //   import { filterMemesWikitext, LarariumTW5 } from "@lararium/tw5";

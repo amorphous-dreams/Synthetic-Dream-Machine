@@ -52,6 +52,7 @@ import {
   type CatalogRoomEntry,
   type CatalogCorpusEntry,
   emptyCatalogDoc,
+  type MemeStoreDoc,
 } from "@lararium/core";
 import { loadCorpusSources } from "../src/node-host.js";
 import type { AutomergeUrl, DocHandle } from "@automerge/automerge-repo";
@@ -192,9 +193,8 @@ async function main() {
         const urlFile   = join(corpusDir, "doc-url.txt");
         if (existsSync(urlFile)) {
           const corpusUrl    = readFileSync(urlFile, "utf8").trim() as AutomergeUrl;
-          const corpusHandle = await memeRepo.find<Record<string, unknown>>(corpusUrl);
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          corpusHandle.change((doc: any) => {
+          const corpusHandle = await memeRepo.find<MemeStoreDoc>(corpusUrl);
+          corpusHandle.change((doc) => {
             for (const [uri, meme] of Object.entries(snapshotMemes.memes)) {
               if (!uri.startsWith("lar:") || !meme.text) continue;
               doc[uri] = { title: uri, fields: meme.fields ?? {}, text: meme.text, bag: "lares" };
@@ -316,6 +316,11 @@ async function main() {
     }
   });
 
+  // CatalogDoc has readonly fields; Automerge change() receives a mutable draft.
+  type DraftCatalogDoc = {
+    -readonly [K in keyof import("@lararium/core").CatalogDoc]: import("@lararium/core").CatalogDoc[K];
+  };
+
   // ---------------------------------------------------------------------------
   // Automerge Repo — one Repo, per-island docs inside
   // ---------------------------------------------------------------------------
@@ -330,8 +335,7 @@ async function main() {
   // ---------------------------------------------------------------------------
   // Helper: open or create a persisted Automerge doc by URL file
   // ---------------------------------------------------------------------------
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  async function openOrCreate<T = any>(
+  async function openOrCreate<T>(
     urlFile: string,
     init: () => T,
   ): Promise<DocHandle<T>> {
@@ -363,13 +367,13 @@ async function main() {
   // Seeding the room doc with corpus content would bloat the room island and
   // defeat the causal-island split.
   // ---------------------------------------------------------------------------
-  async function openOrCreateRoom(roomId: string): Promise<DocHandle<Record<string, unknown>>> {
+  async function openOrCreateRoom(roomId: string): Promise<DocHandle<MemeStoreDoc>> {
     const roomDir = join(ISLANDS_DIR, "rooms", roomId);
     mkdirSync(roomDir, { recursive: true });
     const urlFile = join(roomDir, "doc-url.txt");
     const firstBoot = !existsSync(urlFile);
 
-    const handle = await openOrCreate<Record<string, unknown>>(urlFile, () => ({}));
+    const handle = await openOrCreate<MemeStoreDoc>(urlFile, () => ({}));
 
     if (firstBoot) {
       console.log(`[lararium-serve] room ${roomId} created (empty): ${handle.url}`);
@@ -384,10 +388,9 @@ async function main() {
       schemaVersion:  "0.1",
     };
     catalogHandle.change((doc) => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (doc as any).rooms = (doc as any).rooms ?? {};
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (doc as any).rooms[roomId] = roomEntry;
+      const d = doc as DraftCatalogDoc;
+      d.rooms ??= {};
+      d.rooms[roomId] = roomEntry;
     });
 
     return handle;
@@ -400,21 +403,20 @@ async function main() {
   // travels through the projection codec (separate M12 sub-task).
   // The catalog entry is written immediately so browsers can resolve the doc URL.
   // ---------------------------------------------------------------------------
-  async function openOrCreateCorpus(bagId: string): Promise<DocHandle<Record<string, unknown>>> {
+  async function openOrCreateCorpus(bagId: string): Promise<DocHandle<MemeStoreDoc>> {
     const corpusDir = join(ISLANDS_DIR, "corpora", bagId);
     mkdirSync(corpusDir, { recursive: true });
     const urlFile  = join(corpusDir, "doc-url.txt");
     const firstBoot = !existsSync(urlFile);
 
-    const handle = await openOrCreate<Record<string, unknown>>(urlFile, () => ({}));
+    const handle = await openOrCreate<MemeStoreDoc>(urlFile, () => ({}));
 
     if (firstBoot) {
       console.log(`[lararium-serve] corpus ${bagId} created: ${handle.url}`);
       // Content seeding from lares/ carriers for the quine corpus only.
       // Non-quine corpora (elyncia, ftls, sdm, wtf) seed via projection codec — pending.
       if (bagId === "lares") {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        handle.change((doc: any) => {
+        handle.change((doc) => {
           for (const [uri, meme] of Object.entries(snapshotMemes.memes)) {
             if (!uri.startsWith("lar:") || !meme.text) continue;
             // Top-level bag field stamps the recipe layer for CompositeStore._freeze().
@@ -433,10 +435,9 @@ async function main() {
       schemaVersion: "0.1",
     };
     catalogHandle.change((doc) => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (doc as any).corpora = (doc as any).corpora ?? {};
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (doc as any).corpora[bagId] = entry;
+      const d = doc as DraftCatalogDoc;
+      d.corpora ??= {};
+      d.corpora[bagId] = entry;
     });
 
     return handle;

@@ -32,27 +32,10 @@ import type {
   LarAuthReceipt,
   MemeProjection,
   CatalogDoc,
+  MemeStoreDoc,
+  MutableLarRecord,
 } from "@lararium/core";
 import { MemeProvider } from "@lararium/core";
-
-// ---------------------------------------------------------------------------
-// MemeStoreDoc — Automerge document shape for a room/corpus content island
-// ---------------------------------------------------------------------------
-
-interface MutableLarRecord {
-  title:        string;
-  fields:       Record<string, string>;
-  text?:        string;
-  deleted?:     boolean;
-  sourceUri?:   string;
-  contentHash?: string;
-  revision?:    string;
-  authority?:   string;
-  bag?:         string;
-  // recipe routing pending M12 corpus bag split
-}
-
-export type MemeStoreDoc = Record<string, MutableLarRecord>;
 
 // ---------------------------------------------------------------------------
 // AutomergeMemeStore — LarTiddlerStore over one Automerge DocHandle

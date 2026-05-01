@@ -129,7 +129,7 @@ function applySourcePatch(content: string, liveCode: string): string | null {
   return content.slice(0, fenceStart) + newFence + content.slice(fenceEnd);
 }
 
-// Patches body-sha256 in the first ```toml block (the #iam block).
+// Patches body-sha256 in the first ```toml block (the root toml iam prelude).
 // Adds the field if absent; replaces it if stale.
 function applyBodySha256Patch(content: string, sha256: string): string {
   const SHA_FIELD = /^body-sha256\s*=\s*"[^"]*"/m;

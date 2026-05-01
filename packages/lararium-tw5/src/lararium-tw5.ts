@@ -678,7 +678,7 @@ export class LarariumTW5 {
         const rec = await store.get(uri);
         if (!rec || rec.deleted) { loaded++; onProgress?.(loaded, total); return; }
 
-        const contentType = (rec.fields["content-type"] as string | undefined) ?? "";
+        const contentType = (rec.fields["type"] as string | undefined) ?? (rec.fields["content-type"] as string | undefined) ?? "";
         if (rec.text !== undefined && (contentType === "text/x-memetic-wikitext" || (!contentType && uri.startsWith("lar:")))) {
           const tiddlers = this.deserializeCarrier(uri, rec.text, rec.fields as Record<string, string | string[]>);
           for (const t of tiddlers) tw.wiki.addTiddler(new tw.Tiddler(t));

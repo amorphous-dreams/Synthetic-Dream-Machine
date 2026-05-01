@@ -13,14 +13,14 @@
  * One .md file per lar: address. The parser emits WorksiteNodes (#ahu slots).
  * This module maps those to TW5 tiddler records:
  *
- *   #iam ahu      → parent tiddler fields (dissolved, no child tiddler)
- *   control ahu   → parent structural leaves (body/stream markers; no child)
- *   all other ahu → child tiddlers  title = parentUri + "#" + slot
- *                                   tags  = [parentUri]  (enables filter)
+ *   root ```toml iam``` → parent tiddler fields (dissolved, no child tiddler)
+ *   control ahu         → parent structural leaves (body/stream markers; no child)
+ *   all other ahu       → child tiddlers  title = parentUri + "#" + slot
+ *                                         fragment-parent = parentUri  (enables filter)
  *
  * Graceful degradation:
- *   - Missing #iam       → parent fields empty; parsing continues
- *   - Malformed TOML     → field ignored; warning recorded on parent
+ *   - Missing toml iam  → parent fields empty; parsing continues
+ *   - Malformed TOML    → field ignored; warning recorded on parent
  *   - Unknown ahu kind   → child tiddler created with raw text; no crash
  *   - Duplicate slots    → last one wins (last-write-wins semantics)
  *   - Any thrown error   → caught; warning added; partial result returned

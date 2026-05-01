@@ -3,26 +3,25 @@ import { splitCarrierToTiddlers } from "../src/carrier-split.js";
 
 function carrierWithIam(toml: string): string {
   return [
-    "<<~ ? -> lar:///lararium-node/toml-warning >>",
+    "<<~&#x0001; ? -> lar:///lararium-node/toml-warning >>",
     "",
-    "<<~ ahu #iam >>",
-    "```toml",
+    "```toml iam",
     toml,
     "```",
-    "<<~/ahu >>",
     "",
-    "<<~>>",
+    "<<~&#x0002;>>",
     "",
     "<<~ ahu #body >>",
     "body",
     "<<~/ahu >>",
     "",
-    "<<~ -> ? >>",
+    "<<~&#x0003;>>",
+    "<<~&#x0004; -> ? >>",
     "",
   ].join("\n");
 }
 
-describe("splitCarrierToTiddlers — #iam TOML parsing (smol-toml)", () => {
+describe("splitCarrierToTiddlers — toml iam prelude parsing (smol-toml)", () => {
   test("inline comments on scalar values parse correctly", () => {
     const split = splitCarrierToTiddlers(
       "lar:///lararium-node/toml-inline-comment",

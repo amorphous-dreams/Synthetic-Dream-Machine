@@ -237,8 +237,9 @@ export class LarariumCrdtSyncAdaptor implements MemeProjection {
         } else {
           const rec = change.record;
           const isCarrier = rec.text !== undefined &&
-            (rec.fields["content-type"] === "text/x-memetic-wikitext" ||
-              (!rec.fields["content-type"] && change.title.startsWith("lar:")));
+            (rec.fields["type"] === "text/x-memetic-wikitext" ||
+              rec.fields["content-type"] === "text/x-memetic-wikitext" ||
+              (!(rec.fields["type"] || rec.fields["content-type"]) && change.title.startsWith("lar:")));
 
           if (isCarrier && rec.text) {
             const staleChildren: string[] = this.tw5.filterTiddlers(`[tag[${change.title}]has[ahu-slot]] [field:fragment-parent[${change.title}]]`);
