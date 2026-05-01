@@ -1,40 +1,32 @@
 /**
- * Lararium sync server — local-first Automerge peer.
+ * Lararium node peer — always-online local-first Automerge peer with seed capability.
  *
- * Architecture:
- *   - Server plays two roles:
- *     (1) Seeder: boots a TW5 wiki-engine instance at startup (and on /admin/reseed) to
- *         compute the lares/ snapshot and seed the Automerge room/corpus docs.
- *     (2) Wiki-VM peer: MCP sidecar may invoke the server for live TW5 filter queries,
- *         projections, and canonical receipt computation without a browser client.
- *   - Server is a local-first PEER, not an authority. Automerge is source of truth.
- *   - One Repo; one WebSocket path (/meme-sync); per-room and catalog docs inside.
- *   - Static assets from lararium-app/dist/ served over HTTP on the same port.
+ * Local-first law:
+ *   The server is NOT an authority. It is one peer among equals.
+ *   It has two capabilities other peers typically lack:
+ *     (1) Seed capability: reads lares/ + runs TW5 engine → writes canonical snapshot
+ *         into shared docs. Any peer with this capability could do the same.
+ *     (2) Always-online relay: NodeFS-backed Repo persists docs durably across
+ *         browser disconnects. Acts as the rendezvous point until Beelay/p2p lands.
  *
- * Causal island doc layout:
- *   catalog doc  — tiny hallway: names rooms, corpora, recipes, snapshot URLs, heads
- *   room docs    — one per roomId; durable room content (pins, notes, recipe overrides)
- *   corpus docs  — one per corpus (pending M12; currently all content in room docs)
+ *   Automerge is source of truth. Server cannot overwrite client changes.
+ *   Server creates docs at first boot only — subsequent boots resume from NodeFS.
+ *   Browser creates its own docs if server is unreachable (offline-first).
  *
- * Canon promotion:
- *   Removed from this server. Future promotion belongs to a Keyhive-backed
- *   proposal/receipt graph plus a separate projection/write-back worker.
+ * One Repo, one storage dir (.lararium-data/automerge/), all island docs inside.
+ * Island doc URLs tracked in .lararium-data/islands/ by opaque URL files.
+ *
+ * Island layout:
+ *   catalog  — hallway: names all rooms, corpora, recipes, snapshot URLs, heads
+ *   rooms    — one per roomId; durable room content (pins, notes, recipe overrides)
+ *   corpora  — one per corpus bag; content from lares/ carriers or projection codec
+ *
+ * Canon promotion: disabled. POST /keyhive/promotions is a future Keyhive seam.
  *
  * API routes:
- *   GET  /api/rooms      — room registry (MCP canvas bridge)
- *   GET  /api/catalog    — catalog Automerge doc URL
- *   GET  /admin/reseed   — rebuild snapshot/receipt from lares/ and reseed room docs
- *
- * Boot contract:
- *   1. Build lares/ snapshot → seed room docs (skipped if docs exist on disk)
- *   2. Compute boot receipt SHA → inject into HTML <meta>
- *   3. Clients receive catalog URL via <meta name="lararium-catalog">
- *   4. Clients open catalog, resolve room doc URL, then open room doc
- *
- * Known gaps:
- *   - Corpus island docs (M12) — all content currently in one room doc per room
- *   - Disk↔Automerge sync loop (projector + watcher) being redesigned — M11+
- *   - Browser e2e (Playwright smoke) not yet run against live server — M11 P0
+ *   GET  /api/rooms      — room registry
+ *   GET  /api/catalog    — catalog Automerge doc URL (rendezvous hint for new peers)
+ *   GET  /admin/reseed   — re-run seed capability from lares/ into docs
  *
  * Usage:
  *   pnpm --filter @lararium/node serve
@@ -58,8 +50,10 @@ import {
   type LarAuthReceipt,
   type CatalogDoc,
   type CatalogRoomEntry,
+  type CatalogCorpusEntry,
   emptyCatalogDoc,
 } from "@lararium/core";
+import { loadCorpusSources } from "../src/node-host.js";
 import type { AutomergeUrl, DocHandle } from "@automerge/automerge-repo";
 import { getOrCreateNodeAuthReceipt } from "../src/operator-key.js";
 import { TW5_CORE_SCRIPT_URL } from "@lararium/tw5";
@@ -157,16 +151,12 @@ async function main() {
 
   const DEFAULT_ROOM = "altar-fire";
 
-  // ---------------------------------------------------------------------------
-  // Automerge island storage layout
-  //   .lararium-data/catalog/   — catalog doc (hallway; one per server)
-  //   .lararium-data/rooms/<id>/ — one room content doc per roomId
-  //   (corpus docs land in M12 at .lararium-data/corpora/<id>/)
-  // ---------------------------------------------------------------------------
-  const CATALOG_DIR = join(DATA_DIR, "catalog");
-  const ROOMS_DIR   = join(DATA_DIR, "rooms");
-  mkdirSync(CATALOG_DIR, { recursive: true });
-  mkdirSync(ROOMS_DIR,   { recursive: true });
+  // One Repo, one storage dir — all island docs (catalog, rooms, corpora) inside.
+  // Island URL files tracked under islands/ by type and id.
+  const AUTOMERGE_DIR = join(DATA_DIR, "automerge");
+  const ISLANDS_DIR   = join(DATA_DIR, "islands");
+  mkdirSync(AUTOMERGE_DIR, { recursive: true });
+  mkdirSync(ISLANDS_DIR,   { recursive: true });
 
   // Peer authorization registry — populated by /auth/session, consumed by sharePolicy.
   const peerRegistry = new LarAuthSessionRegistry();
@@ -198,7 +188,7 @@ async function main() {
         snapshotMemes = await buildSnapshot(runtime);
         receiptSha    = await computeReceiptSha(runtime);
         // Re-seed all known room docs from the fresh snapshot.
-        const roomDir = join(ROOMS_DIR, DEFAULT_ROOM);
+        const roomDir = join(ISLANDS_DIR, "rooms", DEFAULT_ROOM);
         const urlFile = join(roomDir, "doc-url.txt");
         if (existsSync(urlFile)) {
           const roomUrl = readFileSync(urlFile, "utf8").trim() as AutomergeUrl;
@@ -331,7 +321,7 @@ async function main() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const memeAdapter = new NodeWSServerAdapter(memeWss as any);
   const memeRepo    = new Repo({
-    storage: new NodeFSStorageAdapter(CATALOG_DIR),
+    storage: new NodeFSStorageAdapter(AUTOMERGE_DIR),
     network: [memeAdapter],
     sharePolicy: async (peerId: string) => peerRegistry.isAuthorized(peerId),
   });
@@ -339,7 +329,8 @@ async function main() {
   // ---------------------------------------------------------------------------
   // Helper: open or create a persisted Automerge doc by URL file
   // ---------------------------------------------------------------------------
-  async function openOrCreate<T extends Record<string, unknown>>(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  async function openOrCreate<T = any>(
     urlFile: string,
     init: () => T,
   ): Promise<DocHandle<T>> {
@@ -356,7 +347,7 @@ async function main() {
   // Catalog doc — hallway; names all islands
   // ---------------------------------------------------------------------------
   const catalogHandle = await openOrCreate<CatalogDoc>(
-    join(CATALOG_DIR, "catalog-url.txt"),
+    join(ISLANDS_DIR, "catalog.txt"),
     emptyCatalogDoc,
   );
   catalogUrl = catalogHandle.url;
@@ -366,7 +357,7 @@ async function main() {
   // Helper: open or create a room content doc, seed on first boot, register in catalog
   // ---------------------------------------------------------------------------
   async function openOrCreateRoom(roomId: string): Promise<DocHandle<Record<string, unknown>>> {
-    const roomDir = join(ROOMS_DIR, roomId);
+    const roomDir = join(ISLANDS_DIR, "rooms", roomId);
     mkdirSync(roomDir, { recursive: true });
     const urlFile = join(roomDir, "doc-url.txt");
     const firstBoot = !existsSync(urlFile);
@@ -403,8 +394,60 @@ async function main() {
     return handle;
   }
 
+  // ---------------------------------------------------------------------------
+  // openOrCreateCorpus — one content doc per corpus bag (M12 island split)
+  //
+  // Corpus docs start empty; content seeding from raw markdown → tiddler records
+  // travels through the projection codec (separate M12 sub-task).
+  // The catalog entry is written immediately so browsers can resolve the doc URL.
+  // ---------------------------------------------------------------------------
+  async function openOrCreateCorpus(bagId: string): Promise<DocHandle<Record<string, unknown>>> {
+    const corpusDir = join(ISLANDS_DIR, "corpora", bagId);
+    mkdirSync(corpusDir, { recursive: true });
+    const urlFile  = join(corpusDir, "doc-url.txt");
+    const firstBoot = !existsSync(urlFile);
+
+    const handle = await openOrCreate<Record<string, unknown>>(urlFile, () => ({}));
+
+    if (firstBoot) {
+      console.log(`[lararium-serve] corpus ${bagId} created: ${handle.url}`);
+      // Content seeding from lares/ carriers for the quine corpus only.
+      // Non-quine corpora (elyncia, ftls, sdm, wtf) seed via projection codec — pending.
+      if (bagId === "lares") {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        handle.change((doc: any) => {
+          for (const [uri, meme] of Object.entries(snapshotMemes.memes)) {
+            if (!uri.startsWith("lar:") || !meme.text) continue;
+            doc[uri] = { title: uri, fields: { ...(meme.fields ?? {}), bag: "lares" }, text: meme.text };
+          }
+        });
+        console.log(`[lararium-serve] corpus lares seeded: ${Object.keys(snapshotMemes.memes).length} memes`);
+      }
+    } else {
+      console.log(`[lararium-serve] corpus ${bagId} resumed: ${handle.url}`);
+    }
+
+    const entry: CatalogCorpusEntry = {
+      id:            bagId,
+      docUrl:        handle.url,
+      schemaVersion: "0.1",
+    };
+    catalogHandle.change((doc) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (doc as any).corpora = (doc as any).corpora ?? {};
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (doc as any).corpora[bagId] = entry;
+    });
+
+    return handle;
+  }
+
   // Warm the default room at boot so its URL is in the catalog immediately.
   await openOrCreateRoom(DEFAULT_ROOM);
+
+  // Warm all corpus islands from the registry.
+  const corpusSources = loadCorpusSources();
+  await Promise.all(corpusSources.map((c) => openOrCreateCorpus(c.bag)));
 
   // Disk write-back and lares/ file watcher removed — file sync refactor in progress.
 
@@ -413,6 +456,7 @@ async function main() {
     console.log(`[lararium-serve] default room: /room/${DEFAULT_ROOM}  (or /room/<any-id>)`);
     console.log(`[lararium-serve] receipt:      ${receiptSha.slice(0, 16) || "(none)"}`);
     console.log(`[lararium-serve] catalog:      ${catalogUrl}`);
+    console.log(`[lararium-serve] corpora:      ${corpusSources.map((c) => c.bag).join(", ")}`);
     console.log(`[lararium-serve] meme-sync:    ws://${HOST}:${PORT}/meme-sync`);
     console.log(`[lararium-serve] reseed:       curl http://${HOST}:${PORT}/admin/reseed`);
     console.log(`[lararium-serve] promote:      disabled; future stub POST /keyhive/promotions`);

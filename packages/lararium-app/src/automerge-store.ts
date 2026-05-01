@@ -59,11 +59,14 @@ export type MemeStoreDoc = Record<string, MutableLarRecord>;
 // ---------------------------------------------------------------------------
 
 export class AutomergeMemeStore implements LarTiddlerStore {
-  private handle:   DocHandle<MemeStoreDoc>;
+  private handle:    DocHandle<MemeStoreDoc>;
   readonly provider: MemeProvider;
+  /** Bag this store serves — undefined for the legacy single-doc room store. */
+  readonly bagId?: string | undefined;
 
-  constructor(handle: DocHandle<MemeStoreDoc>) {
+  constructor(handle: DocHandle<MemeStoreDoc>, bagId?: string) {
     this.handle = handle;
+    this.bagId  = bagId;
     this.provider = new MemeProvider(() => (handle.doc() ?? {}) as Record<string, unknown>);
 
     const remoteOrigin: ChangeOrigin = { kind: "crdt-remote", edgeIsland: "automerge" };
@@ -176,30 +179,79 @@ export class LarariumRepo {
     this.repo = repo;
   }
 
-  async openCatalog(url: string): Promise<DocHandle<CatalogDoc>> {
-    const handle = await this.repo.find<CatalogDoc>(url as AutomergeUrl);
+  // ---------------------------------------------------------------------------
+  // Catalog island — open existing or create new (offline bootstrap)
+  //
+  // Any peer can create a catalog. The server creates one at first boot and
+  // advertises it via <meta name="lararium-catalog">. If offline, the browser
+  // creates its own — a local-only catalog that merges with the server's when
+  // the peer reconnects (Automerge CRDT merge).
+  // ---------------------------------------------------------------------------
+
+  async openOrCreateCatalog(url: string | null): Promise<DocHandle<CatalogDoc>> {
+    const handle: DocHandle<CatalogDoc> = url
+      ? await this.repo.find<CatalogDoc>(url as AutomergeUrl)
+      : this.repo.create<CatalogDoc>({ schemaVersion: "0.1", corpora: {}, rooms: {}, recipes: {}, projections: {} });
     await waitReady(handle);
     return handle;
   }
 
   resolveRoomDocUrl(catalog: DocHandle<CatalogDoc>, roomId: string): string | null {
-    const doc = catalog.doc();
-    return (doc?.rooms?.[roomId]?.contentDocUrl) ?? null;
+    return catalog.doc()?.rooms?.[roomId]?.contentDocUrl ?? null;
   }
 
-  async openRoomDoc(docUrl: string | null): Promise<AutomergeMemeStore> {
+  resolveCorpusDocUrls(catalog: DocHandle<CatalogDoc>): Record<string, string> {
+    const corpora = catalog.doc()?.corpora ?? {};
+    const out: Record<string, string> = {};
+    for (const [id, entry] of Object.entries(corpora)) {
+      if (entry.docUrl) out[id] = entry.docUrl;
+    }
+    return out;
+  }
+
+  // ---------------------------------------------------------------------------
+  // Room island — open existing or create new (offline bootstrap)
+  //
+  // If no room URL found in catalog (new room or offline), create a local doc.
+  // Register it back into the catalog so peers learn about it on next sync.
+  // ---------------------------------------------------------------------------
+
+  async openOrCreateRoomDoc(
+    catalog: DocHandle<CatalogDoc>,
+    roomId: string,
+    docUrl: string | null,
+  ): Promise<AutomergeMemeStore> {
     const handle: DocHandle<MemeStoreDoc> = docUrl
       ? await this.repo.find<MemeStoreDoc>(docUrl as AutomergeUrl)
       : this.repo.create<MemeStoreDoc>({});
     await waitReady(handle);
+
+    // Register newly created room back into catalog for peer discovery.
+    if (!docUrl) {
+      catalog.change((doc) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (doc as any).rooms ??= {};
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (doc as any).rooms[roomId] = { id: roomId, contentDocUrl: handle.url, schemaVersion: "0.1" };
+      });
+    }
+
     const store = new AutomergeMemeStore(handle);
     store.markSyncComplete();
     return store;
   }
 
-  // M12: openCorpusDoc(corpusId, docUrl) — per-corpus Automerge island
-  // Will return a read-only AutomergeMemeStore scoped to corpus bag.
-  // Placeholder for the corpus island split.
+  // ---------------------------------------------------------------------------
+  // Corpus island — open existing (corpus docs are created by seed peers)
+  // ---------------------------------------------------------------------------
+
+  async openCorpusDoc(bagId: string, docUrl: string): Promise<AutomergeMemeStore> {
+    const handle = await this.repo.find<MemeStoreDoc>(docUrl as AutomergeUrl);
+    await waitReady(handle);
+    const store = new AutomergeMemeStore(handle, bagId);
+    store.markSyncComplete();
+    return store;
+  }
 }
 
 // ---------------------------------------------------------------------------

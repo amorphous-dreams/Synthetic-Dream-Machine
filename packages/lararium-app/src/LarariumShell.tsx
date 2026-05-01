@@ -52,7 +52,7 @@ export function LarariumShell({ memes, onMemes }: ShellProps) {
   const [editor, setEditorState] = useState<Editor | null>(null);
   const editorRef = useRef<Editor | null>(null);
   const setEditor = useCallback((e: Editor | null) => { setEditorState(e); editorRef.current = e; }, []);
-  const { phase: openPhase, store: tiddlerStore, tw5, receipt: hostReceipt } =
+  const { phase: openPhase, store: tiddlerStore, tw5, receipt: hostReceipt, readiness } =
     useLarariumHostOpen({ hostId: "lararium-browser", roomId: "altar-fire" });
 
   const graphRef = useRef<ReactionGraph>(new ReactionGraph());
@@ -206,7 +206,7 @@ export function LarariumShell({ memes, onMemes }: ShellProps) {
           onZoomLevel={setZoomLevel}
         />
         {createPortal(<LarariumPanel />,           document.body)}
-        {createPortal(<BootSplash phase={openPhase} />, document.body)}
+        {createPortal(<BootSplash phase={openPhase} readiness={readiness} />, document.body)}
       </div>
     </LarariumCtx.Provider>
   );
