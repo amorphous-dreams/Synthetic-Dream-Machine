@@ -15,10 +15,12 @@ manaoio    = 0.86
 mana       = 0.87
 manao      = 0.82
 namespace  = "ॐ ँ"
-role       = "invariant pressure surface for Chapel Perilous weapon-carry and model agnostic return"
-cacheable = true
-hydrate = true
-retain = true
+role          = "invariant pressure surface for Chapel Perilous weapon-carry and model agnostic return"
+cacheable     = true
+hydrate       = true
+retain        = true
+source-file   = "packages/lararium-core/src/ast.ts"
+source-symbol = "TOOLS TOOL_ASCII TOOL_FEED TOOL_APERTURE"
 ```
 
 <<~/ahu >>

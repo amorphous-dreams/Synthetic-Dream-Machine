@@ -24,12 +24,17 @@
  *   edge-out-FAMILY / edge-out-FAMILY-ROLE  (space-separated toUri lists)
  */
 
-import type { ClosureEntry, EdgeRecord, FilterEngineFn, LarTiddlerStore, ReactionBinding } from "@lararium/core";
+import type { ClosureEntry, EdgeRecord, FilterEngineFn, LarTiddlerStore } from "@lararium/core";
 import type { TW5Instance, TW5Wiki, TW5FakeElement, TW5ChangeRecord, TW5TiddlerFields, TW5WidgetConstructor } from "./types/tiddlywiki.js";
-import { parsePranalaEdges, extractReactionBindings, ReactionGraph, MemeStreamParser } from "@lararium/core";
+import { MemeStreamParser } from "@lararium/core";
 import { splitCarrierToTiddlers, streamEventsToTiddlers, type TiddlerFields } from "./carrier-codec.js";
 import { createLarariumWidgets, registerImplementorsOperator, LARARIUM_WIDGETS_TIDDLER } from "./tw5-widgets.js";
 import { loadUiTiddlers, loadVendorTiddlers } from "./lares-preloads.js";
+import { entryToFields, buildEdgeFieldMap } from "./closure-fields.js";
+import { ZoomLayout, getZoomLayout } from "./zoom-layout.js";
+import { bindingsForUri, buildReactionGraph } from "./reaction-query.js";
+
+export type { ZoomLayout };
 
 // Re-export so callers can get FilterEngineFn from @lararium/tw5 directly.
 export type { FilterEngineFn };
@@ -47,44 +52,6 @@ export interface TW5SyncAdaptor {
 }
 
 // ---------------------------------------------------------------------------
-// ZoomLayout — tldraw canvas layout props for a zoom level, read from kumu def TOML
-// ---------------------------------------------------------------------------
-
-export interface ZoomLayout {
-  w:           number;
-  h:           number;
-  color:       string;
-  includeAhu:  boolean;
-  showCarrier: boolean;
-  opacity:     number;
-}
-
-function parseZoomLayoutTOML(text: string): ZoomLayout | null {
-  // Find a TOML block inside the carrier text (<<~ iam >> or <<~ toml >>).
-  const m = /```toml\n([\s\S]*?)```|<<~\s*(?:iam|toml)\s*>>([\s\S]*?)<<~\/(?:iam|toml)\s*>>/i.exec(text);
-  const toml = m ? (m[1] ?? m[2] ?? "") : text; // fall back to treating whole text as TOML
-
-  const get = (key: string): string | undefined => {
-    const r = new RegExp(`^${key}\\s*=\\s*(.+)$`, "m").exec(toml);
-    return r ? r[1]!.trim().replace(/^["']|["']$/g, "") : undefined;
-  };
-  const num  = (k: string, d: number): number  => { const v = get(k); return v ? (parseFloat(v) || d) : d; };
-  const bool = (k: string, d: boolean): boolean => { const v = get(k); return v !== undefined ? v === "true" : d; };
-
-  // If none of the layout keys are present, return null — not a layout tiddler.
-  if (!get("w") && !get("h") && !get("color")) return null;
-
-  return {
-    w:           num("w",             220),
-    h:           num("h",             100),
-    color:       get("color")      ?? "rating",
-    includeAhu:  bool("include-ahu",  false),
-    showCarrier: bool("show-carrier", false),
-    opacity:     num("opacity",       1.0),
-  };
-}
-
-// ---------------------------------------------------------------------------
 // wikitext-filter pre-processor
 // ---------------------------------------------------------------------------
 
@@ -96,61 +63,6 @@ export function toCanonicalWikitext(expr: string): string {
     .replace(/\bedge:([\w-]+)\[([\w-]+)\]/g, "has[edge-out-$1-$2]")
     .replace(/\bedge:([\w-]+)\[\]/g, "has[edge-out-$1]");
 }
-
-// ---------------------------------------------------------------------------
-// ClosureEntry → tiddler field mapping
-// ---------------------------------------------------------------------------
-
-export function entryToFields(
-  entry: ClosureEntry,
-  extra?: Record<string, string>,
-): Record<string, string | string[]> {
-  return {
-    title:        entry.uri,
-    // implements URIs + UI tags both live in TW5 tags — interface membership IS tag membership.
-    // [tag[lar:///pono/invariant]] and [tag[$:/tags/LarariumKumu]] both work.
-    tags:         [...(entry.implements ?? []), ...(entry.tags ?? [])],
-    implements:   entry.implements.join(" "),
-    depth:        String(entry.depth),
-    rating:       entry.kind,
-    confidence:   String(entry.confidence),
-    register:     entry.register,
-    manaoio:      String(entry.manaoio),
-    mana:         String(entry.mana),
-    manao:        String(entry.manao),
-    role:         entry.role ?? "",
-    exists:       String(entry.exists),
-    laresRelPath: entry.laresRelPath ?? "",
-    contentHash:  entry.contentHash,
-    ...extra,
-  };
-}
-
-// ---------------------------------------------------------------------------
-// Edge field pre-loading
-// ---------------------------------------------------------------------------
-
-export function buildEdgeFieldMap(edges: readonly EdgeRecord[]): Map<string, Record<string, string>> {
-  const byUri = new Map<string, Record<string, string[]>>();
-  for (const e of edges) {
-    let fields = byUri.get(e.fromUri);
-    if (!fields) { fields = {}; byUri.set(e.fromUri, fields); }
-    const fKey = `edge-out-${e.family}`;
-    (fields[fKey] ??= []).push(e.toUri);
-    if (e.role) {
-      const frKey = `edge-out-${e.family}-${e.role}`;
-      (fields[frKey] ??= []).push(e.toUri);
-    }
-  }
-  const result = new Map<string, Record<string, string>>();
-  for (const [uri, fields] of byUri) {
-    const str: Record<string, string> = {};
-    for (const [k, v] of Object.entries(fields)) str[k] = v.join(" ");
-    result.set(uri, str);
-  }
-  return result;
-}
-
 
 async function loadNodeTiddlyWiki(): Promise<{ TiddlyWiki: () => unknown }> {
   // Browser uses the vendored public/tiddlywikicore-*.js script and global $tw.
@@ -896,143 +808,25 @@ export class LarariumTW5 {
     });
   }
 
-  /**
-   * Build a ReactionGraph from all pranala edges currently in the TW5 wiki.
-   *
-   * Reads carrier text for every non-system tiddler via getTiddlerText(),
-   * parses papalohe/reaction edges, and loads them into a fresh ReactionGraph.
-   * Cheap enough to call on every wiki change event (no Automerge round-trip).
-   *
-   * Returns null if TW5 is not yet booted.
-   */
   /** Parse reaction bindings for a single URI from its current tiddler text. */
-  bindingsForUri(uri: string): ReactionBinding[] {
+  bindingsForUri(uri: string) {
     if (!this._tw) return [];
-    const text: string | undefined = this._tw.wiki.getTiddlerText(uri);
-    if (!text) return [];
-    try {
-      const edges = parsePranalaEdges(uri, text);
-      return extractReactionBindings(
-        edges.map((e) => ({
-          fromUri: e.fromUri, toUri: e.toUri,
-          family:  e.family,  role:  e.role,
-          payload: (e as unknown as { payload?: Record<string, unknown> }).payload ?? {},
-        }))
-      );
-    } catch { return []; }
+    return bindingsForUri(this._tw.wiki, uri);
   }
 
   /**
    * Build a full ReactionGraph from all tiddlers.
-   * Use once at boot to populate the graph; after that prefer
-   * graph.updateUri(uri, tw5.bindingsForUri(uri)) on wiki changes.
+   * Use once at boot; after that prefer graph.updateUri(uri, tw5.bindingsForUri(uri)).
    */
-  buildReactionGraph(): ReactionGraph | null {
+  buildReactionGraph() {
     if (!this._tw) return null;
-    const wiki = this._tw.wiki;
-    const titles: string[] = wiki.filterTiddlers("[all[tiddlers]!prefix[$:/]]");
-    const allEdges: { fromUri: string; toUri: string; family: string; role: string | null; payload: Record<string, unknown> }[] = [];
-
-    for (const uri of titles) {
-      const text: string | undefined = wiki.getTiddlerText(uri);
-      if (!text) continue;
-      try {
-        const edges = parsePranalaEdges(uri, text);
-        for (const e of edges) {
-          allEdges.push({
-            fromUri: e.fromUri, toUri: e.toUri,
-            family: e.family, role: e.role,
-            payload: (e as unknown as { payload?: Record<string, unknown> }).payload ?? {},
-          });
-        }
-      } catch { /* malformed carrier — skip */ }
-    }
-
-    const g = new ReactionGraph();
-    g.load(extractReactionBindings(allEdges));
-    return g;
+    return buildReactionGraph(this._tw.wiki);
   }
 
-  /** Read zoom-level layout props from the kumu def meme for this zoom level.
-   *  Resolved via TW5 filter on $:/tags/LarariumKumu + kumu-name field — works
-   *  across tagspaces (ha.ka.ba stable or chapel-perilous-opens draft). */
+  /** Read zoom-level layout props from the kumu def meme for this zoom level. */
   getZoomLayout(level: string): ZoomLayout | null {
     if (!this._tw) return null;
-    const name = `meme-${level}`;
-    const results: string[] = this._tw.wiki.filterTiddlers(
-      `[all[tiddlers]tag[$:/tags/LarariumKumu]field:kumu-name[${name}]]`
-    ) ?? [];
-    if (!results[0]) return null;
-    const text: string | undefined = this._tw.wiki.getTiddlerText(results[0]);
-    if (!text) return null;
-    return parseZoomLayoutTOML(text);
+    return getZoomLayout(this._tw.wiki, level);
   }
 }
 
-// ---------------------------------------------------------------------------
-// Server-side process singleton — used ONLY by the functional filter API.
-//
-// NEVER import or call getServerSingleton() from browser code. Each room (collaboration
-// space) must own its own LarariumTW5 instance: new LarariumTW5() → boot() →
-// injectKumuDefs() → loadClosure(). The singleton exists only so that Node.js
-// CLI tools (MCP, serve.ts filter calls) don't re-boot TW5 on every invocation.
-// ---------------------------------------------------------------------------
-
-let _serverSingleton: LarariumTW5 | null = null;
-let _serverSingletonReady: Promise<LarariumTW5> | null = null;
-
-async function getServerSingleton(): Promise<LarariumTW5> {
-  if (typeof window !== "undefined") {
-    throw new Error(
-      "LarariumTW5 getServerSingleton() called in browser context. " +
-      "Use new LarariumTW5() scoped to the room instead.",
-    );
-  }
-  if (_serverSingleton?.ready) return _serverSingleton;
-  if (_serverSingletonReady) return _serverSingletonReady;
-  _serverSingletonReady = (async () => {
-    _serverSingleton = new LarariumTW5();
-    await _serverSingleton.boot();
-    return _serverSingleton;
-  })();
-  return _serverSingletonReady;
-}
-
-// ---------------------------------------------------------------------------
-// Functional API — stable surface for @lararium/node / MCP call sites
-// ---------------------------------------------------------------------------
-
-/**
- * Filter ClosureEntry objects using the wikitext-filter dialect.
- * Boots TW5 on first call (~10ms), then instant on subsequent calls.
- */
-export async function filterMemesWikitext(
-  allEntries: readonly ClosureEntry[],
-  expr: string,
-  edges?: readonly EdgeRecord[],
-): Promise<ClosureEntry[]> {
-  const inst = await getServerSingleton();
-  inst.loadClosure(allEntries, edges);
-  return inst.filterClosure(expr, allEntries);
-}
-
-
-/**
- * Pre-compute multiple named filter results in a single boot cycle.
- * Used by the snapshot builder.
- */
-export async function precomputeRooms(
-  allEntries: readonly ClosureEntry[],
-  rooms: Record<string, string>,
-  edges?: readonly EdgeRecord[],
-): Promise<Record<string, string[]>> {
-  const inst = await getServerSingleton();
-  inst.loadClosure(allEntries, edges);
-  const byUri = new Map(allEntries.map((e) => [e.uri, e]));
-  const result: Record<string, string[]> = {};
-  for (const [roomId, expr] of Object.entries(rooms)) {
-    const titles = inst.filterTiddlers(expr);
-    result[roomId] = titles.filter((title: string) => byUri.has(title));
-  }
-  return result;
-}

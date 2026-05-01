@@ -18,16 +18,8 @@
  *   render path needed.
  */
 
-export {
-  LarariumTW5,
-  filterMemesWikitext,
-  precomputeRooms,
-  toCanonicalWikitext,
-  entryToFields,
-  buildEdgeFieldMap,
-} from "./lararium-tw5.js";
-
-export type { FilterEngineFn, ZoomLayout, TW5SyncAdaptor } from "./lararium-tw5.js";
+export { LarariumTW5, toCanonicalWikitext } from "./lararium-tw5.js";
+export type { FilterEngineFn, TW5SyncAdaptor } from "./lararium-tw5.js";
 
 // ---------------------------------------------------------------------------
 // Active TW5 accessor — module-level, React-free.
@@ -64,3 +56,9 @@ export { TW5_VERSION, TW5_CORE_SCRIPT_FILENAME, TW5_CORE_SCRIPT_URL } from "./ge
 export { parseTaploFields, patchTomlKey, lintToml } from "./toml-ast.js";
 export { CORPUS_SOURCES, LARES_CORPUS } from "./corpus-sources.js";
 export type { CorpusSource } from "./corpus-sources.js";
+
+export { entryToFields, buildEdgeFieldMap } from "./closure-fields.js";
+export { parseZoomLayoutTOML, getZoomLayout } from "./zoom-layout.js";
+export type { ZoomLayout } from "./zoom-layout.js";
+export { bindingsForUri, buildReactionGraph } from "./reaction-query.js";
+export { filterMemesWikitext, precomputeRooms, getServerSingleton } from "./server-api.js";

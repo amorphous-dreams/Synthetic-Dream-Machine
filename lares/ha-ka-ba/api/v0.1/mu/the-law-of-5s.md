@@ -15,10 +15,12 @@ manaoio    = 0.80
 mana       = 0.88
 manao      = 0.85
 namespace  = "ॐ ँ"
-role       = "OODA-HA loop boot, Catma nav terminal, syad handoff shelf"
-cacheable = true
-hydrate = true
-retain = true
+role        = "OODA-HA loop boot, Catma nav terminal, syad handoff shelf"
+cacheable   = true
+hydrate     = true
+retain      = true
+source-file = "packages/lararium-core/src/ast.ts"
+source-symbol = "LADDER_5 OODA_HA_5 SCOPE_5 SCOPE_TO_LADDER RATING_5 STAGE_5 STAGE_BAND_MID RATING_COLOR"
 ```
 
 <<~/ahu >>
@@ -112,6 +114,10 @@ their associated maps in `packages/lararium-core/src/ast.ts`.
 ```toml
 # Temporal / spatial scale ladder — finest → coarsest
 ladder-5 = ["action", "round", "turn", "watch", "week"]
+
+# OODA-HA phase cycle — active (act) → reflective (aftermath)
+# Runs opposite to ladder-5: Act = finest grain; Aftermath = widest lens
+ooda-ha-5 = ["act", "decide", "orient", "observe", "aftermath"]
 
 # Scope principle ladder — maps 1:1 onto ladder-5
 scope-5 = ["ephemeral", "personal", "consensual", "collective", "universal"]

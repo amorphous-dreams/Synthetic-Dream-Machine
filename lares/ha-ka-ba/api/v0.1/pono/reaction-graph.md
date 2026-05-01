@@ -14,10 +14,12 @@ register     = "CS"
 manaoio      = 0.82
 mana         = 0.86
 manao        = 0.84
-role         = "invariant interface: in-memory reaction graph — subscribe, fire, load, UEFN dispatch semantics"
-cacheable    = true
-retain       = true
-invariant    = true
+role          = "invariant interface: in-memory reaction graph — subscribe, fire, load, UEFN dispatch semantics"
+cacheable     = true
+retain        = true
+invariant     = true
+source-file   = "packages/lararium-core/src/reaction-graph.ts"
+source-symbol = "ReactionGraph RENDER_MODES REACTION_ROLES"
 ```
 
 <<~/ahu >>
@@ -132,6 +134,23 @@ This preserves in-flight kukali suspensions across TW5 wiki-change events.
 
 <<~/ahu >>
 
+
+<<~ ahu #schema >>
+
+## Schema (machine-readable)
+
+```toml
+# Render modes — canonical values for PranaEdge.renderMode
+# Source: RENDER_MODES in packages/lararium-core/src/ast.ts
+render-modes = ["reaction-wire"]
+# reaction-wire: trigger label at source, fn label at target
+
+# Canonical roles for reaction family edges
+# Source: REACTION_ROLES in packages/lararium-core/src/ast.ts
+reaction-roles = ["subscription", "handler", "callback"]
+```
+
+<<~/ahu >>
 
 <<~ ahu #edges >>
 

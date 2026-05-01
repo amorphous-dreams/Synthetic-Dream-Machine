@@ -15,10 +15,12 @@ manaoio = 0.86
 mana = 0.82
 manao = 0.88
 namespace = "ॐ ँ"
-role = "syad reading invariant, register metaphysics anchor, stance-conditioned confidence law"
-cacheable = true
-hydrate = true
-retain = true
+role          = "syad reading invariant, register metaphysics anchor, stance-conditioned confidence law"
+cacheable     = true
+hydrate       = true
+retain        = true
+source-file   = "packages/lararium-core/src/ast.ts"
+source-symbol = "STANCES SYAD_7 STANCE_SYAD SATIRIST_OPERATIONAL"
 ```
 
 <<~/ahu >>

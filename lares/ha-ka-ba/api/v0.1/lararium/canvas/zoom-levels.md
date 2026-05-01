@@ -13,9 +13,11 @@ register     = "CS"
 manaoio      = 0.78
 mana         = 0.82
 manao        = 0.80
-role         = "tldraw zoom-level thresholds, snap values, page routing, and initial view state"
-cacheable    = true
-retain       = true
+role          = "tldraw zoom-level thresholds, snap values, page routing, and initial view state"
+cacheable     = true
+retain        = true
+source-file   = "packages/lararium-tldraw/src/zoom-levels.ts"
+source-symbol = "ZOOM_THRESHOLDS ZOOM_SNAP ZOOM_PAGE"
 ```
 
 <<~/ahu >>

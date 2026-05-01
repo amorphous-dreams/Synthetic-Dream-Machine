@@ -107,6 +107,30 @@ revoke   — roll epoch; terminate future live tail for a principal
 Each ability implies all abilities below it in this ladder, EXCEPT:
 `pull` does not imply `read`. A relay may hold `pull` without `read`.
 
+```toml
+# Ordered least → most privileged. Source of truth for ABILITY_LADDER in
+# packages/lararium-core/src/causal-island.ts
+ability-ladder = [
+  "pull",     # retrieve encrypted bytes; relay without reading
+  "read",     # decrypt and render semantic content
+  "sync",     # participate in CRDT reconciliation
+  "write",    # produce accepted mutations
+  "propose",  # suggest hostful changes (not yet hostless canon)
+  "promote",  # hostful → hostless canon-promotion ceremony
+  "admin",    # manage room, recipe, edge island membership
+  "revoke",   # roll epoch; terminate future live tail for a principal
+]
+
+# Relay-law exception: pull does NOT imply read
+pull-implies-read = false
+# All other abilities imply every ability below them
+implication-rule = "ordered-except-pull"
+
+# Ratings eligible to federate (structural gate — stage band is NOT a gate)
+# Source: FEDERABLE_RATINGS in packages/lararium-core/src/causal-island.ts
+federable-ratings = ["meme", "ano", "kapu"]
+```
+
 <<~/ahu >>
 
 <<~ ahu #caveats >>
