@@ -39,62 +39,83 @@ Runs in `LarariumTW5._bootModules()` after TW5 `instance.boot.boot()` resolves. 
 
 ```typescript
 private async _bootModules(): Promise<void> {
-  const tw   = this._tw as any;
-  const wiki = tw?.wiki;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const tw = this._tw as any;
+    const wiki = tw?.wiki;
 
-  registerImplementorsOperator(tw);
+    // --- Corpus-gated path ---------------------------------------------------
+    // Register implementors filter operator first so the query below works.
+    // Safe to call before corpus load — only needs tw.filterOperators map.
+    registerImplementorsOperator(tw);
 
-  let injected = 0;
-  try {
-    const iface  = LarariumTW5.MODULE_INTERFACE_URI;
-    const titles = wiki.filterTiddlers(`[all[tiddlers]implementors[${iface}]]`) ?? [];
-    for (const title of titles) {
-      const t = wiki.getTiddler(title);
-      if (!t) continue;
-      const f = t.fields as Record<string, string>;
-
-      // Layer 1 — signal thresholds
-      if (
-        parseFloat(f["mana"]       ?? "0") < MODULE_MANA_THRESHOLD       ||
-        parseFloat(f["manao"]      ?? "0") < MODULE_MANAO_THRESHOLD       ||
-        parseFloat(f["manaoio"]    ?? "0") < MODULE_MANAOIO_THRESHOLD     ||
-        parseFloat(f["confidence"] ?? "0") < MODULE_CONFIDENCE_THRESHOLD
-      ) continue;
-
-      const body = f["text"] ?? "";
-      if (!body.trim() || body.startsWith("// Body injected")) continue;
-
-      // Layer 2 — SHA-256 body hash
-      const claimedHash = f["body-sha256"] ?? "";
-      if (!claimedHash || !(await LarariumTW5._verifySha256(body, claimedHash))) continue;
-
-      // Layer 3 — ceremony stamp
-      if (!f["promoted-at"]) continue;
-
-      wiki.addTiddler(new tw.Tiddler({
-        title,
-        type:          "application/javascript",
-        "module-type": f["module-type"] ?? "library",
-        text:          body,
-        tags:          [],
-      }));
-      injected++;
-    }
-  } catch { /* filter unavailable — fall through */ }
-
-  if (injected > 0) {
+    let injected = 0;
     try {
-      const moduleText = wiki.getTiddler(
-        "lar:///ha.ka.ba/api/v0.1/lararium/modules/tw5-modules"
-      )?.fields?.["text"] ?? "";
-      tw.modules.define(moduleText, "library", "lararium-tw5-modules");
-    } catch { /* no-op */ }
-    return;
-  }
+      const iface = LarariumTW5.MODULE_INTERFACE_URI;
+      const titles: string[] = wiki.filterTiddlers(
+        `[all[tiddlers]implementors[${iface}]]`
+      ) ?? [];
+      for (const title of titles) {
+        const t = wiki.getTiddler(title);
+        if (!t) continue;
+        const f = t.fields as Record<string, string>;
 
-  // Imperative fallback: register MemeticParser, deserializer, widgets directly
-  // from compiled TypeScript. See deserializer.md and widget-module.md.
-}
+        // Layer 1 — threshold
+        const mana       = parseFloat(f["mana"]       ?? "0");
+        const manao      = parseFloat(f["manao"]      ?? "0");
+        const manaoio    = parseFloat(f["manaoio"]    ?? "0");
+        const confidence = parseFloat(f["confidence"] ?? "0");
+        if (
+          mana       < LarariumTW5.MODULE_MANA_THRESHOLD       ||
+          manao      < LarariumTW5.MODULE_MANAO_THRESHOLD       ||
+          manaoio    < LarariumTW5.MODULE_MANAOIO_THRESHOLD     ||
+          confidence < LarariumTW5.MODULE_CONFIDENCE_THRESHOLD
+        ) continue;
+
+        const body = f["text"] ?? "";
+        if (!body.trim() || body.startsWith("// Body injected")) continue;
+
+        // Layer 2 — content hash
+        const claimedHash = f["body-sha256"] ?? "";
+        if (!claimedHash || !(await LarariumTW5._verifySha256(body, claimedHash))) continue;
+
+        // Layer 3 — ceremony stamp
+        if (!f["promoted-at"]) continue;
+
+        // All three layers passed — hand $tw.wiki to this meme.
+        wiki.addTiddler(new tw.Tiddler({
+          title,
+          type:           "application/javascript",
+          "module-type":  f["module-type"] ?? "library",
+          text:           body,
+          tags:           [],
+        }));
+        injected++;
+      }
+    } catch { /* filter unavailable — fall through to imperative path */ }
+
+    if (injected > 0) {
+      try {
+        const moduleText = wiki.getTiddler(
+          "lar:///ha.ka.ba/api/v0.1/lararium/modules/tw5-modules"
+        )?.fields?.["text"] ?? "";
+        tw.modules.define(moduleText, "library", "lararium-tw5-modules");
+      } catch { /* no-op */ }
+      return;
+    }
+
+    // --- Imperative fallback -------------------------------------------------
+    // No corpus module memes passed the threshold. Register directly from the
+    // compiled-in classes. This path is permanent for offline/cold-boot and
+    // during the transition before pnpm bundle has run.
+    // implementors operator already registered above; no-op to call again.
+    const parsers: Record<string, unknown> = tw?.Wiki?.parsers ?? {};
+    import("./memetic-parser.js").then(({ MemeticParser }) => {
+      parsers["text/x-memetic-wikitext"] = MemeticParser;
+    }).catch(() => { /* not critical */ });
+
+    LarariumTW5._registerDeserializer(tw);
+    LarariumTW5._registerWidgets(tw);
+  }
 ```
 
 <<~/ahu >>

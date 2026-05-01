@@ -45,28 +45,28 @@ TW5 calls this when it encounters a tiddler with `type = "text/x-memetic-wikitex
 
 ```typescript
 private static _registerDeserializer(tw: any): void {
-  if (!tw?.Wiki?.tiddlerDeserializerModules) return;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  tw.Wiki.tiddlerDeserializerModules["text/x-memetic-wikitext"] = function(text: string, fields: any) {
-    const uri: string = (fields?.title as string) ?? "";
-    const split = splitCarrierToTiddlers(uri, text);
-    const parent = { title: uri, ...fields, ...split.parent.fields, text };
-    const children = split.children.map((c) => ({ ...c.fields, title: c.title, text: c.text }));
-    const result: object[] = [parent, ...children];
-    if (split.warnings.length > 0) {
-      const safeSlug = uri.replace(/[^a-zA-Z0-9._-]/g, "_");
-      result.push({
-        title: `$:/lararium/parse-warning/${safeSlug}`,
-        tags: "$:/lararium/parse-warnings",
-        "carrier-uri": uri,
-        "warning-count": String(split.warnings.length),
-        text: split.warnings.join("\n"),
-        modified: new Date().toISOString().replace(/[:.]/g, "-"),
-      });
-    }
-    return result;
-  };
-}
+    if (!tw?.Wiki?.tiddlerDeserializerModules) return;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    tw.Wiki.tiddlerDeserializerModules["text/x-memetic-wikitext"] = function(text: string, fields: any) {
+      const uri: string = (fields?.title as string) ?? "";
+      const split = splitCarrierToTiddlers(uri, text);
+      const parent = { title: uri, ...fields, ...split.parent.fields, text };
+      const children = split.children.map((c) => ({ ...c.fields, title: c.title, text: c.text }));
+      const result: object[] = [parent, ...children];
+      if (split.warnings.length > 0) {
+        const safeSlug = uri.replace(/[^a-zA-Z0-9._-]/g, "_");
+        result.push({
+          title: `$:/lararium/parse-warning/${safeSlug}`,
+          tags: "$:/lararium/parse-warnings",
+          "carrier-uri": uri,
+          "warning-count": String(split.warnings.length),
+          text: split.warnings.join("\n"),
+          modified: new Date().toISOString().replace(/[:.]/g, "-"),
+        });
+      }
+      return result;
+    };
+  }
 ```
 
 <<~/ahu >>
