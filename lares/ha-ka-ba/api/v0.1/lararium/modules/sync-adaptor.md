@@ -51,7 +51,9 @@ private _applyChange(change: LarTiddlerChange): void {
     // Skip echoes of our own writes.
     if (change.origin.kind === "tw-local" && change.origin.instanceId === this.instanceId) return;
 
-    this._applying = change.origin;
+    // M-bags: key becomes change.origin.edgeIsland when available.
+    const applyKey = this.instanceId;
+    this._applying.set(applyKey, change.origin);
     try {
       if (change.record === null || change.record.deleted) {
         this.tw5.removeTiddler(change.title);
@@ -81,7 +83,7 @@ private _applyChange(change: LarTiddlerChange): void {
         if (change.revision) this._revisions.set(change.title, change.revision);
       }
     } finally {
-      this._applying = null;
+      this._applying.delete(applyKey);
     }
   }
 ```

@@ -28,6 +28,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import type { LarariumOpenPhase } from "@lararium/core";
+import { ReadinessMap } from "@lararium/core";
 import { LarariumTW5, LarariumCrdtSyncAdaptor, setActiveTW5 } from "@lararium/tw5";
 import { initMemeRepo, readMemeStoreUrl, type MemeRepoResult } from "./automerge-store.js";
 import type { AutomergeMemeStore } from "./automerge-store.js";
@@ -55,6 +56,8 @@ export interface HostOpenState {
   tw5:        LarariumTW5 | null;
   receipt:    string | null;
   isLive:     boolean;
+  /** Progressive shrine-light readiness vectors. Observe to drive UI reveals. */
+  readiness:  ReadinessMap;
 }
 
 // ---------------------------------------------------------------------------
@@ -76,6 +79,9 @@ export function useLarariumHostOpen(options: BrowserHostOptions): HostOpenState 
   const [receipt, setReceipt] = useState<string | null>(null);
   const [isLive,  setIsLive]  = useState(false);
 
+  // Stable ReadinessMap instance — outlives phase resets, accumulates shrine lights.
+  const readinessRef = useRef<ReadinessMap>(new ReadinessMap());
+
   const repoRef         = useRef<Repo | null>(null);
   const tw5Ref          = useRef<LarariumTW5 | null>(null);
   const stopAdaptorRef  = useRef<(() => void) | null>(null);
@@ -90,12 +96,22 @@ export function useLarariumHostOpen(options: BrowserHostOptions): HostOpenState 
     // Reset derived state for the new room before kicking off the async boot.
     setPhase(null); setStore(null); setTw5(null); setIsLive(false);
 
+    const readiness = readinessRef.current;
+
     async function run() {
-      // ── Authority ──────────────────────────────────────────────────────────
+      // ── Authority — identity BEFORE any content doc opens ─────────────────
       if (!cancelled) setPhase({ kind: "host-opening", hostId });
       if (!cancelled) setPhase({ kind: "authority-opening", hostId });
+
+      // Auth receipt resolves here — before store-opening — so no content doc
+      // opens without a proven identity context (authority-first-sync-order).
+      const authReceipt = await getOrCreateBrowserAuthReceipt();
       const r = readBootReceipt(hostId);
-      if (!cancelled) { setPhase({ kind: "authority-ready", receipt: r }); setReceipt(r); }
+      if (!cancelled) {
+        setPhase({ kind: "authority-ready", receipt: r });
+        setReceipt(r);
+        readiness.mark("auth");
+      }
 
       // ── Store (local-first) ───────────────────────────────────────────────
       if (!cancelled) setPhase({ kind: "store-opening", recipeUri });
@@ -109,8 +125,7 @@ export function useLarariumHostOpen(options: BrowserHostOptions): HostOpenState 
           return `${proto}//${typeof location !== "undefined" ? location.host : "localhost:4321"}/meme-sync`;
         })();
 
-      const storeUrl  = readMemeStoreUrl(hostId);
-      const authReceipt = await getOrCreateBrowserAuthReceipt();
+      const storeUrl = readMemeStoreUrl(hostId);
 
       let repoResult: MemeRepoResult;
       try {
@@ -129,6 +144,7 @@ export function useLarariumHostOpen(options: BrowserHostOptions): HostOpenState 
       const seedCount = (await s.listVisible()).length;
       setStore(s);
       setPhase({ kind: "store-ready", titleCount: seedCount });
+      readiness.mark("catalog");
 
       // ── TW5 ───────────────────────────────────────────────────────────────
       if (!cancelled) setPhase({ kind: "tw5-opening", hostId });
@@ -150,7 +166,7 @@ export function useLarariumHostOpen(options: BrowserHostOptions): HostOpenState 
         if (!cancelled) setPhase({ kind: "tw5-hydrating", loaded, total });
       });
 
-      if (!cancelled) { setTw5(t); setPhase({ kind: "tw5-ready", hostId }); }
+      if (!cancelled) { setTw5(t); setPhase({ kind: "tw5-ready", hostId }); readiness.mark("tw-vm"); }
 
       // Bind TW5 to the AutomergeMemeStore via CRDT sync adaptor.
       // crdt-remote changes (Automerge → TW5): adaptor.start() subscribes to store.
@@ -165,7 +181,7 @@ export function useLarariumHostOpen(options: BrowserHostOptions): HostOpenState 
 
       stopAdaptorRef.current = () => { stopStore(); stopSyncer(); };
 
-      if (!cancelled) { setPhase({ kind: "live", offset: 0 }); setIsLive(true); }
+      if (!cancelled) { setPhase({ kind: "live", offset: 0 }); setIsLive(true); readiness.mark("room-content"); }
     }
 
     run().catch((err: unknown) => {
@@ -184,7 +200,7 @@ export function useLarariumHostOpen(options: BrowserHostOptions): HostOpenState 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [options.roomId]);
 
-  return { phase, store, tw5, receipt, isLive };
+  return { phase, store, tw5, receipt, isLive, readiness: readinessRef.current };
 }
 
 

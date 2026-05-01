@@ -158,14 +158,17 @@ export class LarariumCrdtSyncAdaptor implements MemeProjection {
   private _unwatchCascade: (() => void) | null = null;
 
   /**
-   * Bulk-refresh gate — buffers inbound changes until the initial Automerge
-   * replay settles (onSyncComplete fires).
+   * Per-island sync-complete gate and change buffers.
    *
-   * M-bags: becomes Map<edgeIslandId, LarTiddlerChange[]> with a per-doc
-   * sync-complete gate. One doc completing does not flush another's buffer.
+   * Each island (identified by edgeIslandId) buffers inbound changes until
+   * onSyncComplete(islandId) fires for that island. One slow corpus doc
+   * completing does not flush or gate another island's buffer.
+   *
+   * Single-doc default: island "automerge" (matches AutomergeMemeStore origin).
+   * M-bags: each DocHandle uses its own edgeIslandId as the key.
    */
-  private _syncComplete = false;
-  private _buffer: LarTiddlerChange[] = [];
+  private _syncComplete = new Set<string>();
+  private _buffer = new Map<string, LarTiddlerChange[]>();
 
   /** Save cascade rules read from the corpus wiki. Invalidated on cascade-meme change. */
   private _cascadeCache: Array<{ filter: string; strategy: SaveStrategy }> | null = null;
@@ -184,40 +187,44 @@ export class LarariumCrdtSyncAdaptor implements MemeProjection {
   // ---------------------------------------------------------------------------
 
   /**
-   * Called by MemeProvider for each coalesced URI change. Buffered until
-   * onSyncComplete, then applied immediately.
+   * Called by MemeProvider for each coalesced URI change.
+   * Buffered per island until onSyncComplete(islandId) fires for that island,
+   * then applied immediately. One slow island cannot gate another.
    */
   onUriChanged(change: LarTiddlerChange): void {
-    if (!this._syncComplete) {
-      this._buffer.push(change);
+    const islandId = change.origin.kind === "crdt-remote"
+      ? change.origin.edgeIsland
+      : this.instanceId;
+    if (!this._syncComplete.has(islandId)) {
+      const buf = this._buffer.get(islandId) ?? [];
+      buf.push(change);
+      this._buffer.set(islandId, buf);
       return;
     }
     this._applyChange(change);
   }
 
   /**
-   * Fired once by MemeProvider after initial Automerge replay settles.
-   * Flushes buffered changes in a single TW5 transaction → one widget refresh
-   * instead of one per tiddler (resolves the 94s setTimeout violation).
+   * Fired by MemeProvider after an island's initial Automerge replay settles.
+   * Flushes only that island's buffer in one TW5 transaction → one widget
+   * refresh per island instead of one per tiddler.
    *
-   * M-bags: signature becomes onDocSyncComplete(edgeIslandId: string) and
-   * flushes only that island's buffer. Each doc reaches sync-complete
-   * independently — one slow corpus doc does not gate a fast room doc.
+   * Single-doc default: islandId = "automerge".
+   * M-bags: each DocHandle fires with its own edgeIslandId.
    */
-  onSyncComplete(): void {
-    this._syncComplete = true;
-    if (this._buffer.length === 0) return;
+  onSyncComplete(islandId = "automerge"): void {
+    this._syncComplete.add(islandId);
+    const buf = this._buffer.get(islandId) ?? [];
+    this._buffer.delete(islandId);
+    if (buf.length === 0) return;
 
     const toRemove: string[] = [];
     const toAdd: Array<Record<string, string | string[]>> = [];
 
-    // Use instanceId as the edge island identity for this doc connection.
-    // M-bags: this becomes the specific edgeIslandId for the doc being flushed.
-    const applyKey = this.instanceId;
-    this._applying.set(applyKey, { kind: "crdt-remote", edgeIsland: this.instanceId });
+    const applyKey = islandId;
+    this._applying.set(applyKey, { kind: "crdt-remote", edgeIsland: islandId });
     try {
-      for (const change of this._buffer) {
-        // Skip changes that originated from this same TW5 instance.
+      for (const change of buf) {
         if (change.origin.kind === "tw-local" && change.origin.instanceId === this.instanceId) {
           continue;
         }
@@ -251,7 +258,6 @@ export class LarariumCrdtSyncAdaptor implements MemeProjection {
         }
       }
     } finally {
-      this._buffer = [];
       this._applying.delete(applyKey);
     }
 

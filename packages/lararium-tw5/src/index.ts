@@ -54,8 +54,6 @@ export type { TW5ParseNode } from "./memetic-parser.js";
 export { TW5_VERSION, TW5_CORE_SCRIPT_FILENAME, TW5_CORE_SCRIPT_URL } from "./generated-tw5-version.js";
 
 export { parseTaploFields, patchTomlKey, lintToml } from "./toml-ast.js";
-export { CORPUS_SOURCES, LARES_CORPUS } from "./corpus-sources.js";
-export type { CorpusSource } from "./corpus-sources.js";
 
 export { entryToFields, buildEdgeFieldMap } from "./closure-fields.js";
 export { parseZoomLayoutTOML, getZoomLayout } from "./zoom-layout.js";

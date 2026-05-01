@@ -118,6 +118,60 @@ export function loadGrammarRules(): GrammarRules | null {
 }
 
 // ---------------------------------------------------------------------------
+// Corpus source registry — loaded from lares meme at runtime
+// Schema: lar:///ha.ka.ba/api/v0.1/lararium/schema/corpus-sources
+// ---------------------------------------------------------------------------
+
+export interface CorpusSource {
+  /** pnpm workspace package name */
+  name: string;
+  /** path relative to monorepo root */
+  path: string;
+  /** Automerge bag name — matches LarTiddlerRecord["bag"] */
+  bag: string;
+  /** quine-corpus: this corpus defines the infrastructure the machinery reads */
+  quine?: true;
+}
+
+export function loadCorpusSources(): CorpusSource[] {
+  const memeFile = join(LARES_ROOT, "ha-ka-ba/api/v0.1/lararium/schema/corpus-sources.md");
+  if (!existsSync(memeFile)) return [];
+  const text = readFileSync(memeFile, "utf8");
+
+  const sources: CorpusSource[] = [];
+  // Extract all ```toml ... ``` fences
+  for (const fence of text.matchAll(/```toml\s*([\s\S]*?)```/g)) {
+    const block = fence[1] ?? "";
+    // Parse [[corpus]] array-of-tables
+    const tableRe = /\[\[corpus\]\]([\s\S]*?)(?=\[\[|$)/g;
+    for (const m of block.matchAll(tableRe)) {
+      const entry: Record<string, string> = {};
+      for (const line of (m[1] ?? "").split("\n")) {
+        const kv = line.match(/^\s*([\w_]+)\s*=\s*(?:"([^"]*)"|'([^']*)'|(true|false)(?=\s|$))/);
+        if (kv) entry[kv[1]!] = kv[2] ?? kv[3] ?? kv[4] ?? "";
+      }
+      if (entry["name"] && entry["path"] && entry["bag"]) {
+        sources.push({
+          name: entry["name"]!,
+          path: entry["path"]!,
+          bag:  entry["bag"]!,
+          ...(entry["quine"] === "true" ? { quine: true as const } : {}),
+        });
+      }
+    }
+  }
+  return sources;
+}
+
+/** The quine-corpus — infrastructure definitions read by the machinery itself. */
+export function loadLaresCorpus(): CorpusSource {
+  const all = loadCorpusSources();
+  const lares = all.find((c) => c.quine);
+  if (!lares) throw new Error("corpus-sources meme has no quine-corpus entry");
+  return lares;
+}
+
+// ---------------------------------------------------------------------------
 // File reader
 // ---------------------------------------------------------------------------
 

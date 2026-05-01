@@ -83,7 +83,7 @@ export class AutomergeMemeStore implements LarTiddlerStore {
     const doc = this.handle.doc();
     if (!doc) return [];
     return Object.values(doc)
-      .filter((r) => r && !r.deleted && r.title?.startsWith("lar:"))
+      .filter((r) => r && !r.deleted && r.title && !r.title.startsWith("$:/temp/"))
       .map((r) => r.title);
   }
 

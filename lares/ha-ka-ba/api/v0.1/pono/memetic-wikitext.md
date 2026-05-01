@@ -158,6 +158,58 @@ A boot-valid surface should let a human or agent answer:
 
 <<~/ahu >>
 
+<<~ ahu #ahu-control-slots >>
+
+## Ahu Control Slots
+
+Some `ahu` slot names carry structural roles in the projection codec.
+They dissolve into the parent tiddler or are discarded during carrier expansion.
+They do NOT become child tiddlers.
+
+```toml
+[[control-slot]]
+name  = "#iam"
+role  = "identity block; metadata TOML; dissolves into parent fields"
+
+[[control-slot]]
+name  = "#exit"
+role  = "outward uncertainty discharge; dissolves, not projected"
+
+[[control-slot]]
+name  = "#stream-open"
+role  = "stream boundary open marker; structural only"
+
+[[control-slot]]
+name  = "#stream-close"
+role  = "stream boundary close marker; structural only"
+
+[[control-slot]]
+name  = "#stream-exit"
+role  = "stream exit marker; structural only"
+
+[[control-slot]]
+name  = "#body-open"
+role  = "body region open marker; structural only"
+
+[[control-slot]]
+name  = "#body-close"
+role  = "body region close marker; structural only"
+
+[[control-slot]]
+name  = "#meme-body-open"
+role  = "meme body open marker; structural only"
+
+[[control-slot]]
+name  = "#meme-body-close"
+role  = "meme body close marker; structural only"
+```
+
+All other `ahu` slot names project as child tiddlers of the parent carrier.
+
+Source invariant: `packages/lararium-tw5/src/carrier-codec.ts` `CONTROL_SLOTS`.
+
+<<~/ahu >>
+
 <<~ ahu #handoff-boundary >>
 
 ## Handoff Boundary

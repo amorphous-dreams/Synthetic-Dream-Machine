@@ -36,11 +36,14 @@ export interface MemeProjection {
   onUriChanged(change: LarTiddlerChange): void;
 
   /**
-   * Fired once when the initial Automerge sync replay has settled (after
-   * markSyncComplete() is called by the host). Use this to trigger a single
-   * bulk-refresh instead of per-tiddler refreshes during boot.
+   * Fired once per island when its initial Automerge sync replay has settled.
+   * islandId identifies which doc completed — projections buffer per-island and
+   * flush only that island's queue, so a slow corpus doc cannot gate a fast catalog.
+   *
+   * Single-doc default: islandId = "automerge" (matches AutomergeMemeStore origin).
+   * M-bags: each DocHandle passes its own edgeIslandId.
    */
-  onSyncComplete?(): void;
+  onSyncComplete?(islandId: string): void;
 }
 
 // Minimal patch shape — only path[0] (the top-level doc key) is needed.
@@ -63,7 +66,8 @@ export class MemeProvider {
 
   private readonly _projections = new Set<MemeProjection>();
   private readonly _pending     = new Map<string, { origin: ChangeOrigin; timer: ReturnType<typeof setTimeout> }>();
-  private _syncComplete         = false;
+  /** Set of island IDs whose initial replay has settled. Default island: "automerge". */
+  private readonly _syncComplete = new Set<string>();
 
   constructor(
     /** Returns the current full document state. Called at debounce-fire time, not patch time. */
@@ -74,8 +78,8 @@ export class MemeProvider {
   // Registration
   // ---------------------------------------------------------------------------
 
-  /** True after markSyncComplete() has been called. */
-  get syncComplete(): boolean { return this._syncComplete; }
+  /** True after markSyncComplete() has been called for the given island (default "automerge"). */
+  isSyncComplete(islandId = "automerge"): boolean { return this._syncComplete.has(islandId); }
 
   /**
    * Register a projection. Returns an unsubscribe function.
@@ -86,8 +90,9 @@ export class MemeProvider {
    */
   addProjection(p: MemeProjection): () => void {
     this._projections.add(p);
-    if (this._syncComplete) {
-      try { p.onSyncComplete?.(); }
+    // Late registration — fire onSyncComplete for every already-complete island.
+    for (const islandId of this._syncComplete) {
+      try { p.onSyncComplete?.(islandId); }
       catch (e) { console.error("[MemeProvider] projection error in late onSyncComplete:", e); }
     }
     return () => this._projections.delete(p);
@@ -98,15 +103,23 @@ export class MemeProvider {
   // ---------------------------------------------------------------------------
 
   /**
-   * Feed raw Automerge patches. Schedules a debounced fire for each touched
-   * lar: URI. Rapid patches for the same URI reset the timer — only the last
-   * known state is delivered to projections.
+   * Feed raw Automerge patches. Schedules a debounced fire for each touched key.
+   *
+   * Eligible keys:
+   *   lar:    — canonical meme URIs (corpus, room, system)
+   *   Draft of — identity-scoped drafts synced across user devices
+   *
+   * $:/temp/ and $:/ system tiddlers are excluded — they never enter the store.
+   * Natural language titles (personal bag, imported wikis) will be included once
+   * the personal bag Automerge doc lands (M-bags). The filter here stays in sync
+   * with the save cascade — whatever the adaptor writes, the provider must fan out.
    */
   handleChange(patches: RawPatch[], origin: ChangeOrigin): void {
     for (const p of patches) {
-      const uri = p.path[0];
-      if (typeof uri === "string" && uri.startsWith("lar:")) {
-        this._schedule(uri, origin);
+      const key = p.path[0];
+      if (typeof key !== "string") continue;
+      if (key.startsWith("lar:") || key.startsWith("Draft of ")) {
+        this._schedule(key, origin);
       }
     }
   }
@@ -133,9 +146,18 @@ export class MemeProvider {
    * state before onSyncComplete fires), then fires onSyncComplete on every
    * registered projection. Idempotent — safe to call more than once.
    */
-  markSyncComplete(): void {
-    if (this._syncComplete) return;
-    this._syncComplete = true;
+  /**
+   * Signal that an island's initial Automerge replay has settled.
+   * Flushes all pending debounce timers (for lar: URIs in this island's replay),
+   * then fires onSyncComplete(islandId) on every registered projection.
+   * Idempotent per island — safe to call more than once for the same id.
+   *
+   * Single-doc default: islandId = "automerge".
+   * M-bags: each DocHandle calls this with its own edgeIslandId after whenReady().
+   */
+  markSyncComplete(islandId = "automerge"): void {
+    if (this._syncComplete.has(islandId)) return;
+    this._syncComplete.add(islandId);
 
     // Flush all pending debounces — deliver final state now, don't wait.
     for (const [uri, { origin, timer }] of this._pending) {
@@ -145,7 +167,7 @@ export class MemeProvider {
     }
 
     for (const p of this._projections) {
-      try { p.onSyncComplete?.(); }
+      try { p.onSyncComplete?.(islandId); }
       catch (e) { console.error("[MemeProvider] projection error in onSyncComplete:", e); }
     }
   }
@@ -175,13 +197,17 @@ export class MemeProvider {
       deleted?: boolean;
     } | undefined;
 
+    const inferredBag = uri.startsWith("Draft of ")
+      ? "session" as const   // drafts: identity-scoped but not yet in dedicated draft bag
+      : "room"    as const;  // lar: URIs: live room content
+
     const record: LarTiddlerRecord | null = raw
       ? Object.freeze({
           title:   raw.title ?? uri,
           fields:  Object.freeze({ ...(raw.fields ?? {}) }),
           ...(raw.text    !== undefined && { text:    raw.text    }),
           ...(raw.deleted !== undefined && { deleted: raw.deleted }),
-          bag: "room" as const,
+          bag: inferredBag,
         })
       : null;
 
