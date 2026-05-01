@@ -10,7 +10,7 @@
  *   system bag   ← invariant boot corpus (read-only in this adaptor)
  *   corpus bags  ← durable Automerge docs, one per named corpus
  *   room bag     ← situated meaning: pins, notes, active artifacts
- *   draft bag    ← local high-churn draft-of tiddlers (not synced to peers)
+ *   draft bag    ← draft-of tiddlers; synced across user's devices, not per-session
  *   projection   ← rebuildable shadow; receipt-tagged
  *
  * Echo-loop guard:
@@ -27,9 +27,15 @@
  *   saveTiddler MUST NOT write to lares/. Canon promotion goes through a
  *   future Keyhive-backed ceremony. No active promotion route exists here.
  *
- * Draft guard:
- *   Session-local tiddlers ($:/temp/*, "Draft of ...") MUST NOT reach shared
- *   store state. They are suppressed in saveTiddler.
+ * Temp guard:
+ *   $:/temp/* tiddlers are session-local scratch and MUST NOT reach shared
+ *   store state. They are suppressed in saveTiddler and deleteTiddler.
+ *
+ * Draft sync:
+ *   "Draft of ..." tiddlers ARE synced across the user's identity's devices.
+ *   A user's in-progress edit on their laptop should appear on their desktop.
+ *   Drafts are per-user (identity), not per-session. They land in the draft
+ *   bag (M-bags) or targetBag (current single-doc) until bag routing exists.
  *
  * Save cascade:
  *   Write routing is corpus-driven — rules live in the wiki at:
@@ -63,19 +69,18 @@ const SAVE_CASCADE_URI = "lar:///ha.ka.ba/api/v0.1/lararium/sync/save-cascade";
 // ---------------------------------------------------------------------------
 
 /**
- * Fast-path guards for the two structural skip categories that mirror cascade
- * rules 1–3. Used in both saveTiddler and deleteTiddler to avoid a filter
- * call for the most common no-op cases.
+ * Fast-path guards mirroring the structural skip/sync categories.
  *
- * Fitness note (re-examine post-M-bags):
- *   isSessionLocal encodes TWO cascade rules (skip-temp + skip-draft).
- *   isTW5System encodes ONE cascade rule (skip-system).
- *   If cascade rule semantics shift (e.g., an operator promotes a $:/temp/
- *   tiddler as intentional corpus material), these fast-paths would override
- *   the corpus ruling. For now the semantics are stable enough to keep them.
+ * isTemp      — $:/temp/* only; session-local scratch, never synced.
+ * isTW5System — $:/ namespace; TW5 internals, never synced.
+ * isDraft     — "Draft of ..." titles; synced across user devices (identity-scoped).
  */
-function isSessionLocal(title: string): boolean {
-  return title.startsWith("$:/temp/") || title.startsWith("Draft of ");
+function isTemp(title: string): boolean {
+  return title.startsWith("$:/temp/");
+}
+
+function isDraft(title: string): boolean {
+  return title.startsWith("Draft of ");
 }
 
 function isTW5System(title: string): boolean {
@@ -128,13 +133,23 @@ export class LarariumCrdtSyncAdaptor implements MemeProjection {
   readonly targetBag: NonNullable<LarTiddlerRecord["bag"]>;
 
   /**
-   * _applying — active inbound origin during a CRDT apply.
+   * _applying — active inbound origins during CRDT applies, keyed by apply slot.
    *
-   * M-bags: becomes Map<edgeIslandId, ChangeOrigin> so concurrent replays
-   * from different docs don't interfere. The single-value form is correct
-   * while we have one doc.
+   * Non-empty means at least one inbound apply is in progress; saveTiddler /
+   * deleteTiddler suppress echoes whenever the map is non-empty.
+   *
+   * Key convention:
+   *   current single-doc: this.instanceId
+   *   M-bags future:      edgeIslandId per concurrent doc replay
+   *   carrier-child removes: `${instanceId}:carrier-child`
+   *
+   * Using a Map (rather than a scalar) means concurrent doc replays from
+   * different islands don't interfere — each island sets and deletes its own
+   * key without clearing another island's guard.
    */
-  private _applying: ChangeOrigin | null = null;
+  private _applying = new Map<string, ChangeOrigin>();
+
+  private _isApplying(): boolean { return this._applying.size > 0; }
 
   private _revisions = new Map<string, string>();
   private _pendingModifications = new Set<string>();
@@ -198,7 +213,8 @@ export class LarariumCrdtSyncAdaptor implements MemeProjection {
 
     // Use instanceId as the edge island identity for this doc connection.
     // M-bags: this becomes the specific edgeIslandId for the doc being flushed.
-    this._applying = { kind: "crdt-remote", edgeIsland: this.instanceId };
+    const applyKey = this.instanceId;
+    this._applying.set(applyKey, { kind: "crdt-remote", edgeIsland: this.instanceId });
     try {
       for (const change of this._buffer) {
         // Skip changes that originated from this same TW5 instance.
@@ -236,12 +252,11 @@ export class LarariumCrdtSyncAdaptor implements MemeProjection {
       }
     } finally {
       this._buffer = [];
+      this._applying.delete(applyKey);
     }
 
     for (const title of toRemove) this.tw5.removeTiddler(title);
     if (toAdd.length > 0) this.tw5.bulkSetTiddlers(toAdd);
-
-    this._applying = null;
   }
 
   /**
@@ -284,7 +299,9 @@ export class LarariumCrdtSyncAdaptor implements MemeProjection {
     // Skip echoes of our own writes.
     if (change.origin.kind === "tw-local" && change.origin.instanceId === this.instanceId) return;
 
-    this._applying = change.origin;
+    // M-bags: key becomes change.origin.edgeIsland when available.
+    const applyKey = this.instanceId;
+    this._applying.set(applyKey, change.origin);
     try {
       if (change.record === null || change.record.deleted) {
         this.tw5.removeTiddler(change.title);
@@ -314,7 +331,7 @@ export class LarariumCrdtSyncAdaptor implements MemeProjection {
         if (change.revision) this._revisions.set(change.title, change.revision);
       }
     } finally {
-      this._applying = null;
+      this._applying.delete(applyKey);
     }
   }
 
@@ -367,7 +384,7 @@ export class LarariumCrdtSyncAdaptor implements MemeProjection {
     tiddler: unknown,
     callback: (err: Error | null, adaptorInfo: unknown, revision: string) => void,
   ): void {
-    if (this._applying !== null) { callback(null, {}, "0"); return; }
+    if (this._isApplying()) { callback(null, {}, "0"); return; }
 
     const fields   = extractFields(tiddler);
     const title    = fields["title"] ?? "";
@@ -404,7 +421,8 @@ export class LarariumCrdtSyncAdaptor implements MemeProjection {
 
   private _resolveSaveStrategy(title: string): SaveStrategy {
     // Fast-path: the structural skip categories never route differently.
-    if (isSessionLocal(title) || isTW5System(title)) return "skip";
+    if (isTemp(title) || isTW5System(title)) return "skip";
+    if (isDraft(title)) return "direct";
 
     if (title.startsWith("lar:")) return "direct";
 
@@ -435,21 +453,23 @@ export class LarariumCrdtSyncAdaptor implements MemeProjection {
 
   /**
    * Remove carrier child tiddlers from the local TW5 wiki under the echo guard.
-   * Uses save/restore of _applying rather than always-null so nested calls
-   * from within an inbound apply don't clear the outer guard prematurely.
    *
-   * M-bags: in multi-doc this needs per-edgeIsland guard tracking — the
-   * save/restore pattern extends naturally if _applying becomes a Map.
+   * Sets a dedicated carrier-child key in _applying so the outer apply guard
+   * remains active if this is called during an inbound replay. The Map means
+   * the outer key survives independently — no save/restore needed.
+   *
+   * M-bags: the carrier-child key remains instance-scoped; each island's
+   * removes get their own key when edgeIslandId is used as the outer key.
    */
   private _removeLocalCarrierChildren(parentUri: string, origin: ChangeOrigin): void {
     const childTitles: string[] = this.tw5.filterTiddlers(`[tag[${parentUri}]has[ahu-slot]]`);
     if (childTitles.length === 0) return;
-    const previous = this._applying;
-    this._applying = origin;
+    const childKey = `${this.instanceId}:carrier-child`;
+    this._applying.set(childKey, origin);
     try {
       for (const title of childTitles) this.tw5.removeTiddler(title);
     } finally {
-      this._applying = previous;
+      this._applying.delete(childKey);
     }
   }
 
@@ -458,11 +478,9 @@ export class LarariumCrdtSyncAdaptor implements MemeProjection {
     callback: (err: Error | null) => void,
     _options?: unknown,
   ): void {
-    if (this._applying !== null) { callback(null); return; }
-    if (isSessionLocal(title) || isTW5System(title) || !title.startsWith("lar:")) {
-      callback(null);
-      return;
-    }
+    if (this._isApplying()) { callback(null); return; }
+    if (isTemp(title) || isTW5System(title)) { callback(null); return; }
+    if (!title.startsWith("lar:") && !isDraft(title)) { callback(null); return; }
 
     const origin: ChangeOrigin = { kind: "tw-local", instanceId: this.instanceId };
 

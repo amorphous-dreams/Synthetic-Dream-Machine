@@ -32,8 +32,10 @@ The save cascade is the write-routing constitution for `LarariumCrdtSyncAdaptor`
 When TW5 fires `saveTiddler(tiddler)`, the adaptor resolves a `SaveStrategy` for the tiddler title by walking these rules in `order` — first match wins.
 
 Two strategies exist:
-- `skip` — do not propagate to the shared Automerge store (session-local or TW5-internal tiddlers)
+- `skip` — do not propagate to the shared Automerge store (session-local scratch: `$:/temp/*`, TW5 system internals)
 - `direct` — write one `LarTiddlerRecord` per tiddler to the store; ahu slot children write as independent records alongside their parent
+
+Draft tiddlers (`Draft of ...`) use `direct` — they are identity-scoped, not session-scoped. A user's in-progress edit syncs across their devices.
 
 The cascade is read at runtime from the wiki via:
 ```
@@ -65,14 +67,14 @@ rationale     = "session-local scratch tiddlers — browser-only, not canonical"
 ```
 <<~/ahu >>
 
-<<~ ahu #skip-draft >>
+<<~ ahu #sync-draft >>
 ```toml
-ahu-slot      = "#skip-draft"
+ahu-slot      = "#sync-draft"
 ahu-parent    = "lar:///ha.ka.ba/api/v0.1/lararium/sync/save-cascade"
 order         = 3
 tw5-filter    = "[prefix[Draft of ]]"
-save-strategy = "skip"
-rationale     = "TW5 edit-draft tiddlers — editor artefacts, must not reach shared state"
+save-strategy = "direct"
+rationale     = "TW5 edit-draft tiddlers — synced across all devices for this user identity; a draft begun on one device should appear on another"
 ```
 <<~/ahu >>
 
