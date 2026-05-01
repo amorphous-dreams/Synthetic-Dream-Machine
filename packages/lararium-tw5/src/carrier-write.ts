@@ -8,6 +8,11 @@
  *
  * All functions take explicit (tw5, store, ...) parameters rather than closing
  * over class state, making them independently testable.
+ *
+ * M-bags note:
+ *   bag/recipe routing is deliberately absent here. LarTiddlerRecord.bag is
+ *   optional and will be assigned by the multi-doc Automerge store layer once
+ *   the M-bags refactor lands. Do not add bag: "room" back here.
  */
 
 import type { LarTiddlerStore, LarTiddlerRecord, ChangeOrigin } from "@lararium/core";
@@ -93,6 +98,41 @@ export function buildCarrierChildren(
 }
 
 // ---------------------------------------------------------------------------
+// Carrier text reconstruction
+// ---------------------------------------------------------------------------
+
+/**
+ * Reconstruct carrier text after a slot change. Tries surgical replacement
+ * first (preserves decorators and sibling slots); falls back to full
+ * reconstruction from sibling children when the slot pattern is missing.
+ *
+ * Used by both save (slot updated) and delete (slot removed) paths.
+ */
+export function reconstructCarrierText(
+  tw5: LarariumTW5,
+  parentUri: string,
+  parentFields: TW5TiddlerFields,
+  rawText: string,
+  options: { slotUpdate?: { slot: string; newBody: string }; excludeTitle?: string },
+): string {
+  const { slotUpdate, excludeTitle } = options;
+
+  if (slotUpdate && rawText) {
+    const spliced = slotUpdate.slot
+      ? replaceCarrierSlot(rawText, slotUpdate.slot, slotUpdate.newBody)
+      : null;
+    if (spliced !== null) return spliced;
+  }
+
+  // Slot not found in raw text, or no slot update requested (delete path):
+  // full reconstruction from all sibling children.
+  return serializeCarrier(
+    { title: parentUri, fields: parentFields as Record<string, string | string[]>, text: "" },
+    buildCarrierChildren(tw5, parentUri, excludeTitle),
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Direct record construction
 // ---------------------------------------------------------------------------
 
@@ -101,6 +141,7 @@ export function buildDirectRecord(
   title: string,
   fields: Record<string, string>,
   revision: string,
+  targetBag: NonNullable<LarTiddlerRecord["bag"]> = "room",
 ): LarTiddlerRecord {
   const textVal = fields["text"];
   return {
@@ -112,7 +153,8 @@ export function buildDirectRecord(
     ),
     ...(textVal !== undefined ? { text: textVal } : {}),
     revision,
-    bag: "room",
+    // bag/recipe intentionally absent — M-bags refactor will route these via
+    // the multi-doc Automerge store layer. See LarTiddlerRecord.bag (optional).
   };
 }
 
@@ -133,6 +175,7 @@ export async function saveChildCarrierRecord(
   fields: Record<string, string>,
   revision: string,
   origin: ChangeOrigin,
+  targetBag: NonNullable<LarTiddlerRecord["bag"]> = "room",
 ): Promise<void> {
   const inferred = inferChildCarrierTitle(tw5, title);
   const parentUri = fields["ahu-parent"] ?? inferred?.parentUri ?? "";
@@ -141,43 +184,32 @@ export async function saveChildCarrierRecord(
   const wiki = tw5.wiki;
   const parentTiddler = wiki.getTiddler?.(parentUri);
   const parentFields: TW5TiddlerFields = parentTiddler?.fields ?? ({} as TW5TiddlerFields);
-  const rawCarrierText = String(parentFields["text"] ?? "");
+  const rawText = String(parentFields["text"] ?? "");
 
   const slot = title.startsWith(parentUri)
     ? title.slice(parentUri.length)
-    : (inferred?.slot ?? null);
-  const newSlotBody = composeCarrierSlotBody(fields, fields["text"] ?? "");
+    : (inferred?.slot ?? "");
+  const newBody = composeCarrierSlotBody(fields, fields["text"] ?? "");
 
-  let reconstructed: string;
-  if (slot && rawCarrierText) {
-    const spliced = replaceCarrierSlot(rawCarrierText, slot, newSlotBody);
-    reconstructed =
-      spliced !== null
-        ? spliced
-        : serializeCarrier(
-            { title: parentUri, fields: parentFields as Record<string, string | string[]>, text: "" },
-            buildCarrierChildren(tw5, parentUri),
-          );
-  } else {
-    reconstructed = serializeCarrier(
-      { title: parentUri, fields: parentFields as Record<string, string | string[]>, text: "" },
-      buildCarrierChildren(tw5, parentUri),
-    );
-  }
+  const reconstructed = slot
+    ? reconstructCarrierText(tw5, parentUri, parentFields, rawText, { slotUpdate: { slot, newBody } })
+    : reconstructCarrierText(tw5, parentUri, parentFields, rawText, {});
 
   revisions.set(parentUri, revision);
-  const record: LarTiddlerRecord = {
-    title: parentUri,
-    fields: Object.fromEntries(
-      Object.entries(parentFields)
-        .filter(([k]) => k !== "text" && k !== "title")
-        .map(([k, v]) => [k, Array.isArray(v) ? v.join(" ") : String(v)]),
-    ),
-    text: reconstructed,
-    revision,
-    bag: "room",
-  };
-  await store.put(record, origin);
+  await store.put(
+    {
+      title: parentUri,
+      fields: Object.fromEntries(
+        Object.entries(parentFields)
+          .filter(([k]) => k !== "text" && k !== "title")
+          .map(([k, v]) => [k, Array.isArray(v) ? v.join(" ") : String(v)]),
+      ),
+      text: reconstructed,
+      revision,
+      bag: targetBag,
+    },
+    origin,
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -197,19 +229,18 @@ export async function saveParentAfterChildDelete(
   slot: string,
   revision: string,
   origin: ChangeOrigin,
+  targetBag: NonNullable<LarTiddlerRecord["bag"]> = "room",
 ): Promise<void> {
   const wiki = tw5.wiki;
   const parentTiddler = wiki.getTiddler?.(parentUri);
   const parentFields: TW5TiddlerFields = parentTiddler?.fields ?? ({} as TW5TiddlerFields);
-  const rawCarrierText = String(parentFields["text"] ?? "");
+  const rawText = String(parentFields["text"] ?? "");
 
-  let reconstructed = rawCarrierText ? removeCarrierSlot(rawCarrierText, slot) : null;
-  if (reconstructed === null) {
-    reconstructed = serializeCarrier(
-      { title: parentUri, fields: parentFields as Record<string, string | string[]>, text: "" },
-      buildCarrierChildren(tw5, parentUri, childTitle),
-    );
-  }
+  // Try removeCarrierSlot first (surgical); fall back via reconstructCarrierText.
+  const removed = rawText ? removeCarrierSlot(rawText, slot) : null;
+  const reconstructed = removed !== null
+    ? removed
+    : reconstructCarrierText(tw5, parentUri, parentFields, rawText, { excludeTitle: childTitle });
 
   revisions.set(parentUri, revision);
   await store.put(
@@ -222,7 +253,7 @@ export async function saveParentAfterChildDelete(
       ),
       text: reconstructed,
       revision,
-      bag: "room",
+      bag: targetBag,
     },
     origin,
   );

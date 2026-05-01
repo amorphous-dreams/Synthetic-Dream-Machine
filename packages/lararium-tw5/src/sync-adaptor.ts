@@ -4,29 +4,41 @@
  * Binds a hosted TW5 wiki to a LarTiddlerStore so TW5's syncer treats the
  * store as its remote backend. Implements the TW5 SyncAdaptor contract.
  *
- * Echo-loop guard:
- *   - When the store fires a change with origin.kind === "tw-local" and the
- *     instanceId matches ours, skip applying it to $tw.wiki (we sent it).
- *   - When the store fires a change with origin.kind === "crdt-remote", apply
- *     to $tw.wiki but suppress the resulting wiki change event from writing
- *     back to the store (we received it, not generated it).
+ * Each adaptor instance targets a single bag. Multi-doc architecture wires
+ * multiple adaptors (one per bag/doc) through the TW5 recipe stack:
  *
- * Canon guard (hard rule):
- *   saveTiddler MUST NOT write to lares/.
- *   Callers that need canon promotion must submit a future Keyhive-backed
- *   promotion proposal. No active promotion route exists in this adaptor.
+ *   system bag   ← invariant boot corpus (read-only in this adaptor)
+ *   corpus bags  ← durable Automerge docs, one per named corpus
+ *   room bag     ← situated meaning: pins, notes, active artifacts
+ *   draft bag    ← local high-churn draft-of tiddlers (not synced to peers)
+ *   projection   ← rebuildable shadow; receipt-tagged
+ *
+ * Echo-loop guard:
+ *   _applying tracks the active ChangeOrigin during an inbound CRDT apply.
+ *   Any saveTiddler / deleteTiddler call while _applying !== null is an echo
+ *   of our own write and is suppressed immediately.
+ *
+ *   M-bags note: in the multi-doc world _applying becomes a per-edgeIsland
+ *   gate (Map<edgeIslandId, ChangeOrigin>) so concurrent doc replays from
+ *   different islands don't block each other. The single-value form here is
+ *   correct for the current single-doc model.
+ *
+ * Canon guard:
+ *   saveTiddler MUST NOT write to lares/. Canon promotion goes through a
+ *   future Keyhive-backed ceremony. No active promotion route exists here.
  *
  * Draft guard:
  *   Session-local tiddlers ($:/temp/*, "Draft of ...") MUST NOT reach shared
- *   store state. The adaptor filters them from saveTiddler.
+ *   store state. They are suppressed in saveTiddler.
  *
  * Save cascade:
- *   Write routing is corpus-driven — rules live in:
+ *   Write routing is corpus-driven — rules live in the wiki at:
  *   lar:///ha.ka.ba/api/v0.1/lararium/sync/save-cascade
- *   Read from the wiki at first use and cached for the session.
+ *   Read from the wiki on first use and cached. Cache invalidates whenever
+ *   that meme changes (subscribed via onWikiChange in start()).
  */
 
-import type { LarTiddlerStore, LarTiddlerChange, ChangeOrigin, MemeProjection } from "@lararium/core";
+import type { LarTiddlerStore, LarTiddlerRecord, LarTiddlerChange, ChangeOrigin, MemeProjection } from "@lararium/core";
 import type { LarariumTW5 } from "./lararium-tw5.js";
 import type { TW5TiddlerFields } from "./types/tiddlywiki.js";
 import {
@@ -37,7 +49,7 @@ import {
 } from "./carrier-write.js";
 
 // ---------------------------------------------------------------------------
-// Save strategy types
+// Types
 // ---------------------------------------------------------------------------
 
 type SaveStrategy = "skip" | "direct" | "child-carrier";
@@ -55,6 +67,18 @@ const SAVE_CASCADE_URI = "lar:///ha.ka.ba/api/v0.1/lararium/sync/save-cascade";
 // Module-level helpers
 // ---------------------------------------------------------------------------
 
+/**
+ * Fast-path guards for the two structural skip categories that mirror cascade
+ * rules 1–3. Used in both saveTiddler and deleteTiddler to avoid a filter
+ * call for the most common no-op cases.
+ *
+ * Fitness note (re-examine post-M-bags):
+ *   isSessionLocal encodes TWO cascade rules (skip-temp + skip-draft).
+ *   isTW5System encodes ONE cascade rule (skip-system).
+ *   If cascade rule semantics shift (e.g., an operator promotes a $:/temp/
+ *   tiddler as intentional corpus material), these fast-paths would override
+ *   the corpus ruling. For now the semantics are stable enough to keep them.
+ */
 function isSessionLocal(title: string): boolean {
   return title.startsWith("$:/temp/") || title.startsWith("Draft of ");
 }
@@ -64,11 +88,14 @@ function isTW5System(title: string): boolean {
 }
 
 /**
- * Extract a flat Record<string, string> from a TW5 tiddler object.
+ * Normalise a TW5 tiddler argument to a flat Record<string, string>.
  *
- * TW5 passes tiddler objects to saveTiddler in two shapes depending on
- * context (Tiddler instance with .fields, or a raw fields object). Both
- * shapes are normalised here. Array-valued fields are joined with spaces.
+ * TW5's saveTiddler callback receives either:
+ *   A) a Tiddler instance — fields nested under `.fields`, other props flat
+ *   B) a raw fields object — everything flat at the top level
+ *
+ * Array-valued fields (e.g. `tags`) are joined with spaces to match the
+ * TW5 wire representation used throughout the adaptor.
  */
 function extractFields(tiddler: unknown): Record<string, string> {
   if (!tiddler || typeof tiddler !== "object") return {};
@@ -80,6 +107,7 @@ function extractFields(tiddler: unknown): Record<string, string> {
   };
   for (const [k, v] of Object.entries(t)) {
     if (k === "fields" && typeof v === "object" && v !== null) {
+      // Shape A: Tiddler instance — unwrap the nested fields object.
       for (const [fk, fv] of Object.entries(v as Record<string, unknown>)) flatten(fk, fv);
     } else {
       flatten(k, v);
@@ -95,33 +123,59 @@ function extractFields(tiddler: unknown): Record<string, string> {
 export class LarariumCrdtSyncAdaptor implements MemeProjection {
   readonly name = "lararium-crdt";
 
+  /**
+   * The bag this adaptor writes to.
+   *
+   * M-bags: in multi-doc architecture each adaptor instance targets one bag.
+   * The TW5 recipe stack composes them. Default "room" is correct for the
+   * current single-doc model where all live content goes to the room bag.
+   */
+  readonly targetBag: NonNullable<LarTiddlerRecord["bag"]>;
+
+  /**
+   * _applying — active inbound origin during a CRDT apply.
+   *
+   * M-bags: becomes Map<edgeIslandId, ChangeOrigin> so concurrent replays
+   * from different docs don't interfere. The single-value form is correct
+   * while we have one doc.
+   */
   private _applying: ChangeOrigin | null = null;
+
   private _revisions = new Map<string, string>();
   private _pendingModifications = new Set<string>();
   private _pendingDeletions = new Set<string>();
   private _unsubscribe: (() => void) | null = null;
+  private _unwatchCascade: (() => void) | null = null;
 
-  // Bulk-refresh gate — buffer changes until initial Automerge replay settles.
+  /**
+   * Bulk-refresh gate — buffers inbound changes until the initial Automerge
+   * replay settles (onSyncComplete fires).
+   *
+   * M-bags: becomes Map<edgeIslandId, LarTiddlerChange[]> with a per-doc
+   * sync-complete gate. One doc completing does not flush another's buffer.
+   */
   private _syncComplete = false;
   private _buffer: LarTiddlerChange[] = [];
 
-  // Save cascade — read from wiki on first use, cached for the session.
+  /** Save cascade rules read from the corpus wiki. Invalidated on cascade-meme change. */
   private _cascadeCache: Array<{ filter: string; strategy: SaveStrategy }> | null = null;
 
   constructor(
     private readonly tw5: LarariumTW5,
     private readonly store: LarTiddlerStore,
     readonly instanceId: string,
-  ) {}
+    targetBag: NonNullable<LarTiddlerRecord["bag"]> = "room",
+  ) {
+    this.targetBag = targetBag;
+  }
 
   // ---------------------------------------------------------------------------
-  // MemeProjection — called by MemeProvider (bypasses the per-tiddler path)
+  // MemeProjection — inbound CRDT→TW5 direction
   // ---------------------------------------------------------------------------
 
   /**
-   * Called by MemeProvider for each coalesced URI change. During the initial
-   * Automerge replay (before markSyncComplete), changes are buffered. After
-   * sync-complete they are applied immediately.
+   * Called by MemeProvider for each coalesced URI change. Buffered until
+   * onSyncComplete, then applied immediately.
    */
   onUriChanged(change: LarTiddlerChange): void {
     if (!this._syncComplete) {
@@ -132,10 +186,13 @@ export class LarariumCrdtSyncAdaptor implements MemeProjection {
   }
 
   /**
-   * Fired once by MemeProvider after the initial Automerge replay settles.
-   * Flushes the buffered changes in a single TW5 transaction → one widget
-   * refresh cycle instead of one per tiddler. Resolves the 94s setTimeout
-   * violation: TW5 used to fire a refresh for every patch during replay.
+   * Fired once by MemeProvider after initial Automerge replay settles.
+   * Flushes buffered changes in a single TW5 transaction → one widget refresh
+   * instead of one per tiddler (resolves the 94s setTimeout violation).
+   *
+   * M-bags: signature becomes onDocSyncComplete(edgeIslandId: string) and
+   * flushes only that island's buffer. Each doc reaches sync-complete
+   * independently — one slow corpus doc does not gate a fast room doc.
    */
   onSyncComplete(): void {
     this._syncComplete = true;
@@ -144,13 +201,15 @@ export class LarariumCrdtSyncAdaptor implements MemeProjection {
     const toRemove: string[] = [];
     const toAdd: Array<Record<string, string | string[]>> = [];
 
-    this._applying = { kind: "crdt-remote", edgeIsland: "automerge" };
+    // Use instanceId as the edge island identity for this doc connection.
+    // M-bags: this becomes the specific edgeIslandId for the doc being flushed.
+    this._applying = { kind: "crdt-remote", edgeIsland: this.instanceId };
     try {
       for (const change of this._buffer) {
-        if (
-          change.origin.kind === "tw-local" &&
-          (change.origin as { instanceId: string }).instanceId === this.instanceId
-        ) continue;
+        // Skip changes that originated from this same TW5 instance.
+        if (change.origin.kind === "tw-local" && change.origin.instanceId === this.instanceId) {
+          continue;
+        }
 
         if (change.record === null || change.record.deleted) {
           toRemove.push(change.title);
@@ -160,16 +219,18 @@ export class LarariumCrdtSyncAdaptor implements MemeProjection {
         } else {
           const rec = change.record;
           const isCarrier = rec.text !== undefined &&
-            (rec?.fields["content-type"] === "text/x-memetic-wikitext" ||
-              (!rec?.fields["content-type"] && change.title.startsWith("lar:")));
+            (rec.fields["content-type"] === "text/x-memetic-wikitext" ||
+              (!rec.fields["content-type"] && change.title.startsWith("lar:")));
 
           if (isCarrier && rec.text) {
             const staleChildren: string[] = this.tw5.filterTiddlers(`[tag[${change.title}]has[ahu-slot]]`);
             for (const t of staleChildren) toRemove.push(t);
-            const tiddlers = this.tw5.deserializeCarrier(change.title, rec.text, rec?.fields as Record<string, string | string[]>);
+            const tiddlers = this.tw5.deserializeCarrier(
+              change.title, rec.text, rec.fields as Record<string, string | string[]>,
+            );
             for (const t of tiddlers) toAdd.push(t as Record<string, string | string[]>);
           } else {
-            const fields: Record<string, string | string[]> = { title: rec.title, ...rec?.fields };
+            const fields: Record<string, string | string[]> = { title: rec.title, ...rec.fields };
             if (rec.text !== undefined) fields["text"] = rec.text;
             toAdd.push(fields);
           }
@@ -189,12 +250,10 @@ export class LarariumCrdtSyncAdaptor implements MemeProjection {
   }
 
   /**
-   * Start listening to store changes and applying them to the TW5 wiki.
+   * Start listening to store changes and subscribe the cascade cache watcher.
    *
-   * When the store exposes addProjection() (AutomergeMemeStore / any MemeProvider-
-   * backed store), this adaptor registers itself as a MemeProjection so it
-   * participates in the onSyncComplete bulk-refresh gate. Otherwise it falls
-   * back to store.subscribe() (no bulk gate, but still correct).
+   * Registers as MemeProjection when the store supports addProjection()
+   * (AutomergeMemeStore), falling back to store.subscribe() for plain stores.
    */
   start(): () => void {
     const storeWithProjection = this.store as unknown as {
@@ -205,12 +264,20 @@ export class LarariumCrdtSyncAdaptor implements MemeProjection {
     } else {
       this._unsubscribe = this.store.subscribe((change) => this._applyChange(change));
     }
+
+    // Invalidate cascade cache whenever the save-cascade meme changes.
+    this._unwatchCascade = this.tw5.onWikiChange((changes) => {
+      if (SAVE_CASCADE_URI in changes) this._cascadeCache = null;
+    });
+
     return () => this.stop();
   }
 
   stop(): void {
     this._unsubscribe?.();
     this._unsubscribe = null;
+    this._unwatchCascade?.();
+    this._unwatchCascade = null;
   }
 
   // ---------------------------------------------------------------------------
@@ -219,10 +286,8 @@ export class LarariumCrdtSyncAdaptor implements MemeProjection {
   // ---------------------------------------------------------------------------
 
   private _applyChange(change: LarTiddlerChange): void {
-    if (
-      change.origin.kind === "tw-local" &&
-      (change.origin as { instanceId: string }).instanceId === this.instanceId
-    ) return;
+    // Skip echoes of our own writes.
+    if (change.origin.kind === "tw-local" && change.origin.instanceId === this.instanceId) return;
 
     this._applying = change.origin;
     try {
@@ -234,16 +299,18 @@ export class LarariumCrdtSyncAdaptor implements MemeProjection {
       } else {
         const rec = change.record;
         const isCarrier = rec.text !== undefined &&
-          (rec?.fields["content-type"] === "text/x-memetic-wikitext" ||
-            (!rec?.fields["content-type"] && change.title.startsWith("lar:")));
+          (rec.fields["content-type"] === "text/x-memetic-wikitext" ||
+            (!rec.fields["content-type"] && change.title.startsWith("lar:")));
 
         if (isCarrier && rec.text) {
           const staleChildren: string[] = this.tw5.filterTiddlers(`[tag[${change.title}]has[ahu-slot]]`);
           for (const t of staleChildren) this.tw5.removeTiddler(t);
-          const tiddlers = this.tw5.deserializeCarrier(change.title, rec.text, rec?.fields as Record<string, string | string[]>);
+          const tiddlers = this.tw5.deserializeCarrier(
+            change.title, rec.text, rec.fields as Record<string, string | string[]>,
+          );
           for (const t of tiddlers) this.tw5.setTiddler(t as Record<string, string | string[]>);
         } else {
-          const fields: Record<string, string | string[]> = { title: rec.title, ...rec?.fields };
+          const fields: Record<string, string | string[]> = { title: rec.title, ...rec.fields };
           if (rec.text !== undefined) fields["text"] = rec.text;
           this.tw5.setTiddler(fields);
         }
@@ -257,7 +324,7 @@ export class LarariumCrdtSyncAdaptor implements MemeProjection {
   }
 
   // ---------------------------------------------------------------------------
-  // TW5 SyncAdaptor contract
+  // TW5 SyncAdaptor contract — outbound TW5→CRDT direction
   // ---------------------------------------------------------------------------
 
   getStatus(
@@ -295,7 +362,7 @@ export class LarariumCrdtSyncAdaptor implements MemeProjection {
   ): void {
     this.store.get(title).then((rec) => {
       if (!rec || rec.deleted) { callback(null, null); return; }
-      const fields: Record<string, unknown> = { title: rec.title, ...rec?.fields };
+      const fields: Record<string, unknown> = { title: rec.title, ...rec.fields };
       if (rec.text !== undefined) fields["text"] = rec.text;
       callback(null, fields);
     }).catch((err: Error) => callback(err, null));
@@ -307,8 +374,8 @@ export class LarariumCrdtSyncAdaptor implements MemeProjection {
   ): void {
     if (this._applying !== null) { callback(null, {}, "0"); return; }
 
-    const fields = extractFields(tiddler);
-    const title  = fields["title"] ?? "";
+    const fields   = extractFields(tiddler);
+    const title    = fields["title"] ?? "";
     const strategy = this._resolveSaveStrategy(title, fields);
 
     if (strategy === "skip") { callback(null, {}, "0"); return; }
@@ -323,11 +390,6 @@ export class LarariumCrdtSyncAdaptor implements MemeProjection {
 
   // ---------------------------------------------------------------------------
   // Save cascade — corpus-driven write routing
-  //
-  // Rules live in lar:///ha.ka.ba/api/v0.1/lararium/sync/save-cascade.
-  // Read from the wiki on first call and cached for the session.
-  // Fast-path guards (isSessionLocal, isTW5System) avoid the filter call for
-  // the most common skip cases; they mirror cascade rules 1–3 exactly.
   // ---------------------------------------------------------------------------
 
   private _readSaveCascade(): Array<{ filter: string; strategy: SaveStrategy }> {
@@ -346,11 +408,12 @@ export class LarariumCrdtSyncAdaptor implements MemeProjection {
   }
 
   private _resolveSaveStrategy(title: string, fields: Record<string, string> = {}): SaveStrategy {
-    // Fast-path: avoid filter call for the most common skip cases.
+    // Fast-path: the structural skip categories never route differently.
     if (isSessionLocal(title) || isTW5System(title)) return "skip";
 
-    // Explicit field/title facts take priority — saveTiddler can be called
-    // with a fresh tiddler not yet in the wiki, so cascade filters may miss it.
+    // Explicit field facts take priority over filter cascade — saveTiddler can
+    // be called with a fresh tiddler not yet in the wiki, so cascade filters
+    // operating on wiki state would miss it.
     if (fields["ahu-parent"]) return "child-carrier";
     const currentFields = this.tw5.wiki.getTiddler?.(title)?.fields ?? ({} as TW5TiddlerFields);
     if (currentFields["ahu-parent"]) return "child-carrier";
@@ -366,7 +429,7 @@ export class LarariumCrdtSyncAdaptor implements MemeProjection {
       try {
         const result: string[] = wiki.filterTiddlers(`[[${title}]${filter}]`);
         if (result.length > 0) return strategy;
-      } catch { /* malformed filter — skip rule */ }
+      } catch { /* malformed corpus filter — skip rule, do not crash */ }
     }
     return "skip";
   }
@@ -376,11 +439,14 @@ export class LarariumCrdtSyncAdaptor implements MemeProjection {
 
     direct: async (title, fields, revision, origin) => {
       this._revisions.set(title, revision);
-      await this.store.put(buildDirectRecord(title, fields, revision), origin);
+      await this.store.put(buildDirectRecord(title, fields, revision, this.targetBag), origin);
     },
 
     "child-carrier": async (title, fields, revision, origin) => {
-      await saveChildCarrierRecord(this.tw5, this.store, this._revisions, title, fields, revision, origin);
+      await saveChildCarrierRecord(
+        this.tw5, this.store, this._revisions,
+        title, fields, revision, origin, this.targetBag,
+      );
     },
   };
 
@@ -388,6 +454,14 @@ export class LarariumCrdtSyncAdaptor implements MemeProjection {
   // Delete path
   // ---------------------------------------------------------------------------
 
+  /**
+   * Remove carrier child tiddlers from the local TW5 wiki under the echo guard.
+   * Uses save/restore of _applying rather than always-null so nested calls
+   * from within an inbound apply don't clear the outer guard prematurely.
+   *
+   * M-bags: in multi-doc this needs per-edgeIsland guard tracking — the
+   * save/restore pattern extends naturally if _applying becomes a Map.
+   */
   private _removeLocalCarrierChildren(parentUri: string, origin: ChangeOrigin): void {
     const childTitles: string[] = this.tw5.filterTiddlers(`[tag[${parentUri}]has[ahu-slot]]`);
     if (childTitles.length === 0) return;
@@ -406,7 +480,10 @@ export class LarariumCrdtSyncAdaptor implements MemeProjection {
     _options?: unknown,
   ): void {
     if (this._applying !== null) { callback(null); return; }
-    if (isSessionLocal(title) || isTW5System(title) || !title.startsWith("lar:")) { callback(null); return; }
+    if (isSessionLocal(title) || isTW5System(title) || !title.startsWith("lar:")) {
+      callback(null);
+      return;
+    }
 
     const origin: ChangeOrigin = { kind: "tw-local", instanceId: this.instanceId };
     const revision = String(Date.now());
@@ -416,7 +493,7 @@ export class LarariumCrdtSyncAdaptor implements MemeProjection {
       saveParentAfterChildDelete(
         this.tw5, this.store, this._revisions,
         title, childCarrier.parentUri, childCarrier.slot,
-        revision, origin,
+        revision, origin, this.targetBag,
       )
         .then(() => callback(null))
         .catch(callback);
@@ -431,6 +508,12 @@ export class LarariumCrdtSyncAdaptor implements MemeProjection {
       .catch(callback);
   }
 
+  /**
+   * Report accumulated modifications and deletions to TW5's syncer.
+   *
+   * M-bags: in multi-doc, modifications from different bags/docs accumulate
+   * in separate sets and are merged here for TW5's single syncer view.
+   */
   getUpdatedTiddlers(
     _syncer: unknown,
     callback: (err: Error | null, updates: { modifications: string[]; deletions: string[] }) => void,
