@@ -23,11 +23,9 @@ retain = true
 
 <<~/ahu >>
 
-<<~&#x0002;>>
-
 <<~ aka lar:///ha.ka.ba/api/v0.1/pono/RFC-2119#normative-language >>
 
-<<~ ahu #meme-header >>
+<<~ ahu #head >>
 
 # Invariant Meme Law (Kānāwai)
 
@@ -52,6 +50,7 @@ loulou links bind invariant -> documentation.
 
 <<~/ahu >>
 
+<<~&#x0002;>>
 
 <<~ ahu #invariant-law >>
 
@@ -79,7 +78,7 @@ Shape and pressure teachings MUST stay invariant.
 
 A template for invariants to fill.
 
-<<~ aka lar:///ha.ka.ba/api/v0.1/mu/ooda-ha#meme-header >>
+<<~ aka lar:///ha.ka.ba/api/v0.1/mu/ooda-ha#head >>
 
 ✶ ???
 ⏿ ???

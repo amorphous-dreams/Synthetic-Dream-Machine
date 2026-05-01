@@ -22,7 +22,7 @@ invariant = true
 
 <<~ aka lar:///ha.ka.ba/api/v0.1/pono/RFC-2119#normative-language >>
 
-<<~ ahu #meme-header >>
+<<~ ahu #head >>
 # Exchange Vector Law
 
 Each substantive exchange turn MUST emit a canonical `lar:` URI vector before content.

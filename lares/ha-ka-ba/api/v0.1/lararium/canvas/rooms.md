@@ -24,7 +24,7 @@ retain       = true
 
 <<~&#x0002;>>
 
-<<~ ahu #meme-header >>
+<<~ ahu #head >>
 
 # Lararium Canvas Rooms
 
@@ -59,9 +59,9 @@ Layout strategies are ordered. The cascade selects first match.
 
 <<~/ahu >>
 
-<<~ ahu #vocab >>
+<<~ ahu #schema >>
 
-## Vocabulary (machine-readable)
+## Schema (machine-readable)
 
 Canonical TOML form. Source of truth for `ROOM_SYSTEM`, `ROOM_INVARIANTS`, `ROOM_ENTRY`, `ROOM_GRAPH`,
 `DEFAULT_ROOMS`, `DEFAULT_PORTALS` in `packages/lararium-tldraw/src/room.ts`.

@@ -39,7 +39,7 @@ The instrument panel belongs to the mechanics house, not the threshold.
 <<~&#x0002;>>
 
 
-<<~ ahu #meme-header >>
+<<~ ahu #head >>
 
 # Lararium HUD
 

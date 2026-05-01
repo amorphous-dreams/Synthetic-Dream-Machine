@@ -25,21 +25,7 @@ retain = true
 
 <<~ aka lar:///ha.ka.ba/api/v0.1/pono/RFC-2119#normative-language >>
 
-<<~ ahu #entry >>
-
-## Entry — Mu Core Hydration
-
-<<~ loulou lar:///ha.ka.ba/api/v0.1/mu >>
-
-The Syad Perspectives receive Mu's cold-hydration pressure here.
-Register reading loads as core, not as an optional later flourish.
-
-<<~/ahu >>
-
-<<~&#x0002;>>
-
-
-<<~ ahu #meme-header >>
+<<~ ahu #head >>
 
 # The Syad Perspectives
 
@@ -48,6 +34,8 @@ Different measure.
 Standpoint declares the measure.
 
 <<~/ahu >>
+
+<<~&#x0002;>>
 
 
 <<~ ahu #ooda-ha >>
@@ -210,9 +198,9 @@ Discordian witness texts can also rest in library space.
 
 <<~/ahu >>
 
-<<~ ahu #vocab >>
+<<~ ahu #schema >>
 
-## Vocabulary (machine-readable)
+## Schema (machine-readable)
 
 Canonical TOML form. Source of truth for `STANCES`, `SYAD_7`, `STANCE_SYAD`, `SATIRIST_OPERATIONAL`
 in `packages/lararium-core/src/ast.ts`.

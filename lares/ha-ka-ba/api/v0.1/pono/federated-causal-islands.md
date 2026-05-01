@@ -22,6 +22,27 @@ invariant    = true
 
 <<~/ahu >>
 
+<<~ ahu #head >>
+
+# Federated Causal Islands
+
+Fuller-Zelenka non-simultaneous apprehension as ontological basis.
+Named causal island tiers 0–3; authority-first sync order; edge-island identity, lifecycle, relay law.
+
+<<~/ahu >>
+
+<<~&#x0002;>>
+
+<<~ ahu #ooda-ha >>
+
+✶ locate the causal boundary — where can causality not be guaranteed simultaneously?
+⏿ orient the tier: Tier 0 kumu/active memes, Tier 1 room memes, Tier 2 Automerge Realms, Tier 3 Lares nodes
+◇ MUST become island: federation edges, pranala connections, canon ceremonies, epoch changes, membership changes
+▶ authority-first sync: authenticate → authority graph → visible rooms → manifest → capability ops → CRDT → deltas
+⤴ edge island carries id, capability, offset, epoch, visibility-gate, receipt; offset belongs to the edge not the remote
+↺ confirm sync order maintained; content did not precede authority; relay holds pull not read
+
+<<~/ahu >>
 
 <<~ ahu #law >>
 
@@ -57,8 +78,6 @@ An Automerge Realm (a distinct Automerge doc) is ALWAYS non-simultaneously appre
 regardless of where it was first encountered on the network.
 
 <<~/ahu >>
-
-<<~&#x0002;>>
 
 
 <<~ ahu #edge-island-shape >>
@@ -224,9 +243,9 @@ Cross-node causality errors become federation corruption.
 <<~/ahu >>
 
 
-<<~ ahu #vocab >>
+<<~ ahu #schema >>
 
-## Vocabulary (machine-readable)
+## Schema (machine-readable)
 
 Canonical TOML form. Source of truth for `AUTHORITY_FIRST_ORDER`, `CAUSAL_ISLAND_MUST`, `CAUSAL_ISLAND_MAY`
 in `packages/lararium-core/src/causal-island.ts`.

@@ -23,7 +23,7 @@ retain = true
 
 <<~ aka lar:///ha.ka.ba/api/v0.1/pono/RFC-2119#normative-language >>
 
-<<~ ahu #meme-header >>
+<<~ ahu #head >>
 
 # Loci
 
@@ -41,6 +41,7 @@ Root path segments outside `\w\.\w\.\w` MAY NOT implement `loci`.
 
 <<~/ahu >>
 
+<<~&#x0002;>>
 
 <<~ ahu #ooda-ha >>
 
@@ -54,8 +55,6 @@ Root path segments outside `\w\.\w\.\w` MAY NOT implement `loci`.
 <<~ loulou lar:///ha.ka.ba/api/v0.1/pono/loci/SKILL >>
 
 <<~/ahu >>
-
-<<~&#x0002;>>
 
 
 <<~ ahu #promotion-path >>

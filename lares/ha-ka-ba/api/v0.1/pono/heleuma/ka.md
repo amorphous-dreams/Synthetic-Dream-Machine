@@ -21,7 +21,7 @@ role         = "invariant interface: heleuma-ka — soul/fire anchor; promotion-
 
 <<~&#x0002;>>
 
-<<~ ahu #meme-header >>
+<<~ ahu #head >>
 
 # Heleuma-Ka Interface (Soul / Fire)
 

@@ -18,9 +18,7 @@ role         = "invariant: heleuma anchor pattern — compiled-side artifacts he
 ```
 <<~/ahu >>
 
-<<~&#x0002;>>
-
-<<~ ahu #definition >>
+<<~ ahu #head >>
 
 # Heleuma — Anchor
 
@@ -32,6 +30,19 @@ A **heleuma** is any artifact that MUST exist outside the `lar:///` URI space �
 - A **doc meme** (`/docs/...`) carrying the design rationale, the "why it is stuck here," and the path toward eventual promotion.
 
 A heleuma is not a failure. It is a **named threshold crossing** — the meme graph asserting sovereignty over something that must, for now, be born outside.
+
+<<~/ahu >>
+
+<<~&#x0002;>>
+
+<<~ ahu #ooda-ha >>
+
+✶ detect compiled artifact — TypeScript module, runtime registration, or build asset outside lar:/// space
+⏿ orient heleuma tier: ha (permanent structure), ka (promotion-eligible soul/fire), ba (path marker)
+◇ ha → declare source-file, no promotion fields; ka → declare source-file, source-symbol, body-sha256; ba → source slot sufficient
+▶ pair artifact with API meme + doc meme; sync-heleuma.ts checks drift between #source slot and live TS
+⤴ meme graph holds the rope; the artifact holds the anchor; drift surfaces as build warning
+↺ confirm heleuma pair complete; drift check registered; promotion path declared or ruled inapplicable
 
 <<~/ahu >>
 

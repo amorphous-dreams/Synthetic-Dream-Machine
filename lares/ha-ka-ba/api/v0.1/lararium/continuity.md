@@ -39,7 +39,7 @@ Session carry belongs to the lararium side, not the threshold side.
 <<~&#x0002;>>
 
 
-<<~ ahu #meme-header >>
+<<~ ahu #head >>
 
 # Lararium Continuity
 

@@ -24,7 +24,7 @@ retain       = true
 
 <<~&#x0002;>>
 
-<<~ ahu #meme-header >>
+<<~ ahu #head >>
 
 # Canvas Zoom Levels
 
@@ -57,9 +57,9 @@ Each level MUST have a threshold min, a snap value, and a page assignment.
 
 <<~/ahu >>
 
-<<~ ahu #vocab >>
+<<~ ahu #schema >>
 
-## Vocabulary (machine-readable)
+## Schema (machine-readable)
 
 Canonical TOML form. Source of truth for `ZOOM_THRESHOLDS`, `ZOOM_SNAP`, `ZOOM_PAGE`, `INITIAL_VIEW_STATE`
 in `packages/lararium-tldraw/src/zoom-levels.ts` and `packages/lararium-tldraw/src/view-state.ts`.

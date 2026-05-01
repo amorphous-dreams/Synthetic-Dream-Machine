@@ -25,21 +25,7 @@ retain = true
 
 <<~ aka lar:///ha.ka.ba/api/v0.1/pono/RFC-2119#normative-language >>
 
-<<~ ahu #entry >>
-
-## Entry — Mu Core Hydration
-
-<<~ loulou lar:///ha.ka.ba/api/v0.1/mu >>
-
-The Law of 5s receives Mu's cold-hydration pressure here.
-Pattern widening loads before live aftermath sorting begins.
-
-<<~/ahu >>
-
-<<~&#x0002;>>
-
-
-<<~ ahu #meme-header >>
+<<~ ahu #head >>
 
 # The Law of 5s
 
@@ -50,6 +36,8 @@ Hagbard Celine states the Law of Fives in Appendix Gimmel of the *Illuminatus!* 
 He gives away the secret when he adds, "given enough ingenuity on the part of the demonstrator. That's the very model of what a scientific law must always be: a statement about how the human mind relates to the cosmos." `[C~0.95]`
 
 <<~/ahu >>
+
+<<~&#x0002;>>
 
 
 <<~ ahu #ooda-ha >>
@@ -114,9 +102,9 @@ The same declaration changes meaning with the standpoint that reads it.
 <<~/ahu >>
 
 
-<<~ ahu #vocab >>
+<<~ ahu #schema >>
 
-## Vocabulary (machine-readable)
+## Schema (machine-readable)
 
 Canonical TOML form. Source of truth for `LADDER_5`, `SCOPE_5`, `RATING_5`, `STAGE_5` and
 their associated maps in `packages/lararium-core/src/ast.ts`.

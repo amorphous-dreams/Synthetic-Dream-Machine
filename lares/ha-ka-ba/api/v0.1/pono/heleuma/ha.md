@@ -21,7 +21,7 @@ role         = "invariant interface: heleuma-ha — body/structure anchor; perma
 
 <<~&#x0002;>>
 
-<<~ ahu #meme-header >>
+<<~ ahu #head >>
 
 # Heleuma-Ha Interface (Body / Structure)
 

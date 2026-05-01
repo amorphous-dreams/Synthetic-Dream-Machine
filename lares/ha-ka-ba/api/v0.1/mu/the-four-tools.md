@@ -25,21 +25,7 @@ retain = true
 
 <<~ aka lar:///ha.ka.ba/api/v0.1/pono/RFC-2119#normative-language >>
 
-<<~ ahu #entry >>
-
-## Entry — Mu Core Hydration
-
-<<~ loulou lar:///ha.ka.ba/api/v0.1/mu >>
-
-The Four Tools receive Mu's cold-hydration pressure here.
-The instrument panel loads before Chapel Perilous pressure spikes.
-
-<<~/ahu >>
-
-<<~&#x0002;>>
-
-
-<<~ ahu #meme-header >>
+<<~ ahu #head >>
 
 # The Four Tools of Chapel Perilous
 
@@ -53,6 +39,8 @@ Mu braids them into one carry-set.
 The agent and operator MUST carry four Minor Arcana weapons and one Major Arcana of Model Agnosticism, and return together.
 
 <<~/ahu >>
+
+<<~&#x0002;>>
 
 
 <<~ ahu #ooda-ha >>
@@ -248,9 +236,9 @@ The agent MUST treat totalized pattern-lock as confidence register collapse.
 <<~/ahu >>
 
 
-<<~ ahu #vocab >>
+<<~ ahu #schema >>
 
-## Vocabulary (machine-readable)
+## Schema (machine-readable)
 
 Canonical TOML form. Source of truth for `TOOLS`, `TOOL_ASCII`, `TOOL_FEED`, `TOOL_APERTURE`
 in `packages/lararium-core/src/ast.ts`.

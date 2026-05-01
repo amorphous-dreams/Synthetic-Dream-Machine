@@ -21,6 +21,27 @@ retain       = true
 
 <<~/ahu >>
 
+<<~ ahu #head >>
+
+# Source Module
+
+Verbatim TypeScript source file emitted as a meme into the graph at postbuild time.
+Makes monorepo source navigable, queryable, and reactable through lar:/// URIs.
+
+<<~/ahu >>
+
+<<~&#x0002;>>
+
+<<~ ahu #ooda-ha >>
+
+✶ detect a postbuild trigger for a priority source file; read verbatim source text
+⏿ orient: hash the content; compare against existing carrier in the store
+◇ hash matches → no-op; hash differs → overwrite carrier with new source text and built-at timestamp
+▶ emit source-module meme at lar:///source/<package>/<path> with origin:operator-import
+⤴ meme graph now holds current source; agents can read, query, and react to source changes
+↺ confirm carrier written; content-hash recorded; no noise or data files emitted
+
+<<~/ahu >>
 
 <<~ ahu #law >>
 
@@ -37,8 +58,6 @@ This makes the monorepo's source navigable through the meme graph:
 agents can read, query, and react to source changes as memes.
 
 <<~/ahu >>
-
-<<~&#x0002;>>
 
 
 <<~ ahu #carrier-shape >>

@@ -21,11 +21,9 @@ retain       = true
 
 <<~/ahu >>
 
-<<~&#x0002;>>
-
 <<~ aka lar:///ha.ka.ba/api/v0.1/pono/RFC-2119#normative-language >>
 
-<<~ ahu #meme-header >>
+<<~ ahu #head >>
 
 # Kapu — Above-Namespace Law (Kānāwai)
 
@@ -35,6 +33,7 @@ This meme stands as a kapu carrier — it enacts the law by presenting as a spec
 
 <<~/ahu >>
 
+<<~&#x0002;>>
 
 <<~ ahu #ooda-ha >>
 

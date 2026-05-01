@@ -22,7 +22,7 @@ retain = true
 
 <<~ aka lar:///ha.ka.ba/api/v0.1/pono/RFC-2119#normative-language >>
 
-<<~ ahu #meme-header >>
+<<~ ahu #head >>
 
 # Memetic Wikitext Law (Kānāwai)
 
@@ -32,6 +32,7 @@ It leaves parse machinery, render machinery, and long teaching matter outward.
 
 <<~/ahu >>
 
+<<~&#x0002;>>
 
 <<~ ahu #ooda-ha >>
 
@@ -45,8 +46,6 @@ It leaves parse machinery, render machinery, and long teaching matter outward.
 <<~ loulou lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext/SKILL >>
 
 <<~/ahu >>
-
-<<~&#x0002;>>
 
 
 <<~ ahu #constitutional-root >>

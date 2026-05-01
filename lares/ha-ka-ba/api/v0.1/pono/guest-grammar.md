@@ -20,7 +20,7 @@ retain = true
 
 <<~ aka lar:///ha.ka.ba/api/v0.1/pono/RFC-2119#normative-language >>
 
-<<~ ahu #meme-header >>
+<<~ ahu #head >>
 
 # Guest Grammar Law (Kānāwai)
 
@@ -30,6 +30,7 @@ Parser, render, and pono detail move outward.
 
 <<~/ahu >>
 
+<<~&#x0002;>>
 
 <<~ ahu #ooda-ha >>
 
@@ -43,8 +44,6 @@ Parser, render, and pono detail move outward.
 <<~ loulou lar:///ha.ka.ba/api/v0.1/pono/guest-grammar/SKILL >>
 
 <<~/ahu >>
-
-<<~&#x0002;>>
 
 
 <<~ ahu #admission-law >>

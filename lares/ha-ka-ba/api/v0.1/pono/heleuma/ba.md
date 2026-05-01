@@ -21,7 +21,7 @@ role         = "invariant interface: heleuma-ba — psyche/path anchor; quine-on
 
 <<~&#x0002;>>
 
-<<~ ahu #meme-header >>
+<<~ ahu #head >>
 
 # Heleuma-Ba Interface (Psyche / Path)
 

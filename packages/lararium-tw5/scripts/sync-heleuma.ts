@@ -234,9 +234,9 @@ function runScan(): void {
 
 function runScanPromote(): void {
   // Collect names already present as corpus memes in lares/.
-  // Checks: uri-path basename, source-symbol, and TOML keys in any #vocab slot.
+  // Checks: uri-path basename, source-symbol, and TOML keys in any #schema slot.
   const existingNames = new Set<string>();
-  const VOCAB_SLOT_RE = /<<~ ahu #vocab >>([\s\S]*?)<<~\/ahu >>/g;
+  const VOCAB_SLOT_RE = /<<~ ahu #schema >>([\s\S]*?)<<~\/ahu >>/g;
 
   for (const mdPath of walkExt(laresRoot, ".md")) {
     const content = readFileSync(mdPath, "utf8");

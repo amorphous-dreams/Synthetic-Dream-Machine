@@ -25,7 +25,7 @@ lifecycle-layers = ["template", "instance", "trace"]
 
 <<~ aka lar:///ha.ka.ba/api/v0.1/pono/RFC-2119#normative-language >>
 
-<<~ ahu #meme-header >>
+<<~ ahu #head >>
 
 # Pranala
 
@@ -185,9 +185,9 @@ label = "parent owns child"
 
 <<~/ahu >>
 
-<<~ ahu #vocab >>
+<<~ ahu #schema >>
 
-## Vocabulary (machine-readable)
+## Schema (machine-readable)
 
 Canonical TOML form. Source of truth for `KNOWN_FAMILIES`, `FAMILY_ROLES`, `FAMILY_CONTRACTS`,
 `RENDER_MODES`, and `REACTION_ROLES` in `packages/lararium-core/src/pranala-parser.ts` and `ast.ts`.
@@ -254,10 +254,11 @@ reaction-roles = ["subscription", "handler", "callback"]
 <<~ pranala #implements-meme ? -> lar:///ha.ka.ba/api/v0.1/pono/meme family:control role:implements >>
 <<~ pranala #implements-loci ? -> lar:///ha.ka.ba/api/v0.1/pono/loci family:control role:implements >>
 <<~ pranala #implements-invariant ? -> lar:///ha.ka.ba/api/v0.1/pono/invariant family:control role:implements >>
-<<~ pranala #edge-ahu ? -> lar:///ha.ka.ba/api/v0.1/grammar/ahu family:relation >>
-<<~ pranala #edge-loulou ? -> lar:///ha.ka.ba/api/v0.1/grammar/loulou family:relation >>
-<<~ pranala #edge-aka ? -> lar:///ha.ka.ba/api/v0.1/grammar/aka family:relation >>
-<<~ pranala #edge-kahea ? -> lar:///ha.ka.ba/api/v0.1/grammar/kahea family:relation >>
+<<~ pranala #edge-loulou ? -> lar:///ha.ka.ba/api/v0.1/pono/loulou family:relation >>
+<<~ pranala #edge-aka ? -> lar:///ha.ka.ba/api/v0.1/pono/aka family:relation >>
+<<~ pranala #edge-kahea ? -> lar:///ha.ka.ba/api/v0.1/pono/kahea family:relation >>
+<<~ pranala #edge-papalohe ? -> lar:///ha.ka.ba/api/v0.1/pono/papalohe family:relation >>
+<<~ pranala #edge-kukali ? -> lar:///ha.ka.ba/api/v0.1/pono/kukali family:relation >>
 
 <<~ loulou lar:///ha.ka.ba/docs/pono/pranala >>
 

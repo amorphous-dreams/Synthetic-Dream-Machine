@@ -24,7 +24,7 @@ ooda-ha-default = 0.50
 
 <<~ aka lar:///ha.ka.ba/api/v0.1/pono/RFC-2119#normative-language >>
 
-<<~ ahu #meme-header >>
+<<~ ahu #head >>
 
 # OODA-HA
 
@@ -62,6 +62,17 @@ A loop that skips Aftermath has stopped serving and commenced managing.
 
 <<~&#x0002;>>
 
+
+<<~ ahu #ooda-ha >>
+
+✶ sense where the loop runs implicit or over-narrated in current output
+⏿ orient visibility posture against the active slider band
+◇ decide which phase elements surface — glyph, labeled, or fully narrated
+▶ emit phase markers at the correct band density; no phantom phases
+⤴ execute each phase turn; ensure aftermath closes and loops back to observe
+↺ close — confirm loop visibility matched the requested band; flag drift
+
+<<~/ahu >>
 
 <<~ ahu #why-five >>
 
@@ -122,21 +133,9 @@ A session that runs without any slider statement MUST default to `[HA^0.50]`.
 
 <<~/ahu >>
 
-<<~ ahu #ooda-ha >>
+<<~ ahu #schema >>
 
-✶ sense where the loop runs implicit or over-narrated in current output
-⏿ orient the visibility posture against the active slider band
-◇ decide which phase elements surface — glyph, labeled, or fully narrated
-▶ emit phase markers at the correct band density; no phantom phases
-⤴ execute each phase turn; ensure aftermath closes and loops back to observe
-↺ close — confirm loop visibility matched the requested band; flag drift
-
-<<~/ahu >>
-
-
-<<~ ahu #vocab >>
-
-## Vocabulary (machine-readable)
+## Schema (machine-readable)
 
 Canonical TOML form. Source of truth for `OODA_HA_5` in `packages/lararium-core/src/ast.ts`.
 
@@ -153,6 +152,7 @@ ooda-glyphs = ["✶", "⏿", "◇", "▶", "⤴", "↺"]
 
 <<~ ahu #edges >>
 
+<<~ loulou lar:///ha.ka.ba/api/v0.1/mu >>
 <<~ loulou lar:///ha.ka.ba/api/v0.1/mu/the-law-of-5s >>
 
 <<~ pranala #implements-meme ? -> lar:///ha.ka.ba/api/v0.1/pono/meme family:control role:implements >>

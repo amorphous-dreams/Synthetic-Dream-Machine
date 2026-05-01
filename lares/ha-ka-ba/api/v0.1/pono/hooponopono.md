@@ -22,7 +22,7 @@ invariant    = true
 
 <<~ aka lar:///ha.ka.ba/api/v0.1/pono/RFC-2119#normative-language >>
 
-<<~ ahu #meme-header >>
+<<~ ahu #head >>
 
 # Hoʻoponopono — To Correct
 
@@ -33,6 +33,7 @@ Without the ceremony, promotion collapses into silent accumulation — a named f
 
 <<~/ahu >>
 
+<<~&#x0002;>>
 
 <<~ ahu #ooda-ha >>
 ✶ gather the live claim, the target meme, affected invariants, and the operator's declared intent.
@@ -42,8 +43,6 @@ Without the ceremony, promotion collapses into silent accumulation — a named f
 ⤴ verify coherence: file-path, uri-path, interface claims, and known conflicts surface before promotion holds.
 ↺ release prior state with forgiveness; leave unpromoted residue as named session records with forward pressure.
 <<~/ahu >>
-
-<<~&#x0002;>>
 
 
 <<~ ahu #ceremony >>

@@ -21,7 +21,7 @@ retain       = true
 
 <<~ aka lar:///ha.ka.ba/api/v0.1/pono/RFC-2119#normative-language >>
 
-<<~ ahu #meme-header >>
+<<~ ahu #head >>
 
 # Failure States
 
@@ -32,6 +32,7 @@ Naming a failure mode carries no condemnation. The name itself opens the ceremon
 
 <<~/ahu >>
 
+<<~&#x0002;>>
 
 <<~ ahu #ooda-ha >>
 ✶ detect the pattern — compare incoming pressure against the named failure-state index.
@@ -41,8 +42,6 @@ Naming a failure mode carries no condemnation. The name itself opens the ceremon
 ⤴ route to hoʻoponopono if correction ceremony is warranted.
 ↺ release without accumulating the failure as residue; the name discharges the pressure.
 <<~/ahu >>
-
-<<~&#x0002;>>
 
 
 <<~ ahu #index >>

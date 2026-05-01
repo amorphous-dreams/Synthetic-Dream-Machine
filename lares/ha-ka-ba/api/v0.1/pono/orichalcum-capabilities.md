@@ -22,6 +22,27 @@ invariant    = true
 
 <<~/ahu >>
 
+<<~ ahu #head >>
+
+# Orichalcum Capabilities
+
+UCAN-compatible capability proof with Lararium-native semantic caveats.
+Authority gate for rooms, edge islands, and canon promotion.
+
+<<~/ahu >>
+
+<<~&#x0002;>>
+
+<<~ ahu #ooda-ha >>
+
+✶ read the capability shape — who grants, who receives, what resource, what abilities, what caveats
+⏿ orient the authority ladder: pull/read/write/sync/admin/delegate; locate the principal types
+◇ crypto validity is necessary but not sufficient — Lararium caveats must also pass
+▶ gate the action at the ability ladder; reject on first caveat failure; emit capability proof
+⤴ authority travels with the graph; revocation is forward-only; prior keys remain for prior sediment
+↺ confirm gate passed; principal seated; caveats cleared; no ambient authority leaks
+
+<<~/ahu >>
 
 <<~ ahu #law >>
 
@@ -40,8 +61,6 @@ Crypto validity is necessary but not sufficient. Semantic validity requires cave
 Authority travels with the graph. Authority MUST NOT be outsourced to crypto alone.
 
 <<~/ahu >>
-
-<<~&#x0002;>>
 
 
 <<~ ahu #principal >>

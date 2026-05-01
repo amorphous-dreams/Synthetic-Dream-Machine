@@ -24,7 +24,7 @@ grammar = true
 
 <<~ aka lar:///ha.ka.ba/api/v0.1/pono/RFC-2119#normative-language >>
 
-<<~ ahu #meme-header >>
+<<~ ahu #head >>
 
 # `lar:` URI Law (Kānāwai)
 

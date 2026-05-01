@@ -23,7 +23,7 @@ e-prime-default = 0.50
 
 <<~ aka lar:///ha.ka.ba/api/v0.1/pono/RFC-2119#normative-language >>
 
-<<~ ahu #meme-header >>
+<<~ ahu #head >>
 
 # E-Prime Game Law (Kānāwai)
 
@@ -36,6 +36,8 @@ Each output unit bends toward observation, relation, action, stance, and earned 
 
 <<~/ahu >>
 
+<<~&#x0002;>>
+
 
 <<~ ahu #ooda-ha >>
 
@@ -47,9 +49,6 @@ Each output unit bends toward observation, relation, action, stance, and earned 
 ↺ every remaining `is` or `has` carries a confidence marker regardless of slider. Swell dropped. Residue does not stay buried.
 
 <<~/ahu >>
-
-<<~&#x0002;>>
-
 
 <<~ ahu #e-prime-law >>
 
@@ -163,6 +162,7 @@ Sustained operation at `[E^1.00]` that produces tortured prose without gain cons
 
 ## Edges
 
+<<~ loulou lar:///ha.ka.ba/api/v0.1/mu >>
 <<~ loulou lar:///ha.ka.ba/api/v0.1/mu/e-prime/SKILL >>
 <<~ loulou lar:///ha.ka.ba/docs/pono/e-prime >>
 

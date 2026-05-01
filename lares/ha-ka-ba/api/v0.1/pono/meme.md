@@ -24,7 +24,7 @@ retain = true
 
 <<~ aka lar:///ha.ka.ba/api/v0.1/pono/RFC-2119#normative-language >>
 
-<<~ ahu #meme-header >>
+<<~ ahu #head >>
 
 # Meme Law (Kānāwai)
 
@@ -34,6 +34,7 @@ It leaves long procedure, skeleton examples, research, and rating tables outward
 
 <<~/ahu >>
 
+<<~&#x0002;>>
 
 <<~ ahu #ooda-ha >>
 
@@ -47,8 +48,6 @@ It leaves long procedure, skeleton examples, research, and rating tables outward
 <<~ loulou lar:///ha.ka.ba/api/v0.1/pono/meme/SKILL >>
 
 <<~/ahu >>
-
-<<~&#x0002;>>
 
 
 <<~ ahu #copy-shape >>

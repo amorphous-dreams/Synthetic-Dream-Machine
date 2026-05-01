@@ -22,6 +22,27 @@ invariant    = true
 
 <<~/ahu >>
 
+<<~ ahu #head >>
+
+# Reaction Graph
+
+Isomorphic in-memory reaction dispatch layer — runs on server and client.
+Routes (fromUri, trigger) → (toUri, fn) bindings; static and dynamic; UEFN dispatch semantics.
+
+<<~/ahu >>
+
+<<~&#x0002;>>
+
+<<~ ahu #ooda-ha >>
+
+✶ read the incoming binding set — fromUri, trigger, toUri, fn, source (static|dynamic)
+⏿ orient dispatch mode: fireSync for view-layer; fire/fireAll for async; fireRace/fireRush reserved
+◇ load() replaces full set; updateUri() updates one meme's bindings; occupied handler slots survive
+▶ route fire call through (fromUri, trigger) → handlers; await or sync per mode
+⤴ subscribeOnce bridges to kukali; subscribeByFn wires view-layer actions by name not source
+↺ confirm handler slots occupied; kukali suspensions preserved across wiki-change reloads
+
+<<~/ahu >>
 
 <<~ ahu #law >>
 
@@ -37,8 +58,6 @@ A reaction binding is a (fromUri, trigger) → (toUri, fn) routing rule.
 The graph is the Tier 0 dispatch surface — all kumu event crossings route through it.
 
 <<~/ahu >>
-
-<<~&#x0002;>>
 
 
 <<~ ahu #binding-shape >>
@@ -119,6 +138,8 @@ This preserves in-flight kukali suspensions across TW5 wiki-change events.
 <<~ pranala #implements-invariant ? -> lar:///ha.ka.ba/api/v0.1/pono/invariant family:control role:implements >>
 <<~ pranala #tier0-dispatch ? -> lar:///ha.ka.ba/api/v0.1/pono/federated-causal-islands family:control role:implements >>
 <<~ pranala #depends-pranala ? -> lar:///ha.ka.ba/api/v0.1/pono/pranala family:control role:depends >>
+<<~ pranala #to-papalohe ? -> lar:///ha.ka.ba/api/v0.1/pono/papalohe family:dataflow role:reads >>
+<<~ pranala #to-kukali ? -> lar:///ha.ka.ba/api/v0.1/pono/kukali family:dataflow role:reads >>
 
 <<~/ahu >>
 
