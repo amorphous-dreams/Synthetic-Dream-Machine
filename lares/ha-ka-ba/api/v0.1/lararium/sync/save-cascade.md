@@ -29,10 +29,9 @@ status-date  = "2026-04-30"
 The save cascade is the write-routing constitution for `LarariumCrdtSyncAdaptor`.
 When TW5 fires `saveTiddler(tiddler)`, the adaptor resolves a `SaveStrategy` for the tiddler title by walking these rules in `order` — first match wins.
 
-Three strategies exist:
+Two strategies exist:
 - `skip` — do not propagate to the shared Automerge store (session-local or TW5-internal tiddlers)
-- `direct` — write the tiddler record as-is to the store (canonical `lar:` URI memes)
-- `child-carrier` — the tiddler is an ahu slot child; reconstruct and write its parent carrier instead
+- `direct` — write one `LarTiddlerRecord` per tiddler to the store; ahu slot children write as independent records alongside their parent
 
 The cascade is read at runtime from the wiki via:
 ```
@@ -75,25 +74,14 @@ rationale     = "TW5 edit-draft tiddlers — editor artefacts, must not reach sh
 ```
 <<~/ahu >>
 
-<<~ ahu #child-carrier >>
-```toml
-ahu-slot      = "#child-carrier"
-ahu-parent    = "lar:///ha.ka.ba/api/v0.1/lararium/sync/save-cascade"
-order         = 4
-tw5-filter    = "[has[ahu-parent]]"
-save-strategy = "child-carrier"
-rationale     = "ahu slot child tiddlers — reconstruct and write the parent carrier to the store rather than the child directly"
-```
-<<~/ahu >>
-
 <<~ ahu #direct >>
 ```toml
 ahu-slot      = "#direct"
 ahu-parent    = "lar:///ha.ka.ba/api/v0.1/lararium/sync/save-cascade"
-order         = 5
+order         = 4
 tw5-filter    = "[prefix[lar:]]"
 save-strategy = "direct"
-rationale     = "canonical lar: URI memes — write record directly to shared Automerge store"
+rationale     = "canonical lar: URI memes — write one LarTiddlerRecord per tiddler directly to the Automerge store; ahu slot children included as independent records"
 ```
 <<~/ahu >>
 

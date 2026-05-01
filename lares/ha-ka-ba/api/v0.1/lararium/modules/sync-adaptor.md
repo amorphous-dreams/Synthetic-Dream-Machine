@@ -48,42 +48,42 @@ Echo-loop guard rule:
 
 ```typescript
 private _applyChange(change: LarTiddlerChange): void {
-  if (
-    change.origin.kind === "tw-local" &&
-    (change.origin as { instanceId: string }).instanceId === this.instanceId
-  ) return;
+    // Skip echoes of our own writes.
+    if (change.origin.kind === "tw-local" && change.origin.instanceId === this.instanceId) return;
 
-  this._applying = change.origin;
-  try {
-    if (change.record === null || change.record.deleted) {
-      this.tw5.removeTiddler(change.title);
-      const childTitles: string[] = this.tw5.filterTiddlers(`[tag[${change.title}]has[ahu-slot]]`);
-      for (const t of childTitles) this.tw5.removeTiddler(t);
-      this._pendingDeletions.add(change.title);
-    } else {
-      const rec = change.record;
-      const isCarrier = rec.text !== undefined &&
-        (rec?.fields["content-type"] === "text/x-memetic-wikitext" ||
-          (!rec?.fields["content-type"] && change.title.startsWith("lar:")));
-
-      if (isCarrier && rec.text) {
-        const staleChildren: string[] = this.tw5.filterTiddlers(`[tag[${change.title}]has[ahu-slot]]`);
-        for (const t of staleChildren) this.tw5.removeTiddler(t);
-        const tiddlers = this.tw5.deserializeCarrier(change.title, rec.text, rec?.fields as Record<string, string | string[]>);
-        for (const t of tiddlers) this.tw5.setTiddler(t as Record<string, string | string[]>);
+    this._applying = change.origin;
+    try {
+      if (change.record === null || change.record.deleted) {
+        this.tw5.removeTiddler(change.title);
+        const childTitles: string[] = this.tw5.filterTiddlers(`[tag[${change.title}]has[ahu-slot]]`);
+        for (const t of childTitles) this.tw5.removeTiddler(t);
+        this._pendingDeletions.add(change.title);
       } else {
-        const fields: Record<string, string | string[]> = { title: rec.title, ...rec?.fields };
-        if (rec.text !== undefined) fields["text"] = rec.text;
-        this.tw5.setTiddler(fields);
-      }
+        const rec = change.record;
+        const isCarrier = rec.text !== undefined &&
+          (rec.fields["content-type"] === "text/x-memetic-wikitext" ||
+            (!rec.fields["content-type"] && change.title.startsWith("lar:")));
 
-      this._pendingModifications.add(change.title);
-      if (change.revision) this._revisions.set(change.title, change.revision);
+        if (isCarrier && rec.text) {
+          const staleChildren: string[] = this.tw5.filterTiddlers(`[tag[${change.title}]has[ahu-slot]]`);
+          for (const t of staleChildren) this.tw5.removeTiddler(t);
+          const tiddlers = this.tw5.deserializeCarrier(
+            change.title, rec.text, rec.fields as Record<string, string | string[]>,
+          );
+          for (const t of tiddlers) this.tw5.setTiddler(t as Record<string, string | string[]>);
+        } else {
+          const fields: Record<string, string | string[]> = { title: rec.title, ...rec.fields };
+          if (rec.text !== undefined) fields["text"] = rec.text;
+          this.tw5.setTiddler(fields);
+        }
+
+        this._pendingModifications.add(change.title);
+        if (change.revision) this._revisions.set(change.title, change.revision);
+      }
+    } finally {
+      this._applying = null;
     }
-  } finally {
-    this._applying = null;
   }
-}
 ```
 
 <<~/ahu >>

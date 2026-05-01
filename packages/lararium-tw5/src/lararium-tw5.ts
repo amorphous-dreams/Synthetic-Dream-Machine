@@ -27,7 +27,7 @@
 import type { ClosureEntry, EdgeRecord, FilterEngineFn, LarTiddlerStore, ReactionBinding } from "@lararium/core";
 import type { TW5Instance, TW5Wiki, TW5FakeElement, TW5ChangeRecord, TW5TiddlerFields, TW5WidgetConstructor } from "./types/tiddlywiki.js";
 import { parsePranalaEdges, extractReactionBindings, ReactionGraph, MemeStreamParser } from "@lararium/core";
-import { splitCarrierToTiddlers, streamEventsToTiddlers, type TiddlerFields } from "./carrier-split.js";
+import { splitCarrierToTiddlers, streamEventsToTiddlers, type TiddlerFields } from "./carrier-codec.js";
 import { createLarariumWidgets, registerImplementorsOperator, LARARIUM_WIDGETS_TIDDLER } from "./tw5-widgets.js";
 import { loadUiTiddlers, loadVendorTiddlers } from "./lares-preloads.js";
 

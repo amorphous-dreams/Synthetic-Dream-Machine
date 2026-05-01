@@ -1,5 +1,14 @@
 /**
- * carrier-split — split a memetic carrier file into parent + child tiddlers.
+ * carrier-codec — projection codec for memetic carrier format ↔ LarTiddlerRecord[].
+ *
+ * Operates at the import/export boundary only. Does not write to any store.
+ * Heleuma: lar:///ha.ka.ba/api/v0.1/lararium/schema/projection-codec
+ *
+ * Import path (disk → records):
+ *   parseCarrier(parentUri, text, parentFields) → LarTiddlerRecord[]
+ *
+ * Export path (records → disk, operator-initiated):
+ *   serializeCarrier(parent, children) → string
  *
  * One .md file per lar: address. The parser emits WorksiteNodes (#ahu slots).
  * This module maps those to TW5 tiddler records:
@@ -17,7 +26,7 @@
  *   - Any thrown error   → caught; warning added; partial result returned
  *
  * Round-trip invariant:
- *   serializeCarrier(splitCarrierToTiddlers(uri, text).parent, children) ≈ text
+ *   serializeCarrier(parseCarrier(uri, text, {}).parent, children) ≈ text
  *   (whitespace and comment normalization permitted)
  */
 
@@ -434,3 +443,11 @@ export function removeCarrierSlot(carrierText: string, slot: string): string | n
   });
   return matched ? result : null;
 }
+
+// ---------------------------------------------------------------------------
+// parseCarrier — canonical import-path alias (replaces splitCarrierToTiddlers)
+// ---------------------------------------------------------------------------
+
+/** Canonical import-path entry: disk carrier text → individual tiddler records. */
+export { splitCarrierToTiddlers as parseCarrier };
+

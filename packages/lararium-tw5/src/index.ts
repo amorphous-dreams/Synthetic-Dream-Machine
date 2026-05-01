@@ -45,8 +45,8 @@ export { setActiveTW5, getActiveTW5 } from "./active-tw5.js";
 export { LarariumCrdtSyncAdaptor } from "./sync-adaptor.js";
 export { MemoryTiddlerStore }      from "./memory-store.js";
 
-export { splitCarrierToTiddlers, serializeCarrier, replaceCarrierSlot, composeCarrierSlotBody, streamEventsToTiddlers } from "./carrier-split.js";
-export type { CarrierSplit, ParentTiddler, ChildTiddler, TiddlerFields } from "./carrier-split.js";
+export { parseCarrier, splitCarrierToTiddlers, serializeCarrier, replaceCarrierSlot, composeCarrierSlotBody, streamEventsToTiddlers } from "./carrier-codec.js";
+export type { CarrierSplit, ParentTiddler, ChildTiddler, TiddlerFields } from "./carrier-codec.js";
 
 export { tw5ElementToVdom, tw5ElementToHtml } from "./fake-dom.js";
 export type { VDomNode, TW5FakeElement, TW5FakeTextNode, TW5FakeNode } from "./fake-dom.js";
@@ -62,3 +62,5 @@ export type { TW5ParseNode } from "./memetic-parser.js";
 export { TW5_VERSION, TW5_CORE_SCRIPT_FILENAME, TW5_CORE_SCRIPT_URL } from "./generated-tw5-version.js";
 
 export { parseTaploFields, patchTomlKey, lintToml } from "./toml-ast.js";
+export { CORPUS_SOURCES, LARES_CORPUS } from "./corpus-sources.js";
+export type { CorpusSource } from "./corpus-sources.js";

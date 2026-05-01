@@ -44,15 +44,14 @@ TW5 calls this when it encounters a tiddler with `type = "text/x-memetic-wikitex
 ## Source (TypeScript — compiled-in)
 
 ```typescript
-private static _registerDeserializer(tw: any): void {
+private static _registerDeserializer(tw: TW5Instance): void {
     if (!tw?.Wiki?.tiddlerDeserializerModules) return;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    tw.Wiki.tiddlerDeserializerModules["text/x-memetic-wikitext"] = function(text: string, fields: any) {
+    tw.Wiki.tiddlerDeserializerModules["text/x-memetic-wikitext"] = function(text: string, fields: Record<string, unknown>) {
       const uri: string = (fields?.title as string) ?? "";
       const split = splitCarrierToTiddlers(uri, text);
       const parent = { title: uri, ...fields, ...split.parent.fields, text };
       const children = split.children.map((c) => ({ ...c.fields, title: c.title, text: c.text }));
-      const result: object[] = [parent, ...children];
+      const result: TW5TiddlerFields[] = [parent, ...children];
       if (split.warnings.length > 0) {
         const safeSlug = uri.replace(/[^a-zA-Z0-9._-]/g, "_");
         result.push({

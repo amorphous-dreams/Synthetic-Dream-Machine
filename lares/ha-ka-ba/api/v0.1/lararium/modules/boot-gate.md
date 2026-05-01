@@ -39,9 +39,10 @@ Runs in `LarariumTW5._bootModules()` after TW5 `instance.boot.boot()` resolves. 
 
 ```typescript
 private async _bootModules(): Promise<void> {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const tw = this._tw as any;
-    const wiki = tw?.wiki;
+    // Called only from the boot() callback after this._tw = instance — never null here.
+    if (!this._tw) return;
+    const tw   = this._tw;
+    const wiki = tw.wiki;
 
     // --- Corpus-gated path ---------------------------------------------------
     // Register implementors filter operator first so the query below works.
@@ -78,10 +79,7 @@ private async _bootModules(): Promise<void> {
         const claimedHash = f["body-sha256"] ?? "";
         if (!claimedHash || !(await LarariumTW5._verifySha256(body, claimedHash))) continue;
 
-        // Layer 3 — ceremony stamp
-        if (!f["promoted-at"]) continue;
-
-        // All three layers passed — hand $tw.wiki to this meme.
+        // Threshold + hash passed — hand $tw.wiki to this meme.
         wiki.addTiddler(new tw.Tiddler({
           title,
           type:           "application/javascript",

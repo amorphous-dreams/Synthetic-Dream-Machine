@@ -21,6 +21,12 @@ importers:
         specifier: ^5.7.0
         version: 5.9.3
 
+  elyncia: {}
+
+  ftls: {}
+
+  lares: {}
+
   packages/lararium-app:
     dependencies:
       '@automerge/automerge':
@@ -258,6 +264,10 @@ importers:
       vite:
         specifier: ^8.0.10
         version: 8.0.10(@types/node@22.19.17)(esbuild@0.27.7)(tsx@4.21.0)(yaml@2.8.3)
+
+  sdm: {}
+
+  wtf: {}
 
 packages:
 

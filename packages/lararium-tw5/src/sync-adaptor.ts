@@ -41,18 +41,13 @@
 import type { LarTiddlerStore, LarTiddlerRecord, LarTiddlerChange, ChangeOrigin, MemeProjection } from "@lararium/core";
 import type { LarariumTW5 } from "./lararium-tw5.js";
 import type { TW5TiddlerFields } from "./types/tiddlywiki.js";
-import {
-  inferChildCarrierTitle,
-  buildDirectRecord,
-  saveChildCarrierRecord,
-  saveParentAfterChildDelete,
-} from "./carrier-write.js";
+import { buildDirectRecord } from "./carrier-write.js";
 
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
 
-type SaveStrategy = "skip" | "direct" | "child-carrier";
+type SaveStrategy = "skip" | "direct";
 type SaveHandler  = (
   title:    string,
   fields:   Record<string, string>,
@@ -376,7 +371,7 @@ export class LarariumCrdtSyncAdaptor implements MemeProjection {
 
     const fields   = extractFields(tiddler);
     const title    = fields["title"] ?? "";
-    const strategy = this._resolveSaveStrategy(title, fields);
+    const strategy = this._resolveSaveStrategy(title);
 
     if (strategy === "skip") { callback(null, {}, "0"); return; }
 
@@ -407,20 +402,10 @@ export class LarariumCrdtSyncAdaptor implements MemeProjection {
     return this._cascadeCache;
   }
 
-  private _resolveSaveStrategy(title: string, fields: Record<string, string> = {}): SaveStrategy {
+  private _resolveSaveStrategy(title: string): SaveStrategy {
     // Fast-path: the structural skip categories never route differently.
     if (isSessionLocal(title) || isTW5System(title)) return "skip";
 
-    // Explicit field facts take priority over filter cascade — saveTiddler can
-    // be called with a fresh tiddler not yet in the wiki, so cascade filters
-    // operating on wiki state would miss it.
-    if (fields["ahu-parent"]) return "child-carrier";
-    const currentFields = this.tw5.wiki.getTiddler?.(title)?.fields ?? ({} as TW5TiddlerFields);
-    if (currentFields["ahu-parent"]) return "child-carrier";
-    const hash = title.lastIndexOf("#");
-    if (title.startsWith("lar:") && hash > 0 && this.tw5.wiki.getTiddler?.(title.slice(0, hash))) {
-      return "child-carrier";
-    }
     if (title.startsWith("lar:")) return "direct";
 
     // Corpus cascade — first matching TW5 filter wins.
@@ -442,12 +427,6 @@ export class LarariumCrdtSyncAdaptor implements MemeProjection {
       await this.store.put(buildDirectRecord(title, fields, revision, this.targetBag), origin);
     },
 
-    "child-carrier": async (title, fields, revision, origin) => {
-      await saveChildCarrierRecord(
-        this.tw5, this.store, this._revisions,
-        title, fields, revision, origin, this.targetBag,
-      );
-    },
   };
 
   // ---------------------------------------------------------------------------
@@ -486,23 +465,12 @@ export class LarariumCrdtSyncAdaptor implements MemeProjection {
     }
 
     const origin: ChangeOrigin = { kind: "tw-local", instanceId: this.instanceId };
-    const revision = String(Date.now());
-    const childCarrier = inferChildCarrierTitle(this.tw5, title);
 
-    if (childCarrier) {
-      saveParentAfterChildDelete(
-        this.tw5, this.store, this._revisions,
-        title, childCarrier.parentUri, childCarrier.slot,
-        revision, origin, this.targetBag,
-      )
-        .then(() => callback(null))
-        .catch(callback);
-      return;
-    }
-
+    // All lar: tiddlers — including ahu slot children — tombstone as independent
+    // records. Carrier text reconstruction does not occur in the write path.
     this.store.tombstone(title, origin)
       .then(() => {
-        if (title.startsWith("lar:")) this._removeLocalCarrierChildren(title, origin);
+        this._removeLocalCarrierChildren(title, origin);
         callback(null);
       })
       .catch(callback);
