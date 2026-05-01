@@ -47,6 +47,7 @@ export interface LarViewState {
 // Initial state
 // ---------------------------------------------------------------------------
 
+// Schema: lar:///ha.ka.ba/api/v0.1/lararium/canvas/room-registry
 export const INITIAL_VIEW_STATE: LarViewState = {
   activeView: "story-river",
   focusUri: null,

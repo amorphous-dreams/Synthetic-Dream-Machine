@@ -316,6 +316,7 @@ KumuWidget.prototype.refresh = function (this: TW5WidgetInstance, changedTiddler
 // ---------------------------------------------------------------------------
 // Factory — returns all widget constructors, no prototype wiring.
 // Prototype chain is set by LarariumTW5._registerWidgets() after boot.
+// Schema: lar:///ha.ka.ba/api/v0.1/lararium/modules/tw5-widgets
 // ---------------------------------------------------------------------------
 
 export function createLarariumWidgets(_tw: TW5Instance): Record<string, WidgetCtorWithProto> {

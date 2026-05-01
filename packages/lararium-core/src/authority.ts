@@ -34,6 +34,7 @@
 
 // ---------------------------------------------------------------------------
 // Provider and principal model
+// Schema: lar:///ha.ka.ba/api/v0.1/lararium/schema/auth-providers
 // ---------------------------------------------------------------------------
 
 export type LarAuthProvider = "bluesky-oauth" | "github-vscode" | "local-dev";

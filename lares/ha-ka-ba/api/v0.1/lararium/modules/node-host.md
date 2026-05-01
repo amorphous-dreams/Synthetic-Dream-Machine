@@ -71,6 +71,31 @@ lares-root-from-dist = "../../../lares"
 
 <<~/ahu >>
 
+<<~ ahu #http-transport >>
+
+## HTTP Transport
+
+```toml
+# Source: packages/lararium-mcp/src/http.ts
+default-port = 3737
+default-host = "127.0.0.1"
+mcp-path     = "/mcp"
+
+# Env overrides
+env-port = "LARARIUM_HTTP_PORT"
+env-host = "LARARIUM_HTTP_HOST"
+
+# Canvas bridge API paths (fetchCanvas targets in stdio.ts)
+canvas-api-rooms = "/api/rooms"
+canvas-api-fire  = "/api/fire"
+
+# Write guard env
+env-write-mode = "LARARIUM_WRITE_MODE"
+write-mode-value-required = "enabled"
+```
+
+<<~/ahu >>
+
 <<~ ahu #edges >>
 
 <<~ pranala #corpus-sources ? -> lar:///ha.ka.ba/api/v0.1/lararium/schema/corpus-sources family:control role:depends >>

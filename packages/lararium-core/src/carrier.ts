@@ -9,6 +9,7 @@ import { parsePranalaEdges, type PranaEdge } from "./pranala-parser.js";
 
 // ---------------------------------------------------------------------------
 // Regex patterns
+// Schema: lar:///ha.ka.ba/api/v0.1/pono/carrier-sigils
 // ---------------------------------------------------------------------------
 
 const DOCTYPE_RE   = /<!--\s*<<~\s*!DOCTYPE\s*=\s*lar:\/\/\/[^>]+>>\s*-->/;

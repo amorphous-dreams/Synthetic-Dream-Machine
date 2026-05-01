@@ -32,6 +32,7 @@ interface FamilyContract {
   confidenceBounded: boolean;
 }
 
+// Schema: lar:///ha.ka.ba/api/v0.1/pono/pranala-families
 export const KNOWN_FAMILIES = ["control", "relation", "observe", "dataflow", "message", "constraint", "reaction", "spatial"] as const;
 export type PranalaFamily = typeof KNOWN_FAMILIES[number];
 

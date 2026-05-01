@@ -16,7 +16,9 @@ tagspace     = "adjacent"
 role         = "corpus-driven write-routing cascade for LarariumCrdtSyncAdaptor: ordered TW5 filter rules mapping tiddler titles to save strategies"
 cacheable    = true
 retain       = true
-status-date  = "2026-04-30"
+status-date   = "2026-04-30"
+source-file   = "packages/lararium-tw5/src/sync-adaptor.ts"
+source-symbol = "SaveStrategy _resolveSaveStrategy _saveHandlers"
 ```
 <<~/ahu >>
 

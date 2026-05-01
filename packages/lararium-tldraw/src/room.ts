@@ -66,6 +66,7 @@ export interface LarPortal {
 // Built-in room presets
 // ---------------------------------------------------------------------------
 
+// Schema: lar:///ha.ka.ba/api/v0.1/lararium/canvas/room-registry
 /** System view: all memes in topo order — the default story river. */
 export const ROOM_SYSTEM: LarRoom = {
   id: "system",

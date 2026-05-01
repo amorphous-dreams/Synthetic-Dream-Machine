@@ -75,6 +75,7 @@ type TLColor =
   | "yellow" | "orange" | "green" | "light-green" | "light-red" | "red" | "white";
 
 // All eight pranala families — matches KNOWN_FAMILIES in pranala-parser.ts.
+// Schema: lar:///ha.ka.ba/api/v0.1/pono/pranala-families (canvas-colors)
 const FAMILY_COLORS: Record<string, TLColor> = {
   control:    "blue",
   relation:   "grey",

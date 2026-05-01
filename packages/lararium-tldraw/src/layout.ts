@@ -83,6 +83,7 @@ export interface LayoutStrategy {
 //   - Arrows: center-of-source-frame → center-of-target-frame (tldraw computes curve)
 // ---------------------------------------------------------------------------
 
+// Schema: lar:///ha.ka.ba/api/v0.1/lararium/canvas/layout-geometry
 const FRAME_W     = 220;
 const FRAME_H     = 100;
 const AHU_W       = 180;
@@ -228,6 +229,7 @@ export function storyRiverLayout(snapshot: LarTLSnapshot): LarTLLayout {
 // The tldraw camera is expected to zoom to the focal frame after loading.
 // ---------------------------------------------------------------------------
 
+// Schema: lar:///ha.ka.ba/api/v0.1/lararium/canvas/layout-geometry [detail]
 const DETAIL_FRAME_W = 320;
 const DETAIL_FRAME_H = 160;
 const DETAIL_GAP_X   = 120;
@@ -296,6 +298,7 @@ export function memeDetailLayout(snapshot: LarTLSnapshot): LarTLLayout {
 // Designed to be loaded into the "graph" tldraw page and zoomed to fit.
 // ---------------------------------------------------------------------------
 
+// Schema: lar:///ha.ka.ba/api/v0.1/lararium/canvas/layout-geometry [graph]
 const GRAPH_FRAME_W  = 160;
 const GRAPH_FRAME_H  = 80;
 const GRAPH_GAP_X    = 60;
@@ -353,6 +356,7 @@ export function radialLayout(_snapshot: LarTLSnapshot): LarTLLayout {
 // Layout cascade — TiddlyWiki-style ordered strategy selector
 // ---------------------------------------------------------------------------
 
+// Schema: lar:///ha.ka.ba/api/v0.1/lararium/canvas/layout-geometry
 export const LAYOUT_CASCADE: LayoutStrategy[] = [
   {
     name: "story-river",

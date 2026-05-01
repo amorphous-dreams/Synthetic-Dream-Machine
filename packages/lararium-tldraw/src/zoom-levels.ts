@@ -33,6 +33,7 @@ export interface ZoomThresholds {
   readonly ACTION_MIN: number;
 }
 
+// Schema: lar:///ha.ka.ba/api/v0.1/lararium/canvas/zoom-levels
 /** Default thresholds for tldraw's zoom range (1.0 ≈ fit-to-viewport). */
 export const ZOOM_THRESHOLDS: ZoomThresholds = {
   OPERATIONAL_MIN: 0.15,

@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 /**
  * lararium-mcp stdio adapter — STUB.
+ * Schema: lar:///ha.ka.ba/api/v0.1/lararium/mcp/tool-registry
  *
  * Intent: operator-agent alignment surface over MCP stdio transport.
  * Every tool maps to something the operator can see or do on the canvas.

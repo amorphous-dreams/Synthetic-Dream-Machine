@@ -25,6 +25,7 @@ import type { ClosureEntry, EdgeRecord } from "./compiler.js";
 
 // ---------------------------------------------------------------------------
 // LarTiddlerRecord — materialized tiddler in Lararium's store model
+// Schema: lar:///ha.ka.ba/api/v0.1/lararium/schema/tiddler-record
 // ---------------------------------------------------------------------------
 
 export interface LarTiddlerRecord {

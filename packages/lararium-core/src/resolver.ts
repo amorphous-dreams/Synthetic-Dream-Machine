@@ -40,6 +40,7 @@ export interface LarHostfulResolution extends LarResolution {
   readonly virtual: true;
 }
 
+// Schema: lar:///ha.ka.ba/api/v0.1/lararium/lar-uri/uri-roots
 const CAPS_FILE_ROOTS = new Set(["AGENTS", "LARES", "README"]);
 const VIRTUAL_CAPS_ROOTS = new Set(["INDEXES"]);
 const STABLE_TUPLE_ROOT = "ha.ka.ba";

@@ -1,0 +1,81 @@
+<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
+
+<<~&#x0001; ? -> lar:///ha.ka.ba/api/v0.1/lararium/schema/auth-providers >>
+
+<<~ ahu #iam >>
+```toml
+uri-path      = "ha.ka.ba/api/v0.1/lararium/schema/auth-providers"
+file-path     = "lares/ha-ka-ba/api/v0.1/lararium/schema/auth-providers.md"
+content-type  = "text/x-memetic-wikitext"
+register      = "CS"
+confidence    = 0.86
+mana          = 0.86
+manao         = 0.84
+manaoio       = 0.82
+tagspace      = "adjacent"
+role          = "lararium auth provider taxonomy: providers, HTTP abilities, principal shapes, scope model"
+cacheable     = true
+retain        = true
+status-date   = "2026-04-30"
+source-file   = "packages/lararium-core/src/authority.ts"
+source-symbol = "LarAuthProvider LarAuthAbility LarAuthPrincipal LarAuthScope LarAuthReceipt"
+```
+<<~/ahu >>
+
+<<~ ahu #head >>
+
+# Auth Providers
+
+Three auth providers gate session entry. HTTP-level abilities form a resource/can
+scope model distinct from the Orichalcum capability ladder. Only `local-dev`
+executes today; `bluesky-oauth` and `github-vscode` carry principal shapes.
+
+<<~/ahu >>
+
+<<~&#x0002;>>
+
+<<~ ahu #schema >>
+
+## Schema (machine-readable)
+
+```toml
+# Auth providers — currently active: local-dev only
+auth-providers = ["bluesky-oauth", "github-vscode", "local-dev"]
+
+# HTTP-level abilities — resource/can scope model
+# Distinct from Orichalcum ability ladder (which governs CRDT/federation)
+auth-abilities = [
+  "auth/session",
+  "catalog/read",
+  "room/read",
+  "room/write",
+  "corpus/read",
+  "corpus/write",
+  "canon/promote",
+  "admin",
+]
+
+# Scope shape: { with: "lararium:* | room:altar-fire | corpus:sdm", can: ability | "*" }
+
+# Principal shapes per provider
+[principal.bluesky-oauth]
+fields = ["did: string (ATProto DID, did:plc:... or did:web:...)", "handle?: string"]
+
+[principal.github-vscode]
+fields = ["login: string", "githubId?: string", "editor: vscode|vscode-insiders", "localInstanceId: string"]
+
+[principal.local-dev]
+fields = ["label: string"]
+```
+
+<<~/ahu >>
+
+<<~ ahu #edges >>
+
+<<~ pranala #to-causal-islands ? -> lar:///ha.ka.ba/api/v0.1/pono/causal-islands family:control role:depends >>
+<<~ pranala #to-open-phases ? -> lar:///ha.ka.ba/api/v0.1/lararium/schema/open-phases family:control role:depends >>
+
+<<~/ahu >>
+
+<<~&#x0003;>>
+<<~&#x0004; -> ? >>

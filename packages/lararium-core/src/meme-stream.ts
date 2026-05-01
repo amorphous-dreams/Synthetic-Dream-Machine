@@ -24,6 +24,7 @@
 
 // ---------------------------------------------------------------------------
 // Event types
+// Schema: lar:///ha.ka.ba/api/v0.1/pono/carrier-sigils
 // ---------------------------------------------------------------------------
 
 export interface StreamEventCarrierOpen  { kind: "carrier-open";  uri: string }

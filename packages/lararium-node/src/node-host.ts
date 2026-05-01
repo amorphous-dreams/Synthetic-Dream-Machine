@@ -41,6 +41,7 @@ function makeMemeHashSync(uri: string, fileBytes: Uint8Array | null): string {
 // ---------------------------------------------------------------------------
 
 const __dirname = fileURLToPath(new URL(".", import.meta.url));
+// Schema: lar:///ha.ka.ba/api/v0.1/lararium/modules/node-host
 // packages/lararium-node/dist/ → ../../lares/
 export const LARES_ROOT = resolve(__dirname, "..", "..", "..", "lares");
 
@@ -214,6 +215,7 @@ function buildControlClosure(entryUri: string): { graph: MemeGraph; topoUris: st
   return { graph, topoUris, violations, grammar };
 }
 
+// Schema: lar:///ha.ka.ba/api/v0.1/lararium/modules/node-host
 // Known interface URIs loaded in Phase 1 before index construction
 const INTERFACE_URIS = [
   "lar:///ha.ka.ba/api/v0.1/pono/meme",
