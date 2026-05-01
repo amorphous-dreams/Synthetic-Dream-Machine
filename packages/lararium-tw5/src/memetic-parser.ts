@@ -11,7 +11,6 @@
  *   - TW5ParseNode: { type, children?, attributes?, tag? }
  *
  * Node type mapping (MemeAstNode → TW5ParseNode):
- *   CarrierHeader → "lararium-header"
  *   Worksite      → "lararium-worksite"  (maps to <<~ ahu #slot >>)
  *   Text          → "text"               (TW5 native text node)
  *   Edge / EdgeSugar → "lararium-edge"
@@ -62,10 +61,6 @@ type TW5Wiki = {
 
 function nodeToTw5(node: MemeAstNode, wiki?: TW5Wiki): TW5ParseNode {
   switch (node.kind) {
-    case "CarrierHeader":
-      return { type: "lararium-header", _ast: node, children: [],
-        attributes: { uri: attr(node.toUri) } };
-
     case "Control":
       // Phase boundary markers are structurally significant but invisible in rendered output.
       return { type: "lararium-control", _ast: node, children: [],

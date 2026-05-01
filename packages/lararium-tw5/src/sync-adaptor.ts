@@ -87,6 +87,13 @@ function isTW5System(title: string): boolean {
   return title.startsWith("$:/");
 }
 
+function isCarrierRecord(rec: LarTiddlerRecord, title: string): boolean {
+  return rec.text !== undefined &&
+    (rec.fields["type"] === "text/x-memetic-wikitext" ||
+      rec.fields["content-type"] === "text/x-memetic-wikitext" ||
+      (!(rec.fields["type"] || rec.fields["content-type"]) && title.startsWith("lar:")));
+}
+
 /**
  * Normalise a TW5 tiddler argument to a flat Record<string, string>.
  *
@@ -231,18 +238,15 @@ export class LarariumCrdtSyncAdaptor implements MemeProjection {
 
         if (change.record === null || change.record.deleted) {
           toRemove.push(change.title);
-          const childTitles: string[] = this.tw5.filterTiddlers(`[tag[${change.title}]has[ahu-slot]] [field:fragment-parent[${change.title}]]`);
+          const childTitles: string[] = this.tw5.filterTiddlers(`[field:fragment-parent[${change.title}]]`);
           for (const t of childTitles) toRemove.push(t);
           this._pendingDeletions.add(change.title);
         } else {
           const rec = change.record;
-          const isCarrier = rec.text !== undefined &&
-            (rec.fields["type"] === "text/x-memetic-wikitext" ||
-              rec.fields["content-type"] === "text/x-memetic-wikitext" ||
-              (!(rec.fields["type"] || rec.fields["content-type"]) && change.title.startsWith("lar:")));
+          const isCarrier = isCarrierRecord(rec, change.title);
 
           if (isCarrier && rec.text) {
-            const staleChildren: string[] = this.tw5.filterTiddlers(`[tag[${change.title}]has[ahu-slot]] [field:fragment-parent[${change.title}]]`);
+            const staleChildren: string[] = this.tw5.filterTiddlers(`[field:fragment-parent[${change.title}]]`);
             for (const t of staleChildren) toRemove.push(t);
             const tiddlers = this.tw5.deserializeCarrier(
               change.title, rec.text, rec.fields as Record<string, string | string[]>,
@@ -312,17 +316,18 @@ export class LarariumCrdtSyncAdaptor implements MemeProjection {
     try {
       if (change.record === null || change.record.deleted) {
         this.tw5.removeTiddler(change.title);
-        const childTitles: string[] = this.tw5.filterTiddlers(`[tag[${change.title}]has[ahu-slot]] [field:fragment-parent[${change.title}]]`);
+        const childTitles: string[] = this.tw5.filterTiddlers(`[field:fragment-parent[${change.title}]]`);
         for (const t of childTitles) this.tw5.removeTiddler(t);
         this._pendingDeletions.add(change.title);
       } else {
         const rec = change.record;
         const isCarrier = rec.text !== undefined &&
-          (rec.fields["content-type"] === "text/x-memetic-wikitext" ||
-            (!rec.fields["content-type"] && change.title.startsWith("lar:")));
+          (rec.fields["type"] === "text/x-memetic-wikitext" ||
+            rec.fields["content-type"] === "text/x-memetic-wikitext" ||
+            (!(rec.fields["type"] || rec.fields["content-type"]) && change.title.startsWith("lar:")));
 
         if (isCarrier && rec.text) {
-          const staleChildren: string[] = this.tw5.filterTiddlers(`[tag[${change.title}]has[ahu-slot]] [field:fragment-parent[${change.title}]]`);
+          const staleChildren: string[] = this.tw5.filterTiddlers(`[field:fragment-parent[${change.title}]]`);
           for (const t of staleChildren) this.tw5.removeTiddler(t);
           const tiddlers = this.tw5.deserializeCarrier(
             change.title, rec.text, rec.fields as Record<string, string | string[]>,
@@ -469,7 +474,7 @@ export class LarariumCrdtSyncAdaptor implements MemeProjection {
    * removes get their own key when edgeIslandId is used as the outer key.
    */
   private _removeLocalCarrierChildren(parentUri: string, origin: ChangeOrigin): void {
-    const childTitles: string[] = this.tw5.filterTiddlers(`[tag[${parentUri}]has[ahu-slot]] [field:fragment-parent[${parentUri}]]`);
+    const childTitles: string[] = this.tw5.filterTiddlers(`[field:fragment-parent[${parentUri}]]`);
     if (childTitles.length === 0) return;
     const childKey = `${this.instanceId}:carrier-child`;
     this._applying.set(childKey, origin);

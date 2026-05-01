@@ -55,6 +55,7 @@ import {
   type MemeStoreDoc,
 } from "@lararium/core";
 import { loadCorpusSources } from "../src/node-host.js";
+import { getGhCliOperatorReceipt } from "../src/github-cli-auth.js";
 import type { AutomergeUrl, DocHandle } from "@automerge/automerge-repo";
 import { getOrCreateNodeAuthReceipt } from "../src/operator-key.js";
 import { TW5_CORE_SCRIPT_URL } from "@lararium/tw5";
@@ -134,10 +135,12 @@ async function main() {
     process.exit(1);
   }
 
-  // Local auth receipt — provider-neutral placeholder until BlueSky OAuth and
-  // GitHub VS Code claim verification land.
-  const nodeAuthReceipt = await getOrCreateNodeAuthReceipt(DATA_DIR);
+  // Operator receipt — prefer gh CLI identity, fall back to local-dev.
+  const ghReceipt       = await getGhCliOperatorReceipt();
+  const nodeAuthReceipt = ghReceipt ?? (await getOrCreateNodeAuthReceipt(DATA_DIR));
   console.log(`[lararium-serve] auth provider: ${nodeAuthReceipt.provider} (${nodeAuthReceipt.subject})`);
+  // base64-encode for meta tag injection; browser reads via readServerInjectedReceipt()
+  const operatorReceiptB64 = Buffer.from(JSON.stringify(nodeAuthReceipt)).toString("base64");
 
   // Receipt SHA — delivered to clients via <meta name="lararium-receipt"> in the HTML
   // shell; no hidden tldraw shape needed. Recomputed on reseed.
@@ -249,7 +252,7 @@ async function main() {
       const { peerId, provider = "local-dev", receipt, proof } = body;
       if (!peerId) return json(res, { error: "peerId is required" }, 400);
 
-      const result = await verifyAuthClaim({ provider, receipt, proof });
+      const result = await verifyAuthClaim({ provider, ...(receipt !== undefined && { receipt }), proof });
       if (!result.ok) return json(res, { error: result.reason }, 403);
 
       peerRegistry.registerPeer(peerId, result.receipt);
@@ -257,13 +260,97 @@ async function main() {
       return json(res, { ok: true, provider: result.receipt.provider, subject: result.receipt.subject });
     }
 
-    // Future provider route placeholders. They intentionally return 501 until
-    // the OAuth metadata/callback and VS Code local UX exist.
-    if (pathname === "/auth/bluesky/start") {
-      return json(res, { error: "bluesky-oauth-not-implemented" }, 501);
+    // ── Bluesky AT Proto OAuth — client-side PKCE+DPoP flow ─────────────────
+    // The browser handles the full AT Proto OAuth dance via @atproto/oauth-client-browser.
+    // The server only needs to serve the client metadata document and handle the
+    // callback redirect (which the browser intercepts via client.init() on load).
+    //
+    // For localhost: AT Proto allows client_id = "http://localhost" — no metadata doc needed.
+    // For production (elyncia.app): serve client-metadata.json at /oauth/client-metadata.json.
+    if (pathname === "/oauth/client-metadata.json") {
+      const host = req.headers["host"] ?? "localhost";
+      const proto = req.headers["x-forwarded-proto"] ?? "http";
+      const base = `${proto}://${host}`;
+      return json(res, {
+        client_id:     `${base}/oauth/client-metadata.json`,
+        client_name:   "Lararium",
+        redirect_uris: [`${base}/auth/bluesky/callback`],
+        scope:         "atproto transition:generic",
+        grant_types:   ["authorization_code", "refresh_token"],
+        response_types: ["code"],
+        token_endpoint_auth_method: "none",
+        application_type: "web",
+        dpop_bound_access_tokens: true,
+      });
     }
-    if (pathname === "/auth/github-vscode/claim") {
-      return json(res, { error: "github-vscode-claim-not-implemented" }, 501);
+
+    // Bluesky callback — the browser's @atproto/oauth-client-browser handles
+    // the token exchange client-side via client.init() on this page load.
+    // The server just serves the app shell; the browser does the rest.
+    if (pathname === "/auth/bluesky/callback") {
+      // Fall through to app shell serving below.
+    }
+
+    // ── GitHub OAuth — env-var-gated web flow ────────────────────────────────
+    // Wire GITHUB_CLIENT_ID + GITHUB_CLIENT_SECRET to enable.
+    const ghClientId     = process.env["GITHUB_CLIENT_ID"];
+    const ghClientSecret = process.env["GITHUB_CLIENT_SECRET"];
+
+    if (pathname === "/auth/github/start") {
+      if (!ghClientId) return json(res, { error: "github-oauth-not-configured" }, 501);
+      const state = Math.random().toString(36).slice(2);
+      const host  = req.headers["host"] ?? `${HOST}:${PORT}`;
+      const proto = req.headers["x-forwarded-proto"] ?? "http";
+      const redirectUri = encodeURIComponent(`${proto}://${host}/auth/github/callback`);
+      const url = `https://github.com/login/oauth/authorize?client_id=${ghClientId}&scope=read:user&state=${state}&redirect_uri=${redirectUri}`;
+      res.writeHead(302, { Location: url });
+      res.end();
+      return;
+    }
+
+    if (pathname === "/auth/github/callback") {
+      if (!ghClientId || !ghClientSecret) return json(res, { error: "github-oauth-not-configured" }, 501);
+      const code = new URL(`http://x${url}`).searchParams.get("code");
+      if (!code) return json(res, { error: "missing-code" }, 400);
+      try {
+        const tokenRes = await fetch("https://github.com/login/oauth/access_token", {
+          method: "POST",
+          headers: { Accept: "application/json", "Content-Type": "application/json" },
+          body: JSON.stringify({ client_id: ghClientId, client_secret: ghClientSecret, code }),
+        });
+        const tokenData = await tokenRes.json() as { access_token?: string; error?: string };
+        if (!tokenData.access_token) throw new Error(tokenData.error ?? "no-token");
+        const userRes = await fetch("https://api.github.com/user", {
+          headers: { Authorization: `Bearer ${tokenData.access_token}`, "User-Agent": "lararium-node/0.1" },
+        });
+        const user = await userRes.json() as { login: string; id: number; name?: string };
+        const now     = new Date();
+        const expires = new Date(now.getTime() + 8 * 60 * 60 * 1000);
+        const receipt: LarAuthReceipt = {
+          provider:    "github-vscode",
+          subject:     `github:${user.login}`,
+          displayName: user.name ?? user.login,
+          issuedAt:    now.toISOString(),
+          expiresAt:   expires.toISOString(),
+          scopes:      [{ with: "lararium:*", can: "*" }],
+          principal: {
+            provider: "github-vscode", login: user.login,
+            githubId: String(user.id), editor: "vscode",
+            localInstanceId: `github-oauth:${user.login}`,
+          },
+        };
+        // Inject receipt via meta tag on next page load — redirect back to app.
+        const b64 = Buffer.from(JSON.stringify(receipt)).toString("base64");
+        // Short-lived cookie so the receipt survives the redirect without being in the URL.
+        res.writeHead(302, {
+          Location: "/",
+          "Set-Cookie": `lararium_auth=${b64}; Path=/; HttpOnly; SameSite=Lax; Max-Age=60`,
+        });
+        res.end();
+      } catch (e) {
+        return json(res, { error: String(e) }, 500);
+      }
+      return;
     }
 
     // ── Static ─────────────────────────────────────────────────────────────
@@ -285,10 +372,12 @@ async function main() {
     const wsProto = req.headers["x-forwarded-proto"] === "https" ? "wss" : "ws";
     let html = readFileSync(join(APP_DIST, "index.html"), "utf-8");
     const metaTags = [
-      `<meta name="lararium-room"      content="${serveRoomId}">`,
-      `<meta name="lararium-meme-sync" content="${wsProto}://${host}/meme-sync">`,
-      `<meta name="lararium-catalog"   content="${catalogUrl}">`,
-      `<meta name="lararium-receipt"   content="${receiptSha}">`,
+      `<meta name="lararium-room"             content="${serveRoomId}">`,
+      `<meta name="lararium-meme-sync"        content="${wsProto}://${host}/meme-sync">`,
+      `<meta name="lararium-catalog"          content="${catalogUrl}">`,
+      `<meta name="lararium-receipt"          content="${receiptSha}">`,
+      `<meta name="lararium-operator-receipt" content="${operatorReceiptB64}">`,
+      ...(process.env["GITHUB_CLIENT_ID"] ? [`<meta name="lararium-github-oauth" content="1">`] : []),
     ].join("\n  ");
     // External core script — suppress auto-boot so LarariumTW5 controls the
     // boot sequence (preloadTiddlers injected before boot() is called).

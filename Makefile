@@ -1,14 +1,32 @@
-.PHONY: help install build test typecheck serve reseed clean
+.PHONY: help install build test typecheck serve serve-dev reseed clean \
+        docker-build docker-serve docker-dev docker-qa docker-prod docker-smoke
 
 help:
-	@echo "Targets:"
+	@echo "Development:"
 	@echo "  make install       Install all workspace dependencies"
-	@echo "  make build         Build all packages (core → tldraw → node → app → mcp)"
+	@echo "  make build         Build all packages (core → tw5 → tldraw → node → app → mcp)"
 	@echo "  make test          Run all package test suites"
 	@echo "  make typecheck     Run tsc --noEmit across all packages"
-	@echo "  make serve         Build app then start lararium serve on :4321"
-	@echo "  make reseed        Force-evict + reseed the boot room (server must be running)"
+	@echo "  make serve         Build app then start lararium-node serve on :4321"
+	@echo "  make serve-dev     tsx watch mode — no build step, hot reload"
+	@echo "  make reseed        Force-reseed corpus:lares island (server must be running)"
 	@echo "  make clean         Remove all dist/ and .lararium-data/ artifacts"
+	@echo ""
+	@echo "Auth (optional — GitHub OAuth web flow):"
+	@echo "  GITHUB_CLIENT_ID=<id> GITHUB_CLIENT_SECRET=<secret> make serve"
+	@echo "  gh CLI session is used automatically when available (developer path)."
+	@echo "  Bluesky AT Proto OAuth is always available in the browser (no config needed)."
+	@echo ""
+	@echo "Docker:"
+	@echo "  make docker-build  Build serve + mcp Docker images"
+	@echo "  make docker-dev    docker compose --profile dev (tsx watch)"
+	@echo "  make docker-qa     docker compose --profile qa (built, ports exposed)"
+	@echo "  make docker-prod   docker compose --profile prod (hardened, no ports)"
+	@echo "  make docker-smoke  docker compose --profile qa-smoke (stdio smoke tests)"
+
+# ---------------------------------------------------------------------------
+# Local dev
+# ---------------------------------------------------------------------------
 
 install:
 	pnpm install
@@ -20,14 +38,38 @@ test:
 	pnpm -r test
 
 typecheck:
-	pnpm -r exec tsc --noEmit
+	pnpm -r typecheck
 
 serve: build
 	pnpm --filter @lararium/node serve
 
+# Hot-reload for active development — skips the full build.
+# Picks up gh CLI session automatically for operator auth.
+serve-dev:
+	pnpm --filter @lararium/node exec tsx --watch scripts/serve.ts
+
 reseed:
-	curl -s "http://localhost:4321/admin/reseed" | python3 -m json.tool
+	curl -sf "http://localhost:4321/admin/reseed" | python3 -m json.tool
 
 clean:
 	find . -path "*/node_modules" -prune -o -name "dist" -type d -print | grep -v node_modules | xargs rm -rf
 	rm -rf .lararium-data
+
+# ---------------------------------------------------------------------------
+# Docker
+# ---------------------------------------------------------------------------
+
+docker-build:
+	docker compose build
+
+docker-dev:
+	docker compose --profile dev up
+
+docker-qa:
+	docker compose --profile qa up
+
+docker-prod:
+	docker compose --profile prod up
+
+docker-smoke:
+	docker compose --profile qa-smoke run --rm lararium-qa-smoke

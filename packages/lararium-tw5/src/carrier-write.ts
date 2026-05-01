@@ -93,7 +93,7 @@ export function buildCarrierChildren(
   excludeTitle?: string,
 ): Array<{ title: string; fields: Record<string, string | string[]>; text: string }> {
   const wiki = tw5.wiki;
-  const childTitles: string[] = tw5.filterTiddlers(`[tag[${parentUri}]has[ahu-slot]] [field:fragment-parent[${parentUri}]]`);
+  const childTitles: string[] = tw5.filterTiddlers(`[field:fragment-parent[${parentUri}]]`);
   return childTitles
     .filter((ct) => ct !== excludeTitle)
     .map((ct) => {

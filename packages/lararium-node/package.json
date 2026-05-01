@@ -21,6 +21,7 @@
     "dev": "tsx src/index.ts",
     "build-snapshot": "tsx scripts/build-snapshot.ts",
     "serve": "tsx scripts/serve.ts",
+    "serve:prod": "node dist/scripts/serve.js",
     "e2e": "playwright test --config playwright.config.ts",
     "e2e:headed": "playwright test --config playwright.config.ts --headed"
   },
@@ -32,6 +33,7 @@
     "@lararium/core": "workspace:*",
     "@lararium/tldraw": "workspace:*",
     "@lararium/tw5": "workspace:*",
+    "@octokit/rest": "^22.0.1",
     "@types/ws": "^8.18.1",
     "ws": "^8.20.0"
   },

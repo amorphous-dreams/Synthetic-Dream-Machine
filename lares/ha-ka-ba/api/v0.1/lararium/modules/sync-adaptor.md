@@ -56,17 +56,18 @@ private _applyChange(change: LarTiddlerChange): void {
     try {
       if (change.record === null || change.record.deleted) {
         this.tw5.removeTiddler(change.title);
-        const childTitles: string[] = this.tw5.filterTiddlers(`[tag[${change.title}]has[ahu-slot]]`);
+        const childTitles: string[] = this.tw5.filterTiddlers(`[field:fragment-parent[${change.title}]]`);
         for (const t of childTitles) this.tw5.removeTiddler(t);
         this._pendingDeletions.add(change.title);
       } else {
         const rec = change.record;
         const isCarrier = rec.text !== undefined &&
-          (rec.fields["content-type"] === "text/x-memetic-wikitext" ||
-            (!rec.fields["content-type"] && change.title.startsWith("lar:")));
+          (rec.fields["type"] === "text/x-memetic-wikitext" ||
+            rec.fields["content-type"] === "text/x-memetic-wikitext" ||
+            (!(rec.fields["type"] || rec.fields["content-type"]) && change.title.startsWith("lar:")));
 
         if (isCarrier && rec.text) {
-          const staleChildren: string[] = this.tw5.filterTiddlers(`[tag[${change.title}]has[ahu-slot]]`);
+          const staleChildren: string[] = this.tw5.filterTiddlers(`[field:fragment-parent[${change.title}]]`);
           for (const t of staleChildren) this.tw5.removeTiddler(t);
           const tiddlers = this.tw5.deserializeCarrier(
             change.title, rec.text, rec.fields as Record<string, string | string[]>,

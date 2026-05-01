@@ -27,7 +27,6 @@ import type {
   EdgeNode,
   EdgeSugarNode,
   DispatchNode,
-  CarrierHeaderNode,
   ControlNode,
   SigilNode,
   DynamicNode,
@@ -66,10 +65,13 @@ const BOOTSTRAP_SCANS: SigilScan[] = [
   { sigilName: "control-soh", regex: /<<~(?:[^>]|->)*&#x0011;(?:[^>]|->)*\?\s*->\s*([^\s>]+)\s*>>/g, eventType: "pragma" },
   { sigilName: "control-eot", regex: /<<~(?:[^>]|->)*&#x0014;(?:[^>]|->)*>>/g,                        eventType: "pragma" },
   // Structural
-  { sigilName: "ahu",       regex: /<<~[^>]*\bahu\s+(#[\w-]+)\s*>>/g,     eventType: "open"   },
+  // ahu: groups [full, #slot, delegate?] — delegate form: <<~ ahu #slot -> ? >> or <<~ ahu #slot -> lar:///uri >>
+  { sigilName: "ahu",       regex: /<<~(?:[^>]|->)*\bahu\s+(#[\w-]+)(?:\s+->\s+(\S+))?\s*>>/g, eventType: "open"   },
   { sigilName: "ahu",       regex: /<<~\/ahu\s*>>/g,                       eventType: "close"  },
-  // Edge — block before inline so block wins at same position
-  { sigilName: "pranala",   regex: /<<~\s*pranala\s+(#[\w-]+\s+)?(\S+)\s*->\s*(\S+)\s*>>([\s\S]*?)<<~\/pranala\s*>>/gs, eventType: "leaf" },
+  // Edge — block before inline so block wins at same position.
+  // Both forms share group layout: 1=#slot?, 2=FROM, 3=TO, 4=family?, 5=role?, 6=body(block only).
+  // This alignment means makeLeaf can read g(1-5) identically for both.
+  { sigilName: "pranala",   regex: /<<~\s*pranala\s+(#[\w-]+\s+)?(\S+)\s*->\s*(\S+)(?:\s+family:([\w-]+))?(?:\s+role:([\w-]+))?\s*>>([\s\S]*?)<<~\/pranala\s*>>/gs, eventType: "leaf" },
   { sigilName: "pranala",   regex: /<<~\s*pranala\s+(#[\w-]+\s+)?(\S+)\s*->\s*(\S+)(?:\s+family:([\w-]+))?(?:\s+role:([\w-]+))?\s*>>/g, eventType: "leaf" },
   // Edge sugar
   { sigilName: "loulou",    regex: /<<~\s*loulou\s+(\S+)\s*>>/g,           eventType: "leaf"   },
@@ -254,13 +256,21 @@ interface Frame {
   children: MemeAstNode[];
 }
 
+// Names that produce SigilNode (not DynamicNode) when encountered.
+// Bootstrapped (BOOTSTRAP_SCANS regex present): ahu, pranala, loulou, aka, kahea, kahea-call,
+//   pono, lele, papalohe, wai, mukuwai, kahawai, huli, kumu, kau, kukali, toml,
+//   control-* (control-soh/stx/etx/eot).
+// Grammar-meme-registered only (no bootstrap scan — must be loaded via grammar carrier):
+//   hana, meme, wehe, helu, kapu, hui, heihei, puka, ui.
+// If a grammar-meme sigil appears in a bootstrap carrier it falls to DynamicNode, not SigilNode.
 const CANONICAL_SIGILS = new Set([
+  // bootstrapped
   "ahu", "pranala", "loulou", "aka", "kahea", "kahea-call", "pono", "lele", "papalohe",
-  "wai", "mukuwai", "kahawai", "huli", "hana", "meme",
-  "wehe", "helu", "kumu", "kau", "kapu", "hui", "heihei", "puka", "ui",
-  "toml", "pranala-header",
-  "kukali",
+  "wai", "mukuwai", "kahawai", "huli", "kumu", "kau", "kukali",
+  "toml",
   "control-soh", "control-stx", "control-etx", "control-eot",
+  // grammar-meme-registered (SigilNode when grammar carrier loaded, DynamicNode in bootstrap)
+  "hana", "meme", "wehe", "helu", "kapu", "hui", "heihei", "puka", "ui",
 ]);
 
 export function buildAst(events: ParseEvent[], carrierUri: string, grammar?: GrammarRules, sourceText?: string): MemeAstNode[] {
@@ -334,8 +344,9 @@ function closeFrame(frame: Frame, carrierUri: string, _scope: "block", grammar?:
   const base = { pos, raw };
 
   if (sigilName === "ahu") {
-    const slot = (groups[1] ?? "").trim();
-    return { kind: "Worksite", ...base, slot, uri: carrierUri + slot, body: children } as WorksiteNode;
+    const slot     = (groups[1] ?? "").trim();
+    const delegate = (groups[2] ?? "").trim() || null;
+    return { kind: "Worksite", ...base, slot, uri: carrierUri + slot, delegate, body: children } as WorksiteNode;
   }
   if (sigilName === "pranala") {
     // Block form
@@ -398,9 +409,11 @@ function makeLeaf(
     case "lele":
       return { kind: "Dispatch", ...base, targetRaw: g(1), family: "message" } as DispatchNode;
     case "toml":
-      return { kind: "Sigil", ...base, sigilName: "toml", attrs: { profile: groups[1] ?? "", content: groups[2] ?? "" }, body: [] } as SigilNode;
-    case "pranala-header":
-      return { kind: "CarrierHeader", ...base, toUri: g(1) } as CarrierHeaderNode;
+      // Fence form: groups[1]=profile, groups[2]=content.
+      // Block form (<<~ toml >>): groups[2] is undefined, groups[1]=content, profile="".
+      return { kind: "Sigil", ...base, sigilName: "toml",
+        attrs: { profile: groups[2] !== undefined ? (groups[1] ?? "") : "",
+                 content: groups[2] ?? groups[1] ?? "" }, body: [] } as SigilNode;
     case "control-soh":
       return { kind: "Control", ...base, phase: "soh", toUri: g(1) || undefined } as ControlNode;
     case "control-stx":
@@ -447,9 +460,6 @@ function walkForEdges(nodes: MemeAstNode[], carrierUri: string, ahuStack: string
         break;
       case "Dispatch":
         edges.push(projectDispatch(node, carrierUri, ahuStack));
-        break;
-      case "CarrierHeader":
-        edges.push(mk(carrierUri, carrierUri, null, node.toUri, node.toUri, "control", "header"));
         break;
       case "Control":
         // SOH emits a "control"/"soh" edge carrying the declared URI.

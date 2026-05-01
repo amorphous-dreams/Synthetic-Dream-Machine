@@ -26,6 +26,7 @@ import { ReactionGraph } from "@lararium/core";
 import { LarariumCanvas } from "./LarariumCanvas.js";
 import { LarariumPanel } from "./LarariumPanel.js";
 import { BootSplash } from "./BootSplash.js";
+import { AuthGate } from "./AuthGate.js";
 import { LarariumCtx, useTheme } from "./lararium-context.js";
 import { useLarariumHostOpen } from "./lararium-browser-host.js";
 import { projectFromTw5 } from "@lararium/tldraw";
@@ -207,6 +208,10 @@ export function LarariumShell({ memes, onMemes }: ShellProps) {
         />
         {createPortal(<LarariumPanel />,           document.body)}
         {createPortal(<BootSplash phase={openPhase} readiness={readiness} />, document.body)}
+        {openPhase?.kind === "authority-opening" && createPortal(
+          <AuthGate githubOAuthEnabled={!!document.querySelector('meta[name="lararium-github-oauth"]')} onReceipt={() => window.location.reload()} />,
+          document.body,
+        )}
       </div>
     </LarariumCtx.Provider>
   );

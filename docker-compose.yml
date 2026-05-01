@@ -1,21 +1,42 @@
-# Lararium MCP — Docker Compose
+# Lararium — Docker Compose
 #
 # Profiles:
-#   dev   — tsx watch mode, lares/ mounted rw, no build step
-#   qa    — built image, ports exposed for integration tests and VSCode sessions
-#   prod  — built image, lares/ read-only, no ports, stdio only
+#   dev        — tsx watch mode, full monorepo mounted rw, no build step
+#   qa         — built serve image, ports exposed for browser QA and VSCode sessions
+#   prod       — built serve image, lares/ read-only, hardened
+#   mcp-dev    — MCP stdio, tsx watch
+#   mcp-qa     — MCP stdio, built image, ports exposed
+#   mcp-prod   — MCP stdio, built image, lares/ read-only
+#   qa-smoke   — stdio smoke tests against built image
 #
 # Usage:
-#   docker compose --profile dev up
-#   docker compose --profile qa up
-#   docker compose --profile prod up
+#   make docker-dev          # hot-reload serve + app
+#   make docker-qa           # QA browser test on :4321
+#   make docker-prod         # production serve
+#   docker compose --profile mcp-qa up
 #
-# Rollback to Python (transition window only):
-#   LARARIUM_SERVER=python docker compose --profile dev up
+# Auth env vars (all optional):
+#   GITHUB_CLIENT_ID         GitHub OAuth App client id  (web flow, browser users)
+#   GITHUB_CLIENT_SECRET     GitHub OAuth App client secret
+#   gh CLI is used automatically on the host (make serve-dev / make serve).
+#   gh CLI is NOT available inside containers — Bluesky OAuth is primary there.
+#   Bluesky AT Proto OAuth requires no server-side config (client-side PKCE+DPoP).
+
+x-auth-env: &auth-env
+  GITHUB_CLIENT_ID:     ${GITHUB_CLIENT_ID:-}
+  GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET:-}
+
+x-serve-volumes-rw: &serve-volumes-rw
+  - ./lares:/app/lares:rw
+  - lararium-data:/app/.lararium-data
+
+x-serve-volumes-ro: &serve-volumes-ro
+  - ./lares:/app/lares:ro
+  - lararium-data:/app/.lararium-data
 
 services:
 
-  # ─── dev ────────────────────────────────────────────────────────────────────
+  # ─── dev — hot-reload serve (tsx watch, full source mounted) ────────────────
   lararium-dev:
     profiles: [dev]
     image: node:24-slim
@@ -24,32 +45,84 @@ services:
       - .:/app
       - /app/node_modules
     environment:
-      - NODE_ENV=development
+      NODE_ENV: development
+      <<: *auth-env
+    command: >
+      sh -c "npm install -g pnpm &&
+             pnpm install &&
+             node --import tsx/esm --watch packages/lararium-node/scripts/serve.ts"
+    ports:
+      - "4321:4321"
+
+  # ─── qa — built serve image, browser QA on :4321 ───────────────────────────
+  lararium-qa:
+    profiles: [qa]
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: serve
+    volumes: *serve-volumes-rw
+    environment:
+      NODE_ENV: qa
+      <<: *auth-env
+    ports:
+      - "4321:4321"
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:4321/api/rooms', r => process.exit(r.statusCode === 200 ? 0 : 1)).on('error', () => process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
+  # ─── prod — hardened, lares/ read-only, no debug ports ─────────────────────
+  lararium-prod:
+    profiles: [prod]
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: serve
+    volumes: *serve-volumes-ro
+    environment:
+      NODE_ENV: production
+      <<: *auth-env
+    ports:
+      - "4321:4321"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:4321/api/rooms', r => process.exit(r.statusCode === 200 ? 0 : 1)).on('error', () => process.exit(1))"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+
+  # ─── mcp-dev — MCP stdio, tsx watch ────────────────────────────────────────
+  lararium-mcp-dev:
+    profiles: [mcp-dev]
+    image: node:24-slim
+    working_dir: /app
+    volumes:
+      - .:/app
+      - /app/node_modules
+    environment:
+      NODE_ENV: development
     command: >
       sh -c "npm install -g pnpm &&
              pnpm install &&
              pnpm --filter @lararium/mcp exec tsx --watch src/stdio.ts"
     stdin_open: true
     tty: true
-    # dev runs stdio only — no ports.
-    # Connect via: docker attach or pipe stdin from your MCP client.
 
-  # ─── qa ─────────────────────────────────────────────────────────────────────
-  lararium-qa:
-    profiles: [qa]
+  # ─── mcp-qa — MCP stdio, built image ───────────────────────────────────────
+  lararium-mcp-qa:
+    profiles: [mcp-qa]
     build:
       context: .
       dockerfile: Dockerfile
-      target: runtime
+      target: mcp-runtime
     volumes:
       - ./lares:/app/lares:rw
     environment:
-      - NODE_ENV=qa
-    # Port 3000 reserved for future Streamable HTTP transport.
-    # Currently stdio only — the port is declared but not used.
-    # Uncomment when Streamable HTTP lands:
-    # ports:
-    #   - "3000:3000"
+      NODE_ENV: qa
     stdin_open: true
     tty: true
     healthcheck:
@@ -58,26 +131,22 @@ services:
       timeout: 5s
       retries: 3
 
-  # ─── prod ───────────────────────────────────────────────────────────────────
-  lararium-prod:
-    profiles: [prod]
+  # ─── mcp-prod — MCP stdio, lares/ read-only ────────────────────────────────
+  lararium-mcp-prod:
+    profiles: [mcp-prod]
     build:
       context: .
       dockerfile: Dockerfile
-      target: runtime
+      target: mcp-runtime
     volumes:
       - ./lares:/app/lares:ro
     environment:
-      - NODE_ENV=production
-    # No ports in prod until Streamable HTTP is hardened with auth.
-    # Cloud deployments (elyncia.app, DreamNet) place a reverse proxy in front.
+      NODE_ENV: production
     stdin_open: true
     tty: true
     restart: unless-stopped
 
-  # ─── qa-smoke ───────────────────────────────────────────────────────────────
-  # Run the stdio smoke tests against the qa image.
-  # Usage: docker compose --profile qa-smoke run --rm lararium-qa-smoke
+  # ─── qa-smoke — stdio smoke tests against built image ──────────────────────
   lararium-qa-smoke:
     profiles: [qa-smoke]
     build:
@@ -87,8 +156,12 @@ services:
     volumes:
       - ./lares:/app/lares:ro
     environment:
-      - NODE_ENV=test
+      NODE_ENV: test
     command: >
       sh -c "NODE_OPTIONS=--experimental-vm-modules
              pnpm exec jest
              --config packages/lararium-mcp/jest.config.cjs"
+
+volumes:
+  lararium-data:
+    driver: local

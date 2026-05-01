@@ -13,7 +13,6 @@ export type MemeAstKind =
   | "Edge"          // pranala (block or inline)
   | "EdgeSugar"     // loulou / aka / kahea / pono / papalohe
   | "Dispatch"      // lele — fire-and-forget message edge
-  | "CarrierHeader" // <<~ ? -> URI >>  (legacy; superseded by Control "soh")
   | "Control"       // <<~&#x0001;>> SOH / <<~&#x0002;>> STX / <<~&#x0003;>> ETX / <<~&#x0004;>> EOT
   | "Text"          // raw wikitext span
   | "Sigil"         // all canonical sigils incl. toml (attrs bag carries content)
@@ -33,6 +32,7 @@ export interface WorksiteNode extends AstBase {
   kind: "Worksite";
   slot: string;           // e.g. "#section-name"
   uri: string;            // carrierUri + slot
+  delegate: string | null; // optional delegation target from `-> target` or `-> ?` form
   body: MemeAstNode[];
 }
 
@@ -62,11 +62,6 @@ export interface DispatchNode extends AstBase {
   kind: "Dispatch";
   targetRaw: string;
   family: "message";
-}
-
-export interface CarrierHeaderNode extends AstBase {
-  kind: "CarrierHeader";
-  toUri: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -157,7 +152,6 @@ export type MemeAstNode =
   | EdgeNode
   | EdgeSugarNode
   | DispatchNode
-  | CarrierHeaderNode
   | ControlNode
   | TextNode
   | SigilNode

@@ -103,6 +103,11 @@ export function useLarariumHostOpen(options: BrowserHostOptions): HostOpenState 
 
       const authReceipt = await getOrCreateBrowserAuthReceipt();
       if (cancelled) return;
+      // No receipt → caller must show AuthGate; abort boot.
+      if (!authReceipt) {
+        setPhase({ kind: "authority-opening", hostId }); // stays here — AuthGate takes over
+        return;
+      }
       const r = readBootReceipt(hostId);
       setPhase({ kind: "authority-ready", receipt: r });
       setReceipt(r);
