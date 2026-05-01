@@ -11,14 +11,13 @@
 
 import { readFileSync, writeFileSync } from "fs";
 import { createHash } from "crypto";
-import { resolve, dirname } from "path";
+import { resolve, dirname, join } from "path";
 import { fileURLToPath } from "url";
+import { laresRoot } from "@lararium/lares";
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const root      = resolve(__dirname, "../../..");
-
+const __dirname  = dirname(fileURLToPath(import.meta.url));
 const bundlePath = resolve(__dirname, "../dist-bundle/lararium-tw5-modules.iife.js");
-const memePath   = resolve(root, "lares/ha-ka-ba/api/v0.1/lararium/modules/tw5-modules.md");
+const memePath   = join(laresRoot, "ha-ka-ba/api/v0.1/lararium/modules/tw5-modules.md");
 
 const bundle = readFileSync(bundlePath, "utf8").trimEnd();
 const sha256 = createHash("sha256").update(bundle, "utf8").digest("hex");

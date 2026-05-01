@@ -8,10 +8,10 @@ confidence    = 0.88
 mana          = 0.88
 role          = "anchor: KukaliWidget — heleuma ka"
 heleuma       = "ka"
-source-file   = "packages/lararium-tw5/src/tw5-widgets.ts"
+source-file   = "packages/lararium-tw5/src/widgets/kukali.ts"
 source-symbol = "KukaliWidget"
 module-ref    = "lar:///ha.ka.ba/api/v0.1/lararium/widgets/kukali-tw5"
-body-sha256   = "fd513dedd41d0825be0f7f017ab51e3add3f7900bd66c70ad3a861298b77e546"
+body-sha256 = "8ac9495db8e12d378b9c388eacf8a8b968d08ce0220ae4bf22a6c871b93f3e0c"
 cacheable     = true
 retain        = true
 ```

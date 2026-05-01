@@ -24,6 +24,7 @@ import { writeFileSync, mkdirSync } from "fs";
 import { join, resolve, relative, dirname } from "path";
 import { fileURLToPath } from "url";
 import { createRequire } from "module";
+import { laresRoot } from "@lararium/lares";
 
 const __dirname = fileURLToPath(new URL(".", import.meta.url));
 const _require = createRequire(import.meta.url);
@@ -31,8 +32,7 @@ const _require = createRequire(import.meta.url);
 const TW5_VERSION = "5.4.0";
 const TW5_SCRIPT_FILENAME = `tiddlywikicore-${TW5_VERSION}.js`;
 
-// Resolve paths relative to monorepo root
-const MONOREPO_ROOT  = resolve(__dirname, "../../..");
+const MONOREPO_ROOT  = dirname(laresRoot);
 const APP_PUBLIC_DIR = join(MONOREPO_ROOT, "packages/lararium-app/public");
 const CORE_JS_OUT    = join(APP_PUBLIC_DIR, TW5_SCRIPT_FILENAME);
 const VERSION_TS_OUT = resolve(__dirname, "../src/generated-tw5-version.ts");

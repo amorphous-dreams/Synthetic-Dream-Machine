@@ -8,10 +8,10 @@ confidence    = 0.88
 mana          = 0.88
 role          = "anchor: PranalaWidget — heleuma ka"
 heleuma       = "ka"
-source-file   = "packages/lararium-tw5/src/tw5-widgets.ts"
+source-file   = "packages/lararium-tw5/src/widgets/pranala.ts"
 source-symbol = "PranalaWidget"
 module-ref    = "lar:///ha.ka.ba/api/v0.1/lararium/widgets/pranala-tw5"
-body-sha256   = "f4ba947f0eaf01d55b1128dc0f4a0e46699eced346fa4901e0104bc66908ba42"
+body-sha256 = "1008f270a77c24eb777078f9213a9a15e714776e555a63c1dcf4c366b29ad2e6"
 cacheable     = true
 retain        = true
 ```

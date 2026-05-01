@@ -34,8 +34,7 @@
 import { createServer, type IncomingMessage, type ServerResponse } from "http";
 import { createHash }                                              from "crypto";
 import { readFileSync, existsSync, statSync, mkdirSync, writeFileSync } from "fs";
-import { join, extname, resolve } from "path";
-import { fileURLToPath } from "url";
+import { join, extname, dirname, resolve } from "path";
 import { WebSocketServer } from "ws";
 import { Repo } from "@automerge/automerge-repo";
 import { NodeWSServerAdapter } from "@automerge/automerge-repo-network-websocket";
@@ -60,25 +59,12 @@ import { getGhCliOperatorReceipt } from "../src/github-cli-auth.js";
 import type { AutomergeUrl, DocHandle } from "@automerge/automerge-repo";
 import { getOrCreateNodeAuthReceipt } from "../src/operator-key.js";
 import { TW5_CORE_SCRIPT_URL } from "@lararium/tw5";
+import { laresRoot } from "@lararium/lares";
 
-const __dirname = fileURLToPath(new URL(".", import.meta.url));
-
-// Walk up until pnpm-workspace.yaml — works from scripts/ (tsx) and dist/scripts/ (compiled).
-function findRepoRoot(start: string): string {
-  let dir = start;
-  for (let i = 0; i < 10; i++) {
-    if (existsSync(join(dir, "pnpm-workspace.yaml"))) return dir;
-    const parent = resolve(dir, "..");
-    if (parent === dir) break;
-    dir = parent;
-  }
-  throw new Error(`[lararium-serve] cannot locate repo root from ${start}`);
-}
-
-const REPO_ROOT = findRepoRoot(__dirname);
-const APP_DIST  = join(REPO_ROOT, "packages/lararium-app/dist");
+const REPO_ROOT  = dirname(laresRoot);
+const APP_DIST   = join(REPO_ROOT, "packages/lararium-app/dist");
 const APP_PUBLIC = join(REPO_ROOT, "packages/lararium-app/public");
-const DATA_DIR = join(REPO_ROOT, ".lararium-data");
+const DATA_DIR   = join(REPO_ROOT, ".lararium-data");
 
 const PORT = parseInt(process.env["LARARIUM_PORT"] ?? "4321", 10);
 const HOST = process.env["LARARIUM_HOST"] ?? "127.0.0.1";

@@ -17,6 +17,7 @@
     "@automerge/automerge-repo-network-websocket": "^2.5.5",
     "@automerge/automerge-repo-storage-indexeddb": "^2.5.5",
     "@lararium/core": "workspace:*",
+    "@lararium/lares": "workspace:*",
     "@lararium/tldraw": "workspace:*",
     "@lararium/tw5": "workspace:*",
     "@tldraw/sync": "^4.5.10",

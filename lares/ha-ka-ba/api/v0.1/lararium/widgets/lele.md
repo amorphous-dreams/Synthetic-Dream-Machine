@@ -8,10 +8,10 @@ confidence    = 0.88
 mana          = 0.88
 role          = "anchor: LeleWidget — heleuma ka"
 heleuma       = "ka"
-source-file   = "packages/lararium-tw5/src/tw5-widgets.ts"
+source-file   = "packages/lararium-tw5/src/widgets/lele.ts"
 source-symbol = "LeleWidget"
 module-ref    = "lar:///ha.ka.ba/api/v0.1/lararium/widgets/lele-tw5"
-body-sha256   = "6f4e880bb8b762e16c3147d4401c073e0c8c2a3834f4adfeea3aa8a3cff11b4e"
+body-sha256 = "adf19c7be25695020e887074244464c00985e6c514af0f65661e084de4d6b3d4"
 cacheable     = true
 retain        = true
 ```

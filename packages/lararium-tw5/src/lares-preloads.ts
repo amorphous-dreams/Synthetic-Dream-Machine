@@ -95,16 +95,13 @@ export async function loadUiTiddlers(): Promise<TiddlerFields[]> {
   // @ts-ignore — dynamic Node-only imports; never reached in browser
   const { readFileSync, readdirSync } = await /* @vite-ignore */ import("fs");
   // @ts-ignore
-  const { resolve, dirname }          = await /* @vite-ignore */ import("path");
+  const { join: pathJoin }            = await /* @vite-ignore */ import("path");
   // @ts-ignore
-  const { fileURLToPath }             = await /* @vite-ignore */ import("url");
+  const { laresRoot: lr }             = await /* @vite-ignore */ import("@lararium/lares");
   /* eslint-enable */
 
-  const __dirname  = dirname(fileURLToPath(import.meta.url));
-  // compiled to dist/, so ../../.. reaches monorepo root from dist/
-  const root       = resolve(__dirname, "../../..");
-  const laraRoot   = resolve(root, "lares/ha-ka-ba/api/v0.1/lararium");
-  const dirs       = ["ui", "templates"].map((d) => resolve(laraRoot, d));
+  const laraRoot = pathJoin(lr, "ha-ka-ba/api/v0.1/lararium");
+  const dirs     = ["ui", "templates"].map((d: string) => pathJoin(laraRoot, d));
 
   const result: TiddlerFields[] = [];
   for (const dir of dirs) {
@@ -112,7 +109,7 @@ export async function loadUiTiddlers(): Promise<TiddlerFields[]> {
     try { files = readdirSync(dir).filter((f: string) => f.endsWith(".md")); }
     catch { continue; }
     for (const file of files) {
-      const content = readFileSync(resolve(dir, file), "utf8");
+      const content = readFileSync(pathJoin(dir, file), "utf8");
       const t = parseMdToTiddler(content);
       if (t) result.push(t);
     }
@@ -142,20 +139,18 @@ export async function loadVendorTiddlers(): Promise<Array<Record<string, string>
   // @ts-ignore
   const { readFileSync, readdirSync } = await /* @vite-ignore */ import("fs");
   // @ts-ignore
-  const { resolve, dirname }          = await /* @vite-ignore */ import("path");
+  const { join: pathJoin }            = await /* @vite-ignore */ import("path");
   // @ts-ignore
-  const { fileURLToPath }             = await /* @vite-ignore */ import("url");
+  const { laresRoot: lr }             = await /* @vite-ignore */ import("@lararium/lares");
 
-  const __dirname  = dirname(fileURLToPath(import.meta.url));
-  const root       = resolve(__dirname, "../../..");
-  const vendorDir  = resolve(root, "lares/ha-ka-ba/api/v0.1/tw5-plugins");
+  const vendorDir = pathJoin(lr, "ha-ka-ba/api/v0.1/tw5-plugins");
 
   const result: Array<Record<string, string>> = [];
   let files: string[];
   try { files = readdirSync(vendorDir).filter((f: string) => f.endsWith(".json")); }
   catch { return result; }
   for (const file of files) {
-    const raw    = readFileSync(resolve(vendorDir, file), "utf8");
+    const raw    = readFileSync(pathJoin(vendorDir, file), "utf8");
     const parsed = JSON.parse(raw) as unknown;
     normalisePluginEntries(parsed, result);
   }

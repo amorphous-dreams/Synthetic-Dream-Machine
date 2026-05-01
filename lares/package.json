@@ -2,5 +2,15 @@
   "name": "@lararium/lares",
   "version": "0.1.0",
   "private": true,
-  "description": "Lararium infrastructure-as-myth corpus — Automerge bag target and quine-corpus"
+  "description": "Lararium infrastructure-as-myth corpus — Automerge bag target and quine-corpus",
+  "type": "module",
+  "exports": {
+    ".": {
+      "import": "./index.js",
+      "types": "./index.d.ts"
+    },
+    "./*": "./*"
+  },
+  "main": "./index.js",
+  "types": "./index.d.ts"
 }

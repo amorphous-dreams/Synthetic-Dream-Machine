@@ -8,10 +8,10 @@ confidence    = 0.88
 mana          = 0.88
 role          = "anchor: PaeWidget — heleuma ka"
 heleuma       = "ka"
-source-file   = "packages/lararium-tw5/src/tw5-widgets.ts"
+source-file   = "packages/lararium-tw5/src/widgets/pae.ts"
 source-symbol = "PaeWidget"
 module-ref    = "lar:///ha.ka.ba/api/v0.1/lararium/widgets/pae-tw5"
-body-sha256   = "a58963a3671cef0b75d375701a2dae9192fc7405a431981aaa85be574a6f0c1f"
+body-sha256 = "4911715531df03ded556bd699cc4c72ddda7a25ead2d28dc48b823334eae8fdf"
 cacheable     = true
 retain        = true
 ```

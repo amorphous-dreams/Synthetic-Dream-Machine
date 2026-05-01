@@ -122,10 +122,18 @@ function parseArrayOfTables(src: string, tableName: string): Record<string, stri
   return entries;
 }
 
+function collectTomlNodes(nodes: import("./ast.js").MemeAstNode[]): SigilNode[] {
+  const out: SigilNode[] = [];
+  for (const n of nodes) {
+    if (n.kind === "Sigil" && n.sigilName === "toml") out.push(n as SigilNode);
+    if ("body" in n && Array.isArray(n.body)) out.push(...collectTomlNodes(n.body as import("./ast.js").MemeAstNode[]));
+  }
+  return out;
+}
+
 export function grammarRulesFromText(uri: string, text: string): GrammarRules | null {
   const ast = parseMemeCarrier(uri, text);
-  const combined = ast
-    .filter((n): n is SigilNode => n.kind === "Sigil" && n.sigilName === "toml")
+  const combined = collectTomlNodes(ast)
     .map((n) => n.attrs["content"] ?? "")
     .join("\n");
 

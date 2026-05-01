@@ -8,10 +8,10 @@ confidence    = 0.88
 mana          = 0.88
 role          = "anchor: TomlWidget — heleuma ka"
 heleuma       = "ka"
-source-file   = "packages/lararium-tw5/src/tw5-widgets.ts"
+source-file   = "packages/lararium-tw5/src/widgets/toml.ts"
 source-symbol = "TomlWidget"
 module-ref    = "lar:///ha.ka.ba/api/v0.1/lararium/widgets/toml-tw5"
-body-sha256   = "ece11a0ce760eb2e85b390cbae2f992076bbe99e9ccac212001b318e536dd3a7"
+body-sha256 = "ed82083a46492a0d4c93a43e941435ff08c34bfd3f682917a625439e3003ede9"
 cacheable     = true
 retain        = true
 ```

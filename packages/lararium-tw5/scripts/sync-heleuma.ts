@@ -24,12 +24,10 @@
 import { readFileSync, writeFileSync, readdirSync, statSync } from "fs";
 import { createHash } from "crypto";
 import { resolve, relative, dirname } from "path";
-import { fileURLToPath } from "url";
+import { laresRoot } from "@lararium/lares";
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const root      = resolve(__dirname, "../../..");
-const laresRoot = resolve(root, "lares");
-const pkgsRoot  = resolve(root, "packages");
+const root     = dirname(laresRoot);
+const pkgsRoot = resolve(root, "packages");
 
 const args          = process.argv.slice(2);
 const COMMIT        = args.includes("--commit");

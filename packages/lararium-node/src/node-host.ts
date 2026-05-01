@@ -7,8 +7,7 @@
 
 import { readFileSync, existsSync, readdirSync, statSync } from "fs";
 import { createHash } from "crypto";
-import { join, relative, resolve } from "path";
-import { fileURLToPath } from "url";
+import { join, relative, dirname } from "path";
 
 import {
   resolveLarUri,
@@ -35,27 +34,10 @@ function makeMemeHashSync(uri: string, fileBytes: Uint8Array | null): string {
   return "sha256:" + createHash("sha256").update(payload, "utf8").digest("hex");
 }
 
-// ---------------------------------------------------------------------------
-// Locate lares/ root relative to this file's location in packages/lararium-node/
-// ---------------------------------------------------------------------------
+import { laresRoot } from "@lararium/lares";
 
-const __dirname = fileURLToPath(new URL(".", import.meta.url));
-
-// Walk up from __dirname until we find pnpm-workspace.yaml — works from both
-// src/ (tsx) and dist/src/ (compiled) without hardcoding depth.
-function findRepoRoot(start: string): string {
-  let dir = start;
-  for (let i = 0; i < 10; i++) {
-    if (existsSync(join(dir, "pnpm-workspace.yaml"))) return dir;
-    const parent = resolve(dir, "..");
-    if (parent === dir) break;
-    dir = parent;
-  }
-  throw new Error(`[lararium] cannot locate repo root from ${start}`);
-}
-
-export const REPO_ROOT  = findRepoRoot(__dirname);
-export const LARES_ROOT = join(REPO_ROOT, "lares");
+export const LARES_ROOT = laresRoot;
+export const REPO_ROOT  = dirname(laresRoot);
 
 // ---------------------------------------------------------------------------
 // Grammar rules reader — Phase 2 scaffolding

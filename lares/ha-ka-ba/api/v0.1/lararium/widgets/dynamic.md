@@ -8,10 +8,10 @@ confidence    = 0.88
 mana          = 0.88
 role          = "anchor: DynamicWidget — heleuma ka"
 heleuma       = "ka"
-source-file   = "packages/lararium-tw5/src/tw5-widgets.ts"
+source-file   = "packages/lararium-tw5/src/widgets/dynamic.ts"
 source-symbol = "DynamicWidget"
 module-ref    = "lar:///ha.ka.ba/api/v0.1/lararium/widgets/dynamic-tw5"
-body-sha256   = "43d9e318af90ac7fc47b0fdab9897b7ac0e9b63138f0225523b7bd6768a16c17"
+body-sha256 = "ab023ebbcaaa7ed865d24e1ab875eff3c002284fbcac26d18ed4cca81832dbf0"
 cacheable     = true
 retain        = true
 ```

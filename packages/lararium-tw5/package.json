@@ -19,12 +19,15 @@
     "build": "tsx scripts/build-tw5-vendor.ts && tsc && tsx scripts/sync-heleuma.ts",
     "build:tw5-vendor": "tsx scripts/build-tw5-vendor.ts",
     "build:heleuma": "tsx scripts/sync-heleuma.ts",
+    "build:heleuma:commit": "tsx scripts/sync-heleuma.ts --commit",
+    "build:widgets": "tsx scripts/write-widget-memes.ts",
     "bundle": "vite build --config vite.bundle.config.ts && tsx scripts/write-module-meme.ts",
     "typecheck": "tsc --noEmit",
     "test": "NODE_OPTIONS=--experimental-vm-modules pnpm exec jest --config jest.config.cjs"
   },
   "dependencies": {
     "@lararium/core": "workspace:*",
+    "@lararium/lares": "workspace:*",
     "@taplo/lib": "^0.5.0",
     "smol-toml": "^1.6.1",
     "tiddlywiki": "^5.4.0"

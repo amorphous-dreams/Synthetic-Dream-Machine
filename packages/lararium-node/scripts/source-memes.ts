@@ -13,12 +13,9 @@
 import { readFileSync, existsSync } from "fs";
 import { createHash }                from "crypto";
 import { join, dirname }             from "path";
-import { fileURLToPath }             from "url";
+import { laresRoot }                 from "@lararium/lares";
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-
-// Monorepo packages root — two levels up from scripts/
-const PACKAGES_ROOT = join(__dirname, "../../");
+const PACKAGES_ROOT = join(dirname(laresRoot), "packages");
 
 // Priority source modules to emit as memes at boot.
 // Keep this list small — agents read source through the graph, not by scanning.

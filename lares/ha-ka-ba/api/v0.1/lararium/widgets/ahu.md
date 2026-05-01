@@ -8,10 +8,10 @@ confidence    = 0.88
 mana          = 0.88
 role          = "anchor: AhuWidget — heleuma ka"
 heleuma       = "ka"
-source-file   = "packages/lararium-tw5/src/tw5-widgets.ts"
+source-file   = "packages/lararium-tw5/src/widgets/ahu.ts"
 source-symbol = "AhuWidget"
 module-ref    = "lar:///ha.ka.ba/api/v0.1/lararium/widgets/ahu-tw5"
-body-sha256   = "29c2c73ba793fd9b5eb8a5249675f8675726dda9dd9a0bf8dfc571860dcf1395"
+body-sha256 = "5f53e970fabce27cac3b4d0490b3c10ee3c50edb93ebf083de98c6d48ca6d3f1"
 cacheable     = true
 retain        = true
 ```

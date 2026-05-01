@@ -8,10 +8,10 @@ confidence    = 0.88
 mana          = 0.88
 role          = "anchor: SigilWidget — heleuma ka"
 heleuma       = "ka"
-source-file   = "packages/lararium-tw5/src/tw5-widgets.ts"
+source-file   = "packages/lararium-tw5/src/widgets/sigil.ts"
 source-symbol = "SigilWidget"
 module-ref    = "lar:///ha.ka.ba/api/v0.1/lararium/widgets/sigil-tw5"
-body-sha256   = "48e8049437775463f0767f0ad4194173601ac00e76057329b82c4f90f8203939"
+body-sha256 = "235354a9ccdc72dbc7765b32c5b90b5329cfe547a7919af783639eb847b9799d"
 cacheable     = true
 retain        = true
 ```

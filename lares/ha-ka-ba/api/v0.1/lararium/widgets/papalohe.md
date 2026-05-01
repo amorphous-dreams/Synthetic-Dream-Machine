@@ -8,10 +8,10 @@ confidence    = 0.88
 mana          = 0.88
 role          = "anchor: PapaloheWidget — heleuma ka"
 heleuma       = "ka"
-source-file   = "packages/lararium-tw5/src/tw5-widgets.ts"
+source-file   = "packages/lararium-tw5/src/widgets/papalohe.ts"
 source-symbol = "PapaloheWidget"
 module-ref    = "lar:///ha.ka.ba/api/v0.1/lararium/widgets/papalohe-tw5"
-body-sha256   = "cf854bcf9f8a7b05e65e4841b85268e2aefefeabb25c1519a8b6ba9a1fa8a026"
+body-sha256 = "63ce59d60fc63fd7d7e4c5d8e599198bd18cefaaa939798bfb91a96a0ecd9319"
 cacheable     = true
 retain        = true
 ```

@@ -8,10 +8,10 @@ confidence    = 0.88
 mana          = 0.88
 role          = "anchor: registerImplementorsOperator — heleuma ka"
 heleuma       = "ka"
-source-file   = "packages/lararium-tw5/src/tw5-widgets.ts"
-source-symbol = "registerImplementorsOperator"
+source-file   = "packages/lararium-tw5/src/filters/implementors.ts"
+source-symbol = "registerImplementors"
 module-ref    = "lar:///ha.ka.ba/api/v0.1/lararium/filters/implementors-tw5"
-body-sha256   = "f42a9cb44873b64b3bc2d06c991939f4e63a639d2ddb69ac4ca9b448d7b618b7"
+body-sha256 = "fbd384d6e9141948c21c973f9bd1d94ca6ca20707938cd2e9b542c03fae6003a"
 cacheable     = true
 retain        = true
 ```
