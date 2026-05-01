@@ -19,8 +19,10 @@ role        = "OODA-HA loop boot, Catma nav terminal, syad handoff shelf"
 cacheable   = true
 hydrate     = true
 retain      = true
+heleuma     = "ba"
 source-file = "packages/lararium-core/src/ast.ts"
 source-symbol = "LADDER_5 OODA_HA_5 SCOPE_5 SCOPE_TO_LADDER RATING_5 STAGE_5 STAGE_BAND_MID RATING_COLOR"
+body-sha256 = "19f27816a8ab295a4bb00080242f0b0592d078c3d2b514cd946da1f396a5454e"
 ```
 
 <<~/ahu >>
@@ -152,6 +154,48 @@ data  = "blue"
 meme  = "green"
 ano   = "orange"
 kapu  = "violet"
+```
+
+<<~/ahu >>
+
+<<~ ahu #source >>
+
+## Source (TypeScript — compiled-in)
+
+```typescript
+export const LADDER_5 = ["action", "round", "turn", "watch", "week"] as const;
+
+export const OODA_HA_5 = ["act", "decide", "orient", "observe", "aftermath"] as const;
+
+export const SCOPE_5 = ["ephemeral", "personal", "consensual", "collective", "universal"] as const;
+
+export const SCOPE_TO_LADDER: Record<Scope5, Ladder5> = {
+  ephemeral:  "action",
+  personal:   "round",
+  consensual: "turn",
+  collective: "watch",
+  universal:  "week",
+};
+
+export const RATING_5 = ["noise", "data", "meme", "ano", "kapu"] as const;
+
+export const STAGE_5 = ["GR", "OS", "US", "CS", "DS"] as const;
+
+export const STAGE_BAND_MID: Record<Stage5, number> = {
+  GR: 0.10,
+  OS: 0.30,
+  US: 0.50,
+  CS: 0.70,
+  DS: 0.90,
+};
+
+export const RATING_COLOR: Record<Rating5, string> = {
+  noise: "grey",
+  data:  "blue",
+  meme:  "green",
+  ano:   "orange",
+  kapu:  "violet",
+};
 ```
 
 <<~/ahu >>

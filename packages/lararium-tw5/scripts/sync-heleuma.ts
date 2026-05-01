@@ -78,7 +78,7 @@ function extractSymbol(srcPath: string, symbol: string): string | null {
   const src   = readFileSync(resolve(root, srcPath), "utf8");
   const lines = src.split("\n");
   const declRe = new RegExp(
-    `^\\s*(export\\s+)?(private\\s+|public\\s+|protected\\s+|static\\s+|async\\s+|function\\s+)*${symbol}\\s*(\\(|=)`
+    `^\\s*(export\\s+)?(const\\s+|private\\s+|public\\s+|protected\\s+|static\\s+|async\\s+|function\\s+)*${symbol}\\s*(?::[^=(]*)?\\s*(\\(|=)`
   );
   const startIdx = lines.findIndex(
     (l: string) => declRe.test(l) && !/^\s*(\/\/|\*)/.test(l)
@@ -90,8 +90,8 @@ function extractSymbol(srcPath: string, symbol: string): string | null {
   for (let i = startIdx; i < lines.length; i++) {
     const line = lines[i]!;
     for (const ch of line) {
-      if (ch === "{") { depth++; started = true; }
-      if (ch === "}") depth--;
+      if (ch === "{" || ch === "[") { depth++; started = true; }
+      if (ch === "}" || ch === "]") depth--;
     }
     collected.push(line);
     if (started && depth === 0) break;
@@ -423,14 +423,68 @@ for (const mdPath of walkExt(laresRoot, ".md")) {
 
   totalChecked++;
 
-  // ba — quine-only: verify #source slot exists
+  // ba — quine-only: verify #source slot exists.
+  // When source-symbol is declared, drift-check and hash exactly like ka.
   if (mode === "ba") {
     const slotM = SOURCE_SLOT_RE.exec(content);
     if (!slotM) {
       console.warn(`[heleuma/ba] MISSING #source slot  ${uri}`);
       totalMissing++;
-    } else {
+      continue;
+    }
+
+    const baSrcFile = toml["source-file"];
+    const baSrcSym  = toml["source-symbol"];
+
+    if (!baSrcFile || !baSrcSym) {
+      // No symbol — quine-only, no drift check needed
       console.log(`[heleuma/ba] ok   ${uri}`);
+      continue;
+    }
+
+    // ba may declare multiple space-separated symbols; extract each and join
+    const baSymbols = baSrcSym.trim().split(/\s+/);
+    const baExtracted: string[] = [];
+    for (const sym of baSymbols) {
+      const extracted = extractSymbol(baSrcFile, sym);
+      if (extracted) baExtracted.push(extracted.trim());
+    }
+    if (baExtracted.length === 0) {
+      console.warn(`[heleuma/ba] SYMBOL NOT FOUND: ${baSrcSym} in ${baSrcFile}  (${uri})`);
+      totalMissing++;
+      continue;
+    }
+
+    const baLiveCode  = baExtracted.join("\n\n");
+    const baDrift     = checkDrift(slotM[1]!, baLiveCode);
+    const baLiveHash  = createHash("sha256").update(baLiveCode, "utf8").digest("hex");
+    const baExistHash = toml["body-sha256"] ?? "";
+    const baHashDrift = baExistHash !== baLiveHash;
+
+    if (COMMIT && (baDrift || baHashDrift)) {
+      let working: string = content;
+      if (baDrift) {
+        const patched = applySourcePatch(working, baLiveCode);
+        if (patched) working = patched;
+      }
+      working = applyBodySha256Patch(working, baLiveHash);
+      writeFileSync(mdPath, working, "utf8");
+
+      const parts: string[] = [];
+      if (baDrift)     parts.push(`source: ${baDrift}`);
+      if (baHashDrift) parts.push(baExistHash ? "body-sha256 updated" : "body-sha256 added");
+      console.log(`[heleuma/ba] patched  ${uri} (${baSrcSym}): ${parts.join("; ")}`);
+      totalPatched++;
+    } else if (!COMMIT && baDrift) {
+      console.warn(`[heleuma/ba] DRIFT  ${uri} (${baSrcSym}): ${baDrift}`);
+      console.warn(`           live: ${resolve(root, baSrcFile)}`);
+      totalDrift++;
+    } else {
+      console.log(`[heleuma/ba] ok   ${uri} (${baSrcSym})`);
+    }
+
+    if (!COMMIT && baHashDrift) {
+      console.log(`[heleuma/ba] body-sha256 ${baExistHash ? "stale" : "missing"}  ${uri}`);
     }
     continue;
   }

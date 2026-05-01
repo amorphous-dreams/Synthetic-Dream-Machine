@@ -4,13 +4,17 @@
  * Architecture:
  *   - Server plays two roles:
  *     (1) Seeder: boots a TW5 wiki-engine instance at startup (and on /admin/reseed) to
- *         compute the lares/ snapshot and seed the shared Automerge meme-store doc.
+ *         compute the lares/ snapshot and seed the Automerge room/corpus docs.
  *     (2) Wiki-VM peer: MCP sidecar may invoke the server for live TW5 filter queries,
  *         projections, and canonical receipt computation without a browser client.
  *   - Server is a local-first PEER, not an authority. Automerge is source of truth.
- *   - Automerge Repo (NodeFS storage) syncs meme content with all connected clients.
- *   - One WebSocket path: /meme-sync → Automerge NodeWSServerAdapter (content CRDT).
+ *   - One Repo; one WebSocket path (/meme-sync); per-room and catalog docs inside.
  *   - Static assets from lararium-app/dist/ served over HTTP on the same port.
+ *
+ * Causal island doc layout:
+ *   catalog doc  — tiny hallway: names rooms, corpora, recipes, snapshot URLs, heads
+ *   room docs    — one per roomId; durable room content (pins, notes, recipe overrides)
+ *   corpus docs  — one per corpus (pending M12; currently all content in room docs)
  *
  * Canon promotion:
  *   Removed from this server. Future promotion belongs to a Keyhive-backed
@@ -18,16 +22,17 @@
  *
  * API routes:
  *   GET  /api/rooms      — room registry (MCP canvas bridge)
- *   GET  /api/meme-store — Automerge doc URL for the meme content store
- *   GET  /admin/reseed   — rebuild snapshot/receipt from lares/ and reseed Automerge doc
+ *   GET  /api/catalog    — catalog Automerge doc URL
+ *   GET  /admin/reseed   — rebuild snapshot/receipt from lares/ and reseed room docs
  *
  * Boot contract:
- *   1. Build lares/ snapshot → seed Automerge doc (skipped if doc already exists on disk)
- *   2. Compute boot receipt SHA (corpus integrity fingerprint) → inject into HTML <meta>
- *   3. All subsequent client loads receive receipt + Automerge doc URL via <meta> tags
+ *   1. Build lares/ snapshot → seed room docs (skipped if docs exist on disk)
+ *   2. Compute boot receipt SHA → inject into HTML <meta>
+ *   3. Clients receive catalog URL via <meta name="lararium-catalog">
+ *   4. Clients open catalog, resolve room doc URL, then open room doc
  *
  * Known gaps:
- *   - Per-room Automerge docs not yet implemented (all clients share one doc) — M12
+ *   - Corpus island docs (M12) — all content currently in one room doc per room
  *   - Disk↔Automerge sync loop (projector + watcher) being redesigned — M11+
  *   - Browser e2e (Playwright smoke) not yet run against live server — M11 P0
  *
@@ -51,7 +56,11 @@ import {
   verifyAuthClaim,
   type LarAuthProvider,
   type LarAuthReceipt,
+  type CatalogDoc,
+  type CatalogRoomEntry,
+  emptyCatalogDoc,
 } from "@lararium/core";
+import type { AutomergeUrl, DocHandle } from "@automerge/automerge-repo";
 import { getOrCreateNodeAuthReceipt } from "../src/operator-key.js";
 import { TW5_CORE_SCRIPT_URL } from "@lararium/tw5";
 
@@ -146,23 +155,18 @@ async function main() {
     console.error("[lararium-serve] ⚠ receipt compute failed — clients will boot without corpus verification:", e);
   }
 
-  // DEFAULT_ROOM — stable room ID for meta tag injection and /api/rooms.
-  // Multi-room HTTP: /room/:id routes all serve the same Automerge doc.
   const DEFAULT_ROOM = "altar-fire";
 
   // ---------------------------------------------------------------------------
-  // Automerge meme-sync peer — content CRDT (separate from tldraw layout CRDT)
-  //
-  // One Automerge Repo per server process, backed by NodeFSStorageAdapter.
-  // The meme store doc is seeded from snapshotMemes on first boot; on restart
-  // it resumes from the NodeFS snapshot (local-first: server is a sync peer).
-  //
-  // Doc URL is stable across restarts (persisted in .lararium-data/meme-store/).
-  // Clients receive the URL via <meta name="lararium-meme-store"> in HTML.
+  // Automerge island storage layout
+  //   .lararium-data/catalog/   — catalog doc (hallway; one per server)
+  //   .lararium-data/rooms/<id>/ — one room content doc per roomId
+  //   (corpus docs land in M12 at .lararium-data/corpora/<id>/)
   // ---------------------------------------------------------------------------
-  const MEME_STORE_DIR = join(DATA_DIR, "meme-store");
-  mkdirSync(MEME_STORE_DIR, { recursive: true });
-
+  const CATALOG_DIR = join(DATA_DIR, "catalog");
+  const ROOMS_DIR   = join(DATA_DIR, "rooms");
+  mkdirSync(CATALOG_DIR, { recursive: true });
+  mkdirSync(ROOMS_DIR,   { recursive: true });
 
   // Peer authorization registry — populated by /auth/session, consumed by sharePolicy.
   const peerRegistry = new LarAuthSessionRegistry();
@@ -171,9 +175,8 @@ async function main() {
   // Evict expired auth sessions every 10 minutes.
   setInterval(() => peerRegistry.evictExpired(), 10 * 60 * 1000);
 
-  // memeWss is declared below after httpServer; adapter is wired then.
-  // memeStoreUrl declared here so the HTTP handler can reference it.
-  let memeStoreUrl = "";
+  // catalogUrl declared here so the HTTP handler can reference it.
+  let catalogUrl = "";
 
   // ---------------------------------------------------------------------------
   // HTTP server
@@ -211,9 +214,9 @@ async function main() {
       }, 501);
     }
 
-    // ── /api/meme-store ────────────────────────────────────────────────────
-    if (pathname === "/api/meme-store") {
-      return json(res, { url: memeStoreUrl });
+    // ── /api/catalog ──────────────────────────────────────────────────────
+    if (pathname === "/api/catalog") {
+      return json(res, { url: catalogUrl });
     }
 
     // ── /auth/session — provider-neutral auth claim (browser/editor → server) ───
@@ -277,10 +280,10 @@ async function main() {
     const wsProto = req.headers["x-forwarded-proto"] === "https" ? "wss" : "ws";
     let html = readFileSync(join(APP_DIST, "index.html"), "utf-8");
     const metaTags = [
-      `<meta name="lararium-room"         content="${serveRoomId}">`,
-      `<meta name="lararium-meme-sync"    content="${wsProto}://${host}/meme-sync">`,
-      `<meta name="lararium-meme-store"   content="${memeStoreUrl}">`,
-      `<meta name="lararium-receipt"      content="${receiptSha}">`,
+      `<meta name="lararium-room"      content="${serveRoomId}">`,
+      `<meta name="lararium-meme-sync" content="${wsProto}://${host}/meme-sync">`,
+      `<meta name="lararium-catalog"   content="${catalogUrl}">`,
+      `<meta name="lararium-receipt"   content="${receiptSha}">`,
     ].join("\n  ");
     // External core script — suppress auto-boot so LarariumTW5 controls the
     // boot sequence (preloadTiddlers injected before boot() is called).

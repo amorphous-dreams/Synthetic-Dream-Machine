@@ -18,8 +18,10 @@ cacheable     = true
 retain        = true
 invariant     = true
 status-date   = "2026-04-30"
+heleuma       = "ba"
 source-file   = "packages/lararium-core/src/causal-island.ts"
 source-symbol = "ABILITY_LADDER AUTHORITY_FIRST_ORDER CAUSAL_ISLAND_MUST CAUSAL_ISLAND_MAY AuthorityFirstGuard visibilityGate"
+body-sha256 = "f9ed8276003e50678b775c174d2c439b43fbd5591845473751b9076ee4c1ebf5"
 ```
 <<~/ahu >>
 
@@ -125,6 +127,67 @@ conditions = [
   "!edge.revoked",
   "!violatesKapu(meme, subject)",
 ]
+```
+
+<<~/ahu >>
+
+<<~ ahu #source >>
+
+## Source (TypeScript — compiled-in)
+
+```typescript
+export const ABILITY_LADDER = [
+  "pull",     // retrieve encrypted bytes and forward; cannot decrypt or render
+  "read",     // decrypt and render semantic content
+  "sync",     // participate in CRDT reconciliation
+  "write",    // produce accepted mutations
+  "propose",  // suggest hostful changes (pending; not yet hostless canon)
+  "promote",  // hostful → hostless canon-promotion ceremony
+  "admin",    // manage room, recipe, edge island membership
+  "revoke",   // roll epoch; terminate future live tail for a principal
+] as const;
+
+export const AUTHORITY_FIRST_ORDER = [
+  "authenticate-peer",         // 1
+  "sync-authority-graph",      // 2
+  "derive-visible-rooms",      // 3
+  "sync-collection-manifest",  // 4
+  "capability-epoch-ops",      // 5a
+  "sync-crdt-heads",           // 5b
+  "sync-delta-payloads",       // 5c
+  "sync-projection-receipts",  // 5d
+] as const;
+
+export const CAUSAL_ISLAND_MUST = [
+  "node-to-node-federation-edge",
+  "cross-node-pranala-connection",
+  "canon-promotion-ceremony",
+  "revocation-epoch-change",
+  "encrypted-sync-membership-change",
+  "live-hostful-record-proposing-hostless-canon-mutation",
+] as const;
+
+export const CAUSAL_ISLAND_MAY = [
+  "room",
+  "meme",
+  "sigil",
+  "kumu-instance",
+  "kahea-invocation",
+  "local-room-projection",
+  "long-lived-runtime-actor",
+  "automerge-realm",
+  "peer-sync-state",
+] as const;
+
+export function visibilityGate(input: VisibilityGateInput): boolean {
+  if (!FEDERABLE_RATINGS.has(input.memeRating.toLowerCase())) return false;
+  if (input.memeManaoio < input.roomMinManaoio)                return false;
+  if (!input.recipeMatches)                                    return false;
+  if (!input.subjectCanSync)                                   return false;
+  if (input.edgeRevoked)                                       return false;
+  if (input.violatesKapu)                                      return false;
+  return true;
+}
 ```
 
 <<~/ahu >>
