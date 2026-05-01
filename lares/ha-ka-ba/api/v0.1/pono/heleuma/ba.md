@@ -35,7 +35,7 @@ A heleuma-ba anchor marks a path through the graph for something that exists out
 
 ✶ locate the artifact; confirm it has no standalone extractable symbol and no corpus promotion path.
 ⏿ orient: is this purely documentation of what exists outside, with no runtime injection route? If yes, this is ba.
-◇ declare `heleuma = "ba"`; no `source-symbol` required; no ceremony fields expected.
+◇ declare `heleuma = "ba"`; no `source-symbol` required; no promotion fields expected.
 ▶ write `#source` slot as the path-record: enough verbatim content for a reader to reconstruct the artifact.
 ⤴ verify: the record is complete enough for reconstruction; no implicit dependencies on unlisted artifacts.
 ↺ the path is marked. The psyche holds. The graph knows its own edge.
@@ -56,7 +56,7 @@ An implementing meme SHALL carry a `#source` slot with sufficient verbatim conte
 
 An implementing meme MAY declare `source-file` as a provenance pointer, but the meme SHALL NOT depend on it for completeness.
 
-An implementing meme SHALL NOT declare `source-symbol`, `body-sha256`, or `promoted-at` — ba does not promote and does not have an extractable symbol boundary.
+An implementing meme SHALL NOT declare `source-symbol` or `body-sha256` — ba does not promote and does not have an extractable symbol boundary.
 
 <<~/ahu >>
 

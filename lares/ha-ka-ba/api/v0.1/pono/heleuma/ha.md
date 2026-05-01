@@ -35,7 +35,7 @@ A heleuma-ha anchor exists outside the `lar:///` corpus **by nature, not by stag
 
 ✶ locate the compiled artifact and confirm it is structural territory, not a traveling soul.
 ⏿ orient: does removing it break the containing form? If yes, this is ha.
-◇ declare `heleuma = "ha"` and `source-file`; confirm no `body-sha256` or `promoted-at` is claimed.
+◇ declare `heleuma = "ha"` and `source-file`; confirm no `body-sha256` is claimed.
 ▶ write `#source` slot with the verbatim artifact copy; close the quine record.
 ⤴ verify: `sync-heleuma` finds the symbol, compares the slot, reports clean.
 ↺ the anchor holds. The body persists. No ceremony expected.
@@ -55,7 +55,7 @@ source-file  = "<repo-relative path to the TS/JSON/script>"
 
 An implementing meme SHALL carry a `#source` slot with the verbatim artifact body (quine property).
 
-An implementing meme SHALL NOT declare `promoted-at` or `body-sha256` — ha does not promote.
+An implementing meme SHALL NOT declare `body-sha256` — ha does not promote.
 
 <<~/ahu >>
 

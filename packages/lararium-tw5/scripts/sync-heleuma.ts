@@ -11,7 +11,7 @@
  *
  * heleuma modes:
  *   ha — body/structure anchor: permanent compiled-in territory, no promotion path.
- *   ka — soul/fire anchor: promotion-eligible; #source + ceremony fields track readiness.
+ *   ka — soul/fire anchor: promotion-eligible; #source + body-sha256 track readiness; keyhive proof is layer 3 (planned).
  *   ba — psyche/path anchor: quine-only; #source slot sufficient for reconstruction.
  *
  * Run:
@@ -22,6 +22,7 @@
  */
 
 import { readFileSync, writeFileSync, readdirSync, statSync } from "fs";
+import { createHash } from "crypto";
 import { resolve, relative, dirname } from "path";
 import { fileURLToPath } from "url";
 
@@ -111,21 +112,32 @@ function checkDrift(memeSlot: string, liveSource: string): string | null {
 }
 
 // ---------------------------------------------------------------------------
-// Commit: patch #source slot with live code
+// Commit: patch #source slot and/or body-sha256 in one write
 // ---------------------------------------------------------------------------
 
-function patchSourceSlot(mdPath: string, content: string, liveCode: string): void {
+// Returns patched content, or null if the #source slot is missing/unparseable.
+function applySourcePatch(content: string, liveCode: string): string | null {
   const slotM = SOURCE_SLOT_RE.exec(content);
-  if (!slotM) return;
+  if (!slotM) return null;
   const fenceM = FENCE_RE.exec(slotM[1]!);
-  if (!fenceM) return;
+  if (!fenceM) return null;
 
   const fenceStart = content.indexOf(fenceM[0], slotM.index);
   const fenceEnd   = fenceStart + fenceM[0].length;
   const lang       = fenceM[0].match(/^```([^\n]*)/)![1] ?? "typescript";
   const newFence   = "```" + lang + "\n" + liveCode + "\n```";
-  const patched    = content.slice(0, fenceStart) + newFence + content.slice(fenceEnd);
-  writeFileSync(mdPath, patched, "utf8");
+  return content.slice(0, fenceStart) + newFence + content.slice(fenceEnd);
+}
+
+// Patches body-sha256 in the first ```toml block (the #iam block).
+// Adds the field if absent; replaces it if stale.
+function applyBodySha256Patch(content: string, sha256: string): string {
+  const SHA_FIELD = /^body-sha256\s*=\s*"[^"]*"/m;
+  if (SHA_FIELD.test(content)) {
+    return content.replace(SHA_FIELD, `body-sha256 = "${sha256}"`);
+  }
+  // Insert before the closing ``` of the first toml fence
+  return content.replace(/(```toml[\s\S]*?)(\n```)/, `$1\nbody-sha256 = "${sha256}"$2`);
 }
 
 // ---------------------------------------------------------------------------
@@ -450,23 +462,41 @@ for (const mdPath of walkExt(laresRoot, ".md")) {
     continue;
   }
 
-  const drift = checkDrift(slotM[1]!, liveSource);
-  if (drift) {
-    if (COMMIT) {
-      patchSourceSlot(mdPath, content, liveSource.trim());
-      console.log(`[heleuma/${mode}] patched  ${uri} (${srcSym}): ${drift}`);
-      totalPatched++;
-    } else {
-      console.warn(`[heleuma/${mode}] DRIFT  ${uri} (${srcSym}): ${drift}`);
-      console.warn(`           live: ${resolve(root, srcFile)}`);
-      totalDrift++;
+  const liveCode  = liveSource.trim();
+  const drift     = checkDrift(slotM[1]!, liveCode);
+
+  // For ka memes: also track whether body-sha256 is current.
+  // sha256(liveCode) is the quine integrity anchor for DreamNet cold-boot verification.
+  const liveHash     = mode === "ka" ? createHash("sha256").update(liveCode, "utf8").digest("hex") : null;
+  const existingHash = mode === "ka" ? (toml["body-sha256"] ?? "") : null;
+  const hashDrift    = liveHash !== null && existingHash !== liveHash;
+
+  if (COMMIT && (drift || hashDrift)) {
+    let working: string = content;
+    if (drift) {
+      const patched = applySourcePatch(working, liveCode);
+      if (patched) working = patched;
     }
+    if (liveHash !== null) {
+      working = applyBodySha256Patch(working, liveHash);
+    }
+    writeFileSync(mdPath, working, "utf8");
+
+    const parts: string[] = [];
+    if (drift)     parts.push(`source: ${drift}`);
+    if (hashDrift) parts.push(existingHash ? "body-sha256 updated" : "body-sha256 added");
+    console.log(`[heleuma/${mode}] patched  ${uri} (${srcSym}): ${parts.join("; ")}`);
+    totalPatched++;
+  } else if (!COMMIT && drift) {
+    console.warn(`[heleuma/${mode}] DRIFT  ${uri} (${srcSym}): ${drift}`);
+    console.warn(`           live: ${resolve(root, srcFile)}`);
+    totalDrift++;
   } else {
     console.log(`[heleuma/${mode}] ok   ${uri} (${srcSym})`);
   }
 
-  if (mode === "ka" && (!toml["body-sha256"] || !toml["promoted-at"])) {
-    console.log(`[heleuma/ka] ceremony pending  ${uri}`);
+  if (!COMMIT && mode === "ka" && hashDrift) {
+    console.log(`[heleuma/ka] body-sha256 ${existingHash ? "stale" : "missing"}  ${uri}`);
   }
 }
 

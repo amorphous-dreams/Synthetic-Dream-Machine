@@ -32,7 +32,7 @@ tier1 = ["mana", "manao", "manaoio", "confidence"]
 # Tier 2 — identity block
 tier2 = ["role", "implements", "namespace", "register", "tagspace"]
 # Tier 3 — technical fields (details disclosure)
-tier3 = ["content-type", "module-type", "tw5-module-name", "body-sha256", "promoted-at", "promoted-by", "cacheable", "retain", "hydrate"]
+tier3 = ["content-type", "module-type", "tw5-module-name", "body-sha256", "cacheable", "retain", "hydrate"]
 # Fields always excluded from tier 4 (raw fallback)
 exclude = ["title", "text", "tags", "bag", "revision", "created", "modified", "creator", "modifier"]
 ```
@@ -88,7 +88,7 @@ exclude = ["title", "text", "tags", "bag", "revision", "created", "modified", "c
 <details class="lar-iam-details">
 <summary>Technical fields</summary>
 <table class="lar-iam-table">
-<$list filter="content-type module-type tw5-module-name body-sha256 promoted-at promoted-by cacheable retain hydrate" variable="f">
+<$list filter="content-type module-type tw5-module-name body-sha256 cacheable retain hydrate" variable="f">
 <$set name="v" value={{{ [{!!$(f)$}] }}}>
 <$reveal type="nomatch" state="" text="">
 <tr><th><code><<f>></code></th><td><code><<v>></code></td></tr>
@@ -103,7 +103,7 @@ exclude = ["title", "text", "tags", "bag", "revision", "created", "modified", "c
 <details class="lar-iam-details">
 <summary>Raw fields</summary>
 <table class="lar-iam-table">
-<$list filter="[fields[]!match[title]!match[text]!match[tags]!match[bag]!match[revision]!match[created]!match[modified]!match[creator]!match[modifier]!match[mana]!match[manao]!match[manaoio]!match[confidence]!match[role]!match[implements]!match[namespace]!match[register]!match[tagspace]!match[content-type]!match[module-type]!match[tw5-module-name]!match[body-sha256]!match[promoted-at]!match[promoted-by]!match[cacheable]!match[retain]!match[hydrate]]" variable="f">
+<$list filter="[fields[]!match[title]!match[text]!match[tags]!match[bag]!match[revision]!match[created]!match[modified]!match[creator]!match[modifier]!match[mana]!match[manao]!match[manaoio]!match[confidence]!match[role]!match[implements]!match[namespace]!match[register]!match[tagspace]!match[content-type]!match[module-type]!match[tw5-module-name]!match[body-sha256]!match[cacheable]!match[retain]!match[hydrate]]" variable="f">
 <$set name="v" value={{{ [{!!$(f)$}] }}}>
 <$reveal type="nomatch" state="" text="">
 <tr><th><code><<f>></code></th><td><<v>></td></tr>

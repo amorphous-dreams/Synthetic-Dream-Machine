@@ -56,12 +56,15 @@ source-symbol = "<standalone function or export name>"
 
 An implementing meme SHALL carry a `#source` slot with the **complete verbatim** body of the named symbol (quine property). Partial captures violate the quine. If the natural unit is embedded in a larger function, extract it to a named function first.
 
-An implementing meme MAY declare ceremony fields when ready for promotion:
+An implementing meme MAY declare `body-sha256` when ready for promotion:
 
 ```toml
 body-sha256 = "<sha256 hex of #source slot content>"
-promoted-at = "<ISO timestamp>"
 ```
+
+This is gate layer 2 (content integrity). Written by `sync-heleuma --commit` when the source is stable.
+
+Gate layer 3 (operator authorization) will be a **keyhive capability proof** — an Ed25519-signed capability from a keyhive principal authorizing corpus injection. This replaces the pre-keyhive `promoted-at` timestamp sketch, which was never implemented and has been removed. Layer 3 is planned but not yet implemented; the gate currently passes on layers 1–2 only.
 
 Signal fields (`mana`, `manao`, `manaoio`, `confidence`) SHALL approach 0.80 / 0.80 / 0.75 / 0.80 as the source matures. The boot gate reads these fields directly.
 
@@ -71,7 +74,7 @@ Signal fields (`mana`, `manao`, `manaoio`, `confidence`) SHALL approach 0.80 / 0
 
 ## Promotion Path
 
-When ceremony fields are present and all signal thresholds are met, `_bootModules()` loads this meme as a live JS module, replacing the compiled-in fallback. At that point:
+When `body-sha256` is present and all signal thresholds are met, `_bootModules()` loads this meme as a live JS module, replacing the compiled-in fallback. (When keyhive lands, a capability proof will also be required — gate layer 3.) At that point:
 
 - `heleuma = "ka"` SHALL be removed
 - The meme pair becomes a standard corpus meme pair

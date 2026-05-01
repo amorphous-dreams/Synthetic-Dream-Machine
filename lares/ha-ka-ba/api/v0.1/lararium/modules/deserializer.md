@@ -18,6 +18,7 @@ heleuma       = "ka"
 source-file  = "packages/lararium-tw5/src/lararium-tw5.ts"
 source-symbol = "_registerDeserializer"
 implements    = ["lar:///ha.ka.ba/api/v0.1/pono/heleuma/ka"]
+body-sha256 = "b663614ec42d32d34974eb52e9e2b1774134b1aca8698a6b1733715f1d96000b"
 ```
 <<~/ahu >>
 

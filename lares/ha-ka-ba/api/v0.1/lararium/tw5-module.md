@@ -41,7 +41,6 @@ corpus load.
 | `manaoio` | MUST be ≥ 0.85 to pass gate layer 1 (threshold) |
 | `confidence` | MUST be ≥ 0.90 to pass gate layer 1 (threshold) |
 | `body-sha256` | SHA-256 hex digest of the body text; MUST match at inject time (gate layer 2 — content integrity); written by `scripts/write-module-meme.ts` at build time |
-| `promoted-at` | ISO 8601 timestamp written by `/admin/promote` ceremony; MUST be present (gate layer 3 — operator authorization); memes without this field are never injected regardless of threshold or hash |
 
 ### Body
 
@@ -57,10 +56,10 @@ to any meme body:
 
 1. **Threshold** (`mana` ≥ 0.90, `manao` ≥ 0.85, `manaoio` ≥ 0.85, `confidence` ≥ 0.90) — declared intent
 2. **Content hash** (`body-sha256` matches `sha256(text)`) — body integrity; set at build time by `pnpm bundle`, verified at inject time; a tampered or stale body fails here
-3. **Ceremony stamp** (`promoted-at` present) — operator authorization; written only by `/admin/promote` on localhost; peer-synced memes without this field are never injected
+3. **Keyhive capability proof** (planned) — Ed25519-signed authorization from a keyhive principal; replaces the pre-keyhive `promoted-at` timestamp sketch; not yet implemented; gate currently passes on layers 1–2 only
 
 A meme that fails any layer falls through to the imperative fallback path and is not executed.
-The build process (`pnpm bundle`) is the trust anchor for layers 1–2; the operator is the trust
+The build process (`pnpm bundle`) is the trust anchor for layers 1–2; keyhive will be the trust
 anchor for layer 3.
 
 ### Fallback

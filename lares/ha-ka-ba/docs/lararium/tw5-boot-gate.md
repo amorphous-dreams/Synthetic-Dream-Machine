@@ -12,7 +12,7 @@ confidence   = 0.88
 mana         = 0.87
 manao        = 0.86
 manaoio      = 0.83
-role         = "design doc: TW5 boot module corpus-gate — 3-layer trust check for promoted JS modules"
+role         = "design doc: TW5 boot module corpus-gate — 3-layer trust check for corpus-carried JS modules (layer 3 = keyhive, planned)"
 status-date  = "2026-04-30"
 ```
 <<~/ahu >>
@@ -34,7 +34,7 @@ _bootModules()
     │       │  for each matching tiddler:
     │       ├─ Layer 1: mana/manao/manaoio/confidence ≥ thresholds
     │       ├─ Layer 2: SHA-256(text) === body-sha256 field
-    │       └─ Layer 3: promoted-at stamp present
+    │       └─ Layer 3: keyhive capability proof (planned — not yet implemented)
     │
     ├─ if any pass → inject as JS modules via wiki.addTiddler()
     │               → load lararium-tw5-modules library meme
@@ -46,7 +46,7 @@ _bootModules()
             createLarariumWidgets() → _registerWidgets()
 ```
 
-**Why two paths?** The corpus path is the target steady state: all logic lives as `lar:` memes, promoted via ceremony, verified by hash. The imperative fallback ensures the app boots and is functional offline, on cold start, and before any meme has been ceremony-stamped.
+**Why two paths?** The corpus path is the target steady state: all logic lives as `lar:` memes, verified by hash and keyhive capability proof. The imperative fallback ensures the app boots and is functional offline, on cold start, and before a meme has passed all gate layers.
 
 <<~/ahu >>
 
@@ -63,7 +63,7 @@ All four signal fields must meet or exceed these floor values for a meme to be i
 | `manaoio` | `MODULE_MANAOIO_THRESHOLD` | 0.75 |
 | `confidence` | `MODULE_CONFIDENCE_THRESHOLD` | 0.80 |
 
-Additionally: `body-sha256` must verify (SHA-256 of the `text` field, hex-encoded), and `promoted-at` must be non-empty.
+Additionally: `body-sha256` must verify (SHA-256 of the `text` field, hex-encoded). Gate layer 3 (keyhive capability proof) is planned but not yet implemented; the gate currently passes on layers 1–2 only.
 
 <<~/ahu >>
 

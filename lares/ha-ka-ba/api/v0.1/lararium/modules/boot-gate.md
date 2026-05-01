@@ -129,7 +129,7 @@ private async _bootModules(): Promise<void> {
 | `manaoio` | `MODULE_MANAOIO_THRESHOLD` | 0.75 |
 | `confidence` | `MODULE_CONFIDENCE_THRESHOLD` | 0.80 |
 
-Plus: `body-sha256` must verify via `SubtleCrypto.digest("SHA-256")`, and `promoted-at` must be non-empty.
+Plus: `body-sha256` must verify via `SubtleCrypto.digest("SHA-256")`. Gate layer 3 (keyhive capability proof) is planned; not yet implemented — gate currently passes on layers 1–2 only.
 
 <<~/ahu >>
 

@@ -39,7 +39,7 @@ A heleuma is not a failure. It is a **named threshold crossing** — the meme gr
 
 ✶ detect compiled artifact — TypeScript module, runtime registration, or build asset outside lar:/// space
 ⏿ orient heleuma tier: ha (permanent structure), ka (promotion-eligible soul/fire), ba (path marker)
-◇ ha → declare source-file, no promotion fields; ka → declare source-file, source-symbol, body-sha256; ba → source slot sufficient
+◇ ha → declare source-file, no promotion fields; ka → declare source-file, source-symbol, body-sha256 (keyhive proof is layer 3, planned); ba → source slot sufficient
 ▶ pair artifact with API meme + doc meme; sync-heleuma.ts checks drift between #source slot and live TS
 ⤴ meme graph holds the rope; the artifact holds the anchor; drift surfaces as build warning
 ↺ confirm heleuma pair complete; drift check registered; promotion path declared or ruled inapplicable
@@ -52,9 +52,9 @@ A heleuma is not a failure. It is a **named threshold crossing** — the meme gr
 
 1. Every compiled-in artifact that cannot be a first-class `lar:` meme SHALL have a heleuma pair.
 2. The API meme SHALL carry the actual source in a `#source` slot and SHALL declare `heleuma = "ha"`, `"ka"`, or `"ba"` in `#iam`.
-3. **ha** — body/structure: permanent territory. SHALL declare `source-file`. SHALL NOT declare `promoted-at` or `body-sha256`.
-4. **ka** — soul/fire: promotion-eligible. SHALL declare `source-file` and `source-symbol`. MAY declare `body-sha256` and `promoted-at` as ceremony fields.
-5. **ba** — psyche/path: quine-only path marker. No symbol boundary. `#source` slot sufficient for reconstruction. SHALL NOT declare `source-symbol`, `body-sha256`, or `promoted-at`.
+3. **ha** — body/structure: permanent territory. SHALL declare `source-file`. SHALL NOT declare `body-sha256`.
+4. **ka** — soul/fire: promotion-eligible. SHALL declare `source-file` and `source-symbol`. MAY declare `body-sha256` (gate layer 2 — content integrity). Keyhive capability proof is gate layer 3 (planned; not yet implemented).
+5. **ba** — psyche/path: quine-only path marker. No symbol boundary. `#source` slot sufficient for reconstruction. SHALL NOT declare `source-symbol` or `body-sha256`.
 6. The doc meme SHALL explain why the artifact cannot be promoted and what preconditions would allow promotion (ka) or why promotion is not applicable (ha, ba).
 7. The build script `sync-heleuma.ts` SHALL detect drift between `#source` slot and the live TS source for ha/ka modes. Drift MUST surface as a build warning. Staleness does not block the build but MUST be visible.
 
@@ -77,8 +77,8 @@ The heleuma is not trying to absorb the anchor into the graph. It is holding the
 A heleuma API meme that acquires:
 
 - `confidence ≥ 0.80`, `mana ≥ 0.80`, `manao ≥ 0.80`, `manaoio ≥ 0.75`
-- A verified `body-sha256` hash
-- A `promoted-at` ceremony stamp
+- A verified `body-sha256` hash (gate layer 2 — content integrity; written by `sync-heleuma --commit`)
+- A keyhive capability proof (gate layer 3 — operator authorization; planned; replaces the pre-keyhive `promoted-at` timestamp sketch)
 
 ...MAY be loaded by `_bootModules()` via the corpus gate and replace its compiled-in counterpart. At that point the heleuma pair becomes a standard meme pair and `heleuma = true` MAY be removed.
 
