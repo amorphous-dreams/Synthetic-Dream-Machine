@@ -16,16 +16,17 @@
 
 import type { ClosureEntry, EdgeRecord } from "@lararium/core";
 import { LarariumTW5 } from "./lararium-tw5.js";
+import { VmPool } from "./vm-pool.js";
 
 if (typeof window !== "undefined") {
   throw new Error("server-api must not be imported in browser bundles.");
 }
 
 // ---------------------------------------------------------------------------
-// Per-recipe VM registry
+// Per-recipe VM registry — backed by isomorphic VmPool
 // ---------------------------------------------------------------------------
 
-const _vms = new Map<string, Promise<LarariumTW5>>();
+const _pool = new VmPool();
 
 /** Canonical recipe key from an ordered list of bag slugs. */
 export function makeRecipeId(bagIds: readonly string[]): string {
@@ -39,27 +40,24 @@ export function makeRecipeId(bagIds: readonly string[]): string {
  * the same instance. Call releaseRecipeVm() to tear down when a room closes.
  */
 export async function getRecipeVm(recipeId: string): Promise<LarariumTW5> {
-  const existing = _vms.get(recipeId);
-  if (existing) return existing;
-  const boot = (async () => {
+  return _pool.get(recipeId, async () => {
     const vm = new LarariumTW5();
     await vm.boot();
     return vm;
-  })();
-  _vms.set(recipeId, boot);
-  return boot;
+  });
 }
 
 /**
  * Release a VM when its recipe/room is torn down.
+ * Calls vm.dispose() and removes from the pool.
  * Safe to call with an unknown recipeId (no-op).
  */
 export function releaseRecipeVm(recipeId: string): void {
-  _vms.delete(recipeId);
+  _pool.release(recipeId);
 }
 
 /** Number of live VM instances — useful for diagnostics. */
-export function liveVmCount(): number { return _vms.size; }
+export function liveVmCount(): number { return _pool.size; }
 
 // ---------------------------------------------------------------------------
 // Functional filter API — used by @lararium/node + MCP server

@@ -34,6 +34,7 @@ import type {
   CatalogDoc,
   MemeStoreDoc,
   MutableLarRecord,
+  EngineDoc,
 } from "@lararium/core";
 import { MemeProvider } from "@lararium/core";
 
@@ -239,6 +240,20 @@ export class LarariumRepo {
     const store = new AutomergeMemeStore(handle, bagId);
     store.markSyncComplete();
     return store;
+  }
+
+  // ---------------------------------------------------------------------------
+  // Engine island — open existing EngineDoc (seeded by server peer)
+  // ---------------------------------------------------------------------------
+
+  async openEngineDoc(docUrl: string): Promise<EngineDoc | null> {
+    try {
+      const handle = await this.repo.find<EngineDoc>(docUrl as AutomergeUrl);
+      await waitReady(handle);
+      return handle.doc() ?? null;
+    } catch {
+      return null;
+    }
   }
 }
 

@@ -1,12 +1,19 @@
 /**
- * kahea dispatch tests — URI form vs name (definition invocation) form.
+ * sigil dispatch tests — kahea / kau / waiho
  *
- * URI form:  <<~ kahea lar:///uri >>  → PranalaSugarNode (compile + render, dataflow edge)
- * Name form: <<~ kahea name >>        → SigilNode { sigilName:"kahea", attrs:{name,args} } (render-only)
- * Call form: <<~ kahea name(k:v) >>   → SigilNode with attrs.args populated
+ * Four-way split:
+ *   aka     — shadow/observe (read-only mirror, source-canonical)
+ *   kahea   — dataflow URI form only: <<~ kahea lar:///uri >> → graph edge
+ *   kau     — invocation/placement (disambiguation by #fragment):
+ *               <<~ kau name >>              render-only invocation, no UUID, no edge
+ *               <<~ kau name(k:v) >>         invocation with args
+ *               <<~ kau #frag Name props >>  device placement with persistent identity
+ *   waiho   — ephemeral binding: <<~ waiho name = val >> → SigilNode, no edge
  *
- * The distinction is at parse time — the compile layer never sees a dataflow
- * edge for name-form kahea. No garbage URI produced for plain identifier targets.
+ * kahea no longer has a name-invocation form (kahea-call removed).
+ * kau does NOT do variable binding — that role belongs to waiho.
+ * kau does NOT produce graph edges — that role belongs to kahea/papalohe/pranala.
+ * The #fragment presence is the placement indicator: without it, kau is render-only.
  */
 
 import { describe, test, expect } from "@jest/globals";
@@ -16,20 +23,15 @@ import type { PranalaSugarNode, SigilNode } from "../src/ast.js";
 
 const BASE = "lar:///test/carrier";
 
-function ast(body: string) {
-  return parseMemeCarrier(BASE, body);
-}
-
-function edges(body: string) {
-  return parsePranalaEdges(BASE, body);
-}
+function ast(body: string) { return parseMemeCarrier(BASE, body); }
+function edges(body: string) { return parsePranalaEdges(BASE, body); }
 
 // ---------------------------------------------------------------------------
-// URI form → PranalaSugarNode + dataflow edge
+// kahea — URI form only → PranalaSugarNode + dataflow edge
 // ---------------------------------------------------------------------------
 
-describe("kahea URI form — PranalaSugarNode", () => {
-  test("lar:/// absolute URI", () => {
+describe("kahea — URI/dataflow form", () => {
+  test("lar:/// absolute URI → PranalaSugarNode sigil=kahea family=dataflow", () => {
     const nodes = ast("<<~ kahea lar:///ha.ka.ba/api/v0.1/mu >>");
     const n = nodes.find((n) => n.kind === "PranalaSugar") as PranalaSugarNode | undefined;
     expect(n).toBeDefined();
@@ -38,11 +40,11 @@ describe("kahea URI form — PranalaSugarNode", () => {
     expect(n!.family).toBe("dataflow");
   });
 
-  test("URI form produces a dataflow edge", () => {
-    const es = edges("<<~ kahea lar:///ha.ka.ba/api/v0.1/mu >>");
-    expect(es).toHaveLength(1);
-    expect(es[0]!.family).toBe("dataflow");
-    expect(es[0]!.toUri).toBe("lar:///ha.ka.ba/api/v0.1/mu");
+  test("relative path with slash matches URI form", () => {
+    const nodes = ast("<<~ kahea some/relative/path >>");
+    const n = nodes.find((n) => n.kind === "PranalaSugar") as PranalaSugarNode | undefined;
+    expect(n).toBeDefined();
+    expect(n!.family).toBe("dataflow");
   });
 
   test("URI with fragment", () => {
@@ -52,98 +54,148 @@ describe("kahea URI form — PranalaSugarNode", () => {
     expect(n!.toRaw).toBe("lar:///some/carrier#section");
   });
 
-  test("relative path with slash", () => {
-    const nodes = ast("<<~ kahea some/relative/path >>");
-    const n = nodes.find((n) => n.kind === "PranalaSugar") as PranalaSugarNode | undefined;
-    expect(n).toBeDefined();
-    expect(n!.family).toBe("dataflow");
+  test("URI form → dataflow edge in graph", () => {
+    const es = edges("<<~ kahea lar:///ha.ka.ba/api/v0.1/mu >>");
+    expect(es).toHaveLength(1);
+    expect(es[0]!.family).toBe("dataflow");
+    expect(es[0]!.toUri).toBe("lar:///ha.ka.ba/api/v0.1/mu");
+  });
+
+  test("bare identifier does NOT match kahea (no graph edge, no PranalaSugar)", () => {
+    // kahea-call (name form) was removed; bare names are not valid kahea targets
+    const nodes = ast("<<~ kahea greeting >>");
+    const sugar = nodes.find((n) => n.kind === "PranalaSugar") as PranalaSugarNode | undefined;
+    expect(sugar).toBeUndefined();
+    expect(edges("<<~ kahea greeting >>")).toHaveLength(0);
   });
 });
 
 // ---------------------------------------------------------------------------
-// Name form → SigilNode (render-only, no graph edge)
+// kau — device placement → SigilNode, no edge
 // ---------------------------------------------------------------------------
 
-describe("kahea name form — SigilNode, render-only", () => {
-  test("bare name → SigilNode", () => {
-    const nodes = ast("<<~ kahea greeting >>");
+describe("kau — invocation (no #fragment) → render-only, attrs.name + attrs.args", () => {
+  test("bare name → SigilNode attrs.name, attrs.args empty", () => {
+    const nodes = ast("<<~ kau MyDevice >>");
     const n = nodes.find((n) => n.kind === "Sigil") as SigilNode | undefined;
     expect(n).toBeDefined();
-    expect(n!.sigilName).toBe("kahea");
-    expect(n!.attrs["name"]).toBe("greeting");
+    expect(n!.sigilName).toBe("kau");
+    expect(n!.attrs["name"]).toBe("MyDevice");
     expect(n!.attrs["args"]).toBe("");
   });
 
-  test("name with args → SigilNode with attrs.args", () => {
-    const nodes = ast('<<~ kahea greeting(name:"Operator") >>');
+  test("name with args → attrs.args populated", () => {
+    const nodes = ast('<<~ kau greeting(name:"Operator") >>');
     const n = nodes.find((n) => n.kind === "Sigil") as SigilNode | undefined;
     expect(n).toBeDefined();
-    expect(n!.sigilName).toBe("kahea");
     expect(n!.attrs["name"]).toBe("greeting");
     expect(n!.attrs["args"]).toBe('name:"Operator"');
   });
 
-  test("dotted name → SigilNode", () => {
-    const nodes = ast("<<~ kahea some.template >>");
-    const n = nodes.find((n) => n.kind === "Sigil") as SigilNode | undefined;
-    expect(n).toBeDefined();
-    expect(n!.attrs["name"]).toBe("some.template");
-  });
-
-  test("multi-arg call → SigilNode", () => {
-    const nodes = ast("<<~ kahea card(title:Welcome body:Hello) >>");
+  test("multi-arg call → attrs.args", () => {
+    const nodes = ast("<<~ kau card(title:Welcome body:Hello) >>");
     const n = nodes.find((n) => n.kind === "Sigil") as SigilNode | undefined;
     expect(n).toBeDefined();
     expect(n!.attrs["name"]).toBe("card");
     expect(n!.attrs["args"]).toBe("title:Welcome body:Hello");
   });
 
-  test("name form produces NO graph edge", () => {
-    const es = edges("<<~ kahea greeting >>");
-    expect(es.filter((e) => e.family === "dataflow")).toHaveLength(0);
-  });
-
-  test("name form with args produces NO graph edge", () => {
-    const es = edges('<<~ kahea greeting(name:"Operator") >>');
-    expect(es.filter((e) => e.family === "dataflow")).toHaveLength(0);
-  });
-});
-
-// ---------------------------------------------------------------------------
-// Both forms in the same carrier
-// ---------------------------------------------------------------------------
-
-describe("kahea mixed — URI edge + name invocation in same carrier", () => {
-  test("one edge, one SigilNode", () => {
-    const body = `
-<<~ kahea lar:///some/meme >>
-<<~ kahea greeting(name:"World") >>`;
-
-    const nodes = ast(body);
-    const edgeSugar = nodes.filter((n) => n.kind === "PranalaSugar") as PranalaSugarNode[];
-    const sigils    = nodes.filter((n) => n.kind === "Sigil")     as SigilNode[];
-
-    expect(edgeSugar.filter((n) => n.sigil === "kahea")).toHaveLength(1);
-    expect(sigils.filter((n) => n.sigilName === "kahea")).toHaveLength(1);
-
-    const es = edges(body);
-    expect(es.filter((e) => e.family === "dataflow")).toHaveLength(1);
-  });
-});
-
-// ---------------------------------------------------------------------------
-// Parameter interpolation inside wehe body
-// ---------------------------------------------------------------------------
-
-describe("kahea as parameter interpolation inside wehe body", () => {
-  test("<<~ kahea paramName >> inside body → SigilNode (render-only)", () => {
-    // Inside a wehe body, `<<~ kahea name >>` interpolates a bound parameter.
-    // The parameter IS a locally-scoped definition — same mechanism, narrower scope.
-    const body = `Hello, <<~ kahea name >>!`;
-    const nodes = ast(body);
+  test("dotted name → attrs.name", () => {
+    const nodes = ast("<<~ kau some.Template >>");
     const n = nodes.find((n) => n.kind === "Sigil") as SigilNode | undefined;
     expect(n).toBeDefined();
-    expect(n!.attrs["name"]).toBe("name");
-    expect(edges(body)).toHaveLength(0);
+    expect(n!.attrs["name"]).toBe("some.Template");
+  });
+
+  test("invocation produces NO graph edge", () => {
+    expect(edges("<<~ kau greeting >>")).toHaveLength(0);
+    expect(edges('<<~ kau greeting(name:"Operator") >>')).toHaveLength(0);
+  });
+});
+
+describe("kau — placement (#fragment present) → persistent identity, attrs.fragment + attrs.name + attrs.propsRaw", () => {
+  test("explicit #fragment → attrs.fragment without leading #", () => {
+    const nodes = ast("<<~ kau #sensor-1 GuardDevice >>");
+    const n = nodes.find((n) => n.kind === "Sigil") as SigilNode | undefined;
+    expect(n).toBeDefined();
+    expect(n!.sigilName).toBe("kau");
+    expect(n!.attrs["fragment"]).toBe("sensor-1");
+    expect(n!.attrs["name"]).toBe("GuardDevice");
+  });
+
+  test("placement with props → attrs.propsRaw", () => {
+    const nodes = ast("<<~ kau #guard-1 GuardDevice mode:patrol zone:north >>");
+    const n = nodes.find((n) => n.kind === "Sigil") as SigilNode | undefined;
+    expect(n).toBeDefined();
+    expect(n!.attrs["propsRaw"]).toContain("mode:patrol");
+    expect(n!.attrs["propsRaw"]).toContain("zone:north");
+  });
+
+  test("placement produces NO graph edge", () => {
+    expect(edges("<<~ kau #inst-1 MyDevice >>")).toHaveLength(0);
+    expect(edges("<<~ kau #inst-1 MyDevice prop:val >>")).toHaveLength(0);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// waiho — ephemeral variable binding → SigilNode, no edge
+// ---------------------------------------------------------------------------
+
+describe("waiho — variable binding", () => {
+  test("block waiho → SigilNode sigilName=waiho scope=block", () => {
+    const nodes = ast("<<~ waiho greeting = Hello >>\ncontent\n<<~/waiho >>");
+    const n = nodes.find((n) => n.kind === "Sigil") as SigilNode | undefined;
+    expect(n).toBeDefined();
+    expect(n!.sigilName).toBe("waiho");
+    expect(n!.attrs["name"]).toBe("greeting");
+    expect(n!.attrs["value"]).toBe("Hello");
+    expect(n!.attrs["scope"]).toBe("block");
+  });
+
+  test("pragma waiho → SigilNode scope=carrier", () => {
+    const nodes = ast("<<~! waiho myVar = world >>");
+    const n = nodes.find((n) => n.kind === "Sigil") as SigilNode | undefined;
+    expect(n).toBeDefined();
+    expect(n!.sigilName).toBe("waiho");
+    expect(n!.attrs["scope"]).toBe("carrier");
+    expect(n!.attrs["name"]).toBe("myVar");
+    expect(n!.attrs["value"]).toBe("world");
+  });
+
+  test("waiho produces NO graph edge", () => {
+    expect(edges("<<~ waiho x = 1 >>\n<<~/waiho >>")).toHaveLength(0);
+    expect(edges("<<~! waiho x = 1 >>")).toHaveLength(0);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Mixed: all four dispatch forms in the same carrier
+// ---------------------------------------------------------------------------
+
+describe("mixed dispatch — all forms in one carrier", () => {
+  test("kahea edge + kau placement + waiho binding — each lands in its own bucket", () => {
+    const body = `
+<<~ kahea lar:///some/meme >>
+<<~ kau #guard-1 GuardDevice mode:patrol >>
+<<~! waiho score = 0 >>`;
+
+    const nodes = ast(body);
+    const es = edges(body);
+
+    const sugarNodes  = nodes.filter((n) => n.kind === "PranalaSugar") as PranalaSugarNode[];
+    const sigilNodes  = nodes.filter((n) => n.kind === "Sigil") as SigilNode[];
+
+    // kahea → one dataflow edge, one PranalaSugar
+    expect(sugarNodes.filter((n) => n.sigil === "kahea")).toHaveLength(1);
+    expect(es.filter((e) => e.family === "dataflow")).toHaveLength(1);
+
+    // kau → one SigilNode, no edge
+    expect(sigilNodes.filter((n) => n.sigilName === "kau")).toHaveLength(1);
+
+    // waiho → one SigilNode, no edge
+    expect(sigilNodes.filter((n) => n.sigilName === "waiho")).toHaveLength(1);
+
+    // total edges = 1 (only the kahea dataflow edge)
+    expect(es).toHaveLength(1);
   });
 });

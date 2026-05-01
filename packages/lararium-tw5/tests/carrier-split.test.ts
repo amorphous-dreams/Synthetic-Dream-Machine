@@ -83,12 +83,11 @@ describe("splitCarrierToTiddlers — toml iam prelude parsing (smol-toml)", () =
     );
 
     // smol-toml is spec-correct: one error fails the whole block.
-    // The parent tiddler still has carrier-text so no data is lost.
     expect(split.warnings).toHaveLength(1);
     expect(split.warnings[0]).toMatch(/TOML parse error/);
     expect(split.parent.fields["role"]).toBeUndefined();
-    // carrier-text always preserved regardless of parse failure
-    expect(typeof split.parent.fields["carrier-text"]).toBe("string");
+    // carrier-text is no longer stored in Automerge — TW5 VM render is the projection path
+    expect(split.parent.fields["carrier-text"]).toBeUndefined();
   });
 
   test("valid TOML with mixed types emits no warnings", () => {

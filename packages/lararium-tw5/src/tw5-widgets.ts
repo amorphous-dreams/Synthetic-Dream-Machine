@@ -42,6 +42,7 @@ export { SigilWidget }    from "./widgets/sigil.js";
 export { DynamicWidget }  from "./widgets/dynamic.js";
 export { AhuWidget }      from "./widgets/ahu.js";
 export { KumuWidget }     from "./widgets/kumu.js";
+export { KauWidget }      from "./widgets/kau.js";
 
 import { PranalaWidget }  from "./widgets/pranala.js";
 import { PaeWidget }      from "./widgets/pae.js";
@@ -53,6 +54,7 @@ import { SigilWidget }    from "./widgets/sigil.js";
 import { DynamicWidget }  from "./widgets/dynamic.js";
 import { AhuWidget }      from "./widgets/ahu.js";
 import { KumuWidget }     from "./widgets/kumu.js";
+import { KauWidget }      from "./widgets/kau.js";
 
 import { registerImplementors } from "./filters/implementors.js";
 import { registerEdge }         from "./filters/edge.js";
@@ -66,6 +68,7 @@ export function createLarariumWidgets(_tw: TW5Instance): Record<string, WidgetCt
     "lele":     LeleWidget     as unknown as WidgetCtorWithProto,
     "kukali":   KukaliWidget   as unknown as WidgetCtorWithProto,
     "kumu":     KumuWidget     as unknown as WidgetCtorWithProto,
+    "kau":      KauWidget      as unknown as WidgetCtorWithProto,
     "toml":     TomlWidget     as unknown as WidgetCtorWithProto,
     "sigil":    SigilWidget    as unknown as WidgetCtorWithProto,
     "dynamic":  DynamicWidget  as unknown as WidgetCtorWithProto,

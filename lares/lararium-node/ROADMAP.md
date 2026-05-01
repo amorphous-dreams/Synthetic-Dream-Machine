@@ -1829,6 +1829,71 @@ Session 5 continued the local-first pivot. The server is now unambiguously a syn
 - **New slot creation UI** — no UX for adding ahu slots inline (Streams-style Tab/Enter)
 - **`carrier-text` staleness** — when child edited inline, parent tiddler's `carrier-text` in TW5 is stale until next Automerge resync; disk write-back correct (reads from disk via `_writeSlot`), but TW5 VM holds stale copy
 
+---
+
+## M11 — Engine Island + Unidirectional Disk Projector (2026-05-01)
+
+### Architecture invariant added
+
+**The TW5 engine is a corpus island.** The `tiddlywikicore-*.js` blob lives in its own Automerge doc (`EngineDoc`), separate from any content corpus. The catalog doc holds only a `CatalogEngineEntry` reference: `{ version, docUrl, sha256 }`. No CDN dependency exists for engine delivery once the first peer has seeded the blob.
+
+Engine island topology:
+
+```
+catalog doc  ─── engine entry { version, docUrl, sha256 }
+                                    │
+                         EngineDoc (Automerge)
+                           blobs["tiddlywikicore"]
+                             { blob: Uint8Array, sha256, version }
+```
+
+The browser Service Worker intercepts `tiddlywikicore-*.js` fetch, verifies sha256 against the catalog entry, and on a miss posts `"need-engine-blob"` to the main thread. The main thread opens the `EngineDoc` via `LarariumRepo.openEngineDoc()` and transfers the `ArrayBuffer` (zero-copy). The SW verifies, caches, and notifies. Any mesh peer can seed the engine blob — no server authority required.
+
+Mid-session engine update: `catalogHandle.on("change", onCatalogChange)` with `DocHandleChangePayload<CatalogDoc>` detects a new engine version pushed by any peer. The SW receives the new entry, re-verifies, and posts `"engine-update-cached"` to trigger the TW5 update-available banner (`$:/lararium/engine/update-available`).
+
+### Disk projector — unidirectional projection law
+
+**The disk is a projection. The Automerge store is the mind.**
+
+`LarDiskProjector` (in `@lararium/tw5`) replaced the old inline `exportCarrierText` + `writeFileSync` subscriber in `serve.ts`. Law:
+
+- The projector NEVER reads from disk.
+- `carrier-text` stored in the parent record in Automerge IS the lossless source.
+- Slot child edits → `replaceCarrierSlot` surgical patch on `carrier-text` → write.
+- Parent change with no `carrier-text` → reconstruct from children via `serializeCarrier` (lossy, correct for operator-created tiddlers).
+- Parent not in store → skip. The disk only receives what the store knows.
+
+`NodeMemeStore` (`packages/lararium-node/src/node-meme-store.ts`) is the server-side `LarTiddlerStore` adapter over a `DocHandle<MemeStoreDoc>` — mirrors `AutomergeMemeStore` in `@lararium/app` but lives in `@lararium/node` so the server can use it without a browser import.
+
+The `writing` Set on the projector guards against file-watcher echo: the watcher MUST check `projector.writing.has(uri)` before re-ingesting a change the projector just wrote.
+
+### Island layout (canonical, 2026-05-01)
+
+```
+catalog doc            — hallway: names all islands (rooms, corpora, engine, recipes)
+  engine doc           — TW5 core + plugins as binary blobs; catalog holds URL + sha256 only
+  corpus docs          — one per corpus bag (lares quine, elyncia, ftls, sdm, …)
+  room docs            — one per roomId; starts empty; durable room content
+```
+
+CompositeStore layer order (browser, lowest → highest priority):
+
+```
+corpus islands  (bag: corpus slug, read-only)  — arrive async, non-blocking
+room island     (bag: "room",  writable)        — primary content gate
+```
+
+### Milestones remaining after M11
+
+| Milestone | Description | Status |
+|---|---|---|
+| C | First-paint projection — `GET /snapshot/:roomId` serves static TW5 HTML before Automerge ready | Not started |
+| D | System bag + projection bag in CompositeStore | Partial (~70%) |
+| E | Draft promotion ceremony | ~10% |
+| F | Presence split (presence never in durable corpus/room doc) | 0% |
+
+**Projection law (Fontany-Fuller-Zelenka):** The snapshot/projection lane is a read artifact. It MUST NOT seed or bootstrap any Automerge doc. Causal islands own their own history. The projection is a window, not the source.
+
 ### Tests at M10 close
 
 - tw5: 41/41 passing

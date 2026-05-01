@@ -62,6 +62,22 @@ export interface CatalogProjectionEntry {
 }
 
 // ---------------------------------------------------------------------------
+// Engine island descriptor — points to the EngineDoc corpus doc.
+//
+// Kept out of CatalogCorpusEntry (different schema, binary blobs, no lares path).
+// The catalog carries the reference only — the EngineDoc is a separate island.
+// ---------------------------------------------------------------------------
+
+export interface CatalogEngineEntry {
+  /** TW5 core version string — "5.4.0". Browsers compare against loaded version. */
+  readonly version:    string;
+  /** Automerge URL for the EngineDoc. */
+  readonly docUrl:     string;
+  /** SHA-256 of the tiddlywikicore blob — content-addressed quick-check. */
+  readonly sha256:     string;
+}
+
+// ---------------------------------------------------------------------------
 // CatalogDoc — Automerge document shape
 //
 // Keyed by id for O(1) lookup. Automerge handles concurrent writes per entry.
@@ -74,6 +90,8 @@ export interface CatalogDoc {
   readonly rooms:      Record<string, CatalogRoomEntry>;
   readonly recipes:    Record<string, CatalogRecipeEntry>;
   readonly projections: Record<string, CatalogProjectionEntry>;
+  /** Engine island reference — separate doc, binary blobs, Keyhive-signed. */
+  readonly engine?:    CatalogEngineEntry;
   /** Capability hints for the connecting peer — read during derive-visible-rooms step. */
   readonly capabilityHints?: Record<string, string>;
 }

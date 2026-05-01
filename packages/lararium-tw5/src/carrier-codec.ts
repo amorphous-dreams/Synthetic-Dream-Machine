@@ -88,24 +88,22 @@ export function streamEventsToTiddlers(
 
 // ---------------------------------------------------------------------------
 // serializeCarrier — reconstruct single-file carrier format from parent + children.
-// Used by the promote / write-back path. Prefers carrier-text field (raw on-disk
-// format) over parent.text (which is mixed TW5 wikitext, not carrier).
+// Used by the VM render / write-back path.
+// parent.text is the mixed TW5 wikitext (transcludes + prose) used by the TW5 VM
+// and is NOT suitable for disk round-trips — this function always reconstructs.
 // ---------------------------------------------------------------------------
 
 export function serializeCarrier(
   parent: ParentTiddler,
   children: ChildTiddler[],
 ): string {
-  // carrier-text holds the raw on-disk carrier format. parent.text is the
-  // mixed wikitext (transcludes + prose) used by the TW5 VM — not suitable
-  // for disk round-trips.
-  const carrierText = (parent.fields as Record<string, unknown>)["carrier-text"];
-  if (typeof carrierText === "string" && carrierText) return carrierText;
-  if (parent.text && !parent.text.includes("<$transclude")) return parent.text;
 
-  // Fallback: reconstruct from fields + children (lossy — no sigil decorations)
+  // Reconstruct from fields + children.
+  // Use canonical control-char framing (SOH/STX/ETX/EOT entity forms) so the
+  // re-ingest parser recognises the header and body boundaries correctly.
   const lines: string[] = [
-    `<<~ ? -> ${parent.title} >>`,
+    `<<~&#x0001; ? -> ${parent.title} >>`,
+    `<<~&#x0002;>>`,
     "",
     "```toml iam",
   ];
@@ -131,7 +129,8 @@ export function serializeCarrier(
     lines.push(`<<~ ahu ${slot} >>`, child.text, `<<~/ahu >>`, "");
   }
 
-  lines.push(`<<~ -> ? >>`);
+  lines.push(`<<~&#x0003;>>`);
+  lines.push(`<<~&#x0004; -> ? >>`);
   return lines.join("\n");
 }
 

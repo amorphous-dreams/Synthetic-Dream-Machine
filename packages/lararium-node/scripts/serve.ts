@@ -39,8 +39,7 @@ import { WebSocketServer } from "ws";
 import { Repo } from "@automerge/automerge-repo";
 import { NodeWSServerAdapter } from "@automerge/automerge-repo-network-websocket";
 import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
-import { createLarariumRuntime } from "../src/node-host.js";
-import { buildSnapshot } from "./build-snapshot-lib.js";
+import { voidBootCorpus } from "./void-boot.js";
 import {
   LarAuthSessionRegistry,
   verifyAuthClaim,
@@ -49,16 +48,19 @@ import {
   type CatalogDoc,
   type CatalogRoomEntry,
   type CatalogCorpusEntry,
+  type CatalogEngineEntry,
+  type EngineDoc,
   emptyCatalogDoc,
   type MemeStoreDoc,
 } from "@lararium/core";
-import { getRecipeVm, makeRecipeId, exportCarrierText } from "@lararium/tw5";
-import { loadCorpusSources, corpusAbsPath, larUriToLaresAbsPath } from "../src/node-host.js";
+import { seedEngineDoc } from "../src/engine-island.js";
+import { LarDiskProjector, exportCarrierText, getRecipeVm, makeRecipeId, TW5_VERSION, TW5_CORE_SCRIPT_URL } from "@lararium/tw5";
+import { loadCorpusSources, corpusAbsPath } from "../src/node-host.js";
 import type { CorpusSource } from "../src/node-host.js";
+import { NodeMemeStore } from "../src/node-meme-store.js";
 import { getGhCliOperatorReceipt } from "../src/github-cli-auth.js";
 import type { AutomergeUrl, DocHandle } from "@automerge/automerge-repo";
 import { getOrCreateNodeAuthReceipt } from "../src/operator-key.js";
-import { TW5_CORE_SCRIPT_URL } from "@lararium/tw5";
 import { laresRoot } from "@lararium/lares";
 
 const REPO_ROOT  = dirname(laresRoot);
@@ -108,17 +110,9 @@ function json(res: ServerResponse, body: unknown, status = 200) {
 
 // ---------------------------------------------------------------------------
 // Receipt from automerge corpus state — hash of sorted (uri, text) pairs.
-// Used on subsequent boots when the corpus doc already lives in NodeFS.
-// On first boot the disk-based receipt is used (see computeDiskReceiptSha).
+// On first boot: computed from the corpus doc after voidBootCorpus populates it.
+// On subsequent boots: computed from the live NodeFS corpus doc.
 // ---------------------------------------------------------------------------
-
-async function computeDiskReceiptSha(
-  runtime: ReturnType<typeof createLarariumRuntime>,
-): Promise<string> {
-  const artifact = runtime.compileBoot();
-  const receipt  = await runtime.compileBootReceipt(artifact);
-  return receipt.sha256.replace(/^sha256:/, "");
-}
 
 function computeCorpusReceiptSha(doc: MemeStoreDoc): string {
   const pairs = Object.entries(doc)
@@ -167,19 +161,7 @@ async function main() {
   const quinePath        = quineSource ? join(ISLANDS_DIR, "corpora", quineSource.bag, "doc-url.txt") : null;
   const quineIsFirstBoot = quinePath ? !existsSync(quinePath) : false;
 
-  // Disk read — only on first boot of the quine corpus.
-  type SnapshotMemes = Awaited<ReturnType<typeof buildSnapshot>>;
-  let snapshotMemes: SnapshotMemes | null = null;
   let receiptSha = "";
-  if (quineIsFirstBoot) {
-    try {
-      const runtime = createLarariumRuntime();
-      snapshotMemes = await buildSnapshot(runtime);
-      receiptSha    = await computeDiskReceiptSha(runtime);
-    } catch (e) {
-      console.error("[lararium-serve] ⚠ first-boot seed failed:", e);
-    }
-  }
 
   // Peer authorization registry — populated by /auth/session, consumed by sharePolicy.
   const peerRegistry = new LarAuthSessionRegistry();
@@ -188,16 +170,9 @@ async function main() {
   // Evict expired auth sessions every 10 minutes.
   setInterval(() => peerRegistry.evictExpired(), 10 * 60 * 1000);
 
-  // catalogUrl / catalogHandle / quineRecipeId declared before the HTTP handler
-  // so the snapshot endpoint can read them. All are assigned after Automerge setup.
-  let catalogUrl     = "";
+  let catalogUrl    = "";
   // Assigned after Automerge setup, before httpServer.listen — never null when a request arrives.
-  let catalogHandle  = null as unknown as DocHandle<CatalogDoc>;
-  const quineRecipeId = makeRecipeId(
-    corpusSources.filter((c) => c.quine).map((c) => c.bag).filter(Boolean).length
-      ? corpusSources.filter((c) => c.quine).map((c) => c.bag)
-      : ["lares"],                                  // fallback: lares always quine
-  );
+  let catalogHandle = null as unknown as DocHandle<CatalogDoc>;
 
   // ---------------------------------------------------------------------------
   // HTTP server
@@ -222,67 +197,6 @@ async function main() {
     if (pathname === "/api/catalog") {
       return json(res, { url: catalogUrl });
     }
-
-    // ── /snapshot/:roomId — Milestone C first-paint projection ─────────────
-    // Island law: this is a READ artifact. It MUST NOT write to any Automerge doc.
-    // The lares corpus VM is loaded once and kept warm; rendering is synchronous.
-    // The browser shows this HTML immediately, then swaps in the live CRDT surface.
-    const snapshotMatch = pathname.match(/^\/snapshot\/([a-zA-Z0-9_-]{1,64})$/);
-    if (snapshotMatch) {
-      try {
-        const vm = await getRecipeVm(quineRecipeId);
-        // Render stylesheet first — inline CSS so the snapshot is self-contained.
-        // PageTemplate renders the full TW5 UI; stylesheet makes it look right.
-        const cssHtml  = vm.renderText("{{$:/core/ui/PageStylesheet}}");
-        const bodyHtml = vm.renderText("{{$:/core/ui/PageTemplate}}");
-        // Projection receipt: source doc heads + timestamp (no Automerge mutation).
-        const laresCatalogEntry = catalogHandle.doc()?.corpora?.["lares"];
-        const snapshotReceipt = JSON.stringify({
-          roomId: snapshotMatch[1],
-          sourceDocUrl: laresCatalogEntry?.docUrl ?? "",
-          renderedAt: new Date().toISOString(),
-          receiptSha,
-        });
-        const html = `<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="lararium-snapshot-receipt" content="${Buffer.from(snapshotReceipt).toString("base64")}">
-<title>Lararium — ${snapshotMatch[1]}</title>
-<style>${cssHtml}</style>
-</head>
-<body>
-${bodyHtml}
-</body>
-</html>`;
-        res.writeHead(200, {
-          "Content-Type": "text/html; charset=utf-8",
-          "Cache-Control": "no-store",
-          "X-Lararium-Snapshot": "1",
-        });
-        res.end(html);
-      } catch (e) {
-        console.error("[lararium-serve] snapshot render failed:", e);
-        res.writeHead(503, { "Content-Type": "text/plain" });
-        res.end("snapshot not ready");
-      }
-      return;
-    }
-
-    // ── /snapshot-heads/:roomId — staleness probe ──────────────────────────
-    // Browser polls this to detect when the live corpus has advanced past the
-    // snapshot. When heads differ, the live surface replaces the static projection.
-    const headsMatch = pathname.match(/^\/snapshot-heads\/([a-zA-Z0-9_-]{1,64})$/);
-    if (headsMatch) {
-      const laresCatalogEntry = catalogHandle.doc()?.corpora?.["lares"];
-      return json(res, {
-        docUrl: laresCatalogEntry?.docUrl ?? "",
-        receiptSha,
-        ts: Date.now(),
-      });
-    }
-
 
     // ── /auth/session — provider-neutral auth claim (browser/editor → server) ───
     // Browser/local UX posts: { peerId, provider, receipt?, proof? }
@@ -560,16 +474,18 @@ ${bodyHtml}
 
     if (firstBoot) {
       console.log(`[lararium-serve] corpus ${bagId} created: ${handle.url}  (src: ${corpusAbsPath(source)})`);
-      // Quine corpus seeds from lares/ carriers (compiled meme snapshot).
+      // Void boot: engine is already seeded; TW5 VM is the deserializer authority.
+      // Each carrier file flows through vm.deserializeCarrier() — the registered
+      // text/x-memetic-wikitext TW5 deserializer — producing normalized [parent, ...children].
       // Non-quine corpora (elyncia, ftls, sdm, wtf) seed via projection codec — pending M12.
-      if (source.quine && snapshotMemes) {
-        handle.change((doc) => {
-          for (const [uri, meme] of Object.entries(snapshotMemes.memes)) {
-            if (!uri.startsWith("lar:") || !meme.text) continue;
-            doc[uri] = { title: uri, fields: meme.fields ?? {}, text: meme.text, bag: bagId };
-          }
-        });
-        console.log(`[lararium-serve] corpus lares seeded: ${Object.keys(snapshotMemes.memes).length} memes`);
+      if (source.quine) {
+        try {
+          const result = await voidBootCorpus(bagId, handle, { quine: true, includeSource: true });
+          receiptSha = computeCorpusReceiptSha(handle.doc() as MemeStoreDoc ?? {});
+          console.log(`[lararium-serve] void boot: ${result.memeCount} parents, ${result.childCount} children seeded`);
+        } catch (e) {
+          console.error("[lararium-serve] ⚠ void boot failed:", e);
+        }
       }
     } else {
       console.log(`[lararium-serve] corpus ${bagId} resumed: ${handle.url}`);
@@ -589,12 +505,54 @@ ${bodyHtml}
     return handle;
   }
 
+  // ---------------------------------------------------------------------------
+  // Engine island — TW5 core + plugins as binary blobs in a separate corpus doc.
+  // Catalog holds a CatalogEngineEntry reference only (URL + version + sha256).
+  // ---------------------------------------------------------------------------
+  const engineUrlFile = join(ISLANDS_DIR, "engine-doc-url.txt");
+  const engineIsFirstBoot = !existsSync(engineUrlFile);
+  if (engineIsFirstBoot) {
+    try {
+      const { handle, coreSha256 } = await seedEngineDoc(memeRepo, APP_PUBLIC);
+      writeFileSync(engineUrlFile, handle.url, "utf8");
+      const engineEntry: CatalogEngineEntry = {
+        version: TW5_VERSION,
+        docUrl:  handle.url,
+        sha256:  coreSha256,
+      };
+      catalogHandle.change((doc) => {
+        const d = doc as DraftCatalogDoc;
+        d.engine = engineEntry;
+      });
+      console.log(`[lararium-serve] engine island seeded  v${TW5_VERSION}  url=${handle.url}`);
+    } catch (e) {
+      console.error("[lararium-serve] ⚠ engine island seed failed:", e);
+    }
+  } else {
+    const engineUrl = readFileSync(engineUrlFile, "utf8").trim() as AutomergeUrl;
+    const engineHandle = await memeRepo.find<EngineDoc>(engineUrl);
+    // Ensure catalog entry is present (idempotent — safe to re-write same values).
+    const engineDoc = engineHandle.doc();
+    const coreSha256Resume = engineDoc?.blobs["tiddlywikicore"]?.sha256 ?? "";
+    const engineEntry: CatalogEngineEntry = { version: TW5_VERSION, docUrl: engineUrl, sha256: coreSha256Resume };
+    catalogHandle.change((d) => { (d as DraftCatalogDoc).engine = engineEntry; });
+    console.log(`[lararium-serve] engine island resumed: ${engineUrl}`);
+  }
+
   // Warm the default room at boot so its URL is in the catalog immediately.
   await openOrCreateRoom(DEFAULT_ROOM);
 
   // Warm all corpus islands from the registry.
-  // For the quine corpus, attach a write-back subscriber: automerge change → lares/ file.
-  // This closes the quine loop: browser edit → automerge → disk → git history.
+  // Quine corpus: start the unidirectional disk projector (store → lares/ files).
+  //
+  // Render law: disk projection is a TW5 VM render operation, not a string copy.
+  // The VM (fakeDOM) re-renders the carrier from its normalized tiddler records —
+  // the same pipeline used to bootstrap the browser client over the wire.
+  // carrier-text is NOT the source; the VM render IS the projection.
+  //
+  // renderFn: sync changed tiddler(s) into the corpus VM, then exportCarrierText.
+  const projectors: LarDiskProjector[] = [];
+
   await Promise.all(corpusSources.map(async (source) => {
     const handle = await openOrCreateCorpus(source);
     if (!source.quine) return;
@@ -605,69 +563,53 @@ ${bodyHtml}
       if (doc) receiptSha = computeCorpusReceiptSha(doc);
     }
 
-    // Boot the quine recipe VM and seed it from the current doc state.
-    // The VM is the server-side TW5 peer; it stays in sync with automerge
-    // and is the canonical projection engine (exportCarrierText goes through it).
-    const quineVm = await getRecipeVm(quineRecipeId);
-    const seedDoc = handle.doc() as MemeStoreDoc | undefined;
-    if (seedDoc) {
-      for (const [uri, rec] of Object.entries(seedDoc)) {
-        if (!rec || rec.deleted || !uri.startsWith("lar:")) continue;
-        const fields: Record<string, string | string[]> = { title: uri, ...(rec.fields as Record<string, string | string[]> ?? {}) };
-        if (rec.text !== undefined) fields["text"] = rec.text;
-        quineVm.setTiddler(fields);
+    if (!WRITEBACK_ENABLED) return;
+
+    const bagId    = source.bag;
+    const recipeId = makeRecipeId([bagId]);
+
+    // renderFn: called by the projector after debounce.
+    // Syncs the parent tiddler and its slot children into the corpus VM,
+    // then asks the VM to render the carrier (fakeDOM TW5 render pipeline).
+    async function renderFn(parentUri: string, store: import("@lararium/core").LarTiddlerStore): Promise<string | null> {
+      const vm = await getRecipeVm(recipeId);
+      // Sync parent and all fragment children into the VM from current store state.
+      const allTitles = await store.listVisible();
+      const prefix    = `${parentUri}#`;
+      const urisToSync = [parentUri, ...allTitles.filter((t) => t.startsWith(prefix))];
+      for (const uri of urisToSync) {
+        const rec = await store.get(uri);
+        if (!rec || rec.deleted) {
+          vm.removeTiddler(uri);
+        } else {
+          const fields: Record<string, string | string[]> = {
+            title: uri,
+            ...(rec.fields as Record<string, string | string[]> ?? {}),
+          };
+          if (rec.text !== undefined) fields["text"] = rec.text;
+          vm.setTiddler(fields);
+        }
+      }
+      try {
+        return exportCarrierText(vm, parentUri);
+      } catch (e) {
+        console.warn(`[lararium] render failed for ${parentUri}:`, e);
+        return null;
       }
     }
 
-    // Server VM stays in snapshot mode permanently — it only serves static projections.
-    quineVm.setSnapshotMode(true);
-
-    // Write-back: disabled by default (LARARIUM_WRITEBACK=1 to enable).
-    // Loop guard (projector.writing) not yet wired — enable only for dev.
-    if (!WRITEBACK_ENABLED) return;
-
-    handle.on("change", ({ doc, patches }: { doc: MemeStoreDoc; patches: { path: (string | number)[] }[] }) => {
-      void (async () => {
-        const vm = await getRecipeVm(quineRecipeId);
-
-        // Apply changed records to the VM so exportCarrierText sees current state.
-        const touchedUris = new Set<string>(
-          patches.map((p) => String(p.path[0])).filter((k) => k.startsWith("lar:"))
-        );
-        for (const uri of touchedUris) {
-          const rec = doc[uri];
-          if (!rec || rec.deleted) {
-            vm.removeTiddler(uri);
-          } else {
-            const fields: Record<string, string | string[]> = { title: uri, ...(rec.fields as Record<string, string | string[]> ?? {}) };
-            if (rec.text !== undefined) fields["text"] = rec.text;
-            vm.setTiddler(fields);
-          }
-        }
-
-        // Collect parent URIs — fragment children (lar:///uri#slot) map to their parent.
-        const parentUris = new Set<string>();
-        for (const uri of touchedUris) {
-          const hash = uri.lastIndexOf("#");
-          parentUris.add(hash > 0 ? uri.slice(0, hash) : uri);
-        }
-
-        // Project each parent to disk via the TW5 VM — same render path as the browser.
-        for (const parentUri of parentUris) {
-          const rec = doc[parentUri];
-          if (!rec || rec.deleted) continue;
-          const absPath = larUriToLaresAbsPath(parentUri);
-          if (!absPath) continue;
-          try {
-            const projected = exportCarrierText(vm, parentUri);
-            writeFileSync(absPath, projected, "utf8");
-          } catch (e) {
-            console.warn(`[lararium] write-back failed for ${parentUri}:`, e);
-          }
-        }
-      })();
-    });
+    // Wrap the DocHandle in a LarTiddlerStore so LarDiskProjector can subscribe.
+    const corpusStore = new NodeMemeStore(handle, bagId);
+    const projector   = new LarDiskProjector(laresRoot, renderFn);
+    projectors.push(projector);
+    projector.start(corpusStore);
+    console.log(`[lararium-serve] disk projector started for corpus ${bagId} (TW5 VM render)`);
   }));
+
+  // Graceful shutdown — stop projectors before process exit.
+  const shutdownProjectors = () => { for (const p of projectors) p.stop(); };
+  process.once("SIGTERM", shutdownProjectors);
+  process.once("SIGINT",  shutdownProjectors);
 
   httpServer.listen(PORT, HOST, () => {
     console.log(`[lararium-serve] http://${HOST}:${PORT}`);

@@ -374,7 +374,7 @@ export class LarariumTW5 {
     tw.Wiki.tiddlerDeserializerModules["text/x-memetic-wikitext"] = function(text: string, fields: Record<string, unknown>) {
       const uri: string = (fields?.title as string) ?? "";
       const split = splitCarrierToTiddlers(uri, text);
-      const parent = { title: uri, ...fields, ...split.parent.fields, text };
+      const parent = { title: uri, ...fields, ...split.parent.fields, text: split.parent.text };
       const children = split.children.map((c) => ({ ...c.fields, title: c.title, text: c.text }));
       const result: TW5TiddlerFields[] = [parent, ...children];
       if (split.warnings.length > 0) {
@@ -531,28 +531,13 @@ export class LarariumTW5 {
   }
 
   /**
-   * Install or remove the Lararium boot-splash tiddlers.
+   * Set/clear the boot-splash signal tiddler ($:/lararium/boot-splash/active).
    *
-   * active=true  — inject styles + banner into the wiki; shown in both the
-   *                server-side snapshot render and the browser TW5 VM while
-   *                Automerge islands are still warming.
-   * active=false — remove them; called by the browser when the live surface mounts.
-   *
-   * Server VMs stay in snapshot mode permanently (they only render snapshots).
-   * Browser VMs call setSnapshotMode(false) when isLive fires.
+   * Styles and banner live in lares/ha-ka-ba/api/v0.1/lararium/ui/ and are
+   * auto-loaded via lares-preloads. The banner uses <$reveal> on this signal.
+   * Call with active=true at boot; active=false when the live surface is ready.
    */
-  /**
-   * Signal tiddler for the boot-splash.
-   *
-   * Styles and banner markup live in lares/ha-ka-ba/api/v0.1/lararium/ui/
-   * (boot-splash-styles.md, boot-splash-banner.md) and are auto-loaded via
-   * lares-preloads. The banner uses <$reveal> conditioned on this signal:
-   *   <$reveal type="nomatch" state="$:/lararium/boot-splash/active" text="">
-   *
-   * active=true  — set signal; banner visible in both snapshot HTML and live VM.
-   * active=false — remove signal; banner hides; called when live surface mounts.
-   */
-  setSnapshotMode(active: boolean): void {
+  setBootSplash(active: boolean): void {
     if (!this._tw) return;
     if (active) {
       this.setTiddler({ title: "$:/lararium/boot-splash/active", text: "yes" });
@@ -833,6 +818,23 @@ export class LarariumTW5 {
   getZoomLayout(level: string): ZoomLayout | null {
     if (!this._tw) return null;
     return getZoomLayout(this._tw.wiki, level);
+  }
+
+  /**
+   * Dispose this VM instance — clear internal TW5 refs so GC can collect.
+   *
+   * In browser: the global $tw is shared and not destroyed here; only the
+   * LarariumTW5 wrapper refs are cleared. True per-VM isolation in the browser
+   * requires iframe or worker boundaries.
+   * In Node: the TW5 instance held by _tw becomes GC-eligible after this call.
+   *
+   * Mounted panels: the cleanup fn returned by mountPanel() must be called
+   * by the caller before dispose(). This method does not track mounted panels.
+   */
+  dispose(): void {
+    this._tw          = null;
+    this._bootPromise = null;
+    this._loadedUris.clear();
   }
 }
 

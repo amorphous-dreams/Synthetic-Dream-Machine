@@ -39,11 +39,25 @@ export class CompositeStore implements LarTiddlerStore {
     this.layers.push(layer);
     if (layer.writable) this.writableStore = layer.store;
 
-    // Forward all change events from this layer to our subscribers.
+    // Forward future change events from this layer to our subscribers.
     const unsub = layer.store.subscribe((change) => {
       this.listeners.forEach((fn) => fn(change));
     });
     this.unsubs.set(layer.store, unsub);
+
+    // Emit synthetic "put" events for tiddlers already in the arriving layer
+    // so subscribers (e.g. LarariumCrdtSyncAdaptor) see existing content.
+    if (this.listeners.size > 0) {
+      layer.store.listVisible().then((titles) => {
+        for (const title of titles) {
+          layer.store.get(title).then((rec) => {
+            if (!rec) return;
+            const change: LarTiddlerChange = { title, record: rec, origin: { kind: "canon-hydrate", receipt: layer.bagId } };
+            this.listeners.forEach((fn) => fn(change));
+          });
+        }
+      });
+    }
   }
 
   removeLayer(bagId: string): void {

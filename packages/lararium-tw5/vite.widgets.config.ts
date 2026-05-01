@@ -30,6 +30,7 @@ export const WIDGET_ENTRIES: Array<{ entry: string; exportKey: string; name: str
   { entry: "src/widgets/dynamic.ts",   exportKey: "dynamic",  name: "dynamic"  },
   { entry: "src/widgets/ahu.ts",       exportKey: "ahu",      name: "ahu"      },
   { entry: "src/widgets/kumu.ts",      exportKey: "kumu",     name: "kumu"     },
+  { entry: "src/widgets/kau.ts",       exportKey: "kau",      name: "kau"      },
 ];
 
 // Filter operator entry points

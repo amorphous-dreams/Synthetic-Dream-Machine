@@ -64,12 +64,6 @@ default_family = "dataflow"
 default_propagation = "push-forward"
 description   = "URI form: live transclusion (dataflow family, compile+render); matches lar:/// prefix, path with /, or fragment with #; emits EdgeSugarNode → graph edge; [SC]"
 
-[[sigils]]
-name          = "kahea-call"
-kind          = "context"
-layer         = "render"
-pattern       = '<<~\s*kahea\s+([\w][\w.-]*)\s*(?:\(([^)]*)\))?\s*>>'
-description   = "name form: definition invocation (render-only, no graph edge); matches plain identifier optionally followed by (args); emits SigilNode { sigilName:kahea, attrs:{name,args} }; used for wehe/helu lookup and wehe parameter interpolation; [SC]"
 
 [[sigils]]
 name         = "toml"
@@ -371,40 +365,49 @@ description    = "constraint family edge sugar; inline-pranala-style (#slot? FRO
 # --- Variable binding sigil ---
 
 [[sigils]]
-name          = "kau"
+name          = "waiho"
 kind          = "pragma"
 layer         = "both"
-pragma_pattern = '<<~!\s*kau\s+([\w-]+)\s*=\s*([^\n>]+?)\s*>>'
-open_pattern  = '<<~\s*kau\s+([\w-]+)\s*=\s*([^\n>]+?)\s*>>'
-close_pattern = '<<~\/kau\s*>>'
-description   = "variable binding; <<~! kau name = val >> = carrier-scoped (hoisted pragma); <<~ kau name = val >>...<<~/kau >> = block-scoped; ! carries scope elevation promise; [SC]"
+pragma_pattern = '<<~!\s*waiho\s+([\w-]+)\s*=\s*([^\n>]+?)\s*>>'
+open_pattern  = '<<~\s*waiho\s+([\w-]+)\s*=\s*([^\n>]+?)\s*>>'
+close_pattern = '<<~\/waiho\s*>>'
+description   = "ephemeral variable binding; waiho = 'to leave in place, deposit for later retrieval'; <<~! waiho name = val >> = carrier-scoped (hoisted pragma); <<~ waiho name = val >>...<<~/waiho >> = block-scoped; no graph identity, no persistent URI; [SC]"
 
-# English aliases for kau
+# English aliases for waiho
 [[sigils]]
 name          = "\\const"
 kind          = "pragma-alias"
 layer         = "both"
-alias_for     = "kau"
+alias_for     = "waiho"
 pattern       = '<<~!\s*\\const\s+([\w-]+)\s*=\s*([^\n>]+?)\s*>>'
-description   = "English alias for kau pragma form (carrier-scoped immutable binding); parser maps to kau before evaluation"
+description   = "English alias for waiho pragma form (carrier-scoped immutable binding); parser maps to waiho before evaluation"
 
 [[sigils]]
 name          = "\\let"
 kind          = "pragma-alias"
 layer         = "both"
-alias_for     = "kau"
+alias_for     = "waiho"
 open_pattern  = '<<~\s*\\let\s+([\w-]+)\s*=\s*([^\n>]+?)\s*>>'
 close_pattern = '<<~\/\\let\s*>>'
-description   = "English alias for kau block form (block-scoped binding); parser maps to kau before evaluation"
+description   = "English alias for waiho block form (block-scoped binding); parser maps to waiho before evaluation"
 
 [[sigils]]
 name          = "\\var"
 kind          = "pragma-alias"
 layer         = "both"
-alias_for     = "kau"
+alias_for     = "waiho"
 open_pattern  = '<<~\s*\\var\s+([\w-]+)\s*=\s*([^\n>]+?)\s*>>'
 close_pattern = '<<~\/\\var\s*>>'
-description   = "English alias for kau block form (mutable variant); parser maps to kau before evaluation"
+description   = "English alias for waiho block form (mutable variant); parser maps to waiho before evaluation"
+
+# --- Device placement sigil ---
+
+[[sigils]]
+name          = "kau"
+kind          = "context"
+layer         = "both"
+pattern       = '<<~\s*kau\s+(#[\w-]+\s+)?([\w][\w.-]*)(?:\s+([^>]*))?\s*>>'
+description   = "device placement/instantiation; kau = 'to place upon, set down with intention'; <<~ kau #fragment? DeviceName prop:val ... >>; creates a device instance with its own execution context, persistent URI (carrierUri + #fragment), and addressable mailbox; #fragment auto-generates UUID on first commit if absent (Keyhive stub: instance URI becomes UCAN resource); [SC]"
 
 # --- Element type definition sigil ---
 
@@ -414,7 +417,7 @@ kind          = "pragma"
 layer         = "both"
 open_pattern  = '<<~!\s*kumu\s+([\w-]+)(?:\(([^)]*)\))?\s*>>'
 close_pattern = '<<~\/kumu\s*>>'
-description   = "element type definition; declares a new grammar node type with a named body contract; self-hosting primitive; TW5 \\widget equivalent; UEFN: maps to creative_device class — body carries @editable property bindings as kau children, event/function ports declared as papalohe edges; not a text template (that is wehe); [SC]"
+description   = "element type definition; declares a new grammar node type with a named body contract; self-hosting primitive; TW5 \\widget equivalent; UEFN: maps to creative_device class — body carries @editable property bindings as waiho children, event/function ports declared as papalohe edges; not a text template (that is wehe); placed/instantiated via kau; [SC]"
 
 # English aliases for kumu
 [[sigils]]

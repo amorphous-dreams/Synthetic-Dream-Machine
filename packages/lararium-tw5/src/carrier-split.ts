@@ -294,7 +294,7 @@ export function splitCarrierToTiddlers(uri: string, text: string): CarrierSplit 
     // Extract leading ```toml iam``` or plain ```toml``` fence from child body
     const iamFence = extractUnitTomlPrelude(bodyText);
     // Also try legacy plain toml fence
-    const plainFence = iamFence ? null : /^[ \t\n]*```toml[ \t]*\n([\s\S]*?)```[ \t]*\n?/.exec(bodyText);
+    const plainFence = iamFence ? null : /^[ \t]*```toml[ \t]*\n([\s\S]*?)```[ \t]*\n?/.exec(bodyText.trimStart());
 
     let displayText = bodyText;
     if (iamFence) {
@@ -341,7 +341,10 @@ export function splitCarrierToTiddlers(uri: string, text: string): CarrierSplit 
     parentFields["stream-type"] = "stream";
   }
 
-  parentFields["carrier-text"] = text;
+  // carrier-text is NOT stored in Automerge. The TW5 VM render pipeline
+  // (exportCarrierText via fakeDOM) is the canonical projection path — the same
+  // pipeline used to bootstrap the browser client over the wire.
+  // Round-trip: disk file → splitCarrierToTiddlers → store → VM render → disk file.
 
   return {
     parent: {

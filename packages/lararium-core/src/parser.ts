@@ -80,8 +80,8 @@ const BOOTSTRAP_SCANS: SigilScan[] = [
   // kahea name form: <<~ kahea name(args)  >> → SigilNode (render-only)
   // URI form matched first (starts with lar: or contains / or #).
   // Name form: identifier optionally followed by (key:val ...) args block.
+  // kahea — URI/dataflow form only: <<~ kahea lar:///uri >> → PranalaSugarNode
   { sigilName: "kahea",      regex: /<<~\s*kahea\s+(lar:[^\s>]+|[^\s>(]+\/[^\s>]*|[^\s>(]+#[^\s>]*)\s*>>/g, eventType: "leaf" },
-  { sigilName: "kahea-call", regex: /<<~\s*kahea\s+([\w][\w.-]*)\s*(?:\(([^)]*)\))?\s*>>/g,                  eventType: "leaf" },
   { sigilName: "pono",        regex: /<<~\s*pono\s+(#[\w-]+\s+)?(\S+)\s*->\s*(\S+)(?:\s+role:([\w-]+))?\s*>>/g, eventType: "leaf" },
   { sigilName: "\\constraint", canonicalName: "pono", regex: /<<~\s*\\constraint\s+(#[\w-]+\s+)?(\S+)\s*->\s*(\S+)(?:\s+role:([\w-]+))?\s*>>/g, eventType: "leaf" },
   { sigilName: "lele",        regex: /<<~\s*lele\s+(\S+)\s*>>/g,           eventType: "leaf"   },
@@ -92,10 +92,15 @@ const BOOTSTRAP_SCANS: SigilScan[] = [
   // ```toml iam ...``` sets profile="iam"; bare ```toml ...``` has profile="".
   { sigilName: "toml",      regex: /```toml(?:[ \t]+([A-Za-z0-9_-]+))?[ \t]*\n([\s\S]*?)```/g, eventType: "leaf" },
   { sigilName: "toml",      regex: /<<~\s*toml\s*>>([\s\S]*?)<<~\/toml\s*>>/g, eventType: "leaf" },
-  // Variable binding (kau — core enough to bootstrap)
-  { sigilName: "kau",       regex: /<<~!\s*kau\s+([\w-]+)\s*=\s*([^\n>]+?)\s*>>/g,  eventType: "pragma" },
-  { sigilName: "kau",       regex: /<<~\s*kau\s+([\w-]+)\s*=\s*([^\n>]+?)\s*>>/g,   eventType: "open"   },
-  { sigilName: "kau",       regex: /<<~\/kau\s*>>/g,                                 eventType: "close"  },
+  // Variable binding (waiho — "to leave in place, deposit for later retrieval")
+  { sigilName: "waiho",     regex: /<<~!\s*waiho\s+([\w-]+)\s*=\s*([^\n>]+?)\s*>>/g, eventType: "pragma" },
+  { sigilName: "waiho",     regex: /<<~\s*waiho\s+([\w-]+)\s*=\s*([^\n>]+?)\s*>>/g,  eventType: "open"   },
+  { sigilName: "waiho",     regex: /<<~\/waiho\s*>>/g,                                eventType: "close"  },
+  // kau — two forms (disambiguation by #fragment in makeLeaf):
+  //   invocation: <<~ kau name(args) >>           g(1)=name, g(2)=args  (must come first, parens break placement regex)
+  //   placement:  <<~ kau #frag? Name props? >>   g(1)=#frag, g(2)=name, g(3)=props
+  { sigilName: "kau",       regex: /<<~\s*kau\s+([\w][\w.-]*)\(([^)]*)\)\s*>>/g,                   eventType: "leaf" },
+  { sigilName: "kau",       regex: /<<~\s*kau\s+(#[\w-]+\s+)?([\w][\w.-]*)(?:\s+([^>]*))?\s*>>/g, eventType: "leaf" },
   // Conditional (needed for parity testing)
   { sigilName: "wai",       regex: /<<~\s*wai\s+([^\n>]+?)\s*>>/g,         eventType: "open"   },
   { sigilName: "wai",       regex: /<<~\/wai\s*>>/g,                        eventType: "close"  },
@@ -109,11 +114,11 @@ const BOOTSTRAP_SCANS: SigilScan[] = [
   { sigilName: "\\if",      canonicalName: "wai",     regex: /<<~\/\\if\s*>>/g,                          eventType: "close"  },
   { sigilName: "\\else",    canonicalName: "mukuwai", regex: /<<~\s*\\else\s*>>/g,                       eventType: "leaf"   },
   { sigilName: "\\elif",    canonicalName: "kahawai", regex: /<<~\s*\\elif\s+([^\n>]+?)\s*>>/g,         eventType: "leaf"   },
-  { sigilName: "\\const",   canonicalName: "kau",     regex: /<<~!\s*\\const\s+([\w-]+)\s*=\s*([^\n>]+?)\s*>>/g, eventType: "pragma" },
-  { sigilName: "\\let",     canonicalName: "kau",     regex: /<<~\s*\\let\s+([\w-]+)\s*=\s*([^\n>]+?)\s*>>/g,    eventType: "open"   },
-  { sigilName: "\\let",     canonicalName: "kau",     regex: /<<~\/\\let\s*>>/g,                         eventType: "close"  },
-  { sigilName: "\\var",     canonicalName: "kau",     regex: /<<~\s*\\var\s+([\w-]+)\s*=\s*([^\n>]+?)\s*>>/g,    eventType: "open"   },
-  { sigilName: "\\var",     canonicalName: "kau",     regex: /<<~\/\\var\s*>>/g,                         eventType: "close"  },
+  { sigilName: "\\const",   canonicalName: "waiho",   regex: /<<~!\s*\\const\s+([\w-]+)\s*=\s*([^\n>]+?)\s*>>/g, eventType: "pragma" },
+  { sigilName: "\\let",     canonicalName: "waiho",   regex: /<<~\s*\\let\s+([\w-]+)\s*=\s*([^\n>]+?)\s*>>/g,    eventType: "open"   },
+  { sigilName: "\\let",     canonicalName: "waiho",   regex: /<<~\/\\let\s*>>/g,                         eventType: "close"  },
+  { sigilName: "\\var",     canonicalName: "waiho",   regex: /<<~\s*\\var\s+([\w-]+)\s*=\s*([^\n>]+?)\s*>>/g,    eventType: "open"   },
+  { sigilName: "\\var",     canonicalName: "waiho",   regex: /<<~\/\\var\s*>>/g,                         eventType: "close"  },
   { sigilName: "kumu",                                regex: /<<~\s*kumu\s+([\w-]+)(?:\(([^)]*)\))?\s*>>/g,     eventType: "open"  },
   { sigilName: "kumu",                                regex: /<<~\/kumu\s*>>/g,                                   eventType: "close"  },
   { sigilName: "\\widget",  canonicalName: "kumu",    regex: /<<~!\s*\\widget\s+([\w-]+)(?:\(([^)]*)\))?\s*>>/g, eventType: "open"  },
@@ -235,6 +240,7 @@ function attrsFromGroups(
     case "wehe":
     case "kumu":    return { name: g(1), params: g(2) };
     case "helu":    return { name: g(1), params: g(2), expression: g(3) };
+    case "waiho":   return { name: g(1), value: g(2), scope };
     case "kau":     return { name: g(1), value: g(2), scope };
     case "kapu":    return { qualifier: g(1), inline: scope === "carrier" ? "true" : "false" };
     case "ui":      return { filter: g(1) };
@@ -258,16 +264,16 @@ interface Frame {
 }
 
 // Names that produce SigilNode (not DynamicNode) when encountered.
-// Bootstrapped (BOOTSTRAP_SCANS regex present): ahu, pranala, loulou, aka, kahea, kahea-call,
-//   pono, lele, papalohe, wai, mukuwai, kahawai, huli, kumu, kau, kukali, toml,
+// Bootstrapped (BOOTSTRAP_SCANS regex present): ahu, pranala, loulou, aka, kahea,
+//   pono, lele, papalohe, wai, mukuwai, kahawai, huli, kumu, kau, waiho, kukali, toml,
 //   control-* (control-soh/stx/etx/eot).
 // Grammar-meme-registered only (no bootstrap scan — must be loaded via grammar carrier):
 //   hana, meme, wehe, helu, kapu, hui, heihei, puka, ui.
 // If a grammar-meme sigil appears in a bootstrap carrier it falls to DynamicNode, not SigilNode.
 const CANONICAL_SIGILS = new Set([
   // bootstrapped
-  "ahu", "pranala", "loulou", "aka", "kahea", "kahea-call", "pono", "lele", "papalohe",
-  "wai", "mukuwai", "kahawai", "huli", "kumu", "kau", "kukali",
+  "ahu", "pranala", "loulou", "aka", "kahea", "pono", "lele", "papalohe",
+  "wai", "mukuwai", "kahawai", "huli", "kumu", "kau", "waiho", "kukali",
   "toml",
   "control-soh", "control-stx", "control-etx", "control-eot",
   // grammar-meme-registered (SigilNode when grammar carrier loaded, DynamicNode in bootstrap)
@@ -394,11 +400,26 @@ function makeLeaf(
     case "aka":
       return { kind: "PranalaSugar", ...base, sigil: "aka",    slot: null, fromRaw: null, toRaw: g(1), family: "observe",  role: null, trigger: null, fn: null } as PranalaSugarNode;
     case "kahea":
+      // URI/dataflow form only — regex guarantees this is always a URI target.
       return { kind: "PranalaSugar", ...base, sigil: "kahea", slot: null, fromRaw: null, toRaw: g(1), family: "dataflow", role: null, trigger: null, fn: null } as PranalaSugarNode;
-    case "kahea-call":
-      // Definition invocation — render-only, no compile-time graph edge.
-      // attrs.name = definition name; attrs.args = raw args string (render layer parses)
-      return { kind: "Sigil", ...base, sigilName: "kahea", attrs: { name: g(1) ?? "", args: g(2) ?? "" }, body: [] } as SigilNode;
+    case "kau": {
+      const scope = eventType === "pragma" ? "carrier" : "block";
+      // Binding: <<~! kau name = value >> — g(1)=name, g(2)=value
+      if (base.raw.match(/<<~!?\s*kau\s+[\w-]+\s*=/)) {
+        return { kind: "Sigil", ...base, sigilName: "kau", attrs: { name: g(1), value: g(2), scope }, body: [] } as SigilNode;
+      }
+      // Invocation name(args): <<~ kau name(args) >> — g(1)=name, g(2)=args (no g(3))
+      if (g(3) === "" && g(1) !== "" && !g(1).startsWith("#") && base.raw.includes("(")) {
+        return { kind: "Sigil", ...base, sigilName: "kau", attrs: { name: g(1), args: g(2) }, body: [] } as SigilNode;
+      }
+      // Invocation bare: <<~ kau name >> — placement regex, g(1)=undefined, g(2)=name, g(3)=""
+      if (!g(1) && g(2) && g(3) === "") {
+        return { kind: "Sigil", ...base, sigilName: "kau", attrs: { name: g(2), args: "" }, body: [] } as SigilNode;
+      }
+      // Placement: <<~ kau #fragment? DeviceName prop:val ... >> — g(1)=#frag, g(2)=name, g(3)=props
+      const fragment = g(1).replace(/^#/, "").trim() || null;
+      return { kind: "Sigil", ...base, sigilName: "kau", attrs: { fragment: fragment ?? "", name: g(2), propsRaw: g(3) }, body: [] } as SigilNode;
+    }
     case "pono": {
       const slot = g(1) || null;
       return { kind: "PranalaSugar", ...base, sigil: "pono", slot, fromRaw: g(2), toRaw: g(3), family: "constraint", role: g(4) || null, trigger: null, fn: null } as PranalaSugarNode;

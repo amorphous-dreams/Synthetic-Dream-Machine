@@ -8,12 +8,48 @@
 
 ## 0. Operator problem statement
 
+### Current island layout (canonical, 2026-05-01)
+
+```
+catalog doc  ─── engine entry { version, docUrl, sha256 }
+             │
+             ├── engine doc (EngineDoc)
+             │     blobs["tiddlywikicore"] = { blob: Uint8Array, sha256, version }
+             │     (TW5 core + plugins — no CDN dependency after first peer seed)
+             │
+             ├── corpus docs  (one per bag: lares, elyncia, ftls, sdm, …)
+             │     MemeStoreDoc — carrier tiddlers from lares/ projection
+             │
+             └── room docs  (one per roomId — starts EMPTY)
+                   MemeStoreDoc — user content, pins, room-local overrides
+```
+
+Browser CompositeStore recipe (lowest → highest priority):
+
+```
+corpus islands  (bag: slug,   read-only)  — arrive async, non-blocking
+room island     (bag: "room", writable)   — primary content gate
+```
+
+### Disk projection law (Fontany-Fuller-Zelenka, 2026-05-01)
+
+**The disk is a projection. The Automerge store is the mind.**
+
+`LarDiskProjector` (store → disk, unidirectional) replaced the old inline `exportCarrierText` subscriber. The projector reads `carrier-text` from the store record — never from disk. Slot edits patch surgically via `replaceCarrierSlot`. The `writing` Set guards against file-watcher echo.
+
+`NodeMemeStore` (`packages/lararium-node/src/node-meme-store.ts`) wraps a `DocHandle<MemeStoreDoc>` as a `LarTiddlerStore` for the server side.
+
+### Engine island law (2026-05-01)
+
+The TW5 engine (`tiddlywikicore-*.js`) lives in its own `EngineDoc` corpus island. The catalog holds only `{ version, docUrl, sha256 }`. The Service Worker verifies sha256 before caching. Any mesh peer can seed the blob — no CDN authority required. Mid-session updates travel over Automerge sync and trigger the TW5 update-available banner.
+
 ### Current milestone state (updated 2026-05-01)
 
 | Milestone | Status |
 |---|---|
 | A — Readiness Map | `ReadinessMap` in `@lararium/core`. All 10 keys declared. Browser marks: `auth`, `catalog`, `room-content`, `corpus:*`, `tw-vm`. `snapshot`, `room-presence`, `tldraw-doc`, `mcp-index`, `disk-projector`, `kowloon-feed` declared but not yet lit. ~60% |
-| B — Catalog Island | `CatalogDoc` fully wired. Server creates, browser opens via `openOrCreateCatalog`. ~95% |
+| B — Catalog Island | `CatalogDoc` fully wired. `engine`, `corpora`, `rooms` entries. ~100% |
+| B.1 — Engine Island | `EngineDoc` with blob + sha256. SW verification + mesh-native delivery. Catalog `engine` entry. ~95% (file-watcher ingest path not yet wired) |
 | C — First-paint projection | NOT started. See §9 law annotation. |
 | D — Recipe/bag live surface | `CompositeStore` + per-recipe TW5 VMs done. System and projection bags not yet wired. ~70% |
 | E — Draft promotion ceremony | Draft suppressed (M-E guard), aspirational tests written. No ceremony. ~10% |
@@ -38,7 +74,7 @@
 | `TimeoutNegativeWarning` | Upstream `automerge-repo` `throttle.js` bug | Known upstream issue |
 | `'message' handler 210ms` | Automerge WASM CRDT merge per WS message | Architectural; warm IDB eliminates return-visit pain |
 
-Primary concern resolved: the single cosmological Automerge doc has been split into catalog + room + corpus islands. `CompositeStore` composes them via TW5 recipe order. Auth gate precedes content sync.
+Primary concern resolved: the single cosmological Automerge doc has been split into catalog + engine + corpus + room islands. `CompositeStore` composes them via TW5 recipe order. Auth gate precedes content sync. Disk is a unidirectional projection from store.
 
 Remaining concern: first cold-visit boot cost lives in the lares corpus doc. Milestone C closes this.
 

@@ -38,6 +38,9 @@ describe("LarariumTW5 — boot and filter", () => {
       "lar:///ha.ka.ba/api/v0.1/lararium/templates/meme",
       "lar:///ha.ka.ba/api/v0.1/lararium/ui/ahu-breadcrumb",
       "lar:///ha.ka.ba/api/v0.1/lararium/ui/ahu-styles",
+      "lar:///ha.ka.ba/api/v0.1/lararium/ui/boot-splash-banner",
+      "lar:///ha.ka.ba/api/v0.1/lararium/ui/boot-splash-styles",
+      "lar:///ha.ka.ba/api/v0.1/lararium/ui/engine-update-banner",
       "lar:///ha.ka.ba/api/v0.1/lararium/ui/iam-panel",
       "lar:///ha.ka.ba/api/v0.1/lararium/ui/iam-startup-action",
       "lar:///ha.ka.ba/api/v0.1/lararium/ui/iam-viewtemplate-tab",
@@ -381,7 +384,7 @@ describe("package boundary", () => {
   test("FilterEngineFn type round-trips correctly (functional test)", async () => {
     // Verify that filterMemesWikitext satisfies FilterEngineFn by calling it
     // with the expected signature. If types are wrong this won't compile.
-    const { filterMemesWikitext } = await import("../src/lararium-tw5.js");
+    const { filterMemesWikitext } = await import("../src/index.js");
     const result = await filterMemesWikitext([], "[all[memes]]");
     expect(Array.isArray(result)).toBe(true);
   });
