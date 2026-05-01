@@ -58,7 +58,7 @@ export function streamEventsToTiddlers(
       const parent: TiddlerFields = {
         title: ev.uri,
         ...split.parent.fields,
-        text: ev.fullText,
+        text: split.parent.text,  // kahea-reference form; children are authoritative
       };
       if (realmOrigin) parent["realm-origin"] = realmOrigin;
       const children: TiddlerFields[] = split.children.map((c: ChildTiddler) => {

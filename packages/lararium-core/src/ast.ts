@@ -1,183 +1,11 @@
-// MemeAstNode — parse-time AST for memetic-wikitext surface form.
+// ast.ts — edge-vocabulary types and Law of Fives constants.
 //
-// Design: typed nodes only for things edgesFromAst branches on (edges, scope).
-// Everything else — conditionals, iteration, definitions, variables, etc. —
-// collapses into SigilNode: { sigilName, attrs, body }. Same shape TW5 uses.
-// DynamicNode is the escape hatch for grammar-meme-registered extensions.
+// MemeAstNode and parse-tree node types live in @lararium/tw5/ast.ts — they
+// compile into TW5 IIFE parser modules and must not create a circular dep here.
 //
-// PranaEdge, GrammarRules, SigilRule, FamilyRule live here so parser.ts and
-// pranala-parser.ts can share them without a circular dependency.
-
-export type MemeAstKind =
-  | "Ahu"           // ahu — addressable scope socket (<<~ ahu #slot >>)
-  | "Pranala"       // pranala — explicit edge (block or inline)
-  | "PranalaSugar"  // sugared pranala forms: loulou / aka / kahea / pono / papalohe
-  | "Lele"          // lele — fire-and-forget dispatch
-  | "Pae"            // <<~①>> SOH / <<~②>> STX / <<~③>> ETX / <<~④>> EOT 
-  | "Text"          // raw wikitext prose span 
-  | "Sigil"         // canonical sigil incl. toml 
-  | "Dynamic";      // grammar-meme-registered extension 
-
-interface AstBase {
-  kind: MemeAstKind;
-  pos: number;
-  raw: string;
-}
-
-// ---------------------------------------------------------------------------
-// Typed nodes (edgesFromAst branches on these)
-// ---------------------------------------------------------------------------
-
-export interface AhuNode extends AstBase {
-  kind: "Ahu";
-  slot: string;           // e.g. "#section-name"
-  uri: string;            // carrierUri + slot
-  delegate: string | null;
-  body: MemeAstNode[];
-  invocation?: boolean;   // true for <<~ kahea ahu #slot >> (leaf, summons pre-built slot)
-}
-
-export interface PranalaNode extends AstBase {
-  kind: "Pranala";
-  slot: string | null;
-  fromRaw: string;
-  toRaw: string;
-  family: string;
-  role: string | null;
-  body: MemeAstNode[];    // non-empty for block-form pranala only
-}
-
-export interface PranalaSugarNode extends AstBase {
-  kind: "PranalaSugar";
-  sigil: "loulou" | "aka" | "kahea" | "pono" | "papalohe";
-  slot: string | null;
-  fromRaw: string | null; // null for single-URI sugar (loulou/aka/kahea)
-  toRaw: string;
-  family: string;
-  role: string | null;
-  trigger: string | null; // papalohe — source event name (DeviceA.EventX)
-  fn: string | null;      // papalohe — target function name (DeviceB.FunctionY)
-}
-
-export interface LeleNode extends AstBase {
-  kind: "Lele";
-  targetRaw: string;
-  family: "message";
-}
-
-// ---------------------------------------------------------------------------
-// PaeNode — ASCII framing protocol (SOH/STX/ETX/EOT).
-//
-// Maps the four classic teletype control characters onto carrier lifecycle:
-//   soh — Start Of Heading  <<~&#x0001; ? -> lar:///URI >>  (self-declaration)
-//   stx — Start of Text     <<~&#x0002;>>                   (identity done; content begins)
-//   etx — End of Text       <<~&#x0003;>>                   (content done; trailer begins)
-//   eot — End of Transmission <<~&#x0004; -> ? >>           (transmission complete)
-//
-// Streaming consumers can update incrementally on each phase boundary:
-//   soh → open stub card for URI
-//   stx → root toml iam prelude dissolved; render identity panel
-//   etx → content ahus committed; fire activate
-//   eot → edges committed; update graph
-// ---------------------------------------------------------------------------
-
-export type PaePhase = "soh" | "stx" | "etx" | "eot";
-
-export interface PaeNode extends AstBase {
-  kind: "Pae";
-  phase: PaePhase;
-  /** Present on soh (declared URI) and eot (return-to-caller marker). */
-  toUri?: string;
-}
-
-// MetadataNode removed — TOML is a general data carrier.
-// New format: root-level ```toml iam``` prelude carries carrier identity fields.
-// Any <<~ toml >>...<<~/toml >> or ```toml [profile]``` fence → SigilNode(sigilName="toml", attrs={profile,content}).
-// Profile "iam" marks a metadata prelude; profile absent means general data block.
-
-export interface TextNode extends AstBase {
-  kind: "Text";
-  content: string;
-}
-
-// ---------------------------------------------------------------------------
-// SigilNode — the collapsed representation for all non-edge canonical sigils.
-//
-// Replaces: MemeBoundary, Conditional, ConditionalElse, ConditionalBranch,
-//           Iteration, WorkBlock, TextTemplate, FilterFunction, TypeDefinition,
-//           Variable, Qualification, SyncBlock, RaceBlock, RushBlock, Query,
-//           MetadataNode (toml is now a general data carrier, not a special type).
-//
-// attrs carries sigil-specific named captures (all strings; rendering layer
-// interprets types). Conventional keys per sigilName:
-//   wai / kahawai / ui → { filter }
-//   huli               → { filter, binding }
-//   hana               → { grammarKey }
-//   meme               → { targetUri }
-//   wehe / kumu        → { name, params }
-//   helu               → { name, params, expression }
-//   kau                → { name, value, scope: "ephemeral"|"personal"|"consensual"|"collective"|"universal"|"carrier"|"block" }
-//                         carrier/block are parse-time aliases for personal/collective (retained for compat)
-//   kapu               → { qualifier, inline: "true"|"false" }
-//                         qualifier may be a scope principle name to gate a block by scope
-//   toml               → { profile, content }  — profile "iam" = metadata prelude; absent = general data block
-//   hui / heihei / puka / mukuwai → {}
-//   kukali             → { trigger? }  — wait posture; trigger is optional papalohe slot name
-// ---------------------------------------------------------------------------
-
-export interface SigilNode extends AstBase {
-  kind: "Sigil";
-  sigilName: string;
-  attrs: Record<string, string>;
-  body: MemeAstNode[];
-}
-
-// ---------------------------------------------------------------------------
-// DynamicNode — grammar-meme-registered sigil not in the canonical union
-// ---------------------------------------------------------------------------
-
-export interface DynamicNode extends AstBase {
-  kind: "Dynamic";
-  sigilName: string;
-  sigilKind: string;
-  eventType: "open-close" | "leaf" | "pragma";
-  body: MemeAstNode[];
-}
-
-// ---------------------------------------------------------------------------
-// Union
-// ---------------------------------------------------------------------------
-
-export type MemeAstNode =
-  | AhuNode
-  | PranalaNode
-  | PranalaSugarNode
-  | LeleNode
-  | PaeNode
-  | TextNode
-  | SigilNode
-  | DynamicNode;
-
-// ---------------------------------------------------------------------------
-// CarrierNode — root of every parsed carrier document.
-//
-// The island boundary at the parse layer: every lar:/// URI maps to exactly
-// one CarrierNode. body holds the flat MemeAstNode[] that parseMemeCarrier
-// previously returned directly.
-//
-// Analogues:
-//   TW5   — the wiki tiddler itself (title = uri, text = source)
-//   UEFN  — a VerseDevice type definition (uri = device type path, body = island)
-//
-// Authority context: uri is the canonical key; authority checking (Orichalcum
-// ceremony) is scoped to this node before any render pass runs.
-// ---------------------------------------------------------------------------
-
-export interface CarrierNode {
-  readonly kind: "Carrier";
-  readonly uri: string;
-  readonly body: readonly MemeAstNode[];
-}
+// What stays here: PranaEdge, GrammarRules, SigilRule, FamilyRule,
+// Law of Fives ladders, Stance/Syad/Tool vocabulary. These are shared by
+// meme-graph.ts, compiler.ts, and carrier.ts without pulling in the parser.
 
 // ---------------------------------------------------------------------------
 // PranaEdge — compiled edge record (output of edgesFromAst / parsePranalaEdges)
@@ -221,7 +49,6 @@ export interface PranaEdgeViolation {
 }
 
 // ---------------------------------------------------------------------------
-// ---------------------------------------------------------------------------
 // Law of Fives — invariant 5-point ladders
 //
 // Two orthogonal axes appear across every domain in the system.
@@ -264,9 +91,7 @@ export const SCOPE_TO_LADDER: Record<Scope5, Ladder5> = {
 //
 // stage  = UX/rendering annotation (GR→OS→US→CS→DS, from confidence scalar)
 //   Used in masks/voices layer: color temperature, label prefix, arrow opacity.
-//   NOT a federation gate condition. Room recipes MAY filter by stage as
-//   operator-configured predicates, but stage does not appear in the
-//   hardcoded visibility predicate or Orichalcum capability caveats.
+//   NOT a federation gate condition.
 // ---------------------------------------------------------------------------
 
 // Schema: lar:///ha.ka.ba/api/v0.1/mu/the-law-of-5s (rating/stage ladders)
@@ -399,7 +224,6 @@ export const TOOL_APERTURE: Record<Tool, ToolAperture> = {
 
 // ---------------------------------------------------------------------------
 // Render modes — canonical values for PranaEdge.renderMode.
-// The render layer switches on these; null means default arrow treatment.
 // ---------------------------------------------------------------------------
 
 // Schema: lar:///ha.ka.ba/api/v0.1/pono/reaction-graph
@@ -408,21 +232,14 @@ export const RENDER_MODES = [
 ] as const;
 export type RenderMode = typeof RENDER_MODES[number];
 
-// ---------------------------------------------------------------------------
-// Canonical roles per family — informational; not exhaustive.
-// roleRecommended families should carry one of these (or a custom string).
-// ---------------------------------------------------------------------------
-
-// Schema: lar:///ha.ka.ba/api/v0.1/pono/reaction-graph
 export const REACTION_ROLES = ["subscription", "handler", "callback"] as const;
 export type ReactionRole = typeof REACTION_ROLES[number];
 
 // ---------------------------------------------------------------------------
 // GrammarRules — external grammar interface (Phase 2+)
 //
-// Loaded from lares/grammars/memetic-wikitext.md; overrides built-in patterns
-// and family contracts. Accepted as optional arg by parseMemeCarrier and
-// parsePranalaEdges.
+// Loaded from lares/grammars/memetic-wikitext.md; overrides built-in patterns.
+// Accepted as optional arg by parseMemeCarrier and parsePranalaEdges.
 // ---------------------------------------------------------------------------
 
 export interface SigilRule {

@@ -5,7 +5,7 @@
  */
 
 import { type Diagnostic, makeDiagnostic } from "./diagnostics.js";
-import { parsePranalaEdges, type PranaEdge } from "./pranala-parser.js";
+import type { PranaEdge } from "./pranala-parser.js";
 
 // ---------------------------------------------------------------------------
 // Regex patterns
@@ -213,9 +213,8 @@ export function validateCarrierShape(
 // parseCarrier — pure text-in, record-out
 // ---------------------------------------------------------------------------
 
-export function parseCarrier(uri: string, text: string): CarrierRecord {
+export function parseCarrier(uri: string, text: string, edges: PranaEdge[] = []): CarrierRecord {
   const { metadata, diagnostics: metaDiags } = extractIamMetadata(text);
-  const edges = parsePranalaEdges(uri, text);
   let shape = validateCarrierShape(text, metadata, edges);
 
   if (metaDiags.length > 0) {

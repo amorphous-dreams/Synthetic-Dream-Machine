@@ -8,7 +8,8 @@
 
 import type { TW5Wiki } from "./types/tiddlywiki.js";
 import type { ReactionBinding } from "@lararium/core";
-import { parsePranalaEdges, extractReactionBindings, ReactionGraph } from "@lararium/core";
+import { parsePranalaEdges } from "./pranala-parser.js";
+import { extractReactionBindings, ReactionGraph } from "@lararium/core";
 
 /**
  * Parse reaction bindings for a single URI from its current tiddler text.

@@ -1,4 +1,5 @@
 import type { TW5WidgetInstance, TW5ParseTreeNode, TW5FakeElement, TW5ChangeRecord } from "../types/tiddlywiki.js";
+import { dispatchSlotRenderMode } from "./render-modes.js";
 
 // Keyhive stub: when WASM lands, this hook accepts the instance URI as a UCAN
 // resource string and returns a capability envelope for the instance scope.
@@ -32,6 +33,33 @@ KauWidget.prototype.render = function (this: TW5WidgetInstance, parent: TW5FakeE
   const args       = this.getAttribute("args", "");
   const propsRaw   = this.getAttribute("propsRaw", "");
   const carrierUri = this.getVariable?.("currentTiddler") ?? "";
+  const renderMode  = this.getVariable?.("lar-render-mode") ?? "";
+  const childUri    = fragment ? (carrierUri ? `${carrierUri}#${fragment}` : `#${fragment}`) : "";
+
+  if (fragment && renderMode) {
+    // Projection mode: generic child-slot dispatch → <<~ aka kau #frag >>
+    const modeResult = dispatchSlotRenderMode(renderMode, {
+      sigil:    "kau",
+      slot:     `#${fragment}`,
+      childUri,
+      wiki:     this.wiki!,
+      document: this.document,
+    });
+    if (modeResult !== null) {
+      if (renderMode === "carrier") {
+        // kau carrier form reconstructs the placement sigil from attributes, not a body block.
+        const parts = [`<<~ kau #${fragment}`, name, propsRaw].filter(Boolean).join(" ");
+        const text  = this.document.createTextNode(`${parts} >>`);
+        _nextSibling ? parent.insertBefore(text, _nextSibling) : parent.appendChild(text);
+        this.domNodes = [text as unknown as TW5FakeElement];
+      } else {
+        const text = this.document.createTextNode(modeResult.raw);
+        _nextSibling ? parent.insertBefore(text, _nextSibling) : parent.appendChild(text);
+        this.domNodes = [text as unknown as TW5FakeElement];
+      }
+      return;
+    }
+  }
 
   // Disambiguate by #fragment presence — same split the parser makes.
   //

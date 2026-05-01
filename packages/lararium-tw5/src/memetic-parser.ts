@@ -30,8 +30,10 @@
  * into $tw.Wiki.parsers after boot.
  */
 
-import { parseMemeCarrier, grammarRulesFromText } from "@lararium/core";
-import type { MemeAstNode, CarrierNode, PaeNode, GrammarRules } from "@lararium/core";
+import { parseMemeCarrier } from "./parser.js";
+import { grammarRulesFromText } from "./pranala-parser.js";
+import type { MemeAstNode, CarrierNode, PaeNode } from "./ast.js";
+import type { GrammarRules } from "@lararium/core";
 
 // ---------------------------------------------------------------------------
 // TW5ParseNode — minimal type for TW5's parse tree nodes
@@ -75,11 +77,11 @@ function nodeToTw5(node: MemeAstNode, wiki?: TW5Wiki): TW5ParseNode {
           slot: attr(node.slot),
           uri:  attr(node.uri),
           ...(node.delegate   ? { delegate:   attr(node.delegate) }      : {}),
-          ...(node.invocation ? { invocation: attr("true") }              : {}),
+          ...(node.invocation ? { invocation: attr("true") } : {}),
+          ...(node.projection ? { projection: attr("true") } : {}),
         },
-        // kahea ahu (invocation) has no body — inline children not rendered.
-        // Definition form body is carried for import/round-trip but <$ahu> transcludesthe child tiddler.
-        children: node.invocation ? [] : node.body.map((n) => nodeToTw5(n, wiki)) };
+        // invocation (kahea) and projection (aka) forms have no inline body.
+        children: (node.invocation || node.projection) ? [] : node.body.map((n) => nodeToTw5(n, wiki)) };
 
     case "Text": {
       // When a wiki context is available, pipe prose through TW5's own wikitext

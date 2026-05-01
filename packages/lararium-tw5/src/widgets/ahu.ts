@@ -41,10 +41,13 @@ AhuWidget.prototype.render = function (this: TW5WidgetInstance, parent: TW5FakeE
   // They are the import source that populated the child tiddler; the child tiddler is
   // authoritative at render time.
 
+  const projection = this.getAttribute("projection", "") === "true";
+
   const el = this.document.createElement("section");
   el.setAttribute("data-lar-kind", "ahu");
   el.setAttribute("data-lar-slot", slot);
   el.setAttribute("data-lar-uri",  childUri);
+  if (projection) el.setAttribute("data-lar-projection", "true");  // read-only; no edit affordance
   parent.appendChild(el);
   this.domNodes = [el];
 

@@ -16,7 +16,8 @@
  */
 
 import { describe, test, expect } from "@jest/globals";
-import { parsePranalaEdges, validatePranaEdge, KNOWN_FAMILIES } from "../src/pranala-parser.js";
+import { parsePranalaEdges } from "../src/pranala-parser.js";
+import { validatePranaEdge, KNOWN_FAMILIES } from "@lararium/core";
 
 const BASE = "lar:///grammars/test-carrier";
 

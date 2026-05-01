@@ -4,7 +4,6 @@ export * from "./authority.js";
 export * from "./resolver.js";
 export * from "./ast.js";
 export * from "./causal-island.js";
-export * from "./parser.js";
 export * from "./diagnostics.js";
 export * from "./pranala-parser.js";
 export * from "./carrier.js";

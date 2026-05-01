@@ -69,3 +69,29 @@ export { VmPool } from "./vm-pool.js";
 export { filterMemesWikitext } from "./filter-compat.js";
 export { exportCarrierText } from "./carrier-write.js";
 export { LarDiskProjector } from "./disk-sync-adaptor.js";
+
+// ---------------------------------------------------------------------------
+// Parser + AST — TW5-VM-owned parse machinery.
+//
+// These compile into TW5 IIFE modules (parser tiddler, deserializer tiddler).
+// No AST trees cross the VM boundary; VMs own projection from Automerge docs.
+// External callers (node-host, tests) import parseMemeCarrier / grammarRulesFromText
+// / parsePranalaEdges / edgesFromAst from here, not from @lararium/core.
+// ---------------------------------------------------------------------------
+
+export { parseMemeCarrier, edgesFromAst, collectEvents, buildAst, parseCarrierNode } from "./parser.js";
+export type {
+  MemeAstKind,
+  MemeAstNode,
+  AhuNode,
+  PranalaNode,
+  PranalaSugarNode,
+  LeleNode,
+  PaeNode,
+  TextNode,
+  SigilNode,
+  DynamicNode,
+  CarrierNode,
+  PaePhase,
+} from "./ast.js";
+export { grammarRulesFromText, parsePranalaEdges } from "./pranala-parser.js";

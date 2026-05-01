@@ -75,7 +75,11 @@ const BOOTSTRAP_SCANS: SigilScan[] = [
   { sigilName: "pranala",   regex: /<<~\s*pranala\s+(#[\w-]+\s+)?(\S+)\s*->\s*(\S+)(?:\s+family:([\w-]+))?(?:\s+role:([\w-]+))?\s*>>/g, eventType: "leaf" },
   // Edge sugar
   { sigilName: "loulou",    regex: /<<~\s*loulou\s+(\S+)\s*>>/g,           eventType: "leaf"   },
-  { sigilName: "aka",       regex: /<<~\s*aka\s+(\S+)\s*>>/g,              eventType: "leaf"   },
+  // aka — two forms:
+  //   URI form:        <<~ aka lar:///uri >>          — g(1)=uri, g(2)=undefined
+  //   child-slot form: <<~ aka ahu #slot >>           — g(1)=type, g(2)=#slot
+  { sigilName: "aka",       regex: /<<~\s*aka\s+([a-z][\w-]*)\s+(#[\w-]+)\s*>>/g, eventType: "leaf" },
+  { sigilName: "aka",       regex: /<<~\s*aka\s+(\S+)\s*>>/g,                      eventType: "leaf" },
   // kahea — generic summoning sigil.
   //
   // Three forms, scanned in this order:
@@ -440,8 +444,19 @@ function makeLeaf(
     }
     case "loulou":
       return { kind: "PranalaSugar", ...base, sigil: "loulou", slot: null, fromRaw: null, toRaw: g(1), family: "relation", role: null, trigger: null, fn: null } as PranalaSugarNode;
-    case "aka":
-      return { kind: "PranalaSugar", ...base, sigil: "aka",    slot: null, fromRaw: null, toRaw: g(1), family: "observe",  role: null, trigger: null, fn: null } as PranalaSugarNode;
+    case "aka": {
+      // Compound form: <<~ aka ahu #slot >> — g(1)=type, g(2)=#slot
+      // URI form:      <<~ aka lar:///uri >> — g(1)=uri, g(2)=undefined
+      const akaType = g(1);
+      const akaSlot = g(2);
+      if (akaSlot) {
+        // Child-slot projection — dispatch to the named slot sigil with projection=true.
+        // Currently only "ahu" is a registered child-slot sigil; future sigils follow same pattern.
+        const akaUri = carrierUri + akaSlot;
+        return { kind: "Ahu", ...base, slot: akaSlot, uri: akaUri, delegate: null, body: [], projection: true } as AhuNode;
+      }
+      return { kind: "PranalaSugar", ...base, sigil: "aka", slot: null, fromRaw: null, toRaw: akaType, family: "observe", role: null, trigger: null, fn: null } as PranalaSugarNode;
+    }
     case "kahea-invoke": {
       // Generic worksite/widget summons — leaf or block open.
       // g(1) = type name, g(2) = args string

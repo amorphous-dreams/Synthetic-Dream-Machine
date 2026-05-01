@@ -12,8 +12,6 @@ import { join, relative, dirname } from "path";
 import {
   resolveLarUri,
   parseCarrier,
-  parsePranalaEdges,
-  grammarRulesFromText,
   MemeGraph,
   Meme,
   laresRelPathToLarUri,
@@ -23,6 +21,7 @@ import {
   type CarrierRecord,
   type GrammarRules,
 } from "@lararium/core";
+import { parsePranalaEdges, grammarRulesFromText } from "@lararium/tw5";
 
 // Sync SHA-256 content hash — Node-only. Same algorithm and output format as the
 // async makeMemeHash in lararium-core, but synchronous for use in the carrier loader.

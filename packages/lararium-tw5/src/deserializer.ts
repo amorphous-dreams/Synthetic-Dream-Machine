@@ -85,7 +85,7 @@ export function memeticWikitextDeserializer(
       ...asStringFields(fields),
       ...split.parent.fields,
       title: baseUri,
-      text,
+      text:  split.parent.text,  // kahea-reference form; children are authoritative
     };
     result.push(parent);
     for (const child of split.children) {
@@ -104,43 +104,6 @@ export function memeticWikitextDeserializer(
   }
 
   return result;
-}
-
-// ---------------------------------------------------------------------------
-// expandCarrierRefs — outgoing edge: wiki → disk
-//
-// Inverts the incoming transformation: reads kahea-reference parent text and
-// reconstructs definition form by expanding <<~ kahea ahu #slot >> with child
-// tiddler bodies read from the wiki.
-//
-// Registered on $tw.lararium so the Node-side sync-adaptor can call it without
-// duplicating this logic outside the compiled module.
-// ---------------------------------------------------------------------------
-
-export function expandCarrierRefs(
-  wiki: { getTiddlerText?: (title: string, fallback: string) => string },
-  parentUri: string,
-): string {
-  const parentText = wiki.getTiddlerText?.(parentUri, "") ?? "";
-  return parentText.replace(
-    /<<~\s*kahea\s+ahu\s+(#[\w-]+)\s*>>/g,
-    (_, slot: string) => {
-      const childBody = wiki.getTiddlerText?.(parentUri + slot, "") ?? "";
-      return `<<~ ahu ${slot} >>\n${childBody}\n<<~/ahu >>`;
-    },
-  );
-}
-
-// Register on $tw.lararium at module load time so the sync-adaptor bridge can
-// call it via tw5._tw.lararium.expandCarrierRefs(wiki, uri).
-declare const exports: Record<string, unknown>;
-if (typeof exports !== "undefined") {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const tw = (globalThis as any).$tw;
-  if (tw) {
-    tw.lararium = tw.lararium ?? {};
-    tw.lararium.expandCarrierRefs = expandCarrierRefs;
-  }
 }
 
 // ---------------------------------------------------------------------------

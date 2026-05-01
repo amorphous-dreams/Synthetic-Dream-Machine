@@ -15,8 +15,8 @@
  *   store → exportCarrierText (expands kahea refs → definition form) → disk
  */
 
-import { parseMemeCarrier } from "@lararium/core";
-import type { MemeAstNode, AhuNode } from "@lararium/core";
+import { parseMemeCarrier } from "./parser.js";
+import type { MemeAstNode, AhuNode } from "./ast.js";
 import { parseTaploFields } from "./toml-ast.js";
 
 // ---------------------------------------------------------------------------
@@ -259,7 +259,7 @@ export function splitCarrierToTiddlers(uri: string, text: string): CarrierSplit 
     };
 
     // Raw body text from source — ahu body IS memetic-wikitext.
-    const rawBody   = sourceBodies.get(slot) ?? ws.body.map((n) => n.raw).join("");
+    const rawBody   = sourceBodies.get(slot) ?? ws.body.map((n: MemeAstNode) => n.raw).join("");
 
     // Extract leading TOML fence (iam or plain) for additional projected fields.
     const fence = extractUnitTomlPrelude(rawBody);
