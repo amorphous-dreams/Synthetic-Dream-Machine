@@ -1,3 +1,5 @@
+<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
+
 <!-- ∞ → lar:///grammar.verification.defines/skill/?confidence=CS:0.80&p=0.5 -->
 
 name: lares-loci-verification

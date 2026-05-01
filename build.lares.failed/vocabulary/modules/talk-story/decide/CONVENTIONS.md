@@ -1,8 +1,12 @@
+<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
+
 <!-- ∞ → lar:///module.phased.instructs/talk-story/decide/?confidence=0.95&p=0.5 -->
 
 # Talk Story — Normative Rules
 
 <!-- → ? -->
+<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
+
 <!-- ∞ → lar:///module.phased.instructs/talk-story/decide/?confidence=0.95#hud -->
 ## HUD During Talk Story
 
@@ -19,6 +23,8 @@ The `⚡∞` sentinel in deployed files means "not a live session — mana pool
 does not apply."
 
 <!-- → ? -->
+<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
+
 <!-- ∞ → lar:///module.phased.instructs/talk-story/decide/?confidence=0.95#rules -->
 ## Mandatory Rules
 

@@ -1,3 +1,5 @@
+<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
+
 <!-- ∞ → lar:///uri.schema.holds/uri-schema/orient/?confidence=CS:0.90&p=0.5 -->
 
 # Signal — Orient: URI Architecture
@@ -7,6 +9,8 @@
 ---
 
 <!-- → ? -->
+<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
+
 <!-- ∞ → lar:///uri.schema.holds/uri-schema/orient/?confidence=0.9#design-intent -->
 ## Design Intent
 
@@ -45,6 +49,8 @@ At each exchange span, `lar:` URIs are used in a mandatory sequence:
 ---
 
 <!-- → ? -->
+<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
+
 <!-- ∞ → lar:///uri.schema.holds/uri-schema/orient/?confidence=0.95#full-form -->
 ## Full Form and Authority-less Form
 
@@ -73,6 +79,8 @@ Three slashes: scheme + `//` (empty authority) + path beginning with `/`. Use fo
 ---
 
 <!-- → ? -->
+<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
+
 <!-- ∞ → lar:///uri.schema.holds/uri-schema/orient/?confidence=0.9#component-map -->
 ## Component Map
 
@@ -91,6 +99,8 @@ Three slashes: scheme + `//` (empty authority) + path beginning with `/`. Use fo
 ---
 
 <!-- → ? -->
+<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
+
 <!-- ∞ → lar:///uri.schema.holds/uri-schema/orient/?confidence=0.9#component-semantics -->
 ## Component Semantics
 
@@ -162,6 +172,8 @@ Scale positions: Strategic (🗺️ ~6 days) · Operational (⚙️ ~4 hours) ·
 ---
 
 <!-- → ? -->
+<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
+
 <!-- ∞ → lar:///uri.schema.holds/uri-schema/orient/?confidence=0.9#provisionality-markers -->
 ## Provisionality Markers
 
@@ -178,6 +190,8 @@ These are orthogonal. A URI may carry multiple `~` markers on different componen
 ---
 
 <!-- → ? -->
+<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
+
 <!-- ∞ → lar:///uri.schema.holds/uri-schema/orient/?confidence=0.9#kowloon-handle-form -->
 ## Kowloon / ActivityPub Handle Form
 

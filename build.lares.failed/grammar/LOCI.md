@@ -1,3 +1,5 @@
+<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
+
 <!-- ∞ → lar:///grammar.root.maps/grammar/?confidence=CS:0.80&p=0.5 -->
 
 # Lares Grammar
@@ -19,7 +21,9 @@ The irreducible kernel. Four True Named Invariants. Everything else in this gram
 | Primitive | Grammar | Confidence | One-line |
 |---|---|---|---|
 | **Kahua** | [kahua/LOCI.md](kahua/LOCI.md) | `[CS:0.95]` | **The foundation cluster. The prepared ground. You are here.** |
-| Locus | [kahua/locus/LOCI.md](kahua/locus/LOCI.md) | `[CS:0.95]` | `<!-- ∞ → ... -->` — opens a content span at an address |
+| Locus | [kahua/locus/LOCI.md](kahua/locus/LOCI.md) | `[CS:0.95]` | `<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
+
+<!-- ∞ → ... -->` — opens a content span at an address |
 | Ahu | [kahua/ahu/LOCI.md](kahua/ahu/LOCI.md) | `[CS:0.95]` | `<!-- ahu ... -->` — waypoint within a locus |
 | Kahea | [kahua/kahea/LOCI.md](kahua/kahea/LOCI.md) | `[CS:0.95]` | `<!-- kahea ... -->` — transclusion pull from another address |
 | Lares (marker) | [kahua/lares/LOCI.md](kahua/lares/LOCI.md) | `[CS:0.95]` | bare `lar:///...` — the daemon's signature; present, no ceremony |

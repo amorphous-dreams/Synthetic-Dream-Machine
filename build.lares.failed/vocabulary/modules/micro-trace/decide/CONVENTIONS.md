@@ -1,3 +1,5 @@
+<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
+
 <!-- ∞ → lar:///trace.micro.marks/micro-trace/decide/?confidence=CS:0.80&p=0.5 -->
 
 # Micro-trace — Normative Rules
@@ -5,6 +7,8 @@
 > Syntax and density bands. Source: `lares/signal/micro-trace.md` §§2–3 `[CS:0.80]`.
 
 <!-- → ? -->
+<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
+
 <!-- ∞ → lar:///trace.micro.marks/micro-trace/decide/?confidence=0.85#syntax -->
 ## Syntax
 
@@ -46,6 +50,8 @@ Ha/domain reorientation significant enough to exceed annotation threshold: emit 
 ```
 
 <!-- → ? -->
+<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
+
 <!-- ∞ → lar:///trace.micro.marks/micro-trace/decide/?confidence=0.85#density-bands -->
 ## Density Bands (p-controlled)
 

@@ -1,8 +1,12 @@
+<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
+
 <!-- ∞ → lar:///module.phased.instructs/talk-story/orient/?confidence=0.95&p=0.5 -->
 
 # Talk Story — How To Orient
 
 <!-- → ? -->
+<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
+
 <!-- ∞ → lar:///module.phased.instructs/talk-story/orient/?confidence=0.95#when -->
 ## When To Invoke
 
@@ -20,6 +24,8 @@
 - A previous orient already ran this tick → do not re-open
 
 <!-- → ? -->
+<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
+
 <!-- ∞ → lar:///module.phased.instructs/talk-story/orient/?confidence=0.95#steps -->
 ## Procedure
 
@@ -42,6 +48,8 @@ phase to resolve.
 in the working artifact — not in a separate doc.
 
 <!-- → ? -->
+<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
+
 <!-- ∞ → lar:///module.phased.instructs/talk-story/orient/?confidence=0.95#voices -->
 ## Voice Assignments During Orient
 

@@ -1,8 +1,12 @@
+<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
+
 <!-- ∞ → lar:///module.phased.instructs/talk-story/observe/?confidence=0.95&p=0.5 -->
 
 # Talk Story — What It Is
 
 <!-- → ? -->
+<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
+
 <!-- ∞ → lar:///module.phased.instructs/talk-story/observe/?confidence=0.95#origin -->
 ## Origin
 
@@ -14,6 +18,8 @@ Talk Story itself. Joshua Fontany transcribed the opening of that
 presentation. The lineage runs through this work directly.
 
 <!-- → ? -->
+<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
+
 <!-- ∞ → lar:///module.phased.instructs/talk-story/observe/?confidence=0.95#mechanics -->
 ## Core Mechanics
 
@@ -26,6 +32,8 @@ presentation. The lineage runs through this work directly.
 - Consensus before action, at every scale
 
 <!-- → ? -->
+<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
+
 <!-- ∞ → lar:///module.phased.instructs/talk-story/observe/?confidence=0.95#two-track -->
 ## Two-Track Model
 

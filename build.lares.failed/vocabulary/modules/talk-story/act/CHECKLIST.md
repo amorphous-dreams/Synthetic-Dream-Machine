@@ -1,3 +1,5 @@
+<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
+
 <!-- ∞ → lar:///module.phased.instructs/talk-story/act/?confidence=0.95&p=0.5 -->
 
 # Talk Story — Session Start Checklist

@@ -1,3 +1,5 @@
+<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
+
 <!-- ∞ → lar:///sigils.render.maps/sigilization/?confidence=CS:0.85&p=0.5 -->
 
 ```yaml

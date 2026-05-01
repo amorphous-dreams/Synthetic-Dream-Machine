@@ -9,14 +9,14 @@
 // pranala-parser.ts can share them without a circular dependency.
 
 export type MemeAstKind =
-  | "Worksite"      // ahu — addressable scope socket
-  | "Edge"          // pranala (block or inline)
-  | "EdgeSugar"     // loulou / aka / kahea / pono / papalohe
-  | "Dispatch"      // lele — fire-and-forget message edge
-  | "Control"       // <<~&#x0001;>> SOH / <<~&#x0002;>> STX / <<~&#x0003;>> ETX / <<~&#x0004;>> EOT
-  | "Text"          // raw wikitext span
-  | "Sigil"         // all canonical sigils incl. toml (attrs bag carries content)
-  | "Dynamic";      // grammar-meme-registered sigil not in canonical set
+  | "Ahu"           // ahu — addressable scope socket (<<~ ahu #slot >>)
+  | "Pranala"       // pranala — explicit edge (block or inline)
+  | "PranalaSugar"  // sugared pranala forms: loulou / aka / kahea / pono / papalohe
+  | "Lele"          // lele — fire-and-forget dispatch
+  | "Control"       // <<~①>> SOH / <<~②>> STX / <<~③>> ETX / <<~④>> EOT (term TBD)
+  | "Text"          // raw wikitext prose span (term TBD)
+  | "Sigil"         // canonical sigil incl. toml (term TBD)
+  | "Dynamic";      // grammar-meme-registered extension (term TBD)
 
 interface AstBase {
   kind: MemeAstKind;
@@ -28,16 +28,16 @@ interface AstBase {
 // Typed nodes (edgesFromAst branches on these)
 // ---------------------------------------------------------------------------
 
-export interface WorksiteNode extends AstBase {
-  kind: "Worksite";
+export interface AhuNode extends AstBase {
+  kind: "Ahu";
   slot: string;           // e.g. "#section-name"
   uri: string;            // carrierUri + slot
-  delegate: string | null; // optional delegation target from `-> target` or `-> ?` form
+  delegate: string | null;
   body: MemeAstNode[];
 }
 
-export interface EdgeNode extends AstBase {
-  kind: "Edge";
+export interface PranalaNode extends AstBase {
+  kind: "Pranala";
   slot: string | null;
   fromRaw: string;
   toRaw: string;
@@ -46,8 +46,8 @@ export interface EdgeNode extends AstBase {
   body: MemeAstNode[];    // non-empty for block-form pranala only
 }
 
-export interface EdgeSugarNode extends AstBase {
-  kind: "EdgeSugar";
+export interface PranalaSugarNode extends AstBase {
+  kind: "PranalaSugar";
   sigil: "loulou" | "aka" | "kahea" | "pono" | "papalohe";
   slot: string | null;
   fromRaw: string | null; // null for single-URI sugar (loulou/aka/kahea)
@@ -58,8 +58,8 @@ export interface EdgeSugarNode extends AstBase {
   fn: string | null;      // papalohe — target function name (DeviceB.FunctionY)
 }
 
-export interface DispatchNode extends AstBase {
-  kind: "Dispatch";
+export interface LeleNode extends AstBase {
+  kind: "Lele";
   targetRaw: string;
   family: "message";
 }
@@ -148,10 +148,10 @@ export interface DynamicNode extends AstBase {
 // ---------------------------------------------------------------------------
 
 export type MemeAstNode =
-  | WorksiteNode
-  | EdgeNode
-  | EdgeSugarNode
-  | DispatchNode
+  | AhuNode
+  | PranalaNode
+  | PranalaSugarNode
+  | LeleNode
   | ControlNode
   | TextNode
   | SigilNode

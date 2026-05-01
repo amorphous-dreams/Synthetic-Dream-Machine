@@ -8,7 +8,7 @@
 
 import { type BootArtifact, scalarToStageBand, parseMemeCarrier } from "@lararium/core";
 import { parsePranalaEdges } from "@lararium/core";
-import type { MemeAstNode, WorksiteNode, TextNode } from "@lararium/core";
+import type { MemeAstNode, AhuNode, TextNode } from "@lararium/core";
 
 import {
   type LarTLSnapshot,
@@ -35,8 +35,8 @@ function collectText(nodes: readonly MemeAstNode[]): string {
     if (node.kind === "Text") {
       const t = (node as TextNode).content.trim();
       if (t) parts.push(t);
-    } else if (node.kind === "Worksite") {
-      const ws = node as WorksiteNode;
+    } else if (node.kind === "Ahu") {
+      const ws = node as AhuNode;
       const slug = ws.slot.replace(/^#/, "");
       if (!SUPPRESSED_WORKSITES.has(slug)) {
         parts.push(...collectText(ws.body).split("\n").filter(Boolean));

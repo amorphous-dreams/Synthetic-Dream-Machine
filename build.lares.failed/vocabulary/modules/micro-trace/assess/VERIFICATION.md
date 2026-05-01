@@ -1,8 +1,12 @@
+<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
+
 <!-- ∞ → lar:///trace.micro.marks/micro-trace/assess/?confidence=CS:0.80&p=0.5 -->
 
 # Micro-trace — Verification
 
 <!-- → ? -->
+<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
+
 <!-- ∞ → lar:///trace.micro.marks/micro-trace/assess/?confidence=0.80#well-formedness -->
 ## Well-formedness Checklist
 
@@ -16,6 +20,8 @@ For any governed response, verify:
 - [ ] 6. Parse layer and micro-trace layer do not substitute for each other
 
 <!-- → ? -->
+<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
+
 <!-- ∞ → lar:///trace.micro.marks/micro-trace/assess/?confidence=0.80#common-errors -->
 ## Common Errors
 
@@ -28,6 +34,8 @@ For any governed response, verify:
 | Inline todo | Todo state change emitted inline | Move to debug log only |
 
 <!-- → ? -->
+<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
+
 <!-- ∞ → lar:///trace.micro.marks/micro-trace/assess/?confidence=0.80#promotion-criteria -->
 ## Promotion Criteria
 

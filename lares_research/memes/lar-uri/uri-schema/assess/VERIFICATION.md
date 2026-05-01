@@ -1,3 +1,5 @@
+<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
+
 <!-- ∞ → lar:///uri.schema.holds/uri-schema/assess/?confidence=CS:0.90&p=0.5 -->
 
 # Signal — Assess: Verification
@@ -8,6 +10,8 @@
 ---
 
 <!-- → ? -->
+<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
+
 <!-- ∞ → lar:///uri.schema.holds/uri-schema/assess/?confidence=0.92#well-formedness -->
 ## Well-Formedness Rules (§10.1)
 
@@ -28,6 +32,8 @@ A `lar:` URI is **well-formed** when ALL of the following hold:
 ---
 
 <!-- → ? -->
+<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
+
 <!-- ∞ → lar:///uri.schema.holds/uri-schema/assess/?confidence=0.92#consistency -->
 ## SpanSpan Consistency Rules (§10.2)
 
@@ -43,6 +49,8 @@ The rendering table (§5.1 of `lares/modules/uri-schema/URI-SCHEMA.md`) governs 
 ---
 
 <!-- → ? -->
+<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
+
 <!-- ∞ → lar:///uri.schema.holds/uri-schema/assess/?confidence=0.92#stable-address-derivation -->
 ## Stable Address Derivation Rules (§10.3)
 
@@ -62,6 +70,8 @@ Correct stable address: lar:///threshold.uncertain.opens/
 ---
 
 <!-- → ? -->
+<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
+
 <!-- ∞ → lar:///uri.schema.holds/uri-schema/assess/?confidence=0.92#canonical-form-comparison -->
 ## Canonical Form and Comparison Rules (§10.4)
 
@@ -76,6 +86,8 @@ When comparing two `lar:` URIs as stable addresses:
 ---
 
 <!-- → ? -->
+<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
+
 <!-- ∞ → lar:///uri.schema.holds/uri-schema/assess/?confidence=0.9#common-errors -->
 ## Common Error Patterns
 
@@ -95,6 +107,8 @@ Errors caught during the S0 URI alignment pass (2026-04-09):
 ---
 
 <!-- → ? -->
+<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
+
 <!-- ∞ → lar:///uri.schema.holds/uri-schema/assess/?confidence=0.9#quick-scan-procedure -->
 ## Quick Scan Procedure
 
@@ -117,6 +131,8 @@ A clean scan returns zero matches on all three patterns.
 ---
 
 <!-- → ? -->
+<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
+
 <!-- ∞ → lar:///uri.schema.holds/uri-schema/assess/?confidence=0.9#promotion-criteria -->
 ## Promotion Criteria
 

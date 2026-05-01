@@ -17,7 +17,9 @@ START_PATTERN      = re.compile(r'^<!--\s*∞\s*→\s*lar:///.+-->')
 END_PATTERN        = re.compile(r'^<!--\s*→\s*\?\s*-->')
 
 # --- Marker grammar (four kahua surfaces) ---
-# locus   <!-- ∞ → lar:///ha.ka.ba[/path][?params] -->          file-level opener
+# locus   <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
+
+<!-- ∞ → lar:///ha.ka.ba[/path][?params] -->          file-level opener
 # ahu     <!-- ahu lar:///ha.ka.ba[/path][?params][#section] --> bookmark (no stances/chrono)
 # kahea   <!-- kahea lar:///ha.ka.ba[/path][?params][#section] --> transclusion pull
 # lares   lar:///ha.ka.ba[/path][?params][#chrono]               bare daemon pointer (needs stances+chrono)
@@ -82,7 +84,9 @@ URI_PLACEHOLDER      = 'ha.ka.ba'
 # Per-extension wrapper patterns and canonical templates
 _WRAPPER_PATTERNS = {
     '.md':   (re.compile(r'^<!--\s*∞\s*→\s*lar:///.+-->'),    re.compile(r'^<!--\s*→\s*\?\s*-->'),
-              '<!-- ∞ → lar:///PLACEHOLDER -->\n',             '<!-- → ? -->'),
+              '<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
+
+<!-- ∞ → lar:///PLACEHOLDER -->\n',             '<!-- → ? -->'),
     '.py':   (re.compile(r'^#\s*∞\s*→\s*lar:///.+'),          re.compile(r'^#\s*→\s*\?\s*$'),
               '# ∞ → lar:///PLACEHOLDER\n',                    '# → ?'),
     '.sh':   (re.compile(r'^#\s*∞\s*→\s*lar:///.+'),          re.compile(r'^#\s*→\s*\?\s*$'),

@@ -1,3 +1,5 @@
+<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
+
 <!-- ∞ → lar:///talk-story.consecration.records/talk-story/?confidence=CS:0.80&p=0.5 -->
 
 # Talk Story: Consecration Grammar + Heritage Grounding

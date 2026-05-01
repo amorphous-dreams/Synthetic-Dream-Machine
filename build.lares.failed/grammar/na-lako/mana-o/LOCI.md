@@ -1,3 +1,5 @@
+<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
+
 <!-- ∞ → lar:///grammar.na-lako.holds/mana-o/?confidence=CS:0.80&p=0.5 -->
 
 # Grammar: Mana'o — Sword of Reason

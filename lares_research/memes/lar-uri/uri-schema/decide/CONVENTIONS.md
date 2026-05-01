@@ -1,3 +1,5 @@
+<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
+
 <!-- ∞ → lar:///uri.schema.holds/uri-schema/decide/?confidence=CS:0.90&p=0.5 -->
 
 # Signal — Decide: URI Conventions
@@ -9,6 +11,8 @@
 ---
 
 <!-- → ? -->
+<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
+
 <!-- ∞ → lar:///uri.schema.holds/uri-schema/decide/?confidence=0.95#mandatory-rules -->
 ## Mandatory Conventions (Canonical Record Form)
 
@@ -36,6 +40,8 @@ These rules apply to every `lar:` URI. No exceptions.
 ---
 
 <!-- → ? -->
+<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
+
 <!-- ∞ → lar:///uri.schema.holds/uri-schema/decide/?confidence=0.9#query-params -->
 ## Query Parameter Reference
 
@@ -67,6 +73,8 @@ These rules apply to every `lar:` URI. No exceptions.
 ---
 
 <!-- → ? -->
+<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
+
 <!-- ∞ → lar:///uri.schema.holds/uri-schema/decide/?confidence=0.9#fragment-chronometer -->
 ## Fragment: FFZ Chronometer
 
@@ -106,6 +114,8 @@ HUD:     ✶0.✶0.✶3.◇2.■1
 ---
 
 <!-- → ? -->
+<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
+
 <!-- ∞ → lar:///uri.schema.holds/uri-schema/decide/?confidence=0.95#hud-line -->
 ## HUD Line Format
 
@@ -135,6 +145,8 @@ The HUD line is a single-line status summary rendered from the URI → URI excha
 ---
 
 <!-- → ? -->
+<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
+
 <!-- ∞ → lar:///uri.schema.holds/uri-schema/decide/?confidence=0.9#span-closing-sigils -->
 ## Span Closing Sigils
 
@@ -178,6 +190,8 @@ When multiple stances are elevated (`+`), the declared confidence sits at the in
 ---
 
 <!-- → ? -->
+<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
+
 <!-- ∞ → lar:///uri.schema.holds/uri-schema/decide/?confidence=0.9#stable-address -->
 ## Stable Address Form
 
@@ -194,6 +208,8 @@ Origin address: `lar:///ha.ka.ba/` is the (0,0,0) of tagspace.
 ---
 
 <!-- → ? -->
+<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
+
 <!-- ∞ → lar:///uri.schema.holds/uri-schema/decide/?confidence=0.9#spanspan-record -->
 ## SpanSpan Record URI Fields
 

@@ -11,12 +11,12 @@
  *   - TW5ParseNode: { type, children?, attributes?, tag? }
  *
  * Node type mapping (MemeAstNode → TW5ParseNode):
- *   Worksite      → "lararium-worksite"  (maps to <<~ ahu #slot >>)
- *   Text          → "text"               (TW5 native text node)
- *   Edge / EdgeSugar → "lararium-edge"
- *   Sigil(toml)   → "lararium-toml"
- *   Sigil(other)  → "lararium-sigil"
- *   Dynamic       → "lararium-dynamic"
+ *   Worksite      → "ahu"         (maps to <<~ ahu #slot >> → <$ahu>)
+ *   Text          → "text"       (TW5 native text node)
+ *   Edge / EdgeSugar → "edge"   (<$edge>)
+ *   Sigil(toml)   → "toml"      (<$toml>)
+ *   Sigil(other)  → "sigil"     (<$sigil>)
+ *   Dynamic       → "dynamic"   (<$dynamic>)
  *
  * TW5 widgets for each "lararium-*" type are registered separately.
  * Text nodes use TW5's built-in text rendering.
@@ -63,14 +63,14 @@ function nodeToTw5(node: MemeAstNode, wiki?: TW5Wiki): TW5ParseNode {
   switch (node.kind) {
     case "Control":
       // Phase boundary markers are structurally significant but invisible in rendered output.
-      return { type: "lararium-control", _ast: node, children: [],
+      return { type: "control", _ast: node, children: [],
         attributes: {
           phase: attr((node as ControlNode).phase),
           ...((node as ControlNode).toUri ? { uri: attr((node as ControlNode).toUri!) } : {}),
         } };
 
-    case "Worksite":
-      return { type: "lararium-worksite", _ast: node,
+    case "Ahu":
+      return { type: "ahu", _ast: node,
         attributes: {
           slot: attr(node.slot),
           uri:  attr(node.uri),
@@ -95,8 +95,8 @@ function nodeToTw5(node: MemeAstNode, wiki?: TW5Wiki): TW5ParseNode {
       return { type: "text", text: node.content, _ast: node, children: [] };
     }
 
-    case "Edge":
-      return { type: "lararium-edge", _ast: node, children: [],
+    case "Pranala":
+      return { type: "edge", _ast: node, children: [],
         attributes: {
           from:   attr(node.fromRaw),
           to:     attr(node.toRaw),
@@ -104,11 +104,11 @@ function nodeToTw5(node: MemeAstNode, wiki?: TW5Wiki): TW5ParseNode {
           ...(node.role ? { role: attr(node.role) } : {}),
         } };
 
-    case "EdgeSugar":
+    case "PranalaSugar":
       // papalohe gets its own widget so trigger/fn labels render visually.
       // All other edge-sugar sigils (loulou, aka, pono, kahea) stay as lararium-edge.
       if (node.sigil === "papalohe") {
-        return { type: "lararium-papalohe", _ast: node, children: [],
+        return { type: "papalohe", _ast: node, children: [],
           attributes: {
             from:    attr(node.fromRaw ?? ""),
             to:      attr(node.toRaw),
@@ -117,7 +117,7 @@ function nodeToTw5(node: MemeAstNode, wiki?: TW5Wiki): TW5ParseNode {
             ...(node.slot    ? { slot:    attr(node.slot) }    : {}),
           } };
       }
-      return { type: "lararium-edge", _ast: node, children: [],
+      return { type: "edge", _ast: node, children: [],
         attributes: {
           sigil:  attr(node.sigil),
           to:     attr(node.toRaw),
@@ -128,14 +128,14 @@ function nodeToTw5(node: MemeAstNode, wiki?: TW5Wiki): TW5ParseNode {
           ...(node.fn      ? { fn: attr(node.fn) }        : {}),
         } };
 
-    case "Dispatch":
-      return { type: "lararium-dispatch", _ast: node, children: [],
+    case "Lele":
+      return { type: "dispatch", _ast: node, children: [],
         attributes: { target: attr(node.targetRaw) } };
 
     case "Sigil":
       if (node.sigilName === "toml") {
         const profile = node.attrs["profile"] ?? "";
-        return { type: "lararium-toml", _ast: node, children: [],
+        return { type: "toml", _ast: node, children: [],
           attributes: {
             content: attr(node.attrs["content"] ?? ""),
             ...(profile ? { profile: attr(profile) } : {}),
@@ -143,12 +143,12 @@ function nodeToTw5(node: MemeAstNode, wiki?: TW5Wiki): TW5ParseNode {
           } };
       }
       if (node.sigilName === "kukali") {
-        return { type: "lararium-kukali", _ast: node, children: [],
+        return { type: "kukali", _ast: node, children: [],
           attributes: { ...(node.attrs["trigger"] ? { trigger: attr(node.attrs["trigger"]) } : {}) } };
       }
       // kahea-call → kumu device instance (name + resolved props, body rendered as children)
       if (node.sigilName === "kahea") {
-        return { type: "lararium-kumu", _ast: node,
+        return { type: "kumu", _ast: node,
           attributes: {
             name:     attr(node.attrs["name"] ?? ""),
             props:    attr(node.attrs["args"] ?? ""),
@@ -156,7 +156,7 @@ function nodeToTw5(node: MemeAstNode, wiki?: TW5Wiki): TW5ParseNode {
           },
           children: node.body.map((n) => nodeToTw5(n, wiki)) };
       }
-      return { type: "lararium-sigil", _ast: node,
+      return { type: "sigil", _ast: node,
         tag: node.sigilName,
         attributes: Object.fromEntries(
           Object.entries(node.attrs).map(([k, v]) => [k, attr(v)])
@@ -164,7 +164,7 @@ function nodeToTw5(node: MemeAstNode, wiki?: TW5Wiki): TW5ParseNode {
         children: node.body.map((n) => nodeToTw5(n, wiki)) };
 
     case "Dynamic":
-      return { type: "lararium-dynamic", _ast: node,
+      return { type: "dynamic", _ast: node,
         tag: node.sigilName,
         attributes: {},
         children: node.body.map((n) => nodeToTw5(n, wiki)) };

@@ -14,7 +14,9 @@ from pathlib import Path
 # --- Marker grammar ---
 # Four kahua markers, each with distinct syntax rules:
 #
-#   locus   <!-- ∞ → lar:///ha.ka.ba[/path][?params] -->   opens a content span (file-level)
+#   locus   <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
+
+<!-- ∞ → lar:///ha.ka.ba[/path][?params] -->   opens a content span (file-level)
 #   ahu     <!-- ahu lar:///ha.ka.ba[/path][?params][#section] -->   bookmark/waypoint
 #   kahea   <!-- kahea lar:///ha.ka.ba[/path][?params][#section] --> transclusion pull
 #   lares   lar:///ha.ka.ba[/path][?params][#chrono]               bare daemon pointer
@@ -220,7 +222,9 @@ COMMENT_PATTERNS = {
 
 # Canonical wrapper templates — start uses PLACEHOLDER for the URI path
 CANONICAL_WRAPPERS = {
-    '.md':   ('<!-- ∞ → lar:///PLACEHOLDER -->\n', '<!-- → ? -->'),
+    '.md':   ('<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
+
+<!-- ∞ → lar:///PLACEHOLDER -->\n', '<!-- → ? -->'),
     '.py':   ('# ∞ → lar:///PLACEHOLDER\n',         '# → ?'),
     '.sh':   ('# ∞ → lar:///PLACEHOLDER\n',         '# → ?'),
     '.js':   ('// ∞ → lar:///PLACEHOLDER\n',        '// → ?'),

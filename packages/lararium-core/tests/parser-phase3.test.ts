@@ -13,7 +13,7 @@
 import { describe, test, expect } from "@jest/globals";
 import { parseMemeCarrier, collectEvents, edgesFromAst } from "../src/parser.js";
 import { parsePranalaEdges } from "../src/pranala-parser.js";
-import type { SigilNode, WorksiteNode, EdgeSugarNode, DynamicNode } from "../src/ast.js";
+import type { SigilNode, AhuNode, PranalaSugarNode, DynamicNode } from "../src/ast.js";
 
 const BASE = "lar:///test/carrier";
 
@@ -26,31 +26,31 @@ describe("parseMemeCarrier — tree structure", () => {
     expect(parseMemeCarrier(BASE, "")).toEqual([]);
   });
 
-  test("single ahu → WorksiteNode with uri", () => {
+  test("single ahu → AhuNode with uri", () => {
     const ast = parseMemeCarrier(BASE, `<<~ ahu #section >>\n<<~/ahu >>`);
-    const ws = ast.find((n) => n.kind === "Worksite") as WorksiteNode | undefined;
+    const ws = ast.find((n) => n.kind === "Ahu") as AhuNode | undefined;
     expect(ws?.uri).toBe(`${BASE}#section`);
     expect(ws?.slot).toBe("#section");
   });
 
-  test("pranala inline → EdgeNode", () => {
+  test("pranala inline → PranalaNode", () => {
     const ast = parseMemeCarrier(BASE, `<<~ pranala ? -> lar:///other family:control role:owns >>`);
-    const e = ast.find((n) => n.kind === "Edge");
+    const e = ast.find((n) => n.kind === "Pranala");
     expect(e).toBeDefined();
     expect((e as {family: string}).family).toBe("control");
     expect((e as {role: string}).role).toBe("owns");
   });
 
-  test("loulou → EdgeSugarNode sigil=loulou family=relation", () => {
+  test("loulou → PranalaSugarNode sigil=loulou family=relation", () => {
     const ast = parseMemeCarrier(BASE, `<<~ loulou lar:///other >>`);
-    const s = ast.find((n) => n.kind === "EdgeSugar") as EdgeSugarNode | undefined;
+    const s = ast.find((n) => n.kind === "PranalaSugar") as PranalaSugarNode | undefined;
     expect(s?.sigil).toBe("loulou");
     expect(s?.family).toBe("relation");
   });
 
-  test("papalohe → EdgeSugarNode with trigger and fn", () => {
+  test("papalohe → PranalaSugarNode with trigger and fn", () => {
     const ast = parseMemeCarrier(BASE, `<<~ papalohe lar:///a -> lar:///b trigger:OnBegin fn:ShowScore >>`);
-    const s = ast.find((n) => n.kind === "EdgeSugar") as EdgeSugarNode | undefined;
+    const s = ast.find((n) => n.kind === "PranalaSugar") as PranalaSugarNode | undefined;
     expect(s?.sigil).toBe("papalohe");
     expect(s?.trigger).toBe("OnBegin");
     expect(s?.fn).toBe("ShowScore");
@@ -62,9 +62,9 @@ describe("parseMemeCarrier — tree structure", () => {
   <<~ ahu #inner >>
   <<~/ahu >>
 <<~/ahu >>`);
-    const outer = ast.find((n) => n.kind === "Worksite") as WorksiteNode | undefined;
+    const outer = ast.find((n) => n.kind === "Ahu") as AhuNode | undefined;
     expect(outer?.slot).toBe("#outer");
-    const inner = outer?.body.find((n) => n.kind === "Worksite") as WorksiteNode | undefined;
+    const inner = outer?.body.find((n) => n.kind === "Ahu") as AhuNode | undefined;
     expect(inner?.slot).toBe("#inner");
   });
 

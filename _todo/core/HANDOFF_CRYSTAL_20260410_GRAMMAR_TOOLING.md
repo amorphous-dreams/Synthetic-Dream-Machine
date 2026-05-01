@@ -32,7 +32,9 @@ New export:
 - **`validate_stream_uri(uri)`** — validates base canonical form AND enforces `stances=`
   query param AND a chronometer `#O1.Ø2.D3.A4.Å5` fragment. For use on operator stream surfaces.
 
-**`stances=` rule clarified:** The infinite form (`<!-- ∞ → lar:///... -->`) does not require
+**`stances=` rule clarified:** The infinite form (`<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
+
+<!-- ∞ → lar:///... -->`) does not require
 `stances=`. The validator previously required it whenever any query params were present — that was
 wrong. Fixed to: `stances` is optional; if present, validate it.
 
@@ -57,7 +59,9 @@ wrong. Fixed to: `stances` is optional; if present, validate it.
 | `--json` | Full structured result: `pass`, `start_ok`, `end_ok`, `uri`, `uri_valid`, `uri_error`, `suggested_fix`, `path` |
 | `--fix` | In-place insert/replace; re-verifies after fix |
 | `--stream` | Adds `stream_violations` + `stream_pass` to output |
-| Extension-aware wrappers | `check_uri_wrappers` now reads per-extension start/end patterns — recognizes `# ∞ → ...` for `.py`, `// ∞ → ...` for `.js`/`.ts`, not just `<!-- ∞ → ... -->` |
+| Extension-aware wrappers | `check_uri_wrappers` now reads per-extension start/end patterns — recognizes `# ∞ → ...` for `.py`, `// ∞ → ...` for `.js`/`.ts`, not just `<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
+
+<!-- ∞ → ... -->` |
 | Own wrappers added | `uri_wrapper_verification.py`, `lares_verification.py`, `SKILL.md` all wrapped |
 
 ---

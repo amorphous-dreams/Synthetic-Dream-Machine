@@ -53,6 +53,7 @@ import {
   emptyCatalogDoc,
   type MemeStoreDoc,
 } from "@lararium/core";
+import { getRecipeVm, makeRecipeId, exportCarrierText } from "@lararium/tw5";
 import { loadCorpusSources, corpusAbsPath, larUriToLaresAbsPath } from "../src/node-host.js";
 import type { CorpusSource } from "../src/node-host.js";
 import { getGhCliOperatorReceipt } from "../src/github-cli-auth.js";
@@ -550,26 +551,65 @@ async function main() {
       if (doc) receiptSha = computeCorpusReceiptSha(doc);
     }
 
+    // Boot the quine recipe VM and seed it from the current doc state.
+    // The VM is the server-side TW5 peer; it stays in sync with automerge
+    // and is the canonical projection engine (exportCarrierText goes through it).
+    const quineRecipeId = makeRecipeId([source.bag]);
+    const quineVm = await getRecipeVm(quineRecipeId);
+    const seedDoc = handle.doc() as MemeStoreDoc | undefined;
+    if (seedDoc) {
+      for (const [uri, rec] of Object.entries(seedDoc)) {
+        if (!rec || rec.deleted || !uri.startsWith("lar:")) continue;
+        const fields: Record<string, string | string[]> = { title: uri, ...(rec.fields as Record<string, string | string[]> ?? {}) };
+        if (rec.text !== undefined) fields["text"] = rec.text;
+        quineVm.setTiddler(fields);
+      }
+    }
+
     // Write-back: disabled by default (LARARIUM_WRITEBACK=1 to enable).
-    // Bug: Automerge change → writeFileSync → file watcher → Automerge change → loop.
-    // Fix requires wiring LarDiskProjector.writing guard before re-enabling.
+    // Loop guard (projector.writing) not yet wired — enable only for dev.
     if (!WRITEBACK_ENABLED) return;
 
     handle.on("change", ({ doc, patches }: { doc: MemeStoreDoc; patches: { path: (string | number)[] }[] }) => {
-      const touched = new Set<string>(
-        patches.map((p) => String(p.path[0])).filter((k) => k.startsWith("lar:"))
-      );
-      for (const uri of touched) {
-        const rec = doc[uri];
-        if (!rec?.text || rec.deleted) continue;
-        const absPath = larUriToLaresAbsPath(uri);
-        if (!absPath) continue;
-        try {
-          writeFileSync(absPath, rec.text, "utf8");
-        } catch (e) {
-          console.warn(`[lararium] write-back failed for ${uri}:`, e);
+      void (async () => {
+        const vm = await getRecipeVm(quineRecipeId);
+
+        // Apply changed records to the VM so exportCarrierText sees current state.
+        const touchedUris = new Set<string>(
+          patches.map((p) => String(p.path[0])).filter((k) => k.startsWith("lar:"))
+        );
+        for (const uri of touchedUris) {
+          const rec = doc[uri];
+          if (!rec || rec.deleted) {
+            vm.removeTiddler(uri);
+          } else {
+            const fields: Record<string, string | string[]> = { title: uri, ...(rec.fields as Record<string, string | string[]> ?? {}) };
+            if (rec.text !== undefined) fields["text"] = rec.text;
+            vm.setTiddler(fields);
+          }
         }
-      }
+
+        // Collect parent URIs — fragment children (lar:///uri#slot) map to their parent.
+        const parentUris = new Set<string>();
+        for (const uri of touchedUris) {
+          const hash = uri.lastIndexOf("#");
+          parentUris.add(hash > 0 ? uri.slice(0, hash) : uri);
+        }
+
+        // Project each parent to disk via the TW5 VM — same render path as the browser.
+        for (const parentUri of parentUris) {
+          const rec = doc[parentUri];
+          if (!rec || rec.deleted) continue;
+          const absPath = larUriToLaresAbsPath(parentUri);
+          if (!absPath) continue;
+          try {
+            const projected = exportCarrierText(vm, parentUri);
+            writeFileSync(absPath, projected, "utf8");
+          } catch (e) {
+            console.warn(`[lararium] write-back failed for ${parentUri}:`, e);
+          }
+        }
+      })();
     });
   }));
 

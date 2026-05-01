@@ -89,6 +89,8 @@ All agentic wikitext work follows the OODA-HA (Observe, Orient, Decide, Act, Ass
 - [LOCI.md](./LOCI.md) — Wild Magic and transclusion grammar
 
 
+<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
+
 <!-- ∞ → lar:///grammar.ooda-ha.holds/ooda-ha/?confidence=S:0.65&p=0.5 -->
 
 # Grammar: OODA-HA

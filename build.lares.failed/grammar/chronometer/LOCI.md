@@ -1,3 +1,5 @@
+<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
+
 <!-- ∞ → lar:///grammar.chronometer.defines/chronometer/?confidence=S:0.65&p=0.5 -->
 
 # Grammar: FFZ Chronometer

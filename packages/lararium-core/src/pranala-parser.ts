@@ -157,6 +157,32 @@ export function grammarRulesFromText(uri: string, text: string): GrammarRules | 
 }
 
 // ---------------------------------------------------------------------------
+// replaceCarrierSlot — surgical in-place replacement of one ahu slot's body.
+//
+// Pure function — no TW5 or Node dependencies. Usable in browser and server.
+// Returns null when the slot is not found (caller should fall back to full
+// reconstruction via serializeCarrier).
+// ---------------------------------------------------------------------------
+
+export function replaceCarrierSlot(
+  carrierText: string,
+  slot: string,       // e.g. "#ooda-ha"
+  newBody: string,
+): string | null {
+  const escaped = slot.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const pattern = new RegExp(
+    `(<<~[^>]*\\bahu\\s+${escaped}\\s*>>)([\\s\\S]*?)(<<~\\/ahu\\s*>>)`,
+    "g",
+  );
+  let matched = false;
+  const result = carrierText.replace(pattern, (_full, open, _body, close) => {
+    matched = true;
+    return `${open}${newBody}${close}`;
+  });
+  return matched ? result : null;
+}
+
+// ---------------------------------------------------------------------------
 // parsePranalaEdges — public shim; callers that hold an AST should use
 // edgesFromAst(ast, uri) directly to avoid double-parsing.
 // ---------------------------------------------------------------------------

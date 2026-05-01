@@ -1,3 +1,5 @@
+<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
+
 <!-- ∞ → lar:///grammar.lares-marker.defines/lares-marker/?confidence=CS:0.95&p=0.5 -->
 
 # Grammar: Lares (The Marker)
@@ -49,6 +51,8 @@ Appears in running text. No `<!-- ... -->` wrapper. No `∞ →`, `ahu`, or `kah
 
 **Contrast with the other three:**
 ```
+<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
+
 <!-- ∞ → lar:///...  ->    ← locus opener (claims an address, opens a span)
 <!-- ahu lar:///...  ->    ← ahu (names a waypoint)
 <!-- kahea lar:///...  ->  ← kahea (summons content)

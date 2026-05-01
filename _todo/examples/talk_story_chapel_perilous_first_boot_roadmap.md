@@ -1,3 +1,5 @@
+<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
+
 <!-- ∞ → lar:///talk-story.chapel-perilous.maps/first-boot-roadmap/?confidence=S:0.65&p=0.5 -->
 
 # Talk Story: Chapel Perilous & the First Boot Roadmap

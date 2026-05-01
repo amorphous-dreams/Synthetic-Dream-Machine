@@ -1,7 +1,7 @@
 /**
  * kahea dispatch tests — URI form vs name (definition invocation) form.
  *
- * URI form:  <<~ kahea lar:///uri >>  → EdgeSugarNode (compile + render, dataflow edge)
+ * URI form:  <<~ kahea lar:///uri >>  → PranalaSugarNode (compile + render, dataflow edge)
  * Name form: <<~ kahea name >>        → SigilNode { sigilName:"kahea", attrs:{name,args} } (render-only)
  * Call form: <<~ kahea name(k:v) >>   → SigilNode with attrs.args populated
  *
@@ -12,7 +12,7 @@
 import { describe, test, expect } from "@jest/globals";
 import { parseMemeCarrier } from "../src/parser.js";
 import { parsePranalaEdges } from "../src/pranala-parser.js";
-import type { EdgeSugarNode, SigilNode } from "../src/ast.js";
+import type { PranalaSugarNode, SigilNode } from "../src/ast.js";
 
 const BASE = "lar:///test/carrier";
 
@@ -25,13 +25,13 @@ function edges(body: string) {
 }
 
 // ---------------------------------------------------------------------------
-// URI form → EdgeSugarNode + dataflow edge
+// URI form → PranalaSugarNode + dataflow edge
 // ---------------------------------------------------------------------------
 
-describe("kahea URI form — EdgeSugarNode", () => {
+describe("kahea URI form — PranalaSugarNode", () => {
   test("lar:/// absolute URI", () => {
     const nodes = ast("<<~ kahea lar:///ha.ka.ba/api/v0.1/mu >>");
-    const n = nodes.find((n) => n.kind === "EdgeSugar") as EdgeSugarNode | undefined;
+    const n = nodes.find((n) => n.kind === "PranalaSugar") as PranalaSugarNode | undefined;
     expect(n).toBeDefined();
     expect(n!.sigil).toBe("kahea");
     expect(n!.toRaw).toBe("lar:///ha.ka.ba/api/v0.1/mu");
@@ -47,14 +47,14 @@ describe("kahea URI form — EdgeSugarNode", () => {
 
   test("URI with fragment", () => {
     const nodes = ast("<<~ kahea lar:///some/carrier#section >>");
-    const n = nodes.find((n) => n.kind === "EdgeSugar") as EdgeSugarNode | undefined;
+    const n = nodes.find((n) => n.kind === "PranalaSugar") as PranalaSugarNode | undefined;
     expect(n).toBeDefined();
     expect(n!.toRaw).toBe("lar:///some/carrier#section");
   });
 
   test("relative path with slash", () => {
     const nodes = ast("<<~ kahea some/relative/path >>");
-    const n = nodes.find((n) => n.kind === "EdgeSugar") as EdgeSugarNode | undefined;
+    const n = nodes.find((n) => n.kind === "PranalaSugar") as PranalaSugarNode | undefined;
     expect(n).toBeDefined();
     expect(n!.family).toBe("dataflow");
   });
@@ -120,7 +120,7 @@ describe("kahea mixed — URI edge + name invocation in same carrier", () => {
 <<~ kahea greeting(name:"World") >>`;
 
     const nodes = ast(body);
-    const edgeSugar = nodes.filter((n) => n.kind === "EdgeSugar") as EdgeSugarNode[];
+    const edgeSugar = nodes.filter((n) => n.kind === "PranalaSugar") as PranalaSugarNode[];
     const sigils    = nodes.filter((n) => n.kind === "Sigil")     as SigilNode[];
 
     expect(edgeSugar.filter((n) => n.sigil === "kahea")).toHaveLength(1);

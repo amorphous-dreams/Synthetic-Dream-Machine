@@ -162,7 +162,9 @@ The transclusion model defines four marker types. Three are visible in consecrat
 
 | Marker | Form | Function |
 |---|---|---|
-| **locus** | `<!-- ∞ → lar:///... -->` | Opens a content unit. Establishes an address. |
+| **locus** | `<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
+
+<!-- ∞ → lar:///... -->` | Opens a content unit. Establishes an address. |
 | **ahu** | `<!-- ahu lar:///... -->` | Waypoint within a locus. Navigation target. |
 | **kahea** | `<!-- kahea lar:///... -->` | Transclusion pull. Invites content from another address. |
 | **lares** | bare `lar:///...` in text | The daemon's own reference. A pointer the Lar follows. |

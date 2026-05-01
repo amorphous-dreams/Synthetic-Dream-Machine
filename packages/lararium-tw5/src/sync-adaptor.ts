@@ -47,7 +47,7 @@
 import type { LarTiddlerStore, LarTiddlerRecord, LarTiddlerChange, ChangeOrigin, MemeProjection } from "@lararium/core";
 import type { LarariumTW5 } from "./lararium-tw5.js";
 import type { TW5TiddlerFields } from "./types/tiddlywiki.js";
-import { buildDirectRecord } from "./carrier-write.js";
+import { buildDirectRecord, decompileCarrierRecord } from "./carrier-write.js";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -454,6 +454,30 @@ export class LarariumCrdtSyncAdaptor implements MemeProjection {
 
     direct: async (title, fields, revision, origin) => {
       this._revisions.set(title, revision);
+      const text = fields["text"] ?? "";
+
+      // Fragment save: title contains "#" → store fragment directly.
+      // No parent patching needed — <$ahu> widget reads live fragment text at
+      // projection time via wiki.getTiddler(parentUri + slot).
+      const hashIdx = title.lastIndexOf("#");
+      if (title.startsWith("lar:") && hashIdx > 0) {
+        await this.store.put(buildDirectRecord(title, fields, revision, this.targetBag), origin);
+        return;
+      }
+
+      // Carrier save: full memetic wikitext → decompile into parent + fragments.
+      const decomposed = decompileCarrierRecord(title, fields, text, this.targetBag);
+      if (decomposed) {
+        const { parent, fragments } = decomposed;
+        await this.store.put({ ...parent, revision }, origin);
+        for (const frag of fragments) {
+          this._revisions.set(frag.title, revision);
+          await this.store.put({ ...frag, revision }, origin);
+        }
+        return;
+      }
+
+      // Plain tiddler — store as-is.
       await this.store.put(buildDirectRecord(title, fields, revision, this.targetBag), origin);
     },
 

@@ -1,8 +1,12 @@
+<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
+
 <!-- ∞ → lar:///trace.micro.marks/micro-trace/observe/?confidence=CS:0.80&p=0.5 -->
 
 # Micro-trace — What It Is
 
 <!-- → ? -->
+<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
+
 <!-- ∞ → lar:///trace.micro.marks/micro-trace/observe/?confidence=0.85#design-intent -->
 ## Design Intent
 
@@ -20,6 +24,8 @@ Contrast with:
 The micro-trace does **not** replace the exchange HUD pair. It annotates the inside of a generative span.
 
 <!-- → ? -->
+<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
+
 <!-- ∞ → lar:///trace.micro.marks/micro-trace/observe/?confidence=0.80#scope -->
 ## Scope
 
@@ -28,6 +34,8 @@ The micro-trace does **not** replace the exchange HUD pair. It annotates the ins
 - Does not replace: Intent Header (prospective), exchange HUD pair (boundary)
 
 <!-- → ? -->
+<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
+
 <!-- ∞ → lar:///trace.micro.marks/micro-trace/observe/?confidence=0.75#prior-art -->
 ## Prior Art & Sources
 

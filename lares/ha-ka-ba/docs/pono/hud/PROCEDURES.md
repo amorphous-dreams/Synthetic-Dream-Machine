@@ -1,3 +1,5 @@
+<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
+
 <!-- ∞ → lar:///uri.schema.holds/uri-schema/act/?confidence=CS:0.85&p=0.5 -->
 
 # Signal — Act: Procedures
@@ -10,6 +12,8 @@
 ---
 
 <!-- → ? -->
+<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
+
 <!-- ∞ → lar:///uri.schema.holds/uri-schema/act/?confidence=0.9#exchange-span-display-contract -->
 ## Exchange Span Display Contract *(consumed)*
 
@@ -60,6 +64,8 @@ lar://scryer:node@enyalios/~aftermath.docs.settle/?stances=^.-.-.-.-&confidence=
 ---
 
 <!-- → ? -->
+<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
+
 <!-- ∞ → lar:///uri.schema.holds/uri-schema/act/?confidence=0.9#micro-trace-rules -->
 ## Micro-trace HUD — Emit Rules *(consumed)*
 
@@ -108,6 +114,8 @@ Canonical flag-behavior table now lives at:
 ---
 
 <!-- → ? -->
+<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
+
 <!-- ∞ → lar:///uri.schema.holds/uri-schema/act/?confidence=0.9#sub-agent-handoff -->
 ## Sub-agent and Coordinator Handoff Protocol *(consumed)*
 
@@ -139,6 +147,8 @@ Within the same session (no spawned sub-agent): micro-trace tag only, unless:
 ---
 
 <!-- → ? -->
+<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
+
 <!-- ∞ → lar:///uri.schema.holds/uri-schema/act/?confidence=0.9#parse-mode -->
 ## Parse Mode and Layer Separation *(consumed)*
 
@@ -156,6 +166,8 @@ If the opening operator URI cannot cleanly summarize the incoming prompt (multi-
 ---
 
 <!-- → ? -->
+<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
+
 <!-- ∞ → lar:///uri.schema.holds/uri-schema/act/?confidence=0.9#system-file-uris -->
 ## System File URI Procedures
 
@@ -164,6 +176,8 @@ When writing or updating system files:
 1. **File-level opening URI** — authority-less form, in HTML comment wrapping:
    ```
 <!-- → ? -->
+<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
+
 <!-- ∞ → lar:///ha.ka.ba/sub/path/?confidence=R:N&p=N -->
    ```
    Placed at the very top of the file (line 1).
@@ -173,6 +187,8 @@ When writing or updating system files:
 3. **Section-level waypoint URIs** — authority-less form, in HTML comment, NO closing sigil:
    ```
 <!-- → ? -->
+<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
+
 <!-- ∞ → lar:///ha.ka.ba/sub/path/?confidence=R:N#section-slug -->
    ```
    Placed immediately before each section heading (`##` level).

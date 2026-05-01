@@ -60,3 +60,4 @@ export { parseZoomLayoutTOML, getZoomLayout } from "./zoom-layout.js";
 export type { ZoomLayout } from "./zoom-layout.js";
 export { bindingsForUri, buildReactionGraph } from "./reaction-query.js";
 export { filterMemesWikitext, precomputeRooms, getRecipeVm, releaseRecipeVm, makeRecipeId, liveVmCount } from "./server-api.js";
+export { exportCarrierText, decompileCarrierRecord } from "./carrier-write.js";

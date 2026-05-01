@@ -1,3 +1,5 @@
+<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
+
 <!-- ∞ → lar:///grammar.jkd.defines/jkd/?confidence=SP:0.45&p=0.5 -->
 
 # Grammar: Jeet Kune Do

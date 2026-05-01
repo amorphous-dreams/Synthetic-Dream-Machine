@@ -1,3 +1,5 @@
+<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
+
 <!-- ∞ → lar:///trace.micro.marks/micro-trace/orient/?confidence=CS:0.80&p=0.5 -->
 
 # Micro-trace — Architecture
@@ -5,6 +7,8 @@
 > URI anatomy, layer split rule, and sub-agent handoff protocol. Source: `lares/signal/micro-trace.md` §§4–5 `[CS:0.80]`.
 
 <!-- → ? -->
+<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
+
 <!-- ∞ → lar:///trace.micro.marks/micro-trace/orient/?confidence=0.85#layer-split -->
 ## Layer Split Rule
 
@@ -25,6 +29,8 @@ They may coexist in the same exchange. Neither substitutes for the other.
 | `--no-verbose` | Returns to default band |
 
 <!-- → ? -->
+<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
+
 <!-- ∞ → lar:///trace.micro.marks/micro-trace/orient/?confidence=0.85#handoff-protocol -->
 ## Sub-agent and Coordinator Handoff Protocol
 

@@ -8,7 +8,7 @@
  */
 
 import { parseMemeCarrier } from "@lararium/core";
-import type { MemeAstNode, WorksiteNode, SigilNode, ControlNode, TextNode } from "@lararium/core";
+import type { MemeAstNode, AhuNode, SigilNode, ControlNode, TextNode } from "@lararium/core";
 import { parseTaploFields } from "./toml-ast.js";
 
 // ---------------------------------------------------------------------------
@@ -136,10 +136,10 @@ export function fragmentFields(opts: {
 }
 
 // ---------------------------------------------------------------------------
-// ahuBodyText — reconstruct raw body text from WorksiteNode children
+// ahuBodyText — reconstruct raw body text from AhuNode children
 // ---------------------------------------------------------------------------
 
-function ahuBodyText(ws: WorksiteNode): string {
+function ahuBodyText(ws: AhuNode): string {
   return ws.body.map((n) => n.raw).join("");
 }
 
@@ -175,8 +175,8 @@ function generateParentText(uri: string, nodes: MemeAstNode[]): string {
     }
     if (!inBody) continue;
 
-    if (node.kind === "Worksite") {
-      const ws = node as WorksiteNode;
+    if (node.kind === "Ahu") {
+      const ws = node as AhuNode;
       if (!CONTROL_SLOTS.has(ws.slot)) {
         parts.push(`<$transclude tiddler="${uri}${ws.slot}" mode="block"/>`);
       }
@@ -217,8 +217,8 @@ export function splitCarrierToTiddlers(uri: string, text: string): CarrierSplit 
   } else {
     // Legacy fallback: look for #iam ahu block (for backwards compatibility)
     for (const node of nodes) {
-      if (node.kind !== "Worksite") continue;
-      const ws = node as WorksiteNode;
+      if (node.kind !== "Ahu") continue;
+      const ws = node as AhuNode;
       if (ws.slot !== "#iam") continue;
       for (const child of ws.body) {
         if (child.kind === "Sigil") {
@@ -260,8 +260,8 @@ export function splitCarrierToTiddlers(uri: string, text: string): CarrierSplit 
   const sourceBodies = collectAhuBodies(text);
 
   for (const node of nodes) {
-    if (node.kind !== "Worksite") continue;
-    const ws   = node as WorksiteNode;
+    if (node.kind !== "Ahu") continue;
+    const ws   = node as AhuNode;
     const slot = ws.slot;
     if (CONTROL_SLOTS.has(slot)) continue;
 

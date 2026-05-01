@@ -1,3 +1,5 @@
+<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
+
 <!-- ∞ → lar:///grammar.locus.defines/locus/?confidence=CS:0.95&p=0.5 -->
 
 # Grammar: Locus
@@ -33,6 +35,8 @@ cluster: kahua
 
 **Opener** — claims the address, opens the span:
 ```
+<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
+
 <!-- ∞ → lar:///ha.ka.ba/path/?confidence=X&p=0.5 -->
 ```
 
@@ -79,7 +83,9 @@ A locus is NOT a transient exchange (those use HUD pair format). It is NOT a nav
 - *Inoa* — name; a Hawaiian place-name IS the story of what happened there
 - *Kuleana* — right, responsibility, authority over a place — the obligation that comes with addressing something
 
-**The locus as wahi pana:** When you open a locus with `<!-- ∞ → lar:///... -->`, you are naming a wahi pana — a place with a story, addressable by name, holding its contents for those who know to go there. The URI is the *inoa*. The content is the *mele* (chant) of that place.
+**The locus as wahi pana:** When you open a locus with `<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
+
+<!-- ∞ → lar:///... -->`, you are naming a wahi pana — a place with a story, addressable by name, holding its contents for those who know to go there. The URI is the *inoa*. The content is the *mele* (chant) of that place.
 
 **'Āina** (land, that which feeds): in Hawaiian thought, the land is not property — it is relationship. A locus is *'āina* in the same sense: the content is not owned, it is held in trust, feeding those who come to it.
 

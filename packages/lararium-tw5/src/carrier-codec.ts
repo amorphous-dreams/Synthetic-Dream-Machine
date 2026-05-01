@@ -10,7 +10,7 @@
  * Export path (records → disk, operator-initiated):
  *   serializeCarrier(parent, children) → string
  *
- * One .md file per lar: address. The parser emits WorksiteNodes (#ahu slots).
+ * One .md file per lar: address. The parser emits AhuNodes (#ahu slots).
  * This module maps those to TW5 tiddler records:
  *
  *   root ```toml iam``` → parent tiddler fields (dissolved, no child tiddler)

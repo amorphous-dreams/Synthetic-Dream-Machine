@@ -1,3 +1,5 @@
+<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
+
 <!-- ∞ → lar:///grammar.truename.holds/truename/?confidence=CS:0.80&p=0.5 -->
 <!-- Canonical registry: see LOCI.registry.toml for True Name registry data -->
 <!-- TOML registry: lares/grammar/truename/LOCI.registry.toml -->
@@ -51,7 +53,9 @@ The canonical registry is maintained in [LOCI.registry.toml](./LOCI.registry.tom
 | True Name | Language | LOCUS | Function |
 |---|---|---|---|
 | **Kahua** | Hawaiian (*kahua* — prepared platform, foundation ground) | [kahua/LOCI.md](../kahua/LOCI.md) | The foundation cluster; the prepared ground everything else is built on |
-| **Locus** | Latin/Etruscan (*locus* — place, site; Etruscan *templum* — marked ground) | [kahua/locus/LOCI.md](../kahua/locus/LOCI.md) | `<!-- ∞ → ... -->` — opens a content span at a canonical address |
+| **Locus** | Latin/Etruscan (*locus* — place, site; Etruscan *templum* — marked ground) | [kahua/locus/LOCI.md](../kahua/locus/LOCI.md) | `<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
+
+<!-- ∞ → ... -->` — opens a content span at a canonical address |
 | **Ahu** | Hawaiian (*ahu* — cairn, altar, boundary marker; pile of stones) | [kahua/ahu/LOCI.md](../kahua/ahu/LOCI.md) | `<!-- ahu ... -->` — waypoint within a locus; the marker that says *here* |
 | **Kahea** | Hawaiian (*kāhea* — to call, to summon, to invite; also the call in hula) | [kahua/kahea/LOCI.md](../kahua/kahea/LOCI.md) | `<!-- kahea ... -->` — transclusion pull; summoning content from another address |
 | **Lares** (marker) | Latin/Etruscan (*lares* — household spirits; guardian daemons of place) | [kahua/lares/LOCI.md](../kahua/lares/LOCI.md) | bare `lar:///...` — the daemon's signature; present, no ceremony |

@@ -7,7 +7,7 @@
 // canonicalName; alias scans emit canonical name directly. No separate phase.
 //
 // Node hierarchy is flat: canonical non-edge sigils all produce SigilNode.
-// Typed nodes (WorksiteNode, EdgeNode, EdgeSugarNode, etc.) exist only where
+// Typed nodes (AhuNode, PranalaNode, PranalaSugarNode, etc.) exist only where
 // edgesFromAst needs to branch on node shape.
 //
 // BOOTSTRAP_SCANS covers edge sigils + ahu + the most common control sigils.
@@ -23,10 +23,10 @@ import type {
   SigilRule,
   PranaEdge,
   MemeAstNode,
-  WorksiteNode,
-  EdgeNode,
-  EdgeSugarNode,
-  DispatchNode,
+  AhuNode,
+  PranalaNode,
+  PranalaSugarNode,
+  LeleNode,
   ControlNode,
   SigilNode,
   DynamicNode,
@@ -76,7 +76,7 @@ const BOOTSTRAP_SCANS: SigilScan[] = [
   // Edge sugar
   { sigilName: "loulou",    regex: /<<~\s*loulou\s+(\S+)\s*>>/g,           eventType: "leaf"   },
   { sigilName: "aka",       regex: /<<~\s*aka\s+(\S+)\s*>>/g,              eventType: "leaf"   },
-  // kahea URI form:  <<~ kahea lar:///uri >> → EdgeSugarNode (compile + render)
+  // kahea URI form:  <<~ kahea lar:///uri >> → PranalaSugarNode (compile + render)
   // kahea name form: <<~ kahea name(args)  >> → SigilNode (render-only)
   // URI form matched first (starts with lar: or contains / or #).
   // Name form: identifier optionally followed by (key:val ...) args block.
@@ -347,7 +347,7 @@ function closeFrame(frame: Frame, carrierUri: string, _scope: "block", grammar?:
   if (sigilName === "ahu") {
     const slot     = (groups[1] ?? "").trim();
     const delegate = (groups[2] ?? "").trim() || null;
-    return { kind: "Worksite", ...base, slot, uri: carrierUri + slot, delegate, body: children } as WorksiteNode;
+    return { kind: "Ahu", ...base, slot, uri: carrierUri + slot, delegate, body: children } as AhuNode;
   }
   if (sigilName === "pranala") {
     // Block form
@@ -357,7 +357,7 @@ function closeFrame(frame: Frame, carrierUri: string, _scope: "block", grammar?:
     const body    = groups[4] ?? "";
     const family  = body.match(/\bfamily\s*=\s*"([\w-]+)"/)?.[1] ?? "relation";
     const role    = body.match(/\brole\s*=\s*"([\w-]+)"/)?.[1] ?? null;
-    return { kind: "Edge", ...base, slot, fromRaw, toRaw, family, role, body: children } as EdgeNode;
+    return { kind: "Pranala", ...base, slot, fromRaw, toRaw, family, role, body: children } as PranalaNode;
   }
   if (CANONICAL_SIGILS.has(sigilName)) {
     return { kind: "Sigil", ...base, sigilName, attrs: attrsFromGroups(sigilName, groups, "block"), body: children } as SigilNode;
@@ -387,28 +387,28 @@ function makeLeaf(
       const toRaw   = g(3);
       const family  = g(4) || "relation";
       const role    = g(5) || null;
-      return { kind: "Edge", ...base, slot, fromRaw, toRaw, family, role, body: [] } as EdgeNode;
+      return { kind: "Pranala", ...base, slot, fromRaw, toRaw, family, role, body: [] } as PranalaNode;
     }
     case "loulou":
-      return { kind: "EdgeSugar", ...base, sigil: "loulou", slot: null, fromRaw: null, toRaw: g(1), family: "relation", role: null, trigger: null, fn: null } as EdgeSugarNode;
+      return { kind: "PranalaSugar", ...base, sigil: "loulou", slot: null, fromRaw: null, toRaw: g(1), family: "relation", role: null, trigger: null, fn: null } as PranalaSugarNode;
     case "aka":
-      return { kind: "EdgeSugar", ...base, sigil: "aka",    slot: null, fromRaw: null, toRaw: g(1), family: "observe",  role: null, trigger: null, fn: null } as EdgeSugarNode;
+      return { kind: "PranalaSugar", ...base, sigil: "aka",    slot: null, fromRaw: null, toRaw: g(1), family: "observe",  role: null, trigger: null, fn: null } as PranalaSugarNode;
     case "kahea":
-      return { kind: "EdgeSugar", ...base, sigil: "kahea", slot: null, fromRaw: null, toRaw: g(1), family: "dataflow", role: null, trigger: null, fn: null } as EdgeSugarNode;
+      return { kind: "PranalaSugar", ...base, sigil: "kahea", slot: null, fromRaw: null, toRaw: g(1), family: "dataflow", role: null, trigger: null, fn: null } as PranalaSugarNode;
     case "kahea-call":
       // Definition invocation — render-only, no compile-time graph edge.
       // attrs.name = definition name; attrs.args = raw args string (render layer parses)
       return { kind: "Sigil", ...base, sigilName: "kahea", attrs: { name: g(1) ?? "", args: g(2) ?? "" }, body: [] } as SigilNode;
     case "pono": {
       const slot = g(1) || null;
-      return { kind: "EdgeSugar", ...base, sigil: "pono", slot, fromRaw: g(2), toRaw: g(3), family: "constraint", role: g(4) || null, trigger: null, fn: null } as EdgeSugarNode;
+      return { kind: "PranalaSugar", ...base, sigil: "pono", slot, fromRaw: g(2), toRaw: g(3), family: "constraint", role: g(4) || null, trigger: null, fn: null } as PranalaSugarNode;
     }
     case "papalohe": {
       const slot = g(1) || null;
-      return { kind: "EdgeSugar", ...base, sigil: "papalohe", slot, fromRaw: g(2), toRaw: g(3), family: "reaction", role: null, trigger: g(4) || null, fn: g(5) || null } as EdgeSugarNode;
+      return { kind: "PranalaSugar", ...base, sigil: "papalohe", slot, fromRaw: g(2), toRaw: g(3), family: "reaction", role: null, trigger: g(4) || null, fn: g(5) || null } as PranalaSugarNode;
     }
     case "lele":
-      return { kind: "Dispatch", ...base, targetRaw: g(1), family: "message" } as DispatchNode;
+      return { kind: "Lele", ...base, targetRaw: g(1), family: "message" } as LeleNode;
     case "toml":
       // Fence form: groups[1]=profile, groups[2]=content.
       // Block form (<<~ toml >>): groups[2] is undefined, groups[1]=content, profile="".
@@ -447,19 +447,19 @@ export function edgesFromAst(ast: MemeAstNode[], carrierUri: string): PranaEdge[
 function walkForEdges(nodes: MemeAstNode[], carrierUri: string, ahuStack: string[], edges: PranaEdge[]): void {
   for (const node of nodes) {
     switch (node.kind) {
-      case "Worksite":
+      case "Ahu":
         ahuStack.push(node.uri);
         walkForEdges(node.body, carrierUri, ahuStack, edges);
         ahuStack.pop();
         break;
-      case "Edge":
+      case "Pranala":
         edges.push(projectEdge(node, carrierUri, ahuStack));
         if (node.body.length) walkForEdges(node.body, carrierUri, ahuStack, edges);
         break;
-      case "EdgeSugar":
+      case "PranalaSugar":
         edges.push(projectSugar(node, carrierUri, ahuStack));
         break;
-      case "Dispatch":
+      case "Lele":
         edges.push(projectDispatch(node, carrierUri, ahuStack));
         break;
       case "Control":
@@ -511,14 +511,14 @@ function mk(
   };
 }
 
-function projectEdge(node: EdgeNode, cu: string, ahuStack: string[]): PranaEdge {
+function projectEdge(node: PranalaNode, cu: string, ahuStack: string[]): PranaEdge {
   const fromSlot = node.slot ? cu + node.slot : null;
   const [fromUri, fromSocket] = tok(node.fromRaw, cu, ahuStack);
   const [toUri, toSocket] = tok(node.toRaw, cu, ahuStack);
   return mk(fromUri, fromSocket, fromSlot, toUri, toSocket, node.family, node.role);
 }
 
-function projectSugar(node: EdgeSugarNode, cu: string, ahuStack: string[]): PranaEdge {
+function projectSugar(node: PranalaSugarNode, cu: string, ahuStack: string[]): PranaEdge {
   const fromSlot = node.slot ? cu + node.slot : null;
   const fromSocket = ahuStack[ahuStack.length - 1] ?? cu;
 
@@ -545,7 +545,7 @@ function projectSugar(node: EdgeSugarNode, cu: string, ahuStack: string[]): Pran
   return mk(cu, fromSocket, null, toUri, toSocket, node.family, node.role, { propagation });
 }
 
-function projectDispatch(node: DispatchNode, cu: string, ahuStack: string[]): PranaEdge {
+function projectDispatch(node: LeleNode, cu: string, ahuStack: string[]): PranaEdge {
   const fromSocket = ahuStack[ahuStack.length - 1] ?? cu;
   const toRaw = node.targetRaw;
   let toUri: string, toSocket: string;

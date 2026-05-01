@@ -1,3 +1,7 @@
+<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
+
+<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
+
 <!-- ∞ → lar:///grammar.kahea.defines/kahea/?confidence=CS:0.95&p=0.5 -->
 
 # Grammar: Kahea

@@ -6,17 +6,17 @@
  * after boot, when the real Widget base class is available.
  *
  * Messaging + kumu are first-class TW5 widget citizens — not a parallel tree:
- *   lararium-worksite  → WorksiteWidget   ahu socket section (<span data-lar-slot>)
- *   lararium-edge      → EdgeWidget       pranala metadata (<meta data-lar-*>)
- *   lararium-papalohe  → PapaloheWidget   reaction wire metadata (<meta data-lar-kind=papalohe>)
- *   lararium-kukali    → KukaliWidget     suspend posture (<span data-lar-kind=kukali>)
- *   lararium-kumu      → KumuWidget       device instance — looks up def via wiki variable,
- *                                          renders body; execution hook fires here
- *   lararium-toml      → TomlWidget       data block (<script type=application/toml>)
- *   lararium-sigil     → SigilWidget      generic sigil container
- *   lararium-dynamic   → DynamicWidget    grammar-meme extension
- *   lararium-control   → ControlWidget    phase boundary marker (no visible output)
- *   lararium-dispatch  → DispatchWidget   lele fire-and-forget (<meta data-lar-target>)
+ *   ahu        → AhuWidget         <$ahu>       carrier slot — <<~ ahu #slot >> and <$ahu slot="#slot"> are equivalent
+ *   edge       → EdgeWidget       <$edge>      pranala metadata
+ *   papalohe   → PapaloheWidget   <$papalohe>  reaction wire metadata
+ *   kukali     → KukaliWidget     <$kukali>    suspend posture
+ *   kumu       → KumuWidget       <$kumu>      device instance (UEFN analogue)
+ *   toml       → TomlWidget       <$toml>      data block
+ *   sigil      → SigilWidget      <$sigil>     generic sigil container
+ *   dynamic    → DynamicWidget    <$dynamic>   grammar-meme extension
+ *   control    → ControlWidget    <$control>   phase boundary marker (no visible output)
+ *   dispatch   → DispatchWidget   <$dispatch>  lele fire-and-forget
+ *   ahu        → AhuWidget        <$ahu>       carrier slot — dual form of <<~ ahu #slot >>
  *
  * KumuWidget execution model (local-first Zelenka):
  *   On render, KumuWidget filters the wiki for tiddlers tagged $:/tags/LarariumKumu
@@ -38,34 +38,6 @@ import type {
 
 type WidgetCtor = (this: TW5WidgetInstance, parseTreeNode: TW5ParseTreeNode, options: Record<string, unknown>) => void;
 type WidgetCtorWithProto = WidgetCtor & { prototype: Partial<TW5WidgetInstance> };
-
-// ---------------------------------------------------------------------------
-// WorksiteWidget — <<~ ahu #slot >> container
-//
-// Rendering policy: WorksiteWidget is a pure structural metadata anchor.
-// Parent tiddler text = `{{||lar:///ha.ka.ba/.../templates/meme}}` — the template
-// drives all slot rendering via $transclude on child tiddlers. WorksiteWidget
-// emits only a data-attr span so CSS/JS can query slot boundaries; no children
-// are rendered inline. This prevents double-render with the meme template.
-// ---------------------------------------------------------------------------
-
-function WorksiteWidget(this: TW5WidgetInstance, parseTreeNode: TW5ParseTreeNode, options: Record<string, unknown>) {
-  this.initialise(parseTreeNode, options);
-}
-WorksiteWidget.prototype.render = function (this: TW5WidgetInstance, parent: TW5FakeElement, _nextSibling: TW5FakeElement | null) {
-  this.parentDomNode = parent;
-  this.computeAttributes();
-  const el = this.document.createElement("span");
-  el.setAttribute("data-lar-kind", "worksite");
-  el.setAttribute("data-lar-slot", this.getAttribute("slot", ""));
-  el.setAttribute("data-lar-uri",  this.getAttribute("uri", ""));
-  const delegate = this.getAttribute("delegate", "");
-  if (delegate) el.setAttribute("data-lar-delegate", delegate);
-  parent.appendChild(el);
-  this.domNodes = [el];
-  // No renderChildren — template handles all slot content.
-};
-WorksiteWidget.prototype.execute = function (this: TW5WidgetInstance) { /* no children */ };
 
 // ---------------------------------------------------------------------------
 // EdgeWidget — pranala / edge-sugar (metadata; no visible output)
@@ -310,6 +282,68 @@ KumuWidget.prototype.refresh = function (this: TW5WidgetInstance, changedTiddler
 };
 
 // ---------------------------------------------------------------------------
+// AhuWidget — <$ahu slot="#name"> carrier slot widget
+//
+// Dual surface: sigil form (<<~ ahu #slot >>) and widget form (<$ahu slot="#slot">)
+// are semantically equivalent — both produce a worksite node in the parse tree.
+// The widget form is TW5-native, so operators can mix TW5 and memetic grammar freely.
+//
+// HTML render mode: renders children (typically {{parentUri#slot}} transclusions)
+// Carrier projection mode (lar-render-mode=carrier):
+//   emits <<~ ahu #slot >> + live fragment body from wiki + <<~/ahu >>
+//   This is the write-back projection path used by wiki.renderTiddler().
+// ---------------------------------------------------------------------------
+
+function AhuWidget(this: TW5WidgetInstance, parseTreeNode: TW5ParseTreeNode, options: Record<string, unknown>) {
+  this.initialise(parseTreeNode, options);
+}
+AhuWidget.prototype.render = function (this: TW5WidgetInstance, parent: TW5FakeElement, nextSibling: TW5FakeElement | null) {
+  this.parentDomNode = parent;
+  this.computeAttributes();
+  this.execute();
+
+  const slot        = this.getAttribute("slot", "");
+  const renderMode  = this.getVariable?.("lar-render-mode") ?? "";
+
+  if (renderMode === "carrier") {
+    // Carrier projection: reconstruct the <<~ ahu #slot >>...<<~/ahu >> syntax.
+    // Read the live fragment body from the wiki — parentUri is currentTiddler.
+    const parentUri   = this.getVariable?.("currentTiddler") ?? "";
+    const fragmentUri = parentUri + slot;
+    const fragFields  = this.wiki?.getTiddler?.(fragmentUri)?.fields as Record<string, unknown> | undefined;
+    const body        = typeof fragFields?.["text"] === "string" ? fragFields["text"] : "";
+    const open        = `<<~ ahu ${slot} >>`;
+    const close       = `<<~/ahu >>`;
+    const text        = this.document.createTextNode(open + body + close);
+    parent.insertBefore(text, nextSibling);
+    this.domNodes = [text as unknown as TW5FakeElement];
+  } else {
+    // HTML render: render children — the transclusion handles live slot content.
+    const el = this.document.createElement("section");
+    el.setAttribute("data-lar-kind", "ahu");
+    el.setAttribute("data-lar-slot", slot);
+    parent.appendChild(el);
+    this.domNodes = [el];
+    this.renderChildren(el, null);
+  }
+};
+AhuWidget.prototype.execute = function (this: TW5WidgetInstance) { this.makeChildWidgets(); };
+AhuWidget.prototype.refresh = function (this: TW5WidgetInstance, changedTiddlers: Record<string, TW5ChangeRecord>): boolean {
+  const slot       = this.getAttribute("slot", "");
+  const parentUri  = this.getVariable?.("currentTiddler") ?? "";
+  const fragUri    = parentUri + slot;
+  if (changedTiddlers[fragUri]) {
+    this.refreshSelf();
+    return true;
+  }
+  let changed = false;
+  for (const child of (this.children ?? [])) {
+    if (child.refresh(changedTiddlers)) changed = true;
+  }
+  return changed;
+};
+
+// ---------------------------------------------------------------------------
 // Factory — returns all widget constructors, no prototype wiring.
 // Prototype chain is set by LarariumTW5._registerWidgets() after boot.
 // Schema: lar:///ha.ka.ba/api/v0.1/lararium/modules/tw5-widgets
@@ -317,16 +351,16 @@ KumuWidget.prototype.refresh = function (this: TW5WidgetInstance, changedTiddler
 
 export function createLarariumWidgets(_tw: TW5Instance): Record<string, WidgetCtorWithProto> {
   return {
-    "lararium-worksite":  WorksiteWidget  as unknown as WidgetCtorWithProto,
-    "lararium-edge":      EdgeWidget      as unknown as WidgetCtorWithProto,
-    "lararium-toml":      TomlWidget      as unknown as WidgetCtorWithProto,
-    "lararium-sigil":     SigilWidget     as unknown as WidgetCtorWithProto,
-    "lararium-dynamic":   DynamicWidget   as unknown as WidgetCtorWithProto,
-    "lararium-control":   ControlWidget   as unknown as WidgetCtorWithProto,
-    "lararium-dispatch":  DispatchWidget  as unknown as WidgetCtorWithProto,
-    "lararium-papalohe":  PapaloheWidget  as unknown as WidgetCtorWithProto,
-    "lararium-kukali":    KukaliWidget    as unknown as WidgetCtorWithProto,
-    "lararium-kumu":      KumuWidget      as unknown as WidgetCtorWithProto,
+    "edge":       EdgeWidget      as unknown as WidgetCtorWithProto,
+    "toml":       TomlWidget      as unknown as WidgetCtorWithProto,
+    "sigil":      SigilWidget     as unknown as WidgetCtorWithProto,
+    "dynamic":    DynamicWidget   as unknown as WidgetCtorWithProto,
+    "control":    ControlWidget   as unknown as WidgetCtorWithProto,
+    "dispatch":   DispatchWidget  as unknown as WidgetCtorWithProto,
+    "papalohe":   PapaloheWidget  as unknown as WidgetCtorWithProto,
+    "kukali":     KukaliWidget    as unknown as WidgetCtorWithProto,
+    "kumu":       KumuWidget      as unknown as WidgetCtorWithProto,
+    "ahu":        AhuWidget       as unknown as WidgetCtorWithProto,
   };
 }
 

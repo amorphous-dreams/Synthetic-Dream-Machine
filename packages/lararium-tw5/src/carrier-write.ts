@@ -11,8 +11,79 @@
 
 import type { TW5TiddlerFields } from "./types/tiddlywiki.js";
 import type { LarariumTW5 } from "./lararium-tw5.js";
-import type { LarTiddlerRecord } from "@lararium/core";
+import type { LarTiddlerRecord, AhuNode } from "@lararium/core";
+import { parseMemeCarrier } from "@lararium/core";
 import { serializeCarrier, replaceCarrierSlot, removeCarrierSlot, composeCarrierSlotBody } from "./carrier-codec.js";
+
+// ---------------------------------------------------------------------------
+// Carrier decompile — memetic wikitext → parent + fragment tiddler records
+//
+// When an operator saves a tiddler whose text is a full memetic wikitext
+// carrier (contains <<~ ahu #slot >> blocks), we split it into:
+//   parent  — carrier-text field holds the lossless original; text holds TW5
+//             transclusion markup so the parent renders correctly in TW5.
+//   fragments — one LarTiddlerRecord per <<~ ahu #slot >> worksite, keyed
+//               by "parentUri#slot". fragment-parent + ahu-slot fields link
+//               them back to the parent for queries and write-back.
+//
+// Round-trip invariant: carrier-text MUST survive any edit cycle unchanged
+// unless a fragment body is explicitly edited. replaceCarrierSlot() is the
+// only mutation allowed on carrier-text (surgical, lossless).
+// ---------------------------------------------------------------------------
+
+/**
+ * Decompose a full memetic wikitext carrier into a parent record + fragment
+ * records. Returns null when the text contains no <<~ ahu >> worksites
+ * (plain tiddler — let the caller store it as-is).
+ */
+export function decompileCarrierRecord(
+  title: string,
+  fields: Record<string, string>,
+  text: string,
+  targetBag: NonNullable<LarTiddlerRecord["bag"]> = "room",
+): { parent: LarTiddlerRecord; fragments: LarTiddlerRecord[] } | null {
+  if (!text.includes("<<~ ahu ")) return null;
+
+  const ast = parseMemeCarrier(title, text);
+  const slots = ast.filter((n): n is AhuNode => n.kind === "Ahu");
+  if (slots.length === 0) return null;
+
+  // Parent text: walk the full AST in document order.
+  // Non-worksite nodes (prose, control bytes, edges, TOML blocks) pass through
+  // as raw text — preserving all structure including control characters.
+  // AhuNode → <$ahu slot="#name">{{uri#name}}</$ahu>
+  // This is valid TW5 wikitext: operators can use either the sigil or widget form.
+  const parentText = ast.map((n) => {
+    if (n.kind === "Ahu") {
+      const s = n as AhuNode;
+      return `<$ahu slot="${s.slot}">{{${s.uri}}}</$ahu>`;
+    }
+    return n.raw;
+  }).join("");
+
+  const parent: LarTiddlerRecord = {
+    title,
+    fields: Object.fromEntries(
+      Object.entries(fields).filter(([k]) => k !== "text" && k !== "title"),
+    ),
+    text: parentText,
+    bag: targetBag,
+  };
+
+  // Fragments: body text from AhuNode body nodes.
+  const fragments: LarTiddlerRecord[] = slots.map((s) => ({
+    title: s.uri,
+    fields: {
+      "fragment-parent": title,
+      "ahu-slot": s.slot,
+    },
+    text: s.body.map((n) => n.raw).join(""),
+    bag: targetBag,
+  }));
+
+  return { parent, fragments };
+}
+
 
 // ---------------------------------------------------------------------------
 // Child carrier inference (used by deleteTiddler guard only)

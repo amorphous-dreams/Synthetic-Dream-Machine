@@ -1,3 +1,5 @@
+<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
+
 <!-- ∞ → lar:///uri.schema.holds/uri-schema/observe/?confidence=CS:0.85&p=0.5 -->
 
 # Signal — Observe: URI Design State
@@ -8,6 +10,8 @@
 ---
 
 <!-- → ? -->
+<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
+
 <!-- ∞ → lar:///uri.schema.holds/uri-schema/observe/?confidence=0.9#what-v2-settled -->
 ## What v2 Settled
 
@@ -81,6 +85,8 @@ lar:///ha.ka.ba/optional/sub/path/
 ---
 
 <!-- → ? -->
+<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
+
 <!-- ∞ → lar:///uri.schema.holds/uri-schema/observe/?confidence=0.65#what-remains-open -->
 ## What Remains Open
 
@@ -101,6 +107,8 @@ The following questions are `[SP:0.45]` – `[S:0.65]`. They do not block the co
 ---
 
 <!-- → ? -->
+<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
+
 <!-- ∞ → lar:///uri.schema.holds/uri-schema/observe/?confidence=0.9#what-was-explicitly-rejected -->
 ## What Was Explicitly Rejected
 
@@ -117,6 +125,8 @@ These decisions are closed. Do not re-open without operator directive.
 ---
 
 <!-- → ? -->
+<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/api/v0.1/pono/memetic-wikitext >> -->
+
 <!-- ∞ → lar:///uri.schema.holds/uri-schema/observe/?confidence=0.85#scope-of-this-module -->
 ## Scope of This Module
 
