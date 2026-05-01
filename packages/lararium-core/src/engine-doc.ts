@@ -33,6 +33,19 @@ export interface EngineDoc {
   readonly schemaVersion: string;
   /** Keyed by EngineBlobEntry.id. */
   readonly blobs: Record<string, EngineBlobEntry>;
+  /**
+   * Sorted list of $:/ tiddler titles present in a freshly booted TW5 VM
+   * before any corpus tiddlers are loaded.  Written once at seedEngineDoc time.
+   *
+   * Authority boundary: any $:/ title in this list is engine-owned.
+   * Corpus Automerge docs MUST NOT store these titles.
+   * TW5 state that falls outside this set (plugin config, personal state)
+   * belongs in the personal or session/presence doc.
+   *
+   * Keyhive: this manifest will be signed as part of the engine island
+   * authority proof — changes require a new signed engine doc.
+   */
+  readonly systemTitles?: readonly string[];
 }
 
 export function emptyEngineDoc(): EngineDoc {

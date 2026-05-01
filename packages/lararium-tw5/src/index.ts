@@ -39,7 +39,7 @@ export { setActiveTW5, getActiveTW5 } from "./active-tw5.js";
 export { LarariumCrdtSyncAdaptor } from "./sync-adaptor.js";
 export { MemoryTiddlerStore }      from "./memory-store.js";
 
-export { parseCarrier, splitCarrierToTiddlers, serializeCarrier, replaceCarrierSlot, composeCarrierSlotBody, streamEventsToTiddlers } from "./carrier-codec.js";
+export { parseCarrier, splitCarrierToTiddlers, replaceCarrierSlot, composeCarrierSlotBody, streamEventsToTiddlers } from "./carrier-codec.js";
 export type { CarrierSplit, ParentTiddler, ChildTiddler, TiddlerFields } from "./carrier-codec.js";
 
 export { tw5ElementToVdom, tw5ElementToHtml } from "./fake-dom.js";
@@ -61,11 +61,11 @@ export { entryToFields, buildEdgeFieldMap } from "./closure-fields.js";
 export { parseZoomLayoutTOML, getZoomLayout } from "./zoom-layout.js";
 export type { ZoomLayout } from "./zoom-layout.js";
 export { bindingsForUri, buildReactionGraph } from "./reaction-query.js";
-export { bootRecipeVm, releaseRecipeVm, makeRecipeId, liveVmCount, filterRecipe, precomputeRecipeRooms, renderCarrier } from "./server-api.js";
+export { bootRecipeVm, attachRecipeVm, releaseRecipeVm, makeRecipeId, liveVmCount, filterRecipe, precomputeRecipeRooms, renderCarrier } from "./server-api.js";
 export type { RecipeVm, SerializedRecord } from "./recipe-vm.js";
 export { DirectRecipeVm } from "./recipe-vm.js";
 export { TW5WorkerProxy } from "./tw5-worker-proxy.js";
 export { VmPool } from "./vm-pool.js";
 export { filterMemesWikitext } from "./filter-compat.js";
-export { exportCarrierText, decompileCarrierRecord } from "./carrier-write.js";
+export { exportCarrierText } from "./carrier-write.js";
 export { LarDiskProjector } from "./disk-sync-adaptor.js";

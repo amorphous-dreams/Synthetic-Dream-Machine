@@ -169,7 +169,7 @@ export function grammarRulesFromText(uri: string, text: string): GrammarRules | 
 //
 // Pure function — no TW5 or Node dependencies. Usable in browser and server.
 // Returns null when the slot is not found (caller should fall back to full
-// reconstruction via serializeCarrier).
+// reconstruction via VM render).
 // ---------------------------------------------------------------------------
 
 export function replaceCarrierSlot(

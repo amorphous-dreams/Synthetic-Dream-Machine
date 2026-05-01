@@ -34,6 +34,7 @@ export interface AhuNode extends AstBase {
   uri: string;            // carrierUri + slot
   delegate: string | null;
   body: MemeAstNode[];
+  invocation?: boolean;   // true for <<~ kahea ahu #slot >> (leaf, summons pre-built slot)
 }
 
 export interface PranalaNode extends AstBase {

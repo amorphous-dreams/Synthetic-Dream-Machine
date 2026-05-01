@@ -27,11 +27,22 @@ The TypeScript parser reads this registry in Phase 2; until then it serves as au
 # Each sigil maps name → surface-form patterns and semantic defaults
 
 [[sigils]]
-name         = "ahu"
-kind         = "worksite"
-open_pattern = '<<~[^>]*\bahu\s+(#[\w-]+)\s*>>'
-close_pattern = '<<~\/ahu\s*>>'
-description  = "worksite scope boundary; creates an addressable ahu socket"
+name              = "ahu"
+kind              = "child-slot"
+open_pattern      = '<<~[^>]*\bahu\s+(#[\w-]+)\s*>>'
+close_pattern     = '<<~\/ahu\s*>>'
+description       = "worksite scope boundary; creates an addressable, writable child-slot tiddler at parentUri+slot"
+three_forms       = true
+
+# Three surface forms — same semantic slot, different boundary positions:
+#   disk (definition):  <<~ ahu #slot >>body<<~/ahu >>        — body inline; authoritative at parse time
+#   wiki (live-ref):    <<~ kahea ahu #slot >>                 — child tiddler is authoritative; parent holds reference
+#   projection (frozen):<<~ aka ahu #slot >>                   — shadow transclusion; frozen read at projection time
+#
+# Causal island boundary:
+#   deserializer: definition form → wiki form (splitCarrierToTiddlers transforms parent text)
+#   disk export:  wiki form → definition form (renderTiddler carrier mode; each child-slot widget reads child body)
+#   projection:   wiki form → projection form (renderTiddler projection mode; aka sigil embedded at render time)
 
 [[sigils]]
 name         = "pranala"
@@ -51,9 +62,41 @@ description   = "sugar: bidirectional relation edge; equivalent to pranala with 
 [[sigils]]
 name          = "aka"
 kind          = "edge-sugar"
-pattern       = '<<~\s*aka\s+(\S+)\s*>>'
+pattern       = '<<~\s*aka\s+([\w-]+\s+)?(\S+)\s*>>'
 default_family = "observe"
-description   = "sugar: shadow transclusion (observe family); read-only embed; equivalent to pranala family=observe"
+description   = "shadow transclusion (observe family); frozen read at projection time; equivalent to pranala family=observe"
+
+# Two usage forms:
+#   URI form:          <<~ aka lar:///some/uri >>              — embed a remote meme as a frozen copy
+#   child-slot form:   <<~ aka ahu #slot >>                    — projection form of a child-slot sigil
+#                      <<~ aka kau #device >>                  — projection form of a kau device slot
+#
+# 'aka' signals: this content was live (kahea) at authoring time; it is frozen here.
+# Projection renders resolve kahea refs to aka refs before emitting carrier wikitext.
+# The frozen read does not track edits to the child tiddler after projection time.
+
+[[sigils]]
+name          = "kahea-invoke"
+kind          = "child-slot-summons"
+layer         = "both"
+leaf_pattern  = '<<~\s*kahea\s+([a-z][\w-]*)\s+([^>\n]+?)\s*>>'
+open_pattern  = '<<~\s*kahea\s+([a-z][\w-]*)(?:\s+([^>]*?))?\s*>>'
+close_pattern = '<<~\/kahea\s*>>'
+description   = "generic child-slot summons — <<~ kahea <type> <slot> >>. Type word dispatches to the named child-slot sigil widget. Type must be a bare identifier (not URI); URI targets fall through to kahea URI form."
+
+# Dispatch principle — generic, not ahu-specific:
+#   <<~ kahea ahu #slot >>        → AhuWidget(invocation=true)  — live child-slot reference
+#   <<~ kahea kau #device >>      → KauWidget(invocation=true)  — live device-slot reference
+#   <<~ kahea <type> <args> >>    → <TypeWidget>(invocation=true) for any registered child-slot sigil
+#
+# Block form (template invocation):
+#   <<~ kahea ahu #slot >>template body<<~/kahea >>
+#   → child tiddler rendered through the inline template rather than its own body
+#
+# Relation to aka:
+#   kahea = live transclusion (tracks child edits at render time)
+#   aka   = shadow transclusion (frozen read at projection time)
+#   The kahea→aka substitution is the projection boundary transform.
 
 [[sigils]]
 name          = "kahea"
@@ -404,10 +447,16 @@ description   = "English alias for waiho block form (mutable variant); parser ma
 
 [[sigils]]
 name          = "kau"
-kind          = "context"
+kind          = "child-slot"
 layer         = "both"
 pattern       = '<<~\s*kau\s+(#[\w-]+\s+)?([\w][\w.-]*)(?:\s+([^>]*))?\s*>>'
-description   = "device placement/instantiation; kau = 'to place upon, set down with intention'; <<~ kau #fragment? DeviceName prop:val ... >>; creates a device instance with its own execution context, persistent URI (carrierUri + #fragment), and addressable mailbox; #fragment auto-generates UUID on first commit if absent (Keyhive stub: instance URI becomes UCAN resource); [SC]"
+description   = "device placement/instantiation; child-slot sigil for device instances; kau = 'to place upon, set down with intention'; <<~ kau #fragment? DeviceName prop:val ... >>; creates a device instance with its own execution context, persistent URI (carrierUri + #fragment), and addressable mailbox; #fragment auto-generates UUID on first commit if absent (Keyhive stub: instance URI becomes UCAN resource); [SC]"
+three_forms   = true
+
+# Three surface forms (same as ahu — kau is a child-slot sigil):
+#   disk (definition):  <<~ kau #device DeviceName prop:val >>   — inline; authoritative at parse time
+#   wiki (live-ref):    <<~ kahea kau #device >>                  — child tiddler is authoritative
+#   projection (frozen):<<~ aka kau #device >>                    — frozen read at projection time
 
 # --- Element type definition sigil ---
 
@@ -956,6 +1005,55 @@ uri         = "lar:///grammars/wikitext-filter"
 status      = "active"
 description = "native lararium filter dialect; drops !!field/##index; uses toml:/edge:/self[] operators; [SC]"
 ```
+
+<<~/ahu >>
+
+<<~ ahu #render-modes >>
+
+## Render Modes — Causal Island Boundary
+
+`lar-render-mode` is a TW5 variable threaded through the widget tree to select which surface form each child-slot widget emits. It drives both the deserializer edge (incoming) and the serializer/projection edge (outgoing).
+
+```toml
+[[render_modes]]
+name        = ""
+label       = "HTML (default)"
+description = "story river rendering; child-slot widgets transclude their child tiddler into DOM"
+example     = "<section data-lar-kind='ahu'> ... </section>"
+
+[[render_modes]]
+name        = "carrier"
+label       = "Disk export (definition form)"
+description = "each child-slot widget reads child body from wiki and emits inline definition sigil"
+example     = "<<~ ahu #slot >>\nchild body\n<<~/ahu >>"
+trigger     = "wiki.renderTiddler('text/plain', uri, { variables: { 'lar-render-mode': 'carrier' } })"
+
+[[render_modes]]
+name        = "projection"
+label       = "Projection (shadow/frozen form)"
+description = "each child-slot widget emits aka (shadow transclusion) sigil; content frozen at projection time"
+example     = "<<~ aka ahu #slot >>"
+trigger     = "wiki.renderTiddler('text/plain', uri, { variables: { 'lar-render-mode': 'projection' } })"
+```
+
+### Applies to all child-slot sigil kinds
+
+Any sigil with `kind = "child-slot"` participates in this three-mode dispatch:
+- `ahu` — worksite text slot
+- `kau` — device instance slot
+- Future child-slot sigils inherit the pattern via `dispatchSlotRenderMode()` in `render-modes.ts`
+
+### Causal island summary
+
+```
+disk → deserializer → wiki (kahea-live refs + authoritative children)
+                         ↓ carrier render
+                       disk (definition form, round-trip)
+                         ↓ projection render
+                       snapshot (aka-frozen refs, human-readable carrier wikitext)
+```
+
+The **projection snapshot** is the human-readable collection format: memetic-wikitext with SOH/STX/ETX carrier framing, multiple memes in flow. Not JSON — readable prose with sigil structure intact.
 
 <<~/ahu >>
 

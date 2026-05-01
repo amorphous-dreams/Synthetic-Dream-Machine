@@ -4,30 +4,17 @@
  * Operates at the import/export boundary only. Does not write to any store.
  * Heleuma: lar:///ha.ka.ba/api/v0.1/lararium/schema/projection-codec
  *
- * Import path (disk → records):
- *   parseCarrier(parentUri, text, parentFields) → LarTiddlerRecord[]
+ * Import path (disk → tiddler fields):
+ *   parseCarrier(uri, text) → CarrierSplit { parent, children, warnings }
+ *   parent.text = original carrier text (MemeticParser renders it).
+ *   child.text  = ahu body text (also memetic-wikitext).
  *
- * Export path (records → disk, operator-initiated):
- *   serializeCarrier(parent, children) → string
+ * Export path: exportCarrierText(tw5, uri) in carrier-write.ts returns
+ *   wiki.getTiddlerText(uri) — the stored original carrier, no reconstruction.
+ *   Surgical slot edits use replaceCarrierSlot / removeCarrierSlot.
  *
- * One .md file per lar: address. The parser emits AhuNodes (#ahu slots).
- * This module maps those to TW5 tiddler records:
- *
- *   root ```toml iam``` → parent tiddler fields (dissolved, no child tiddler)
- *   control ahu         → parent structural leaves (body/stream markers; no child)
- *   all other ahu       → child tiddlers  title = parentUri + "#" + slot
- *                                         fragment-parent = parentUri  (enables filter)
- *
- * Graceful degradation:
- *   - Missing toml iam  → parent fields empty; parsing continues
- *   - Malformed TOML    → field ignored; warning recorded on parent
- *   - Unknown ahu kind  → child tiddler created with raw text; no crash
- *   - Duplicate slots   → last one wins (last-write-wins semantics)
- *   - Any thrown error  → caught; warning added; partial result returned
- *
- * Round-trip invariant:
- *   serializeCarrier(parseCarrier(uri, text, {}).parent, children) ≈ text
- *   (whitespace and comment normalization permitted)
+ * Streaming import: streamEventsToTiddlers(events) → TiddlerFields[][]
+ *   One batch per carrier-close event; handles multi-carrier and partial streams.
  */
 
 import type { MemeStreamEvent } from "@lararium/core";
@@ -37,7 +24,7 @@ import type { MemeStreamEvent } from "@lararium/core";
 // ---------------------------------------------------------------------------
 
 export type { ParentTiddler, ChildTiddler, CarrierSplit } from "./carrier-split.js";
-import type { ParentTiddler, ChildTiddler } from "./carrier-split.js";
+import type { ChildTiddler } from "./carrier-split.js";
 
 // splitCarrierToTiddlers — re-exported from carrier-split.ts (new toml iam prelude format)
 export { splitCarrierToTiddlers } from "./carrier-split.js";
@@ -84,54 +71,6 @@ export function streamEventsToTiddlers(
   }
 
   return batches;
-}
-
-// ---------------------------------------------------------------------------
-// serializeCarrier — reconstruct single-file carrier format from parent + children.
-// Used by the VM render / write-back path.
-// parent.text is the mixed TW5 wikitext (transcludes + prose) used by the TW5 VM
-// and is NOT suitable for disk round-trips — this function always reconstructs.
-// ---------------------------------------------------------------------------
-
-export function serializeCarrier(
-  parent: ParentTiddler,
-  children: ChildTiddler[],
-): string {
-
-  // Reconstruct from fields + children.
-  // Use canonical control-char framing (SOH/STX/ETX/EOT entity forms) so the
-  // re-ingest parser recognises the header and body boundaries correctly.
-  const lines: string[] = [
-    `<<~&#x0001; ? -> ${parent.title} >>`,
-    `<<~&#x0002;>>`,
-    "",
-    "```toml iam",
-  ];
-
-  for (const [k, v] of Object.entries(parent.fields)) {
-    if (k === "implements" || k === "tags" || k === "ahu-slots") continue;
-    lines.push(`${k} = "${Array.isArray(v) ? v.join(" ") : v}"`);
-  }
-  const impl = parent.fields["implements"];
-  if (impl && (Array.isArray(impl) ? impl.length : impl)) {
-    const arr = Array.isArray(impl) ? impl : String(impl).split(" ").filter(Boolean);
-    lines.push(`implements = [${arr.map((s) => `"${s}"`).join(", ")}]`);
-  }
-  const tags = parent.fields["tags"];
-  if (tags && (Array.isArray(tags) ? tags.length : tags)) {
-    const arr = Array.isArray(tags) ? tags : String(tags).split(" ").filter(Boolean);
-    lines.push(`tags = [${arr.map((s) => `"${s}"`).join(", ")}]`);
-  }
-  lines.push("```", "");
-
-  for (const child of children) {
-    const slot = String(child.fields["ahu-slot"] ?? "");
-    lines.push(`<<~ ahu ${slot} >>`, child.text, `<<~/ahu >>`, "");
-  }
-
-  lines.push(`<<~&#x0003;>>`);
-  lines.push(`<<~&#x0004; -> ? >>`);
-  return lines.join("\n");
 }
 
 // ---------------------------------------------------------------------------

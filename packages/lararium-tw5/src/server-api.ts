@@ -22,16 +22,20 @@
  *   browser — VmPool<RecipeVm>, 1+ recipe slots, Web Workers for $tw isolation
  *
  * recipeId: sorted bag slugs joined by "+"  e.g. "lares+room"
+ *
+ * Two registration paths:
+ *   bootRecipeVm(recipeId, store, vmFactory?)
+ *     — cold start: reads store, creates VM via factory, subscribes.
+ *     — Node default: DirectRecipeVm (in-process). Browser: TW5WorkerProxy.
+ *   attachRecipeVm(recipeId, store, vm)
+ *     — hot attach: VM already loaded (e.g. browser in-process TW5 after
+ *       loadFromStore). Skips readAllFromStore/loadRecords; just wires subscription.
  */
 
 import type { LarTiddlerStore, LarTiddlerChange } from "@lararium/core";
 import { LarariumTW5 } from "./lararium-tw5.js";
 import { VmPool } from "./vm-pool.js";
 import { DirectRecipeVm, type RecipeVm, type SerializedRecord } from "./recipe-vm.js";
-
-if (typeof window !== "undefined") {
-  throw new Error("server-api must not be imported in browser bundles.");
-}
 
 // ---------------------------------------------------------------------------
 // Registry
@@ -112,6 +116,43 @@ export async function bootRecipeVm(
 
   _subs.set(recipeId, unsub);
   return vm;
+}
+
+/**
+ * Attach a pre-loaded RecipeVm to the pool without re-reading the store.
+ *
+ * Browser path: the in-process LarariumTW5 is already loaded via loadFromStore.
+ * Wrapping it here registers it for filterRecipe / renderCarrier calls and wires
+ * the store subscription so incremental changes keep it current.
+ *
+ * Does NOT call loadRecords — callers must ensure the VM is fully hydrated first.
+ * Safe to call again to re-attach (releases the previous entry first).
+ */
+export function attachRecipeVm(recipeId: string, store: LarTiddlerStore, vm: RecipeVm): void {
+  releaseRecipeVm(recipeId);
+  // Wrap in a non-owning shim — pool.release() calls dispose() but must not
+  // destroy the external VM (the browser's in-process LarariumTW5).
+  const shim: RecipeVm = {
+    loadRecords: (r) => vm.loadRecords(r),
+    setTiddler:  (f) => vm.setTiddler(f),
+    removeTiddler: (t) => vm.removeTiddler(t),
+    filterTiddlers: (e) => vm.filterTiddlers(e),
+    renderCarrier:  (u) => vm.renderCarrier(u),
+    dispose() { /* intentionally empty — caller owns the VM lifecycle */ },
+  };
+  _pool.get(recipeId, async () => shim);
+
+  const unsub = store.subscribe((change: LarTiddlerChange) => {
+    const { title, record } = change;
+    if (!record || record.deleted) {
+      vm.removeTiddler(title);
+    } else {
+      const fields: Record<string, string | string[]> = { title, ...record.fields };
+      if (record.text !== undefined) fields["text"] = record.text;
+      vm.setTiddler(fields);
+    }
+  });
+  _subs.set(recipeId, unsub);
 }
 
 /**

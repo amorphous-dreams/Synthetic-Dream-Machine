@@ -2,13 +2,17 @@
  * carrier-split — disk carrier text → tiddler fields.
  *
  * Model:
- *   Parent tiddler: title = URI, text = original carrier text, type = text/x-memetic-wikitext.
- *   Child tiddlers: one per non-control ahu slot, text = ahu body (also memetic-wikitext).
+ *   Parent tiddler: title = URI, text = kahea-reference form, type = text/x-memetic-wikitext.
+ *     ahu definition blocks (<<~ ahu #slot >>body<<~/ahu >>) are replaced with
+ *     kahea references (<<~ kahea ahu #slot >>). Children are authoritative.
+ *   Child tiddlers: one per non-control ahu slot, text = ahu body (memetic-wikitext).
  *
  * No AST→string reconstruction. The MemeticParser owns rendering for both levels.
  * This module only projects TOML iam fields and fragment-* structural fields.
  *
- * Round-trip: disk file → splitCarrierToTiddlers → store → MemeticParser → TW5 render.
+ * Round-trip:
+ *   disk file → splitCarrierToTiddlers → store
+ *   store → exportCarrierText (expands kahea refs → definition form) → disk
  */
 
 import { parseMemeCarrier } from "@lararium/core";
@@ -156,9 +160,25 @@ function collectAhuBodies(text: string): Map<string, string> {
 }
 
 // ---------------------------------------------------------------------------
+// transformParentText — replace ahu definition blocks with kahea references
+//
+// <<~ ahu #slot >>body<<~/ahu >>  →  <<~ kahea ahu #slot >>
+//
+// Children are authoritative in the TW5 wiki. Parent holds references only.
+// Disk export reconstructs definition form via <$ahu> carrier-mode render.
+// ---------------------------------------------------------------------------
+
+export function transformParentText(text: string): string {
+  return text.replace(
+    /<<~[^>]*\bahu\s+(#[\w-]+)\s*>>[\s\S]*?<<~\/ahu\s*>>/g,
+    (_, slot: string) => `<<~ kahea ahu ${slot} >>`,
+  );
+}
+
+// ---------------------------------------------------------------------------
 // splitCarrierToTiddlers — disk carrier text → CarrierSplit
 //
-// Parent tiddler text  = original carrier text (MemeticParser renders it).
+// Parent tiddler text  = transformed carrier (ahu defs → kahea refs).
 // Child tiddler text   = ahu body text (also memetic-wikitext).
 // No string reconstruction from AST. Field projection only.
 // ---------------------------------------------------------------------------
@@ -269,11 +289,15 @@ export function splitCarrierToTiddlers(uri: string, text: string): CarrierSplit 
     parentFields["ahu-slots"] = slotOrder.join(" ");
   }
 
+  // Transform parent: replace ahu definition blocks with kahea references.
+  // Children are authoritative; parent holds references for TW5 wiki storage.
+  const parentText = slotOrder.length > 0 ? transformParentText(text) : text;
+
   return {
     parent: {
       title:  uri,
       fields: parentFields,
-      text,              // original carrier text — MemeticParser owns rendering
+      text:   parentText,
     },
     children: slotOrder.map((t) => childMap.get(t)!),
     warnings,

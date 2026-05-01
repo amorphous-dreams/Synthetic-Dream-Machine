@@ -76,12 +76,22 @@ const BOOTSTRAP_SCANS: SigilScan[] = [
   // Edge sugar
   { sigilName: "loulou",    regex: /<<~\s*loulou\s+(\S+)\s*>>/g,           eventType: "leaf"   },
   { sigilName: "aka",       regex: /<<~\s*aka\s+(\S+)\s*>>/g,              eventType: "leaf"   },
-  // kahea URI form:  <<~ kahea lar:///uri >> → PranalaSugarNode (compile + render)
-  // kahea name form: <<~ kahea name(args)  >> → SigilNode (render-only)
-  // URI form matched first (starts with lar: or contains / or #).
-  // Name form: identifier optionally followed by (key:val ...) args block.
-  // kahea — URI/dataflow form only: <<~ kahea lar:///uri >> → PranalaSugarNode
-  { sigilName: "kahea",      regex: /<<~\s*kahea\s+(lar:[^\s>]+|[^\s>(]+\/[^\s>]*|[^\s>(]+#[^\s>]*)\s*>>/g, eventType: "leaf" },
+  // kahea — generic summoning sigil.
+  //
+  // Three forms, scanned in this order:
+  //   1. Leaf:  <<~ kahea <type> <args> >>          — summons <type> widget with args, no template body
+  //   2. Open:  <<~ kahea <type> <args> >>body       — block form, body is an inline template
+  //             Close: <<~/kahea >>                  — explicit close required for block form
+  //   3. URI:   <<~ kahea lar:///uri >>              — dataflow edge (PranalaSugarNode)
+  //
+  // Type must be a bare identifier ([a-z][\w-]*); URI targets (lar:, paths, #frags) never match.
+  // Leaf scan is listed before Open — bare invocations are always leaves.
+  // Block form must use an explicit <<~/kahea >> close.
+  { sigilName: "kahea-invoke", regex: /<<~\s*kahea\s+([a-z][\w-]*)\s+([^>\n]+?)\s*>>/g,        eventType: "leaf" },
+  { sigilName: "kahea-invoke", regex: /<<~\s*kahea\s+([a-z][\w-]*)(?:\s+([^>]*?))?\s*>>/g,      eventType: "open" },
+  { sigilName: "kahea-invoke", regex: /<<~\/kahea\s*>>/g,                                         eventType: "close" },
+  // kahea URI/dataflow form: <<~ kahea lar:///uri >> → PranalaSugarNode
+  { sigilName: "kahea",        regex: /<<~\s*kahea\s+(lar:[^\s>]+|[^\s>(]+\/[^\s>]*|[^\s>(]+#[^\s>]*)\s*>>/g, eventType: "leaf" },
   { sigilName: "pono",        regex: /<<~\s*pono\s+(#[\w-]+\s+)?(\S+)\s*->\s*(\S+)(?:\s+role:([\w-]+))?\s*>>/g, eventType: "leaf" },
   { sigilName: "\\constraint", canonicalName: "pono", regex: /<<~\s*\\constraint\s+(#[\w-]+\s+)?(\S+)\s*->\s*(\S+)(?:\s+role:([\w-]+))?\s*>>/g, eventType: "leaf" },
   { sigilName: "lele",        regex: /<<~\s*lele\s+(\S+)\s*>>/g,           eventType: "leaf"   },
@@ -272,7 +282,7 @@ interface Frame {
 // If a grammar-meme sigil appears in a bootstrap carrier it falls to DynamicNode, not SigilNode.
 const CANONICAL_SIGILS = new Set([
   // bootstrapped
-  "ahu", "pranala", "loulou", "aka", "kahea", "pono", "lele", "papalohe",
+  "ahu", "kahea-invoke", "pranala", "loulou", "aka", "kahea", "pono", "lele", "papalohe",
   "wai", "mukuwai", "kahawai", "huli", "kumu", "kau", "waiho", "kukali",
   "toml",
   "control-soh", "control-stx", "control-etx", "control-eot",
@@ -346,6 +356,32 @@ export function buildAst(events: ParseEvent[], carrierUri: string, grammar?: Gra
   return root;
 }
 
+// ---------------------------------------------------------------------------
+// kaheaInvokeNode — dispatch <<~ kahea <type> <args> >> to the right AST node.
+// Called by both makeLeaf (leaf form) and closeFrame (block form with template body).
+// ---------------------------------------------------------------------------
+
+function kaheaInvokeNode(
+  type: string,
+  args: string,
+  base: { pos: number; raw: string },
+  carrierUri: string,
+  children: MemeAstNode[],
+): MemeAstNode {
+  switch (type) {
+    case "ahu": {
+      // Worksite summons: <<~ kahea ahu #slot >> → AhuNode(invocation=true)
+      // Leaf: body=[]. Block: body=children (inline template rendered in slot context).
+      const slot = args.trim();
+      return { kind: "Ahu", ...base, slot, uri: carrierUri + slot, delegate: null, body: children, invocation: true } as AhuNode;
+    }
+    default:
+      // Generic type summons → SigilNode with summon flag.
+      // The registered widget for sigilName=type handles invocation semantics.
+      return { kind: "Sigil", ...base, sigilName: type, attrs: { summon: "true", args }, body: children } as SigilNode;
+  }
+}
+
 function closeFrame(frame: Frame, carrierUri: string, _scope: "block", grammar?: GrammarRules): MemeAstNode {
   const { sigilName, pos, raw, groups, children } = frame;
   const base = { pos, raw };
@@ -354,6 +390,13 @@ function closeFrame(frame: Frame, carrierUri: string, _scope: "block", grammar?:
     const slot     = (groups[1] ?? "").trim();
     const delegate = (groups[2] ?? "").trim() || null;
     return { kind: "Ahu", ...base, slot, uri: carrierUri + slot, delegate, body: children } as AhuNode;
+  }
+  if (sigilName === "kahea-invoke") {
+    // Block form: <<~ kahea <type> <args> >>template<<~/kahea >>
+    // children = inline template nodes rendered in summoned tiddler's context.
+    const type = (groups[1] ?? "").trim();
+    const args = (groups[2] ?? "").trim();
+    return kaheaInvokeNode(type, args, base, carrierUri, children);
   }
   if (sigilName === "pranala") {
     // Block form
@@ -399,6 +442,14 @@ function makeLeaf(
       return { kind: "PranalaSugar", ...base, sigil: "loulou", slot: null, fromRaw: null, toRaw: g(1), family: "relation", role: null, trigger: null, fn: null } as PranalaSugarNode;
     case "aka":
       return { kind: "PranalaSugar", ...base, sigil: "aka",    slot: null, fromRaw: null, toRaw: g(1), family: "observe",  role: null, trigger: null, fn: null } as PranalaSugarNode;
+    case "kahea-invoke": {
+      // Generic worksite/widget summons — leaf or block open.
+      // g(1) = type name, g(2) = args string
+      // Dispatch by type → correct AST node kind.
+      const type = g(1);
+      const args = g(2);
+      return kaheaInvokeNode(type, args, base, carrierUri, []);
+    }
     case "kahea":
       // URI/dataflow form only — regex guarantees this is always a URI target.
       return { kind: "PranalaSugar", ...base, sigil: "kahea", slot: null, fromRaw: null, toRaw: g(1), family: "dataflow", role: null, trigger: null, fn: null } as PranalaSugarNode;

@@ -57,6 +57,11 @@ export async function voidBootCorpus(
   const vm = new LarariumTW5();
   await vm.boot();
 
+  // Snapshot the engine-owned $:/ namespace immediately after boot, before any
+  // corpus tiddlers are loaded. These titles belong in the engine doc island —
+  // they must not be written into the corpus Automerge doc.
+  const engineSystemTitles = new Set(vm.filterTiddlers("[prefix[$:/]]"));
+
   const records: Array<{ title: string; fields: Record<string, string | string[]>; text: string }> = [];
   let warnCount = 0;
 
@@ -73,13 +78,15 @@ export async function voidBootCorpus(
       try {
         const tiddlers = vm.deserializeCarrier(carrier.uri, text);
         for (const t of tiddlers) {
-          // Filter out TW5 internal parse-warning tiddlers from Automerge
-          if (typeof t["title"] === "string" && (t["title"] as string).startsWith("$:/lararium/parse-warning/")) {
-            warnCount++;
+          const title = t["title"] as string | undefined;
+          if (!title) continue;
+          // Engine-owned $:/ titles stay in the engine doc island — not corpus.
+          // Any new $:/ titles emitted by carrier deserialization (plugin state,
+          // parse warnings) are also excluded; they belong in personal/session doc.
+          if (title.startsWith("$:/")) {
+            if (!engineSystemTitles.has(title)) warnCount++;
             continue;
           }
-          const title = t["title"] as string;
-          if (!title) continue;
           const { title: _t, text: bodyText, ...fieldRest } = t;
           records.push({
             title,

@@ -11,6 +11,10 @@
     "./node": {
       "import": "./dist/node.js",
       "types": "./dist/node.d.ts"
+    },
+    "./tw5-worker-script": {
+      "import": "./dist/tw5-worker-script.js",
+      "types": "./dist/tw5-worker-script.d.ts"
     }
   },
   "main": "./dist/index.js",
@@ -20,7 +24,7 @@
     "build:tw5-vendor": "tsx scripts/build-tw5-vendor.ts",
     "build:heleuma": "tsx scripts/sync-heleuma.ts",
     "build:heleuma:commit": "tsx scripts/sync-heleuma.ts --commit",
-    "build:widgets": "tsx scripts/write-tiddler-memes.ts",
+    "build:modules": "tsx scripts/write-tiddler-memes.ts",
     "bundle": "vite build --config vite.bundle.config.ts && tsx scripts/write-module-meme.ts",
     "typecheck": "tsc --noEmit",
     "test": "NODE_OPTIONS=--experimental-vm-modules pnpm exec jest --config jest.config.cjs"

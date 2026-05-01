@@ -31,7 +31,10 @@
 import { useState, useEffect, useRef } from "react";
 import type { LarariumOpenPhase, CatalogDoc } from "@lararium/core";
 import { ReadinessMap, CompositeStore } from "@lararium/core";
-import { LarariumTW5, LarariumCrdtSyncAdaptor, setActiveTW5 } from "@lararium/tw5";
+import {
+  LarariumTW5, LarariumCrdtSyncAdaptor, setActiveTW5,
+  DirectRecipeVm, attachRecipeVm, releaseRecipeVm, makeRecipeId,
+} from "@lararium/tw5";
 import { openLarariumRepo, readCatalogUrl, type LarariumRepo } from "./automerge-store.js";
 import type { AutomergeMemeStore } from "./automerge-store.js";
 import type { DocHandleChangePayload } from "@automerge/automerge-repo";
@@ -255,6 +258,13 @@ export function useLarariumHostOpen(options: BrowserHostOptions): HostOpenState 
       setPhase({ kind: "tw5-ready", hostId });
       readiness.mark("tw-vm");
 
+      // Register the live in-process VM with the VmPool so filterRecipe /
+      // renderCarrier are available to canvas, MCP, and debug tools without
+      // React context or prop threading.
+      // Non-owning shim — releaseRecipeVm on teardown does not dispose the VM.
+      const recipeId = makeRecipeId([roomId]);
+      attachRecipeVm(recipeId, composite, new DirectRecipeVm(t));
+
       // ── Corpus islands — parallel, non-blocking ───────────────────────────
       // addLayer emits synthetic put-events for existing content so the live
       // adaptor pushes them into TW5 without a reload.
@@ -284,6 +294,7 @@ export function useLarariumHostOpen(options: BrowserHostOptions): HostOpenState 
       stopCatalogRef.current = null;
       stopAdaptorRef.current?.();
       stopAdaptorRef.current = null;
+      releaseRecipeVm(makeRecipeId([options.roomId]));
       setActiveTW5(null);
     };
   // roomId is the capability scope — change triggers clean teardown + reboot.

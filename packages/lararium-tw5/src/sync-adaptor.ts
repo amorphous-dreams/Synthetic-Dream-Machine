@@ -47,7 +47,8 @@
 import type { LarTiddlerStore, LarTiddlerRecord, LarTiddlerChange, ChangeOrigin, MemeProjection } from "@lararium/core";
 import type { LarariumTW5 } from "./lararium-tw5.js";
 import type { TW5TiddlerFields } from "./types/tiddlywiki.js";
-import { buildDirectRecord, decompileCarrierRecord } from "./carrier-write.js";
+import { buildDirectRecord } from "./carrier-write.js";
+import { splitCarrierToTiddlers } from "./carrier-codec.js";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -465,14 +466,25 @@ export class LarariumCrdtSyncAdaptor implements MemeProjection {
         return;
       }
 
-      // Carrier save: full memetic wikitext → decompile into parent + fragments.
-      const decomposed = decompileCarrierRecord(title, fields, text, this.targetBag);
-      if (decomposed) {
-        const { parent, fragments } = decomposed;
-        await this.store.put({ ...parent, revision }, origin);
-        for (const frag of fragments) {
-          this._revisions.set(frag.title, revision);
-          await this.store.put({ ...frag, revision }, origin);
+      // Carrier save: memetic wikitext → parent (original text) + ahu slot children.
+      const split = splitCarrierToTiddlers(title, text);
+      if (split.children.length > 0) {
+        await this.store.put({
+          title,
+          fields: split.parent.fields as Record<string, string>,
+          text,
+          revision,
+          bag: this.targetBag,
+        }, origin);
+        for (const child of split.children) {
+          this._revisions.set(child.title, revision);
+          await this.store.put({
+            title:  child.title,
+            fields: child.fields as Record<string, string>,
+            text:   child.text,
+            revision,
+            bag:    this.targetBag,
+          }, origin);
         }
         return;
       }

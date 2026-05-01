@@ -57,6 +57,7 @@ import { seedEngineDoc } from "../src/engine-island.js";
 import { LarDiskProjector, makeRecipeId, bootRecipeVm, renderCarrier, releaseRecipeVm, TW5_VERSION, TW5_CORE_SCRIPT_URL } from "@lararium/tw5";
 import { loadCorpusSources, corpusAbsPath } from "../src/node-host.js";
 import type { CorpusSource } from "../src/node-host.js";
+import { LarDiskWatcher } from "../src/disk-watcher.js";
 import { NodeMemeStore } from "../src/node-meme-store.js";
 import { getGhCliOperatorReceipt } from "../src/github-cli-auth.js";
 import type { AutomergeUrl, DocHandle } from "@automerge/automerge-repo";
@@ -511,10 +512,14 @@ async function main() {
   // ---------------------------------------------------------------------------
   const engineUrlFile = join(ISLANDS_DIR, "engine-doc-url.txt");
   const engineIsFirstBoot = !existsSync(engineUrlFile);
+  // Engine system titles — $:/ namespace owned by the engine island.
+  // Passed to LarDiskWatcher so it never writes engine-owned tiddlers to corpus.
+  let engineSystemTitles: readonly string[] = [];
   if (engineIsFirstBoot) {
     try {
       const { handle, coreSha256 } = await seedEngineDoc(memeRepo, APP_PUBLIC);
       writeFileSync(engineUrlFile, handle.url, "utf8");
+      engineSystemTitles = handle.doc()?.systemTitles ?? [];
       const engineEntry: CatalogEngineEntry = {
         version: TW5_VERSION,
         docUrl:  handle.url,
@@ -524,19 +529,19 @@ async function main() {
         const d = doc as DraftCatalogDoc;
         d.engine = engineEntry;
       });
-      console.log(`[lararium-serve] engine island seeded  v${TW5_VERSION}  url=${handle.url}`);
+      console.log(`[lararium-serve] engine island seeded  v${TW5_VERSION}  url=${handle.url}  system titles: ${engineSystemTitles.length}`);
     } catch (e) {
       console.error("[lararium-serve] ⚠ engine island seed failed:", e);
     }
   } else {
     const engineUrl = readFileSync(engineUrlFile, "utf8").trim() as AutomergeUrl;
     const engineHandle = await memeRepo.find<EngineDoc>(engineUrl);
-    // Ensure catalog entry is present (idempotent — safe to re-write same values).
     const engineDoc = engineHandle.doc();
+    engineSystemTitles = engineDoc?.systemTitles ?? [];
     const coreSha256Resume = engineDoc?.blobs["tiddlywikicore"]?.sha256 ?? "";
     const engineEntry: CatalogEngineEntry = { version: TW5_VERSION, docUrl: engineUrl, sha256: coreSha256Resume };
     catalogHandle.change((d) => { (d as DraftCatalogDoc).engine = engineEntry; });
-    console.log(`[lararium-serve] engine island resumed: ${engineUrl}`);
+    console.log(`[lararium-serve] engine island resumed: ${engineUrl}  system titles: ${engineSystemTitles.length}`);
   }
 
   // Warm the default room at boot so its URL is in the catalog immediately.
@@ -552,6 +557,7 @@ async function main() {
   //
   // renderFn: sync changed tiddler(s) into the corpus VM, then exportCarrierText.
   const projectors: LarDiskProjector[] = [];
+  const watchers:   LarDiskWatcher[]   = [];
 
   await Promise.all(corpusSources.map(async (source) => {
     const handle = await openOrCreateCorpus(source);
@@ -573,14 +579,22 @@ async function main() {
     const corpusStore = new NodeMemeStore(handle, bagId);
     await bootRecipeVm(recipeId, corpusStore);
 
+    // store → disk (debounced render via VM)
     const projector = new LarDiskProjector(laresRoot, async (uri) => renderCarrier(recipeId, uri));
     projectors.push(projector);
     projector.start(corpusStore);
-    console.log(`[lararium-serve] recipe VM booted for corpus ${bagId}`);
+
+    // disk → store (file watcher; echo guard via projector.writing)
+    const watcher = new LarDiskWatcher(laresRoot, corpusStore, projector, engineSystemTitles);
+    watchers.push(watcher);
+    watcher.start();
+
+    console.log(`[lararium-serve] recipe VM booted for corpus ${bagId} (writeback + watch enabled)`);
   }));
 
-  // Graceful shutdown — stop projectors and release recipe VMs.
+  // Graceful shutdown — stop projectors, watchers, and release recipe VMs.
   const shutdownProjectors = () => {
+    for (const w of watchers)   w.stop();
     for (const p of projectors) p.stop();
     for (const source of corpusSources) releaseRecipeVm(makeRecipeId([source.bag]));
   };

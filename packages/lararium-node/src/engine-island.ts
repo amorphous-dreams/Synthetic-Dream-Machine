@@ -13,6 +13,7 @@
 
 import { readFileSync, existsSync, readdirSync } from "fs";
 import { join, basename } from "path";
+import { LarariumTW5 } from "@lararium/tw5";
 import { createHash } from "crypto";
 import type { Repo, DocHandle } from "@automerge/automerge-repo";
 import type { EngineDoc, EngineBlobEntry } from "@lararium/core";
@@ -100,7 +101,18 @@ export async function seedEngineDoc(
     }
   }
 
-  console.log(`[engine-island] TW5 core v${TW5_VERSION}  sha=${coreSha.slice(0, 12)}…`);
+  // Snapshot the $:/ system title manifest from a freshly booted VM.
+  // This set is the engine authority boundary — corpus docs must not store these.
+  const snapshotVm = new LarariumTW5();
+  await snapshotVm.boot();
+  const systemTitles = snapshotVm.filterTiddlers("[prefix[$:/]]").sort();
+  snapshotVm.dispose();
+
+  handle.change((doc) => {
+    (doc as { systemTitles?: readonly string[] }).systemTitles = systemTitles;
+  });
+
+  console.log(`[engine-island] TW5 core v${TW5_VERSION}  sha=${coreSha.slice(0, 12)}…  system titles: ${systemTitles.length}`);
   console.log(`[engine-island] engine doc URL: ${handle.url}`);
   return { handle, coreSha256: coreSha };
 }

@@ -8,12 +8,10 @@
  *   receipt                Compile boot receipt
  */
 
-import { createLarariumRuntime } from "./node-host.js";
-import { resolveLarUri } from "@lararium/core";
+import { readCarrier, compileBootArtifact } from "./node-host.js";
+import { resolveLarUri, compileBootReceipt } from "@lararium/core";
 
 const [, , cmd, ...args] = process.argv;
-
-const runtime = createLarariumRuntime({ writeback: false });
 
 switch (cmd) {
   case "resolve": {
@@ -25,17 +23,15 @@ switch (cmd) {
   case "carrier": {
     const uri = args[0];
     if (!uri) { console.error("Usage: lararium carrier <uri>"); process.exit(1); }
-    console.log(JSON.stringify(runtime.readCarrier(uri), null, 2));
+    console.log(JSON.stringify(readCarrier(uri), null, 2));
     break;
   }
   case "boot": {
-    const artifact = runtime.compileBoot();
-    console.log(JSON.stringify(artifact, null, 2));
+    console.log(JSON.stringify(compileBootArtifact(), null, 2));
     break;
   }
   case "receipt": {
-    const artifact = runtime.compileBoot();
-    runtime.compileBootReceipt(artifact).then((receipt) => {
+    compileBootReceipt(compileBootArtifact()).then((receipt) => {
       console.log(JSON.stringify(receipt, null, 2));
     });
     break;

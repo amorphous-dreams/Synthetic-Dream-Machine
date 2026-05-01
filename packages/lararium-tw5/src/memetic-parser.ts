@@ -74,9 +74,12 @@ function nodeToTw5(node: MemeAstNode, wiki?: TW5Wiki): TW5ParseNode {
         attributes: {
           slot: attr(node.slot),
           uri:  attr(node.uri),
-          ...(node.delegate ? { delegate: attr(node.delegate) } : {}),
+          ...(node.delegate   ? { delegate:   attr(node.delegate) }      : {}),
+          ...(node.invocation ? { invocation: attr("true") }              : {}),
         },
-        children: node.body.map((n) => nodeToTw5(n, wiki)) };
+        // kahea ahu (invocation) has no body — inline children not rendered.
+        // Definition form body is carried for import/round-trip but <$ahu> transcludesthe child tiddler.
+        children: node.invocation ? [] : node.body.map((n) => nodeToTw5(n, wiki)) };
 
     case "Text": {
       // When a wiki context is available, pipe prose through TW5's own wikitext

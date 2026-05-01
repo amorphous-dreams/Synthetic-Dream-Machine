@@ -18,10 +18,8 @@ import {
   Meme,
   laresRelPathToLarUri,
   compileBoot,
-  compileBootReceipt,
   ENTRY_URI,
   type BootArtifact,
-  type BootReceipt,
   type CarrierRecord,
   type GrammarRules,
 } from "@lararium/core";
@@ -297,30 +295,8 @@ export function compileCarrierIndex(): CarrierRecord[] {
   return records;
 }
 
-// ---------------------------------------------------------------------------
-// Public runtime API
-// ---------------------------------------------------------------------------
-
-export interface LarariumRuntime {
-  readResource(uri: string): string;
-  readCarrier(uri: string): CarrierRecord;
-  compileBoot(): BootArtifact;
-  compileBootReceipt(artifact: BootArtifact): Promise<BootReceipt>;
-  // compileCarrierIndex intentionally absent — filesystem scan is a build-time
-  // seeding tool, not a store query. Use compileCarrierIndex() from node-host directly.
-}
-
-export function createLarariumRuntime(_opts?: { writeback?: boolean }): LarariumRuntime {
-  return {
-    readResource: readLarResource,
-    readCarrier,
-
-    compileBoot(): BootArtifact {
-      const { graph, topoUris, violations, grammar } = buildControlClosure(ENTRY_URI);
-      loadInterfaces(graph, grammar);
-      return compileBoot(graph, topoUris, violations);
-    },
-
-    compileBootReceipt,
-  };
+export function compileBootArtifact(): BootArtifact {
+  const { graph, topoUris, violations, grammar } = buildControlClosure(ENTRY_URI);
+  loadInterfaces(graph, grammar);
+  return compileBoot(graph, topoUris, violations);
 }

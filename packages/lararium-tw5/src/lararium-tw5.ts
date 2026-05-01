@@ -27,7 +27,7 @@
 import type { ClosureEntry, EdgeRecord, FilterEngineFn, LarTiddlerStore } from "@lararium/core";
 import type { TW5Instance, TW5Wiki, TW5FakeElement, TW5ChangeRecord, TW5TiddlerFields, TW5WidgetConstructor } from "./types/tiddlywiki.js";
 import { MemeStreamParser } from "@lararium/core";
-import { splitCarrierToTiddlers, streamEventsToTiddlers, type TiddlerFields } from "./carrier-codec.js";
+import type { TiddlerFields } from "./carrier-codec.js";
 import { createLarariumWidgets, registerImplementorsOperator, LARARIUM_WIDGETS_TIDDLER } from "./tw5-widgets.js";
 import { loadUiTiddlers, loadVendorTiddlers } from "./lares-preloads.js";
 import { entryToFields, buildEdgeFieldMap } from "./closure-fields.js";
@@ -562,14 +562,8 @@ export class LarariumTW5 {
     const base: TiddlerFields = { title: uri, ...extraFields };
     let tiddlers: TiddlerFields[];
 
-    if (this._tw) {
-      tiddlers = (this._tw.wiki.deserializeTiddlers("text/x-memetic-wikitext", text, base) ?? []) as TiddlerFields[];
-    } else {
-      // Pre-boot fallback — same shape as _registerDeserializer
-      const split = splitCarrierToTiddlers(uri, text);
-      const parent: TiddlerFields = { ...base, ...split.parent.fields, text: split.parent.text };
-      tiddlers = [parent, ...split.children.map((c) => ({ ...c.fields, title: c.title, text: c.text }))];
-    }
+    if (!this._tw) throw new Error("LarariumTW5: call boot() before deserializeCarrier()");
+    tiddlers = (this._tw.wiki.deserializeTiddlers("text/x-memetic-wikitext", text, base) ?? []) as TiddlerFields[];
 
     if (opts?.realmOrigin) {
       const ro = opts.realmOrigin;
@@ -595,17 +589,28 @@ export class LarariumTW5 {
     chunks:  AsyncIterable<string>,
     opts?:   { realmOrigin?: string },
   ): AsyncGenerator<TiddlerFields[]> {
+    if (!this._tw) throw new Error("LarariumTW5: call boot() before streamDeserializeCarrier()");
+    const wiki = this._tw.wiki;
+    const ro = opts?.realmOrigin;
+
+    // MemeStreamParser handles SOH/STX/ETX framing only — no field projection.
+    // Field projection happens inside the VM via wiki.deserializeTiddlers.
     const parser = new MemeStreamParser();
+
+    const yieldCarrier = (uri: string, fullText: string): TiddlerFields[] => {
+      const base: TiddlerFields = { title: uri, ...(ro ? { "realm-origin": ro } : {}) };
+      const tiddlers = (wiki.deserializeTiddlers("text/x-memetic-wikitext", fullText, base) ?? []) as TiddlerFields[];
+      if (ro) return tiddlers.map((t) => ({ ...t, "realm-origin": ro }));
+      return tiddlers;
+    };
+
     for await (const chunk of chunks) {
-      const events = parser.push(chunk);
-      for (const batch of streamEventsToTiddlers(events, opts?.realmOrigin)) {
-        yield batch;
+      for (const ev of parser.push(chunk)) {
+        if (ev.kind === "carrier-close") yield yieldCarrier(ev.uri, ev.fullText);
       }
     }
-    // Flush any incomplete carrier at stream end
-    const tail = parser.flush();
-    for (const batch of streamEventsToTiddlers(tail, opts?.realmOrigin)) {
-      yield batch;
+    for (const ev of parser.flush()) {
+      if (ev.kind === "carrier-close") yield yieldCarrier(ev.uri, ev.fullText);
     }
   }
 
@@ -745,7 +750,7 @@ export class LarariumTW5 {
    * This is the isomorphic TW5 syncer — it replaces $tw.syncer for the
    * local-first model where the adaptor backend varies by context:
    *   browser → LarariumCrdtSyncAdaptor (TW5 ↔ Automerge IndexedDB)
-   *   server  → LarDiskSyncAdaptor      (TW5 ↔ lares/ files)
+   *   server  → LarDiskProjector + LarDiskWatcher (TW5 VM ↔ lares/ files)
    *
    * Drives the TW5 → adaptor write direction:
    *   wiki change event fires

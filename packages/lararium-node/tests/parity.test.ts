@@ -5,10 +5,8 @@
  */
 
 import { describe, test, expect } from "@jest/globals";
-import { resolveLarUri, parseHostfulLarUri, isHostfulLarUri } from "@lararium/core";
-import { readCarrier, createLarariumRuntime, compileCarrierIndex } from "../src/node-host.js";
-
-const runtime = createLarariumRuntime({ writeback: false });
+import { resolveLarUri, parseHostfulLarUri, isHostfulLarUri, compileBootReceipt } from "@lararium/core";
+import { readCarrier, compileBootArtifact, compileCarrierIndex } from "../src/node-host.js";
 
 // ---------------------------------------------------------------------------
 // Resolver invariants
@@ -86,32 +84,32 @@ describe("carrier mana signals", () => {
 
 describe("minimal boot closure", () => {
   test("entry point is AGENTS", () => {
-    const artifact = runtime.compileBoot();
+    const artifact = compileBootArtifact();
     expect(artifact.closure[0]?.uri).toBe("lar:///AGENTS");
   });
 
   test("closure is non-empty and bounded (≥18 memes)", () => {
-    const artifact = runtime.compileBoot();
+    const artifact = compileBootArtifact();
     expect(artifact.memeCount).toBeGreaterThanOrEqual(18);
     expect(artifact.closure.length).toBe(artifact.memeCount);
   });
 
   test("mu is in the closure at depth 1", () => {
-    const artifact = runtime.compileBoot();
+    const artifact = compileBootArtifact();
     const mu = artifact.closure.find((e) => e.uri === "lar:///ha.ka.ba/api/v0.1/mu");
     expect(mu).toBeDefined();
     expect(mu!.depth).toBe(1);
   });
 
   test("LARES is in the closure", () => {
-    const artifact = runtime.compileBoot();
+    const artifact = compileBootArtifact();
     const lares = artifact.closure.find((e) => e.uri === "lar:///LARES");
     expect(lares).toBeDefined();
     expect(lares!.depth).toBeGreaterThanOrEqual(1);
   });
 
   test("lararium law memes present (live-session-overwrite, canon-promotion-boundary, tagspace-trust, exchange-vector)", () => {
-    const artifact = runtime.compileBoot();
+    const artifact = compileBootArtifact();
     const uris = new Set(artifact.closure.map((e) => e.uri));
     const PONO = "lar:///ha.ka.ba/api/v0.1/pono/";
     const LAR  = "lar:///ha.ka.ba/api/v0.1/lararium/";
@@ -122,7 +120,7 @@ describe("minimal boot closure", () => {
   });
 
   test("closure entries have uri, depth, kind fields", () => {
-    const artifact = runtime.compileBoot();
+    const artifact = compileBootArtifact();
     for (const entry of artifact.closure) {
       expect(typeof entry.uri).toBe("string");
       expect(typeof entry.depth).toBe("number");
@@ -133,25 +131,25 @@ describe("minimal boot closure", () => {
 
 describe("boot closure", () => {
   test("two boot compiles return the same closure URIs", () => {
-    const a = runtime.compileBoot().closure.map((e) => e.uri);
-    const b = runtime.compileBoot().closure.map((e) => e.uri);
+    const a = compileBootArtifact().closure.map((e) => e.uri);
+    const b = compileBootArtifact().closure.map((e) => e.uri);
     expect(a).toEqual(b);
   });
 });
 
 describe("boot receipt", () => {
   test("receipt sha256 is stable across two calls with same lares/ state", async () => {
-    const a1 = runtime.compileBoot();
-    const a2 = runtime.compileBoot();
-    const r1 = await runtime.compileBootReceipt(a1);
-    const r2 = await runtime.compileBootReceipt(a2);
+    const a1 = compileBootArtifact();
+    const a2 = compileBootArtifact();
+    const r1 = await compileBootReceipt(a1);
+    const r2 = await compileBootReceipt(a2);
     expect(r1.sha256).toBe(r2.sha256);
     expect(r1.sha256).toMatch(/^(sha256:)?[0-9a-f]{63,64}$/);
   });
 
   test("receipt memeCount matches minimal boot memeCount", async () => {
-    const artifact = runtime.compileBoot();
-    const receipt = await runtime.compileBootReceipt(artifact);
+    const artifact = compileBootArtifact();
+    const receipt = await compileBootReceipt(artifact);
     expect(receipt.memeCount).toBe(artifact.memeCount);
   });
 });

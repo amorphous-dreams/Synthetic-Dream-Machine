@@ -1,26 +1,23 @@
 /**
- * deserializer — TW5 tiddlerdeserializer for text/x-memetic-wikitext.
+ * deserializer — TW5 causal-island boundary module for text/x-memetic-wikitext.
  *
  * Heleuma ba: this TS source compiles to an IIFE plugin tiddler at
  * lar:///ha.ka.ba/api/v0.1/lararium/modules/deserializer
  * (module-type: tiddlerdeserializer, key: text/x-memetic-wikitext).
  *
- * TW5 deserializer contract:
- *   deserializer(text: string, fields: Record<string, unknown>) → TiddlerFields[]
+ * Covers both edges of the causal island:
+ *   Incoming (disk → wiki): memeticWikitextDeserializer — TW5 tiddlerdeserializer contract.
+ *   Outgoing (wiki → disk): expandCarrierRefs — registered on $tw.lararium; called by sync-adaptor.
+ *
+ * Parent text model:
+ *   Incoming: splitCarrierToTiddlers transforms ahu definition blocks to kahea references.
+ *   Children are authoritative in the wiki.
+ *   Outgoing: expandCarrierRefs inverts — reads child bodies, reconstructs definition form.
  *
  * Stream model:
- *   Multi-carrier: MemeStreamParser emits one carrier-close per meme; each becomes
- *     a batch of [parent, ...children] tiddlers.
+ *   Multi-carrier: MemeStreamParser emits one carrier-close per meme.
  *   Partial carrier (no ETX): flush() emits a best-effort carrier-close; no crash.
  *   Bare body (no SOH framing): treated as a single carrier with baseUri from fields.title.
- *
- * OODA-HA:
- *   ✶ scan: MemeStreamParser.push(text) + flush() → events
- *   ⏿ hold: filter to carrier-close events only
- *   ◇ route: carrier-close → splitCarrierToTiddlers → [parent, ...children]
- *   ▶ yield: TiddlerFields[] result (all carriers, all children)
- *   ⤴ fallback: no events → bare body path
- *   ↺ release: no state; every call is a fresh parse
  */
 
 import { MemeStreamParser } from "@lararium/core";
@@ -61,7 +58,7 @@ export function memeticWikitextDeserializer(
       ...asStringFields(fields),
       ...split.parent.fields,
       title: uri,
-      text:  ev.fullText,   // original carrier text — MemeticParser renders it
+      text:  split.parent.text,   // kahea-reference form; children are authoritative
     };
     result.push(parent);
 
@@ -107,6 +104,43 @@ export function memeticWikitextDeserializer(
   }
 
   return result;
+}
+
+// ---------------------------------------------------------------------------
+// expandCarrierRefs — outgoing edge: wiki → disk
+//
+// Inverts the incoming transformation: reads kahea-reference parent text and
+// reconstructs definition form by expanding <<~ kahea ahu #slot >> with child
+// tiddler bodies read from the wiki.
+//
+// Registered on $tw.lararium so the Node-side sync-adaptor can call it without
+// duplicating this logic outside the compiled module.
+// ---------------------------------------------------------------------------
+
+export function expandCarrierRefs(
+  wiki: { getTiddlerText?: (title: string, fallback: string) => string },
+  parentUri: string,
+): string {
+  const parentText = wiki.getTiddlerText?.(parentUri, "") ?? "";
+  return parentText.replace(
+    /<<~\s*kahea\s+ahu\s+(#[\w-]+)\s*>>/g,
+    (_, slot: string) => {
+      const childBody = wiki.getTiddlerText?.(parentUri + slot, "") ?? "";
+      return `<<~ ahu ${slot} >>\n${childBody}\n<<~/ahu >>`;
+    },
+  );
+}
+
+// Register on $tw.lararium at module load time so the sync-adaptor bridge can
+// call it via tw5._tw.lararium.expandCarrierRefs(wiki, uri).
+declare const exports: Record<string, unknown>;
+if (typeof exports !== "undefined") {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const tw = (globalThis as any).$tw;
+  if (tw) {
+    tw.lararium = tw.lararium ?? {};
+    tw.lararium.expandCarrierRefs = expandCarrierRefs;
+  }
 }
 
 // ---------------------------------------------------------------------------
