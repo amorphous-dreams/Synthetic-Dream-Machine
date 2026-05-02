@@ -33,8 +33,10 @@ function makeMemeHashSync(uri: string, fileBytes: Uint8Array | null): string {
 
 import { laresRoot } from "@lares/lares";
 
-export const LARES_ROOT = laresRoot;
-export const REPO_ROOT  = dirname(laresRoot);
+export const LARES_ROOT       = laresRoot;
+/** packages/lares/memes/ — the walkable corpus root. Non-meme lares/ files (package machinery) stay outside. */
+export const LARES_MEMES_ROOT = join(laresRoot, "memes");
+export const REPO_ROOT        = dirname(laresRoot);
 
 // ---------------------------------------------------------------------------
 // Grammar rules reader — Phase 2 scaffolding
@@ -45,7 +47,7 @@ export const REPO_ROOT  = dirname(laresRoot);
 // ---------------------------------------------------------------------------
 
 export function loadGrammarRules(): GrammarRules | null {
-  const grammarPath = join(LARES_ROOT, "grammars", "memetic-wikitext.md");
+  const grammarPath = join(LARES_MEMES_ROOT, "grammars", "memetic-wikitext.md");
   if (!existsSync(grammarPath)) return null;
   const text = readFileSync(grammarPath, "utf8");
   return grammarRulesFromText("lar:///ha.ka.ba/@lares/grammars/memetic-wikitext", text);
@@ -68,7 +70,7 @@ export interface CorpusSource {
 }
 
 export function loadCorpusSources(): CorpusSource[] {
-  const memeFile = join(LARES_ROOT, "api/v0.1/lararium/schema/corpus-sources.md");
+  const memeFile = join(LARES_MEMES_ROOT, "api/v0.1/lararium/schema/corpus-sources.md");
   if (!existsSync(memeFile)) return [];
   const text = readFileSync(memeFile, "utf8");
 
@@ -118,7 +120,7 @@ export function larUriToLaresAbsPath(uri: string): string | null {
   try {
     const resolution = resolveLarUri(uri);
     if (!resolution.laresRelPath) return null;
-    return join(LARES_ROOT, resolution.laresRelPath);
+    return join(LARES_MEMES_ROOT, resolution.laresRelPath);
   } catch {
     return null;
   }
@@ -132,7 +134,7 @@ export function readLarResource(uri: string): string {
   const resolution = resolveLarUri(uri);
   if (resolution.virtual) throw new Error(`${uri} names a virtual lar resource`);
   if (!resolution.laresRelPath) throw new Error(`${uri} has no file path`);
-  const abs = join(LARES_ROOT, resolution.laresRelPath);
+  const abs = join(LARES_MEMES_ROOT, resolution.laresRelPath);
   if (!existsSync(abs)) throw new Error(`${uri} does not resolve to an existing file: ${abs}`);
   return readFileSync(abs, "utf8");
 }
@@ -145,7 +147,7 @@ export function readCarrier(uri: string): CarrierRecord {
   const resolution = resolveLarUri(uri);
   if (resolution.virtual) throw new Error(`${uri} names a virtual carrier namespace`);
   if (!resolution.laresRelPath) throw new Error(`${uri} has no file path`);
-  const abs = join(LARES_ROOT, resolution.laresRelPath);
+  const abs = join(LARES_MEMES_ROOT, resolution.laresRelPath);
   if (!existsSync(abs)) throw new Error(`${uri} does not resolve to an existing carrier file`);
   const text = readFileSync(abs, "utf8");
   const edges = parsePranalaEdges(uri, text);
@@ -165,7 +167,7 @@ function loadMeme(uri: string, grammar?: GrammarRules): Meme | null {
   }
 
   if (!resolution.laresRelPath) return null;
-  const abs = join(LARES_ROOT, resolution.laresRelPath);
+  const abs = join(LARES_MEMES_ROOT, resolution.laresRelPath);
 
   if (!existsSync(abs)) {
     return { uri, laresRelPath: resolution.laresRelPath, contentHash: makeMemeHashSync(uri, null), metadata: {}, edgesOut: [], virtual: false, exists: false, shape: null };
@@ -280,14 +282,14 @@ function* walkLares(dir: string, ignorePatterns: RegExp[], laresRoot: string): I
 
 function* iterSourceCarrierPaths(): Iterable<string> {
   const ignorePatterns = loadIgnorePatterns();
-  yield* walkLares(LARES_ROOT, ignorePatterns, LARES_ROOT);
+  yield* walkLares(LARES_MEMES_ROOT, ignorePatterns, LARES_ROOT);
 }
 
 export function compileCarrierIndex(): CarrierRecord[] {
   const records: CarrierRecord[] = [];
   for (const absPath of iterSourceCarrierPaths()) {
     try {
-      const relPath = relative(LARES_ROOT, absPath).replace(/\\/g, "/");
+      const relPath = relative(LARES_MEMES_ROOT, absPath).replace(/\\/g, "/");
       const uri = laresRelPathToLarUri(relPath);
       records.push(readCarrier(uri));
     } catch { continue; }

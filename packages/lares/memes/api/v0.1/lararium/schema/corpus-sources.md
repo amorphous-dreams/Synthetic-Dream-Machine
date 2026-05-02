@@ -3,7 +3,7 @@
 <<~&#x0001; ? -> lar:///ha.ka.ba/@lares/api/v0.1/lararium/schema/corpus-sources >>
 ```toml iam
 uri-path = "ha.ka.ba/@lares/api/v0.1/lararium/schema/corpus-sources"
-file-path = "packages/lares/api/v0.1/lararium/schema/corpus-sources.md"
+file-path = "packages/lares/memes/api/v0.1/lararium/schema/corpus-sources.md"
 type = "text/x-memetic-wikitext"
 register     = "CS"
 confidence   = 0.90
@@ -62,7 +62,7 @@ It hydrates before all other corpora. All other corpora treat it as read-only at
 ```toml
 [[corpus]]
 name  = "@lares/lares"
-path  = "packages/lares"
+path  = "packages/lares/memes"
 bag   = "lares"
 quine = true
 note  = "infrastructure-as-myth corpus; quine-corpus; hydrates first"
@@ -92,12 +92,25 @@ bag   = "wtf"
 note  = "Wizard.Thief.Fighter rules corpus"
 
 [[corpus]]
-name     = "@lararium/ha-ka-ba"
-path     = "packages/ha-ka-ba"
+name     = "@lararium/core"
+path     = "packages/lararium-core/memes"
 bag      = "engine"
-quine    = true
-uri-rule = "lar:///ha.ka.ba/@lares/{@scope/name}/v{version}/**"
-note     = "engine self-documentation corpus; TypeScript symbol memes + compiled IIFE tiddlers; URI derives from source package name+version"
+uri-rule = "lar:///ha.ka.ba/@lararium/core/v{version}/**"
+note     = "engine self-doc memes for @lararium/core TypeScript symbols"
+
+[[corpus]]
+name     = "@lararium/tw5"
+path     = "packages/lararium-tw5/memes"
+bag      = "engine"
+uri-rule = "lar:///ha.ka.ba/@lararium/tw5/v{version}/**"
+note     = "engine self-doc memes for @lararium/tw5 TypeScript symbols + compiled IIFE tiddlers"
+
+[[corpus]]
+name     = "@lararium/node"
+path     = "packages/lararium-node/memes"
+bag      = "engine"
+uri-rule = "lar:///ha.ka.ba/@lararium/node/v{version}/**"
+note     = "engine self-doc memes for @lararium/node TypeScript symbols"
 ```
 
 <<~/ahu >>
@@ -108,7 +121,7 @@ note     = "engine self-documentation corpus; TypeScript symbol memes + compiled
 
 ```
 system bag    ← invariant TW5 boot corpus (read-only)
-engine bag    ← TypeScript self-doc memes + compiled IIFE tiddlers; URI: lar:///ha.ka.ba/@lares/{pkg}/v{ver}/**
+engine bag    ← TypeScript self-doc memes + compiled IIFE tiddlers; URI: lar:///ha.ka.ba/@lararium/{pkg}/v{ver}/**
 lares bag     ← infrastructure-as-myth; quine-corpus; read at runtime by machinery
 elyncia bag   ← setting content
 ftls bag      ← FTLS rules

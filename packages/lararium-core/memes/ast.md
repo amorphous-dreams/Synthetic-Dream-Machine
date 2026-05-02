@@ -1,7 +1,9 @@
+<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/@lares/api/v0.1/pono/memetic-wikitext >> -->
+
 <<~&#x0001; ? -> lar:///ha.ka.ba/@lararium/core/v0.1/ast >>
 ```toml iam
 uri-path     = "ha.ka.ba/@lararium/core/v0.1/ast"
-file-path    = "packages/ha-ka-ba/lararium-core/ast.md"
+file-path    = "packages/lararium-core/memes/ast.md"
 source-file  = "packages/lararium-core/src/ast.ts"
 type         = "text/x-memetic-wikitext"
 register     = "CS"

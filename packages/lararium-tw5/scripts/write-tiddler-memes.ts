@@ -58,8 +58,8 @@ function processEntry(name: string, kind: "widget" | "filter" | "module"): void 
   const sha256 = createHash("sha256").update(iife, "utf8").digest("hex");
 
   const subdir     = kind === "widget" ? "widgets" : kind === "filter" ? "filters" : "modules";
-  const modulePath = resolve(laresRoot, `api/v0.1/lararium/${subdir}/${name}-tw5.md`);
-  const anchorPath = resolve(laresRoot, `api/v0.1/lararium/${subdir}/${name}.md`);
+  const modulePath = resolve(laresRoot, `memes/api/v0.1/lararium/${subdir}/${name}-tw5.md`);
+  const anchorPath = resolve(laresRoot, `memes/api/v0.1/lararium/${subdir}/${name}.md`);
 
   if (!existsSync(modulePath)) {
     console.warn(`[write-tiddler-memes] MISSING module tiddler: ${modulePath}`);
