@@ -10,7 +10,7 @@ register     = "CS"
 confidence   = 0.92
 mana         = 0.90
 role         = "self-documentation: edge-vocabulary types and Law of Fives constants"
-tagspace     = "engine"
+tagspace     = "lararium"
 cacheable    = true
 retain       = true
 ```

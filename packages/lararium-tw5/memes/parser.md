@@ -10,7 +10,7 @@ register     = "CS"
 confidence   = 0.92
 mana         = 0.90
 role         = "self-documentation: parseMemeCarrier and MemeAst construction pipeline"
-tagspace     = "engine"
+tagspace     = "lararium"
 cacheable    = true
 retain       = true
 ```

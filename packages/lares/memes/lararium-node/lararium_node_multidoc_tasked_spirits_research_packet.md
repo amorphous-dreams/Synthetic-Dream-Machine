@@ -13,7 +13,7 @@
 ```
 catalog doc  ─── engine entry { version, docUrl, sha256 }
              │
-             ├── engine doc (EngineDoc)
+             ├── lararium doc (EngineDoc)
              │     blobs["tiddlywikicore"] = { blob: Uint8Array, sha256, version }
              │     (TW5 core + plugins — no CDN dependency after first peer seed)
              │

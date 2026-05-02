@@ -10,7 +10,7 @@ register     = "CS"
 confidence   = 0.92
 mana         = 0.90
 role         = "self-documentation: MemeAstNode union and all parse-time AST node types"
-tagspace     = "engine"
+tagspace     = "lararium"
 cacheable    = true
 retain       = true
 ```

@@ -100,21 +100,21 @@ note  = "Wizard.Thief.Fighter rules corpus"
 [[corpus]]
 name     = "@lararium/core"
 path     = "packages/lararium-core/memes"
-bag      = "engine"
+bag      = "lararium"
 uri-rule = "lar:///ha.ka.ba/@lararium/core/v{version}/**"
 note     = "engine self-doc memes for @lararium/core TypeScript symbols"
 
 [[corpus]]
 name     = "@lararium/tw5"
 path     = "packages/lararium-tw5/memes"
-bag      = "engine"
+bag      = "lararium"
 uri-rule = "lar:///ha.ka.ba/@lararium/tw5/v{version}/**"
 note     = "engine self-doc memes for @lararium/tw5 TypeScript symbols + compiled IIFE tiddlers"
 
 [[corpus]]
 name     = "@lararium/node"
 path     = "packages/lararium-node/memes"
-bag      = "engine"
+bag      = "lararium"
 uri-rule = "lar:///ha.ka.ba/@lararium/node/v{version}/**"
 note     = "engine self-doc memes for @lararium/node TypeScript symbols"
 ```
@@ -127,7 +127,7 @@ note     = "engine self-doc memes for @lararium/node TypeScript symbols"
 
 ```
 system bag    ← invariant TW5 boot corpus (read-only)
-engine bag    ← TypeScript self-doc memes + compiled IIFE tiddlers; URI: lar:///ha.ka.ba/@lararium/{pkg}/v{ver}/**
+lararium bag    ← TypeScript self-doc memes + compiled IIFE tiddlers; URI: lar:///ha.ka.ba/@lararium/{pkg}/v{ver}/**
 lares bag     ← infrastructure-as-myth + chapel-perilous-opens unstable tagspace; quine-corpus; read at runtime by machinery
 elyncia bag   ← setting content
 ftls bag      ← FTLS rules

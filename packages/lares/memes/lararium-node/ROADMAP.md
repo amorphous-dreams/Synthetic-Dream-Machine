@@ -1871,7 +1871,7 @@ The `writing` Set on the projector guards against file-watcher echo: the watcher
 
 ```
 catalog doc            — hallway: names all islands (rooms, corpora, engine, recipes)
-  engine doc           — TW5 core + plugins as binary blobs; catalog holds URL + sha256 only
+  lararium doc           — TW5 core + plugins as binary blobs; catalog holds URL + sha256 only
   corpus docs          — one per corpus bag (lares quine, elyncia, ftls, sdm, …)
   room docs            — one per roomId; starts empty; durable room content
 ```

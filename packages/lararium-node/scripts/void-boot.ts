@@ -58,7 +58,7 @@ export async function voidBootCorpus(
   await vm.boot();
 
   // Snapshot the engine-owned $:/ namespace immediately after boot, before any
-  // corpus tiddlers are loaded. These titles belong in the engine doc island —
+  // corpus tiddlers are loaded. These titles belong in the lararium doc island —
   // they must not be written into the corpus Automerge doc.
   const engineSystemTitles = new Set(vm.filterTiddlers("[prefix[$:/]]"));
 
@@ -80,7 +80,7 @@ export async function voidBootCorpus(
         for (const t of tiddlers) {
           const title = t["title"] as string | undefined;
           if (!title) continue;
-          // Engine-owned $:/ titles stay in the engine doc island — not corpus.
+          // Engine-owned $:/ titles stay in the lararium doc island — not corpus.
           // Any new $:/ titles emitted by carrier deserialization (plugin state,
           // parse warnings) are also excluded; they belong in personal/session doc.
           if (title.startsWith("$:/")) {
