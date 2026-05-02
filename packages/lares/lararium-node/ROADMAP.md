@@ -106,7 +106,7 @@ cd packages/lararium-tw5  && npx tsc --noEmit  # ✓ one rebuild-target (Memetic
 - `MemeRecipeVm`: Sprint 3 complete ✓
 - `KumuDeviceSpec` + `ReactionEngine`: Sprint 4 complete ✓ — see `#m14-session-cont-2026-05-02` below
 - UEFN canonical English name pass: complete ✓ — see `#m14-uefn-name-pass-2026-05-02` below
-- `MemeSyncAdaptor`: Sprint 5 — replaces `LarariumCrdtSyncAdaptor`
+- `MemeSyncAdaptor`: Sprint 5 complete ✓ — see `#m14-sprint5-meme-sync-adaptor-2026-05-02`
 - Browser host (`meme-browser-host.ts`): Sprint 6 — research-before-act (Automerge browser repo + Keyhive)
 - `sw.ts` tsconfig lib issues: pre-existing, separate fix
 - `system` + `projection` bag store impls: still pending (D stubs)
@@ -192,8 +192,8 @@ cd packages/lararium-tw5  && npx tsc --noEmit  # ✓ ZERO errors
 
 ↺ **Aftermath / M14 open work:**
 
-- **Sprint 5 next:** `meme-sync-adaptor.ts` — `MemeSyncAdaptor` replaces `LarariumCrdtSyncAdaptor` stub. Echo-loop guard, canon guard (lares/ namespace rejects saveTiddler), temp guard (`$:/temp/*`), draft sync. Uses `buildDirectRecord` from `meme-write.ts`. Read `sync-adaptor.web2.ts` sidecar before writing.
-- **Sprint 6:** `meme-browser-host.ts` — Automerge browser repo + IndexedDB. Research-before-act.
+- **Sprint 5 complete ✓:** `meme-sync-adaptor.ts` — see `#m14-sprint5-meme-sync-adaptor-2026-05-02`
+- **Sprint 6 next:** `meme-browser-host.ts` — Automerge browser repo + IndexedDB. Research-before-act.
 - `sw.ts` tsconfig lib issues: pre-existing, separate fix
 - `system` + `projection` bag store impls: still pending (D stubs)
 - Milestone F (presence split): 0%, not started
@@ -258,8 +258,51 @@ cd packages/lararium-tw5  && npx tsc --noEmit  # ✓ ZERO errors
 
 ↺ **Aftermath / open work:**
 
-- Sprint 5 next: `meme-sync-adaptor.ts` — unchanged
+- Sprint 5 complete ✓ — see `#m14-sprint5-meme-sync-adaptor-2026-05-02` below
 - Grammar alignment pass (future): `meme-grammar.ts` and grammar definition files may need a separate pass to ensure Hawaiian sigil names align with UEFN vocabulary throughout the full grammar spec
+
+<<~/ahu >>
+
+<<~ ahu #m14-sprint5-meme-sync-adaptor-2026-05-02 >>
+
+## M14 Sprint 5 — 2026-05-02 (MemeSyncAdaptor / TW5 Write-Back Gate)
+
+### OODA-HA receipt
+
+✶ **Observe:**
+Sprint 5 target: `meme-sync-adaptor.ts` — replace the dead `sync-adaptor.ts` stub with a working `MemeSyncAdaptor` class. Read `sync-adaptor.web2.ts` sidecar + `meme-write.ts` before writing. Both packages clean from prior session.
+
+⏿ **Orient:**
+Web2 adaptor used `splitCarrierToTiddlers` (carrier-write.ts) in the outbound save handler to split carrier text into parent + children. Meme model shift: ahu slot children store as independent `lar:///parent#slot` records and receive their own `saveTiddler` calls — no outbound split needed. Inbound direction unchanged: `tw5.deserializeCarrier` still handles meme records arriving from the CRDT store (backward compat with inline-body records).
+
+◇ **Decide:**
+Write `meme-sync-adaptor.ts` — new class `MemeSyncAdaptor implements MemeProjection`. Delta from web2:
+1. Import `buildDirectRecord` from `./meme-write.js` (drop `carrier-write.js` import)
+2. Drop `splitCarrierToTiddlers` — not needed in outbound path
+3. Outbound `direct` handler collapses to single `store.put(buildDirectRecord(…))` — no carrier split
+4. All guards (echo-loop Map, canon, temp, draft, cascade) preserved verbatim
+5. Export from `index.ts` barrel
+
+▶ **Act (files touched):**
+
+| File | Change |
+|---|---|
+| `@lararium/tw5` `meme-sync-adaptor.ts` | **New** — `MemeSyncAdaptor implements MemeProjection`; all invariants from web2 sidecar preserved |
+| `@lararium/tw5` `index.ts` | `export { MemeSyncAdaptor } from "./meme-sync-adaptor.js"` |
+
+⤴ **Ho'oko:**
+
+```sh
+cd packages/lararium-tw5 && npx tsc --noEmit  # ✓ ZERO errors
+```
+
+↺ **Aftermath / open work:**
+
+- **Sprint 6 next:** `meme-browser-host.ts` — Automerge browser repo + IndexedDB. Research-before-act (read Automerge browser repo + Keyhive codebase before writing any code).
+- `sw.ts` tsconfig lib issues: pre-existing, separate fix
+- `system` + `projection` bag store impls: still pending (D stubs)
+- Milestone F (presence split): 0%, not started
+- Keyhive UUID derivation for `KumuInstanceRef.uuidFragment`: post-Sprint 6
 
 <<~/ahu >>
 

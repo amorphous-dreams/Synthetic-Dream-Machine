@@ -36,7 +36,7 @@ export type { FilterEngineFn, TW5SyncAdaptor } from "./lararium-tw5.js";
 
 export { setActiveTW5, getActiveTW5 } from "./active-tw5.js";
 
-// @deprecated web2-era: LarariumCrdtSyncAdaptor removed (sync-adaptor.ts is a dead stub)
+export { MemeSyncAdaptor } from "./meme-sync-adaptor.js";
 export { MemoryTiddlerStore } from "./memory-store.js";
 
 // @deprecated web2-era — carrier-codec value exports dead; type contracts kept.

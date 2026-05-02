@@ -503,7 +503,30 @@ cd packages/lararium-core && npx tsc --noEmit  # ✓ ZERO errors
 cd packages/lararium-tw5  && npx tsc --noEmit  # ✓ ZERO errors
 ```
 
-↺ **tsc invariant maintained.** Next: Sprint 5 `meme-sync-adaptor.ts`.
+↺ **tsc invariant maintained.** Sprint 5 complete ✓ — see next ahu.
+
+<<~/ahu >>
+
+<<~ ahu #ooda-ha-sprint5-meme-sync-adaptor-2026-05-02 >>
+
+## Sprint 5 — MemeSyncAdaptor (2026-05-02)
+
+✶ **Observe:** `sync-adaptor.ts` was a dead 7-line stub. `meme-sync-adaptor.ts` didn't exist. `sync-adaptor.web2.ts` held the full prior implementation (583 lines). `meme-write.ts` had `buildDirectRecord` ready.
+
+⏿ **Orient:** Delta from web2 sidecar: outbound `direct` save handler no longer needs `splitCarrierToTiddlers` — in the meme model ahu slot children store as independent `lar:///parent#slot` records receiving their own `saveTiddler` calls. Inbound direction unchanged: `tw5.deserializeCarrier` still handles meme records. All guards (echo-loop, canon, temp, draft, cascade) preserved verbatim.
+
+◇ **Decide:** Write `MemeSyncAdaptor implements MemeProjection`. Import `buildDirectRecord` from `meme-write.js`. Drop carrier-write.js. Export from index.ts barrel.
+
+▶ **Act:**
+
+| File | Change |
+|---|---|
+| `@lararium/tw5` `meme-sync-adaptor.ts` | **New** — `MemeSyncAdaptor implements MemeProjection` |
+| `@lararium/tw5` `index.ts` | export added |
+
+⤴ `tsc --noEmit` ✓ ZERO errors.
+
+↺ **Sprint 6 next:** `meme-browser-host.ts` — research-before-act.
 
 <<~ ahu #edges >>
 
