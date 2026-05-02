@@ -365,3 +365,38 @@ export const CAUSAL_ISLAND_MAY = [
 ] as const;
 
 export type CausalIslandMay = typeof CAUSAL_ISLAND_MAY[number];
+
+// ---------------------------------------------------------------------------
+// PromotionReceipt — cross-island promotion ceremony record
+//
+// Emitted when a draft tiddler moves from the local/session layer to a durable
+// corpus or room island.  Receipts prevent cross-island mutation from becoming
+// hidden atomicity.  A promotion without a receipt becomes shadow canon.
+//
+// Capability gate: the actor MUST hold at least "promote" in ABILITY_LADDER.
+// Use abilityImplies(actor.ability, "promote") before accepting.
+//
+// Meme: lar:///ha.ka.ba/@lares/api/v0.1/lararium/schema/promotion-receipt
+// ---------------------------------------------------------------------------
+
+export interface PromotionReceipt {
+  /** The draft tiddler title being promoted. */
+  readonly sourceDraftId: string;
+  /** Target tiddler title in the destination island (may differ from draft id). */
+  readonly targetId: string;
+  /** Bag ID of the destination island ("room", "corpus:<slug>", etc.). */
+  readonly targetBag: string;
+  /** Automerge doc head(s) of the destination island before the promotion write. */
+  readonly beforeHeads: readonly string[];
+  /** Automerge doc head(s) of the destination island after the promotion write. */
+  readonly afterHeads: readonly string[];
+  /** Principal performing the promotion — must hold "promote" ability. */
+  readonly actor: LarPrincipal;
+  /** ISO 8601 timestamp of the ceremony. */
+  readonly promotedAt: string;
+  /**
+   * Projection ids invalidated by this promotion.
+   * Projection consumers must recompute any listed id after receiving this receipt.
+   */
+  readonly invalidatesProjections: readonly string[];
+}

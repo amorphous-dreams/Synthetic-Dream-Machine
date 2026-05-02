@@ -15,8 +15,9 @@ import type {
   MemeStoreDoc,
   MutableLarRecord,
   MemeProjection,
+  PromotionReceipt,
 } from "@lararium/core";
-import { MemeProvider } from "@lararium/core";
+import { MemeProvider, abilityImplies } from "@lararium/core";
 
 export class NodeMemeStore implements LarTiddlerStore {
   private readonly handle: DocHandle<MemeStoreDoc>;
@@ -83,6 +84,42 @@ export class NodeMemeStore implements LarTiddlerStore {
 
   subscribe(fn: (change: LarTiddlerChange) => void): () => void {
     return this.provider.addProjection({ onUriChanged: fn });
+  }
+
+  /**
+   * Draft promotion ceremony stub.
+   *
+   * Validates the actor holds "promote" ability, then writes the draft record
+   * into this store and returns a PromotionReceipt.
+   *
+   * Full implementation: resolve beforeHeads/afterHeads from the Automerge
+   * DocHandle, fire projection invalidations, and record the receipt in the
+   * room/corpus doc for audit.  Those steps land in subsequent loops.
+   */
+  async promoteDraft(
+    draft: LarTiddlerRecord,
+    actor: PromotionReceipt["actor"],
+    targetBag: string,
+    invalidatesProjections: readonly string[] = [],
+  ): Promise<PromotionReceipt> {
+    const actorAbility = "authority" in actor ? (actor as { authority?: string }).authority : undefined;
+    if (!abilityImplies((actorAbility ?? "read") as Parameters<typeof abilityImplies>[0], "promote")) {
+      throw new Error(`promoteDraft: actor lacks "promote" ability`);
+    }
+
+    await this.put(draft, { kind: "canon-hydrate", receipt: "promotion-ceremony" });
+
+    const receipt: PromotionReceipt = {
+      sourceDraftId:          draft.title,
+      targetId:               draft.title,
+      targetBag,
+      beforeHeads:            [],
+      afterHeads:             [],
+      actor,
+      promotedAt:             new Date().toISOString(),
+      invalidatesProjections,
+    };
+    return receipt;
   }
 
   private _freeze(raw: MutableLarRecord): LarTiddlerRecord {

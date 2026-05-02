@@ -60,7 +60,7 @@ export function BootSplash({ phase, readiness }: BootSplashProps): React.ReactEl
 // ---------------------------------------------------------------------------
 
 const BOOT_LIGHTS: ReadinessKey[] = ["auth", "catalog", "room-content", "tw-vm"];
-const SECONDARY_LIGHTS: ReadinessKey[] = ["tldraw-doc", "room-presence", "snapshot"];
+const SECONDARY_LIGHTS: ReadinessKey[] = ["tldraw-doc", "room-presence", "sw-shell"];
 
 function ShrinePanel({ readiness }: { readiness: ReadinessMap }): React.ReactElement {
   // Collect any dynamic corpus/projection keys that have lit.

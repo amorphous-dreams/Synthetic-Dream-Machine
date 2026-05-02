@@ -32,6 +32,47 @@ function readBlob(path: string): Uint8Array {
 }
 
 /**
+ * Check whether the TW5 core blob on disk has a different sha256 than what the
+ * existing LarariumDoc stores, and patch the doc if so.
+ *
+ * Called on resume boots so a rebuild (new tiddlywikicore-*.js) propagates to all
+ * live peers without requiring a full island reseed.
+ *
+ * Returns the sha256 in use after the call (existing or updated).
+ */
+export async function reconcileEngineBlobIfChanged(
+  handle: DocHandle<LarariumDoc>,
+  appPublicDir: string,
+): Promise<string> {
+  const coreJsPath = join(appPublicDir, TW5_CORE_SCRIPT_FILENAME);
+  if (!existsSync(coreJsPath)) return handle.doc()?.blobs[ENGINE_CORE_ID]?.sha256 ?? "";
+
+  const coreBlob  = readBlob(coreJsPath);
+  const diskSha   = sha256hex(coreBlob);
+  const storedSha = handle.doc()?.blobs[ENGINE_CORE_ID]?.sha256 ?? "";
+
+  if (diskSha === storedSha) return storedSha;
+
+  const coreEntry: LarariumBlobEntry = {
+    id:       ENGINE_CORE_ID,
+    version:  TW5_VERSION,
+    sha256:   diskSha,
+    mimeType: "application/javascript",
+    blob:     coreBlob,
+    license:  "BSD-3-Clause",
+    author:   "UnaMesa Association",
+    source:   "https://tiddlywiki.com",
+  };
+
+  handle.change((doc) => {
+    (doc.blobs as Record<string, LarariumBlobEntry>)[ENGINE_CORE_ID] = coreEntry;
+  });
+
+  console.log(`[lararium-island] engine blob updated  v${TW5_VERSION}  sha=${diskSha.slice(0, 12)}…  (was ${storedSha.slice(0, 12)}…)`);
+  return diskSha;
+}
+
+/**
  * Seed a new LarariumDoc from disk artifacts.
  * Returns the doc handle and the sha256 of the TW5 core blob.
  */

@@ -11,7 +11,7 @@ register = "S"
 manaoio = 0.82
 mana = 0.88
 manao = 0.86
-role = "work journey log — migration roadmap and milestone log for Lararium Node; M10 SESSION-5 CLOSE (2026-04-29): Streams plugin vendor (sq/streams v1.2.24), mixed prose/children (generateParentText), peer-correct LarDiskProjector (store subscriber, writing Set), WorksiteWidget anchor-only, slot overlay UI (meme-view-children/edit/breadcrumb/styles), serializeCarrier round-trip fix (carrier-text first); M11 opens: browser manual QA (P0 — never done), CSS colour resolution, Playwright e2e smoke"
+role = "work journey log — migration roadmap and milestone log for Lararium Node; M11 SESSION CLOSE (2026-05-01): packages/ monorepo reorg (FFZ web3), LarDiskProjector lights disk-projector readiness, reconcileEngineBlobIfChanged on resume boot (B.1→100%), BAG_IDS + hasBag + corpusBagId in CompositeStore (D→80%), sw-shell replaces snapshot key (FFZ-correct first paint via SW cache), PromotionReceipt type + promoteDraft stub + 6 ability-ladder guard tests (E→25%); M12 opens: sw.ts tsconfig fix, system/projection store impls, promoteDraft head-tracking, Milestone F presence split"
 cacheable = false
 retain = true
 invariant = false
@@ -33,6 +33,58 @@ It adds explicit ahu markers around the major research sections so the file can 
 <<~/ahu >>
 
 <<~&#x0002;>>
+
+
+<<~ ahu #m12-session-open-2026-05-01 >>
+
+## M12 Session Open — 2026-05-01 (Fever Sprint / FFZ Web3 Reorganization)
+
+### OODA-HA receipt
+
+✶ **Observe:**
+Full monorepo reorganization completed this session under `packages/` root with per-package `memes/` trees. Git history: `ebb72a58` → `0ad9a2db` (path remapping, URI rewrites, ha.ka.ba corpus relocation). E-prime 0.8 + OODA-HA 0.8 operating rules locked. Five open-work OODA-HA loops enacted.
+
+⏿ **Orient:**
+The sprint closed the gap between the post-M11 causal-island split and the FFZ web3 local-first doctrine. Key invariants locked: (1) no server-rendered CRDT projections as HTML ("web2 SPA pattern" rejected); (2) disk + HTTP responses are projections, Automerge store is the mind; (3) `tw-vm` gates early as the isomorphic rendering VM kernel — before room tiddlers hydrate, parallel with room-content arrival; (4) server and browser peer at the same VM boot flow.
+
+◇ **Decide:**
+Five loops enacted in sequence: readiness light (disk-projector), engine blob reconciliation (B.1→100%), bag slot constants (D→80%), sw-shell first paint (C, FFZ-correct), PromotionReceipt scaffold (E→25%). `snapshot` key renamed `sw-shell`. `tw-vm` promoted to early boot gate (post-catalog, parallel with room-content).
+
+▶ **Act (files touched):**
+
+| File | Change |
+|---|---|
+| `@lararium/tw5` `disk-sync-adaptor.ts` | `ReadinessMap` injection → lights `disk-projector` on first flush |
+| `@lararium/node` `lararium-island.ts` | `reconcileEngineBlobIfChanged` — re-ingests engine blob if disk sha differs |
+| `@lararium/node` `serve.ts` | resume path calls `reconcileEngineBlobIfChanged` |
+| `@lararium/core` `composite-store.ts` | `BAG_IDS`, `corpusBagId()`, `hasBag()`, duplicate-registration guard |
+| `@lararium/core` `causal-island.ts` | `PromotionReceipt` interface |
+| `@lararium/core` `readiness.ts` | `snapshot` → `sw-shell`; `tw-vm` promoted to early gate; full doctrine rewrite |
+| `@lararium/app` `lararium-browser-host.ts` | `sw-shell` lights on SW `controllerchange`; `tw-vm` marks right after `t.boot()` |
+| `@lararium/app` `BootSplash.tsx` | `snapshot` → `sw-shell` in secondary lights |
+| `@lararium/node` `node-meme-store.ts` | `promoteDraft` stub with ability-ladder guard |
+| `@lararium/node` `promote-guard.test.ts` | 6 `abilityImplies` gate tests |
+| `lares/memes/lararium-node/` research packet | Milestone state table updated (B.1→100%, C→60%, D→80%, E→25%) |
+
+⤴ **Ho'oko:**
+
+```sh
+pnpm --filter @lararium/core build     # ✓ clean
+pnpm --filter @lararium/tw5 typecheck  # ✓ clean
+pnpm --filter @lararium/node typecheck # ✓ clean
+pnpm --filter @lararium/node test      # ✓ 48/48 pass
+```
+
+↺ **Aftermath / M12 open work:**
+
+- `sw.ts` in `@lararium/app` has pre-existing tsconfig lib issues (SW global scope) — not from this session; needs separate fix
+- `system` + `projection` bag store implementations still pending (D stubs exist, no impls)
+- `promoteDraft` head-tracking (`beforeHeads`/`afterHeads` from `DocHandle`) pending
+- Milestone F (presence split) — 0%, not started
+- `tw-vm` isomorphic server-peer boot flow: server currently boots VM from `LarariumTW5` inside `bootRecipeVm` — confirm it also marks a readiness signal on the server side
+- Realm portal VMs: `projection:<id>` keys cover portal/recipe VMs — wire a test recipe that boots a second VM and lights `projection:portal-<roomId>`
+
+<<~/ahu >>
 
 
 <<~ ahu #executive-summary >>

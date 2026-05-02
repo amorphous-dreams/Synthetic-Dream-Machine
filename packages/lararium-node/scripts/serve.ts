@@ -53,7 +53,7 @@ import {
   emptyCatalogDoc,
   type MemeStoreDoc,
 } from "@lararium/core";
-import { seedLarariumDoc } from "../src/lararium-island.js";
+import { seedLarariumDoc, reconcileEngineBlobIfChanged } from "../src/lararium-island.js";
 import { LarDiskProjector, makeRecipeId, bootRecipeVm, renderCarrier, releaseRecipeVm, TW5_VERSION, TW5_CORE_SCRIPT_URL } from "@lararium/tw5";
 import { loadCorpusSources, corpusAbsPath } from "../src/node-host.js";
 import type { CorpusSource } from "../src/node-host.js";
@@ -537,9 +537,9 @@ async function main() {
   } else {
     const engineUrl = readFileSync(engineUrlFile, "utf8").trim() as AutomergeUrl;
     const engineHandle = await memeRepo.find<LarariumDoc>(engineUrl);
+    const coreSha256Resume = await reconcileEngineBlobIfChanged(engineHandle, APP_PUBLIC);
     const larariumDoc = engineHandle.doc();
     engineSystemTitles = larariumDoc?.systemTitles ?? [];
-    const coreSha256Resume = larariumDoc?.blobs["tiddlywikicore"]?.sha256 ?? "";
     const engineEntry: CatalogEngineEntry = { version: TW5_VERSION, docUrl: engineUrl, sha256: coreSha256Resume };
     catalogHandle.change((d) => { (d as DraftCatalogDoc).engine = engineEntry; });
     console.log(`[lararium-serve] lararium island resumed: ${engineUrl}  system titles: ${engineSystemTitles.length}`);

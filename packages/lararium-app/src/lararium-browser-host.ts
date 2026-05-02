@@ -125,6 +125,23 @@ export function useLarariumHostOpen(options: BrowserHostOptions): HostOpenState 
       setReceipt(r);
       readiness.mark("auth");
 
+      // ── SW app-shell readiness ────────────────────────────────────────────
+      // snapshot.ready lights when the Service Worker controls this page,
+      // meaning the app shell (HTML/JS/CSS) serves from SW cache — local-first
+      // first paint without any server-rendered CRDT projection.
+      if ("serviceWorker" in navigator) {
+        if (navigator.serviceWorker.controller) {
+          readiness.mark("sw-shell");
+        } else {
+          // Not yet controlling — listen for first activation (install → claim).
+          const onController = () => {
+            readiness.mark("sw-shell");
+            navigator.serviceWorker.removeEventListener("controllerchange", onController);
+          };
+          navigator.serviceWorker.addEventListener("controllerchange", onController);
+        }
+      }
+
       // ── Repo ──────────────────────────────────────────────────────────────
       setPhase({ kind: "store-opening", recipeUri: roomId });
 
@@ -230,6 +247,8 @@ export function useLarariumHostOpen(options: BrowserHostOptions): HostOpenState 
         t.setBootSplash(true);
         tw5Ref.current = t;
         setActiveTW5(t);
+        // VM kernel booted — rendering pool ready before room tiddlers hydrate.
+        readiness.mark("tw-vm");
       } catch (err: unknown) {
         setPhase({ kind: "error", message: `TW5 boot failed: ${String(err)}` });
         return;
@@ -256,7 +275,6 @@ export function useLarariumHostOpen(options: BrowserHostOptions): HostOpenState 
 
       setTw5(t);
       setPhase({ kind: "tw5-ready", hostId });
-      readiness.mark("tw-vm");
 
       // Register the live in-process VM with the VmPool so filterRecipe /
       // renderCarrier are available to canvas, MCP, and debug tools without

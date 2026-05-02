@@ -43,17 +43,19 @@ room island     (bag: "room", writable)   — primary content gate
 
 The TW5 engine (`tiddlywikicore-*.js`) lives in its own `LarariumDoc` corpus island. The catalog holds only `{ version, docUrl, sha256 }`. The Service Worker verifies sha256 before caching. Any mesh peer can seed the blob — no CDN authority required. Mid-session updates travel over Automerge sync and trigger the TW5 update-available banner.
 
-### Current milestone state (updated 2026-05-01)
+### Current milestone state (updated 2026-05-01, sprint 2)
 
 | Milestone | Status |
 |---|---|
-| A — Readiness Map | `ReadinessMap` in `@lararium/core`. All 10 keys declared. Browser marks: `auth`, `catalog`, `room-content`, `corpus:*`, `tw-vm`. `snapshot`, `room-presence`, `tldraw-doc`, `mcp-index`, `disk-projector`, `kowloon-feed` declared but not yet lit. ~60% |
+| A — Readiness Map | `ReadinessMap` in `@lararium/core`. `snapshot` key renamed `sw-shell` (FFZ-correct: lights when SW controls page, not server-rendered HTML). Browser marks: `auth`, `sw-shell`, `catalog`, `room-content`, `corpus:*`, `tw-vm`. `room-presence`, `tldraw-doc`, `mcp-index`, `disk-projector`, `kowloon-feed` declared but not yet lit. `disk-projector` now lights on first `LarDiskProjector` flush. ~70% |
 | B — Catalog Island | `CatalogDoc` fully wired. `engine`, `corpora`, `rooms` entries. ~100% |
-| B.1 — Engine Island | `LarariumDoc` with blob + sha256. SW verification + mesh-native delivery. Catalog `engine` entry. ~95% (file-watcher ingest path not yet wired) |
-| C — First-paint projection | NOT started. See §9 law annotation. |
-| D — Recipe/bag live surface | `CompositeStore` + per-recipe TW5 VMs done. System and projection bags not yet wired. ~70% |
-| E — Draft promotion ceremony | Draft suppressed (M-E guard), aspirational tests written. No ceremony. ~10% |
+| B.1 — Engine Island | `LarariumDoc` blob + sha256. SW verification + mesh-native delivery. Resume boot now calls `reconcileEngineBlobIfChanged` — re-ingests updated TW5 core if disk sha differs from stored sha. ~100% |
+| C — First-paint (FFZ) | No server-rendered snapshot — rejected as web2 SPA pattern. `sw-shell` readiness key lights when SW controls page (warm: immediate; cold: `controllerchange`). App shell serves from SW cache. Automerge islands hydrate in background. ~60% |
+| D — Recipe/bag live surface | `CompositeStore` + per-recipe TW5 VMs done. `BAG_IDS` constants (`system`, `room`, `draft`, `projection`) + `corpusBagId()` factory added. `hasBag()` guard prevents duplicate registration. Priority order locked. System and projection store implementations still pending. ~80% |
+| E — Draft promotion ceremony | `PromotionReceipt` type in `causal-island.ts`. `promoteDraft` stub on `NodeMemeStore` with ability-ladder guard (`promote` required). 6 `abilityImplies` guard tests passing. Head-tracking and projection invalidation pending. ~25% |
 | F — Presence split | Not started. ~0% |
+
+**FFZ web3 principle (locked 2026-05-01):** No server-rendered CRDT projections served as HTML. The disk and any HTTP response are projections; the Automerge store is the mind. `sw-shell` replaces `snapshot` across the codebase.
 
 ### Auth state (updated 2026-05-01)
 

@@ -20,6 +20,29 @@ import type {
   ChangeOrigin,
 } from "./tiddler-store.js";
 
+// ---------------------------------------------------------------------------
+// Well-known bag slot IDs
+//
+// Recipe order (add lowest-priority first → highest-priority last):
+//   system     invariant UI / grammar / control memes  (read-only)
+//   corpus:*   durable corpus islands                  (read-only, one per bag)
+//   room       situated room content                   (writable)
+//   draft      high-churn local draft-of tiddlers      (writable, local)
+//   projection derived tiddlers, search indexes, hints (read-only, rebuildable)
+//
+// Meme: lar:///ha.ka.ba/@lares/api/v0.1/lararium/schema/bag-ids
+// ---------------------------------------------------------------------------
+
+export const BAG_IDS = {
+  system:     "system",
+  room:       "room",
+  draft:      "draft",
+  projection: "projection",
+} as const satisfies Record<string, string>;
+
+/** Construct the canonical bag ID for a named corpus island. */
+export function corpusBagId(slug: string): string { return `corpus:${slug}`; }
+
 export interface CompositeLayer {
   readonly bagId:    string;
   readonly store:    LarTiddlerStore;
@@ -35,7 +58,12 @@ export class CompositeStore implements LarTiddlerStore {
   /** The single writable store — must be registered via addLayer with writable:true. */
   private writableStore: LarTiddlerStore | null = null;
 
+  hasBag(bagId: string): boolean {
+    return this.layers.some((l) => l.bagId === bagId);
+  }
+
   addLayer(layer: CompositeLayer): void {
+    if (this.hasBag(layer.bagId)) throw new Error(`CompositeStore: bag "${layer.bagId}" already registered`);
     this.layers.push(layer);
     if (layer.writable) this.writableStore = layer.store;
 

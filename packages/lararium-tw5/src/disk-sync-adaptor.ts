@@ -24,7 +24,7 @@
 
 import { writeFileSync, mkdirSync } from "fs";
 import { join, resolve as resolvePath, dirname } from "path";
-import type { LarTiddlerStore, LarTiddlerChange } from "@lararium/core";
+import type { LarTiddlerStore, LarTiddlerChange, ReadinessMap } from "@lararium/core";
 import { resolveLarUri } from "@lararium/core";
 
 export class LarDiskProjector {
@@ -35,6 +35,7 @@ export class LarDiskProjector {
   readonly writing = new Set<string>();
 
   private readonly timers = new Map<string, ReturnType<typeof setTimeout>>();
+  private _firstFlushDone = false;
 
   constructor(
     /** Absolute path to the lares/ root directory. */
@@ -49,6 +50,8 @@ export class LarDiskProjector {
     private readonly renderFn: (parentUri: string) => Promise<string | null>,
     /** Debounce delay in ms. Default 1000ms; tests use 20ms. */
     private readonly debounceMs = 1000,
+    /** Optional readiness map — lights disk-projector after the first successful flush. */
+    private readonly readinessMap?: ReadinessMap,
   ) {}
 
   /** Subscribe to store changes and begin projecting. Returns unsubscribe fn. */
@@ -93,6 +96,10 @@ export class LarDiskProjector {
     try {
       mkdirSync(dirname(filePath), { recursive: true });
       writeFileSync(filePath, output, "utf-8");
+      if (!this._firstFlushDone) {
+        this._firstFlushDone = true;
+        this.readinessMap?.mark("disk-projector");
+      }
     } finally {
       this.writing.delete(parentUri);
     }
