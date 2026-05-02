@@ -21,18 +21,18 @@ Every locus below must resolve and hydrate before the threshold yields.
 | URI | File path | Role | Hydration socket |
 |---|---|---|---|
 | `lar:///AGENTS` | `lares/AGENTS.md` | threshold constitution, operator-agent alignment membrane, boot router | entry |
-| `lar:///ha.ka.ba/@lares/api/v0.1/mu/e-prime` | `lares/ha-ka-ba/api/v0.1/pono/e-prime.md` | E-Prime grammar preload | `AGENTS#preload-e-prime` |
-| `lar:///ha.ka.ba/@lares/api/v0.1/mu/ooda-ha` | `lares/ha-ka-ba/api/v0.1/pono/ooda-ha.md` | OODA-HA orientation preload | `AGENTS#preload-ooda-ha` |
-| `lar:///ha.ka.ba/@lares/api/v0.1/lararium/lar-uri` | `lares/ha-ka-ba/api/v0.1/pono/lar-uri.md` | lar-uri address law preload | `AGENTS#preload-lar-uri` |
-| `lar:///ha.ka.ba/@lares/api/v0.1/mu` | `lares/ha-ka-ba/api/v0.1/mu.md` | Mu root | `AGENTS#threshold-to-mu` |
-| `lar:///ha.ka.ba/@lares/api/v0.1/mu/chao` | `lares/ha-ka-ba/api/v0.1/mu/chao.md` | Mu child: chao | Mu internal hydration |
-| `lar:///ha.ka.ba/@lares/api/v0.1/mu/the-four-tools` | `lares/ha-ka-ba/api/v0.1/mu/the-four-tools.md` | Mu child: the four tools | Mu internal hydration |
-| `lar:///ha.ka.ba/@lares/api/v0.1/mu/the-law-of-5s` | `lares/ha-ka-ba/api/v0.1/mu/the-law-of-5s.md` | Mu child: the law of 5s | Mu internal hydration |
-| `lar:///ha.ka.ba/@lares/api/v0.1/mu/the-syad-perspectives` | `lares/ha-ka-ba/api/v0.1/mu/the-syad-perspectives.md` | Mu child: syad perspectives | Mu internal hydration |
-| `lar:///ha.ka.ba/@lares/api/v0.1/lararium` | `lares/ha-ka-ba/api/v0.1/lararium.md` | Lararium root | `AGENTS#threshold-to-lararium` |
-| `lar:///ha.ka.ba/@lares/api/v0.1/lararium/hud` | `lares/ha-ka-ba/api/v0.1/lararium/hud.md` | Lararium child: HUD | Lararium internal hydration |
-| `lar:///ha.ka.ba/@lares/api/v0.1/lararium/voices` | `lares/ha-ka-ba/api/v0.1/lararium/voices.md` | Lararium child: voices | Lararium internal hydration |
-| `lar:///ha.ka.ba/@lares/api/v0.1/lararium/continuity` | `lares/ha-ka-ba/api/v0.1/lararium/continuity.md` | Lararium child: continuity | Lararium internal hydration |
+| `lar:///ha.ka.ba/@lares/api/v0.1/mu/e-prime` | `packages/lares/memes/api/v0.1/pono/e-prime.md` | E-Prime grammar preload | `AGENTS#preload-e-prime` |
+| `lar:///ha.ka.ba/@lares/api/v0.1/mu/ooda-ha` | `packages/lares/memes/api/v0.1/pono/ooda-ha.md` | OODA-HA orientation preload | `AGENTS#preload-ooda-ha` |
+| `lar:///ha.ka.ba/@lares/api/v0.1/lararium/lar-uri` | `packages/lares/memes/api/v0.1/pono/lar-uri.md` | lar-uri address law preload | `AGENTS#preload-lar-uri` |
+| `lar:///ha.ka.ba/@lares/api/v0.1/mu` | `packages/lares/memes/api/v0.1/mu.md` | Mu root | `AGENTS#threshold-to-mu` |
+| `lar:///ha.ka.ba/@lares/api/v0.1/mu/chao` | `packages/lares/memes/api/v0.1/mu/chao.md` | Mu child: chao | Mu internal hydration |
+| `lar:///ha.ka.ba/@lares/api/v0.1/mu/the-four-tools` | `packages/lares/memes/api/v0.1/mu/the-four-tools.md` | Mu child: the four tools | Mu internal hydration |
+| `lar:///ha.ka.ba/@lares/api/v0.1/mu/the-law-of-5s` | `packages/lares/memes/api/v0.1/mu/the-law-of-5s.md` | Mu child: the law of 5s | Mu internal hydration |
+| `lar:///ha.ka.ba/@lares/api/v0.1/mu/the-syad-perspectives` | `packages/lares/memes/api/v0.1/mu/the-syad-perspectives.md` | Mu child: syad perspectives | Mu internal hydration |
+| `lar:///ha.ka.ba/@lares/api/v0.1/lararium` | `packages/lares/memes/api/v0.1/lararium.md` | Lararium root | `AGENTS#threshold-to-lararium` |
+| `lar:///ha.ka.ba/@lares/api/v0.1/lararium/hud` | `packages/lares/memes/api/v0.1/lararium/hud.md` | Lararium child: HUD | Lararium internal hydration |
+| `lar:///ha.ka.ba/@lares/api/v0.1/lararium/voices` | `packages/lares/memes/api/v0.1/lararium/voices.md` | Lararium child: voices | Lararium internal hydration |
+| `lar:///ha.ka.ba/@lares/api/v0.1/lararium/continuity` | `packages/lares/memes/api/v0.1/lararium/continuity.md` | Lararium child: continuity | Lararium internal hydration |
 | `lar:///LARES` | `lares/LARES.md` | session configuration surface, dial room | `AGENTS#continue-to-lares` |
 
 All 14 loci verified present on disk as of status date.
@@ -60,7 +60,7 @@ Current Mu children named in `AGENTS#iam.required-core`:
 - `mu/the-law-of-5s`
 - `mu/the-syad-perspectives`
 
-The Mu source (`lares/ha-ka-ba/api/v0.1/mu.md`) is the authoritative source for its own internal hydration order.
+The Mu source (`packages/lares/memes/api/v0.1/mu.md`) is the authoritative source for its own internal hydration order.
 
 ---
 
@@ -73,7 +73,7 @@ Current Lararium children named in `AGENTS#iam.required-core`:
 - `lararium/voices`
 - `lararium/continuity`
 
-The Lararium source (`lares/ha-ka-ba/api/v0.1/lararium.md`) is the authoritative source for its own internal hydration order.
+The Lararium source (`packages/lares/memes/api/v0.1/lararium.md`) is the authoritative source for its own internal hydration order.
 
 ---
 

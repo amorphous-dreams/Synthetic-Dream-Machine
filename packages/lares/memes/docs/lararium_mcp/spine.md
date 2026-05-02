@@ -13,8 +13,8 @@ manaoio      = 0.78
 manao        = 0.84
 role         = "canonical Lararium MCP program spine and architecture contraction"
 source-consumes = [
-  "lares/ha-ka-ba/docs/mcp/README.md",
-  "lares/ha-ka-ba/docs/mcp/ARCHITECTURE.md"
+  "packages/lares/memes/docs/mcp/README.md",
+  "packages/lares/memes/docs/mcp/ARCHITECTURE.md"
 ]
 status-date  = "2026-04-23"
 ```
@@ -45,7 +45,7 @@ The v1 spine carries four promises:
 | Promise | Reading |
 |---|---|
 | read-only first | resources, prompts, and tools inspect/compile; they do not mutate source truth |
-| canonical carrier source | `lares/AGENTS.md`, `lares/LARES.md`, and `lares/ha-ka-ba/**` govern hydration |
+| canonical carrier source | `lares/AGENTS.md`, `lares/LARES.md`, and `packages/lares/memes/**` govern hydration |
 | interface-aware indexes | `implements`, invariant posture, and shape diagnostics remain inspectable |
 | local stdio before remote | workspace clients come first; remote transport waits for auth/scope policy |
 
@@ -99,7 +99,7 @@ The v1 spine carries four promises:
 | `lar:///LARES` | all-caps file-backed session surface root |
 | `lar:///INDEXES/**` | virtual all-caps compiler indexes |
 | `lar:///boot/**` | virtual compiler artifact resources |
-| `lar:///ha.ka.ba/@lares/**` | stable tuple root mapped into `lares/ha-ka-ba/**` |
+| `lar:///ha.ka.ba/@lares/**` | stable tuple root mapped into `packages/lares/memes/**` |
 | future `lar:///*.*.*/**` | unstable tuple roots may map into chapel-perilous paths until canon promotion |
 
 <<~/ahu >>

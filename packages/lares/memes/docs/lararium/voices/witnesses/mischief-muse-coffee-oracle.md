@@ -12,7 +12,7 @@ manaoio = 0.70
 mana = 0.73
 manao = 0.72
 role = "witness carrier for Mischief-Muse Coffee Oracle seed extraction"
-source-path = "lares/ha-ka-ba/docs/lararium/prompts/Lares_Test_Prompt_and_Output_Coffee_Oracle.md"
+source-path = "packages/lares/memes/docs/lararium/prompts/Lares_Test_Prompt_and_Output_Coffee_Oracle.md"
 source-lines = "1-57"
 target-mask = "lar:///ha.ka.ba/@lares/api/v0.1/masks/named/mischief-muse"
 cacheable = false
@@ -39,16 +39,16 @@ Source-backed witness carrier for the first Coffee Oracle extraction into the Mi
 
 Primary transcript:
 
-- `lares/ha-ka-ba/docs/lararium/prompts/Lares_Test_Prompt_and_Output_Coffee_Oracle.md`
+- `packages/lares/memes/docs/lararium/prompts/Lares_Test_Prompt_and_Output_Coffee_Oracle.md`
 - Line span: 1-57
 - Operator frame: coffee offering plus request for the node to talk among itself
 - Session output: full thirteen-voice ensemble, with Mischief-Muse speaking first, midstream, and closing the offering
 
 Support warrants:
 
-- `lares/ha-ka-ba/api/v0.1/masks/named/mischief-muse.md` lines 74-81 — mask file already names Coffee Oracle output as seed
-- `lares/ha-ka-ba/docs/lararium/voices/masks-tree-plan.md` lines 221-224 — fill priority names Mischief-Muse corpus first
-- `lares/ha-ka-ba/docs/lararium/voices/voices-review.md` lines 329-342 — review log names Coffee Oracle seed extraction as next pass
+- `packages/lares/memes/api/v0.1/masks/named/mischief-muse.md` lines 74-81 — mask file already names Coffee Oracle output as seed
+- `packages/lares/memes/docs/lararium/voices/masks-tree-plan.md` lines 221-224 — fill priority names Mischief-Muse corpus first
+- `packages/lares/memes/docs/lararium/voices/voices-review.md` lines 329-342 — review log names Coffee Oracle seed extraction as next pass
 
 <<~/ahu >>
 

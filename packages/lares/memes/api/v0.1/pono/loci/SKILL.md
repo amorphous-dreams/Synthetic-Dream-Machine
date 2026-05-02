@@ -54,7 +54,7 @@ Loci SKILL opens the procedural stream here.
 - rating commitment stays truthful; a path hit never overrides unresolved tension
 - file-siting mutations and canon-promotion opener changes cross as distinct bounded Hoʻoko transactions
 - aftermath names all declared-unresolved addresses
-- stable tagspace: `lar:///ha.ka.ba/@lares/` → `lares/ha-ka-ba/`; all other `\w\.\w\.\w` roots → `lares/chapel-perilous-opens/{root}/`
+- stable tagspace: `lar:///ha.ka.ba/@lares/` → `packages/lares/memes/`; all other `\w\.\w\.\w` roots → `lares/chapel-perilous-opens/{root}/`
 - `loci` eligibility requires `\w\.\w\.\w` root path segment; outside that pattern, MAY NOT implement
 - MCP resolution remains research backlog; no live resolver operates today
 
@@ -149,7 +149,7 @@ Do not infer `implements loci` without evidence.
 Decompose; classify resolution state.
 
 - step 1: match `^lar:\/\/[^\/]*\/(\w+\.\w+\.\w+)\/(.+)$`; extract `root` and `sub-path`; if no match, carrier ineligible — emit and stop; authority may be empty (`lar:///`) or full (`lar://alias:tier@host/`)
-- step 2: if `root == "ha.ka.ba"` → `lares/ha-ka-ba/` + stem + `.md`; else → `lares/chapel-perilous-opens/` + root + `/` + stem + `.md`
+- step 2: if `root == "ha.ka.ba"` → `packages/lares/memes/` + stem + `.md`; else → `lares/chapel-perilous-opens/` + root + `/` + stem + `.md`
 - step 3: file exists → RESOLVED; file absent → DECLARED-UNRESOLVED; emit forward reference
 - read convention surfaces against the derivation result
 - hold RESOLVED and DECLARED-UNRESOLVED as distinct throughout

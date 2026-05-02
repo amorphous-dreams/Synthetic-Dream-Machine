@@ -13,12 +13,12 @@ manaoio      = 0.76
 manao        = 0.84
 role         = "canonical AST envelope, pranala graph-plane, execution graph, and render projection contract"
 source-consumes = [
-  "lares/ha-ka-ba/docs/mcp/TW_FILTER_BOUNDARY.md",
-  "lares/ha-ka-ba/docs/mcp/AST_ENVELOPE.md",
-  "lares/ha-ka-ba/docs/mcp/TW_AST_MAPPING.md",
-  "lares/ha-ka-ba/docs/mcp/PRANALA_ALIGNMENT.md",
-  "lares/ha-ka-ba/docs/mcp/EXECUTION_GRAPH_SCHEMA.md",
-  "lares/ha-ka-ba/docs/mcp/RENDER_PROJECTION_CONTRACT.md"
+  "packages/lares/memes/docs/mcp/TW_FILTER_BOUNDARY.md",
+  "packages/lares/memes/docs/mcp/AST_ENVELOPE.md",
+  "packages/lares/memes/docs/mcp/TW_AST_MAPPING.md",
+  "packages/lares/memes/docs/mcp/PRANALA_ALIGNMENT.md",
+  "packages/lares/memes/docs/mcp/EXECUTION_GRAPH_SCHEMA.md",
+  "packages/lares/memes/docs/mcp/RENDER_PROJECTION_CONTRACT.md"
 ]
 status-date  = "2026-04-23"
 ```

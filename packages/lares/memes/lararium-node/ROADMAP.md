@@ -282,15 +282,15 @@ The verified files below are the code/config/build/test/design surfaces that eit
 | `Makefile` | Branch dev/test helper | Make | Adds `test` and `mcp-smoke` commands around current Python MCP surface |  |
 | `scripts/mcp-smoke.py` | Branch smoke harness | Python | Spawns current MCP server over stdio and runs initialize/tools/list |  |
 | `scripts/dev-setup.sh` | Branch dev bootstrap | Bash | Editable install, submodule init, packaging setup |  |
-| `lares/ha-ka-ba/docs/lararium_mcp.md` | Current server intent | Markdown | States the server is read-only, stdio, small/bootstrap, resource-heavy |  |
-| `lares/ha-ka-ba/docs/mcp/ARCHITECTURE.md` | Future stack plan | Markdown | Frames compiler, AST, execution graph, render, branch stories |  |
-| `lares/ha-ka-ba/docs/mcp/RENDER_PROJECTION_CONTRACT.md` | Projection contract | Markdown | Defines `dom`, `tldraw`, `kowloon`, `trace` outputs as read-only render artifacts |  |
-| `lares/ha-ka-ba/docs/mcp/SUBMODULE_INTEGRATION_MATRIX.md` | Submodule role matrix | Markdown | Declares Kowloon, Kowloon client/frontend, tldraw, TiddlyWiki roles |  |
-| `lares/ha-ka-ba/docs/mcp/TW_FILTER_BOUNDARY.md` | TiddlyWiki boundary | Markdown | Explicitly keeps TW as guest grammar / comparison corpus, not constitutional runtime |  |
+| `packages/lares/memes/docs/lararium_mcp.md` | Current server intent | Markdown | States the server is read-only, stdio, small/bootstrap, resource-heavy |  |
+| `packages/lares/memes/docs/mcp/ARCHITECTURE.md` | Future stack plan | Markdown | Frames compiler, AST, execution graph, render, branch stories |  |
+| `packages/lares/memes/docs/mcp/RENDER_PROJECTION_CONTRACT.md` | Projection contract | Markdown | Defines `dom`, `tldraw`, `kowloon`, `trace` outputs as read-only render artifacts |  |
+| `packages/lares/memes/docs/mcp/SUBMODULE_INTEGRATION_MATRIX.md` | Submodule role matrix | Markdown | Declares Kowloon, Kowloon client/frontend, tldraw, TiddlyWiki roles |  |
+| `packages/lares/memes/docs/mcp/TW_FILTER_BOUNDARY.md` | TiddlyWiki boundary | Markdown | Explicitly keeps TW as guest grammar / comparison corpus, not constitutional runtime |  |
 | `.gitmodules` | Submodule pins/paths | Git config | Confirms `kowloon`, `kowloon-client`, `kowloon-frontend`, `tldraw`, `tiddlywiki5` are repo-level dependencies |  |
-| `lares/ha-ka-ba/docs/pono/lar-uri.md` | URI scheme spec | Markdown | Documents authority-bearing and authority-less `lar:` forms and validation/security concerns |  |
-| `lares/ha-ka-ba/docs/graph/traversal.md` | Graph traversal law | Markdown | Defines Tier 0/1/2 traversal and DAG expectations |  |
-| `lares/ha-ka-ba/docs/graph/pranala-parser.md` | Parser law | Markdown | Defines surface forms and `? ->` resolution rules |  |
+| `packages/lares/memes/docs/pono/lar-uri.md` | URI scheme spec | Markdown | Documents authority-bearing and authority-less `lar:` forms and validation/security concerns |  |
+| `packages/lares/memes/docs/graph/traversal.md` | Graph traversal law | Markdown | Defines Tier 0/1/2 traversal and DAG expectations |  |
+| `packages/lares/memes/docs/graph/pranala-parser.md` | Parser law | Markdown | Defines surface forms and `? ->` resolution rules |  |
 
 The surviving behavioral contract is narrower than the codebase, and that is what matters for migration. The package exports resolver/carrier/index/compiler/resource/prompt functions through `__init__.py`; the stdio entrypoint is stable; resources, tools, and prompts are all namespaced under `lararium-*`; and the core package is read-only by design.   
 
@@ -1230,7 +1230,7 @@ Forked from `x-tiddlywiki-filter`. Key departures:
 - Register system: `[C]` (operator canon), `[SC]` (Synthetic Canon), `[S]` (synthesis/proposal), `[SP]` (speculative/unproven), `[P]` (provisional — session-local candidate, dissolves rapidly)
 - `[CS]` → `[SC]` rename throughout all grammar files
 
-**Research carrier (`lares/ha-ka-ba/docs/pono/sigil-grammar-research.md`) — new carrier:**
+**Research carrier (`packages/lares/memes/docs/pono/sigil-grammar-research.md`) — new carrier:**
 
 Hawaiian vocabulary grounding, operator rulings log, precedent alignment (TW5/Liquid/MCP/SwiftUI/Flutter/Elm/Verse), full sigil vocabulary table with register, source notes with confidence levels.
 
@@ -1316,7 +1316,7 @@ All three laws landed:
 
 **kumu template pipeline — fully wikitext-native**
 - ✓ Five template carriers at `lar:///ha.ka.ba/@lares/api/v0.1/lararium/templates/meme-*` (in `ha.ka.ba/@lares/api` namespace — no adjacent namespace)
-- ✓ `lares/ha-ka-ba/api/v0.1/lararium/templates/index.md` — namespace index, owns control edges to all five; wired from `lararium` meme via `#hydrate-templates` (control:owns)
+- ✓ `packages/lares/memes/api/v0.1/lararium/templates/index.md` — namespace index, owns control edges to all five; wired from `lararium` meme via `#hydrate-templates` (control:owns)
 - ✓ Each template TOML body carries: `zoom-level`, `cascade` (filter predicate string), `priority`, `w`, `h`, `color`, `label`, `include-ahu`, `show-notes`, `show-carrier`, `opacity`
 - ✓ `<<~ kumu name(params) >>` / `<<~/kumu >>` direct form added to `SIGIL_SCANS` in `parser.ts` (alongside `\\widget` alias)
 - ✓ `collectKumuDefs()` + `collectKumuDefsFromGraph()` — extract kumu defs from boot closure carriers
@@ -1484,7 +1484,7 @@ Both `STANCES` and `TOOLS` (with `TOOL_ASCII`) are const arrays in `ast.ts`. The
 
 ## Open questions and limitationsThe largest open question is the lack of a public, formal `lararium-node` specification. I therefore treated `lararium-node` as a target architecture inferred from your brief and the repo’s own documents, not as a fully documented existing package.
 
-I also did not inspect every narrative doc under `lares/ha-ka-ba/docs/lararium_mcp/**` or every CI workflow file in the repo. That means this report is strongest on code/config/tests/explicit architecture docs, and weaker on any undocumented operational conventions that may exist elsewhere in the tree.
+I also did not inspect every narrative doc under `packages/lares/memes/docs/lararium_mcp/**` or every CI workflow file in the repo. That means this report is strongest on code/config/tests/explicit architecture docs, and weaker on any undocumented operational conventions that may exist elsewhere in the tree.
 
 Finally, the official MCP TypeScript SDK ecosystem is in a transitional period: the docs present a robust server model today, but the official repository also still warns that its v2 `main` branch is pre-alpha and that v1.x is the production recommendation. That does not block migration, but it is precisely why the MCP layer should remain thin and adapter-local. 
 
@@ -1787,7 +1787,7 @@ Session 5 continued the local-first pivot. The server is now unambiguously a syn
 
 ### Closed
 
-- **Streams plugin vendor** — sq/streams v1.2.24 by Saq Imtiaz (MIT) vendored at `lar:///ha.ka.ba/@lares/api/v0.1/vendor/sq-streams`; stored in `lares/ha-ka-ba/api/v0.1/tw5-plugins/sq-streams-1.2.24.json`; vendor pipeline: `scripts/write-vendor-plugins.ts` reads `tw5-plugins/*.json` → `generated-vendor-plugins.ts` → preloaded at boot. Carrier documents field mapping (ahu-parent↔parent, ahu-slots↔stream-list) at `lares/ha-ka-ba/api/v0.1/lararium/plugins/sq-streams.md`
+- **Streams plugin vendor** — sq/streams v1.2.24 by Saq Imtiaz (MIT) vendored at `lar:///ha.ka.ba/@lares/api/v0.1/vendor/sq-streams`; stored in `packages/lares/memes/api/v0.1/tw5-plugins/sq-streams-1.2.24.json`; vendor pipeline: `scripts/write-vendor-plugins.ts` reads `tw5-plugins/*.json` → `generated-vendor-plugins.ts` → preloaded at boot. Carrier documents field mapping (ahu-parent↔parent, ahu-slots↔stream-list) at `packages/lares/memes/api/v0.1/lararium/plugins/sq-streams.md`
 
 - **Streams compat fields** — `splitCarrierToTiddlers` now emits both ahu fields (`ahu-parent`, `ahu-slots`) and Streams compat fields (`parent`, `stream-list`, `stream-type`) on parent/child tiddlers simultaneously. Both filter dialects work natively without glue code
 

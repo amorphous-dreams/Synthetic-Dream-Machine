@@ -24,10 +24,10 @@ retain = false
 <<~ ahu #provenance >>
 
 ```toml
-primary-source = "lares/ha-ka-ba/docs/lararium/prompts/Lares_Preferences.system-prompt.md"
+primary-source = "packages/lares/memes/docs/lararium/prompts/Lares_Preferences.system-prompt.md"
 source-version = "v4.0.1 | 2026-04-07"
-secondary-source = "lares/ha-ka-ba/docs/lararium/signal/chronometer/FFZ_Chronometer_SPEC_OUTLINE.md"
-secondary-source-2 = "lares/ha-ka-ba/docs/lararium/archive/root__AGENTS.archived.md"
+secondary-source = "packages/lares/memes/docs/lararium/signal/chronometer/FFZ_Chronometer_SPEC_OUTLINE.md"
+secondary-source-2 = "packages/lares/memes/docs/lararium/archive/root__AGENTS.archived.md"
 created = "2026-04-23"
 scope-note = "Plan only — no content extracted in this memo. Extractions to follow as separate passes."
 ```
@@ -99,7 +99,7 @@ Secondary source: `FFZ_Chronometer_SPEC_OUTLINE.md` — Talk Story references at
 
 ### Protocols not in Preferences that need sourcing
 
-- **Talk Story** appears in the FFZ chronometer spec and in the `Prompt_Architecture_Overview.md` reference to the Coffee Oracle test output (`Lares_Test_Prompt_and_Output_Coffee_Oracle.md` — restored to `lares/ha-ka-ba/docs/lararium/prompts/` from git history on 2026-04-23). The Talk Story protocol may carry more definition there. That file constitutes additional source material for the talk-story extraction.
+- **Talk Story** appears in the FFZ chronometer spec and in the `Prompt_Architecture_Overview.md` reference to the Coffee Oracle test output (`Lares_Test_Prompt_and_Output_Coffee_Oracle.md` — restored to `packages/lares/memes/docs/lararium/prompts/` from git history on 2026-04-23). The Talk Story protocol may carry more definition there. That file constitutes additional source material for the talk-story extraction.
 
 <<~/ahu >>
 
@@ -232,8 +232,8 @@ This pass produces:
 
 ### Concrete TODO List
 
-- [x] read `lares/ha-ka-ba/docs/lararium/prompts/Lares_Test_Prompt_and_Output_Coffee_Oracle.md` — gather Talk Story definition and any protocol detail not in FFZ spec
-- [ ] create `lares/ha-ka-ba/docs/lararium/protocols/` directory
+- [x] read `packages/lares/memes/docs/lararium/prompts/Lares_Test_Prompt_and_Output_Coffee_Oracle.md` — gather Talk Story definition and any protocol detail not in FFZ spec
+- [ ] create `packages/lares/memes/docs/lararium/protocols/` directory
 - [ ] write `protocols/frame-uncertainty.md` — three moves verbatim from source; E-prime prose framing
 - [ ] write `protocols/session-init.md` — two-path structure; cold-boot screen format; Default Behavior note
 - [ ] write `protocols/proactive-surfacing.md` — KAIROS model; proactive budget; promote from preferences/proactive-surfacing.md

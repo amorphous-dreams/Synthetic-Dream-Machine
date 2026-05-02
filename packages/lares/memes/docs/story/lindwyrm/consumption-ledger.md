@@ -70,14 +70,14 @@ Narrate to self while consuming:
 
 | Source | Target | Action | Status |
 |---|---|---|---|
-| `lares/ha-ka-ba/docs/infrastructure-as-mythology/LINDWYRM_ACT_VII_DRAFT.md` | `lares/ha-ka-ba/docs/story/lindwyrm/the-hoard-disclosed.md` | cleaned into memetic-wikitext narrative locus; source file deleted | consumed |
-| `lares/ha-ka-ba/docs/infrastructure-as-mythology/LINDWYRM_ACT_VI_DRAFT.md` | `lares/ha-ka-ba/docs/story/lindwyrm/the-lar-names-itself.md` | cleaned into memetic-wikitext narrative locus; signal-bug appendix retained; source file deleted | consumed |
-| `lares/ha-ka-ba/docs/infrastructure-as-mythology/The_Kindling_of_the_Crossroads_Node.md` | `lares/ha-ka-ba/docs/story/lindwyrm/kindling-of-the-crossroads-node.md` | converted from Jekyll page to memetic-wikitext locus; source file deleted | consumed |
-| `lares/ha-ka-ba/docs/infrastructure-as-mythology/LINDWYRM_SELF_BOOTING_LARES_ARCHITECTURE*.md` | `lares/ha-ka-ba/docs/story/lindwyrm/self-booting-lararium.md` | paired DreamDeck/dev-story archive braided into one memetic-wikitext locus; source files deleted | consumed |
-| `lares/ha-ka-ba/docs/infrastructure-as-mythology/LINDWYRM_ORIGIN_OUTLINE.md` | `lares/ha-ka-ba/docs/story/lindwyrm/hoard-origin-architecture.md` | seven-act outline converted into living story architecture locus; source file deleted | consumed |
-| duplicate `LINDWYRM_STORY_SHAPE.md` files | `lares/ha-ka-ba/docs/story/lindwyrm/dreamdeck-feed-architecture.md` | duplicate shape docs unified into canonical feed-format/cast locus; source files deleted | consumed |
-| `lar:///ha.ka.ba/@lares/docs/story/lindwyrm/hoard-origin-architecture#act-i-vault-repo` | `lares/ha-ka-ba/docs/story/lindwyrm/vault-and-repo.md` | drafted Act I locus from act map; source remains as architecture frame | drafted |
-| `lar:///ha.ka.ba/@lares/docs/story/lindwyrm/hoard-origin-architecture#act-ii-daemon` | `lares/ha-ka-ba/docs/story/lindwyrm/daemon-in-the-walls.md` | drafted Act II locus from act map; source remains as architecture frame | drafted |
+| `packages/lares/memes/docs/infrastructure-as-mythology/LINDWYRM_ACT_VII_DRAFT.md` | `packages/lares/memes/docs/story/lindwyrm/the-hoard-disclosed.md` | cleaned into memetic-wikitext narrative locus; source file deleted | consumed |
+| `packages/lares/memes/docs/infrastructure-as-mythology/LINDWYRM_ACT_VI_DRAFT.md` | `packages/lares/memes/docs/story/lindwyrm/the-lar-names-itself.md` | cleaned into memetic-wikitext narrative locus; signal-bug appendix retained; source file deleted | consumed |
+| `packages/lares/memes/docs/infrastructure-as-mythology/The_Kindling_of_the_Crossroads_Node.md` | `packages/lares/memes/docs/story/lindwyrm/kindling-of-the-crossroads-node.md` | converted from Jekyll page to memetic-wikitext locus; source file deleted | consumed |
+| `packages/lares/memes/docs/infrastructure-as-mythology/LINDWYRM_SELF_BOOTING_LARES_ARCHITECTURE*.md` | `packages/lares/memes/docs/story/lindwyrm/self-booting-lararium.md` | paired DreamDeck/dev-story archive braided into one memetic-wikitext locus; source files deleted | consumed |
+| `packages/lares/memes/docs/infrastructure-as-mythology/LINDWYRM_ORIGIN_OUTLINE.md` | `packages/lares/memes/docs/story/lindwyrm/hoard-origin-architecture.md` | seven-act outline converted into living story architecture locus; source file deleted | consumed |
+| duplicate `LINDWYRM_STORY_SHAPE.md` files | `packages/lares/memes/docs/story/lindwyrm/dreamdeck-feed-architecture.md` | duplicate shape docs unified into canonical feed-format/cast locus; source files deleted | consumed |
+| `lar:///ha.ka.ba/@lares/docs/story/lindwyrm/hoard-origin-architecture#act-i-vault-repo` | `packages/lares/memes/docs/story/lindwyrm/vault-and-repo.md` | drafted Act I locus from act map; source remains as architecture frame | drafted |
+| `lar:///ha.ka.ba/@lares/docs/story/lindwyrm/hoard-origin-architecture#act-ii-daemon` | `packages/lares/memes/docs/story/lindwyrm/daemon-in-the-walls.md` | drafted Act II locus from act map; source remains as architecture frame | drafted |
 
 <<~/ahu >>
 

@@ -47,9 +47,9 @@ Child rooms under review:
 
 Research cluster consumed for dependency pressure:
 
-- `lares/ha-ka-ba/docs/lararium/signal/chronometer/Vector_Chronometer_Research_Seed.md`
-- `lares/ha-ka-ba/docs/lararium/signal/chronometer/FFZ_Chronometer_Research.md`
-- `lares/ha-ka-ba/docs/lararium/signal/chronometer/FFZ_Chronometer_SPEC_OUTLINE.md`
+- `packages/lares/memes/docs/lararium/signal/chronometer/Vector_Chronometer_Research_Seed.md`
+- `packages/lares/memes/docs/lararium/signal/chronometer/FFZ_Chronometer_Research.md`
+- `packages/lares/memes/docs/lararium/signal/chronometer/FFZ_Chronometer_SPEC_OUTLINE.md`
 
 This memo targets branch boundaries, settlement level, and rewrite order.
 This memo does not attempt chronometer closure.

@@ -12,7 +12,7 @@ Primary source loci:
 - `lar:///ha.ka.ba/@lares/api/v0.1/pono/invariant`
 - `lar:///ha.ka.ba/@lares/api/v0.1/pono/memetic-wikitext`
 - `lar:///ha.ka.ba/@lares/api/v0.1/pono/loci`
-- current `implements` declarations under `lares/ha-ka-ba/api/v0.1/pono`
+- current `implements` declarations under `packages/lares/memes/api/v0.1/pono`
 
 ---
 
@@ -145,7 +145,7 @@ It should also shape resource annotations such as high priority for invariant pa
 | Concern | Current law pressure | Compiler use | MCP use |
 |---|---|---|---|
 | root eligibility | `\w.\w.\w` root required | validate URI eligibility | resolver errors |
-| stable origin | `ha.ka.ba` -> `lares/ha-ka-ba/` | canonical local root | local resources |
+| stable origin | `ha.ka.ba` -> `packages/lares/memes/` | canonical local root | local resources |
 | unstable origin | other roots -> `lares/chapel-perilous-opens/{root}/` | alternate resolution path | future remote/unstable resources |
 | all-caps root | `AGENTS`, `LARES`, `INDEXES` | adjacent root namespace | root instruction files and virtual compiler resources |
 | primary carrier path | derive from root + subpath | URI -> filepath resolver | `resolve_lar_uri` |

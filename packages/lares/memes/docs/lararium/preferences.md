@@ -38,7 +38,7 @@ The concepts can now stand on their own feet.
 
 Primary extraction source:
 
-- `lares/ha-ka-ba/docs/lararium/prompts/Lares_Preferences.system-prompt.md`
+- `packages/lares/memes/docs/lararium/prompts/Lares_Preferences.system-prompt.md`
 
 Supporting witness matter nearby:
 

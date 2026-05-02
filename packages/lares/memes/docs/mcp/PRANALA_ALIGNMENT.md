@@ -6,7 +6,7 @@
 # Pranala Family-to-Graph-Plane Alignment Table
 
 Status date: **April 23, 2026**
-Source of truth: `lares/ha-ka-ba/api/v0.1/pono/pranala.md`
+Source of truth: `packages/lares/memes/api/v0.1/pono/pranala.md`
 See also: `EDGE_TAXONOMY.md`, `AST_ENVELOPE.md`
 
 Deliverable for: `MCP-TASK-019`
@@ -81,7 +81,7 @@ The compiler walks these edges from `lar:///AGENTS` to produce the required-core
 
 ## Inventory from current API/docs loci
 
-Current explicit pranala usage found in `lares/ha-ka-ba/api/` and `lares/`:
+Current explicit pranala usage found in `packages/lares/memes/api/` and `lares/`:
 
 | Source locus | Family | Role | From socket | To socket |
 |---|---|---|---|---|

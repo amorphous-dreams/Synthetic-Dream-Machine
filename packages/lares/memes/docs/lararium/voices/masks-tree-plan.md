@@ -25,7 +25,7 @@ created = "2026-04-23"
 
 # Masks API Tree — Build Plan
 
-OODA-HA plan for creating `lares/ha-ka-ba/api/v0.1/masks/` and populating it with
+OODA-HA plan for creating `packages/lares/memes/api/v0.1/masks/` and populating it with
 skeleton meme-loci ready for talk-story-dev fill passes.
 
 <<~/ahu >>
@@ -38,7 +38,7 @@ skeleton meme-loci ready for talk-story-dev fill passes.
 ### Target tree
 
 ```
-lares/ha-ka-ba/api/v0.1/masks/
+packages/lares/memes/api/v0.1/masks/
   masks.md                          → lar:///ha.ka.ba/@lares/api/v0.1/masks
   named/
     mischief-muse.md                → lar:///ha.ka.ba/@lares/api/v0.1/masks/named/mischief-muse
@@ -189,8 +189,8 @@ The repeatable skeleton pattern for all nine files:
 ### Concrete TODO List
 
 **Tree setup:**
-- [ ] create `lares/ha-ka-ba/api/v0.1/masks/masks.md` — parent index with child routes and type taxonomy
-- [ ] create `lares/ha-ka-ba/api/v0.1/masks/named/` directory
+- [ ] create `packages/lares/memes/api/v0.1/masks/masks.md` — parent index with child routes and type taxonomy
+- [ ] create `packages/lares/memes/api/v0.1/masks/named/` directory
 
 **Named coordinator masks (skeletons):**
 - [ ] write `named/mischief-muse.md` — senior named Voice; most identity depth available; fills from Coffee Oracle test output + house entry
@@ -200,12 +200,12 @@ The repeatable skeleton pattern for all nine files:
 - [ ] write `named/map-wisp.md` — Scryer; structural forward-looking character
 
 **Character masks (from existing docs examples):**
-- [ ] create `lares/ha-ka-ba/api/v0.1/masks/character/` directory
+- [ ] create `packages/lares/memes/api/v0.1/masks/character/` directory
 - [ ] write `character/ghost-of-mark-twain.md` — extract from docs/lararium/voices/masks.md founding example
 - [ ] write `character/friend-computer.md` — extract from docs/lararium/voices/masks.md founding example
 
 **Chorus mask (concept stake):**
-- [ ] create `lares/ha-ka-ba/api/v0.1/masks/chorus/` directory
+- [ ] create `packages/lares/memes/api/v0.1/masks/chorus/` directory
 - [ ] write `chorus/lagrange-chorus.md` — concept staked; nodes field stub; harmony protocol pending-grammar
 
 **Cross-links:**

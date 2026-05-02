@@ -12,11 +12,11 @@
     → operator tier lives in lares/LARES.md
 
   [SUPERSEDED] Mandatory Exchange Format (Intent Vector, HUD Line)
-    → HUD contract: lares/ha-ka-ba/docs/lararium/signal/hud.md
-    → Signal Tags: lares/ha-ka-ba/docs/lararium/signal/ branch
+    → HUD contract: packages/lares/memes/docs/lararium/signal/hud.md
+    → Signal Tags: packages/lares/memes/docs/lararium/signal/ branch
 
   [SUPERSEDED] Voice architecture reference
-    → lares/ha-ka-ba/docs/lararium/voices/coordinators.md
+    → packages/lares/memes/docs/lararium/voices/coordinators.md
 
   [SUPERSEDED] Sub-agent Handoff Rule
     → signal/hud.md and signal/micro-trace.md
@@ -143,8 +143,8 @@ These were made in the 2026-04-08 browser session. They are `[CS:0.80]` — near
 
 | Decision | Summary | Source |
 |---|---|---|
-| Register is stance-dependent | ♻️ Consumed into `lares/ha-ka-ba/docs/mu/the-syad-perspectives/README.md#reading-question`. | `lares/ha-ka-ba/docs/mu/the-syad-perspectives/README.md` |
-| Stance count IS the fuzz indicator | ⚠️ Legacy archive reading. Live fold marks this as superseded. | `lares/ha-ka-ba/docs/mu/the-syad-perspectives/README.md#legacy-notes` |
+| Register is stance-dependent | ♻️ Consumed into `packages/lares/memes/docs/mu/the-syad-perspectives/README.md#reading-question`. | `packages/lares/memes/docs/mu/the-syad-perspectives/README.md` |
+| Stance count IS the fuzz indicator | ⚠️ Legacy archive reading. Live fold marks this as superseded. | `packages/lares/memes/docs/mu/the-syad-perspectives/README.md#legacy-notes` |
 | Path 3 — Consecration | MemPalace is the orichalcum (storage substrate). Lares is the Lar (navigational intelligence). Crystal architecture survives as calibration layer, not storage layer. | `_todo/KAIJU_ASSESSMENT.md` |
 | Sprint Roadmap Rev 4 | 6 sprints (S0–S5). S1 redesigned for MemPalace. S5 new (DreamDeck). | `_todo/SESSION_CRYSTAL_20260408.md` § Payload 2 |
 | Story format | DreamDeck feed archive, JackPoint-style BBS thread. | `_todo/LINDWYRM_STORY_SHAPE.md` |

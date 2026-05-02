@@ -139,7 +139,7 @@ The rename in the server awaits Phase 1 implementation. Until then, current code
 | 2 | `lares/lararium_mcp/tests/test_pranala_parser.py` | AGENTS.md block fixtures, `? ->` resolution |
 | 3 | `lares/lararium_mcp/compiler.py` (rewrite) | Tier 0/1/2 walk, live `pranala_edges`, `interface_index`, content hash |
 | 3 | updated `test_compiler.py` | `test_tier0_tier1_convergence`, `test_full_boot_has_edges`, `test_receipt_deterministic` |
-| 4 | `lares/ha-ka-ba/docs/graph/**` | this carrier cluster (plan → loci) |
+| 4 | `packages/lares/memes/docs/graph/**` | this carrier cluster (plan → loci) |
 
 Phase 2 awaits the `? ->` resolution call.
 Phases 1, 3, and 4 may proceed independently.

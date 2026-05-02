@@ -13,9 +13,9 @@ manaoio      = 0.76
 manao        = 0.82
 role         = "canonical closed-sprint ledger and consumption map for Lararium MCP planning documents"
 source-consumes = [
-  "lares/ha-ka-ba/docs/mcp/sprints/SPRINT-00_FOUNDATION.md",
-  "lares/ha-ka-ba/docs/mcp/sprints/SPRINT-01_HYDRATION_SLICE.md",
-  "lares/ha-ka-ba/docs/mcp/sprints/SPRINT-02_LOCAL_CLIENTS.md"
+  "packages/lares/memes/docs/mcp/sprints/SPRINT-00_FOUNDATION.md",
+  "packages/lares/memes/docs/mcp/sprints/SPRINT-01_HYDRATION_SLICE.md",
+  "packages/lares/memes/docs/mcp/sprints/SPRINT-02_LOCAL_CLIENTS.md"
 ]
 status      = "sequence-bound; no calendar dates"
 ```

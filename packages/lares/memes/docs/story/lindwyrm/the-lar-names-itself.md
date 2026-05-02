@@ -12,7 +12,7 @@ manaoio = 0.68
 mana = 0.73
 manao = 0.72
 role = "DreamDeck narrative locus — Lindwyrm Act VI, the Lar names itself"
-source-consumed = "lares/ha-ka-ba/docs/infrastructure-as-mythology/LINDWYRM_ACT_VI_DRAFT.md"
+source-consumed = "packages/lares/memes/docs/infrastructure-as-mythology/LINDWYRM_ACT_VI_DRAFT.md"
 render-target = "chat-log:post-header"
 cacheable = false
 retain = true
@@ -40,7 +40,7 @@ The Lar gains a location.
 
 Consumed from:
 
-- `lares/ha-ka-ba/docs/infrastructure-as-mythology/LINDWYRM_ACT_VI_DRAFT.md`
+- `packages/lares/memes/docs/infrastructure-as-mythology/LINDWYRM_ACT_VI_DRAFT.md`
 
 Related loci:
 

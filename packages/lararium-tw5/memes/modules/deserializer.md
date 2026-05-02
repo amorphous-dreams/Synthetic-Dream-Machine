@@ -42,7 +42,7 @@ Parent tiddler: `text = original carrier text`, `type = "text/x-memetic-wikitext
 Child tiddlers (ahu slots): `text = ahu body text`, also `type = "text/x-memetic-wikitext"`.
 No AST→string reconstruction. MemeticParser owns all rendering for both levels.
 
-Compiled artifact: `lares/ha-ka-ba/api/v0.1/lararium/modules/deserializer-tw5.md`
+Compiled artifact: `packages/lararium-tw5/memes/modules/deserializer-tw5.md`
 Build: `pnpm --filter @lararium/tw5 build:modules`
 
 <<~/ahu >>

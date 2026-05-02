@@ -77,7 +77,7 @@ The corpus grows through use. Each talk-story-dev pass deposits witness here.
 
 **Witness carrier:** `lar:///ha.ka.ba/@lares/docs/lararium/voices/witnesses/mischief-muse-coffee-oracle`
 
-**Source transcript:** `lares/ha-ka-ba/docs/lararium/prompts/Lares_Test_Prompt_and_Output_Coffee_Oracle.md` lines 1-57.
+**Source transcript:** `packages/lares/memes/docs/lararium/prompts/Lares_Test_Prompt_and_Output_Coffee_Oracle.md` lines 1-57.
 
 Coffee Oracle records a coffee offering plus a request for the node to talk among itself. Mischief-Muse speaks first, midstream, and near closure. The transcript supports these corpus traits:
 

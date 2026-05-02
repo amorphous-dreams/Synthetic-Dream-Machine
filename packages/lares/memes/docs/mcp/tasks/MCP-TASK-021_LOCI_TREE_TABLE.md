@@ -6,7 +6,7 @@ Size: `S`
 
 ## Deliverable
 
-Delivered in `lares/ha-ka-ba/docs/mcp/CARRIER_LAW_BUNDLE.md#task-021--loci-derived-carrier-tree-and-child-resolution-table`.
+Delivered in `packages/lares/memes/docs/mcp/CARRIER_LAW_BUNDLE.md#task-021--loci-derived-carrier-tree-and-child-resolution-table`.
 
 A repo-local table that maps `loci` derivation, stable file-path convention, parent-child tree growth, and address-stability rules into MCP resolver, resource-template, and carrier-index planning.
 

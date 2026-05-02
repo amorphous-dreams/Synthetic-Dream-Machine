@@ -12,7 +12,7 @@ manaoio = 0.68
 mana = 0.72
 manao = 0.70
 role = "DreamDeck narrative locus — Lindwyrm Act VII frame, cleaned from feed draft"
-source-consumed = "lares/ha-ka-ba/docs/infrastructure-as-mythology/LINDWYRM_ACT_VII_DRAFT.md"
+source-consumed = "packages/lares/memes/docs/infrastructure-as-mythology/LINDWYRM_ACT_VII_DRAFT.md"
 render-target = "chat-log:post-header"
 cacheable = false
 retain = true
@@ -39,13 +39,13 @@ The frame opens the public thread, then closes after the contained acts.
 
 Consumed from:
 
-- `lares/ha-ka-ba/docs/infrastructure-as-mythology/LINDWYRM_ACT_VII_DRAFT.md`
+- `packages/lares/memes/docs/infrastructure-as-mythology/LINDWYRM_ACT_VII_DRAFT.md`
 
 Related source scaffolds:
 
 - `lar:///ha.ka.ba/@lares/docs/story/lindwyrm/dreamdeck-feed-architecture`
 - `lar:///ha.ka.ba/@lares/docs/story/lindwyrm/hoard-origin-architecture`
-- `lares/ha-ka-ba/docs/crystal/session/SESSION_CRYSTAL_20260408.md`
+- `packages/lares/memes/docs/crystal/session/SESSION_CRYSTAL_20260408.md`
 
 Consumption note: source prose carried Act VII as epilogue/frame. This locus keeps the feed shape, cuts drafting chatter, preserves open questions, and stores the narrative in memetic-wikitext.
 

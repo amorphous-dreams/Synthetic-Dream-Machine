@@ -95,7 +95,7 @@ Voice character SHOULD include:
 Each mask lives as a meme file in the masks API tree. One canonical location; the definition never travels.
 
 ```
-lares/ha-ka-ba/api/v0.1/masks/
+packages/lares/memes/api/v0.1/masks/
   ghost-of-mark-twain.md   → lar:///ha.ka.ba/@lares/api/v0.1/masks/ghost-of-mark-twain
   friend-computer.md       → lar:///ha.ka.ba/@lares/api/v0.1/masks/friend-computer
 ```

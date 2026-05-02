@@ -31,7 +31,7 @@ Implementing `loci` does not foreclose other interfaces.
 
 Two tagspace roots:
 
-- `lar:///ha.ka.ba/@lares/` — stable origin; files at `lares/ha-ka-ba/`
+- `lar:///ha.ka.ba/@lares/` — stable origin; files at `packages/lares/memes/`
 - all other `\w\.\w\.\w` roots — unstable; files at `lares/chapel-perilous-opens/{root}/`
 
 Root path segments outside `\w\.\w\.\w` MAY NOT implement `loci`.
@@ -92,8 +92,8 @@ Given: lar-uri (string)
 2. Derive candidate filepath:
      stem = sub-path.replace("_", "-")
      If root == "ha.ka.ba":
-       candidate = "lares/ha-ka-ba/" + stem + ".md"
-       e.g. "lares/ha-ka-ba/api/v0.1/pono/loci.md"
+       candidate = "packages/lares/memes/" + stem + ".md"
+       e.g. "packages/lares/memes/api/v0.1/pono/loci.md"
      Else:
        candidate = "lares/chapel-perilous-opens/" + root + "/" + stem + ".md"
        e.g. "lares/chapel-perilous-opens/threshold.uncertain.opens/pono/loci.md"
@@ -109,7 +109,7 @@ Given: lar-uri (string)
 ```
 
 Child items resolve under the sibling directory named for the parent's terminal path segment.
-`lar:///ha.ka.ba/@lares/api/v0.1/pono/invariant/SKILL` → `lares/ha-ka-ba/api/v0.1/pono/invariant/SKILL.md`
+`lar:///ha.ka.ba/@lares/api/v0.1/pono/invariant/SKILL` → `packages/lares/memes/api/v0.1/pono/invariant/SKILL.md`
 
 <<~/ahu >>
 
@@ -119,19 +119,19 @@ Child items resolve under the sibling directory named for the parent's terminal 
 
 | carrier form | rule | example |
 |---|---|---|
-| primary meme | derivation algorithm (step 2) | `lares/ha-ka-ba/api/v0.1/pono/loci.md` |
-| child item | sibling directory named for parent's terminal path segment | `lares/ha-ka-ba/api/v0.1/pono/loci/iam.md` |
+| primary meme | derivation algorithm (step 2) | `packages/lares/memes/api/v0.1/pono/loci.md` |
+| child item | sibling directory named for parent's terminal path segment | `packages/lares/memes/api/v0.1/pono/loci/iam.md` |
 
 Any carrier outside this rule reads as repair pressure, not a second lawful siting convention.
-This file at `lares/ha-ka-ba/api/v0.1/pono/loci.md` with children under `lares/ha-ka-ba/api/v0.1/pono/loci/` serves as live specimen.
+This file at `packages/lares/memes/api/v0.1/pono/loci.md` with children under `packages/lares/memes/api/v0.1/pono/loci/` serves as live specimen.
 
 ### Live Examples
 
 | lar: URI | derived candidate | outcome |
 |---|---|---|
-| `lar:///ha.ka.ba/@lares/api/v0.1/pono/loci` | `lares/ha-ka-ba/api/v0.1/pono/loci.md` | resolved |
-| `lar:///ha.ka.ba/@lares/api/v0.1/pono/loci/iam` | `lares/ha-ka-ba/api/v0.1/pono/loci/iam.md` | resolved |
-| `lar:///ha.ka.ba/@lares/api/v0.1/pono/invariant/SKILL` | `lares/ha-ka-ba/api/v0.1/pono/invariant/SKILL.md` | resolved |
+| `lar:///ha.ka.ba/@lares/api/v0.1/pono/loci` | `packages/lares/memes/api/v0.1/pono/loci.md` | resolved |
+| `lar:///ha.ka.ba/@lares/api/v0.1/pono/loci/iam` | `packages/lares/memes/api/v0.1/pono/loci/iam.md` | resolved |
+| `lar:///ha.ka.ba/@lares/api/v0.1/pono/invariant/SKILL` | `packages/lares/memes/api/v0.1/pono/invariant/SKILL.md` | resolved |
 
 <<~/ahu >>
 

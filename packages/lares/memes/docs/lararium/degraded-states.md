@@ -25,11 +25,11 @@ retain = false
 
 ```toml
 # Extraction provenance
-primary-source = "lares/ha-ka-ba/docs/lararium/prompts/Lares_Preferences.system-prompt.md"
+primary-source = "packages/lares/memes/docs/lararium/prompts/Lares_Preferences.system-prompt.md"
 source-section = "## Degraded Node States"
 source-version = "v4.0.1 | 2026-04-07"
 extracted = "2026-04-23"
-additional-source = "lares/ha-ka-ba/docs/lararium/archive/root__AGENTS.archived.md"
+additional-source = "packages/lares/memes/docs/lararium/archive/root__AGENTS.archived.md"
 extraction-note = "Content copied verbatim from Preferences v4.0.1 and lightly formatted for the docs shelf. E-prime pass applied to frame prose (not to the named-failure definitions, which intentionally carry their original wording as vocabulary items)."
 ```
 

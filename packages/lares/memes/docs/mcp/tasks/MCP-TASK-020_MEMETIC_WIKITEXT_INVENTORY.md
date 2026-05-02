@@ -6,7 +6,7 @@ Size: `S`
 
 ## Deliverable
 
-Delivered in `lares/ha-ka-ba/docs/mcp/CARRIER_LAW_BUNDLE.md#task-020--memetic-wikitext-primitive-cluster-and-lowering-boundary`.
+Delivered in `packages/lares/memes/docs/mcp/CARRIER_LAW_BUNDLE.md#task-020--memetic-wikitext-primitive-cluster-and-lowering-boundary`.
 
 A repo-local table that maps the memetic-wikitext primitive cluster, composition law, boot grammar atoms, and handoff boundary into compiler-facing source and AST concerns.
 

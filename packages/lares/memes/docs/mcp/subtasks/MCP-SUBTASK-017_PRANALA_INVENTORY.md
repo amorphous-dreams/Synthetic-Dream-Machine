@@ -5,4 +5,4 @@ Status: `ready`
 
 ## Deliverable
 
-A concise inventory drawn from `lares/ha-ka-ba/api/v0.1` and `lares/ha-ka-ba/docs` showing current `pranala` family usage, hydration sockets, `role:owns` patterns, and named sugar that should survive into graph compilation.
+A concise inventory drawn from `packages/lares/memes/api/v0.1` and `packages/lares/memes/docs` showing current `pranala` family usage, hydration sockets, `role:owns` patterns, and named sugar that should survive into graph compilation.

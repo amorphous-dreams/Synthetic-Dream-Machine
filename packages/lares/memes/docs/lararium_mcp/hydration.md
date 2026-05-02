@@ -13,9 +13,9 @@ manaoio      = 0.80
 manao        = 0.84
 role         = "canonical hydration closure, edge taxonomy, artifact, resolver, and resource contract"
 source-consumes = [
-  "lares/ha-ka-ba/docs/mcp/BOOT_LOCI_INVENTORY.md",
-  "lares/ha-ka-ba/docs/mcp/EDGE_TAXONOMY.md",
-  "lares/ha-ka-ba/docs/mcp/HYDRATION_ARTIFACT_CONTRACT.md"
+  "packages/lares/memes/docs/mcp/BOOT_LOCI_INVENTORY.md",
+  "packages/lares/memes/docs/mcp/EDGE_TAXONOMY.md",
+  "packages/lares/memes/docs/mcp/HYDRATION_ARTIFACT_CONTRACT.md"
 ]
 status-date  = "2026-04-23"
 ```
@@ -44,18 +44,18 @@ All 14 memes below must resolve before threshold yield.
 | # | URI | File path | Hydration socket |
 |---:|---|---|---|
 | 1 | `lar:///AGENTS` | `lares/AGENTS.md` | entry |
-| 2 | `lar:///ha.ka.ba/@lares/api/v0.1/mu/e-prime` | `lares/ha-ka-ba/api/v0.1/pono/e-prime.md` | `AGENTS#preload-e-prime` |
-| 3 | `lar:///ha.ka.ba/@lares/api/v0.1/mu/ooda-ha` | `lares/ha-ka-ba/api/v0.1/pono/ooda-ha.md` | `AGENTS#preload-ooda-ha` |
-| 4 | `lar:///ha.ka.ba/@lares/api/v0.1/lararium/lar-uri` | `lares/ha-ka-ba/api/v0.1/pono/lar-uri.md` | `AGENTS#preload-lar-uri` |
-| 5 | `lar:///ha.ka.ba/@lares/api/v0.1/mu` | `lares/ha-ka-ba/api/v0.1/mu.md` | `AGENTS#threshold-to-mu` |
-| 6 | `lar:///ha.ka.ba/@lares/api/v0.1/mu/chao` | `lares/ha-ka-ba/api/v0.1/mu/chao.md` | Mu internal hydration |
-| 7 | `lar:///ha.ka.ba/@lares/api/v0.1/mu/the-four-tools` | `lares/ha-ka-ba/api/v0.1/mu/the-four-tools.md` | Mu internal hydration |
-| 8 | `lar:///ha.ka.ba/@lares/api/v0.1/mu/the-law-of-5s` | `lares/ha-ka-ba/api/v0.1/mu/the-law-of-5s.md` | Mu internal hydration |
-| 9 | `lar:///ha.ka.ba/@lares/api/v0.1/mu/the-syad-perspectives` | `lares/ha-ka-ba/api/v0.1/mu/the-syad-perspectives.md` | Mu internal hydration |
-| 10 | `lar:///ha.ka.ba/@lares/api/v0.1/lararium` | `lares/ha-ka-ba/api/v0.1/lararium.md` | `AGENTS#threshold-to-lararium` |
-| 11 | `lar:///ha.ka.ba/@lares/api/v0.1/lararium/hud` | `lares/ha-ka-ba/api/v0.1/lararium/hud.md` | Lararium internal hydration |
-| 12 | `lar:///ha.ka.ba/@lares/api/v0.1/lararium/voices` | `lares/ha-ka-ba/api/v0.1/lararium/voices.md` | Lararium internal hydration |
-| 13 | `lar:///ha.ka.ba/@lares/api/v0.1/lararium/continuity` | `lares/ha-ka-ba/api/v0.1/lararium/continuity.md` | Lararium internal hydration |
+| 2 | `lar:///ha.ka.ba/@lares/api/v0.1/mu/e-prime` | `packages/lares/memes/api/v0.1/pono/e-prime.md` | `AGENTS#preload-e-prime` |
+| 3 | `lar:///ha.ka.ba/@lares/api/v0.1/mu/ooda-ha` | `packages/lares/memes/api/v0.1/pono/ooda-ha.md` | `AGENTS#preload-ooda-ha` |
+| 4 | `lar:///ha.ka.ba/@lares/api/v0.1/lararium/lar-uri` | `packages/lares/memes/api/v0.1/pono/lar-uri.md` | `AGENTS#preload-lar-uri` |
+| 5 | `lar:///ha.ka.ba/@lares/api/v0.1/mu` | `packages/lares/memes/api/v0.1/mu.md` | `AGENTS#threshold-to-mu` |
+| 6 | `lar:///ha.ka.ba/@lares/api/v0.1/mu/chao` | `packages/lares/memes/api/v0.1/mu/chao.md` | Mu internal hydration |
+| 7 | `lar:///ha.ka.ba/@lares/api/v0.1/mu/the-four-tools` | `packages/lares/memes/api/v0.1/mu/the-four-tools.md` | Mu internal hydration |
+| 8 | `lar:///ha.ka.ba/@lares/api/v0.1/mu/the-law-of-5s` | `packages/lares/memes/api/v0.1/mu/the-law-of-5s.md` | Mu internal hydration |
+| 9 | `lar:///ha.ka.ba/@lares/api/v0.1/mu/the-syad-perspectives` | `packages/lares/memes/api/v0.1/mu/the-syad-perspectives.md` | Mu internal hydration |
+| 10 | `lar:///ha.ka.ba/@lares/api/v0.1/lararium` | `packages/lares/memes/api/v0.1/lararium.md` | `AGENTS#threshold-to-lararium` |
+| 11 | `lar:///ha.ka.ba/@lares/api/v0.1/lararium/hud` | `packages/lares/memes/api/v0.1/lararium/hud.md` | Lararium internal hydration |
+| 12 | `lar:///ha.ka.ba/@lares/api/v0.1/lararium/voices` | `packages/lares/memes/api/v0.1/lararium/voices.md` | Lararium internal hydration |
+| 13 | `lar:///ha.ka.ba/@lares/api/v0.1/lararium/continuity` | `packages/lares/memes/api/v0.1/lararium/continuity.md` | Lararium internal hydration |
 | 14 | `lar:///LARES` | `lares/LARES.md` | `AGENTS#continue-to-lares` |
 
 Mu and Lararium hydrate their declared children before yielding.

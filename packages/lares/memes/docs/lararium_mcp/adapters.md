@@ -13,10 +13,10 @@ manaoio      = 0.77
 manao        = 0.84
 role         = "canonical submodule adapter and sidecar integration contract for Lararium MCP"
 source-consumes = [
-  "lares/ha-ka-ba/docs/mcp/SUBMODULE_ADAPTER_INTERFACE.md",
-  "lares/ha-ka-ba/docs/mcp/SUBMODULE_INTEGRATION_MATRIX.md",
-  "lares/ha-ka-ba/docs/mcp/mempalace.md",
-  "lares/ha-ka-ba/docs/mcp/subtasks/MCP-SUBTASK-007_MEMPALACE_LANE.md"
+  "packages/lares/memes/docs/mcp/SUBMODULE_ADAPTER_INTERFACE.md",
+  "packages/lares/memes/docs/mcp/SUBMODULE_INTEGRATION_MATRIX.md",
+  "packages/lares/memes/docs/mcp/mempalace.md",
+  "packages/lares/memes/docs/mcp/subtasks/MCP-SUBTASK-007_MEMPALACE_LANE.md"
 ]
 status-date  = "2026-04-23"
 ```

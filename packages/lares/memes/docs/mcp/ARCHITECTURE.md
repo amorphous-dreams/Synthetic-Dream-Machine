@@ -216,7 +216,7 @@ The resolver should treat root shapes as first-class law, not incidental filenam
 |---|---|---|
 | all-caps file root | `lar:///AGENTS`, `lar:///LARES` | file-backed root under `lares/` |
 | all-caps virtual root | `lar:///INDEXES/carriers` | compiler-produced namespace; child paths may use any case |
-| stable tuple root | `lar:///ha.ka.ba/@lares/api/v0.1/pono/meme` | stable local root under `lares/ha-ka-ba/` |
+| stable tuple root | `lar:///ha.ka.ba/@lares/api/v0.1/pono/meme` | stable local root under `packages/lares/memes/` |
 | future unstable tuple root | `lar:///*.*.*/...` | unstable local root under `lares/chapel-perilous-opens/<root>/` |
 
 `lar:///INDEXES/**` does not need a one-to-one disk file. It names materialized compiler resources.

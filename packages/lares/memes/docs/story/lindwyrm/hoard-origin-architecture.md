@@ -12,7 +12,7 @@ manaoio = 0.70
 mana = 0.74
 manao = 0.76
 role = "story architecture locus — seven-act Lindwyrm hoard braid across Gaia and Elyncia"
-source-consumed = "lares/ha-ka-ba/docs/infrastructure-as-mythology/LINDWYRM_ORIGIN_OUTLINE.md"
+source-consumed = "packages/lares/memes/docs/infrastructure-as-mythology/LINDWYRM_ORIGIN_OUTLINE.md"
 cacheable = false
 retain = true
 ```
@@ -38,7 +38,7 @@ This locus carries the story map, act status, crossing threads, and drafting con
 
 Consumed from:
 
-- `lares/ha-ka-ba/docs/infrastructure-as-mythology/LINDWYRM_ORIGIN_OUTLINE.md`
+- `packages/lares/memes/docs/infrastructure-as-mythology/LINDWYRM_ORIGIN_OUTLINE.md`
 
 Related narrative loci:
 

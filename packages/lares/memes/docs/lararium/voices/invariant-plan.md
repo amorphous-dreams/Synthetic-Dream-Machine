@@ -47,7 +47,7 @@ Current target:
 
 | File | Current state |
 |---|---|
-| `lares/ha-ka-ba/api/v0.1/lararium/voices.md` | skeletal placeholder; declares `role`, `implements`, `hydrate`, `retain`; no substantive content |
+| `packages/lares/memes/api/v0.1/lararium/voices.md` | skeletal placeholder; declares `role`, `implements`, `hydrate`, `retain`; no substantive content |
 
 <<~/ahu >>
 
@@ -207,10 +207,10 @@ These rules apply across all three layers and belong at the top of the invariant
 
 ### Concrete TODO List
 
-- [ ] create `lares/ha-ka-ba/api/v0.1/masks/` tree with a parent index meme (`masks.md` → `lar:///ha.ka.ba/@lares/api/v0.1/masks`)
-- [ ] write `lares/ha-ka-ba/api/v0.1/masks/ghost-of-mark-twain.md` from founding example in docs
-- [ ] write `lares/ha-ka-ba/api/v0.1/masks/friend-computer.md` from founding example in docs
-- [ ] open `lares/ha-ka-ba/api/v0.1/lararium/voices.md`
+- [ ] create `packages/lares/memes/api/v0.1/masks/` tree with a parent index meme (`masks.md` → `lar:///ha.ka.ba/@lares/api/v0.1/masks`)
+- [ ] write `packages/lares/memes/api/v0.1/masks/ghost-of-mark-twain.md` from founding example in docs
+- [ ] write `packages/lares/memes/api/v0.1/masks/friend-computer.md` from founding example in docs
+- [ ] open `packages/lares/memes/api/v0.1/lararium/voices.md`
 - [ ] update `#iam` role description to match spec status
 - [ ] keep `#entry` backlink pranala intact
 - [ ] replace `#meme-header` with brief three-line framing

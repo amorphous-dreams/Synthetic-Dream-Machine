@@ -6,7 +6,7 @@
 # Edge Taxonomy — Lararium MCP
 
 Status date: **April 23, 2026**
-Source of truth: `lares/ha-ka-ba/api/v0.1/pono/pranala.md`
+Source of truth: `packages/lares/memes/api/v0.1/pono/pranala.md`
 
 Deliverable for: `MCP-TASK-002`
 

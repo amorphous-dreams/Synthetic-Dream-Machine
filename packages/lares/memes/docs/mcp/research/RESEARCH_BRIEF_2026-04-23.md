@@ -101,7 +101,7 @@ That gives the MCP program a native local rationale for integration.
 
 ### C. The TiddlyWiki import boundary already leans toward Filter Language, not runtime takeover
 
-`lares/ha-ka-ba/api/v0.1/grammars/tiddlywiki-filter.md` already names `x-tiddlywiki-filter` as an imported guest grammar, bounded through `hana`, with a defined boot-preserved feature family.
+`packages/lares/memes/api/v0.1/grammars/tiddlywiki-filter.md` already names `x-tiddlywiki-filter` as an imported guest grammar, bounded through `hana`, with a defined boot-preserved feature family.
 That local law strongly supports direct Filter Language import while keeping the host graph and host metaphysics in charge.
 
 ---

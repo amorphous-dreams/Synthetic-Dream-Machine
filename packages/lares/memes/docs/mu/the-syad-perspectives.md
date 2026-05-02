@@ -107,9 +107,9 @@ The tight invariant lives at:
 The archive-derived research bundle lives at:
 
 - `lar:///ha.ka.ba/@lares/docs/mu/the-syad-perspectives/README`
-- `lares/ha-ka-ba/docs/mu/the-syad-perspectives/SYADASTI_READING_RULE.md`
-- `lares/ha-ka-ba/docs/mu/the-syad-perspectives/G_deep_research_meaning.md`
-- `lares/ha-ka-ba/docs/mu/the-syad-perspectives/STANCE_LOCI.md`
+- `packages/lares/memes/docs/mu/the-syad-perspectives/SYADASTI_READING_RULE.md`
+- `packages/lares/memes/docs/mu/the-syad-perspectives/G_deep_research_meaning.md`
+- `packages/lares/memes/docs/mu/the-syad-perspectives/STANCE_LOCI.md`
 
 <<~/ahu >>
 

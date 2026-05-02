@@ -6,7 +6,7 @@
 # TiddlyWiki Filter Language — Direct-Import Boundary
 
 Status date: **April 23, 2026**
-Source of truth: `lares/ha-ka-ba/api/v0.1/grammars/tiddlywiki-filter.md`
+Source of truth: `packages/lares/memes/api/v0.1/grammars/tiddlywiki-filter.md`
 Grammar key: `x-tiddlywiki-filter`
 
 Deliverable for: `MCP-TASK-013`

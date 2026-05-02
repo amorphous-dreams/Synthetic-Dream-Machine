@@ -125,7 +125,7 @@ All tools carry `readOnlyHint: true`, `destructiveHint: false`, `idempotentHint:
 |---|---|---|
 | `lar:///AGENTS` | file | threshold constitution |
 | `lar:///LARES` | file | session configuration surface |
-| `lar:///ha.ka.ba/@lares/**` | file | stable source carriers under `lares/ha-ka-ba/api/v0.1/` |
+| `lar:///ha.ka.ba/@lares/**` | file | stable source carriers under `packages/lares/memes/api/v0.1/` |
 | `lar:///INDEXES/carriers` | virtual JSON | all carrier records |
 | `lar:///INDEXES/interfaces` | virtual JSON | interface URI → carrier URIs |
 | `lar:///INDEXES/invariants` | virtual JSON | invariant carrier URI list |
@@ -179,7 +179,7 @@ lares/lararium_mcp/
 
 ## Canonical Child Loci
 
-The durable MCP design now lives under `lares/ha-ka-ba/docs/lararium_mcp/**` as memetic-wikitext loci:
+The durable MCP design now lives under `packages/lares/memes/docs/lararium_mcp/**` as memetic-wikitext loci:
 
 | Locus | Canonical role |
 |---|---|
@@ -191,7 +191,7 @@ The durable MCP design now lives under `lares/ha-ka-ba/docs/lararium_mcp/**` as 
 | `local-clients` | VS Code, Claude Code, Codex, prompt catalog, read-only tool façade |
 | `sprint-ledger` | closed Sprint-00/01/02 contraction and consumed-source map |
 
-Graph redesign cluster lives under `lares/ha-ka-ba/docs/graph/**`:
+Graph redesign cluster lives under `packages/lares/memes/docs/graph/**`:
 
 | Locus | Canonical role |
 |---|---|
@@ -210,7 +210,7 @@ Active Sprint-03, roadmap, backlog, and todo work-tracking files remain live pla
 
 ## Legacy Contract Documents
 
-Checked-in design contracts under `lares/ha-ka-ba/docs/mcp/` now act as consumed source/reference stubs:
+Checked-in design contracts under `packages/lares/memes/docs/mcp/` now act as consumed source/reference stubs:
 
 | Document | Covers |
 |---|---|

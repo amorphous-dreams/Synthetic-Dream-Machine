@@ -13,12 +13,12 @@ manaoio      = 0.78
 manao        = 0.82
 role         = "canonical local client exposure contract for Lararium MCP"
 source-consumes = [
-  "lares/ha-ka-ba/docs/mcp/sprints/SPRINT-02_LOCAL_CLIENTS.md",
-  "lares/ha-ka-ba/docs/mcp/stories/MCP-STORY-202_HYDRATION_PROMPTS.md",
-  "lares/ha-ka-ba/docs/mcp/stories/MCP-STORY-203_PORTABILITY_TOOLS.md",
-  "lares/ha-ka-ba/docs/mcp/stories/MCP-STORY-401_VSCODE_COPILOT.md",
-  "lares/ha-ka-ba/docs/mcp/stories/MCP-STORY-402_CLAUDE_CODE.md",
-  "lares/ha-ka-ba/docs/mcp/stories/MCP-STORY-403_CODEX.md"
+  "packages/lares/memes/docs/mcp/sprints/SPRINT-02_LOCAL_CLIENTS.md",
+  "packages/lares/memes/docs/mcp/stories/MCP-STORY-202_HYDRATION_PROMPTS.md",
+  "packages/lares/memes/docs/mcp/stories/MCP-STORY-203_PORTABILITY_TOOLS.md",
+  "packages/lares/memes/docs/mcp/stories/MCP-STORY-401_VSCODE_COPILOT.md",
+  "packages/lares/memes/docs/mcp/stories/MCP-STORY-402_CLAUDE_CODE.md",
+  "packages/lares/memes/docs/mcp/stories/MCP-STORY-403_CODEX.md"
 ]
 status-date  = "2026-04-23"
 ```

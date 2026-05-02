@@ -50,7 +50,7 @@ Lararium owns agent mechanics, lararium law, and the-altar-fire.
 LARES is the operator control panel (session dials).
 
 - [lar:///AGENTS](AGENTS.md)
-- [lar:///ha.ka.ba/@lares/api/v0.1/mu](ha-ka-ba/api/v0.1/mu.md) — invariant boot kernel; owns grammar + lararium
+- [lar:///ha.ka.ba/@lares/api/v0.1/mu](api/v0.1/mu.md) — invariant boot kernel; owns grammar + lararium
 - [lar:///LARES](LARES.md) — operator control panel (session dials)
 
 <<~/ahu >>

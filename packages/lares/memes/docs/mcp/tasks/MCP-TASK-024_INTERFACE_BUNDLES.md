@@ -6,7 +6,7 @@ Size: `S`
 
 ## Deliverable
 
-Delivered in `lares/ha-ka-ba/docs/mcp/CARRIER_LAW_BUNDLE.md#task-024--implementsinterface-composability-table`.
+Delivered in `packages/lares/memes/docs/mcp/CARRIER_LAW_BUNDLE.md#task-024--implementsinterface-composability-table`.
 
 A repo-local table that maps truthful `implements` bundles into interface composition, validation, routing, and future MCP capability surfaces without collapsing interface distinctions.
 

@@ -29,7 +29,7 @@ tw5-plugin-version = "1.2.24"
 **License**: MIT
 **Upstream source**: https://saqimtiaz.github.io/streams/
 **TW5 plugin id**: `$:/plugins/sq/streams`
-**Vendored at**: `lares/ha-ka-ba/api/v0.1/tw5-plugins/sq-streams-1.2.24.json`
+**Vendored at**: `packages/lares/memes/api/v0.1/tw5-plugins/sq-streams-1.2.24.json`
 **Preload script**: `scripts/write-vendor-plugins.ts` → `src/generated-vendor-plugins.ts`
 
 Provides hierarchical tree-of-tiddlers UI: rapid keyboard-driven entry, Tab to

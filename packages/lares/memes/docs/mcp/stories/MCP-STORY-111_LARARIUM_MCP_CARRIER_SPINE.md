@@ -21,7 +21,7 @@ so that the server compiles from Lararium source truth before it exposes transpo
 - implementation lives under `lares/` and treats code outside `lares/` as legacy/provisional orichalcum
 - `lar:///AGENTS` and `lar:///LARES` resolve as all-caps file-backed roots
 - `lar:///INDEXES/**` resolves as an all-caps virtual root whose child paths may use any case
-- `lar:///ha.ka.ba/@lares/**` resolves through the stable tuple root into `lares/ha-ka-ba/**`
+- `lar:///ha.ka.ba/@lares/**` resolves through the stable tuple root into `packages/lares/memes/**`
 - future `lar:///*.*.*/**` tuple roots can resolve through the unstable tuple path without replacing all-caps roots
 - carrier ingress extracts `#iam` metadata, `implements`, shape diagnostics, rating posture, and depth state
 - interface and invariant indexes materialize as virtual read-only resources before MCP transport binding

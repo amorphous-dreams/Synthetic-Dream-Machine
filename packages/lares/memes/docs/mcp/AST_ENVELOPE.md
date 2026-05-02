@@ -6,7 +6,7 @@
 # AST Envelope and Node Schema — Lararium MCP
 
 Status date: **April 23, 2026**
-Source of truth: `lares/ha-ka-ba/api/v0.1/pono/memetic-wikitext.md`, `pranala.md`, `tiddlywiki-filter.md`
+Source of truth: `packages/lares/memes/api/v0.1/pono/memetic-wikitext.md`, `pranala.md`, `tiddlywiki-filter.md`
 Research backing: `research/TIDDLYWIKI_AST_AND_MCP_PARALLELS_2026-04-23.md`
 
 Deliverable for: `MCP-TASK-015`

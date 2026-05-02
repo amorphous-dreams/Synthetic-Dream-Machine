@@ -45,9 +45,9 @@ The separation is strict: **canonical form in the record; sigil form on the surf
 ### Amplitude Modifiers
 
 **Consumed into**
-- `lares/ha-ka-ba/api/v0.1/mu/the-syad-perspectives.md#stance-flags`
-- `lares/ha-ka-ba/docs/mu/the-syad-perspectives/README.md#flag-surface`
-- `lares/ha-ka-ba/docs/mu/the-syad-perspectives/README.md#stance-array`
+- `packages/lares/memes/api/v0.1/mu/the-syad-perspectives.md#stance-flags`
+- `packages/lares/memes/docs/mu/the-syad-perspectives/README.md#flag-surface`
+- `packages/lares/memes/docs/mu/the-syad-perspectives/README.md#stance-array`
 
 **Legacy note:** this archive section held the migration bridge from early sigil surfaces to the fixed five-position array. Live canon keeps all five positions present and treats omission-based examples as legacy.
 

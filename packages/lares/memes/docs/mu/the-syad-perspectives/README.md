@@ -37,17 +37,17 @@ Derivation remains recoverable here.
 
 Consumed from archive files and now shelved in this bundle:
 
-- `lares/ha-ka-ba/docs/mu/the-syad-perspectives/SYADASTI_READING_RULE.md`
-- `lares/ha-ka-ba/docs/mu/the-syad-perspectives/G_deep_research_meaning.md`
-- `lares/ha-ka-ba/docs/mu/the-syad-perspectives/STANCE_LOCI.md`
+- `packages/lares/memes/docs/mu/the-syad-perspectives/SYADASTI_READING_RULE.md`
+- `packages/lares/memes/docs/mu/the-syad-perspectives/G_deep_research_meaning.md`
+- `packages/lares/memes/docs/mu/the-syad-perspectives/STANCE_LOCI.md`
 - `build.lares.failed/S0_Boot_Handoff.md`
 - `build.lares.failed/The_Lares_Protocols.md`
 - `build.lares.failed/The_Lares_Protocols_Dev_Story.md`
 - `build.lares.failed/vocabulary/protocols/README.md`
 - `build.lares.failed/vocabulary/modules/sigilization/orient/ARCHITECTURE.md`
 - `build.lares.failed/vocabulary/modules/sigilization/decide/CONVENTIONS.md`
-- `lares/ha-ka-ba/docs/story/lindwyrm/hoard-origin-architecture.md`
-- `lares/ha-ka-ba/docs/lararium/archive/root__AGENTS.archived.md`
+- `packages/lares/memes/docs/story/lindwyrm/hoard-origin-architecture.md`
+- `packages/lares/memes/docs/lararium/archive/root__AGENTS.archived.md`
 - `build.lares.failed/scrum/sprints/00000/S0_REFINEMENT_PLAN.md`
 - `build.lares.failed/vocabulary/protocols/The_Lares_Protocols_Dev_Story.md`
 

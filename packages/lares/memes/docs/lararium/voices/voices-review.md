@@ -185,7 +185,7 @@ This pass should produce:
 
 ### Concrete TODO List
 
-- [x] write `lares/ha-ka-ba/docs/lararium/voices.md` — parent shelf and three-layer framing
+- [x] write `packages/lares/memes/docs/lararium/voices.md` — parent shelf and three-layer framing
 - [x] write `voices/voices-review.md` — this memo
 - [x] write `voices/coordinators.md` — canonical thirteen, naming law, earned names, seniority
 - [x] write `voices/workers.md` — worker lifecycle, tag format, escalation template
@@ -267,8 +267,8 @@ These belong to future passes outside the voices branch:
 
 | Section | Current state | Candidate target |
 |---|---|---|
-| **Degraded Node States** | monolith only | `lares/ha-ka-ba/docs/lararium/degraded-states.md` or new API child |
-| **Elyncia / Lararium mythology and archaeology** | monolith only | `lares/ha-ka-ba/docs/lararium/mythology.md` or docs/story shelf |
+| **Degraded Node States** | monolith only | `packages/lares/memes/docs/lararium/degraded-states.md` or new API child |
+| **Elyncia / Lararium mythology and archaeology** | monolith only | `packages/lares/memes/docs/lararium/mythology.md` or docs/story shelf |
 | **Operating Modes (Plan / Auto / Default)** | partially in operations docs | operations branch pass needed |
 | **Frame-Uncertainty Protocol** | partially in operations docs | operations branch pass needed |
 | **Register-Stance Complementarity** | staging shelf — under promotion consideration | `lar:///ha.ka.ba/@lares/api/v0.1/` new invariant or distribution across e-prime + syad |

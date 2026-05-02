@@ -3,11 +3,11 @@
  *
  * Resolution policy:
  * - ha.ka.ba/@lares/{path} → packages/lares/{path}.md  (primary lares corpus path)
- * - ha.ka.ba/@lararium/{pkg}/v{ver}/{path} → packages/ha-ka-ba/{pkg-slug}/{path}.md  (engine corpus)
- * - ha.ka.ba/{other} → packages/lares/ha-ka-ba/{other}.md  (legacy compat — remove after URI sweep)
+ * - ha.ka.ba/@lararium/{pkg}/v{ver}/{path} → packages/{pkg-slug}/memes/{path}.md  (engine corpus)
+ * - ha.ka.ba/{other} → packages/lares/memes/{other}.md  (legacy compat — remove after URI sweep)
  * - AGENTS, LARES, README → packages/lares/{ROOT}.md  (caps-file legacy alias)
  * - INDEXES/** and other ALL-CAPS roots → virtual namespace (caps-virtual)
- * - other three-segment tuple roots → packages/lares/chapel-perilous-opens/{root}/{path}.md
+ * - other three-segment tuple roots → packages/lares-chapel-perilous-opens/memes/{root}/{path}.md
  *
  * NOTE: `lararium-core` is isomorphic — no `fs`, `path`, or `process` imports.
  * File existence and reading are delegated to the host (lararium-node).
@@ -23,7 +23,7 @@ export interface LarResolution {
   readonly laresRelPath: string | null;
   /** Relative path within packages/lares-chapel-perilous-opens/memes/ — non-null only for unstable three-segment tuple roots. */
   readonly chapelRelPath: string | null;
-  /** Relative path within packages/ha-ka-ba/{pkg}/memes/ — non-null only for engine corpus URIs (@lararium/* scope). */
+  /** Relative path within packages/{pkg-slug}/memes/ — non-null only for engine corpus URIs (@lararium/* scope). */
   readonly engineRelPath: string | null;
   readonly kind: "caps-file" | "caps-virtual" | "tuple-file";
   readonly virtual: boolean;

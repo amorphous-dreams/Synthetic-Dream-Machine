@@ -1,6 +1,6 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/@lares/api/v0.1/pono/memetic-wikitext >> -->
 
-<!-- Extracted from lares/ha-ka-ba/docs/pono/lar-uri/URI-SCHEMA.md §1.1 and §5 (2026-04-21). -->
+<!-- Extracted from packages/lares/memes/docs/pono/lar-uri/URI-SCHEMA.md §1.1 and §5 (2026-04-21). -->
 <!-- STATUS: STALE — examples use old fragment chronometer (#O0.O0.O1.D2.A7) and old phase glyphs (◎ ■ ○). -->
 <!-- Hold updates until ffz deep research resolves encoding and glyph rationalization completes. -->
 <!-- See hud.md research plan for priority ordering. -->

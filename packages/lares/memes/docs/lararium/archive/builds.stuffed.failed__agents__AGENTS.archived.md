@@ -13,13 +13,13 @@
     → replaced by meme-graph boot chain: AGENTS.md → Mu → Lararium → LARES
 
   [SUPERSEDED] The Thirteen Coordinator Voices table
-    → lares/ha-ka-ba/docs/lararium/voices/coordinators.md (canonical)
+    → packages/lares/memes/docs/lararium/voices/coordinators.md (canonical)
 
   [SUPERSEDED] Worker (Tasked Spirits) summary
-    → lares/ha-ka-ba/docs/lararium/voices/workers.md (canonical)
+    → packages/lares/memes/docs/lararium/voices/workers.md (canonical)
 
   [SUPERSEDED] E-Prime Game description
-    → lares/ha-ka-ba/api/v0.1/pono/e-prime.md (invariant)
+    → packages/lares/memes/api/v0.1/pono/e-prime.md (invariant)
 
   [LEGACY, not extracted] combine_agents.py workflow, platform wrapper schema, verify_alignment.py
     → these tools are no longer part of the active architecture

@@ -13,7 +13,7 @@ manaoio      = 0.78
 manao        = 0.86
 role         = "canonical carrier-law bundle for Lararium MCP compiler planning"
 source-consumes = [
-  "lares/ha-ka-ba/docs/mcp/CARRIER_LAW_BUNDLE.md"
+  "packages/lares/memes/docs/mcp/CARRIER_LAW_BUNDLE.md"
 ]
 status-date  = "2026-04-23"
 ```
@@ -108,7 +108,7 @@ Parser legality and render machinery stay separate.
 | Concern | Compiler use | MCP use |
 |---|---|---|
 | root eligibility | validate `\w.\w.\w` tuple roots | resolver errors |
-| stable origin | map `ha.ka.ba` into `lares/ha-ka-ba/` | canonical file resources |
+| stable origin | map `ha.ka.ba` into `packages/lares/memes/` | canonical file resources |
 | all-caps roots | reserve `AGENTS`, `LARES`, `INDEXES` | root and virtual namespaces |
 | primary carrier path | derive file path from URI | `resources/read` |
 | child item path | sibling dir named for terminal segment | future carrier-tree reads |

@@ -252,7 +252,7 @@ Inline shift: `[Voices: MaskName Voice1, Voice2]` — shifts foreground-voices f
 **Mask definition file** — canonical home in `lar:///ha.ka.ba/@lares/api/v0.1/masks/**`. Definition never travels.
 
 ```
-lares/ha-ka-ba/api/v0.1/masks/
+packages/lares/memes/api/v0.1/masks/
   named/mischief-muse.md          → lar:///ha.ka.ba/@lares/api/v0.1/masks/named/mischief-muse
   character/ghost-of-mark-twain.md → lar:///ha.ka.ba/@lares/api/v0.1/masks/character/ghost-of-mark-twain
   chorus/lagrange-chorus.md        → lar:///ha.ka.ba/@lares/api/v0.1/masks/chorus/lagrange-chorus
