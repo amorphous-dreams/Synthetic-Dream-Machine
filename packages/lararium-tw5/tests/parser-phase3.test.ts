@@ -148,15 +148,15 @@ describe("PranalaSugarNode — edge sugar sigils", () => {
   });
 
   test("kahea URI form → sigil=kahea family=dataflow", () => {
-    const nodes = ast(`<<~ kahea lar:///ha.ka.ba/api/v0.1/mu >>`);
+    const nodes = ast(`<<~ kahea lar:///ha.ka.ba/@lares/api/v0.1/mu >>`);
     const n = nodes.find((n) => n.kind === "PranalaSugar") as PranalaSugarNode | undefined;
     expect(n?.sigil).toBe("kahea");
     expect(n?.family).toBe("dataflow");
-    expect(n?.toRaw).toBe("lar:///ha.ka.ba/api/v0.1/mu");
+    expect(n?.toRaw).toBe("lar:///ha.ka.ba/@lares/api/v0.1/mu");
   });
 
   test("kahea produces dataflow graph edge", () => {
-    const es = edges(`<<~ kahea lar:///ha.ka.ba/api/v0.1/mu >>`);
+    const es = edges(`<<~ kahea lar:///ha.ka.ba/@lares/api/v0.1/mu >>`);
     expect(es).toHaveLength(1);
     expect(es[0]!.family).toBe("dataflow");
   });

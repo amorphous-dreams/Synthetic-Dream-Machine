@@ -27,7 +27,7 @@ describe("resolver", () => {
   });
 
   test("ha.ka.ba paths resolve to lares/ha-ka-ba tree", () => {
-    const r = resolveLarUri("lar:///ha.ka.ba/api/v0.1/mu");
+    const r = resolveLarUri("lar:///ha.ka.ba/@lares/api/v0.1/mu");
     expect(["file", "tuple-file"]).toContain(r.kind);
     expect(r.virtual).toBe(false);
     expect(r.root).toBe("ha.ka.ba");
@@ -45,9 +45,9 @@ describe("resolver", () => {
 
 describe("carrier mana signals", () => {
   const PROBE_URIS = [
-    "lar:///AGENTS",
-    "lar:///ha.ka.ba/api/v0.1/mu",
-    "lar:///ha.ka.ba/api/v0.1/pono/invariant",
+    "lar:///ha.ka.ba/@lares/AGENTS",
+    "lar:///ha.ka.ba/@lares/api/v0.1/mu",
+    "lar:///ha.ka.ba/@lares/api/v0.1/pono/invariant",
   ];
 
   for (const uri of PROBE_URIS) {
@@ -73,7 +73,7 @@ describe("carrier mana signals", () => {
     test(`${uri} — implements at least meme interface`, () => {
       const c = readCarrier(uri);
       expect(c.implements.length).toBeGreaterThan(0);
-      expect(c.implements).toContain("lar:///ha.ka.ba/api/v0.1/pono/meme");
+      expect(c.implements).toContain("lar:///ha.ka.ba/@lares/api/v0.1/pono/meme");
     });
   }
 });
@@ -85,7 +85,7 @@ describe("carrier mana signals", () => {
 describe("minimal boot closure", () => {
   test("entry point is AGENTS", () => {
     const artifact = compileBootArtifact();
-    expect(artifact.closure[0]?.uri).toBe("lar:///AGENTS");
+    expect(artifact.closure[0]?.uri).toBe("lar:///ha.ka.ba/@lares/AGENTS");
   });
 
   test("closure is non-empty and bounded (≥18 memes)", () => {
@@ -96,7 +96,7 @@ describe("minimal boot closure", () => {
 
   test("mu is in the closure at depth 1", () => {
     const artifact = compileBootArtifact();
-    const mu = artifact.closure.find((e) => e.uri === "lar:///ha.ka.ba/api/v0.1/mu");
+    const mu = artifact.closure.find((e) => e.uri === "lar:///ha.ka.ba/@lares/api/v0.1/mu");
     expect(mu).toBeDefined();
     expect(mu!.depth).toBe(1);
   });
@@ -111,8 +111,8 @@ describe("minimal boot closure", () => {
   test("lararium law memes present (live-session-overwrite, canon-promotion-boundary, tagspace-trust, exchange-vector)", () => {
     const artifact = compileBootArtifact();
     const uris = new Set(artifact.closure.map((e) => e.uri));
-    const PONO = "lar:///ha.ka.ba/api/v0.1/pono/";
-    const LAR  = "lar:///ha.ka.ba/api/v0.1/lararium/";
+    const PONO = "lar:///ha.ka.ba/@lares/api/v0.1/pono/";
+    const LAR  = "lar:///ha.ka.ba/@lares/api/v0.1/lararium/";
     expect(uris.has(`${PONO}failure-states/live-session-overwrite`)).toBe(true);
     expect(uris.has(`${PONO}hooponopono`)).toBe(true);
     expect(uris.has(`${LAR}tagspace-trust`)).toBe(true);
@@ -170,18 +170,18 @@ describe("carrier index", () => {
 
   test("AGENTS and mu are in the carrier index", () => {
     const uris = new Set(compileCarrierIndex().map((c) => c.uri));
-    expect(uris.has("lar:///AGENTS")).toBe(true);
-    expect(uris.has("lar:///ha.ka.ba/api/v0.1/mu")).toBe(true);
+    expect(uris.has("lar:///ha.ka.ba/@lares/AGENTS")).toBe(true);
+    expect(uris.has("lar:///ha.ka.ba/@lares/api/v0.1/mu")).toBe(true);
   });
 
   test("invariant index contains the four lararium law memes", () => {
-    const INVARIANT_URI = "lar:///ha.ka.ba/api/v0.1/pono/invariant";
+    const INVARIANT_URI = "lar:///ha.ka.ba/@lares/api/v0.1/pono/invariant";
     const carriers = compileCarrierIndex();
     const invariants = new Set(
       carriers.filter((c) => c.implements.includes(INVARIANT_URI)).map((c) => c.uri)
     );
-    const PONO = "lar:///ha.ka.ba/api/v0.1/pono/";
-    const LAR  = "lar:///ha.ka.ba/api/v0.1/lararium/";
+    const PONO = "lar:///ha.ka.ba/@lares/api/v0.1/pono/";
+    const LAR  = "lar:///ha.ka.ba/@lares/api/v0.1/lararium/";
     expect(invariants.has(`${PONO}hooponopono`)).toBe(true);
     expect(invariants.has(`${LAR}tagspace-trust`)).toBe(true);
     expect(invariants.has(`${LAR}exchange-vector`)).toBe(true);
@@ -196,7 +196,7 @@ describe("hostful URI", () => {
   test("isHostfulLarUri detects hostful form", () => {
     expect(isHostfulLarUri("lar://claude:session@elyncia.app/ha.ka.ba/api/v0.1/mu")).toBe(true);
     expect(isHostfulLarUri("lar:///AGENTS")).toBe(false);
-    expect(isHostfulLarUri("lar:///ha.ka.ba/api/v0.1/mu")).toBe(false);
+    expect(isHostfulLarUri("lar:///ha.ka.ba/@lares/api/v0.1/mu")).toBe(false);
   });
 
   test("parseHostfulLarUri extracts authority components", () => {

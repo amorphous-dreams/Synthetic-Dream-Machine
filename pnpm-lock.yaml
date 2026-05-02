@@ -27,6 +27,8 @@ importers:
 
   lares: {}
 
+  packages/ha-ka-ba: {}
+
   packages/lararium-app:
     dependencies:
       '@atproto/oauth-client-browser':
@@ -47,15 +49,15 @@ importers:
       '@lararium/core':
         specifier: workspace:*
         version: link:../lararium-core
-      '@lararium/lares':
-        specifier: workspace:*
-        version: link:../../lares
       '@lararium/tldraw':
         specifier: workspace:*
         version: link:../lararium-tldraw
       '@lararium/tw5':
         specifier: workspace:*
         version: link:../lararium-tw5
+      '@lares/lares':
+        specifier: workspace:*
+        version: link:../lares
       '@tldraw/sync':
         specifier: ^4.5.10
         version: 4.5.10(@floating-ui/dom@1.7.6)(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
@@ -93,9 +95,9 @@ importers:
 
   packages/lararium-core:
     dependencies:
-      '@lararium/lares':
+      '@lares/lares':
         specifier: workspace:*
-        version: link:../../lares
+        version: link:../lares
       '@noble/ed25519':
         specifier: ^3.1.0
         version: 3.1.0
@@ -124,15 +126,15 @@ importers:
       '@lararium/core':
         specifier: workspace:*
         version: link:../lararium-core
-      '@lararium/lares':
-        specifier: workspace:*
-        version: link:../../lares
       '@lararium/node':
         specifier: workspace:*
         version: link:../lararium-node
       '@lararium/tldraw':
         specifier: workspace:*
         version: link:../lararium-tldraw
+      '@lares/lares':
+        specifier: workspace:*
+        version: link:../lares
       '@modelcontextprotocol/sdk':
         specifier: ^1.29.0
         version: 1.29.0(zod@3.25.76)
@@ -173,15 +175,15 @@ importers:
       '@lararium/core':
         specifier: workspace:*
         version: link:../lararium-core
-      '@lararium/lares':
-        specifier: workspace:*
-        version: link:../../lares
       '@lararium/tldraw':
         specifier: workspace:*
         version: link:../lararium-tldraw
       '@lararium/tw5':
         specifier: workspace:*
         version: link:../lararium-tw5
+      '@lares/lares':
+        specifier: workspace:*
+        version: link:../lares
       '@octokit/rest':
         specifier: ^22.0.1
         version: 22.0.1
@@ -213,12 +215,12 @@ importers:
       '@lararium/core':
         specifier: workspace:*
         version: link:../lararium-core
-      '@lararium/lares':
-        specifier: workspace:*
-        version: link:../../lares
       '@lararium/tw5':
         specifier: workspace:*
         version: link:../lararium-tw5
+      '@lares/lares':
+        specifier: workspace:*
+        version: link:../lares
       '@tldraw/utils':
         specifier: ^4.5.10
         version: 4.5.10
@@ -244,9 +246,9 @@ importers:
       '@lararium/core':
         specifier: workspace:*
         version: link:../lararium-core
-      '@lararium/lares':
+      '@lares/lares':
         specifier: workspace:*
-        version: link:../../lares
+        version: link:../lares
       '@taplo/lib':
         specifier: ^0.5.0
         version: 0.5.0
@@ -272,6 +274,8 @@ importers:
       vite:
         specifier: ^8.0.10
         version: 8.0.10(@types/node@22.19.17)(esbuild@0.27.7)(tsx@4.21.0)(yaml@2.8.3)
+
+  packages/lares: {}
 
   sdm: {}
 

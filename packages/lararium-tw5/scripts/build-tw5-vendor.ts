@@ -24,7 +24,7 @@ import { writeFileSync, mkdirSync } from "fs";
 import { join, resolve, relative, dirname } from "path";
 import { fileURLToPath } from "url";
 import { createRequire } from "module";
-import { laresRoot } from "@lararium/lares";
+import { laresRoot } from "@lares/lares";
 
 const __dirname = fileURLToPath(new URL(".", import.meta.url));
 const _require = createRequire(import.meta.url);

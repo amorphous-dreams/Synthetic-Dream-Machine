@@ -18,7 +18,7 @@ import { createHash } from "crypto";
 import type { Repo, DocHandle } from "@automerge/automerge-repo";
 import type { EngineDoc, EngineBlobEntry } from "@lararium/core";
 import { ENGINE_CORE_ID, emptyEngineDoc } from "@lararium/core";
-import { laresRoot } from "@lararium/lares";
+import { laresRoot } from "@lares/lares";
 import { TW5_VERSION, TW5_CORE_SCRIPT_FILENAME } from "@lararium/tw5";
 
 const PLUGINS_DIR = join(laresRoot, "ha-ka-ba/api/v0.1/tw5-plugins");

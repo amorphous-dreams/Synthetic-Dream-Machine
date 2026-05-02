@@ -78,8 +78,8 @@ export async function loadUiTiddlers(): Promise<TiddlerFields[]> {
     // import.meta.glob is resolved by Vite at build time; never reached in Jest/Node.
     // Path: packages/lararium-tw5/src/ → ../../../ → monorepo root → lares/...
     const mods = import.meta.glob(
-      ["../../../lares/ha-ka-ba/api/v0.1/lararium/ui/*.md",
-       "../../../lares/ha-ka-ba/api/v0.1/lararium/templates/*.md"],
+      ["../../../packages/lares/api/v0.1/lararium/ui/*.md",
+       "../../../packages/lares/api/v0.1/lararium/templates/*.md"],
       { query: "?raw", import: "default", eager: true },
     ) as Record<string, string>;
     const result: TiddlerFields[] = [];
@@ -97,10 +97,10 @@ export async function loadUiTiddlers(): Promise<TiddlerFields[]> {
   // @ts-ignore
   const { join: pathJoin }            = await /* @vite-ignore */ import("path");
   // @ts-ignore
-  const { laresRoot: lr }             = await /* @vite-ignore */ import("@lararium/lares");
+  const { laresRoot: lr }             = await /* @vite-ignore */ import("@lares/lares");
   /* eslint-enable */
 
-  const laraRoot = pathJoin(lr, "ha-ka-ba/api/v0.1/lararium");
+  const laraRoot = pathJoin(lr, "api/v0.1/lararium");
   const dirs     = ["ui", "templates"].map((d: string) => pathJoin(laraRoot, d));
 
   const result: TiddlerFields[] = [];
@@ -126,7 +126,7 @@ export async function loadVendorTiddlers(): Promise<Array<Record<string, string>
 
   if (isBrowser) {
     const mods = import.meta.glob(
-      ["../../../lares/ha-ka-ba/api/v0.1/tw5-plugins/*.json"],
+      ["../../../packages/lares/api/v0.1/tw5-plugins/*.json"],
       { eager: true },
     ) as Record<string, unknown>;
     const result: Array<Record<string, string>> = [];
@@ -141,9 +141,9 @@ export async function loadVendorTiddlers(): Promise<Array<Record<string, string>
   // @ts-ignore
   const { join: pathJoin }            = await /* @vite-ignore */ import("path");
   // @ts-ignore
-  const { laresRoot: lr }             = await /* @vite-ignore */ import("@lararium/lares");
+  const { laresRoot: lr }             = await /* @vite-ignore */ import("@lares/lares");
 
-  const vendorDir = pathJoin(lr, "ha-ka-ba/api/v0.1/tw5-plugins");
+  const vendorDir = pathJoin(lr, "api/v0.1/tw5-plugins");
 
   const result: Array<Record<string, string>> = [];
   let files: string[];

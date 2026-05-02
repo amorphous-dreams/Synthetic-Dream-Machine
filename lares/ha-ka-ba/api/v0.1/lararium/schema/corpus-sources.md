@@ -61,8 +61,8 @@ It hydrates before all other corpora. All other corpora treat it as read-only at
 
 ```toml
 [[corpus]]
-name  = "@lararium/lares"
-path  = "lares"
+name  = "@lares/lares"
+path  = "packages/lares"
 bag   = "lares"
 quine = true
 note  = "infrastructure-as-myth corpus; quine-corpus; hydrates first"

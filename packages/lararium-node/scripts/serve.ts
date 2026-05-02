@@ -62,7 +62,7 @@ import { NodeMemeStore } from "../src/node-meme-store.js";
 import { getGhCliOperatorReceipt } from "../src/github-cli-auth.js";
 import type { AutomergeUrl, DocHandle } from "@automerge/automerge-repo";
 import { getOrCreateNodeAuthReceipt } from "../src/operator-key.js";
-import { laresRoot } from "@lararium/lares";
+import { laresRoot } from "@lares/lares";
 
 const REPO_ROOT  = dirname(laresRoot);
 const APP_DIST   = join(REPO_ROOT, "packages/lararium-app/dist");

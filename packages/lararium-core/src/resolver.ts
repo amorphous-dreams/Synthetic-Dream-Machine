@@ -2,10 +2,12 @@
  * `lar:` URI resolution for the Lararium carrier spine.
  *
  * Resolution policy:
- * - AGENTS and LARES → lares/<ROOT>.md (caps-file)
+ * - ha.ka.ba/@lares/{path} → packages/lares/{path}.md  (primary lares corpus path)
+ * - ha.ka.ba/@lararium/{pkg}/v{ver}/{path} → packages/ha-ka-ba/{pkg-slug}/{path}.md  (engine corpus)
+ * - ha.ka.ba/{other} → packages/lares/ha-ka-ba/{other}.md  (legacy compat — remove after URI sweep)
+ * - AGENTS, LARES, README → packages/lares/{ROOT}.md  (caps-file legacy alias)
  * - INDEXES/** and other ALL-CAPS roots → virtual namespace (caps-virtual)
- * - ha.ka.ba/<path> → lares/ha-ka-ba/<path>.md (tuple-file)
- * - other three-segment tuple roots → lares/chapel-perilous-opens/<root>/<path>.md
+ * - other three-segment tuple roots → packages/lares/chapel-perilous-opens/{root}/{path}.md
  *
  * NOTE: `lararium-core` is isomorphic — no `fs`, `path`, or `process` imports.
  * File existence and reading are delegated to the host (lararium-node).
@@ -15,9 +17,9 @@ export interface LarResolution {
   readonly uri: string;
   readonly root: string;
   readonly childPath: readonly string[];
-  /** Relative repo path from lares/ root (no leading slash). Null for virtual roots. */
+  /** Relative path from packages/lares/ root (no leading slash). Null for virtual roots. */
   readonly resourcePath: string;
-  /** Absolute-path-like string within lares/ — null for virtual. Caller resolves against laresRoot. */
+  /** Absolute-path-like string within packages/lares/ — null for virtual. Caller resolves against laresRoot. */
   readonly laresRelPath: string | null;
   readonly kind: "caps-file" | "caps-virtual" | "tuple-file";
   readonly virtual: boolean;
@@ -40,10 +42,11 @@ export interface LarHostfulResolution extends LarResolution {
   readonly virtual: true;
 }
 
-// Schema: lar:///ha.ka.ba/api/v0.1/lararium/lar-uri/uri-roots
+// Schema: lar:///ha.ka.ba/@lares/api/v0.1/lararium/lar-uri/uri-roots
 const CAPS_FILE_ROOTS = new Set(["AGENTS", "LARES", "README"]);
 const VIRTUAL_CAPS_ROOTS = new Set(["INDEXES"]);
 const STABLE_TUPLE_ROOT = "ha.ka.ba";
+const LARES_SCOPE    = "@lares";
 
 function splitLarUri(uri: string): { root: string; childPath: string[] } {
   const url = new URL(uri);
@@ -123,6 +126,8 @@ export function resolveLarUri(uri: string): LarResolution {
   const { root, childPath } = splitLarUri(uri);
   const resourcePath = [root, ...childPath].join("/");
 
+  // Legacy caps-file roots: lar:///AGENTS → packages/lares/AGENTS.md
+  // Kept as alias; canonical form is lar:///ha.ka.ba/@lares/AGENTS
   if (CAPS_FILE_ROOTS.has(root) && childPath.length === 0) {
     const laresRelPath = `${root}.md`;
     return { uri, root, childPath, resourcePath, laresRelPath, kind: "caps-file", virtual: false };
@@ -132,19 +137,35 @@ export function resolveLarUri(uri: string): LarResolution {
     return { uri, root, childPath, resourcePath, laresRelPath: null, kind: "caps-virtual", virtual: true };
   }
 
-  if (isTupleRoot(root)) {
-    const base =
-      root === STABLE_TUPLE_ROOT
-        ? root.replace(/\./g, "-")
-        : `chapel-perilous-opens/${root}`;
+  if (isTupleRoot(root) && root === STABLE_TUPLE_ROOT) {
+    // lar:///ha.ka.ba/@lares/{rest} → packages/lares/{rest}.md  (canonical lares path)
+    if (childPath[0] === LARES_SCOPE) {
+      const rest = childPath.slice(1);
+      // Top-level lares files: lar:///ha.ka.ba/@lares/AGENTS → AGENTS.md
+      if (rest.length === 1 && CAPS_FILE_ROOTS.has(rest[0]!)) {
+        return { uri, root, childPath, resourcePath, laresRelPath: `${rest[0]}.md`, kind: "caps-file", virtual: false };
+      }
+      const joined = rest.length > 0 ? rest.join("/") : "";
+      const laresRelPath = joined ? withMdSuffix(joined) : "index.md";
+      return { uri, root, childPath, resourcePath, laresRelPath, kind: "tuple-file", virtual: false };
+    }
+
+    // Legacy: lar:///ha.ka.ba/{rest} (no @lares scope) → ha-ka-ba/{rest}.md
+    // Remove after URI sweep is complete.
+    const base = root.replace(/\./g, "-");
     const joined = childPath.length > 0 ? `${base}/${childPath.join("/")}` : base;
     const laresRelPath = withMdSuffix(joined);
     return { uri, root, childPath, resourcePath, laresRelPath, kind: "tuple-file", virtual: false };
   }
 
-  // Adjacent tagspace dirs: map directly to lares/ subdirs
-  // grammars/... → lares/grammars/
-  // lararium-node/... → lares/lararium-node/
+  if (isTupleRoot(root)) {
+    const base = `chapel-perilous-opens/${root}`;
+    const joined = childPath.length > 0 ? `${base}/${childPath.join("/")}` : base;
+    const laresRelPath = withMdSuffix(joined);
+    return { uri, root, childPath, resourcePath, laresRelPath, kind: "tuple-file", virtual: false };
+  }
+
+  // Adjacent tagspace dirs — legacy; absorb into @lares scope after URI sweep
   if (root === "grammars" || root === "lararium-node") {
     const joined = childPath.length > 0 ? `${root}/${childPath.join("/")}` : root;
     const laresRelPath = withMdSuffix(joined);

@@ -32,11 +32,11 @@ function edges(body: string) { return parsePranalaEdges(BASE, body); }
 
 describe("kahea — URI/dataflow form", () => {
   test("lar:/// absolute URI → PranalaSugarNode sigil=kahea family=dataflow", () => {
-    const nodes = ast("<<~ kahea lar:///ha.ka.ba/api/v0.1/mu >>");
+    const nodes = ast("<<~ kahea lar:///ha.ka.ba/@lares/api/v0.1/mu >>");
     const n = nodes.find((n) => n.kind === "PranalaSugar") as PranalaSugarNode | undefined;
     expect(n).toBeDefined();
     expect(n!.sigil).toBe("kahea");
-    expect(n!.toRaw).toBe("lar:///ha.ka.ba/api/v0.1/mu");
+    expect(n!.toRaw).toBe("lar:///ha.ka.ba/@lares/api/v0.1/mu");
     expect(n!.family).toBe("dataflow");
   });
 
@@ -55,10 +55,10 @@ describe("kahea — URI/dataflow form", () => {
   });
 
   test("URI form → dataflow edge in graph", () => {
-    const es = edges("<<~ kahea lar:///ha.ka.ba/api/v0.1/mu >>");
+    const es = edges("<<~ kahea lar:///ha.ka.ba/@lares/api/v0.1/mu >>");
     expect(es).toHaveLength(1);
     expect(es[0]!.family).toBe("dataflow");
-    expect(es[0]!.toUri).toBe("lar:///ha.ka.ba/api/v0.1/mu");
+    expect(es[0]!.toUri).toBe("lar:///ha.ka.ba/@lares/api/v0.1/mu");
   });
 
   test("bare identifier does NOT match kahea (no graph edge, no PranalaSugar)", () => {

@@ -13,7 +13,7 @@
 import { readFileSync, existsSync } from "fs";
 import { createHash }                from "crypto";
 import { join, dirname }             from "path";
-import { laresRoot }                 from "@lararium/lares";
+import { laresRoot }                 from "@lares/lares";
 
 const PACKAGES_ROOT = join(dirname(laresRoot), "packages");
 

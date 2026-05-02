@@ -23,7 +23,7 @@
 import { describe, test, expect } from "@jest/globals";
 import { parsePranalaEdges } from "../src/pranala-parser.js";
 
-const BASE = "lar:///ha.ka.ba/api/v0.1/test";
+const BASE = "lar:///ha.ka.ba/@lares/api/v0.1/test";
 
 function edges(body: string) {
   return parsePranalaEdges(BASE, body);
@@ -37,18 +37,18 @@ describe("bare ? — ahu stack resolution", () => {
   test("? inside ahu resolves to that ahu socket", () => {
     const result = edges(`
 <<~ ahu #core >>
-<<~ pranala ? -> lar:///ha.ka.ba/api/v0.1/mu family:control role:owns >>
+<<~ pranala ? -> lar:///ha.ka.ba/@lares/api/v0.1/mu family:control role:owns >>
 <<~/ahu >>
 `);
     expect(result).toHaveLength(1);
     expect(result[0]!.fromSocket).toBe(`${BASE}#core`);
-    expect(result[0]!.toUri).toBe("lar:///ha.ka.ba/api/v0.1/mu");
+    expect(result[0]!.toUri).toBe("lar:///ha.ka.ba/@lares/api/v0.1/mu");
     expect(result[0]!.role).toBe("owns");
   });
 
   test("? outside all ahu resolves to carrier URI", () => {
     const result = edges(`
-<<~ pranala ? -> lar:///ha.ka.ba/api/v0.1/mu family:control role:owns >>
+<<~ pranala ? -> lar:///ha.ka.ba/@lares/api/v0.1/mu family:control role:owns >>
 `);
     expect(result[0]!.fromSocket).toBe(BASE);
   });
@@ -57,7 +57,7 @@ describe("bare ? — ahu stack resolution", () => {
     const result = edges(`
 <<~ ahu #core >>
 <<~/ahu >>
-<<~ pranala ? -> lar:///ha.ka.ba/api/v0.1/mu family:control role:owns >>
+<<~ pranala ? -> lar:///ha.ka.ba/@lares/api/v0.1/mu family:control role:owns >>
 `);
     expect(result[0]!.fromSocket).toBe(BASE);
   });
@@ -71,7 +71,7 @@ describe("explicit slot #name — names the outgoing slot on the ahu socket", ()
   test("explicit #name inside ahu: fromSocket = ahu, fromSlot = named slot", () => {
     const result = edges(`
 <<~ ahu #core-hydration >>
-<<~ pranala #hydrate-mu ? -> lar:///ha.ka.ba/api/v0.1/mu family:control role:owns >>
+<<~ pranala #hydrate-mu ? -> lar:///ha.ka.ba/@lares/api/v0.1/mu family:control role:owns >>
 <<~/ahu >>
 `);
     expect(result[0]!.fromSocket).toBe(`${BASE}#core-hydration`);
@@ -82,7 +82,7 @@ describe("explicit slot #name — names the outgoing slot on the ahu socket", ()
     const result = edges(`
 <<~ ahu #outer >>
 <<~ ahu #inner >>
-<<~ pranala #my-slot ? -> lar:///ha.ka.ba/api/v0.1/mu family:control role:owns >>
+<<~ pranala #my-slot ? -> lar:///ha.ka.ba/@lares/api/v0.1/mu family:control role:owns >>
 <<~/ahu >>
 <<~/ahu >>
 `);
@@ -93,7 +93,7 @@ describe("explicit slot #name — names the outgoing slot on the ahu socket", ()
   test("bare ? has null fromSlot", () => {
     const result = edges(`
 <<~ ahu #core >>
-<<~ pranala ? -> lar:///ha.ka.ba/api/v0.1/mu family:control role:owns >>
+<<~ pranala ? -> lar:///ha.ka.ba/@lares/api/v0.1/mu family:control role:owns >>
 <<~/ahu >>
 `);
     expect(result[0]!.fromSocket).toBe(`${BASE}#core`);
@@ -103,8 +103,8 @@ describe("explicit slot #name — names the outgoing slot on the ahu socket", ()
   test("two named slots inside same ahu have distinct fromSlot, shared fromSocket", () => {
     const result = edges(`
 <<~ ahu #edges >>
-<<~ pranala #implements-meme ? -> lar:///ha.ka.ba/api/v0.1/pono/meme family:control role:implements >>
-<<~ pranala #implements-loci ? -> lar:///ha.ka.ba/api/v0.1/pono/loci family:control role:implements >>
+<<~ pranala #implements-meme ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/meme family:control role:implements >>
+<<~ pranala #implements-loci ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/loci family:control role:implements >>
 <<~/ahu >>
 `);
     expect(result).toHaveLength(2);
@@ -128,7 +128,7 @@ describe("two-level nested ahu with bare ?", () => {
     const result = edges(`
 <<~ ahu #outer >>
 <<~ ahu #inner >>
-<<~ pranala ? -> lar:///ha.ka.ba/api/v0.1/mu family:control role:owns >>
+<<~ pranala ? -> lar:///ha.ka.ba/@lares/api/v0.1/mu family:control role:owns >>
 <<~/ahu >>
 <<~/ahu >>
 `);
@@ -140,7 +140,7 @@ describe("two-level nested ahu with bare ?", () => {
 <<~ ahu #outer >>
 <<~ ahu #inner >>
 <<~/ahu >>
-<<~ pranala ? -> lar:///ha.ka.ba/api/v0.1/mu family:control role:owns >>
+<<~ pranala ? -> lar:///ha.ka.ba/@lares/api/v0.1/mu family:control role:owns >>
 <<~/ahu >>
 `);
     expect(result[0]!.fromSocket).toBe(`${BASE}#outer`);
@@ -149,9 +149,9 @@ describe("two-level nested ahu with bare ?", () => {
   test("bare ? at each nesting level captures the correct innermost socket", () => {
     const result = edges(`
 <<~ ahu #outer >>
-<<~ pranala ? -> lar:///ha.ka.ba/api/v0.1/lararium family:control role:owns >>
+<<~ pranala ? -> lar:///ha.ka.ba/@lares/api/v0.1/lararium family:control role:owns >>
 <<~ ahu #inner >>
-<<~ pranala ? -> lar:///ha.ka.ba/api/v0.1/mu family:control role:owns >>
+<<~ pranala ? -> lar:///ha.ka.ba/@lares/api/v0.1/mu family:control role:owns >>
 <<~/ahu >>
 <<~/ahu >>
 `);
@@ -171,11 +171,11 @@ describe("three-level nested ahu with bare ?", () => {
   test("? at each level captures the correct innermost socket", () => {
     const result = edges(`
 <<~ ahu #a >>
-<<~ pranala ? -> lar:///ha.ka.ba/api/v0.1/pono/meme family:control role:implements >>
+<<~ pranala ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/meme family:control role:implements >>
 <<~ ahu #b >>
-<<~ pranala ? -> lar:///ha.ka.ba/api/v0.1/pono/loci family:control role:implements >>
+<<~ pranala ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/loci family:control role:implements >>
 <<~ ahu #c >>
-<<~ pranala ? -> lar:///ha.ka.ba/api/v0.1/pono/invariant family:control role:implements >>
+<<~ pranala ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/invariant family:control role:implements >>
 <<~/ahu >>
 <<~/ahu >>
 <<~/ahu >>
@@ -199,7 +199,7 @@ describe("sugar forms in nested ahu", () => {
     const result = edges(`
 <<~ ahu #outer >>
 <<~ ahu #refs >>
-<<~ loulou lar:///ha.ka.ba/api/v0.1/mu >>
+<<~ loulou lar:///ha.ka.ba/@lares/api/v0.1/mu >>
 <<~/ahu >>
 <<~/ahu >>
 `);
@@ -210,18 +210,18 @@ describe("sugar forms in nested ahu", () => {
   test("aka inside single ahu uses that socket", () => {
     const result = edges(`
 <<~ ahu #edges >>
-<<~ aka lar:///ha.ka.ba/api/v0.1/pono/RFC-2119#normative-language >>
+<<~ aka lar:///ha.ka.ba/@lares/api/v0.1/pono/RFC-2119#normative-language >>
 <<~/ahu >>
 `);
     expect(result[0]!.fromSocket).toBe(`${BASE}#edges`);
     expect(result[0]!.family).toBe("observe");
-    expect(result[0]!.toUri).toBe("lar:///ha.ka.ba/api/v0.1/pono/RFC-2119");
-    expect(result[0]!.toSocket).toBe("lar:///ha.ka.ba/api/v0.1/pono/RFC-2119#normative-language");
+    expect(result[0]!.toUri).toBe("lar:///ha.ka.ba/@lares/api/v0.1/pono/RFC-2119");
+    expect(result[0]!.toSocket).toBe("lar:///ha.ka.ba/@lares/api/v0.1/pono/RFC-2119#normative-language");
   });
 
   test("kahea outside all ahu uses carrier URI as socket", () => {
     const result = edges(`
-<<~ kahea lar:///ha.ka.ba/api/v0.1/lararium >>
+<<~ kahea lar:///ha.ka.ba/@lares/api/v0.1/lararium >>
 `);
     expect(result[0]!.fromSocket).toBe(BASE);
     expect(result[0]!.family).toBe("dataflow");
@@ -232,7 +232,7 @@ describe("sugar forms in nested ahu", () => {
 <<~ ahu #outer >>
 <<~ ahu #inner >>
 <<~/ahu >>
-<<~ loulou lar:///ha.ka.ba/api/v0.1/mu >>
+<<~ loulou lar:///ha.ka.ba/@lares/api/v0.1/mu >>
 <<~/ahu >>
 `);
     expect(result[0]!.fromSocket).toBe(`${BASE}#outer`);
@@ -248,12 +248,12 @@ describe("adversarial — unbalanced ahu", () => {
     expect(() => edges(`
 <<~/ahu >>
 <<~/ahu >>
-<<~ pranala ? -> lar:///ha.ka.ba/api/v0.1/mu family:control role:owns >>
+<<~ pranala ? -> lar:///ha.ka.ba/@lares/api/v0.1/mu family:control role:owns >>
 `)).not.toThrow();
 
     const result = edges(`
 <<~/ahu >>
-<<~ pranala ? -> lar:///ha.ka.ba/api/v0.1/mu family:control role:owns >>
+<<~ pranala ? -> lar:///ha.ka.ba/@lares/api/v0.1/mu family:control role:owns >>
 `);
     expect(result[0]!.fromSocket).toBe(BASE);
   });
@@ -261,7 +261,7 @@ describe("adversarial — unbalanced ahu", () => {
   test("unclosed ahu — bare ? inside still resolves to its socket", () => {
     const result = edges(`
 <<~ ahu #dangling >>
-<<~ pranala ? -> lar:///ha.ka.ba/api/v0.1/mu family:control role:owns >>
+<<~ pranala ? -> lar:///ha.ka.ba/@lares/api/v0.1/mu family:control role:owns >>
 `);
     expect(result[0]!.fromSocket).toBe(`${BASE}#dangling`);
   });
@@ -271,9 +271,9 @@ describe("adversarial — unbalanced ahu", () => {
     const result = edges(`
 <<~ ahu #section >>
 <<~ ahu #section >>
-<<~ pranala ? -> lar:///ha.ka.ba/api/v0.1/mu family:control role:owns >>
+<<~ pranala ? -> lar:///ha.ka.ba/@lares/api/v0.1/mu family:control role:owns >>
 <<~/ahu >>
-<<~ pranala ? -> lar:///ha.ka.ba/api/v0.1/lararium family:control role:owns >>
+<<~ pranala ? -> lar:///ha.ka.ba/@lares/api/v0.1/lararium family:control role:owns >>
 <<~/ahu >>
 `);
     expect(result).toHaveLength(2);
@@ -303,13 +303,13 @@ describe("adversarial — target forms in nested ahu", () => {
     const result = edges(`
 <<~ ahu #outer >>
 <<~ ahu #inner >>
-<<~ pranala ? -> lar:///ha.ka.ba/api/v0.1/pono/RFC-2119#normative-language family:observe >>
+<<~ pranala ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/RFC-2119#normative-language family:observe >>
 <<~/ahu >>
 <<~/ahu >>
 `);
     expect(result[0]!.fromSocket).toBe(`${BASE}#inner`);
-    expect(result[0]!.toUri).toBe("lar:///ha.ka.ba/api/v0.1/pono/RFC-2119");
-    expect(result[0]!.toSocket).toBe("lar:///ha.ka.ba/api/v0.1/pono/RFC-2119#normative-language");
+    expect(result[0]!.toUri).toBe("lar:///ha.ka.ba/@lares/api/v0.1/pono/RFC-2119");
+    expect(result[0]!.toSocket).toBe("lar:///ha.ka.ba/@lares/api/v0.1/pono/RFC-2119#normative-language");
   });
 });
 
@@ -318,14 +318,14 @@ describe("adversarial — target forms in nested ahu", () => {
 // ---------------------------------------------------------------------------
 
 describe("real carrier — lararium.md pattern", () => {
-  const LARARIUM_URI = "lar:///ha.ka.ba/api/v0.1/lararium";
+  const LARARIUM_URI = "lar:///ha.ka.ba/@lares/api/v0.1/lararium";
   const LARARIUM_TEXT = `
 <<~ ahu #core-hydration >>
-<<~ pranala #hydrate-hud ? -> lar:///ha.ka.ba/api/v0.1/lararium/hud family:control role:owns >>
-<<~ pranala #hydrate-voices ? -> lar:///ha.ka.ba/api/v0.1/lararium/voices family:control role:owns >>
+<<~ pranala #hydrate-hud ? -> lar:///ha.ka.ba/@lares/api/v0.1/lararium/hud family:control role:owns >>
+<<~ pranala #hydrate-voices ? -> lar:///ha.ka.ba/@lares/api/v0.1/lararium/voices family:control role:owns >>
 <<~/ahu >>
 <<~ ahu #edges >>
-<<~ pranala #implements-meme ? -> lar:///ha.ka.ba/api/v0.1/pono/meme family:control role:implements >>
+<<~ pranala #implements-meme ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/meme family:control role:implements >>
 <<~/ahu >>
 `;
 

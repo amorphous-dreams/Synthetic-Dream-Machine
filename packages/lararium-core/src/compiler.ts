@@ -9,7 +9,7 @@ import { type MemeGraph, memeImplements } from "./meme-graph.js";
 import { type DigestProvider, defaultCryptoProvider, sha256Hex, canonicalJsonBytes } from "./crypto.js";
 import { type PranaEdge, validatePranaEdge, type PranaEdgeViolation } from "./pranala-parser.js";
 
-export const ENTRY_URI = "lar:///AGENTS";
+export const ENTRY_URI = "lar:///ha.ka.ba/@lares/AGENTS";
 
 // ---------------------------------------------------------------------------
 // Types

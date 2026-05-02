@@ -13,7 +13,7 @@ import { readFileSync, writeFileSync } from "fs";
 import { createHash } from "crypto";
 import { resolve, dirname, join } from "path";
 import { fileURLToPath } from "url";
-import { laresRoot } from "@lararium/lares";
+import { laresRoot } from "@lares/lares";
 
 const __dirname  = dirname(fileURLToPath(import.meta.url));
 const bundlePath = resolve(__dirname, "../dist-bundle/lararium-tw5-modules.iife.js");

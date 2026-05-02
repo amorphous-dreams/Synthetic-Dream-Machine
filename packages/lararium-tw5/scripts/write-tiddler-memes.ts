@@ -16,7 +16,7 @@ import { createHash } from "crypto";
 import { resolve, dirname } from "path";
 import { fileURLToPath } from "url";
 import { WIDGET_ENTRIES, FILTER_ENTRIES, DESERIALIZER_ENTRIES, buildAll } from "../vite.tiddlers.config.js";
-import { laresRoot } from "@lararium/lares";
+import { laresRoot } from "@lares/lares";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const root      = dirname(laresRoot);

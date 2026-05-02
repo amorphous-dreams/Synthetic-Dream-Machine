@@ -35,17 +35,17 @@ describe("LarariumTW5 — boot and filter", () => {
     const larTitles = titles.filter((t) => t.startsWith("lar://")).sort();
     // Preloaded at boot: widget module marker + UI preload tiddlers.
     expect(larTitles).toEqual([
-      "lar:///ha.ka.ba/api/v0.1/lararium/templates/meme",
-      "lar:///ha.ka.ba/api/v0.1/lararium/ui/ahu-breadcrumb",
-      "lar:///ha.ka.ba/api/v0.1/lararium/ui/ahu-styles",
-      "lar:///ha.ka.ba/api/v0.1/lararium/ui/boot-splash-banner",
-      "lar:///ha.ka.ba/api/v0.1/lararium/ui/boot-splash-styles",
-      "lar:///ha.ka.ba/api/v0.1/lararium/ui/engine-update-banner",
-      "lar:///ha.ka.ba/api/v0.1/lararium/ui/iam-panel",
-      "lar:///ha.ka.ba/api/v0.1/lararium/ui/iam-startup-action",
-      "lar:///ha.ka.ba/api/v0.1/lararium/ui/iam-viewtemplate-tab",
-      "lar:///ha.ka.ba/api/v0.1/lararium/ui/meme-edit-children",
-      "lar:///ha.ka.ba/api/v0.1/lararium/ui/meme-view-children",
+      "lar:///ha.ka.ba/@lares/api/v0.1/lararium/templates/meme",
+      "lar:///ha.ka.ba/@lares/api/v0.1/lararium/ui/ahu-breadcrumb",
+      "lar:///ha.ka.ba/@lares/api/v0.1/lararium/ui/ahu-styles",
+      "lar:///ha.ka.ba/@lares/api/v0.1/lararium/ui/boot-splash-banner",
+      "lar:///ha.ka.ba/@lares/api/v0.1/lararium/ui/boot-splash-styles",
+      "lar:///ha.ka.ba/@lares/api/v0.1/lararium/ui/engine-update-banner",
+      "lar:///ha.ka.ba/@lares/api/v0.1/lararium/ui/iam-panel",
+      "lar:///ha.ka.ba/@lares/api/v0.1/lararium/ui/iam-startup-action",
+      "lar:///ha.ka.ba/@lares/api/v0.1/lararium/ui/iam-viewtemplate-tab",
+      "lar:///ha.ka.ba/@lares/api/v0.1/lararium/ui/meme-edit-children",
+      "lar:///ha.ka.ba/@lares/api/v0.1/lararium/ui/meme-view-children",
       "lar:///lararium-node/tw5/widgets",
     ]);
   });

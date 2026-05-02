@@ -129,7 +129,7 @@ test.describe("TW5 Panel", () => {
     await page.waitForTimeout(1000);
 
     // Navigate to a known lar: tiddler via URL hash — triggers iam-startup-action
-    await page.goto("/#lar:///ha.ka.ba/api/v0.1/pono/meme");
+    await page.goto("/#lar:///ha.ka.ba/@lares/api/v0.1/pono/meme");
     await page.waitForTimeout(2000);
 
     const phase = await getPhase(page);
@@ -215,13 +215,13 @@ test.describe("Fragment routing", () => {
     await waitForLive(page);
 
     // Navigate to a tiddler with #iam fragment
-    await page.goto("/#lar:///ha.ka.ba/api/v0.1/pono/meme#iam");
+    await page.goto("/#lar:///ha.ka.ba/@lares/api/v0.1/pono/meme#iam");
     await page.waitForTimeout(2000);
 
     const tabState = await page.evaluate(() => {
       const tw = (window as any).__larariumDebug?.tw5?._tw;
       if (!tw) return "no tw5";
-      const title = tw.wiki.filterTiddlers("[[$:/state/tab/view-1-lar:///ha.ka.ba/api/v0.1/pono/meme]]")[0];
+      const title = tw.wiki.filterTiddlers("[[$:/state/tab/view-1-lar:///ha.ka.ba/@lares/api/v0.1/pono/meme]]")[0];
       return tw.wiki.getTiddler(title)?.fields?.text ?? "no tab state";
     });
     console.log(`[smoke] tab state after #iam fragment: ${tabState}`);

@@ -3,7 +3,7 @@ import { MemeStreamParser } from "../src/meme-stream.js";
 
 // Minimal carrier fixture using the HTML entity forms the parser regexes match.
 // Real .md carrier files on disk use these exact string forms (not raw control chars).
-const URI = "lar:///ha.ka.ba/api/v0.1/lararium/templates/meme-strategic";
+const URI = "lar:///ha.ka.ba/@lares/api/v0.1/lararium/templates/meme-strategic";
 const CARRIER = [
   `<!-- <<~ !DOCTYPE = ${URI} >> -->`,
   ``,

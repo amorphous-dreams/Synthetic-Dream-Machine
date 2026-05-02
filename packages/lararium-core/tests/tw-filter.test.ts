@@ -32,11 +32,11 @@ function makeEntry(overrides: Partial<ClosureEntry>): ClosureEntry {
 }
 
 const ENTRIES: ClosureEntry[] = [
-  makeEntry({ uri: "lar:///AGENTS",                            depth: 0, kind: "meme", register: "CS",  confidence: 0.82, implements: ["lar:///ha.ka.ba/api/v0.1/pono/meme"] }),
-  makeEntry({ uri: "lar:///ha.ka.ba/api/v0.1/mu",             depth: 1, kind: "meme", register: "DS",  confidence: 0.92, implements: ["lar:///ha.ka.ba/api/v0.1/pono/meme", "lar:///ha.ka.ba/api/v0.1/pono/invariant"] }),
+  makeEntry({ uri: "lar:///AGENTS",                            depth: 0, kind: "meme", register: "CS",  confidence: 0.82, implements: ["lar:///ha.ka.ba/@lares/api/v0.1/pono/meme"] }),
+  makeEntry({ uri: "lar:///ha.ka.ba/@lares/api/v0.1/mu",             depth: 1, kind: "meme", register: "DS",  confidence: 0.92, implements: ["lar:///ha.ka.ba/@lares/api/v0.1/pono/meme", "lar:///ha.ka.ba/@lares/api/v0.1/pono/invariant"] }),
   makeEntry({ uri: "lar:///LARES",                             depth: 1, kind: "data", register: "CS",  confidence: 0.70, implements: [] }),
-  makeEntry({ uri: "lar:///ha.ka.ba/api/v0.1/lararium",       depth: 2, kind: "meme", register: "SC",  confidence: 0.60, implements: ["lar:///ha.ka.ba/api/v0.1/pono/meme"] }),
-  makeEntry({ uri: "lar:///ha.ka.ba/api/v0.1/pono/invariant", depth: 3, kind: "data", register: "SC",  confidence: 0.88, implements: ["lar:///ha.ka.ba/api/v0.1/pono/meme"] }),
+  makeEntry({ uri: "lar:///ha.ka.ba/@lares/api/v0.1/lararium",       depth: 2, kind: "meme", register: "SC",  confidence: 0.60, implements: ["lar:///ha.ka.ba/@lares/api/v0.1/pono/meme"] }),
+  makeEntry({ uri: "lar:///ha.ka.ba/@lares/api/v0.1/pono/invariant", depth: 3, kind: "data", register: "SC",  confidence: 0.88, implements: ["lar:///ha.ka.ba/@lares/api/v0.1/pono/meme"] }),
 ];
 
 describe("filterMemesWikitext — wikitext-filter dialect", () => {
@@ -50,9 +50,9 @@ describe("filterMemesWikitext — wikitext-filter dialect", () => {
   });
 
   test("[tag[X]] filters by implements via TW tag membership", async () => {
-    const result = await filterMemesWikitext(ENTRIES, "[all[memes]tag[lar:///ha.ka.ba/api/v0.1/pono/invariant]]");
+    const result = await filterMemesWikitext(ENTRIES, "[all[memes]tag[lar:///ha.ka.ba/@lares/api/v0.1/pono/invariant]]");
     expect(result).toHaveLength(1);
-    expect(result[0]!.uri).toBe("lar:///ha.ka.ba/api/v0.1/mu");
+    expect(result[0]!.uri).toBe("lar:///ha.ka.ba/@lares/api/v0.1/mu");
   });
 
   test("[field:rating[data]] filters by rating field", async () => {
@@ -92,7 +92,7 @@ describe("filterMemesWikitext — wikitext-filter dialect", () => {
     const result = await filterMemesWikitext(ENTRIES, "[all[memes]field:depth[1]]");
     expect(result).toHaveLength(2);
     const uris = result.map((e) => e.uri);
-    expect(uris).toContain("lar:///ha.ka.ba/api/v0.1/mu");
+    expect(uris).toContain("lar:///ha.ka.ba/@lares/api/v0.1/mu");
     expect(uris).toContain("lar:///LARES");
   });
 
@@ -109,7 +109,7 @@ describe("filterMemesWikitext — wikitext-filter dialect", () => {
   test("[toml:register[DS]] returns only DS-register entries", async () => {
     const result = await filterMemesWikitext(ENTRIES, "[all[memes]toml:register[DS]]");
     expect(result).toHaveLength(1);
-    expect(result[0]!.uri).toBe("lar:///ha.ka.ba/api/v0.1/mu");
+    expect(result[0]!.uri).toBe("lar:///ha.ka.ba/@lares/api/v0.1/mu");
   });
 
   test("[toml:rating[meme]] is equivalent to [field:rating[meme]]", async () => {
@@ -140,10 +140,10 @@ describe("filterMemesWikitext — wikitext-filter dialect", () => {
   //                  lararium --relation:companion--> pono/invariant
   //                  LARES --spatial:portal--> lararium
   const EDGES: EdgeRecord[] = [
-    { fromUri: "lar:///AGENTS",                            fromSocket: "core", toUri: "lar:///ha.ka.ba/api/v0.1/mu",             family: "control",  role: "owns"      },
+    { fromUri: "lar:///AGENTS",                            fromSocket: "core", toUri: "lar:///ha.ka.ba/@lares/api/v0.1/mu",             family: "control",  role: "owns"      },
     { fromUri: "lar:///AGENTS",                            fromSocket: "core", toUri: "lar:///LARES",                             family: "control",  role: "owns"      },
-    { fromUri: "lar:///ha.ka.ba/api/v0.1/lararium",       fromSocket: "core", toUri: "lar:///ha.ka.ba/api/v0.1/pono/invariant", family: "relation", role: "companion" },
-    { fromUri: "lar:///LARES",                             fromSocket: "core", toUri: "lar:///ha.ka.ba/api/v0.1/lararium",       family: "spatial",  role: "portal"    },
+    { fromUri: "lar:///ha.ka.ba/@lares/api/v0.1/lararium",       fromSocket: "core", toUri: "lar:///ha.ka.ba/@lares/api/v0.1/pono/invariant", family: "relation", role: "companion" },
+    { fromUri: "lar:///LARES",                             fromSocket: "core", toUri: "lar:///ha.ka.ba/@lares/api/v0.1/lararium",       family: "spatial",  role: "portal"    },
   ];
 
   test("[edge:control[owns]] returns only entries with control:owns outgoing edge", async () => {
@@ -161,7 +161,7 @@ describe("filterMemesWikitext — wikitext-filter dialect", () => {
   test("[edge:relation[companion]] returns lararium entry", async () => {
     const result = await filterMemesWikitext(ENTRIES, "[all[memes]edge:relation[companion]]", EDGES);
     expect(result).toHaveLength(1);
-    expect(result[0]!.uri).toBe("lar:///ha.ka.ba/api/v0.1/lararium");
+    expect(result[0]!.uri).toBe("lar:///ha.ka.ba/@lares/api/v0.1/lararium");
   });
 
   test("[edge:spatial[portal]] returns LARES (has spatial:portal edge)", async () => {

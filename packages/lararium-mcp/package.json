@@ -22,7 +22,7 @@
   },
   "dependencies": {
     "@lararium/core": "workspace:*",
-    "@lararium/lares": "workspace:*",
+    "@lares/lares": "workspace:*",
     "@lararium/node": "workspace:*",
     "@lararium/tldraw": "workspace:*",
     "@modelcontextprotocol/sdk": "^1.29.0",

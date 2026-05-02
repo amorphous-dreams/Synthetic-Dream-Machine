@@ -31,7 +31,7 @@ function makeMemeHashSync(uri: string, fileBytes: Uint8Array | null): string {
   return "sha256:" + createHash("sha256").update(payload, "utf8").digest("hex");
 }
 
-import { laresRoot } from "@lararium/lares";
+import { laresRoot } from "@lares/lares";
 
 export const LARES_ROOT = laresRoot;
 export const REPO_ROOT  = dirname(laresRoot);
@@ -48,7 +48,7 @@ export function loadGrammarRules(): GrammarRules | null {
   const grammarPath = join(LARES_ROOT, "grammars", "memetic-wikitext.md");
   if (!existsSync(grammarPath)) return null;
   const text = readFileSync(grammarPath, "utf8");
-  return grammarRulesFromText("lar:///lares/grammars/memetic-wikitext", text);
+  return grammarRulesFromText("lar:///ha.ka.ba/@lares/grammars/memetic-wikitext", text);
 }
 
 // ---------------------------------------------------------------------------
@@ -68,7 +68,7 @@ export interface CorpusSource {
 }
 
 export function loadCorpusSources(): CorpusSource[] {
-  const memeFile = join(LARES_ROOT, "ha-ka-ba/api/v0.1/lararium/schema/corpus-sources.md");
+  const memeFile = join(LARES_ROOT, "api/v0.1/lararium/schema/corpus-sources.md");
   if (!existsSync(memeFile)) return [];
   const text = readFileSync(memeFile, "utf8");
 
@@ -148,7 +148,8 @@ export function readCarrier(uri: string): CarrierRecord {
   const abs = join(LARES_ROOT, resolution.laresRelPath);
   if (!existsSync(abs)) throw new Error(`${uri} does not resolve to an existing carrier file`);
   const text = readFileSync(abs, "utf8");
-  return parseCarrier(uri, text);
+  const edges = parsePranalaEdges(uri, text);
+  return parseCarrier(uri, text, edges);
 }
 
 // ---------------------------------------------------------------------------

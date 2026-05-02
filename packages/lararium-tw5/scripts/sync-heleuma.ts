@@ -24,7 +24,7 @@
 import { readFileSync, writeFileSync, readdirSync, statSync } from "fs";
 import { createHash } from "crypto";
 import { resolve, relative, dirname } from "path";
-import { laresRoot } from "@lararium/lares";
+import { laresRoot } from "@lares/lares";
 
 const root     = dirname(laresRoot);
 const pkgsRoot = resolve(root, "packages");
