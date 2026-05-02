@@ -24,10 +24,7 @@
  *   toml          TOML field name equality
  */
 
-import type {
-  TW5Instance,
-  TW5FilterSource,
-} from "./types/tiddlywiki.js";
+import type { TW5Instance } from "./types/tiddlywiki.js";
 
 type WidgetCtor = { prototype: unknown };
 type WidgetCtorWithProto = WidgetCtor & { prototype: unknown };
@@ -77,21 +74,6 @@ export function createLarariumWidgets(_tw: TW5Instance): Record<string, WidgetCt
 export function registerImplementorsOperator(tw: TW5Instance): void {
   if (!tw?.filterOperators) return;
   registerLarariumFilters(tw);
-  // all[memes] — alias for all[tiddlers] via allfilteroperator module type.
-  if (tw?.modules?.types) {
-    tw.modules.types["allfilteroperator"] = tw.modules.types["allfilteroperator"] ?? {};
-    if (!tw.modules.types["allfilteroperator"]["memes"]) {
-      tw.modules.types["allfilteroperator"]["memes"] = {
-        moduleType: "allfilteroperator",
-        definition: null,
-        exports: {
-          memes: function (_source: TW5FilterSource, _prefix: string, options: { wiki: { each: unknown } }) {
-            return options.wiki.each;
-          },
-        },
-      };
-    }
-  }
 }
 
 export const LARARIUM_WIDGETS_TIDDLER = {

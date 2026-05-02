@@ -303,6 +303,102 @@ cd packages/lararium-tw5 && npx tsc --noEmit  # ✓ ZERO errors
 - `system` + `projection` bag store impls: still pending (D stubs)
 - Milestone F (presence split): 0%, not started
 - Keyhive UUID derivation for `KumuInstanceRef.uuidFragment`: post-Sprint 6
+- **Web3 rip-out Sprint (this session):** see `#m15-web3-rip-sprint-2026-05-02` below
+
+<<~/ahu >>
+
+<<~ ahu #m15-web3-rip-sprint-2026-05-02 >>
+
+## M15 Web3 Rip Sprint — 2026-05-02 (TW5Engine + Filter Operators + Web2 Sidecar Sweep)
+
+### OODA-HA receipt
+
+✶ **Observe:**
+Session opened with a 10-directive architecture refactor after a pre-Sprint 6 spike identified web2 design smells across the full `@lararium/tw5` API surface. Prior session had `LarariumTW5` as a 826-line monolith carrying carrier-era dead methods (`loadClosure`, `filterClosure`, `startSyncer`, `loadFromStore`, `buildReactionGraph`) alongside live boot/render logic. `getActiveTW5`/`setActiveTW5` global singleton existed. `filterOperators` registered as string regex rewrites (`toCanonicalWikitext`) rather than native TW5 operators. `LarDiskProjector` lived in `@lararium/tw5` despite using Node-only fs APIs. `MemeSyncAdaptor` existed but lacked `onChangeset()` (Scale-3 gap).
+
+⏿ **Orient:**
+
+Ten architecture directives locked:
+
+1. JKD: rename `lararium-tw5.ts` → `.web2.ts`, start fresh `tw5-vm.ts` (absorb useful, discard rest)
+2. Browser gets same isomorphic VmPool as server — server is a peer, not an authority
+3. Delete dead web2 code; mark remaining clearly as `*.web2.*`
+4. Implement `onChangeset()` in `MemeSyncAdaptor` (Scale-3 gap closure)
+5. Multidoc store needs isomorphic composable class base in `@lararium/core`
+6. Delete `setActiveTW5`/`getActiveTW5` global entirely
+7. Core isomorphic in `@lararium/core`; composable variants in each `lararium-*`
+8. Causal islands all the way down
+9. Remove all "carrier"-tagged code; wire deserializer through new grammar
+10. Research-before-act for items 5, 9, 10 before Sprint 6+
+
+Two new design principles locked:
+
+  **Composable file size invariant:** Each source file must remain small enough to become a self-describing quine meme. No consolidation of multiple operators/widgets into one file.
+
+  **TW5 VM as causal island:** Filter operators live *inside* the wiki as `filteroperator` module-type tiddlers, not as string pre-processors outside. The VM IS the island boundary.
+
+◇ **Decide:**
+
+Enacted immediately (no research needed):
+- `lararium-tw5.ts` → `lararium-tw5.web2.ts` (git mv)
+- New `tw5-vm.ts` — `TW5Engine` class: boot, render, tiddler mutation, deserialize, wiki events. No carrier/store/sync.
+- New `tw5-filter.ts` — thin registration entry + `toCanonicalWikitext` compat shim
+- New `filters/memes.ts` — `memes` TW5 filteroperator (ignores input pipeline, iterates `options.wiki.each()`, matches `lar:` hostless + hostful)
+- `tw5-widgets.ts` — `registerImplementorsOperator` → delegates to `registerLarariumFilters`
+- `onChangeset()` added to `MemeSyncAdaptor` (async Scale-3 bulk path: `store.get` all URIs, single `bulkSetTiddlers` transaction)
+- `active-tw5.ts`, `filter-compat.ts`, `reaction-query.ts`, `closure-fields.ts` → `*.web2.*`
+- `lararium-node/scripts/serve.ts`, `void-boot.ts`, `src/cli.ts` → `*.web2.*` (web2 callers of dead tw5 exports)
+- `LarariumCanvas.tsx`: `getActiveTW5()` replaced by `tw5` from `useLararium()` context; `applyZoomTemplate` gains `tw5` param
+- `LarariumShell.tsx`: `tw5.buildReactionGraph()` / `tw5.bindingsForUri()` → standalone imports `buildReactionGraph(tw5.wiki)` / `bindingsForUri(tw5.wiki, uri)`; `b.trigger` → `b.listenable`
+- Barrel `index.ts` rewritten: removes all dead carrier-era exports; exports `TW5Engine`
+- All packages typecheck clean
+
+Deferred to Sprint 6 research phase (items 5, 9, 10):
+- Isomorphic `AutomergeStoreBase` in `@lararium/core`
+- Grammar-wired deserializer (`splitCarrierToTiddlers` → `parseMemeText`)
+- Multi-doc boot order analysis for browser host
+
+▶ **Act (files touched):**
+
+| File | Change |
+|---|---|
+| `@lararium/tw5` `lararium-tw5.ts` | Renamed → `lararium-tw5.web2.ts` (git mv; verbatim original preserved) |
+| `@lararium/tw5` `tw5-vm.ts` | **New** — `TW5Engine` class: boot, mountPanel, render, tiddler mutation, deserialize, wiki events |
+| `@lararium/tw5` `tw5-filter.ts` | **New** — `registerLarariumFilters()` entry + `toCanonicalWikitext` compat shim |
+| `@lararium/tw5` `filters/memes.ts` | **New** — `memes` TW5 filteroperator; ignores input source; iterates `options.wiki.each()` |
+| `@lararium/tw5` `tw5-widgets.ts` | `registerImplementorsOperator` → delegates to `registerLarariumFilters` |
+| `@lararium/tw5` `meme-sync-adaptor.ts` | `onChangeset(uris, origin)` implemented (Scale-3 async bulk path) |
+| `@lararium/tw5` `meme-recipe-vm.ts` | `LarariumTW5` → `TW5Engine` |
+| `@lararium/tw5` `meme-write.ts` | `LarariumTW5` → `TW5Engine` |
+| `@lararium/tw5` `active-tw5.ts` | → `active-tw5.web2.ts` |
+| `@lararium/tw5` `filter-compat.ts` | → `filter-compat.web2.ts` |
+| `@lararium/tw5` `reaction-query.ts` | → `reaction-query.web2.ts` |
+| `@lararium/tw5` `closure-fields.ts` | → `closure-fields.web2.ts` |
+| `@lararium/tw5` `index.ts` | Rewritten: exports `TW5Engine`; removes dead carrier-era exports; adds `buildReactionGraph`/`bindingsForUri` from web2 sidecar |
+| `@lararium/node` `scripts/serve.ts` | → `serve.web2.ts` |
+| `@lararium/node` `scripts/void-boot.ts` | → `void-boot.web2.ts` |
+| `@lararium/node` `src/cli.ts` | → `cli.web2.ts` |
+| `@lararium/app` `LarariumCanvas.tsx` | `getActiveTW5()` removed; `tw5` from `useLararium()` context; `applyZoomTemplate(editor, level, tw5)` |
+| `@lararium/app` `LarariumShell.tsx` | `buildReactionGraph(tw5.wiki)` / `bindingsForUri(tw5.wiki, uri)` standalone; `b.trigger` → `b.listenable` |
+| `@lararium/app` `lararium-context.tsx` | `DEFAULT_ROOMS.map` implicit-any fixed |
+
+⤴ **Ho'oko:**
+
+```sh
+cd packages/lararium-tw5  && npx tsc --noEmit  # ✓ ZERO errors
+cd packages/lararium-node && npx tsc --noEmit  # ✓ ZERO errors
+cd packages/lararium-app  && npx tsc --noEmit  # ✓ ZERO errors (tldraw/sw.ts pre-existing)
+```
+
+↺ **Aftermath / open work:**
+
+- `toCanonicalWikitext` shim: remove from `TW5Engine.filterTiddlers()` once `all[memes]` source registration lands (TW5 `allfilteroperator` module type vs `filterOperators` dispatch gap)
+- `buildReactionGraph`/`bindingsForUri` re-exports from `reaction-query.web2.ts`: replace with `ReactionEngine implements MemeProjection` (Sprint 6+ target)
+- Isomorphic `AutomergeStoreBase` in `@lararium/core`: extract from duplicated browser/node store code (Sprint 6 research item)
+- Grammar-wired deserializer: `splitCarrierToTiddlers` → `parseMemeText` from `@lararium/core` (Sprint 6 research item)
+- Multi-doc boot order analysis for browser host (Sprint 6 research item)
+- Heleuma `body-sha256` anchors for filter operator meme files: each `filters/*.ts` becomes a self-describing code-snippet meme
+- `LarDiskProjector` still in `@lararium/tw5` — move to `@lararium/node` (deferred, needs package split)
 
 <<~/ahu >>
 

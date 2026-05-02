@@ -26,13 +26,9 @@ import {
 import { loadUiTiddlers, loadVendorTiddlers } from "./lares-preloads.js";
 import { getZoomLayout } from "./zoom-layout.js";
 import type { ZoomLayout } from "./zoom-layout.js";
-import { toCanonicalWikitext } from "./tw5-filter.js";
-
 export type { ZoomLayout };
 
-// ---------------------------------------------------------------------------
-// Re-export filter pre-processor so callers can import from one place.
-// ---------------------------------------------------------------------------
+// Re-export for callers that held a reference — identity passthrough, now a no-op.
 export { toCanonicalWikitext } from "./tw5-filter.js";
 
 async function loadNodeTiddlyWiki(): Promise<{ TiddlyWiki: () => unknown }> {
@@ -299,11 +295,12 @@ export class TW5Engine {
 
   /**
    * Run a wikitext-filter expression against the loaded tiddler store.
-   * Pre-processes through toCanonicalWikitext().
+   * All sugar operators (memes, edge:, toml:, implementors[]) resolve natively
+   * via registerLarariumFilters() called at boot. No pre-processing needed.
    */
   filterTiddlers(expr: string): string[] {
     if (!this._tw) throw new Error("TW5Engine: call boot() before filterTiddlers()");
-    return this._tw.wiki.filterTiddlers(toCanonicalWikitext(expr));
+    return this._tw.wiki.filterTiddlers(expr);
   }
 
   /** Subscribe to TW5 wiki change events. Returns unsubscribe fn. */
