@@ -34,11 +34,13 @@ import { ReadinessMap, CompositeStore } from "@lararium/core";
 import {
   LarariumTW5, LarariumCrdtSyncAdaptor, setActiveTW5,
   DirectRecipeVm, attachRecipeVm, releaseRecipeVm, makeRecipeId,
+  vmDebugSurface,
 } from "@lararium/tw5";
 import { openLarariumRepo, readCatalogUrl, type LarariumRepo } from "./automerge-store.js";
 import type { AutomergeMemeStore } from "./automerge-store.js";
 import type { DocHandleChangePayload } from "@automerge/automerge-repo";
 import { getOrCreateBrowserAuthReceipt } from "./operator-key.js";
+import { debugSet } from "./debug.js";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -282,6 +284,11 @@ export function useLarariumHostOpen(options: BrowserHostOptions): HostOpenState 
       // Non-owning shim — releaseRecipeVm on teardown does not dispose the VM.
       const recipeId = makeRecipeId([roomId]);
       attachRecipeVm(recipeId, composite, new DirectRecipeVm(t));
+
+      // Expose VM pool + raw TW5 instance on the isomorphic debug surface.
+      // Same shape on every peer — server wires global.__larariumDebug.vmPool.
+      debugSet("vmPool", vmDebugSurface());
+      debugSet("tw5", t);
 
       // ── Corpus islands — parallel, non-blocking ───────────────────────────
       // addLayer emits synthetic put-events for existing content so the live

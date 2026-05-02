@@ -54,7 +54,7 @@ import {
   type MemeStoreDoc,
 } from "@lararium/core";
 import { seedLarariumDoc, reconcileEngineBlobIfChanged } from "../src/lararium-island.js";
-import { LarDiskProjector, makeRecipeId, bootRecipeVm, renderCarrier, releaseRecipeVm, TW5_VERSION, TW5_CORE_SCRIPT_URL } from "@lararium/tw5";
+import { LarDiskProjector, makeRecipeId, bootRecipeVm, renderCarrier, releaseRecipeVm, TW5_VERSION, TW5_CORE_SCRIPT_URL, vmDebugSurface } from "@lararium/tw5";
 import { loadCorpusSources, corpusAbsPath } from "../src/node-host.js";
 import type { CorpusSource } from "../src/node-host.js";
 import { LarDiskWatcher } from "../src/disk-watcher.js";
@@ -579,6 +579,11 @@ async function main() {
     // Answers both filter queries and disk renders from the same live wiki state.
     const corpusStore = new NodeMemeStore(handle, bagId);
     await bootRecipeVm(recipeId, corpusStore);
+
+    // Expose VM pool on the isomorphic debug surface — same shape as browser peer.
+    // global.__larariumDebug.vmPool.list/filter/filterFirst/setTiddler work here.
+    (globalThis as Record<string, unknown>).__larariumDebug ??= {};
+    ((globalThis as Record<string, unknown>).__larariumDebug as Record<string, unknown>).vmPool = vmDebugSurface();
 
     // store → disk (debounced render via VM)
     const projector = new LarDiskProjector(LARES_MEMES, async (uri) => renderCarrier(recipeId, uri));

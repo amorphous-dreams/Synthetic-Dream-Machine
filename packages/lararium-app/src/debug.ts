@@ -6,7 +6,7 @@
  * Access via: window.__larariumDebug.<key>
  */
 
-import type { LarariumTW5 } from "@lararium/tw5";
+import type { LarariumTW5, VmDebugSurface } from "@lararium/tw5";
 import type { LarariumOpenPhase, CompositeStore } from "@lararium/core";
 import type { LarViewAction } from "@lararium/tldraw";
 import type React from "react";
@@ -18,6 +18,14 @@ export interface LarariumDebug {
   openPhase?:    LarariumOpenPhase | null;
   tw5?:          LarariumTW5 | null;
   dispatch?:     React.Dispatch<LarViewAction> | null;
+  /**
+   * Isomorphic VM pool debug surface — same shape on every peer.
+   *   vmPool.list()                      → active recipe IDs
+   *   vmPool.filter(recipeId, expr)      → TW5 filter result
+   *   vmPool.filterFirst(expr)           → filter against first VM (single-room shortcut)
+   *   vmPool.setTiddler(recipeId, fields) → inject into VM (no Automerge write)
+   */
+  vmPool?: VmDebugSurface;
 }
 
 declare global {

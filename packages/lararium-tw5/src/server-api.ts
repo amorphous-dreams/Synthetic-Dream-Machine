@@ -168,6 +168,49 @@ export function releaseRecipeVm(recipeId: string): void {
 /** Number of live recipe VM instances. */
 export function liveVmCount(): number { return _pool.size; }
 
+/** All active recipe IDs — same on every peer (server, browser, portal). */
+export function listRecipeIds(): string[] { return _pool.keys(); }
+
+// ---------------------------------------------------------------------------
+// VmDebugSurface — isomorphic debug interface for the active VM pool.
+//
+// Same shape on every peer. Wire to window.__larariumDebug.vmPool (browser)
+// or global.__larariumDebug.vmPool (Node server) after first VM boots.
+// ---------------------------------------------------------------------------
+
+export interface VmDebugSurface {
+  /** Active recipe IDs in the pool. */
+  list(): string[];
+  /** TW5 filter expression against a specific recipe VM. */
+  filter(recipeId: string, expr: string): Promise<string[]>;
+  /** TW5 filter against the first available VM — convenience for single-room peers. */
+  filterFirst(expr: string): Promise<string[]>;
+  /** Inject a tiddler directly into a VM (does not write to Automerge store). */
+  setTiddler(recipeId: string, fields: Record<string, string | string[]>): Promise<void>;
+}
+
+export function vmDebugSurface(): VmDebugSurface {
+  return {
+    list: listRecipeIds,
+
+    async filter(recipeId, expr) {
+      return filterRecipe(recipeId, expr);
+    },
+
+    async filterFirst(expr) {
+      const keys = _pool.keys();
+      if (keys.length === 0) return [];
+      return filterRecipe(keys[0]!, expr);
+    },
+
+    async setTiddler(recipeId, fields) {
+      if (!_pool.has(recipeId)) return;
+      const vm = await _pool.get(recipeId, async () => { throw new Error(`recipe ${recipeId} not booted`); });
+      vm.setTiddler(fields);
+    },
+  };
+}
+
 // ---------------------------------------------------------------------------
 // Filter — TW5 wikitext filter expressions against the live VM wiki state
 // ---------------------------------------------------------------------------
