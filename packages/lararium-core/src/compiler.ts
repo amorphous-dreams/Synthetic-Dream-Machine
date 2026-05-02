@@ -7,7 +7,7 @@
 
 import { type MemeGraph, memeImplements } from "./meme-graph.js";
 import { type DigestProvider, defaultCryptoProvider, sha256Hex, canonicalJsonBytes } from "./crypto.js";
-import { type PranalaEdge, validatePranalaEdge, type PranaEdgeViolation } from "./pranala-parser.js";
+import { type PranalaEdge, validatePranalaEdge, type PranalaEdgeViolation } from "./pranala-parser.js";
 
 export const ENTRY_URI = "lar:///ha.ka.ba/@lares/AGENTS";
 
@@ -46,7 +46,7 @@ export interface ValidationResult {
   missing: string[];
   dagViolations: string[][];
   declaredUnresolved: { uri: string; severity: string; family: string }[];
-  edgeViolations: PranaEdgeViolation[];
+  edgeViolations: PranalaEdgeViolation[];
 }
 
 /** Serialised edge record — subset of PranalaEdge safe for JSON transport. */
@@ -179,7 +179,7 @@ function validateClosure(
     .map((d: { uri: string; severity: string; edge: { family: string } }) => ({ uri: d.uri, severity: d.severity, family: d.edge.family }));
 
   // Family contract validation — runs against all edges in the graph
-  const edgeViolations: PranaEdgeViolation[] = [];
+  const edgeViolations: PranalaEdgeViolation[] = [];
   for (const meme of graph.memes.values()) {
     for (const edge of meme.edgesOut) {
       edgeViolations.push(...validatePranalaEdge(edge));
