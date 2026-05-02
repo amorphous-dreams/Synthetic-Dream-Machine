@@ -129,7 +129,7 @@ export function useLarariumHostOpen(options: BrowserHostOptions): HostOpenState 
       readiness.mark("auth");
 
       // ── SW app-shell readiness ────────────────────────────────────────────
-      // snapshot.ready lights when the Service Worker controls this page,
+      // sw-shell lights when the Service Worker controls this page,
       // meaning the app shell (HTML/JS/CSS) serves from SW cache — local-first
       // first paint without any server-rendered CRDT projection.
       if ("serviceWorker" in navigator) {
