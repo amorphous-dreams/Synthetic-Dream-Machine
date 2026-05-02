@@ -33,7 +33,7 @@ Only the following program lines survive into the near-term core:
 The MCP layer now points toward five hard deliverables:
 
 - a hydration compiler over the Lararium graph
-- a carrier-tree, meme/invariant-shape, interface-bundle, and loci index over `lares/ha-ka-ba` source surfaces
+- a carrier-tree, meme/invariant-shape, interface-bundle, and loci index over `packages/lares/memes` source surfaces
 - a submodule integration layer across all current submodules
 - a local stdio MCP server for IDE surfaces
 - a remote HTTP/SSE MCP server for remote surfaces

@@ -10,7 +10,7 @@ Program objective: deliver a production-worthy MCP layer that hydrates the Larar
 
 A client asks for Lararium context and receives a deterministic, policy-aware, fully hydrated boot packet built from:
 - the canonical `lar:///...` graph
-- the current meme, invariant, and memetic-wikitext carrier trees under `lares/ha-ka-ba`
+- the current meme, invariant, and memetic-wikitext carrier trees under `packages/lares/memes`
 - meme copy-shape and rating-posture law
 - invariant pressure and cache-stable compression law
 - `loci` derivation and address-stability law

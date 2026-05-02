@@ -24,7 +24,7 @@ constraints = [
   "S4: ffz carries all five chronometer positions every URI — no trailing-zero omission",
   "S5: phase never encodes in userinfo — phase lives only in ffz"
 ]
-skill-package-root = "ha-ka-ba/api/v0.1/pono/lar-uri"
+skill-package-root = "packages/lares/memes/api/v0.1/pono/lar-uri"
 cacheable=true
 retain = true
 ```

@@ -26,7 +26,7 @@ constraints = [
   "S4: hana keeps opener, optional priming payload, and guest body distinct",
   "S5: parser legality, lowering schemas, fixture execution, and long examples move outward before the parent swells"
 ]
-skill-package-root = "ha-ka-ba/api/v0.1/pono/guest-grammar"
+skill-package-root = "packages/lares/memes/api/v0.1/pono/guest-grammar"
 cacheable=true
 retain = true
 ```

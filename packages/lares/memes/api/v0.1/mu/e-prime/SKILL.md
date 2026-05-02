@@ -25,7 +25,7 @@ constraints = [
   "S3: Hoʻoko output returns before/after/reason without widening local correction into unnecessary document rewrite",
   "S4: residue names ambiguity and intentionally untouched quoted or code surfaces honestly"
 ]
-skill-package-root = "ha-ka-ba/api/v0.1/pono/e-prime"
+skill-package-root = "packages/lares/memes/api/v0.1/pono/e-prime"
 ```
 
 

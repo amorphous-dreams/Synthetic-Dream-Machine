@@ -5,4 +5,4 @@ Status: `ready`
 
 ## Deliverable
 
-A concise inventory drawn from current `implements` declarations under `lares/ha-ka-ba` that captures interface composition patterns, truthful bundle constraints, and the distinction between carrier law and capability surfacing.
+A concise inventory drawn from current `implements` declarations under `packages/lares/memes` that captures interface composition patterns, truthful bundle constraints, and the distinction between carrier law and capability surfacing.

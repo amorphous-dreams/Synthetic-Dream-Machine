@@ -26,7 +26,7 @@ constraints = [
   "S4: declared depth uses named pranala sugar only when the outward claim carries real yield, real backlog, or real adjacency",
   "S5: skeleton blocks, detailed conformance tables, research notes, and long procedure move outward before the parent swells"
 ]
-skill-package-root = "ha-ka-ba/api/v0.1/pono/meme"
+skill-package-root = "packages/lares/memes/api/v0.1/pono/meme"
 cacheable=true
 retain = true
 ```

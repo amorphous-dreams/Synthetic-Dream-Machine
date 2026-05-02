@@ -13,7 +13,7 @@ Target sprint: `SPRINT-00`
 ## User story
 
 As the maintainer of the Lararium compiler boundary,
-I want planning artifacts to consume the current meme law, memetic-wikitext carrier trees, and `loci` law under `lares/ha-ka-ba`,
+I want planning artifacts to consume the current meme law, memetic-wikitext carrier trees, and `loci` law under `packages/lares/memes`,
 so that compiler and MCP design can grow from lawful copy-shape, child trees, and stable address derivation rather than abstract graph talk alone.
 
 ## Acceptance notes

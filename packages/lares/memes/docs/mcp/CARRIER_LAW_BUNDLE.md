@@ -6,7 +6,7 @@
 # Carrier Law Bundle — Meme / Invariant / Memetic-Wikitext / Loci / Interfaces
 
 Status date: **April 23, 2026**
-Purpose: consume the current carrier-law bundle under `lares/ha-ka-ba` into compiler planning.
+Purpose: consume the current carrier-law bundle under `packages/lares/memes` into compiler planning.
 Primary source loci:
 - `lar:///ha.ka.ba/@lares/api/v0.1/pono/meme`
 - `lar:///ha.ka.ba/@lares/api/v0.1/pono/invariant`

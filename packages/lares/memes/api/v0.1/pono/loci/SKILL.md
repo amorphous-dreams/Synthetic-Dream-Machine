@@ -25,7 +25,7 @@ constraints = [
   "S5: file-siting mutations and opener changes cross as distinct bounded Hoʻoko transactions",
   "S6: aftermath names all declared-unresolved addresses; none silently disappear"
 ]
-skill-package-root = "ha-ka-ba/api/v0.1/pono/loci"
+skill-package-root = "packages/lares/memes/api/v0.1/pono/loci"
 ```
 
 

@@ -33,7 +33,7 @@ Architecture work should proceed by refine-consume:
 ### In scope
 
 - `lar:///...` graph resolution
-- meme, invariant, and memetic-wikitext carrier-tree consumption under `lares/ha-ka-ba`
+- meme, invariant, and memetic-wikitext carrier-tree consumption under `packages/lares/memes`
 - meme copy-shape, invariant compression, and rating-posture validation
 - `loci` derivation and child-item resolution
 - `implements` interface-bundle extraction and validation
@@ -113,7 +113,7 @@ See `SUBMODULE_INTEGRATION_MATRIX.md`.
 
 ## Meme, invariant, memetic-wikitext, and loci consumption
 
-The Lararium already carries a lawful source corpus under `lares/ha-ka-ba`:
+The Lararium already carries a lawful source corpus under `packages/lares/memes`:
 - primary memes at stable derived filepaths
 - copy-shape law and rating posture at `lar:///ha.ka.ba/@lares/api/v0.1/pono/meme`
 - invariant compression and sidecar boundary at `lar:///ha.ka.ba/@lares/api/v0.1/pono/invariant`

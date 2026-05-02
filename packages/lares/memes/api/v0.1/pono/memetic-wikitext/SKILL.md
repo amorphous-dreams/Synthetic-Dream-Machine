@@ -26,7 +26,7 @@ constraints = [
   "S4: boot grammar stays minimal but sufficient for identity, body thresholds, relation, invocation, query, and honest residue",
   "S5: parse legality, normalization detail, render lowering, long examples, and archive commentary move outward when they stop earning invariant residency"
 ]
-skill-package-root = "ha-ka-ba/api/v0.1/pono/memetic-wikitext"
+skill-package-root = "packages/lares/memes/api/v0.1/pono/memetic-wikitext"
 cacheable=true
 retain = true
 ```

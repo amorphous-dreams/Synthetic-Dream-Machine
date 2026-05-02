@@ -4,7 +4,7 @@
  * Resolution policy:
  * - ha.ka.ba/@lares/{path} → packages/lares/{path}.md  (primary lares corpus path)
  * - ha.ka.ba/@lararium/{pkg}/v{ver}/{path} → packages/{pkg-slug}/memes/{path}.md  (engine corpus)
- * - ha.ka.ba/{other} → packages/lares/memes/{other}.md  (legacy compat — remove after URI sweep)
+ * - ha.ka.ba/{other} → packages/lares-chapel-perilous-opens/memes/ha-ka-ba/{other}.md  (legacy compat — remove after URI sweep)
  * - AGENTS, LARES, README → packages/lares/{ROOT}.md  (caps-file legacy alias)
  * - INDEXES/** and other ALL-CAPS roots → virtual namespace (caps-virtual)
  * - other three-segment tuple roots → packages/lares-chapel-perilous-opens/memes/{root}/{path}.md
@@ -169,11 +169,11 @@ export function resolveLarUri(uri: string): LarResolution {
       return { uri, root, childPath, resourcePath, laresRelPath: null, chapelRelPath: null, engineRelPath, kind: "tuple-file", virtual: false };
     }
 
-    // Legacy: lar:///ha.ka.ba/{rest} (no scope) — remove after URI sweep is complete.
+    // Legacy: lar:///ha.ka.ba/{rest} (no scope) — kept in chapel under ha-ka-ba/ subdir. Remove after URI sweep is complete.
     const base = root.replace(/\./g, "-");
     const joined = childPath.length > 0 ? `${base}/${childPath.join("/")}` : base;
-    const laresRelPath = withMdSuffix(joined);
-    return { uri, root, childPath, resourcePath, laresRelPath, chapelRelPath: null, engineRelPath: null, kind: "tuple-file", virtual: false };
+    const chapelRelPath = withMdSuffix(joined);
+    return { uri, root, childPath, resourcePath, laresRelPath: null, chapelRelPath, engineRelPath: null, kind: "tuple-file", virtual: false };
   }
 
   // lar:///{a.b.c}/{path} → packages/lares-chapel-perilous-opens/memes/{a.b.c}/{path}.md

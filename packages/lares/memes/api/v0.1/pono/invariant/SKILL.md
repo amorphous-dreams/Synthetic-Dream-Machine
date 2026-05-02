@@ -27,7 +27,7 @@ constraints = [
   "S5: always-on law stays in the invariant; explanations, procedures, examples, traces, and audits split to sidecars",
   "S6: RFC-2119 keywords stay sparse and bind only load-bearing directives"
 ]
-skill-package-root = "ha-ka-ba/api/v0.1/pono/invariant"
+skill-package-root = "packages/lares/memes/api/v0.1/pono/invariant"
 ```
 
 
