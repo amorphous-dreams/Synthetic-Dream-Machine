@@ -23,10 +23,10 @@
 
 import { readFileSync, writeFileSync, readdirSync, statSync } from "fs";
 import { createHash } from "crypto";
-import { resolve, relative, dirname } from "path";
-import { laresRoot } from "@lares/lares";
+import { resolve, relative } from "path";
+import { laresRoot, repoRoot } from "@lares/lares";
 
-const root     = dirname(laresRoot);
+const root     = repoRoot;
 const pkgsRoot = resolve(root, "packages");
 
 const args          = process.argv.slice(2);

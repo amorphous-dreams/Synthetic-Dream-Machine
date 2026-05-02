@@ -1,5 +1,5 @@
 # .codex/config.toml
-model_instructions_file = "../lares/AGENTS.md"
+model_instructions_file = "../packages/lares/memes/AGENTS.md"
 
 [mcp_servers.lararium]
 command = "node"

@@ -7,7 +7,7 @@
 
 import { readFileSync, existsSync, readdirSync, statSync } from "fs";
 import { createHash } from "crypto";
-import { join, relative, dirname } from "path";
+import { join, relative } from "path";
 
 import {
   resolveLarUri,
@@ -32,7 +32,7 @@ function makeMemeHashSync(uri: string, fileBytes: Uint8Array | null): string {
   return "sha256:" + createHash("sha256").update(payload, "utf8").digest("hex");
 }
 
-import { laresRoot } from "@lares/lares";
+import { laresRoot, repoRoot } from "@lares/lares";
 import { chapelRoot } from "@lares/chapel-perilous-opens";
 
 export const LARES_ROOT        = laresRoot;
@@ -40,7 +40,7 @@ export const LARES_ROOT        = laresRoot;
 export const LARES_MEMES_ROOT  = join(laresRoot, "memes");
 /** packages/lares-chapel-perilous-opens/memes/ — unstable tuple-root corpus root. */
 export const CHAPEL_MEMES_ROOT = join(chapelRoot, "memes");
-export const REPO_ROOT         = dirname(laresRoot);
+export const REPO_ROOT         = repoRoot;
 
 // ---------------------------------------------------------------------------
 // Grammar rules reader — Phase 2 scaffolding

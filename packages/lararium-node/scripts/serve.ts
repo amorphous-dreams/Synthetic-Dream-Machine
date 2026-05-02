@@ -34,7 +34,7 @@
 import { createServer, type IncomingMessage, type ServerResponse } from "http";
 import { createHash }                                              from "crypto";
 import { readFileSync, existsSync, statSync, mkdirSync, writeFileSync } from "fs";
-import { join, extname, dirname, resolve } from "path";
+import { join, extname, resolve } from "path";
 import { WebSocketServer } from "ws";
 import { Repo } from "@automerge/automerge-repo";
 import { NodeWSServerAdapter } from "@automerge/automerge-repo-network-websocket";
@@ -62,10 +62,10 @@ import { NodeMemeStore } from "../src/node-meme-store.js";
 import { getGhCliOperatorReceipt } from "../src/github-cli-auth.js";
 import type { AutomergeUrl, DocHandle } from "@automerge/automerge-repo";
 import { getOrCreateNodeAuthReceipt } from "../src/operator-key.js";
-import { laresRoot } from "@lares/lares";
+import { laresRoot, repoRoot } from "@lares/lares";
 
 const LARES_MEMES = join(laresRoot, "memes");
-const REPO_ROOT   = dirname(laresRoot);
+const REPO_ROOT   = repoRoot;
 const APP_DIST   = join(REPO_ROOT, "packages/lararium-app/dist");
 const APP_PUBLIC = join(REPO_ROOT, "packages/lararium-app/public");
 const DATA_DIR   = join(REPO_ROOT, ".lararium-data");
