@@ -3,7 +3,7 @@
 <<~&#x0001; ? -> lar:///ha.ka.ba/@lares/docs/lararium/preferences/collaboration-model >>
 ```toml iam
 uri-path = "ha.ka.ba/@lares/docs/lararium/preferences/collaboration-model"
-file-path = "packages/lares/docs/lararium/preferences/collaboration-model.md"
+file-path = "packages/lares/memes/docs/lararium/preferences/collaboration-model.md"
 type = "text/x-memetic-wikitext"
 tagspace = "stable"
 confidence = 0.88

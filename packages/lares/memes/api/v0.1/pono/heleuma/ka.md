@@ -3,7 +3,7 @@
 <<~⊙&#x0001; ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/heleuma/ka >>
 ```toml iam
 uri-path = "ha.ka.ba/@lares/api/v0.1/pono/heleuma/ka"
-file-path = "packages/lares/api/v0.1/pono/heleuma/ka.md"
+file-path = "packages/lares/memes/api/v0.1/pono/heleuma/ka.md"
 type = "text/x-memetic-wikitext"
 namespace    = "⊙"
 register     = "CS"

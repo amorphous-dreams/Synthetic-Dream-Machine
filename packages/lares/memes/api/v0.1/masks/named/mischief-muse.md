@@ -3,7 +3,7 @@
 <<~&#x0001; ? -> lar:///ha.ka.ba/@lares/api/v0.1/masks/named/mischief-muse >>
 ```toml iam
 uri-path = "ha.ka.ba/@lares/api/v0.1/masks/named/mischief-muse"
-file-path = "packages/lares/api/v0.1/masks/named/mischief-muse.md"
+file-path = "packages/lares/memes/api/v0.1/masks/named/mischief-muse.md"
 type = "text/x-memetic-wikitext"
 tagspace = "stable"
 confidence = 0.55

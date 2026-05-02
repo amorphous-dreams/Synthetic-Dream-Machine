@@ -1,7 +1,7 @@
 <<~&#x0001; ? -> lar:///ha.ka.ba/@lares/api/v0.1/lararium/templates/projection >>
 ```toml iam
 uri-path = "ha.ka.ba/@lares/api/v0.1/lararium/templates/projection"
-file-path = "packages/lares/api/v0.1/lararium/templates/projection.md"
+file-path = "packages/lares/memes/api/v0.1/lararium/templates/projection.md"
 type         = "text/vnd.tiddlywiki"
 register     = "CS"
 confidence   = 0.88

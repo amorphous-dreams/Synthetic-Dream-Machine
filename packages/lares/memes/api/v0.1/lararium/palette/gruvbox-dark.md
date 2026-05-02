@@ -3,7 +3,7 @@
 <<~&#x0001; ? -> lar:///ha.ka.ba/@lares/api/v0.1/lararium/palette/gruvbox-dark >>
 ```toml iam
 uri-path = "ha.ka.ba/@lares/api/v0.1/lararium/palette/gruvbox-dark"
-file-path = "packages/lares/api/v0.1/lararium/palette/gruvbox-dark.md"
+file-path = "packages/lares/memes/api/v0.1/lararium/palette/gruvbox-dark.md"
 type = "text/plain"
 tagspace     = "adjacent"
 confidence   = 1.0

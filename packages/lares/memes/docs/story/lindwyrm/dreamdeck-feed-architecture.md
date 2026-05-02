@@ -3,7 +3,7 @@
 <<~&#x0001; ? -> lar:///ha.ka.ba/@lares/docs/story/lindwyrm/dreamdeck-feed-architecture >>
 ```toml iam
 uri-path = "ha.ka.ba/@lares/docs/story/lindwyrm/dreamdeck-feed-architecture"
-file-path = "packages/lares/docs/story/lindwyrm/dreamdeck-feed-architecture.md"
+file-path = "packages/lares/memes/docs/story/lindwyrm/dreamdeck-feed-architecture.md"
 type = "text/x-memetic-wikitext"
 tagspace = "adjacent"
 confidence = 0.72

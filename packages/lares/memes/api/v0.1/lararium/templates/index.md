@@ -3,7 +3,7 @@
 <<~① ? -> lar:///ha.ka.ba/@lares/api/v0.1/lararium/templates/index >>
 ```toml iam
 uri-path = "ha.ka.ba/@lares/api/v0.1/lararium/templates/index"
-file-path = "packages/lares/api/v0.1/lararium/templates/index.md"
+file-path = "packages/lares/memes/api/v0.1/lararium/templates/index.md"
 type = "text/x-memetic-wikitext"
 role         = "namespace index — canvas render templates for tldraw meme frames; one kumu def per zoom level"
 cacheable    = true

@@ -3,7 +3,7 @@
 <<~&#x0001; ? -> lar:///ha.ka.ba/@lares/docs/lararium/preferences/identity-permissions >>
 ```toml iam
 uri-path = "ha.ka.ba/@lares/docs/lararium/preferences/identity-permissions"
-file-path = "packages/lares/docs/lararium/preferences/identity-permissions.md"
+file-path = "packages/lares/memes/docs/lararium/preferences/identity-permissions.md"
 type = "text/x-memetic-wikitext"
 tagspace = "stable"
 confidence = 0.88

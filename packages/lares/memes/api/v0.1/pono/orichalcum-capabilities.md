@@ -3,7 +3,7 @@
 <<~&#x0001; ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/orichalcum-capabilities >>
 ```toml iam
 uri-path = "ha.ka.ba/@lares/api/v0.1/pono/orichalcum-capabilities"
-file-path = "packages/lares/api/v0.1/pono/orichalcum-capabilities.md"
+file-path = "packages/lares/memes/api/v0.1/pono/orichalcum-capabilities.md"
 type = "text/x-memetic-wikitext"
 tagspace     = "invariant"
 confidence   = 0.80

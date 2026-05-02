@@ -3,7 +3,7 @@
 <<~&#x0001; ? -> lar:///ha.ka.ba/@lares/api/v0.1/vendor/sq-streams >>
 ```toml iam
 uri-path = "ha.ka.ba/@lares/api/v0.1/vendor/sq-streams"
-file-path = "packages/lares/api/v0.1/lararium/plugins/sq-streams.md"
+file-path = "packages/lares/memes/api/v0.1/lararium/plugins/sq-streams.md"
 type = "text/x-memetic-wikitext"
 register     = "CS"
 confidence   = 0.92

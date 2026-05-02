@@ -1,7 +1,7 @@
 <<~ ? -> lar:///ha.ka.ba/@lares/docs/pono/sigil-grammar-research >>
 ```toml iam
 uri-path     = "ha.ka.ba/@lares/docs/pono/sigil-grammar-research"
-file-path = "packages/lares/docs/pono/sigil-grammar-research.md"
+file-path = "packages/lares/memes/docs/pono/sigil-grammar-research.md"
 type = "text/x-memetic-wikitext"
 tagspace     = "stable"
 confidence   = 0.82

@@ -1,0 +1,108 @@
+<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/@lares/api/v0.1/pono/memetic-wikitext >> -->
+
+<<~&#x0001; ? -> lar:///ha.ka.ba/@lares/api/v0.1/lararium/modules/node-host >>
+```toml iam
+uri-path = "ha.ka.ba/@lares/api/v0.1/lararium/modules/node-host"
+file-path = "packages/lararium-tw5/memes/modules/node-host.md"
+type  = "text/x-memetic-wikitext"
+register      = "CS"
+confidence    = 0.86
+mana          = 0.86
+manao         = 0.84
+manaoio       = 0.82
+tagspace      = "adjacent"
+role          = "lararium-node host: lares/ walker, meme graph loader, interface URI bootstrap list"
+cacheable     = true
+retain        = true
+status-date   = "2026-04-30"
+source-file   = "packages/lararium-node/src/node-host.ts"
+source-symbol = "INTERFACE_URIS LARES_ROOT"
+```
+
+
+
+<<~ ahu #head >>
+
+# Node Host
+
+The Lararium node host walks `lares/` at startup, indexes all carrier files
+into a `MemeGraph`, and bootstraps the corpus for MCP and Automerge sync.
+Three interface URIs load in Phase 1, before the full index builds —
+they gate corpus validation and filter evaluation.
+
+<<~/ahu >>
+
+<<~&#x0002;>>
+
+<<~ ahu #law >>
+
+## Law
+
+`LARES_ROOT` resolves relative to the compiled `dist/` directory:
+`dist/` → `../../../lares/` = monorepo root `lares/`.
+
+Phase 1 interface loading precedes full index construction.
+The three interface URIs below load unconditionally:
+they define the structural classification vocabulary the index depends on.
+
+<<~/ahu >>
+
+<<~ ahu #schema >>
+
+## Schema (machine-readable)
+
+```toml
+# Phase 1 interface URIs — loaded before index construction
+# Source: INTERFACE_URIS in packages/lararium-node/src/node-host.ts
+interface-uris = [
+  "lar:///ha.ka.ba/@lares/api/v0.1/pono/meme",
+  "lar:///ha.ka.ba/@lares/api/v0.1/pono/loci",
+  "lar:///ha.ka.ba/@lares/api/v0.1/pono/invariant",
+]
+
+# Compiler entry point — first meme loaded by the graph compiler
+# Source: ENTRY_URI in packages/lararium-core/src/compiler.ts
+entry-uri = "lar:///AGENTS"
+
+# Lares root path — relative from compiled dist/, resolves to monorepo lares/
+lares-root-from-dist = "../../../lares"
+```
+
+<<~/ahu >>
+
+<<~ ahu #http-transport >>
+
+## HTTP Transport
+
+```toml
+# Source: packages/lararium-mcp/src/http.ts
+default-port = 3737
+default-host = "127.0.0.1"
+mcp-path     = "/mcp"
+
+# Env overrides
+env-port = "LARARIUM_HTTP_PORT"
+env-host = "LARARIUM_HTTP_HOST"
+
+# Canvas bridge API paths (fetchCanvas targets in stdio.ts)
+canvas-api-rooms = "/api/rooms"
+canvas-api-fire  = "/api/fire"
+
+# Write guard env
+env-write-mode = "LARARIUM_WRITE_MODE"
+write-mode-value-required = "enabled"
+```
+
+<<~/ahu >>
+
+<<~ ahu #edges >>
+
+<<~ pranala #corpus-sources ? -> lar:///ha.ka.ba/@lares/api/v0.1/lararium/schema/corpus-sources family:control role:depends >>
+<<~ pranala #to-meme ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/meme family:control role:implements >>
+<<~ pranala #to-loci ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/loci family:control role:implements >>
+<<~ pranala #to-invariant ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/invariant family:control role:implements >>
+
+<<~/ahu >>
+
+<<~&#x0003;>>
+<<~&#x0004; -> ? >>

@@ -3,7 +3,7 @@
 <<~&#x0001; ? -> lar:///ha.ka.ba/@lares/docs/pono/tagspace-trust >>
 ```toml iam
 uri-path = "ha.ka.ba/@lares/docs/pono/tagspace-trust"
-file-path = "packages/lares/docs/pono/tagspace-trust.md"
+file-path = "packages/lares/memes/docs/pono/tagspace-trust.md"
 type = "text/x-memetic-wikitext"
 tagspace = "stable"
 confidence = 0.72

@@ -3,7 +3,7 @@
 <<~① ? -> lar:///ha.ka.ba/@lares/api/v0.1/lararium/templates/meme-combat >>
 ```toml iam
 uri-path = "ha.ka.ba/@lares/api/v0.1/lararium/templates/meme-combat"
-file-path = "packages/lares/api/v0.1/lararium/templates/meme-combat.md"
+file-path = "packages/lares/memes/api/v0.1/lararium/templates/meme-combat.md"
 type = "text/x-memetic-wikitext"
 role         = "canvas template — meme frame at combat zoom (0.80–1.50, ahu sub-frames materialise)"
 kumu-name    = "meme-combat"

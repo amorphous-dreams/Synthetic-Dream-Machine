@@ -3,7 +3,7 @@
 <<~&#x0001; ? -> lar:///ha.ka.ba/@lares/docs/pono/live-session-overwrite >>
 ```toml iam
 uri-path = "ha.ka.ba/@lares/docs/pono/live-session-overwrite"
-file-path = "packages/lares/docs/pono/live-session-overwrite.md"
+file-path = "packages/lares/memes/docs/pono/live-session-overwrite.md"
 type = "text/x-memetic-wikitext"
 tagspace = "stable"
 confidence = 0.72

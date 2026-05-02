@@ -3,7 +3,7 @@
 <<~&#x0001; ? -> lar:///ha.ka.ba/@lares/docs/lararium/preferences/frame-uncertainty >>
 ```toml iam
 uri-path = "ha.ka.ba/@lares/docs/lararium/preferences/frame-uncertainty"
-file-path = "packages/lares/docs/lararium/preferences/frame-uncertainty.md"
+file-path = "packages/lares/memes/docs/lararium/preferences/frame-uncertainty.md"
 type = "text/x-memetic-wikitext"
 tagspace = "stable"
 confidence = 0.84

@@ -3,7 +3,7 @@
 <<~&#x0001; ? -> lar:///ha.ka.ba/@lares/api/v0.1/lararium/ui/ahu-styles >>
 ```toml iam
 uri-path = "ha.ka.ba/@lares/api/v0.1/lararium/ui/ahu-styles"
-file-path = "packages/lares/api/v0.1/lararium/ui/ahu-styles.md"
+file-path = "packages/lares/memes/api/v0.1/lararium/ui/ahu-styles.md"
 type = "text/vnd.tiddlywiki"
 register     = "CS"
 confidence   = 0.88

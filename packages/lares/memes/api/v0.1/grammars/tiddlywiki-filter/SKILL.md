@@ -8,7 +8,7 @@ allowed-tools: Read, Grep, Glob, Bash, Edit, Write
 <<~&#x0001; ? -> lar:///ha.ka.ba/@lares/api/v0.1/grammars/x-tiddlywiki-filter/SKILL >>
 ```toml iam
 uri-path = "ha.ka.ba/@lares/api/v0.1/grammars/x-tiddlywiki-filter/SKILL"
-file-path = "packages/lares/api/v0.1/grammars/tiddlywiki-filter/SKILL.md"
+file-path = "packages/lares/memes/api/v0.1/grammars/tiddlywiki-filter/SKILL.md"
 type = "text/x-memetic-wikitext"
 confidence   = 0.70
 register     = "CS"

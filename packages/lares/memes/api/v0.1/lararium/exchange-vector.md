@@ -3,7 +3,7 @@
 <<~ॐ ँ&#x0001; ? -> lar:///ha.ka.ba/@lares/api/v0.1/lararium/exchange-vector >>
 ```toml iam
 uri-path = "ha.ka.ba/@lares/api/v0.1/lararium/exchange-vector"
-file-path = "packages/lares/api/v0.1/lararium/exchange-vector.md"
+file-path = "packages/lares/memes/api/v0.1/lararium/exchange-vector.md"
 type = "text/x-memetic-wikitext"
 confidence = 0.74
 register = "CS"

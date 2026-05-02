@@ -4,7 +4,7 @@
 
 ```toml iam
 uri-path = "LARARIUM-NODE/ROADMAP"
-file-path = "packages/lares/lararium-node/ROADMAP.md"
+file-path = "packages/lares/memes/lararium-node/ROADMAP.md"
 type = "text/x-memetic-wikitext"
 confidence = 0.88
 register = "S"

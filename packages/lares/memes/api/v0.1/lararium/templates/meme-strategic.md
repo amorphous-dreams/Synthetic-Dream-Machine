@@ -3,7 +3,7 @@
 <<~① ? -> lar:///ha.ka.ba/@lares/api/v0.1/lararium/templates/meme-strategic >>
 ```toml iam
 uri-path = "ha.ka.ba/@lares/api/v0.1/lararium/templates/meme-strategic"
-file-path = "packages/lares/api/v0.1/lararium/templates/meme-strategic.md"
+file-path = "packages/lares/memes/api/v0.1/lararium/templates/meme-strategic.md"
 type = "text/x-memetic-wikitext"
 role         = "canvas template — meme frame at strategic zoom (galaxy view, < 0.15)"
 kumu-name    = "meme-strategic"

@@ -3,7 +3,7 @@
 <<~&#x0001; ? -> lar:///ha.ka.ba/@lares/api/v0.1/masks/named/ink-clerk >>
 ```toml iam
 uri-path = "ha.ka.ba/@lares/api/v0.1/masks/named/ink-clerk"
-file-path = "packages/lares/api/v0.1/masks/named/ink-clerk.md"
+file-path = "packages/lares/memes/api/v0.1/masks/named/ink-clerk.md"
 type = "text/x-memetic-wikitext"
 tagspace = "stable"
 confidence = 0.45

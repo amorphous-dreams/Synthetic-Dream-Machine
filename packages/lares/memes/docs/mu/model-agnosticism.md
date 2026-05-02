@@ -3,7 +3,7 @@
 <<~&#x0001; ? -> lar:///ha.ka.ba/@lares/docs/mu/model-agnosticism >>
 ```toml iam
 uri-path = "ha.ka.ba/@lares/docs/mu/model-agnosticism"
-file-path = "packages/lares/docs/mu/model-agnosticism.md"
+file-path = "packages/lares/memes/docs/mu/model-agnosticism.md"
 type = "text/x-memetic-wikitext"
 tagspace = "stable"
 confidence = 0.78

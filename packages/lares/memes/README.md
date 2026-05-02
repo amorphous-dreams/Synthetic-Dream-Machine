@@ -1,7 +1,7 @@
 <<~ ? -> lar:///README >>
 ```toml iam
 uri-path     = "README"
-file-path = "packages/lares/README.md"
+file-path = "packages/lares/memes/README.md"
 type = "text/x-memetic-wikitext"
 tagspace     = "adjacent"
 confidence   = 0.90

@@ -21,7 +21,7 @@ import { ENGINE_CORE_ID, emptyEngineDoc } from "@lararium/core";
 import { laresRoot } from "@lares/lares";
 import { TW5_VERSION, TW5_CORE_SCRIPT_FILENAME } from "@lararium/tw5";
 
-const PLUGINS_DIR = join(laresRoot, "ha-ka-ba/api/v0.1/tw5-plugins");
+const PLUGINS_DIR = join(laresRoot, "memes/api/v0.1/tw5-plugins");
 
 function sha256hex(bytes: Uint8Array): string {
   return createHash("sha256").update(bytes).digest("hex");

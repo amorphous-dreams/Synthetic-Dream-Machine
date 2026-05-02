@@ -3,7 +3,7 @@
 <<~&#x0001; ? -> lar:///LARARIUM-NODE/MULTIPLAYER-INFINITE-CANVAS-WIKI >>
 ```toml iam
 uri-path    = "LARARIUM-NODE/MULTIPLAYER-INFINITE-CANVAS-WIKI"
-file-path = "packages/lares/lararium-node/MULTIPLAYER-INFINITE-CANVAS-WIKI.md"
+file-path = "packages/lares/memes/lararium-node/MULTIPLAYER-INFINITE-CANVAS-WIKI.md"
 type = "text/x-memetic-wikitext"
 confidence  = 0.88
 register    = "S"

@@ -3,7 +3,7 @@
 <<~ॐ ँ&#x0001; ? -> lar:///ha.ka.ba/@lares/api/v0.1/mu/the-four-tools >>
 ```toml iam
 uri-path = "ha.ka.ba/@lares/api/v0.1/mu/the-four-tools"
-file-path = "packages/lares/api/v0.1/mu/the-four-tools.md"
+file-path = "packages/lares/memes/api/v0.1/mu/the-four-tools.md"
 type = "text/x-memetic-wikitext"
 tagspace     = "stable"
 confidence = 0.84

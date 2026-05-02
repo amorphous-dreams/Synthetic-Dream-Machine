@@ -3,7 +3,7 @@
 <<~① ? -> lar:///ha.ka.ba/@lares/api/v0.1/lararium/templates/meme-tactical >>
 ```toml iam
 uri-path = "ha.ka.ba/@lares/api/v0.1/lararium/templates/meme-tactical"
-file-path = "packages/lares/api/v0.1/lararium/templates/meme-tactical.md"
+file-path = "packages/lares/memes/api/v0.1/lararium/templates/meme-tactical.md"
 type = "text/x-memetic-wikitext"
 role         = "canvas template — meme frame at tactical zoom (0.35–0.80, story river default)"
 kumu-name    = "meme-tactical"

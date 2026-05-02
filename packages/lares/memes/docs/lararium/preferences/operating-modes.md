@@ -3,7 +3,7 @@
 <<~&#x0001; ? -> lar:///ha.ka.ba/@lares/docs/lararium/preferences/operating-modes >>
 ```toml iam
 uri-path = "ha.ka.ba/@lares/docs/lararium/preferences/operating-modes"
-file-path = "packages/lares/docs/lararium/preferences/operating-modes.md"
+file-path = "packages/lares/memes/docs/lararium/preferences/operating-modes.md"
 type = "text/x-memetic-wikitext"
 tagspace = "stable"
 confidence = 0.86

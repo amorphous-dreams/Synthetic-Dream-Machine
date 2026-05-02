@@ -3,7 +3,7 @@
 <<~ॐ ँ&#x0001; ? -> lar:///ha.ka.ba/@lares/api/v0.1/mu/the-law-of-5s >>
 ```toml iam
 uri-path = "ha.ka.ba/@lares/api/v0.1/mu/the-law-of-5s"
-file-path = "packages/lares/api/v0.1/mu/the-law-of-5s.md"
+file-path = "packages/lares/memes/api/v0.1/mu/the-law-of-5s.md"
 type = "text/x-memetic-wikitext"
 tagspace     = "stable"
 confidence = 0.82

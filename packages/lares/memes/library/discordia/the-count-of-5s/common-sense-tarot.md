@@ -6,7 +6,7 @@
 
 ```toml
 uri-path = "ha.ka.ba/@lares/library/discordia/the-count-of-5s/common-sense-tarot"
-file-path = "packages/lares/library/discordia/the-count-of-5s/common-sense-tarot.md"
+file-path = "packages/lares/memes/library/discordia/the-count-of-5s/common-sense-tarot.md"
 content-type = "text/x-memetic-wikitext"
 tagspace = "stable"
 confidence = 0.78

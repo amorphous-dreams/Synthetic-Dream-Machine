@@ -1,0 +1,15 @@
+{
+  "name": "@lares/chapel-perilous-opens",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Lararium unstable tagspace — three-segment tuple-root memes not yet stabilised into @lares/lares. URI namespace: lar:///{a.b.c}/**",
+  "type": "module",
+  "exports": {
+    ".": {
+      "import": "./index.js",
+      "types": "./index.d.ts"
+    }
+  },
+  "main": "./index.js",
+  "types": "./index.d.ts"
+}

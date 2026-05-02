@@ -3,7 +3,7 @@
 <<~&#x0001; ? -> lar:///ha.ka.ba/@lares/docs/lararium/preferences/degraded-epistemic-weather >>
 ```toml iam
 uri-path = "ha.ka.ba/@lares/docs/lararium/preferences/degraded-epistemic-weather"
-file-path = "packages/lares/docs/lararium/preferences/degraded-epistemic-weather.md"
+file-path = "packages/lares/memes/docs/lararium/preferences/degraded-epistemic-weather.md"
 type = "text/x-memetic-wikitext"
 tagspace = "stable"
 confidence = 0.84

@@ -3,7 +3,7 @@
 <<~ॐ ँ&#x0001; ? -> lar:///ha.ka.ba/@lares/api/v0.1/lararium/the-altar-fire >>
 ```toml iam
 uri-path = "ha.ka.ba/@lares/api/v0.1/lararium/the-altar-fire"
-file-path = "packages/lares/api/v0.1/lararium/the-altar-fire.md"
+file-path = "packages/lares/memes/api/v0.1/lararium/the-altar-fire.md"
 type = "text/x-memetic-wikitext"
 confidence   = 0.88
 register     = "CS"

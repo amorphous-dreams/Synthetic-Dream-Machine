@@ -3,7 +3,7 @@
 <<~&#x0001; ? -> lar:///ha.ka.ba/@lares/docs/lararium/degraded-states >>
 ```toml iam
 uri-path = "ha.ka.ba/@lares/docs/lararium/degraded-states"
-file-path = "packages/lares/docs/lararium/degraded-states.md"
+file-path = "packages/lares/memes/docs/lararium/degraded-states.md"
 type = "text/x-memetic-wikitext"
 tagspace = "stable"
 confidence = 0.88

@@ -6,7 +6,7 @@
 
 ```toml
 uri-path = "ha.ka.ba/@lares/library/discordia/malaclypse-the-younger/are-discordians-serious"
-file-path = "packages/lares/library/discordia/malaclypse-the-younger/are-discordians-serious.md"
+file-path = "packages/lares/memes/library/discordia/malaclypse-the-younger/are-discordians-serious.md"
 content-type = "text/x-memetic-wikitext"
 tagspace = "stable"
 confidence = 0.90

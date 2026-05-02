@@ -3,7 +3,7 @@
 <<~&#x0001; ? -> lar:///ha.ka.ba/@lares/docs/pono/e-prime >>
 ```toml iam
 uri-path     = "ha.ka.ba/@lares/docs/pono/e-prime"
-file-path = "packages/lares/docs/pono/e-prime.md"
+file-path = "packages/lares/memes/docs/pono/e-prime.md"
 type = "text/x-memetic-wikitext"
 confidence   = 0.70
 register     = "S"

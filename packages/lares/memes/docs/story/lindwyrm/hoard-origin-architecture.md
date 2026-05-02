@@ -3,7 +3,7 @@
 <<~&#x0001; ? -> lar:///ha.ka.ba/@lares/docs/story/lindwyrm/hoard-origin-architecture >>
 ```toml iam
 uri-path = "ha.ka.ba/@lares/docs/story/lindwyrm/hoard-origin-architecture"
-file-path = "packages/lares/docs/story/lindwyrm/hoard-origin-architecture.md"
+file-path = "packages/lares/memes/docs/story/lindwyrm/hoard-origin-architecture.md"
 type = "text/x-memetic-wikitext"
 tagspace = "adjacent"
 confidence = 0.70

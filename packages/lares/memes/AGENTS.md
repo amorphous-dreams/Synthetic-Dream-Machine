@@ -4,7 +4,7 @@
 
 ```toml iam
 uri-path     = "AGENTS"
-file-path = "packages/lares/AGENTS.md"
+file-path = "packages/lares/memes/AGENTS.md"
 type         = "text/x-memetic-wikitext"
 tagspace     = "adjacent"
 confidence   = 0.82

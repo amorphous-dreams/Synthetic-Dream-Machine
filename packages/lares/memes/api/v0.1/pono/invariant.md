@@ -3,7 +3,7 @@
 <<~⊙&#x0001; ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/invariant >>
 ```toml iam
 uri-path = "ha.ka.ba/@lares/api/v0.1/pono/invariant"
-file-path = "packages/lares/api/v0.1/pono/invariant.md"
+file-path = "packages/lares/memes/api/v0.1/pono/invariant.md"
 type = "text/x-memetic-wikitext"
 confidence = 0.7
 register = "SC"

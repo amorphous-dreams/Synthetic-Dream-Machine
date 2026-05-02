@@ -3,7 +3,7 @@
 <<~&#x0001; ? -> lar:///ha.ka.ba/@lares/api/v0.1/lararium/ui/boot-splash-styles >>
 ```toml iam
 uri-path = "ha.ka.ba/@lares/api/v0.1/lararium/ui/boot-splash-styles"
-file-path = "packages/lares/api/v0.1/lararium/ui/boot-splash-styles.md"
+file-path = "packages/lares/memes/api/v0.1/lararium/ui/boot-splash-styles.md"
 type         = "text/vnd.tiddlywiki"
 register     = "CS"
 confidence   = 0.88

@@ -3,7 +3,7 @@
 <<~&#x0001; ? -> lar:///ha.ka.ba/@lares/api/v0.1/lararium/sync/save-cascade >>
 ```toml iam
 uri-path = "ha.ka.ba/@lares/api/v0.1/lararium/sync/save-cascade"
-file-path = "packages/lares/api/v0.1/lararium/sync/save-cascade.md"
+file-path = "packages/lares/memes/api/v0.1/lararium/sync/save-cascade.md"
 type = "text/x-memetic-wikitext"
 register     = "CS"
 confidence   = 0.88

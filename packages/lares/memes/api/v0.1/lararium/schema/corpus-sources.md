@@ -68,6 +68,12 @@ quine = true
 note  = "infrastructure-as-myth corpus; quine-corpus; hydrates first"
 
 [[corpus]]
+name  = "@lares/chapel-perilous-opens"
+path  = "packages/lares-chapel-perilous-opens/memes"
+bag   = "lares"
+note  = "unstable tagspace; three-segment tuple-root memes not yet stabilised; URI: lar:///{a.b.c}/**"
+
+[[corpus]]
 name  = "@lararium/corpus-elyncia"
 path  = "elyncia"
 bag   = "elyncia"
@@ -122,7 +128,7 @@ note     = "engine self-doc memes for @lararium/node TypeScript symbols"
 ```
 system bag    ← invariant TW5 boot corpus (read-only)
 engine bag    ← TypeScript self-doc memes + compiled IIFE tiddlers; URI: lar:///ha.ka.ba/@lararium/{pkg}/v{ver}/**
-lares bag     ← infrastructure-as-myth; quine-corpus; read at runtime by machinery
+lares bag     ← infrastructure-as-myth + chapel-perilous-opens unstable tagspace; quine-corpus; read at runtime by machinery
 elyncia bag   ← setting content
 ftls bag      ← FTLS rules
 sdm bag       ← SDM core rules

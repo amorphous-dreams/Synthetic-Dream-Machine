@@ -3,7 +3,7 @@
 <<~&#x0001; ? -> lar:///ha.ka.ba/@lares/docs/mu/the-syad-perspectives/README >>
 ```toml iam
 uri-path = "ha.ka.ba/@lares/docs/mu/the-syad-perspectives/README"
-file-path = "packages/lares/docs/mu/the-syad-perspectives/README.md"
+file-path = "packages/lares/memes/docs/mu/the-syad-perspectives/README.md"
 type = "text/x-memetic-wikitext"
 tagspace = "stable"
 confidence = 0.80

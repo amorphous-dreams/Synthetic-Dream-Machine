@@ -32,6 +32,7 @@
     "@automerge/automerge-repo-storage-nodefs": "^2.5.5",
     "@lararium/core": "workspace:*",
     "@lares/lares": "workspace:*",
+    "@lares/chapel-perilous-opens": "workspace:*",
     "@lararium/tldraw": "workspace:*",
     "@lararium/tw5": "workspace:*",
     "@octokit/rest": "^22.0.1",

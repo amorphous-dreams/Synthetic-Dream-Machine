@@ -3,7 +3,7 @@
 <<~&#x0001; ? -> lar:///ha.ka.ba/@lares/api/v0.1/lararium/canvas/zoom-levels >>
 ```toml iam
 uri-path = "ha.ka.ba/@lares/api/v0.1/lararium/canvas/zoom-levels"
-file-path = "packages/lares/api/v0.1/lararium/canvas/zoom-levels.md"
+file-path = "packages/lares/memes/api/v0.1/lararium/canvas/zoom-levels.md"
 type = "text/x-memetic-wikitext"
 confidence   = 0.80
 register     = "CS"

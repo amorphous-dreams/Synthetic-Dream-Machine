@@ -4,7 +4,7 @@
 
 ```toml iam
 uri-path     = "SESSION"
-file-path = "packages/lares/SESSION.md"
+file-path = "packages/lares/memes/SESSION.md"
 type         = "text/x-memetic-wikitext"
 tagspace     = "adjacent"
 confidence   = 0.84

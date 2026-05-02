@@ -4,7 +4,7 @@
 
 ```toml iam
 uri-path = "lararium-node/PRINCIPLES"
-file-path = "packages/lares/lararium-node/PRINCIPLES.md"
+file-path = "packages/lares/memes/lararium-node/PRINCIPLES.md"
 type = "text/x-memetic-wikitext"
 confidence = 0.99
 register = "CS"

@@ -3,7 +3,7 @@
 <<~&#x0001; ? -> lar:///ha.ka.ba/@lares/docs/lararium_mcp/carrier-law >>
 ```toml iam
 uri-path     = "ha.ka.ba/@lares/docs/lararium_mcp/carrier-law"
-file-path = "packages/lares/docs/lararium_mcp/carrier-law.md"
+file-path = "packages/lares/memes/docs/lararium_mcp/carrier-law.md"
 type = "text/x-memetic-wikitext"
 tagspace     = "stable"
 register     = "CS"

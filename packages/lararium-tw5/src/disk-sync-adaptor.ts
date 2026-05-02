@@ -25,6 +25,7 @@
 import { writeFileSync, mkdirSync } from "fs";
 import { join, resolve as resolvePath, dirname } from "path";
 import type { LarTiddlerStore, LarTiddlerChange } from "@lararium/core";
+import { resolveLarUri } from "@lararium/core";
 
 export class LarDiskProjector {
   /**
@@ -98,12 +99,12 @@ export class LarDiskProjector {
   }
 
   private uriToPath(uri: string): string | null {
-    const match = uri.match(/^lar:\/\/\/(.+)$/);
-    if (!match) return null;
-    const raw        = match[1]!;
-    const normalized = raw.replace(/^ha\.ka\.ba\//, "ha-ka-ba/");
-    const candidate  = resolvePath(join(this.laresRoot, normalized + ".md"));
-    if (!candidate.startsWith(resolvePath(this.laresRoot) + "/")) return null;
-    return candidate;
+    try {
+      const resolution = resolveLarUri(uri);
+      if (!resolution.laresRelPath) return null;
+      const candidate = resolvePath(join(this.laresRoot, resolution.laresRelPath));
+      if (!candidate.startsWith(resolvePath(this.laresRoot) + "/")) return null;
+      return candidate;
+    } catch { return null; }
   }
 }

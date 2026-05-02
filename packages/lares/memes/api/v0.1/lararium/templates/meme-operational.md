@@ -3,7 +3,7 @@
 <<~① ? -> lar:///ha.ka.ba/@lares/api/v0.1/lararium/templates/meme-operational >>
 ```toml iam
 uri-path = "ha.ka.ba/@lares/api/v0.1/lararium/templates/meme-operational"
-file-path = "packages/lares/api/v0.1/lararium/templates/meme-operational.md"
+file-path = "packages/lares/memes/api/v0.1/lararium/templates/meme-operational.md"
 type = "text/x-memetic-wikitext"
 role         = "canvas template — meme frame at operational zoom (0.15–0.35, edge topology readable)"
 kumu-name    = "meme-operational"

@@ -3,7 +3,7 @@
 <<~&#x0001; ? -> lar:///ha.ka.ba/@lares/docs/lararium/meme-provider >>
 ```toml iam
 uri-path    = "ha.ka.ba/@lares/docs/lararium/meme-provider"
-file-path = "packages/lares/docs/lararium/meme-provider.md"
+file-path = "packages/lares/memes/docs/lararium/meme-provider.md"
 type = "text/x-memetic-wikitext"
 register    = "CS"
 confidence  = 0.86

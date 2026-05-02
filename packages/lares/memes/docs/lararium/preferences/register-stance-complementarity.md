@@ -3,7 +3,7 @@
 <<~&#x0001; ? -> lar:///ha.ka.ba/@lares/docs/lararium/preferences/register-stance-complementarity >>
 ```toml iam
 uri-path = "ha.ka.ba/@lares/docs/lararium/preferences/register-stance-complementarity"
-file-path = "packages/lares/docs/lararium/preferences/register-stance-complementarity.md"
+file-path = "packages/lares/memes/docs/lararium/preferences/register-stance-complementarity.md"
 type = "text/x-memetic-wikitext"
 tagspace = "stable"
 confidence = 0.84

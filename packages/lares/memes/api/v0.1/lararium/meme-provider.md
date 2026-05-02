@@ -3,7 +3,7 @@
 <<~&#x0001; ? -> lar:///ha.ka.ba/@lares/api/v0.1/lararium/meme-provider >>
 ```toml iam
 uri-path = "ha.ka.ba/@lares/api/v0.1/lararium/meme-provider"
-file-path = "packages/lares/api/v0.1/lararium/meme-provider.md"
+file-path = "packages/lares/memes/api/v0.1/lararium/meme-provider.md"
 type = "text/x-typescript"
 register     = "CS"
 confidence   = 0.86

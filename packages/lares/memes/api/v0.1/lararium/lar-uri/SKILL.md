@@ -8,7 +8,7 @@ allowed-tools: Read, Grep, Glob, Bash, Edit, Write
 <<~&#x0001; ? -> lar:///ha.ka.ba/@lares/api/v0.1/lararium/lar-uri/SKILL >>
 ```toml iam
 uri-path = "ha.ka.ba/@lares/api/v0.1/pono/lar-uri/SKILL"
-file-path = "packages/lares/api/v0.1/pono/lar-uri/SKILL.md"
+file-path = "packages/lares/memes/api/v0.1/pono/lar-uri/SKILL.md"
 type = "text/x-memetic-wikitext"
 confidence = 0.80
 register = "CS"

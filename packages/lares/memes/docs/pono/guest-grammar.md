@@ -3,7 +3,7 @@
 <<~&#x0001; ? -> lar:///ha.ka.ba/@lares/docs/pono/guest-grammar >>
 ```toml iam
 uri-path = "ha.ka.ba/@lares/docs/pono/guest-grammar"
-file-path = "packages/lares/docs/pono/guest-grammar.md"
+file-path = "packages/lares/memes/docs/pono/guest-grammar.md"
 type = "text/x-memetic-wikitext"
 tagspace = "stable"
 confidence = 0.70

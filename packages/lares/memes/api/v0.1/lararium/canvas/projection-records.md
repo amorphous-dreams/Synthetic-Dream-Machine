@@ -3,7 +3,7 @@
 <<~&#x0001; ? -> lar:///ha.ka.ba/@lares/api/v0.1/lararium/canvas/projection-records >>
 ```toml iam
 uri-path = "ha.ka.ba/@lares/api/v0.1/lararium/canvas/projection-records"
-file-path = "packages/lares/api/v0.1/lararium/canvas/projection-records.md"
+file-path = "packages/lares/memes/api/v0.1/lararium/canvas/projection-records.md"
 type  = "text/x-memetic-wikitext"
 register      = "CS"
 confidence    = 0.86

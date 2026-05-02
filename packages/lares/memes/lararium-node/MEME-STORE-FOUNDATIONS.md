@@ -1,7 +1,7 @@
 <<~ ? -> lar:///lararium-node/MEME-STORE-FOUNDATIONS >>
 ```toml iam
 uri-path     = "lararium-node/MEME-STORE-FOUNDATIONS"
-file-path = "packages/lares/lararium-node/MEME-STORE-FOUNDATIONS.md"
+file-path = "packages/lares/memes/lararium-node/MEME-STORE-FOUNDATIONS.md"
 type = "text/x-memetic-wikitext"
 tagspace     = "adjacent"
 confidence   = 0.88

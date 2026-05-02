@@ -2,7 +2,7 @@
 
 ```toml iam
 uri-path     = "grammars/memetic-wikitext"
-file-path = "packages/lares/grammars/memetic-wikitext.md"
+file-path = "packages/lares/memes/grammars/memetic-wikitext.md"
 type         = "text/x-memetic-wikitext"
 tagspace     = "grammar"
 confidence   = 0.92

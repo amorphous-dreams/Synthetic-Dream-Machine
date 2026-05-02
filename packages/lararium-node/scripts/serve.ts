@@ -64,7 +64,8 @@ import type { AutomergeUrl, DocHandle } from "@automerge/automerge-repo";
 import { getOrCreateNodeAuthReceipt } from "../src/operator-key.js";
 import { laresRoot } from "@lares/lares";
 
-const REPO_ROOT  = dirname(laresRoot);
+const LARES_MEMES = join(laresRoot, "memes");
+const REPO_ROOT   = dirname(laresRoot);
 const APP_DIST   = join(REPO_ROOT, "packages/lararium-app/dist");
 const APP_PUBLIC = join(REPO_ROOT, "packages/lararium-app/public");
 const DATA_DIR   = join(REPO_ROOT, ".lararium-data");
@@ -580,12 +581,12 @@ async function main() {
     await bootRecipeVm(recipeId, corpusStore);
 
     // store → disk (debounced render via VM)
-    const projector = new LarDiskProjector(laresRoot, async (uri) => renderCarrier(recipeId, uri));
+    const projector = new LarDiskProjector(LARES_MEMES, async (uri) => renderCarrier(recipeId, uri));
     projectors.push(projector);
     projector.start(corpusStore);
 
     // disk → store (file watcher; echo guard via projector.writing)
-    const watcher = new LarDiskWatcher(laresRoot, corpusStore, projector, engineSystemTitles);
+    const watcher = new LarDiskWatcher(LARES_MEMES, corpusStore, projector, engineSystemTitles);
     watchers.push(watcher);
     watcher.start();
 

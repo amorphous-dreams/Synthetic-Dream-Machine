@@ -3,7 +3,7 @@
 <<~&#x0001; ? -> lar:///ha.ka.ba/@lares/api/v0.1/lararium/canvas/layout-geometry >>
 ```toml iam
 uri-path = "ha.ka.ba/@lares/api/v0.1/lararium/canvas/layout-geometry"
-file-path = "packages/lares/api/v0.1/lararium/canvas/layout-geometry.md"
+file-path = "packages/lares/memes/api/v0.1/lararium/canvas/layout-geometry.md"
 type  = "text/x-memetic-wikitext"
 register      = "CS"
 confidence    = 0.84

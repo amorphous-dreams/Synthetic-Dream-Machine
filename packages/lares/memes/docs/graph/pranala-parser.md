@@ -7,7 +7,7 @@
 <<~&#x0001; ? -> lar:///ha.ka.ba/@lares/docs/graph/pranala-parser >>
 ```toml iam
 uri-path     = "ha.ka.ba/@lares/docs/graph/pranala-parser"
-file-path = "packages/lares/docs/graph/pranala-parser.md"
+file-path = "packages/lares/memes/docs/graph/pranala-parser.md"
 type = "text/x-memetic-wikitext"
 tagspace     = "stable"
 register     = "CS"

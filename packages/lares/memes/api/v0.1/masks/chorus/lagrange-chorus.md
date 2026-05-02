@@ -3,7 +3,7 @@
 <<~&#x0001; ? -> lar:///ha.ka.ba/@lares/api/v0.1/masks/chorus/lagrange-chorus >>
 ```toml iam
 uri-path = "ha.ka.ba/@lares/api/v0.1/masks/chorus/lagrange-chorus"
-file-path = "packages/lares/api/v0.1/masks/chorus/lagrange-chorus.md"
+file-path = "packages/lares/memes/api/v0.1/masks/chorus/lagrange-chorus.md"
 type = "text/x-memetic-wikitext"
 tagspace = "stable"
 confidence = 0.35

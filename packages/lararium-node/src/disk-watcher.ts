@@ -22,6 +22,7 @@
 import { watch, readFileSync, existsSync } from "fs";
 import { join, resolve as resolvePath, relative, extname } from "path";
 import type { LarTiddlerStore, ChangeOrigin } from "@lararium/core";
+import { laresRelPathToLarUri } from "@lararium/core";
 import { splitCarrierToTiddlers } from "@lararium/tw5";
 import type { LarDiskProjector } from "@lararium/tw5";
 
@@ -116,11 +117,7 @@ export class LarDiskWatcher {
   private _pathToUri(absPath: string): string | null {
     const root = resolvePath(this.laresRoot);
     if (!absPath.startsWith(root + "/")) return null;
-    let rel = relative(root, absPath);
-    // Strip .md extension
-    if (rel.endsWith(".md")) rel = rel.slice(0, -3);
-    // Normalize ha-ka-ba/ → ha.ka.ba/
-    rel = rel.replace(/^ha-ka-ba\//, "ha.ka.ba/");
-    return `lar:///${rel}`;
+    const rel = relative(root, absPath);
+    try { return laresRelPathToLarUri(rel); } catch { return null; }
   }
 }

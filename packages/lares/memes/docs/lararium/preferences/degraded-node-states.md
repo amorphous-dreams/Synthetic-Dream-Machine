@@ -3,7 +3,7 @@
 <<~&#x0001; ? -> lar:///ha.ka.ba/@lares/docs/lararium/preferences/degraded-node-states >>
 ```toml iam
 uri-path = "ha.ka.ba/@lares/docs/lararium/preferences/degraded-node-states"
-file-path = "packages/lares/docs/lararium/preferences/degraded-node-states.md"
+file-path = "packages/lares/memes/docs/lararium/preferences/degraded-node-states.md"
 type = "text/x-memetic-wikitext"
 tagspace = "stable"
 confidence = 0.82

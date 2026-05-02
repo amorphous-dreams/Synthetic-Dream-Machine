@@ -3,7 +3,7 @@
 <<~&#x0001; ? -> lar:///ha.ka.ba/@lares/docs/lararium/preferences/workspace-trust-gate >>
 ```toml iam
 uri-path = "ha.ka.ba/@lares/docs/lararium/preferences/workspace-trust-gate"
-file-path = "packages/lares/docs/lararium/preferences/workspace-trust-gate.md"
+file-path = "packages/lares/memes/docs/lararium/preferences/workspace-trust-gate.md"
 type = "text/x-memetic-wikitext"
 tagspace = "stable"
 confidence = 0.86

@@ -6,7 +6,7 @@
 
 ```toml
 uri-path = "ha.ka.ba/@lares/library/discordia/mordecai-malignatus/prometheus-rising/prometheus-rising-ch-8-the-4-tools"
-file-path = "packages/lares/library/discordia/mordecai-malignatus/prometheus-rising/prometheus-rising-ch-8-the-4-tools.md"
+file-path = "packages/lares/memes/library/discordia/mordecai-malignatus/prometheus-rising/prometheus-rising-ch-8-the-4-tools.md"
 content-type = "text/x-memetic-wikitext"
 tagspace = "stable"
 confidence = 0.80

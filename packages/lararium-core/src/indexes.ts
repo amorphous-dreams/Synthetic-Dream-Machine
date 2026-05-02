@@ -1,33 +1,38 @@
 /**
  * Pure index builders — no I/O. Host provides carrier records.
  *
- * Also exports the URI derivation helper for mapping lares-relative file
- * paths back to lar:/// URIs (used by the node host when walking the tree).
+ * Also exports URI derivation helpers for mapping corpus-relative file
+ * paths back to lar:/// URIs (used by the node host when walking each tree).
  */
 
 import { type CarrierRecord } from "./carrier.js";
 
 // ---------------------------------------------------------------------------
-// URI derivation from lares-relative path
+// URI derivation from corpus-relative paths
 // ---------------------------------------------------------------------------
 
 const LARES_CAPS_FILES = new Set(["AGENTS", "LARES", "README", "SESSION"]);
 
 /**
- * Derive a lar:/// URI from a packages/lares-relative path (e.g. "api/v0.1/pono/meme.md").
+ * Derive a lar:/// URI from a packages/lares/memes-relative path.
  * All paths map into the lar:///ha.ka.ba/@lares/ namespace.
  */
 export function laresRelPathToLarUri(relPath: string): string {
   const withoutMd = relPath.endsWith(".md") ? relPath.slice(0, -3) : relPath;
   const parts = withoutMd.split("/");
-
-  // All-caps root files: AGENTS.md → lar:///ha.ka.ba/@lares/AGENTS
   if (parts.length === 1 && parts[0] && LARES_CAPS_FILES.has(parts[0])) {
     return `lar:///ha.ka.ba/@lares/${parts[0]}`;
   }
-
-  // Everything else maps into lar:///ha.ka.ba/@lares/{path}
   return "lar:///ha.ka.ba/@lares/" + withoutMd;
+}
+
+/**
+ * Derive a lar:/// URI from a packages/lares-chapel-perilous-opens/memes-relative path.
+ * The root dir is the three-segment tuple root: "foo.bar.baz/rest" → "lar:///foo.bar.baz/rest".
+ */
+export function chapelRelPathToLarUri(relPath: string): string {
+  const withoutMd = relPath.endsWith(".md") ? relPath.slice(0, -3) : relPath;
+  return `lar:///${withoutMd}`;
 }
 
 // ---------------------------------------------------------------------------

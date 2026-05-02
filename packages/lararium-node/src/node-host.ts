@@ -15,6 +15,7 @@ import {
   MemeGraph,
   Meme,
   laresRelPathToLarUri,
+  chapelRelPathToLarUri,
   compileBoot,
   ENTRY_URI,
   type BootArtifact,
@@ -32,11 +33,14 @@ function makeMemeHashSync(uri: string, fileBytes: Uint8Array | null): string {
 }
 
 import { laresRoot } from "@lares/lares";
+import { chapelRoot } from "@lares/chapel-perilous-opens";
 
-export const LARES_ROOT       = laresRoot;
-/** packages/lares/memes/ — the walkable corpus root. Non-meme lares/ files (package machinery) stay outside. */
-export const LARES_MEMES_ROOT = join(laresRoot, "memes");
-export const REPO_ROOT        = dirname(laresRoot);
+export const LARES_ROOT        = laresRoot;
+/** packages/lares/memes/ — the walkable lares corpus root. */
+export const LARES_MEMES_ROOT  = join(laresRoot, "memes");
+/** packages/lares-chapel-perilous-opens/memes/ — unstable tuple-root corpus root. */
+export const CHAPEL_MEMES_ROOT = join(chapelRoot, "memes");
+export const REPO_ROOT         = dirname(laresRoot);
 
 // ---------------------------------------------------------------------------
 // Grammar rules reader — Phase 2 scaffolding
@@ -116,25 +120,26 @@ export function corpusAbsPath(source: CorpusSource): string {
  * Map a lar: URI back to an absolute disk path under lares/.
  * Returns null if the URI is virtual (no file backing) or unresolvable.
  */
-export function larUriToLaresAbsPath(uri: string): string | null {
+/** Resolve a lar: URI to an absolute disk path across all corpus roots. Null for virtual or engine URIs. */
+export function larUriToAbsPath(uri: string): string | null {
   try {
-    const resolution = resolveLarUri(uri);
-    if (!resolution.laresRelPath) return null;
-    return join(LARES_MEMES_ROOT, resolution.laresRelPath);
-  } catch {
+    const r = resolveLarUri(uri);
+    if (r.laresRelPath)  return join(LARES_MEMES_ROOT,  r.laresRelPath);
+    if (r.chapelRelPath) return join(CHAPEL_MEMES_ROOT, r.chapelRelPath);
     return null;
-  }
+  } catch { return null; }
 }
+
+/** @deprecated Use larUriToAbsPath */
+export const larUriToLaresAbsPath = larUriToAbsPath;
 
 // ---------------------------------------------------------------------------
 // File reader
 // ---------------------------------------------------------------------------
 
 export function readLarResource(uri: string): string {
-  const resolution = resolveLarUri(uri);
-  if (resolution.virtual) throw new Error(`${uri} names a virtual lar resource`);
-  if (!resolution.laresRelPath) throw new Error(`${uri} has no file path`);
-  const abs = join(LARES_MEMES_ROOT, resolution.laresRelPath);
+  const abs = larUriToAbsPath(uri);
+  if (!abs) throw new Error(`${uri} is virtual or engine-corpus — no file path`);
   if (!existsSync(abs)) throw new Error(`${uri} does not resolve to an existing file: ${abs}`);
   return readFileSync(abs, "utf8");
 }
@@ -144,10 +149,8 @@ export function readLarResource(uri: string): string {
 // ---------------------------------------------------------------------------
 
 export function readCarrier(uri: string): CarrierRecord {
-  const resolution = resolveLarUri(uri);
-  if (resolution.virtual) throw new Error(`${uri} names a virtual carrier namespace`);
-  if (!resolution.laresRelPath) throw new Error(`${uri} has no file path`);
-  const abs = join(LARES_MEMES_ROOT, resolution.laresRelPath);
+  const abs = larUriToAbsPath(uri);
+  if (!abs) throw new Error(`${uri} is virtual or engine-corpus — no carrier file`);
   if (!existsSync(abs)) throw new Error(`${uri} does not resolve to an existing carrier file`);
   const text = readFileSync(abs, "utf8");
   const edges = parsePranalaEdges(uri, text);
@@ -166,11 +169,12 @@ function loadMeme(uri: string, grammar?: GrammarRules): Meme | null {
     return { uri, laresRelPath: null, contentHash: makeMemeHashSync(uri, null), metadata: {}, edgesOut: [], virtual: true, exists: false, shape: null };
   }
 
-  if (!resolution.laresRelPath) return null;
-  const abs = join(LARES_MEMES_ROOT, resolution.laresRelPath);
+  const abs = larUriToAbsPath(uri);
+  if (!abs) return null;
+  const relPath = resolution.laresRelPath ?? resolution.chapelRelPath ?? null;
 
   if (!existsSync(abs)) {
-    return { uri, laresRelPath: resolution.laresRelPath, contentHash: makeMemeHashSync(uri, null), metadata: {}, edgesOut: [], virtual: false, exists: false, shape: null };
+    return { uri, laresRelPath: relPath, contentHash: makeMemeHashSync(uri, null), metadata: {}, edgesOut: [], virtual: false, exists: false, shape: null };
   }
 
   try {
@@ -180,7 +184,7 @@ function loadMeme(uri: string, grammar?: GrammarRules): Meme | null {
     const edges = parsePranalaEdges(uri, text, grammar);
     return {
       uri,
-      laresRelPath: resolution.laresRelPath,
+      laresRelPath: relPath,
       contentHash: makeMemeHashSync(uri, fileBytes),
       metadata: record.metadata,
       edgesOut: edges,
@@ -280,17 +284,19 @@ function* walkLares(dir: string, ignorePatterns: RegExp[], laresRoot: string): I
   }
 }
 
-function* iterSourceCarrierPaths(): Iterable<string> {
+function* iterLaresCarrierPaths(): Iterable<[absPath: string, kind: "lares" | "chapel"]> {
   const ignorePatterns = loadIgnorePatterns();
-  yield* walkLares(LARES_MEMES_ROOT, ignorePatterns, LARES_ROOT);
+  for (const p of walkLares(LARES_MEMES_ROOT, ignorePatterns, LARES_ROOT)) yield [p, "lares"];
+  for (const p of walkLares(CHAPEL_MEMES_ROOT, ignorePatterns, LARES_ROOT)) yield [p, "chapel"];
 }
 
 export function compileCarrierIndex(): CarrierRecord[] {
   const records: CarrierRecord[] = [];
-  for (const absPath of iterSourceCarrierPaths()) {
+  for (const [absPath, kind] of iterLaresCarrierPaths()) {
     try {
-      const relPath = relative(LARES_MEMES_ROOT, absPath).replace(/\\/g, "/");
-      const uri = laresRelPathToLarUri(relPath);
+      const root = kind === "chapel" ? CHAPEL_MEMES_ROOT : LARES_MEMES_ROOT;
+      const relPath = relative(root, absPath).replace(/\\/g, "/");
+      const uri = kind === "chapel" ? chapelRelPathToLarUri(relPath) : laresRelPathToLarUri(relPath);
       records.push(readCarrier(uri));
     } catch { continue; }
   }

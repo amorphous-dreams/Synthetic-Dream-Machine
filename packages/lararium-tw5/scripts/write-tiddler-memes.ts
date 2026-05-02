@@ -18,9 +18,10 @@ import { fileURLToPath } from "url";
 import { WIDGET_ENTRIES, FILTER_ENTRIES, DESERIALIZER_ENTRIES, buildAll } from "../vite.tiddlers.config.js";
 import { laresRoot } from "@lares/lares";
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const root      = dirname(laresRoot);
-const distDir   = resolve(__dirname, "../dist-widgets");
+const __dirname  = dirname(fileURLToPath(import.meta.url));
+const tw5Memes   = resolve(__dirname, "../memes");
+const root       = dirname(laresRoot);
+const distDir    = resolve(__dirname, "../dist-widgets");
 
 const STX_RE       = /<<~[^>]*&#x0002;[^>]*>>/;
 const ETX_RE       = /<<~[^>]*&#x0003;[^>]*>>/;
@@ -58,8 +59,8 @@ function processEntry(name: string, kind: "widget" | "filter" | "module"): void 
   const sha256 = createHash("sha256").update(iife, "utf8").digest("hex");
 
   const subdir     = kind === "widget" ? "widgets" : kind === "filter" ? "filters" : "modules";
-  const modulePath = resolve(laresRoot, `memes/api/v0.1/lararium/${subdir}/${name}-tw5.md`);
-  const anchorPath = resolve(laresRoot, `memes/api/v0.1/lararium/${subdir}/${name}.md`);
+  const modulePath = resolve(tw5Memes, `${subdir}/${name}-tw5.md`);
+  const anchorPath = resolve(tw5Memes, `${subdir}/${name}.md`);
 
   if (!existsSync(modulePath)) {
     console.warn(`[write-tiddler-memes] MISSING module tiddler: ${modulePath}`);

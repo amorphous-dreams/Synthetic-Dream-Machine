@@ -3,7 +3,7 @@
 <<~&#x0001; ? -> lar:///ha.ka.ba/@lares/docs/graph >>
 ```toml iam
 uri-path     = "ha.ka.ba/@lares/docs/graph"
-file-path = "packages/lares/docs/graph.md"
+file-path = "packages/lares/memes/docs/graph.md"
 type = "text/x-memetic-wikitext"
 tagspace     = "stable"
 register     = "CS"
