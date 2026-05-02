@@ -90,6 +90,14 @@ name  = "@lararium/corpus-wtf"
 path  = "wtf"
 bag   = "wtf"
 note  = "Wizard.Thief.Fighter rules corpus"
+
+[[corpus]]
+name     = "@lararium/ha-ka-ba"
+path     = "packages/ha-ka-ba"
+bag      = "engine"
+quine    = true
+uri-rule = "lar:///ha.ka.ba/{@scope/name}/v{version}/**"
+note     = "engine self-documentation corpus; TypeScript symbol memes + compiled IIFE tiddlers; URI derives from source package name+version"
 ```
 
 <<~/ahu >>
@@ -100,6 +108,7 @@ note  = "Wizard.Thief.Fighter rules corpus"
 
 ```
 system bag    ← invariant TW5 boot corpus (read-only)
+engine bag    ← TypeScript self-doc memes + compiled IIFE tiddlers; URI: lar:///ha.ka.ba/{pkg}/v{ver}/**
 lares bag     ← infrastructure-as-myth; quine-corpus; read at runtime by machinery
 elyncia bag   ← setting content
 ftls bag      ← FTLS rules

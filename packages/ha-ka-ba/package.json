@@ -1,0 +1,10 @@
+{
+  "name": "@lararium/ha-ka-ba",
+  "version": "0.1.0",
+  "description": "Self-documentation memes and compiled engine tiddlers for all @lararium/* packages. URI namespace: lar:///ha.ka.ba/{@scope/name}/v{version}/**",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "check": "echo 'no build step — carrier .md files are source'"
+  }
+}
