@@ -1,0 +1,179 @@
+/**
+ * meme-ast/types.ts — parse-time AST node types for memetic-wikitext.
+ *
+ * Local-first, isomorphic: no fs/path/DOM imports.
+ * Runs in Node, Deno, browser, and TW5-era JS environments.
+ *
+ * PranaEdge, GrammarRules, and SigilRule live in @lararium/core/ast.ts (shared
+ * vocabulary). This file owns ONLY the parse-tree node shapes.
+ *
+ * Heleuma ka: sync-heleuma tracks this file.
+ * Bundle entry: packages/lararium-tw5/src/meme-ast-entry.ts
+ */
+
+import type { PranaEdge, GrammarRules, SigilRule } from "../ast.js";
+export type { PranaEdge, GrammarRules, SigilRule };
+
+// ---------------------------------------------------------------------------
+// MemeAstKind — discriminator for every node in the parse tree
+// ---------------------------------------------------------------------------
+
+export type MemeAstKind =
+  | "Meme"          // root document node  (replaces CarrierNode)
+  | "Ahu"           // addressable scope socket  <<~ ahu #slot >>
+  | "Pranala"       // explicit edge  (block or inline)
+  | "PranalaSugar"  // sugared forms: loulou / aka / kahea / pono / papalohe
+  | "Lele"          // fire-and-forget dispatch
+  | "Pae"           // phase boundary: soh/stx/etx/eot
+  | "Text"          // raw wikitext prose span
+  | "Sigil"         // canonical sigil (incl. toml)
+  | "Dynamic";      // grammar-meme-registered extension
+
+// ---------------------------------------------------------------------------
+// Base
+// ---------------------------------------------------------------------------
+
+export interface MemeAstBase {
+  kind:  MemeAstKind;
+  pos:   number;
+  raw:   string;
+}
+
+// ---------------------------------------------------------------------------
+// MemeNode — root document node (replaces CarrierNode / CarrierNode.kind=Carrier)
+// ---------------------------------------------------------------------------
+
+export interface MemeNode {
+  readonly kind: "Meme";
+  readonly uri:  string;
+  readonly body: readonly MemeAstNode[];
+}
+
+// ---------------------------------------------------------------------------
+// AhuNode — addressable scope socket
+// ---------------------------------------------------------------------------
+
+export interface AhuNode extends MemeAstBase {
+  kind:        "Ahu";
+  slot:        string;            // e.g. "#section-name"
+  uri:         string;            // memeUri + slot
+  delegate:    string | null;
+  body:        MemeAstNode[];
+  invocation?: boolean;           // <<~ kahea ahu #slot >>
+  projection?: boolean;           // <<~ aka ahu #slot >>
+}
+
+// ---------------------------------------------------------------------------
+// PranalaNode — explicit edge
+// ---------------------------------------------------------------------------
+
+export interface PranalaNode extends MemeAstBase {
+  kind:    "Pranala";
+  slot:    string | null;
+  fromRaw: string;
+  toRaw:   string;
+  family:  string;
+  role:    string | null;
+  body:    MemeAstNode[];         // non-empty for block-form only
+}
+
+// ---------------------------------------------------------------------------
+// PranalaSugarNode — sugared edge vocabulary
+// ---------------------------------------------------------------------------
+
+export interface PranalaSugarNode extends MemeAstBase {
+  kind:     "PranalaSugar";
+  sigil:    "loulou" | "aka" | "kahea" | "pono" | "papalohe";
+  slot:     string | null;
+  fromRaw:  string | null;
+  toRaw:    string;
+  family:   string;
+  role:     string | null;
+  trigger:  string | null;        // papalohe: source event name
+  fn:       string | null;        // papalohe: target function name
+}
+
+// ---------------------------------------------------------------------------
+// LeleNode — fire-and-forget dispatch
+// ---------------------------------------------------------------------------
+
+export interface LeleNode extends MemeAstBase {
+  kind:      "Lele";
+  targetRaw: string;
+  family:    "message";
+}
+
+// ---------------------------------------------------------------------------
+// PaeNode — phase boundary (SOH/STX/ETX/EOT)
+//
+//   soh — Start Of Heading  (self-declaration, meme URI)
+//   stx — Start of Text     (identity done, content begins)
+//   etx — End of Text       (content done, trailer begins)
+//   eot — End of Transmission (transmission complete)
+// ---------------------------------------------------------------------------
+
+export type PaePhase = "soh" | "stx" | "etx" | "eot";
+
+export interface PaeNode extends MemeAstBase {
+  kind:   "Pae";
+  phase:  PaePhase;
+  toUri?: string;   // present on soh (declared URI) and eot (return-to-caller)
+}
+
+// ---------------------------------------------------------------------------
+// TextNode — raw prose span
+// ---------------------------------------------------------------------------
+
+export interface TextNode extends MemeAstBase {
+  kind:    "Text";
+  content: string;
+}
+
+// ---------------------------------------------------------------------------
+// SigilNode — canonical sigil (collapsed)
+//
+// attrs carries sigil-specific named captures (all strings).
+// Conventional keys per sigilName:
+//   wai / kahawai / ui → { filter }
+//   huli               → { filter, binding }
+//   hana               → { grammarKey }
+//   meme               → { targetUri }
+//   wehe / kumu        → { name, params }
+//   helu               → { name, params, expression }
+//   kau                → { name, value, scope }
+//   kapu               → { qualifier, inline: "true"|"false" }
+//   toml               → { profile, content }
+// ---------------------------------------------------------------------------
+
+export interface SigilNode extends MemeAstBase {
+  kind:      "Sigil";
+  sigilName: string;
+  attrs:     Record<string, string>;
+  body:      MemeAstNode[];
+}
+
+// ---------------------------------------------------------------------------
+// DynamicNode — grammar-meme-registered extension
+// ---------------------------------------------------------------------------
+
+export interface DynamicNode extends MemeAstBase {
+  kind:      "Dynamic";
+  sigilName: string;
+  sigilKind: string;
+  eventType: "open-close" | "leaf" | "pragma";
+  body:      MemeAstNode[];
+}
+
+// ---------------------------------------------------------------------------
+// Union
+// ---------------------------------------------------------------------------
+
+export type MemeAstNode =
+  | AhuNode
+  | PranalaNode
+  | PranalaSugarNode
+  | LeleNode
+  | PaeNode
+  | TextNode
+  | SigilNode
+  | DynamicNode;

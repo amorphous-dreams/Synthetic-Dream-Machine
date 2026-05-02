@@ -8,6 +8,10 @@
       "import": "./dist/index.js",
       "types": "./dist/index.d.ts"
     },
+    "./meme-ast": {
+      "import": "./dist/meme-ast/index.js",
+      "types": "./dist/meme-ast/index.d.ts"
+    },
     "./cascade": {
       "import": "./dist/cascade.js",
       "types": "./dist/cascade.d.ts"

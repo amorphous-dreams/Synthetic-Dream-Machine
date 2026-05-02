@@ -15,7 +15,7 @@ import { readFileSync, writeFileSync, existsSync } from "fs";
 import { createHash } from "crypto";
 import { resolve, dirname } from "path";
 import { fileURLToPath } from "url";
-import { WIDGET_ENTRIES, FILTER_ENTRIES, DESERIALIZER_ENTRIES, buildAll } from "../vite.tiddlers.config.js";
+import { WIDGET_ENTRIES, FILTER_ENTRIES, DESERIALIZER_ENTRIES, MODULE_ENTRIES, buildAll } from "../vite.tiddlers.config.js";
 import { repoRoot } from "@lares/lares";
 
 const __dirname  = dirname(fileURLToPath(import.meta.url));
@@ -87,5 +87,6 @@ console.log("\n[write-tiddler-memes] injecting into lares/ module tiddlers…\n"
 for (const { name } of WIDGET_ENTRIES)       processEntry(name, "widget");
 for (const { name } of FILTER_ENTRIES)       processEntry(name, "filter");
 for (const { name } of DESERIALIZER_ENTRIES) processEntry(name, "module");
+for (const { name } of MODULE_ENTRIES)       processEntry(name, "module");
 
 console.log("\n[write-tiddler-memes] done.");

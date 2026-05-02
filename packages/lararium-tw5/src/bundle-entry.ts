@@ -1,4 +1,15 @@
 /**
+ * @deprecated web2-era — exports MemeticParser (carrier-era TW5 parser).
+ * Do NOT add new exports here.
+ *
+ * Principles worth keeping:
+ *   - IIFE bundle entry + global window.__lararium_tw5_modules registration is
+ *     correct. The kernel injection gate (_bootModules) remains the right seam.
+ *   - Self-register implementors operator on load via the $tw global — pattern stays.
+ *   - MemeticParser → MemeParser (from meme-parser.ts) is the only swap needed.
+ *
+ * Rebuild target: swap MemeticParser import to MemeParser from ./meme-parser.js.
+ *
  * bundle-entry.ts — IIFE entry point for TW5 module meme.
  *
  * Exposes MemeticParser, createLarariumWidgets, and registerImplementorsOperator

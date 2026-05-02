@@ -27,7 +27,7 @@
 import type { ClosureEntry, EdgeRecord, FilterEngineFn, LarTiddlerStore } from "@lararium/core";
 import type { TW5Instance, TW5Wiki, TW5FakeElement, TW5ChangeRecord, TW5TiddlerFields, TW5WidgetConstructor } from "./types/tiddlywiki.js";
 import { MemeStreamParser } from "@lararium/core";
-import type { TiddlerFields } from "./carrier-codec.js";
+import type { TiddlerFields } from "./deserializer.js";
 import { createLarariumWidgets, registerImplementorsOperator, LARARIUM_WIDGETS_TIDDLER } from "./tw5-widgets.js";
 import { loadUiTiddlers, loadVendorTiddlers } from "./lares-preloads.js";
 import { entryToFields, buildEdgeFieldMap } from "./closure-fields.js";

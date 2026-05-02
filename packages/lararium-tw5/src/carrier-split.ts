@@ -1,4 +1,10 @@
 /**
+ * @deprecated web2-era — splitting of meme text into tiddler fields MUST happen
+ * inside the TW5 deserializer (memeticWikitextDeserializer) running in the TW5 VM.
+ * This file pre-dates that constraint. New code: lararium-tw5/src/deserializer.ts
+ * will consume lararium-core/src/meme-ast/ directly without a separate split step.
+ * This file remains for the disk-projector's surgical slot edits until migration.
+ *
  * carrier-split — disk carrier text → tiddler fields.
  *
  * Model:

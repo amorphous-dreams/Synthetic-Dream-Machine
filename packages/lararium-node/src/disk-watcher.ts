@@ -1,4 +1,19 @@
 /**
+ * @deprecated web2-era — ingest uses splitCarrierToTiddlers (disk as source of truth
+ * via carrier stack). Do NOT add new exports here.
+ *
+ * Principles worth keeping:
+ *   - Echo guard (projector.writing.has(uri)) is FFZ-aligned; closes the
+ *     render→watch loop. Preserve this exact guard in the new model.
+ *   - Direction is correct: disk change → store.put(). The Automerge store
+ *     is the mind; the disk watcher IS a valid operator-import signal path.
+ *   - Only lares/ URIs ingested. $:/ and temp/ exclusions are invariant.
+ *   - ChangeOrigin { kind: "operator-import", sessionId } tag stays.
+ *
+ * Rebuild target: meme-disk-watcher.ts — replaces splitCarrierToTiddlers
+ *   with parseMemeText() + splitMemeToTiddlers() from the deserializer.
+ *   Imports from @lararium/core/meme-ast, not @lararium/tw5 carrier stack.
+ *
  * LarDiskWatcher — unidirectional ingest: lares/ files on disk → Automerge store.
  *
  * The ingest counterpart to LarDiskProjector.  Watches laresRoot for .md file

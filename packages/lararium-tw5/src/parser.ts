@@ -1,3 +1,9 @@
+// @deprecated web2-era — use @lararium/core meme-ast/parse.ts (parseMemeText) instead.
+// Parsing of memetic-wikitext MUST happen inside the TW5 VM on live clients.
+// This file pre-dates that constraint; it remains for reference and the gradual
+// migration of the bootstrap scanner constants into meme-ast/scanner.ts.
+// Do NOT import from this file in new code.
+
 // ---------------------------------------------------------------------------
 // parser.ts — Phase 3 unified carrier parser (compressed)
 //

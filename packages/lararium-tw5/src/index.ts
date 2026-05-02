@@ -39,12 +39,17 @@ export { setActiveTW5, getActiveTW5 } from "./active-tw5.js";
 export { LarariumCrdtSyncAdaptor } from "./sync-adaptor.js";
 export { MemoryTiddlerStore }      from "./memory-store.js";
 
+// @deprecated web2-era — carrier-codec re-exports. Use deserializer.ts TiddlerFields instead.
 export { parseCarrier, splitCarrierToTiddlers, replaceCarrierSlot, composeCarrierSlotBody, streamEventsToTiddlers } from "./carrier-codec.js";
-export type { CarrierSplit, ParentTiddler, ChildTiddler, TiddlerFields } from "./carrier-codec.js";
+export type { CarrierSplit, ParentTiddler, ChildTiddler } from "./carrier-codec.js";
+
+// TiddlerFields — canonical home is now deserializer.ts
+export type { TiddlerFields } from "./deserializer.js";
 
 export { tw5ElementToVdom, tw5ElementToHtml } from "./fake-dom.js";
 export type { VDomNode, TW5FakeElement, TW5FakeTextNode, TW5FakeNode } from "./fake-dom.js";
 
+// @deprecated web2-era — memetic-parser re-exports. Rebuild target: meme-parser.ts.
 export {
   MemeticParser,
   parseCarrierToTw5,
@@ -68,19 +73,23 @@ export { DirectRecipeVm } from "./recipe-vm.js";
 export { TW5WorkerProxy } from "./tw5-worker-proxy.js";
 export { VmPool } from "./vm-pool.js";
 export { filterMemesWikitext } from "./filter-compat.js";
+// @deprecated web2-era — carrier-write re-export. Rebuild target: meme-write.ts.
 export { exportCarrierText } from "./carrier-write.js";
 export { LarDiskProjector } from "./disk-sync-adaptor.js";
 
 // ---------------------------------------------------------------------------
-// Parser + AST — TW5-VM-owned parse machinery.
+// Parser + AST — @deprecated web2-era. New model: @lararium/core/meme-ast.
 //
-// These compile into TW5 IIFE modules (parser tiddler, deserializer tiddler).
-// No AST trees cross the VM boundary; VMs own projection from Automerge docs.
-// External callers (node-host, tests) import parseMemeCarrier / grammarRulesFromText
-// / parsePranalaEdges / edgesFromAst from here, not from @lararium/core.
+// Re-exports remain so existing callers compile while the new model builds out.
+// Rebuild targets:
+//   parseMemeCarrier / edgesFromAst / buildAst  →  parseMemeText / edgesFromMemeAst / buildMemeAst
+//   CarrierNode                                 →  MemeNode
+//   grammarRulesFromText / parsePranalaEdges    →  @lararium/core/meme-grammar (TBD)
 // ---------------------------------------------------------------------------
 
+// @deprecated web2-era
 export { parseMemeCarrier, edgesFromAst, collectEvents, buildAst, parseCarrierNode } from "./parser.js";
+// @deprecated web2-era — use @lararium/core/meme-ast types instead
 export type {
   MemeAstKind,
   MemeAstNode,
@@ -95,4 +104,5 @@ export type {
   CarrierNode,
   PaePhase,
 } from "./ast.js";
+// @deprecated web2-era
 export { grammarRulesFromText, parsePranalaEdges } from "./pranala-parser.js";

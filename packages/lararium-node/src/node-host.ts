@@ -1,4 +1,18 @@
 /**
+ * @deprecated web2-era — node host wired to parseCarrier, parsePranalaEdges,
+ * grammarRulesFromText (carrier-era stack). Do NOT add new exports here.
+ *
+ * Principles worth keeping:
+ *   - Walk lares/ tree, load meme files, populate MemeGraph, drive compiler.
+ *     This I/O shape is correct and FFZ-aligned.
+ *   - parsePranalaEdges → parseMemeEdges from @lararium/core/meme-ast.
+ *   - grammarRulesFromText → @lararium/core/meme-grammar (grammar IS a meme;
+ *     canonical URI: lar:///ha.ka.ba/@lares/grammars/memetic-wikitext).
+ *   - parseCarrier → parseMemeText from @lararium/core/meme-ast.
+ *
+ * Rebuild target: meme-node-host.ts — same tree walk, same MemeGraph
+ *   population; all carrier-era imports replaced with meme-ast equivalents.
+ *
  * File-backed Lararium host for Node.js.
  *
  * Responsibility: walk the lares/ tree, load carrier files, populate MemeGraph,

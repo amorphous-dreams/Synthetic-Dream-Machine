@@ -1,3 +1,9 @@
+// @deprecated web2-era — use @lararium/core meme-ast instead.
+// This file pre-dates the FFZ quine-wiki model where parsing MUST happen inside
+// a TW5 VM. New code uses lararium-core/src/meme-ast/types.ts for AST types and
+// lararium-core/src/meme-ast/parse.ts for the parseMemeText() entry point.
+// This file remains for reference and gradual migration; do NOT add to new surfaces.
+
 // MemeAstNode — parse-time AST for memetic-wikitext surface form.
 //
 // Owned by lararium-tw5: these types compile into TW5 IIFE parser/deserializer

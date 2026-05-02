@@ -1,4 +1,9 @@
 /**
+ * @deprecated web2-era — "carrier" terminology replaced by "meme" in the FFZ model.
+ * The shape-analysis and ingress functions here migrate into meme-ast/parse.ts in this
+ * same package. This file remains to keep existing imports green during migration.
+ * Do NOT add new exports here.
+ *
  * Carrier ingress for the Lararium carrier spine.
  *
  * Core is isomorphic — no fs/path imports. Text is passed in by the host.

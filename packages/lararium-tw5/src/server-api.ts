@@ -1,4 +1,18 @@
 /**
+ * @deprecated web2-era — wired to DirectRecipeVm (carrier-era recipe VM).
+ * Do NOT add new exports here.
+ *
+ * Principles worth keeping:
+ *   - VmPool<RecipeVm> multi-slot API: bootRecipeVm, attachRecipeVm,
+ *     releaseRecipeVm, filterRecipe, renderCarrier — names and contracts stay.
+ *   - Factory seam (DirectRecipeVm vs TW5WorkerProxy) for in-process vs Worker
+ *     isolation is FFZ-aligned. Keep the factory param pattern.
+ *   - Boot sequence: readAllFromStore → loadRecords → subscribe(incrementalSync)
+ *     is the correct causal-island wiring for a VM slot.
+ *
+ * Rebuild target: swap DirectRecipeVm → MemeRecipeVm from ./meme-recipe-vm.js
+ *   once meme-recipe-vm.ts exists.
+ *
  * server-api — Recipe VM registry for the Lararium node peer.
  *
  * VmPool<RecipeVm> is the multi-peer backbone: the server holds one VM per

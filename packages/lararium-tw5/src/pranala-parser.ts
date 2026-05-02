@@ -1,12 +1,19 @@
-// pranala-parser — parse-dependent edge utilities.
-//
-// grammarRulesFromText and parsePranalaEdges call parseMemeCarrier and live
-// here (lararium-tw5) because they compile into TW5 IIFE modules alongside
-// parser.ts and ast.ts. Callers outside lararium-tw5 (node-host, tests) import
-// from "@lararium/tw5".
-//
-// validatePranaEdge and family vocabulary stay in @lararium/core/pranala-parser
-// because compiler.ts and meme-graph.ts need them without pulling in the parser.
+/**
+ * @deprecated web2-era — "carrier"-era parse bridge. Do NOT add new exports here.
+ *
+ * Principles worth keeping in the new model:
+ *   - grammarRulesFromText: grammar discovery from TOML [[sigils]]/[[families]]
+ *     array-of-tables inside a meme body — the FFZ principle that a meme's
+ *     grammar rule IS a meme itself (self-describing corpus).
+ *   - parsePranalaEdges: edge extraction from raw text as a composable operation
+ *     separate from render. Lives in isomorphic core, not the VM.
+ *   - validatePranaEdge and family vocabulary stay in @lararium/core (no change).
+ *
+ * Rebuild target:
+ *   grammarRulesFromText  → @lararium/core/meme-grammar (reads TOML via parseMemeText)
+ *   parsePranalaEdges     → @lararium/core/meme-ast (already: parseMemeEdges)
+ *   Both MUST have self-describing anchor memes and ship as TW5 library modules.
+ */
 
 import { parseMemeCarrier, edgesFromAst } from "./parser.js";
 import type { SigilNode, MemeAstNode } from "./ast.js";

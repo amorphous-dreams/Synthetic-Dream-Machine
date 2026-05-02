@@ -1,4 +1,14 @@
 /**
+ * @deprecated web2-era — index builders wired to CarrierRecord. Do NOT add new exports here.
+ *
+ * Principles worth keeping:
+ *   - compileInterfaceIndex / compileInvariantIndex are pure graph utilities;
+ *     they operate on PranaEdge sets, not on parsing. Keep the concept.
+ *   - Replace CarrierRecord with MemeRecord { uri: string; edges: PranaEdge[] }.
+ *     The index functions themselves need no other change.
+ *
+ * Rebuild target: migrate CarrierRecord → MemeRecord; source from @lararium/core/meme-ast.
+ *
  * Pure index builders — no I/O. Host provides carrier records.
  *
  * Also exports URI derivation helpers for mapping corpus-relative file

@@ -1,4 +1,8 @@
 /**
+ * @deprecated web2-era — "carrier" terminology replaced by "meme" in the FFZ model.
+ * This file will be replaced by meme-write.ts once slot-surgery helpers migrate.
+ * Do NOT add new exports here.
+ *
  * carrier-write — operator-facing disk-export utilities for carrier format.
  *
  * Projection layer only. Nothing here writes to a LarTiddlerStore.

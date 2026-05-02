@@ -1,4 +1,9 @@
 /**
+ * @deprecated web2-era — "carrier" terminology replaced by "meme" in the FFZ model.
+ * Slot-surgery helpers (replaceCarrierSlot, removeCarrierSlot, composeCarrierSlotBody)
+ * will migrate to meme-slot.ts; stream ingress moves into the TW5 deserializer.
+ * This file remains for the disk-projector until that migration completes.
+ *
  * carrier-codec — projection codec for memetic carrier format ↔ LarTiddlerRecord[].
  *
  * Operates at the import/export boundary only. Does not write to any store.

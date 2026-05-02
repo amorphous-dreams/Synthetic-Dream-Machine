@@ -1,4 +1,16 @@
 /**
+ * @deprecated web2-era — uses parseMemeCarrier and parsePranalaEdges from
+ * the carrier-era @lararium/core. Do NOT add new exports here.
+ *
+ * Principles worth keeping:
+ *   - Pure projection (no I/O, no tldraw runtime import, no Node APIs) is
+ *     FFZ-aligned — projection IS a read-only lens over the meme graph.
+ *   - Boot artifact → tldraw snapshot mapping via MemeGraph edge traversal.
+ *     The mapping logic is correct; only the parser imports change.
+ *
+ * Rebuild target: replace parseMemeCarrier → parseMemeText, parsePranalaEdges
+ *   → parseMemeEdges from @lararium/core/meme-ast. No structural change needed.
+ *
  * projectToTldraw — pure projection from a Lararium boot artifact to a tldraw snapshot.
  *
  * No tldraw runtime import. No I/O. No Node APIs.

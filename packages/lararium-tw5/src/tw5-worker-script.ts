@@ -1,4 +1,19 @@
 /**
+ * @deprecated web2-era — worker script imports exportCarrierText from carrier-write.
+ * Do NOT add new exports here.
+ *
+ * Principles worth keeping in the new model:
+ *   - Worker message protocol (id / type / ok / result / error) is correct.
+ *     Fire-and-forget (setTiddler, removeTiddler, dispose) carry no id.
+ *     Request-response carries a correlation id. Keep both patterns.
+ *   - Node parentPort / browser self detection at runtime is the right
+ *     isomorphic Worker shim — same script runs in both environments.
+ *   - All TW5 operations inside the Worker run through the same LarariumTW5
+ *     boot path as the main thread. No separate boot contract.
+ *
+ * Rebuild target: meme-worker-script.ts — same protocol, same isomorphic
+ *   detection, imports meme-write.ts (not carrier-write.ts).
+ *
  * tw5-worker-script — TW5 RecipeVm running inside a Worker context.
  *
  * Executed inside a Node Worker Thread or browser Web Worker.

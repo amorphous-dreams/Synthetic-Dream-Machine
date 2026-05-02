@@ -1,4 +1,18 @@
 /**
+ * @deprecated web2-era — wired to LarariumCrdtSyncAdaptor (carrier-era sync
+ * adaptor). Do NOT add new exports here.
+ *
+ * Principles worth keeping:
+ *   - Boot sequence (auth.ready → repo.open → catalog.ready → room.ready → TW5)
+ *     is correct and FFZ-aligned.
+ *   - CompositeStore layering (corpus read-only / room writable) is the right
+ *     causal-island model. Layers arrive async; TW5 renders before they land.
+ *   - Single TW5 VM per roomId. roomId change → clean teardown + reboot.
+ *   - Cold-start via bundle preloads (~200ms to live TW5) stays.
+ *
+ * Rebuild target: swap LarariumCrdtSyncAdaptor → MemeSyncAdaptor from
+ *   @lararium/tw5 once meme-sync-adaptor.ts exists. All other boot logic unchanged.
+ *
  * lararium-browser-host — local-first Automerge-native boot sequence.
  *
  * Authority-first-sync-order (Zelenka / causal-island law):

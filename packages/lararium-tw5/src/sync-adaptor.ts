@@ -1,4 +1,26 @@
 /**
+ * @deprecated web2-era — sync-adaptor wired to carrier-write and carrier-codec.
+ * Do NOT add new exports here.
+ *
+ * Principles worth keeping in the new model:
+ *   - TW5 SyncAdaptor IS the causal-island write gate. All disk writes MUST
+ *     flow through the adaptor; the Automerge store is the mind, disk is a
+ *     projection. This contract is FFZ-aligned.
+ *   - Echo-loop guard (_applying: ChangeOrigin) prevents CRDT patch echoes.
+ *     Rebuild as per-island gate (Map<islandId, ChangeOrigin>) for M-bags.
+ *   - Canon guard: lares/ namespace MUST NOT accept saveTiddler writes.
+ *     Promotion is a ceremony, not a fallthrough. Keep this hard wall.
+ *   - Temp guard: $:/temp/* is session-local scratch, never synced.
+ *     $:/ namespace is TW5-internal, never synced. Both guards stay.
+ *   - Draft sync: "Draft of ..." tiddlers sync across the user's identity
+ *     (not session). This is identity-scoped, not session-scoped.
+ *   - Save cascade: routing rules live in the wiki itself
+ *     (lar:///...sync/save-cascade). The rule meme IS the routing table.
+ *
+ * Rebuild target: meme-sync-adaptor.ts — same contract, imports
+ *   meme-write.ts (not carrier-write.ts) for LarTiddlerRecord construction.
+ *   Uses parseMemeText (not splitCarrierToTiddlers) for any inline parse needs.
+ *
  * LarariumCrdtSyncAdaptor — TW5 SyncAdaptor backed by LarTiddlerStore.
  *
  * Binds a hosted TW5 wiki to a LarTiddlerStore so TW5's syncer treats the

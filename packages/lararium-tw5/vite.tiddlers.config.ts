@@ -46,11 +46,18 @@ export const DESERIALIZER_ENTRIES: Array<{ entry: string; exportKey: string; nam
   { entry: "src/deserializer.ts", exportKey: "memeticWikitextDeserializer", name: "deserializer" },
 ];
 
+// Module bundle entry points — self-contained IIFEs loaded as TW5 library modules.
+// module-type: library in the corresponding memes/modules/*-tw5.md tiddler.
+export const MODULE_ENTRIES: Array<{ entry: string; exportKey: string; name: string }> = [
+  { entry: "src/meme-ast-entry.ts", exportKey: "memeAst", name: "meme-ast" },
+];
+
 export async function buildAll(): Promise<void> {
   const all = [
     ...WIDGET_ENTRIES.map((e) => ({ ...e, kind: "widget" as const })),
     ...FILTER_ENTRIES.map((e) => ({ ...e, kind: "filter" as const })),
     ...DESERIALIZER_ENTRIES.map((e) => ({ ...e, kind: "module" as const })),
+    ...MODULE_ENTRIES.map((e) => ({ ...e, kind: "module" as const })),
   ];
 
   for (const { entry, name } of all) {

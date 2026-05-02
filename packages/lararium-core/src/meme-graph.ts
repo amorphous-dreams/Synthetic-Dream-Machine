@@ -1,4 +1,15 @@
 /**
+ * @deprecated web2-era — MemeGraph wired to CarrierShape. Do NOT add new exports here.
+ *
+ * Principles worth keeping:
+ *   - MemeGraph as a pure adjacency structure over PranaEdge (no I/O) is
+ *     FFZ-aligned. memeImplements(), compileMemeGraph() etc. are correct.
+ *   - Meme.shape: CarrierShape | null — drop the shape field. MemeGraph is
+ *     an edge structure, not a carrier renderer; shape belongs to the
+ *     projection layer, not the graph layer.
+ *
+ * Rebuild target: drop CarrierShape import; remove Meme.shape or type it null.
+ *
  * MemeGraph — adjacency structure over reachable memes in the carrier DAG.
  *
  * Pure in-memory structure. I/O belongs to lararium-node.

@@ -1,4 +1,22 @@
 /**
+ * @deprecated web2-era — MemeAstNode→TW5ParseNode bridge built on CarrierNode.
+ * Do NOT add new exports here.
+ *
+ * Principles worth keeping in the new model:
+ *   - Register text/x-memetic-wikitext as a TW5 parser (module-type: parser).
+ *     The TW5 parse-tree IS the live causal-island render boundary — this
+ *     contract is FFZ-aligned and must survive in the new model.
+ *   - astToTw5 mapping: MemeAstNode kinds map 1:1 to TW5 widget types
+ *     (Ahu→<$ahu>, Pranala→<$pranala>, etc.). The mapping table is the
+ *     invariant; only the source node type changes (CarrierNode→MemeNode).
+ *   - Grammar discovery via grammarRulesFromText feeds the parser at
+ *     construction time — grammar IS a meme, loaded from the corpus.
+ *
+ * Rebuild target: meme-parser.ts (new) — constructs a TW5ParseNode tree
+ *   from parseMemeText() (MemeNode, not CarrierNode). Registers as TW5
+ *   parser IIFE via vite.tiddlers.config.ts MODULE_ENTRIES.
+ *   Self-describes via memes/modules/meme-parser.md anchor meme.
+ *
  * memetic-parser — TW5 content-type parser binding for text/x-memetic-wikitext.
  *
  * Registers `text/x-memetic-wikitext` as a TW5 parser that delegates to
