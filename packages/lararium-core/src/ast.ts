@@ -223,16 +223,72 @@ export const TOOL_APERTURE: Record<Tool, ToolAperture> = {
 };
 
 // ---------------------------------------------------------------------------
+// Hawaiian ↔ Verse 5.6+ ↔ English concept mapping (core grammar reference)
+//
+// Hawaiian is the core grammar for load-bearing concepts.
+// Verse 5.6+ names are the UEFN alignment target.
+// English names serve as grammar-internal terms or programmer aliases only.
+//
+// ┌──────────────────────────┬──────────────────────────────┬──────────────────────────────┐
+// │ Hawaiian / Lararium      │ Verse 5.6+ concept           │ English (alias/internal)     │
+// ├──────────────────────────┼──────────────────────────────┼──────────────────────────────┤
+// │ pranala                  │ edge (compositional link)    │ link / edge                  │
+// │ ahu                      │ device class body scope      │ worksite / enclosure         │
+// │ kahea                    │ summon sigil                 │ live summon / portal-in          │
+// │ kau                      │ instance sigil               │ emplace / instantiate        │
+// │ kumu                     │ creative_device class        │ device type                  │
+// │ papalohe                 │ event→fn pin wire (editor)   │ reaction wire / binding      │
+// │ kukali                   │ Await(event)<suspends>       │ suspend / single-shot await  │
+// │ pono                     │ constraint / validation      │ correct / validate           │
+// │ lele                     │ dispatch / jump              │ dispatch                     │
+// │ loulou                   │ link sugar sigil             │ link                         │
+// │ aka                      │ alias sugar sigil            │ shadow summon / transclusion │
+// ├──────────────────────────┼──────────────────────────────┼──────────────────────────────┤
+// │ Pranala reaction roles (type-level declarations on kumu type memes):                   │
+// ├──────────────────────────┼──────────────────────────────┼──────────────────────────────┤
+// │ (role: "listenable")     │ listenable OUTPUT event pin  │ listenable                   │
+// │  → KumuListenable        │ Verse `listenable` value     │                              │
+// │ (role: "subscribable")   │ @subscribes INPUT fn pin     │ subscribable                 │
+// │  → KumuSubscribable      │ Verse `@subscribes` fn       │                              │
+// │ (role: "observes")       │ passive observer (no fn)     │ watches / monitors           │
+// │ (grammar-internal)       │ throttles / debounces        │ rate-control modifiers       │
+// ├──────────────────────────┼──────────────────────────────┼──────────────────────────────┤
+// │ ReactionBinding.source (instance-level wiring origin):                                 │
+// │  "wired"                 │ editor-wired pin connection  │ static / design-time         │
+// │  "subscribed"            │ Subscribe() call in code     │ dynamic / runtime            │
+// ├──────────────────────────┼──────────────────────────────┼──────────────────────────────┤
+// │ Instance-level wiring (papalohe edges, NOT type declarations):                         │
+// │  listenable field        │ source listenable name       │ listenable name              │
+// │  subscribable field      │ target @subscribes fn name   │ subscribable name            │
+// └──────────────────────────┴──────────────────────────────┴──────────────────────────────┘
+//
+// ---------------------------------------------------------------------------
 // Render modes — canonical values for PranalaEdge.renderMode.
+// Hawaiian name is the primary; English is the internal programmer alias.
 // ---------------------------------------------------------------------------
 
 // Schema: lar:///ha.ka.ba/@lares/api/v0.1/pono/reaction-graph
 export const RENDER_MODES = [
-  "reaction-wire",   // papalohe — trigger label at source, fn label at target
+  "papalohe",   // reaction wire — event OUTPUT pin → function INPUT pin; trigger label at source, fn label at target
 ] as const;
 export type RenderMode = typeof RENDER_MODES[number];
+/** English alias: "reaction-wire" → RENDER_MODES["papalohe"]. Use `"papalohe"` in new code. */
+export const RENDER_MODE_REACTION_WIRE = "papalohe" as const;
 
-export const REACTION_ROLES = ["subscription", "handler", "callback"] as const;
+// ---------------------------------------------------------------------------
+// Reaction roles — Verse 5.6+ aligned type-level declarations.
+//
+// These are the KNOWN role values for `reaction` family pranala edges on type
+// memes (KumuDeviceSpec derivation). NOT instance-level wiring (that is the
+// papalohe sigil on instance memes, carrying listenable/subscribable payload fields).
+// ---------------------------------------------------------------------------
+export const REACTION_ROLES = [
+  "listenable",   // OUTPUT event pin — this device EMITS (Verse `listenable`; declare on kumu type)
+  "subscribable", // INPUT function pin — this device EXPOSES (Verse `@subscribes`; declare on kumu type)
+  "observes",     // passive observation — no subscription callback registered
+  "throttles",    // rate-control modifier (grammar-internal)
+  "debounces",    // rate-control modifier (grammar-internal)
+] as const;
 export type ReactionRole = typeof REACTION_ROLES[number];
 
 // ---------------------------------------------------------------------------

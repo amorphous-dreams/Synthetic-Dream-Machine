@@ -17,8 +17,8 @@
  *
  * ## Lararium vocabulary mapping
  *
- *   Verse `listenable` event   → `KumuDeviceEvent`   (OUTPUT pin; `reaction:triggers` role)
- *   Verse callable function    → `KumuDeviceHandler`  (INPUT fn pin; `reaction:handles` role)
+ *   Verse `listenable` event   → `KumuListenable`     (OUTPUT pin; `reaction:listenable` role)
+ *   Verse `@subscribes` fn     → `KumuSubscribable`   (INPUT fn pin; `reaction:subscribable` role)
  *   Verse `using` / trait      → `control:implements` pranala edge → `KumuDeviceSpec.traits`
  *   UEFN editor event→fn wire  → `papalohe` pranala edge (instance-level binding)
  *   `Await(event)<suspends>`   → `ReactionGraph.subscribeOnce()`
@@ -35,7 +35,7 @@
  *
  * ## ReactionEngine
  *   MemeProjection that routes CRDT change events through a ReactionGraph.
- *   Scale-1/2 (onUriChanged): fires all unique triggers for the changed URI.
+ *   Scale-1/2 (onUriChanged): fires all unique listenables for the changed URI.
  *   Scale-3 (onChangeset):    one synchronous tick across all changed URIs.
  *
  * Isomorphic: no Node/browser APIs. Works in Node, browser, and TW5-era environments.
@@ -47,27 +47,28 @@ import type { ReactionBinding } from "./live-protocol.js";
 import { ReactionGraph } from "./live-protocol.js";
 
 // ---------------------------------------------------------------------------
-// KumuDeviceEvent / KumuDeviceHandler — Verse OUTPUT / INPUT pin vocabulary
+// KumuListenable / KumuSubscribable — UEFN Verse 5.6+ pin vocabulary
 // ---------------------------------------------------------------------------
 
 /**
- * A named event this kumu device can EMIT (Verse OUTPUT pin / `listenable` event value).
- * Others subscribe to this event; it fires via `reaction:triggers` pranala edges.
- * e.g. "Activated", "Damaged", "Exploded"
+ * A named `listenable` event this kumu device EMITS (Verse OUTPUT pin).
+ * In Verse: `OnActivated : listenable([]void) = event[]void{}`
+ * Others subscribe to this event; declared via `reaction:listenable` pranala edges.
+ * e.g. "OnActivated", "OnDamaged", "OnExploded"
  */
-export interface KumuDeviceEvent {
-  /** Event name — e.g. "Activated", "Damaged", "Reset". */
+export interface KumuListenable {
+  /** Event name — e.g. "OnActivated", "OnDamaged", "OnReset". */
   readonly name: string;
   readonly description?: string;
 }
 
 /**
- * A named handler function this kumu device EXPOSES (Verse INPUT function pin).
- * Others call this function when wiring their output events to this device.
- * Declared via `reaction:handles` pranala edges on the type meme.
+ * A named subscribable function this kumu device EXPOSES (Verse INPUT function pin).
+ * In Verse: `Enable()<suspends>` decorated with `@subscribes`.
+ * Others call this function by wiring their listenable to it; declared via `reaction:subscribable` pranala edges.
  * e.g. "Enable", "Disable", "SetDamage"
  */
-export interface KumuDeviceHandler {
+export interface KumuSubscribable {
   /** Handler name — e.g. "Enable", "Disable", "SetDamage". */
   readonly name: string;
   readonly description?: string;
@@ -82,21 +83,21 @@ export interface KumuDeviceHandler {
  *
  * Derived from the type meme's pranala edge list — not from a class hierarchy.
  *
- *   events   ← `reaction:triggers` edges where `fromUri === typeUri`
- *              payload.trigger = event name (Verse OUTPUT pin / `listenable`)
- *   handlers ← `reaction:handles` edges where `fromUri === typeUri`
- *              payload.fn = handler name (Verse INPUT function pin)
- *   slots    ← ahu socket URIs declared within the type meme
- *   traits   ← `control:implements` edges out of the type meme (Verse `using` trait)
+ *   listenables   ← `reaction:listenable` edges where `fromUri === typeUri`
+ *                  payload.listenable = event name (Verse `listenable` OUTPUT pin)
+ *   subscribables ← `reaction:subscribable` edges where `fromUri === typeUri`
+ *                  payload.subscribable = handler name (Verse `@subscribes` INPUT pin)
+ *   slots        ← ahu socket URIs declared within the type meme (Verse `@editable`)
+ *   traits       ← `control:implements` edges out of the type meme (Verse `using` trait)
  */
 export interface KumuDeviceSpec {
   /** Canonical type URI (no fragment). e.g. `lar:///sdm/devices/button` */
   readonly typeUri: string;
-  /** Events this device type emits — OUTPUT pins (Verse `listenable` event values). */
-  readonly events: readonly KumuDeviceEvent[];
-  /** Handler functions this device type exposes — INPUT function pins (Verse callables). */
-  readonly handlers: readonly KumuDeviceHandler[];
-  /** Ahu slot URIs declared on this type. */
+  /** Listenable events this device type emits — OUTPUT pins (Verse `listenable`). */
+  readonly listenables: readonly KumuListenable[];
+  /** Subscribable functions this device type exposes — INPUT pins (Verse `@subscribes`). */
+  readonly subscribables: readonly KumuSubscribable[];
+  /** Ahu slot URIs declared on this type (Verse `@editable` attributes). */
   readonly slots: readonly string[];
   /** Trait type URIs this device implements (control:implements edges — Verse `using`). */
   readonly traits: readonly string[];
@@ -161,9 +162,9 @@ export function kumuDeviceSpecFromEdges(
   edges:   readonly EdgeLike[],
   slots:   readonly string[] = [],
 ): KumuDeviceSpec {
-  const events:   KumuDeviceEvent[]   = [];
-  const handlers: KumuDeviceHandler[] = [];
-  const traits:   string[]            = [];
+  const listenables:   KumuListenable[]   = [];
+  const subscribables: KumuSubscribable[] = [];
+  const traits:        string[]           = [];
 
   for (const e of edges) {
     if (e.fromUri !== typeUri) continue;
@@ -171,16 +172,16 @@ export function kumuDeviceSpecFromEdges(
     if (e.family === "reaction") {
       const desc = e.payload["description"] as string | undefined;
 
-      if (e.role === "triggers") {
-        // OUTPUT pin — event this device emits (Verse `listenable`)
-        const name = e.payload["trigger"] as string | undefined;
-        if (name) events.push(desc ? { name, description: desc } : { name });
-      } else if (e.role === "handles") {
-        // INPUT function pin — handler this device exposes (Verse callable)
-        const name = e.payload["fn"] as string | undefined;
-        if (name) handlers.push(desc ? { name, description: desc } : { name });
+      if (e.role === "listenable") {
+        // OUTPUT pin — listenable event this device emits (Verse `listenable`)
+        const name = e.payload["listenable"] as string | undefined;
+        if (name) listenables.push(desc ? { name, description: desc } : { name });
+      } else if (e.role === "subscribable") {
+        // INPUT pin — subscribable function this device exposes (Verse `@subscribes`)
+        const name = e.payload["subscribable"] as string | undefined;
+        if (name) subscribables.push(desc ? { name, description: desc } : { name });
       }
-      // roles: observes, throttles, debounces, subscription — not reflected in spec
+      // roles: observes, throttles, debounces — not reflected in spec
     }
 
     if (e.family === "control" && e.role === "implements") {
@@ -189,7 +190,7 @@ export function kumuDeviceSpecFromEdges(
     }
   }
 
-  return { typeUri, events, handlers, slots, traits };
+  return { typeUri, listenables, subscribables, slots, traits };
 }
 
 // ---------------------------------------------------------------------------
@@ -230,15 +231,15 @@ export class ReactionEngine implements MemeProjection {
   }
 
   private _fireForUri(uri: string, payload: Record<string, unknown>): void {
-    // Collect unique trigger names for this URI first, then fire once per trigger.
-    // fireSync fans out to all subscribers for (uri, trigger) — calling it N times
+    // Collect unique listenable names for this URI first, then fire once per listenable.
+    // fireSync fans out to all subscribers for (uri, listenable) — calling it N times
     // per binding would fire every subscriber N times.
-    const triggers = new Set<string>();
+    const listenables = new Set<string>();
     for (const b of this.graph.bindings) {
-      if (b.fromUri === uri && b.trigger) triggers.add(b.trigger);
+      if (b.fromUri === uri && b.listenable) listenables.add(b.listenable);
     }
-    for (const trigger of triggers) {
-      this.graph.fireSync(uri, trigger, payload);
+    for (const listenable of listenables) {
+      this.graph.fireSync(uri, listenable, payload);
     }
   }
 }

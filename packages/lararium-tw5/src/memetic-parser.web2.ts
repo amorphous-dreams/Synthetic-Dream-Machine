@@ -135,9 +135,9 @@ function nodeToTw5(node: MemeAstNode, wiki?: TW5Wiki): TW5ParseNode {
           attributes: {
             from:    attr(node.fromRaw ?? ""),
             to:      attr(node.toRaw),
-            ...(node.trigger ? { trigger: attr(node.trigger) } : {}),
-            ...(node.fn      ? { fn:      attr(node.fn) }      : {}),
-            ...(node.slot    ? { slot:    attr(node.slot) }    : {}),
+            ...(node.listenable  ? { listenable:  attr(node.listenable) }  : {}),
+            ...(node.subscribable ? { subscribable: attr(node.subscribable) } : {}),
+            ...(node.slot        ? { slot:         attr(node.slot) }        : {}),
           } };
       }
       return { type: "pranala", _ast: node, children: [],
@@ -145,10 +145,10 @@ function nodeToTw5(node: MemeAstNode, wiki?: TW5Wiki): TW5ParseNode {
           sigil:  attr(node.sigil),
           to:     attr(node.toRaw),
           family: attr(node.family),
-          ...(node.fromRaw ? { from: attr(node.fromRaw) } : {}),
-          ...(node.role    ? { role: attr(node.role) }    : {}),
-          ...(node.trigger ? { trigger: attr(node.trigger) } : {}),
-          ...(node.fn      ? { fn: attr(node.fn) }        : {}),
+          ...(node.fromRaw     ? { from:         attr(node.fromRaw) }     : {}),
+          ...(node.role        ? { role:         attr(node.role) }        : {}),
+          ...(node.listenable  ? { listenable:   attr(node.listenable) }  : {}),
+          ...(node.subscribable ? { subscribable: attr(node.subscribable) } : {}),
         } };
 
     case "Lele":

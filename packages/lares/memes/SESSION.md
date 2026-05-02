@@ -371,6 +371,140 @@ packages/lararium-node/
 
 <<~/ahu >>
 
+<<~ ahu #ooda-ha-sprint4-verse-alignment >>
+
+## OODA-HA: Sprint 4 + Verse Alignment — 2026-05-02
+
+### OODA-HA receipt
+
+✶ **Observe:**
+Sprint 4 (KumuDeviceSpec + ReactionEngine) completed with initial Blueprint-era vocabulary. Shift 3 (Verse 5.6+ compositional model) locked in ROADMAP but not yet reflected in the vocabulary layer. Three vocabulary gaps identified:
+1. `REACTION_ROLES = ["subscription", "handler", "callback"]` — Blueprint inheritance thinking; "subscription" is instance-level wiring, not a type declaration.
+2. `RENDER_MODES = ["reaction-wire"]` — English internal alias used as the primary name; `papalohe` is the Hawaiian grammar sigil already established everywhere else.
+3. `FAMILY_ROLES.reaction` included `"subscription"` — wrong layer; subscription is an instance-level papalohe edge payload concept.
+
+⏿ **Orient:**
+
+  **Hawaiian ↔ Verse 5.6+ ↔ English concept map (locked):**
+
+  | Hawaiian / Lararium | Verse 5.6+ concept | English (alias/internal) |
+  |---|---|---|
+  | `pranala` | edge (compositional link) | link / edge |
+  | `ahu` | device class body / `@editable` scope | worksite / enclosure |
+  | `kumu` | `creative_device` class | device type |
+  | `papalohe` | event→fn pin wire in editor | reaction wire / binding |
+  | `kahea` | `<<~` declaration sigil | declare / announce |
+  | `kukali` | `Await(event)<suspends>` | suspend / single-shot await |
+  | `pono` | constraint / validation check | correct / validate |
+  | `lele` | dispatch / jump | dispatch |
+  | `loulou` | link sugar sigil | link |
+  | `aka` | alias sugar sigil | alias |
+
+  **Reaction roles (type-level, kumu type memes only):**
+
+  | Role string | Verse concept | English |
+  |---|---|---|
+  | `"listenable"` | `listenable` OUTPUT event pin | this device emits |
+  | `"subscribable"` | callable INPUT function pin | this device exposes |
+  | `"observes"` | passive observer (no callback) | watches / monitors |
+  | `"throttles"` | rate-control modifier | (grammar-internal) |
+  | `"debounces"` | rate-control modifier | (grammar-internal) |
+
+  **Instance-level wiring (papalohe edges, NOT type declarations):**
+  - `listenable` field — source OUTPUT event name
+  - `subscribable` field — target INPUT function name
+
+  **Principle:** Hawaiian names are primary in `RENDER_MODES`, `REACTION_ROLES`, and sigil vocabulary. English appears in type names and grammar-internal modifiers only. `"reaction-wire"` is retired as an active value; `"papalohe"` is canonical. `"subscription"` and `"handler"` are retired from `REACTION_ROLES` and `FAMILY_ROLES.reaction`; they were Blueprint-era concepts at the wrong layer.
+
+◇ **Decide:**
+Four file changes:
+  - `ast.ts`: `REACTION_ROLES` → `["listenable","subscribable","observes","throttles","debounces"]`; `RENDER_MODES` → `["papalohe"]`; Hawaiian concept map comment added; `RENDER_MODE_REACTION_WIRE` alias exported
+  - `pranala-parser.ts`: `FAMILY_ROLES.reaction` — `"subscription"` removed; explanatory comment added
+  - `meme-ast/edges.ts`: string literal `"reaction-wire"` → `"papalohe"`
+  - `kumu-device.ts`: doc comment updated with Hawaiian ↔ Verse ↔ English vocabulary
+
+▶ **Act (files touched):**
+
+| File | Change |
+|---|---|
+| `@lararium/core` `ast.ts` | `REACTION_ROLES` Verse-aligned; `RENDER_MODES` = `["papalohe"]`; Hawaiian concept map comment block added; `RENDER_MODE_REACTION_WIRE` alias |
+| `@lararium/core` `pranala-parser.ts` | `FAMILY_ROLES.reaction` — `"subscription"` removed |
+| `@lararium/core` `meme-ast/edges.ts` | `"reaction-wire"` literal → `"papalohe"` |
+| `@lararium/core` `kumu-device.ts` | Doc comment: Hawaiian/Verse/English mapping table added |
+| `packages/lares/lararium-node/ROADMAP.md` | Shift 5/6/7 section; m14 session receipt |
+| `packages/lares/memes/SESSION.md` | This section |
+
+⤴ **Ho'oko:**
+
+```sh
+cd packages/lararium-core && npx tsc --noEmit  # ✓ ZERO errors
+cd packages/lararium-tw5  && npx tsc --noEmit  # ✓ ZERO errors
+```
+
+↺ **tsc invariant maintained.** Sprint 5 next: `MemeSyncAdaptor` — replaces `LarariumCrdtSyncAdaptor`.
+
+<<~/ahu >>
+
+<<~ ahu #ooda-ha-uefn-name-pass-2026-05-02 >>
+
+## UEFN Name Pass — 2026-05-02 (Role/Field Rename)
+
+### OODA-HA receipt
+
+❖ **Observe:**
+After `kumu-device.ts` landed with Verse-aligned pin types, a vocabulary gap remained: `REACTION_ROLES` used `"triggers"`/`"handles"` (Blueprint-era English) and payload fields were `"trigger"`/`"fn"`. Verse 5.6+ canonical: `listenable` (OUTPUT event) and `subscribable` (@subscribes callable INPUT). Also: `KumuDeviceEvent`/`KumuDeviceHandler` and `ReactionBinding.source: "static"|"dynamic"` were non-UEFN. An 8-file pass enacted.
+
+⏿ **Orient:**
+
+  **Vocabulary delta (before → after):**
+
+  | Old | New | Layer |
+  |---|---|---|
+  | `REACTION_ROLES["triggers"]` | `"listenable"` | `ast.ts` |
+  | `REACTION_ROLES["handles"]` | `"subscribable"` | `ast.ts` |
+  | `KumuDeviceEvent` | `KumuListenable` | `kumu-device.ts` |
+  | `KumuDeviceHandler` | `KumuSubscribable` | `kumu-device.ts` |
+  | `KumuDeviceSpec.events` | `.listenables` | `kumu-device.ts` |
+  | `KumuDeviceSpec.handlers` | `.subscribables` | `kumu-device.ts` |
+  | `ReactionBinding.trigger` | `.listenable` | `live-protocol.ts` |
+  | `ReactionBinding.fn` | `.subscribable` | `live-protocol.ts` |
+  | `payload["trigger"]` | `payload["listenable"]` | edges + web2 |
+  | `payload["fn"]` | `payload["subscribable"]` | edges + web2 |
+  | `ReactionGraph.*(trigger)` | `*(listenable)` | `live-protocol.ts` |
+  | `PranalaSugarNode.trigger` | `.listenable` | `meme-ast/types.ts` |
+  | `PranalaSugarNode.fn` | `.subscribable` | `meme-ast/types.ts` |
+  | `source: "static"` | `"wired"` | `live-protocol.ts` |
+  | `source: "dynamic"` | `"subscribed"` | `live-protocol.ts` |
+
+◇ **Decide:**
+Systematic 8-file rename; tsc verify after batch. `pranala.md` role array also updated.
+
+▶ **Act (files touched):**
+
+| File | Change |
+|---|---|
+| `@lararium/core` `ast.ts` | `REACTION_ROLES` + concept map roles; table col overflow fixed |
+| `@lararium/core` `pranala-parser.ts` | `FAMILY_ROLES.reaction` roles |
+| `@lararium/core` `meme-ast/types.ts` | `PranalaSugarNode.trigger/.fn` → `.listenable/.subscribable` |
+| `@lararium/core` `meme-ast/builder.ts` | All 5 `PranalaSugarNode` literal constructors |
+| `@lararium/core` `meme-ast/edges.ts` | Payload key assignments |
+| `@lararium/core` `live-protocol.ts` | `ReactionBinding`; all `ReactionGraph` method signatures |
+| `@lararium/core` `kumu-device.ts` | `KumuListenable/KumuSubscribable`; `.listenables/.subscribables`; role checks; `_fireForUri` |
+| `@lararium/tw5` `parser.web2.ts` | Payload key assignments |
+| `@lararium/tw5` `memetic-parser.web2.ts` | papalohe widget attribute keys |
+| `packages/lares/memes/api/v0.1/pono/pranala.md` | `reaction` roles array |
+| `packages/lares/lararium-node/ROADMAP.md` | Shifts 5–7 text; new ahu section |
+| `packages/lares/memes/SESSION.md` | This section |
+
+⤤ **Ho'oko:**
+
+```sh
+cd packages/lararium-core && npx tsc --noEmit  # ✓ ZERO errors
+cd packages/lararium-tw5  && npx tsc --noEmit  # ✓ ZERO errors
+```
+
+↺ **tsc invariant maintained.** Next: Sprint 5 `meme-sync-adaptor.ts`.
+
 <<~ ahu #edges >>
 
 ## Edges

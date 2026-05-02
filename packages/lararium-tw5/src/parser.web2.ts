@@ -619,8 +619,8 @@ function projectSugar(node: PranalaSugarNode, cu: string, ahuStack: string[]): P
     const [fromUri, fSock] = tok(node.fromRaw, cu, ahuStack);
     const [toUri, toSocket] = tok(node.toRaw, cu, ahuStack);
     const payload: Record<string, unknown> = {};
-    if (node.trigger) payload["trigger"] = node.trigger;
-    if (node.fn)      payload["fn"]      = node.fn;
+    if (node.listenable)  payload["listenable"]  = node.listenable;
+    if (node.subscribable) payload["subscribable"] = node.subscribable;
     const renderMode = node.sigil === "papalohe" ? "reaction-wire" : null;
     const edge = mk(fromUri, fSock, fromSlot, toUri, toSocket, node.family, node.role, payload);
     return renderMode ? { ...edge, renderMode } : edge;

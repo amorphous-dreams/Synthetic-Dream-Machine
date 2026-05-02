@@ -146,21 +146,21 @@ function makeLeaf(
       return { kind: "Pranala", ...base, slot: g(1) || null, fromRaw: g(2), toRaw: g(3), family: g(4) || "relation", role: g(5) || null, body: [] } as PranalaNode;
 
     case "loulou":
-      return { kind: "PranalaSugar", ...base, sigil: "loulou", slot: null, fromRaw: null, toRaw: g(1), family: "relation", role: null, trigger: null, fn: null } as PranalaSugarNode;
+      return { kind: "PranalaSugar", ...base, sigil: "loulou", slot: null, fromRaw: null, toRaw: g(1), family: "relation", role: null, listenable: null, subscribable: null } as PranalaSugarNode;
 
     case "aka": {
       const akaSlot = g(2);
       if (akaSlot) {
         return { kind: "Ahu", ...base, slot: akaSlot, uri: memeUri + akaSlot, delegate: null, body: [], projection: true } as AhuNode;
       }
-      return { kind: "PranalaSugar", ...base, sigil: "aka", slot: null, fromRaw: null, toRaw: g(1), family: "observe", role: null, trigger: null, fn: null } as PranalaSugarNode;
+      return { kind: "PranalaSugar", ...base, sigil: "aka", slot: null, fromRaw: null, toRaw: g(1), family: "observe", role: null, listenable: null, subscribable: null } as PranalaSugarNode;
     }
 
     case "kahea-invoke":
       return kaheaInvokeNode(g(1), g(2), base, memeUri, []);
 
     case "kahea":
-      return { kind: "PranalaSugar", ...base, sigil: "kahea", slot: null, fromRaw: null, toRaw: g(1), family: "dataflow", role: null, trigger: null, fn: null } as PranalaSugarNode;
+      return { kind: "PranalaSugar", ...base, sigil: "kahea", slot: null, fromRaw: null, toRaw: g(1), family: "dataflow", role: null, listenable: null, subscribable: null } as PranalaSugarNode;
 
     case "kau": {
       const scope = eventType === "pragma" ? "carrier" : "block";
@@ -178,10 +178,10 @@ function makeLeaf(
     }
 
     case "pono":
-      return { kind: "PranalaSugar", ...base, sigil: "pono", slot: g(1) || null, fromRaw: g(2), toRaw: g(3), family: "constraint", role: g(4) || null, trigger: null, fn: null } as PranalaSugarNode;
+      return { kind: "PranalaSugar", ...base, sigil: "pono", slot: g(1) || null, fromRaw: g(2), toRaw: g(3), family: "constraint", role: g(4) || null, listenable: null, subscribable: null } as PranalaSugarNode;
 
     case "papalohe":
-      return { kind: "PranalaSugar", ...base, sigil: "papalohe", slot: g(1) || null, fromRaw: g(2), toRaw: g(3), family: "reaction", role: null, trigger: g(4) || null, fn: g(5) || null } as PranalaSugarNode;
+      return { kind: "PranalaSugar", ...base, sigil: "papalohe", slot: g(1) || null, fromRaw: g(2), toRaw: g(3), family: "reaction", role: null, listenable: g(4) || null, subscribable: g(5) || null } as PranalaSugarNode;
 
     case "lele":
       return { kind: "Lele", ...base, targetRaw: g(1), family: "message" } as LeleNode;

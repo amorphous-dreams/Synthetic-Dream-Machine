@@ -130,9 +130,9 @@ function projectSugar(node: PranalaSugarNode, mu: string, ahuStack: string[]): P
     const [fromUri, fSock] = tok(node.fromRaw, mu, ahuStack);
     const [toUri, toSocket] = tok(node.toRaw, mu, ahuStack);
     const payload: Record<string, unknown> = {};
-    if (node.trigger) payload["trigger"] = node.trigger;
-    if (node.fn)      payload["fn"]      = node.fn;
-    const renderMode = node.sigil === "papalohe" ? "reaction-wire" : null;
+    if (node.listenable)  payload["listenable"]  = node.listenable;
+    if (node.subscribable) payload["subscribable"] = node.subscribable;
+    const renderMode = node.sigil === "papalohe" ? "papalohe" : null;  // Hawaiian primary name
     const edge = mk(fromUri, fSock, fromSlot, toUri, toSocket, node.family, node.role, payload);
     return renderMode ? { ...edge, renderMode } : edge;
   }

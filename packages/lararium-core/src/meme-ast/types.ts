@@ -89,8 +89,8 @@ export interface PranalaSugarNode extends MemeAstBase {
   toRaw:    string;
   family:   string;
   role:     string | null;
-  trigger:  string | null;        // papalohe: source event name
-  fn:       string | null;        // papalohe: target function name
+  listenable:  string | null;        // papalohe: source listenable name (UEFN OUTPUT pin)
+  subscribable: string | null;       // papalohe: target subscribable fn name (UEFN INPUT pin)
 }
 
 // ---------------------------------------------------------------------------

@@ -27,7 +27,9 @@ export const FAMILY_ROLES: Partial<Record<PranalaFamily, readonly string[]>> = {
   dataflow:   ["reads", "writes", "streams", "buffers", "pipes"],
   message:    ["sends", "receives", "publishes", "subscribes", "replies"],
   constraint: ["must-hold", "invariant", "requires", "forbids", "guards", "bounds", "governs"],
-  reaction:   ["triggers", "handles", "observes", "throttles", "debounces", "subscription"],
+  // reaction roles are type-level declarations on kumu type memes (Verse 5.6+ pin vocabulary).
+  // "subscription" is an instance-level wiring concept (papalohe edge payload) — not a role here.
+  reaction:   ["listenable", "subscribable", "observes", "throttles", "debounces"],
   spatial:    ["contains", "portal", "adjacent", "layer"],
 };
 

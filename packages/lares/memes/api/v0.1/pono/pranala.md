@@ -198,7 +198,7 @@ known-families = ["control", "relation", "observe", "dataflow", "message", "cons
 control  = ["owns", "implements", "extends", "configures", "delegates"]
 dataflow = ["reads", "writes", "streams", "buffers", "pipes"]
 message  = ["sends", "receives", "publishes", "subscribes", "replies"]
-reaction = ["triggers", "handles", "observes", "throttles", "debounces", "subscription"]
+reaction = ["listenable", "subscribable", "observes", "throttles", "debounces"]
 spatial  = ["contains", "portal", "adjacent", "layer"]
 
 # Family contracts — scanner alias (keyed form for constant recognition)

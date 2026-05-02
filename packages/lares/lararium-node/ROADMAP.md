@@ -62,7 +62,7 @@ Four model shifts locked this session:
   Scale 3 is opt-in: projections declare `onChangeset?` to receive it; others fall back to N debounced calls.
 
   **Shift 3 — Kumu/Verse 5.6+ is compositional, not hierarchical.**
-  Old mental model: kumu devices subclass/extend a type (Blueprint/class-hierarchy). Rejected — that's Unreal 4 Blueprint thinking. Verse 5.6+ uses pure composition via `using`/`trait`. Lararium mapping: type composition via `control:implements` pranala edges (already exists). Device instances carry no inheritance chain. Behavior = assembled from `implements` edges + `papalohe` bindings (reaction:triggers). Instance UUID = crypto.randomUUID() now; Keyhive-group-derived UUID later.
+  Old mental model: kumu devices subclass/extend a type (Blueprint/class-hierarchy). Rejected — that's Unreal 4 Blueprint thinking. Verse 5.6+ uses pure composition via `using`/`trait`. Lararium mapping: type composition via `control:implements` pranala edges (already exists). Device instances carry no inheritance chain. Behavior = assembled from `implements` edges + `papalohe` bindings (reaction:listenable). Instance UUID = crypto.randomUUID() now; Keyhive-group-derived UUID later.
 
   **Shift 4 — MemeGraph is a pure adjacency structure, not a carrier renderer.**
   Old web2 `Meme.shape: CarrierShape | null` field dropped entirely. `MemeRating` lives on `MemeRecord` (ingest boundary output), not on the graph node. The graph sees only `Meme` (structural: uri, laresRelPath, contentHash, metadata, edgesOut, virtual, exists). Shape is a projection-layer concern. `MemeRecord` is the ingest boundary output used by the compiler; `Meme` is what the graph stores and traverses.
@@ -105,6 +105,7 @@ cd packages/lararium-tw5  && npx tsc --noEmit  # ✓ one rebuild-target (Memetic
 - Grammar multi-doc boot: Sprint 2 complete ✓
 - `MemeRecipeVm`: Sprint 3 complete ✓
 - `KumuDeviceSpec` + `ReactionEngine`: Sprint 4 complete ✓ — see `#m14-session-cont-2026-05-02` below
+- UEFN canonical English name pass: complete ✓ — see `#m14-uefn-name-pass-2026-05-02` below
 - `MemeSyncAdaptor`: Sprint 5 — replaces `LarariumCrdtSyncAdaptor`
 - Browser host (`meme-browser-host.ts`): Sprint 6 — research-before-act (Automerge browser repo + Keyhive)
 - `sw.ts` tsconfig lib issues: pre-existing, separate fix
@@ -126,11 +127,11 @@ Session continued from M13. The `PranaEdge` → `PranalaEdge` family rename was 
 
   1. **No inheritance for behavior.** Devices are `class(creative_device)` — behavior is assembled via `using` trait composition, not subclassing. Lararium: `control:implements` pranala edges. No device-class hierarchy in type memes.
 
-  2. **Events are typed first-class values.** In Verse: `OnActivated : listenable([]void) = event[]void{}`. An event is a VALUE that can be passed, subscribed to, awaited, or wired in the editor. NOT a callback registration pattern. Lararium: `reaction:triggers` pranala edges — the edge IS the event declaration.
+  2. **Events are typed first-class values.** In Verse: `OnActivated : listenable([]void) = event[]void{}`. An event is a VALUE that can be passed, subscribed to, awaited, or wired in the editor. NOT a callback registration pattern. Lararium: `reaction:listenable` pranala edges — the edge IS the event declaration.
 
   3. **Two distinct pin kinds — directional, not symmetric:**
-     - **OUTPUT event pin** (`listenable` event): something this device EMITS — others subscribe. Verse: `OnActivated`. Lararium: `KumuDeviceEvent`, `reaction:triggers` role.
-     - **INPUT function pin** (callable): something this device EXPOSES — others call. Verse: `ActivateButton()<suspends>` / `@subscribes`. Lararium: `KumuDeviceHandler`, `reaction:handles` role.
+     - **OUTPUT event pin** (`listenable` event): something this device EMITS — others subscribe. Verse: `OnActivated`. Lararium: `KumuListenable`, `reaction:listenable` role.
+     - **INPUT function pin** (callable): something this device EXPOSES — others call. Verse: `ActivateButton()<suspends>` / `@subscribes`. Lararium: `KumuSubscribable`, `reaction:subscribable` role.
      - Wiring direction: `source.OutputEvent → target.InputHandler` — never the reverse.
 
   4. **Wiring is declarative, resolved at device-graph load time.** UEFN: editor connects event pin to function pin, stored as the device graph. Lararium: `papalohe` pranala edges on the instance meme (not hardcoded in the type meme).
@@ -150,10 +151,10 @@ Session continued from M13. The `PranaEdge` → `PranalaEdge` family rename was 
   `KumuDeviceSpec` fields renamed: `inputs` → `handlers`, `outputs` → `events`.
 
   **Shift 6 — Pranala role vocabulary locked for device spec derivation.**
-  `reaction:triggers` = event declaration (OUTPUT). `reaction:handles` = handler declaration (INPUT). `reaction:subscription` and bare edges are NOT type-level declarations — they are instance-level wiring annotations. `kumuDeviceSpecFromEdges` now maps strictly on role.
+  `reaction:listenable` = event declaration (OUTPUT). `reaction:subscribable` = handler declaration (INPUT). `reaction:subscription` and bare edges are NOT type-level declarations — they are instance-level wiring annotations. `kumuDeviceSpecFromEdges` maps strictly on role.
 
   **Shift 7 — `_fireForUri` deduplication invariant.**
-  `ReactionEngine._fireForUri` MUST collect unique trigger names before calling `fireSync`. Calling `fireSync(uri, trigger)` fans out to ALL subscribers for that `(uri, trigger)` pair. Iterating bindings naively = fires each subscriber once per matching binding = N×M dispatch bug at game-loop rates.
+  `ReactionEngine._fireForUri` MUST collect unique listenable names before calling `fireSync`. Calling `fireSync(uri, listenable)` fans out to ALL subscribers for that `(uri, listenable)` pair. Iterating bindings naively = fires each subscriber once per matching binding = N×M dispatch bug at game-loop rates.
 
 ◇ **Decide:**
 
@@ -197,6 +198,68 @@ cd packages/lararium-tw5  && npx tsc --noEmit  # ✓ ZERO errors
 - `system` + `projection` bag store impls: still pending (D stubs)
 - Milestone F (presence split): 0%, not started
 - Keyhive UUID derivation for `KumuInstanceRef.uuidFragment`: post-Sprint 6
+
+<<~/ahu >>
+
+<<~ ahu #m14-uefn-name-pass-2026-05-02 >>
+
+## M14 UEFN Name Pass — 2026-05-02 (Role/Field Rename to Verse 5.6+ Canonical English)
+
+### OODA-HA receipt
+
+✶ **Observe:**
+After Sprint 4b landed `KumuDeviceSpec` with Verse-aligned types, a second vocabulary gap remained: `REACTION_ROLES` still used Blueprint-era English names `"triggers"` and `"handles"`, and the internal payload fields were `"trigger"` / `"fn"`. Verse 5.6+ canonical English: `listenable` (OUTPUT event pin) and `@subscribes` callable (INPUT fn pin). A targeted rename pass was enacted across 8 files.
+
+⏿ **Orient:**
+
+  **Shift 8 — REACTION_ROLES use Verse canonical English strings.**
+  `"triggers"` → `"listenable"` (REACTION_ROLES[0], role on kumu type memes — OUTPUT event pin).
+  `"handles"` → `"subscribable"` (REACTION_ROLES[1], role on kumu type memes — INPUT fn pin).
+  `FAMILY_ROLES.reaction` updated to match.
+
+  **Shift 9 — Payload field keys match role strings.**
+  `payload["trigger"]` → `payload["listenable"]`.
+  `payload["fn"]` → `payload["subscribable"]`.
+  `ReactionBinding.trigger` → `.listenable`; `ReactionBinding.fn` → `.subscribable`.
+  `PranalaSugarNode.trigger` → `.listenable`; `.fn` → `.subscribable`.
+  All `ReactionGraph` method signatures: `trigger` parameter → `listenable`.
+
+  **Shift 10 — KumuDeviceEvent/KumuDeviceHandler renamed to UEFN English.**
+  `KumuDeviceEvent` → `KumuListenable`; `KumuDeviceHandler` → `KumuSubscribable`.
+  `KumuDeviceSpec.events` → `.listenables`; `.handlers` → `.subscribables`.
+  `ReactionBinding.source: "static"|"dynamic"` → `"wired"|"subscribed"`.
+
+◇ **Decide:**
+8-file rename pass. tsc verify after each batch.
+
+▶ **Act (files touched):**
+
+| File | Change |
+|---|---|
+| `@lararium/core` `ast.ts` | `REACTION_ROLES`: `"triggers"`→`"listenable"`, `"handles"`→`"subscribable"`; concept map table updated |
+| `@lararium/core` `pranala-parser.ts` | `FAMILY_ROLES.reaction` roles updated |
+| `@lararium/core` `meme-ast/types.ts` | `PranalaSugarNode.trigger/.fn` → `.listenable/.subscribable` |
+| `@lararium/core` `meme-ast/builder.ts` | All 5 `PranalaSugarNode` literal constructors updated |
+| `@lararium/core` `meme-ast/edges.ts` | Payload key assignments updated |
+| `@lararium/core` `live-protocol.ts` | `ReactionBinding.listenable/.subscribable`; all `ReactionGraph` method params `trigger`→`listenable` |
+| `@lararium/core` `kumu-device.ts` | `KumuListenable/KumuSubscribable`; `.listenables/.subscribables`; role checks; `_fireForUri` dedup |
+| `@lararium/tw5` `parser.web2.ts` | Payload key assignments updated |
+| `@lararium/tw5` `memetic-parser.web2.ts` | papalohe widget attribute keys updated |
+| `packages/lares/memes/api/v0.1/pono/pranala.md` | `reaction` roles array updated |
+| `packages/lares/lararium-node/ROADMAP.md` | Shifts 5–7 text corrected; this section |
+| `packages/lares/memes/SESSION.md` | New OODA-HA ahu section |
+
+⤴ **Ho'oko:**
+
+```sh
+cd packages/lararium-core && npx tsc --noEmit  # ✓ ZERO errors
+cd packages/lararium-tw5  && npx tsc --noEmit  # ✓ ZERO errors
+```
+
+↺ **Aftermath / open work:**
+
+- Sprint 5 next: `meme-sync-adaptor.ts` — unchanged
+- Grammar alignment pass (future): `meme-grammar.ts` and grammar definition files may need a separate pass to ensure Hawaiian sigil names align with UEFN vocabulary throughout the full grammar spec
 
 <<~/ahu >>
 
