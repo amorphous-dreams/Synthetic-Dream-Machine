@@ -24,14 +24,13 @@ export function registerLarariumFilters(tw: TW5Instance): void {
 }
 
 /**
- * toCanonicalWikitext — compat shim for `all[memes]` sugar until the memes
- * source operator propagates to all callers.
+ * toCanonicalWikitext — compat shim for callers that pre-date native operator registration.
  *
- * With all operators registered, edge:/toml:/implementors[] resolve natively.
- * Only `all[memes]` → `all[tiddlers]` requires rewriting (TW5 source dispatch
- * does not call custom filterOperators for `all[]` — it calls getGlobalCache).
+ * With registerLarariumFilters() called at boot, all sugar operators resolve
+ * natively inside TW5. This shim rewrites `all[memes]` to `all[tiddlers]`
+ * only as a fallback for contexts where the VM has not been booted yet.
  *
- * @deprecated Remove when TW5 source registration lands for `memes`.
+ * @deprecated Call registerLarariumFilters(tw) at boot instead of pre-processing expressions.
  */
 export function toCanonicalWikitext(expr: string): string {
   return expr.replace(/\ball\[memes\]/g, "all[tiddlers]");
