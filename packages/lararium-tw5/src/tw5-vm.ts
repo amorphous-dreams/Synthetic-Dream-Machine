@@ -28,8 +28,6 @@ import { getZoomLayout } from "./zoom-layout.js";
 import type { ZoomLayout } from "./zoom-layout.js";
 export type { ZoomLayout };
 
-// Re-export for callers that held a reference — identity passthrough, now a no-op.
-export { toCanonicalWikitext } from "./tw5-filter.js";
 
 async function loadNodeTiddlyWiki(): Promise<{ TiddlyWiki: () => unknown }> {
   // @ts-ignore — tiddlywiki has no local ESM declaration; Node path only.

@@ -7,7 +7,6 @@
  *   MemoryTiddlerStore      — in-memory LarTiddlerStore (tests / fixtures)
  *   VmPool                  — generic isomorphic VM lifecycle manager
  *   DirectMemeRecipeVm      — in-process TW5Engine wrapper; bootMemeRecipeVm boot helper
- *   toCanonicalWikitext     — wikitext-filter sugar pre-processor
  *
  * Widget tree ownership:
  *   Messaging (papalohe/kukali/lele) and kumu device instances are native
@@ -15,7 +14,7 @@
  *   builds the widgetTree and fakeDOM on each render call.
  */
 
-export { TW5Engine, toCanonicalWikitext } from "./tw5-vm.js";
+export { TW5Engine } from "./tw5-vm.js";
 export type { ZoomLayout } from "./tw5-vm.js";
 
 export { MemeSyncAdaptor } from "./meme-sync-adaptor.js";

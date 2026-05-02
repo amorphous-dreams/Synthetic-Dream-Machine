@@ -24,21 +24,3 @@ export function registerLarariumFilters(tw: TW5Instance): void {
   registerImplementors(tw);
 }
 
-/**
- * toCanonicalWikitext — identity passthrough.
- *
- * With registerLarariumFilters() called at boot, all filter sugar resolves
- * natively inside TW5:
- *   [all[memes]]   → allfilteroperator "memes" source (registerMemesSource)
- *   [memes[]]      → filterOperator "memes" (registerMemes)
- *   edge:fam[role] → filterOperator "edge" (registerEdge)
- *   toml:key[val]  → filterOperator "toml" (registerTomlField)
- *   implementors[] → filterOperator "implementors" (registerImplementors)
- *
- * @deprecated This function now does nothing. Call registerLarariumFilters(tw)
- * at boot and pass filter expressions to wiki.filterTiddlers() directly.
- * Kept for call-site compatibility; remove callers, then remove this export.
- */
-export function toCanonicalWikitext(expr: string): string {
-  return expr;
-}
