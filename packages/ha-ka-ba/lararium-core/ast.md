@@ -41,6 +41,6 @@ All phase/confidence/stance systems project from `OODA_HA_5`.
 <<~&#x0003;>>
 
 <<~ pranala ? -> lar:///ha.ka.ba/@lararium/tw5/v0.1/ast family:dataflow role:pipes >>
-<<~ pranala ? -> lar:///ha.ka.ba/api/v0.1/mu/the-law-of-5s family:control role:implements >>
+<<~ pranala ? -> lar:///ha.ka.ba/@lares/api/v0.1/mu/the-law-of-5s family:control role:implements >>
 
 <<~&#x0004; -> ? >>

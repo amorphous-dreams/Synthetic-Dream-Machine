@@ -61,7 +61,7 @@ export interface PranaEdgeViolation {
 // projections of OODA_HA_5.
 // ---------------------------------------------------------------------------
 
-// Schema: lar:///ha.ka.ba/api/v0.1/mu/the-law-of-5s
+// Schema: lar:///ha.ka.ba/@lares/api/v0.1/mu/the-law-of-5s
 /** Temporal/spatial scale ladder — finest (action) to coarsest (week). */
 export const LADDER_5 = ["action", "round", "turn", "watch", "week"] as const;
 export type Ladder5 = typeof LADDER_5[number];
@@ -94,7 +94,7 @@ export const SCOPE_TO_LADDER: Record<Scope5, Ladder5> = {
 //   NOT a federation gate condition.
 // ---------------------------------------------------------------------------
 
-// Schema: lar:///ha.ka.ba/api/v0.1/mu/the-law-of-5s (rating/stage ladders)
+// Schema: lar:///ha.ka.ba/@lares/api/v0.1/mu/the-law-of-5s (rating/stage ladders)
 /** Structural quality ladder — lowest (noise) to highest (kapu). Gate: ≥meme to federate. */
 export const RATING_5 = ["noise", "data", "meme", "ano", "kapu"] as const;
 export type Rating5 = typeof RATING_5[number];
@@ -148,7 +148,7 @@ export const RATING_COLOR: Record<Rating5, string> = {
 // Register measures confidence *within* the active stance; not universal truth.
 // ---------------------------------------------------------------------------
 
-// Schema: lar:///ha.ka.ba/api/v0.1/mu/the-syad-perspectives
+// Schema: lar:///ha.ka.ba/@lares/api/v0.1/mu/the-syad-perspectives
 export const STANCES = ["philosopher", "poet", "satirist", "humorist", "private"] as const;
 export type Stance = typeof STANCES[number];
 
@@ -190,7 +190,7 @@ export const SATIRIST_OPERATIONAL: Syad7 = "nasti-avaktavya";
 // Arcana has no Stance intermediary; maps directly to Syad P7.
 // ---------------------------------------------------------------------------
 
-// Schema: lar:///ha.ka.ba/api/v0.1/mu/the-four-tools
+// Schema: lar:///ha.ka.ba/@lares/api/v0.1/mu/the-four-tools
 export const TOOLS = ["wand", "cup", "sword", "pentacle", "arcana"] as const;
 export type Tool = typeof TOOLS[number];
 
@@ -226,7 +226,7 @@ export const TOOL_APERTURE: Record<Tool, ToolAperture> = {
 // Render modes — canonical values for PranaEdge.renderMode.
 // ---------------------------------------------------------------------------
 
-// Schema: lar:///ha.ka.ba/api/v0.1/pono/reaction-graph
+// Schema: lar:///ha.ka.ba/@lares/api/v0.1/pono/reaction-graph
 export const RENDER_MODES = [
   "reaction-wire",   // papalohe — trigger label at source, fn label at target
 ] as const;

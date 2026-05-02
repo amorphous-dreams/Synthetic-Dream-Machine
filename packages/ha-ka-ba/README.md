@@ -4,7 +4,7 @@
 
 ```
 packages/ha-ka-ba/{package-slug}/{path}.md
-  →  lar:///ha.ka.ba/{npm-scope/name}/v{version}/{path}
+  →  lar:///ha.ka.ba/@lares/{npm-scope/name}/v{version}/{path}
 ```
 
 Version resolves from the source package's `package.json` at seeding time.

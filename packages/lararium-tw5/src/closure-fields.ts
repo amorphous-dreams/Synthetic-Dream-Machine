@@ -3,7 +3,7 @@
  *
  * Projection codec for the closure/edge graph → TW5 tiddler boundary.
  * These functions operate at the tiddler-record boundary defined by
- * lar:///ha.ka.ba/api/v0.1/lararium/schema/tiddler-record.
+ * lar:///ha.ka.ba/@lares/api/v0.1/lararium/schema/tiddler-record.
  */
 
 import type { ClosureEntry, EdgeRecord } from "@lararium/core";

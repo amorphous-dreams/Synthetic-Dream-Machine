@@ -53,7 +53,7 @@ export function loadGrammarRules(): GrammarRules | null {
 
 // ---------------------------------------------------------------------------
 // Corpus source registry — loaded from lares meme at runtime
-// Schema: lar:///ha.ka.ba/api/v0.1/lararium/schema/corpus-sources
+// Schema: lar:///ha.ka.ba/@lares/api/v0.1/lararium/schema/corpus-sources
 // ---------------------------------------------------------------------------
 
 export interface CorpusSource {
@@ -223,12 +223,12 @@ function buildControlClosure(entryUri: string): { graph: MemeGraph; topoUris: st
   return { graph, topoUris, violations, grammar };
 }
 
-// Schema: lar:///ha.ka.ba/api/v0.1/lararium/modules/node-host
+// Schema: lar:///ha.ka.ba/@lares/api/v0.1/lararium/modules/node-host
 // Known interface URIs loaded in Phase 1 before index construction
 const INTERFACE_URIS = [
-  "lar:///ha.ka.ba/api/v0.1/pono/meme",
-  "lar:///ha.ka.ba/api/v0.1/pono/loci",
-  "lar:///ha.ka.ba/api/v0.1/pono/invariant",
+  "lar:///ha.ka.ba/@lares/api/v0.1/pono/meme",
+  "lar:///ha.ka.ba/@lares/api/v0.1/pono/loci",
+  "lar:///ha.ka.ba/@lares/api/v0.1/pono/invariant",
 ];
 
 function loadInterfaces(graph: MemeGraph, grammar?: GrammarRules): void {

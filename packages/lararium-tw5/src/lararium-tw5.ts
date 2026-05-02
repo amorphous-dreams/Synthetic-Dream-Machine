@@ -160,14 +160,14 @@ export class LarariumTW5 {
       instance.preloadTiddlers.push(LARARIUM_WIDGETS_TIDDLER);
 
       // UI tiddlers — ViewTemplate tab + iam-panel character sheet template.
-      // Loaded at runtime from lares/ha-ka-ba/api/v0.1/lararium/{ui,templates}/*.md.
+      // Loaded at runtime from packages/lares/api/v0.1/lararium/{ui,templates}/*.md.
       // Must be present before first render so the Metadata tab appears immediately.
       for (const t of uiTiddlers) {
         instance.preloadTiddlers.push(t as Record<string, unknown>);
       }
 
       // Boot shadows + vendored third-party TW5 plugins — loaded at runtime from
-      // lares/ha-ka-ba/api/v0.1/tw5-plugins/*.json.
+      // packages/lares/api/v0.1/tw5-plugins/*.json.
       // Includes: MIME config, LarariumKumu tag, $:/palette pointer, render no-op,
       // and sq/streams vendor plugin.
       for (const t of vendorTiddlers) {
@@ -261,7 +261,7 @@ export class LarariumTW5 {
    * Switch the active TW5 palette. Triggers stylesheet recompile automatically
    * via the wiki "change" event wired in the stylesheet startup.
    *
-   * paletteName: "lar:///ha.ka.ba/api/v0.1/lararium/palette/gruvbox-dark" | "...gruvbox-light"
+   * paletteName: "lar:///ha.ka.ba/@lares/api/v0.1/lararium/palette/gruvbox-dark" | "...gruvbox-light"
    */
   setPalette(paletteName: string): void {
     if (!this._tw) return;
@@ -288,7 +288,7 @@ export class LarariumTW5 {
   private static readonly MODULE_MANAOIO_THRESHOLD    = 0.85;
   private static readonly MODULE_CONFIDENCE_THRESHOLD = 0.90;
   private static readonly MODULE_INTERFACE_URI =
-    "lar:///ha.ka.ba/api/v0.1/lararium/tw5-module";
+    "lar:///ha.ka.ba/@lares/api/v0.1/lararium/tw5-module";
 
   private async _bootModules(): Promise<void> {
     // Called only from the boot() callback after this._tw = instance — never null here.
@@ -346,7 +346,7 @@ export class LarariumTW5 {
     if (injected > 0) {
       try {
         const moduleText = wiki.getTiddler(
-          "lar:///ha.ka.ba/api/v0.1/lararium/modules/tw5-modules"
+          "lar:///ha.ka.ba/@lares/api/v0.1/lararium/modules/tw5-modules"
         )?.fields?.["text"] ?? "";
         tw.modules.define(moduleText, "library", "lararium-tw5-modules");
       } catch { /* no-op */ }
@@ -368,7 +368,7 @@ export class LarariumTW5 {
   }
 
   // Heleuma ba: register the text/x-memetic-wikitext tiddler deserializer.
-  // Canonical source: lar:///ha.ka.ba/api/v0.1/lararium/modules/deserializer
+  // Canonical source: lar:///ha.ka.ba/@lares/api/v0.1/lararium/modules/deserializer
   // Compiled IIFE (module-type: tiddlerdeserializer) is the production path.
   // This imperative registration is the server-side bridge during boot.
   private static _registerDeserializer(tw: TW5Instance): void {
@@ -380,7 +380,7 @@ export class LarariumTW5 {
   }
 
   // Heleuma: wire compiled widget classes into the TW5 prototype chain.
-  // Canonical source copy lives at lar:///ha.ka.ba/api/v0.1/lararium/modules/widget-wiring.
+  // Canonical source copy lives at lar:///ha.ka.ba/@lares/api/v0.1/lararium/modules/widget-wiring.
   private static _registerWidgets(tw: TW5Instance): void {
     const WidgetCtor = tw.modules?.types?.widget?.["$:/core/modules/widgets/widget.js"]
       ?.exports?.["widget"] as TW5WidgetConstructor | undefined;
@@ -520,7 +520,7 @@ export class LarariumTW5 {
   /**
    * Set/clear the boot-splash signal tiddler ($:/lararium/boot-splash/active).
    *
-   * Styles and banner live in lares/ha-ka-ba/api/v0.1/lararium/ui/ and are
+   * Styles and banner live in packages/lares/api/v0.1/lararium/ui/ and are
    * auto-loaded via lares-preloads. The banner uses <$reveal> on this signal.
    * Call with active=true at boot; active=false when the live surface is ready.
    */

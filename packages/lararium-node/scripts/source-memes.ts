@@ -7,7 +7,7 @@
  *
  * Source memes carry the verbatim source text as their body.
  * They have no laresRelPath (not on-disk in lares/) — seeded into the store only.
- * Interface law: lares/ha-ka-ba/api/v0.1/pono/source-module.md
+ * Interface law: packages/lares/api/v0.1/pono/source-module.md
  */
 
 import { readFileSync, existsSync } from "fs";

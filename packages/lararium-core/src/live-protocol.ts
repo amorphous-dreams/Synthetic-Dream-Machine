@@ -16,7 +16,7 @@
 
 // ---------------------------------------------------------------------------
 // LarariumOpenPhase — async host opening sequence (authority-first ordering)
-// Schema: lar:///ha.ka.ba/api/v0.1/lararium/schema/open-phases
+// Schema: lar:///ha.ka.ba/@lares/api/v0.1/lararium/schema/open-phases
 // ---------------------------------------------------------------------------
 
 export type LarariumOpenPhase =

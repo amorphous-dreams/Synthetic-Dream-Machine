@@ -18,7 +18,7 @@
 // Well-known readiness keys
 // ---------------------------------------------------------------------------
 
-// Corpus meme: lar:///ha.ka.ba/api/v0.1/lararium/schema/readiness-keys
+// Corpus meme: lar:///ha.ka.ba/@lares/api/v0.1/lararium/schema/readiness-keys
 export const READINESS_KEYS = [
   "auth",
   "catalog",

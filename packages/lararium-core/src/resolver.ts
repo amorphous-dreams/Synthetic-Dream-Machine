@@ -150,7 +150,7 @@ export function resolveLarUri(uri: string): LarResolution {
       return { uri, root, childPath, resourcePath, laresRelPath, kind: "tuple-file", virtual: false };
     }
 
-    // Legacy: lar:///ha.ka.ba/{rest} (no @lares scope) → ha-ka-ba/{rest}.md
+    // Legacy: lar:///ha.ka.ba/@lares/{rest} (no @lares scope) → ha-ka-ba/{rest}.md
     // Remove after URI sweep is complete.
     const base = root.replace(/\./g, "-");
     const joined = childPath.length > 0 ? `${base}/${childPath.join("/")}` : base;

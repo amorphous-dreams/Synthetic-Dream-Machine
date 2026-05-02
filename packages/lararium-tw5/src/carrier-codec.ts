@@ -2,7 +2,7 @@
  * carrier-codec — projection codec for memetic carrier format ↔ LarTiddlerRecord[].
  *
  * Operates at the import/export boundary only. Does not write to any store.
- * Heleuma: lar:///ha.ka.ba/api/v0.1/lararium/schema/projection-codec
+ * Heleuma: lar:///ha.ka.ba/@lares/api/v0.1/lararium/schema/projection-codec
  *
  * Import path (disk → tiddler fields):
  *   parseCarrier(uri, text) → CarrierSplit { parent, children, warnings }

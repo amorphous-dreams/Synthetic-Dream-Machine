@@ -416,21 +416,21 @@ function runSyncModules(): { drift: number; missing: number; patched: number } {
     const moduleRef = toml["module-ref"];
     if (!moduleRef) continue;
 
-    // Convert lar URI to file path: lar:///ha.ka.ba/api/... -> lares/ha-ka-ba/api/...
+    // Convert lar URI to file path: lar:///ha.ka.ba/@lares/{rest} -> packages/lares/{rest}.md
     const uriTrimmed = moduleRef.replace(/^lar:\/\/\//, "");
-    // Domain part uses dots, convert first segment dots to dashes
     const parts      = uriTrimmed.split("/");
-    const domain     = parts[0]!.replace(/\./g, "-");
-    const rest       = parts.slice(1).join("/");
-    const modRelPath = `lares/${domain}/${rest}.md`;
-    const modPath    = resolve(root, modRelPath);
+    // Strip ha.ka.ba/@lares prefix (3 segments: ha.ka.ba, @lares, rest...)
+    const rest       = (parts[0] === "ha.ka.ba" && parts[1] === "@lares")
+      ? parts.slice(2).join("/")
+      : parts.slice(1).join("/");
+    const modPath    = resolve(laresRoot, `${rest}.md`);
 
     let modContent: string;
     try {
       modContent = readFileSync(modPath, "utf8");
     } catch {
       console.warn(`[sync-modules] MISSING module tiddler  ${moduleRef}`);
-      console.warn(`               expected at: ${modRelPath}`);
+      console.warn(`               expected at: ${modPath}`);
       missing++;
       continue;
     }

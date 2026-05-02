@@ -3,6 +3,5 @@ packages:
   # Corpus bag targets — each maps to one Automerge doc
   - 'elyncia'
   - 'ftls'
-  - 'lares'
   - 'sdm'
   - 'wtf'

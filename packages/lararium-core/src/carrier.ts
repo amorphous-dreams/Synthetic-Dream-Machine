@@ -9,7 +9,7 @@ import type { PranaEdge } from "./pranala-parser.js";
 
 // ---------------------------------------------------------------------------
 // Regex patterns
-// Schema: lar:///ha.ka.ba/api/v0.1/pono/carrier-sigils
+// Schema: lar:///ha.ka.ba/@lares/api/v0.1/pono/carrier-sigils
 // ---------------------------------------------------------------------------
 
 const DOCTYPE_RE   = /<!--\s*<<~\s*!DOCTYPE\s*=\s*lar:\/\/\/[^>]+>>\s*-->/;
@@ -196,7 +196,7 @@ export function validateCarrierShape(
     if (edge.family === "control" && edge.role === "implements") implSet.add(edge.toUri);
   }
 
-  const KAPU_URI = "lar:///ha.ka.ba/api/v0.1/pono/kapu";
+  const KAPU_URI = "lar:///ha.ka.ba/@lares/api/v0.1/pono/kapu";
   let rating: CarrierRating;
   if (valid && implSet.has(KAPU_URI)) rating = "kapu";
   else if (valid && implSet.size > 0) rating = "ano";

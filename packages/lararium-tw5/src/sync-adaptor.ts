@@ -39,7 +39,7 @@
  *
  * Save cascade:
  *   Write routing is corpus-driven — rules live in the wiki at:
- *   lar:///ha.ka.ba/api/v0.1/lararium/sync/save-cascade
+ *   lar:///ha.ka.ba/@lares/api/v0.1/lararium/sync/save-cascade
  *   Read from the wiki on first use and cached. Cache invalidates whenever
  *   that meme changes (subscribed via onWikiChange in start()).
  */
@@ -63,7 +63,7 @@ type SaveHandler  = (
 ) => Promise<void>;
 
 /** URI of the corpus meme that declares the ordered save-routing rules. */
-const SAVE_CASCADE_URI = "lar:///ha.ka.ba/api/v0.1/lararium/sync/save-cascade";
+const SAVE_CASCADE_URI = "lar:///ha.ka.ba/@lares/api/v0.1/lararium/sync/save-cascade";
 
 // ---------------------------------------------------------------------------
 // Module-level helpers
@@ -304,7 +304,7 @@ export class LarariumCrdtSyncAdaptor implements MemeProjection {
 
   // ---------------------------------------------------------------------------
   // Internal — apply a single change to TW5 wiki under echo guard
-  // Heleuma: lar:///ha.ka.ba/api/v0.1/lararium/modules/sync-adaptor #source
+  // Heleuma: lar:///ha.ka.ba/@lares/api/v0.1/lararium/modules/sync-adaptor #source
   // ---------------------------------------------------------------------------
 
   private _applyChange(change: LarTiddlerChange): void {

@@ -2,7 +2,7 @@
  * deserializer — TW5 causal-island boundary module for text/x-memetic-wikitext.
  *
  * Heleuma ba: this TS source compiles to an IIFE plugin tiddler at
- * lar:///ha.ka.ba/api/v0.1/lararium/modules/deserializer
+ * lar:///ha.ka.ba/@lares/api/v0.1/lararium/modules/deserializer
  * (module-type: tiddlerdeserializer, key: text/x-memetic-wikitext).
  *
  * Covers both edges of the causal island:

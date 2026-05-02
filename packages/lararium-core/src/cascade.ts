@@ -29,7 +29,7 @@ export type { EdgeRecord } from "./compiler.js";
 
 // ---------------------------------------------------------------------------
 // MemeCascadeFrame — epistemic view of a ClosureEntry for match predicates
-// Schema: lar:///ha.ka.ba/api/v0.1/lararium/schema/template-cascade
+// Schema: lar:///ha.ka.ba/@lares/api/v0.1/lararium/schema/template-cascade
 // ---------------------------------------------------------------------------
 
 export type MemeCascadeFrame = {
@@ -81,7 +81,7 @@ export interface CascadeEntry<TOverride = Record<string, unknown>> {
    *
    * @example "[all[memes]toml:register[CS]]"
    * @example "[all[memes]edge:control[implements]]"
-   * @example "[tag[lar:///ha.ka.ba/api/v0.1/pono/invariant]]"
+   * @example "[tag[lar:///ha.ka.ba/@lares/api/v0.1/pono/invariant]]"
    */
   filter?: string;
   /**
