@@ -1,10 +1,10 @@
 /**
- * engine-island — seeds the EngineDoc Automerge corpus doc.
+ * lararium-island — seeds the LarariumDoc Automerge corpus doc.
  *
  * Reads TW5 core JS and vendored plugin JSON files from disk on first boot.
  * Stores each as a Uint8Array blob (Automerge binary, no CRDT string overhead).
  *
- * Called once per server lifetime when the engine island URL file does not exist.
+ * Called once per server lifetime when the lararium island URL file does not exist.
  * On subsequent boots the existing doc is loaded from NodeFS storage.
  *
  * Island law: this doc is separate from the catalog.
@@ -16,8 +16,8 @@ import { join, basename } from "path";
 import { LarariumTW5 } from "@lararium/tw5";
 import { createHash } from "crypto";
 import type { Repo, DocHandle } from "@automerge/automerge-repo";
-import type { EngineDoc, EngineBlobEntry } from "@lararium/core";
-import { ENGINE_CORE_ID, emptyEngineDoc } from "@lararium/core";
+import type { LarariumDoc, LarariumBlobEntry } from "@lararium/core";
+import { ENGINE_CORE_ID, emptyLarariumDoc } from "@lararium/core";
 import { laresRoot } from "@lares/lares";
 import { TW5_VERSION, TW5_CORE_SCRIPT_FILENAME } from "@lararium/tw5";
 
@@ -32,23 +32,23 @@ function readBlob(path: string): Uint8Array {
 }
 
 /**
- * Seed a new EngineDoc from disk artifacts.
+ * Seed a new LarariumDoc from disk artifacts.
  * Returns the doc handle and the sha256 of the TW5 core blob.
  */
-export async function seedEngineDoc(
+export async function seedLarariumDoc(
   repo: Repo,
   appPublicDir: string,
-): Promise<{ handle: DocHandle<EngineDoc>; coreSha256: string }> {
-  const handle = repo.create<EngineDoc>(emptyEngineDoc());
+): Promise<{ handle: DocHandle<LarariumDoc>; coreSha256: string }> {
+  const handle = repo.create<LarariumDoc>(emptyLarariumDoc());
 
   // TW5 core blob
   const coreJsPath = join(appPublicDir, TW5_CORE_SCRIPT_FILENAME);
   if (!existsSync(coreJsPath)) {
-    throw new Error(`[engine-island] TW5 core not found: ${coreJsPath} — run pnpm build:tw5-vendor`);
+    throw new Error(`[lararium-island] TW5 core not found: ${coreJsPath} — run pnpm build:tw5-vendor`);
   }
   const coreBlob  = readBlob(coreJsPath);
   const coreSha   = sha256hex(coreBlob);
-  const coreEntry: EngineBlobEntry = {
+  const coreEntry: LarariumBlobEntry = {
     id:       ENGINE_CORE_ID,
     version:  TW5_VERSION,
     sha256:   coreSha,
@@ -60,7 +60,7 @@ export async function seedEngineDoc(
   };
 
   handle.change((doc) => {
-    (doc.blobs as Record<string, EngineBlobEntry>)[ENGINE_CORE_ID] = coreEntry;
+    (doc.blobs as Record<string, LarariumBlobEntry>)[ENGINE_CORE_ID] = coreEntry;
   });
 
   // Vendored plugin blobs — every *.json in the tw5-plugins dir
@@ -70,7 +70,7 @@ export async function seedEngineDoc(
       const blob     = readBlob(filePath);
       const sha      = sha256hex(blob);
 
-      // Parse metadata from outer JSON to populate EngineBlobEntry fields.
+      // Parse metadata from outer JSON to populate LarariumBlobEntry fields.
       // The blob itself is stored as binary — we only peek for the id/version.
       let id      = basename(file, ".json");
       let version = "unknown";
@@ -84,7 +84,7 @@ export async function seedEngineDoc(
         if (typeof meta["source"]  === "string") source  = meta["source"];
       } catch { /* unparseable — use filename-derived id */ }
 
-      const entry: EngineBlobEntry = {
+      const entry: LarariumBlobEntry = {
         id, version, sha256: sha,
         mimeType: "application/json",
         blob,
@@ -94,10 +94,10 @@ export async function seedEngineDoc(
       };
 
       handle.change((doc) => {
-        (doc.blobs as Record<string, EngineBlobEntry>)[id] = entry;
+        (doc.blobs as Record<string, LarariumBlobEntry>)[id] = entry;
       });
 
-      console.log(`[engine-island] seeded plugin  ${id}  v${version}  sha=${sha.slice(0, 12)}…`);
+      console.log(`[lararium-island] seeded plugin  ${id}  v${version}  sha=${sha.slice(0, 12)}…`);
     }
   }
 
@@ -112,7 +112,7 @@ export async function seedEngineDoc(
     (doc as { systemTitles?: readonly string[] }).systemTitles = systemTitles;
   });
 
-  console.log(`[engine-island] TW5 core v${TW5_VERSION}  sha=${coreSha.slice(0, 12)}…  system titles: ${systemTitles.length}`);
-  console.log(`[engine-island] engine doc URL: ${handle.url}`);
+  console.log(`[lararium-island] TW5 core v${TW5_VERSION}  sha=${coreSha.slice(0, 12)}…  system titles: ${systemTitles.length}`);
+  console.log(`[lararium-island] engine doc URL: ${handle.url}`);
   return { handle, coreSha256: coreSha };
 }

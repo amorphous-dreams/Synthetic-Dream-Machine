@@ -13,7 +13,7 @@
 ```
 catalog doc  ─── engine entry { version, docUrl, sha256 }
              │
-             ├── lararium doc (EngineDoc)
+             ├── lararium doc (LarariumDoc)
              │     blobs["tiddlywikicore"] = { blob: Uint8Array, sha256, version }
              │     (TW5 core + plugins — no CDN dependency after first peer seed)
              │
@@ -41,7 +41,7 @@ room island     (bag: "room", writable)   — primary content gate
 
 ### Engine island law (2026-05-01)
 
-The TW5 engine (`tiddlywikicore-*.js`) lives in its own `EngineDoc` corpus island. The catalog holds only `{ version, docUrl, sha256 }`. The Service Worker verifies sha256 before caching. Any mesh peer can seed the blob — no CDN authority required. Mid-session updates travel over Automerge sync and trigger the TW5 update-available banner.
+The TW5 engine (`tiddlywikicore-*.js`) lives in its own `LarariumDoc` corpus island. The catalog holds only `{ version, docUrl, sha256 }`. The Service Worker verifies sha256 before caching. Any mesh peer can seed the blob — no CDN authority required. Mid-session updates travel over Automerge sync and trigger the TW5 update-available banner.
 
 ### Current milestone state (updated 2026-05-01)
 
@@ -49,7 +49,7 @@ The TW5 engine (`tiddlywikicore-*.js`) lives in its own `EngineDoc` corpus islan
 |---|---|
 | A — Readiness Map | `ReadinessMap` in `@lararium/core`. All 10 keys declared. Browser marks: `auth`, `catalog`, `room-content`, `corpus:*`, `tw-vm`. `snapshot`, `room-presence`, `tldraw-doc`, `mcp-index`, `disk-projector`, `kowloon-feed` declared but not yet lit. ~60% |
 | B — Catalog Island | `CatalogDoc` fully wired. `engine`, `corpora`, `rooms` entries. ~100% |
-| B.1 — Engine Island | `EngineDoc` with blob + sha256. SW verification + mesh-native delivery. Catalog `engine` entry. ~95% (file-watcher ingest path not yet wired) |
+| B.1 — Engine Island | `LarariumDoc` with blob + sha256. SW verification + mesh-native delivery. Catalog `engine` entry. ~95% (file-watcher ingest path not yet wired) |
 | C — First-paint projection | NOT started. See §9 law annotation. |
 | D — Recipe/bag live surface | `CompositeStore` + per-recipe TW5 VMs done. System and projection bags not yet wired. ~70% |
 | E — Draft promotion ceremony | Draft suppressed (M-E guard), aspirational tests written. No ceremony. ~10% |

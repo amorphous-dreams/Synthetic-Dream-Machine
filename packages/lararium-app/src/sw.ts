@@ -1,5 +1,5 @@
 /**
- * Lararium Service Worker — engine island integrity verifier.
+ * Lararium Service Worker — lararium island integrity verifier.
  *
  * Intercepts tiddlywikicore-*.js fetches. On first load: network fetch + cache.
  * On subsequent loads: serve from cache after sha256 verification against the
@@ -109,7 +109,7 @@ self.addEventListener("message", (ev) => {
     knownEntry = incoming;
     if (previousVersion && previousVersion !== incoming.version) {
       // Version changed — request the blob from the main thread (mesh-native path).
-      // Main thread holds the Automerge EngineDoc; it pushes the bytes back via
+      // Main thread holds the Automerge LarariumDoc; it pushes the bytes back via
       // "engine-blob" message. Avoids any CDN dependency in the update path.
       void requestBlobFromClient(incoming);
     }

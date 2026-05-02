@@ -1835,19 +1835,19 @@ Session 5 continued the local-first pivot. The server is now unambiguously a syn
 
 ### Architecture invariant added
 
-**The TW5 engine is a corpus island.** The `tiddlywikicore-*.js` blob lives in its own Automerge doc (`EngineDoc`), separate from any content corpus. The catalog doc holds only a `CatalogEngineEntry` reference: `{ version, docUrl, sha256 }`. No CDN dependency exists for engine delivery once the first peer has seeded the blob.
+**The TW5 engine is a corpus island.** The `tiddlywikicore-*.js` blob lives in its own Automerge doc (`LarariumDoc`), separate from any content corpus. The catalog doc holds only a `CatalogEngineEntry` reference: `{ version, docUrl, sha256 }`. No CDN dependency exists for engine delivery once the first peer has seeded the blob.
 
 Engine island topology:
 
 ```
 catalog doc  ─── engine entry { version, docUrl, sha256 }
                                     │
-                         EngineDoc (Automerge)
+                         LarariumDoc (Automerge)
                            blobs["tiddlywikicore"]
                              { blob: Uint8Array, sha256, version }
 ```
 
-The browser Service Worker intercepts `tiddlywikicore-*.js` fetch, verifies sha256 against the catalog entry, and on a miss posts `"need-engine-blob"` to the main thread. The main thread opens the `EngineDoc` via `LarariumRepo.openEngineDoc()` and transfers the `ArrayBuffer` (zero-copy). The SW verifies, caches, and notifies. Any mesh peer can seed the engine blob — no server authority required.
+The browser Service Worker intercepts `tiddlywikicore-*.js` fetch, verifies sha256 against the catalog entry, and on a miss posts `"need-engine-blob"` to the main thread. The main thread opens the `LarariumDoc` via `LarariumRepo.openLarariumDoc()` and transfers the `ArrayBuffer` (zero-copy). The SW verifies, caches, and notifies. Any mesh peer can seed the engine blob — no server authority required.
 
 Mid-session engine update: `catalogHandle.on("change", onCatalogChange)` with `DocHandleChangePayload<CatalogDoc>` detects a new engine version pushed by any peer. The SW receives the new entry, re-verifies, and posts `"engine-update-cached"` to trigger the TW5 update-available banner (`$:/lararium/engine/update-available`).
 

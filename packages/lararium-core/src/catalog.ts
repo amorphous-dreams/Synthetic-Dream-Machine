@@ -62,16 +62,16 @@ export interface CatalogProjectionEntry {
 }
 
 // ---------------------------------------------------------------------------
-// Engine island descriptor — points to the EngineDoc corpus doc.
+// Engine island descriptor — points to the LarariumDoc corpus doc.
 //
 // Kept out of CatalogCorpusEntry (different schema, binary blobs, no lares path).
-// The catalog carries the reference only — the EngineDoc is a separate island.
+// The catalog carries the reference only — the LarariumDoc is a separate island.
 // ---------------------------------------------------------------------------
 
 export interface CatalogEngineEntry {
   /** TW5 core version string — "5.4.0". Browsers compare against loaded version. */
   readonly version:    string;
-  /** Automerge URL for the EngineDoc. */
+  /** Automerge URL for the LarariumDoc. */
   readonly docUrl:     string;
   /** SHA-256 of the tiddlywikicore blob — content-addressed quick-check. */
   readonly sha256:     string;

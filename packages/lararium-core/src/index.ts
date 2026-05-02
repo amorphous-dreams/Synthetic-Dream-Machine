@@ -17,7 +17,7 @@ export * from "./readiness.js";
 export * from "./catalog.js";
 export * from "./meme-store-doc.js";
 export * from "./composite-store.js";
-export * from "./engine-doc.js";
+export * from "./lararium-doc.js";
 // LarariumTW5 and filter helpers live in @lararium/tw5 — import from there:
 //   import { filterMemesWikitext, LarariumTW5 } from "@lararium/tw5";
 // Kept out of @lararium/core to prevent tiddlywiki from entering bundles that don't need it.

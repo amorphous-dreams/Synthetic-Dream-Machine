@@ -1,5 +1,5 @@
 /**
- * EngineDoc — Automerge corpus doc for the TW5 engine and bundled plugins.
+ * LarariumDoc — Automerge corpus doc for the TW5 engine and bundled plugins.
  *
  * Each blob is stored as Uint8Array (Automerge binary, not CRDT string).
  * This gives O(1) sync cost after the initial transfer — the blob is treated
@@ -16,7 +16,7 @@
  * Signature verification is added at the Keyhive layer (planned).
  */
 
-export interface EngineBlobEntry {
+export interface LarariumBlobEntry {
   /** Stable id — "tiddlywikicore" or TW5 plugin title like "$:/plugins/sq/streams". */
   readonly id:       string;
   readonly version:  string;
@@ -29,26 +29,26 @@ export interface EngineBlobEntry {
   readonly source?:  string;
 }
 
-export interface EngineDoc {
+export interface LarariumDoc {
   readonly schemaVersion: string;
-  /** Keyed by EngineBlobEntry.id. */
-  readonly blobs: Record<string, EngineBlobEntry>;
+  /** Keyed by LarariumBlobEntry.id. */
+  readonly blobs: Record<string, LarariumBlobEntry>;
   /**
    * Sorted list of $:/ tiddler titles present in a freshly booted TW5 VM
-   * before any corpus tiddlers are loaded.  Written once at seedEngineDoc time.
+   * before any corpus tiddlers are loaded.  Written once at seedLarariumDoc time.
    *
    * Authority boundary: any $:/ title in this list is engine-owned.
    * Corpus Automerge docs MUST NOT store these titles.
    * TW5 state that falls outside this set (plugin config, personal state)
    * belongs in the personal or session/presence doc.
    *
-   * Keyhive: this manifest will be signed as part of the engine island
+   * Keyhive: this manifest will be signed as part of the lararium island
    * authority proof — changes require a new signed engine doc.
    */
   readonly systemTitles?: readonly string[];
 }
 
-export function emptyEngineDoc(): EngineDoc {
+export function emptyLarariumDoc(): LarariumDoc {
   return { schemaVersion: "0.1", blobs: {} };
 }
 

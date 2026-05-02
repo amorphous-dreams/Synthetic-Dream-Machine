@@ -49,7 +49,7 @@ export class LarDiskWatcher {
     private readonly laresRoot: string,
     private readonly store: LarTiddlerStore,
     private readonly projector: LarDiskProjector,
-    /** systemTitles from EngineDoc — passed in by serve.ts after the engine island loads. */
+    /** systemTitles from LarariumDoc — passed in by serve.ts after the lararium island loads. */
     engineSystemTitles: readonly string[] = [],
     sessionId = `disk-watcher:${Date.now()}`,
   ) {

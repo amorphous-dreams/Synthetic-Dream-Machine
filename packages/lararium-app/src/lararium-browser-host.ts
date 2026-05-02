@@ -182,7 +182,7 @@ export function useLarariumHostOpen(options: BrowserHostOptions): HostOpenState 
       stopCatalogRef.current = () => catalogHandle.removeListener("change", onCatalogChange);
 
       // Listen for SW messages:
-      //   "need-engine-blob"   — SW needs blob bytes for a new version; pull from EngineDoc
+      //   "need-engine-blob"   — SW needs blob bytes for a new version; pull from LarariumDoc
       //   "engine-update-cached" — SW has cached a new version; set banner tiddler
       if (navigator.serviceWorker) {
         navigator.serviceWorker.addEventListener("message", (ev) => {
@@ -190,8 +190,8 @@ export function useLarariumHostOpen(options: BrowserHostOptions): HostOpenState 
           if (!data) return;
 
           if (data.type === "need-engine-blob" && engineEntryRef.current?.docUrl) {
-            void larariumRepo.openEngineDoc(engineEntryRef.current.docUrl).then((engineDoc) => {
-              const blob = engineDoc?.blobs["tiddlywikicore"]?.blob;
+            void larariumRepo.openLarariumDoc(engineEntryRef.current.docUrl).then((larariumDoc) => {
+              const blob = larariumDoc?.blobs["tiddlywikicore"]?.blob;
               if (!blob || !navigator.serviceWorker.controller) return;
               // Transfer as ArrayBuffer — zero-copy across the message channel.
               const buf = blob.buffer.slice(blob.byteOffset, blob.byteOffset + blob.byteLength);

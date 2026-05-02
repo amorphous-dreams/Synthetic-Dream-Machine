@@ -49,11 +49,11 @@ import {
   type CatalogRoomEntry,
   type CatalogCorpusEntry,
   type CatalogEngineEntry,
-  type EngineDoc,
+  type LarariumDoc,
   emptyCatalogDoc,
   type MemeStoreDoc,
 } from "@lararium/core";
-import { seedEngineDoc } from "../src/engine-island.js";
+import { seedLarariumDoc } from "../src/lararium-island.js";
 import { LarDiskProjector, makeRecipeId, bootRecipeVm, renderCarrier, releaseRecipeVm, TW5_VERSION, TW5_CORE_SCRIPT_URL } from "@lararium/tw5";
 import { loadCorpusSources, corpusAbsPath } from "../src/node-host.js";
 import type { CorpusSource } from "../src/node-host.js";
@@ -511,14 +511,14 @@ async function main() {
   // Engine island — TW5 core + plugins as binary blobs in a separate corpus doc.
   // Catalog holds a CatalogEngineEntry reference only (URL + version + sha256).
   // ---------------------------------------------------------------------------
-  const engineUrlFile = join(ISLANDS_DIR, "engine-doc-url.txt");
+  const engineUrlFile = join(ISLANDS_DIR, "lararium-doc-url.txt");
   const engineIsFirstBoot = !existsSync(engineUrlFile);
-  // Engine system titles — $:/ namespace owned by the engine island.
+  // Engine system titles — $:/ namespace owned by the lararium island.
   // Passed to LarDiskWatcher so it never writes engine-owned tiddlers to corpus.
   let engineSystemTitles: readonly string[] = [];
   if (engineIsFirstBoot) {
     try {
-      const { handle, coreSha256 } = await seedEngineDoc(memeRepo, APP_PUBLIC);
+      const { handle, coreSha256 } = await seedLarariumDoc(memeRepo, APP_PUBLIC);
       writeFileSync(engineUrlFile, handle.url, "utf8");
       engineSystemTitles = handle.doc()?.systemTitles ?? [];
       const engineEntry: CatalogEngineEntry = {
@@ -530,19 +530,19 @@ async function main() {
         const d = doc as DraftCatalogDoc;
         d.engine = engineEntry;
       });
-      console.log(`[lararium-serve] engine island seeded  v${TW5_VERSION}  url=${handle.url}  system titles: ${engineSystemTitles.length}`);
+      console.log(`[lararium-serve] lararium island seeded  v${TW5_VERSION}  url=${handle.url}  system titles: ${engineSystemTitles.length}`);
     } catch (e) {
-      console.error("[lararium-serve] ⚠ engine island seed failed:", e);
+      console.error("[lararium-serve] ⚠ lararium island seed failed:", e);
     }
   } else {
     const engineUrl = readFileSync(engineUrlFile, "utf8").trim() as AutomergeUrl;
-    const engineHandle = await memeRepo.find<EngineDoc>(engineUrl);
-    const engineDoc = engineHandle.doc();
-    engineSystemTitles = engineDoc?.systemTitles ?? [];
-    const coreSha256Resume = engineDoc?.blobs["tiddlywikicore"]?.sha256 ?? "";
+    const engineHandle = await memeRepo.find<LarariumDoc>(engineUrl);
+    const larariumDoc = engineHandle.doc();
+    engineSystemTitles = larariumDoc?.systemTitles ?? [];
+    const coreSha256Resume = larariumDoc?.blobs["tiddlywikicore"]?.sha256 ?? "";
     const engineEntry: CatalogEngineEntry = { version: TW5_VERSION, docUrl: engineUrl, sha256: coreSha256Resume };
     catalogHandle.change((d) => { (d as DraftCatalogDoc).engine = engineEntry; });
-    console.log(`[lararium-serve] engine island resumed: ${engineUrl}  system titles: ${engineSystemTitles.length}`);
+    console.log(`[lararium-serve] lararium island resumed: ${engineUrl}  system titles: ${engineSystemTitles.length}`);
   }
 
   // Warm the default room at boot so its URL is in the catalog immediately.
