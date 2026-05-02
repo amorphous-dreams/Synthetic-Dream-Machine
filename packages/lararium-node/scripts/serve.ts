@@ -582,8 +582,9 @@ async function main() {
 
     // Expose VM pool on the isomorphic debug surface — same shape as browser peer.
     // global.__larariumDebug.vmPool.list/filter/filterFirst/setTiddler work here.
+    // Server peer: local-operator receipt carries can:"*" — always admin.
     (globalThis as Record<string, unknown>).__larariumDebug ??= {};
-    ((globalThis as Record<string, unknown>).__larariumDebug as Record<string, unknown>).vmPool = vmDebugSurface();
+    ((globalThis as Record<string, unknown>).__larariumDebug as Record<string, unknown>).vmPool = vmDebugSurface(() => true);
 
     // store → disk (debounced render via VM)
     const projector = new LarDiskProjector(LARES_MEMES, async (uri) => renderCarrier(recipeId, uri));

@@ -187,9 +187,31 @@ export interface VmDebugSurface {
   filterFirst(expr: string): Promise<string[]>;
   /** Inject a tiddler directly into a VM (does not write to Automerge store). */
   setTiddler(recipeId: string, fields: Record<string, string | string[]>): Promise<void>;
+  /**
+   * Return the raw RecipeVm for a recipe — admin-gated.
+   *
+   * For DirectRecipeVm backends the caller can reach the full LarariumTW5
+   * surface via `(vm as DirectRecipeVm).tw5` after confirming the type.
+   * Throws if the caller does not hold admin authority.
+   */
+  getVm(recipeId: string): Promise<RecipeVm>;
 }
 
-export function vmDebugSurface(): VmDebugSurface {
+/**
+ * Build the isomorphic debug surface for the active VmPool.
+ *
+ * isAdmin — predicate evaluated on each admin-gated call.
+ *   Node server:  () => true  (local-operator receipt carries can:"*")
+ *   Browser:      () => receiptAllows(receipt, "lararium:*", "admin")
+ *
+ * Wire to window.__larariumDebug.vmPool (browser) or
+ * globalThis.__larariumDebug.vmPool (Node) after first VM boots.
+ */
+export function vmDebugSurface(isAdmin: () => boolean = () => false): VmDebugSurface {
+  function requireAdmin(): void {
+    if (!isAdmin()) throw new Error("[lararium] vmPool.getVm: admin authority required");
+  }
+
   return {
     list: listRecipeIds,
 
@@ -207,6 +229,12 @@ export function vmDebugSurface(): VmDebugSurface {
       if (!_pool.has(recipeId)) return;
       const vm = await _pool.get(recipeId, async () => { throw new Error(`recipe ${recipeId} not booted`); });
       vm.setTiddler(fields);
+    },
+
+    async getVm(recipeId) {
+      requireAdmin();
+      if (!_pool.has(recipeId)) throw new Error(`[lararium] vmPool.getVm: recipe "${recipeId}" not booted`);
+      return _pool.get(recipeId, async () => { throw new Error(`recipe ${recipeId} not booted`); });
     },
   };
 }

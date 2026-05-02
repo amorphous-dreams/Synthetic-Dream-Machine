@@ -54,6 +54,9 @@ export interface RecipeVm {
 export class DirectRecipeVm implements RecipeVm {
   constructor(private readonly vm: LarariumTW5) {}
 
+  /** Full LarariumTW5 instance — available for admin/debug surfaces only. */
+  get tw5(): LarariumTW5 { return this.vm; }
+
   async loadRecords(records: SerializedRecord[]): Promise<void> {
     this.vm.bulkSetTiddlers(
       records.map((r) => ({

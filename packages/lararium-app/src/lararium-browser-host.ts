@@ -30,7 +30,8 @@
 
 import { useState, useEffect, useRef } from "react";
 import type { LarariumOpenPhase, CatalogDoc } from "@lararium/core";
-import { ReadinessMap, CompositeStore } from "@lararium/core";
+import { ReadinessMap, CompositeStore, receiptAllows } from "@lararium/core";
+import type { LarAuthReceipt } from "@lararium/core";
 import {
   LarariumTW5, LarariumCrdtSyncAdaptor, setActiveTW5,
   DirectRecipeVm, attachRecipeVm, releaseRecipeVm, makeRecipeId,
@@ -287,7 +288,10 @@ export function useLarariumHostOpen(options: BrowserHostOptions): HostOpenState 
 
       // Expose VM pool + raw TW5 instance on the isomorphic debug surface.
       // Same shape on every peer — server wires global.__larariumDebug.vmPool.
-      debugSet("vmPool", vmDebugSurface());
+      const receipt: LarAuthReceipt | null = authReceipt ?? null;
+      debugSet("vmPool", vmDebugSurface(
+        () => !!receipt && receiptAllows(receipt, "lararium:*", "admin"),
+      ));
       debugSet("tw5", t);
 
       // ── Corpus islands — parallel, non-blocking ───────────────────────────

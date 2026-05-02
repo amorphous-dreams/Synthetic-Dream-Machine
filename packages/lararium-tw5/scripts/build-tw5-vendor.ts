@@ -32,7 +32,8 @@ const _require = createRequire(import.meta.url);
 const TW5_VERSION = "5.4.0";
 const TW5_SCRIPT_FILENAME = `tiddlywikicore-${TW5_VERSION}.js`;
 
-const MONOREPO_ROOT  = dirname(laresRoot);
+// laresRoot = .../packages/lares — two dirname() calls reach the repo root.
+const MONOREPO_ROOT  = dirname(dirname(laresRoot));
 const APP_PUBLIC_DIR = join(MONOREPO_ROOT, "packages/lararium-app/public");
 const CORE_JS_OUT    = join(APP_PUBLIC_DIR, TW5_SCRIPT_FILENAME);
 const VERSION_TS_OUT = resolve(__dirname, "../src/generated-tw5-version.ts");
