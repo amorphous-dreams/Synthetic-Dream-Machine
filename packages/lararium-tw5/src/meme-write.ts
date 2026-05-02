@@ -21,7 +21,7 @@
  */
 
 import type { TW5TiddlerFields } from "./types/tiddlywiki.js";
-import type { LarariumTW5 } from "./lararium-tw5.js";
+import type { TW5Engine } from "./tw5-vm.js";
 import type { LarTiddlerRecord } from "@lararium/core";
 
 // ---------------------------------------------------------------------------
@@ -33,7 +33,7 @@ import type { LarTiddlerRecord } from "@lararium/core";
  * Returns null when the title does not identify an ahu slot child.
  */
 export function inferChildMemeTitle(
-  tw5:   LarariumTW5,
+  tw5:   TW5Engine,
   title: string,
 ): { parentUri: string; slot: string } | null {
   const wiki = tw5.wiki;
@@ -101,11 +101,11 @@ export function buildDirectRecord(
  * children are authoritative for body). This mirrors the carrier-write pattern:
  *   tw5.wiki.renderTiddler("text/plain", memeUri, { variables: { "lar-render-mode": "meme" } })
  *
- * @param tw5     - Live LarariumTW5 VM instance
+ * @param tw5     - Live TW5Engine VM instance
  * @param memeUri - lar:/// URI of the meme tiddler
  * @returns       - Canonical memetic-wikitext string, or "" if not found
  */
-export function exportMemeText(tw5: LarariumTW5, memeUri: string): string {
+export function exportMemeText(tw5: TW5Engine, memeUri: string): string {
   return tw5.wiki.getTiddlerText?.(memeUri, "") ?? "";
 }
 

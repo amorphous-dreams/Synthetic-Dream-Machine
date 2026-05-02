@@ -23,7 +23,7 @@
  */
 
 import type { LarTiddlerStore, LarTiddlerRecord, LarTiddlerChange, ChangeOrigin, MemeProjection } from "@lararium/core";
-import type { LarariumTW5 } from "./lararium-tw5.js";
+import type { TW5Engine } from "./tw5-vm.js";
 import type { TW5TiddlerFields } from "./types/tiddlywiki.js";
 import { buildDirectRecord } from "./meme-write.js";
 
@@ -132,7 +132,7 @@ export class MemeSyncAdaptor implements MemeProjection {
   private _cascadeCache: Array<{ filter: string; strategy: SaveStrategy }> | null = null;
 
   constructor(
-    private readonly tw5:      LarariumTW5,
+    private readonly tw5:      TW5Engine,
     private readonly store:    LarTiddlerStore,
     readonly instanceId:       string,
     targetBag: NonNullable<LarTiddlerRecord["bag"]> = "room",
@@ -159,6 +159,48 @@ export class MemeSyncAdaptor implements MemeProjection {
       return;
     }
     this._applyChange(change);
+  }
+
+  /**
+   * Scale-3 bulk path — called by MemeProvider when >= CHANGESET_THRESHOLD URIs
+   * change in one patch. Fetches all records from the store and applies as one
+   * TW5 transaction, avoiding N individual onUriChanged debounce callbacks.
+   */
+  async onChangeset(uris: ReadonlySet<string>, origin: ChangeOrigin): Promise<void> {
+    if (this._isApplying()) return;
+    const applyKey = `changeset:${origin.kind}`;
+    this._applying.set(applyKey, origin);
+    try {
+      const toRemove: string[] = [];
+      const toAdd: Array<Record<string, string | string[]>> = [];
+
+      await Promise.all(Array.from(uris).map(async (uri) => {
+        const rec = await this.store.get(uri);
+        if (!rec || rec.deleted) {
+          toRemove.push(uri);
+          const childTitles = this.tw5.filterTiddlers(`[field:fragment-parent[${uri}]]`);
+          for (const t of childTitles) toRemove.push(t);
+          return;
+        }
+        const isMeme = isMemeRecord(rec, uri);
+        if (isMeme && rec.text) {
+          const staleChildren = this.tw5.filterTiddlers(`[field:fragment-parent[${uri}]]`);
+          for (const t of staleChildren) toRemove.push(t);
+          const tiddlers = this.tw5.deserializeCarrier(uri, rec.text, rec.fields as Record<string, string | string[]>);
+          for (const t of tiddlers) toAdd.push(t as Record<string, string | string[]>);
+        } else {
+          const fields: Record<string, string | string[]> = { title: rec.title, ...rec.fields };
+          if (rec.text !== undefined) fields["text"] = rec.text;
+          toAdd.push(fields);
+        }
+        if (rec.revision) this._revisions.set(uri, rec.revision);
+      }));
+
+      for (const title of toRemove) this.tw5.removeTiddler(title);
+      if (toAdd.length > 0) this.tw5.bulkSetTiddlers(toAdd);
+    } finally {
+      this._applying.delete(applyKey);
+    }
   }
 
   /**

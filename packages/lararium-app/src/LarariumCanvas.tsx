@@ -5,8 +5,8 @@ import "tldraw/tldraw.css";
 import type { LarViewState, LarViewAction, TldrawEditorLike, ZoomLevel } from "@lararium/tldraw";
 import { goToStoryRiver, goToGraph, goToRoom, zoomToMeme, classifyZoom } from "@lararium/tldraw";
 import { RATING_COLOR, type Rating5 } from "@lararium/core";
+import type { TW5Engine } from "@lararium/tw5";
 import { LarariumMenuPanel, LarariumSharePanel, LarariumHelperButtons, useLararium } from "./lararium-context.js";
-import { getActiveTW5 } from "@lararium/tw5";
 import { debugSet } from "./debug.js";
 
 // Wiki mode: suppress tldraw chrome; Lararium slot components fill the UI.
@@ -58,10 +58,9 @@ const ZOOM_DEFAULTS: Record<string, { w: number; h: number; color: string; inclu
   action:      { w: 400, h: 220, color: "rating",  includeAhu: true,  showCarrier: true  },
 };
 
-function applyZoomTemplate(editor: TldrawEditor, level: ZoomLevel) {
+function applyZoomTemplate(editor: TldrawEditor, level: ZoomLevel, tw5: TW5Engine | null) {
   // Read layout props from TW5 wiki: filter by $:/tags/LarariumKumu + kumu-name field.
   // TW5 is the first-class source of truth — no shape.meta.templateProps needed.
-  const tw5 = getActiveTW5();
   const tl = tw5?.getZoomLayout(level) ?? ZOOM_DEFAULTS[level] ?? ZOOM_DEFAULTS["tactical"]!;
 
   const shapes = editor.getCurrentPageShapes();
@@ -162,7 +161,7 @@ function getLarUriFromShape(editor: TldrawEditor, shapeId: TLShapeId): string | 
 
 export function LarariumCanvas({ navState, dispatch, drawingMode, onZoomLevel }: Props) {
   const editorRef = useRef<TldrawEditor | null>(null);
-  const { theme, setEditor, tiddlerStore } = useLararium();
+  const { theme, setEditor, tiddlerStore, tw5 } = useLararium();
 
   // Sync tldraw colorScheme when Lararium theme changes
   useEffect(() => {
@@ -234,7 +233,7 @@ editor.user.updateUserPreferences({ colorScheme: "dark" });
           editor.setCurrentTool("select");
 
           let lastLevel = classifyZoom(editor.getZoomLevel());
-          applyZoomTemplate(editor, lastLevel);
+          applyZoomTemplate(editor, lastLevel, tw5);
 
           editor.store.listen(
             () => {
@@ -242,7 +241,7 @@ editor.user.updateUserPreferences({ colorScheme: "dark" });
               if (level === lastLevel) return;
               lastLevel = level;
               onZoomLevel?.(level);
-              applyZoomTemplate(editor, level);
+              applyZoomTemplate(editor, level, tw5);
             },
             { scope: "session" },
           );

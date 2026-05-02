@@ -23,6 +23,7 @@ import { createPortal } from "react-dom";
 import { INITIAL_VIEW_STATE, viewStateReducer } from "@lararium/tldraw";
 import type { LarViewAction, ZoomLevel } from "@lararium/tldraw";
 import { ReactionGraph } from "@lararium/core";
+import { buildReactionGraph, bindingsForUri } from "@lararium/tw5";
 import { LarariumCanvas } from "./LarariumCanvas.js";
 import { LarariumPanel } from "./LarariumPanel.js";
 import { BootSplash } from "./BootSplash.js";
@@ -74,7 +75,7 @@ export function LarariumShell({ memes, onMemes }: ShellProps) {
         dispatchRef.current({ type: "ZOOM_IN", uri: b.toUri });
       }),
       g.subscribeByFn("relay", (b, payload) => {
-        if (b.trigger) graphRef.current.fireSync(b.toUri, b.trigger, payload);
+        if (b.listenable) graphRef.current.fireSync(b.toUri, b.listenable, payload);
       }),
     ];
     return () => { unsubs.forEach((u) => u()); };
@@ -98,14 +99,14 @@ export function LarariumShell({ memes, onMemes }: ShellProps) {
 
   useEffect(() => {
     if (!tw5) return;
-    const initial = tw5.buildReactionGraph();
-    if (initial) { graphRef.current.load(initial.bindings); setGraphReady(true); }
+    const initial = buildReactionGraph(tw5.wiki);
+    graphRef.current.load(initial.bindings); setGraphReady(true);
     scanMemesFromTw5();
     return tw5.onWikiChange((changes: Record<string, unknown>) => {
       let changed = false;
       for (const uri of Object.keys(changes)) {
         if (!uri.startsWith("lar:")) continue;
-        const bindings = tw5.bindingsForUri(uri);
+        const bindings = bindingsForUri(tw5.wiki, uri);
         if (bindings.length > 0) graphRef.current.updateUri(uri, bindings);
         else graphRef.current.removeUri(uri);
         changed = true;

@@ -13,7 +13,7 @@
 
 import { readFileSync, existsSync, readdirSync } from "fs";
 import { join, basename } from "path";
-import { LarariumTW5 } from "@lararium/tw5";
+import { TW5Engine } from "@lararium/tw5";
 import { createHash } from "crypto";
 import type { Repo, DocHandle } from "@automerge/automerge-repo";
 import type { LarariumDoc, LarariumBlobEntry } from "@lararium/core";
@@ -144,7 +144,7 @@ export async function seedLarariumDoc(
 
   // Snapshot the $:/ system title manifest from a freshly booted VM.
   // This set is the engine authority boundary — corpus docs must not store these.
-  const snapshotVm = new LarariumTW5();
+  const snapshotVm = new TW5Engine();
   await snapshotVm.boot();
   const systemTitles = snapshotVm.filterTiddlers("[prefix[$:/]]").sort();
   snapshotVm.dispose();

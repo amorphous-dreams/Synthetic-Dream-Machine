@@ -13,7 +13,7 @@ import type { Editor } from "tldraw";
 import type { LarViewState, LarViewAction, ZoomLevel } from "@lararium/tldraw";
 import { DEFAULT_ROOMS, ROOM_SYSTEM } from "@lararium/tldraw";
 import type { LarariumOpenPhase, ReactionGraph, CompositeStore } from "@lararium/core";
-import type { LarariumTW5 } from "@lararium/tw5";
+import type { TW5Engine } from "@lararium/tw5";
 import type { MemeEntry } from "./App.js";
 
 // ---------------------------------------------------------------------------
@@ -96,7 +96,7 @@ export interface LarariumCtxValue {
   /** Composite store (corpus layers + room layer) — null until store-ready phase. */
   tiddlerStore:   CompositeStore | null;
   /** Booted TW5 instance — null until tw5-ready phase. */
-  tw5:            LarariumTW5 | null;
+  tw5:            TW5Engine | null;
   /** Boot receipt from authority phase. */
   hostReceipt:    string | null;
   /** Reaction graph built from Automerge store — null until store-ready + scan complete. */

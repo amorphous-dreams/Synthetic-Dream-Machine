@@ -24,7 +24,7 @@
  */
 
 import type { LarTiddlerChange, MemeProjection, MemeProvider } from "@lararium/core";
-import type { LarariumTW5 } from "./lararium-tw5.js";
+import type { TW5Engine } from "./tw5-vm.js";
 import { exportMemeText } from "./meme-write.js";
 
 // ---------------------------------------------------------------------------
@@ -33,7 +33,7 @@ import { exportMemeText } from "./meme-write.js";
 
 /**
  * One VM slot per recipe. Two implementations:
- *   `DirectMemeRecipeVm`  — in-process LarariumTW5 (default; no Worker overhead)
+ *   `DirectMemeRecipeVm`  — in-process TW5Engine (default; no Worker overhead)
  *   `TW5WorkerProxy`      — Worker Thread / Web Worker (Sprint 6 browser host)
  *
  * Implements MemeProjection so it can be registered directly with MemeProvider.
@@ -57,14 +57,14 @@ export interface MemeRecipeVm extends MemeProjection {
 }
 
 // ---------------------------------------------------------------------------
-// DirectMemeRecipeVm — in-process LarariumTW5 wrapper
+// DirectMemeRecipeVm — in-process TW5Engine wrapper
 // ---------------------------------------------------------------------------
 
 export class DirectMemeRecipeVm implements MemeRecipeVm {
-  constructor(private readonly vm: LarariumTW5) {}
+  constructor(private readonly vm: TW5Engine) {}
 
-  /** Full LarariumTW5 instance — available for admin/debug surfaces only. */
-  get tw5(): LarariumTW5 { return this.vm; }
+  /** Full TW5Engine instance — available for admin/debug surfaces only. */
+  get tw5(): TW5Engine { return this.vm; }
 
   onUriChanged(change: LarTiddlerChange): void {
     if (!change.record || change.record.deleted) {

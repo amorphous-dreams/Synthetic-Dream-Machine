@@ -14,7 +14,7 @@
  * editor.store.put() / editor.store.remove() as needed.
  */
 
-import type { LarariumTW5 } from "@lararium/tw5";
+import type { TW5Engine } from "@lararium/tw5";
 import type { BootArtifact, ClosureEntry } from "@lararium/core";
 import { renderToTldraw } from "./render.js";
 import type { TldrawEmission } from "./tldraw-shapes.js";
@@ -55,7 +55,7 @@ function closureEntryFromTiddler(uri: string, fields: Record<string, any>): Clos
 // projectFromTw5 — full TW5 wiki → TldrawEmission
 // ---------------------------------------------------------------------------
 
-export function projectFromTw5(tw5: LarariumTW5): TldrawEmission {
+export function projectFromTw5(tw5: TW5Engine): TldrawEmission {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const wiki = tw5.wiki as any;
 

@@ -7,7 +7,7 @@
 import { useState } from "react";
 import type { LarariumOpenPhase } from "@lararium/core";
 import { ReadinessMap, CompositeStore } from "@lararium/core";
-import type { LarariumTW5 } from "@lararium/tw5";
+import type { TW5Engine } from "@lararium/tw5";
 import type { LarariumRepo } from "./automerge-store.js";
 
 export interface BrowserHostOptions { hostId: string; roomId: string; }
@@ -16,7 +16,7 @@ export interface HostOpenState {
   phase:     LarariumOpenPhase | null;
   repo:      LarariumRepo | null;
   store:     CompositeStore | null;
-  tw5:       LarariumTW5 | null;
+  tw5:       TW5Engine | null;
   receipt:   string | null;
   isLive:    boolean;
   readiness: ReadinessMap;

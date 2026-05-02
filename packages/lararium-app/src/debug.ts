@@ -6,7 +6,7 @@
  * Access via: window.__larariumDebug.<key>
  */
 
-import type { LarariumTW5, VmDebugSurface } from "@lararium/tw5";
+import type { TW5Engine, VmDebugSurface } from "@lararium/tw5";
 import type { LarariumOpenPhase, CompositeStore } from "@lararium/core";
 import type { LarViewAction } from "@lararium/tldraw";
 import type React from "react";
@@ -16,7 +16,7 @@ export interface LarariumDebug {
   tiddlerStore?: CompositeStore | null;
   hostReceipt?:  string | null;
   openPhase?:    LarariumOpenPhase | null;
-  tw5?:          LarariumTW5 | null;
+  tw5?:          TW5Engine | null;
   dispatch?:     React.Dispatch<LarViewAction> | null;
   /**
    * Isomorphic VM pool debug surface — same shape on every peer.
