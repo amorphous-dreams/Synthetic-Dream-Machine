@@ -103,7 +103,7 @@ Both stubs sit in `packages/lararium-tw5/src/widgets/kau.ts`. The capability hoo
 
 ## Causal Island
 
-Each kau instance operates as an isolated async execution boundary. Events do not leak between instances. The only declared crossing points are papalohe edges: `<<~ papalohe DeviceA -> DeviceB trigger:Event fn:Handler >>`.
+Each kau instance operates as an isolated async execution boundary. Events do not leak between instances. The only declared crossing points are papalohe edges: `<<~ papalohe DeviceA -> DeviceB listenable:Event subscribable:Handler >>`.
 
 This maps directly to the Ink & Switch island model: each automerge object is a causally independent document. Merges happen at declared sync points, not implicitly.
 

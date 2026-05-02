@@ -26,7 +26,7 @@ source-symbol = "ReactionGraph RENDER_MODES REACTION_ROLES"
 # Reaction Graph
 
 Isomorphic in-memory reaction dispatch layer — runs on server and client.
-Routes (fromUri, trigger) → (toUri, fn) bindings; static and dynamic; UEFN dispatch semantics.
+Routes (fromUri, listenable) → (toUri, subscribable) bindings; wired and subscribed; UEFN dispatch semantics.
 
 <<~/ahu >>
 
@@ -34,10 +34,10 @@ Routes (fromUri, trigger) → (toUri, fn) bindings; static and dynamic; UEFN dis
 
 <<~ ahu #ooda-ha >>
 
-✶ read the incoming binding set — fromUri, trigger, toUri, fn, source (static|dynamic)
+✶ read the incoming binding set — fromUri, listenable, toUri, subscribable, source (wired|subscribed)
 ⏿ orient dispatch mode: fireSync for view-layer; fire/fireAll for async; fireRace/fireRush reserved
 ◇ load() replaces full set; updateUri() updates one meme's bindings; occupied handler slots survive
-▶ route fire call through (fromUri, trigger) → handlers; await or sync per mode
+▶ route fire call through (fromUri, listenable) → handlers; await or sync per mode
 ⤴ subscribeOnce bridges to kukali; subscribeByFn wires view-layer actions by name not source
 ↺ confirm handler slots occupied; kukali suspensions preserved across wiki-change reloads
 
@@ -51,8 +51,8 @@ The ReactionGraph is the live reaction dispatch layer.
 It is isomorphic (no Node or browser APIs) and runs on both server and client.
 It carries static bindings (declared in carrier pranala edges) and dynamic subscriptions (runtime).
 
-A reaction binding is a (fromUri, trigger) → (toUri, fn) routing rule.
-`fromUri` is the meme that fires. `trigger` is the event name. `fn` is the handler label.
+A reaction binding is a (fromUri, listenable) → (toUri, subscribable) routing rule.
+`fromUri` is the meme that fires. `listenable` is the event name (UEFN OUTPUT pin). `subscribable` is the handler label (UEFN INPUT pin).
 
 The graph is the Tier 0 dispatch surface — all kumu event crossings route through it.
 
@@ -64,16 +64,16 @@ The graph is the Tier 0 dispatch surface — all kumu event crossings route thro
 ## Binding Shape
 
 ```toml
-fromUri  = "lar:/// source meme URI"
-toUri    = "lar:/// target meme URI"
-trigger  = "event name, or null for wildcard"
-fn       = "handler label (subscribeByFn key), or null"
-role     = "pranala edge role, or null"
-source   = "static | dynamic"
+fromUri      = "lar:/// source meme URI"
+toUri        = "lar:/// target meme URI"
+listenable   = "event name (UEFN OUTPUT pin), or null for wildcard"
+subscribable = "handler label (subscribeByFn key, UEFN INPUT pin), or null"
+role         = "pranala edge role, or null"
+source       = "wired | subscribed"
 ```
 
-`static` bindings are declared in carrier text as pranala edges with `family:reaction`.
-`dynamic` bindings are established at runtime via `subscribe()`.
+`wired` bindings are declared in carrier text as pranala edges with `family:reaction`.
+`subscribed` bindings are established at runtime via `subscribe()`.
 
 <<~/ahu >>
 
@@ -101,12 +101,12 @@ fireRush         — puka: first to resolve wins; others receive AbortSignal
 ## Subscription API
 
 ```
-load(bindings)              — replace full binding set; preserve handler slots
-updateUri(uri, bindings)    — incremental update for one meme's bindings
-removeUri(uri)              — remove all bindings for a deleted meme
-subscribe(fromUri, trigger, handler) → unsub   — per-(fromUri,trigger) handler
-subscribeByFn(fnName, handler) → unsub         — handler for ALL bindings with fn=fnName
-subscribeOnce(fromUri, trigger) → Promise + cancel()  — kukali bridge primitive
+load(bindings)                        — replace full binding set; preserve handler slots
+updateUri(uri, bindings)              — incremental update for one meme's bindings
+removeUri(uri)                        — remove all bindings for a deleted meme
+subscribe(fromUri, listenable, handler) → unsub   — per-(fromUri,listenable) handler
+subscribeByFn(fnName, handler) → unsub             — handler for ALL bindings with subscribable=fnName
+subscribeOnce(fromUri, listenable) → Promise + cancel()  — kukali bridge primitive
 ```
 
 `subscribeByFn` is the preferred wiring point for view-layer actions.
@@ -114,7 +114,7 @@ Register once; automatically handles bindings that arrive after boot via `update
 Equivalent to subscribing to a UEFN Relay device by name rather than by source.
 
 `subscribeOnce` bridges to the `kukali` posture (Verse `suspends` analogue).
-The returned Promise resolves when the trigger fires once; `cancel()` rejects it.
+The returned Promise resolves when the listenable fires once; `cancel()` rejects it.
 
 <<~/ahu >>
 
@@ -124,7 +124,7 @@ The returned Promise resolves when the trigger fires once; `cancel()` rejects it
 
 `load()` and `updateUri()` preserve occupied handler slots across binding rebuilds.
 A handler registered via `subscribe()` or `subscribeOnce()` survives graph reloads
-as long as the (fromUri, trigger) key still exists in the incoming binding set.
+as long as the (fromUri, listenable) key still exists in the incoming binding set.
 Unoccupied slots for removed bindings are dropped; occupied slots are kept.
 
 This preserves in-flight kukali suspensions across TW5 wiki-change events.
@@ -137,14 +137,14 @@ This preserves in-flight kukali suspensions across TW5 wiki-change events.
 ## Schema (machine-readable)
 
 ```toml
-# Render modes — canonical values for PranaEdge.renderMode
+# Render modes — canonical values for PranalaEdge.renderMode
 # Source: RENDER_MODES in packages/lararium-core/src/ast.ts
-render-modes = ["reaction-wire"]
-# reaction-wire: trigger label at source, fn label at target
+render-modes = ["papalohe"]
+# papalohe: listenable label at source (OUTPUT pin), subscribable label at target (INPUT pin)
 
 # Canonical roles for reaction family edges
 # Source: REACTION_ROLES in packages/lararium-core/src/ast.ts
-reaction-roles = ["subscription", "handler", "callback"]
+reaction-roles = ["listenable", "subscribable", "observes", "throttles", "debounces"]
 ```
 
 <<~/ahu >>

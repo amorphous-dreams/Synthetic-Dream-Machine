@@ -10,7 +10,7 @@ register     = "CS"
 manaoio      = 0.82
 mana         = 0.86
 manao        = 0.84
-role         = "reaction-family edge sugar — UEFN device graph event wire; trigger at source, fn at target"
+role         = "reaction-family edge sugar — UEFN device graph event wire; listenable at source, subscribable at target"
 cacheable    = true
 retain       = true
 ```
@@ -27,7 +27,7 @@ retain       = true
 
 A reaction-family edge sugar. The wire fires only when the named source event activates it.
 UEFN device graph analogue: `DeviceA.EventX -> DeviceB.FunctionY`.
-`trigger` names the source event. `fn` names the optional target function.
+`listenable` names the source event (OUTPUT pin). `subscribable` names the optional target function (INPUT pin).
 
 <<~/ahu >>
 
@@ -35,11 +35,11 @@ UEFN device graph analogue: `DeviceA.EventX -> DeviceB.FunctionY`.
 
 <<~ ahu #ooda-ha >>
 
-✶ sense the source event declaration at the wire mouth — notice trigger name and optional fn
-⏿ orient the edge: family:reaction, renderMode:reaction-wire; bind trigger label at source end
-◇ fn present → full UEFN binding; fn absent → trigger-only subscription; validate no DAG cycles
-▶ emit EdgeSugarNode with sigil:papalohe, family:reaction, trigger, fn; render reaction-wire
-⤴ register binding in ReactionGraph; kukali suspensions awaiting this trigger may now resolve
+✶ sense the source event declaration at the wire mouth — notice listenable name and optional subscribable
+⏿ orient the edge: family:reaction, renderMode:papalohe; bind listenable label at source end
+◇ subscribable present → full UEFN binding; subscribable absent → listenable-only subscription; validate no DAG cycles
+▶ emit PranalaSugarNode with sigil:papalohe, family:reaction, listenable, subscribable; render papalohe wire
+⤴ register binding in ReactionGraph; kukali suspensions awaiting this listenable may now resolve
 ↺ confirm wire registered; handler slots occupied; aftermath closes to observe
 
 <<~/ahu >>
@@ -50,13 +50,13 @@ UEFN device graph analogue: `DeviceA.EventX -> DeviceB.FunctionY`.
 
 A papalohe MUST carry a `from` socket and a `to` socket.
 A papalohe MUST carry `family:reaction`.
-A papalohe SHOULD carry `trigger` naming the source-side event.
-A papalohe MAY carry `fn` naming the target-side function to invoke.
-A papalohe MUST NOT fire unless the named trigger activates.
+A papalohe SHOULD carry `listenable` naming the source-side event (UEFN OUTPUT pin).
+A papalohe MAY carry `subscribable` naming the target-side function to invoke (UEFN INPUT pin).
+A papalohe MUST NOT fire unless the named listenable activates.
 A papalohe MUST NOT carry `traversal:both`; reciprocal wires MUST use two parallel edges.
 
-`trigger` — the activating event at the source (e.g. `OnEliminated`, `Button.InteractedWithEvent`).
-`fn` — the function invoked at the target (e.g. `ShowScore`, `HandleDamage`). MAY be omitted.
+`listenable` — the activating event at the source (e.g. `OnEliminated`, `Button.InteractedWithEvent`).
+`subscribable` — the function invoked at the target (e.g. `ShowScore`, `HandleDamage`). MAY be omitted.
 
 <<~/ahu >>
 
@@ -66,18 +66,18 @@ A papalohe MUST NOT carry `traversal:both`; reciprocal wires MUST use two parall
 
 ```text
 <<~ papalohe FROM -> TO >>
-<<~ papalohe FROM -> TO trigger:EventName >>
-<<~ papalohe FROM -> TO trigger:EventName fn:FunctionName >>
-<<~ papalohe #fragment FROM -> TO trigger:OnEliminated fn:ShowScore >>
+<<~ papalohe FROM -> TO listenable:EventName >>
+<<~ papalohe FROM -> TO listenable:EventName subscribable:FunctionName >>
+<<~ papalohe #fragment FROM -> TO listenable:OnEliminated subscribable:ShowScore >>
 ```
 
 `? ->` MAY compress when enclosing pressure carries the source socket.
 
 Regex (canonical):
 ```
-/<<~\s*papalohe\s+(#[\w-]+\s+)?(\S+)\s*->\s*(\S+)(?:\s+trigger:([\w.-]+))?(?:\s+fn:([\w.-]+))?\s*>>/
+/<<~\s*papalohe\s+(#[\w-]+\s+)?(\S+)\s*->\s*(\S+)(?:\s+listenable:([\w.-]+))?(?:\s+subscribable:([\w.-]+))?\s*>>/
 ```
-Groups: `[full, #slot?, FROM, TO, trigger?, fn?]`
+Groups: `[full, #slot?, FROM, TO, listenable?, subscribable?]`
 
 <<~/ahu >>
 
@@ -93,19 +93,19 @@ sigil          = "papalohe"
 kind           = "edge-sugar"
 layer          = "both"
 default-family = "reaction"
-render-mode    = "reaction-wire"
+render-mode    = "papalohe"
 alias          = []
 
-pattern = '<<~\s*papalohe\s+(#[\w-]+\s+)?(\S+)\s*->\s*(\S+)(?:\s+trigger:([\w.-]+))?(?:\s+fn:([\w.-]+))?\s*>>'
+pattern = '<<~\s*papalohe\s+(#[\w-]+\s+)?(\S+)\s*->\s*(\S+)(?:\s+listenable:([\w.-]+))?(?:\s+subscribable:([\w.-]+))?\s*>>'
 
 [captures]
-slot    = 1
-from    = 2
-to      = 3
-trigger = 4
-fn      = 5
+slot        = 1
+from        = 2
+to          = 3
+listenable  = 4
+subscribable = 5
 
-canonical-roles = ["subscription", "handler", "callback"]
+canonical-roles = ["listenable", "subscribable", "observes", "throttles", "debounces"]
 ```
 
 <<~/ahu >>

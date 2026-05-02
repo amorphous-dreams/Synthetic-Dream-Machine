@@ -117,11 +117,11 @@ export interface LiveCarrier {
 /** Reaction event broadcast — fan-out from a fire() call. */
 export interface LiveMsgEvent {
   type: "event";
-  fromUri:  string;
-  trigger:  string;
-  targetFn: string | null;
-  payload:  unknown;
-  timestamp: string;
+  fromUri:      string;
+  listenable:   string;
+  subscribable: string | null;
+  payload:      unknown;
+  timestamp:    string;
 }
 
 

@@ -518,10 +518,10 @@ description   = "English alias for pono; declarative structural constraint; pars
 name           = "papalohe"
 kind           = "edge-sugar"
 layer          = "both"
-pattern        = '<<~\s*papalohe\s+(#[\w-]+\s+)?(\S+)\s*->\s*(\S+)(?:\s+trigger:([\w.-]+))?(?:\s+fn:([\w.-]+))?\s*>>'
+pattern        = '<<~\s*papalohe\s+(#[\w-]+\s+)?(\S+)\s*->\s*(\S+)(?:\s+listenable:([\w.-]+))?(?:\s+subscribable:([\w.-]+))?\s*>>'
 default_family = "reaction"
-render_mode    = "reaction-wire"
-description    = "reaction family edge sugar; Lua: pāpālohe — warrior body-listening reflex; full UEFN wire: DeviceA -> DeviceB trigger:OnEliminated fn:ShowScore; trigger = source event name (DeviceA.EventX); fn = target function name (DeviceB.FunctionY); compile: pranala family:reaction renderMode:reaction-wire; render: arrow with trigger label at source, fn label at target; canonical roles: subscription | handler | callback; [SC]"
+render_mode    = "papalohe"
+description    = "reaction family edge sugar; Lua: pāpālohe — warrior body-listening reflex; full UEFN wire: DeviceA -> DeviceB listenable:OnEliminated subscribable:ShowScore; listenable = source event name / UEFN OUTPUT pin (DeviceA.EventX); subscribable = target function name / UEFN INPUT pin (DeviceB.FunctionY); compile: pranala family:reaction renderMode:papalohe; render: arrow with listenable label at source, subscribable label at target; canonical roles: listenable | subscribable | observes | throttles | debounces; [SC]"
 
 [[sigils]]
 name          = "kukali"
@@ -607,9 +607,9 @@ dag_required        = false
 role_required       = false
 role_recommended    = true
 confidence_bounded  = false
-canonical_roles     = ["subscription", "handler", "callback"]
-render_mode         = "reaction-wire"
-description         = "triggered response subscription; pāpālohe — body-listening reflex; fires only when source event activates; payload: trigger (source event name), fn (target function name); OODA-HA: wire declared at Orient phase, executes at Act phase, violations surface at Aftermath; sugar: papalohe; render: reaction-wire (trigger label at source, fn label at target)"
+canonical_roles     = ["listenable", "subscribable", "observes", "throttles", "debounces"]
+render_mode         = "papalohe"
+description         = "triggered response subscription; pāpālohe — body-listening reflex; fires only when source listenable activates; payload: listenable (source event name / UEFN OUTPUT pin), subscribable (target function name / UEFN INPUT pin); OODA-HA: wire declared at Orient phase, executes at Act phase, violations surface at Aftermath; sugar: papalohe; render: papalohe wire (listenable label at source, subscribable label at target)"
 
 [[families]]
 name                = "spatial"

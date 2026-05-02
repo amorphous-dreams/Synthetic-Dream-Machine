@@ -160,8 +160,8 @@ function nodeToTw5(node: MemeAstNode, wiki?: TW5Wiki): TW5ParseNode {
           attributes: {
             from:    attr(n.fromRaw ?? ""),
             to:      attr(n.toRaw),
-            ...(n.trigger ? { trigger: attr(n.trigger) } : {}),
-            ...(n.fn      ? { fn:      attr(n.fn) }      : {}),
+            ...(n.listenable  ? { listenable:  attr(n.listenable) }  : {}),
+            ...(n.subscribable ? { subscribable: attr(n.subscribable) } : {}),
             ...(n.slot    ? { slot:    attr(n.slot) }    : {}),
           },
         };
@@ -172,10 +172,10 @@ function nodeToTw5(node: MemeAstNode, wiki?: TW5Wiki): TW5ParseNode {
           sigil:  attr(n.sigil),
           to:     attr(n.toRaw),
           family: attr(n.family),
-          ...(n.fromRaw ? { from:    attr(n.fromRaw) }    : {}),
-          ...(n.role    ? { role:    attr(n.role) }        : {}),
-          ...(n.trigger ? { trigger: attr(n.trigger) }     : {}),
-          ...(n.fn      ? { fn:      attr(n.fn) }          : {}),
+          ...(n.fromRaw    ? { from:       attr(n.fromRaw) }       : {}),
+          ...(n.role      ? { role:       attr(n.role) }         : {}),
+          ...(n.listenable  ? { listenable:  attr(n.listenable) }  : {}),
+          ...(n.subscribable ? { subscribable: attr(n.subscribable) } : {}),
         },
       };
     }

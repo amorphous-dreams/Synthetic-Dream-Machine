@@ -245,20 +245,20 @@ Each posture reads the same edge differently — the stance sets what the regist
 
 - `*!` (external/narrow — Philosopher's natural posture): reads the specific wire — "A.OnEliminated causes B.ShowScore" — propositional commitment, detail view
 - `*?` (external/wide — Poet ranging): reads the reaction topology — which devices react to which across the carrier
-- `~!` (internal/narrow — Satirist targeting): reads what does NOT have a handler — the absent reactions, missing fn, unmatched triggers (P6: the void the targeting produced)
+- `~!` (internal/narrow — Satirist targeting): reads what does NOT have a handler — the absent reactions, missing subscribable, unmatched listenables (P6: the void the targeting produced)
 - `~?` (internal/wide — Private reflecting): reads what the reaction does to B's internal state when it fires
 - `?` (Cup/Humorist): holds A and B as reaction partners — does this coupling fit? does ShowScore make sense after OnEliminated?
 
 **Rendering loop:**
 
-The canvas render layer reads `PranaEdge.renderMode`. For `"reaction-wire"`:
+The canvas render layer reads `PranalaEdge.renderMode`. For `"papalohe"`:
 1. Draw directed arrow A → B
-2. Label source end with `payload.trigger` (if set)
-3. Label target end with `payload.fn` (if set)
+2. Label source end with `payload.listenable` (if set)
+3. Label target end with `payload.subscribable` (if set)
 4. Apply reaction family visual treatment (distinct from control/dataflow arrows)
 5. `role` value surfaces as edge tooltip or secondary label
 
-Posture-aware render: `*!` posture shows trigger/fn detail labels; `*?` posture renders topology only (device names, no labels); `~!` posture highlights edges with missing fn (Satirist reads the gap).
+Posture-aware render: `*!` posture shows listenable/subscribable detail labels; `*?` posture renders topology only (device names, no labels); `~!` posture highlights edges with missing subscribable (Satirist reads the gap).
 
 ### Shadow vs. Live Transclusion
 
