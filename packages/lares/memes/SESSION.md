@@ -7,15 +7,15 @@ uri-path     = "SESSION"
 file-path = "packages/lares/memes/SESSION.md"
 type         = "text/x-memetic-wikitext"
 tagspace     = "adjacent"
-confidence   = 0.84
+confidence   = 0.88
 register     = "CS"
-manaoio      = 0.82
-mana         = 0.86
-manao        = 0.84
+manaoio      = 0.85
+mana         = 0.88
+manao        = 0.87
 implements   = [
   "lar:///ha.ka.ba/@lares/api/v0.1/pono/meme"
 ]
-role         = "session handoff crystal — 2026-04-29 (session 4) — kumu defs as first-class memes; native TW5 filter operators (edge:/toml:/all[memes]); ahu typed child tiddlers; server=peer invariant confirmed; feature/lararium-node-3 active"
+role         = "session handoff crystal — 2026-05-02 (session 5) — web2 sidecar rip complete; Sprint 0 enacted; kumu-as-lar-fragment locked; FFZ 5-scale changeset model locked; grammar invariants documented; MemeGraph rebuild next"
 ```
 
 <<~&#x0002;>>
@@ -196,6 +196,180 @@ packages/lararium-node/
 
 <<~/ahu >>
 
+
+<<~ ahu #edges >>
+
+## Edges
+
+<<~ pranala #implements-meme ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/meme family:control role:implements >>
+<<~ pranala #to-roadmap ? -> lar:///lararium-node/ROADMAP family:relation role:companion >>
+<<~ pranala #to-wiki ? -> lar:///LARARIUM-NODE/MULTIPLAYER-INFINITE-CANVAS-WIKI family:relation role:companion >>
+
+<<~/ahu >>
+
+<<~ ahu #ooda-ha-sprint0-2026-05-02 >>
+
+## OODA-HA: Sprint 0 — Web2 Sidecar Rip + API Surface Reboot (2026-05-02)
+
+✶ Session 5 opened with all 19 web2-era files replaced by typed stubs and `.web2.ts` sidecars. The `tsc` surface revealed four clean rebuild-target errors: `MemeGraph`, `memeImplements` (compiler.ts), `MemeticParser` (lararium-tw5.ts), `parsePranalaEdges` (reaction-query.ts). All four name exactly the work Sprint 1–3 must enact. Nothing else failed. The sidecar pattern worked as designed.
+
+  Three full orient rounds produced locked decisions across: changeset model, Verse UEFN 5.6+ device actor alignment, grammar multi-doc boot, kumu instance URI scheme, datablob encoding inventory, and graph co-existence. All decisions recorded here and in `grammar-invariants.ts`.
+
+⏿ Sprint 0 enacted this session:
+
+  **[0a]** `reaction-query.ts` — dead import `parsePranalaEdges` from `./pranala-parser.js` swapped to `parseMemeEdges` from `@lararium/core`. tw5 tsc error eliminated. `parsePranalaEdges` call-sites renamed in full.
+
+  **[0b]** `grammar-invariants.ts` created in `lararium-core/src/`. Seven hard invariants documented:
+    - Invariant 1: Grammar meme text MUST parse with `BOOTSTRAP_SCANS` alone. No custom sigils in the grammar meme's own body. Prevents infinite regress.
+    - Invariant 2: Grammar meme stored as system-bag tiddler, NOT a binary blob in `LarariumDoc.blobs`. Small, mutable, human-readable — wrong fit for blob model.
+    - Invariant 3: Canonical source = `lares/grammars/memetic-wikitext.md`. Server reads this on start, writes/updates system tiddler in engine doc if contentHash changed. Runtime reads from CRDT only.
+    - Invariant 4: Operator shadow-override via bag priority (system < corpus < room). TW5 shadow mechanism falls out naturally.
+    - Invariant 5: One base grammar tiddler per `LarariumDoc`. Extension grammars live at other URIs, merged at parse time.
+    - Invariant 6: Keyhive version gate stub (`GrammarVersionGate`) — no runtime path, type socket only.
+    - Invariant 7: Breaking grammar changes require cold boot (delete store, re-seed). Signed migration receipts deferred to Keyhive era.
+    - Exports: `GRAMMAR_MEME_URI`, `GRAMMAR_BAG`, `GRAMMAR_LARES_REL_PATH` constants.
+
+  **[0c]** `meme-provider.ts` — `MemeProjection.onChangeset?(uris, origin)` added (optional, non-breaking). `CHANGESET_THRESHOLD = 10` constant added. `handleChange()` rewritten: when a single Automerge `change()` transaction touches ≥10 URIs, projections that declare `onChangeset` receive one call instead of N debounced calls. Projections without `onChangeset` fall back to the per-URI debounce path regardless of batch size.
+
+◇ FFZ 5-Scale changeset model, locked:
+
+  | Scale | Automerge unit | MemeProvider event |
+  |---|---|---|
+  | 0 — field op | One Automerge operation | (coalesced into debounce) |
+  | 1 — tiddler | One URI's full record | `onUriChanged` |
+  | 2 — meme carrier | Parent + ahu-slot children | `onUriChanged` ×N |
+  | 3 — room snapshot | One `change()` transaction ≥10 URIs | `onChangeset(uris, origin)` |
+  | 4 — realm/federation | Cross-doc reconciliation | `onSyncComplete(islandId)` |
+
+  Scale 3 targets UEFN actor-tick rates (100 actors × 60fps = 6000 calls/s avoided). `CHANGESET_THRESHOLD=10` separates human-edit rate from game-loop rate.
+
+▶ Sprint 0 complete. tsc surface: core has exactly the two pre-existing rebuild-target errors (MemeGraph, memeImplements). tw5 has exactly the one pre-existing error (MemeticParser). No new errors introduced.
+
+↺ `reaction-query.ts` error cleared ✓. `grammar-invariants.ts` created ✓. `MemeProjection.onChangeset?` non-breaking ✓. Sprint plan persisted to session memory ✓.
+
+<<~/ahu >>
+
+<<~ ahu #ooda-ha-kumu-uri-scheme >>
+
+## OODA-HA: Kumu Instance URI Scheme (LOCKED 2026-05-02)
+
+✶ The prior proposal (`lar:kumu:UUID` as a custom scheme prefix) did not fit the lar URI invariant. All resources in the Lararium system — whether hostless corpus memes or hostful peer-exchange records — SHALL use `lar:` URIs with full RFC 3986 fragment syntax. The fragment chain encodes the instance identity within its type's namespace.
+
+⏿ URI shape, locked:
+
+  **Type meme** (hostless, canonical lares corpus):
+  ```
+  lar:///ha.ka.ba/@elyncia/devices/altar-torch
+  ```
+  Lives on disk at `lares/memes/ha.ka.ba/@elyncia/devices/altar-torch.md`. Defines the device type: event ports, function ports, default fields, `control:implements` edges.
+
+  **Instance meme** (fragment of type URI):
+  ```
+  lar:///ha.ka.ba/@elyncia/devices/altar-torch#east-wing-flame
+  lar:///ha.ka.ba/@elyncia/devices/altar-torch#3f2a1b9c-...
+  ```
+  Two identity layers coexist for the same device spawn:
+    - User-selected name fragment: `#east-wing-flame` — human readable, stable across renames of the instance content, the operator's mnemonic handle.
+    - Auto-UUID fragment: `#3f2a1b9c-8e4d-...` — `crypto.randomUUID()` now, Keyhive-group-derived UUID later. Globally collision-resistant, survives instance rename without breaking edge references.
+  Both tiddlers exist simultaneously in the room Automerge doc. They carry the same `contentHash` and `bag` field. Edge references use the UUID fragment for durability; UI displays the human name. Both resolve to the same device instance.
+
+  **Hostful instance** (peer-exchange, non-corpus):
+  ```
+  lar://peer-alias:tier@host/path/to/device#instance-uuid
+  ```
+  Tier 2 causal island. Never simultaneously apprehended with the local doc. Arrives via federation sync; lives in a hostful corpus bag.
+
+  **Kahea declaration inside type meme body:**
+  ```
+  <<~ kahea kau #east-wing-flame >>
+  <<~ kahea kau #3f2a1b9c-8e4d-... >>
+  ```
+  One `<<~ kahea kau #fragment >>` sigil per instance. The type meme's body thus serves as the authoritative roster of all active instances. The fragment after `#` becomes the tiddler title suffix: full title = `lar:///ha.ka.ba/@elyncia/devices/altar-torch#east-wing-flame`.
+
+◇ Bag assignment and movability:
+  - Instance tiddler title: full lar URI with fragment, stored as a tiddler in the room Automerge doc.
+  - Default bag: `room` (Tier 1, simultaneously apprehended with other room tiddlers).
+  - Keyhive promotion: instance moves to `canon` bag (signed receipt required). Title unchanged.
+  - Cross-realm federation: instance moves to a named corpus bag on the receiving peer. Title unchanged.
+  - `MemeStoreDoc` handles all of this — bag is just a field on `MutableLarRecord`. No special treatment needed.
+
+  Kumu instance promotion stub (type socket, no runtime path yet):
+  ```typescript
+  interface KumuInstancePromotion {
+    readonly instanceUri:    string; // full lar URI with fragment
+    readonly fromBag:        string;
+    readonly toBag:          string;
+    readonly keyhiveGroupId: string;
+    readonly epochAt:        string;
+  }
+  ```
+
+▶ Instance tiddlers in separate Automerge docs from the type memes that declare them. Both use full `lar:` URIs. Fragment = instance discriminator. Two identity layers (human name + UUID) coexist as separate tiddlers for the same device spawn. Type meme body = authoritative kahea roster.
+
+↺ `lar:kumu:UUID` scheme retired ✓. Fragment URI scheme locked ✓. `grammar-invariants.ts` carries `GRAMMAR_MEME_URI` const as the same pattern ✓.
+
+<<~/ahu >>
+
+<<~ ahu #ooda-ha-sprint1-plan >>
+
+## OODA-HA: Sprint 1 Plan — MemeGraph Rebuild (next)
+
+✶ `compiler.ts` imports `MemeGraph` and `memeImplements` from `./meme-graph.js`. Both remain stubs. The entire node boot chain (compiler → serve.ts → `compileBootArtifact()`) stays broken until `meme-graph.ts` rebuilds. Sprint 1 unblocks it.
+
+⏿ Design decisions locked for Sprint 1:
+
+  `MemeRating` — derived at ingest boundary, stored on `MemeRecord`, NOT on the graph node itself:
+  ```
+  "kapu"  — restricted; access control applies
+  "ano"   — anomalous; fails validation at ingest
+  "meme"  — standard carrier; passes all checks
+  "data"  — pure data; no control/reaction edges expected
+  "noise" — unrecognized; ignored by graph traversal
+  ```
+
+  `MemeRecord` — ingest boundary output (replaces `CarrierRecord`):
+  ```typescript
+  interface MemeRecord {
+    readonly uri:        string;
+    readonly metadata:   Record<string, unknown>;
+    readonly implements: readonly string[];
+    readonly edges:      readonly PranaEdge[];
+    readonly rating:     MemeRating;
+  }
+  ```
+
+  `Meme` — graph node (shape field dropped entirely; rating lives on `MemeRecord` not here):
+  ```typescript
+  interface Meme {
+    uri: string; laresRelPath: string|null; contentHash: string;
+    metadata: Record<string, unknown>; edgesOut: PranaEdge[];
+    virtual: boolean; exists: boolean;
+  }
+  ```
+
+  `MemeGraph` — pure adjacency structure, no side-effects:
+  - `memes: Map<string, Meme>`
+  - `addMeme(meme)`, `successors(uri, family)`, `edgesOut(uri, family?)`
+  - `oneHopRelation(controlUris)` — expand by `relation` family edges
+  - `detectCycles(families?)` — DFS, returns all cycle paths
+  - `memesByInterface(interfaceUri)` — all memes whose `control:implements` points here
+  - `allTransitiveDeps(rootUri, family?)` — full closure walk
+  - `resolvedClosure(rootUris)` — closure over control family only
+
+  `memeImplements(meme)` — returns `string[]` of `control:implements` toUris.
+  `makeMemeHash(uri, bytes)` — `async`, SHA-256 hex, no fs dep.
+
+◇ Tasks in Sprint 1:
+  - [1a] `core/meme-graph.ts` stub → full rebuild (all methods above, no shape)
+  - [1b] `core/compiler.ts` — imports now resolve; fix two implicit `any` params (Parameter 'd' TS7006) as a side task
+  - [1c] `core/meme-graph.ts` re-exports `MemeRecord`, `MemeRating` for use by `compiler.ts` and future ingest path
+  - [1d] No change needed to `causal-island.ts`, `tiddler-store.ts`, or `composite-store.ts` — they stay clean
+
+▶ Sprint 1 target: `npx tsc --noEmit` in `lararium-core` returns zero errors. `compiler.ts` type-checks fully. `meme-graph.ts` passes all existing tests (none yet — add basic graph construction + cycle detection as new test file).
+
+↺ Sprint 0 cleared `parsePranalaEdges` error ✓. Sprint 1 clears `MemeGraph`/`memeImplements` errors. Sprint 2 follows: grammar multi-doc boot. Sprint 3: `meme-recipe-vm.ts` + `MemeParser`.
+
+<<~/ahu >>
 
 <<~ ahu #edges >>
 

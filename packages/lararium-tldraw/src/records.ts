@@ -14,7 +14,7 @@
  *   BootArtifact    → TLPage (one page = one boot view / story river)
  *   ClosureEntry    → TLFrameShape (one frame per meme, positioned by topo depth)
  *   ahu socket      → TLFrameShape nested inside its meme frame (parentId = meme frame)
- *   PranaEdge       → TLArrowShape from fromSocket-frame to toUri-frame
+ *   PranalaEdge       → TLArrowShape from fromSocket-frame to toUri-frame
  *   CarrierMetadata → TLNoteShape inside meme frame (IAM block summary)
  *
  * Scopes follow tldraw's documented model:
@@ -144,7 +144,7 @@ export interface LarTLSocket {
   readonly ahuIdx: number;
 }
 
-/** A projected arrow shape — one per PranaEdge. */
+/** A projected arrow shape — one per PranalaEdge. */
 export interface LarTLArrow {
   readonly type: "arrow";
   readonly id: LarProjectionId;

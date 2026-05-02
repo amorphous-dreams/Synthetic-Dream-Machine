@@ -32,8 +32,27 @@ export interface MemeProjection {
   /**
    * Fired once per coalesced URI, after DEBOUNCE_MS has elapsed since the
    * last patch touching that URI. record is null for tombstoned/deleted URIs.
+   *
+   * Covers FFZ Scale-1 (single tiddler) and Scale-2 (meme carrier family).
+   * Human-speed edit rates — debounce window filters duplicate patches.
    */
   onUriChanged(change: LarTiddlerChange): void;
+
+  /**
+   * Fired when a single Automerge change() transaction touches >= CHANGESET_THRESHOLD
+   * URIs simultaneously (FFZ Scale-3 — "all actors tick").
+   *
+   * Called INSTEAD OF N individual onUriChanged calls when the batch is large.
+   * The projection should call bulkSetTiddlers() (or equivalent) once, rather than
+   * N individual setTiddler() calls — critical for UEFN-scale actor tick rates.
+   *
+   * `uris` contains all URIs touched in the transaction. The projection is
+   * responsible for fetching current records from the store for those URIs.
+   *
+   * If absent on a projection, MemeProvider falls back to N individual onUriChanged
+   * calls regardless of batch size — i.e. Scale-3 awareness is opt-in.
+   */
+  onChangeset?(uris: ReadonlySet<string>, origin: ChangeOrigin): void;
 
   /**
    * Fired once per island when its initial Automerge sync replay has settled.
@@ -42,6 +61,8 @@ export interface MemeProjection {
    *
    * Single-doc default: islandId = "automerge" (matches AutomergeMemeStore origin).
    * M-bags: each DocHandle passes its own edgeIslandId.
+   *
+   * Covers FFZ Scale-4 (realm/federation reconciliation).
    */
   onSyncComplete?(islandId: string): void;
 }
@@ -63,6 +84,20 @@ export class MemeProvider {
    * a full initial-sync burst before the first projection callback fires.
    */
   static readonly DEBOUNCE_MS = 40;
+
+  /**
+   * FFZ Scale-3 threshold. When a single Automerge change() transaction touches
+   * >= CHANGESET_THRESHOLD URIs, MemeProvider emits one onChangeset() call on
+   * projections that declare it, INSTEAD OF N individual onUriChanged() calls.
+   *
+   * Rationale: at UEFN scene scale (100 actors × 60fps) per-URI debounce fires
+   * 6000 callbacks/second into the TW5 VM. A single onChangeset() call lets the
+   * VM call bulkSetTiddlers() once per transaction instead.
+   *
+   * Below this threshold: per-URI debounce path (human-speed edits).
+   * At/above this threshold: onChangeset() path (game-loop/bulk imports).
+   */
+  static readonly CHANGESET_THRESHOLD = 10;
 
   private readonly _projections = new Set<MemeProjection>();
   private readonly _pending     = new Map<string, { origin: ChangeOrigin; timer: ReturnType<typeof setTimeout> }>();
@@ -115,12 +150,48 @@ export class MemeProvider {
    * with the save cascade — whatever the adaptor writes, the provider must fan out.
    */
   handleChange(patches: RawPatch[], origin: ChangeOrigin): void {
+    // Collect all touched URIs from this Automerge change() transaction.
+    const touched = new Set<string>();
     for (const p of patches) {
       const key = p.path[0];
       if (typeof key !== "string") continue;
       if (key.startsWith("lar:") || key.startsWith("Draft of ")) {
-        this._schedule(key, origin);
+        touched.add(key);
       }
+    }
+    if (touched.size === 0) return;
+
+    // FFZ Scale-3: large batch → emit onChangeset to projections that declare it.
+    // Any projection WITHOUT onChangeset falls back to N individual debounced calls.
+    if (touched.size >= MemeProvider.CHANGESET_THRESHOLD) {
+      let hasChangesetProjection = false;
+      for (const p of this._projections) {
+        if (p.onChangeset) {
+          hasChangesetProjection = true;
+          try { p.onChangeset(touched, origin); }
+          catch (e) { console.error("[MemeProvider] projection error in onChangeset:", e); }
+        }
+      }
+      // For projections WITHOUT onChangeset, fall through to debounce path below.
+      if (hasChangesetProjection) {
+        // Only fan-out to projections that opted out of changeset mode.
+        for (const uri of touched) {
+          const existing = this._pending.get(uri);
+          if (existing) clearTimeout(existing.timer);
+          this._pending.delete(uri);
+        }
+        // Fire debounced for non-changeset projections only when they exist.
+        const hasNonChangeset = [...this._projections].some((p) => !p.onChangeset);
+        if (hasNonChangeset) {
+          for (const uri of touched) this._schedule(uri, origin);
+        }
+        return;
+      }
+    }
+
+    // FFZ Scale-1/2: small batch or no changeset projections → debounce per URI.
+    for (const uri of touched) {
+      this._schedule(uri, origin);
     }
   }
 

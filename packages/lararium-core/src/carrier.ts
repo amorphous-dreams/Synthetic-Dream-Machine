@@ -5,7 +5,7 @@
  */
 
 // Type stubs kept for shape-reference only. Rebuild replaces with MemeRecord.
-import type { PranaEdge } from "./ast.js";
+import type { PranalaEdge } from "./ast.js";
 
 export type CarrierRating = "kapu" | "ano" | "meme" | "data" | "noise";
 export type DepthState    = "resolved" | "absent";

@@ -12,12 +12,12 @@
  *
  * kau / kumu / new aliases: grammar meme registration only (no parser wiring needed
  * until Phase 3 rule-interpreter — they are TOML entries read by GrammarRules).
- * Validated here via validatePranaEdge on reaction edges and KNOWN_FAMILIES export.
+ * Validated here via validatePranalaEdge on reaction edges and KNOWN_FAMILIES export.
  */
 
 import { describe, test, expect } from "@jest/globals";
 import { parsePranalaEdges } from "../src/pranala-parser.js";
-import { validatePranaEdge, KNOWN_FAMILIES } from "@lararium/core";
+import { validatePranalaEdge, KNOWN_FAMILIES } from "@lararium/core";
 
 const BASE = "lar:///grammars/test-carrier";
 
@@ -100,9 +100,9 @@ describe("papalohe — reaction family sugar", () => {
 // reaction family contract
 // ---------------------------------------------------------------------------
 
-describe("reaction family — validatePranaEdge", () => {
+describe("reaction family — validatePranalaEdge", () => {
   test("reaction edge without trigger: no error (trigger not required, just recommended)", () => {
-    const violations = validatePranaEdge({
+    const violations = validatePranalaEdge({
       fromUri: "lar:///a", fromSocket: "lar:///a", fromSlot: null,
       toUri: "lar:///b", toSocket: "lar:///b",
       family: "reaction", role: null, lifecycle: "instance",
@@ -115,7 +115,7 @@ describe("reaction family — validatePranaEdge", () => {
   });
 
   test("reaction edge without role: warning (roleRecommended = true)", () => {
-    const violations = validatePranaEdge({
+    const violations = validatePranalaEdge({
       fromUri: "lar:///a", fromSocket: "lar:///a", fromSlot: null,
       toUri: "lar:///b", toSocket: "lar:///b",
       family: "reaction", role: null, lifecycle: "instance",
@@ -128,7 +128,7 @@ describe("reaction family — validatePranaEdge", () => {
   });
 
   test("reaction edge with role: no warnings", () => {
-    const violations = validatePranaEdge({
+    const violations = validatePranalaEdge({
       fromUri: "lar:///a", fromSocket: "lar:///a", fromSlot: null,
       toUri: "lar:///b", toSocket: "lar:///b",
       family: "reaction", role: "subscription", lifecycle: "instance",
@@ -140,7 +140,7 @@ describe("reaction family — validatePranaEdge", () => {
   });
 
   test("unknown family still errors", () => {
-    const violations = validatePranaEdge({
+    const violations = validatePranalaEdge({
       fromUri: "lar:///a", fromSocket: "lar:///a", fromSlot: null,
       toUri: "lar:///b", toSocket: "lar:///b",
       family: "ghost-family", role: null, lifecycle: "instance",

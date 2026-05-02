@@ -16,6 +16,9 @@
  * Signature verification is added at the Keyhive layer (planned).
  */
 
+import type { MutableLarRecord } from "./meme-store-doc.js";
+export type { MutableLarRecord };
+
 export interface LarariumBlobEntry {
   /** Stable id — "tiddlywikicore" or TW5 plugin title like "$:/plugins/sq/streams". */
   readonly id:       string;
@@ -34,6 +37,26 @@ export interface LarariumDoc {
   /** Keyed by LarariumBlobEntry.id. */
   readonly blobs: Record<string, LarariumBlobEntry>;
   /**
+   * System tiddlers keyed by `lar:` URI (or TW5 title for $:/ namespace).
+   *
+   * Holds first-class tiddlers that belong to the engine island rather than
+   * a corpus or room doc. Seeded at island creation time and reconciled on
+   * resume boots. Current residents:
+   *   - grammar meme  (lar:///ha.ka.ba/@lares/grammars/memetic-wikitext)
+   *
+   * Bag stamped as "system" on each record. Recipe priority: system < corpus < room.
+   * Operator overrides use a higher-priority bag (Invariant 4 of grammar-invariants.ts).
+   *
+   * Value type is `Readonly<MutableLarRecord>` — these records are engine-owned and
+   * must only be written via `seedGrammarTiddler` / `reconcileGrammarTiddlerIfChanged`.
+   * `MutableLarRecord` (non-readonly) is the Automerge write-layer shape used internally
+   * inside `handle.change()` callbacks.
+   *
+   * Optional for backward-compat with engine docs created before this field existed;
+   * `emptyLarariumDoc()` always initializes it as `{}`.
+   */
+  readonly tiddlers?: Record<string, Readonly<MutableLarRecord>>;
+  /**
    * Sorted list of $:/ tiddler titles present in a freshly booted TW5 VM
    * before any corpus tiddlers are loaded.  Written once at seedLarariumDoc time.
    *
@@ -49,7 +72,7 @@ export interface LarariumDoc {
 }
 
 export function emptyLarariumDoc(): LarariumDoc {
-  return { schemaVersion: "0.1", blobs: {} };
+  return { schemaVersion: "0.1", blobs: {}, tiddlers: {} };
 }
 
 export const ENGINE_CORE_ID = "tiddlywikicore";

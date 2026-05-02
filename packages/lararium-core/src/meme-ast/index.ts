@@ -9,7 +9,7 @@
  *   types.ts   — MemeAstNode union types + MemeNode root
  *   scanner.ts — SigilScan patterns + collectEvents()
  *   builder.ts — buildMemeAst(): ParseEvent[] → MemeAstNode[]
- *   edges.ts   — edgesFromMemeAst(): MemeAstNode[] → PranaEdge[]
+ *   edges.ts   — edgesFromMemeAst(): MemeAstNode[] → PranalaEdge[]
  *   parse.ts   — parseMemeText() top-level entry (all three tiers)
  */
 
@@ -29,8 +29,8 @@ export type {
   DynamicNode,
 } from "./types.js";
 
-// Re-export PranaEdge from the shared edge-vocabulary module for convenience.
-export type { PranaEdge, PranaEdgeViolation, GrammarRules, SigilRule } from "../ast.js";
+// Re-export PranalaEdge from the shared edge-vocabulary module for convenience.
+export type { PranalaEdge as PranalaEdge, PranalaEdgeViolation as PranaEdgeViolation, GrammarRules, SigilRule } from "../ast.js";
 
 export type { SigilScan, ParseEvent } from "./scanner.js";
 export { BOOTSTRAP_SCANS, buildScansFromGrammar, collectEvents } from "./scanner.js";

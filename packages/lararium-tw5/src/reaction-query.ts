@@ -8,7 +8,7 @@
 
 import type { TW5Wiki } from "./types/tiddlywiki.js";
 import type { ReactionBinding } from "@lararium/core";
-import { parsePranalaEdges } from "./pranala-parser.js";
+import { parseMemeEdges } from "@lararium/core";
 import { extractReactionBindings, ReactionGraph } from "@lararium/core";
 
 /**
@@ -19,7 +19,7 @@ export function bindingsForUri(wiki: TW5Wiki, uri: string): ReactionBinding[] {
   const text: string | undefined = wiki.getTiddlerText(uri);
   if (!text) return [];
   try {
-    const edges = parsePranalaEdges(uri, text);
+    const edges = parseMemeEdges(uri, text);
     return extractReactionBindings(
       edges.map((e) => ({
         fromUri: e.fromUri, toUri: e.toUri,
@@ -46,7 +46,7 @@ export function buildReactionGraph(wiki: TW5Wiki): ReactionGraph {
     const text: string | undefined = wiki.getTiddlerText(uri);
     if (!text) continue;
     try {
-      const edges = parsePranalaEdges(uri, text);
+      const edges = parseMemeEdges(uri, text);
       for (const e of edges) {
         allEdges.push({
           fromUri: e.fromUri, toUri: e.toUri,

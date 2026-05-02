@@ -6,7 +6,7 @@
  *
  * Three tiers of result:
  *   nodes  — MemeAstNode[] (full parse tree)
- *   edges  — PranaEdge[]   (projected edge records for the meme graph)
+ *   edges  — PranalaEdge[]   (projected edge records for the meme graph)
  *   meme   — MemeNode      (rooted document with uri + body)
  *
  * In a live client, parsing MUST happen inside the TW5 VM so that the grammar
@@ -19,7 +19,7 @@
  */
 
 import type { GrammarRules } from "./types.js";
-import type { MemeAstNode, MemeNode, PranaEdge } from "./types.js";
+import type { MemeAstNode, MemeNode, PranalaEdge } from "./types.js";
 import { collectEvents } from "./scanner.js";
 import { buildMemeAst } from "./builder.js";
 import { edgesFromMemeAst } from "./edges.js";
@@ -34,7 +34,7 @@ export interface ParseMemeResult {
   /** Flat parse tree (same as meme.body, exposed for convenience). */
   readonly nodes: readonly MemeAstNode[];
   /** Projected edge records for the meme graph / TW5 edge-field codec. */
-  readonly edges: readonly PranaEdge[];
+  readonly edges: readonly PranalaEdge[];
 }
 
 // ---------------------------------------------------------------------------
@@ -73,7 +73,7 @@ export function parseMemeEdges(
   uri:      string,
   text:     string,
   grammar?: GrammarRules,
-): PranaEdge[] {
+): PranalaEdge[] {
   return edgesFromMemeAst(
     buildMemeAst(collectEvents(text, grammar), uri, grammar, text),
     uri,

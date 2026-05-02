@@ -3,15 +3,15 @@
 // MemeAstNode and parse-tree node types live in @lararium/tw5/ast.ts — they
 // compile into TW5 IIFE parser modules and must not create a circular dep here.
 //
-// What stays here: PranaEdge, GrammarRules, SigilRule, FamilyRule,
+// What stays here: PranalaEdge, GrammarRules, SigilRule, FamilyRule,
 // Law of Fives ladders, Stance/Syad/Tool vocabulary. These are shared by
 // meme-graph.ts, compiler.ts, and carrier.ts without pulling in the parser.
 
 // ---------------------------------------------------------------------------
-// PranaEdge — compiled edge record (output of edgesFromAst / parsePranalaEdges)
+// PranalaEdge — compiled edge record (output of edgesFromAst / parsePranalaEdges)
 // ---------------------------------------------------------------------------
 
-export interface PranaEdge {
+export interface PranalaEdge {
   readonly fromUri: string;
   /** The enclosing ahu worksite socket. Falls back to carrierUri if no ahu is open. */
   readonly fromSocket: string;
@@ -37,13 +37,13 @@ export interface PranaEdge {
   readonly renderMode: string | null;
 }
 
-export type PranaViolationSeverity = "error" | "warning";
+export type PranalaViolationSeverity = "error" | "warning";
 
-export interface PranaEdgeViolation {
+export interface PranalaEdgeViolation {
   readonly fromUri: string;
   readonly toUri: string;
   readonly family: string;
-  readonly severity: PranaViolationSeverity;
+  readonly severity: PranalaViolationSeverity;
   readonly rule: string;
   readonly message: string;
 }
@@ -223,7 +223,7 @@ export const TOOL_APERTURE: Record<Tool, ToolAperture> = {
 };
 
 // ---------------------------------------------------------------------------
-// Render modes — canonical values for PranaEdge.renderMode.
+// Render modes — canonical values for PranalaEdge.renderMode.
 // ---------------------------------------------------------------------------
 
 // Schema: lar:///ha.ka.ba/@lares/api/v0.1/pono/reaction-graph

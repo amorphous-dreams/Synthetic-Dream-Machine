@@ -25,6 +25,6 @@ export {
 export type {
   MemeAstNode,
   MemeNode,
-  PranaEdge,
+  PranalaEdge,
   ParseMemeResult,
 } from "@lararium/core/meme-ast";

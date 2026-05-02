@@ -4,15 +4,15 @@
  * Local-first, isomorphic: no fs/path/DOM imports.
  * Runs in Node, Deno, browser, and TW5-era JS environments.
  *
- * PranaEdge, GrammarRules, and SigilRule live in @lararium/core/ast.ts (shared
+ * PranalaEdge, GrammarRules, and SigilRule live in @lararium/core/ast.ts (shared
  * vocabulary). This file owns ONLY the parse-tree node shapes.
  *
  * Heleuma ka: sync-heleuma tracks this file.
  * Bundle entry: packages/lararium-tw5/src/meme-ast-entry.ts
  */
 
-import type { PranaEdge, GrammarRules, SigilRule } from "../ast.js";
-export type { PranaEdge, GrammarRules, SigilRule };
+import type { PranalaEdge, GrammarRules, SigilRule } from "../ast.js";
+export type { PranalaEdge as PranalaEdge, GrammarRules, SigilRule };
 
 // ---------------------------------------------------------------------------
 // MemeAstKind — discriminator for every node in the parse tree

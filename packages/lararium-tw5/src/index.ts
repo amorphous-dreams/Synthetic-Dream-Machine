@@ -66,6 +66,9 @@ export { bindingsForUri, buildReactionGraph } from "./reaction-query.js";
 export type { VmDebugSurface } from "./server-api.js";
 export type { RecipeVm, SerializedRecord } from "./recipe-vm.js";
 // @deprecated web2-era: DirectRecipeVm dead (recipe-vm.ts is a stub; see recipe-vm.web2.ts)
+export type { MemeRecipeVm } from "./meme-recipe-vm.js";
+export { DirectMemeRecipeVm, bootMemeRecipeVm } from "./meme-recipe-vm.js";
+export { exportMemeText, buildDirectRecord, inferChildMemeTitle } from "./meme-write.js";
 // @deprecated web2-era: exportCarrierText dead (carrier-write.ts is a stub; see carrier-write.web2.ts)
 export { TW5WorkerProxy } from "./tw5-worker-proxy.js";
 export { VmPool } from "./vm-pool.js";

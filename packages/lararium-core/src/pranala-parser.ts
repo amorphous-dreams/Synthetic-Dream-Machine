@@ -1,19 +1,19 @@
 // pranala-parser — edge vocabulary and validation.
 //
 // grammarRulesFromText and parsePranalaEdges live in @lararium/tw5 (they call
-// parseMemeCarrier). Only the vocabulary constants and validatePranaEdge stay
+// parseMemeCarrier). Only the vocabulary constants and validatePranalaEdge stay
 // here so compiler.ts and meme-graph.ts can use them without a circular dep.
 
 import type {
-  PranaEdge,
-  PranaEdgeViolation,
-  PranaViolationSeverity,
+  PranalaEdge,
+  PranalaEdgeViolation,
+  PranalaViolationSeverity,
   GrammarRules,
   SigilRule,
   FamilyRule,
 } from "./ast.js";
 
-export type { PranaEdge, PranaEdgeViolation, PranaViolationSeverity, GrammarRules, SigilRule, FamilyRule };
+export type { PranalaEdge, PranalaEdgeViolation as PranalaEdgeViolation, PranalaViolationSeverity as PranalaViolationSeverity, GrammarRules, SigilRule, FamilyRule };
 
 // ---------------------------------------------------------------------------
 // Family vocabulary
@@ -45,11 +45,11 @@ export const FAMILY_CONTRACTS: Record<string, FamilyContract> = {
 };
 
 // ---------------------------------------------------------------------------
-// validatePranaEdge
+// validatePranalaEdge
 // ---------------------------------------------------------------------------
 
-export function validatePranaEdge(edge: PranaEdge, grammar?: GrammarRules): PranaEdgeViolation[] {
-  const violations: PranaEdgeViolation[] = [];
+export function validatePranalaEdge(edge: PranalaEdge, grammar?: GrammarRules): PranalaEdgeViolation[] {
+  const violations: PranalaEdgeViolation[] = [];
   const base = { fromUri: edge.fromUri, toUri: edge.toUri, family: edge.family };
 
   const contracts: Record<string, FamilyContract> = { ...FAMILY_CONTRACTS };

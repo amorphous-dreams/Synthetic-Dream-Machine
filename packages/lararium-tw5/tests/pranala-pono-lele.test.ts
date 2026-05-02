@@ -12,7 +12,7 @@
 
 import { describe, test, expect } from "@jest/globals";
 import { parsePranalaEdges } from "../src/pranala-parser.js";
-import { validatePranaEdge } from "@lararium/core";
+import { validatePranalaEdge } from "@lararium/core";
 
 const BASE = "lar:///grammars/test-carrier";
 
@@ -101,15 +101,15 @@ describe("lele — message family edge sugar", () => {
 });
 
 describe("pono and lele family validation", () => {
-  test("pono edges pass validatePranaEdge (constraint family known)", () => {
+  test("pono edges pass validatePranalaEdge (constraint family known)", () => {
     const [e] = edges(`<<~ pono ? -> lar:///something >>`);
-    const violations = validatePranaEdge(e!);
+    const violations = validatePranalaEdge(e!);
     expect(violations.filter((v) => v.severity === "error")).toHaveLength(0);
   });
 
-  test("lele edges pass validatePranaEdge (message family known, role warning expected)", () => {
+  test("lele edges pass validatePranalaEdge (message family known, role warning expected)", () => {
     const [e] = edges(`<<~ lele lar:///something >>`);
-    const violations = validatePranaEdge(e!);
+    const violations = validatePranalaEdge(e!);
     // message has roleRecommended — expect one warning, zero errors
     expect(violations.filter((v) => v.severity === "error")).toHaveLength(0);
     expect(violations.filter((v) => v.severity === "warning")).toHaveLength(1);

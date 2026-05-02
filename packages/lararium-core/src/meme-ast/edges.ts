@@ -1,18 +1,18 @@
 /**
- * meme-ast/edges.ts — edgesFromMemeAst(): MemeAstNode[] → PranaEdge[].
+ * meme-ast/edges.ts — edgesFromMemeAst(): MemeAstNode[] → PranalaEdge[].
  *
  * Local-first, isomorphic: no fs/path/DOM imports.
  * Runs in Node, Deno, browser, and TW5-era JS environments.
  *
  * Projects edge declarations (Pranala, PranalaSugar, Lele, Pae/soh) out of
- * a parsed meme AST into the flat PranaEdge record format consumed by the
+ * a parsed meme AST into the flat PranalaEdge record format consumed by the
  * meme graph, MCP export, and TW5 edge-field codec.
  *
  * Heleuma ka: sync-heleuma tracks this file.
  * Bundle entry: packages/lararium-tw5/src/meme-ast-entry.ts
  */
 
-import type { PranaEdge } from "./types.js";
+import type { PranalaEdge } from "./types.js";
 import type {
   MemeAstNode,
   AhuNode,
@@ -25,8 +25,8 @@ import type {
 // Public entry point
 // ---------------------------------------------------------------------------
 
-export function edgesFromMemeAst(ast: MemeAstNode[], memeUri: string): PranaEdge[] {
-  const edges: PranaEdge[] = [];
+export function edgesFromMemeAst(ast: MemeAstNode[], memeUri: string): PranalaEdge[] {
+  const edges: PranalaEdge[] = [];
   walkForEdges(ast, memeUri, [memeUri], edges);
   return edges;
 }
@@ -35,7 +35,7 @@ export function edgesFromMemeAst(ast: MemeAstNode[], memeUri: string): PranaEdge
 // Walk
 // ---------------------------------------------------------------------------
 
-function walkForEdges(nodes: MemeAstNode[], memeUri: string, ahuStack: string[], edges: PranaEdge[]): void {
+function walkForEdges(nodes: MemeAstNode[], memeUri: string, ahuStack: string[], edges: PranalaEdge[]): void {
   for (const node of nodes) {
     switch (node.kind) {
       case "Ahu":
@@ -87,7 +87,7 @@ function tok(token: string, memeUri: string, ahuStack: string[]): [string, strin
 }
 
 // ---------------------------------------------------------------------------
-// mk — minimal PranaEdge factory with sensible defaults
+// mk — minimal PranalaEdge factory with sensible defaults
 // ---------------------------------------------------------------------------
 
 function mk(
@@ -95,7 +95,7 @@ function mk(
   toUri:   string, toSocket:   string,
   family:  string, role:       string | null,
   payload: Record<string, unknown> = {},
-): PranaEdge {
+): PranalaEdge {
   return {
     fromUri, fromSocket, fromSlot, toUri, toSocket, family, role,
     lifecycle:    "instance",
@@ -115,14 +115,14 @@ function mk(
 // Projection helpers
 // ---------------------------------------------------------------------------
 
-function projectEdge(node: PranalaNode, mu: string, ahuStack: string[]): PranaEdge {
+function projectEdge(node: PranalaNode, mu: string, ahuStack: string[]): PranalaEdge {
   const fromSlot              = node.slot ? mu + node.slot : null;
   const [fromUri, fromSocket] = tok(node.fromRaw, mu, ahuStack);
   const [toUri,   toSocket]   = tok(node.toRaw,   mu, ahuStack);
   return mk(fromUri, fromSocket, fromSlot, toUri, toSocket, node.family, node.role);
 }
 
-function projectSugar(node: PranalaSugarNode, mu: string, ahuStack: string[]): PranaEdge {
+function projectSugar(node: PranalaSugarNode, mu: string, ahuStack: string[]): PranalaEdge {
   const fromSlot   = node.slot ? mu + node.slot : null;
   const fromSocket = ahuStack[ahuStack.length - 1] ?? mu;
 
@@ -152,7 +152,7 @@ function projectSugar(node: PranalaSugarNode, mu: string, ahuStack: string[]): P
   return mk(mu, fromSocket, null, toUri, toSocket, node.family, node.role, { propagation });
 }
 
-function projectDispatch(node: LeleNode, mu: string, ahuStack: string[]): PranaEdge {
+function projectDispatch(node: LeleNode, mu: string, ahuStack: string[]): PranalaEdge {
   const fromSocket = ahuStack[ahuStack.length - 1] ?? mu;
   const toRaw      = node.targetRaw;
   let toUri: string, toSocket: string;

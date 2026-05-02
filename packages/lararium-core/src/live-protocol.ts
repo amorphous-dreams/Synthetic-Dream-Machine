@@ -126,7 +126,7 @@ export interface LiveMsgEvent {
 
 
 // ---------------------------------------------------------------------------
-// Reaction graph — built from PranaEdge[] on both sides
+// Reaction graph — built from PranalaEdge[] on both sides
 // ---------------------------------------------------------------------------
 
 export interface ReactionBinding {

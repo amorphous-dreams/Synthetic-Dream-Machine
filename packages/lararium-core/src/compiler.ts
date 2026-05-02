@@ -7,7 +7,7 @@
 
 import { type MemeGraph, memeImplements } from "./meme-graph.js";
 import { type DigestProvider, defaultCryptoProvider, sha256Hex, canonicalJsonBytes } from "./crypto.js";
-import { type PranaEdge, validatePranaEdge, type PranaEdgeViolation } from "./pranala-parser.js";
+import { type PranalaEdge, validatePranalaEdge, type PranaEdgeViolation } from "./pranala-parser.js";
 
 export const ENTRY_URI = "lar:///ha.ka.ba/@lares/AGENTS";
 
@@ -49,7 +49,7 @@ export interface ValidationResult {
   edgeViolations: PranaEdgeViolation[];
 }
 
-/** Serialised edge record — subset of PranaEdge safe for JSON transport. */
+/** Serialised edge record — subset of PranalaEdge safe for JSON transport. */
 export interface EdgeRecord {
   readonly fromUri:    string;
   readonly fromSocket: string;
@@ -175,14 +175,14 @@ function validateClosure(
 ): ValidationResult {
   const missing = closure.filter((e) => !e.exists && !e.virtual).map((e) => e.uri);
   const du = graph.declaredUnresolved()
-    .filter((d) => d.severity === "error" || d.severity === "warning")
-    .map((d) => ({ uri: d.uri, severity: d.severity, family: d.edge.family }));
+    .filter((d: { severity: string }) => d.severity === "error" || d.severity === "warning")
+    .map((d: { uri: string; severity: string; edge: { family: string } }) => ({ uri: d.uri, severity: d.severity, family: d.edge.family }));
 
   // Family contract validation — runs against all edges in the graph
   const edgeViolations: PranaEdgeViolation[] = [];
   for (const meme of graph.memes.values()) {
     for (const edge of meme.edgesOut) {
-      edgeViolations.push(...validatePranaEdge(edge));
+      edgeViolations.push(...validatePranalaEdge(edge));
     }
   }
 
@@ -235,7 +235,7 @@ export function compileBoot(
     closureEntry(graph, uri, depthMap.get(uri) ?? 0, socketMap.get(uri) ?? "")
   );
 
-  const allEdges: PranaEdge[] = [];
+  const allEdges: PranalaEdge[] = [];
   for (const meme of graph.memes.values()) allEdges.push(...meme.edgesOut);
 
   const { interfaceIndex, invariantIndex } = buildInterfaceIndexes(graph, topoUris);

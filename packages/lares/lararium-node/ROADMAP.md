@@ -11,7 +11,7 @@ register = "S"
 manaoio = 0.82
 mana = 0.88
 manao = 0.86
-role = "work journey log — migration roadmap and milestone log for Lararium Node; M11 SESSION CLOSE (2026-05-01): packages/ monorepo reorg (FFZ web3), LarDiskProjector lights disk-projector readiness, reconcileEngineBlobIfChanged on resume boot (B.1→100%), BAG_IDS + hasBag + corpusBagId in CompositeStore (D→80%), sw-shell replaces snapshot key (FFZ-correct first paint via SW cache), PromotionReceipt type + promoteDraft stub + 6 ability-ladder guard tests (E→25%); M12 opens: sw.ts tsconfig fix, system/projection store impls, promoteDraft head-tracking, Milestone F presence split"
+role = "work journey log — migration roadmap and milestone log for Lararium Node; M13 SESSION OPEN (2026-05-02): web2 sidecar rip complete (19 stubs + sidecars), Sprint 0–1 enacted, MemeGraph zero-error rebuild, kumu lar-fragment URI scheme locked, FFZ 5-scale changeset model locked, grammar-invariants.ts, Sprint 2 next: grammar multi-doc boot"
 cacheable = false
 retain = true
 invariant = false
@@ -34,6 +34,84 @@ It adds explicit ahu markers around the major research sections so the file can 
 
 <<~&#x0002;>>
 
+
+<<~ ahu #m13-session-open-2026-05-02 >>
+
+## M13 Session Open — 2026-05-02 (Sprint 0–1 / Web2 Sidecar Rip + MemeGraph Rebuild)
+
+### OODA-HA receipt
+
+✶ **Observe:**
+Session 5 opened with the full web2 sidecar rip complete from the previous session: 19 dead web2-era source files replaced by typed stubs; 19 `.web2.ts` sidecars created (verbatim originals, excluded from tsc). All 5 tsconfigs updated with `*.web2.ts` exclusions. The `tsc` surface confirmed exactly four rebuild-target errors and nothing else. Three rounds of talk-story orient ran — API surface friction, FFZ web3 redesign direction, Verse UEFN 5.6+ alignment, grammar boot model, changeset scale, graph co-existence, datablob inventory — all decisions locked.
+
+Two new design dimensions unlocked mid-session:
+  1. **Kumu instance URI scheme** — clarified: ALL resources use `lar:` URI fragment syntax (`lar:///type-path#fragment`). Two identity layers coexist per device spawn: user-selected name fragment + auto-UUID fragment. Both stored as separate tiddlers in the room Automerge doc. Declared in type meme body via `<<~ kahea kau #fragment >>` sigils. `lar:kumu:UUID` proposed scheme retired.
+  2. **SESSION.md** — written as the canonical session handoff crystal; three new OODA-HA ahu sections recorded.
+
+⏿ **Orient:**
+Four model shifts locked this session:
+
+  **Shift 1 — Grammar meme is a tiddler, not a blob.**
+  The grammar meme text (`lar:///ha.ka.ba/@lares/grammars/memetic-wikitext`) lives in the `system` bag of the engine Automerge doc as a first-class tiddler. NOT a binary blob in `LarariumDoc.blobs`. Binary blobs are for large, immutable, non-parseable assets (TW5 core JS, plugin bundles). Grammar text is small, mutable, and must remain human-readable. Compiled `GrammarRules` struct = in-memory cache only (fast to derive, no storage). Server re-derives from tiddler text on each VM boot.
+
+  **Shift 2 — FFZ 5-scale changeset model replaces per-URI-only debounce.**
+  `MemeProvider` previously emitted only Scale-1 events (one `onUriChanged` per URI per debounce window). At UEFN game-loop rates (100 actors × 60fps = 6000 callbacks/s), that model breaks. New model:
+  - Scale 1–2 (human-pace): per-URI `onUriChanged` after `DEBOUNCE_MS=40`
+  - Scale 3 (game-loop, bulk import): `onChangeset(uris, origin)` — one call per Automerge `change()` transaction when ≥`CHANGESET_THRESHOLD=10` URIs touched
+  - Scale 4 (realm sync): `onSyncComplete(islandId)` — unchanged
+  Scale 3 is opt-in: projections declare `onChangeset?` to receive it; others fall back to N debounced calls.
+
+  **Shift 3 — Kumu/Verse 5.6+ is compositional, not hierarchical.**
+  Old mental model: kumu devices subclass/extend a type (Blueprint/class-hierarchy). Rejected — that's Unreal 4 Blueprint thinking. Verse 5.6+ uses pure composition via `using`/`trait`. Lararium mapping: type composition via `control:implements` pranala edges (already exists). Device instances carry no inheritance chain. Behavior = assembled from `implements` edges + `papalohe` bindings (reaction:triggers). Instance UUID = crypto.randomUUID() now; Keyhive-group-derived UUID later.
+
+  **Shift 4 — MemeGraph is a pure adjacency structure, not a carrier renderer.**
+  Old web2 `Meme.shape: CarrierShape | null` field dropped entirely. `MemeRating` lives on `MemeRecord` (ingest boundary output), not on the graph node. The graph sees only `Meme` (structural: uri, laresRelPath, contentHash, metadata, edgesOut, virtual, exists). Shape is a projection-layer concern. `MemeRecord` is the ingest boundary output used by the compiler; `Meme` is what the graph stores and traverses.
+
+◇ **Decide:**
+Three sprints enacted:
+
+  **Sprint 0:**
+  - `reaction-query.ts`: `parsePranalaEdges` → `parseMemeEdges` (dead import cleared)
+  - `grammar-invariants.ts`: created in `lararium-core/src/` — 7 invariants, 3 constants, `GrammarVersionGate` Keyhive stub
+  - `meme-provider.ts`: `onChangeset?` added to `MemeProjection`, `CHANGESET_THRESHOLD=10`, `handleChange()` rewritten for Scale-3 dispatch
+
+  **Sprint 1:**
+  - `meme-graph.ts`: full rebuild — `MemeRating`, `MemeRecord`, `Meme` (no shape), `DeclaredUnresolved`; `MemeGraph` class with `addMeme`, `successors`, `edgesOut`, `oneHopRelation`, `memesByInterface`, `allTransitiveDeps`, `resolvedClosure`, `topologicalSort` (Kahn), `declaredUnresolved`, `detectCycles` (DFS); `memeImplements()`, `makeMemeHash()`, `declaredUnresolvedFromEdge()`
+  - `compiler.ts`: implicit-`any` params fixed; `declaredUnresolved()` added to `MemeGraph` surface
+  - `lararium-core tsc`: **ZERO ERRORS** — node boot chain (compiler → serve.ts → `compileBootArtifact()`) unblocked
+
+▶ **Act (files touched):**
+
+| File | Change |
+|---|---|
+| `@lararium/tw5` `reaction-query.ts` | Dead `parsePranalaEdges` import swapped to `parseMemeEdges` from `@lararium/core` |
+| `@lararium/core` `grammar-invariants.ts` | **New** — 7 invariants, `GRAMMAR_MEME_URI`, `GRAMMAR_BAG`, `GRAMMAR_LARES_REL_PATH`, `GrammarVersionGate` stub |
+| `@lararium/core` `meme-provider.ts` | `MemeProjection.onChangeset?`, `CHANGESET_THRESHOLD=10`, Scale-3 dispatch in `handleChange()` |
+| `@lararium/core` `meme-graph.ts` | **Full rebuild** — `MemeRating`, `MemeRecord`, `Meme`, `MemeGraph` class, all traversal/query/sort/cycle methods |
+| `@lararium/core` `compiler.ts` | Implicit-`any` params typed; now compiles clean |
+| `packages/lares/memes/SESSION.md` | Updated — iam block bumped; 3 new OODA-HA ahu sections |
+| `packages/lares/lararium-node/ROADMAP.md` | This section |
+
+⤴ **Ho'oko:**
+
+```sh
+cd packages/lararium-core && npx tsc --noEmit  # ✓ ZERO errors
+cd packages/lararium-tw5  && npx tsc --noEmit  # ✓ one rebuild-target (MemeticParser only)
+```
+
+↺ **Aftermath / M13 open work:**
+
+- `MemeticParser` (lararium-tw5): Sprint 3 target — `meme-parser.ts` TW5 binding using `parseMemeText()`
+- Grammar multi-doc boot: Sprint 2 — `seedGrammarTiddler()` in lararium-node, `loadGrammarFromStore()` in node-host.ts
+- `MemeRecipeVm`: Sprint 3 — new interface (no `loadRecords`, has `syncComplete(islandId)`, has `renderMeme(uri)`)
+- `MemeSyncAdaptor`: Sprint 5 — replaces `LarariumCrdtSyncAdaptor`
+- `KumuDeviceSpec` + `ReactionEngine`: Sprint 4 — Verse 5.6+ device actor model
+- Browser host (`meme-browser-host.ts`): Sprint 6 — research-before-act (Automerge browser repo + Keyhive)
+- `sw.ts` tsconfig lib issues: pre-existing, separate fix
+- `system` + `projection` bag store impls: still pending (D stubs)
+- Milestone F (presence split): 0%, not started
+
+<<~/ahu >>
 
 <<~ ahu #m12-session-open-2026-05-01 >>
 

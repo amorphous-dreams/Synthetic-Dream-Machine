@@ -2,7 +2,7 @@
  * Nested ahu ? -> resolution tests.
  *
  * Ahu blocks serve as:
- *   - graph sockets (fromSocket/toSocket in PranaEdge)
+ *   - graph sockets (fromSocket/toSocket in PranalaEdge)
  *   - wiki worksites/bookmarks (nested sections in a carrier page)
  *
  * Two socket-resolution modes exist for inline pranala:
