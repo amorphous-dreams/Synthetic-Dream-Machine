@@ -101,15 +101,102 @@ cd packages/lararium-tw5  && npx tsc --noEmit  # ✓ one rebuild-target (Memetic
 
 ↺ **Aftermath / M13 open work:**
 
-- `MemeticParser` (lararium-tw5): Sprint 3 target — `meme-parser.ts` TW5 binding using `parseMemeText()`
-- Grammar multi-doc boot: Sprint 2 — `seedGrammarTiddler()` in lararium-node, `loadGrammarFromStore()` in node-host.ts
-- `MemeRecipeVm`: Sprint 3 — new interface (no `loadRecords`, has `syncComplete(islandId)`, has `renderMeme(uri)`)
+- `MemeticParser` (lararium-tw5): Sprint 3 complete ✓
+- Grammar multi-doc boot: Sprint 2 complete ✓
+- `MemeRecipeVm`: Sprint 3 complete ✓
+- `KumuDeviceSpec` + `ReactionEngine`: Sprint 4 complete ✓ — see `#m14-session-cont-2026-05-02` below
 - `MemeSyncAdaptor`: Sprint 5 — replaces `LarariumCrdtSyncAdaptor`
-- `KumuDeviceSpec` + `ReactionEngine`: Sprint 4 — Verse 5.6+ device actor model
 - Browser host (`meme-browser-host.ts`): Sprint 6 — research-before-act (Automerge browser repo + Keyhive)
 - `sw.ts` tsconfig lib issues: pre-existing, separate fix
 - `system` + `projection` bag store impls: still pending (D stubs)
 - Milestone F (presence split): 0%, not started
+
+<<~/ahu >>
+
+<<~ ahu #m14-session-cont-2026-05-02 >>
+
+## M14 Session Cont — 2026-05-02 (Sprint 2–4 / Pranala Rename + Verse Device Model)
+
+### OODA-HA receipt
+
+✶ **Observe:**
+Session continued from M13. The `PranaEdge` → `PranalaEdge` family rename was enacted (LSP missed tail files; sed sweep completed two passes). Backward-compat aliases stripped. Core rebuilt to zero errors. Sprint 4 then revealed a vocabulary gap: the original `kumu-device.ts` used Blueprint/class-hierarchy terms (`Input`/`Output`) that contradict the locked Shift 3 — Verse 5.6+ compositional model. A full Verse alignment pass enacted.
+
+✶ **UEFN Verse 5.6+ Golden Principles (locked):**
+
+  1. **No inheritance for behavior.** Devices are `class(creative_device)` — behavior is assembled via `using` trait composition, not subclassing. Lararium: `control:implements` pranala edges. No device-class hierarchy in type memes.
+
+  2. **Events are typed first-class values.** In Verse: `OnActivated : listenable([]void) = event[]void{}`. An event is a VALUE that can be passed, subscribed to, awaited, or wired in the editor. NOT a callback registration pattern. Lararium: `reaction:triggers` pranala edges — the edge IS the event declaration.
+
+  3. **Two distinct pin kinds — directional, not symmetric:**
+     - **OUTPUT event pin** (`listenable` event): something this device EMITS — others subscribe. Verse: `OnActivated`. Lararium: `KumuDeviceEvent`, `reaction:triggers` role.
+     - **INPUT function pin** (callable): something this device EXPOSES — others call. Verse: `ActivateButton()<suspends>` / `@subscribes`. Lararium: `KumuDeviceHandler`, `reaction:handles` role.
+     - Wiring direction: `source.OutputEvent → target.InputHandler` — never the reverse.
+
+  4. **Wiring is declarative, resolved at device-graph load time.** UEFN: editor connects event pin to function pin, stored as the device graph. Lararium: `papalohe` pranala edges on the instance meme (not hardcoded in the type meme).
+
+  5. **Single-shot async = `Await(event)<suspends>`.** A `suspends` coroutine awaits one event then continues linearly. No callback nesting. Lararium: `ReactionGraph.subscribeOnce()` — already implemented. Same semantic.
+
+  6. **Game-loop actor tick = synchronous declaration order.** At 60fps, all wired handlers for a changeset fire in one synchronous tick. No async interleaving within a tick. Lararium: `ReactionEngine.onChangeset()` → `fireSync()` per URI per unique trigger.
+
+  7. **`@editable` attributes = designer-visible props = ahu slots.** Properties exposed to the level designer in the UEFN editor. Lararium: `ahu` socket URIs on the type meme (`KumuDeviceSpec.slots`).
+
+⏿ **Orient:**
+
+  **Shift 5 — Verse pin vocabulary replaces Input/Output.**
+  `KumuDeviceInput` / `KumuDeviceOutput` discarded. Correct Verse-aligned types:
+  - `KumuDeviceEvent` — OUTPUT pin (event this device emits; Verse `listenable`)
+  - `KumuDeviceHandler` — INPUT function pin (handler this device exposes; Verse callable)
+  `KumuDeviceSpec` fields renamed: `inputs` → `handlers`, `outputs` → `events`.
+
+  **Shift 6 — Pranala role vocabulary locked for device spec derivation.**
+  `reaction:triggers` = event declaration (OUTPUT). `reaction:handles` = handler declaration (INPUT). `reaction:subscription` and bare edges are NOT type-level declarations — they are instance-level wiring annotations. `kumuDeviceSpecFromEdges` now maps strictly on role.
+
+  **Shift 7 — `_fireForUri` deduplication invariant.**
+  `ReactionEngine._fireForUri` MUST collect unique trigger names before calling `fireSync`. Calling `fireSync(uri, trigger)` fans out to ALL subscribers for that `(uri, trigger)` pair. Iterating bindings naively = fires each subscriber once per matching binding = N×M dispatch bug at game-loop rates.
+
+◇ **Decide:**
+
+  **Sprint 4a:** `parseMemeEdges` + `ReactionGraph` + `ReactionBinding` + `extractReactionBindings` — confirmed already present in `live-protocol.ts` and `meme-ast/parse.ts`. Sprint satisfied by prior rebuild.
+
+  **Sprint 4b:** `kumu-device.ts` — written, barrel-exported, then corrected in this session. Two rounds:
+  - Round 1: initial file written with `KumuDeviceInput`/`KumuDeviceOutput` (Blueprint vocabulary)
+  - Round 2: Verse alignment pass — full vocabulary correction, bug fixes, tsc verify
+
+  **Pranala rename:** `PranaEdge` → `PranalaEdge`, `PranaEdgeViolation` → `PranalaEdgeViolation`, `PranaViolationSeverity` → `PranalaViolationSeverity`, `validatePranaEdge` → `validatePranalaEdge`. All backward-compat aliases removed (alpha dev, no consumers). sed sweep + rebuild.
+
+▶ **Act (files touched):**
+
+| File | Change |
+|---|---|
+| `packages/lararium-core/src/ast.ts` | `PranaEdge` → `PranalaEdge`, `PranaEdgeViolation` → `PranalaEdgeViolation`, `PranaViolationSeverity` → `PranalaViolationSeverity` |
+| `packages/lararium-core/src/pranala-parser.ts` | `validatePranaEdge` → `validatePranalaEdge`; backward-compat alias stripped |
+| `packages/lararium-core/src/meme-ast/edges.ts` | All `PranaEdge` → `PranalaEdge` |
+| `packages/lararium-core/src/meme-ast/types.ts` | Import renamed |
+| `packages/lararium-core/src/meme-ast/index.ts` | Re-exports renamed; self-aliases removed |
+| `packages/lararium-core/src/compiler.ts` | `PranaEdgeViolation` import + usages renamed |
+| Tests (3 files) | All `validatePranaEdge` / `PranaEdge` → new names |
+| `@lararium/core` `kumu-device.ts` | **New** — `KumuDeviceEvent`, `KumuDeviceHandler`, `KumuDeviceSpec`, `KumuInstanceRef`, `kumuInstanceUris`, `kumuDeviceSpecFromEdges`, `ReactionEngine implements MemeProjection` |
+| `@lararium/core` `index.ts` | `export * from "./kumu-device.js"` added |
+| `packages/lares/lararium-node/ROADMAP.md` | This section |
+| `packages/lares/memes/SESSION.md` | Updated — new OODA-HA ahu section |
+
+⤴ **Ho'oko:**
+
+```sh
+cd packages/lararium-core && npx tsc --noEmit  # ✓ ZERO errors
+cd packages/lararium-tw5  && npx tsc --noEmit  # ✓ ZERO errors
+# lararium-node: 14 pre-existing web2 rebuild targets only (unchanged)
+```
+
+↺ **Aftermath / M14 open work:**
+
+- **Sprint 5 next:** `meme-sync-adaptor.ts` — `MemeSyncAdaptor` replaces `LarariumCrdtSyncAdaptor` stub. Echo-loop guard, canon guard (lares/ namespace rejects saveTiddler), temp guard (`$:/temp/*`), draft sync. Uses `buildDirectRecord` from `meme-write.ts`. Read `sync-adaptor.web2.ts` sidecar before writing.
+- **Sprint 6:** `meme-browser-host.ts` — Automerge browser repo + IndexedDB. Research-before-act.
+- `sw.ts` tsconfig lib issues: pre-existing, separate fix
+- `system` + `projection` bag store impls: still pending (D stubs)
+- Milestone F (presence split): 0%, not started
+- Keyhive UUID derivation for `KumuInstanceRef.uuidFragment`: post-Sprint 6
 
 <<~/ahu >>
 

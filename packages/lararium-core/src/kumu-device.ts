@@ -1,23 +1,42 @@
 /**
  * kumu-device.ts — KumuDeviceSpec + ReactionEngine.
  *
- * KumuDeviceSpec:
- *   Isomorphic type describing a kumu device actor (Verse 5.6+ composition model).
- *   A kumu type declares named inputs (triggers it can receive) and outputs (fns
- *   it can call on connected devices). Behavior is assembled via `implements`
- *   edges and `papalohe` reaction bindings — no class hierarchy.
+ * ## Verse 5.6+ device model (NOT Blueprint)
  *
- *   Two identity layers per instance (both stored as tiddlers in the room doc):
- *     lar:///type-path#name-fragment  — user-selected friendly name
- *     lar:///type-path#uuid-fragment  — crypto.randomUUID() instance address
+ * UEFN Verse 5.6+ uses pure composition — no class inheritance for behavior.
+ * A `creative_device` class gains behavior by:
+ *   - Declaring `listenable` event values as OUTPUT pins (others subscribe to them)
+ *   - Declaring callable `@subscribes` functions as INPUT function pins (others call them)
+ *   - Using `using` to compose traits (Lararium: `control:implements` pranala edges)
+ *
+ * Wiring is type-safe and directional:
+ *   sourceDevice.OutputEvent → targetDevice.InputHandler
+ *
+ * Verse async: `Await(event)<suspends>` = single-shot coroutine (our `subscribeOnce()`).
+ * Verse sync tick: game-loop actors fire in declaration order — our `fireSync()` + `onChangeset`.
+ *
+ * ## Lararium vocabulary mapping
+ *
+ *   Verse `listenable` event   → `KumuDeviceEvent`   (OUTPUT pin; `reaction:triggers` role)
+ *   Verse callable function    → `KumuDeviceHandler`  (INPUT fn pin; `reaction:handles` role)
+ *   Verse `using` / trait      → `control:implements` pranala edge → `KumuDeviceSpec.traits`
+ *   UEFN editor event→fn wire  → `papalohe` pranala edge (instance-level binding)
+ *   `Await(event)<suspends>`   → `ReactionGraph.subscribeOnce()`
+ *   UEFN game-loop actor tick  → `ReactionEngine.onChangeset()` — Scale-3 synchronous tick
+ *
+ * ## KumuDeviceSpec
+ *   Isomorphic type describing a kumu device type. Derived from the type meme's
+ *   pranala edge list (not from class hierarchy — there is none).
+ *
+ *   Two identity layers per instance (both tiddlers in the room doc):
+ *     lar:///type-path#name-fragment  — user-selected friendly name (human label)
+ *     lar:///type-path#uuid-fragment  — crypto.randomUUID() stable wiring address
  *   Declared in the type meme body via <<~ kahea kau #fragment >> sigils.
  *
- * ReactionEngine:
+ * ## ReactionEngine
  *   MemeProjection that routes CRDT change events through a ReactionGraph.
- *
- *   Scale-1/2 (onUriChanged): fires all reaction triggers for the changed URI.
- *   Scale-3 (onChangeset):    fires all triggers for all URIs in the transaction
- *                             in a single synchronous tick — UEFN game-loop fidelity.
+ *   Scale-1/2 (onUriChanged): fires all unique triggers for the changed URI.
+ *   Scale-3 (onChangeset):    one synchronous tick across all changed URIs.
  *
  * Isomorphic: no Node/browser APIs. Works in Node, browser, and TW5-era environments.
  */
@@ -28,19 +47,28 @@ import type { ReactionBinding } from "./live-protocol.js";
 import { ReactionGraph } from "./live-protocol.js";
 
 // ---------------------------------------------------------------------------
-// KumuDeviceInput / KumuDeviceOutput — actor event vocabulary
+// KumuDeviceEvent / KumuDeviceHandler — Verse OUTPUT / INPUT pin vocabulary
 // ---------------------------------------------------------------------------
 
-/** A named trigger this kumu device can receive (reaction:subscription edge). */
-export interface KumuDeviceInput {
-  /** Trigger name — e.g. "Activated", "Damaged", "Reset". */
+/**
+ * A named event this kumu device can EMIT (Verse OUTPUT pin / `listenable` event value).
+ * Others subscribe to this event; it fires via `reaction:triggers` pranala edges.
+ * e.g. "Activated", "Damaged", "Exploded"
+ */
+export interface KumuDeviceEvent {
+  /** Event name — e.g. "Activated", "Damaged", "Reset". */
   readonly name: string;
   readonly description?: string;
 }
 
-/** A named function this kumu device can call on connected devices (reaction:handler edge). */
-export interface KumuDeviceOutput {
-  /** Function name — e.g. "Enable", "Disable", "SetDamage". */
+/**
+ * A named handler function this kumu device EXPOSES (Verse INPUT function pin).
+ * Others call this function when wiring their output events to this device.
+ * Declared via `reaction:handles` pranala edges on the type meme.
+ * e.g. "Enable", "Disable", "SetDamage"
+ */
+export interface KumuDeviceHandler {
+  /** Handler name — e.g. "Enable", "Disable", "SetDamage". */
   readonly name: string;
   readonly description?: string;
 }
@@ -50,24 +78,27 @@ export interface KumuDeviceOutput {
 // ---------------------------------------------------------------------------
 
 /**
- * Describes a kumu device type.
+ * Describes a kumu device type (Verse 5.6+ composition model).
  *
- * Derived at compile time from a type meme's AST edges:
- *   inputs  ← reaction edges where `role === "subscription"` and `fromUri === typeUri`
- *   outputs ← reaction edges where `role === "handler"` and `fromUri === typeUri`
- *   slots   ← ahu socket URIs declared within the type meme
- *   traits  ← `control:implements` edges out of the type meme
+ * Derived from the type meme's pranala edge list — not from a class hierarchy.
+ *
+ *   events   ← `reaction:triggers` edges where `fromUri === typeUri`
+ *              payload.trigger = event name (Verse OUTPUT pin / `listenable`)
+ *   handlers ← `reaction:handles` edges where `fromUri === typeUri`
+ *              payload.fn = handler name (Verse INPUT function pin)
+ *   slots    ← ahu socket URIs declared within the type meme
+ *   traits   ← `control:implements` edges out of the type meme (Verse `using` trait)
  */
 export interface KumuDeviceSpec {
   /** Canonical type URI (no fragment). e.g. `lar:///sdm/devices/button` */
   readonly typeUri: string;
-  /** Events this device type can receive. */
-  readonly inputs: readonly KumuDeviceInput[];
-  /** Events this device type fires / functions it exposes to connected devices. */
-  readonly outputs: readonly KumuDeviceOutput[];
+  /** Events this device type emits — OUTPUT pins (Verse `listenable` event values). */
+  readonly events: readonly KumuDeviceEvent[];
+  /** Handler functions this device type exposes — INPUT function pins (Verse callables). */
+  readonly handlers: readonly KumuDeviceHandler[];
   /** Ahu slot URIs declared on this type. */
   readonly slots: readonly string[];
-  /** Type URIs this device implements (control:implements edges). */
+  /** Trait type URIs this device implements (control:implements edges — Verse `using`). */
   readonly traits: readonly string[];
 }
 
@@ -102,60 +133,63 @@ export function kumuInstanceUris(ref: KumuInstanceRef): { named: string; uuid: s
 // kumuDeviceSpecFromEdges — derive KumuDeviceSpec from a flat edge list
 // ---------------------------------------------------------------------------
 
+/**
+ * Minimal edge shape required by `kumuDeviceSpecFromEdges`.
+ * Matches the `PranalaEdge` interface from `@lararium/core/ast`.
+ */
 interface EdgeLike {
   fromUri: string;
+  toUri:   string;
   family:  string;
   role:    string | null;
   payload: Record<string, unknown>;
 }
 
 /**
- * Derive a KumuDeviceSpec from the flat edge list for a type meme.
- * Pass the result of `parseMemeEdges(typeUri, text)` after mapping to EdgeLike.
+ * Derive a `KumuDeviceSpec` from the flat edge list for a type meme.
  *
- * inputs  ← reaction edges with role "subscription" (or trigger-only edges)
- * outputs ← reaction edges with role "handler"
- * slots   ← inferred from ahu socket URIs in fromSocket fields (caller must pass)
- * traits  ← control:implements edges
+ * Pass the result of `parseMemeEdges(typeUri, text)` directly — `PranalaEdge`
+ * satisfies the `EdgeLike` shape.
+ *
+ * events   ← `reaction:triggers` edges with `fromUri === typeUri`; name = payload.trigger
+ * handlers ← `reaction:handles` edges with `fromUri === typeUri`; name = payload.fn
+ * slots    ← inferred from ahu socket URIs (caller must pass; no AST field for these yet)
+ * traits   ← `control:implements` edges; toUri = trait type URI (Verse `using`)
  */
 export function kumuDeviceSpecFromEdges(
   typeUri: string,
   edges:   readonly EdgeLike[],
   slots:   readonly string[] = [],
 ): KumuDeviceSpec {
-  const inputs:  KumuDeviceInput[]  = [];
-  const outputs: KumuDeviceOutput[] = [];
-  const traits:  string[]           = [];
+  const events:   KumuDeviceEvent[]   = [];
+  const handlers: KumuDeviceHandler[] = [];
+  const traits:   string[]            = [];
 
   for (const e of edges) {
     if (e.fromUri !== typeUri) continue;
 
     if (e.family === "reaction") {
-      const name = (e.payload["trigger"] as string | undefined)
-                ?? (e.payload["fn"]      as string | undefined)
-                ?? null;
-      if (!name) continue;
-
       const desc = e.payload["description"] as string | undefined;
-      if (e.role === "subscription" || e.role === "handler" && !e.payload["fn"]) {
-        inputs.push(desc ? { name, description: desc } : { name });
-      } else if (e.role === "handler") {
-        outputs.push(desc ? { name, description: desc } : { name });
-      } else {
-        // Bare reaction edge with trigger → treated as input.
-        inputs.push(desc ? { name, description: desc } : { name });
+
+      if (e.role === "triggers") {
+        // OUTPUT pin — event this device emits (Verse `listenable`)
+        const name = e.payload["trigger"] as string | undefined;
+        if (name) events.push(desc ? { name, description: desc } : { name });
+      } else if (e.role === "handles") {
+        // INPUT function pin — handler this device exposes (Verse callable)
+        const name = e.payload["fn"] as string | undefined;
+        if (name) handlers.push(desc ? { name, description: desc } : { name });
       }
+      // roles: observes, throttles, debounces, subscription — not reflected in spec
     }
 
     if (e.family === "control" && e.role === "implements") {
-      traits.push(e.fromUri === typeUri ? e.fromUri : e.fromUri);
-      // target is the trait type URI
-      const targetUri = (e.payload["toUri"] as string | undefined) ?? (e as unknown as { toUri: string }).toUri;
-      if (targetUri && targetUri !== typeUri) traits.push(targetUri);
+      // toUri is the trait type URI (Verse `using` target)
+      if (e.toUri && e.toUri !== typeUri) traits.push(e.toUri);
     }
   }
 
-  return { typeUri, inputs, outputs, slots, traits };
+  return { typeUri, events, handlers, slots, traits };
 }
 
 // ---------------------------------------------------------------------------
@@ -196,11 +230,15 @@ export class ReactionEngine implements MemeProjection {
   }
 
   private _fireForUri(uri: string, payload: Record<string, unknown>): void {
-    const bindings: readonly ReactionBinding[] = this.graph.bindings;
-    for (const b of bindings) {
-      if (b.fromUri === uri && b.trigger) {
-        this.graph.fireSync(uri, b.trigger, payload);
-      }
+    // Collect unique trigger names for this URI first, then fire once per trigger.
+    // fireSync fans out to all subscribers for (uri, trigger) — calling it N times
+    // per binding would fire every subscriber N times.
+    const triggers = new Set<string>();
+    for (const b of this.graph.bindings) {
+      if (b.fromUri === uri && b.trigger) triggers.add(b.trigger);
+    }
+    for (const trigger of triggers) {
+      this.graph.fireSync(uri, trigger, payload);
     }
   }
 }
