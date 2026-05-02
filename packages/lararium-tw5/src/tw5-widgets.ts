@@ -56,9 +56,7 @@ import { AhuWidget }      from "./widgets/ahu.js";
 import { KumuWidget }     from "./widgets/kumu.js";
 import { KauWidget }      from "./widgets/kau.js";
 
-import { registerImplementors } from "./filters/implementors.js";
-import { registerEdge }         from "./filters/edge.js";
-import { registerTomlField }    from "./filters/toml-field.js";
+import { registerLarariumFilters } from "./tw5-filter.js";
 
 export function createLarariumWidgets(_tw: TW5Instance): Record<string, WidgetCtorWithProto> {
   return {
@@ -78,9 +76,7 @@ export function createLarariumWidgets(_tw: TW5Instance): Record<string, WidgetCt
 
 export function registerImplementorsOperator(tw: TW5Instance): void {
   if (!tw?.filterOperators) return;
-  registerImplementors(tw);
-  registerEdge(tw);
-  registerTomlField(tw);
+  registerLarariumFilters(tw);
   // all[memes] — alias for all[tiddlers] via allfilteroperator module type.
   if (tw?.modules?.types) {
     tw.modules.types["allfilteroperator"] = tw.modules.types["allfilteroperator"] ?? {};

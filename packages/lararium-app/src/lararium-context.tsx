@@ -125,7 +125,7 @@ export function shortUri(uri: string): string {
 }
 
 const ROOM_NAME: Record<string, string> = Object.fromEntries(
-  DEFAULT_ROOMS.map((r) => [r.id, r.name])
+  DEFAULT_ROOMS.map((r: { id: string; name: string }) => [r.id, r.name])
 );
 
 export function activeRoomName(navState: LarViewState): string {
