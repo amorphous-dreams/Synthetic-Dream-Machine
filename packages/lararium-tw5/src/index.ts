@@ -36,11 +36,11 @@ export type { FilterEngineFn, TW5SyncAdaptor } from "./lararium-tw5.js";
 
 export { setActiveTW5, getActiveTW5 } from "./active-tw5.js";
 
-export { LarariumCrdtSyncAdaptor } from "./sync-adaptor.js";
-export { MemoryTiddlerStore }      from "./memory-store.js";
+// @deprecated web2-era: LarariumCrdtSyncAdaptor removed (sync-adaptor.ts is a dead stub)
+export { MemoryTiddlerStore } from "./memory-store.js";
 
-// @deprecated web2-era — carrier-codec re-exports. Use deserializer.ts TiddlerFields instead.
-export { parseCarrier, splitCarrierToTiddlers, replaceCarrierSlot, composeCarrierSlotBody, streamEventsToTiddlers } from "./carrier-codec.js";
+// @deprecated web2-era — carrier-codec value exports dead; type contracts kept.
+// Rebuild target: splitCarrierToTiddlers → deserializer.ts
 export type { CarrierSplit, ParentTiddler, ChildTiddler } from "./carrier-codec.js";
 
 // TiddlerFields — canonical home is now deserializer.ts
@@ -49,13 +49,8 @@ export type { TiddlerFields } from "./deserializer.js";
 export { tw5ElementToVdom, tw5ElementToHtml } from "./fake-dom.js";
 export type { VDomNode, TW5FakeElement, TW5FakeTextNode, TW5FakeNode } from "./fake-dom.js";
 
-// @deprecated web2-era — memetic-parser re-exports. Rebuild target: meme-parser.ts.
-export {
-  MemeticParser,
-  parseCarrierToTw5,
-  buildCarrierAndTw5Tree,
-  astToTw5Tree,
-} from "./memetic-parser.js";
+// @deprecated web2-era — memetic-parser value exports dead (memetic-parser.ts is a stub).
+// Rebuild target: meme-parser.ts
 export type { TW5ParseNode } from "./memetic-parser.js";
 
 export { TW5_VERSION, TW5_CORE_SCRIPT_FILENAME, TW5_CORE_SCRIPT_URL } from "./generated-tw5-version.js";
@@ -66,15 +61,15 @@ export { entryToFields, buildEdgeFieldMap } from "./closure-fields.js";
 export { parseZoomLayoutTOML, getZoomLayout } from "./zoom-layout.js";
 export type { ZoomLayout } from "./zoom-layout.js";
 export { bindingsForUri, buildReactionGraph } from "./reaction-query.js";
-export { bootRecipeVm, attachRecipeVm, releaseRecipeVm, makeRecipeId, liveVmCount, listRecipeIds, filterRecipe, precomputeRecipeRooms, renderCarrier, vmDebugSurface } from "./server-api.js";
+// @deprecated web2-era — server-api value exports dead; VmDebugSurface kept.
+// Rebuild target: meme-recipe-vm.ts + meme-server-api.ts
 export type { VmDebugSurface } from "./server-api.js";
 export type { RecipeVm, SerializedRecord } from "./recipe-vm.js";
-export { DirectRecipeVm } from "./recipe-vm.js";
+// @deprecated web2-era: DirectRecipeVm dead (recipe-vm.ts is a stub; see recipe-vm.web2.ts)
+// @deprecated web2-era: exportCarrierText dead (carrier-write.ts is a stub; see carrier-write.web2.ts)
 export { TW5WorkerProxy } from "./tw5-worker-proxy.js";
 export { VmPool } from "./vm-pool.js";
 export { filterMemesWikitext } from "./filter-compat.js";
-// @deprecated web2-era — carrier-write re-export. Rebuild target: meme-write.ts.
-export { exportCarrierText } from "./carrier-write.js";
 export { LarDiskProjector } from "./disk-sync-adaptor.js";
 
 // ---------------------------------------------------------------------------
@@ -87,22 +82,6 @@ export { LarDiskProjector } from "./disk-sync-adaptor.js";
 //   grammarRulesFromText / parsePranalaEdges    →  @lararium/core/meme-grammar (TBD)
 // ---------------------------------------------------------------------------
 
-// @deprecated web2-era
-export { parseMemeCarrier, edgesFromAst, collectEvents, buildAst, parseCarrierNode } from "./parser.js";
-// @deprecated web2-era — use @lararium/core/meme-ast types instead
-export type {
-  MemeAstKind,
-  MemeAstNode,
-  AhuNode,
-  PranalaNode,
-  PranalaSugarNode,
-  LeleNode,
-  PaeNode,
-  TextNode,
-  SigilNode,
-  DynamicNode,
-  CarrierNode,
-  PaePhase,
-} from "./ast.js";
-// @deprecated web2-era
-export { grammarRulesFromText, parsePranalaEdges } from "./pranala-parser.js";
+// @deprecated web2-era — parser.ts is a dead stub; see parser.web2.ts
+// @deprecated web2-era — ast.ts is a dead stub; AST types live in @lararium/core/meme-ast
+// @deprecated web2-era — pranala-parser.ts is a dead stub; see pranala-parser.web2.ts

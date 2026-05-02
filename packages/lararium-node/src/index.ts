@@ -1,4 +1,6 @@
-// @deprecated web2-era — re-exports renderCarrier / recipe VM API from carrier-era stack.
-// Rebuild target: swap to meme-* API once meme-recipe-vm.ts and meme-write.ts exist.
-export * from "./node-host.js";
-export { bootRecipeVm, releaseRecipeVm, filterRecipe, renderCarrier, makeRecipeId, LarariumTW5 } from "@lararium/tw5";
+/**
+ * @deprecated web2-era — recipe VM / renderCarrier exports pending meme-* rebuild.
+ * Rebuild target: swap bootRecipeVm → bootMemeRecipeVm once meme-recipe-vm.ts exists.
+ */
+export type { CorpusSource } from "./node-host.js";
+export { LARES_ROOT, LARES_MEMES_ROOT, CHAPEL_MEMES_ROOT, REPO_ROOT } from "./node-host.js";
