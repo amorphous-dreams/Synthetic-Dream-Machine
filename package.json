@@ -8,7 +8,7 @@
     "test": "pnpm -r test",
     "typecheck": "pnpm -r typecheck",
     "lint": "pnpm -r lint",
-    "dev": "concurrently -n node,vite -c magenta,cyan \"pnpm --filter @lararium/node dev\" \"pnpm --filter lararium-app dev\""
+    "dev": "concurrently -n node,vite -c magenta,cyan \"pnpm --filter @lararium/node dev\" \"pnpm --filter @lararium/app dev\""
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
