@@ -23,7 +23,6 @@ import {
   registerImplementorsOperator,
   LARARIUM_WIDGETS_TIDDLER,
 } from "./tw5-widgets.js";
-import { loadUiTiddlers, loadVendorTiddlers } from "./lares-preloads.js";
 import { getZoomLayout } from "./zoom-layout.js";
 import type { ZoomLayout } from "./zoom-layout.js";
 export type { ZoomLayout };
@@ -93,8 +92,7 @@ export class TW5Engine {
         instance.boot.argv = [];
       }
 
-      const uiTiddlers     = preloadedTiddlers ?? await loadUiTiddlers();
-      const vendorTiddlers = preloadedTiddlers ? [] : await loadVendorTiddlers();
+      const allPreloads = preloadedTiddlers ?? [];
 
       await new Promise<void>((resolve) => {
         let restoreStdout: (() => void) | null = null;
@@ -107,8 +105,7 @@ export class TW5Engine {
 
         instance.preloadTiddlers = instance.preloadTiddlers ?? [];
         instance.preloadTiddlers.push(LARARIUM_WIDGETS_TIDDLER);
-        for (const t of uiTiddlers)     instance.preloadTiddlers.push(t as Record<string, unknown>);
-        for (const t of vendorTiddlers) instance.preloadTiddlers.push(t as Record<string, unknown>);
+        for (const t of allPreloads) instance.preloadTiddlers.push(t as Record<string, unknown>);
 
         instance.boot.boot(() => {
           restoreStdout?.();

@@ -32,6 +32,11 @@ import {
   CompositeStore, corpusBagId, emptyLarariumDoc,
 }                                       from "@lararium/core";
 import { TW5Engine, MemeSyncAdaptor, VmPool } from "@lararium/tw5";
+import {
+  seedLarariumDoc,
+  reconcileEngineBlobIfChanged,
+  reconcileLaresPluginBlobIfChanged,
+} from "./lararium-island.js";
 
 export type NodeOpenPhase =
   | "boot"
@@ -139,16 +144,40 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
   const composite = new CompositeStore();
 
   // ── 3a. LarariumIsland doc — system bag ───────────────────────────────────
-  // Node peer is the authority for the island doc — it creates it if missing.
-  // catalogHandle.larariumDoc.docUrl is set by the seeder in main.ts.
+  // Node peer is the authority for the island doc.
+  // On first boot: seed from disk, register URL in catalog.
+  // On resume: reconcile blobs if disk artifacts changed.
+  let islandHandle: DocHandle<LarariumDoc> | null = null;
   const islandDocUrl = catalog?.larariumDoc?.docUrl ?? null;
   if (islandDocUrl) {
-    const islandHandle = await waitHandleLocal<LarariumDoc>(
+    // Resume boot — load existing island doc.
+    islandHandle = await waitHandleLocal<LarariumDoc>(
       repo, islandDocUrl as AutomergeUrl,
       () => repo.create<LarariumDoc>(emptyLarariumDoc()),
     );
+    await reconcileEngineBlobIfChanged(islandHandle);
+    await reconcileLaresPluginBlobIfChanged(islandHandle);
     composite.addLayer({ bagId: "system", store: new LarariumDocStore(islandHandle), writable: false });
     emit("island-ready");
+  } else {
+    // First boot — seed island doc from disk and register in catalog.
+    try {
+      const { handle } = await seedLarariumDoc(repo);
+      islandHandle = handle;
+      catalogHandle.change((doc) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (doc as any).larariumDoc = {
+          version: (islandHandle!.doc() as any)?.blobs?.["tiddlywikicore"]?.version ?? "unknown",
+          docUrl:  islandHandle!.url,
+          sha256:  (islandHandle!.doc() as any)?.blobs?.["tiddlywikicore"]?.sha256 ?? "",
+        };
+      });
+      composite.addLayer({ bagId: "system", store: new LarariumDocStore(islandHandle), writable: false });
+      emit("island-ready");
+    } catch (err) {
+      // Non-fatal: TW5 core blob may be missing in dev without build step.
+      console.warn(`[lararium] island seed skipped: ${String(err)}`);
+    }
   }
 
   // ── 3b. Corpus docs — one bag per corpus island ───────────────────────────
@@ -216,8 +245,37 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
   emit("peer-ready");
 
   // ── 7. TW5Engine ──────────────────────────────────────────────────────────
+  // Decode lares plugin + vendor plugin blobs from the island doc.
+  // "lararium-lares" is a TW5 plugin tiddler (type: application/json, plugin-type: plugin).
+  // Vendor blobs are keyed by their TW5 plugin title (e.g. "$:/plugins/sq/streams").
+  // TW5's preloadTiddlers mechanism unpacks plugin bundles automatically at boot.
   const tw5 = new TW5Engine();
-  await tw5.boot();
+  const blobs = islandHandle?.doc()?.blobs ?? {};
+  const preloadedTiddlers: Array<Record<string, unknown>> = [];
+
+  const laresBlob = blobs["lararium-lares"]?.blob;
+  if (laresBlob) {
+    try {
+      preloadedTiddlers.push(
+        JSON.parse(new TextDecoder().decode(new Uint8Array(laresBlob))) as Record<string, unknown>,
+      );
+    } catch { /* malformed — skip */ }
+  }
+
+  for (const [id, entry] of Object.entries(blobs)) {
+    if (!id.startsWith("$:/plugins/")) continue;
+    try {
+      const parsed = JSON.parse(new TextDecoder().decode(new Uint8Array(entry.blob))) as unknown;
+      const arr = Array.isArray(parsed) ? parsed : [parsed];
+      for (const item of arr) {
+        if (item && typeof item === "object" && (item as Record<string, unknown>)["title"]) {
+          preloadedTiddlers.push(item as Record<string, unknown>);
+        }
+      }
+    } catch { /* malformed — skip */ }
+  }
+
+  await tw5.boot(undefined, preloadedTiddlers.length > 0 ? preloadedTiddlers : undefined);
   emit("tw5-booted");
 
   // ── 8. Corpus bags — await after TW5 boots ────────────────────────────────

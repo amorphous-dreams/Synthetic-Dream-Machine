@@ -14,7 +14,7 @@
 import { readFileSync, existsSync, readdirSync } from "fs";
 import { join, basename, dirname } from "path";
 import { fileURLToPath } from "url";
-import { TW5Engine, loadUiTiddlers, loadVendorTiddlers } from "@lararium/tw5";
+import { TW5Engine } from "@lararium/tw5";
 import { createHash } from "crypto";
 import type { Repo, DocHandle } from "@automerge/automerge-repo";
 import type { LarariumDoc, LarariumBlobEntry } from "@lararium/core";
@@ -22,9 +22,79 @@ import { ENGINE_CORE_ID, emptyLarariumDoc } from "@lararium/core";
 import { laresRoot } from "@lares/lares";
 import { TW5_VERSION, TW5_CORE_SCRIPT_FILENAME } from "@lararium/tw5";
 
+// ---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------
+// Seed VM helpers — Node-only, builds lares plugin blob for Automerge storage.
+// Browser and Node peers receive the blob via Automerge sync and pass it to
+// TW5Engine.boot() as a preloaded plugin — TW5 unpacks tiddlers at boot.
+// ---------------------------------------------------------------------------
+
+/** URI marker in meme carrier files — captures the lar:/// address. */
+const SOH_URI_RE = /<<~[^>]*&#x0001;[^>]*\?\s*->\s*([^\s>]+)\s*>>/;
+
+/** Walk a directory tree and return all *.md file paths. */
+function walkMdFiles(dir: string): string[] {
+  const results: string[] = [];
+  try {
+    for (const entry of readdirSync(dir, { withFileTypes: true })) {
+      const full = join(dir, entry.name);
+      if (entry.isDirectory()) results.push(...walkMdFiles(full));
+      else if (entry.name.endsWith(".md")) results.push(full);
+    }
+  } catch { /* directory not found — skip silently */ }
+  return results;
+}
+
+/**
+ * Boot a bare Seed TW5VM, ingest all lares/memes/api/v0.1 meme files via
+ * deserializeCarrier(), and pack them into a single "$:/plugins/lararium/lares"
+ * TW5 plugin JSON tiddler blob.
+ *
+ * No TS parsers needed — the TW5 deserializer registered by _registerDeserializer()
+ * handles all memetic-wikitext parsing internally.
+ */
+async function buildLaresPluginBlob(): Promise<Uint8Array> {
+  const memeRoot = join(laresRoot, "memes/api/v0.1");
+  const mdFiles  = walkMdFiles(memeRoot);
+
+  // Boot a Seed VM — no preloads, just registers text/x-memetic-wikitext deserializer.
+  const seedVm = new TW5Engine();
+  await seedVm.boot();
+
+  const tiddlerMap: Record<string, Record<string, unknown>> = {};
+  let count = 0;
+
+  for (const filePath of mdFiles) {
+    const content  = readFileSync(filePath, "utf8");
+    const uriMatch = SOH_URI_RE.exec(content);
+    if (!uriMatch) continue;
+    const rawUri = uriMatch[1]!;
+    const uri    = rawUri.startsWith("lar:///") ? rawUri : `lar:///${rawUri}`;
+    try {
+      const fields = seedVm.deserializeCarrier(uri, content);
+      for (const f of fields) {
+        if (f["title"]) { tiddlerMap[f["title"] as string] = f; count++; }
+      }
+    } catch { /* malformed meme — skip */ }
+  }
+
+  seedVm.dispose();
+  console.log(`[lararium-island] lares plugin  ${count} tiddlers from ${mdFiles.length} files`);
+
+  const pluginTiddler = {
+    title:          "$:/plugins/lararium/lares",
+    type:           "application/json",
+    "plugin-type": "plugin",
+    version:        TW5_VERSION,
+    text:           JSON.stringify({ tiddlers: tiddlerMap }),
+  };
+  return new TextEncoder().encode(JSON.stringify(pluginTiddler));
+}
+
 /** Absolute path to lararium-tw5/public/ — the seeder's source of truth for TW5 core blob. */
 const TW5_PUBLIC_DIR = join(dirname(fileURLToPath(import.meta.url)), "../../lararium-tw5/public");
 
+/** Absolute path to the tw5-plugins directory inside lares. */
 const PLUGINS_DIR = join(laresRoot, "memes/api/v0.1/tw5-plugins");
 
 function sha256hex(bytes: Uint8Array): string {
@@ -76,36 +146,32 @@ export async function reconcileEngineBlobIfChanged(
 }
 
 /**
- * Recompute the lararium-preloads blob from current lares source files.
+ * Recompute the lararium-lares plugin blob from current lares source files.
  * If the sha256 differs from what the LarariumDoc stores, patches the doc.
  *
  * Call this on every resume boot alongside reconcileEngineBlobIfChanged
- * so that changes to lares/memes/api UI/vendor tiddlers propagate to all peers.
+ * so that changes to lares/memes/api tiddlers propagate to all peers.
  */
-export async function reconcilePreloadsBlobIfChanged(
+export async function reconcileLaresPluginBlobIfChanged(
   handle: DocHandle<LarariumDoc>,
 ): Promise<string> {
-  const uiTiddlers     = await loadUiTiddlers();
-  const vendorTiddlers = await loadVendorTiddlers();
-  const preloadsJson   = JSON.stringify([...uiTiddlers, ...vendorTiddlers]);
-  const freshBlob      = new TextEncoder().encode(preloadsJson);
-  const freshSha       = sha256hex(freshBlob);
-  const storedSha      = handle.doc()?.blobs["lararium-preloads"]?.sha256 ?? "";
+  const freshBlob = await buildLaresPluginBlob();
+  const freshSha  = sha256hex(freshBlob);
+  const storedSha = handle.doc()?.blobs["lararium-lares"]?.sha256 ?? "";
 
   if (freshSha === storedSha) return storedSha;
 
-  const entry: LarariumBlobEntry = {
-    id:       "lararium-preloads",
-    version:  TW5_VERSION,
-    sha256:   freshSha,
-    mimeType: "application/json",
-    blob:     freshBlob,
-  };
   handle.change((doc) => {
-    (doc.blobs as Record<string, LarariumBlobEntry>)["lararium-preloads"] = entry;
+    (doc.blobs as Record<string, LarariumBlobEntry>)["lararium-lares"] = {
+      id:       "lararium-lares",
+      version:  TW5_VERSION,
+      sha256:   freshSha,
+      mimeType: "application/json",
+      blob:     freshBlob,
+    };
   });
 
-  console.log(`[lararium-island] preloads blob updated  sha=${freshSha.slice(0, 12)}…  (was ${storedSha.slice(0, 12) || "none"}…)`);
+  console.log(`[lararium-island] lares plugin updated  sha=${freshSha.slice(0, 12)}…  (was ${storedSha.slice(0, 12) || "none"}…)`);
   return freshSha;
 }
 
@@ -190,25 +256,20 @@ export async function seedLarariumDoc(
     if (titles) titles.splice(0, titles.length, ...systemTitles);
   });
 
-  // Serialize UI + vendor tiddlers into a single preloads blob.
-  // Browser peers receive this via Automerge sync and pass it to TW5Engine.boot()
-  // as preloadedTiddlers — no import.meta.glob or disk access needed in the browser.
-  const uiTiddlers     = await loadUiTiddlers();
-  const vendorTiddlers = await loadVendorTiddlers();
-  const preloadsJson   = JSON.stringify([...uiTiddlers, ...vendorTiddlers]);
-  const preloadsBlob   = new TextEncoder().encode(preloadsJson);
-  const preloadsSha    = sha256hex(preloadsBlob);
-  const preloadsEntry: LarariumBlobEntry = {
-    id:       "lararium-preloads",
-    version:  TW5_VERSION,
-    sha256:   preloadsSha,
-    mimeType: "application/json",
-    blob:     preloadsBlob,
-  };
+  // Pack lares memes into a TW5 plugin blob via Seed VM.
+  // Browser and Node peers receive this via Automerge sync and pass it to
+  // TW5Engine.boot() as a preloaded plugin — TW5 unpacks tiddlers at boot.
+  const laresPluginBlob  = await buildLaresPluginBlob();
+  const laresPluginSha   = sha256hex(laresPluginBlob);
   handle.change((doc) => {
-    (doc.blobs as Record<string, LarariumBlobEntry>)["lararium-preloads"] = preloadsEntry;
+    (doc.blobs as Record<string, LarariumBlobEntry>)["lararium-lares"] = {
+      id:       "lararium-lares",
+      version:  TW5_VERSION,
+      sha256:   laresPluginSha,
+      mimeType: "application/json",
+      blob:     laresPluginBlob,
+    };
   });
-  console.log(`[lararium-island] preloads blob  ${uiTiddlers.length + vendorTiddlers.length} tiddlers  sha=${preloadsSha.slice(0, 12)}…`);
 
   console.log(`[lararium-island] TW5 core v${TW5_VERSION}  sha=${coreSha.slice(0, 12)}…  system titles: ${systemTitles.length}`);
   console.log(`[lararium-island] engine doc URL: ${handle.url}`);

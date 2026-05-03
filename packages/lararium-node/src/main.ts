@@ -31,7 +31,6 @@ import { LarDiskProjector } from "./disk-projector.js";
 import { LARES_MEMES_ROOT } from "./node-host.js";
 import { ReactionEngine }   from "@lararium/core";
 import { exportMemeText }   from "@lararium/tw5";
-import { seedLarariumDoc, reconcileEngineBlobIfChanged, reconcilePreloadsBlobIfChanged } from "./lararium-island.js";
 import type { NodeLarPeerResult } from "./open-node-lar-peer.js";
 
 // ---------------------------------------------------------------------------
@@ -136,41 +135,7 @@ async function main(): Promise<void> {
   });
   state.result = result;
 
-  const { peer, tw5, repo } = result;
-
-  // ── LarariumDoc seeder — system bag bootstrap ────────────────────────────
-  // Loop B: seed once on first boot; reconcile blob on resume if version changed.
-  const catalogHandle = repo.find<import("@lararium/core").CatalogDoc>(
-    result.catalogHandleUrl as import("@automerge/automerge-repo").AutomergeUrl,
-  );
-  const existingLarariumDocUrl = (await catalogHandle).doc()?.larariumDoc?.docUrl ?? null;
-
-  if (!existingLarariumDocUrl) {
-    try {
-      const { handle: larariumDocHandle } = await seedLarariumDoc(repo);
-      (await catalogHandle).change((doc) => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (doc as any).larariumDoc = {
-          version: (larariumDocHandle.doc() as any)?.blobs?.["tiddlywikicore"]?.version ?? "unknown",
-          docUrl:  larariumDocHandle.url,
-          sha256:  (larariumDocHandle.doc() as any)?.blobs?.["tiddlywikicore"]?.sha256 ?? "",
-        };
-      });
-      console.log(`[lararium] larariumDoc seeded: ${larariumDocHandle.url}`);
-    } catch (err) {
-      // Non-fatal: TW5 core blob may be missing in dev without build step.
-      console.warn(`[lararium] larariumDoc seed skipped: ${String(err)}`);
-    }
-  } else {
-    // Resume boot: reconcile TW5 core blob if version changed on disk.
-    try {
-      const larariumDocHandle = await repo.find<import("@lararium/core").LarariumDoc>(
-        existingLarariumDocUrl as import("@automerge/automerge-repo").AutomergeUrl,
-      );
-      await reconcileEngineBlobIfChanged(larariumDocHandle);
-      await reconcilePreloadsBlobIfChanged(larariumDocHandle);
-    } catch { /* blob unchanged or file missing — no-op */ }
-  }
+  const { peer, tw5 } = result;
 
   // Reaction bus — maintains ReactionGraph from CRDT changes.
   const engine = new ReactionEngine();

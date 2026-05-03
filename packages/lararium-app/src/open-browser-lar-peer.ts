@@ -261,20 +261,41 @@ export async function openBrowserLarPeer(opts: {
   });
   emit("peer-ready");
 
-  // ── 7. TW5Engine — boot with core blob + preloaded tiddlers from LarariumDoc ──
+  // ── 7. TW5Engine — boot with core blob + lares plugin + vendor plugins from LarariumDoc ──
   // new Uint8Array(raw) normalises Automerge's internal chunk type to a clean ArrayBuffer.
   const doc = larariumDocHandle?.doc();
-  const coreBlobRaw    = doc?.blobs?.["tiddlywikicore"]?.blob;
-  const preloadsBlobRaw = doc?.blobs?.["lararium-preloads"]?.blob;
-  const coreBlob = coreBlobRaw ? new Uint8Array(coreBlobRaw) : undefined;
-  let preloadedTiddlers: Array<Record<string, unknown>> | undefined;
-  if (preloadsBlobRaw) {
+  const coreBlobRaw = doc?.blobs?.["tiddlywikicore"]?.blob;
+  const coreBlob    = coreBlobRaw ? new Uint8Array(coreBlobRaw) : undefined;
+
+  const blobs = doc?.blobs ?? {};
+  const preloadedTiddlers: Array<Record<string, unknown>> = [];
+
+  // Lares first-party memes plugin (packed by Seed VM on the server).
+  const laresBlob = blobs["lararium-lares"]?.blob;
+  if (laresBlob) {
     try {
-      preloadedTiddlers = JSON.parse(new TextDecoder().decode(new Uint8Array(preloadsBlobRaw))) as Array<Record<string, unknown>>;
-    } catch { /* malformed blob — fail gracefully by booting raw TW5 */ }
+      preloadedTiddlers.push(
+        JSON.parse(new TextDecoder().decode(new Uint8Array(laresBlob))) as Record<string, unknown>,
+      );
+    } catch { /* malformed — skip */ }
   }
+
+  // Vendor plugin blobs — keyed by their TW5 plugin title.
+  for (const [id, entry] of Object.entries(blobs)) {
+    if (!id.startsWith("$:/plugins/")) continue;
+    try {
+      const parsed = JSON.parse(new TextDecoder().decode(new Uint8Array(entry.blob))) as unknown;
+      const arr = Array.isArray(parsed) ? parsed : [parsed];
+      for (const item of arr) {
+        if (item && typeof item === "object" && (item as Record<string, unknown>)["title"]) {
+          preloadedTiddlers.push(item as Record<string, unknown>);
+        }
+      }
+    } catch { /* malformed — skip */ }
+  }
+
   const tw5 = new TW5Engine();
-  await tw5.boot(coreBlob, preloadedTiddlers);
+  await tw5.boot(coreBlob, preloadedTiddlers.length > 0 ? preloadedTiddlers : undefined);
   emit("tw5-booted");
 
   // ── 8. Corpus bags — await after TW5 boots so render isn't blocked ────────
