@@ -29,7 +29,7 @@ import type { CatalogDoc, MemeStoreDoc, LarariumDoc }  from "@lararium/core";
 import {
   LarPeer, PEER_CAPABILITIES_BROWSER, OpenIdentitySlot,
   AutomergeDocStore, LarariumDocStore,
-  CompositeStore, corpusBagId,
+  CompositeStore, corpusBagId, emptyLarariumDoc,
 }                                                       from "@lararium/core";
 import { TW5Engine, MemeSyncAdaptor, VmPool }           from "@lararium/tw5";
 
@@ -53,11 +53,15 @@ export type BrowserOpenPhase =
 // On miss, boot blank and merge remote in background when it arrives.
 const LOCAL_READY_MS = 500;
 
+// Use findWithProgress to get the handle synchronously — repo.find() in 2.5.5
+// awaits networkSubsystem.whenReady() which blocks until a peer connects.
 async function waitHandleLocal<T>(
-  handleP: Promise<DocHandle<T>>,
+  repo: Repo,
+  url: AutomergeUrl,
   fallbackFn: () => DocHandle<T>,
 ): Promise<DocHandle<T>> {
-  const handle = await handleP;
+  const progress = repo.findWithProgress<T>(url);
+  const handle: DocHandle<T> = progress.handle;
   const localReady = await Promise.race([
     handle.whenReady().then(() => true),
     new Promise<false>((r) => setTimeout(() => r(false), LOCAL_READY_MS)),
@@ -167,7 +171,7 @@ export async function openBrowserLarPeer(opts: {
   // ── 2. Catalog ────────────────────────────────────────────────────────────
   const blankCatalog = () => repo.create<CatalogDoc>({ schemaVersion: "0.1", corpora: {}, rooms: {}, recipes: {}, projections: {} });
   const catalogHandle: DocHandle<CatalogDoc> = catalogUrl
-    ? await waitHandleLocal(repo.find<CatalogDoc>(catalogUrl as AutomergeUrl), blankCatalog)
+    ? await waitHandleLocal<CatalogDoc>(repo, catalogUrl as AutomergeUrl, blankCatalog)
     : blankCatalog();
   const catalog = catalogHandle.doc();
   emit("catalog-ready");
@@ -181,9 +185,9 @@ export async function openBrowserLarPeer(opts: {
   const larariumDocUrl = catalog?.larariumDoc?.docUrl ?? null;
   let larariumDocHandle: DocHandle<LarariumDoc> | null = null;
   if (larariumDocUrl) {
-    larariumDocHandle = await waitHandleLocal(
-      repo.find<LarariumDoc>(larariumDocUrl as AutomergeUrl),
-      () => repo.create<LarariumDoc>({ schemaVersion: "0.1", blobs: {}, tiddlers: {} }),
+    larariumDocHandle = await waitHandleLocal<LarariumDoc>(
+      repo, larariumDocUrl as AutomergeUrl,
+      () => repo.create<LarariumDoc>(emptyLarariumDoc()),
     );
     composite.addLayer({ bagId: "system", store: new LarariumDocStore(larariumDocHandle), writable: false });
     emit("island-ready");
@@ -193,8 +197,8 @@ export async function openBrowserLarPeer(opts: {
   // Non-blocking: added in parallel; render proceeds with whatever arrives first.
   const corpusEntries = Object.values(catalog?.corpora ?? {});
   const corpusPromises = corpusEntries.map(async (entry) => {
-    const handle = await waitHandleLocal(
-      repo.find<MemeStoreDoc>(entry.docUrl as AutomergeUrl),
+    const handle = await waitHandleLocal<MemeStoreDoc>(
+      repo, entry.docUrl as AutomergeUrl,
       () => repo.create<MemeStoreDoc>({}),
     );
     const bagId = corpusBagId(entry.id);
@@ -207,7 +211,7 @@ export async function openBrowserLarPeer(opts: {
   const roomDocUrl = catalog?.rooms?.[roomId]?.contentDocUrl ?? null;
   const blankRoom  = () => repo.create<MemeStoreDoc>({});
   const roomHandle: DocHandle<MemeStoreDoc> = roomDocUrl
-    ? await waitHandleLocal(repo.find<MemeStoreDoc>(roomDocUrl as AutomergeUrl), blankRoom)
+    ? await waitHandleLocal<MemeStoreDoc>(repo, roomDocUrl as AutomergeUrl, blankRoom)
     : blankRoom();
 
   if (!roomDocUrl) {
@@ -232,7 +236,7 @@ export async function openBrowserLarPeer(opts: {
   const existingDraftUrl: string | null = (catalog?.rooms?.[roomId] as any)?.[draftKey] ?? null;
   const blankDraft = () => repo.create<MemeStoreDoc>({});
   const draftHandle: DocHandle<MemeStoreDoc> = existingDraftUrl
-    ? await waitHandleLocal(repo.find<MemeStoreDoc>(existingDraftUrl as AutomergeUrl), blankDraft)
+    ? await waitHandleLocal<MemeStoreDoc>(repo, existingDraftUrl as AutomergeUrl, blankDraft)
     : blankDraft();
 
   if (!existingDraftUrl) {
@@ -258,8 +262,9 @@ export async function openBrowserLarPeer(opts: {
   emit("peer-ready");
 
   // ── 7. TW5Engine — boot with core blob from LarariumDoc (web3, no static serve) ──
+  // new Uint8Array(raw) normalises Automerge's internal chunk type to a clean ArrayBuffer.
   const coreBlobRaw = larariumDocHandle?.doc()?.blobs?.["tiddlywikicore"]?.blob;
-  const coreBlob = coreBlobRaw instanceof Uint8Array ? coreBlobRaw : coreBlobRaw ? new Uint8Array(coreBlobRaw as ArrayBuffer) : undefined;
+  const coreBlob = coreBlobRaw ? new Uint8Array(coreBlobRaw) : undefined;
   const tw5 = new TW5Engine();
   await tw5.boot(coreBlob);
   emit("tw5-booted");

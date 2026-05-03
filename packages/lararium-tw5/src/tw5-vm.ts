@@ -60,7 +60,7 @@ export class TW5Engine {
       // Browser web3 path: if coreBlob provided, inject via Blob URL — no static serve needed.
       if (isBrowser && coreBlob && !g.$tw?.modules?.titles) {
         await new Promise<void>((resolve, reject) => {
-          const blobUrl = URL.createObjectURL(new Blob([coreBlob.buffer as ArrayBuffer], { type: "application/javascript" }));
+          const blobUrl = URL.createObjectURL(new Blob([new Uint8Array(coreBlob)], { type: "application/javascript" }));
           const script = document.createElement("script");
           script.src = blobUrl;
           script.onload = () => { URL.revokeObjectURL(blobUrl); resolve(); };

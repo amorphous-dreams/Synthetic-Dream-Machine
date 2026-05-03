@@ -72,7 +72,7 @@ export interface LarariumDoc {
 }
 
 export function emptyLarariumDoc(): LarariumDoc {
-  return { schemaVersion: "0.1", blobs: {}, tiddlers: {} };
+  return { schemaVersion: "0.1", blobs: {}, tiddlers: {}, systemTitles: [] };
 }
 
 export const ENGINE_CORE_ID = "tiddlywikicore";

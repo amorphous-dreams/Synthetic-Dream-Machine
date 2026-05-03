@@ -148,7 +148,8 @@ export async function seedLarariumDoc(
   snapshotVm.dispose();
 
   handle.change((doc) => {
-    (doc as { systemTitles?: readonly string[] }).systemTitles = systemTitles;
+    const titles = (doc as unknown as { systemTitles?: string[] }).systemTitles;
+    if (titles) titles.splice(0, titles.length, ...systemTitles);
   });
 
   console.log(`[lararium-island] TW5 core v${TW5_VERSION}  sha=${coreSha.slice(0, 12)}…  system titles: ${systemTitles.length}`);
