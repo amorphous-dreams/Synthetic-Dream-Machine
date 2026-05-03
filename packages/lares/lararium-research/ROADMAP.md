@@ -11,7 +11,7 @@ register = "S"
 manaoio = 0.82
 mana = 0.88
 manao = 0.86
-role = "work journey log — migration roadmap and milestone log for Lararium Node; M13 SESSION OPEN (2026-05-02): web2 sidecar rip complete (19 stubs + sidecars), Sprint 0–1 enacted, MemeGraph zero-error rebuild, kumu lar-fragment URI scheme locked, FFZ 5-scale changeset model locked, grammar-invariants.ts, Sprint 2 next: grammar multi-doc boot"
+role = "work journey log — migration roadmap and milestone log for Lararium Node; M17 SESSION OPEN (2026-05-03): named-doc @-prefix pattern crystallised, CATALOG_DOC_URI (drop _SLOT), corpusLarUri(), CatalogDoc.tiddlers self-describing, resolver @-prefix virtual route, node peer writes catalog+corpus tiddlers, build clean; Sprint 4 next: room keys as lar:///ha.ka.ba/@lararium/rooms/{slug}"
 cacheable = false
 retain = true
 invariant = false
@@ -2460,5 +2460,108 @@ room island     (bag: "room",  writable)        — primary content gate
 <<~/ahu >>
 
 
-<<~&#x0003;>>
+<<~ ahu #m17-session-2026-05-03 >>
+
+## M17 Self-Describing Docs + Named-Doc Oracle — 2026-05-03
+
+### OODA-HA receipt
+
+✶ **Observe:**
+Boot flow was LarariumDoc-first but the catalog oracle tiddler was keyed `CATALOG_DOC_URI_SLOT` — a name that implied a "slot" holding a value rather than a named-doc identity. Room entries in `CatalogDoc.rooms` used opaque short slugs (`"altar-fire"`) with no stable address. `CatalogDoc` had no `tiddlers` field — it could not self-describe. The resolver had no rule for `@`-prefixed scopes other than `@lares` and `@lararium`. Browser peer still referenced `CATALOG_DOC_URI_SLOT` and used `readCatalogUrl()` (pre-Sprint 3 name).
+
+⏿ **Orient:**
+
+  **Named-doc `@`-prefix pattern (crystallised):**
+
+  Every named doc IS its own `lar:` URI — the constant is both the slot key and the identity. There is no semantic difference between the doc's address slot and the doc's identity URI.
+
+  | `lar:` URI | Doc | Stored where |
+  |---|---|---|
+  | `lar:///ha.ka.ba/@lararium` | LarariumDoc (engine, blobs, self-ref) | LarariumDoc.tiddlers self-ref |
+  | `lar:///ha.ka.ba/@catalog`  | CatalogDoc (hallway, corpus list) | LarariumDoc.tiddlers + CatalogDoc.tiddlers self-ref |
+  | `lar:///ha.ka.ba/@elyncia`  | Elyncia corpus doc | CatalogDoc.tiddlers |
+  | `lar:///ha.ka.ba/@ftls`     | FTLS corpus doc | CatalogDoc.tiddlers |
+  | `lar:///ha.ka.ba/@sdm`      | SDM corpus doc | CatalogDoc.tiddlers |
+  | `lar:///ha.ka.ba/@lararium/rooms/{slug}` | Room identity URI (not a doc) | CatalogDoc.rooms key (Sprint 4 remaining) |
+
+  **Zelenka law preserved:** server seeds because it has disk access (a capability), not authority. Both browser and node peer follow the same oracle read path: open LarariumDoc → read `tiddlers[CATALOG_DOC_URI]` → open CatalogDoc.
+
+◇ **Decide:**
+- Drop `_SLOT` suffix: `CATALOG_DOC_URI_SLOT` → `CATALOG_DOC_URI`. The constant is dual-purpose.
+- Add `corpusLarUri(slug): string` — single source of truth for `lar:///ha.ka.ba/@${slug}`.
+- `CatalogDoc` gains `tiddlers?: Record<string, Readonly<MutableLarRecord>>` (parallel to `LarariumDoc`).
+- Resolver: any `@`-prefixed first path segment that is not `@lares` or `@lararium` → `kind: "caps-virtual"`.
+- Node peer writes catalog self-ref tiddler in `blankCatalog()`.
+- Node peer reconciles corpus tiddlers alongside corpus-entry open loop.
+- Browser peer inline `blankCatalog` gets `tiddlers: {}` to stay in sync with `emptyCatalogDoc()`.
+
+▶ **Act (files touched):**
+
+| File | Change |
+|---|---|
+| `@lararium/core` `lararium-doc.ts` | `CATALOG_DOC_URI_SLOT` → `CATALOG_DOC_URI`; full docblock; `corpusLarUri()` helper |
+| `@lararium/core` `catalog.ts` | `tiddlers?` field added; `emptyCatalogDoc()` includes `tiddlers: {}`; import `MutableLarRecord` |
+| `@lararium/core` `resolver.ts` | `@`-prefixed scope → `kind: "caps-virtual"` virtual route (after `@lares` + `@lararium` guards) |
+| `@lararium/node` `lararium-island.ts` | `CATALOG_DOC_URI_SLOT` → `CATALOG_DOC_URI` throughout (import + seed + reconcile) |
+| `@lararium/node` `open-node-lar-peer.ts` | Import `CATALOG_DOC_URI, corpusLarUri`; `blankCatalog()` writes self-ref tiddler; corpus loop reconciles `corpusLarUri(entry.id)` tiddler; `tiddlers: {}` in inline blank |
+| `@lararium/app` `open-browser-lar-peer.ts` | `CATALOG_DOC_URI_SLOT` → `CATALOG_DOC_URI`; `blankCatalog` inline gets `tiddlers: {}` |
+
+⤴ **Ho'oko:**
+
+```sh
+pnpm --filter @lararium/core build     # ✓ clean
+pnpm --filter @lararium/node build     # ✓ clean
+pnpm --filter @lararium/app  build     # ✓ clean
+```
+
+↺ **Aftermath / open work (Sprint backlog, updated):**
+
+**Sprint 2 — `@catalog` URI + CatalogDoc tiddlers: ✓ COMPLETE this session**
+- All six files updated, build clean.
+
+**Sprint 3 — `readBootstrap()` browser peer bootstrap: ✓ COMPLETE (prior session)**
+- `readCatalogUrl()` → `readBootstrap()`; fragment treated as LarariumDoc URL; `CATALOG_DOC_URI` tiddler read from LarariumDoc to locate CatalogDoc; legacy CatalogDoc-URL fragment kept as backward-compat path; `bootstrap-wanted/bootstrap-here` BC gossip.
+
+**Sprint 4 — Room keys as `lar:` URIs (NEXT):**
+
+  **Tension**: `CatalogDoc.rooms` keyed by opaque slugs (`"altar-fire"`). When a room moves relay, the key is meaningless.
+
+  **Decide**: Room keys become `lar:///ha.ka.ba/@lararium/rooms/{slug}`. The `id` field retains the slug for readability; the map key is the full URI. Room entries materialise as tiddlers at their key URI in any synced wiki.
+
+  **Schema change:**
+  ```typescript
+  // CatalogDoc.rooms key changes:
+  // "altar-fire" → "lar:///ha.ka.ba/@lararium/rooms/altar-fire"
+  ```
+
+  **Act:**
+  1. `CatalogRoomEntry` convention note — key IS the `lar:` URI, `id` is the slug suffix
+  2. `lararium-island.ts` seed code that inserts room entries — use full URI key
+  3. All code that reads `CatalogDoc.rooms` by old string keys
+  4. Resolver: `lar:///ha.ka.ba/@lararium/rooms/{slug}` → `kind: "catalog-room"` virtual (already covered by the `@lararium` prefix path; confirm no extra rule needed)
+  5. Test fixtures in `parity.test.ts` / `node-host.test.ts`
+
+  **HA check**: Breaking for persisted CatalogDoc data; mitigation is re-seed (no real users yet). Grep-audit needed for short-key assumptions.
+
+**Sprint 5 — Kill `make reseed` dead target + Connect screen UX:**
+
+  **Tension**: `make reseed` calls `/admin/reseed` which does not exist. Cold first-visit with no fragment has no UX.
+
+  **Decide**:
+  - `make reseed` → direct CLI: `node packages/lararium-node/dist/src/main.js --reseed` (or standalone script)
+  - Connect screen: minimal overlay shown when `readBootstrap()` returns null — text input for altar-fire URL, "Connect" button, "Start fresh (local only)" link
+  - Static `/connect` page lives inside the built Vite app (not the node peer) — deferred to Sprint 5 kickoff
+
+  **Act:**
+  1. Remove or replace `reseed:` Makefile target
+  2. Move seed logic into callable `reseed(repo)` function callable from CLI flag
+  3. Add connect screen component in `@lararium/app`; `readBootstrap() → null` triggers it
+
+  **HA check**: Static serving was removed in M15 web3 surgery; `/connect` reintroduces it minimally. Prefer keeping it inside the Vite app bundle to avoid re-opening node static serving.
+
+**Dependency order**: Sprint 4 (room keys) is independent of Sprint 5 (reseed/UX). Both can run in parallel.
+
+<<~/ahu >>
+
+
 <<~&#x0004; -> ? >>

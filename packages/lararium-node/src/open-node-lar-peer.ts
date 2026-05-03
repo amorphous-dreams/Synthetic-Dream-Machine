@@ -30,6 +30,7 @@ import {
   LarPeer, PEER_CAPABILITIES_NODE, OpenIdentitySlot,
   AutomergeDocStore, LarariumDocStore,
   CompositeStore, corpusBagId, emptyLarariumDoc,
+  CATALOG_DOC_URI, corpusLarUri, roomLarUri,
 }                                       from "@lararium/core";
 import { TW5Engine, MemeSyncAdaptor, VmPool, DirectMemeRecipeVm } from "@lararium/tw5";
 import type { MemeRecipeVm } from "@lararium/tw5";
@@ -37,6 +38,7 @@ import {
   seedLarariumDoc,
   reconcileEngineBlobIfChanged,
   reconcileLaresPluginBlobIfChanged,
+  reconcileWellKnownTiddlers,
 } from "./lararium-island.js";
 
 export type NodeOpenPhase =
@@ -65,8 +67,10 @@ export interface NodeLarPeerResult {
   tw5:              TW5Engine;
   pool:             VmPool<MemeRecipeVm>;
   repo:             Repo;
-  /** Automerge URL of the catalog doc — printed to console as the connect invite URL. */
+  /** Automerge URL of the catalog doc. */
   catalogHandleUrl: string;
+  /** Automerge URL of the LarariumDoc — share this as the connect invite URL. */
+  larariumDocUrl:   string | null;
   phase:            NodeOpenPhase;
 }
 
@@ -98,6 +102,8 @@ async function waitHandleLocal<T>(
 export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLarPeerResult> {
   const { hostId, roomId, storageDir, wss, catalogUrl, onPhase } = opts;
   const emit = (p: NodeOpenPhase) => onPhase?.(p);
+  // Stable identity URI for this room — the map key in CatalogDoc.rooms.
+  const roomKey = roomLarUri(roomId);
 
   emit("boot");
 
@@ -123,8 +129,17 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
   }
 
   const blankCatalog = (): DocHandle<CatalogDoc> => {
-    const h = repo.create<CatalogDoc>({ schemaVersion: "0.1", corpora: {}, rooms: {}, recipes: {}, projections: {} });
-    // Persist URL synchronously before returning — GET /api/catalog is servable immediately.
+    const h = repo.create<CatalogDoc>({ schemaVersion: "0.1", corpora: {}, rooms: {}, recipes: {}, projections: {}, tiddlers: {} });
+    // Self-reference: catalog doc knows its own lar: URI and automerge: URL.
+    // Isomorphic with LarariumDoc — any peer that syncs this doc self-discovers.
+    h.change((doc) => {
+      const t = (doc as unknown as { tiddlers: Record<string, unknown> }).tiddlers;
+      t[CATALOG_DOC_URI] = {
+        title: CATALOG_DOC_URI, fields: { bag: "catalog" },
+        text: h.url, bag: "catalog", authority: "lararium-seed",
+      };
+    });
+    // Persist URL synchronously before returning.
     try { mkdirSync(storageDir, { recursive: true }); writeFileSync(catalogUrlFile, h.url, "utf8"); } catch { /* quota */ }
     return h;
   };
@@ -158,12 +173,15 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
     );
     await reconcileEngineBlobIfChanged(islandHandle);
     await reconcileLaresPluginBlobIfChanged(islandHandle);
+    // Zelenka: server is just another peer. Keep oracle tiddlers current on
+    // every resume so any peer that syncs this doc can self-discover.
+    reconcileWellKnownTiddlers(islandHandle, catalogHandle.url);
     composite.addLayer({ bagId: "system", store: new LarariumDocStore(islandHandle), writable: false });
     emit("island-ready");
   } else {
     // First boot — seed island doc from disk and register in catalog.
     try {
-      const { handle } = await seedLarariumDoc(repo);
+      const { handle } = await seedLarariumDoc(repo, catalogHandle.url);
       islandHandle = handle;
       catalogHandle.change((doc) => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -190,10 +208,24 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
     );
     const bagId = corpusBagId(entry.id);
     composite.addLayer({ bagId, store: new AutomergeDocStore(handle, bagId), writable: false });
+
+    // Zelenka: keep tiddler store current so any peer can enumerate corpora
+    // without walking the corpora Record — same pattern as LarariumDoc oracle.
+    const corpusUri = corpusLarUri(entry.id);
+    const existingText = catalogHandle.doc()?.tiddlers?.[corpusUri]?.text;
+    if (existingText !== entry.docUrl) {
+      catalogHandle.change((doc) => {
+        const t = (doc as unknown as { tiddlers: Record<string, unknown> }).tiddlers;
+        t[corpusUri] = {
+          title: corpusUri, fields: { bag: "catalog" },
+          text: entry.docUrl, bag: "catalog", authority: "lararium-seed",
+        };
+      });
+    }
   }));
 
   // ── 4. Room doc — local-first, writable ───────────────────────────────────
-  const roomDocUrl = catalog?.rooms?.[roomId]?.contentDocUrl ?? null;
+  const roomDocUrl = catalog?.rooms?.[roomKey]?.contentDocUrl ?? null;
   const blankRoom  = (): DocHandle<MemeStoreDoc> => repo.create<MemeStoreDoc>({});
   const roomHandle: DocHandle<MemeStoreDoc> = roomDocUrl
     ? await waitHandleLocal<MemeStoreDoc>(repo, roomDocUrl as AutomergeUrl, blankRoom)
@@ -204,7 +236,7 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const d = doc as any;
       d.rooms ??= {};
-      d.rooms[roomId] = { id: roomId, contentDocUrl: roomHandle.url, schemaVersion: "0.1" };
+      d.rooms[roomKey] = { id: roomId, contentDocUrl: roomHandle.url, schemaVersion: "0.1" };
     });
   }
   const roomStore = new AutomergeDocStore(roomHandle, "room");
@@ -217,7 +249,7 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
   const identity = new OpenIdentitySlot(`${hostId}:${roomId}`);
   const draftKey = `drafts_${encodeURIComponent(identity.did)}`;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const existingDraftUrl: string | null = (catalog?.rooms?.[roomId] as any)?.[draftKey] ?? null;
+  const existingDraftUrl: string | null = (catalog?.rooms?.[roomKey] as any)?.[draftKey] ?? null;
   const blankDraft = (): DocHandle<MemeStoreDoc> => repo.create<MemeStoreDoc>({});
   const draftHandle: DocHandle<MemeStoreDoc> = existingDraftUrl
     ? await waitHandleLocal<MemeStoreDoc>(repo, existingDraftUrl as AutomergeUrl, blankDraft)
@@ -228,8 +260,8 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const d = doc as any;
       d.rooms ??= {};
-      d.rooms[roomId] ??= {};
-      d.rooms[roomId][draftKey] = draftHandle.url;
+      d.rooms[roomKey] ??= {};
+      d.rooms[roomKey][draftKey] = draftHandle.url;
     });
   }
   composite.addLayer({ bagId: "draft", store: new AutomergeDocStore(draftHandle, "draft"), writable: true });
@@ -293,5 +325,5 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
   peer.attachVmPool(pool);
 
   emit("live");
-  return { peer, tw5, pool, repo, catalogHandleUrl: catalogHandle.url, phase: "live" };
+  return { peer, tw5, pool, repo, catalogHandleUrl: catalogHandle.url, larariumDocUrl: islandHandle?.url ?? null, phase: "live" };
 }

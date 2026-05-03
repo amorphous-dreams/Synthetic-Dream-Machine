@@ -1,3 +1,5 @@
+import type { MutableLarRecord } from "./meme-store-doc.js";
+
 /**
  * CatalogDoc — the tiny root Automerge document that names all islands.
  *
@@ -87,6 +89,11 @@ export interface CatalogLarariumEntry {
 export interface CatalogDoc {
   readonly schemaVersion: string;
   readonly corpora:    Record<string, CatalogCorpusEntry>;
+  /**
+   * Room entries, keyed by `lar:///ha.ka.ba/@lararium/rooms/{slug}`.
+   * Use `roomLarUri(slug)` from `@lararium/core` to form the key.
+   * `CatalogRoomEntry.id` holds the short slug for human-readable display.
+   */
   readonly rooms:      Record<string, CatalogRoomEntry>;
   readonly recipes:    Record<string, CatalogRecipeEntry>;
   readonly projections: Record<string, CatalogProjectionEntry>;
@@ -94,6 +101,23 @@ export interface CatalogDoc {
   readonly larariumDoc?:  CatalogLarariumEntry;
   /** Capability hints for the connecting peer — read during derive-visible-rooms step. */
   readonly capabilityHints?: Record<string, string>;
+  /**
+   * Named doc tiddler store — keyed by `lar:///ha.ka.ba/@{slug}`.
+   *
+   * Each corpus / named island doc is stored here as a tiddler whose
+   * `text` field holds its current `automerge:` URL.  Isomorphic to
+   * LarariumDoc.tiddlers: any peer that has synced the CatalogDoc can
+   * enumerate all available corpora without a separate HTTP oracle.
+   *
+   * Reserved keys:
+   *   "lar:///ha.ka.ba/@catalog"  — self-reference (catalog doc's own automerge: URL)
+   *
+   * Example corpus keys:
+   *   "lar:///ha.ka.ba/@elyncia"  → Elyncia world corpus
+   *   "lar:///ha.ka.ba/@ftls"     → Flying Triremes & Laser Swords corpus
+   *   "lar:///ha.ka.ba/@sdm"      → Synthetic Dream Machine corpus
+   */
+  readonly tiddlers?: Record<string, Readonly<MutableLarRecord>>;
 }
 
 // ---------------------------------------------------------------------------
@@ -107,5 +131,6 @@ export function emptyCatalogDoc(): CatalogDoc {
     rooms:         {},
     recipes:       {},
     projections:   {},
+    tiddlers:      {},
   };
 }

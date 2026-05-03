@@ -169,6 +169,13 @@ export function resolveLarUri(uri: string): LarResolution {
       return { uri, root, childPath, resourcePath, laresRelPath: null, chapelRelPath: null, engineRelPath, kind: "tuple-file", virtual: false };
     }
 
+    // lar:///ha.ka.ba/@{slug}[/{path}] — named doc oracle URI.
+    // @catalog, @elyncia, @ftls, @sdm, etc. are doc identities, not file paths.
+    // Any @-prefixed scope that is not @lares or @lararium resolves as virtual.
+    if (childPath[0]?.startsWith("@")) {
+      return { uri, root, childPath, resourcePath, laresRelPath: null, chapelRelPath: null, engineRelPath: null, kind: "caps-virtual", virtual: true };
+    }
+
     // Legacy: lar:///ha.ka.ba/{rest} (no scope) — kept in chapel under ha-ka-ba/ subdir. Remove after URI sweep is complete.
     const base = root.replace(/\./g, "-");
     const joined = childPath.length > 0 ? `${base}/${childPath.join("/")}` : base;

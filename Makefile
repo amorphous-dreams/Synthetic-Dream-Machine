@@ -1,4 +1,4 @@
-.PHONY: help install build test typecheck serve dev reseed clean \
+.PHONY: help install build test typecheck serve dev drop-data clean \
         docker-build docker-serve docker-dev docker-qa docker-prod docker-smoke
 
 help:
@@ -9,7 +9,7 @@ help:
 	@echo "  make typecheck     Run tsc --noEmit across all packages"
 	@echo "  make serve         Build then run node relay peer on :4321 (catalog URL printed to console)"
 	@echo "  make dev           Run node peer (:8080) + Vite dev server (:5173) concurrently"
-	@echo "  make reseed        Force-reseed corpus:lares island (server must be running)"
+	@echo "  make drop-data     Delete local Automerge storage (.lararium-data/) — next serve re-seeds"
 	@echo "  make clean         Remove all dist/ and .lararium-data/ artifacts"
 	@echo ""
 	@echo "Auth (optional — GitHub OAuth web flow):"
@@ -48,9 +48,13 @@ serve: build
 dev:
 	pnpm --filter @lararium/node exec tsx src/main.ts & pnpm --filter @lararium/app exec vite
 
-reseed:
-	@echo "[reseed] open the relay console — catalog URL is printed on boot."
-	@echo "[reseed] navigate to http://localhost:4321/#<catalog-url> to join."
+# Local-first reseed: delete the peer's Automerge storage so the next boot
+# recreates blank docs and re-seeds blobs + well-known tiddlers from disk.
+# No server needs to be running; no HTTP call happens.
+# To fully reset build + data: make clean (which also calls drop-data).
+drop-data:
+	rm -rf .lararium-data
+	@echo "[drop-data] .lararium-data removed — run 'make serve' to re-seed."
 
 clean:
 	find . -path "*/node_modules" -prune -o -name "dist" -type d -print | grep -v node_modules | xargs rm -rf

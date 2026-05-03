@@ -19,7 +19,7 @@ import { tw5MemesRoot, tw5PluginsRoot } from "@lararium/tw5/tw5-memes-root";
 import { createHash } from "crypto";
 import type { Repo, DocHandle } from "@automerge/automerge-repo";
 import type { LarariumDoc, LarariumBlobEntry } from "@lararium/core";
-import { ENGINE_CORE_ID, emptyLarariumDoc } from "@lararium/core";
+import { ENGINE_CORE_ID, LARARIUM_DOC_URI, CATALOG_DOC_URI, emptyLarariumDoc } from "@lararium/core";
 import { TW5_VERSION, TW5_CORE_SCRIPT_FILENAME } from "@lararium/tw5";
 
 // ---------------------------------------------------------------------------
@@ -177,10 +177,18 @@ export async function reconcileLaresPluginBlobIfChanged(
 
 /**
  * Seed a new LarariumDoc from disk artifacts.
+ *
+ * @param repo        - Automerge Repo instance.
+ * @param catalogUrl  - automerge: URL of the CatalogDoc to store in the
+ *                      CATALOG_DOC_URI_SLOT well-known tiddler.  Optional on
+ *                      first call; call reconcileWellKnownTiddlers() later once
+ *                      the catalog handle exists.
+ *
  * Returns the doc handle and the sha256 of the TW5 core blob.
  */
 export async function seedLarariumDoc(
   repo: Repo,
+  catalogUrl?: string,
 ): Promise<{ handle: DocHandle<LarariumDoc>; coreSha256: string }> {
   const handle = repo.create<LarariumDoc>(emptyLarariumDoc());
 
@@ -273,5 +281,69 @@ export async function seedLarariumDoc(
 
   console.log(`[lararium-island] TW5 core v${TW5_VERSION}  sha=${coreSha.slice(0, 12)}…  system titles: ${systemTitles.length}`);
   console.log(`[lararium-island] engine doc URL: ${handle.url}`);
+
+  // Write well-known tiddlers — the isomorphic oracle pair.
+  // Both node and browser peers read these from LarariumDoc.tiddlers using
+  // the same LARARIUM_DOC_URI / CATALOG_DOC_URI_SLOT constants.
+  // The self-reference (handle.url → LARARIUM_DOC_URI tiddler) makes the doc
+  // self-describing: any peer that has synced it can recover the root URL.
+  handle.change((doc) => {
+    const tiddlers = (doc as unknown as { tiddlers: Record<string, unknown> }).tiddlers;
+    tiddlers[LARARIUM_DOC_URI] = {
+      title:     LARARIUM_DOC_URI,
+      fields:    { bag: "system" },
+      text:      handle.url,
+      bag:       "system",
+      authority: "lararium-seed",
+    };
+    if (catalogUrl) {
+      tiddlers[CATALOG_DOC_URI] = {
+        title:     CATALOG_DOC_URI,
+        fields:    { bag: "system" },
+        text:      catalogUrl,
+        bag:       "system",
+        authority: "lararium-seed",
+      };
+    }
+  });
+
   return { handle, coreSha256: coreSha };
+}
+
+/**
+ * Patch the well-known tiddlers on a resume boot.
+ *
+ * Called after both the LarariumDoc and CatalogDoc handles exist.
+ * Writes are no-ops if values already match — Automerge deduplicates.
+ *
+ * Both peers (node and browser) must call this whenever they boot with an
+ * existing LarariumDoc to keep the oracle tiddlers current.
+ */
+export function reconcileWellKnownTiddlers(
+  handle: DocHandle<LarariumDoc>,
+  catalogUrl: string,
+): void {
+  const doc     = handle.doc();
+  const tiddlers = doc?.tiddlers ?? {};
+  const selfOk   = tiddlers[LARARIUM_DOC_URI]?.text === handle.url;
+  const catOk    = tiddlers[CATALOG_DOC_URI]?.text === catalogUrl;
+  if (selfOk && catOk) return;
+
+  handle.change((d) => {
+    const t = (d as unknown as { tiddlers: Record<string, unknown> }).tiddlers;
+    if (!selfOk) {
+      t[LARARIUM_DOC_URI] = {
+        title: LARARIUM_DOC_URI, fields: { bag: "system" },
+        text: handle.url, bag: "system", authority: "lararium-seed",
+      };
+    }
+    if (!catOk) {
+      t[CATALOG_DOC_URI] = {
+        title: CATALOG_DOC_URI, fields: { bag: "system" },
+        text: catalogUrl, bag: "system", authority: "lararium-seed",
+      };
+    }
+  });
+
+  console.log(`[lararium-island] well-known tiddlers reconciled  self=${selfOk ? "ok" : "patched"}  catalog=${catOk ? "ok" : "patched"}`);
 }

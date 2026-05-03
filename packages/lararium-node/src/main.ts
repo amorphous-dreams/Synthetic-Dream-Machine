@@ -141,8 +141,9 @@ async function main(): Promise<void> {
   projector.start(peer.store);
 
   console.log(`[lararium] live — room: ${roomId} | storage: ${storageDir}`);
-  console.log(`[lararium] catalog: ${result.catalogHandleUrl ?? "(none)"}`);
-  console.log(`[lararium] connect: http://localhost:${port}/#${result.catalogHandleUrl ?? ""}`);
+  console.log(`[lararium] catalog:  ${result.catalogHandleUrl ?? "(none)"}`);
+  console.log(`[lararium] lararium: ${result.larariumDocUrl ?? "(none)"}`);
+  console.log(`[lararium] connect:  http://localhost:${port}/#${result.larariumDocUrl ?? result.catalogHandleUrl ?? ""}`);
 
   const shutdown = () => {
     console.log("[lararium] shutting down");

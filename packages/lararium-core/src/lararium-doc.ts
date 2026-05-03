@@ -76,3 +76,60 @@ export function emptyLarariumDoc(): LarariumDoc {
 }
 
 export const ENGINE_CORE_ID = "tiddlywikicore";
+
+/**
+ * Well-known tiddler address — the LarariumDoc self-reference.
+ *
+ * The `@lararium` scope root IS the LarariumDoc. No sub-path needed.
+ * Stored inside LarariumDoc.tiddlers. Its `text` field holds the current
+ * `automerge:` URL of the LarariumDoc itself (self-referential).
+ *
+ * Analogous to IPNS (stable name → mutable pointer to current content) and
+ * AT Protocol `.well-known/atproto-did` (stable path → current DID).
+ * Any peer that has synced the LarariumDoc can read this tiddler and recover
+ * the root doc URL — no out-of-band oracle required.
+ *
+ * Namespace clarity:
+ *   lar:///ha.ka.ba/@lararium              ← this constant (engine root oracle)
+ *   lar:///ha.ka.ba/@lararium/catalogDocUri ← catalog URL slot
+ *   lar:///ha.ka.ba/@lararium/rooms/{slug}  ← room identifiers (no collision)
+ */
+export const LARARIUM_DOC_URI = "lar:///ha.ka.ba/@lararium";
+
+/**
+ * Well-known tiddler address — the CatalogDoc identity URI.
+ *
+ * Dual purpose (mirrors LARARIUM_DOC_URI):
+ *   1. The slot key in LarariumDoc.tiddlers whose `text` = the CatalogDoc automerge: URL.
+ *   2. The key in CatalogDoc.tiddlers for the catalog's own self-reference tiddler.
+ *
+ * Boot sequence: URL fragment → open LarariumDoc → read this tiddler → open CatalogDoc.
+ *
+ * Named doc pattern — all `@`-prefixed scopes in ha.ka.ba ARE doc identities:
+ *   lar:///ha.ka.ba/@lararium  → LarariumDoc (engine)
+ *   lar:///ha.ka.ba/@catalog   → CatalogDoc  (hallway)
+ *   lar:///ha.ka.ba/@elyncia   → elyncia corpus doc   (tiddler in CatalogDoc.tiddlers)
+ *   lar:///ha.ka.ba/@ftls      → ftls corpus doc       (tiddler in CatalogDoc.tiddlers)
+ *   lar:///ha.ka.ba/@sdm       → sdm corpus doc        (tiddler in CatalogDoc.tiddlers)
+ */
+export const CATALOG_DOC_URI = "lar:///ha.ka.ba/@catalog";
+
+/**
+ * Derive the stable lar: URI identity for a named corpus doc.
+ * e.g. corpusLarUri("elyncia") → "lar:///ha.ka.ba/@elyncia"
+ */
+export function corpusLarUri(slug: string): string {
+  return `lar:///ha.ka.ba/@${slug}`;
+}
+
+/**
+ * Derive the stable lar: URI identity for a room.
+ * Rooms live in the @lararium sub-namespace — no collision with @-scope doc roots.
+ * e.g. roomLarUri("altar-fire") → "lar:///ha.ka.ba/@lararium/rooms/altar-fire"
+ *
+ * This URI forms the map key in CatalogDoc.rooms.
+ * The CatalogRoomEntry.id field retains the short slug for readability.
+ */
+export function roomLarUri(slug: string): string {
+  return `lar:///ha.ka.ba/@lararium/rooms/${slug}`;
+}

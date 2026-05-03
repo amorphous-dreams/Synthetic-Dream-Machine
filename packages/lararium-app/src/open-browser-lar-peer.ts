@@ -3,20 +3,19 @@
  *
  * Boot sequence — six causal island layers (authority-first-sync-order):
  *   1. Repo — IndexedDB storage + BroadcastChannel + optional WS
- *   2. Catalog doc — URL registry (rooms, corpora, engine)
- *   3. LarariumIsland doc — system bag (grammar + widget tiddlers)  [optional, from catalog.engine]
+ *   2. LarariumDoc — system bag + oracle tiddlers (LARARIUM_DOC_URI / CATALOG_DOC_URI_SLOT)
+ *   3. Catalog doc — URL registry (rooms, corpora, engine) [URL from oracle tiddler]
  *   4. Corpus* docs — per-corpus bags from catalog.corpora[*]       [async, non-blocking render]
  *   5. Room doc — situated content, writable                        [room bag]
- *   6. Room-Drafts doc — same-user multi-device draft sync          [draft bag, user-scoped]
+ *   6. Room-Drafts doc — per-user draft sync                        [draft bag, user-scoped]
  *
  *   CompositeStore: system → corpus:* → room(writable) → draft(writable)
  *   LarPeer: store = room AutomergeDocStore, composite = full CompositeStore
  *
- * Local-first fast path: IndexedDB materializes in <500ms if previously seen.
- * On miss (first visit, cleared storage), boot from blank and merge remote in background.
- *
- * FPI-5 (trim tab): env-specific adapters live only in this file. Everything
- * above here stays isomorphic.
+ * Zelenka: the browser is just another peer.  The node peer wrote the oracle
+ * tiddlers (LARARIUM_DOC_URI → self, CATALOG_DOC_URI_SLOT → catalog URL) at
+ * seed time.  The browser reads them using the same constants — no HTTP oracle,
+ * no server privilege.
  */
 
 import { useEffect, useRef, useState, useMemo }        from "react";
@@ -30,6 +29,7 @@ import {
   LarPeer, PEER_CAPABILITIES_BROWSER, OpenIdentitySlot,
   AutomergeDocStore, LarariumDocStore,
   CompositeStore, corpusBagId, emptyLarariumDoc,
+  LARARIUM_DOC_URI, CATALOG_DOC_URI, roomLarUri,
 }                                                       from "@lararium/core";
 import { TW5Engine, MemeSyncAdaptor, VmPool, DirectMemeRecipeVm } from "@lararium/tw5";
 import type { MemeRecipeVm }                            from "@lararium/tw5";
@@ -73,24 +73,33 @@ async function waitHandleLocal<T>(
   return fresh;
 }
 
-function readCatalogUrl(hostId: string): string | null {
-  // Tier 0a: URL fragment — operator shares `…/#automerge:…` invite link.
-  // The catalog address IS the entry point; the relay does not serve it.
-  // Nothing injects it; you receive it out-of-band and it lives in the URL.
+/**
+ * readBootstrap — extract the LarariumDoc (or legacy catalog) URL from the
+ * browser environment.  Returns whichever address lives in the fragment /
+ * localStorage, leaving the caller to discriminate by shape.
+ *
+ * Tier order:
+ *   0a: URL fragment   (#automerge:…)
+ *   0b: localStorage   (lararium:bootstrap-url:{hostId})
+ *   0c: null           (blank local state)
+ */
+function readBootstrap(hostId: string): string | null {
   if (typeof window !== "undefined") {
     const hash = window.location.hash.replace(/^#/, "");
     if (hash.startsWith("automerge:")) {
-      try { localStorage.setItem(`lararium:catalog-url:${hostId}`, hash); } catch { /* quota */ }
+      try { localStorage.setItem(`lararium:bootstrap-url:${hostId}`, hash); } catch { /* quota */ }
       return hash;
     }
   }
-
-  // Tier 0b: localStorage cache — warm path; works offline after first visit.
   try {
-    const cached = localStorage.getItem(`lararium:catalog-url:${hostId}`);
-    if (cached) return cached;
+    // Accept both old key ("catalog-url") and new key ("bootstrap-url") so
+    // existing localStorage entries keep working through the transition.
+    return (
+      localStorage.getItem(`lararium:bootstrap-url:${hostId}`) ??
+      localStorage.getItem(`lararium:catalog-url:${hostId}`) ??
+      null
+    );
   } catch { /* quota/private mode */ }
-
   return null;
 }
 
@@ -113,13 +122,16 @@ export async function openBrowserLarPeer(opts: {
 }): Promise<BrowserLarPeerResult> {
   const { hostId, roomId, wsUrl, onPhase } = opts;
   const emit = (p: BrowserOpenPhase) => onPhase?.(p);
+  // Stable identity URI for this room — the map key in CatalogDoc.rooms.
+  const roomKey = roomLarUri(roomId);
 
   emit("boot");
 
   // ── 1. Repo ───────────────────────────────────────────────────────────────
-  // Tier 0: catalog URL from URL fragment (#automerge:…) → localStorage.
+  // Bootstrap URL from fragment → localStorage.  May be a LarariumDoc URL
+  // (new path) or a CatalogDoc URL (legacy/direct invite).
   // BC gossip (Tier 2) propagates it between tabs once any tab has it.
-  const catalogUrl = readCatalogUrl(hostId);
+  const bootstrapUrl = readBootstrap(hostId);
 
   const storage = new IndexedDBStorageAdapter(`lararium:meme-store:${hostId}`);
   const bcNet   = new BroadcastChannelNetworkAdapter({ channelName: "lararium" });
@@ -127,59 +139,88 @@ export async function openBrowserLarPeer(opts: {
   const network = wsNet ? [bcNet, wsNet] : [bcNet];
   const repo    = new Repo({ storage, network, sharePolicy: async () => true });
 
-  // Tier 2: side-channel BroadcastChannel for catalog URL gossip between tabs.
-  // Separate from the automerge sync channel (channelName "lararium").
-  // A tab that has the catalog URL announces it; tabs without one listen.
+  // Tier 2: side-channel BroadcastChannel for bootstrap URL gossip between tabs.
   const _bcDiscovery = (() => {
-    if (catalogUrl || typeof BroadcastChannel === "undefined") return null;
+    if (bootstrapUrl || typeof BroadcastChannel === "undefined") return null;
     const ch = new BroadcastChannel("lararium:discovery");
-    ch.postMessage({ type: "catalog-wanted", hostId });
+    ch.postMessage({ type: "bootstrap-wanted", hostId });
     ch.onmessage = (ev: MessageEvent) => {
-      if (ev.data?.type === "catalog-here" && ev.data.catalogUrl && !catalogUrl) {
-        try { localStorage.setItem(`lararium:catalog-url:${hostId}`, ev.data.catalogUrl); } catch { /* quota */ }
+      if (ev.data?.type === "bootstrap-here" && ev.data.bootstrapUrl && !bootstrapUrl) {
+        try { localStorage.setItem(`lararium:bootstrap-url:${hostId}`, ev.data.bootstrapUrl); } catch { /* quota */ }
       }
     };
     return ch;
   })();
-  if (catalogUrl && typeof BroadcastChannel !== "undefined") {
+  if (bootstrapUrl && typeof BroadcastChannel !== "undefined") {
     const ch = new BroadcastChannel("lararium:discovery");
     ch.onmessage = (ev: MessageEvent) => {
-      if (ev.data?.type === "catalog-wanted") ch.postMessage({ type: "catalog-here", catalogUrl });
+      if (ev.data?.type === "bootstrap-wanted") ch.postMessage({ type: "bootstrap-here", bootstrapUrl });
     };
-    // Don't hold this channel open; close after a tick.
     setTimeout(() => ch.close(), 5000);
   }
   void _bcDiscovery;
 
   emit("repo-open");
 
-  // ── 2. Catalog ────────────────────────────────────────────────────────────
-  const blankCatalog = () => repo.create<CatalogDoc>({ schemaVersion: "0.1", corpora: {}, rooms: {}, recipes: {}, projections: {} });
-  const catalogHandle: DocHandle<CatalogDoc> = catalogUrl
-    ? await waitHandleLocal<CatalogDoc>(repo, catalogUrl as AutomergeUrl, blankCatalog)
+  // ── 2. LarariumDoc — system bag + oracle tiddlers ─────────────────────────
+  // Zelenka: the browser is just another peer.  It reads the same well-known
+  // tiddlers (LARARIUM_DOC_URI, CATALOG_DOC_URI_SLOT) that the node peer wrote
+  // at seed time.  No HTTP oracle; no server privilege.
+  //
+  // Boot path A (new):  fragment = LarariumDoc URL
+  //   → open LarariumDoc → read CATALOG_DOC_URI_SLOT tiddler → open CatalogDoc
+  // Boot path B (legacy): fragment = CatalogDoc URL (no tiddlywikicore blob)
+  //   → open as catalog directly (backward compat for dev/testing)
+  const composite = new CompositeStore();
+
+  let larariumDocHandle: DocHandle<LarariumDoc> | null = null;
+  let resolvedCatalogUrl: string | null = null;
+
+  if (bootstrapUrl) {
+    // Speculatively open as LarariumDoc.  Inspect for blobs field after local
+    // materialisation — if present, it IS the engine doc (path A).
+    const candidate = await waitHandleLocal<LarariumDoc>(
+      repo, bootstrapUrl as AutomergeUrl,
+      () => repo.create<LarariumDoc>(emptyLarariumDoc()),
+    );
+    const maybeEngine = candidate.doc();
+    if (maybeEngine?.blobs && Object.keys(maybeEngine.blobs).length > 0) {
+      // Path A: bootstrapUrl is the LarariumDoc URL.
+      larariumDocHandle = candidate;
+      emit("island-ready");
+      composite.addLayer({ bagId: "system", store: new LarariumDocStore(larariumDocHandle), writable: false });
+      // Read catalog URL from oracle tiddler.
+      resolvedCatalogUrl = larariumDocHandle.doc()?.tiddlers?.[CATALOG_DOC_URI]?.text ?? null;
+    } else {
+      // Path B: legacy — treat bootstrapUrl as the CatalogDoc URL directly.
+      resolvedCatalogUrl = bootstrapUrl;
+    }
+  }
+
+  // ── 3. Catalog ────────────────────────────────────────────────────────────
+  const blankCatalog = () => repo.create<CatalogDoc>({ schemaVersion: "0.1", corpora: {}, rooms: {}, recipes: {}, projections: {}, tiddlers: {} });
+  const catalogHandle: DocHandle<CatalogDoc> = resolvedCatalogUrl
+    ? await waitHandleLocal<CatalogDoc>(repo, resolvedCatalogUrl as AutomergeUrl, blankCatalog)
     : blankCatalog();
   const catalog = catalogHandle.doc();
   emit("catalog-ready");
 
-  // ── 3. CompositeStore — build lowest→highest priority ────────────────────
-  const composite = new CompositeStore();
-
-  // ── 3a. LarariumDoc — system bag + TW5 core blob source ──────────────────
-  // Browser receives the LarariumDoc URL from the node peer via catalog sync.
-  // The core blob inside is injected into TW5Engine.boot() — no static HTTP serve.
-  const larariumDocUrl = catalog?.larariumDoc?.docUrl ?? null;
-  let larariumDocHandle: DocHandle<LarariumDoc> | null = null;
-  if (larariumDocUrl) {
-    larariumDocHandle = await waitHandleLocal<LarariumDoc>(
-      repo, larariumDocUrl as AutomergeUrl,
-      () => repo.create<LarariumDoc>(emptyLarariumDoc()),
-    );
-    composite.addLayer({ bagId: "system", store: new LarariumDocStore(larariumDocHandle), writable: false });
-    emit("island-ready");
+  // ── 3a. LarariumDoc (path B fallback) — load from catalog.larariumDoc ─────
+  // If we arrived via legacy path (no blobs on candidate), check catalog for
+  // the island reference the node peer registered there.
+  if (!larariumDocHandle) {
+    const larariumDocUrl = catalog?.larariumDoc?.docUrl ?? null;
+    if (larariumDocUrl) {
+      larariumDocHandle = await waitHandleLocal<LarariumDoc>(
+        repo, larariumDocUrl as AutomergeUrl,
+        () => repo.create<LarariumDoc>(emptyLarariumDoc()),
+      );
+      composite.addLayer({ bagId: "system", store: new LarariumDocStore(larariumDocHandle), writable: false });
+      emit("island-ready");
+    }
   }
 
-  // ── 3b. Corpus docs — one bag per corpus island ───────────────────────────
-  // Non-blocking: added in parallel; render proceeds with whatever arrives first.
+  // ── 4. Corpus docs — one bag per corpus island ───────────────────────────
   const corpusEntries = Object.values(catalog?.corpora ?? {});
   const corpusPromises = corpusEntries.map(async (entry) => {
     const handle = await waitHandleLocal<MemeStoreDoc>(
@@ -193,7 +234,7 @@ export async function openBrowserLarPeer(opts: {
   const corpusReadyP = Promise.all(corpusPromises);
 
   // ── 4. Room doc — writable ─────────────────────────────────────────────────
-  const roomDocUrl = catalog?.rooms?.[roomId]?.contentDocUrl ?? null;
+  const roomDocUrl = catalog?.rooms?.[roomKey]?.contentDocUrl ?? null;
   const blankRoom  = () => repo.create<MemeStoreDoc>({});
   const roomHandle: DocHandle<MemeStoreDoc> = roomDocUrl
     ? await waitHandleLocal<MemeStoreDoc>(repo, roomDocUrl as AutomergeUrl, blankRoom)
@@ -204,7 +245,7 @@ export async function openBrowserLarPeer(opts: {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const d = doc as any;
       d.rooms ??= {};
-      d.rooms[roomId] = { id: roomId, contentDocUrl: roomHandle.url, schemaVersion: "0.1" };
+      d.rooms[roomKey] = { id: roomId, contentDocUrl: roomHandle.url, schemaVersion: "0.1" };
     });
   }
   const roomStore = new AutomergeDocStore(roomHandle, "room");
@@ -218,7 +259,7 @@ export async function openBrowserLarPeer(opts: {
   const identity = new OpenIdentitySlot(hostId);
   const draftKey = `drafts_${encodeURIComponent(identity.did)}`;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const existingDraftUrl: string | null = (catalog?.rooms?.[roomId] as any)?.[draftKey] ?? null;
+  const existingDraftUrl: string | null = (catalog?.rooms?.[roomKey] as any)?.[draftKey] ?? null;
   const blankDraft = () => repo.create<MemeStoreDoc>({});
   const draftHandle: DocHandle<MemeStoreDoc> = existingDraftUrl
     ? await waitHandleLocal<MemeStoreDoc>(repo, existingDraftUrl as AutomergeUrl, blankDraft)
@@ -229,8 +270,8 @@ export async function openBrowserLarPeer(opts: {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const d = doc as any;
       d.rooms ??= {};
-      d.rooms[roomId] ??= {};
-      d.rooms[roomId][draftKey] = draftHandle.url;
+      d.rooms[roomKey] ??= {};
+      d.rooms[roomKey][draftKey] = draftHandle.url;
     });
   }
   composite.addLayer({ bagId: "draft", store: new AutomergeDocStore(draftHandle, "draft"), writable: true });
