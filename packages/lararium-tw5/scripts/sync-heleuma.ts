@@ -88,7 +88,9 @@ function walkExt(dir: string, ext: string): string[] {
 // ---------------------------------------------------------------------------
 
 function extractSymbol(srcPath: string, symbol: string): string | null {
-  const src   = readFileSync(resolve(root, srcPath), "utf8");
+  const absPath = resolve(root, srcPath);
+  if (!existsSync(absPath)) return null;
+  const src   = readFileSync(absPath, "utf8");
   const lines = src.split("\n");
   const declRe = new RegExp(
     `^\\s*(export\\s+)?(const\\s+|private\\s+|public\\s+|protected\\s+|static\\s+|async\\s+|function\\s+)*${symbol}\\s*(?::[^=(]*)?\\s*(\\(|=)`

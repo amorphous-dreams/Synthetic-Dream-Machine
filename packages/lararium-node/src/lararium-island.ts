@@ -46,7 +46,7 @@ function walkMdFiles(dir: string): string[] {
 }
 
 /**
- * Boot a bare Seed TW5VM, ingest all lararium-tw5/memes/**/*.md files via
+ * Boot a bare Seed TW5VM, ingest all .md meme files under lararium-tw5/memes/ via
  * deserializeCarrier(), and pack them into a single "$:/plugins/lararium/lares"
  * TW5 plugin JSON tiddler blob.
  *
