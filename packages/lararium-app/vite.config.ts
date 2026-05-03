@@ -11,6 +11,10 @@ export default defineConfig({
         ws: true,
         rewriteWsOrigin: true,
       },
+      "/api": {
+        target: "http://localhost:8080",
+        changeOrigin: true,
+      },
     },
   },
   build: {
@@ -21,16 +25,14 @@ export default defineConfig({
       input: {
         // Main app shell
         index: "index.html",
-        // Service worker — emitted at dist/sw.js (root-scoped)
-        sw: "src/sw.ts",
         // TW5 recipe VM worker — loaded via TW5WorkerProxy in browser peers.
         // Fixed name (no hash) so TW5WorkerProxy can reference it at a stable URL.
         "tw5-worker": "src/tw5-worker-entry.ts",
       },
       output: {
-        // SW and TW5 worker must land at root with fixed names — no hash.
+        // TW5 worker must land at root with a fixed name — no hash.
         entryFileNames: (chunk) =>
-          (chunk.name === "sw" || chunk.name === "tw5-worker")
+          chunk.name === "tw5-worker"
             ? `${chunk.name}.js`
             : "assets/[name]-[hash].js",
       },
