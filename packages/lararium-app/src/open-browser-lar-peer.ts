@@ -261,12 +261,20 @@ export async function openBrowserLarPeer(opts: {
   });
   emit("peer-ready");
 
-  // ── 7. TW5Engine — boot with core blob from LarariumDoc (web3, no static serve) ──
+  // ── 7. TW5Engine — boot with core blob + preloaded tiddlers from LarariumDoc ──
   // new Uint8Array(raw) normalises Automerge's internal chunk type to a clean ArrayBuffer.
-  const coreBlobRaw = larariumDocHandle?.doc()?.blobs?.["tiddlywikicore"]?.blob;
+  const doc = larariumDocHandle?.doc();
+  const coreBlobRaw    = doc?.blobs?.["tiddlywikicore"]?.blob;
+  const preloadsBlobRaw = doc?.blobs?.["lararium-preloads"]?.blob;
   const coreBlob = coreBlobRaw ? new Uint8Array(coreBlobRaw) : undefined;
+  let preloadedTiddlers: Array<Record<string, unknown>> | undefined;
+  if (preloadsBlobRaw) {
+    try {
+      preloadedTiddlers = JSON.parse(new TextDecoder().decode(new Uint8Array(preloadsBlobRaw))) as Array<Record<string, unknown>>;
+    } catch { /* malformed blob — fail gracefully by booting raw TW5 */ }
+  }
   const tw5 = new TW5Engine();
-  await tw5.boot(coreBlob);
+  await tw5.boot(coreBlob, preloadedTiddlers);
   emit("tw5-booted");
 
   // ── 8. Corpus bags — await after TW5 boots so render isn't blocked ────────

@@ -31,7 +31,7 @@ import { LarDiskProjector } from "./disk-projector.js";
 import { LARES_MEMES_ROOT } from "./node-host.js";
 import { ReactionEngine }   from "@lararium/core";
 import { exportMemeText }   from "@lararium/tw5";
-import { seedLarariumDoc, reconcileEngineBlobIfChanged } from "./lararium-island.js";
+import { seedLarariumDoc, reconcileEngineBlobIfChanged, reconcilePreloadsBlobIfChanged } from "./lararium-island.js";
 import type { NodeLarPeerResult } from "./open-node-lar-peer.js";
 
 // ---------------------------------------------------------------------------
@@ -168,6 +168,7 @@ async function main(): Promise<void> {
         existingLarariumDocUrl as import("@automerge/automerge-repo").AutomergeUrl,
       );
       await reconcileEngineBlobIfChanged(larariumDocHandle);
+      await reconcilePreloadsBlobIfChanged(larariumDocHandle);
     } catch { /* blob unchanged or file missing — no-op */ }
   }
 

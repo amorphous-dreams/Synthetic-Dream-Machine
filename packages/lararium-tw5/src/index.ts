@@ -31,6 +31,8 @@ export type { VDomNode, TW5FakeElement, TW5FakeTextNode, TW5FakeNode } from "./f
 
 export { TW5_VERSION, TW5_CORE_SCRIPT_FILENAME } from "./generated-tw5-version.js";
 
+export { loadUiTiddlers, loadVendorTiddlers } from "./lares-preloads.js";
+
 export { parseTaploFields, patchTomlKey, lintToml } from "./toml-ast.js";
 
 export { parseZoomLayoutTOML, getZoomLayout } from "./zoom-layout.js";

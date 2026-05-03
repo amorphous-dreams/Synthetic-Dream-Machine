@@ -14,7 +14,7 @@
 import { readFileSync, existsSync, readdirSync } from "fs";
 import { join, basename, dirname } from "path";
 import { fileURLToPath } from "url";
-import { TW5Engine } from "@lararium/tw5";
+import { TW5Engine, loadUiTiddlers, loadVendorTiddlers } from "@lararium/tw5";
 import { createHash } from "crypto";
 import type { Repo, DocHandle } from "@automerge/automerge-repo";
 import type { LarariumDoc, LarariumBlobEntry } from "@lararium/core";
@@ -73,6 +73,40 @@ export async function reconcileEngineBlobIfChanged(
 
   console.log(`[lararium-island] engine blob updated  v${TW5_VERSION}  sha=${diskSha.slice(0, 12)}…  (was ${storedSha.slice(0, 12)}…)`);
   return diskSha;
+}
+
+/**
+ * Recompute the lararium-preloads blob from current lares source files.
+ * If the sha256 differs from what the LarariumDoc stores, patches the doc.
+ *
+ * Call this on every resume boot alongside reconcileEngineBlobIfChanged
+ * so that changes to lares/memes/api UI/vendor tiddlers propagate to all peers.
+ */
+export async function reconcilePreloadsBlobIfChanged(
+  handle: DocHandle<LarariumDoc>,
+): Promise<string> {
+  const uiTiddlers     = await loadUiTiddlers();
+  const vendorTiddlers = await loadVendorTiddlers();
+  const preloadsJson   = JSON.stringify([...uiTiddlers, ...vendorTiddlers]);
+  const freshBlob      = new TextEncoder().encode(preloadsJson);
+  const freshSha       = sha256hex(freshBlob);
+  const storedSha      = handle.doc()?.blobs["lararium-preloads"]?.sha256 ?? "";
+
+  if (freshSha === storedSha) return storedSha;
+
+  const entry: LarariumBlobEntry = {
+    id:       "lararium-preloads",
+    version:  TW5_VERSION,
+    sha256:   freshSha,
+    mimeType: "application/json",
+    blob:     freshBlob,
+  };
+  handle.change((doc) => {
+    (doc.blobs as Record<string, LarariumBlobEntry>)["lararium-preloads"] = entry;
+  });
+
+  console.log(`[lararium-island] preloads blob updated  sha=${freshSha.slice(0, 12)}…  (was ${storedSha.slice(0, 12) || "none"}…)`);
+  return freshSha;
 }
 
 /**
@@ -155,6 +189,26 @@ export async function seedLarariumDoc(
     const titles = (doc as unknown as { systemTitles?: string[] }).systemTitles;
     if (titles) titles.splice(0, titles.length, ...systemTitles);
   });
+
+  // Serialize UI + vendor tiddlers into a single preloads blob.
+  // Browser peers receive this via Automerge sync and pass it to TW5Engine.boot()
+  // as preloadedTiddlers — no import.meta.glob or disk access needed in the browser.
+  const uiTiddlers     = await loadUiTiddlers();
+  const vendorTiddlers = await loadVendorTiddlers();
+  const preloadsJson   = JSON.stringify([...uiTiddlers, ...vendorTiddlers]);
+  const preloadsBlob   = new TextEncoder().encode(preloadsJson);
+  const preloadsSha    = sha256hex(preloadsBlob);
+  const preloadsEntry: LarariumBlobEntry = {
+    id:       "lararium-preloads",
+    version:  TW5_VERSION,
+    sha256:   preloadsSha,
+    mimeType: "application/json",
+    blob:     preloadsBlob,
+  };
+  handle.change((doc) => {
+    (doc.blobs as Record<string, LarariumBlobEntry>)["lararium-preloads"] = preloadsEntry;
+  });
+  console.log(`[lararium-island] preloads blob  ${uiTiddlers.length + vendorTiddlers.length} tiddlers  sha=${preloadsSha.slice(0, 12)}…`);
 
   console.log(`[lararium-island] TW5 core v${TW5_VERSION}  sha=${coreSha.slice(0, 12)}…  system titles: ${systemTitles.length}`);
   console.log(`[lararium-island] engine doc URL: ${handle.url}`);
