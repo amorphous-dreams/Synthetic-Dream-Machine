@@ -31,7 +31,8 @@ import {
   AutomergeDocStore, LarariumDocStore,
   CompositeStore, corpusBagId, emptyLarariumDoc,
 }                                       from "@lararium/core";
-import { TW5Engine, MemeSyncAdaptor, VmPool } from "@lararium/tw5";
+import { TW5Engine, MemeSyncAdaptor, VmPool, DirectMemeRecipeVm } from "@lararium/tw5";
+import type { MemeRecipeVm } from "@lararium/tw5";
 import {
   seedLarariumDoc,
   reconcileEngineBlobIfChanged,
@@ -60,11 +61,11 @@ export interface NodeLarPeerOptions {
 }
 
 export interface NodeLarPeerResult {
-  peer:             LarPeer<VmPool<TW5Engine>>;
+  peer:             LarPeer<VmPool<MemeRecipeVm>>;
   tw5:              TW5Engine;
-  pool:             VmPool<TW5Engine>;
+  pool:             VmPool<MemeRecipeVm>;
   repo:             Repo;
-  /** Automerge URL of the catalog doc — exposed for GET /api/catalog bootstrap. */
+  /** Automerge URL of the catalog doc — printed to console as the connect invite URL. */
   catalogHandleUrl: string;
   phase:            NodeOpenPhase;
 }
@@ -236,7 +237,7 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
 
   // ── 6. LarPeer ────────────────────────────────────────────────────────────
   roomStore.markSyncComplete();
-  const peer = new LarPeer<VmPool<TW5Engine>>({
+  const peer = new LarPeer<VmPool<MemeRecipeVm>>({
     peerId:       `${hostId}:${roomId}`,
     store:        composite,
     capabilities: PEER_CAPABILITIES_NODE,
@@ -287,8 +288,8 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
   peer.addProjection(adaptor);
 
   // ── 10. VmPool ────────────────────────────────────────────────────────────
-  const pool = new VmPool<TW5Engine>();
-  await pool.get("slot-0", async () => tw5);
+  const pool = new VmPool<MemeRecipeVm>();
+  await pool.get("slot-0", async () => new DirectMemeRecipeVm(tw5));
   peer.attachVmPool(pool);
 
   emit("live");

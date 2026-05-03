@@ -19,9 +19,8 @@
     "typecheck": "tsc --noEmit",
     "test": "NODE_OPTIONS=--experimental-vm-modules pnpm exec jest --config jest.config.cjs",
     "dev": "tsx src/main.ts",
+    "start": "node dist/src/main.js",
     "build-snapshot": "tsx scripts/build-snapshot.ts",
-    "serve": "tsx scripts/serve.ts",
-    "serve:prod": "node dist/scripts/serve.js",
     "e2e": "playwright test --config playwright.config.ts",
     "e2e:headed": "playwright test --config playwright.config.ts --headed"
   },

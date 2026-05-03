@@ -1,4 +1,4 @@
-.PHONY: help install build test typecheck serve serve-dev reseed clean \
+.PHONY: help install build test typecheck serve dev reseed clean \
         docker-build docker-serve docker-dev docker-qa docker-prod docker-smoke
 
 help:
@@ -7,8 +7,8 @@ help:
 	@echo "  make build         Build all packages (core → tw5 → tldraw → node → app → mcp)"
 	@echo "  make test          Run all package test suites"
 	@echo "  make typecheck     Run tsc --noEmit across all packages"
-	@echo "  make serve         Build app then start lararium-node serve on :4321"
-	@echo "  make serve-dev     tsx watch mode — no build step, hot reload"
+	@echo "  make serve         Build then run node relay peer on :4321 (catalog URL printed to console)"
+	@echo "  make dev           Run node peer (:8080) + Vite dev server (:5173) concurrently"
 	@echo "  make reseed        Force-reseed corpus:lares island (server must be running)"
 	@echo "  make clean         Remove all dist/ and .lararium-data/ artifacts"
 	@echo ""
@@ -41,15 +41,16 @@ typecheck:
 	pnpm -r typecheck
 
 serve: build
-	pnpm --filter @lararium/node serve
+	LAR_PORT=4321 node packages/lararium-node/dist/src/main.js
 
-# Hot-reload for active development — skips the full build.
-# Picks up gh CLI session automatically for operator auth.
-serve-dev:
-	pnpm --filter @lararium/node exec tsx --watch scripts/serve.ts
+# Hot-reload for active development: node peer (:8080) + Vite HMR (:5173) concurrently.
+# Vite proxies /ws and /api to :8080 — no static serving needed from node in dev.
+dev:
+	pnpm --filter @lararium/node exec tsx src/main.ts & pnpm --filter @lararium/app exec vite
 
 reseed:
-	curl -sf "http://localhost:4321/admin/reseed" | python3 -m json.tool
+	@echo "[reseed] open the relay console — catalog URL is printed on boot."
+	@echo "[reseed] navigate to http://localhost:4321/#<catalog-url> to join."
 
 clean:
 	find . -path "*/node_modules" -prune -o -name "dist" -type d -print | grep -v node_modules | xargs rm -rf

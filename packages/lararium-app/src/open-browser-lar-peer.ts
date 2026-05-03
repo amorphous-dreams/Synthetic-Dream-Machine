@@ -31,7 +31,8 @@ import {
   AutomergeDocStore, LarariumDocStore,
   CompositeStore, corpusBagId, emptyLarariumDoc,
 }                                                       from "@lararium/core";
-import { TW5Engine, MemeSyncAdaptor, VmPool }           from "@lararium/tw5";
+import { TW5Engine, MemeSyncAdaptor, VmPool, DirectMemeRecipeVm } from "@lararium/tw5";
+import type { MemeRecipeVm }                            from "@lararium/tw5";
 
 // ---------------------------------------------------------------------------
 // BrowserOpenPhase — clean phase sequence
@@ -72,39 +73,23 @@ async function waitHandleLocal<T>(
   return fresh;
 }
 
-async function readCatalogUrl(hostId: string, wsUrl?: string): Promise<string | null> {
-  if (typeof document === "undefined") return null;
-
-  // Tier 0a: <meta name="lararium-catalog"> — server-injected into page HTML.
-  const meta = document.querySelector('meta[name="lararium-catalog"]')?.getAttribute("content");
-  if (meta) {
-    try { localStorage.setItem(`lararium:catalog-url:${hostId}`, meta); } catch { /* quota */ }
-    return meta;
+function readCatalogUrl(hostId: string): string | null {
+  // Tier 0a: URL fragment — operator shares `…/#automerge:…` invite link.
+  // The catalog address IS the entry point; the relay does not serve it.
+  // Nothing injects it; you receive it out-of-band and it lives in the URL.
+  if (typeof window !== "undefined") {
+    const hash = window.location.hash.replace(/^#/, "");
+    if (hash.startsWith("automerge:")) {
+      try { localStorage.setItem(`lararium:catalog-url:${hostId}`, hash); } catch { /* quota */ }
+      return hash;
+    }
   }
 
-  // Tier 0b: localStorage cache — warm path after first successful bootstrap.
+  // Tier 0b: localStorage cache — warm path; works offline after first visit.
   try {
     const cached = localStorage.getItem(`lararium:catalog-url:${hostId}`);
     if (cached) return cached;
   } catch { /* quota/private mode */ }
-
-  // Tier 0c: GET /api/catalog — node server HTTP endpoint.
-  // Derive base URL from wsUrl (ws://host → http://host) or window.location.
-  if (wsUrl ?? (typeof window !== "undefined")) {
-    try {
-      const base = wsUrl
-        ? wsUrl.replace(/^ws(s?):\/\//, "http$1://").replace(/\/ws$/, "")
-        : window.location.origin;
-      const resp = await fetch(`${base}/api/catalog`, { signal: AbortSignal.timeout(3000) });
-      if (resp.ok) {
-        const { catalogUrl } = await resp.json() as { catalogUrl: string };
-        if (catalogUrl) {
-          try { localStorage.setItem(`lararium:catalog-url:${hostId}`, catalogUrl); } catch { /* quota */ }
-          return catalogUrl;
-        }
-      }
-    } catch { /* node server not up yet — fall through to blank catalog */ }
-  }
 
   return null;
 }
@@ -114,9 +99,9 @@ async function readCatalogUrl(hostId: string, wsUrl?: string): Promise<string | 
 // ---------------------------------------------------------------------------
 
 export interface BrowserLarPeerResult {
-  peer:  LarPeer<VmPool<TW5Engine>>;
+  peer:  LarPeer<VmPool<MemeRecipeVm>>;
   tw5:   TW5Engine;
-  pool:  VmPool<TW5Engine>;
+  pool:  VmPool<MemeRecipeVm>;
   phase: BrowserOpenPhase;
 }
 
@@ -132,9 +117,9 @@ export async function openBrowserLarPeer(opts: {
   emit("boot");
 
   // ── 1. Repo ───────────────────────────────────────────────────────────────
-  // Tier 0: fetch catalog URL before Repo opens (meta tag → localStorage → GET /api/catalog).
-  // BC peerMetadata (Tier 2) will carry it to other tabs once we have it.
-  const catalogUrl = await readCatalogUrl(hostId, wsUrl);
+  // Tier 0: catalog URL from URL fragment (#automerge:…) → localStorage.
+  // BC gossip (Tier 2) propagates it between tabs once any tab has it.
+  const catalogUrl = readCatalogUrl(hostId);
 
   const storage = new IndexedDBStorageAdapter(`lararium:meme-store:${hostId}`);
   const bcNet   = new BroadcastChannelNetworkAdapter({ channelName: "lararium" });
@@ -253,7 +238,7 @@ export async function openBrowserLarPeer(opts: {
 
   // ── 6. LarPeer ────────────────────────────────────────────────────────────
   roomStore.markSyncComplete();
-  const peer = new LarPeer<VmPool<TW5Engine>>({
+  const peer = new LarPeer<VmPool<MemeRecipeVm>>({
     peerId:       repo.peerId ?? hostId,
     store:        composite,
     capabilities: PEER_CAPABILITIES_BROWSER,
@@ -307,8 +292,8 @@ export async function openBrowserLarPeer(opts: {
   peer.addProjection(adaptor);
 
   // ── 10. VmPool ────────────────────────────────────────────────────────────
-  const pool = new VmPool<TW5Engine>();
-  await pool.get("slot-0", async () => tw5);
+  const pool = new VmPool<MemeRecipeVm>();
+  await pool.get("slot-0", async () => new DirectMemeRecipeVm(tw5));
   peer.attachVmPool(pool);
 
   emit("live");
@@ -321,9 +306,9 @@ export async function openBrowserLarPeer(opts: {
 
 export interface BrowserPeerState {
   phase: BrowserOpenPhase | null;
-  peer:  LarPeer<VmPool<TW5Engine>> | null;
+  peer:  LarPeer<VmPool<MemeRecipeVm>> | null;
   tw5:   TW5Engine | null;
-  pool:  VmPool<TW5Engine> | null;
+  pool:  VmPool<MemeRecipeVm> | null;
   error: Error | null;
 }
 

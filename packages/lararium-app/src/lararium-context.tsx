@@ -13,7 +13,7 @@ import type { Editor } from "tldraw";
 import type { LarViewState, LarViewAction, ZoomLevel } from "@lararium/tldraw";
 import { DEFAULT_ROOMS, ROOM_SYSTEM } from "@lararium/tldraw";
 import type { ReactionEngine, LarPeer } from "@lararium/core";
-import type { TW5Engine, VmPool } from "@lararium/tw5";
+import type { TW5Engine, VmPool, MemeRecipeVm } from "@lararium/tw5";
 import type { BrowserOpenPhase } from "./open-browser-lar-peer.js";
 import type { MemeEntry } from "./App.js";
 
@@ -99,7 +99,7 @@ export interface LarariumCtxValue {
   /** Current opening phase — null before host open begins. */
   openPhase:      BrowserOpenPhase | null;
   /** LarPeer (store + vm pool) — null until peer-ready phase. */
-  peer:           LarPeer<VmPool<TW5Engine>> | null;
+  peer:           LarPeer<VmPool<MemeRecipeVm>> | null;
   /** Booted TW5 instance — null until tw5-booted phase. */
   tw5:            TW5Engine | null;
   /** Reaction engine — null until tw5 boot + initial wiki scan complete. */

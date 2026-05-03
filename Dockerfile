@@ -77,6 +77,8 @@ VOLUME /app/lares
 VOLUME /app/.lararium-data
 
 ENV NODE_ENV=production
+# Peer port — single surface: WS /ws + GET /api/health
+ENV LAR_PORT=4321
 # Auth env vars — set via docker compose or -e flags
 # GITHUB_CLIENT_ID and GITHUB_CLIENT_SECRET are optional
 # gh CLI is NOT available in the container; server falls back to local-dev receipt
@@ -84,7 +86,7 @@ ENV NODE_ENV=production
 
 EXPOSE 4321
 
-ENTRYPOINT ["node", "packages/lararium-node/dist/scripts/serve.js"]
+ENTRYPOINT ["node", "packages/lararium-node/dist/src/main.js"]
 
 # ---------------------------------------------------------------------------
 # Stage 4: mcp-runtime — minimal stdio MCP server (unchanged)

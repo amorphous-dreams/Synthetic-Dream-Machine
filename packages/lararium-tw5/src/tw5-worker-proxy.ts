@@ -1,26 +1,25 @@
 /**
- * TW5WorkerProxy — RecipeVm backed by a Worker Thread (Node) or Web Worker (browser).
+ * TW5WorkerProxy — MemeRecipeVm backed by a Worker Thread (Node) or Web Worker (browser).
  *
- * Spawns a tw5-worker-script instance and forwards RecipeVm calls as structured-clone
+ * Spawns a meme-worker-script instance and forwards MemeRecipeVm calls as structured-clone
  * messages. Request/response pairs are matched by a monotonic id.
  *
- * Fire-and-forget ops (setTiddler, removeTiddler, dispose) post without waiting.
- * All other ops return Promises resolved by the response listener.
- *
- * Usage (Node):
- *   const proxy = new TW5WorkerProxy(new URL("./tw5-worker-script.js", import.meta.url));
- *   await proxy.boot();
- *   await proxy.loadRecords(records);
- *   // VM is live — same interface as DirectRecipeVm from this point on.
+ * Fire-and-forget ops (onUriChanged, onSyncComplete, dispose) post without waiting.
+ * Query ops (filterTiddlers, renderMeme) return Promises resolved by the response listener.
  *
  * Usage (browser, Vite):
- *   const proxy = new TW5WorkerProxy(new URL("./tw5-worker-script.ts?worker", import.meta.url));
+ *   const proxy = new TW5WorkerProxy(new URL("/tw5-worker.js", location.origin));
+ *   await proxy.boot(coreBlob, preloads);
+ *   // VM is live — same MemeRecipeVm interface as DirectMemeRecipeVm.
  *
- * The VmPool factory is the only place that constructs a TW5WorkerProxy —
- * all server-api call sites are backend-agnostic.
+ * Isomorphic seam: identical interface whether TW5 runs in-process (DirectMemeRecipeVm)
+ * or in a Worker thread (TW5WorkerProxy). The VmPool factory is the only construction site.
+ *
+ * Schema: lar:///ha.ka.ba/@lares/api/v0.1/lararium/schema/tw5-worker-proxy
  */
 
-import type { RecipeVm, SerializedRecord } from "./recipe-vm.js";
+import type { LarTiddlerChange } from "@lararium/core";
+import type { MemeRecipeVm } from "./meme-recipe-vm.js";
 
 // ---------------------------------------------------------------------------
 // Isomorphic worker constructor — Node Worker Thread or browser Web Worker
@@ -51,7 +50,7 @@ function spawnWorker(scriptUrl: URL): AnyWorker {
 // TW5WorkerProxy
 // ---------------------------------------------------------------------------
 
-export class TW5WorkerProxy implements RecipeVm {
+export class TW5WorkerProxy implements MemeRecipeVm {
   private readonly _worker: AnyWorker;
   private readonly _pending = new Map<
     string,
@@ -98,32 +97,36 @@ export class TW5WorkerProxy implements RecipeVm {
   }
 
   // -------------------------------------------------------------------------
-  // RecipeVm implementation
+  // MemeRecipeVm implementation
   // -------------------------------------------------------------------------
 
-  /** Boot the TW5 engine inside the Worker. Must be called before all else. */
-  boot(): Promise<void> {
-    return this.request("boot");
+  /**
+   * Boot the TW5 engine inside the Worker.
+   * Must be called before any other operation.
+   */
+  boot(coreBlob?: Uint8Array, preloads?: Array<Record<string, unknown>>): Promise<void> {
+    return this.request("boot", {
+      ...(coreBlob ? { coreBlob } : {}),
+      ...(preloads ? { preloads } : {}),
+    });
   }
 
-  async loadRecords(records: SerializedRecord[]): Promise<void> {
-    await this.request("loadRecords", { records });
+  /** Scale 1–3 incremental sync: fire-and-forget, no response expected. */
+  onUriChanged(change: LarTiddlerChange): void {
+    this.send("onUriChanged", { change });
   }
 
-  setTiddler(fields: Record<string, string | string[]>): void {
-    this.send("setTiddler", { fields });
-  }
-
-  removeTiddler(title: string): void {
-    this.send("removeTiddler", { title });
+  /** Flush buffer on island sync complete. Fire-and-forget. */
+  onSyncComplete(islandId: string): void {
+    this.send("onSyncComplete", { islandId });
   }
 
   filterTiddlers(expr: string): Promise<string[]> {
     return this.request("filterTiddlers", { expr });
   }
 
-  renderCarrier(uri: string): Promise<string | null> {
-    return this.request("renderCarrier", { uri });
+  renderMeme(uri: string): Promise<string | null> {
+    return this.request("renderMeme", { uri });
   }
 
   dispose(): void {

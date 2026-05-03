@@ -5,9 +5,8 @@
  * browser peers to sync against, and attaches a LarDiskProjector so
  * the packages/lares/memes tree stays in sync with the Automerge store.
  *
- * HTTP surface (cold-bootstrap Tier 0):
- *   GET /api/catalog   → { catalogUrl: "automerge:..." }
- *   GET /api/health    → { ok: true, phase, roomId }
+ * HTTP surface:
+ *   GET /api/health    → { ok: true, phase, roomId }  (infra probe only)
  *
  * WS surface (sync):
  *   ws://localhost:8080/ws  → Automerge sync protocol
@@ -21,17 +20,23 @@
  *   LAR_STORAGE  — storage directory (default .lararium)
  *   LAR_ROOM     — room id (default altar-fire)
  *   LAR_CATALOG  — existing catalog automerge URL to join (optional)
+ *
+ * Bootstrap:
+ *   The catalog Automerge URL is printed to stdout on boot.
+ *   Share it as a URL fragment: http://HOST:PORT/#CATALOG_URL
+ *   Browser peers read it from location.hash on first visit, cache to
+ *   localStorage for offline return visits.
  */
 
-import { createServer }    from "http";
-import { WebSocketServer } from "ws";
-import { resolve }         from "path";
-import { openNodeLarPeer } from "./open-node-lar-peer.js";
-import { LarDiskProjector } from "./disk-projector.js";
-import { LARES_MEMES_ROOT } from "./node-host.js";
-import { ReactionEngine }   from "@lararium/core";
-import { exportMemeText }   from "@lararium/tw5";
-import type { NodeLarPeerResult } from "./open-node-lar-peer.js";
+import { createServer }                  from "http";
+import { WebSocketServer }               from "ws";
+import { resolve }                       from "path";
+import { openNodeLarPeer }               from "./open-node-lar-peer.js";
+import { LarDiskProjector }              from "./disk-projector.js";
+import { LARES_MEMES_ROOT }              from "./node-host.js";
+import { ReactionEngine }                from "@lararium/core";
+import { exportMemeText }                from "@lararium/tw5";
+
 
 // ---------------------------------------------------------------------------
 // CLI / env config
@@ -39,8 +44,10 @@ import type { NodeLarPeerResult } from "./open-node-lar-peer.js";
 
 function parseArgs(): { port: number; storageDir: string; roomId: string; catalogUrl: string | null } {
   const args = process.argv.slice(2);
-  const get  = (flag: string, env: string, fallback: string) =>
-    args[args.indexOf(flag) + 1] ?? process.env[env] ?? fallback;
+  const get  = (flag: string, env: string, fallback: string) => {
+    const i = args.indexOf(flag);
+    return (i !== -1 ? args[i + 1] : undefined) ?? process.env[env] ?? fallback;
+  };
   return {
     port:       Number(get("--port",    "LAR_PORT",    "8080")),
     storageDir: resolve(get("--storage","LAR_STORAGE", ".lararium")),
@@ -54,34 +61,20 @@ function parseArgs(): { port: number; storageDir: string; roomId: string; catalo
 // ---------------------------------------------------------------------------
 
 function makeHandler(
-  state: { result: NodeLarPeerResult | null; phase: string; roomId: string },
+  state: { phase: string; roomId: string },
 ) {
   return (req: import("http").IncomingMessage, res: import("http").ServerResponse) => {
     const url = new URL(req.url ?? "/", "http://localhost");
     res.setHeader("Access-Control-Allow-Origin", "*");
-    res.setHeader("Content-Type", "application/json");
-
-    if (url.pathname === "/api/catalog") {
-      // Retrieve catalogUrl from the repo's catalog handle.
-      // The Automerge Repo exposes all handles; catalog was the first doc created.
-      // We store it on the result object for easy access.
-      const catalogUrl = state.result?.catalogHandleUrl ?? null;
-      if (!catalogUrl) {
-        res.writeHead(503);
-        res.end(JSON.stringify({ error: "catalog not yet ready", phase: state.phase }));
-        return;
-      }
-      res.writeHead(200);
-      res.end(JSON.stringify({ catalogUrl, roomId: state.roomId }));
-      return;
-    }
 
     if (url.pathname === "/api/health") {
+      res.setHeader("Content-Type", "application/json");
       res.writeHead(200);
       res.end(JSON.stringify({ ok: true, phase: state.phase, roomId: state.roomId }));
       return;
     }
 
+    res.setHeader("Content-Type", "application/json");
     res.writeHead(404);
     res.end(JSON.stringify({ error: "not found" }));
   };
@@ -94,14 +87,13 @@ function makeHandler(
 async function main(): Promise<void> {
   const { port, storageDir, roomId, catalogUrl } = parseArgs();
 
-  // Shared state — populated after openNodeLarPeer resolves.
-  const state: { result: NodeLarPeerResult | null; phase: string; roomId: string } = {
-    result: null,
+  // Shared state — updated as boot phases fire.
+  const state: { phase: string; roomId: string } = {
     phase:  "boot",
     roomId,
   };
 
-  // HTTP server — handles /api/* requests.
+  // HTTP server — /api/health for infra probes only. Relay does not serve content.
   const httpServer = createServer(makeHandler(state));
 
   // WS server — path-scoped to /ws only (local-first best practice: reject other upgrade paths
@@ -119,7 +111,7 @@ async function main(): Promise<void> {
   });
 
   httpServer.listen(port, () => {
-    console.log(`[lararium] HTTP+WS server on :${port}  (HTTP /api/*  WS /ws)`);
+    console.log(`[lararium] HTTP+WS server on :${port}  (GET /api/health  WS /ws)`);
   });
 
   const result = await openNodeLarPeer({
@@ -133,8 +125,6 @@ async function main(): Promise<void> {
       console.log(`[lararium] phase → ${phase}`);
     },
   });
-  state.result = result;
-
   const { peer, tw5 } = result;
 
   // Reaction bus — maintains ReactionGraph from CRDT changes.
@@ -152,6 +142,7 @@ async function main(): Promise<void> {
 
   console.log(`[lararium] live — room: ${roomId} | storage: ${storageDir}`);
   console.log(`[lararium] catalog: ${result.catalogHandleUrl ?? "(none)"}`);
+  console.log(`[lararium] connect: http://localhost:${port}/#${result.catalogHandleUrl ?? ""}`);
 
   const shutdown = () => {
     console.log("[lararium] shutting down");
