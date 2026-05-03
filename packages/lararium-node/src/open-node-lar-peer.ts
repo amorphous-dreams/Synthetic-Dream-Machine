@@ -47,15 +47,28 @@ export interface NodeLarPeerResult {
   phase: NodeOpenPhase;
 }
 
-const READY_TIMEOUT_MS = 30_000;
+// Local-first: prefer locally available doc; remote sync is opportunistic.
+// If the doc is in NodeFS, Automerge serves it immediately — no network wait.
+// If it has never been seen locally (first boot, remote offline), fall back
+// to a fresh doc rather than blocking boot.
+const LOCAL_READY_MS = 500; // fast path: doc should be in NodeFS if previously seen
 
-async function waitHandle(handle: DocHandle<unknown>): Promise<void> {
-  await Promise.race([
-    handle.whenReady(),
-    new Promise<never>((_, reject) =>
-      setTimeout(() => reject(new Error(`DocHandle not ready after ${READY_TIMEOUT_MS / 1000}s`)), READY_TIMEOUT_MS)
-    ),
+async function waitHandleLocal<T>(
+  handleP: Promise<DocHandle<T>>,
+  fallbackFn: () => DocHandle<T>,
+): Promise<DocHandle<T>> {
+  const handle = await handleP;
+  const localReady = await Promise.race([
+    handle.whenReady().then(() => true),
+    new Promise<false>((r) => setTimeout(() => r(false), LOCAL_READY_MS)),
   ]);
+  if (localReady) return handle;
+  // Doc not in local storage — boot fresh; merge remote in background when it comes online.
+  const fresh = fallbackFn();
+  handle.whenReady().then(() => {
+    fresh.merge(handle);
+  }).catch(() => { /* remote never came — fresh doc stands */ });
+  return fresh;
 }
 
 export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLarPeerResult> {
@@ -71,19 +84,23 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
   const repo    = new Repo({ storage, network: [network], sharePolicy: async () => true });
   emit("repo-open");
 
-  // ── 2. Catalog ────────────────────────────────────────────────────────────
+  // ── 2. Catalog — local-first ───────────────────────────────────────────────
+  // repo.find() serves from NodeFS immediately if previously seen.
+  // If catalogUrl is remote-only and offline, waitHandleLocal falls back to
+  // a fresh catalog and merges the remote in the background when it comes online.
+  const blankCatalog = (): DocHandle<CatalogDoc> =>
+    repo.create<CatalogDoc>({ schemaVersion: "0.1", corpora: {}, rooms: {}, recipes: {}, projections: {} });
   const catalogHandle: DocHandle<CatalogDoc> = catalogUrl
-    ? await repo.find<CatalogDoc>(catalogUrl as AutomergeUrl)
-    : repo.create<CatalogDoc>({ schemaVersion: "0.1", corpora: {}, rooms: {}, recipes: {}, projections: {} });
-  await waitHandle(catalogHandle);
+    ? await waitHandleLocal(repo.find<CatalogDoc>(catalogUrl as AutomergeUrl), blankCatalog)
+    : blankCatalog();
   emit("catalog-ready");
 
-  // ── 3. Room doc ───────────────────────────────────────────────────────────
+  // ── 3. Room doc — local-first ─────────────────────────────────────────────
   const roomDocUrl = catalogHandle.doc()?.rooms?.[roomId]?.contentDocUrl ?? null;
+  const blankRoom  = (): DocHandle<MemeStoreDoc> => repo.create<MemeStoreDoc>({});
   const roomHandle: DocHandle<MemeStoreDoc> = roomDocUrl
-    ? await repo.find<MemeStoreDoc>(roomDocUrl as AutomergeUrl)
-    : repo.create<MemeStoreDoc>({});
-  await waitHandle(roomHandle);
+    ? await waitHandleLocal(repo.find<MemeStoreDoc>(roomDocUrl as AutomergeUrl), blankRoom)
+    : blankRoom();
 
   if (!roomDocUrl) {
     catalogHandle.change((doc) => {
