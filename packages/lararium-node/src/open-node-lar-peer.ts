@@ -18,6 +18,8 @@
  * FPI-5 (trim tab): all Node-specific code lives here.
  */
 
+import { readFileSync, writeFileSync, mkdirSync } from "fs";
+import { join }                         from "path";
 import type { DocHandle, AutomergeUrl } from "@automerge/automerge-repo";
 import { Repo }                         from "@automerge/automerge-repo";
 import { NodeFSStorageAdapter }         from "@automerge/automerge-repo-storage-nodefs";
@@ -53,11 +55,13 @@ export interface NodeLarPeerOptions {
 }
 
 export interface NodeLarPeerResult {
-  peer:  LarPeer<VmPool<TW5Engine>>;
-  tw5:   TW5Engine;
-  pool:  VmPool<TW5Engine>;
-  repo:  Repo;
-  phase: NodeOpenPhase;
+  peer:             LarPeer<VmPool<TW5Engine>>;
+  tw5:              TW5Engine;
+  pool:             VmPool<TW5Engine>;
+  repo:             Repo;
+  /** Automerge URL of the catalog doc — exposed for GET /api/catalog bootstrap. */
+  catalogHandleUrl: string;
+  phase:            NodeOpenPhase;
 }
 
 // Local-first: NodeFS serves immediately if previously seen (< 500ms).
@@ -95,11 +99,33 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
   emit("repo-open");
 
   // ── 2. Catalog ────────────────────────────────────────────────────────────
-  const blankCatalog = (): DocHandle<CatalogDoc> =>
-    repo.create<CatalogDoc>({ schemaVersion: "0.1", corpora: {}, rooms: {}, recipes: {}, projections: {} });
-  const catalogHandle: DocHandle<CatalogDoc> = catalogUrl
-    ? await waitHandleLocal(repo.find<CatalogDoc>(catalogUrl as AutomergeUrl), blankCatalog)
+  // Local-first rendezvous anchor: catalog URL persisted to storageDir/catalog-url.
+  // On first boot: create blank catalog, write URL to disk immediately.
+  // On subsequent boots: read URL from disk, call repo.find() — already in NodeFS, fast.
+  // This is NOT seed-then-hydrate: the URL file is the stable rendezvous anchor.
+  // GET /api/catalog serves this file's content — available before any sync completes.
+  const catalogUrlFile = join(storageDir, "catalog-url");
+  let resolvedCatalogUrl: string | null = catalogUrl ?? null;
+  if (!resolvedCatalogUrl) {
+    try { resolvedCatalogUrl = readFileSync(catalogUrlFile, "utf8").trim() || null; } catch { /* first boot */ }
+  }
+
+  const blankCatalog = (): DocHandle<CatalogDoc> => {
+    const h = repo.create<CatalogDoc>({ schemaVersion: "0.1", corpora: {}, rooms: {}, recipes: {}, projections: {} });
+    // Persist URL synchronously before returning — GET /api/catalog is servable immediately.
+    try { mkdirSync(storageDir, { recursive: true }); writeFileSync(catalogUrlFile, h.url, "utf8"); } catch { /* quota */ }
+    return h;
+  };
+
+  const catalogHandle: DocHandle<CatalogDoc> = resolvedCatalogUrl
+    ? await waitHandleLocal(repo.find<CatalogDoc>(resolvedCatalogUrl as AutomergeUrl), blankCatalog)
     : blankCatalog();
+
+  // Ensure the URL file exists even if catalog came from env/arg rather than disk.
+  if (resolvedCatalogUrl && resolvedCatalogUrl !== catalogUrl) {
+    try { mkdirSync(storageDir, { recursive: true }); writeFileSync(catalogUrlFile, catalogHandle.url, "utf8"); } catch { /* quota */ }
+  }
+
   const catalog = catalogHandle.doc();
   emit("catalog-ready");
 
@@ -202,5 +228,5 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
   peer.attachVmPool(pool);
 
   emit("live");
-  return { peer, tw5, pool, repo, phase: "live" };
+  return { peer, tw5, pool, repo, catalogHandleUrl: catalogHandle.url, phase: "live" };
 }

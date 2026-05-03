@@ -68,14 +68,41 @@ async function waitHandleLocal<T>(
   return fresh;
 }
 
-function readCatalogUrl(hostId: string): string | null {
+async function readCatalogUrl(hostId: string, wsUrl?: string): Promise<string | null> {
   if (typeof document === "undefined") return null;
+
+  // Tier 0a: <meta name="lararium-catalog"> — server-injected into page HTML.
   const meta = document.querySelector('meta[name="lararium-catalog"]')?.getAttribute("content");
   if (meta) {
     try { localStorage.setItem(`lararium:catalog-url:${hostId}`, meta); } catch { /* quota */ }
     return meta;
   }
-  try { return localStorage.getItem(`lararium:catalog-url:${hostId}`); } catch { return null; }
+
+  // Tier 0b: localStorage cache — warm path after first successful bootstrap.
+  try {
+    const cached = localStorage.getItem(`lararium:catalog-url:${hostId}`);
+    if (cached) return cached;
+  } catch { /* quota/private mode */ }
+
+  // Tier 0c: GET /api/catalog — node server HTTP endpoint.
+  // Derive base URL from wsUrl (ws://host → http://host) or window.location.
+  if (wsUrl ?? (typeof window !== "undefined")) {
+    try {
+      const base = wsUrl
+        ? wsUrl.replace(/^ws(s?):\/\//, "http$1://").replace(/\/ws$/, "")
+        : window.location.origin;
+      const resp = await fetch(`${base}/api/catalog`, { signal: AbortSignal.timeout(3000) });
+      if (resp.ok) {
+        const { catalogUrl } = await resp.json() as { catalogUrl: string };
+        if (catalogUrl) {
+          try { localStorage.setItem(`lararium:catalog-url:${hostId}`, catalogUrl); } catch { /* quota */ }
+          return catalogUrl;
+        }
+      }
+    } catch { /* node server not up yet — fall through to blank catalog */ }
+  }
+
+  return null;
 }
 
 // ---------------------------------------------------------------------------
@@ -101,15 +128,43 @@ export async function openBrowserLarPeer(opts: {
   emit("boot");
 
   // ── 1. Repo ───────────────────────────────────────────────────────────────
+  // Tier 0: fetch catalog URL before Repo opens (meta tag → localStorage → GET /api/catalog).
+  // BC peerMetadata (Tier 2) will carry it to other tabs once we have it.
+  const catalogUrl = await readCatalogUrl(hostId, wsUrl);
+
   const storage = new IndexedDBStorageAdapter(`lararium:meme-store:${hostId}`);
-  const bcNet   = new BroadcastChannelNetworkAdapter();
+  const bcNet   = new BroadcastChannelNetworkAdapter({ channelName: "lararium" });
   const wsNet   = wsUrl ? new WebSocketClientAdapter(wsUrl) : null;
   const network = wsNet ? [bcNet, wsNet] : [bcNet];
   const repo    = new Repo({ storage, network, sharePolicy: async () => true });
+
+  // Tier 2: side-channel BroadcastChannel for catalog URL gossip between tabs.
+  // Separate from the automerge sync channel (channelName "lararium").
+  // A tab that has the catalog URL announces it; tabs without one listen.
+  const _bcDiscovery = (() => {
+    if (catalogUrl || typeof BroadcastChannel === "undefined") return null;
+    const ch = new BroadcastChannel("lararium:discovery");
+    ch.postMessage({ type: "catalog-wanted", hostId });
+    ch.onmessage = (ev: MessageEvent) => {
+      if (ev.data?.type === "catalog-here" && ev.data.catalogUrl && !catalogUrl) {
+        try { localStorage.setItem(`lararium:catalog-url:${hostId}`, ev.data.catalogUrl); } catch { /* quota */ }
+      }
+    };
+    return ch;
+  })();
+  if (catalogUrl && typeof BroadcastChannel !== "undefined") {
+    const ch = new BroadcastChannel("lararium:discovery");
+    ch.onmessage = (ev: MessageEvent) => {
+      if (ev.data?.type === "catalog-wanted") ch.postMessage({ type: "catalog-here", catalogUrl });
+    };
+    // Don't hold this channel open; close after a tick.
+    setTimeout(() => ch.close(), 5000);
+  }
+  void _bcDiscovery;
+
   emit("repo-open");
 
   // ── 2. Catalog ────────────────────────────────────────────────────────────
-  const catalogUrl = readCatalogUrl(hostId);
   const blankCatalog = () => repo.create<CatalogDoc>({ schemaVersion: "0.1", corpora: {}, rooms: {}, recipes: {}, projections: {} });
   const catalogHandle: DocHandle<CatalogDoc> = catalogUrl
     ? await waitHandleLocal(repo.find<CatalogDoc>(catalogUrl as AutomergeUrl), blankCatalog)
