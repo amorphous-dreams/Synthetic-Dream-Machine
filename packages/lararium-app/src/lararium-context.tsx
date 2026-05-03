@@ -78,6 +78,8 @@ export { THEME_GLYPH, THEME_LABEL };
 // Context
 // ---------------------------------------------------------------------------
 
+export type DockEdge = "right" | "bottom";
+
 export interface LarariumCtxValue {
   navState:      LarViewState;
   dispatch:      React.Dispatch<LarViewAction>;
@@ -89,6 +91,8 @@ export interface LarariumCtxValue {
   zoomLevel:      ZoomLevel;
   theme:          LarTheme;
   cycleTheme:     () => void;
+  dockEdge:       DockEdge;
+  setDockEdge:    React.Dispatch<React.SetStateAction<DockEdge>>;
   /** Live tldraw editor — set by LarariumCanvas on mount, null before sync. */
   editor:         Editor | null;
   setEditor:      (editor: Editor | null) => void;

@@ -1,22 +1,22 @@
 /**
- * LarHUD — right-docked TW5 wiki panel, VSCode activity-bar model.
+ * LarHUD — right/bottom-docked TW5 wiki panel, VSCode activity-bar model.
  *
- * Architecture: flex sibling of LarariumCanvas (NOT a portal).
- * The canvas container shrinks when the panel opens — push model, no z-index wars.
+ * Three open states (⌘K cycles, Escape collapses):
+ *   collapsed  — 44px icon strip; always visible
+ *   sidebar    — default working width/height
+ *   expanded   — full wiki chrome
  *
- * Three states (⌘K cycles, Escape collapses):
- *   collapsed  — 44px icon strip on right edge; always visible
- *   sidebar    — 340px push panel; default on first open
- *   expanded   — 640px push panel; full wiki chrome
+ * Dock edges:
+ *   right  — flex column child; width drives canvas push (default)
+ *   bottom — flex row child; height drives canvas push
  *
- * TW5 mount: shadow root lives on tw5HostRef.current via tw5.mountPanel().
- * The shadow root is never destroyed — it stays live across all state transitions
- * (same pattern as VSCode webviews staying alive when sidebar collapses).
+ * Resize handle: drag the leading edge (left when right-docked, top when
+ * bottom-docked) to adjust between MIN_W/MIN_H and MAX_W/MAX_H.
+ * Persisted to localStorage.
  *
- * Push vs overlay: above PUSH_BREAKPOINT_PX container width → push (shrinks canvas).
- * Below → overlay (fixed-position, right:0, does not shrink canvas). Future work.
+ * Breadcrumb: reads $:/StoryList from tw5; shows the top open tiddler title.
  *
- * CSS transition: width 150ms ease on panel div. No spring. No layout thrash.
+ * TW5 shadow root stays live across all state transitions.
  */
 
 import { useEffect, useRef, useCallback, useState } from "react";
@@ -30,21 +30,45 @@ export type HudState = "collapsed" | "sidebar" | "expanded";
 
 const STATE_CYCLE: HudState[] = ["collapsed", "sidebar", "expanded"];
 
-const STRIP_W    = 44;   // px — collapsed icon strip
-const SIDEBAR_W  = 340;  // px — default open width
-const EXPANDED_W = 640;  // px — full wiki width
+const STRIP_W    = 44;
+const SIDEBAR_W  = 340;
+const EXPANDED_W = 640;
+
+const STRIP_H    = 44;
+const SIDEBAR_H  = 280;
+const EXPANDED_H = 480;
+
+const MIN_W = 200;
+const MAX_W = 900;
+const MIN_H = 160;
+const MAX_H = 700;
+
+const STORAGE_KEY_W = "lararium.hud.width";
+const STORAGE_KEY_H = "lararium.hud.height";
+
+function clamp(v: number, lo: number, hi: number) { return Math.max(lo, Math.min(hi, v)); }
+function readStored(key: string, fallback: number): number {
+  try { const v = localStorage.getItem(key); if (v) return Number(v); } catch {}
+  return fallback;
+}
 
 // ---------------------------------------------------------------------------
 // LarHUD
 // ---------------------------------------------------------------------------
 
 export function LarHUD() {
-  const { tw5, openPhase, wikiOpen, setWikiOpen } = useLararium();
-  const tw5HostRef   = useRef<HTMLDivElement>(null);
-  const unmountRef   = useRef<(() => void) | null>(null);
+  const { tw5, openPhase, wikiOpen, setWikiOpen, dockEdge, setDockEdge } = useLararium();
+  const tw5HostRef = useRef<HTMLDivElement>(null);
+  const unmountRef = useRef<(() => void) | null>(null);
+
   const [hudState, setHudState] = useState<HudState>("collapsed");
   const hudRef = useRef<HudState>("collapsed");
   hudRef.current = hudState;
+
+  const [userWidth,  setUserWidth]  = useState(() => readStored(STORAGE_KEY_W, SIDEBAR_W));
+  const [userHeight, setUserHeight] = useState(() => readStored(STORAGE_KEY_H, SIDEBAR_H));
+
+  const [breadcrumb, setBreadcrumb] = useState<string | null>(null);
 
   // ── Sync wikiOpen ↔ hudState ──────────────────────────────────────────────
   useEffect(() => {
@@ -66,7 +90,7 @@ export function LarHUD() {
     setWikiOpen(false);
   }, [setWikiOpen]);
 
-  // ── ⌘K capture — cycles states (overrides LarariumShell toggle) ──────────
+  // ── ⌘K capture ───────────────────────────────────────────────────────────
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === "k") {
@@ -90,13 +114,12 @@ export function LarHUD() {
     return () => window.removeEventListener("keydown", handler, { capture: true });
   }, [hudState, collapseHud]);
 
-  // ── Block tldraw from intercepting keys typed inside the shadow root ───────
+  // ── Block tldraw key intercept inside shadow root ─────────────────────────
   useEffect(() => {
     const host = tw5HostRef.current;
     if (!host) return;
     const guard = (e: Event) => {
-      const shadow = host.shadowRoot;
-      if (shadow?.contains(e.target as Node)) e.stopPropagation();
+      if (host.shadowRoot?.contains(e.target as Node)) e.stopPropagation();
     };
     window.addEventListener("keydown", guard, { capture: true });
     window.addEventListener("keyup",   guard, { capture: true });
@@ -106,71 +129,142 @@ export function LarHUD() {
     };
   }, []);
 
-  // ── TW5 shadow mount — boot once, stay live ───────────────────────────────
+  // ── TW5 mount — boot once, stay live ─────────────────────────────────────
   useEffect(() => {
     const host = tw5HostRef.current;
     if (!tw5 || !host || unmountRef.current) return;
-    try {
-      unmountRef.current = tw5.mountPanel(host);
-    } catch {
-      // tw5.boot() not yet resolved — will retry when tw5 ref updates
-    }
+    try { unmountRef.current = tw5.mountPanel(host); }
+    catch { /* tw5 not yet ready — retries when tw5 ref updates */ }
     return () => { unmountRef.current?.(); unmountRef.current = null; };
   }, [tw5]);
 
-  // ── Derived ───────────────────────────────────────────────────────────────
+  // ── Breadcrumb — top of $:/StoryList ─────────────────────────────────────
+  const refreshBreadcrumb = useCallback(() => {
+    if (!tw5) return;
+    const titles = tw5.filterTiddlers("[list[$:/StoryList]]");
+    setBreadcrumb(titles[0] ?? null);
+  }, [tw5]);
+
+  useEffect(() => {
+    if (!tw5) return;
+    refreshBreadcrumb();
+    return tw5.onWikiChange((changes: Record<string, unknown>) => {
+      if ("$:/StoryList" in changes) refreshBreadcrumb();
+    });
+  }, [tw5, refreshBreadcrumb]);
+
+  // ── Resize handle (pointer capture) ──────────────────────────────────────
+  const onResizePointerDown = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
+    const el = e.currentTarget;
+    el.setPointerCapture(e.pointerId);
+    const startCoord = dockEdge === "right" ? e.clientX : e.clientY;
+    const startSize  = dockEdge === "right" ? userWidth : userHeight;
+
+    const onMove = (ev: PointerEvent) => {
+      const coord = dockEdge === "right" ? ev.clientX : ev.clientY;
+      const delta = startCoord - coord; // drag toward leading edge = grow
+      if (dockEdge === "right") {
+        const w = clamp(startSize + delta, MIN_W, MAX_W);
+        setUserWidth(w);
+        try { localStorage.setItem(STORAGE_KEY_W, String(w)); } catch {}
+      } else {
+        const h = clamp(startSize + delta, MIN_H, MAX_H);
+        setUserHeight(h);
+        try { localStorage.setItem(STORAGE_KEY_H, String(h)); } catch {}
+      }
+    };
+    const onUp = () => {
+      el.releasePointerCapture(e.pointerId);
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerup",   onUp);
+    };
+    window.addEventListener("pointermove", onMove);
+    window.addEventListener("pointerup",   onUp);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dockEdge, userWidth, userHeight]);
+
+  // ── Derived dimensions ────────────────────────────────────────────────────
   const isCollapsed = hudState === "collapsed";
-  const panelWidth  = hudState === "expanded" ? EXPANDED_W
-    : hudState === "sidebar"                  ? SIDEBAR_W
-    :                                           STRIP_W;
+
+  const panelW = dockEdge === "right"
+    ? (isCollapsed ? STRIP_W : hudState === "expanded" ? clamp(EXPANDED_W, MIN_W, MAX_W) : userWidth)
+    : "100%";
+
+  const panelH = dockEdge === "bottom"
+    ? (isCollapsed ? STRIP_H : hudState === "expanded" ? clamp(EXPANDED_H, MIN_H, MAX_H) : userHeight)
+    : "100%";
 
   const phaseLabel = !openPhase ? "—"
-    : openPhase === "live"         ? "live"
-    : openPhase === "tw5-booted"   ? "ready"
-    : openPhase === "peer-ready"   ? "peer"
-    : openPhase === "room-ready"   ? "room"
-    : openPhase === "catalog-ready"? "cat"
-    :                                "boot";
+    : openPhase === "live"          ? "live"
+    : openPhase === "tw5-booted"    ? "ready"
+    : openPhase === "peer-ready"    ? "peer"
+    : openPhase === "room-ready"    ? "room"
+    : openPhase === "catalog-ready" ? "cat"
+    :                                 "boot";
+
+  const crumbText = breadcrumb
+    ? breadcrumb.replace(/^\$:\//, "").replace(/\//g, " / ")
+    : null;
 
   // ── Render ────────────────────────────────────────────────────────────────
+  const resizeHandleStyle: React.CSSProperties = dockEdge === "right"
+    ? { ...css.resizeHandle, ...css.resizeHandleLeft }
+    : { ...css.resizeHandle, ...css.resizeHandleTop };
+
   return (
-    <div style={{ ...css.shell, width: panelWidth }}>
+    <div style={{ ...css.shell, width: panelW, height: panelH,
+      flexDirection: dockEdge === "bottom" ? "row" : "column" }}>
+
+      {/* ── Resize handle ─────────────────────────────────────────────────── */}
+      {!isCollapsed && (
+        <div style={resizeHandleStyle} onPointerDown={onResizePointerDown} />
+      )}
 
       {/* ── Tab bar / icon strip ─────────────────────────────────────────── */}
       {isCollapsed ? (
         <button
-          style={css.iconStrip}
+          style={dockEdge === "bottom" ? css.iconStripH : css.iconStrip}
           onClick={cycleHud}
           title="Open wiki (⌘K)"
           aria-label="Open wiki panel"
         >
           <span style={css.stripIcon}>⬡</span>
-          <span style={css.stripPhase}>{phaseLabel}</span>
+          <span style={dockEdge === "bottom" ? css.stripPhaseH : css.stripPhase}>{phaseLabel}</span>
         </button>
       ) : (
         <div style={css.tabBar}>
           <span style={css.tabIcon}>⬡</span>
           <span style={css.tabTitle}>wiki</span>
+          {crumbText && (
+            <>
+              <span style={css.crumbSep}>›</span>
+              <span style={css.crumbText} title={breadcrumb ?? ""}>{crumbText}</span>
+            </>
+          )}
           <span style={css.tabPhase}>{phaseLabel}</span>
           <div style={css.tabActions}>
             <button
               style={css.iconBtn}
-              title={hudState === "expanded" ? "Shrink to sidebar (⌘K)" : "Expand (⌘K)"}
-              onClick={() => {
-                const next = hudState === "expanded" ? "sidebar" : "expanded";
-                setHudState(next); setWikiOpen(true);
-              }}
+              title={hudState === "expanded" ? "Shrink (⌘K)" : "Expand (⌘K)"}
+              onClick={() => { setHudState(hudState === "expanded" ? "sidebar" : "expanded"); setWikiOpen(true); }}
             >
-              {hudState === "expanded" ? "◂" : "▸"}
+              {dockEdge === "right"
+                ? (hudState === "expanded" ? "◂" : "▸")
+                : (hudState === "expanded" ? "▴" : "▾")}
             </button>
-            <button style={css.iconBtn} title="Collapse (Escape)" onClick={collapseHud}>
-              ✕
+            <button
+              style={css.iconBtn}
+              title={dockEdge === "right" ? "Dock to bottom" : "Dock to right"}
+              onClick={() => setDockEdge(dockEdge === "right" ? "bottom" : "right")}
+            >
+              {dockEdge === "right" ? "⬓" : "⬒"}
             </button>
+            <button style={css.iconBtn} title="Collapse (Escape)" onClick={collapseHud}>✕</button>
           </div>
         </div>
       )}
 
-      {/* ── TW5 mount surface — always present, hidden when collapsed ────── */}
+      {/* ── TW5 mount surface ────────────────────────────────────────────── */}
       <div
         ref={tw5HostRef}
         style={isCollapsed ? css.tw5Hidden : css.tw5Live}
@@ -185,21 +279,36 @@ export function LarHUD() {
 // ---------------------------------------------------------------------------
 
 const css = {
-  // Outer shell — this div is the flex child; width drives push behavior
   shell: {
     flexShrink:    0,
-    height:        "100%",
     display:       "flex",
-    flexDirection: "column" as const,
     background:    "var(--tl-color-panel, #1e1e1e)",
     borderLeft:    "1px solid var(--tl-color-divider, #2a2a2a)",
     overflow:      "hidden",
-    transition:    "width 150ms ease-in-out",
-    // Ensure correct stacking without relying on z-index
+    transition:    "width 150ms ease-in-out, height 150ms ease-in-out",
     position:      "relative" as const,
-  },
+  } as React.CSSProperties,
 
-  // Collapsed icon strip — full height, 44px wide, acts as the tab
+  // Resize handle — 4px hit target on the leading edge
+  resizeHandle: {
+    flexShrink:  0,
+    background:  "transparent",
+    zIndex:      1,
+    transition:  "background 100ms",
+  } as React.CSSProperties,
+  resizeHandleLeft: {
+    width:  4,
+    height: "100%",
+    cursor: "col-resize",
+  } as React.CSSProperties,
+  resizeHandleTop: {
+    height: 4,
+    width:  "100%",
+    cursor: "row-resize",
+    borderTop: "2px solid transparent",
+  } as React.CSSProperties,
+
+  // Collapsed right-dock icon strip
   iconStrip: {
     width:          "100%",
     height:         "100%",
@@ -213,7 +322,24 @@ const css = {
     cursor:         "pointer",
     padding:        0,
     color:          "var(--tl-color-text, #ccc)",
-  },
+  } as React.CSSProperties,
+
+  // Collapsed bottom-dock icon strip (horizontal)
+  iconStripH: {
+    width:          "100%",
+    height:         "100%",
+    display:        "flex",
+    flexDirection:  "row" as const,
+    alignItems:     "center",
+    justifyContent: "center",
+    gap:            8,
+    background:     "transparent",
+    border:         "none",
+    cursor:         "pointer",
+    padding:        0,
+    color:          "var(--tl-color-text, #ccc)",
+  } as React.CSSProperties,
+
   stripIcon: {
     fontSize:   18,
     color:      "var(--tl-color-primary, #7c9cce)",
@@ -229,8 +355,14 @@ const css = {
     userSelect:      "none" as const,
     letterSpacing:   "0.08em",
   },
+  stripPhaseH: {
+    fontSize:      9,
+    fontFamily:    "var(--tl-font-mono, monospace)",
+    color:         "var(--tl-color-text-3, #555)",
+    userSelect:    "none" as const,
+    letterSpacing: "0.08em",
+  },
 
-  // Open tab bar
   tabBar: {
     height:       36,
     flexShrink:   0,
@@ -240,6 +372,7 @@ const css = {
     padding:      "0 8px",
     borderBottom: "1px solid var(--tl-color-divider, #2a2a2a)",
     userSelect:   "none" as const,
+    overflow:     "hidden",
   },
   tabIcon: {
     fontSize:   15,
@@ -249,14 +382,27 @@ const css = {
     flexShrink: 0,
   },
   tabTitle: {
-    flex:          1,
     fontSize:      12,
     fontWeight:    600,
     color:         "var(--tl-color-text, #ccc)",
     fontFamily:    "var(--tl-font-mono, monospace)",
     letterSpacing: "0.05em",
-    overflow:      "hidden",
-    whiteSpace:    "nowrap" as const,
+    flexShrink:    0,
+  },
+  crumbSep: {
+    color:      "var(--tl-color-text-3, #555)",
+    fontSize:   12,
+    flexShrink: 0,
+  },
+  crumbText: {
+    flex:         1,
+    fontSize:     11,
+    fontFamily:   "var(--tl-font-mono, monospace)",
+    color:        "var(--tl-color-text-1, #aaa)",
+    overflow:     "hidden",
+    textOverflow: "ellipsis",
+    whiteSpace:   "nowrap" as const,
+    minWidth:     0,
   },
   tabPhase: {
     fontSize:     10,
@@ -271,6 +417,7 @@ const css = {
     display:    "flex",
     gap:        2,
     flexShrink: 0,
+    marginLeft: "auto",
   },
   iconBtn: {
     background:   "transparent",
@@ -285,11 +432,11 @@ const css = {
     minHeight:    24,
   },
 
-  // TW5 mount surface — flex:1 when live, zero when hidden
   tw5Live: {
-    flex:     1,
-    overflow: "hidden",
+    flex:      1,
+    overflow:  "hidden",
     minHeight: 0,
+    minWidth:  0,
   },
   tw5Hidden: {
     width:      0,

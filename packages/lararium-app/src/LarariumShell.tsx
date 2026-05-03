@@ -48,6 +48,7 @@ export function LarariumShell({ memes, onMemes }: ShellProps) {
   const [wikiOpen,    setWikiOpen]    = useState(false);
   const [drawingMode, setDrawingMode] = useState(false);
   const [zoomLevel,   setZoomLevel]   = useState<ZoomLevel>("tactical");
+  const [dockEdge,    setDockEdge]    = useState<"right" | "bottom">("right");
   const [theme, cycleTheme] = useTheme();
   const [editor, setEditorState] = useState<Editor | null>(null);
   const editorRef = useRef<Editor | null>(null);
@@ -181,6 +182,7 @@ export function LarariumShell({ memes, onMemes }: ShellProps) {
     drawingMode,   setDrawingMode,
     zoomLevel,
     theme,         cycleTheme,
+    dockEdge,      setDockEdge,
     editor,        setEditor,
     openPhase,
     peer,
@@ -189,9 +191,14 @@ export function LarariumShell({ memes, onMemes }: ShellProps) {
     fireMeme,
   };
 
+  const shellStyle = {
+    ...css.shellRoot,
+    flexDirection: (dockEdge === "bottom" ? "column" : "row") as "column" | "row",
+  };
+
   return (
     <LarariumCtx.Provider value={ctxValue}>
-      <div style={css.shellRoot}>
+      <div style={shellStyle}>
         {/* Canvas shrinks to accommodate LarHUD push — no z-index management needed */}
         <div style={css.canvasWrap}>
           <LarariumCanvas
@@ -218,9 +225,10 @@ const css = {
     overflow: "hidden",
   },
   canvasWrap: {
-    flex:     1,
-    minWidth: 0,
-    height:   "100%",
-    position: "relative" as const,
+    flex:      1,
+    minWidth:  0,
+    minHeight: 0,
+    overflow:  "hidden",
+    position:  "relative" as const,
   },
 } as const;
