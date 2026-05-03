@@ -27,9 +27,8 @@ import { buildReactionGraph, bindingsForUri } from "@lararium/tw5";
 import { LarariumCanvas } from "./LarariumCanvas.js";
 import { LarariumPanel } from "./LarariumPanel.js";
 import { BootSplash } from "./BootSplash.js";
-import { AuthGate } from "./AuthGate.js";
 import { LarariumCtx, useTheme } from "./lararium-context.js";
-import { useLarariumHostOpen } from "./lararium-browser-host.js";
+import { useBrowserLarPeer } from "./open-browser-lar-peer.js";
 import { projectFromTw5 } from "@lararium/tldraw";
 import { debugSet } from "./debug.js";
 import "./lararium-theme.css";
@@ -54,8 +53,8 @@ export function LarariumShell({ memes, onMemes }: ShellProps) {
   const [editor, setEditorState] = useState<Editor | null>(null);
   const editorRef = useRef<Editor | null>(null);
   const setEditor = useCallback((e: Editor | null) => { setEditorState(e); editorRef.current = e; }, []);
-  const { phase: openPhase, store: tiddlerStore, tw5, receipt: hostReceipt, readiness } =
-    useLarariumHostOpen({ hostId: "lararium-browser", roomId: "altar-fire" });
+  const { phase: openPhase, peer, tw5, pool } =
+    useBrowserLarPeer({ hostId: "lararium-browser", roomId: "altar-fire" });
 
   const graphRef = useRef<ReactionGraph>(new ReactionGraph());
   const [graphReady, setGraphReady] = useState(false);
@@ -175,11 +174,9 @@ export function LarariumShell({ memes, onMemes }: ShellProps) {
     return () => window.removeEventListener("keydown", handler);
   }, []);
 
-  debugSet("openPhase",    openPhase);
-  debugSet("tw5",          tw5);
-  debugSet("dispatch",     dispatch);
-  debugSet("tiddlerStore", tiddlerStore);
-  debugSet("hostReceipt",  hostReceipt);
+  debugSet("openPhase", openPhase);
+  debugSet("tw5",       tw5);
+  debugSet("dispatch",  dispatch);
 
   const ctxValue = {
     navState,
@@ -191,9 +188,8 @@ export function LarariumShell({ memes, onMemes }: ShellProps) {
     theme,         cycleTheme,
     editor,        setEditor,
     openPhase,
-    tiddlerStore,
+    peer,
     tw5,
-    hostReceipt,
     reactionGraph,
     fireMeme,
   };
@@ -208,11 +204,7 @@ export function LarariumShell({ memes, onMemes }: ShellProps) {
           onZoomLevel={setZoomLevel}
         />
         {createPortal(<LarariumPanel />,           document.body)}
-        {createPortal(<BootSplash phase={openPhase} readiness={readiness} />, document.body)}
-        {openPhase?.kind === "authority-opening" && createPortal(
-          <AuthGate githubOAuthEnabled={!!document.querySelector('meta[name="lararium-github-oauth"]')} onReceipt={() => window.location.reload()} />,
-          document.body,
-        )}
+        {createPortal(<BootSplash phase={openPhase} />, document.body)}
       </div>
     </LarariumCtx.Provider>
   );

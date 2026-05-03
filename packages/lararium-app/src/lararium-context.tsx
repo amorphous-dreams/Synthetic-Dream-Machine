@@ -12,8 +12,9 @@ import { createContext, useContext, useState, useCallback } from "react";
 import type { Editor } from "tldraw";
 import type { LarViewState, LarViewAction, ZoomLevel } from "@lararium/tldraw";
 import { DEFAULT_ROOMS, ROOM_SYSTEM } from "@lararium/tldraw";
-import type { LarariumOpenPhase, ReactionGraph, CompositeStore } from "@lararium/core";
-import type { TW5Engine } from "@lararium/tw5";
+import type { ReactionGraph, LarPeer } from "@lararium/core";
+import type { TW5Engine, VmPool } from "@lararium/tw5";
+import type { BrowserOpenPhase } from "./open-browser-lar-peer.js";
 import type { MemeEntry } from "./App.js";
 
 // ---------------------------------------------------------------------------
@@ -92,13 +93,11 @@ export interface LarariumCtxValue {
   editor:         Editor | null;
   setEditor:      (editor: Editor | null) => void;
   /** Current opening phase — null before host open begins. */
-  openPhase:      LarariumOpenPhase | null;
-  /** Composite store (corpus layers + room layer) — null until store-ready phase. */
-  tiddlerStore:   CompositeStore | null;
-  /** Booted TW5 instance — null until tw5-ready phase. */
+  openPhase:      BrowserOpenPhase | null;
+  /** LarPeer (store + vm pool) — null until peer-ready phase. */
+  peer:           LarPeer<VmPool<TW5Engine>> | null;
+  /** Booted TW5 instance — null until tw5-booted phase. */
   tw5:            TW5Engine | null;
-  /** Boot receipt from authority phase. */
-  hostReceipt:    string | null;
   /** Reaction graph built from Automerge store — null until store-ready + scan complete. */
   reactionGraph:  ReactionGraph | null;
   /** Fire a reaction trigger locally through the reaction graph. No WS round-trip. */

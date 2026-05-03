@@ -161,7 +161,8 @@ function getLarUriFromShape(editor: TldrawEditor, shapeId: TLShapeId): string | 
 
 export function LarariumCanvas({ navState, dispatch, drawingMode, onZoomLevel }: Props) {
   const editorRef = useRef<TldrawEditor | null>(null);
-  const { theme, setEditor, tiddlerStore, tw5 } = useLararium();
+  const { theme, setEditor, peer, tw5 } = useLararium();
+  const tiddlerStore = peer?.store ?? null;
 
   // Sync tldraw colorScheme when Lararium theme changes
   useEffect(() => {

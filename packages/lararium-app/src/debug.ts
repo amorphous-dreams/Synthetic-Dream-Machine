@@ -7,17 +7,14 @@
  */
 
 import type { TW5Engine, VmDebugSurface } from "@lararium/tw5";
-import type { LarariumOpenPhase, CompositeStore } from "@lararium/core";
 import type { LarViewAction } from "@lararium/tldraw";
 import type React from "react";
 
 export interface LarariumDebug {
-  editor?:       unknown;                       // tldraw Editor instance
-  tiddlerStore?: CompositeStore | null;
-  hostReceipt?:  string | null;
-  openPhase?:    LarariumOpenPhase | null;
-  tw5?:          TW5Engine | null;
-  dispatch?:     React.Dispatch<LarViewAction> | null;
+  editor?:    unknown;
+  openPhase?: string | null;
+  tw5?:       TW5Engine | null;
+  dispatch?:  React.Dispatch<LarViewAction> | null;
   /**
    * Isomorphic VM pool debug surface — same shape on every peer.
    *   vmPool.list()                      → active recipe IDs

@@ -38,6 +38,9 @@ importers:
       '@automerge/automerge-repo':
         specifier: ^2.5.5
         version: 2.5.5
+      '@automerge/automerge-repo-network-broadcastchannel':
+        specifier: ^2.5.5
+        version: 2.5.5
       '@automerge/automerge-repo-network-websocket':
         specifier: ^2.5.5
         version: 2.5.5
@@ -348,6 +351,9 @@ packages:
 
   '@atproto/xrpc@0.7.7':
     resolution: {integrity: sha512-K1ZyO/BU8JNtXX5dmPp7b5UrkLMMqpsIa/Lrj5D3Su+j1Xwq1m6QJ2XJ1AgjEjkI1v4Muzm7klianLE6XGxtmA==}
+
+  '@automerge/automerge-repo-network-broadcastchannel@2.5.5':
+    resolution: {integrity: sha512-yYSW2lEd+aJyY6HRS2Q0PCWUmtWiGhp8oRdmL61KipRC31dZaYo+qsRVt+xw45MAC0ZBWUYHuvF6xqCPDB4Q1A==}
 
   '@automerge/automerge-repo-network-websocket@2.5.5':
     resolution: {integrity: sha512-pwHNXTsTTfofU3X/wtFa9L3lWfAJBI7v1+3EKgFDgEodUJo9FPDH0hcy4HUsQiDrQPADO7FP9fVOQSXVm8n5VA==}
@@ -3879,6 +3885,12 @@ snapshots:
     dependencies:
       '@atproto/lexicon': 0.6.2
       zod: 3.25.76
+
+  '@automerge/automerge-repo-network-broadcastchannel@2.5.5':
+    dependencies:
+      '@automerge/automerge-repo': 2.5.5
+    transitivePeerDependencies:
+      - supports-color
 
   '@automerge/automerge-repo-network-websocket@2.5.5':
     dependencies:
