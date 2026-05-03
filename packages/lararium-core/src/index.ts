@@ -23,6 +23,7 @@ export * from "./composite-store.js";
 export * from "./lararium-doc.js";
 export * from "./kumu-device.js";
 export * from "./automerge-doc-store.js";
+export * from "./lararium-doc-store.js";
 export * from "./lar-peer.js";
 export type { IdentitySlot, CapabilityToken, ActorId } from "./identity-slot.js";
 export { OpenIdentitySlot } from "./identity-slot.js";

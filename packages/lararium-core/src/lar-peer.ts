@@ -1,7 +1,5 @@
-import type { DocHandle } from "@automerge/automerge-repo";
 import type { MemeProjection } from "./meme-provider.js";
-import type { MemeStoreDoc } from "./meme-store-doc.js";
-import { AutomergeDocStore } from "./automerge-doc-store.js";
+import type { LarTiddlerStore } from "./tiddler-store.js";
 import type { IdentitySlot } from "./identity-slot.js";
 import { OpenIdentitySlot } from "./identity-slot.js";
 
@@ -24,9 +22,7 @@ export interface KeyhiveSlot {
  * LarPeerCapabilities — I/O surfaces this peer can perform.
  *
  * These declare capability, not authority. No peer holds content truth.
- * The server sets diskAccess + corsHop + persistentRelay.
- * The browser sets broadcastChannel.
- * Workers set only what applies to their role.
+ * Server and browser peers are symmetric nodes on the same mesh.
  */
 export interface LarPeerCapabilities {
   diskAccess:            boolean;
@@ -40,47 +36,34 @@ export interface LarPeerCapabilities {
   authoritativeReactions: boolean;
 }
 
-/** Full capability set defaults — all capabilities off. */
 export const PEER_CAPABILITIES_NONE: LarPeerCapabilities = {
-  diskAccess:             false,
-  corsHop:                false,
-  persistentRelay:        false,
-  broadcastChannel:       false,
-  authoritativeReactions: false,
+  diskAccess: false, corsHop: false, persistentRelay: false,
+  broadcastChannel: false, authoritativeReactions: false,
 };
 
-/** Server peer capability preset. */
 export const PEER_CAPABILITIES_NODE: LarPeerCapabilities = {
-  diskAccess:             true,
-  corsHop:                true,
-  persistentRelay:        true,
-  broadcastChannel:       false,
-  authoritativeReactions: true,
+  diskAccess: true, corsHop: true, persistentRelay: true,
+  broadcastChannel: false, authoritativeReactions: true,
 };
 
-/** Browser peer capability preset. */
 export const PEER_CAPABILITIES_BROWSER: LarPeerCapabilities = {
-  diskAccess:             false,
-  corsHop:                false,
-  persistentRelay:        false,
-  broadcastChannel:       true,
-  authoritativeReactions: false,
+  diskAccess: false, corsHop: false, persistentRelay: false,
+  broadcastChannel: true, authoritativeReactions: false,
 };
 
 /**
  * LarPeerOptions — construction args for a LarPeer.
  *
- * @param TVm — the VM pool type. Typed generically to keep @lararium/core
- * free of @lararium/tw5 imports. Pass VmPool<TW5Engine> at call sites.
+ * `store` is the full composite store (system → corpus:* → room → draft).
+ * Factories build the CompositeStore and call markSyncComplete() on the writable
+ * AutomergeDocStore layers before constructing the peer.
  */
 export interface LarPeerOptions<TVm = unknown> {
   peerId:        string;
-  handle:        DocHandle<MemeStoreDoc>;
-  bagId?:        string;
+  /** Full doc stack — CompositeStore(system → corpus:* → room → draft) from the factory. */
+  store:         LarTiddlerStore;
   vmPool?:       TVm | null;
   capabilities?: Partial<LarPeerCapabilities>;
-  /** Identity slot — DID-based auth/capability layer.
-   *  Defaults to OpenIdentitySlot (alpha: open access, stable actorId from peerId). */
   identity?:     IdentitySlot;
   /** @deprecated — pass identity: KeyhiveIdentitySlot instead once Keyhive WASM lands. */
   keyhive?:      KeyhiveSlot;
@@ -89,23 +72,16 @@ export interface LarPeerOptions<TVm = unknown> {
 /**
  * LarPeer — the one peer class for browser, Node, and worker.
  *
- * All peers instantiate LarPeer directly. Capability differences live in the
- * AutomergeDocStore's backing Repo (IndexedDB vs fs vs memory adapter) and in
- * the `capabilities` preset — not in peer subclasses.
+ * Server and browser peers are symmetric. The Repo's storage/network adapters
+ * and `capabilities` preset encode the environmental difference — not subclasses.
  *
- * "The server holds no privilege over the content it relays." — local-first.md
- *
- * VmPool wiring:
- *   const peer = new LarPeer({ peerId, handle, vmPool: pool, capabilities: PEER_CAPABILITIES_NODE });
- *   pool.activateSlot(0, tw5Engine, reactionEngine);
- *
- * Multiple rooms (server pattern):
- *   For each room, create a new LarPeer with a separate DocHandle.
- *   Same class, same code — the Repo's sharePolicy controls which docs sync where.
+ * `store` is the full composite stack. Factories own the Automerge DocHandles;
+ * LarPeer receives only the assembled LarTiddlerStore interface.
  */
 export class LarPeer<TVm = unknown> {
   readonly peerId:       string;
-  readonly store:        AutomergeDocStore;
+  /** Full doc stack — CompositeStore(system → corpus:* → room → draft). */
+  readonly store:        LarTiddlerStore;
   readonly capabilities: LarPeerCapabilities;
   readonly identity:     IdentitySlot;
   /** @deprecated — access via identity slot once Keyhive WASM lands. */
@@ -115,7 +91,7 @@ export class LarPeer<TVm = unknown> {
 
   constructor(opts: LarPeerOptions<TVm>) {
     this.peerId       = opts.peerId;
-    this.store        = new AutomergeDocStore(opts.handle, opts.bagId);
+    this.store        = opts.store;
     this.capabilities = { ...PEER_CAPABILITIES_NONE, ...opts.capabilities };
     this.identity     = opts.identity ?? new OpenIdentitySlot(opts.peerId);
     this.keyhive      = opts.keyhive;
@@ -124,22 +100,15 @@ export class LarPeer<TVm = unknown> {
 
   get vmPool(): TVm | null { return this._vmPool; }
 
-  /** Attach the VM pool after async boot. */
   attachVmPool(pool: TVm): void {
     this._vmPool = pool;
   }
 
-  /** True once a vmPool has been attached. */
   get ready(): boolean { return this._vmPool !== null; }
 
-  /** Delegate to store — shorthand for projection wiring. */
+  /** Subscribe a projection to the full composite store. */
   addProjection(p: MemeProjection): () => void {
-    return this.store.addProjection(p);
-  }
-
-  /** Signal that initial sync (catalog + room) has completed. */
-  markSyncComplete(): void {
-    this.store.markSyncComplete();
+    return this.store.subscribe((change) => p.onUriChanged(change));
   }
 
   dispose(): void {
