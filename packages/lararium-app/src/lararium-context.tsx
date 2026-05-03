@@ -12,7 +12,7 @@ import { createContext, useContext, useState, useCallback } from "react";
 import type { Editor } from "tldraw";
 import type { LarViewState, LarViewAction, ZoomLevel } from "@lararium/tldraw";
 import { DEFAULT_ROOMS, ROOM_SYSTEM } from "@lararium/tldraw";
-import type { ReactionGraph, LarPeer } from "@lararium/core";
+import type { ReactionEngine, LarPeer } from "@lararium/core";
 import type { TW5Engine, VmPool } from "@lararium/tw5";
 import type { BrowserOpenPhase } from "./open-browser-lar-peer.js";
 import type { MemeEntry } from "./App.js";
@@ -98,8 +98,8 @@ export interface LarariumCtxValue {
   peer:           LarPeer<VmPool<TW5Engine>> | null;
   /** Booted TW5 instance — null until tw5-booted phase. */
   tw5:            TW5Engine | null;
-  /** Reaction graph built from Automerge store — null until store-ready + scan complete. */
-  reactionGraph:  ReactionGraph | null;
+  /** Reaction engine — null until tw5 boot + initial wiki scan complete. */
+  reactionGraph:  ReactionEngine | null;
   /** Fire a reaction trigger locally through the reaction graph. No WS round-trip. */
   fireMeme:       (fromUri: string, trigger: string, payload?: unknown) => void;
 }

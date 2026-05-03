@@ -44,7 +44,9 @@
 import type { LarTiddlerChange, ChangeOrigin } from "./tiddler-store.js";
 import type { MemeProjection } from "./meme-provider.js";
 import type { ReactionBinding } from "./live-protocol.js";
-import { ReactionGraph } from "./live-protocol.js";
+import { extractReactionBindings, ReactionGraph } from "./live-protocol.js";
+import { parseMemeEdges } from "./meme-ast/index.js";
+import type { ReactionHandler } from "./live-protocol.js";
 
 // ---------------------------------------------------------------------------
 // KumuListenable / KumuSubscribable — UEFN Verse 5.6+ pin vocabulary
@@ -197,32 +199,88 @@ export function kumuDeviceSpecFromEdges(
 // ReactionEngine — MemeProjection that routes change events through ReactionGraph
 // ---------------------------------------------------------------------------
 
+// Minimal wiki surface needed for boot scan — avoids @lararium/tw5 import.
+interface BootScanSurface {
+  filterTiddlers(filter: string): string[];
+  getTiddlerText(uri: string): string | undefined;
+}
+
+function _bindingsFromText(uri: string, text: string): ReactionBinding[] {
+  try {
+    const edges = parseMemeEdges(uri, text);
+    return extractReactionBindings(
+      edges.map((e) => ({
+        fromUri: e.fromUri, toUri: e.toUri,
+        family:  e.family,  role:  e.role,
+        payload: (e as unknown as { payload?: Record<string, unknown> }).payload ?? {},
+      }))
+    );
+  } catch { return []; }
+}
+
 /**
- * Routes CRDT change events through a ReactionGraph.
+ * Routes CRDT change events through a ReactionGraph, and owns the graph.
  *
- * Register with a MemeProvider to receive change events and automatically fire
- * the matching reaction triggers. At Scale-3 (onChangeset), all triggers for all
- * changed URIs fire in a single synchronous tick — UEFN game-loop fidelity.
+ * Replaces the web2 buildReactionGraph / bindingsForUri wiki-scan pattern.
+ * Call boot() once after TW5Engine.boot() for the initial full scan;
+ * onUriChanged() maintains the graph incrementally thereafter.
  *
  * Usage:
- *   const engine = new ReactionEngine(graph);
- *   provider.addProjection(engine);
- *
- * The graph must be kept current separately (via buildReactionGraph / updateUri).
- * ReactionEngine is a pure dispatcher — it does not mutate the graph.
+ *   const engine = new ReactionEngine();
+ *   engine.boot(tw5);
+ *   peer.store.addProjection(engine);
+ *   engine.subscribeByFn("navigate", handler);
  */
 export class ReactionEngine implements MemeProjection {
-  constructor(private readonly graph: ReactionGraph) {}
+  private readonly _graph: ReactionGraph;
+  private _ready = false;
 
-  /** Scale-1/2: fire all reaction triggers for the one changed URI. */
+  constructor(graph?: ReactionGraph) {
+    this._graph = graph ?? new ReactionGraph();
+  }
+
+  /** Full wiki scan — call once after TW5Engine.boot(). */
+  boot(wiki: BootScanSurface): void {
+    const uris = wiki.filterTiddlers("[all[tiddlers]!prefix[$:/]]");
+    const allEdges: { fromUri: string; toUri: string; family: string; role: string | null; payload: Record<string, unknown> }[] = [];
+    for (const uri of uris) {
+      const text = wiki.getTiddlerText(uri);
+      if (!text) continue;
+      try {
+        for (const e of parseMemeEdges(uri, text)) {
+          allEdges.push({
+            fromUri: e.fromUri, toUri: e.toUri,
+            family:  e.family,  role:  e.role,
+            payload: (e as unknown as { payload?: Record<string, unknown> }).payload ?? {},
+          });
+        }
+      } catch { /* malformed — skip */ }
+    }
+    this._graph.load(extractReactionBindings(allEdges));
+    this._ready = true;
+  }
+
+  get ready(): boolean { return this._ready; }
+
+  // ── MemeProjection ──────────────────────────────────────────────────────
+
+  /** Scale-1/2: maintain graph + fire all reaction triggers for changed URI. */
   onUriChanged(change: LarTiddlerChange): void {
-    this._fireForUri(change.title, { uri: change.title });
+    const { title, record } = change;
+    if (!title.startsWith("lar:")) return;
+    if (!record || record.deleted) {
+      this._graph.removeUri(title);
+    } else {
+      const bindings = _bindingsFromText(title, record.text ?? "");
+      if (bindings.length > 0) this._graph.updateUri(title, bindings);
+      else this._graph.removeUri(title);
+    }
+    this._fireForUri(title, { uri: title });
   }
 
   /**
-   * Scale-3: fire all reaction triggers for every URI in the changeset.
-   * All handlers run synchronously in declaration order — equivalent to a
-   * single UEFN actor-tick where all wired events fire together.
+   * Scale-3: maintain + fire all triggers for every URI in the changeset.
+   * All handlers run in declaration order — UEFN game-loop fidelity.
    */
   onChangeset(uris: ReadonlySet<string>, origin: ChangeOrigin): void {
     for (const uri of uris) {
@@ -230,16 +288,27 @@ export class ReactionEngine implements MemeProjection {
     }
   }
 
+  // ── ReactionGraph delegation ───────────────────────────────────────────
+
+  subscribeByFn(fnName: string, handler: ReactionHandler): () => void {
+    return this._graph.subscribeByFn(fnName, handler);
+  }
+
+  subscribe(fromUri: string, listenable: string, handler: ReactionHandler): () => void {
+    return this._graph.subscribe(fromUri, listenable, handler);
+  }
+
+  fireSync(fromUri: string, listenable: string, payload: unknown = {}): void {
+    this._graph.fireSync(fromUri, listenable, payload);
+  }
+
   private _fireForUri(uri: string, payload: Record<string, unknown>): void {
-    // Collect unique listenable names for this URI first, then fire once per listenable.
-    // fireSync fans out to all subscribers for (uri, listenable) — calling it N times
-    // per binding would fire every subscriber N times.
     const listenables = new Set<string>();
-    for (const b of this.graph.bindings) {
+    for (const b of this._graph.bindings) {
       if (b.fromUri === uri && b.listenable) listenables.add(b.listenable);
     }
     for (const listenable of listenables) {
-      this.graph.fireSync(uri, listenable, payload);
+      this._graph.fireSync(uri, listenable, payload);
     }
   }
 }

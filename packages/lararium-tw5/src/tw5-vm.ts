@@ -301,6 +301,11 @@ export class TW5Engine {
     return this._tw.wiki.filterTiddlers(expr);
   }
 
+  getTiddlerText(title: string, defaultText?: string): string | undefined {
+    if (!this._tw) return defaultText;
+    return this._tw.wiki.getTiddlerText(title, defaultText);
+  }
+
   /** Subscribe to TW5 wiki change events. Returns unsubscribe fn. */
   onWikiChange(cb: (changes: Record<string, unknown>) => void): () => void {
     if (!this._tw) throw new Error("TW5Engine: call boot() before onWikiChange()");

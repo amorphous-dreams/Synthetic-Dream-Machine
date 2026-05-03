@@ -22,10 +22,9 @@ import type { Editor } from "tldraw";
 import { createPortal } from "react-dom";
 import { INITIAL_VIEW_STATE, viewStateReducer } from "@lararium/tldraw";
 import type { LarViewAction, ZoomLevel } from "@lararium/tldraw";
-import { ReactionGraph } from "@lararium/core";
-import { buildReactionGraph, bindingsForUri } from "@lararium/tw5";
+import { ReactionEngine } from "@lararium/core";
 import { LarariumCanvas } from "./LarariumCanvas.js";
-import { LarariumPanel } from "./LarariumPanel.js";
+import { LarHUD } from "./LarHUD.js";
 import { BootSplash } from "./BootSplash.js";
 import { LarariumCtx, useTheme } from "./lararium-context.js";
 import { useBrowserLarPeer } from "./open-browser-lar-peer.js";
@@ -56,7 +55,7 @@ export function LarariumShell({ memes, onMemes }: ShellProps) {
   const { phase: openPhase, peer, tw5, pool } =
     useBrowserLarPeer({ hostId: "lararium-browser", roomId: "altar-fire" });
 
-  const graphRef = useRef<ReactionGraph>(new ReactionGraph());
+  const engineRef = useRef<ReactionEngine>(new ReactionEngine());
   const [graphReady, setGraphReady] = useState(false);
   const projectedIdsRef = useRef<Set<string>>(new Set());
 
@@ -65,16 +64,16 @@ export function LarariumShell({ memes, onMemes }: ShellProps) {
 
   // fn-based reaction handlers — registered once, never re-subscribed.
   useEffect(() => {
-    const g = graphRef.current;
+    const e = engineRef.current;
     const unsubs = [
-      g.subscribeByFn("navigate", (b) => {
+      e.subscribeByFn("navigate", (b) => {
         dispatchRef.current({ type: "GO_TO_ROOM", roomId: b.toUri });
       }),
-      g.subscribeByFn("zoom", (b) => {
+      e.subscribeByFn("zoom", (b) => {
         dispatchRef.current({ type: "ZOOM_IN", uri: b.toUri });
       }),
-      g.subscribeByFn("relay", (b, payload) => {
-        if (b.listenable) graphRef.current.fireSync(b.toUri, b.listenable, payload);
+      e.subscribeByFn("relay", (b, payload) => {
+        if (b.listenable) engineRef.current.fireSync(b.toUri, b.listenable, payload);
       }),
     ];
     return () => { unsubs.forEach((u) => u()); };
@@ -98,19 +97,10 @@ export function LarariumShell({ memes, onMemes }: ShellProps) {
 
   useEffect(() => {
     if (!tw5) return;
-    const initial = buildReactionGraph(tw5.wiki);
-    graphRef.current.load(initial.bindings); setGraphReady(true);
+    engineRef.current.boot(tw5); setGraphReady(true);
     scanMemesFromTw5();
     return tw5.onWikiChange((changes: Record<string, unknown>) => {
-      let changed = false;
-      for (const uri of Object.keys(changes)) {
-        if (!uri.startsWith("lar:")) continue;
-        const bindings = bindingsForUri(tw5.wiki, uri);
-        if (bindings.length > 0) graphRef.current.updateUri(uri, bindings);
-        else graphRef.current.removeUri(uri);
-        changed = true;
-      }
-      if (!changed) return;
+      if (Object.keys(changes).every((u) => !u.startsWith("lar:"))) return;
       scanMemesFromTw5();
       // Incremental canvas re-projection: diff shape IDs, put new/updated, remove deleted.
       const ed = editorRef.current;
@@ -140,10 +130,10 @@ export function LarariumShell({ memes, onMemes }: ShellProps) {
     (editor.store as any).put(records);
   }, [editor, tw5]);
 
-  const reactionGraph = graphReady ? graphRef.current : null;
+  const reactionGraph = graphReady ? engineRef.current : null;
 
   const fireMeme = useCallback((fromUri: string, trigger: string, payload: unknown = {}) => {
-    graphRef.current.fireSync(fromUri, trigger, payload);
+    engineRef.current.fireSync(fromUri, trigger, payload);
   }, []);
 
   useEffect(() => {
@@ -203,7 +193,7 @@ export function LarariumShell({ memes, onMemes }: ShellProps) {
           drawingMode={drawingMode}
           onZoomLevel={setZoomLevel}
         />
-        {createPortal(<LarariumPanel />,           document.body)}
+        <LarHUD />
         {createPortal(<BootSplash phase={openPhase} />, document.body)}
       </div>
     </LarariumCtx.Provider>
