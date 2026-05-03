@@ -385,10 +385,8 @@ export interface TW5Wiki {
   clearTiddlerEventQueue(): void;
   getSizeOfTiddlerEventQueue(): number;
 
-  // ── Lararium extension slot ───────────────────────────────────────────────
-
-  /** Written by LarariumTW5.registerKukaliHook() at runtime. */
-  _larKukaliHook?: ((uri: string, trigger: string) => (() => void) | void) | undefined;
+  // ── Lararium projection bus ───────────────────────────────────────────────
+  // KukaliWidget fires "tm-lararium-event"; consumers wire via registerProjectionBus().
 }
 
 // ---------------------------------------------------------------------------

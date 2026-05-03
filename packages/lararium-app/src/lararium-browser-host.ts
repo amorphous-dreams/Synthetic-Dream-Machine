@@ -8,7 +8,7 @@ import { useState } from "react";
 import type { LarariumOpenPhase } from "@lararium/core";
 import { ReadinessMap, CompositeStore } from "@lararium/core";
 import type { TW5Engine } from "@lararium/tw5";
-import type { LarariumRepo } from "./automerge-store.js";
+import type { LarariumRepo } from "./automerge-store.web2.js";
 
 export interface BrowserHostOptions { hostId: string; roomId: string; }
 

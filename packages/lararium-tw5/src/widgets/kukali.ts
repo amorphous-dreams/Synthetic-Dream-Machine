@@ -7,18 +7,18 @@ KukaliWidget.prototype.render = function (this: TW5WidgetInstance, parent: TW5Fa
   this.parentDomNode = parent;
   this.computeAttributes();
   this.execute();
-  const trigger = this.getAttribute("trigger", "");
+  const listenable = this.getAttribute("listenable", "");
+  const uri        = this.getAttribute("uri", "") || (this.getVariable?.("currentTiddler") ?? "");
   const el = this.document.createElement("span");
-  el.setAttribute("data-lar-kind",    "kukali");
-  el.setAttribute("data-lar-trigger", trigger);
+  el.setAttribute("data-lar-kind",       "kukali");
+  el.setAttribute("data-lar-listenable", listenable);
+  el.setAttribute("data-lar-uri",        uri);
   parent.appendChild(el);
   this.domNodes = [el];
-  // Bridge to reactionGraph.subscribeOnce() via hook registered on $tw.wiki.
-  const hook = this.wiki?._larKukaliHook;
-  const uri  = this.getVariable?.("currentTiddler") ?? "";
-  if (hook && uri && trigger) {
-    const cancel = hook(uri, trigger);
-    if (typeof cancel === "function") (el as unknown as Record<string, unknown>)["_larKukaliCancel"] = cancel;
+  // Signal the projection bus (Verse signalable pattern).
+  // ReactionEngine subscribes via TW5Engine.registerProjectionBus() — never coupled here.
+  if (uri && listenable && this.wiki?.dispatchEvent) {
+    this.wiki.dispatchEvent("tm-lararium-event", { uri, listenable });
   }
 };
 KukaliWidget.prototype.execute = function (this: TW5WidgetInstance) { this.makeChildWidgets(); };

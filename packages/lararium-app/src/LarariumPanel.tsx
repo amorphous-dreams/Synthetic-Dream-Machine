@@ -100,17 +100,19 @@ export function LarariumPanel() {
   }, [tw5]);
 
   // ---------------------------------------------------------------------------
-  // Kukali suspension wire — local-first, no React MutationObserver.
-  // KukaliWidget calls wiki._larKukaliHook(uri, trigger) at render time.
-  // We subscribe once via reactionGraph; when the trigger fires, touch the
-  // tiddler to force TW5 to re-render it in the story river.
+  // Projection bus wire — KukaliWidget fires "tm-lararium-event" via dispatchEvent.
+  // registerProjectionBus() subscribes and routes to the reaction consumer.
+  // Full ReactionEngine wiring happens in LarariumShell; this is the panel stub.
   // ---------------------------------------------------------------------------
   useEffect(() => {
     if (!tw5 || !reactionGraph) return;
-    return tw5.registerKukaliHook((kukaliUri, trigger) => {
-      const p = reactionGraph.subscribeOnce(kukaliUri, trigger);
-      p.then(() => tw5.touchTiddler(kukaliUri)).catch(() => {});
-      return () => p.cancel();
+    return tw5.registerProjectionBus({
+      handleLarariumEvent(uri: string, listenable: string) {
+        const bindings = (reactionGraph as unknown as { bindingsFor?: (u: string) => Array<{ listenable: string; handler: () => void }> }).bindingsFor?.(uri) ?? [];
+        for (const b of bindings) {
+          if (b.listenable === listenable) b.handler();
+        }
+      },
     });
   }, [tw5, reactionGraph]);
 

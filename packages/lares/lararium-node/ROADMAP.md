@@ -402,6 +402,54 @@ cd packages/lararium-app  && npx tsc --noEmit  # ✓ ZERO errors (tldraw/sw.ts p
 
 <<~/ahu >>
 
+<<~ ahu #m15b-standards-memes-2026-05-02 >>
+
+## M15b Standards Memes + Projection Bus — 2026-05-02
+
+### OODA-HA receipt
+
+✶ **Observe:**
+Session resumed from M15 context-limit boundary. Five standards memes needed; web2 stores still live; KukaliWidget still used `_larKukaliHook` singleton. Keyhive state unknown — needed scoping before any peer code.
+
+⏿ **Orient:**
+Keyhive confirmed pre-alpha (no npm package, no security audit, WASM bindings auto-generated but unstable). LarPeer keyhive slot MUST be opaque optional interface. `registerProjectionBus` replaces `registerKukaliHook` as the correct Verse-aligned coupling.
+
+◇ **Decide:**
+Write five standards memes in sequence: `verse-event-lattice`, `vm-projection-bus`, `quine-principles` (pattern-integrity and local-first already written). Retire `automerge-store.ts` and `node-meme-store.ts`. Fix KukaliWidget. Add `TW5Engine.registerProjectionBus()`. Update `LarariumPanel.tsx` stub wire.
+
+▶ **Act (files touched):**
+
+| File | Change |
+|---|---|
+| `packages/lares/memes/api/v0.1/pono/verse-event-lattice.md` | **New** — Verse 5.6 event lattice: 4 types, `<suspends>` effect specifier, `@editable` boundary, `using` import clarification, device model alignment table |
+| `packages/lares/memes/api/v0.1/pono/vm-projection-bus.md` | **New** — VM Pool→Projection Messaging Standard; event contract; VmPool wiring; `_larKukaliHook` migration; Verse alignment table |
+| `packages/lares/memes/api/v0.1/pono/quine-principles.md` | **New** — P1-P4 quine properties; TW5 vs Smalltalk table; "if it CAN live in the wiki it MUST" rule; IPLD bridge; Heleuma anchor system |
+| `@lararium/app` `automerge-store.ts` | → `automerge-store.web2.ts` (git mv) |
+| `@lararium/node` `node-meme-store.ts` | → `node-meme-store.web2.ts` (git mv) |
+| `@lararium/app` `lararium-browser-host.ts` | Import path updated: `automerge-store.js` → `automerge-store.web2.js` |
+| `@lararium/tw5` `widgets/kukali.ts` | `trigger`/`_larKukaliHook` → `listenable`/`dispatchEvent("tm-lararium-event", {uri, listenable})` |
+| `@lararium/tw5` `tw5-vm.ts` | `registerKukaliHook` → `registerProjectionBus(consumer)` (Verse cancelable return) |
+| `@lararium/tw5` `types/tiddlywiki.d.ts` | `_larKukaliHook` slot removed; comment updated to projection bus |
+| `@lararium/app` `LarariumPanel.tsx` | Kukali hook block → `registerProjectionBus` stub wire |
+
+⤴ **Ho'oko:**
+
+```sh
+pnpm -r --filter "@lararium/tw5"  typecheck  # ✓ ZERO errors
+pnpm -r --filter "@lararium/node" typecheck  # ✓ ZERO errors
+pnpm -r --filter "@lararium/app"  typecheck  # ✓ (tldraw/sw.ts pre-existing only)
+```
+
+↺ **Aftermath / open work:**
+
+- `AutomergeDocStore` isomorphic base not yet written (`@lararium/core`)
+- `LarPeer` / `NodeLarPeer` / `BrowserLarPeer` interfaces not yet written
+- Heleuma body-sha256 anchors for `filters/*.ts` (Stage 1 candidates)
+- `LarHUD` floating dockable React frame not yet scaffolded
+- Keyhive WASM slot: `LarPeer.keyhive?: KeyhiveSlot` opaque optional — awaits stable WASM API
+
+<<~/ahu >>
+
 <<~ ahu #m12-session-open-2026-05-01 >>
 
 ## M12 Session Open — 2026-05-01 (Fever Sprint / FFZ Web3 Reorganization)

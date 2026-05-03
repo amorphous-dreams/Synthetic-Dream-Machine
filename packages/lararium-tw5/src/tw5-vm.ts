@@ -311,16 +311,20 @@ export class TW5Engine {
   }
 
   /**
-   * Register a kukali suspension hook — called by KukaliWidget at render time.
-   * Returns an unsub function.
+   * Wire a ProjectionBusConsumer to this VM's wiki event bus.
+   * KukaliWidget fires "tm-lararium-event"; the consumer handles it.
+   * Returns a teardown function (Verse cancelable equivalent).
    */
-  registerKukaliHook(fn: (uri: string, trigger: string) => (() => void) | void): () => void {
+  registerProjectionBus(consumer: { handleLarariumEvent(uri: string, listenable: string): void }): () => void {
     if (!this._tw) return () => {};
-    this._tw.wiki._larKukaliHook = fn;
-    return () => {
-      const wiki = this._tw?.wiki;
-      if (wiki?._larKukaliHook === fn) delete wiki._larKukaliHook;
+    const handler = (...args: unknown[]) => {
+      const event = args[0] as { uri?: string; listenable?: string } | undefined;
+      if (event?.uri && event.listenable) {
+        consumer.handleLarariumEvent(event.uri, event.listenable);
+      }
     };
+    this._tw.wiki.addEventListener("tm-lararium-event", handler);
+    return () => this._tw?.wiki.removeEventListener("tm-lararium-event", handler);
   }
 
   /** Read zoom-level layout props from the kumu def meme for this zoom level. */
