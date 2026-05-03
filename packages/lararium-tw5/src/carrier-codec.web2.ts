@@ -3,4 +3,4 @@
  * Rebuild target: slot surgery → meme-write.ts; split → deserializer.ts.
  */
 
-export type { ParentTiddler, ChildTiddler, CarrierSplit } from "./carrier-split.js";
+export type { ParentTiddler, ChildTiddler, CarrierSplit } from "./carrier-split.web2.js";

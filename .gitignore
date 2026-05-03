@@ -47,3 +47,7 @@ packages/lararium-node/test-results
 packages/lararium-node/playwright-report
 **/playwright-report/
 **/test-results/**/tests/.playwright-userdata/
+
+# Lararium node storage — per-deployment, never committed
+packages/lararium-node/.lararium/
+packages/lararium-tw5/public/tiddlywikicore-*.js

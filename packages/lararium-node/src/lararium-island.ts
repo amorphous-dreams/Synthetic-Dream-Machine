@@ -12,14 +12,18 @@
  */
 
 import { readFileSync, existsSync, readdirSync } from "fs";
-import { join, basename } from "path";
+import { join, basename, dirname } from "path";
+import { fileURLToPath } from "url";
 import { TW5Engine } from "@lararium/tw5";
 import { createHash } from "crypto";
 import type { Repo, DocHandle } from "@automerge/automerge-repo";
 import type { LarariumDoc, LarariumBlobEntry } from "@lararium/core";
 import { ENGINE_CORE_ID, emptyLarariumDoc } from "@lararium/core";
 import { laresRoot } from "@lares/lares";
-import { TW5_VERSION, TW5_CORE_SCRIPT_FILENAME, TW5_PUBLIC_DIR } from "@lararium/tw5";
+import { TW5_VERSION, TW5_CORE_SCRIPT_FILENAME } from "@lararium/tw5";
+
+/** Absolute path to lararium-tw5/public/ — the seeder's source of truth for TW5 core blob. */
+const TW5_PUBLIC_DIR = join(dirname(fileURLToPath(import.meta.url)), "../../lararium-tw5/public");
 
 const PLUGINS_DIR = join(laresRoot, "memes/api/v0.1/tw5-plugins");
 
