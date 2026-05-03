@@ -1,8 +1,8 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/@lares/api/v0.1/pono/memetic-wikitext >> -->
 
-<<~&#x0001; ? -> lar:///ha.ka.ba/@lares/api/v0.1/lararium/modules/tw5-widgets >>
+<<~&#x0001; ? -> lar:///ha.ka.ba/@lararium/tw5/modules/tw5-widgets >>
 ```toml iam
-uri-path = "ha.ka.ba/@lares/api/v0.1/lararium/modules/tw5-widgets"
+uri-path = "ha.ka.ba/@lararium/tw5/modules/tw5-widgets"
 file-path = "packages/lararium-tw5/memes/modules/tw5-widgets.md"
 type  = "text/x-memetic-wikitext"
 register      = "CS"
@@ -78,7 +78,7 @@ fields = [
 
 <<~ ahu #edges >>
 
-<<~ pranala #to-node-host ? -> lar:///ha.ka.ba/@lares/api/v0.1/lararium/modules/node-host family:control role:depends >>
+<<~ pranala #to-node-host ? -> lar:///ha.ka.ba/@lararium/tw5/modules/node-host family:control role:depends >>
 <<~ pranala #to-carrier-sigils ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/carrier-sigils family:control role:depends >>
 <<~ pranala #to-papalohe ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/papalohe family:control role:implements >>
 <<~ pranala #to-kukali ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/kukali family:control role:implements >>

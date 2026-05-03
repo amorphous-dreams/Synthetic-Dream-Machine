@@ -1,6 +1,6 @@
-<<~&#x0001; ? -> lar:///ha.ka.ba/@lares/api/v0.1/lararium/widgets/ahu >>
+<<~&#x0001; ? -> lar:///ha.ka.ba/@lararium/tw5/widgets/ahu >>
 ```toml iam
-uri-path = "ha.ka.ba/@lares/api/v0.1/lararium/widgets/ahu"
+uri-path = "ha.ka.ba/@lararium/tw5/widgets/ahu"
 file-path = "packages/lararium-tw5/memes/widgets/ahu.md"
 type          = "text/x-memetic-wikitext"
 register      = "CS"
@@ -10,7 +10,7 @@ role          = "anchor: AhuWidget — heleuma ka"
 heleuma       = "ka"
 source-file   = "packages/lararium-tw5/src/widgets/ahu.ts"
 source-symbol = "AhuWidget"
-module-ref    = "lar:///ha.ka.ba/@lares/api/v0.1/lararium/widgets/ahu-tw5"
+module-ref    = "lar:///ha.ka.ba/@lararium/tw5/widgets/ahu-tw5"
 body-sha256 = "5f53e970fabce27cac3b4d0490b3c10ee3c50edb93ebf083de98c6d48ca6d3f1"
 cacheable     = true
 retain        = true
@@ -81,8 +81,8 @@ AhuWidget.prototype.refresh = function (this: TW5WidgetInstance, changedTiddlers
 <<~ ahu #edges >>
 
 <<~ pranala #to-pono ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/ahu family:control role:implements >>
-<<~ pranala #to-tw5-widgets ? -> lar:///ha.ka.ba/@lares/api/v0.1/lararium/modules/tw5-widgets family:control role:implements >>
-<<~ pranala #to-module ? -> lar:///ha.ka.ba/@lares/api/v0.1/lararium/widgets/ahu-tw5 family:control role:module >>
+<<~ pranala #to-tw5-widgets ? -> lar:///ha.ka.ba/@lararium/tw5/modules/tw5-widgets family:control role:implements >>
+<<~ pranala #to-module ? -> lar:///ha.ka.ba/@lararium/tw5/widgets/ahu-tw5 family:control role:module >>
 
 <<~/ahu >>
 

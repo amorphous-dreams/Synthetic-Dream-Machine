@@ -1,8 +1,8 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/@lares/api/v0.1/pono/memetic-wikitext >> -->
 
-<<~&#x0001; ? -> lar:///ha.ka.ba/@lares/api/v0.1/lararium/modules/sync-adaptor >>
+<<~&#x0001; ? -> lar:///ha.ka.ba/@lararium/tw5/modules/sync-adaptor >>
 ```toml iam
-uri-path = "ha.ka.ba/@lares/api/v0.1/lararium/modules/sync-adaptor"
+uri-path = "ha.ka.ba/@lararium/tw5/modules/sync-adaptor"
 file-path = "packages/lararium-tw5/memes/modules/sync-adaptor.md"
 type = "text/x-memetic-wikitext"
 register     = "CS"
@@ -32,7 +32,7 @@ implements   = ["lar:///ha.ka.ba/@lares/api/v0.1/pono/heleuma/ha"]
 : Changes arriving from the Automerge store are applied to the live TW5 wiki under an echo-loop guard (`_applying` flag). During initial replay (`onSyncComplete`), changes are buffered and flushed in a single `bulkSetTiddlers` transaction to avoid one widget refresh per tiddler.
 
 **TW5 SyncAdaptor** (TW5→CRDT direction)
-: When TW5 fires `saveTiddler` or `deleteTiddler`, the adaptor resolves a `SaveStrategy` by reading the corpus-driven save-cascade meme (`lar:///ha.ka.ba/@lares/api/v0.1/lararium/sync/save-cascade`) and routes accordingly. Carrier-aware: ahu child tiddler writes trigger parent carrier reconstruction.
+: When TW5 fires `saveTiddler` or `deleteTiddler`, the adaptor resolves a `SaveStrategy` by reading the corpus-driven save-cascade meme (`lar:///ha.ka.ba/@lararium/tw5/sync/save-cascade`) and routes accordingly. Carrier-aware: ahu child tiddler writes trigger parent carrier reconstruction.
 
 Echo-loop guard rule:
 - Applying a CRDT change sets `_applying = change.origin`
@@ -93,8 +93,8 @@ private _applyChange(change: LarTiddlerChange): void {
 <<~ ahu #edges >>
 
 <<~ pranala #implements-meme ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/meme family:control role:implements >>
-<<~ pranala #reads-cascade ? -> lar:///ha.ka.ba/@lares/api/v0.1/lararium/sync/save-cascade family:data role:reads >>
-<<~ pranala #gate ? -> lar:///ha.ka.ba/@lares/api/v0.1/lararium/modules/boot-gate family:control role:registered-by >>
+<<~ pranala #reads-cascade ? -> lar:///ha.ka.ba/@lararium/tw5/sync/save-cascade family:data role:reads >>
+<<~ pranala #gate ? -> lar:///ha.ka.ba/@lararium/tw5/modules/boot-gate family:control role:registered-by >>
 
 <<~/ahu >>
 

@@ -384,7 +384,7 @@ export class TW5Engine {
   private static readonly MODULE_MANAOIO_THRESHOLD    = 0.85;
   private static readonly MODULE_CONFIDENCE_THRESHOLD = 0.90;
   private static readonly MODULE_INTERFACE_URI =
-    "lar:///ha.ka.ba/@lares/api/v0.1/lararium/tw5-module";
+    "lar:///ha.ka.ba/@lararium/tw5/tw5-module";
 
   private async _bootModules(): Promise<void> {
     if (!this._tw) return;
@@ -433,7 +433,7 @@ export class TW5Engine {
     if (injected > 0) {
       try {
         const moduleText = wiki.getTiddler(
-          "lar:///ha.ka.ba/@lares/api/v0.1/lararium/modules/tw5-modules"
+          "lar:///ha.ka.ba/@lararium/tw5/modules/tw5-modules"
         )?.fields?.["text"] ?? "";
         tw.modules.define(moduleText, "library", "lararium-tw5-modules");
       } catch { /* no-op */ }

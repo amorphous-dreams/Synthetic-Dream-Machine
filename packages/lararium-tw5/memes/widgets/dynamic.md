@@ -1,6 +1,6 @@
-<<~&#x0001; ? -> lar:///ha.ka.ba/@lares/api/v0.1/lararium/widgets/dynamic >>
+<<~&#x0001; ? -> lar:///ha.ka.ba/@lararium/tw5/widgets/dynamic >>
 ```toml iam
-uri-path = "ha.ka.ba/@lares/api/v0.1/lararium/widgets/dynamic"
+uri-path = "ha.ka.ba/@lararium/tw5/widgets/dynamic"
 file-path = "packages/lararium-tw5/memes/widgets/dynamic.md"
 type          = "text/x-memetic-wikitext"
 register      = "CS"
@@ -10,7 +10,7 @@ role          = "anchor: DynamicWidget — heleuma ka"
 heleuma       = "ka"
 source-file   = "packages/lararium-tw5/src/widgets/dynamic.ts"
 source-symbol = "DynamicWidget"
-module-ref    = "lar:///ha.ka.ba/@lares/api/v0.1/lararium/widgets/dynamic-tw5"
+module-ref    = "lar:///ha.ka.ba/@lararium/tw5/widgets/dynamic-tw5"
 body-sha256 = "ab023ebbcaaa7ed865d24e1ab875eff3c002284fbcac26d18ed4cca81832dbf0"
 cacheable     = true
 retain        = true
@@ -53,8 +53,8 @@ DynamicWidget.prototype.execute = function (this: TW5WidgetInstance) { this.make
 <<~ ahu #edges >>
 
 <<~ pranala #to-pono ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/dynamic family:control role:implements >>
-<<~ pranala #to-tw5-widgets ? -> lar:///ha.ka.ba/@lares/api/v0.1/lararium/modules/tw5-widgets family:control role:implements >>
-<<~ pranala #to-module ? -> lar:///ha.ka.ba/@lares/api/v0.1/lararium/widgets/dynamic-tw5 family:control role:module >>
+<<~ pranala #to-tw5-widgets ? -> lar:///ha.ka.ba/@lararium/tw5/modules/tw5-widgets family:control role:implements >>
+<<~ pranala #to-module ? -> lar:///ha.ka.ba/@lararium/tw5/widgets/dynamic-tw5 family:control role:module >>
 
 <<~/ahu >>
 

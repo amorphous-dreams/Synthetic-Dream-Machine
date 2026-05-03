@@ -18,8 +18,8 @@
  *   ba — psyche/path anchor: quine-only; #source slot sufficient for reconstruction.
  *
  * Decorator file conventions (--scan-decorators):
- *   <pkg>/src/filters/<name>.ts  → filter-operator memes → lares/.../lararium/modules/filter-operators/
- *   <pkg>/src/widgets/<name>.ts  → widget memes          → lares/.../lararium/modules/widgets/
+ *   <pkg>/src/filters/<name>.ts  → filter-operator memes → lararium-tw5/memes/filters/
+ *   <pkg>/src/widgets/<name>.ts  → widget memes          → lararium-tw5/memes/widgets/
  *
  * Run:
  *   pnpm --filter @lararium/tw5 build:heleuma                       # dry-run (build gate)
@@ -33,7 +33,11 @@
 import { readFileSync, writeFileSync, readdirSync, statSync, mkdirSync, existsSync } from "fs";
 import { createHash } from "crypto";
 import { resolve, relative } from "path";
-import { laresRoot, repoRoot } from "@lares/lares";
+import { fileURLToPath } from "url";
+import { repoRoot } from "@lares/lares";
+
+/** Root of packages/lararium-tw5/ — the package that owns these memes. */
+const tw5MemesRoot = resolve(fileURLToPath(import.meta.url), "../../memes");
 
 const root     = repoRoot;
 const pkgsRoot = resolve(root, "packages");
@@ -156,7 +160,7 @@ function applyBodySha256Patch(content: string, sha256: string): string {
 function runScan(): void {
   // Collect all URIs that already have a heleuma API meme
   const existingUris = new Set<string>();
-  for (const mdPath of walkExt(laresRoot, ".md")) {
+  for (const mdPath of walkExt(tw5MemesRoot, ".md")) {
     const content = readFileSync(mdPath, "utf8");
     const tomlM   = TOML_RE.exec(content);
     if (!tomlM) continue;
@@ -254,12 +258,12 @@ function runScan(): void {
 // ---------------------------------------------------------------------------
 
 function runScanPromote(): void {
-  // Collect names already present as corpus memes in lares/.
+  // Collect names already present as corpus memes in lararium-tw5/memes/.
   // Checks: uri-path basename, source-symbol, and TOML keys in any #schema slot.
   const existingNames = new Set<string>();
   const VOCAB_SLOT_RE = /<<~ ahu #schema >>([\s\S]*?)<<~\/ahu >>/g;
 
-  for (const mdPath of walkExt(laresRoot, ".md")) {
+  for (const mdPath of walkExt(tw5MemesRoot, ".md")) {
     const content = readFileSync(mdPath, "utf8");
     const tomlM   = TOML_RE.exec(content);
     if (!tomlM) continue;
@@ -417,7 +421,7 @@ function extractModuleBody(content: string): string | null {
 function runSyncModules(): { drift: number; missing: number; patched: number } {
   let drift = 0, missing = 0, patched = 0;
 
-  for (const mdPath of walkExt(laresRoot, ".md")) {
+  for (const mdPath of walkExt(tw5MemesRoot, ".md")) {
     const content = readFileSync(mdPath, "utf8");
     const tomlM   = TOML_RE.exec(content);
     if (!tomlM) continue;
@@ -426,14 +430,14 @@ function runSyncModules(): { drift: number; missing: number; patched: number } {
     const moduleRef = toml["module-ref"];
     if (!moduleRef) continue;
 
-    // Convert lar URI to file path: lar:///ha.ka.ba/@lares/{rest} -> packages/lares/{rest}.md
+    // Convert lar URI to file path: lar:///ha.ka.ba/@lararium/tw5/{rest} -> tw5MemesRoot/{rest}.md
     const uriTrimmed = moduleRef.replace(/^lar:\/\/\//, "");
     const parts      = uriTrimmed.split("/");
-    // Strip ha.ka.ba/@lares prefix (3 segments: ha.ka.ba, @lares, rest...)
-    const rest       = (parts[0] === "ha.ka.ba" && parts[1] === "@lares")
-      ? parts.slice(2).join("/")
-      : parts.slice(1).join("/");
-    const modPath    = resolve(laresRoot, `${rest}.md`);
+    // Strip ha.ka.ba/@lararium/tw5 prefix (4 segments)
+    const rest       = (parts[0] === "ha.ka.ba" && parts[1] === "@lararium" && parts[2] === "tw5")
+      ? parts.slice(3).join("/")
+      : parts.slice(2).join("/"); // legacy fallback
+    const modPath    = resolve(tw5MemesRoot, `${rest}.md`);
 
     let modContent: string;
     try {
@@ -516,8 +520,8 @@ function collectDecoratorFiles(): DecoratorFile[] {
     } catch { /* no package.json */ }
 
     for (const [subDir, kind, exportRe, memeSubDir, uriSub] of [
-      ["src/filters", "filter-operator", /^export\s+function\s+(register\w+)/, "lararium/modules/filter-operators", "lararium/modules/filter-operators"],
-      ["src/widgets", "widget",           /^export\s+function\s+(\w+Widget)/,   "lararium/modules/widgets",          "lararium/modules/widgets"],
+      ["src/filters", "filter-operator", /^export\s+function\s+(register\w+)/, "filters",  "filters"],
+      ["src/widgets", "widget",           /^export\s+function\s+(\w+Widget)/,   "widgets",  "widgets"],
     ] as const) {
       const dirAbs = resolve(pkgAbs, subDir);
       let entries: string[] = [];
@@ -549,8 +553,8 @@ function collectDecoratorFiles(): DecoratorFile[] {
           }
         }
 
-        const memeDir   = resolve(laresRoot, "memes/api/v0.1", memeSubDir);
-        const uriPrefix = `ha.ka.ba/@lares/api/v0.1/${uriSub}`;
+        const memeDir   = resolve(tw5MemesRoot, memeSubDir);
+        const uriPrefix = `ha.ka.ba/@lararium/tw5/${uriSub}`;
         results.push({ relPath, absPath, slug, kind, symbols, memeDir, uriPrefix, pkgName });
       }
     }
@@ -581,7 +585,7 @@ function scaffoldDecoratorMeme(d: DecoratorFile): void {
   if (existsSync(memePath)) return; // already exists — drift check handles it
 
   const uriPath   = `${d.uriPrefix}/${d.slug}`;
-  const filePath  = `packages/lares/memes/api/v0.1/${d.uriPrefix.replace("ha.ka.ba/@lares/api/v0.1/", "")}/${d.slug}.md`;
+  const filePath  = `packages/lararium-tw5/memes/${d.uriPrefix.replace("ha.ka.ba/@lararium/tw5/", "")}/${d.slug}.md`;
   const srcSym    = d.symbols.join(" ");
   const bodies    = d.symbols.map(s => extractSymbol(d.relPath, s) ?? "").filter(Boolean);
   const joined    = bodies.join("\n\n");
@@ -722,7 +726,7 @@ let totalDrift   = 0;
 let totalMissing = 0;
 let totalPatched = 0;
 
-for (const mdPath of walkExt(laresRoot, ".md")) {
+for (const mdPath of walkExt(tw5MemesRoot, ".md")) {
   const content = readFileSync(mdPath, "utf8");
 
   const tomlM = TOML_RE.exec(content);

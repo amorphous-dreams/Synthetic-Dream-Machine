@@ -1,6 +1,6 @@
-<<~&#x0001; ? -> lar:///ha.ka.ba/@lares/api/v0.1/lararium/widgets/pranala >>
+<<~&#x0001; ? -> lar:///ha.ka.ba/@lararium/tw5/widgets/pranala >>
 ```toml iam
-uri-path = "ha.ka.ba/@lares/api/v0.1/lararium/widgets/pranala"
+uri-path = "ha.ka.ba/@lararium/tw5/widgets/pranala"
 file-path = "packages/lararium-tw5/memes/widgets/pranala.md"
 type          = "text/x-memetic-wikitext"
 register      = "CS"
@@ -10,7 +10,7 @@ role          = "anchor: PranalaWidget — heleuma ka"
 heleuma       = "ka"
 source-file   = "packages/lararium-tw5/src/widgets/pranala.ts"
 source-symbol = "PranalaWidget"
-module-ref    = "lar:///ha.ka.ba/@lares/api/v0.1/lararium/widgets/pranala-tw5"
+module-ref    = "lar:///ha.ka.ba/@lararium/tw5/widgets/pranala-tw5"
 body-sha256 = "1008f270a77c24eb777078f9213a9a15e714776e555a63c1dcf4c366b29ad2e6"
 cacheable     = true
 retain        = true
@@ -55,8 +55,8 @@ PranalaWidget.prototype.execute = function (this: TW5WidgetInstance) { this.make
 <<~ ahu #edges >>
 
 <<~ pranala #to-pono ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/pranala family:control role:implements >>
-<<~ pranala #to-tw5-widgets ? -> lar:///ha.ka.ba/@lares/api/v0.1/lararium/modules/tw5-widgets family:control role:implements >>
-<<~ pranala #to-module ? -> lar:///ha.ka.ba/@lares/api/v0.1/lararium/widgets/pranala-tw5 family:control role:module >>
+<<~ pranala #to-tw5-widgets ? -> lar:///ha.ka.ba/@lararium/tw5/modules/tw5-widgets family:control role:implements >>
+<<~ pranala #to-module ? -> lar:///ha.ka.ba/@lararium/tw5/widgets/pranala-tw5 family:control role:module >>
 
 <<~/ahu >>
 

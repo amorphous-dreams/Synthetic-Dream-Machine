@@ -1,6 +1,6 @@
-<<~&#x0001; ? -> lar:///ha.ka.ba/@lares/api/v0.1/lararium/widgets/kukali >>
+<<~&#x0001; ? -> lar:///ha.ka.ba/@lararium/tw5/widgets/kukali >>
 ```toml iam
-uri-path = "ha.ka.ba/@lares/api/v0.1/lararium/widgets/kukali"
+uri-path = "ha.ka.ba/@lararium/tw5/widgets/kukali"
 file-path = "packages/lararium-tw5/memes/widgets/kukali.md"
 type          = "text/x-memetic-wikitext"
 register      = "CS"
@@ -10,7 +10,7 @@ role          = "anchor: KukaliWidget — heleuma ka"
 heleuma       = "ka"
 source-file   = "packages/lararium-tw5/src/widgets/kukali.ts"
 source-symbol = "KukaliWidget"
-module-ref    = "lar:///ha.ka.ba/@lares/api/v0.1/lararium/widgets/kukali-tw5"
+module-ref    = "lar:///ha.ka.ba/@lararium/tw5/widgets/kukali-tw5"
 body-sha256 = "8ac9495db8e12d378b9c388eacf8a8b968d08ce0220ae4bf22a6c871b93f3e0c"
 cacheable     = true
 retain        = true
@@ -59,8 +59,8 @@ KukaliWidget.prototype.execute = function (this: TW5WidgetInstance) { this.makeC
 <<~ ahu #edges >>
 
 <<~ pranala #to-pono ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/kukali family:control role:implements >>
-<<~ pranala #to-tw5-widgets ? -> lar:///ha.ka.ba/@lares/api/v0.1/lararium/modules/tw5-widgets family:control role:implements >>
-<<~ pranala #to-module ? -> lar:///ha.ka.ba/@lares/api/v0.1/lararium/widgets/kukali-tw5 family:control role:module >>
+<<~ pranala #to-tw5-widgets ? -> lar:///ha.ka.ba/@lararium/tw5/modules/tw5-widgets family:control role:implements >>
+<<~ pranala #to-module ? -> lar:///ha.ka.ba/@lararium/tw5/widgets/kukali-tw5 family:control role:module >>
 
 <<~/ahu >>
 

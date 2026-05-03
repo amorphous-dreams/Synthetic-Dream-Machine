@@ -1,6 +1,6 @@
-<<~&#x0001; ? -> lar:///ha.ka.ba/@lares/api/v0.1/lararium/filters/implementors-tw5 >>
+<<~&#x0001; ? -> lar:///ha.ka.ba/@lararium/tw5/filters/implementors-tw5 >>
 ```toml iam
-uri-path = "ha.ka.ba/@lares/api/v0.1/lararium/filters/implementors-tw5"
+uri-path = "ha.ka.ba/@lararium/tw5/filters/implementors-tw5"
 file-path = "packages/lararium-tw5/memes/filters/implementors-tw5.md"
 type          = "application/javascript"
 module-type   = "filteroperator"

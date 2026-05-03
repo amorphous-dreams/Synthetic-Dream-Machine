@@ -1,6 +1,6 @@
-<<~&#x0001; ? -> lar:///ha.ka.ba/@lares/api/v0.1/lararium/widgets/sigil >>
+<<~&#x0001; ? -> lar:///ha.ka.ba/@lararium/tw5/widgets/sigil >>
 ```toml iam
-uri-path = "ha.ka.ba/@lares/api/v0.1/lararium/widgets/sigil"
+uri-path = "ha.ka.ba/@lararium/tw5/widgets/sigil"
 file-path = "packages/lararium-tw5/memes/widgets/sigil.md"
 type          = "text/x-memetic-wikitext"
 register      = "CS"
@@ -10,7 +10,7 @@ role          = "anchor: SigilWidget — heleuma ka"
 heleuma       = "ka"
 source-file   = "packages/lararium-tw5/src/widgets/sigil.ts"
 source-symbol = "SigilWidget"
-module-ref    = "lar:///ha.ka.ba/@lares/api/v0.1/lararium/widgets/sigil-tw5"
+module-ref    = "lar:///ha.ka.ba/@lararium/tw5/widgets/sigil-tw5"
 body-sha256 = "235354a9ccdc72dbc7765b32c5b90b5329cfe547a7919af783639eb847b9799d"
 cacheable     = true
 retain        = true
@@ -53,8 +53,8 @@ SigilWidget.prototype.execute = function (this: TW5WidgetInstance) { this.makeCh
 <<~ ahu #edges >>
 
 <<~ pranala #to-pono ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/sigil family:control role:implements >>
-<<~ pranala #to-tw5-widgets ? -> lar:///ha.ka.ba/@lares/api/v0.1/lararium/modules/tw5-widgets family:control role:implements >>
-<<~ pranala #to-module ? -> lar:///ha.ka.ba/@lares/api/v0.1/lararium/widgets/sigil-tw5 family:control role:module >>
+<<~ pranala #to-tw5-widgets ? -> lar:///ha.ka.ba/@lararium/tw5/modules/tw5-widgets family:control role:implements >>
+<<~ pranala #to-module ? -> lar:///ha.ka.ba/@lararium/tw5/widgets/sigil-tw5 family:control role:module >>
 
 <<~/ahu >>
 

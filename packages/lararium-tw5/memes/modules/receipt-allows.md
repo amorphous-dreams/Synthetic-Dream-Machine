@@ -1,8 +1,8 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/@lares/api/v0.1/pono/memetic-wikitext >> -->
 
-<<~&#x0001; ? -> lar:///ha.ka.ba/@lares/api/v0.1/lararium/modules/receipt-allows >>
+<<~&#x0001; ? -> lar:///ha.ka.ba/@lararium/tw5/modules/receipt-allows >>
 ```toml iam
-uri-path = "ha.ka.ba/@lares/api/v0.1/lararium/modules/receipt-allows"
+uri-path = "ha.ka.ba/@lararium/tw5/modules/receipt-allows"
 file-path = "packages/lararium-tw5/memes/modules/receipt-allows.md"
 type  = "text/x-memetic-wikitext"
 register      = "CS"
@@ -74,8 +74,8 @@ export function receiptAllows(
 
 <<~ ahu #edges >>
 
-<<~ pranala #auth-providers ? -> lar:///ha.ka.ba/@lares/api/v0.1/lararium/schema/auth-providers family:control role:depends >>
-<<~ pranala #open-phases ? -> lar:///ha.ka.ba/@lares/api/v0.1/lararium/schema/open-phases family:control role:depends >>
+<<~ pranala #auth-providers ? -> lar:///ha.ka.ba/@lararium/tw5/schema/auth-providers family:control role:depends >>
+<<~ pranala #open-phases ? -> lar:///ha.ka.ba/@lararium/tw5/schema/open-phases family:control role:depends >>
 <<~ pranala #implements-invariant ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/invariant family:control role:implements >>
 
 <<~/ahu >>

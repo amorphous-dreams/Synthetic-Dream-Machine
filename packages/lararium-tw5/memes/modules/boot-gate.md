@@ -1,8 +1,8 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/@lares/api/v0.1/pono/memetic-wikitext >> -->
 
-<<~&#x0001; ? -> lar:///ha.ka.ba/@lares/api/v0.1/lararium/modules/boot-gate >>
+<<~&#x0001; ? -> lar:///ha.ka.ba/@lararium/tw5/modules/boot-gate >>
 ```toml iam
-uri-path = "ha.ka.ba/@lares/api/v0.1/lararium/modules/boot-gate"
+uri-path = "ha.ka.ba/@lararium/tw5/modules/boot-gate"
 file-path = "packages/lararium-tw5/memes/modules/boot-gate.md"
 type = "text/x-memetic-wikitext"
 register     = "CS"
@@ -26,7 +26,7 @@ implements    = ["lar:///ha.ka.ba/@lares/api/v0.1/pono/heleuma/ha"]
 
 ## Boot Gate
 
-Runs in `LarariumTW5._bootModules()` after TW5 `instance.boot.boot()` resolves. Queries all tiddlers that declare `implements = "lar:///ha.ka.ba/@lares/api/v0.1/lararium/modules/tw5-module-interface"` and applies three layers of trust before injecting them as live JS modules.
+Runs in `LarariumTW5._bootModules()` after TW5 `instance.boot.boot()` resolves. Queries all tiddlers that declare `implements = "lar:///ha.ka.ba/@lararium/tw5/modules/tw5-module-interface"` and applies three layers of trust before injecting them as live JS modules.
 
 **This code cannot be loaded from a meme.** It requires a live `$tw` instance and is the mechanism that promotes memes into executables. It lives in `packages/lararium-tw5/src/lararium-tw5.ts` as `_bootModules()`.
 
@@ -93,7 +93,7 @@ private async _bootModules(): Promise<void> {
     if (injected > 0) {
       try {
         const moduleText = wiki.getTiddler(
-          "lar:///ha.ka.ba/@lares/api/v0.1/lararium/modules/tw5-modules"
+          "lar:///ha.ka.ba/@lararium/tw5/modules/tw5-modules"
         )?.fields?.["text"] ?? "";
         tw.modules.define(moduleText, "library", "lararium-tw5-modules");
       } catch { /* no-op */ }

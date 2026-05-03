@@ -1,6 +1,6 @@
-<<~&#x0001; ? -> lar:///ha.ka.ba/@lares/api/v0.1/lararium/widgets/kau >>
+<<~&#x0001; ? -> lar:///ha.ka.ba/@lararium/tw5/widgets/kau >>
 ```toml iam
-uri-path = "ha.ka.ba/@lares/api/v0.1/lararium/widgets/kau"
+uri-path = "ha.ka.ba/@lararium/tw5/widgets/kau"
 file-path = "packages/lararium-tw5/memes/widgets/kau.md"
 type          = "text/x-memetic-wikitext"
 register      = "CS"
@@ -10,7 +10,7 @@ role          = "anchor: KauWidget — heleuma ka"
 heleuma       = "ka"
 source-file   = "packages/lararium-tw5/src/widgets/kau.ts"
 source-symbol = "KauWidget"
-module-ref    = "lar:///ha.ka.ba/@lares/api/v0.1/lararium/widgets/kau-tw5"
+module-ref    = "lar:///ha.ka.ba/@lararium/tw5/widgets/kau-tw5"
 body-sha256   = ""
 cacheable     = true
 retain        = true
@@ -54,9 +54,9 @@ See [packages/lararium-tw5/src/widgets/kau.ts](packages/lararium-tw5/src/widgets
 <<~ ahu #edges >>
 
 <<~ pranala #to-pono ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/kau family:control role:implements >>
-<<~ pranala #to-tw5-widgets ? -> lar:///ha.ka.ba/@lares/api/v0.1/lararium/modules/tw5-widgets family:control role:implements >>
-<<~ pranala #to-module ? -> lar:///ha.ka.ba/@lares/api/v0.1/lararium/widgets/kau-tw5 family:control role:module >>
-<<~ pranala #to-kumu ? -> lar:///ha.ka.ba/@lares/api/v0.1/lararium/widgets/kumu family:control role:depends >>
+<<~ pranala #to-tw5-widgets ? -> lar:///ha.ka.ba/@lararium/tw5/modules/tw5-widgets family:control role:implements >>
+<<~ pranala #to-module ? -> lar:///ha.ka.ba/@lararium/tw5/widgets/kau-tw5 family:control role:module >>
+<<~ pranala #to-kumu ? -> lar:///ha.ka.ba/@lararium/tw5/widgets/kumu family:control role:depends >>
 
 <<~/ahu >>
 

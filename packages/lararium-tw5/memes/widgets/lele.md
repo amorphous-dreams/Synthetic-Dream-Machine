@@ -1,6 +1,6 @@
-<<~&#x0001; ? -> lar:///ha.ka.ba/@lares/api/v0.1/lararium/widgets/lele >>
+<<~&#x0001; ? -> lar:///ha.ka.ba/@lararium/tw5/widgets/lele >>
 ```toml iam
-uri-path = "ha.ka.ba/@lares/api/v0.1/lararium/widgets/lele"
+uri-path = "ha.ka.ba/@lararium/tw5/widgets/lele"
 file-path = "packages/lararium-tw5/memes/widgets/lele.md"
 type          = "text/x-memetic-wikitext"
 register      = "CS"
@@ -10,7 +10,7 @@ role          = "anchor: LeleWidget — heleuma ka"
 heleuma       = "ka"
 source-file   = "packages/lararium-tw5/src/widgets/lele.ts"
 source-symbol = "LeleWidget"
-module-ref    = "lar:///ha.ka.ba/@lares/api/v0.1/lararium/widgets/lele-tw5"
+module-ref    = "lar:///ha.ka.ba/@lararium/tw5/widgets/lele-tw5"
 body-sha256 = "adf19c7be25695020e887074244464c00985e6c514af0f65661e084de4d6b3d4"
 cacheable     = true
 retain        = true
@@ -52,8 +52,8 @@ LeleWidget.prototype.execute = function (this: TW5WidgetInstance) { this.makeChi
 <<~ ahu #edges >>
 
 <<~ pranala #to-pono ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/lele family:control role:implements >>
-<<~ pranala #to-tw5-widgets ? -> lar:///ha.ka.ba/@lares/api/v0.1/lararium/modules/tw5-widgets family:control role:implements >>
-<<~ pranala #to-module ? -> lar:///ha.ka.ba/@lares/api/v0.1/lararium/widgets/lele-tw5 family:control role:module >>
+<<~ pranala #to-tw5-widgets ? -> lar:///ha.ka.ba/@lararium/tw5/modules/tw5-widgets family:control role:implements >>
+<<~ pranala #to-module ? -> lar:///ha.ka.ba/@lararium/tw5/widgets/lele-tw5 family:control role:module >>
 
 <<~/ahu >>
 

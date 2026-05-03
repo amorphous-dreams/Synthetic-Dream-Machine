@@ -1,8 +1,8 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/@lares/api/v0.1/pono/memetic-wikitext >> -->
 
-<<~&#x0001; ? -> lar:///ha.ka.ba/@lares/api/v0.1/lararium/modules/carrier-parse >>
+<<~&#x0001; ? -> lar:///ha.ka.ba/@lararium/tw5/modules/carrier-parse >>
 ```toml iam
-uri-path = "ha.ka.ba/@lares/api/v0.1/lararium/modules/carrier-parse"
+uri-path = "ha.ka.ba/@lararium/tw5/modules/carrier-parse"
 file-path = "packages/lararium-tw5/memes/modules/carrier-parse.md"
 type  = "text/x-memetic-wikitext"
 register      = "CS"
@@ -79,7 +79,7 @@ export function parseCarrier(uri: string, text: string): CarrierRecord {
 <<~ ahu #edges >>
 
 <<~ pranala #carrier-sigils ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/carrier-sigils family:control role:depends >>
-<<~ pranala #projection-codec ? -> lar:///ha.ka.ba/@lares/api/v0.1/lararium/schema/projection-codec family:control role:depends >>
+<<~ pranala #projection-codec ? -> lar:///ha.ka.ba/@lararium/tw5/schema/projection-codec family:control role:depends >>
 <<~ pranala #implements-invariant ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/invariant family:control role:implements >>
 
 <<~/ahu >>

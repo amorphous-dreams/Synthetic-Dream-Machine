@@ -48,6 +48,6 @@ Walks the AST, collects all `PranalaNode` and `PranalaSugarNode` instances, retu
 
 <<~ pranala ? -> lar:///ha.ka.ba/@lararium/tw5/v0.1/ast family:dataflow role:produces >>
 <<~ pranala ? -> lar:///ha.ka.ba/@lararium/tw5/v0.1/pranala-parser family:dataflow role:sibling >>
-<<~ pranala ? -> lar:///ha.ka.ba/@lares/api/v0.1/lararium/modules/memetic-parser family:code role:compilesInto >>
+<<~ pranala ? -> lar:///ha.ka.ba/@lararium/tw5/modules/memetic-parser family:code role:compilesInto >>
 
 <<~&#x0004; -> ? >>

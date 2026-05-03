@@ -1,6 +1,6 @@
-<<~&#x0001; ? -> lar:///ha.ka.ba/@lares/api/v0.1/lararium/modules/meme-ast-tw5 >>
+<<~&#x0001; ? -> lar:///ha.ka.ba/@lararium/tw5/modules/meme-ast-tw5 >>
 ```toml iam
-uri-path = "ha.ka.ba/@lares/api/v0.1/lararium/modules/meme-ast-tw5"
+uri-path = "ha.ka.ba/@lararium/tw5/modules/meme-ast-tw5"
 file-path = "packages/lararium-tw5/memes/modules/meme-ast-tw5.md"
 type          = "application/javascript"
 module-type   = "library"

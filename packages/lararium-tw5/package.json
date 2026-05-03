@@ -15,6 +15,10 @@
     "./tw5-worker-script": {
       "import": "./dist/tw5-worker-script.js",
       "types": "./dist/tw5-worker-script.d.ts"
+    },
+    "./tw5-memes-root": {
+      "import": "./tw5-memes-root.js",
+      "types": "./tw5-memes-root.d.ts"
     }
   },
   "main": "./dist/index.js",

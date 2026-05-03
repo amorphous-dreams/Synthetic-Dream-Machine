@@ -1,6 +1,6 @@
-<<~&#x0001; ? -> lar:///ha.ka.ba/@lares/api/v0.1/lararium/modules/meme-ast >>
+<<~&#x0001; ? -> lar:///ha.ka.ba/@lararium/tw5/modules/meme-ast >>
 ```toml iam
-uri-path = "ha.ka.ba/@lares/api/v0.1/lararium/modules/meme-ast"
+uri-path = "ha.ka.ba/@lararium/tw5/modules/meme-ast"
 file-path = "packages/lararium-tw5/memes/modules/meme-ast.md"
 type         = "text/x-memetic-wikitext"
 register     = "CS"
@@ -13,7 +13,7 @@ status-date  = "2026-05-01"
 heleuma      = "ka"
 source-file  = "packages/lararium-tw5/src/meme-ast-entry.ts"
 source-symbol = "parseMemeText"
-module-ref   = "lar:///ha.ka.ba/@lares/api/v0.1/lararium/modules/meme-ast-tw5"
+module-ref   = "lar:///ha.ka.ba/@lararium/tw5/modules/meme-ast-tw5"
 implements   = ["lar:///ha.ka.ba/@lares/api/v0.1/pono/heleuma/ka"]
 body-sha256  = ""
 ```
@@ -46,13 +46,13 @@ Build: `pnpm --filter @lararium/tw5 build:modules`
 
 <<~ ahu #edges >>
 
-<<~ pranala #types ? -> lar:///ha.ka.ba/@lares/api/v0.1/lararium/core/meme-ast/types family:data role:defines >>
-<<~ pranala #scanner ? -> lar:///ha.ka.ba/@lares/api/v0.1/lararium/core/meme-ast/scanner family:data role:defines >>
-<<~ pranala #builder ? -> lar:///ha.ka.ba/@lares/api/v0.1/lararium/core/meme-ast/builder family:data role:defines >>
-<<~ pranala #edges ? -> lar:///ha.ka.ba/@lares/api/v0.1/lararium/core/meme-ast/edges family:data role:defines >>
-<<~ pranala #parse ? -> lar:///ha.ka.ba/@lares/api/v0.1/lararium/core/meme-ast/parse family:data role:defines >>
-<<~ pranala #module ? -> lar:///ha.ka.ba/@lares/api/v0.1/lararium/modules/meme-ast-tw5 family:control role:compiles-to >>
-<<~ pranala #deserializer ? -> lar:///ha.ka.ba/@lares/api/v0.1/lararium/modules/deserializer family:control role:consumed-by >>
+<<~ pranala #types ? -> lar:///ha.ka.ba/@lararium/tw5/core/meme-ast/types family:data role:defines >>
+<<~ pranala #scanner ? -> lar:///ha.ka.ba/@lararium/tw5/core/meme-ast/scanner family:data role:defines >>
+<<~ pranala #builder ? -> lar:///ha.ka.ba/@lararium/tw5/core/meme-ast/builder family:data role:defines >>
+<<~ pranala #edges ? -> lar:///ha.ka.ba/@lararium/tw5/core/meme-ast/edges family:data role:defines >>
+<<~ pranala #parse ? -> lar:///ha.ka.ba/@lararium/tw5/core/meme-ast/parse family:data role:defines >>
+<<~ pranala #module ? -> lar:///ha.ka.ba/@lararium/tw5/modules/meme-ast-tw5 family:control role:compiles-to >>
+<<~ pranala #deserializer ? -> lar:///ha.ka.ba/@lararium/tw5/modules/deserializer family:control role:consumed-by >>
 
 <<~/ahu >>
 

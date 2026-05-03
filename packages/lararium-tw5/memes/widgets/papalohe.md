@@ -1,6 +1,6 @@
-<<~&#x0001; ? -> lar:///ha.ka.ba/@lares/api/v0.1/lararium/widgets/papalohe >>
+<<~&#x0001; ? -> lar:///ha.ka.ba/@lararium/tw5/widgets/papalohe >>
 ```toml iam
-uri-path = "ha.ka.ba/@lares/api/v0.1/lararium/widgets/papalohe"
+uri-path = "ha.ka.ba/@lararium/tw5/widgets/papalohe"
 file-path = "packages/lararium-tw5/memes/widgets/papalohe.md"
 type          = "text/x-memetic-wikitext"
 register      = "CS"
@@ -10,7 +10,7 @@ role          = "anchor: PapaloheWidget — heleuma ka"
 heleuma       = "ka"
 source-file   = "packages/lararium-tw5/src/widgets/papalohe.ts"
 source-symbol = "PapaloheWidget"
-module-ref    = "lar:///ha.ka.ba/@lares/api/v0.1/lararium/widgets/papalohe-tw5"
+module-ref    = "lar:///ha.ka.ba/@lararium/tw5/widgets/papalohe-tw5"
 body-sha256 = "63ce59d60fc63fd7d7e4c5d8e599198bd18cefaaa939798bfb91a96a0ecd9319"
 cacheable     = true
 retain        = true
@@ -56,8 +56,8 @@ PapaloheWidget.prototype.execute = function (this: TW5WidgetInstance) { this.mak
 <<~ ahu #edges >>
 
 <<~ pranala #to-pono ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/papalohe family:control role:implements >>
-<<~ pranala #to-tw5-widgets ? -> lar:///ha.ka.ba/@lares/api/v0.1/lararium/modules/tw5-widgets family:control role:implements >>
-<<~ pranala #to-module ? -> lar:///ha.ka.ba/@lares/api/v0.1/lararium/widgets/papalohe-tw5 family:control role:module >>
+<<~ pranala #to-tw5-widgets ? -> lar:///ha.ka.ba/@lararium/tw5/modules/tw5-widgets family:control role:implements >>
+<<~ pranala #to-module ? -> lar:///ha.ka.ba/@lararium/tw5/widgets/papalohe-tw5 family:control role:module >>
 
 <<~/ahu >>
 

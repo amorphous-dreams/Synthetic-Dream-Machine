@@ -1,6 +1,6 @@
-<<~&#x0001; ? -> lar:///ha.ka.ba/@lares/api/v0.1/lararium/widgets/kumu >>
+<<~&#x0001; ? -> lar:///ha.ka.ba/@lararium/tw5/widgets/kumu >>
 ```toml iam
-uri-path = "ha.ka.ba/@lares/api/v0.1/lararium/widgets/kumu"
+uri-path = "ha.ka.ba/@lararium/tw5/widgets/kumu"
 file-path = "packages/lararium-tw5/memes/widgets/kumu.md"
 type          = "text/x-memetic-wikitext"
 register      = "CS"
@@ -10,7 +10,7 @@ role          = "anchor: KumuWidget — heleuma ka"
 heleuma       = "ka"
 source-file   = "packages/lararium-tw5/src/widgets/kumu.ts"
 source-symbol = "KumuWidget"
-module-ref    = "lar:///ha.ka.ba/@lares/api/v0.1/lararium/widgets/kumu-tw5"
+module-ref    = "lar:///ha.ka.ba/@lararium/tw5/widgets/kumu-tw5"
 body-sha256 = "f6507b2d2d360385b58bed82a03b9ee9c6ac7b5ae7c6797ec9ba6eb32e45768b"
 cacheable     = true
 retain        = true
@@ -86,8 +86,8 @@ KumuWidget.prototype.refresh = function (this: TW5WidgetInstance, changedTiddler
 <<~ ahu #edges >>
 
 <<~ pranala #to-pono ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/kumu family:control role:implements >>
-<<~ pranala #to-tw5-widgets ? -> lar:///ha.ka.ba/@lares/api/v0.1/lararium/modules/tw5-widgets family:control role:implements >>
-<<~ pranala #to-module ? -> lar:///ha.ka.ba/@lares/api/v0.1/lararium/widgets/kumu-tw5 family:control role:module >>
+<<~ pranala #to-tw5-widgets ? -> lar:///ha.ka.ba/@lararium/tw5/modules/tw5-widgets family:control role:implements >>
+<<~ pranala #to-module ? -> lar:///ha.ka.ba/@lararium/tw5/widgets/kumu-tw5 family:control role:module >>
 
 <<~/ahu >>
 

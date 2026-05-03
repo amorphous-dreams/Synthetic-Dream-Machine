@@ -1,8 +1,8 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/@lares/api/v0.1/pono/memetic-wikitext >> -->
 
-<<~&#x0001; ? -> lar:///ha.ka.ba/@lares/api/v0.1/lararium/modules/widget-module >>
+<<~&#x0001; ? -> lar:///ha.ka.ba/@lararium/tw5/modules/widget-module >>
 ```toml iam
-uri-path = "ha.ka.ba/@lares/api/v0.1/lararium/modules/widget-module"
+uri-path = "ha.ka.ba/@lararium/tw5/modules/widget-module"
 file-path = "packages/lararium-tw5/memes/modules/widget-module.md"
 type = "text/x-memetic-wikitext"
 register     = "CS"
@@ -37,7 +37,7 @@ TW5 discovers widget modules via tiddlers with `module-type = "widget"`. The wid
 3. Sets `Object.setPrototypeOf(cls.prototype, WidgetCtor.prototype)` for each widget
 4. Registers each class in `WidgetCtor.prototype.widgetClasses[name]`
 
-**This code cannot be loaded from a meme.** Phase 2 requires access to the compiled TypeScript classes and the live `WidgetCtor` from the TW5 module registry. The corpus path (if it passes the boot gate) subsumes all of this via `tw5-modules` — a prebuilt bundle that includes MemeticParser + all widget classes. See `lar:///ha.ka.ba/@lares/api/v0.1/lararium/modules/tw5-modules`.
+**This code cannot be loaded from a meme.** Phase 2 requires access to the compiled TypeScript classes and the live `WidgetCtor` from the TW5 module registry. The corpus path (if it passes the boot gate) subsumes all of this via `tw5-modules` — a prebuilt bundle that includes MemeticParser + all widget classes. See `lar:///ha.ka.ba/@lararium/tw5/modules/tw5-modules`.
 
 <<~/ahu >>
 
@@ -104,8 +104,8 @@ export function createLarariumWidgets(_tw: any): Record<string, WidgetCtor> {
 
 <<~ ahu #edges >>
 
-<<~ pranala #bundle ? -> lar:///ha.ka.ba/@lares/api/v0.1/lararium/modules/tw5-modules family:control role:corpus-path >>
-<<~ pranala #gate ? -> lar:///ha.ka.ba/@lares/api/v0.1/lararium/modules/boot-gate family:control role:wired-by >>
+<<~ pranala #bundle ? -> lar:///ha.ka.ba/@lararium/tw5/modules/tw5-modules family:control role:corpus-path >>
+<<~ pranala #gate ? -> lar:///ha.ka.ba/@lararium/tw5/modules/boot-gate family:control role:wired-by >>
 
 <<~/ahu >>
 

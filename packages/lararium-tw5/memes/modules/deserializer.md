@@ -1,6 +1,6 @@
-<<~&#x0001; ? -> lar:///ha.ka.ba/@lares/api/v0.1/lararium/modules/deserializer >>
+<<~&#x0001; ? -> lar:///ha.ka.ba/@lararium/tw5/modules/deserializer >>
 ```toml iam
-uri-path = "ha.ka.ba/@lares/api/v0.1/lararium/modules/deserializer"
+uri-path = "ha.ka.ba/@lararium/tw5/modules/deserializer"
 file-path = "packages/lararium-tw5/memes/modules/deserializer.md"
 type         = "text/x-memetic-wikitext"
 register     = "CS"
@@ -13,7 +13,7 @@ status-date  = "2026-05-01"
 heleuma      = "ka"
 source-file  = "packages/lararium-tw5/src/deserializer.ts"
 source-symbol = "memeticWikitextDeserializer"
-module-ref   = "lar:///ha.ka.ba/@lares/api/v0.1/lararium/modules/deserializer-tw5"
+module-ref   = "lar:///ha.ka.ba/@lararium/tw5/modules/deserializer-tw5"
 implements   = ["lar:///ha.ka.ba/@lares/api/v0.1/pono/heleuma/ka"]
 body-sha256  = ""
 ```
@@ -49,9 +49,9 @@ Build: `pnpm --filter @lararium/tw5 build:modules`
 
 <<~ ahu #edges >>
 
-<<~ pranala #splits ? -> lar:///ha.ka.ba/@lares/api/v0.1/lararium/carrier-split family:data role:uses >>
-<<~ pranala #streams ? -> lar:///ha.ka.ba/@lares/api/v0.1/lararium/meme-stream family:data role:uses >>
-<<~ pranala #module ? -> lar:///ha.ka.ba/@lares/api/v0.1/lararium/modules/deserializer-tw5 family:control role:compiles-to >>
+<<~ pranala #splits ? -> lar:///ha.ka.ba/@lararium/tw5/carrier-split family:data role:uses >>
+<<~ pranala #streams ? -> lar:///ha.ka.ba/@lararium/tw5/meme-stream family:data role:uses >>
+<<~ pranala #module ? -> lar:///ha.ka.ba/@lararium/tw5/modules/deserializer-tw5 family:control role:compiles-to >>
 
 <<~/ahu >>
 

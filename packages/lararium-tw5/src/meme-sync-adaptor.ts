@@ -40,7 +40,7 @@ type SaveHandler  = (
 ) => Promise<void>;
 
 /** URI of the corpus meme that declares the ordered save-routing rules. */
-const SAVE_CASCADE_URI = "lar:///ha.ka.ba/@lares/api/v0.1/lararium/sync/save-cascade";
+const SAVE_CASCADE_URI = "lar:///ha.ka.ba/@lararium/tw5/sync/save-cascade";
 
 // ---------------------------------------------------------------------------
 // Module-level helpers

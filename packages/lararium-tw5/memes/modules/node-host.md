@@ -1,8 +1,8 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/@lares/api/v0.1/pono/memetic-wikitext >> -->
 
-<<~&#x0001; ? -> lar:///ha.ka.ba/@lares/api/v0.1/lararium/modules/node-host >>
+<<~&#x0001; ? -> lar:///ha.ka.ba/@lararium/tw5/modules/node-host >>
 ```toml iam
-uri-path = "ha.ka.ba/@lares/api/v0.1/lararium/modules/node-host"
+uri-path = "ha.ka.ba/@lararium/tw5/modules/node-host"
 file-path = "packages/lararium-tw5/memes/modules/node-host.md"
 type  = "text/x-memetic-wikitext"
 register      = "CS"
@@ -97,7 +97,7 @@ write-mode-value-required = "enabled"
 
 <<~ ahu #edges >>
 
-<<~ pranala #corpus-sources ? -> lar:///ha.ka.ba/@lares/api/v0.1/lararium/schema/corpus-sources family:control role:depends >>
+<<~ pranala #corpus-sources ? -> lar:///ha.ka.ba/@lararium/tw5/schema/corpus-sources family:control role:depends >>
 <<~ pranala #to-meme ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/meme family:control role:implements >>
 <<~ pranala #to-loci ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/loci family:control role:implements >>
 <<~ pranala #to-invariant ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/invariant family:control role:implements >>

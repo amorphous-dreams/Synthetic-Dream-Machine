@@ -15,11 +15,11 @@ import { readFileSync, existsSync, readdirSync } from "fs";
 import { join, basename, dirname } from "path";
 import { fileURLToPath } from "url";
 import { TW5Engine } from "@lararium/tw5";
+import { tw5MemesRoot, tw5PluginsRoot } from "@lararium/tw5/tw5-memes-root";
 import { createHash } from "crypto";
 import type { Repo, DocHandle } from "@automerge/automerge-repo";
 import type { LarariumDoc, LarariumBlobEntry } from "@lararium/core";
 import { ENGINE_CORE_ID, emptyLarariumDoc } from "@lararium/core";
-import { laresRoot } from "@lares/lares";
 import { TW5_VERSION, TW5_CORE_SCRIPT_FILENAME } from "@lararium/tw5";
 
 // ---------------------------------------------------------------------------
@@ -46,7 +46,7 @@ function walkMdFiles(dir: string): string[] {
 }
 
 /**
- * Boot a bare Seed TW5VM, ingest all lares/memes/api/v0.1 meme files via
+ * Boot a bare Seed TW5VM, ingest all lararium-tw5/memes/**/*.md files via
  * deserializeCarrier(), and pack them into a single "$:/plugins/lararium/lares"
  * TW5 plugin JSON tiddler blob.
  *
@@ -54,7 +54,7 @@ function walkMdFiles(dir: string): string[] {
  * handles all memetic-wikitext parsing internally.
  */
 async function buildLaresPluginBlob(): Promise<Uint8Array> {
-  const memeRoot = join(laresRoot, "memes/api/v0.1");
+  const memeRoot = tw5MemesRoot;
   const mdFiles  = walkMdFiles(memeRoot);
 
   // Boot a Seed VM — no preloads, just registers text/x-memetic-wikitext deserializer.
@@ -94,8 +94,8 @@ async function buildLaresPluginBlob(): Promise<Uint8Array> {
 /** Absolute path to lararium-tw5/public/ — the seeder's source of truth for TW5 core blob. */
 const TW5_PUBLIC_DIR = join(dirname(fileURLToPath(import.meta.url)), "../../lararium-tw5/public");
 
-/** Absolute path to the tw5-plugins directory inside lares. */
-const PLUGINS_DIR = join(laresRoot, "memes/api/v0.1/tw5-plugins");
+/** Absolute path to the tw5-plugins directory inside lararium-tw5/plugins/. */
+const PLUGINS_DIR = tw5PluginsRoot;
 
 function sha256hex(bytes: Uint8Array): string {
   return createHash("sha256").update(bytes).digest("hex");
@@ -150,7 +150,7 @@ export async function reconcileEngineBlobIfChanged(
  * If the sha256 differs from what the LarariumDoc stores, patches the doc.
  *
  * Call this on every resume boot alongside reconcileEngineBlobIfChanged
- * so that changes to lares/memes/api tiddlers propagate to all peers.
+ * so that changes to lararium-tw5/memes tiddlers propagate to all peers.
  */
 export async function reconcileLaresPluginBlobIfChanged(
   handle: DocHandle<LarariumDoc>,

@@ -1,6 +1,6 @@
-<<~&#x0001; ? -> lar:///ha.ka.ba/@lares/api/v0.1/lararium/widgets/toml >>
+<<~&#x0001; ? -> lar:///ha.ka.ba/@lararium/tw5/widgets/toml >>
 ```toml iam
-uri-path = "ha.ka.ba/@lares/api/v0.1/lararium/widgets/toml"
+uri-path = "ha.ka.ba/@lararium/tw5/widgets/toml"
 file-path = "packages/lararium-tw5/memes/widgets/toml.md"
 type          = "text/x-memetic-wikitext"
 register      = "CS"
@@ -10,7 +10,7 @@ role          = "anchor: TomlWidget — heleuma ka"
 heleuma       = "ka"
 source-file   = "packages/lararium-tw5/src/widgets/toml.ts"
 source-symbol = "TomlWidget"
-module-ref    = "lar:///ha.ka.ba/@lares/api/v0.1/lararium/widgets/toml-tw5"
+module-ref    = "lar:///ha.ka.ba/@lararium/tw5/widgets/toml-tw5"
 body-sha256 = "ed82083a46492a0d4c93a43e941435ff08c34bfd3f682917a625439e3003ede9"
 cacheable     = true
 retain        = true
@@ -53,8 +53,8 @@ TomlWidget.prototype.execute = function (this: TW5WidgetInstance) { this.makeChi
 <<~ ahu #edges >>
 
 <<~ pranala #to-pono ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/toml family:control role:implements >>
-<<~ pranala #to-tw5-widgets ? -> lar:///ha.ka.ba/@lares/api/v0.1/lararium/modules/tw5-widgets family:control role:implements >>
-<<~ pranala #to-module ? -> lar:///ha.ka.ba/@lares/api/v0.1/lararium/widgets/toml-tw5 family:control role:module >>
+<<~ pranala #to-tw5-widgets ? -> lar:///ha.ka.ba/@lararium/tw5/modules/tw5-widgets family:control role:implements >>
+<<~ pranala #to-module ? -> lar:///ha.ka.ba/@lararium/tw5/widgets/toml-tw5 family:control role:module >>
 
 <<~/ahu >>
 
