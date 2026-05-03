@@ -34,3 +34,13 @@ html[data-theme="gruvbox-light"] .tl-theme__light {
   --tl-color-low:               #f9f5d7;
   --tl-color-muted-1:           #ebdbb2;
 }
+
+/* LarHUD resize handle hover highlight */
+.lar-hud-resize:hover {
+  background: var(--tl-color-primary, #7c9cce) !important;
+  opacity: 0.6;
+}
+.lar-hud-resize:active {
+  background: var(--tl-color-primary, #7c9cce) !important;
+  opacity: 1;
+}

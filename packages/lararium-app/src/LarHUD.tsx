@@ -217,7 +217,7 @@ export function LarHUD() {
 
       {/* ── Resize handle ─────────────────────────────────────────────────── */}
       {!isCollapsed && (
-        <div style={resizeHandleStyle} onPointerDown={onResizePointerDown} />
+        <div className="lar-hud-resize" style={resizeHandleStyle} onPointerDown={onResizePointerDown} />
       )}
 
       {/* ── Tab bar / icon strip ─────────────────────────────────────────── */}
