@@ -18,7 +18,7 @@ import { NodeFSStorageAdapter }         from "@automerge/automerge-repo-storage-
 import { NodeWSServerAdapter }          from "@automerge/automerge-repo-network-websocket";
 import type { WebSocketServer }         from "ws";
 import type { CatalogDoc, MemeStoreDoc } from "@lararium/core";
-import { LarPeer, PEER_CAPABILITIES_NODE } from "@lararium/core";
+import { LarPeer, PEER_CAPABILITIES_NODE, OpenIdentitySlot } from "@lararium/core";
 import { TW5Engine, MemeSyncAdaptor, VmPool } from "@lararium/tw5";
 
 export type NodeOpenPhase =
@@ -81,6 +81,8 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
   const storage = new NodeFSStorageAdapter(storageDir);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const network = new NodeWSServerAdapter(wss as any);
+  // sharePolicy: alpha stub — open federation. Keyhive/UCAN injection point:
+  //   swap for: async (peerId) => identity.verifyCapability(peerId, "read")
   const repo    = new Repo({ storage, network: [network], sharePolicy: async () => true });
   emit("repo-open");
 
@@ -113,11 +115,15 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
   emit("room-ready");
 
   // ── 4. LarPeer ────────────────────────────────────────────────────────────
+  // identity: OpenIdentitySlot gives stable actorId from hostId:roomId hash.
+  // Swap for KeyhiveIdentitySlot once Keyhive WASM ships; sharePolicy below is its injection point.
+  const identity = new OpenIdentitySlot(`${hostId}:${roomId}`);
   const peer = new LarPeer<VmPool<TW5Engine>>({
     peerId:       `${hostId}:${roomId}`,
     handle:       roomHandle,
     bagId:        "room",
     capabilities: PEER_CAPABILITIES_NODE,
+    identity,
   });
   peer.store.markSyncComplete();
   emit("peer-ready");

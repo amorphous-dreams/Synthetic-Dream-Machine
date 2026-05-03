@@ -24,7 +24,7 @@ import { IndexedDBStorageAdapter }                 from "@automerge/automerge-re
 import { BroadcastChannelNetworkAdapter }          from "@automerge/automerge-repo-network-broadcastchannel";
 import type { DocHandle, AutomergeUrl }            from "@automerge/automerge-repo";
 import type { CatalogDoc, MemeStoreDoc }           from "@lararium/core";
-import { LarPeer, PEER_CAPABILITIES_BROWSER }      from "@lararium/core";
+import { LarPeer, PEER_CAPABILITIES_BROWSER, OpenIdentitySlot } from "@lararium/core";
 import { TW5Engine, MemeSyncAdaptor, VmPool }      from "@lararium/tw5";
 
 // ---------------------------------------------------------------------------
@@ -114,11 +114,15 @@ export async function openBrowserLarPeer(opts: {
   emit("room-ready");
 
   // ── 4. LarPeer ────────────────────────────────────────────────────────────
+  // identity: OpenIdentitySlot derives stable actorId from hostId (SHA-256 truncated).
+  // Swap for BlueskyIdentitySlot / KeyhiveIdentitySlot when auth lands.
+  const identity = new OpenIdentitySlot(hostId);
   const peer = new LarPeer<VmPool<TW5Engine>>({
     peerId:       repo.peerId ?? hostId,
     handle:       roomHandle,
     bagId:        "room",
     capabilities: PEER_CAPABILITIES_BROWSER,
+    identity,
   });
   peer.store.markSyncComplete();
   emit("peer-ready");

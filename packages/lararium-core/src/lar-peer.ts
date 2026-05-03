@@ -2,6 +2,8 @@ import type { DocHandle } from "@automerge/automerge-repo";
 import type { MemeProjection } from "./meme-provider.js";
 import type { MemeStoreDoc } from "./meme-store-doc.js";
 import { AutomergeDocStore } from "./automerge-doc-store.js";
+import type { IdentitySlot } from "./identity-slot.js";
+import { OpenIdentitySlot } from "./identity-slot.js";
 
 /**
  * KeyhiveSlot — opaque optional handle for the Keyhive three-layer stack.
@@ -27,34 +29,42 @@ export interface KeyhiveSlot {
  * Workers set only what applies to their role.
  */
 export interface LarPeerCapabilities {
-  diskAccess:       boolean;
-  corsHop:          boolean;
-  persistentRelay:  boolean;
-  broadcastChannel: boolean;
+  diskAccess:            boolean;
+  corsHop:               boolean;
+  persistentRelay:       boolean;
+  broadcastChannel:      boolean;
+  /** May fire non-idempotent ReactionEngine write-backs (e.g. generate summary tiddlers).
+   *  Must be true on exactly one peer per room (the node server peer).
+   *  Browser peers must set this false — reactions fire on all peers but only
+   *  authoritativeReactions:true peers write non-idempotent outputs to the store. */
+  authoritativeReactions: boolean;
 }
 
 /** Full capability set defaults — all capabilities off. */
 export const PEER_CAPABILITIES_NONE: LarPeerCapabilities = {
-  diskAccess:       false,
-  corsHop:          false,
-  persistentRelay:  false,
-  broadcastChannel: false,
+  diskAccess:             false,
+  corsHop:                false,
+  persistentRelay:        false,
+  broadcastChannel:       false,
+  authoritativeReactions: false,
 };
 
 /** Server peer capability preset. */
 export const PEER_CAPABILITIES_NODE: LarPeerCapabilities = {
-  diskAccess:       true,
-  corsHop:          true,
-  persistentRelay:  true,
-  broadcastChannel: false,
+  diskAccess:             true,
+  corsHop:                true,
+  persistentRelay:        true,
+  broadcastChannel:       false,
+  authoritativeReactions: true,
 };
 
 /** Browser peer capability preset. */
 export const PEER_CAPABILITIES_BROWSER: LarPeerCapabilities = {
-  diskAccess:       false,
-  corsHop:          false,
-  persistentRelay:  false,
-  broadcastChannel: true,
+  diskAccess:             false,
+  corsHop:                false,
+  persistentRelay:        false,
+  broadcastChannel:       true,
+  authoritativeReactions: false,
 };
 
 /**
@@ -64,12 +74,16 @@ export const PEER_CAPABILITIES_BROWSER: LarPeerCapabilities = {
  * free of @lararium/tw5 imports. Pass VmPool<TW5Engine> at call sites.
  */
 export interface LarPeerOptions<TVm = unknown> {
-  peerId:       string;
-  handle:       DocHandle<MemeStoreDoc>;
-  bagId?:       string;
-  vmPool?:      TVm | null;
+  peerId:        string;
+  handle:        DocHandle<MemeStoreDoc>;
+  bagId?:        string;
+  vmPool?:       TVm | null;
   capabilities?: Partial<LarPeerCapabilities>;
-  keyhive?:     KeyhiveSlot;
+  /** Identity slot — DID-based auth/capability layer.
+   *  Defaults to OpenIdentitySlot (alpha: open access, stable actorId from peerId). */
+  identity?:     IdentitySlot;
+  /** @deprecated — pass identity: KeyhiveIdentitySlot instead once Keyhive WASM lands. */
+  keyhive?:      KeyhiveSlot;
 }
 
 /**
@@ -93,6 +107,8 @@ export class LarPeer<TVm = unknown> {
   readonly peerId:       string;
   readonly store:        AutomergeDocStore;
   readonly capabilities: LarPeerCapabilities;
+  readonly identity:     IdentitySlot;
+  /** @deprecated — access via identity slot once Keyhive WASM lands. */
   readonly keyhive:      KeyhiveSlot | undefined;
 
   private _vmPool: TVm | null;
@@ -101,6 +117,7 @@ export class LarPeer<TVm = unknown> {
     this.peerId       = opts.peerId;
     this.store        = new AutomergeDocStore(opts.handle, opts.bagId);
     this.capabilities = { ...PEER_CAPABILITIES_NONE, ...opts.capabilities };
+    this.identity     = opts.identity ?? new OpenIdentitySlot(opts.peerId);
     this.keyhive      = opts.keyhive;
     this._vmPool      = opts.vmPool ?? null;
   }
