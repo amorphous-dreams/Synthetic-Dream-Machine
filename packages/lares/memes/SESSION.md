@@ -42,19 +42,39 @@ role         = "session handoff crystal — 2026-05-02 (session 5) — web2 side
 
 <<~/ahu >>
 
-<<~ ahu #ooda-ha-hud >>
+<<~ ahu #ooda-ha-larhud-2026-05-02 >>
 
-## OODA-HA: LarariumPanel / HUD Architecture
+## OODA-HA: LarHUD — Web3 Dockable TW5 Frame (2026-05-02)
 
-✶ `LarariumPanel` (new file) merges the HUD chip and TW5 wiki panel into a single always-mounted floating component. `wikiOpen` and `drawingMode` are independent booleans in `LarariumShell` state — replacing the old `paletteOpen`/`canvasMode` coupling. ⌘K toggles wiki panel; `` ` `` toggles full tldraw drawing chrome. Both have hotkeys wired in `LarariumShell` keyboard handler.
+✶ `LarariumPanel` was a `position:fixed` React portal overlay on top of the TLDraw canvas. z-index 8000. Conflicted with tldraw's `--tl-layer-panels=300` hierarchy. Drag/resize/edge-snap required custom pointer capture logic. No research grounding.
 
-⏿ TW5 shadow root mounts once (`mountPanel()`) and survives wiki open/close via `display: none`. Pointer-capture drag, edge-snap (`SNAP_PX=28`), and corner resize handle. `drawingMode` auto-collapses on wiki open (snapshot in `prevDrawRef`), restores on wiki close. Capture-phase keyboard guard blocks single-char tldraw tool keys when shadow root has focus. Escape closes panel.
+⏿ Research (two agents): tldraw uses `--tl-layer-panels=300` global; flex sibling approach eliminates all z-index management. Kinopio: four-corner distribution, no persistent toolbar, contextual panels. VSCode: 3-state icon strip → sidebar → expanded. Excalidraw: push vs overlay split at container width breakpoint. Shadow DOM + TW5: `mountPanel()` uses `fakeDocument` + raw `addEventListener` — React synthetic event retargeting bug doesn't apply. No iframe needed.
 
-◇ ZOOM_IN action no longer opens the wiki panel — zoom activates other UX (planned). WikiCommandPalette rename completed → LarariumPanel. Old `LarariumCommandPalette` (quick-jump) deleted — superseded by TW5 story river. `LarariumHUD` slot deleted — absorbed into LarariumPanel.
+◇ Decided: LarHUD as **flex sibling** of `canvasWrap` (not portal). 44px icon strip (collapsed) → 340px sidebar → 640px expanded. Shadow root stays live across all transitions. `width` CSS transition 150ms ease. ⌘K capture-phase cycles. Escape collapses.
 
-▶ UX surface: HUD chip (collapsed, bottom-right) expands to TW5 wiki panel. `⌘K` + `◻/✏` buttons in handle bar. Theme toggle in SharePanel. Back+Graph in HelperButtons. All slot components are stable module-level refs.
+▶ LarHUD architecture: `packages/lararium-app/src/LarHUD.tsx` (new). `LarariumShell` wraps canvas in `canvasWrap` (flex:1) + sibling `<LarHUD />`. `LarariumPanel.tsx` → `LarariumPanel.web2.tsx`. All tldraw slot components (MenuPanel, SharePanel, HelperButtons) render inside `canvasWrap` and never overlap LarHUD. `lar-hud.md` doctrine meme written.
 
-↺ `wikiOpen` ≠ `navState.activeView === "meme-detail"` — wiki panel open state is independent of nav focus. ZOOM_IN fires reaction; panel opening is a separate user action.
+⤴ TLDraw HUD elements (drawing mode, nav mode, theme toggle, graph toggle) fully compatible — all live inside `canvasWrap`. LarHUD is outside and unaffected by tldraw internal layout changes. Typecheck clean.
+
+↺ LarHUD needs: resize handle (drag left edge), bottom-dock option, mobile overlay mode below breakpoint, `peer.store.addProjection(engine)` wiring to replace `tw5.onWikiChange` wiki scan, per-tiddler breadcrumb in tab bar.
+
+<<~/ahu >>
+
+<<~ ahu #ooda-ha-web3-peer-2026-05-02 >>
+
+## OODA-HA: Web3 Peer Boot + web2 Purge (2026-05-02)
+
+✶ `LarariumShell` booted via `useLarariumHostOpen` (throws at runtime — dead stub). 29 web2 archive files on disk. `ReactionEngine` in `kumu-device.ts` was a pure dispatcher — took a pre-built `ReactionGraph` as constructor arg, never maintained it. `BrowserOpenPhase` undefined in context; `LarariumCtxValue` still typed against `LarariumOpenPhase` discriminated union and `CompositeStore`.
+
+⏿ All web2 files confirmed orphaned (no non-web2 imports). `reaction-query.web2.ts` had one live re-export from `index.ts` → `LarariumShell`. `ReactionEngine` needed `boot(wiki)` + incremental `onUriChanged` graph maintenance to replace `buildReactionGraph`/`bindingsForUri`.
+
+◇ Delete 29 web2 files. Promote `ReactionEngine` in-place (owns graph, `boot()`, incremental). Wire `useBrowserLarPeer`. Update context types. `BootSplash` rewritten for string phase union.
+
+▶ Commits: `1ba2be94` (peer wiring), `b00134dd` (ReactionEngine + purge). `reaction-query.web2.ts` is the last web2 file — orphaned, delete next pass. All context types updated. `LarHUD.tsx` + `LarariumShell` flex layout committed in `728248ea`.
+
+⤴ `pnpm -r typecheck` clean across core/tw5/app. 29 web2 files gone. Shell boots via local-first 7-step sequence.
+
+↺ `reaction-query.web2.ts` orphaned (no callers) — delete. `LarariumPanel.web2.tsx` retire after LarHUD gets fireMeme + wiki nav. Node server entrypoint needed. `LarDiskProjector` move.
 
 <<~/ahu >>
 

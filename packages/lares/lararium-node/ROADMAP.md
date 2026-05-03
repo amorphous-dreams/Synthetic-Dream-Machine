@@ -450,6 +450,78 @@ pnpm -r --filter "@lararium/app"  typecheck  # ✓ (tldraw/sw.ts pre-existing on
 
 <<~/ahu >>
 
+<<~ ahu #m16-web3-peer-larhud-2026-05-02 >>
+
+## M16 Web3 Peer Boot + LarHUD + web2 Purge — 2026-05-02
+
+### OODA-HA receipt
+
+✶ **Observe:**
+`LarPeer` + `AutomergeDocStore` in `@lararium/core` written but not wired.
+`LarariumShell` still used dead `useLarariumHostOpen` stub (throws at runtime).
+29 web2 archive files still on disk. `ReactionGraph` still required `buildReactionGraph`/`bindingsForUri` web2 scan on every wiki change.
+`LarariumPanel` was a portal overlay conflicting with tldraw's z-index hierarchy.
+Research needed on HUD best practices before writing the frame.
+
+⏿ **Orient:**
+Two research agents returned:
+1. tldraw z-index model: `--tl-layer-panels = 300`; flex sibling avoids all conflicts.
+2. Kinopio: four-corner distribution; no persistent sidebar; contextual panels.
+3. VSCode: activity bar icon strip → sidebar → expanded 3-state machine.
+4. Shadow DOM + TW5: `mountPanel()` uses `fakeDocument` + raw `addEventListener` — NOT React synthetic events, so retargeting bug doesn't apply.
+5. Excalidraw: push vs overlay split at container width breakpoint.
+
+◇ **Decide:**
+- Wire `useBrowserLarPeer` into `LarariumShell` (retire web2 host open).
+- Delete all 29 safely-removable web2 archive files.
+- Promote `ReactionEngine` (was dispatcher-only) to own its `ReactionGraph`:
+  `boot(wiki)` full scan + `onUriChanged` incremental maintenance + `subscribeByFn`/`fireSync`.
+- `LarariumPanel.tsx` → `LarariumPanel.web2.tsx`.
+- Write `LarHUD`: flex sibling (not portal), 3-state, shadow DOM mount stays live.
+- Write `lar-hud.md` doctrine meme.
+
+▶ **Act (files touched):**
+
+| File | Change |
+|---|---|
+| `@lararium/app` `open-browser-lar-peer.ts` | **New** — 7-step browser factory (IndexedDB+BC Repo → catalog → room → LarPeer → TW5 → adaptor → VmPool) |
+| `@lararium/node` `open-node-lar-peer.ts` | **New** — 7-step node factory (NodeFS+NodeWSServer Repo → same chain) |
+| `@lararium/app` `LarariumShell.tsx` | `useLarariumHostOpen` → `useBrowserLarPeer`; `graphRef<ReactionGraph>` → `engineRef<ReactionEngine>` |
+| `@lararium/app` `lararium-context.tsx` | `LarariumOpenPhase` → `BrowserOpenPhase`; `tiddlerStore: CompositeStore` → `peer: LarPeer`; `reactionGraph: ReactionGraph` → `ReactionEngine` |
+| `@lararium/app` `BootSplash.tsx` | Rewritten for `BrowserOpenPhase` string union; ReadinessMap removed |
+| `@lararium/app` `LarariumCanvas.tsx` | `tiddlerStore` → `peer?.store` |
+| `@lararium/app` `LarariumPanel.tsx` | → `LarariumPanel.web2.tsx` |
+| `@lararium/app` `LarHUD.tsx` | **New** — flex-sibling VSCode-style TW5 dock (3-state, shadow mount, ⌘K cycle, Escape collapse) |
+| `@lararium/core` `kumu-device.ts` | `ReactionEngine` promoted: owns graph, `boot(wiki)`, `onUriChanged` graph maintenance, `subscribeByFn`/`fireSync` delegation |
+| `@lararium/tw5` `tw5-vm.ts` | `getTiddlerText()` added to satisfy `BootScanSurface` |
+| 29 `*.web2.*` files | Deleted (carrier, indexes, node-host, disk-watcher, recipe-vm, sync-adaptor, server-api, parser, ast, memetic-parser, bundle-entry, active-tw5, lararium-tw5.web2, carrier-write/split/codec, pranala-parser, filter-compat, closure-fields, tw5-worker-script, project.web2, browser-host, automerge-store, serve, void-boot, node-meme-store, cli, meme-graph.web2) |
+| `packages/lares/memes/api/v0.1/lararium/ui/lar-hud.md` | **New** — doctrine meme |
+
+⤴ **Ho'oko:**
+
+```sh
+pnpm -r --filter "@lararium/core" typecheck  # ✓ ZERO errors
+pnpm -r --filter "@lararium/tw5"  typecheck  # ✓ ZERO errors
+pnpm -r --filter "@lararium/app"  typecheck  # ✓ (tldraw/sw.ts pre-existing only)
+git log --oneline -5
+# 728248ea refactor: LarHUD flex-sibling push model
+# b00134dd feat: LarHUD + ReactionEngine + web2 purge
+# 1ba2be94 feat: wire useBrowserLarPeer into LarariumShell
+# 206a0676 fix: export repoRoot from @lares/lares
+# bce4b14a fix+feat: admin-gated full VM access
+```
+
+↺ **Aftermath / open work:**
+
+- `reaction-query.web2.ts` — last web2 file; orphaned now (no live callers), delete in next pass
+- `LarariumPanel.web2.tsx` — retire once LarHUD carries all panel functions (`fireMeme`, wiki nav)
+- `ReactionEngine` → add `peer.store.addProjection(engine)` wiring in shell (replaces `tw5.onWikiChange` scan)
+- LarHUD: resize handle (drag left edge), bottom dock option, per-tiddler breadcrumb
+- Node server entrypoint: `openNodeLarPeer` boots but nothing calls it
+- `LarDiskProjector` move: `@lararium/tw5` → `@lararium/node`
+
+<<~/ahu >>
+
 <<~ ahu #m12-session-open-2026-05-01 >>
 
 ## M12 Session Open — 2026-05-01 (Fever Sprint / FFZ Web3 Reorganization)
