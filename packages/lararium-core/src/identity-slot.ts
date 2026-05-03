@@ -25,9 +25,12 @@
  *   The IdentitySlot implementation class lives in TypeScript (it must — crypto
  *   primitives can't live in the wiki). BUT the identity config (which DID to
  *   use, which OAuth provider, which capability token) MUST be stored as
- *   $:/config/lararium/identity/* tiddlers so users can inspect and override
- *   their identity context from within the wiki. The TS code reads config from
- *   the wiki; the wiki does not read from TS.
+ *   lar: URI tiddlers so users can inspect and override from within the wiki:
+ *     lar:///elyncia.social/@lares/api/v0.1/lararium/config/identity/did
+ *     lar:///elyncia.social/@lares/api/v0.1/lararium/config/identity/provider
+ *     lar:///elyncia.social/@lares/api/v0.1/lararium/config/island/catalogDocUrl
+ *   Reserve $:/ ONLY for TW5 core + TW5 plugins. All Lararium config is lar:.
+ *   Tiddlers with lar: URIs are the heleuma sync candidates; $:/ tiddlers are not.
  */
 
 /** Automerge-compatible actor ID — 16-byte UUID string, stable per peer. */
@@ -102,8 +105,9 @@ export class OpenIdentitySlot implements IdentitySlot {
 
   constructor(peerId: string) {
     this._peerId = peerId;
-    // did:key:z6Mk... would be ideal; use a stable fake DID for alpha.
-    this.did = `did:web:lararium.local/${encodeURIComponent(peerId)}`;
+    // Placeholder DID until user logs in via Bluesky (elyncia.social) or GitHub.
+    // Real login sets did:web:elyncia.social or did:web:github.com/<user>.
+    this.did = `did:web:elyncia.app/peers/${encodeURIComponent(peerId)}`;
   }
 
   async deriveActorId(): Promise<ActorId> {
