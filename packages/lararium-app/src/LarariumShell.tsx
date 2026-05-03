@@ -17,7 +17,7 @@
  * All tap targets ≥ 44×44px. No hover-only affordances.
  */
 
-import { useReducer, useEffect, useState, useRef, useCallback } from "react";
+import { useReducer, useEffect, useState, useRef, useCallback, useMemo } from "react";
 import type { Editor } from "tldraw";
 import { createPortal } from "react-dom";
 import { INITIAL_VIEW_STATE, viewStateReducer } from "@lararium/tldraw";
@@ -56,10 +56,14 @@ export function LarariumShell({ memes, onMemes }: ShellProps) {
   // In dev: Vite proxies /ws → ws://localhost:8080 (node peer).
   // VITE_LAR_WS_URL overrides (e.g. wss://elyncia.app/ws in prod).
   // Omitting wsUrl gives tabs-only offline mode.
-  const wsUrl = import.meta.env.VITE_LAR_WS_URL as string | undefined
-    ?? (import.meta.env.DEV ? `ws://${window.location.host}/ws` : undefined);
+  // useMemo: stable reference — avoids re-triggering the peer hook on every render.
+  const wsUrl = useMemo(
+    () => (import.meta.env.VITE_LAR_WS_URL as string | undefined)
+      ?? (import.meta.env.DEV ? `ws://${window.location.host}/ws` : undefined),
+    [],
+  );
   const { phase: openPhase, peer, tw5, pool } =
-    useBrowserLarPeer({ hostId: "lararium-browser", roomId: "altar-fire", wsUrl });
+    useBrowserLarPeer({ hostId: "lararium-browser", roomId: "altar-fire", ...(wsUrl !== undefined && { wsUrl }) });
 
   const engineRef = useRef<ReactionEngine>(new ReactionEngine());
   const [graphReady, setGraphReady] = useState(false);

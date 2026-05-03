@@ -200,7 +200,7 @@ export function useBrowserLarPeer(opts: { hostId: string; roomId: string; wsUrl?
 
     return () => { cancelled = true; };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [opts.hostId, opts.roomId]);
+  }, [opts.hostId, opts.roomId, opts.wsUrl]);
 
   return state;
 }
