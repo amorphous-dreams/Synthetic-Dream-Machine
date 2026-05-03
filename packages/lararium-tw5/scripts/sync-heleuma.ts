@@ -2,26 +2,35 @@
  * sync-heleuma.ts — drift check, patch, and corpus-promotion scan.
  *
  * Modes (mutually exclusive flags):
- *   (none)          Dry-run: report drift/missing, write nothing.
- *   --commit        Patch #source slots in-place to match live TS source.
- *   --scan          Scan packages/ for exported symbols that lack a heleuma pair.
- *   --scan-promote  Scan packages/ for pure-data constants that should become
- *                   first-class corpus memes in lares/ (not heleuma anchors —
- *                   things that can MOVE to lares/ and be deleted from packages/).
+ *   (none)            Dry-run: report drift/missing, write nothing.
+ *   --commit          Patch #source slots in-place to match live TS source.
+ *   --scan            Scan packages/ for exported symbols that lack a heleuma pair.
+ *   --scan-promote    Scan packages/ for pure-data constants that should become
+ *                     first-class corpus memes in lares/ (not heleuma anchors —
+ *                     things that can MOVE to lares/ and be deleted from packages/).
+ *   --scan-decorators Scan for convention-based decorator files (filter operators,
+ *                     widgets) that lack heleuma memes. With --commit, scaffolds
+ *                     missing memes automatically.
  *
  * heleuma modes:
  *   ha — body/structure anchor: permanent compiled-in territory, no promotion path.
  *   ka — soul/fire anchor: promotion-eligible; #source + body-sha256 track readiness; keyhive proof is layer 3 (planned).
  *   ba — psyche/path anchor: quine-only; #source slot sufficient for reconstruction.
  *
+ * Decorator file conventions (--scan-decorators):
+ *   <pkg>/src/filters/<name>.ts  → filter-operator memes → lares/.../lararium/modules/filter-operators/
+ *   <pkg>/src/widgets/<name>.ts  → widget memes          → lares/.../lararium/modules/widgets/
+ *
  * Run:
- *   pnpm --filter @lararium/tw5 build:heleuma                  # dry-run (build gate)
- *   pnpm --filter @lararium/tw5 build:heleuma --commit         # patch #source slots
- *   pnpm --filter @lararium/tw5 build:heleuma --scan           # find heleuma candidates
- *   pnpm --filter @lararium/tw5 build:heleuma --scan-promote   # find corpus-promotion candidates
+ *   pnpm --filter @lararium/tw5 build:heleuma                       # dry-run (build gate)
+ *   pnpm --filter @lararium/tw5 build:heleuma --commit              # patch #source slots
+ *   pnpm --filter @lararium/tw5 build:heleuma --scan                # find heleuma candidates
+ *   pnpm --filter @lararium/tw5 build:heleuma --scan-promote        # find corpus-promotion candidates
+ *   pnpm --filter @lararium/tw5 build:heleuma --scan-decorators     # find decorator files lacking memes
+ *   pnpm --filter @lararium/tw5 build:heleuma --scan-decorators --commit  # scaffold missing memes
  */
 
-import { readFileSync, writeFileSync, readdirSync, statSync } from "fs";
+import { readFileSync, writeFileSync, readdirSync, statSync, mkdirSync, existsSync } from "fs";
 import { createHash } from "crypto";
 import { resolve, relative } from "path";
 import { laresRoot, repoRoot } from "@lares/lares";
@@ -29,11 +38,12 @@ import { laresRoot, repoRoot } from "@lares/lares";
 const root     = repoRoot;
 const pkgsRoot = resolve(root, "packages");
 
-const args          = process.argv.slice(2);
-const COMMIT        = args.includes("--commit");
-const SCAN          = args.includes("--scan");
-const SCAN_PROMOTE  = args.includes("--scan-promote");
-const SYNC_MODULES  = args.includes("--sync-modules");
+const args             = process.argv.slice(2);
+const COMMIT           = args.includes("--commit");
+const SCAN             = args.includes("--scan");
+const SCAN_PROMOTE     = args.includes("--scan-promote");
+const SCAN_DECORATORS  = args.includes("--scan-decorators");
+const SYNC_MODULES     = args.includes("--sync-modules");
 
 // ---------------------------------------------------------------------------
 // Regex patterns
@@ -467,6 +477,208 @@ function runSyncModules(): { drift: number; missing: number; patched: number } {
 }
 
 // ---------------------------------------------------------------------------
+// --scan-decorators: convention-based decorator file discovery
+//
+// Detects files following the Lararium decorator convention:
+//   <pkg>/src/filters/<name>.ts  — filter-operator files (exports register* fns)
+//   <pkg>/src/widgets/<name>.ts  — widget files (exports *Widget fns)
+//
+// For each decorator file found, checks whether a heleuma meme already exists
+// (by scanning lares/ for a meme with source-file pointing to this file).
+//
+// With --commit: scaffolds missing memes with correct TOML, source-file,
+// source-symbol, body-sha256, and a #source slot containing verbatim source.
+// ---------------------------------------------------------------------------
+
+interface DecoratorFile {
+  relPath:    string;
+  absPath:    string;
+  slug:       string;
+  kind:       "filter-operator" | "widget";
+  symbols:    string[];
+  memeDir:    string;
+  uriPrefix:  string;
+  pkgName:    string;
+}
+
+function collectDecoratorFiles(): DecoratorFile[] {
+  const results: DecoratorFile[] = [];
+
+  for (const pkgDir of readdirSync(pkgsRoot)) {
+    const pkgAbs = resolve(pkgsRoot, pkgDir);
+    if (!statSync(pkgAbs).isDirectory()) continue;
+
+    // Read package name from package.json
+    let pkgName = pkgDir;
+    try {
+      const pj = JSON.parse(readFileSync(resolve(pkgAbs, "package.json"), "utf8") as string) as Record<string, unknown>;
+      if (typeof pj["name"] === "string") pkgName = pj["name"];
+    } catch { /* no package.json */ }
+
+    for (const [subDir, kind, exportRe, memeSubDir, uriSub] of [
+      ["src/filters", "filter-operator", /^export\s+function\s+(register\w+)/, "lararium/modules/filter-operators", "lararium/modules/filter-operators"],
+      ["src/widgets", "widget",           /^export\s+function\s+(\w+Widget)/,   "lararium/modules/widgets",          "lararium/modules/widgets"],
+    ] as const) {
+      const dirAbs = resolve(pkgAbs, subDir);
+      let entries: string[] = [];
+      try { entries = readdirSync(dirAbs); } catch { continue; }
+
+      for (const entry of entries) {
+        if (!entry.endsWith(".ts") || entry.includes(".web2.") || entry.includes(".test.")) continue;
+        const absPath = resolve(dirAbs, entry);
+        const relPath = relative(root, absPath);
+        const slug    = entry.replace(/\.ts$/, "");
+        const src     = readFileSync(absPath, "utf8");
+
+        const symbols: string[] = [];
+        for (const line of src.split("\n")) {
+          const m = line.match(exportRe);
+          if (m) symbols.push(m[1]!);
+        }
+        if (symbols.length === 0) continue;
+
+        // Also collect non-exported helpers used by exports (heuristic: functions
+        // declared before first export that appear in exported function bodies)
+        const helperRe = /^function\s+(\w+)\s*\(/;
+        for (const line of src.split("\n")) {
+          const m = line.match(helperRe);
+          if (m && !symbols.includes(m[1]!)) {
+            // Include only if referenced by an exported symbol body
+            const body = symbols.map(s => extractSymbol(relPath, s) ?? "").join("\n");
+            if (body.includes(m[1]!)) symbols.unshift(m[1]!);
+          }
+        }
+
+        const memeDir   = resolve(laresRoot, "memes/api/v0.1", memeSubDir);
+        const uriPrefix = `ha.ka.ba/@lares/api/v0.1/${uriSub}`;
+        results.push({ relPath, absPath, slug, kind, symbols, memeDir, uriPrefix, pkgName });
+      }
+    }
+  }
+  return results;
+}
+
+function decoratorMemeExists(decoratorFile: DecoratorFile): string | null {
+  // Returns the meme file path if a matching meme exists, null otherwise.
+  // Matches by source-file field in meme TOML.
+  let memeFiles: string[] = [];
+  try { memeFiles = walkExt(decoratorFile.memeDir, ".md"); } catch { return null; }
+
+  for (const mdPath of memeFiles) {
+    const content = readFileSync(mdPath, "utf8");
+    const tomlM   = TOML_RE.exec(content);
+    if (!tomlM) continue;
+    const toml = parseToml(tomlM[1]!);
+    if (toml["source-file"] === decoratorFile.relPath) return mdPath;
+  }
+  return null;
+}
+
+function scaffoldDecoratorMeme(d: DecoratorFile): void {
+  if (!existsSync(d.memeDir)) mkdirSync(d.memeDir, { recursive: true });
+
+  const memePath  = resolve(d.memeDir, `${d.slug}.md`);
+  if (existsSync(memePath)) return; // already exists — drift check handles it
+
+  const uriPath   = `${d.uriPrefix}/${d.slug}`;
+  const filePath  = `packages/lares/memes/api/v0.1/${d.uriPrefix.replace("ha.ka.ba/@lares/api/v0.1/", "")}/${d.slug}.md`;
+  const srcSym    = d.symbols.join(" ");
+  const bodies    = d.symbols.map(s => extractSymbol(d.relPath, s) ?? "").filter(Boolean);
+  const joined    = bodies.join("\n\n");
+  const bodyHash  = createHash("sha256").update(joined, "utf8").digest("hex");
+  const kindLabel   = d.kind === "filter-operator" ? "TW5 filter operator" : "TW5 widget";
+  // ka handles a single symbol; ba handles multiple space-separated symbols
+  const heleumaMode = d.symbols.length === 1 ? "ka" : "ba";
+
+  const meme = `<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/@lares/api/v0.1/pono/memetic-wikitext >> -->
+
+<<~&#x0001; ? -> lar:///${uriPath} >>
+\`\`\`toml iam
+uri-path    = "${uriPath}"
+file-path   = "${filePath}"
+type        = "text/x-memetic-wikitext"
+register    = "CS"
+confidence  = 0.70
+mana        = 0.70
+manao       = 0.68
+manaoio     = 0.66
+tagspace    = "lararium"
+role        = "${kindLabel}: ${d.slug} — scaffolded by sync-heleuma --scan-decorators --commit"
+heleuma     = "${heleumaMode}"
+source-file = "${d.relPath}"
+source-symbol = "${srcSym}"
+body-sha256 = "${bodyHash}"
+cacheable   = true
+status-date = "${new Date().toISOString().slice(0, 10)}"
+\`\`\`
+
+<<~&#x0002;>>
+
+<<~ ahu #head >>
+
+# ${d.slug}
+
+${kindLabel} from \`${d.pkgName}\`.
+
+<<~/ahu >>
+
+<<~ ahu #contract >>
+
+Exported symbols: \`${d.symbols.join("`, `")}\`.
+
+<<~/ahu >>
+
+<<~ ahu #source >>
+
+\`\`\`typescript
+${joined}
+\`\`\`
+
+<<~/ahu >>
+
+<<~ ahu #edges >>
+
+<<~/ahu >>
+
+<<~&#x0003;>>
+<<~&#x0004; -> ? >>
+`;
+
+  writeFileSync(memePath, meme, "utf8");
+  console.log(`[heleuma/decorators] scaffolded  ${uriPath}`);
+}
+
+function runScanDecorators(): void {
+  const files = collectDecoratorFiles();
+  if (files.length === 0) {
+    console.log("[heleuma/decorators] No decorator files found.");
+    return;
+  }
+
+  let found = 0, missing = 0, scaffolded = 0;
+  for (const d of files) {
+    found++;
+    const existing = decoratorMemeExists(d);
+    if (existing) {
+      console.log(`[heleuma/decorators] ok       ${d.relPath}  →  ${relative(root, existing)}`);
+    } else {
+      missing++;
+      console.warn(`[heleuma/decorators] MISSING  ${d.relPath}  (symbols: ${d.symbols.join(" ")})`);
+      if (COMMIT) {
+        scaffoldDecoratorMeme(d);
+        scaffolded++;
+      }
+    }
+  }
+  console.log(`\n[heleuma/decorators] ${found} decorator file(s) — ${missing} missing`);
+  if (COMMIT && scaffolded > 0) {
+    console.log(`[heleuma/decorators] scaffolded ${scaffolded} meme(s) — run build:heleuma --commit to patch #source slots`);
+  } else if (!COMMIT && missing > 0) {
+    console.log(`[heleuma/decorators] run with --scan-decorators --commit to scaffold missing memes`);
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Main — check/commit loop
 // ---------------------------------------------------------------------------
 
@@ -477,6 +689,11 @@ if (SCAN_PROMOTE) {
 
 if (SCAN) {
   runScan();
+  process.exit(0);
+}
+
+if (SCAN_DECORATORS) {
+  runScanDecorators();
   process.exit(0);
 }
 
