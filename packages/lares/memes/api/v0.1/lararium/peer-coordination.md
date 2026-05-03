@@ -102,10 +102,17 @@ by actor-ID + Lamport timestamp. The losing peer migrates via `Automerge.merge()
 ## Keyhive Path (Sprint-future)
 
 Keyhive (Ink & Switch — Zelenka, Mumm, Good) builds Automerge-native access
-control. Its mechanism directly solves the bootstrap problem:
+control. Correction from prior notes:
 
-- **Every Automerge doc is identified by a public key** — the URL is
-  `automerge:<base58-pubkey>`, a cryptographic commitment to ownership, not random.
+- **Doc IDs are NOT Ed25519 public keys.** Automerge doc URLs remain random UUIDs
+  (`automerge:<base58-uuid>`). Keyhive adds an access-control layer ON TOP — it does
+  not change the URL scheme.
+- **Individuals** have stable Ed25519 keypairs → DIDs. **Documents** have their own
+  Keyhive group structure (separate from the individual's key).
+- **"Add member"** is a signed operation committed to the doc's Keyhive ACL log,
+  referencing the new peer's Ed25519 public key. No separate invite token — the
+  signed "add" entry IS the invitation artifact, delivered out-of-band then
+  applied when the peer connects.
 - **Convergent Capabilities** replace UCAN JWTs with CRDT-compatible capability
   tokens. Concurrent delegation and revocation resolve without coordination.
 - **Group Management CRDT** handles room membership (who can write) as Automerge
@@ -116,10 +123,10 @@ control. Its mechanism directly solves the bootstrap problem:
   into capability propagation.
 
 In a Keyhive-integrated system: **only the island author creates room docs; all
-others receive a delegation token and join via `repo.find()`**. The `sharePolicy`
-stub (`async () => true`) is replaced by a Keyhive capability check. UCANs serve
-as the out-of-band invite channel — a UCAN token over `automerge:<catalogUrl>`
-with `rooms/altar-fire` as resource is the invitation artifact itself.
+others receive a "add member" signed op referencing their Ed25519 key, then join
+via `repo.find(url)` where url was exchanged out-of-band (invitation link, DID
+service endpoint, or social graph record)**. The `sharePolicy` stub
+(`async () => true`) is replaced by a Keyhive capability check.
 
 Until Keyhive stabilizes (currently experimental/Rust-only): `sharePolicy` remains
 open, the island file provides static rendezvous, and the catalog protocol handles
