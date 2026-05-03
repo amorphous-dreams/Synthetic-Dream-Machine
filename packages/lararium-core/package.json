@@ -33,6 +33,7 @@
     "tsx": "^4.19.0"
   },
   "dependencies": {
+    "@automerge/automerge-repo": "^2.5.5",
     "@lares/lares": "workspace:*",
     "@noble/ed25519": "^3.1.0",
     "@noble/hashes": "^2.2.0"

@@ -93,6 +93,9 @@ importers:
 
   packages/lararium-core:
     dependencies:
+      '@automerge/automerge-repo':
+        specifier: ^2.5.5
+        version: 2.5.5
       '@lares/lares':
         specifier: workspace:*
         version: link:../lares
