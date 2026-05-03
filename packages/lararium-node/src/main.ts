@@ -21,6 +21,7 @@ import { openNodeLarPeer } from "./open-node-lar-peer.js";
 import { LarDiskProjector } from "./disk-projector.js";
 import { LARES_MEMES_ROOT } from "./node-host.js";
 import { ReactionEngine }   from "@lararium/core";
+import { exportMemeText }   from "@lararium/tw5";
 
 // ---------------------------------------------------------------------------
 // CLI / env config
@@ -64,10 +65,10 @@ async function main(): Promise<void> {
   peer.addProjection(engine);
 
   // Disk projector — write meme files on any lar: change.
-  // renderFn: use tw5 to render the carrier. Swap for renderCarrier() when server-api is wired.
+  // exportMemeText gives lossless .md round-trip (TOML iam block + wikitext body).
   const projector = new LarDiskProjector(
     LARES_MEMES_ROOT,
-    async (parentUri) => tw5.getTiddlerText(parentUri) ?? null,
+    async (uri) => { try { return exportMemeText(tw5, uri); } catch { return null; } },
   );
   projector.start(peer.store);
 

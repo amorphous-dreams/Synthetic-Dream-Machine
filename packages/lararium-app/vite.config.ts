@@ -4,6 +4,15 @@ import wasm from "vite-plugin-wasm";
 
 export default defineConfig({
   plugins: [wasm(), react()],
+  server: {
+    proxy: {
+      "/ws": {
+        target: "ws://localhost:8080",
+        ws: true,
+        rewriteWsOrigin: true,
+      },
+    },
+  },
   build: {
     outDir: "dist",
     sourcemap: true,

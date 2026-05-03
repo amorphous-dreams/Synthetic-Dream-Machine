@@ -18,7 +18,7 @@
     "build": "tsc",
     "typecheck": "tsc --noEmit",
     "test": "NODE_OPTIONS=--experimental-vm-modules pnpm exec jest --config jest.config.cjs",
-    "dev": "tsx src/index.ts",
+    "dev": "tsx src/main.ts",
     "build-snapshot": "tsx scripts/build-snapshot.ts",
     "serve": "tsx scripts/serve.ts",
     "serve:prod": "node dist/scripts/serve.js",

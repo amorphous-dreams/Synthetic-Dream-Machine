@@ -53,8 +53,13 @@ export function LarariumShell({ memes, onMemes }: ShellProps) {
   const [editor, setEditorState] = useState<Editor | null>(null);
   const editorRef = useRef<Editor | null>(null);
   const setEditor = useCallback((e: Editor | null) => { setEditorState(e); editorRef.current = e; }, []);
+  // In dev: Vite proxies /ws → ws://localhost:8080 (node peer).
+  // VITE_LAR_WS_URL overrides (e.g. wss://elyncia.app/ws in prod).
+  // Omitting wsUrl gives tabs-only offline mode.
+  const wsUrl = import.meta.env.VITE_LAR_WS_URL as string | undefined
+    ?? (import.meta.env.DEV ? `ws://${window.location.host}/ws` : undefined);
   const { phase: openPhase, peer, tw5, pool } =
-    useBrowserLarPeer({ hostId: "lararium-browser", roomId: "altar-fire" });
+    useBrowserLarPeer({ hostId: "lararium-browser", roomId: "altar-fire", wsUrl });
 
   const engineRef = useRef<ReactionEngine>(new ReactionEngine());
   const [graphReady, setGraphReady] = useState(false);
