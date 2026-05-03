@@ -10,3 +10,5 @@ export {
   reconcileGrammarTiddlerIfChanged,
   loadGrammarFromStore,
 } from "./seed-grammar-tiddler.js";
+
+export { LarDiskProjector } from "./disk-projector.js";

@@ -35,12 +35,6 @@ export { parseTaploFields, patchTomlKey, lintToml } from "./toml-ast.js";
 
 export { parseZoomLayoutTOML, getZoomLayout } from "./zoom-layout.js";
 
-export { LarDiskProjector } from "./disk-sync-adaptor.js";
-
-// Reaction graph helpers — @deprecated web2-era wiki-scan pattern.
-// Rebuild target: ReactionEngine implements MemeProjection.
-// Kept for LarariumShell.tsx callers during web3 transition.
-export { buildReactionGraph, bindingsForUri } from "./reaction-query.web2.js";
 
 export { TW5WorkerProxy } from "./tw5-worker-proxy.js";
 

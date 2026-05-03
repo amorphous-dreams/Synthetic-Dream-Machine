@@ -96,29 +96,34 @@ export function LarariumShell({ memes, onMemes }: ShellProps) {
   }, [tw5, onMemes]);
 
   useEffect(() => {
-    if (!tw5) return;
+    if (!tw5 || !peer) return;
     engineRef.current.boot(tw5); setGraphReady(true);
     scanMemesFromTw5();
-    return tw5.onWikiChange((changes: Record<string, unknown>) => {
-      if (Object.keys(changes).every((u) => !u.startsWith("lar:"))) return;
-      scanMemesFromTw5();
-      // Incremental canvas re-projection: diff shape IDs, put new/updated, remove deleted.
-      const ed = editorRef.current;
-      if (!ed) return;
-      const { pages, shapes, bindings: newBindings } = projectFromTw5(tw5);
-      const newRecords = [...pages, ...shapes, ...newBindings];
-      const newIds = new Set(newRecords.map((r) => r.id));
-      const prevIds = projectedIdsRef.current;
-      const removed = [...prevIds].filter((id) => !newIds.has(id));
-      // projectFromTw5 emits plain string IDs; tldraw store expects branded TLBindingId.
-      // Cast until the projection layer uses createBindingId() for arrow bindings.
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (ed.store as any).put(newRecords);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      if (removed.length > 0) (ed.store as any).remove(removed);
-      projectedIdsRef.current = newIds;
+    // Route CRDT changes through ReactionEngine (MemeProjection bus).
+    const unsubEngine = peer.addProjection(engineRef.current);
+    // Canvas re-projection on any lar: tiddler change.
+    const unsubCanvas = peer.addProjection({
+      onUriChanged(change) {
+        if (!change.title.startsWith("lar:")) return;
+        scanMemesFromTw5();
+        const ed = editorRef.current;
+        if (!ed) return;
+        const { pages, shapes, bindings: newBindings } = projectFromTw5(tw5);
+        const newRecords = [...pages, ...shapes, ...newBindings];
+        const newIds = new Set(newRecords.map((r) => r.id));
+        const prevIds = projectedIdsRef.current;
+        const removed = [...prevIds].filter((id) => !newIds.has(id));
+        // projectFromTw5 emits plain string IDs; tldraw store expects branded TLBindingId.
+        // Cast until the projection layer uses createBindingId() for arrow bindings.
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (ed.store as any).put(newRecords);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        if (removed.length > 0) (ed.store as any).remove(removed);
+        projectedIdsRef.current = newIds;
+      },
     });
-  }, [tw5, scanMemesFromTw5]);
+    return () => { unsubEngine(); unsubCanvas(); };
+  }, [tw5, peer, scanMemesFromTw5]);
 
   useEffect(() => {
     if (!editor || !tw5) return;
