@@ -1,42 +1,38 @@
 /**
- * LarHUD — VSCode-style dockable TW5 wiki frame.
+ * LarHUD — right-docked TW5 wiki panel, VSCode activity-bar model.
  *
- * Three panel states (cycles via ⌘K):
- *   collapsed  — tab chip on the right edge (44×120px); shows ⬡ icon + phase
- *   sidebar    — right-docked panel, ~340px wide; default on first open
- *   expanded   — right-docked panel, ~640px wide; full wiki chrome
+ * Architecture: flex sibling of LarariumCanvas (NOT a portal).
+ * The canvas container shrinks when the panel opens — push model, no z-index wars.
  *
- * Dock edge: right (default). Future: bottom dock via drag-to-edge snap.
- * TW5 mount: shadow root stays live across all states (never unmounted).
- * Portal: renders into document.body; sits above TLDraw z-index.
+ * Three states (⌘K cycles, Escape collapses):
+ *   collapsed  — 44px icon strip on right edge; always visible
+ *   sidebar    — 340px push panel; default on first open
+ *   expanded   — 640px push panel; full wiki chrome
  *
- * Keyboard:
- *   ⌘K / Ctrl+K  — cycle collapsed → sidebar → expanded → collapsed
- *   Escape        — collapse (capture-phase, only when focus inside shadow root)
+ * TW5 mount: shadow root lives on tw5HostRef.current via tw5.mountPanel().
+ * The shadow root is never destroyed — it stays live across all state transitions
+ * (same pattern as VSCode webviews staying alive when sidebar collapses).
+ *
+ * Push vs overlay: above PUSH_BREAKPOINT_PX container width → push (shrinks canvas).
+ * Below → overlay (fixed-position, right:0, does not shrink canvas). Future work.
+ *
+ * CSS transition: width 150ms ease on panel div. No spring. No layout thrash.
  */
 
 import { useEffect, useRef, useCallback, useState } from "react";
-import { createPortal } from "react-dom";
 import { useLararium } from "./lararium-context.js";
 
 // ---------------------------------------------------------------------------
-// Types
+// Types + constants
 // ---------------------------------------------------------------------------
 
 export type HudState = "collapsed" | "sidebar" | "expanded";
 
 const STATE_CYCLE: HudState[] = ["collapsed", "sidebar", "expanded"];
 
-// ---------------------------------------------------------------------------
-// Layout constants
-// ---------------------------------------------------------------------------
-
-const CHIP_W       = 44;
-const CHIP_H       = 120;
-const SIDEBAR_W    = 340;
-const EXPANDED_W   = 640;
-const PANEL_H_PCT  = 100;   // vh — full height when docked right
-const Z            = 8000;  // above tldraw (tldraw uses ~300–1000)
+const STRIP_W    = 44;   // px — collapsed icon strip
+const SIDEBAR_W  = 340;  // px — default open width
+const EXPANDED_W = 640;  // px — full wiki width
 
 // ---------------------------------------------------------------------------
 // LarHUD
@@ -44,40 +40,39 @@ const Z            = 8000;  // above tldraw (tldraw uses ~300–1000)
 
 export function LarHUD() {
   const { tw5, openPhase, wikiOpen, setWikiOpen } = useLararium();
-  const tw5HostRef = useRef<HTMLDivElement>(null);
-  const unmountRef = useRef<(() => void) | null>(null);
-
-  // Derive hudState from wikiOpen + local expanded toggle
+  const tw5HostRef   = useRef<HTMLDivElement>(null);
+  const unmountRef   = useRef<(() => void) | null>(null);
   const [hudState, setHudState] = useState<HudState>("collapsed");
-  const hudStateRef = useRef<HudState>("collapsed");
-  hudStateRef.current = hudState;
+  const hudRef = useRef<HudState>("collapsed");
+  hudRef.current = hudState;
 
-  // ── Sync wikiOpen → hudState ─────────────────────────────────────────────
-  // wikiOpen true  → at least sidebar
-  // wikiOpen false → collapsed
+  // ── Sync wikiOpen ↔ hudState ──────────────────────────────────────────────
   useEffect(() => {
-    if (!wikiOpen && hudState !== "collapsed") {
-      setHudState("collapsed");
-    } else if (wikiOpen && hudState === "collapsed") {
-      setHudState("sidebar");
-    }
+    if (!wikiOpen && hudRef.current !== "collapsed") setHudState("collapsed");
+    if (wikiOpen  && hudRef.current === "collapsed") setHudState("sidebar");
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [wikiOpen]);
 
-  // Expose hudState changes back to shell's wikiOpen signal
   const cycleHud = useCallback(() => {
-    const next = STATE_CYCLE[(STATE_CYCLE.indexOf(hudStateRef.current) + 1) % STATE_CYCLE.length]!;
-    setHudState(next);
-    setWikiOpen(next !== "collapsed");
+    setHudState((cur) => {
+      const next = STATE_CYCLE[(STATE_CYCLE.indexOf(cur) + 1) % STATE_CYCLE.length]!;
+      setWikiOpen(next !== "collapsed");
+      return next;
+    });
   }, [setWikiOpen]);
 
-  // Override ⌘K to cycle rather than toggle
+  const collapseHud = useCallback(() => {
+    setHudState("collapsed");
+    setWikiOpen(false);
+  }, [setWikiOpen]);
+
+  // ── ⌘K capture — cycles states (overrides LarariumShell toggle) ──────────
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
-      const tag = (e.target as HTMLElement)?.tagName;
-      if (tag === "INPUT" || tag === "TEXTAREA") return;
       if ((e.metaKey || e.ctrlKey) && e.key === "k") {
-        e.preventDefault(); e.stopPropagation();
+        const tag = (e.target as HTMLElement)?.tagName;
+        if (tag === "INPUT" || tag === "TEXTAREA") return;
+        e.preventDefault(); e.stopImmediatePropagation();
         cycleHud();
       }
     };
@@ -85,218 +80,218 @@ export function LarHUD() {
     return () => window.removeEventListener("keydown", handler, { capture: true });
   }, [cycleHud]);
 
-  // ── TW5 shadow mount ─────────────────────────────────────────────────────
+  // ── Escape → collapse ─────────────────────────────────────────────────────
   useEffect(() => {
-    const host = tw5HostRef.current;
-    if (!tw5 || !host) return;
-    if (unmountRef.current) return; // already mounted
-    try {
-      unmountRef.current = tw5.mountPanel(host);
-    } catch {
-      // boot() not yet resolved — will retry when tw5 ref updates
-    }
-    return () => {
-      unmountRef.current?.();
-      unmountRef.current = null;
-    };
-  }, [tw5]);
-
-  // ── Escape → collapse ────────────────────────────────────────────────────
-  useEffect(() => {
-    if (hudState === "collapsed") return;
+    if (hudRef.current === "collapsed") return;
     const handler = (e: KeyboardEvent) => {
-      if (e.key === "Escape") { setHudState("collapsed"); setWikiOpen(false); }
+      if (e.key === "Escape") { e.stopPropagation(); collapseHud(); }
     };
     window.addEventListener("keydown", handler, { capture: true });
     return () => window.removeEventListener("keydown", handler, { capture: true });
-  }, [hudState, setWikiOpen]);
+  }, [hudState, collapseHud]);
 
-  // ── TLDraw key passthrough guard ─────────────────────────────────────────
-  // Block tldraw from intercepting keys typed inside the shadow root.
+  // ── Block tldraw from intercepting keys typed inside the shadow root ───────
   useEffect(() => {
     const host = tw5HostRef.current;
     if (!host) return;
-    const stop = (e: Event) => {
+    const guard = (e: Event) => {
       const shadow = host.shadowRoot;
-      if (shadow && shadow.contains(e.target as Node)) e.stopPropagation();
+      if (shadow?.contains(e.target as Node)) e.stopPropagation();
     };
-    window.addEventListener("keydown", stop, { capture: true });
-    window.addEventListener("keyup",   stop, { capture: true });
+    window.addEventListener("keydown", guard, { capture: true });
+    window.addEventListener("keyup",   guard, { capture: true });
     return () => {
-      window.removeEventListener("keydown", stop, { capture: true });
-      window.removeEventListener("keyup",   stop, { capture: true });
+      window.removeEventListener("keydown", guard, { capture: true });
+      window.removeEventListener("keyup",   guard, { capture: true });
     };
   }, []);
 
+  // ── TW5 shadow mount — boot once, stay live ───────────────────────────────
+  useEffect(() => {
+    const host = tw5HostRef.current;
+    if (!tw5 || !host || unmountRef.current) return;
+    try {
+      unmountRef.current = tw5.mountPanel(host);
+    } catch {
+      // tw5.boot() not yet resolved — will retry when tw5 ref updates
+    }
+    return () => { unmountRef.current?.(); unmountRef.current = null; };
+  }, [tw5]);
+
+  // ── Derived ───────────────────────────────────────────────────────────────
   const isCollapsed = hudState === "collapsed";
-  const panelW = hudState === "expanded" ? EXPANDED_W : SIDEBAR_W;
+  const panelWidth  = hudState === "expanded" ? EXPANDED_W
+    : hudState === "sidebar"                  ? SIDEBAR_W
+    :                                           STRIP_W;
 
-  // Status label for the collapsed chip
-  const phaseLabel = !openPhase        ? "—"
-    : openPhase === "live"             ? "live"
-    : openPhase === "tw5-booted"       ? "ready"
-    : openPhase === "peer-ready"       ? "peer"
-    : openPhase === "room-ready"       ? "room"
-    : openPhase === "catalog-ready"    ? "cat"
-    : "boot";
+  const phaseLabel = !openPhase ? "—"
+    : openPhase === "live"         ? "live"
+    : openPhase === "tw5-booted"   ? "ready"
+    : openPhase === "peer-ready"   ? "peer"
+    : openPhase === "room-ready"   ? "room"
+    : openPhase === "catalog-ready"? "cat"
+    :                                "boot";
 
-  const hud = (
-    <div
-      style={isCollapsed ? css.chip : { ...css.panel, width: panelW }}
-      onPointerDown={(e) => { if (isCollapsed) { e.stopPropagation(); cycleHud(); } }}
-      aria-label={isCollapsed ? "Open wiki HUD (⌘K)" : undefined}
-      role={isCollapsed ? "button" : undefined}
-    >
-      {/* ── Tab bar ─────────────────────────────────────────────────────── */}
-      <div style={css.tabBar}>
-        <span style={css.tabIcon}>⬡</span>
-        {!isCollapsed && <span style={css.tabTitle}>wiki</span>}
-        {!isCollapsed && (
+  // ── Render ────────────────────────────────────────────────────────────────
+  return (
+    <div style={{ ...css.shell, width: panelWidth }}>
+
+      {/* ── Tab bar / icon strip ─────────────────────────────────────────── */}
+      {isCollapsed ? (
+        <button
+          style={css.iconStrip}
+          onClick={cycleHud}
+          title="Open wiki (⌘K)"
+          aria-label="Open wiki panel"
+        >
+          <span style={css.stripIcon}>⬡</span>
+          <span style={css.stripPhase}>{phaseLabel}</span>
+        </button>
+      ) : (
+        <div style={css.tabBar}>
+          <span style={css.tabIcon}>⬡</span>
+          <span style={css.tabTitle}>wiki</span>
           <span style={css.tabPhase}>{phaseLabel}</span>
-        )}
-        {!isCollapsed && (
           <div style={css.tabActions}>
             <button
               style={css.iconBtn}
-              onClick={() => setHudState(hudState === "expanded" ? "sidebar" : "expanded")}
-              title={hudState === "expanded" ? "Shrink to sidebar" : "Expand panel"}
+              title={hudState === "expanded" ? "Shrink to sidebar (⌘K)" : "Expand (⌘K)"}
+              onClick={() => {
+                const next = hudState === "expanded" ? "sidebar" : "expanded";
+                setHudState(next); setWikiOpen(true);
+              }}
             >
               {hudState === "expanded" ? "◂" : "▸"}
             </button>
-            <button
-              style={css.iconBtn}
-              onClick={() => { setHudState("collapsed"); setWikiOpen(false); }}
-              title="Collapse (Escape)"
-            >
+            <button style={css.iconBtn} title="Collapse (Escape)" onClick={collapseHud}>
               ✕
             </button>
           </div>
-        )}
-        {isCollapsed && <span style={css.chipPhase}>{phaseLabel}</span>}
-      </div>
+        </div>
+      )}
 
-      {/* ── TW5 mount surface ───────────────────────────────────────────── */}
+      {/* ── TW5 mount surface — always present, hidden when collapsed ────── */}
       <div
         ref={tw5HostRef}
-        style={isCollapsed ? css.tw5HostHidden : css.tw5Host}
+        style={isCollapsed ? css.tw5Hidden : css.tw5Live}
         aria-hidden={isCollapsed}
       />
     </div>
   );
-
-  return createPortal(hud, document.body);
 }
 
 // ---------------------------------------------------------------------------
 // Styles
 // ---------------------------------------------------------------------------
 
-const shared = {
-  position:   "fixed" as const,
-  top:        0,
-  right:      0,
-  zIndex:     Z,
-  fontFamily: "var(--tl-font-sans, system-ui, sans-serif)",
-};
-
 const css = {
-  // Collapsed chip — vertical tab on right edge
-  chip: {
-    ...shared,
-    top:            "50%",
-    transform:      "translateY(-50%)",
-    width:          CHIP_W,
-    height:         CHIP_H,
-    background:     "var(--tl-color-panel, #1e1e1e)",
-    border:         "1px solid var(--tl-color-divider, #333)",
-    borderRight:    "none",
-    borderRadius:   "6px 0 0 6px",
+  // Outer shell — this div is the flex child; width drives push behavior
+  shell: {
+    flexShrink:    0,
+    height:        "100%",
+    display:       "flex",
+    flexDirection: "column" as const,
+    background:    "var(--tl-color-panel, #1e1e1e)",
+    borderLeft:    "1px solid var(--tl-color-divider, #2a2a2a)",
+    overflow:      "hidden",
+    transition:    "width 150ms ease-in-out",
+    // Ensure correct stacking without relying on z-index
+    position:      "relative" as const,
+  },
+
+  // Collapsed icon strip — full height, 44px wide, acts as the tab
+  iconStrip: {
+    width:          "100%",
+    height:         "100%",
     display:        "flex",
     flexDirection:  "column" as const,
     alignItems:     "center",
     justifyContent: "center",
-    gap:            6,
+    gap:            8,
+    background:     "transparent",
+    border:         "none",
     cursor:         "pointer",
-    userSelect:     "none" as const,
-    boxShadow:      "-2px 0 8px rgba(0,0,0,.35)",
-    transition:     "background 120ms",
+    padding:        0,
+    color:          "var(--tl-color-text, #ccc)",
   },
-
-  // Open panel — full height right dock
-  panel: {
-    ...shared,
-    height:         `${PANEL_H_PCT}dvh`,
-    background:     "var(--tl-color-panel, #1e1e1e)",
-    borderLeft:     "1px solid var(--tl-color-divider, #333)",
-    display:        "flex",
-    flexDirection:  "column" as const,
-    boxShadow:      "-4px 0 16px rgba(0,0,0,.45)",
-    transition:     "width 160ms cubic-bezier(.4,0,.2,1)",
-    overflow:       "hidden",
-  },
-
-  // Tab bar — top strip with title + actions
-  tabBar: {
-    display:        "flex",
-    alignItems:     "center",
-    gap:            6,
-    padding:        "0 8px",
-    height:         36,
-    borderBottom:   "1px solid var(--tl-color-divider, #333)",
-    flexShrink:     0,
-    userSelect:     "none" as const,
-  },
-
-  tabIcon: {
-    fontSize:   16,
+  stripIcon: {
+    fontSize:   18,
     color:      "var(--tl-color-primary, #7c9cce)",
     lineHeight: 1,
+    fontFamily: "system-ui, sans-serif",
   },
-  tabTitle: {
-    fontSize:   12,
-    fontWeight: 600,
-    color:      "var(--tl-color-text, #ccc)",
-    flexGrow:   1,
-    letterSpacing: "0.05em",
-    fontFamily: "var(--tl-font-mono, monospace)",
-  },
-  tabPhase: {
-    fontSize:   10,
-    color:      "var(--tl-color-text-3, #666)",
-    fontFamily: "var(--tl-font-mono, monospace)",
-    padding:    "1px 5px",
-    background: "var(--tl-color-muted-1, #2a2a2a)",
-    borderRadius: 3,
-  },
-  chipPhase: {
-    fontSize:   9,
-    color:      "var(--tl-color-text-3, #666)",
-    fontFamily: "var(--tl-font-mono, monospace)",
-    writingMode: "vertical-rl" as const,
+  stripPhase: {
+    fontSize:        9,
+    fontFamily:      "var(--tl-font-mono, monospace)",
+    color:           "var(--tl-color-text-3, #555)",
+    writingMode:     "vertical-rl" as const,
     textOrientation: "mixed" as const,
-  },
-  tabActions: {
-    display: "flex",
-    gap:     2,
-  },
-  iconBtn: {
-    background: "transparent",
-    border:     "none",
-    color:      "var(--tl-color-text-3, #888)",
-    cursor:     "pointer",
-    padding:    "4px 6px",
-    fontSize:   13,
-    borderRadius: 4,
-    lineHeight: 1,
+    userSelect:      "none" as const,
+    letterSpacing:   "0.08em",
   },
 
-  // TW5 mount — hidden in chip, full height in panel
-  tw5Host: {
-    flex:       1,
-    overflow:   "hidden",
-    minHeight:  0,
+  // Open tab bar
+  tabBar: {
+    height:       36,
+    flexShrink:   0,
+    display:      "flex",
+    alignItems:   "center",
+    gap:          6,
+    padding:      "0 8px",
+    borderBottom: "1px solid var(--tl-color-divider, #2a2a2a)",
+    userSelect:   "none" as const,
   },
-  tw5HostHidden: {
+  tabIcon: {
+    fontSize:   15,
+    color:      "var(--tl-color-primary, #7c9cce)",
+    lineHeight: 1,
+    fontFamily: "system-ui, sans-serif",
+    flexShrink: 0,
+  },
+  tabTitle: {
+    flex:          1,
+    fontSize:      12,
+    fontWeight:    600,
+    color:         "var(--tl-color-text, #ccc)",
+    fontFamily:    "var(--tl-font-mono, monospace)",
+    letterSpacing: "0.05em",
+    overflow:      "hidden",
+    whiteSpace:    "nowrap" as const,
+  },
+  tabPhase: {
+    fontSize:     10,
+    color:        "var(--tl-color-text-3, #555)",
+    fontFamily:   "var(--tl-font-mono, monospace)",
+    padding:      "1px 5px",
+    background:   "var(--tl-color-muted-1, #252525)",
+    borderRadius: 3,
+    flexShrink:   0,
+  },
+  tabActions: {
+    display:    "flex",
+    gap:        2,
+    flexShrink: 0,
+  },
+  iconBtn: {
+    background:   "transparent",
+    border:       "none",
+    color:        "var(--tl-color-text-3, #777)",
+    cursor:       "pointer",
+    padding:      "4px 6px",
+    fontSize:     12,
+    borderRadius: 4,
+    lineHeight:   1,
+    minWidth:     24,
+    minHeight:    24,
+  },
+
+  // TW5 mount surface — flex:1 when live, zero when hidden
+  tw5Live: {
+    flex:     1,
+    overflow: "hidden",
+    minHeight: 0,
+  },
+  tw5Hidden: {
     width:      0,
     height:     0,
     overflow:   "hidden",

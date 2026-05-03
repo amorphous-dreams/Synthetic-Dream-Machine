@@ -187,12 +187,15 @@ export function LarariumShell({ memes, onMemes }: ShellProps) {
   return (
     <LarariumCtx.Provider value={ctxValue}>
       <div style={css.shellRoot}>
-        <LarariumCanvas
-          navState={navState}
-          dispatch={dispatch as React.Dispatch<LarViewAction>}
-          drawingMode={drawingMode}
-          onZoomLevel={setZoomLevel}
-        />
+        {/* Canvas shrinks to accommodate LarHUD push — no z-index management needed */}
+        <div style={css.canvasWrap}>
+          <LarariumCanvas
+            navState={navState}
+            dispatch={dispatch as React.Dispatch<LarViewAction>}
+            drawingMode={drawingMode}
+            onZoomLevel={setZoomLevel}
+          />
+        </div>
         <LarHUD />
         {createPortal(<BootSplash phase={openPhase} />, document.body)}
       </div>
@@ -201,9 +204,18 @@ export function LarariumShell({ memes, onMemes }: ShellProps) {
 }
 
 const css = {
+  // Flex row: [canvas flex:1] [LarHUD fixed-width]
   shellRoot: {
-    width: "100%", height: "100%",
-    position: "relative" as const,
+    width:    "100%",
+    height:   "100%",
+    display:  "flex",
+    flexDirection: "row" as const,
     overflow: "hidden",
+  },
+  canvasWrap: {
+    flex:     1,
+    minWidth: 0,
+    height:   "100%",
+    position: "relative" as const,
   },
 } as const;
