@@ -86,8 +86,8 @@ describe("isHostfulLarUri", () => {
 
 describe("parseHostfulLarUri", () => {
   test("extracts host and path from a hostful lar: URI", () => {
-    const r = parseHostfulLarUri("lar://elyncia.social/rooms/altar-fire");
-    expect(r.host).toBe("elyncia.social");
+    const r = parseHostfulLarUri("lar://altar-fire:peer@elyncia.social/rooms/altar-fire");
+    expect(r.authority.host).toBe("elyncia.social");
     expect(r.root).toBeDefined();
   });
 });
@@ -101,13 +101,15 @@ describe("grammarRulesFromText — real lares/grammars/memetic-wikitext.md", () 
   const grammarExists = existsSync(grammarPath);
 
   // Skip gracefully if the carrier is not present (CI without full repo).
-  test.skipIf(!grammarExists)("loads grammar carrier from disk", () => {
+  const maybeTest = grammarExists ? test : test.skip;
+
+  maybeTest("loads grammar carrier from disk", () => {
     const text = readFileSync(grammarPath, "utf8");
     const rules = grammarRulesFromText("lar:///grammars/memetic-wikitext", text);
     expect(rules).not.toBeNull();
   });
 
-  test.skipIf(!grammarExists)("extracts expected sigil names", () => {
+  maybeTest("extracts expected sigil names", () => {
     const text  = readFileSync(grammarPath, "utf8");
     const rules = grammarRulesFromText("lar:///grammars/memetic-wikitext", text);
     const names = rules!.sigils.map((s) => s.name);
@@ -118,7 +120,7 @@ describe("grammarRulesFromText — real lares/grammars/memetic-wikitext.md", () 
     expect(names).toContain("kahea");
   });
 
-  test.skipIf(!grammarExists)("ahu sigil has open and close patterns", () => {
+  maybeTest("ahu sigil has open and close patterns", () => {
     const text = readFileSync(grammarPath, "utf8");
     const rules = grammarRulesFromText("lar:///grammars/memetic-wikitext", text);
     const ahu = rules!.sigils.find((s) => s.name === "ahu");
@@ -126,7 +128,7 @@ describe("grammarRulesFromText — real lares/grammars/memetic-wikitext.md", () 
     expect(ahu?.closePattern).toBeTruthy();
   });
 
-  test.skipIf(!grammarExists)("papalohe/reaction family registered (Phase 2x)", () => {
+  maybeTest("papalohe/reaction family registered (Phase 2x)", () => {
     const text = readFileSync(grammarPath, "utf8");
     const rules = grammarRulesFromText("lar:///grammars/memetic-wikitext", text);
     const families = rules!.families.map((f) => f.name);
