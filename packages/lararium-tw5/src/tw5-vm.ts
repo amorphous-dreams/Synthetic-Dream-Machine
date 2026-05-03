@@ -50,19 +50,30 @@ export class TW5Engine {
    *          with suppressBoot set. We reuse the global instance.
    * Node:    npm tiddlywiki loaded dynamically; no external script needed.
    */
-  boot(): Promise<void> {
+  boot(coreBlob?: Uint8Array): Promise<void> {
     if (this._bootPromise) return this._bootPromise;
     this._bootPromise = (async () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const g = globalThis as any;
       const isBrowser = typeof window !== "undefined" && typeof document !== "undefined";
 
+      // Browser web3 path: if coreBlob provided, inject via Blob URL — no static serve needed.
+      if (isBrowser && coreBlob && !g.$tw?.modules?.titles) {
+        await new Promise<void>((resolve, reject) => {
+          const blobUrl = URL.createObjectURL(new Blob([coreBlob.buffer as ArrayBuffer], { type: "application/javascript" }));
+          const script = document.createElement("script");
+          script.src = blobUrl;
+          script.onload = () => { URL.revokeObjectURL(blobUrl); resolve(); };
+          script.onerror = () => { URL.revokeObjectURL(blobUrl); reject(new Error("TW5Engine: blob script load failed")); };
+          document.head.appendChild(script);
+        });
+      }
+
       const instance: TW5Instance = isBrowser
         ? (() => {
             if (!g.$tw?.modules?.titles) {
               throw new Error(
-                "TW5Engine: tiddlywikicore script not loaded. " +
-                "Ensure serve.ts injects <script src=\"/tiddlywikicore-*.js\"> before </head>."
+                "TW5Engine: no TW5 core. Pass coreBlob from LarariumDoc to boot()."
               );
             }
             g.$tw.boot.suppressBoot = true;

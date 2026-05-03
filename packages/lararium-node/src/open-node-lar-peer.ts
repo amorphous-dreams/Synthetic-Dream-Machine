@@ -134,8 +134,8 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
 
   // ── 3a. LarariumIsland doc — system bag ───────────────────────────────────
   // Node peer is the authority for the island doc — it creates it if missing.
-  // catalogHandle.engine.docUrl is set by lararium-island.ts seeder.
-  const islandDocUrl = catalog?.engine?.docUrl ?? null;
+  // catalogHandle.larariumDoc.docUrl is set by the seeder in main.ts.
+  const islandDocUrl = catalog?.larariumDoc?.docUrl ?? null;
   if (islandDocUrl) {
     const islandHandle = await waitHandleLocal(
       repo.find<LarariumDoc>(islandDocUrl as AutomergeUrl),

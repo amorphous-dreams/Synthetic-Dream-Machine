@@ -62,13 +62,13 @@ export interface CatalogProjectionEntry {
 }
 
 // ---------------------------------------------------------------------------
-// Engine island descriptor — points to the LarariumDoc corpus doc.
+// LarariumDoc entry — points to the LarariumDoc island (system bag).
 //
 // Kept out of CatalogCorpusEntry (different schema, binary blobs, no lares path).
 // The catalog carries the reference only — the LarariumDoc is a separate island.
 // ---------------------------------------------------------------------------
 
-export interface CatalogEngineEntry {
+export interface CatalogLarariumEntry {
   /** TW5 core version string — "5.4.0". Browsers compare against loaded version. */
   readonly version:    string;
   /** Automerge URL for the LarariumDoc. */
@@ -90,8 +90,8 @@ export interface CatalogDoc {
   readonly rooms:      Record<string, CatalogRoomEntry>;
   readonly recipes:    Record<string, CatalogRecipeEntry>;
   readonly projections: Record<string, CatalogProjectionEntry>;
-  /** Engine island reference — separate doc, binary blobs, Keyhive-signed. */
-  readonly engine?:    CatalogEngineEntry;
+  /** LarariumDoc reference — separate island doc, binary blobs, Keyhive-signed. */
+  readonly larariumDoc?:  CatalogLarariumEntry;
   /** Capability hints for the connecting peer — read during derive-visible-rooms step. */
   readonly capabilityHints?: Record<string, string>;
 }

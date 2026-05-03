@@ -19,7 +19,7 @@ import type { Repo, DocHandle } from "@automerge/automerge-repo";
 import type { LarariumDoc, LarariumBlobEntry } from "@lararium/core";
 import { ENGINE_CORE_ID, emptyLarariumDoc } from "@lararium/core";
 import { laresRoot } from "@lares/lares";
-import { TW5_VERSION, TW5_CORE_SCRIPT_FILENAME } from "@lararium/tw5";
+import { TW5_VERSION, TW5_CORE_SCRIPT_FILENAME, TW5_PUBLIC_DIR } from "@lararium/tw5";
 
 const PLUGINS_DIR = join(laresRoot, "memes/api/v0.1/tw5-plugins");
 
@@ -42,9 +42,8 @@ function readBlob(path: string): Uint8Array {
  */
 export async function reconcileEngineBlobIfChanged(
   handle: DocHandle<LarariumDoc>,
-  appPublicDir: string,
 ): Promise<string> {
-  const coreJsPath = join(appPublicDir, TW5_CORE_SCRIPT_FILENAME);
+  const coreJsPath = join(TW5_PUBLIC_DIR, TW5_CORE_SCRIPT_FILENAME);
   if (!existsSync(coreJsPath)) return handle.doc()?.blobs[ENGINE_CORE_ID]?.sha256 ?? "";
 
   const coreBlob  = readBlob(coreJsPath);
@@ -78,12 +77,11 @@ export async function reconcileEngineBlobIfChanged(
  */
 export async function seedLarariumDoc(
   repo: Repo,
-  appPublicDir: string,
 ): Promise<{ handle: DocHandle<LarariumDoc>; coreSha256: string }> {
   const handle = repo.create<LarariumDoc>(emptyLarariumDoc());
 
   // TW5 core blob
-  const coreJsPath = join(appPublicDir, TW5_CORE_SCRIPT_FILENAME);
+  const coreJsPath = join(TW5_PUBLIC_DIR, TW5_CORE_SCRIPT_FILENAME);
   if (!existsSync(coreJsPath)) {
     throw new Error(`[lararium-island] TW5 core not found: ${coreJsPath} — run pnpm build:tw5-vendor`);
   }

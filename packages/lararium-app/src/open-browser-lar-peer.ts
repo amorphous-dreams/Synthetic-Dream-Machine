@@ -175,16 +175,17 @@ export async function openBrowserLarPeer(opts: {
   // ── 3. CompositeStore — build lowest→highest priority ────────────────────
   const composite = new CompositeStore();
 
-  // ── 3a. LarariumIsland doc — system bag (grammar + widget tiddlers) ───────
-  // Non-blocking: if island URL unknown (fresh install), system bag stays empty.
-  // Browser receives the island doc URL from the node peer via catalog sync.
-  const islandDocUrl = catalog?.engine?.docUrl ?? null;
-  if (islandDocUrl) {
-    const islandHandle = await waitHandleLocal(
-      repo.find<LarariumDoc>(islandDocUrl as AutomergeUrl),
+  // ── 3a. LarariumDoc — system bag + TW5 core blob source ──────────────────
+  // Browser receives the LarariumDoc URL from the node peer via catalog sync.
+  // The core blob inside is injected into TW5Engine.boot() — no static HTTP serve.
+  const larariumDocUrl = catalog?.larariumDoc?.docUrl ?? null;
+  let larariumDocHandle: DocHandle<LarariumDoc> | null = null;
+  if (larariumDocUrl) {
+    larariumDocHandle = await waitHandleLocal(
+      repo.find<LarariumDoc>(larariumDocUrl as AutomergeUrl),
       () => repo.create<LarariumDoc>({ schemaVersion: "0.1", blobs: {}, tiddlers: {} }),
     );
-    composite.addLayer({ bagId: "system", store: new LarariumDocStore(islandHandle), writable: false });
+    composite.addLayer({ bagId: "system", store: new LarariumDocStore(larariumDocHandle), writable: false });
     emit("island-ready");
   }
 
@@ -256,9 +257,11 @@ export async function openBrowserLarPeer(opts: {
   });
   emit("peer-ready");
 
-  // ── 7. TW5Engine ──────────────────────────────────────────────────────────
+  // ── 7. TW5Engine — boot with core blob from LarariumDoc (web3, no static serve) ──
+  const coreBlobRaw = larariumDocHandle?.doc()?.blobs?.["tiddlywikicore"]?.blob;
+  const coreBlob = coreBlobRaw instanceof Uint8Array ? coreBlobRaw : coreBlobRaw ? new Uint8Array(coreBlobRaw as ArrayBuffer) : undefined;
   const tw5 = new TW5Engine();
-  await tw5.boot();
+  await tw5.boot(coreBlob);
   emit("tw5-booted");
 
   // ── 8. Corpus bags — await after TW5 boots so render isn't blocked ────────
