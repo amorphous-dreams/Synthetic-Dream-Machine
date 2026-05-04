@@ -12,12 +12,17 @@
  * Island law: engine doc is separate from the catalog. Catalog holds the URL
  * reference only. Engine doc may be large (~2.5MB) — catalog stays small.
  *
+ * LarDoc alignment (M24): LarariumDoc extends LarDoc.  The `blobs` field lives
+ * outside `tiddlers` — therefore each blob MUST have a self-describing tiddler
+ * in `tiddlers` at `blobDescriptorUri(blob.id)`.  `systemTitles` likewise gets
+ * a descriptor tiddler.
+ *
  * Keyhive: each blob entry carries a sha256 for content-addressing.
  * Signature verification is added at the Keyhive layer (planned).
  */
 
-import type { MutableLarRecord } from "./meme-store-doc.js";
-export type { MutableLarRecord };
+import type { LarDoc, MutableLarRecord } from "./base-doc.js";
+export type { MutableLarRecord } from "./base-doc.js";
 
 export interface LarariumBlobEntry {
   /** Stable id — "tiddlywikicore" or TW5 plugin title like "$:/plugins/sq/streams". */
@@ -32,30 +37,19 @@ export interface LarariumBlobEntry {
   readonly source?:  string;
 }
 
-export interface LarariumDoc {
-  readonly schemaVersion: string;
+/**
+ * LarariumDoc extends LarDoc — `tiddlers` required (not optional).
+ *
+ * Out-of-tiddlers fields:
+ *   `blobs`        — binary engine artefacts; each blob MUST have a tiddler
+ *                    at blobDescriptorUri(blob.id) carrying sha256, version, etc.
+ *   `systemTitles` — written once at seed time; descriptor tiddler at
+ *                    lar:///ha.ka.ba/@lararium/system/titles
+ */
+export interface LarariumDoc extends LarDoc {
+  readonly tiddlers: Record<string, Readonly<MutableLarRecord>>;
   /** Keyed by LarariumBlobEntry.id. */
   readonly blobs: Record<string, LarariumBlobEntry>;
-  /**
-   * System tiddlers keyed by `lar:` URI (or TW5 title for $:/ namespace).
-   *
-   * Holds first-class tiddlers that belong to the engine island rather than
-   * a corpus or room doc. Seeded at island creation time and reconciled on
-   * resume boots. Current residents:
-   *   - grammar meme  (lar:///ha.ka.ba/@lares/grammars/memetic-wikitext)
-   *
-   * Bag stamped as "lararium" on each record. Recipe priority: lararium < catalog < lares < corpus < room.
-   * Operator overrides use a higher-priority bag (Invariant 4 of grammar-invariants.ts).
-   *
-   * Value type is `Readonly<MutableLarRecord>` — these records are engine-owned and
-   * must only be written via `seedGrammarTiddler` / `reconcileGrammarTiddlerIfChanged`.
-   * `MutableLarRecord` (non-readonly) is the Automerge write-layer shape used internally
-   * inside `handle.change()` callbacks.
-   *
-   * Optional for backward-compat with engine docs created before this field existed;
-   * `emptyLarariumDoc()` always initializes it as `{}`.
-   */
-  readonly tiddlers?: Record<string, Readonly<MutableLarRecord>>;
   /**
    * Sorted list of $:/ tiddler titles present in a freshly booted TW5 VM
    * before any corpus tiddlers are loaded.  Written once at seedLarariumDoc time.
@@ -76,6 +70,67 @@ export function emptyLarariumDoc(): LarariumDoc {
 }
 
 export const ENGINE_CORE_ID = "tiddlywikicore";
+
+/**
+ * Stable lar: URI for a blob descriptor tiddler.
+ *
+ * The descriptor tiddler title = `lar:///ha.ka.ba/@lararium/blobs/{blobId}`.
+ * Stored in LarariumDoc.tiddlers — carries sha256, version, mimeType as fields
+ * but NOT the binary data (which stays in LarariumDoc.blobs).
+ *
+ * Self-describing law: any peer that syncs LarariumDoc can read blob metadata
+ * via the TW5 wiki (filter on tag[blob-descriptor]) without TS interop.
+ *
+ * @param blobId  - LarariumBlobEntry.id, e.g. "tiddlywikicore" or "$:/plugins/sq/streams"
+ * @returns       - e.g. "lar:///ha.ka.ba/@lararium/blobs/tiddlywikicore"
+ */
+export function blobDescriptorUri(blobId: string): string {
+  // Sanitise plugin titles: "$:/plugins/sq/streams" → "plugins/sq/streams"
+  const safe = blobId.replace(/^\$:\//, "").replace(/[^a-zA-Z0-9/_.-]/g, "_");
+  return `lar:///ha.ka.ba/@lararium/blobs/${safe}`;
+}
+
+/**
+ * lar: URI grammar — six root docs in two planes.
+ *
+ * Position semantics (zero-indexed path segments after lar:///)
+ *
+ *   pos 0  — what3words tagspace host, e.g. "ha.ka.ba"
+ *   pos 1  — @-prefixed root doc identity (EXACTLY six reserved slots, see below)
+ *   pos 2  — @-prefixed child doc identity   e.g. @catalog/@elyncia
+ *            OR plain leaf path segment      e.g. @lararium/rooms/altar-fire
+ *   pos 3+ — plain leaf path segments, never @-prefixed
+ *
+ * Rule: @ ONLY at pos 1 (root doc) or pos 2 (child doc under a root).
+ *       @ NEVER at pos 3+.
+ *       Any bare @name at pos 1 = exactly one Automerge doc identity.
+ *
+ * CONTENT PLANE (Automerge Tiga — ha / ka / ba):
+ *   @lararium   LarariumDoc  — ha: engine, grammar, admin rooms, ha-recipes
+ *   @catalog    CatalogDoc   — ka: corpus discovery, user rooms, ka-recipes
+ *   @lares      LaresDoc     — ba: persona/doctrine, ba-recipes
+ *
+ * SOCIAL PLANE (identity / authority / session):
+ *   @identities IdentitiesDoc — stable principal records (operators, agents, services)
+ *   @groups     GroupsDoc     — collective authority + durable membership
+ *   @sessions   SessionsDoc   — live operator-agent session docs
+ *
+ * Corpus child-docs live under ka (pos-2 @ slot):
+ *   lar:///ha.ka.ba/@catalog/@elyncia   → elyncia corpus doc
+ *   lar:///ha.ka.ba/@catalog/@ftls      → ftls corpus doc
+ *
+ * Rooms remain leaf paths (no @ at pos 2):
+ *   lar:///ha.ka.ba/@lararium/rooms/{slug}  → admin/operator room (ha branch)
+ *   lar:///ha.ka.ba/@catalog/rooms/{slug}   → user room (ka branch, M22+)
+ *
+ * Oracle chain:
+ *   fragment → ha (LarariumDoc) → tiddlers[CATALOG_DOC_URI]   → CatalogDoc
+ *                               → tiddlers[LARES_DOC_URI]      → LaresDoc
+ *                               → tiddlers[IDENTITIES_DOC_URI] → IdentitiesDoc
+ *                               → tiddlers[GROUPS_DOC_URI]     → GroupsDoc
+ *                               → tiddlers[SESSIONS_DOC_URI]   → SessionsDoc
+ *   CatalogDoc → tiddlers[corpusLarUri(slug)]  → corpus child-docs
+ *             → tiddlers[roomLarUri(slug)]    → room leaf docs
 
 /**
  * lar: URI grammar — six root docs in two planes.

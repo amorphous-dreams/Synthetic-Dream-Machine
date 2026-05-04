@@ -15,10 +15,58 @@ manao        = 0.87
 implements   = [
   "lar:///ha.ka.ba/@lares/api/v0.1/pono/meme"
 ]
-role         = "session handoff crystal — 2026-05-03 (session 9) — M23 complete: TW5 Bags/Recipes alignment: BagTiddler interface, bagDescriptorUri, CompositeLayer policies, putViaRecipe, priority-correct VM onUriChanged, TW5Engine.getTiddlerField, seedBagDescriptors; M24 open: tombstone priority, draft bag URI, catalog.corpora retire"
+role         = "session handoff crystal — 2026-05-03 (session 9) — M24 complete: LarDoc base alignment: base-doc.ts, MutableLarRecord single canonical, all Automerge docs extend LarDoc, AutomergeDocStore widened to LarDoc, all seed functions write to .tiddlers, emptyXxxDoc() factories everywhere, seedBlobDescriptors; M25 open: catalog.corpora retire, writePolicy enforcement, room/corpus bag self-descriptors"
 ```
 
 <<~&#x0002;>>
+
+<<~ ahu #ooda-ha-m24-lardoc-alignment-2026-05-03 >>
+
+## OODA-HA: M24 — LarDoc Base Alignment (2026-05-03)
+
+✶ **Observe:**
+M23 delivered bags/recipes alignment with 153 passing tests, but the Automerge doc model remained fractured: `MutableLarRecord` lived in `meme-store-doc.ts` and got re-exported by both `lararium-doc.ts` and `base-doc.ts` → TS2308 duplicate export error. Seed functions wrote tiddlers via unsafe flat-doc casts `(doc as unknown as Record<string, unknown>)[title]`. `AutomergeDocStore` only accepted `DocHandle<MemeStoreDoc>`, forcing `as unknown as` casts for every social doc handle. Social plane docs declared no clear structural alignment with `MemeStoreDoc`. `LarariumDoc.blobs` had no corresponding descriptor tiddlers (self-describing meme law violated). All `repo.create<MemeStoreDoc>({})` calls passed bare `{}` instead of a typed empty factory.
+
+⏿ **Orient:**
+LarDoc invariant: every Automerge doc in the stack MUST extend `{ schemaVersion: string; tiddlers: Record<string, MutableLarRecord> }`. Anything outside `tiddlers` (blobs, legacy Records) MUST have a self-describing descriptor tiddler in `tiddlers` — queryable from the TW5 wiki without TS interop. `MutableLarRecord` must have exactly one canonical home (no re-export collisions). `AutomergeDocStore` must accept any `DocHandle<LarDoc>` via structural typing — no web2 casts. All factories must be named (`emptyXxxDoc()`) — never bare `{}`.
+
+◇ **Decide:**
+- `base-doc.ts` = single canonical home for `MutableLarRecord` + `LarDoc` interface
+- `meme-store-doc.ts` re-exports `MutableLarRecord` from `base-doc.ts` for backward-compat; removes duplicate declaration
+- All doc types (`MemeStoreDoc`, `LarariumDoc`, `CatalogDoc`, `IdentitiesDoc`, `GroupsDoc`, `SessionsDoc`) extend `LarDoc`
+- `AutomergeDocStore` handle type widened to `DocHandle<LarDoc>` — structural typing covers all doc variants
+- All seed functions write to `.tiddlers` submap; corpus self-refs use same pattern
+- `seedBlobDescriptors` writes one tiddler per `LarariumDoc.blobs` entry at `blobDescriptorUri(id)`; called after `seedBagDescriptors` at node boot
+
+■ **Act:**
+  1. `base-doc.ts` created — `MutableLarRecord` + `LarDoc` interface
+  2. `index.ts` — `export * from "./base-doc.js"` added as first export
+  3. `meme-store-doc.ts` — duplicate `MutableLarRecord` removed; `import type { LarDoc, MutableLarRecord } from "./base-doc.js"` + `export type { MutableLarRecord }` re-export
+  4. `lararium-doc.ts` — imports from `base-doc`; `tiddlers` required; `export type { MutableLarRecord }` re-export
+  5. `catalog.ts` — imports from `base-doc`; `tiddlers` required; `corpora`/`rooms` `@deprecated`
+  6. `social-doc.ts` — full rewrite: tiddler-first, Keyhive fields, URI helpers, typed read helpers, extends `LarDoc`
+  7. `lararium-doc-store.ts` — `DocWithTiddlers.tiddlers` required; imports `MutableLarRecord` from `base-doc`
+  8. `automerge-doc-store.ts` — `DocHandle<MemeStoreDoc>` → `DocHandle<LarDoc>`; imports from `base-doc`
+  9. `seedLaresDoc` — `repo.create<MemeStoreDoc>(emptyMemeStoreDoc())`; flat write → `.tiddlers` submap write
+  10. `open-node-lar-peer.ts` — all `{}` factories → `emptyMemeStoreDoc()`; social `as unknown as` casts removed; corpus self-ref → `.tiddlers`; `seedBlobDescriptors` imported + called
+  11. `open-browser-lar-peer.ts` — same `{}` → factory fixes; social casts removed; corpus self-ref → `.tiddlers`; `emptyMemeStoreDoc` imported
+  12. `seedBlobDescriptors(islandHandle)` (new) — iterates `LarariumDoc.blobs`; writes `blobDescriptorUri(id)` tiddlers (sha256/version/mimeType/author/source/license as fields; no binary); idempotent on sha256 match
+
+⤴ **Advance:**
+The full Lararium Automerge doc stack aligns on `LarDoc`. No more flat-doc casts in any seed function. No more `as unknown as DocHandle<MemeStoreDoc>` for social docs. Blob metadata queryable from TW5 wiki via `[tag[blob-descriptor]]`. `emptyXxxDoc()` factories used everywhere. 153 tests pass, build clean.
+
+↺ **M25 candidates:**
+- `catalog.corpora` / `catalog.rooms` Records full retirement — migrate remaining callers to tiddlers oracle
+- `writePolicy` enforcement in `putViaRecipe` against identity/group principals
+- Room/corpus bags: seed own `BagTiddler` descriptor at boot (not relying on Automerge sync alone)
+- Browser peer: explicit `seedBlobDescriptors` call at first-boot
+- Tombstone priority: `CompositeStore` check at tombstone time whether higher-priority bag retains title
+- `"draft"` bag → stable lar: URI (`lar:///ha.ka.ba/@sessions/drafts/{did}`)
+- Social plane UX: identity picker + group membership TW5 widgets reading Keyhive tiddler fields
+
+---
+
+<<~/ahu >>
 
 <<~ ahu #ooda-ha-m23-bags-recipes-alignment-2026-05-03 >>
 

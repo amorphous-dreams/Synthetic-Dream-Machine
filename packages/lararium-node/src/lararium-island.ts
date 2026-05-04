@@ -24,9 +24,11 @@ import {
   LARARIUM_DOC_URI, CATALOG_DOC_URI, LARES_DOC_URI,
   IDENTITIES_DOC_URI, GROUPS_DOC_URI, SESSIONS_DOC_URI,
   emptyLarariumDoc,
+  emptyMemeStoreDoc,
   emptyIdentitiesDoc, emptyGroupsDoc, emptySessionsDoc,
   recipeUri,
   bagDescriptorUri,
+  blobDescriptorUri,
 } from "@lararium/core";
 import { TW5_VERSION, TW5_CORE_SCRIPT_FILENAME } from "@lararium/tw5";
 
@@ -405,9 +407,10 @@ export function reconcileWellKnownTiddlers(
  * is written separately by reconcileWellKnownTiddlers once the caller has both handles.
  */
 export function seedLaresDoc(repo: Repo): DocHandle<MemeStoreDoc> {
-  const handle = repo.create<MemeStoreDoc>({});
+  const handle = repo.create<MemeStoreDoc>(emptyMemeStoreDoc());
   handle.change((doc) => {
-    (doc as unknown as Record<string, unknown>)[LARES_DOC_URI] = {
+    const t = (doc as unknown as { tiddlers: Record<string, unknown> }).tiddlers;
+    t[LARES_DOC_URI] = {
       title: LARES_DOC_URI, text: handle.url,
       bag: LARES_DOC_URI, authority: "lararium-seed",
     };
@@ -614,4 +617,68 @@ export function seedBagDescriptors(islandHandle: DocHandle<LarariumDoc>): void {
   }
 
   console.log(`[lararium-island] bag descriptors seeded (${ROOT_BAG_DESCRIPTORS.length})`);
+}
+
+// ---------------------------------------------------------------------------
+// seedBlobDescriptors — one descriptor tiddler per LarariumDoc blob entry
+//
+// Self-describing meme law: anything outside `tiddlers` (i.e. LarariumDoc.blobs)
+// MUST have a descriptor tiddler in `tiddlers` so TW5 wiki filters can enumerate
+// blobs without TS interop.
+//
+// Descriptor tiddler fields:
+//   title       = blobDescriptorUri(blob.id)
+//   text        = blob.id
+//   sha256      = blob.sha256
+//   version     = blob.version
+//   mimeType    = blob.mimeType
+//   author      = blob.author  (optional)
+//   source      = blob.source  (optional)
+//   license     = blob.license (optional)
+//   tags        = "blob-descriptor"
+//   bag         = LARARIUM_DOC_URI
+//   authority   = "lararium-seed"
+//
+// Writes are idempotent: skip when sha256 matches existing descriptor.
+// ---------------------------------------------------------------------------
+
+export function seedBlobDescriptors(islandHandle: DocHandle<LarariumDoc>): void {
+  const doc = islandHandle.doc();
+  if (!doc) return;
+  const blobs     = doc.blobs     ?? {};
+  const tiddlers  = doc.tiddlers  ?? {};
+  const now       = new Date().toISOString();
+  let   seeded    = 0;
+
+  for (const [blobId, entry] of Object.entries(blobs)) {
+    const uri = blobDescriptorUri(blobId);
+    // Idempotent: skip if descriptor already exists with same sha256
+    const existing = tiddlers[uri] as { fields?: { sha256?: string } } | undefined;
+    if (existing?.fields?.["sha256"] === entry.sha256) continue;
+
+    islandHandle.change((d) => {
+      const t = (d as unknown as { tiddlers: Record<string, unknown> }).tiddlers;
+      t[uri] = {
+        title:     uri,
+        text:      blobId,
+        fields: {
+          sha256:   entry.sha256,
+          version:  entry.version,
+          mimeType: entry.mimeType,
+          ...(entry.author  && { author:  entry.author }),
+          ...(entry.source  && { source:  entry.source }),
+          ...(entry.license && { license: entry.license }),
+          tags:      "blob-descriptor",
+          updatedAt: now,
+        },
+        bag:       LARARIUM_DOC_URI,
+        authority: "lararium-seed",
+      };
+    });
+    seeded++;
+  }
+
+  if (seeded > 0) {
+    console.log(`[lararium-island] blob descriptors seeded/updated (${seeded})`);
+  }
 }

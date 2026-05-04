@@ -1,25 +1,32 @@
 /**
  * MemeStoreDoc — Automerge document shape for a room or corpus content island.
  *
- * Lives in @lararium/core so both the browser (lararium-app) and server
- * (lararium-node) can type their Automerge handles without a cross-package dep.
+ * MemeStoreDoc extends LarDoc — same `{ schemaVersion, tiddlers }` shape
+ * as every other Lararium Automerge document.  `tiddlers` remains a writable
+ * Record (not Readonly) so AutomergeDocStore can mutate it inside change().
  *
  * Key = tiddler title (lar:/// URI for corpus; short title for room).
  * The bag field stamps the recipe priority slot: corpus slug for corpus islands,
- * "room" for the room island. _freeze() in AutomergeMemeStore uses it.
+ * "room" for the room island.
+ *
+ * MutableLarRecord now lives in base-doc.ts (single canonical definition).
+ * Re-exported here for backward-compat with existing importers.
  */
 
-export interface MutableLarRecord {
-  title:        string;
-  fields:       Record<string, string>;
-  text?:        string;
-  deleted?:     boolean;
-  sourceUri?:   string;
-  contentHash?: string;
-  revision?:    string;
-  authority?:   string;
-  /** Corpus slug ("lares", "elyncia", …) or "room". Stamped at write time. */
-  bag?:         string;
+import type { LarDoc, MutableLarRecord } from "./base-doc.js";
+export type { MutableLarRecord } from "./base-doc.js";
+
+/**
+ * MemeStoreDoc — writable tiddler-store document.
+ *
+ * Extends LarDoc: `schemaVersion` + `tiddlers` are the canonical shape.
+ * No extra fields — the whole payload lives in `tiddlers`.
+ */
+export interface MemeStoreDoc extends LarDoc {
+  readonly tiddlers: Record<string, MutableLarRecord>;  // writable inside change()
 }
 
-export type MemeStoreDoc = Record<string, MutableLarRecord>;
+/** Safe empty state for repo.create<MemeStoreDoc>(). */
+export function emptyMemeStoreDoc(): MemeStoreDoc {
+  return { schemaVersion: "0.1", tiddlers: {} };
+}

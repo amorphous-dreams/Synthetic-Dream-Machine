@@ -1,4 +1,5 @@
-import type { MutableLarRecord } from "./meme-store-doc.js";
+import type { LarDoc } from "./base-doc.js";
+import type { MutableLarRecord } from "./base-doc.js";
 
 /**
  * CatalogDoc — the tiny root Automerge document that names all islands.
@@ -82,17 +83,27 @@ export interface CatalogLarariumEntry {
 // ---------------------------------------------------------------------------
 // CatalogDoc — Automerge document shape
 //
+// Extends LarDoc (M24): `tiddlers` required, not optional.
+// `corpora`, `rooms`, `recipes`, `projections` remain as legacy typed Records
+// for backward-compat.  New code MUST use `tiddlers` as the authoritative
+// oracle — these Records exist as a read-optimisation cache only and will be
+// deprecated once all call sites migrate to tiddler-first lookups.
+//
 // Keyed by id for O(1) lookup. Automerge handles concurrent writes per entry.
 // Keep field count small — this doc loads on every cold boot.
 // ---------------------------------------------------------------------------
 
-export interface CatalogDoc {
-  readonly schemaVersion: string;
+export interface CatalogDoc extends LarDoc {
+  readonly tiddlers: Record<string, Readonly<MutableLarRecord>>;
+  /**
+   * @deprecated Use tiddlers keyed by corpusLarUri(slug) instead.
+   * Legacy corpus index for backward-compat — entries here are now mirrored
+   * as tiddlers by all boot-sequence peers.  Will be removed in M25+.
+   */
   readonly corpora:    Record<string, CatalogCorpusEntry>;
   /**
-   * Room entries, keyed by `lar:///ha.ka.ba/@lararium/rooms/{slug}`.
-   * Use `roomLarUri(slug)` from `@lararium/core` to form the key.
-   * `CatalogRoomEntry.id` holds the short slug for human-readable display.
+   * @deprecated Use tiddlers keyed by roomLarUri(slug) instead.
+   * Legacy room index — mirrored as tiddlers at boot. Will be removed in M25+.
    */
   readonly rooms:      Record<string, CatalogRoomEntry>;
   readonly recipes:    Record<string, CatalogRecipeEntry>;
@@ -101,29 +112,7 @@ export interface CatalogDoc {
   readonly larariumDoc?:  CatalogLarariumEntry;
   /** Capability hints for the connecting peer — read during derive-visible-rooms step. */
   readonly capabilityHints?: Record<string, string>;
-  /**
-   * Named doc tiddler store — keyed by `lar:///ha.ka.ba/@{slug}`.
-   * Bag stamped as "catalog" on each record (ka vertex of the Automerge Tiga).
-   *
-   * Each corpus / named island doc is stored here as a tiddler whose
-   * `text` field holds its current `automerge:` URL.  Isomorphic to
-   * LarariumDoc.tiddlers: any peer that has synced the CatalogDoc can
-   * enumerate all available corpora without a separate HTTP oracle.
-   *
-   * Reserved keys:
-   *   "lar:///ha.ka.ba/@catalog"  — self-reference (ka self-ref tiddler)
-   *
-   * Corpus keys (written by node peer on first boot / resume):
-   *   "lar:///ha.ka.ba/@elyncia"  → Elyncia world corpus automerge URL
-   *   "lar:///ha.ka.ba/@ftls"     → Flying Triremes & Laser Swords corpus
-   *   "lar:///ha.ka.ba/@sdm"      → Synthetic Dream Machine corpus
-   */
-  readonly tiddlers?: Record<string, Readonly<MutableLarRecord>>;
 }
-
-// ---------------------------------------------------------------------------
-// Empty catalog — safe initial state for repo.create()
-// ---------------------------------------------------------------------------
 
 export function emptyCatalogDoc(): CatalogDoc {
   return {

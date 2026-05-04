@@ -11,10 +11,10 @@
 
 import type { DocHandle }              from "@automerge/automerge-repo";
 import type { LarTiddlerRecord, LarTiddlerStore, LarTiddlerChange, ChangeOrigin } from "./tiddler-store.js";
-import type { MutableLarRecord }       from "./meme-store-doc.js";
+import type { MutableLarRecord }       from "./base-doc.js";
 import { LARARIUM_DOC_URI }            from "./lararium-doc.js";
 
-type DocWithTiddlers = { readonly tiddlers?: Record<string, Readonly<MutableLarRecord>> };
+type DocWithTiddlers = { readonly tiddlers: Record<string, Readonly<MutableLarRecord>> };
 
 export class LarariumDocStore<T extends DocWithTiddlers = DocWithTiddlers> implements LarTiddlerStore {
   readonly bagId: string;

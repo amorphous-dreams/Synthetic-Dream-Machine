@@ -31,6 +31,7 @@ import {
   LarPeer, PEER_CAPABILITIES_BROWSER, OpenIdentitySlot,
   AutomergeDocStore, LarariumDocStore,
   CompositeStore, corpusBagId, emptyLarariumDoc,
+  emptyMemeStoreDoc,
   emptyIdentitiesDoc, emptyGroupsDoc, emptySessionsDoc,
   LARARIUM_DOC_URI, CATALOG_DOC_URI, LARES_DOC_URI,
   IDENTITIES_DOC_URI, GROUPS_DOC_URI, SESSIONS_DOC_URI,
@@ -241,7 +242,7 @@ export async function openBrowserLarPeer(opts: {
   if (laresDocUrl) {
     const laresHandle = await waitHandleLocal<MemeStoreDoc>(
       repo, laresDocUrl as AutomergeUrl,
-      () => repo.create<MemeStoreDoc>({}),
+      () => repo.create<MemeStoreDoc>(emptyMemeStoreDoc()),
     );
     composite.addLayer({ bagId: BAG_IDS.lares, store: new AutomergeDocStore(laresHandle, BAG_IDS.lares), writable: false });
   }
@@ -253,7 +254,7 @@ export async function openBrowserLarPeer(opts: {
       repo, identitiesDocUrl as AutomergeUrl,
       () => repo.create<IdentitiesDoc>(emptyIdentitiesDoc()),
     );
-    composite.addLayer({ bagId: BAG_IDS.identities, store: new AutomergeDocStore(idHandle as unknown as DocHandle<MemeStoreDoc>, BAG_IDS.identities), writable: false });
+    composite.addLayer({ bagId: BAG_IDS.identities, store: new AutomergeDocStore(idHandle, BAG_IDS.identities), writable: false });
   }
   const groupsDocUrl = larariumDocHandle?.doc()?.tiddlers?.[GROUPS_DOC_URI]?.text ?? null;
   if (groupsDocUrl) {
@@ -261,7 +262,7 @@ export async function openBrowserLarPeer(opts: {
       repo, groupsDocUrl as AutomergeUrl,
       () => repo.create<GroupsDoc>(emptyGroupsDoc()),
     );
-    composite.addLayer({ bagId: BAG_IDS.groups, store: new AutomergeDocStore(grHandle as unknown as DocHandle<MemeStoreDoc>, BAG_IDS.groups), writable: false });
+    composite.addLayer({ bagId: BAG_IDS.groups, store: new AutomergeDocStore(grHandle, BAG_IDS.groups), writable: false });
   }
   const sessionsDocUrl = larariumDocHandle?.doc()?.tiddlers?.[SESSIONS_DOC_URI]?.text ?? null;
   if (sessionsDocUrl) {
@@ -269,7 +270,7 @@ export async function openBrowserLarPeer(opts: {
       repo, sessionsDocUrl as AutomergeUrl,
       () => repo.create<SessionsDoc>(emptySessionsDoc()),
     );
-    composite.addLayer({ bagId: BAG_IDS.sessions, store: new AutomergeDocStore(seHandle as unknown as DocHandle<MemeStoreDoc>, BAG_IDS.sessions), writable: false });
+    composite.addLayer({ bagId: BAG_IDS.sessions, store: new AutomergeDocStore(seHandle, BAG_IDS.sessions), writable: false });
   }
   // ── 5. Corpus docs — one bag per corpus child-doc ──────────────────────────
   // Isomorphic oracle path: read from CatalogDoc.tiddlers keyed by corpusLarUri(slug).
@@ -287,16 +288,17 @@ export async function openBrowserLarPeer(opts: {
   const corpusPromises = corpusEntries.map(async (entry) => {
     const handle = await waitHandleLocal<MemeStoreDoc>(
       repo, entry.docUrl as AutomergeUrl,
-      () => repo.create<MemeStoreDoc>({}),
+      () => repo.create<MemeStoreDoc>(emptyMemeStoreDoc()),
     );
     const bagId = corpusBagId(entry.id);
     composite.addLayer({ bagId, store: new AutomergeDocStore(handle, bagId), writable: false });
     // Self-describing: corpus doc carries its own lar: URI + automerge URL as a tiddler.
     const corpusUri = corpusLarUri(entry.id);
-    const existingSelfRef = (handle.doc() as unknown as Record<string, { text?: string }>)?.[corpusUri]?.text;
+    const existingSelfRef = handle.doc()?.tiddlers?.[corpusUri]?.text;
     if (existingSelfRef !== handle.url) {
       handle.change((doc) => {
-        (doc as unknown as Record<string, unknown>)[corpusUri] = {
+        const t = (doc as unknown as { tiddlers: Record<string, unknown> }).tiddlers;
+        t[corpusUri] = {
           title: corpusUri, text: handle.url, bag: bagId, authority: "lararium-seed",
         };
       });
@@ -307,7 +309,7 @@ export async function openBrowserLarPeer(opts: {
 
   // ── 4. Room doc — writable ─────────────────────────────────────────────────
   const roomDocUrl = catalog?.rooms?.[roomKey]?.contentDocUrl ?? null;
-  const blankRoom  = () => repo.create<MemeStoreDoc>({});
+  const blankRoom  = () => repo.create<MemeStoreDoc>(emptyMemeStoreDoc());
   const roomHandle: DocHandle<MemeStoreDoc> = roomDocUrl
     ? await waitHandleLocal<MemeStoreDoc>(repo, roomDocUrl as AutomergeUrl, blankRoom)
     : blankRoom();
@@ -333,7 +335,7 @@ export async function openBrowserLarPeer(opts: {
   const draftKey = `drafts_${encodeURIComponent(identity.did)}`;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const existingDraftUrl: string | null = (catalog?.rooms?.[roomKey] as any)?.[draftKey] ?? null;
-  const blankDraft = () => repo.create<MemeStoreDoc>({});
+  const blankDraft = () => repo.create<MemeStoreDoc>(emptyMemeStoreDoc());
   const draftHandle: DocHandle<MemeStoreDoc> = existingDraftUrl
     ? await waitHandleLocal<MemeStoreDoc>(repo, existingDraftUrl as AutomergeUrl, blankDraft)
     : blankDraft();

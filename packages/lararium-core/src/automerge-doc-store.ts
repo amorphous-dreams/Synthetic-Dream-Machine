@@ -1,6 +1,6 @@
 import type { DocHandle } from "@automerge/automerge-repo";
 import type { LarTiddlerRecord, LarTiddlerStore, LarTiddlerChange, ChangeOrigin } from "./tiddler-store.js";
-import type { MemeStoreDoc, MutableLarRecord } from "./meme-store-doc.js";
+import type { LarDoc, MutableLarRecord } from "./base-doc.js";
 import type { MemeProjection } from "./meme-provider.js";
 import { MemeProvider } from "./meme-provider.js";
 
@@ -11,22 +11,36 @@ import { MemeProvider } from "./meme-provider.js";
  * Platform differences (IndexedDB vs fs vs memory) live in the Repo's
  * storage/network adapters — never in the store. Server-as-peer doctrine.
  *
+ * LarDoc alignment (M24): the Automerge doc carries a `tiddlers` submap.
+ *   doc.tiddlers[title] = MutableLarRecord
+ *
+ * Automerge patches arrive with path = ["tiddlers", title, fieldName].
+ * AutomergeDocStore strips the leading "tiddlers" segment before handing
+ * patches to MemeProvider so the provider stays path-agnostic.
+ *
  * FPI-3 (synergy): same mutation/subscription API runs on every peer.
  * Local-first Ideal 1 (fast): get/listVisible read from the in-memory doc.
  */
 export class AutomergeDocStore implements LarTiddlerStore {
-  protected readonly handle: DocHandle<MemeStoreDoc>;
+  protected readonly handle: DocHandle<LarDoc>;
   readonly provider: MemeProvider;
   readonly bagId: string | undefined;
 
-  constructor(handle: DocHandle<MemeStoreDoc>, bagId?: string) {
+  constructor(handle: DocHandle<LarDoc>, bagId?: string) {
     this.handle  = handle;
     this.bagId   = bagId;
-    this.provider = new MemeProvider(() => (handle.doc() ?? {}) as Record<string, unknown>);
+    // MemeProvider gets the tiddlers submap — keeps MemeProvider path-agnostic.
+    this.provider = new MemeProvider(() => (handle.doc()?.tiddlers ?? {}) as Record<string, unknown>);
 
     const remoteOrigin: ChangeOrigin = { kind: "crdt-remote", edgeIsland: "automerge" };
     handle.on("change", ({ patches }) => {
-      this.provider.handleChange(patches ?? [], remoteOrigin);
+      // Re-map ["tiddlers", title, ...] → [title, ...] before fan-out.
+      // Patches that touch doc-level fields (schemaVersion, etc.) are dropped here
+      // since MemeProvider only tracks tiddler-keyed URIs.
+      const remapped = (patches ?? [])
+        .filter((p) => Array.isArray(p.path) && p.path[0] === "tiddlers")
+        .map((p) => ({ ...p, path: (p.path as unknown[]).slice(1) }));
+      this.provider.handleChange(remapped, remoteOrigin);
     });
   }
 
@@ -39,21 +53,21 @@ export class AutomergeDocStore implements LarTiddlerStore {
   }
 
   async listVisible(): Promise<string[]> {
-    const doc = this.handle.doc();
-    if (!doc) return [];
-    return (Object.values(doc) as MutableLarRecord[])
+    const tiddlers = this.handle.doc()?.tiddlers;
+    if (!tiddlers) return [];
+    return (Object.values(tiddlers) as MutableLarRecord[])
       .filter((r) => r && !r.deleted && r.title && !r.title.startsWith("$:/temp/"))
       .map((r) => r.title);
   }
 
   async get(title: string): Promise<LarTiddlerRecord | null> {
-    const raw = this.handle.doc()?.[title];
+    const raw = this.handle.doc()?.tiddlers?.[title];
     return raw ? this._freeze(raw) : null;
   }
 
   async put(record: LarTiddlerRecord, origin: ChangeOrigin): Promise<void> {
     this.handle.change((doc) => {
-      doc[record.title] = {
+      (doc.tiddlers as Record<string, MutableLarRecord>)[record.title] = {
         title:  record.title,
         fields: { ...record.fields },
         ...(record.text        !== undefined && { text:        record.text }),
@@ -70,9 +84,10 @@ export class AutomergeDocStore implements LarTiddlerStore {
 
   async tombstone(title: string, origin: ChangeOrigin): Promise<void> {
     this.handle.change((doc) => {
-      const existing = doc[title];
+      const tiddlers = doc.tiddlers as Record<string, MutableLarRecord>;
+      const existing = tiddlers[title];
       if (existing) { existing.deleted = true; }
-      else { doc[title] = { title, fields: {}, deleted: true }; }
+      else { tiddlers[title] = { title, fields: {}, deleted: true }; }
     });
     this.provider.fireImmediate({ title, record: null, origin });
   }

@@ -31,6 +31,7 @@ import {
   LarPeer, PEER_CAPABILITIES_NODE, OpenIdentitySlot,
   AutomergeDocStore, LarariumDocStore,
   CompositeStore, corpusBagId, emptyLarariumDoc,
+  emptyMemeStoreDoc,
   emptyIdentitiesDoc, emptyGroupsDoc, emptySessionsDoc,
   CATALOG_DOC_URI, LARES_DOC_URI,
   IDENTITIES_DOC_URI, GROUPS_DOC_URI, SESSIONS_DOC_URI,
@@ -46,6 +47,7 @@ import {
   seedSessionsDoc,
   seedDefaultRecipes,
   seedBagDescriptors,
+  seedBlobDescriptors,
   reconcileEngineBlobIfChanged,
   reconcileLaresPluginBlobIfChanged,
   reconcileWellKnownTiddlers,
@@ -228,7 +230,7 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
     if (laresDocUrl) {
       laresHandle = await waitHandleLocal<MemeStoreDoc>(
         repo, laresDocUrl as AutomergeUrl,
-        () => repo.create<MemeStoreDoc>({}),
+        () => repo.create<MemeStoreDoc>(emptyMemeStoreDoc()),
       );
     } else {
       laresHandle = seedLaresDoc(repo);
@@ -247,19 +249,19 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
     identitiesHandle = identitiesUrl
       ? await waitHandleLocal<IdentitiesDoc>(repo, identitiesUrl as AutomergeUrl, () => repo.create<IdentitiesDoc>(emptyIdentitiesDoc()))
       : seedIdentitiesDoc(repo);
-    composite.addLayer({ bagId: BAG_IDS.identities, store: new AutomergeDocStore(identitiesHandle as unknown as DocHandle<MemeStoreDoc>, BAG_IDS.identities), writable: false });
+    composite.addLayer({ bagId: BAG_IDS.identities, store: new AutomergeDocStore(identitiesHandle, BAG_IDS.identities), writable: false });
 
     const groupsUrl = islandHandle.doc()?.tiddlers?.[GROUPS_DOC_URI]?.text ?? null;
     groupsHandle = groupsUrl
       ? await waitHandleLocal<GroupsDoc>(repo, groupsUrl as AutomergeUrl, () => repo.create<GroupsDoc>(emptyGroupsDoc()))
       : seedGroupsDoc(repo);
-    composite.addLayer({ bagId: BAG_IDS.groups, store: new AutomergeDocStore(groupsHandle as unknown as DocHandle<MemeStoreDoc>, BAG_IDS.groups), writable: false });
+    composite.addLayer({ bagId: BAG_IDS.groups, store: new AutomergeDocStore(groupsHandle, BAG_IDS.groups), writable: false });
 
     const sessionsUrl = islandHandle.doc()?.tiddlers?.[SESSIONS_DOC_URI]?.text ?? null;
     sessionsHandle = sessionsUrl
       ? await waitHandleLocal<SessionsDoc>(repo, sessionsUrl as AutomergeUrl, () => repo.create<SessionsDoc>(emptySessionsDoc()))
       : seedSessionsDoc(repo);
-    composite.addLayer({ bagId: BAG_IDS.sessions, store: new AutomergeDocStore(sessionsHandle as unknown as DocHandle<MemeStoreDoc>, BAG_IDS.sessions), writable: false });
+    composite.addLayer({ bagId: BAG_IDS.sessions, store: new AutomergeDocStore(sessionsHandle, BAG_IDS.sessions), writable: false });
 
     // Zelenka: keep oracle tiddlers current on every boot — self, ka, ba, social plane.
     reconcileWellKnownTiddlers(
@@ -272,6 +274,7 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
     // Seed default recipe tiddlers into ha island (idempotent — no-op on resume).
     seedDefaultRecipes(islandHandle);
     seedBagDescriptors(islandHandle);
+    seedBlobDescriptors(islandHandle);
   }
 
   // ── 3c. Corpus docs — one bag per corpus child-doc ───────────────────────
@@ -289,7 +292,7 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
   const corpusReadyP = Promise.all(corpusEntries.map(async (entry) => {
     const handle = await waitHandleLocal<MemeStoreDoc>(
       repo, entry.docUrl as AutomergeUrl,
-      () => repo.create<MemeStoreDoc>({}),
+      () => repo.create<MemeStoreDoc>(emptyMemeStoreDoc()),
     );
     const bagId = corpusBagId(entry.id);
     composite.addLayer({ bagId, store: new AutomergeDocStore(handle, bagId), writable: false });
@@ -297,10 +300,11 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
     // Self-describing: corpus doc holds its own lar: URI + automerge URL as a tiddler.
     // Any peer that opens the doc can discover its canonical lar: address without a catalog lookup.
     const corpusUri = corpusLarUri(entry.id);
-    const existingCorpusSelfRef = (handle.doc() as unknown as Record<string, { text?: string }>)?.[corpusUri]?.text;
+    const existingCorpusSelfRef = handle.doc()?.tiddlers?.[corpusUri]?.text;
     if (existingCorpusSelfRef !== handle.url) {
       handle.change((doc) => {
-        (doc as unknown as Record<string, unknown>)[corpusUri] = {
+        const t = (doc as unknown as { tiddlers: Record<string, unknown> }).tiddlers;
+        t[corpusUri] = {
           title: corpusUri, text: handle.url, bag: bagId, authority: "lararium-seed",
         };
       });
@@ -322,7 +326,7 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
 
   // ── 4. Room doc — local-first, writable ───────────────────────────────────
   const roomDocUrl = catalog?.rooms?.[roomKey]?.contentDocUrl ?? null;
-  const blankRoom  = (): DocHandle<MemeStoreDoc> => repo.create<MemeStoreDoc>({});
+  const blankRoom  = (): DocHandle<MemeStoreDoc> => repo.create<MemeStoreDoc>(emptyMemeStoreDoc());
   const roomHandle: DocHandle<MemeStoreDoc> = roomDocUrl
     ? await waitHandleLocal<MemeStoreDoc>(repo, roomDocUrl as AutomergeUrl, blankRoom)
     : blankRoom();
@@ -347,7 +351,7 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
   const draftKey = `drafts_${encodeURIComponent(identity.did)}`;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const existingDraftUrl: string | null = (catalog?.rooms?.[roomKey] as any)?.[draftKey] ?? null;
-  const blankDraft = (): DocHandle<MemeStoreDoc> => repo.create<MemeStoreDoc>({});
+  const blankDraft = (): DocHandle<MemeStoreDoc> => repo.create<MemeStoreDoc>(emptyMemeStoreDoc());
   const draftHandle: DocHandle<MemeStoreDoc> = existingDraftUrl
     ? await waitHandleLocal<MemeStoreDoc>(repo, existingDraftUrl as AutomergeUrl, blankDraft)
     : blankDraft();
