@@ -36,6 +36,7 @@
     "@lararium/tw5": "workspace:*",
     "@octokit/rest": "^22.0.1",
     "@types/ws": "^8.18.1",
+    "isomorphic-ws": "^5.0.0",
     "ws": "^8.20.0"
   },
   "devDependencies": {

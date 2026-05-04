@@ -8,9 +8,14 @@
  * Query ops (filterTiddlers, renderMeme) return Promises resolved by the response listener.
  *
  * Usage (browser, Vite):
- *   const proxy = new TW5WorkerProxy(new URL("/tw5-worker.js", location.origin));
+ *   const factory = () => new Worker(new URL("/tw5-worker.js", location.origin), { type: "module" });
+ *   const proxy = new TW5WorkerProxy(factory);
  *   await proxy.boot(coreBlob, preloads);
  *   // VM is live — same MemeRecipeVm interface as DirectMemeRecipeVm.
+ *
+ * Usage (Node Worker Thread):
+ *   const factory = () => new NodeWorker(new URL("./tw5-worker.js", import.meta.url));
+ *   const proxy = new TW5WorkerProxy(factory);
  *
  * Isomorphic seam: identical interface whether TW5 runs in-process (DirectMemeRecipeVm)
  * or in a Worker thread (TW5WorkerProxy). The VmPool factory is the only construction site.
@@ -19,32 +24,21 @@
  */
 
 import type { LarTiddlerChange } from "@lararium/core";
-import type { MemeRecipeVm } from "./meme-recipe-vm.js";
+import type { MemeRecipeVm } from "@lararium/core";
 
 // ---------------------------------------------------------------------------
-// Isomorphic worker constructor — Node Worker Thread or browser Web Worker
+// Platform-agnostic worker handle — Node Worker Thread or browser Web Worker
 // ---------------------------------------------------------------------------
 
-type AnyWorker = {
+export type AnyWorker = {
   postMessage(data: unknown): void;
   on?(event: string, handler: (data: unknown) => void): void;
   addEventListener?(type: string, handler: (e: MessageEvent) => void): void;
   terminate(): void | Promise<void>;
 };
 
-function spawnWorker(scriptUrl: URL): AnyWorker {
-  if (
-    typeof process !== "undefined" &&
-    typeof process.versions?.node === "string"
-  ) {
-    // Node Worker Thread — dynamic import so browser bundles never see it
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const { Worker } = require("node:worker_threads") as typeof import("node:worker_threads");
-    return new Worker(scriptUrl) as unknown as AnyWorker;
-  }
-  // Web Worker (browser)
-  return new Worker(scriptUrl, { type: "module" }) as unknown as AnyWorker;
-}
+/** Factory supplied by the platform package (@lararium/app or @lararium/node). */
+export type WorkerFactory = () => AnyWorker;
 
 // ---------------------------------------------------------------------------
 // TW5WorkerProxy
@@ -58,8 +52,8 @@ export class TW5WorkerProxy implements MemeRecipeVm {
   >();
   private _seq = 0;
 
-  constructor(scriptUrl: URL) {
-    this._worker = spawnWorker(scriptUrl);
+  constructor(workerFactory: WorkerFactory) {
+    this._worker = workerFactory();
 
     const onMessage = (msg: unknown) => {
       const { id, ok, result, error } = msg as {

@@ -1,60 +1,17 @@
 /**
- * meme-recipe-vm — MemeRecipeVm interface and DirectMemeRecipeVm implementation.
+ * meme-recipe-vm — DirectMemeRecipeVm and bootMemeRecipeVm.
  *
- * Replaces the web2-era RecipeVm (recipe-vm.ts / recipe-vm.web2.ts) with an
- * interface aligned to the FFZ 5-scale causal-island model:
+ * MemeRecipeVm interface lives in @lararium/core (meme-recipe-vm.ts) so both
+ * @lararium/node and @lararium/app can type against it without pulling in TW5.
  *
- *   - `loadRecords` REMOVED — MemeProvider projection IS the bulk path.
- *     The VM receives incremental `onUriChanged` calls from MemeProvider;
- *     the provider coalesces CRDT patches per DEBOUNCE_MS.
- *   - `onSyncComplete(islandId)` replaces the old "loadRecords done" signal.
- *     Called once per causal island after initial sync completes (Scale 4).
- *     Made required (not optional) at the MemeRecipeVm layer.
- *   - `renderMeme(uri)` replaces `renderCarrier(uri)`.
- *     Sprint 3c: calls exportMemeText from meme-write.ts.
- *     Sprint 3a stub: delegates to renderTiddler (HTML render pass).
- *   - Worker isolation (DirectMemeRecipeVm vs TW5WorkerProxy) is unchanged.
- *     The factory seam is kept; all call sites are backend-agnostic.
- *
- * Boot sequence (via `bootMemeRecipeVm`):
- *   provider.addProjection(vm) → vm receives incremental deltas from CRDT
- *   vm.onSyncComplete(islandId) → called once when initial sync is done
- *
- * Schema: lar:///ha.ka.ba/@lares/api/v0.1/lararium/schema/meme-recipe-vm
+ * DirectMemeRecipeVm — in-process TW5Engine wrapper (no Worker overhead).
+ * TW5WorkerProxy     — Worker-backed implementation; lives in tw5-worker-proxy.ts.
+ *                      Platform supplies the workerFactory at construction time.
  */
 
-import type { LarTiddlerChange, MemeProjection, MemeProvider } from "@lararium/core";
+import type { LarTiddlerChange, MemeProvider, MemeRecipeVm } from "@lararium/core";
 import type { TW5Engine } from "./tw5-vm.js";
 import { exportMemeText } from "./meme-write.js";
-
-// ---------------------------------------------------------------------------
-// MemeRecipeVm — isomorphic interface for a TW5 wiki engine slot in the VmPool
-// ---------------------------------------------------------------------------
-
-/**
- * One VM slot per recipe. Two implementations:
- *   `DirectMemeRecipeVm`  — in-process TW5Engine (default; no Worker overhead)
- *   `TW5WorkerProxy`      — Worker Thread / Web Worker (Sprint 6 browser host)
- *
- * Implements MemeProjection so it can be registered directly with MemeProvider.
- */
-export interface MemeRecipeVm extends MemeProjection {
-  // onUriChanged(change): void  — inherited (required) from MemeProjection
-  // onChangeset?(uris, origin)  — inherited (optional) from MemeProjection
-
-  /** Required at this layer — VM slot must handle island sync-complete (Scale 4). */
-  onSyncComplete(islandId: string): void;
-  /** Run a TW5 wikitext filter expression, return matching titles. */
-  filterTiddlers(expr: string): Promise<string[]>;
-  /**
-   * Render a meme URI to its disk format (memetic-wikitext export).
-   * Calls exportMemeText from meme-write.ts — not exportCarrierText.
-   * Returns null if the URI is not present or is deleted.
-   */
-  renderMeme(uri: string): Promise<string | null>;
-  /** Release resources. Called by VmPool.release(). */
-  dispose(): void;
-}
 
 // ---------------------------------------------------------------------------
 // DirectMemeRecipeVm — in-process TW5Engine wrapper

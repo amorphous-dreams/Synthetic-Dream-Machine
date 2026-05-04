@@ -29,7 +29,7 @@
  */
 
 import { createServer }                  from "http";
-import { WebSocketServer }               from "ws";
+import WebSocket                         from "isomorphic-ws";
 import { resolve }                       from "path";
 import { openNodeLarPeer }               from "./open-node-lar-peer.js";
 import { LarDiskProjector }              from "./disk-projector.js";
@@ -99,7 +99,7 @@ async function main(): Promise<void> {
   // WS server — path-scoped to /ws only (local-first best practice: reject other upgrade paths
   // so a stray browser probe or dev tool WS never gets wired into Automerge sync).
   // `noServer: true` + manual handleProtocols lets us filter by path before upgrade.
-  const wss = new WebSocketServer({ noServer: true });
+  const wss = new WebSocket.Server({ noServer: true });
 
   httpServer.on("upgrade", (req, socket, head) => {
     const pathname = new URL(req.url ?? "/", "http://localhost").pathname;

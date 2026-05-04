@@ -37,26 +37,17 @@ import {
   IDENTITIES_DOC_URI, GROUPS_DOC_URI, SESSIONS_DOC_URI,
   roomLarUri, corpusLarUri, BAG_IDS, recipeUri,
   sha256Hex, defaultCryptoProvider,
+  VmPool,
 }                                                       from "@lararium/core";
-import type { IdentitiesDoc, GroupsDoc, SessionsDoc }   from "@lararium/core";
-import { TW5Engine, MemeSyncAdaptor, VmPool, DirectMemeRecipeVm } from "@lararium/tw5";
-import type { MemeRecipeVm }                            from "@lararium/tw5";
+import type { MemeRecipeVm, LarOpenPhase, IdentitiesDoc, GroupsDoc, SessionsDoc } from "@lararium/core";
+import { TW5Engine, MemeSyncAdaptor, DirectMemeRecipeVm } from "@lararium/tw5";
 
 // ---------------------------------------------------------------------------
-// BrowserOpenPhase — clean phase sequence
+// BrowserOpenPhase — alias of the canonical LarOpenPhase from @lararium/core
 // ---------------------------------------------------------------------------
 
-export type BrowserOpenPhase =
-  | "boot"           // factory called; repo not yet open
-  | "repo-open"      // Repo + adapters initialized
-  | "catalog-ready"  // catalog DocHandle resolved
-  | "island-ready"   // LarariumIsland (system bag) resolved — may arrive async
-  | "room-ready"     // room DocHandle resolved
-  | "draft-ready"    // room-drafts DocHandle resolved
-  | "peer-ready"     // LarPeer constructed, CompositeStore wired
-  | "tw5-booted"     // TW5Engine.boot() resolved
-  | "corpus-ready"   // corpus bags attached (fires once all initial corpora loaded)
-  | "live";          // MemeSyncAdaptor wired, VmPool attached
+/** @see LarOpenPhase in @lararium/core */
+export type BrowserOpenPhase = LarOpenPhase;
 
 // 500ms: IndexedDB should materialize immediately if previously seen.
 // On miss, boot blank and merge remote in background when it arrives.
@@ -127,8 +118,17 @@ export async function openBrowserLarPeer(opts: {
    */
   recipeUri?: string;
   onPhase?:  (phase: BrowserOpenPhase) => void;
+  /**
+   * Optional factory for the per-recipe VM.  Defaults to DirectMemeRecipeVm (same-thread).
+   * Pass a TW5WorkerProxy factory for Worker isolation (Sprint 6 browser Worker isolation).
+   *
+   * @param recipeUri - The resolved recipe URI for the VM scope.
+   * @param tw5       - The booted TW5Engine for this peer.
+   * @param bagStack  - Ordered bag stack for this recipe's tiddler view.
+   */
+  vmFactory?: (recipeUri: string, tw5: TW5Engine, bagStack: readonly string[]) => Promise<MemeRecipeVm>;
 }): Promise<BrowserLarPeerResult> {
-  const { hostId, roomId, wsUrl, recipeUri: recipeUriOpt, onPhase } = opts;
+  const { hostId, roomId, wsUrl, recipeUri: recipeUriOpt, onPhase, vmFactory } = opts;
   const emit = (p: BrowserOpenPhase) => onPhase?.(p);
   // Stable identity URI for this room — the map key in CatalogDoc.rooms.
   const roomKey = roomLarUri(roomId);
@@ -277,7 +277,7 @@ export async function openBrowserLarPeer(opts: {
     .filter(([uri]) => uri.startsWith(CORPUS_PREFIX))
     .map(([uri, tiddler]) => ({
       id: uri.slice(CORPUS_PREFIX.length),
-      docUrl: (tiddler as { text?: string }).text ?? null,
+      docUrl: tiddler.text ?? null,
     }))
     .filter((e): e is { id: string; docUrl: string } => Boolean(e.docUrl));
   const corpusPromises = corpusEntries.map(async (entry) => {
@@ -292,9 +292,8 @@ export async function openBrowserLarPeer(opts: {
     const existingSelfRef = handle.doc()?.tiddlers?.[corpusUri]?.text;
     if (existingSelfRef !== handle.url) {
       handle.change((doc) => {
-        const t = (doc as unknown as { tiddlers: Record<string, unknown> }).tiddlers;
-        t[corpusUri] = {
-          title: corpusUri, text: handle.url, bag: bagId, authority: "lararium-seed",
+        doc.tiddlers[corpusUri] = {
+          title: corpusUri, text: handle.url, fields: {}, bag: bagId, authority: "lararium-seed",
         };
       });
     }
@@ -376,9 +375,8 @@ export async function openBrowserLarPeer(opts: {
       console.error(
         `[lararium] tiddlywikicore sha256 mismatch: got=${actualSha.slice(0, 12)}… want=${coreBlobEntry.sha256.slice(0, 12)}…`,
       );
-      // Don't boot with a tampered blob — surface the phase and bail.
-      setPhase("error");
-      return;
+      // Don't boot with a tampered blob — throw so the hook surfaces error state.
+      throw new Error(`tiddlywikicore sha256 mismatch: got=${actualSha}, want=${coreBlobEntry.sha256}`);
     }
   }
 
@@ -429,7 +427,11 @@ export async function openBrowserLarPeer(opts: {
   const vmBagStack: readonly string[] = vmRecipe?.bagStack ?? composite.layerIds;
 
   const pool = new VmPool<MemeRecipeVm>();
-  await pool.get(resolvedRecipeUri, async () => new DirectMemeRecipeVm(tw5, vmBagStack));
+  const _vmFactory = vmFactory ?? (
+    async (_uri: string, engine: TW5Engine, bags: readonly string[]) =>
+      new DirectMemeRecipeVm(engine, bags)
+  );
+  await pool.get(resolvedRecipeUri, () => _vmFactory(resolvedRecipeUri, tw5, vmBagStack));
   peer.attachVmPool(pool);
 
   emit("live");

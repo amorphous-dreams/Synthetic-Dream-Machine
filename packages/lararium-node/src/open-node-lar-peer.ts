@@ -25,7 +25,7 @@ import type { DocHandle, AutomergeUrl } from "@automerge/automerge-repo";
 import { Repo }                         from "@automerge/automerge-repo";
 import { NodeFSStorageAdapter }         from "@automerge/automerge-repo-storage-nodefs";
 import { NodeWSServerAdapter }          from "@automerge/automerge-repo-network-websocket";
-import type { WebSocketServer }         from "ws";
+import type { WebSocketServer }         from "isomorphic-ws";
 import type { CatalogDoc, MemeStoreDoc, LarariumDoc, IdentitiesDoc, GroupsDoc, SessionsDoc } from "@lararium/core";
 import type { MutableLarRecord }        from "@lararium/core";
 import {
@@ -37,9 +37,10 @@ import {
   LARARIUM_DOC_URI, CATALOG_DOC_URI, LARES_DOC_URI,
   IDENTITIES_DOC_URI, GROUPS_DOC_URI, SESSIONS_DOC_URI,
   corpusLarUri, roomLarUri, BAG_IDS, recipeUri,
+  VmPool,
 }                                       from "@lararium/core";
-import { TW5Engine, MemeSyncAdaptor, VmPool, DirectMemeRecipeVm } from "@lararium/tw5";
-import type { MemeRecipeVm } from "@lararium/tw5";
+import type { MemeRecipeVm, LarOpenPhase } from "@lararium/core";
+import { TW5Engine, MemeSyncAdaptor, DirectMemeRecipeVm } from "@lararium/tw5";
 import {
   seedLarariumDoc,
   seedLaresDoc,
@@ -54,17 +55,8 @@ import {
   reconcileWellKnownTiddlers,
 } from "./lararium-island.js";
 
-export type NodeOpenPhase =
-  | "boot"
-  | "repo-open"
-  | "catalog-ready"
-  | "island-ready"
-  | "room-ready"
-  | "draft-ready"
-  | "peer-ready"
-  | "tw5-booted"
-  | "corpus-ready"
-  | "live";
+/** @see LarOpenPhase in @lararium/core */
+export type NodeOpenPhase = LarOpenPhase;
 
 export interface NodeLarPeerOptions {
   hostId:     string;
@@ -80,6 +72,15 @@ export interface NodeLarPeerOptions {
    */
   recipeUri?: string;
   onPhase?:   (phase: NodeOpenPhase) => void;
+  /**
+   * Optional factory for the per-recipe VM.  Defaults to DirectMemeRecipeVm (same-thread).
+   * Pass a TW5WorkerProxy factory for Worker isolation (Sprint 6 node Worker isolation).
+   *
+   * @param recipeUri - The resolved recipe URI for the VM scope.
+   * @param tw5       - The booted TW5Engine for this peer.
+   * @param bagStack  - Ordered bag stack for this recipe's tiddler view.
+   */
+  vmFactory?: (recipeUri: string, tw5: TW5Engine, bagStack: readonly string[]) => Promise<MemeRecipeVm>;
 }
 
 export interface NodeLarPeerResult {
@@ -120,7 +121,7 @@ async function waitHandleLocal<T>(
 }
 
 export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLarPeerResult> {
-  const { hostId, roomId, storageDir, wss, catalogUrl, recipeUri: recipeUriOpt, onPhase } = opts;
+  const { hostId, roomId, storageDir, wss, catalogUrl, recipeUri: recipeUriOpt, onPhase, vmFactory } = opts;
   const emit = (p: NodeOpenPhase) => onPhase?.(p);
   // Stable identity URI for this room — the map key in CatalogDoc.rooms.
   const roomKey = roomLarUri(roomId);
@@ -129,8 +130,9 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
 
   // ── 1. Repo ───────────────────────────────────────────────────────────────
   const storage = new NodeFSStorageAdapter(storageDir);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const network = new NodeWSServerAdapter(wss as any);
+  // Tier-3 causal-island boundary: WebSocket server is the network relay.
+  // wss is typed via isomorphic-ws — the same module NodeWSServerAdapter uses.
+  const network = new NodeWSServerAdapter(wss);
   // sharePolicy: alpha stub — open federation.
   // Keyhive/UCAN injection point: async (peerId) => identity.verifyCapability(peerId, "read")
   const repo    = new Repo({ storage, network: [network], sharePolicy: async () => true });
@@ -292,7 +294,7 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
     .filter(([uri]) => uri.startsWith(CORPUS_PREFIX))
     .map(([uri, tiddler]) => ({
       id: uri.slice(CORPUS_PREFIX.length),
-      docUrl: (tiddler as { text?: string }).text ?? null,
+      docUrl: tiddler.text ?? null,
     }))
     .filter((e): e is { id: string; docUrl: string } => Boolean(e.docUrl));
   const corpusReadyP = Promise.all(corpusEntries.map(async (entry) => {
@@ -309,9 +311,8 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
     const existingCorpusSelfRef = handle.doc()?.tiddlers?.[corpusUri]?.text;
     if (existingCorpusSelfRef !== handle.url) {
       handle.change((doc) => {
-        const t = (doc as unknown as { tiddlers: Record<string, unknown> }).tiddlers;
-        t[corpusUri] = {
-          title: corpusUri, text: handle.url, bag: bagId, authority: "lararium-seed",
+        doc.tiddlers[corpusUri] = {
+          title: corpusUri, text: handle.url, fields: {}, bag: bagId, authority: "lararium-seed",
         };
       });
     }
@@ -321,9 +322,8 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
     const existingText = catalogHandle.doc()?.tiddlers?.[corpusUri]?.text;
     if (existingText !== entry.docUrl) {
       catalogHandle.change((doc) => {
-        const t = (doc as unknown as { tiddlers: Record<string, unknown> }).tiddlers;
-        t[corpusUri] = {
-          title: corpusUri, text: entry.docUrl,
+        doc.tiddlers[corpusUri] = {
+          title: corpusUri, text: entry.docUrl, fields: {},
           bag: CATALOG_DOC_URI, authority: "lararium-seed",
         };
       });
@@ -438,7 +438,11 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
 
   // ── 10. VmPool ────────────────────────────────────────────────────────────
   const pool = new VmPool<MemeRecipeVm>();
-  await pool.get("slot-0", async () => new DirectMemeRecipeVm(tw5, vmBagStack));
+  const _vmFactory = vmFactory ?? (
+    async (_uri: string, engine: TW5Engine, bags: readonly string[]) =>
+      new DirectMemeRecipeVm(engine, bags)
+  );
+  await pool.get(resolvedRecipeUri, () => _vmFactory(resolvedRecipeUri, tw5, vmBagStack));
   peer.attachVmPool(pool);
 
   emit("live");

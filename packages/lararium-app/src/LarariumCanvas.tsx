@@ -2,8 +2,8 @@ import { useEffect, useRef } from "react";
 import { Tldraw } from "tldraw";
 import type { TLShapeId, TLComponents, TLEventInfo } from "tldraw";
 import "tldraw/tldraw.css";
-import type { LarViewState, LarViewAction, TldrawEditorLike, ZoomLevel } from "@lararium/tldraw";
-import { goToStoryRiver, goToGraph, goToRoom, zoomToMeme, classifyZoom } from "@lararium/tldraw";
+import type { LarViewState, LarViewAction, ZoomLevel } from "@lararium/tldraw";
+import { goToStoryRiver, goToGraph, goToRoom, zoomToMeme, classifyZoom, MemeCanvasProjection, TldrawCanvasBinding } from "@lararium/tldraw";
 import { RATING_COLOR, type Rating5 } from "@lararium/core";
 import type { TW5Engine } from "@lararium/tw5";
 import { LarariumMenuPanel, LarariumSharePanel, LarariumHelperButtons, useLararium } from "./lararium-context.js";
@@ -41,6 +41,8 @@ interface Props {
   dispatch: React.Dispatch<LarViewAction>;
   drawingMode: boolean;
   onZoomLevel?: (level: ZoomLevel) => void;
+  /** Canvas projection to bind once the tldraw editor mounts. */
+  canvasProjection?: MemeCanvasProjection;
 }
 
 type TldrawEditor = Parameters<NonNullable<React.ComponentProps<typeof Tldraw>["onMount"]>>[0];
@@ -133,15 +135,14 @@ function ratingFromShape(shape: ReturnType<TldrawEditor["getCurrentPageShapes"]>
 }
 
 function syncNavState(editor: TldrawEditor, navState: LarViewState) {
-  const ed = editor as unknown as TldrawEditorLike;
   if (navState.activeView === "graph") {
-    goToGraph(ed);
+    goToGraph(editor);
   } else if (navState.activeView === "room" && navState.focusUri) {
-    goToRoom(ed, navState.focusUri);
+    goToRoom(editor, navState.focusUri);
   } else if (navState.activeView === "meme-detail" && navState.focusUri) {
-    zoomToMeme(ed, navState.focusUri);
+    zoomToMeme(editor, navState.focusUri);
   } else {
-    goToStoryRiver(ed);
+    goToStoryRiver(editor);
   }
 }
 
@@ -159,7 +160,7 @@ function getLarUriFromShape(editor: TldrawEditor, shapeId: TLShapeId): string | 
   return null;
 }
 
-export function LarariumCanvas({ navState, dispatch, drawingMode, onZoomLevel }: Props) {
+export function LarariumCanvas({ navState, dispatch, drawingMode, onZoomLevel, canvasProjection }: Props) {
   const editorRef = useRef<TldrawEditor | null>(null);
   const { theme, setEditor, peer, tw5 } = useLararium();
   const tiddlerStore = peer?.store ?? null;
@@ -230,6 +231,9 @@ export function LarariumCanvas({ navState, dispatch, drawingMode, onZoomLevel }:
           editorRef.current = editor;
           setEditor(editor);
           debugSet("editor",       editor);
+          // Bind the canvas projection to the tldraw editor.
+          // From this point, CRDT changes drive the canvas via typed APIs.
+          canvasProjection?.bindView(new TldrawCanvasBinding(editor));
 editor.user.updateUserPreferences({ colorScheme: "dark" });
           editor.setCurrentTool("select");
 

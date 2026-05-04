@@ -20,7 +20,7 @@
 import { useReducer, useEffect, useState, useRef, useCallback, useMemo } from "react";
 import type { Editor } from "tldraw";
 import { createPortal } from "react-dom";
-import { INITIAL_VIEW_STATE, viewStateReducer } from "@lararium/tldraw";
+import { INITIAL_VIEW_STATE, viewStateReducer, MemeCanvasProjection } from "@lararium/tldraw";
 import type { LarViewAction, ZoomLevel } from "@lararium/tldraw";
 import { ReactionEngine } from "@lararium/core";
 import { LarariumCanvas } from "./LarariumCanvas.js";
@@ -28,7 +28,6 @@ import { LarHUD } from "./LarHUD.js";
 import { BootSplash } from "./BootSplash.js";
 import { LarariumCtx, useTheme } from "./lararium-context.js";
 import { useBrowserLarPeer } from "./open-browser-lar-peer.js";
-import { projectFromTw5 } from "@lararium/tldraw";
 import { debugSet } from "./debug.js";
 import "./lararium-theme.css";
 import type { MemeEntry } from "./App.js";
@@ -67,7 +66,7 @@ export function LarariumShell({ memes, onMemes }: ShellProps) {
 
   const engineRef = useRef<ReactionEngine>(new ReactionEngine());
   const [graphReady, setGraphReady] = useState(false);
-  const projectedIdsRef = useRef<Set<string>>(new Set());
+  const canvasProjectionRef = useRef(new MemeCanvasProjection());
 
   const dispatchRef = useRef(dispatch);
   dispatchRef.current = dispatch;
@@ -109,39 +108,21 @@ export function LarariumShell({ memes, onMemes }: ShellProps) {
     scanMemesFromTw5();
     // Route CRDT changes through ReactionEngine (MemeProjection bus).
     const unsubEngine = peer.addProjection(engineRef.current);
-    // Canvas re-projection on any lar: tiddler change.
-    const unsubCanvas = peer.addProjection({
+    // Canvas projection: CRDT changes → CanvasPatch → TldrawCanvasBinding.
+    // The binding is wired to the editor inside LarariumCanvas.onMount via
+    // canvasProjectionRef.current.bindView(new TldrawCanvasBinding(editor)).
+    const unsubCanvas = peer.addProjection(canvasProjectionRef.current);
+    // Also scan memes on every lar: tiddler change for the HUD list.
+    const unsubScan = peer.addProjection({
       onUriChanged(change) {
-        if (!change.title.startsWith("lar:")) return;
-        scanMemesFromTw5();
-        const ed = editorRef.current;
-        if (!ed) return;
-        const { pages, shapes, bindings: newBindings } = projectFromTw5(tw5);
-        const newRecords = [...pages, ...shapes, ...newBindings];
-        const newIds = new Set(newRecords.map((r) => r.id));
-        const prevIds = projectedIdsRef.current;
-        const removed = [...prevIds].filter((id) => !newIds.has(id));
-        // projectFromTw5 emits plain string IDs; tldraw store expects branded TLBindingId.
-        // Cast until the projection layer uses createBindingId() for arrow bindings.
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (ed.store as any).put(newRecords);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        if (removed.length > 0) (ed.store as any).remove(removed);
-        projectedIdsRef.current = newIds;
+        if (change.title.startsWith("lar:")) scanMemesFromTw5();
       },
     });
-    return () => { unsubEngine(); unsubCanvas(); };
+    return () => { unsubEngine(); unsubCanvas(); unsubScan(); };
   }, [tw5, peer, scanMemesFromTw5]);
 
-  useEffect(() => {
-    if (!editor || !tw5) return;
-    const { pages, shapes, bindings } = projectFromTw5(tw5);
-    const records = [...pages, ...shapes, ...bindings];
-    projectedIdsRef.current = new Set(records.map((r) => r.id));
-    // projectFromTw5 emits plain string IDs; tldraw store expects branded TLBindingId.
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (editor.store as any).put(records);
-  }, [editor, tw5]);
+  // Canvas binding is wired from LarariumCanvas.onMount via canvasProjectionRef.
+  // No store.put() here — the projection layer drives the canvas view.
 
   const reactionGraph = graphReady ? engineRef.current : null;
 
@@ -213,6 +194,7 @@ export function LarariumShell({ memes, onMemes }: ShellProps) {
             dispatch={dispatch as React.Dispatch<LarViewAction>}
             drawingMode={drawingMode}
             onZoomLevel={setZoomLevel}
+            canvasProjection={canvasProjectionRef.current}
           />
         </div>
         <LarHUD />

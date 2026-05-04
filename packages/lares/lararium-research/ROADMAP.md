@@ -3058,5 +3058,111 @@ descriptor tiddler in `tiddlers` — queryable from TW5 without TS interop.
 
 <<~/ahu >>
 
+## M26 — Isomorphic VmPool + WorkerFactory Injection (2026-05-04)
+
+**Scope:** Moved isomorphic contracts to `@lararium/core`; injected `WorkerFactory` into `TW5WorkerProxy`; fixed sha256 gate error propagation; fixed node peer pool key.
+
+**Changes delivered:**
+
+| File | Change |
+|---|---|
+| `lararium-core/src/vm-pool.ts` (NEW) | `VmPool<T>` generic lifecycle manager |
+| `lararium-core/src/meme-recipe-vm.ts` (NEW) | `MemeRecipeVm` interface (imports `MemeProjection`) |
+| `lararium-core/src/index.ts` | `export * from "./vm-pool.js"` + `export * from "./meme-recipe-vm.js"` |
+| `lararium-tw5/src/vm-pool.ts` | DELETED — superseded by core |
+| `lararium-tw5/src/meme-recipe-vm.ts` | Interface removed; imports `MemeRecipeVm` from core |
+| `lararium-tw5/src/tw5-worker-proxy.ts` | `spawnWorker()` removed; `WorkerFactory = () => AnyWorker` exported; constructor takes factory; doc updated |
+| `lararium-tw5/src/index.ts` | Removed `VmPool`/`MemeRecipeVm`; added `WorkerFactory`/`AnyWorker` |
+| `lararium-app/src/open-browser-lar-peer.ts` | `VmPool`+`MemeRecipeVm` from core; sha256 gate: `throw new Error(...)` |
+| `lararium-node/src/open-node-lar-peer.ts` | `VmPool`+`MemeRecipeVm` from core; `"slot-0"` → `resolvedRecipeUri` |
+
+**Gaps surfaced (OODA-HA orient):**
+
+| Gap | Impact | Status |
+|---|---|---|
+| `setPhase("error")` in sha256 gate — wrong fn, wrong phase | Silent boot-continue with tampered blob | **Fixed** |
+| `VmPool`/`MemeRecipeVm` in `@lararium/tw5` | Forced tw5 dep in both platform packages | **Fixed** |
+| `TW5WorkerProxy.spawnWorker()` env-detection branch | Non-isomorphic; dead Node code in browser bundle | **Fixed** |
+| Node peer `"slot-0"` pool key | Pool key collision risk; recipe URI ignored | **Fixed** |
+| `TW5WorkerProxy` doc shows old `new URL(...)` API | Misleading after refactor | **Fixed** |
+| `NodeOpenPhase`/`BrowserOpenPhase` parallel string unions | Duplicated; drift risk | M27 (or intentional divergence) |
+| `TW5WorkerProxy` not wired to VmPool in `@lararium/app` | Worker isolation not used yet | Sprint 6 |
+
+| Corpus `as unknown as { tiddlers }` cast in both peers | Missing `fields: {}` on corpus self-ref writes — runtime `MutableLarRecord` invariant violation | M26 Loop 1 |
+| `(tiddler as { text?: string })` cast in both peers | Unnecessary — `MutableLarRecord.text?: string` | M26 Loop 1 |
+
+**Test gate:** 173 tests (84 core + 52 tw5 + 25 tldraw + 16 node). Build clean.
+
+## M26 Loop 1 — Corpus Cast Audit (2026-05-04)
+
+**Scope:** Removed `as unknown as` and unnecessary `as` casts from corpus write paths in both platform peers. Root cause: missing `fields: {}` on corpus self-ref tiddler writes (same `MutableLarRecord.fields` invariant as M25 Loop 3 for `lararium-island.ts`).
+
+**Changes delivered:**
+
+| File | Change |
+|---|---|
+| `lararium-app/src/open-browser-lar-peer.ts` | `tiddler.text` direct; `doc.tiddlers[corpusUri] = {..., fields: {}}` |
+| `lararium-node/src/open-node-lar-peer.ts` | Same; plus `catalogHandle.change()` fixed; `wss as any` comment improved |
+
+**Test gate:** 173 tests. Build clean.
+
+↺ **M27 candidates:**
+- `TW5WorkerProxy` wired to VmPool in `@lararium/app` (Sprint 6 browser Worker isolation)
+- Canonical `LarOpenPhase` shared type in `@lararium/core` (or document intentional divergence)
+- Draft bag → stable lar: URI
+- tldraw `(ed.store as any).put()` × 3 wiki-first migration
+- Connect screen cold-boot path
+- MCP `hud`/`receipt` storage-dir fix
+
+<<~/ahu >>
+
+## M27 — tldraw Wiki-First Migration + LarOpenPhase + vmFactory Injection (2026-05-04)
+
+**Scope:** Full delete + rebuild of `@lararium/tldraw`; eliminated all `(store as any).put()` casts; introduced `LarOpenPhase` canonical type in `@lararium/core`; landed `vmFactory` injectable option on both platform peers.
+
+**Changes delivered:**
+
+| File | Change |
+|---|---|
+| `lararium-core/src/open-phase.ts` (NEW) | `LarOpenPhase` canonical union — single source for all platform peers |
+| `lararium-core/src/index.ts` | `export * from "./open-phase.js"` |
+| `lararium-app/src/open-browser-lar-peer.ts` | `BrowserOpenPhase = LarOpenPhase`; `vmFactory?` option; default `DirectMemeRecipeVm` |
+| `lararium-node/src/open-node-lar-peer.ts` | `NodeOpenPhase = LarOpenPhase`; `vmFactory?` option; default `DirectMemeRecipeVm` |
+| `lararium-tldraw` — 9 files DELETED | `cascade.ts`, `layout.ts`, `multi-view.ts`, `project.ts`, `records.ts`, `render.ts`, `room.ts` (old), `tldraw-shapes.ts`, `tw5-projection.ts` |
+| `lararium-tldraw/tests/layout.test.ts` DELETED | Tested deleted code |
+| `lararium-tldraw/src/canvas-record.ts` (NEW) | `CanvasShapeKind`, `CanvasRecord`, `CanvasPatch` — isomorphic plain data |
+| `lararium-tldraw/src/canvas-projection.ts` (NEW) | `CanvasView` interface; `MemeCanvasProjection implements MemeProjection` |
+| `lararium-tldraw/src/canvas-view.ts` (NEW) | `TldrawCanvasBinding implements CanvasView` — browser-only tldraw adapter |
+| `lararium-tldraw/src/room.ts` (NEW) | `LarRoom`, `DEFAULT_ROOMS`, `ROOM_SYSTEM` — pure data constants, no runtime dep |
+| `lararium-tldraw/src/nav.ts` (REWRITTEN) | `createShapeId(uri)` for shape lookup; `page:{seed}` cast as `TLPageId`; nav fns accept `Editor` |
+| `lararium-tldraw/src/index.ts` (REWRITTEN) | Clean barrel for new surface |
+| `lararium-tldraw/package.json` | `@lararium/tw5` dep removed |
+| `lararium-app/src/LarariumShell.tsx` | `MemeCanvasProjection` wired to projection bus; all three `store.put()` calls removed |
+| `lararium-app/src/LarariumCanvas.tsx` | `TldrawCanvasBinding` bound in `onMount`; `as unknown as TldrawEditorLike` cast removed |
+
+**Gaps surfaced (OODA-HA orient):**
+
+| Gap | Impact | Status |
+|---|---|---|
+| `(ed.store as any).put()` × 3 in tldraw path | Bypassed projection bus; wiki-first violation | **Fixed** |
+| `BrowserOpenPhase` / `NodeOpenPhase` parallel unions | Drift risk; no canonical anchor | **Fixed** |
+| `vmFactory` option absent from both peers | `TW5WorkerProxy` not injectable at call site | **Fixed** |
+| `tw5-projection.ts` dep on `@lararium/tw5` | Forced tw5 dep into tldraw package | **Fixed (deleted)** |
+| `nav.ts` imported `memeFrameId` from deleted `records.ts` | Would not compile after tldraw rewrite | **Fixed** |
+| `as unknown as TldrawEditorLike` in `LarariumCanvas.tsx` | Unnecessary alias cast | **Fixed** |
+| `MemeCanvasProjection.onUriChanged()` render algorithm | No-op stub — Sprint 7 work | Sprint 7 |
+| `TldrawCanvasBinding.applyPatch()` shape translation | No-op stub — Sprint 7 work | Sprint 7 |
+| `TW5WorkerProxy` passed as `vmFactory` at call site | Worker isolation not activated yet | Sprint 6 |
+
+**Test gate:** 164 tests (84 core + 16 tldraw + 52 tw5 + 16 node, 4 node skipped). Build clean.
+
+↺ **M28 candidates:**
+- `TW5WorkerProxy` passed as `vmFactory` at call site (Sprint 6 browser Worker isolation)
+- `MemeCanvasProjection.onUriChanged()` full render algorithm — meme-frame layout from `LarTiddlerChange`
+- `TldrawCanvasBinding.applyPatch()` meme-frame + edge-arrow translation via `createShapeId`
+- `richText: TLRichText` label on geo shapes (tldraw v4.5.10)
+- Draft bag → stable lar: URI (`lar:///ha.ka.ba/@sessions/drafts/{did}`)
+- Connect screen cold-boot path
+- MCP `hud`/`receipt` storage-dir fix
 
 <<~&#x0004; -> ? >>

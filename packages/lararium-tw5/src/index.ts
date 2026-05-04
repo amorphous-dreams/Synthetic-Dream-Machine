@@ -19,10 +19,10 @@ export type { ZoomLayout } from "./tw5-vm.js";
 
 export { MemeSyncAdaptor } from "./meme-sync-adaptor.js";
 export { MemoryTiddlerStore } from "./memory-store.js";
-export { VmPool } from "./vm-pool.js";
+// VmPool and MemeRecipeVm are isomorphic contracts — they live in @lararium/core.
+// Import them from there: import { VmPool, MemeRecipeVm } from "@lararium/core".
 
 export { DirectMemeRecipeVm, bootMemeRecipeVm } from "./meme-recipe-vm.js";
-export type { MemeRecipeVm } from "./meme-recipe-vm.js";
 
 export { exportMemeText, buildDirectRecord, inferChildMemeTitle } from "./meme-write.js";
 
@@ -37,6 +37,7 @@ export { parseZoomLayoutTOML, getZoomLayout } from "./zoom-layout.js";
 
 
 export { TW5WorkerProxy } from "./tw5-worker-proxy.js";
+export type { WorkerFactory, AnyWorker } from "./tw5-worker-proxy.js";
 
 // ---------------------------------------------------------------------------
 // Active type re-exports

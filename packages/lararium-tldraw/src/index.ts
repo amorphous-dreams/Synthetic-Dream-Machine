@@ -1,15 +1,14 @@
-export * from "./records.js";
-export * from "./zoom-levels.js";
-export * from "./project.js";
-export * from "./layout.js";
-export * from "./tldraw-shapes.js";
+// ---------------------------------------------------------------------------
+// @lararium/tldraw — local-first canvas projection for the Lararium wiki.
+//
+// Isomorphic layer (no tldraw runtime dep):
 export * from "./view-state.js";
-export * from "./nav.js";
-export * from "./multi-view.js";
+export * from "./zoom-levels.js";
 export * from "./room.js";
+export * from "./canvas-record.js";
+export * from "./canvas-projection.js";
 
-// Convenience: project + layout + emit in one call
-export { renderToTldraw } from "./render.js";
-
-export { projectFromTw5 } from "./tw5-projection.js";
+// Browser-only layer (tldraw peer dep required):
+export * from "./nav.js";
+export * from "./canvas-view.js";
 

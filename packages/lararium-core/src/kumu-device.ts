@@ -212,7 +212,7 @@ function _bindingsFromText(uri: string, text: string): ReactionBinding[] {
       edges.map((e) => ({
         fromUri: e.fromUri, toUri: e.toUri,
         family:  e.family,  role:  e.role,
-        payload: (e as unknown as { payload?: Record<string, unknown> }).payload ?? {},
+        payload: e.payload,
       }))
     );
   } catch { return []; }
@@ -251,7 +251,7 @@ export class ReactionEngine implements MemeProjection {
           allEdges.push({
             fromUri: e.fromUri, toUri: e.toUri,
             family:  e.family,  role:  e.role,
-            payload: (e as unknown as { payload?: Record<string, unknown> }).payload ?? {},
+            payload: e.payload,
           });
         }
       } catch { /* malformed — skip */ }

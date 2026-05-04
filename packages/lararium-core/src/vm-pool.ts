@@ -1,17 +1,12 @@
 /**
  * VmPool — isomorphic VM lifecycle manager.
  *
- * Generic over T so it can hold LarariumTW5, RecipeVm, TW5WorkerProxy, or
- * any other disposable VM-shaped object. Same shape on server and browser.
+ * Generic over T so it can hold DirectMemeRecipeVm, TW5WorkerProxy, or any
+ * other disposable VM-shaped object. Same shape on server and browser — lives
+ * in @lararium/core so both @lararium/node and @lararium/app can type against
+ * it without taking a dependency on @lararium/tw5.
  *
- * Usage:
- *   const pool = new VmPool<RecipeVm>();
- *   const vm = await pool.get("lares", () => bootDirectVm(store));
- *   await vm.filterTiddlers("[all[memes]]");
- *   pool.release("lares"); // calls vm.dispose() + removes from pool
- *
- * recipeId convention: sorted bag slugs joined by "+"
- *   Use makeRecipeId(bagIds) from server-api to produce canonical keys.
+ * Key convention: recipe URI (lar:///ha.ka.ba/@lararium/recipes/<name>).
  */
 
 export class VmPool<T extends { dispose(): void }> {
