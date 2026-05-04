@@ -34,7 +34,7 @@ import {
   emptyIdentitiesDoc, emptyGroupsDoc, emptySessionsDoc,
   LARARIUM_DOC_URI, CATALOG_DOC_URI, LARES_DOC_URI,
   IDENTITIES_DOC_URI, GROUPS_DOC_URI, SESSIONS_DOC_URI,
-  roomLarUri, corpusLarUri, BAG_IDS,
+  roomLarUri, corpusLarUri, BAG_IDS, recipeUri,
 }                                                       from "@lararium/core";
 import type { IdentitiesDoc, GroupsDoc, SessionsDoc }   from "@lararium/core";
 import { TW5Engine, MemeSyncAdaptor, VmPool, DirectMemeRecipeVm } from "@lararium/tw5";
@@ -124,9 +124,15 @@ export async function openBrowserLarPeer(opts: {
   hostId:    string;
   roomId:    string;
   wsUrl?:    string;
+  /**
+   * Optional recipe URI to scope the VM's tiddler view.
+   * Defaults to `lar:///ha.ka.ba/@lararium/recipes/default` (content Tiga).
+   * Pass `recipeUri("@lararium", "full")` to include the social plane.
+   */
+  recipeUri?: string;
   onPhase?:  (phase: BrowserOpenPhase) => void;
 }): Promise<BrowserLarPeerResult> {
-  const { hostId, roomId, wsUrl, onPhase } = opts;
+  const { hostId, roomId, wsUrl, recipeUri: recipeUriOpt, onPhase } = opts;
   const emit = (p: BrowserOpenPhase) => onPhase?.(p);
   // Stable identity URI for this room — the map key in CatalogDoc.rooms.
   const roomKey = roomLarUri(roomId);
@@ -399,9 +405,15 @@ export async function openBrowserLarPeer(opts: {
   const adaptor = new MemeSyncAdaptor(tw5, peer.store, roomBagId);
   peer.addProjection(adaptor);
 
-  // ── 10. VmPool ────────────────────────────────────────────────────────────
+  // ── 10. VmPool — recipe-scoped VM ─────────────────────────────────────────
+  // Derive bag stack from the recipe tiddler seeded into ha island.
+  // Falls back to composite.layerIds (full view) if recipe is not yet available.
+  const resolvedRecipeUri = recipeUriOpt ?? recipeUri("@lararium", "default");
+  const vmRecipe = await composite.getRecipe(resolvedRecipeUri);
+  const vmBagStack: readonly string[] = vmRecipe?.bagStack ?? composite.layerIds;
+
   const pool = new VmPool<MemeRecipeVm>();
-  await pool.get("slot-0", async () => new DirectMemeRecipeVm(tw5));
+  await pool.get("slot-0", async () => new DirectMemeRecipeVm(tw5, vmBagStack));
   peer.attachVmPool(pool);
 
   emit("live");

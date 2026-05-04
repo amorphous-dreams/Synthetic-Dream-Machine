@@ -26,6 +26,7 @@ import {
   emptyLarariumDoc,
   emptyIdentitiesDoc, emptyGroupsDoc, emptySessionsDoc,
   recipeUri,
+  bagDescriptorUri,
 } from "@lararium/core";
 import { TW5_VERSION, TW5_CORE_SCRIPT_FILENAME } from "@lararium/tw5";
 
@@ -504,6 +505,8 @@ export function seedDefaultRecipes(islandHandle: DocHandle<LarariumDoc>): void {
       t[fullUri] = {
         title: fullUri,
         label: "Full (content + social plane)",
+        // TW5 list format: space-separated lar: URIs (no spaces in URIs, no [[...]] needed).
+        // parseBagStack() on the TS side handles both string and array formats.
         bagStack: [
           LARARIUM_DOC_URI,
           CATALOG_DOC_URI,
@@ -511,7 +514,7 @@ export function seedDefaultRecipes(islandHandle: DocHandle<LarariumDoc>): void {
           IDENTITIES_DOC_URI,
           GROUPS_DOC_URI,
           SESSIONS_DOC_URI,
-        ],
+        ].join(" "),
         updatedAt: now,
         authority: "lararium-seed",
         bag: LARARIUM_DOC_URI,
@@ -527,7 +530,7 @@ export function seedDefaultRecipes(islandHandle: DocHandle<LarariumDoc>): void {
       t[defaultUri] = {
         title: defaultUri,
         label: "Default (content Tiga)",
-        bagStack: [LARARIUM_DOC_URI, CATALOG_DOC_URI, LARES_DOC_URI],
+        bagStack: [LARARIUM_DOC_URI, CATALOG_DOC_URI, LARES_DOC_URI].join(" "),
         updatedAt: now,
         authority: "lararium-seed",
         bag: LARARIUM_DOC_URI,
@@ -543,7 +546,7 @@ export function seedDefaultRecipes(islandHandle: DocHandle<LarariumDoc>): void {
       t[catalogDefaultUri] = {
         title: catalogDefaultUri,
         label: "Catalog default (discovery + lares)",
-        bagStack: [CATALOG_DOC_URI, LARES_DOC_URI],
+        bagStack: [CATALOG_DOC_URI, LARES_DOC_URI].join(" "),
         updatedAt: now,
         authority: "lararium-seed",
         bag: LARARIUM_DOC_URI,
@@ -552,4 +555,63 @@ export function seedDefaultRecipes(islandHandle: DocHandle<LarariumDoc>): void {
   }
 
   console.log(`[lararium-island] default recipes seeded`);
+}
+
+// ---------------------------------------------------------------------------
+// seedBagDescriptors — one BagTiddler per root-doc bag, stored in ha island
+//
+// TW5 Bags and Recipes law: "bags have access controls that determine which
+// users can read or write to them."  Bag descriptor tiddlers make those policies
+// first-class queryable tiddlers in the wiki.
+//
+// All descriptors live in the ha island (bag = LARARIUM_DOC_URI) so they arrive
+// as part of the initial Automerge sync with no extra subscriptions.
+// The descriptor title = bagDescriptorUri(bagId) = "{bagId}/descriptor".
+//
+// Access policies at this stage:
+//   Content Tiga (ha / ka / ba) — readPolicy: "public",   writePolicy: "private"
+//   Social plane (identities / groups / sessions)
+//                               — readPolicy: "private",  writePolicy: "private"
+//   (Room and corpus leaves seed their own descriptors when they boot.)
+//
+// Meme: lar:///ha.ka.ba/@lararium/core/v0.1/bag
+// ---------------------------------------------------------------------------
+
+const ROOT_BAG_DESCRIPTORS: Array<{
+  bagId: string;
+  label: string;
+  readPolicy: string;
+  writePolicy: string;
+}> = [
+  { bagId: LARARIUM_DOC_URI,   label: "ha — engine & grammar (Lararium)",   readPolicy: "public",  writePolicy: "private" },
+  { bagId: CATALOG_DOC_URI,    label: "ka — corpus discovery (Catalog)",     readPolicy: "public",  writePolicy: "private" },
+  { bagId: LARES_DOC_URI,      label: "ba — persona & doctrine (Lares)",     readPolicy: "public",  writePolicy: "private" },
+  { bagId: IDENTITIES_DOC_URI, label: "Identities — principals",             readPolicy: "private", writePolicy: "private" },
+  { bagId: GROUPS_DOC_URI,     label: "Groups — collective authority",       readPolicy: "private", writePolicy: "private" },
+  { bagId: SESSIONS_DOC_URI,   label: "Sessions — live operator sessions",   readPolicy: "private", writePolicy: "private" },
+];
+
+export function seedBagDescriptors(islandHandle: DocHandle<LarariumDoc>): void {
+  const existingTiddlers = islandHandle.doc()?.tiddlers ?? {};
+  const now = new Date().toISOString();
+
+  for (const { bagId, label, readPolicy, writePolicy } of ROOT_BAG_DESCRIPTORS) {
+    const uri = bagDescriptorUri(bagId);
+    if (existingTiddlers[uri]) continue;
+
+    islandHandle.change((doc) => {
+      const t = (doc as unknown as { tiddlers: Record<string, unknown> }).tiddlers;
+      t[uri] = {
+        title:       uri,
+        label,
+        readPolicy,
+        writePolicy,
+        updatedAt:   now,
+        authority:   "lararium-seed",
+        bag:         LARARIUM_DOC_URI,
+      };
+    });
+  }
+
+  console.log(`[lararium-island] bag descriptors seeded (${ROOT_BAG_DESCRIPTORS.length})`);
 }

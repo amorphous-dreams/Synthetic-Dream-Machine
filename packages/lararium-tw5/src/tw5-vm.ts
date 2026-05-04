@@ -318,6 +318,18 @@ export class TW5Engine {
     return this._tw.wiki.filterTiddlers(expr);
   }
 
+  /**
+   * Read a single named field from a tiddler in the wiki.
+   *
+   * Returns undefined if the tiddler does not exist or the engine is not booted.
+   * Used by DirectMemeRecipeVm to check the existing tiddler's `bag` field for
+   * priority-correct conflict resolution (TW5 Bags/Recipes: highest-priority bag wins).
+   */
+  getTiddlerField(title: string, field: string): string | undefined {
+    if (!this._tw) return undefined;
+    return this._tw.wiki.getTiddler(title)?.fields[field] as string | undefined;
+  }
+
   getTiddlerText(title: string, defaultText?: string): string | undefined {
     if (!this._tw) return defaultText;
     return this._tw.wiki.getTiddlerText(title, defaultText);

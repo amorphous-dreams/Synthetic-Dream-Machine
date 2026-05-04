@@ -34,7 +34,7 @@ import {
   emptyIdentitiesDoc, emptyGroupsDoc, emptySessionsDoc,
   CATALOG_DOC_URI, LARES_DOC_URI,
   IDENTITIES_DOC_URI, GROUPS_DOC_URI, SESSIONS_DOC_URI,
-  corpusLarUri, roomLarUri, BAG_IDS,
+  corpusLarUri, roomLarUri, BAG_IDS, recipeUri,
 }                                       from "@lararium/core";
 import { TW5Engine, MemeSyncAdaptor, VmPool, DirectMemeRecipeVm } from "@lararium/tw5";
 import type { MemeRecipeVm } from "@lararium/tw5";
@@ -45,6 +45,7 @@ import {
   seedGroupsDoc,
   seedSessionsDoc,
   seedDefaultRecipes,
+  seedBagDescriptors,
   reconcileEngineBlobIfChanged,
   reconcileLaresPluginBlobIfChanged,
   reconcileWellKnownTiddlers,
@@ -68,6 +69,13 @@ export interface NodeLarPeerOptions {
   storageDir: string;
   wss:        WebSocketServer;
   catalogUrl?: string | null;
+  /**
+   * Optional recipe URI to scope the VM's tiddler view.
+   * Defaults to `lar:///ha.ka.ba/@lararium/recipes/default` (content Tiga).
+   * Pass `recipeUri("@lararium", "full")` to include the social plane.
+   * The VM receives only tiddlers from the recipe's bagStack.
+   */
+  recipeUri?: string;
   onPhase?:   (phase: NodeOpenPhase) => void;
 }
 
@@ -109,7 +117,7 @@ async function waitHandleLocal<T>(
 }
 
 export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLarPeerResult> {
-  const { hostId, roomId, storageDir, wss, catalogUrl, onPhase } = opts;
+  const { hostId, roomId, storageDir, wss, catalogUrl, recipeUri: recipeUriOpt, onPhase } = opts;
   const emit = (p: NodeOpenPhase) => onPhase?.(p);
   // Stable identity URI for this room — the map key in CatalogDoc.rooms.
   const roomKey = roomLarUri(roomId);
@@ -263,6 +271,7 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
     );
     // Seed default recipe tiddlers into ha island (idempotent — no-op on resume).
     seedDefaultRecipes(islandHandle);
+    seedBagDescriptors(islandHandle);
   }
 
   // ── 3c. Corpus docs — one bag per corpus child-doc ───────────────────────
@@ -366,6 +375,13 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
   emit("peer-ready");
 
   // ── 7. TW5Engine ──────────────────────────────────────────────────────────
+  // Derive VM bag stack from the recipe tiddler seeded into ha island.
+  // Falls back to composite.layerIds (full view) if recipe is not yet available.
+  // Default recipe: content Tiga — ha + ka + ba, no social plane, no room leaf.
+  const resolvedRecipeUri = recipeUriOpt ?? recipeUri("@lararium", "default");
+  const vmRecipe = await composite.getRecipe(resolvedRecipeUri);
+  const vmBagStack: readonly string[] = vmRecipe?.bagStack ?? composite.layerIds;
+
   // Decode lares plugin + vendor plugin blobs from the island doc.
   // "lararium-lares" is a TW5 plugin tiddler (type: application/json, plugin-type: plugin).
   // Vendor blobs are keyed by their TW5 plugin title (e.g. "$:/plugins/sq/streams").
@@ -409,7 +425,7 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
 
   // ── 10. VmPool ────────────────────────────────────────────────────────────
   const pool = new VmPool<MemeRecipeVm>();
-  await pool.get("slot-0", async () => new DirectMemeRecipeVm(tw5));
+  await pool.get("slot-0", async () => new DirectMemeRecipeVm(tw5, vmBagStack));
   peer.attachVmPool(pool);
 
   emit("live");

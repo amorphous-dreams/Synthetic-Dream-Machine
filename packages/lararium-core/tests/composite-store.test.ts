@@ -221,3 +221,164 @@ describe("CompositeStore — subscribe fan-out", () => {
     expect(changes.some((c) => c.title === "lar:///after")).toBe(false);
   });
 });
+
+// ---------------------------------------------------------------------------
+// Recipe helpers (Loop 4 — topology-derived VM)
+// ---------------------------------------------------------------------------
+
+describe("CompositeStore — getRecipe + buildLayersFromRecipe", () => {
+  const RECIPE_URI = "lar:///ha.ka.ba/@lararium/recipes/default";
+
+  test("getRecipe returns null when tiddler absent", async () => {
+    const store = new CompositeStore();
+    store.addLayer({ bagId: BAG_IDS.lararium, store: new MemoryTiddlerStore(), writable: false });
+    expect(await store.getRecipe(RECIPE_URI)).toBeNull();
+  });
+
+  test("getRecipe parses space-separated bagStack string", async () => {
+    const ha = new MemoryTiddlerStore();
+    await ha.put(
+      {
+        title:  RECIPE_URI,
+        fields: {
+          bag:      BAG_IDS.lararium,
+          label:    "Default",
+          bagStack: `${LARARIUM_DOC_URI} ${CATALOG_DOC_URI} ${LARES_DOC_URI}`,
+          authority: "test",
+          updatedAt: "2026-05-03T00:00:00Z",
+        },
+        text: "",
+      },
+      systemOrigin(),
+    );
+    const store = new CompositeStore();
+    store.addLayer({ bagId: BAG_IDS.lararium, store: ha, writable: false });
+
+    const recipe = await store.getRecipe(RECIPE_URI);
+    expect(recipe).not.toBeNull();
+    expect(recipe!.bagStack).toEqual([LARARIUM_DOC_URI, CATALOG_DOC_URI, LARES_DOC_URI]);
+    expect(recipe!.label).toBe("Default");
+  });
+
+  test("buildLayersFromRecipe returns layers in bagStack order, skipping unregistered", async () => {
+    const ha = new MemoryTiddlerStore();
+    const ka = new MemoryTiddlerStore();
+    const store = new CompositeStore();
+    store.addLayer({ bagId: BAG_IDS.lararium, store: ha, writable: false });
+    store.addLayer({ bagId: BAG_IDS.catalog,  store: ka, writable: false });
+    // Note: LARES_DOC_URI layer NOT registered — should be omitted silently.
+
+    const layers = store.buildLayersFromRecipe({
+      title:     RECIPE_URI,
+      label:     "Default",
+      bagStack:  [LARARIUM_DOC_URI, CATALOG_DOC_URI, LARES_DOC_URI],
+      updatedAt: "2026-05-03T00:00:00Z",
+      authority: "test",
+      bag:       BAG_IDS.lararium,
+    });
+
+    expect(layers.map((l) => l.bagId)).toEqual([LARARIUM_DOC_URI, CATALOG_DOC_URI]);
+  });
+
+  test("getRecipe returns null for tombstoned tiddler", async () => {
+    const ha = new MemoryTiddlerStore();
+    const store = new CompositeStore();
+    store.addLayer({ bagId: BAG_IDS.lararium, store: ha, writable: false });
+    await ha.put({ title: RECIPE_URI, fields: { bag: BAG_IDS.lararium, bagStack: "" }, text: "" }, systemOrigin());
+    await ha.tombstone(RECIPE_URI, systemOrigin());
+
+    expect(await store.getRecipe(RECIPE_URI)).toBeNull();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// putViaRecipe (TW5 Bags/Recipes law: writes route to writableBag)
+// ---------------------------------------------------------------------------
+
+describe("CompositeStore — putViaRecipe", () => {
+  test("routes write to declared writableBag layer", async () => {
+    const ha   = new MemoryTiddlerStore();
+    const room = new MemoryTiddlerStore();
+    const store = new CompositeStore();
+    store.addLayer({ bagId: BAG_IDS.lararium, store: ha,   writable: false });
+    store.addLayer({ bagId: TEST_ROOM_URI,     store: room, writable: true  });
+
+    const recipe = {
+      title:       "lar:///ha.ka.ba/@lararium/recipes/default",
+      label:       "Default",
+      bagStack:    [LARARIUM_DOC_URI, TEST_ROOM_URI],
+      writableBag: TEST_ROOM_URI,
+      updatedAt:   "2026-05-03T00:00:00Z",
+      authority:   "test",
+      bag:         BAG_IDS.lararium,
+    };
+
+    await store.putViaRecipe(recipe, { title: "test-tiddler", fields: { bag: TEST_ROOM_URI }, text: "hello" }, systemOrigin());
+
+    const rec = await room.get("test-tiddler");
+    expect(rec).not.toBeNull();
+    expect(rec!.text).toBe("hello");
+
+    // Should NOT appear in ha
+    expect(await ha.get("test-tiddler")).toBeNull();
+  });
+
+  test("falls back to default writable store when writableBag absent", async () => {
+    const room = new MemoryTiddlerStore();
+    const store = new CompositeStore();
+    store.addLayer({ bagId: TEST_ROOM_URI, store: room, writable: true });
+
+    const recipe = {
+      title:     "lar:///ha.ka.ba/@lararium/recipes/default",
+      label:     "Default",
+      bagStack:  [TEST_ROOM_URI],
+      updatedAt: "2026-05-03T00:00:00Z",
+      authority: "test",
+      bag:       BAG_IDS.lararium,
+    };
+
+    await store.putViaRecipe(recipe, { title: "t", fields: {}, text: "x" }, systemOrigin());
+    expect(await room.get("t")).not.toBeNull();
+  });
+
+  test("throws when writableBag is not registered as writable", async () => {
+    const ha    = new MemoryTiddlerStore();
+    const store = new CompositeStore();
+    store.addLayer({ bagId: BAG_IDS.lararium, store: ha, writable: false });
+
+    const recipe = {
+      title:       "lar:///ha.ka.ba/@lararium/recipes/default",
+      label:       "Default",
+      bagStack:    [LARARIUM_DOC_URI],
+      writableBag: TEST_ROOM_URI, // not registered
+      updatedAt:   "2026-05-03T00:00:00Z",
+      authority:   "test",
+      bag:         BAG_IDS.lararium,
+    };
+
+    await expect(
+      store.putViaRecipe(recipe, { title: "t", fields: {}, text: "x" }, systemOrigin()),
+    ).rejects.toThrow("writableBag");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// CompositeLayer readPolicy / writePolicy (TW5 Bags access controls model)
+// ---------------------------------------------------------------------------
+
+describe("CompositeStore — CompositeLayer access policy fields", () => {
+  test("layers carry optional readPolicy and writePolicy", () => {
+    const store = new CompositeStore();
+    store.addLayer({
+      bagId:       BAG_IDS.lararium,
+      store:       new MemoryTiddlerStore(),
+      writable:    false,
+      readPolicy:  "public",
+      writePolicy: "private",
+    });
+    const ids = store.layerIds;
+    expect(ids).toContain(BAG_IDS.lararium);
+    // Policy fields are carried on the layer object (no runtime enforcement yet;
+    // this test asserts the field is accepted without type error).
+  });
+});

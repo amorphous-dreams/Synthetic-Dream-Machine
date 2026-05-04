@@ -61,21 +61,55 @@ export interface MemeRecipeVm extends MemeProjection {
 // ---------------------------------------------------------------------------
 
 export class DirectMemeRecipeVm implements MemeRecipeVm {
-  constructor(private readonly vm: TW5Engine) {}
+  /**
+   * @param vm       - The TW5Engine instance this VM slot wraps.
+   * @param bagStack - Optional ordered bag IDs (lowest → highest priority).
+   *                   When supplied, `onUriChanged` only loads tiddlers from
+   *                   these bags into the engine — giving the VM a recipe-scoped
+   *                   view of the corpus.  Tombstones always pass through so
+   *                   deletions from any bag are honoured.
+   *                   When omitted, all tiddlers pass through (full composite view).
+   */
+  constructor(
+    private readonly vm: TW5Engine,
+    private readonly bagStack?: readonly string[],
+  ) {}
 
   /** Full TW5Engine instance — available for admin/debug surfaces only. */
   get tw5(): TW5Engine { return this.vm; }
 
   onUriChanged(change: LarTiddlerChange): void {
+    // Tombstones always pass through — honour deletions regardless of bag origin.
     if (!change.record || change.record.deleted) {
       this.vm.removeTiddler(change.title);
-    } else {
-      this.vm.setTiddler({
-        title: change.record.title,
-        ...change.record.fields,
-        ...(change.record.text !== undefined ? { text: change.record.text } : {}),
-      });
+      return;
     }
+    // If a bagStack was configured, gate additions/updates to those bags only.
+    if (this.bagStack && this.bagStack.length > 0) {
+      const bag = change.record.fields?.["bag"] as string | undefined;
+      // Skip if tiddler has a bag field that falls outside the configured stack.
+      // Tiddlers without a bag field pass through (defensive — should not occur post-M20).
+      if (bag && !this.bagStack.includes(bag)) return;
+
+      // Priority-correct conflict resolution (TW5 Bags/Recipes law: highest-priority wins).
+      // If the wiki already holds a version of this title from a higher-priority bag,
+      // the incoming lower-priority update MUST NOT overwrite it.
+      // bagStack ordering: index 0 = lowest, length-1 = highest.
+      if (bag) {
+        const existingBag = this.vm.getTiddlerField(change.title, "bag");
+        if (existingBag && existingBag !== bag) {
+          const incomingIdx = this.bagStack.indexOf(bag);
+          const existingIdx = this.bagStack.indexOf(existingBag);
+          // Both bags are in our stack; skip if the existing version wins.
+          if (existingIdx > incomingIdx) return;
+        }
+      }
+    }
+    this.vm.setTiddler({
+      title: change.record.title,
+      ...change.record.fields,
+      ...(change.record.text !== undefined ? { text: change.record.text } : {}),
+    });
   }
 
   onSyncComplete(_islandId: string): void {

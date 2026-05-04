@@ -29,6 +29,8 @@ import {
   corpusLarUri,
   roomLarUri,
 } from "./lararium-doc.js";
+import type { RecipeTiddler } from "./recipe.js";
+import { parseBagStack } from "./recipe.js";
 
 // Re-export so callers get bag IDs and URI helpers from a single import.
 export { corpusLarUri as corpusBagId, roomLarUri as roomBagId };
@@ -71,9 +73,20 @@ export const BAG_IDS = {
 } as const;
 
 export interface CompositeLayer {
-  readonly bagId:    string;
-  readonly store:    LarTiddlerStore;
-  readonly writable: boolean;
+  readonly bagId:        string;
+  readonly store:        LarTiddlerStore;
+  readonly writable:     boolean;
+  /**
+   * Optional read-access policy expression from the bag's BagTiddler descriptor.
+   * Carried here so callers can inspect policy without another tiddler lookup.
+   * Default interpretation: "public" when absent.
+   */
+  readonly readPolicy?:  string;
+  /**
+   * Optional write-access policy expression from the bag's BagTiddler descriptor.
+   * Default interpretation: derived from `writable` flag when absent.
+   */
+  readonly writePolicy?: string;
 }
 
 export class CompositeStore implements LarTiddlerStore {
@@ -168,4 +181,82 @@ export class CompositeStore implements LarTiddlerStore {
 
   get layerCount(): number { return this.layers.length; }
   get layerIds(): string[] { return this.layers.map((l) => l.bagId); }
+
+  // ---------------------------------------------------------------------------
+  // Recipe helpers — topology-derived VM support
+  // ---------------------------------------------------------------------------
+
+  /**
+   * Read a RecipeTiddler from the composite store by its lar: URI.
+   *
+   * Returns null if the tiddler does not exist, was tombstoned, or has no
+   * parseable bagStack field.  Reads from the highest-priority layer that
+   * holds the tiddler (standard CompositeStore read semantics).
+   *
+   * Recipe tiddlers arrive via MemeSyncAdaptor from the ha island.  Call this
+   * method after the peer boot sequence completes so ha is already in the store.
+   *
+   * Meme: lar:///ha.ka.ba/@lararium/core/v0.1/recipe
+   */
+  async getRecipe(uri: string): Promise<RecipeTiddler | null> {
+    const rec = await this.get(uri);
+    if (!rec || rec.deleted) return null;
+    const bagStack = parseBagStack(rec.fields["bagStack"]);
+    if (bagStack.length === 0) return null;
+    const writableBag = rec.fields["writableBag"] as string | undefined;
+    return {
+      title:     rec.title,
+      label:     (rec.fields["label"] as string) ?? rec.title,
+      bagStack,
+      ...(writableBag !== undefined ? { writableBag } : {}),
+      updatedAt: (rec.fields["updatedAt"] as string) ?? new Date().toISOString(),
+      authority: (rec.fields["authority"] as string) ?? "unknown",
+      bag:       (rec.fields["bag"] as string) ?? "",
+    };
+  }
+
+  /**
+   * Return the subset of registered layers whose bagId appears in the recipe's
+   * bagStack, ordered lowest → highest priority (bagStack order).
+   *
+   * Layers not yet registered (corpus docs arriving async) are silently omitted.
+   * Callers may call this again after corpus bags attach to get the full set.
+   *
+   * Meme: lar:///ha.ka.ba/@lararium/core/v0.1/recipe
+   */
+  buildLayersFromRecipe(recipe: RecipeTiddler): CompositeLayer[] {
+    const result: CompositeLayer[] = [];
+    for (const bagId of recipe.bagStack) {
+      const layer = this.layers.find((l) => l.bagId === bagId);
+      if (layer) result.push(layer);
+    }
+    return result;
+  }
+
+  /**
+   * Route a put() through the recipe's declared `writableBag`.
+   *
+   * TW5 Bags and Recipes law: writes in a recipe target the designated writable
+   * bag, not an arbitrary registered layer.  This method enforces that law.
+   *
+   * Falls back to `this.put(record, origin)` (default writable store) when the
+   * recipe declares no `writableBag` — safe for read-only recipes like "default".
+   *
+   * Throws if `writableBag` is declared but the layer is not registered or is not
+   * marked writable — indicating a boot-sequence ordering error.
+   *
+   * Meme: lar:///ha.ka.ba/@lararium/core/v0.1/recipe
+   */
+  async putViaRecipe(recipe: RecipeTiddler, record: LarTiddlerRecord, origin: ChangeOrigin): Promise<void> {
+    if (!recipe.writableBag) {
+      return this.put(record, origin);
+    }
+    const layer = this.layers.find((l) => l.bagId === recipe.writableBag && l.writable);
+    if (!layer) {
+      throw new Error(
+        `CompositeStore: recipe writableBag "${recipe.writableBag}" not registered or not writable`,
+      );
+    }
+    return layer.store.put(record, origin);
+  }
 }

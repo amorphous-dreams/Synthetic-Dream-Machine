@@ -12,8 +12,10 @@ import { registerMemes, registerMemesSource } from "./filters/memes.js";
 import { registerEdge }                       from "./filters/edge.js";
 import { registerTomlField }                  from "./filters/toml-field.js";
 import { registerImplementors }               from "./filters/implementors.js";
+import { registerBag, registerRecipe }        from "./filters/bag.js";
 
 export { registerMemes, registerMemesSource, registerEdge, registerTomlField, registerImplementors };
+export { registerBag, registerRecipe };
 
 /** Register all Lararium filter operators on a TW5 instance. */
 export function registerLarariumFilters(tw: TW5Instance): void {
@@ -22,5 +24,7 @@ export function registerLarariumFilters(tw: TW5Instance): void {
   registerEdge(tw);
   registerTomlField(tw);
   registerImplementors(tw);
+  registerBag(tw);
+  registerRecipe(tw);
 }
 

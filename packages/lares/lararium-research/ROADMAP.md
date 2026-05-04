@@ -2790,6 +2790,100 @@ M21–M22 = Phase 4 open (TW5 recipe from topology + connect screen).
 - Isomorphic `AutomergeStoreBase` / grammar-wired deserializer — Sprint 6 research
 - Browser smoke / Playwright QA — no automated tests for the boot sequence yet
 
+---
+
+## M22 Topology-Derived VM + Wiki-First Filter Operators — 2026-05-03
+
+### Loop 4: Recipe → VM bag scoping
+
+**Delivered:**
+
+| Change | File | Detail |
+|--------|------|--------|
+| `parseBagStack(raw)` | `recipe.ts` | Isomorphic — handles TW5 space-separated string AND JS array; both peers safe |
+| `getRecipe(uri)` | `composite-store.ts` | Reads recipe tiddler from composite, returns `RecipeTiddler \| null`; tombstone-aware |
+| `buildLayersFromRecipe(recipe)` | `composite-store.ts` | Returns `CompositeLayer[]` in `bagStack` order, silently skips unregistered bags |
+| `seedDefaultRecipes` bagStack fix | `lararium-island.ts` | Stores bagStack as TW5 list (space-joined string), not JS array — wiki-first law |
+| `[bag[bagId]]` filter operator | `lararium-tw5/src/filters/bag.ts` | Wiki-first: all tiddlers where `fields.bag == bagId`; ignores input (collection source) |
+| `[recipe[recipeUri]]` filter operator | `lararium-tw5/src/filters/bag.ts` | Wiki-first: reads recipe tiddler from wiki, walks bagStack, returns visible title union |
+| `registerBag` + `registerRecipe` | `tw5-filter.ts` | Registers both operators in `registerLarariumFilters` |
+| `DirectMemeRecipeVm` bagStack | `meme-recipe-vm.ts` | Constructor accepts optional `bagStack`; tombstones pass through; puts/updates gated by bag membership |
+| Node peer recipe option | `open-node-lar-peer.ts` | `recipeUri?` option; derives `vmBagStack` from `composite.getRecipe()`; falls back to `composite.layerIds` |
+| Browser peer recipe option | `open-browser-lar-peer.ts` | Same pattern as node peer; `pool.get("slot-0")` passes `vmBagStack` to `DirectMemeRecipeVm` |
+| 4 new tests | `composite-store.test.ts` | `getRecipe` null (absent), parse string bagStack, `buildLayersFromRecipe` ordering + skip, tombstone null |
+
+**Test gate:** 71/71 tests pass (`@lararium/core`). Full workspace: 138 tests pass. `@lararium/mcp` 2 failures pre-existing (not introduced by M22).
+
+**Build gate:** `pnpm -r build` clean — `exactOptionalPropertyTypes` fix applied to `getRecipe` return (`writableBag` spread conditionally).
+
+**Architectural invariants upheld:**
+- TW5 VM law: bag+recipe logic lives in wiki filters (`[bag[]]`, `[recipe[]]`); TS peer code calls `composite.getRecipe()` only to scope the initial VM bag list
+- `parseBagStack` handles both wire formats — forward compat with any serializer
+- Both peers follow identical recipe-derivation boot path (web3 / local-first)
+- Tombstones always pass through `DirectMemeRecipeVm` regardless of bagStack
+
+↺ **M23 candidates:**
+- `"draft"` bag → stable lar: URI (`roomLarUri(slug)/drafts/{did}`)
+- `catalog.corpora` legacy Record — retire after confirming all peers read from tiddlers oracle
+- Social plane UX: identity picker + group membership TW5 widgets
+- Session sub-docs at `@sessions/@{slug}` (pos-2 child doc under @sessions root)
+- `VmPool` multi-slot: one slot per recipe (different VMs serve different recipe slices)
+- Room-scoped recipe: `recipeUri("@lararium", "room")` includes room bag as writable leaf
+- Wiki-first: recipe picker macro/widget in TW5 so users switch recipes without TS changes
+- Connect screen: `readBootstrap() === null` UX gate
+
+---
+
+## M23 TW5 Bags/Recipes Alignment — 2026-05-03
+
+### Loop 1: First-class bag descriptors, priority-correct VM, putViaRecipe
+
+**Source reference:** TW5 MultiWikiServer Bags and Recipes Model (https://mws.tiddlywiki.com/)
+
+**Gaps identified against the TW5 model:**
+
+| TW5 Model Requirement | Prior state | Gap |
+|---|---|---|
+| Bags have access controls (read/write per bag) | `CompositeLayer.writable: boolean` only | No policy tiddlers; no label/description per bag |
+| Same title → highest-priority bag wins | `CompositeStore.get` correct; VM `onUriChanged` had race | Lower-priority CRDT delta could overwrite higher-priority wiki version |
+| Writes route to recipe's writable bag | `writableBag` field existed but ignored on put path | `CompositeStore.put` always went to last `writable: true` layer |
+| Bag descriptors as tiddlers | `BAG_IDS` constants only | No tiddler representation of bag labels, policies |
+
+**Delivered:**
+
+| Change | File | Detail |
+|--------|------|--------|
+| `BagTiddler` interface | `recipe.ts` | `label`, `readPolicy`, `writePolicy`, `updatedAt`, `authority`, `bag` fields |
+| `bagDescriptorUri(bagId)` | `recipe.ts` | `{bagId}/descriptor` — stable leaf path under root doc URI; no `@` at pos-3+ |
+| `CompositeLayer.readPolicy?` / `writePolicy?` | `composite-store.ts` | Optional policy strings mirroring BagTiddler; no runtime enforcement yet — carried for query |
+| `CompositeStore.putViaRecipe(recipe, record, origin)` | `composite-store.ts` | Routes write to `recipe.writableBag` layer; falls back to default writable when `writableBag` absent; throws if declared bag not registered |
+| `TW5Engine.getTiddlerField(title, field)` | `tw5-vm.ts` | Exposes single-field read from live wiki; used by DirectMemeRecipeVm priority gate |
+| Priority-correct `onUriChanged` | `meme-recipe-vm.ts` | Before `setTiddler`, checks existing wiki tiddler's `bag`; skips update if existing bag has higher priority index in bagStack (TW5 highest-priority-wins law) |
+| `seedBagDescriptors(islandHandle)` | `lararium-island.ts` | Seeds one `BagTiddler` per root doc into ha island at `bagDescriptorUri(bagId)`; idempotent; called alongside `seedDefaultRecipes` in node peer boot |
+| `seedBagDescriptors` called in node peer | `open-node-lar-peer.ts` | Called after `seedDefaultRecipes` in the island-ready block |
+| 12 new tests | `composite-store.test.ts`, `meme-recipe-vm.test.ts` | `putViaRecipe` routing + error, access policy field acceptance; VM priority gate (6 cases: high wins, low blocked, high overwrites low, out-of-stack rejected, tombstone pass-through, no-bagStack full-pass) |
+
+**Test gate:** 75/75 `@lararium/core`, 37/37 `@lararium/tw5` (7 new VM tests), 153 total workspace passes. `@lararium/mcp` 2 failures pre-existing.
+
+**Build gate:** `pnpm -r build` clean.
+
+**Architectural invariants upheld:**
+- Bag descriptor URI = `bagId + "/descriptor"` — clean leaf path, no `@` at pos-3+, self-addressing
+- All 6 root-doc bag descriptors live in ha island → single-doc sync delivers all bag metadata
+- `putViaRecipe` is the ONLY correct write path when a recipe is active; `put()` remains for internal/system writes
+- Priority gate in VM uses bagStack index (0 = lowest) — same ordering convention as TW5 and CompositeStore
+- `getTiddlerField` added to TW5Engine as minimal read surface; no broader wiki API leakage
+
+↺ **M24 candidates (forward from M23):**
+- `"draft"` bag → stable lar: URI
+- `catalog.corpora` Record retirement
+- Social plane UX: identity picker + group membership TW5 widgets
+- Tombstone priority: on tombstone from low-priority bag, check if higher-priority bag still has the title (requires per-bag tombstone tracking or CompositeStore query at tombstone time)
+- Browser peer: also call `seedBagDescriptors` at boot (currently node-only — browser receives via Automerge sync, but explicit seeding guards first-boot edge case)
+- Room/corpus bags seed their own `BagTiddler` descriptor when they boot
+- `writePolicy` enforcement in `putViaRecipe` (policy evaluation against identity/group)
+- Wiki-first: bag picker TW5 widget reads `[recipe[lar:///ha.ka.ba/@lararium/bags/]]` to list bags
+
 <<~/ahu >>
 
 
