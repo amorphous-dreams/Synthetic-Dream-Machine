@@ -2950,5 +2950,33 @@ descriptor tiddler in `tiddlers` — queryable from TW5 without TS interop.
 
 <<~/ahu >>
 
+<<~ ahu #m25-loop1-stack-upward-walk-2026-05-03 >>
+
+## M25 Loop 1 — Stack Upward Walk (2026-05-03)
+
+**Scope:** Walk the full stack upward from Automerge doc → CompositeStore → MemeSyncAdaptor → VM → UX, removing all legacy web2 patterns and duck-type seams identified in the M25 audit.
+
+**Changes delivered:**
+
+| File | Change |
+|---|---|
+| `tiddler-store.ts` | `addProjection?(p: MemeProjection): () => void` declared on `LarTiddlerStore`; no more duck-type |
+| `composite-store.ts` | `addProjection(p)` implemented — fans to each layer's `addProjection?` or `subscribe()`; per-island MemeProvider coalescing preserved |
+| `meme-sync-adaptor.ts` | `start()` uses `typeof this.store.addProjection === "function"` guard; `as unknown as` cast removed |
+| `open-browser-lar-peer.ts` | Step 9: `peer.addProjection(adaptor)` → `adaptor.start()` — cascade watcher wired; room/draft URLs via `catalog.tiddlers` oracle (no `as any`); draftKey `drafts_{did}` → `{roomKey}/drafts/{encodedDid}`; legacy `catalog-url` localStorage key removed; VmPool slot = `resolvedRecipeUri` |
+| `tw5-vm.ts` | `getTiddler(title): Record<string, unknown> \| null` added after `getTiddlerField` |
+| `LarariumShell.tsx` | `scanMemesFromTw5()`: `tw5.wiki as any` → `tw5.getTiddler(uri)`; field access via string index |
+
+**Test gate:** 153/153 tests pass. Build clean across all 6 packages. MCP 2 pre-existing failures unchanged.
+
+↺ **M25 Loop 2 candidates:**
+- `putViaRecipe` write routing: adaptor `direct` handler still calls `store.put()` (routes to last writable); needs recipe injection or `CompositeStore.put()` route by `record.bag`
+- `CompositeStore.addProjection` dynamic registration: async corpus layers added after `adaptor.start()` don't register with their MemeProvider — `addLayer` needs to fan active projections
+- tldraw canvas wiki-first migration: `projectFromTw5(tw5)` to TW5 filter; `(ed.store as any).put()` × 3 awaits `createBindingId()` projection fix
+- `"draft"` bag → stable lar: URI
+- `writePolicy` enforcement in `putViaRecipe`
+
+<<~/ahu >>
+
 
 <<~&#x0004; -> ? >>

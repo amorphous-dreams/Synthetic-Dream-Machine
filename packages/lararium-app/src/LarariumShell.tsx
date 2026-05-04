@@ -91,15 +91,13 @@ export function LarariumShell({ memes, onMemes }: ShellProps) {
 
   const scanMemesFromTw5 = useCallback(() => {
     if (!tw5) return;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const wiki = tw5.wiki as any;
     const uris: string[] = tw5.filterTiddlers("[all[tiddlers]prefix[lar:]]");
     const entries = uris.map((uri) => {
-      const t = wiki.getTiddler?.(uri);
+      const t = tw5.getTiddler(uri);
       return {
         uri,
-        depth: Number(t?.fields?.depth ?? 0),
-        kind:  String(t?.fields?.rating ?? "meme"),
+        depth: Number(t?.["depth"] ?? 0),
+        kind:  String(t?.["rating"] ?? "meme"),
       };
     }).filter((e) => e.uri.startsWith("lar:"));
     onMemes(entries);

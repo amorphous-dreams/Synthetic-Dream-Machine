@@ -15,10 +15,55 @@ manao        = 0.87
 implements   = [
   "lar:///ha.ka.ba/@lares/api/v0.1/pono/meme"
 ]
-role         = "session handoff crystal — 2026-05-03 (session 9) — M24 complete: LarDoc base alignment: base-doc.ts, MutableLarRecord single canonical, all Automerge docs extend LarDoc, AutomergeDocStore widened to LarDoc, all seed functions write to .tiddlers, emptyXxxDoc() factories everywhere, seedBlobDescriptors; M25 open: catalog.corpora retire, writePolicy enforcement, room/corpus bag self-descriptors"
+role         = "session handoff crystal — 2026-05-03 (session 10) — M25 Loop 1 complete: stack walked Automerge→Recipe→VM→UX; addProjection typed on LarTiddlerStore; CompositeStore fans projections per-island via MemeProviders; MemeSyncAdaptor.start() now called in browser boot (cascade watcher wired); getTiddler() wrapper on TW5Engine (wiki as any eliminated); VmPool slot keyed by resolvedRecipeUri; catalog/draft URLs migrate to tiddlers oracle (no more as any); legacy catalog-url localStorage key removed"
 ```
 
 <<~&#x0002;>>
+
+<<~ ahu #ooda-ha-m25-loop1-stack-upward-walk-2026-05-03 >>
+
+## OODA-HA: M25 Loop 1 — Stack Upward Walk (2026-05-03)
+
+✶ **Observe:**
+M24 aligned the Automerge doc model (LarDoc invariant, emptyXxxDoc() factories, tiddlers-first writes). The stack above the doc layer still carried web2 legacy patterns: `MemeSyncAdaptor.start()` never called in browser peer boot (cascade watcher absent); `addProjection` on `LarTiddlerStore` implementations accessed only via `as unknown as` duck-type cast; `tw5.wiki as any` in `LarariumShell.tsx`; catalog room/draft URLs written via `as any` into `catalog.rooms` Records (not oracle tiddlers); legacy `localStorage.getItem("lararium:catalog-url:…")` fallback still read; `VmPool` slot hardcoded to `"slot-0"` regardless of recipe URI.
+
+⏿ **Orient:**
+Walking upward from Automerge doc → CompositeStore → MemeSyncAdaptor → VM → UX, each seam carried a castaway. The causal-islands principle requires each Automerge island to deliver changes through its own MemeProvider (debounce, changeset batching, onSyncComplete per island). `CompositeStore` fans subscriptions to all layers but did not fan projections — the adaptor fell back to plain `subscribe()`, losing per-island coalescing. The wiki-first law requires room and draft URLs to live as oracle tiddlers (queryable from TW5), not raw Automerge Records outside the tiddlers map. Recipe-keyed VmPool slots allow future multi-recipe VM pools without slot collisions.
+
+◇ **Decide:**
+- `addProjection?` declared optional on `LarTiddlerStore` interface (typed, no duck-type seam)
+- `CompositeStore.addProjection(p)` fans to each layer's `addProjection?` or `layer.store.subscribe()` — per-island MemeProvider coalescing preserved
+- `MemeSyncAdaptor.start()` fixed: typed optional chain replaces `as unknown as` cast
+- `openBrowserLarPeer` step 9: `adaptor.start()` replaces `peer.addProjection(adaptor)` — wires cascade cache watcher
+- `TW5Engine.getTiddler(title)` added: returns `Record<string, unknown> | null` from `$tw.wiki.getTiddler(title)?.fields`
+- `LarariumShell.tsx` `scanMemesFromTw5()`: `tw5.wiki as any` → `tw5.getTiddler(uri)`; `t?.fields?.depth` → `t?.["depth"]`
+- `openBrowserLarPeer` room URL: `catalog.tiddlers[roomKey]?.text` (oracle) with `catalog.rooms[roomKey]?.contentDocUrl` legacy fallback; NEW writes to `catalog.tiddlers[roomKey]` (no `as any`)
+- `openBrowserLarPeer` draft URL: `catalog.tiddlers[draftTiddlerKey]?.text`; key = `{roomKey}/drafts/{encodedDid}`; NEW writes to `catalog.tiddlers[draftTiddlerKey]` (no `as any`); `draftKey` variable removed
+- Legacy `"lararium:catalog-url:{hostId}"` localStorage read removed; only `bootstrap-url` key survives
+- `VmPool.get("slot-0", …)` → `VmPool.get(resolvedRecipeUri, …)` — slot keyed by recipe URI
+
+■ **Act:**
+  1. `tiddler-store.ts` — added `import type { MemeProjection }` from `meme-provider.js`; added `addProjection?(p: MemeProjection): () => void` optional method to `LarTiddlerStore` interface with docstring
+  2. `composite-store.ts` — added `import type { MemeProjection }`; implemented `addProjection(p)` — fans to each layer's `addProjection?.(p)` or `layer.store.subscribe(change => p.onUriChanged(change))`; returns combined unsubscribe; causal-islands comment
+  3. `meme-sync-adaptor.ts` — `start()` duck-type cast removed; now uses `typeof this.store.addProjection === "function"` guard directly
+  4. `open-browser-lar-peer.ts` — step 9: `peer.addProjection(adaptor)` → `adaptor.start()`; room URL read from `catalog.tiddlers` oracle (legacy rooms fallback retained); room tiddler written via typed `doc.tiddlers[roomKey] = { title, text, fields }` (no `as any`); draft tiddler same pattern; `draftKey` removed; legacy localStorage key removed; VmPool slot = `resolvedRecipeUri`
+  5. `tw5-vm.ts` — `getTiddler(title: string): Record<string, unknown> | null` added after `getTiddlerField`
+  6. `LarariumShell.tsx` — `tw5.wiki as any` block → `tw5.getTiddler(uri)`; field access `t?.["depth"]` / `t?.["rating"]`; `// eslint-disable-next-line` comment removed
+
+⤴ **Advance:**
+153 tests pass. Build clean across all packages. The full stack from Automerge doc to UX now understands causal-islands principles: each island delivers through its own MemeProvider; the composite fans projections without duck-type surgery; cascade cache watcher wires at boot; wiki-first oracle tiddlers own room/draft URL registration; recipe URI identifies VM slots.
+
+↺ **M25 Loop 2 candidates:**
+- `putViaRecipe` write routing: adaptor `direct` handler still calls `store.put()` (routes to last writable); full recipe-driven routing needs `RecipeTiddler` injected into adaptor or `CompositeStore.put()` routing by `record.bag`
+- tldraw canvas wiki-first migration: `projectFromTw5(tw5)` belongs in TW5 filter pipeline; `(ed.store as any).put()` × 3 awaits `createBindingId()` proper projection
+- `CompositeStore.addProjection` dynamic registration: layers added after `adaptor.start()` (async corpus) don't register adaptor with their MemeProvider — needs `addLayer` to fan new registrations
+- `"draft"` bag → stable lar: URI (`lar:///ha.ka.ba/@sessions/drafts/{did}`)
+- `writePolicy` enforcement in `putViaRecipe` against Keyhive principal capabilities
+- Room/corpus bags: `BagTiddler` descriptor seeded at boot via `seedBagDescriptors`
+
+---
+
+<<~/ahu >>
 
 <<~ ahu #ooda-ha-m24-lardoc-alignment-2026-05-03 >>
 

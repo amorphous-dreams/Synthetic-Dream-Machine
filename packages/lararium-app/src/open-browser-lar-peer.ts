@@ -99,13 +99,7 @@ function readBootstrap(hostId: string): string | null {
     }
   }
   try {
-    // Accept both old key ("catalog-url") and new key ("bootstrap-url") so
-    // existing localStorage entries keep working through the transition.
-    return (
-      localStorage.getItem(`lararium:bootstrap-url:${hostId}`) ??
-      localStorage.getItem(`lararium:catalog-url:${hostId}`) ??
-      null
-    );
+    return localStorage.getItem(`lararium:bootstrap-url:${hostId}`) ?? null;
   } catch { /* quota/private mode */ }
   return null;
 }
@@ -308,7 +302,12 @@ export async function openBrowserLarPeer(opts: {
   const corpusReadyP = Promise.all(corpusPromises);
 
   // ── 4. Room doc — writable ─────────────────────────────────────────────────
-  const roomDocUrl = catalog?.rooms?.[roomKey]?.contentDocUrl ?? null;
+  // Oracle tiddler path: catalog.tiddlers[roomKey].text = room contentDocUrl.
+  // Wiki-first law: room registration lives as a tiddler, visible in TW5.
+  const roomDocUrl =
+    catalog?.tiddlers?.[roomKey]?.text
+    ?? catalog?.rooms?.[roomKey]?.contentDocUrl  // legacy fallback
+    ?? null;
   const blankRoom  = () => repo.create<MemeStoreDoc>(emptyMemeStoreDoc());
   const roomHandle: DocHandle<MemeStoreDoc> = roomDocUrl
     ? await waitHandleLocal<MemeStoreDoc>(repo, roomDocUrl as AutomergeUrl, blankRoom)
@@ -316,10 +315,10 @@ export async function openBrowserLarPeer(opts: {
 
   if (!roomDocUrl) {
     catalogHandle.change((doc) => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const d = doc as any;
-      d.rooms ??= {};
-      d.rooms[roomKey] = { id: roomId, contentDocUrl: roomHandle.url, schemaVersion: "0.1" };
+      doc.tiddlers[roomKey] = {
+        title: roomKey, text: roomHandle.url,
+        fields: { bag: BAG_IDS.catalog, authority: "lararium-boot" },
+      };
     });
   }
   const roomBagId = roomLarUri(roomId);
@@ -328,13 +327,12 @@ export async function openBrowserLarPeer(opts: {
   emit("room-ready");
 
   // ── 5. Room-Drafts doc — same-user multi-device sync ─────────────────────
-  // Draft URL stored per-user in catalog: rooms[id].draftDocUrls[did]
-  // On first session: create a fresh draft doc and register in catalog.
-  // Other devices with same DID find it via catalog sync.
+  // Oracle tiddler path: catalog.tiddlers[draftTiddlerKey].text = draft contentDocUrl.
+  // Key: {roomKey}/drafts/{encodedDid} — stable per-user per-room URI.
+  // Other devices with same DID find it via catalog tiddler sync.
   const identity = new OpenIdentitySlot(hostId);
-  const draftKey = `drafts_${encodeURIComponent(identity.did)}`;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const existingDraftUrl: string | null = (catalog?.rooms?.[roomKey] as any)?.[draftKey] ?? null;
+  const draftTiddlerKey = `${roomKey}/drafts/${encodeURIComponent(identity.did)}`;
+  const existingDraftUrl = catalog?.tiddlers?.[draftTiddlerKey]?.text ?? null;
   const blankDraft = () => repo.create<MemeStoreDoc>(emptyMemeStoreDoc());
   const draftHandle: DocHandle<MemeStoreDoc> = existingDraftUrl
     ? await waitHandleLocal<MemeStoreDoc>(repo, existingDraftUrl as AutomergeUrl, blankDraft)
@@ -342,11 +340,10 @@ export async function openBrowserLarPeer(opts: {
 
   if (!existingDraftUrl) {
     catalogHandle.change((doc) => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const d = doc as any;
-      d.rooms ??= {};
-      d.rooms[roomKey] ??= {};
-      d.rooms[roomKey][draftKey] = draftHandle.url;
+      doc.tiddlers[draftTiddlerKey] = {
+        title: draftTiddlerKey, text: draftHandle.url,
+        fields: { bag: BAG_IDS.catalog, authority: "lararium-boot" },
+      };
     });
   }
   composite.addLayer({ bagId: BAG_IDS.draft, store: new AutomergeDocStore(draftHandle, BAG_IDS.draft), writable: true });
@@ -405,7 +402,7 @@ export async function openBrowserLarPeer(opts: {
 
   // ── 9. MemeSyncAdaptor — reads full stack, writes to room bag via composite.put() ──
   const adaptor = new MemeSyncAdaptor(tw5, peer.store, roomBagId);
-  peer.addProjection(adaptor);
+  adaptor.start();
 
   // ── 10. VmPool — recipe-scoped VM ─────────────────────────────────────────
   // Derive bag stack from the recipe tiddler seeded into ha island.
@@ -415,7 +412,7 @@ export async function openBrowserLarPeer(opts: {
   const vmBagStack: readonly string[] = vmRecipe?.bagStack ?? composite.layerIds;
 
   const pool = new VmPool<MemeRecipeVm>();
-  await pool.get("slot-0", async () => new DirectMemeRecipeVm(tw5, vmBagStack));
+  await pool.get(resolvedRecipeUri, async () => new DirectMemeRecipeVm(tw5, vmBagStack));
   peer.attachVmPool(pool);
 
   emit("live");

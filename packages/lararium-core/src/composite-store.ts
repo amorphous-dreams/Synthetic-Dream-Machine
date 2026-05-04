@@ -19,6 +19,7 @@ import type {
   LarTiddlerChange,
   ChangeOrigin,
 } from "./tiddler-store.js";
+import type { MemeProjection } from "./meme-provider.js";
 import {
   LARARIUM_DOC_URI,
   CATALOG_DOC_URI,
@@ -177,6 +178,28 @@ export class CompositeStore implements LarTiddlerStore {
   subscribe(fn: (change: LarTiddlerChange) => void): () => void {
     this.listeners.add(fn);
     return () => { this.listeners.delete(fn); };
+  }
+
+  /**
+   * Register a MemeProjection across all layers.
+   *
+   * Fans the projection to each layer's `addProjection?` (AutomergeDocStore
+   * routes through MemeProvider — debounce, changeset, onSyncComplete).
+   * Layers without `addProjection` fall back to their plain `subscribe()`.
+   *
+   * Returns a combined unsubscribe function.
+   *
+   * Causal-islands law: each island (doc) delivers changes through its own
+   * MemeProvider so debounce and onSyncComplete remain per-island — a slow
+   * corpus island cannot gate a fast room island.
+   */
+  addProjection(p: MemeProjection): () => void {
+    const unsubs: Array<() => void> = this.layers.map((layer) =>
+      typeof layer.store.addProjection === "function"
+        ? layer.store.addProjection(p)
+        : layer.store.subscribe((change) => p.onUriChanged(change)),
+    );
+    return () => { for (const u of unsubs) u(); };
   }
 
   get layerCount(): number { return this.layers.length; }

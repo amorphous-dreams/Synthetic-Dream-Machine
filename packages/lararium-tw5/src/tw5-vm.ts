@@ -330,6 +330,16 @@ export class TW5Engine {
     return this._tw.wiki.getTiddler(title)?.fields[field] as string | undefined;
   }
 
+  /**
+   * Return all fields of a tiddler as a plain Record, or null if absent.
+   * Replaces `tw5.wiki as any` calls in consumer code.
+   */
+  getTiddler(title: string): Record<string, unknown> | null {
+    if (!this._tw) return null;
+    const t = this._tw.wiki.getTiddler(title);
+    return t ? { ...t.fields } : null;
+  }
+
   getTiddlerText(title: string, defaultText?: string): string | undefined {
     if (!this._tw) return defaultText;
     return this._tw.wiki.getTiddlerText(title, defaultText);

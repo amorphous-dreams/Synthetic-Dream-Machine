@@ -22,6 +22,7 @@
  */
 
 import type { ClosureEntry, EdgeRecord } from "./compiler.js";
+import type { MemeProjection } from "./meme-provider.js";
 
 // ---------------------------------------------------------------------------
 // LarTiddlerRecord — materialized tiddler in Lararium's store model
@@ -128,6 +129,18 @@ export interface LarTiddlerStore {
    * Subscribers MUST check change.origin before writing back to avoid echo loops.
    */
   subscribe(fn: (change: LarTiddlerChange) => void): () => void;
+
+  /**
+   * Register a typed MemeProjection for coalesced CRDT-aware change delivery.
+   *
+   * Implementations that wrap a MemeProvider (AutomergeDocStore, CompositeStore)
+   * route through the provider's debounce/changeset/onSyncComplete pipeline.
+   * Plain stores (MemoryTiddlerStore) may fall back to subscribe().
+   *
+   * Returns an unsubscribe function.  Optional — stores without MemeProvider
+   * support omit this; callers fall back to subscribe() in that case.
+   */
+  addProjection?(p: MemeProjection): () => void;
 }
 
 // ---------------------------------------------------------------------------

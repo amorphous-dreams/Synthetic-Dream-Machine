@@ -265,11 +265,8 @@ export class MemeSyncAdaptor implements MemeProjection {
    * falling back to store.subscribe() for plain stores.
    */
   start(): () => void {
-    const storeWithProjection = this.store as unknown as {
-      addProjection?: (p: MemeProjection) => () => void;
-    };
-    if (typeof storeWithProjection.addProjection === "function") {
-      this._unsubscribe = storeWithProjection.addProjection(this);
+    if (typeof this.store.addProjection === "function") {
+      this._unsubscribe = this.store.addProjection(this);
     } else {
       this._unsubscribe = this.store.subscribe((change) => this._applyChange(change));
     }
