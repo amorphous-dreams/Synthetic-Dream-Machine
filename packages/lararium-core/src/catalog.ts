@@ -103,6 +103,7 @@ export interface CatalogDoc {
   readonly capabilityHints?: Record<string, string>;
   /**
    * Named doc tiddler store — keyed by `lar:///ha.ka.ba/@{slug}`.
+   * Bag stamped as "catalog" on each record (ka vertex of the Automerge Tiga).
    *
    * Each corpus / named island doc is stored here as a tiddler whose
    * `text` field holds its current `automerge:` URL.  Isomorphic to
@@ -110,10 +111,10 @@ export interface CatalogDoc {
    * enumerate all available corpora without a separate HTTP oracle.
    *
    * Reserved keys:
-   *   "lar:///ha.ka.ba/@catalog"  — self-reference (catalog doc's own automerge: URL)
+   *   "lar:///ha.ka.ba/@catalog"  — self-reference (ka self-ref tiddler)
    *
-   * Example corpus keys:
-   *   "lar:///ha.ka.ba/@elyncia"  → Elyncia world corpus
+   * Corpus keys (written by node peer on first boot / resume):
+   *   "lar:///ha.ka.ba/@elyncia"  → Elyncia world corpus automerge URL
    *   "lar:///ha.ka.ba/@ftls"     → Flying Triremes & Laser Swords corpus
    *   "lar:///ha.ka.ba/@sdm"      → Synthetic Dream Machine corpus
    */

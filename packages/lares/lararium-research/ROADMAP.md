@@ -11,7 +11,7 @@ register = "S"
 manaoio = 0.82
 mana = 0.88
 manao = 0.86
-role = "work journey log — migration roadmap and milestone log for Lararium Node; M17 SESSION OPEN (2026-05-03): named-doc @-prefix pattern crystallised, CATALOG_DOC_URI (drop _SLOT), corpusLarUri(), CatalogDoc.tiddlers self-describing, resolver @-prefix virtual route, node peer writes catalog+corpus tiddlers, build clean; Sprint 4 next: room keys as lar:///ha.ka.ba/@lararium/rooms/{slug}"
+role = "work journey log — migration roadmap and milestone log for Lararium Node; M20 COMPLETE: bag ID = lar: URI everywhere, LarariumDocStore generic, corpusBagId=corpusLarUri, catalog bag in both peers, fields:{bag} dup stripped, room bag = roomLarUri, MemeSyncAdaptor uses room URI; M21 OPEN: draft lar: URI, room self-ref tiddler, catalog.corpora retire, connect screen, TW5 recipe from CompositeStore topology"
 cacheable = false
 retain = true
 invariant = false
@@ -121,7 +121,7 @@ cd packages/lararium-tw5  && npx tsc --noEmit  # ✓ one rebuild-target (Memetic
 ### OODA-HA receipt
 
 ✶ **Observe:**
-Session continued from M13. The `PranaEdge` → `PranalaEdge` family rename was enacted (LSP missed tail files; sed sweep completed two passes). Backward-compat aliases stripped. Core rebuilt to zero errors. Sprint 4 then revealed a vocabulary gap: the original `kumu-device.ts` used Blueprint/class-hierarchy terms (`Input`/`Output`) that contradict the locked Shift 3 — Verse 5.6+ compositional model. A full Verse alignment pass enacted.
+Session continued from M13. The `PranalaEdge` → `PranalaEdge` family rename was enacted (LSP missed tail files; sed sweep completed two passes). Backward-compat aliases stripped. Core rebuilt to zero errors. Sprint 4 then revealed a vocabulary gap: the original `kumu-device.ts` used Blueprint/class-hierarchy terms (`Input`/`Output`) that contradict the locked Shift 3 — Verse 5.6+ compositional model. A full Verse alignment pass enacted.
 
 ✶ **UEFN Verse 5.6+ Golden Principles (locked):**
 
@@ -164,19 +164,19 @@ Session continued from M13. The `PranaEdge` → `PranalaEdge` family rename was 
   - Round 1: initial file written with `KumuDeviceInput`/`KumuDeviceOutput` (Blueprint vocabulary)
   - Round 2: Verse alignment pass — full vocabulary correction, bug fixes, tsc verify
 
-  **Pranala rename:** `PranaEdge` → `PranalaEdge`, `PranaEdgeViolation` → `PranalaEdgeViolation`, `PranaViolationSeverity` → `PranalaViolationSeverity`, `validatePranaEdge` → `validatePranalaEdge`. All backward-compat aliases removed (alpha dev, no consumers). sed sweep + rebuild.
+  **Pranala rename:** `PranalaEdge` → `PranalaEdge`, `PranalaEdgeViolation` → `PranalaEdgeViolation`, `PranaViolationSeverity` → `PranalaViolationSeverity`, `validatePranalaEdge` → `validatePranalaEdge`. All backward-compat aliases removed (alpha dev, no consumers). sed sweep + rebuild.
 
 ▶ **Act (files touched):**
 
 | File | Change |
 |---|---|
-| `packages/lararium-core/src/ast.ts` | `PranaEdge` → `PranalaEdge`, `PranaEdgeViolation` → `PranalaEdgeViolation`, `PranaViolationSeverity` → `PranalaViolationSeverity` |
-| `packages/lararium-core/src/pranala-parser.ts` | `validatePranaEdge` → `validatePranalaEdge`; backward-compat alias stripped |
-| `packages/lararium-core/src/meme-ast/edges.ts` | All `PranaEdge` → `PranalaEdge` |
+| `packages/lararium-core/src/ast.ts` | `PranalaEdge` → `PranalaEdge`, `PranalaEdgeViolation` → `PranalaEdgeViolation`, `PranaViolationSeverity` → `PranalaViolationSeverity` |
+| `packages/lararium-core/src/pranala-parser.ts` | `validatePranalaEdge` → `validatePranalaEdge`; backward-compat alias stripped |
+| `packages/lararium-core/src/meme-ast/edges.ts` | All `PranalaEdge` → `PranalaEdge` |
 | `packages/lararium-core/src/meme-ast/types.ts` | Import renamed |
 | `packages/lararium-core/src/meme-ast/index.ts` | Re-exports renamed; self-aliases removed |
-| `packages/lararium-core/src/compiler.ts` | `PranaEdgeViolation` import + usages renamed |
-| Tests (3 files) | All `validatePranaEdge` / `PranaEdge` → new names |
+| `packages/lararium-core/src/compiler.ts` | `PranalaEdgeViolation` import + usages renamed |
+| Tests (3 files) | All `validatePranalaEdge` / `PranalaEdge` → new names |
 | `@lararium/core` `kumu-device.ts` | **New** — `KumuDeviceEvent`, `KumuDeviceHandler`, `KumuDeviceSpec`, `KumuInstanceRef`, `kumuInstanceUris`, `kumuDeviceSpecFromEdges`, `ReactionEngine implements MemeProjection` |
 | `@lararium/core` `index.ts` | `export * from "./kumu-device.js"` added |
 | `packages/lares/lararium-node/ROADMAP.md` | This section |
@@ -809,7 +809,7 @@ The verified files below are the code/config/build/test/design surfaces that eit
 | `lares/lararium_mcp/tests/test_compiler.py` | Compiler contract tests | Python | Verifies minimal/full boot and MCP boot tools/resources |  |
 | `lares/lararium_mcp/tests/test_prompts.py` | Prompt contract tests | Python | Verifies prompt catalog, message shape, JSON-RPC prompt access/error cases |  |
 | `lares/lararium_mcp/tests/test_mempalace_adapter.py` | Adapter tests | Python | Verifies sidecar JSON-RPC protocol/lifecycle behavior |  |
-| `lares/lararium_mcp/pranala_parser.py` | Pranala edge parser | Python | Branch addition; extracts `PranaEdge` records from carrier text |  |
+| `lares/lararium_mcp/pranala_parser.py` | Pranala edge parser | Python | Branch addition; extracts `PranalaEdge` records from carrier text |  |
 | `lares/lararium_mcp/meme_graph.py` | Graph model and traversal helpers | Python | Branch addition; models memes, adjacency, topological sort, cycle detection, unresolved refs |  |
 | `lares/lararium_mcp/tests/test_pranala_parser.py` | Parser contract tests | Python | Branch addition; verifies inline/block/sugar forms and `? ->` socket resolution |  |
 | `lares/lararium_mcp/tests/test_meme_graph.py` | Graph contract tests | Python | Branch addition; verifies sort, relation expansion, implements derivation, unresolved severity, stable hash |  |
@@ -841,7 +841,7 @@ More specifically, the contract that should survive the migration is this:
 | `read_lar_resource(uri)` | Reads file-backed resources only; raises on virtual or missing paths | `readLarTextResource(uri, host)` in `lararium-node` with identical error taxonomy exposed upward  |
 | `read_carrier(uri)` / `validate_carrier_shape()` | Extracts IAM metadata, validates carrier markers, computes kapu/ano/meme/data/noise rating, returns implements bundle and diagnostics | `readCarrier(uri, text)` / `validateCarrierShape()` in `lararium-core` with deterministic diagnostics ordering   |
 | `compile_carrier_index()` / interface / invariant indexes | Builds resource material for carrier/interface/invariant discovery | `buildCarrierIndex()`, `buildInterfaceIndex()`, `buildInvariantIndex()` in `lararium-core` with node-host file enumeration in `lararium-node`  |
-| `parse_pranala_edges()` | Parses inline, block, and sugar forms; resolves `? ->` against enclosing `ahu`; normalizes TOML edge fields | `parsePranalaEdges()` in `lararium-core` returning immutable `PranaEdge` records   |
+| `parse_pranala_edges()` | Parses inline, block, and sugar forms; resolves `? ->` against enclosing `ahu`; normalizes TOML edge fields | `parsePranalaEdges()` in `lararium-core` returning immutable `PranalaEdge` records   |
 | `MemeGraph` and compiler helpers | Maintains adjacency, sort, cycle detection, unresolved severity, closure hash, interface derivation | `MemeGraph` / `compileMinimalBoot()` / `compileFullBoot()` / `compileBootReceipt()` in `lararium-core`   |
 | `list_lar_resources()` / `read_lar_resource_or_index()` | Exposes carrier URIs, indexes, and boot artifacts as read-only resources; boot resources include `lar:///boot/minimal`, `.../full`, `.../receipt` | `registerLarariumResources(server, runtime)` in `lararium-mcp` backed by `lararium-node` runtime APIs    |
 | `define_tools()` / `call_tool()` | Defines and dispatches namespaced tools such as resolver/carrier/boot compilation; returns MCP tool result shape with `content[]` and `isError` | `server.registerTool(...)` in `lararium-mcp`; each tool delegates to `lararium-node` / `lararium-core` services   |
@@ -857,7 +857,7 @@ There is also a compatibility drift already visible inside the repo: tests and a
 The branch-local parser and graph work changes the migration baseline.
 The TypeScript roadmap should preserve these semantics before adding new surfaces:
 
-- `PranaEdge` records from block pranala, inline pranala, `loulou`, `aka`, and `kahea`
+- `PranalaEdge` records from block pranala, inline pranala, `loulou`, `aka`, and `kahea`
 - `? ->` resolution through the enclosing `ahu` stack
 - `MemeGraph` adjacency by family
 - control-edge BFS
@@ -1698,7 +1698,7 @@ Three laws:
 
 ### Priority 9: Pranala family property contracts + compile-time validation ✓ (2026-04-27)
 
-**Implemented.** `validatePranaEdge(edge)` added to `pranala-parser.ts`. `FAMILY_CONTRACTS` map defines per-family rules. `validateClosure()` in `compiler.ts` runs the validator against all edges in the graph and populates `ValidationResult.edgeViolations`. `BootReceipt.validation` surfaces `edgeViolationCount` + `edgeErrors` counts.
+**Implemented.** `validatePranalaEdge(edge)` added to `pranala-parser.ts`. `FAMILY_CONTRACTS` map defines per-family rules. `validateClosure()` in `compiler.ts` runs the validator against all edges in the graph and populates `ValidationResult.edgeViolations`. `BootReceipt.validation` surfaces `edgeViolationCount` + `edgeErrors` counts.
 
 Violation model:
 | Severity | Rule | Condition |
@@ -1993,9 +1993,9 @@ The apparent tension between TW5 (everything is `Record<string,string>`) and UEF
 |------------|-------------|----------------------------|------------------------------------|
 | Observe    | TW5 / wikitext | `Record<string,string>` | parse surface text; carry forward  |
 | Orient     | `parseMemeCarrier` | `MemeAstNode[]`     | token tree, typed sigil nodes      |
-| Decide     | `edgesFromAst` | typed attrs, `PranaEdge` | extract edge semantics             |
+| Decide     | `edgesFromAst` | typed attrs, `PranalaEdge` | extract edge semantics             |
 | Act        | Verse runtime | statically typed           | execute game logic                 |
-| Aftermath  | `validatePranaEdge` | `PranaEdgeViolation[]` | violations surface, loop closes |
+| Aftermath  | `validatePranalaEdge` | `PranalaEdgeViolation[]` | violations surface, loop closes |
 
 `attrs: Record<string,string>` is correct at Observe phase. "Parse, don't validate" (King 2019) and the blame calculus (Wadler & Findler) both say: parse at the boundary once, carry typed values through. The single parse path (`parsePranalaEdges` → thin shim over `parseMemeCarrier` + `edgesFromAst`) enacts this.
 
@@ -2189,7 +2189,7 @@ All M5/M6/M7/M8/M9 tactile behaviors unverified by automated browser. Manual smo
 
 ### Priority 3: Spatial family registration ✓ (shipped 2026-04-28)
 
-8th pranala family (`spatial`): roles `contains`, `portal`, `adjacent`, `layer` locked in `FAMILY_ROLES` (pranala-parser.ts). `validatePranaEdge` now emits `unknown-role` warning for out-of-vocabulary roles across all `roleRecommended` families. Color `"light-blue"` in tldraw `FAMILY_COLORS`. Unblocks portals-as-graph-edges (not just geo shapes with `meta.larPortal`).
+8th pranala family (`spatial`): roles `contains`, `portal`, `adjacent`, `layer` locked in `FAMILY_ROLES` (pranala-parser.ts). `validatePranalaEdge` now emits `unknown-role` warning for out-of-vocabulary roles across all `roleRecommended` families. Color `"light-blue"` in tldraw `FAMILY_COLORS`. Unblocks portals-as-graph-edges (not just geo shapes with `meta.larPortal`).
 
 ### Priority 4: Canon-promotion surface ✓ guard + endpoint shipped (ceremony deferred to M10)
 
@@ -2522,44 +2522,217 @@ pnpm --filter @lararium/app  build     # ✓ clean
 **Sprint 3 — `readBootstrap()` browser peer bootstrap: ✓ COMPLETE (prior session)**
 - `readCatalogUrl()` → `readBootstrap()`; fragment treated as LarariumDoc URL; `CATALOG_DOC_URI` tiddler read from LarariumDoc to locate CatalogDoc; legacy CatalogDoc-URL fragment kept as backward-compat path; `bootstrap-wanted/bootstrap-here` BC gossip.
 
-**Sprint 4 — Room keys as `lar:` URIs (NEXT):**
+**Sprint 4 — Room keys as `lar:` URIs: ✓ COMPLETE**
+- `roomLarUri(slug)` helper added to `lararium-doc.ts` and exported from `@lararium/core` barrel
+- `CatalogDoc.rooms` docblock updated: key IS the full `lar:` URI, `id` field retains the slug
+- `lararium-island.ts` seed loop uses `roomKey = roomLarUri(roomId)`
+- Both node peer and browser peer use `roomLarUri(roomId)` for room key construction and lookup
+- Resolver: `@lararium/rooms/{slug}` prefix already covered by `@lararium` virtual route; no extra rule needed
 
-  **Tension**: `CatalogDoc.rooms` keyed by opaque slugs (`"altar-fire"`). When a room moves relay, the key is meaningless.
+**Sprint 5 — Kill `make reseed` dead target + drop-data: ✓ COMPLETE**
+- `reseed:` Makefile target removed
+- `drop-data:` target added (`rm -rf .lararium-data`) — explicit local reset with no dead HTTP call
+- `identity-slot.ts` comment corrected to `lar:///ha.ka.ba/@catalog`
 
-  **Decide**: Room keys become `lar:///ha.ka.ba/@lararium/rooms/{slug}`. The `id` field retains the slug for readability; the map key is the full URI. Room entries materialise as tiddlers at their key URI in any synced wiki.
+M17 complete. All 5 + Sprint 0 correction sprints landed. Build clean across core / node / app.
 
-  **Schema change:**
-  ```typescript
-  // CatalogDoc.rooms key changes:
-  // "altar-fire" → "lar:///ha.ka.ba/@lararium/rooms/altar-fire"
-  ```
+<<~/ahu >>
 
-  **Act:**
-  1. `CatalogRoomEntry` convention note — key IS the `lar:` URI, `id` is the slug suffix
-  2. `lararium-island.ts` seed code that inserts room entries — use full URI key
-  3. All code that reads `CatalogDoc.rooms` by old string keys
-  4. Resolver: `lar:///ha.ka.ba/@lararium/rooms/{slug}` → `kind: "catalog-room"` virtual (already covered by the `@lararium` prefix path; confirm no extra rule needed)
-  5. Test fixtures in `parity.test.ts` / `node-host.test.ts`
+<<~ ahu #m18-session-2026-05-03 >>
 
-  **HA check**: Breaking for persisted CatalogDoc data; mitigation is re-seed (no real users yet). Grep-audit needed for short-key assumptions.
+## M18 Self-Describing Corpus Docs + Browser Peer Isomorphism — 2026-05-03
 
-**Sprint 5 — Kill `make reseed` dead target + Connect screen UX:**
+### OODA-HA receipt
 
-  **Tension**: `make reseed` calls `/admin/reseed` which does not exist. Cold first-visit with no fragment has no UX.
+✶ **Observe:**
+After M17 landed `CatalogDoc.tiddlers` and the `@`-prefix named-doc oracle pattern, one alignment gap remained: the browser peer at Step 4 still read corpus discovery from `catalog?.corpora` (the `Record<string, CatalogCorpusEntry>` field) rather than from `catalog?.tiddlers`. The node peer wrote corpus tiddlers with the comment "Zelenka: keep tiddler store current so any peer can enumerate corpora without walking the corpora Record." The browser ignored that writing entirely. Additionally, each corpus `MemeStoreDoc` carried no tiddler pointing to itself — it could not answer "what lar: URI am I?"
 
-  **Decide**:
-  - `make reseed` → direct CLI: `node packages/lararium-node/dist/src/main.js --reseed` (or standalone script)
-  - Connect screen: minimal overlay shown when `readBootstrap()` returns null — text input for altar-fire URL, "Connect" button, "Start fresh (local only)" link
-  - Static `/connect` page lives inside the built Vite app (not the node peer) — deferred to Sprint 5 kickoff
+⏿ **Orient:**
 
-  **Act:**
-  1. Remove or replace `reseed:` Makefile target
-  2. Move seed logic into callable `reseed(repo)` function callable from CLI flag
-  3. Add connect screen component in `@lararium/app`; `readBootstrap() → null` triggers it
+  **Corpus tiddler read/write isomorphism:**
+  Node peer writes `catalogHandle.tiddlers[corpusLarUri(entry.id)]` with `text = corpusDocHandle.url`.
+  Browser peer read from `catalog?.corpora` — a second source of truth that had to stay in sync manually.
+  Fix: browser walks `catalog?.tiddlers`, filters keys starting with `lar:///ha.ka.ba/@` (excluding `CATALOG_DOC_URI` and `LARARIUM_DOC_URI`), extracts `.text` as automerge URL. `catalog.corpora` becomes optimization index only, not the authoritative oracle.
 
-  **HA check**: Static serving was removed in M15 web3 surgery; `/connect` reintroduces it minimally. Prefer keeping it inside the Vite app bundle to avoid re-opening node static serving.
+  **Self-describing corpus docs:**
+  Each corpus `MemeStoreDoc` should carry `tiddlers[corpusLarUri(slug)] = { title: corpusUri, text: handle.url }`.
+  Mirrors the LarariumDoc self-ref pattern. Any peer opening a corpus doc can discover its own lar: identity.
+  Helper: `reconcileCorpusSelfRef(corpusHandle, corpusUri)` exported from `lararium-island.ts`.
 
-**Dependency order**: Sprint 4 (room keys) is independent of Sprint 5 (reseed/UX). Both can run in parallel.
+◇ **Decide:**
+- Add `reconcileCorpusSelfRef` to `lararium-island.ts`.
+- Node peer corpus loop calls it after `waitHandleLocal`.
+- Browser peer Step 4 reads `catalog?.tiddlers` not `catalog?.corpora`.
+- Fix stale `CATALOG_DOC_URI_SLOT` in browser peer file docblock and inline comment.
+
+▶ **Act (files touched):**
+
+| File | Change |
+|---|---|
+| `@lararium/node` `lararium-island.ts` | `reconcileCorpusSelfRef(corpusHandle, corpusUri)` exported |
+| `@lararium/node` `open-node-lar-peer.ts` | Corpus loop calls `reconcileCorpusSelfRef` after `waitHandleLocal` |
+| `@lararium/app` `open-browser-lar-peer.ts` | Step 4 reads `catalog?.tiddlers` not `catalog?.corpora`; `CATALOG_DOC_URI_SLOT` comments fixed |
+
+⤴ **Ho'oko:**
+
+```sh
+pnpm --filter @lararium/core build     # ✓ clean
+pnpm --filter @lararium/node build     # ✓ clean
+pnpm --filter @lararium/app  build     # ✓ clean
+```
+
+↺ **Aftermath / M19 candidates:**
+- `catalog.corpora` Record: optimization index only; can be retired once all peers run M18+
+- Room docs self-ref tiddler: same pattern, not yet done
+- Connect screen UX (Sprint 5 from M17 backlog)
+
+<<~/ahu >>
+
+<<~ ahu #m19-session-2026-05-03 >>
+
+## M19 Automerge Tiga — 2026-05-03
+
+### OODA-HA receipt
+
+✶ **Observe:**
+The Beelay/Keyhive research confirmed that each self-describing Automerge doc should NOT carry upward pointers. The three-doc oracle chain (LarariumDoc → CatalogDoc → corpus/room leaves) has a structurally named fourth presence: LaresDoc — the `@lares` personality layer. The SDM metaphysics maps cleanly: ha (structure) = LarariumDoc, ka (fire/motion) = CatalogDoc, ba (personality/flow) = LaresDoc. The Tiga (Indonesian: triangle, Bucky Fuller's minimal stable geometry) names this as invariant. Before M19: `LARES_DOC_URI` constant did not exist; no ha→ba oracle tiddler existed; LaresDoc had no Automerge handle; the `lares` bag was absent from CompositeStore; the boot sequence in both peers named only ha and ka.
+
+⏿ **Orient:**
+The Tiga closes when: (1) `LARES_DOC_URI = "lar:///ha.ka.ba/@lares"` exists as a typed constant; (2) `seedLaresDoc()` creates ba with a self-ref tiddler; (3) `reconcileWellKnownTiddlers` writes the ha→ba oracle tiddler; (4) both peers open LaresDoc from the ha oracle and add a `lares` bag between `system` and `corpus` in CompositeStore; (5) the browser corpus scanner excludes `LARES_DOC_URI` from the `@`-prefix tiddler walk. The `lares` bag slots above corpus so `@lares` memes have higher recipe priority than user corpus content but lower than system engine tiddlers.
+
+◇ **Decide:**
+Three OODA loops across four files:
+- Loop 1 — `lararium-island.ts`: add `LARES_DOC_URI` import + `MemeStoreDoc` type import; add `seedLaresDoc(repo)` export; update `reconcileWellKnownTiddlers` signature to accept optional `laresUrl` and write the ba tiddler.
+- Loop 2 — `open-node-lar-peer.ts`: import `seedLaresDoc` + `LARES_DOC_URI`; add Step 3b (LaresDoc open/seed after island); pass `laresHandle.url` to `reconcileWellKnownTiddlers`; update docblock boot sequence.
+- Loop 3 — `open-browser-lar-peer.ts`: import `LARES_DOC_URI`; add Step 4 (read ha oracle, open LaresDoc, add `lares` bag); exclude `LARES_DOC_URI` from corpus tiddler scan; update docblock.
+- Meme — `packages/lararium-core/memes/automerge-tiga.md` at `lar:///ha.ka.ba/@lararium/core/v0.1/automerge-tiga`: invariant doc locking the Tiga law, Zelenka alignment, boot sequence mapping, structural law table.
+
+▶ **Act (files touched):**
+
+| File | Change |
+|---|---|
+| `@lararium/core` `lararium-doc.ts` | `LARES_DOC_URI` constant + Tiga docblock |
+| `@lararium/node` `lararium-island.ts` | `seedLaresDoc()` export; `reconcileWellKnownTiddlers` threaded with `laresUrl` |
+| `@lararium/node` `open-node-lar-peer.ts` | Step 3b LaresDoc open/seed; `lares` bag added; boot sequence docblock updated |
+| `@lararium/app` `open-browser-lar-peer.ts` | Step 4 LaresDoc open from ha oracle; `lares` bag added; corpus scan excludes ba; docblock updated |
+| `packages/lararium-core/memes/automerge-tiga.md` | Invariant Tiga meme created |
+
+⤴ **Ho'oko:**
+
+```sh
+pnpm --filter @lararium/core build     # ✓ clean
+pnpm --filter @lararium/node build     # ✓ clean
+pnpm --filter @lararium/app  build     # ✓ clean
+```
+
+CompositeStore recipe is now: `system → lares → corpus:* → room → draft`
+All three Tiga oracle tiddlers reconciled on every boot: self, ka, ba.
+`lares=pending` log line disappears once LaresDoc handle exists on resume boot.
+
+↺ **Aftermath / M20 candidates:**
+- `catalog.corpora` Record: legacy optimization index; retire once all peers run M18+
+- Room docs self-ref tiddler: same `seedSelfRef` pattern as corpus and lares, not yet done
+- Connect screen UX: `readBootstrap() === null` cold-boot path still unimplemented
+- `LarDiskProjector` migration: `@lararium/tw5` → `@lararium/node` still pending
+- Web2 cleanup: `reaction-query.web2.ts` orphan, `LarariumPanel.web2.tsx` retirement
+
+<<~/ahu >>
+
+<<~ ahu #m20-session-2026-05-03 >>
+
+## M20 Bag-ID = Lar: URI — 2026-05-03
+
+### OODA-HA receipt
+
+✶ **Observe:**
+After M19 locked the Tiga, `CompositeStore` still used opaque short strings as bag IDs (`"system"`, `"catalog"`, `"lares"`, `"corpus:slug"`, `"room"`, `"draft"`). TiddlerRecord `bag` fields inside oracle tiddlers duplicated identity in two ways: a top-level `bag:` field AND a nested `fields: { bag: "..." }` object. `LarariumDocStore` was typed to `DocHandle<LarariumDoc>` only, preventing reuse for CatalogDoc. `corpusBagId(slug)` returned `"corpus:slug"` — inconsistent with `corpusLarUri(slug)`. Browser peer had no `catalog` layer in CompositeStore. `MemeSyncAdaptor` hardcoded `"room"` as write target.
+
+⏿ **Orient:**
+Bag ID = lar: URI of the owning Automerge doc is the correct invariant. One doc = one bag = one URI. This makes the TW5 recipe derivable from the CompositeStore bag topology without any side-channel. The `fields: { bag }` duplication was a leftover from an earlier schema where `fields` mirrored top-level fields — the top-level `bag` field is authoritative. `LarariumDocStore` is generic over any `{ tiddlers? }` doc — same adapter serves ha and ka. `corpusBagId` IS `corpusLarUri` — they were always the same concept.
+
+◇ **Decide:**
+One sweep across 8 files:
+- `composite-store.ts`: import Tiga URI constants; `BAG_IDS` uses lar: URIs; `corpusBagId` re-exports as alias of `corpusLarUri`; `roomBagId` re-exported as alias of `roomLarUri`
+- `grammar-invariants.ts`: `GRAMMAR_BAG` re-exports as `LARARIUM_DOC_URI`
+- `lararium-doc-store.ts`: generic `<T extends { tiddlers? }>`, default `bagId = LARARIUM_DOC_URI`
+- `lararium-island.ts`: all tiddler writes use URI constants, strip `fields:{bag}` dup
+- `open-node-lar-peer.ts`: catalog layer added; all bag IDs use `BAG_IDS.*` or computed URIs; `roomBagId = roomLarUri(roomId)`; `MemeSyncAdaptor` receives `roomBagId`
+- `open-browser-lar-peer.ts`: same; catalog layer added before lararium in step 3
+
+▶ **Act (files touched):**
+
+| File | Change |
+|---|---|
+| `composite-store.ts` | `BAG_IDS` → lar: URIs; `corpusBagId`/`roomBagId` = URI aliases; imports Tiga constants |
+| `grammar-invariants.ts` | `GRAMMAR_BAG` re-exports `LARARIUM_DOC_URI` |
+| `lararium-doc-store.ts` | Generic `<T extends DocWithTiddlers>`; `bagId` defaults to `LARARIUM_DOC_URI` |
+| `lararium-island.ts` | All tiddler writes: URI constants for `bag`, no `fields:{bag}` |
+| `open-node-lar-peer.ts` | Catalog bag layer; all bag IDs use URI constants; `roomBagId`; adaptor |
+| `open-browser-lar-peer.ts` | Catalog bag layer; all bag IDs use URI constants; `roomBagId`; adaptor |
+| `lararium-doc.ts` | Docblock: updated recipe priority comment |
+| `catalog.ts` | Docblock: `bag: "catalog"` → `bag: CATALOG_DOC_URI` note |
+
+⤴ **Ho'oko:**
+
+```sh
+pnpm --filter @lararium/core build     # ✓ clean
+pnpm --filter @lararium/node build     # ✓ clean
+pnpm --filter @lararium/app  build     # ✓ clean
+```
+
+CompositeStore recipe: `LARARIUM_DOC_URI → CATALOG_DOC_URI → LARES_DOC_URI → corpusLarUri(*) → roomLarUri(slug) → "draft"`
+TiddlerRecord `bag` field = lar: URI of the owning doc everywhere.
+`MemeSyncAdaptor` writes to `roomLarUri(roomId)` — correct named bag.
+
+↺ **M21 candidates:**
+- `"draft"` bag: needs a stable lar: URI (per-user-per-room, e.g. `roomLarUri(slug) + "/drafts/" + did`)
+- Room docs self-ref tiddler: `title: roomLarUri(slug), text: handle.url, bag: roomLarUri(slug)`
+- `catalog.corpora` Record: legacy index, safe to retire
+- Connect screen: `readBootstrap() === null` cold-boot UX
+- `meme-provider.ts` line 273: hardcoded `"room"` inferred bag — needs `roomId` context threaded through
+- TW5 recipe dynamically derived from `CompositeStore.layerIds()` — Phase 4 target
+
+<<~/ahu >>
+
+<<~ ahu #project-ooda-ha-2026-05-03 >>
+
+## Project OODA-HA — 2026-05-03 (M17–M20 sprint close)
+
+✶ **Observe:**
+In a single session (2026-05-03), the project completed M17 through M20 — four milestones. The oracle chain is complete and consistent: `fragment → ha (LarariumDoc) → ka (CatalogDoc) → ba (LaresDoc) → corpus leaves → room leaf`. Every Automerge doc in the system has a stable `lar:` URI that equals its `CompositeStore` bag ID and equals the `bag` field stamped on every tiddler it owns. The Beelay/Keyhive alignment is locked: no upward pointers; reachability flows root-downward from ha; the oracle tiddler chain IS the pre-Keyhive reachability index. The Automerge Tiga (ha/ka/ba) is documented as an invariant meme. The TW5 `bag` = lar: URI = Automerge doc mapping is now structurally enforced, not just conventional.
+
+⏿ **Orient:**
+The identity layer is complete. What remains is three distinct concerns at different zoom levels:
+
+  **Zoom 1 — Cleanup (M21, tight):** `"draft"` bag URI, room self-ref tiddler, `catalog.corpora` retirement, `meme-provider.ts` hardcoded `"room"`, Web2 orphan removal. These are individually small; none is a design question.
+
+  **Zoom 2 — UX gate (M21–M22):** Connect screen for `readBootstrap() === null`. This is the only hard blocker to handing a URL to a new user and having it work without developer intervention.
+
+  **Zoom 3 — Architecture (Phase 4):** TW5 VM recipe derived dynamically from `CompositeStore.layerIds()`. Today the recipe is implicit (construction order). The TW5 bag/recipe model should read the lar: URI layer IDs and construct the wiki recipe from them — making the wiki a direct projection of the Automerge topology. This is the "wiki VM = Automerge topology" invariant. It unlocks: room-switching without re-boot, federation bag injection, Keyhive group membership → recipe derivation.
+
+  **Zoom 4 — Federation (Phase 5):** Keyhive group-identity integration. The Tiga becomes a Keyhive root group. `corpusLarUri(slug)` URIs become Keyhive document identifiers. Federation = two lararium deployments sharing a corpus bag by syncing the same Automerge doc URL through CatalogDoc.tiddlers.
+
+◇ **Decide:**
+- M21 is a cleanup sprint — no design questions. Execute fast.
+- Connect screen (M22) unblocks real user testing.
+- Phase 4 (TW5 recipe from topology) is the next architectural milestone. Research spike in M22 or M23.
+- Phase 5 (Keyhive) follows Phase 4 naturally — Keyhive membership graph → CompositeStore layer set → TW5 recipe.
+
+▶ **Priority order for M21:**
+1. `"draft"` bag lar: URI (structural completeness — closes the one remaining opaque bag ID)
+2. Room self-ref tiddler (pattern parity with corpus and lares)
+3. `catalog.corpora` Record retirement (removes dual source-of-truth)
+4. Connect screen (user-facing blocker)
+5. Web2 cleanup (dead code)
+
+⤴ **Phase boundary:**
+M17–M20 = Phase 3 close (identity + oracle layer complete).
+M21–M22 = Phase 4 open (TW5 recipe from topology + connect screen).
+
+↺ **Residue carried forward:**
+- `LarDiskProjector` migration (`@lararium/tw5` → `@lararium/node`) — independent of Phase 4
+- Isomorphic `AutomergeStoreBase` / grammar-wired deserializer — Sprint 6 research
+- Browser smoke / Playwright QA — no automated tests for the boot sequence yet
 
 <<~/ahu >>
 

@@ -547,11 +547,11 @@ description   = "English alias for kukali; Verse `suspends` keyword; parser maps
 ## Pranala Family Contracts
 
 Each family carries an invariant property schema.
-The TypeScript validator (`validatePranaEdge`) enforces these contracts at compile time.
+The TypeScript validator (`validatePranalaEdge`) enforces these contracts at compile time.
 In Phase 2 this table replaces the hard-coded `FAMILY_CONTRACTS` map in `pranala-parser.ts`.
 
 ```toml
-# Family contract definitions — enforced by validatePranaEdge()
+# Family contract definitions — enforced by validatePranalaEdge()
 
 [[families]]
 name                = "control"

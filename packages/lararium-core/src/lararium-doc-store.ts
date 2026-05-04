@@ -1,24 +1,27 @@
 /**
- * LarariumDocStore — read-only LarTiddlerStore adapter over LarariumDoc.tiddlers.
+ * LarariumDocStore — read-only LarTiddlerStore adapter over a doc's `.tiddlers` map.
  *
- * The LarariumIsland doc carries system tiddlers (grammar meme, widget memes)
- * in its `tiddlers` map alongside binary blobs for the TW5 engine bundle.
- * This adapter exposes those tiddlers as the "system" bag in the CompositeStore.
+ * Generic over any Automerge doc that carries a `tiddlers?` field at its root
+ * (LarariumDoc, CatalogDoc).  Pass a `bagId` to the constructor to set the
+ * Pass the owning doc's lar: URI as `bagId` — bag ID = doc URI (one doc = one bag).
+ * Defaults to LARARIUM_DOC_URI for backward-compat.
  *
- * Read-only: no put() or tombstone() — system bag is engine-authored only.
- * Writes must go through the node server's `seedGrammarTiddler` path.
+ * Read-only: no put() or tombstone() — these bags are authority-authored only.
  */
 
 import type { DocHandle }              from "@automerge/automerge-repo";
 import type { LarTiddlerRecord, LarTiddlerStore, LarTiddlerChange, ChangeOrigin } from "./tiddler-store.js";
-import type { LarariumDoc }            from "./lararium-doc.js";
 import type { MutableLarRecord }       from "./meme-store-doc.js";
+import { LARARIUM_DOC_URI }            from "./lararium-doc.js";
 
-export class LarariumDocStore implements LarTiddlerStore {
-  readonly bagId = "system";
+type DocWithTiddlers = { readonly tiddlers?: Record<string, Readonly<MutableLarRecord>> };
+
+export class LarariumDocStore<T extends DocWithTiddlers = DocWithTiddlers> implements LarTiddlerStore {
+  readonly bagId: string;
   private readonly listeners: Set<(c: LarTiddlerChange) => void> = new Set();
 
-  constructor(private readonly handle: DocHandle<LarariumDoc>) {
+  constructor(private readonly handle: DocHandle<T>, bagId = LARARIUM_DOC_URI) {
+    this.bagId = bagId;
     handle.on("change", () => {
       const tiddlers = handle.doc()?.tiddlers ?? {};
       const origin: ChangeOrigin = { kind: "crdt-remote", edgeIsland: "automerge" };
@@ -45,11 +48,11 @@ export class LarariumDocStore implements LarTiddlerStore {
   }
 
   async put(_record: LarTiddlerRecord, _origin: ChangeOrigin): Promise<void> {
-    throw new Error("LarariumDocStore: system bag is read-only");
+    throw new Error(`LarariumDocStore(${this.bagId}): bag is read-only`);
   }
 
   async tombstone(_title: string, _origin: ChangeOrigin): Promise<void> {
-    throw new Error("LarariumDocStore: system bag is read-only");
+    throw new Error(`LarariumDocStore(${this.bagId}): bag is read-only`);
   }
 
   subscribe(fn: (change: LarTiddlerChange) => void): () => void {
@@ -61,7 +64,7 @@ export class LarariumDocStore implements LarTiddlerStore {
     return Object.freeze({
       title:  raw.title,
       fields: Object.freeze({ ...raw.fields }),
-      bag:    "system",
+      bag:    this.bagId,
       ...(raw.text        !== undefined && { text:        raw.text }),
       ...(raw.deleted     !== undefined && { deleted:     raw.deleted }),
       ...(raw.sourceUri   !== undefined && { sourceUri:   raw.sourceUri }),

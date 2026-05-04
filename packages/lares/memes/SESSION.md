@@ -15,7 +15,7 @@ manao        = 0.87
 implements   = [
   "lar:///ha.ka.ba/@lares/api/v0.1/pono/meme"
 ]
-role         = "session handoff crystal — 2026-05-02 (session 5) — web2 sidecar rip complete; Sprint 0 enacted; kumu-as-lar-fragment locked; FFZ 5-scale changeset model locked; grammar invariants documented; MemeGraph rebuild next"
+role         = "session handoff crystal — 2026-05-03 (session 6) — M17–M20 complete: oracle chain ha→ka→ba, Automerge Tiga locked, bag ID = lar: URI everywhere, catalog bag in CompositeStore, MemeSyncAdaptor uses roomLarUri; M21 open: draft lar: URI, room self-ref, connect screen, TW5 recipe from topology"
 ```
 
 <<~&#x0002;>>
@@ -353,7 +353,7 @@ packages/lararium-node/
     readonly uri:        string;
     readonly metadata:   Record<string, unknown>;
     readonly implements: readonly string[];
-    readonly edges:      readonly PranaEdge[];
+    readonly edges:      readonly PranalaEdge[];
     readonly rating:     MemeRating;
   }
   ```
@@ -362,7 +362,7 @@ packages/lararium-node/
   ```typescript
   interface Meme {
     uri: string; laresRelPath: string|null; contentHash: string;
-    metadata: Record<string, unknown>; edgesOut: PranaEdge[];
+    metadata: Record<string, unknown>; edgesOut: PranalaEdge[];
     virtual: boolean; exists: boolean;
   }
   ```
@@ -592,6 +592,70 @@ cd packages/lararium-tw5  && npx tsc --noEmit  # ✓ ZERO errors
 - Heleuma `body-sha256` anchors for `filters/*.ts` files as self-describing code-snippet memes
 - `LarDiskProjector` move from `@lararium/tw5` → `@lararium/node`
 - Isomorphic `AutomergeStoreBase` / grammar-wired deserializer / multi-doc boot order: Sprint 6 research
+
+<<~ ahu #ooda-ha-named-doc-pattern-m17-2026-05-03 >>
+
+## OODA-HA: Named-Doc Oracle + Room Keys + Self-Describing Pass (M17 — 2026-05-03)
+
+✶ **Observe:** `CATALOG_DOC_URI_SLOT` name carried implicit "slot" semantics — ambiguous; constant does double duty as slot key AND doc identity URI. Room keys in `CatalogDoc.rooms` were opaque short slugs (`"altar-fire"`) — meaningless if a room moves relay. `CatalogDoc` had no `tiddlers` field — couldn't self-describe or serve as an oracle for corpus discovery. Browser peer bootstrapped via `readCatalogUrl()` reading the catalog URL from the location fragment (no oracle chain). `make reseed` called non-existent `/admin/reseed`.
+
+⏿ **Orient:** Named-doc identity IS the `lar:` URI — constant serves as both slot key and canonical identity address. `@`-prefix scope = virtual named-doc lane. Room key IS a stable `lar:` address (`roomLarUri(slug)`). Oracle tiddler pattern: each doc holds its own URL at its own `lar:` address, enabling any peer to discover it without a side-channel. `readBootstrap()` replaces `readCatalogUrl()`: LarariumDoc URL in fragment → read `tiddlers[CATALOG_DOC_URI].text` → CatalogDoc URL.
+
+◇ **Decide:** 6 sprints (Sprint 0 = identity-slot comment fix; Sprints 1–5 = LARARIUM_DOC_URI, CATALOG_DOC_URI + corpusLarUri + CatalogDoc.tiddlers + node-peer corpus tiddler writes, readBootstrap chain, roomLarUri + room keys, drop-data Makefile target + reseed removal).
+
+▶ All 6 sprints enacted. Three packages build clean. Oracle read chain established: fragment → LarariumDoc → `tiddlers[CATALOG_DOC_URI]` → CatalogDoc → `tiddlers[corpusLarUri(slug)]` → corpus docs.
+
+⤴ `pnpm -r build` ✓ across `@lararium/core` / `@lararium/node` / `@lararium/app`.
+
+↺ M18 open: corpus `MemeStoreDoc` not yet self-describing (no tiddler at its own `lar:` address inside the doc). Browser peer corpus discovery still reads `catalog?.corpora` not `catalog?.tiddlers` — isomorphism gap remains. `@lares` oracle tiddler not yet in LarariumDoc.
+
+<<~/ahu >>
+
+<<~ ahu #session-6-m17-m20-2026-05-03 >>
+
+## Session 6 — M17–M20 Sprint Close (2026-05-03)
+
+### Work completed this session
+
+**M17 — Named-doc oracle + room keys:**
+`CATALOG_DOC_URI` (drop `_SLOT`), `corpusLarUri()`, `roomLarUri()`, `CatalogDoc.tiddlers` oracle field, `readBootstrap()` chain, resolver `@`-prefix virtual routes, `drop-data` Makefile target.
+
+**M18 — Self-describing corpus docs + browser isomorphism:**
+Each corpus `MemeStoreDoc` carries `tiddlers[corpusLarUri(slug)]` self-ref tiddler. Browser peer reads corpus discovery from `CatalogDoc.tiddlers`, not the legacy `corpora` Record.
+
+**M19 — Automerge Tiga:**
+`LARES_DOC_URI` constant. `seedLaresDoc()`. `reconcileWellKnownTiddlers` threaded with `laresUrl`. `lares` bag in `CompositeStore` both peers. `automerge-tiga.md` invariant meme at `lar:///ha.ka.ba/@lararium/core/v0.1/automerge-tiga`. SDM metaphysics: ha = LarariumDoc (structure), ka = CatalogDoc (motion), ba = LaresDoc (personality).
+
+**M20 — Bag ID = lar: URI everywhere:**
+`LarariumDocStore<T>` generic over any `{ tiddlers? }` doc. `corpusBagId` = alias of `corpusLarUri`. `roomBagId` = alias of `roomLarUri`. `BAG_IDS` exports lar: URI constants. Catalog bag layer added to both peers. `fields: { bag }` duplication stripped from all oracle tiddler writes. `MemeSyncAdaptor` receives `roomLarUri(roomId)`. All three packages build clean.
+
+### Work left — M21 sprint
+
+| Item | Priority | Blocker? |
+|---|---|---|
+| `"draft"` bag lar: URI | high | structural completeness |
+| Room self-ref tiddler | high | pattern parity |
+| `catalog.corpora` Record retirement | medium | dual source-of-truth |
+| Connect screen (`readBootstrap() === null`) | high | user-facing cold boot |
+| `meme-provider.ts` hardcoded `"room"` bag | medium | needs roomId context |
+| Web2 cleanup (`reaction-query.web2.ts`, `LarariumPanel.web2.tsx`) | low | dead code |
+| `LarDiskProjector` migration | low | independent |
+
+### Project OODA-HA — higher zoom
+
+✶ **Observe:** M17–M20 completed the identity layer. Every Automerge doc has a stable `lar:` URI = CompositeStore bag ID = `bag` field on every tiddler it owns. The oracle chain is complete: fragment → ha → ka → ba → corpus leaves → room leaf. Three packages build clean.
+
+⏿ **Orient:** Three zoom levels remain. Zoom 1 (cleanup, M21): `"draft"` URI, room self-ref, catalog.corpora retirement, connect screen. Zoom 2 (architecture, Phase 4): TW5 VM recipe derived dynamically from `CompositeStore.layerIds()` — makes the wiki a direct projection of the Automerge topology; unlocks room-switching, federation bag injection, Keyhive derivation. Zoom 3 (federation, Phase 5): Keyhive group-identity integration; Tiga = root group; corpus URIs = Keyhive document identifiers.
+
+◇ **Decide:** M21 = cleanup sprint (no design questions, execute fast). Connect screen = M22 (user-facing gate). Phase 4 spike (TW5 recipe from topology) starts in M22 or M23. Phase 5 (Keyhive) follows Phase 4.
+
+▶ **Phase boundary:** M17–M20 closes Phase 3 (identity + oracle layer). M21 opens Phase 4 (TW5 recipe from topology).
+
+⤴ Build status: `@lararium/core` ✓ `@lararium/node` ✓ `@lararium/app` ✓
+
+↺ Residue carried: isomorphic `AutomergeStoreBase`, grammar-wired deserializer, browser Playwright QA, `LarDiskProjector` migration.
+
+<<~/ahu >>
 
 <<~ ahu #edges >>
 

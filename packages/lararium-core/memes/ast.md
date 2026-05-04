@@ -24,11 +24,11 @@ Shared by `meme-graph.ts`, `compiler.ts`, `pranala-parser.ts` in `@lararium/core
 
 | Type | Description |
 |---|---|
-| `PranaEdge` | Compiled edge record — output of `edgesFromAst` / `parsePranalaEdges` |
+| `PranalaEdge` | Compiled edge record — output of `edgesFromAst` / `parsePranalaEdges` |
 | `GrammarRules` | `{ sigils: SigilRule[], families: FamilyRule[] }` — loaded from grammar carrier |
 | `SigilRule` | Grammar-defined sigil registration entry |
 | `FamilyRule` | Grammar-defined pranala family contract |
-| `PranaEdgeViolation` | Validation failure record from `validatePranaEdge` |
+| `PranalaEdgeViolation` | Validation failure record from `validatePranalaEdge` |
 
 ## Law of Fives constants
 

@@ -89,7 +89,7 @@ fields    = [
 type   = "socket"
 fields = ["id", "scope=document", "pageId", "parentId: meme-frame-id", "memeUri", "slotId", "ahuIdx: number"]
 
-# LarTLArrow — one per PranaEdge
+# LarTLArrow — one per PranalaEdge
 [LarTLArrow]
 type   = "arrow"
 fields = [

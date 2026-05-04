@@ -1,4 +1,4 @@
-"""Pranala parser — extract PranaEdge records from carrier text.
+"""Pranala parser — extract PranalaEdge records from carrier text.
 
 Handles four surface forms:
   block pranala   <<~ pranala #frag FROM -> TO >> ... <<~/pranala >>
@@ -18,11 +18,11 @@ from dataclasses import dataclass, field
 from typing import Any
 
 # ---------------------------------------------------------------------------
-# PranaEdge dataclass
+# PranalaEdge dataclass
 # ---------------------------------------------------------------------------
 
 @dataclass(frozen=True)
-class PranaEdge:
+class PranalaEdge:
     from_uri: str
     from_socket: str
     to_uri: str
@@ -171,13 +171,13 @@ def _fields_from_toml(toml_text: str) -> dict[str, Any]:
 # Main parser
 # ---------------------------------------------------------------------------
 
-def parse_pranala_edges(carrier_uri: str, text: str) -> list[PranaEdge]:
-    """Extract all PranaEdge records from carrier text.
+def parse_pranala_edges(carrier_uri: str, text: str) -> list[PranalaEdge]:
+    """Extract all PranalaEdge records from carrier text.
 
     Processes text sequentially to maintain ahu context stack for ? -> resolution.
     Block pranala regions are identified first and excluded from inline scan.
     """
-    edges: list[PranaEdge] = []
+    edges: list[PranalaEdge] = []
 
     # Step 1: collect block pranala spans so inline scan can skip them.
     block_spans: list[tuple[int, int]] = [
@@ -245,7 +245,7 @@ def parse_pranala_edges(carrier_uri: str, text: str) -> list[PranaEdge]:
                 family_m = re.search(r'\bfamily\s*=\s*"([\w-]+)"', body)
                 family = family_m.group(1) if family_m else 'relation'
 
-            edges.append(PranaEdge(
+            edges.append(PranalaEdge(
                 from_uri=from_uri,
                 from_socket=from_socket,
                 to_uri=to_uri,
@@ -267,7 +267,7 @@ def parse_pranala_edges(carrier_uri: str, text: str) -> list[PranaEdge]:
                 from_socket = carrier_uri + frag_raw
             to_uri, to_socket = _resolve_to(to_raw, carrier_uri)
 
-            edges.append(PranaEdge(
+            edges.append(PranalaEdge(
                 from_uri=from_uri,
                 from_socket=from_socket,
                 to_uri=to_uri,
@@ -290,21 +290,21 @@ def parse_pranala_edges(carrier_uri: str, text: str) -> list[PranaEdge]:
         from_socket_s = ahu_stack[-1] if ahu_stack else carrier_uri
 
         if kind == 'loulou':
-            edges.append(PranaEdge(
+            edges.append(PranalaEdge(
                 from_uri=carrier_uri, from_socket=from_socket_s,
                 to_uri=to_uri_s, to_socket=to_socket_s,
                 family='relation', lifecycle='instance',
                 traversal='source-to-target', propagation='none',
             ))
         elif kind == 'aka':
-            edges.append(PranaEdge(
+            edges.append(PranalaEdge(
                 from_uri=carrier_uri, from_socket=from_socket_s,
                 to_uri=to_uri_s, to_socket=to_socket_s,
                 family='observe', lifecycle='instance',
                 traversal='source-to-target', propagation='none',
             ))
         elif kind == 'kahea':
-            edges.append(PranaEdge(
+            edges.append(PranalaEdge(
                 from_uri=carrier_uri, from_socket=from_socket_s,
                 to_uri=to_uri_s, to_socket=to_socket_s,
                 family='dataflow', lifecycle='instance',

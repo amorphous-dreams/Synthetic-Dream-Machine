@@ -103,7 +103,7 @@ separate layers with separate sigil sets — they are two readings of the same s
 │                                                                      │
 │  Every sigil produces graph artifacts:                               │
 │  ahu → worksite node / fragment anchor                               │
-│  pranala/loulou/aka/kahea → PranaEdge records                        │
+│  pranala/loulou/aka/kahea → PranalaEdge records                        │
 │  iam → carrier metadata                                              │
 │  ? -> → DAG socket edge                                              │
 │                                                                      │
@@ -233,9 +233,9 @@ All eight families registered in the grammar meme `[[families]]` TOML array and 
 |-------|-------|-----------|
 | Observe | wikitext surface | operator writes `<<~ papalohe A -> B trigger:OnElim fn:Show >>` |
 | Orient | `parseMemeCarrier` | → `EdgeSugarNode { trigger, fn }` |
-| Decide | `edgesFromAst` | → `PranaEdge { family: "reaction", payload: { trigger, fn }, renderMode: "reaction-wire" }` |
+| Decide | `edgesFromAst` | → `PranalaEdge { family: "reaction", payload: { trigger, fn }, renderMode: "reaction-wire" }` |
 | Act | Verse/UEFN runtime | `DeviceA.OnEliminated.Subscribe(agent => DeviceB.ShowScore(agent))` |
-| Aftermath | `validatePranaEdge` | warn if no role; loop closes; state change feeds back to Observe |
+| Aftermath | `validatePranalaEdge` | warn if no role; loop closes; state change feeds back to Observe |
 
 The wire (`papalohe`) belongs to Orient phase — a named shape in the graph. The execution (`suspends`/`kukali`, Gap 5) belongs to Act phase. Different phases, different sigils.
 
@@ -316,7 +316,7 @@ Document-level DAG sockets. Required in well-formed carriers.
 
 ## Edge Sigils — Graph + Render Dual-Layer
 
-All edge sigils produce compile-time `PranaEdge` records AND carry render-time directives.
+All edge sigils produce compile-time `PranalaEdge` records AND carry render-time directives.
 
 ### `pranala` — full edge declaration
 
@@ -951,13 +951,13 @@ The tension between TW5's string-typed store (`Record<string,string>`) and Verse
 |-------|-------------|-----------|-------|
 | ✶ Observe | carrier text arrives as raw string | `Record<string,string>` — `?` | Week |
 | ⏿ Orient | `parseMemeCarrier` → `MemeAstNode[]` | named shapes, attrs unresolved strings | Watch |
-| ◇ Decide | `edgesFromAst` interprets sigil attrs | `string` → `Ladder5 \| OodaHa5 \| PranaEdge…` | Turn |
+| ◇ Decide | `edgesFromAst` interprets sigil attrs | `string` → `Ladder5 \| OodaHa5 \| PranalaEdge…` | Turn |
 | ▶ Act | Verse execute / render / canvas | typed, transactional, committed | Round |
-| ⤴↺ Aftermath | `validatePranaEdge`, blame calculus | contract violations surface, loop closes | Action |
+| ⤴↺ Aftermath | `validatePranalaEdge`, blame calculus | contract violations surface, loop closes | Action |
 
 **`attrs: Record<string,string>`** — the honest Observe-phase representation. Siek's `?` type at parse boundary, correct for the phase. King's "parse, don't validate" fires at Decide: consume the string bag once, emit typed values, carry them forward. Act phase can then run as strict as Verse demands.
 
-**Blame calculus (Wadler & Findler):** when a `scope:ephemeral` value escapes its Action-scale container, blame falls on the boundary that failed to enforce the scope type — Aftermath surfaces it via `validatePranaEdge`.
+**Blame calculus (Wadler & Findler):** when a `scope:ephemeral` value escapes its Action-scale container, blame falls on the boundary that failed to enforce the scope type — Aftermath surfaces it via `validatePranalaEdge`.
 
 **Elm's no-nested-signals rule:** scope can only widen (`ephemeral → personal` valid), never silently leak (`universal → ephemeral` a contract violation). Enforced at the Decide→Act boundary.
 

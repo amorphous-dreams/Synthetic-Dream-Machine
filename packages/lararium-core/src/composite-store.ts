@@ -19,29 +19,41 @@ import type {
   LarTiddlerChange,
   ChangeOrigin,
 } from "./tiddler-store.js";
+import {
+  LARARIUM_DOC_URI,
+  CATALOG_DOC_URI,
+  LARES_DOC_URI,
+  corpusLarUri,
+  roomLarUri,
+} from "./lararium-doc.js";
+
+// Re-export so callers get bag IDs and URI helpers from a single import.
+export { corpusLarUri as corpusBagId, roomLarUri as roomBagId };
 
 // ---------------------------------------------------------------------------
-// Well-known bag slot IDs
+// Well-known bag slot IDs — Automerge Tiga + leaves
+//
+// Bag ID = lar: URI of the owning Automerge doc. One doc = one bag = one URI.
 //
 // Recipe order (add lowest-priority first → highest-priority last):
-//   system     invariant UI / grammar / control memes  (read-only)
-//   corpus:*   durable corpus islands                  (read-only, one per bag)
-//   room       situated room content                   (writable)
-//   draft      high-churn local draft-of tiddlers      (writable, local)
-//   projection derived tiddlers, search indexes, hints (read-only, rebuildable)
+//   LARARIUM_DOC_URI   engine island: grammar, widget memes, oracle tiddlers (ha)
+//   CATALOG_DOC_URI    catalog doc: room + corpus oracle tiddlers             (ka)
+//   LARES_DOC_URI      lares personality doc: @lares system memes             (ba)
+//   corpusLarUri(slug) durable corpus islands — one per bag                   (leaves)
+//   roomLarUri(slug)   situated room content — writable                       (leaf)
+//   "draft"            high-churn drafts — per-user; stable lar: URI pending
+//   "projection"       derived tiddlers, search indexes — in-memory only
 //
-// Meme: lar:///ha.ka.ba/@lares/api/v0.1/lararium/schema/bag-ids
+// Meme: lar:///ha.ka.ba/@lararium/core/v0.1/automerge-tiga
 // ---------------------------------------------------------------------------
 
 export const BAG_IDS = {
-  system:     "system",
-  room:       "room",
+  lararium:   LARARIUM_DOC_URI,
+  catalog:    CATALOG_DOC_URI,
+  lares:      LARES_DOC_URI,
   draft:      "draft",
   projection: "projection",
-} as const satisfies Record<string, string>;
-
-/** Construct the canonical bag ID for a named corpus island. */
-export function corpusBagId(slug: string): string { return `corpus:${slug}`; }
+} as const;
 
 export interface CompositeLayer {
   readonly bagId:    string;

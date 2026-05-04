@@ -19,7 +19,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
-from .pranala_parser import PranaEdge
+from .pranala_parser import PranalaEdge
 
 
 # ---------------------------------------------------------------------------
@@ -32,7 +32,7 @@ class Meme:
     path: Path | None
     content_hash: str
     metadata: dict[str, Any]
-    edges_out: list[PranaEdge] = field(default_factory=list)
+    edges_out: list[PranalaEdge] = field(default_factory=list)
     virtual: bool = False
     exists: bool = False
     shape: Any = None  # CarrierShape when available; Any to avoid circular import
@@ -58,11 +58,11 @@ class Meme:
 @dataclass
 class DeclaredUnresolved:
     uri: str
-    edge: PranaEdge
+    edge: PranalaEdge
     severity: str  # "error" | "warning" | "info"
 
     @classmethod
-    def from_edge(cls, edge: PranaEdge) -> 'DeclaredUnresolved':
+    def from_edge(cls, edge: PranalaEdge) -> 'DeclaredUnresolved':
         # Two-phase load pattern (Bazel/Flecs): interface attachment edges
         # (control/implements) point to abstract interface URIs that are
         # intentionally outside the boot walk spine.  They are not missing
@@ -91,13 +91,13 @@ class MemeGraph:
 
     Internal layout:
         memes:     uri → Meme
-        adjacency: family → from_uri → [PranaEdge, ...]
+        adjacency: family → from_uri → [PranalaEdge, ...]
     """
 
     def __init__(self) -> None:
         self.memes: dict[str, Meme] = {}
-        # adjacency[family][from_uri] = [PranaEdge, ...]
-        self.adjacency: dict[str, dict[str, list[PranaEdge]]] = defaultdict(lambda: defaultdict(list))
+        # adjacency[family][from_uri] = [PranalaEdge, ...]
+        self.adjacency: dict[str, dict[str, list[PranalaEdge]]] = defaultdict(lambda: defaultdict(list))
 
     # ------------------------------------------------------------------
     # Mutation
@@ -117,8 +117,8 @@ class MemeGraph:
         """Outbound target URIs for a given meme and edge family."""
         return [e.to_uri for e in self.adjacency.get(family, {}).get(uri, [])]
 
-    def edges_out(self, uri: str, family: str | None = None) -> list[PranaEdge]:
-        """All outbound PranaEdge records from uri, optionally filtered by family."""
+    def edges_out(self, uri: str, family: str | None = None) -> list[PranalaEdge]:
+        """All outbound PranalaEdge records from uri, optionally filtered by family."""
         meme = self.memes.get(uri)
         if meme is None:
             return []
@@ -216,7 +216,7 @@ class MemeGraph:
     # Closure hash
     # ------------------------------------------------------------------
 
-    def closure_hash(self, uri_list: list[str], edge_list: list[PranaEdge]) -> str:
+    def closure_hash(self, uri_list: list[str], edge_list: list[PranalaEdge]) -> str:
         """SHA256 of sorted meme hashes + serialised edge records."""
         meme_hashes = sorted(
             self.memes[u].content_hash for u in uri_list if u in self.memes

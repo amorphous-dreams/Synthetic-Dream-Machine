@@ -44,7 +44,7 @@ export interface LarariumDoc {
    * resume boots. Current residents:
    *   - grammar meme  (lar:///ha.ka.ba/@lares/grammars/memetic-wikitext)
    *
-   * Bag stamped as "system" on each record. Recipe priority: system < corpus < room.
+   * Bag stamped as "lararium" on each record. Recipe priority: lararium < catalog < lares < corpus < room.
    * Operator overrides use a higher-priority bag (Invariant 4 of grammar-invariants.ts).
    *
    * Value type is `Readonly<MutableLarRecord>` — these records are engine-owned and
@@ -113,6 +113,26 @@ export const LARARIUM_DOC_URI = "lar:///ha.ka.ba/@lararium";
  *   lar:///ha.ka.ba/@sdm       → sdm corpus doc        (tiddler in CatalogDoc.tiddlers)
  */
 export const CATALOG_DOC_URI = "lar:///ha.ka.ba/@catalog";
+
+/**
+ * Well-known tiddler address — the LaresDoc identity URI.  The ha → ba edge of the Tiga.
+ *
+ * Dual purpose (mirrors LARARIUM_DOC_URI / CATALOG_DOC_URI):
+ *   1. The slot key in LarariumDoc.tiddlers whose `text` = the LaresDoc automerge: URL.
+ *   2. The key in LaresDoc.tiddlers for the lares doc's own self-reference tiddler.
+ *
+ * The Automerge Tiga — three oracle vertices, all reachable from LarariumDoc (ha):
+ *   ha  lar:///ha.ka.ba/@lararium  → LarariumDoc  (structure / stability)
+ *   ka  lar:///ha.ka.ba/@catalog   → CatalogDoc   (fire / motion)
+ *   ba  lar:///ha.ka.ba/@lares     → LaresDoc      (personality / flow)
+ *
+ * No vertex carries upward pointers.  Reachability flows ha → ka and ha → ba.
+ * Leaves (corpus docs, room docs) hang from ka — they self-describe only.
+ *
+ * LaresDoc Automerge handle: M19 pending.  This constant establishes the slot now
+ * so reconcileWellKnownTiddlers can write the ba oracle tiddler once the handle exists.
+ */
+export const LARES_DOC_URI = "lar:///ha.ka.ba/@lares";
 
 /**
  * Derive the stable lar: URI identity for a named corpus doc.

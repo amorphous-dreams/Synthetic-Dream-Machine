@@ -37,10 +37,10 @@ Invariants:
 ## edgesFromAst
 
 ```typescript
-edgesFromAst(ast: CarrierNode, carrierUri: string): PranaEdge[]
+edgesFromAst(ast: CarrierNode, carrierUri: string): PranalaEdge[]
 ```
 
-Walks the AST, collects all `PranalaNode` and `PranalaSugarNode` instances, returns flat `PranaEdge[]`. Called by the VM after `parseMemeCarrier`; only the edge list exits the parse step.
+Walks the AST, collects all `PranalaNode` and `PranalaSugarNode` instances, returns flat `PranalaEdge[]`. Called by the VM after `parseMemeCarrier`; only the edge list exits the parse step.
 
 <<~/ahu >>
 

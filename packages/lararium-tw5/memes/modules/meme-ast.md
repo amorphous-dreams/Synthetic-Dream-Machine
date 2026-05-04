@@ -33,7 +33,7 @@ Composable source files in `packages/lararium-core/src/meme-ast/`:
 - `types.ts`   — `MemeAstNode` union types + `MemeNode` root
 - `scanner.ts` — `SigilScan` patterns + `collectEvents()`
 - `builder.ts` — `buildMemeAst()`: `ParseEvent[]` → `MemeAstNode[]`
-- `edges.ts`   — `edgesFromMemeAst()`: `MemeAstNode[]` → `PranaEdge[]`
+- `edges.ts`   — `edgesFromMemeAst()`: `MemeAstNode[]` → `PranalaEdge[]`
 - `parse.ts`   — `parseMemeText()` top-level entry (all three tiers)
 
 Public API sub-export: `@lararium/core/meme-ast`

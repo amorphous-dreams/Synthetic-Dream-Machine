@@ -5,12 +5,12 @@ from __future__ import annotations
 import unittest
 
 from lares.lararium_mcp.meme_graph import DeclaredUnresolved, Meme, MemeGraph
-from lares.lararium_mcp.pranala_parser import PranaEdge
+from lares.lararium_mcp.pranala_parser import PranalaEdge
 
 
 def _make_meme(uri: str, control_targets: list[str] | None = None) -> Meme:
     edges = [
-        PranaEdge(
+        PranalaEdge(
             from_uri=uri, from_socket=uri,
             to_uri=t, to_socket='',
             family='control', role='owns',
@@ -69,7 +69,7 @@ class TopologicalSortTests(unittest.TestCase):
 class OneHopRelationTests(unittest.TestCase):
     def test_one_hop_relation(self) -> None:
         g = MemeGraph()
-        rel_edge = PranaEdge(
+        rel_edge = PranalaEdge(
             from_uri="lar:///A", from_socket="lar:///A",
             to_uri="lar:///Neighbor", to_socket='',
             family='relation',
@@ -87,7 +87,7 @@ class OneHopRelationTests(unittest.TestCase):
     def test_already_in_control_set_not_added(self) -> None:
         g = _simple_graph()
         # D is already in control closure; it shouldn't appear in relation expansion
-        rel_edge = PranaEdge(
+        rel_edge = PranalaEdge(
             from_uri="lar:///A", from_socket="lar:///A",
             to_uri="lar:///D", to_socket='',
             family='relation',
@@ -105,12 +105,12 @@ class OneHopRelationTests(unittest.TestCase):
 
 class MemeImplementsPropertyTests(unittest.TestCase):
     def test_implements_derived_from_edges_out(self) -> None:
-        impl_edge = PranaEdge(
+        impl_edge = PranalaEdge(
             from_uri="lar:///Carrier", from_socket="lar:///Carrier",
             to_uri="lar:///ha.ka.ba/api/v0.1/pono/meme", to_socket='',
             family='control', role='implements',
         )
-        owns_edge = PranaEdge(
+        owns_edge = PranalaEdge(
             from_uri="lar:///Carrier", from_socket="lar:///Carrier",
             to_uri="lar:///ha.ka.ba/api/v0.1/pono/loci", to_socket='',
             family='control', role='owns',
@@ -131,7 +131,7 @@ class MemeImplementsPropertyTests(unittest.TestCase):
 
 class DeclaredUnresolvedTests(unittest.TestCase):
     def test_control_edge_is_error(self) -> None:
-        edge = PranaEdge(
+        edge = PranalaEdge(
             from_uri="lar:///A", from_socket="lar:///A",
             to_uri="lar:///Missing", to_socket='',
             family='control', role='owns',
@@ -140,7 +140,7 @@ class DeclaredUnresolvedTests(unittest.TestCase):
         self.assertEqual(du.severity, 'error')
 
     def test_relation_edge_is_warning(self) -> None:
-        edge = PranaEdge(
+        edge = PranalaEdge(
             from_uri="lar:///A", from_socket="lar:///A",
             to_uri="lar:///Missing", to_socket='',
             family='relation',
@@ -150,7 +150,7 @@ class DeclaredUnresolvedTests(unittest.TestCase):
 
     def test_graph_reports_unresolved(self) -> None:
         g = MemeGraph()
-        edge = PranaEdge(
+        edge = PranalaEdge(
             from_uri="lar:///A", from_socket="lar:///A",
             to_uri="lar:///NotLoaded", to_socket='',
             family='control', role='owns',

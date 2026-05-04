@@ -62,9 +62,9 @@ export const GRAMMAR_MEME_URI =
 
 /**
  * The bag in which the base grammar tiddler lives in the engine Automerge doc.
- * Must be "system" (lowest priority bag) so room tiddlers can shadow it (Invariant 4).
+ * Must equal LARARIUM_DOC_URI (lowest-priority bag) so room tiddlers can shadow it (Invariant 4).
  */
-export const GRAMMAR_BAG = "system" as const;
+export { LARARIUM_DOC_URI as GRAMMAR_BAG } from "./lararium-doc.js";
 
 /**
  * Relative path of the grammar meme source within the lares/memes/ directory.

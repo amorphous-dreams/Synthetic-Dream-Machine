@@ -18,8 +18,8 @@ import { TW5Engine } from "@lararium/tw5";
 import { tw5MemesRoot, tw5PluginsRoot } from "@lararium/tw5/tw5-memes-root";
 import { createHash } from "crypto";
 import type { Repo, DocHandle } from "@automerge/automerge-repo";
-import type { LarariumDoc, LarariumBlobEntry } from "@lararium/core";
-import { ENGINE_CORE_ID, LARARIUM_DOC_URI, CATALOG_DOC_URI, emptyLarariumDoc } from "@lararium/core";
+import type { LarariumDoc, LarariumBlobEntry, MemeStoreDoc } from "@lararium/core";
+import { ENGINE_CORE_ID, LARARIUM_DOC_URI, CATALOG_DOC_URI, LARES_DOC_URI, emptyLarariumDoc } from "@lararium/core";
 import { TW5_VERSION, TW5_CORE_SCRIPT_FILENAME } from "@lararium/tw5";
 
 // ---------------------------------------------------------------------------
@@ -282,27 +282,21 @@ export async function seedLarariumDoc(
   console.log(`[lararium-island] TW5 core v${TW5_VERSION}  sha=${coreSha.slice(0, 12)}…  system titles: ${systemTitles.length}`);
   console.log(`[lararium-island] engine doc URL: ${handle.url}`);
 
-  // Write well-known tiddlers — the isomorphic oracle pair.
-  // Both node and browser peers read these from LarariumDoc.tiddlers using
-  // the same LARARIUM_DOC_URI / CATALOG_DOC_URI_SLOT constants.
-  // The self-reference (handle.url → LARARIUM_DOC_URI tiddler) makes the doc
-  // self-describing: any peer that has synced it can recover the root URL.
+  // Write the Automerge Tiga oracle tiddlers into LarariumDoc (ha vertex).
+  // ha self-ref  : LARARIUM_DOC_URI → this doc's own automerge URL  (bag: lararium)
+  // ha → ka edge : CATALOG_DOC_URI  → catalogUrl (CatalogDoc)       (bag: lararium)
+  // ha → ba edge : LARES_DOC_URI    → omitted here; written by reconcileWellKnownTiddlers
+  //                                   once the LaresDoc handle exists.
   handle.change((doc) => {
     const tiddlers = (doc as unknown as { tiddlers: Record<string, unknown> }).tiddlers;
     tiddlers[LARARIUM_DOC_URI] = {
-      title:     LARARIUM_DOC_URI,
-      fields:    { bag: "system" },
-      text:      handle.url,
-      bag:       "system",
-      authority: "lararium-seed",
+      title: LARARIUM_DOC_URI, text: handle.url,
+      bag: LARARIUM_DOC_URI, authority: "lararium-seed",
     };
     if (catalogUrl) {
       tiddlers[CATALOG_DOC_URI] = {
-        title:     CATALOG_DOC_URI,
-        fields:    { bag: "system" },
-        text:      catalogUrl,
-        bag:       "system",
-        authority: "lararium-seed",
+        title: CATALOG_DOC_URI, text: catalogUrl,
+        bag: LARARIUM_DOC_URI, authority: "lararium-seed",
       };
     }
   });
@@ -313,37 +307,73 @@ export async function seedLarariumDoc(
 /**
  * Patch the well-known tiddlers on a resume boot.
  *
- * Called after both the LarariumDoc and CatalogDoc handles exist.
- * Writes are no-ops if values already match — Automerge deduplicates.
+ * Writes the Automerge Tiga oracle tiddlers into LarariumDoc (ha):
+ *   - ha self-ref  : LARARIUM_DOC_URI → handle.url
+ *   - ha → ka edge : CATALOG_DOC_URI  → catalogUrl
+ *   - ha → ba edge : LARES_DOC_URI    → laresUrl  (omitted when LaresDoc not yet open)
  *
- * Both peers (node and browser) must call this whenever they boot with an
- * existing LarariumDoc to keep the oracle tiddlers current.
+ * Writes are no-ops if values already match — Automerge deduplicates.
+ * Both peers (node and browser) call this on every boot to keep oracle tiddlers current.
  */
 export function reconcileWellKnownTiddlers(
   handle: DocHandle<LarariumDoc>,
   catalogUrl: string,
+  laresUrl?: string,
 ): void {
-  const doc     = handle.doc();
+  const doc      = handle.doc();
   const tiddlers = doc?.tiddlers ?? {};
   const selfOk   = tiddlers[LARARIUM_DOC_URI]?.text === handle.url;
-  const catOk    = tiddlers[CATALOG_DOC_URI]?.text === catalogUrl;
-  if (selfOk && catOk) return;
+  const catOk    = tiddlers[CATALOG_DOC_URI]?.text  === catalogUrl;
+  const baOk     = laresUrl ? tiddlers[LARES_DOC_URI]?.text === laresUrl : true;
+  if (selfOk && catOk && baOk) return;
 
   handle.change((d) => {
     const t = (d as unknown as { tiddlers: Record<string, unknown> }).tiddlers;
     if (!selfOk) {
       t[LARARIUM_DOC_URI] = {
-        title: LARARIUM_DOC_URI, fields: { bag: "system" },
-        text: handle.url, bag: "system", authority: "lararium-seed",
+        title: LARARIUM_DOC_URI, text: handle.url,
+        bag: LARARIUM_DOC_URI, authority: "lararium-seed",
       };
     }
     if (!catOk) {
       t[CATALOG_DOC_URI] = {
-        title: CATALOG_DOC_URI, fields: { bag: "system" },
-        text: catalogUrl, bag: "system", authority: "lararium-seed",
+        title: CATALOG_DOC_URI, text: catalogUrl,
+        bag: LARARIUM_DOC_URI, authority: "lararium-seed",
+      };
+    }
+    if (!baOk && laresUrl) {
+      t[LARES_DOC_URI] = {
+        title: LARES_DOC_URI, text: laresUrl,
+        bag: LARARIUM_DOC_URI, authority: "lararium-seed",
       };
     }
   });
 
-  console.log(`[lararium-island] well-known tiddlers reconciled  self=${selfOk ? "ok" : "patched"}  catalog=${catOk ? "ok" : "patched"}`);
+  console.log(
+    `[lararium-island] well-known tiddlers reconciled` +
+    `  self=${selfOk ? "ok" : "patched"}` +
+    `  catalog=${catOk ? "ok" : "patched"}` +
+    `  lares=${baOk ? "ok" : laresUrl ? "patched" : "pending"}`,
+  );
+}
+
+/**
+ * Seed a new LaresDoc — the ba vertex of the Automerge Tiga.
+ *
+ * Creates a fresh MemeStoreDoc and writes the ba self-ref tiddler so any peer
+ * that opens this doc can discover its canonical lar: address without a catalog lookup.
+ *
+ * The ha → ba oracle tiddler (LarariumDoc.tiddlers[LARES_DOC_URI] = handle.url)
+ * is written separately by reconcileWellKnownTiddlers once the caller has both handles.
+ */
+export function seedLaresDoc(repo: Repo): DocHandle<MemeStoreDoc> {
+  const handle = repo.create<MemeStoreDoc>({});
+  handle.change((doc) => {
+    (doc as unknown as Record<string, unknown>)[LARES_DOC_URI] = {
+      title: LARES_DOC_URI, text: handle.url,
+      bag: LARES_DOC_URI, authority: "lararium-seed",
+    };
+  });
+  console.log(`[lararium-island] LaresDoc seeded  url=${handle.url}`);
+  return handle;
 }

@@ -28,7 +28,7 @@ status-date  = "2026-04-24"
 ⏿ orient: the parser must handle four surface forms, field normalization across two vocabularies, and one unresolved design gate.
 ◇ decide: implement block and sugar forms; `? ->` gate closed — fragment-level (Option A) confirmed by canonical pranala law.
 ▶ act: specify regex patterns, extraction order, field mapping table, and the confirmed `? ->` resolution algorithm.
-⤴ verify: parser produces correct `PranaEdge` records from actual AGENTS.md source blocks.
+⤴ verify: parser produces correct `PranalaEdge` records from actual AGENTS.md source blocks.
 ↺ the `? ->` gate is now closed; the implementation file should implement Option A, not a stub.
 <<~/ahu >>
 
@@ -49,7 +49,7 @@ that the parser must handle.
 | Aka sugar | `<<~ aka URI >>` | `observe`, `instance` |
 | Kahea sugar | `<<~ kahea URI >>` | `dataflow`, `instance` |
 
-All five forms produce `PranaEdge` records.
+All five forms produce `PranalaEdge` records.
 
 <<~/ahu >>
 
@@ -75,7 +75,7 @@ BLOCK_RE = re.compile(
 3. Parse the TOML; extract `family`, `lifecycle`, `role`, `traversal`, `propagation`, `label`, `payload`, `dir`.
 4. Resolve the TO expression to a full `lar:///` URI.
 5. Resolve FROM via the `? ->` rule (see `#question-mark-resolution`).
-6. Build `PranaEdge` with normalized fields.
+6. Build `PranalaEdge` with normalized fields.
 
 **TOML fence extraction:**
 
@@ -110,7 +110,7 @@ Inline pranala does not carry a `payload`; `payload` defaults to `{}`.
 <<~ ahu #sugar-forms >>
 ## Sugar Form Expansion
 
-The three sugar sigils expand into `PranaEdge` records without a TOML body.
+The three sugar sigils expand into `PranalaEdge` records without a TOML body.
 
 ```python
 LOULOU_RE = re.compile(r'<<~\s*loulou\s+(\S+)\s*>>')
@@ -162,10 +162,10 @@ When `?` appears outside any named `ahu`, `from_socket = from_uri` (carrier root
 <<~ ahu #field-normalization >>
 ## Field Normalization Table
 
-The source carrier TOML vocabulary and the compiler's `PranaEdge` vocabulary diverge in two places.
+The source carrier TOML vocabulary and the compiler's `PranalaEdge` vocabulary diverge in two places.
 This table records every mapping.
 
-| Source TOML field | Source values | `PranaEdge` field | Mapped value |
+| Source TOML field | Source values | `PranalaEdge` field | Mapped value |
 |---|---|---|---|
 | `family` | any | `family` | passthrough |
 | `lifecycle` | any | `lifecycle` | passthrough; default `"instance"` if absent |

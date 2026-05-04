@@ -156,7 +156,7 @@ Recursive expansion belongs to a future graph query surface, not the boot compil
 
 **Result appended to full boot artifact:**
 - additional closure entries at depth ≥ 2
-- `pranala_edges` — flat list of all `PranaEdge` records traversed in Tier 1 + Tier 2
+- `pranala_edges` — flat list of all `PranalaEdge` records traversed in Tier 1 + Tier 2
 - `interface_index` — `{interface_uri: [carrier_uri, ...]}` built from all reachable `implements` bundles
 - `invariant_index` — `{invariant_uri: [carrier_uri, ...]}` built from carriers implementing invariant interfaces
 

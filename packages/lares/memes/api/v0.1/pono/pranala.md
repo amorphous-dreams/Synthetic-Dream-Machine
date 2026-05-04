@@ -237,7 +237,7 @@ confidence-bounded  = false
 role-recommended    = true
 confidence-bounded  = false
 
-# PranaEdge render modes — render layer switches on these; null = default arrow
+# PranalaEdge render modes — render layer switches on these; null = default arrow
 render-modes = ["reaction-wire"]
 
 # Canonical reaction roles (informational; not exhaustive)

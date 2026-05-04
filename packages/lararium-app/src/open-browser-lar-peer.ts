@@ -1,21 +1,23 @@
 /**
  * openBrowserLarPeer — local-first browser peer factory.
  *
- * Boot sequence — six causal island layers (authority-first-sync-order):
- *   1. Repo — IndexedDB storage + BroadcastChannel + optional WS
- *   2. LarariumDoc — system bag + oracle tiddlers (LARARIUM_DOC_URI / CATALOG_DOC_URI_SLOT)
- *   3. Catalog doc — URL registry (rooms, corpora, engine) [URL from oracle tiddler]
- *   4. Corpus* docs — per-corpus bags from catalog.corpora[*]       [async, non-blocking render]
- *   5. Room doc — situated content, writable                        [room bag]
- *   6. Room-Drafts doc — per-user draft sync                        [draft bag, user-scoped]
+ * Boot sequence — Automerge Tiga + leaves (authority-first-sync-order):
+ *   1. Repo     — IndexedDB storage + BroadcastChannel + optional WS
+ *   2. ha opens — LarariumDoc: system bag + oracle tiddlers
+ *                 reads CATALOG_DOC_URI → ka URL
+ *                 reads LARES_DOC_URI   → ba URL
+ *   3. ka opens — CatalogDoc: URL registry (rooms, corpora)
+ *   4. ba opens — LaresDoc: personality bag                         [from ha oracle]
+ *   5. Corpus*  — per-corpus bags from CatalogDoc.tiddlers          [async, non-blocking]
+ *   6. Room     — situated content, writable                        [room bag]
+ *   7. Drafts   — per-user draft sync                               [draft bag, user-scoped]
  *
- *   CompositeStore: system → corpus:* → room(writable) → draft(writable)
+ *   CompositeStore: system → lares → corpus:* → room(writable) → draft(writable)
  *   LarPeer: store = room AutomergeDocStore, composite = full CompositeStore
  *
- * Zelenka: the browser is just another peer.  The node peer wrote the oracle
- * tiddlers (LARARIUM_DOC_URI → self, CATALOG_DOC_URI_SLOT → catalog URL) at
- * seed time.  The browser reads them using the same constants — no HTTP oracle,
- * no server privilege.
+ * Zelenka: the browser is just another peer.  The node peer wrote all three
+ * Tiga oracle tiddlers (self, ka, ba) into LarariumDoc at seed time.
+ * The browser reads them using the same constants — no HTTP oracle, no server privilege.
  */
 
 import { useEffect, useRef, useState, useMemo }        from "react";
@@ -29,7 +31,7 @@ import {
   LarPeer, PEER_CAPABILITIES_BROWSER, OpenIdentitySlot,
   AutomergeDocStore, LarariumDocStore,
   CompositeStore, corpusBagId, emptyLarariumDoc,
-  LARARIUM_DOC_URI, CATALOG_DOC_URI, roomLarUri,
+  LARARIUM_DOC_URI, CATALOG_DOC_URI, LARES_DOC_URI, roomLarUri, corpusLarUri, BAG_IDS,
 }                                                       from "@lararium/core";
 import { TW5Engine, MemeSyncAdaptor, VmPool, DirectMemeRecipeVm } from "@lararium/tw5";
 import type { MemeRecipeVm }                            from "@lararium/tw5";
@@ -188,7 +190,7 @@ export async function openBrowserLarPeer(opts: {
       // Path A: bootstrapUrl is the LarariumDoc URL.
       larariumDocHandle = candidate;
       emit("island-ready");
-      composite.addLayer({ bagId: "system", store: new LarariumDocStore(larariumDocHandle), writable: false });
+      composite.addLayer({ bagId: BAG_IDS.lararium, store: new LarariumDocStore(larariumDocHandle, BAG_IDS.lararium), writable: false });
       // Read catalog URL from oracle tiddler.
       resolvedCatalogUrl = larariumDocHandle.doc()?.tiddlers?.[CATALOG_DOC_URI]?.text ?? null;
     } else {
@@ -197,11 +199,12 @@ export async function openBrowserLarPeer(opts: {
     }
   }
 
-  // ── 3. Catalog ────────────────────────────────────────────────────────────
+  // ── 3. Catalog (ka) ──────────────────────────────────────────────────────
   const blankCatalog = () => repo.create<CatalogDoc>({ schemaVersion: "0.1", corpora: {}, rooms: {}, recipes: {}, projections: {}, tiddlers: {} });
   const catalogHandle: DocHandle<CatalogDoc> = resolvedCatalogUrl
     ? await waitHandleLocal<CatalogDoc>(repo, resolvedCatalogUrl as AutomergeUrl, blankCatalog)
     : blankCatalog();
+  composite.addLayer({ bagId: BAG_IDS.catalog, store: new LarariumDocStore(catalogHandle, BAG_IDS.catalog), writable: false });
   const catalog = catalogHandle.doc();
   emit("catalog-ready");
 
@@ -215,13 +218,37 @@ export async function openBrowserLarPeer(opts: {
         repo, larariumDocUrl as AutomergeUrl,
         () => repo.create<LarariumDoc>(emptyLarariumDoc()),
       );
-      composite.addLayer({ bagId: "system", store: new LarariumDocStore(larariumDocHandle), writable: false });
+      composite.addLayer({ bagId: BAG_IDS.lararium, store: new LarariumDocStore(larariumDocHandle, BAG_IDS.lararium), writable: false });
       emit("island-ready");
     }
   }
 
-  // ── 4. Corpus docs — one bag per corpus island ───────────────────────────
-  const corpusEntries = Object.values(catalog?.corpora ?? {});
+  // ── 4. LaresDoc (ba) — personality bag ───────────────────────────────────
+  // Ha → ba oracle: LarariumDoc.tiddlers[LARES_DOC_URI].text = LaresDoc automerge URL.
+  // Zelenka: browser reads the same oracle tiddler the node peer wrote at seed time.
+  // No server privilege — ba is just another doc the browser finds via ha.
+  const laresDocUrl = larariumDocHandle?.doc()?.tiddlers?.[LARES_DOC_URI]?.text ?? null;
+  if (laresDocUrl) {
+    const laresHandle = await waitHandleLocal<MemeStoreDoc>(
+      repo, laresDocUrl as AutomergeUrl,
+      () => repo.create<MemeStoreDoc>({}),
+    );
+    composite.addLayer({ bagId: BAG_IDS.lares, store: new AutomergeDocStore(laresHandle, BAG_IDS.lares), writable: false });
+  }
+
+  // ── 5. Corpus docs — one bag per corpus island ───────────────────────────
+  // Isomorphic oracle path: read from CatalogDoc.tiddlers keyed by corpusLarUri(slug).
+  // Node peer writes these tiddlers; browser peer reads them — single source of truth.
+  // catalog.corpora may still exist as a legacy optimization index but is not authoritative.
+  // LARES_DOC_URI excluded: ba is opened via ha oracle, not the CatalogDoc tiddler scan.
+  const CORPUS_PREFIX = "lar:///ha.ka.ba/@";
+  const corpusEntries = Object.entries(catalog?.tiddlers ?? {})
+    .filter(([uri]) => uri.startsWith(CORPUS_PREFIX) && uri !== CATALOG_DOC_URI && uri !== LARARIUM_DOC_URI && uri !== LARES_DOC_URI)
+    .map(([uri, tiddler]) => ({
+      id: uri.slice(CORPUS_PREFIX.length),
+      docUrl: (tiddler as { text?: string }).text ?? null,
+    }))
+    .filter((e): e is { id: string; docUrl: string } => Boolean(e.docUrl));
   const corpusPromises = corpusEntries.map(async (entry) => {
     const handle = await waitHandleLocal<MemeStoreDoc>(
       repo, entry.docUrl as AutomergeUrl,
@@ -229,6 +256,16 @@ export async function openBrowserLarPeer(opts: {
     );
     const bagId = corpusBagId(entry.id);
     composite.addLayer({ bagId, store: new AutomergeDocStore(handle, bagId), writable: false });
+    // Self-describing: corpus doc holds its own lar: URI + automerge URL as a tiddler.
+    const corpusUri = corpusLarUri(entry.id);
+    const existingSelfRef = (handle.doc() as unknown as Record<string, { text?: string }>)?.[corpusUri]?.text;
+    if (existingSelfRef !== handle.url) {
+      handle.change((doc) => {
+        (doc as unknown as Record<string, unknown>)[corpusUri] = {
+          title: corpusUri, text: handle.url, bag: bagId, authority: "lararium-seed",
+        };
+      });
+    }
   });
   // Await all corpus bags before emitting corpus-ready (fires after tw5-booted below)
   const corpusReadyP = Promise.all(corpusPromises);
@@ -248,8 +285,9 @@ export async function openBrowserLarPeer(opts: {
       d.rooms[roomKey] = { id: roomId, contentDocUrl: roomHandle.url, schemaVersion: "0.1" };
     });
   }
-  const roomStore = new AutomergeDocStore(roomHandle, "room");
-  composite.addLayer({ bagId: "room", store: roomStore, writable: true });
+  const roomBagId = roomLarUri(roomId);
+  const roomStore = new AutomergeDocStore(roomHandle, roomBagId);
+  composite.addLayer({ bagId: roomBagId, store: roomStore, writable: true });
   emit("room-ready");
 
   // ── 5. Room-Drafts doc — same-user multi-device sync ─────────────────────
@@ -274,7 +312,7 @@ export async function openBrowserLarPeer(opts: {
       d.rooms[roomKey][draftKey] = draftHandle.url;
     });
   }
-  composite.addLayer({ bagId: "draft", store: new AutomergeDocStore(draftHandle, "draft"), writable: true });
+  composite.addLayer({ bagId: BAG_IDS.draft, store: new AutomergeDocStore(draftHandle, BAG_IDS.draft), writable: true });
   emit("draft-ready");
 
   // ── 6. LarPeer ────────────────────────────────────────────────────────────
@@ -329,7 +367,7 @@ export async function openBrowserLarPeer(opts: {
   emit("corpus-ready");
 
   // ── 9. MemeSyncAdaptor — reads full stack, writes to room bag via composite.put() ──
-  const adaptor = new MemeSyncAdaptor(tw5, peer.store, "room");
+  const adaptor = new MemeSyncAdaptor(tw5, peer.store, roomBagId);
   peer.addProjection(adaptor);
 
   // ── 10. VmPool ────────────────────────────────────────────────────────────

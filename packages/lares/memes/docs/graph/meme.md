@@ -11,7 +11,7 @@ confidence   = 0.86
 mana         = 0.86
 manaoio      = 0.82
 manao        = 0.86
-role         = "PranaEdge, Meme, and MemeGraph data model contracts for the pranala-edge DAG compiler"
+role         = "PranalaEdge, Meme, and MemeGraph data model contracts for the pranala-edge DAG compiler"
 status-date  = "2026-04-24"
 renamed-from = "ha.ka.ba/@lares/docs/graph/loci"
 
@@ -36,15 +36,15 @@ uncertainty-locus-subtype     = "Locus remains valid as the subtype name for mem
 
 <<~ ahu #ooda-ha >>
 ✶ observe: the compiler needs three types — an edge, a meme, and a graph — before any walk can proceed.
-⏿ orient: Bazel's depset pattern informs meme structure; canonical pranala kānāwai (`lar:///ha.ka.ba/@lares/api/v0.1/pono/pranala`) governs the full PranaEdge field set and independence law.
-◇ decide: frozen dataclasses for PranaEdge and Meme; a mutable MemeGraph that builds incrementally from carrier reads.
+⏿ orient: Bazel's depset pattern informs meme structure; canonical pranala kānāwai (`lar:///ha.ka.ba/@lares/api/v0.1/pono/pranala`) governs the full PranalaEdge field set and independence law.
+◇ decide: frozen dataclasses for PranalaEdge and Meme; a mutable MemeGraph that builds incrementally from carrier reads.
 ▶ act: specify field-level contracts for each type and the graph's core operations.
 ⤴ verify: every field carries a type, a source (where the compiler reads it from), and a default.
 ↺ deeper parser/render concerns route to `pranala-parser` and `traversal` siblings.
 <<~/ahu >>
 
 <<~ ahu #prana-edge >>
-## PranaEdge
+## PranalaEdge
 
 One typed, directed, acyclic edge between two sockets.
 Produced by the pranala parser from carrier source text.
@@ -123,7 +123,7 @@ The compiler adds and removes memes via `add_meme` / `dispose` semantics (childr
 | `metadata` | `dict` | `#iam` TOML extraction | `{}` |
 | `implements` | `tuple[str, ...]` | derived from `edges_out` where `role == "implements"` | `()` |
 | `shape` | `CarrierShape` | shape validation result from `carrier.py` | required |
-| `edges_out` | `list[PranaEdge]` | pranala parser output from carrier text | `[]` |
+| `edges_out` | `list[PranalaEdge]` | pranala parser output from carrier text | `[]` |
 | `virtual` | `bool` | resolver flag | `False` |
 | `exists` | `bool` | `path.exists()` for file-backed | `False` for virtual |
 
@@ -148,7 +148,7 @@ The compiler records it rather than failing, following the temporal KG pattern
 | Field | Type | Meaning |
 |---|---|---|
 | `uri` | `str` | the unresolvable target URI |
-| `edge` | `PranaEdge` | the edge that references this URI |
+| `edge` | `PranalaEdge` | the edge that references this URI |
 | `severity` | `str` | `"error"` when `family="control"`, else `"warning"` |
 
 Control-family declared-unresolved entries appear in `validation.dag_violations`.
@@ -171,8 +171,8 @@ Built incrementally as the compiler reads carriers and parses their pranala edge
 memes: dict[str, Meme]
     uri → meme
 
-adjacency: dict[str, dict[str, list[PranaEdge]]]
-    family → from_uri → [PranaEdge, ...]
+adjacency: dict[str, dict[str, list[PranalaEdge]]]
+    family → from_uri → [PranalaEdge, ...]
 ```
 
 **Core operations:**

@@ -1,15 +1,16 @@
 /**
  * openNodeLarPeer — local-first Node.js peer factory.
  *
- * Boot sequence — six causal island layers (authority-first-sync-order):
- *   1. Repo — NodeFS storage + WebSocket server
- *   2. Catalog doc — URL registry (rooms, corpora, engine)
- *   3. LarariumDoc — system bag (grammar + widget tiddlers + TW5 core blob)  [from catalog.larariumDoc]
- *   4. Corpus* docs — per-corpus bags from catalog.corpora[*]       [async, non-blocking]
- *   5. Room doc — situated content, writable                        [room bag]
- *   6. Room-Drafts doc — per-user draft sync                        [draft bag]
+ * Boot sequence — Automerge Tiga + leaves (authority-first-sync-order):
+ *   1. Repo     — NodeFS storage + WebSocket server
+ *   2. ka opens — CatalogDoc: URL registry (rooms, corpora, engine)
+ *   3. ha opens — LarariumDoc: system bag                           [from catalog.larariumDoc]
+ *   4. ba opens — LaresDoc: personality bag                         [from ha oracle tiddler]
+ *   5. Corpus*  — per-corpus bags from catalog.corpora[*]           [async, non-blocking]
+ *   6. Room     — situated content, writable                        [room bag]
+ *   7. Drafts   — per-user draft sync                               [draft bag]
  *
- *   CompositeStore: system → corpus:* → room(writable) → draft(writable)
+ *   CompositeStore: system → lares → corpus:* → room(writable) → draft(writable)
  *   LarPeer: store = room AutomergeDocStore, composite = full CompositeStore
  *
  * The server holds no privilege. It relays; it does not adjudicate content truth.
@@ -30,12 +31,13 @@ import {
   LarPeer, PEER_CAPABILITIES_NODE, OpenIdentitySlot,
   AutomergeDocStore, LarariumDocStore,
   CompositeStore, corpusBagId, emptyLarariumDoc,
-  CATALOG_DOC_URI, corpusLarUri, roomLarUri,
+  CATALOG_DOC_URI, LARES_DOC_URI, corpusLarUri, roomLarUri, BAG_IDS,
 }                                       from "@lararium/core";
 import { TW5Engine, MemeSyncAdaptor, VmPool, DirectMemeRecipeVm } from "@lararium/tw5";
 import type { MemeRecipeVm } from "@lararium/tw5";
 import {
   seedLarariumDoc,
+  seedLaresDoc,
   reconcileEngineBlobIfChanged,
   reconcileLaresPluginBlobIfChanged,
   reconcileWellKnownTiddlers,
@@ -135,8 +137,8 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
     h.change((doc) => {
       const t = (doc as unknown as { tiddlers: Record<string, unknown> }).tiddlers;
       t[CATALOG_DOC_URI] = {
-        title: CATALOG_DOC_URI, fields: { bag: "catalog" },
-        text: h.url, bag: "catalog", authority: "lararium-seed",
+        title: CATALOG_DOC_URI, text: h.url,
+        bag: CATALOG_DOC_URI, authority: "lararium-seed",
       };
     });
     // Persist URL synchronously before returning.
@@ -156,10 +158,14 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
   const catalog = catalogHandle.doc();
   emit("catalog-ready");
 
-  // ── 3. CompositeStore — build lowest→highest priority ────────────────────
+  // ── 3. CompositeStore — lowest→highest priority ──────────────────────────
+  // Recipe: LARARIUM_DOC_URI → CATALOG_DOC_URI → LARES_DOC_URI → corpusLarUri(*) → roomLarUri → draft
   const composite = new CompositeStore();
 
-  // ── 3a. LarariumIsland doc — system bag ───────────────────────────────────
+  // ── 3a. CatalogDoc (ka) — bag = CATALOG_DOC_URI ──────────────────────────
+  composite.addLayer({ bagId: BAG_IDS.catalog, store: new LarariumDocStore(catalogHandle, BAG_IDS.catalog), writable: false });
+
+  // ── 3b. LarariumIsland doc (ha) — lararium bag ───────────────────────────
   // Node peer is the authority for the island doc.
   // On first boot: seed from disk, register URL in catalog.
   // On resume: reconcile blobs if disk artifacts changed.
@@ -173,10 +179,7 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
     );
     await reconcileEngineBlobIfChanged(islandHandle);
     await reconcileLaresPluginBlobIfChanged(islandHandle);
-    // Zelenka: server is just another peer. Keep oracle tiddlers current on
-    // every resume so any peer that syncs this doc can self-discover.
-    reconcileWellKnownTiddlers(islandHandle, catalogHandle.url);
-    composite.addLayer({ bagId: "system", store: new LarariumDocStore(islandHandle), writable: false });
+    composite.addLayer({ bagId: BAG_IDS.lararium, store: new LarariumDocStore(islandHandle, BAG_IDS.lararium), writable: false });
     emit("island-ready");
   } else {
     // First boot — seed island doc from disk and register in catalog.
@@ -191,7 +194,7 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
           sha256:  (islandHandle!.doc() as any)?.blobs?.["tiddlywikicore"]?.sha256 ?? "",
         };
       });
-      composite.addLayer({ bagId: "system", store: new LarariumDocStore(islandHandle), writable: false });
+      composite.addLayer({ bagId: BAG_IDS.lararium, store: new LarariumDocStore(islandHandle, BAG_IDS.lararium), writable: false });
       emit("island-ready");
     } catch (err) {
       // Non-fatal: TW5 core blob may be missing in dev without build step.
@@ -199,7 +202,28 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
     }
   }
 
-  // ── 3b. Corpus docs — one bag per corpus island ───────────────────────────
+  // ── 3b. LaresDoc (ba) — personality bag ──────────────────────────────────
+  // Ha → ba oracle: LarariumDoc.tiddlers[LARES_DOC_URI].text = LaresDoc automerge URL.
+  // On resume: read URL from oracle tiddler, open existing doc.
+  // On first boot: seed a new doc, then write the oracle tiddler into LarariumDoc.
+  // Zelenka: server is just another peer — no privilege over ba.
+  let laresHandle: DocHandle<MemeStoreDoc> | null = null;
+  if (islandHandle) {
+    const laresDocUrl = islandHandle.doc()?.tiddlers?.[LARES_DOC_URI]?.text ?? null;
+    if (laresDocUrl) {
+      laresHandle = await waitHandleLocal<MemeStoreDoc>(
+        repo, laresDocUrl as AutomergeUrl,
+        () => repo.create<MemeStoreDoc>({}),
+      );
+    } else {
+      laresHandle = seedLaresDoc(repo);
+    }
+    composite.addLayer({ bagId: BAG_IDS.lares, store: new AutomergeDocStore(laresHandle, BAG_IDS.lares), writable: false });
+    // Zelenka: keep oracle tiddlers current on every boot — self, ka, ba.
+    reconcileWellKnownTiddlers(islandHandle, catalogHandle.url, laresHandle.url);
+  }
+
+  // ── 3c. Corpus docs — one bag per corpus island ───────────────────────────
   const corpusEntries = Object.values(catalog?.corpora ?? {});
   const corpusReadyP = Promise.all(corpusEntries.map(async (entry) => {
     const handle = await waitHandleLocal<MemeStoreDoc>(
@@ -209,16 +233,27 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
     const bagId = corpusBagId(entry.id);
     composite.addLayer({ bagId, store: new AutomergeDocStore(handle, bagId), writable: false });
 
+    // Self-describing: corpus doc holds its own lar: URI + automerge URL as a tiddler.
+    // Any peer that opens the doc can discover its canonical lar: address without a catalog lookup.
+    const corpusUri = corpusLarUri(entry.id);
+    const existingCorpusSelfRef = (handle.doc() as unknown as Record<string, { text?: string }>)?.[corpusUri]?.text;
+    if (existingCorpusSelfRef !== handle.url) {
+      handle.change((doc) => {
+        (doc as unknown as Record<string, unknown>)[corpusUri] = {
+          title: corpusUri, text: handle.url, bag: bagId, authority: "lararium-seed",
+        };
+      });
+    }
+
     // Zelenka: keep tiddler store current so any peer can enumerate corpora
     // without walking the corpora Record — same pattern as LarariumDoc oracle.
-    const corpusUri = corpusLarUri(entry.id);
     const existingText = catalogHandle.doc()?.tiddlers?.[corpusUri]?.text;
     if (existingText !== entry.docUrl) {
       catalogHandle.change((doc) => {
         const t = (doc as unknown as { tiddlers: Record<string, unknown> }).tiddlers;
         t[corpusUri] = {
-          title: corpusUri, fields: { bag: "catalog" },
-          text: entry.docUrl, bag: "catalog", authority: "lararium-seed",
+          title: corpusUri, text: entry.docUrl,
+          bag: CATALOG_DOC_URI, authority: "lararium-seed",
         };
       });
     }
@@ -239,8 +274,9 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
       d.rooms[roomKey] = { id: roomId, contentDocUrl: roomHandle.url, schemaVersion: "0.1" };
     });
   }
-  const roomStore = new AutomergeDocStore(roomHandle, "room");
-  composite.addLayer({ bagId: "room", store: roomStore, writable: true });
+  const roomBagId = roomLarUri(roomId);
+  const roomStore = new AutomergeDocStore(roomHandle, roomBagId);
+  composite.addLayer({ bagId: roomBagId, store: roomStore, writable: true });
   emit("room-ready");
 
   // ── 5. Room-Drafts doc — per-user, stored in catalog ─────────────────────
@@ -264,7 +300,7 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
       d.rooms[roomKey][draftKey] = draftHandle.url;
     });
   }
-  composite.addLayer({ bagId: "draft", store: new AutomergeDocStore(draftHandle, "draft"), writable: true });
+  composite.addLayer({ bagId: BAG_IDS.draft, store: new AutomergeDocStore(draftHandle, BAG_IDS.draft), writable: true });
   emit("draft-ready");
 
   // ── 6. LarPeer ────────────────────────────────────────────────────────────
@@ -316,7 +352,7 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
   emit("corpus-ready");
 
   // ── 9. MemeSyncAdaptor — reads full stack, writes to room bag via composite.put() ──
-  const adaptor = new MemeSyncAdaptor(tw5, peer.store, "room");
+  const adaptor = new MemeSyncAdaptor(tw5, peer.store, roomBagId);
   peer.addProjection(adaptor);
 
   // ── 10. VmPool ────────────────────────────────────────────────────────────

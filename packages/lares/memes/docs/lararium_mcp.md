@@ -196,7 +196,7 @@ Graph redesign cluster lives under `packages/lares/memes/docs/graph/**`:
 | Locus | Canonical role |
 |---|---|
 | `lar:///ha.ka.ba/@lares/docs/graph` | spine — research synthesis, committed decisions, open `? ->` gate |
-| `lar:///ha.ka.ba/@lares/docs/graph/nodes` | `PranaEdge`, `CarrierNode`, `CarrierGraph` data model contracts |
+| `lar:///ha.ka.ba/@lares/docs/graph/nodes` | `PranalaEdge`, `CarrierNode`, `CarrierGraph` data model contracts |
 | `lar:///ha.ka.ba/@lares/docs/graph/traversal` | Tier 0/1/2 walk, DFS cycle detection, Kahn topo sort, declared-unresolved law |
 | `lar:///ha.ka.ba/@lares/docs/graph/pranala-parser` | block + inline + sugar parser, field normalization, `? ->` gate |
 | `lar:///ha.ka.ba/@lares/docs/graph/artifacts` | SHA256 content-addressed artifacts, three classes, compaction rules |

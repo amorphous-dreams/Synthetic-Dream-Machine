@@ -75,7 +75,7 @@ Queries inbound or outbound pranala edges for the memes in the current result se
 [edge:family[control]role[implements]]    memes that implement an interface
 ```
 
-Replaces TW5 `##index`. Edge queries run against the compiled PranaEdge graph.
+Replaces TW5 `##index`. Edge queries run against the compiled PranalaEdge graph.
 
 ### `self[]` — current meme URI
 

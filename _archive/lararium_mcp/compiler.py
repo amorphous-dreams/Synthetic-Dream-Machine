@@ -21,7 +21,7 @@ from typing import Any
 from .carrier import read_carrier
 from .indexes import compile_carrier_index
 from .meme_graph import DeclaredUnresolved, Meme, MemeGraph
-from .pranala_parser import PranaEdge, parse_pranala_edges
+from .pranala_parser import PranalaEdge, parse_pranala_edges
 from .resolver import LARES_ROOT, resolve_lar_uri
 
 
@@ -380,7 +380,7 @@ def compile_full_boot(entry: str = ENTRY_URI) -> dict[str, Any]:
     interface_index, invariant_index = _build_interface_indexes(graph, all_uris)
 
     # Collect all parsed edges
-    all_edges: list[PranaEdge] = []
+    all_edges: list[PranalaEdge] = []
     for meme in graph.memes.values():
         all_edges.extend(meme.edges_out)
 

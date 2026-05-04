@@ -1045,7 +1045,7 @@ State lives in `localStorage` (`lararium.theme`). Applied on mount before first 
 
 1d. ✓ **TW5 TemplateCascade type wired (shipped 2026-04-28):** `CascadeEntry { match: MemeCascadePredicate | fn, override: Partial<MemeTemplateProps>, levels? }` in `multi-view.ts`. `applyCascade()` evaluates per-meme at `renderAllViews` time — first match wins per zoom level. `MemeTemplateProps.cascade` string field (predicate stored in shape meta) maps to this runtime type. Future: thread wikitext-filter expression evaluation as `match` predicate.
 
-1e. ✓ **Spatial family + FAMILY_ROLES (shipped 2026-04-28):** All 8 pranala families have canonical role vocabularies in `FAMILY_ROLES` (pranala-parser.ts). `validatePranaEdge` now emits `"unknown-role"` warnings for out-of-vocabulary roles across all `roleRecommended` families. Spatial roles: `contains | portal | adjacent | layer`. Unblocks portals-as-graph-edges (not just geo shapes with `meta.larPortal`).
+1e. ✓ **Spatial family + FAMILY_ROLES (shipped 2026-04-28):** All 8 pranala families have canonical role vocabularies in `FAMILY_ROLES` (pranala-parser.ts). `validatePranalaEdge` now emits `"unknown-role"` warnings for out-of-vocabulary roles across all `roleRecommended` families. Spatial roles: `contains | portal | adjacent | layer`. Unblocks portals-as-graph-edges (not just geo shapes with `meta.larPortal`).
 
 2. ✓ **Meme count reactive subscription (shipped 2026-04-27):** `store.listen` with `scope: "document"` + 150ms debounce added to `LarariumCanvas`. One-shot scan on `synced-remote`, live re-scan on any shape mutation. `MenuPanel` now reflects live meme count.
 

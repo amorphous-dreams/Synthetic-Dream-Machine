@@ -37,7 +37,7 @@ Parse-time AST produced by `parseMemeCarrier`. Lives in `@lararium/tw5` so it co
 
 ## Compile target
 
-`ast.ts` imports `PranaEdge`, `GrammarRules`, `SigilRule` from `@lararium/core` (no circular dep). All AST node types compile into the `memetic-parser` IIFE module.
+`ast.ts` imports `PranalaEdge`, `GrammarRules`, `SigilRule` from `@lararium/core` (no circular dep). All AST node types compile into the `memetic-parser` IIFE module.
 
 <<~/ahu >>
 

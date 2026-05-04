@@ -1,10 +1,10 @@
-"""Tests for pranala_parser — PranaEdge extraction from carrier text."""
+"""Tests for pranala_parser — PranalaEdge extraction from carrier text."""
 
 from __future__ import annotations
 
 import unittest
 
-from lares.lararium_mcp.pranala_parser import PranaEdge, parse_pranala_edges
+from lares.lararium_mcp.pranala_parser import PranalaEdge, parse_pranala_edges
 
 CARRIER = "lar:///ha.ka.ba/api/v0.1/pono/e-prime"
 
@@ -167,7 +167,7 @@ family = "relation"
 class LiveCarrierTests(unittest.TestCase):
     """Parse actual carrier files and assert key edges are extracted."""
 
-    def _parse(self, file_path: str, carrier_uri: str) -> list[PranaEdge]:
+    def _parse(self, file_path: str, carrier_uri: str) -> list[PranalaEdge]:
         from pathlib import Path
         text = Path(file_path).read_text(encoding="utf-8")
         return parse_pranala_edges(carrier_uri, text)

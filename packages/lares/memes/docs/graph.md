@@ -70,7 +70,7 @@ They do not require further operator input.
 | Decision | Rationale |
 |---|---|
 | `lifecycle: template` edges count as traversable | Templates declare intended connectivity. The static compiler walks declared intent; the `template/instance/trace` distinction matters for execution runtime, not hydration compilation. Bazel BUILD declarations drive the build graph before any runtime runs. |
-| `dir = "both"` maps to `traversal: source-to-target` | "Both" means both carriers declare awareness of the edge — not that the walker traverses both directions. The walker goes source → target. `dir` becomes metadata recorded in `PranaEdge.payload` as `dir_hint`. |
+| `dir = "both"` maps to `traversal: source-to-target` | "Both" means both carriers declare awareness of the edge — not that the walker traverses both directions. The walker goes source → target. `dir` becomes metadata recorded in `PranalaEdge.payload` as `dir_hint`. |
 | `payload.continue/backlink` records as metadata, not walk directives | The static compiler produces loci sets and ordered lists; it does not execute coroutines. `payload.continue` annotates where the calling carrier expects to resume — recorded in edge payload for the boot receipt, honored by a future execution-graph compiler. |
 | Tier 0 declared-core stays as fast-path validation | `#iam.required-core` gives a pre-computed "what should appear in minimal boot" check. The pranala walk produces the source-of-truth set; the declared list cross-validates it. Mismatches surface in the receipt as a `declared_vs_walked` diffset. |
 | Content-addressed artifacts via SHA256(carrier bytes + edge records) | Deterministic ordering of carrier bytes plus sorted edge records produces a stable hash. This makes boot receipts valid Anthropic prompt cache keys: identical source files always produce identical receipt hashes. |
@@ -99,7 +99,7 @@ The parser implementation in `graph/pranala-parser` may now proceed on this basi
 
 | Meme | Role |
 |---|---|
-| `lar:///ha.ka.ba/@lares/docs/graph/loci` | `PranaEdge`, `Meme`, and `MemesGraph` data model contracts (see note above for loci interface) |
+| `lar:///ha.ka.ba/@lares/docs/graph/loci` | `PranalaEdge`, `Meme`, and `MemesGraph` data model contracts (see note above for loci interface) |
 | `lar:///ha.ka.ba/@lares/docs/graph/traversal` | three-tier walk rules, DFS cycle detection, Kahn topological sort, declared-unresolved handling |
 | `lar:///ha.ka.ba/@lares/docs/graph/pranala-parser` | block form, inline form, sugar expansion, `? ->` resolution, field normalization |
 | `lar:///ha.ka.ba/@lares/docs/graph/artifacts` | content-addressed SHA256 scheme, three artifact classes, compaction rules |
@@ -133,7 +133,7 @@ The rename in the server awaits Phase 1 implementation. Until then, current code
 
 | Phase | New file | Key deliverable |
 |---|---|---|
-| 1 | `lares/lararium_mcp/graph.py` | `PranaEdge`, `CarrierNode`, `CarrierGraph` with BFS/DFS/topo-sort |
+| 1 | `lares/lararium_mcp/graph.py` | `PranalaEdge`, `CarrierNode`, `CarrierGraph` with BFS/DFS/topo-sort |
 | 1 | `lares/lararium_mcp/tests/test_graph.py` | synthetic graph fixtures, cycle detection, topo sort tests |
 | 2 | `lares/lararium_mcp/pranala_parser.py` | block + inline + sugar parser, field normalization |
 | 2 | `lares/lararium_mcp/tests/test_pranala_parser.py` | AGENTS.md block fixtures, `? ->` resolution |
