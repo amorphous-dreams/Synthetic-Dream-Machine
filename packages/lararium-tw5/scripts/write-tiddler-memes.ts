@@ -1,8 +1,8 @@
 /**
- * write-tiddler-memes.ts — postbuild: splice compiled IIFEs into lares/ module tiddlers.
+ * write-tiddler-memes.ts — postbuild: splice compiled CJS modules into lares/ module tiddlers.
  *
- * For each widget/filter/deserializer IIFE in dist-widgets/:
- *   1. Read dist-widgets/{name}.iife.js
+ * For each widget/filter/deserializer CJS module in dist-widgets/:
+ *   1. Read dist-widgets/{name}.tw5.js
  *   2. Compute SHA-256
  *   3. Splice into lares/.../{subdir}/{name}-tw5.md between STX/ETX
  *   4. Patch body-sha256 in the anchor meme lares/.../{subdir}/{name}.md
@@ -16,11 +16,8 @@ import { createHash } from "crypto";
 import { resolve, dirname } from "path";
 import { fileURLToPath } from "url";
 import { WIDGET_ENTRIES, FILTER_ENTRIES, DESERIALIZER_ENTRIES, MODULE_ENTRIES, buildAll } from "../vite.tiddlers.config.js";
-import { repoRoot } from "@lares/lares";
-
 const __dirname  = dirname(fileURLToPath(import.meta.url));
 const tw5Memes   = resolve(__dirname, "../memes");
-const root       = repoRoot;
 const distDir    = resolve(__dirname, "../dist-widgets");
 
 const STX_RE       = /<<~[^>]*&#x0002;[^>]*>>/;
@@ -49,9 +46,9 @@ function patchSha256(meme: string, sha256: string): string {
 }
 
 function processEntry(name: string, kind: "widget" | "filter" | "module"): void {
-  const iifeFile = resolve(distDir, `${name}.iife.js`);
+  const iifeFile = resolve(distDir, `${name}.tw5.js`);
   if (!existsSync(iifeFile)) {
-    console.warn(`[write-tiddler-memes] MISSING dist: ${name}.iife.js`);
+    console.warn(`[write-tiddler-memes] MISSING dist: ${name}.tw5.js`);
     return;
   }
 

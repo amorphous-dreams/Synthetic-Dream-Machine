@@ -11,7 +11,7 @@ heleuma       = "ka"
 source-file   = "packages/lararium-tw5/src/widgets/sigil.ts"
 source-symbol = "SigilWidget"
 module-ref    = "lar:///ha.ka.ba/@lararium/tw5/widgets/sigil-tw5"
-body-sha256 = "235354a9ccdc72dbc7765b32c5b90b5329cfe547a7919af783639eb847b9799d"
+body-sha256 = "1b825842beea8a3e00d8c4feee19fbbfeb56f2575ab8a36dcb7a0a41467f887f"
 cacheable     = true
 retain        = true
 ```
@@ -31,21 +31,9 @@ retain        = true
 ## Source
 
 ```typescript
-function SigilWidget(this: TW5WidgetInstance, parseTreeNode: TW5ParseTreeNode, options: Record<string, unknown>) {
+export function SigilWidget(this: TW5WidgetInstance, parseTreeNode: TW5ParseTreeNode, options: Record<string, unknown>) {
   this.initialise(parseTreeNode, options);
 }
-SigilWidget.prototype.render = function (this: TW5WidgetInstance, parent: TW5FakeElement, nextSibling: TW5FakeElement | null) {
-  this.parentDomNode = parent;
-  this.computeAttributes();
-  this.execute();
-  const el = this.document.createElement("span");
-  el.setAttribute("data-lar-kind",  "sigil");
-  el.setAttribute("data-lar-sigil", this.parseTreeNode?.tag ?? "");
-  parent.appendChild(el);
-  this.domNodes = [el];
-  this.renderChildren(el, nextSibling);
-};
-SigilWidget.prototype.execute = function (this: TW5WidgetInstance) { this.makeChildWidgets(); };
 ```
 
 <<~/ahu >>

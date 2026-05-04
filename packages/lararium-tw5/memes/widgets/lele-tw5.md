@@ -15,20 +15,39 @@ source-file   = "packages/lararium-tw5/src/tw5-widgets.ts"
 ```
 
 <<~&#x0002;>>
-(function(){
-"use strict";
-exports.lele = function LeleWidget(parseTreeNode, options) { this.initialise(parseTreeNode, options); };
-exports.lele.prototype.render = function(parent, _nextSibling) {
-  this.parentDomNode = parent;
-  this.computeAttributes();
-  this.execute();
-  var el = this.document.createElement("meta");
-  el.setAttribute("data-lar-kind",   "lele");
-  el.setAttribute("data-lar-target", this.getAttribute("target", ""));
-  parent.appendChild(el);
-  this.domNodes = [el];
+
+Object.defineProperty(exports, Symbol.toStringTag, { value: "Module" });
+//#region src/widgets/lele.ts
+function LeleWidget(parseTreeNode, options) {
+	this.initialise(parseTreeNode, options);
+}
+LeleWidget.prototype.render = function(parent, _nextSibling) {
+	this.parentDomNode = parent;
+	this.computeAttributes();
+	this.execute();
+	const el = this.document.createElement("meta");
+	el.setAttribute("data-lar-kind", "lele");
+	el.setAttribute("data-lar-target", this.getAttribute("target", ""));
+	parent.appendChild(el);
+	this.domNodes = [el];
 };
-exports.lele.prototype.execute = function() { this.makeChildWidgets(); };
-})();
+LeleWidget.prototype.execute = function() {
+	this.makeChildWidgets();
+};
+//#endregion
+exports.LeleWidget = LeleWidget;
+
 <<~&#x0003;>>
+
+<<~ ahu #source >>
+
+## Source
+
+Compiled IIFE artifact. Canonical TS source: `packages/lararium-tw5/src/tw5-widgets.ts` (`source-symbol = "LeleWidget"`).
+Anchor meme: `lar:///ha.ka.ba/@lararium/tw5/widgets/lele`.
+
+Run `pnpm --filter @lararium/tw5 build:tiddlers` to regenerate.
+
+<<~/ahu >>
+
 <<~&#x0004; -> ? >>

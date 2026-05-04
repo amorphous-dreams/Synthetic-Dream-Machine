@@ -493,12 +493,11 @@ export function seedDefaultRecipes(islandHandle: DocHandle<LarariumDoc>): void {
   const existingTiddlers = islandHandle.doc()?.tiddlers ?? {};
   const now = new Date().toISOString();
 
-  // Recipe 1: full — all six root docs ordered lowest → highest priority
+  // Recipe 1: full — all six root docs ordered lowest → highest priority.
+  // No plugins declared — vendored plugin opt-in is per-Room only, never a default.
   const fullUri = recipeUri("@lararium", "full");
   if (!existingTiddlers[fullUri]) {
     islandHandle.change((doc) => {
-      // TW5 list format: space-separated lar: URIs (no spaces in URIs, no [[...]] needed).
-      // parseBagStack() on the TS side handles both string and array formats.
       const bagStack = [
         LARARIUM_DOC_URI, CATALOG_DOC_URI, LARES_DOC_URI,
         IDENTITIES_DOC_URI, GROUPS_DOC_URI, SESSIONS_DOC_URI,
@@ -641,6 +640,11 @@ export function seedBlobDescriptors(islandHandle: DocHandle<LarariumDoc>): void 
     const existing = tiddlers[uri] as { fields?: { sha256?: string } } | undefined;
     if (existing?.fields?.["sha256"] === entry.sha256) continue;
 
+    // Vendored TW5 community plugins are optional; flag them so Recipes can enumerate
+    // and opt-in via the plugins field. System blobs (TW5 core, lararium-lares) are
+    // not installable — they are unconditionally required at vm boot.
+    const isVendoredPlugin = blobId.startsWith("$:/plugins/");
+
     islandHandle.change((d) => {
       d.tiddlers[uri] = {
         title:     uri,
@@ -652,7 +656,8 @@ export function seedBlobDescriptors(islandHandle: DocHandle<LarariumDoc>): void 
           ...(entry.author  && { author:  entry.author }),
           ...(entry.source  && { source:  entry.source }),
           ...(entry.license && { license: entry.license }),
-          tags:      "blob-descriptor",
+          ...(isVendoredPlugin && { pluginInstallable: "true", pluginTitle: blobId }),
+          tags:      isVendoredPlugin ? "blob-descriptor plugin-descriptor" : "blob-descriptor",
           updatedAt: now,
         },
         bag:       LARARIUM_DOC_URI,

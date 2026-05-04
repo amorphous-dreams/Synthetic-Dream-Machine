@@ -11,7 +11,7 @@ heleuma       = "ka"
 source-file   = "packages/lararium-tw5/src/widgets/pranala.ts"
 source-symbol = "PranalaWidget"
 module-ref    = "lar:///ha.ka.ba/@lararium/tw5/widgets/pranala-tw5"
-body-sha256 = "1008f270a77c24eb777078f9213a9a15e714776e555a63c1dcf4c366b29ad2e6"
+body-sha256 = "b00d58b877b14c494b15d219cb456e8c55dd2e00703347d763a26d73753de1c4"
 cacheable     = true
 retain        = true
 ```
@@ -31,23 +31,9 @@ retain        = true
 ## Source
 
 ```typescript
-function PranalaWidget(this: TW5WidgetInstance, parseTreeNode: TW5ParseTreeNode, options: Record<string, unknown>) {
+export function PranalaWidget(this: TW5WidgetInstance, parseTreeNode: TW5ParseTreeNode, options: Record<string, unknown>) {
   this.initialise(parseTreeNode, options);
 }
-PranalaWidget.prototype.render = function (this: TW5WidgetInstance, parent: TW5FakeElement, _nextSibling: TW5FakeElement | null) {
-  this.parentDomNode = parent;
-  this.computeAttributes();
-  this.execute();
-  const el = this.document.createElement("meta");
-  el.setAttribute("data-lar-kind",   "pranala");
-  el.setAttribute("data-lar-from",   this.getAttribute("from", ""));
-  el.setAttribute("data-lar-to",     this.getAttribute("to", ""));
-  el.setAttribute("data-lar-family", this.getAttribute("family", ""));
-  el.setAttribute("data-lar-role",   this.getAttribute("role", ""));
-  parent.appendChild(el);
-  this.domNodes = [el];
-};
-PranalaWidget.prototype.execute = function (this: TW5WidgetInstance) { this.makeChildWidgets(); };
 ```
 
 <<~/ahu >>

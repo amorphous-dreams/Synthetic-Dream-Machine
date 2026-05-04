@@ -37,6 +37,9 @@ export { parseZoomLayoutTOML, getZoomLayout } from "./zoom-layout.js";
 
 
 export { TW5WorkerProxy } from "./tw5-worker-proxy.js";
+
+export { buildCeremonyTiddlers, didKeyFromVerifyingKey } from "./cold-boot-ceremony.js";
+export type { CeremonyTiddler } from "./cold-boot-ceremony.js";
 export type { WorkerFactory, AnyWorker } from "./tw5-worker-proxy.js";
 
 // ---------------------------------------------------------------------------

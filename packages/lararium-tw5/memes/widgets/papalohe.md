@@ -11,7 +11,7 @@ heleuma       = "ka"
 source-file   = "packages/lararium-tw5/src/widgets/papalohe.ts"
 source-symbol = "PapaloheWidget"
 module-ref    = "lar:///ha.ka.ba/@lararium/tw5/widgets/papalohe-tw5"
-body-sha256 = "63ce59d60fc63fd7d7e4c5d8e599198bd18cefaaa939798bfb91a96a0ecd9319"
+body-sha256 = "e92dd8b986640521996b49672dde6081626e0b44c5b9cc8a82ae2372d285dd97"
 cacheable     = true
 retain        = true
 ```
@@ -31,24 +31,9 @@ retain        = true
 ## Source
 
 ```typescript
-function PapaloheWidget(this: TW5WidgetInstance, parseTreeNode: TW5ParseTreeNode, options: Record<string, unknown>) {
+export function PapaloheWidget(this: TW5WidgetInstance, parseTreeNode: TW5ParseTreeNode, options: Record<string, unknown>) {
   this.initialise(parseTreeNode, options);
 }
-PapaloheWidget.prototype.render = function (this: TW5WidgetInstance, parent: TW5FakeElement, _nextSibling: TW5FakeElement | null) {
-  this.parentDomNode = parent;
-  this.computeAttributes();
-  this.execute();
-  const el = this.document.createElement("meta");
-  el.setAttribute("data-lar-kind",    "papalohe");
-  el.setAttribute("data-lar-from",    this.getAttribute("from", ""));
-  el.setAttribute("data-lar-to",      this.getAttribute("to", ""));
-  el.setAttribute("data-lar-trigger", this.getAttribute("trigger", ""));
-  el.setAttribute("data-lar-fn",      this.getAttribute("fn", ""));
-  el.setAttribute("data-lar-slot",    this.getAttribute("slot", ""));
-  parent.appendChild(el);
-  this.domNodes = [el];
-};
-PapaloheWidget.prototype.execute = function (this: TW5WidgetInstance) { this.makeChildWidgets(); };
 ```
 
 <<~/ahu >>

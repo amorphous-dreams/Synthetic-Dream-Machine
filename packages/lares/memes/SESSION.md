@@ -1083,6 +1083,104 @@ Three pressures converged. (1) `LarariumShell.tsx` held three `(ed.store as any)
 
 <<~/ahu >>
 
+<<~ ahu #ooda-ha-m28-cold-boot-ceremony >>
+
+## M28 — Cold-Boot Ceremony + Keyhive Identity Bridge (2026-05-04)
+
+**Libation:** Kona coffee. Thirteen Voices convened.
+
+⊙ **Observe:**
+
+`IdentitiesDoc` seeded but never populated. `operator-key.ts` stub — no real keypair. `build:heleuma` did not own IIFE packaging. `source-symbol` single-export only. Multi-dev keypair collision risk. `did:web:github.com:{login}` sketched as principal — web2 smell.
+
+↻ **Orient:**
+
+Brooklyn Zelenka / UCAN / Keyhive alignment: `did:key` = self-certifying, Ed25519-rooted.
+- `"did:key:z" + base58btc(0xed 0x01 || 32-byte-pubkey)` — multicodec `0xed01`
+- `verifyingKey` field = BeeKEM CGKA upgrade slot
+- keypair-precedes-docs; causal-islands: ceremony LOGIC in TW5 IIFE, ceremony WRITES via direct `handle.change()` (room bag ≠ social docs island)
+- `build:heleuma --commit` spawns `write-tiddler-memes.ts`; `source-symbol="*"` = whole-file `#source` ahu
+
+⊘ **Decide:** `cold-boot-ceremony.ts` (IIFE-safe, no external deps). `operator-key.ts` real keygen, GitHub-login-keyed file. `socialPlaneIsNew` gate + idempotent tiddler guard in `open-node-lar-peer.ts`.
+
+⊕ **Act:**
+
+| File | Change |
+|---|---|
+| `lararium-tw5/src/cold-boot-ceremony.ts` (NEW) | `didKeyFromVerifyingKey` + `buildCeremonyTiddlers` |
+| `lararium-tw5/memes/modules/cold-boot-ceremony.md` (NEW) | Anchor meme; `heleuma=ka`, `source-symbol="*"` |
+| `lararium-tw5/memes/modules/cold-boot-ceremony-tw5.md` (NEW) | Compiled IIFE library tiddler |
+| `lararium-tw5/scripts/sync-heleuma.ts` | `*` whole-file mode; `--commit` → subprocess |
+| `lararium-node/src/operator-key.ts` (REPLACED) | Real Ed25519 keygen; GitHub-login-keyed filename |
+| `lararium-node/src/open-node-lar-peer.ts` | `operatorIdentity?`; ceremony writes via `handle.change()` |
+| `lararium-node/src/main.ts` | `generateOrLoadOperatorKeypair` wired before peer open |
+| All dist-widgets IIFEs + meme body-sha256 | Rebuilt (user side work, same sprint) |
+
+⤴ **Advance:** 164 tests pass. Build clean. Causal-islands sanity check passed. `did:key` alignment confirmed.
+
+↺ **Pressures forward:**
+- `TW5WorkerProxy` vmFactory at call site
+- `MemeCanvasProjection.onUriChanged()` full render algorithm
+- Connect screen cold-boot path + "check for admin operators" guard
+- Widget export key normalization: `KauWidget` → `kau` for TW5 tag registration
+
+<<~/ahu >>
+
+<<~ ahu #ooda-ha-m28-source-coverage >>
+
+## M28 Loop 2 — Self-Documenting Quine: `#source` ahu Coverage (2026-05-04)
+
+⊙ **Observe:** All `heleuma=ka` anchor memes missing `#source` ahu. Compiled `-tw5.md` tiddlers had no anchor backlink. Deserializer called out as pre-existing condition. `node-host.md` + `tw5-widgets.md` (non-packageable) had no source listing.
+
+↻ **Orient:** Quine law: wiki must be able to regenerate source files. Anchor meme = `#source` with live TS. Compiled `-tw5.md` = `#source` with anchor URI + build command (not full source — CJS body IS the artifact). Non-packageable code gets source listing + reason note.
+
+⊕ **Act:**
+
+| File | Change |
+|---|---|
+| `memes/modules/deserializer.md` | `#source` ahu (full TS); `source-symbol → "*"` |
+| `memes/modules/node-host.md` | `#source` ahu (deprecated stub + rebuild target) |
+| `memes/modules/tw5-widgets.md` | `#source` ahu (barrel + non-packageable note) |
+| `memes/modules/tw5-modules.md` | `#source` ahu (bundle entry listing + build cmd) |
+| All 17 `*-tw5.md` compiled tiddlers | `#source` ahu after ETX: anchor URI + build command |
+
+⤴ **Advance:** 164 tests pass. All packaged cTW5 tiddlers carry `#source`. Quine law holds.
+
+<<~/ahu >>
+
+<<~ ahu #ooda-ha-m28-cjs-cleanup >>
+
+## M28 Loop 3 — CJS Module Wrapper Cleanup (2026-05-04)
+
+⊙ **Observe:** `format: 'iife'` produced `var __lar_X = (function(exports){...})({})`. IIFE's `exports` param is a fresh `{}` — TW5's injected `exports` never touched. Every `require()` returned `{}`. Deserializer MIME key unregistered. `window.__lararium_tw5_modules` in bundle config had zero runtime readers. `.iife.js` suffix was a lie post-fix.
+
+↻ **Orient:** TW5 wraps plugin code in CJS scope, injecting real `exports`. CJS output targets that object directly. Deserializer needs MIME-key footer (not a valid TS export identifier). `.tw5.js` suffix = format-agnostic, describes the file correctly. Bundle config gets same treatment; write scripts updated to match.
+
+⊘ **Decide:** `format: 'cjs'`, `esModule: false`, `exports: "named"`, MIME footer for deserializer, rename all dist files.
+
+⊕ **Act:**
+
+| File | Change |
+|---|---|
+| `vite.tiddlers.config.ts` | `formats: ["cjs"]`; removed `name:`; `esModule:false`; MIME footer; `*.tw5.js` |
+| `vite.bundle.config.ts` | Same CJS conversion; dead `window.__lararium_tw5_modules` purged |
+| `scripts/write-tiddler-memes.ts` | `.iife.js → .tw5.js`; removed unused `repoRoot` import |
+| `scripts/write-module-meme.ts` | `.iife.js → .tw5.js` |
+| `src/meme-ast-entry.ts` | Stale `__lar_meme_ast` global comment replaced |
+| `dist-widgets/*.iife.js` (17) | Renamed + rebuilt → `*.tw5.js`; wrapper gone |
+| All 17 `*-tw5.md` meme bodies | Re-spliced: direct `exports.X = X` |
+
+⤴ **Advance:** 164 tests pass. No `.iife.js` files remain. `require()` to all TW5 module tiddlers returns correct exports for the first time.
+
+↺ **M29 pressures:**
+- `TW5WorkerProxy` vmFactory at call site
+- `MemeCanvasProjection.onUriChanged()` full render algorithm
+- Connect screen cold-boot path + "check for admin operators" guard
+- Widget export key: `KauWidget` → `kau` (TW5 tag registration alignment)
+- MCP `hud`/`receipt` storage-dir fix
+
+<<~/ahu >>
+
 <<~ ahu #edges >>
 
 ## Edges

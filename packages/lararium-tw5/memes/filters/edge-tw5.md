@@ -15,24 +15,44 @@ source-file   = "packages/lararium-tw5/src/tw5-widgets.ts"
 ```
 
 <<~&#x0002;>>
-(function(){
-"use strict";
-exports.edge = function(source, operator) {
-  var family  = operator.suffix ?? "";
-  var role    = operator.operand ?? "";
-  var results = [];
-  source(function(tiddler, title) {
-    if (!tiddler) return;
-    if (role) {
-      var v = tiddler.fields?.["edge-out-" + family + "-" + role];
-      if (v !== undefined && v !== "") results.push(title);
-    } else {
-      var prefix = "edge-out-" + family + "-";
-      if (Object.keys(tiddler.fields ?? {}).some(function(k) { return k.startsWith(prefix); })) results.push(title);
-    }
-  });
-  return results;
-};
-})();
+
+Object.defineProperty(exports, Symbol.toStringTag, { value: "Module" });
+//#region src/filters/edge.ts
+/** edge:family[role] — filter tiddlers that have an edge-out field for family+role.
+*  edge:control[owns] → has field edge-out-control-owns
+*  edge:control[]     → has any edge-out-control-* field */
+function registerEdge(tw) {
+	tw.filterOperators["edge"] = function(source, operator) {
+		const family = operator.suffix ?? "";
+		const role = operator.operand ?? "";
+		const results = [];
+		source(function(tiddler, title) {
+			if (!tiddler) return;
+			if (role) {
+				const v = tiddler.fields?.[`edge-out-${family}-${role}`];
+				if (v !== void 0 && v !== "") results.push(title);
+			} else {
+				const prefix = `edge-out-${family}-`;
+				if (Object.keys(tiddler.fields ?? {}).some((k) => k.startsWith(prefix))) results.push(title);
+			}
+		});
+		return results;
+	};
+}
+//#endregion
+exports.registerEdge = registerEdge;
+
 <<~&#x0003;>>
+
+<<~ ahu #source >>
+
+## Source
+
+Compiled IIFE artifact. Canonical TS source: `packages/lararium-tw5/src/tw5-widgets.ts` (`source-symbol = "registerEdgeOperator"`).
+Anchor meme: `lar:///ha.ka.ba/@lararium/tw5/filters/edge`.
+
+Run `pnpm --filter @lararium/tw5 build:tiddlers` to regenerate.
+
+<<~/ahu >>
+
 <<~&#x0004; -> ? >>

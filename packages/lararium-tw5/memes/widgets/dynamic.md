@@ -11,7 +11,7 @@ heleuma       = "ka"
 source-file   = "packages/lararium-tw5/src/widgets/dynamic.ts"
 source-symbol = "DynamicWidget"
 module-ref    = "lar:///ha.ka.ba/@lararium/tw5/widgets/dynamic-tw5"
-body-sha256 = "ab023ebbcaaa7ed865d24e1ab875eff3c002284fbcac26d18ed4cca81832dbf0"
+body-sha256 = "5beae338d5da165a12ef267fc64b3a85f16597a19f0d5192123458046954f3b2"
 cacheable     = true
 retain        = true
 ```
@@ -31,21 +31,9 @@ retain        = true
 ## Source
 
 ```typescript
-function DynamicWidget(this: TW5WidgetInstance, parseTreeNode: TW5ParseTreeNode, options: Record<string, unknown>) {
+export function DynamicWidget(this: TW5WidgetInstance, parseTreeNode: TW5ParseTreeNode, options: Record<string, unknown>) {
   this.initialise(parseTreeNode, options);
 }
-DynamicWidget.prototype.render = function (this: TW5WidgetInstance, parent: TW5FakeElement, nextSibling: TW5FakeElement | null) {
-  this.parentDomNode = parent;
-  this.computeAttributes();
-  this.execute();
-  const el = this.document.createElement("span");
-  el.setAttribute("data-lar-kind",  "dynamic");
-  el.setAttribute("data-lar-sigil", this.parseTreeNode?.tag ?? "");
-  parent.appendChild(el);
-  this.domNodes = [el];
-  this.renderChildren(el, nextSibling);
-};
-DynamicWidget.prototype.execute = function (this: TW5WidgetInstance) { this.makeChildWidgets(); };
 ```
 
 <<~/ahu >>

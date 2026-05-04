@@ -13,12 +13,21 @@
  *   Allowed structural elements: ahu, pranala, toml fences, loulou, aka, SOH/STX/ETX/EOT.
  *   FORBIDDEN: any sigil registered by the grammar meme itself.
  *
- * Invariant 2 — System-bag tiddler, not a blob:
+ * Invariant 2 — System-bag tiddler, raw carrier text, not deserialized fragments:
  *   The grammar meme lives as a memetic-wikitext tiddler in the 'system' bag of
  *   the LarariumDoc (engine Automerge document). It is NOT stored as a binary blob
  *   in LarariumDoc.blobs. Binary blobs are for large, immutable, non-parseable
  *   assets (TW5 core JS, plugin bundles). The grammar meme text is small, mutable
  *   across versions, and must remain human-readable and diff-able.
+ *
+ *   The grammar tiddler stores raw carrier text in its .text field — it is the
+ *   deliberate exception to the "meme files deserialize into fragment tiddlers" law.
+ *   Reason: grammarRulesFromText() must walk the carrier AST (collecting toml
+ *   SigilNodes) via BOOTSTRAP_SCANS. Storing pre-deserialized fragment tiddlers
+ *   would require deserializeCarrier() to run first — which needs the grammar —
+ *   closing the bootstrap circle. Raw carrier text + BOOTSTRAP_SCANS breaks the
+ *   circle. Path β (fragment tiddler storage) was evaluated and rejected: moving
+ *   deserialization earlier in boot tightens, not relaxes, the dependency.
  *
  * Invariant 3 — Seeded at server start, from lares/:
  *   The canonical source of truth is lares/grammars/memetic-wikitext.md (filesystem).

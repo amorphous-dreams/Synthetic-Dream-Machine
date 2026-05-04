@@ -11,7 +11,7 @@ heleuma       = "ka"
 source-file   = "packages/lararium-tw5/src/filters/toml-field.ts"
 source-symbol = "registerTomlFieldOperator"
 module-ref    = "lar:///ha.ka.ba/@lararium/tw5/filters/toml-field-tw5"
-body-sha256 = "62d470d180b465a175f4f88125461a97829ff92232bbe20094f0801aa25f8f10"
+body-sha256 = "c032db6fb2e07cdc2b3b363a5dbb243e0ec13a71734350e6fb7c4dd8b1588680"
 cacheable     = true
 retain        = true
 ```

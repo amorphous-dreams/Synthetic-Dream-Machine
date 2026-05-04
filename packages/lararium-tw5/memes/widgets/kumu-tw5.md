@@ -15,54 +15,64 @@ source-file   = "packages/lararium-tw5/src/tw5-widgets.ts"
 ```
 
 <<~&#x0002;>>
-(function(){
-"use strict";
-exports.kumu = function KumuWidget(parseTreeNode, options) { this.initialise(parseTreeNode, options); };
-exports.kumu.prototype.render = function(parent, _nextSibling) {
-  this.parentDomNode = parent;
-  this.computeAttributes();
-  this.execute();
-  var name    = this.getAttribute("name", "");
-  var args    = this.getAttribute("props", "");
-  var results = this.wiki?.filterTiddlers?.(
-    "[all[tiddlers]tag[$:/tags/LarariumKumu]field:kumu-name[" + name + "]]"
-  ) ?? [];
-  var defUri = results[0] ?? "";
-  var el = this.document.createElement("div");
-  el.setAttribute("data-lar-kind",     "kumu");
-  el.setAttribute("data-lar-name",     name);
-  el.setAttribute("data-lar-resolved", defUri ? "true" : "false");
-  parent.appendChild(el);
-  this.domNodes = [el];
-  if (defUri) {
-    var propRe = /([\w-]+):(\S+)/g;
-    var m;
-    while ((m = propRe.exec(args)) !== null) {
-      this.setVariable(m[1], m[2]);
-    }
-    var transclude = this.wiki?.makeTranscludeWidget(defUri, {
-      document:     this.document,
-      parentWidget: this,
-    });
-    if (transclude) {
-      transclude.render(el, null);
-      this.children = [transclude];
-    }
-  } else {
-    var hole = this.document.createElement("span");
-    hole.setAttribute("data-lar-kind", "hole");
-    hole.textContent = "? " + name;
-    el.appendChild(hole);
-  }
+
+Object.defineProperty(exports, Symbol.toStringTag, { value: "Module" });
+//#region src/widgets/kumu.ts
+function KumuWidget(parseTreeNode, options) {
+	this.initialise(parseTreeNode, options);
+}
+KumuWidget.prototype.render = function(parent, _nextSibling) {
+	this.parentDomNode = parent;
+	this.computeAttributes();
+	this.execute();
+	const name = this.getAttribute("name", "");
+	const args = this.getAttribute("props", "");
+	const defUri = (this.wiki?.filterTiddlers?.(`[all[tiddlers]tag[$:/tags/LarariumKumu]field:kumu-name[${name}]]`) ?? [])[0] ?? "";
+	const el = this.document.createElement("div");
+	el.setAttribute("data-lar-kind", "kumu");
+	el.setAttribute("data-lar-name", name);
+	el.setAttribute("data-lar-resolved", defUri ? "true" : "false");
+	parent.appendChild(el);
+	this.domNodes = [el];
+	if (defUri) {
+		const propRe = /([\w-]+):(\S+)/g;
+		let m;
+		while ((m = propRe.exec(args)) !== null) this.setVariable(m[1], m[2]);
+		const transclude = this.wiki?.makeTranscludeWidget(defUri, {
+			document: this.document,
+			parentWidget: this
+		});
+		if (transclude) {
+			transclude.render(el, null);
+			this.children = [transclude];
+		}
+	} else {
+		const hole = this.document.createElement("span");
+		hole.setAttribute("data-lar-kind", "hole");
+		hole.textContent = `? ${name}`;
+		el.appendChild(hole);
+	}
 };
-exports.kumu.prototype.execute = function() { /* children managed in render */ };
-exports.kumu.prototype.refresh = function(changedTiddlers) {
-  var changed = false;
-  for (var i = 0; i < (this.children ?? []).length; i++) {
-    if (this.children[i].refresh(changedTiddlers)) changed = true;
-  }
-  return changed;
+KumuWidget.prototype.execute = function() {};
+KumuWidget.prototype.refresh = function(changedTiddlers) {
+	let changed = false;
+	for (const child of this.children ?? []) if (child.refresh(changedTiddlers)) changed = true;
+	return changed;
 };
-})();
+//#endregion
+exports.KumuWidget = KumuWidget;
+
 <<~&#x0003;>>
+
+<<~ ahu #source >>
+
+## Source
+
+Compiled IIFE artifact. Canonical TS source: `packages/lararium-tw5/src/tw5-widgets.ts` (`source-symbol = "KumuWidget"`).
+Anchor meme: `lar:///ha.ka.ba/@lararium/tw5/widgets/kumu`.
+
+Run `pnpm --filter @lararium/tw5 build:tiddlers` to regenerate.
+
+<<~/ahu >>
+
 <<~&#x0004; -> ? >>

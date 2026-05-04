@@ -11,7 +11,7 @@ heleuma       = "ka"
 source-file   = "packages/lararium-tw5/src/widgets/kukali.ts"
 source-symbol = "KukaliWidget"
 module-ref    = "lar:///ha.ka.ba/@lararium/tw5/widgets/kukali-tw5"
-body-sha256 = "8ac9495db8e12d378b9c388eacf8a8b968d08ce0220ae4bf22a6c871b93f3e0c"
+body-sha256 = "7184dc25ea1de71f37a3f3556380159e36ac70daa7263b89fe989730908539a6"
 cacheable     = true
 retain        = true
 ```
@@ -31,27 +31,9 @@ retain        = true
 ## Source
 
 ```typescript
-function KukaliWidget(this: TW5WidgetInstance, parseTreeNode: TW5ParseTreeNode, options: Record<string, unknown>) {
+export function KukaliWidget(this: TW5WidgetInstance, parseTreeNode: TW5ParseTreeNode, options: Record<string, unknown>) {
   this.initialise(parseTreeNode, options);
 }
-KukaliWidget.prototype.render = function (this: TW5WidgetInstance, parent: TW5FakeElement, _nextSibling: TW5FakeElement | null) {
-  this.parentDomNode = parent;
-  this.computeAttributes();
-  this.execute();
-  const trigger = this.getAttribute("trigger", "");
-  const el = this.document.createElement("span");
-  el.setAttribute("data-lar-kind",    "kukali");
-  el.setAttribute("data-lar-trigger", trigger);
-  parent.appendChild(el);
-  this.domNodes = [el];
-  const hook = this.wiki?._larKukaliHook;
-  const uri  = this.getVariable?.("currentTiddler") ?? "";
-  if (hook && uri && trigger) {
-    const cancel = hook(uri, trigger);
-    if (typeof cancel === "function") (el as unknown as Record<string, unknown>)["_larKukaliCancel"] = cancel;
-  }
-};
-KukaliWidget.prototype.execute = function (this: TW5WidgetInstance) { this.makeChildWidgets(); };
 ```
 
 <<~/ahu >>

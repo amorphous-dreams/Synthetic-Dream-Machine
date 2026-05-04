@@ -15,21 +15,40 @@ source-file   = "packages/lararium-tw5/src/tw5-widgets.ts"
 ```
 
 <<~&#x0002;>>
-(function(){
-"use strict";
-exports.dynamic = function DynamicWidget(parseTreeNode, options) { this.initialise(parseTreeNode, options); };
-exports.dynamic.prototype.render = function(parent, nextSibling) {
-  this.parentDomNode = parent;
-  this.computeAttributes();
-  this.execute();
-  var el = this.document.createElement("span");
-  el.setAttribute("data-lar-kind",  "dynamic");
-  el.setAttribute("data-lar-sigil", this.parseTreeNode?.tag ?? "");
-  parent.appendChild(el);
-  this.domNodes = [el];
-  this.renderChildren(el, nextSibling);
+
+Object.defineProperty(exports, Symbol.toStringTag, { value: "Module" });
+//#region src/widgets/dynamic.ts
+function DynamicWidget(parseTreeNode, options) {
+	this.initialise(parseTreeNode, options);
+}
+DynamicWidget.prototype.render = function(parent, nextSibling) {
+	this.parentDomNode = parent;
+	this.computeAttributes();
+	this.execute();
+	const el = this.document.createElement("span");
+	el.setAttribute("data-lar-kind", "dynamic");
+	el.setAttribute("data-lar-sigil", this.parseTreeNode?.tag ?? "");
+	parent.appendChild(el);
+	this.domNodes = [el];
+	this.renderChildren(el, nextSibling);
 };
-exports.dynamic.prototype.execute = function() { this.makeChildWidgets(); };
-})();
+DynamicWidget.prototype.execute = function() {
+	this.makeChildWidgets();
+};
+//#endregion
+exports.DynamicWidget = DynamicWidget;
+
 <<~&#x0003;>>
+
+<<~ ahu #source >>
+
+## Source
+
+Compiled IIFE artifact. Canonical TS source: `packages/lararium-tw5/src/tw5-widgets.ts` (`source-symbol = "DynamicWidget"`).
+Anchor meme: `lar:///ha.ka.ba/@lararium/tw5/widgets/dynamic`.
+
+Run `pnpm --filter @lararium/tw5 build:tiddlers` to regenerate.
+
+<<~/ahu >>
+
 <<~&#x0004; -> ? >>

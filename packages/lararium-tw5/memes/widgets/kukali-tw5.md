@@ -15,27 +15,46 @@ source-file   = "packages/lararium-tw5/src/tw5-widgets.ts"
 ```
 
 <<~&#x0002;>>
-(function(){
-"use strict";
-exports.kukali = function KukaliWidget(parseTreeNode, options) { this.initialise(parseTreeNode, options); };
-exports.kukali.prototype.render = function(parent, _nextSibling) {
-  this.parentDomNode = parent;
-  this.computeAttributes();
-  this.execute();
-  var trigger = this.getAttribute("trigger", "");
-  var el = this.document.createElement("span");
-  el.setAttribute("data-lar-kind",    "kukali");
-  el.setAttribute("data-lar-trigger", trigger);
-  parent.appendChild(el);
-  this.domNodes = [el];
-  var hook = this.wiki?._larKukaliHook;
-  var uri  = this.getVariable?.("currentTiddler") ?? "";
-  if (hook && uri && trigger) {
-    var cancel = hook(uri, trigger);
-    if (typeof cancel === "function") el["_larKukaliCancel"] = cancel;
-  }
+
+Object.defineProperty(exports, Symbol.toStringTag, { value: "Module" });
+//#region src/widgets/kukali.ts
+function KukaliWidget(parseTreeNode, options) {
+	this.initialise(parseTreeNode, options);
+}
+KukaliWidget.prototype.render = function(parent, _nextSibling) {
+	this.parentDomNode = parent;
+	this.computeAttributes();
+	this.execute();
+	const listenable = this.getAttribute("listenable", "");
+	const uri = this.getAttribute("uri", "") || (this.getVariable?.("currentTiddler") ?? "");
+	const el = this.document.createElement("span");
+	el.setAttribute("data-lar-kind", "kukali");
+	el.setAttribute("data-lar-listenable", listenable);
+	el.setAttribute("data-lar-uri", uri);
+	parent.appendChild(el);
+	this.domNodes = [el];
+	if (uri && listenable && this.wiki?.dispatchEvent) this.wiki.dispatchEvent("tm-lararium-event", {
+		uri,
+		listenable
+	});
 };
-exports.kukali.prototype.execute = function() { this.makeChildWidgets(); };
-})();
+KukaliWidget.prototype.execute = function() {
+	this.makeChildWidgets();
+};
+//#endregion
+exports.KukaliWidget = KukaliWidget;
+
 <<~&#x0003;>>
+
+<<~ ahu #source >>
+
+## Source
+
+Compiled IIFE artifact. Canonical TS source: `packages/lararium-tw5/src/tw5-widgets.ts` (`source-symbol = "KukaliWidget"`).
+Anchor meme: `lar:///ha.ka.ba/@lararium/tw5/widgets/kukali`.
+
+Run `pnpm --filter @lararium/tw5 build:tiddlers` to regenerate.
+
+<<~/ahu >>
+
 <<~&#x0004; -> ? >>

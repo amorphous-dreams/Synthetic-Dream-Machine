@@ -11,7 +11,7 @@ heleuma       = "ka"
 source-file   = "packages/lararium-tw5/src/widgets/pae.ts"
 source-symbol = "PaeWidget"
 module-ref    = "lar:///ha.ka.ba/@lararium/tw5/widgets/pae-tw5"
-body-sha256 = "4911715531df03ded556bd699cc4c72ddda7a25ead2d28dc48b823334eae8fdf"
+body-sha256 = "132e271839e2574b1d00a9b68bd9c638bddb8de441b29ac5c575f2bc16dccd8a"
 cacheable     = true
 retain        = true
 ```
@@ -31,15 +31,9 @@ retain        = true
 ## Source
 
 ```typescript
-function PaeWidget(this: TW5WidgetInstance, parseTreeNode: TW5ParseTreeNode, options: Record<string, unknown>) {
+export function PaeWidget(this: TW5WidgetInstance, parseTreeNode: TW5ParseTreeNode, options: Record<string, unknown>) {
   this.initialise(parseTreeNode, options);
 }
-PaeWidget.prototype.render = function (this: TW5WidgetInstance, parent: TW5FakeElement, _nextSibling: TW5FakeElement | null) {
-  this.parentDomNode = parent;
-  this.domNodes = [];
-  // Phase markers carry no visible output — phase metadata lives in the AST.
-};
-PaeWidget.prototype.execute = function (this: TW5WidgetInstance) { /* no children */ };
 ```
 
 <<~/ahu >>

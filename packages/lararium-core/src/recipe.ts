@@ -89,6 +89,13 @@ export interface RecipeTiddler {
    * Set to the highest-priority bag in the stack for typical recipe use.
    */
   readonly writableBag?: string;
+  /**
+   * Optional: vendored TW5 community plugin blob IDs to preload for this Recipe's vm.
+   * Each entry is the blob's id (e.g. "$:/plugins/sq/streams").
+   * When absent or empty, no vendored plugins are preloaded (minimal vm).
+   * Opt-in per Recipe — plugins are never forced into all vms.
+   */
+  readonly plugins?: readonly string[];
   /** ISO 8601 creation / last-update timestamp. */
   readonly updatedAt:  string;
   /** Authority that wrote this recipe tiddler. */
@@ -131,6 +138,15 @@ export function recipeUri(root: string, name: string): string {
  *
  * Meme: lar:///ha.ka.ba/@lararium/core/v0.1/recipe
  */
+/**
+ * Parse a plugins value from a recipe tiddler field into a string array.
+ * Same format as bagStack: space-separated blob IDs or JS array.
+ * Returns [] when absent — callers treat empty list as "no vendored plugins".
+ */
+export function parsePlugins(raw: unknown): string[] {
+  return parseBagStack(raw);
+}
+
 export function parseBagStack(raw: unknown): string[] {
   if (Array.isArray(raw)) {
     return (raw as unknown[]).filter((x): x is string => typeof x === "string");

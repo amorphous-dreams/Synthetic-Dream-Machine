@@ -11,7 +11,7 @@ heleuma       = "ka"
 source-file   = "packages/lararium-tw5/src/widgets/lele.ts"
 source-symbol = "LeleWidget"
 module-ref    = "lar:///ha.ka.ba/@lararium/tw5/widgets/lele-tw5"
-body-sha256 = "adf19c7be25695020e887074244464c00985e6c514af0f65661e084de4d6b3d4"
+body-sha256 = "7baf12b8660c497b5fd14eeb6a0de967c2282d342755ce6a7cc64379ca7a51d8"
 cacheable     = true
 retain        = true
 ```
@@ -31,20 +31,9 @@ retain        = true
 ## Source
 
 ```typescript
-function LeleWidget(this: TW5WidgetInstance, parseTreeNode: TW5ParseTreeNode, options: Record<string, unknown>) {
+export function LeleWidget(this: TW5WidgetInstance, parseTreeNode: TW5ParseTreeNode, options: Record<string, unknown>) {
   this.initialise(parseTreeNode, options);
 }
-LeleWidget.prototype.render = function (this: TW5WidgetInstance, parent: TW5FakeElement, _nextSibling: TW5FakeElement | null) {
-  this.parentDomNode = parent;
-  this.computeAttributes();
-  this.execute();
-  const el = this.document.createElement("meta");
-  el.setAttribute("data-lar-kind",   "lele");
-  el.setAttribute("data-lar-target", this.getAttribute("target", ""));
-  parent.appendChild(el);
-  this.domNodes = [el];
-};
-LeleWidget.prototype.execute = function (this: TW5WidgetInstance) { this.makeChildWidgets(); };
 ```
 
 <<~/ahu >>

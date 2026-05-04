@@ -11,7 +11,7 @@ heleuma       = "ka"
 source-file   = "packages/lararium-tw5/src/filters/implementors.ts"
 source-symbol = "registerImplementors"
 module-ref    = "lar:///ha.ka.ba/@lararium/tw5/filters/implementors-tw5"
-body-sha256 = "fbd384d6e9141948c21c973f9bd1d94ca6ca20707938cd2e9b542c03fae6003a"
+body-sha256 = "3d7ca785723817e6ec16315e9b0812ba1134d742c654ff7acbe7a6740de389cf"
 cacheable     = true
 retain        = true
 ```
@@ -31,17 +31,19 @@ retain        = true
 ## Source
 
 ```typescript
-tw.filterOperators["implementors"] = function (source: TW5FilterSource, operator: TW5FilterOperator) {
-  const target  = operator.operand ?? "";
-  const results: string[] = [];
-  source(function (tiddler, title: string) {
-    if (!tiddler) return;
-    const raw: string = String(tiddler.fields?.["implements"] ?? "");
-    const tokens: string[] = tw.utils.parseStringArray(raw) ?? [];
-    if (tokens.includes(target)) results.push(title);
-  });
-  return results;
-};
+export function registerImplementors(tw: TW5Instance): void {
+  tw.filterOperators["implementors"] = function (source: TW5FilterSource, operator: TW5FilterOperator) {
+    const target  = operator.operand ?? "";
+    const results: string[] = [];
+    source(function (tiddler, title: string) {
+      if (!tiddler) return;
+      const raw: string    = String(tiddler.fields?.["implements"] ?? "");
+      const tokens: string[] = tw.utils.parseStringArray(raw) ?? [];
+      if (tokens.includes(target)) results.push(title);
+    });
+    return results;
+  };
+}
 ```
 
 <<~/ahu >>

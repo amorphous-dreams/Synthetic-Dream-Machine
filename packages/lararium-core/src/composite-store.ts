@@ -31,7 +31,7 @@ import {
   roomLarUri,
 } from "./lararium-doc.js";
 import type { RecipeTiddler } from "./recipe.js";
-import { parseBagStack } from "./recipe.js";
+import { parseBagStack, parsePlugins } from "./recipe.js";
 
 // Re-export so callers get bag IDs and URI helpers from a single import.
 export { corpusLarUri as corpusBagId, roomLarUri as roomBagId };
@@ -248,11 +248,13 @@ export class CompositeStore implements LarTiddlerStore {
     const bagStack = parseBagStack(rec.fields["bagStack"]);
     if (bagStack.length === 0) return null;
     const writableBag = rec.fields["writableBag"] as string | undefined;
+    const plugins = parsePlugins(rec.fields["plugins"]);
     return {
       title:     rec.title,
       label:     (rec.fields["label"] as string) ?? rec.title,
       bagStack,
       ...(writableBag !== undefined ? { writableBag } : {}),
+      ...(plugins.length > 0 ? { plugins } : {}),
       updatedAt: (rec.fields["updatedAt"] as string) ?? new Date().toISOString(),
       authority: (rec.fields["authority"] as string) ?? "unknown",
       bag:       (rec.fields["bag"] as string) ?? "",

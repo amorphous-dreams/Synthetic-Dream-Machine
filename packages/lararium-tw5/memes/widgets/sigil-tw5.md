@@ -15,21 +15,40 @@ source-file   = "packages/lararium-tw5/src/tw5-widgets.ts"
 ```
 
 <<~&#x0002;>>
-(function(){
-"use strict";
-exports.sigil = function SigilWidget(parseTreeNode, options) { this.initialise(parseTreeNode, options); };
-exports.sigil.prototype.render = function(parent, nextSibling) {
-  this.parentDomNode = parent;
-  this.computeAttributes();
-  this.execute();
-  var el = this.document.createElement("span");
-  el.setAttribute("data-lar-kind",  "sigil");
-  el.setAttribute("data-lar-sigil", this.parseTreeNode?.tag ?? "");
-  parent.appendChild(el);
-  this.domNodes = [el];
-  this.renderChildren(el, nextSibling);
+
+Object.defineProperty(exports, Symbol.toStringTag, { value: "Module" });
+//#region src/widgets/sigil.ts
+function SigilWidget(parseTreeNode, options) {
+	this.initialise(parseTreeNode, options);
+}
+SigilWidget.prototype.render = function(parent, nextSibling) {
+	this.parentDomNode = parent;
+	this.computeAttributes();
+	this.execute();
+	const el = this.document.createElement("span");
+	el.setAttribute("data-lar-kind", "sigil");
+	el.setAttribute("data-lar-sigil", this.parseTreeNode?.tag ?? "");
+	parent.appendChild(el);
+	this.domNodes = [el];
+	this.renderChildren(el, nextSibling);
 };
-exports.sigil.prototype.execute = function() { this.makeChildWidgets(); };
-})();
+SigilWidget.prototype.execute = function() {
+	this.makeChildWidgets();
+};
+//#endregion
+exports.SigilWidget = SigilWidget;
+
 <<~&#x0003;>>
+
+<<~ ahu #source >>
+
+## Source
+
+Compiled IIFE artifact. Canonical TS source: `packages/lararium-tw5/src/tw5-widgets.ts` (`source-symbol = "SigilWidget"`).
+Anchor meme: `lar:///ha.ka.ba/@lararium/tw5/widgets/sigil`.
+
+Run `pnpm --filter @lararium/tw5 build:tiddlers` to regenerate.
+
+<<~/ahu >>
+
 <<~&#x0004; -> ? >>

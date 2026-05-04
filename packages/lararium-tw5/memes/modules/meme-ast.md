@@ -15,7 +15,7 @@ source-file  = "packages/lararium-tw5/src/meme-ast-entry.ts"
 source-symbol = "parseMemeText"
 module-ref   = "lar:///ha.ka.ba/@lararium/tw5/modules/meme-ast-tw5"
 implements   = ["lar:///ha.ka.ba/@lares/api/v0.1/pono/heleuma/ka"]
-body-sha256  = ""
+body-sha256 = "a31316c2e25c7209328b72006b8cfa76a65365403452a630b397508083e9a2ad"
 ```
 
 

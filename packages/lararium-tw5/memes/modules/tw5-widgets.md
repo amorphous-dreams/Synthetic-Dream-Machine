@@ -76,6 +76,43 @@ fields = [
 
 <<~/ahu >>
 
+<<~ ahu #source >>
+
+## Source
+
+`packages/lararium-tw5/src/tw5-widgets.ts` — barrel re-export; not packageable as standalone IIFE (spans multiple widget files + memetic-parser).
+
+```typescript
+// Widget registry — re-exports all widget classes and wires TW5 tag name mapping.
+// Each widget lives in src/widgets/{name}.ts; each filter in src/filters/{name}.ts.
+export { PranalaWidget }  from "./widgets/pranala.js";
+export { PaeWidget }      from "./widgets/pae.js";
+export { LeleWidget }     from "./widgets/lele.js";
+export { PapaloheWidget } from "./widgets/papalohe.js";
+export { KukaliWidget }   from "./widgets/kukali.js";
+export { TomlWidget }     from "./widgets/toml.js";
+export { SigilWidget }    from "./widgets/sigil.js";
+export { DynamicWidget }  from "./widgets/dynamic.js";
+export { AhuWidget }      from "./widgets/ahu.js";
+export { KumuWidget }     from "./widgets/kumu.js";
+export { KauWidget }      from "./widgets/kau.js";
+
+export function createLarariumWidgets(_tw: TW5Instance): Record<string, WidgetCtorWithProto> {
+  return {
+    "ahu":      AhuWidget,      "pranala":  PranalaWidget,
+    "papalohe": PapaloheWidget, "lele":     LeleWidget,
+    "kukali":   KukaliWidget,   "toml":     TomlWidget,
+    "sigil":    SigilWidget,    "dynamic":  DynamicWidget,
+    "kumu":     KumuWidget,     "pae":      PaeWidget,
+    "kau":      KauWidget,
+  };
+}
+// Full source: packages/lararium-tw5/src/tw5-widgets.ts
+// Compiled bundle: lar:///ha.ka.ba/@lararium/tw5/modules/tw5-modules (application/javascript library)
+```
+
+<<~/ahu >>
+
 <<~ ahu #edges >>
 
 <<~ pranala #to-node-host ? -> lar:///ha.ka.ba/@lararium/tw5/modules/node-host family:control role:depends >>

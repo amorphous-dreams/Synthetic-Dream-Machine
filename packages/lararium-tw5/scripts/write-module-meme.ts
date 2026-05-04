@@ -1,5 +1,5 @@
 /**
- * write-module-meme.ts — postbuild: splice IIFE bundle + body-sha256 into the tw5-modules meme.
+ * write-module-meme.ts — postbuild: splice CJS bundle + body-sha256 into the tw5-modules meme.
  *
  * 1. Reads dist-bundle/lararium-tw5-modules.iife.js
  * 2. Computes SHA-256 of the bundle text
@@ -16,7 +16,7 @@ import { fileURLToPath } from "url";
 import { tw5MemesRoot } from "@lararium/tw5/tw5-memes-root";
 
 const __dirname  = dirname(fileURLToPath(import.meta.url));
-const bundlePath = resolve(__dirname, "../dist-bundle/lararium-tw5-modules.iife.js");
+const bundlePath = resolve(__dirname, "../dist-bundle/lararium-tw5-modules.tw5.js");
 const memePath   = join(tw5MemesRoot, "modules/tw5-modules.md");
 
 const bundle = readFileSync(bundlePath, "utf8").trimEnd();

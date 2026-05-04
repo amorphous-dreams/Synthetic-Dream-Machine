@@ -17,6 +17,9 @@
  * Multiple rooms → multiple openNodeLarPeer calls, one LarPeer per DocHandle.
  *
  * FPI-5 (trim tab): all Node-specific code lives here.
+ *
+ * Boot phases: 10 LarOpenPhase transitions emitted; see LarOpenPhase in @lararium/core.
+ * waitHandleLocal: uses DocHandle.merge() (present in @automerge/automerge-repo@2.5.5).
  */
 
 import { readFileSync, writeFileSync, mkdirSync } from "fs";
@@ -40,7 +43,8 @@ import {
   VmPool,
 }                                       from "@lararium/core";
 import type { MemeRecipeVm, LarOpenPhase } from "@lararium/core";
-import { TW5Engine, MemeSyncAdaptor, DirectMemeRecipeVm } from "@lararium/tw5";
+import { TW5Engine, MemeSyncAdaptor, DirectMemeRecipeVm, buildCeremonyTiddlers } from "@lararium/tw5";
+import type { OperatorIdentity } from "./operator-key.js";
 import {
   seedLarariumDoc,
   seedLaresDoc,
@@ -72,6 +76,13 @@ export interface NodeLarPeerOptions {
    */
   recipeUri?: string;
   onPhase?:   (phase: NodeOpenPhase) => void;
+  /**
+   * Device Ed25519 operator identity for the cold-boot ceremony.
+   * When present and IdentitiesDoc is freshly seeded (void-start), the ceremony
+   * writes an IdentityTiddler + operators GroupTiddler into the social docs.
+   * Omitting this skips the ceremony (useful for tests / replica nodes).
+   */
+  operatorIdentity?: OperatorIdentity;
   /**
    * Optional factory for the per-recipe VM.  Defaults to DirectMemeRecipeVm (same-thread).
    * Pass a TW5WorkerProxy factory for Worker isolation (Sprint 6 node Worker isolation).
@@ -109,7 +120,7 @@ async function waitHandleLocal<T>(
   fallbackFn: () => DocHandle<T>,
 ): Promise<DocHandle<T>> {
   const progress = repo.findWithProgress<T>(url);
-  const handle: DocHandle<T> = "subscribe" in progress ? progress.handle : progress.handle;
+  const handle = progress.handle;
   const localReady = await Promise.race([
     handle.whenReady().then(() => true),
     new Promise<false>((r) => setTimeout(() => r(false), LOCAL_READY_MS)),
@@ -121,7 +132,7 @@ async function waitHandleLocal<T>(
 }
 
 export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLarPeerResult> {
-  const { hostId, roomId, storageDir, wss, catalogUrl, recipeUri: recipeUriOpt, onPhase, vmFactory } = opts;
+  const { hostId, roomId, storageDir, wss, catalogUrl, recipeUri: recipeUriOpt, onPhase, vmFactory, operatorIdentity } = opts;
   const emit = (p: NodeOpenPhase) => onPhase?.(p);
   // Stable identity URI for this room — the map key in CatalogDoc.rooms.
   const roomKey = roomLarUri(roomId);
@@ -252,8 +263,10 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
   let identitiesHandle: DocHandle<IdentitiesDoc> | null = null;
   let groupsHandle: DocHandle<GroupsDoc> | null = null;
   let sessionsHandle: DocHandle<SessionsDoc> | null = null;
+  let socialPlaneIsNew = false;
   if (islandHandle) {
     const identitiesUrl = islandHandle.doc()?.tiddlers?.[IDENTITIES_DOC_URI]?.text ?? null;
+    socialPlaneIsNew    = identitiesUrl === null;
     identitiesHandle = identitiesUrl
       ? await waitHandleLocal<IdentitiesDoc>(repo, identitiesUrl as AutomergeUrl, () => repo.create<IdentitiesDoc>(emptyIdentitiesDoc()))
       : seedIdentitiesDoc(repo);
@@ -270,6 +283,29 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
       ? await waitHandleLocal<SessionsDoc>(repo, sessionsUrl as AutomergeUrl, () => repo.create<SessionsDoc>(emptySessionsDoc()))
       : seedSessionsDoc(repo);
     composite.addLayer({ bagId: BAG_IDS.sessions, store: new AutomergeDocStore(sessionsHandle, BAG_IDS.sessions), writable: false });
+
+    // Cold-boot ceremony: write operator principal on void-start.
+    // Runs before TW5 boots so the sync adaptor picks up the tiddlers on first load.
+    // Guard: skip if identity tiddler already exists (idempotent across replica boots).
+    if (socialPlaneIsNew && operatorIdentity && identitiesHandle && groupsHandle) {
+      const tiddlers = buildCeremonyTiddlers(operatorIdentity.verifyingKey, operatorIdentity.displayName);
+      for (const t of tiddlers) {
+        if (t.bag === (IDENTITIES_DOC_URI as string)) {
+          identitiesHandle.change((doc) => {
+            if (!doc.tiddlers[t.title]) {
+              doc.tiddlers[t.title] = { title: t.title, bag: t.bag, authority: t.authority, fields: { ...t.fields } };
+            }
+          });
+        } else {
+          groupsHandle.change((doc) => {
+            if (!doc.tiddlers[t.title]) {
+              doc.tiddlers[t.title] = { title: t.title, bag: t.bag, authority: t.authority, fields: { ...t.fields } };
+            }
+          });
+        }
+      }
+      console.log(`[lararium] cold-boot ceremony complete — operator did:key written to IdentitiesDoc`);
+    }
 
     // Zelenka: keep oracle tiddlers current on every boot — self, ka, ba, social plane.
     reconcileWellKnownTiddlers(
@@ -396,9 +432,9 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
   const vmBagStack: readonly string[] = vmRecipe?.bagStack ?? composite.layerIds;
 
   // Decode lares plugin + vendor plugin blobs from the island doc.
-  // "lararium-lares" is a TW5 plugin tiddler (type: application/json, plugin-type: plugin).
-  // Vendor blobs are keyed by their TW5 plugin title (e.g. "$:/plugins/sq/streams").
-  // TW5's preloadTiddlers mechanism unpacks plugin bundles automatically at boot.
+  // "lararium-lares" is always preloaded — it is the lares corpus plugin, not optional.
+  // Vendored community plugins ($:/plugins/*) are opt-in per Recipe via the plugins field.
+  // When the resolved Recipe declares no plugins, no vendored plugins are preloaded.
   const tw5 = new TW5Engine();
   const blobs = islandHandle?.doc()?.blobs ?? {};
   const preloadedTiddlers: Array<Record<string, unknown>> = [];
@@ -412,8 +448,11 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
     } catch { /* malformed — skip */ }
   }
 
+  // Only preload vendored plugins declared in the resolved Recipe's plugins list.
+  const recipePlugins = new Set(vmRecipe?.plugins ?? []);
   for (const [id, entry] of Object.entries(blobs)) {
     if (!id.startsWith("$:/plugins/")) continue;
+    if (!recipePlugins.has(id)) continue;
     try {
       const parsed = JSON.parse(new TextDecoder().decode(new Uint8Array(entry.blob))) as unknown;
       const arr = Array.isArray(parsed) ? parsed : [parsed];

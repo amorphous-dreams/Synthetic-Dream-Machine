@@ -31,8 +31,9 @@
  */
 
 import { readFileSync, writeFileSync, readdirSync, statSync, mkdirSync, existsSync } from "fs";
+import { execSync } from "child_process";
 import { createHash } from "crypto";
-import { resolve, relative } from "path";
+import { resolve, relative, dirname } from "path";
 import { fileURLToPath } from "url";
 import { repoRoot } from "@lares/lares";
 
@@ -90,7 +91,12 @@ function walkExt(dir: string, ext: string): string[] {
 function extractSymbol(srcPath: string, symbol: string): string | null {
   const absPath = resolve(root, srcPath);
   if (!existsSync(absPath)) return null;
-  const src   = readFileSync(absPath, "utf8");
+  const src = readFileSync(absPath, "utf8");
+
+  // "*" = whole file — for small composable TS modules where the file IS the source.
+  // build:heleuma places the full TS file in the #source ahu; small files are required.
+  if (symbol === "*") return src;
+
   const lines = src.split("\n");
   const declRe = new RegExp(
     `^\\s*(export\\s+)?(const\\s+|private\\s+|public\\s+|protected\\s+|static\\s+|async\\s+|function\\s+)*${symbol}\\s*(?::[^=(]*)?\\s*(\\(|=)`
@@ -718,7 +724,13 @@ if (SYNC_MODULES) {
 }
 
 if (COMMIT) {
-  console.log("[heleuma] --commit: patching #source slots to match live TS source\n");
+  // build:heleuma owns all TS → IIFE packaging.
+  // Run write-tiddler-memes.ts first so IIFE bodies are spliced into *-tw5.md tiddlers
+  // before the #source + body-sha256 drift check runs.
+  const scriptsDir = dirname(fileURLToPath(import.meta.url));
+  console.log("[heleuma] --commit: building IIFEs and splicing into module tiddlers…\n");
+  execSync(`tsx ${resolve(scriptsDir, "write-tiddler-memes.ts")}`, { stdio: "inherit" });
+  console.log("\n[heleuma] --commit: patching #source slots to match live TS source\n");
 } else {
   console.log("[heleuma] dry-run (pass --commit to patch, --scan to find candidates, --scan-promote to find corpus candidates)\n");
 }

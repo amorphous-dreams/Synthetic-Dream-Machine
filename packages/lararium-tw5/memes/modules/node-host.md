@@ -16,7 +16,7 @@ cacheable     = true
 retain        = true
 status-date   = "2026-04-30"
 source-file   = "packages/lararium-node/src/node-host.ts"
-source-symbol = "INTERFACE_URIS LARES_ROOT"
+source-symbol = "*"
 ```
 
 
@@ -91,6 +91,41 @@ canvas-api-fire  = "/api/fire"
 # Write guard env
 env-write-mode = "LARARIUM_WRITE_MODE"
 write-mode-value-required = "enabled"
+```
+
+<<~/ahu >>
+
+<<~ ahu #source >>
+
+## Source
+
+`packages/lararium-node/src/node-host.ts` — not packageable as IIFE (Node-only path resolution, `@lares/lares` import).
+
+```typescript
+/**
+ * @deprecated web2-era — all functions dead. See node-host.web2.ts for the original.
+ * Rebuild target: meme-node-host.ts
+ *   readCarrier        → readMeme (parseMemeText from @lararium/core/meme-ast)
+ *   compileCarrierIndex → compileMemeIndex (MemeRecord not CarrierRecord)
+ *   compileBootArtifact → compileBootArtifact (same shape; new parser)
+ *   loadGrammarRules   → grammarRulesFromText (@lararium/core/meme-grammar)
+ */
+
+import { join } from "path";
+import { laresRoot, repoRoot } from "@lares/lares";
+import { chapelRoot } from "@lares/chapel-perilous-opens";
+
+export const LARES_ROOT        = laresRoot;
+export const LARES_MEMES_ROOT  = join(laresRoot, "memes");
+export const CHAPEL_MEMES_ROOT = join(chapelRoot, "memes");
+export const REPO_ROOT         = repoRoot;
+
+export interface CorpusSource {
+  name:   string;
+  path:   string;
+  bag:    string;
+  quine?: true;
+}
 ```
 
 <<~/ahu >>

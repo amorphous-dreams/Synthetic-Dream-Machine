@@ -32,6 +32,7 @@ import { createServer }                  from "http";
 import WebSocket                         from "isomorphic-ws";
 import { resolve }                       from "path";
 import { openNodeLarPeer }               from "./open-node-lar-peer.js";
+import { generateOrLoadOperatorKeypair } from "./operator-key.js";
 import { LarDiskProjector }              from "./disk-projector.js";
 import { LARES_MEMES_ROOT }              from "./node-host.js";
 import { ReactionEngine }                from "@lararium/core";
@@ -114,12 +115,16 @@ async function main(): Promise<void> {
     console.log(`[lararium] HTTP+WS server on :${port}  (GET /api/health  WS /ws)`);
   });
 
+  // keypair-precedes-docs: generate/load device Ed25519 identity before any doc opens.
+  const operatorIdentity = await generateOrLoadOperatorKeypair(storageDir);
+
   const result = await openNodeLarPeer({
     hostId:     "lararium-node",
     roomId,
     storageDir,
     wss,
     catalogUrl,
+    operatorIdentity,
     onPhase: (phase) => {
       state.phase = phase;
       console.log(`[lararium] phase → ${phase}`);

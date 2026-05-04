@@ -15,15 +15,31 @@ source-file   = "packages/lararium-tw5/src/tw5-widgets.ts"
 ```
 
 <<~&#x0002;>>
-(function(){
-"use strict";
-exports.pae = function PaeWidget(parseTreeNode, options) { this.initialise(parseTreeNode, options); };
-exports.pae.prototype.render = function(parent, _nextSibling) {
-  this.parentDomNode = parent;
-  this.domNodes = [];
-  // Phase markers carry no visible output — phase metadata lives in the AST.
+
+Object.defineProperty(exports, Symbol.toStringTag, { value: "Module" });
+//#region src/widgets/pae.ts
+function PaeWidget(parseTreeNode, options) {
+	this.initialise(parseTreeNode, options);
+}
+PaeWidget.prototype.render = function(parent, _nextSibling) {
+	this.parentDomNode = parent;
+	this.domNodes = [];
 };
-exports.pae.prototype.execute = function() { /* no children */ };
-})();
+PaeWidget.prototype.execute = function() {};
+//#endregion
+exports.PaeWidget = PaeWidget;
+
 <<~&#x0003;>>
+
+<<~ ahu #source >>
+
+## Source
+
+Compiled IIFE artifact. Canonical TS source: `packages/lararium-tw5/src/tw5-widgets.ts` (`source-symbol = "PaeWidget"`).
+Anchor meme: `lar:///ha.ka.ba/@lararium/tw5/widgets/pae`.
+
+Run `pnpm --filter @lararium/tw5 build:tiddlers` to regenerate.
+
+<<~/ahu >>
+
 <<~&#x0004; -> ? >>
