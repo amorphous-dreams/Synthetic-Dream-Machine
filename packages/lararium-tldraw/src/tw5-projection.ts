@@ -56,20 +56,17 @@ function closureEntryFromTiddler(uri: string, fields: Record<string, any>): Clos
 // ---------------------------------------------------------------------------
 
 export function projectFromTw5(tw5: TW5Engine): TldrawEmission {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const wiki = tw5.wiki as any;
-
   const uris = tw5.filterTiddlers("[all[tiddlers]prefix[lar:]]");
   const closure: ClosureEntry[] = [];
 
   for (const uri of uris) {
-    const tiddler = wiki.getTiddler?.(uri);
-    if (!tiddler) continue;
-    closure.push(closureEntryFromTiddler(uri, tiddler.fields ?? {}));
+    const fields = tw5.getTiddler(uri);
+    if (!fields) continue;
+    closure.push(closureEntryFromTiddler(uri, fields));
   }
 
   const readText = (uri: string): string | null =>
-    wiki.getTiddlerText?.(uri) ?? null;
+    tw5.getTiddlerText(uri) ?? null;
 
   // Minimal BootArtifact — renderToTldraw only reads artifact/closure/compiledAt/memeCount
   const artifact = {

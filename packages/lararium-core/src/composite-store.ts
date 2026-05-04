@@ -92,9 +92,11 @@ export interface CompositeLayer {
 
 export class CompositeStore implements LarTiddlerStore {
   // Ordered lowest-priority → highest-priority.
-  private readonly layers:   CompositeLayer[] = [];
-  private readonly listeners: Set<(change: LarTiddlerChange) => void> = new Set();
-  private readonly unsubs:   Map<LarTiddlerStore, () => void> = new Map();
+  private readonly layers:      CompositeLayer[] = [];
+  private readonly listeners:   Set<(change: LarTiddlerChange) => void> = new Set();
+  private readonly unsubs:      Map<LarTiddlerStore, () => void> = new Map();
+  /** Active projections — fanned to every layer and to layers added in the future. */
+  private readonly projections: Map<MemeProjection, Array<() => void>> = new Map();
 
   /** The single writable store — must be registered via addLayer with writable:true. */
   private writableStore: LarTiddlerStore | null = null;
@@ -113,6 +115,14 @@ export class CompositeStore implements LarTiddlerStore {
       this.listeners.forEach((fn) => fn(change));
     });
     this.unsubs.set(layer.store, unsub);
+
+    // Fan any active projections to this new layer (dynamic registration law).
+    for (const [projection, unsubs] of this.projections) {
+      const layerUnsub = typeof layer.store.addProjection === "function"
+        ? layer.store.addProjection(projection)
+        : layer.store.subscribe((change) => projection.onUriChanged(change));
+      unsubs.push(layerUnsub);
+    }
 
     // Emit synthetic "put" events for tiddlers already in the arriving layer
     // so subscribers (e.g. LarariumCrdtSyncAdaptor) see existing content.
@@ -166,6 +176,12 @@ export class CompositeStore implements LarTiddlerStore {
   }
 
   async put(record: LarTiddlerRecord, origin: ChangeOrigin): Promise<void> {
+    // Route to the layer whose bagId matches record.bag (if that layer is writable).
+    // Falls back to writableStore (last registered writable) for unbagged records.
+    if (record.bag) {
+      const bagLayer = this.layers.find((l) => l.bagId === record.bag && l.writable);
+      if (bagLayer) return bagLayer.store.put(record, origin);
+    }
     if (!this.writableStore) throw new Error("CompositeStore: no writable layer registered");
     return this.writableStore.put(record, origin);
   }
@@ -199,7 +215,12 @@ export class CompositeStore implements LarTiddlerStore {
         ? layer.store.addProjection(p)
         : layer.store.subscribe((change) => p.onUriChanged(change)),
     );
-    return () => { for (const u of unsubs) u(); };
+    // Store so future addLayer() calls fan this projection to new layers.
+    this.projections.set(p, unsubs);
+    return () => {
+      for (const u of unsubs) u();
+      this.projections.delete(p);
+    };
   }
 
   get layerCount(): number { return this.layers.length; }

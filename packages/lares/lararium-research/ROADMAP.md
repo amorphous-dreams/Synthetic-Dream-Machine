@@ -2978,5 +2978,45 @@ descriptor tiddler in `tiddlers` — queryable from TW5 without TS interop.
 
 <<~/ahu >>
 
+<<~ ahu #m25-loop2-qa-gap-survey-2026-05-03 >>
+
+## M25 Loop 2 — QA Gap Survey + Sync Bridge Tests (2026-05-03)
+
+**Scope:** Rebuilt from void. Surveyed all packages for gaps blocking real web3 session QA. Executed highest-priority fixes.
+
+**Changes delivered:**
+
+| File | Change |
+|---|---|
+| `open-node-lar-peer.ts` | Oracle tiddler pattern for room + draft URL (mirrors browser peer M25 Loop 1); typed writes; `draftKey` → `draftTiddlerKey`; 4 `as any` removed |
+| `tests/meme-sync-adaptor.test.ts` (NEW) | `FakeTW5Engine` stub + 15 tests: lifecycle / inbound / outbound / echo-loop-guard |
+| `composite-store.test.ts` | 4 `addProjection` fan-out tests appended |
+
+**Gaps surfaced (OODA-HA orient):**
+
+| Gap | Impact | Status |
+|---|---|---|
+| Node peer room/draft oracle divergence | Rendezvous broken for real multi-peer sync | **Fixed** |
+| `MemeSyncAdaptor` zero tests | Sync bridge regressions invisible | **Fixed** |
+| `CompositeStore.addProjection` zero tests | M25 Loop 1 fan-out feature untested | **Fixed** |
+| Island doc `as any` in node peer | Type safety; non-blocking | M25 Loop 3 |
+| `lararium-island.ts` tiddler casts × 10+ | Type hygiene | M25 Loop 3 |
+| `putViaRecipe` routing in adaptor | Wrong write destination | M25 Loop 3 |
+| tldraw `(ed.store as any).put()` × 3 | Wiki-first violation | M25 Loop 3 |
+| MCP `hud`/`receipt` pre-existing | Storage dir absent in test | M25 Loop 3 |
+
+**Test gate:** 172/172 tests pass (79 core + 52 tw5 + 25 tldraw + 16 node). Build clean.
+
+↺ **M25 Loop 3 candidates:**
+- Node peer island doc registration: `(doc as any).larariumDoc` → oracle tiddler in catalog
+- `lararium-island.ts` cast cleanup (× 10+)
+- `putViaRecipe` adaptor injection
+- `CompositeStore.addProjection` dynamic layers (corpus added after start)
+- tldraw wiki-first migration
+- Draft bag stable lar: URI
+- MCP `hud`/`receipt` storage-dir fix
+
+<<~/ahu >>
+
 
 <<~&#x0004; -> ? >>

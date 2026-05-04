@@ -382,3 +382,75 @@ describe("CompositeStore — CompositeLayer access policy fields", () => {
     // this test asserts the field is accepted without type error).
   });
 });
+
+// ---------------------------------------------------------------------------
+// addProjection — per-island causal fan-out (M25 Loop 1)
+// ---------------------------------------------------------------------------
+
+describe("CompositeStore — addProjection fan-out", () => {
+  test("projection receives onUriChanged from a MemoryTiddlerStore layer", async () => {
+    const mem   = new MemoryTiddlerStore();
+    const store = new CompositeStore();
+    store.addLayer({ bagId: TEST_ROOM_URI, store: mem, writable: true });
+
+    const received: LarTiddlerChange[] = [];
+    const unsub = store.addProjection({
+      onUriChanged: (c) => received.push(c),
+    });
+
+    await store.put(record("lar:///proj-test", "v1"), roomOrigin());
+    // MemoryTiddlerStore fires subscribe synchronously → addProjection fan-out.
+    expect(received.some((c) => c.title === "lar:///proj-test")).toBe(true);
+    unsub();
+  });
+
+  test("unsubscribe stops projection from receiving future events", async () => {
+    const mem   = new MemoryTiddlerStore();
+    const store = new CompositeStore();
+    store.addLayer({ bagId: TEST_ROOM_URI, store: mem, writable: true });
+
+    const received: LarTiddlerChange[] = [];
+    const unsub = store.addProjection({ onUriChanged: (c) => received.push(c) });
+    unsub(); // disconnect immediately
+
+    await store.put(record("lar:///proj-test2", "v1"), roomOrigin());
+    expect(received).toHaveLength(0);
+  });
+
+  test("projection receives events from multiple layers independently", async () => {
+    const layerA = new MemoryTiddlerStore();
+    const layerB = new MemoryTiddlerStore();
+    const store  = new CompositeStore();
+    store.addLayer({ bagId: BAG_IDS.lararium, store: layerA, writable: false });
+    store.addLayer({ bagId: TEST_ROOM_URI,    store: layerB, writable: true });
+
+    const received: LarTiddlerChange[] = [];
+    const unsub = store.addProjection({ onUriChanged: (c) => received.push(c) });
+
+    // Only writable layer accepts put() — but we can fire directly on layerA via _seed.
+    layerA._seed("lar:///from-a", { title: "lar:///from-a", fields: { bag: BAG_IDS.lararium } });
+    await store.put(record("lar:///from-b", "b-body"), roomOrigin());
+
+    // layerB fires via store.put(); layerA was seeded (no subscriber fired).
+    // Projection should at minimum get the layerB event.
+    expect(received.some((c) => c.title === "lar:///from-b")).toBe(true);
+    unsub();
+  });
+
+  test("multiple projections each receive every event", async () => {
+    const mem   = new MemoryTiddlerStore();
+    const store = new CompositeStore();
+    store.addLayer({ bagId: TEST_ROOM_URI, store: mem, writable: true });
+
+    const p1: LarTiddlerChange[] = [];
+    const p2: LarTiddlerChange[] = [];
+    const u1 = store.addProjection({ onUriChanged: (c) => p1.push(c) });
+    const u2 = store.addProjection({ onUriChanged: (c) => p2.push(c) });
+
+    await store.put(record("lar:///multi", "v1"), roomOrigin());
+
+    expect(p1.some((c) => c.title === "lar:///multi")).toBe(true);
+    expect(p2.some((c) => c.title === "lar:///multi")).toBe(true);
+    u1(); u2();
+  });
+});

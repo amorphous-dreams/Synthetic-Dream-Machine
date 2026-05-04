@@ -270,8 +270,7 @@ export async function seedLarariumDoc(
   snapshotVm.dispose();
 
   handle.change((doc) => {
-    const titles = (doc as unknown as { systemTitles?: string[] }).systemTitles;
-    if (titles) titles.splice(0, titles.length, ...systemTitles);
+    if (doc.systemTitles) (doc.systemTitles as string[]).splice(0, doc.systemTitles.length, ...systemTitles);
   });
 
   // Pack lares memes into a TW5 plugin blob via Seed VM.
@@ -298,14 +297,13 @@ export async function seedLarariumDoc(
   // ha → ba edge : LARES_DOC_URI    → omitted here; written by reconcileWellKnownTiddlers
   //                                   once the LaresDoc handle exists.
   handle.change((doc) => {
-    const tiddlers = (doc as unknown as { tiddlers: Record<string, unknown> }).tiddlers;
-    tiddlers[LARARIUM_DOC_URI] = {
-      title: LARARIUM_DOC_URI, text: handle.url,
+    doc.tiddlers[LARARIUM_DOC_URI] = {
+      title: LARARIUM_DOC_URI, text: handle.url, fields: {},
       bag: LARARIUM_DOC_URI, authority: "lararium-seed",
     };
     if (catalogUrl) {
-      tiddlers[CATALOG_DOC_URI] = {
-        title: CATALOG_DOC_URI, text: catalogUrl,
+      doc.tiddlers[CATALOG_DOC_URI] = {
+        title: CATALOG_DOC_URI, text: catalogUrl, fields: {},
         bag: LARARIUM_DOC_URI, authority: "lararium-seed",
       };
     }
@@ -347,40 +345,39 @@ export function reconcileWellKnownTiddlers(
   if (selfOk && catOk && baOk && idOk && grOk && seOk) return;
 
   handle.change((d) => {
-    const t = (d as unknown as { tiddlers: Record<string, unknown> }).tiddlers;
     if (!selfOk) {
-      t[LARARIUM_DOC_URI] = {
-        title: LARARIUM_DOC_URI, text: handle.url,
+      d.tiddlers[LARARIUM_DOC_URI] = {
+        title: LARARIUM_DOC_URI, text: handle.url, fields: {},
         bag: LARARIUM_DOC_URI, authority: "lararium-seed",
       };
     }
     if (!catOk) {
-      t[CATALOG_DOC_URI] = {
-        title: CATALOG_DOC_URI, text: catalogUrl,
+      d.tiddlers[CATALOG_DOC_URI] = {
+        title: CATALOG_DOC_URI, text: catalogUrl, fields: {},
         bag: LARARIUM_DOC_URI, authority: "lararium-seed",
       };
     }
     if (!baOk && laresUrl) {
-      t[LARES_DOC_URI] = {
-        title: LARES_DOC_URI, text: laresUrl,
+      d.tiddlers[LARES_DOC_URI] = {
+        title: LARES_DOC_URI, text: laresUrl, fields: {},
         bag: LARARIUM_DOC_URI, authority: "lararium-seed",
       };
     }
     if (!idOk && identitiesUrl) {
-      t[IDENTITIES_DOC_URI] = {
-        title: IDENTITIES_DOC_URI, text: identitiesUrl,
+      d.tiddlers[IDENTITIES_DOC_URI] = {
+        title: IDENTITIES_DOC_URI, text: identitiesUrl, fields: {},
         bag: LARARIUM_DOC_URI, authority: "lararium-seed",
       };
     }
     if (!grOk && groupsUrl) {
-      t[GROUPS_DOC_URI] = {
-        title: GROUPS_DOC_URI, text: groupsUrl,
+      d.tiddlers[GROUPS_DOC_URI] = {
+        title: GROUPS_DOC_URI, text: groupsUrl, fields: {},
         bag: LARARIUM_DOC_URI, authority: "lararium-seed",
       };
     }
     if (!seOk && sessionsUrl) {
-      t[SESSIONS_DOC_URI] = {
-        title: SESSIONS_DOC_URI, text: sessionsUrl,
+      d.tiddlers[SESSIONS_DOC_URI] = {
+        title: SESSIONS_DOC_URI, text: sessionsUrl, fields: {},
         bag: LARARIUM_DOC_URI, authority: "lararium-seed",
       };
     }
@@ -409,9 +406,8 @@ export function reconcileWellKnownTiddlers(
 export function seedLaresDoc(repo: Repo): DocHandle<MemeStoreDoc> {
   const handle = repo.create<MemeStoreDoc>(emptyMemeStoreDoc());
   handle.change((doc) => {
-    const t = (doc as unknown as { tiddlers: Record<string, unknown> }).tiddlers;
-    t[LARES_DOC_URI] = {
-      title: LARES_DOC_URI, text: handle.url,
+    doc.tiddlers[LARES_DOC_URI] = {
+      title: LARES_DOC_URI, text: handle.url, fields: {},
       bag: LARES_DOC_URI, authority: "lararium-seed",
     };
   });
@@ -431,9 +427,8 @@ export function seedLaresDoc(repo: Repo): DocHandle<MemeStoreDoc> {
 export function seedIdentitiesDoc(repo: Repo): DocHandle<IdentitiesDoc> {
   const handle = repo.create<IdentitiesDoc>(emptyIdentitiesDoc());
   handle.change((doc) => {
-    const t = (doc as unknown as { tiddlers: Record<string, unknown> }).tiddlers;
-    t[IDENTITIES_DOC_URI] = {
-      title: IDENTITIES_DOC_URI, text: handle.url,
+    doc.tiddlers[IDENTITIES_DOC_URI] = {
+      title: IDENTITIES_DOC_URI, text: handle.url, fields: {},
       bag: IDENTITIES_DOC_URI, authority: "lararium-seed",
     };
   });
@@ -449,9 +444,8 @@ export function seedIdentitiesDoc(repo: Repo): DocHandle<IdentitiesDoc> {
 export function seedGroupsDoc(repo: Repo): DocHandle<GroupsDoc> {
   const handle = repo.create<GroupsDoc>(emptyGroupsDoc());
   handle.change((doc) => {
-    const t = (doc as unknown as { tiddlers: Record<string, unknown> }).tiddlers;
-    t[GROUPS_DOC_URI] = {
-      title: GROUPS_DOC_URI, text: handle.url,
+    doc.tiddlers[GROUPS_DOC_URI] = {
+      title: GROUPS_DOC_URI, text: handle.url, fields: {},
       bag: GROUPS_DOC_URI, authority: "lararium-seed",
     };
   });
@@ -467,9 +461,8 @@ export function seedGroupsDoc(repo: Repo): DocHandle<GroupsDoc> {
 export function seedSessionsDoc(repo: Repo): DocHandle<SessionsDoc> {
   const handle = repo.create<SessionsDoc>(emptySessionsDoc());
   handle.change((doc) => {
-    const t = (doc as unknown as { tiddlers: Record<string, unknown> }).tiddlers;
-    t[SESSIONS_DOC_URI] = {
-      title: SESSIONS_DOC_URI, text: handle.url,
+    doc.tiddlers[SESSIONS_DOC_URI] = {
+      title: SESSIONS_DOC_URI, text: handle.url, fields: {},
       bag: SESSIONS_DOC_URI, authority: "lararium-seed",
     };
   });
@@ -504,21 +497,15 @@ export function seedDefaultRecipes(islandHandle: DocHandle<LarariumDoc>): void {
   const fullUri = recipeUri("@lararium", "full");
   if (!existingTiddlers[fullUri]) {
     islandHandle.change((doc) => {
-      const t = (doc as unknown as { tiddlers: Record<string, unknown> }).tiddlers;
-      t[fullUri] = {
+      // TW5 list format: space-separated lar: URIs (no spaces in URIs, no [[...]] needed).
+      // parseBagStack() on the TS side handles both string and array formats.
+      const bagStack = [
+        LARARIUM_DOC_URI, CATALOG_DOC_URI, LARES_DOC_URI,
+        IDENTITIES_DOC_URI, GROUPS_DOC_URI, SESSIONS_DOC_URI,
+      ].join(" ");
+      doc.tiddlers[fullUri] = {
         title: fullUri,
-        label: "Full (content + social plane)",
-        // TW5 list format: space-separated lar: URIs (no spaces in URIs, no [[...]] needed).
-        // parseBagStack() on the TS side handles both string and array formats.
-        bagStack: [
-          LARARIUM_DOC_URI,
-          CATALOG_DOC_URI,
-          LARES_DOC_URI,
-          IDENTITIES_DOC_URI,
-          GROUPS_DOC_URI,
-          SESSIONS_DOC_URI,
-        ].join(" "),
-        updatedAt: now,
+        fields: { label: "Full (content + social plane)", bagStack, updatedAt: now, authority: "lararium-seed", bag: LARARIUM_DOC_URI },
         authority: "lararium-seed",
         bag: LARARIUM_DOC_URI,
       };
@@ -529,12 +516,13 @@ export function seedDefaultRecipes(islandHandle: DocHandle<LarariumDoc>): void {
   const defaultUri = recipeUri("@lararium", "default");
   if (!existingTiddlers[defaultUri]) {
     islandHandle.change((doc) => {
-      const t = (doc as unknown as { tiddlers: Record<string, unknown> }).tiddlers;
-      t[defaultUri] = {
+      doc.tiddlers[defaultUri] = {
         title: defaultUri,
-        label: "Default (content Tiga)",
-        bagStack: [LARARIUM_DOC_URI, CATALOG_DOC_URI, LARES_DOC_URI].join(" "),
-        updatedAt: now,
+        fields: {
+          label: "Default (content Tiga)",
+          bagStack: [LARARIUM_DOC_URI, CATALOG_DOC_URI, LARES_DOC_URI].join(" "),
+          updatedAt: now, authority: "lararium-seed", bag: LARARIUM_DOC_URI,
+        },
         authority: "lararium-seed",
         bag: LARARIUM_DOC_URI,
       };
@@ -545,12 +533,13 @@ export function seedDefaultRecipes(islandHandle: DocHandle<LarariumDoc>): void {
   const catalogDefaultUri = recipeUri("@catalog", "default");
   if (!existingTiddlers[catalogDefaultUri]) {
     islandHandle.change((doc) => {
-      const t = (doc as unknown as { tiddlers: Record<string, unknown> }).tiddlers;
-      t[catalogDefaultUri] = {
+      doc.tiddlers[catalogDefaultUri] = {
         title: catalogDefaultUri,
-        label: "Catalog default (discovery + lares)",
-        bagStack: [CATALOG_DOC_URI, LARES_DOC_URI].join(" "),
-        updatedAt: now,
+        fields: {
+          label: "Catalog default (discovery + lares)",
+          bagStack: [CATALOG_DOC_URI, LARES_DOC_URI].join(" "),
+          updatedAt: now, authority: "lararium-seed", bag: LARARIUM_DOC_URI,
+        },
         authority: "lararium-seed",
         bag: LARARIUM_DOC_URI,
       };
@@ -603,15 +592,11 @@ export function seedBagDescriptors(islandHandle: DocHandle<LarariumDoc>): void {
     if (existingTiddlers[uri]) continue;
 
     islandHandle.change((doc) => {
-      const t = (doc as unknown as { tiddlers: Record<string, unknown> }).tiddlers;
-      t[uri] = {
-        title:       uri,
-        label,
-        readPolicy,
-        writePolicy,
-        updatedAt:   now,
-        authority:   "lararium-seed",
-        bag:         LARARIUM_DOC_URI,
+      doc.tiddlers[uri] = {
+        title: uri,
+        fields: { label, readPolicy, writePolicy, updatedAt: now, authority: "lararium-seed", bag: LARARIUM_DOC_URI },
+        authority: "lararium-seed",
+        bag:       LARARIUM_DOC_URI,
       };
     });
   }
@@ -657,8 +642,7 @@ export function seedBlobDescriptors(islandHandle: DocHandle<LarariumDoc>): void 
     if (existing?.fields?.["sha256"] === entry.sha256) continue;
 
     islandHandle.change((d) => {
-      const t = (d as unknown as { tiddlers: Record<string, unknown> }).tiddlers;
-      t[uri] = {
+      d.tiddlers[uri] = {
         title:     uri,
         text:      blobId,
         fields: {

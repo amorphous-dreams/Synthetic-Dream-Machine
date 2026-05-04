@@ -15,7 +15,7 @@ manao        = 0.87
 implements   = [
   "lar:///ha.ka.ba/@lares/api/v0.1/pono/meme"
 ]
-role         = "session handoff crystal — 2026-05-03 (session 10) — M25 Loop 1 complete: stack walked Automerge→Recipe→VM→UX; addProjection typed on LarTiddlerStore; CompositeStore fans projections per-island via MemeProviders; MemeSyncAdaptor.start() now called in browser boot (cascade watcher wired); getTiddler() wrapper on TW5Engine (wiki as any eliminated); VmPool slot keyed by resolvedRecipeUri; catalog/draft URLs migrate to tiddlers oracle (no more as any); legacy catalog-url localStorage key removed"
+role         = "session handoff crystal — 2026-05-03 (session 10) — M25 Loop 2 (partial): node peer oracle tiddler alignment; MemeSyncAdaptor 15 tests; CompositeStore.addProjection 4 tests; 172 passing (was 153)"
 ```
 
 <<~&#x0002;>>
@@ -867,6 +867,48 @@ Each corpus `MemeStoreDoc` carries `tiddlers[corpusLarUri(slug)]` self-ref tiddl
 ⤴ Build status: `@lararium/core` ✓ `@lararium/node` ✓ `@lararium/app` ✓
 
 ↺ Residue carried: isomorphic `AutomergeStoreBase`, grammar-wired deserializer, browser Playwright QA, `LarDiskProjector` migration.
+
+<<~/ahu >>
+
+<<~ ahu #ooda-ha-m25-loop2-qa-gap-survey-2026-05-03 >>
+
+## OODA-HA: M25 Loop 2 — QA Gap Survey + Sync Bridge Tests (2026-05-03)
+
+✶ **Observe:**
+Rebuilt from void. 153 tests passing, build clean. Surveying all packages revealed:
+- Node peer (`open-node-lar-peer.ts`) still wrote room/draft URLs to `catalog.rooms` (not oracle tiddlers) — diverged from browser peer fixed in M25 Loop 1. A browser peer syncing a catalog from a node peer would find `catalog.tiddlers[roomKey]?.text === undefined`; room discovery fails at rendezvous.
+- `MemeSyncAdaptor` (CRDT↔TW5 sync bridge) — **zero tests** despite carrying every session edit in both directions.
+- `CompositeStore.addProjection` (new M25 Loop 1 feature) — **zero coverage**.
+- MCP `hud`/`receipt` failures pre-existing — storage dir absent during test run.
+
+⏿ **Orient:**
+Gap A — **Rendezvous divergence**: Browser peer reads `catalog.tiddlers[roomKey]?.text`. Node peer wrote to `catalog.rooms[roomKey].contentDocUrl`. Two different schemas on the same CatalogDoc — real multi-peer sync collapses at room discovery. Oracle tiddler path = canonical; `catalog.rooms` = deprecated.
+
+Gap B — **Sync bridge untested**: `MemeSyncAdaptor` lifecycle, buffering per island until `onSyncComplete`, subscribe fallback path, outbound `saveTiddler → store.put()`, echo-loop guard — zero regression pressure.
+
+Gap C — **addProjection fan-out untested**: `CompositeStore.addProjection` was new in M25 Loop 1 with no test.
+
+◇ **Decide:**
+1. Mirror browser peer oracle tiddler fix to node peer (typed writes, remove `as any`).
+2. Write 15 `MemeSyncAdaptor` tests: lifecycle, inbound CRDT→TW5, outbound TW5→CRDT, echo-loop guard.
+3. Write 4 `CompositeStore.addProjection` tests.
+
+■ **Act:**
+  1. `open-node-lar-peer.ts` — `import type { MutableLarRecord }` from `@lararium/core`; room URL read: oracle tiddler first, legacy fallback retained; room write: `doc.tiddlers[roomKey] = { title, text: roomHandle.url, fields }` (typed); `draftKey` → `draftTiddlerKey = {roomKey}/drafts/{encodedDid}`; draft oracle read/write same pattern; removed 4 `as any` + eslint-disable comments.
+  2. `packages/lararium-tw5/tests/meme-sync-adaptor.test.ts` (NEW) — `FakeTW5Engine` stub; 15 tests: `start()` addProjection branch; `start()` subscribe fallback; `stop()` disconnects; `onUriChanged` buffering before sync; `onSyncComplete` flushes buffer; immediate apply after sync; tombstone; per-island; own-write suppression; `saveTiddler` for lar: title; skip for `$:/temp/`; skip for `$:/`; `deleteTiddler → tombstone`; echo-loop guard.
+  3. `composite-store.test.ts` — 4 new `addProjection` tests appended: single-layer fan-out; unsubscribe stops events; multi-layer fan-out; multiple projections each receive every event.
+
+⤴ **Advance:**
+172 tests pass (79 core + 52 tw5 + 25 tldraw + 16 node). Build clean. Node and browser peers now use the same oracle tiddler schema for room/draft rendezvous. `MemeSyncAdaptor` lifecycle, inbound/outbound sync, and echo-loop guard carry test contracts.
+
+↺ **M25 Loop 3 candidates:**
+- Node peer island doc registration: `(doc as any).larariumDoc` → oracle tiddler in catalog
+- `lararium-island.ts` `(doc as unknown as { tiddlers }).tiddlers` casts × 10+ → `doc.tiddlers` (LarDoc typing through handle callbacks)
+- `putViaRecipe` write routing in adaptor `direct` handler
+- `CompositeStore.addProjection` dynamic: async corpus layers not yet registered after `adaptor.start()`
+- tldraw `(ed.store as any).put()` × 3 wiki-first migration
+- Draft bag → stable lar: URI
+- MCP `hud`/`receipt` — diagnose and fix storage-dir absent during test run
 
 <<~/ahu >>
 

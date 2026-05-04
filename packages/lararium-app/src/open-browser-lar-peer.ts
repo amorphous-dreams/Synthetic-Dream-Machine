@@ -213,11 +213,11 @@ export async function openBrowserLarPeer(opts: {
   const catalog = catalogHandle.doc();
   emit("catalog-ready");
 
-  // ── 3a. LarariumDoc (path B fallback) — load from catalog.larariumDoc ─────
-  // If we arrived via legacy path (no blobs on candidate), check catalog for
-  // the island reference the node peer registered there.
+  // ── 3a. LarariumDoc (path B) — oracle tiddler or legacy catalog.larariumDoc ─
+  // Node peer now writes LARARIUM_DOC_URI oracle into catalog.tiddlers (M25 Loop 3).
+  // Legacy fallback: catalog.larariumDoc?.docUrl (M24 compat — nodes that haven't upgraded).
   if (!larariumDocHandle) {
-    const larariumDocUrl = catalog?.larariumDoc?.docUrl ?? null;
+    const larariumDocUrl = catalog?.tiddlers?.[LARARIUM_DOC_URI]?.text ?? catalog?.larariumDoc?.docUrl ?? null;
     if (larariumDocUrl) {
       larariumDocHandle = await waitHandleLocal<LarariumDoc>(
         repo, larariumDocUrl as AutomergeUrl,
