@@ -454,3 +454,95 @@ describe("CompositeStore — addProjection fan-out", () => {
     u1(); u2();
   });
 });
+
+// ---------------------------------------------------------------------------
+// CompositeStore — put() bag routing (M25 Loop 3)
+// ---------------------------------------------------------------------------
+
+describe("CompositeStore — put() bag routing", () => {
+  test("put() with record.bag routes to the matching writable layer", async () => {
+    const roomMem  = new MemoryTiddlerStore();
+    const draftMem = new MemoryTiddlerStore();
+    const store    = new CompositeStore();
+    store.addLayer({ bagId: TEST_ROOM_URI,  store: roomMem,  writable: true });
+    store.addLayer({ bagId: TEST_DRAFT_URI, store: draftMem, writable: true });
+
+    await store.put({ title: "lar:///routed", fields: {}, text: "room-body", bag: TEST_ROOM_URI }, roomOrigin());
+
+    const inRoom  = await roomMem.get("lar:///routed");
+    const inDraft = await draftMem.get("lar:///routed");
+    expect(inRoom).not.toBeNull();
+    expect(inDraft).toBeNull();
+  });
+
+  test("put() with no record.bag falls back to writableStore (last registered)", async () => {
+    const roomMem  = new MemoryTiddlerStore();
+    const draftMem = new MemoryTiddlerStore();
+    const store    = new CompositeStore();
+    store.addLayer({ bagId: TEST_ROOM_URI,  store: roomMem,  writable: true });
+    store.addLayer({ bagId: TEST_DRAFT_URI, store: draftMem, writable: true });
+
+    await store.put(record("lar:///fallback", "any"), roomOrigin());
+
+    // writableStore = last writable = draftMem
+    const inDraft = await draftMem.get("lar:///fallback");
+    expect(inDraft).not.toBeNull();
+  });
+
+  test("put() with record.bag pointing to a non-writable layer falls back to writableStore", async () => {
+    const readMem  = new MemoryTiddlerStore();
+    const writeMem = new MemoryTiddlerStore();
+    const store    = new CompositeStore();
+    store.addLayer({ bagId: BAG_IDS.lararium, store: readMem,  writable: false });
+    store.addLayer({ bagId: TEST_ROOM_URI,    store: writeMem, writable: true });
+
+    await store.put(record("lar:///fallback2", "v", BAG_IDS.lararium), systemOrigin());
+
+    const inWrite = await writeMem.get("lar:///fallback2");
+    expect(inWrite).not.toBeNull();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// CompositeStore — dynamic addProjection (M25 Loop 3)
+// ---------------------------------------------------------------------------
+
+describe("CompositeStore — dynamic addProjection fan-out to future layers", () => {
+  test("projection registered before addLayer receives events from that new layer", async () => {
+    const store  = new CompositeStore();
+    const early  = new MemoryTiddlerStore();
+    store.addLayer({ bagId: TEST_ROOM_URI, store: early, writable: true });
+
+    const received: LarTiddlerChange[] = [];
+    const unsub = store.addProjection({ onUriChanged: (c) => received.push(c) });
+
+    // Add a second layer AFTER addProjection was called.
+    const late = new MemoryTiddlerStore();
+    store.addLayer({ bagId: BAG_IDS.lararium, store: late, writable: false });
+
+    // Trigger an event from the late layer's store so the subscriber fires.
+    await late.put({ title: "lar:///late-event", fields: {}, text: "late" }, systemOrigin());
+
+    expect(received.some((c) => c.title === "lar:///late-event")).toBe(true);
+    unsub();
+  });
+
+  test("stop() unsubscribes from all layers including those added after registration", async () => {
+    const store = new CompositeStore();
+    const mem1  = new MemoryTiddlerStore();
+    store.addLayer({ bagId: TEST_ROOM_URI, store: mem1, writable: true });
+
+    const received: LarTiddlerChange[] = [];
+    const unsub = store.addProjection({ onUriChanged: (c) => received.push(c) });
+
+    const mem2 = new MemoryTiddlerStore();
+    store.addLayer({ bagId: BAG_IDS.catalog, store: mem2, writable: false });
+
+    unsub(); // stop before any events
+
+    await mem2.put({ title: "lar:///after-stop", fields: {} }, systemOrigin());
+    await mem1.put({ title: "lar:///also-after",  fields: {} }, roomOrigin());
+
+    expect(received).toHaveLength(0);
+  });
+});

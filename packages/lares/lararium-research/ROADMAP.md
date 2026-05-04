@@ -3018,5 +3018,45 @@ descriptor tiddler in `tiddlers` — queryable from TW5 without TS interop.
 
 <<~/ahu >>
 
+## M25 Loop 3 — Cast Cleanup + Bag Routing + Dynamic Projections (2026-05-03)
+
+**Scope:** Executed all M25 Loop 3 candidates identified in the Loop 2 gap survey. All `as unknown as` tiddler casts removed. Bag routing and dynamic projection registration implemented and tested.
+
+**Changes delivered:**
+
+| File | Change |
+|---|---|
+| `lararium-island.ts` | 12 `(doc as unknown as { tiddlers })` casts removed; recipe seeds restructured with `fields: { label, bagStack, updatedAt, authority, bag }`; bag descriptors `fields: { label, readPolicy, writePolicy, ... }` — aligns with `getRecipe()` read pattern |
+| `open-node-lar-peer.ts` | `LARARIUM_DOC_URI` import; island URL write via oracle tiddler `catalog.tiddlers[LARARIUM_DOC_URI]`; oracle + legacy fallback on read; blankCatalog cast removed |
+| `open-browser-lar-peer.ts` | Path B: `catalog?.tiddlers?.[LARARIUM_DOC_URI]?.text ??` oracle primary before legacy fallback |
+| `composite-store.ts` | `put()` routes by `record.bag` to matching writable layer; `addProjection()` stores in `Map<MemeProjection, unsubs[]>`; `addLayer()` fans active projections to new layers |
+| `tw5-projection.ts` | `wiki as any` removed; uses `tw5.getTiddler()` + `tw5.getTiddlerText()` |
+| `composite-store.test.ts` | +8 tests: 3 bag-routing + 2 dynamic-projection tests; 84 core total |
+
+**Gaps surfaced (OODA-HA orient):**
+
+| Gap | Impact | Status |
+|---|---|---|
+| `lararium-island.ts` × 12 casts | Hidden recipe field misalignment (bagStack unreadable via `getRecipe()`) | **Fixed** |
+| Node peer island doc `(doc as any).larariumDoc` | Island URL outside oracle tiddler pattern | **Fixed** |
+| `CompositeStore.put()` ignores `record.bag` | Writes always to last writable, not intended bag | **Fixed** |
+| `CompositeStore.addProjection` static-only | Async corpus layers got no projection | **Fixed** |
+| `tw5-projection.ts` `wiki as any` | Bypassed TW5Engine API | **Fixed** |
+| `systemTitles` as separate Automerge field | Not oracle-tiddler pattern | M25 Loop 4 |
+| tldraw `(ed.store as any).put()` × 3 | Wiki-first violation | M25 Loop 4 |
+| MCP `hud`/`receipt` storage-dir | Pre-existing; storage path absent in test | M25 Loop 4 |
+| Connect screen cold-boot | User-facing; `readBootstrap() === null` path untested | M25 Loop 4 |
+
+**Test gate:** 173 tests (84 core + 52 tw5 + 25 tldraw + 16 node). Build clean.
+
+↺ **M25 Loop 4 candidates:**
+- Draft bag → stable lar: URI (`lar:///ha.ka.ba/@sessions/drafts/{did}`)
+- `lararium-island.ts` `systemTitles` oracle tiddler migration
+- tldraw `(ed.store as any).put()` × 3 wiki-first migration
+- MCP `hud`/`receipt` storage-dir fix
+- Connect screen cold-boot path
+
+<<~/ahu >>
+
 
 <<~&#x0004; -> ? >>

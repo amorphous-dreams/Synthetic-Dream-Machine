@@ -912,6 +912,52 @@ Gap C — **addProjection fan-out untested**: `CompositeStore.addProjection` was
 
 <<~/ahu >>
 
+<<~ ahu #ooda-ha-m25-loop3-cast-cleanup-routing-2026-05-03 >>
+
+## OODA-HA: M25 Loop 3 — Cast Cleanup + Bag Routing + Dynamic Projections (2026-05-03)
+
+✶ **Observe:**
+172 tests passing. M25 Loop 2 survey identified 5 classes of pivot-blockers:
+- `lararium-island.ts` × 12 `(doc as unknown as { tiddlers })` casts — every seed function bypassed the type system; also hid a recipe data misalignment (domain fields stored top-level, not in `MutableLarRecord.fields`, so `getRecipe()` returned empty bagStack)
+- Node peer `(doc as any).larariumDoc` × 3 — island URL stored in legacy `CatalogDoc.larariumDoc.docUrl` field, not oracle tiddler
+- `CompositeStore.put()` always routed to last writable regardless of `record.bag` — adaptor's `targetBag` stamp was ignored
+- `CompositeStore.addProjection()` — projections not tracked; corpus layers arriving async after `adaptor.start()` received no projection registrations
+- `tw5-projection.ts` `tw5.wiki as any` — bypassed TW5Engine API surface
+
+⏿ **Orient:**
+Cast A: `MutableLarRecord.fields` is required (`Record<string, string>`). Seed tiddler literals omitted `fields: {}` — couldn't use `doc.tiddlers` directly without the cast. Recipe seed writes stored `label`, `bagStack`, `updatedAt` as top-level Automerge properties, but `getRecipe()` reads from `rec.fields["bagStack"]` — complete miss.
+
+Routing B: `CompositeStore.put(record)` ignores `record.bag`. `MemeSyncAdaptor` stamps `record.bag = this.targetBag`. The bag stamp is the routing signal — if `put()` ignores it, writes go to the wrong Automerge doc.
+
+Dynamic C: `addLayer()` arrives async (corpus docs open as peers sync). If `adaptor.start()` called `addProjection()` before corpus layers arrived, those layers got no MemeProvider projection — their changes arrive via plain `subscribe()`, losing per-island debounce and `onSyncComplete` coalescing.
+
+◇ **Decide:**
+1. Add `fields: {}` to all oracle seed writes; move recipe/bag-descriptor domain metadata into `fields: {...}` matching `getRecipe()` + bag filter read patterns.
+2. Oracle tiddler for island URL in catalog: `catalog.tiddlers[LARARIUM_DOC_URI]` primary; `catalog.larariumDoc?.docUrl` legacy fallback.
+3. `CompositeStore.put()`: route by `record.bag` to matching writable layer first; fallback to `writableStore`.
+4. `CompositeStore.addProjection()`: store in `Map<MemeProjection, unsubs[]>`; `addLayer()` fans active projections to new layers.
+5. `tw5-projection.ts`: use `tw5.getTiddler()` + `tw5.getTiddlerText()` directly.
+
+■ **Act:**
+  1. `lararium-island.ts` — 12 casts removed: `doc.tiddlers[K] = { title, text, fields: {}, bag, authority }`; recipe seeds restructured with `fields: { label, bagStack, updatedAt, authority, bag }`; bag descriptors `fields: { label, readPolicy, writePolicy, updatedAt, authority, bag }`.
+  2. `open-node-lar-peer.ts` — `LARARIUM_DOC_URI` import added; island URL write: `doc.tiddlers[LARARIUM_DOC_URI] = { title, text: islandHandle.url, fields: { version?, sha256? }, bag: CATALOG_DOC_URI, authority: "lararium-boot" }`; island URL read: oracle + legacy fallback; blankCatalog cast removed.
+  3. `open-browser-lar-peer.ts` — path B: `catalog?.tiddlers?.[LARARIUM_DOC_URI]?.text ?? catalog?.larariumDoc?.docUrl ?? null`.
+  4. `composite-store.ts` — `projections: Map<MemeProjection, Array<() => void>>`; `addLayer()` fans existing projections; `put()` routes by `record.bag`; `addProjection()` stores in Map + cleans on unsub.
+  5. `tw5-projection.ts` — `wiki as any` removed; `tw5.getTiddler(uri)` + `tw5.getTiddlerText(uri)`.
+  6. `composite-store.test.ts` — 8 new tests: 3 bag-routing tests + 2 dynamic-projection tests added to the existing 4 addProjection describe block.
+
+⤴ **Advance:**
+84 core tests pass (5 new added). 173 total across all packages (84 core + 52 tw5 + 25 tldraw + 16 node). Build clean. All `as unknown as` tiddler casts removed from lararium-island.ts. Island URL travels via oracle tiddler. Adaptor writes route to correct bag doc. Corpus layers arriving after boot register with active projections. TW5Engine API surface fully typed.
+
+↺ **M25 Loop 4 candidates:**
+- Draft bag → stable lar: URI (`lar:///ha.ka.ba/@sessions/drafts/{did}`)
+- `lararium-island.ts` `systemTitles` — consider moving to oracle tiddler rather than separate Automerge field
+- tldraw `(ed.store as any).put()` × 3 wiki-first migration
+- MCP `hud`/`receipt` — diagnose storage-dir issue
+- Connect screen (`readBootstrap() === null`) — user-facing cold boot
+
+<<~/ahu >>
+
 <<~ ahu #edges >>
 
 ## Edges
