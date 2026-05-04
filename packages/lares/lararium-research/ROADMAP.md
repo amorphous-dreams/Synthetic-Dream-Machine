@@ -2696,6 +2696,62 @@ TiddlerRecord `bag` field = lar: URI of the owning doc everywhere.
 
 <<~ ahu #project-ooda-ha-2026-05-03 >>
 
+## M21 6-Root 2-Plane + Recipe Schema — 2026-05-03
+
+### OODA-HA receipt
+
+✶ **Observe:**
+After M20, `corpusLarUri(slug)` returned `lar:///ha.ka.ba/@${slug}` — a pos-1 collision with root doc identities.  Any system scanning `@`-prefixed pos-1 URIs could not distinguish corpus child-docs from root docs.  The browser peer `CORPUS_PREFIX` used `"lar:///ha.ka.ba/@"` with a fragile exclusion list (`!== CATALOG_DOC_URI`, `!== LARARIUM_DOC_URI`, `!== LARES_DOC_URI`) — a list that would not grow automatically when new root docs arrived.  No social plane docs existed.  No recipe schema existed.  Tests still asserted the old `corpus:slug` opaque prefix and `BAG_IDS.system`/`BAG_IDS.room` stub keys.
+
+⏿ **Orient:**
+The URI grammar carries the topology.  `@` at pos-1 = root doc (exactly 6 reserved).  `@` at pos-2 = child doc under a root.  Corpus docs belong at `lar:///ha.ka.ba/@catalog/@{slug}` — scoped under ka, not parallel to it.  Six root docs in two planes form the full address space: content Tiga (ha/ka/ba) + social plane (identities/groups/sessions).  A recipe tiddler stored inside ha island gives every TW5 VM a derivable bag stack without side-channel configuration.  Bag-ID law (M20) extends naturally: social docs use their lar: URI as bag ID.
+
+◇ **Decide:**
+Four OODA loops in sequence, each with a build gate:
+
+- **Loop 1 (breaking):** remap `corpusLarUri` to pos-2 + add 6-root grammar docblock + add 3 social plane URI constants + fix browser/node peer CORPUS_PREFIX + update resolver named-doc comment
+- **Loop 2 (additive):** create `social-doc.ts` (IdentitiesDoc / GroupsDoc / SessionsDoc) + extend `reconcileWellKnownTiddlers` to 6 oracle tiddlers + boot social docs in both peers
+- **Loop 3 (additive):** create `recipe.ts` (RecipeTiddler + `recipeUri()`) + `seedDefaultRecipes` in island + wire into node peer boot
+- **Test gate:** update `composite-store.test.ts` to assert lar: URI bag IDs (M21 law), remove stale `corpus:slug` and `BAG_IDS.system`/`BAG_IDS.room` expectations
+
+▶ **Act (files touched):**
+
+| File | Change |
+|---|---|
+| `lararium-doc.ts` | 6-root 2-plane grammar docblock; `IDENTITIES_DOC_URI`, `GROUPS_DOC_URI`, `SESSIONS_DOC_URI`; `corpusLarUri` → pos-2 `@catalog/@{slug}` |
+| `composite-store.ts` | Import + add social plane to `BAG_IDS`; updated recipe order comment |
+| `resolver.ts` | Named-doc branch comment updated to describe pos-1 / pos-2 `@` law |
+| `open-browser-lar-peer.ts` | `CORPUS_PREFIX` → `"lar:///ha.ka.ba/@catalog/@"`; drop exclusion list; import social URI constants + empty constructors; social boot block |
+| `open-node-lar-peer.ts` | Switch corpus discovery to `catalog.tiddlers` oracle (was `catalog.corpora`); same `CORPUS_PREFIX` fix; social boot block; `seedDefaultRecipes` call |
+| `lararium-island.ts` | Import social types + `recipeUri`; `reconcileWellKnownTiddlers` extended to 6 args; `seedIdentitiesDoc`/`seedGroupsDoc`/`seedSessionsDoc`; `seedDefaultRecipes` |
+| `social-doc.ts` *(new)* | `IdentitiesDoc`, `GroupsDoc`, `SessionsDoc` + empty constructors; barrel-exported from `index.ts` |
+| `recipe.ts` *(new)* | `RecipeTiddler` interface + `recipeUri(root, name)` helper; barrel-exported from `index.ts` |
+| `composite-store.test.ts` | Updated to M21 bag ID law: `BAG_IDS.lararium` replaces `system`, `roomLarUri("test-room")` replaces `BAG_IDS.room`, corpus expectations assert full lar: URI |
+
+⤴ **Ho'oko:**
+
+```sh
+pnpm --filter @lararium/core build     # ✓ clean
+pnpm --filter @lararium/node build     # ✓ clean
+pnpm --filter @lararium/app  build     # ✓ clean (4.74 s)
+pnpm --filter @lararium/core test      # ✓ 5/5 suites, 67 tests
+```
+
+Architecture now live:
+- `lar:///ha.ka.ba/@catalog/@elyncia` — correct pos-2 corpus child-doc URI
+- Six root docs (2 planes) boot in both peers; oracle tiddlers reconciled on every boot
+- Three seed recipes stored as tiddlers in ha island: `full`, `default`, `catalog/default`
+- Bag ID law holds across all 8 root + leaf doc types
+
+↺ **M22 candidates:**
+- `"draft"` bag: needs a stable lar: URI (per-user-per-room `roomLarUri(slug)/drafts/{did}`)
+- `meme-provider.ts` line 273: hardcoded `"room"` inferred bag — thread `roomId` context through
+- `CompositeStore.getRecipe(uri)` + `buildLayersFromRecipe(recipe)` (Loop 4 placeholder)
+- TW5 VM recipe derived from `CompositeStore.layerIds()` via `DirectMemeRecipeVm` — topology → VM
+- `catalog.corpora` legacy index: retire after confirming all peers read from `tiddlers` oracle only
+- Social plane UX: identity picker, group membership UI (wiki-first — vite builds TS → TW5 plugin)
+- Session doc lifecycle: open/close events; session sub-docs at `@sessions/@{slug}` pos-2 slot
+
 ## Project OODA-HA — 2026-05-03 (M17–M20 sprint close)
 
 ✶ **Observe:**

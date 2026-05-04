@@ -78,68 +78,79 @@ export function emptyLarariumDoc(): LarariumDoc {
 export const ENGINE_CORE_ID = "tiddlywikicore";
 
 /**
- * Well-known tiddler address — the LarariumDoc self-reference.
+ * lar: URI grammar — six root docs in two planes.
  *
- * The `@lararium` scope root IS the LarariumDoc. No sub-path needed.
- * Stored inside LarariumDoc.tiddlers. Its `text` field holds the current
- * `automerge:` URL of the LarariumDoc itself (self-referential).
+ * Position semantics (zero-indexed path segments after lar:///)
  *
- * Analogous to IPNS (stable name → mutable pointer to current content) and
- * AT Protocol `.well-known/atproto-did` (stable path → current DID).
- * Any peer that has synced the LarariumDoc can read this tiddler and recover
- * the root doc URL — no out-of-band oracle required.
+ *   pos 0  — what3words tagspace host, e.g. "ha.ka.ba"
+ *   pos 1  — @-prefixed root doc identity (EXACTLY six reserved slots, see below)
+ *   pos 2  — @-prefixed child doc identity   e.g. @catalog/@elyncia
+ *            OR plain leaf path segment      e.g. @lararium/rooms/altar-fire
+ *   pos 3+ — plain leaf path segments, never @-prefixed
  *
- * Namespace clarity:
- *   lar:///ha.ka.ba/@lararium              ← this constant (engine root oracle)
- *   lar:///ha.ka.ba/@lararium/catalogDocUri ← catalog URL slot
- *   lar:///ha.ka.ba/@lararium/rooms/{slug}  ← room identifiers (no collision)
+ * Rule: @ ONLY at pos 1 (root doc) or pos 2 (child doc under a root).
+ *       @ NEVER at pos 3+.
+ *       Any bare @name at pos 1 = exactly one Automerge doc identity.
+ *
+ * CONTENT PLANE (Automerge Tiga — ha / ka / ba):
+ *   @lararium   LarariumDoc  — ha: engine, grammar, admin rooms, ha-recipes
+ *   @catalog    CatalogDoc   — ka: corpus discovery, user rooms, ka-recipes
+ *   @lares      LaresDoc     — ba: persona/doctrine, ba-recipes
+ *
+ * SOCIAL PLANE (identity / authority / session):
+ *   @identities IdentitiesDoc — stable principal records (operators, agents, services)
+ *   @groups     GroupsDoc     — collective authority + durable membership
+ *   @sessions   SessionsDoc   — live operator-agent session docs
+ *
+ * Corpus child-docs live under ka (pos-2 @ slot):
+ *   lar:///ha.ka.ba/@catalog/@elyncia   → elyncia corpus doc
+ *   lar:///ha.ka.ba/@catalog/@ftls      → ftls corpus doc
+ *
+ * Rooms remain leaf paths (no @ at pos 2):
+ *   lar:///ha.ka.ba/@lararium/rooms/{slug}  → admin/operator room (ha branch)
+ *   lar:///ha.ka.ba/@catalog/rooms/{slug}   → user room (ka branch, M22+)
+ *
+ * Oracle chain:
+ *   fragment → ha (LarariumDoc) → tiddlers[CATALOG_DOC_URI]   → CatalogDoc
+ *                               → tiddlers[LARES_DOC_URI]      → LaresDoc
+ *                               → tiddlers[IDENTITIES_DOC_URI] → IdentitiesDoc
+ *                               → tiddlers[GROUPS_DOC_URI]     → GroupsDoc
+ *                               → tiddlers[SESSIONS_DOC_URI]   → SessionsDoc
+ *   CatalogDoc → tiddlers[corpusLarUri(slug)]  → corpus child-docs
+ *             → tiddlers[roomLarUri(slug)]    → room leaf docs
+ *
+ * Meme: lar:///ha.ka.ba/@lararium/core/v0.1/automerge-tiga
  */
+
+// ── Content plane — Automerge Tiga ──────────────────────────────────────────
+
+/** ha vertex — engine / grammar / admin rooms / ha-recipes. */
 export const LARARIUM_DOC_URI = "lar:///ha.ka.ba/@lararium";
 
-/**
- * Well-known tiddler address — the CatalogDoc identity URI.
- *
- * Dual purpose (mirrors LARARIUM_DOC_URI):
- *   1. The slot key in LarariumDoc.tiddlers whose `text` = the CatalogDoc automerge: URL.
- *   2. The key in CatalogDoc.tiddlers for the catalog's own self-reference tiddler.
- *
- * Boot sequence: URL fragment → open LarariumDoc → read this tiddler → open CatalogDoc.
- *
- * Named doc pattern — all `@`-prefixed scopes in ha.ka.ba ARE doc identities:
- *   lar:///ha.ka.ba/@lararium  → LarariumDoc (engine)
- *   lar:///ha.ka.ba/@catalog   → CatalogDoc  (hallway)
- *   lar:///ha.ka.ba/@elyncia   → elyncia corpus doc   (tiddler in CatalogDoc.tiddlers)
- *   lar:///ha.ka.ba/@ftls      → ftls corpus doc       (tiddler in CatalogDoc.tiddlers)
- *   lar:///ha.ka.ba/@sdm       → sdm corpus doc        (tiddler in CatalogDoc.tiddlers)
- */
+/** ka vertex — corpus discovery / user rooms / ka-recipes. */
 export const CATALOG_DOC_URI = "lar:///ha.ka.ba/@catalog";
 
-/**
- * Well-known tiddler address — the LaresDoc identity URI.  The ha → ba edge of the Tiga.
- *
- * Dual purpose (mirrors LARARIUM_DOC_URI / CATALOG_DOC_URI):
- *   1. The slot key in LarariumDoc.tiddlers whose `text` = the LaresDoc automerge: URL.
- *   2. The key in LaresDoc.tiddlers for the lares doc's own self-reference tiddler.
- *
- * The Automerge Tiga — three oracle vertices, all reachable from LarariumDoc (ha):
- *   ha  lar:///ha.ka.ba/@lararium  → LarariumDoc  (structure / stability)
- *   ka  lar:///ha.ka.ba/@catalog   → CatalogDoc   (fire / motion)
- *   ba  lar:///ha.ka.ba/@lares     → LaresDoc      (personality / flow)
- *
- * No vertex carries upward pointers.  Reachability flows ha → ka and ha → ba.
- * Leaves (corpus docs, room docs) hang from ka — they self-describe only.
- *
- * LaresDoc Automerge handle: M19 pending.  This constant establishes the slot now
- * so reconcileWellKnownTiddlers can write the ba oracle tiddler once the handle exists.
- */
+/** ba vertex — persona / doctrine / ba-recipes. */
 export const LARES_DOC_URI = "lar:///ha.ka.ba/@lares";
 
+// ── Social plane — identity / authority / session ───────────────────────────
+
+/** Stable principal records — operators, agents, services, devices. */
+export const IDENTITIES_DOC_URI = "lar:///ha.ka.ba/@identities";
+
+/** Collective authority + durable group membership. */
+export const GROUPS_DOC_URI = "lar:///ha.ka.ba/@groups";
+
+/** Live operator-agent session docs; hostful overlays project into these. */
+export const SESSIONS_DOC_URI = "lar:///ha.ka.ba/@sessions";
+
 /**
- * Derive the stable lar: URI identity for a named corpus doc.
- * e.g. corpusLarUri("elyncia") → "lar:///ha.ka.ba/@elyncia"
+ * Derive the stable lar: URI identity for a named corpus child-doc.
+ * Corpus docs sit at pos-2 under the @catalog root doc.
+ * e.g. corpusLarUri("elyncia") → "lar:///ha.ka.ba/@catalog/@elyncia"
  */
 export function corpusLarUri(slug: string): string {
-  return `lar:///ha.ka.ba/@${slug}`;
+  return `lar:///ha.ka.ba/@catalog/@${slug}`;
 }
 
 /**

@@ -23,6 +23,9 @@ import {
   LARARIUM_DOC_URI,
   CATALOG_DOC_URI,
   LARES_DOC_URI,
+  IDENTITIES_DOC_URI,
+  GROUPS_DOC_URI,
+  SESSIONS_DOC_URI,
   corpusLarUri,
   roomLarUri,
 } from "./lararium-doc.js";
@@ -31,18 +34,27 @@ import {
 export { corpusLarUri as corpusBagId, roomLarUri as roomBagId };
 
 // ---------------------------------------------------------------------------
-// Well-known bag slot IDs — Automerge Tiga + leaves
+// Well-known bag slot IDs — six root docs (two planes) + corpus leaves + room
 //
 // Bag ID = lar: URI of the owning Automerge doc. One doc = one bag = one URI.
 //
 // Recipe order (add lowest-priority first → highest-priority last):
-//   LARARIUM_DOC_URI   engine island: grammar, widget memes, oracle tiddlers (ha)
-//   CATALOG_DOC_URI    catalog doc: room + corpus oracle tiddlers             (ka)
-//   LARES_DOC_URI      lares personality doc: @lares system memes             (ba)
-//   corpusLarUri(slug) durable corpus islands — one per bag                   (leaves)
-//   roomLarUri(slug)   situated room content — writable                       (leaf)
-//   "draft"            high-churn drafts — per-user; stable lar: URI pending
-//   "projection"       derived tiddlers, search indexes — in-memory only
+//
+//   CONTENT PLANE (Tiga)
+//   LARARIUM_DOC_URI   ha: engine, grammar, oracle tiddlers
+//   CATALOG_DOC_URI    ka: corpus discovery, room oracle tiddlers
+//   LARES_DOC_URI      ba: persona/doctrine system memes
+//
+//   SOCIAL PLANE
+//   IDENTITIES_DOC_URI principals: operators, agents, services
+//   GROUPS_DOC_URI     collective authority + durable membership
+//   SESSIONS_DOC_URI   live operator-agent session docs
+//
+//   LEAVES (added dynamically)
+//   corpusLarUri(slug) lar:///ha.ka.ba/@catalog/@{slug}  corpus child-docs
+//   roomLarUri(slug)   lar:///ha.ka.ba/@lararium/rooms/{slug}  room leaf
+//   "draft"            high-churn drafts — stable lar: URI pending (M22)
+//   "projection"       derived tiddlers / search indexes — in-memory only
 //
 // Meme: lar:///ha.ka.ba/@lararium/core/v0.1/automerge-tiga
 // ---------------------------------------------------------------------------
@@ -51,6 +63,9 @@ export const BAG_IDS = {
   lararium:   LARARIUM_DOC_URI,
   catalog:    CATALOG_DOC_URI,
   lares:      LARES_DOC_URI,
+  identities: IDENTITIES_DOC_URI,
+  groups:     GROUPS_DOC_URI,
+  sessions:   SESSIONS_DOC_URI,
   draft:      "draft",
   projection: "projection",
 } as const;

@@ -21,6 +21,8 @@ export * from "./catalog.js";
 export * from "./meme-store-doc.js";
 export * from "./composite-store.js";
 export * from "./lararium-doc.js";
+export * from "./social-doc.js";
+export * from "./recipe.js";
 export * from "./kumu-device.js";
 export * from "./automerge-doc-store.js";
 export * from "./lararium-doc-store.js";

@@ -18,8 +18,15 @@ import { TW5Engine } from "@lararium/tw5";
 import { tw5MemesRoot, tw5PluginsRoot } from "@lararium/tw5/tw5-memes-root";
 import { createHash } from "crypto";
 import type { Repo, DocHandle } from "@automerge/automerge-repo";
-import type { LarariumDoc, LarariumBlobEntry, MemeStoreDoc } from "@lararium/core";
-import { ENGINE_CORE_ID, LARARIUM_DOC_URI, CATALOG_DOC_URI, LARES_DOC_URI, emptyLarariumDoc } from "@lararium/core";
+import type { LarariumDoc, LarariumBlobEntry, MemeStoreDoc, IdentitiesDoc, GroupsDoc, SessionsDoc } from "@lararium/core";
+import {
+  ENGINE_CORE_ID,
+  LARARIUM_DOC_URI, CATALOG_DOC_URI, LARES_DOC_URI,
+  IDENTITIES_DOC_URI, GROUPS_DOC_URI, SESSIONS_DOC_URI,
+  emptyLarariumDoc,
+  emptyIdentitiesDoc, emptyGroupsDoc, emptySessionsDoc,
+  recipeUri,
+} from "@lararium/core";
 import { TW5_VERSION, TW5_CORE_SCRIPT_FILENAME } from "@lararium/tw5";
 
 // ---------------------------------------------------------------------------
@@ -308,9 +315,12 @@ export async function seedLarariumDoc(
  * Patch the well-known tiddlers on a resume boot.
  *
  * Writes the Automerge Tiga oracle tiddlers into LarariumDoc (ha):
- *   - ha self-ref  : LARARIUM_DOC_URI → handle.url
- *   - ha → ka edge : CATALOG_DOC_URI  → catalogUrl
- *   - ha → ba edge : LARES_DOC_URI    → laresUrl  (omitted when LaresDoc not yet open)
+ *   - ha self-ref       : LARARIUM_DOC_URI    → handle.url
+ *   - ha → ka edge      : CATALOG_DOC_URI     → catalogUrl
+ *   - ha → ba edge      : LARES_DOC_URI       → laresUrl       (omitted when not yet open)
+ *   - ha → identities   : IDENTITIES_DOC_URI  → identitiesUrl  (omitted when not yet open)
+ *   - ha → groups       : GROUPS_DOC_URI      → groupsUrl      (omitted when not yet open)
+ *   - ha → sessions     : SESSIONS_DOC_URI    → sessionsUrl    (omitted when not yet open)
  *
  * Writes are no-ops if values already match — Automerge deduplicates.
  * Both peers (node and browser) call this on every boot to keep oracle tiddlers current.
@@ -319,13 +329,19 @@ export function reconcileWellKnownTiddlers(
   handle: DocHandle<LarariumDoc>,
   catalogUrl: string,
   laresUrl?: string,
+  identitiesUrl?: string,
+  groupsUrl?: string,
+  sessionsUrl?: string,
 ): void {
   const doc      = handle.doc();
   const tiddlers = doc?.tiddlers ?? {};
   const selfOk   = tiddlers[LARARIUM_DOC_URI]?.text === handle.url;
   const catOk    = tiddlers[CATALOG_DOC_URI]?.text  === catalogUrl;
-  const baOk     = laresUrl ? tiddlers[LARES_DOC_URI]?.text === laresUrl : true;
-  if (selfOk && catOk && baOk) return;
+  const baOk     = laresUrl       ? tiddlers[LARES_DOC_URI]?.text       === laresUrl       : true;
+  const idOk     = identitiesUrl  ? tiddlers[IDENTITIES_DOC_URI]?.text  === identitiesUrl  : true;
+  const grOk     = groupsUrl      ? tiddlers[GROUPS_DOC_URI]?.text      === groupsUrl      : true;
+  const seOk     = sessionsUrl    ? tiddlers[SESSIONS_DOC_URI]?.text    === sessionsUrl    : true;
+  if (selfOk && catOk && baOk && idOk && grOk && seOk) return;
 
   handle.change((d) => {
     const t = (d as unknown as { tiddlers: Record<string, unknown> }).tiddlers;
@@ -347,14 +363,35 @@ export function reconcileWellKnownTiddlers(
         bag: LARARIUM_DOC_URI, authority: "lararium-seed",
       };
     }
+    if (!idOk && identitiesUrl) {
+      t[IDENTITIES_DOC_URI] = {
+        title: IDENTITIES_DOC_URI, text: identitiesUrl,
+        bag: LARARIUM_DOC_URI, authority: "lararium-seed",
+      };
+    }
+    if (!grOk && groupsUrl) {
+      t[GROUPS_DOC_URI] = {
+        title: GROUPS_DOC_URI, text: groupsUrl,
+        bag: LARARIUM_DOC_URI, authority: "lararium-seed",
+      };
+    }
+    if (!seOk && sessionsUrl) {
+      t[SESSIONS_DOC_URI] = {
+        title: SESSIONS_DOC_URI, text: sessionsUrl,
+        bag: LARARIUM_DOC_URI, authority: "lararium-seed",
+      };
+    }
   });
 
-  console.log(
-    `[lararium-island] well-known tiddlers reconciled` +
-    `  self=${selfOk ? "ok" : "patched"}` +
-    `  catalog=${catOk ? "ok" : "patched"}` +
-    `  lares=${baOk ? "ok" : laresUrl ? "patched" : "pending"}`,
-  );
+  const flags = [
+    `self=${selfOk ? "ok" : "patched"}`,
+    `catalog=${catOk ? "ok" : "patched"}`,
+    `lares=${baOk ? "ok" : laresUrl ? "patched" : "pending"}`,
+    `identities=${idOk ? "ok" : identitiesUrl ? "patched" : "pending"}`,
+    `groups=${grOk ? "ok" : groupsUrl ? "patched" : "pending"}`,
+    `sessions=${seOk ? "ok" : sessionsUrl ? "patched" : "pending"}`,
+  ].join("  ");
+  console.log(`[lararium-island] well-known tiddlers reconciled  ${flags}`);
 }
 
 /**
@@ -376,4 +413,143 @@ export function seedLaresDoc(repo: Repo): DocHandle<MemeStoreDoc> {
   });
   console.log(`[lararium-island] LaresDoc seeded  url=${handle.url}`);
   return handle;
+}
+
+// ---------------------------------------------------------------------------
+// Social plane seed helpers — @identities / @groups / @sessions
+// ---------------------------------------------------------------------------
+
+/**
+ * Seed a new IdentitiesDoc — principal records store.
+ * Writes self-ref tiddler at IDENTITIES_DOC_URI inside the new doc.
+ * ha oracle tiddler written by reconcileWellKnownTiddlers.
+ */
+export function seedIdentitiesDoc(repo: Repo): DocHandle<IdentitiesDoc> {
+  const handle = repo.create<IdentitiesDoc>(emptyIdentitiesDoc());
+  handle.change((doc) => {
+    const t = (doc as unknown as { tiddlers: Record<string, unknown> }).tiddlers;
+    t[IDENTITIES_DOC_URI] = {
+      title: IDENTITIES_DOC_URI, text: handle.url,
+      bag: IDENTITIES_DOC_URI, authority: "lararium-seed",
+    };
+  });
+  console.log(`[lararium-island] IdentitiesDoc seeded  url=${handle.url}`);
+  return handle;
+}
+
+/**
+ * Seed a new GroupsDoc — collective authority + durable membership.
+ * Writes self-ref tiddler at GROUPS_DOC_URI inside the new doc.
+ * ha oracle tiddler written by reconcileWellKnownTiddlers.
+ */
+export function seedGroupsDoc(repo: Repo): DocHandle<GroupsDoc> {
+  const handle = repo.create<GroupsDoc>(emptyGroupsDoc());
+  handle.change((doc) => {
+    const t = (doc as unknown as { tiddlers: Record<string, unknown> }).tiddlers;
+    t[GROUPS_DOC_URI] = {
+      title: GROUPS_DOC_URI, text: handle.url,
+      bag: GROUPS_DOC_URI, authority: "lararium-seed",
+    };
+  });
+  console.log(`[lararium-island] GroupsDoc seeded  url=${handle.url}`);
+  return handle;
+}
+
+/**
+ * Seed a new SessionsDoc — live operator-agent session docs.
+ * Writes self-ref tiddler at SESSIONS_DOC_URI inside the new doc.
+ * ha oracle tiddler written by reconcileWellKnownTiddlers.
+ */
+export function seedSessionsDoc(repo: Repo): DocHandle<SessionsDoc> {
+  const handle = repo.create<SessionsDoc>(emptySessionsDoc());
+  handle.change((doc) => {
+    const t = (doc as unknown as { tiddlers: Record<string, unknown> }).tiddlers;
+    t[SESSIONS_DOC_URI] = {
+      title: SESSIONS_DOC_URI, text: handle.url,
+      bag: SESSIONS_DOC_URI, authority: "lararium-seed",
+    };
+  });
+  console.log(`[lararium-island] SessionsDoc seeded  url=${handle.url}`);
+  return handle;
+}
+
+// ---------------------------------------------------------------------------
+// Default recipe seeds — ha island recipes
+// ---------------------------------------------------------------------------
+
+/**
+ * Seed default recipe tiddlers into LarariumDoc (ha island).
+ *
+ * Three built-in recipes:
+ *
+ *   lararium/recipes/full     — all root docs + social plane (read-only stack)
+ *   lararium/recipes/default  — content Tiga only (lararium + catalog + lares)
+ *   catalog/recipes/default   — catalog + lares + corpus leaves stub
+ *
+ * Recipe tiddlers use `recipeUri(root, name)` for addressing:
+ *   e.g. "lar:///ha.ka.ba/@lararium/recipes/full"
+ *
+ * No-op if the recipe tiddler already exists with matching bagStack.
+ * Writes are idempotent: calling again on a resumed doc will not touch existing recipes.
+ */
+export function seedDefaultRecipes(islandHandle: DocHandle<LarariumDoc>): void {
+  const existingTiddlers = islandHandle.doc()?.tiddlers ?? {};
+  const now = new Date().toISOString();
+
+  // Recipe 1: full — all six root docs ordered lowest → highest priority
+  const fullUri = recipeUri("@lararium", "full");
+  if (!existingTiddlers[fullUri]) {
+    islandHandle.change((doc) => {
+      const t = (doc as unknown as { tiddlers: Record<string, unknown> }).tiddlers;
+      t[fullUri] = {
+        title: fullUri,
+        label: "Full (content + social plane)",
+        bagStack: [
+          LARARIUM_DOC_URI,
+          CATALOG_DOC_URI,
+          LARES_DOC_URI,
+          IDENTITIES_DOC_URI,
+          GROUPS_DOC_URI,
+          SESSIONS_DOC_URI,
+        ],
+        updatedAt: now,
+        authority: "lararium-seed",
+        bag: LARARIUM_DOC_URI,
+      };
+    });
+  }
+
+  // Recipe 2: default — content Tiga only (no social plane)
+  const defaultUri = recipeUri("@lararium", "default");
+  if (!existingTiddlers[defaultUri]) {
+    islandHandle.change((doc) => {
+      const t = (doc as unknown as { tiddlers: Record<string, unknown> }).tiddlers;
+      t[defaultUri] = {
+        title: defaultUri,
+        label: "Default (content Tiga)",
+        bagStack: [LARARIUM_DOC_URI, CATALOG_DOC_URI, LARES_DOC_URI],
+        updatedAt: now,
+        authority: "lararium-seed",
+        bag: LARARIUM_DOC_URI,
+      };
+    });
+  }
+
+  // Recipe 3: catalog/recipes/default — catalog + lares (corpus leaves added dynamically by peers)
+  const catalogDefaultUri = recipeUri("@catalog", "default");
+  if (!existingTiddlers[catalogDefaultUri]) {
+    islandHandle.change((doc) => {
+      const t = (doc as unknown as { tiddlers: Record<string, unknown> }).tiddlers;
+      t[catalogDefaultUri] = {
+        title: catalogDefaultUri,
+        label: "Catalog default (discovery + lares)",
+        bagStack: [CATALOG_DOC_URI, LARES_DOC_URI],
+        updatedAt: now,
+        authority: "lararium-seed",
+        bag: LARARIUM_DOC_URI,
+      };
+    });
+  }
+
+  console.log(`[lararium-island] default recipes seeded`);
 }

@@ -15,10 +15,48 @@ manao        = 0.87
 implements   = [
   "lar:///ha.ka.ba/@lares/api/v0.1/pono/meme"
 ]
-role         = "session handoff crystal — 2026-05-03 (session 6) — M17–M20 complete: oracle chain ha→ka→ba, Automerge Tiga locked, bag ID = lar: URI everywhere, catalog bag in CompositeStore, MemeSyncAdaptor uses roomLarUri; M21 open: draft lar: URI, room self-ref, connect screen, TW5 recipe from topology"
+role         = "session handoff crystal — 2026-05-03 (session 7) — M21 complete: 6-root 2-plane URI grammar locked, corpus at pos-2 @catalog/@slug, social plane docs booted, recipe schema seeded; M22 open: draft lar: URI, CompositeStore.buildLayersFromRecipe, wiki-first social UX"
 ```
 
 <<~&#x0002;>>
+
+<<~ ahu #ooda-ha-m21-6root-2plane-2026-05-03 >>
+
+## OODA-HA: M21 — 6-Root 2-Plane + Recipe Schema (2026-05-03)
+
+✶ `corpusLarUri(slug)` returned `lar:///ha.ka.ba/@${slug}` — pos-1 collision with root doc identities.  Browser peer `CORPUS_PREFIX` carried a growing exclusion list (`!== CATALOG_DOC_URI`, etc.) that would not auto-extend as new root docs arrived.  No social plane docs existed (no `@identities`, `@groups`, `@sessions`).  No recipe schema existed.  Tests still asserted the old `corpus:slug` opaque-prefix and `BAG_IDS.system`/`BAG_IDS.room` stub keys.
+
+⏿ URI grammar law finalised (pos 0-indexed after `lar:///`):
+  - pos 1 `@name` = root doc identity (exactly 6 reserved — `@lararium`, `@catalog`, `@lares`, `@identities`, `@groups`, `@sessions`)
+  - pos 2 `@name` = child doc under a root (corpus: `@catalog/@elyncia`; future session: `@sessions/@slug`)
+  - pos 2+ plain = leaf path (rooms: `@lararium/rooms/altar-fire`)
+  - `@` NEVER at pos 3+
+  Corpus docs belong at pos-2 under ka.  `CORPUS_PREFIX = "lar:///ha.ka.ba/@catalog/@"` scopes naturally — no exclusion list needed.  Six root docs in two planes: content Tiga (ha/ka/ba) + social plane (identities/groups/sessions).  `RecipeTiddler` stored in ha island gives every VM a derivable bag stack.
+
+◇ Four loops, each gated by `pnpm -r build` + `pnpm --filter @lararium/core test`:
+  1. **Loop 1 (breaking)** — remap `corpusLarUri` to pos-2; 6-root grammar docblock; 3 social URI constants; fix both peers' `CORPUS_PREFIX`; update resolver named-doc comment
+  2. **Loop 2 (additive)** — `social-doc.ts` (IdentitiesDoc / GroupsDoc / SessionsDoc + empty constructors); extend `reconcileWellKnownTiddlers` to 6 oracle tiddlers; boot social docs in both peers
+  3. **Loop 3 (additive)** — `recipe.ts` (RecipeTiddler + `recipeUri()`); `seedDefaultRecipes` in island; wired into node peer boot after oracle reconcile
+  4. **Test gate** — `composite-store.test.ts` updated: M21 lar: URI bag IDs replace opaque stubs
+
+▶ Files: `lararium-doc.ts` · `composite-store.ts` · `resolver.ts` · `open-browser-lar-peer.ts` · `open-node-lar-peer.ts` · `lararium-island.ts` · `social-doc.ts` (new) · `recipe.ts` (new) · `composite-store.test.ts`.
+Build clean across core + node + app.  67/67 tests pass.
+
+⤴ Architecture live on `feature/lararium-node-3`:
+  - `lar:///ha.ka.ba/@catalog/@elyncia` — correct pos-2 corpus URI
+  - Six root docs boot in both peers; oracle tiddlers reconciled on every boot
+  - Three seed recipes in ha island tiddlers: `@lararium/recipes/full`, `@lararium/recipes/default`, `@catalog/recipes/default`
+  - Bag ID law holds across all doc types; `CompositeStore` BAG_IDS includes all 6 roots
+
+↺ **M22 open:**
+  - `"draft"` bag → stable lar: URI (`roomLarUri(slug)/drafts/{did}`)
+  - `CompositeStore.getRecipe(uri)` + `buildLayersFromRecipe(recipe)` (Loop 4)
+  - TW5 VM bag stack derived from `CompositeStore.layerIds()` → `DirectMemeRecipeVm`
+  - `catalog.corpora` legacy index: retire (all peers now read from `tiddlers` oracle)
+  - Wiki-first social UX: identity picker + group membership TW5 widgets (vite builds TS → TW5 plugin)
+  - Session sub-docs at `@sessions/@{slug}` pos-2 slot + session lifecycle events
+
+<<~/ahu >>
 
 <<~ ahu #ooda-ha-local-first >>
 

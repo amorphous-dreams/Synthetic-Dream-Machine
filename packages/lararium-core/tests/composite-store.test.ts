@@ -6,13 +6,17 @@
  * islands may attach after room is already live.
  *
  * Bag order (lowest → highest priority):
- *   system → corpus:* → room (writable) → draft (writable, user-scoped)
+ *   lararium (ha) → catalog (ka) → lares (ba) → corpus:* → room (writable) → draft (writable)
  *
- * Meme: lar:///ha.ka.ba/@lares/api/v0.1/lararium/schema/bag-ids
+ * Bag ID law (M21): bag ID = lar: URI of the owning Automerge doc.
+ * No opaque prefixes (e.g. "corpus:") — every bag carries a stable lar:/// address.
+ *
+ * Meme: lar:///ha.ka.ba/@lararium/core/v0.1/automerge-tiga
  */
 
 import { describe, test, expect, beforeEach } from "@jest/globals";
 import { CompositeStore, BAG_IDS, corpusBagId } from "../src/composite-store.js";
+import { roomLarUri, LARARIUM_DOC_URI, CATALOG_DOC_URI, LARES_DOC_URI } from "../src/lararium-doc.js";
 import { MemoryTiddlerStore } from "../../lararium-tw5/src/memory-store.js";
 import type { LarTiddlerChange, ChangeOrigin } from "../src/tiddler-store.js";
 
@@ -20,8 +24,11 @@ import type { LarTiddlerChange, ChangeOrigin } from "../src/tiddler-store.js";
 // Fixtures
 // ---------------------------------------------------------------------------
 
+const TEST_ROOM_URI  = roomLarUri("test-room");
+const TEST_DRAFT_URI = "draft";
+
 function systemOrigin(): ChangeOrigin { return { kind: "canon-hydrate", receipt: "system" }; }
-function roomOrigin():   ChangeOrigin { return { kind: "crdt-remote", edgeIsland: "room" }; }
+function roomOrigin():   ChangeOrigin { return { kind: "crdt-remote", edgeIsland: TEST_ROOM_URI }; }
 function draftOrigin():  ChangeOrigin { return { kind: "tw-local", instanceId: "wiki:1" }; }
 
 function record(title: string, text: string, bag?: string) {
@@ -41,30 +48,33 @@ describe("CompositeStore — layer management", () => {
 
   test("addLayer registers bag id", () => {
     const store = new CompositeStore();
-    store.addLayer({ bagId: BAG_IDS.system, store: new MemoryTiddlerStore(), writable: false });
-    expect(store.hasBag(BAG_IDS.system)).toBe(true);
+    store.addLayer({ bagId: BAG_IDS.lararium, store: new MemoryTiddlerStore(), writable: false });
+    expect(store.hasBag(BAG_IDS.lararium)).toBe(true);
   });
 
   test("addLayer with duplicate bagId throws", () => {
     const store = new CompositeStore();
     const ms = new MemoryTiddlerStore();
-    store.addLayer({ bagId: BAG_IDS.room, store: ms, writable: true });
+    store.addLayer({ bagId: TEST_ROOM_URI, store: ms, writable: true });
     expect(() =>
-      store.addLayer({ bagId: BAG_IDS.room, store: new MemoryTiddlerStore(), writable: false }),
+      store.addLayer({ bagId: TEST_ROOM_URI, store: new MemoryTiddlerStore(), writable: false }),
     ).toThrow(/already registered/);
   });
 
   test("removeLayer de-registers bag", () => {
     const store = new CompositeStore();
     const ms = new MemoryTiddlerStore();
-    store.addLayer({ bagId: "corpus:lares", store: ms, writable: false });
-    store.removeLayer("corpus:lares");
-    expect(store.hasBag("corpus:lares")).toBe(false);
+    const corpusId = corpusBagId("lares");
+    store.addLayer({ bagId: corpusId, store: ms, writable: false });
+    store.removeLayer(corpusId);
+    expect(store.hasBag(corpusId)).toBe(false);
   });
 
-  test("corpusBagId produces namespaced id", () => {
-    expect(corpusBagId("elyncia")).toBe("corpus:elyncia");
-    expect(corpusBagId("lares")).toBe("corpus:lares");
+  test("corpusBagId produces lar: URI at pos-2 child-doc slot", () => {
+    // M21 law: bag ID = full lar: URI of the owning Automerge doc.
+    // Corpus docs live at pos-2 under @catalog.
+    expect(corpusBagId("elyncia")).toBe("lar:///ha.ka.ba/@catalog/@elyncia");
+    expect(corpusBagId("lares")).toBe("lar:///ha.ka.ba/@catalog/@lares");
   });
 });
 
@@ -72,7 +82,7 @@ describe("CompositeStore — layer management", () => {
 // Read fan-out — highest-priority layer wins
 // ---------------------------------------------------------------------------
 
-describe("CompositeStore — read priority (system < corpus < room)", () => {
+describe("CompositeStore — read priority (ha < corpus < room)", () => {
   let system: MemoryTiddlerStore;
   let corpus: MemoryTiddlerStore;
   let room:   MemoryTiddlerStore;
@@ -83,9 +93,9 @@ describe("CompositeStore — read priority (system < corpus < room)", () => {
     corpus = new MemoryTiddlerStore();
     room   = new MemoryTiddlerStore();
     store  = new CompositeStore();
-    store.addLayer({ bagId: BAG_IDS.system, store: system, writable: false });
+    store.addLayer({ bagId: BAG_IDS.lararium, store: system, writable: false });
     store.addLayer({ bagId: corpusBagId("lares"), store: corpus, writable: false });
-    store.addLayer({ bagId: BAG_IDS.room, store: room, writable: true });
+    store.addLayer({ bagId: TEST_ROOM_URI, store: room, writable: true });
   });
 
   test("get() returns null when no layer has the title", async () => {
@@ -140,18 +150,18 @@ describe("CompositeStore — read priority (system < corpus < room)", () => {
 describe("CompositeStore — write routing", () => {
   test("put() without any writable layer throws", async () => {
     const store = new CompositeStore();
-    store.addLayer({ bagId: BAG_IDS.system, store: new MemoryTiddlerStore(), writable: false });
+    store.addLayer({ bagId: BAG_IDS.lararium, store: new MemoryTiddlerStore(), writable: false });
     await expect(
       store.put({ title: "lar:///x", fields: {} }, systemOrigin()),
     ).rejects.toThrow(/no writable layer/);
   });
 
-  test("put() writes to the registered writable store, not system", async () => {
+  test("put() writes to the registered writable store, not ha island", async () => {
     const system = new MemoryTiddlerStore();
     const room   = new MemoryTiddlerStore();
     const store  = new CompositeStore();
-    store.addLayer({ bagId: BAG_IDS.system, store: system, writable: false });
-    store.addLayer({ bagId: BAG_IDS.room,   store: room,   writable: true });
+    store.addLayer({ bagId: BAG_IDS.lararium, store: system, writable: false });
+    store.addLayer({ bagId: TEST_ROOM_URI,    store: room,   writable: true });
 
     await store.put(record("lar:///new", "data"), roomOrigin());
 
@@ -163,7 +173,7 @@ describe("CompositeStore — write routing", () => {
     const room  = new MemoryTiddlerStore();
     const draft = new MemoryTiddlerStore();
     const store = new CompositeStore();
-    store.addLayer({ bagId: BAG_IDS.room,  store: room,  writable: true });
+    store.addLayer({ bagId: TEST_ROOM_URI,    store: room,  writable: true });
     store.addLayer({ bagId: BAG_IDS.draft, store: draft, writable: true });
 
     await store.put(record("lar:///edit", "draft"), draftOrigin());
@@ -185,8 +195,8 @@ describe("CompositeStore — subscribe fan-out", () => {
     const changes: LarTiddlerChange[] = [];
     store.subscribe((c) => changes.push(c));
 
-    store.addLayer({ bagId: BAG_IDS.system, store: system, writable: false });
-    store.addLayer({ bagId: BAG_IDS.room,   store: room,   writable: true });
+    store.addLayer({ bagId: BAG_IDS.lararium, store: system, writable: false });
+    store.addLayer({ bagId: TEST_ROOM_URI,    store: room,   writable: true });
 
     await system.put(record("lar:///A", "sys"), systemOrigin());
     await room.put(record("lar:///B", "room"), roomOrigin());
@@ -198,7 +208,7 @@ describe("CompositeStore — subscribe fan-out", () => {
   test("unsubscribe stops notifications", async () => {
     const room  = new MemoryTiddlerStore();
     const store = new CompositeStore();
-    store.addLayer({ bagId: BAG_IDS.room, store: room, writable: true });
+    store.addLayer({ bagId: TEST_ROOM_URI, store: room, writable: true });
 
     const changes: LarTiddlerChange[] = [];
     const unsub = store.subscribe((c) => changes.push(c));

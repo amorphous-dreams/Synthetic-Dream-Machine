@@ -31,8 +31,12 @@ import {
   LarPeer, PEER_CAPABILITIES_BROWSER, OpenIdentitySlot,
   AutomergeDocStore, LarariumDocStore,
   CompositeStore, corpusBagId, emptyLarariumDoc,
-  LARARIUM_DOC_URI, CATALOG_DOC_URI, LARES_DOC_URI, roomLarUri, corpusLarUri, BAG_IDS,
+  emptyIdentitiesDoc, emptyGroupsDoc, emptySessionsDoc,
+  LARARIUM_DOC_URI, CATALOG_DOC_URI, LARES_DOC_URI,
+  IDENTITIES_DOC_URI, GROUPS_DOC_URI, SESSIONS_DOC_URI,
+  roomLarUri, corpusLarUri, BAG_IDS,
 }                                                       from "@lararium/core";
+import type { IdentitiesDoc, GroupsDoc, SessionsDoc }   from "@lararium/core";
 import { TW5Engine, MemeSyncAdaptor, VmPool, DirectMemeRecipeVm } from "@lararium/tw5";
 import type { MemeRecipeVm }                            from "@lararium/tw5";
 
@@ -235,15 +239,40 @@ export async function openBrowserLarPeer(opts: {
     );
     composite.addLayer({ bagId: BAG_IDS.lares, store: new AutomergeDocStore(laresHandle, BAG_IDS.lares), writable: false });
   }
-
-  // ── 5. Corpus docs — one bag per corpus island ───────────────────────────
+  // ── 4-social. Social plane docs — @identities / @groups / @sessions ────────────
+  // Browser reads oracle tiddlers the node peer wrote; same local-first boot path.
+  const identitiesDocUrl = larariumDocHandle?.doc()?.tiddlers?.[IDENTITIES_DOC_URI]?.text ?? null;
+  if (identitiesDocUrl) {
+    const idHandle = await waitHandleLocal<IdentitiesDoc>(
+      repo, identitiesDocUrl as AutomergeUrl,
+      () => repo.create<IdentitiesDoc>(emptyIdentitiesDoc()),
+    );
+    composite.addLayer({ bagId: BAG_IDS.identities, store: new AutomergeDocStore(idHandle as unknown as DocHandle<MemeStoreDoc>, BAG_IDS.identities), writable: false });
+  }
+  const groupsDocUrl = larariumDocHandle?.doc()?.tiddlers?.[GROUPS_DOC_URI]?.text ?? null;
+  if (groupsDocUrl) {
+    const grHandle = await waitHandleLocal<GroupsDoc>(
+      repo, groupsDocUrl as AutomergeUrl,
+      () => repo.create<GroupsDoc>(emptyGroupsDoc()),
+    );
+    composite.addLayer({ bagId: BAG_IDS.groups, store: new AutomergeDocStore(grHandle as unknown as DocHandle<MemeStoreDoc>, BAG_IDS.groups), writable: false });
+  }
+  const sessionsDocUrl = larariumDocHandle?.doc()?.tiddlers?.[SESSIONS_DOC_URI]?.text ?? null;
+  if (sessionsDocUrl) {
+    const seHandle = await waitHandleLocal<SessionsDoc>(
+      repo, sessionsDocUrl as AutomergeUrl,
+      () => repo.create<SessionsDoc>(emptySessionsDoc()),
+    );
+    composite.addLayer({ bagId: BAG_IDS.sessions, store: new AutomergeDocStore(seHandle as unknown as DocHandle<MemeStoreDoc>, BAG_IDS.sessions), writable: false });
+  }
+  // ── 5. Corpus docs — one bag per corpus child-doc ──────────────────────────
   // Isomorphic oracle path: read from CatalogDoc.tiddlers keyed by corpusLarUri(slug).
+  // corpusLarUri(slug) = "lar:///ha.ka.ba/@catalog/@{slug}" (pos-2 child-doc slot).
   // Node peer writes these tiddlers; browser peer reads them — single source of truth.
-  // catalog.corpora may still exist as a legacy optimization index but is not authoritative.
-  // LARES_DOC_URI excluded: ba is opened via ha oracle, not the CatalogDoc tiddler scan.
-  const CORPUS_PREFIX = "lar:///ha.ka.ba/@";
+  // catalog.corpora is a legacy optimization index only; tiddlers oracle is authoritative.
+  const CORPUS_PREFIX = "lar:///ha.ka.ba/@catalog/@";
   const corpusEntries = Object.entries(catalog?.tiddlers ?? {})
-    .filter(([uri]) => uri.startsWith(CORPUS_PREFIX) && uri !== CATALOG_DOC_URI && uri !== LARARIUM_DOC_URI && uri !== LARES_DOC_URI)
+    .filter(([uri]) => uri.startsWith(CORPUS_PREFIX))
     .map(([uri, tiddler]) => ({
       id: uri.slice(CORPUS_PREFIX.length),
       docUrl: (tiddler as { text?: string }).text ?? null,
@@ -256,7 +285,7 @@ export async function openBrowserLarPeer(opts: {
     );
     const bagId = corpusBagId(entry.id);
     composite.addLayer({ bagId, store: new AutomergeDocStore(handle, bagId), writable: false });
-    // Self-describing: corpus doc holds its own lar: URI + automerge URL as a tiddler.
+    // Self-describing: corpus doc carries its own lar: URI + automerge URL as a tiddler.
     const corpusUri = corpusLarUri(entry.id);
     const existingSelfRef = (handle.doc() as unknown as Record<string, { text?: string }>)?.[corpusUri]?.text;
     if (existingSelfRef !== handle.url) {

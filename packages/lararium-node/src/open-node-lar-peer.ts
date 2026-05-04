@@ -26,18 +26,25 @@ import { Repo }                         from "@automerge/automerge-repo";
 import { NodeFSStorageAdapter }         from "@automerge/automerge-repo-storage-nodefs";
 import { NodeWSServerAdapter }          from "@automerge/automerge-repo-network-websocket";
 import type { WebSocketServer }         from "ws";
-import type { CatalogDoc, MemeStoreDoc, LarariumDoc } from "@lararium/core";
+import type { CatalogDoc, MemeStoreDoc, LarariumDoc, IdentitiesDoc, GroupsDoc, SessionsDoc } from "@lararium/core";
 import {
   LarPeer, PEER_CAPABILITIES_NODE, OpenIdentitySlot,
   AutomergeDocStore, LarariumDocStore,
   CompositeStore, corpusBagId, emptyLarariumDoc,
-  CATALOG_DOC_URI, LARES_DOC_URI, corpusLarUri, roomLarUri, BAG_IDS,
+  emptyIdentitiesDoc, emptyGroupsDoc, emptySessionsDoc,
+  CATALOG_DOC_URI, LARES_DOC_URI,
+  IDENTITIES_DOC_URI, GROUPS_DOC_URI, SESSIONS_DOC_URI,
+  corpusLarUri, roomLarUri, BAG_IDS,
 }                                       from "@lararium/core";
 import { TW5Engine, MemeSyncAdaptor, VmPool, DirectMemeRecipeVm } from "@lararium/tw5";
 import type { MemeRecipeVm } from "@lararium/tw5";
 import {
   seedLarariumDoc,
   seedLaresDoc,
+  seedIdentitiesDoc,
+  seedGroupsDoc,
+  seedSessionsDoc,
+  seedDefaultRecipes,
   reconcileEngineBlobIfChanged,
   reconcileLaresPluginBlobIfChanged,
   reconcileWellKnownTiddlers,
@@ -219,12 +226,57 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
       laresHandle = seedLaresDoc(repo);
     }
     composite.addLayer({ bagId: BAG_IDS.lares, store: new AutomergeDocStore(laresHandle, BAG_IDS.lares), writable: false });
-    // Zelenka: keep oracle tiddlers current on every boot — self, ka, ba.
-    reconcileWellKnownTiddlers(islandHandle, catalogHandle.url, laresHandle.url);
   }
 
-  // ── 3c. Corpus docs — one bag per corpus island ───────────────────────────
-  const corpusEntries = Object.values(catalog?.corpora ?? {});
+  // ── 3b-social. Social plane docs — @identities / @groups / @sessions ─────
+  // Oracle pattern identical to LaresDoc: ha oracle tiddler → automerge: URL → doc.
+  // Social docs boot after content Tiga so ha island handle is available for oracle.
+  let identitiesHandle: DocHandle<IdentitiesDoc> | null = null;
+  let groupsHandle: DocHandle<GroupsDoc> | null = null;
+  let sessionsHandle: DocHandle<SessionsDoc> | null = null;
+  if (islandHandle) {
+    const identitiesUrl = islandHandle.doc()?.tiddlers?.[IDENTITIES_DOC_URI]?.text ?? null;
+    identitiesHandle = identitiesUrl
+      ? await waitHandleLocal<IdentitiesDoc>(repo, identitiesUrl as AutomergeUrl, () => repo.create<IdentitiesDoc>(emptyIdentitiesDoc()))
+      : seedIdentitiesDoc(repo);
+    composite.addLayer({ bagId: BAG_IDS.identities, store: new AutomergeDocStore(identitiesHandle as unknown as DocHandle<MemeStoreDoc>, BAG_IDS.identities), writable: false });
+
+    const groupsUrl = islandHandle.doc()?.tiddlers?.[GROUPS_DOC_URI]?.text ?? null;
+    groupsHandle = groupsUrl
+      ? await waitHandleLocal<GroupsDoc>(repo, groupsUrl as AutomergeUrl, () => repo.create<GroupsDoc>(emptyGroupsDoc()))
+      : seedGroupsDoc(repo);
+    composite.addLayer({ bagId: BAG_IDS.groups, store: new AutomergeDocStore(groupsHandle as unknown as DocHandle<MemeStoreDoc>, BAG_IDS.groups), writable: false });
+
+    const sessionsUrl = islandHandle.doc()?.tiddlers?.[SESSIONS_DOC_URI]?.text ?? null;
+    sessionsHandle = sessionsUrl
+      ? await waitHandleLocal<SessionsDoc>(repo, sessionsUrl as AutomergeUrl, () => repo.create<SessionsDoc>(emptySessionsDoc()))
+      : seedSessionsDoc(repo);
+    composite.addLayer({ bagId: BAG_IDS.sessions, store: new AutomergeDocStore(sessionsHandle as unknown as DocHandle<MemeStoreDoc>, BAG_IDS.sessions), writable: false });
+
+    // Zelenka: keep oracle tiddlers current on every boot — self, ka, ba, social plane.
+    reconcileWellKnownTiddlers(
+      islandHandle, catalogHandle.url,
+      laresHandle?.url,
+      identitiesHandle.url,
+      groupsHandle.url,
+      sessionsHandle.url,
+    );
+    // Seed default recipe tiddlers into ha island (idempotent — no-op on resume).
+    seedDefaultRecipes(islandHandle);
+  }
+
+  // ── 3c. Corpus docs — one bag per corpus child-doc ───────────────────────
+  // Isomorphic oracle path: read from CatalogDoc.tiddlers keyed by corpusLarUri(slug).
+  // corpusLarUri(slug) = "lar:///ha.ka.ba/@catalog/@{slug}" (pos-2 child-doc slot).
+  // catalog.corpora Record is a legacy optimization index only; tiddlers oracle authoritative.
+  const CORPUS_PREFIX = "lar:///ha.ka.ba/@catalog/@";
+  const corpusEntries = Object.entries(catalog?.tiddlers ?? {})
+    .filter(([uri]) => uri.startsWith(CORPUS_PREFIX))
+    .map(([uri, tiddler]) => ({
+      id: uri.slice(CORPUS_PREFIX.length),
+      docUrl: (tiddler as { text?: string }).text ?? null,
+    }))
+    .filter((e): e is { id: string; docUrl: string } => Boolean(e.docUrl));
   const corpusReadyP = Promise.all(corpusEntries.map(async (entry) => {
     const handle = await waitHandleLocal<MemeStoreDoc>(
       repo, entry.docUrl as AutomergeUrl,
