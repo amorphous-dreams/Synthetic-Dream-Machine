@@ -7,8 +7,8 @@
  *   - PKCE + DPoP handled entirely by @atproto/oauth-client-browser.
  *   - client_id for localhost dev = "http://localhost" (AT Proto loopback special case).
  *   - client_id for production    = "https://elyncia.app/oauth/client-metadata.json"
- *   - After the callback, the session's DID is the user's identity.
- *   - The session is posted to /auth/session to register the Automerge peer.
+ *   - After the callback, the session's DID is the user's Automerge peer identity.
+ *   - The DID is stored in the LarAuthReceipt and seeded into the social Automerge docs.
  *
  * Boot flow:
  *   initBlueSkyClient() → call once at app start

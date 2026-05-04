@@ -36,6 +36,7 @@ import {
   LARARIUM_DOC_URI, CATALOG_DOC_URI, LARES_DOC_URI,
   IDENTITIES_DOC_URI, GROUPS_DOC_URI, SESSIONS_DOC_URI,
   roomLarUri, corpusLarUri, BAG_IDS, recipeUri,
+  sha256Hex, defaultCryptoProvider,
 }                                                       from "@lararium/core";
 import type { IdentitiesDoc, GroupsDoc, SessionsDoc }   from "@lararium/core";
 import { TW5Engine, MemeSyncAdaptor, VmPool, DirectMemeRecipeVm } from "@lararium/tw5";
@@ -362,8 +363,24 @@ export async function openBrowserLarPeer(opts: {
   // ── 7. TW5Engine — boot with core blob + lares plugin + vendor plugins from LarariumDoc ──
   // new Uint8Array(raw) normalises Automerge's internal chunk type to a clean ArrayBuffer.
   const doc = larariumDocHandle?.doc();
-  const coreBlobRaw = doc?.blobs?.["tiddlywikicore"]?.blob;
-  const coreBlob    = coreBlobRaw ? new Uint8Array(coreBlobRaw) : undefined;
+  const coreBlobEntry = doc?.blobs?.["tiddlywikicore"];
+  const coreBlobRaw   = coreBlobEntry?.blob;
+  const coreBlob      = coreBlobRaw ? new Uint8Array(coreBlobRaw) : undefined;
+
+  // Integrity gate — verify sha256 of engine bytes against the oracle tiddler stamp.
+  // This replaces the sw.web2.ts CDN-boundary check. The CRDT channel is trusted
+  // by Automerge sync, but we still verify content-address matches the declared hash.
+  if (coreBlob && coreBlobEntry?.sha256) {
+    const actualSha = await sha256Hex(coreBlob, defaultCryptoProvider);
+    if (actualSha !== coreBlobEntry.sha256) {
+      console.error(
+        `[lararium] tiddlywikicore sha256 mismatch: got=${actualSha.slice(0, 12)}… want=${coreBlobEntry.sha256.slice(0, 12)}…`,
+      );
+      // Don't boot with a tampered blob — surface the phase and bail.
+      setPhase("error");
+      return;
+    }
+  }
 
   const blobs = doc?.blobs ?? {};
   const preloadedTiddlers: Array<Record<string, unknown>> = [];

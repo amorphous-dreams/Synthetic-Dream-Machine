@@ -2,7 +2,8 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { App } from "./App.js";
 
-// Deregister any previously installed SW — web3 blob path needs no SW.
+// Sweep any SW registered by a previous build (sw.web2.ts era). The blob-mesh
+// path delivers TW5 engine bytes through the Automerge catalog; no SW is needed.
 if ("serviceWorker" in navigator) {
   navigator.serviceWorker.getRegistrations().then((regs) => {
     regs.forEach((r) => r.unregister());
