@@ -52,17 +52,15 @@ export class TW5Engine {
   boot(coreBlob?: Uint8Array, preloadedTiddlers?: Array<Record<string, unknown>>): Promise<void> {
     if (this._bootPromise) return this._bootPromise;
     this._bootPromise = (async () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const g = globalThis as any;
       const isBrowser = typeof window !== "undefined" && typeof document !== "undefined";
 
       // Browser web3 path: suppress auto-boot, inject blob, then boot once with preloads.
       if (isBrowser) {
-        if (coreBlob && !g.$tw?.modules?.titles) {
+        if (coreBlob && !globalThis.$tw?.modules?.titles) {
           // Pre-set suppressBoot so the blob script does NOT auto-boot.
-          g.$tw ??= {};
-          g.$tw.boot ??= {};
-          g.$tw.boot.suppressBoot = true;
+          globalThis.$tw ??= {} as TW5Instance;
+          globalThis.$tw.boot ??= {} as TW5Instance["boot"];
+          globalThis.$tw.boot.suppressBoot = true;
 
           await new Promise<void>((resolve, reject) => {
             const blob    = new Blob([new Uint8Array(coreBlob)], { type: "application/javascript" });
@@ -75,18 +73,18 @@ export class TW5Engine {
           });
         }
 
-        if (!g.$tw?.modules?.titles) {
+        if (!globalThis.$tw?.modules?.titles) {
           throw new Error("TW5Engine: no TW5 core. Pass coreBlob from LarariumDoc to boot().");
         }
 
-        // Fall through to the shared boot path below with instance = g.$tw.
+        // Fall through to the shared boot path below with instance = globalThis.$tw.
       }
 
       let instance: TW5Instance;
       if (isBrowser) {
-        g.$tw.boot.suppressBoot = true;
-        g.$tw.boot.argv = g.$tw.boot.argv ?? [];
-        instance = g.$tw as unknown as TW5Instance;
+        globalThis.$tw!.boot.suppressBoot = true;
+        globalThis.$tw!.boot.argv = globalThis.$tw!.boot.argv ?? [];
+        instance = globalThis.$tw as unknown as TW5Instance;
       } else {
         instance = (await loadNodeTiddlyWiki()).TiddlyWiki() as unknown as TW5Instance;
         instance.boot.argv = [];
@@ -96,7 +94,7 @@ export class TW5Engine {
 
       await new Promise<void>((resolve) => {
         let restoreStdout: (() => void) | null = null;
-        const proc = g.process;
+        const proc = (globalThis as Record<string, unknown>).process as (typeof process) | undefined;
         if (proc?.stdout?.write) {
           const orig = proc.stdout.write.bind(proc.stdout);
           proc.stdout.write = () => true;

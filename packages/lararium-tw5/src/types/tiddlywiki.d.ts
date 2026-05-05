@@ -801,3 +801,9 @@ declare module "tiddlywiki" {
   function TiddlyWiki(): TW5Instance;
   export = { TiddlyWiki };
 }
+
+// Global $tw — injected by TW5 core script at boot time (browser and Node).
+// Declared here so tw5-vm.ts can read globalThis.$tw without `as any`.
+declare global {
+  var $tw: TW5Instance | undefined;
+}

@@ -1,11 +1,9 @@
 /**
  * lararium-island — seeds the LarariumDoc Automerge corpus doc.
  *
- * Reads TW5 core JS and vendored plugin JSON files from disk on first boot.
- * Stores each as a Uint8Array blob (Automerge binary, no CRDT string overhead).
- *
- * Called once per server lifetime when the lararium island URL file does not exist.
- * On subsequent boots the existing doc is loaded from NodeFS storage.
+ * SPRINT-2 TARGET: first-boot disk reads (TW5 core blob, vendored plugins,
+ * lares plugin blob) move to buildGenesisIsland build script. Runtime path
+ * will clone from a content-addressed genesis artifact — no disk reads.
  *
  * Island law: this doc is separate from the catalog.
  * The catalog receives a CatalogEngineEntry pointing to the engine doc URL.
@@ -115,75 +113,10 @@ function readBlob(path: string): Uint8Array {
   return new Uint8Array(readFileSync(path));
 }
 
-/**
- * Check whether the TW5 core blob on disk has a different sha256 than what the
- * existing LarariumDoc stores, and patch the doc if so.
- *
- * Called on resume boots so a rebuild (new tiddlywikicore-*.js) propagates to all
- * live peers without requiring a full island reseed.
- *
- * Returns the sha256 in use after the call (existing or updated).
- */
-export async function reconcileEngineBlobIfChanged(
-  handle: DocHandle<LarariumDoc>,
-): Promise<string> {
-  const coreJsPath = join(TW5_PUBLIC_DIR, TW5_CORE_SCRIPT_FILENAME);
-  if (!existsSync(coreJsPath)) return handle.doc()?.blobs[ENGINE_CORE_ID]?.sha256 ?? "";
-
-  const coreBlob  = readBlob(coreJsPath);
-  const diskSha   = sha256hex(coreBlob);
-  const storedSha = handle.doc()?.blobs[ENGINE_CORE_ID]?.sha256 ?? "";
-
-  if (diskSha === storedSha) return storedSha;
-
-  const coreEntry: LarariumBlobEntry = {
-    id:       ENGINE_CORE_ID,
-    version:  TW5_VERSION,
-    sha256:   diskSha,
-    mimeType: "application/javascript",
-    blob:     coreBlob,
-    license:  "BSD-3-Clause",
-    author:   "UnaMesa Association",
-    source:   "https://tiddlywiki.com",
-  };
-
-  handle.change((doc) => {
-    (doc.blobs as Record<string, LarariumBlobEntry>)[ENGINE_CORE_ID] = coreEntry;
-  });
-
-  console.log(`[lararium-island] engine blob updated  v${TW5_VERSION}  sha=${diskSha.slice(0, 12)}…  (was ${storedSha.slice(0, 12)}…)`);
-  return diskSha;
-}
-
-/**
- * Recompute the lararium-lares plugin blob from current lares source files.
- * If the sha256 differs from what the LarariumDoc stores, patches the doc.
- *
- * Call this on every resume boot alongside reconcileEngineBlobIfChanged
- * so that changes to lararium-tw5/memes tiddlers propagate to all peers.
- */
-export async function reconcileLaresPluginBlobIfChanged(
-  handle: DocHandle<LarariumDoc>,
-): Promise<string> {
-  const freshBlob = await buildLaresPluginBlob();
-  const freshSha  = sha256hex(freshBlob);
-  const storedSha = handle.doc()?.blobs["lararium-lares"]?.sha256 ?? "";
-
-  if (freshSha === storedSha) return storedSha;
-
-  handle.change((doc) => {
-    (doc.blobs as Record<string, LarariumBlobEntry>)["lararium-lares"] = {
-      id:       "lararium-lares",
-      version:  TW5_VERSION,
-      sha256:   freshSha,
-      mimeType: "application/json",
-      blob:     freshBlob,
-    };
-  });
-
-  console.log(`[lararium-island] lares plugin updated  sha=${freshSha.slice(0, 12)}…  (was ${storedSha.slice(0, 12) || "none"}…)`);
-  return freshSha;
-}
+// reconcileEngineBlobIfChanged and reconcileLaresPluginBlobIfChanged removed.
+// Resume-boot disk polling was a web2 pattern — server read disk to patch CRDT.
+// SPRINT-2 replacement: reconcileIslandFromGenesis() diffs live doc against
+// the content-addressed genesis artifact CID. No disk reads on resume.
 
 /**
  * Seed a new LarariumDoc from disk artifacts.
@@ -273,9 +206,8 @@ export async function seedLarariumDoc(
     if (doc.systemTitles) (doc.systemTitles as string[]).splice(0, doc.systemTitles.length, ...systemTitles);
   });
 
-  // Pack lares memes into a TW5 plugin blob via Seed VM.
-  // Browser and Node peers receive this via Automerge sync and pass it to
-  // TW5Engine.boot() as a preloaded plugin — TW5 unpacks tiddlers at boot.
+  // SPRINT-2: extract to buildGenesisIsland — this disk walk moves to build time.
+  // Runtime will clone from the genesis artifact instead of building the blob here.
   const laresPluginBlob  = await buildLaresPluginBlob();
   const laresPluginSha   = sha256hex(laresPluginBlob);
   handle.change((doc) => {

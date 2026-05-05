@@ -54,8 +54,6 @@ import {
   seedDefaultRecipes,
   seedBagDescriptors,
   seedBlobDescriptors,
-  reconcileEngineBlobIfChanged,
-  reconcileLaresPluginBlobIfChanged,
   reconcileWellKnownTiddlers,
 } from "./lararium-island.js";
 
@@ -155,6 +153,9 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
   // On subsequent boots: read URL from disk, call repo.find() — already in NodeFS, fast.
   // This is NOT seed-then-hydrate: the URL file is the stable rendezvous anchor.
   // GET /api/catalog serves this file's content — available before any sync completes.
+  // catalog-url: named infrastructure exception — stores this peer's own Automerge
+  // doc URL, not content. Peer-symmetric: any peer writes only its own URL here.
+  // Analogous to BOOTSTRAP_SCANS (codec layer) — intentionally not in the CRDT.
   const catalogUrlFile = join(storageDir, "catalog-url");
   let resolvedCatalogUrl: string | null = catalogUrl ?? null;
   if (!resolvedCatalogUrl) {
@@ -207,8 +208,8 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
       repo, islandDocUrl as AutomergeUrl,
       () => repo.create<LarariumDoc>(emptyLarariumDoc()),
     );
-    await reconcileEngineBlobIfChanged(islandHandle);
-    await reconcileLaresPluginBlobIfChanged(islandHandle);
+    // SPRINT-2: reconcileIslandFromGenesis(islandHandle, genesisHandle) replaces
+    // the removed reconcileEngineBlobIfChanged + reconcileLaresPluginBlobIfChanged.
     composite.addLayer({ bagId: BAG_IDS.lararium, store: new LarariumDocStore(islandHandle, BAG_IDS.lararium), writable: false });
     emit("island-ready");
   } else {
