@@ -29,7 +29,7 @@
  *   SessionTiddler.capabilityToken   — ConcAp / UCAN token proving session authority
  *
  *   All fields arrive via CRDT sync — queryable from TW5 `[field[verifyingKey]]`
- *   without any TS interop.  The TW5 wiki surface IS the ACL query surface.
+ *   without any TS interop.  The TW5 wiki surface serves as the ACL query surface.
  *
  * POLICY EXPRESSIONS (open-ended strings; Keyhive layer enforces at runtime):
  *   "public"              — any peer may read / write

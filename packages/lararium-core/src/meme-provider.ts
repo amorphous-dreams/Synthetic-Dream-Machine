@@ -4,7 +4,7 @@
  *
  * Motivation:
  *   Automerge replays all historical patches to new peers on connect. Without
- *   coalescing, each patch fires every subscriber: the same URI is deserialized
+ *   coalescing, each patch fires every subscriber: the same URI gets deserialized
  *   8+ times, TW5 accumulates hundreds of addTiddler calls before its first
  *   refresh, and disk write-back hammers the filesystem redundantly.
  *
@@ -113,7 +113,7 @@ export class MemeProvider {
   // Registration
   // ---------------------------------------------------------------------------
 
-  /** True after markSyncComplete() has been called for the given island (default "automerge"). */
+  /** Returns true after markSyncComplete() has been called for the given island (default "automerge"). */
   isSyncComplete(islandId = "automerge"): boolean { return this._syncComplete.has(islandId); }
 
   /**

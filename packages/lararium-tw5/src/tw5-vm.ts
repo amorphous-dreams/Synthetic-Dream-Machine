@@ -375,11 +375,11 @@ export class TW5Engine {
     return getZoomLayout(this._tw.wiki, level);
   }
 
-  /** True after boot() resolves. */
+  /** Returns true after boot() resolves. */
   get ready(): boolean { return this._tw !== null; }
 
   /**
-   * The raw TW5 $tw.wiki instance. Available after boot().
+   * Exposes the raw TW5 $tw.wiki instance. Accessible after boot().
    */
   get wiki(): TW5Wiki {
     if (!this._tw) throw new Error("TW5Engine: call boot() before accessing wiki");

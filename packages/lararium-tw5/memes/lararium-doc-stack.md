@@ -21,7 +21,7 @@ retain       = true
 
 ## The Six-Layer Model
 
-Every peer boots the same doc stack in this order. Each layer is a separate
+Every peer boots the same doc stack in this order. Each layer forms a separate
 Automerge DocHandle. Layers compose into a `CompositeStore`; TW5 recipe law
 (highest bag priority wins) resolves title collisions.
 
@@ -63,7 +63,7 @@ Automerge DocHandle. Layers compose into a `CompositeStore`; TW5 recipe law
 
 ## Boot Sequence
 
-Altar lights turn on one by one. Each step is async; TW5 renders
+Altar lights turn on one by one. Each step runs async; TW5 renders
 whatever is available at each phase:
 
 ```
@@ -88,21 +88,21 @@ whatever is available at each phase:
    Search index, reaction hints ready.
 ```
 
-`ReactionEngine.boot(tw5)` is called after step 3 (corpus bags loaded),
+`ReactionEngine.boot(tw5)` fires after step 3 (corpus bags loaded),
 not at step 4 — reactions on system + corpus tiddlers fire first.
-The boot scan on an empty room doc is valid (optimistic-empty);
+The boot scan on an empty room doc passes as valid (optimistic-empty);
 incremental `onUriChanged` updates the graph as room tiddlers arrive.
 
 ## Creator-Namespaced Rooms
 
-Room doc URLs are owned by their creator's DID:
+Room doc URLs belong to their creator's DID:
 
 ```
 lar://elyncia.social/rooms/altar-fire    → creator: did:web:elyncia.social
 lar://amorphousdream.com/rooms/cabal-1   → creator: cabal DID
 ```
 
-The room URL IS the capability root (Keyhive: doc URL = public key).
+The room URL serves as the capability root (Keyhive: doc URL = public key).
 Other peers receive a delegation token granting read/write; the URL
 does not change when new members join.
 
@@ -123,7 +123,7 @@ survive concurrent promotion races (CRDT-safe move pattern).
 
 ## Tiddler Export Round-Trip
 
-TW5's built-in export pipeline (json / tid / html) is the round-trip
+TW5's built-in export pipeline (json / tid / html) serves as the round-trip
 anchor. For the `.md` carrier format:
 
 ```
@@ -135,7 +135,7 @@ disk (.md file)
 
 The disk projector `renderFn` calls `exportMemeText(record)` — not
 `renderTiddler()` (HTML) and not `getTiddlerText()` (raw text).
-The `.md` carrier format is lossless: every field in `LarTiddlerRecord`
+The `.md` carrier format stays lossless: every field in `LarTiddlerRecord`
 round-trips through the TOML `#iam` block + wikitext body.
 
 For HTML export (sidebar "Export tiddler" dropdown), TW5's own

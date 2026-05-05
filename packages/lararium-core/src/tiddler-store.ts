@@ -98,7 +98,7 @@ export interface LarTiddlerStore {
    * Returns titles of all non-deleted tiddlers visible under current authority.
    * Applies room recipe + Orichalcum ability checks.
    * Never returns $:/temp/* (session-local scratch).
-   * "Draft of ..." titles ARE returned — drafts are identity-scoped, not session-scoped.
+   * "Draft of ..." titles get returned — drafts are identity-scoped, not session-scoped.
    */
   listVisible(): Promise<string[]>;
 

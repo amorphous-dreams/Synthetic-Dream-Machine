@@ -8,20 +8,20 @@
  * Invariant 1 — BOOTSTRAP parseable:
  *   The grammar meme text at lar:///ha.ka.ba/@lares/grammars/memetic-wikitext
  *   MUST be fully parseable by BOOTSTRAP_SCANS alone (no loaded GrammarRules).
- *   This is non-negotiable: the grammar meme defines the rules that parse itself;
+ *   Non-negotiable: the grammar meme defines the rules that parse itself;
  *   if it uses a custom sigil from those rules, an infinite regress results.
  *   Allowed structural elements: ahu, pranala, toml fences, loulou, aka, SOH/STX/ETX/EOT.
  *   FORBIDDEN: any sigil registered by the grammar meme itself.
  *
  * Invariant 2 — System-bag tiddler, raw carrier text, not deserialized fragments:
  *   The grammar meme lives as a memetic-wikitext tiddler in the 'system' bag of
- *   the LarariumDoc (engine Automerge document). It is NOT stored as a binary blob
- *   in LarariumDoc.blobs. Binary blobs are for large, immutable, non-parseable
- *   assets (TW5 core JS, plugin bundles). The grammar meme text is small, mutable
+ *   the LarariumDoc (engine Automerge document). It does NOT live as a binary blob
+ *   in LarariumDoc.blobs. Binary blobs serve large, immutable, non-parseable
+ *   assets (TW5 core JS, plugin bundles). The grammar meme text stays small, mutable
  *   across versions, and must remain human-readable and diff-able.
  *
- *   The grammar tiddler stores raw carrier text in its .text field — it is the
- *   deliberate exception to the "meme files deserialize into fragment tiddlers" law.
+ *   The grammar tiddler stores raw carrier text in its .text field — it functions as
+ *   the deliberate exception to the "meme files deserialize into fragment tiddlers" law.
  *   Reason: grammarRulesFromText() must walk the carrier AST (collecting toml
  *   SigilNodes) via BOOTSTRAP_SCANS. Storing pre-deserialized fragment tiddlers
  *   would require deserializeCarrier() to run first — which needs the grammar —
@@ -29,12 +29,25 @@
  *   circle. Path β (fragment tiddler storage) was evaluated and rejected: moving
  *   deserialization earlier in boot tightens, not relaxes, the dependency.
  *
- * Invariant 3 — Seeded at server start, from lares/:
- *   The canonical source of truth is lares/grammars/memetic-wikitext.md (filesystem).
- *   At server start, the host reads this file using BOOTSTRAP_SCANS, computes a
- *   SHA-256 contentHash, and writes/updates the system tiddler in the engine doc
- *   if the contentHash has changed. Runtime always reads from the engine doc (CRDT),
- *   never from the filesystem after boot.
+ * Invariant 3 — Grammar travels in the genesis artifact:  (@phase: S2 — declared now; implemented Sprint 2)
+ *   The grammar meme travels as an ordinary tiddler inside genesis/island.bin —
+ *   an Automerge.save() binary embedded in the bundle at build time. No peer
+ *   reads grammar from any filesystem path at runtime. At boot, repo.import(genesisBytes)
+ *   hydrates the full engine doc; the grammar tiddler is present with its sealed
+ *   content-hash. A peer whose genesis binary is absent or whose grammar tiddler
+ *   hash diverges from the sealed root MUST halt rather than fall back to any
+ *   local filesystem source.
+ *
+ *   Grammar version bump = new genesis binary with a new artifact root. No in-place
+ *   upgrade path exists until Keyhive provides signed migration receipts
+ *   (Invariant 6). Code that assumes the current grammar hash is permanent will
+ *   break on version bump; plan for this before S2 ships.
+ *
+ *   Transitional state (pre-S2): the node peer reads lares/grammars/memetic-wikitext.md
+ *   at cold-boot with BOOTSTRAP_SCANS, seeds the engine doc, then treats CRDT as
+ *   authoritative. Named exception: CODEC_EX_PRE_S2_COLD_BOOT in
+ *   system-invariants.ts. It disappears when build-genesis-island.ts ships.
+ *   See GRAMMAR_GENESIS_REL_PATH — marked @remove: S2.
  *
  * Invariant 4 — Operator shadow-override via bag priority:
  *   Operators may extend or override grammar rules by creating a tiddler at the
@@ -47,8 +60,8 @@
  * Invariant 5 — Single source per Automerge doc:
  *   Each LarariumDoc contains exactly one grammar tiddler for the base grammar.
  *   Additional grammar memes (extension grammars, domain vocabularies) MAY live
- *   at other URIs and are merged with the base at parse time. The base URI is
- *   the sole anchor for BOOTSTRAP_SCANS-level trust.
+ *   at other URIs and merge with the base at parse time. The base URI anchors
+ *   BOOTSTRAP_SCANS-level trust.
  *
  * Invariant 6 — Version gate stub (Keyhive):
  *   When Keyhive lands, grammar meme changes to the engine doc MUST be signed
@@ -64,7 +77,7 @@
 
 /**
  * The canonical URI of the base memetic-wikitext grammar meme.
- * This URI is the single anchor for Invariant 1 trust.
+ * This URI anchors Invariant 1 trust.
  */
 export const GRAMMAR_MEME_URI =
   "lar:///ha.ka.ba/@lares/grammars/memetic-wikitext" as const;
@@ -76,10 +89,10 @@ export const GRAMMAR_MEME_URI =
 export { LARARIUM_DOC_URI as GRAMMAR_BAG } from "./lararium-doc.js";
 
 /**
- * Relative path of the grammar meme source within the lares/memes/ directory.
- * Used by the server-side seeder to locate the file on the filesystem.
+ * Relative path of the grammar genesis artifact within the lares/ directory.
+ * Used only during cold-boot seeding (Invariant 3). Not read at runtime.
  */
-export const GRAMMAR_LARES_REL_PATH = "grammars/memetic-wikitext.md" as const;
+export const GRAMMAR_GENESIS_REL_PATH = "grammars/memetic-wikitext.md" as const;
 
 // ---------------------------------------------------------------------------
 // Version gate stub — Keyhive (Invariant 6)

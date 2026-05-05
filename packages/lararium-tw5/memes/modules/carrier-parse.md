@@ -26,7 +26,7 @@ body-sha256 = "de5ced103cad1f1a5e414cabe57a2052578fa69e190baf2e2dc06fb458db9ceb"
 <<~ ahu #ooda-ha >>
 
 ✶ carrier text arrives; locate the iau block and opener URI.
-⏿ orient: is this a valid carrier? does metadata align with opener? are STX/ETX/return-throat present?
+⏿ orient: does this qualify as a valid carrier? does metadata align with opener? do STX/ETX/return-throat appear?
 ◇ decide rating: kapu if valid + implements kapu URI; ano if valid + implements set non-empty; meme if valid; data if opener or metadata present; noise otherwise.
 ▶ parse pranala edges; merge implements set; return CarrierRecord with shape, metadata, implements.
 ⤴ verify: diagnostics surface all errors; rating reflects the worst valid state; depthState reflects loulou count.
@@ -38,7 +38,7 @@ body-sha256 = "de5ced103cad1f1a5e414cabe57a2052578fa69e190baf2e2dc06fb458db9ceb"
 
 ## Contract
 
-`parseCarrier(uri, text)` is the entry gate for all carrier ingress. It is isomorphic — no `fs`, no `path`, no `window`. The host passes text; parseCarrier returns a typed record.
+`parseCarrier(uri, text)` serves as the entry gate for all carrier ingress. Isomorphic — no `fs`, no `path`, no `window`. The host passes text; parseCarrier returns a typed record.
 
 **This function cannot be loaded from a meme.** It orchestrates `extractIamMetadata`, `validateCarrierShape`, and `parsePranalaEdges` — all compiled-in. Extracting it to a corpus JS module would require all three dependencies to also move, collapsing the entire carrier spine into a single bundle. The boundary is practical, not philosophical.
 

@@ -5,7 +5,7 @@
  * Runs in Node, Deno, browser, and TW5-era JS environments.
  *
  * The push/pop scope stack converts the flat sorted ParseEvent stream into a
- * properly nested MemeAstNode tree. This is the structural heart of the parser.
+ * properly nested MemeAstNode tree. This forms the structural heart of the parser.
  *
  * Heleuma ka: sync-heleuma tracks this file.
  * Bundle entry: packages/lararium-tw5/src/meme-ast-entry.ts

@@ -45,7 +45,7 @@ The shape type (frame/arrow/note) lives in the `type` field, not the ID prefix.
 - low zoom (`includeAhu:false`) → cluster to meme center (centerX, centerY)
 - high zoom (`includeAhu:true`) → spread to ahu frame position (spreadX, spreadY)
 
-Stage band on `LarTLFrame` is a UX annotation only — NOT an epistemic gate.
+Stage band on `LarTLFrame` functions as a UX annotation only — NOT an epistemic gate.
 
 <<~/ahu >>
 

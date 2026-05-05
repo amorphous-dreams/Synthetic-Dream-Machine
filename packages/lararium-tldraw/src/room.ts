@@ -1,7 +1,7 @@
 /**
  * room.ts — Static room registry for the Lararium canvas.
  *
- * A "room" is a named tldraw page with a canonical TW filter expression.
+ * A "room" names a tldraw page with a canonical TW filter expression.
  * This file defines the data model and built-in room constants.
  * All tldraw-runtime projection code was removed in the M27 rewrite.
  *

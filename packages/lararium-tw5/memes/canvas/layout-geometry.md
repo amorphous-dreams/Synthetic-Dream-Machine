@@ -28,7 +28,7 @@ source-symbol = "FRAME_W FRAME_H AHU_W AHU_H DETAIL_FRAME_W GRAPH_FRAME_W LAYOUT
 **Canvas-type-first model.** Each tldraw canvas instance carries a `canvas-type` that
 governs which layout modes and zoom levels apply. The `story-river` layout hosts the
 floating TW5/HUD instance — when the operator opens full TW5 mode, that floating frame
-IS the story-river surface. Other canvas types (RPG battle map, merchant/caravan UX,
+serves as the story-river surface. Other canvas types (RPG battle map, merchant/caravan UX,
 docs/wiki) use independent geometry tuned to their surface.
 
 Layout constants below apply to the `docs-wiki` canvas type (the Lararium default).
@@ -44,7 +44,7 @@ Full-text meme display at close zoom, story-river as primary reading surface.
 
 ```toml
 # Known canvas types — each type selects its own layout geometry and zoom levels
-# story-river IS the floating TW5/HUD frame when in full TW5 mode
+# story-river serves as the floating TW5/HUD frame when in full TW5 mode
 canvas-types = [
   "docs-wiki",       # meme graph + story-river HUD (default Lararium canvas)
   "rpg-battle-map",  # tactical battle grid; meme frames suppressed or minimized
@@ -52,7 +52,7 @@ canvas-types = [
   "rpg-overworld",   # regional/hex map; spatial family edges drive layout
 ]
 
-# story-river is the TW5/HUD floating overlay — present on docs-wiki; optional on others
+# story-river serves as the TW5/HUD floating overlay — present on docs-wiki; optional on others
 # full-text-view is configurable per canvas type (default: true for docs-wiki only)
 [canvas-type-flags]
 docs-wiki.story-river-hud     = true

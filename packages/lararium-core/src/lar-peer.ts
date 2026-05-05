@@ -54,7 +54,7 @@ export const PEER_CAPABILITIES_BROWSER: LarPeerCapabilities = {
 /**
  * LarPeerOptions — construction args for a LarPeer.
  *
- * `store` is the full composite store (system → corpus:* → room → draft).
+ * `store` holds the full composite store (system → corpus:* → room → draft).
  * Factories build the CompositeStore and call markSyncComplete() on the writable
  * AutomergeDocStore layers before constructing the peer.
  */
@@ -75,7 +75,7 @@ export interface LarPeerOptions<TVm = unknown> {
  * Server and browser peers are symmetric. The Repo's storage/network adapters
  * and `capabilities` preset encode the environmental difference — not subclasses.
  *
- * `store` is the full composite stack. Factories own the Automerge DocHandles;
+ * `store` holds the full composite stack. Factories own the Automerge DocHandles;
  * LarPeer receives only the assembled LarTiddlerStore interface.
  */
 export class LarPeer<TVm = unknown> {

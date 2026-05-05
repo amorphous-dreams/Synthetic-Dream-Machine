@@ -1,7 +1,7 @@
 /**
  * AuthGate — shown before boot when no auth receipt is present.
  *
- * Bluesky is the primary login. GitHub OAuth is secondary (env-gated).
+ * Bluesky serves as the primary login. GitHub OAuth functions as secondary (env-gated).
  * Local-dev auto-passes if the server injected a receipt meta tag.
  */
 

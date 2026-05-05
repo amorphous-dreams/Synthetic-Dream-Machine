@@ -92,7 +92,7 @@ lar://telarus:operator@enyalios/threshold.uncertain.opens/?stances=^.?.-.-.-&con
 
 The stable address does not change across sessions, machines, or participants.
 
-**Comparison rule:** two URIs designate the same stable address iff their lowercased, stripped paths are byte-identical. Query and fragment are excluded from comparison.
+**Comparison rule:** two URIs designate the same stable address iff their lowercased, stripped paths are byte-identical. Query and fragment drop out of comparison.
 
 <<~/ahu >>
 
@@ -140,7 +140,7 @@ The `?ffz=` parameter carries nested OODA-HA loop position across five scales pe
 ?ffz=0.0.3.2.1
 ```
 
-The fixed positions are Action, Combat, Tactical, Operational, and Strategic.
+The fixed positions: Action, Combat, Tactical, Operational, and Strategic.
 
 **Glyph table:**
 
@@ -158,7 +158,7 @@ Hoʻoko (⤴) names the execution gap within Act that surfaces into Aftermath. I
 
 **Rules:**
 - All five positions MUST appear every time — no trailing-zero omission.
-- Values are numeric counters at fixed scale positions. Glyphs are optional render-target decorations.
+- Values represent numeric counters at fixed scale positions. Glyphs are optional render-target decorations.
 - `0.0.0.0.0` = all scales inactive; `0.0.3.2.1` = Tactical 3, Operational 2, Strategic 1.
 - The numeric canonical form avoids raw glyph hexcodes in query strings.
 

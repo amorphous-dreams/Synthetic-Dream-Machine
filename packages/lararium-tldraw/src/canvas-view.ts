@@ -4,7 +4,7 @@
  * TldrawCanvasBinding translates CanvasPatch into tldraw editor calls using
  * the typed tldraw API — no store.put() hacks, no branded-ID casts.
  *
- * Isomorphism law: this file is the ONLY file in @lararium/tldraw that imports
+ * Isomorphism law: this file stands as the ONLY file in @lararium/tldraw that imports
  * the tldraw runtime.  All upstream code (canvas-record.ts,
  * canvas-projection.ts, nav.ts) uses only types that are safe in Node / tests.
  *

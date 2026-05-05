@@ -11,7 +11,7 @@
  *                              └─ editor.createShapes() / editor.updateShapes()
  *
  * This module is isomorphic — it has no tldraw runtime dependency.
- * TldrawCanvasBinding (in canvas-view.ts) is the browser-side adapter.
+ * TldrawCanvasBinding (in canvas-view.ts) serves as the browser-side adapter.
  *
  * Usage:
  *   const proj = new MemeCanvasProjection();

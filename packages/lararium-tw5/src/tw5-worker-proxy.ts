@@ -2,7 +2,7 @@
  * TW5WorkerProxy — MemeRecipeVm backed by a Worker Thread (Node) or Web Worker (browser).
  *
  * Spawns a meme-worker-script instance and forwards MemeRecipeVm calls as structured-clone
- * messages. Request/response pairs are matched by a monotonic id.
+ * messages. Request/response pairs match by a monotonic id.
  *
  * Fire-and-forget ops (onUriChanged, onSyncComplete, dispose) post without waiting.
  * Query ops (filterTiddlers, renderMeme) return Promises resolved by the response listener.

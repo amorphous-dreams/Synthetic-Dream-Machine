@@ -1,9 +1,9 @@
 /**
  * recipe — RecipeTiddler schema + URI helpers for Lares recipe tiddlers.
  *
- * A recipe tiddler is a first-class tiddler stored inside a root doc (typically
+ * A recipe tiddler functions as a first-class tiddler stored inside a root doc (typically
  * LarariumDoc or CatalogDoc) that describes an ordered bag stack for a TW5 VM.
- * Recipes are the bridge between the static Automerge doc topology and the dynamic
+ * Recipes bridge the static Automerge doc topology and the dynamic
  * TW5 FilterRecipe evaluation surface.
  *
  * Recipe tiddler addressing:

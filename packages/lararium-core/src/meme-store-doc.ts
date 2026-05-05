@@ -19,7 +19,7 @@ export type { MutableLarRecord } from "./base-doc.js";
 /**
  * MemeStoreDoc — writable tiddler-store document.
  *
- * Extends LarDoc: `schemaVersion` + `tiddlers` are the canonical shape.
+ * Extends LarDoc: `schemaVersion` + `tiddlers` constitute the canonical shape.
  * No extra fields — the whole payload lives in `tiddlers`.
  */
 export interface MemeStoreDoc extends LarDoc {

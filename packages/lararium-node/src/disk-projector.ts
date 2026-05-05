@@ -1,7 +1,7 @@
 /**
  * LarDiskProjector — unidirectional projection: store → lares/ files on disk.
  *
- * The Automerge store IS the mind. Disk files are a projection of it.
+ * The Automerge store functions as the mind. Disk files project from it.
  * This projector NEVER reads from disk — that direction belongs to the ingest
  * path (file watcher → store.put).
  *

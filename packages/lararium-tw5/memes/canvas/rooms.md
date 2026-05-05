@@ -26,7 +26,7 @@ retain       = true
 # Lararium Canvas Rooms
 
 Four built-in rooms form the default lararium canvas.
-Each room has an id, a TiddlyWiki filter expression, a tldraw page, and a layout strategy.
+Each room carries an id, a TiddlyWiki filter expression, a tldraw page, and a layout strategy.
 Portals connect rooms as directed edges.
 
 <<~/ahu >>
@@ -51,8 +51,8 @@ A room SHOULD carry `tlPageId` when a dedicated tldraw page is allocated.
 A portal MUST carry `id`, `fromRoomId`, `toRoomId`, and `label`.
 Portal ids SHOULD follow the convention `portal:{from}→{to}`.
 
-Layout strategies are ordered. The cascade selects first match.
-`story-river` is the catch-all default and MUST appear last.
+Layout strategies follow a priority order. The cascade selects first match.
+`story-river` serves as the catch-all default and MUST appear last.
 
 <<~/ahu >>
 

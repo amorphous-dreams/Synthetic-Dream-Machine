@@ -1,13 +1,13 @@
 /**
  * bluesky-auth — AT Protocol OAuth client for the browser.
  *
- * Bluesky is the primary login for all end-users.
+ * Bluesky serves as the primary login for all end-users.
  *
  * AT Proto OAuth law:
  *   - PKCE + DPoP handled entirely by @atproto/oauth-client-browser.
  *   - client_id for localhost dev = "http://localhost" (AT Proto loopback special case).
  *   - client_id for production    = "https://elyncia.app/oauth/client-metadata.json"
- *   - After the callback, the session's DID is the user's Automerge peer identity.
+ *   - After the callback, the session's DID serves as the user's Automerge peer identity.
  *   - The DID is stored in the LarAuthReceipt and seeded into the social Automerge docs.
  *
  * Boot flow:

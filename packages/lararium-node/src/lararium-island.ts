@@ -99,7 +99,7 @@ async function buildLaresPluginBlob(): Promise<Uint8Array> {
   return new TextEncoder().encode(JSON.stringify(pluginTiddler));
 }
 
-/** Absolute path to lararium-tw5/public/ — the seeder's source of truth for TW5 core blob. */
+/** Absolute path to lararium-tw5/public/ — the seeder's authoritative source for the TW5 core blob. */
 const TW5_PUBLIC_DIR = join(dirname(fileURLToPath(import.meta.url)), "../../lararium-tw5/public");
 
 /** Absolute path to the tw5-plugins directory inside lararium-tw5/plugins/. */
@@ -196,7 +196,7 @@ export async function seedLarariumDoc(
   }
 
   // Snapshot the $:/ system title manifest from a freshly booted VM.
-  // This set is the engine authority boundary — corpus docs must not store these.
+  // This set marks the engine authority boundary — corpus docs must not store these.
   const snapshotVm = new TW5Engine();
   await snapshotVm.boot();
   const systemTitles = snapshotVm.filterTiddlers("[prefix[$:/]]").sort();
@@ -352,7 +352,7 @@ export function seedLaresDoc(repo: Repo): DocHandle<MemeStoreDoc> {
 // ---------------------------------------------------------------------------
 
 /**
- * Seed a new IdentitiesDoc — principal records store.
+ * Seed a new IdentitiesDoc — stores principal records.
  * Writes self-ref tiddler at IDENTITIES_DOC_URI inside the new doc.
  * ha oracle tiddler written by reconcileWellKnownTiddlers.
  */
@@ -369,7 +369,7 @@ export function seedIdentitiesDoc(repo: Repo): DocHandle<IdentitiesDoc> {
 }
 
 /**
- * Seed a new GroupsDoc — collective authority + durable membership.
+ * Seed a new GroupsDoc — holds collective authority and durable membership.
  * Writes self-ref tiddler at GROUPS_DOC_URI inside the new doc.
  * ha oracle tiddler written by reconcileWellKnownTiddlers.
  */
@@ -386,7 +386,7 @@ export function seedGroupsDoc(repo: Repo): DocHandle<GroupsDoc> {
 }
 
 /**
- * Seed a new SessionsDoc — live operator-agent session docs.
+ * Seed a new SessionsDoc — carries live operator-agent session docs.
  * Writes self-ref tiddler at SESSIONS_DOC_URI inside the new doc.
  * ha oracle tiddler written by reconcileWellKnownTiddlers.
  */
@@ -483,7 +483,7 @@ export function seedDefaultRecipes(islandHandle: DocHandle<LarariumDoc>): void {
 // ---------------------------------------------------------------------------
 // seedBagDescriptors — one BagTiddler per root-doc bag, stored in ha island
 //
-// TW5 Bags and Recipes law: "bags have access controls that determine which
+// TW5 Bags and Recipes law: "bags carry access controls that determine which
 // users can read or write to them."  Bag descriptor tiddlers make those policies
 // first-class queryable tiddlers in the wiki.
 //
@@ -539,7 +539,7 @@ export function seedBagDescriptors(islandHandle: DocHandle<LarariumDoc>): void {
 // seedBlobDescriptors — one descriptor tiddler per LarariumDoc blob entry
 //
 // Self-describing meme law: anything outside `tiddlers` (i.e. LarariumDoc.blobs)
-// MUST have a descriptor tiddler in `tiddlers` so TW5 wiki filters can enumerate
+// MUST carry a descriptor tiddler in `tiddlers` so TW5 wiki filters can enumerate
 // blobs without TS interop.
 //
 // Descriptor tiddler fields:

@@ -1,7 +1,7 @@
 /**
  * meme-grammar — derive GrammarRules from a grammar meme text.
  *
- * The grammar meme IS a meme: its text follows the memetic-wikitext carrier
+ * The grammar meme qualifies as a meme: its text follows the memetic-wikitext carrier
  * protocol and is parsed by BOOTSTRAP_SCANS (Invariant 1 of grammar-invariants.ts).
  * GrammarRules are extracted from `[[sigils]]` and `[[families]]` TOML
  * array-of-tables inside toml-fenced blocks in the grammar meme body.

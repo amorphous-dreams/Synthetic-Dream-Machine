@@ -139,7 +139,7 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
 
   // ── 1. Repo ───────────────────────────────────────────────────────────────
   const storage = new NodeFSStorageAdapter(storageDir);
-  // Tier-3 causal-island boundary: WebSocket server is the network relay.
+  // Tier-3 causal-island boundary: WebSocket server serves as the network relay.
   // wss is typed via isomorphic-ws — the same module NodeWSServerAdapter uses.
   const network = new NodeWSServerAdapter(wss);
   // sharePolicy: alpha stub — open federation.
@@ -151,7 +151,7 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
   // Local-first rendezvous anchor: catalog URL persisted to storageDir/catalog-url.
   // On first boot: create blank catalog, write URL to disk immediately.
   // On subsequent boots: read URL from disk, call repo.find() — already in NodeFS, fast.
-  // This is NOT seed-then-hydrate: the URL file is the stable rendezvous anchor.
+  // NOT seed-then-hydrate: the URL file serves as the stable rendezvous anchor.
   // GET /api/catalog serves this file's content — available before any sync completes.
   // catalog-url: named infrastructure exception — stores this peer's own Automerge
   // doc URL, not content. Peer-symmetric: any peer writes only its own URL here.
@@ -164,8 +164,8 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
 
   const blankCatalog = (): DocHandle<CatalogDoc> => {
     const h = repo.create<CatalogDoc>({ schemaVersion: "0.1", corpora: {}, rooms: {}, recipes: {}, projections: {}, tiddlers: {} });
-    // Self-reference: catalog doc knows its own lar: URI and automerge: URL.
-    // Isomorphic with LarariumDoc — any peer that syncs this doc self-discovers.
+    // Self-reference: catalog doc holds its own lar: URI and automerge: URL.
+    // Follows the same pattern as LarariumDoc — any peer that syncs this doc self-discovers.
     h.change((doc) => {
       doc.tiddlers[CATALOG_DOC_URI] = {
         title: CATALOG_DOC_URI, text: h.url, fields: {},
@@ -197,7 +197,7 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
   composite.addLayer({ bagId: BAG_IDS.catalog, store: new LarariumDocStore(catalogHandle, BAG_IDS.catalog), writable: false });
 
   // ── 3b. LarariumIsland doc (ha) — lararium bag ───────────────────────────
-  // Node peer is the authority for the island doc.
+  // Node peer holds authority for the island doc.
   // On first boot: seed from disk, register URL in catalog.
   // On resume: reconcile blobs if disk artifacts changed.
   let islandHandle: DocHandle<LarariumDoc> | null = null;
@@ -433,7 +433,7 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
   const vmBagStack: readonly string[] = vmRecipe?.bagStack ?? composite.layerIds;
 
   // Decode lares plugin + vendor plugin blobs from the island doc.
-  // "lararium-lares" is always preloaded — it is the lares corpus plugin, not optional.
+  // "lararium-lares" always preloads — it functions as the lares corpus plugin and remains non-optional.
   // Vendored community plugins ($:/plugins/*) are opt-in per Recipe via the plugins field.
   // When the resolved Recipe declares no plugins, no vendored plugins are preloaded.
   const tw5 = new TW5Engine();

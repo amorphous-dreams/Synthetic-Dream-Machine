@@ -41,7 +41,7 @@ export interface LarAuthority {
 
 export interface LarHostfulResolution extends LarResolution {
   readonly authority: LarAuthority;
-  /** Hostful records never resolve to lares/ files — they are exchange records. */
+  /** Hostful records never resolve to lares/ files — they function as exchange records. */
   readonly kind: "caps-virtual";
   readonly virtual: true;
 }
@@ -99,7 +99,7 @@ export function parseHostfulLarUri(uri: string): LarHostfulResolution {
 }
 
 /**
- * Returns true if the URI is a hostful live exchange record.
+ * Returns true if the URI qualifies as a hostful live exchange record.
  * Hostful records must not silently override hostless invariant memes.
  */
 export function isHostfulLarUri(uri: string): boolean {

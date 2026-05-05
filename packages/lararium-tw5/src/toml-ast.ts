@@ -21,8 +21,8 @@ import { parse as smolParse } from "smol-toml";
 //
 // TOML tables become prefix-keyed scalars:
 //   { uncertainty: { foo: "bar" } } → { "uncertainty-foo": "bar" }
-// Numbers / booleans are coerced to string (TW5 tiddler field contract).
-// Arrays are kept as string[] (maps to TW5 tags-style field).
+// Numbers / booleans coerce to string (TW5 tiddler field contract).
+// Arrays stay as string[] (maps to TW5 tags-style field).
 // ---------------------------------------------------------------------------
 function flattenTomlValue(
   obj: Record<string, unknown>,
@@ -68,7 +68,7 @@ export function parseTaploFields(
 // ---------------------------------------------------------------------------
 // Taplo write engine — lazy WASM load, comment-preserving format.
 //
-// _taploLoad is set on the first call to getTaplo() and reused thereafter.
+// _taploLoad gets set on the first call to getTaplo() and reused thereafter.
 // If the WASM fails to load, getTaplo() resolves to null and all write-path
 // functions degrade gracefully (no throw, no data loss).
 // ---------------------------------------------------------------------------

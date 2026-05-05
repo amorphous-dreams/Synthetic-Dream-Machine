@@ -53,8 +53,8 @@ export interface PranalaEdgeViolation {
 //
 // Two orthogonal axes appear across every domain in the system.
 // Scale tells you the size of a loop. Phase tells you where in it you are.
-// They run in opposite directions: Act is the finest-grain scale (Action);
-// Observe is the widest-lens scale (Week). This tension is productive.
+// They run in opposite directions: Act covers the finest-grain scale (Action);
+// Observe covers the widest-lens scale (Week). This tension is productive.
 //
 // All domain-specific ladders (scope, zoom, Kowloon addressing, lifecycle)
 // are projections of LADDER_5. All phase/confidence/stance systems are
@@ -225,8 +225,8 @@ export const TOOL_APERTURE: Record<Tool, ToolAperture> = {
 // ---------------------------------------------------------------------------
 // Hawaiian ↔ Verse 5.6+ ↔ English concept mapping (core grammar reference)
 //
-// Hawaiian is the core grammar for load-bearing concepts.
-// Verse 5.6+ names are the UEFN alignment target.
+// Hawaiian serves as the core grammar for load-bearing concepts.
+// Verse 5.6+ names align to the UEFN target.
 // English names serve as grammar-internal terms or programmer aliases only.
 //
 // ┌──────────────────────────┬──────────────────────────────┬──────────────────────────────┐
@@ -264,7 +264,7 @@ export const TOOL_APERTURE: Record<Tool, ToolAperture> = {
 //
 // ---------------------------------------------------------------------------
 // Render modes — canonical values for PranalaEdge.renderMode.
-// Hawaiian name is the primary; English is the internal programmer alias.
+// Hawaiian name carries primary weight; English serves as the internal programmer alias.
 // ---------------------------------------------------------------------------
 
 // Schema: lar:///ha.ka.ba/@lares/api/v0.1/pono/reaction-graph
@@ -278,7 +278,7 @@ export const RENDER_MODE_REACTION_WIRE = "papalohe" as const;
 // ---------------------------------------------------------------------------
 // Reaction roles — Verse 5.6+ aligned type-level declarations.
 //
-// These are the KNOWN role values for `reaction` family pranala edges on type
+// These mark the KNOWN role values for `reaction` family pranala edges on type
 // memes (KumuDeviceSpec derivation). NOT instance-level wiring (that is the
 // papalohe sigil on instance memes, carrying listenable/subscribable payload fields).
 // ---------------------------------------------------------------------------

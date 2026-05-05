@@ -37,7 +37,7 @@ export type LarariumOpenPhase =
 // local-dev: provider-neutral development receipt; no cryptographic authority.
 // keyhive:   future encrypted group sync with membership graph (Brooklyn / Beelay).
 //
-// Only "local-dev" executes today. The Keyhive arm is a type-only socket until
+// Only "local-dev" executes today. The Keyhive arm functions as a type-only socket until
 // the membership graph and encrypted sync layer land.
 // ---------------------------------------------------------------------------
 
@@ -242,7 +242,7 @@ export class ReactionGraph {
   /**
    * Register a handler for ALL bindings with a given subscribable value.
    * Fires for any (fromUri, listenable) whose resolved binding has subscribable === name.
-   * This is the preferred wiring point for view-layer actions — subscribe once,
+   * Preferred wiring point for view-layer actions — subscribe once,
    * automatically handles bindings that arrive after boot via updateUri().
    * Equivalent to subscribing to a UEFN Relay device by name rather than by source.
    */

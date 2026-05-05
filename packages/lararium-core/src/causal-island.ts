@@ -5,7 +5,7 @@
  *   Events in Universe are not simultaneously apprehended by any observer.
  *   A node never holds the full state of a distributed system "at once" —
  *   it holds a snapshot of what it has synchronized so far.
- *   This is not a limitation. It IS the topology.
+ *   This topology defines the system — not a limitation it suffers.
  *
  * Simultaneously apprehended: your local Automerge doc snapshot, right now.
  * Non-simultaneously apprehended: everything else —
@@ -15,7 +15,7 @@
  *   - kumu/active-meme instances whose event horizon is their own
  *
  * Law: Any boundary across which causality cannot be guaranteed simultaneously
- *      IS a causal island boundary.
+ *      marks a causal island boundary.
  *
  * Four tiers (inner → outer):
  *   Tier 0 — active memes (kumu/UEFN device instances): MAY become islands —
@@ -26,7 +26,7 @@
  *   Tier 2 — Automerge Realms: other Automerge docs reachable from this one,
  *            no matter where first encountered. Always non-simultaneous.
  *   Tier 3 — Lares nodes (federation layer): node-to-node edge islands.
- *            A pranala connection between nodes IS a causal island. MUST.
+ *            A pranala connection between nodes constitutes a causal island. MUST.
  */
 
 // ---------------------------------------------------------------------------
@@ -158,7 +158,7 @@ export type EdgeIslandLifecycle =
 // The offset belongs to the edge island — NOT to the remote node.
 // An edge island that reconnects resumes from its last known offset.
 // Peer-sync-state (Tier 1/2) is always non-simultaneously apprehended;
-// the edge island is the named, capability-gated record of that horizon.
+// the edge island functions as the named, capability-gated record of that horizon.
 // ---------------------------------------------------------------------------
 
 export interface EdgeIslandShape {
@@ -180,7 +180,7 @@ export interface EdgeIslandShape {
 // Visibility Gate
 //
 // A meme passes the federation gate when ALL conditions hold.
-// Stage band is a UX annotation — NOT a gate condition here.
+// Stage band functions as a UX annotation — NOT a gate condition here.
 // Room recipes MAY filter by stage as operator configuration.
 // ---------------------------------------------------------------------------
 
@@ -348,7 +348,7 @@ export type CausalIslandMust = typeof CAUSAL_ISLAND_MUST[number];
  *
  * "automerge-realm" and "peer-sync-state" are always non-simultaneously
  * apprehended (Fuller-Zelenka); they are listed here to make the doctrine
- * explicit even though they aren't promoted by ceremony — they ARE islands
+ * explicit even though they aren't promoted by ceremony — they qualify as islands
  * by topology.
  */
 // Schema: lar:///ha.ka.ba/@lares/api/v0.1/pono/causal-islands

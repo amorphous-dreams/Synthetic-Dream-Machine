@@ -48,28 +48,28 @@ The system folds into itself: the genesis artifact carries the engine that deser
 
 ---
 
-## S1 — Constitutional Invariants 🔄
+## S1 — Constitutional Invariants ✅
 
 **Goal:** Declare the full system's invariants before writing any new runtime code. The from-void design needs a written constitution.
 
 ### Tasks
 
-- [ ] Update `grammar-invariants.ts` Invariant 3: grammar travels in the genesis artifact; no runtime disk read on resume
-- [ ] Create `packages/lararium-core/src/system-invariants.ts`:
-  - `SYSTEM_LAWS` — the five architecture laws as runtime-assertable constants
-  - `GENESIS_INVARIANTS` — genesis artifact is canonical; all peers boot from it
-  - `PEER_INVARIANTS` — peer-symmetric: no peer is more authoritative than another at boot
-  - `CODEC_EXCEPTIONS` — named list of deliberate codec-layer exceptions (`catalog-url`, `BOOTSTRAP_SCANS`)
+- [x] Update `grammar-invariants.ts` Invariant 3: grammar travels in the genesis artifact; no runtime disk read on resume
+- [x] Create `packages/lararium-core/src/system-invariants.ts`:
+  - `SYSTEM_LAWS` — five architecture laws as typed witnessing constants
+  - `GENESIS_INVARIANTS` — causal origin, content-addressed identity, immutability, quine stub (`@phase: S5`)
+  - `PEER_INVARIANTS` — boot symmetry, operational divergence not authority, capability-from-receipt
+  - `CODEC_EXCEPTIONS` — catalog-url, BOOTSTRAP_SCANS, pre-S2 cold-boot, binary blobs
 
 ### Exit Criteria
 
-- `grammar-invariants.ts` Invariant 3 names genesis artifact as the grammar carrier
-- `system-invariants.ts` compiles clean and exports typed constant arrays
-- No new `TODO` or `SPRINT-2:` markers added without a corresponding backlog entry here
+- `grammar-invariants.ts` Invariant 3 names genesis artifact as the grammar carrier — ✅
+- `system-invariants.ts` compiles clean and exports typed constant arrays — ✅
+- No new `TODO` or `SPRINT-2:` markers added without a corresponding backlog entry here — ✅
 
 ---
 
-## S2 — Build-Time Genesis Builder 🔒
+## S2 — Build-Time Genesis Builder �
 
 **Goal:** Move all disk reads and blob construction to build time. Produce a deterministic, content-addressed Automerge doc.
 
@@ -171,6 +171,6 @@ S0 Cleanup
 | Item | Why deferred |
 |---|---|
 | `openBrowserLarPeer` wiring | No browser test harness yet; architecture same as node peer |
-| Federation / multi-peer sync | Correct after genesis is stable; not before |
+| Federation / multi-peer sync | Correct after genesis stabilizes; not before |
 | Kowloon feed integration | DreamDeck epic; depends on stable peer factory |
 | Grammar Invariant 4+ | Block until quine round-trip proves Invariant 3 |

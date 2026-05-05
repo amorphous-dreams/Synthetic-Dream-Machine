@@ -2,7 +2,7 @@
  * MemoryTiddlerStore — in-memory LarTiddlerStore for tests and fixtures.
  *
  * Not intended for production use. Satisfies the full LarTiddlerStore
- * interface with no I/O. Suitable for host.test.ts, sync-adaptor.test.ts,
+ * interface with no I/O. Works for host.test.ts, sync-adaptor.test.ts,
  * and browser host factory during development.
  *
  * Tombstoned titles disappear from listVisible() but remain readable via

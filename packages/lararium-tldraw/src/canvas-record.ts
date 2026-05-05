@@ -1,9 +1,9 @@
 /**
  * canvas-record.ts — isomorphic, local-first canvas data model.
  *
- * Wiki-first law: tiddlers ARE the source of truth.  Canvas is a projection.
+ * Wiki-first law: tiddlers serve as the source of truth.  Canvas functions as a projection.
  *
- * CanvasRecord is the platform-agnostic intermediate form:
+ * CanvasRecord serves as the platform-agnostic intermediate form:
  *   MutableLarRecord  →  CanvasRecord[]   (pure function, no tldraw runtime)
  *   CanvasRecord      →  tldraw shapes    (TldrawCanvasBinding, browser-only)
  *

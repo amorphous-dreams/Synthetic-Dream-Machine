@@ -65,11 +65,11 @@ export interface MemeCascadePredicate {
  *
  * Evaluation order: `filter` takes precedence over `match`.
  *   - `filter` present → evaluate as wikitext-filter expression against full closure;
- *     result is a URI set. O(1) lookup at apply time.
+ *     result forms a URI set. O(1) lookup at apply time.
  *   - `match` present, `filter` absent → evaluate predicate per frame at apply time.
  *   - Both absent → never matches.
  *
- * TOverride is the shape of the override object.
+ * TOverride carries the shape of the override object.
  * For tldraw: Partial<MemeTemplateProps>.
  * For React: Partial<KumuRenderProps> (future).
  * For generic use: Record<string, unknown>.

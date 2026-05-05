@@ -7,7 +7,7 @@
 
 import type { RecipeVm } from "./recipe-vm.js";
 
-// VmDebugSurface kept — it is the admin debug contract, invariant across rebuild.
+// VmDebugSurface kept — it functions as the admin debug contract, invariant across rebuild.
 export interface VmDebugSurface {
   list(): string[];
   filter(recipeId: string, expr: string): Promise<string[]>;

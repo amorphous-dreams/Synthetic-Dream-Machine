@@ -62,7 +62,7 @@ const ZOOM_DEFAULTS: Record<string, { w: number; h: number; color: string; inclu
 
 function applyZoomTemplate(editor: TldrawEditor, level: ZoomLevel, tw5: TW5Engine | null) {
   // Read layout props from TW5 wiki: filter by $:/tags/LarariumKumu + kumu-name field.
-  // TW5 is the first-class source of truth — no shape.meta.templateProps needed.
+  // TW5 serves as the first-class source of truth — no shape.meta.templateProps needed.
   const tl = tw5?.getZoomLayout(level) ?? ZOOM_DEFAULTS[level] ?? ZOOM_DEFAULTS["tactical"]!;
 
   const shapes = editor.getCurrentPageShapes();

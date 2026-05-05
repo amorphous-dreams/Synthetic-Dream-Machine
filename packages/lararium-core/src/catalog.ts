@@ -5,7 +5,7 @@ import type { MutableLarRecord } from "./base-doc.js";
  * CatalogDoc — the tiny root Automerge document that names all islands.
  *
  * Doctrine (research packet §8 principle 8):
- *   The catalog is the hallway. Corpus docs are libraries. Room docs are shrines.
+ *   The catalog serves as the hallway. Corpus docs function as libraries. Room docs function as shrines.
  *   The catalog MUST stay small and warmable. It MUST NOT contain full corpus.
  *
  * Boot order:

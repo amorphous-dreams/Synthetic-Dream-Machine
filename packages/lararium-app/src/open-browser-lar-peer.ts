@@ -186,7 +186,7 @@ export async function openBrowserLarPeer(opts: {
 
   if (bootstrapUrl) {
     // Speculatively open as LarariumDoc.  Inspect for blobs field after local
-    // materialisation — if present, it IS the engine doc (path A).
+    // materialisation — if present, it qualifies as the engine doc (path A).
     const candidate = await waitHandleLocal<LarariumDoc>(
       repo, bootstrapUrl as AutomergeUrl,
       () => repo.create<LarariumDoc>(emptyLarariumDoc()),

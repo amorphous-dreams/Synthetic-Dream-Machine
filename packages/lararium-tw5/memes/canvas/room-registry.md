@@ -28,7 +28,7 @@ source-symbol = "DEFAULT_ROOMS DEFAULT_PORTALS ROOM_SYSTEM ROOM_INVARIANTS ROOM_
 A room = one tldraw page driven by a TW5 filter expression.
 Portals = navigation arrows between rooms (spatial family edge, rendered as tldraw shape).
 Four default rooms ship with the docs-wiki canvas type.
-View-state is a pure reducer — nav history stack enables back-navigation.
+View-state functions as a pure reducer — nav history stack enables back-navigation.
 
 <<~/ahu >>
 

@@ -14,8 +14,27 @@ Branch: feature/lararium-node-3.
 Active work: 5-sprint web3 genesis artifact refactor (ROADMAP.md).
 Architecture laws in memory: feedback_architecture_principles.md.
 Do not re-decide the five architecture laws or the BOOTSTRAP_SCANS / Path α grammar decision.
-Sprint 0 complete. Next: Sprint 1 — grammar-invariants.ts Invariant 3 update.
+Sprint 0 complete. Sprint 1 complete. Next: Sprint 2 — build-genesis-island.ts.
 ```
+
+---
+
+## What Just Happened (Sprint 1 Complete)
+
+### Added to `packages/lararium-core/src/system-invariants.ts`
+
+- `SYSTEM_LAWS` — five architecture laws as typed witnessing constants (IDs importable by tests and agents)
+- `GENESIS_INVARIANTS` — causal origin, content-addressed identity, immutability, quine property stub (`@phase: S5`)
+- `PEER_INVARIANTS` — boot symmetry, post-boot operational divergence is not authority, capability-from-receipt
+
+### Already completed (not stale — Sprint 1 ran before SESSION.md was updated)
+
+- `grammar-invariants.ts` Invariant 3 — grammar travels in genesis artifact; peer halts on hash divergence; transitional `CODEC_EX_PRE_S2_COLD_BOOT` named
+- `CODEC_EXCEPTIONS` in `system-invariants.ts` — was present from prior pass
+
+### Clarified sprint boundary
+
+- `buildLaresPluginBlob()` runtime body deletion is **S2 scope**, not S1. The `// SPRINT-2` marker at the call site in `lararium-island.ts` line 211 is correct. CURRENT-EPIC.md Sprint 1 description overshot; corrected.
 
 ---
 
@@ -50,7 +69,7 @@ Sprint 0 complete. Next: Sprint 1 — grammar-invariants.ts Invariant 3 update.
 
 ### Grammar bootstrap resolved
 
-- Path α chosen: raw carrier text stored in CRDT; no grammar on first parse (BOOTSTRAP_SCANS is the codec escape hatch)
+- Path α chosen: raw carrier text stored in CRDT; no grammar on first parse (BOOTSTRAP_SCANS serves as the codec escape hatch)
 - `packages/lararium-core/src/grammar-invariants.ts` Invariant 2 updated to document the decision
 
 ---
@@ -67,7 +86,7 @@ Sprint 0 complete. Next: Sprint 1 — grammar-invariants.ts Invariant 3 update.
 
 ## BOOTSTRAP_SCANS Decision (Grammar Invariant 2)
 
-- Path α: raw carrier text is the deliberate exception to Law 5
+- Path α: raw carrier text functions as the deliberate exception to Law 5
 - BOOTSTRAP_SCANS = codec layer (not web2); Grammar Invariant 1
 - Path β (store grammar as fragment tiddlers) rejected: tightens the bootstrap circle
 - Documented in `packages/lararium-core/src/grammar-invariants.ts` Invariant 2
@@ -80,9 +99,9 @@ See ROADMAP.md Sprint column for sequencing.
 
 | # | Item | Sprint | Status |
 |---|---|---|---|
-| 1 | `grammar-invariants.ts` Invariant 3 — declare genesis artifact approach | S1 | Next |
-| 2 | `system-invariants.ts` in `lararium-core` — constitutional declaration | S1 | Next |
-| 3 | `packages/lararium-node/scripts/build-genesis-island.ts` — build-time genesis builder | S2 | Locked |
+| 1 | `grammar-invariants.ts` Invariant 3 — declare genesis artifact approach | S1 | ✅ Done |
+| 2 | `system-invariants.ts` in `lararium-core` — constitutional declaration | S1 | ✅ Done |
+| 3 | `packages/lararium-node/scripts/build-genesis-island.ts` — build-time genesis builder | S2 | Next |
 | 4 | `loadGenesisIsland()` runtime function | S3 | Locked |
 | 5 | Rewrite `openNodeLarPeer` + `openBrowserLarPeer` to use genesis artifact | S4 | Locked |
 | 6 | Wire `.tw5.cjs` outputs into genesis artifact; verify quine round-trip | S5 | Locked |

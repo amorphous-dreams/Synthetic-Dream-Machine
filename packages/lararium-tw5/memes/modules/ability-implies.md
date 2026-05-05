@@ -26,10 +26,10 @@ body-sha256 = "4eb7fd5da26c4cb5097ed713b105a0e0f8570f390a4ee7882ec7a98064faea68"
 <<~ ahu #ooda-ha >>
 
 ✶ two ability names arrive: `have` (what the principal holds) and `need` (what is required).
-⏿ orient: identical abilities trivially imply; `pull` is a relay-law exception — it implies only itself.
+⏿ orient: identical abilities trivially imply; `pull` functions as a relay-law exception — it implies only itself.
 ◇ decide: find both positions in ABILITY_LADDER; `have` implies `need` iff `haveIdx >= needIdx`.
 ▶ return true or false — one predicate, no side effects.
-⤴ verify: the relay-law exception (pull does not imply read) is the only non-monotonic case.
+⤴ verify: the relay-law exception (pull does not imply read) stands as the only non-monotonic case.
 ↺ pure; runs at gate time before any corpus load; must never block on I/O.
 
 <<~/ahu >>
@@ -38,9 +38,9 @@ body-sha256 = "4eb7fd5da26c4cb5097ed713b105a0e0f8570f390a4ee7882ec7a98064faea68"
 
 ## Contract
 
-`abilityImplies(have, need)` is the capability lattice predicate. The `ABILITY_LADDER` array defines total order from weakest (`pull`) to strongest (`revoke`).
+`abilityImplies(have, need)` serves as the capability lattice predicate. The `ABILITY_LADDER` array defines total order from weakest (`pull`) to strongest (`revoke`).
 
-**Relay-law exception**: `pull` carries without implying `read`. A shrine relay holds encrypted offerings it cannot decrypt or render. This is the ONLY non-monotonic case in the lattice. All other abilities imply every ability below them.
+**Relay-law exception**: `pull` carries without implying `read`. A shrine relay holds encrypted offerings it cannot decrypt or render. This stands as the ONLY non-monotonic case in the lattice. All other abilities imply every ability below them.
 
 ```
 pull < read < sync < write < propose < promote < admin < revoke
@@ -48,7 +48,7 @@ pull < read < sync < write < propose < promote < admin < revoke
 
 Exception: `pull` does NOT imply `read`. A principal with `pull` may forward bytes; it cannot decrypt or render.
 
-**Why compiled-in**: this predicate is called by `capabilityHasAbility`, `visibilityGate`, and the Automerge share-policy gate — all of which run before TW5 boots. Keyhive will carry capability proofs that embed this lattice natively; `abilityImplies` will be subsumed, not promoted.
+**Why compiled-in**: this predicate runs inside `capabilityHasAbility`, `visibilityGate`, and the Automerge share-policy gate — all of which run before TW5 boots. Keyhive will carry capability proofs that embed this lattice natively; `abilityImplies` will be subsumed, not promoted.
 
 <<~/ahu >>
 

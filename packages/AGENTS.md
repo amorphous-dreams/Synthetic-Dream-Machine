@@ -140,7 +140,7 @@ Watch these current weak spots:
 
 * MCP stdio smoke tests can time out when test framing drifts from SDK transport framing.
 * `@lararium/tw5` barrel can expose Node-shaped disk/TW5 boot imports to browser bundles.
-* Child-carrier reconstruction has lossy fallback paths when surgical slot replacement misses.
+* Child-carrier reconstruction produces lossy fallback paths when surgical slot replacement misses.
 * Automerge `whenReady()` and true initial peer replay completion may not mean the same thing.
 * Generated files in `@lararium/tw5/src/generated-*` come from scripts; do not hand-edit unless you intend to replace the generator output.
 * Open IDE tabs may name stale files; trust filesystem scans over editor ghosts.

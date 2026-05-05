@@ -3,7 +3,7 @@
  *
  * Local-first identity root (Brooklyn Zelenka / UCAN / Keyhive alignment):
  *   - keypair is generated device-local, persists to disk with mode 0o600
- *   - verifyingKey (hex 32 bytes) is the input to did:key derivation
+ *   - verifyingKey (hex 32 bytes) feeds did:key derivation
  *   - did:key derivation happens in the TW5 VM (cold-boot-ceremony module)
  *   - GitHub / BlueSky auth enriches displayName; it does not own the DID
  *
@@ -49,7 +49,7 @@ function keyFileName(login: string | null): string {
  * Key file is named by GitHub login for local dev — different developers on the
  * same machine each hold separate keys. Falls back to a shared file when offline.
  *
- * Causal-islands alignment: keypair generation is a device-local operation that
+ * Causal-islands alignment: keypair generation runs as a device-local operation that
  * MUST complete before any Automerge doc opens. The verifyingKey flows into the
  * cold-boot ceremony which writes the IdentityTiddler into IdentitiesDoc via
  * direct handle.change() — not through the TW5 sync adaptor (wrong island).

@@ -3,13 +3,14 @@
 > Updated: 2026-05-04
 > Branch: feature/lararium-node-3
 > Sprint 0: ✅ Complete — see SESSION.md for what changed
-> Active sprint: S1 — Constitutional Invariants + Demolition
+> Sprint 1: ✅ Complete — see SESSION.md for what changed
+> Active sprint: S2 — Genesis Artifact Build Script
 
 ---
 
 ## North Star
 
-> The genesis artifact IS the quine seed. Any peer (node, browser, worker) clones from it. No disk reads at runtime. The build step is the only seam between disk projections and the CRDT mind.
+> The genesis artifact functions as the quine seed. Any peer (node, browser, worker) clones from it. No disk reads at runtime. The build step forms the only seam between disk projections and the CRDT mind.
 
 ---
 
@@ -35,9 +36,9 @@ The Lararium architecture maps directly onto the Ink & Switch seven ideals:
 
 `Automerge.save(doc)` returns a deterministic `Uint8Array` encoding full document history. The same logical content always produces the same bytes. This means:
 
-- A genesis document built at **build time** can be saved to bytes and embedded in the bundle as a typed constant.
+- A genesis document built at **build time** can save to bytes and embed in the bundle as a typed constant.
 - At **runtime**, `Automerge.load(genesisBytes)` hydrates the full doc — zero disk I/O, zero network.
-- The `automerge:<base58>` DocUrl that automerge-repo assigns after `repo.import(bytes)` is a content-addressed stable room identifier — analogous to an IPFS CID or a Ceramic stream ID.
+- The `automerge:<base58>` DocUrl that automerge-repo assigns after `repo.import(bytes)` serves as a content-addressed stable room identifier — analogous to an IPFS CID or a Ceramic stream ID.
 
 ```ts
 // build-time
@@ -70,18 +71,18 @@ for await (const { cid, bytes } of reader.blocks()) {
 
 ### TiddlyWiki as Prior Art — The Quine Seed
 
-TiddlyWiki's `empty.html` is the canonical quine-genesis prior art:
+TiddlyWiki's `empty.html` stands as the canonical quine-genesis prior art:
 
 - **Single-file completeness**: the HTML contains the engine, all system tiddlers, and the save mechanism.
 - **Quine property**: saving the wiki outputs a new file that is itself a valid TiddlyWiki. The tool to build itself lives inside the artifact it builds.
-- **Genesis semantics**: `empty.html` is the zero-content seed. Every user's wiki is a fork of that seed. The seed is immutable; forks diverge from it.
+- **Genesis semantics**: `empty.html` serves as the zero-content seed. Every user's wiki forks from it. The seed holds immutable state; forks diverge from it.
 - **No server needed**: download, open in browser, write, save. The save mechanism writes a new quine.
 
 **Lararium's `genesis/island.bin` = `empty.html`**:
 - Deterministic build-time output.
 - Contains engine tiddlers, grammar meme, default bags + recipes, blob descriptors.
 - Every peer boots from it; CRDT sync carries forward from there.
-- The system can regenerate its own genesis: boot a vm from the artifact → `renderTiddler` → source file. That is the quine closure.
+- The system can regenerate its own genesis: boot a vm from the artifact → `renderTiddler` → source file. That forms the quine closure.
 
 ### Peer-Symmetric Architecture (Willow + Hypercore + Automerge-Repo)
 
@@ -91,12 +92,12 @@ Three converging patterns from the peer-symmetric space:
 - Peer A creates the root doc, gets its DocUrl.
 - Shares DocUrl out-of-band (URL hash, config file, oracle tiddler).
 - Peer B calls `repo.find(docUrl)` — sync protocol fetches missing changes from any connected adapter.
-- Neither peer is privileged. The node peer writing `catalog-url` is an infrastructure codec exception, not a seeding authority.
+- Neither peer holds privilege. The node peer writing `catalog-url` functions as an infrastructure codec exception, not a seeding authority.
 
 **Willow Protocol** (earthstar-project, TypeScript):
 > "Content-addressed data excels at immutability and global connectivity. Willow embraces mutability, locality, and structure. They complement each other."
 
-This is the exact layering Lararium uses: IPLD/CID for the genesis artifact (immutable seed), Automerge for live doc state (mutable CRDT).
+This layering matches what Lararium uses: IPLD/CID for the genesis artifact (immutable seed), Automerge for live doc state (mutable CRDT).
 
 **Ceramic Network** (IPLD + DID-based mutable streams):
 Ceramic's stream ID = CID of the genesis event. The stream identifier is content-addressed and verifiable without a server. Lararium's room DocUrl plays the same role.
@@ -110,7 +111,7 @@ The general principle used across the ecosystem (WASM embedding, service workers
 3. **Runtime** imports a typed constant — zero fs calls, zero network.
 4. **CI verification** reruns the build script, compares CIDs. Deterministic = reproducible.
 
-This pattern eliminates the class of `reconcile*IfChanged` functions entirely. There is nothing to reconcile at runtime because the genesis bytes are immutable — any "update" is a new genesis build.
+This pattern eliminates the class of `reconcile*IfChanged` functions entirely. Nothing requires reconciliation at runtime because the genesis bytes stay immutable — any "update" produces a new genesis build.
 
 ---
 
@@ -139,25 +140,22 @@ See SESSION.md for full change list.
 
 ---
 
-### Sprint 1 — Constitutional Invariants + Final Demolition 🔄 Active
+### Sprint 1 — Constitutional Invariants ✅ Complete
 
-**Delete:**
-- `buildLaresPluginBlob()` runtime body in `lararium-island.ts` — moves entirely to build script
-- Any remaining stub calls that reference deleted seed functions
+**Done:**
+- [x] `grammar-invariants.ts` Invariant 3: grammar meme travels in the genesis artifact; peer halts on hash divergence; `CODEC_EX_PRE_S2_COLD_BOOT` named as transitional exception
+- [x] `packages/lararium-core/src/system-invariants.ts` created and complete:
+  - `SYSTEM_LAWS` — five architecture laws as typed witnessing constants
+  - `GENESIS_INVARIANTS` — causal origin, content-addressed identity, immutability, quine stub
+  - `PEER_INVARIANTS` — boot symmetry, operational divergence, capability-from-receipt
+  - `CODEC_EXCEPTIONS` — catalog-url, BOOTSTRAP_SCANS, pre-S2 cold-boot, binary blobs
+  - `MIND_LAWS`, `ISLAND_LAWS`, `AUTHORITY_LAWS`, `CODEC_LAWS` (present from prior pass)
 
-**Rewrite:**
-- `grammar-invariants.ts` Invariant 3: "grammar meme travels in the genesis artifact; no peer reads grammar from disk at runtime"
-- Create `packages/lararium-core/src/system-invariants.ts`:
-  - `SYSTEM_LAWS` — five architecture laws as runtime-assertable constants
-  - `GENESIS_INVARIANTS` — genesis artifact is canonical origin; all peers boot from it
-  - `PEER_INVARIANTS` — peer-symmetric: no peer holds seeding authority at runtime
-  - `CODEC_EXCEPTIONS` — named list of deliberate codec-layer exceptions (`catalog-url`, `BOOTSTRAP_SCANS`)
-
-**Gate:** TypeScript compiles clean; island doc with no grammar tiddler emits a warning, not a crash.
+**Scope note:** `buildLaresPluginBlob()` runtime body deletion was in an earlier draft of this sprint description but belongs to S2. The `// SPRINT-2` marker at `lararium-island.ts` line 211 is correct. Nothing to delete in S1.
 
 ---
 
-### Sprint 2 — Genesis Artifact Build Script 🔒
+### Sprint 2 — Genesis Artifact Build Script � Active
 
 **New file:** `packages/lararium-node/scripts/build-genesis-island.ts`
 

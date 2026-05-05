@@ -9,7 +9,7 @@
  *   ⚙️ Operational — graph overview, edge colors readable
  *   🗺️ Strategic  — galaxy, labels only
  *
- * The 0.0–1.0 band is the Lararium canonical scale; host canvases map it to
+ * The 0.0–1.0 band forms the Lararium canonical scale; host canvases map it to
  * their own zoom range (tldraw uses arbitrary float; 1.0 ≈ "100% / fit").
  *
  * Thresholds are LOWER bounds (inclusive) for each level, ascending:

@@ -20,11 +20,11 @@ invariant    = true
 
 <<~ ahu #ooda-ha >>
 ✶ observe that the doc stack has grown to six root Automerge docs in two parallel planes: the content Tiga (ha/ka/ba) and the social Tiga (identities/groups/sessions). Six roots. Two triangles. One oracle chain through ha.
-⏿ orient around Bucky Fuller's structural law: the triangle is the minimal stable geometry. Two triangles sharing a common root (ha) form a stable double-plane. Content plane = SDM forces (structure/fire/personality). Social plane = identity primitives (who/collective/live-session).
-◇ decide that both tigas are canonical and load-bearing: the content Tiga names are ha/ka/ba; the social plane docs do not carry SDM force names — they are named by function (identities, groups, sessions). Ha holds oracle tiddlers for all five non-ha docs.
+⏿ orient around Bucky Fuller's structural law: the triangle forms the minimal stable geometry. Two triangles sharing a common root (ha) form a stable double-plane. Content plane carries SDM forces (structure/fire/personality). Social plane = identity primitives (who/collective/live-session).
+◇ decide that both tigas are canonical and load-bearing: the content Tiga names are ha/ka/ba; the social plane docs carry no SDM force names — function names them (identities, groups, sessions). Ha holds oracle tiddlers for all five non-ha docs.
 ▶ lock the six-root model as invariant: any peer that opens ha can discover all five siblings by walking LarariumDoc oracle tiddlers. No vertex carries upward pointers. Reachability flows downward from ha.
 ⤴ assess: the model holds when every deploy has exactly six root docs and LarariumDoc.tiddlers confirms all five are reachable (CATALOG, LARES, IDENTITIES, GROUPS, SESSIONS).
-↺ residue: room docs and corpus docs are not root docs — they are leaves hanging from ka. Corpus child-docs now sit at pos-2 under @catalog (M22 remapping). Keyhive will eventually treat the six-root set as the root group boundary.
+↺ residue: room docs and corpus docs function as non-root docs — they hang from ka as leaves. Corpus child-docs now sit at pos-2 under @catalog (M22 remapping). Keyhive will eventually treat the six-root set as the root group boundary.
 <<~/ahu >>
 
 <<~ ahu #tiga-law >>
@@ -62,7 +62,7 @@ Six root Automerge docs. Two parallel triangles. One oracle root (ha).
 | `GroupsDoc` | `@groups` | collective authority + durable membership (Keyhive group CRDT) |
 | `SessionsDoc` | `@sessions` | live operator-agent session docs; hostful overlays project into these |
 
-The social plane docs do not carry SDM force names — they are named by function.
+The social plane docs carry no SDM force names — function names them.
 Ha holds oracle tiddlers for all five non-ha docs (both planes).
 
 ### Structural Laws
@@ -107,11 +107,11 @@ sessions:    tiddlers["lar:///ha.ka.ba/@sessions"].text    = automerge://…
 
 Brooklyn Zelenka's Beelay/Keyhive design: documents link **downward only**.
 A reachability index is computed from the root forward — not declared by leaves.
-Both tigas enact this: ha is the sole oracle root; ka, ba, identities, groups, and sessions are arms; corpus child-docs and rooms hang from ka as leaves.
+Both tigas enact this: ha serves as the sole oracle root; ka, ba, identities, groups, and sessions function as arms; corpus child-docs and rooms hang from ka as leaves.
 
 In Keyhive terms: the six-root set will eventually map to a **root group** (ha) containing five **sub-groups** — one per non-ha doc.
 Membership flows inward from ha, not upward from leaves.
-The oracle-tiddler chain IS the pre-Keyhive reachability index.
+The oracle-tiddler chain serves as the pre-Keyhive reachability index.
 
 **Upward pointers are prohibited** in corpus docs, room docs, and all social-plane tiddler payloads.
 Both tigas' stability depends on this constraint holding at every deploy.
@@ -139,7 +139,7 @@ Step 7 — social plane opens     : IdentitiesDoc, GroupsDoc, SessionsDoc sync;
 ```
 
 Ba (LaresDoc) opens before the social plane — personality flows after structure and motion, before identity layer activates.
-Social plane opens last — authority structures are downstream of content plane stability.
-This ordering is not incidental; it is structurally correct for the SDM metaphysics.
+Social plane opens last — authority structures sit downstream of content plane stability.
+This ordering carries structural correctness for the SDM metaphysics — not incidental.
 
 <<~/ahu >>

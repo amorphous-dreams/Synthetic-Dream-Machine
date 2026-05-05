@@ -1,7 +1,7 @@
 /**
  * Hydration closure compiler — pure graph operations.
  *
- * The host (lararium-node) is responsible for loading memes into the graph.
+ * The host (lararium-node) carries responsibility for loading memes into the graph.
  * These functions operate on a populated MemeGraph and return serialisable artifacts.
  */
 

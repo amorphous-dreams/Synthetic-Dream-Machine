@@ -30,7 +30,7 @@
  *     lar:///ha.ka.ba/@lararium/config/identity/provider
  *     lar:///ha.ka.ba/@catalog
  *   Reserve $:/ ONLY for TW5 core + TW5 plugins. All Lararium config is lar:.
- *   Tiddlers with lar: URIs are the heleuma sync candidates; $:/ tiddlers are not.
+ *   Tiddlers with lar: URIs serve as the heleuma sync candidates; $:/ tiddlers do not.
  */
 
 /** Automerge-compatible actor ID — 16-byte UUID string, stable per peer. */
@@ -95,7 +95,7 @@ export interface IdentitySlot {
 /**
  * OpenIdentitySlot — permits all access; uses peerId hash for stable actorId.
  *
- * This is the current alpha stub. The sharePolicy wired to it returns true
+ * Current alpha stub. The sharePolicy wired to it returns true
  * unconditionally (same as the current hardcoded `async () => true`), but now
  * the actorId is stable across reboots — derived from the peerId string.
  */
