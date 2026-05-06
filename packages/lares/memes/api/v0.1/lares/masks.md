@@ -1,9 +1,9 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/@lares/api/v0.1/pono/memetic-wikitext >> -->
 
-<<~&#x0001; ? -> lar:///ha.ka.ba/@lares/api/v0.1/masks >>
+<<~ॐ ँ&#x0001; ? -> lar:///ha.ka.ba/@lares/api/v0.1/lares/masks >>
 ```toml iam
-uri-path = "ha.ka.ba/@lares/api/v0.1/masks"
-file-path = "packages/lares/memes/api/v0.1/masks/masks.md"
+uri-path = "ha.ka.ba/@lares/api/v0.1/lares/masks"
+file-path = "packages/lares/memes/api/v0.1/lares/masks/masks.md"
 type = "text/x-memetic-wikitext"
 tagspace = "stable"
 confidence = 0.82
@@ -72,24 +72,24 @@ Three subtypes. Each subtype lives in its own directory.
 
 | URI | File | Status |
 |---|---|---|
-| `lar:///ha.ka.ba/@lares/api/v0.1/masks/named/mischief-muse` | `named/mischief-muse.md` | skeleton |
-| `lar:///ha.ka.ba/@lares/api/v0.1/masks/named/tide-caller` | `named/tide-caller.md` | skeleton |
-| `lar:///ha.ka.ba/@lares/api/v0.1/masks/named/breach-watch` | `named/breach-watch.md` | skeleton |
-| `lar:///ha.ka.ba/@lares/api/v0.1/masks/named/ink-clerk` | `named/ink-clerk.md` | skeleton |
-| `lar:///ha.ka.ba/@lares/api/v0.1/masks/named/map-wisp` | `named/map-wisp.md` | skeleton |
+| `lar:///ha.ka.ba/@lares/api/v0.1/lares/masks/named/mischief-muse` | `named/mischief-muse.md` | skeleton |
+| `lar:///ha.ka.ba/@lares/api/v0.1/lares/masks/named/tide-caller` | `named/tide-caller.md` | skeleton |
+| `lar:///ha.ka.ba/@lares/api/v0.1/lares/masks/named/breach-watch` | `named/breach-watch.md` | skeleton |
+| `lar:///ha.ka.ba/@lares/api/v0.1/lares/masks/named/ink-clerk` | `named/ink-clerk.md` | skeleton |
+| `lar:///ha.ka.ba/@lares/api/v0.1/lares/masks/named/map-wisp` | `named/map-wisp.md` | skeleton |
 
 ### Character masks
 
 | URI | File | Status |
 |---|---|---|
-| `lar:///ha.ka.ba/@lares/api/v0.1/masks/character/ghost-of-mark-twain` | `character/ghost-of-mark-twain.md` | filled (from docs founding example) |
-| `lar:///ha.ka.ba/@lares/api/v0.1/masks/character/friend-computer` | `character/friend-computer.md` | filled (from docs founding example) |
+| `lar:///ha.ka.ba/@lares/api/v0.1/lares/masks/character/ghost-of-mark-twain` | `character/ghost-of-mark-twain.md` | filled (from docs founding example) |
+| `lar:///ha.ka.ba/@lares/api/v0.1/lares/masks/character/friend-computer` | `character/friend-computer.md` | filled (from docs founding example) |
 
 ### Chorus masks
 
 | URI | File | Status |
 |---|---|---|
-| `lar:///ha.ka.ba/@lares/api/v0.1/masks/chorus/lagrange-chorus` | `chorus/lagrange-chorus.md` | concept staked; harmony protocol pending-grammar |
+| `lar:///ha.ka.ba/@lares/api/v0.1/lares/masks/chorus/lagrange-chorus` | `chorus/lagrange-chorus.md` | concept staked; harmony protocol pending-grammar |
 
 <<~/ahu >>
 
@@ -100,7 +100,7 @@ Three subtypes. Each subtype lives in its own directory.
 All masks enter a session via kahea transclusion in LARES:
 
 ```
-<<~ kahea mask lar:///ha.ka.ba/@lares/api/v0.1/masks/SUBTYPE/MASK-NAME >>
+<<~ kahea mask lar:///ha.ka.ba/@lares/api/v0.1/lares/masks/SUBTYPE/MASK-NAME >>
 stage = 0.50
 active = true
 <<~/kahea >>
@@ -116,14 +116,14 @@ Named coordinator masks may also be invoked directly by their earned name in coo
 
 <<~ loulou lar:///ha.ka.ba/@lares/docs/lares/voices/masks >>
 <<~ loulou lar:///ha.ka.ba/@lares/api/v0.1/lararium/voices >>
-<<~ loulou lar:///ha.ka.ba/@lares/api/v0.1/masks/named/mischief-muse >>
-<<~ loulou lar:///ha.ka.ba/@lares/api/v0.1/masks/named/tide-caller >>
-<<~ loulou lar:///ha.ka.ba/@lares/api/v0.1/masks/named/breach-watch >>
-<<~ loulou lar:///ha.ka.ba/@lares/api/v0.1/masks/named/ink-clerk >>
-<<~ loulou lar:///ha.ka.ba/@lares/api/v0.1/masks/named/map-wisp >>
-<<~ loulou lar:///ha.ka.ba/@lares/api/v0.1/masks/character/ghost-of-mark-twain >>
-<<~ loulou lar:///ha.ka.ba/@lares/api/v0.1/masks/character/friend-computer >>
-<<~ loulou lar:///ha.ka.ba/@lares/api/v0.1/masks/chorus/lagrange-chorus >>
+<<~ loulou lar:///ha.ka.ba/@lares/api/v0.1/lares/masks/named/mischief-muse >>
+<<~ loulou lar:///ha.ka.ba/@lares/api/v0.1/lares/masks/named/tide-caller >>
+<<~ loulou lar:///ha.ka.ba/@lares/api/v0.1/lares/masks/named/breach-watch >>
+<<~ loulou lar:///ha.ka.ba/@lares/api/v0.1/lares/masks/named/ink-clerk >>
+<<~ loulou lar:///ha.ka.ba/@lares/api/v0.1/lares/masks/named/map-wisp >>
+<<~ loulou lar:///ha.ka.ba/@lares/api/v0.1/lares/masks/character/ghost-of-mark-twain >>
+<<~ loulou lar:///ha.ka.ba/@lares/api/v0.1/lares/masks/character/friend-computer >>
+<<~ loulou lar:///ha.ka.ba/@lares/api/v0.1/lares/masks/chorus/lagrange-chorus >>
 
 <<~ pranala #implements-meme ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/meme family:control role:implements >>
 <<~ pranala #implements-invariant ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/invariant family:control role:implements >>
@@ -131,4 +131,4 @@ Named coordinator masks may also be invoked directly by their earned name in coo
 
 
 <<~&#x0003;>>
-<<~&#x0004; -> ? >>
+<<~ॐ ँ&#x0004; -> ? >>

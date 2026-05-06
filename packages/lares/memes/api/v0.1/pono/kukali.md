@@ -1,6 +1,6 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/@lares/api/v0.1/pono/memetic-wikitext >> -->
 
-<<~&#x0001; ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/kukali >>
+<<~⊙&#x0001; ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/kukali >>
 ```toml iam
 uri-path = "ha.ka.ba/@lares/api/v0.1/pono/kukali"
 file-path = "packages/lares/memes/api/v0.1/pono/kukali.md"
@@ -149,4 +149,4 @@ sigilName = "kukali"
 <<~/ahu >>
 
 <<~&#x0003;>>
-<<~&#x0004; -> ? >>
+<<~⊙&#x0004; -> ? >>

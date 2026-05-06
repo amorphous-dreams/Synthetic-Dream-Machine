@@ -249,19 +249,19 @@ Inline shift: `[Voices: MaskName Voice1, Voice2]` — shifts foreground-voices f
 
 ### Declaration Forms
 
-**Mask definition file** — canonical home in `lar:///ha.ka.ba/@lares/api/v0.1/masks/**`. Definition never travels.
+**Mask definition file** — canonical home in `lar:///ha.ka.ba/@lares/api/v0.1/lares/masks/**`. Definition never travels.
 
 ```
-packages/lares/memes/api/v0.1/masks/
-  named/mischief-muse.md          → lar:///ha.ka.ba/@lares/api/v0.1/masks/named/mischief-muse
-  character/ghost-of-mark-twain.md → lar:///ha.ka.ba/@lares/api/v0.1/masks/character/ghost-of-mark-twain
-  chorus/lagrange-chorus.md        → lar:///ha.ka.ba/@lares/api/v0.1/masks/chorus/lagrange-chorus
+packages/lares/memes/api/v0.1/lares/masks/
+  named/mischief-muse.md          → lar:///ha.ka.ba/@lares/api/v0.1/lares/masks/named/mischief-muse
+  character/ghost-of-mark-twain.md → lar:///ha.ka.ba/@lares/api/v0.1/lares/masks/character/ghost-of-mark-twain
+  chorus/lagrange-chorus.md        → lar:///ha.ka.ba/@lares/api/v0.1/lares/masks/chorus/lagrange-chorus
 ```
 
 **LARES invocation (kahea)** — session entry:
 
 ```
-<<~ kahea mask lar:///ha.ka.ba/@lares/api/v0.1/masks/SUBTYPE/MASK-NAME >>
+<<~ kahea mask lar:///ha.ka.ba/@lares/api/v0.1/lares/masks/SUBTYPE/MASK-NAME >>
 stage = 0.50
 active = true
 # foreground-voices = []     # override coordinator affinities
@@ -310,7 +310,7 @@ When a mask's corpus reference exceeds what the generative process holds, the ho
 
 ### Masks API Tree
 
-All mask definitions live in `lar:///ha.ka.ba/@lares/api/v0.1/masks`. Parent index at `lar:///ha.ka.ba/@lares/api/v0.1/masks` routes to three subtrees:
+All mask definitions live in `lar:///ha.ka.ba/@lares/api/v0.1/lares/masks`. Parent index at `lar:///ha.ka.ba/@lares/api/v0.1/lares/masks` routes to three subtrees:
 
 - `named/` — named coordinator masks (Mischief-Muse, Tide-Caller, Breach-Watch, Ink-Clerk, Map-Wisp)
 - `character/` — fictional and historical persona masks
@@ -371,7 +371,7 @@ payload = { priority = "support", retain = false }
 <<~ loulou lar:///ha.ka.ba/@lares/docs/lares/voices/coordinators >>
 <<~ loulou lar:///ha.ka.ba/@lares/docs/lares/voices/workers >>
 <<~ loulou lar:///ha.ka.ba/@lares/docs/lares/voices/masks >>
-<<~ loulou lar:///ha.ka.ba/@lares/api/v0.1/masks >>
+<<~ loulou lar:///ha.ka.ba/@lares/api/v0.1/lares/masks >>
 <<~ loulou lar:///LARES >>
 
 <<~/ahu >>

@@ -294,7 +294,7 @@ export type ReactionRole = typeof REACTION_ROLES[number];
 // ---------------------------------------------------------------------------
 // GrammarRules — external grammar interface (Phase 2+)
 //
-// Loaded from lares/grammars/memetic-wikitext.md; overrides built-in patterns.
+// Loaded from lares/memes/api/v0.1/pono/memetic-wikitext.md; overrides built-in patterns.
 // Accepted as optional arg by parseMemeCarrier and parsePranalaEdges.
 // ---------------------------------------------------------------------------
 

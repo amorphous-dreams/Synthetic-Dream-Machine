@@ -1,6 +1,6 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/@lares/api/v0.1/pono/memetic-wikitext >> -->
 
-<<~&#x0001; ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/guest-grammar >>
+<<~⊙&#x0001; ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/guest-grammar >>
 ```toml iam
 uri-path = "ha.ka.ba/@lares/api/v0.1/pono/guest-grammar"
 file-path = "packages/lares/memes/api/v0.1/pono/guest-grammar.md"
@@ -145,4 +145,4 @@ Schema detail, fixture families, and execution procedure belong in the sidecars.
 <<~/ahu >>
 
 <<~&#x0003;>>
-<<~&#x0004; -> ? >>
+<<~⊙&#x0004; -> ? >>

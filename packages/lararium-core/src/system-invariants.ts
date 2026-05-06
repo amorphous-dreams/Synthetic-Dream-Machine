@@ -118,7 +118,7 @@ export const CODEC_LAWS = [
   {
     id:          "CODEC_1_GRAMMAR_AS_MEMES",
     label:       "All grammar rules live as carrier memes",
-    description: "Grammar rules, parse patterns, and template definitions SHALL live as carrier memes in lares/grammars/. The TypeScript parser is a thin interpreter; it MUST NOT hard-code sigil semantics.",
+    description: "Grammar rules, parse patterns, and template definitions SHALL live as carrier memes in lares/memes/api/v0.1/pono/.  The TypeScript parser is a thin interpreter; it MUST NOT hard-code sigil semantics.",
   },
   {
     id:          "CODEC_2_ROUND_TRIP",
@@ -163,7 +163,7 @@ export const CODEC_EXCEPTIONS = [
   {
     id:          "CODEC_EX_PRE_S2_COLD_BOOT",
     label:       "Pre-S2 cold-boot filesystem read",
-    description: "@remove: S2  Until genesis/island.bin exists, the node peer reads lares/grammars/memetic-wikitext.md at cold-boot to seed the engine doc. Transitional exception to ISLAND_2_GENESIS_ROOT. Disappears when build-genesis-island.ts ships.",
+    description: "@remove: S2  Until genesis/island.bin exists, the node peer reads lares/memes/api/v0.1/pono/memetic-wikitext.md at cold-boot to seed the engine doc. Transitional exception to ISLAND_2_GENESIS_ROOT. Disappears when build-genesis-island.ts ships.",
   },
   {
     id:          "CODEC_EX_BINARY_BLOBS",

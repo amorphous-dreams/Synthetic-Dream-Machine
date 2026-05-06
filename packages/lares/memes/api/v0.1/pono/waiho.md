@@ -1,4 +1,6 @@
-<<~&#x0001; ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/waiho >>
+<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/@lares/api/v0.1/pono/memetic-wikitext >> -->
+
+<<~⊙&#x0001; ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/waiho >>
 ```toml iam
 uri-path = "ha.ka.ba/@lares/api/v0.1/pono/waiho"
 file-path = "packages/lares/memes/api/v0.1/pono/waiho.md"
@@ -88,4 +90,4 @@ In the Kumulipo creation chant, *waiho* appears in the context of primal materia
 <<~/ahu >>
 
 <<~&#x0003;>>
-<<~&#x0004; -> ? >>
+<<~⊙&#x0004; -> ? >>

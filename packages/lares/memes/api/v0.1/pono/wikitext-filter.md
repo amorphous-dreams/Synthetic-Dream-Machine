@@ -1,8 +1,10 @@
-<<~ ? -> lar:///grammars/wikitext-filter >>
+<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/@lares/api/v0.1/pono/memetic-wikitext >> -->
+
+<<~⊙&#x0001; ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/wikitext-filter >>
 
 ```toml iam
-uri-path     = "grammars/wikitext-filter"
-file-path = "packages/lares/memes/grammars/wikitext-filter.md"
+uri-path     = "ha.ka.ba/@lares/api/v0.1/pono/wikitext-filter"
+file-path = "packages/lares/memes/api/v0.1/pono/wikitext-filter.md"
 type         = "text/x-memetic-wikitext"
 tagspace     = "grammar"
 confidence   = 0.88
@@ -24,7 +26,7 @@ invariant    = false
 
 `wikitext-filter` functions as the native filter dialect for memetic-wikitext.
 
-**Fork origin:** `x-tiddlywiki-filter` (`lar:///ha.ka.ba/@lares/api/v0.1/grammars/x-tiddlywiki-filter`).
+**Fork origin:** `x-tiddlywiki-filter` (`lar:///ha.ka.ba/@lares/api/v0.1/pono/x-tiddlywiki-filter`).
 `x-tiddlywiki-filter` remains available for legacy/import use. `wikitext-filter` supersedes it
 for new authoring.
 
@@ -225,10 +227,10 @@ Systematic find-replace for authors migrating TW5 content:
 
 ## Edges
 
-<<~ pranala #to-tw5-filter ? -> lar:///ha.ka.ba/@lares/api/v0.1/grammars/x-tiddlywiki-filter family:relation role:forks >>
-<<~ pranala #to-grammar-kernel ? -> lar:///grammars/memetic-wikitext family:control role:registered-in >>
-<<~ pranala #to-spec ? -> lar:///grammars/memetic-wikitext-spec family:control role:documented-in >>
+<<~ pranala #to-tw5-filter ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/x-tiddlywiki-filter family:relation role:forks >>
+<<~ pranala #to-grammar-kernel ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/memetic-wikitext family:control role:registered-in >>
+<<~ pranala #to-spec ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/memetic-wikitext-spec family:control role:documented-in >>
 
 <<~/ahu >>
 
-<<~ ? -> lar:///grammars/wikitext-filter >>
+<<~⊙&#x0004; -> ? >>

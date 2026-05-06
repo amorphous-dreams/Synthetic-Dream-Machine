@@ -1,6 +1,6 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/@lares/api/v0.1/pono/memetic-wikitext >> -->
 
-<<~&#x0001; ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/reaction-graph >>
+<<~⊙&#x0001; ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/reaction-graph >>
 ```toml iam
 uri-path = "ha.ka.ba/@lares/api/v0.1/pono/reaction-graph"
 file-path = "packages/lares/memes/api/v0.1/pono/reaction-graph.md"
@@ -160,4 +160,4 @@ reaction-roles = ["listenable", "subscribable", "observes", "throttles", "deboun
 <<~/ahu >>
 
 <<~&#x0003;>>
-<<~&#x0004; -> ? >>
+<<~⊙&#x0004; -> ? >>

@@ -1,4 +1,6 @@
-<<~&#x0001; ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/kau >>
+<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/@lares/api/v0.1/pono/memetic-wikitext >> -->
+
+<<~⊙&#x0001; ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/kau >>
 ```toml iam
 uri-path = "ha.ka.ba/@lares/api/v0.1/pono/kau"
 file-path = "packages/lares/memes/api/v0.1/pono/kau.md"
@@ -121,4 +123,4 @@ This maps directly to the Ink & Switch island model: each automerge object is a 
 <<~/ahu >>
 
 <<~&#x0003;>>
-<<~&#x0004; -> ? >>
+<<~⊙&#x0004; -> ? >>

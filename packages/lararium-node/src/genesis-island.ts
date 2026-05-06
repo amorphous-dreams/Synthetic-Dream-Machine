@@ -130,8 +130,12 @@ export async function loadGenesisIsland(repo: Repo): Promise<DocHandle<LarariumD
 
   const blobCount    = Object.keys(doc.blobs ?? {}).length;
   const tiddlerCount = Object.keys(doc.tiddlers ?? {}).length;
+  const widgetCount  = Object.keys(doc.blobs ?? {}).filter(id => id.startsWith("lararium-widget-")).length;
+  if (widgetCount === 0) {
+    throw new Error("[genesis-island] genesis artifact contains no widget blobs (lararium-widget-*) — re-run build:genesis after widget build.");
+  }
   console.log(
-    `[genesis-island] loaded  url=${handle.url}  blobs=${blobCount}  tiddlers=${tiddlerCount}  systemTitles=${doc.systemTitles?.length ?? 0}`,
+    `[genesis-island] loaded  url=${handle.url}  blobs=${blobCount}  widgets=${widgetCount}  tiddlers=${tiddlerCount}  systemTitles=${doc.systemTitles?.length ?? 0}`,
   );
 
   return handle;
@@ -252,7 +256,7 @@ export function reconcileWellKnownTiddlers(
     `catalog=${catOk ? "ok" : "patched"}`,
     `lares=${baOk  ? "ok" : laresUrl       ? "patched" : "pending"}`,
     `identities=${idOk ? "ok" : identitiesUrl ? "patched" : "pending"}`,
-    `groups=${grOk ? "ok" : groupsUrl      ? "patched" : "pending"}`,
+    `circles=${grOk ? "ok" : groupsUrl      ? "patched" : "pending"}`,
     `sessions=${seOk ? "ok" : sessionsUrl   ? "patched" : "pending"}`,
   ].join("  ");
   console.log(`[genesis-island] oracle tiddlers  ${flags}`);

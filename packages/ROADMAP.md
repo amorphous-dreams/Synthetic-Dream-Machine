@@ -1,6 +1,6 @@
 # Lararium — Web3 Genesis Artifact Roadmap
 
-> Updated: 2026-05-05
+> Updated: 2026-05-05 (session 2)
 > Branch: feature/lararium-node-3
 > Governing laws: see SESSION.md § Five Architecture Laws
 
@@ -25,8 +25,9 @@ Social graph control inverts: circles are owned by their center, not the platfor
 | S2 | Build-Time Genesis Builder | ✅ Complete | `build-genesis-island.ts` — deterministic content-addressed genesis artifact |
 | S3 | Runtime Genesis Loader | ✅ Complete | `loadGenesisIsland()` — clone and boot from genesis artifact CID |
 | S4 | Peer Factory Rewrites | ✅ Complete | `openNodeLarPeer` uses genesis loader; `lararium-island.ts` deleted |
-| S5 | Quine Round-Trip Verification | 🔴 Active | Wire `.tw5.js` CJS into genesis; verify self-hosting round-trip |
-| S6 | SessionEventLog | ⬜ Designed | Per-session append-only Automerge doc; `broadcast()` for presence |
+| S5 | Quine Round-Trip Verification | ✅ Complete | Wire `.tw5.js` CJS into genesis; verify self-hosting round-trip |
+| S5.1 | Meme Namespace Consolidation | ✅ Complete | grammar→pono merge; misfile audit (5 moves); voice-house under lares/ |
+| S6 | SessionEventLog | 🔴 Active | Per-session append-only Automerge doc; `broadcast()` for presence |
 | S7 | Circles + Identities Capability Layer | ⬜ Designed | Keyhive/UCAN device delegation; Seitan token circle invites |
 | S8 | Kowloon Bridge | ⬜ Designed | `KowloonOutbox` draft queue + `KowloonInbox` feed mirror; `elyncia.app` deployment |
 
@@ -74,20 +75,20 @@ Social graph control inverts: circles are owned by their center, not the platfor
 
 ---
 
-## S2 — Build-Time Genesis Builder �
+## S2 — Build-Time Genesis Builder ✅
 
 **Goal:** Move all disk reads and blob construction to build time. Produce a deterministic, content-addressed Automerge doc.
 
 ### Tasks
 
-- [ ] Create `packages/lararium-node/scripts/build-genesis-island.ts`
+- [x] Create `packages/lararium-node/scripts/build-genesis-island.ts`
   - Walk `LARES_MEMES_ROOT` at build time (not runtime)
   - Load `.tw5.cjs` plugin blobs
   - Serialize all tiddlers and blobs into a new `LarariumDoc`
   - Export as a binary Automerge doc; write CID to `packages/lararium-node/genesis.cid`
   - Write artifact bytes to `packages/lararium-node/genesis.bin` (git-tracked, deterministic)
-- [ ] Extract `buildLaresPluginBlob()` body from `lararium-island.ts` into the script (remove the runtime call)
-- [ ] Wire into `package.json` build script: runs before TypeScript compilation
+- [x] Extract `buildLaresPluginBlob()` body from `lararium-island.ts` into the script (remove the runtime call)
+- [x] Wire into `package.json` build script: runs before TypeScript compilation
 
 ### Exit Criteria
 
@@ -97,18 +98,18 @@ Social graph control inverts: circles are owned by their center, not the platfor
 
 ---
 
-## S3 — Runtime Genesis Loader 🔒
+## S3 — Runtime Genesis Loader ✅
 
 **Goal:** At peer boot, load the genesis artifact from the bundled binary rather than constructing it from disk.
 
 ### Tasks
 
-- [ ] Create `loadGenesisIsland(genesisBytes: Uint8Array): Promise<DocHandle<LarariumDoc>>` in `lararium-island.ts`
+- [x] Create `loadGenesisIsland(genesisBytes: Uint8Array): Promise<DocHandle<LarariumDoc>>` in `lararium-island.ts`
   - Imports `genesis.bin` (bundled asset, no fs read at runtime)
   - Calls `Automerge.load()` on the bytes
   - Returns a live `DocHandle` ready for sync
-- [ ] Add `reconcileIslandFromGenesis(islandHandle, genesisHandle)` — diffs live doc against genesis CID; applies only net-new content from genesis
-- [ ] Remove `// SPRINT-2: reconcileIslandFromGenesis(...)` placeholder comments; replace with real calls
+- [x] Add `reconcileIslandFromGenesis(islandHandle, genesisHandle)` — diffs live doc against genesis CID; applies only net-new content from genesis
+- [x] Remove `// SPRINT-2: reconcileIslandFromGenesis(...)` placeholder comments; replace with real calls
 
 ### Exit Criteria
 
@@ -118,17 +119,17 @@ Social graph control inverts: circles are owned by their center, not the platfor
 
 ---
 
-## S4 — Peer Factory Rewrites 🔒
+## S4 — Peer Factory Rewrites ✅
 
 **Goal:** `openNodeLarPeer` and `openBrowserLarPeer` use `loadGenesisIsland()`; `seedLarariumDoc` disk-walk pattern disappears.
 
 ### Tasks
 
-- [ ] Rewrite cold-boot branch of `openNodeLarPeer` to call `loadGenesisIsland()`
-- [ ] Rewrite `openBrowserLarPeer` equivalently (load genesis from bundled asset)
-- [ ] Verify `RecipeTiddler.plugins` opt-in flows end-to-end: recipe tiddler → `recipePlugins` Set → plugin preload
-- [ ] Verify `LarOpenPhase` 10 transitions emit correctly from new boot path
-- [ ] Delete `seedLarariumDoc` disk-walk body from `lararium-island.ts` if no callers remain
+- [x] Rewrite cold-boot branch of `openNodeLarPeer` to call `loadGenesisIsland()`
+- [x] Rewrite `openBrowserLarPeer` equivalently (load genesis from bundled asset)
+- [x] Verify `RecipeTiddler.plugins` opt-in flows end-to-end: recipe tiddler → `recipePlugins` Set → plugin preload
+- [x] Verify `LarOpenPhase` 10 transitions emit correctly from new boot path
+- [x] Delete `seedLarariumDoc` disk-walk body from `lararium-island.ts` if no callers remain
 
 ### Exit Criteria
 
@@ -138,26 +139,55 @@ Social graph control inverts: circles are owned by their center, not the platfor
 
 ---
 
-## S5 — Quine Round-Trip Verification 🔴 Active
+## S5 — Quine Round-Trip Verification ✅
 
 **Goal:** The engine that boots the system lives inside the system it boots.
 
 ### Tasks
 
-- [ ] Confirm all `@lararium/tw5` vite outputs are `.tw5.js` CJS format (done — labels updated)
-- [ ] Wire every `.tw5.js` CJS plugin blob into `build-genesis-island.ts`
-- [ ] Boot a node peer from genesis; render the grammar meme via the TW5 vm
-- [ ] Verify rendered output hash matches source tiddler hash
-- [ ] Write genesis CID as `$:/lararium/genesis-cid` self-ref tiddler into island doc
+- [x] Confirm all `@lararium/tw5` vite outputs are `.tw5.js` CJS format (done — labels updated)
+- [x] Wire every `.tw5.js` CJS plugin blob into `build-genesis-island.ts`
+- [x] Boot a node peer from genesis; render the grammar meme via the TW5 vm
+- [x] Verify rendered output hash matches source tiddler hash
+- [x] Write genesis CID as `$:/lararium/genesis-cid` self-ref tiddler into island doc
 
 ### Exit Criteria
 
-- `pnpm test:quine` passes: hash of rendered grammar meme === hash of source tiddler in genesis
-- No external file read required after `genesis/island.bin` is loaded
+- `pnpm test:quine` passes: hash of rendered grammar meme === hash of source tiddler in genesis ✅
+- No external file read required after `genesis/island.bin` is loaded ✅
 
 ---
 
-## S6 — SessionEventLog ⬜ Designed
+## S5.1 — Meme Namespace Consolidation ✅
+
+**Goal:** Eliminate the `grammars/` duplicate namespace; settle sigil discipline; audit misfiled memes; consolidate voice-house.
+
+### Completed
+
+- [x] Merge `grammars/memetic-wikitext.md` into `pono/memetic-wikitext.md` (law + grammar kernel in one file)
+- [x] Delete `api/v0.1/grammars/` tree entirely
+- [x] Update `GRAMMAR_MEME_URI`, `GRAMMAR_GENESIS_REL_PATH`, test paths, inline comments → `pono/memetic-wikitext`
+- [x] Upgrade all 25 `pono/*.md` files to `⊙` sigils (`<<~⊙&#x0001;` / `<<~⊙&#x0004;`)
+- [x] Misfile moves: `circles-kowloon` → `docs/pono/`, `pattern-integrity` → `mu/`, `tiddlywiki-filter` → `docs/pono/`, `source-module` → `docs/lararium/`
+- [x] Move `masks/**` → `lares/masks/**`; upgrade to `ॐ ँ` sigils; update all URIs
+- [x] Update `lares/voices.md` mask references to `api/v0.1/lares/masks`
+
+### Settled Sigil Table
+
+| Namespace | Open | Close |
+|---|---|---|
+| `pono/` | `<<~⊙&#x0001;` | `<<~⊙&#x0004;` |
+| `mu/`, `lares/` | `<<~ॐ ँ&#x0001;` | `<<~ॐ ँ&#x0004;` |
+| `docs/` | `<<~&#x0001;` | `<<~&#x0004;` |
+| `kapu.md` | `<<~⊙&#x0011;` | `<<~⊙&#x0014;` (DC1/DC4 — intentional) |
+
+### Known Forward Pointers (not blocking S6)
+
+- `docs/lares/voices/coordinators`, `docs/lares/voices/workers`, `docs/lares/voices/masks` — spec rooms declared in `voices.md` but not yet created
+
+---
+
+## S6 — SessionEventLog 🔴 Active
 
 **Goal:** Per-session append-only event log; ephemeral presence via `broadcast()`.
 
@@ -235,9 +265,10 @@ S0 Cleanup ✅
         └── S2 Build-Time Genesis ✅
               ├── S3 Runtime Loader ✅
               │     └── S4 Peer Factories ✅
-              │           └── S5 Quine Closure 🔴 ← HERE
-              │                 └── S6 SessionEventLog ⬜
-              │                 └── S7 Capability Layer ⬜
+              │           └── S5 Quine Closure ✅
+              │                 └── S5.1 Namespace Consolidation ✅
+              │                       └── S6 SessionEventLog 🔴 ← HERE
+              │                       └── S7 Capability Layer ⬜
               │                       └── (S6+S7 can run in parallel)
               │                             └── S8 Kowloon Bridge ⬜
               └── (S3 and S4 unlocked together after S2)

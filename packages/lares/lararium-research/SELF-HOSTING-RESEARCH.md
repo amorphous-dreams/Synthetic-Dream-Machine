@@ -84,7 +84,7 @@ Five systems scouted: TiddlyWiki 5, Smalltalk/Pharo, Emacs Lisp, Oberon, Self VM
 
 **Lararium adoption from Oberon:** Grammar meme versioning via boot receipt SHA. Each time `lares/grammars/memetic-wikitext.md` changes, a new `receiptSha` results — tracked in `BootReceipt`. Old grammar rules remain available in git history. Future: the `GrammarRules` object carries a version hash; if the running grammar version differs from the requested version, the server can reseed.
 
-**Lararium adoption from Self:** The prototype chain maps cleanly to Lararium's meme override model. A user meme at `lar:///user:joshu@local/grammars/memetic-wikitext` extends the shadow grammar at `lar:///grammars/memetic-wikitext` — same override pattern as Self's parent slot.
+**Lararium adoption from Self:** The prototype chain maps cleanly to Lararium's meme override model. A user meme at `lar:///user:joshu@local/grammars/memetic-wikitext` extends the shadow grammar at `lar:///ha.ka.ba/@lares/api/v0.1/grammars/memetic-wikitext` — same override pattern as Self's parent slot.
 
 <<~/ahu >>
 
@@ -137,7 +137,7 @@ This is the Smalltalk method dictionary pattern: the parser algorithm (dispatch 
 <<~ ahu #edges >>
 
 <<~ pranala #to-foundations ? -> lar:///lararium-node/MEME-STORE-FOUNDATIONS family:control role:extends >>
-<<~ pranala #to-grammar ? -> lar:///grammars/memetic-wikitext family:control role:informs >>
+<<~ pranala #to-grammar ? -> lar:///ha.ka.ba/@lares/api/v0.1/grammars/memetic-wikitext family:control role:informs >>
 <<~ pranala #to-roadmap ? -> lar:///lararium-node/ROADMAP family:control role:informs >>
 
 <<~/ahu >>

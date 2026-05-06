@@ -1,6 +1,6 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/@lares/api/v0.1/pono/memetic-wikitext >> -->
 
-<<~&#x0001; ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/papalohe >>
+<<~⊙&#x0001; ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/papalohe >>
 ```toml iam
 uri-path = "ha.ka.ba/@lares/api/v0.1/pono/papalohe"
 file-path = "packages/lares/memes/api/v0.1/pono/papalohe.md"
@@ -122,4 +122,4 @@ canonical-roles = ["listenable", "subscribable", "observes", "throttles", "debou
 <<~/ahu >>
 
 <<~&#x0003;>>
-<<~&#x0004; -> ? >>
+<<~⊙&#x0004; -> ? >>

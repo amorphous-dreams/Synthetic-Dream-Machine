@@ -23,7 +23,7 @@ import { join, dirname, basename } from "path";
 import { fileURLToPath }         from "url";
 
 import { TW5Engine }             from "@lararium/tw5";
-import { tw5MemesRoot, tw5PluginsRoot } from "@lararium/tw5/tw5-memes-root";
+import { tw5MemesRoot, tw5PluginsRoot, tw5DistWidgetsRoot } from "@lararium/tw5/tw5-memes-root";
 import { TW5_VERSION, TW5_CORE_SCRIPT_FILENAME } from "@lararium/tw5";
 
 import type { LarariumDoc, LarariumBlobEntry } from "@lararium/core";
@@ -107,6 +107,12 @@ function deriveActorId(tw5CorePath: string): string {
   // Vendored plugin JSON files (sorted)
   for (const f of walkFiles(tw5PluginsRoot, ".json")) {
     h.update(`plugin:${f}:`);
+    h.update(readFileSync(f));
+  }
+
+  // Widget CJS blobs (sorted)
+  for (const f of walkFiles(tw5DistWidgetsRoot, ".tw5.js")) {
+    h.update(`widget:${f}:`);
     h.update(readFileSync(f));
   }
 
@@ -217,7 +223,21 @@ async function main(): Promise<void> {
     }
   }
 
-  // 5. Snapshot systemTitles from a bare VM boot.
+  // 5. Collect widget CJS blobs from dist-widgets/*.tw5.js.
+  const widgetBlobs: LarariumBlobEntry[] = [];
+  if (existsSync(tw5DistWidgetsRoot)) {
+    for (const file of readdirSync(tw5DistWidgetsRoot).filter(f => f.endsWith(".tw5.js")).sort()) {
+      const filePath = join(tw5DistWidgetsRoot, file);
+      const blob     = new Uint8Array(readFileSync(filePath));
+      const sha      = sha256hex(blob);
+      const name     = basename(file, ".tw5.js");
+      const id       = `lararium-widget-${name}`;
+      widgetBlobs.push({ id, version: TW5_VERSION, sha256: sha, mimeType: "application/javascript", blob });
+      console.log(`[genesis] widget blob  ${id}  sha=${sha.slice(0, 12)}…`);
+    }
+  }
+
+  // 6. Snapshot systemTitles from a bare VM boot.
   console.log("[genesis] snapshotting system titles …");
   const snapshotVm = new TW5Engine();
   await snapshotVm.boot();
@@ -259,7 +279,14 @@ async function main(): Promise<void> {
     });
   }
 
-  // 9. Write lares plugin blob.
+  // 9. Write widget CJS blobs.
+  for (const entry of widgetBlobs) {
+    doc = Automerge.change(doc, { time: 0 }, d => {
+      (d.blobs as Record<string, LarariumBlobEntry>)[entry.id] = entry;
+    });
+  }
+
+  // 10. Write lares plugin blob.
   doc = Automerge.change(doc, { time: 0 }, d => {
     (d.blobs as Record<string, LarariumBlobEntry>)["lararium-lares"] = {
       id:       "lararium-lares",
@@ -330,7 +357,7 @@ async function main(): Promise<void> {
     { bagId: CATALOG_DOC_URI,    label: "ka — corpus discovery (Catalog)",     readPolicy: "public",  writePolicy: "private" },
     { bagId: LARES_DOC_URI,      label: "ba — persona & doctrine (Lares)",     readPolicy: "public",  writePolicy: "private" },
     { bagId: IDENTITIES_DOC_URI, label: "ha — principals (Identities)",             readPolicy: "private", writePolicy: "private" },
-    { bagId: CIRCLES_DOC_URI,     label: "ka — collective authority (Groups)",       readPolicy: "private", writePolicy: "private" },
+    { bagId: CIRCLES_DOC_URI,     label: "ka — collective authority (Circles)",      readPolicy: "private", writePolicy: "private" },
     { bagId: SESSIONS_DOC_URI,   label: "ba — live operator sessions (Sessions)",   readPolicy: "private", writePolicy: "private" },
   ];
   doc = Automerge.change(doc, { time: 0 }, d => {
@@ -372,27 +399,59 @@ async function main(): Promise<void> {
     }
   });
 
-  // 14. Serialize and write output files.
+  // 14. Two-pass CID injection.
+  //
+  //   Pass 1: serialize the doc without the self-ref tiddler → compute sha256-pre.
+  //   Pass 2: inject $:/lararium/genesis-cid tiddler carrying sha256-pre → re-serialize.
+  //
+  //   The invariant: strip the genesis-cid tiddler and hash the result → sha256-pre.
+  //   This is verifiable without a true fixpoint and honest about what it proves.
   mkdirSync(GENESIS_DIR, { recursive: true });
+
+  const preBytes  = Automerge.save(doc);
+  const preSha    = sha256hex(preBytes);
+  console.log(`[genesis] sha256-pre = ${preSha}`);
+
+  const GENESIS_CID_TIDDLER = `${LARARIUM_DOC_URI}/genesis-cid`;
+  doc = Automerge.change(doc, { time: 0 }, d => {
+    (d.tiddlers as Record<string, unknown>)[GENESIS_CID_TIDDLER] = {
+      title:     GENESIS_CID_TIDDLER,
+      text:      "",
+      fields:    { sha256: preSha, note: "sha256 of island.bin before this tiddler was added" },
+      bag:       LARARIUM_DOC_URI,
+      authority: "genesis",
+    };
+  });
 
   const genesisBytes = Automerge.save(doc);
   const genesisSha   = sha256hex(genesisBytes);
 
-  writeFileSync(join(GENESIS_DIR, "island.bin"), genesisBytes);
-  writeFileSync(join(GENESIS_DIR, "island.sha256"), genesisSha + "\n", "utf8");
+  writeFileSync(join(GENESIS_DIR, "island.bin"),         genesisBytes);
+  writeFileSync(join(GENESIS_DIR, "island.sha256"),      genesisSha + "\n",  "utf8");
+  writeFileSync(join(GENESIS_DIR, "island.sha256-pre"),  preSha + "\n",      "utf8");
 
-  // 15. Smoke-test: load the saved bytes and verify grammar tiddler readable.
+  // 15. Smoke-test: reload and verify core blob + genesis-cid tiddler present.
   const reloaded = Automerge.load<LarariumDoc>(genesisBytes);
   const blobCount    = Object.keys(reloaded.blobs ?? {}).length;
   const tiddlerCount = Object.keys(reloaded.tiddlers ?? {}).length;
   if (!reloaded.blobs?.[ENGINE_CORE_ID]) {
     throw new Error("[genesis] smoke-test FAILED: TW5 core blob not found after reload");
   }
+  const storedCid = (reloaded.tiddlers?.[GENESIS_CID_TIDDLER] as { fields?: { sha256?: string } } | undefined)?.fields?.sha256;
+  if (storedCid !== preSha) {
+    throw new Error(`[genesis] smoke-test FAILED: genesis-cid tiddler sha256 mismatch — stored=${storedCid} expected=${preSha}`);
+  }
+  const widgetBlobIds = widgetBlobs.map(b => b.id);
+  for (const id of widgetBlobIds) {
+    if (!reloaded.blobs?.[id]) {
+      throw new Error(`[genesis] smoke-test FAILED: widget blob missing after reload: ${id}`);
+    }
+  }
 
   console.log(`[genesis] ✓ island.bin  ${(genesisBytes.byteLength / 1024).toFixed(0)} KB`);
   console.log(`[genesis] ✓ blobs=${blobCount}  tiddlers=${tiddlerCount}  systemTitles=${reloaded.systemTitles?.length ?? 0}`);
-  console.log(`[genesis] ✓ sha256=${genesisSha}`);
-  console.log("[genesis] Sprint 2 gate satisfied — genesis artifact ready.");
+  console.log(`[genesis] ✓ sha256=${genesisSha}  sha256-pre=${preSha}`);
+  console.log("[genesis] S5 gate A satisfied — widget blobs wired + genesis-cid tiddler injected.");
 }
 
 main().catch(err => {

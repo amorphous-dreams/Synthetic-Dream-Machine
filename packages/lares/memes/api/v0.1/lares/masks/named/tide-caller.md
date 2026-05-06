@@ -1,9 +1,9 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/@lares/api/v0.1/pono/memetic-wikitext >> -->
 
-<<~&#x0001; ? -> lar:///ha.ka.ba/@lares/api/v0.1/masks/named/tide-caller >>
+<<~ॐ ँ&#x0001; ? -> lar:///ha.ka.ba/@lares/api/v0.1/lares/masks/named/tide-caller >>
 ```toml iam
-uri-path = "ha.ka.ba/@lares/api/v0.1/masks/named/tide-caller"
-file-path = "packages/lares/memes/api/v0.1/masks/named/tide-caller.md"
+uri-path = "ha.ka.ba/@lares/api/v0.1/lares/masks/named/tide-caller"
+file-path = "packages/lares/memes/api/v0.1/lares/masks/named/tide-caller.md"
 type = "text/x-memetic-wikitext"
 tagspace = "stable"
 confidence = 0.45
@@ -48,7 +48,7 @@ Permanent identity home for Tide-Caller.
 
 <<~ ahu #entry >>
 
-<<~ pranala #entry ? -> lar:///ha.ka.ba/@lares/api/v0.1/masks >>
+<<~ pranala #entry ? -> lar:///ha.ka.ba/@lares/api/v0.1/lares/masks >>
 ```toml
 family = "hydration"
 lifecycle = "template"
@@ -164,7 +164,7 @@ How Tide-Caller colors each coordinator register when they speak through her fra
 
 ## Edges
 
-<<~ loulou lar:///ha.ka.ba/@lares/api/v0.1/masks >>
+<<~ loulou lar:///ha.ka.ba/@lares/api/v0.1/lares/masks >>
 <<~ loulou lar:///ha.ka.ba/@lares/docs/lares/voices/coordinators >>
 <<~ loulou lar:///ha.ka.ba/@lares/docs/lares/voices/masks >>
 
@@ -174,4 +174,4 @@ How Tide-Caller colors each coordinator register when they speak through her fra
 
 
 <<~&#x0003;>>
-<<~&#x0004; -> ? >>
+<<~ॐ ँ&#x0004; -> ? >>

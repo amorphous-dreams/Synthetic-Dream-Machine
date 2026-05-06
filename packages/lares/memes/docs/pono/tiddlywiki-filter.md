@@ -1,9 +1,9 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/@lares/api/v0.1/pono/memetic-wikitext >> -->
 
-<<~&#x0001; ? -> lar:///ha.ka.ba/@lares/docs/grammars/tiddlywiki-filter >>
+<<~&#x0001; ? -> lar:///ha.ka.ba/@lares/docs/pono/tiddlywiki-filter >>
 ```toml iam
-uri-path     = "ha.ka.ba/@lares/docs/grammars/tiddlywiki-filter"
-file-path = "packages/lares/memes/docs/grammars/tiddlywiki-filter.md"
+uri-path     = "ha.ka.ba/@lares/docs/pono/tiddlywiki-filter"
+file-path = "packages/lares/memes/docs/pono/tiddlywiki-filter.md"
 type = "text/x-memetic-wikitext"
 confidence   = 0.68
 register     = "S"

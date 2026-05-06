@@ -1,8 +1,10 @@
-<<~ ? -> lar:///grammars/memetic-wikitext-spec >>
+<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/@lares/api/v0.1/pono/memetic-wikitext >> -->
+
+<<~⊙&#x0001; ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/memetic-wikitext-spec >>
 
 ```toml iam
-uri-path     = "grammars/memetic-wikitext-spec"
-file-path = "packages/lares/memes/grammars/memetic-wikitext-spec.md"
+uri-path     = "ha.ka.ba/@lares/api/v0.1/pono/memetic-wikitext-spec"
+file-path = "packages/lares/memes/api/v0.1/pono/memetic-wikitext-spec.md"
 type         = "text/x-memetic-wikitext"
 tagspace     = "grammar"
 confidence   = 0.90
@@ -34,7 +36,7 @@ invariant    = false
 
 This carrier is the holistic grammar spec for `text/x-memetic-wikitext`.
 
-**Not** the grammar kernel (`lar:///grammars/memetic-wikitext` holds the live TOML registry).
+**Not** the grammar kernel (`lar:///ha.ka.ba/@lares/api/v0.1/pono/memetic-wikitext` holds the live TOML registry).
 **Not** the invariant law (`lar:///ha.ka.ba/@lares/api/v0.1/pono/memetic-wikitext` holds the root).
 **Not** the pranala edge law (`lar:///ha.ka.ba/@lares/api/v0.1/pono/pranala` holds the edge contract).
 
@@ -1192,7 +1194,7 @@ The single-form version is not ruled out but adds parser complexity without clea
 
 ## Sigil Registry Status
 
-All sigils documented in this spec are registered in `lares/grammars/memetic-wikitext.md`.
+All sigils documented in this spec are registered in `lares/pono/memetic-wikitext.md`.
 All eight families are wired in `pranala-parser.ts` (`KNOWN_FAMILIES`, `FAMILY_CONTRACTS`).
 
 **Sigils added in Grammar Phase 2.x (post-M7):**
@@ -1257,10 +1259,10 @@ All eight families are wired in `pranala-parser.ts` (`KNOWN_FAMILIES`, `FAMILY_C
 
 ## Edges
 
-<<~ pranala #defines-grammar ? -> lar:///grammars/memetic-wikitext family:control role:extends >>
+<<~ pranala #defines-grammar ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/memetic-wikitext family:control role:extends >>
 <<~ pranala #pranala-law ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/pranala family:control role:governed-by >>
 <<~ pranala #mwt-law ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/memetic-wikitext family:control role:governed-by >>
-<<~ pranala #tw5-filter ? -> lar:///ha.ka.ba/@lares/api/v0.1/grammars/x-tiddlywiki-filter family:observe role:references >>
+<<~ pranala #tw5-filter ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/x-tiddlywiki-filter family:observe role:references >>
 <<~ pranala #to-foundations ? -> lar:///lararium-node/MEME-STORE-FOUNDATIONS family:observe role:informs >>
 <<~ pranala #to-roadmap ? -> lar:///lararium-node/ROADMAP family:observe role:informs >>
 <<~ loulou lar:///ha.ka.ba/@lares/docs/pono/memetic-wikitext >>
@@ -1268,4 +1270,5 @@ All eight families are wired in `pranala-parser.ts` (`KNOWN_FAMILIES`, `FAMILY_C
 
 <<~/ahu >>
 
-<<~ ? -> lar:///grammars/memetic-wikitext-spec >>
+<<~&#x0003;>>
+<<~⊙&#x0004; -> ? >>

@@ -1,6 +1,6 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/@lares/api/v0.1/pono/memetic-wikitext >> -->
 
-<<~&#x0001; ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/federated-causal-islands >>
+<<~⊙&#x0001; ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/federated-causal-islands >>
 ```toml iam
 uri-path = "ha.ka.ba/@lares/api/v0.1/pono/federated-causal-islands"
 file-path = "packages/lares/memes/api/v0.1/pono/federated-causal-islands.md"
@@ -295,4 +295,4 @@ causal-island-may = [
 <<~/ahu >>
 
 <<~&#x0003;>>
-<<~&#x0004; -> ? >>
+<<~⊙&#x0004; -> ? >>

@@ -1,5 +1,5 @@
 /**
- * wikitext-filter cascade engine — core primitive (lar:///grammars/wikitext-filter).
+ * wikitext-filter cascade engine — core primitive (lar:///ha.ka.ba/@lares/api/v0.1/pono/wikitext-filter).
  *
  * Cascade semantics mirror TW5's :cascade filter run:
  *   priority-ordered list; first matching entry per target wins.
@@ -76,7 +76,7 @@ export interface MemeCascadePredicate {
  */
 export interface CascadeEntry<TOverride = Record<string, unknown>> {
   /**
-   * wikitext-filter expression (lar:///grammars/wikitext-filter).
+   * wikitext-filter expression (lar:///ha.ka.ba/@lares/api/v0.1/pono/wikitext-filter).
    * Evaluated against full closure + edges. Takes precedence over match.
    *
    * @example "[all[memes]toml:register[CS]]"

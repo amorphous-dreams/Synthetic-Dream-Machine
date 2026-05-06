@@ -1,6 +1,6 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/@lares/api/v0.1/pono/memetic-wikitext >> -->
 
-<<~&#x0001; ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/vm-projection-bus >>
+<<~⊙&#x0001; ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/vm-projection-bus >>
 ```toml iam
 uri-path    = "ha.ka.ba/@lares/api/v0.1/pono/vm-projection-bus"
 file-path   = "packages/lares/memes/api/v0.1/pono/vm-projection-bus.md"
@@ -181,4 +181,4 @@ The asymmetry is preserved:
 <<~/ahu >>
 
 <<~&#x0003;>>
-<<~&#x0004; -> ? >>
+<<~⊙&#x0004; -> ? >>

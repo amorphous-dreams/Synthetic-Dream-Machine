@@ -1,9 +1,9 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/@lares/api/v0.1/pono/memetic-wikitext >> -->
 
-<<~&#x0001; ? -> lar:///ha.ka.ba/@lares/api/v0.1/masks/character/ghost-of-mark-twain >>
+<<~ॐ ँ&#x0001; ? -> lar:///ha.ka.ba/@lares/api/v0.1/lares/masks/character/ghost-of-mark-twain >>
 ```toml iam
-uri-path = "ha.ka.ba/@lares/api/v0.1/masks/character/ghost-of-mark-twain"
-file-path = "packages/lares/memes/api/v0.1/masks/character/ghost-of-mark-twain.md"
+uri-path = "ha.ka.ba/@lares/api/v0.1/lares/masks/character/ghost-of-mark-twain"
+file-path = "packages/lares/memes/api/v0.1/lares/masks/character/ghost-of-mark-twain.md"
 type = "text/x-memetic-wikitext"
 tagspace = "stable"
 confidence = 0.80
@@ -43,7 +43,7 @@ Canonical home extracted from `lar:///ha.ka.ba/@lares/docs/lares/voices/masks#fo
 
 <<~ ahu #entry >>
 
-<<~ pranala #entry ? -> lar:///ha.ka.ba/@lares/api/v0.1/masks >>
+<<~ pranala #entry ? -> lar:///ha.ka.ba/@lares/api/v0.1/lares/masks >>
 ```toml
 family = "hydration"
 lifecycle = "template"
@@ -159,7 +159,7 @@ Remaining coordinators — Gatekeeper, Lorekeeper, Scryer, Artificer, Advocate, 
 
 ## Edges
 
-<<~ loulou lar:///ha.ka.ba/@lares/api/v0.1/masks >>
+<<~ loulou lar:///ha.ka.ba/@lares/api/v0.1/lares/masks >>
 <<~ loulou lar:///ha.ka.ba/@lares/docs/lares/voices/masks >>
 
 <<~ pranala #implements-meme ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/meme family:control role:implements >>
@@ -168,4 +168,4 @@ Remaining coordinators — Gatekeeper, Lorekeeper, Scryer, Artificer, Advocate, 
 
 
 <<~&#x0003;>>
-<<~&#x0004; -> ? >>
+<<~ॐ ँ&#x0004; -> ? >>

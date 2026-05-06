@@ -1,6 +1,6 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/@lares/api/v0.1/pono/memetic-wikitext >> -->
 
-<<~&#x0001; ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/pranala-families >>
+<<~⊙&#x0001; ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/pranala-families >>
 ```toml iam
 uri-path = "ha.ka.ba/@lares/api/v0.1/pono/pranala-families"
 file-path = "packages/lares/memes/api/v0.1/pono/pranala-families.md"
@@ -164,4 +164,4 @@ spatial    = "light-blue"
 <<~/ahu >>
 
 <<~&#x0003;>>
-<<~&#x0004; -> ? >>
+<<~⊙&#x0004; -> ? >>

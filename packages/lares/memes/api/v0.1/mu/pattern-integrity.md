@@ -1,9 +1,9 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/@lares/api/v0.1/pono/memetic-wikitext >> -->
 
-<<~&#x0001; ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/pattern-integrity >>
+<<~ॐ ँ&#x0001; ? -> lar:///ha.ka.ba/@lares/api/v0.1/mu/pattern-integrity >>
 ```toml iam
-uri-path    = "ha.ka.ba/@lares/api/v0.1/pono/pattern-integrity"
-file-path   = "packages/lares/memes/api/v0.1/pono/pattern-integrity.md"
+uri-path    = "ha.ka.ba/@lares/api/v0.1/mu/pattern-integrity"
+file-path   = "packages/lares/memes/api/v0.1/mu/pattern-integrity.md"
 type        = "text/x-memetic-wikitext"
 register    = "CS"
 confidence  = 0.90
@@ -219,4 +219,4 @@ Run this against any new code before merging:
 <<~/ahu >>
 
 <<~&#x0003;>>
-<<~&#x0004; -> ? >>
+<<~ॐ ँ&#x0004; -> ? >>

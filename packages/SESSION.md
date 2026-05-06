@@ -11,41 +11,61 @@
 ```text
 Resume from /home/joshu/Synthetic-Dream-Machine/SESSION.md.
 Branch: feature/lararium-node-3.
-Active sprint: S5 — quine round-trip verification, .tw5.js CJS integration, genesis CID self-ref tiddler.
+Active sprint: S6 — SessionEventLog per-session append-only doc; broadcast() presence.
 Architecture laws in memory: feedback_architecture_principles.md.
 Do not re-decide the five architecture laws or the BOOTSTRAP_SCANS / Path α grammar decision.
-Sprints 0–4 complete. Social tiga renamed Groups→Circles. Packaging model: CJS (not IIFE). Kowloon bridge question open — see ROADMAP.md § S8.
+Sprints 0–5 complete. Social tiga renamed Groups→Circles. Packaging model: CJS (not IIFE). Kowloon bridge design locked (Option B) — see ROADMAP.md § S8.
+Grammar now lives at api/v0.1/pono/memetic-wikitext (not grammars/). grammars/ tree deleted.
+Voice-house consolidated: lares/voices.md parents lares/masks/** (all masks moved from masks/).
 Research docs: packages/lares/lararium-research/PROTOCOL-STACK-IDENTITY-CIRCLES-SESSIONS.md
 ```
 
 ---
 
-## What Just Happened (S0–S4 + Protocol Design Complete)
+## What Just Happened (S5 Complete + Meme Namespace Consolidation)
 
-### S4 Complete — Peer Factory Rewrites
+### S5 Complete — Quine Round-Trip Verification
 
-- `openNodeLarPeer` rewritten: uses `loadGenesisIsland()`, removes `seedLarariumDoc` disk-walk body
+- `.tw5.js` CJS plugin blobs wired into `build-genesis-island.ts`
+- `test-quine.ts` passes: rendered grammar meme hash === source tiddler hash in genesis
+- Genesis CID written as `$:/lararium/genesis-cid` self-ref tiddler
+- `GEN_4_QUINE_PROPERTY` invariant declared proved in `system-invariants.ts`
+
+### Meme Namespace Consolidation
+
+**Grammar → pono merge (Option B):**
+- `api/v0.1/grammars/memetic-wikitext.md` merged into `api/v0.1/pono/memetic-wikitext.md` (single source: law + grammar kernel)
+- `api/v0.1/grammars/` tree deleted entirely
+- `GRAMMAR_MEME_URI` and `GRAMMAR_GENESIS_REL_PATH` updated to `pono/memetic-wikitext`
+- All 25 pono memes upgraded to `⊙` sigils (`<<~⊙&#x0001;` / `<<~⊙&#x0004;`)
+
+**Namespace sigil table (settled):**
+
+| Namespace | Open | Close |
+|---|---|---|
+| `pono/` | `<<~⊙&#x0001;` | `<<~⊙&#x0004;` |
+| `mu/`, `lares/` | `<<~ॐ ँ&#x0001;` | `<<~ॐ ँ&#x0004;` |
+| `docs/` | `<<~&#x0001;` | `<<~&#x0004;` |
+| `kapu.md` | `<<~⊙&#x0011;` | `<<~⊙&#x0014;` (DC1/DC4 — intentional) |
+
+**Misfile audit — five moves:**
+1. `pono/circles-kowloon.md` → `docs/pono/circles-kowloon.md` (doc companion, not binding law)
+2. `pono/pattern-integrity.md` → `mu/pattern-integrity.md` (cosmological, not protocol)
+3. `docs/grammars/tiddlywiki-filter.md` → `docs/pono/tiddlywiki-filter.md` (docs/grammars/ deleted)
+4. `pono/source-module.md` → `docs/lararium/source-module.md` (reference companion)
+5. `masks/**` → `lares/masks/**` — voice-house consolidated under `lares/voices.md`
+
+**Voice-house:**
+- `lares/voices.md` is now the invariant parent of `lares/masks/`
+- All mask files upgraded to `ॐ ँ` sigils; URIs updated to `api/v0.1/lares/masks/...`
+- Three pending spec rooms: `docs/lares/voices/coordinators`, `/workers`, `/masks` (forward pointers, not yet created)
+
+### Earlier (S0–S4)
+
+- `openNodeLarPeer` rewritten: uses `loadGenesisIsland()`, removes `seedLarariumDoc` disk-walk
 - `lararium-island.ts` deleted entirely (605 → 0 lines)
-- All satellite doc seeders moved to `genesis-island.ts`
-- `reconcileWellKnownTiddlers` + 4 satellite seeders (`seedLaresDoc`, `seedIdentitiesDoc`, `seedCirclesDoc`, `seedSessionsDoc`) now in `genesis-island.ts`
-
-### Protocol Stack Design Session (same day)
-
-**Social tiga renamed:** `GroupsDoc` / `GROUPS_DOC_URI` / `@groups` → `CirclesDoc` / `CIRCLES_DOC_URI` / `@circles` everywhere (source, dist stubs, memes, research docs).
-
-**Kowloon Circles seeded:**
-- `CircleTiddler` now has `kind: "Circle" | "System"`, `addressingScope`, full Kowloon JSDoc
-- `seedCirclesDoc()` auto-seeds 5 system circles (Following, All Following, Circles, Blocked, Muted)
-- Reference meme: `packages/lares/memes/api/v0.1/pono/circles-kowloon.md`
-
-**Protocol stack research docs:**
-- `packages/lares/lararium-research/PROTOCOL-STACK-IDENTITY-CIRCLES-SESSIONS.md` — full 7-research-thread synthesis; 6-doc model; Keyhive + UCAN + ERA + Seitan + Kowloon inversion
-
-**Packaging model fixed:**
-- All IIFE references replaced with CJS across all source TS files, vite configs, and meme `.md` files (32 files)
-- `.tw5.js` CJS outputs already exist in `dist-widgets/`; format was always CJS — only labels were stale
-
-**EPIC updated:** `packages/CURRENT-EPIC.md` reflects S0–S4 complete, S5 active, S6–S7 designed.
+- Social tiga renamed Groups→Circles everywhere; `seedCirclesDoc()` seeds 5 system circles
+- All IIFE references replaced with CJS (32 files); packaging model settled
 
 ---
 
@@ -148,16 +168,16 @@ The publish step is a deliberate authority handoff: user keypair authorizes the 
 | 3 | `build-genesis-island.ts` — build-time genesis builder | S2 | ✅ Done |
 | 4 | `loadGenesisIsland()` runtime function | S3 | ✅ Done |
 | 5 | Rewrite `openNodeLarPeer` to use genesis artifact | S4 | ✅ Done |
-| 6 | Wire `.tw5.js` CJS outputs into genesis; quine round-trip | S5 | 🔴 Active |
-| 7 | `SessionEventLog` per-session append-only doc | S6 | ⬜ Designed |
+| 6 | Wire `.tw5.js` CJS outputs into genesis; quine round-trip | S5 | ✅ Done |
+| 7 | `SessionEventLog` per-session append-only doc | S6 | 🔴 Active |
 | 8 | Circles + Identities capability layer (Keyhive/UCAN) | S7 | ⬜ Designed |
 | 9 | Kowloon bridge — `KowloonDoc` or HTTP adapter | S8 | ⬜ Research pending |
 
 ---
 
-## Likely Next Files To Touch (S5)
+## Likely Next Files To Touch (S6)
 
-- `packages/lararium-node/scripts/build-genesis-island.ts` — wire `.tw5.js` CJS blobs into genesis
-- `packages/lararium-tw5/scripts/write-tiddler-memes.ts` — verify CJS splicing pipeline
-- `packages/lararium-core/src/system-invariants.ts` — complete quine invariant stub
-- `pnpm test:quine` script — new file, boot vm + render + hash check
+- `packages/lararium-core/src/social-doc.ts` — add `eventLogUrl?`, `eventLogHeads?` to `SessionTiddler`; add `SessionEventLog` doc type + `SessionEvent` entry type
+- `packages/lararium-node/src/genesis-island.ts` — add `seedSessionEventLog(repo, sessionId)`
+- `packages/lares/memes/api/v0.1/lares/voices.md` — spec-shelf links need companion docs created: `docs/lares/voices/coordinators`, `docs/lares/voices/workers`, `docs/lares/voices/masks`
+- `packages/ROADMAP.md` — S6 tasks to check off as they complete

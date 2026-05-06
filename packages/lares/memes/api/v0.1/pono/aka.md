@@ -1,6 +1,6 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/@lares/api/v0.1/pono/memetic-wikitext >> -->
 
-<<~&#x0001; ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/aka >>
+<<~⊙&#x0001; ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/aka >>
 ```toml iam
 uri-path = "ha.ka.ba/@lares/api/v0.1/pono/aka"
 file-path = "packages/lares/memes/api/v0.1/pono/aka.md"
@@ -130,4 +130,4 @@ confidence-bounded = true
 <<~/ahu >>
 
 <<~&#x0003;>>
-<<~&#x0004; -> ? >>
+<<~⊙&#x0004; -> ? >>

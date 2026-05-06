@@ -5,7 +5,7 @@
  * seeding (disk → CRDT once; runtime reads CRDT — never disk again).
  *
  * Tests exercise pure, I/O-free functions from @lararium/core plus the one
- * grammar round-trip that reads the canonical lares/grammars/memetic-wikitext.md
+ * grammar round-trip that reads the canonical lares/api/v0.1/pono/memetic-wikitext.md
  * carrier from disk (present in the monorepo; stable contract).
  *
  * No HTTP, no OAuth routes, no web2 auth ceremony.
@@ -96,8 +96,8 @@ describe("parseHostfulLarUri", () => {
 // grammarRulesFromText — reads real grammar carrier from lares/
 // ---------------------------------------------------------------------------
 
-describe("grammarRulesFromText — real lares/grammars/memetic-wikitext.md", () => {
-  const grammarPath = join(LARES_ROOT, "grammars", "memetic-wikitext.md");
+describe("grammarRulesFromText — real lares/api/v0.1/pono/memetic-wikitext.md", () => {
+  const grammarPath = join(LARES_ROOT, "api", "v0.1", "pono", "memetic-wikitext.md");
   const grammarExists = existsSync(grammarPath);
 
   // Skip gracefully if the carrier is not present (CI without full repo).
@@ -105,13 +105,13 @@ describe("grammarRulesFromText — real lares/grammars/memetic-wikitext.md", () 
 
   maybeTest("loads grammar carrier from disk", () => {
     const text = readFileSync(grammarPath, "utf8");
-    const rules = grammarRulesFromText("lar:///grammars/memetic-wikitext", text);
+    const rules = grammarRulesFromText("lar:///ha.ka.ba/@lares/api/v0.1/pono/memetic-wikitext", text);
     expect(rules).not.toBeNull();
   });
 
   maybeTest("extracts expected sigil names", () => {
     const text  = readFileSync(grammarPath, "utf8");
-    const rules = grammarRulesFromText("lar:///grammars/memetic-wikitext", text);
+    const rules = grammarRulesFromText("lar:///ha.ka.ba/@lares/api/v0.1/pono/memetic-wikitext", text);
     const names = rules!.sigils.map((s) => s.name);
     expect(names).toContain("ahu");
     expect(names).toContain("pranala");
@@ -122,7 +122,7 @@ describe("grammarRulesFromText — real lares/grammars/memetic-wikitext.md", () 
 
   maybeTest("ahu sigil has open and close patterns", () => {
     const text = readFileSync(grammarPath, "utf8");
-    const rules = grammarRulesFromText("lar:///grammars/memetic-wikitext", text);
+    const rules = grammarRulesFromText("lar:///ha.ka.ba/@lares/api/v0.1/pono/memetic-wikitext", text);
     const ahu = rules!.sigils.find((s) => s.name === "ahu");
     expect(ahu?.openPattern).toBeTruthy();
     expect(ahu?.closePattern).toBeTruthy();
@@ -130,7 +130,7 @@ describe("grammarRulesFromText — real lares/grammars/memetic-wikitext.md", () 
 
   maybeTest("papalohe/reaction family registered (Phase 2x)", () => {
     const text = readFileSync(grammarPath, "utf8");
-    const rules = grammarRulesFromText("lar:///grammars/memetic-wikitext", text);
+    const rules = grammarRulesFromText("lar:///ha.ka.ba/@lares/api/v0.1/pono/memetic-wikitext", text);
     const families = rules!.families.map((f) => f.name);
     // reaction family powers kumu device event wiring
     expect(families).toContain("reaction");

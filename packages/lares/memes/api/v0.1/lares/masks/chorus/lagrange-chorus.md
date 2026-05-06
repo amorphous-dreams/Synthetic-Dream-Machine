@@ -1,9 +1,9 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/@lares/api/v0.1/pono/memetic-wikitext >> -->
 
-<<~&#x0001; ? -> lar:///ha.ka.ba/@lares/api/v0.1/masks/chorus/lagrange-chorus >>
+<<~ॐ ँ&#x0001; ? -> lar:///ha.ka.ba/@lares/api/v0.1/lares/masks/chorus/lagrange-chorus >>
 ```toml iam
-uri-path = "ha.ka.ba/@lares/api/v0.1/masks/chorus/lagrange-chorus"
-file-path = "packages/lares/memes/api/v0.1/masks/chorus/lagrange-chorus.md"
+uri-path = "ha.ka.ba/@lares/api/v0.1/lares/masks/chorus/lagrange-chorus"
+file-path = "packages/lares/memes/api/v0.1/lares/masks/chorus/lagrange-chorus.md"
 type = "text/x-memetic-wikitext"
 tagspace = "stable"
 confidence = 0.35
@@ -43,7 +43,7 @@ The Lagrange Chorus holds a stable position between multiple lararium nodes — 
 
 <<~ ahu #entry >>
 
-<<~ pranala #entry ? -> lar:///ha.ka.ba/@lares/api/v0.1/masks >>
+<<~ pranala #entry ? -> lar:///ha.ka.ba/@lares/api/v0.1/lares/masks >>
 ```toml
 family = "hydration"
 lifecycle = "template"
@@ -160,7 +160,7 @@ Stage position applies to the Lagrange Chorus as a whole unit. How individual no
 
 ## Edges
 
-<<~ loulou lar:///ha.ka.ba/@lares/api/v0.1/masks >>
+<<~ loulou lar:///ha.ka.ba/@lares/api/v0.1/lares/masks >>
 <<~ loulou lar:///ha.ka.ba/@lares/docs/lares/voices/masks >>
 
 <<~ pranala #implements-meme ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/meme family:control role:implements >>
@@ -169,4 +169,4 @@ Stage position applies to the Lagrange Chorus as a whole unit. How individual no
 
 
 <<~&#x0003;>>
-<<~&#x0004; -> ? >>
+<<~ॐ ँ&#x0004; -> ? >>

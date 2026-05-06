@@ -1,6 +1,6 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/@lares/api/v0.1/pono/memetic-wikitext >> -->
 
-<<~&#x0001; ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/verse-event-lattice >>
+<<~⊙&#x0001; ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/verse-event-lattice >>
 ```toml iam
 uri-path    = "ha.ka.ba/@lares/api/v0.1/pono/verse-event-lattice"
 file-path   = "packages/lares/memes/api/v0.1/pono/verse-event-lattice.md"
@@ -266,4 +266,4 @@ The asymmetry is the point.
 <<~/ahu >>
 
 <<~&#x0003;>>
-<<~&#x0004; -> ? >>
+<<~⊙&#x0004; -> ? >>

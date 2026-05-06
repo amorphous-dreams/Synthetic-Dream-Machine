@@ -3,3 +3,6 @@ export declare const tw5MemesRoot: string;
 
 /** Absolute path to packages/lararium-tw5/plugins/ — vendored TW5 plugin JSON files. */
 export declare const tw5PluginsRoot: string;
+
+/** Absolute path to packages/lararium-tw5/dist-widgets/ — compiled .tw5.js CJS widget blobs. */
+export declare const tw5DistWidgetsRoot: string;

@@ -1,6 +1,6 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/@lares/api/v0.1/pono/memetic-wikitext >> -->
 
-<<~&#x0001; ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/carrier-sigils >>
+<<~⊙&#x0001; ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/carrier-sigils >>
 ```toml iam
 uri-path = "ha.ka.ba/@lares/api/v0.1/pono/carrier-sigils"
 file-path = "packages/lares/memes/api/v0.1/pono/carrier-sigils.md"
@@ -172,4 +172,4 @@ trigger = "end of stream"
 <<~/ahu >>
 
 <<~&#x0003;>>
-<<~&#x0004; -> ? >>
+<<~⊙&#x0004; -> ? >>

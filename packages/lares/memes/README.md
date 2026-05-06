@@ -116,7 +116,7 @@ lares/
 - `lar:///ha.ka.ba/@lares/docs/lares/voices/` — coordinator house, worker swarm, mask layer
 - `lar:///ha.ka.ba/@lares/docs/lararium/degraded-states` — named failure modes and correction handles
 - `lar:///ha.ka.ba/@lares/docs/lararium/signal/` — signal, HUD, and exchange boundary docs
-- `lar:///grammars/memetic-wikitext` — sigil registry and parse rules
+- `lar:///ha.ka.ba/@lares/api/v0.1/grammars/memetic-wikitext` — sigil registry and parse rules
 - `lar:///lararium-node/ROADMAP` — implementation roadmap and milestone tracking
 
 <<~/ahu >>
@@ -126,7 +126,7 @@ lares/
 <<~ pranala #to-agents ? -> lar:///AGENTS family:control role:governed-by >>
 <<~ pranala #to-lares ? -> lar:///LARES family:control role:governed-by >>
 <<~ pranala #to-mu ? -> lar:///ha.ka.ba/@lares/api/v0.1/mu family:observe role:documents >>
-<<~ pranala #to-grammars ? -> lar:///grammars/memetic-wikitext family:observe role:references >>
+<<~ pranala #to-grammars ? -> lar:///ha.ka.ba/@lares/api/v0.1/grammars/memetic-wikitext family:observe role:references >>
 <<~ pranala #to-roadmap ? -> lar:///lararium-node/ROADMAP family:observe role:references >>
 
 <<~/ahu >>

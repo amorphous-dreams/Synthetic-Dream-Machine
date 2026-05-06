@@ -1,6 +1,6 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/@lares/api/v0.1/pono/memetic-wikitext >> -->
 
-<<~&#x0001; ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/local-first >>
+<<~⊙&#x0001; ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/local-first >>
 ```toml iam
 uri-path    = "ha.ka.ba/@lares/api/v0.1/pono/local-first"
 file-path   = "packages/lares/memes/api/v0.1/pono/local-first.md"
@@ -253,4 +253,4 @@ Beelay's sync protocol operates below this boundary — transparent to the meme 
 <<~/ahu >>
 
 <<~&#x0003;>>
-<<~&#x0004; -> ? >>
+<<~⊙&#x0004; -> ? >>

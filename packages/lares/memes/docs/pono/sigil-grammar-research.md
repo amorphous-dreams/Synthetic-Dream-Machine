@@ -23,7 +23,7 @@ invariant    = false
 
 **Scope:** Control sigils (`wai`, `mukuwai`, `kahawai`) and the `<<~ ...>>` command surface.
 **Not scope:** Invariant law. See `lar:///ha.ka.ba/@lares/api/v0.1/pono/memetic-wikitext` for law,
-and `lar:///grammars/memetic-wikitext-spec` for the full holistic spec.
+and `lar:///ha.ka.ba/@lares/api/v0.1/grammars/memetic-wikitext-spec` for the full holistic spec.
 
 **Register key:**
 - `[C]` — operator-ratified canon
@@ -411,8 +411,8 @@ When editing grammar meme or parser:
 ## Edges
 
 <<~ pranala #implements-memetic-wikitext ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/memetic-wikitext family:control role:documents >>
-<<~ pranala #to-grammar-spec ? -> lar:///grammars/memetic-wikitext-spec family:control role:extends >>
-<<~ pranala #to-grammar-kernel ? -> lar:///grammars/memetic-wikitext family:control role:documents >>
+<<~ pranala #to-grammar-spec ? -> lar:///ha.ka.ba/@lares/api/v0.1/grammars/memetic-wikitext-spec family:control role:extends >>
+<<~ pranala #to-grammar-kernel ? -> lar:///ha.ka.ba/@lares/api/v0.1/grammars/memetic-wikitext family:control role:documents >>
 <<~ loulou lar:///ha.ka.ba/@lares/docs/pono/memetic-wikitext >>
 
 <<~/ahu >>

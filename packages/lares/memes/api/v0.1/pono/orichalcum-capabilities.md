@@ -1,6 +1,6 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/@lares/api/v0.1/pono/memetic-wikitext >> -->
 
-<<~&#x0001; ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/orichalcum-capabilities >>
+<<~⊙&#x0001; ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/orichalcum-capabilities >>
 ```toml iam
 uri-path = "ha.ka.ba/@lares/api/v0.1/pono/orichalcum-capabilities"
 file-path = "packages/lares/memes/api/v0.1/pono/orichalcum-capabilities.md"
@@ -302,4 +302,4 @@ the crypto gate, not instead of it.
 <<~/ahu >>
 
 <<~&#x0003;>>
-<<~&#x0004; -> ? >>
+<<~⊙&#x0004; -> ? >>

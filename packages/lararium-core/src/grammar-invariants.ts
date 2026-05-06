@@ -6,7 +6,7 @@
  * No runtime code lives here — only types and doc-comments.
  *
  * Invariant 1 — BOOTSTRAP parseable:
- *   The grammar meme text at lar:///ha.ka.ba/@lares/grammars/memetic-wikitext
+ *   The grammar meme text at lar:///ha.ka.ba/@lares/api/v0.1/pono/memetic-wikitext
  *   MUST be fully parseable by BOOTSTRAP_SCANS alone (no loaded GrammarRules).
  *   Non-negotiable: the grammar meme defines the rules that parse itself;
  *   if it uses a custom sigil from those rules, an infinite regress results.
@@ -43,7 +43,7 @@
  *   (Invariant 6). Code that assumes the current grammar hash is permanent will
  *   break on version bump; plan for this before S2 ships.
  *
- *   Transitional state (pre-S2): the node peer reads lares/grammars/memetic-wikitext.md
+ *   Transitional state (pre-S2): the node peer reads lares/pono/memetic-wikitext.md
  *   at cold-boot with BOOTSTRAP_SCANS, seeds the engine doc, then treats CRDT as
  *   authoritative. Named exception: CODEC_EX_PRE_S2_COLD_BOOT in
  *   system-invariants.ts. It disappears when build-genesis-island.ts ships.
@@ -80,7 +80,7 @@
  * This URI anchors Invariant 1 trust.
  */
 export const GRAMMAR_MEME_URI =
-  "lar:///ha.ka.ba/@lares/grammars/memetic-wikitext" as const;
+  "lar:///ha.ka.ba/@lares/api/v0.1/pono/memetic-wikitext" as const;
 
 /**
  * The bag in which the base grammar tiddler lives in the engine Automerge doc.
@@ -92,7 +92,7 @@ export { LARARIUM_DOC_URI as GRAMMAR_BAG } from "./lararium-doc.js";
  * Relative path of the grammar genesis artifact within the lares/ directory.
  * Used only during cold-boot seeding (Invariant 3). Not read at runtime.
  */
-export const GRAMMAR_GENESIS_REL_PATH = "grammars/memetic-wikitext.md" as const;
+export const GRAMMAR_GENESIS_REL_PATH = "api/v0.1/pono/memetic-wikitext.md" as const;
 
 // ---------------------------------------------------------------------------
 // Version gate stub — Keyhive (Invariant 6)

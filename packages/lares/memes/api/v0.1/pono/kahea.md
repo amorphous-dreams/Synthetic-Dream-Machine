@@ -1,6 +1,6 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/@lares/api/v0.1/pono/memetic-wikitext >> -->
 
-<<~&#x0001; ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/kahea >>
+<<~⊙&#x0001; ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/kahea >>
 ```toml iam
 uri-path = "ha.ka.ba/@lares/api/v0.1/pono/kahea"
 file-path = "packages/lares/memes/api/v0.1/pono/kahea.md"
@@ -152,4 +152,4 @@ canonical-roles = ["reads", "writes", "streams", "buffers", "pipes"]
 <<~/ahu >>
 
 <<~&#x0003;>>
-<<~&#x0004; -> ? >>
+<<~⊙&#x0004; -> ? >>

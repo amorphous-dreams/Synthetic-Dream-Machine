@@ -1,6 +1,6 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/@lares/api/v0.1/pono/memetic-wikitext >> -->
 
-<<~&#x0001; ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/heleuma >>
+<<~⊙&#x0001; ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/heleuma >>
 ```toml iam
 uri-path = "ha.ka.ba/@lares/api/v0.1/pono/heleuma"
 file-path = "packages/lares/memes/api/v0.1/pono/heleuma.md"
@@ -90,4 +90,4 @@ A heleuma API meme that acquires:
 <<~/ahu >>
 
 <<~&#x0003;>>
-<<~&#x0004; -> ? >>
+<<~⊙&#x0004; -> ? >>

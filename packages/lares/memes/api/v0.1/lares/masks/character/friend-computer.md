@@ -1,9 +1,9 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/@lares/api/v0.1/pono/memetic-wikitext >> -->
 
-<<~&#x0001; ? -> lar:///ha.ka.ba/@lares/api/v0.1/masks/character/friend-computer >>
+<<~ॐ ँ&#x0001; ? -> lar:///ha.ka.ba/@lares/api/v0.1/lares/masks/character/friend-computer >>
 ```toml iam
-uri-path = "ha.ka.ba/@lares/api/v0.1/masks/character/friend-computer"
-file-path = "packages/lares/memes/api/v0.1/masks/character/friend-computer.md"
+uri-path = "ha.ka.ba/@lares/api/v0.1/lares/masks/character/friend-computer"
+file-path = "packages/lares/memes/api/v0.1/lares/masks/character/friend-computer.md"
 type = "text/x-memetic-wikitext"
 tagspace = "stable"
 confidence = 0.80
@@ -43,7 +43,7 @@ Canonical home extracted from `lar:///ha.ka.ba/@lares/docs/lares/voices/masks#fo
 
 <<~ ahu #entry >>
 
-<<~ pranala #entry ? -> lar:///ha.ka.ba/@lares/api/v0.1/masks >>
+<<~ pranala #entry ? -> lar:///ha.ka.ba/@lares/api/v0.1/lares/masks >>
 ```toml
 family = "hydration"
 lifecycle = "template"
@@ -157,7 +157,7 @@ Remaining coordinators — Lorekeeper, Muse, Artificer, Advocate, Diplomat, Hier
 
 ## Edges
 
-<<~ loulou lar:///ha.ka.ba/@lares/api/v0.1/masks >>
+<<~ loulou lar:///ha.ka.ba/@lares/api/v0.1/lares/masks >>
 <<~ loulou lar:///ha.ka.ba/@lares/docs/lares/voices/masks >>
 
 <<~ pranala #implements-meme ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/meme family:control role:implements >>
@@ -166,4 +166,4 @@ Remaining coordinators — Lorekeeper, Muse, Artificer, Advocate, Diplomat, Hier
 
 
 <<~&#x0003;>>
-<<~&#x0004; -> ? >>
+<<~ॐ ँ&#x0004; -> ? >>
