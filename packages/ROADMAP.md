@@ -10,11 +10,17 @@
 
 Every peer boots from a single content-addressed genesis artifact — an Automerge doc built at build time containing all blobs, tiddlers, and the TW5 core. No runtime disk reads. No seed functions. Any peer that holds the CID can clone the canonical state.
 
-The system folds into itself: the genesis artifact carries the engine that deserializes it.
+The system folds into itself: the genesis artifact carries the engine that deserializes it. **Myth speaks reality into being.**
 
 Social graph control inverts: circles are owned by their center, not the platform. Adding to a circle IS the follow. Membership never federates. (Kowloon / jzellis model.)
 
-**DreamNet law (2026-05-06):** A Nexus is a keypair-rooted namespace, not a server. `lar://<nexus-pubkey>/<doc-id>` is the canonical URI form. `@lararium/*` = DreamNet protocol/infra. `@dreamdeck/*` = first app stack on the Lares DreamNet. Other Nexus apps possible.
+**Settled terminology (2026-05-06):**
+- **DreamNet** — the entire distributed network of nexus-meshes: allied, neutral, and oppositional. Opposition is designed in. A Nexus may be hostile, degraded, or incompatible. "Not a single machine, nor merely a choir of helpful ghosts, but a living mesh of thresholds." (Elyncia_02)
+- **Lararium** — one operator's infrastructure: a `lararium-node` process + browser peers + devices. The household shrine. Smallest unit. Has two layers: *stable mesh* (lares/ carriers, genesis → `ha` content tiga) and *transitory flow* (operators, agents, sessions → social tiga).
+- **Nexus** — a *confederation of lararia* sharing a stable internal ley-line mesh. Named by community + place (e.g. "Floating Library of Mu, PNW Branch"). Resources may extend geographically beyond the name. Cross-Nexus connections = wild-magic-zone hops: explicitly brokered, potentially unreliable. NOT a single server. NOT a single lararium. "Each node a city of spirits, not a solitary saint — but a city can be besieged." The Nexus keypair serves as the confederation keypair — Keyhive-group-rooted when available.
+- **DreamDeck** — the first personal browser app for accessing DreamNet. One UX surface among possible others. Package: `@dreamdeck/app`.
+- **`@lararium/*`** — DreamNet protocol/infra (core, tw5, node, browser, mcp)
+- **`@dreamdeck/*`** — DreamDeck app stack (tldraw, app)
 
 ---
 
@@ -193,6 +199,27 @@ Social graph control inverts: circles are owned by their center, not the platfor
 
 ---
 
+## S5.3 — FfzClock Type ⬜ Queued (precedes S6 close)
+
+**Goal:** Define `FfzClock` in `@lararium/core` before S6 closes so `SessionEvent` and `PresenceSlot` use the right clock type from the start.
+
+### Tasks
+
+- [ ] Add `FfzClock`, `FfzLevel` types to `@lararium/core/src/ffz-clock.ts`
+- [ ] Add `ffzTick`, `ffzCompare`, `ffzMerge` functions
+- [ ] Export from `@lararium/core` index
+- [ ] Wire into `PresenceSlot.clock` and `SessionEvent.clock` type shapes in `social-doc.ts`
+
+### Key decisions (from FFZ Chronometer research)
+
+- L4 epoch MUST be unbounded (epoch aliasing problem)
+- `bounds` companion field controls rollover behavior; L0–L3 bounded, L4 = `Infinity`
+- `actorId` retained as tie-breaker — preserves Automerge change-ordering contract
+- Final bound values should be coprime primes (TBD); stub as `[64, 256, 1024, 365, Infinity]`
+- Reference: `packages/lares/lararium-research/FFZ-CHRONOMETER.md`
+
+---
+
 ## S6 — SessionEventLog 🔴 Active
 
 **Goal:** Per-session append-only event log; ephemeral presence via `broadcast()`.
@@ -200,8 +227,9 @@ Social graph control inverts: circles are owned by their center, not the platfor
 ### Tasks
 
 - [ ] Add `eventLogUrl`, `eventLogHeads` fields to `SessionTiddler` in `social-doc.ts`
-- [ ] Add `SessionEventLog` doc type + `SessionEvent` entry type in `social-doc.ts`
+- [ ] Add `SessionEventLog` doc type + `SessionEvent` entry type (`clock: FfzClock`) in `social-doc.ts`
 - [ ] Add `seedSessionEventLog(repo, sessionId)` in `genesis-island.ts`
+- [ ] Define `PresenceSlot` type (`clock: FfzClock`) in `social-doc.ts` or new `presence.ts`
 - [ ] Document `broadcast()` usage pattern for presence (no separate doc needed)
 
 ### Key design decisions
@@ -223,7 +251,7 @@ Social graph control inverts: circles are owned by their center, not the platfor
 
 ### Key design decisions (from research)
 
-- `IdentitiesDoc`: Keyhive person-as-group model — each person = a group of their device `did:key`s; UCAN delegation chain proves "Device B is also me". `IdentityTiddler.verifyingKey` already present.
+- `IdentitiesDoc`: Keyhive person-as-group model — each person = a group of their device `did:key`s; UCAN delegation chain proves "Device B belongs to me". `IdentityTiddler.verifyingKey` already present.
 - `CirclesDoc`: Keyhive convergent capabilities + Seitan token invitations (@localfirst/auth); nexus admin = founding key for system circles; users = founding key for personal circles. `CircleTiddler.encryptedShareHint` already present.
 - ERA paper (arXiv:2601.22963): epoch-resolved arbitration for concurrent admin revocations.
 
@@ -318,20 +346,32 @@ Full research: `packages/lares/lararium-research/DREAMNET-FEDERATION-RESEARCH.md
 
 ### Settled Decisions
 
-- **Nexus identity** = Ed25519 keypair. `lar://<nexus-pubkey>/<doc-id>` is the URI form. No DNS.
+- **Nexus identity** = Ed25519 keypair. `lar://<nexus-pubkey>/<doc-id>` serves as the URI form. No DNS.
 - **Membership** = signed invite token: `sign_with_operator_key({ iss: nexus_did, cap: "join/nexus", exp, nonce })`. Offline-verifiable, nonce burned on redemption. No central registry.
 - **Auth substrate** = Keyhive (Ink & Switch, Brooklyn Zelenka) when TS/WASM bindings ship. Until then: node-local operator keypair + ucanto-compatible capability schemas as forward-compatible surface.
 - **Presence** = `DocHandle.broadcast()` + Yjs-awareness-style `{ userId, deviceId, cursor, viewport, selection, clock }` slot per peer. Last-write-wins per `(peerId, deviceId)`. 15s heartbeat, 30s expiry. Never written to Automerge doc.
 - **Session-local state** = never enters broadcast(). Enforced at schema level (tldraw three-tier model).
-- **DreamDeck visual principles**: spatial position is semantic; nodes are `lar://` resource containers; edge types are first-class; no shared mutable state (Verse model, not Blueprint); export to open formats (JSON Canvas).
+- **DreamDeck visual principles**: spatial position carries semantic weight; nodes act as `lar://` resource containers; edge types function as first-class; no shared mutable state (Verse model, not Blueprint); export to open formats (JSON Canvas).
+
+### Settled Protocol Decisions (2026-05-06)
+
+- **lar:// URI** — three families, no grammar change. Nexus identity uses new `@nexus` scope: `lar:///ha.ka.ba/@nexus/<pubkey>`. Resolver gets `"nexus-doc"` kind. Triple-slash hostless form retained for all system/content memes.
+- **Presence routing** — `@lararium/core` types → `@lararium/tw5` tiddler representation → peer packages wire broadcast → UX layer consumes.
+- **FFZ Chronometer** — `FfzClock` type lands in `@lararium/core` before S6 closes. `PresenceSlot.clock` and `SessionEvent.clock` are `FfzClock`, not `number`. L4 (epoch) unbounded; L0–L3 bounded + looping.
+- **`capabilityFlags` forms a monotonic set** — never negotiate down. Protocol downgrade attack is mitigated structurally.
+- **`keyHistory` designed in from day one** — key rotation proofs required; cannot be retrofitted.
 
 ### Open Protocol Questions (research pending)
 
 | Question | Status |
 |---|---|
-| `lar://` URI grammar: `lar:///path` → `lar://<nexus-pubkey>/path` — when? | Design pending |
 | Cross-Nexus federation: room-level or Nexus-level subscription? No `nexus_id` in schemas yet | Research pending |
 | Keyhive WASM/TS bindings ETA | Watch Ink & Switch; pre-alpha Rust only as of 2026-05 |
+| `FfzClock` bound values — should be coprime primes; final values not yet chosen | Design pending |
+| `NexusRegistryDoc` bootstrap into genesis artifact | S9 question |
+| `allies` and `blocked` — same doc or separate satellite docs? | Design pending |
+| ATProto-style DNS verification as optional operator proof | Deferred — not primary mechanism |
+| FfzClock external publication — Google Scholar search for "hierarchical logical clock" + "bounded" first | Before publishing |
 
 ---
 

@@ -28,9 +28,12 @@ The seven ideals from Kleppmann et al. (Ink & Switch, 2019) define the design ta
 Keyhive (convergent capabilities + BeeKEM) and Beelay (RIBLT sync + sedimentree) are
 the current prior-art stack closest to satisfying all seven simultaneously.
 
-**Core law:** a lararium-node is a peer, not an authority. The server holds no privilege
-over the content it relays. "The sync server is just another member in the system."
-(Brooklyn Zelenka, localfirst.fm ep. 19)
+**Scale ladder (canonical 2026-05-06):**
+- **Lararium** — one operator's infrastructure: a `lararium-node` process + browser peers + devices.
+- **Nexus** — a confederation of Lararia sharing a stable internal mesh. Named by community + place.
+- **DreamNet** — the super-mesh of all Nexuses (allied + oppositional). Within-Nexus = reliable CRDT sync. Cross-Nexus = explicitly brokered, degraded-state-tolerant.
+
+**Core law:** a `lararium-node` operates as a peer, not an authority — it functions as one Lararium in a Nexus confederation. The server holds no privilege over the content it relays. "The sync server is just another member in the system." (Brooklyn Zelenka, localfirst.fm ep. 19)
 
 <<~/ahu >>
 

@@ -287,8 +287,12 @@ Alphabetical. Examples:]
   in every exchange, making epistemic state visible.
 - **Participant** — any entity maintaining its own clock element:
   an operator, a Lares node, or a Tasked Spirit.
-- **Scale** — one of five nested temporal levels (week, watch, turn,
-  round, action) at which OODA-HA phases are tracked.
+- **Scale** — one of five nested temporal levels at which OODA-HA phases
+  are tracked. Canonical register names (attention-scale vocabulary):
+  L0 = Pulse (sub-perceptual), L1 = Beat (operator perceptual grain,
+  the anchor), L2 = Measure (procedural default), L3 = Arc (episodic
+  session), L4 = Theme (strategic epoch, unbounded).
+  See `lar:///ha.ka.ba/@lares/api/v0.1/pono/attention-scale`.
 - **Stamp** — an ITC stamp; a pair (id, event) encoding a
   participant's causal identity and accumulated events.
 - **Sync Point** — see Exchange Boundary.
@@ -357,9 +361,13 @@ not merge — it carries per-participant at sync points.]
 
 #### 5.2.3 Nested Scales
 
-[PLACEHOLDER — Five default scales: week, watch, turn, round, action.
+[PLACEHOLDER — Five default scales with canonical attention-scale
+register names: L0 = Pulse (sub-perceptual), L1 = Beat (operator
+perceptual grain — the anchor), L2 = Measure (procedural default),
+L3 = Arc (episodic session), L4 = Theme (strategic epoch, unbounded).
 Scales are contextual, not fixed-duration. Each carries an independent
-OODA-HA phase and counter.]
+OODA-HA phase and counter. Reference:
+`lar:///ha.ka.ba/@lares/api/v0.1/pono/attention-scale`.]
 
 ### 5.3 Four-Layer CRDT Composition `[S:0.65]`
 

@@ -130,9 +130,12 @@ HUD-ANATOMY.md §5.3.1 carries four separate sigil sets:
 1. Phase sigils (old set — needs update per Priority 1)
 2. Authority/actor marks (`⊙` operator_set, `◇` node) — status unknown
 3. Stance sigils (🏛️ 🌊 🗡️ 🎭 🔮) — stable, locked in
-4. Chronometer scale sigils (🗺️ ⚙️ 🔍 ⚔️ ⚡) — stable, not yet in invariant
+4. Chronometer scale sigils (🗺️ ⚙️ 🔍 ⚔️ ⚡) — stable, not yet in invariant.
+   Canonical register names for these five scales: L0 = Pulse, L1 = Beat,
+   L2 = Measure, L3 = Arc, L4 = Theme.
+   See `lar:///ha.ka.ba/@lares/api/v0.1/pono/attention-scale`.
 
-**Action needed:** After Priority 1 resolves, rebuild the unified symbol table with the updated glyph set. The scale sigil set (🗺️ through ⚡) and their FTLS time-term bindings belong in a chronometer research doc (not yet created).
+**Action needed:** After Priority 1 resolves, rebuild the unified symbol table with the updated glyph set. The scale sigil set (🗺️ through ⚡) maps to the attention-scale register names (Pulse/Beat/Measure/Arc/Theme); the full binding table belongs in the attention-scale meme and in any chronometer research doc.
 
 ---
 

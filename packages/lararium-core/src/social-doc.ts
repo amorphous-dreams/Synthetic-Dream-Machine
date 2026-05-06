@@ -41,6 +41,7 @@
  */
 
 import type { LarDoc, MutableLarRecord } from "./base-doc.js";
+import type { FfzClock, ExchangeState } from "./ffz-clock.js";
 
 // ---------------------------------------------------------------------------
 // URI helpers — derive canonical tiddler title from principal/group/session ID
@@ -148,14 +149,22 @@ export interface CircleTiddler {
    * Circle kind.
    *
    * "System" — auto-created at identity boot; cannot be deleted.
-   *   Built-in system circles per identity:
+   *   Built-in system circles per identity (personal, never federates):
    *     "following"     — people the operator actively reads
    *     "all-following" — superset: followed nodes + circles
    *     "circles"       — tracks circle memberships (members are circles, not identities)
    *     "blocked"       — blocked identities
    *     "muted"         — muted identities
-   *   Built-in system circles per nexus (authorization tiers):
-   *     "nexus:anon", "nexus:user", "nexus:operator", "nexus:admin"
+   *   Built-in authorization tier circles (seeded per-Lararium; become Nexus-wide
+   *   when Nexus confederation + Keyhive federation land):
+   *     "nexus:anon"      — unauthenticated / public access
+   *     "nexus:user"      — authenticated member of this Lararium/Nexus
+   *     "nexus:operator"  — local operator (can promote content, manage sessions)
+   *     "nexus:admin"     — Nexus confederation admin (Keyhive group key, future)
+   *
+   *   Terminology: a Lararium represents one operator's infrastructure (single node + peers).
+   *   A Nexus forms a confederation of Lararia. These circles seed locally on each
+   *   Lararium but carry Nexus scope names so they federate cleanly when S9 lands.
    *
    * "Circle" — user-created personal circle (e.g. "Close Friends", "Work").
    */
@@ -332,8 +341,62 @@ export function readSessionTiddler(raw: MutableLarRecord): SessionTiddler | null
     ...(raw.fields["readPolicy"]      && { readPolicy:      raw.fields["readPolicy"] }),
   };
 }
-// Re-export legacy aliases so callers that used IdentityRecord / CircleRecord / SessionRecord
-// can migrate gradually.  These will be removed in a future milestone.
+// ---------------------------------------------------------------------------
+// Ephemeral presence — broadcast via DocHandle.broadcast(), never persisted
+// ---------------------------------------------------------------------------
+
+/**
+ * PresenceSlot — live peer position broadcast over Automerge ephemeral channel.
+ *
+ * `clock` encodes rhythmic session position (FfzClock L2 = session level).
+ * Serialized to wire via `ffzSerialize(clock)` for compact broadcast payloads.
+ */
+export interface PresenceSlot {
+  /** DID of the operating principal. */
+  readonly userId:    string;
+  /** Device/agent ID — matches SessionTiddler.agentId. */
+  readonly deviceId:  string;
+  /** Last known cursor position in the current canvas/document, or null. */
+  readonly cursor:    { x: number; y: number } | null;
+  /** Last known viewport state, or null. */
+  readonly viewport:  { x: number; y: number; zoom: number } | null;
+  /** Currently selected tiddler titles or element IDs. */
+  readonly selection: string[];
+  /** FfzClock at L2 (session) — ticked on each broadcast. */
+  readonly clock:          FfzClock;
+  /**
+   * Lifecycle state of the current operator-agent exchange turn.
+   * L1 tick fires on transition to "grounded"; stays stable during async wait.
+   * Absent for non-alignment presence slots (e.g. game or tool-time contexts).
+   */
+  readonly exchangeState?: ExchangeState;
+}
+
+// ---------------------------------------------------------------------------
+// Session event log — ordered entries within a session (S6 target)
+// ---------------------------------------------------------------------------
+
+/**
+ * SessionEvent — one entry in a session's event log.
+ *
+ * `clock` encodes position within the session (L1 = action, L0 = sub-action).
+ * The event log lives in a child doc at `@sessions/@{sessionId}/events`.
+ */
+export interface SessionEvent {
+  /** Unique event ID (UUID or nanoid). */
+  readonly id:      string;
+  /** FfzClock position — L1 ticks per action, L0 ticks per sub-action. */
+  readonly clock:   FfzClock;
+  /** Discriminator for payload shape (e.g. "tiddler:change", "nav:open", "tool:run"). */
+  readonly kind:    string;
+  /** Event payload — shape varies by `kind`. */
+  readonly payload: unknown;
+}
+
+// ---------------------------------------------------------------------------
+// Legacy aliases — migrate callers gradually; remove in a future milestone
+// ---------------------------------------------------------------------------
+
 /** @deprecated Use IdentityTiddler instead. */
 export type IdentityRecord = IdentityTiddler;
 /** @deprecated Use CircleTiddler instead. */

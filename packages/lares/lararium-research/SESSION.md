@@ -466,13 +466,15 @@ packages/lararium-node/
 
 ◇ FFZ 5-Scale changeset model, locked:
 
-  | Scale | Automerge unit | MemeProvider event |
-  |---|---|---|
-  | 0 — field op | One Automerge operation | (coalesced into debounce) |
-  | 1 — tiddler | One URI's full record | `onUriChanged` |
-  | 2 — meme carrier | Parent + ahu-slot children | `onUriChanged` ×N |
-  | 3 — room snapshot | One `change()` transaction ≥10 URIs | `onChangeset(uris, origin)` |
-  | 4 — realm/federation | Cross-doc reconciliation | `onSyncComplete(islandId)` |
+  Attention-scale register names now canonical: **Pulse** (0) / **Beat** (1) / **Measure** (2, default band) / **Arc** (3) / **Theme** (4). Canonical meme: `lar:///ha.ka.ba/@lares/api/v0.1/pono/attention-scale`.
+
+  | Scale | Register Name | Automerge unit | MemeProvider event |
+  |---|---|---|---|
+  | 0 — field op | **Pulse** | One Automerge operation | (coalesced into debounce) |
+  | 1 — tiddler | **Beat** | One URI's full record | `onUriChanged` |
+  | 2 — meme carrier | **Measure** | Parent + ahu-slot children | `onUriChanged` ×N |
+  | 3 — room snapshot | **Arc** | One `change()` transaction ≥10 URIs | `onChangeset(uris, origin)` |
+  | 4 — realm/federation | **Theme** | Cross-doc reconciliation | `onSyncComplete(islandId)` |
 
   Scale 3 targets UEFN actor-tick rates (100 actors × 60fps = 6000 calls/s avoided). `CHANGESET_THRESHOLD=10` separates human-edit rate from game-loop rate.
 

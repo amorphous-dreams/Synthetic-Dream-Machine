@@ -12,7 +12,7 @@ mana        = 0.99
 manao       = 0.98
 manaoio     = 0.97
 namespace   = "⊙"
-role        = "FFZ pono constitutional law — MIND, ISLAND, AUTHORITY, CODEC, SYSTEM, GENESIS, and PEER invariants for the Lararium causal-island system"
+role        = "FFZ pono constitutional law — MIND, ISLAND, AUTHORITY, CODEC, SYSTEM, PENTADIC, GENESIS, and PEER invariants for the Lararium causal-island system; attention-scale register names Pulse/Beat/Measure/Arc/Theme grounded in PENTA_2_CLOCK_ALIGNMENT"
 invariant   = true
 cacheable   = true
 hydrate     = true
@@ -35,7 +35,7 @@ These encode design-time laws and named exceptions — no runtime validators.
 Witnessing constants: named so any agent, test, or operator can reference by ID.
 Enforcement is structural, not procedural.
 
-Seven law clusters: MIND · ISLAND · AUTHORITY · CODEC · SYSTEM · GENESIS · PEER.
+Eight law clusters: MIND · ISLAND · AUTHORITY · CODEC · SYSTEM · PENTADIC · GENESIS · PEER.
 Named exceptions: CODEC_EXCEPTIONS.
 
 <<~/ahu >>
@@ -261,6 +261,40 @@ desc  = "*.md carrier files are projections of parent + fragment tiddler package
 <<~/ahu >>
 
 
+<<~ ahu #pentadic-laws >>
+
+## PENTADIC Laws — the Law of Fives as a structural invariant
+
+FFZ pentadic law (2026-05-06):
+The number five recurs as the natural bounded scale in this system — not by decree but
+by convergent design. LADDER_5, OODA_HA_5, FPI-1–5, FfzClock L0–L4, five SYSTEM laws,
+five ISLAND laws, five CODEC laws. When a design produces a sixth element, treat that
+as a signal to re-examine whether the fifth absorbs it or the whole cluster needs
+regrounding.
+
+```toml #PENTA_1_BOUNDED_SCALE
+id    = "PENTA_1_BOUNDED_SCALE"
+label = "Five is the natural bounded scale of the FFZ system"
+desc  = "LADDER_5 / OODA_HA_5 (5 stances/tools), FPI-1–5 (Fuller's pattern integrities), FfzClock L0–L4, five SYSTEM laws, five ISLAND laws, five CODEC laws. The pentadic structure is not arbitrary decoration — it is the common bounded scale across stance, pattern, time, and law. A cluster that requires a sixth slot is a signal for redesign, not extension."
+```
+
+```toml #PENTA_2_CLOCK_ALIGNMENT
+id    = "PENTA_2_CLOCK_ALIGNMENT"
+label = "FfzClock levels map onto OODA_HA_5 stances"
+desc  = "The five FfzClock levels correspond to the five OODA_HA_5 stances: L0 = Pulse (sub-action/micro-op, sub-perceptual) = observe-inner; L1 = Beat (operator perceptual grain) = orient-act — the smallest phase transition the operator treats as a completed meaningful unit in their connected system (an exchange turn, a chess move, a DAW bar, a market trade, a pipeline stage); L2 = Measure (session) = decide-loop; L3 = Arc (day/cycle) = act-outer; L4 = Theme (epoch, unbounded) = strategic/ground. L4 remaining unbounded is not a violation of the law of fives — it is the anchoring ground that makes the four bounded levels meaningful. The epoch is the field; the stances loop within it. L0 MUST remain sub-perceptual: if a system's smallest operator-meaningful event lands at L0, the L1 anchor erodes and session bounds lose meaning. Canonical register names: Pulse / Beat / Measure / Arc / Theme (see lar:///ha.ka.ba/@lares/api/v0.1/pono/attention-scale)."
+```
+
+```toml #PENTA_3_PATTERN_INTEGRITY
+id    = "PENTA_3_PATTERN_INTEGRITY"
+label = "The five FPIs and the five SYSTEM laws are the same invariant in two registers"
+desc  = "Fuller's five pattern integrities (tensegrity, wave/water, synergy, ephemeralization, trim tab) and the five architecture SYSTEM laws (web3 smell test, TW5 vm primacy, TS-as-projection, tiddler format, meme-as-projection) are not separate lists. They are the same structural pattern expressed in different registers: Fuller's in geometry/physics, FFZ's in code architecture. Neither list supersedes the other; violations in one register typically produce violations in the other."
+```
+
+<<~ pranala #to-attention-scale ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/attention-scale family:relation role:grounds >>
+
+<<~/ahu >>
+
+
 <<~ ahu #genesis-invariants >>
 
 ## GENESIS Invariants — causal origin, content-addressed identity, quine semantics
@@ -331,6 +365,9 @@ desc  = "No peer gains write or promote authority by being first online, by hold
 <<~ loulou lar:///ha.ka.ba/@lares/api/v0.1/pono/tagspace-trust >>
 <<~ loulou lar:///ha.ka.ba/@lares/api/v0.1/pono/automerge-tiga >>
 <<~ loulou lar:///ha.ka.ba/@lares/api/v0.1/pono/causal-islands >>
+<<~ loulou lar:///ha.ka.ba/@lares/api/v0.1/mu/pattern-integrity >>
+<<~ loulou lar:///ha.ka.ba/@lares/api/v0.1/mu/node-hazards >>
+<<~ pranala #grounded-in-elyncia ? -> lar:///elyncia/Elyncia_02_The_Lares_DreamNet family:reference role:grounding-myth >>
 
 <<~/ahu >>
 

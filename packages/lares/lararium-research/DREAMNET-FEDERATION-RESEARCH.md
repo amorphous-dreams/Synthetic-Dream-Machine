@@ -30,7 +30,7 @@
 
 Hybrid: **OCapN capability-as-membership + ATProto DID-rooted portable addresses + Automerge for CRDT sync**.
 
-- **Nexus identifier** = Ed25519 keypair. Public key is the namespace root. `lar://<nexus-pubkey>/<doc-id>`.
+- **Nexus identifier** = Ed25519 keypair. Public key serves as the namespace root. `lar://<nexus-pubkey>/<doc-id>`.
 - **Room address** = `lar://<nexus-pubkey>/<doc-id>` where `<doc-id>` is the Automerge DocumentId. Cross-Nexus content: a signed alias tiddler mapping the foreign `lar://` URI to a local document.
 - **Membership** = possession of a signed invite token from the Nexus operator key (OCapN sturdyref model).
 - **Cross-Nexus federation** = Nexus A signs a "federation treaty" event readable by both operator keys. Peers in either Nexus can sync the shared room; the room address stays anchored to the creating Nexus.
@@ -44,7 +44,7 @@ Hybrid: **OCapN capability-as-membership + ATProto DID-rooted portable addresses
 
 - **UCAN spec**: v1.0.0-rc.1. Core Delegation and Invocation sub-specs stable. Treated as production-ready by the working group.
 - **Best TS library**: `ucanto` (storacha/ucanto) — typed UCAN RPC framework, battle-tested in Storacha/web3.storage production infra. Defines capabilities as typed schemas; delegation chains compose naturally.
-- **Gap**: `ucanto` is designed for hub-spoke topology (client delegates to a service). Does not natively handle P2P mesh where any peer can promote to operator and revocation must propagate without a central index.
+- **Gap**: `ucanto` targets hub-spoke topology (client delegates to a service). Does not natively handle P2P mesh where any peer can promote to operator and revocation must propagate without a central index.
 
 ### Keyhive (Ink & Switch) — The Answer to the Gap
 
@@ -64,7 +64,7 @@ Brooklyn Zelenka (UCAN co-author) moved to Ink & Switch and is leading **Keyhive
 | `ucanto`-compatible capability schemas (typed, UCAN-aligned surface) | Slot in Keyhive WASM when TS bindings ship |
 | No delegation | Coordination-free delegation + revocation via Keyhive |
 
-**Design the capability surface to be Keyhive-compatible now.** The `encryptedShareHint` field on `CircleTiddler` is already the forward-compatible hook.
+**Design the capability surface to be Keyhive-compatible now.** The `encryptedShareHint` field on `CircleTiddler` already provides the forward-compatible hook.
 
 ### References
 
@@ -89,8 +89,8 @@ Brooklyn Zelenka (UCAN co-author) moved to Ink & Switch and is leading **Keyhive
 
 ### Key Findings
 
-- **Automerge Repo has a built-in ephemeral channel** (`DocHandle.broadcast()`) — CBOR-encoded, scoped to a DocHandle, zero persistence, unreliable delivery. `PeerId` is per-connection (tab/process), not stable user identity — single human with two tabs = two PeerIds.
-- **Yjs awareness is the reference design**: each client owns one slot keyed by `clientId`; clock-based LWW; 30s heartbeat; disconnect = null-state broadcast.
+- **Automerge Repo has a built-in ephemeral channel** (`DocHandle.broadcast()`) — CBOR-encoded, scoped to a DocHandle, zero persistence, unreliable delivery. `PeerId` runs per-connection (tab/process), not per stable user identity — single human with two tabs = two PeerIds.
+- **Yjs awareness provides the reference design**: each client owns one slot keyed by `clientId`; clock-based LWW; 30s heartbeat; disconnect = null-state broadcast.
 - **tldraw enforces session/document boundary at schema level**, not transport level. Record type determines persistence tier.
 - **Never write presence into the Automerge document** — pollutes causal history, inflates storage.
 
@@ -153,7 +153,7 @@ type NexusInviteToken = {
 }
 ```
 
-- Operator's DID keypair is the trust anchor (no central registry).
+- Operator's DID keypair serves as the trust anchor (no central registry).
 - Nonce prevents replay; operator burns it on redemption.
 - Any peer can verify offline — check signature against known operator pubkey.
 - Chain of operators: each operator's DID can be published in a signed "operator list" tiddler, forming a web of trust without a root CA.
@@ -174,12 +174,12 @@ type NexusInviteToken = {
 
 ### Gap DreamDeck Occupies
 
-No existing project treats tldraw shapes as first-class wiki nodes with bidirectional `lar://` links in a graph database sense. That is the exact space DreamDeck fills.
+No existing project treats tldraw shapes as first-class wiki nodes with bidirectional `lar://` links in a graph database sense. That gap marks the exact space DreamDeck fills.
 
 ### Five Principles DreamDeck Should Carry Forward
 
-1. **Spatial position is semantic** (Kinopio) — do not throw away XY layout; it encodes relationships the formal graph does not.
-2. **Nodes are resource containers** (V.U.E.) — each canvas node is addressable (`lar://` URI) and embeddable.
+1. **Spatial position carries semantic weight** (Kinopio) — do not throw away XY layout; it encodes relationships the formal graph does not.
+2. **Nodes function as resource containers** (V.U.E.) — each canvas node addresses via `lar://` URI and embeds.
 3. **Edge types are first-class** (V.U.E. + Kinopio `connectionType`) — typed, colored, named relationships; not just lines.
 4. **No shared mutable state at the scripting layer** (Verse) — reactive/functional event model; mutation through explicit transactions.
 5. **Export to open formats** (Kinopio JSON Canvas, Obsidian-compatible) — the graph is not a walled garden.

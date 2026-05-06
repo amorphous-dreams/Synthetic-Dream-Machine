@@ -2262,11 +2262,14 @@ The `ReactionGraph` IS the causal island manager. `fire(fromUri, trigger, payloa
 
 ### FFZ Chronometer as causal timestamp
 
+> Canonical attention-scale register names (Pulse/Beat/Measure/Arc/Theme): `lar:///ha.ka.ba/@lares/api/v0.1/pono/attention-scale`
+> The `scale` field in the fragment below maps to these register names: Pulse=L0, Beat=L1, Measure=L2 (default band), Arc=L3, Theme=L4.
+
 The FFZ Chronometer fragment (`#O0.O3.D2.A7`) encodes `{ scale: Ladder5, phase: OodaHa5, counter: number }`. In the async model, each `fire()` call carries an implicit causal timestamp derived from the Chronometer — not a wall-clock time, but a logical position in the OODA-HA loop.
 
 This is the *why* behind decoupling Chronometer from grammar invariants: `LADDER_5` and `OODA_HA_5` are static arrays in `ast.ts`; the Chronometer generates a *live causal cursor* at runtime. They share vocabulary but live in different layers.
 
-**Causal ordering law:** an event fired at `(scale: "action", phase: "act")` cannot causally precede an event in the same island at `(scale: "round", phase: "decide")`. The Chronometer encodes this ordering as a sortable fragment, not as a wall clock. CRDT CRDTs maintain causal ordering structurally; the Chronometer makes it readable.
+**Causal ordering law:** an event fired at `(scale: "Pulse", phase: "act")` [L0 / game alias: "action"] cannot causally precede an event in the same island at `(scale: "Beat", phase: "decide")` [L1 / game alias: "round"]. The Chronometer encodes this ordering as a sortable fragment, not as a wall clock. CRDT CRDTs maintain causal ordering structurally; the Chronometer makes it readable.
 
 ### `kumu` as the widget-tree node type
 

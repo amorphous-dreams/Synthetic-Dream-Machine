@@ -43,16 +43,56 @@ Research docs: packages/lares/lararium-research/PROTOCOL-STACK-IDENTITY-CIRCLES-
 
 Full findings in `packages/lares/lararium-research/DREAMNET-FEDERATION-RESEARCH.md`. Highlights:
 
-- **Nexus = a namespace, not a server.** A Nexus is a named group of peers sharing a keypair-rooted identity. `lar://<nexus-pubkey>/<doc-id>` is the URI form. No DNS dependency.
-- **Keyhive** (Ink & Switch, Brooklyn Zelenka) is the exact auth substrate we need — convergent capabilities + Beelay E2EE sync co-designed with Automerge. Pre-alpha Rust, no TS yet. Design our capability surface to be Keyhive-compatible now via ucanto-style schemas.
-- **Presence** = `DocHandle.broadcast()` + Yjs-awareness-style clock/slot per `(userId, deviceId)`. Never write presence into the Automerge doc. Session-local state never enters broadcast. Schema-level enforcement (tldraw three-tier model) is the right pattern.
+- **Nexus = a namespace, not a server.** A Nexus functions as a named group of peers sharing a keypair-rooted identity. `lar://<nexus-pubkey>/<doc-id>` serves as the URI form. No DNS dependency.
+- **Keyhive** (Ink & Switch, Brooklyn Zelenka) represents the exact auth substrate we need — convergent capabilities + Beelay E2EE sync co-designed with Automerge. Pre-alpha Rust, no TS yet. Design our capability surface to be Keyhive-compatible now via ucanto-style schemas.
+- **Presence** = `DocHandle.broadcast()` + Yjs-awareness-style clock/slot per `(userId, deviceId)`. Never write presence into the Automerge doc. Session-local state never enters broadcast. Schema-level enforcement (tldraw three-tier model) provides the right pattern.
 - **Invite token** = SSB-style: `sign_with_operator_key({ iss: nexus_did, cap: "join/nexus", exp, nonce })`. Offline-verifiable. No central registry. Chain of operators possible via UCAN proof chains later.
-- **DreamDeck visual principles** (from V.U.E., Kinopio, Verse): spatial position is semantic; canvas nodes are `lar://` resource containers; edge types are first-class; no shared mutable state (Verse model, not Blueprint); export to open formats.
+- **DreamDeck visual principles** (from V.U.E., Kinopio, Verse): spatial position carries semantic weight; canvas nodes act as `lar://` resource containers; edge types function as first-class; no shared mutable state (Verse model, not Blueprint); export to open formats.
 
-### Two open design questions going into next talk-story
+### Settled Design Decisions (2026-05-06 talk-story)
 
-1. `lar://` URI grammar change — current form is `lar:///path` (no authority). Nexus-pubkey-as-authority requires `lar://<pubkey>/path`. Land immediately in core or stub?
-2. Presence broadcast ownership — `@lararium/browser` (peer transport layer) or `@lararium/tw5` (session tiddlers)? Research suggests transport layer is correct; schema enforcement is the right dividing line.
+**lar:// URI — three families, no grammar change:**
+- `lar:///` (triple-slash, hostless) = system/content memes. Stable tagspace: `ha.ka.ba`. Unstable: what3words-style roots.
+- `lar://alias:tier@host/` (hostful, existing) = active operators/agents on a machine (VS Code, MCP, etc.)
+- NEW: `lar:///ha.ka.ba/@nexus/<nexus-pubkey>` = Nexus identity + registry doc. New `@nexus` scope in resolver. New kind: `"nexus-doc"`. No URI grammar change.
+
+**Presence routing — three-layer:**
+`@lararium/core` (PresenceSlot + FfzClock types) → `@lararium/tw5` (`$:/temp/presence/{peerId}` tiddlers, already blocked from sync) → `@lararium/browser` or `@lararium/node` (`DocHandle.broadcast()` wiring) → UX layer. `meme-sync-adaptor.ts:49` already guards `$:/temp/*`.
+
+**FFZ Chronometer — `FfzClock` type to land in `@lararium/core` before S6 closes:**
+5-level bounded hierarchical logical clock. L0–L3 bounded (looping/musical time); L4 epoch unbounded (anti-aliasing). `SessionEvent.clock` and `PresenceSlot.clock` both use `FfzClock`, not `number`.
+Attention-scale register names now canonical: **Pulse** (L0) / **Beat** (L1) / **Measure** (L2, default band) / **Arc** (L3) / **Theme** (L4). These sit above domain aliases (sub-action/action/session/day/epoch for Lares; Action/Round/Turn/Watch/Week for FTLS/TTRPG). Canonical meme: `lar:///ha.ka.ba/@lares/api/v0.1/pono/attention-scale`.
+
+**NexusRegistryDoc — new doc type, S9 work:**
+`lar:///ha.ka.ba/@nexus/<pubkey>`. Fields: `nexusId`, `protocolVersion`, `capabilityFlags` (monotonic set), `allies`, `blocked`, `keyHistory`. Key rotation designed in from day one. Tombstoning eventual; blocked peers starved of capability tokens regardless.
+
+**Nexus naming — three-layer petname model (no global registry):**
+- Layer 1: `lar:///ha.ka.ba/@nexus/<pubkey>` — canonical, always
+- Layer 2: `NexusRegistryDoc.displayName` — operator-signed self-assertion, not authoritative
+- Layer 3: client-local petname map, user-controlled, overrides all
+- Disambiguation: truncated pubkey suffix in UI (`DreamDeck [ab3f…]`)
+- No ATProto DNS verification, no ENS — both add dependencies we don't need yet
+- Keybase lesson: never put naming verification on third-party infrastructure
+
+**FfzClock — CONFIRMED NOVEL, proceed as designed:**
+- No prior art in distributed systems for bounded multi-level cyclic hierarchy with unbounded epoch guard
+- Closest adjacent: ERA paper (arXiv:2601.22963) — cite if publishing externally
+- FfzClock = application-layer rhythmic position. Automerge `<counter, actorID>` OpId = causal total order. COMPLEMENTARY, not substitutable.
+- "Total actions taken" as L5: rejected — Automerge already has it, violates Law of Fives
+- Beelay uses DAG + wall-clock replay guard only. No conflict. No need to wait on Beelay.
+- FfzClock rides alongside Automerge OpId as application-layer annotation on tiddlers/changes
+
+**PENTADIC invariants added to `system-invariants.md`:**
+- `PENTA_1_BOUNDED_SCALE` — Law of Fives as structural invariant
+- `PENTA_2_CLOCK_ALIGNMENT` — FfzClock L0–L4 maps onto OODA_HA_5
+- `PENTA_3_PATTERN_INTEGRITY` — Fuller's FPIs and SYSTEM laws are same invariant in two registers
+- `loulou` edge from system-invariants → pattern-integrity now wired
+
+### Research files
+- `DREAMNET-FEDERATION-RESEARCH.md` — federation topology, Keyhive, presence, invite-seeding, visual graph
+- `NEXUS-REGISTRY-AND-FORK-RESILIENCE.md` — NexusRegistryDoc schema, hostile fork prior art
+- `NEXUS-NAMING-PETNAMES.md` — three-layer petname model, Zooko's Triangle, prior art survey
+- `FFZ-CHRONOMETER.md` — FfzClock type, deep research findings, novelty confirmed, Lares level mapping
 
 ---
 
@@ -90,7 +130,7 @@ Full findings in `packages/lares/lararium-research/DREAMNET-FEDERATION-RESEARCH.
 5. `masks/**` → `lares/masks/**` — voice-house consolidated under `lares/voices.md`
 
 **Voice-house:**
-- `lares/voices.md` is now the invariant parent of `lares/masks/`
+- `lares/voices.md` now functions as the invariant parent of `lares/masks/`
 - All mask files upgraded to `ॐ ँ` sigils; URIs updated to `api/v0.1/lares/masks/...`
 - Three pending spec rooms: `docs/lares/voices/coordinators`, `/workers`, `/masks` (forward pointers, not yet created)
 
@@ -111,18 +151,34 @@ We want `elyncia.app` to serve a Kowloon node (ActivityPub, Node.js + MongoDB) a
 
 **Three bridge options under consideration** (research pending):
 - **A)** `SessionsDoc` (social tiga ba) replaced by a `KowloonDoc` — Automerge mirror of user's Kowloon outbox/drafts/circles. Social tiga ba slot becomes the Kowloon bridge.
-- **B)** `SessionsDoc` stays ba; `KowloonDoc` is a 4th satellite doc outside the social tiga.
+- **B)** `SessionsDoc` stays ba; `KowloonDoc` acts as a 4th satellite doc outside the social tiga.
 - **C)** No Automerge doc for Kowloon — DreamDeck uses a lightweight HTTP adapter; Automerge stack stays pure.
 
 Research results expected in: `packages/lares/lararium-research/KOWLOON-BRIDGE.md` (to be created on research return).
 
 ---
 
+## Settled Terminology (2026-05-06)
+
+| Term | Definition |
+|---|---|
+| **DreamNet** | The entire distributed network — all nexus-meshes, allied AND oppositional. Opposition designed in. |
+| **Nexus** | A *confederation of lararia* sharing a stable internal mesh. Named by community + place. e.g. "Floating Library of Mu, PNW Branch." Cross-Nexus = wild-magic-zone hops: explicitly brokered, potentially unreliable. NOT a single server. NOT a single lararium. |
+| **Lararium** | One operator's infrastructure — a `lararium-node` process + their browser peers + devices. The household shrine. Smallest unit. |
+| **DreamDeck** | First personal browser app for accessing DreamNet. One UX surface. `@dreamdeck/app`. |
+| **Tasked Spirits** | Bounded single-protocol agents — what we spawn for research. Elyncian term, same operational structure. |
+| **Named Personas** | Persistent agent identities that follow operator signatures across nodes. Maps to DID/identity system. |
+| **Scale ladder** | Lararium (single operator) → Nexus (confederation of lararia, regional mesh) → DreamNet (all Nexuses) |
+| **Within-Nexus sync** | Automerge CRDT — stable, reliable internal mesh. |
+| **Cross-Nexus federation** | Explicit treaty, astral-sea hops — unreliable, degraded-state-tolerant. Needs `allies` treaty events. |
+
+Canonical grounding: `elyncia/Elyncia_02_The_Lares_DreamNet.md`
+
 ## Four-Layer Stack
 
 ```
-DreamNet                  — federated network of Nexus namespaces (keypair-rooted, invite-seeded)
-  └── Nexus               — a named peer group sharing a keypair-rooted lar:// namespace
+DreamNet                  — entire distributed network of nexus-meshes (allied + oppositional)
+  └── Nexus               — threshold space: stable mesh (ha-tiga) + transitory flow (social-tiga)
         ├── lararium-node     — local host peer: filesystem, operator key, canon promotion
         └── lararium-browser  — browser/OPFS peer: IndexedDB, broadcast(), WebSocket sync
 
@@ -133,8 +189,7 @@ elyncia.app               — public domain; reverse proxy (web2 Kowloon ↔ web
   └── Kowloon Node        — web2 ActivityPub gateway; Node.js + MongoDB; @user@elyncia.app
 ```
 
-DreamDeck is the first *application* built on Lares + Lararium — not the architecture itself.
-`@lararium/*` = DreamNet protocol/infra. `@dreamdeck/*` = DreamDeck app layer. Other Nexus apps possible.
+`@lararium/*` = DreamNet protocol/infra. `@dreamdeck/*` = DreamDeck app layer. "Myth speaks reality into being." (Elyncia_02)
 
 ## Three-Tiga Doc Model
 
@@ -194,7 +249,7 @@ The publish step is a deliberate authority handoff: user keypair authorizes the 
 - `catalog-url` as named codec-layer exception (not web2)
 - Vendored plugins optional via `RecipeTiddler.plugins`; no default recipe auto-loads them
 - CJS format (not IIFE) for TW5 plugin modules — `exports` object provided by TW5's CJS wrapper
-- `Groups` → `Circles` rename complete and settled; `GroupsDoc` is now `CirclesDoc` everywhere
+- `Groups` → `Circles` rename complete and settled; `GroupsDoc` now appears as `CirclesDoc` everywhere
 - Adding to a circle IS the follow (Kowloon model); circle membership never federates
 
 ---

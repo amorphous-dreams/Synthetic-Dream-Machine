@@ -35,19 +35,29 @@ retain       = true
 
 <<~ ahu #package-map >>
 
+## Network Topology (canonical)
+
+**Lararium** — one operator's infrastructure: a `lararium-node` process + browser peers + devices. The household shrine. Smallest unit.
+
+**Nexus** — a confederated mesh of Lararia sharing a stable internal sync network. Named by community + place (e.g. "Floating Library of Mu, PNW Branch"). The Nexus keypair is the confederation keypair.
+
+**DreamNet** — the overall super-mesh of all Nexuses: allied, neutral, and oppositional. Opposition is designed in. Cross-Nexus connections are explicitly brokered and degraded-state-tolerant.
+
+Within-Nexus sync = Automerge CRDT (reliable). Cross-Nexus = explicit treaty, wild-magic-zone hops (unreliable).
+
 ## Package Map
 
-`@lararium/core` carries contracts and graph law. Keep this package TW5-neutral and browser-neutral. Put shared types, parsers, authority, provider fan-out, stores, graph indexes, compiler, crypto, and live protocol here.
+`@lararium/core` carries contracts and graph law. Keep this package TW5-neutral, browser-neutral, and Node-neutral. Put shared types, parsers, authority, lar:// URI resolution, Nexus identity primitives, FfzClock, presence slot types, capability schemas, stores, graph indexes, compiler, and crypto here.
 
-`@lararium/tw5` carries TiddlyWiki runtime integration. Put widget/render/filter work, carrier splitting, TOML AST helpers, generated TW5 core metadata, memory store, CRDT sync adaptor, and disk projection here. Treat disk projection as Node-shaped even when the barrel export exposes it.
+`@lararium/tw5` carries TiddlyWiki runtime integration. Put widget/render/filter work, carrier splitting, TOML AST helpers, generated TW5 core metadata, memory store, CRDT sync adaptor, and session-tier tiddler representation here. Treat disk projection as Node-shaped even when the barrel export exposes it.
 
-`@lararium/node` carries local host duties. Put filesystem hydration, canon promotion guards, serve/CLI behavior, operator key handling, parity checks, and no-write gates here.
+`@lararium/node` carries local Lararium host duties. Put filesystem hydration, canon promotion guards, serve/CLI behavior, operator key handling, parity checks, and no-write gates here. One `lararium-node` process = one Lararium (household shrine).
 
-`@lararium/browser` carries isomorphic browser-peer duties. Put Automerge browser repo, IndexedDB, WebSocket sync, and browser-host exports here. Parallels `@lararium/node` with different capabilities; no React, no canvas.
+`@lararium/browser` carries browser Lararium peer duties. Put Automerge browser repo, IndexedDB, WebSocket sync, `DocHandle.broadcast()` presence engine, and browser-host exports here. Parallels `@lararium/node` with different capabilities; no React, no canvas.
 
-`@dreamdeck/tldraw` carries infinite-canvas projections. Put tldraw records, layout, rooms, view state, multi-view, navigation, shape rendering, and zoom-level policy here.
+`@dreamdeck/tldraw` carries DreamDeck infinite-canvas projections. Put tldraw shapes as `lar://` resource containers, three-tier store (document/session/presence), edge types, layout, rooms, and zoom-level policy here.
 
-`@dreamdeck/app` carries the DreamNet browser peer shell. Put React, boot splash, tldraw surface wiring, debug hooks, and TW5/canvas projection glue here. This is the first app-stack client on the Lares DreamNet infrastructure.
+`@dreamdeck/app` carries the DreamDeck browser shell — the first app on the Lares DreamNet. Put React, boot splash, tldraw surface wiring, debug hooks, and TW5/canvas projection glue here. Consumes from `@lararium/browser`; no protocol logic of its own.
 
 `@lararium/mcp` carries agent-facing tools and resources. Keep stdout pure. Treat stdio framing as a protocol seam, not a log stream.
 

@@ -17,8 +17,8 @@
 | Session date | 2026-04-09 |
 | Participants | Telarus, KSC (operator/admin) + cloud Lares (claude.ai web) |
 | Platform | claude.ai web chat |
-| Starting chronometer | `O0.O0.O0.O0.O0` (new session) |
-| Parent seed chronometer | `O0.O0.A1.A23.A1` (session 1 final) |
+| Starting chronometer | `0.0.0.0.0` (new session) |
+| Parent seed chronometer | `0.0.1.23.1` (session 1 final) |
 | Companion artifacts | See parent crystals above |
 | Purpose | Deep research toward the Causal Islands Chronometer protocol |
 
@@ -42,7 +42,7 @@ angles. Each contributed a load-bearing piece:
 | **Protocol Labs** | Merkle-CRDTs / Merkle Clocks | 2019–2020 | Content-addressed causal history |
 | **Brooklyn Zelenka / Fission** | Causal Islands + UCAN | 2021 | Infrastructure frame: bounded causal zones + auth |
 | **Storacha (née web3.storage)** | Merkle Clock + UCAN multi-writer | 2025 | Production pattern: UCAN-authorized clock writes |
-| **Lares Protocols** | OODA-HA nested chronometer + HUD | 2026 | Application: human-AI alignment instrument |
+| **Lares Protocols** | OODA-HA + nested chronometer + HUD | 2026 | Application: human-AI alignment instrument |
 
 ### 1.2 The True Name `[C:0.95]`
 
@@ -53,7 +53,7 @@ Named Session 2 (2026-04-09). Freyja laughed. Operator approved at
 
 - **Fontany** — the practice. Joshua transcribed RAW's Talk Story.
   Joshua and Freyja co-authored FTLS. The Talk Story protocol, the
-  OODA-HA extension (-A for Assess), the SDM rules ecosystem. The
+  OODA-HA extension (-A for Aftermath), the SDM rules ecosystem. The
   name places *practice* first — the protocol exists to serve the
   Talk Story, not the other way around.
 - **Fuller** — the principle. Non-simultaneous apprehension. Universe
@@ -171,8 +171,8 @@ constitutes:
 
 The register system (0.0–1.0) already encodes this principle for
 epistemic claims. The vector chronometer extends it to temporal claims.
-A clock reading carries a register value — a `[P:0.35]` reading of
-the current OODA-HA phase differs from a `[C:0.9]` reading not just
+A clock reading carries a register value — a `[P~:~0.35]` reading of
+the current OODA-HA phase differs from a `[C~0.9]` reading not just
 in content but in temporal authority.
 
 **Research need:** Formalize Register × Temporal Authority composition.
@@ -487,18 +487,25 @@ via the MCP server.
 
 ### 4.5 DreamNet Topology Correspondence `[SP:0.4]` 🏛️🌊
 
-The DreamNet lararium tiers map onto causal island scale:
+Terminology (canonical 2026-05-06): a **Lararium** represents one operator's infrastructure
+(single node + peers). A **Nexus** forms a confederation of Lararia sharing a stable
+internal mesh. **DreamNet** spans the super-mesh of all Nexuses (allied + oppositional).
 
-| Lararium tier | Causal island scale | Clock scope |
+Lararium tiers map onto causal island scale within a single Nexus:
+
+| Lararium tier | Causal island scope | Clock scope |
 |--------------|--------------------|----|
-| Household (single inscribed figure) | Single device / single participant | One ITC stamp |
-| Crossroads (district node) | Edge / exchange boundary | Sync point between stamps |
-| Temple (ley-line confluence) | Cloud / hub | Full vector merge, persistent history |
+| Household (single inscribed figure) | Single Lararium — one operator's devices | One ITC stamp per device |
+| Crossroads (district node) | Multiple Lararia within a Nexus | Sync point between Lararium stamps |
+| Temple (ley-line confluence) | Nexus anchor — high-bandwidth confederation hub | Full vector merge, persistent history |
 
-A household lararium constitutes a single-participant island. A
-crossroads lararium constitutes a sync point between islands. A temple
-lararium constitutes a high-bandwidth hub where many islands converge
-and the Merkle Clock DAG accumulates depth.
+Cross-Nexus federation (DreamNet level) forms a distinct layer above this table:
+explicitly brokered, degraded-state-tolerant, wild-magic-zone hops. FfzClock L4
+(epoch, unbounded) provides the natural scope for cross-Nexus time.
+
+A household Lararium = single-participant island. A crossroads Lararium = sync
+point between Lararia within the same Nexus. A temple Lararium = high-bandwidth
+hub where many Lararia converge within a Nexus. Cross-Nexus = separate clock domain.
 
 **Register note:** This correspondence reads as Poet-mode (🌊) — true
 in resonance, potentially load-bearing as architecture, but not yet
