@@ -1,9 +1,9 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/@lares/api/v0.1/pono/memetic-wikitext >> -->
 
-<<~ॐ ँ&#x0001; ? -> lar:///ha.ka.ba/@lararium/tw5/hud >>
+<<~ॐ ँ&#x0001; ? -> lar:///ha.ka.ba/@lares/api/v0.1/lares/hud >>
 ```toml iam
-uri-path = "ha.ka.ba/@lararium/tw5/hud"
-file-path = "packages/lararium-tw5/memes/hud.md"
+uri-path = "ha.ka.ba/@lares/api/v0.1/lares/hud"
+file-path = "packages/lares/memes/api/v0.1/lares/hud.md"
 type = "text/x-memetic-wikitext"
 tagspace = "stable"
 confidence = 0.64

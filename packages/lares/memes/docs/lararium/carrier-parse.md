@@ -1,9 +1,9 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/@lares/api/v0.1/pono/memetic-wikitext >> -->
 
-<<~&#x0001; ? -> lar:///ha.ka.ba/@lararium/tw5/modules/carrier-parse >>
+<<~&#x0001; ? -> lar:///ha.ka.ba/@lares/docs/lararium/carrier-parse >>
 ```toml iam
-uri-path = "ha.ka.ba/@lararium/tw5/modules/carrier-parse"
-file-path = "packages/lararium-tw5/memes/modules/carrier-parse.md"
+uri-path = "ha.ka.ba/@lares/docs/lararium/carrier-parse"
+file-path = "packages/lares/memes/docs/lararium/carrier-parse.md"
 type  = "text/x-memetic-wikitext"
 register      = "CS"
 confidence    = 0.88

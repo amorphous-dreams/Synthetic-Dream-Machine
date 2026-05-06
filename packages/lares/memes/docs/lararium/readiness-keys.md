@@ -1,9 +1,9 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/@lares/api/v0.1/pono/memetic-wikitext >> -->
 
-<<~&#x0001; ? -> lar:///ha.ka.ba/@lararium/tw5/schema/readiness-keys >>
+<<~&#x0001; ? -> lar:///ha.ka.ba/@lares/docs/lararium/readiness-keys >>
 ```toml iam
-uri-path = "ha.ka.ba/@lararium/tw5/schema/readiness-keys"
-file-path = "packages/lararium-tw5/memes/schema/readiness-keys.md"
+uri-path = "ha.ka.ba/@lares/docs/lararium/readiness-keys"
+file-path = "packages/lares/memes/docs/lararium/readiness-keys.md"
 type  = "text/x-memetic-wikitext"
 register      = "CS"
 confidence    = 0.88
@@ -95,7 +95,7 @@ dynamic-forms = ["corpus:<id>", "projection:<id>"]
 
 <<~ ahu #edges >>
 
-<<~ pranala #to-readiness-ts ? -> lar:///ha.ka.ba/@lararium/tw5/schema/readiness-keys family:control role:implements >>
+<<~ pranala #to-readiness-ts ? -> lar:///ha.ka.ba/@lares/docs/lararium/readiness-keys family:control role:implements >>
 <<~ pranala #to-open-phases ? -> lar:///ha.ka.ba/@lararium/tw5/schema/open-phases family:control role:depends >>
 <<~ pranala #to-causal-islands ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/causal-islands family:control role:depends >>
 

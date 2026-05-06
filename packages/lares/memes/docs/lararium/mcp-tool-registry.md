@@ -1,9 +1,9 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/@lares/api/v0.1/pono/memetic-wikitext >> -->
 
-<<~&#x0001; ? -> lar:///ha.ka.ba/@lararium/tw5/mcp/tool-registry >>
+<<~&#x0001; ? -> lar:///ha.ka.ba/@lares/docs/lararium/mcp-tool-registry >>
 ```toml iam
-uri-path = "ha.ka.ba/@lararium/tw5/mcp/tool-registry"
-file-path = "packages/lararium-tw5/memes/mcp/tool-registry.md"
+uri-path = "ha.ka.ba/@lares/docs/lararium/mcp-tool-registry"
+file-path = "packages/lares/memes/docs/lararium/mcp-tool-registry.md"
 type  = "text/x-memetic-wikitext"
 register      = "CS"
 confidence    = 0.86

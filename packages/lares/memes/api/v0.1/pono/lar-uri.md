@@ -1,9 +1,9 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/@lares/api/v0.1/pono/memetic-wikitext >> -->
 
-<<~ॐ ँ&#x0001; ? -> lar:///ha.ka.ba/@lararium/tw5/lar-uri >>
+<<~⊙&#x0001; ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/lar-uri >>
 ```toml iam
-uri-path = "ha.ka.ba/@lararium/tw5/lar-uri"
-file-path = "packages/lararium-tw5/memes/lar-uri.md"
+uri-path = "ha.ka.ba/@lares/api/v0.1/pono/lar-uri"
+file-path = "packages/lares/memes/api/v0.1/pono/lar-uri.md"
 type = "text/x-memetic-wikitext"
 confidence = 0.84
 register = "CS"
@@ -62,7 +62,7 @@ Session form MUST NOT appear in storage, stable graph addresses, or system resou
 **Stable** — literal `ha.ka.ba` root, permanent API surfaces:
 ```
 lar:///ha.ka.ba/@lares/api/v0.1/pono/meme
-lar:///ha.ka.ba/@lararium/tw5/lar-uri
+lar:///ha.ka.ba/@lares/api/v0.1/pono/lar-uri
 ```
 
 **Unstable** — arbitrary three-word coordinate, session-specific territory:
@@ -120,7 +120,7 @@ WHERE (path) → HOW (query: stances, confidence, p, ffz) → SECTION (fragment)
 
 ## Edges
 
-<<~ loulou lar:///ha.ka.ba/@lararium/tw5/lar-uri/SKILL >>
+<<~ loulou lar:///ha.ka.ba/@lares/api/v0.1/pono/lar-uri/SKILL >>
 
 <<~ loulou lar:///ha.ka.ba/@lares/docs/pono/lar-uri >>
 <<~ loulou lar:///ha.ka.ba/@lares/api/v0.1/pono/invariant >>
@@ -131,4 +131,4 @@ WHERE (path) → HOW (query: stances, confidence, p, ffz) → SECTION (fragment)
 <<~/ahu >>
 
 <<~&#x0003;>>
-<<~ॐ ँ&#x0004; -> ? >>
+<<~⊙&#x0004; -> ? >>

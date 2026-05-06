@@ -1,9 +1,9 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/@lares/api/v0.1/pono/memetic-wikitext >> -->
 
-<<~ॐ ँ&#x0001; ? -> lar:///ha.ka.ba/@lararium/tw5/exchange-vector >>
+<<~⊙&#x0001; ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/exchange-vector >>
 ```toml iam
-uri-path = "ha.ka.ba/@lararium/tw5/exchange-vector"
-file-path = "packages/lararium-tw5/memes/exchange-vector.md"
+uri-path = "ha.ka.ba/@lares/api/v0.1/pono/exchange-vector"
+file-path = "packages/lares/memes/api/v0.1/pono/exchange-vector.md"
 type = "text/x-memetic-wikitext"
 confidence = 0.74
 register = "CS"
@@ -98,4 +98,4 @@ A compact HUD line SHOULD follow this field order:
 <<~/ahu >>
 
 <<~&#x0003;>>
-<<~ॐ ँ&#x0004; -> ? >>
+<<~⊙&#x0004; -> ? >>

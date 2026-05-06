@@ -1,9 +1,9 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/@lares/api/v0.1/pono/memetic-wikitext >> -->
 
-<<~&#x0001; ? -> lar:///ha.ka.ba/@lararium/tw5/modules/node-host >>
+<<~&#x0001; ? -> lar:///ha.ka.ba/@lares/docs/lararium/node-host >>
 ```toml iam
-uri-path = "ha.ka.ba/@lararium/tw5/modules/node-host"
-file-path = "packages/lararium-tw5/memes/modules/node-host.md"
+uri-path = "ha.ka.ba/@lares/docs/lararium/node-host"
+file-path = "packages/lares/memes/docs/lararium/node-host.md"
 type  = "text/x-memetic-wikitext"
 register      = "CS"
 confidence    = 0.86

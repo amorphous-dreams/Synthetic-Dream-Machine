@@ -1,9 +1,9 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/@lares/api/v0.1/pono/memetic-wikitext >> -->
 
-<<~ॐ ँ&#x0001; ? -> lar:///ha.ka.ba/@lararium/tw5/tagspace-trust >>
+<<~⊙&#x0001; ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/tagspace-trust >>
 ```toml iam
-uri-path = "ha.ka.ba/@lararium/tw5/tagspace-trust"
-file-path = "packages/lararium-tw5/memes/tagspace-trust.md"
+uri-path = "ha.ka.ba/@lares/api/v0.1/pono/tagspace-trust"
+file-path = "packages/lares/memes/api/v0.1/pono/tagspace-trust.md"
 type = "text/x-memetic-wikitext"
 confidence = 0.78
 register = "CS"
@@ -93,4 +93,4 @@ Explicit operator-mediated promotion MAY move content upward by creating or revi
 <<~/ahu >>
 
 <<~&#x0003;>>
-<<~ॐ ँ&#x0004; -> ? >>
+<<~⊙&#x0004; -> ? >>

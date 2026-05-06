@@ -1,8 +1,8 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/@lares/api/v0.1/pono/memetic-wikitext >> -->
 
-<<~&#x0001; ? -> lar:///ha.ka.ba/@lararium/tw5/v0.1/ast >>
+<<~&#x0001; ? -> lar:///ha.ka.ba/@lares/docs/lararium/ast >>
 ```toml iam
-uri-path     = "ha.ka.ba/@lararium/tw5/v0.1/ast"
+uri-path     = "ha.ka.ba/@lares/docs/lararium/ast"
 file-path    = "packages/lararium-tw5/memes/ast.md"
 source-file  = "packages/lararium-tw5/src/ast.ts"
 type         = "text/x-memetic-wikitext"

@@ -1,8 +1,8 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/@lares/api/v0.1/pono/memetic-wikitext >> -->
 
-<<~&#x0001; ? -> lar:///ha.ka.ba/@lararium/tw5/peer-coordination >>
+<<~&#x0001; ? -> lar:///ha.ka.ba/@lares/docs/lararium/peer-coordination >>
 ```toml iam
-uri-path     = "ha.ka.ba/@lararium/tw5/peer-coordination"
+uri-path     = "ha.ka.ba/@lares/docs/lararium/peer-coordination"
 file-path    = "packages/lararium-tw5/memes/peer-coordination.md"
 type         = "text/vnd.tiddlywiki"
 register     = "CS"

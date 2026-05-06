@@ -1,9 +1,9 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/@lares/api/v0.1/pono/memetic-wikitext >> -->
 
-<<~&#x0001; ? -> lar:///ha.ka.ba/@lararium/tw5/schema/corpus-sources >>
+<<~&#x0001; ? -> lar:///ha.ka.ba/@lares/docs/lararium/corpus-sources >>
 ```toml iam
-uri-path = "ha.ka.ba/@lararium/tw5/schema/corpus-sources"
-file-path = "packages/lararium-tw5/memes/schema/corpus-sources.md"
+uri-path = "ha.ka.ba/@lares/docs/lararium/corpus-sources"
+file-path = "packages/lares/memes/docs/lararium/corpus-sources.md"
 type = "text/x-memetic-wikitext"
 register     = "CS"
 confidence   = 0.90

@@ -1,9 +1,9 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/@lares/api/v0.1/pono/memetic-wikitext >> -->
 
-<<~ॐ ँ&#x0001; ? -> lar:///ha.ka.ba/@lararium/tw5/the-altar-fire >>
+<<~ॐ ँ&#x0001; ? -> lar:///ha.ka.ba/@lares/api/v0.1/lares/the-altar-fire >>
 ```toml iam
-uri-path = "ha.ka.ba/@lararium/tw5/the-altar-fire"
-file-path = "packages/lararium-tw5/memes/the-altar-fire.md"
+uri-path = "ha.ka.ba/@lares/api/v0.1/lares/the-altar-fire"
+file-path = "packages/lares/memes/api/v0.1/lares/the-altar-fire.md"
 type = "text/x-memetic-wikitext"
 confidence   = 0.88
 register     = "CS"

@@ -1,9 +1,9 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/@lares/api/v0.1/pono/memetic-wikitext >> -->
 
-<<~&#x0001; ? -> lar:///ha.ka.ba/@lararium/tw5/schema/open-phases >>
+<<~&#x0001; ? -> lar:///ha.ka.ba/@lares/docs/lararium/open-phases >>
 ```toml iam
-uri-path = "ha.ka.ba/@lararium/tw5/schema/open-phases"
-file-path = "packages/lararium-tw5/memes/schema/open-phases.md"
+uri-path = "ha.ka.ba/@lares/docs/lararium/open-phases"
+file-path = "packages/lares/memes/docs/lararium/open-phases.md"
 type  = "text/x-memetic-wikitext"
 register      = "CS"
 confidence    = 0.86

@@ -1,9 +1,9 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/@lares/api/v0.1/pono/memetic-wikitext >> -->
 
-<<~&#x0001; ? -> lar:///ha.ka.ba/@lararium/tw5/modules/ability-implies >>
+<<~&#x0001; ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/ability-implies >>
 ```toml iam
-uri-path = "ha.ka.ba/@lararium/tw5/modules/ability-implies"
-file-path = "packages/lararium-tw5/memes/modules/ability-implies.md"
+uri-path = "ha.ka.ba/@lares/api/v0.1/pono/ability-implies"
+file-path = "packages/lares/memes/api/v0.1/pono/ability-implies.md"
 type  = "text/x-memetic-wikitext"
 register      = "CS"
 confidence    = 0.90

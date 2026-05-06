@@ -1,9 +1,9 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/@lares/api/v0.1/pono/memetic-wikitext >> -->
 
-<<~&#x0001; ? -> lar:///ha.ka.ba/@lararium/tw5/schema/auth-providers >>
+<<~&#x0001; ? -> lar:///ha.ka.ba/@lares/docs/lararium/auth-providers >>
 ```toml iam
-uri-path = "ha.ka.ba/@lararium/tw5/schema/auth-providers"
-file-path = "packages/lararium-tw5/memes/schema/auth-providers.md"
+uri-path = "ha.ka.ba/@lares/docs/lararium/auth-providers"
+file-path = "packages/lares/memes/docs/lararium/auth-providers.md"
 type  = "text/x-memetic-wikitext"
 register      = "CS"
 confidence    = 0.86

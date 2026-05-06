@@ -1,9 +1,9 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/@lares/api/v0.1/pono/memetic-wikitext >> -->
 
-<<~&#x0001; ? -> lar:///ha.ka.ba/@lararium/tw5/modules/receipt-allows >>
+<<~&#x0001; ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/receipt-allows >>
 ```toml iam
-uri-path = "ha.ka.ba/@lararium/tw5/modules/receipt-allows"
-file-path = "packages/lararium-tw5/memes/modules/receipt-allows.md"
+uri-path = "ha.ka.ba/@lares/api/v0.1/pono/receipt-allows"
+file-path = "packages/lares/memes/api/v0.1/pono/receipt-allows.md"
 type  = "text/x-memetic-wikitext"
 register      = "CS"
 confidence    = 0.88

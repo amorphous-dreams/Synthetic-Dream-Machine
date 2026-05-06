@@ -1,9 +1,9 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/@lares/api/v0.1/pono/memetic-wikitext >> -->
 
-<<~&#x0001; ? -> lar:///ha.ka.ba/@lararium/tw5/lar-uri/uri-roots >>
+<<~&#x0001; ? -> lar:///ha.ka.ba/@lares/docs/pono/lar-uri-roots >>
 ```toml iam
-uri-path = "ha.ka.ba/@lararium/tw5/lar-uri/uri-roots"
-file-path = "packages/lararium-tw5/memes/lar-uri/uri-roots.md"
+uri-path = "ha.ka.ba/@lares/docs/pono/lar-uri-roots"
+file-path = "packages/lares/memes/docs/pono/lar-uri-roots.md"
 type  = "text/x-memetic-wikitext"
 register      = "CS"
 confidence    = 0.88
