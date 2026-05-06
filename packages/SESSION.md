@@ -1,6 +1,6 @@
 # Session State — Lararium Web3 Refactor
 
-> Updated: 2026-05-05
+> Updated: 2026-05-06
 > Branch: feature/lararium-node-3
 > Purpose: Resume artifact — enough state to continue without prior chat context
 
@@ -17,8 +17,42 @@ Do not re-decide the five architecture laws or the BOOTSTRAP_SCANS / Path α gra
 Sprints 0–5 complete. Social tiga renamed Groups→Circles. Packaging model: CJS (not IIFE). Kowloon bridge design locked (Option B) — see ROADMAP.md § S8.
 Grammar now lives at api/v0.1/pono/memetic-wikitext (not grammars/). grammars/ tree deleted.
 Voice-house consolidated: lares/voices.md parents lares/masks/** (all masks moved from masks/).
+lararium-app + lararium-tldraw + lararium-web DELETED. Replaced with: lararium-browser, dreamdeck-tldraw, dreamdeck-app (see ROADMAP.md § Package Reboot).
+New package namespaces: @lararium/* = infra/protocol; @dreamdeck/* = first app stack on DreamNet.
+Research: packages/lares/lararium-research/DREAMNET-FEDERATION-RESEARCH.md (2026-05-06).
 Research docs: packages/lares/lararium-research/PROTOCOL-STACK-IDENTITY-CIRCLES-SESSIONS.md
 ```
+
+---
+
+## What Just Happened (2026-05-06 — Package Reboot + DreamNet Research)
+
+### Package Reboot
+
+- `lararium-app`, `lararium-tldraw`, `lararium-web` deleted — old web2-brained app packages removed entirely
+- Stubbed three new blank package dirs: `lararium-browser`, `dreamdeck-tldraw`, `dreamdeck-app` (typo `dreakdeck-app` fixed)
+- `packages/AGENTS.md` package map updated to new namespaces
+- `lararium-node/package.json` — `@lararium/tldraw` dep dropped
+- `lararium-node/scripts/source-memes.ts` — `lararium-app` source entries removed
+- `lararium-tw5/memes/canvas/*.md` — `source-file` pointers updated to `dreamdeck-tldraw`
+- All src file comments updated (`@lararium/app` → `@dreamdeck/app`, etc.)
+
+**New namespace law:** `@lararium/*` = DreamNet infrastructure/protocol. `@dreamdeck/*` = first app stack on the Lares DreamNet, client UX layer.
+
+### DreamNet Federation Research (four spirits)
+
+Full findings in `packages/lares/lararium-research/DREAMNET-FEDERATION-RESEARCH.md`. Highlights:
+
+- **Nexus = a namespace, not a server.** A Nexus is a named group of peers sharing a keypair-rooted identity. `lar://<nexus-pubkey>/<doc-id>` is the URI form. No DNS dependency.
+- **Keyhive** (Ink & Switch, Brooklyn Zelenka) is the exact auth substrate we need — convergent capabilities + Beelay E2EE sync co-designed with Automerge. Pre-alpha Rust, no TS yet. Design our capability surface to be Keyhive-compatible now via ucanto-style schemas.
+- **Presence** = `DocHandle.broadcast()` + Yjs-awareness-style clock/slot per `(userId, deviceId)`. Never write presence into the Automerge doc. Session-local state never enters broadcast. Schema-level enforcement (tldraw three-tier model) is the right pattern.
+- **Invite token** = SSB-style: `sign_with_operator_key({ iss: nexus_did, cap: "join/nexus", exp, nonce })`. Offline-verifiable. No central registry. Chain of operators possible via UCAN proof chains later.
+- **DreamDeck visual principles** (from V.U.E., Kinopio, Verse): spatial position is semantic; canvas nodes are `lar://` resource containers; edge types are first-class; no shared mutable state (Verse model, not Blueprint); export to open formats.
+
+### Two open design questions going into next talk-story
+
+1. `lar://` URI grammar change — current form is `lar:///path` (no authority). Nexus-pubkey-as-authority requires `lar://<pubkey>/path`. Land immediately in core or stub?
+2. Presence broadcast ownership — `@lararium/browser` (peer transport layer) or `@lararium/tw5` (session tiddlers)? Research suggests transport layer is correct; schema enforcement is the right dividing line.
 
 ---
 
@@ -87,14 +121,20 @@ Research results expected in: `packages/lares/lararium-research/KOWLOON-BRIDGE.m
 ## Four-Layer Stack
 
 ```
+DreamNet                  — federated network of Nexus namespaces (keypair-rooted, invite-seeded)
+  └── Nexus               — a named peer group sharing a keypair-rooted lar:// namespace
+        ├── lararium-node     — local host peer: filesystem, operator key, canon promotion
+        └── lararium-browser  — browser/OPFS peer: IndexedDB, broadcast(), WebSocket sync
+
 elyncia.app               — public domain; reverse proxy (web2 Kowloon ↔ web3 Lares)
-  ├── DreamDeck           — first app on DreamNet; memetic-wikitext wiki; mobile Lares node
+  ├── DreamDeck           — first app on DreamNet (@dreamdeck/app); quine-wiki + infinite canvas
   │     ├── Lares         — Agent alignment + HUD; personal workspace (MemeStoreDoc)
   │     └── Lararium      — "where the lares lives"; isomorphic identity + TW5/Automerge quine
   └── Kowloon Node        — web2 ActivityPub gateway; Node.js + MongoDB; @user@elyncia.app
 ```
 
-DreamDeck is the first *application* built on Lares + Lararium — not the architecture itself. Other node types on the DreamNet are possible.
+DreamDeck is the first *application* built on Lares + Lararium — not the architecture itself.
+`@lararium/*` = DreamNet protocol/infra. `@dreamdeck/*` = DreamDeck app layer. Other Nexus apps possible.
 
 ## Three-Tiga Doc Model
 

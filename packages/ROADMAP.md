@@ -1,6 +1,6 @@
 # Lararium — Web3 Genesis Artifact Roadmap
 
-> Updated: 2026-05-05 (session 2)
+> Updated: 2026-05-06 (session 3)
 > Branch: feature/lararium-node-3
 > Governing laws: see SESSION.md § Five Architecture Laws
 
@@ -13,6 +13,8 @@ Every peer boots from a single content-addressed genesis artifact — an Automer
 The system folds into itself: the genesis artifact carries the engine that deserializes it.
 
 Social graph control inverts: circles are owned by their center, not the platform. Adding to a circle IS the follow. Membership never federates. (Kowloon / jzellis model.)
+
+**DreamNet law (2026-05-06):** A Nexus is a keypair-rooted namespace, not a server. `lar://<nexus-pubkey>/<doc-id>` is the canonical URI form. `@lararium/*` = DreamNet protocol/infra. `@dreamdeck/*` = first app stack on the Lares DreamNet. Other Nexus apps possible.
 
 ---
 
@@ -27,9 +29,13 @@ Social graph control inverts: circles are owned by their center, not the platfor
 | S4 | Peer Factory Rewrites | ✅ Complete | `openNodeLarPeer` uses genesis loader; `lararium-island.ts` deleted |
 | S5 | Quine Round-Trip Verification | ✅ Complete | Wire `.tw5.js` CJS into genesis; verify self-hosting round-trip |
 | S5.1 | Meme Namespace Consolidation | ✅ Complete | grammar→pono merge; misfile audit (5 moves); voice-house under lares/ |
+| S5.2 | Package Reboot | ✅ Complete | Delete lararium-app/tldraw/web; stub lararium-browser, dreamdeck-tldraw, dreamdeck-app |
 | S6 | SessionEventLog | 🔴 Active | Per-session append-only Automerge doc; `broadcast()` for presence |
 | S7 | Circles + Identities Capability Layer | ⬜ Designed | Keyhive/UCAN device delegation; Seitan token circle invites |
 | S8 | Kowloon Bridge | ⬜ Designed | `KowloonOutbox` draft queue + `KowloonInbox` feed mirror; `elyncia.app` deployment |
+| S9 | lararium-browser scaffold | ⬜ Queued | Full Automerge browser peer; IndexedDB; broadcast() presence engine; OPFS option |
+| S10 | dreamdeck-tldraw scaffold | ⬜ Queued | tldraw shapes as lar:// resource containers; three-tier store; edge types first-class |
+| S11 | dreamdeck-app scaffold | ⬜ Queued | React shell; DreamDeck boot; TW5+canvas composition; no protocol logic |
 
 ---
 
@@ -273,6 +279,59 @@ S0 Cleanup ✅
               │                             └── S8 Kowloon Bridge ⬜
               └── (S3 and S4 unlocked together after S2)
 ```
+
+---
+
+## S5.2 — Package Reboot ✅
+
+**Goal:** Delete the web2-brained app packages. Stub the new DreamNet-first package triad.
+
+### Completed
+
+- [x] `packages/lararium-app` deleted
+- [x] `packages/lararium-tldraw` deleted
+- [x] `packages/lararium-web` deleted
+- [x] Stub dirs created: `lararium-browser`, `dreamdeck-tldraw`, `dreamdeck-app` (typo `dreakdeck-app` corrected)
+- [x] `packages/AGENTS.md` package map updated to new namespaces + spine flow + test routes
+- [x] `lararium-node/package.json` — `@lararium/tldraw` dep removed
+- [x] `lararium-node/scripts/source-memes.ts` — `lararium-app` source entries removed
+- [x] `lararium-tw5/memes/canvas/*.md` — `source-file` paths updated to `dreamdeck-tldraw`
+- [x] All `@lararium/app`, `@lararium/tldraw`, `@lararium/web` comment refs updated across `lararium-core` and `lararium-tw5` src
+
+### New Package Map
+
+| Package | Namespace | Role |
+|---|---|---|
+| `lararium-core` | `@lararium/core` | Contracts, parser, AST, lar:// URIs, Nexus identity primitives, capability schemas |
+| `lararium-tw5` | `@lararium/tw5` | TW5 runtime, widget/render, CRDT sync adaptor, carrier children |
+| `lararium-node` | `@lararium/node` | Local host peer: filesystem, operator key, canon promotion, serve/CLI |
+| `lararium-browser` | `@lararium/browser` | Browser/OPFS peer: Automerge repo, IndexedDB, broadcast() presence, WebSocket sync |
+| `dreamdeck-tldraw` | `@dreamdeck/tldraw` | tldraw shapes as lar:// containers; three-tier store; edge types; spatial layout |
+| `dreamdeck-app` | `@dreamdeck/app` | React shell, DreamDeck boot, UX composition — no protocol logic |
+| `lares-mcp` | `@lararium/mcp` | Agent-facing tools and resources; stdout pure JSON-RPC |
+
+---
+
+## DreamNet Protocol Design (Research 2026-05-06)
+
+Full research: `packages/lares/lararium-research/DREAMNET-FEDERATION-RESEARCH.md`
+
+### Settled Decisions
+
+- **Nexus identity** = Ed25519 keypair. `lar://<nexus-pubkey>/<doc-id>` is the URI form. No DNS.
+- **Membership** = signed invite token: `sign_with_operator_key({ iss: nexus_did, cap: "join/nexus", exp, nonce })`. Offline-verifiable, nonce burned on redemption. No central registry.
+- **Auth substrate** = Keyhive (Ink & Switch, Brooklyn Zelenka) when TS/WASM bindings ship. Until then: node-local operator keypair + ucanto-compatible capability schemas as forward-compatible surface.
+- **Presence** = `DocHandle.broadcast()` + Yjs-awareness-style `{ userId, deviceId, cursor, viewport, selection, clock }` slot per peer. Last-write-wins per `(peerId, deviceId)`. 15s heartbeat, 30s expiry. Never written to Automerge doc.
+- **Session-local state** = never enters broadcast(). Enforced at schema level (tldraw three-tier model).
+- **DreamDeck visual principles**: spatial position is semantic; nodes are `lar://` resource containers; edge types are first-class; no shared mutable state (Verse model, not Blueprint); export to open formats (JSON Canvas).
+
+### Open Protocol Questions (research pending)
+
+| Question | Status |
+|---|---|
+| `lar://` URI grammar: `lar:///path` → `lar://<nexus-pubkey>/path` — when? | Design pending |
+| Cross-Nexus federation: room-level or Nexus-level subscription? No `nexus_id` in schemas yet | Research pending |
+| Keyhive WASM/TS bindings ETA | Watch Ink & Switch; pre-alpha Rust only as of 2026-05 |
 
 ---
 

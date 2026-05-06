@@ -13,7 +13,7 @@ manao        = 0.80
 role          = "tldraw zoom-level thresholds, snap values, page routing, and initial view state"
 cacheable     = true
 retain        = true
-source-file   = "packages/lararium-tldraw/src/zoom-levels.ts"
+source-file   = "packages/dreamdeck-tldraw/src/zoom-levels.ts"
 source-symbol = "ZOOM_THRESHOLDS ZOOM_SNAP ZOOM_PAGE"
 ```
 
@@ -61,7 +61,7 @@ Each level MUST have a threshold min, a snap value, and a page assignment.
 ## Schema (machine-readable)
 
 Canonical TOML form. Source of truth for `ZOOM_THRESHOLDS`, `ZOOM_SNAP`, `ZOOM_PAGE`, `INITIAL_VIEW_STATE`
-in `packages/lararium-tldraw/src/zoom-levels.ts` and `packages/lararium-tldraw/src/view-state.ts`.
+in `packages/dreamdeck-tldraw/src/zoom-levels.ts` and `packages/dreamdeck-tldraw/src/view-state.ts`.
 
 ```toml
 # Zoom level names — ordered widest to tightest
@@ -98,7 +98,7 @@ focus-uri   = null
 history     = []
 
 # Layout cascade — ordered strategy names (implementations carry function refs; names are pure data)
-# Source: packages/lararium-tldraw/src/layout.ts LAYOUT_CASCADE
+# Source: packages/dreamdeck-tldraw/src/layout.ts LAYOUT_CASCADE
 layout-cascade = ["story-river"]
 ```
 

@@ -2,7 +2,7 @@
  * meme-recipe-vm — DirectMemeRecipeVm and bootMemeRecipeVm.
  *
  * MemeRecipeVm interface lives in @lararium/core (meme-recipe-vm.ts) so both
- * @lararium/node and @lararium/app can type against it without pulling in TW5.
+ * @lararium/node and @dreamdeck/app can type against it without pulling in TW5.
  *
  * DirectMemeRecipeVm — in-process TW5Engine wrapper (no Worker overhead).
  * TW5WorkerProxy     — Worker-backed implementation; lives in tw5-worker-proxy.ts.

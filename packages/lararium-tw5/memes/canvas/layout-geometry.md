@@ -15,7 +15,7 @@ role          = "tldraw canvas layout geometry: canvas-type taxonomy, story-rive
 cacheable     = true
 retain        = true
 status-date   = "2026-04-30"
-source-file   = "packages/lararium-tldraw/src/layout.ts"
+source-file   = "packages/dreamdeck-tldraw/src/layout.ts"
 source-symbol = "FRAME_W FRAME_H AHU_W AHU_H DETAIL_FRAME_W GRAPH_FRAME_W LAYOUT_CASCADE CANVAS_TYPES"
 ```
 
@@ -68,7 +68,7 @@ rpg-company.story-river-hud   = false
 ## Schema (machine-readable)
 
 Canonical TOML form. Source of truth for geometry constants
-in `packages/lararium-tldraw/src/layout.ts`.
+in `packages/dreamdeck-tldraw/src/layout.ts`.
 Applies to the `docs-wiki` canvas type.
 
 ```toml
@@ -101,13 +101,13 @@ gap-x    = 60
 gap-y    = 16
 
 # Animation parameters
-# Source: packages/lararium-tldraw/src/nav.ts
+# Source: packages/dreamdeck-tldraw/src/nav.ts
 [animation]
 zoom-duration-ms = 400   # camera transition duration
 zoom-inset-px    = 72    # padding inset when fitting a frame into view
 
 # Initial view state
-# Source: packages/lararium-tldraw/src/view-state.ts INITIAL_VIEW_STATE
+# Source: packages/dreamdeck-tldraw/src/view-state.ts INITIAL_VIEW_STATE
 [initial-view-state]
 active-view   = "story-river"
 canvas-type   = "docs-wiki"   # canvas type governs available layouts

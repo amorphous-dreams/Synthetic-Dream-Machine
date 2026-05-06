@@ -61,7 +61,7 @@ Layout strategies follow a priority order. The cascade selects first match.
 ## Schema (machine-readable)
 
 Canonical TOML form. Source of truth for `ROOM_SYSTEM`, `ROOM_INVARIANTS`, `ROOM_ENTRY`, `ROOM_GRAPH`,
-`DEFAULT_ROOMS`, `DEFAULT_PORTALS` in `packages/lararium-tldraw/src/room.ts`.
+`DEFAULT_ROOMS`, `DEFAULT_PORTALS` in `packages/dreamdeck-tldraw/src/room.ts`.
 
 ```toml
 # Named room constants — scanner aliases; data repeated in [[default-rooms]] below

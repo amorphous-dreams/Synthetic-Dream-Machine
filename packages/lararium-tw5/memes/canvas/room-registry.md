@@ -15,7 +15,7 @@ role          = "tldraw room and portal registry: four default rooms, four defau
 cacheable     = true
 retain        = true
 status-date   = "2026-04-30"
-source-file   = "packages/lararium-tldraw/src/room.ts packages/lararium-tldraw/src/view-state.ts"
+source-file   = "packages/dreamdeck-tldraw/src/room.ts packages/dreamdeck-tldraw/src/view-state.ts"
 source-symbol = "DEFAULT_ROOMS DEFAULT_PORTALS ROOM_SYSTEM ROOM_INVARIANTS ROOM_ENTRY ROOM_GRAPH INITIAL_VIEW_STATE LarViewAction"
 ```
 

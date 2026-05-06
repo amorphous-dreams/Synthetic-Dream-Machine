@@ -43,11 +43,11 @@ retain       = true
 
 `@lararium/node` carries local host duties. Put filesystem hydration, canon promotion guards, serve/CLI behavior, operator key handling, parity checks, and no-write gates here.
 
-`@lararium/app` carries the browser shell. Put React, Automerge browser repo, IndexedDB, WebSocket sync, boot splash, tldraw surface wiring, debug hooks, and TW5/canvas projection glue here.
+`@lararium/browser` carries isomorphic browser-peer duties. Put Automerge browser repo, IndexedDB, WebSocket sync, and browser-host exports here. Parallels `@lararium/node` with different capabilities; no React, no canvas.
 
-`@lararium/tldraw` carries infinite-canvas projections. Put tldraw records, layout, rooms, view state, multi-view, navigation, shape rendering, and zoom-level policy here.
+`@dreamdeck/tldraw` carries infinite-canvas projections. Put tldraw records, layout, rooms, view state, multi-view, navigation, shape rendering, and zoom-level policy here.
 
-`@lararium/web` carries browser-host exports for non-React consumers.
+`@dreamdeck/app` carries the DreamNet browser peer shell. Put React, boot splash, tldraw surface wiring, debug hooks, and TW5/canvas projection glue here. This is the first app-stack client on the Lares DreamNet infrastructure.
 
 `@lararium/mcp` carries agent-facing tools and resources. Keep stdout pure. Treat stdio framing as a protocol seam, not a log stream.
 
@@ -67,7 +67,7 @@ lares/ carriers
   -> LarTiddlerStore records
   -> MemeProvider projections
   -> @lararium/tw5 wiki + carrier children
-  -> @lararium/app / @lararium/tldraw / @lararium/mcp views
+  -> @dreamdeck/app / @dreamdeck/tldraw / @lararium/mcp views
 ```
 
 Reverse flow needs care:
@@ -116,7 +116,7 @@ Focused package tests:
 pnpm --filter @lararium/core test
 pnpm --filter @lararium/tw5 test
 pnpm --filter @lararium/node test
-pnpm --filter @lararium/tldraw test
+pnpm --filter @dreamdeck/tldraw test
 pnpm --filter @lararium/mcp test
 ```
 
@@ -126,7 +126,7 @@ Build all package outputs when generated files, barrels, bundle seams, TW5 vendo
 pnpm -r --filter './packages/**' build
 ```
 
-Browser smoke lives under `packages/lararium-app/tests/e2e/` and expects a live node server on localhost unless the test config says otherwise.
+Browser smoke lives under `packages/dreamdeck-app/tests/e2e/` and expects a live node server on localhost unless the test config says otherwise.
 
 If sandboxing blocks `tsx` IPC under `/tmp`, request escalation and rerun the same build command.
 

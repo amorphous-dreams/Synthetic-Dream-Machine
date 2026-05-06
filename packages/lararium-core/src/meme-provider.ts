@@ -18,7 +18,7 @@
  *     single bulk-refresh instead of one refresh per tiddler.
  *
  * Isomorphic: zero Automerge import. Works identically in Node and browser.
- * Lives in @lararium/core so @lararium/app, @lararium/node, and future packages
+ * Lives in @lararium/core so @dreamdeck/app, @lararium/node, and future packages
  * all share one implementation without circular dependencies.
  */
 

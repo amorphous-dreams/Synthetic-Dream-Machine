@@ -25,8 +25,6 @@ const PRIORITY_SOURCES: Array<{ pkg: string; relPath: string }> = [
   { pkg: "lararium-core", relPath: "src/causal-island.ts" },
   { pkg: "lararium-core", relPath: "src/live-protocol.ts" },
   { pkg: "lararium-tw5",  relPath: "src/lararium-tw5.ts" },
-  { pkg: "lararium-app",  relPath: "src/LarariumPanel.tsx" },
-  { pkg: "lararium-app",  relPath: "src/LarariumShell.tsx" },
 ];
 
 export interface SourceMemeEntry {

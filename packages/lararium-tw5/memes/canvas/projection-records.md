@@ -15,7 +15,7 @@ role          = "tldraw projection record types: LarTLPage, LarTLFrame, LarTLSoc
 cacheable     = true
 retain        = true
 status-date   = "2026-04-30"
-source-file   = "packages/lararium-tldraw/src/records.ts"
+source-file   = "packages/dreamdeck-tldraw/src/records.ts"
 source-symbol = "LarTLPage LarTLFrame LarTLSocket LarTLArrow LarTLNote LarProjectionId memeFrameId ahuFrameId edgeArrowId pageId"
 ```
 

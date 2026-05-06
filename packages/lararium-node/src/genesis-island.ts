@@ -14,7 +14,7 @@
  *   readFileSync(genesis/island.bin) resolved relative to import.meta.url.
  *   One-time boot-path read of a known build artifact — not a disk walk.
  *
- * Browser path (future, @lararium/app):
+ * Browser path (future, @dreamdeck/app):
  *   Bundler (esbuild / Vite) binary loader inlines island.bin as Uint8Array.
  *   repo.import(genesisBytes) — zero fs reads.
  *

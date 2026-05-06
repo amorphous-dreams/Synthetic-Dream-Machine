@@ -3,7 +3,7 @@
  *
  * Generic over T so it can hold DirectMemeRecipeVm, TW5WorkerProxy, or any
  * other disposable VM-shaped object. Same shape on server and browser — lives
- * in @lararium/core so both @lararium/node and @lararium/app can type against
+ * in @lararium/core so both @lararium/node and @dreamdeck/app can type against
  * it without taking a dependency on @lararium/tw5.
  *
  * Key convention: recipe URI (lar:///ha.ka.ba/@lararium/recipes/<name>).

@@ -1,7 +1,7 @@
 /**
  * MemeRecipeVm — isomorphic interface for a TW5 wiki engine slot in the VmPool.
  *
- * Lives in @lararium/core so both @lararium/node and @lararium/app can type
+ * Lives in @lararium/core so both @lararium/node and @dreamdeck/app can type
  * against it without a @lararium/tw5 dependency.
  *
  * Two implementations in @lararium/tw5:

@@ -37,7 +37,7 @@ export type AnyWorker = {
   terminate(): void | Promise<void>;
 };
 
-/** Factory supplied by the platform package (@lararium/app or @lararium/node). */
+/** Factory supplied by the platform package (@dreamdeck/app or @lararium/node). */
 export type WorkerFactory = () => AnyWorker;
 
 // ---------------------------------------------------------------------------
