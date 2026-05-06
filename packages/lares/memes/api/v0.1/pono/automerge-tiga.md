@@ -1,9 +1,9 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/@lares/api/v0.1/pono/memetic-wikitext >> -->
 
-<<~&#x0001; ? -> lar:///ha.ka.ba/@lararium/core/v0.1/automerge-tiga >>
+<<~⊙&#x0001; ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/automerge-tiga >>
 ```toml iam
-uri-path     = "ha.ka.ba/@lararium/core/v0.1/automerge-tiga"
-file-path    = "packages/lararium-core/memes/automerge-tiga.md"
+uri-path     = "ha.ka.ba/@lares/api/v0.1/pono/automerge-tiga"
+file-path    = "packages/lares/memes/api/v0.1/pono/automerge-tiga.md"
 type         = "text/x-memetic-wikitext"
 register     = "CS"
 confidence   = 0.95
