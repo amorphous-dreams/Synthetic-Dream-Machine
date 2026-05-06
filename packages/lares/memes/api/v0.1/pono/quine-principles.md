@@ -241,7 +241,7 @@ body-sha256   = "sha256:..."  # hash of the TypeScript source at time of meme ca
 |---|---|
 | 0 | Logic in TypeScript only; no meme |
 | 1 | TypeScript file has meme; meme has `heleuma = "ba"` and `body-sha256` |
-| 2 | Meme body contains compiled IIFE; TypeScript fallback still active |
+| 2 | Meme body contains compiled CJS; TypeScript fallback still active |
 | 3 | Boot-time gate checks `mana`, `confidence`, `body-sha256`; meme preferred if all pass |
 | 4 | Meme is authoritative; TypeScript is fallback only |
 

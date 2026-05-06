@@ -22,8 +22,8 @@ Object.defineProperty(exports, Symbol.toStringTag, { value: "Module" });
 /**
 * cold-boot-ceremony — void-start operator identity tiddler builder.
 *
-* Runs in TW5 VM (compiled as IIFE) and in Node (imported as TS module).
-* Produces the IdentityTiddler + operators GroupTiddler for the device operator
+* Runs in TW5 VM (compiled as CJS) and in Node (imported as TS module).
+* Produces the IdentityTiddler + operators CircleTiddler for the device operator
 * on first boot, when IdentitiesDoc has no principals.
 *
 * Key derivation (Brooklyn Zelenka / UCAN / Keyhive alignment):
@@ -35,7 +35,7 @@ Object.defineProperty(exports, Symbol.toStringTag, { value: "Module" });
 * GitHub / BlueSky auth enriches displayName only — they do not own the DID.
 * verifyingKey field is populated now; Keyhive BeeKEM consumes it when available.
 *
-* No external imports — self-contained IIFE in TW5 wiki context.
+* No external imports — self-contained CJS in TW5 wiki context.
 *
 * Meme: lar:///ha.ka.ba/@lararium/tw5/modules/cold-boot-ceremony
 */
@@ -76,17 +76,17 @@ function didKeyFromVerifyingKey(verifyingKeyHex) {
 }
 var SOCIAL_HOST = "ha.ka.ba";
 var IDENTITIES_BAG_URI = `lar:///${SOCIAL_HOST}/@identities`;
-var GROUPS_BAG_URI = `lar:///${SOCIAL_HOST}/@groups`;
+var GROUPS_BAG_URI = `lar:///${SOCIAL_HOST}/@circles`;
 function identityTiddlerUri(did) {
 	return `${IDENTITIES_BAG_URI}/${did}`;
 }
-function groupTiddlerUri(id) {
+function circleTiddlerUri(id) {
 	return `${GROUPS_BAG_URI}/${id}`;
 }
 /**
 * Build void-start ceremony tiddlers.
 *
-* Returns [IdentityTiddler, GroupTiddler] keyed for IdentitiesDoc and GroupsDoc.
+* Returns [IdentityTiddler, CircleTiddler] keyed for IdentitiesDoc and CirclesDoc.
 * Caller writes each into the appropriate Automerge doc handle.
 *
 * Idempotency: caller MUST check the tiddler title doesn't already exist before writing.
@@ -108,7 +108,7 @@ function buildCeremonyTiddlers(verifyingKeyHex, displayName) {
 			readPolicy: "private"
 		}
 	}, {
-		title: groupTiddlerUri("operators"),
+		title: circleTiddlerUri("operators"),
 		bag: GROUPS_BAG_URI,
 		authority: "cold-boot-ceremony",
 		fields: {
@@ -130,7 +130,7 @@ exports.didKeyFromVerifyingKey = didKeyFromVerifyingKey;
 
 ## Source
 
-Compiled IIFE artifact. Canonical TS source: `packages/lararium-tw5/src/cold-boot-ceremony.ts` (`source-symbol = "buildCeremonyTiddlers"`).
+Compiled CJS artifact. Canonical TS source: `packages/lararium-tw5/src/cold-boot-ceremony.ts` (`source-symbol = "buildCeremonyTiddlers"`).
 Anchor meme: `lar:///ha.ka.ba/@lararium/tw5/modules/cold-boot-ceremony`.
 
 Run `pnpm --filter @lararium/tw5 build:tiddlers` to regenerate.

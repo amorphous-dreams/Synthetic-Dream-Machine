@@ -31,7 +31,7 @@ Void-start identity builder. Runs on first boot when `IdentitiesDoc` has no prin
 Given a hex-encoded 32-byte Ed25519 verifying key, derives `did:key` (multicodec `0xed01` + base58btc, UCAN/Keyhive aligned) and returns two tiddler records:
 
 - `IdentityTiddler` at `lar:///ha.ka.ba/@identities/{did}` — operator principal, `kind = "operator"`, `verifyingKey` populated for Keyhive upgrade
-- `GroupTiddler` at `lar:///ha.ka.ba/@groups/operators` — sole-member operators group, `capabilityPolicy = "group:operators"`
+- `CircleTiddler` at `lar:///ha.ka.ba/@circles/operators` — sole-member operators group, `capabilityPolicy = "group:operators"`
 
 The device Ed25519 keypair is the identity root. GitHub / BlueSky auth enriches `displayName` only.
 
@@ -47,8 +47,8 @@ Caller MUST check the identity tiddler does not already exist before writing (id
 /**
  * cold-boot-ceremony — void-start operator identity tiddler builder.
  *
- * Runs in TW5 VM (compiled as IIFE) and in Node (imported as TS module).
- * Produces the IdentityTiddler + operators GroupTiddler for the device operator
+ * Runs in TW5 VM (compiled as CJS) and in Node (imported as TS module).
+ * Produces the IdentityTiddler + operators CircleTiddler for the device operator
  * on first boot, when IdentitiesDoc has no principals.
  *
  * Key derivation (Brooklyn Zelenka / UCAN / Keyhive alignment):
@@ -60,7 +60,7 @@ Caller MUST check the identity tiddler does not already exist before writing (id
  * GitHub / BlueSky auth enriches displayName only — they do not own the DID.
  * verifyingKey field is populated now; Keyhive BeeKEM consumes it when available.
  *
- * No external imports — self-contained IIFE in TW5 wiki context.
+ * No external imports — self-contained CJS in TW5 wiki context.
  *
  * Meme: lar:///ha.ka.ba/@lararium/tw5/modules/cold-boot-ceremony
  */
@@ -118,18 +118,18 @@ export function didKeyFromVerifyingKey(verifyingKeyHex: string): string {
 }
 
 // ---------------------------------------------------------------------------
-// Tiddler URI helpers — inlined to avoid @lararium/core import in IIFE
+// Tiddler URI helpers — inlined to avoid @lararium/core import in CJS
 // ---------------------------------------------------------------------------
 
 const SOCIAL_HOST        = "ha.ka.ba";
 const IDENTITIES_BAG_URI = `lar:///${SOCIAL_HOST}/@identities`;
-const GROUPS_BAG_URI     = `lar:///${SOCIAL_HOST}/@groups`;
+const GROUPS_BAG_URI     = `lar:///${SOCIAL_HOST}/@circles`;
 
 function identityTiddlerUri(did: string): string {
   return `${IDENTITIES_BAG_URI}/${did}`;
 }
 
-function groupTiddlerUri(id: string): string {
+function circleTiddlerUri(id: string): string {
   return `${GROUPS_BAG_URI}/${id}`;
 }
 
@@ -147,7 +147,7 @@ export interface CeremonyTiddler {
 /**
  * Build void-start ceremony tiddlers.
  *
- * Returns [IdentityTiddler, GroupTiddler] keyed for IdentitiesDoc and GroupsDoc.
+ * Returns [IdentityTiddler, CircleTiddler] keyed for IdentitiesDoc and CirclesDoc.
  * Caller writes each into the appropriate Automerge doc handle.
  *
  * Idempotency: caller MUST check the tiddler title doesn't already exist before writing.
@@ -175,7 +175,7 @@ export function buildCeremonyTiddlers(
   };
 
   const groupTiddler: CeremonyTiddler = {
-    title:     groupTiddlerUri("operators"),
+    title:     circleTiddlerUri("operators"),
     bag:       GROUPS_BAG_URI,
     authority: "cold-boot-ceremony",
     fields: {

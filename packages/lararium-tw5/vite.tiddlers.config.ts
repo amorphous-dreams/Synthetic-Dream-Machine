@@ -3,7 +3,7 @@
  *
  * Builds each widget class and filter operator as an independent CJS module with no
  * external dependencies beyond the TW5 widget API (which is provided at runtime).
- * Outputs go to dist-widgets/{name}.iife.js (filename kept for write-tiddler-memes compat).
+ * Outputs go to dist-widgets/{name}.tw5.js — CJS format.
  *
  * Format is CJS (not IIFE) so that TW5's CommonJS module wrapper provides the real
  * `exports` object — IIFE format would shadow TW5's exports with a fresh {}, making
@@ -44,13 +44,13 @@ export const FILTER_ENTRIES: Array<{ entry: string; exportKey: string; name: str
   { entry: "src/filters/toml-field.ts",   exportKey: "toml",         name: "toml-field"   },
 ];
 
-// Deserializer entry points — compiled to IIFE, exported as exports["content/type"]
+// Deserializer entry points — CJS module, exported as exports["content/type"]
 // module-type: tiddlerdeserializer in the corresponding lares/ module tiddler.
 export const DESERIALIZER_ENTRIES: Array<{ entry: string; exportKey: string; name: string }> = [
   { entry: "src/deserializer.ts", exportKey: "memeticWikitextDeserializer", name: "deserializer" },
 ];
 
-// Module bundle entry points — self-contained IIFEs loaded as TW5 library modules.
+// Module bundle entry points — CJS modules loaded as TW5 library modules.
 // module-type: library in the corresponding memes/modules/*-tw5.md tiddler.
 export const MODULE_ENTRIES: Array<{ entry: string; exportKey: string; name: string }> = [
   { entry: "src/meme-ast-entry.ts",        exportKey: "memeAst",     name: "meme-ast"           },
@@ -96,6 +96,6 @@ export async function buildAll(): Promise<void> {
         },
       },
     });
-    console.log(`[build:widgets] ${name}.iife.js`);
+    console.log(`[build:widgets] ${name}.tw5.js`);
   }
 }

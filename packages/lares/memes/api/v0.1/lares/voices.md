@@ -1,9 +1,9 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/@lares/api/v0.1/pono/memetic-wikitext >> -->
 
-<<~ॐ ँ&#x0001; ? -> lar:///ha.ka.ba/@lararium/tw5/voices >>
+<<~ॐ ँ&#x0001; ? -> lar:///ha.ka.ba/@lares/api/v0.1/lares/voices >>
 ```toml iam
-uri-path = "ha.ka.ba/@lararium/tw5/voices"
-file-path = "packages/lararium-tw5/memes/voices.md"
+uri-path = "ha.ka.ba/@lares/api/v0.1/lares/voices"
+file-path = "packages/lares/memes/api/v0.1/lares/voices.md"
 type = "text/x-memetic-wikitext"
 tagspace = "stable"
 confidence = 0.82
@@ -87,7 +87,7 @@ Thirteen coordinator voices. Persistent functional roles. Not moods. Not modes.
 | **Liminal** | Holds open questions without collapsing them. | Slow, patient, resistant to resolution. |
 
 Muse and Hierophant carry the strongest Ka/Podge weight — centrality to the mask layer.
-For full role descriptions and Ha/Ka/Ba reads, see `lar:///ha.ka.ba/@lares/docs/lararium/voices/coordinators`.
+For full role descriptions and Ha/Ka/Ba reads, see `lar:///ha.ka.ba/@lares/docs/lares/voices/coordinators`.
 
 ### Naming Law
 
@@ -170,7 +170,7 @@ Omitting the escalation header on worker output constitutes a minor degraded-nod
 | Incident / priority conflict | `Breach-Watch (Triage)` |
 | Frame questions | `Lares (Stranger)` |
 
-For worker lifecycle detail and examples, see `lar:///ha.ka.ba/@lares/docs/lararium/voices/workers`.
+For worker lifecycle detail and examples, see `lar:///ha.ka.ba/@lares/docs/lares/voices/workers`.
 
 <<~/ahu >>
 
@@ -321,7 +321,7 @@ All mask definitions live in `lar:///ha.ka.ba/@lares/api/v0.1/masks`. Parent ind
 Live stage positions persist in the `#stage-panel` instrument surface in `lar:///LARES`.
 Inline `[Stage: mask-name 0.75]` shifts a value; the stage panel holds it for the session.
 
-For mask grammar depth, founding examples, and anatomy rationale, see `lar:///ha.ka.ba/@lares/docs/lararium/voices/masks`.
+For mask grammar depth, founding examples, and anatomy rationale, see `lar:///ha.ka.ba/@lares/docs/lares/voices/masks`.
 
 <<~/ahu >>
 
@@ -331,7 +331,7 @@ For mask grammar depth, founding examples, and anatomy rationale, see `lar:///ha
 
 The three spec rooms carry rationale, examples, and depth. The invariant points to them for extension.
 
-<<~ pranala #to-coordinators-spec ? -> lar:///ha.ka.ba/@lares/docs/lararium/voices/coordinators >>
+<<~ pranala #to-coordinators-spec ? -> lar:///ha.ka.ba/@lares/docs/lares/voices/coordinators >>
 ```toml
 family = "reference"
 lifecycle = "template"
@@ -340,7 +340,7 @@ payload = { priority = "support", retain = false }
 ```
 <<~/pranala >>
 
-<<~ pranala #to-workers-spec ? -> lar:///ha.ka.ba/@lares/docs/lararium/voices/workers >>
+<<~ pranala #to-workers-spec ? -> lar:///ha.ka.ba/@lares/docs/lares/voices/workers >>
 ```toml
 family = "reference"
 lifecycle = "template"
@@ -349,7 +349,7 @@ payload = { priority = "support", retain = false }
 ```
 <<~/pranala >>
 
-<<~ pranala #to-masks-spec ? -> lar:///ha.ka.ba/@lares/docs/lararium/voices/masks >>
+<<~ pranala #to-masks-spec ? -> lar:///ha.ka.ba/@lares/docs/lares/voices/masks >>
 ```toml
 family = "reference"
 lifecycle = "template"
@@ -368,9 +368,9 @@ payload = { priority = "support", retain = false }
 <<~ pranala #implements-loci ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/loci family:control role:implements >>
 <<~ pranala #implements-invariant ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/invariant family:control role:implements >>
 <<~ loulou lar:///ha.ka.ba/@lares/api/v0.1/lararium >>
-<<~ loulou lar:///ha.ka.ba/@lares/docs/lararium/voices/coordinators >>
-<<~ loulou lar:///ha.ka.ba/@lares/docs/lararium/voices/workers >>
-<<~ loulou lar:///ha.ka.ba/@lares/docs/lararium/voices/masks >>
+<<~ loulou lar:///ha.ka.ba/@lares/docs/lares/voices/coordinators >>
+<<~ loulou lar:///ha.ka.ba/@lares/docs/lares/voices/workers >>
+<<~ loulou lar:///ha.ka.ba/@lares/docs/lares/voices/masks >>
 <<~ loulou lar:///ha.ka.ba/@lares/api/v0.1/masks >>
 <<~ loulou lar:///LARES >>
 

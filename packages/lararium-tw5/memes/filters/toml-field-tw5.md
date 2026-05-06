@@ -41,7 +41,7 @@ exports.registerTomlField = registerTomlField;
 
 ## Source
 
-Compiled IIFE artifact. Canonical TS source: `packages/lararium-tw5/src/tw5-widgets.ts` (`source-symbol = "registerTomlFieldOperator"`).
+Compiled CJS artifact. Canonical TS source: `packages/lararium-tw5/src/tw5-widgets.ts` (`source-symbol = "registerTomlFieldOperator"`).
 Anchor meme: `lar:///ha.ka.ba/@lararium/tw5/filters/toml-field`.
 
 Run `pnpm --filter @lararium/tw5 build:tiddlers` to regenerate.

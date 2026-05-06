@@ -166,7 +166,7 @@ exports.registerKauWriteBackHook = registerKauWriteBackHook;
 
 ## Source
 
-Compiled IIFE artifact. Canonical TS source: `packages/lararium-tw5/src/widgets/kau.ts` (`source-symbol = "KauWidget"`).
+Compiled CJS artifact. Canonical TS source: `packages/lararium-tw5/src/widgets/kau.ts` (`source-symbol = "KauWidget"`).
 Anchor meme: `lar:///ha.ka.ba/@lararium/tw5/widgets/kau`.
 
 Run `pnpm --filter @lararium/tw5 build:tiddlers` to regenerate.

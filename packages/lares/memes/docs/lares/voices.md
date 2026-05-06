@@ -1,9 +1,9 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/@lares/api/v0.1/pono/memetic-wikitext >> -->
 
-<<~&#x0001; ? -> lar:///ha.ka.ba/@lares/docs/lararium/voices >>
+<<~&#x0001; ? -> lar:///ha.ka.ba/@lares/docs/lares/voices >>
 ```toml iam
-uri-path = "ha.ka.ba/@lares/docs/lararium/voices"
-file-path = "packages/lares/memes/docs/lararium/voices.md"
+uri-path = "ha.ka.ba/@lares/docs/lares/voices"
+file-path = "packages/lares/memes/docs/lares/voices.md"
 type = "text/x-memetic-wikitext"
 tagspace = "stable"
 confidence = 0.84
@@ -101,11 +101,11 @@ Forward scope: composable-invariant control surface requires its own design pass
 
 ## Rooms
 
-<<~ loulou lar:///ha.ka.ba/@lares/docs/lararium/voices/coordinators >>
-<<~ loulou lar:///ha.ka.ba/@lares/docs/lararium/voices/workers >>
-<<~ loulou lar:///ha.ka.ba/@lares/docs/lararium/voices/masks >>
-<<~ loulou lar:///ha.ka.ba/@lares/docs/lararium/voices/invariant-plan >>
-<<~ loulou lar:///ha.ka.ba/@lares/docs/lararium/voices/voices-review >>
+<<~ loulou lar:///ha.ka.ba/@lares/docs/lares/voices/coordinators >>
+<<~ loulou lar:///ha.ka.ba/@lares/docs/lares/voices/workers >>
+<<~ loulou lar:///ha.ka.ba/@lares/docs/lares/voices/masks >>
+<<~ loulou lar:///ha.ka.ba/@lares/docs/lares/voices/invariant-plan >>
+<<~ loulou lar:///ha.ka.ba/@lares/docs/lares/voices/voices-review >>
 
 <<~/ahu >>
 

@@ -1,9 +1,9 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/@lares/api/v0.1/pono/memetic-wikitext >> -->
 
-<<~&#x0001; ? -> lar:///ha.ka.ba/@lares/docs/lararium/voices/witnesses/mischief-muse-coffee-oracle >>
+<<~&#x0001; ? -> lar:///ha.ka.ba/@lares/docs/lares/voices/witnesses/mischief-muse-coffee-oracle >>
 ```toml iam
-uri-path = "ha.ka.ba/@lares/docs/lararium/voices/witnesses/mischief-muse-coffee-oracle"
-file-path = "packages/lares/memes/docs/lararium/voices/witnesses/mischief-muse-coffee-oracle.md"
+uri-path = "ha.ka.ba/@lares/docs/lares/voices/witnesses/mischief-muse-coffee-oracle"
+file-path = "packages/lares/memes/docs/lares/voices/witnesses/mischief-muse-coffee-oracle.md"
 type = "text/x-memetic-wikitext"
 tagspace = "research"
 confidence = 0.72
@@ -47,8 +47,8 @@ Primary transcript:
 Support warrants:
 
 - `packages/lares/memes/api/v0.1/masks/named/mischief-muse.md` lines 74-81 — mask file already names Coffee Oracle output as seed
-- `packages/lares/memes/docs/lararium/voices/masks-tree-plan.md` lines 221-224 — fill priority names Mischief-Muse corpus first
-- `packages/lares/memes/docs/lararium/voices/voices-review.md` lines 329-342 — review log names Coffee Oracle seed extraction as next pass
+- `packages/lares/memes/docs/lares/voices/masks-tree-plan.md` lines 221-224 — fill priority names Mischief-Muse corpus first
+- `packages/lares/memes/docs/lares/voices/voices-review.md` lines 329-342 — review log names Coffee Oracle seed extraction as next pass
 
 <<~/ahu >>
 

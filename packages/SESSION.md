@@ -1,6 +1,6 @@
 # Session State — Lararium Web3 Refactor
 
-> Updated: 2026-05-04
+> Updated: 2026-05-05
 > Branch: feature/lararium-node-3
 > Purpose: Resume artifact — enough state to continue without prior chat context
 
@@ -11,66 +11,101 @@
 ```text
 Resume from /home/joshu/Synthetic-Dream-Machine/SESSION.md.
 Branch: feature/lararium-node-3.
-Active work: 5-sprint web3 genesis artifact refactor (ROADMAP.md).
+Active sprint: S5 — quine round-trip verification, .tw5.js CJS integration, genesis CID self-ref tiddler.
 Architecture laws in memory: feedback_architecture_principles.md.
 Do not re-decide the five architecture laws or the BOOTSTRAP_SCANS / Path α grammar decision.
-Sprint 0 complete. Sprint 1 complete. Next: Sprint 2 — build-genesis-island.ts.
+Sprints 0–4 complete. Social tiga renamed Groups→Circles. Packaging model: CJS (not IIFE). Kowloon bridge question open — see ROADMAP.md § S8.
+Research docs: packages/lares/lararium-research/PROTOCOL-STACK-IDENTITY-CIRCLES-SESSIONS.md
 ```
 
 ---
 
-## What Just Happened (Sprint 1 Complete)
+## What Just Happened (S0–S4 + Protocol Design Complete)
 
-### Added to `packages/lararium-core/src/system-invariants.ts`
+### S4 Complete — Peer Factory Rewrites
 
-- `SYSTEM_LAWS` — five architecture laws as typed witnessing constants (IDs importable by tests and agents)
-- `GENESIS_INVARIANTS` — causal origin, content-addressed identity, immutability, quine property stub (`@phase: S5`)
-- `PEER_INVARIANTS` — boot symmetry, post-boot operational divergence is not authority, capability-from-receipt
+- `openNodeLarPeer` rewritten: uses `loadGenesisIsland()`, removes `seedLarariumDoc` disk-walk body
+- `lararium-island.ts` deleted entirely (605 → 0 lines)
+- All satellite doc seeders moved to `genesis-island.ts`
+- `reconcileWellKnownTiddlers` + 4 satellite seeders (`seedLaresDoc`, `seedIdentitiesDoc`, `seedCirclesDoc`, `seedSessionsDoc`) now in `genesis-island.ts`
 
-### Already completed (not stale — Sprint 1 ran before SESSION.md was updated)
+### Protocol Stack Design Session (same day)
 
-- `grammar-invariants.ts` Invariant 3 — grammar travels in genesis artifact; peer halts on hash divergence; transitional `CODEC_EX_PRE_S2_COLD_BOOT` named
-- `CODEC_EXCEPTIONS` in `system-invariants.ts` — was present from prior pass
+**Social tiga renamed:** `GroupsDoc` / `GROUPS_DOC_URI` / `@groups` → `CirclesDoc` / `CIRCLES_DOC_URI` / `@circles` everywhere (source, dist stubs, memes, research docs).
 
-### Clarified sprint boundary
+**Kowloon Circles seeded:**
+- `CircleTiddler` now has `kind: "Circle" | "System"`, `addressingScope`, full Kowloon JSDoc
+- `seedCirclesDoc()` auto-seeds 5 system circles (Following, All Following, Circles, Blocked, Muted)
+- Reference meme: `packages/lares/memes/api/v0.1/pono/circles-kowloon.md`
 
-- `buildLaresPluginBlob()` runtime body deletion is **S2 scope**, not S1. The `// SPRINT-2` marker at the call site in `lararium-island.ts` line 211 is correct. CURRENT-EPIC.md Sprint 1 description overshot; corrected.
+**Protocol stack research docs:**
+- `packages/lares/lararium-research/PROTOCOL-STACK-IDENTITY-CIRCLES-SESSIONS.md` — full 7-research-thread synthesis; 6-doc model; Keyhive + UCAN + ERA + Seitan + Kowloon inversion
+
+**Packaging model fixed:**
+- All IIFE references replaced with CJS across all source TS files, vite configs, and meme `.md` files (32 files)
+- `.tw5.js` CJS outputs already exist in `dist-widgets/`; format was always CJS — only labels were stale
+
+**EPIC updated:** `packages/CURRENT-EPIC.md` reflects S0–S4 complete, S5 active, S6–S7 designed.
 
 ---
 
-## What Just Happened (Sprint 0 Complete)
+## Open Question: Kowloon Bridge (S8 design)
 
-### Deleted
+We want `elyncia.app` to serve a Kowloon node (ActivityPub, Node.js + MongoDB) alongside the Lares web3 stack. DreamDeck users draft and publish Kowloon posts from within the local-first app.
 
-- `packages/lararium-node/src/seed-grammar-tiddler.ts` — web2 runtime disk-read pattern; gone entirely
-- Exports removed from `packages/lararium-node/src/index.ts`
+**The tension:** Kowloon = server-authoritative (ActivityPub actor lives on server). Lares = keypair-authoritative (DID/UCAN). These must coexist without one undermining the other.
 
-### Refactored (web2 residue excised, SPRINT-2 markers placed)
+**Three bridge options under consideration** (research pending):
+- **A)** `SessionsDoc` (social tiga ba) replaced by a `KowloonDoc` — Automerge mirror of user's Kowloon outbox/drafts/circles. Social tiga ba slot becomes the Kowloon bridge.
+- **B)** `SessionsDoc` stays ba; `KowloonDoc` is a 4th satellite doc outside the social tiga.
+- **C)** No Automerge doc for Kowloon — DreamDeck uses a lightweight HTTP adapter; Automerge stack stays pure.
 
-- `packages/lararium-node/src/lararium-island.ts`
-  - Removed `reconcileEngineBlobIfChanged()` and `reconcileLaresPluginBlobIfChanged()`
-  - Marked `buildLaresPluginBlob()` call: moves to `buildGenesisIsland` at build time
-  - Added `pluginInstallable: "true"` and `pluginTitle` tagging in `seedBlobDescriptors()`
-- `packages/lararium-node/src/open-node-lar-peer.ts`
-  - Collapsed vacuous `findWithProgress` conditional
-  - Added `recipePlugins` Set filter — vendored plugins opt-in per Recipe, not default
-  - Added `catalog-url` named-exception comment (codec layer, not CRDT)
-  - Replaced reconcile call sites with `// SPRINT-2: reconcileIslandFromGenesis(...)` markers
+Research results expected in: `packages/lares/lararium-research/KOWLOON-BRIDGE.md` (to be created on research return).
 
-### Type safety hardened
+---
 
-- `packages/lararium-tw5/src/types/tiddlywiki.d.ts` — added `declare global { var $tw: TW5Instance | undefined }`
-- `packages/lararium-tw5/src/tw5-vm.ts` — removed `const g = globalThis as any`; all `g.` references replaced with typed `globalThis.$tw` / `(globalThis as Record<string, unknown>).process`
+## Four-Layer Stack
 
-### New interfaces
+```
+elyncia.app               — public domain; reverse proxy (web2 Kowloon ↔ web3 Lares)
+  ├── DreamDeck           — first app on DreamNet; memetic-wikitext wiki; mobile Lares node
+  │     ├── Lares         — Agent alignment + HUD; personal workspace (MemeStoreDoc)
+  │     └── Lararium      — "where the lares lives"; isomorphic identity + TW5/Automerge quine
+  └── Kowloon Node        — web2 ActivityPub gateway; Node.js + MongoDB; @user@elyncia.app
+```
 
-- `packages/lararium-core/src/recipe.ts` — `RecipeTiddler.plugins?: readonly string[]` + `parsePlugins()`
-- `packages/lararium-core/src/composite-store.ts` — `getRecipe()` reads and returns plugins field
+DreamDeck is the first *application* built on Lares + Lararium — not the architecture itself. Other node types on the DreamNet are possible.
 
-### Grammar bootstrap resolved
+## Three-Tiga Doc Model
 
-- Path α chosen: raw carrier text stored in CRDT; no grammar on first parse (BOOTSTRAP_SCANS serves as the codec escape hatch)
-- `packages/lararium-core/src/grammar-invariants.ts` Invariant 2 updated to document the decision
+### Content Tiga (genesis-artifact-authoritative)
+
+| Slot | Doc | URI |
+|---|---|---|
+| ha | `LarariumDoc` | `lar:///ha.ka.ba/@lararium` |
+| ka | `CatalogDoc` | `lar:///ha.ka.ba/@catalog` |
+| ba | `MemeStoreDoc` | `lar:///ha.ka.ba/@lares` |
+
+### Local Social Tiga (keypair-authoritative, never federates)
+
+| Slot | Doc | URI |
+|---|---|---|
+| ha | `IdentitiesDoc` | `lar:///ha.ka.ba/@identities` |
+| ka | `CirclesDoc` | `lar:///ha.ka.ba/@circles` |
+| ba | `SessionsDoc` | `lar:///ha.ka.ba/@sessions` |
+
+Dynamic children: `SessionEventLog` (one per session, AutomergeUrl in session tiddler).
+Ephemeral channel: `docHandle.broadcast()` for presence — not a doc.
+
+### Federated Social Tiga (server-authoritative at publish boundary, S8)
+
+| Slot | Doc | Role |
+|---|---|---|
+| ha | `KowloonProfile` (outbox) | Your authorial voice going out — drafts → published activities |
+| ka | `KowloonFeed` (inbox) | Collective signal coming in — discovery, followed servers |
+| ba | `KowloonActivity` (notifications) | Live state — mentions, replies, pending invites |
+
+The publish step is a deliberate authority handoff: user keypair authorizes the draft; server keypair signs the federation activity. These are sequential, not concurrent. The local social tiga is unaffected.
 
 ---
 
@@ -89,22 +124,6 @@ Sprint 0 complete. Sprint 1 complete. Next: Sprint 2 — build-genesis-island.ts
 - Path α: raw carrier text functions as the deliberate exception to Law 5
 - BOOTSTRAP_SCANS = codec layer (not web2); Grammar Invariant 1
 - Path β (store grammar as fragment tiddlers) rejected: tightens the bootstrap circle
-- Documented in `packages/lararium-core/src/grammar-invariants.ts` Invariant 2
-
----
-
-## Open Work, In Order
-
-See ROADMAP.md Sprint column for sequencing.
-
-| # | Item | Sprint | Status |
-|---|---|---|---|
-| 1 | `grammar-invariants.ts` Invariant 3 — declare genesis artifact approach | S1 | ✅ Done |
-| 2 | `system-invariants.ts` in `lararium-core` — constitutional declaration | S1 | ✅ Done |
-| 3 | `packages/lararium-node/scripts/build-genesis-island.ts` — build-time genesis builder | S2 | Next |
-| 4 | `loadGenesisIsland()` runtime function | S3 | Locked |
-| 5 | Rewrite `openNodeLarPeer` + `openBrowserLarPeer` to use genesis artifact | S4 | Locked |
-| 6 | Wire `.tw5.cjs` outputs into genesis artifact; verify quine round-trip | S5 | Locked |
 
 ---
 
@@ -114,13 +133,31 @@ See ROADMAP.md Sprint column for sequencing.
 - Path α for grammar bootstrap
 - `catalog-url` as named codec-layer exception (not web2)
 - Vendored plugins optional via `RecipeTiddler.plugins`; no default recipe auto-loads them
-- `.tw5.cjs` format (CJS exports, not IIFE) for TW5 plugin modules
+- CJS format (not IIFE) for TW5 plugin modules — `exports` object provided by TW5's CJS wrapper
+- `Groups` → `Circles` rename complete and settled; `GroupsDoc` is now `CirclesDoc` everywhere
+- Adding to a circle IS the follow (Kowloon model); circle membership never federates
 
 ---
 
-## Likely Next Files To Touch
+## Open Work, In Order
 
-- `packages/lararium-core/src/grammar-invariants.ts` — Invariant 3
-- `packages/lararium-core/src/system-invariants.ts` — create new
-- `packages/lararium-node/scripts/build-genesis-island.ts` — create new (Sprint 2)
-- `packages/lararium-node/src/lararium-island.ts` — `buildGenesisIsland` extraction
+| # | Item | Sprint | Status |
+|---|---|---|---|
+| 1 | `grammar-invariants.ts` Invariant 3 | S1 | ✅ Done |
+| 2 | `system-invariants.ts` constitutional declaration | S1 | ✅ Done |
+| 3 | `build-genesis-island.ts` — build-time genesis builder | S2 | ✅ Done |
+| 4 | `loadGenesisIsland()` runtime function | S3 | ✅ Done |
+| 5 | Rewrite `openNodeLarPeer` to use genesis artifact | S4 | ✅ Done |
+| 6 | Wire `.tw5.js` CJS outputs into genesis; quine round-trip | S5 | 🔴 Active |
+| 7 | `SessionEventLog` per-session append-only doc | S6 | ⬜ Designed |
+| 8 | Circles + Identities capability layer (Keyhive/UCAN) | S7 | ⬜ Designed |
+| 9 | Kowloon bridge — `KowloonDoc` or HTTP adapter | S8 | ⬜ Research pending |
+
+---
+
+## Likely Next Files To Touch (S5)
+
+- `packages/lararium-node/scripts/build-genesis-island.ts` — wire `.tw5.js` CJS blobs into genesis
+- `packages/lararium-tw5/scripts/write-tiddler-memes.ts` — verify CJS splicing pipeline
+- `packages/lararium-core/src/system-invariants.ts` — complete quine invariant stub
+- `pnpm test:quine` script — new file, boot vm + render + hash check

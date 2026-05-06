@@ -161,7 +161,7 @@ Stage position applies to the Lagrange Chorus as a whole unit. How individual no
 ## Edges
 
 <<~ loulou lar:///ha.ka.ba/@lares/api/v0.1/masks >>
-<<~ loulou lar:///ha.ka.ba/@lares/docs/lararium/voices/masks >>
+<<~ loulou lar:///ha.ka.ba/@lares/docs/lares/voices/masks >>
 
 <<~ pranala #implements-meme ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/meme family:control role:implements >>
 <<~ pranala #implements-mask ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/mask family:control role:implements >>

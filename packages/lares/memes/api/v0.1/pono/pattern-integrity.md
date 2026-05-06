@@ -138,7 +138,7 @@ field in its meme MAY be a candidate for ephemeralization once the meme is stabl
 ```
 Stage 0: logic in external TypeScript only (no meme representation)
 Stage 1: TypeScript file has a Heleuma anchor; meme exists with body-sha256
-Stage 2: meme body contains the compiled IIFE; imperative fallback still present
+Stage 2: meme body contains the compiled CJS; imperative fallback still present
 Stage 3: boot-time gate checks mana/confidence/body-sha256; corpus path preferred
 Stage 4: external TypeScript is the fallback only; meme is authoritative
 ```

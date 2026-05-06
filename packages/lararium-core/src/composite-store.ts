@@ -25,7 +25,7 @@ import {
   CATALOG_DOC_URI,
   LARES_DOC_URI,
   IDENTITIES_DOC_URI,
-  GROUPS_DOC_URI,
+  CIRCLES_DOC_URI,
   SESSIONS_DOC_URI,
   corpusLarUri,
   roomLarUri,
@@ -50,7 +50,7 @@ export { corpusLarUri as corpusBagId, roomLarUri as roomBagId };
 //
 //   SOCIAL PLANE
 //   IDENTITIES_DOC_URI principals: operators, agents, services
-//   GROUPS_DOC_URI     collective authority + durable membership
+//   CIRCLES_DOC_URI     collective authority + durable membership
 //   SESSIONS_DOC_URI   live operator-agent session docs
 //
 //   LEAVES (added dynamically)
@@ -67,7 +67,7 @@ export const BAG_IDS = {
   catalog:    CATALOG_DOC_URI,
   lares:      LARES_DOC_URI,
   identities: IDENTITIES_DOC_URI,
-  groups:     GROUPS_DOC_URI,
+  groups:     CIRCLES_DOC_URI,
   sessions:   SESSIONS_DOC_URI,
   draft:      "draft",
   projection: "projection",

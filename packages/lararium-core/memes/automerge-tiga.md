@@ -59,7 +59,7 @@ Six root Automerge docs. Two parallel triangles. One oracle root (ha).
 | Doc | URI | Role |
 |---|---|---|
 | `IdentitiesDoc` | `@identities` | stable principal records — operators, agents, services, devices |
-| `GroupsDoc` | `@groups` | collective authority + durable membership (Keyhive group CRDT) |
+| `CirclesDoc` | `@circles` | collective authority + durable membership (Keyhive group CRDT) |
 | `SessionsDoc` | `@sessions` | live operator-agent session docs; hostful overlays project into these |
 
 The social plane docs carry no SDM force names — function names them.
@@ -77,7 +77,7 @@ Ha holds oracle tiddlers for all five non-ha docs (both planes).
 **Social plane (oracle tiddlers stored in ha):**
 
 5. Ha holds identities. `LarariumDoc.tiddlers[IDENTITIES_DOC_URI].text` = IdentitiesDoc automerge URL.
-6. Ha holds groups. `LarariumDoc.tiddlers[GROUPS_DOC_URI].text` = GroupsDoc automerge URL.
+6. Ha holds groups. `LarariumDoc.tiddlers[CIRCLES_DOC_URI].text` = CirclesDoc automerge URL.
 7. Ha holds sessions. `LarariumDoc.tiddlers[SESSIONS_DOC_URI].text` = SessionsDoc automerge URL.
 
 **Invariants across both planes:**
@@ -95,7 +95,7 @@ ha:          tiddlers["lar:///ha.ka.ba/@lararium"].text    = automerge://…
 ka:          tiddlers["lar:///ha.ka.ba/@catalog"].text     = automerge://…
 ba:          tiddlers["lar:///ha.ka.ba/@lares"].text       = automerge://…
 identities:  tiddlers["lar:///ha.ka.ba/@identities"].text  = automerge://…
-groups:      tiddlers["lar:///ha.ka.ba/@groups"].text      = automerge://…
+groups:      tiddlers["lar:///ha.ka.ba/@circles"].text      = automerge://…
 sessions:    tiddlers["lar:///ha.ka.ba/@sessions"].text    = automerge://…
 ```
 
@@ -128,13 +128,13 @@ Step 2 — ha opens               : LarariumDoc syncs; grammar + widgets availab
           ha reads ka URI       : tiddlers[CATALOG_DOC_URI].text      → CatalogDoc URL
           ha reads ba URI       : tiddlers[LARES_DOC_URI].text        → LaresDoc URL
           ha reads social URIs  : tiddlers[IDENTITIES_DOC_URI].text   → IdentitiesDoc URL
-                                  tiddlers[GROUPS_DOC_URI].text       → GroupsDoc URL
+                                  tiddlers[CIRCLES_DOC_URI].text       → CirclesDoc URL
                                   tiddlers[SESSIONS_DOC_URI].text     → SessionsDoc URL
 Step 3 — ka opens               : CatalogDoc syncs; corpus + room URLs known
 Step 4 — corpus child-docs      : each carries own self-ref tiddler; pos-2 under @catalog
 Step 5 — room leaf              : situates session content
 Step 6 — ba opens               : LaresDoc syncs; personality layer active
-Step 7 — social plane opens     : IdentitiesDoc, GroupsDoc, SessionsDoc sync;
+Step 7 — social plane opens     : IdentitiesDoc, CirclesDoc, SessionsDoc sync;
                                   principal records and session state available
 ```
 

@@ -41,7 +41,7 @@ corpus load.
 
 ### Body
 
-The meme body (between `<<~&#x0002;>>` and `<<~&#x0003;>>`) MUST be a self-contained IIFE JS bundle
+The meme body (between `<<~&#x0002;>>` and `<<~&#x0003;>>`) MUST be a self-contained CJS JS bundle
 with no unresolved external imports. `tiddlywiki` MAY be referenced as the global `$tw` — the host
 TW5 instance provides it at injection time.
 

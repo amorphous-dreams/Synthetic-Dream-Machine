@@ -1,6 +1,6 @@
 # Lararium — Web3 Genesis Artifact Roadmap
 
-> Updated: 2026-05-04
+> Updated: 2026-05-05
 > Branch: feature/lararium-node-3
 > Governing laws: see SESSION.md § Five Architecture Laws
 
@@ -12,6 +12,8 @@ Every peer boots from a single content-addressed genesis artifact — an Automer
 
 The system folds into itself: the genesis artifact carries the engine that deserializes it.
 
+Social graph control inverts: circles are owned by their center, not the platform. Adding to a circle IS the follow. Membership never federates. (Kowloon / jzellis model.)
+
 ---
 
 ## Sprint Summary
@@ -19,11 +21,14 @@ The system folds into itself: the genesis artifact carries the engine that deser
 | Sprint | Name | Status | Goal |
 |---|---|---|---|
 | S0 | Web2 Pono Audit | ✅ Complete | Delete all web2 seed/reconcile residue; harden type safety |
-| S1 | Constitutional Invariants | 🔄 Next | Declare system invariants; update grammar Invariant 3 for genesis approach |
-| S2 | Build-Time Genesis Builder | 🔒 Locked | `build-genesis-island.ts` — produce content-addressed genesis artifact |
-| S3 | Runtime Genesis Loader | 🔒 Locked | `loadGenesisIsland()` — clone and boot from genesis artifact CID |
-| S4 | Peer Factory Rewrites | 🔒 Locked | `openNodeLarPeer` + `openBrowserLarPeer` use genesis loader; no more `seedLarariumDoc` disk walks |
-| S5 | Quine Round-Trip Verification | 🔒 Locked | Wire `.tw5.cjs` into genesis artifact; verify self-hosting round-trip |
+| S1 | Constitutional Invariants | ✅ Complete | Declare system invariants; grammar Invariant 3 for genesis approach |
+| S2 | Build-Time Genesis Builder | ✅ Complete | `build-genesis-island.ts` — deterministic content-addressed genesis artifact |
+| S3 | Runtime Genesis Loader | ✅ Complete | `loadGenesisIsland()` — clone and boot from genesis artifact CID |
+| S4 | Peer Factory Rewrites | ✅ Complete | `openNodeLarPeer` uses genesis loader; `lararium-island.ts` deleted |
+| S5 | Quine Round-Trip Verification | 🔴 Active | Wire `.tw5.js` CJS into genesis; verify self-hosting round-trip |
+| S6 | SessionEventLog | ⬜ Designed | Per-session append-only Automerge doc; `broadcast()` for presence |
+| S7 | Circles + Identities Capability Layer | ⬜ Designed | Keyhive/UCAN device delegation; Seitan token circle invites |
+| S8 | Kowloon Bridge | ⬜ Designed | `KowloonOutbox` draft queue + `KowloonInbox` feed mirror; `elyncia.app` deployment |
 
 ---
 
@@ -133,35 +138,109 @@ The system folds into itself: the genesis artifact carries the engine that deser
 
 ---
 
-## S5 — Quine Round-Trip Verification 🔒
+## S5 — Quine Round-Trip Verification 🔴 Active
 
-**Goal:** The engine that boots the system lives inside the system it boots. Verify the quine property.
+**Goal:** The engine that boots the system lives inside the system it boots.
 
 ### Tasks
 
-- [ ] Ensure all `@lararium/tw5` vite outputs write `.tw5.cjs` format
-- [ ] Wire every `.tw5.cjs` plugin blob into `build-genesis-island.ts`
-- [ ] Boot a node peer from genesis; render the lararium engine tiddlers via the TW5 vm
-- [ ] Verify rendered output matches the source tiddlers (hash check)
-- [ ] Document the quine invariant in `system-invariants.ts` `GENESIS_INVARIANTS`
+- [ ] Confirm all `@lararium/tw5` vite outputs are `.tw5.js` CJS format (done — labels updated)
+- [ ] Wire every `.tw5.js` CJS plugin blob into `build-genesis-island.ts`
+- [ ] Boot a node peer from genesis; render the grammar meme via the TW5 vm
+- [ ] Verify rendered output hash matches source tiddler hash
+- [ ] Write genesis CID as `$:/lararium/genesis-cid` self-ref tiddler into island doc
 
 ### Exit Criteria
 
-- `pnpm test:quine` passes: hash of rendered engine tiddlers === hash of source tiddlers in genesis
-- No external file read required after `genesis.bin` is loaded
+- `pnpm test:quine` passes: hash of rendered grammar meme === hash of source tiddler in genesis
+- No external file read required after `genesis/island.bin` is loaded
+
+---
+
+## S6 — SessionEventLog ⬜ Designed
+
+**Goal:** Per-session append-only event log; ephemeral presence via `broadcast()`.
+
+### Tasks
+
+- [ ] Add `eventLogUrl`, `eventLogHeads` fields to `SessionTiddler` in `social-doc.ts`
+- [ ] Add `SessionEventLog` doc type + `SessionEvent` entry type in `social-doc.ts`
+- [ ] Add `seedSessionEventLog(repo, sessionId)` in `genesis-island.ts`
+- [ ] Document `broadcast()` usage pattern for presence (no separate doc needed)
+
+### Key design decisions
+
+- `docHandle.broadcast()` (automerge-repo `EphemeralMessage`) = presence channel. Never persisted. Direct Yjs-awareness equivalent.
+- `SessionEventLog` = one Automerge doc per session, referenced by `{ url: AutomergeUrl, heads: string[] }` in session tiddler. Supports replay via `Automerge.view(doc, heads)`.
+- Log compaction: patternist.xyz lossless snapshot pattern when event count exceeds threshold.
+
+### Exit Criteria
+
+- Session open creates a `SessionEventLog` doc; URL stored in session tiddler
+- Presence broadcasts on session doc handle; never touches `NodeFSStorageAdapter`
+
+---
+
+## S7 — Circles + Identities Capability Layer ⬜ Designed
+
+**Goal:** `IdentitiesDoc` and `CirclesDoc` acquire real protocol integrity.
+
+### Key design decisions (from research)
+
+- `IdentitiesDoc`: Keyhive person-as-group model — each person = a group of their device `did:key`s; UCAN delegation chain proves "Device B is also me". `IdentityTiddler.verifyingKey` already present.
+- `CirclesDoc`: Keyhive convergent capabilities + Seitan token invitations (@localfirst/auth); nexus admin = founding key for system circles; users = founding key for personal circles. `CircleTiddler.encryptedShareHint` already present.
+- ERA paper (arXiv:2601.22963): epoch-resolved arbitration for concurrent admin revocations.
+
+### Tasks
+
+- [ ] Write `CAPABILITY-LAYER.md` design doc before any code
+- [ ] Implement device delegation chain tiddlers in `IdentitiesDoc`
+- [ ] Implement Seitan token invite flow for `CirclesDoc`
+- [ ] Introduce capability verification: any peer verifies "Device X speaks as Identity Y at level Z" serverlessly
+
+---
+
+## S8 — Kowloon Bridge ⬜ Designed
+
+**Goal:** DreamDeck users draft and publish to Kowloon from the local-first app. `elyncia.app` runs both services.
+
+### Key design decisions (from research)
+
+**Option B wins:** separate bridge docs, social tiga stays clean. The `ha/ka/ba` tiga remains entirely local-first authoritative. The publish step is a deliberate authority handoff (user keypair → server key for ActivityPub signing) — not undermining, intentional boundary.
+
+- **`KowloonOutbox`** — Automerge doc (tiddler-first) storing unpublished drafts as a mutation queue. On publish: POST to Kowloon API, mark `status: "published"` with `remoteRef`. Replicache outbox pattern.
+- **`KowloonInbox`** — Automerge doc caching feed items for display. Refreshed from `/.well-known/kowloon/pull`. Server wins on refresh (not a CRDT peer). Electric SQL shape pattern.
+- Local `CirclesDoc` drives `to`/`canReply`/`canReact` addressing — translated to Kowloon user IDs by the adapter. Circle membership never sent to server.
+
+### Tasks
+
+- [ ] Add `KowloonOutbox` + `DraftTiddler` types (`kowloon-doc.ts` or extend `social-doc.ts`)
+- [ ] Add `KowloonInbox` type
+- [ ] `seedKowloonOutbox(repo)` + `seedKowloonInbox(repo)` in `genesis-island.ts`
+- [ ] Write `packages/lararium-node/src/kowloon-adapter.ts` — POST draft, GET feed shape
+- [ ] Add Kowloon URLs to oracle tiddlers in island doc
+- [ ] `elyncia.app` deployment: Lares node + Kowloon node on same domain, separate services
+
+### References
+
+`packages/lares/lararium-research/KOWLOON-BRIDGE.md`
 
 ---
 
 ## Cross-Sprint Dependencies
 
 ```
-S0 Cleanup
-  └── S1 Invariants
-        └── S2 Build-Time Genesis
-              ├── S3 Runtime Loader
-              │     └── S4 Peer Factories
-              │           └── S5 Quine Verification
-              └── (S3 and S4 unlock together after S2)
+S0 Cleanup ✅
+  └── S1 Invariants ✅
+        └── S2 Build-Time Genesis ✅
+              ├── S3 Runtime Loader ✅
+              │     └── S4 Peer Factories ✅
+              │           └── S5 Quine Closure 🔴 ← HERE
+              │                 └── S6 SessionEventLog ⬜
+              │                 └── S7 Capability Layer ⬜
+              │                       └── (S6+S7 can run in parallel)
+              │                             └── S8 Kowloon Bridge ⬜
+              └── (S3 and S4 unlocked together after S2)
 ```
 
 ---
@@ -172,5 +251,5 @@ S0 Cleanup
 |---|---|
 | `openBrowserLarPeer` wiring | No browser test harness yet; architecture same as node peer |
 | Federation / multi-peer sync | Correct after genesis stabilizes; not before |
-| Kowloon feed integration | DreamDeck epic; depends on stable peer factory |
 | Grammar Invariant 4+ | Block until quine round-trip proves Invariant 3 |
+| Keyhive WASM integration | `encryptedShareHint` field is the forward-compatible hook; Keyhive WASM not yet stable |

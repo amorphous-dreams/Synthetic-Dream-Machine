@@ -16,7 +16,7 @@
     → Signal Tags: packages/lares/memes/docs/lararium/signal/ branch
 
   [SUPERSEDED] Voice architecture reference
-    → packages/lares/memes/docs/lararium/voices/coordinators.md
+    → packages/lares/memes/docs/lares/voices/coordinators.md
 
   [SUPERSEDED] Sub-agent Handoff Rule
     → signal/hud.md and signal/micro-trace.md

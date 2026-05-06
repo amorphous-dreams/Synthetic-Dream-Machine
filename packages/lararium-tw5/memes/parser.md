@@ -31,7 +31,7 @@ Stages:
 
 Invariants:
 - Pure function — no I/O, no side effects
-- Runs inside TW5 VM (compiles into `memetic-parser` IIFE module)
+- Runs inside TW5 VM (compiles into `memetic-parser` CJS module)
 - No AST trees cross the VM boundary — caller extracts edges via `edgesFromAst`, discards tree
 
 ## edgesFromAst

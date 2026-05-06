@@ -113,7 +113,7 @@ lares/
 
 - `lar:///ha.ka.ba/@lares/api/v0.1/mu` — null-oracle core, five-season loop
 - `lar:///ha.ka.ba/@lares/api/v0.1/lararium` — canonical seat and hydration bridge
-- `lar:///ha.ka.ba/@lares/docs/lararium/voices/` — coordinator house, worker swarm, mask layer
+- `lar:///ha.ka.ba/@lares/docs/lares/voices/` — coordinator house, worker swarm, mask layer
 - `lar:///ha.ka.ba/@lares/docs/lararium/degraded-states` — named failure modes and correction handles
 - `lar:///ha.ka.ba/@lares/docs/lararium/signal/` — signal, HUD, and exchange boundary docs
 - `lar:///grammars/memetic-wikitext` — sigil registry and parse rules

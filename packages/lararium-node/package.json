@@ -16,6 +16,7 @@
   },
   "scripts": {
     "build": "tsc",
+    "build:genesis": "tsx scripts/build-genesis-island.ts",
     "typecheck": "tsc --noEmit",
     "test": "NODE_OPTIONS=--experimental-vm-modules pnpm exec jest --config jest.config.cjs",
     "dev": "tsx src/main.ts",

@@ -1012,7 +1012,7 @@ exports.parseMemeText = parseMemeText;
 
 ## Source
 
-Compiled IIFE artifact. Canonical TS source: `packages/lararium-tw5/src/meme-ast-entry.ts` (`source-symbol = "parseMemeText"`).
+Compiled CJS artifact. Canonical TS source: `packages/lararium-tw5/src/meme-ast-entry.ts` (`source-symbol = "parseMemeText"`).
 Anchor meme: `lar:///ha.ka.ba/@lararium/tw5/modules/meme-ast`.
 
 Run `pnpm --filter @lararium/tw5 build:tiddlers` to regenerate.

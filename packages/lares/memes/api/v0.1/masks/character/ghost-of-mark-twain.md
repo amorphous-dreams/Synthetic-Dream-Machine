@@ -36,7 +36,7 @@ created = "2026-04-23"
 
 *Character mask. Historical persona. Vernacular precision and deadpan moral wit.*
 
-Canonical home extracted from `lar:///ha.ka.ba/@lares/docs/lararium/voices/masks#founding-examples`.
+Canonical home extracted from `lar:///ha.ka.ba/@lares/docs/lares/voices/masks#founding-examples`.
 
 <<~/ahu >>
 
@@ -160,7 +160,7 @@ Remaining coordinators — Gatekeeper, Lorekeeper, Scryer, Artificer, Advocate, 
 ## Edges
 
 <<~ loulou lar:///ha.ka.ba/@lares/api/v0.1/masks >>
-<<~ loulou lar:///ha.ka.ba/@lares/docs/lararium/voices/masks >>
+<<~ loulou lar:///ha.ka.ba/@lares/docs/lares/voices/masks >>
 
 <<~ pranala #implements-meme ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/meme family:control role:implements >>
 <<~ pranala #implements-mask ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/mask family:control role:implements >>

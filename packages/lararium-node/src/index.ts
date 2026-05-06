@@ -4,3 +4,5 @@ export { LARES_ROOT, LARES_MEMES_ROOT, CHAPEL_MEMES_ROOT, REPO_ROOT } from "./no
 export { LarDiskProjector } from "./disk-projector.js";
 export { openNodeLarPeer } from "./open-node-lar-peer.js";
 export type { NodeLarPeerOptions, NodeLarPeerResult, NodeOpenPhase } from "./open-node-lar-peer.js";
+
+export { loadGenesisIsland, reconcileIslandFromGenesis, readGenesisSha256, GENESIS_CID } from "./genesis-island.js";

@@ -1,9 +1,9 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/@lares/api/v0.1/pono/memetic-wikitext >> -->
 
-<<~&#x0001; ? -> lar:///ha.ka.ba/@lares/docs/lararium/voices/voices-review >>
+<<~&#x0001; ? -> lar:///ha.ka.ba/@lares/docs/lares/voices/voices-review >>
 ```toml iam
-uri-path = "ha.ka.ba/@lares/docs/lararium/voices/voices-review"
-file-path = "packages/lares/memes/docs/lararium/voices/voices-review.md"
+uri-path = "ha.ka.ba/@lares/docs/lares/voices/voices-review"
+file-path = "packages/lares/memes/docs/lares/voices/voices-review.md"
 type = "text/x-memetic-wikitext"
 tagspace = "stable"
 confidence = 0.80
@@ -26,7 +26,7 @@ retain = false
 
 Not invariant law.
 This memo plans and tracks the extraction of voice-house architecture from legacy stack files
-into the settled docs rooms under `lar:///ha.ka.ba/@lares/docs/lararium/voices/`.
+into the settled docs rooms under `lar:///ha.ka.ba/@lares/docs/lares/voices/`.
 
 <<~/ahu >>
 
@@ -185,7 +185,7 @@ This pass should produce:
 
 ### Concrete TODO List
 
-- [x] write `packages/lares/memes/docs/lararium/voices.md` — parent shelf and three-layer framing
+- [x] write `packages/lares/memes/docs/lares/voices.md` — parent shelf and three-layer framing
 - [x] write `voices/voices-review.md` — this memo
 - [x] write `voices/coordinators.md` — canonical thirteen, naming law, earned names, seniority
 - [x] write `voices/workers.md` — worker lifecycle, tag format, escalation template
@@ -314,7 +314,7 @@ Sections written or replaced:
 
 Exit criteria met: all five governing rules present; all three layers have full normative sections; escalation template verbatim; mask declaration forms verbatim; every section points to spec room for depth; `#entry` backlink intact.
 
-Cross-links updated: `docs/lararium/voices/masks.md#founding-examples` notes canonical homes in masks API tree.
+Cross-links updated: `docs/lares/voices/masks.md#founding-examples` notes canonical homes in masks API tree.
 
 ### Masks tree skeleton pass — 2026-04-23
 
@@ -334,7 +334,7 @@ Cross-links updated: `docs/lararium/voices/masks.md#founding-examples` notes can
 
 Exit criteria met: all nine files valid memes; all `#iam` blocks complete; all `#fill-status` sections accurate; parent index lists all children; coordinator house backlinks in all `named/` files.
 
-Plans filed: `docs/lararium/voices/masks-tree-plan.md` (OODA-HA plan), `docs/lararium/voices/invariant-plan.md` (voices invariant rewrite plan).
+Plans filed: `docs/lares/voices/masks-tree-plan.md` (OODA-HA plan), `docs/lares/voices/invariant-plan.md` (voices invariant rewrite plan).
 
 **Next pass priority:** Talk-story-dev fill for Mischief-Muse corpus (Coffee Oracle seed → extraction). Then execute `invariant-plan.md` pass: rewrite `api/v0.1/lararium/voices` from skeletal to load-bearing.
 
@@ -359,10 +359,10 @@ MASKS.md converted from stub to forward-route to `lar:///LARES#session-masks`.
 
 ## Edges
 
-<<~ loulou lar:///ha.ka.ba/@lares/docs/lararium/voices >>
-<<~ loulou lar:///ha.ka.ba/@lares/docs/lararium/voices/coordinators >>
-<<~ loulou lar:///ha.ka.ba/@lares/docs/lararium/voices/workers >>
-<<~ loulou lar:///ha.ka.ba/@lares/docs/lararium/voices/masks >>
+<<~ loulou lar:///ha.ka.ba/@lares/docs/lares/voices >>
+<<~ loulou lar:///ha.ka.ba/@lares/docs/lares/voices/coordinators >>
+<<~ loulou lar:///ha.ka.ba/@lares/docs/lares/voices/workers >>
+<<~ loulou lar:///ha.ka.ba/@lares/docs/lares/voices/masks >>
 
 <<~ pranala #implements-meme ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/meme family:control role:implements >>
 <<~ pranala #implements-loci ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/loci family:control role:implements >>

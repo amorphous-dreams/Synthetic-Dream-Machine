@@ -2710,7 +2710,7 @@ The URI grammar carries the topology.  `@` at pos-1 = root doc (exactly 6 reserv
 Four OODA loops in sequence, each with a build gate:
 
 - **Loop 1 (breaking):** remap `corpusLarUri` to pos-2 + add 6-root grammar docblock + add 3 social plane URI constants + fix browser/node peer CORPUS_PREFIX + update resolver named-doc comment
-- **Loop 2 (additive):** create `social-doc.ts` (IdentitiesDoc / GroupsDoc / SessionsDoc) + extend `reconcileWellKnownTiddlers` to 6 oracle tiddlers + boot social docs in both peers
+- **Loop 2 (additive):** create `social-doc.ts` (IdentitiesDoc / CirclesDoc / SessionsDoc) + extend `reconcileWellKnownTiddlers` to 6 oracle tiddlers + boot social docs in both peers
 - **Loop 3 (additive):** create `recipe.ts` (RecipeTiddler + `recipeUri()`) + `seedDefaultRecipes` in island + wire into node peer boot
 - **Test gate:** update `composite-store.test.ts` to assert lar: URI bag IDs (M21 law), remove stale `corpus:slug` and `BAG_IDS.system`/`BAG_IDS.room` expectations
 
@@ -2718,13 +2718,13 @@ Four OODA loops in sequence, each with a build gate:
 
 | File | Change |
 |---|---|
-| `lararium-doc.ts` | 6-root 2-plane grammar docblock; `IDENTITIES_DOC_URI`, `GROUPS_DOC_URI`, `SESSIONS_DOC_URI`; `corpusLarUri` → pos-2 `@catalog/@{slug}` |
+| `lararium-doc.ts` | 6-root 2-plane grammar docblock; `IDENTITIES_DOC_URI`, `CIRCLES_DOC_URI`, `SESSIONS_DOC_URI`; `corpusLarUri` → pos-2 `@catalog/@{slug}` |
 | `composite-store.ts` | Import + add social plane to `BAG_IDS`; updated recipe order comment |
 | `resolver.ts` | Named-doc branch comment updated to describe pos-1 / pos-2 `@` law |
 | `open-browser-lar-peer.ts` | `CORPUS_PREFIX` → `"lar:///ha.ka.ba/@catalog/@"`; drop exclusion list; import social URI constants + empty constructors; social boot block |
 | `open-node-lar-peer.ts` | Switch corpus discovery to `catalog.tiddlers` oracle (was `catalog.corpora`); same `CORPUS_PREFIX` fix; social boot block; `seedDefaultRecipes` call |
-| `lararium-island.ts` | Import social types + `recipeUri`; `reconcileWellKnownTiddlers` extended to 6 args; `seedIdentitiesDoc`/`seedGroupsDoc`/`seedSessionsDoc`; `seedDefaultRecipes` |
-| `social-doc.ts` *(new)* | `IdentitiesDoc`, `GroupsDoc`, `SessionsDoc` + empty constructors; barrel-exported from `index.ts` |
+| `lararium-island.ts` | Import social types + `recipeUri`; `reconcileWellKnownTiddlers` extended to 6 args; `seedIdentitiesDoc`/`seedCirclesDoc`/`seedSessionsDoc`; `seedDefaultRecipes` |
+| `social-doc.ts` *(new)* | `IdentitiesDoc`, `CirclesDoc`, `SessionsDoc` + empty constructors; barrel-exported from `index.ts` |
 | `recipe.ts` *(new)* | `RecipeTiddler` interface + `recipeUri(root, name)` helper; barrel-exported from `index.ts` |
 | `composite-store.test.ts` | Updated to M21 bag ID law: `BAG_IDS.lararium` replaces `system`, `roomLarUri("test-room")` replaces `BAG_IDS.room`, corpus expectations assert full lar: URI |
 
@@ -2896,7 +2896,7 @@ M21–M22 = Phase 4 open (TW5 recipe from topology + connect screen).
 **Problem statement:**
 Every Automerge doc in the Lararium stack carried its own flat or partial tiddler map shape.
 `MutableLarRecord` lived in `meme-store-doc.ts` causing circular-import risk and TS2308 when
-re-exported via two paths. Social plane docs (`IdentitiesDoc`, `GroupsDoc`, `SessionsDoc`) had
+re-exported via two paths. Social plane docs (`IdentitiesDoc`, `CirclesDoc`, `SessionsDoc`) had
 separate typed Records outside `tiddlers`. Seed functions wrote flat-doc entries via unsafe
 `(doc as unknown as Record<string, unknown>)[title]` casts. Corpus self-ref tiddlers used the
 same broken flat-write pattern. `AutomergeDocStore` only accepted `DocHandle<MemeStoreDoc>`,
@@ -2916,7 +2916,7 @@ descriptor tiddler in `tiddlers` — queryable from TW5 without TS interop.
 | `meme-store-doc.ts` — TS2308 fix | `meme-store-doc.ts` | Removed duplicate `MutableLarRecord` declaration; now `import type { LarDoc, MutableLarRecord } from "./base-doc.js"` + `export type { MutableLarRecord }` re-export for backward compat |
 | `lararium-doc.ts` | `lararium-doc.ts` | `extends LarDoc`; imports `MutableLarRecord` from `base-doc`; `tiddlers` required (not optional) |
 | `catalog.ts` | `catalog.ts` | `extends LarDoc`; imports from `base-doc`; `tiddlers` required; `corpora`/`rooms` marked `@deprecated` |
-| `social-doc.ts` (full rewrite) | `social-doc.ts` | Tiddler-first, Keyhive fields; `IdentitiesDoc/GroupsDoc/SessionsDoc` extend `LarDoc` with only `tiddlers`; no extra Records; typed read helpers `readIdentityTiddler`, `readGroupTiddler`, `readSessionTiddler`; URI helpers `identityTiddlerUri`, `groupTiddlerUri`, `sessionTiddlerUri` |
+| `social-doc.ts` (full rewrite) | `social-doc.ts` | Tiddler-first, Keyhive fields; `IdentitiesDoc/CirclesDoc/SessionsDoc` extend `LarDoc` with only `tiddlers`; no extra Records; typed read helpers `readIdentityTiddler`, `readCircleTiddler`, `readSessionTiddler`; URI helpers `identityTiddlerUri`, `circleTiddlerUri`, `sessionTiddlerUri` |
 | `lararium-doc-store.ts` | `lararium-doc-store.ts` | `DocWithTiddlers.tiddlers` required (not optional); `MutableLarRecord` imported from `base-doc` |
 | `automerge-doc-store.ts` | `automerge-doc-store.ts` | Handle type widened `DocHandle<MemeStoreDoc>` → `DocHandle<LarDoc>`; social doc handles pass without casts |
 | `seedLaresDoc` flat-write fix | `lararium-island.ts` | `(doc as unknown as Record<...>)[title]` → `doc.tiddlers[title]` pattern; `emptyMemeStoreDoc()` factory |
@@ -3175,7 +3175,7 @@ descriptor tiddler in `tiddlers` — queryable from TW5 without TS interop.
 
 - `operator-key.ts` held a stub — no keypair generation, no DID derivation, no social doc write
 - `IdentitiesDoc` seeded on first boot but left empty (no operator principal ever written)
-- `build:modules` and `build:heleuma` were separate pipelines; heleuma did not own IIFE packaging
+- `build:modules` and `build:heleuma` were separate pipelines; heleuma did not own CJS packaging
 - `source-symbol` in `sync-heleuma.ts` extracted single named exports only; no whole-file mode
 - Keypair file used a fixed name `.operator-key.json` — multi-developer local dev would collide
 - `did:web:github.com:{login}` sketched as principal ID — web2 smell, requires GitHub availability
@@ -3186,15 +3186,15 @@ descriptor tiddler in `tiddlers` — queryable from TW5 without TS interop.
   - Format: `"did:key:z" + base58btc(0xed 0x01 || 32-byte-pubkey)` (multicodec `0xed01`, varint of `0x1300`)
   - Keyhive BeeKEM alignment: `verifyingKey` field = upgrade slot for CGKA group key agreement
 - Keypair-precedes-docs law: Ed25519 device identity must be established before any Automerge doc opens
-- Causal-islands law governs write path: `IdentitiesDoc` and `GroupsDoc` are separate islands from room bag;
+- Causal-islands law governs write path: `IdentitiesDoc` and `CirclesDoc` are separate islands from room bag;
   TW5 sync adaptor targets room bag only → ceremony writes MUST use direct `handle.change()`
-- TW5-VM-first principle applies to ceremony LOGIC (did:key derivation, tiddler field construction lives in TW5 module / compiled IIFE); write PATH uses Automerge handles directly — orthogonal concerns
-- `build:heleuma --commit` should own the full TS→IIFE cycle; `source-symbol = "*"` enables whole-file `#source` ahu for small composable modules
+- TW5-VM-first principle applies to ceremony LOGIC (did:key derivation, tiddler field construction lives in TW5 module / compiled CJS); write PATH uses Automerge handles directly — orthogonal concerns
+- `build:heleuma --commit` should own the full TS→CJS cycle; `source-symbol = "*"` enables whole-file `#source` ahu for small composable modules
 - GitHub CLI login state drives keypair file naming for local dev — different developers each get their own device keypair; keypair remains random Ed25519, not derived from GitHub credentials
 
 ⊘ **Decide:**
 
-- `cold-boot-ceremony.ts` in `@lararium/tw5` — self-contained IIFE; exports `didKeyFromVerifyingKey` + `buildCeremonyTiddlers`
+- `cold-boot-ceremony.ts` in `@lararium/tw5` — self-contained CJS; exports `didKeyFromVerifyingKey` + `buildCeremonyTiddlers`
 - `operator-key.ts` in `lararium-node` — real `generateKeyPairSync("ed25519")`; login-keyed file naming; `OperatorIdentity = { verifyingKey, displayName? }`
 - `sync-heleuma.ts` — `source-symbol = "*"` whole-file pass-through; `--commit` spawns `write-tiddler-memes.ts` subprocess
 - Ceremony write in `open-node-lar-peer.ts` — `socialPlaneIsNew` gate; direct `identitiesHandle.change()` + `groupsHandle.change()`; idempotency guard on `doc.tiddlers[t.title]`
@@ -3203,11 +3203,11 @@ descriptor tiddler in `tiddlers` — queryable from TW5 without TS interop.
 
 | File | Change |
 |---|---|
-| `lararium-tw5/src/cold-boot-ceremony.ts` (NEW) | `base58btcEncode`, `didKeyFromVerifyingKey`, `buildCeremonyTiddlers` — no external deps, IIFE-safe |
+| `lararium-tw5/src/cold-boot-ceremony.ts` (NEW) | `base58btcEncode`, `didKeyFromVerifyingKey`, `buildCeremonyTiddlers` — no external deps, CJS-safe |
 | `lararium-tw5/src/index.ts` | Export `buildCeremonyTiddlers`, `didKeyFromVerifyingKey`, `CeremonyTiddler` |
 | `lararium-tw5/vite.tiddlers.config.ts` | Add `cold-boot-ceremony` to `MODULE_ENTRIES` |
 | `lararium-tw5/memes/modules/cold-boot-ceremony.md` (NEW) | Anchor meme; `heleuma=ka`, `source-symbol="*"`, `module-ref` → tw5 compiled tiddler |
-| `lararium-tw5/memes/modules/cold-boot-ceremony-tw5.md` (NEW) | Compiled IIFE tiddler; `type=application/javascript`, `module-type=library` |
+| `lararium-tw5/memes/modules/cold-boot-ceremony-tw5.md` (NEW) | Compiled CJS tiddler; `type=application/javascript`, `module-type=library` |
 | `lararium-tw5/scripts/sync-heleuma.ts` | `source-symbol="*"` whole-file mode; `--commit` spawns `write-tiddler-memes.ts` |
 | `lararium-node/src/operator-key.ts` (REPLACED) | Real `generateKeyPairSync("ed25519")`; GitHub-login-keyed file; `exactOptionalPropertyTypes`-safe return |
 | `lararium-node/src/open-node-lar-peer.ts` | `operatorIdentity?` option; `socialPlaneIsNew` gate; ceremony call with direct handle writes |
@@ -3218,7 +3218,7 @@ descriptor tiddler in `tiddlers` — queryable from TW5 without TS interop.
 ⤴ **Advance:**
 
 164 tests (84 core + 16 tldraw + 52 tw5 + 16 node, 4 node skipped). Build clean.
-Causal-islands sanity check passed: ceremony LOGIC in TW5 IIFE module; ceremony WRITES via direct `handle.change()`.
+Causal-islands sanity check passed: ceremony LOGIC in TW5 CJS module; ceremony WRITES via direct `handle.change()`.
 `did:key` alignment with Brooklyn Zelenka / UCAN / Keyhive BeeKEM confirmed.
 
 ---
@@ -3229,7 +3229,7 @@ Causal-islands sanity check passed: ceremony LOGIC in TW5 IIFE module; ceremony 
 
 ⊙ **Observe:** All anchor memes (`heleuma = "ka"`) for packaged TW5 tiddlers were missing `#source` ahu slots. The compiled `-tw5.md` tiddlers had no backlink to their canonical source. Deserializer anchor meme was explicitly called out as a pre-existing condition. `node-host.md` and `tw5-widgets.md` hold non-packageable Node/barrel code with no source listing. `tw5-modules.md` (bundle descriptor) had no build provenance record.
 
-↻ **Orient:** Quine law requires the wiki to be able to regenerate its source files. Self-documenting tiddler = anchor meme with `#source` ahu holding the live TS source. Compiled `-tw5.md` artifacts should carry a backlink to their anchor, not the full source (the IIFE/CJS body IS the compiled artifact). Non-packageable code (Node paths, barrel re-exports) gets a source listing tiddler noting why it can't be packaged as IIFE.
+↻ **Orient:** Quine law requires the wiki to be able to regenerate its source files. Self-documenting tiddler = anchor meme with `#source` ahu holding the live TS source. Compiled `-tw5.md` artifacts should carry a backlink to their anchor, not the full source (the CJS/CJS body IS the compiled artifact). Non-packageable code (Node paths, barrel re-exports) gets a source listing tiddler noting why it can't be packaged as CJS.
 
 ⊘ **Decide:** Four anchor memes get full `#source` ahu + `source-symbol = "*"`. All 17 `-tw5.md` compiled tiddlers get `#source` ahu with anchor backlink + build command. Agent handles the batch `-tw5.md` updates in parallel.
 
@@ -3249,17 +3249,17 @@ Causal-islands sanity check passed: ceremony LOGIC in TW5 IIFE module; ceremony 
 
 ### M28 Loop 3 — CJS Module Wrapper Cleanup (2026-05-04)
 
-**Sprint: TW5 module system alignment — IIFE wrapper removal**
+**Sprint: TW5 module system alignment — CJS wrapper removal**
 
-⊙ **Observe:** `vite.tiddlers.config.ts` used `format: 'iife'` which produced:
+⊙ **Observe:** `vite.tiddlers.config.ts` used `format: 'cjs'` which produced:
 ```js
 var __lar_X = (function(exports) { exports.X = X; return exports; })({});
 ```
-The IIFE's `exports` parameter is a fresh `{}` — TW5's injected `exports` object is never touched. Every `require("lar:///...{module}")` returns `{}`. Widget registration, deserializer registration, and library module exports were all broken. `window.__lararium_tw5_modules` global declared in `vite.bundle.config.ts` had zero runtime readers (dead web2 remnant). All 17 `dist-widgets/*.iife.js` files had misleading extension — not IIFEs after the fix.
+The CJS's `exports` parameter is a fresh `{}` — TW5's injected `exports` object is never touched. Every `require("lar:///...{module}")` returns `{}`. Widget registration, deserializer registration, and library module exports were all broken. `window.__lararium_tw5_modules` global declared in `vite.bundle.config.ts` had zero runtime readers (dead web2 remnant). All 17 `dist-widgets/*.cjs.js` files had misleading extension — not IIFEs after the fix.
 
-↻ **Orient:** TW5 wraps all plugin tiddler code in its own CommonJS scope, injecting real `exports`. CJS output (`format: 'cjs'`) targets TW5's actual `exports` object directly. Deserializer needs MIME-key footer (`exports["text/x-memetic-wikitext"] = exports.memeticWikitextDeserializer`) since `"text/x-memetic-wikitext"` is not a valid TypeScript export identifier. `.iife.js` suffix → `.tw5.js` (format-agnostic; describes what the file IS). `vite.bundle.config.ts` gets same treatment; `write-tiddler-memes.ts` + `write-module-meme.ts` updated to match.
+↻ **Orient:** TW5 wraps all plugin tiddler code in its own CommonJS scope, injecting real `exports`. CJS output (`format: 'cjs'`) targets TW5's actual `exports` object directly. Deserializer needs MIME-key footer (`exports["text/x-memetic-wikitext"] = exports.memeticWikitextDeserializer`) since `"text/x-memetic-wikitext"` is not a valid TypeScript export identifier. `.cjs.js` suffix → `.tw5.js` (format-agnostic; describes what the file IS). `vite.bundle.config.ts` gets same treatment; `write-tiddler-memes.ts` + `write-module-meme.ts` updated to match.
 
-⊘ **Decide:** `format: 'cjs'`, remove IIFE `name:`, add `esModule: false` + `exports: "named"` in rollup output, footer injection for deserializer MIME key, rename all dist files and build pipeline references.
+⊘ **Decide:** `format: 'cjs'`, remove CJS `name:`, add `esModule: false` + `exports: "named"` in rollup output, footer injection for deserializer MIME key, rename all dist files and build pipeline references.
 
 ⊕ **Act:**
 
@@ -3267,14 +3267,14 @@ The IIFE's `exports` parameter is a fresh `{}` — TW5's injected `exports` obje
 |---|---|
 | `vite.tiddlers.config.ts` | `formats: ["cjs"]`; removed `name:`; `esModule: false`, `exports: "named"`; MIME footer for deserializer; `fileName → *.tw5.js`; unused `defineConfig` import removed |
 | `vite.bundle.config.ts` | `formats: ["cjs"]`; removed `name:`, `external:`, `globals:`; `esModule: false`, `exports: "named"`; dead `window.__lararium_tw5_modules` comment purged; `fileName → *.tw5.js` |
-| `scripts/write-tiddler-memes.ts` | `.iife.js → .tw5.js`; removed unused `root`/`repoRoot` import |
-| `scripts/write-module-meme.ts` | `.iife.js → .tw5.js` |
+| `scripts/write-tiddler-memes.ts` | `.cjs.js → .tw5.js`; removed unused `root`/`repoRoot` import |
+| `scripts/write-module-meme.ts` | `.cjs.js → .tw5.js` |
 | `src/meme-ast-entry.ts` | Stale `__lar_meme_ast` global comment replaced with CJS module-type note |
-| `dist-widgets/*.iife.js` (17 files) | Renamed → `*.tw5.js`; rebuilt with CJS output |
-| `dist-bundle/lararium-tw5-modules.iife.js` | Renamed → `lararium-tw5-modules.tw5.js` |
+| `dist-widgets/*.cjs.js` (17 files) | Renamed → `*.tw5.js`; rebuilt with CJS output |
+| `dist-bundle/lararium-tw5-modules.cjs.js` | Renamed → `lararium-tw5-modules.tw5.js` |
 | All 17 `*-tw5.md` meme bodies | Re-spliced: `var __lar_X = (function(exports){...})({})` wrapper gone; direct `exports.X = X` |
 
-⤴ **Advance:** 164 tests pass. Build clean. No `.iife.js` files remain anywhere. `require()` calls to all TW5 module tiddlers now return correct exports for the first time.
+⤴ **Advance:** 164 tests pass. Build clean. No `.cjs.js` files remain anywhere. `require()` calls to all TW5 module tiddlers now return correct exports for the first time.
 
 ↺ **M29 candidates:**
 - `TW5WorkerProxy` passed as `vmFactory` at call site (Sprint 6 browser Worker isolation)

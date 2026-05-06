@@ -2001,7 +2001,7 @@ function parseTaploFields(toml, warnings = [], context = "#iam") {
 /**
 * deserializer — TW5 causal-island boundary module for text/x-memetic-wikitext.
 *
-* Heleuma ba: this TS source compiles to an IIFE plugin tiddler at
+* Heleuma ba: this TS source compiles to an CJS plugin tiddler at
 * lar:///ha.ka.ba/@lares/api/v0.1/lararium/modules/deserializer
 * (module-type: tiddlerdeserializer, key: text/x-memetic-wikitext).
 *
@@ -2143,7 +2143,7 @@ exports["text/x-memetic-wikitext"] = exports.memeticWikitextDeserializer;
 
 ## Source
 
-Compiled IIFE artifact. Canonical TS source: `packages/lararium-tw5/src/deserializer.ts` (`source-symbol = "memeticWikitextDeserializer"`).
+Compiled CJS artifact. Canonical TS source: `packages/lararium-tw5/src/deserializer.ts` (`source-symbol = "memeticWikitextDeserializer"`).
 Anchor meme: `lar:///ha.ka.ba/@lararium/tw5/modules/deserializer`.
 
 Run `pnpm --filter @lararium/tw5 build:tiddlers` to regenerate.

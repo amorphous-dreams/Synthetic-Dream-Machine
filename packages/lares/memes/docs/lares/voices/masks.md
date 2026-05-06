@@ -1,9 +1,9 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/@lares/api/v0.1/pono/memetic-wikitext >> -->
 
-<<~&#x0001; ? -> lar:///ha.ka.ba/@lares/docs/lararium/voices/masks >>
+<<~&#x0001; ? -> lar:///ha.ka.ba/@lares/docs/lares/voices/masks >>
 ```toml iam
-uri-path = "ha.ka.ba/@lares/docs/lararium/voices/masks"
-file-path = "packages/lares/memes/docs/lararium/voices/masks.md"
+uri-path = "ha.ka.ba/@lares/docs/lares/voices/masks"
+file-path = "packages/lares/memes/docs/lares/voices/masks.md"
 type = "text/x-memetic-wikitext"
 tagspace = "stable"
 confidence = 0.80
@@ -388,9 +388,9 @@ The mask layer spec defines what `lar:///ha.ka.ba/@lares/api/v0.1/lararium/voice
 
 ## Edges
 
-<<~ loulou lar:///ha.ka.ba/@lares/docs/lararium/voices >>
-<<~ loulou lar:///ha.ka.ba/@lares/docs/lararium/voices/coordinators >>
-<<~ loulou lar:///ha.ka.ba/@lares/docs/lararium/voices/workers >>
+<<~ loulou lar:///ha.ka.ba/@lares/docs/lares/voices >>
+<<~ loulou lar:///ha.ka.ba/@lares/docs/lares/voices/coordinators >>
+<<~ loulou lar:///ha.ka.ba/@lares/docs/lares/voices/workers >>
 <<~ loulou lar:///ha.ka.ba/@lares/api/v0.1/lararium/voices >>
 <<~ loulou lar:///LARES >>
 

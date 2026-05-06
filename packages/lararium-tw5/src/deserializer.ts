@@ -1,7 +1,7 @@
 /**
  * deserializer — TW5 causal-island boundary module for text/x-memetic-wikitext.
  *
- * Heleuma ba: this TS source compiles to an IIFE plugin tiddler at
+ * Heleuma ba: this TS source compiles to an CJS plugin tiddler at
  * lar:///ha.ka.ba/@lares/api/v0.1/lararium/modules/deserializer
  * (module-type: tiddlerdeserializer, key: text/x-memetic-wikitext).
  *
@@ -43,7 +43,7 @@ const CONTROL_SLOTS = new Set([
 // memeticWikitextDeserializer — the TW5 module export
 //
 // TW5 registers tiddlerdeserializer modules keyed by content-type.
-// The compiled IIFE exports: exports["text/x-memetic-wikitext"] = this function.
+// The compiled CJS exports: exports["text/x-memetic-wikitext"] = this function.
 // ---------------------------------------------------------------------------
 
 export function memeticWikitextDeserializer(

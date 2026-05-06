@@ -4,7 +4,7 @@
  * Social plane = three root docs parallel to the content Tiga (ha/ka/ba):
  *
  *   @identities  IdentitiesDoc  — stable principal records
- *   @groups      GroupsDoc      — collective authority + durable membership
+ *   @circles      CirclesDoc      — collective authority + durable membership
  *   @sessions    SessionsDoc    — live operator-agent session docs
  *
  * TIDDLER-FIRST (M24 alignment):
@@ -14,7 +14,7 @@
  *
  *   Each entity = one tiddler at its canonical lar: URI:
  *     principal  →  identityTiddlerUri(did)   = "@identities/{did}"
- *     group      →  groupTiddlerUri(id)        = "@groups/{id}"
+ *     group      →  circleTiddlerUri(id)        = "@circles/{id}"
  *     session    →  sessionTiddlerUri(id)      = "@sessions/{id}"
  *
  * KEYHIVE / INK & SWITCH / ZELENKA:
@@ -23,9 +23,9 @@
  *
  *   IdentityTiddler.verifyingKey     — Ed25519 public key (hex); basis for DID
  *                                      capability delegation and actor-ID derivation
- *   GroupTiddler.encryptedShareHint  — BeeKEM encrypted share hint for key recovery
+ *   CircleTiddler.encryptedShareHint  — BeeKEM encrypted share hint for key recovery
  *                                      across group membership changes
- *   GroupTiddler.capabilityPolicy    — policy expression, e.g. "keyhive:{groupUri}"
+ *   CircleTiddler.capabilityPolicy    — policy expression, e.g. "keyhive:{groupUri}"
  *   SessionTiddler.capabilityToken   — ConcAp / UCAN token proving session authority
  *
  *   All fields arrive via CRDT sync — queryable from TW5 `[field[verifyingKey]]`
@@ -63,10 +63,10 @@ export function identityTiddlerUri(did: string): string {
  * Canonical tiddler URI for a group.
  *
  * @param id   - Group ID (short slug or UUID)
- * @returns    - e.g. "lar:///ha.ka.ba/@groups/admins"
+ * @returns    - e.g. "lar:///ha.ka.ba/@circles/admins"
  */
-export function groupTiddlerUri(id: string): string {
-  return `lar:///${SOCIAL_HOST}/@groups/${id}`;
+export function circleTiddlerUri(id: string): string {
+  return `lar:///${SOCIAL_HOST}/@circles/${id}`;
 }
 
 /**
@@ -119,40 +119,73 @@ export interface IdentityTiddler {
 }
 
 /**
- * GroupTiddler — field shape for a group membership tiddler.
+ * CircleTiddler — field shape for a circle membership tiddler.
  *
- * Lives at groupTiddlerUri(id) inside GroupsDoc.tiddlers.
- * Bag = GROUPS_DOC_URI.
+ * Lives at circleTiddlerUri(id) inside CirclesDoc.tiddlers.
+ * Bag = CIRCLES_DOC_URI.
  *
- * Keyhive: `encryptedShareHint` carries the BeeKEM encrypted-share material
- * needed for key recovery when membership changes.  `capabilityPolicy` declares
- * what capability proof a peer must present to be considered a member.
+ * Kowloon model (jzellis): Circles replace the follow/unfollow system entirely.
+ * Adding someone to a circle IS the follow. Circle membership never federates —
+ * the social graph is private to the owner's home node. No remote server can
+ * reconstruct who follows whom. System circles auto-boot on identity creation;
+ * user circles are operator-created.
+ *
+ * Addressing: `to`, `canReply`, `canReact` on *content* tiddlers reference a
+ * circle ID to gate visibility. A circle can only be targeted by its owner.
+ *
+ * Keyhive: `encryptedShareHint` carries BeeKEM encrypted-share material for
+ * key recovery across membership changes. `capabilityPolicy` declares what
+ * capability proof a peer must present to be considered a member.
  */
-export interface GroupTiddler {
-  /** Short group ID (slug or UUID). */
+export interface CircleTiddler {
+  /** Short circle ID (slug or UUID). */
   readonly id:                  string;
   /** Human-readable display name. */
   readonly displayName:         string;
   /** ISO 8601 creation timestamp. */
   readonly createdAt:           string;
   /**
+   * Circle kind.
+   *
+   * "System" — auto-created at identity boot; cannot be deleted.
+   *   Built-in system circles per identity:
+   *     "following"     — people the operator actively reads
+   *     "all-following" — superset: followed nodes + circles
+   *     "circles"       — tracks circle memberships (members are circles, not identities)
+   *     "blocked"       — blocked identities
+   *     "muted"         — muted identities
+   *   Built-in system circles per nexus (authorization tiers):
+   *     "nexus:anon", "nexus:user", "nexus:operator", "nexus:admin"
+   *
+   * "Circle" — user-created personal circle (e.g. "Close Friends", "Work").
+   */
+  readonly kind:                "Circle" | "System";
+  /**
    * TW5 list format: space-separated DIDs of current members.
    * parseable with `parseBagStack()` or `split(" ")`.
    * e.g. "did:web:alice.bsky.social did:web:bob.bsky.social"
+   * Never federates — private to the owning node.
    */
   readonly memberDids:          string;
   /**
+   * Addressing scope for content targeting this circle.
+   * Mirrors Kowloon's `to` field: who can see content addressed to this circle.
+   * Values: "@public" | "@{domain}" | "{circleId}" | "{did}" | "" (owner only)
+   * Default: "" (private — only the owning operator sees it)
+   */
+  readonly addressingScope?:    string;
+  /**
    * Keyhive BeeKEM hint: content-addressed encrypted share material.
    * Opaque bytes (base64) — interpreted by the Keyhive WASM layer (planned).
-   * Lets peers recover the group encryption key after membership changes
+   * Lets peers recover the circle encryption key after membership changes
    * without trusting a central key server.
    */
   readonly encryptedShareHint?: string;
   /**
-   * Capability policy expression for this group.
-   * "keyhive:{groupUri}" — Keyhive convergent capability required
-   * "group:{uri}"        — simple membership check via CRDT
-   * "public"             — open group
+   * Capability policy expression for this circle.
+   * "keyhive:{circleUri}" — Keyhive convergent capability required
+   * "circle:{uri}"        — simple membership check via CRDT
+   * "public"              — open circle
    */
   readonly capabilityPolicy?:   string;
   /** Policy expression controlling read access to this tiddler. */
@@ -205,12 +238,12 @@ export interface IdentitiesDoc extends LarDoc {
 }
 
 /**
- * GroupsDoc — collective authority + durable membership, tiddler-first.
+ * CirclesDoc — collective authority + durable membership, tiddler-first.
  *
- * Each group = one tiddler at groupTiddlerUri(id).
- * Self-reference tiddler at GROUPS_DOC_URI.
+ * Each group = one tiddler at circleTiddlerUri(id).
+ * Self-reference tiddler at CIRCLES_DOC_URI.
  */
-export interface GroupsDoc extends LarDoc {
+export interface CirclesDoc extends LarDoc {
   readonly tiddlers: Record<string, MutableLarRecord>;
 }
 
@@ -232,7 +265,7 @@ export function emptyIdentitiesDoc(): IdentitiesDoc {
   return { schemaVersion: "0.1", tiddlers: {} };
 }
 
-export function emptyGroupsDoc(): GroupsDoc {
+export function emptyCirclesDoc(): CirclesDoc {
   return { schemaVersion: "0.1", tiddlers: {} };
 }
 
@@ -263,17 +296,19 @@ export function readIdentityTiddler(raw: MutableLarRecord): IdentityTiddler | nu
 }
 
 /**
- * Read a GroupTiddler from a raw tiddler record.
+ * Read a CircleTiddler from a raw tiddler record.
  * Returns null if the tiddler lacks an `id` field.
  */
-export function readGroupTiddler(raw: MutableLarRecord): GroupTiddler | null {
+export function readCircleTiddler(raw: MutableLarRecord): CircleTiddler | null {
   const id = raw.fields["id"];
   if (!id) return null;
   return {
     id,
     displayName:          raw.fields["displayName"]        ?? id,
     createdAt:            raw.fields["createdAt"]          ?? raw.fields["created"] ?? "",
+    kind:                 (raw.fields["kind"] as CircleTiddler["kind"]) ?? "Circle",
     memberDids:           raw.fields["memberDids"]         ?? "",
+    ...(raw.fields["addressingScope"]    && { addressingScope:    raw.fields["addressingScope"] }),
     ...(raw.fields["encryptedShareHint"] && { encryptedShareHint: raw.fields["encryptedShareHint"] }),
     ...(raw.fields["capabilityPolicy"]   && { capabilityPolicy:   raw.fields["capabilityPolicy"] }),
     ...(raw.fields["readPolicy"]         && { readPolicy:         raw.fields["readPolicy"] }),
@@ -297,12 +332,12 @@ export function readSessionTiddler(raw: MutableLarRecord): SessionTiddler | null
     ...(raw.fields["readPolicy"]      && { readPolicy:      raw.fields["readPolicy"] }),
   };
 }
-// Re-export legacy aliases so callers that used IdentityRecord / GroupRecord / SessionRecord
+// Re-export legacy aliases so callers that used IdentityRecord / CircleRecord / SessionRecord
 // can migrate gradually.  These will be removed in a future milestone.
 /** @deprecated Use IdentityTiddler instead. */
 export type IdentityRecord = IdentityTiddler;
-/** @deprecated Use GroupTiddler instead. */
-export type GroupRecord    = GroupTiddler & { readonly memberDids: string };
+/** @deprecated Use CircleTiddler instead. */
+export type CircleRecord    = CircleTiddler & { readonly memberDids: string };
 /** @deprecated Use SessionTiddler instead. */
 export type SessionRecord  = SessionTiddler;
 

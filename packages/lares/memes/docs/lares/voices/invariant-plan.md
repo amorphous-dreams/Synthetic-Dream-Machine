@@ -1,9 +1,9 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/@lares/api/v0.1/pono/memetic-wikitext >> -->
 
-<<~&#x0001; ? -> lar:///ha.ka.ba/@lares/docs/lararium/voices/invariant-plan >>
+<<~&#x0001; ? -> lar:///ha.ka.ba/@lares/docs/lares/voices/invariant-plan >>
 ```toml iam
-uri-path = "ha.ka.ba/@lares/docs/lararium/voices/invariant-plan"
-file-path = "packages/lares/memes/docs/lararium/voices/invariant-plan.md"
+uri-path = "ha.ka.ba/@lares/docs/lares/voices/invariant-plan"
+file-path = "packages/lares/memes/docs/lares/voices/invariant-plan.md"
 type = "text/x-memetic-wikitext"
 tagspace = "stable"
 confidence = 0.82
@@ -39,9 +39,9 @@ The three spec rooms define the contract. This plan defines the write.
 
 | Spec room | What it defines | Status |
 |---|---|---|
-| `lar:///ha.ka.ba/@lares/docs/lararium/voices/coordinators` | the thirteen, naming law, earned names, hard gate, chao reads, multi-coordinator turns | settled CS/0.88 |
-| `lar:///ha.ka.ba/@lares/docs/lararium/voices/workers` | worker-coordinator distinction, lifecycle, tag format, escalation template, routing table | settled CS/0.86 |
-| `lar:///ha.ka.ba/@lares/docs/lararium/voices/masks` | mask anatomy, stacking law, declaration form, grammar, worker coloring, invariant contract | settled CS/0.80 |
+| `lar:///ha.ka.ba/@lares/docs/lares/voices/coordinators` | the thirteen, naming law, earned names, hard gate, chao reads, multi-coordinator turns | settled CS/0.88 |
+| `lar:///ha.ka.ba/@lares/docs/lares/voices/workers` | worker-coordinator distinction, lifecycle, tag format, escalation template, routing table | settled CS/0.86 |
+| `lar:///ha.ka.ba/@lares/docs/lares/voices/masks` | mask anatomy, stacking law, declaration form, grammar, worker coloring, invariant contract | settled CS/0.80 |
 
 Current target:
 
@@ -266,10 +266,10 @@ Multi-mask composability now in base spec. No longer deferred.
 
 ## Edges
 
-<<~ loulou lar:///ha.ka.ba/@lares/docs/lararium/voices >>
-<<~ loulou lar:///ha.ka.ba/@lares/docs/lararium/voices/coordinators >>
-<<~ loulou lar:///ha.ka.ba/@lares/docs/lararium/voices/workers >>
-<<~ loulou lar:///ha.ka.ba/@lares/docs/lararium/voices/masks >>
+<<~ loulou lar:///ha.ka.ba/@lares/docs/lares/voices >>
+<<~ loulou lar:///ha.ka.ba/@lares/docs/lares/voices/coordinators >>
+<<~ loulou lar:///ha.ka.ba/@lares/docs/lares/voices/workers >>
+<<~ loulou lar:///ha.ka.ba/@lares/docs/lares/voices/masks >>
 <<~ loulou lar:///ha.ka.ba/@lares/api/v0.1/lararium/voices >>
 
 <<~ pranala #implements-meme ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/meme family:control role:implements >>

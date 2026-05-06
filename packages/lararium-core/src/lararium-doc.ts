@@ -112,7 +112,7 @@ export function blobDescriptorUri(blobId: string): string {
  *
  * SOCIAL PLANE (identity / authority / session):
  *   @identities IdentitiesDoc — stable principal records (operators, agents, services)
- *   @groups     GroupsDoc     — collective authority + durable membership
+ *   @circles     CirclesDoc     — collective authority + durable membership
  *   @sessions   SessionsDoc   — live operator-agent session docs
  *
  * Corpus child-docs live under ka (pos-2 @ slot):
@@ -127,7 +127,7 @@ export function blobDescriptorUri(blobId: string): string {
  *   fragment → ha (LarariumDoc) → tiddlers[CATALOG_DOC_URI]   → CatalogDoc
  *                               → tiddlers[LARES_DOC_URI]      → LaresDoc
  *                               → tiddlers[IDENTITIES_DOC_URI] → IdentitiesDoc
- *                               → tiddlers[GROUPS_DOC_URI]     → GroupsDoc
+ *                               → tiddlers[CIRCLES_DOC_URI]     → CirclesDoc
  *                               → tiddlers[SESSIONS_DOC_URI]   → SessionsDoc
  *   CatalogDoc → tiddlers[corpusLarUri(slug)]  → corpus child-docs
  *             → tiddlers[roomLarUri(slug)]    → room leaf docs
@@ -154,7 +154,7 @@ export function blobDescriptorUri(blobId: string): string {
  *
  * SOCIAL PLANE (identity / authority / session):
  *   @identities IdentitiesDoc — stable principal records (operators, agents, services)
- *   @groups     GroupsDoc     — collective authority + durable membership
+ *   @circles     CirclesDoc     — collective authority + durable membership
  *   @sessions   SessionsDoc   — live operator-agent session docs
  *
  * Corpus child-docs live under ka (pos-2 @ slot):
@@ -169,7 +169,7 @@ export function blobDescriptorUri(blobId: string): string {
  *   fragment → ha (LarariumDoc) → tiddlers[CATALOG_DOC_URI]   → CatalogDoc
  *                               → tiddlers[LARES_DOC_URI]      → LaresDoc
  *                               → tiddlers[IDENTITIES_DOC_URI] → IdentitiesDoc
- *                               → tiddlers[GROUPS_DOC_URI]     → GroupsDoc
+ *                               → tiddlers[CIRCLES_DOC_URI]     → CirclesDoc
  *                               → tiddlers[SESSIONS_DOC_URI]   → SessionsDoc
  *   CatalogDoc → tiddlers[corpusLarUri(slug)]  → corpus child-docs
  *             → tiddlers[roomLarUri(slug)]    → room leaf docs
@@ -194,7 +194,7 @@ export const LARES_DOC_URI = "lar:///ha.ka.ba/@lares";
 export const IDENTITIES_DOC_URI = "lar:///ha.ka.ba/@identities";
 
 /** Collective authority + durable group membership. */
-export const GROUPS_DOC_URI = "lar:///ha.ka.ba/@groups";
+export const CIRCLES_DOC_URI = "lar:///ha.ka.ba/@circles";
 
 /** Live operator-agent session docs; hostful overlays project into these. */
 export const SESSIONS_DOC_URI = "lar:///ha.ka.ba/@sessions";

@@ -44,7 +44,7 @@ exports.TomlWidget = TomlWidget;
 
 ## Source
 
-Compiled IIFE artifact. Canonical TS source: `packages/lararium-tw5/src/tw5-widgets.ts` (`source-symbol = "TomlWidget"`).
+Compiled CJS artifact. Canonical TS source: `packages/lararium-tw5/src/tw5-widgets.ts` (`source-symbol = "TomlWidget"`).
 Anchor meme: `lar:///ha.ka.ba/@lararium/tw5/widgets/toml`.
 
 Run `pnpm --filter @lararium/tw5 build:tiddlers` to regenerate.

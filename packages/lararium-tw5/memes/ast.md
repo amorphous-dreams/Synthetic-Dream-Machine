@@ -20,7 +20,7 @@ retain       = true
 
 ## MemeAstNode union
 
-Parse-time AST produced by `parseMemeCarrier`. Lives in `@lararium/tw5` so it compiles into the TW5 IIFE parser/deserializer modules. No AST trees cross the VM boundary — VMs own projection.
+Parse-time AST produced by `parseMemeCarrier`. Lives in `@lararium/tw5` so it compiles into the TW5 CJS parser/deserializer modules. No AST trees cross the VM boundary — VMs own projection.
 
 | Type | Description |
 |---|---|
@@ -37,7 +37,7 @@ Parse-time AST produced by `parseMemeCarrier`. Lives in `@lararium/tw5` so it co
 
 ## Compile target
 
-`ast.ts` imports `PranalaEdge`, `GrammarRules`, `SigilRule` from `@lararium/core` (no circular dep). All AST node types compile into the `memetic-parser` IIFE module.
+`ast.ts` imports `PranalaEdge`, `GrammarRules`, `SigilRule` from `@lararium/core` (no circular dep). All AST node types compile into the `memetic-parser` CJS module.
 
 <<~/ahu >>
 

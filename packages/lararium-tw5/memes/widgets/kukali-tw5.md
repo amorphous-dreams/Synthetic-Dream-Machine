@@ -50,7 +50,7 @@ exports.KukaliWidget = KukaliWidget;
 
 ## Source
 
-Compiled IIFE artifact. Canonical TS source: `packages/lararium-tw5/src/tw5-widgets.ts` (`source-symbol = "KukaliWidget"`).
+Compiled CJS artifact. Canonical TS source: `packages/lararium-tw5/src/tw5-widgets.ts` (`source-symbol = "KukaliWidget"`).
 Anchor meme: `lar:///ha.ka.ba/@lararium/tw5/widgets/kukali`.
 
 Run `pnpm --filter @lararium/tw5 build:tiddlers` to regenerate.

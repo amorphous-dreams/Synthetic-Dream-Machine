@@ -38,7 +38,7 @@ Composable source files in `packages/lararium-core/src/meme-ast/`:
 
 Public API sub-export: `@lararium/core/meme-ast`
 
-Vite IIFE entry: `packages/lararium-tw5/src/meme-ast-entry.ts`
+Vite CJS entry: `packages/lararium-tw5/src/meme-ast-entry.ts`
 Compiled artifact: `packages/lararium-tw5/memes/modules/meme-ast-tw5.md`
 Build: `pnpm --filter @lararium/tw5 build:modules`
 

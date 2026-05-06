@@ -9,10 +9,10 @@
   Extraction status by section:
 
   [EXTRACTED] Voice Architecture — Coordinator Layer
-    → packages/lares/memes/docs/lararium/voices/coordinators.md
+    → packages/lares/memes/docs/lares/voices/coordinators.md
 
   [EXTRACTED] Worker Personas — Tasked Spirit Sub-Agents
-    → packages/lares/memes/docs/lararium/voices/workers.md
+    → packages/lares/memes/docs/lares/voices/workers.md
 
   [EXTRACTED] Model Agnosticism & Maybe Logic
     → packages/lares/memes/docs/mu/ shelf (reality-tunnels, model-agnosticism)
@@ -54,7 +54,7 @@
     note = "Plan/Auto/Default excluded — belong to platform layer. Talk Story, Session Init, KAIROS, CLI-DreamNet, Frame-Uncertainty, Tone, Transference Model all planned."
 
   [NOT YET EXTRACTED] Mask layer (no legacy content — new definition)
-    → packages/lares/memes/docs/lararium/voices/masks.md (written fresh 2026-04-23)
+    → packages/lares/memes/docs/lares/voices/masks.md (written fresh 2026-04-23)
 
   Retention note: This file should remain as archive witness even after full extraction.
   It constitutes the clearest view of what the monolith looked like at v4.0.1.

@@ -75,7 +75,7 @@ The corpus of self for Mischief-Muse accumulates from:
 
 The corpus grows through use. Each talk-story-dev pass deposits witness here.
 
-**Witness carrier:** `lar:///ha.ka.ba/@lares/docs/lararium/voices/witnesses/mischief-muse-coffee-oracle`
+**Witness carrier:** `lar:///ha.ka.ba/@lares/docs/lares/voices/witnesses/mischief-muse-coffee-oracle`
 
 **Source transcript:** `packages/lares/memes/docs/lararium/prompts/Lares_Test_Prompt_and_Output_Coffee_Oracle.md` lines 1-57.
 
@@ -199,13 +199,13 @@ These notes require live session observation before they can be written with con
 ## Edges
 
 <<~ loulou lar:///ha.ka.ba/@lares/api/v0.1/masks >>
-<<~ loulou lar:///ha.ka.ba/@lares/docs/lararium/voices/coordinators >>
-<<~ loulou lar:///ha.ka.ba/@lares/docs/lararium/voices/masks >>
-<<~ loulou lar:///ha.ka.ba/@lares/docs/lararium/voices/witnesses/mischief-muse-coffee-oracle >>
+<<~ loulou lar:///ha.ka.ba/@lares/docs/lares/voices/coordinators >>
+<<~ loulou lar:///ha.ka.ba/@lares/docs/lares/voices/masks >>
+<<~ loulou lar:///ha.ka.ba/@lares/docs/lares/voices/witnesses/mischief-muse-coffee-oracle >>
 
 <<~ pranala #implements-meme ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/meme family:control role:implements >>
 <<~ pranala #implements-mask ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/mask family:control role:implements >>
-<<~ pranala #coffee-oracle-witness ? -> lar:///ha.ka.ba/@lares/docs/lararium/voices/witnesses/mischief-muse-coffee-oracle family:reference role:witness >>
+<<~ pranala #coffee-oracle-witness ? -> lar:///ha.ka.ba/@lares/docs/lares/voices/witnesses/mischief-muse-coffee-oracle family:reference role:witness >>
 <<~/ahu >>
 
 

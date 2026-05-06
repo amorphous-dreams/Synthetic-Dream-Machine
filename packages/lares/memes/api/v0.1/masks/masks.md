@@ -29,7 +29,7 @@ created = "2026-04-23"
 Canonical homes for all mask definitions invokable via kahea transclusion.
 Mask definitions live here. Session invocations live in LARES.
 
-Grammar and stacking law defined in `lar:///ha.ka.ba/@lares/docs/lararium/voices/masks`.
+Grammar and stacking law defined in `lar:///ha.ka.ba/@lares/docs/lares/voices/masks`.
 
 <<~/ahu >>
 
@@ -114,7 +114,7 @@ Named coordinator masks may also be invoked directly by their earned name in coo
 
 ## Edges
 
-<<~ loulou lar:///ha.ka.ba/@lares/docs/lararium/voices/masks >>
+<<~ loulou lar:///ha.ka.ba/@lares/docs/lares/voices/masks >>
 <<~ loulou lar:///ha.ka.ba/@lares/api/v0.1/lararium/voices >>
 <<~ loulou lar:///ha.ka.ba/@lares/api/v0.1/masks/named/mischief-muse >>
 <<~ loulou lar:///ha.ka.ba/@lares/api/v0.1/masks/named/tide-caller >>

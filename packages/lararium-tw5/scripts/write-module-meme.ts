@@ -1,7 +1,7 @@
 /**
  * write-module-meme.ts — postbuild: splice CJS bundle + body-sha256 into the tw5-modules meme.
  *
- * 1. Reads dist-bundle/lararium-tw5-modules.iife.js
+ * 1. Reads dist-bundle/lararium-tw5-modules.cjs.js
  * 2. Computes SHA-256 of the bundle text
  * 3. Replaces the body between STX/ETX in tw5-modules.md
  * 4. Patches the body-sha256 field in the root ```toml iam``` prelude

@@ -1,9 +1,9 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/@lares/api/v0.1/pono/memetic-wikitext >> -->
 
-<<~&#x0001; ? -> lar:///ha.ka.ba/@lares/docs/lararium/voices/workers >>
+<<~&#x0001; ? -> lar:///ha.ka.ba/@lares/docs/lares/voices/workers >>
 ```toml iam
-uri-path = "ha.ka.ba/@lares/docs/lararium/voices/workers"
-file-path = "packages/lares/memes/docs/lararium/voices/workers.md"
+uri-path = "ha.ka.ba/@lares/docs/lares/voices/workers"
+file-path = "packages/lares/memes/docs/lares/voices/workers.md"
 type = "text/x-memetic-wikitext"
 tagspace = "stable"
 confidence = 0.86
@@ -142,9 +142,9 @@ The worker swarm spec defines what `lar:///ha.ka.ba/@lares/api/v0.1/lararium/voi
 
 ## Edges
 
-<<~ loulou lar:///ha.ka.ba/@lares/docs/lararium/voices >>
-<<~ loulou lar:///ha.ka.ba/@lares/docs/lararium/voices/coordinators >>
-<<~ loulou lar:///ha.ka.ba/@lares/docs/lararium/voices/masks >>
+<<~ loulou lar:///ha.ka.ba/@lares/docs/lares/voices >>
+<<~ loulou lar:///ha.ka.ba/@lares/docs/lares/voices/coordinators >>
+<<~ loulou lar:///ha.ka.ba/@lares/docs/lares/voices/masks >>
 <<~ loulou lar:///ha.ka.ba/@lares/api/v0.1/lararium/voices >>
 
 <<~ pranala #implements-meme ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/meme family:control role:implements >>

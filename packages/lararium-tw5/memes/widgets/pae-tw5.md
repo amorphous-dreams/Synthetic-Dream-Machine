@@ -35,7 +35,7 @@ exports.PaeWidget = PaeWidget;
 
 ## Source
 
-Compiled IIFE artifact. Canonical TS source: `packages/lararium-tw5/src/tw5-widgets.ts` (`source-symbol = "PaeWidget"`).
+Compiled CJS artifact. Canonical TS source: `packages/lararium-tw5/src/tw5-widgets.ts` (`source-symbol = "PaeWidget"`).
 Anchor meme: `lar:///ha.ka.ba/@lararium/tw5/widgets/pae`.
 
 Run `pnpm --filter @lararium/tw5 build:tiddlers` to regenerate.

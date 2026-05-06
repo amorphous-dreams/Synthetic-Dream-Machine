@@ -1,7 +1,7 @@
 /**
  * meme-ast-entry.ts — CJS entry point for the meme-ast TW5 library module.
  *
- * Compiled by vite.tiddlers.config.ts → dist-widgets/meme-ast.iife.js
+ * Compiled by vite.tiddlers.config.ts → dist-widgets/meme-ast.cjs.js
  * Spliced into memes/modules/meme-ast-tw5.md between STX/ETX markers.
  *
  * module-type: library — accessible via require("lar:///ha.ka.ba/@lararium/tw5/modules/meme-ast-tw5")

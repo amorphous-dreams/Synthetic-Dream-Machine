@@ -1,24 +1,24 @@
-# Current Epic — Lararium Genesis Artifact
+# Current Epic — Lararium Genesis Artifact + Protocol Stack
 
-> Updated: 2026-05-04
+> Updated: 2026-05-05
 > Branch: feature/lararium-node-3
-> Sprint 0: ✅ Complete — see SESSION.md for what changed
-> Sprint 1: ✅ Complete — see SESSION.md for what changed
-> Active sprint: S2 — Genesis Artifact Build Script
+> Sprints 0–4: ✅ Complete
+> Active sprint: S5 — Quine Round-Trip Verification
+> Designed sprints: S6 (SessionEventLog), S7 (Circles + Identities capability layer)
 
 ---
 
 ## North Star
 
 > The genesis artifact functions as the quine seed. Any peer (node, browser, worker) clones from it. No disk reads at runtime. The build step forms the only seam between disk projections and the CRDT mind.
+>
+> Every peer establishes WHO it is (IdentitiesDoc), WHAT CIRCLES it belongs to (CirclesDoc), and WHAT IT IS DOING NOW (SessionsDoc) — all without a central server. Social graph control inverts: circles are owned by their center, not by the platform.
 
 ---
 
 ## Grounding Principles — Web3 + Local-First Research
 
 ### The Seven Local-First Ideals (Ink & Switch, 2019)
-
-The Lararium architecture maps directly onto the Ink & Switch seven ideals:
 
 | Ideal | Lararium mapping |
 |---|---|
@@ -30,15 +30,11 @@ The Lararium architecture maps directly onto the Ink & Switch seven ideals:
 | Security by default | Blobs and tiddlers never leave device unencrypted |
 | Ultimate ownership | Deleting an account does not destroy a room doc |
 
-**Web3 smell test**: if a design requires a privileged server to write the first byte, it violates Ideals 5 and 7. Every `seedFrom*` runtime function that reads disk on boot fails this test.
+**Web3 smell test**: if a design requires a privileged server to write the first byte, it violates Ideals 5 and 7.
 
 ### Automerge Genesis Pattern
 
-`Automerge.save(doc)` returns a deterministic `Uint8Array` encoding full document history. The same logical content always produces the same bytes. This means:
-
-- A genesis document built at **build time** can save to bytes and embed in the bundle as a typed constant.
-- At **runtime**, `Automerge.load(genesisBytes)` hydrates the full doc — zero disk I/O, zero network.
-- The `automerge:<base58>` DocUrl that automerge-repo assigns after `repo.import(bytes)` serves as a content-addressed stable room identifier — analogous to an IPFS CID or a Ceramic stream ID.
+`Automerge.save(doc)` returns a deterministic `Uint8Array` encoding full document history. Same logical content → same bytes.
 
 ```ts
 // build-time
@@ -50,220 +46,148 @@ import genesisBytes from "./genesis/island.bin"  // Uint8Array, no fs
 const handle = await repo.import(genesisBytes)
 ```
 
-### Content-Addressed Distribution (IPFS/IPLD CAR Pattern)
+### Social Graph Inversion (Kowloon / jzellis model)
 
-A CAR (Content Addressable aRchive) file packages an IPLD DAG as a portable binary with:
-- Each block keyed by its CID (SHA2-256 + multicodec)
-- A root CID list declaring entry points
-- Full self-verifiability — unpack, hash, confirm roots
+Circles are owned by their center, not by the platform. The user's keypair is the root of authority for who is in their circles. A nexus node routes and relays but cannot forge circle membership. System circles (authorization tiers) are founded by the nexus admin key; user circles are founded by the user's key. These are structurally identical — only the trust root differs.
 
-The genesis artifact can optionally be distributed as a `.car` file for cold peer-to-peer seeding. Any peer that receives the CID can verify authenticity without trusting the transport.
+See: `packages/lares/lararium-research/PROTOCOL-STACK-IDENTITY-CIRCLES-SESSIONS.md`
 
-```ts
-import { CarReader } from "@ipld/car"
-const reader = await CarReader.fromBytes(carBytes)
-for await (const { cid, bytes } of reader.blocks()) {
-  // verify cid matches bytes, then ingest
-}
-```
+### TiddlyWiki Quine Seed
 
-**Lararium genesis CID**: computed from the Automerge binary bytes using `multiformats`. Stored as a self-ref tiddler field in the island doc (`$:/lararium/genesis-cid`). `reconcileIslandFromGenesis` compares live doc's stored CID against the package CID to decide whether to merge.
-
-### TiddlyWiki as Prior Art — The Quine Seed
-
-TiddlyWiki's `empty.html` stands as the canonical quine-genesis prior art:
-
-- **Single-file completeness**: the HTML contains the engine, all system tiddlers, and the save mechanism.
-- **Quine property**: saving the wiki outputs a new file that is itself a valid TiddlyWiki. The tool to build itself lives inside the artifact it builds.
-- **Genesis semantics**: `empty.html` serves as the zero-content seed. Every user's wiki forks from it. The seed holds immutable state; forks diverge from it.
-- **No server needed**: download, open in browser, write, save. The save mechanism writes a new quine.
-
-**Lararium's `genesis/island.bin` = `empty.html`**:
-- Deterministic build-time output.
-- Contains engine tiddlers, grammar meme, default bags + recipes, blob descriptors.
-- Every peer boots from it; CRDT sync carries forward from there.
-- The system can regenerate its own genesis: boot a vm from the artifact → `renderTiddler` → source file. That forms the quine closure.
-
-### Peer-Symmetric Architecture (Willow + Hypercore + Automerge-Repo)
-
-Three converging patterns from the peer-symmetric space:
-
-**Automerge-repo (production, Trellis/PushPin pattern)**:
-- Peer A creates the root doc, gets its DocUrl.
-- Shares DocUrl out-of-band (URL hash, config file, oracle tiddler).
-- Peer B calls `repo.find(docUrl)` — sync protocol fetches missing changes from any connected adapter.
-- Neither peer holds privilege. The node peer writing `catalog-url` functions as an infrastructure codec exception, not a seeding authority.
-
-**Willow Protocol** (earthstar-project, TypeScript):
-> "Content-addressed data excels at immutability and global connectivity. Willow embraces mutability, locality, and structure. They complement each other."
-
-This layering matches what Lararium uses: IPLD/CID for the genesis artifact (immutable seed), Automerge for live doc state (mutable CRDT).
-
-**Ceramic Network** (IPLD + DID-based mutable streams):
-Ceramic's stream ID = CID of the genesis event. The stream identifier is content-addressed and verifiable without a server. Lararium's room DocUrl plays the same role.
-
-### Build-Time Seeding Pattern
-
-The general principle used across the ecosystem (WASM embedding, service workers, Vite asset inlining):
-
-1. **Build-time script** creates the artifact, writes bytes to disk.
-2. **Bundler loader** (`esbuild binary`, `vite ?raw`, `vite ?url`) inlines bytes into the JS bundle.
-3. **Runtime** imports a typed constant — zero fs calls, zero network.
-4. **CI verification** reruns the build script, compares CIDs. Deterministic = reproducible.
-
-This pattern eliminates the class of `reconcile*IfChanged` functions entirely. Nothing requires reconciliation at runtime because the genesis bytes stay immutable — any "update" produces a new genesis build.
+`genesis/island.bin` = TiddlyWiki's `empty.html`:
+- Deterministic build-time output
+- Contains engine tiddlers, grammar meme, default bags + recipes, blob descriptors
+- Every peer boots from it; CRDT sync carries forward
+- Quine closure: boot vm → `renderTiddler` → source file → hash match
 
 ---
 
-## Implementation Checklist (Lararium-Specific)
+## Sprint Status
 
-| Step | Tool | Output |
-|---|---|---|
-| Build-time genesis creation | `automerge.from()` + `automerge.save()` | `genesis/island.bin` |
-| CID computation | `multiformats` SHA2-256 | `genesis/island.sha256` |
-| Embed in bundle | esbuild `loader: { ".bin": "binary" }` | `Uint8Array` constant |
-| Boot from constant | `Automerge.load(GENESIS_BYTES)` | `DocHandle<LarariumDoc>` |
-| DocUrl as room address | `repo.import(bytes)` → `handle.url` | `automerge:<base58>` |
-| CAR file (optional) | `@ipld/car` | `genesis/island.car` |
-| Quine property | boot tiddlers → `renderTiddler` → diff source | round-trip hash match |
-| Peer equality | all peers `repo.import(genesisBytes)` | no privileged seeder |
+### S0 — Web2 Pono Audit ✅ Complete
 
----
+Deleted all `reconcile*` functions, `seed-grammar-tiddler.ts`, runtime disk-read patterns. Placed `// SPRINT-2` markers. Hardened `globalThis.$tw` typing. Added `RecipeTiddler.plugins` for vendor opt-in.
 
-## Five-Sprint Plan
+### S1 — Constitutional Invariants ✅ Complete
 
-### Sprint 0 — Web2 Pono Audit ✅ Complete
+- `grammar-invariants.ts` Invariant 3: grammar meme travels in genesis artifact
+- `system-invariants.ts`: `SYSTEM_LAWS`, `GENESIS_INVARIANTS`, `PEER_INVARIANTS`, `CODEC_EXCEPTIONS`
 
-Deleted all `reconcile*` functions, `seed-grammar-tiddler.ts`, and all runtime disk-read patterns. Placed `// SPRINT-2` markers. Hardened `globalThis.$tw` typing. Added `RecipeTiddler.plugins` for vendor opt-in.
+### S2 — Genesis Artifact Build Script ✅ Complete
 
-See SESSION.md for full change list.
+`packages/lararium-node/scripts/build-genesis-island.ts` — deterministic build via content-hash actor ID + `time: 0` on all changes. Produces `genesis/island.bin` (932 KB, 4 blobs, 13 tiddlers) + `genesis/island.sha256`.
 
----
+Key fix: `Automerge.from()` ignores `time` option internally — replaced with `Automerge.init({ actor }) + change({ time: 0 }, fn)` pattern.
 
-### Sprint 1 — Constitutional Invariants ✅ Complete
+### S3 — Runtime Genesis Loader ✅ Complete
 
-**Done:**
-- [x] `grammar-invariants.ts` Invariant 3: grammar meme travels in the genesis artifact; peer halts on hash divergence; `CODEC_EX_PRE_S2_COLD_BOOT` named as transitional exception
-- [x] `packages/lararium-core/src/system-invariants.ts` created and complete:
-  - `SYSTEM_LAWS` — five architecture laws as typed witnessing constants
-  - `GENESIS_INVARIANTS` — causal origin, content-addressed identity, immutability, quine stub
-  - `PEER_INVARIANTS` — boot symmetry, operational divergence, capability-from-receipt
-  - `CODEC_EXCEPTIONS` — catalog-url, BOOTSTRAP_SCANS, pre-S2 cold-boot, binary blobs
-  - `MIND_LAWS`, `ISLAND_LAWS`, `AUTHORITY_LAWS`, `CODEC_LAWS` (present from prior pass)
+`packages/lararium-node/src/genesis-island.ts`:
+- `loadGenesisIsland(repo)` — reads `genesis/island.bin` via `readFileSync`, smoke-verifies, `repo.import(bytes)` + `whenReady()`
+- `reconcileIslandFromGenesis(handle, genesisHandle)` — diffs live doc CID against genesis; merges net-new content
+- `reconcileWellKnownTiddlers(...)` — writes oracle tiddlers (runtime-assigned Automerge URLs)
+- `seedLaresDoc`, `seedIdentitiesDoc`, `seedCirclesDoc`, `seedSessionsDoc` — satellite doc seeders
 
-**Scope note:** `buildLaresPluginBlob()` runtime body deletion was in an earlier draft of this sprint description but belongs to S2. The `// SPRINT-2` marker at `lararium-island.ts` line 211 is correct. Nothing to delete in S1.
+### S4 — Peer Factory Rewrites ✅ Complete
 
----
+`openNodeLarPeer` rewritten: uses `loadGenesisIsland()`, removes `seedLarariumDoc` disk-walk body, removes `// SPRINT-2` placeholders. `lararium-island.ts` deleted entirely (147 → 0 lines). All satellite doc seeders moved to `genesis-island.ts`.
 
-### Sprint 2 — Genesis Artifact Build Script � Active
+### S5 — Quine Round-Trip Verification 🔴 Active
 
-**New file:** `packages/lararium-node/scripts/build-genesis-island.ts`
+**Goal:** The engine that boots the system lives inside the system it boots.
 
-Build sequence:
-1. Boot a Seed VM (same path as current `buildLaresPluginBlob`)
-2. Walk `tw5MemesRoot` — deserialize all `.md` meme carriers via `seedVm.deserializeCarrier()`
-3. Grammar meme travels as an ordinary tiddler — no special path
-4. Pack deserialized tiddlers into `$:/plugins/lararium/lares` JSON plugin tiddler
-5. Read TW5 core JS blob + vendored plugin blobs from `tw5PluginsRoot`
-6. Create `Repo` + `DocHandle<LarariumDoc>` — write all blobs + tiddlers using existing seeding helpers
-7. Serialize via `Automerge.save()` → write `genesis/island.bin` + `genesis/island.sha256`
-8. Compute CID via `multiformats` → write to `genesis/island.cid`
+**Tasks:**
+- [ ] Ensure all `@lararium/tw5` vite outputs write `.tw5.cjs` format
+- [ ] Wire every `.tw5.cjs` plugin blob into `build-genesis-island.ts`
+- [ ] Boot a node peer from genesis; render grammar meme via TW5 vm
+- [ ] Verify rendered output hash matches source tiddler hash (`pnpm test:quine`)
+- [ ] Write genesis CID as self-ref tiddler `$:/lararium/genesis-cid` into island doc
 
-Build order in `package.json`:
-```
-vite:tiddlers → write-tiddler-memes → build-genesis-island
-```
+**Exit criteria:** `pnpm test:quine` passes. No external file read required after `genesis.bin` is loaded.
 
-**Gate:** `genesis/island.bin` exists; two consecutive identical-source builds produce identical `genesis/island.cid`; `Automerge.load(bytes)` can read the grammar tiddler back out.
+### S6 — SessionEventLog ⬜ Designed
 
----
+**Goal:** Wire per-session append-only event log; adopt `docHandle.broadcast()` for presence.
 
-### Sprint 3 — `loadGenesisIsland()` Runtime 🔒
+**Tasks:**
+- [ ] Add `eventLogUrl: string` and `eventLogHeads: string[]` to `SessionTiddler` interface in `social-doc.ts`
+- [ ] Add `SessionEventLog` doc type + `SessionEvent` entry type in `social-doc.ts`
+- [ ] Add `seedSessionEventLog(repo, sessionId)` in `genesis-island.ts`
+- [ ] Update `capabilityToken` field semantics: store UCAN root hash (not the token)
+- [ ] Document `broadcast()` usage pattern for ephemeral presence in session-opening code path
 
-**New file:** `packages/lararium-node/src/genesis-island.ts`
+**Key insight from research:** `docHandle.broadcast()` (automerge-repo `EphemeralMessage`) is the correct primitive for presence — NOT a separate persisted doc. Direct equivalent to Yjs awareness. Never touches `NodeFSStorageAdapter`.
 
-```ts
-export async function loadGenesisIsland(repo: Repo): Promise<DocHandle<LarariumDoc>>
-```
+### S7 — Circles + Identities Capability Layer ⬜ Designed (design doc only)
 
-- Imports `genesis/island.bin` as `Uint8Array` via esbuild binary loader (zero fs read)
-- Calls `repo.import(genesisBytes)` — Automerge built-in doc import from saved binary
-- Returns live `DocHandle` with all blobs + tiddlers
+**Goal:** IdentitiesDoc and CirclesDoc acquire real protocol integrity via capability delegation chain.
 
-```ts
-export async function reconcileIslandFromGenesis(
-  handle: DocHandle<LarariumDoc>,
-  genesisHandle: DocHandle<LarariumDoc>
-): Promise<void>
-```
+**Design decisions (from research):**
+- `IdentitiesDoc`: Keyhive person-as-group model; each person = a group of their device `did:key`s; delegation chain proves "Device B is also me"
+- `CirclesDoc`: Keyhive convergent capabilities + Seitan token invitations (@localfirst/auth); nexus admin = founding key for system circles; users = founding key for personal circles
+- ERA paper (arXiv:2601.22963): epoch-resolved arbitration for concurrent admin revocations
+- `IdentityTiddler.verifyingKey` and `CircleTiddler.encryptedShareHint` already present as forward-compatible hooks
 
-- Reads `$:/lararium/genesis-cid` from live island doc
-- Compares against package `GENESIS_CID` constant
-- If changed, merges genesis handle into live doc (net-new content only)
-- Replaces all three `reconcile*` placeholders from Sprint 0
+**Tasks (requires design doc before code):**
+- [ ] Write `packages/lares/lararium-research/CAPABILITY-LAYER.md` design doc
+- [ ] Implement device delegation chain tiddlers in `IdentitiesDoc`
+- [ ] Implement Seitan token invite flow for `CirclesDoc`
+- [ ] Introduce capability verification: any peer verifies "Device X speaks as Identity Y at level Z" serverlessly
 
-**Gate:** `loadGenesisIsland` returns a handle with `handle.doc()?.tiddlers?.[GRAMMAR_MEME_URI]?.text` non-null.
+**References:** `packages/lares/lararium-research/PROTOCOL-STACK-IDENTITY-CIRCLES-SESSIONS.md`
 
 ---
 
-### Sprint 4 — Peer Factory Rewrites 🔒
+## Current 6-Doc Model
 
-**`openNodeLarPeer`:**
-- Replace `seedLarariumDoc(repo, catalogUrl)` with `loadGenesisIsland(repo)` + oracle tiddler writes
-- Replace `// SPRINT-2: reconcileIslandFromGenesis(...)` stubs with real calls
-- Node peer becomes peer-symmetric: same genesis bytes as any other peer
-- `seedLarariumDoc` disappears entirely if no callers remain
+### Content Tiga (ha-ka-ba)
 
-**`openBrowserLarPeer`:**
-- Add `loadGenesisIsland` as fallback when no island URL is discoverable
-- Browser already receives blobs via Automerge sync — this closes the cold-start gap
+| Slot | Doc | URI | Role |
+|---|---|---|---|
+| ha | `LarariumDoc` | `lar:///ha.ka.ba/@lararium` | System island — genesis artifact |
+| ka | `CatalogDoc` | `lar:///ha.ka.ba/@catalog` | Corpus/room index |
+| ba | `MemeStoreDoc` | `lar:///ha.ka.ba/@lares` | Personal workspace |
 
-**Gate:** Both peers boot cleanly from genesis bytes; no `readdir` / `readFile` in the production hot path (only `catalog-url` disk write remains — named codec exception).
+### Social Tiga (ha-ka-ba)
 
----
+| Slot | Doc | URI | Role |
+|---|---|---|---|
+| ha | `IdentitiesDoc` | `lar:///ha.ka.ba/@identities` | Principal records — device keys, delegation proofs |
+| ka | `CirclesDoc` | `lar:///ha.ka.ba/@circles` | Circles — collective authority, Keyhive capabilities |
+| ba | `SessionsDoc` | `lar:///ha.ka.ba/@sessions` | Session registry + per-session EventLog refs |
 
-### Sprint 5 — Quine Closure + CJS Integration 🔒
+Dynamic child docs (not root-tiga slots):
+- `SessionEventLog` — one per session, `AutomergeUrl` stored in session tiddler
 
-**CJS module tiddlers in genesis:**
-- `write-tiddler-memes.ts` splices `dist-widgets/{name}.tw5.js` CJS bodies into meme `.md` as `module-text` fields
-- `build-genesis-island.ts` deserializes those `.md` files — CJS module tiddlers land in lares plugin blob
-- At vm boot, TW5's module system loads them via `require()` (CJS exports visible; no IIFE wrapper shadowing)
-- Verify: `tw5.filterTiddlers("[[$:/plugins/lararium/widgets/ahu]]")` returns the widget tiddler
-
-**Quine round-trip test (`pnpm test:quine`):**
-1. Boot a vm from `genesis/island.bin`
-2. `renderTiddler(GRAMMAR_MEME_URI, "lar:///ha.ka.ba/@lares/templates/carrier-render")` → temp file
-3. Diff output against `lares/grammars/memetic-wikitext.md` — must match (modulo whitespace normalization)
-4. Store genesis CID as `$:/lararium/genesis-cid` self-ref tiddler in the island doc
-
-**Gate:** Quine round-trip test passes. No runtime disk reads in either peer factory except `catalog-url`. Genesis CID stored as self-ref tiddler. System can describe and regenerate itself.
+Ephemeral channel (not a doc):
+- `docHandle.broadcast()` — presence/cursor/turn-order; never persisted
 
 ---
 
 ## Cross-Sprint Dependencies
 
 ```
-S0 Cleanup (done)
-  └── S1 Invariants + Demolition
-        └── S2 Build-Time Genesis Script
-              ├── S3 Runtime Loader (loadGenesisIsland)
-              │     └── S4 Peer Factory Rewrites
-              │           └── S5 Quine Closure
-              └── (S3 and S4 unlock together after S2)
+S0 Cleanup ✅
+  └── S1 Invariants ✅
+        └── S2 Build-Time Genesis ✅
+              ├── S3 Runtime Loader ✅
+              │     └── S4 Peer Factories ✅
+              │           └── S5 Quine Closure 🔴 ← HERE
+              │                 └── S6 SessionEventLog ⬜
+              │                       └── S7 Capability Layer ⬜
+              └── (S3 and S4 unlocked together after S2)
 ```
-
-**Critical path:** S1 → S2 → S3/S4 parallel → S5.
 
 ---
 
 ## Key Sources
 
-- [Local-first software: You own your data, in spite of the cloud](https://www.inkandswitch.com/essay/local-first/) — Ink & Switch, 2019
-- [Automerge save/load API](https://automerge.org/automerge/api-docs/js/functions/save.html)
-- [Automerge Repo — DocHandle and DocUrl](https://automerge.org/automerge-repo/classes/_automerge_automerge-repo.DocHandle.html)
-- [IPLD CAR file spec (CARv1)](https://ipld.io/specs/transport/car/carv1/)
-- [ipld/js-car — TypeScript implementation](https://github.com/ipld/js-car)
-- [TiddlyWiki Quine documentation](https://tiddlywiki.com/static/Quine.html)
-- [Willow Protocol](https://willowprotocol.org/) — peer-symmetric mutable + immutable layering
-- [Ceramic Network — genesis CID / stream ID pattern](https://developers.ceramic.network/docs/introduction/intro)
-- [awesome-local-first](https://github.com/schickling/awesome-local-first)
+- [Keyhive notebook — Ink & Switch](https://www.inkandswitch.com/keyhive/notebook/)
+- [UCAN specification](https://ucan.xyz/specification/)
+- [ERA paper — duelling admins (arXiv:2601.22963)](https://arxiv.org/abs/2601.22963)
+- [@localfirst/auth — Seitan token invitations](https://github.com/local-first-web/auth)
+- [automerge-repo EphemeralMessage](https://automerge.org/docs/reference/repositories/ephemeral/)
+- [Automerge getHeads / view() / history](https://www.mintlify.com/automerge/automerge/advanced/viewing-history)
+- [Kowloon by jzellis](https://github.com/jzellis/kowloon/)
+- [Local-First Software essay — Ink & Switch](https://www.inkandswitch.com/essay/local-first/)
+- [Automerge storage compaction](https://patternist.xyz/posts/concurrent-compaction-in-automerge-repo/)
+- [Protocol Stack design doc](./lares/lararium-research/PROTOCOL-STACK-IDENTITY-CIRCLES-SESSIONS.md)

@@ -1,7 +1,7 @@
 // ast.ts — edge-vocabulary types and Law of Fives constants.
 //
 // MemeAstNode and parse-tree node types live in @lararium/tw5/ast.ts — they
-// compile into TW5 IIFE parser modules and must not create a circular dep here.
+// compile into TW5 CJS parser modules and must not create a circular dep here.
 //
 // What stays here: PranalaEdge, GrammarRules, SigilRule, FamilyRule,
 // Law of Fives ladders, Stance/Syad/Tool vocabulary. These are shared by

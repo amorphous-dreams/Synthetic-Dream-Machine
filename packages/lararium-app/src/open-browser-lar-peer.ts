@@ -32,14 +32,14 @@ import {
   AutomergeDocStore, LarariumDocStore,
   CompositeStore, corpusBagId, emptyLarariumDoc,
   emptyMemeStoreDoc,
-  emptyIdentitiesDoc, emptyGroupsDoc, emptySessionsDoc,
+  emptyIdentitiesDoc, emptyCirclesDoc, emptySessionsDoc,
   LARARIUM_DOC_URI, CATALOG_DOC_URI, LARES_DOC_URI,
-  IDENTITIES_DOC_URI, GROUPS_DOC_URI, SESSIONS_DOC_URI,
+  IDENTITIES_DOC_URI, CIRCLES_DOC_URI, SESSIONS_DOC_URI,
   roomLarUri, corpusLarUri, BAG_IDS, recipeUri,
   sha256Hex, defaultCryptoProvider,
   VmPool,
 }                                                       from "@lararium/core";
-import type { MemeRecipeVm, LarOpenPhase, IdentitiesDoc, GroupsDoc, SessionsDoc } from "@lararium/core";
+import type { MemeRecipeVm, LarOpenPhase, IdentitiesDoc, CirclesDoc, SessionsDoc } from "@lararium/core";
 import { TW5Engine, MemeSyncAdaptor, DirectMemeRecipeVm } from "@lararium/tw5";
 
 // ---------------------------------------------------------------------------
@@ -241,7 +241,7 @@ export async function openBrowserLarPeer(opts: {
     );
     composite.addLayer({ bagId: BAG_IDS.lares, store: new AutomergeDocStore(laresHandle, BAG_IDS.lares), writable: false });
   }
-  // ── 4-social. Social plane docs — @identities / @groups / @sessions ────────────
+  // ── 4-social. Social plane docs — @identities / @circles / @sessions ────────────
   // Browser reads oracle tiddlers the node peer wrote; same local-first boot path.
   const identitiesDocUrl = larariumDocHandle?.doc()?.tiddlers?.[IDENTITIES_DOC_URI]?.text ?? null;
   if (identitiesDocUrl) {
@@ -251,11 +251,11 @@ export async function openBrowserLarPeer(opts: {
     );
     composite.addLayer({ bagId: BAG_IDS.identities, store: new AutomergeDocStore(idHandle, BAG_IDS.identities), writable: false });
   }
-  const groupsDocUrl = larariumDocHandle?.doc()?.tiddlers?.[GROUPS_DOC_URI]?.text ?? null;
+  const groupsDocUrl = larariumDocHandle?.doc()?.tiddlers?.[CIRCLES_DOC_URI]?.text ?? null;
   if (groupsDocUrl) {
-    const grHandle = await waitHandleLocal<GroupsDoc>(
+    const grHandle = await waitHandleLocal<CirclesDoc>(
       repo, groupsDocUrl as AutomergeUrl,
-      () => repo.create<GroupsDoc>(emptyGroupsDoc()),
+      () => repo.create<CirclesDoc>(emptyCirclesDoc()),
     );
     composite.addLayer({ bagId: BAG_IDS.groups, store: new AutomergeDocStore(grHandle, BAG_IDS.groups), writable: false });
   }

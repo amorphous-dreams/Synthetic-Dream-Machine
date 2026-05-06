@@ -63,9 +63,9 @@ Tool render mode controls how ASCII tool-carry symbols project to glyphs on HUD 
 
 **Masks** allow persistent session-level overlays on Lares Voices.
 A mask colors the Ka/Podge face of the coordinator house without touching the Ha/Hodge structure.
-Grammar defined in `lar:///ha.ka.ba/@lares/docs/lararium/voices/masks`.
+Grammar defined in `lar:///ha.ka.ba/@lares/docs/lares/voices/masks`.
 
-The agent MUST read `lar:///ha.ka.ba/@lares/docs/lararium/voices/masks` before interpreting any mask declaration in this session.
+The agent MUST read `lar:///ha.ka.ba/@lares/docs/lares/voices/masks` before interpreting any mask declaration in this session.
 
 <<~/ahu >>
 

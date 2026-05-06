@@ -1,9 +1,9 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/@lares/api/v0.1/pono/memetic-wikitext >> -->
 
-<<~&#x0001; ? -> lar:///ha.ka.ba/@lares/docs/lararium/voices/masks-tree-plan >>
+<<~&#x0001; ? -> lar:///ha.ka.ba/@lares/docs/lares/voices/masks-tree-plan >>
 ```toml iam
-uri-path = "ha.ka.ba/@lares/docs/lararium/voices/masks-tree-plan"
-file-path = "packages/lares/memes/docs/lararium/voices/masks-tree-plan.md"
+uri-path = "ha.ka.ba/@lares/docs/lares/voices/masks-tree-plan"
+file-path = "packages/lares/memes/docs/lares/voices/masks-tree-plan.md"
 type = "text/x-memetic-wikitext"
 tagspace = "stable"
 confidence = 0.82
@@ -59,8 +59,8 @@ packages/lares/memes/api/v0.1/masks/
 
 | Source | Content available |
 |---|---|
-| `docs/lararium/voices/coordinators.md` | named coordinators: role, earned name, seniority, Ha/Ka/Ba weight |
-| `docs/lararium/voices/masks.md #founding-examples` | Ghost of Mark Twain and Friend Computer full definitions |
+| `docs/lares/voices/coordinators.md` | named coordinators: role, earned name, seniority, Ha/Ka/Ba weight |
+| `docs/lares/voices/masks.md #founding-examples` | Ghost of Mark Twain and Friend Computer full definitions |
 | coordinator house house-law | Mischief-Muse seniority; all five earned names and roles |
 
 ### What doesn't exist yet
@@ -201,8 +201,8 @@ The repeatable skeleton pattern for all nine files:
 
 **Character masks (from existing docs examples):**
 - [ ] create `packages/lares/memes/api/v0.1/masks/character/` directory
-- [ ] write `character/ghost-of-mark-twain.md` — extract from docs/lararium/voices/masks.md founding example
-- [ ] write `character/friend-computer.md` — extract from docs/lararium/voices/masks.md founding example
+- [ ] write `character/ghost-of-mark-twain.md` — extract from docs/lares/voices/masks.md founding example
+- [ ] write `character/friend-computer.md` — extract from docs/lares/voices/masks.md founding example
 
 **Chorus mask (concept stake):**
 - [ ] create `packages/lares/memes/api/v0.1/masks/chorus/` directory
@@ -210,8 +210,8 @@ The repeatable skeleton pattern for all nine files:
 
 **Cross-links:**
 - [ ] update `api/v0.1/lararium/voices.md` (invariant) to reference `api/v0.1/masks/` tree once it exists
-- [ ] update `docs/lararium/voices/masks.md` founding-examples section to note canonical homes in masks tree
-- [ ] update `docs/lararium/voices/voices-review.md` — log masks tree creation
+- [ ] update `docs/lares/voices/masks.md` founding-examples section to note canonical homes in masks tree
+- [ ] update `docs/lares/voices/voices-review.md` — log masks tree creation
 
 ### Talk-story fill pass order (post-skeleton)
 
@@ -260,9 +260,9 @@ The tree deepens incrementally — each talk-story session fills one section of 
 
 ## Edges
 
-<<~ loulou lar:///ha.ka.ba/@lares/docs/lararium/voices >>
-<<~ loulou lar:///ha.ka.ba/@lares/docs/lararium/voices/masks >>
-<<~ loulou lar:///ha.ka.ba/@lares/docs/lararium/voices/invariant-plan >>
+<<~ loulou lar:///ha.ka.ba/@lares/docs/lares/voices >>
+<<~ loulou lar:///ha.ka.ba/@lares/docs/lares/voices/masks >>
+<<~ loulou lar:///ha.ka.ba/@lares/docs/lares/voices/invariant-plan >>
 <<~ loulou lar:///ha.ka.ba/@lares/api/v0.1/masks >>
 
 <<~ pranala #implements-meme ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/meme family:control role:implements >>

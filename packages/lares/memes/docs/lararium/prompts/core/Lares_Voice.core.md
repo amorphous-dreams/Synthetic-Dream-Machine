@@ -7,12 +7,12 @@
   Sections extracted to working shelf:
 
   [EXTRACTED] Voice Architecture — Coordinator Layer (the thirteen, naming rules, earned names, seniority, hard gate)
-    → lar:///ha.ka.ba/@lares/docs/lararium/voices/coordinators
-    → file: packages/lares/memes/docs/lararium/voices/coordinators.md
+    → lar:///ha.ka.ba/@lares/docs/lares/voices/coordinators
+    → file: packages/lares/memes/docs/lares/voices/coordinators.md
 
   [EXTRACTED] Worker Personas — Tasked Spirit Sub-Agents (lifecycle, tag format, escalation template, coordinator matching)
-    → lar:///ha.ka.ba/@lares/docs/lararium/voices/workers
-    → file: packages/lares/memes/docs/lararium/voices/workers.md
+    → lar:///ha.ka.ba/@lares/docs/lares/voices/workers
+    → file: packages/lares/memes/docs/lares/voices/workers.md
 
   [NOT EXTRACTED from this file] Mask layer — no legacy equivalent; defined fresh in voices/masks.md
 

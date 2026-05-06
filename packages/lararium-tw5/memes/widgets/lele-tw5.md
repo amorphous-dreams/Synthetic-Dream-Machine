@@ -43,7 +43,7 @@ exports.LeleWidget = LeleWidget;
 
 ## Source
 
-Compiled IIFE artifact. Canonical TS source: `packages/lararium-tw5/src/tw5-widgets.ts` (`source-symbol = "LeleWidget"`).
+Compiled CJS artifact. Canonical TS source: `packages/lararium-tw5/src/tw5-widgets.ts` (`source-symbol = "LeleWidget"`).
 Anchor meme: `lar:///ha.ka.ba/@lararium/tw5/widgets/lele`.
 
 Run `pnpm --filter @lararium/tw5 build:tiddlers` to regenerate.

@@ -29,16 +29,16 @@ import { Repo }                         from "@automerge/automerge-repo";
 import { NodeFSStorageAdapter }         from "@automerge/automerge-repo-storage-nodefs";
 import { NodeWSServerAdapter }          from "@automerge/automerge-repo-network-websocket";
 import type { WebSocketServer }         from "isomorphic-ws";
-import type { CatalogDoc, MemeStoreDoc, LarariumDoc, IdentitiesDoc, GroupsDoc, SessionsDoc } from "@lararium/core";
+import type { CatalogDoc, MemeStoreDoc, LarariumDoc, IdentitiesDoc, CirclesDoc, SessionsDoc } from "@lararium/core";
 import type { MutableLarRecord }        from "@lararium/core";
 import {
   LarPeer, PEER_CAPABILITIES_NODE, OpenIdentitySlot,
   AutomergeDocStore, LarariumDocStore,
-  CompositeStore, corpusBagId, emptyLarariumDoc,
+  CompositeStore, corpusBagId,
   emptyMemeStoreDoc,
-  emptyIdentitiesDoc, emptyGroupsDoc, emptySessionsDoc,
+  emptyIdentitiesDoc, emptyCirclesDoc, emptySessionsDoc,
   LARARIUM_DOC_URI, CATALOG_DOC_URI, LARES_DOC_URI,
-  IDENTITIES_DOC_URI, GROUPS_DOC_URI, SESSIONS_DOC_URI,
+  IDENTITIES_DOC_URI, CIRCLES_DOC_URI, SESSIONS_DOC_URI,
   corpusLarUri, roomLarUri, BAG_IDS, recipeUri,
   VmPool,
 }                                       from "@lararium/core";
@@ -46,16 +46,10 @@ import type { MemeRecipeVm, LarOpenPhase } from "@lararium/core";
 import { TW5Engine, MemeSyncAdaptor, DirectMemeRecipeVm, buildCeremonyTiddlers } from "@lararium/tw5";
 import type { OperatorIdentity } from "./operator-key.js";
 import {
-  seedLarariumDoc,
-  seedLaresDoc,
-  seedIdentitiesDoc,
-  seedGroupsDoc,
-  seedSessionsDoc,
-  seedDefaultRecipes,
-  seedBagDescriptors,
-  seedBlobDescriptors,
+  loadGenesisIsland, reconcileIslandFromGenesis,
   reconcileWellKnownTiddlers,
-} from "./lararium-island.js";
+  seedLaresDoc, seedIdentitiesDoc, seedCirclesDoc, seedSessionsDoc,
+} from "./genesis-island.js";
 
 /** @see LarOpenPhase in @lararium/core */
 export type NodeOpenPhase = LarOpenPhase;
@@ -77,7 +71,7 @@ export interface NodeLarPeerOptions {
   /**
    * Device Ed25519 operator identity for the cold-boot ceremony.
    * When present and IdentitiesDoc is freshly seeded (void-start), the ceremony
-   * writes an IdentityTiddler + operators GroupTiddler into the social docs.
+   * writes an IdentityTiddler + operators CircleTiddler into the social docs.
    * Omitting this skips the ceremony (useful for tests / replica nodes).
    */
   operatorIdentity?: OperatorIdentity;
@@ -197,47 +191,41 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
   composite.addLayer({ bagId: BAG_IDS.catalog, store: new LarariumDocStore(catalogHandle, BAG_IDS.catalog), writable: false });
 
   // ── 3b. LarariumIsland doc (ha) — lararium bag ───────────────────────────
-  // Node peer holds authority for the island doc.
-  // On first boot: seed from disk, register URL in catalog.
-  // On resume: reconcile blobs if disk artifacts changed.
-  let islandHandle: DocHandle<LarariumDoc> | null = null;
+  // Genesis-first boot: load the build-time artifact, then reconcile with any
+  // existing live doc. Both cold and resume boot call loadGenesisIsland so the
+  // peer always holds the full engine content, even before any network sync.
+  const genesisHandle = await loadGenesisIsland(repo);
+
   const islandDocUrl = catalog?.tiddlers?.[LARARIUM_DOC_URI]?.text ?? catalog?.larariumDoc?.docUrl ?? null;
+  let islandHandle: DocHandle<LarariumDoc>;
+
   if (islandDocUrl) {
-    // Resume boot — load existing island doc.
+    // Resume boot — load existing island doc; merge genesis if CID diverged.
     islandHandle = await waitHandleLocal<LarariumDoc>(
       repo, islandDocUrl as AutomergeUrl,
-      () => repo.create<LarariumDoc>(emptyLarariumDoc()),
+      () => genesisHandle,
     );
-    // SPRINT-2: reconcileIslandFromGenesis(islandHandle, genesisHandle) replaces
-    // the removed reconcileEngineBlobIfChanged + reconcileLaresPluginBlobIfChanged.
-    composite.addLayer({ bagId: BAG_IDS.lararium, store: new LarariumDocStore(islandHandle, BAG_IDS.lararium), writable: false });
-    emit("island-ready");
+    await reconcileIslandFromGenesis(islandHandle, genesisHandle);
   } else {
-    // First boot — seed island doc from disk and register in catalog.
-    try {
-      const { handle } = await seedLarariumDoc(repo, catalogHandle.url);
-      islandHandle = handle;
-      catalogHandle.change((doc) => {
-        const islandDoc  = islandHandle!.doc();
-        const blobEntry  = islandDoc?.blobs?.["tiddlywikicore"];
-        doc.tiddlers[LARARIUM_DOC_URI] = {
-          title:     LARARIUM_DOC_URI,
-          text:      islandHandle!.url,
-          fields:    {
-            ...(blobEntry?.version && { version: blobEntry.version }),
-            ...(blobEntry?.sha256  && { sha256:  blobEntry.sha256 }),
-          },
-          bag:       CATALOG_DOC_URI,
-          authority: "lararium-boot",
-        };
-      });
-      composite.addLayer({ bagId: BAG_IDS.lararium, store: new LarariumDocStore(islandHandle, BAG_IDS.lararium), writable: false });
-      emit("island-ready");
-    } catch (err) {
-      // Non-fatal: TW5 core blob may be missing in dev without build step.
-      console.warn(`[lararium] island seed skipped: ${String(err)}`);
-    }
+    // Cold boot — genesis IS the island doc; register URL in catalog.
+    islandHandle = genesisHandle;
+    const blobEntry = islandHandle.doc()?.blobs?.["tiddlywikicore"];
+    catalogHandle.change((doc) => {
+      doc.tiddlers[LARARIUM_DOC_URI] = {
+        title:     LARARIUM_DOC_URI,
+        text:      islandHandle.url,
+        fields:    {
+          ...(blobEntry?.version && { version: blobEntry.version }),
+          ...(blobEntry?.sha256  && { sha256:  blobEntry.sha256 }),
+        },
+        bag:       CATALOG_DOC_URI,
+        authority: "lararium-boot",
+      };
+    });
   }
+
+  composite.addLayer({ bagId: BAG_IDS.lararium, store: new LarariumDocStore(islandHandle, BAG_IDS.lararium), writable: false });
+  emit("island-ready");
 
   // ── 3b. LaresDoc (ba) — personality bag ──────────────────────────────────
   // Ha → ba oracle: LarariumDoc.tiddlers[LARES_DOC_URI].text = LaresDoc automerge URL.
@@ -245,7 +233,7 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
   // On first boot: seed a new doc, then write the oracle tiddler into LarariumDoc.
   // Zelenka: server is just another peer — no privilege over ba.
   let laresHandle: DocHandle<MemeStoreDoc> | null = null;
-  if (islandHandle) {
+  {
     const laresDocUrl = islandHandle.doc()?.tiddlers?.[LARES_DOC_URI]?.text ?? null;
     if (laresDocUrl) {
       laresHandle = await waitHandleLocal<MemeStoreDoc>(
@@ -258,14 +246,14 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
     composite.addLayer({ bagId: BAG_IDS.lares, store: new AutomergeDocStore(laresHandle, BAG_IDS.lares), writable: false });
   }
 
-  // ── 3b-social. Social plane docs — @identities / @groups / @sessions ─────
+  // ── 3b-social. Social plane docs — @identities / @circles / @sessions ─────
   // Oracle pattern identical to LaresDoc: ha oracle tiddler → automerge: URL → doc.
   // Social docs boot after content Tiga so ha island handle is available for oracle.
   let identitiesHandle: DocHandle<IdentitiesDoc> | null = null;
-  let groupsHandle: DocHandle<GroupsDoc> | null = null;
+  let groupsHandle: DocHandle<CirclesDoc> | null = null;
   let sessionsHandle: DocHandle<SessionsDoc> | null = null;
   let socialPlaneIsNew = false;
-  if (islandHandle) {
+  {
     const identitiesUrl = islandHandle.doc()?.tiddlers?.[IDENTITIES_DOC_URI]?.text ?? null;
     socialPlaneIsNew    = identitiesUrl === null;
     identitiesHandle = identitiesUrl
@@ -273,10 +261,10 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
       : seedIdentitiesDoc(repo);
     composite.addLayer({ bagId: BAG_IDS.identities, store: new AutomergeDocStore(identitiesHandle, BAG_IDS.identities), writable: false });
 
-    const groupsUrl = islandHandle.doc()?.tiddlers?.[GROUPS_DOC_URI]?.text ?? null;
+    const groupsUrl = islandHandle.doc()?.tiddlers?.[CIRCLES_DOC_URI]?.text ?? null;
     groupsHandle = groupsUrl
-      ? await waitHandleLocal<GroupsDoc>(repo, groupsUrl as AutomergeUrl, () => repo.create<GroupsDoc>(emptyGroupsDoc()))
-      : seedGroupsDoc(repo);
+      ? await waitHandleLocal<CirclesDoc>(repo, groupsUrl as AutomergeUrl, () => repo.create<CirclesDoc>(emptyCirclesDoc()))
+      : seedCirclesDoc(repo);
     composite.addLayer({ bagId: BAG_IDS.groups, store: new AutomergeDocStore(groupsHandle, BAG_IDS.groups), writable: false });
 
     const sessionsUrl = islandHandle.doc()?.tiddlers?.[SESSIONS_DOC_URI]?.text ?? null;
@@ -309,6 +297,7 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
     }
 
     // Zelenka: keep oracle tiddlers current on every boot — self, ka, ba, social plane.
+    // Recipes, bag descriptors, and blob descriptors are baked into the genesis artifact.
     reconcileWellKnownTiddlers(
       islandHandle, catalogHandle.url,
       laresHandle?.url,
@@ -316,10 +305,6 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
       groupsHandle.url,
       sessionsHandle.url,
     );
-    // Seed default recipe tiddlers into ha island (idempotent — no-op on resume).
-    seedDefaultRecipes(islandHandle);
-    seedBagDescriptors(islandHandle);
-    seedBlobDescriptors(islandHandle);
   }
 
   // ── 3c. Corpus docs — one bag per corpus child-doc ───────────────────────

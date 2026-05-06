@@ -78,7 +78,7 @@ LarDoc invariant: every Automerge doc in the stack MUST extend `{ schemaVersion:
 ◇ **Decide:**
 - `base-doc.ts` = single canonical home for `MutableLarRecord` + `LarDoc` interface
 - `meme-store-doc.ts` re-exports `MutableLarRecord` from `base-doc.ts` for backward-compat; removes duplicate declaration
-- All doc types (`MemeStoreDoc`, `LarariumDoc`, `CatalogDoc`, `IdentitiesDoc`, `GroupsDoc`, `SessionsDoc`) extend `LarDoc`
+- All doc types (`MemeStoreDoc`, `LarariumDoc`, `CatalogDoc`, `IdentitiesDoc`, `CirclesDoc`, `SessionsDoc`) extend `LarDoc`
 - `AutomergeDocStore` handle type widened to `DocHandle<LarDoc>` — structural typing covers all doc variants
 - All seed functions write to `.tiddlers` submap; corpus self-refs use same pattern
 - `seedBlobDescriptors` writes one tiddler per `LarariumDoc.blobs` entry at `blobDescriptorUri(id)`; called after `seedBagDescriptors` at node boot
@@ -199,10 +199,10 @@ The VM sees only the recipe's bag slice. Both peers boot recipe-aware. The wiki 
 
 ## OODA-HA: M21 — 6-Root 2-Plane + Recipe Schema (2026-05-03)
 
-✶ `corpusLarUri(slug)` returned `lar:///ha.ka.ba/@${slug}` — pos-1 collision with root doc identities.  Browser peer `CORPUS_PREFIX` carried a growing exclusion list (`!== CATALOG_DOC_URI`, etc.) that would not auto-extend as new root docs arrived.  No social plane docs existed (no `@identities`, `@groups`, `@sessions`).  No recipe schema existed.  Tests still asserted the old `corpus:slug` opaque-prefix and `BAG_IDS.system`/`BAG_IDS.room` stub keys.
+✶ `corpusLarUri(slug)` returned `lar:///ha.ka.ba/@${slug}` — pos-1 collision with root doc identities.  Browser peer `CORPUS_PREFIX` carried a growing exclusion list (`!== CATALOG_DOC_URI`, etc.) that would not auto-extend as new root docs arrived.  No social plane docs existed (no `@identities`, `@circles`, `@sessions`).  No recipe schema existed.  Tests still asserted the old `corpus:slug` opaque-prefix and `BAG_IDS.system`/`BAG_IDS.room` stub keys.
 
 ⏿ URI grammar law finalised (pos 0-indexed after `lar:///`):
-  - pos 1 `@name` = root doc identity (exactly 6 reserved — `@lararium`, `@catalog`, `@lares`, `@identities`, `@groups`, `@sessions`)
+  - pos 1 `@name` = root doc identity (exactly 6 reserved — `@lararium`, `@catalog`, `@lares`, `@identities`, `@circles`, `@sessions`)
   - pos 2 `@name` = child doc under a root (corpus: `@catalog/@elyncia`; future session: `@sessions/@slug`)
   - pos 2+ plain = leaf path (rooms: `@lararium/rooms/altar-fire`)
   - `@` NEVER at pos 3+
@@ -210,7 +210,7 @@ The VM sees only the recipe's bag slice. Both peers boot recipe-aware. The wiki 
 
 ◇ Four loops, each gated by `pnpm -r build` + `pnpm --filter @lararium/core test`:
   1. **Loop 1 (breaking)** — remap `corpusLarUri` to pos-2; 6-root grammar docblock; 3 social URI constants; fix both peers' `CORPUS_PREFIX`; update resolver named-doc comment
-  2. **Loop 2 (additive)** — `social-doc.ts` (IdentitiesDoc / GroupsDoc / SessionsDoc + empty constructors); extend `reconcileWellKnownTiddlers` to 6 oracle tiddlers; boot social docs in both peers
+  2. **Loop 2 (additive)** — `social-doc.ts` (IdentitiesDoc / CirclesDoc / SessionsDoc + empty constructors); extend `reconcileWellKnownTiddlers` to 6 oracle tiddlers; boot social docs in both peers
   3. **Loop 3 (additive)** — `recipe.ts` (RecipeTiddler + `recipeUri()`); `seedDefaultRecipes` in island; wired into node peer boot after oracle reconcile
   4. **Test gate** — `composite-store.test.ts` updated: M21 lar: URI bag IDs replace opaque stubs
 
@@ -1091,17 +1091,17 @@ Three pressures converged. (1) `LarariumShell.tsx` held three `(ed.store as any)
 
 ⊙ **Observe:**
 
-`IdentitiesDoc` seeded but never populated. `operator-key.ts` stub — no real keypair. `build:heleuma` did not own IIFE packaging. `source-symbol` single-export only. Multi-dev keypair collision risk. `did:web:github.com:{login}` sketched as principal — web2 smell.
+`IdentitiesDoc` seeded but never populated. `operator-key.ts` stub — no real keypair. `build:heleuma` did not own CJS packaging. `source-symbol` single-export only. Multi-dev keypair collision risk. `did:web:github.com:{login}` sketched as principal — web2 smell.
 
 ↻ **Orient:**
 
 Brooklyn Zelenka / UCAN / Keyhive alignment: `did:key` = self-certifying, Ed25519-rooted.
 - `"did:key:z" + base58btc(0xed 0x01 || 32-byte-pubkey)` — multicodec `0xed01`
 - `verifyingKey` field = BeeKEM CGKA upgrade slot
-- keypair-precedes-docs; causal-islands: ceremony LOGIC in TW5 IIFE, ceremony WRITES via direct `handle.change()` (room bag ≠ social docs island)
+- keypair-precedes-docs; causal-islands: ceremony LOGIC in TW5 CJS, ceremony WRITES via direct `handle.change()` (room bag ≠ social docs island)
 - `build:heleuma --commit` spawns `write-tiddler-memes.ts`; `source-symbol="*"` = whole-file `#source` ahu
 
-⊘ **Decide:** `cold-boot-ceremony.ts` (IIFE-safe, no external deps). `operator-key.ts` real keygen, GitHub-login-keyed file. `socialPlaneIsNew` gate + idempotent tiddler guard in `open-node-lar-peer.ts`.
+⊘ **Decide:** `cold-boot-ceremony.ts` (CJS-safe, no external deps). `operator-key.ts` real keygen, GitHub-login-keyed file. `socialPlaneIsNew` gate + idempotent tiddler guard in `open-node-lar-peer.ts`.
 
 ⊕ **Act:**
 
@@ -1109,7 +1109,7 @@ Brooklyn Zelenka / UCAN / Keyhive alignment: `did:key` = self-certifying, Ed2551
 |---|---|
 | `lararium-tw5/src/cold-boot-ceremony.ts` (NEW) | `didKeyFromVerifyingKey` + `buildCeremonyTiddlers` |
 | `lararium-tw5/memes/modules/cold-boot-ceremony.md` (NEW) | Anchor meme; `heleuma=ka`, `source-symbol="*"` |
-| `lararium-tw5/memes/modules/cold-boot-ceremony-tw5.md` (NEW) | Compiled IIFE library tiddler |
+| `lararium-tw5/memes/modules/cold-boot-ceremony-tw5.md` (NEW) | Compiled CJS library tiddler |
 | `lararium-tw5/scripts/sync-heleuma.ts` | `*` whole-file mode; `--commit` → subprocess |
 | `lararium-node/src/operator-key.ts` (REPLACED) | Real Ed25519 keygen; GitHub-login-keyed filename |
 | `lararium-node/src/open-node-lar-peer.ts` | `operatorIdentity?`; ceremony writes via `handle.change()` |
@@ -1152,7 +1152,7 @@ Brooklyn Zelenka / UCAN / Keyhive alignment: `did:key` = self-certifying, Ed2551
 
 ## M28 Loop 3 — CJS Module Wrapper Cleanup (2026-05-04)
 
-⊙ **Observe:** `format: 'iife'` produced `var __lar_X = (function(exports){...})({})`. IIFE's `exports` param is a fresh `{}` — TW5's injected `exports` never touched. Every `require()` returned `{}`. Deserializer MIME key unregistered. `window.__lararium_tw5_modules` in bundle config had zero runtime readers. `.iife.js` suffix was a lie post-fix.
+⊙ **Observe:** `format: 'cjs'` produced `var __lar_X = (function(exports){...})({})`. CJS's `exports` param is a fresh `{}` — TW5's injected `exports` never touched. Every `require()` returned `{}`. Deserializer MIME key unregistered. `window.__lararium_tw5_modules` in bundle config had zero runtime readers. `.cjs.js` suffix was a lie post-fix.
 
 ↻ **Orient:** TW5 wraps plugin code in CJS scope, injecting real `exports`. CJS output targets that object directly. Deserializer needs MIME-key footer (not a valid TS export identifier). `.tw5.js` suffix = format-agnostic, describes the file correctly. Bundle config gets same treatment; write scripts updated to match.
 
@@ -1164,13 +1164,13 @@ Brooklyn Zelenka / UCAN / Keyhive alignment: `did:key` = self-certifying, Ed2551
 |---|---|
 | `vite.tiddlers.config.ts` | `formats: ["cjs"]`; removed `name:`; `esModule:false`; MIME footer; `*.tw5.js` |
 | `vite.bundle.config.ts` | Same CJS conversion; dead `window.__lararium_tw5_modules` purged |
-| `scripts/write-tiddler-memes.ts` | `.iife.js → .tw5.js`; removed unused `repoRoot` import |
-| `scripts/write-module-meme.ts` | `.iife.js → .tw5.js` |
+| `scripts/write-tiddler-memes.ts` | `.cjs.js → .tw5.js`; removed unused `repoRoot` import |
+| `scripts/write-module-meme.ts` | `.cjs.js → .tw5.js` |
 | `src/meme-ast-entry.ts` | Stale `__lar_meme_ast` global comment replaced |
-| `dist-widgets/*.iife.js` (17) | Renamed + rebuilt → `*.tw5.js`; wrapper gone |
+| `dist-widgets/*.cjs.js` (17) | Renamed + rebuilt → `*.tw5.js`; wrapper gone |
 | All 17 `*-tw5.md` meme bodies | Re-spliced: direct `exports.X = X` |
 
-⤴ **Advance:** 164 tests pass. No `.iife.js` files remain. `require()` to all TW5 module tiddlers returns correct exports for the first time.
+⤴ **Advance:** 164 tests pass. No `.cjs.js` files remain. `require()` to all TW5 module tiddlers returns correct exports for the first time.
 
 ↺ **M29 pressures:**
 - `TW5WorkerProxy` vmFactory at call site

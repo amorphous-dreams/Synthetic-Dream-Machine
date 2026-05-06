@@ -16,7 +16,7 @@
  *   CatalogDoc   extends LarDoc  (adds corpora/rooms legacy, deprecated)
  *   MemeStoreDoc extends LarDoc  (tiddlers carries the payload — no extra fields)
  *   IdentitiesDoc extends LarDoc (tiddler-first: each principal = one tiddler)
- *   GroupsDoc    extends LarDoc  (tiddler-first: each group = one tiddler)
+ *   CirclesDoc    extends LarDoc  (tiddler-first: each group = one tiddler)
  *   SessionsDoc  extends LarDoc  (tiddler-first: each session = one tiddler)
  *
  * Keyhive / Ink & Switch / Zelenka:

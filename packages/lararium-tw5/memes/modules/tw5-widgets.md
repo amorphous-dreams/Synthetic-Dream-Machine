@@ -80,7 +80,7 @@ fields = [
 
 ## Source
 
-`packages/lararium-tw5/src/tw5-widgets.ts` — barrel re-export; not packageable as standalone IIFE (spans multiple widget files + memetic-parser).
+`packages/lararium-tw5/src/tw5-widgets.ts` — barrel re-export; not packageable as standalone CJS (spans multiple widget files + memetic-parser).
 
 ```typescript
 // Widget registry — re-exports all widget classes and wires TW5 tag name mapping.

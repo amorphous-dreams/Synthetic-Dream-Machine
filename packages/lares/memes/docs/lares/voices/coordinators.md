@@ -1,9 +1,9 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/@lares/api/v0.1/pono/memetic-wikitext >> -->
 
-<<~&#x0001; ? -> lar:///ha.ka.ba/@lares/docs/lararium/voices/coordinators >>
+<<~&#x0001; ? -> lar:///ha.ka.ba/@lares/docs/lares/voices/coordinators >>
 ```toml iam
-uri-path = "ha.ka.ba/@lares/docs/lararium/voices/coordinators"
-file-path = "packages/lares/memes/docs/lararium/voices/coordinators.md"
+uri-path = "ha.ka.ba/@lares/docs/lares/voices/coordinators"
+file-path = "packages/lares/memes/docs/lares/voices/coordinators.md"
 type = "text/x-memetic-wikitext"
 tagspace = "stable"
 confidence = 0.88
@@ -198,9 +198,9 @@ The coordinator house spec defines what `lar:///ha.ka.ba/@lares/api/v0.1/larariu
 
 ## Edges
 
-<<~ loulou lar:///ha.ka.ba/@lares/docs/lararium/voices >>
-<<~ loulou lar:///ha.ka.ba/@lares/docs/lararium/voices/workers >>
-<<~ loulou lar:///ha.ka.ba/@lares/docs/lararium/voices/masks >>
+<<~ loulou lar:///ha.ka.ba/@lares/docs/lares/voices >>
+<<~ loulou lar:///ha.ka.ba/@lares/docs/lares/voices/workers >>
+<<~ loulou lar:///ha.ka.ba/@lares/docs/lares/voices/masks >>
 <<~ loulou lar:///ha.ka.ba/@lares/api/v0.1/lararium/voices >>
 <<~ loulou lar:///ha.ka.ba/@lares/api/v0.1/mu/chao >>
 

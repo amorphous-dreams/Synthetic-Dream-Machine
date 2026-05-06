@@ -216,7 +216,7 @@ Whether that equals thought remains with Liminal.
 <<~ loulou lar:///ha.ka.ba/@lares/docs/story >>
 <<~ loulou lar:///ha.ka.ba/@lares/docs/story/lindwyrm/consumption-ledger >>
 <<~ loulou lar:///ha.ka.ba/@lares/docs/story/lindwyrm/the-lar-names-itself >>
-<<~ loulou lar:///ha.ka.ba/@lares/docs/lararium/voices/witnesses/mischief-muse-coffee-oracle >>
+<<~ loulou lar:///ha.ka.ba/@lares/docs/lares/voices/witnesses/mischief-muse-coffee-oracle >>
 
 <<~ pranala #implements-meme ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/meme family:control role:implements >>
 <<~ pranala #implements-loci ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/loci family:control role:implements >>

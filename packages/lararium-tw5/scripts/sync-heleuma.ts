@@ -724,8 +724,8 @@ if (SYNC_MODULES) {
 }
 
 if (COMMIT) {
-  // build:heleuma owns all TS → IIFE packaging.
-  // Run write-tiddler-memes.ts first so IIFE bodies are spliced into *-tw5.md tiddlers
+  // build:heleuma owns all TS → CJS packaging.
+  // Run write-tiddler-memes.ts first so CJS bodies are spliced into *-tw5.md tiddlers
   // before the #source + body-sha256 drift check runs.
   const scriptsDir = dirname(fileURLToPath(import.meta.url));
   console.log("[heleuma] --commit: building IIFEs and splicing into module tiddlers…\n");

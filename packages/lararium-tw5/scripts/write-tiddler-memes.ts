@@ -52,8 +52,8 @@ function processEntry(name: string, kind: "widget" | "filter" | "module"): void 
     return;
   }
 
-  const iife   = readFileSync(iifeFile, "utf8").trimEnd();
-  const sha256 = createHash("sha256").update(iife, "utf8").digest("hex");
+  const cjs   = readFileSync(iifeFile, "utf8").trimEnd();
+  const sha256 = createHash("sha256").update(cjs, "utf8").digest("hex");
 
   const subdir     = kind === "widget" ? "widgets" : kind === "filter" ? "filters" : "modules";
   const modulePath = resolve(tw5Memes, `${subdir}/${name}-tw5.md`);
@@ -65,7 +65,7 @@ function processEntry(name: string, kind: "widget" | "filter" | "module"): void 
   }
 
   let moduleMeme = readFileSync(modulePath, "utf8");
-  moduleMeme = spliceBody(moduleMeme, iife);
+  moduleMeme = spliceBody(moduleMeme, cjs);
   writeFileSync(modulePath, moduleMeme, "utf8");
   console.log(`[write-tiddler-memes] ${subdir}/${name}-tw5.md  sha256=${sha256.slice(0, 16)}…`);
 

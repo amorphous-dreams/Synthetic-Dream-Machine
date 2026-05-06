@@ -99,7 +99,7 @@ write-mode-value-required = "enabled"
 
 ## Source
 
-`packages/lararium-node/src/node-host.ts` — not packageable as IIFE (Node-only path resolution, `@lares/lares` import).
+`packages/lararium-node/src/node-host.ts` — not packageable as CJS (Node-only path resolution, `@lares/lares` import).
 
 ```typescript
 /**
