@@ -6,6 +6,37 @@
 
 ---
 
+## What Just Happened (2026-05-07 — S5.7 Heleuma Coverage + Bag Mirror Reset)
+
+### Three commits closing the canon-promotion arc
+
+**1. Genesis discovery generalized** ([60bbc9ca](lararium-node/scripts/build-genesis-island.ts))
+`build-genesis-island.ts` walks every `packages/*/memes/` directory, not just the two hardcoded roots. Lares plugin tiddler count rose to 259 from 429 walked files. `lararium-core/memes/ast.md` and any future per-package self-describing meme now reaches the engine corpus.
+
+**2. Bag-aware disk projector** ([e6152123](lararium-node/src/disk-projector.ts))
+Fixed the canon leak: prior projector wrote any URI-with-laresRelPath to `packages/lares/memes/` regardless of bag, so wiki edits violated canon-promotion law automatically. New `BagMirrorConfig` shape: each bag opts into a filesystem mirror via `{ bagId, mirrorRoot, toRelPath }`. Three standard strategies in `@lararium/core/bag-mirror.ts`:
+- `laresPathStrategy` — lares carriers
+- `enginePathStrategy` — engine corpus, per-package
+- `roomShadowPathStrategy` — preserves canonical structure under `rooms/{slug}/`
+
+Room edits land in `rooms/{slug}/...` (gitignored). Promotion ceremony (S5.8) moves a tiddler between bags; the disk side effect is a file move from `rooms/` to `packages/`. The git diff IS the operator's signature on canon.
+
+Mirror configs are programmatic in `main.ts` for now; S5.6 admin VM moves them to admin-room tiddlers tagged `$:/tags/LarariumBagMirror`.
+
+**3. Heleuma generator + audit** ([07e4a1ad](../scripts/heleuma.ts))
+`pnpm heleuma` audits every load-bearing source file for a self-describing meme; `pnpm heleuma:write` scaffolds missing memes and fixes iam-block drift. Idempotent.
+
+Filter: source needs heleuma if (in `index.ts` re-exports) OR `// @heleuma:required`, NOT `// @heleuma:exempt`.
+
+Initial audit: 50 missing across core/tw5/node, 8 orphans in tw5 (memes pointing to deleted dreamdeck-tldraw / old core sources). Operator decides which to scaffold and how to handle orphans.
+
+### Architecture clarifications
+
+- **`packages/ha-ka-ba/` doesn't exist as a directory**, by design. `ha.ka.ba` names a URI namespace (engine = ha, catalog = ka, lares = ba); each package owns the memes describing itself, the engine corpus is their *virtual union* materialized in `genesis/island.bin`.
+- **Per-bag mirror, not per-package mirror**: disk layout reflects bag boundaries (lares → `packages/lares/memes/`, engine → per-package `memes/`, room → `rooms/{slug}/`); operator-private bags (identities/groups/sessions/admin) never reach disk.
+
+---
+
 ## What Just Happened (2026-05-07 — Projection Registry + Admin URI Constants)
 
 ### Projections become declarative system plugins
