@@ -19,6 +19,12 @@
 
 import { resolveLarUri } from "./resolver.js";
 
+/** TW5 tag that identifies a bag-mirror-config tiddler in the admin room. */
+export const LARARIUM_BAG_MIRROR_TAG = "$:/tags/LarariumBagMirror";
+
+/** Strategy name as written in admin-room tiddlers. Maps to a MirrorPathFn. */
+export type MirrorStrategyName = "lares" | "engine" | "room-shadow";
+
 /**
  * Convert a lar: URI into a path relative to a mirror root.
  * Returns null when the URI doesn't resolve to a file (virtual / unsupported).

@@ -40,9 +40,52 @@ import {
   LarProjectionRegistry,
   laresPathStrategy, enginePathStrategy, roomShadowPathStrategy,
   BAG_IDS, roomBagId,
+  LARARIUM_BAG_MIRROR_TAG,
 } from "@lararium/core";
-import type { BagMirrorConfig } from "@lararium/core";
+import type { BagMirrorConfig, MirrorPathFn } from "@lararium/core";
 import { exportMemeText }                from "@lararium/tw5";
+import type { TW5Engine }                from "@lararium/tw5";
+
+const STRATEGIES: Record<string, MirrorPathFn> = {
+  lares: laresPathStrategy,
+  engine: enginePathStrategy,
+  "room-shadow": roomShadowPathStrategy,
+};
+
+/**
+ * Read bag-mirror configs from admin-room tiddlers tagged
+ * `$:/tags/LarariumBagMirror`. Falls back to `defaults` when none found.
+ *
+ * Tiddler fields read:
+ *   bag-id       — bag URI to mirror (required)
+ *   mirror-root  — path relative to REPO_ROOT, or absolute (required)
+ *   strategy     — one of lares | engine | room-shadow (required)
+ *   enabled      — "no" disables the mirror; anything else (incl. absent) enables
+ */
+function readBagMirrorsFromAdmin(adminTw5: TW5Engine, defaults: BagMirrorConfig[]): BagMirrorConfig[] {
+  const titles = adminTw5.filterTiddlers(`[tag[${LARARIUM_BAG_MIRROR_TAG}]]`);
+  if (titles.length === 0) {
+    console.log(`[lararium] no admin bag-mirror tiddlers found — using ${defaults.length} programmatic defaults`);
+    return defaults;
+  }
+  const result: BagMirrorConfig[] = [];
+  for (const title of titles) {
+    const fields = (adminTw5.getTiddler(title)?.["fields"] ?? {}) as Record<string, string>;
+    if (fields["enabled"] === "no") continue;
+    const bagId      = fields["bag-id"];
+    const mirrorRoot = fields["mirror-root"];
+    const strategy   = fields["strategy"];
+    const toRelPath  = strategy ? STRATEGIES[strategy] : undefined;
+    if (!bagId || !mirrorRoot || !toRelPath) {
+      console.warn(`[lararium] admin bag-mirror tiddler ${title} missing required fields — skipping`);
+      continue;
+    }
+    const root = mirrorRoot.startsWith("/") ? mirrorRoot : join(REPO_ROOT, mirrorRoot);
+    result.push({ bagId, mirrorRoot: root, toRelPath });
+  }
+  console.log(`[lararium] loaded ${result.length} bag-mirror config(s) from admin room`);
+  return result;
+}
 
 
 // ---------------------------------------------------------------------------
@@ -148,10 +191,10 @@ async function main(): Promise<void> {
   // no-op here.
 
   // Bag mirror configs — which bags reflect to disk, and where.
-  // TODO(S5.6): read from admin-room tiddlers tagged $:/tags/LarariumBagMirror.
-  // Operator-private bags (identities/groups/sessions/admin) are absent — they
-  // never reach disk; they live solely in .lararium/ Automerge storage.
-  const mirrors: BagMirrorConfig[] = [
+  // First read attempt: admin-room tiddlers tagged $:/tags/LarariumBagMirror.
+  // Fallback: programmatic defaults below. Operator-private bags
+  // (identities/groups/sessions/admin) are absent — they never reach disk.
+  const defaultMirrors: BagMirrorConfig[] = [
     // Canonical lares — only written via promotion ceremony (room → lares).
     { bagId: BAG_IDS.lares,    mirrorRoot: LARES_MEMES_ROOT,   toRelPath: laresPathStrategy },
     // Engine corpus — `lar:///ha.ka.ba/@lararium/{pkg}/v{ver}/{path}` →
@@ -160,6 +203,7 @@ async function main(): Promise<void> {
     // Room bag — gitignored scratch. Edits land here; promotion is the move.
     { bagId: roomBagId(roomId), mirrorRoot: join(REPO_ROOT, "rooms", roomId), toRelPath: roomShadowPathStrategy },
   ];
+  const mirrors = readBagMirrorsFromAdmin(result.admin.tw5, defaultMirrors);
 
   projections.registerKind("disk", makeDiskProjectionKind({
     mirrors,
