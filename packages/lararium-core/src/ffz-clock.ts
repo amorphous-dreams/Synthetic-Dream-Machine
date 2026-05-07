@@ -40,14 +40,76 @@ export type FfzLevel = [number, number, number, number, number];
  */
 export const FFZ_DEFAULT_BOUNDS: FfzLevel = [64, 256, 1024, 365, Infinity];
 
-/** Semantic labels for the five levels. */
-export const FFZ_LEVEL_NAMES = [
-  "sub-action", // L0 — Automerge op within a change
-  "action",     // L1 — Automerge change; user gesture
-  "session",    // L2 — Presence slot clock
-  "day",        // L3 — SessionEventLog sequence
-  "epoch",      // L4 — Anti-aliasing guard; OODA_HA_5 strategic cycle
+/** Canonical register names for the five attention-scale bands (Pulse/Beat/Measure/Arc/Theme). */
+export const FFZ_REGISTER_NAMES = [
+  "Pulse",   // L0 — sub-perceptual; operator-invisible system tick
+  "Beat",    // L1 — operator perceptual grain; the anchor level
+  "Measure", // L2 — session-length arc; coherent working window (DEFAULT)
+  "Arc",     // L3 — day/cycle arc; recurrent cadence
+  "Theme",   // L4 — epoch; anti-aliasing guard; unbounded by invariant
 ] as const;
+
+/** Legacy level names — kept for backward compatibility. Prefer FFZ_REGISTER_NAMES. */
+export const FFZ_LEVEL_NAMES = [
+  "sub-action", // L0
+  "action",     // L1
+  "session",    // L2
+  "day",        // L3
+  "epoch",      // L4
+] as const;
+
+/**
+ * FfzClockProfile — a named bound set with a documented L1-grain annotation.
+ *
+ * A profile declares what ONE Beat (L1 tick) means in a given domain context.
+ * The `bounds` field on FfzClock carries the numeric bounds; the profile carries
+ * the semantic annotation so operators and tools can reason about the clock.
+ *
+ * Profiles do NOT require a new FfzClock type — they annotate an existing instance.
+ * Select the active profile via the session tiddler's `clock-context` field.
+ *
+ * Built-in profile names: "session" | "diegetic" | "world-time"
+ * Tool adapters may register additional profiles (e.g., "daw-bar", "market-trade").
+ */
+export interface FfzClockProfile {
+  /** Short machine-readable name, e.g. "session", "diegetic", "world-time". */
+  readonly name:       string;
+  /** Human description of what one Beat (L1 tick) means in this profile. */
+  readonly l1Grain:    string;
+  /** Bounds tuple for this profile. L4 MUST remain Infinity. */
+  readonly bounds:     FfzLevel;
+}
+
+/** Built-in profiles. Bounds remain stubs until real rhythm data arrives. */
+export const FFZ_PROFILES: Record<string, FfzClockProfile> = {
+  "session": {
+    name:    "session",
+    l1Grain: "one operator-agent exchange turn (grounded)",
+    bounds:  [64, 256, 1024, 365, Infinity],
+  },
+  "diegetic": {
+    name:    "diegetic",
+    l1Grain: "one FTLS combat round (~6 seconds in-world)",
+    bounds:  [16, 8, 12, 6, Infinity],
+  },
+  "world-time": {
+    name:    "world-time",
+    l1Grain: "one in-world month (4 weeks)",
+    bounds:  [4, 3, 4, 100, Infinity],
+  },
+} as const;
+
+/**
+ * LarTickCounter — the Lararium node's monotonic sequence number.
+ *
+ * Distinct from FfzClock: carries NO bounded-cyclic semantics.
+ * Serves as the causal join key across event sources:
+ * "TW5 recipe X ran during tick 47291, at session exchange turn 8."
+ *
+ * Driven by the unified tick loop (Verse-style event bus).
+ * NOT an application-layer rhythmic position marker — that role belongs to FfzClock.
+ */
+export type LarTickCounter = number & { readonly __brand: "LarTickCounter" };
 
 export interface FfzClock {
   /** Current level values: [L0, L1, L2, L3, L4]. */

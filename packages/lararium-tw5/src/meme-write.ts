@@ -69,7 +69,6 @@ export function inferChildMemeTitle(
 export function buildDirectRecord(
   title:     string,
   fields:    Record<string, string>,
-  revision:  string,
   targetBag: NonNullable<LarTiddlerRecord["bag"]> = "room",
 ): LarTiddlerRecord {
   const textVal = fields["text"];
@@ -81,7 +80,6 @@ export function buildDirectRecord(
         .map(([k, v]) => [k, String(v)]),
     ),
     ...(textVal !== undefined ? { text: textVal } : {}),
-    revision,
     bag: targetBag,
   };
 }

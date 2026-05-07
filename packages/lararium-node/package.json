@@ -15,16 +15,19 @@
     "lararium": "./dist/cli.js"
   },
   "scripts": {
-    "build": "tsc",
-    "build:genesis": "tsx scripts/build-genesis-island.ts",
-    "test:quine": "tsx scripts/test-quine.ts",
-    "typecheck": "tsc --noEmit",
-    "test": "NODE_OPTIONS=--experimental-vm-modules pnpm exec jest --config jest.config.cjs",
-    "dev": "tsx src/main.ts",
-    "start": "node dist/src/main.js",
-    "build-snapshot": "tsx scripts/build-snapshot.ts",
-    "e2e": "playwright test --config playwright.config.ts",
-    "e2e:headed": "playwright test --config playwright.config.ts --headed"
+    "build":          "tsc",
+    "build:genesis":  "tsx scripts/build-genesis-island.ts",
+    "lararium:init":  "tsx scripts/init-lararium.ts",
+    "lararium:reset": "rm -rf .lararium genesis/social-bootstrap.json && tsx scripts/init-lararium.ts",
+    "lararium:fresh": "pnpm run lararium:reset && tsx src/main.ts",
+    "lararium:pack":  "echo 'lararium:pack — nexus connect bundle (S9, not yet implemented)'",
+    "test:quine":     "tsx scripts/test-quine.ts",
+    "typecheck":      "tsc --noEmit",
+    "test":           "NODE_OPTIONS=--experimental-vm-modules pnpm exec jest --config jest.config.cjs",
+    "dev":            "tsx src/main.ts",
+    "start":          "node dist/src/main.js",
+    "e2e":            "playwright test --config playwright.config.ts",
+    "e2e:headed":     "playwright test --config playwright.config.ts --headed"
   },
   "dependencies": {
     "@automerge/automerge": "^3.2.6",

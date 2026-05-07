@@ -33,9 +33,9 @@ import WebSocket                         from "isomorphic-ws";
 import { resolve }                       from "path";
 import { openNodeLarPeer }               from "./open-node-lar-peer.js";
 import { generateOrLoadOperatorKeypair } from "./operator-key.js";
-import { LarDiskProjector }              from "./disk-projector.js";
+import { makeDiskProjectionKind }        from "./projection-kinds.js";
 import { LARES_MEMES_ROOT }              from "./node-host.js";
-import { ReactionEngine }                from "@lararium/core";
+import { LarProjectionRegistry } from "@lararium/core";
 import { exportMemeText }                from "@lararium/tw5";
 
 
@@ -115,8 +115,9 @@ async function main(): Promise<void> {
     console.log(`[lararium] HTTP+WS server on :${port}  (GET /api/health  WS /ws)`);
   });
 
-  // keypair-precedes-docs: generate/load device Ed25519 identity before any doc opens.
-  const operatorIdentity = await generateOrLoadOperatorKeypair(storageDir);
+  // S7.1: device keypair generation moves to scripts/init-lararium.ts (lararium:init).
+  // Loaded here for future use by createNodeSession / capability layer.
+  const _operatorIdentity = await generateOrLoadOperatorKeypair(storageDir);
 
   const result = await openNodeLarPeer({
     hostId:     "lararium-node",
@@ -124,7 +125,6 @@ async function main(): Promise<void> {
     storageDir,
     wss,
     catalogUrl,
-    operatorIdentity,
     onPhase: (phase) => {
       state.phase = phase;
       console.log(`[lararium] phase → ${phase}`);
@@ -132,18 +132,21 @@ async function main(): Promise<void> {
   });
   const { peer, tw5 } = result;
 
-  // Reaction bus — maintains ReactionGraph from CRDT changes.
-  const engine = new ReactionEngine();
-  engine.boot(tw5);
-  peer.addProjection(engine);
+  // Projection registry — declarative wiring for system projections.
+  // Configs are programmatic here; migrate to admin-room tiddlers tagged
+  // $:/tags/LarariumProjection once the admin VM lands (S5.6).
+  const projections = new LarProjectionRegistry();
 
-  // Disk projector — write meme files on any lar: change.
-  // exportMemeText gives lossless .md round-trip (TOML iam block + wikitext body).
-  const projector = new LarDiskProjector(
-    LARES_MEMES_ROOT,
-    async (uri) => { try { return exportMemeText(tw5, uri); } catch { return null; } },
-  );
-  projector.start(peer.store);
+  // TODO: ReactionEngine not yet implemented in @lararium/core. Re-register
+  // the "reaction" kind once it lands; current ReactionGraph maintenance is a
+  // no-op here.
+
+  projections.registerKind("disk", makeDiskProjectionKind({
+    defaultLaresRoot: LARES_MEMES_ROOT,
+    renderFn: async (uri) => { try { return exportMemeText(tw5, uri); } catch { return null; } },
+  }));
+
+  await projections.enable({ id: "disk", kind: "disk", enabled: true, fields: {} }, peer);
 
   console.log(`[lararium] live — room: ${roomId} | storage: ${storageDir}`);
   console.log(`[lararium] catalog:  ${result.catalogHandleUrl ?? "(none)"}`);

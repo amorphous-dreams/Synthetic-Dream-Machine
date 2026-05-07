@@ -219,3 +219,25 @@ export function corpusLarUri(slug: string): string {
 export function roomLarUri(slug: string): string {
   return `lar:///ha.ka.ba/@lararium/rooms/${slug}`;
 }
+
+/**
+ * Admin room — operator-private state for a single Lararium node.
+ *
+ * Federation: scoped to the operator's own devices (via cap=infrastructure
+ * device delegations, S7.1 / ingress gate S7.4). Never federates to room peers.
+ *
+ * Holds:
+ *   - DeviceDelegationTiddlers (operator-private credential proofs)
+ *   - ProjectionTiddlers tagged $:/tags/LarariumProjection (declarative manifest)
+ *   - SessionTiddlers (operator → agent, not room → agent)
+ *   - Future: ceremony state (key rotation, invite acceptance)
+ */
+export const ADMIN_ROOM_SLUG = "admin";
+export const ADMIN_ROOM_URI  = roomLarUri(ADMIN_ROOM_SLUG);
+/**
+ * Admin Automerge doc URI — direct child of @lararium, sibling to
+ * @identities / @circles / @sessions in the @-scope namespace.
+ * Distinct from ADMIN_ROOM_URI: the logical room lives at pos-3 under /rooms/;
+ * the doc itself sits at pos-2 as its own namespaced child.
+ */
+export const ADMIN_BAG_ID = "lar:///ha.ka.ba/@lararium/@admin";

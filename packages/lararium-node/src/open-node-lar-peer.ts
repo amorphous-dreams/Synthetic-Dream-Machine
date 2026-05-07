@@ -22,8 +22,9 @@
  * waitHandleLocal: uses DocHandle.merge() (present in @automerge/automerge-repo@2.5.5).
  */
 
-import { readFileSync, writeFileSync, mkdirSync } from "fs";
-import { join }                         from "path";
+import { readFileSync, writeFileSync, mkdirSync, existsSync } from "fs";
+import { join, dirname }                from "path";
+import { fileURLToPath }                from "url";
 import type { DocHandle, AutomergeUrl } from "@automerge/automerge-repo";
 import { Repo }                         from "@automerge/automerge-repo";
 import { NodeFSStorageAdapter }         from "@automerge/automerge-repo-storage-nodefs";
@@ -36,20 +37,33 @@ import {
   AutomergeDocStore, LarariumDocStore,
   CompositeStore, corpusBagId,
   emptyMemeStoreDoc,
-  emptyIdentitiesDoc, emptyCirclesDoc, emptySessionsDoc,
   LARARIUM_DOC_URI, CATALOG_DOC_URI, LARES_DOC_URI,
   IDENTITIES_DOC_URI, CIRCLES_DOC_URI, SESSIONS_DOC_URI,
   corpusLarUri, roomLarUri, BAG_IDS, recipeUri,
   VmPool,
 }                                       from "@lararium/core";
 import type { MemeRecipeVm, LarOpenPhase } from "@lararium/core";
-import { TW5Engine, MemeSyncAdaptor, DirectMemeRecipeVm, buildCeremonyTiddlers } from "@lararium/tw5";
-import type { OperatorIdentity } from "./operator-key.js";
+import { TW5Engine, MemeSyncAdaptor, DirectMemeRecipeVm } from "@lararium/tw5";
 import {
   loadGenesisIsland, reconcileIslandFromGenesis,
   reconcileWellKnownTiddlers,
-  seedLaresDoc, seedIdentitiesDoc, seedCirclesDoc, seedSessionsDoc,
+  seedLaresDoc,
+  createSessionEventLog,
 } from "./genesis-island.js";
+import { LarEventBusImpl, DEFAULT_RINGS } from "./lar-event-bus-impl.js";
+import { LAR_EVENT } from "@lararium/core";
+
+const __dir = dirname(fileURLToPath(import.meta.url));
+
+// genesis/social-bootstrap.json — written by `lararium:init`, read here as a boot-path
+// infrastructure exception (same pattern as catalog-url). Contains the social-plane
+// plugin container: a single lar:/// tiddler with packed oracle tiddlers in its text.
+// Primary source for social doc AutomergeUrls on the init node; island oracle tiddlers
+// serve as the fallback for replica nodes that sync the island doc from a peer.
+const SOCIAL_BOOTSTRAP_PATH = join(__dir, "../genesis/social-bootstrap.json");
+
+// Title of the social bootstrap plugin tiddler baked by lararium:init.
+export const SOCIAL_BOOTSTRAP_PLUGIN_TITLE = "lar:///ha.ka.ba/@lararium/bootstrap/social";
 
 /** @see LarOpenPhase in @lararium/core */
 export type NodeOpenPhase = LarOpenPhase;
@@ -69,13 +83,6 @@ export interface NodeLarPeerOptions {
   recipeUri?: string;
   onPhase?:   (phase: NodeOpenPhase) => void;
   /**
-   * Device Ed25519 operator identity for the cold-boot ceremony.
-   * When present and IdentitiesDoc is freshly seeded (void-start), the ceremony
-   * writes an IdentityTiddler + operators CircleTiddler into the social docs.
-   * Omitting this skips the ceremony (useful for tests / replica nodes).
-   */
-  operatorIdentity?: OperatorIdentity;
-  /**
    * Optional factory for the per-recipe VM.  Defaults to DirectMemeRecipeVm (same-thread).
    * Pass a TW5WorkerProxy factory for Worker isolation (Sprint 6 node Worker isolation).
    *
@@ -91,6 +98,10 @@ export interface NodeLarPeerResult {
   tw5:              TW5Engine;
   pool:             VmPool<MemeRecipeVm>;
   repo:             Repo;
+  /** Started event bus — ingress rings registered; tick loop running at 20 Hz. */
+  eventBus:         LarEventBusImpl;
+  /** Composite store — pass to createNodeSession(); use store.put() for all tiddler writes. */
+  store:            CompositeStore;
   /** Automerge URL of the catalog doc. */
   catalogHandleUrl: string;
   /** Automerge URL of the LarariumDoc — share this as the connect invite URL. */
@@ -124,7 +135,7 @@ async function waitHandleLocal<T>(
 }
 
 export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLarPeerResult> {
-  const { hostId, roomId, storageDir, wss, catalogUrl, recipeUri: recipeUriOpt, onPhase, vmFactory, operatorIdentity } = opts;
+  const { hostId, roomId, storageDir, wss, catalogUrl, recipeUri: recipeUriOpt, onPhase, vmFactory } = opts;
   const emit = (p: NodeOpenPhase) => onPhase?.(p);
   // Stable identity URI for this room — the map key in CatalogDoc.rooms.
   const roomKey = roomLarUri(roomId);
@@ -247,65 +258,72 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
   }
 
   // ── 3b-social. Social plane docs — @identities / @circles / @sessions ─────
-  // Oracle pattern identical to LaresDoc: ha oracle tiddler → automerge: URL → doc.
-  // Social docs boot after content Tiga so ha island handle is available for oracle.
-  let identitiesHandle: DocHandle<IdentitiesDoc> | null = null;
-  let groupsHandle: DocHandle<CirclesDoc> | null = null;
-  let sessionsHandle: DocHandle<SessionsDoc> | null = null;
-  let socialPlaneIsNew = false;
-  {
-    const identitiesUrl = islandHandle.doc()?.tiddlers?.[IDENTITIES_DOC_URI]?.text ?? null;
-    socialPlaneIsNew    = identitiesUrl === null;
-    identitiesHandle = identitiesUrl
-      ? await waitHandleLocal<IdentitiesDoc>(repo, identitiesUrl as AutomergeUrl, () => repo.create<IdentitiesDoc>(emptyIdentitiesDoc()))
-      : seedIdentitiesDoc(repo);
-    composite.addLayer({ bagId: BAG_IDS.identities, store: new AutomergeDocStore(identitiesHandle, BAG_IDS.identities), writable: false });
+  // Causal-island law: the server finds; it never seeds. Run `lararium:init` before
+  // first server start to establish these docs via scripts/init-lararium.ts.
+  //
+  // URL source priority:
+  //   1. genesis/social-bootstrap.json plugin container (init node — authoritative)
+  //   2. ha island oracle tiddlers (replica nodes that synced the island doc from a peer)
+  //
+  // The bootstrap plugin is also pushed to preloadedTiddlers so TW5 boots with the
+  // oracle tiddlers available as plugin shadows. The lararium-bootstrap-sync startup
+  // module (lararium-boot-shadows.json) promotes them to regular wiki tiddlers after
+  // the syncer initialises, causing each plugin to sync as one package to the CRDT.
+  //
+  // Social bags are writable so composite.put(record) routes to them by bag field.
+  let bootstrapPlugin: Record<string, unknown> | null = null;
+  if (existsSync(SOCIAL_BOOTSTRAP_PATH)) {
+    try {
+      bootstrapPlugin = JSON.parse(readFileSync(SOCIAL_BOOTSTRAP_PATH, "utf8")) as Record<string, unknown>;
+    } catch { /* malformed — fall through to island oracle fallback */ }
+  }
 
-    const groupsUrl = islandHandle.doc()?.tiddlers?.[CIRCLES_DOC_URI]?.text ?? null;
-    groupsHandle = groupsUrl
-      ? await waitHandleLocal<CirclesDoc>(repo, groupsUrl as AutomergeUrl, () => repo.create<CirclesDoc>(emptyCirclesDoc()))
-      : seedCirclesDoc(repo);
-    composite.addLayer({ bagId: BAG_IDS.groups, store: new AutomergeDocStore(groupsHandle, BAG_IDS.groups), writable: false });
+  const bootstrapTiddlers: Record<string, { text?: string }> = bootstrapPlugin
+    ? (JSON.parse(bootstrapPlugin["text"] as string) as { tiddlers: Record<string, { text?: string }> }).tiddlers
+    : {};
 
-    const sessionsUrl = islandHandle.doc()?.tiddlers?.[SESSIONS_DOC_URI]?.text ?? null;
-    sessionsHandle = sessionsUrl
-      ? await waitHandleLocal<SessionsDoc>(repo, sessionsUrl as AutomergeUrl, () => repo.create<SessionsDoc>(emptySessionsDoc()))
-      : seedSessionsDoc(repo);
-    composite.addLayer({ bagId: BAG_IDS.sessions, store: new AutomergeDocStore(sessionsHandle, BAG_IDS.sessions), writable: false });
+  const identitiesUrl =
+    bootstrapTiddlers[IDENTITIES_DOC_URI]?.text ??
+    islandHandle.doc()?.tiddlers?.[IDENTITIES_DOC_URI]?.text ?? null;
+  const circlesUrl =
+    bootstrapTiddlers[CIRCLES_DOC_URI]?.text ??
+    islandHandle.doc()?.tiddlers?.[CIRCLES_DOC_URI]?.text    ?? null;
+  const sessionsUrl =
+    bootstrapTiddlers[SESSIONS_DOC_URI]?.text ??
+    islandHandle.doc()?.tiddlers?.[SESSIONS_DOC_URI]?.text   ?? null;
 
-    // Cold-boot ceremony: write operator principal on void-start.
-    // Runs before TW5 boots so the sync adaptor picks up the tiddlers on first load.
-    // Guard: skip if identity tiddler already exists (idempotent across replica boots).
-    if (socialPlaneIsNew && operatorIdentity && identitiesHandle && groupsHandle) {
-      const tiddlers = buildCeremonyTiddlers(operatorIdentity.verifyingKey, operatorIdentity.displayName);
-      for (const t of tiddlers) {
-        if (t.bag === (IDENTITIES_DOC_URI as string)) {
-          identitiesHandle.change((doc) => {
-            if (!doc.tiddlers[t.title]) {
-              doc.tiddlers[t.title] = { title: t.title, bag: t.bag, authority: t.authority, fields: { ...t.fields } };
-            }
-          });
-        } else {
-          groupsHandle.change((doc) => {
-            if (!doc.tiddlers[t.title]) {
-              doc.tiddlers[t.title] = { title: t.title, bag: t.bag, authority: t.authority, fields: { ...t.fields } };
-            }
-          });
-        }
-      }
-      console.log(`[lararium] cold-boot ceremony complete — operator did:key written to IdentitiesDoc`);
-    }
-
-    // Zelenka: keep oracle tiddlers current on every boot — self, ka, ba, social plane.
-    // Recipes, bag descriptors, and blob descriptors are baked into the genesis artifact.
-    reconcileWellKnownTiddlers(
-      islandHandle, catalogHandle.url,
-      laresHandle?.url,
-      identitiesHandle.url,
-      groupsHandle.url,
-      sessionsHandle.url,
+  if (!identitiesUrl || !circlesUrl || !sessionsUrl) {
+    throw new Error(
+      `[lararium] social plane not initialised — run: pnpm --filter @lararium/node lararium:init\n` +
+      `  missing: ${[!identitiesUrl && "@identities", !circlesUrl && "@circles", !sessionsUrl && "@sessions"].filter(Boolean).join(", ")}`,
     );
   }
+
+  const identitiesHandle = await waitHandleLocal<IdentitiesDoc>(
+    repo, identitiesUrl as AutomergeUrl,
+    () => { throw new Error(`[lararium] @identities doc not found in local storage — sync may be incomplete`); },
+  );
+  const groupsHandle = await waitHandleLocal<CirclesDoc>(
+    repo, circlesUrl as AutomergeUrl,
+    () => { throw new Error(`[lararium] @circles doc not found in local storage — sync may be incomplete`); },
+  );
+  const sessionsHandle = await waitHandleLocal<SessionsDoc>(
+    repo, sessionsUrl as AutomergeUrl,
+    () => { throw new Error(`[lararium] @sessions doc not found in local storage — sync may be incomplete`); },
+  );
+
+  composite.addLayer({ bagId: BAG_IDS.identities, store: new AutomergeDocStore(identitiesHandle, BAG_IDS.identities), writable: true });
+  composite.addLayer({ bagId: BAG_IDS.groups,     store: new AutomergeDocStore(groupsHandle,     BAG_IDS.groups),     writable: true });
+  composite.addLayer({ bagId: BAG_IDS.sessions,   store: new AutomergeDocStore(sessionsHandle,   BAG_IDS.sessions),   writable: true });
+
+  // Zelenka: keep oracle tiddlers current on every boot — self, ka, ba, social plane.
+  reconcileWellKnownTiddlers(
+    islandHandle, catalogHandle.url,
+    laresHandle?.url,
+    identitiesHandle.url,
+    groupsHandle.url,
+    sessionsHandle.url,
+  );
 
   // ── 3c. Corpus docs — one bag per corpus child-doc ───────────────────────
   // Isomorphic oracle path: read from CatalogDoc.tiddlers keyed by corpusLarUri(slug).
@@ -450,6 +468,12 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
     } catch { /* malformed — skip */ }
   }
 
+  // Preload the social bootstrap plugin container.
+  // The lararium-bootstrap-sync startup module (lararium-boot-shadows.json) runs after
+  // the syncer initialises and promotes this plugin to a regular wiki tiddler, causing
+  // the syncer to save it as one package to the CRDT store.
+  if (bootstrapPlugin) preloadedTiddlers.push(bootstrapPlugin);
+
   await tw5.boot(undefined, preloadedTiddlers.length > 0 ? preloadedTiddlers : undefined);
   emit("tw5-booted");
 
@@ -470,6 +494,89 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
   await pool.get(resolvedRecipeUri, () => _vmFactory(resolvedRecipeUri, tw5, vmBagStack));
   peer.attachVmPool(pool);
 
+  // ── 11. Event bus — ingress rings + tick loop ─────────────────────────────
+  const eventBus = new LarEventBusImpl(20);
+  for (const ring of DEFAULT_RINGS) eventBus.registerRing(ring);
+  eventBus.start();
+
   emit("live");
-  return { peer, tw5, pool, repo, catalogHandleUrl: catalogHandle.url, larariumDocUrl: islandHandle?.url ?? null, phase: "live" };
+  return {
+    peer, tw5, pool, repo, eventBus,
+    store: composite,
+    catalogHandleUrl: catalogHandle.url,
+    larariumDocUrl: islandHandle?.url ?? null,
+    phase: "live",
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Session lifecycle — create a session + seed its event log
+// ---------------------------------------------------------------------------
+
+export interface CreateNodeSessionOptions {
+  sessionId:   string;
+  operatorDid: string;
+  agentId:     string;
+}
+
+export interface NodeSessionResult {
+  sessionTiddlerUri: string;
+  eventLogUrl:       string;
+}
+
+/**
+ * Open a new session: writes a SessionTiddler into the CRDT via the composite
+ * store (TW5 VM path), creates the per-session SessionEventLog child doc, and
+ * wires `session.grounded` emission onto the event bus for L1 clock ticks.
+ *
+ * Call after `openNodeLarPeer` returns. One call per operator session.
+ * Pass `result.store` (the CompositeStore) — session tiddler routes to the
+ * sessions bag because that layer is registered as writable.
+ */
+export async function createNodeSession(
+  opts:     CreateNodeSessionOptions,
+  repo:     Repo,
+  store:    CompositeStore,
+  eventBus: LarEventBusImpl,
+): Promise<NodeSessionResult> {
+  const { sessionId, operatorDid, agentId } = opts;
+  const tiddlerUri = `lar:///ha.ka.ba/@sessions/${sessionId}`;
+  const now = new Date().toISOString();
+
+  // Create the event log child doc first so its URL is available for the tiddler.
+  // repo.create() is unavoidable here (new Automerge doc). The self-ref oracle
+  // tiddler inside it is a direct write on a brand-new doc not yet in the composite.
+  const logHandle = createSessionEventLog(repo, sessionId);
+
+  // Write session tiddler through the composite store — routes to sessions bag
+  // (writable: true) because record.bag === SESSIONS_DOC_URI.
+  // This is the TW5 VM write path: composite.put() → AutomergeDocStore → CRDT.
+  await store.put(
+    {
+      title:     tiddlerUri,
+      text:      "",
+      fields: {
+        id:            sessionId,
+        operatorDid,
+        agentId,
+        startedAt:     now,
+        state:         "active",
+        eventLogUrl:   logHandle.url,
+        eventLogHeads: "",
+      },
+      bag:       SESSIONS_DOC_URI,
+      authority: "lararium-session",
+    },
+    { kind: "operator-import", sessionId },
+  );
+
+  // Wire session.grounded events from the event bus so L1 clock ticks can fire.
+  eventBus.subscribe(LAR_EVENT.SESSION_GROUNDED, (e) => {
+    const ev = e as { sessionId?: string };
+    if (ev.sessionId === sessionId) {
+      console.log(`[session:${sessionId}] grounded — L1 tick fires`);
+    }
+  });
+
+  return { sessionTiddlerUri: tiddlerUri, eventLogUrl: logHandle.url };
 }

@@ -36,7 +36,11 @@ Social graph control inverts: circles are owned by their center, not the platfor
 | S5 | Quine Round-Trip Verification | ✅ Complete | Wire `.tw5.js` CJS into genesis; verify self-hosting round-trip |
 | S5.1 | Meme Namespace Consolidation | ✅ Complete | grammar→pono merge; misfile audit (5 moves); voice-house under lares/ |
 | S5.2 | Package Reboot | ✅ Complete | Delete lararium-app/tldraw/web; stub lararium-browser, dreamdeck-tldraw, dreamdeck-app |
-| S6 | SessionEventLog | 🔴 Active | Per-session append-only Automerge doc; `broadcast()` for presence |
+| S5.3 | FfzClock Type | ✅ Complete | `FfzClock` + clock ops in `@lararium/core`; `ExchangeState` FSM; `ffzSerialize` |
+| S5.4 | Multi-Clock Architecture | ✅ Complete | `PresenceSlot` multi-clock; `WorldClockTiddler`; `ObservedClockTiddler`; `LarEventBus` interface; `LarTickCounter` |
+| S5.5 | Genesis Bootstrap Causal Correction | 🟡 In progress | Init script extracted; projection registry landed; admin URI constants added; admin VM lift pending |
+| S5.6 | Admin VM Lift | 🔴 Next | Stand up admin TW5 VM in node peer; move `createNodeSession` and operator identity into admin doc (`lar:///ha.ka.ba/@lararium/@admin`) |
+| S6 | SessionEventLog | ✅ Complete | Per-session append-only Automerge doc; `broadcast()` for presence |
 | S7 | Circles + Identities Capability Layer | ⬜ Designed | Keyhive/UCAN device delegation; Seitan token circle invites |
 | S8 | Kowloon Bridge | ⬜ Designed | `KowloonOutbox` draft queue + `KowloonInbox` feed mirror; `elyncia.app` deployment |
 | S9 | lararium-browser scaffold | ⬜ Queued | Full Automerge browser peer; IndexedDB; broadcast() presence engine; OPFS option |
@@ -199,24 +203,56 @@ Social graph control inverts: circles are owned by their center, not the platfor
 
 ---
 
-## S5.3 — FfzClock Type ⬜ Queued (precedes S6 close)
+## S5.3 — FfzClock Type ✅ Complete
 
 **Goal:** Define `FfzClock` in `@lararium/core` before S6 closes so `SessionEvent` and `PresenceSlot` use the right clock type from the start.
 
-### Tasks
+### Completed
 
-- [ ] Add `FfzClock`, `FfzLevel` types to `@lararium/core/src/ffz-clock.ts`
-- [ ] Add `ffzTick`, `ffzCompare`, `ffzMerge` functions
-- [ ] Export from `@lararium/core` index
-- [ ] Wire into `PresenceSlot.clock` and `SessionEvent.clock` type shapes in `social-doc.ts`
+- [x] `FfzLevel`, `FfzClock`, `FFZ_DEFAULT_BOUNDS`, `FFZ_LEVEL_NAMES`, `FFZ_REGISTER_NAMES` in `ffz-clock.ts`
+- [x] `ffzZero`, `ffzTick`, `ffzCompare`, `ffzMerge`, `ffzSerialize`, `ffzDeserialize`
+- [x] `ExchangeState` FSM type (`idle → operator-sent → agent-working → agent-responded → grounded → blocked`)
+- [x] `FfzClockProfile` interface + `FFZ_PROFILES` map (session / diegetic / world-time)
+- [x] `LarTickCounter` branded number type
+- [x] Exported from `@lararium/core` index
 
-### Key decisions (from FFZ Chronometer research)
+### Key decisions
 
 - L4 epoch MUST be unbounded (epoch aliasing problem)
-- `bounds` companion field controls rollover behavior; L0–L3 bounded, L4 = `Infinity`
-- `actorId` retained as tie-breaker — preserves Automerge change-ordering contract
-- Final bound values should be coprime primes (TBD); stub as `[64, 256, 1024, 365, Infinity]`
+- L1 = operator perceptual grain; L1 tick fires on `"grounded"` ExchangeState transition (Clark-Brennan 1991)
+- `actorId` tie-breaker preserves Automerge ordering contract
+- Stub bounds `[64, 256, 1024, 365, Infinity]`; coprime-prime candidates noted: `[59, 251, 1021, 367, Infinity]`
 - Reference: `packages/lares/lararium-research/FFZ-CHRONOMETER.md`
+
+---
+
+## S5.4 — Multi-Clock Architecture ✅ Complete
+
+**Goal:** Extend `@lararium/core` type contracts to support multiple concurrent clocks, world/observed clocks, and the Verse-shaped event bus interface.
+
+### Completed
+
+- [x] `PresenceSlot.clocks: Record<string, FfzClock>` replaces single `clock: FfzClock`
+- [x] `PresenceSlot.worldClockRef?: string` — lar: URI pointer to WorldClockTiddler
+- [x] `PresenceSlot.exchangeState?: ExchangeState`
+- [x] `WorldClockTiddler` interface: `writePolicy`, `tickPolicy: "autonomous"|"freeze"|"manual"`, `lastTickedAt`
+- [x] `ObservedClockTiddler` interface: LWW-Register cluster with hwm (Flink watermark), stale flag, bi-temporal anchor
+- [x] `WorldTimeAdvancedEvent` interface: bi-temporal event (Verraes 2022) with `atSessionClock` + `atTickCounter`
+- [x] `lar-event-bus.ts`: `Cancelable`, `LarEventStream<T>`, `IngressRingDescriptor`, `LarEventBus` interface, `LAR_EVENT` constants
+- [x] All compile clean; `pnpm tsc --noEmit` zero errors
+
+### Key decisions
+
+- Two time bases that must not conflate: Automerge async I/O vs simulation tick (configurable fixed-rate)
+- CRDT merges always-commit; no STM rollback across Automerge boundaries
+- Five clock domains: two owned (tick counter + session clock), three observed (connected-world, diegetic, world calendar)
+- `externalClockHwm` never decreases — implements Flink watermark; triggers use `hwm >= threshold`, not `value == threshold`
+- `branch` tasks scope to session lifetime — structural leak prevention for Automerge listeners
+
+### Runtime work deferred to `@lararium/node`
+
+- `LarEventBusImpl` — concrete ingress ring + configurable multi-rate tick loop
+- `WorldClockTickService` — `tickPolicy` dispatch
 
 ---
 
@@ -226,11 +262,13 @@ Social graph control inverts: circles are owned by their center, not the platfor
 
 ### Tasks
 
-- [ ] Add `eventLogUrl`, `eventLogHeads` fields to `SessionTiddler` in `social-doc.ts`
-- [ ] Add `SessionEventLog` doc type + `SessionEvent` entry type (`clock: FfzClock`) in `social-doc.ts`
-- [ ] Add `seedSessionEventLog(repo, sessionId)` in `genesis-island.ts`
-- [ ] Define `PresenceSlot` type (`clock: FfzClock`) in `social-doc.ts` or new `presence.ts`
-- [ ] Document `broadcast()` usage pattern for presence (no separate doc needed)
+- [x] Add `eventLogUrl`, `eventLogHeads` fields to `SessionTiddler` in `social-doc.ts`
+- [x] Add `SessionEventLog` doc type + `SessionEvent` entry type (`clock: FfzClock`, `tickCounter: LarTickCounter`) in `social-doc.ts`
+- [x] Add `seedSessionEventLog(repo, sessionId, sessionsHandle)` in `genesis-island.ts`
+- [x] `PresenceSlot` with `clocks: Record<string, FfzClock>` defined in `social-doc.ts`
+- [x] `broadcast()` pattern documented via `PresenceSlot` type — no separate doc needed
+- [x] Wire `seedSessionEventLog` into session open path via `createNodeSession()`
+- [x] `LAR_EVENT.SESSION_GROUNDED` subscriber wired in `createNodeSession()`; callers enqueue via `eventBus.enqueueToRing("session-ring", …)`
 
 ### Key design decisions
 
@@ -245,22 +283,74 @@ Social graph control inverts: circles are owned by their center, not the platfor
 
 ---
 
-## S7 — Circles + Identities Capability Layer ⬜ Designed
+## S7 — Circles + Identities Capability Layer 🔴 Active
 
-**Goal:** `IdentitiesDoc` and `CirclesDoc` acquire real protocol integrity.
+**Goal:** `IdentitiesDoc` and `CirclesDoc` acquire real protocol integrity across a
+hostile multi-Nexus mesh where not all peers are aligned or interoperable.
 
-### Key design decisions (from research)
+### Key design decisions (from jzellis/kowloon audit + DreamNet redesign, 2026-05-06)
 
-- `IdentitiesDoc`: Keyhive person-as-group model — each person = a group of their device `did:key`s; UCAN delegation chain proves "Device B belongs to me". `IdentityTiddler.verifyingKey` already present.
-- `CirclesDoc`: Keyhive convergent capabilities + Seitan token invitations (@localfirst/auth); nexus admin = founding key for system circles; users = founding key for personal circles. `CircleTiddler.encryptedShareHint` already present.
-- ERA paper (arXiv:2601.22963): epoch-resolved arbitration for concurrent admin revocations.
+**Confirmed from Kowloon source:**
+- Follow = local circle add, never federated, never announced. `shouldFederate.js` confirms.
+- Visibility = writer sets `to`/`canReply`/`canReact` on content; reader's circle membership
+  is evaluated locally at read time. No remote server query at check time.
+- Block/Mute = local circles, never cross-announced. Actor-level only.
+- Circle integrity: signed over `id|name|to|sortedMemberList` by owner's key.
 
-### Tasks
+**DreamNet divergence (what Ellis cannot do):**
+- Identity anchor = keypair (`did:key`), not server domain. Server is just another peer.
+- Circles span Nexus boundaries via Keyhive Group CRDT — not single-actor on single-server.
+- Hostile Nexus threat: Nexus-level trust assertions + nonce burn (anti-replay).
+  Ellis' block is actor-level only; DreamNet needs server-level circuit breakers.
+- Key rotation: Keyhive BeeKEM re-wrap on member change. Ellis has `keyRotationAt` field
+  but no protocol.
 
-- [ ] Write `CAPABILITY-LAYER.md` design doc before any code
-- [ ] Implement device delegation chain tiddlers in `IdentitiesDoc`
-- [ ] Implement Seitan token invite flow for `CirclesDoc`
-- [ ] Introduce capability verification: any peer verifies "Device X speaks as Identity Y at level Z" serverlessly
+**Five identity planes (revised):**
+- Plane 0: Device (`did:key` Ed25519)
+- Plane 1: Operator (Keyhive person-as-group of device keys)
+- Plane 2: Circle (local CRDT for personal; Keyhive Group for Nexus-scoped)
+- Plane 3: Nexus (confederation keypair; signs cross-Nexus capability tokens)
+- Plane 4: DreamNet (no central authority; trust from Nexus treaty events only)
+
+**Three-tier authority separation:**
+- Tier 1 (local CRDT): `CirclesDoc` membership checked via TW5 filter. No crypto needed.
+- Tier 2 (Nexus CRDT): Keyhive Group replicates to all Nexus peers. Waits on Keyhive WASM.
+- Tier 3 (cross-Nexus token): UCAN-compatible token signed by source Nexus keypair. S9.
+
+**Addressing model (from Ellis, upgraded):**
+- Three fields on every content tiddler: `to`, `canReply`, `canReact`
+- Values: `"@public"` | `"@nexus:{pubkey}"` | `"circle:{id}"` | `"group:{uri}"`
+- Replaces implicit follower-list visibility with explicit capability grants
+
+Full design: `packages/lares/lararium-research/S7-CIRCLES-IDENTITIES-REDESIGN.md`
+
+### Sub-sprints
+
+#### S7.0 — Type stubs + design doc ✅
+- [x] `CircleTiddler` — `nexusScope`, `memberSignature`, `nonceBurnSet` added; comment updated (web3 only)
+- [x] `IdentityTiddler` — `nexusId`, `keyHistory`, `trustTier` added
+- [x] `ContentAddressing`, `DeviceDelegationTiddler`, `CircleInviteToken`, `NexusTrustTiddler` added to `social-doc.ts`
+- [x] `deviceDelegationUri()`, `nexusTrustUri()` helpers added
+- [x] `CAPABILITY-LAYER.md` — code-ready spec with S7.1–S7.4 function signatures
+
+#### S7.1 — Device delegation chain (Tier 1)
+- [ ] `DeviceDelegationTiddler` — UCAN-compatible chain proving device→operator
+- [ ] Wire into `buildCeremonyTiddlers` in `@lararium/tw5`
+- [ ] `verifyDeviceDelegation(deviceDid, operatorDid, tiddlers)` in `@lararium/core`
+
+#### S7.2 — Circle invites + Seitan token (Tier 1/2)
+- [ ] Invite token: `sign({ iss: nexusDid, circleId, cap: "join", exp, nonce })`
+- [ ] `acceptCircleInvite(token, identitiesHandle, circlesHandle)` in `@lararium/node`
+- [ ] Nonce burn: write to `CircleTiddler.nonceBurnSet` on accept
+
+#### S7.3 — Capability check surface (TW5-queryable)
+- [ ] `canRead`, `canReply`, `canReact` helpers in `@lararium/core`
+- [ ] Expose as TW5 filter operators: `[can-read[{currentUser}]]`
+
+#### S7.4 — Hostile mesh circuit breakers
+- [ ] `NexusTrustTiddler` write helpers
+- [ ] Nonce burn on inbound cross-Nexus activities
+- [ ] `CrdtIngressAdapter` actor-ID allow-list check on `LarEventBus` crdt-ring
 
 ---
 
@@ -288,6 +378,131 @@ Social graph control inverts: circles are owned by their center, not the platfor
 ### References
 
 `packages/lares/lararium-research/KOWLOON-BRIDGE.md`
+
+---
+
+## S5.5 — Genesis Bootstrap Causal Correction 🟡 In progress
+
+**Goal:** Remove all social Tiga seeding and identity ceremony from `openNodeLarPeer`.
+The server finds what exists; it never authors. Init happens before the server starts.
+
+**Principle:** Three causal moments, strictly separated:
+
+```
+Build time   scripts/build-genesis-island.ts    content Tiga → genesis/island.bin ✓ (done)
+Init time    scripts/init-lararium.ts (NEW)     social Tiga + identity → social-bootstrap.json
+Runtime      openNodeLarPeer (simplified)        finds docs; errors if uninitialised; no seeding
+```
+
+**The init script (`scripts/init-lararium.ts`):**
+- Creates IdentitiesDoc, CirclesDoc, SessionsDoc
+- Runs `buildCeremonyTiddlers` (operator identity + system circles)
+- Creates `DeviceDelegationTiddler` with `cap: "infrastructure"` for the node device (S7.1)
+- Writes `genesis/social-bootstrap.json` as a **TW5 tiddler bundle** — a JSON array of tiddler objects
+  mirroring the oracle tiddler shape (`title` / `text` / `fields` / `bag` / `authority`):
+  ```json
+  [
+    { "title": "lar:///ha.ka.ba/@identities", "text": "automerge:abc...",
+      "fields": { "kind": "social-bootstrap" }, "bag": "lar:///ha.ka.ba/@lararium",
+      "authority": "lararium-init" },
+    { "title": "lar:///ha.ka.ba/@circles",    "text": "automerge:def...", ... },
+    { "title": "lar:///ha.ka.ba/@sessions",   "text": "automerge:ghi...", ... },
+    { "title": "lar:///ha.ka.ba/@lares",      "text": "automerge:jkl...", ... }
+  ]
+  ```
+  TW5 VM queries it directly: `[field[kind]exact[social-bootstrap]]`. No special loader needed.
+- Optionally: `lararium:pack` produces a nexus connect bundle (genesis CID + catalog URL + invite token) for browser peer cold-boot
+
+**The simplified `openNodeLarPeer`:**
+- Reads `genesis/social-bootstrap.json` (tiddler bundle) — writes oracle tiddlers into island doc via `islandHandle.change()` on first boot; CRDT already holds them on resume
+- Extracts AutomergeUrls from bundle tiddler `text` fields; `waitHandleLocal` for each doc
+- `waitHandleLocal` for each doc — they already exist
+- Throws `"Run lararium:init before starting the node"` if bootstrap file absent
+- Removes: `socialPlaneIsNew`, `seedIdentitiesDoc/Circles/Sessions`, `seedLaresDoc`, `buildCeremonyTiddlers`, `operatorIdentity` option
+
+**Browser cold-boot path:**
+Admin runs `lararium:pack` after init. Browser peer receives a bundle encoding:
+genesis CID + catalog AutomergeUrl + invite token (nonce-bearing, expiring, Seitan pattern).
+Browser loads `genesis/island.bin` from its bundled copy (content-addressed, same binary),
+then syncs live docs from the catalog URL. No server-side seeding needed.
+
+**Impact on S7.1:** `buildDeviceDelegation` + ceremony move to `init-lararium.ts`.
+S7.1 targets the init script callsite, not `openNodeLarPeer`.
+
+### Tasks
+
+- [x] Create `scripts/init-lararium.ts` — seeds social Tiga, runs ceremony, writes `genesis/social-bootstrap.json` as TW5 plugin container
+- [x] Add `lararium:init` / `lararium:reset` / `lararium:fresh` / `lararium:pack` (stub) to `package.json` scripts
+- [x] Simplify `openNodeLarPeer` — load bundle, write oracle tiddlers to island doc, extract AutomergeUrls, remove all seeding branches
+- [x] Remove `operatorIdentity` from `NodeLarPeerOptions`; loaded in `main.ts` for future capability use
+- [x] `lararium-bootstrap-sync` startup module promotes the bootstrap plugin container after the syncer
+- [x] Content-equality guard in `AutomergeDocStore.put()` — kills file-watcher echo + Automerge churn
+- [x] Retire `_revisions` map in `MemeSyncAdaptor` (web2 revision concept; CRDT handles conflict resolution)
+- [x] Projection registry in `@lararium/core` — declarative, kind-based, factory-owned attachment
+- [x] `ADMIN_ROOM_URI` (`lar:///ha.ka.ba/@lararium/rooms/admin`) and `ADMIN_BAG_ID` (`lar:///ha.ka.ba/@lararium/@admin`) constants
+- [ ] Update `AGENTS.md` package map and boot sequence description
+
+---
+
+## S5.6 — Admin VM Lift 🔴 Next
+
+**Goal:** Stand up an admin TW5 VM in the node peer. Move operator-private state out of `main.ts` imperative wiring and into a meme-driven coordinator room.
+
+**Two URIs, one Automerge doc:**
+- Logical room: `lar:///ha.ka.ba/@lararium/rooms/admin` (TW5 view, what the admin VM "lives in")
+- Bag (Automerge doc): `lar:///ha.ka.ba/@lararium/@admin` (sync boundary, sibling to @identities/@circles/@sessions)
+
+**Federation:** scoped to the operator's own devices. Room peers cannot prove `cap=infrastructure`; admin doc never federates outside operator's device set. Trust gate at S7.4 (`checkIngressTrust`).
+
+**What lands in the admin doc:**
+- `DeviceDelegationTiddler`s tagged `cap=infrastructure` (S7.1)
+- `ProjectionTiddler`s tagged `$:/tags/LarariumProjection` (declarative manifest replacing the programmatic `registry.enable(...)` calls in `main.ts`)
+- Session tiddlers (operator → agent; sessions become an admin-room concern, not a room-room concern)
+- Future ceremony state (key rotation, invite acceptance)
+
+### Tasks
+
+- [ ] Genesis-island oracle entry for `ADMIN_BAG_ID` (parallel to identities/circles/sessions)
+- [ ] `init-lararium.ts` seeds admin doc + writes oracle tiddler into bootstrap bundle
+- [ ] New `open-admin-vm.ts` mounts admin doc as writable layer in `CompositeStore` + boots second TW5 engine
+- [ ] Move `createNodeSession` from sessions doc → admin doc
+- [ ] Convert `main.ts` projection registrations from programmatic to admin-room tiddler-driven (filter `[tag[$:/tags/LarariumProjection]has[enabled]]`)
+- [ ] CLI surface stub: `lararium admin <subcommand>` opens session against admin room with operator key
+
+---
+
+## Open Design Questions (pre-sprint, blocking S7.1+)
+
+### Node peer identity — server-as-device
+
+The `lararium-node` process holds its own device key and speaks as the operator via
+`DeviceDelegationTiddler`. Even when server and browser run on the same laptop, they
+constitute separate peers with separate threat models:
+
+- Node peer: headless, autonomous, holds filesystem, manages social docs — `cap: "infrastructure"`
+- Browser/mobile peer: under direct operator attention — `cap: "social"`
+
+**Decided (2026-05-06):**
+- `IdentityTiddler.kind` gains `"node"` as a distinct value (five kinds: operator/node/agent/service/device)
+- `DeviceDelegationTiddler.cap` scopes the grant: `"infrastructure" | "social" | "relay" | "full"`
+- Node peer's delegation carries `cap: "infrastructure"` — can sync, seed, oracle-sign, manage sessions; cannot sign social content or issue circle invites
+- Browser peer carries `cap: "social"` — can sign content, manage circles, issue invites
+- Ceremony writes the node's `cap: "infrastructure"` delegation during `lararium:init`, not at server start
+
+### Ley-line relay — pass-only sub-peer
+
+A Node.js relay node participates in Automerge sync without holding read authority.
+It passes opaque sync byte-streams between peers without deserializing document state.
+Analogous to a Tor relay — passes ciphertext, holds no plaintext key.
+
+**Design questions (inform NexusTrustTiddler + DeviceDelegationTiddler before they solidify):**
+- Can Automerge sync operate on a stripped transport-layer adapter without a full Repo?
+- Does a relay hold a `did:key` identity, or is it purely transport-layer?
+- Is the ley-line relay a Nexus peer with `trustLevel: "neutral"` or a distinct concept?
+- E2E encryption forcing function: Keyhive BeeKEM would make this pattern natural —
+  relay holds no decryption key by construction. Prioritize BeeKEM before relay work.
+- Unbounded history problem: a relay that cannot compact Automerge changes accumulates
+  forever. Needs a solution before relay nodes operate long-term.
 
 ---
 

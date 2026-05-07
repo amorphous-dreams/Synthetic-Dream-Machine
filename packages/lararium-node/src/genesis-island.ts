@@ -27,12 +27,13 @@ import { join, dirname }             from "path";
 import { fileURLToPath }             from "url";
 import * as Automerge                from "@automerge/automerge";
 import type { Repo, DocHandle }      from "@automerge/automerge-repo";
-import type { LarariumDoc, MemeStoreDoc, IdentitiesDoc, CirclesDoc, SessionsDoc } from "@lararium/core";
+import type { LarariumDoc, MemeStoreDoc, IdentitiesDoc, CirclesDoc, SessionsDoc, SessionEventLog } from "@lararium/core";
 import {
   ENGINE_CORE_ID, LARARIUM_DOC_URI,
   CATALOG_DOC_URI, LARES_DOC_URI,
   IDENTITIES_DOC_URI, CIRCLES_DOC_URI, SESSIONS_DOC_URI,
   emptyMemeStoreDoc, emptyIdentitiesDoc, emptyCirclesDoc, emptySessionsDoc,
+  sessionEventLogUri,
 } from "@lararium/core";
 
 // ---------------------------------------------------------------------------
@@ -324,4 +325,35 @@ export function seedSessionsDoc(repo: Repo): DocHandle<SessionsDoc> {
   });
   console.log(`[genesis-island] SessionsDoc seeded  url=${handle.url}`);
   return handle;
+}
+
+/**
+ * Create a per-session SessionEventLog child doc.
+ *
+ * Creates the Automerge doc and writes its self-ref oracle tiddler.
+ * The caller is responsible for writing the session tiddler (with `eventLogUrl`)
+ * through the CompositeStore so the write flows through the TW5 VM path.
+ *
+ * Returns the live DocHandle — its `.url` is the value to store in `eventLogUrl`.
+ */
+export function createSessionEventLog(
+  repo:      Repo,
+  sessionId: string,
+): DocHandle<SessionEventLog> {
+  const logHandle = repo.create<SessionEventLog>({ schemaVersion: "0.1", tiddlers: {}, events: {} });
+  const logUri = sessionEventLogUri(sessionId);
+
+  // Self-ref oracle tiddler: new doc not yet in composite — direct write is correct here.
+  logHandle.change((doc) => {
+    doc.tiddlers[logUri] = {
+      title:     logUri,
+      text:      logHandle.url,
+      fields:    { sessionId, kind: "session-event-log" },
+      bag:       SESSIONS_DOC_URI,
+      authority: "lararium-session",
+    };
+  });
+
+  console.log(`[genesis-island] SessionEventLog created  sessionId=${sessionId}  url=${logHandle.url}`);
+  return logHandle;
 }

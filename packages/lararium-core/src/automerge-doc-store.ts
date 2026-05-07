@@ -21,6 +21,22 @@ import { MemeProvider } from "./meme-provider.js";
  * FPI-3 (synergy): same mutation/subscription API runs on every peer.
  * Local-first Ideal 1 (fast): get/listVisible read from the in-memory doc.
  */
+function _contentEquals(cur: MutableLarRecord, rec: LarTiddlerRecord): boolean {
+  if (cur.text      !== rec.text)      return false;
+  if (cur.deleted   !== rec.deleted)   return false;
+  if (cur.sourceUri !== rec.sourceUri) return false;
+  if (cur.contentHash !== rec.contentHash) return false;
+  if (cur.authority !== rec.authority) return false;
+  if (cur.bag       !== rec.bag)       return false;
+  const cf = cur.fields as Record<string, unknown>;
+  const rf = rec.fields as Record<string, unknown>;
+  const ck = Object.keys(cf);
+  const rk = Object.keys(rf);
+  if (ck.length !== rk.length) return false;
+  for (const k of rk) { if (cf[k] !== rf[k]) return false; }
+  return true;
+}
+
 export class AutomergeDocStore implements LarTiddlerStore {
   protected readonly handle: DocHandle<LarDoc>;
   readonly provider: MemeProvider;
@@ -66,6 +82,9 @@ export class AutomergeDocStore implements LarTiddlerStore {
   }
 
   async put(record: LarTiddlerRecord, origin: ChangeOrigin): Promise<void> {
+    const existing = this.handle.doc()?.tiddlers?.[record.title];
+    if (existing && _contentEquals(existing, record)) return;
+
     this.handle.change((doc) => {
       (doc.tiddlers as Record<string, MutableLarRecord>)[record.title] = {
         title:  record.title,
@@ -74,7 +93,6 @@ export class AutomergeDocStore implements LarTiddlerStore {
         ...(record.deleted                  && { deleted:     record.deleted }),
         ...(record.sourceUri   !== undefined && { sourceUri:  record.sourceUri }),
         ...(record.contentHash !== undefined && { contentHash: record.contentHash }),
-        ...(record.revision    !== undefined && { revision:   record.revision }),
         ...(record.authority   !== undefined && { authority:  record.authority }),
         ...(record.bag         !== undefined && { bag:        record.bag }),
       };

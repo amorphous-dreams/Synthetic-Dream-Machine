@@ -33,10 +33,9 @@ import { buildDirectRecord } from "./meme-write.js";
 
 type SaveStrategy = "skip" | "direct";
 type SaveHandler  = (
-  title:    string,
-  fields:   Record<string, string>,
-  revision: string,
-  origin:   ChangeOrigin,
+  title:  string,
+  fields: Record<string, string>,
+  origin: ChangeOrigin,
 ) => Promise<void>;
 
 /** URI of the corpus meme that declares the ordered save-routing rules. */
@@ -114,7 +113,6 @@ export class MemeSyncAdaptor implements MemeProjection {
 
   private _isApplying(): boolean { return this._applying.size > 0; }
 
-  private _revisions            = new Map<string, string>();
   private _pendingModifications = new Set<string>();
   private _pendingDeletions     = new Set<string>();
   private _unsubscribe:   (() => void) | null = null;
@@ -193,7 +191,6 @@ export class MemeSyncAdaptor implements MemeProjection {
           if (rec.text !== undefined) fields["text"] = rec.text;
           toAdd.push(fields);
         }
-        if (rec.revision) this._revisions.set(uri, rec.revision);
       }));
 
       for (const title of toRemove) this.tw5.removeTiddler(title);
@@ -248,7 +245,6 @@ export class MemeSyncAdaptor implements MemeProjection {
           }
 
           this._pendingModifications.add(change.title);
-          if (change.revision) this._revisions.set(change.title, change.revision);
         }
       }
     } finally {
@@ -318,7 +314,6 @@ export class MemeSyncAdaptor implements MemeProjection {
         }
 
         this._pendingModifications.add(change.title);
-        if (change.revision) this._revisions.set(change.title, change.revision);
       }
     } finally {
       this._applying.delete(applyKey);
@@ -336,25 +331,18 @@ export class MemeSyncAdaptor implements MemeProjection {
   }
 
   getTiddlerInfo(_tiddler: unknown): { revision?: string } {
-    const t     = _tiddler as { fields?: { title?: string }; title?: string };
-    const title = t?.fields?.title ?? t?.title ?? "";
-    const rev   = this._revisions.get(title);
-    return rev !== undefined ? { revision: rev } : {};
+    return { revision: "0" };
   }
 
-  getTiddlerRevision(title: string): string | undefined {
-    return this._revisions.get(title);
+  getTiddlerRevision(_title: string): string | undefined {
+    return "0";
   }
 
   getSkinnyTiddlers(
     callback: (err: Error | null, tiddlers: { title: string; revision?: string }[]) => void,
   ): void {
     this.store.listVisible().then((titles) => {
-      const skinny = titles.map((title) => {
-        const rev = this._revisions.get(title);
-        return rev !== undefined ? { title, revision: rev } : { title };
-      });
-      callback(null, skinny);
+      callback(null, titles.map((title) => ({ title, revision: "0" })));
     }).catch((err: Error) => callback(err, []));
   }
 
@@ -382,12 +370,11 @@ export class MemeSyncAdaptor implements MemeProjection {
 
     if (strategy === "skip") { callback(null, {}, "0"); return; }
 
-    const revision = String(Date.now());
     const origin: ChangeOrigin = { kind: "tw-local", instanceId: this.instanceId };
 
-    this._saveHandlers[strategy](title, fields, revision, origin)
-      .then(() => callback(null, {}, revision))
-      .catch((err: Error) => callback(err, {}, revision));
+    this._saveHandlers[strategy](title, fields, origin)
+      .then(() => callback(null, {}, "0"))
+      .catch((err: Error) => callback(err, {}, "0"));
   }
 
   // ---------------------------------------------------------------------------
@@ -436,9 +423,8 @@ export class MemeSyncAdaptor implements MemeProjection {
      * Fragment saves (title contains "#") and plain meme saves both go through
      * buildDirectRecord.
      */
-    direct: async (title, fields, revision, origin) => {
-      this._revisions.set(title, revision);
-      await this.store.put(buildDirectRecord(title, fields, revision, this.targetBag), origin);
+    direct: async (title, fields, origin) => {
+      await this.store.put(buildDirectRecord(title, fields, this.targetBag), origin);
     },
   };
 

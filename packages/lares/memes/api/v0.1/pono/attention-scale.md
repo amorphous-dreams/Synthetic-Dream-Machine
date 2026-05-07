@@ -237,6 +237,31 @@ clocks: {
 Each instance holds its own `bounds` profile. CRDT merge operates per-clock
 independently. No translation layer required — `ffzMerge` works identically for all.
 
+### WorldClockTiddler Integration
+
+The world-time and diegetic clocks live in a `WorldClockTiddler`, not in `PresenceSlot`.
+`PresenceSlot.worldClockRef` holds a `lar:` URI pointer; the tiddler carries the
+authoritative clock values and write policy.
+
+```
+WorldClockTiddler at lar:///ha.ka.ba/@world/{worldId}/clock
+  clocks["world-time"]  = ffzSerialize(FfzClock)  // Week/Month/Season/Year/Era
+  clocks["diegetic"]    = ffzSerialize(FfzClock)  // Action/Round/Turn/Watch/Week
+  writePolicy           = "keyhive:{gmCircleUri}" | "group:{circleUri}" | "private"
+  tickPolicy            = "autonomous" | "freeze" | "manual"
+```
+
+**Rhine rule (FRP, ACM 2018):** clock identity lives in the type/schema, not the
+value. `PresenceSlot` owns `session-clock`; the world doc owns `world-time` and
+`diegetic`. These axes never coerce into each other without an explicit
+`WorldTimeAdvancedEvent` (Verraes 2022) carrying both clock values as the
+bi-temporal anchor.
+
+**Observed clocks** (Minecraft day-counter, Valheim day, market session) land in
+`ObservedClockTiddler` — LWW-Register clusters with a `hwm` field that never
+decreases (Flink watermark pattern). Trigger queries use `hwm >= threshold`,
+not `value == threshold`, to handle out-of-order delivery.
+
 <<~/ahu >>
 
 <<~ ahu #boundary-zones >>
