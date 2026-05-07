@@ -218,8 +218,12 @@ function main(): number {
     }
 
     // ── Index existing memes by source-file ───────────────────────────────
+    // source-file may carry multiple paths separated by whitespace — a single
+    // meme may describe a coherent surface implemented across files. Each
+    // path is indexed independently, but the meme is reported orphan only
+    // when ALL its source-files are missing.
     const memesDir = join(pkgDir, "memes");
-    const memeBySource = new Map<string, { path: string; iam: IamBlock; raw: string }>();
+    const memeBySource = new Map<string, { path: string; iam: IamBlock; raw: string; sources: string[] }>();
     if (existsSync(memesDir)) {
       for (const memePath of walkMd(memesDir)) {
         const text = readFileSync(memePath, "utf8");
@@ -227,7 +231,9 @@ function main(): number {
         if (!iam) continue;
         const sf = iam.fields["source-file"];
         if (!sf) continue;
-        memeBySource.set(sf, { path: memePath, iam, raw: text });
+        const sources = sf.split(/\s+/).filter(Boolean);
+        const entry = { path: memePath, iam, raw: text, sources };
+        for (const s of sources) memeBySource.set(s, entry);
       }
     }
 
@@ -266,12 +272,16 @@ function main(): number {
       }
     }
 
-    // ── Remaining memes with source-file → those sources are missing ──────
-    for (const [sourceRel, m] of memeBySource) {
-      const abs = join(WORKSPACE, sourceRel);
-      if (existsSync(abs)) continue; // source still exists; meme covers a non-candidate (allowed)
+    // ── Memes whose source-files all gone → orphan ────────────────────────
+    // Deduplicate by meme path (multi-source memes appear under each source).
+    const seenMemePaths = new Set<string>();
+    for (const m of memeBySource.values()) {
+      if (seenMemePaths.has(m.path)) continue;
+      seenMemePaths.add(m.path);
+      const allGone = m.sources.every((s) => !existsSync(join(WORKSPACE, s)));
+      if (!allGone) continue;
       issues.push({ kind: "orphan", pkg: info.pkgName,
-                    detail: `${relative(WORKSPACE, m.path)}  source-file gone: ${sourceRel}` });
+                    detail: `${relative(WORKSPACE, m.path)}  source-file gone: ${m.sources.join(" ")}` });
     }
   }
 
