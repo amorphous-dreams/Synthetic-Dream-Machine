@@ -1,0 +1,7 @@
+{
+  "title": "lar:///ha.ka.ba/@lararium/bootstrap/social",
+  "plugin-type": "plugin",
+  "type": "application/json",
+  "tags": "$:/tags/LarariumBootstrap",
+  "text": "{\"tiddlers\":{\"lar:///ha.ka.ba/@identities\":{\"title\":\"lar:///ha.ka.ba/@identities\",\"text\":\"automerge:4GVE7yZTko7sA6yFHX3Utbimicy8\",\"fields\":{\"kind\":\"oracle\"}},\"lar:///ha.ka.ba/@circles\":{\"title\":\"lar:///ha.ka.ba/@circles\",\"text\":\"automerge:G1g9Y9ubBXW6vWSRZrKDKvn4pHJ\",\"fields\":{\"kind\":\"oracle\"}},\"lar:///ha.ka.ba/@sessions\":{\"title\":\"lar:///ha.ka.ba/@sessions\",\"text\":\"automerge:4243X7NhD1gUF98xbXEvLqhERpWn\",\"fields\":{\"kind\":\"oracle\"}},\"lar:///ha.ka.ba/@lararium/@admin\":{\"title\":\"lar:///ha.ka.ba/@lararium/@admin\",\"text\":\"automerge:Rf7kQDkhEjMC9u8unWxUx51mTe9\",\"fields\":{\"kind\":\"oracle\"}}}}"
+}

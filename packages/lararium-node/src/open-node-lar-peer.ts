@@ -38,7 +38,7 @@ import {
   CompositeStore, corpusBagId,
   emptyMemeStoreDoc,
   LARARIUM_DOC_URI, CATALOG_DOC_URI, LARES_DOC_URI,
-  IDENTITIES_DOC_URI, CIRCLES_DOC_URI, SESSIONS_DOC_URI,
+  IDENTITIES_DOC_URI, CIRCLES_DOC_URI, SESSIONS_DOC_URI, ADMIN_BAG_ID,
   corpusLarUri, roomLarUri, BAG_IDS, recipeUri,
   VmPool,
 }                                       from "@lararium/core";
@@ -52,6 +52,8 @@ import {
 } from "./genesis-island.js";
 import { LarEventBusImpl, DEFAULT_RINGS } from "./lar-event-bus-impl.js";
 import { waitHandleLocal }                from "./repo-helpers.js";
+import { openAdminVm }                    from "./open-admin-vm.js";
+import type { AdminVmResult }             from "./open-admin-vm.js";
 import { LAR_EVENT } from "@lararium/core";
 
 const __dir = dirname(fileURLToPath(import.meta.url));
@@ -103,6 +105,8 @@ export interface NodeLarPeerResult {
   eventBus:         LarEventBusImpl;
   /** Composite store — pass to createNodeSession(); use store.put() for all tiddler writes. */
   store:            CompositeStore;
+  /** Admin VM — operator-private coordinator (S5.6). */
+  admin:            AdminVmResult;
   /** Automerge URL of the catalog doc. */
   catalogHandleUrl: string;
   /** Automerge URL of the LarariumDoc — share this as the connect invite URL. */
@@ -269,11 +273,15 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
   const sessionsUrl =
     bootstrapTiddlers[SESSIONS_DOC_URI]?.text ??
     islandHandle.doc()?.tiddlers?.[SESSIONS_DOC_URI]?.text   ?? null;
+  const adminUrl =
+    bootstrapTiddlers[ADMIN_BAG_ID]?.text ??
+    islandHandle.doc()?.tiddlers?.[ADMIN_BAG_ID]?.text       ?? null;
 
-  if (!identitiesUrl || !circlesUrl || !sessionsUrl) {
+  if (!identitiesUrl || !circlesUrl || !sessionsUrl || !adminUrl) {
     throw new Error(
       `[lararium] social plane not initialised — run: pnpm --filter @lararium/node lararium:init\n` +
-      `  missing: ${[!identitiesUrl && "@identities", !circlesUrl && "@circles", !sessionsUrl && "@sessions"].filter(Boolean).join(", ")}`,
+      `  missing: ${[!identitiesUrl && "@identities", !circlesUrl && "@circles", !sessionsUrl && "@sessions", !adminUrl && "@admin"].filter(Boolean).join(", ")}\n` +
+      `  (older bundles: delete genesis/social-bootstrap.json and re-run init to add @admin)`,
     );
   }
 
@@ -294,13 +302,19 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
   composite.addLayer({ bagId: BAG_IDS.groups,     store: new AutomergeDocStore(groupsHandle,     BAG_IDS.groups),     writable: true });
   composite.addLayer({ bagId: BAG_IDS.sessions,   store: new AutomergeDocStore(sessionsHandle,   BAG_IDS.sessions),   writable: true });
 
-  // Zelenka: keep oracle tiddlers current on every boot — self, ka, ba, social plane.
+  // Admin VM — operator-private coordinator with its own TW5 engine and
+  // composite. Booted in parallel with the room VM; never shares state with
+  // room peer connections.
+  const adminVm = await openAdminVm({ repo, adminUrl });
+
+  // Zelenka: keep oracle tiddlers current on every boot — self, ka, ba, social plane, admin.
   reconcileWellKnownTiddlers(
     islandHandle, catalogHandle.url,
     laresHandle?.url,
     identitiesHandle.url,
     groupsHandle.url,
     sessionsHandle.url,
+    adminVm.adminHandle.url,
   );
 
   // ── 3c. Corpus docs — one bag per corpus child-doc ───────────────────────
@@ -481,6 +495,7 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
   return {
     peer, tw5, pool, repo, eventBus,
     store: composite,
+    admin: adminVm,
     catalogHandleUrl: catalogHandle.url,
     larariumDocUrl: islandHandle?.url ?? null,
     phase: "live",

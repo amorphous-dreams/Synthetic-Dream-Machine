@@ -171,10 +171,12 @@ async function main(): Promise<void> {
   console.log(`[lararium] live — room: ${roomId} | storage: ${storageDir}`);
   console.log(`[lararium] catalog:  ${result.catalogHandleUrl ?? "(none)"}`);
   console.log(`[lararium] lararium: ${result.larariumDocUrl ?? "(none)"}`);
+  console.log(`[lararium] admin:    ${result.admin.adminHandle.url}`);
   console.log(`[lararium] connect:  http://localhost:${port}/#${result.larariumDocUrl ?? result.catalogHandleUrl ?? ""}`);
 
   const shutdown = () => {
     console.log("[lararium] shutting down");
+    result.admin.dispose();
     httpServer.close();
     process.exit(0);
   };

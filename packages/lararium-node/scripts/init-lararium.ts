@@ -134,6 +134,11 @@ const bootstrapPlugin = {
 };
 
 writeFileSync(BOOTSTRAP, JSON.stringify(bootstrapPlugin, null, 2), "utf8");
+
+// Flush all docs to NodeFS storage before exit — without this race the next
+// process boot won't find the docs the init just seeded.
+await repo.flush();
+
 console.log(`[lararium:init] genesis/social-bootstrap.json written`);
 console.log(`  @identities  ${identitiesHandle.url}`);
 console.log(`  @circles     ${circlesHandle.url}`);
