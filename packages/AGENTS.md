@@ -51,7 +51,7 @@ Within-Nexus sync = Automerge CRDT (reliable). Cross-Nexus = explicit treaty, wi
 
 `@lararium/tw5` carries TiddlyWiki runtime integration. Put widget/render/filter work, carrier splitting, TOML AST helpers, generated TW5 core metadata, memory store, CRDT sync adaptor, and session-tier tiddler representation here. Treat disk projection as Node-shaped even when the barrel export exposes it.
 
-`@lararium/node` carries local Lararium host duties. Put filesystem hydration, canon promotion guards, serve/CLI behavior, operator key handling, parity checks, and no-write gates here. One `lararium-node` process = one Lararium (household shrine).
+`@lararium/node` carries local Lararium host duties. Put filesystem hydration, canon promotion guards, serve/CLI behavior, operator key handling, parity checks, and no-write gates here. One `lararium-node` process = one Lararium (household shrine). The `scripts/init-lararium.ts` ceremony is the one and only place that authors social Tiga state — the running server finds, never seeds. Projection wiring goes through `LarProjectionRegistry` (kind-based factories); `makeDiskProjectionKind` lives here as the node-scoped disk projector kind.
 
 `@lararium/browser` carries browser Lararium peer duties. Put Automerge browser repo, IndexedDB, WebSocket sync, `DocHandle.broadcast()` presence engine, and browser-host exports here. Parallels `@lararium/node` with different capabilities; no React, no canvas.
 
@@ -91,6 +91,26 @@ TW5 child edit
 ```
 
 Canon promotion must travel a separate Orichalcum path. Do not let live room edits write `lares/` directly.
+
+<<~/ahu >>
+
+<<~ ahu #boot-sequence >>
+
+## Boot Sequence — three causal moments
+
+The Lararium node treats build, init, and runtime as strictly separated authorship moments. No moment reaches into another's authority.
+
+```text
+Build time    scripts/build-genesis-island.ts    content Tiga → genesis/island.bin (CID-verifiable)
+Init time     scripts/init-lararium.ts           social Tiga + identity ceremony → genesis/social-bootstrap.json
+Runtime       openNodeLarPeer (server)           finds docs, wires layers; never authors social state
+```
+
+`genesis/social-bootstrap.json` materializes as a TW5 plugin container tagged `$:/tags/LarariumBootstrap`. The `lararium-bootstrap-sync` startup module promotes the container after the syncer initializes, so the bundle syncs as one package and individual user overrides remain editable.
+
+Admin state — operator-private to one node, federated to the operator's own devices via `cap=infrastructure` device delegations — lives in its own Automerge doc at `lar:///ha.ka.ba/@lararium/@admin` (bag URI). The logical room presents at `lar:///ha.ka.ba/@lararium/rooms/admin` (room URI). Two URIs, one doc — the bag-as-doc invariant gives admin its own sync boundary.
+
+Projections register as kinds with `LarProjectionRegistry`; configs are programmatic now, will move to admin-room tiddlers tagged `$:/tags/LarariumProjection` once the admin VM lands (S5.6).
 
 <<~/ahu >>
 

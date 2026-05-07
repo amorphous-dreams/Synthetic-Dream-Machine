@@ -38,7 +38,7 @@ Social graph control inverts: circles are owned by their center, not the platfor
 | S5.2 | Package Reboot | ✅ Complete | Delete lararium-app/tldraw/web; stub lararium-browser, dreamdeck-tldraw, dreamdeck-app |
 | S5.3 | FfzClock Type | ✅ Complete | `FfzClock` + clock ops in `@lararium/core`; `ExchangeState` FSM; `ffzSerialize` |
 | S5.4 | Multi-Clock Architecture | ✅ Complete | `PresenceSlot` multi-clock; `WorldClockTiddler`; `ObservedClockTiddler`; `LarEventBus` interface; `LarTickCounter` |
-| S5.5 | Genesis Bootstrap Causal Correction | 🟡 In progress | Init script extracted; projection registry landed; admin URI constants added; admin VM lift pending |
+| S5.5 | Genesis Bootstrap Causal Correction | ✅ Complete | Init script extracted; projection registry landed; admin URI constants added; AGENTS.md updated |
 | S5.6 | Admin VM Lift | 🔴 Next | Stand up admin TW5 VM in node peer; move `createNodeSession` and operator identity into admin doc (`lar:///ha.ka.ba/@lararium/@admin`) |
 | S6 | SessionEventLog | ✅ Complete | Per-session append-only Automerge doc; `broadcast()` for presence |
 | S7 | Circles + Identities Capability Layer | ⬜ Designed | Keyhive/UCAN device delegation; Seitan token circle invites |
@@ -381,7 +381,7 @@ Full design: `packages/lares/lararium-research/S7-CIRCLES-IDENTITIES-REDESIGN.md
 
 ---
 
-## S5.5 — Genesis Bootstrap Causal Correction 🟡 In progress
+## S5.5 — Genesis Bootstrap Causal Correction ✅
 
 **Goal:** Remove all social Tiga seeding and identity ceremony from `openNodeLarPeer`.
 The server finds what exists; it never authors. Init happens before the server starts.
@@ -440,7 +440,8 @@ S7.1 targets the init script callsite, not `openNodeLarPeer`.
 - [x] Retire `_revisions` map in `MemeSyncAdaptor` (web2 revision concept; CRDT handles conflict resolution)
 - [x] Projection registry in `@lararium/core` — declarative, kind-based, factory-owned attachment
 - [x] `ADMIN_ROOM_URI` (`lar:///ha.ka.ba/@lararium/rooms/admin`) and `ADMIN_BAG_ID` (`lar:///ha.ka.ba/@lararium/@admin`) constants
-- [ ] Update `AGENTS.md` package map and boot sequence description
+- [x] Update `AGENTS.md` package map and boot sequence description
+- [x] Remove dead playwright config (empty `tests/e2e/`, missing `scripts/serve.ts`, web2 HTTP-test smell)
 
 ---
 

@@ -25,9 +25,7 @@
     "typecheck":      "tsc --noEmit",
     "test":           "NODE_OPTIONS=--experimental-vm-modules pnpm exec jest --config jest.config.cjs",
     "dev":            "tsx src/main.ts",
-    "start":          "node dist/src/main.js",
-    "e2e":            "playwright test --config playwright.config.ts",
-    "e2e:headed":     "playwright test --config playwright.config.ts --headed"
+    "start":          "node dist/src/main.js"
   },
   "dependencies": {
     "@automerge/automerge": "^3.2.6",
@@ -45,7 +43,6 @@
   },
   "devDependencies": {
     "@jest/globals": "^29.7.0",
-    "@playwright/test": "^1.59.1",
     "jest": "^29.7.0",
     "ts-jest": "^29.2.0",
     "tsx": "^4.19.0"
