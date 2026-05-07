@@ -40,7 +40,7 @@ Social graph control inverts: circles are owned by their center, not the platfor
 | S5.4 | Multi-Clock Architecture | ✅ Complete | `PresenceSlot` multi-clock; `WorldClockTiddler`; `ObservedClockTiddler`; `LarEventBus` interface; `LarTickCounter` |
 | S5.5 | Genesis Bootstrap Causal Correction | ✅ Complete | Init script extracted; projection registry landed; admin URI constants added; AGENTS.md updated |
 | S5.6 | Admin VM Lift | 🔴 Next | Stand up admin TW5 VM in node peer; move `createNodeSession` and operator identity into admin doc (`lar:///ha.ka.ba/@lararium/@admin`) |
-| S5.7 | Heleuma Coverage + Bag Mirror | 🟡 In progress | Genesis discovery now walks all packages' memes/; `LarDiskProjector` is bag-aware (canon leak fixed); `pnpm heleuma` audits load-bearing source coverage |
+| S5.7 | Heleuma Coverage + Bag Mirror | ✅ Complete | Genesis discovery walks all packages' memes/; `LarDiskProjector` bag-aware (canon leak closed); `pnpm heleuma` audit/scaffold; `lares-chapel-perilous-opens` removed |
 | S5.8 | Promotion Ceremony | ⬜ Designed | Wiki widget + CLI to promote tiddlers between recipe bags; per-bag presence shown to operator; commit lock-in via git on canonical-bag write |
 | S6 | SessionEventLog | ✅ Complete | Per-session append-only Automerge doc; `broadcast()` for presence |
 | S7 | Circles + Identities Capability Layer | ⬜ Designed | Keyhive/UCAN device delegation; Seitan token circle invites |

@@ -6,6 +6,19 @@
 
 ---
 
+## What Just Happened (2026-05-07 — chapel-perilous-opens deleted)
+
+`packages/lares-chapel-perilous-opens` removed: the empty stub for "unstable three-segment tuple-root URIs not yet stabilized" was superseded by the bag-mirror system. Unstable URIs without an `@-scope` now resolve as `caps-virtual` (no on-disk path). To gain a writable disk surface, an URI must promote into `@lares` or `@lararium` scope, or register a custom bag mirror via the admin room (S5.6+).
+
+Cleanup spans:
+- `packages/lares-chapel-perilous-opens/` directory deleted
+- `chapelRelPath` removed from `LarResolution` interface
+- `CHAPEL_MEMES_ROOT` removed from `@lararium/node` exports
+- Workspace dep `@lares/chapel-perilous-opens` removed from `lararium-node/package.json`
+- Resolver branches that produced `chapelRelPath` now return virtual
+
+---
+
 ## What Just Happened (2026-05-07 — S5.7 Heleuma Coverage + Bag Mirror Reset)
 
 ### Three commits closing the canon-promotion arc

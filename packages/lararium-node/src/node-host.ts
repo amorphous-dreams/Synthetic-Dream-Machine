@@ -9,12 +9,10 @@
 
 import { join } from "path";
 import { laresRoot, repoRoot } from "@lares/lares";
-import { chapelRoot } from "@lares/chapel-perilous-opens";
 
 // Path roots — no carrier dependency; kept verbatim.
 export const LARES_ROOT        = laresRoot;
 export const LARES_MEMES_ROOT  = join(laresRoot, "memes");
-export const CHAPEL_MEMES_ROOT = join(chapelRoot, "memes");
 export const REPO_ROOT         = repoRoot;
 
 // CorpusSource — structural contract used by serve.ts; no carrier dependency.

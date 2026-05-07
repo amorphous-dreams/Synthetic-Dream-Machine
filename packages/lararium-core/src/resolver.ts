@@ -4,10 +4,13 @@
  * Resolution policy:
  * - ha.ka.ba/@lares/{path} → packages/lares/{path}.md  (primary lares corpus path)
  * - ha.ka.ba/@lararium/{pkg}/v{ver}/{path} → packages/{pkg-slug}/memes/{path}.md  (engine corpus)
- * - ha.ka.ba/{other} → packages/lares-chapel-perilous-opens/memes/ha-ka-ba/{other}.md  (legacy compat — remove after URI sweep)
  * - AGENTS, LARES, README → packages/lares/{ROOT}.md  (caps-file legacy alias)
  * - INDEXES/** and other ALL-CAPS roots → virtual namespace (caps-virtual)
- * - other three-segment tuple roots → packages/lares-chapel-perilous-opens/memes/{root}/{path}.md
+ * - any other shape → virtual (no on-disk path; wiki-only)
+ *
+ * Removed (S5.7): chapelRelPath / @lares/chapel-perilous-opens — superseded by
+ * the bag-mirror system. Unstable URIs that haven't earned a stable @-scope
+ * resolve as virtual; promote into @lares or @lararium scope to gain disk.
  *
  * NOTE: `lararium-core` is isomorphic — no `fs`, `path`, or `process` imports.
  * File existence and reading are delegated to the host (lararium-node).
@@ -17,12 +20,10 @@ export interface LarResolution {
   readonly uri: string;
   readonly root: string;
   readonly childPath: readonly string[];
-  /** Relative path from packages/lares/ root (no leading slash). Null for virtual or engine-corpus roots. */
+  /** Composite resource path used for receipts and diagnostics. */
   readonly resourcePath: string;
-  /** Relative path within packages/lares/memes/ — null for virtual, engine-corpus, or chapel roots. Caller resolves against join(laresRoot, "memes"). */
+  /** Relative path within packages/lares/memes/ — non-null only for @lares-scoped or caps-file URIs. */
   readonly laresRelPath: string | null;
-  /** Relative path within packages/lares-chapel-perilous-opens/memes/ — non-null only for unstable three-segment tuple roots. */
-  readonly chapelRelPath: string | null;
   /** Relative path within packages/{pkg-slug}/memes/ — non-null only for engine corpus URIs (@lararium/* scope). */
   readonly engineRelPath: string | null;
   readonly kind: "caps-file" | "caps-virtual" | "tuple-file";
@@ -90,7 +91,6 @@ export function parseHostfulLarUri(uri: string): LarHostfulResolution {
     childPath: Object.freeze(childPath),
     resourcePath,
     laresRelPath: null,
-    chapelRelPath: null,
     engineRelPath: null,
     kind: "caps-virtual" as const,
     virtual: true as const,
@@ -137,11 +137,11 @@ export function resolveLarUri(uri: string): LarResolution {
   // Kept as alias; canonical form is lar:///ha.ka.ba/@lares/AGENTS
   if (CAPS_FILE_ROOTS.has(root) && childPath.length === 0) {
     const laresRelPath = `${root}.md`;
-    return { uri, root, childPath, resourcePath, laresRelPath, chapelRelPath: null, engineRelPath: null, kind: "caps-file", virtual: false };
+    return { uri, root, childPath, resourcePath, laresRelPath, engineRelPath: null, kind: "caps-file", virtual: false };
   }
 
   if (VIRTUAL_CAPS_ROOTS.has(root) || isCapsRoot(root)) {
-    return { uri, root, childPath, resourcePath, laresRelPath: null, chapelRelPath: null, engineRelPath: null, kind: "caps-virtual", virtual: true };
+    return { uri, root, childPath, resourcePath, laresRelPath: null, engineRelPath: null, kind: "caps-virtual", virtual: true };
   }
 
   if (isTupleRoot(root) && root === STABLE_TUPLE_ROOT) {
@@ -149,11 +149,11 @@ export function resolveLarUri(uri: string): LarResolution {
     if (childPath[0] === LARES_SCOPE) {
       const rest = childPath.slice(1);
       if (rest.length === 1 && CAPS_FILE_ROOTS.has(rest[0]!)) {
-        return { uri, root, childPath, resourcePath, laresRelPath: `${rest[0]}.md`, chapelRelPath: null, engineRelPath: null, kind: "caps-file", virtual: false };
+        return { uri, root, childPath, resourcePath, laresRelPath: `${rest[0]}.md`, engineRelPath: null, kind: "caps-file", virtual: false };
       }
       const joined = rest.length > 0 ? rest.join("/") : "";
       const laresRelPath = joined ? withMdSuffix(joined) : "index.md";
-      return { uri, root, childPath, resourcePath, laresRelPath, chapelRelPath: null, engineRelPath: null, kind: "tuple-file", virtual: false };
+      return { uri, root, childPath, resourcePath, laresRelPath, engineRelPath: null, kind: "tuple-file", virtual: false };
     }
 
     // lar:///ha.ka.ba/@lararium/{pkg}/v{ver}/{path} → packages/{pkg-slug}/memes/{path}.md  (engine corpus)
@@ -166,7 +166,7 @@ export function resolveLarUri(uri: string): LarResolution {
       const pkgSlug = scopedName.replace(/^@lararium\//, "lararium-");
       const filePath = pathParts.length > 0 ? pathParts.join("/") : "index";
       const engineRelPath = withMdSuffix(`${pkgSlug}/memes/${filePath}`);
-      return { uri, root, childPath, resourcePath, laresRelPath: null, chapelRelPath: null, engineRelPath, kind: "tuple-file", virtual: false };
+      return { uri, root, childPath, resourcePath, laresRelPath: null, engineRelPath, kind: "tuple-file", virtual: false };
     }
 
     // lar:///ha.ka.ba/@{root-doc}[/@{child-doc}][/{path}] — named doc oracle URI.
@@ -181,28 +181,26 @@ export function resolveLarUri(uri: string): LarResolution {
     // as virtual (doc identity, not a file path).
     // @catalog/@{slug} also resolves as virtual (corpus child-doc identity).
     if (childPath[0]?.startsWith("@")) {
-      return { uri, root, childPath, resourcePath, laresRelPath: null, chapelRelPath: null, engineRelPath: null, kind: "caps-virtual", virtual: true };
+      return { uri, root, childPath, resourcePath, laresRelPath: null, engineRelPath: null, kind: "caps-virtual", virtual: true };
     }
 
-    // Legacy: lar:///ha.ka.ba/{rest} (no scope) — kept in chapel under ha-ka-ba/ subdir. Remove after URI sweep is complete.
-    const base = root.replace(/\./g, "-");
-    const joined = childPath.length > 0 ? `${base}/${childPath.join("/")}` : base;
-    const chapelRelPath = withMdSuffix(joined);
-    return { uri, root, childPath, resourcePath, laresRelPath: null, chapelRelPath, engineRelPath: null, kind: "tuple-file", virtual: false };
+    // ha.ka.ba/{rest} with no @-scope — virtual (no on-disk path).
+    // Promote into @lares or @lararium scope to gain a writable disk surface.
+    return { uri, root, childPath, resourcePath, laresRelPath: null, engineRelPath: null, kind: "caps-virtual", virtual: true };
   }
 
-  // lar:///{a.b.c}/{path} → packages/lares-chapel-perilous-opens/memes/{a.b.c}/{path}.md
+  // Other three-segment tuple roots — virtual. Stabilize by promoting into
+  // a recognized @-scope or by registering a custom bag mirror in the admin
+  // room (S5.6+).
   if (isTupleRoot(root)) {
-    const joined = childPath.length > 0 ? `${root}/${childPath.join("/")}` : root;
-    const chapelRelPath = withMdSuffix(joined);
-    return { uri, root, childPath, resourcePath, laresRelPath: null, chapelRelPath, engineRelPath: null, kind: "tuple-file", virtual: false };
+    return { uri, root, childPath, resourcePath, laresRelPath: null, engineRelPath: null, kind: "caps-virtual", virtual: true };
   }
 
   // Adjacent tagspace dirs — legacy; absorb into @lares scope after URI sweep
   if (root === "grammars" || root === "lararium-node") {
     const joined = childPath.length > 0 ? `${root}/${childPath.join("/")}` : root;
     const laresRelPath = withMdSuffix(joined);
-    return { uri, root, childPath, resourcePath, laresRelPath, chapelRelPath: null, engineRelPath: null, kind: "tuple-file", virtual: false };
+    return { uri, root, childPath, resourcePath, laresRelPath, engineRelPath: null, kind: "tuple-file", virtual: false };
   }
 
   throw new Error(`unsupported lar root "${root}" in ${uri}`);

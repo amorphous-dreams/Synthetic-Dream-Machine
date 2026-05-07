@@ -45,7 +45,7 @@ export function parseZoomLayoutTOML(text: string): ZoomLayout | null {
  * Read zoom-level layout props from the kumu def meme for a given zoom level.
  *
  * Resolved via TW5 filter on $:/tags/LarariumKumu + kumu-name field — works
- * across tagspaces (ha.ka.ba stable or chapel-perilous-opens draft).
+ * across tagspaces (ha.ka.ba stable; unstable URIs resolve as virtual).
  */
 export function getZoomLayout(wiki: TW5Wiki, level: string): ZoomLayout | null {
   const name = `meme-${level}`;

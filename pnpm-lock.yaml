@@ -82,9 +82,6 @@ importers:
       '@lararium/tw5':
         specifier: workspace:*
         version: link:../lararium-tw5
-      '@lares/chapel-perilous-opens':
-        specifier: workspace:*
-        version: link:../lares-chapel-perilous-opens
       '@lares/lares':
         specifier: workspace:*
         version: link:../lares
@@ -149,8 +146,6 @@ importers:
         version: 8.0.10(@types/node@22.19.17)(esbuild@0.27.7)(tsx@4.21.0)(yaml@2.8.3)
 
   packages/lares: {}
-
-  packages/lares-chapel-perilous-opens: {}
 
   sdm: {}
 
