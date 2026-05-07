@@ -32,6 +32,7 @@ import {
   ENGINE_CORE_ID, LARARIUM_DOC_URI,
   CATALOG_DOC_URI, LARES_DOC_URI,
   IDENTITIES_DOC_URI, CIRCLES_DOC_URI, SESSIONS_DOC_URI,
+  ADMIN_BAG_ID,
   emptyMemeStoreDoc, emptyIdentitiesDoc, emptyCirclesDoc, emptySessionsDoc,
   sessionEventLogUri,
 } from "@lararium/core";
@@ -232,6 +233,7 @@ export function reconcileWellKnownTiddlers(
   identitiesUrl?: string,
   groupsUrl?:     string,
   sessionsUrl?:   string,
+  adminUrl?:      string,
 ): void {
   const doc      = handle.doc();
   const tiddlers = doc?.tiddlers ?? {};
@@ -241,7 +243,8 @@ export function reconcileWellKnownTiddlers(
   const idOk   = identitiesUrl  ? tiddlers[IDENTITIES_DOC_URI]?.text  === identitiesUrl  : true;
   const grOk   = groupsUrl      ? tiddlers[CIRCLES_DOC_URI]?.text      === groupsUrl      : true;
   const seOk   = sessionsUrl    ? tiddlers[SESSIONS_DOC_URI]?.text    === sessionsUrl    : true;
-  if (selfOk && catOk && baOk && idOk && grOk && seOk) return;
+  const adOk   = adminUrl       ? tiddlers[ADMIN_BAG_ID]?.text         === adminUrl       : true;
+  if (selfOk && catOk && baOk && idOk && grOk && seOk && adOk) return;
 
   handle.change((d) => {
     if (!selfOk) d.tiddlers[LARARIUM_DOC_URI] = { title: LARARIUM_DOC_URI, text: handle.url, fields: {}, bag: LARARIUM_DOC_URI, authority: "lararium-seed" };
@@ -250,6 +253,7 @@ export function reconcileWellKnownTiddlers(
     if (!idOk  && identitiesUrl)  d.tiddlers[IDENTITIES_DOC_URI]  = { title: IDENTITIES_DOC_URI,  text: identitiesUrl,  fields: {}, bag: LARARIUM_DOC_URI, authority: "lararium-seed" };
     if (!grOk  && groupsUrl)      d.tiddlers[CIRCLES_DOC_URI]      = { title: CIRCLES_DOC_URI,      text: groupsUrl,      fields: {}, bag: LARARIUM_DOC_URI, authority: "lararium-seed" };
     if (!seOk  && sessionsUrl)    d.tiddlers[SESSIONS_DOC_URI]    = { title: SESSIONS_DOC_URI,    text: sessionsUrl,    fields: {}, bag: LARARIUM_DOC_URI, authority: "lararium-seed" };
+    if (!adOk  && adminUrl)       d.tiddlers[ADMIN_BAG_ID]         = { title: ADMIN_BAG_ID,        text: adminUrl,       fields: {}, bag: LARARIUM_DOC_URI, authority: "lararium-seed" };
   });
 
   const flags = [
@@ -259,6 +263,7 @@ export function reconcileWellKnownTiddlers(
     `identities=${idOk ? "ok" : identitiesUrl ? "patched" : "pending"}`,
     `circles=${grOk ? "ok" : groupsUrl      ? "patched" : "pending"}`,
     `sessions=${seOk ? "ok" : sessionsUrl   ? "patched" : "pending"}`,
+    `admin=${adOk ? "ok" : adminUrl        ? "patched" : "pending"}`,
   ].join("  ");
   console.log(`[genesis-island] oracle tiddlers  ${flags}`);
 }
@@ -324,6 +329,27 @@ export function seedSessionsDoc(repo: Repo): DocHandle<SessionsDoc> {
     doc.tiddlers[SESSIONS_DOC_URI] = { title: SESSIONS_DOC_URI, text: handle.url, fields: {}, bag: SESSIONS_DOC_URI, authority: "lararium-seed" };
   });
   console.log(`[genesis-island] SessionsDoc seeded  url=${handle.url}`);
+  return handle;
+}
+
+/**
+ * Seed the AdminDoc — operator-private infrastructure bag.
+ *
+ * Holds device delegations (cap=infrastructure), bag-mirror configs tagged
+ * $:/tags/LarariumBagMirror, projection configs tagged $:/tags/LarariumProjection,
+ * session tiddlers (operator → agent), and ceremony state. Federation scopes
+ * to the operator's own devices via cap=infrastructure delegations gated at
+ * the ingress trust check (S7.4); never reaches room peers.
+ *
+ * Reuses the generic MemeStoreDoc shape — semantic distinction lives in URI
+ * and bag identity, not in document type.
+ */
+export function seedAdminDoc(repo: Repo): DocHandle<MemeStoreDoc> {
+  const handle = repo.create<MemeStoreDoc>(emptyMemeStoreDoc());
+  handle.change((doc) => {
+    doc.tiddlers[ADMIN_BAG_ID] = { title: ADMIN_BAG_ID, text: handle.url, fields: {}, bag: ADMIN_BAG_ID, authority: "lararium-seed" };
+  });
+  console.log(`[genesis-island] AdminDoc seeded  url=${handle.url}`);
   return handle;
 }
 
