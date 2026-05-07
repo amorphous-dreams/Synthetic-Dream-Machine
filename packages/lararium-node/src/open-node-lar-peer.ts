@@ -51,6 +51,7 @@ import {
   createSessionEventLog,
 } from "./genesis-island.js";
 import { LarEventBusImpl, DEFAULT_RINGS } from "./lar-event-bus-impl.js";
+import { waitHandleLocal }                from "./repo-helpers.js";
 import { LAR_EVENT } from "@lararium/core";
 
 const __dir = dirname(fileURLToPath(import.meta.url));
@@ -109,30 +110,7 @@ export interface NodeLarPeerResult {
   phase:            NodeOpenPhase;
 }
 
-// Local-first: NodeFS serves immediately if previously seen (< 500ms).
-// LOCAL_READY_MS: NodeFS should materialize in < 500ms if data is on disk.
-// On miss, boot blank and merge remote in background when it arrives.
-const LOCAL_READY_MS = 500;
-
-// Use findWithProgress to get the handle synchronously (never blocks on network),
-// then race whenReady() against a 500ms fallback. repo.find() in 2.5.5 awaits
-// networkSubsystem.whenReady() before even starting — which hangs at boot.
-async function waitHandleLocal<T>(
-  repo: Repo,
-  url: AutomergeUrl,
-  fallbackFn: () => DocHandle<T>,
-): Promise<DocHandle<T>> {
-  const progress = repo.findWithProgress<T>(url);
-  const handle = progress.handle;
-  const localReady = await Promise.race([
-    handle.whenReady().then(() => true),
-    new Promise<false>((r) => setTimeout(() => r(false), LOCAL_READY_MS)),
-  ]);
-  if (localReady) return handle;
-  const fresh = fallbackFn();
-  handle.whenReady().then(() => { fresh.merge(handle); }).catch(() => { /* remote never came */ });
-  return fresh;
-}
+// waitHandleLocal moved to repo-helpers.ts — shared with openAdminVm.
 
 export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLarPeerResult> {
   const { hostId, roomId, storageDir, wss, catalogUrl, recipeUri: recipeUriOpt, onPhase, vmFactory } = opts;
