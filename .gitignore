@@ -52,3 +52,7 @@ packages/lararium-node/playwright-report
 .lararium
 packages/lararium-node/.lararium/
 packages/lararium-tw5/public/tiddlywikicore-*.js
+
+# Room-bag disk scratch — operator's editable surface, never committed.
+# Promotion ceremony moves files from rooms/{slug}/ into packages/.
+rooms/

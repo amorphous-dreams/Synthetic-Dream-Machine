@@ -1,18 +1,21 @@
 /**
- * LarDiskProjector — unidirectional projection: store → lares/ files on disk.
+ * LarDiskProjector — bag-aware unidirectional projection: store → disk.
  *
  * The Automerge store functions as the mind. Disk files project from it.
  * This projector NEVER reads from disk — that direction belongs to the ingest
  * path (file watcher → store.put).
  *
+ * Bag-aware (S5.5+): each writable bag may opt into a filesystem mirror via
+ * BagMirrorConfig. Bags without a mirror config never write to disk. Edits in
+ * the room bag mirror to `rooms/{slug}/...`; canonical bags mirror to
+ * `packages/...`. Promotion is a deliberate ceremony that moves a tiddler
+ * between bags, with the disk side effect of a file move — the git diff IS
+ * the operator's signature on canon.
+ *
  * Projection law (Fontany-Fuller-Zelenka):
  *   Disk projection is a RENDER operation, not a string copy.
  *   The TW5 VM (with fakeDOM) re-renders the carrier from its normalized
  *   tiddler records — the same pipeline used to bootstrap the browser client.
- *
- * The renderFn is injected by the caller and wraps renderCarrier() from server-api.
- * The recipe VM (booted via bootRecipeVm) stays in sync via store subscription —
- * renderFn needs no store argument.
  *
  * Projection triggers:
  *   Slot child change  → debounce → flush parent (renderFn)
@@ -24,8 +27,9 @@
 
 import { writeFileSync, mkdirSync } from "fs";
 import { join, resolve as resolvePath, dirname } from "path";
-import type { LarTiddlerStore, LarTiddlerChange, ReadinessMap } from "@lararium/core";
-import { resolveLarUri } from "@lararium/core";
+import type {
+  LarTiddlerStore, LarTiddlerChange, ReadinessMap, BagMirrorConfig,
+} from "@lararium/core";
 
 export class LarDiskProjector {
   /**
@@ -34,23 +38,21 @@ export class LarDiskProjector {
    */
   readonly writing = new Set<string>();
 
+  /** Timer key shape: `${bagId}\0${parentUri}` — debounce per (bag, parent). */
   private readonly timers = new Map<string, ReturnType<typeof setTimeout>>();
   private _firstFlushDone = false;
 
   constructor(
-    /** Absolute path to the lares/ root directory. */
-    private readonly laresRoot: string,
+    /** Bag mirrors. Bags absent from this list never write to disk. */
+    private readonly mirrors: readonly BagMirrorConfig[],
     /**
      * Render a parent URI to its carrier text string.
-     * Called after debounce. Returns null to skip writing (unknown type, render error).
-     * Typically wraps renderCarrier(recipeId, uri) from server-api.
-     * The recipe VM (bootRecipeVm) is kept current via store subscription —
-     * no store argument needed here.
+     * Called after debounce. Returns null to skip writing.
      */
     private readonly renderFn: (parentUri: string) => Promise<string | null>,
-    /** Debounce delay in ms. Default 1000ms; tests use 20ms. */
+    /** Debounce delay in ms. */
     private readonly debounceMs = 1000,
-    /** Optional readiness map — lights disk-projector after the first successful flush. */
+    /** Optional readiness map — lights `disk-projector` after first flush. */
     private readonly readinessMap?: ReadinessMap,
   ) {}
 
@@ -69,33 +71,49 @@ export class LarDiskProjector {
   }
 
   private schedule(change: LarTiddlerChange): void {
-    const { title, record } = change;
+    const { title, record, origin } = change;
     if (!title.startsWith("lar:")) return;
     if (!record || record.deleted) return;
+    // Skip canon-hydrate replays at boot — the file already exists with that
+    // content; rewriting churns the file watcher and git for no reason.
+    if (origin.kind === "canon-hydrate") return;
+
+    const bagId = record.bag;
+    if (!bagId) return;
+    if (!this.mirrors.some((m) => m.bagId === bagId)) return;
 
     const fields    = record.fields as Record<string, string | string[] | undefined> ?? {};
     const ahuParent = typeof fields["ahu-parent"] === "string" ? fields["ahu-parent"] : null;
     const parentUri = ahuParent ?? title;
 
-    const existing = this.timers.get(parentUri);
+    const key = `${bagId}\0${parentUri}`;
+    const existing = this.timers.get(key);
     if (existing) clearTimeout(existing);
-    this.timers.set(parentUri, setTimeout(() => {
-      this.timers.delete(parentUri);
-      void this.flush(parentUri);
+    this.timers.set(key, setTimeout(() => {
+      this.timers.delete(key);
+      void this.flush(bagId, parentUri);
     }, this.debounceMs));
   }
 
-  private async flush(parentUri: string): Promise<void> {
-    const filePath = this.uriToPath(parentUri);
-    if (!filePath) return;
+  private async flush(bagId: string, parentUri: string): Promise<void> {
+    const mirror = this.mirrors.find((m) => m.bagId === bagId);
+    if (!mirror) return;
+
+    const relPath = mirror.toRelPath(parentUri);
+    if (!relPath) return;
+
+    const root      = resolvePath(mirror.mirrorRoot);
+    const candidate = resolvePath(join(root, relPath));
+    // Path-traversal guard.
+    if (!candidate.startsWith(root + "/") && candidate !== root) return;
 
     const output = await this.renderFn(parentUri);
     if (output === null) return;
 
     this.writing.add(parentUri);
     try {
-      mkdirSync(dirname(filePath), { recursive: true });
-      writeFileSync(filePath, output, "utf-8");
+      mkdirSync(dirname(candidate), { recursive: true });
+      writeFileSync(candidate, output, "utf-8");
       if (!this._firstFlushDone) {
         this._firstFlushDone = true;
         this.readinessMap?.mark("disk-projector");
@@ -103,15 +121,5 @@ export class LarDiskProjector {
     } finally {
       this.writing.delete(parentUri);
     }
-  }
-
-  private uriToPath(uri: string): string | null {
-    try {
-      const resolution = resolveLarUri(uri);
-      if (!resolution.laresRelPath) return null;
-      const candidate = resolvePath(join(this.laresRoot, resolution.laresRelPath));
-      if (!candidate.startsWith(resolvePath(this.laresRoot) + "/")) return null;
-      return candidate;
-    } catch { return null; }
   }
 }

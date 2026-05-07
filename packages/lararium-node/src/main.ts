@@ -33,9 +33,15 @@ import WebSocket                         from "isomorphic-ws";
 import { resolve }                       from "path";
 import { openNodeLarPeer }               from "./open-node-lar-peer.js";
 import { generateOrLoadOperatorKeypair } from "./operator-key.js";
+import { join } from "path";
 import { makeDiskProjectionKind }        from "./projection-kinds.js";
-import { LARES_MEMES_ROOT }              from "./node-host.js";
-import { LarProjectionRegistry } from "@lararium/core";
+import { LARES_MEMES_ROOT, REPO_ROOT }   from "./node-host.js";
+import {
+  LarProjectionRegistry,
+  laresPathStrategy, enginePathStrategy, roomShadowPathStrategy,
+  BAG_IDS, roomBagId,
+} from "@lararium/core";
+import type { BagMirrorConfig } from "@lararium/core";
 import { exportMemeText }                from "@lararium/tw5";
 
 
@@ -141,8 +147,22 @@ async function main(): Promise<void> {
   // the "reaction" kind once it lands; current ReactionGraph maintenance is a
   // no-op here.
 
+  // Bag mirror configs — which bags reflect to disk, and where.
+  // TODO(S5.6): read from admin-room tiddlers tagged $:/tags/LarariumBagMirror.
+  // Operator-private bags (identities/groups/sessions/admin) are absent — they
+  // never reach disk; they live solely in .lararium/ Automerge storage.
+  const mirrors: BagMirrorConfig[] = [
+    // Canonical lares — only written via promotion ceremony (room → lares).
+    { bagId: BAG_IDS.lares,    mirrorRoot: LARES_MEMES_ROOT,   toRelPath: laresPathStrategy },
+    // Engine corpus — `lar:///ha.ka.ba/@lararium/{pkg}/v{ver}/{path}` →
+    // `packages/{pkg-slug}/memes/{path}.md`. Workspace root is the mirror root.
+    { bagId: BAG_IDS.lararium, mirrorRoot: join(REPO_ROOT, "packages"), toRelPath: enginePathStrategy },
+    // Room bag — gitignored scratch. Edits land here; promotion is the move.
+    { bagId: roomBagId(roomId), mirrorRoot: join(REPO_ROOT, "rooms", roomId), toRelPath: roomShadowPathStrategy },
+  ];
+
   projections.registerKind("disk", makeDiskProjectionKind({
-    defaultLaresRoot: LARES_MEMES_ROOT,
+    mirrors,
     renderFn: async (uri) => { try { return exportMemeText(tw5, uri); } catch { return null; } },
   }));
 

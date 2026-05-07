@@ -8,13 +8,15 @@
  * mirror) — the registry shape stays identical.
  */
 
-import type { LarProjectionKind, ReadinessMap } from "@lararium/core";
+import type {
+  LarProjectionKind, ReadinessMap, BagMirrorConfig,
+} from "@lararium/core";
 import { LarDiskProjector } from "./disk-projector.js";
 
 export interface DiskKindDeps {
-  /** Default root if config.fields["root"] is absent. */
-  defaultLaresRoot: string;
-  /** Render a parent URI to its carrier text string. Closes over the TW5 engine. */
+  /** Bag mirrors — one entry per writable bag that should reflect to disk. */
+  mirrors: readonly BagMirrorConfig[];
+  /** Render a parent URI to its carrier text. Closes over the TW5 engine. */
   renderFn: (parentUri: string) => Promise<string | null>;
   /** Optional readiness map — first flush lights `disk-projector`. */
   readinessMap?: ReadinessMap;
@@ -25,13 +27,18 @@ export interface DiskKindDeps {
 /**
  * Build a `disk` projection kind bound to a TW5 render function.
  *
- * Config fields read:
- *   root  — absolute filesystem path (defaults to `defaultLaresRoot`)
+ * The mirror set determines which bags reach disk. Bags absent from the set
+ * (typically operator-private — identities, groups, sessions, admin) never
+ * write to disk; they live solely in `.lararium/` Automerge storage.
  */
 export function makeDiskProjectionKind(deps: DiskKindDeps): LarProjectionKind {
-  return async (config, peer) => {
-    const root = config.fields["root"] ?? deps.defaultLaresRoot;
-    const projector = new LarDiskProjector(root, deps.renderFn, deps.debounceMs ?? 1000, deps.readinessMap);
+  return async (_config, peer) => {
+    const projector = new LarDiskProjector(
+      deps.mirrors,
+      deps.renderFn,
+      deps.debounceMs ?? 1000,
+      deps.readinessMap,
+    );
     const stop = projector.start(peer.store);
     return { stop };
   };
