@@ -23,7 +23,7 @@ import { join, dirname, basename } from "path";
 import { fileURLToPath }         from "url";
 
 import { TW5Engine }             from "@lararium/tw5";
-import { tw5MemesRoot, tw5PluginsRoot, tw5DistWidgetsRoot } from "@lararium/tw5/tw5-memes-root";
+import { tw5PluginsRoot, tw5DistWidgetsRoot } from "@lararium/tw5/tw5-memes-root";
 import { TW5_VERSION, TW5_CORE_SCRIPT_FILENAME } from "@lararium/tw5";
 
 import type { LarariumDoc, LarariumBlobEntry } from "@lararium/core";
@@ -43,6 +43,25 @@ import {
 const __dir = dirname(fileURLToPath(import.meta.url));
 const GENESIS_DIR  = join(__dir, "../genesis");
 const TW5_PUBLIC   = join(__dir, "../../lararium-tw5/public");
+const PACKAGES_ROOT = join(__dir, "../../");
+
+/**
+ * Enumerate every `packages/*\/memes` directory in the workspace.
+ * Each package owns the memes that describe its load-bearing files; the engine
+ * corpus is the union of all of them. URIs already encode the package via the
+ * @{pkg-scope}/v{ver}/{path} convention, so directory order doesn't matter.
+ */
+function findPackageMemeRoots(): string[] {
+  const roots: string[] = [];
+  try {
+    for (const entry of readdirSync(PACKAGES_ROOT, { withFileTypes: true })) {
+      if (!entry.isDirectory()) continue;
+      const memesDir = join(PACKAGES_ROOT, entry.name, "memes");
+      if (existsSync(memesDir)) roots.push(memesDir);
+    }
+  } catch { /* workspace shape unexpected — skip */ }
+  return roots.sort();
+}
 
 /** Capture the SOH ? -> uri line from a memetic-wikitext carrier. */
 const SOH_URI_RE = /<<~[^>]*&#x0001;[^>]*\?\s*->\s*([^\s>]+)\s*>>/;
@@ -91,17 +110,12 @@ function deriveActorId(tw5CorePath: string): string {
     h.update(readFileSync(tw5CorePath));
   }
 
-  // Meme carrier files (sorted for determinism)
-  for (const f of walkMdFiles(tw5MemesRoot)) {
-    h.update(`md:${f}:`);
-    h.update(readFileSync(f));
-  }
-
-  // Lares meme root — the @lares carriers
-  const laresMemeRoot = join(__dir, "../../lares/memes");
-  for (const f of walkMdFiles(laresMemeRoot)) {
-    h.update(`lares:${f}:`);
-    h.update(readFileSync(f));
+  // Every package's memes/ directory (sorted for determinism)
+  for (const memeRoot of findPackageMemeRoots()) {
+    for (const f of walkMdFiles(memeRoot)) {
+      h.update(`md:${f}:`);
+      h.update(readFileSync(f));
+    }
   }
 
   // Vendored plugin JSON files (sorted)
@@ -125,11 +139,11 @@ function deriveActorId(tw5CorePath: string): string {
 // ---------------------------------------------------------------------------
 
 async function buildLaresPluginBlob(): Promise<Uint8Array> {
-  // Walk both tw5 memes and lares memes
-  const tw5Files   = walkMdFiles(tw5MemesRoot);
-  const laresMemes = join(__dir, "../../lares/memes");
-  const laresFiles = walkMdFiles(laresMemes);
-  const allFiles   = [...tw5Files, ...laresFiles];
+  // Every package's memes/ directory — engine corpus is their union
+  const allFiles: string[] = [];
+  for (const memeRoot of findPackageMemeRoots()) {
+    allFiles.push(...walkMdFiles(memeRoot));
+  }
 
   const seedVm = new TW5Engine();
   await seedVm.boot();
