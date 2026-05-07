@@ -28,11 +28,11 @@ import { fileURLToPath }   from "url";
 import { Repo }            from "@automerge/automerge-repo";
 import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
 import {
-  IDENTITIES_DOC_URI, CIRCLES_DOC_URI, SESSIONS_DOC_URI,
+  IDENTITIES_DOC_URI, CIRCLES_DOC_URI, SESSIONS_DOC_URI, ADMIN_BAG_ID,
 } from "@lararium/core";
 import { buildCeremonyTiddlers } from "@lararium/tw5";
 import {
-  seedIdentitiesDoc, seedCirclesDoc, seedSessionsDoc,
+  seedIdentitiesDoc, seedCirclesDoc, seedSessionsDoc, seedAdminDoc,
 } from "../src/genesis-island.js";
 import { generateOrLoadOperatorKeypair } from "../src/operator-key.js";
 import { SOCIAL_BOOTSTRAP_PLUGIN_TITLE } from "../src/open-node-lar-peer.js";
@@ -79,6 +79,7 @@ console.log(`[lararium:init] operator verifyingKey  ${operatorIdentity.verifying
 const identitiesHandle = seedIdentitiesDoc(repo);
 const circlesHandle    = seedCirclesDoc(repo);
 const sessionsHandle   = seedSessionsDoc(repo);
+const adminHandle      = seedAdminDoc(repo);
 
 // Operator identity ceremony: IdentityTiddler + operators CircleTiddler.
 // S7.1 will add DeviceDelegationTiddler with cap: "infrastructure" here.
@@ -121,6 +122,7 @@ const packedTiddlers: Record<string, Record<string, unknown>> = {
   [IDENTITIES_DOC_URI]: { title: IDENTITIES_DOC_URI, text: identitiesHandle.url, fields: { kind: "oracle" } },
   [CIRCLES_DOC_URI]:    { title: CIRCLES_DOC_URI,    text: circlesHandle.url,    fields: { kind: "oracle" } },
   [SESSIONS_DOC_URI]:   { title: SESSIONS_DOC_URI,   text: sessionsHandle.url,   fields: { kind: "oracle" } },
+  [ADMIN_BAG_ID]:       { title: ADMIN_BAG_ID,       text: adminHandle.url,      fields: { kind: "oracle" } },
 };
 
 const bootstrapPlugin = {
@@ -136,6 +138,7 @@ console.log(`[lararium:init] genesis/social-bootstrap.json written`);
 console.log(`  @identities  ${identitiesHandle.url}`);
 console.log(`  @circles     ${circlesHandle.url}`);
 console.log(`  @sessions    ${sessionsHandle.url}`);
+console.log(`  @admin       ${adminHandle.url}`);
 console.log("[lararium:init] done — start the node with: pnpm --filter @lararium/node dev");
 
 process.exit(0);
