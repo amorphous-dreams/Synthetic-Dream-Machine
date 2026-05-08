@@ -66,7 +66,7 @@ export async function connectAdminPeer(opts: ConnectOptions = {}): Promise<Admin
   const timeout = opts.timeoutMs ?? 3000;
   const adminUrl = readAdminUrl(bootstrap);
 
-  const adapter = new WebSocketClientAdapter(`ws://${host}:${port}`);
+  const adapter = new WebSocketClientAdapter(`ws://${host}:${port}/ws`);
   const repo    = new Repo({ network: [adapter] });
 
   // Wait for ready or fail fast.

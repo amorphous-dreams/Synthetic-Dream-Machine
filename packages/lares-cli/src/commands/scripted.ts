@@ -26,9 +26,11 @@ export async function cmdHeleuma(args: ParsedArgs): Promise<number> {
   return runTsxScript(join(REPO_ROOT, "scripts", "heleuma.ts"), scriptArgs);
 }
 
-/** `lares serve` — boot the lararium node only (no Vite). */
+/** `lares serve` — boot the lararium node only (no Vite).
+ *  Runs from the lararium-node package directory because main.ts resolves
+ *  .lararium / genesis paths relative to cwd. */
 export async function cmdServe(_args: ParsedArgs): Promise<number> {
-  return runCommand(TSX_BIN, [join(NODE_PKG, "src", "main.ts")]);
+  return runCommand(TSX_BIN, [join(NODE_PKG, "src", "main.ts")], NODE_PKG);
 }
 
 /** `lares dev` — boot node + Vite app concurrently (full dev experience). */
