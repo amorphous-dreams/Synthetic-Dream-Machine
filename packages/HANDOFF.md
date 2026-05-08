@@ -1,7 +1,7 @@
 # Hand-off Crystal — Lares Lararium Node Branch
 
 > Forged: 2026-05-07
-> Branch: `feature/lararium-node-3` (15 commits ahead of origin)
+> Branch: `feature/lararium-node-3`
 > Working tree: clean
 > Last pulse: S5.6 Admin VM Lift complete — both TW5 VMs boot to `live`
 
@@ -11,7 +11,7 @@
 
 ```text
 Resume from packages/HANDOFF.md.
-Branch: feature/lararium-node-3, 15 commits ahead of origin.
+Branch: feature/lararium-node-3.
 Active sprint completed: S5.6 Admin VM Lift (5-commit sub-arc A.1→A.5).
 S5.5 / S5.7 / S5.6 all closed; S5.8 promotion ceremony next.
 Architecture laws hold: causal-island, bag=Automerge-doc=sync-boundary,
