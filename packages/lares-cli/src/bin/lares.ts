@@ -19,6 +19,11 @@ import { fileURLToPath } from "node:url";
 import { realpathSync }  from "node:fs";
 import { parseArgs, type ParsedArgs } from "../parse-args.js";
 import { cmdInit }                    from "../commands/init.js";
+import { cmdStatus }                  from "../commands/status.js";
+import {
+  cmdBuildGenesis, cmdTestQuine, cmdHeleuma,
+  cmdServe, cmdDev, cmdReset, cmdFresh,
+} from "../commands/scripted.js";
 
 type Handler = (args: ParsedArgs) => Promise<number>;
 
@@ -29,7 +34,15 @@ interface Command {
 }
 
 const COMMANDS: readonly Command[] = [
-  { name: "init", summary: "Bootstrap a new Lararium node (seed identities/circles/sessions/admin docs).", handler: cmdInit },
+  { name: "init",          summary: "Bootstrap a new Lararium node (seed identities/circles/sessions/admin docs).", handler: cmdInit          },
+  { name: "status",        summary: "Print local node health: bootstrap presence, storage size, port in use.",      handler: cmdStatus        },
+  { name: "serve",         summary: "Run the lararium node in foreground (no Vite).",                                handler: cmdServe         },
+  { name: "dev",           summary: "Run node + Vite app concurrently (full dev experience).",                       handler: cmdDev           },
+  { name: "reset",         summary: "Wipe .lararium/ + bootstrap, then re-init. Requires --force.",                  handler: cmdReset         },
+  { name: "fresh",         summary: "reset --force, then serve.",                                                    handler: cmdFresh         },
+  { name: "build-genesis", summary: "Build the deterministic genesis-island artifact.",                              handler: cmdBuildGenesis  },
+  { name: "test-quine",    summary: "Verify the quine round-trip: genesis → boot → render → hash.",                  handler: cmdTestQuine     },
+  { name: "heleuma",       summary: "Audit / scaffold load-bearing source-file memes. Pass --write to scaffold.",    handler: cmdHeleuma       },
 ];
 
 function printHelp(): void {

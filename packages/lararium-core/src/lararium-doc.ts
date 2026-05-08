@@ -105,7 +105,7 @@ export function blobDescriptorUri(blobId: string): string {
  *       @ NEVER at pos 3+.
  *       Any bare @name at pos 1 = exactly one Automerge doc identity.
  *
- * CONTENT PLANE (System Tiga — engine / corpus / person):
+ * CONTENT PLANE (Content Tiga — engine / corpus / person):
  *   @lararium   LarariumDoc  — ha: engine, grammar, admin rooms, ha-recipes
  *   @catalog    CatalogDoc   — ka: corpus discovery, user rooms, ka-recipes
  *   @lares      LaresDoc     — ba: persona/doctrine, ba-recipes
@@ -125,79 +125,37 @@ export function blobDescriptorUri(blobId: string): string {
  *   lar:///ha.ka.ba/@catalog/rooms/{slug}   → user room (ka branch, M22+)
  *
  * Oracle chain:
- *   fragment → ha (LarariumDoc) → tiddlers[CATALOG_DOC_URI]   → CatalogDoc
- *                               → tiddlers[LARES_DOC_URI]      → LaresDoc
- *                               → tiddlers[IDENTITIES_DOC_URI] → IdentitiesDoc
- *                               → tiddlers[CIRCLES_DOC_URI]     → CirclesDoc
- *                               → tiddlers[SESSIONS_DOC_URI]   → SessionsDoc
+ *   fragment → LarariumDoc → tiddlers[CATALOG_DOC_URI]     → CatalogDoc
+ *                          → tiddlers[LARES_DOC_URI]       → LaresDoc
+ *                          → tiddlers[IDENTITIES_DOC_URI]  → IdentitiesDoc
+ *                          → tiddlers[CIRCLES_DOC_URI]     → CirclesDoc
+ *                          → tiddlers[SESSIONS_DOC_URI]     → SessionsDoc
  *   CatalogDoc → tiddlers[corpusLarUri(slug)]  → corpus child-docs
- *             → tiddlers[roomLarUri(slug)]    → room leaf docs
-
-/**
- * lar: URI grammar — six root docs in two planes.
- *
- * Position semantics (zero-indexed path segments after lar:///)
- *
- *   pos 0  — what3words tagspace host, e.g. "ha.ka.ba"
- *   pos 1  — @-prefixed root doc identity (EXACTLY six reserved slots, see below)
- *   pos 2  — @-prefixed child doc identity   e.g. @catalog/@elyncia
- *            OR plain leaf path segment      e.g. @lararium/rooms/altar-fire
- *   pos 3+ — plain leaf path segments, never @-prefixed
- *
- * Rule: @ ONLY at pos 1 (root doc) or pos 2 (child doc under a root).
- *       @ NEVER at pos 3+.
- *       Any bare @name at pos 1 = exactly one Automerge doc identity.
- *
- * CONTENT PLANE (Automerge Tiga — ha / ka / ba):
- *   @lararium   LarariumDoc  — ha: engine, grammar, admin rooms, ha-recipes
- *   @catalog    CatalogDoc   — ka: corpus discovery, user rooms, ka-recipes
- *   @lares      LaresDoc     — ba: persona/doctrine, ba-recipes
- *
- * SOCIAL PLANE (identity / authority / session):
- *   @identities IdentitiesDoc — stable principal records (operators, agents, services)
- *   @circles     CirclesDoc     — collective authority + durable membership
- *   @sessions   SessionsDoc   — live operator-agent session docs
- *
- * Corpus child-docs live under ka (pos-2 @ slot):
- *   lar:///ha.ka.ba/@catalog/@elyncia   → elyncia corpus doc
- *   lar:///ha.ka.ba/@catalog/@ftls      → ftls corpus doc
- *
- * Rooms remain leaf paths (no @ at pos 2):
- *   lar:///ha.ka.ba/@lararium/rooms/{slug}  → admin/operator room (ha branch)
- *   lar:///ha.ka.ba/@catalog/rooms/{slug}   → user room (ka branch, M22+)
- *
- * Oracle chain:
- *   fragment → ha (LarariumDoc) → tiddlers[CATALOG_DOC_URI]   → CatalogDoc
- *                               → tiddlers[LARES_DOC_URI]      → LaresDoc
- *                               → tiddlers[IDENTITIES_DOC_URI] → IdentitiesDoc
- *                               → tiddlers[CIRCLES_DOC_URI]     → CirclesDoc
- *                               → tiddlers[SESSIONS_DOC_URI]   → SessionsDoc
- *   CatalogDoc → tiddlers[corpusLarUri(slug)]  → corpus child-docs
- *             → tiddlers[roomLarUri(slug)]    → room leaf docs
+ *              → tiddlers[roomLarUri(slug)]    → room leaf docs
  *
  * Meme: lar:///ha.ka.ba/@lararium/core/v0.1/automerge-tiga
  */
 
 // ── Content plane — Automerge Tiga ──────────────────────────────────────────
 
-/** ha vertex — engine / grammar / admin rooms / ha-recipes. */
+/** ha vertex — engine / grammar / admin rooms / system-recipes. */
 export const LARARIUM_DOC_URI = "lar:///ha.ka.ba/@lararium";
 
-/** ka vertex — corpus discovery / user rooms / ka-recipes. */
+/** ka vertex — corpus discovery / user rooms / corpus-recipes. */
 export const CATALOG_DOC_URI = "lar:///ha.ka.ba/@catalog";
 
-/** ba vertex — persona / doctrine / ba-recipes. */
+/** ba vertex — persona / doctrine / agent-recipes. */
 export const LARES_DOC_URI = "lar:///ha.ka.ba/@lares";
 
 // ── Social plane — identity / authority / session ───────────────────────────
 
-/** Stable principal records — operators, agents, services, devices. */
+/** ha vertex — Stable principal records — operators, agents, services, devices. */
 export const IDENTITIES_DOC_URI = "lar:///ha.ka.ba/@identities";
 
-/** Collective authority + durable group membership. */
+/** ka vertex — Collective authority + durable group membership. */
 export const CIRCLES_DOC_URI = "lar:///ha.ka.ba/@circles";
 
-/** Live operator-agent session docs; hostful overlays project into these. */
+/** ba vertex — Live operator-agent session docs; hostful overlays project into these. */
 export const SESSIONS_DOC_URI = "lar:///ha.ka.ba/@sessions";
 
 /**

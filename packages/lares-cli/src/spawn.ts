@@ -1,0 +1,46 @@
+/**
+ * spawn — child-process helpers for CLI subcommands that delegate to existing
+ * tsx scripts or pnpm composers.
+ *
+ * The CLI shells out for two reasons:
+ *   1. The underlying scripts are sizeable and self-contained (build-genesis,
+ *      test-quine, heleuma) — re-importing them as library functions would
+ *      balloon the CLI diff for no behavioral gain.
+ *   2. Composition scripts (root `pnpm dev`) already wrap concurrency
+ *      orchestration; re-implementing here would duplicate config.
+ *
+ * Subcommands whose logic is small AND benefits from in-vm reuse (`init`,
+ * future `promote`) live as library imports instead — see commands/init.ts.
+ */
+
+import { spawn } from "node:child_process";
+import { fileURLToPath } from "node:url";
+import { dirname, join, resolve } from "node:path";
+
+/** Repo root (workspace) — three levels up from this source file. */
+export const REPO_ROOT = resolve(
+  dirname(fileURLToPath(import.meta.url)),
+  "..", "..", "..", "..",
+);
+
+/** Run a tsx script and resolve to its exit code. Inherits stdio. */
+export function runTsxScript(scriptPath: string, args: readonly string[] = []): Promise<number> {
+  const tsx = join(REPO_ROOT, "node_modules", ".bin", "tsx");
+  return new Promise((resolveP) => {
+    const child = spawn(tsx, [scriptPath, ...args], {
+      stdio: "inherit",
+      cwd:   REPO_ROOT,
+    });
+    child.on("exit", (code) => resolveP(code ?? 1));
+    child.on("error", (err) => { console.error(err); resolveP(1); });
+  });
+}
+
+/** Run an arbitrary command (pnpm, node, etc.) and resolve to its exit code. */
+export function runCommand(cmd: string, args: readonly string[] = [], cwd = REPO_ROOT): Promise<number> {
+  return new Promise((resolveP) => {
+    const child = spawn(cmd, [...args], { stdio: "inherit", cwd });
+    child.on("exit",  (code) => resolveP(code ?? 1));
+    child.on("error", (err)  => { console.error(err); resolveP(1); });
+  });
+}
