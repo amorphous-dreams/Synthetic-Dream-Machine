@@ -136,7 +136,7 @@ export function blobDescriptorUri(blobId: string): string {
  * Meme: lar:///ha.ka.ba/@lararium/core/v0.1/automerge-tiga
  */
 
-// ── Content plane — Automerge Tiga ──────────────────────────────────────────
+// ── Content plane — engine / corpuses / personas ──────────────────────────────────────────
 
 /** ha vertex — engine / grammar / admin rooms / system-recipes. */
 export const LARARIUM_DOC_URI = "lar:///ha.ka.ba/@lararium";
