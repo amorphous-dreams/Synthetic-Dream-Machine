@@ -105,17 +105,18 @@ export function blobDescriptorUri(blobId: string): string {
  *       @ NEVER at pos 3+.
  *       Any bare @name at pos 1 = exactly one Automerge doc identity.
  *
- * CONTENT PLANE (Automerge Tiga — ha / ka / ba):
+ * CONTENT PLANE (System Tiga — engine / corpus / person):
  *   @lararium   LarariumDoc  — ha: engine, grammar, admin rooms, ha-recipes
  *   @catalog    CatalogDoc   — ka: corpus discovery, user rooms, ka-recipes
  *   @lares      LaresDoc     — ba: persona/doctrine, ba-recipes
  *
- * SOCIAL PLANE (identity / authority / session):
- *   @identities IdentitiesDoc — stable principal records (operators, agents, services)
- *   @circles     CirclesDoc     — collective authority + durable membership
- *   @sessions   SessionsDoc   — live operator-agent session docs
+ * SOCIAL PLANE (Social Tiga - identity / authority / session):
+ *   @identities  IdentitiesDoc — ha: stable principal records (operators, agents, services)
+ *   @circles     CirclesDoc    — ka: collective authority + durable membership
+ *   @sessions    SessionsDoc   — ba: live operator-agent session docs
  *
- * Corpus child-docs live under ka (pos-2 @ slot):
+ * Child-docs live under parent docs (pos-2 @ slot):
+ *   lar:///ha.ka.ba/@lararium/@admin   → admin room doc (distinct from room leaf doc at pos-3)
  *   lar:///ha.ka.ba/@catalog/@elyncia   → elyncia corpus doc
  *   lar:///ha.ka.ba/@catalog/@ftls      → ftls corpus doc
  *

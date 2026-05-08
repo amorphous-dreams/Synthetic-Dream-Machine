@@ -70,10 +70,9 @@ Audit baseline at hand-off: 0 orphans, 0 drifted, 48 missing.
 ## Smoke-test recipe (verify branch state)
 
 ```sh
-cd packages/lararium-node
-rm -rf .lararium genesis/social-bootstrap.json   # fresh slate
-pnpm exec tsx scripts/init-lararium.ts            # seed all 4 docs (incl. admin)
-pnpm exec tsx src/main.ts                         # boot → reaches "live" phase
+rm -rf packages/lararium-node/.lararium packages/lararium-node/genesis/social-bootstrap.json   # fresh slate
+lares init                                          # seed all 4 docs (incl. admin)
+cd packages/lararium-node && pnpm exec tsx src/main.ts   # boot → reaches "live" phase
 # Expected output includes: "[lararium] admin: automerge:..."
 # Expected output: "[lararium] no admin bag-mirror tiddlers found — using 3 programmatic defaults"
 ```

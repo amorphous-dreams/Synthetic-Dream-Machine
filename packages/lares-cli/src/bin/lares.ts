@@ -1,0 +1,76 @@
+#!/usr/bin/env node
+/**
+ * `lares` — operator CLI entry point.
+ *
+ * Dispatches subcommands. Adding a new command means: add a handler under
+ * src/commands/, add a row to COMMANDS below, and (if the command needs help
+ * text) add a description.
+ *
+ * Architecture notes:
+ *   - The CLI is a thin dispatch shim. Every command's logic lives in a
+ *     library function (typically in @lararium/node), so the same operations
+ *     can also run from inside the TW5 vm via the command-tiddler protocol
+ *     (see B.3 in packages/HANDOFF.md).
+ *   - No HTTP/RPC surface here. CLI ↔ live-node coordination happens through
+ *     the admin Automerge doc — CRDT-native, web2-free.
+ */
+
+import { fileURLToPath } from "node:url";
+import { realpathSync }  from "node:fs";
+import { parseArgs, type ParsedArgs } from "../parse-args.js";
+import { cmdInit }                    from "../commands/init.js";
+
+type Handler = (args: ParsedArgs) => Promise<number>;
+
+interface Command {
+  readonly name:        string;
+  readonly summary:     string;
+  readonly handler:     Handler;
+}
+
+const COMMANDS: readonly Command[] = [
+  { name: "init", summary: "Bootstrap a new Lararium node (seed identities/circles/sessions/admin docs).", handler: cmdInit },
+];
+
+function printHelp(): void {
+  console.log("lares — operator CLI for the Lares lararium stack\n");
+  console.log("Usage:  lares <command> [args...]\n");
+  console.log("Commands:");
+  for (const c of COMMANDS) {
+    console.log(`  ${c.name.padEnd(14)} ${c.summary}`);
+  }
+  console.log(`  ${"help".padEnd(14)} Show this message.\n`);
+  console.log("Run `lares <command> --help` once a command implements its own help (TBD).");
+}
+
+export async function dispatch(argv: readonly string[]): Promise<number> {
+  const args = parseArgs(argv);
+  if (args.command === null || args.command === "help" || args.flags["help"]) {
+    printHelp();
+    return args.command === null ? 1 : 0;
+  }
+  const cmd = COMMANDS.find((c) => c.name === args.command);
+  if (!cmd) {
+    console.error(`lares: unknown command "${args.command}".  Run \`lares help\` for the list.`);
+    return 2;
+  }
+  return await cmd.handler(args);
+}
+
+// Run dispatch when this file IS the entry point (not when imported).
+const invokedAsScript = (() => {
+  const arg1 = process.argv[1];
+  if (!arg1) return false;
+  try {
+    return realpathSync(arg1) === fileURLToPath(import.meta.url);
+  } catch {
+    return false;
+  }
+})();
+
+if (invokedAsScript) {
+  dispatch(process.argv.slice(2)).then(
+    (code) => process.exit(code),
+    (err)  => { console.error(err); process.exit(1); },
+  );
+}

@@ -5,22 +5,15 @@
   "type": "module",
   "exports": {
     ".": {
-      "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
+      "import": "./dist/src/index.js",
+      "types": "./dist/src/index.d.ts"
     }
   },
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "bin": {
-    "lararium": "./dist/cli.js"
-  },
+  "main": "./dist/src/index.js",
+  "types": "./dist/src/index.d.ts",
   "scripts": {
     "build":          "tsc",
     "build:genesis":  "tsx scripts/build-genesis-island.ts",
-    "lararium:init":  "tsx scripts/init-lararium.ts",
-    "lararium:reset": "rm -rf .lararium genesis/social-bootstrap.json && tsx scripts/init-lararium.ts",
-    "lararium:fresh": "pnpm run lararium:reset && tsx src/main.ts",
-    "lararium:pack":  "echo 'lararium:pack — nexus connect bundle (S9, not yet implemented)'",
     "test:quine":     "tsx scripts/test-quine.ts",
     "typecheck":      "tsc --noEmit",
     "test":           "NODE_OPTIONS=--experimental-vm-modules pnpm exec jest --config jest.config.cjs",

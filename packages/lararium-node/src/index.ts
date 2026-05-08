@@ -12,3 +12,6 @@ export type { NodeLarPeerOptions, NodeLarPeerResult, NodeOpenPhase, CreateNodeSe
 export { loadGenesisIsland, reconcileIslandFromGenesis, readGenesisSha256, GENESIS_CID, createSessionEventLog, seedAdminDoc } from "./genesis-island.js";
 export { SOCIAL_BOOTSTRAP_PLUGIN_TITLE } from "./open-node-lar-peer.js";
 export { LarEventBusImpl, DEFAULT_RINGS } from "./lar-event-bus-impl.js";
+
+export { runInit } from "./commands/init.js";
+export type { InitOptions, InitResult } from "./commands/init.js";
