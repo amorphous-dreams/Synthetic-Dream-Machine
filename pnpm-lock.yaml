@@ -152,6 +152,12 @@ importers:
 
   packages/lares-cli:
     dependencies:
+      '@automerge/automerge-repo':
+        specifier: ^2.5.5
+        version: 2.5.5
+      '@automerge/automerge-repo-network-websocket':
+        specifier: ^2.5.5
+        version: 2.5.5
       '@lararium/core':
         specifier: workspace:*
         version: link:../lararium-core
@@ -161,6 +167,9 @@ importers:
       '@lararium/tw5':
         specifier: workspace:*
         version: link:../lararium-tw5
+      '@lares/lares':
+        specifier: workspace:*
+        version: link:../lares
     devDependencies:
       tsx:
         specifier: ^4.19.0

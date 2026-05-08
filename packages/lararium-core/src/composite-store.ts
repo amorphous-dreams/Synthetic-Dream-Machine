@@ -208,6 +208,19 @@ export class CompositeStore implements LarTiddlerStore {
     return this.layers.some((l) => l.bagId === bagId && l.writable);
   }
 
+  /** Bag ids of every layer currently holding a non-tombstoned record for the
+   *  given title. Highest-priority bag appears first (recipe-presence order).
+   *  Used by the `where` ceremony — recipe-presence preview before promotion. */
+  async listBagsHolding(title: string): Promise<string[]> {
+    const out: string[] = [];
+    for (let i = this.layers.length - 1; i >= 0; i--) {
+      const layer = this.layers[i]!;
+      const rec = await layer.store.get(title);
+      if (rec && !rec.deleted) out.push(layer.bagId);
+    }
+    return out;
+  }
+
   subscribe(fn: (change: LarTiddlerChange) => void): () => void {
     this.listeners.add(fn);
     return () => { this.listeners.delete(fn); };

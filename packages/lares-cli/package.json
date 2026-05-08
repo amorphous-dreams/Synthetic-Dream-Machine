@@ -21,9 +21,12 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@automerge/automerge-repo": "^2.5.5",
+    "@automerge/automerge-repo-network-websocket": "^2.5.5",
     "@lararium/core": "workspace:*",
     "@lararium/node": "workspace:*",
-    "@lararium/tw5":  "workspace:*"
+    "@lararium/tw5":  "workspace:*",
+    "@lares/lares":   "workspace:*"
   },
   "devDependencies": {
     "tsx": "^4.19.0"

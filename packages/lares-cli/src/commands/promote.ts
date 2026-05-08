@@ -1,0 +1,113 @@
+/**
+ * `lares promote <uri> --to <bag> [--from <bag>] [--yes]`
+ *
+ * Canon-promotion ceremony. Connects to the running `lares serve` daemon as
+ * an Automerge-repo WebSocket peer, writes a recipe-presence query first
+ * (so the operator confirms the source bag), then writes the actual promote
+ * command. Both flow through the admin doc; the daemon's dispatcher reacts.
+ *
+ * Attach mode only — operator chose this for B.5. If no daemon is up, the
+ * CLI exits with a clear error rather than booting an in-process node.
+ *
+ * Flags:
+ *   --to <bag>     target bag id (required)
+ *   --from <bag>   optional explicit source; refused on mismatch with record.bag
+ *   --yes          skip the confirmation prompt
+ *   --port <n>     daemon port (defaults to LAR_PORT or 8080)
+ */
+
+import { createInterface } from "node:readline/promises";
+import { stdin, stdout } from "node:process";
+import { connectAdminPeer, submitCommand } from "../admin-peer.js";
+import type { ParsedArgs } from "../parse-args.js";
+
+export async function cmdPromote(args: ParsedArgs): Promise<number> {
+  const tiddler = args.positional[0];
+  const toBag   = args.options["to"];
+  const fromBag = args.options["from"];
+
+  if (!tiddler) {
+    console.error("usage: lares promote <uri> --to <bag> [--from <bag>] [--yes]");
+    return 2;
+  }
+  if (!toBag) {
+    console.error("--to <bag> is required");
+    return 2;
+  }
+
+  const portOpt = args.options["port"];
+  const connectOpts: Parameters<typeof connectAdminPeer>[0] = portOpt
+    ? { port: Number(portOpt) }
+    : {};
+
+  let peer;
+  try {
+    peer = await connectAdminPeer(connectOpts);
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    console.error(`lares promote: ${msg}`);
+    console.error("  Start the daemon with `lares serve` and try again.");
+    return 3;
+  }
+
+  try {
+    // 1. Recipe-presence preview.
+    const where = await submitCommand(peer, "where", { tiddler }, "lares-cli");
+    if (where.status === "error") {
+      console.error(`recipe-presence query failed: ${where.errorMessage ?? "unknown"}`);
+      return 4;
+    }
+    const bags = (where.result?.["bags"] ?? []) as string[];
+    const primary = where.result?.["primaryBag"] as string | null;
+
+    if (!primary) {
+      console.error(`tiddler not found in any bag: ${tiddler}`);
+      return 5;
+    }
+    if (fromBag && fromBag !== primary) {
+      console.error(`source mismatch: --from=${fromBag}, but tiddler lives in ${primary}`);
+      return 5;
+    }
+    if (primary === toBag) {
+      console.error(`tiddler already lives in ${toBag} — nothing to promote`);
+      return 5;
+    }
+
+    console.log("");
+    console.log(`  tiddler:   ${tiddler}`);
+    console.log(`  currently: ${bags.join(", ")}`);
+    console.log(`  promote:   ${primary} → ${toBag}`);
+    console.log("");
+
+    // 2. Confirmation.
+    if (!args.flags["yes"]) {
+      const rl = createInterface({ input: stdin, output: stdout });
+      const answer = await rl.question("Proceed? [y/N] ");
+      rl.close();
+      if (answer.trim().toLowerCase() !== "y") {
+        console.log("aborted.");
+        return 0;
+      }
+    }
+
+    // 3. Promote.
+    const promoteResult = await submitCommand(
+      peer, "promote",
+      { tiddler, toBag, fromBag: primary },
+      "lares-cli",
+    );
+
+    if (promoteResult.status === "error") {
+      console.error(`promotion failed: ${promoteResult.errorMessage ?? "unknown"}`);
+      return 6;
+    }
+
+    console.log(`promoted: ${tiddler}`);
+    console.log(`  ${promoteResult.result?.["promotedFrom"]} → ${promoteResult.result?.["promotedTo"]}`);
+    console.log(`  at: ${promoteResult.result?.["promotedAt"]}`);
+    console.log(`  audit: lar:///ha.ka.ba/@lararium/@admin/log/${promoteResult.requestId}`);
+    return 0;
+  } finally {
+    await peer.disconnect();
+  }
+}

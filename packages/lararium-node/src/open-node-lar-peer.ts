@@ -55,6 +55,7 @@ import { waitHandleLocal }                from "./repo-helpers.js";
 import { openAdminVm }                    from "./open-admin-vm.js";
 import { CommandDispatcher, CommandHandlerRegistry } from "./command-dispatcher.js";
 import { createPromoteHandler }                     from "./promote-handler.js";
+import { createWhereHandler }                       from "./where-handler.js";
 import type { AdminVmResult }             from "./open-admin-vm.js";
 import { LAR_EVENT } from "@lararium/core";
 
@@ -322,6 +323,9 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
   // this single registration generalizes — the handler stays the same; the
   // composite reference becomes "the requesting peer's composite + cap chain".
   commandRegistry.register("promote", createPromoteHandler({ composite }));
+  // Read-only recipe-presence query — `lares promote` previews source bag via
+  // this command before writing the promote command itself.
+  commandRegistry.register("where",   createWhereHandler({ composite }));
   const commandDispatcher = new CommandDispatcher({
     admin:    adminVm.composite,
     registry: commandRegistry,
