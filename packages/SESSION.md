@@ -6,6 +6,36 @@
 
 ---
 
+## What Just Happened (2026-05-07 — S5.6 Admin VM Lift complete)
+
+Five-step sub-arc closed (A.1 → A.5):
+
+**A.1 `9461d7ca`** — `seedAdminDoc()` in `genesis-island.ts`; `reconcileWellKnownTiddlers` extended with optional `adminUrl`. AdminDoc reuses `MemeStoreDoc` shape — semantic distinction lives in URI/bag identity (`lar:///ha.ka.ba/@lararium/@admin`).
+
+**A.2 `23047176`** — `init-lararium.ts` seeds admin doc alongside identities/circles/sessions; admin oracle lands in `genesis/social-bootstrap.json`.
+
+**A.3 `aac30c23`** — Standalone `open-admin-vm.ts` module: own TW5Engine, own CompositeStore with admin doc as writable layer, own MemeSyncAdaptor targeting `ADMIN_BAG_ID`. `waitHandleLocal` extracted to `repo-helpers.ts` for sharing with the room VM.
+
+**A.4 `6a7372e3`** — `openNodeLarPeer` mounts admin VM in parallel with the room VM; admin URL flows through `reconcileWellKnownTiddlers`; `NodeLarPeerResult.admin` exposes the admin VM. `init-lararium.ts` calls `repo.flush()` before exit (caught a flush race during smoke test).
+
+**A.5 `5b4a379d`** — `main.ts` reads bag-mirror configs from admin-room tiddlers tagged `$:/tags/LarariumBagMirror`, falling back to programmatic defaults. Operators can edit mirror configs from inside the wiki.
+
+**Smoke test result**: `rm -rf .lararium && lararium:init && main.ts` reaches `live` phase. Both VMs boot, admin URL displayed, falls back to 3 programmatic mirrors when admin doc lacks bag-mirror tiddlers.
+
+**Bug caught and fixed**: `genesis/social-bootstrap.json` accidentally tracked in `6a7372e3` — now gitignored (`1916ab7f`).
+
+S5.7 closure work: Loop 1 `2d365b3f` cleaned 8 orphans (5 deleted, 2 repointed) and fixed multi-source detection in heleuma audit.
+
+### Next:
+
+**S5.8 promotion ceremony** — wiki widget + CLI; operates on the admin VM substrate just landed. The promotion handler will write to the admin doc's session-event-log to record operator decisions.
+
+**S7.1 device delegations** — `cap=infrastructure` proofs go in admin doc; init-lararium ceremony writes the node's own device delegation as part of operator identity.
+
+**Heleuma stub authoring** — 48 missing memes to scaffold + author content for. Defer to a separate "documentation pass" branch.
+
+---
+
 ## What Just Happened (2026-05-07 — chapel-perilous-opens deleted)
 
 `packages/lares-chapel-perilous-opens` removed: the empty stub for "unstable three-segment tuple-root URIs not yet stabilized" was superseded by the bag-mirror system. Unstable URIs without an `@-scope` now resolve as `caps-virtual` (no on-disk path). To gain a writable disk surface, an URI must promote into `@lares` or `@lararium` scope, or register a custom bag mirror via the admin room (S5.6+).
