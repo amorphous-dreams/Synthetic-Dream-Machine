@@ -32,6 +32,7 @@ export { OpenIdentitySlot } from "./identity-slot.js";
 export * from "./vm-pool.js";
 export * from "./meme-recipe-vm.js";
 export * from "./open-phase.js";
+export * from "./command-tiddler.js";
 // LarariumTW5 and filter helpers live in @lararium/tw5 — import from there:
 //   import { filterMemesWikitext, LarariumTW5 } from "@lararium/tw5";
 // Kept out of @lararium/core to prevent tiddlywiki from entering bundles that don't need it.

@@ -53,6 +53,7 @@ import {
 import { LarEventBusImpl, DEFAULT_RINGS } from "./lar-event-bus-impl.js";
 import { waitHandleLocal }                from "./repo-helpers.js";
 import { openAdminVm }                    from "./open-admin-vm.js";
+import { CommandDispatcher, CommandHandlerRegistry } from "./command-dispatcher.js";
 import type { AdminVmResult }             from "./open-admin-vm.js";
 import { LAR_EVENT } from "@lararium/core";
 
@@ -306,6 +307,19 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
   // composite. Booted in parallel with the room VM; never shares state with
   // room peer connections.
   const adminVm = await openAdminVm({ repo, adminUrl });
+
+  // Command dispatcher — subscribes to the admin store and runs commands
+  // delivered as command-tiddlers (CRDT-native CLI ↔ daemon coordination).
+  // Real handlers register here; the registry stays empty for now and
+  // populates as B.4+ lands them.
+  const commandRegistry  = new CommandHandlerRegistry();
+  // Stub "echo" handler — useful for end-to-end smoke of the protocol.
+  commandRegistry.register("echo", async (args) => ({ echoed: args }));
+  const commandDispatcher = new CommandDispatcher({
+    admin:    adminVm.composite,
+    registry: commandRegistry,
+  });
+  commandDispatcher.start();
 
   // Zelenka: keep oracle tiddlers current on every boot — self, ka, ba, social plane, admin.
   reconcileWellKnownTiddlers(
