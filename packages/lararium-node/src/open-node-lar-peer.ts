@@ -54,6 +54,7 @@ import { LarEventBusImpl, DEFAULT_RINGS } from "./lar-event-bus-impl.js";
 import { waitHandleLocal }                from "./repo-helpers.js";
 import { openAdminVm }                    from "./open-admin-vm.js";
 import { CommandDispatcher, CommandHandlerRegistry } from "./command-dispatcher.js";
+import { createPromoteHandler }                     from "./promote-handler.js";
 import type { AdminVmResult }             from "./open-admin-vm.js";
 import { LAR_EVENT } from "@lararium/core";
 
@@ -315,6 +316,12 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
   const commandRegistry  = new CommandHandlerRegistry();
   // Stub "echo" handler — useful for end-to-end smoke of the protocol.
   commandRegistry.register("echo", async (args) => ({ echoed: args }));
+  // S5.8 — canon promotion. The handler operates on the room composite
+  // (the bags eligible for promotion live there: lares, lararium, room/{slug}).
+  // Forward note: when federated promotion lands (UCAN-gated, any room VM),
+  // this single registration generalizes — the handler stays the same; the
+  // composite reference becomes "the requesting peer's composite + cap chain".
+  commandRegistry.register("promote", createPromoteHandler({ composite }));
   const commandDispatcher = new CommandDispatcher({
     admin:    adminVm.composite,
     registry: commandRegistry,

@@ -39,6 +39,42 @@ export const LARES_COMMAND_TAG = "$:/tags/LaresCommand";
 /** All command tiddler titles share this prefix. */
 export const COMMAND_URI_PREFIX = `${ADMIN_BAG_ID}/cmd/`;
 
+/** Durable audit-event tiddlers live under this prefix in the admin doc.
+ *  Every successful command produces one; operators inspect them as the
+ *  forensic trail. Tagged $:/tags/LaresCommandEvent for vm-side filters. */
+export const COMMAND_EVENT_URI_PREFIX = `${ADMIN_BAG_ID}/log/`;
+export const LARES_COMMAND_EVENT_TAG  = "$:/tags/LaresCommandEvent";
+
+/** Build a durable audit-event record for a completed command. */
+export function buildCommandEventTiddler(opts: {
+  requestId:    string;
+  command:      string;
+  args:         Record<string, unknown>;
+  status:       "done" | "error";
+  result?:      Record<string, unknown>;
+  errorMessage?: string;
+  requestedBy:  string;
+  authority?:   string;
+}): LarTiddlerRecord {
+  const title = `${COMMAND_EVENT_URI_PREFIX}${opts.requestId}`;
+  return {
+    title,
+    bag:       ADMIN_BAG_ID,
+    authority: opts.authority ?? "lares-dispatcher",
+    fields: {
+      tags:           LARES_COMMAND_EVENT_TAG,
+      "request-id":   opts.requestId,
+      command:        opts.command,
+      args:           JSON.stringify(opts.args),
+      status:         opts.status,
+      ...(opts.result       !== undefined && { result: JSON.stringify(opts.result) }),
+      ...(opts.errorMessage !== undefined && { "error-message": opts.errorMessage }),
+      "requested-by": opts.requestedBy,
+      "completed-at": new Date().toISOString(),
+    },
+  };
+}
+
 /** Lifecycle states. The dispatcher transitions pending → running → done|error. */
 export type CommandStatus = "pending" | "running" | "done" | "error";
 

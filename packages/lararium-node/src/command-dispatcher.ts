@@ -39,6 +39,7 @@ import {
   type LarTiddlerRecord, type LarTiddlerChange, type ChangeOrigin,
   type CommandTiddler, type CompositeStore,
   parseCommandTiddler, buildRunningPatch, buildDonePatch, buildErrorPatch,
+  buildCommandEventTiddler,
   ADMIN_BAG_ID,
 } from "@lararium/core";
 
@@ -151,10 +152,34 @@ export class CommandDispatcher {
         cap:     null,
       });
       await this.patch(record, buildDonePatch(result), origin);
+      await this.writeAuditEvent({ command, status: "done", result, origin });
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       await this.patch(record, buildErrorPatch(message), origin);
+      await this.writeAuditEvent({ command, status: "error", errorMessage: message, origin });
     }
+  }
+
+  /** Write a durable audit-event tiddler under @admin/log/<requestId>. The
+   *  command-tiddler itself stays transient (consumer tombstones after read);
+   *  the audit event is the operator's forensic trail. */
+  private async writeAuditEvent(opts: {
+    command:       CommandTiddler;
+    status:        "done" | "error";
+    result?:       Record<string, unknown>;
+    errorMessage?: string;
+    origin:        ChangeOrigin;
+  }): Promise<void> {
+    const event = buildCommandEventTiddler({
+      requestId:    opts.command.requestId,
+      command:      opts.command.command,
+      args:         opts.command.args as Record<string, unknown>,
+      status:       opts.status,
+      requestedBy:  opts.command.requestedBy,
+      ...(opts.result       !== undefined && { result:       opts.result }),
+      ...(opts.errorMessage !== undefined && { errorMessage: opts.errorMessage }),
+    });
+    await this.opts.admin.put(event, opts.origin);
   }
 
   /** Merge a partial field patch onto the existing command record. */

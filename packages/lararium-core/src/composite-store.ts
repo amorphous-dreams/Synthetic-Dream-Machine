@@ -191,6 +191,23 @@ export class CompositeStore implements LarTiddlerStore {
     return this.writableStore.tombstone(title, origin);
   }
 
+  /**
+   * Tombstone a tiddler in a specific writable bag — used by ceremonies that
+   * need to delete from a non-default writable layer (e.g. canon-promotion
+   * removes the source-bag copy after writing the canonical copy).
+   * Throws when the named bag is absent or not writable.
+   */
+  async tombstoneInBag(bagId: string, title: string, origin: ChangeOrigin): Promise<void> {
+    const layer = this.layers.find((l) => l.bagId === bagId && l.writable);
+    if (!layer) throw new Error(`CompositeStore: no writable layer for bag "${bagId}"`);
+    return layer.store.tombstone(title, origin);
+  }
+
+  /** True when a writable layer for the given bag is registered. */
+  hasWritableBag(bagId: string): boolean {
+    return this.layers.some((l) => l.bagId === bagId && l.writable);
+  }
+
   subscribe(fn: (change: LarTiddlerChange) => void): () => void {
     this.listeners.add(fn);
     return () => { this.listeners.delete(fn); };
