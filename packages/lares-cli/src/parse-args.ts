@@ -1,3 +1,7 @@
+// @heleuma:exempt — internal helper with no semantic boundary worth
+// anchoring. The CLI's command grammar lives in bin/lares.ts (which IS
+// anchored); this file is a 50-line dep-free token-walker beneath it.
+
 /**
  * parse-args — minimal arg parser for `lares <command> [args...] [--flag] [--key value]`.
  *

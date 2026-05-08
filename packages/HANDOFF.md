@@ -133,6 +133,7 @@ lares promote <uri> --to <target-bag>
 - Recipe-presence preview before promote prompt is required UX
 - ULID-style request id: millis-base32 + 8 random base32; sortable, monotonic
 - Per-package `memes/` is the canonical convention — no central `ha-ka-ba/` filesystem aggregator
+- **Corpus-vs-engine package category.** Corpus packages (`@lares/lares`, `elyncia`, `ftls`, `sdm`, `wtf`) hold tiddler-package projections in `memes/`; their root JS is at most a 5-line path helper, NOT a TS pipeline. Engine packages (`@lararium/*`, `@lares/cli`) run `src/` + `dist/` + `tsc`. The asymmetry encodes architecture-principle 5: meme files are render projections, code is code-as-projection. Do not migrate corpus index.js to TS.
 - Chapel-perilous-opens removed; unstable URIs resolve as virtual until promoted to a stable @-scope
 - Admin URI shape: room URI vs bag URI distinction is intentional
 - Bag-mirror configs live in admin room (operator-private, federates to operator devices only)

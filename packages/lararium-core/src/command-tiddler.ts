@@ -10,11 +10,21 @@
  *   tag:    $:/tags/LaresCommand
  *   fields: { command, args, request-id, status, result, requested-by, requested-at }
  *
- * The dispatcher (in @lararium/node) subscribes to the admin store, picks up
- * tiddlers with status="pending", invokes the registered handler, writes
- * status="done" + result back into the same tiddler, and tombstones the
- * command after the consumer reads the result. Durable audit lives in the
- * session event-log as a separate tiddler (see eventLogUrl on SessionTiddler).
+ * Two-tiddler contract (clarified post-S5.8):
+ *   cmd/<requestId>   THIN signal-tiddler. Carries only state-machine status
+ *                     (pending → running) and the call args. NEVER carries
+ *                     the result. The dispatcher tombstones it as soon as
+ *                     the audit-event lands. CLIs do NOT tombstone — they
+ *                     never need to.
+ *   log/<requestId>   DURABLE audit-event tiddler. Holds the full result OR
+ *                     error, plus timing and provenance. CLIs poll for THIS
+ *                     tiddler appearing — its appearance IS the "done"
+ *                     signal. Survives forever as the forensic trail.
+ *
+ * This split dissolves the crash-safety bug from the earlier shape (CLI
+ * died mid-flight → cmd/ namespace stayed dirty). Now: the dispatcher
+ * owns cleanup of cmd/, the log/ tiddler is the consumer's source of truth
+ * for the result, and a CLI crash leaves no namespace residue.
  *
  * Forward note (UEFN ReactionEngine): once the Verse-inspired ReactionEngine
  * lands, this protocol generalizes — the dispatcher pattern federates across
@@ -179,20 +189,7 @@ export function buildRunningPatch(): Record<string, string> {
   return { status: "running", "started-at": new Date().toISOString() };
 }
 
-/** Build the field patch that records a successful completion. */
-export function buildDonePatch(result: Record<string, unknown>): Record<string, string> {
-  return {
-    status:        "done",
-    result:        JSON.stringify(result),
-    "completed-at": new Date().toISOString(),
-  };
-}
-
-/** Build the field patch that records a failure. */
-export function buildErrorPatch(message: string): Record<string, string> {
-  return {
-    status:         "error",
-    "error-message": message,
-    "completed-at":  new Date().toISOString(),
-  };
-}
+// buildDonePatch / buildErrorPatch removed under the split contract — the
+// signal-tiddler never carries result/error data. Done/error state lives in
+// the durable log/<requestId> tiddler (buildCommandEventTiddler) and the
+// signal-tiddler gets tombstoned by the dispatcher once the log lands.

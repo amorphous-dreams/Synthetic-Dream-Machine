@@ -38,7 +38,7 @@
 import {
   type LarTiddlerRecord, type LarTiddlerChange, type ChangeOrigin,
   type CommandTiddler, type CompositeStore,
-  parseCommandTiddler, buildRunningPatch, buildDonePatch, buildErrorPatch,
+  parseCommandTiddler, buildRunningPatch,
   buildCommandEventTiddler,
   ADMIN_BAG_ID,
 } from "@lararium/core";
@@ -139,10 +139,20 @@ export class CommandDispatcher {
     const origin: ChangeOrigin = { kind: "lares-command", requestId: command.requestId };
 
     if (!handler) {
-      await this.patch(record, buildErrorPatch(`no handler registered for "${command.command}"`), origin);
+      // No handler exists — write an error audit event, tombstone the cmd
+      // signal. The CLI sees the log/<id> tiddler appear with status=error.
+      await this.writeAuditEvent({
+        command,
+        status:       "error",
+        errorMessage: `no handler registered for "${command.command}"`,
+        origin,
+      });
+      await this.opts.admin.tombstone(record.title, origin);
       return;
     }
 
+    // Transition the signal-tiddler to running — operators inspecting the
+    // admin VM during a long-running command see this state.
     await this.patch(record, buildRunningPatch(), origin);
 
     try {
@@ -151,13 +161,16 @@ export class CommandDispatcher {
         command,
         cap:     null,
       });
-      await this.patch(record, buildDonePatch(result), origin);
+      // Done path: write durable audit event, then tombstone the signal.
+      // CLI's poll on log/<id> picks up the result; signal-tiddler vanishes.
       await this.writeAuditEvent({ command, status: "done", result, origin });
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
-      await this.patch(record, buildErrorPatch(message), origin);
       await this.writeAuditEvent({ command, status: "error", errorMessage: message, origin });
     }
+    // In both done and error paths, the signal-tiddler has served its job.
+    // The audit event under log/<id> is the durable record.
+    await this.opts.admin.tombstone(record.title, origin);
   }
 
   /** Write a durable audit-event tiddler under @admin/log/<requestId>. The

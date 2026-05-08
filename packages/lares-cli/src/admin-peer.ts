@@ -19,8 +19,8 @@ import { Repo, type AutomergeUrl, type DocHandle } from "@automerge/automerge-re
 import { WebSocketClientAdapter } from "@automerge/automerge-repo-network-websocket";
 import {
   ADMIN_BAG_ID, AutomergeDocStore, CompositeStore,
-  buildCommandTiddler, parseCommandTiddler, COMMAND_URI_PREFIX,
-  type MemeStoreDoc, type CommandTiddler,
+  buildCommandTiddler, COMMAND_URI_PREFIX, COMMAND_EVENT_URI_PREFIX,
+  type MemeStoreDoc,
 } from "@lararium/core";
 import { repoRoot } from "@lares/lares";
 
@@ -101,8 +101,6 @@ export interface SubmitOptions {
   readonly pollMs?:   number;
   /** Total timeout in ms (default 10000). */
   readonly timeoutMs?: number;
-  /** True (default) tombstones the command-tiddler after reading the result. */
-  readonly tombstoneAfterRead?: boolean;
 }
 
 export interface SubmitResult {
@@ -113,8 +111,12 @@ export interface SubmitResult {
 }
 
 /**
- * Write a command-tiddler, poll the admin doc until the dispatcher writes
- * status=done|error, then optionally tombstone the command tiddler.
+ * Write a command-tiddler signal, poll for the durable log/<requestId>
+ * audit-event tiddler appearing — its appearance IS the "done" signal.
+ *
+ * Under the split contract: signal-tiddler under cmd/<id> is fire-and-
+ * forget; the dispatcher tombstones it. CLI never tombstones; a CLI crash
+ * leaves no namespace residue.
  */
 export async function submitCommand(
   peer:        AdminPeerHandle,
@@ -125,41 +127,36 @@ export async function submitCommand(
 ): Promise<SubmitResult> {
   const pollMs    = opts.pollMs    ?? 100;
   const timeoutMs = opts.timeoutMs ?? 10000;
-  const tombstone = opts.tombstoneAfterRead ?? true;
 
   const cmdRecord = buildCommandTiddler({ command, args, requestedBy });
   const requestId = (cmdRecord.fields as Record<string, string>)["request-id"]!;
+  const logTitle  = `${COMMAND_EVENT_URI_PREFIX}${requestId}`;
 
   await peer.composite.put(cmdRecord, { kind: "operator-import", sessionId: `lares-cli-${requestId}` });
 
   const start = Date.now();
-  let last: CommandTiddler | null = null;
   while (Date.now() - start < timeoutMs) {
     await new Promise((r) => setTimeout(r, pollMs));
-    const current = await peer.composite.get(cmdRecord.title);
-    if (!current) continue;
-    const parsed = parseCommandTiddler(current);
-    if (!parsed) continue;
-    last = parsed;
-    if (parsed.status === "done" || parsed.status === "error") break;
+    const event = await peer.composite.get(logTitle);
+    if (!event || event.deleted) continue;
+    const fields = event.fields as Record<string, string>;
+    const status = fields["status"];
+    if (status !== "done" && status !== "error") continue;
+
+    let result: Record<string, unknown> | undefined;
+    if (typeof fields["result"] === "string" && fields["result"].length > 0) {
+      try { result = JSON.parse(fields["result"]); } catch { /* malformed — leave undefined */ }
+    }
+    const errorMessage = fields["error-message"];
+    return {
+      status:    status as "done" | "error",
+      requestId,
+      ...(result       !== undefined && { result }),
+      ...(errorMessage !== undefined && { errorMessage }),
+    };
   }
 
-  if (!last || (last.status !== "done" && last.status !== "error")) {
-    throw new Error(`command "${command}" timed out after ${timeoutMs}ms`);
-  }
-
-  if (tombstone) {
-    await peer.composite.tombstone(cmdRecord.title, {
-      kind: "operator-import", sessionId: `lares-cli-${requestId}-cleanup`,
-    });
-  }
-
-  return {
-    status:    last.status,
-    requestId,
-    ...(last.result       !== undefined && { result:       last.result }),
-    ...(last.errorMessage !== undefined && { errorMessage: last.errorMessage }),
-  };
+  throw new Error(`command "${command}" timed out after ${timeoutMs}ms`);
 }
 
 // Re-export so commands don't need a separate import path.
