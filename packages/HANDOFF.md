@@ -14,8 +14,8 @@
 Resume from packages/HANDOFF.md.
 Branch: feature/lararium-node-3.
 S5.8 ✅ closed. S6 (BagResidencyManager) opened C.1; paused mid-arc.
-S7.1 (Capability layer via @keyhive/keyhive) opened D.1+D.1.5+D.2; paused
-awaiting TW5 bag/recipe research return for D.4 cap-event-home decision.
+S7.1 (Capability layer via @keyhive/keyhive) ✅ closed (D.1→D.6).
+Next: resume S6 (C.2-C.6) OR S7.4 (admin doc ingress trust gate).
 Architecture laws hold: causal-island, bag=Automerge-doc=sync-boundary,
 canon-promotion requires active operator decision, TW5 VM primacy,
 web3-only — no HTTP/RPC for inter-process coordination, command-tiddlers
@@ -41,7 +41,7 @@ category boundary.
 | S5.6 | ✅ | Admin TW5 VM stood up. Admin doc at `lar:///ha.ka.ba/@lararium/@admin`. Bag-mirror configs read from admin tiddlers tagged `$:/tags/LarariumBagMirror`. |
 | S5.8 | ✅ | `@lares/cli` package + `lares` binary; command-tiddler CRDT protocol; TS dispatcher; promote/where/echo handlers; durable audit-event tiddlers. |
 | S6 (C.1) | 🟡 | `BagResidencyManager` skeleton (pinned/hot/cold tiers). `lares pin/unpin/residency`. No eviction yet — C.2 wires LRU+sweeper. Paused mid-arc to scope S7. |
-| S7.1 (D.1, D.1.5, D.2) | 🟡 | @keyhive/keyhive pre-alpha probed and adopted. CapabilityProvider+KeyhiveProvider land; provider smoke green. D.3-D.6 paused awaiting TW5 bag/recipe research return for D.4 cap-event-home decision. |
+| S7.1 (D.1→D.6) | ✅ | @keyhive/keyhive (concap) integration complete. Operator-key bridge, AdminEventStore persistence, ctx.cap wired, promote-handler enforces. Operator identity and admin proof survive daemon restarts. |
 
 ## S5.8 sub-arc — what each commit landed
 
@@ -73,23 +73,20 @@ category boundary.
 
 ## Three immediate paths
 
-### Path A — S7.1 Device Delegations
-Admin doc exists; command-tiddler protocol exists; ctx.cap stays null until this lands.
+### Path A — Resume S6 BagResidencyManager (C.2 → C.6)
+C.1 landed the skeleton. Remaining work: LRU + idle sweeper, oracle stub-by-default, hydrate-on-read, opportunistic same-machine peer consolidation, smoke + closure. Cap-aware now — handlers can gate residency operations on `ctx.cap` if needed.
 
-1. `buildDeviceDelegation()` / `verifyDeviceDelegation()` in `@lararium/core/capability.ts`
-2. `runInit()` writes the node's own `cap=infrastructure` delegation as part of operator ceremony
-3. Browser peer ceremony writes its own `cap=social` delegation
-4. The S7.4 ingress trust check that gates the admin doc's network sync waits on this.
-5. Promote handler updates: actually verifyCapability("promote", toBag) before any write.
+### Path B — S7.4 Admin doc ingress trust gate
+With S7.1 closed, the admin doc's WebSocket federation can gate on `cap=infrastructure` proofs. Before accepting an Automerge sync message touching the admin doc, the daemon verifies the peer holds a delegation rooted at the operator's identity. Pre-condition for federating between operator's own devices.
 
-### Path B — `<$lar-promote>` action-widget
-With promote handler live as a TS dispatch target, this widget is now just a UI shim that writes the same command-tiddler the CLI does. Lives in admin VM (or any room VM, gated by cap once Path A lands). Adds the visual recipe-presence preview that the CLI prints textually.
+### Path C — `<$lar-promote>` action-widget
+With promote handler enforcing real cap, the widget becomes a UI shim that writes the same command-tiddler the CLI does. Lives in admin VM. Adds the visual recipe-presence preview that the CLI prints textually.
 
-### Path C — Heleuma Stub Authoring (still deferred)
-48 missing memes flagged + 2 new ones from `@lares/cli`. `lares heleuma --write` scaffolds templates. Defer to a focused documentation pass.
+### Path D — Heleuma Stub Authoring (still deferred)
+50+ scaffolded memes carry TODO role/contract content. `lares heleuma --write` keeps the audit aligned. Defer to a focused documentation pass.
 
-### Path D — Federated promotion (eventual)
-Operator-stated forward state: any room VM should let any user/operator promote, gated by UCAN-style capability proofs. Promote-handler signature already supports this — the `composite` reference generalizes from "room composite" to "requesting peer's composite + cap chain".
+### Path E — Federated promotion
+Operator-stated forward state: any room VM, any peer, gated by Keyhive cap chains. Promote-handler's `ctx.cap` already returns Keyhive verification; the `composite` reference generalizes from "room composite" to "requesting peer's composite + cap chain" when transports federate caps across peers.
 
 ## Smoke-test recipe (verify branch state)
 
@@ -101,6 +98,12 @@ lares serve              # daemon foreground (alternate terminal)
 # In another terminal — smoke negative path:
 lares promote lar:///definitely-not-real --to lar:///ha.ka.ba/@lares --yes
 # Expected: "tiddler not found in any bag: …"
+
+# Verify cap-layer round-trip:
+# Boot 1: clean .lararium → keyhive logs `did=0x…  admin-bag registered  self-admin=true`
+#         Cap events accumulate as $:/tags/CapEvent tiddlers in admin doc.
+# Boot 2 (kill + lares serve): keyhive logs `hydrated N cap events from admin doc`
+#         followed by SAME did=0x… and self-admin=true. Identity persists.
 
 # Smoke `lares status`:
 lares status

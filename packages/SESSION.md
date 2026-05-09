@@ -6,6 +6,32 @@
 
 ---
 
+## What Just Happened (2026-05-08 evening — S7.1 closed via D.3 → D.6)
+
+Cap layer landed end-to-end. Three more commits on top of the morning's D.1+D.1.5+D.2.
+
+| sha | What |
+|---|---|
+| `108c54d7` D.3 | operator-key.ts ↔ KeyhiveProvider bridge. `loadOperatorSigningSeed` surfaces the 32-byte private seed; `KeyhiveProvider.init({seed})` derives the same identity as `verifyingKey`. Sanity-check log fires if the bridge ever drifts. Self-verify: ok=true. |
+| `0d632011` D.4 | `AdminEventStore` persists every Keyhive event as `$:/tags/CapEvent` tiddlers under `lar:///@admin/cap/<sha256>`. SHA-256 de-dup via composite.get pre-write. `keyhive.hydrateFromEventStore()` re-ingests on boot. Restart cycle smoked: same DID + same self-admin survive. |
+| `a69bcffe` D.5 | `CommandContext.cap` becomes a curried `(access, bagUrl) → Promise<{ok}>` closure bound to each command's `requestedBy` DID. `CapabilityVerifier` interface decouples dispatcher from `@lararium/keyhive`. Promote-handler enforces `ctx.cap("admin", toBag)` before any composite read. CLI loads operator's verifyingKey via the new `loadOperatorVerifyingKey` and submits `0x` + hex as the DID. |
+
+**Three architectural notes worth holding:**
+- *Two-tier policy holds.* Keyhive provides the binary read/admin cryptographic gate. Future promote-handler ABILITY_LADDER caveats (e.g. "only specific peers may push canon") layer above the Keyhive proof. D.5 wires the Keyhive layer; the application layer waits for federated peers.
+- *D4.a "minimum-viable" scope.* All Keyhive events route to the admin doc today regardless of semantic scope (operator-principal vs document vs group-CGKA). Per-bag routing per the strict D4.a decision is reserved for when federation actually pressures it. Captured in HANDOFF "Don't re-decide" + memory.
+- *Pre-alpha hiccup logged.* `ingestEventsBytes` occasionally hits `Stuck on a fixed point: ReceiveCgkaOpError(UnknownInvitePrekey)` on hydrate when CGKA events re-ingest out of natural causal order. Non-fatal — operator identity + admin proof verify regardless. Track when bumping past `0.0.0-alpha.56c`.
+
+### Where the arc rests
+
+S5.8 ✅, S6.C.1 partial, S7.1 ✅. Next path candidates documented in HANDOFF:
+- **A** — resume S6 (C.2 LRU + sweeper, C.3 oracle stub, C.4 hydrate-on-read, C.5 same-machine consolidation, C.6 closure)
+- **B** — S7.4 admin doc ingress trust gate (newly unblocked by S7.1)
+- **C** — `<$lar-promote>` action-widget UI shim
+- **D** — heleuma authoring (still deferred)
+- **E** — federated promotion (longer horizon)
+
+---
+
 ## What Just Happened (2026-05-08 — S5.8 closed; S6.C.1 + S7.1.D{1,1.5,2} opened)
 
 Big arc in one session. Three sprint movements landed; two more opened and paused awaiting research.
