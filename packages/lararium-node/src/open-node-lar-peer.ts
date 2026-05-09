@@ -60,7 +60,7 @@ import {
   createPinHandler, createUnpinHandler, createResidencyStatsHandler,
 } from "./residency-handlers.js";
 import { BagResidencyManager }                      from "@lararium/core";
-import { KeyhiveProvider, InMemoryEventStore }      from "@lararium/keyhive";
+import { KeyhiveProvider, AdminEventStore }         from "@lararium/keyhive";
 import { generateOrLoadOperatorKeypair, loadOperatorSigningSeed } from "./operator-key.js";
 import type { AdminVmResult }             from "./open-admin-vm.js";
 import { LAR_EVENT } from "@lararium/core";
@@ -360,15 +360,25 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
   // operator's verifying key AND the Keyhive principal — they're the same
   // identity from two surfaces.
   //
-  // EventStore today is in-memory (D.4 wires the AdminEventStore that
-  // persists events as $:/tags/CapEvent tiddlers in each bag's own
-  // Automerge doc per the D4.a decision). Provider state will not survive
-  // daemon restarts until D.4 lands.
+  // EventStore persists every Keyhive event as a tiddler in the admin
+  // Automerge doc (lar:///...@admin/cap/<sha256>, tagged $:/tags/CapEvent).
+  // Daemon restart re-hydrates Keyhive state from these tiddlers via
+  // ingestEventsBytes — the operator's identity and delegations survive
+  // across reboots.
+  //
+  // D.4 minimum-viable: every event lands in the admin doc regardless of
+  // semantic scope. Per-bag routing per the D4.a decision is reserved for
+  // a future refinement; tracked in HANDOFF "Don't re-decide" + memory.
   const operatorIdentity   = await generateOrLoadOperatorKeypair(storageDir);
   const operatorSeed       = await loadOperatorSigningSeed(storageDir);
-  const keyhiveEventStore  = new InMemoryEventStore();
+  const keyhiveEventStore  = new AdminEventStore({ admin: adminVm.composite });
   const keyhive            = new KeyhiveProvider();
   await keyhive.init({ seed: operatorSeed, eventStore: keyhiveEventStore });
+  // Re-ingest any events the previous daemon process persisted.
+  const hydrated = await keyhive.hydrateFromEventStore();
+  if (hydrated.ingested > 0) {
+    console.log(`[lararium] keyhive: hydrated ${hydrated.ingested} cap events from admin doc`);
+  }
   const keyhiveDid         = await keyhive.whoami();
   // Sanity: the bridge derives the same identity from both surfaces.
   if (!keyhiveDid.endsWith(operatorIdentity.verifyingKey)) {

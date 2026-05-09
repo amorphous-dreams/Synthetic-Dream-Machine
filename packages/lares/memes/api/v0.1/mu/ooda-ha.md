@@ -17,8 +17,6 @@ retain = true
 ooda-ha-default = 0.50
 ```
 
-
-
 <<~ aka lar:///ha.ka.ba/@lares/api/v0.1/pono/RFC-2119#normative-language >>
 
 <<~ ahu #head >>
