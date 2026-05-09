@@ -75,11 +75,37 @@ export const LARARIUM_WIDGETS_TIDDLER = {
  * Operators may override per-wiki by tagging additional tiddlers with
  * `$:/tags/Lar/AhuTemplate` (cascade re-evaluates dynamically).
  */
+/**
+ * Cascade ordering — list-before / list-after govern evaluation order.
+ *
+ * Walked top-to-bottom; first non-empty filter result wins. Operators may
+ * insert their own entries between these by tagging additional tiddlers
+ * with `$:/tags/Lar/AhuTemplate` and setting `list-before` / `list-after`.
+ *
+ * Two markdown-meme entries — fragment vs full — distinguished by tiddler
+ * shape rather than scope variable alone. Slot tiddlers carrying `prologue`
+ * or iam fields denote a "full meme form" slot; the cascade routes them
+ * through a richer template that reconstructs the inner SOH/iam/postamble
+ * framing on disk emission. Plain body-fragment slots route through the
+ * minimal opener+body+closer template.
+ *
+ * The discriminator filter `[<currentTiddler>has[prologue]]` runs INSIDE
+ * each cascade entry's text — TW5's filter evaluates with the active
+ * variable scope, so `<currentTiddler>` resolves to the slot child URI
+ * the AhuWidget set as currentTiddler before invoking the cascade.
+ */
+export const LARARIUM_AHU_CASCADE_MARKDOWN_MEME_FULL = {
+  title:         "$:/config/Lar/AhuTemplate/markdown-meme-full",
+  tags:          ["$:/tags/Lar/AhuTemplate"],
+  "list-before": "$:/config/Lar/AhuTemplate/markdown-meme-fragment",
+  text:          "[<lar-export-scope>match[markdown-meme]] :and[<currentTiddler>has[prologue]then[lar:///ha.ka.ba/@lararium/templates/ahu/markdown-meme-full]]",
+} as const;
+
 export const LARARIUM_AHU_CASCADE_MARKDOWN_MEME = {
-  title:       "$:/config/Lar/AhuTemplate/markdown-meme",
-  tags:        ["$:/tags/Lar/AhuTemplate"],
+  title:         "$:/config/Lar/AhuTemplate/markdown-meme-fragment",
+  tags:          ["$:/tags/Lar/AhuTemplate"],
   "list-before": "$:/config/Lar/AhuTemplate/html",
-  text:        "[<lar-export-scope>match[markdown-meme]then[lar:///ha.ka.ba/@lararium/templates/ahu/markdown-meme]]",
+  text:          "[<lar-export-scope>match[markdown-meme]then[lar:///ha.ka.ba/@lararium/templates/ahu/markdown-meme]]",
 } as const;
 
 export const LARARIUM_AHU_CASCADE_HTML = {
@@ -122,6 +148,26 @@ export const LARARIUM_AHU_TEMPLATE_MARKDOWN_MEME = {
   title:    "lar:///ha.ka.ba/@lararium/templates/ahu/markdown-meme",
   type:     "text/x-memetic-wikitext",
   text:     "<<~ ahu {{!!slot}} >>\n{{!!text}}\n<<~/ahu >>\n",
+} as const;
+
+/**
+ * Slot template — markdown-meme scope, full-meme-form variant.
+ *
+ * Slot child tiddler in full-meme-form carries the inner meme's structural
+ * framing as fields: `prologue` (DOCTYPE + leading prose), `preamble` (text
+ * between iam fence and first inner sigil), `postamble` (text between last
+ * inner sigil and ETX). Iam-extracted fields dissolve into the child tiddler
+ * directly; the template reconstructs the inner toml fence on emit via the
+ * `lar-emit-iam` macro (Phase D). Round-trip identity stays byte-equivalent
+ * to the operator-authored source.
+ *
+ * Variant selected by the cascade when the slot tiddler has a `prologue`
+ * field. Plain body-fragment slots route through the simpler template.
+ */
+export const LARARIUM_AHU_TEMPLATE_MARKDOWN_MEME_FULL = {
+  title:    "lar:///ha.ka.ba/@lararium/templates/ahu/markdown-meme-full",
+  type:     "text/x-memetic-wikitext",
+  text:     "<<~ ahu {{!!slot}} >>\n<$list filter=\"[<currentTiddler>has[prologue]]\" variable=\"_\">{{!!prologue}}</$list>{{!!text}}<$list filter=\"[<currentTiddler>has[postamble]]\" variable=\"_\">{{!!postamble}}</$list>\n<<~/ahu >>\n",
 } as const;
 
 export const LARARIUM_AHU_TEMPLATE_HTML = {

@@ -93,7 +93,37 @@ export class LarDiskProjector {
     if (!this.mirrors.some((m) => m.bagId === bagId)) return;
 
     const fields    = record.fields as Record<string, string | string[] | undefined> ?? {};
-    const ahuParent = typeof fields["ahu-parent"] === "string" ? fields["ahu-parent"] : null;
+
+    // Disk-projection-eligible gate. Two convention surfaces:
+    //   - Tag `$:/tags/Lar/DiskProjection` — default for sync-ingested
+    //     parents. Operator can author with this tag in TW5 UX to opt
+    //     in to disk projection for browser-authored tiddlers.
+    //   - Field `disk-projection: "no"` — explicit opt-out. Lets operator
+    //     mark a synced tiddler as TW5-only without losing the bag record.
+    // Slot child tiddlers project transitively through their parent
+    // (AhuWidget transcludes them via the cascade); they don't need the
+    // tag themselves. Bypass the gate when an `ahu-parent`/`fragment-
+    // parent` field is present.
+    const ahuParent = typeof fields["ahu-parent"] === "string" ? fields["ahu-parent"]
+                    : typeof fields["fragment-parent"] === "string" ? fields["fragment-parent"]
+                    : null;
+    if (!ahuParent) {
+      const optOut = fields["disk-projection"];
+      if (typeof optOut === "string" && optOut === "no") return;
+      const tags = fields["tags"];
+      const tagList = Array.isArray(tags) ? tags
+                    : typeof tags === "string" ? tags.split(/\s+/).filter(Boolean)
+                    : [];
+      // Default-eligible heuristic: sync-ingested parents carry a
+      // `source-file` field; treat that as implicit eligibility so
+      // existing memes flow without operator-side migration. Explicit
+      // opt-in via `$:/tags/Lar/DiskProjection` covers operator-authored
+      // tiddlers that lack a source-file.
+      const hasTag = tagList.includes("$:/tags/Lar/DiskProjection");
+      const hasSourceFile = typeof fields["source-file"] === "string";
+      if (!hasTag && !hasSourceFile) return;
+    }
+
     const parentUri = ahuParent ?? title;
 
     const key = `${bagId}\0${parentUri}`;

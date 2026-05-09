@@ -51,9 +51,13 @@ export const BOOTSTRAP_SCANS: SigilScan[] = [
   // Kapu extended range — DC1 (&#x0011;) SOH variant, DC4 (&#x0014;) EOT variant
   { sigilName: "control-soh", regex: /<<~(?:[^>]|->)*&#x0011;(?:[^>]|->)*\?\s*->\s*([^\s>]+)\s*>>/g, eventType: "pragma" },
   { sigilName: "control-eot", regex: /<<~(?:[^>]|->)*&#x0014;(?:[^>]|->)*>>/g,                        eventType: "pragma" },
-  // Structural: ahu
-  { sigilName: "ahu", regex: /<<~(?:[^>]|->)*\bahu\s+(#[\w-]+)(?:\s+->\s+(\S+))?\s*>>/g, eventType: "open"  },
-  { sigilName: "ahu", regex: /<<~\/ahu\s*>>/g,                                              eventType: "close" },
+  // Structural: ahu — slot identifier supports nested fragment paths via
+  // `/`-separated segments (`#parent/child/grandchild`). Per memetic-wikitext
+  // spec §5.3 + lar-uri.md §5.6, the URI fragment is a path within the meme;
+  // nested ahu blocks produce child tiddlers at `parentUri#parent/child`
+  // rather than dedicated `#parent#child` URIs (single-hash invariant).
+  { sigilName: "ahu", regex: /<<~(?:[^>]|->)*\bahu\s+(#[\w-]+(?:\/[\w-]+)*)(?:\s+->\s+(\S+))?\s*>>/g, eventType: "open"  },
+  { sigilName: "ahu", regex: /<<~\/ahu\s*>>/g,                                                          eventType: "close" },
   // Pranala — block before inline (block wins at same position)
   { sigilName: "pranala", regex: /<<~\s*pranala\s+(#[\w-]+\s+)?(\S+)\s*->\s*(\S+)(?:\s+family:([\w-]+))?(?:\s+role:([\w-]+))?\s*>>([\s\S]*?)<<~\/pranala\s*>>/gs, eventType: "leaf" },
   { sigilName: "pranala", regex: /<<~\s*pranala\s+(#[\w-]+\s+)?(\S+)\s*->\s*(\S+)(?:\s+family:([\w-]+))?(?:\s+role:([\w-]+))?\s*>>/g, eventType: "leaf" },
