@@ -60,6 +60,8 @@ import {
   createPinHandler, createUnpinHandler, createResidencyStatsHandler,
 } from "./residency-handlers.js";
 import { BagResidencyManager }                      from "@lararium/core";
+import { KeyhiveProvider, InMemoryEventStore }      from "@lararium/keyhive";
+import { generateOrLoadOperatorKeypair, loadOperatorSigningSeed } from "./operator-key.js";
 import type { AdminVmResult }             from "./open-admin-vm.js";
 import { LAR_EVENT } from "@lararium/core";
 
@@ -114,6 +116,8 @@ export interface NodeLarPeerResult {
   store:            CompositeStore;
   /** Admin VM — operator-private coordinator (S5.6). */
   admin:            AdminVmResult;
+  /** Capability provider — Keyhive-backed cap layer (S7.1 D.3). */
+  keyhive:          KeyhiveProvider;
   /** Automerge URL of the catalog doc. */
   catalogHandleUrl: string;
   /** Automerge URL of the LarariumDoc — share this as the connect invite URL. */
@@ -351,6 +355,43 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
   });
   commandDispatcher.start();
 
+  // S7.1 D.3 — Capability layer. Bridge operator-key.ts ed25519 seed into
+  // KeyhiveProvider. The same 32-byte seed deterministically derives the
+  // operator's verifying key AND the Keyhive principal — they're the same
+  // identity from two surfaces.
+  //
+  // EventStore today is in-memory (D.4 wires the AdminEventStore that
+  // persists events as $:/tags/CapEvent tiddlers in each bag's own
+  // Automerge doc per the D4.a decision). Provider state will not survive
+  // daemon restarts until D.4 lands.
+  const operatorIdentity   = await generateOrLoadOperatorKeypair(storageDir);
+  const operatorSeed       = await loadOperatorSigningSeed(storageDir);
+  const keyhiveEventStore  = new InMemoryEventStore();
+  const keyhive            = new KeyhiveProvider();
+  await keyhive.init({ seed: operatorSeed, eventStore: keyhiveEventStore });
+  const keyhiveDid         = await keyhive.whoami();
+  // Sanity: the bridge derives the same identity from both surfaces.
+  if (!keyhiveDid.endsWith(operatorIdentity.verifyingKey)) {
+    console.warn(
+      `[lararium] keyhive identity drift: whoami=${keyhiveDid} verifyingKey=${operatorIdentity.verifyingKey}`,
+    );
+  }
+  // Register the admin bag — operator becomes implicit admin via Keyhive's
+  // generateDocument semantics (the creator holds the document).
+  await keyhive.registerBag(adminVm.adminHandle.url);
+  // Sanity: confirm the operator can verify their own admin access. This
+  // closes the D.3 bridge end-to-end — bytes-on-disk → seed → Keyhive
+  // principal → registered bag → admin proof verifies.
+  const selfVerify = await keyhive.verify({
+    presenter: keyhiveDid,
+    bagUrl:    adminVm.adminHandle.url,
+    access:    "admin",
+  });
+  console.log(
+    `[lararium] keyhive: did=${keyhiveDid.slice(0, 18)}…  admin-bag registered  ` +
+    `self-admin=${selfVerify.ok}${selfVerify.ok ? "" : ` (${selfVerify.reason})`}`,
+  );
+
   // Zelenka: keep oracle tiddlers current on every boot — self, ka, ba, social plane, admin.
   reconcileWellKnownTiddlers(
     islandHandle, catalogHandle.url,
@@ -540,6 +581,7 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
     peer, tw5, pool, repo, eventBus,
     store: composite,
     admin: adminVm,
+    keyhive,
     catalogHandleUrl: catalogHandle.url,
     larariumDocUrl: islandHandle?.url ?? null,
     phase: "live",

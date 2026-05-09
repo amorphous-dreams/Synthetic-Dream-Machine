@@ -91,6 +91,9 @@ importers:
       '@lararium/core':
         specifier: workspace:*
         version: link:../lararium-core
+      '@lararium/keyhive':
+        specifier: workspace:*
+        version: link:../lararium-keyhive
       '@lararium/tw5':
         specifier: workspace:*
         version: link:../lararium-tw5

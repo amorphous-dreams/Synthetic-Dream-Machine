@@ -86,3 +86,39 @@ export async function generateOrLoadOperatorKeypair(
   const base: OperatorIdentity = { verifyingKey };
   return ghReceipt?.displayName ? { ...base, displayName: ghReceipt.displayName } : base;
 }
+
+/**
+ * Load the operator's 32-byte Ed25519 SIGNING seed (private key bytes).
+ *
+ * Separate from `generateOrLoadOperatorKeypair` — that function returns only
+ * the public verifying key (sufficient for IdentityTiddler), while this one
+ * surfaces the private seed needed by KeyhiveProvider.init({ seed }) and any
+ * other capability layer that signs on the operator's behalf.
+ *
+ * SECURITY: the returned bytes ARE the operator's private signing key. Treat
+ * with care: don't log it, don't write it anywhere outside the operator-key
+ * file, and don't pass it across process boundaries that aren't already
+ * inside the operator's trust domain.
+ *
+ * Throws when no key file exists — caller must call
+ * `generateOrLoadOperatorKeypair(dataDir)` first to ensure one is on disk.
+ */
+export async function loadOperatorSigningSeed(dataDir: string): Promise<Uint8Array> {
+  const ghReceipt = await getGhCliOperatorReceipt().catch(() => null);
+  const ghLogin   = ghReceipt?.subject?.replace("github:", "") ?? null;
+  const keyFile   = join(dataDir, keyFileName(ghLogin));
+  if (!existsSync(keyFile)) {
+    throw new Error(
+      `[operator-key] no key file at ${keyFile} — run \`lares init\` first to generate the keypair`,
+    );
+  }
+  const raw = JSON.parse(readFileSync(keyFile, "utf8")) as PersistedKey;
+  if (typeof raw.signingKey !== "string" || raw.signingKey.length !== 64) {
+    throw new Error(`[operator-key] malformed signingKey in ${keyFile}`);
+  }
+  const bytes = new Uint8Array(32);
+  for (let i = 0; i < 32; i++) {
+    bytes[i] = parseInt(raw.signingKey.slice(i * 2, i * 2 + 2), 16);
+  }
+  return bytes;
+}

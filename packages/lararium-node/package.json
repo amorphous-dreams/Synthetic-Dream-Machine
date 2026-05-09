@@ -24,6 +24,7 @@
     "@automerge/automerge-repo-network-websocket": "^2.5.5",
     "@automerge/automerge-repo-storage-nodefs": "^2.5.5",
     "@lararium/core": "workspace:*",
+    "@lararium/keyhive": "workspace:*",
     "@lares/lares": "workspace:*",
     "@lararium/tw5": "workspace:*",
     "@octokit/rest": "^22.0.1",
