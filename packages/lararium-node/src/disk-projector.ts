@@ -94,33 +94,25 @@ export class LarDiskProjector {
 
     const fields    = record.fields as Record<string, string | string[] | undefined> ?? {};
 
-    // Tag-driven file-root gate (operator law: iam toml `tags` controls
-    // disk projection split). Two surfaces:
-    //   - Tag `$:/tags/Lar/MemeRoot`   — explicit; this tiddler emits as its
-    //     own file at its URI's projection path. Both parent memes AND
-    //     tagged ahu-slot children carry it; whichever has it becomes a
-    //     file root.
-    //   - Field `disk-projection: "no"` — explicit opt-out for a tagged
-    //     tiddler (keep in bag, skip disk).
-    // Heuristic: sync-ingested tiddlers with a `source-file` field flow
-    // through automatically (back-compat for the existing meme corpus).
-    // Untagged child tiddlers (those with `fragment-parent` set but no
-    // MemeRoot tag) DO NOT emit their own file — they roll up into their
-    // nearest tagged ancestor's emission via the markdown-meme template's
-    // `<<~ kahea ahu #slot >>` → fragment-template inline expansion.
-    const optOut = fields["disk-projection"];
-    if (typeof optOut === "string" && optOut === "no") return;
-    const tags = fields["tags"];
-    const tagList = Array.isArray(tags) ? tags
-                  : typeof tags === "string" ? tags.split(/\s+/).filter(Boolean)
-                  : [];
-    const isMemeRoot    = tagList.includes("$:/tags/Lar/MemeRoot");
-    const hasSourceFile = typeof fields["source-file"] === "string";
-    if (!isMemeRoot && !hasSourceFile) return;
+    // Always-split architectural law (operator-confirmed): every tiddler
+    // with a writable URI projects to its own file. The deserializer +
+    // action widget split every ahu sigil into its own tiddler at sync/
+    // save time; each slot child IS a file root. Disk projection becomes
+    // a function of (bag, URI) — no tag discriminator, no transitive
+    // climbs. Roslyn / recast / XInclude consensus: serialization is a
+    // function of the tree, never of external metadata.
+    //
+    // Two opt-out surfaces remain for operator authoring:
+    //   - `disk-projection: "no"` field — keep in bag, skip disk.
+    //   - `lar-generated: "yes"` field is informational only; widget-
+    //     emitted children DO project. Only operator-toggled opt-out
+    //     stops projection.
+    if (fields["disk-projection"] === "no") return;
 
-    // The render unit is THIS tiddler; URI fragment-path projects through
-    // resolveLarUri's appendFragment to a unique disk path. No transitive
-    // walk-up — every tagged tiddler is a meme root in its own right.
+    // The render unit is THIS tiddler; URI fragment-path projects via
+    // `resolveLarUri.appendFragment` to a unique disk path. The path-
+    // strategy returns null for URIs that have no disk home (virtual
+    // caps, etc.); the projector silently skips those.
     const parentUri = title;
 
     const key = `${bagId}\0${parentUri}`;

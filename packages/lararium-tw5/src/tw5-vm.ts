@@ -24,10 +24,8 @@ import {
   LARARIUM_WIDGETS_TIDDLER,
   LARARIUM_AHU_CASCADE_HTML,
   LARARIUM_AHU_CASCADE_MARKDOWN_MEME,
-  LARARIUM_AHU_CASCADE_MARKDOWN_MEME_KAHEA,
   LARARIUM_AHU_TEMPLATE_HTML,
   LARARIUM_AHU_TEMPLATE_MARKDOWN_MEME,
-  LARARIUM_AHU_TEMPLATE_MARKDOWN_MEME_KAHEA,
   LARARIUM_MEME_TEMPLATE_MARKDOWN_MEME,
   LARARIUM_MEME_SPLIT_MOUNT,
 } from "./tw5-widgets.js";
@@ -118,8 +116,6 @@ export class TW5Engine {
         instance.preloadTiddlers.push(LARARIUM_AHU_CASCADE_MARKDOWN_MEME as unknown as Record<string, unknown>);
         instance.preloadTiddlers.push(LARARIUM_AHU_TEMPLATE_HTML as unknown as Record<string, unknown>);
         instance.preloadTiddlers.push(LARARIUM_AHU_TEMPLATE_MARKDOWN_MEME as unknown as Record<string, unknown>);
-        instance.preloadTiddlers.push(LARARIUM_AHU_CASCADE_MARKDOWN_MEME_KAHEA as unknown as Record<string, unknown>);
-        instance.preloadTiddlers.push(LARARIUM_AHU_TEMPLATE_MARKDOWN_MEME_KAHEA as unknown as Record<string, unknown>);
         instance.preloadTiddlers.push(LARARIUM_MEME_TEMPLATE_MARKDOWN_MEME as unknown as Record<string, unknown>);
         instance.preloadTiddlers.push(LARARIUM_MEME_SPLIT_MOUNT as unknown as Record<string, unknown>);
         for (const t of allPreloads) instance.preloadTiddlers.push(t as Record<string, unknown>);

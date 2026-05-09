@@ -24,18 +24,14 @@
 
 import { MemeStreamParser } from "@lararium/core";
 import type { MemeStreamEvent } from "@lararium/core";
+import {
+  CONTROL_SLOTS,
+  findTopLevelAhuBlocks,
+  composeSlotPath,
+} from "@lararium/core/meme-ast";
 import { parseTaploFields } from "./toml-ast.js";
 
 export type TiddlerFields = Record<string, string | string[]>;
-
-// ---------------------------------------------------------------------------
-// Control slots — ahu slots that carry structural metadata, not child tiddlers.
-// ---------------------------------------------------------------------------
-
-const CONTROL_SLOTS = new Set([
-  "#iam", "#exit", "#stream-open", "#stream-close", "#stream-exit",
-  "#body-open", "#body-close", "#meme-body-open", "#meme-body-close",
-]);
 
 // ---------------------------------------------------------------------------
 // memeticWikitextDeserializer — the TW5 module export
@@ -197,66 +193,6 @@ function splitRecursive(
   }
   rewritten += text.slice(cursor);
   return { children: allChildren, rewrittenText: rewritten };
-}
-
-interface AhuBlock {
-  readonly openStart: number;
-  readonly bodyStart: number;
-  readonly bodyEnd:   number;
-  readonly closeEnd:  number;
-  readonly slot:      string;
-}
-
-// Slot identifier supports nested fragment paths (`#parent/child/grandchild`).
-// The pattern matches a definition-form ahu opener; nested ahu inside the
-// body are handled by the recursive caller.
-const AHU_OPEN_RE  = /<<~[^>]*\bahu\s+(#[\w-]+(?:\/[\w-]+)*)(?:\s+->\s+\S+)?\s*>>/g;
-const AHU_CLOSE_RE = /<<~\/ahu\s*>>/g;
-
-function findTopLevelAhuBlocks(text: string): AhuBlock[] {
-  // Scan opens + closes by position; pair via depth counter so nested
-  // openers don't claim the outer block's closer.
-  AHU_OPEN_RE.lastIndex = 0;
-  AHU_CLOSE_RE.lastIndex = 0;
-  const events: Array<{ kind: "open" | "close"; pos: number; end: number; slot: string }> = [];
-  let m: RegExpExecArray | null;
-  while ((m = AHU_OPEN_RE.exec(text)) !== null) {
-    events.push({ kind: "open", pos: m.index, end: AHU_OPEN_RE.lastIndex, slot: m[1] ?? "#" });
-  }
-  while ((m = AHU_CLOSE_RE.exec(text)) !== null) {
-    events.push({ kind: "close", pos: m.index, end: AHU_CLOSE_RE.lastIndex, slot: "" });
-  }
-  events.sort((a, b) => a.pos - b.pos);
-
-  const blocks: AhuBlock[] = [];
-  const stack: Array<{ openStart: number; bodyStart: number; slot: string }> = [];
-  for (const ev of events) {
-    if (ev.kind === "open") {
-      stack.push({ openStart: ev.pos, bodyStart: ev.end, slot: ev.slot });
-    } else {
-      const opener = stack.pop();
-      if (!opener) continue;
-      if (stack.length === 0) {
-        blocks.push({
-          openStart: opener.openStart,
-          bodyStart: opener.bodyStart,
-          bodyEnd:   ev.pos,
-          closeEnd:  ev.end,
-          slot:      opener.slot,
-        });
-      }
-    }
-  }
-  return blocks;
-}
-
-function composeSlotPath(prefix: string, slot: string): string {
-  // First-level child: prefix="" → return slot verbatim ("#thesis").
-  // Deeper child: prefix="#parent" + slot="#child" → "#parent/child".
-  // Slot already containing a path ("#parent/child"): treat as authored.
-  if (!prefix) return slot;
-  const slotTail = slot.startsWith("#") ? slot.slice(1) : slot;
-  return `${prefix}/${slotTail}`;
 }
 
 // ---------------------------------------------------------------------------

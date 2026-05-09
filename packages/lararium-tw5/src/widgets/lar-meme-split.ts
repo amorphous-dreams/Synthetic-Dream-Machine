@@ -38,23 +38,14 @@
  */
 
 import type { TW5WidgetInstance, TW5ParseTreeNode, TW5FakeElement } from "../types/tiddlywiki.js";
+import { CONTROL_SLOTS, findTopLevelAhuBlocks, composeSlotPath } from "@lararium/core/meme-ast";
 
 const MEMETIC_TYPE = "text/x-memetic-wikitext";
-const CONTROL_SLOTS = new Set([
-  "#iam", "#exit", "#stream-open", "#stream-close", "#stream-exit",
-  "#body-open", "#body-close", "#meme-body-open", "#meme-body-close",
-]);
-const MAX_DEPTH = 32;
-const AHU_OPEN_RE  = /<<~[^>]*\bahu\s+(#[\w-]+(?:\/[\w-]+)*)(?:\s+->\s+\S+)?\s*>>/g;
-const AHU_CLOSE_RE = /<<~\/ahu\s*>>/g;
-
-interface AhuBlock {
-  readonly openStart: number;
-  readonly bodyStart: number;
-  readonly bodyEnd:   number;
-  readonly closeEnd:  number;
-  readonly slot:      string;
-}
+const MAX_DEPTH    = 32;
+/** Field marker on widget-emitted children — listener skips changes whose
+ *  tiddler carries this field, breaking the save → split → save echo loop
+ *  per TW5's editor-widget pattern. */
+const GENERATED_MARKER_FIELD = "lar-generated";
 
 interface SplitOutcome {
   readonly create: Array<Record<string, string>>;
@@ -102,6 +93,13 @@ LarMemeSplitWidget.prototype.render = function (
   // Subscribe once per widget render. TW5 fires `change` events with a
   // dictionary of changed-tiddler entries; iterate, dispatch only on
   // memetic-typed parents that still exist (deletions skip).
+  // Cache last-split text per title so the listener can short-circuit
+  // when the change isn't a meme-text mutation. Editor widget pattern
+  // (core/modules/widgets/edit-text.js): never re-write what's already
+  // there. Combined with the lar-generated marker, echo loops terminate
+  // in one nextTick.
+  const lastSeen = new Map<string, string>();
+
   wiki.addEventListener("change", (changes) => {
     for (const title of Object.keys(changes)) {
       if (!title.startsWith("lar:")) continue;
@@ -109,13 +107,17 @@ LarMemeSplitWidget.prototype.render = function (
       const tiddler = wiki.getTiddler?.(title);
       if (!tiddler) continue;
       const fields = tiddler.fields;
+      // Skip widget-emitted children — they carry the lar-generated marker.
+      if (fields[GENERATED_MARKER_FIELD] === "yes") continue;
       const type = fields["type"];
       if (type !== MEMETIC_TYPE) continue;
-      // Only memes that the operator marked for split — avoids splitting
-      // on every TW5 system tiddler change. The presence of a `text` field
-      // containing ahu sigils is the practical signal.
       const text = typeof fields["text"] === "string" ? fields["text"] : "";
-      if (!/<<~[^>]*\bahu\s+#/.test(text)) continue;
+      if (!text || !/<<~[^>]*\bahu\s+#/.test(text)) continue;
+      // Content-equality guard: if the text didn't change since we last
+      // split, skip. nextTick coalescing ensures one entry per save; we
+      // still might receive unrelated field-only edits.
+      if (lastSeen.get(title) === text) continue;
+      lastSeen.set(title, text);
       void runSplit(wiki, title);
     }
   });
@@ -151,18 +153,28 @@ async function runSplit(wiki: WikiLike, parentTitle: string): Promise<void> {
       finally { _applying.delete(removedTitle); }
     }
 
-    // Bulk-commit creates + parent-text rewrite. addTiddlers wraps in one
-    // change-event when supported; fall back to per-tiddler when absent.
+    // Bulk-commit creates + parent-text rewrite. addTiddlers wraps each in
+    // its own enqueue, but TW5's nextTick coalesces them into one change
+    // event — atomic from listeners' perspective. Content-equality guard
+    // on the parent: skip re-write when the rewritten text matches what's
+    // already stored. Editor-widget pattern; without it, every save with
+    // already-split content fires a redundant write.
     const writes: Array<Record<string, unknown>> = [];
-    writes.push({
-      ...stripUndefined(fields),
-      title: parentTitle,
-      text:  outcome.parentText,
-    });
+    if (outcome.parentText !== text) {
+      writes.push({
+        ...stripUndefined(fields),
+        title: parentTitle,
+        text:  outcome.parentText,
+      });
+    }
     for (const child of outcome.create) {
+      const existing = wiki.getTiddler?.(child["title"]!);
+      const existingText = typeof existing?.fields?.["text"] === "string" ? existing.fields["text"] : undefined;
+      if (existingText === child["text"]) continue; // skip identical-content writes
       _applying.add(child["title"]!);
       writes.push(child);
     }
+    if (writes.length === 0 && outcome.remove.size === 0) return;
     if (typeof wiki.addTiddlers === "function") {
       wiki.addTiddlers(writes);
     } else if (typeof wiki.addTiddler === "function") {
@@ -232,10 +244,11 @@ function computeSplit(parentTitle: string, text: string, wiki: WikiLike): SplitO
       const childInner = walk(rootUri, childPath, bodyText, depth + 1);
       seenTitles.add(childUri);
       create.push({
-        title:             childUri,
-        text:              childInner.text,
-        slot:              block.slot,
-        "fragment-parent": enclosingUri,
+        title:                childUri,
+        text:                 childInner.text,
+        slot:                 block.slot,
+        "fragment-parent":    enclosingUri,
+        [GENERATED_MARKER_FIELD]: "yes",
       });
       out += `<<~ kahea ahu ${block.slot} >>`;
       cursor = block.closeEnd;
@@ -245,42 +258,3 @@ function computeSplit(parentTitle: string, text: string, wiki: WikiLike): SplitO
   }
 }
 
-function findTopLevelAhuBlocks(text: string): AhuBlock[] {
-  AHU_OPEN_RE.lastIndex = 0;
-  AHU_CLOSE_RE.lastIndex = 0;
-  const events: Array<{ kind: "open" | "close"; pos: number; end: number; slot: string }> = [];
-  let m: RegExpExecArray | null;
-  while ((m = AHU_OPEN_RE.exec(text)) !== null) {
-    events.push({ kind: "open", pos: m.index, end: AHU_OPEN_RE.lastIndex, slot: m[1] ?? "#" });
-  }
-  while ((m = AHU_CLOSE_RE.exec(text)) !== null) {
-    events.push({ kind: "close", pos: m.index, end: AHU_CLOSE_RE.lastIndex, slot: "" });
-  }
-  events.sort((a, b) => a.pos - b.pos);
-  const blocks: AhuBlock[] = [];
-  const stack: Array<{ openStart: number; bodyStart: number; slot: string }> = [];
-  for (const ev of events) {
-    if (ev.kind === "open") {
-      stack.push({ openStart: ev.pos, bodyStart: ev.end, slot: ev.slot });
-    } else {
-      const opener = stack.pop();
-      if (!opener) continue;
-      if (stack.length === 0) {
-        blocks.push({
-          openStart: opener.openStart,
-          bodyStart: opener.bodyStart,
-          bodyEnd:   ev.pos,
-          closeEnd:  ev.end,
-          slot:      opener.slot,
-        });
-      }
-    }
-  }
-  return blocks;
-}
-
-function composeSlotPath(prefix: string, slot: string): string {
-  if (!prefix) return slot;
-  const slotTail = slot.startsWith("#") ? slot.slice(1) : slot;
-  return `${prefix}/${slotTail}`;
-}

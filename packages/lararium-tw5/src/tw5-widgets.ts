@@ -92,36 +92,27 @@ export const LARARIUM_MEME_SPLIT_MOUNT = {
  * `$:/tags/Lar/AhuTemplate` (cascade re-evaluates dynamically).
  */
 /**
- * Cascade ordering — list-before / list-after govern evaluation order.
+ * Cascade ordering — `list-before` / `list-after` govern evaluation order.
  *
  * Walked top-to-bottom; first non-empty filter result wins. Operators may
- * insert their own entries by tagging additional tiddlers with
- * `$:/tags/Lar/AhuTemplate` and setting `list-before` / `list-after`.
+ * insert their own entries between these by tagging additional tiddlers
+ * with `$:/tags/Lar/AhuTemplate`.
  *
- * Three markdown-meme entries, distinguished by tiddler shape:
+ * **Architectural law (operator-confirmed):** always-split, always-kahea.
+ * The deserializer + action widget split every ahu sigil into its own
+ * tiddler at sync/save time; the parent's text always carries kahea-refs
+ * for its slot children. Disk emission therefore collapses to one shape:
+ * the slot template emits `<<~ kahea ahu #slot >>`. Each child becomes
+ * its own file. Round-trip is canonical: parent file + N child files.
  *
- *   1. **kahea-ref** — when a slot child carries `$:/tags/Lar/MemeRoot`,
- *      the parent's emission emits a `<<~ kahea ahu #slot >>` reference
- *      and DOES NOT inline the body. The tagged child gets its own
- *      file via the disk-projector's separate render pass.
- *   2. **fragment** — slot child without the MemeRoot tag, body-only
- *      content. Parent emission inlines `<<~ ahu #slot >>body<<~/ahu >>`.
- *   3. **html** (default fallback) — live-UI rendering.
- *
- * The discriminator filter `[<currentTiddler>tag[$:/tags/Lar/MemeRoot]]`
- * runs inside each cascade entry's text. TW5 evaluates with the active
- * variable scope, so `<currentTiddler>` resolves to the slot child URI
- * the AhuWidget set before invoking the cascade.
+ * Operator-installable cascades may opt into "single long-form meme"
+ * projection by registering an entry that inlines child bodies — that's
+ * a non-default render mode, shipped via operator-authored cascade
+ * entries, not baked into the core. Roslyn / recast / XInclude consensus:
+ * serialization is a function of the tree, never of external metadata.
  */
-export const LARARIUM_AHU_CASCADE_MARKDOWN_MEME_KAHEA = {
-  title:         "$:/config/Lar/AhuTemplate/markdown-meme-kahea",
-  tags:          ["$:/tags/Lar/AhuTemplate"],
-  "list-before": "$:/config/Lar/AhuTemplate/markdown-meme-fragment",
-  text:          "[<lar-export-scope>match[markdown-meme]] :and[<currentTiddler>tag[$:/tags/Lar/MemeRoot]then[lar:///ha.ka.ba/@lararium/templates/ahu/markdown-meme-kahea]]",
-} as const;
-
 export const LARARIUM_AHU_CASCADE_MARKDOWN_MEME = {
-  title:         "$:/config/Lar/AhuTemplate/markdown-meme-fragment",
+  title:         "$:/config/Lar/AhuTemplate/markdown-meme",
   tags:          ["$:/tags/Lar/AhuTemplate"],
   "list-before": "$:/config/Lar/AhuTemplate/html",
   text:          "[<lar-export-scope>match[markdown-meme]then[lar:///ha.ka.ba/@lararium/templates/ahu/markdown-meme]]",
@@ -163,28 +154,22 @@ export const LARARIUM_AHU_CASCADE_HTML = {
  * body from its `text` field. Per-slot iam emission (default-elision
  * against parent fields) lands via macros in Path D.
  */
+/**
+ * Slot template — markdown-meme scope. Single canonical shape.
+ *
+ * Always emits `<<~ kahea ahu #slot >>` — the spec's live-ref form,
+ * per memetic-wikitext.md §5.3. The slot child is authoritative for
+ * its own body; disk-projector emits each child as its own file. The
+ * parent file holds invocation references; the child files hold body
+ * bytes. Round-trip is canonical: parent file + N child files.
+ *
+ * No "inline body" variant ships in the default cascade. Operators
+ * who want a single-long-form projection author their own cascade
+ * entry that points at an inline-emitting template — non-default,
+ * non-canonical, opt-in.
+ */
 export const LARARIUM_AHU_TEMPLATE_MARKDOWN_MEME = {
   title:    "lar:///ha.ka.ba/@lararium/templates/ahu/markdown-meme",
-  type:     "text/x-memetic-wikitext",
-  text:     "<<~ ahu {{!!slot}} >>\n{{!!text}}\n<<~/ahu >>\n",
-} as const;
-
-/**
- * Slot template — markdown-meme scope, kahea-ref variant.
- *
- * Fires when the slot child carries `$:/tags/Lar/MemeRoot`. The tagged
- * child becomes its own file via the disk-projector's separate render
- * pass; the parent's emission emits a `<<~ kahea ahu #slot >>` reference
- * (live-ref form per memetic-wikitext spec §5.3) and stops there. The
- * parent file stays compact; the child file carries its full framing.
- *
- * Round-trip identity: source (parent file with kahea-ref + child file
- * with framing) → ingest into bag (flat tiddler set; child carries the
- * MemeRoot tag) → emit (parent file's kahea-ref + child file's framing).
- * Operator-source-told-you-to: the iam tag drives the split.
- */
-export const LARARIUM_AHU_TEMPLATE_MARKDOWN_MEME_KAHEA = {
-  title:    "lar:///ha.ka.ba/@lararium/templates/ahu/markdown-meme-kahea",
   type:     "text/x-memetic-wikitext",
   text:     "<<~ kahea ahu {{!!slot}} >>",
 } as const;

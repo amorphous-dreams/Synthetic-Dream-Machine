@@ -41,3 +41,6 @@ export { edgesFromMemeAst } from "./edges.js";
 
 export type { ParseMemeResult } from "./parse.js";
 export { parseMemeText, parseMemeNodes, parseMemeEdges } from "./parse.js";
+
+export type { AhuBlock } from "./ahu-scan.js";
+export { AHU_OPEN_RE, AHU_CLOSE_RE, CONTROL_SLOTS, findTopLevelAhuBlocks, composeSlotPath } from "./ahu-scan.js";

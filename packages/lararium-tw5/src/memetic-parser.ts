@@ -1,70 +1,67 @@
 /**
- * memetic-parser — thin parser wrapper for `text/x-memetic-wikitext`.
+ * memetic-parser — WikiParser subclass for `text/x-memetic-wikitext`.
  *
- * Prepends a `\rules only` pragma to the source so the standard WikiParser
- * runs with a curated rule set. Without this, rendering a memetic-wikitext
- * tiddler invokes the full wikitext rule pipeline — backticks become inline
- * code, triple-backticks become code fences, dashes become em-dashes,
- * `<!-- -->` comments get stripped, etc. — and round-trip identity breaks.
+ * Inherits the standard wikitext parser, then filters its rule arrays in
+ * the constructor so the rules that mangle round-trip never instantiate
+ * for memetic-typed tiddlers. Per Jermolene (TW5 GH discussion #6712):
  *
- * The curated set lets sigil and transclusion rules fire while everything
- * else passes through verbatim:
- *   - `transcludeinline`     → `{{!!field}}` resolves
- *   - `lar-sigil-block`      → `<<~ ahu #slot >>...<<~/ahu >>` → AhuWidget
- *   - `lar-sigil-inline`     → every other `<<~ ... >>` → literal-survival
- *   - `lar-doctype-comment`  → `<!-- <<~ !DOCTYPE = ... >> -->` → literal
- *   - `macrodef`             → `\procedure ... \end` definitions
- *   - `transcludeblock`      → `<$transclude>` widget invocations
- *   - `prettyextlink`        → operator-authored markdown links survive
+ *   "The `\rules` pragma scope does not propagate through `<$transclude>`.
+ *    Transcluded content reparses under its own type's full ruleset."
  *
- * Operators may extend the rule set per-wiki by editing
- * `$:/config/Lar/MemeticRules` (read at parser construction).
+ * Pragma injection (`\rules except codeblock dash …`) only affects the
+ * outer parse — when a meme template transcludes the parent's text via
+ * `{{!!text}}`, the inner content reparses fresh, the pragma evaporates,
+ * and the offending rules fire. Rule-array filtering at parser
+ * construction is the only mechanism that scopes per-type. The filter
+ * propagates because every memetic-typed tiddler instantiates THIS
+ * parser, transclude or not.
  *
- * Architecture note:
- *   This wrapper is NOT the prior MemeticParser class (330 lines of typed-
- *   widget node-emission boilerplate). That logic collapsed in E.10.5;
- *   sigil recognition lives entirely in the wikirule. The wrapper here
- *   only curates which TW5 rules fire — a one-line pragma prepend.
+ * What gets filtered (deny list):
+ *   - codeblock / codeinline    — strip backtick fences (turn ``` into `).
+ *   - commentblock / commentinline — strip `<!-- ... -->` (DOCTYPE, etc).
+ *   - entity                    — expand `&#x0001;` carrier sentinels.
+ *   - dash                      — convert `---` to em-dash.
+ *   - macrocallinline / macrocallblock — claim `<<...>>` before the
+ *     lar-sigil rules can match.
+ *
+ * Operator override: writing a space-separated rule-name list to
+ * `$:/config/Lar/MemeticRulesExcept` replaces the default deny list.
  *
  * Schema: lar:///ha.ka.ba/@lares/api/v0.1/lararium/schema/memetic-parser
  */
 
 const RULES_CONFIG_TIDDLER = "$:/config/Lar/MemeticRulesExcept";
 
-/**
- * Default rules to DISABLE for memetic-wikitext. Each entry would otherwise
- * mangle round-trip identity:
- *   - `codeblockinline` / `codeblockbacktick` — interpret triple-backtick
- *     toml fences as code-block elements; text/plain output strips fence.
- *   - `dash`                                  — converts `---` to `—`.
- *   - `htmlcomment`                           — strips `<!-- ... -->`,
- *     including DOCTYPE prologue.
- *   - `macrocallinline` / `macrocallblock`    — claims `<<...>>` as macro
- *     syntax before the lar-sigil rules can match.
- *   - `entity`                                — would expand `&#x0001;`
- *     control char in carrier sentinels at parse time.
- *
- * Operators may override by writing a space-separated rule-name list to
- * `$:/config/Lar/MemeticRulesExcept`.
- */
-const DEFAULT_RULES_EXCEPT = [
-  // Code-fence / inline-code rules — strip backticks in text/plain output.
-  "codeblock",
-  "codeinline",
-  // HTML comment rules — strip `<!-- ... -->` lines (incl. DOCTYPE).
-  "commentblock",
-  "commentinline",
-  // Entity rule — expands `&#x0001;` carrier sentinels at parse time.
+const DEFAULT_RULES_EXCEPT: ReadonlySet<string> = new Set([
+  "codeblock", "codeinline",
+  "commentblock", "commentinline",
   "entity",
-  // Dash rule — converts `---` to em-dash.
   "dash",
-  // Macrocall — claims `<<...>>` before lar-sigil rules can match.
-  "macrocallinline",
-  "macrocallblock",
-] as const;
+  "macrocallinline", "macrocallblock",
+]);
 
 interface ParserCtor {
   new (type: string, text: string, options: unknown): unknown;
+}
+
+interface RuleClass {
+  prototype: { name?: string };
+}
+
+interface RuleInstance {
+  name?: string;
+}
+
+interface ParserInstance {
+  pragmaRules?: RuleInstance[];
+  blockRules?:  RuleInstance[];
+  inlineRules?: RuleInstance[];
+}
+
+interface ParserPrototype {
+  pragmaRuleClasses?:  Record<string, RuleClass>;
+  blockRuleClasses?:   Record<string, RuleClass>;
+  inlineRuleClasses?:  Record<string, RuleClass>;
 }
 
 interface WikiLike {
@@ -72,18 +69,40 @@ interface WikiLike {
 }
 
 /**
- * Build a parser class that wraps the standard wikitext parser with a
- * `\rules only` pragma prepended to the source. The base parser comes
- * from `tw.Wiki.parsers["text/vnd.tiddlywiki"]`.
+ * Build a parser class that subclasses the standard wikitext parser. After
+ * the base constructor populates `pragmaRules` / `blockRules` / `inlineRules`,
+ * filter out the offenders by `name`. The base lazy-instantiates rule
+ * classes from the prototype's `*RuleClasses` maps; we drop instances after
+ * the base constructor runs, leaving the maps untouched (other parsers see
+ * full rule sets).
  */
 export function makeMemeticParser(stdParser: ParserCtor): ParserCtor {
-  function MemeticParser(this: object, type: string, text: string, options: unknown): unknown {
+  function MemeticParser(this: ParserInstance, type: string, text: string, options: unknown): void {
+    // Resolve the operator-override deny list from the wiki, falling back
+    // to the default deny set. Set lookup is O(1) for the per-rule filter.
     const wiki = (options as { wiki?: WikiLike } | undefined)?.wiki;
     const override = wiki?.getTiddlerText?.(RULES_CONFIG_TIDDLER, "")?.trim() ?? "";
-    const rules = override.length > 0 ? override : DEFAULT_RULES_EXCEPT.join(" ");
-    const wrapped = `\\rules except ${rules}\n${text ?? ""}`;
-    return new stdParser(type, wrapped, options);
+    const denyList = override.length > 0
+      ? new Set(override.split(/\s+/).filter(Boolean))
+      : DEFAULT_RULES_EXCEPT;
+
+    // Run the base constructor — it instantiates all rule classes onto
+    // `this.{pragma,block,inline}Rules`.
+    stdParser.call(this, type, text, options);
+
+    // Filter offending rule instances out of each list. The base parser's
+    // findNextMatch loops over these arrays per parse pass; absent rules
+    // never fire. Rule classes stay registered globally.
+    if (Array.isArray(this.pragmaRules)) {
+      this.pragmaRules = this.pragmaRules.filter((r) => !r.name || !denyList.has(r.name));
+    }
+    if (Array.isArray(this.blockRules)) {
+      this.blockRules = this.blockRules.filter((r) => !r.name || !denyList.has(r.name));
+    }
+    if (Array.isArray(this.inlineRules)) {
+      this.inlineRules = this.inlineRules.filter((r) => !r.name || !denyList.has(r.name));
+    }
   }
-  MemeticParser.prototype = stdParser.prototype;
+  MemeticParser.prototype = Object.create(stdParser.prototype as object) as ParserPrototype;
   return MemeticParser as unknown as ParserCtor;
 }
