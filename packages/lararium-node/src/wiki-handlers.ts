@@ -578,6 +578,82 @@ export function createRemoveBagHandler(opts: WikiComposeOptions): CommandHandler
 }
 
 // ---------------------------------------------------------------------------
+// draft-from — copy a tiddler from a lower bag into a writable draft bag
+// ---------------------------------------------------------------------------
+//
+// Operator wants to edit a meme that lives in a lower (read-only or non-
+// active) bag. `lares draft <uri>` reads the current composite resolution
+// for the URI, copies it into a writable draft bag (default: the composite's
+// default-writable layer — the active room's draft), and leaves the source
+// alone. Unlike promote, no tombstone is written and no source-writable
+// check fires. The new draft copy overlays the original via composite
+// priority; subsequent edits land in the draft; `lares promote` later
+// publishes the draft into canon.
+//
+// This is the missing third leg of the promote ceremony for cross-room
+// content: pull-into-draft → edit → promote. Without it, a meme synced
+// from another room's bag (e.g. via `wiki sync`) is stuck — its record.bag
+// points at a non-writable layer, and promote's source-writable assertion
+// trips.
+
+export interface DraftHandlerOptions {
+  readonly composite: CompositeStore;
+}
+
+export function createDraftHandler(opts: DraftHandlerOptions): CommandHandler {
+  return async (args, ctx) => {
+    const tiddler = stringArg(args, "tiddler");
+    let toBag     = stringArg(args, "toBag");
+    if (!tiddler) throw new Error("args.tiddler is required (lar: URI to draft)");
+
+    // Default target: the composite's default-writable bag — by convention the
+    // active room's draft bag. Operator can override with explicit toBag.
+    if (!toBag) {
+      const fallback = opts.composite.defaultWritableBagId();
+      if (!fallback) {
+        throw new Error("no default writable bag available — pass toBag explicitly");
+      }
+      toBag = fallback;
+    }
+
+    const proof = await ctx.cap("admin", toBag);
+    if (!proof.ok) {
+      throw new Error(`cap-denied: admin on ${toBag} required (${proof.reason ?? "no reason"})`);
+    }
+
+    const record = await opts.composite.get(tiddler);
+    if (!record) throw new Error(`tiddler not found: ${tiddler}`);
+
+    const fromBag = record.bag ?? null;
+    if (fromBag === toBag) {
+      return { tiddler, toBag, fromBag, status: "already-in-target" };
+    }
+
+    if (!opts.composite.hasWritableBag(toBag)) {
+      throw new Error(`target bag is not writable in this composite: ${toBag}`);
+    }
+
+    const origin: ChangeOrigin = { kind: "lares-command", requestId: ctx.command.requestId };
+    const drafted: LarTiddlerRecord = {
+      title:     record.title,
+      bag:       toBag,
+      authority: "lares-draft",
+      fields:    { ...(record.fields ?? {}), "drafted-from": fromBag ?? "(none)", "drafted-at": new Date().toISOString() },
+      ...(record.text !== undefined && { text: record.text }),
+    };
+    await opts.composite.put(drafted, origin);
+
+    return {
+      tiddler,
+      fromBag,
+      toBag,
+      status:    "drafted",
+      draftedAt: new Date().toISOString(),
+    };
+  };
+}
+
+// ---------------------------------------------------------------------------
 // prune-stale — surface draft tiddlers that haven't been touched recently
 // ---------------------------------------------------------------------------
 //

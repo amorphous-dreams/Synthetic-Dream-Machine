@@ -244,6 +244,17 @@ export class CompositeStore implements LarTiddlerStore {
     return this.layers.some((l) => l.bagId === bagId && l.writable);
   }
 
+  /** BagId of the layer that receives unbagged writes — i.e. the last-
+   *  registered layer with `writable:true` AND `defaultWritable !== false`.
+   *  Returns null when no default writable layer is registered. */
+  defaultWritableBagId(): string | null {
+    for (let i = this.layers.length - 1; i >= 0; i--) {
+      const l = this.layers[i]!;
+      if (l.writable && l.defaultWritable !== false) return l.bagId;
+    }
+    return null;
+  }
+
   /** Bag ids of every layer currently holding a non-tombstoned record for the
    *  given title. Highest-priority bag appears first (recipe-presence order).
    *  Used by the `where` ceremony — recipe-presence preview before promotion. */

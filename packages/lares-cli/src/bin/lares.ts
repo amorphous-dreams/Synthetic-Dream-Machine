@@ -21,6 +21,7 @@ import { parseArgs, type ParsedArgs } from "../parse-args.js";
 import { cmdInit }                    from "../commands/init.js";
 import { cmdStatus }                  from "../commands/status.js";
 import { cmdPromote }                 from "../commands/promote.js";
+import { cmdDraft }                   from "../commands/draft.js";
 import { cmdBag }                     from "../commands/bag.js";
 import { cmdWiki }                    from "../commands/wiki.js";
 import {
@@ -39,6 +40,7 @@ interface Command {
 const COMMANDS: readonly Command[] = [
   { name: "init",          summary: "Bootstrap a new Lararium node (seed identities/circles/sessions/admin docs).", handler: cmdInit          },
   { name: "promote",       summary: "Promote a tiddler from one bag to another (canon ceremony). Needs `lares serve` running.", handler: cmdPromote      },
+  { name: "draft",         summary: "Pull a tiddler from a lower bag into a writable draft (no tombstone). Pair with `promote`.", handler: cmdDraft        },
   { name: "bag",           summary: "Operate on individual bags: pin / unpin / stats / register-cold. Run `lares bag help`.",      handler: cmdBag          },
   { name: "wiki",          summary: "Operate on whole wikis: init/open/sync/pin/unpin/add-bag/remove-bag/list/which. Run `lares wiki help`.", handler: cmdWiki },
   { name: "status",        summary: "Print local node health: bootstrap presence, storage size, port in use.",      handler: cmdStatus        },

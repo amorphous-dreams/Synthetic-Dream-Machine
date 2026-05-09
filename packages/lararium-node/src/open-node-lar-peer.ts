@@ -61,7 +61,7 @@ import {
   createOpenWikiHandler, createSyncWikiHandler,
   createPinWikiHandler, createUnpinWikiHandler,
   createAddBagHandler, createRemoveBagHandler,
-  createPruneStaleHandler,
+  createPruneStaleHandler, createDraftHandler,
 } from "./wiki-handlers.js";
 import { createEpochBagHandler, createRotateRecipeHandler } from "./epoch-handlers.js";
 import {
@@ -416,6 +416,7 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
   // tiddlers whose last activity exceeds a threshold (default 7 days);
   // surfaces them for operator's promote-or-prune decisions.
   commandRegistry.register("prune-stale", createPruneStaleHandler(wikiMintOpts));
+  commandRegistry.register("draft",       createDraftHandler({ composite }));
   // C.2 — start the background sweeper. Idle eviction + LRU trim run
   // every sweepIntervalMs (default 30s). The manager's own re-entrancy
   // guard makes overlapping ticks safe.
@@ -459,15 +460,25 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
       `[lararium] keyhive identity drift: whoami=${keyhiveDid} verifyingKey=${operatorIdentity.verifyingKey}`,
     );
   }
-  // Register the admin bag — operator becomes implicit admin via Keyhive's
-  // generateDocument semantics (the creator holds the document).
-  await keyhive.registerBag(adminVm.adminHandle.url);
+  // Register every writable bag the operator owns with Keyhive — operator
+  // becomes implicit admin via Keyhive's generateDocument semantics. The
+  // bagId namespace MUST match what dispatchers verify against (lar: URIs,
+  // NOT automerge: URLs) — same shape as the C.4 residency-pin namespace
+  // fix. Without this, ctx.cap("admin", lar:URI) returns false because
+  // keyhive's bagToDocId map only has automerge: URL keys.
+  await keyhive.registerBag(ADMIN_BAG_ID);
+  await keyhive.registerBag(BAG_IDS.identities);
+  await keyhive.registerBag(BAG_IDS.groups);
+  await keyhive.registerBag(BAG_IDS.sessions);
+  await keyhive.registerBag(roomLarUri(roomId));         // active room canonical
+  await keyhive.registerBag(roomDraftLarUri(roomId));    // active room draft
+
   // Sanity: confirm the operator can verify their own admin access. This
   // closes the D.3 bridge end-to-end — bytes-on-disk → seed → Keyhive
   // principal → registered bag → admin proof verifies.
   const selfVerify = await keyhive.verify({
     presenter: keyhiveDid,
-    bagUrl:    adminVm.adminHandle.url,
+    bagUrl:    ADMIN_BAG_ID,
     access:    "admin",
   });
   console.log(

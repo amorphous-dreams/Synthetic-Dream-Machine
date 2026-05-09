@@ -32,11 +32,11 @@ export {
   createOpenWikiHandler, createSyncWikiHandler,
   createPinWikiHandler, createUnpinWikiHandler,
   createAddBagHandler, createRemoveBagHandler,
-  createPruneStaleHandler,
+  createPruneStaleHandler, createDraftHandler,
 } from "./wiki-handlers.js";
 export type {
   WikiHandlerOptions, WikiMintHandlerOptions, WikiResidencyOptions,
-  WikiComposeOptions,
+  WikiComposeOptions, DraftHandlerOptions,
 } from "./wiki-handlers.js";
 
 export { createEpochBagHandler, createRotateRecipeHandler } from "./epoch-handlers.js";
