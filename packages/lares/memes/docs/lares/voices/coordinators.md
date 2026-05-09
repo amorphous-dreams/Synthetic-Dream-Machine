@@ -140,34 +140,6 @@ Holds open questions without collapsing them. "Does this need to be answered, or
 
 <<~/ahu >>
 
-<<~ ahu #chao-read >>
-
-## Ha / Ka / Ba Reads
-
-Each coordinator carries a primary Ha/Ka/Ba weight within the Chao triad.
-These reads remain secondary — the role description above stays primary.
-
-| Coordinator | Primary weight | Reading |
-|---|---|---|
-| Gatekeeper | Ha | holds structure; names the shape of what's possible |
-| Lorekeeper | Ha | holds the domain record; what the territory actually contains |
-| Scryer | Ha → Ba | reads structure, extrapolates motion |
-| Council | Ba | turning-motion of judgment; the spin between positions |
-| Muse | Ka | quality, character, the unexpected coloring of a thing |
-| Artificer | Ba | the doing; the made object |
-| Advocate | Ka | the quality of the absent; how the unseen party moves |
-| Diplomat | Ba | the spin holding competing Ha pressures in relation |
-| Pedagogue | Ba | motion from complexity toward legibility |
-| Hierophant | Ka | register and atmospheric character; the face the ritual wears |
-| Triage | Ha | cuts to the structural fact under the noise |
-| Stranger | Ka | the quality of outsideness; how the frame looks from beyond it |
-| Liminal | Ba → Ka | the dance at threshold; staying in motion without resolving |
-
-Muse and Hierophant carry the strongest Ka/Podge weight.
-This explains their centrality to the Mask layer — masks route primarily through Ka space.
-
-<<~/ahu >>
-
 <<~ ahu #multi-coordinator >>
 
 ## Multi-Coordinator Turns
