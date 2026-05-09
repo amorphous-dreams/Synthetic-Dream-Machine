@@ -39,6 +39,26 @@ export function createUnpinHandler(opts: ResidencyHandlerOptions): CommandHandle
   };
 }
 
+/**
+ * Mark a bag URL as known-but-not-loaded. Oracle traversal (admin VM,
+ * catalog walks, recipe expansion) calls this when it discovers a URL via
+ * a tiddler.text pointer that doesn't need immediate hydration. The first
+ * read through that URL via the composite store (C.4) triggers
+ * onHydrate → repo.find().
+ *
+ * Operator surface: `lares register-cold <url>` — manual stub registration,
+ * useful for smoke tests and future "I know this URL exists but won't
+ * touch it yet" workflows.
+ */
+export function createRegisterColdHandler(opts: ResidencyHandlerOptions): CommandHandler {
+  return async (args) => {
+    const url = typeof args["url"] === "string" ? args["url"] : "";
+    if (!url) throw new Error("args.url is required");
+    opts.residency.registerCold(url);
+    return { url, tier: opts.residency.tier(url) };
+  };
+}
+
 export function createResidencyStatsHandler(opts: ResidencyHandlerOptions): CommandHandler {
   return async () => {
     const stats = opts.residency.stats();

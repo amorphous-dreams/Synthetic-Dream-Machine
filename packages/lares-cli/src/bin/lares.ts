@@ -21,7 +21,7 @@ import { parseArgs, type ParsedArgs } from "../parse-args.js";
 import { cmdInit }                    from "../commands/init.js";
 import { cmdStatus }                  from "../commands/status.js";
 import { cmdPromote }                 from "../commands/promote.js";
-import { cmdPin, cmdUnpin, cmdResidency } from "../commands/residency.js";
+import { cmdPin, cmdUnpin, cmdResidency, cmdRegisterCold } from "../commands/residency.js";
 import {
   cmdBuildGenesis, cmdTestQuine, cmdHeleuma,
   cmdServe, cmdDev, cmdReset, cmdFresh,
@@ -41,6 +41,7 @@ const COMMANDS: readonly Command[] = [
   { name: "pin",           summary: "Pin a bag URL — the daemon never evicts it from RAM. Needs `lares serve`.",                handler: cmdPin          },
   { name: "unpin",         summary: "Unpin a bag URL — demotes from pinned to hot (LRU may then evict). Needs `lares serve`.", handler: cmdUnpin        },
   { name: "residency",     summary: "Print the daemon's current bag residency snapshot (pinned / hot / cold). Needs `lares serve`.", handler: cmdResidency },
+  { name: "register-cold", summary: "Mark a bag URL as known-but-not-loaded (oracle stub). Needs `lares serve`.",                  handler: cmdRegisterCold },
   { name: "status",        summary: "Print local node health: bootstrap presence, storage size, port in use.",      handler: cmdStatus        },
   { name: "serve",         summary: "Run the lararium node in foreground (no Vite).",                                handler: cmdServe         },
   { name: "dev",           summary: "Run node + Vite app concurrently (full dev experience).",                       handler: cmdDev           },

@@ -33,6 +33,21 @@ export async function cmdUnpin(args: ParsedArgs): Promise<number> {
   return await runResidencyCommand("unpin", { url });
 }
 
+/**
+ * `lares register-cold <bag-url>` — mark a URL as known-but-not-loaded.
+ * Oracle traversal calls this for URLs it discovers but doesn't need to
+ * fetch yet. C.4 will wire hydrate-on-read so the first read through the
+ * URL via composite triggers repo.find().
+ */
+export async function cmdRegisterCold(args: ParsedArgs): Promise<number> {
+  const url = args.positional[0];
+  if (!url) {
+    console.error("usage: lares register-cold <bag-url>");
+    return 2;
+  }
+  return await runResidencyCommand("register-cold", { url });
+}
+
 export async function cmdResidency(_args: ParsedArgs): Promise<number> {
   const peer = await tryConnect();
   if (!peer) return 3;

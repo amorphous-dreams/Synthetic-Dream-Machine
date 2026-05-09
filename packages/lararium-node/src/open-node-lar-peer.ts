@@ -58,6 +58,7 @@ import { createPromoteHandler }                     from "./promote-handler.js";
 import { createWhereHandler }                       from "./where-handler.js";
 import {
   createPinHandler, createUnpinHandler, createResidencyStatsHandler,
+  createRegisterColdHandler,
 } from "./residency-handlers.js";
 import { BagResidencyManager }                      from "@lararium/core";
 import { KeyhiveProvider, AdminEventStore }         from "@lararium/keyhive";
@@ -360,7 +361,8 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
   await residency.pin(adminVm.adminHandle.url,   "boot:admin");
   commandRegistry.register("pin",       createPinHandler({ residency }));
   commandRegistry.register("unpin",     createUnpinHandler({ residency }));
-  commandRegistry.register("residency", createResidencyStatsHandler({ residency }));
+  commandRegistry.register("residency",     createResidencyStatsHandler({ residency }));
+  commandRegistry.register("register-cold", createRegisterColdHandler({ residency }));
   // C.2 — start the background sweeper. Idle eviction + LRU trim run
   // every sweepIntervalMs (default 30s). The manager's own re-entrancy
   // guard makes overlapping ticks safe.

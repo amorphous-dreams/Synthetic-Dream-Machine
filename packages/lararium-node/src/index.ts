@@ -29,5 +29,6 @@ export type { WhereHandlerOptions } from "./where-handler.js";
 
 export {
   createPinHandler, createUnpinHandler, createResidencyStatsHandler,
+  createRegisterColdHandler,
 } from "./residency-handlers.js";
 export type { ResidencyHandlerOptions } from "./residency-handlers.js";
