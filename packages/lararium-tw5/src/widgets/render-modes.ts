@@ -45,8 +45,16 @@ export function dispatchSlotRenderMode(
 
   if (mode === "carrier") {
     // Disk export: always emit definition form — read child body from wiki.
+    // When the child tiddler carries non-body fields (anything beyond `title`,
+    // `text`, `bag`, `fragment-parent`, framework bookkeeping), emit a
+    // per-slot iam toml block before the body so the round-trip preserves
+    // slot-local metadata. Plain bodies omit the iam block to keep the
+    // disk form readable for hand-edited memes.
     const childBody = wiki.getTiddlerText?.(childUri, "") ?? "";
-    return { kind: "text", raw: `<<~ ${sigil} ${slot} >>\n${childBody}\n<<~/${sigil} >>` };
+    const childTid  = wiki.getTiddler?.(childUri);
+    const iamBlock  = childTid ? renderSlotIam(childTid.fields ?? {}) : "";
+    const head = iamBlock ? `<<~ ${sigil} ${slot} >>\n${iamBlock}\n` : `<<~ ${sigil} ${slot} >>\n`;
+    return { kind: "text", raw: `${head}${childBody}\n<<~/${sigil} >>` };
   }
 
   if (mode === "projection") {
@@ -54,5 +62,45 @@ export function dispatchSlotRenderMode(
     return { kind: "text", raw: `<<~ aka ${sigil} ${slot} >>` };
   }
 
+  return null;
+}
+
+// Fields suppressed from the per-slot iam emission. These are framework
+// bookkeeping (title/text identity) or routing metadata (bag, fragment-
+// parent, source-file, synced-at, modified, created, revision) that the
+// disk form reconstructs implicitly.
+const SLOT_IAM_SUPPRESS = new Set<string>([
+  "title", "text", "bag", "fragment-parent", "source-file", "synced-at",
+  "modified", "created", "revision", "type",
+]);
+
+function renderSlotIam(fields: Record<string, unknown>): string {
+  const lines: string[] = [];
+  for (const [k, v] of Object.entries(fields)) {
+    if (SLOT_IAM_SUPPRESS.has(k)) continue;
+    if (v === undefined || v === null) continue;
+    const value = formatTomlScalar(v);
+    if (value === null) continue;
+    lines.push(`${k} = ${value}`);
+  }
+  if (lines.length === 0) return "";
+  return "```toml iam\n" + lines.join("\n") + "\n```";
+}
+
+function formatTomlScalar(v: unknown): string | null {
+  if (typeof v === "string") {
+    return JSON.stringify(v);
+  }
+  if (typeof v === "number" || typeof v === "boolean") {
+    return String(v);
+  }
+  if (Array.isArray(v)) {
+    const parts: string[] = [];
+    for (const item of v) {
+      const s = formatTomlScalar(item);
+      if (s !== null) parts.push(s);
+    }
+    return `[${parts.join(", ")}]`;
+  }
   return null;
 }

@@ -91,20 +91,33 @@ export function buildDirectRecord(
 /**
  * Return the canonical memetic-wikitext for a meme URI.
  *
- * In the meme model the `text` field of a tiddler IS the source form —
- * no kahea-reference expansion is needed for identity-form memes.
+ * Routes through TW5's `renderTiddler` pipeline — the same render path TW5
+ * uses for HTML export and the wiki shell on first client load — under
+ * `lar-render-mode: "carrier"`. Sigil widgets that own child-slot bodies
+ * (ahu, kau, future) detect the variable in `dispatchSlotRenderMode` and
+ * emit the definition form `<<~ sigil slot >>\n{child body}\n<<~/sigil >>`
+ * instead of transcluding HTML. The wikifier walks the parent's parse tree,
+ * each widget self-renders its disk form, and the concatenated text node
+ * stream is the canonical source for promotion / git diff.
  *
- * TODO (Sprint 4+): add `lar-render-mode: "meme"` render pass for memes
- * that use slot-body kahea references (parent tiddler stores reference form,
- * children are authoritative for body). This mirrors the carrier-write pattern:
- *   tw5.wiki.renderTiddler("text/plain", memeUri, { variables: { "lar-render-mode": "meme" } })
+ * For plain memes (no slot bodies), the parse tree is just text and the
+ * result equals `getTiddlerText`. For memes whose body lives in slot
+ * children, this re-serializes the full source from authoritative state.
  *
  * @param tw5     - Live TW5Engine VM instance
  * @param memeUri - lar:/// URI of the meme tiddler
  * @returns       - Canonical memetic-wikitext string, or "" if not found
  */
 export function exportMemeText(tw5: TW5Engine, memeUri: string): string {
-  return tw5.wiki.getTiddlerText?.(memeUri, "") ?? "";
+  const wiki = tw5.wiki;
+  if (!wiki?.renderTiddler) return wiki?.getTiddlerText?.(memeUri, "") ?? "";
+  try {
+    return wiki.renderTiddler("text/plain", memeUri, {
+      variables: { "lar-render-mode": "carrier" },
+    }) ?? "";
+  } catch {
+    return wiki.getTiddlerText?.(memeUri, "") ?? "";
+  }
 }
 
 // ---------------------------------------------------------------------------
