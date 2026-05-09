@@ -1,10 +1,10 @@
 # Hand-off Crystal — Lares Lararium Node Branch
 
 > Forged: 2026-05-07
-> Last update: 2026-05-08 — S5.8 Promotion Ceremony closed; lares CLI lives
+> Last update: 2026-05-09 — E.10.1→E.10.4 hardened canon-promote AND landed ahu sigil round-trip via TW5 wikirule + cascade + templates
 > Branch: `feature/lararium-node-3`
 > Working tree: dirty (smoke residue under packages/lararium-node/.lararium)
-> Last pulse: 6-commit B-arc landed — `lares` CLI + command-tiddler protocol + promote handler
+> Last pulse: ahu sigil renders through TW5-native template-cascade; markdown-meme disk export works end-to-end
 
 ---
 
@@ -16,12 +16,25 @@ Branch: feature/lararium-node-3.
 S5.8 ✅ closed. S6 (BagResidencyManager) ✅ closed (C.1→C.6, C.5 deferred).
 S7.1 (Capability layer via @keyhive/keyhive) ✅ closed (D.1→D.6).
 S8 (Wiki composition) ✅ closed (E.1→E.10). Twelve operator verbs across
-`lares bag` + `lares wiki` subcommand surfaces. End-to-end disk → CRDT
-sync proven. DXOS Epoch + Nix-generations rotation primitives shipped.
-F-arc (TW5 routing rule + debounce shim + auto-truncate projection)
-remains the next sprint candidate.
-Next paths: F-arc (TW5 vm refresh-pipeline + debounce shim), S7.4 (admin
-doc ingress trust gate), dreamdeck-app sprint (picks up S6.C.5),
+`lares bag` + `lares wiki` subcommand surfaces.
+E.10.1: Keyhive bag namespace fix + lares draft command. E.10.2: hardened
+cross-bag promote ceremony (six interlocking bugs in source-detection,
+TW5 refresh on cross-bag write, tombstone bag info). E.10.3: exportMemeText
+routes through wiki.renderTiddler. E.10.4 (BIG): rewrite ahu render
+dispatch as TW5-native wikirule + cascade + templates. AhuWidget owns
+no scope decision; cascade of `$:/tags/Lar/AhuTemplate` entries picks a
+template by matching `<lar-export-scope>` filter. New module
+`wikirules/memetic-wikitext-sigil.ts` makes `<<~ ahu ... >>` first-class
+TW5 grammar — block + inline forms — usable in any wikitext context
+including browser-side authoring. exportMemeText threads currentTiddler
++ scope variable through renderTiddler. Round-trip verified end-to-end:
+sync → draft → promote → packages/lares/memes/ file with sigil wrappers
+and slot bodies preserved.
+Next paths: G-arc (other sigils — aka, kahea, kau, lele, papalohe,
+pranala, pae — ported to wikirule + cascade + template), H-arc (save-
+side auto-split: TW5 UX edits parse on save → spawn child tiddlers), F-arc
+deferred (TW5 vm refresh-pipeline + debounce shim), S7.4 (admin doc
+ingress trust gate), dreamdeck-app sprint (picks up S6.C.5),
 <$lar-promote> widget, heleuma authoring, federated promotion.
 Architecture laws hold: causal-island, bag=Automerge-doc=sync-boundary,
 canon-promotion requires active operator decision, TW5 VM primacy,
@@ -50,6 +63,7 @@ category boundary.
 | S6 | ✅ | `BagResidencyManager` end-to-end: pinned/hot/cold tiers, LRU + idle sweeper + sync-state guard, register-cold for oracle stubs, composite-store hydrate-on-read, `lares status` residency line. C.5 same-machine peer consolidation deferred to the dreamdeck-app sprint. |
 | S7.1 (D.1→D.6) | ✅ | @keyhive/keyhive (concap) integration complete. Operator-key bridge, AdminEventStore persistence, ctx.cap wired, promote-handler enforces. Operator identity and admin proof survive daemon restarts. |
 | S8 (E.1→E.10) | ✅ | Wiki composition end-to-end. `lares bag` + `lares wiki` subcommand surfaces (12 verbs). Per-wiki draft bagId namespace; explicit `BAG_IDS.projection` MemoryTiddlerStore. Disk → CRDT sync ceremony. DXOS-style bag epoch for bounded history. Nix-generations recipe rotation. Stale-tiddler queue. Hot-reload via composite addLayer/removeLayer. |
+| S8 (E.10.1→E.10.4) | ✅ | Canon-promote ceremony hardened end-to-end. E.10.1: Keyhive registers all writable bags at boot (lar: URIs, not automerge: URLs); `lares draft <uri>` ceremony pulls non-writable-bag tiddlers into draft for promote. E.10.2: six bugs fixed — open canonical bags as writable+defaultWritable:false; MemeSyncAdaptor buffer gate skipped for local-origin events; AutomergeDocStore.tombstone carries `record.bag`; disk-projector per-bag unlink on tombstone; cross-bag tombstone walks `composite.getLive()` before yanking from TW5; promote/where source-detection via `listBagsHolding`. E.10.3: exportMemeText routes through `wiki.renderTiddler`. E.10.4: ahu render dispatch as TW5-native wikirule + cascade + templates — AhuWidget owns no scope decision, MemeticParser+deserializer registration synchronous (race fix), `wikirules/memetic-wikitext-sigil.ts` makes `<<~` first-class grammar in any wikitext context. |
 
 ## S5.8 sub-arc — what each commit landed
 
@@ -79,25 +93,39 @@ category boundary.
 - **Handlers today:** `echo` (admin composite), `promote` (room composite), `where` (room composite, recipe-presence).
 - **Forward generalization:** when UEFN-Verse ReactionEngine lands, this dispatcher pattern federates across causal-island bounds; command-tiddlers become one shape of reaction trigger among many. Comments inline in command-dispatcher.ts and promote-handler.ts.
 
-## Three immediate paths
+## Forward paths (post-E.10.4)
 
-### Path A — F-arc TW5 routing + debounce shim + auto-truncate projection
-Lives in `@lararium/tw5`. The MemeSyncAdaptor learns: `$:/state/*` → projection layer (in-memory only, never synced); `Draft of *` → per-wiki draft bag; everything else → canonical. Yjs-style `captureTimeout` debounce (300-500ms window) coalesces TW5 keystroke events into Automerge transactions. Auto-truncate of projection layer on idle. Closes the E-arc + F-arc loop with TW5 vm + Automerge wire integration.
+### Path G (next sprint) — Other sigils via wikirule + cascade + templates
+Port the sigil set (`aka`, `kahea`, `kau`, `lele`, `papalohe`, `pranala`, `pae`) to the same architecture ahu now uses. Each sigil:
+  - extends `wikirules/memetic-wikitext-sigil.ts` with its match patterns (block and/or inline modes per operator note);
+  - ships its own template tiddlers under `lar:///ha.ka.ba/@lararium/templates/{sigil}/{html,markdown-meme}`;
+  - registers its cascade entries `$:/config/Lar/{Sigil}Template/*`;
+  - keeps any sigil-specific JS widget thin (cascade-resolve + transclude).
+Open question per sigil: does it own a child tiddler (slot child) or fragment-render in place? `aka` projects, `kahea` invokes, `kau` places (with Keyhive UCAN attachment), `lele` flows, `pae` phases (LADDER/OODA-HA), `pranala` is an explicit edge. Each gets its template grammar.
 
-### Path B — S7.4 Admin doc ingress trust gate
-With S7.1 closed, the admin doc's WebSocket federation can gate on `cap=infrastructure` proofs. Before accepting an Automerge sync message touching the admin doc, the daemon verifies the peer holds a delegation rooted at the operator's identity. Pre-condition for federating between operator's own devices.
+### Path H — Save-side auto-split (TW5 UX → child tiddlers)
+The fourth call site of `parseMemeText`. `MemeSyncAdaptor.saveTiddler`'s `direct` strategy detects memetic-wikitext content, runs `splitMemeToTiddlers(title, text, fields)`, writes parent + child records to the bag, tombstones removed children. Symmetric with the disk-sync path — operator edits a parent meme in TW5 UX, inserts a new `<<~ ahu #foo >>body<<~/ahu >>`, hits save, and `lar:///parent#foo` appears in the bag autonomously. Same-grammar invariant the operator named: edit on disk OR edit in UX, identical result.
 
-### Path B — Dreamdeck-app sprint (picks up S6.C.5)
-Browser-side peer scaffold. Builds atop Path A's cap-gated admin doc to subscribe as the operator's own device. Same-machine peer consolidation lands here: tab joins the daemon's `/residency` endpoint (designed in HANDOFF; not yet built), treats the daemon as its primary handle source, skips materializing bags the daemon already has hot. tldraw multiplayer + TLDraw infinite canvas surfaces sit atop.
+### Path I — Wikifier DOCTYPE + dash + macrocall recovery
+Three small diff items in current round-trip output: HTML comment DOCTYPE dropped; TW5's `dash` rule converts `|---|` → `|—|`; MemeticParser's prologue handling (DOCTYPE, root iam toml extraction) survives but the wikifier swallows the comment in text/plain. Fix by either disabling rules at the parent meme rendering level (via a meme-level wrapper template that pragma-disables them), or by emitting these via `<$text>` widgets carrying the literal char sequences. Aesthetic, not load-bearing — defer until G+H ship.
 
-### Path C — `<$lar-promote>` action-widget
-With promote handler enforcing real cap, the widget becomes a UI shim that writes the same command-tiddler the CLI does. Lives in admin VM. Adds the visual recipe-presence preview that the CLI prints textually.
+### Path J — Per-slot iam emission with default-elision
+Operator's idempotency rule from this session: emit only operator-authored fields; child slots elide values matching parent's iam defaults. The markdown-meme template needs an emit-iam macro that diffs child fields against parent and writes only divergent keys. Per-slot iam toml block lands ahead of the body inside the `<<~ ahu>>` wrapper. Streaming-text terminology approved earlier: `preamble` / `postamble` for non-sigil text around body sigils.
 
-### Path D — Heleuma Stub Authoring (still deferred)
-50+ scaffolded memes carry TODO role/contract content. `lares heleuma --write` keeps the audit aligned. Defer to a focused documentation pass.
+### Path K — F-arc deferred (TW5 routing rule + Yjs debounce + auto-truncate projection)
+Original F-arc charter — `$:/state/*` → projection layer; `Draft of *` → per-wiki draft bag; Yjs-style captureTimeout debounce 300-500ms; idle auto-truncate of projection layer. Lives in MemeSyncAdaptor. Important once browser peer surfaces let operators edit at sustained rates.
 
-### Path E — Federated promotion
-Operator-stated forward state: any room VM, any peer, gated by Keyhive cap chains. Promote-handler's `ctx.cap` already returns Keyhive verification; the `composite` reference generalizes from "room composite" to "requesting peer's composite + cap chain" when transports federate caps across peers.
+### Path L — S7.4 Admin doc ingress trust gate
+Already-deferred. With S7.1 closed, the admin doc's WebSocket federation can gate on `cap=infrastructure` proofs. Pre-condition for federating between operator's own devices.
+
+### Path M — Dreamdeck-app sprint (picks up S6.C.5)
+Browser-side peer scaffold. Builds atop Path L's cap-gated admin doc.
+
+### Path N — `<$lar-promote>` action-widget
+UI shim writing the same command-tiddler the CLI does.
+
+### Path O — Heleuma stub authoring + federated promotion
+50+ scaffolded memes carry TODO content; `lares heleuma --write` keeps the audit aligned. Federated promotion: any room VM, any peer, gated by Keyhive cap chains.
 
 ## Smoke-test recipe (verify branch state)
 

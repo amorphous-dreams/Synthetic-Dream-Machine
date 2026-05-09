@@ -1,10 +1,29 @@
 # Session State — Lararium Web3 Refactor
 
-> Updated: 2026-05-09 (E-arc closure)
+> Updated: 2026-05-09 (E.10.1 → E.10.4 hardened canon-promote AND landed ahu render rewrite)
 > Branch: feature/lararium-node-3
 > Purpose: Resume artifact — enough state to continue without prior chat context
 
 ---
+
+**Architectural notes worth holding (E.10.4):**
+
+- *The round-trip law*: ONE parser, FOUR call sites — disk sync (CLI `wiki sync`), CRDT inbound (MemeSyncAdaptor.onUriChanged), TW5 UX save (saveTiddler — Path H, deferred), disk export (exportMemeText). All consume `parseMemeText` output. This commit gets three of the four call sites aligned. Path H lands save-side auto-split next.
+- *Templates not modes*: AhuWidget owns no scope decision. The cascade `$:/tags/Lar/AhuTemplate` evaluates filter expressions over the `lar-export-scope` variable; first non-empty result names the template tiddler. Operators override per-wiki by writing tiddlers tagged `$:/tags/Lar/AhuTemplate` — no TS recompile needed. Render scope decisions live in TW5 grammar, not in JS.
+- *Wikirule unlocks browser authoring*: `<<~ sigil ... >>` syntax becomes first-class wikitext. Drafts in TW5 UX recognize the syntax without a custom parser. Operator's stated next-tier UX requirement — author memes inside the live wiki, sigils auto-promote to child tiddlers on save (Path H closes the loop).
+- *Three small wikifier diff items remain* (DOCTYPE HTML comment, em-dash conversion of `|---|`, aka URI sigil routes to empty `<<~ ahu>>`). Aesthetic, not load-bearing — Path I.
+
+## What Just Happened (2026-05-09 late — E.10 follow-ons hardened the canon ceremony AND rewrote ahu render dispatch)
+
+The E-arc closed but the canon-promotion ceremony broke under load when tested against a real meme. Four follow-on commits hardened everything end-to-end and pivoted ahu rendering to a TW5-native architecture.
+
+| sha | What |
+|---|---|
+| `ba7a518e` E.10.1 | Closed the sync→draft→promote loop. Keyhive registers all writable bags at boot (lar: URIs, not automerge: URLs). New `lares draft <uri>` ceremony — pulls a tiddler from any composite-resolvable bag into a writable draft; the missing third leg between `wiki sync` and `promote`. New `CompositeStore.defaultWritableBagId()` accessor. |
+| `4262cef2` E.10.2 | Hardened cross-bag promote ceremony. Six interlocking bugs fixed: BAG_IDS.lares + BAG_IDS.lararium open as writable+defaultWritable:false (canon writes work; default writable still routes to room); MemeSyncAdaptor.onUriChanged — only crdt-remote events go through buffer gate (local-origin events apply immediately, cross-bag promote-write reaches TW5); AutomergeDocStore.tombstone fires {deleted:true, bag:this.bagId} (listeners can route per-bag); disk-projector per-bag unlink on tombstone (room file disappears, canonical stays); MemeSyncAdaptor cross-bag tombstone walks composite.getLive() (no "promote wipes its own write" race); promote/where source-detection via listBagsHolding (stale tombstones in draft layers no longer masquerade). New `composite.getLive()` helper. |
+| `50d93821` E.10.3 | exportMemeText routes through `wiki.renderTiddler` with `lar-export-scope: "carrier"` (renamed to "markdown-meme" in E.10.4). Per-slot iam toml emission added to `dispatchSlotRenderMode("carrier")` with hardcoded suppress list. Note: this commit's mode-dispatch architecture got replaced wholesale in E.10.4 below. |
+| `2d6da6f4` E.10.4-WIP | Begin template+cascade rewrite. Mode-dispatch widget architecture deleted; `transformParentText` deleted; `dispatchSlotRenderMode` markdown-meme branch deleted. Template memes authored at `packages/lararium-tw5/memes/templates/{ahu,meme}/`. AhuWidget rewritten as cascade-resolve + transclude shim. exportMemeText points at meme-level template + scope variable. |
+| `a9ff64c9` E.10.4 | **The big architectural pivot.** `<<~` becomes first-class TW5 grammar via a new wikirule module (`wikirules/memetic-wikitext-sigil.ts`) — block + inline forms, mutates `WikiParser.prototype.{block,inline}RuleClasses`. Cascade tiddlers `$:/config/Lar/AhuTemplate/{html,markdown-meme}` plus their template tiddlers ship as preload. Template uses `\rules except lar-sigil-block lar-sigil-inline macrocallinline macrocallblock` so literal `<<~ ahu` survives instead of recursing. MemeticParser, deserializer, wikirule registration moved from async `import().then()` to synchronous module imports — eliminates the parser-not-registered-at-first-render race. Deserializer sets `slot` and `fragment-parent` fields on child tiddlers (template's `{{!!slot}}` resolves; `[field:fragment-parent[<uri>]]` filter enumerates slots). exportMemeText threads currentTiddler + lar-export-scope through renderTiddler options. Round-trip verified end-to-end. |
 
 ## What Just Happened (2026-05-09 evening — S8 wiki composition closed via E.1→E.10)
 
