@@ -105,23 +105,25 @@ export function buildDirectRecord(
  * @param memeUri - lar:/// URI of the meme parent tiddler
  * @returns       - Canonical memetic-wikitext, or empty string if absent
  */
+const MEME_MARKDOWN_TEMPLATE = "lar:///ha.ka.ba/@lararium/templates/meme/markdown-meme";
+
 export function exportMemeText(tw5: TW5Engine, memeUri: string): string {
   const wiki = tw5.wiki;
   if (!wiki?.renderTiddler) return "";
   try {
-    return wiki.renderTiddler("text/plain", memeUri, {
+    // Render through the meme-level template, which carries `\rules only
+    // transcludeinline lar-sigil-block lar-sigil-inline lar-doctype-comment`.
+    // The pragma curates the wikitext rule set so backticks, dashes, html
+    // entities, html comments, and macrocall stay literal — only sigil and
+    // transclusion rules fire. AhuWidget transcludes slot children through
+    // the cascade-resolved slot template; everything else passes verbatim.
+    return wiki.renderTiddler("text/plain", MEME_MARKDOWN_TEMPLATE, {
       variables: {
-        // currentTiddler must equal the parent meme URI so AhuWidget can
-        // compute child slot URIs as `parentUri + slot`. TW5 does not
-        // automatically inject currentTiddler at the renderTiddler entry —
-        // we thread it explicitly here.
         currentTiddler:    memeUri,
         "lar-export-scope": "markdown-meme",
       },
     }) ?? "";
   } catch {
-    // Defensive: a malformed cascade or missing template tiddler falls back
-    // to the raw stored text rather than throwing into the disk projector.
     return wiki.getTiddlerText?.(memeUri, "") ?? "";
   }
 }

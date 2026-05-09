@@ -1,202 +1,89 @@
 /**
- * meme-parser — TW5 content-type parser binding for text/x-memetic-wikitext.
+ * memetic-parser — thin parser wrapper for `text/x-memetic-wikitext`.
  *
- * Replaces memetic-parser.web2.ts: uses parseMemeText (MemeAstNode) not
- * parseMemeCarrier (CarrierNode). Node kind names are identical; only the
- * source type and import origin change.
+ * Prepends a `\rules only` pragma to the source so the standard WikiParser
+ * runs with a curated rule set. Without this, rendering a memetic-wikitext
+ * tiddler invokes the full wikitext rule pipeline — backticks become inline
+ * code, triple-backticks become code fences, dashes become em-dashes,
+ * `<!-- -->` comments get stripped, etc. — and round-trip identity breaks.
  *
- * TW5 parser contract:
- *   - Constructed as: new MemeticParser(type, text, options)
- *   - Must expose: this.tree → TW5ParseNode[]
- *   - TW5ParseNode: { type, children?, attributes?, tag?, text? }
+ * The curated set lets sigil and transclusion rules fire while everything
+ * else passes through verbatim:
+ *   - `transcludeinline`     → `{{!!field}}` resolves
+ *   - `lar-sigil-block`      → `<<~ ahu #slot >>...<<~/ahu >>` → AhuWidget
+ *   - `lar-sigil-inline`     → every other `<<~ ... >>` → literal-survival
+ *   - `lar-doctype-comment`  → `<!-- <<~ !DOCTYPE = ... >> -->` → literal
+ *   - `macrodef`             → `\procedure ... \end` definitions
+ *   - `transcludeblock`      → `<$transclude>` widget invocations
+ *   - `prettyextlink`        → operator-authored markdown links survive
  *
- * Node kind → TW5 widget type mapping (invariant across web2→meme rebuild):
- *   Ahu          → "ahu"      (<$ahu>)
- *   Text         → "text"     (TW5 native text / prose delegation)
- *   Pranala      → "pranala"  (<$pranala>)
- *   PranalaSugar → "pranala" or "papalohe"
- *   Lele         → "lele"     (<$lele>)
- *   Pae          → "pae"      (phase boundary marker)
- *   Sigil(toml)  → "toml"     (<$toml>)
- *   Sigil(kukali)→ "kukali"   (<$kukali>)
- *   Sigil(waiho) → "waiho"    (<$waiho>)
- *   Sigil(kau)   → "kau"      (<$kau>)
- *   Sigil(other) → "sigil"    (<$sigil>)
- *   Dynamic      → "dynamic"  (<$dynamic>)
+ * Operators may extend the rule set per-wiki by editing
+ * `$:/config/Lar/MemeticRules` (read at parser construction).
  *
- * Grammar boot: grammar tiddler is loaded from the TW5 wiki via
- * getTiddlerText(GRAMMAR_MEME_URI); parsed once per wiki instance and
- * cached. Invalidated when the grammar tiddler text changes.
+ * Architecture note:
+ *   This wrapper is NOT the prior MemeticParser class (330 lines of typed-
+ *   widget node-emission boilerplate). That logic collapsed in E.10.5;
+ *   sigil recognition lives entirely in the wikirule. The wrapper here
+ *   only curates which TW5 rules fire — a one-line pragma prepend.
  *
- * Schema: lar:///ha.ka.ba/@lares/api/v0.1/lararium/modules/meme-parser
+ * Schema: lar:///ha.ka.ba/@lares/api/v0.1/lararium/schema/memetic-parser
  */
 
-import type {
-  MemeAstNode,
-  AhuNode,
-  GrammarRules,
-} from "@lararium/core";
-import { parseMemeText, grammarRulesFromText } from "@lararium/core";
-import { GRAMMAR_MEME_URI } from "@lararium/core";
-
-// TW5ParseNode — the parse-tree contract between the parser and TW5 widget renderer.
-// Shape is invariant across web2→meme rebuild; exported for downstream callers.
-export interface TW5ParseNode {
-  type:           string;
-  tag?:           string;
-  attributes?:    Record<string, { type: string; value: unknown }>;
-  children?:      TW5ParseNode[];
-  text?:          string;
-  isSelfClosing?: boolean;
-  /** Original MemeAstNode for round-trip access without re-parsing. */
-  _ast?:          MemeAstNode;
-}
-
-// ---------------------------------------------------------------------------
-// Internal types
-// ---------------------------------------------------------------------------
-
-/** Minimal TW5 wiki surface used by the parser (grammar resolution + prose delegation). */
-type TW5Wiki = {
-  getTiddlerText?(title: string, defaultText?: string): string | undefined;
-  parseText?(type: string, text: string, opts?: unknown): { tree: TW5ParseNode[] };
-  _larGrammar?:  { text: string; rules: GrammarRules | null };
-  _larAstCache?: Map<string, { text: string; grammarText: string; nodes: readonly MemeAstNode[] }>;
-};
-
-// ---------------------------------------------------------------------------
-// Attribute helpers
-// ---------------------------------------------------------------------------
-
-function attr(value: string): { type: "string"; value: string } {
-  return { type: "string", value };
-}
-
-// ---------------------------------------------------------------------------
-// Grammar resolution — cached per wiki instance
-// ---------------------------------------------------------------------------
-
-function resolveGrammar(wiki: TW5Wiki | undefined): GrammarRules | null {
-  if (!wiki?.getTiddlerText) return null;
-  const text = wiki.getTiddlerText(GRAMMAR_MEME_URI) ?? "";
-  if (!text) return null;
-  if (!wiki._larGrammar || wiki._larGrammar.text !== text) {
-    wiki._larGrammar = { text, rules: grammarRulesFromText(GRAMMAR_MEME_URI, text) };
-  }
-  return wiki._larGrammar.rules;
-}
-
-// ---------------------------------------------------------------------------
-// nodeToTw5 — map a single MemeAstNode to a TW5ParseNode
-// ---------------------------------------------------------------------------
-
-function nodeToTw5(node: MemeAstNode, wiki?: TW5Wiki): TW5ParseNode {
-  // Ahu — the only widget-bearing case. AhuWidget transcludes its slot
-  // child tiddler through the cascade-resolved template; the parse-tree
-  // body of definition-form ahu blocks is unused at render time.
-  if (node.kind === "Ahu") {
-    const n = node as AhuNode;
-    return {
-      type: "ahu", _ast: node,
-      attributes: {
-        slot: attr(n.slot),
-        uri:  attr(n.uri),
-        ...(n.delegate   ? { delegate:   attr(n.delegate) }   : {}),
-        ...(n.invocation ? { invocation: attr("true") }        : {}),
-        ...(n.projection ? { projection: attr("true") }        : {}),
-      },
-      children: (n.invocation || n.projection) ? [] : n.body.map((c) => nodeToTw5(c, wiki)),
-    };
-  }
-
-  // Text — prose between sigils. Emit literal so carrier sentinels
-  // (SOH/STX/ETX) and DOCTYPE comments embedded in prose survive.
-  if (node.kind === "Text") {
-    return { type: "text", text: node.content, _ast: node, children: [] };
-  }
-
-  // Literal-survival for every other sigil. Each AST node carries its
-  // raw source slice (`raw: string` on MemeAstBase); emit it verbatim so
-  // disk round-trip preserves the operator's grammar. Per-sigil widget
-  // rendering for live UI / HTML scope ports through the template-cascade
-  // pattern in follow-up sprints (Path G).
-  //
-  // Sigils covered by this branch today: pranala, pranala-sugar (loulou /
-  // aka / kahea / pono / papalohe), lele, sigil (toml / kukali / waiho /
-  // kau / generic), dynamic, pae. Each gets its own `$:/tags/Lar/<Sigil>
-  // Template` cascade entry when ported.
-  return { type: "text", text: node.raw, _ast: node, children: [] };
-}
-
-// ---------------------------------------------------------------------------
-// astToTw5Tree — map a MemeAstNode array to TW5ParseNode[]
-// ---------------------------------------------------------------------------
-
-export function astToTw5Tree(
-  ast:   readonly MemeAstNode[],
-  wiki?: TW5Wiki,
-): TW5ParseNode[] {
-  return ast.map((n) => nodeToTw5(n, wiki));
-}
-
-// ---------------------------------------------------------------------------
-// MemeticParser — the TW5 parser class registered for text/x-memetic-wikitext
-// ---------------------------------------------------------------------------
+const RULES_CONFIG_TIDDLER = "$:/config/Lar/MemeticRulesExcept";
 
 /**
- * TW5 parser class for text/x-memetic-wikitext.
- * Registered via `$tw.Wiki.parsers["text/x-memetic-wikitext"] = MemeticParser`.
+ * Default rules to DISABLE for memetic-wikitext. Each entry would otherwise
+ * mangle round-trip identity:
+ *   - `codeblockinline` / `codeblockbacktick` — interpret triple-backtick
+ *     toml fences as code-block elements; text/plain output strips fence.
+ *   - `dash`                                  — converts `---` to `—`.
+ *   - `htmlcomment`                           — strips `<!-- ... -->`,
+ *     including DOCTYPE prologue.
+ *   - `macrocallinline` / `macrocallblock`    — claims `<<...>>` as macro
+ *     syntax before the lar-sigil rules can match.
+ *   - `entity`                                — would expand `&#x0001;`
+ *     control char in carrier sentinels at parse time.
  *
- * Constructor signature matches TW5's parser protocol:
- *   new MemeticParser(type, text, options)
- *
- * Grammar is resolved from the TW5 wiki at construction time (hot-reloadable):
- *   wiki.getTiddlerText(GRAMMAR_MEME_URI) → GrammarRules
+ * Operators may override by writing a space-separated rule-name list to
+ * `$:/config/Lar/MemeticRulesExcept`.
  */
-export class MemeticParser {
-  readonly tree: TW5ParseNode[];
+const DEFAULT_RULES_EXCEPT = [
+  // Code-fence / inline-code rules — strip backticks in text/plain output.
+  "codeblock",
+  "codeinline",
+  // HTML comment rules — strip `<!-- ... -->` lines (incl. DOCTYPE).
+  "commentblock",
+  "commentinline",
+  // Entity rule — expands `&#x0001;` carrier sentinels at parse time.
+  "entity",
+  // Dash rule — converts `---` to em-dash.
+  "dash",
+  // Macrocall — claims `<<...>>` before lar-sigil rules can match.
+  "macrocallinline",
+  "macrocallblock",
+] as const;
 
-  constructor(
-    _type: string,
-    text:  string,
-    options: {
-      tiddler?:      { fields?: { title?: string } };
-      parseAsInline?: boolean;
-      wiki?:         unknown;
-    } = {},
-  ) {
-    const uri     = options.tiddler?.fields?.title ?? "lar:///unknown";
-    const wiki    = options.wiki as TW5Wiki | undefined;
-    const grammar = resolveGrammar(wiki);
-    const grammarText = wiki?._larGrammar?.text ?? "";
+interface ParserCtor {
+  new (type: string, text: string, options: unknown): unknown;
+}
 
-    // Per-wiki AST cache keyed by URI; invalidated when text or grammar text changes.
-    if (wiki && !wiki._larAstCache) wiki._larAstCache = new Map();
-    const cache   = wiki?._larAstCache;
-    const cached  = cache?.get(uri);
-    const nodes = (cached?.text === text && cached?.grammarText === grammarText)
-      ? cached.nodes
-      : (() => {
-          const result = parseMemeText(uri, text, grammar ?? undefined);
-          cache?.set(uri, { text, grammarText, nodes: result.nodes });
-          return result.nodes;
-        })();
+interface WikiLike {
+  getTiddlerText?: (title: string, fallback?: string) => string;
+}
 
-    this.tree = astToTw5Tree(nodes, wiki);
+/**
+ * Build a parser class that wraps the standard wikitext parser with a
+ * `\rules only` pragma prepended to the source. The base parser comes
+ * from `tw.Wiki.parsers["text/vnd.tiddlywiki"]`.
+ */
+export function makeMemeticParser(stdParser: ParserCtor): ParserCtor {
+  function MemeticParser(this: object, type: string, text: string, options: unknown): unknown {
+    const wiki = (options as { wiki?: WikiLike } | undefined)?.wiki;
+    const override = wiki?.getTiddlerText?.(RULES_CONFIG_TIDDLER, "")?.trim() ?? "";
+    const rules = override.length > 0 ? override : DEFAULT_RULES_EXCEPT.join(" ");
+    const wrapped = `\\rules except ${rules}\n${text ?? ""}`;
+    return new stdParser(type, wrapped, options);
   }
+  MemeticParser.prototype = stdParser.prototype;
+  return MemeticParser as unknown as ParserCtor;
 }
-
-// ---------------------------------------------------------------------------
-// parseMemeToTw5 — convenience: text → TW5ParseNode[] without a wiki context
-// ---------------------------------------------------------------------------
-
-export function parseMemeToTw5(
-  uri:  string,
-  text: string,
-  wiki?: TW5Wiki,
-): TW5ParseNode[] {
-  const grammar = wiki ? resolveGrammar(wiki) : null;
-  const { nodes } = parseMemeText(uri, text, grammar ?? undefined);
-  return astToTw5Tree(nodes, wiki);
-}
-

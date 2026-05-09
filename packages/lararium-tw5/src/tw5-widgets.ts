@@ -104,22 +104,64 @@ export const LARARIUM_AHU_CASCADE_HTML = {
  * metadata directly from the parent meme view.
  */
 /**
- * The `\rules except` pragma disables the lar-sigil-block / lar-sigil-inline
- * wikirules inside this template. Without it, the wikifier sees the literal
- * `<<~ ahu` in the template body and matches its own sigil rule recursively —
- * the template would emit ahu widgets that transclude through the same
- * cascade, infinite-loop or empty. With the pragma, `<<~ ahu` becomes
- * literal text in the parse output. The transclusion macros (`{{!!slot}}`,
- * `{{!!text}}`) survive the pragma and resolve normally.
+ * Slot template — markdown-meme scope.
+ *
+ * The `\rules only` pragma curates a minimal rule set for verbatim emission.
+ * `transcludeinline` resolves `{{!!slot}}` and `{{!!text}}` field references;
+ * everything else (backticks, dashes, html entities, HTML comments,
+ * macrocall, our own lar-sigil rules) STAYS LITERAL. Without `\rules only`
+ * the wikifier would interpret `<<~ ahu` as a macro call, ` ``` ` as a code
+ * fence, `&#x0001;` as a control char, etc. — round-trip identity breaks.
+ *
+ * The template emits the canonical disk form for an ahu slot: opener +
+ * body + closer. Slot identifier read from the slot child's `slot` field;
+ * body from its `text` field. Per-slot iam emission (default-elision
+ * against parent fields) lands via macros in Path D.
  */
 export const LARARIUM_AHU_TEMPLATE_MARKDOWN_MEME = {
   title:    "lar:///ha.ka.ba/@lararium/templates/ahu/markdown-meme",
-  type:     "text/vnd.tiddlywiki",
-  text:     "\\rules except lar-sigil-block lar-sigil-inline lar-doctype-comment macrocallinline macrocallblock\n<<~ ahu {{!!slot}} >>\n{{!!text}}\n<<~/ahu >>\n",
+  type:     "text/x-memetic-wikitext",
+  text:     "<<~ ahu {{!!slot}} >>\n{{!!text}}\n<<~/ahu >>\n",
 } as const;
 
 export const LARARIUM_AHU_TEMPLATE_HTML = {
   title:    "lar:///ha.ka.ba/@lararium/templates/ahu/html",
   type:     "text/vnd.tiddlywiki",
   text:     '<section class="lar-ahu" data-uri=<<currentTiddler>>><header class="lar-ahu-slot"><$link to=<<currentTiddler>>>{{!!slot}}</$link></header><div class="lar-ahu-body"><$transclude $tiddler=<<currentTiddler>> mode="block"/></div></section>',
+} as const;
+
+/**
+ * Meme-level template — markdown-meme scope.
+ *
+ * Wraps a parent meme's text field with `\rules only` so the wikifier emits
+ * everything literal except the lar-sigil rules and field transclusions. The
+ * lar-sigil-block rule then routes ahu sigil openers to AhuWidget (which
+ * transcludes the slot child via the cascade-resolved slot template), and
+ * the lar-sigil-inline rule emits everything else (aka, kahea, loulou,
+ * pranala-header, carrier sentinels) as literal-survival text nodes.
+ *
+ * Round-trip law: the rendered output equals the operator's source text,
+ * with slot bodies reconstructed from their authoritative child tiddlers.
+ *
+ * Curated rule set:
+ *   transcludeinline      — `{{!!text}}` resolves the parent's text field.
+ *   lar-sigil-block       — `<<~ ahu #slot >>...<<~/ahu>>` → AhuWidget.
+ *   lar-sigil-inline      — every other `<<~ ... >>` → literal source slice.
+ *   lar-doctype-comment   — `<!-- <<~ !DOCTYPE = ... >> -->` → literal.
+ *
+ * Everything else (backticks, dashes, html entities, html comments,
+ * macrocall, paragraph wrapping, etc.) does NOT fire — meme content
+ * survives byte-for-byte.
+ */
+/**
+ * The `prologue` field carries pre-SOH content (DOCTYPE comment + any
+ * leading prose) captured by the deserializer at sync time. Emit it
+ * verbatim ahead of the meme body so disk projection round-trips the
+ * full operator-authored source — including the framing comment that
+ * names the meme's grammar contract.
+ */
+export const LARARIUM_MEME_TEMPLATE_MARKDOWN_MEME = {
+  title:    "lar:///ha.ka.ba/@lararium/templates/meme/markdown-meme",
+  type:     "text/x-memetic-wikitext",
+  text:     "<$list filter=\"[<currentTiddler>has[prologue]]\" variable=\"_\">{{!!prologue}}</$list>{{!!text}}",
 } as const;

@@ -24,12 +24,13 @@ import {
   LARARIUM_WIDGETS_TIDDLER,
   LARARIUM_AHU_CASCADE_HTML, LARARIUM_AHU_CASCADE_MARKDOWN_MEME,
   LARARIUM_AHU_TEMPLATE_HTML, LARARIUM_AHU_TEMPLATE_MARKDOWN_MEME,
+  LARARIUM_MEME_TEMPLATE_MARKDOWN_MEME,
 } from "./tw5-widgets.js";
 import { getZoomLayout } from "./zoom-layout.js";
 import type { ZoomLayout } from "./zoom-layout.js";
-import { MemeticParser } from "./memetic-parser.js";
 import { memeticWikitextDeserializer } from "./deserializer.js";
 import { registerLarSigilWikirule } from "./wikirules/memetic-wikitext-sigil.js";
+import { makeMemeticParser } from "./memetic-parser.js";
 export type { ZoomLayout };
 
 
@@ -112,6 +113,7 @@ export class TW5Engine {
         instance.preloadTiddlers.push(LARARIUM_AHU_CASCADE_MARKDOWN_MEME as unknown as Record<string, unknown>);
         instance.preloadTiddlers.push(LARARIUM_AHU_TEMPLATE_HTML as unknown as Record<string, unknown>);
         instance.preloadTiddlers.push(LARARIUM_AHU_TEMPLATE_MARKDOWN_MEME as unknown as Record<string, unknown>);
+        instance.preloadTiddlers.push(LARARIUM_MEME_TEMPLATE_MARKDOWN_MEME as unknown as Record<string, unknown>);
         for (const t of allPreloads) instance.preloadTiddlers.push(t as Record<string, unknown>);
 
         instance.boot.boot(() => {
@@ -469,12 +471,23 @@ export class TW5Engine {
       return;
     }
 
-    // Synchronous registration — parser must be in place before any
-    // renderTiddler call. The previous async import() introduced a race
-    // where parseTiddler's first invocation (during boot or initial sync)
-    // saw the default text/vnd.tiddlywiki parser and cached its result.
+    // Register a thin MemeticParser wrapper for `text/x-memetic-wikitext`.
+    // It composes the standard wikitext parser with a `\rules only` pragma
+    // prepended to the source so a curated rule set fires — sigils +
+    // transclusion + macro defs survive, ordinary markdown formatting
+    // (backticks, dashes, html entities, html comments) stays literal.
+    // Round-trip identity depends on this curation; without it, the wikifier
+    // mangles meme content during render.
+    //
+    // This wrapper is NOT the prior MemeticParser class — that 330-line
+    // typed-widget emitter collapsed in E.10.5. Sigil recognition lives in
+    // the wikirule registered below; the wrapper only restricts which TW5
+    // rules fire when memetic-typed tiddlers parse.
     const parsers: Record<string, unknown> = tw?.Wiki?.parsers ?? {};
-    parsers["text/x-memetic-wikitext"] = MemeticParser;
+    const stdParser = parsers["text/vnd.tiddlywiki"] as Parameters<typeof makeMemeticParser>[0] | undefined;
+    if (stdParser) {
+      parsers["text/x-memetic-wikitext"] = makeMemeticParser(stdParser);
+    }
 
     // Register the lar-sigil wikirule so `<<~ sigil ... >>` syntax works in
     // any wikitext context — vanilla `text/vnd.tiddlywiki` tiddlers, browser-
