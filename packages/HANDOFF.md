@@ -15,9 +15,14 @@ Resume from packages/HANDOFF.md.
 Branch: feature/lararium-node-3.
 S5.8 ✅ closed. S6 (BagResidencyManager) ✅ closed (C.1→C.6, C.5 deferred).
 S7.1 (Capability layer via @keyhive/keyhive) ✅ closed (D.1→D.6).
-Next paths: S7.4 (admin doc ingress trust gate), dreamdeck-app sprint
-(picks up S6 C.5 same-machine peer consolidation), <$lar-promote> widget,
-heleuma authoring, federated promotion.
+S8 (Wiki composition) ✅ closed (E.1→E.10). Twelve operator verbs across
+`lares bag` + `lares wiki` subcommand surfaces. End-to-end disk → CRDT
+sync proven. DXOS Epoch + Nix-generations rotation primitives shipped.
+F-arc (TW5 routing rule + debounce shim + auto-truncate projection)
+remains the next sprint candidate.
+Next paths: F-arc (TW5 vm refresh-pipeline + debounce shim), S7.4 (admin
+doc ingress trust gate), dreamdeck-app sprint (picks up S6.C.5),
+<$lar-promote> widget, heleuma authoring, federated promotion.
 Architecture laws hold: causal-island, bag=Automerge-doc=sync-boundary,
 canon-promotion requires active operator decision, TW5 VM primacy,
 web3-only — no HTTP/RPC for inter-process coordination, command-tiddlers
@@ -44,6 +49,7 @@ category boundary.
 | S5.8 | ✅ | `@lares/cli` package + `lares` binary; command-tiddler CRDT protocol; TS dispatcher; promote/where/echo handlers; durable audit-event tiddlers. |
 | S6 | ✅ | `BagResidencyManager` end-to-end: pinned/hot/cold tiers, LRU + idle sweeper + sync-state guard, register-cold for oracle stubs, composite-store hydrate-on-read, `lares status` residency line. C.5 same-machine peer consolidation deferred to the dreamdeck-app sprint. |
 | S7.1 (D.1→D.6) | ✅ | @keyhive/keyhive (concap) integration complete. Operator-key bridge, AdminEventStore persistence, ctx.cap wired, promote-handler enforces. Operator identity and admin proof survive daemon restarts. |
+| S8 (E.1→E.10) | ✅ | Wiki composition end-to-end. `lares bag` + `lares wiki` subcommand surfaces (12 verbs). Per-wiki draft bagId namespace; explicit `BAG_IDS.projection` MemoryTiddlerStore. Disk → CRDT sync ceremony. DXOS-style bag epoch for bounded history. Nix-generations recipe rotation. Stale-tiddler queue. Hot-reload via composite addLayer/removeLayer. |
 
 ## S5.8 sub-arc — what each commit landed
 
@@ -75,7 +81,10 @@ category boundary.
 
 ## Three immediate paths
 
-### Path A — S7.4 Admin doc ingress trust gate
+### Path A — F-arc TW5 routing + debounce shim + auto-truncate projection
+Lives in `@lararium/tw5`. The MemeSyncAdaptor learns: `$:/state/*` → projection layer (in-memory only, never synced); `Draft of *` → per-wiki draft bag; everything else → canonical. Yjs-style `captureTimeout` debounce (300-500ms window) coalesces TW5 keystroke events into Automerge transactions. Auto-truncate of projection layer on idle. Closes the E-arc + F-arc loop with TW5 vm + Automerge wire integration.
+
+### Path B — S7.4 Admin doc ingress trust gate
 With S7.1 closed, the admin doc's WebSocket federation can gate on `cap=infrastructure` proofs. Before accepting an Automerge sync message touching the admin doc, the daemon verifies the peer holds a delegation rooted at the operator's identity. Pre-condition for federating between operator's own devices.
 
 ### Path B — Dreamdeck-app sprint (picks up S6.C.5)
@@ -108,9 +117,20 @@ lares promote lar:///definitely-not-real --to lar:///ha.ka.ba/@lares --yes
 #         followed by SAME did=0x… and self-admin=true. Identity persists.
 
 # Verify S6 residency:
-lares status            # includes "residency: N pinned · M/cap hot · K cold"
-lares residency         # full snapshot
-lares register-cold automerge:test  # marks URL as cold, no hydration
+lares status               # includes "residency: N pinned · M/cap hot · K cold"
+lares bag stats            # full residency snapshot (renamed from `lares residency` in E.1)
+lares bag register-cold automerge:test  # marks URL as cold, no hydration
+
+# Verify S8 wiki composition (E-arc):
+lares wiki init MyWiki              # mint canonical + per-wiki draft + recipe
+lares wiki sync MyWiki              # ingest rooms/MyWiki/memes/** → canonical
+lares wiki list                     # enumerate all wikis with their automerge URLs
+lares wiki which lar:///some/uri    # recipe-presence query
+lares wiki pin MyWiki               # pin every bag in the recipe
+lares wiki add-bag MyWiki <uri>     # compose recipe at runtime
+lares wiki bag-epoch <bag-uri>      # snapshot-restart one bag (bounds history)
+lares wiki rotate-recipe MyWiki     # Nix-generations: fresh canonical, old as underlay
+lares wiki prune-stale MyWiki       # surface stale draft tiddlers (default 7 days)
 
 # Smoke `lares status`:
 lares status

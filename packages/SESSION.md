@@ -1,8 +1,46 @@
 # Session State — Lararium Web3 Refactor
 
-> Updated: 2026-05-09
+> Updated: 2026-05-09 (E-arc closure)
 > Branch: feature/lararium-node-3
 > Purpose: Resume artifact — enough state to continue without prior chat context
+
+---
+
+## What Just Happened (2026-05-09 evening — S8 wiki composition closed via E.1→E.10)
+
+E-arc closed end-to-end. Ten commits + this closure commit. Twelve operator verbs ship across two subcommand surfaces (`lares bag` + `lares wiki`).
+
+| sha | What |
+|---|---|
+| `3f33f6dc` E.1 | `lares bag` subcommand refactor — retire flat pin/unpin/residency/register-cold; ship `lares bag pin/unpin/stats/register-cold`. Backwards-incompatible CLI break, accepted at hobbyist scale. |
+| `3afaf226` E.2 | Explicit `BAG_IDS.projection` MemoryTiddlerStore layer. Top-priority composite layer; `defaultWritable: false` so unbagged writes still route to draft. |
+| `9d2c0821` E.3 | Per-wiki draft refactor. `roomDraftLarUri(slug)` replaces static `BAG_IDS.draft` constant in composite-layer bagId namespace. |
+| `22efd1f7` E.4 | `lares wiki list` + `wiki which`. Read-only commands; prove subcommand dispatcher pattern at wiki granularity. |
+| `0441d456` E.5 | `lares wiki init/open/sync`. End-to-end disk → CRDT path. The protocols meme authored in earlier sessions now lives in TestWiki's canonical Automerge doc. |
+| `ce42baaf` E.6 | `lares wiki pin/unpin` (whole-recipe). Walks bag-stack and fan-outs residency calls. |
+| `e3d8f6cf` E.7 | `lares wiki add-bag/remove-bag`. Hot-reload via composite addLayer/removeLayer. Research-informed (Pattern 5 SQLite refcount, Pattern 3 MNT_DETACH drain, Pattern 1 VS Code per-title delta). |
+| `ea973973` E.8 | `lares bag epoch` + `lares wiki epoch`. DXOS-style snapshot-restart. Tombstones survive (Cassandra rule). Catalog oracle records `epoch-prev` for forensic recovery. |
+| `9479a144` E.9a | `lares wiki rotate-recipe`. Nix-generations stack rotation. Each rotation accumulates a `canon/v{n}` underlay slot at lower priority. |
+| `fb4690ea` E.9b | `lares wiki prune-stale`. Read-only inspection of stale draft tiddlers; `--days <N>` threshold. |
+| (this) E.10 | Closure: HANDOFF + SESSION + ROADMAP + memory updates; smoke recipe extension. |
+
+**Architectural notes worth holding:**
+
+- *Twelve operator verbs* span the bag-level surface (5 verbs: pin/unpin/stats/register-cold/epoch) and the wiki-level surface (7 verbs: init/open/sync/pin/unpin/add-bag/remove-bag plus list/which plus epoch/rotate-recipe/prune-stale = 12 wiki verbs total). Total CLI surface: top-level `init/promote/bag/wiki/status/serve/dev/reset/fresh/build-genesis/test-quine/heleuma/help`.
+- *Three GC primitives ship*: bag epoch (snapshot-restart one bag, bound history), recipe rotation (whole-wiki fresh start with retained underlays), prune-stale (operator inspection of forgotten drafts). Per the research, these compose to give Lares the only practical history-elision pattern in deployed local-first CRDT space (DXOS Epochs + Nix generations + Kafka-style stale-key surfacing).
+- *Disk → CRDT direction operational* via `lares wiki sync`. First time the codebase ships this direction. Direct doc writes via `repo.find()` + `handle.change()` bypass composite-overlay routing because the target wiki may not be the daemon's currently-mounted active room.
+- *Open caveats*: `wiki open` writes a marker tiddler but the daemon doesn't live re-mount — operator must restart `lares serve` to pick up the new active room. Live re-mount waits on F-arc. Recipe-rotation's draft-drain step also waits on F-arc routing rules.
+
+### Where the arc rests
+
+S5.8 ✅, S6 ✅, S7.1 ✅, S8 ✅. Branch holds the full E-arc plus the closure. Origin pending push.
+
+Next path candidates (HANDOFF Path A→E):
+- **A** — F-arc: TW5 routing rule + Yjs-style `captureTimeout` debounce shim + auto-truncate projection
+- **B** — S7.4 admin doc ingress trust gate
+- **C** — dreamdeck-app sprint (browser peer scaffold; picks up C.5 same-machine consolidation)
+- **D** — `<$lar-promote>` action-widget UI shim
+- **E** — heleuma authoring + federated promotion
 
 ---
 
