@@ -32,6 +32,7 @@ export {
   createOpenWikiHandler, createSyncWikiHandler,
   createPinWikiHandler, createUnpinWikiHandler,
   createAddBagHandler, createRemoveBagHandler,
+  createPruneStaleHandler,
 } from "./wiki-handlers.js";
 export type {
   WikiHandlerOptions, WikiMintHandlerOptions, WikiResidencyOptions,

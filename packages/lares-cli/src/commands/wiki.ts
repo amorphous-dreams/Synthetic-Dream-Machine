@@ -352,6 +352,47 @@ export async function cmdWikiRotateRecipe(args: ParsedArgs): Promise<number> {
   }
 }
 
+export async function cmdWikiPruneStale(args: ParsedArgs): Promise<number> {
+  const slug = args.positional[0];
+  if (!slug) {
+    console.error("usage: lares wiki prune-stale <slug> [--days <N>]");
+    return 2;
+  }
+  const daysOpt = args.options["days"];
+  const did     = await operatorDid().catch(() => "lares-cli");
+  const peer    = await tryConnect();
+  if (!peer) return 3;
+  try {
+    const cmdArgs: Record<string, unknown> = { slug };
+    if (daysOpt) cmdArgs["daysThreshold"] = Number(daysOpt);
+    const r = await submitCommand(peer, "prune-stale", cmdArgs, did);
+    if (r.status === "error") {
+      console.error(`prune-stale failed: ${r.errorMessage ?? "unknown"}`);
+      return 4;
+    }
+    const result = r.result ?? {};
+    const stale  = (result["stale"] ?? []) as Array<{ title: string; lastUpdate: string | null; daysIdle: number }>;
+    console.log("");
+    console.log(`wiki ${slug} prune-stale (threshold: ${result["daysThreshold"]} days):`);
+    console.log(`  draft bag: ${result["draftBagId"]}`);
+    console.log(`  scanned:   ${result["scanned"]} tiddler(s)`);
+    console.log(`  stale:     ${stale.length}`);
+    if (stale.length > 0) {
+      console.log("");
+      for (const s of stale) {
+        const idleStr = s.daysIdle < 0 ? "no timestamp" : `${s.daysIdle}d idle`;
+        console.log(`    ${s.title}  (${idleStr})`);
+      }
+      console.log("");
+      console.log("  Promote with: lares promote <uri> --to <canonical-bag>");
+    }
+    console.log("");
+    return 0;
+  } finally {
+    await peer.disconnect();
+  }
+}
+
 export async function cmdWikiWhich(args: ParsedArgs): Promise<number> {
   const tiddler = args.positional[0];
   if (!tiddler) {
@@ -393,6 +434,7 @@ const SUBCOMMANDS: Readonly<Record<string, { handler: WikiSubcommand; summary: s
   "remove-bag": { handler: cmdWikiRemoveBag, summary: "Remove a bag from the wiki's recipe (soft remove; F-arc adds StoryList drain)." },
   "epoch":         { handler: cmdWikiEpoch,         summary: "DXOS-style snapshot-restart on one of the wiki's bags. Bounds history." },
   "rotate-recipe": { handler: cmdWikiRotateRecipe,  summary: "Nix-generations: mint fresh canonical; retain old as previous-canon underlay." },
+  "prune-stale":   { handler: cmdWikiPruneStale,    summary: "Surface stale draft tiddlers (no recent activity) for promote-or-prune." },
   "list":       { handler: cmdWikiList,      summary: "Enumerate rooms registered in the catalog. Needs `lares serve`." },
   "which":      { handler: cmdWikiWhich,     summary: "Recipe-presence query — list bags holding a tiddler. Needs `lares serve`." },
 };
@@ -403,7 +445,7 @@ function printWikiHelp(): void {
   for (const [verb, entry] of Object.entries(SUBCOMMANDS)) {
     console.log(`  ${verb.padEnd(10)} ${entry.summary}`);
   }
-  console.log("\nOne verb left in E.9b (prune-stale).");
+  console.log("\nFull E-arc surface complete.");
 }
 
 export async function cmdWiki(args: ParsedArgs): Promise<number> {

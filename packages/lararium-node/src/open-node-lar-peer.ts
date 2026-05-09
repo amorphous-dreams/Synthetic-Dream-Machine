@@ -61,6 +61,7 @@ import {
   createOpenWikiHandler, createSyncWikiHandler,
   createPinWikiHandler, createUnpinWikiHandler,
   createAddBagHandler, createRemoveBagHandler,
+  createPruneStaleHandler,
 } from "./wiki-handlers.js";
 import { createEpochBagHandler, createRotateRecipeHandler } from "./epoch-handlers.js";
 import {
@@ -411,6 +412,10 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
   commandRegistry.register("rotate-recipe", createRotateRecipeHandler({
     composite, repo, residency, catalogHandle,
   }));
+  // E.9b — read-only stale-tiddler queue. Scans the draft bag for
+  // tiddlers whose last activity exceeds a threshold (default 7 days);
+  // surfaces them for operator's promote-or-prune decisions.
+  commandRegistry.register("prune-stale", createPruneStaleHandler(wikiMintOpts));
   // C.2 — start the background sweeper. Idle eviction + LRU trim run
   // every sweepIntervalMs (default 30s). The manager's own re-entrancy
   // guard makes overlapping ticks safe.

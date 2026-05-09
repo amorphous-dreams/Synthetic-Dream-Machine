@@ -578,6 +578,78 @@ export function createRemoveBagHandler(opts: WikiComposeOptions): CommandHandler
 }
 
 // ---------------------------------------------------------------------------
+// prune-stale — surface draft tiddlers that haven't been touched recently
+// ---------------------------------------------------------------------------
+//
+// Read-only inspection. The "junk-drawer working bag" risk the research
+// flagged: tiddlers edited into the draft bag that never get promoted to
+// canon accumulate forever. Operator wants visibility before operator
+// decides promote-or-prune (no mutation in this handler — operator runs
+// `lares promote` or future `lares wiki sweep-draft` to act).
+//
+// Args: { slug, daysThreshold? } — default 7 days.
+// Result: { slug, draftBagId, scanned, stale: [{ title, lastUpdate, daysIdle }] }.
+
+export function createPruneStaleHandler(opts: WikiMintHandlerOptions): CommandHandler {
+  return async (args) => {
+    const slug = stringArg(args, "slug");
+    if (!slug) throw new Error("args.slug is required");
+    const daysThreshold = numberArg(args, "daysThreshold", 7);
+
+    const draftBagId = roomDraftLarUri(slug);
+    const did        = await opts.operatorDid();
+    const draftKey   = `${roomLarUri(slug)}/drafts/${encodeURIComponent(did)}`;
+    const draftOracle = await opts.composite.get(draftKey);
+    if (!draftOracle || typeof draftOracle.text !== "string") {
+      throw new Error(`draft bag oracle missing for "${slug}" — run \`lares wiki init ${slug}\` first`);
+    }
+
+    const handle = await opts.repo.find<MemeStoreDoc>(draftOracle.text as AutomergeUrl);
+    await handle.whenReady();
+    const docState = handle.doc();
+    const tiddlers = (docState?.tiddlers ?? {}) as Record<string, MutableLarRecord>;
+
+    const cutoffMs = Date.now() - daysThreshold * 86_400_000;
+    const stale: Array<{ title: string; lastUpdate: string | null; daysIdle: number }> = [];
+    let scanned = 0;
+    for (const [title, rec] of Object.entries(tiddlers)) {
+      if (rec.deleted) continue;
+      scanned++;
+      const fields = (rec.fields ?? {}) as Record<string, string>;
+      const lastUpdate = fields["synced-at"] ?? fields["updated-at"] ?? null;
+      if (!lastUpdate) {
+        // No timestamp at all — definitely stale-candidate.
+        stale.push({ title, lastUpdate: null, daysIdle: -1 });
+        continue;
+      }
+      const ts = Date.parse(lastUpdate);
+      if (Number.isFinite(ts) && ts < cutoffMs) {
+        const daysIdle = Math.floor((Date.now() - ts) / 86_400_000);
+        stale.push({ title, lastUpdate, daysIdle });
+      }
+    }
+
+    return {
+      slug,
+      draftBagId,
+      daysThreshold,
+      scanned,
+      stale,
+    };
+  };
+}
+
+function numberArg(args: Readonly<Record<string, unknown>>, key: string, fallback: number): number {
+  const v = args[key];
+  if (typeof v === "number" && Number.isFinite(v)) return v;
+  if (typeof v === "string") {
+    const n = Number(v);
+    if (Number.isFinite(n)) return n;
+  }
+  return fallback;
+}
+
+// ---------------------------------------------------------------------------
 // helpers
 // ---------------------------------------------------------------------------
 
