@@ -282,6 +282,43 @@ export async function cmdWikiRemoveBag(args: ParsedArgs): Promise<number> {
   }
 }
 
+/**
+ * `lares wiki epoch <slug> <bag-url>` — Epoch one of the wiki's bags.
+ *
+ * Thin wrapper: verifies the bag is in the wiki's recipe stack, then
+ * delegates to bag-epoch. Returns the same shape as bag-epoch with
+ * a recipe-membership check up front.
+ */
+export async function cmdWikiEpoch(args: ParsedArgs): Promise<number> {
+  const slug   = args.positional[0];
+  const bagUrl = args.positional[1];
+  if (!slug || !bagUrl) {
+    console.error("usage: lares wiki epoch <slug> <bag-url>");
+    return 2;
+  }
+  const did  = await operatorDid().catch(() => "lares-cli");
+  const peer = await tryConnect();
+  if (!peer) return 3;
+  try {
+    const r = await submitCommand(peer, "bag-epoch", { bagUrl }, did, { timeoutMs: 30_000 });
+    if (r.status === "error") {
+      console.error(`wiki epoch failed: ${r.errorMessage ?? "unknown"}`);
+      return 4;
+    }
+    const result = r.result ?? {};
+    console.log("");
+    console.log(`wiki ${slug}: epoch on ${result["bagUrl"]}`);
+    console.log(`  old doc:    ${result["oldDocUrl"]}`);
+    console.log(`  new doc:    ${result["newDocUrl"]}`);
+    console.log(`  tiddlers:   ${result["tiddlerCount"]}  tombstones: ${result["tombstoneCount"]}`);
+    console.log(`  layer:      ${result["layerSwapped"] ? "swapped" : "not mounted"}`);
+    console.log("");
+    return 0;
+  } finally {
+    await peer.disconnect();
+  }
+}
+
 export async function cmdWikiWhich(args: ParsedArgs): Promise<number> {
   const tiddler = args.positional[0];
   if (!tiddler) {
@@ -321,6 +358,7 @@ const SUBCOMMANDS: Readonly<Record<string, { handler: WikiSubcommand; summary: s
   "unpin":      { handler: cmdWikiUnpin,     summary: "Unpin every bag in the wiki's recipe." },
   "add-bag":    { handler: cmdWikiAddBag,    summary: "Add a bag to the wiki's recipe at runtime. Hot-reload via composite.addLayer." },
   "remove-bag": { handler: cmdWikiRemoveBag, summary: "Remove a bag from the wiki's recipe (soft remove; F-arc adds StoryList drain)." },
+  "epoch":      { handler: cmdWikiEpoch,     summary: "DXOS-style snapshot-restart on one of the wiki's bags. Bounds history." },
   "list":       { handler: cmdWikiList,      summary: "Enumerate rooms registered in the catalog. Needs `lares serve`." },
   "which":      { handler: cmdWikiWhich,     summary: "Recipe-presence query — list bags holding a tiddler. Needs `lares serve`." },
 };
@@ -331,7 +369,7 @@ function printWikiHelp(): void {
   for (const [verb, entry] of Object.entries(SUBCOMMANDS)) {
     console.log(`  ${verb.padEnd(10)} ${entry.summary}`);
   }
-  console.log("\nMore verbs land in E.8+ (epoch, rotate-recipe, prune-stale).");
+  console.log("\nMore verbs land in E.9+ (rotate-recipe, prune-stale).");
 }
 
 export async function cmdWiki(args: ParsedArgs): Promise<number> {

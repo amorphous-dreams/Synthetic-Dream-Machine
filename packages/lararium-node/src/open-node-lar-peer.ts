@@ -62,6 +62,7 @@ import {
   createPinWikiHandler, createUnpinWikiHandler,
   createAddBagHandler, createRemoveBagHandler,
 } from "./wiki-handlers.js";
+import { createEpochBagHandler } from "./epoch-handlers.js";
 import {
   createPinHandler, createUnpinHandler, createResidencyStatsHandler,
   createRegisterColdHandler,
@@ -399,6 +400,11 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
   // remove (no MNT_DETACH StoryList reconciliation yet — F-arc territory).
   commandRegistry.register("add-bag",    createAddBagHandler({    composite, repo, residency }));
   commandRegistry.register("remove-bag", createRemoveBagHandler({ composite, repo, residency }));
+  // E.8 — DXOS-style snapshot-restart on a single bag. Bounds history;
+  // lossy by design. Tombstones survive (Cassandra rule).
+  commandRegistry.register("bag-epoch", createEpochBagHandler({
+    composite, repo, residency, catalogHandle,
+  }));
   // C.2 — start the background sweeper. Idle eviction + LRU trim run
   // every sweepIntervalMs (default 30s). The manager's own re-entrancy
   // guard makes overlapping ticks safe.

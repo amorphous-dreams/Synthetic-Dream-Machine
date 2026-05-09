@@ -14,10 +14,61 @@
  * E.1 ships these four; E.8 adds `bag epoch <url>` (DXOS-style snapshot-restart).
  */
 
+import { join } from "node:path";
+import { loadOperatorVerifyingKey } from "@lararium/node";
+import { repoRoot } from "@lares/lares";
 import {
   cmdPin, cmdUnpin, cmdRegisterCold, cmdResidency,
 } from "./residency.js";
+import { connectAdminPeer, submitCommand } from "../admin-peer.js";
 import type { ParsedArgs } from "../parse-args.js";
+
+async function operatorDid(): Promise<string> {
+  const dataDir = join(repoRoot, "packages", "lararium-node", ".lararium");
+  return "0x" + (await loadOperatorVerifyingKey(dataDir));
+}
+
+async function tryConnect() {
+  try {
+    return await connectAdminPeer({});
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    console.error(`lares bag: ${msg}`);
+    console.error("  Start the daemon with `lares serve` and try again.");
+    return null;
+  }
+}
+
+/** `lares bag epoch <bag-url>` — DXOS-style snapshot-restart on one bag. */
+export async function cmdBagEpoch(args: ParsedArgs): Promise<number> {
+  const bagUrl = args.positional[0];
+  if (!bagUrl) {
+    console.error("usage: lares bag epoch <bag-url>");
+    return 2;
+  }
+  const did  = await operatorDid().catch(() => "lares-cli");
+  const peer = await tryConnect();
+  if (!peer) return 3;
+  try {
+    const r = await submitCommand(peer, "bag-epoch", { bagUrl }, did, { timeoutMs: 30_000 });
+    if (r.status === "error") {
+      console.error(`bag epoch failed: ${r.errorMessage ?? "unknown"}`);
+      return 4;
+    }
+    const result = r.result ?? {};
+    console.log("");
+    console.log(`bag epoch: ${result["bagUrl"]}`);
+    console.log(`  old doc:  ${result["oldDocUrl"]}`);
+    console.log(`  new doc:  ${result["newDocUrl"]}`);
+    console.log(`  tiddlers: ${result["tiddlerCount"]}  tombstones: ${result["tombstoneCount"]}`);
+    console.log(`  layer:    ${result["layerSwapped"] ? "swapped in composite" : "not mounted"}`);
+    if (result["note"]) console.log(`  note:     ${result["note"]}`);
+    console.log("");
+    return 0;
+  } finally {
+    await peer.disconnect();
+  }
+}
 
 type BagSubcommand = (args: ParsedArgs) => Promise<number>;
 
@@ -26,6 +77,7 @@ const SUBCOMMANDS: Readonly<Record<string, { handler: BagSubcommand; summary: st
   "unpin":         { handler: cmdUnpin,        summary: "Unpin a bag URL — demotes from pinned to hot LRU. Needs `lares serve`." },
   "stats":         { handler: cmdResidency,    summary: "Print the daemon's bag residency snapshot. Needs `lares serve`." },
   "register-cold": { handler: cmdRegisterCold, summary: "Mark a bag URL as known-but-not-loaded (oracle stub). Needs `lares serve`." },
+  "epoch":         { handler: cmdBagEpoch,     summary: "DXOS-style snapshot-restart on one bag. Bounds history; lossy by design." },
 };
 
 function printBagHelp(): void {

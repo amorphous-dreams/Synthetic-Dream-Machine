@@ -38,6 +38,9 @@ export type {
   WikiComposeOptions,
 } from "./wiki-handlers.js";
 
+export { createEpochBagHandler } from "./epoch-handlers.js";
+export type { EpochHandlerOptions } from "./epoch-handlers.js";
+
 export {
   createPinHandler, createUnpinHandler, createResidencyStatsHandler,
   createRegisterColdHandler,
