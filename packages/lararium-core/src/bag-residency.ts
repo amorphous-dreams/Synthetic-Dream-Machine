@@ -87,11 +87,17 @@ export interface BagResidencyStats {
 export interface BagResidencyManagerOptions {
   /** Soft cap on hot-tier bag count. Default 32. */
   readonly hotCap?:     number;
+  /** Idle threshold in ms — bags untouched longer than this become eviction
+   *  candidates during a sweeper tick. Default 300_000 (5 minutes). */
+  readonly idleMs?:     number;
+  /** Sweeper tick interval in ms. Default 30_000 (30 seconds). */
+  readonly sweepIntervalMs?: number;
   /** Hook the manager calls when transitioning cold → hot. C.4 wires
    *  this into Automerge's repo.find(). Today (C.1) it's a stub. */
   readonly onHydrate?:  (url: BagUrl) => Promise<void>;
   /** Hook called when transitioning hot → cold. C.2 wires this into
-   *  compact-then-drop. Today a stub. */
+   *  compact-then-drop; until automerge-repo#358 lands a public eviction
+   *  API, the actual handle drop stays a TODO inside the hook impl. */
   readonly onEvict?:    (url: BagUrl) => Promise<void>;
 }
 
@@ -106,12 +112,21 @@ export class BagResidencyManager {
   private readonly _pinned     = new Map<BagUrl, string | undefined>();
   private readonly _hot        = new Map<BagUrl, BagResidencyEntry>();
   private readonly _cold       = new Set<BagUrl>();
-  private readonly hotCap:       number;
-  private readonly onHydrate?:   (url: BagUrl) => Promise<void>;
-  private readonly onEvict?:     (url: BagUrl) => Promise<void>;
+  private readonly hotCap:          number;
+  private readonly idleMs:          number;
+  private readonly sweepIntervalMs: number;
+  private readonly onHydrate?:      (url: BagUrl) => Promise<void>;
+  private readonly onEvict?:        (url: BagUrl) => Promise<void>;
+  // ReturnType<typeof setInterval> resolves to DOM's `number` here because
+  // @types/node isn't on the lararium-core type chain. The runtime value
+  // is Node's Timeout. clearInterval accepts both; only Node has .unref().
+  private sweeperTimer:             ReturnType<typeof setInterval> | null = null;
+  private sweepInFlight = false;
 
   constructor(opts: BagResidencyManagerOptions = {}) {
-    this.hotCap     = opts.hotCap ?? 32;
+    this.hotCap          = opts.hotCap          ?? 32;
+    this.idleMs          = opts.idleMs          ?? 300_000;
+    this.sweepIntervalMs = opts.sweepIntervalMs ?? 30_000;
     if (opts.onHydrate) this.onHydrate = opts.onHydrate;
     if (opts.onEvict)   this.onEvict   = opts.onEvict;
   }
@@ -135,14 +150,22 @@ export class BagResidencyManager {
   }
 
   /** Note that a bag was just touched (read or write). Promotes cold → hot
-   *  via the onHydrate hook; bumps lastTouched for hot bags. */
+   *  via the onHydrate hook; bumps lastTouched for hot bags. Triggers an
+   *  LRU trim when adding pushes the hot count past hotCap. */
   async touch(url: BagUrl): Promise<void> {
     if (this._pinned.has(url)) return;        // already always-hot
     if (this._cold.has(url)) {
       this._cold.delete(url);
       if (this.onHydrate) await this.onHydrate(url);
     }
-    this._hot.set(url, { url, tier: "hot", lastTouched: Date.now() });
+    const existing = this._hot.get(url);
+    this._hot.set(url, {
+      url,
+      tier:        "hot",
+      lastTouched: Date.now(),
+      ...(existing?.syncActive !== undefined && { syncActive: existing.syncActive }),
+    });
+    await this.enforceCap();
   }
 
   /** Register a URL we know about but haven't loaded. Oracle traversal
@@ -155,14 +178,90 @@ export class BagResidencyManager {
   }
 
   /** Demote a hot bag to cold — calls onEvict hook for compact-then-drop.
-   *  Refuses to evict pinned bags. C.2 wires this into the idle sweeper. */
+   *  Refuses pinned bags AND bags currently mid-sync (the
+   *  automerge-repo#358 invariant: don't evict while a peer is replicating
+   *  to us; we'd drop the sync conversation and have to renegotiate). */
   async evict(url: BagUrl): Promise<boolean> {
     if (this._pinned.has(url)) return false;
-    if (!this._hot.has(url))   return false;
+    const entry = this._hot.get(url);
+    if (!entry) return false;
+    if (entry.syncActive) return false;
     if (this.onEvict) await this.onEvict(url);
     this._hot.delete(url);
     this._cold.add(url);
     return true;
+  }
+
+  /** LRU trim — while hot.size > hotCap, evict the oldest non-syncing entry.
+   *  Called automatically from touch() and from sweepOnce(). */
+  private async enforceCap(): Promise<void> {
+    while (this._hot.size > this.hotCap) {
+      const target = this.oldestEvictable();
+      if (!target) break;        // every hot entry is mid-sync
+      const ok = await this.evict(target);
+      if (!ok) break;            // race or refusal — bail; next sweep retries
+    }
+  }
+
+  /** Pick the oldest non-syncing hot entry. Returns null when none qualify. */
+  private oldestEvictable(): BagUrl | null {
+    let oldestUrl: BagUrl | null = null;
+    let oldestAt  = Infinity;
+    for (const entry of this._hot.values()) {
+      if (entry.syncActive) continue;
+      if (entry.lastTouched < oldestAt) {
+        oldestAt  = entry.lastTouched;
+        oldestUrl = entry.url;
+      }
+    }
+    return oldestUrl;
+  }
+
+  /** Start the background sweeper. Idempotent — calling twice is a no-op. */
+  startSweeper(): void {
+    if (this.sweeperTimer) return;
+    this.sweeperTimer = setInterval(() => {
+      void this.sweepOnce().catch((err) => {
+        console.error("[bag-residency] sweep crashed:", err);
+      });
+    }, this.sweepIntervalMs);
+    // Don't keep the Node event loop alive just for this. Cast through
+    // unknown — DOM's setInterval-return-type lacks .unref() but the
+    // runtime value (Node's Timeout) carries it.
+    (this.sweeperTimer as unknown as { unref?: () => void }).unref?.();
+  }
+
+  /** Stop the sweeper; safe to call multiple times. */
+  stopSweeper(): void {
+    if (!this.sweeperTimer) return;
+    clearInterval(this.sweeperTimer);
+    this.sweeperTimer = null;
+  }
+
+  /** One sweep pass: idle-evict bags untouched longer than idleMs, then
+   *  enforce hotCap. Re-entrancy-guarded so overlapping ticks don't fight. */
+  async sweepOnce(): Promise<{ idleEvicted: number; lruEvicted: number }> {
+    if (this.sweepInFlight) return { idleEvicted: 0, lruEvicted: 0 };
+    this.sweepInFlight = true;
+    let idleEvicted = 0;
+    let lruEvicted  = 0;
+    try {
+      const cutoff = Date.now() - this.idleMs;
+      const stale: BagUrl[] = [];
+      for (const entry of this._hot.values()) {
+        if (entry.syncActive) continue;
+        if (entry.lastTouched < cutoff) stale.push(entry.url);
+      }
+      for (const url of stale) {
+        if (await this.evict(url)) idleEvicted++;
+      }
+      const before = this._hot.size;
+      await this.enforceCap();
+      lruEvicted = before - this._hot.size;
+    } finally {
+      this.sweepInFlight = false;
+    }
+    return { idleEvicted, lruEvicted };
   }
 
   /** Mark or unmark a bag as mid-sync. C.2's sweeper consults this before

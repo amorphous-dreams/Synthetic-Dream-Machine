@@ -338,7 +338,19 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
   // S6 — BagResidencyManager. Phase 1 (C.1): instrumentation only; no
   // eviction yet. Pin every doc the daemon touches at boot so we don't
   // unintentionally evict load-bearing infrastructure once C.2 wires the LRU.
-  const residency = new BagResidencyManager({ hotCap: 32 });
+  // S6 C.2 — sweeper-aware residency manager. onEvict stays a stub here
+  // until upstream Automerge-repo lands a public eviction API (#358);
+  // C.2's value is the manager's own book-keeping (hot cap enforcement,
+  // idle eviction, sync-state guard) so the wiring is in place when the
+  // handle-drop path materializes.
+  const residency = new BagResidencyManager({
+    hotCap:          32,
+    idleMs:          300_000,   // 5 min
+    sweepIntervalMs:  30_000,   // 30 sec
+    onEvict: async (url) => {
+      console.log(`[bag-residency] evicted ${url} (compact-then-drop reserved for repo#358)`);
+    },
+  });
   await residency.pin(catalogHandle.url,         "boot:catalog");
   if (islandHandle)         await residency.pin(islandHandle.url,         "boot:lararium-island");
   if (laresHandle)          await residency.pin(laresHandle.url,          "boot:lares-corpus");
@@ -349,6 +361,10 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
   commandRegistry.register("pin",       createPinHandler({ residency }));
   commandRegistry.register("unpin",     createUnpinHandler({ residency }));
   commandRegistry.register("residency", createResidencyStatsHandler({ residency }));
+  // C.2 — start the background sweeper. Idle eviction + LRU trim run
+  // every sweepIntervalMs (default 30s). The manager's own re-entrancy
+  // guard makes overlapping ticks safe.
+  residency.startSweeper();
 
   // S7.1 D.3 — Capability layer. Bridge operator-key.ts ed25519 seed into
   // KeyhiveProvider. The same 32-byte seed deterministically derives the
