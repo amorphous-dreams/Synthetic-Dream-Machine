@@ -106,3 +106,106 @@ Bundle size: 8.8 MB unpacked. Acceptable for a Node daemon. Browser bundle will 
 - **Pin our version.** Treat upgrades as planned breaking changes per operator's stated migration policy.
 - **Install `setPanicHook`** at every process boot (daemon + future browser).
 - **D.2 `CapabilityProvider` interface** wraps roughly: `init(seed)`, `delegate(audienceContactCard, bagUrl, ability)`, `revoke(delegation)`, `verify(delegation, ability, bagUrl)`, `serializeEvents()`, `ingestEvents(bytes)`. Narrower than the 10-method UCAN-shape — Keyhive does more in fewer calls.
+
+---
+
+# D.1.5 — Access enumeration + Event capture (2026-05-08)
+
+> Run: `pnpm exec tsx packages/lararium-keyhive/probes/access-enum-and-events.ts`
+
+## A. Access values — only TWO
+
+Brute-forced 27 plausible UCAN/role/filesystem-style strings. Keyhive's
+`Access.tryFromString` accepts exactly **two**:
+
+```
+read  → "Read"
+admin → "Admin"
+```
+
+Rejected: pull, sync, write, propose, promote, revoke, none, r, rw, rwx,
+owner, viewer, editor, manager, member, guest, control, delegate, share,
+execute, `*`, all, any, a, w.
+
+**Implication for our `ABILITY_LADDER`.** Keyhive's binary read/admin
+distinction is coarser than our 8-step ladder (pull/read/sync/write/
+propose/promote/admin/revoke). Two paths:
+
+1. **Collapse our ladder to {read, admin}.** Lose granularity at the
+   application layer; Keyhive becomes the only policy site.
+2. **Two-tier policy (recommended).** Keyhive provides the cryptographic
+   gate (admin or read on a bag). Our application layer (e.g.
+   promote-handler) keeps richer semantics via caveat-bearing tiddlers
+   gated under Keyhive's admin proof. So:
+   - "can this peer touch the bag at all?" → Keyhive Access.read|admin
+   - "can this peer specifically *promote*?" → application caveat
+     check, only checked once Keyhive admin proof is present
+
+(2) keeps `ABILITY_LADDER` for our application semantics (what the
+promote handler verifies) without bending Keyhive into a shape it
+doesn't have.
+
+## B. Event variants during a delegate ceremony
+
+11 events fire when the operator generates a Document and addMembers
+the device with Access.admin. Distribution:
+
+```
+PREKEY_ROTATED:  6  (~172 bytes each)
+CGKA_OPERATION:  3  (244–684 bytes)
+DELEGATED:       2  (249–257 bytes)
+```
+
+Per event: `event.variant: string` + `event.toBytes(): Uint8Array` +
+`event.isDelegated`/`event.isRevoked` getters + type-narrowed
+`tryIntoSignedDelegation()` / `tryIntoSignedRevocation()`.
+
+**Implications for D.4 (cap state persistence):**
+- Persist each event as one tiddler under `lar:///ha.ka.ba/@lararium/@admin/cap/<eventHash>`.
+- Tiddler `text` field carries base64 of `event.toBytes()`.
+- Tiddler fields: `variant` (PREKEY_ROTATED|CGKA_OPERATION|DELEGATED|REVOKED|…), `bytes-len`, `is-delegated`, `is-revoked`.
+- On daemon boot, walk these tiddlers, sort by causality (TBD how), call `keyhive.ingestEventsBytes([…])` to restore state.
+- Average event size <300 bytes; an active operator with hundreds of bags accumulates kilobytes-to-low-megabytes of cap state. Cheap.
+
+**Note on PREKEY_ROTATED frequency.** 6 prekey rotations during one
+small ceremony = continuous BeeKEM key advancement. Production will
+fire many of these. They're small (172 bytes each). Persistence
+strategy must batch tiddler writes; otherwise we'd thrash the admin
+doc on every key rotation.
+
+## D.2 interface refinement (post-D.1.5)
+
+```ts
+export interface CapabilityProvider {
+  // Lifecycle
+  init(opts: { seed: Uint8Array; eventStore: EventStore }): Promise<void>;
+  whoami(): Promise<string>;          // operator/device DID
+
+  // Identity
+  contactCard(): Promise<Uint8Array>;             // serialize for transport
+  receiveContactCard(bytes: Uint8Array): Promise<{ id: string }>;
+
+  // Bag-as-Document
+  registerBag(bagUrl: string, coparents?: string[]): Promise<{ docId: string }>;
+  delegate(args: {
+    audience:  string;                            // peer DID
+    bagUrl:    string;
+    access:    "read" | "admin";                  // Keyhive's binary
+  }): Promise<{ delegationId: string; bytes: Uint8Array }>;
+  revoke(delegationId: string): Promise<{ bytes: Uint8Array }>;
+  verify(args: {
+    presenter: string;
+    bagUrl:    string;
+    access:    "read" | "admin";
+  }): Promise<{ ok: boolean; reason?: string }>;
+}
+
+export interface EventStore {
+  put(eventHash: string, variant: string, bytes: Uint8Array): Promise<void>;
+  list(): Promise<{ hash: string; bytes: Uint8Array }[]>;
+}
+```
+
+The application `ABILITY_LADDER` (promote/write/etc.) checks happen
+at a layer ABOVE this interface — in the promote-handler, gated on
+the Keyhive admin proof being present.
