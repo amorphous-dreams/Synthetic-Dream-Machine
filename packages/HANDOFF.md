@@ -13,9 +13,11 @@
 ```text
 Resume from packages/HANDOFF.md.
 Branch: feature/lararium-node-3.
-S5.8 ✅ closed. S6 (BagResidencyManager) opened C.1; paused mid-arc.
+S5.8 ✅ closed. S6 (BagResidencyManager) ✅ closed (C.1→C.6, C.5 deferred).
 S7.1 (Capability layer via @keyhive/keyhive) ✅ closed (D.1→D.6).
-Next: resume S6 (C.2-C.6) OR S7.4 (admin doc ingress trust gate).
+Next paths: S7.4 (admin doc ingress trust gate), dreamdeck-app sprint
+(picks up S6 C.5 same-machine peer consolidation), <$lar-promote> widget,
+heleuma authoring, federated promotion.
 Architecture laws hold: causal-island, bag=Automerge-doc=sync-boundary,
 canon-promotion requires active operator decision, TW5 VM primacy,
 web3-only — no HTTP/RPC for inter-process coordination, command-tiddlers
@@ -40,7 +42,7 @@ category boundary.
 | S5.7 | ✅ | Bag-aware `LarDiskProjector` (canon leak closed). Genesis walks all `packages/*/memes/`. `lares heleuma` audit/scaffold. `lares-chapel-perilous-opens` removed. |
 | S5.6 | ✅ | Admin TW5 VM stood up. Admin doc at `lar:///ha.ka.ba/@lararium/@admin`. Bag-mirror configs read from admin tiddlers tagged `$:/tags/LarariumBagMirror`. |
 | S5.8 | ✅ | `@lares/cli` package + `lares` binary; command-tiddler CRDT protocol; TS dispatcher; promote/where/echo handlers; durable audit-event tiddlers. |
-| S6 (C.1) | 🟡 | `BagResidencyManager` skeleton (pinned/hot/cold tiers). `lares pin/unpin/residency`. No eviction yet — C.2 wires LRU+sweeper. Paused mid-arc to scope S7. |
+| S6 | ✅ | `BagResidencyManager` end-to-end: pinned/hot/cold tiers, LRU + idle sweeper + sync-state guard, register-cold for oracle stubs, composite-store hydrate-on-read, `lares status` residency line. C.5 same-machine peer consolidation deferred to the dreamdeck-app sprint. |
 | S7.1 (D.1→D.6) | ✅ | @keyhive/keyhive (concap) integration complete. Operator-key bridge, AdminEventStore persistence, ctx.cap wired, promote-handler enforces. Operator identity and admin proof survive daemon restarts. |
 
 ## S5.8 sub-arc — what each commit landed
@@ -73,11 +75,11 @@ category boundary.
 
 ## Three immediate paths
 
-### Path A — Resume S6 BagResidencyManager (C.2 → C.6)
-C.1 landed the skeleton. Remaining work: LRU + idle sweeper, oracle stub-by-default, hydrate-on-read, opportunistic same-machine peer consolidation, smoke + closure. Cap-aware now — handlers can gate residency operations on `ctx.cap` if needed.
-
-### Path B — S7.4 Admin doc ingress trust gate
+### Path A — S7.4 Admin doc ingress trust gate
 With S7.1 closed, the admin doc's WebSocket federation can gate on `cap=infrastructure` proofs. Before accepting an Automerge sync message touching the admin doc, the daemon verifies the peer holds a delegation rooted at the operator's identity. Pre-condition for federating between operator's own devices.
+
+### Path B — Dreamdeck-app sprint (picks up S6.C.5)
+Browser-side peer scaffold. Builds atop Path A's cap-gated admin doc to subscribe as the operator's own device. Same-machine peer consolidation lands here: tab joins the daemon's `/residency` endpoint (designed in HANDOFF; not yet built), treats the daemon as its primary handle source, skips materializing bags the daemon already has hot. tldraw multiplayer + TLDraw infinite canvas surfaces sit atop.
 
 ### Path C — `<$lar-promote>` action-widget
 With promote handler enforcing real cap, the widget becomes a UI shim that writes the same command-tiddler the CLI does. Lives in admin VM. Adds the visual recipe-presence preview that the CLI prints textually.
@@ -104,6 +106,11 @@ lares promote lar:///definitely-not-real --to lar:///ha.ka.ba/@lares --yes
 #         Cap events accumulate as $:/tags/CapEvent tiddlers in admin doc.
 # Boot 2 (kill + lares serve): keyhive logs `hydrated N cap events from admin doc`
 #         followed by SAME did=0x… and self-admin=true. Identity persists.
+
+# Verify S6 residency:
+lares status            # includes "residency: N pinned · M/cap hot · K cold"
+lares residency         # full snapshot
+lares register-cold automerge:test  # marks URL as cold, no hydration
 
 # Smoke `lares status`:
 lares status

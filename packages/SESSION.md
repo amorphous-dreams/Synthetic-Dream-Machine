@@ -1,8 +1,38 @@
 # Session State — Lararium Web3 Refactor
 
-> Updated: 2026-05-08
+> Updated: 2026-05-09
 > Branch: feature/lararium-node-3
 > Purpose: Resume artifact — enough state to continue without prior chat context
+
+---
+
+## What Just Happened (2026-05-09 — S6 BagResidencyManager closed)
+
+S6 closed end-to-end. Five commits on top of S7.1's evening close.
+
+| sha | What |
+|---|---|
+| `67525b63` C.2 | LRU + idle sweeper + sync-state guard. `enforceCap()` trims hot when over cap; `sweepOnce()` evicts idle non-syncing bags then re-trims; `evict()` refuses bags with `syncActive=true` (the automerge-repo#358 invariant). Sweeper unrefs the timer so daemon shutdown stays clean. |
+| `6ecd17f0` C.3 | `register-cold` handler + CLI command. Surfaces the API for oracle stub-by-default — URLs known but not loaded. |
+| `00bd9771` C.4 | `composite.attachResidency()` wires reads through residency.touch. `lares status` adds a residency line. **Pin namespace bug caught**: C.1 had used `handle.url` (automerge:) but composite layers use `bagId` (lar:); pinned set never intersected reads. Fixed by switching pins to `BAG_IDS` constants. |
+| (this commit) C.6 | S6 closure docs. C.5 same-machine peer consolidation deferred to dreamdeck-app sprint where the consumer side firms up against real demand. |
+
+**Architectural notes worth holding:**
+
+- *onEvict stays a stub.* The manager's book-keeping (LRU, idle sweep, sync-state guard) lands now. Actual Automerge handle drop waits on automerge-repo#358 (no public eviction API today). Wiring complete; payload pending upstream.
+- *Hot tier reflects reads against non-pinned bags.* All 7 boot-pinned infrastructure bags stay pinned; hot populates only when reads land on bags outside the pin set (corpus children, future dynamic bags).
+- *Cold-promote-mid-`composite.get()` deferred.* Composite knows how to touch existing layers but not how to mint new ones for cold-stub URLs — that requires repo.find() integration plus C.5's same-machine consolidation story.
+
+### Where the arc rests
+
+S5.8 ✅, S6 ✅, S7.1 ✅. Branch holds 5 S6 commits + 1 closure commit since the morning's `3dfa5c3c`.
+
+Next path candidates (HANDOFF listings):
+- **A** — S7.4 admin doc ingress trust gate (newly unblocked by S7.1's cap layer)
+- **B** — dreamdeck-app sprint (browser peer scaffold; picks up C.5 in context)
+- **C** — `<$lar-promote>` action-widget UI shim
+- **D** — heleuma authoring (still deferred)
+- **E** — federated promotion (longer horizon)
 
 ---
 
