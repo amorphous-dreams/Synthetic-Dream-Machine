@@ -56,6 +56,7 @@ import { openAdminVm }                    from "./open-admin-vm.js";
 import { CommandDispatcher, CommandHandlerRegistry } from "./command-dispatcher.js";
 import { createPromoteHandler }                     from "./promote-handler.js";
 import { createWhereHandler }                       from "./where-handler.js";
+import { createListWikisHandler }                   from "./wiki-handlers.js";
 import {
   createPinHandler, createUnpinHandler, createResidencyStatsHandler,
   createRegisterColdHandler,
@@ -335,6 +336,9 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
   // Read-only recipe-presence query — `lares promote` previews source bag via
   // this command before writing the promote command itself.
   commandRegistry.register("where",   createWhereHandler({ composite }));
+  // E.4 — read-only wiki commands. write commands (init/sync/pin/etc) land
+  // in E.5+. `list-wikis` walks the catalog for room oracle tiddlers.
+  commandRegistry.register("list-wikis", createListWikisHandler({ composite }));
 
   // S6 — BagResidencyManager. Phase 1 (C.1): instrumentation only; no
   // eviction yet. Pin every doc the daemon touches at boot so we don't

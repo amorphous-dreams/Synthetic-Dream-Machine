@@ -27,6 +27,9 @@ export type { PromoteHandlerOptions } from "./promote-handler.js";
 export { createWhereHandler } from "./where-handler.js";
 export type { WhereHandlerOptions } from "./where-handler.js";
 
+export { createListWikisHandler } from "./wiki-handlers.js";
+export type { WikiHandlerOptions } from "./wiki-handlers.js";
+
 export {
   createPinHandler, createUnpinHandler, createResidencyStatsHandler,
   createRegisterColdHandler,
