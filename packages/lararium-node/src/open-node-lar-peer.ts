@@ -56,7 +56,10 @@ import { openAdminVm }                    from "./open-admin-vm.js";
 import { CommandDispatcher, CommandHandlerRegistry } from "./command-dispatcher.js";
 import { createPromoteHandler }                     from "./promote-handler.js";
 import { createWhereHandler }                       from "./where-handler.js";
-import { createListWikisHandler }                   from "./wiki-handlers.js";
+import {
+  createListWikisHandler, createInitWikiHandler,
+  createOpenWikiHandler, createSyncWikiHandler,
+} from "./wiki-handlers.js";
 import {
   createPinHandler, createUnpinHandler, createResidencyStatsHandler,
   createRegisterColdHandler,
@@ -339,6 +342,21 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
   // E.4 — read-only wiki commands. write commands (init/sync/pin/etc) land
   // in E.5+. `list-wikis` walks the catalog for room oracle tiddlers.
   commandRegistry.register("list-wikis", createListWikisHandler({ composite }));
+  // E.5 — wiki write commands. operatorDid resolves lazily so the registry
+  // can register before the keyhive bridge finishes booting.
+  const wikiMintOpts = {
+    composite,
+    repo,
+    catalogHandle,
+    operatorDid: async () => {
+      // Keyhive's whoami is the canonical source post-boot; until then
+      // the operator's verifyingKey hex (loaded earlier) is sufficient.
+      return "0x" + operatorIdentity.verifyingKey;
+    },
+  };
+  commandRegistry.register("init-wiki", createInitWikiHandler(wikiMintOpts));
+  commandRegistry.register("open-wiki", createOpenWikiHandler({ composite }));
+  commandRegistry.register("sync-wiki", createSyncWikiHandler(wikiMintOpts));
 
   // S6 — BagResidencyManager. Phase 1 (C.1): instrumentation only; no
   // eviction yet. Pin every doc the daemon touches at boot so we don't

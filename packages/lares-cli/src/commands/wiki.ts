@@ -72,6 +72,99 @@ export async function cmdWikiList(_args: ParsedArgs): Promise<number> {
   }
 }
 
+export async function cmdWikiInit(args: ParsedArgs): Promise<number> {
+  const slug = args.positional[0];
+  if (!slug) {
+    console.error("usage: lares wiki init <slug>");
+    return 2;
+  }
+  const did  = await operatorDid().catch(() => "lares-cli");
+  const peer = await tryConnect();
+  if (!peer) return 3;
+  try {
+    const r = await submitCommand(peer, "init-wiki", { slug }, did);
+    if (r.status === "error") {
+      console.error(`init failed: ${r.errorMessage ?? "unknown"}`);
+      return 4;
+    }
+    const result = r.result ?? {};
+    console.log("");
+    console.log(`wiki: ${slug}`);
+    console.log(`  status:    ${result["status"]}`);
+    console.log(`  room URI:  ${result["roomUri"]}`);
+    console.log(`  room doc:  ${result["roomDocUrl"]}`);
+    console.log(`  draft URI: ${result["draftBagId"]}`);
+    console.log(`  draft doc: ${result["draftDocUrl"]}`);
+    console.log(`  recipe:    ${result["recipeUri"]}`);
+    console.log("");
+    return 0;
+  } finally {
+    await peer.disconnect();
+  }
+}
+
+export async function cmdWikiOpen(args: ParsedArgs): Promise<number> {
+  const slug = args.positional[0];
+  if (!slug) {
+    console.error("usage: lares wiki open <slug>");
+    return 2;
+  }
+  const did  = await operatorDid().catch(() => "lares-cli");
+  const peer = await tryConnect();
+  if (!peer) return 3;
+  try {
+    const r = await submitCommand(peer, "open-wiki", { slug }, did);
+    if (r.status === "error") {
+      console.error(`open failed: ${r.errorMessage ?? "unknown"}`);
+      return 4;
+    }
+    const result = r.result ?? {};
+    console.log("");
+    console.log(`wiki: ${slug}  status: ${result["status"]}`);
+    if (result["restartRequired"]) {
+      console.log(`  ${result["hint"] ?? "restart `lares serve` to mount this wiki"}`);
+    }
+    console.log("");
+    return 0;
+  } finally {
+    await peer.disconnect();
+  }
+}
+
+export async function cmdWikiSync(args: ParsedArgs): Promise<number> {
+  const slug = args.positional[0];
+  if (!slug) {
+    console.error("usage: lares wiki sync <slug>");
+    return 2;
+  }
+  const did  = await operatorDid().catch(() => "lares-cli");
+  const peer = await tryConnect();
+  if (!peer) return 3;
+  try {
+    const r = await submitCommand(peer, "sync-wiki", { slug }, did, { timeoutMs: 30_000 });
+    if (r.status === "error") {
+      console.error(`sync failed: ${r.errorMessage ?? "unknown"}`);
+      return 4;
+    }
+    const result = r.result ?? {};
+    console.log("");
+    console.log(`sync ${slug}:`);
+    console.log(`  scanned:  ${result["scanned"]}`);
+    console.log(`  ingested: ${result["ingested"]}`);
+    console.log(`  skipped:  ${result["skipped"]}`);
+    const errors = (result["errors"] ?? []) as string[];
+    if (errors.length > 0) {
+      console.log(`  errors (${errors.length}):`);
+      for (const e of errors) console.log(`    ${e}`);
+    }
+    if (result["note"]) console.log(`  ${result["note"]}`);
+    console.log("");
+    return 0;
+  } finally {
+    await peer.disconnect();
+  }
+}
+
 export async function cmdWikiWhich(args: ParsedArgs): Promise<number> {
   const tiddler = args.positional[0];
   if (!tiddler) {
@@ -104,6 +197,9 @@ export async function cmdWikiWhich(args: ParsedArgs): Promise<number> {
 }
 
 const SUBCOMMANDS: Readonly<Record<string, { handler: WikiSubcommand; summary: string }>> = {
+  "init":  { handler: cmdWikiInit,  summary: "Mint a fresh wiki: room canonical + per-wiki draft + recipe. Idempotent." },
+  "open":  { handler: cmdWikiOpen,  summary: "Set the daemon's active wiki marker. Restart required to mount (E.7 = hot-reload)." },
+  "sync":  { handler: cmdWikiSync,  summary: "Walk rooms/<slug>/memes/** and ingest into the canonical bag. Idempotent." },
   "list":  { handler: cmdWikiList,  summary: "Enumerate rooms registered in the catalog. Needs `lares serve`." },
   "which": { handler: cmdWikiWhich, summary: "Recipe-presence query — list bags holding a tiddler. Needs `lares serve`." },
 };
@@ -114,8 +210,8 @@ function printWikiHelp(): void {
   for (const [verb, entry] of Object.entries(SUBCOMMANDS)) {
     console.log(`  ${verb.padEnd(10)} ${entry.summary}`);
   }
-  console.log("\nMore verbs land in E.5+ (init, open, sync, pin, unpin,");
-  console.log("add-bag, remove-bag, epoch, rotate-recipe, prune-stale).");
+  console.log("\nMore verbs land in E.6+ (pin, unpin, add-bag, remove-bag,");
+  console.log("epoch, rotate-recipe, prune-stale).");
 }
 
 export async function cmdWiki(args: ParsedArgs): Promise<number> {

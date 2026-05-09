@@ -40,7 +40,7 @@ const COMMANDS: readonly Command[] = [
   { name: "init",          summary: "Bootstrap a new Lararium node (seed identities/circles/sessions/admin docs).", handler: cmdInit          },
   { name: "promote",       summary: "Promote a tiddler from one bag to another (canon ceremony). Needs `lares serve` running.", handler: cmdPromote      },
   { name: "bag",           summary: "Operate on individual bags: pin / unpin / stats / register-cold. Run `lares bag help`.",      handler: cmdBag          },
-  { name: "wiki",          summary: "Operate on whole wikis (rooms+recipes): list / which. Run `lares wiki help`.",                handler: cmdWiki         },
+  { name: "wiki",          summary: "Operate on whole wikis (rooms+recipes): init / open / sync / list / which. Run `lares wiki help`.", handler: cmdWiki },
   { name: "status",        summary: "Print local node health: bootstrap presence, storage size, port in use.",      handler: cmdStatus        },
   { name: "serve",         summary: "Run the lararium node in foreground (no Vite).",                                handler: cmdServe         },
   { name: "dev",           summary: "Run node + Vite app concurrently (full dev experience).",                       handler: cmdDev           },

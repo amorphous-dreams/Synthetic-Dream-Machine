@@ -9,13 +9,32 @@
  * (init, sync, pin, etc.) when the per-room mint ceremony lands.
  */
 
-import type { CompositeStore } from "@lararium/core";
+import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
+import { join } from "node:path";
+import type { Repo, DocHandle, AutomergeUrl } from "@automerge/automerge-repo";
+import {
+  type CompositeStore, type LarTiddlerRecord, type ChangeOrigin, type MemeStoreDoc,
+  type CatalogDoc, type MutableLarRecord,
+  emptyMemeStoreDoc, ADMIN_BAG_ID, BAG_IDS, roomLarUri, roomDraftLarUri, recipeUri,
+  CATALOG_DOC_URI, LARARIUM_DOC_URI, LARES_DOC_URI,
+} from "@lararium/core";
+import { repoRoot } from "@lares/lares";
 import type { CommandHandler } from "./command-dispatcher.js";
 
 const ROOM_PREFIX = "lar:///ha.ka.ba/@lararium/rooms/";
 
 export interface WikiHandlerOptions {
   readonly composite: CompositeStore;
+}
+
+/** Options for handlers that need raw repo access to mint new docs.
+ *  operatorDid resolves lazily so the registry can register before the
+ *  keyhive bridge has finished booting. */
+export interface WikiMintHandlerOptions {
+  readonly composite:     CompositeStore;
+  readonly repo:          Repo;
+  readonly catalogHandle: DocHandle<CatalogDoc>;
+  readonly operatorDid:   () => Promise<string> | string;
 }
 
 /**
@@ -43,4 +62,298 @@ export function createListWikisHandler(opts: WikiHandlerOptions): CommandHandler
     }
     return { wikis };
   };
+}
+
+// ---------------------------------------------------------------------------
+// init — mint a new wiki end-to-end
+// ---------------------------------------------------------------------------
+
+/**
+ * `lares wiki init <slug>` — mint a fresh wiki.
+ *
+ * Idempotent: if the room oracle tiddler already exists in the catalog,
+ * returns the existing URLs without re-minting.
+ *
+ * Creates:
+ *   - canonical bag: a fresh MemeStoreDoc Automerge doc, oracle tiddler
+ *     in catalog at title `roomLarUri(slug)`.
+ *   - per-wiki draft bag: a fresh MemeStoreDoc, oracle tiddler in catalog
+ *     at `${roomLarUri(slug)}/drafts/${operatorDid}`.
+ *   - recipe tiddler at `recipeUri("@lararium", slug)` with the default
+ *     bag stack: catalog → lararium → lares → corpus children → room
+ *     canonical → per-wiki draft.
+ */
+export function createInitWikiHandler(opts: WikiMintHandlerOptions): CommandHandler {
+  return async (args) => {
+    const slug = stringArg(args, "slug");
+    if (!slug) throw new Error("args.slug is required (the wiki name)");
+    if (slug.includes("/") || slug.includes(" ")) {
+      throw new Error(`invalid slug: "${slug}" (no slashes or spaces)`);
+    }
+
+    const did          = await opts.operatorDid();
+    const roomKey      = roomLarUri(slug);
+    const draftBagId   = roomDraftLarUri(slug);
+    const draftKey     = `${roomKey}/drafts/${encodeURIComponent(did)}`;
+    const recipeTitle  = recipeUri("@lararium", slug);
+
+    // Idempotent skip — operator runs init twice, second run reports.
+    const existingRoomRec   = await opts.composite.get(roomKey);
+    const existingDraftRec  = await opts.composite.get(draftKey);
+    const existingRecipeRec = await opts.composite.get(recipeTitle);
+    if (existingRoomRec && existingDraftRec && existingRecipeRec) {
+      return {
+        slug,
+        status: "already-exists",
+        roomUri:     roomKey,
+        roomDocUrl:  existingRoomRec.text ?? null,
+        draftBagId,
+        draftDocUrl: existingDraftRec.text ?? null,
+        recipeUri:   recipeTitle,
+      };
+    }
+
+    // Mint the docs we need.
+    const roomHandle  = existingRoomRec?.text
+      ? await opts.repo.find<MemeStoreDoc>(existingRoomRec.text as AutomergeUrl)
+      : opts.repo.create<MemeStoreDoc>(emptyMemeStoreDoc());
+    const draftHandle = existingDraftRec?.text
+      ? await opts.repo.find<MemeStoreDoc>(existingDraftRec.text as AutomergeUrl)
+      : opts.repo.create<MemeStoreDoc>(emptyMemeStoreDoc());
+
+    // Wait for handle readiness before writing oracles (avoids URL race).
+    if (!existingRoomRec)  await roomHandle.whenReady();
+    if (!existingDraftRec) await draftHandle.whenReady();
+
+    // Write catalog oracles. Idempotent — overwrites with same values when
+    // the doc already existed.
+    opts.catalogHandle.change((doc) => {
+      const tiddlers = doc.tiddlers as Record<string, MutableLarRecord>;
+      tiddlers[roomKey] = {
+        title: roomKey, text: roomHandle.url,
+        fields: { bag: BAG_IDS.catalog, authority: "lares-cli:wiki-init" },
+      };
+      tiddlers[draftKey] = {
+        title: draftKey, text: draftHandle.url,
+        fields: { bag: BAG_IDS.catalog, authority: "lares-cli:wiki-init" },
+      };
+    });
+
+    // Write recipe tiddler — lives in the lararium island doc.
+    const origin: ChangeOrigin = { kind: "lares-command", requestId: ctx_request_id_safe() };
+    const recipe: LarTiddlerRecord = {
+      title: recipeTitle,
+      bag:   LARARIUM_DOC_URI,
+      authority: "lares-cli:wiki-init",
+      fields: {
+        label:      slug,
+        // Default bag stack: lowest priority → highest. Per-wiki draft sits
+        // at top so it overlays canonical for the operator's working surface.
+        "bag-stack":   `${CATALOG_DOC_URI} ${LARARIUM_DOC_URI} ${LARES_DOC_URI} ${roomKey} ${draftBagId}`,
+        "writable-bag": draftBagId,
+        "updated-at":   new Date().toISOString(),
+      },
+    };
+    await opts.composite.put(recipe, origin);
+
+    return {
+      slug,
+      status: existingRoomRec ? "completed-partial" : "minted",
+      roomUri:     roomKey,
+      roomDocUrl:  roomHandle.url,
+      draftBagId,
+      draftDocUrl: draftHandle.url,
+      recipeUri:   recipeTitle,
+    };
+  };
+}
+
+// ---------------------------------------------------------------------------
+// open — switch the daemon's active wiki (write an admin marker; restart-required)
+// ---------------------------------------------------------------------------
+
+const ACTIVE_WIKI_URI = `${ADMIN_BAG_ID}/active-wiki`;
+
+/**
+ * `lares wiki open <slug>` — set the daemon's active wiki marker.
+ *
+ * Writes a tiddler at `lar:///ha.ka.ba/@lararium/@admin/active-wiki` whose
+ * `text` field carries the slug. The daemon reads this marker at boot and
+ * mounts the matching room. Live re-mount lands in E.7 (hot-reload sprint);
+ * E.5 minimum requires a daemon restart.
+ *
+ * Idempotent: setting to the current value returns "no-op".
+ */
+export function createOpenWikiHandler(opts: WikiHandlerOptions): CommandHandler {
+  return async (args) => {
+    const slug = stringArg(args, "slug");
+    if (!slug) throw new Error("args.slug is required");
+
+    const roomKey = roomLarUri(slug);
+    const roomRec = await opts.composite.get(roomKey);
+    if (!roomRec) {
+      throw new Error(`wiki "${slug}" not registered — run \`lares wiki init ${slug}\` first`);
+    }
+
+    const marker = await opts.composite.get(ACTIVE_WIKI_URI);
+    if (marker?.text === slug) {
+      return { slug, status: "already-active", restartRequired: false };
+    }
+
+    const origin: ChangeOrigin = { kind: "lares-command", requestId: ctx_request_id_safe() };
+    const record: LarTiddlerRecord = {
+      title: ACTIVE_WIKI_URI,
+      bag:   ADMIN_BAG_ID,
+      authority: "lares-cli:wiki-open",
+      text:  slug,
+      fields: {
+        "updated-at": new Date().toISOString(),
+      },
+    };
+    await opts.composite.put(record, origin);
+
+    return {
+      slug,
+      status: "marker-set",
+      restartRequired: true,
+      hint: "restart `lares serve` to mount this wiki as the active room",
+    };
+  };
+}
+
+// ---------------------------------------------------------------------------
+// sync — ingest rooms/<slug>/memes/** files into the canonical bag
+// ---------------------------------------------------------------------------
+
+/**
+ * `lares wiki sync <slug>` — disk → CRDT ingest.
+ *
+ * Walks `rooms/<slug>/memes/**` for `.md` files. For each file, derives a
+ * tiddler title from the iam `uri-path` field (or falls back to a path-
+ * based URI). Writes the file's full text as the tiddler's `text` field
+ * directly into the wiki's canonical bag's Automerge doc — bypasses the
+ * composite-overlay routing because the target wiki may not be the
+ * daemon's currently-mounted active room.
+ *
+ * Idempotent: tiddlers whose existing record matches the file's text get
+ * skipped (no-op write). Tiddlers whose URI lacks a record get created.
+ *
+ * Returns { slug, scanned, ingested, skipped, errors[] }.
+ */
+export function createSyncWikiHandler(opts: WikiMintHandlerOptions): CommandHandler {
+  return async (args) => {
+    const slug = stringArg(args, "slug");
+    if (!slug) throw new Error("args.slug is required");
+
+    const roomKey = roomLarUri(slug);
+    const roomRec = await opts.composite.get(roomKey);
+    if (!roomRec || typeof roomRec.text !== "string") {
+      throw new Error(`wiki "${slug}" not registered — run \`lares wiki init ${slug}\` first`);
+    }
+    const roomDocUrl = roomRec.text;
+
+    const memesRoot = join(repoRoot, "rooms", slug, "memes");
+    if (!existsSync(memesRoot)) {
+      return { slug, scanned: 0, ingested: 0, skipped: 0, errors: [], note: "no rooms/<slug>/memes/ directory" };
+    }
+
+    const files: string[] = [];
+    walkMemes(memesRoot, files);
+
+    // Open the wiki's canonical Automerge doc directly. This sidesteps the
+    // composite-overlay routing — the target wiki may not be the daemon's
+    // currently-mounted active room, so composite.put would fall through
+    // to the default writable layer (today's altar-fire/draft) instead of
+    // landing in the right bag. Direct doc writes go where intended.
+    const handle = await opts.repo.find<MemeStoreDoc>(roomDocUrl as AutomergeUrl);
+    await handle.whenReady();
+
+    const errors: string[] = [];
+    let ingested = 0;
+    let skipped  = 0;
+
+    for (const file of files) {
+      try {
+        const text = readFileSync(file, "utf8");
+        const uri  = extractIamUri(text) ?? deriveUriFromPath(slug, memesRoot, file);
+        const sourceFile = file.startsWith(repoRoot) ? file.slice(repoRoot.length + 1) : file;
+        const syncedAt   = new Date().toISOString();
+
+        // Read current state from the doc directly.
+        const docState = handle.doc();
+        const existing = (docState?.tiddlers as Record<string, MutableLarRecord> | undefined)?.[uri];
+        if (existing && existing.text === text && !existing.deleted) {
+          skipped++;
+          continue;
+        }
+
+        handle.change((doc) => {
+          const tiddlers = doc.tiddlers as Record<string, MutableLarRecord>;
+          tiddlers[uri] = {
+            title: uri,
+            text,
+            fields: {
+              "source-file": sourceFile,
+              "synced-at":   syncedAt,
+            },
+            bag:       roomKey,
+            authority: "lares-cli:wiki-sync",
+          };
+        });
+        ingested++;
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+        errors.push(`${file}: ${msg}`);
+      }
+    }
+
+    return { slug, scanned: files.length, ingested, skipped, errors };
+  };
+}
+
+// ---------------------------------------------------------------------------
+// helpers
+// ---------------------------------------------------------------------------
+
+function stringArg(args: Readonly<Record<string, unknown>>, key: string): string {
+  const v = args[key];
+  return typeof v === "string" ? v : "";
+}
+
+function ctx_request_id_safe(): string {
+  return `wiki-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+}
+
+function walkMemes(dir: string, out: string[]): void {
+  for (const entry of readdirSync(dir)) {
+    const full = join(dir, entry);
+    if (statSync(full).isDirectory()) {
+      walkMemes(full, out);
+    } else if (entry.endsWith(".md")) {
+      out.push(full);
+    }
+  }
+}
+
+/**
+ * Extract the `uri-path` value from a memetic-wikitext iam toml block.
+ * Cheap regex; we don't need full TOML parsing for this single field.
+ * Returns the lar:/// URI, or null when no iam block matches.
+ */
+function extractIamUri(text: string): string | null {
+  const iamMatch = text.match(/```toml iam\s*\n([\s\S]*?)\n```/);
+  if (!iamMatch) return null;
+  const block = iamMatch[1] ?? "";
+  const uriPathMatch = block.match(/^uri-path\s*=\s*["']([^"']+)["']/m);
+  if (!uriPathMatch) return null;
+  return `lar:///${uriPathMatch[1]}`;
+}
+
+/**
+ * Fallback URI derivation when no iam block declares uri-path. Uses the
+ * file's path under rooms/<slug>/memes/ as the URI suffix.
+ */
+function deriveUriFromPath(slug: string, memesRoot: string, file: string): string {
+  const rel = file.slice(memesRoot.length + 1).replace(/\.md$/, "").replace(/\\/g, "/");
+  return `${roomLarUri(slug)}/memes/${rel}`;
 }
