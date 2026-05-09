@@ -90,6 +90,13 @@ export interface CompositeLayer {
   readonly writePolicy?: string;
 }
 
+/** Minimal residency-touch shape — kept structural so composite-store
+ *  doesn't depend on the BagResidencyManager class directly (avoids
+ *  circular imports). The daemon binds it via attachResidency(). */
+export interface ResidencyTouch {
+  touch(bagUrl: string): Promise<void> | void;
+}
+
 export class CompositeStore implements LarTiddlerStore {
   // Ordered lowest-priority → highest-priority.
   private readonly layers:      CompositeLayer[] = [];
@@ -100,6 +107,17 @@ export class CompositeStore implements LarTiddlerStore {
 
   /** The single writable store — must be registered via addLayer with writable:true. */
   private writableStore: LarTiddlerStore | null = null;
+
+  /** Residency-touch hook — set via attachResidency(). C.4: composite.get
+   *  bumps lastTouched on the bag whose layer answered the read. Cold-
+   *  promote-mid-get (i.e. hydrate a stub URL when something reads through
+   *  it) is reserved for a later refinement; see HANDOFF "Don't re-decide". */
+  private residency: ResidencyTouch | null = null;
+
+  /** Bind a residency manager. Calling twice replaces the binding. */
+  attachResidency(residency: ResidencyTouch): void {
+    this.residency = residency;
+  }
 
   hasBag(bagId: string): boolean {
     return this.layers.some((l) => l.bagId === bagId);
@@ -169,8 +187,14 @@ export class CompositeStore implements LarTiddlerStore {
   async get(title: string): Promise<LarTiddlerRecord | null> {
     // Highest priority first.
     for (let i = this.layers.length - 1; i >= 0; i--) {
-      const rec = await this.layers[i]!.store.get(title);
-      if (rec !== null) return rec;
+      const layer = this.layers[i]!;
+      const rec   = await layer.store.get(title);
+      if (rec !== null) {
+        // C.4 — bump residency lastTouched on the bag that answered. Fire-
+        // and-forget; we don't block the read on the touch handler.
+        if (this.residency) void Promise.resolve(this.residency.touch(layer.bagId));
+        return rec;
+      }
     }
     return null;
   }

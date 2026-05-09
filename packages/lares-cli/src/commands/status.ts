@@ -53,9 +53,37 @@ export async function cmdStatus(_args: ParsedArgs): Promise<number> {
   const portRaw   = process.env["LAR_PORT"] ?? "8080";
   const port      = Number(portRaw);
 
+  const portInUse = await probePort(port);
+
   console.log("lares status");
   console.log(`  bootstrap:   ${existsSync(bootstrap) ? "present" : "absent (run `lares init`)"}`);
   console.log(`  storage:     ${dirSizeHint(storage)}`);
-  console.log(`  port ${port}:  ${(await probePort(port)) ? "in use (node likely running)" : "free"}`);
+  console.log(`  port ${port}:  ${portInUse ? "in use (node likely running)" : "free"}`);
+
+  // C.4 — when the daemon is up, ask it for a residency snapshot. Cheap
+  // call (one command-tiddler round-trip); if anything fails, fall through
+  // silently — `lares status` stays cheap and never errors.
+  if (portInUse) {
+    try {
+      const { connectAdminPeer, submitCommand } = await import("../admin-peer.js");
+      const peer = await connectAdminPeer({});
+      try {
+        const r = await submitCommand(peer, "residency", {}, "lares-status", { timeoutMs: 2000 });
+        if (r.status === "done") {
+          const stats   = r.result ?? {};
+          const pinned  = (stats["pinned"] ?? []) as string[];
+          const hot     = (stats["hot"]    ?? []) as Array<{ url: string }>;
+          const coldCnt = stats["coldCount"] as number;
+          const hotCap  = stats["hotCap"]    as number;
+          console.log(`  residency:   ${pinned.length} pinned · ${hot.length}/${hotCap} hot · ${coldCnt} cold`);
+        }
+      } finally {
+        await peer.disconnect();
+      }
+    } catch {
+      // Daemon up but residency probe failed — quiet.
+    }
+  }
+
   return 0;
 }

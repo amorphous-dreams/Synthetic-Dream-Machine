@@ -352,13 +352,17 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
       console.log(`[bag-residency] evicted ${url} (compact-then-drop reserved for repo#358)`);
     },
   });
-  await residency.pin(catalogHandle.url,         "boot:catalog");
-  if (islandHandle)         await residency.pin(islandHandle.url,         "boot:lararium-island");
-  if (laresHandle)          await residency.pin(laresHandle.url,          "boot:lares-corpus");
-  await residency.pin(identitiesHandle.url,      "boot:identities");
-  await residency.pin(groupsHandle.url,          "boot:circles");
-  await residency.pin(sessionsHandle.url,        "boot:sessions");
-  await residency.pin(adminVm.adminHandle.url,   "boot:admin");
+  // C.4 — pin by bagId (lar: URI), NOT handle.url (automerge: URL).
+  // Composite layers register with bagId; residency.touch fires with the
+  // matching layer.bagId on read. Pinning by handle.url would track two
+  // disjoint namespaces and make hot/pinned never intersect.
+  await residency.pin(BAG_IDS.catalog,        "boot:catalog");
+  if (islandHandle) await residency.pin(BAG_IDS.lararium,        "boot:lararium-island");
+  if (laresHandle)  await residency.pin(BAG_IDS.lares,           "boot:lares-corpus");
+  await residency.pin(BAG_IDS.identities,     "boot:identities");
+  await residency.pin(BAG_IDS.groups,         "boot:circles");
+  await residency.pin(BAG_IDS.sessions,       "boot:sessions");
+  await residency.pin(ADMIN_BAG_ID,           "boot:admin");
   commandRegistry.register("pin",       createPinHandler({ residency }));
   commandRegistry.register("unpin",     createUnpinHandler({ residency }));
   commandRegistry.register("residency",     createResidencyStatsHandler({ residency }));
@@ -367,6 +371,10 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
   // every sweepIntervalMs (default 30s). The manager's own re-entrancy
   // guard makes overlapping ticks safe.
   residency.startSweeper();
+  // C.4 — wire composite reads through the residency manager so
+  // lastTouched advances on actual traffic. Sweeper's idle-evict path
+  // now reflects real activity rather than only boot-time pins.
+  composite.attachResidency(residency);
 
   // S7.1 D.3 — Capability layer. Bridge operator-key.ts ed25519 seed into
   // KeyhiveProvider. The same 32-byte seed deterministically derives the
