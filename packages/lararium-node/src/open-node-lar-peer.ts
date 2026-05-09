@@ -60,6 +60,7 @@ import {
   createListWikisHandler, createInitWikiHandler,
   createOpenWikiHandler, createSyncWikiHandler,
   createPinWikiHandler, createUnpinWikiHandler,
+  createAddBagHandler, createRemoveBagHandler,
 } from "./wiki-handlers.js";
 import {
   createPinHandler, createUnpinHandler, createResidencyStatsHandler,
@@ -394,6 +395,10 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
   // pins/unpins each bag in one shot.
   commandRegistry.register("pin-wiki",   createPinWikiHandler({ composite, residency }));
   commandRegistry.register("unpin-wiki", createUnpinWikiHandler({ composite, residency }));
+  // E.7 — recipe composition. Hot-reload at the composite layer; soft
+  // remove (no MNT_DETACH StoryList reconciliation yet — F-arc territory).
+  commandRegistry.register("add-bag",    createAddBagHandler({    composite, repo, residency }));
+  commandRegistry.register("remove-bag", createRemoveBagHandler({ composite, repo, residency }));
   // C.2 — start the background sweeper. Idle eviction + LRU trim run
   // every sweepIntervalMs (default 30s). The manager's own re-entrancy
   // guard makes overlapping ticks safe.

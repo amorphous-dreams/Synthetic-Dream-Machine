@@ -17,7 +17,7 @@ import {
   type CatalogDoc, type MutableLarRecord, type BagResidencyManager,
   emptyMemeStoreDoc, ADMIN_BAG_ID, BAG_IDS, roomLarUri, roomDraftLarUri, recipeUri,
   CATALOG_DOC_URI, LARARIUM_DOC_URI, LARES_DOC_URI,
-  parseBagStack,
+  parseBagStack, AutomergeDocStore,
 } from "@lararium/core";
 import { repoRoot } from "@lares/lares";
 import type { CommandHandler } from "./command-dispatcher.js";
@@ -41,6 +41,14 @@ export interface WikiMintHandlerOptions {
 /** Options for whole-wiki residency operations (pin/unpin). */
 export interface WikiResidencyOptions {
   readonly composite: CompositeStore;
+  readonly residency: BagResidencyManager;
+}
+
+/** Options for recipe-composition operations (add-bag / remove-bag).
+ *  Combines mint surface (repo + composite) with residency for pin-on-add. */
+export interface WikiComposeOptions {
+  readonly composite: CompositeStore;
+  readonly repo:      Repo;
   readonly residency: BagResidencyManager;
 }
 
@@ -386,6 +394,186 @@ export function createUnpinWikiHandler(opts: WikiResidencyOptions): CommandHandl
       unpinned.push(bagUrl);
     }
     return { slug, recipeUri: recipeTitle, unpinned };
+  };
+}
+
+// ---------------------------------------------------------------------------
+// add-bag / remove-bag — recipe composition (E.7, hot-reload)
+// ---------------------------------------------------------------------------
+//
+// Hot-reload patterns (research-informed):
+//   * Pattern 5 (SQLite refcount) — addLayer/removeLayer respect refcount;
+//     the composite already supports both operations natively.
+//   * Pattern 3 (MNT_DETACH drain) — remove-bag does not eagerly drop the
+//     handle; LRU sweeper handles eventual GC. Title-set delta + StoryList
+//     reconciliation lands in F-arc.
+//   * Pattern 1 (VS Code per-title delta) — composite emits subscribe
+//     events for layer changes today; F-arc adds per-title delta wrapping
+//     for the TW5 vm's refresh pipeline.
+//
+// E.7 minimum: mutate recipe + addLayer/removeLayer at runtime. Auto-pin
+// on add (operator just declared the bag relevant). Soft remove on
+// remove-bag — bag drops from layer set; residency loses its wiki:<slug>
+// pin reference; LRU eventually evicts.
+
+/**
+ * `lares wiki add-bag <slug> <bag-uri> [--at <position>]` — add a bag to
+ * the wiki's recipe at runtime.
+ *
+ * Idempotent: if the bag URL is already in the recipe stack, returns
+ * "already-in-stack" without mutation.
+ *
+ * The bag must already resolve to an Automerge doc the daemon's repo
+ * can find. Minting fresh bags is out of scope (`wiki init` or specific
+ * mint ceremonies handle that).
+ */
+export function createAddBagHandler(opts: WikiComposeOptions): CommandHandler {
+  return async (args) => {
+    const slug   = stringArg(args, "slug");
+    const bagUrl = stringArg(args, "bagUrl");
+    if (!slug)   throw new Error("args.slug is required");
+    if (!bagUrl) throw new Error("args.bagUrl is required (the bag's lar: URI)");
+
+    const recipeTitle = recipeUri("@lararium", slug);
+    const recipeRec   = await opts.composite.get(recipeTitle);
+    if (!recipeRec) {
+      throw new Error(`recipe not found for "${slug}" — run \`lares wiki init ${slug}\` first`);
+    }
+
+    const fields  = (recipeRec.fields ?? {}) as Record<string, string>;
+    const stack   = parseBagStack(fields["bag-stack"]);
+    if (stack.includes(bagUrl)) {
+      return { slug, recipeUri: recipeTitle, status: "already-in-stack", bagUrl };
+    }
+
+    // Append to the end (highest priority slot — overlays everything below).
+    const nextStack = [...stack, bagUrl];
+
+    // Mutate the recipe tiddler.
+    const origin: ChangeOrigin = { kind: "lares-command", requestId: ctx_request_id_safe() };
+    const updated: LarTiddlerRecord = {
+      title:     recipeRec.title,
+      bag:       recipeRec.bag ?? LARARIUM_DOC_URI,
+      authority: recipeRec.authority ?? "lares-cli:wiki-add-bag",
+      ...(recipeRec.text !== undefined && { text: recipeRec.text }),
+      fields: {
+        ...fields,
+        "bag-stack":   nextStack.join(" "),
+        "updated-at":  new Date().toISOString(),
+      },
+    };
+    await opts.composite.put(updated, origin);
+
+    // Add the layer to the live composite if not already present.
+    let layerAdded = false;
+    if (!opts.composite.hasBag(bagUrl)) {
+      try {
+        // Resolve the Automerge URL via composite read OR direct repo find.
+        // The bag URL must already exist as a doc; try discovering its
+        // automerge URL via a catalog oracle tiddler at the same URI.
+        const oracleRec = await opts.composite.get(bagUrl);
+        const docUrl = typeof oracleRec?.text === "string" ? oracleRec.text : null;
+        if (docUrl) {
+          const handle = await opts.repo.find<MemeStoreDoc>(docUrl as AutomergeUrl);
+          await handle.whenReady();
+          opts.composite.addLayer({
+            bagId:    bagUrl,
+            store:    new AutomergeDocStore(handle, bagUrl),
+            writable: true,
+          });
+          layerAdded = true;
+        }
+      } catch (err) {
+        // Layer-add failed; recipe mutation persists. Operator can retry.
+        return {
+          slug,
+          recipeUri: recipeTitle,
+          status: "recipe-updated-layer-not-mounted",
+          bagUrl,
+          stack: nextStack,
+          error: err instanceof Error ? err.message : String(err),
+        };
+      }
+    }
+
+    // Auto-pin: operator just declared this bag relevant. Pattern 5.
+    await opts.residency.pin(bagUrl, `wiki:${slug}`);
+
+    return {
+      slug,
+      recipeUri:  recipeTitle,
+      status:     layerAdded ? "added" : "added-recipe-only",
+      bagUrl,
+      stack:      nextStack,
+    };
+  };
+}
+
+/**
+ * `lares wiki remove-bag <slug> <bag-uri>` — remove a bag from the wiki's
+ * recipe at runtime.
+ *
+ * Idempotent: if the bag URL isn't in the recipe stack, returns
+ * "not-in-stack" without mutation.
+ *
+ * Soft remove: drops from the composite layer set; unpins residency.
+ * Active StoryList reconciliation (Pattern 3 MNT_DETACH drain) lands in
+ * F-arc when the TW5 vm refresh pipeline gets touched. For now, operator
+ * tabs/state pointing into the removed bag may resolve to nothing —
+ * acceptable at hobbyist scale.
+ */
+export function createRemoveBagHandler(opts: WikiComposeOptions): CommandHandler {
+  return async (args) => {
+    const slug   = stringArg(args, "slug");
+    const bagUrl = stringArg(args, "bagUrl");
+    if (!slug)   throw new Error("args.slug is required");
+    if (!bagUrl) throw new Error("args.bagUrl is required");
+
+    const recipeTitle = recipeUri("@lararium", slug);
+    const recipeRec   = await opts.composite.get(recipeTitle);
+    if (!recipeRec) {
+      throw new Error(`recipe not found for "${slug}"`);
+    }
+
+    const fields = (recipeRec.fields ?? {}) as Record<string, string>;
+    const stack  = parseBagStack(fields["bag-stack"]);
+    if (!stack.includes(bagUrl)) {
+      return { slug, recipeUri: recipeTitle, status: "not-in-stack", bagUrl };
+    }
+
+    const nextStack = stack.filter((u) => u !== bagUrl);
+
+    // Mutate the recipe.
+    const origin: ChangeOrigin = { kind: "lares-command", requestId: ctx_request_id_safe() };
+    const updated: LarTiddlerRecord = {
+      title:     recipeRec.title,
+      bag:       recipeRec.bag ?? LARARIUM_DOC_URI,
+      authority: recipeRec.authority ?? "lares-cli:wiki-remove-bag",
+      ...(recipeRec.text !== undefined && { text: recipeRec.text }),
+      fields: {
+        ...fields,
+        "bag-stack":   nextStack.join(" "),
+        "updated-at":  new Date().toISOString(),
+      },
+    };
+    await opts.composite.put(updated, origin);
+
+    // Soft remove: composite.removeLayer + residency.unpin. The Automerge
+    // doc handle stays in the repo; future re-add reuses it.
+    let layerRemoved = false;
+    if (opts.composite.hasBag(bagUrl)) {
+      opts.composite.removeLayer(bagUrl);
+      layerRemoved = true;
+    }
+    opts.residency.unpin(bagUrl);
+
+    return {
+      slug,
+      recipeUri:    recipeTitle,
+      status:       layerRemoved ? "removed" : "removed-recipe-only",
+      bagUrl,
+      stack:        nextStack,
+    };
   };
 }
 
