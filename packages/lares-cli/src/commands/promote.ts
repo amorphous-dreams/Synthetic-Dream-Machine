@@ -18,8 +18,19 @@
 
 import { createInterface } from "node:readline/promises";
 import { stdin, stdout } from "node:process";
+import { join } from "node:path";
+import { loadOperatorVerifyingKey } from "@lararium/node";
+import { repoRoot } from "@lares/lares";
 import { connectAdminPeer, submitCommand } from "../admin-peer.js";
 import type { ParsedArgs } from "../parse-args.js";
+
+/** Load the operator's DID — `0x` + verifyingKey hex — for signing the
+ *  command's requestedBy field. The daemon's dispatcher hands this DID
+ *  to ctx.cap when verifying handler-level capability proofs. */
+async function operatorDid(): Promise<string> {
+  const dataDir = join(repoRoot, "packages", "lararium-node", ".lararium");
+  return "0x" + (await loadOperatorVerifyingKey(dataDir));
+}
 
 export async function cmdPromote(args: ParsedArgs): Promise<number> {
   const tiddler = args.positional[0];
@@ -40,6 +51,15 @@ export async function cmdPromote(args: ParsedArgs): Promise<number> {
     ? { port: Number(portOpt) }
     : {};
 
+  let did: string;
+  try {
+    did = await operatorDid();
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    console.error(`lares promote: ${msg}`);
+    return 3;
+  }
+
   let peer;
   try {
     peer = await connectAdminPeer(connectOpts);
@@ -52,7 +72,7 @@ export async function cmdPromote(args: ParsedArgs): Promise<number> {
 
   try {
     // 1. Recipe-presence preview.
-    const where = await submitCommand(peer, "where", { tiddler }, "lares-cli");
+    const where = await submitCommand(peer, "where", { tiddler }, did);
     if (where.status === "error") {
       console.error(`recipe-presence query failed: ${where.errorMessage ?? "unknown"}`);
       return 4;
@@ -94,7 +114,7 @@ export async function cmdPromote(args: ParsedArgs): Promise<number> {
     const promoteResult = await submitCommand(
       peer, "promote",
       { tiddler, toBag, fromBag: primary },
-      "lares-cli",
+      did,
     );
 
     if (promoteResult.status === "error") {

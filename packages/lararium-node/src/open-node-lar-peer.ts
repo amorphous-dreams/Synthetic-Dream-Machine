@@ -349,11 +349,6 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
   commandRegistry.register("pin",       createPinHandler({ residency }));
   commandRegistry.register("unpin",     createUnpinHandler({ residency }));
   commandRegistry.register("residency", createResidencyStatsHandler({ residency }));
-  const commandDispatcher = new CommandDispatcher({
-    admin:    adminVm.composite,
-    registry: commandRegistry,
-  });
-  commandDispatcher.start();
 
   // S7.1 D.3 — Capability layer. Bridge operator-key.ts ed25519 seed into
   // KeyhiveProvider. The same 32-byte seed deterministically derives the
@@ -369,6 +364,9 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
   // D.4 minimum-viable: every event lands in the admin doc regardless of
   // semantic scope. Per-bag routing per the D4.a decision is reserved for
   // a future refinement; tracked in HANDOFF "Don't re-decide" + memory.
+  //
+  // D.5 wires this provider as the dispatcher's verifier, so handlers'
+  // ctx.cap closures route through real Keyhive verification.
   const operatorIdentity   = await generateOrLoadOperatorKeypair(storageDir);
   const operatorSeed       = await loadOperatorSigningSeed(storageDir);
   const keyhiveEventStore  = new AdminEventStore({ admin: adminVm.composite });
@@ -401,6 +399,15 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
     `[lararium] keyhive: did=${keyhiveDid.slice(0, 18)}…  admin-bag registered  ` +
     `self-admin=${selfVerify.ok}${selfVerify.ok ? "" : ` (${selfVerify.reason})`}`,
   );
+
+  // Now that keyhive exists, construct the dispatcher with it as verifier.
+  // ctx.cap in every handler routes through keyhive.verify().
+  const commandDispatcher = new CommandDispatcher({
+    admin:    adminVm.composite,
+    registry: commandRegistry,
+    verifier: keyhive,
+  });
+  commandDispatcher.start();
 
   // Zelenka: keep oracle tiddlers current on every boot — self, ka, ba, social plane, admin.
   reconcileWellKnownTiddlers(

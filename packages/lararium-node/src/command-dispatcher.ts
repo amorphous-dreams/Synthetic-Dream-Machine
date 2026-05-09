@@ -43,6 +43,15 @@ import {
   ADMIN_BAG_ID,
 } from "@lararium/core";
 
+/** Result shape for ctx.cap(...) calls — same shape as KeyhiveProvider.verify. */
+export interface CapVerifyResult {
+  readonly ok:      boolean;
+  readonly reason?: string;
+}
+
+/** Curried verify closure — pre-bound to the requesting peer's DID. */
+export type CapVerify = (access: "read" | "admin", bagUrl: string) => Promise<CapVerifyResult>;
+
 /** Context passed to every handler. */
 export interface CommandContext {
   /** Composite store for the admin VM — handlers may read/write tiddlers. */
@@ -50,11 +59,18 @@ export interface CommandContext {
   /** Parsed command, in case the handler needs metadata beyond args. */
   readonly command: CommandTiddler;
   /**
-   * Capability proof — null until S7 device delegations land. Handlers SHOULD
-   * gate on this when the operation requires a capability (e.g. `promote`).
-   * Today the gate is "operator runs the node" implicitly.
+   * Capability gate — bound to the command's `requested-by` DID. Handlers
+   * call ctx.cap("admin", bagUrl) and throw on !ok before performing
+   * privileged operations. The dispatcher builds this closure per-command
+   * from the keyhive provider and the parsed CommandTiddler.requestedBy.
+   *
+   * In single-operator deployments the operator's local CLI runs against
+   * their own daemon; the daemon trusts admin-doc writes by virtue of
+   * filesystem-local control. ctx.cap still returns ok=true for the
+   * operator's own DID against their own bags, providing the correct
+   * shape for future federated peers without changing handler code.
    */
-  readonly cap:     null;
+  readonly cap:     CapVerify;
 }
 
 /** Handler shape: pure function over (args, context) → result. */
@@ -87,11 +103,26 @@ export class CommandHandlerRegistry {
   }
 }
 
+/** Minimal capability-verifier shape the dispatcher binds to ctx.cap.
+ *  Matches KeyhiveProvider.verify but kept structural so tests can stub
+ *  without dragging in @lararium/keyhive. */
+export interface CapabilityVerifier {
+  verify(args: {
+    presenter: string;
+    bagUrl:    string;
+    access:    "read" | "admin";
+  }): Promise<CapVerifyResult>;
+}
+
 export interface CommandDispatcherOptions {
   /** Composite store wrapping the admin doc as its writable layer. */
   readonly admin:    CompositeStore;
   /** Handler registry. Pre-populate before calling start(). */
   readonly registry: CommandHandlerRegistry;
+  /** Capability provider — handlers' ctx.cap closures bind through this.
+   *  Optional today: when absent, ctx.cap returns ok=true (legacy
+   *  "operator runs the node" gate). When present, real verification. */
+  readonly verifier?: CapabilityVerifier;
 }
 
 /**
@@ -155,11 +186,18 @@ export class CommandDispatcher {
     // admin VM during a long-running command see this state.
     await this.patch(record, buildRunningPatch(), origin);
 
+    // Build per-command cap closure, bound to the request's claimed
+    // requestedBy DID. The verifier (KeyhiveProvider) does the real check.
+    const verifier = this.opts.verifier;
+    const cap: CapVerify = verifier
+      ? (access, bagUrl) => verifier.verify({ presenter: command.requestedBy, bagUrl, access })
+      : async () => ({ ok: true, reason: "no-verifier" });
+
     try {
       const result = await handler(command.args, {
         admin:   this.opts.admin,
         command,
-        cap:     null,
+        cap,
       });
       // Done path: write durable audit event, then tombstone the signal.
       // CLI's poll on log/<id> picks up the result; signal-tiddler vanishes.

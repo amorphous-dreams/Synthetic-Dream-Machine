@@ -56,6 +56,13 @@ export function createPromoteHandler(opts: PromoteHandlerOptions): CommandHandle
     if (!tiddler) throw new Error('args.tiddler is required (lar: URI of the tiddler to promote)');
     if (!toBag)   throw new Error('args.toBag is required (target bag id)');
 
+    // S7.1 D.5 — capability gate. ctx.cap is bound to the requestedBy DID.
+    // Promotion writes into the target bag; require admin on the target.
+    const proof = await ctx.cap("admin", toBag);
+    if (!proof.ok) {
+      throw new Error(`cap-denied: admin on ${toBag} required (${proof.reason ?? "no reason"})`);
+    }
+
     const composite = opts.composite;
 
     // 1. Read source record. Composite reads fan across layers; the result's

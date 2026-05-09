@@ -16,6 +16,8 @@ export { LarEventBusImpl, DEFAULT_RINGS } from "./lar-event-bus-impl.js";
 export { runInit } from "./commands/init.js";
 export type { InitOptions, InitResult } from "./commands/init.js";
 
+export { loadOperatorVerifyingKey, loadOperatorSigningSeed } from "./operator-key.js";
+
 export { CommandDispatcher, CommandHandlerRegistry } from "./command-dispatcher.js";
 export type { CommandHandler, CommandContext, CommandDispatcherOptions } from "./command-dispatcher.js";
 

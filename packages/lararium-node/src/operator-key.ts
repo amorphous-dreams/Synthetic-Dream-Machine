@@ -103,6 +103,31 @@ export async function generateOrLoadOperatorKeypair(
  * Throws when no key file exists — caller must call
  * `generateOrLoadOperatorKeypair(dataDir)` first to ensure one is on disk.
  */
+/**
+ * Load the operator's hex-encoded Ed25519 PUBLIC verifying key from disk.
+ * Cheap read — no crypto. Returns the same `verifyingKey` field
+ * generateOrLoadOperatorKeypair surfaces, without regenerating if missing.
+ *
+ * Used by the CLI to populate command-tiddler `requested-by` with a
+ * Keyhive-recognizable DID (`0x` + verifyingKey hex). Throws when no key
+ * file exists.
+ */
+export async function loadOperatorVerifyingKey(dataDir: string): Promise<string> {
+  const ghReceipt = await getGhCliOperatorReceipt().catch(() => null);
+  const ghLogin   = ghReceipt?.subject?.replace("github:", "") ?? null;
+  const keyFile   = join(dataDir, keyFileName(ghLogin));
+  if (!existsSync(keyFile)) {
+    throw new Error(
+      `[operator-key] no key file at ${keyFile} — run \`lares init\` first to generate the keypair`,
+    );
+  }
+  const raw = JSON.parse(readFileSync(keyFile, "utf8")) as PersistedKey;
+  if (typeof raw.verifyingKey !== "string" || raw.verifyingKey.length !== 64) {
+    throw new Error(`[operator-key] malformed verifyingKey in ${keyFile}`);
+  }
+  return raw.verifyingKey;
+}
+
 export async function loadOperatorSigningSeed(dataDir: string): Promise<Uint8Array> {
   const ghReceipt = await getGhCliOperatorReceipt().catch(() => null);
   const ghLogin   = ghReceipt?.subject?.replace("github:", "") ?? null;
