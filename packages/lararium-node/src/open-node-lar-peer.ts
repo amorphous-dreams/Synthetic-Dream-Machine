@@ -43,7 +43,7 @@ import {
   VmPool,
 }                                       from "@lararium/core";
 import type { MemeRecipeVm, LarOpenPhase } from "@lararium/core";
-import { TW5Engine, MemeSyncAdaptor, DirectMemeRecipeVm } from "@lararium/tw5";
+import { TW5Engine, MemeSyncAdaptor, DirectMemeRecipeVm, MemoryTiddlerStore } from "@lararium/tw5";
 import {
   loadGenesisIsland, reconcileIslandFromGenesis,
   reconcileWellKnownTiddlers,
@@ -535,6 +535,19 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
     });
   }
   composite.addLayer({ bagId: BAG_IDS.draft, store: new AutomergeDocStore(draftHandle, BAG_IDS.draft), writable: true });
+
+  // S6 E.2 — projection layer. In-memory MemoryTiddlerStore at top read
+  // priority. Holds TW5 runtime state ($:/state/*, $:/HistoryList,
+  // $:/StoryList, derived projections) that the operator does not want
+  // synced or persisted. Writes route here only when record.bag ===
+  // BAG_IDS.projection ("projection"); defaultWritable=false keeps draft
+  // as the unbagged-write target. Daemon restart starts this layer empty.
+  composite.addLayer({
+    bagId:           BAG_IDS.projection,
+    store:           new MemoryTiddlerStore(),
+    writable:        true,
+    defaultWritable: false,
+  });
   emit("draft-ready");
 
   // ── 6. LarPeer ────────────────────────────────────────────────────────────

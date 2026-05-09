@@ -78,6 +78,15 @@ export interface CompositeLayer {
   readonly store:        LarTiddlerStore;
   readonly writable:     boolean;
   /**
+   * When true (default), this layer becomes the composite's default writable
+   * store on registration — unbagged writes route here. Set false for layers
+   * that accept explicit `record.bag` routing but shouldn't override the
+   * default. The projection layer (E.2) uses this: writable=true so explicit
+   * writes targeting `bag: "projection"` route correctly, but the default
+   * writable stays draft/room.
+   */
+  readonly defaultWritable?: boolean;
+  /**
    * Optional read-access policy expression from the bag's BagTiddler descriptor.
    * Carried here so callers can inspect policy without another tiddler lookup.
    * Default interpretation: "public" when absent.
@@ -126,7 +135,10 @@ export class CompositeStore implements LarTiddlerStore {
   addLayer(layer: CompositeLayer): void {
     if (this.hasBag(layer.bagId)) throw new Error(`CompositeStore: bag "${layer.bagId}" already registered`);
     this.layers.push(layer);
-    if (layer.writable) this.writableStore = layer.store;
+    // defaultWritable defaults to true. Set false for layers that accept
+    // explicit-bag-routed writes but shouldn't override the default writable
+    // store (the projection layer).
+    if (layer.writable && layer.defaultWritable !== false) this.writableStore = layer.store;
 
     // Forward future change events from this layer to our subscribers.
     const unsub = layer.store.subscribe((change) => {

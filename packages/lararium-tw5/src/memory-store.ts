@@ -1,9 +1,17 @@
 /**
- * MemoryTiddlerStore — in-memory LarTiddlerStore for tests and fixtures.
+ * MemoryTiddlerStore — in-memory LarTiddlerStore.
  *
- * Not intended for production use. Satisfies the full LarTiddlerStore
- * interface with no I/O. Works for host.test.ts, sync-adaptor.test.ts,
- * and browser host factory during development.
+ * Two roles:
+ *   1. Tests and fixtures (original purpose). Used by host.test.ts,
+ *      sync-adaptor.test.ts, and the browser host factory during
+ *      development.
+ *   2. **Production projection layer** (E.2 onward). Mounted as the
+ *      top-priority composite layer with bagId = `BAG_IDS.projection`.
+ *      Holds tiddlers whose `bag` field reads `"projection"` —
+ *      typically TW5 runtime state (`$:/state/*`, `$:/HistoryList`,
+ *      `$:/StoryList`) that the operator does NOT want synced or
+ *      persisted. The store has no I/O, no Automerge backing, no wire
+ *      surface; on daemon restart the projection layer comes up empty.
  *
  * Tombstoned titles disappear from listVisible() but remain readable via
  * get() when the record carries { deleted: true }.
