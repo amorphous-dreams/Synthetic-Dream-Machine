@@ -25,7 +25,7 @@
  *   file watcher MUST check writing.has(uri) before ingesting a change.
  */
 
-import { writeFileSync, mkdirSync } from "fs";
+import { writeFileSync, mkdirSync, unlinkSync, existsSync } from "fs";
 import { join, resolve as resolvePath, dirname } from "path";
 import type {
   LarTiddlerStore, LarTiddlerChange, ReadinessMap, BagMirrorConfig,
@@ -73,10 +73,20 @@ export class LarDiskProjector {
   private schedule(change: LarTiddlerChange): void {
     const { title, record, origin } = change;
     if (!title.startsWith("lar:")) return;
-    if (!record || record.deleted) return;
     // Skip canon-hydrate replays at boot — the file already exists with that
     // content; rewriting churns the file watcher and git for no reason.
     if (origin.kind === "canon-hydrate") return;
+
+    // Tombstone path: a delete in a mirrored bag MUST unlink the file.
+    // Canon-promotion's contract — the source-bag's tombstone is what makes
+    // "git diff IS the operator's signature" work. A tombstone with no
+    // surviving record.bag still has to know which mirror to unlink against;
+    // for tombstones we trust title alone and try every mirror whose strategy
+    // resolves the URI (typically only one).
+    if (!record || record.deleted) {
+      this._scheduleUnlink(title, change);
+      return;
+    }
 
     const bagId = record.bag;
     if (!bagId) return;
@@ -93,6 +103,28 @@ export class LarDiskProjector {
       this.timers.delete(key);
       void this.flush(bagId, parentUri);
     }, this.debounceMs));
+  }
+
+  private _scheduleUnlink(title: string, change: LarTiddlerChange): void {
+    // Per-bag unlink: each AutomergeDocStore tombstone fires with
+    // change.record.bag set to the source bag. Unlink ONLY that bag's mirror
+    // file. Other layers' mirrors stay intact — that's the canon-promotion
+    // contract: room file disappears, canonical file appears.
+    const candidateBag = change.record?.bag ?? null;
+    if (!candidateBag) return;
+    const mirror = this.mirrors.find((m) => m.bagId === candidateBag);
+    if (!mirror) return;
+    const relPath = mirror.toRelPath(title);
+    if (!relPath) return;
+    const root      = resolvePath(mirror.mirrorRoot);
+    const candidate = resolvePath(join(root, relPath));
+    if (!candidate.startsWith(root + "/") && candidate !== root) return;
+    try {
+      if (existsSync(candidate)) {
+        this.writing.add(title);
+        try { unlinkSync(candidate); } finally { this.writing.delete(title); }
+      }
+    } catch { /* best-effort — operator can clean up manually */ }
   }
 
   private async flush(bagId: string, parentUri: string): Promise<void> {

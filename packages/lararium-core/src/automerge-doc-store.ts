@@ -107,7 +107,16 @@ export class AutomergeDocStore implements LarTiddlerStore {
       if (existing) { existing.deleted = true; }
       else { tiddlers[title] = { title, fields: {}, deleted: true }; }
     });
-    this.provider.fireImmediate({ title, record: null, origin });
+    // Carry a deleted record (rather than null) so listeners can reason about
+    // which bag emitted the tombstone — needed by disk-projector unlink
+    // routing and by MemeSyncAdaptor's "remove only when no live copy" logic.
+    const tombstone: LarTiddlerRecord = Object.freeze({
+      title,
+      fields:  Object.freeze({}),
+      deleted: true,
+      ...(this.bagId !== undefined && { bag: this.bagId }),
+    });
+    this.provider.fireImmediate({ title, record: tombstone, origin });
   }
 
   subscribe(fn: (change: LarTiddlerChange) => void): () => void {

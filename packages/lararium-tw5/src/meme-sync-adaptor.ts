@@ -147,9 +147,16 @@ export class MemeSyncAdaptor implements MemeProjection {
    * Buffered per island until onSyncComplete(islandId) fires; then applied.
    */
   onUriChanged(change: LarTiddlerChange): void {
-    const islandId = change.origin.kind === "crdt-remote"
-      ? change.origin.edgeIsland
-      : this.instanceId;
+    // The buffer gate only applies to crdt-remote events — initial Automerge
+    // replay coalescing. Local-origin events (tw-local echoes, lares-command
+    // ceremonies like promote/draft, canon-hydrate boot fans) must apply
+    // immediately so cross-bag writes reach TW5 without waiting on a
+    // sync-complete signal that local origins never trigger.
+    if (change.origin.kind !== "crdt-remote") {
+      this._applyChange(change);
+      return;
+    }
+    const islandId = change.origin.edgeIsland;
     if (!this._syncComplete.has(islandId)) {
       const buf = this._buffer.get(islandId) ?? [];
       buf.push(change);
@@ -285,6 +292,28 @@ export class MemeSyncAdaptor implements MemeProjection {
   // Internal — apply a single change to TW5 wiki under echo guard
   // ---------------------------------------------------------------------------
 
+  private _removeFromTw5(title: string): void {
+    this.tw5.removeTiddler(title);
+    const childTitles: string[] = this.tw5.filterTiddlers(`[field:fragment-parent[${title}]]`);
+    for (const t of childTitles) this.tw5.removeTiddler(t);
+    this._pendingDeletions.add(title);
+  }
+
+  private _applyLiveRecord(title: string, rec: LarTiddlerRecord): void {
+    const isMeme = isMemeRecord(rec, title);
+    if (isMeme && rec.text) {
+      const staleChildren: string[] = this.tw5.filterTiddlers(`[field:fragment-parent[${title}]]`);
+      for (const t of staleChildren) this.tw5.removeTiddler(t);
+      const tiddlers = this.tw5.deserializeCarrier(title, rec.text, rec.fields as Record<string, string | string[]>);
+      for (const t of tiddlers) this.tw5.setTiddler(t as Record<string, string | string[]>);
+    } else {
+      const fields: Record<string, string | string[]> = { title: rec.title, ...rec.fields };
+      if (rec.text !== undefined) fields["text"] = rec.text;
+      this.tw5.setTiddler(fields);
+    }
+    this._pendingModifications.add(title);
+  }
+
   private _applyChange(change: LarTiddlerChange): void {
     if (change.origin.kind === "tw-local" && change.origin.instanceId === this.instanceId) return;
 
@@ -292,28 +321,30 @@ export class MemeSyncAdaptor implements MemeProjection {
     this._applying.set(applyKey, change.origin);
     try {
       if (change.record === null || change.record.deleted) {
-        this.tw5.removeTiddler(change.title);
-        const childTitles: string[] = this.tw5.filterTiddlers(`[field:fragment-parent[${change.title}]]`);
-        for (const t of childTitles) this.tw5.removeTiddler(t);
-        this._pendingDeletions.add(change.title);
-      } else {
-        const rec    = change.record;
-        const isMeme = isMemeRecord(rec, change.title);
-
-        if (isMeme && rec.text) {
-          const staleChildren: string[] = this.tw5.filterTiddlers(`[field:fragment-parent[${change.title}]]`);
-          for (const t of staleChildren) this.tw5.removeTiddler(t);
-          const tiddlers = this.tw5.deserializeCarrier(
-            change.title, rec.text, rec.fields as Record<string, string | string[]>,
-          );
-          for (const t of tiddlers) this.tw5.setTiddler(t as Record<string, string | string[]>);
+        // Cross-bag promotion contract: a tombstone in ONE bag must not wipe
+        // TW5 if another layer still holds a live copy. Resolve via the
+        // composite's live-walk; only remove when no live record remains.
+        // The Promise resolves async; we fire-and-forget to keep _applyChange
+        // synchronous (TW5 sync semantics). Concurrent writes for the same
+        // URI are protected by the _applying echo guard above.
+        const store = this.store as { getLive?: (t: string) => Promise<LarTiddlerRecord | null> };
+        if (typeof store.getLive === "function") {
+          void store.getLive(change.title).then((live) => {
+            if (live) {
+              this._applying.set(applyKey, change.origin);
+              try { this._applyLiveRecord(change.title, live); }
+              finally { this._applying.delete(applyKey); }
+            } else {
+              this._applying.set(applyKey, change.origin);
+              try { this._removeFromTw5(change.title); }
+              finally { this._applying.delete(applyKey); }
+            }
+          });
         } else {
-          const fields: Record<string, string | string[]> = { title: rec.title, ...rec.fields };
-          if (rec.text !== undefined) fields["text"] = rec.text;
-          this.tw5.setTiddler(fields);
+          this._removeFromTw5(change.title);
         }
-
-        this._pendingModifications.add(change.title);
+      } else {
+        this._applyLiveRecord(change.title, change.record);
       }
     } finally {
       this._applying.delete(applyKey);

@@ -237,7 +237,15 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
     });
   }
 
-  composite.addLayer({ bagId: BAG_IDS.lararium, store: new LarariumDocStore(islandHandle, BAG_IDS.lararium), writable: false });
+  // Writable for the canon-promotion ceremony (`lares promote --to <lararium>`).
+  // defaultWritable:false keeps unbagged TW5 saves routing to the room — only
+  // explicit record.bag === BAG_IDS.lararium writes land here.
+  composite.addLayer({
+    bagId:           BAG_IDS.lararium,
+    store:           new LarariumDocStore(islandHandle, BAG_IDS.lararium),
+    writable:        true,
+    defaultWritable: false,
+  });
   emit("island-ready");
 
   // ── 3b. LaresDoc (ba) — personality bag ──────────────────────────────────
@@ -256,7 +264,14 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
     } else {
       laresHandle = seedLaresDoc(repo);
     }
-    composite.addLayer({ bagId: BAG_IDS.lares, store: new AutomergeDocStore(laresHandle, BAG_IDS.lares), writable: false });
+    // Writable for the canon-promotion ceremony (room/draft → @lares canon).
+    // defaultWritable:false so unbagged TW5 saves continue routing to the room.
+    composite.addLayer({
+      bagId:           BAG_IDS.lares,
+      store:           new AutomergeDocStore(laresHandle, BAG_IDS.lares),
+      writable:        true,
+      defaultWritable: false,
+    });
   }
 
   // ── 3b-social. Social plane docs — @identities / @circles / @sessions ─────
@@ -470,6 +485,9 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
   await keyhive.registerBag(BAG_IDS.identities);
   await keyhive.registerBag(BAG_IDS.groups);
   await keyhive.registerBag(BAG_IDS.sessions);
+  await keyhive.registerBag(BAG_IDS.catalog);            // catalog index of room oracles
+  await keyhive.registerBag(BAG_IDS.lararium);           // engine corpus (canon)
+  await keyhive.registerBag(BAG_IDS.lares);              // @lares persona/doctrine (canon)
   await keyhive.registerBag(roomLarUri(roomId));         // active room canonical
   await keyhive.registerBag(roomDraftLarUri(roomId));    // active room draft
 

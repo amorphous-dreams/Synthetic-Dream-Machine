@@ -65,25 +65,30 @@ export function createPromoteHandler(opts: PromoteHandlerOptions): CommandHandle
 
     const composite = opts.composite;
 
-    // 1. Read source record. Composite reads fan across layers; the result's
-    //    `bag` field tells us where the tiddler currently lives.
-    const record = await composite.get(tiddler);
-    if (!record) {
-      throw new Error(`tiddler not found: ${tiddler}`);
+    // 1. Source-bag detection. composite.get() returns the highest-priority
+    //    record including tombstones — a stale tombstone in a draft layer
+    //    masquerades as the source. Walk listBagsHolding (which filters
+    //    deletions) to pick the actual live holder. The CLI typically passes
+    //    fromBag (the where-ceremony primary); honour it when valid.
+    const liveBags = await composite.listBagsHolding(tiddler);
+    if (liveBags.length === 0) {
+      throw new Error(`tiddler not found in any live bag: ${tiddler}`);
     }
+    const actualFromBag = fromBagOpt && liveBags.includes(fromBagOpt)
+      ? fromBagOpt
+      : liveBags[0]!;
 
-    const actualFromBag = record.bag;
-    if (!actualFromBag) {
-      throw new Error(`source record has no bag field — cannot promote: ${tiddler}`);
-    }
-
-    // 2. Strict source check (operator-chosen edge case): if the caller named
-    //    a fromBag, refuse the promotion when it doesn't match where the
-    //    tiddler actually lives. Avoids silent surprises.
-    if (fromBagOpt && fromBagOpt !== actualFromBag) {
+    if (fromBagOpt && !liveBags.includes(fromBagOpt)) {
       throw new Error(
-        `source mismatch: args.fromBag=${fromBagOpt}, but tiddler lives in ${actualFromBag}`,
+        `source mismatch: args.fromBag=${fromBagOpt} doesn't hold a live record for ${tiddler}; live bags: ${liveBags.join(", ")}`,
       );
+    }
+
+    // Read the highest-priority LIVE record so we promote actual content
+    // rather than a stale tombstone. getLive walks layers and skips deletions.
+    const record = await composite.getLive(tiddler);
+    if (!record) {
+      throw new Error(`tiddler not readable: ${tiddler}`);
     }
 
     if (actualFromBag === toBag) {

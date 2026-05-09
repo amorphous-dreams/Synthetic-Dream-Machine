@@ -255,6 +255,22 @@ export class CompositeStore implements LarTiddlerStore {
     return null;
   }
 
+  /** Read the highest-priority LIVE (non-tombstoned) record for a title.
+   *  Standard composite.get() returns the first non-null result including
+   *  tombstones — useful when a caller needs to know about deletions.
+   *  getLive() is the variant ceremonies use when "is the tiddler actually
+   *  there right now" matters (promote source-detection, draft-from). */
+  async getLive(title: string): Promise<LarTiddlerRecord | null> {
+    for (let i = this.layers.length - 1; i >= 0; i--) {
+      const rec = await this.layers[i]!.store.get(title);
+      if (rec && !rec.deleted) {
+        if (this.residency) void Promise.resolve(this.residency.touch(this.layers[i]!.bagId));
+        return rec;
+      }
+    }
+    return null;
+  }
+
   /** Bag ids of every layer currently holding a non-tombstoned record for the
    *  given title. Highest-priority bag appears first (recipe-presence order).
    *  Used by the `where` ceremony — recipe-presence preview before promotion. */

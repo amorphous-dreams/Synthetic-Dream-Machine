@@ -26,8 +26,10 @@ export function createWhereHandler(opts: WhereHandlerOptions): CommandHandler {
     if (!tiddler) throw new Error("args.tiddler is required");
 
     const bags    = await opts.composite.listBagsHolding(tiddler);
-    const record  = await opts.composite.get(tiddler);
-    const primary = record?.bag ?? null;
+    // primaryBag must reflect the live primary holder, not a tombstone.
+    // listBagsHolding already filters deletions and orders highest-priority
+    // first — its head is the canonical source for promote ceremonies.
+    const primary = bags[0] ?? null;
 
     return { tiddler, bags, primaryBag: primary };
   };
