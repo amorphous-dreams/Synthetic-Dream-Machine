@@ -30,8 +30,11 @@ export type { WhereHandlerOptions } from "./where-handler.js";
 export {
   createListWikisHandler, createInitWikiHandler,
   createOpenWikiHandler, createSyncWikiHandler,
+  createPinWikiHandler, createUnpinWikiHandler,
 } from "./wiki-handlers.js";
-export type { WikiHandlerOptions, WikiMintHandlerOptions } from "./wiki-handlers.js";
+export type {
+  WikiHandlerOptions, WikiMintHandlerOptions, WikiResidencyOptions,
+} from "./wiki-handlers.js";
 
 export {
   createPinHandler, createUnpinHandler, createResidencyStatsHandler,

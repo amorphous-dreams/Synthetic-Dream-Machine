@@ -59,6 +59,7 @@ import { createWhereHandler }                       from "./where-handler.js";
 import {
   createListWikisHandler, createInitWikiHandler,
   createOpenWikiHandler, createSyncWikiHandler,
+  createPinWikiHandler, createUnpinWikiHandler,
 } from "./wiki-handlers.js";
 import {
   createPinHandler, createUnpinHandler, createResidencyStatsHandler,
@@ -389,6 +390,10 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
   commandRegistry.register("unpin",     createUnpinHandler({ residency }));
   commandRegistry.register("residency",     createResidencyStatsHandler({ residency }));
   commandRegistry.register("register-cold", createRegisterColdHandler({ residency }));
+  // E.6 — whole-recipe residency. Walks the wiki's bag-stack and
+  // pins/unpins each bag in one shot.
+  commandRegistry.register("pin-wiki",   createPinWikiHandler({ composite, residency }));
+  commandRegistry.register("unpin-wiki", createUnpinWikiHandler({ composite, residency }));
   // C.2 — start the background sweeper. Idle eviction + LRU trim run
   // every sweepIntervalMs (default 30s). The manager's own re-entrancy
   // guard makes overlapping ticks safe.

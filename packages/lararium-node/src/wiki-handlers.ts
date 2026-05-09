@@ -14,9 +14,10 @@ import { join } from "node:path";
 import type { Repo, DocHandle, AutomergeUrl } from "@automerge/automerge-repo";
 import {
   type CompositeStore, type LarTiddlerRecord, type ChangeOrigin, type MemeStoreDoc,
-  type CatalogDoc, type MutableLarRecord,
+  type CatalogDoc, type MutableLarRecord, type BagResidencyManager,
   emptyMemeStoreDoc, ADMIN_BAG_ID, BAG_IDS, roomLarUri, roomDraftLarUri, recipeUri,
   CATALOG_DOC_URI, LARARIUM_DOC_URI, LARES_DOC_URI,
+  parseBagStack,
 } from "@lararium/core";
 import { repoRoot } from "@lares/lares";
 import type { CommandHandler } from "./command-dispatcher.js";
@@ -35,6 +36,12 @@ export interface WikiMintHandlerOptions {
   readonly repo:          Repo;
   readonly catalogHandle: DocHandle<CatalogDoc>;
   readonly operatorDid:   () => Promise<string> | string;
+}
+
+/** Options for whole-wiki residency operations (pin/unpin). */
+export interface WikiResidencyOptions {
+  readonly composite: CompositeStore;
+  readonly residency: BagResidencyManager;
 }
 
 /**
@@ -308,6 +315,77 @@ export function createSyncWikiHandler(opts: WikiMintHandlerOptions): CommandHand
     }
 
     return { slug, scanned: files.length, ingested, skipped, errors };
+  };
+}
+
+// ---------------------------------------------------------------------------
+// pin / unpin — whole-recipe residency operations
+// ---------------------------------------------------------------------------
+
+/**
+ * `lares wiki pin <slug>` — pin every bag in the wiki's recipe.
+ *
+ * Reads the recipe tiddler, walks `bag-stack`, calls residency.pin for
+ * each bag URI. Reason field encodes "wiki:<slug>:<bagSlot>" so unpin can
+ * identify which pins belong to this wiki.
+ *
+ * Returns { slug, recipeUri, pinned: [{ bagUrl, reason }] }.
+ */
+export function createPinWikiHandler(opts: WikiResidencyOptions): CommandHandler {
+  return async (args) => {
+    const slug = stringArg(args, "slug");
+    if (!slug) throw new Error("args.slug is required");
+
+    const recipeTitle = recipeUri("@lararium", slug);
+    const recipeRec   = await opts.composite.get(recipeTitle);
+    if (!recipeRec) {
+      throw new Error(`recipe not found for "${slug}" — run \`lares wiki init ${slug}\` first`);
+    }
+
+    const fields  = (recipeRec.fields ?? {}) as Record<string, string>;
+    const bagStack = parseBagStack(fields["bag-stack"]);
+    if (bagStack.length === 0) {
+      return { slug, recipeUri: recipeTitle, pinned: [], note: "recipe has no bag-stack" };
+    }
+
+    const pinned: Array<{ bagUrl: string; reason: string }> = [];
+    for (const bagUrl of bagStack) {
+      const reason = `wiki:${slug}`;
+      await opts.residency.pin(bagUrl, reason);
+      pinned.push({ bagUrl, reason });
+    }
+    return { slug, recipeUri: recipeTitle, pinned };
+  };
+}
+
+/**
+ * `lares wiki unpin <slug>` — unpin every bag in the wiki's recipe.
+ *
+ * Walks the recipe's bag-stack and calls residency.unpin for each. Bags
+ * that were pinned for OTHER reasons (e.g. boot:catalog from infrastructure
+ * pins) lose their pin too — operator should re-pin those manually if they
+ * want them back. The pin reason field doesn't gate unpin; it's
+ * informational. Future refinement: scope unpin by reason prefix.
+ */
+export function createUnpinWikiHandler(opts: WikiResidencyOptions): CommandHandler {
+  return async (args) => {
+    const slug = stringArg(args, "slug");
+    if (!slug) throw new Error("args.slug is required");
+
+    const recipeTitle = recipeUri("@lararium", slug);
+    const recipeRec   = await opts.composite.get(recipeTitle);
+    if (!recipeRec) {
+      throw new Error(`recipe not found for "${slug}"`);
+    }
+
+    const fields   = (recipeRec.fields ?? {}) as Record<string, string>;
+    const bagStack = parseBagStack(fields["bag-stack"]);
+    const unpinned: string[] = [];
+    for (const bagUrl of bagStack) {
+      opts.residency.unpin(bagUrl);
+      unpinned.push(bagUrl);
+    }
+    return { slug, recipeUri: recipeTitle, unpinned };
   };
 }
 

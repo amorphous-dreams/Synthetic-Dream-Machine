@@ -165,6 +165,61 @@ export async function cmdWikiSync(args: ParsedArgs): Promise<number> {
   }
 }
 
+export async function cmdWikiPin(args: ParsedArgs): Promise<number> {
+  const slug = args.positional[0];
+  if (!slug) {
+    console.error("usage: lares wiki pin <slug>");
+    return 2;
+  }
+  const did  = await operatorDid().catch(() => "lares-cli");
+  const peer = await tryConnect();
+  if (!peer) return 3;
+  try {
+    const r = await submitCommand(peer, "pin-wiki", { slug }, did);
+    if (r.status === "error") {
+      console.error(`pin failed: ${r.errorMessage ?? "unknown"}`);
+      return 4;
+    }
+    const result = r.result ?? {};
+    const pinned = (result["pinned"] ?? []) as Array<{ bagUrl: string; reason: string }>;
+    console.log("");
+    console.log(`wiki ${slug}: pinned ${pinned.length} bag(s)`);
+    for (const p of pinned) console.log(`  ${p.bagUrl}  (${p.reason})`);
+    if (result["note"]) console.log(`  ${result["note"]}`);
+    console.log("");
+    return 0;
+  } finally {
+    await peer.disconnect();
+  }
+}
+
+export async function cmdWikiUnpin(args: ParsedArgs): Promise<number> {
+  const slug = args.positional[0];
+  if (!slug) {
+    console.error("usage: lares wiki unpin <slug>");
+    return 2;
+  }
+  const did  = await operatorDid().catch(() => "lares-cli");
+  const peer = await tryConnect();
+  if (!peer) return 3;
+  try {
+    const r = await submitCommand(peer, "unpin-wiki", { slug }, did);
+    if (r.status === "error") {
+      console.error(`unpin failed: ${r.errorMessage ?? "unknown"}`);
+      return 4;
+    }
+    const result = r.result ?? {};
+    const unpinned = (result["unpinned"] ?? []) as string[];
+    console.log("");
+    console.log(`wiki ${slug}: unpinned ${unpinned.length} bag(s)`);
+    for (const u of unpinned) console.log(`  ${u}`);
+    console.log("");
+    return 0;
+  } finally {
+    await peer.disconnect();
+  }
+}
+
 export async function cmdWikiWhich(args: ParsedArgs): Promise<number> {
   const tiddler = args.positional[0];
   if (!tiddler) {
@@ -200,6 +255,8 @@ const SUBCOMMANDS: Readonly<Record<string, { handler: WikiSubcommand; summary: s
   "init":  { handler: cmdWikiInit,  summary: "Mint a fresh wiki: room canonical + per-wiki draft + recipe. Idempotent." },
   "open":  { handler: cmdWikiOpen,  summary: "Set the daemon's active wiki marker. Restart required to mount (E.7 = hot-reload)." },
   "sync":  { handler: cmdWikiSync,  summary: "Walk rooms/<slug>/memes/** and ingest into the canonical bag. Idempotent." },
+  "pin":   { handler: cmdWikiPin,   summary: "Pin every bag in the wiki's recipe (whole-recipe residency)." },
+  "unpin": { handler: cmdWikiUnpin, summary: "Unpin every bag in the wiki's recipe." },
   "list":  { handler: cmdWikiList,  summary: "Enumerate rooms registered in the catalog. Needs `lares serve`." },
   "which": { handler: cmdWikiWhich, summary: "Recipe-presence query — list bags holding a tiddler. Needs `lares serve`." },
 };
@@ -210,8 +267,8 @@ function printWikiHelp(): void {
   for (const [verb, entry] of Object.entries(SUBCOMMANDS)) {
     console.log(`  ${verb.padEnd(10)} ${entry.summary}`);
   }
-  console.log("\nMore verbs land in E.6+ (pin, unpin, add-bag, remove-bag,");
-  console.log("epoch, rotate-recipe, prune-stale).");
+  console.log("\nMore verbs land in E.7+ (add-bag, remove-bag, epoch,");
+  console.log("rotate-recipe, prune-stale).");
 }
 
 export async function cmdWiki(args: ParsedArgs): Promise<number> {
