@@ -149,8 +149,19 @@ function makeLeaf(
       return { kind: "PranalaSugar", ...base, sigil: "loulou", slot: null, fromRaw: null, toRaw: g(1), family: "relation", role: null, listenable: null, subscribable: null } as PranalaSugarNode;
 
     case "aka": {
+      // Two surface forms (per memetic-wikitext spec):
+      //   child-slot: `<<~ aka ahu #slot >>`  → scanner regex with two
+      //                                          groups: g(1)=sigil keyword,
+      //                                          g(2)=`#slot` → AhuNode
+      //                                          (projection).
+      //   URI form:   `<<~ aka lar:///foo >>` → scanner regex with one
+      //                                          group: g(1)=URI, g(2)=""
+      //                                          → PranalaSugar (observe).
+      // Discriminator: g(2) starting with `#` selects child-slot. Otherwise
+      // route to URI / edge branch with toRaw = g(1) (URI lives in group 1
+      // when group 2 is absent).
       const akaSlot = g(2);
-      if (akaSlot) {
+      if (akaSlot.startsWith("#")) {
         return { kind: "Ahu", ...base, slot: akaSlot, uri: memeUri + akaSlot, delegate: null, body: [], projection: true } as AhuNode;
       }
       return { kind: "PranalaSugar", ...base, sigil: "aka", slot: null, fromRaw: null, toRaw: g(1), family: "observe", role: null, listenable: null, subscribable: null } as PranalaSugarNode;

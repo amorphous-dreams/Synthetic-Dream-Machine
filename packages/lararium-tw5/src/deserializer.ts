@@ -25,7 +25,7 @@
 import { MemeStreamParser } from "@lararium/core";
 import type { MemeStreamEvent } from "@lararium/core";
 import { parseMemeText } from "@lararium/core/meme-ast";
-import type { MemeAstNode, AhuNode } from "@lararium/core/meme-ast";
+import type { AhuNode } from "@lararium/core/meme-ast";
 import { parseTaploFields } from "./toml-ast.js";
 
 export type TiddlerFields = Record<string, string | string[]>;

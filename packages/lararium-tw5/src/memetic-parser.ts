@@ -34,12 +34,6 @@
 import type {
   MemeAstNode,
   AhuNode,
-  PranalaNode,
-  PranalaSugarNode,
-  LeleNode,
-  PaeNode,
-  SigilNode,
-  DynamicNode,
   GrammarRules,
 } from "@lararium/core";
 import { parseMemeText, grammarRulesFromText } from "@lararium/core";
@@ -97,169 +91,41 @@ function resolveGrammar(wiki: TW5Wiki | undefined): GrammarRules | null {
 // ---------------------------------------------------------------------------
 
 function nodeToTw5(node: MemeAstNode, wiki?: TW5Wiki): TW5ParseNode {
-  switch (node.kind) {
-    case "Pae": {
-      const n = node as PaeNode;
-      return {
-        type: "pae", _ast: node, children: [],
-        attributes: {
-          phase: attr(n.phase),
-          ...(n.toUri ? { uri: attr(n.toUri) } : {}),
-        },
-      };
-    }
-
-    case "Ahu": {
-      const n = node as AhuNode;
-      return {
-        type: "ahu", _ast: node,
-        attributes: {
-          slot: attr(n.slot),
-          uri:  attr(n.uri),
-          ...(n.delegate   ? { delegate:   attr(n.delegate) }   : {}),
-          ...(n.invocation ? { invocation: attr("true") }        : {}),
-          ...(n.projection ? { projection: attr("true") }        : {}),
-        },
-        children: (n.invocation || n.projection) ? [] : n.body.map((c) => nodeToTw5(c, wiki)),
-      };
-    }
-
-    case "Text": {
-      // Emit prose as a literal-text TW5 parse-tree node. The previous
-      // architecture re-parsed Text content through `text/vnd.tiddlywiki`
-      // so prose between sigils picked up wiki-markup formatting — but
-      // that re-parse also intercepted the meme's carrier sentinels
-      // (`<<~&#x0001;>>`, `<<~&#x0002;>>`, DOCTYPE comments) as `<<macro>>`
-      // syntax and silently dropped them when no matching procedure
-      // existed. Round-trip idempotency depends on the parser preserving
-      // the operator's source verbatim. Live-UI rendering of inline
-      // wiki-markup belongs in a template, not in the parser.
-      return { type: "text", text: node.content, _ast: node, children: [] };
-    }
-
-    case "Pranala": {
-      const n = node as PranalaNode;
-      return {
-        type: "pranala", _ast: node, children: [],
-        attributes: {
-          from:   attr(n.fromRaw),
-          to:     attr(n.toRaw),
-          family: attr(n.family),
-          ...(n.role ? { role: attr(n.role) } : {}),
-        },
-      };
-    }
-
-    case "PranalaSugar": {
-      const n = node as PranalaSugarNode;
-      if (n.sigil === "papalohe") {
-        return {
-          type: "papalohe", _ast: node, children: [],
-          attributes: {
-            from:    attr(n.fromRaw ?? ""),
-            to:      attr(n.toRaw),
-            ...(n.listenable  ? { listenable:  attr(n.listenable) }  : {}),
-            ...(n.subscribable ? { subscribable: attr(n.subscribable) } : {}),
-            ...(n.slot    ? { slot:    attr(n.slot) }    : {}),
-          },
-        };
-      }
-      return {
-        type: "pranala", _ast: node, children: [],
-        attributes: {
-          sigil:  attr(n.sigil),
-          to:     attr(n.toRaw),
-          family: attr(n.family),
-          ...(n.fromRaw    ? { from:       attr(n.fromRaw) }       : {}),
-          ...(n.role      ? { role:       attr(n.role) }         : {}),
-          ...(n.listenable  ? { listenable:  attr(n.listenable) }  : {}),
-          ...(n.subscribable ? { subscribable: attr(n.subscribable) } : {}),
-        },
-      };
-    }
-
-    case "Lele": {
-      const n = node as LeleNode;
-      return {
-        type: "lele", _ast: node, children: [],
-        attributes: { target: attr(n.targetRaw) },
-      };
-    }
-
-    case "Sigil": {
-      const n = node as SigilNode;
-      if (n.sigilName === "toml") {
-        const profile = n.attrs["profile"] ?? "";
-        return {
-          type: "toml", _ast: node, children: [],
-          attributes: {
-            content: attr(n.attrs["content"] ?? ""),
-            ...(profile ? { profile: attr(profile) } : {}),
-            ...(profile === "iam" ? { suppress: attr("true") } : {}),
-          },
-        };
-      }
-      if (n.sigilName === "kukali") {
-        return {
-          type: "kukali", _ast: node, children: [],
-          attributes: n.attrs["trigger"] ? { trigger: attr(n.attrs["trigger"]) } : {},
-        };
-      }
-      if (n.sigilName === "waiho") {
-        return {
-          type: "waiho", _ast: node,
-          attributes: {
-            name:  attr(n.attrs["name"]  ?? ""),
-            value: attr(n.attrs["value"] ?? ""),
-            scope: attr(n.attrs["scope"] ?? "block"),
-          },
-          children: n.body.map((c) => nodeToTw5(c, wiki)),
-        };
-      }
-      if (n.sigilName === "kau") {
-        const fragment = n.attrs["fragment"] ?? "";
-        if (fragment) {
-          return {
-            type: "kau", _ast: node, children: [],
-            attributes: {
-              fragment: attr(fragment),
-              name:     attr(n.attrs["name"]     ?? ""),
-              propsRaw: attr(n.attrs["propsRaw"] ?? ""),
-            },
-          };
-        }
-        return {
-          type: "kau", _ast: node, children: [],
-          attributes: {
-            name: attr(n.attrs["name"] ?? ""),
-            args: attr(n.attrs["args"] ?? ""),
-          },
-        };
-      }
-      // Generic sigil fallback
-      return {
-        type: "sigil", _ast: node,
-        tag: n.sigilName,
-        attributes: Object.fromEntries(
-          Object.entries(n.attrs).map(([k, v]) => [k, attr(v)])
-        ),
-        children: n.body.map((c) => nodeToTw5(c, wiki)),
-      };
-    }
-
-    case "Dynamic": {
-      const n = node as DynamicNode;
-      return {
-        type: "dynamic", _ast: node,
-        tag: n.sigilName,
-        attributes: {},
-        children: n.body.map((c) => nodeToTw5(c, wiki)),
-      };
-    }
-
-    default:
-      return { type: "text", text: (node as MemeAstNode).raw ?? "", children: [] };
+  // Ahu — the only widget-bearing case. AhuWidget transcludes its slot
+  // child tiddler through the cascade-resolved template; the parse-tree
+  // body of definition-form ahu blocks is unused at render time.
+  if (node.kind === "Ahu") {
+    const n = node as AhuNode;
+    return {
+      type: "ahu", _ast: node,
+      attributes: {
+        slot: attr(n.slot),
+        uri:  attr(n.uri),
+        ...(n.delegate   ? { delegate:   attr(n.delegate) }   : {}),
+        ...(n.invocation ? { invocation: attr("true") }        : {}),
+        ...(n.projection ? { projection: attr("true") }        : {}),
+      },
+      children: (n.invocation || n.projection) ? [] : n.body.map((c) => nodeToTw5(c, wiki)),
+    };
   }
+
+  // Text — prose between sigils. Emit literal so carrier sentinels
+  // (SOH/STX/ETX) and DOCTYPE comments embedded in prose survive.
+  if (node.kind === "Text") {
+    return { type: "text", text: node.content, _ast: node, children: [] };
+  }
+
+  // Literal-survival for every other sigil. Each AST node carries its
+  // raw source slice (`raw: string` on MemeAstBase); emit it verbatim so
+  // disk round-trip preserves the operator's grammar. Per-sigil widget
+  // rendering for live UI / HTML scope ports through the template-cascade
+  // pattern in follow-up sprints (Path G).
+  //
+  // Sigils covered by this branch today: pranala, pranala-sugar (loulou /
+  // aka / kahea / pono / papalohe), lele, sigil (toml / kukali / waiho /
+  // kau / generic), dynamic, pae. Each gets its own `$:/tags/Lar/<Sigil>
+  // Template` cascade entry when ported.
+  return { type: "text", text: node.raw, _ast: node, children: [] };
 }
 
 // ---------------------------------------------------------------------------

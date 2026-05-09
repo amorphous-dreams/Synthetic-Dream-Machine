@@ -1,22 +1,20 @@
 /**
- * tw5-widgets — barrel: re-exports all lararium widget classes and filter operators.
+ * tw5-widgets — barrel: re-exports lararium widget classes + filter operators.
  *
  * Each widget lives in its own file under src/widgets/.
  * Each filter operator lives in its own file under src/filters/.
- * The build script (sync-heleuma --sync-modules) reads these files, strips types,
- * and injects compiled JS into the corresponding lares/ module tiddlers.
  *
  * Widget registry (createLarariumWidgets) → TW5 tag name mapping:
- *   ahu        → AhuWidget       <$ahu>      carrier slot
- *   pranala    → PranalaWidget   <$pranala>  explicit edge metadata
- *   papalohe   → PapaloheWidget  <$papalohe> reaction wire edge
- *   lele       → LeleWidget      <$lele>     fire-and-forget dispatch
- *   kukali     → KukaliWidget    <$kukali>   reactive wait posture
- *   kumu       → KumuWidget      <$kumu>     device instance
- *   toml       → TomlWidget      <$toml>     data block
- *   sigil      → SigilWidget     <$sigil>    generic sigil container
- *   dynamic    → DynamicWidget   <$dynamic>  grammar-meme extension
- *   pae        → PaeWidget       <$pae>      phase boundary marker
+ *   ahu        → AhuWidget       <$ahu>      carrier slot (cascade-routed
+ *                                            template; lives in templates
+ *                                            tagged $:/tags/Lar/AhuTemplate)
+ *   kau        → KauWidget       <$kau>      Keyhive UCAN slot (port to
+ *                                            template-cascade in Path G)
+ *
+ * Other sigils (pranala, papalohe, lele, kukali, kumu, toml, sigil, dynamic,
+ * pae, etc.) ride the lar-sigil wikirule's literal-survival path — their
+ * raw source survives intact through disk export. Per-sigil HTML rendering
+ * gets ported to the template-cascade pattern in follow-up sprints.
  *
  * Filter operators (registerImplementorsOperator):
  *   implementors  exact-token match on implements field
@@ -29,45 +27,18 @@ import type { TW5Instance } from "./types/tiddlywiki.js";
 type WidgetCtor = { prototype: unknown };
 type WidgetCtorWithProto = WidgetCtor & { prototype: unknown };
 
-export { PranalaWidget }  from "./widgets/pranala.js";
-export { PaeWidget }      from "./widgets/pae.js";
-export { LeleWidget }     from "./widgets/lele.js";
-export { PapaloheWidget } from "./widgets/papalohe.js";
-export { KukaliWidget }   from "./widgets/kukali.js";
-export { TomlWidget }     from "./widgets/toml.js";
-export { SigilWidget }    from "./widgets/sigil.js";
-export { DynamicWidget }  from "./widgets/dynamic.js";
-export { AhuWidget }      from "./widgets/ahu.js";
-export { KumuWidget }     from "./widgets/kumu.js";
-export { KauWidget }      from "./widgets/kau.js";
+export { AhuWidget } from "./widgets/ahu.js";
+export { KauWidget } from "./widgets/kau.js";
 
-import { PranalaWidget }  from "./widgets/pranala.js";
-import { PaeWidget }      from "./widgets/pae.js";
-import { LeleWidget }     from "./widgets/lele.js";
-import { PapaloheWidget } from "./widgets/papalohe.js";
-import { KukaliWidget }   from "./widgets/kukali.js";
-import { TomlWidget }     from "./widgets/toml.js";
-import { SigilWidget }    from "./widgets/sigil.js";
-import { DynamicWidget }  from "./widgets/dynamic.js";
-import { AhuWidget }      from "./widgets/ahu.js";
-import { KumuWidget }     from "./widgets/kumu.js";
-import { KauWidget }      from "./widgets/kau.js";
+import { AhuWidget } from "./widgets/ahu.js";
+import { KauWidget } from "./widgets/kau.js";
 
 import { registerLarariumFilters } from "./tw5-filter.js";
 
 export function createLarariumWidgets(_tw: TW5Instance): Record<string, WidgetCtorWithProto> {
   return {
-    "ahu":      AhuWidget      as unknown as WidgetCtorWithProto,
-    "pranala":  PranalaWidget  as unknown as WidgetCtorWithProto,
-    "papalohe": PapaloheWidget as unknown as WidgetCtorWithProto,
-    "lele":     LeleWidget     as unknown as WidgetCtorWithProto,
-    "kukali":   KukaliWidget   as unknown as WidgetCtorWithProto,
-    "kumu":     KumuWidget     as unknown as WidgetCtorWithProto,
-    "kau":      KauWidget      as unknown as WidgetCtorWithProto,
-    "toml":     TomlWidget     as unknown as WidgetCtorWithProto,
-    "sigil":    SigilWidget    as unknown as WidgetCtorWithProto,
-    "dynamic":  DynamicWidget  as unknown as WidgetCtorWithProto,
-    "pae":      PaeWidget      as unknown as WidgetCtorWithProto,
+    "ahu": AhuWidget as unknown as WidgetCtorWithProto,
+    "kau": KauWidget as unknown as WidgetCtorWithProto,
   };
 }
 
@@ -144,7 +115,7 @@ export const LARARIUM_AHU_CASCADE_HTML = {
 export const LARARIUM_AHU_TEMPLATE_MARKDOWN_MEME = {
   title:    "lar:///ha.ka.ba/@lararium/templates/ahu/markdown-meme",
   type:     "text/vnd.tiddlywiki",
-  text:     "\\rules except lar-sigil-block lar-sigil-inline macrocallinline macrocallblock\n<<~ ahu {{!!slot}} >>\n{{!!text}}\n<<~/ahu >>\n",
+  text:     "\\rules except lar-sigil-block lar-sigil-inline lar-doctype-comment macrocallinline macrocallblock\n<<~ ahu {{!!slot}} >>\n{{!!text}}\n<<~/ahu >>\n",
 } as const;
 
 export const LARARIUM_AHU_TEMPLATE_HTML = {

@@ -48,6 +48,4 @@ export type { WorkerFactory, AnyWorker } from "./tw5-worker-proxy.js";
 
 export type { TiddlerFields } from "./deserializer.js";
 export type { TW5ParseNode } from "./memetic-parser.js";
-export type { VmDebugSurface } from "./server-api.js";
-export type { RecipeVm, SerializedRecord } from "./recipe-vm.js";
 export type { FilterEngineFn } from "@lararium/core";
