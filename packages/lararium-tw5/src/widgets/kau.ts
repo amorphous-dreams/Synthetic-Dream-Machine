@@ -46,7 +46,7 @@ KauWidget.prototype.render = function (this: TW5WidgetInstance, parent: TW5FakeE
       document: this.document,
     });
     if (modeResult !== null) {
-      if (renderMode === "carrier") {
+      if (renderMode === "markdown-meme") {
         // kau carrier form reconstructs the placement sigil from attributes, not a body block.
         const parts = [`<<~ kau #${fragment}`, name, propsRaw].filter(Boolean).join(" ");
         const text  = this.document.createTextNode(`${parts} >>`);

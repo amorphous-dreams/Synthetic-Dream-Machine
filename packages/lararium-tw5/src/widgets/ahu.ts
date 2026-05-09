@@ -1,99 +1,146 @@
-import type { TW5WidgetInstance, TW5ParseTreeNode, TW5FakeElement, TW5ChangeRecord } from "../types/tiddlywiki.js";
-import { dispatchSlotRenderMode } from "./render-modes.js";
+/**
+ * AhuWidget — TW5 widget for the `ahu` sigil (slot reference / definition).
+ *
+ * Architecture (rewrite, no legacy code):
+ *   The widget owns no render-mode dispatch. It computes the slot's child
+ *   tiddler URI, then transcludes it through the cascade-resolved template.
+ *   Template selection is data-driven: tiddlers tagged `$:/tags/Lar/AhuTemplate`
+ *   form a TW5 cascade; each entry's text is a filter expression returning
+ *   the template tiddler URI when the entry applies. The variable
+ *   `lar-export-scope` lets callers select disk-export vs live-UI rendering
+ *   without the widget knowing which is which.
+ *
+ *   Default cascade entries ship in tw5-widgets.ts:
+ *     - `$:/config/Lar/AhuTemplate/markdown-meme` — matches when
+ *       `lar-export-scope=="markdown-meme"`, returns the disk-export template.
+ *     - `$:/config/Lar/AhuTemplate/html` — fallback, always matches, returns
+ *       the live-UI template.
+ *
+ *   The widget is intentionally thin: ~30 lines of logic. All grammar lives
+ *   in the templates (memes at `lar:///ha.ka.ba/@lararium/templates/ahu/*`).
+ *   Operators can override the cascade or templates per-wiki without
+ *   recompiling TS.
+ *
+ * Parse tree shape (from MemeticParser):
+ *   { type: "ahu", attributes: { slot, uri, invocation?, projection?, delegate? } }
+ *
+ * The `invocation` and `projection` flags from the AST are no longer
+ * read — both forms render identically through the cascade. Operator-
+ * authored shape distinctions belong in cascade entries (e.g. a future
+ * `$:/config/Lar/AhuTemplate/projection` entry can match
+ * `<lar-export-scope>match[projection]` and emit the aka shadow ref).
+ */
 
-export function AhuWidget(this: TW5WidgetInstance, parseTreeNode: TW5ParseTreeNode, options: Record<string, unknown>) {
+import type {
+  TW5WidgetInstance, TW5ParseTreeNode, TW5FakeElement, TW5ChangeRecord,
+} from "../types/tiddlywiki.js";
+
+const CASCADE_FILTER =
+  "[all[shadows+tiddlers]tag[$:/tags/Lar/AhuTemplate]!is[draft]] :map:flat[subfilter{!!text}] +[first[]]";
+
+const FALLBACK_TEMPLATE = "lar:///ha.ka.ba/@lararium/templates/ahu/html";
+
+export function AhuWidget(
+  this:          TW5WidgetInstance,
+  parseTreeNode: TW5ParseTreeNode,
+  options:       Record<string, unknown>,
+) {
   this.initialise(parseTreeNode, options);
 }
 
-AhuWidget.prototype.render = function (this: TW5WidgetInstance, parent: TW5FakeElement, nextSibling: TW5FakeElement | null) {
+AhuWidget.prototype.render = function (
+  this:        TW5WidgetInstance,
+  parent:      TW5FakeElement,
+  nextSibling: TW5FakeElement | null,
+) {
   this.parentDomNode = parent;
   this.computeAttributes();
   this.execute();
 
-  const slot       = this.getAttribute("slot", "");
-  const renderMode = this.getVariable?.("lar-render-mode") ?? "";
-  const parentUri  = this.getVariable?.("currentTiddler") ?? "";
-  const childUri   = this.getAttribute("uri", "") || (parentUri + slot);
-
-  const modeResult = dispatchSlotRenderMode(renderMode, {
-    sigil:    "ahu",
-    slot,
-    childUri,
-    wiki:     this.wiki!,
-    document: this.document,
-  });
-
-  if (modeResult !== null) {
-    const text = this.document.createTextNode(modeResult.raw);
-    parent.insertBefore(text, nextSibling);
-    this.domNodes = [text as unknown as TW5FakeElement];
-    return;
-  }
-
-  // ── HTML render mode ──────────────────────────────────────────────────────
-  // Transclude the stored child tiddler (uri#slot) as currentTiddler.
-  // This is the TW5 <$tiddler tiddler="uri#slot"><$transclude/></$tiddler> pattern:
-  //   - View: renders child tiddler body (also text/x-memetic-wikitext via MemeticParser)
-  //   - Edit: TW5 draft of uri#slot → memetic-wikitext slot body as editing surface
-  //   - Nested ahu → nested transclusions → nested edit UX automatically
-  //
-  // The inline parse tree children (from carrier body) are intentionally not rendered here.
-  // They are the import source that populated the child tiddler; the child tiddler is
-  // authoritative at render time.
-
-  const projection = this.getAttribute("projection", "") === "true";
-
-  const el = this.document.createElement("section");
-  el.setAttribute("data-lar-kind", "ahu");
-  el.setAttribute("data-lar-slot", slot);
-  el.setAttribute("data-lar-uri",  childUri);
-  if (projection) el.setAttribute("data-lar-projection", "true");  // read-only; no edit affordance
-  parent.appendChild(el);
-  this.domNodes = [el];
-
-  if (!childUri) {
-    const hole = this.document.createElement("span");
-    hole.setAttribute("data-lar-kind", "hole");
-    hole.textContent = `? ahu ${slot}`;
-    el.appendChild(hole);
-    return;
-  }
-
-  // Push child URI as currentTiddler so nested ahu transclusions have the right context.
-  this.setVariable?.("currentTiddler", childUri);
-
-  const transclude = this.wiki?.makeTranscludeWidget?.(childUri, {
-    document:     this.document,
-    parentWidget: this,
-  });
-
-  if (transclude) {
-    transclude.render(el, null);
-    this.children = [transclude];
-  } else {
-    const hole = this.document.createElement("span");
-    hole.setAttribute("data-lar-kind", "hole");
-    hole.textContent = `? ahu ${slot}`;
-    el.appendChild(hole);
-  }
-};
-
-AhuWidget.prototype.execute = function (this: TW5WidgetInstance) {
-  // Children are managed imperatively in render; no makeChildWidgets needed.
-};
-
-AhuWidget.prototype.refresh = function (this: TW5WidgetInstance, changedTiddlers: Record<string, TW5ChangeRecord>): boolean {
   const slot      = this.getAttribute("slot", "");
-  const childUri  = this.getAttribute("uri", "");
+  const explicit  = this.getAttribute("uri",  "");
   const parentUri = this.getVariable?.("currentTiddler") ?? "";
-  const fragUri   = childUri || (parentUri + slot);
+  // The parse tree's `uri` attribute carries a placeholder ("lar:///unknown")
+  // when MemeticParser ran without a tiddler-context (TW5's parseText omits
+  // the title). currentTiddler is authoritative — derive childUri from it.
+  const isUnknownPlaceholder = explicit.startsWith("lar:///unknown");
+  const childUri  = (!explicit || isUnknownPlaceholder) ? (parentUri + slot) : explicit;
 
-  if (changedTiddlers[fragUri]) {
+  // Resolve the active template via the cascade. The cascade reads
+  // lar-export-scope (and any future scope variables) without the widget
+  // needing to know which scopes exist.
+  const cascadeMatches = this.wiki?.filterTiddlers?.(CASCADE_FILTER, this) ?? [];
+  const template       = cascadeMatches[0] || FALLBACK_TEMPLATE;
+  if (typeof process !== "undefined" && process.stderr) {
+    const exists = this.wiki?.tiddlerExists?.(template) ?? "?";
+    process.stderr.write(`[ahu] childUri=${childUri} template=${template} exists=${exists} cascadeCount=${cascadeMatches.length}\n`);
+  }
+
+  // Build a parse subtree equivalent to:
+  //   <$tiddler tiddler=<<childUri>>>
+  //     <$transclude $tiddler=<<template>>/>
+  //   </$tiddler>
+  // Rendering that subtree as a child widget plugs the slot into the
+  // template's wikitext; `currentTiddler` inside the template resolves to
+  // childUri so {{!!slot}} / {{!!text}} read the slot tiddler's fields.
+  const subtree: TW5ParseTreeNode = {
+    type: "tiddler",
+    attributes: {
+      tiddler: { type: "string", value: childUri },
+    },
+    children: [
+      {
+        type: "transclude",
+        attributes: {
+          $tiddler: { type: "string", value: template },
+        },
+        children: [],
+      },
+    ],
+  };
+
+  const childWidget = this.makeChildWidget?.(subtree, undefined);
+  if (childWidget) {
+    childWidget.render(parent, nextSibling);
+    this.children = [childWidget];
+    return;
+  }
+
+  // Defensive fallback — should not fire in a healthy TW5 boot.
+  const placeholder = this.document.createTextNode(`? ahu ${slot}`);
+  parent.insertBefore(placeholder, nextSibling);
+  this.domNodes = [placeholder as unknown as TW5FakeElement];
+};
+
+AhuWidget.prototype.execute = function (this: TW5WidgetInstance): void {
+  // makeChildWidget runs the children we constructed in render(); no
+  // makeChildWidgets() over the parse-tree body — body content lives in the
+  // slot child tiddler, not the parent's parse tree.
+};
+
+AhuWidget.prototype.refresh = function (
+  this:            TW5WidgetInstance,
+  changedTiddlers: Record<string, TW5ChangeRecord>,
+): boolean {
+  const slot      = this.getAttribute("slot", "");
+  const explicit  = this.getAttribute("uri",  "");
+  const parentUri = this.getVariable?.("currentTiddler") ?? "";
+  const childUri  = explicit || (parentUri + slot);
+
+  // Re-render when the slot child changes OR when any cascade entry changes
+  // (operator may have overridden the template at runtime).
+  if (changedTiddlers[childUri]) {
     this.refreshSelf();
     return true;
   }
+  for (const t of Object.keys(changedTiddlers)) {
+    if (t.startsWith("$:/config/Lar/AhuTemplate")) {
+      this.refreshSelf();
+      return true;
+    }
+  }
   let changed = false;
-  for (const child of (this.children ?? [])) {
+  for (const child of this.children ?? []) {
     if (child.refresh(changedTiddlers)) changed = true;
   }
   return changed;

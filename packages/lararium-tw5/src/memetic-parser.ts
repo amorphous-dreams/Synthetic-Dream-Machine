@@ -125,17 +125,15 @@ function nodeToTw5(node: MemeAstNode, wiki?: TW5Wiki): TW5ParseNode {
     }
 
     case "Text": {
-      // Delegate prose through TW5's own wikitext parser when wiki context is available.
-      if (wiki?.parseText && node.content.trim()) {
-        try {
-          const parsed = wiki.parseText("text/vnd.tiddlywiki", node.content, {});
-          if (parsed?.tree?.length) {
-            return { type: "element", tag: "span", _ast: node, children: parsed.tree };
-          }
-        } catch {
-          // Fall through to raw text.
-        }
-      }
+      // Emit prose as a literal-text TW5 parse-tree node. The previous
+      // architecture re-parsed Text content through `text/vnd.tiddlywiki`
+      // so prose between sigils picked up wiki-markup formatting — but
+      // that re-parse also intercepted the meme's carrier sentinels
+      // (`<<~&#x0001;>>`, `<<~&#x0002;>>`, DOCTYPE comments) as `<<macro>>`
+      // syntax and silently dropped them when no matching procedure
+      // existed. Round-trip idempotency depends on the parser preserving
+      // the operator's source verbatim. Live-UI rendering of inline
+      // wiki-markup belongs in a template, not in the parser.
       return { type: "text", text: node.content, _ast: node, children: [] };
     }
 
@@ -319,6 +317,11 @@ export class MemeticParser {
         })();
 
     this.tree = astToTw5Tree(nodes, wiki);
+    if (typeof process !== "undefined" && process.stderr && uri.includes("the-lares-protocols")) {
+      const ahuCount = nodes.filter((n) => n.kind === "Ahu").length;
+      const treeAhu  = this.tree.filter((t) => t.type === "ahu").length;
+      process.stderr.write(`[MemeticParser] uri=${uri} astNodes=${nodes.length} astAhu=${ahuCount} treeNodes=${this.tree.length} treeAhu=${treeAhu}\n`);
+    }
   }
 }
 

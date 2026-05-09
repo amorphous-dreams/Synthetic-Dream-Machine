@@ -1,21 +1,25 @@
 /**
- * meme-write — disk-export utilities for meme format.
+ * meme-write — disk export of memes via TW5 templates + cascades.
  *
- * Replaces carrier-write.ts / carrier-write.web2.ts:
- *   exportCarrierText  → exportMemeText
- *   buildDirectRecord  — same contract (bag / revision fields unchanged)
- *   replaceCarrierSlot → replaceMemeSlot  (slot-surgery; Sprint 4+)
- *   removeCarrierSlot  → removeMemeSlot   (slot-surgery; Sprint 4+)
- *   composeCarrierSlotBody → composeMemeSlotBody (Sprint 4+)
+ * Architecture (rewrite, no legacy code):
+ *   `exportMemeText` invokes `wiki.renderTiddler` on the parent meme tiddler
+ *   under a scope variable (`lar-export-scope = "markdown-meme"`). The
+ *   wikifier walks the parent's parse tree in source order; each AhuWidget
+ *   it encounters resolves the ahu cascade — which reads the scope variable
+ *   and picks the matching slot template (`templates/ahu/markdown-meme`).
+ *   The slot template emits the canonical `<<~ ahu slot >>\n{body}\n<<~/ahu>>`
+ *   form by transcluding the slot child tiddler. Non-sigil prose between
+ *   slots renders as text; the iam toml fenced block survives as literal
+ *   text under text/plain rendering. Source-order ahu emission falls out
+ *   of TW5's parse-tree rendering — no manual ordering needed.
  *
- * Projection layer only. Nothing here writes to a LarTiddlerStore.
+ *   The cascade-template chain replaces the prior `lar-render-mode` widget
+ *   dispatch entirely. AhuWidget knows nothing about render scopes.
  *
- * Key shift from carrier-write:
- *   In the meme model the tiddler `text` field IS the memetic-wikitext source —
- *   no expansion from kahea-reference form is needed for identity-form memes.
- *   exportMemeText returns the live TW5 tiddler text directly.
- *   Slot-expanded definition form (for carrier-style disk layout) is a
- *   future lar-render-mode pass, noted below with TODO.
+ *   Round-trip idempotency target: the operator-authored meme grammar
+ *   round-trips through sync → CRDT → render → disk byte-equivalent
+ *   (modulo trailing-newline normalization). Anything not in the source
+ *   does not appear on render.
  *
  * Schema: lar:///ha.ka.ba/@lares/api/v0.1/lararium/schema/meme-write
  */
@@ -25,12 +29,12 @@ import type { TW5Engine } from "./tw5-vm.js";
 import type { LarTiddlerRecord } from "@lararium/core";
 
 // ---------------------------------------------------------------------------
-// inferChildMemeTitle — used by deleteTiddler guard
+// inferChildMemeTitle — sync-adaptor delete-path helper
 // ---------------------------------------------------------------------------
 
 /**
- * Given a child tiddler title, infer the parent meme URI and slot fragment.
- * Returns null when the title does not identify an ahu slot child.
+ * Given a child tiddler title, infer its parent meme URI and slot fragment.
+ * Returns null when the title doesn't identify an ahu slot child.
  */
 export function inferChildMemeTitle(
   tw5:   TW5Engine,
@@ -65,7 +69,7 @@ export function inferChildMemeTitle(
 // buildDirectRecord — sync-adaptor write path
 // ---------------------------------------------------------------------------
 
-/** Build a `LarTiddlerRecord` for the `direct` save strategy. */
+/** Build a LarTiddlerRecord for the `direct` save strategy. */
 export function buildDirectRecord(
   title:     string,
   fields:    Record<string, string>,
@@ -85,72 +89,32 @@ export function buildDirectRecord(
 }
 
 // ---------------------------------------------------------------------------
-// exportMemeText — disk export of a meme's canonical text form
+// exportMemeText — disk export via TW5 templates + cascades
 // ---------------------------------------------------------------------------
 
 /**
  * Return the canonical memetic-wikitext for a meme URI.
  *
- * Routes through TW5's `renderTiddler` pipeline — the same render path TW5
- * uses for HTML export and the wiki shell on first client load — under
- * `lar-render-mode: "carrier"`. Sigil widgets that own child-slot bodies
- * (ahu, kau, future) detect the variable in `dispatchSlotRenderMode` and
- * emit the definition form `<<~ sigil slot >>\n{child body}\n<<~/sigil >>`
- * instead of transcluding HTML. The wikifier walks the parent's parse tree,
- * each widget self-renders its disk form, and the concatenated text node
- * stream is the canonical source for promotion / git diff.
- *
- * For plain memes (no slot bodies), the parse tree is just text and the
- * result equals `getTiddlerText`. For memes whose body lives in slot
- * children, this re-serializes the full source from authoritative state.
+ * Routes through TW5's renderTiddler pipeline — the same path the wiki
+ * shell and HTML export use — with the `lar-export-scope` variable set
+ * to "markdown-meme". The wikifier walks the parent's parse tree;
+ * AhuWidget instances resolve the ahu cascade and transclude their slot
+ * children through the disk-export template. Non-sigil text renders as-is.
  *
  * @param tw5     - Live TW5Engine VM instance
- * @param memeUri - lar:/// URI of the meme tiddler
- * @returns       - Canonical memetic-wikitext string, or "" if not found
+ * @param memeUri - lar:/// URI of the meme parent tiddler
+ * @returns       - Canonical memetic-wikitext, or empty string if absent
  */
 export function exportMemeText(tw5: TW5Engine, memeUri: string): string {
   const wiki = tw5.wiki;
-  if (!wiki?.renderTiddler) return wiki?.getTiddlerText?.(memeUri, "") ?? "";
+  if (!wiki?.renderTiddler) return "";
   try {
     return wiki.renderTiddler("text/plain", memeUri, {
-      variables: { "lar-render-mode": "carrier" },
+      variables: { "lar-export-scope": "markdown-meme" },
     }) ?? "";
   } catch {
+    // Defensive: a malformed cascade or missing template tiddler falls back
+    // to the raw stored text rather than throwing into the disk projector.
     return wiki.getTiddlerText?.(memeUri, "") ?? "";
   }
-}
-
-// ---------------------------------------------------------------------------
-// Slot-surgery helpers — Sprint 4+ stubs
-//
-// Wire `DirectMemeRecipeVm.renderMeme` to `exportMemeText` in Sprint 3c.
-// Implement full slot-surgery in Sprint 4 alongside KumuDeviceSpec.
-// ---------------------------------------------------------------------------
-
-/**
- * Replace the body of a named ahu slot in memetic-wikitext source.
- * TODO Sprint 4 — implement slot-surgery on MemeAstNode tree.
- */
-export function replaceMemeSlot(
-  _source:   string,
-  _slot:     string,
-  _newBody:  string,
-): string {
-  throw new Error("[meme-write] replaceMemeSlot not yet implemented — Sprint 4+");
-}
-
-/**
- * Remove a named ahu slot block from memetic-wikitext source.
- * TODO Sprint 4 — implement slot-surgery on MemeAstNode tree.
- */
-export function removeMemeSlot(_source: string, _slot: string): string {
-  throw new Error("[meme-write] removeMemeSlot not yet implemented — Sprint 4+");
-}
-
-/**
- * Compose a slot body string from parts.
- * TODO Sprint 4 — implement once slot-surgery helpers land.
- */
-export function composeMemeSlotBody(_parts: string[]): string {
-  throw new Error("[meme-write] composeMemeSlotBody not yet implemented — Sprint 4+");
 }

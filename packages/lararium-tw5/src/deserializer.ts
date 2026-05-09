@@ -108,15 +108,18 @@ function splitMemeToTiddlers(
   const rootToml   = extractRootToml(text);
   const rootFields = rootToml ? fieldifyToml(rootToml, warnings, uri) : {};
 
-  // Parent text: replace ahu definition blocks with kahea references
-  const parentText = transformParentText(text);
-
+  // Parent retains the operator-authored source verbatim. AhuWidget reads
+  // its slot child tiddler at render time (cascade-routed template), so the
+  // parse-tree body of definition-form ahu blocks is unused at render. This
+  // preserves source-grammar idempotency: render → disk equals source. The
+  // prior `transformParentText` collapsing of ahu blocks → kahea references
+  // belonged to the dead mode-dispatch architecture.
   const parent: TiddlerFields = {
     ...baseFields,
     ...rootFields,
     title: uri,
     type:  "text/x-memetic-wikitext",
-    text:  parentText,
+    text,
   };
 
   const result: TiddlerFields[] = [parent, ...children];
@@ -196,18 +199,6 @@ function fieldifyToml(
     else                  { out[k] = String(v); }
   }
   return out;
-}
-
-// ---------------------------------------------------------------------------
-// transformParentText — replace ahu definition blocks with kahea references.
-// <<~ ahu #slot >>body<<~/ahu >>  →  <<~ kahea ahu #slot >>
-// ---------------------------------------------------------------------------
-
-function transformParentText(text: string): string {
-  return text.replace(
-    /<<~[^>]*\bahu\s+(#[\w-]+)\s*>>[\s\S]*?<<~\/ahu\s*>>/g,
-    (_, slot: string) => `<<~ kahea ahu ${slot} >>`,
-  );
 }
 
 // ---------------------------------------------------------------------------

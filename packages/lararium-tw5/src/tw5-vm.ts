@@ -21,10 +21,12 @@ import type { TiddlerFields } from "./deserializer.js";
 import {
   createLarariumWidgets,
   registerImplementorsOperator,
-  LARARIUM_WIDGETS_TIDDLER,
+  LARARIUM_WIDGETS_TIDDLER, LARARIUM_AHU_CASCADE_HTML, LARARIUM_AHU_CASCADE_MARKDOWN_MEME,
 } from "./tw5-widgets.js";
 import { getZoomLayout } from "./zoom-layout.js";
 import type { ZoomLayout } from "./zoom-layout.js";
+import { MemeticParser } from "./memetic-parser.js";
+import { memeticWikitextDeserializer } from "./deserializer.js";
 export type { ZoomLayout };
 
 
@@ -103,6 +105,8 @@ export class TW5Engine {
 
         instance.preloadTiddlers = instance.preloadTiddlers ?? [];
         instance.preloadTiddlers.push(LARARIUM_WIDGETS_TIDDLER);
+        instance.preloadTiddlers.push(LARARIUM_AHU_CASCADE_HTML as unknown as Record<string, unknown>);
+        instance.preloadTiddlers.push(LARARIUM_AHU_CASCADE_MARKDOWN_MEME as unknown as Record<string, unknown>);
         for (const t of allPreloads) instance.preloadTiddlers.push(t as Record<string, unknown>);
 
         instance.boot.boot(() => {
@@ -460,11 +464,12 @@ export class TW5Engine {
       return;
     }
 
-    // Imperative fallback — no corpus module memes passed threshold.
+    // Synchronous registration — parser must be in place before any
+    // renderTiddler call. The previous async import() introduced a race
+    // where parseTiddler's first invocation (during boot or initial sync)
+    // saw the default text/vnd.tiddlywiki parser and cached its result.
     const parsers: Record<string, unknown> = tw?.Wiki?.parsers ?? {};
-    import("./memetic-parser.js").then(({ MemeticParser }) => {
-      parsers["text/x-memetic-wikitext"] = MemeticParser;
-    }).catch(() => {});
+    parsers["text/x-memetic-wikitext"] = MemeticParser;
 
     TW5Engine._registerDeserializer(tw);
     TW5Engine._registerWidgets(tw);
@@ -472,10 +477,8 @@ export class TW5Engine {
 
   private static _registerDeserializer(tw: TW5Instance): void {
     if (!tw?.Wiki?.tiddlerDeserializerModules) return;
-    import("./deserializer.js").then(({ memeticWikitextDeserializer }) => {
-      tw.Wiki.tiddlerDeserializerModules["text/x-memetic-wikitext"] =
-        memeticWikitextDeserializer as unknown as (text: string, fields: Record<string, unknown>) => TW5TiddlerFields[];
-    }).catch(() => {});
+    tw.Wiki.tiddlerDeserializerModules["text/x-memetic-wikitext"] =
+      memeticWikitextDeserializer as unknown as (text: string, fields: Record<string, unknown>) => TW5TiddlerFields[];
   }
 
   private static _registerWidgets(tw: TW5Instance): void {
