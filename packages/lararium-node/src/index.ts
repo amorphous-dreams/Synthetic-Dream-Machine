@@ -21,3 +21,11 @@ export type { CommandHandler, CommandContext, CommandDispatcherOptions } from ".
 
 export { createPromoteHandler } from "./promote-handler.js";
 export type { PromoteHandlerOptions } from "./promote-handler.js";
+
+export { createWhereHandler } from "./where-handler.js";
+export type { WhereHandlerOptions } from "./where-handler.js";
+
+export {
+  createPinHandler, createUnpinHandler, createResidencyStatsHandler,
+} from "./residency-handlers.js";
+export type { ResidencyHandlerOptions } from "./residency-handlers.js";

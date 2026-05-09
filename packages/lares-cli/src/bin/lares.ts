@@ -21,6 +21,7 @@ import { parseArgs, type ParsedArgs } from "../parse-args.js";
 import { cmdInit }                    from "../commands/init.js";
 import { cmdStatus }                  from "../commands/status.js";
 import { cmdPromote }                 from "../commands/promote.js";
+import { cmdPin, cmdUnpin, cmdResidency } from "../commands/residency.js";
 import {
   cmdBuildGenesis, cmdTestQuine, cmdHeleuma,
   cmdServe, cmdDev, cmdReset, cmdFresh,
@@ -37,6 +38,9 @@ interface Command {
 const COMMANDS: readonly Command[] = [
   { name: "init",          summary: "Bootstrap a new Lararium node (seed identities/circles/sessions/admin docs).", handler: cmdInit          },
   { name: "promote",       summary: "Promote a tiddler from one bag to another (canon ceremony). Needs `lares serve` running.", handler: cmdPromote      },
+  { name: "pin",           summary: "Pin a bag URL — the daemon never evicts it from RAM. Needs `lares serve`.",                handler: cmdPin          },
+  { name: "unpin",         summary: "Unpin a bag URL — demotes from pinned to hot (LRU may then evict). Needs `lares serve`.", handler: cmdUnpin        },
+  { name: "residency",     summary: "Print the daemon's current bag residency snapshot (pinned / hot / cold). Needs `lares serve`.", handler: cmdResidency },
   { name: "status",        summary: "Print local node health: bootstrap presence, storage size, port in use.",      handler: cmdStatus        },
   { name: "serve",         summary: "Run the lararium node in foreground (no Vite).",                                handler: cmdServe         },
   { name: "dev",           summary: "Run node + Vite app concurrently (full dev experience).",                       handler: cmdDev           },

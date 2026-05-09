@@ -56,6 +56,10 @@ import { openAdminVm }                    from "./open-admin-vm.js";
 import { CommandDispatcher, CommandHandlerRegistry } from "./command-dispatcher.js";
 import { createPromoteHandler }                     from "./promote-handler.js";
 import { createWhereHandler }                       from "./where-handler.js";
+import {
+  createPinHandler, createUnpinHandler, createResidencyStatsHandler,
+} from "./residency-handlers.js";
+import { BagResidencyManager }                      from "@lararium/core";
 import type { AdminVmResult }             from "./open-admin-vm.js";
 import { LAR_EVENT } from "@lararium/core";
 
@@ -326,6 +330,21 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
   // Read-only recipe-presence query — `lares promote` previews source bag via
   // this command before writing the promote command itself.
   commandRegistry.register("where",   createWhereHandler({ composite }));
+
+  // S6 — BagResidencyManager. Phase 1 (C.1): instrumentation only; no
+  // eviction yet. Pin every doc the daemon touches at boot so we don't
+  // unintentionally evict load-bearing infrastructure once C.2 wires the LRU.
+  const residency = new BagResidencyManager({ hotCap: 32 });
+  await residency.pin(catalogHandle.url,         "boot:catalog");
+  if (islandHandle)         await residency.pin(islandHandle.url,         "boot:lararium-island");
+  if (laresHandle)          await residency.pin(laresHandle.url,          "boot:lares-corpus");
+  await residency.pin(identitiesHandle.url,      "boot:identities");
+  await residency.pin(groupsHandle.url,          "boot:circles");
+  await residency.pin(sessionsHandle.url,        "boot:sessions");
+  await residency.pin(adminVm.adminHandle.url,   "boot:admin");
+  commandRegistry.register("pin",       createPinHandler({ residency }));
+  commandRegistry.register("unpin",     createUnpinHandler({ residency }));
+  commandRegistry.register("residency", createResidencyStatsHandler({ residency }));
   const commandDispatcher = new CommandDispatcher({
     admin:    adminVm.composite,
     registry: commandRegistry,
