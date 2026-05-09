@@ -24,8 +24,6 @@
 
 import { MemeStreamParser } from "@lararium/core";
 import type { MemeStreamEvent } from "@lararium/core";
-import { parseMemeText } from "@lararium/core/meme-ast";
-import type { AhuNode } from "@lararium/core/meme-ast";
 import { parseTaploFields } from "./toml-ast.js";
 
 export type TiddlerFields = Record<string, string | string[]>;
@@ -105,46 +103,25 @@ function splitMemeToTiddlers(
   text:       string,
   baseFields: TiddlerFields,
 ): TiddlerFields[] {
-  const { nodes } = parseMemeText(uri, text);
-  const warnings: string[]      = [];
-  const children: TiddlerFields[] = [];
+  const warnings: string[] = [];
 
-  // Walk top-level AhuNodes to extract child tiddlers
-  for (const node of nodes) {
-    if (node.kind !== "Ahu" || !node.slot || CONTROL_SLOTS.has(node.slot)) continue;
-    const ahuNode = node as AhuNode;
-    const childTitle = uri + ahuNode.slot;
-    const bodyText   = rawBodyText(text, ahuNode);
-    const childFields = extractAhuFields(bodyText, warnings, `${uri}${ahuNode.slot}`);
-    // The `slot` field carries the slot identifier (e.g. "#thesis") so the
-    // markdown-meme template's `{{!!slot}}` substitution resolves to it.
-    // `fragment-parent` lets `<$list filter="[field:fragment-parent[<uri>]]">`
-    // enumerate slot children of a given parent.
-    children.push({
-      ...childFields,
-      title: childTitle,
-      text:  bodyText,
-      slot:  ahuNode.slot,
-      "fragment-parent": uri,
-    });
-  }
+  // Recursive split — every ahu sigil at every depth becomes its own tiddler.
+  // The bag stays flat: addressing lives entirely in the URI fragment-path
+  // (`#parent/child/grandchild`); the fragment-parent field points one level
+  // up so disk-projector / templates can climb to the nearest tagged ancestor.
+  // The parent's text is rewritten to `<<~ kahea ahu #slot >>` references
+  // (live-ref form per memetic-wikitext spec §5.3); slot children hold their
+  // body bytes authoritatively.
+  const { children, rewrittenText } = splitRecursive(uri, "", text, warnings);
 
-  // Parent fields: root TOML iam prelude
   const rootToml   = extractRootToml(text);
   const rootFields = rootToml ? fieldifyToml(rootToml, warnings, uri) : {};
-
-  // Parent retains the operator-authored source verbatim. AhuWidget reads
-  // its slot child tiddler at render time (cascade-routed template), so the
-  // parse-tree body of definition-form ahu blocks is unused at render. This
-  // preserves source-grammar idempotency: render → disk equals source. The
-  // prior `transformParentText` collapsing of ahu blocks → kahea references
-  // belonged to the dead mode-dispatch architecture.
   const parent: TiddlerFields = {
     ...baseFields,
     ...rootFields,
     title: uri,
     type:  "text/x-memetic-wikitext",
-    text,
+    text:  rewrittenText,
   };
 
   const result: TiddlerFields[] = [parent, ...children];
@@ -164,15 +141,122 @@ function splitMemeToTiddlers(
 }
 
 // ---------------------------------------------------------------------------
-// rawBodyText — extract the raw source text of an AhuNode's body span.
+// splitRecursive — full-depth ahu walk producing a flat tiddler set.
+//
+// Each ahu sigil at every depth becomes its own tiddler. The bag stays flat;
+// the URI fragment-path (`#parent/child/grandchild`) carries the hierarchy.
+// The parent of each tiddler — `fragment-parent` field — points ONE LEVEL up
+// (immediate enclosing ahu, not the meme-root), so disk-projector and
+// templates can climb to the nearest tagged ancestor in a single hop chain.
+// The text returned for each tiddler has its own ahu blocks rewritten to
+// `<<~ kahea ahu #slot >>` references; child tiddlers hold the body bytes
+// authoritatively.
 // ---------------------------------------------------------------------------
 
-function rawBodyText(fullText: string, node: AhuNode): string {
-  if (!node.body.length) return "";
-  const first = node.body[0]!;
-  const last  = node.body[node.body.length - 1]!;
-  // pos/raw.length gives us the end of the last node
-  return fullText.slice(first.pos, last.pos + last.raw.length);
+function splitRecursive(
+  rootUri:         string,
+  fragmentPrefix:  string,   // "" at meme root; "#a" → "#a/b" → "#a/b/c"
+  text:            string,
+  warnings:        string[],
+): { children: TiddlerFields[]; rewrittenText: string } {
+  const allChildren: TiddlerFields[] = [];
+  const enclosingUri = rootUri + fragmentPrefix;
+
+  // Match top-level ahu blocks via balanced-aware iteration. Regex with
+  // `[\s\S]*?` non-greedy handles single-level pairing; for nested blocks,
+  // we walk by tracking depth via successive open/close-tag positions.
+  // Cheaper than a full re-parse and adequate for the recursion-depth limit
+  // TW5 enforces in widget rendering.
+  const blocks = findTopLevelAhuBlocks(text);
+  let cursor = 0;
+  let rewritten = "";
+  for (const block of blocks) {
+    rewritten += text.slice(cursor, block.openStart);
+    if (CONTROL_SLOTS.has(block.slot)) {
+      // Control slots dissolve in the parent (iam, exit, stream-*, body-*).
+      // Keep them inline in parent text — they're not addressable children.
+      rewritten += text.slice(block.openStart, block.closeEnd);
+      cursor = block.closeEnd;
+      continue;
+    }
+    const childSlotPath = composeSlotPath(fragmentPrefix, block.slot);
+    const childUri      = rootUri + childSlotPath;
+    const bodyText      = text.slice(block.bodyStart, block.bodyEnd);
+    const inner         = splitRecursive(rootUri, childSlotPath, bodyText, warnings);
+    const childIam      = extractAhuFields(bodyText, warnings, childUri);
+    allChildren.push({
+      ...childIam,
+      title:             childUri,
+      text:              inner.rewrittenText,
+      slot:              block.slot,
+      "fragment-parent": enclosingUri,
+    });
+    allChildren.push(...inner.children);
+    rewritten += `<<~ kahea ahu ${block.slot} >>`;
+    cursor = block.closeEnd;
+  }
+  rewritten += text.slice(cursor);
+  return { children: allChildren, rewrittenText: rewritten };
+}
+
+interface AhuBlock {
+  readonly openStart: number;
+  readonly bodyStart: number;
+  readonly bodyEnd:   number;
+  readonly closeEnd:  number;
+  readonly slot:      string;
+}
+
+// Slot identifier supports nested fragment paths (`#parent/child/grandchild`).
+// The pattern matches a definition-form ahu opener; nested ahu inside the
+// body are handled by the recursive caller.
+const AHU_OPEN_RE  = /<<~[^>]*\bahu\s+(#[\w-]+(?:\/[\w-]+)*)(?:\s+->\s+\S+)?\s*>>/g;
+const AHU_CLOSE_RE = /<<~\/ahu\s*>>/g;
+
+function findTopLevelAhuBlocks(text: string): AhuBlock[] {
+  // Scan opens + closes by position; pair via depth counter so nested
+  // openers don't claim the outer block's closer.
+  AHU_OPEN_RE.lastIndex = 0;
+  AHU_CLOSE_RE.lastIndex = 0;
+  const events: Array<{ kind: "open" | "close"; pos: number; end: number; slot: string }> = [];
+  let m: RegExpExecArray | null;
+  while ((m = AHU_OPEN_RE.exec(text)) !== null) {
+    events.push({ kind: "open", pos: m.index, end: AHU_OPEN_RE.lastIndex, slot: m[1] ?? "#" });
+  }
+  while ((m = AHU_CLOSE_RE.exec(text)) !== null) {
+    events.push({ kind: "close", pos: m.index, end: AHU_CLOSE_RE.lastIndex, slot: "" });
+  }
+  events.sort((a, b) => a.pos - b.pos);
+
+  const blocks: AhuBlock[] = [];
+  const stack: Array<{ openStart: number; bodyStart: number; slot: string }> = [];
+  for (const ev of events) {
+    if (ev.kind === "open") {
+      stack.push({ openStart: ev.pos, bodyStart: ev.end, slot: ev.slot });
+    } else {
+      const opener = stack.pop();
+      if (!opener) continue;
+      if (stack.length === 0) {
+        blocks.push({
+          openStart: opener.openStart,
+          bodyStart: opener.bodyStart,
+          bodyEnd:   ev.pos,
+          closeEnd:  ev.end,
+          slot:      opener.slot,
+        });
+      }
+    }
+  }
+  return blocks;
+}
+
+function composeSlotPath(prefix: string, slot: string): string {
+  // First-level child: prefix="" → return slot verbatim ("#thesis").
+  // Deeper child: prefix="#parent" + slot="#child" → "#parent/child".
+  // Slot already containing a path ("#parent/child"): treat as authored.
+  if (!prefix) return slot;
+  const slotTail = slot.startsWith("#") ? slot.slice(1) : slot;
+  return `${prefix}/${slotTail}`;
 }
 
 // ---------------------------------------------------------------------------

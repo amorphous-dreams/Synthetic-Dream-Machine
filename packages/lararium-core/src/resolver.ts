@@ -54,7 +54,7 @@ const STABLE_TUPLE_ROOT = "ha.ka.ba";
 const LARES_SCOPE   = "@lares";
 const ENGINE_SCOPE  = "@lararium";
 
-function splitLarUri(uri: string): { root: string; childPath: string[] } {
+function splitLarUri(uri: string): { root: string; childPath: string[]; fragmentPath: string[] } {
   const url = new URL(uri);
   if (url.protocol !== "lar:") throw new Error(`expected lar URI, got ${uri}`);
   if (url.host) throw new Error(`expected triple-slash lar URI (hostless), got ${uri} — use parseHostfulLarUri for hostful`);
@@ -62,7 +62,12 @@ function splitLarUri(uri: string): { root: string; childPath: string[] } {
   const parts = rawPath.replace(/^\/+/, "").split("/").filter(Boolean);
   if (parts.length === 0) throw new Error(`lar URI needs a root segment: ${uri}`);
   const [root, ...childPath] = parts as [string, ...string[]];
-  return { root, childPath };
+  // Fragment-path (`#parent/child/grandchild`) projects onto disk as nested
+  // subdirectories — `lar:///foo#a/b` → `foo/a/b.md`. The single-hash + path
+  // invariant comes from lar-uri.md §5.6 / memetic-wikitext.md §nested-ahu.
+  const rawHash = decodeURIComponent(url.hash.replace(/^#/, ""));
+  const fragmentPath = rawHash ? rawHash.split("/").filter(Boolean) : [];
+  return { root, childPath, fragmentPath };
 }
 
 /**
@@ -130,13 +135,25 @@ function withMdSuffix(p: string): string {
  * Does not perform any I/O — existence checking is the caller's responsibility.
  */
 export function resolveLarUri(uri: string): LarResolution {
-  const { root, childPath } = splitLarUri(uri);
+  const { root, childPath, fragmentPath } = splitLarUri(uri);
   const resourcePath = [root, ...childPath].join("/");
+
+  // `appendFragment` mounts fragment-path segments as nested subdirectories
+  // on disk: `lar:///foo#a/b` → `foo/a/b.md`. Files materialize as
+  // `<dir>/index.md` for the root + `<dir>/<segs>.md` for each tagged-on-
+  // disk descendant. The disk-projector decides which fragment URIs become
+  // file roots via `$:/tags/Lar/MemeRoot`; the path strategy here just
+  // names where each URI WOULD project if it earns a file.
+  const appendFragment = (basePath: string): string => {
+    if (fragmentPath.length === 0) return basePath;
+    const baseNoExt = basePath.replace(/\.md$/, "");
+    return `${baseNoExt}/${fragmentPath.join("/")}.md`;
+  };
 
   // Legacy caps-file roots: lar:///AGENTS → packages/lares/AGENTS.md
   // Kept as alias; canonical form is lar:///ha.ka.ba/@lares/AGENTS
   if (CAPS_FILE_ROOTS.has(root) && childPath.length === 0) {
-    const laresRelPath = `${root}.md`;
+    const laresRelPath = appendFragment(`${root}.md`);
     return { uri, root, childPath, resourcePath, laresRelPath, engineRelPath: null, kind: "caps-file", virtual: false };
   }
 
@@ -149,10 +166,10 @@ export function resolveLarUri(uri: string): LarResolution {
     if (childPath[0] === LARES_SCOPE) {
       const rest = childPath.slice(1);
       if (rest.length === 1 && CAPS_FILE_ROOTS.has(rest[0]!)) {
-        return { uri, root, childPath, resourcePath, laresRelPath: `${rest[0]}.md`, engineRelPath: null, kind: "caps-file", virtual: false };
+        return { uri, root, childPath, resourcePath, laresRelPath: appendFragment(`${rest[0]}.md`), engineRelPath: null, kind: "caps-file", virtual: false };
       }
       const joined = rest.length > 0 ? rest.join("/") : "";
-      const laresRelPath = joined ? withMdSuffix(joined) : "index.md";
+      const laresRelPath = appendFragment(joined ? withMdSuffix(joined) : "index.md");
       return { uri, root, childPath, resourcePath, laresRelPath, engineRelPath: null, kind: "tuple-file", virtual: false };
     }
 
@@ -165,7 +182,7 @@ export function resolveLarUri(uri: string): LarResolution {
       const [_ver, ...pathParts] = afterScope;
       const pkgSlug = scopedName.replace(/^@lararium\//, "lararium-");
       const filePath = pathParts.length > 0 ? pathParts.join("/") : "index";
-      const engineRelPath = withMdSuffix(`${pkgSlug}/memes/${filePath}`);
+      const engineRelPath = appendFragment(withMdSuffix(`${pkgSlug}/memes/${filePath}`));
       return { uri, root, childPath, resourcePath, laresRelPath: null, engineRelPath, kind: "tuple-file", virtual: false };
     }
 
@@ -199,7 +216,7 @@ export function resolveLarUri(uri: string): LarResolution {
   // Adjacent tagspace dirs — legacy; absorb into @lares scope after URI sweep
   if (root === "grammars" || root === "lararium-node") {
     const joined = childPath.length > 0 ? `${root}/${childPath.join("/")}` : root;
-    const laresRelPath = withMdSuffix(joined);
+    const laresRelPath = appendFragment(withMdSuffix(joined));
     return { uri, root, childPath, resourcePath, laresRelPath, engineRelPath: null, kind: "tuple-file", virtual: false };
   }
 

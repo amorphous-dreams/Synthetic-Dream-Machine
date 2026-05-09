@@ -94,37 +94,34 @@ export class LarDiskProjector {
 
     const fields    = record.fields as Record<string, string | string[] | undefined> ?? {};
 
-    // Disk-projection-eligible gate. Two convention surfaces:
-    //   - Tag `$:/tags/Lar/DiskProjection` — default for sync-ingested
-    //     parents. Operator can author with this tag in TW5 UX to opt
-    //     in to disk projection for browser-authored tiddlers.
-    //   - Field `disk-projection: "no"` — explicit opt-out. Lets operator
-    //     mark a synced tiddler as TW5-only without losing the bag record.
-    // Slot child tiddlers project transitively through their parent
-    // (AhuWidget transcludes them via the cascade); they don't need the
-    // tag themselves. Bypass the gate when an `ahu-parent`/`fragment-
-    // parent` field is present.
-    const ahuParent = typeof fields["ahu-parent"] === "string" ? fields["ahu-parent"]
-                    : typeof fields["fragment-parent"] === "string" ? fields["fragment-parent"]
-                    : null;
-    if (!ahuParent) {
-      const optOut = fields["disk-projection"];
-      if (typeof optOut === "string" && optOut === "no") return;
-      const tags = fields["tags"];
-      const tagList = Array.isArray(tags) ? tags
-                    : typeof tags === "string" ? tags.split(/\s+/).filter(Boolean)
-                    : [];
-      // Default-eligible heuristic: sync-ingested parents carry a
-      // `source-file` field; treat that as implicit eligibility so
-      // existing memes flow without operator-side migration. Explicit
-      // opt-in via `$:/tags/Lar/DiskProjection` covers operator-authored
-      // tiddlers that lack a source-file.
-      const hasTag = tagList.includes("$:/tags/Lar/DiskProjection");
-      const hasSourceFile = typeof fields["source-file"] === "string";
-      if (!hasTag && !hasSourceFile) return;
-    }
+    // Tag-driven file-root gate (operator law: iam toml `tags` controls
+    // disk projection split). Two surfaces:
+    //   - Tag `$:/tags/Lar/MemeRoot`   — explicit; this tiddler emits as its
+    //     own file at its URI's projection path. Both parent memes AND
+    //     tagged ahu-slot children carry it; whichever has it becomes a
+    //     file root.
+    //   - Field `disk-projection: "no"` — explicit opt-out for a tagged
+    //     tiddler (keep in bag, skip disk).
+    // Heuristic: sync-ingested tiddlers with a `source-file` field flow
+    // through automatically (back-compat for the existing meme corpus).
+    // Untagged child tiddlers (those with `fragment-parent` set but no
+    // MemeRoot tag) DO NOT emit their own file — they roll up into their
+    // nearest tagged ancestor's emission via the markdown-meme template's
+    // `<<~ kahea ahu #slot >>` → fragment-template inline expansion.
+    const optOut = fields["disk-projection"];
+    if (typeof optOut === "string" && optOut === "no") return;
+    const tags = fields["tags"];
+    const tagList = Array.isArray(tags) ? tags
+                  : typeof tags === "string" ? tags.split(/\s+/).filter(Boolean)
+                  : [];
+    const isMemeRoot    = tagList.includes("$:/tags/Lar/MemeRoot");
+    const hasSourceFile = typeof fields["source-file"] === "string";
+    if (!isMemeRoot && !hasSourceFile) return;
 
-    const parentUri = ahuParent ?? title;
+    // The render unit is THIS tiddler; URI fragment-path projects through
+    // resolveLarUri's appendFragment to a unique disk path. No transitive
+    // walk-up — every tagged tiddler is a meme root in its own right.
+    const parentUri = title;
 
     const key = `${bagId}\0${parentUri}`;
     const existing = this.timers.get(key);

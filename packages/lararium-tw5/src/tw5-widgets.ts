@@ -27,18 +27,21 @@ import type { TW5Instance } from "./types/tiddlywiki.js";
 type WidgetCtor = { prototype: unknown };
 type WidgetCtorWithProto = WidgetCtor & { prototype: unknown };
 
-export { AhuWidget } from "./widgets/ahu.js";
-export { KauWidget } from "./widgets/kau.js";
+export { AhuWidget }          from "./widgets/ahu.js";
+export { KauWidget }          from "./widgets/kau.js";
+export { LarMemeSplitWidget } from "./widgets/lar-meme-split.js";
 
-import { AhuWidget } from "./widgets/ahu.js";
-import { KauWidget } from "./widgets/kau.js";
+import { AhuWidget }          from "./widgets/ahu.js";
+import { KauWidget }          from "./widgets/kau.js";
+import { LarMemeSplitWidget } from "./widgets/lar-meme-split.js";
 
 import { registerLarariumFilters } from "./tw5-filter.js";
 
 export function createLarariumWidgets(_tw: TW5Instance): Record<string, WidgetCtorWithProto> {
   return {
-    "ahu": AhuWidget as unknown as WidgetCtorWithProto,
-    "kau": KauWidget as unknown as WidgetCtorWithProto,
+    "ahu":             AhuWidget          as unknown as WidgetCtorWithProto,
+    "kau":             KauWidget          as unknown as WidgetCtorWithProto,
+    "lar-meme-split":  LarMemeSplitWidget as unknown as WidgetCtorWithProto,
   };
 }
 
@@ -56,6 +59,19 @@ export const LARARIUM_WIDGETS_TIDDLER = {
   role:          "tw5-widget-module",
   cacheable:     "true",
   hydrate:       "true",
+} as const;
+
+/**
+ * Global mount for `<$lar-meme-split>`. The widget self-subscribes to wiki
+ * change events on render; tagging this tiddler `$:/tags/Global` ensures
+ * TW5 instantiates it once at boot for the lifetime of the wiki. The
+ * subscription handles all subsequent memetic-wikitext saves — the fourth
+ * call site of the operator's "ONE parser, FOUR call sites" law.
+ */
+export const LARARIUM_MEME_SPLIT_MOUNT = {
+  title: "$:/lararium/mounts/lar-meme-split",
+  tags:  ["$:/tags/Global"],
+  text:  "<$lar-meme-split/>",
 } as const;
 
 /**
@@ -79,26 +95,29 @@ export const LARARIUM_WIDGETS_TIDDLER = {
  * Cascade ordering — list-before / list-after govern evaluation order.
  *
  * Walked top-to-bottom; first non-empty filter result wins. Operators may
- * insert their own entries between these by tagging additional tiddlers
- * with `$:/tags/Lar/AhuTemplate` and setting `list-before` / `list-after`.
+ * insert their own entries by tagging additional tiddlers with
+ * `$:/tags/Lar/AhuTemplate` and setting `list-before` / `list-after`.
  *
- * Two markdown-meme entries — fragment vs full — distinguished by tiddler
- * shape rather than scope variable alone. Slot tiddlers carrying `prologue`
- * or iam fields denote a "full meme form" slot; the cascade routes them
- * through a richer template that reconstructs the inner SOH/iam/postamble
- * framing on disk emission. Plain body-fragment slots route through the
- * minimal opener+body+closer template.
+ * Three markdown-meme entries, distinguished by tiddler shape:
  *
- * The discriminator filter `[<currentTiddler>has[prologue]]` runs INSIDE
- * each cascade entry's text — TW5's filter evaluates with the active
+ *   1. **kahea-ref** — when a slot child carries `$:/tags/Lar/MemeRoot`,
+ *      the parent's emission emits a `<<~ kahea ahu #slot >>` reference
+ *      and DOES NOT inline the body. The tagged child gets its own
+ *      file via the disk-projector's separate render pass.
+ *   2. **fragment** — slot child without the MemeRoot tag, body-only
+ *      content. Parent emission inlines `<<~ ahu #slot >>body<<~/ahu >>`.
+ *   3. **html** (default fallback) — live-UI rendering.
+ *
+ * The discriminator filter `[<currentTiddler>tag[$:/tags/Lar/MemeRoot]]`
+ * runs inside each cascade entry's text. TW5 evaluates with the active
  * variable scope, so `<currentTiddler>` resolves to the slot child URI
- * the AhuWidget set as currentTiddler before invoking the cascade.
+ * the AhuWidget set before invoking the cascade.
  */
-export const LARARIUM_AHU_CASCADE_MARKDOWN_MEME_FULL = {
-  title:         "$:/config/Lar/AhuTemplate/markdown-meme-full",
+export const LARARIUM_AHU_CASCADE_MARKDOWN_MEME_KAHEA = {
+  title:         "$:/config/Lar/AhuTemplate/markdown-meme-kahea",
   tags:          ["$:/tags/Lar/AhuTemplate"],
   "list-before": "$:/config/Lar/AhuTemplate/markdown-meme-fragment",
-  text:          "[<lar-export-scope>match[markdown-meme]] :and[<currentTiddler>has[prologue]then[lar:///ha.ka.ba/@lararium/templates/ahu/markdown-meme-full]]",
+  text:          "[<lar-export-scope>match[markdown-meme]] :and[<currentTiddler>tag[$:/tags/Lar/MemeRoot]then[lar:///ha.ka.ba/@lararium/templates/ahu/markdown-meme-kahea]]",
 } as const;
 
 export const LARARIUM_AHU_CASCADE_MARKDOWN_MEME = {
@@ -151,23 +170,23 @@ export const LARARIUM_AHU_TEMPLATE_MARKDOWN_MEME = {
 } as const;
 
 /**
- * Slot template — markdown-meme scope, full-meme-form variant.
+ * Slot template — markdown-meme scope, kahea-ref variant.
  *
- * Slot child tiddler in full-meme-form carries the inner meme's structural
- * framing as fields: `prologue` (DOCTYPE + leading prose), `preamble` (text
- * between iam fence and first inner sigil), `postamble` (text between last
- * inner sigil and ETX). Iam-extracted fields dissolve into the child tiddler
- * directly; the template reconstructs the inner toml fence on emit via the
- * `lar-emit-iam` macro (Phase D). Round-trip identity stays byte-equivalent
- * to the operator-authored source.
+ * Fires when the slot child carries `$:/tags/Lar/MemeRoot`. The tagged
+ * child becomes its own file via the disk-projector's separate render
+ * pass; the parent's emission emits a `<<~ kahea ahu #slot >>` reference
+ * (live-ref form per memetic-wikitext spec §5.3) and stops there. The
+ * parent file stays compact; the child file carries its full framing.
  *
- * Variant selected by the cascade when the slot tiddler has a `prologue`
- * field. Plain body-fragment slots route through the simpler template.
+ * Round-trip identity: source (parent file with kahea-ref + child file
+ * with framing) → ingest into bag (flat tiddler set; child carries the
+ * MemeRoot tag) → emit (parent file's kahea-ref + child file's framing).
+ * Operator-source-told-you-to: the iam tag drives the split.
  */
-export const LARARIUM_AHU_TEMPLATE_MARKDOWN_MEME_FULL = {
-  title:    "lar:///ha.ka.ba/@lararium/templates/ahu/markdown-meme-full",
+export const LARARIUM_AHU_TEMPLATE_MARKDOWN_MEME_KAHEA = {
+  title:    "lar:///ha.ka.ba/@lararium/templates/ahu/markdown-meme-kahea",
   type:     "text/x-memetic-wikitext",
-  text:     "<<~ ahu {{!!slot}} >>\n<$list filter=\"[<currentTiddler>has[prologue]]\" variable=\"_\">{{!!prologue}}</$list>{{!!text}}<$list filter=\"[<currentTiddler>has[postamble]]\" variable=\"_\">{{!!postamble}}</$list>\n<<~/ahu >>\n",
+  text:     "<<~ kahea ahu {{!!slot}} >>",
 } as const;
 
 export const LARARIUM_AHU_TEMPLATE_HTML = {
