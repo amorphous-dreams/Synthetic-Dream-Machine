@@ -180,6 +180,21 @@ export function roomLarUri(slug: string): string {
 }
 
 /**
+ * Derive the per-wiki draft bagId. Each room mints its own draft Automerge
+ * doc; the composite-layer bagId encodes which room owns the drafts so
+ * multiple wikis can mount simultaneously without intermingling.
+ *
+ * e.g. roomDraftLarUri("altar-fire") → "lar:///ha.ka.ba/@lararium/rooms/altar-fire/draft"
+ *
+ * Replaces the static `BAG_IDS.draft` constant in composite-layer bagId
+ * usage. The Automerge doc URL itself still lives in the catalog under
+ * `${roomLarUri(slug)}/drafts/${peerDid}`.
+ */
+export function roomDraftLarUri(slug: string): string {
+  return `${roomLarUri(slug)}/draft`;
+}
+
+/**
  * Admin room — operator-private state for a single Lararium node.
  *
  * Federation: scoped to the operator's own devices (via cap=infrastructure

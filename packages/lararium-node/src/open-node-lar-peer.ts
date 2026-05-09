@@ -39,7 +39,7 @@ import {
   emptyMemeStoreDoc,
   LARARIUM_DOC_URI, CATALOG_DOC_URI, LARES_DOC_URI,
   IDENTITIES_DOC_URI, CIRCLES_DOC_URI, SESSIONS_DOC_URI, ADMIN_BAG_ID,
-  corpusLarUri, roomLarUri, BAG_IDS, recipeUri,
+  corpusLarUri, roomLarUri, roomDraftLarUri, BAG_IDS, recipeUri,
   VmPool,
 }                                       from "@lararium/core";
 import type { MemeRecipeVm, LarOpenPhase } from "@lararium/core";
@@ -534,7 +534,13 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
       };
     });
   }
-  composite.addLayer({ bagId: BAG_IDS.draft, store: new AutomergeDocStore(draftHandle, BAG_IDS.draft), writable: true });
+  // E.3 — per-wiki draft bagId. Composite layer encodes which room owns
+  // the drafts so multiple wikis can mount simultaneously without
+  // intermingling. The Automerge doc URL still lives in the catalog under
+  // ${roomLarUri(slug)}/drafts/${peerDid} (unchanged); only the layer
+  // bagId namespace changed from the static "draft" constant.
+  const draftBagId = roomDraftLarUri(roomId);
+  composite.addLayer({ bagId: draftBagId, store: new AutomergeDocStore(draftHandle, draftBagId), writable: true });
 
   // S6 E.2 — projection layer. In-memory MemoryTiddlerStore at top read
   // priority. Holds TW5 runtime state ($:/state/*, $:/HistoryList,
