@@ -62,7 +62,7 @@ import {
   createPinWikiHandler, createUnpinWikiHandler,
   createAddBagHandler, createRemoveBagHandler,
 } from "./wiki-handlers.js";
-import { createEpochBagHandler } from "./epoch-handlers.js";
+import { createEpochBagHandler, createRotateRecipeHandler } from "./epoch-handlers.js";
 import {
   createPinHandler, createUnpinHandler, createResidencyStatsHandler,
   createRegisterColdHandler,
@@ -403,6 +403,12 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
   // E.8 — DXOS-style snapshot-restart on a single bag. Bounds history;
   // lossy by design. Tombstones survive (Cassandra rule).
   commandRegistry.register("bag-epoch", createEpochBagHandler({
+    composite, repo, residency, catalogHandle,
+  }));
+  // E.9a — Nix-generations stack rotation. Mints a fresh canonical doc;
+  // retains old canonical as a previous-canon underlay slot (lower
+  // priority) so old generations stay readable.
+  commandRegistry.register("rotate-recipe", createRotateRecipeHandler({
     composite, repo, residency, catalogHandle,
   }));
   // C.2 — start the background sweeper. Idle eviction + LRU trim run

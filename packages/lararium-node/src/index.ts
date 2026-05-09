@@ -38,8 +38,8 @@ export type {
   WikiComposeOptions,
 } from "./wiki-handlers.js";
 
-export { createEpochBagHandler } from "./epoch-handlers.js";
-export type { EpochHandlerOptions } from "./epoch-handlers.js";
+export { createEpochBagHandler, createRotateRecipeHandler } from "./epoch-handlers.js";
+export type { EpochHandlerOptions, RotateRecipeOptions } from "./epoch-handlers.js";
 
 export {
   createPinHandler, createUnpinHandler, createResidencyStatsHandler,
