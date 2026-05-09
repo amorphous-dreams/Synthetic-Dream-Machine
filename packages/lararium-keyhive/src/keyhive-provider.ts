@@ -1,0 +1,232 @@
+/**
+ * KeyhiveProvider — CapabilityProvider implementation atop @keyhive/keyhive
+ * pre-alpha (0.0.0-alpha.56c).
+ *
+ * Mapping (from D.1 + D.1.5 findings):
+ *   - Lararium bag URL ↔ Keyhive Document, 1:1
+ *   - Operator ed25519 seed → Signer.memorySignerFromBytes
+ *   - Peer DID = hex-encoded Identifier bytes (matches Keyhive.idString)
+ *   - Access "read" / "admin" passes through verbatim
+ *
+ * Bag URL ↔ DocumentId mapping lives in-memory; D.4 will persist it as
+ * tiddler fields under each cap event so it survives daemon restart.
+ *
+ * Caveats (pre-alpha):
+ *   - No security audit; not for adversarial multi-peer use
+ *   - Wire format may rev between alpha versions; pin @keyhive/keyhive
+ *     and treat upgrades as planned breaking changes
+ *   - PREKEY_ROTATED fires often; production EventStore should batch
+ */
+
+import * as KH from "@keyhive/keyhive";
+import type {
+  CapabilityProvider, CapabilityProviderInitOpts,
+  DelegateArgs, DelegateResult, VerifyArgs, VerifyResult,
+  PeerDID, KeyhiveAccess,
+} from "./capability-provider.js";
+
+/** setPanicHook installs a global Rust→JS error translator. Calling it twice
+ *  panics ("a global default trace dispatcher has already been set"). Guard
+ *  with a module-level flag so multiple providers in one process play nice. */
+let panicHookInstalled = false;
+function ensurePanicHook(): void {
+  if (panicHookInstalled) return;
+  try { (KH as unknown as { setPanicHook?: () => void }).setPanicHook?.(); } catch { /* already installed */ }
+  panicHookInstalled = true;
+}
+
+function bytesToHex(bytes: Uint8Array): string {
+  let s = "0x";
+  for (const b of bytes) s += b.toString(16).padStart(2, "0");
+  return s;
+}
+
+function hexToBytes(hex: string): Uint8Array {
+  const clean = hex.startsWith("0x") ? hex.slice(2) : hex;
+  if (clean.length % 2 !== 0) throw new Error(`bad hex length: ${hex}`);
+  const out = new Uint8Array(clean.length / 2);
+  for (let i = 0; i < out.length; i++) {
+    out[i] = parseInt(clean.slice(i * 2, i * 2 + 2), 16);
+  }
+  return out;
+}
+
+/** Stable ChangeId for a bag URL — deterministic so two registrations of
+ *  the same URL produce the same Keyhive Document seed. Hash via SHA-256. */
+async function changeIdForBag(bagUrl: string): Promise<KH.ChangeId> {
+  const bytes = new TextEncoder().encode(bagUrl);
+  const hashBuf = await crypto.subtle.digest("SHA-256", bytes);
+  return new KH.ChangeId(new Uint8Array(hashBuf));
+}
+
+export class KeyhiveProvider implements CapabilityProvider {
+  private kh:         KH.Keyhive | null = null;
+  private eventStore: CapabilityProviderInitOpts["eventStore"] | null = null;
+  /** bagUrl → DocumentId bytes (hex). DocumentId class wraps bytes; we
+   *  keep the hex form to use as a stable string key. */
+  private readonly bagToDocId = new Map<string, string>();
+  /** Reverse: docId hex → bagUrl. */
+  private readonly docIdToBag = new Map<string, string>();
+  /** delegationId (hex of SignedDelegation.signature) → signature bytes. */
+  private readonly delegations = new Map<string, Uint8Array>();
+  /** delegationId → audience DID (so revoke can rebuild the addMember target). */
+  private readonly delegationAudience = new Map<string, string>();
+  /** delegationId → bag URL (so revoke knows which Document.toMembered() to use). */
+  private readonly delegationBag = new Map<string, string>();
+
+  async init(opts: CapabilityProviderInitOpts): Promise<void> {
+    if (this.kh) throw new Error("KeyhiveProvider: already initialized");
+    if (opts.seed.length !== 32) throw new Error(`seed must be 32 bytes (got ${opts.seed.length})`);
+    ensurePanicHook();
+    this.eventStore = opts.eventStore;
+
+    const signer = KH.Signer.memorySignerFromBytes(opts.seed);
+    const store  = KH.CiphertextStore.newInMemory();
+
+    const handler = (event: unknown): void => {
+      // Fire-and-forget persistence. Errors get swallowed at this seam —
+      // the EventStore impl logs its own failures.
+      const e = event as KH.Event;
+      try {
+        const variant = e.variant;
+        const bytes   = e.toBytes();
+        // D.2 uses synthetic hashes via the in-memory store; D.4's
+        // tiddler-backed store will compute content hashes itself.
+        const hash    = `${variant}-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+        void this.eventStore?.put({ hash, variant, bytes });
+      } catch (err) {
+        console.error("[keyhive] event capture failed:", err);
+      }
+    };
+
+    this.kh = await KH.Keyhive.init(signer, store, handler);
+  }
+
+  private requireKh(): KH.Keyhive {
+    if (!this.kh) throw new Error("KeyhiveProvider: not initialized — call init() first");
+    return this.kh;
+  }
+
+  async whoami(): Promise<PeerDID> {
+    // NOT idString — that formatter trims per-byte leading zeros and
+    // produces strings of inconsistent length (~60 chars vs the canonical
+    // 64). Use the raw bytes via `whoami: IndividualId` and our own hex.
+    return bytesToHex(this.requireKh().whoami.bytes);
+  }
+
+  async contactCard(): Promise<Uint8Array> {
+    // ContactCard serializes as JSON (toJson / fromJson) in alpha.56c.
+    // We wrap it in a UTF-8 byte form so transport layers stay byte-uniform.
+    const card = await this.requireKh().contactCard();
+    return new TextEncoder().encode(card.toJson());
+  }
+
+  async receiveContactCard(bytes: Uint8Array): Promise<{ id: PeerDID }> {
+    const json = new TextDecoder().decode(bytes);
+    const card = KH.ContactCard.fromJson(json);
+    const individual = await this.requireKh().receiveContactCard(card);
+    const idBytes = individual.id.toBytes();
+    return { id: bytesToHex(idBytes) };
+  }
+
+  async registerBag(bagUrl: string): Promise<{ docId: string }> {
+    const cached = this.bagToDocId.get(bagUrl);
+    if (cached) return { docId: cached };
+
+    const cid = await changeIdForBag(bagUrl);
+    const doc = await this.requireKh().generateDocument([], cid, []);
+    const docIdHex = bytesToHex(doc.id.toBytes());
+    this.bagToDocId.set(bagUrl, docIdHex);
+    this.docIdToBag.set(docIdHex, bagUrl);
+    return { docId: docIdHex };
+  }
+
+  async delegate(args: DelegateArgs): Promise<DelegateResult> {
+    const docIdHex = this.bagToDocId.get(args.bagUrl);
+    if (!docIdHex) throw new Error(`bag not registered: ${args.bagUrl} (call registerBag first)`);
+    const docId = new KH.DocumentId(hexToBytes(docIdHex));
+
+    const access = KH.Access.tryFromString(args.access);
+    if (!access) throw new Error(`invalid access: ${args.access} (Keyhive accepts only "read" or "admin")`);
+
+    const audienceId = new KH.Identifier(hexToBytes(args.audience));
+    const audienceAgent = await this.requireKh().getAgent(audienceId);
+    if (!audienceAgent) throw new Error(`audience not known to this provider — exchange contact cards first`);
+
+    // Need the actual Document, not just its id, to call toMembered().
+    const doc = await this.requireKh().getDocument(docId);
+    if (!doc) throw new Error(`document not in scope (lost from local state?): ${args.bagUrl}`);
+
+    const signedDelegation = await this.requireKh().addMember(
+      audienceAgent, doc.toMembered(), access, [],
+    );
+
+    // SignedDelegation in alpha.56c does NOT expose .toBytes(). It DOES
+    // expose .signature: Uint8Array which is unique per delegation. We use
+    // the signature hex as a stable delegationId for revocation.
+    //
+    // Transport bytes for the audience peer flow through the event_handler
+    // callback (DELEGATED variant). Callers that need to ship the
+    // delegation across the wire pull events from the EventStore. The
+    // DelegateResult.bytes field returns the signature (for now); D.4
+    // tightens this up by exposing the full event set captured during the
+    // addMember call.
+    const sigBytes = signedDelegation.signature;
+    const delegationId = bytesToHex(sigBytes);
+    this.delegations.set(delegationId, sigBytes);
+    // Track audience+bag+access for revoke().
+    this.delegationAudience.set(delegationId, args.audience);
+    this.delegationBag.set(delegationId, args.bagUrl);
+    return { delegationId, bytes: sigBytes };
+  }
+
+  async revoke(delegationId: string): Promise<{ bytes: Uint8Array }> {
+    if (!this.delegations.has(delegationId)) {
+      throw new Error(`unknown delegationId: ${delegationId}`);
+    }
+    // Parse out the audience + bag from the delegationId we minted; or
+    // walk the docMemberCapabilities to find the audience-agent and call
+    // revokeMember(agent, retain_others=true, doc.toMembered()).
+    // TODO(D.3): full revocation path lives here; D.2 records the API
+    // surface but punts the implementation behind a clear marker.
+    throw new Error("revoke(): full path lands in D.3 (needs delegationId → audience+bag mapping)");
+  }
+
+  async verify(args: VerifyArgs): Promise<VerifyResult> {
+    const docIdHex = this.bagToDocId.get(args.bagUrl);
+    if (!docIdHex) {
+      return { ok: false, reason: `bag not registered: ${args.bagUrl}` };
+    }
+    const docId = new KH.DocumentId(hexToBytes(docIdHex));
+    const presenterId = new KH.Identifier(hexToBytes(args.presenter));
+
+    const granted = await this.requireKh().accessForDoc(presenterId, docId);
+    if (!granted) {
+      return { ok: false, reason: "no access granted" };
+    }
+    const grantedStr = granted.toString().toLowerCase();
+    // admin satisfies read; read does NOT satisfy admin.
+    if (args.access === "read")  return { ok: true };
+    if (args.access === "admin" && grantedStr === "admin") return { ok: true };
+    return { ok: false, reason: `granted=${grantedStr}, required=${args.access}` };
+  }
+
+  async hydrateFromEventStore(): Promise<{ ingested: number }> {
+    if (!this.eventStore) return { ingested: 0 };
+    const records = await this.eventStore.list();
+    if (records.length === 0) return { ingested: 0 };
+    const eventsArray = records.map((r) => r.bytes);
+    await this.requireKh().ingestEventsBytes(eventsArray);
+    return { ingested: records.length };
+  }
+
+  async dispose(): Promise<void> {
+    // Keyhive WASM types support Symbol.dispose; rely on JS GC otherwise.
+    this.kh = null;
+    this.bagToDocId.clear();
+    this.docIdToBag.clear();
+    this.delegations.clear();
+    this.delegationAudience.clear();
+    this.delegationBag.clear();
+  }
+}
