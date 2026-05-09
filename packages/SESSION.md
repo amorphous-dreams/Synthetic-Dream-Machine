@@ -1,8 +1,68 @@
 # Session State — Lararium Web3 Refactor
 
-> Updated: 2026-05-07
+> Updated: 2026-05-08
 > Branch: feature/lararium-node-3
 > Purpose: Resume artifact — enough state to continue without prior chat context
+
+---
+
+## What Just Happened (2026-05-08 — S5.8 closed; S6.C.1 + S7.1.D{1,1.5,2} opened)
+
+Big arc in one session. Three sprint movements landed; two more opened and paused awaiting research.
+
+### S5.8 Promotion Ceremony — closed (six-commit B-arc)
+
+| sha | What |
+|---|---|
+| `47d72020` B.1 | `@lares/cli` package scaffold + `lares init` (replaces old pnpm scripts) |
+| `50a9c5be` B.2 | Full taxonomy port — status, serve, dev, reset, fresh, build-genesis, test-quine, heleuma |
+| `b564ef0c` B.3 | Command-tiddler protocol + TS dispatcher in `@lararium/node`; echo handler smoke |
+| `1681e83f` B.4 | Promote handler (TS, factory closing over room composite) + audit-event side channel |
+| `1ff23ede` B.5 | `lares promote <uri> --to <bag>` CLI; WS-attach to daemon, recipe-presence preview, polled round-trip |
+| `1d4df5b2` B.6 | Smoke green; HANDOFF + memory updates |
+
+End-to-end CRDT-native CLI ↔ daemon coordination via command-tiddlers in the admin doc. **No HTTP/RPC dispatch surface anywhere** — preserves web3-only invariant.
+
+### Three-tension fix — single commit on top of B.6
+
+Captured tensions surfaced after B.6 closure; fixed in one pass:
+
+- **Tension 1 (cmd-tiddler tombstone hygiene).** Old shape: one tiddler at `cmd/<id>` carried both signal AND result; CLI tombstoned after read; CLI crash mid-flight = dirty namespace. New shape: split signal from record. `cmd/<id>` thin signal-only (status state machine). `log/<id>` durable record (full result+audit). Dispatcher tombstones cmd/<id> after writing log/<id>. CLI polls log/<id> and never tombstones. Crash-safe.
+- **Tension 2 (heleuma deficit).** 54 missing source-file memes. `parse-args.ts` marked `@heleuma:exempt`; remaining 54 scaffolded via `lares heleuma --write`; `bin/lares.ts` anchor authored beyond stub. `lares heleuma` now reports "all aligned."
+- **Tension 3 (corpus-vs-engine package asymmetry).** Documented as category boundary. Corpus packages hold tiddler-package projections; engine packages run `src/`+`dist/`+`tsc`. Inline note in `packages/lares/index.js` forbids TS migration.
+
+### S6 BagResidencyManager — opened C.1, paused mid-arc
+
+Triggered by an explicit operator scale concern. Two background research agents returned with a cluster of golden principles (working set << total store; tier hot-warm-cold; sync the index before content; compress history into strata; one authoritative writer per bag).
+
+C.1 commit landed `BagResidencyManager` skeleton in `@lararium/core/bag-residency.ts` — pinned/hot/cold tiers, `pin/unpin/touch/registerCold/evict/setSyncActive` surface, stats reporting. **No eviction logic yet** — instrumentation only by design (research warning: don't theorize eviction policy, watch numbers grow under real use). Three CLI commands wired: `lares pin <url> [--reason]`, `lares unpin <url>`, `lares residency`. Daemon pre-pins all infrastructure docs at boot.
+
+Sprint paused after C.1 to scope S7 — the cap layer is what S7 needs and changes shape downstream of decisions made there.
+
+### S7.1 Capability Layer — opened D.1, D.1.5, D.2; paused for design
+
+Two research streams reframed the original "use UCAN, swap to Keyhive later" plan:
+
+1. **UCAN library survey** returned with: *Keyhive does NOT use UCAN.* It uses concap (convergent capabilities, CRDT-shaped revocation). Migration UCAN→Keyhive is re-implementation, not swap.
+2. **Keyhive deep-dive** confirmed: concap spec is design-phase ("very recently begun to implement" per Notebook 01), but `keyhive_wasm` (npm `@keyhive/keyhive`) ships as pre-alpha 0.0.0-alpha.56c with TypeScript bindings. Operator chose **adopt directly** rather than hand-roll concap-shape from incomplete spec.
+
+D.1 probe (`packages/lararium-keyhive/probes/operator-delegate-device.ts`) end-to-end exercised init → contact-card exchange → registerBag → addMember → SignedDelegation. Verdict: **WORKABLE.** D.1.5 enumerated `Access.tryFromString` → only `read` and `admin` accepted (binary, NOT our 8-step ABILITY_LADDER). Captured event variants per ceremony: PREKEY_ROTATED (frequent ~172B), CGKA_OPERATION (3×), DELEGATED (2×).
+
+D.2 landed `CapabilityProvider` interface + `KeyhiveProvider` impl in `@lararium/keyhive/src/`. End-to-end provider smoke green: two providers init, exchange contact cards, register a bag, delegate, verify admin access, 8 events captured per ceremony.
+
+Three architectural decisions locked across the D-arc:
+
+- **Two-tier policy.** Keyhive provides the cryptographic gate (binary read/admin). Application layer (promote-handler etc.) checks finer-grained ABILITY_LADDER caveats only AFTER Keyhive's admin proof verifies.
+- **Sync semantics: γ-with-operator-α-mirror.** Room peers hold the cap-subgraph for bags they're members of (Beelay's transitive-closure-rooted-at-doc rule). Operator's own devices hold the full cap log across all bags as a strict subset. NOT (β) full-graph (leaks topology). NOT pure (α) operator-private (breaks revocation propagation). Forward-compatible with Beelay/Keyhive's production model.
+- **Cap-event home: D4.a — inside the bag's own Automerge doc.** Title `lar:///{bag-uri}/cap/{event-id}`, tag `$:/tags/CapEvent` (with sub-tags Prekey/Cgka/Delegation/Revocation). TW5 research drove this: bags are policy boundaries (not performance boundaries); cap events MUST share the bag's sync surface (peer with bag but no cap log can't validate writes); Automerge has no cross-doc atomicity. Companion-doc shape reserved for future performance tuning only.
+
+**Pin pre-alpha:** @keyhive/keyhive `0.0.0-alpha.56c`. Treat upgrades as planned breaking changes per operator's named migration policy.
+
+### Where the arc rests now
+
+Branch is at origin (`0e120ec4`); 11 unpushed commits actually pushed when checked. Three pending docs (HANDOFF, SESSION, ROADMAP) updated this turn to capture the locked decisions.
+
+Next code work: D.3 (operator-key bridge: tie `operator-key.ts` ed25519 to KeyhiveProvider; `lares init` writes operator's `cap=infrastructure` self-delegation). After D.6 closes S7.1, resume S6 (C.2-C.6: LRU sweeper, oracle stub-by-default, hydrate-on-read, same-machine consolidation).
 
 ---
 

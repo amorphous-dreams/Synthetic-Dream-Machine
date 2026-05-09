@@ -13,19 +13,23 @@
 ```text
 Resume from packages/HANDOFF.md.
 Branch: feature/lararium-node-3.
-Active sprint completed: S5.8 Promotion Ceremony (6-commit B-arc B.1→B.6).
-S5.5 / S5.6 / S5.7 / S5.8 all closed; S7.1 device delegations next.
+S5.8 ✅ closed. S6 (BagResidencyManager) opened C.1; paused mid-arc.
+S7.1 (Capability layer via @keyhive/keyhive) opened D.1+D.1.5+D.2; paused
+awaiting TW5 bag/recipe research return for D.4 cap-event-home decision.
 Architecture laws hold: causal-island, bag=Automerge-doc=sync-boundary,
 canon-promotion requires active operator decision, TW5 VM primacy,
 web3-only — no HTTP/RPC for inter-process coordination, command-tiddlers
 through admin doc instead.
+Sync semantics for cap log: γ-with-operator-α-mirror (Beelay-aligned).
 Memory: feedback_architecture_principles.md + feedback_web3_only_lares.md +
-project_lares_cli_and_command_protocol.md (NEW).
-Do not re-decide: @lares/cli is its own package; command-tiddler URIs
-live under lar:///ha.ka.ba/@lararium/@admin/cmd/<requestId>; audit events
-under .../@admin/log/<requestId>; promote handler is TS not widget;
-attach-only CLI mode (daemon must run); ABILITY_LADDER "promote" gates
-the future federated promotion path.
+project_lares_cli_and_command_protocol.md +
+project_capability_layer_design.md (NEW S7.1).
+Do not re-decide: @lares/cli is its own package; command-tiddler split
+contract (cmd/=signal, log/=durable record); attach-only CLI mode;
+@keyhive/keyhive pinned at 0.0.0-alpha.56c; bag↔Keyhive Document 1:1;
+two-tier policy (Keyhive crypto + ABILITY_LADDER caveats); DID via raw
+bytes-hex (not idString); ContactCard via JSON; corpus-vs-engine package
+category boundary.
 ```
 
 ## What landed in this branch
@@ -36,6 +40,8 @@ the future federated promotion path.
 | S5.7 | ✅ | Bag-aware `LarDiskProjector` (canon leak closed). Genesis walks all `packages/*/memes/`. `lares heleuma` audit/scaffold. `lares-chapel-perilous-opens` removed. |
 | S5.6 | ✅ | Admin TW5 VM stood up. Admin doc at `lar:///ha.ka.ba/@lararium/@admin`. Bag-mirror configs read from admin tiddlers tagged `$:/tags/LarariumBagMirror`. |
 | S5.8 | ✅ | `@lares/cli` package + `lares` binary; command-tiddler CRDT protocol; TS dispatcher; promote/where/echo handlers; durable audit-event tiddlers. |
+| S6 (C.1) | 🟡 | `BagResidencyManager` skeleton (pinned/hot/cold tiers). `lares pin/unpin/residency`. No eviction yet — C.2 wires LRU+sweeper. Paused mid-arc to scope S7. |
+| S7.1 (D.1, D.1.5, D.2) | 🟡 | @keyhive/keyhive pre-alpha probed and adopted. CapabilityProvider+KeyhiveProvider land; provider smoke green. D.3-D.6 paused awaiting TW5 bag/recipe research return for D.4 cap-event-home decision. |
 
 ## S5.8 sub-arc — what each commit landed
 
@@ -134,6 +140,12 @@ lares promote <uri> --to <target-bag>
 - ULID-style request id: millis-base32 + 8 random base32; sortable, monotonic
 - Per-package `memes/` is the canonical convention — no central `ha-ka-ba/` filesystem aggregator
 - **Corpus-vs-engine package category.** Corpus packages (`@lares/lares`, `elyncia`, `ftls`, `sdm`, `wtf`) hold tiddler-package projections in `memes/`; their root JS is at most a 5-line path helper, NOT a TS pipeline. Engine packages (`@lararium/*`, `@lares/cli`) run `src/` + `dist/` + `tsc`. The asymmetry encodes architecture-principle 5: meme files are render projections, code is code-as-projection. Do not migrate corpus index.js to TS.
+- **Command-tiddler split contract.** `cmd/<id>` = thin signal-tiddler (status state-machine ONLY, no result/error data). `log/<id>` = durable record (full result+audit). Dispatcher tombstones `cmd/<id>` after writing `log/<id>`. CLI polls `log/<id>` and never tombstones. Crash-safe.
+- **Capability layer = @keyhive/keyhive (Ink & Switch concap, pre-alpha).** Bag URL ↔ Keyhive Document, 1:1. Two-tier policy: Keyhive provides the binary read/admin cryptographic gate; ABILITY_LADDER caveats live at the application layer (promote-handler etc.). Pinned to `0.0.0-alpha.56c`; upgrades = planned breaking changes.
+- **Cap-log sync semantics: γ-with-operator-mirror.** Room peers hold the cap-subgraph for bags they're members of (Beelay's transitive-closure-rooted-at-doc rule). Operator devices hold the full cap log across all bags as a strict subset of γ. NOT (β) full-graph (leaks topology). NOT pure (α) operator-private (breaks revocation propagation).
+- **DID encoding.** Use `whoami: IndividualId` + own bytes-to-hex. NOT `idString` — strips per-byte leading zeros, breaks DID round-trip.
+- **ContactCard transport.** JSON via `toJson`/`fromJson`, wrap with TextEncoder. NOT bytes — alpha.56c doesn't expose `toBytes` for ContactCard.
+- **Cap-event home: D4.a — inside the bag's own Automerge doc** (TW5-native, decided post-research). Title shape `lar:///{bag-uri}/cap/{event-id}`, tag `$:/tags/CapEvent` (sub-tags `.../Prekey`, `.../Cgka`, `.../Delegation`, `.../Revocation`). Reasons: bags are TW5 policy boundaries, not performance boundaries; cap events MUST share the bag's sync surface (peer with bag but not cap log can't validate writes); Automerge has no cross-doc atomicity; TW5's own pattern co-locates high-churn runtime metadata (history, state, drafts) with content via `$:/` + tag, not via separate bag. Companion-doc shape is reserved for future *performance* tuning if cap-event volume crosses a threshold.
 - Chapel-perilous-opens removed; unstable URIs resolve as virtual until promoted to a stable @-scope
 - Admin URI shape: room URI vs bag URI distinction is intentional
 - Bag-mirror configs live in admin room (operator-private, federates to operator devices only)

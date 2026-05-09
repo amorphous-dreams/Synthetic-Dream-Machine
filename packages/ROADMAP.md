@@ -1,6 +1,6 @@
 # Lararium — Web3 Genesis Artifact Roadmap
 
-> Updated: 2026-05-06 (session 3)
+> Updated: 2026-05-08
 > Branch: feature/lararium-node-3
 > Governing laws: see SESSION.md § Five Architecture Laws
 
@@ -41,9 +41,12 @@ Social graph control inverts: circles are owned by their center, not the platfor
 | S5.5 | Genesis Bootstrap Causal Correction | ✅ Complete | Init script extracted; projection registry landed; admin URI constants added; AGENTS.md updated |
 | S5.6 | Admin VM Lift | ✅ Complete | Admin TW5 VM stood up; admin doc seeded; `openNodeLarPeer` boots both VMs; bag-mirror configs now readable from admin-room tiddlers tagged `$:/tags/LarariumBagMirror` |
 | S5.7 | Heleuma Coverage + Bag Mirror | ✅ Complete | Genesis discovery walks all packages' memes/; `LarDiskProjector` bag-aware (canon leak closed); `pnpm heleuma` audit/scaffold; `lares-chapel-perilous-opens` removed |
-| S5.8 | Promotion Ceremony | ⬜ Designed | Wiki widget + CLI to promote tiddlers between recipe bags; per-bag presence shown to operator; commit lock-in via git on canonical-bag write |
-| S6 | SessionEventLog | ✅ Complete | Per-session append-only Automerge doc; `broadcast()` for presence |
-| S7 | Circles + Identities Capability Layer | ⬜ Designed | Keyhive/UCAN device delegation; Seitan token circle invites |
+| S5.8 | Promotion Ceremony | ✅ Complete | `@lares/cli` package + `lares promote` CLI; command-tiddler protocol (cmd/=signal, log/=durable record); TS dispatcher + promote handler in `@lararium/node`; CLI ↔ daemon coordination via admin-doc tiddlers (no HTTP/RPC) |
+| S6 | BagResidencyManager | 🟡 In Progress | Three-tier residency (pinned/hot/cold) for Automerge bags; LRU + idle sweeper; oracle stub-by-default; opportunistic same-machine peer consolidation. C.1 landed (skeleton + `lares pin/unpin/residency`); C.2-C.6 paused for S7.1 |
+| S6 (legacy) | SessionEventLog | ✅ Complete | Per-session append-only Automerge doc; `broadcast()` for presence (renumbered: BagResidencyManager took the S6 slot 2026-05-08) |
+| S7.1 | Capability Layer (Keyhive concap) | 🟡 In Progress | `@keyhive/keyhive` adopted pre-alpha (0.0.0-alpha.56c); `CapabilityProvider` + `KeyhiveProvider` landed; bag↔Keyhive Document 1:1; two-tier policy (Keyhive crypto gate + ABILITY_LADDER caveats); γ+α-mirror sync; cap events live in bag-doc as `lar:///{bag}/cap/<id>` tagged `$:/tags/CapEvent`. D.1+D.1.5+D.2 landed; D.3-D.6 ahead |
+| S7.4 | Admin doc ingress trust gate | ⬜ Designed | Admin doc federation gates on `cap=infrastructure` proofs (waits on S7.1 D-arc closure) |
+| S7 (legacy) | Circles + Identities Capability Layer | partly absorbed | Keyhive direction confirmed via S7.1; UCAN direction rejected (Keyhive does NOT use UCAN — uses concap); Seitan token circle invites still pending |
 | S8 | Kowloon Bridge | ⬜ Designed | `KowloonOutbox` draft queue + `KowloonInbox` feed mirror; `elyncia.app` deployment |
 | S9 | lararium-browser scaffold | ⬜ Queued | Full Automerge browser peer; IndexedDB; broadcast() presence engine; OPFS option |
 | S10 | dreamdeck-tldraw scaffold | ⬜ Queued | tldraw shapes as lar:// resource containers; three-tier store; edge types first-class |
