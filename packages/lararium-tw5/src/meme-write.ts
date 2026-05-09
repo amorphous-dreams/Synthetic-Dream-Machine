@@ -110,7 +110,14 @@ export function exportMemeText(tw5: TW5Engine, memeUri: string): string {
   if (!wiki?.renderTiddler) return "";
   try {
     return wiki.renderTiddler("text/plain", memeUri, {
-      variables: { "lar-export-scope": "markdown-meme" },
+      variables: {
+        // currentTiddler must equal the parent meme URI so AhuWidget can
+        // compute child slot URIs as `parentUri + slot`. TW5 does not
+        // automatically inject currentTiddler at the renderTiddler entry —
+        // we thread it explicitly here.
+        currentTiddler:    memeUri,
+        "lar-export-scope": "markdown-meme",
+      },
     }) ?? "";
   } catch {
     // Defensive: a malformed cascade or missing template tiddler falls back

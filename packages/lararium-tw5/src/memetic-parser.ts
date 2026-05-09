@@ -317,11 +317,6 @@ export class MemeticParser {
         })();
 
     this.tree = astToTw5Tree(nodes, wiki);
-    if (typeof process !== "undefined" && process.stderr && uri.includes("the-lares-protocols")) {
-      const ahuCount = nodes.filter((n) => n.kind === "Ahu").length;
-      const treeAhu  = this.tree.filter((t) => t.type === "ahu").length;
-      process.stderr.write(`[MemeticParser] uri=${uri} astNodes=${nodes.length} astAhu=${ahuCount} treeNodes=${this.tree.length} treeAhu=${treeAhu}\n`);
-    }
   }
 }
 

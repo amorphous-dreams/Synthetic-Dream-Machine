@@ -116,3 +116,39 @@ export const LARARIUM_AHU_CASCADE_HTML = {
   tags:        ["$:/tags/Lar/AhuTemplate"],
   text:        "[[lar:///ha.ka.ba/@lararium/templates/ahu/html]]",
 } as const;
+
+/**
+ * Default ahu render templates — shipped as preload tiddlers so the cascade
+ * always resolves to a valid template at boot. Operators may override per-
+ * wiki by writing tiddlers at the same lar:/// titles via the engine corpus
+ * meme-loading path; preload tiddlers act as the floor.
+ *
+ * The `markdown-meme` template emits the canonical disk form:
+ *   `<<~ ahu {{slot}} >>\n{{body}}\n<<~/ahu >>`. Slot and body come from
+ * the slot-child tiddler's fields; the AhuWidget sets currentTiddler before
+ * transcluding the template, so {{!!slot}} and {{!!text}} resolve naturally.
+ *
+ * The `html` template emits a clickable section with the slot child's body
+ * transcluded into it. Operators get click-through inspection of slot
+ * metadata directly from the parent meme view.
+ */
+/**
+ * The `\rules except` pragma disables the lar-sigil-block / lar-sigil-inline
+ * wikirules inside this template. Without it, the wikifier sees the literal
+ * `<<~ ahu` in the template body and matches its own sigil rule recursively —
+ * the template would emit ahu widgets that transclude through the same
+ * cascade, infinite-loop or empty. With the pragma, `<<~ ahu` becomes
+ * literal text in the parse output. The transclusion macros (`{{!!slot}}`,
+ * `{{!!text}}`) survive the pragma and resolve normally.
+ */
+export const LARARIUM_AHU_TEMPLATE_MARKDOWN_MEME = {
+  title:    "lar:///ha.ka.ba/@lararium/templates/ahu/markdown-meme",
+  type:     "text/vnd.tiddlywiki",
+  text:     "\\rules except lar-sigil-block lar-sigil-inline macrocallinline macrocallblock\n<<~ ahu {{!!slot}} >>\n{{!!text}}\n<<~/ahu >>\n",
+} as const;
+
+export const LARARIUM_AHU_TEMPLATE_HTML = {
+  title:    "lar:///ha.ka.ba/@lararium/templates/ahu/html",
+  type:     "text/vnd.tiddlywiki",
+  text:     '<section class="lar-ahu" data-uri=<<currentTiddler>>><header class="lar-ahu-slot"><$link to=<<currentTiddler>>>{{!!slot}}</$link></header><div class="lar-ahu-body"><$transclude $tiddler=<<currentTiddler>> mode="block"/></div></section>',
+} as const;

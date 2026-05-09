@@ -57,24 +57,29 @@ AhuWidget.prototype.render = function (
   this.computeAttributes();
   this.execute();
 
-  const slot      = this.getAttribute("slot", "");
+  const slot = this.getAttribute("slot", "");
   const explicit  = this.getAttribute("uri",  "");
   const parentUri = this.getVariable?.("currentTiddler") ?? "";
-  // The parse tree's `uri` attribute carries a placeholder ("lar:///unknown")
-  // when MemeticParser ran without a tiddler-context (TW5's parseText omits
-  // the title). currentTiddler is authoritative — derive childUri from it.
+  // Resolution order:
+  //   1. explicit `uri` attribute, when present and not a placeholder.
+  //   2. slot starting with `lar:` (URI-form sigils — MemeticParser stores
+  //      the URI in `slot` when the parse tree comes from PranalaSugar's
+  //      aka/kahea forms with a URI argument).
+  //   3. parentUri + slot fragment (the conventional `#slot` form).
+  // The parse tree's `uri` placeholder ("lar:///unknown") fires when
+  // MemeticParser parsed without a tiddler-context — currentTiddler then
+  // names the authoritative parent URI.
   const isUnknownPlaceholder = explicit.startsWith("lar:///unknown");
-  const childUri  = (!explicit || isUnknownPlaceholder) ? (parentUri + slot) : explicit;
+  const childUri =
+    explicit && !isUnknownPlaceholder ? explicit
+    : slot.startsWith("lar:")         ? slot
+    : (parentUri + slot);
 
   // Resolve the active template via the cascade. The cascade reads
   // lar-export-scope (and any future scope variables) without the widget
   // needing to know which scopes exist.
   const cascadeMatches = this.wiki?.filterTiddlers?.(CASCADE_FILTER, this) ?? [];
   const template       = cascadeMatches[0] || FALLBACK_TEMPLATE;
-  if (typeof process !== "undefined" && process.stderr) {
-    const exists = this.wiki?.tiddlerExists?.(template) ?? "?";
-    process.stderr.write(`[ahu] childUri=${childUri} template=${template} exists=${exists} cascadeCount=${cascadeMatches.length}\n`);
-  }
 
   // Build a parse subtree equivalent to:
   //   <$tiddler tiddler=<<childUri>>>

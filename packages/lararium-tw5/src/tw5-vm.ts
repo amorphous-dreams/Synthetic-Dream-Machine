@@ -21,12 +21,15 @@ import type { TiddlerFields } from "./deserializer.js";
 import {
   createLarariumWidgets,
   registerImplementorsOperator,
-  LARARIUM_WIDGETS_TIDDLER, LARARIUM_AHU_CASCADE_HTML, LARARIUM_AHU_CASCADE_MARKDOWN_MEME,
+  LARARIUM_WIDGETS_TIDDLER,
+  LARARIUM_AHU_CASCADE_HTML, LARARIUM_AHU_CASCADE_MARKDOWN_MEME,
+  LARARIUM_AHU_TEMPLATE_HTML, LARARIUM_AHU_TEMPLATE_MARKDOWN_MEME,
 } from "./tw5-widgets.js";
 import { getZoomLayout } from "./zoom-layout.js";
 import type { ZoomLayout } from "./zoom-layout.js";
 import { MemeticParser } from "./memetic-parser.js";
 import { memeticWikitextDeserializer } from "./deserializer.js";
+import { registerLarSigilWikirule } from "./wikirules/memetic-wikitext-sigil.js";
 export type { ZoomLayout };
 
 
@@ -107,6 +110,8 @@ export class TW5Engine {
         instance.preloadTiddlers.push(LARARIUM_WIDGETS_TIDDLER);
         instance.preloadTiddlers.push(LARARIUM_AHU_CASCADE_HTML as unknown as Record<string, unknown>);
         instance.preloadTiddlers.push(LARARIUM_AHU_CASCADE_MARKDOWN_MEME as unknown as Record<string, unknown>);
+        instance.preloadTiddlers.push(LARARIUM_AHU_TEMPLATE_HTML as unknown as Record<string, unknown>);
+        instance.preloadTiddlers.push(LARARIUM_AHU_TEMPLATE_MARKDOWN_MEME as unknown as Record<string, unknown>);
         for (const t of allPreloads) instance.preloadTiddlers.push(t as Record<string, unknown>);
 
         instance.boot.boot(() => {
@@ -470,6 +475,12 @@ export class TW5Engine {
     // saw the default text/vnd.tiddlywiki parser and cached its result.
     const parsers: Record<string, unknown> = tw?.Wiki?.parsers ?? {};
     parsers["text/x-memetic-wikitext"] = MemeticParser;
+
+    // Register the lar-sigil wikirule so `<<~ sigil ... >>` syntax works in
+    // any wikitext context — vanilla `text/vnd.tiddlywiki` tiddlers, browser-
+    // side authoring drafts, embedded transclusions. Without this, only the
+    // memetic-wikitext typed tiddlers recognize the syntax.
+    registerLarSigilWikirule(tw as unknown as Parameters<typeof registerLarSigilWikirule>[0]);
 
     TW5Engine._registerDeserializer(tw);
     TW5Engine._registerWidgets(tw);

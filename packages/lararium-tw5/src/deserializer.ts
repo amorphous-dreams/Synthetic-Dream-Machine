@@ -101,7 +101,17 @@ function splitMemeToTiddlers(
     const childTitle = uri + ahuNode.slot;
     const bodyText   = rawBodyText(text, ahuNode);
     const childFields = extractAhuFields(bodyText, warnings, `${uri}${ahuNode.slot}`);
-    children.push({ ...childFields, title: childTitle, text: bodyText });
+    // The `slot` field carries the slot identifier (e.g. "#thesis") so the
+    // markdown-meme template's `{{!!slot}}` substitution resolves to it.
+    // `fragment-parent` lets `<$list filter="[field:fragment-parent[<uri>]]">`
+    // enumerate slot children of a given parent.
+    children.push({
+      ...childFields,
+      title: childTitle,
+      text:  bodyText,
+      slot:  ahuNode.slot,
+      "fragment-parent": uri,
+    });
   }
 
   // Parent fields: root TOML iam prelude
