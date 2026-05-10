@@ -217,12 +217,30 @@ function splitRecursive(
     // text = the body proper, between iam-toml end and last-kahea-ref end
     // (inclusive of inline kahea refs for sub-slot reconstruction).
     const childStructure = extractSlotStructure(inner.rewrittenText, warnings, childUri);
+    // preamble-rendered substitutes the `<<~ iam >>` sentinel inside
+    // preamble with the regenerated iam toml block. Pre-computed here at
+    // deserialize so the meme-template can emit it directly without
+    // needing macro/transclude expansion (the curated rule set in
+    // text/x-memetic-wikitext excludes macrocall). J.2b will regenerate
+    // iam-source from native fields with default-elision; for now this
+    // is bytes-faithful — operator edits to iam-source field round-trip,
+    // edits to native iam-class fields do not.
+    const preambleRendered = childStructure.preamble && childStructure.iamSource
+      ? childStructure.preamble.replace(
+          IAM_MARKER,
+          `\`\`\`toml iam\n${childStructure.iamSource}\`\`\``,
+        )
+      : childStructure.preamble;
     allChildren.push({
       ...childStructure.fields,
       title:             childUri,
       text:              childStructure.text,
-      ...(childStructure.preamble  ? { preamble:  childStructure.preamble  } : {}),
-      ...(childStructure.postamble ? { postamble: childStructure.postamble } : {}),
+      ...(childStructure.preamble  ? { preamble:    childStructure.preamble  } : {}),
+      ...(preambleRendered && preambleRendered !== childStructure.preamble
+        ? { "preamble-rendered": preambleRendered }
+        : {}),
+      ...(childStructure.iamSource ? { "iam-source": childStructure.iamSource } : {}),
+      ...(childStructure.postamble ? { postamble:   childStructure.postamble } : {}),
       slot:              block.slot,
       "fragment-parent": enclosingUri,
     });
@@ -284,6 +302,7 @@ export const IAM_MARKER = "<<~ iam >>";
 interface SlotStructure {
   readonly preamble:  string;
   readonly fields:    TiddlerFields;
+  readonly iamSource: string;   // raw toml block bytes (between fences); empty when no iam
   readonly text:      string;
   readonly postamble: string;
 }
@@ -305,16 +324,22 @@ function extractSlotStructure(
   // Extract iam toml from preamble region. Replace it in-place with the
   // sentinel marker so position survives — operator may have written
   // prose on either side, or both, or neither.
-  const iamRe   = /```toml[ \t]+iam[ \t]*\n([\s\S]*?)```\n?/;
-  const plainRe = /```toml[ \t]*\n([\s\S]*?)```\n?/;
+  // Don't consume a trailing newline after the closing fence — let it
+  // remain part of post-iam preamble prose so emission re-emits the
+  // line-break that the operator authored between the iam block and
+  // following text.
+  const iamRe   = /```toml[ \t]+iam[ \t]*\n([\s\S]*?)```/;
+  const plainRe = /```toml[ \t]*\n([\s\S]*?)```/;
   const iamM    = iamRe.exec(preambleRegion) ?? plainRe.exec(preambleRegion);
-  let preamble = preambleRegion;
-  let fields:  TiddlerFields = {};
+  let preamble  = preambleRegion;
+  let fields:   TiddlerFields = {};
+  let iamSource = "";
   if (iamM) {
     const beforeIam = preambleRegion.slice(0, iamM.index);
     const afterIam  = preambleRegion.slice(iamM.index + iamM[0].length);
-    fields   = fieldifyToml(iamM[1] ?? "", warnings, context);
-    preamble = beforeIam + IAM_MARKER + afterIam;
+    iamSource = iamM[1] ?? "";
+    fields    = fieldifyToml(iamSource, warnings, context);
+    preamble  = beforeIam + IAM_MARKER + afterIam;
   }
 
   // Find LAST inner kahea ref — trailing prose after it becomes postamble.
@@ -342,7 +367,7 @@ function extractSlotStructure(
     }
   }
 
-  return { preamble, fields, text, postamble };
+  return { preamble, fields, iamSource, text, postamble };
 }
 
 // ---------------------------------------------------------------------------

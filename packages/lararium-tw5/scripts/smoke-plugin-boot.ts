@@ -14,6 +14,7 @@
  * Exit nonzero if any check fails.
  */
 import { TW5Engine } from "../src/tw5-vm.js";
+import { exportMemeText } from "../src/meme-write.js";
 
 async function main(): Promise<void> {
   const engine = new TW5Engine();
@@ -201,6 +202,32 @@ async function main(): Promise<void> {
     if (typeof parentSlot["postamble"] !== "string" || !(parentSlot["postamble"] as string).includes("trailing slot prose")) {
       failures.push(`slot postamble missing or wrong: ${JSON.stringify(parentSlot["postamble"])}`);
     }
+    if (typeof parentSlot["iam-source"] !== "string" || !(parentSlot["iam-source"] as string).includes("field = \"value\"")) {
+      failures.push(`iam-source missing: ${JSON.stringify(parentSlot["iam-source"])}`);
+    }
+    if (typeof parentSlot["preamble"] === "string" && !(parentSlot["preamble"] as string).includes("<<~ iam >>")) {
+      failures.push(`preamble missing iam sentinel: ${JSON.stringify(parentSlot["preamble"])}`);
+    }
+  }
+
+  // J.2c — round-trip emission via exportMemeText (markdown-meme scope).
+  // Inject the slot child fields into the wiki and render through the
+  // meme-template; output should reconstruct the operator's original
+  // slot body — preamble + iam toml + postamble.
+  if (parentSlot) {
+    for (const t of slotResults) {
+      engine.setTiddler(t as unknown as Record<string, string | string[]>);
+    }
+    const rendered = exportMemeText(engine, "lar:///probe-slot-meme#parent");
+    if (!rendered.includes("leading slot prose")) {
+      failures.push(`slot round-trip lost preamble; got: ${rendered.slice(0, 300)}`);
+    }
+    if (!rendered.includes("trailing slot prose")) {
+      failures.push(`slot round-trip lost postamble; got: ${rendered.slice(0, 300)}`);
+    }
+    if (!rendered.includes("```toml iam") || !rendered.includes('field = "value"')) {
+      failures.push(`slot round-trip lost iam toml; got: ${rendered.slice(0, 300)}`);
+    }
   }
 
   if (failures.length > 0) {
@@ -220,6 +247,7 @@ async function main(): Promise<void> {
   console.log(`  pranala block edge rendered with body (${pranalaBlockHTML.length} bytes, body inlined)`);
   console.log(`  deserializer captured prologue + postamble fields on parent`);
   console.log(`  slot-structure split: preamble + iam fields + postamble on slot child`);
+  console.log(`  slot round-trip emission: preamble + iam toml + postamble reconstructed via meme-template`);
   process.exit(0);
 }
 

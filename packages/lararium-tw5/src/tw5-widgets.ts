@@ -385,15 +385,41 @@ export const LARARIUM_PRANALA_TEMPLATE_HTML = {
  * survives byte-for-byte.
  */
 /**
- * The `prologue` and `postamble` fields carry pre-SOH and post-ETX content
- * (DOCTYPE comment + leading prose, and trailing comments / closing prose)
- * captured by the deserializer at sync time. Emit both verbatim around the
- * meme body so disk projection round-trips the full operator-authored
- * source — including the framing comment that names the meme's grammar
- * contract and any trailing edge declarations or commentary.
+ * The meme-level template emits a tiddler's full disk projection:
+ *
+ *   prologue?    — pre-SOH framing (DOCTYPE comment + leading prose), parent
+ *                  meme only.
+ *   preamble?    — pre-first-sigil prose flanking the iam toml. The
+ *                  `<<~ iam >>` sentinel inside preamble gets substituted
+ *                  with the regenerated iam toml block (operator-authored
+ *                  bytes preserved via `iam-source` field).
+ *   text         — body proper.
+ *   postamble?   — trailing prose (parent meme = post-ETX content; slot
+ *                  child = post-last-inner-sigil content).
+ *
+ * Round-trip law: anything in the operator's source survives the cycle.
+ * The sentinel substitution uses TW5's filter operator `search-replace` to
+ * rewrite the marker in-place inside the preamble field's text.
+ *
+ * The fenced toml block re-emits with literal triple-backticks since the
+ * meme-template runs under `text/x-memetic-wikitext` — the curated rule
+ * set keeps backticks as bytes (codeblock rule does not fire).
  */
 export const LARARIUM_MEME_TEMPLATE_MARKDOWN_MEME = {
   title:    "lar:///ha.ka.ba/@lararium/templates/meme/markdown-meme",
   type:     "text/x-memetic-wikitext",
-  text:     "<$list filter=\"[<currentTiddler>has[prologue]]\" variable=\"_\">{{!!prologue}}</$list>{{!!text}}<$list filter=\"[<currentTiddler>has[postamble]]\" variable=\"_\">{{!!postamble}}</$list>",
+  text: [
+    // Prologue / preamble / postamble emit via <$text> — TW5 wiki rules
+    // pragma doesn't propagate through field transclude (Jermolene, GH
+    // #6712). Field-transcluded content reparses under default wikitext
+    // rules, where codeblock eats backticks and macrocall claims `<<...>>`.
+    // <$text text={{!!field}}/> emits the field bytes verbatim with no
+    // re-parse — bytes survive round-trip exactly.
+    "<$list filter=\"[<currentTiddler>has[prologue]]\" variable=\"_\"><$text text={{!!prologue}}/></$list>",
+    "<$list filter=\"[<currentTiddler>has[preamble-rendered]]\" variable=\"_\" emptyMessage=\"<$list filter='[<currentTiddler>has[preamble]]' variable='_'><$text text={{!!preamble}}/></$list>\"><$text text={{!!preamble-rendered}}/></$list>",
+    // text field continues to wikitext-parse so kahea refs and other
+    // sigils route through the wikirule + cascade.
+    "{{!!text}}",
+    "<$list filter=\"[<currentTiddler>has[postamble]]\" variable=\"_\"><$text text={{!!postamble}}/></$list>",
+  ].join(""),
 } as const;
