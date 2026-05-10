@@ -30,6 +30,10 @@ async function main(): Promise<void> {
     "lar:///config/Lar/AkaTemplate/html",
     "lar:///config/Lar/PranalaHeaderTemplate/markdown-meme",
     "lar:///config/Lar/PranalaHeaderTemplate/html",
+    "lar:///config/Lar/KaheaTemplate/markdown-meme",
+    "lar:///config/Lar/KaheaTemplate/html",
+    "lar:///config/Lar/LoulouTemplate/markdown-meme",
+    "lar:///config/Lar/LoulouTemplate/html",
     "lar:///mounts/lar-meme-split",
     "lar:///ha.ka.ba/@lararium/templates/ahu/markdown-meme",
     "lar:///ha.ka.ba/@lararium/templates/ahu/html",
@@ -37,6 +41,10 @@ async function main(): Promise<void> {
     "lar:///ha.ka.ba/@lararium/templates/aka/html",
     "lar:///ha.ka.ba/@lararium/templates/pranala-header/markdown-meme",
     "lar:///ha.ka.ba/@lararium/templates/pranala-header/html",
+    "lar:///ha.ka.ba/@lararium/templates/kahea/markdown-meme",
+    "lar:///ha.ka.ba/@lararium/templates/kahea/html",
+    "lar:///ha.ka.ba/@lararium/templates/loulou/markdown-meme",
+    "lar:///ha.ka.ba/@lararium/templates/loulou/html",
     "lar:///ha.ka.ba/@lararium/templates/meme/markdown-meme",
   ];
   for (const title of expectedTitles) {
@@ -49,7 +57,7 @@ async function main(): Promise<void> {
   if (!parsers["text/x-memetic-wikitext"]) failures.push("parser not registered: text/x-memetic-wikitext");
 
   const widgetMods = tw?.modules?.types?.widget ?? {};
-  for (const expected of ["ahu", "aka", "kau", "lar-meme-split", "pranala-header"]) {
+  for (const expected of ["ahu", "aka", "kahea", "kau", "lar-meme-split", "loulou", "pranala-header"]) {
     const found = Object.keys(widgetMods).some((title) => title.includes(expected));
     if (!found) failures.push(`widget module not found in registry: ${expected}`);
   }
@@ -90,6 +98,21 @@ async function main(): Promise<void> {
   }
   if (!phHTML.includes("lar-pranala-header")) {
     failures.push(`pranala-header render did not produce widget HTML; got: ${phHTML.slice(0, 200)}`);
+  }
+
+  // Probe kahea + loulou URI forms.
+  const kaheaSample = "before <<~ kahea lar:///live/target >> after";
+  let kaheaHTML = "";
+  try { kaheaHTML = engine.renderText(kaheaSample); } catch (e) { failures.push(`kahea renderText threw: ${(e as Error).message}`); }
+  if (!kaheaHTML.includes("lar-kahea")) {
+    failures.push(`kahea render did not produce widget HTML; got: ${kaheaHTML.slice(0, 200)}`);
+  }
+
+  const loulouSample = "before <<~ loulou lar:///related/target >> after";
+  let loulouHTML = "";
+  try { loulouHTML = engine.renderText(loulouSample); } catch (e) { failures.push(`loulou renderText threw: ${(e as Error).message}`); }
+  if (!loulouHTML.includes("lar-loulou")) {
+    failures.push(`loulou render did not produce widget HTML; got: ${loulouHTML.slice(0, 200)}`);
   }
 
   // Probe deserializer prologue + postamble capture.
@@ -133,6 +156,8 @@ async function main(): Promise<void> {
   console.log(`  ahu render produced ${renderedHTML.length} bytes of HTML`);
   console.log(`  aka URI sigil rendered as widget (${akaHTML.length} bytes, .lar-aka span present)`);
   console.log(`  pranala-header sigil rendered as widget (${phHTML.length} bytes, .lar-pranala-header span present)`);
+  console.log(`  kahea URI sigil rendered as widget (${kaheaHTML.length} bytes, .lar-kahea span present)`);
+  console.log(`  loulou URI sigil rendered as widget (${loulouHTML.length} bytes, .lar-loulou span present)`);
   console.log(`  deserializer captured prologue + postamble fields on parent`);
   process.exit(0);
 }

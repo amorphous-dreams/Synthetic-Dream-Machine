@@ -52,6 +52,8 @@ export const PLUGIN_ENTRIES: Array<{
   { entry: "src/wikirules/lar-doctype-comment.ts",  name: "lar-doctype-comment",  moduleType: "wikirule" },
   { entry: "src/widgets/ahu.ts",                       name: "ahu",                    moduleType: "widget"   },
   { entry: "src/widgets/aka.ts",                       name: "aka",                    moduleType: "widget"   },
+  { entry: "src/widgets/kahea.ts",                     name: "kahea",                  moduleType: "widget"   },
+  { entry: "src/widgets/loulou.ts",                    name: "loulou",                 moduleType: "widget"   },
   { entry: "src/widgets/pranala-header.ts",            name: "pranala-header",         moduleType: "widget"   },
   { entry: "src/widgets/kau.ts",                       name: "kau",                    moduleType: "widget"   },
   { entry: "src/widgets/lar-meme-split.ts",            name: "lar-meme-split",         moduleType: "widget"   },

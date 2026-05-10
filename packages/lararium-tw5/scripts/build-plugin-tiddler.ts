@@ -87,6 +87,16 @@ const MODULE_ENTRIES: Array<{
     moduleType:   "widget",
   },
   {
+    bundleFile:   "kahea.cjs.js",
+    tiddlerTitle: `${PLUGIN_TITLE_LAR}/widgets/kahea.js`,
+    moduleType:   "widget",
+  },
+  {
+    bundleFile:   "loulou.cjs.js",
+    tiddlerTitle: `${PLUGIN_TITLE_LAR}/widgets/loulou.js`,
+    moduleType:   "widget",
+  },
+  {
     bundleFile:   "pranala-header.cjs.js",
     tiddlerTitle: `${PLUGIN_TITLE_LAR}/widgets/pranala-header.js`,
     moduleType:   "widget",
@@ -157,6 +167,14 @@ async function dataTiddlers(): Promise<TiddlerFields[]> {
     "LARARIUM_PRANALA_HEADER_CASCADE_MARKDOWN_MEME",
     "LARARIUM_PRANALA_HEADER_TEMPLATE_HTML",
     "LARARIUM_PRANALA_HEADER_TEMPLATE_MARKDOWN_MEME",
+    "LARARIUM_KAHEA_CASCADE_HTML",
+    "LARARIUM_KAHEA_CASCADE_MARKDOWN_MEME",
+    "LARARIUM_KAHEA_TEMPLATE_HTML",
+    "LARARIUM_KAHEA_TEMPLATE_MARKDOWN_MEME",
+    "LARARIUM_LOULOU_CASCADE_HTML",
+    "LARARIUM_LOULOU_CASCADE_MARKDOWN_MEME",
+    "LARARIUM_LOULOU_TEMPLATE_HTML",
+    "LARARIUM_LOULOU_TEMPLATE_MARKDOWN_MEME",
     "LARARIUM_MEME_TEMPLATE_MARKDOWN_MEME",
     "LARARIUM_MEME_SPLIT_MOUNT",
   ];

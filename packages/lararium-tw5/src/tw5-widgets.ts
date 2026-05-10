@@ -242,6 +242,68 @@ export const LARARIUM_PRANALA_HEADER_TEMPLATE_HTML = {
 } as const;
 
 /**
+ * Kahea cascade — `<<~ kahea <uri> >>` live transclusion. Same shape as
+ * aka cascade. The `kahea-uri` variable carries the source URI;
+ * markdown-meme template re-emits the literal sigil; html template
+ * transcludes the target's body inside a `.lar-kahea` span.
+ */
+export const LARARIUM_KAHEA_CASCADE_MARKDOWN_MEME = {
+  title:         "lar:///config/Lar/KaheaTemplate/markdown-meme",
+  tags:          ["$:/tags/Lar/KaheaTemplate"],
+  "list-before": "lar:///config/Lar/KaheaTemplate/html",
+  text:          "[<lar-export-scope>match[markdown-meme]then[lar:///ha.ka.ba/@lararium/templates/kahea/markdown-meme]]",
+} as const;
+
+export const LARARIUM_KAHEA_CASCADE_HTML = {
+  title:       "lar:///config/Lar/KaheaTemplate/html",
+  tags:        ["$:/tags/Lar/KaheaTemplate"],
+  text:        "[[lar:///ha.ka.ba/@lararium/templates/kahea/html]]",
+} as const;
+
+export const LARARIUM_KAHEA_TEMPLATE_MARKDOWN_MEME = {
+  title:    "lar:///ha.ka.ba/@lararium/templates/kahea/markdown-meme",
+  type:     "text/x-memetic-wikitext",
+  text:     "<<~ kahea <<kahea-uri>> >>",
+} as const;
+
+export const LARARIUM_KAHEA_TEMPLATE_HTML = {
+  title:    "lar:///ha.ka.ba/@lararium/templates/kahea/html",
+  type:     "text/vnd.tiddlywiki",
+  text:     '<span class="lar-kahea" data-kahea-uri=<<kahea-uri>>><$link to=<<kahea-uri>>><<kahea-uri>></$link><span class="lar-kahea-live"><$transclude $tiddler=<<kahea-uri>> mode="inline"/></span></span>',
+} as const;
+
+/**
+ * Loulou cascade — `<<~ loulou <uri> >>` bidirectional relation edge sugar.
+ * No body transclusion (relation edge, not transclusion). Markdown-meme
+ * template re-emits the literal sigil; html template emits a plain
+ * `.lar-loulou` link annotated as a relation.
+ */
+export const LARARIUM_LOULOU_CASCADE_MARKDOWN_MEME = {
+  title:         "lar:///config/Lar/LoulouTemplate/markdown-meme",
+  tags:          ["$:/tags/Lar/LoulouTemplate"],
+  "list-before": "lar:///config/Lar/LoulouTemplate/html",
+  text:          "[<lar-export-scope>match[markdown-meme]then[lar:///ha.ka.ba/@lararium/templates/loulou/markdown-meme]]",
+} as const;
+
+export const LARARIUM_LOULOU_CASCADE_HTML = {
+  title:       "lar:///config/Lar/LoulouTemplate/html",
+  tags:        ["$:/tags/Lar/LoulouTemplate"],
+  text:        "[[lar:///ha.ka.ba/@lararium/templates/loulou/html]]",
+} as const;
+
+export const LARARIUM_LOULOU_TEMPLATE_MARKDOWN_MEME = {
+  title:    "lar:///ha.ka.ba/@lararium/templates/loulou/markdown-meme",
+  type:     "text/x-memetic-wikitext",
+  text:     "<<~ loulou <<loulou-uri>> >>",
+} as const;
+
+export const LARARIUM_LOULOU_TEMPLATE_HTML = {
+  title:    "lar:///ha.ka.ba/@lararium/templates/loulou/html",
+  type:     "text/vnd.tiddlywiki",
+  text:     '<span class="lar-loulou" data-loulou-uri=<<loulou-uri>>><$link to=<<loulou-uri>>><<loulou-uri>></$link></span>',
+} as const;
+
+/**
  * Meme-level template — markdown-meme scope.
  *
  * Wraps a parent meme's text field with `\rules only` so the wikifier emits
