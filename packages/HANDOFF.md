@@ -1,10 +1,10 @@
 # Hand-off Crystal — Lares Lararium Node Branch
 
 > Forged: 2026-05-07
-> Last update: 2026-05-09 (late+1) — E.10.13 boot-path conversion + lar:// namespace alignment
+> Last update: 2026-05-09 (late+2) — Sigil family arc complete: G.1→G.5 (six sigils on cascade) + J.1+J.2a/b/c (slot-as-full-meme-MD-projection round-trip with default-elision)
 > Branch: `feature/lararium-node-3`
-> Working tree: clean (smoke residue under packages/lararium-node/.lararium; dist-plugin/ artifact gitignored)
-> Last pulse: TW5Engine boots via plugin-tiddler load; all Lares system titles in `lar:///` (sync-eligible); dual-distribution build emits both `lar:///` (canonical, 72.2 KiB) and `$:/` (drag-and-drop) artifacts
+> Working tree: clean
+> Last pulse: six sigils ride the template-cascade architecture (ahu, aka, kahea, loulou, pranala-header, pranala); five share the makeCascadeSigilWidget factory; slot bodies round-trip bytes-faithfully with iam default-elision against parent's effective iam
 
 ---
 
@@ -35,18 +35,49 @@ the running VM imperatively. Boot pushes one envelope tiddler
 (`lar:///plugins/lares/memetic-wikitext`) into preloadTiddlers; TW5's
 standard plugin loader registers wikirule/parser/deserializer/widget
 modules and materializes cascade configs + templates + mount as
-shadow tiddlers. `_registerWidgets`/`_registerDeserializer` and the
-ad-hoc parser-wrapper-injection block are gone — parsers now
-instantiate via the canonical `$tw.modules` construction path
-(side-cures the single-backtick parser regression). Namespace
-alignment: every Lares system title moved to `lar:///` (cascades,
-mount, templates, plugin envelope) so browser-side shadow-tiddler
-edits + plugin re-pack now sync to disk; canon-promote ceremony
-no longer bugs out on `$:/`-prefixed system tiddlers. Tag VALUES
+shadow tiddlers. Namespace alignment: every Lares system title moved
+to `lar:///` (cascades, mount, templates, plugin envelope). Tag VALUES
 stay TW5-conventional. Dual-distribution build emits both
-`lares-memetic-wikitext.lar.tid` (lararium VM canonical, sync-eligible)
-and `lares-memetic-wikitext.tid` ($:/-titled, vanilla drag-and-drop)
-from the same module bundle.
+`lares-memetic-wikitext.lar.tid` (canonical) and
+`lares-memetic-wikitext.tid` ($:/-titled, drag-and-drop).
+E.10.14 (Path A): Wikirule split into three canonical TW5
+module-type:wikirule files (lar-sigil-block, lar-sigil-inline,
+lar-doctype-comment) + shared helpers. Parser exports as
+`{ MemeticParser as "text/x-memetic-wikitext" }` per TW5 wiki.js
+convention. Widgets self-`require`("$:/core/.../widget.js"), set
+prototype chain, export under tag name. Plugin loader unpacks via
+canonical `$tw.modules.applyMethods` flow. Smoke (in-process) green.
+G.1→G.5 (Sigil family): aka URI sigil, pranala-header, kahea + loulou
+URI sigils, pranala edge (inline + block forms with body-or-not branch
+in template), then refactor: five sigil widgets (aka, kahea, loulou,
+pranala-header, pranala) collapse into makeCascadeSigilWidget factory
+(~165 lines replaces ~590 lines). ahu stays bespoke (slot/uri/parentUri
+resolution doesn't fit factory). kau retired from G — its dispatch
+logic (kumu-def lookup, capability hooks, UUID write-back) is logic-
+heavy not template-driven; cascade pattern is wrong abstraction for it.
+J.1 (meme-level framing): postamble symmetric with prologue. Pre-SOH
+content captured as `prologue`, post-ETX as `postamble`. Trim duplicated
+postamble from parent's text field (MemeStreamParser fullText extends
+past ETX in single-meme files).
+J.2a (slot-level framing): per-slot preamble/postamble + iam field
+capture. Each slot is itself a "full published meme MD file" projection
+(operator-confirmed). preamble holds prose flanking the iam toml block,
+with `<<~ iam >>` sentinel marking iam's original position so prose can
+exist on either side. postamble holds prose after the last inner kahea
+ref. iam toml content extracted to native fields + raw bytes preserved
+as `iam-source`.
+J.2c (round-trip emission): pre-computed `preamble-rendered` field
+substitutes the iam sentinel with the regenerated toml block. Meme-
+template emits via `<$text>` widget (not `{{!!field}}` transclude) —
+per Jermolene GH #6712, `\rules only` pragma scope doesn't propagate
+through field transclude. Bytes survive verbatim through round-trip.
+J.2b (default-elision): regenerateIamToml(fields, parentFields) walks
+iam-class fields (denylisted against TW5 system + Lar control fields),
+elides values matching parent's effective iam, emits remainder as toml.
+splitRecursive threads parentIam through recursion so deep slots elide
+against immediate parent's effective iam (= inherited + own merged).
+Operator edits to native iam-class fields flow back to disk; inherited
+values disappear from emission unless overridden.
 ARCHITECTURE INVARIANT (operator-confirmed): always-split, always-kahea.
 Deserializer + <$lar-meme-split> widget split every ahu sigil into its
 own tiddler at sync/save time. Parent text always carries kahea-refs
@@ -54,12 +85,15 @@ for slot children. Disk emission canonical: parent file + N child files.
 No tag discriminator. ONE parser, FOUR call sites — disk sync, CRDT
 inbound, TW5 UX save (via lar-meme-split widget), disk export — all
 consume splitRecursive identically.
-Next paths: end-to-end daemon smoke (boot Node VM, verify plugin
-unpacks, ahu round-trip), G-arc (other sigils ported — aka, kahea,
-kau, lele, papalohe, pranala, pae), F-arc (TW5 vm refresh-pipeline +
-debounce shim), S7.4 (admin doc ingress trust gate), dreamdeck-app
-sprint (picks up S6.C.5), <$lar-promote> widget, federated promotion,
-CodeMirror 6 alignment (Path W).
+Next paths: end-to-end daemon smoke with `lares serve` + CLI promote
+ceremony (verify plugin/cascade/elision compose with bag/sync layer);
+remaining G sigils (lele, papalohe, pae — operator-confirmed less
+urgent than aka/kahea/loulou which carry the load); F-arc (TW5 vm
+refresh-pipeline + debounce shim, important once browser peers come
+online); S7.4 (admin doc ingress trust gate); dreamdeck-app sprint
+(picks up S6.C.5); <$lar-promote> action-widget; federated promotion;
+CodeMirror 6 + LSP alignment (Path W — operator-gated on CLI wiki
+stability).
 Architecture laws hold: causal-island, bag=Automerge-doc=sync-boundary,
 canon-promotion requires active operator decision, TW5 VM primacy,
 web3-only — no HTTP/RPC for inter-process coordination, command-tiddlers
@@ -119,11 +153,14 @@ category boundary.
 
 ## Forward paths (post-E.10.13)
 
-### Path V.2 ✅ (E.10.13) — Boot-path conversion to plugin loader
-The plugin artifact lands at `dist-plugin/lares-memetic-wikitext.{lar.tid,tid}` from the same Vite library bundle. Boot path now pushes the envelope into `preloadTiddlers`; TW5's standard plugin loader unpacks it. Imperative `_registerWidgets` / `_registerDeserializer` / parser-wrapper-injection block deleted. The single-backtick parser regression is gone as a side effect — parsers instantiate via the canonical `$tw.modules` construction path. Folded with namespace alignment: every Lares system title moved to `lar:///` so shadow-tiddler edits and in-VM plugin re-packs sync to disk through the existing `lar:`-only filter. Dual-distribution emits both canonical (`lar:///plugins/lares/memetic-wikitext`) and drag-and-drop (`$:/plugins/lares/memetic-wikitext`) envelopes; same module code, two namespace conventions for two ecosystems.
+### Path V.2 ✅ (E.10.13) + Path A ✅ (E.10.14) — Plugin-tiddler boot path
+TW5Engine boots by pushing one envelope tiddler into `preloadTiddlers`; TW5's standard plugin loader unpacks. Wikirules split into three canonical files; parser/widgets/deserializer use TW5-canonical export shapes (Path A). Namespace alignment: every Lares system title in `lar:///`. Dual-distribution emits both canonical and drag-and-drop envelopes from one Vite bundle. In-process smoke (`scripts/smoke-plugin-boot.ts`) verifies plugin loads, parsers/widgets register, ahu/aka/kahea/loulou/pranala-header/pranala render as widgets, slot bodies round-trip with default-elision.
+
+### Sigil family ✅ (G.1→G.5 + J.1+J.2a/b/c)
+Six sigils ride the template-cascade architecture. Five share `widgets/_cascade-sigil-base.ts::makeCascadeSigilWidget(config)` — declarative widget definition (cascadeTag + fallbackTemplate + buildBindings + setCurrentTiddler? + refreshUri? + placeholder?). ahu stays bespoke. Slot-as-full-meme-MD-projection invariant: each slot has preamble (with `<<~ iam >>` position sentinel), iam-source (raw bytes), preamble-rendered (with sentinel substituted via regenerated toml), text (body proper with kahea refs), postamble (trailing prose). regenerateIamToml default-elides against parent's effective iam (inherited + own merged through splitRecursive recursion).
 
 ### Smoke (immediate next) — End-to-end daemon round-trip
-`pnpm build` + `pnpm test` (52/52) green. Outstanding: boot the Node daemon, verify the plugin tiddler unpacks via the standard loader, exercise an ahu round-trip with the cascade-resolved markdown-meme template (expected: `<<~ kahea ahu #slot >>` emission per the always-split-always-kahea law). Until smoke runs once, build/type/unit-test-green is necessary but not sufficient.
+In-process smoke covers deserialize + render + plugin boot. Outstanding: `lares serve` daemon boot, CLI promote ceremony with a real meme to verify the plugin/cascade/elision composes with bag/sync/Keyhive. Until that runs once, infrastructure-correct ≠ feature-correct.
 
 ### Path G — Other sigils via wikirule + cascade + templates
 Port the sigil set (`aka`, `kahea`, `kau`, `lele`, `papalohe`, `pranala`, `pae`) to the same architecture ahu now uses. Each sigil:

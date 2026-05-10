@@ -1,12 +1,62 @@
 # Session State — Lararium Web3 Refactor
 
-> Updated: 2026-05-09 (E.10.13 boot-path conversion + lar:// namespace alignment)
+> Updated: 2026-05-09 (Sigil family arc complete — G.1→G.5 + J.1+J.2)
 > Branch: feature/lararium-node-3
 > Purpose: Resume artifact — enough state to continue without prior chat context
 
 ---
 
-## What Just Happened (2026-05-09 late+1 — Path V.2 + namespace alignment)
+## What Just Happened (2026-05-09 late+2 — Sigil family arc)
+
+Eleven commits across two arcs land the Sigil family work:
+
+**G arc — sigil ports + factory:**
+
+| sha | What |
+|---|---|
+| `a5878459` G.1 | aka URI sigil — `<<~ aka <uri> >>` parses to `aka` widget node, cascade picks template, html template emits `.lar-aka` span with shadow transclusion of target. URI_FORM_SIGIL_RE in lar-sigil-shared.ts matches aka/kahea/loulou. |
+| `136a8c9f` G.2 | pranala-header — `<<~ ? -> uri >>` widget + cascade + templates. PRANALA_HEADER_RE matches the `?` token + arrow + uri shape. |
+| `ab3453f6` G.3 | kahea + loulou URI sigils — widgets for nodes already matched by G.1's URI_FORM_SIGIL_RE. Both render as cascade-resolved spans. |
+| `505932a0` G.4 | pranala edge sigil — inline (`<<~ pranala from -> to family:f role:r >>`) + block (with body) forms. PRANALA_OPEN_RE captures slot/from/to + key:value attrs. Single template branches on `<<pranala-body>>` non-emptiness. |
+| `8a2e1fa2` G.5 | refactor — five widgets collapse into `widgets/_cascade-sigil-base.ts::makeCascadeSigilWidget(config)`. Net 590→97 lines of widget code (+165 line factory). Adding a new cascade sigil = config object, not a fresh prototype-chain dance. |
+
+**J arc — meme/slot framing + iam round-trip:**
+
+| sha | What |
+|---|---|
+| `cac583f8` J.1 | postamble symmetric with prologue — text after last ETX/EOT lands on parent meme as `postamble` field. Meme-template emits prologue + text + postamble. |
+| `1e34a60a` J.2a | per-slot preamble/postamble + iam field capture. extractSlotStructure replaces extractAhuFields. preamble holds prose flanking iam toml; iam toml fields lift to native fields; text holds body proper between first and last inner kahea ref; postamble holds trailing prose. Slot is itself a "full published meme MD file" projection (operator-confirmed). |
+| `28775447` J.2a refinement | `<<~ iam >>` sentinel in preamble records iam original position (operator may write prose on either side). SOH regex tightened to `<<~(⊙?)\s*&#x000<digit>;` so DOCTYPE comments + pranala-headers don't false-match. Parent-text postamble dedup. |
+| `494666bc` J.2c | round-trip emission via meme-template. preamble-rendered field substitutes the iam sentinel with regenerated toml block. Meme-template uses `<$text>` widget (not `{{!!field}}` transclude) — per Jermolene GH #6712, `\rules only` pragma scope doesn't propagate through field transclude. |
+| `bf893a78` J.2b | regenerateIamToml(fields, parentFields) — denylist + TOML formatter + default-elision. splitRecursive threads parentIam through recursion so deep slots elide against immediate parent's effective iam. Operator edits to native iam-class fields flow back to disk; inherited values disappear unless overridden. |
+
+**Architecture invariant established (operator-confirmed): slot-as-full-meme-MD-projection.** Every ahu slot has the same structural shape as a meme root: prologue/preamble + iam toml + body + postamble. The deserializer applies the same split recursively so each slot file on disk reads as a self-contained "full published meme MD file." iam fields inherit down through the slot tree; default-elision keeps emission compact.
+
+**Build/test posture:** `pnpm build` clean, `pnpm test` 52/52 passing, smoke clean across plugin boot + six sigils + slot round-trip + default-elision. Plugin envelope: 13 modules + 27 data tiddlers, 114.7 KiB.
+
+**Outstanding (next):** end-to-end daemon smoke (`lares serve` + CLI promote ceremony with a real meme); kau cleanup (deferred — its dispatch is logic-heavy, not cascade-shaped); remaining G sigils (lele/papalohe/pae — less urgent per operator); Path I follow-ups (DOCTYPE/dash polish — single-backtick already cured).
+
+---
+
+## What Just Happened (2026-05-09 late+1 — Path V.2 + namespace alignment + Path A)
+
+Three commits retire architectural debts and canonicalize TW5 module shapes.
+
+| sha | What |
+|---|---|
+| `0adc3697` E.10.13 | TW5Engine boot path → plugin-tiddler load. `_registerWidgets` / `_registerDeserializer` / parser-wrapper-injection deleted. Boot pushes one envelope tiddler into `preloadTiddlers`; TW5's standard plugin loader unpacks. Namespace alignment: every Lares system title moved to `lar:///`. Tag VALUES stay TW5-conventional. Dual-distribution emits both canonical and drag-and-drop envelopes. |
+| `8a543b6e` (docs) | E.10.13 closure docs + namespace decision recorded in `packages/lares/memes/api/v0.1/pono/lar-uri.md`. |
+| `430f40f5` E.10.14 (Path A) | Canonical TW5 module export shapes. Wikirule split into three module-type:wikirule files. Parser exports as `{ MemeticParser as "text/x-memetic-wikitext" }`. Widgets self-`require`("$:/core/.../widget.js"), set prototype chain, export under tag name. Plugin loader unpacks via canonical `$tw.modules.applyMethods` flow. In-process smoke harness lands at `scripts/smoke-plugin-boot.ts`. |
+
+**Operator-flagged debts retired:**
+  - Construction-path debt — parsers instantiate via canonical `$tw.modules` path. Single-backtick regression cured.
+  - Sync-namespace debt — shadow-tiddler edits + in-VM plugin re-pack now sync to disk; promote ceremony no longer bugs out on `$:/`-prefixed system tiddlers.
+
+**Decision recorded** in `packages/lares/memes/api/v0.1/pono/lar-uri.md` under "TW5 System Boundary" subsection. Rule: lar:// for everything that crosses the sync filter; $:/ for browser-local UX state.
+
+---
+
+## What Just Happened (2026-05-09 late — original — Path V.2 + namespace alignment)
 
 One commit (`0adc3697` E.10.13) retired two architectural debts in a single swing.
 
