@@ -79,6 +79,18 @@ Adjacent paths MUST NOT carry HA.KA.BA dot-notation in the path root.
 
 For stable and unstable paths: each slot holds exactly one lowercase word — Ha (NOUN), Ka (ADJECTIVE), Ba (VERB). Hyphens, underscores, and spaces within a slot MUST NOT appear. Fewer than three slots MUST NOT appear. Sub-path after the triple navigates within territory; strip it to get the named tagspace address.
 
+### TW5 System Boundary
+
+TW5 reserves the `$:/` URI prefix for system tiddlers that stay browser-local — shadow tiddlers, palette state, draft markers, plugin internals. The lararium sync filter mirrors this distinction: only titles in the `lar:` scheme cross the sync boundary into Automerge bags and onto disk.
+
+Lares system tiddlers — cascade configs, render templates, global mounts, plugin envelopes — MUST carry `lar:///` titles (typically under `lar:///config/...`, `lar:///mounts/...`, `lar:///plugins/...`, or `lar:///ha.ka.ba/@lararium/templates/...`). This lets browser-side shadow-tiddler edits and in-VM plugin re-packs sync to disk and federate to peers; it lets the canon-promote ceremony trust the bag state.
+
+Tag *values* may still reference TW5-conventional `$:/tags/...` strings (`$:/tags/Global`, `$:/tags/Lar/AhuTemplate`). Tag values are not titles and do not intersect the sync filter; they exist only so that cascade entries plug into TW5 core's standard tag-discovery path.
+
+Drafts, ephemeral UX state, and per-operator working surface remain in the `$:/` namespace by design — those tiddlers stay browser-local until the operator's explicit promotion act.
+
+For drag-and-drop distribution to the broader TW5 community, lar-namespaced plugin envelopes MAY be re-emitted under `$:/plugins/...` titles. The plugin module code is identical; only the envelope title differs. This dual-distribution shape is a packaging convention, not a namespace exception — the canonical artifact carrying the operator's signature is always the `lar:///` form.
+
 <<~/ahu >>
 
 <<~ ahu #signal-law >>

@@ -1,8 +1,28 @@
 # Session State — Lararium Web3 Refactor
 
-> Updated: 2026-05-09 (E.10.5 → E.10.12 yin-mode collapse + Path V.1 plugin artifact)
+> Updated: 2026-05-09 (E.10.13 boot-path conversion + lar:// namespace alignment)
 > Branch: feature/lararium-node-3
 > Purpose: Resume artifact — enough state to continue without prior chat context
+
+---
+
+## What Just Happened (2026-05-09 late+1 — Path V.2 + namespace alignment)
+
+One commit (`0adc3697` E.10.13) retired two architectural debts in a single swing.
+
+| sha | What |
+|---|---|
+| `0adc3697` E.10.13 | TW5Engine boot path converted to plugin-tiddler load. `_registerWidgets` / `_registerDeserializer` / parser-wrapper-injection block deleted. Boot pushes one envelope tiddler (`lar:///plugins/lares/memetic-wikitext`) into `preloadTiddlers`; TW5's standard plugin loader unpacks wikirule, parser, deserializer, widget modules + materializes cascade configs, templates, and `<$lar-meme-split>` global mount as shadow tiddlers. Folded with namespace alignment: every Lares system title moved from `$:/...` to `lar:///...` (cascades, mount, templates, plugin envelope). Tag VALUES stay TW5-conventional `$:/tags/...`. Dual-distribution build emits both `lares-memetic-wikitext.lar.tid` (canonical, sync-eligible) and `lares-memetic-wikitext.tid` (drag-and-drop) from one Vite library bundle (72.2 KiB each, 5 modules + 7 data tiddlers). |
+
+**Operator-flagged debts retired:**
+  - **Construction-path debt.** Parsers now instantiate via the canonical `$tw.modules` path. The single-backtick regression — produced by hand-rolled `stdParser.call(this, ...)` prototype-chain wrapping — is gone as a side effect.
+  - **Sync-namespace debt.** Browser-side shadow-tiddler edits + in-VM plugin re-pack now sync to disk because every Lares system title sits in the `lar:`-only sync namespace. The promote ceremony no longer bugs out on `$:/`-prefixed system tiddlers. Drafts and per-operator UX state stay browser-local in `$:/` by design.
+
+**Decision recorded** in `packages/lares/memes/api/v0.1/pono/lar-uri.md` under a new "TW5 System Boundary" subsection of Path Taxonomy. Rule: lar:// for everything that crosses the sync filter; $:/ for browser-local UX state; tag values stay TW5-conventional in either case; `$:/`-titled plugin envelopes are a drag-and-drop packaging convention only.
+
+**Build/test posture:** `pnpm build` clean, `pnpm test` 52/52 passing, plugin tiddler regenerates deterministically.
+
+**Outstanding (smoke next):** boot the Node daemon, verify the plugin tiddler unpacks via the standard loader, exercise an ahu round-trip with the cascade-resolved markdown-meme template (expected emission: `<<~ kahea ahu #slot >>` per always-split-always-kahea law). Until smoke runs once, build/type/unit-test-green is necessary but not sufficient.
 
 ---
 

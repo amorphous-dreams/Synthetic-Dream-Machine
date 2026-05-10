@@ -1,10 +1,10 @@
 # Hand-off Crystal — Lares Lararium Node Branch
 
 > Forged: 2026-05-07
-> Last update: 2026-05-09 (late) — E.10.5 → E.10.12 yin-mode collapse + Path V.1 plugin artifact
+> Last update: 2026-05-09 (late+1) — E.10.13 boot-path conversion + lar:// namespace alignment
 > Branch: `feature/lararium-node-3`
-> Working tree: dirty (smoke residue under packages/lararium-node/.lararium; dist-plugin/ artifact)
-> Last pulse: drag-and-drop TW5 plugin tiddler emits at dist-plugin/lares-memetic-wikitext.tid (71.3 KiB)
+> Working tree: clean (smoke residue under packages/lararium-node/.lararium; dist-plugin/ artifact gitignored)
+> Last pulse: TW5Engine boots via plugin-tiddler load; all Lares system titles in `lar:///` (sync-eligible); dual-distribution build emits both `lar:///` (canonical, 72.2 KiB) and `$:/` (drag-and-drop) artifacts
 
 ---
 
@@ -30,6 +30,23 @@ E.10.12 (Path V.1): Vite plugin config + build script ship dist-plugin/
 lares-memetic-wikitext.tid — drag-and-drop installable in any TW5
 5.4+ wiki, gives memetic-wikitext authoring + export without
 lararium-node, Automerge, Keyhive, ReactionEngine.
+E.10.13 (Path V.2 + namespace alignment): TW5Engine no longer mutates
+the running VM imperatively. Boot pushes one envelope tiddler
+(`lar:///plugins/lares/memetic-wikitext`) into preloadTiddlers; TW5's
+standard plugin loader registers wikirule/parser/deserializer/widget
+modules and materializes cascade configs + templates + mount as
+shadow tiddlers. `_registerWidgets`/`_registerDeserializer` and the
+ad-hoc parser-wrapper-injection block are gone — parsers now
+instantiate via the canonical `$tw.modules` construction path
+(side-cures the single-backtick parser regression). Namespace
+alignment: every Lares system title moved to `lar:///` (cascades,
+mount, templates, plugin envelope) so browser-side shadow-tiddler
+edits + plugin re-pack now sync to disk; canon-promote ceremony
+no longer bugs out on `$:/`-prefixed system tiddlers. Tag VALUES
+stay TW5-conventional. Dual-distribution build emits both
+`lares-memetic-wikitext.lar.tid` (lararium VM canonical, sync-eligible)
+and `lares-memetic-wikitext.tid` ($:/-titled, vanilla drag-and-drop)
+from the same module bundle.
 ARCHITECTURE INVARIANT (operator-confirmed): always-split, always-kahea.
 Deserializer + <$lar-meme-split> widget split every ahu sigil into its
 own tiddler at sync/save time. Parent text always carries kahea-refs
@@ -37,12 +54,12 @@ for slot children. Disk emission canonical: parent file + N child files.
 No tag discriminator. ONE parser, FOUR call sites — disk sync, CRDT
 inbound, TW5 UX save (via lar-meme-split widget), disk export — all
 consume splitRecursive identically.
-Next paths: V.2 (boot-path conversion to plugin loader; fixes
-single-backtick parser regression as side effect), G-arc (other sigils
-ported — aka, kahea, kau, lele, papalohe, pranala, pae), F-arc (TW5
-vm refresh-pipeline + debounce shim), S7.4 (admin doc ingress trust
-gate), dreamdeck-app sprint (picks up S6.C.5), <$lar-promote> widget,
-federated promotion, CodeMirror 6 alignment (Path W).
+Next paths: end-to-end daemon smoke (boot Node VM, verify plugin
+unpacks, ahu round-trip), G-arc (other sigils ported — aka, kahea,
+kau, lele, papalohe, pranala, pae), F-arc (TW5 vm refresh-pipeline +
+debounce shim), S7.4 (admin doc ingress trust gate), dreamdeck-app
+sprint (picks up S6.C.5), <$lar-promote> widget, federated promotion,
+CodeMirror 6 alignment (Path W).
 Architecture laws hold: causal-island, bag=Automerge-doc=sync-boundary,
 canon-promotion requires active operator decision, TW5 VM primacy,
 web3-only — no HTTP/RPC for inter-process coordination, command-tiddlers
@@ -100,10 +117,13 @@ category boundary.
 - **Handlers today:** `echo` (admin composite), `promote` (room composite), `where` (room composite, recipe-presence).
 - **Forward generalization:** when UEFN-Verse ReactionEngine lands, this dispatcher pattern federates across causal-island bounds; command-tiddlers become one shape of reaction trigger among many. Comments inline in command-dispatcher.ts and promote-handler.ts.
 
-## Forward paths (post-E.10.12)
+## Forward paths (post-E.10.13)
 
-### Path V.2 (immediate next) — Boot-path conversion to plugin loader
-The plugin artifact lands at `dist-plugin/lares-memetic-wikitext.tid` (V.1, E.10.12). V.2 replaces the imperative `_registerWidgets` + `parsers["text/x-memetic-wikitext"] = ...` mutations in `tw5-vm.ts` with plugin-tiddler load via TW5's standard `$tw.modules` flow. The plugin's `module-type: parser` / `module-type: widget` / `module-type: wikirule` modules self-register. **Side effect: fixes the single-backtick parser regression** — TW5 instantiates parsers via the proper construction path, not our hand-rolled `stdParser.call(this, ...)` prototype-chain dance. Engine corpus loads the plugin tiddler at boot; daemon room VM gets the same artifact as drag-and-drop external installs.
+### Path V.2 ✅ (E.10.13) — Boot-path conversion to plugin loader
+The plugin artifact lands at `dist-plugin/lares-memetic-wikitext.{lar.tid,tid}` from the same Vite library bundle. Boot path now pushes the envelope into `preloadTiddlers`; TW5's standard plugin loader unpacks it. Imperative `_registerWidgets` / `_registerDeserializer` / parser-wrapper-injection block deleted. The single-backtick parser regression is gone as a side effect — parsers instantiate via the canonical `$tw.modules` construction path. Folded with namespace alignment: every Lares system title moved to `lar:///` so shadow-tiddler edits and in-VM plugin re-packs sync to disk through the existing `lar:`-only filter. Dual-distribution emits both canonical (`lar:///plugins/lares/memetic-wikitext`) and drag-and-drop (`$:/plugins/lares/memetic-wikitext`) envelopes; same module code, two namespace conventions for two ecosystems.
+
+### Smoke (immediate next) — End-to-end daemon round-trip
+`pnpm build` + `pnpm test` (52/52) green. Outstanding: boot the Node daemon, verify the plugin tiddler unpacks via the standard loader, exercise an ahu round-trip with the cascade-resolved markdown-meme template (expected: `<<~ kahea ahu #slot >>` emission per the always-split-always-kahea law). Until smoke runs once, build/type/unit-test-green is necessary but not sufficient.
 
 ### Path G — Other sigils via wikirule + cascade + templates
 Port the sigil set (`aka`, `kahea`, `kau`, `lele`, `papalohe`, `pranala`, `pae`) to the same architecture ahu now uses. Each sigil:
@@ -217,6 +237,8 @@ lares promote <uri> --to <target-bag>
 - **DID encoding.** Use `whoami: IndividualId` + own bytes-to-hex. NOT `idString` — strips per-byte leading zeros, breaks DID round-trip.
 - **ContactCard transport.** JSON via `toJson`/`fromJson`, wrap with TextEncoder. NOT bytes — alpha.56c doesn't expose `toBytes` for ContactCard.
 - **Cap-event home: D4.a — inside the bag's own Automerge doc** (TW5-native, decided post-research). Title shape `lar:///{bag-uri}/cap/{event-id}`, tag `$:/tags/CapEvent` (sub-tags `.../Prekey`, `.../Cgka`, `.../Delegation`, `.../Revocation`). Reasons: bags are TW5 policy boundaries, not performance boundaries; cap events MUST share the bag's sync surface (peer with bag but not cap log can't validate writes); Automerge has no cross-doc atomicity; TW5's own pattern co-locates high-churn runtime metadata (history, state, drafts) with content via `$:/` + tag, not via separate bag. Companion-doc shape is reserved for future *performance* tuning if cap-event volume crosses a threshold.
+- **TW5 system-namespace boundary (E.10.13).** Every Lares system tiddler TITLE lives in `lar:///`: cascade configs (`lar:///config/Lar/...`), global mounts (`lar:///mounts/...`), templates (`lar:///ha.ka.ba/@lararium/templates/...`), plugin envelopes (`lar:///plugins/lares/...`). Tag VALUES stay TW5-conventional `$:/tags/...` — tag values are not titles, do not intersect the sync filter, and let cascade entries plug into TW5's standard tag-discovery path. Drafts, ephemeral UX state, and shadow-tiddler defaults stay browser-local in `$:/` by design. For drag-and-drop community distribution, `$:/plugins/...` envelopes MAY re-emit the same plugin module code; canonical signature lives in the `lar:///` form. Decision recorded in `packages/lares/memes/api/v0.1/pono/lar-uri.md` (TW5 System Boundary section).
+- **Plugin-tiddler boot path (E.10.13).** TW5Engine boots by pushing one envelope tiddler — `lar:///plugins/lares/memetic-wikitext` — into `preloadTiddlers`. The standard `$tw.modules` flow registers wikirule, parser, deserializer, and widget modules; cascade configs, templates, and the `<$lar-meme-split>` global mount materialize as shadow tiddlers. No imperative widget/parser/wikirule registration code remains. Parsers instantiate via the canonical TW5 construction path (not a hand-rolled prototype-chain dance). Do not reintroduce imperative `parsers["text/x-memetic-wikitext"] = ...` mutations.
 - Chapel-perilous-opens removed; unstable URIs resolve as virtual until promoted to a stable @-scope
 - Admin URI shape: room URI vs bag URI distinction is intentional
 - Bag-mirror configs live in admin room (operator-private, federates to operator devices only)
