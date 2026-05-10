@@ -13,27 +13,13 @@ import type {
   TW5Wiki,
   TW5FakeElement,
   TW5ChangeRecord,
-  TW5TiddlerFields,
-  TW5WidgetConstructor,
 } from "./types/tiddlywiki.js";
 import { MemeStreamParser } from "@lararium/core";
 import type { TiddlerFields } from "./deserializer.js";
-import {
-  createLarariumWidgets,
-  registerImplementorsOperator,
-  LARARIUM_WIDGETS_TIDDLER,
-  LARARIUM_AHU_CASCADE_HTML,
-  LARARIUM_AHU_CASCADE_MARKDOWN_MEME,
-  LARARIUM_AHU_TEMPLATE_HTML,
-  LARARIUM_AHU_TEMPLATE_MARKDOWN_MEME,
-  LARARIUM_MEME_TEMPLATE_MARKDOWN_MEME,
-  LARARIUM_MEME_SPLIT_MOUNT,
-} from "./tw5-widgets.js";
+import { registerImplementorsOperator } from "./tw5-widgets.js";
 import { getZoomLayout } from "./zoom-layout.js";
 import type { ZoomLayout } from "./zoom-layout.js";
-import { memeticWikitextDeserializer } from "./deserializer.js";
-import { registerLarSigilWikirule } from "./wikirules/memetic-wikitext-sigil.js";
-import { makeMemeticParser } from "./memetic-parser.js";
+import { LARES_MEMETIC_WIKITEXT_PLUGIN } from "./plugin-tiddler.generated.js";
 export type { ZoomLayout };
 
 
@@ -111,13 +97,14 @@ export class TW5Engine {
         }
 
         instance.preloadTiddlers = instance.preloadTiddlers ?? [];
-        instance.preloadTiddlers.push(LARARIUM_WIDGETS_TIDDLER);
-        instance.preloadTiddlers.push(LARARIUM_AHU_CASCADE_HTML as unknown as Record<string, unknown>);
-        instance.preloadTiddlers.push(LARARIUM_AHU_CASCADE_MARKDOWN_MEME as unknown as Record<string, unknown>);
-        instance.preloadTiddlers.push(LARARIUM_AHU_TEMPLATE_HTML as unknown as Record<string, unknown>);
-        instance.preloadTiddlers.push(LARARIUM_AHU_TEMPLATE_MARKDOWN_MEME as unknown as Record<string, unknown>);
-        instance.preloadTiddlers.push(LARARIUM_MEME_TEMPLATE_MARKDOWN_MEME as unknown as Record<string, unknown>);
-        instance.preloadTiddlers.push(LARARIUM_MEME_SPLIT_MOUNT as unknown as Record<string, unknown>);
+        // Single plugin tiddler — the lar:// canonical envelope
+        // emitted by `pnpm build:plugin`. TW5's standard plugin
+        // loader unpacks the JSON envelope, registers each inner
+        // module via $tw.modules.define, and materializes the
+        // cascade configs / templates / mount as shadow tiddlers.
+        // Replaces the imperative widget/parser/wikirule/
+        // deserializer registrations that the V.1 boot path used.
+        instance.preloadTiddlers.push(LARES_MEMETIC_WIKITEXT_PLUGIN as unknown as Record<string, unknown>);
         for (const t of allPreloads) instance.preloadTiddlers.push(t as Record<string, unknown>);
 
         instance.boot.boot(() => {
@@ -475,53 +462,12 @@ export class TW5Engine {
       return;
     }
 
-    // Register a thin MemeticParser wrapper for `text/x-memetic-wikitext`.
-    // It composes the standard wikitext parser with a `\rules only` pragma
-    // prepended to the source so a curated rule set fires — sigils +
-    // transclusion + macro defs survive, ordinary markdown formatting
-    // (backticks, dashes, html entities, html comments) stays literal.
-    // Round-trip identity depends on this curation; without it, the wikifier
-    // mangles meme content during render.
-    //
-    // This wrapper is NOT the prior MemeticParser class — that 330-line
-    // typed-widget emitter collapsed in E.10.5. Sigil recognition lives in
-    // the wikirule registered below; the wrapper only restricts which TW5
-    // rules fire when memetic-typed tiddlers parse.
-    const parsers: Record<string, unknown> = tw?.Wiki?.parsers ?? {};
-    const stdParser = parsers["text/vnd.tiddlywiki"] as Parameters<typeof makeMemeticParser>[0] | undefined;
-    if (stdParser) {
-      parsers["text/x-memetic-wikitext"] = makeMemeticParser(stdParser);
-    }
-
-    // Register the lar-sigil wikirule so `<<~ sigil ... >>` syntax works in
-    // any wikitext context — vanilla `text/vnd.tiddlywiki` tiddlers, browser-
-    // side authoring drafts, embedded transclusions. Without this, only the
-    // memetic-wikitext typed tiddlers recognize the syntax.
-    registerLarSigilWikirule(tw as unknown as Parameters<typeof registerLarSigilWikirule>[0]);
-
-    TW5Engine._registerDeserializer(tw);
-    TW5Engine._registerWidgets(tw);
-  }
-
-  private static _registerDeserializer(tw: TW5Instance): void {
-    if (!tw?.Wiki?.tiddlerDeserializerModules) return;
-    tw.Wiki.tiddlerDeserializerModules["text/x-memetic-wikitext"] =
-      memeticWikitextDeserializer as unknown as (text: string, fields: Record<string, unknown>) => TW5TiddlerFields[];
-  }
-
-  private static _registerWidgets(tw: TW5Instance): void {
-    const WidgetCtor = tw.modules?.types?.widget?.["$:/core/modules/widgets/widget.js"]
-      ?.exports?.["widget"] as TW5WidgetConstructor | undefined;
-    if (!WidgetCtor) return;
-    if (!WidgetCtor.prototype.widgetClasses) {
-      tw.modules.applyMethods("widget", {});
-    }
-    const widgetClasses = createLarariumWidgets(tw);
-    for (const [name, cls] of Object.entries(widgetClasses)) {
-      Object.setPrototypeOf((cls as { prototype: object }).prototype, WidgetCtor.prototype);
-      WidgetCtor.prototype.widgetClasses ??= {};
-      WidgetCtor.prototype.widgetClasses[name] = cls as unknown as TW5WidgetConstructor;
-    }
+    // Plugin-tiddler load path: the bundled `lar:///plugins/lares/
+    // memetic-wikitext` envelope (pushed via preloadTiddlers in boot())
+    // carries the wikirule, parser, deserializer, widget modules, and
+    // cascade/template/mount shadow tiddlers. TW5's standard plugin
+    // loader unpacks the JSON envelope and registers each inner module
+    // via $tw.modules.define on boot — no imperative wiring needed.
   }
 
   private static async _verifySha256(body: string, claimedHex: string): Promise<boolean> {

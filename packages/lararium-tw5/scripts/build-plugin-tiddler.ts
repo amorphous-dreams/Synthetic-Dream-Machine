@@ -40,7 +40,19 @@ import { fileURLToPath } from "url";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT      = path.resolve(__dirname, "..");
 const OUT_DIR   = path.join(ROOT, "dist-plugin");
-const PLUGIN_TITLE = "$:/plugins/lares/memetic-wikitext";
+/**
+ * Plugin titles live in the `lar:` namespace by default — operator
+ * customizations sync through MemeSyncAdaptor's lar:-only filter to
+ * peers, so promote ceremonies + browser plugin re-packs don't bug
+ * out on $:/-namespace tiddlers that the sync rule skips.
+ *
+ * For the vanilla-TW5 drag-and-drop artifact, the build also emits a
+ * `$:/`-prefixed variant (rewriting only the OUTER plugin envelope
+ * title; inner JSON tiddler keys stay at lar://-prefixed names since
+ * TW5 doesn't enforce prefix conventions on plugin shadows).
+ */
+const PLUGIN_TITLE_LAR = "lar:///plugins/lares/memetic-wikitext";
+const PLUGIN_TITLE_TW5 = "$:/plugins/lares/memetic-wikitext";
 const PLUGIN_VERSION = "0.1.0";
 
 // Match `vite.plugin.config.ts::PLUGIN_ENTRIES` — keep in sync.
@@ -51,27 +63,27 @@ const MODULE_ENTRIES: Array<{
 }> = [
   {
     bundleFile:   "memetic-wikitext-sigil.cjs.js",
-    tiddlerTitle: `${PLUGIN_TITLE}/wikirules/memetic-wikitext-sigil.js`,
+    tiddlerTitle: `${PLUGIN_TITLE_LAR}/wikirules/memetic-wikitext-sigil.js`,
     moduleType:   "wikirule",
   },
   {
     bundleFile:   "ahu.cjs.js",
-    tiddlerTitle: `${PLUGIN_TITLE}/widgets/ahu.js`,
+    tiddlerTitle: `${PLUGIN_TITLE_LAR}/widgets/ahu.js`,
     moduleType:   "widget",
   },
   {
     bundleFile:   "lar-meme-split.cjs.js",
-    tiddlerTitle: `${PLUGIN_TITLE}/widgets/lar-meme-split.js`,
+    tiddlerTitle: `${PLUGIN_TITLE_LAR}/widgets/lar-meme-split.js`,
     moduleType:   "widget",
   },
   {
     bundleFile:   "memetic-parser.cjs.js",
-    tiddlerTitle: `${PLUGIN_TITLE}/parsers/memetic-parser.js`,
+    tiddlerTitle: `${PLUGIN_TITLE_LAR}/parsers/memetic-parser.js`,
     moduleType:   "parser",
   },
   {
     bundleFile:   "memetic-wikitext-deserializer.cjs.js",
-    tiddlerTitle: `${PLUGIN_TITLE}/deserializers/memetic-wikitext.js`,
+    tiddlerTitle: `${PLUGIN_TITLE_LAR}/deserializers/memetic-wikitext.js`,
     moduleType:   "tiddlerdeserializer",
   },
 ];
@@ -127,7 +139,7 @@ async function dataTiddlers(): Promise<TiddlerFields[]> {
   // README tiddler for the TW5 control panel. Surfaces the plugin's
   // intent to operators dropping it into a vanilla TW5 wiki.
   tiddlers.push({
-    title: `${PLUGIN_TITLE}/readme`,
+    title: `${PLUGIN_TITLE_LAR}/readme`,
     type:  "text/vnd.tiddlywiki",
     text: [
       "! Memetic-wikitext for TiddlyWiki5",
@@ -140,6 +152,16 @@ async function dataTiddlers(): Promise<TiddlerFields[]> {
       "* `text/x-memetic-wikitext` content type with curated rule set (codeblock / dash / commentblock / macrocall stay verbatim).",
       "* Cascade-routed templates for HTML view + markdown-meme disk export.",
       "* `<$lar-meme-split>` global widget keeps the parent ↔ child tiddler graph in sync as you author.",
+      "",
+      "!! Naming convention",
+      "",
+      "The plugin uses three intentionally distinct prefixes — each carries semantic weight:",
+      "",
+      "* `lares/` (project surface) — plugin author + plugin name. Matches the `@lares/cli` npm scope, the canonical `@lares` lar-URI bag scope, the human-facing CLI verb. Operator-facing.",
+      "* `lararium/` (engine machinery) — render templates + control-surface mounts. Matches `@lararium/core` and `@lararium/tw5` package scope. Infrastructure-facing.",
+      "* `Lar/` (URI-scheme abbreviation) — compact prefix for inline TW5 system tags + configs (`$:/tags/Lar/AhuTemplate`, `$:/config/Lar/MemeticRulesExcept`). Operator-extensible.",
+      "",
+      "From the cosmology: //lares// = household guardian (the project surface); //lararium// = household shrine (the engine machinery). The Lar prefix abbreviates either as the URI scheme demands.",
       "",
       "!! What this plugin does NOT include",
       "",
@@ -185,38 +207,73 @@ async function main(): Promise<void> {
   }
 
   const pluginText = JSON.stringify({ tiddlers: tiddlersDict }, null, 0);
-  const pluginTiddler: TiddlerFields = {
-    title:          PLUGIN_TITLE,
+
+  // Plugin envelope at the lar:// title — canonical for lararium VMs.
+  // Operator customizations to plugin-shadow tiddlers (cascade configs,
+  // mount, even bundled module overrides) intersect MemeSyncAdaptor's
+  // sync filter and propagate to peers via Automerge. promote ceremony
+  // works on lar:-namespaced shadow overrides; browser plugin re-packs
+  // sync uniformly.
+  const pluginTiddlerLar: TiddlerFields = {
+    title:          PLUGIN_TITLE_LAR,
     "plugin-type":  "plugin",
     author:         "lares",
     name:           "memetic-wikitext",
     description:    "Memetic-wikitext sigil grammar + cascade-routed render templates for TiddlyWiki5",
     version:        PLUGIN_VERSION,
     "core-version": ">=5.4.0",
-    list:           `${PLUGIN_TITLE}/readme`,
+    list:           `${PLUGIN_TITLE_LAR}/readme`,
     type:           "application/json",
     text:           pluginText,
   };
 
-  // 5. Emit `.tid` (TW5's standard plain-text tiddler file format).
-  // Header lines are `key: value`, blank line, then text content.
-  const tidLines: string[] = [];
-  for (const [key, val] of Object.entries(pluginTiddler)) {
-    if (key === "text") continue;
-    if (val === undefined) continue;
-    if (typeof val === "string" && val.includes("\n")) continue; // skip multi-line headers (text only)
-    tidLines.push(`${key}: ${String(val)}`);
+  // Plugin envelope at the $:/ title — drag-and-drop artifact for
+  // vanilla TW5 wikis. Same JSON payload (inner tiddler titles stay
+  // lar:-prefixed; TW5 registers shadows by their JSON key without
+  // enforcing prefix conventions). Only the OUTER envelope title
+  // changes.
+  const pluginTiddlerTw5: TiddlerFields = {
+    ...pluginTiddlerLar,
+    title: PLUGIN_TITLE_TW5,
+  };
+
+  // 5. Emit two `.tid` artifacts. Header lines `key: value`, blank
+  // line, then text content (TW5 plain-text tiddler file format).
+  function emitTid(tiddler: TiddlerFields, fileName: string): { path: string; bytes: number } {
+    const lines: string[] = [];
+    for (const [key, val] of Object.entries(tiddler)) {
+      if (key === "text") continue;
+      if (val === undefined) continue;
+      if (typeof val === "string" && val.includes("\n")) continue;
+      lines.push(`${key}: ${String(val)}`);
+    }
+    const content = lines.join("\n") + "\n\n" + (tiddler.text ?? "");
+    const filePath = path.join(OUT_DIR, fileName);
+    writeFileSync(filePath, content, "utf8");
+    return { path: filePath, bytes: content.length };
   }
-  const tidContent = tidLines.join("\n") + "\n\n" + (pluginTiddler.text ?? "");
-  const outPath = path.join(OUT_DIR, "lares-memetic-wikitext.tid");
-  writeFileSync(outPath, tidContent, "utf8");
+  const tidLar = emitTid(pluginTiddlerLar, "lares-memetic-wikitext.lar.tid");
+  const tidTw5 = emitTid(pluginTiddlerTw5, "lares-memetic-wikitext.tid");
 
-  // 6. Also emit a JSON form for consumers expecting the JSON envelope.
-  const jsonPath = path.join(OUT_DIR, "lares-memetic-wikitext.json");
-  writeFileSync(jsonPath, JSON.stringify(pluginTiddler, null, 2), "utf8");
+  // 6. JSON envelopes for tooling that expects the canonical shape.
+  const jsonLarPath = path.join(OUT_DIR, "lares-memetic-wikitext.lar.json");
+  const jsonTw5Path = path.join(OUT_DIR, "lares-memetic-wikitext.json");
+  writeFileSync(jsonLarPath, JSON.stringify(pluginTiddlerLar, null, 2), "utf8");
+  writeFileSync(jsonTw5Path, JSON.stringify(pluginTiddlerTw5, null, 2), "utf8");
 
-  console.log(`✓ wrote ${outPath} (${(tidContent.length / 1024).toFixed(1)} KiB)`);
-  console.log(`✓ wrote ${jsonPath}`);
+  // 7. Emit TS module under src/ exporting the lar:// form. The
+  // lararium daemon's tw5-vm.ts imports this and pushes the plugin
+  // tiddler into TW5's `preloadTiddlers` at boot. Single source of
+  // truth for the in-process distribution; the lar:// title makes the
+  // plugin envelope itself sync-eligible alongside its shadow overrides.
+  const tsHeader = `/* eslint-disable */\n// AUTO-GENERATED by scripts/build-plugin-tiddler.ts — do not edit.\n// Source: vite.plugin.config.ts compiles plugin module sources;\n// build-plugin-tiddler.ts wraps them into this artifact.\n//\n// Regenerate via: pnpm --filter @lararium/tw5 build:plugin\n\n`;
+  const tsBody = `export const LARES_MEMETIC_WIKITEXT_PLUGIN = ${JSON.stringify(pluginTiddlerLar, null, 2)} as const;\n`;
+  const tsSrcPath = path.join(ROOT, "src", "plugin-tiddler.generated.ts");
+  writeFileSync(tsSrcPath, tsHeader + tsBody, "utf8");
+
+  console.log(`✓ wrote ${tidLar.path} (${(tidLar.bytes / 1024).toFixed(1)} KiB) — lararium VM canonical`);
+  console.log(`✓ wrote ${tidTw5.path} (${(tidTw5.bytes / 1024).toFixed(1)} KiB) — vanilla TW5 drag-and-drop`);
+  console.log(`✓ wrote ${tsSrcPath}`);
   console.log(`  ${moduleTiddlers.length} module tiddlers + ${dataTiddlerList.length} data tiddlers`);
 }
 

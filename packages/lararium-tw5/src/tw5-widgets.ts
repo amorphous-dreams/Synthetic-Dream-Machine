@@ -68,8 +68,11 @@ export const LARARIUM_WIDGETS_TIDDLER = {
  * subscription handles all subsequent memetic-wikitext saves — the fourth
  * call site of the operator's "ONE parser, FOUR call sites" law.
  */
+// Mount tiddler TITLE moves into lar: namespace (sync-eligible); tag
+// VALUE stays `$:/tags/Global` (TW5 core requirement for global widget
+// instantiation — tag values aren't titles).
 export const LARARIUM_MEME_SPLIT_MOUNT = {
-  title: "$:/lararium/mounts/lar-meme-split",
+  title: "lar:///mounts/lar-meme-split",
   tags:  ["$:/tags/Global"],
   text:  "<$lar-meme-split/>",
 } as const;
@@ -111,15 +114,20 @@ export const LARARIUM_MEME_SPLIT_MOUNT = {
  * entries, not baked into the core. Roslyn / recast / XInclude consensus:
  * serialization is a function of the tree, never of external metadata.
  */
+// Cascade config tiddler TITLES live in the lar: namespace so operator
+// customizations sync to peers. Tag VALUES (`$:/tags/Lar/AhuTemplate`)
+// remain TW5-conventional — tag values aren't titles, don't intersect
+// the sync filter, and let our cascade entries plug into TW5's standard
+// cascade-tag discovery.
 export const LARARIUM_AHU_CASCADE_MARKDOWN_MEME = {
-  title:         "$:/config/Lar/AhuTemplate/markdown-meme",
+  title:         "lar:///config/Lar/AhuTemplate/markdown-meme",
   tags:          ["$:/tags/Lar/AhuTemplate"],
-  "list-before": "$:/config/Lar/AhuTemplate/html",
+  "list-before": "lar:///config/Lar/AhuTemplate/html",
   text:          "[<lar-export-scope>match[markdown-meme]then[lar:///ha.ka.ba/@lararium/templates/ahu/markdown-meme]]",
 } as const;
 
 export const LARARIUM_AHU_CASCADE_HTML = {
-  title:       "$:/config/Lar/AhuTemplate/html",
+  title:       "lar:///config/Lar/AhuTemplate/html",
   tags:        ["$:/tags/Lar/AhuTemplate"],
   text:        "[[lar:///ha.ka.ba/@lararium/templates/ahu/html]]",
 } as const;
