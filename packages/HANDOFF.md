@@ -1,10 +1,10 @@
 # Hand-off Crystal — Lares Lararium Node Branch
 
 > Forged: 2026-05-07
-> Last update: 2026-05-09 — E.10.1→E.10.4 hardened canon-promote AND landed ahu sigil round-trip via TW5 wikirule + cascade + templates
+> Last update: 2026-05-09 (late) — E.10.5 → E.10.12 yin-mode collapse + Path V.1 plugin artifact
 > Branch: `feature/lararium-node-3`
-> Working tree: dirty (smoke residue under packages/lararium-node/.lararium)
-> Last pulse: ahu sigil renders through TW5-native template-cascade; markdown-meme disk export works end-to-end
+> Working tree: dirty (smoke residue under packages/lararium-node/.lararium; dist-plugin/ artifact)
+> Last pulse: drag-and-drop TW5 plugin tiddler emits at dist-plugin/lares-memetic-wikitext.tid (71.3 KiB)
 
 ---
 
@@ -17,25 +17,32 @@ S5.8 ✅ closed. S6 (BagResidencyManager) ✅ closed (C.1→C.6, C.5 deferred).
 S7.1 (Capability layer via @keyhive/keyhive) ✅ closed (D.1→D.6).
 S8 (Wiki composition) ✅ closed (E.1→E.10). Twelve operator verbs across
 `lares bag` + `lares wiki` subcommand surfaces.
-E.10.1: Keyhive bag namespace fix + lares draft command. E.10.2: hardened
-cross-bag promote ceremony (six interlocking bugs in source-detection,
-TW5 refresh on cross-bag write, tombstone bag info). E.10.3: exportMemeText
-routes through wiki.renderTiddler. E.10.4 (BIG): rewrite ahu render
-dispatch as TW5-native wikirule + cascade + templates. AhuWidget owns
-no scope decision; cascade of `$:/tags/Lar/AhuTemplate` entries picks a
-template by matching `<lar-export-scope>` filter. New module
-`wikirules/memetic-wikitext-sigil.ts` makes `<<~ ahu ... >>` first-class
-TW5 grammar — block + inline forms — usable in any wikitext context
-including browser-side authoring. exportMemeText threads currentTiddler
-+ scope variable through renderTiddler. Round-trip verified end-to-end:
-sync → draft → promote → packages/lares/memes/ file with sigil wrappers
-and slot bodies preserved.
-Next paths: G-arc (other sigils — aka, kahea, kau, lele, papalohe,
-pranala, pae — ported to wikirule + cascade + template), H-arc (save-
-side auto-split: TW5 UX edits parse on save → spawn child tiddlers), F-arc
-deferred (TW5 vm refresh-pipeline + debounce shim), S7.4 (admin doc
-ingress trust gate), dreamdeck-app sprint (picks up S6.C.5),
-<$lar-promote> widget, heleuma authoring, federated promotion.
+E.10.1→E.10.4: canon-promote hardening + ahu render rewrite via TW5
+wikirule + cascade + templates. E.10.5→E.10.9: yin-mode collapse —
+delete MemeticParser typed-widget emitter (~330 lines), purge dead web2-
+era stubs (-18 files), drop tag-driven cascade discriminator (Roslyn /
+recast / XInclude consensus), consolidate ahu scanner into one shared
+@lararium/core/meme-ast/ahu-scan.ts module, replace `\rules except`
+pragma injection with WikiParser subclass. E.10.10→E.10.11: tw5-typed
+adopted as dev dep + activated in tsconfig types array; coexistence
+with hand-rolled types (per-site migration as call sites are touched).
+E.10.12 (Path V.1): Vite plugin config + build script ship dist-plugin/
+lares-memetic-wikitext.tid — drag-and-drop installable in any TW5
+5.4+ wiki, gives memetic-wikitext authoring + export without
+lararium-node, Automerge, Keyhive, ReactionEngine.
+ARCHITECTURE INVARIANT (operator-confirmed): always-split, always-kahea.
+Deserializer + <$lar-meme-split> widget split every ahu sigil into its
+own tiddler at sync/save time. Parent text always carries kahea-refs
+for slot children. Disk emission canonical: parent file + N child files.
+No tag discriminator. ONE parser, FOUR call sites — disk sync, CRDT
+inbound, TW5 UX save (via lar-meme-split widget), disk export — all
+consume splitRecursive identically.
+Next paths: V.2 (boot-path conversion to plugin loader; fixes
+single-backtick parser regression as side effect), G-arc (other sigils
+ported — aka, kahea, kau, lele, papalohe, pranala, pae), F-arc (TW5
+vm refresh-pipeline + debounce shim), S7.4 (admin doc ingress trust
+gate), dreamdeck-app sprint (picks up S6.C.5), <$lar-promote> widget,
+federated promotion, CodeMirror 6 alignment (Path W).
 Architecture laws hold: causal-island, bag=Automerge-doc=sync-boundary,
 canon-promotion requires active operator decision, TW5 VM primacy,
 web3-only — no HTTP/RPC for inter-process coordination, command-tiddlers
@@ -93,9 +100,12 @@ category boundary.
 - **Handlers today:** `echo` (admin composite), `promote` (room composite), `where` (room composite, recipe-presence).
 - **Forward generalization:** when UEFN-Verse ReactionEngine lands, this dispatcher pattern federates across causal-island bounds; command-tiddlers become one shape of reaction trigger among many. Comments inline in command-dispatcher.ts and promote-handler.ts.
 
-## Forward paths (post-E.10.4)
+## Forward paths (post-E.10.12)
 
-### Path G (next sprint) — Other sigils via wikirule + cascade + templates
+### Path V.2 (immediate next) — Boot-path conversion to plugin loader
+The plugin artifact lands at `dist-plugin/lares-memetic-wikitext.tid` (V.1, E.10.12). V.2 replaces the imperative `_registerWidgets` + `parsers["text/x-memetic-wikitext"] = ...` mutations in `tw5-vm.ts` with plugin-tiddler load via TW5's standard `$tw.modules` flow. The plugin's `module-type: parser` / `module-type: widget` / `module-type: wikirule` modules self-register. **Side effect: fixes the single-backtick parser regression** — TW5 instantiates parsers via the proper construction path, not our hand-rolled `stdParser.call(this, ...)` prototype-chain dance. Engine corpus loads the plugin tiddler at boot; daemon room VM gets the same artifact as drag-and-drop external installs.
+
+### Path G — Other sigils via wikirule + cascade + templates
 Port the sigil set (`aka`, `kahea`, `kau`, `lele`, `papalohe`, `pranala`, `pae`) to the same architecture ahu now uses. Each sigil:
   - extends `wikirules/memetic-wikitext-sigil.ts` with its match patterns (block and/or inline modes per operator note);
   - ships its own template tiddlers under `lar:///ha.ka.ba/@lararium/templates/{sigil}/{html,markdown-meme}`;
@@ -126,6 +136,9 @@ UI shim writing the same command-tiddler the CLI does.
 
 ### Path O — Heleuma stub authoring + federated promotion
 50+ scaffolded memes carry TODO content; `lares heleuma --write` keeps the audit aligned. Federated promotion: any room VM, any peer, gated by Keyhive cap chains.
+
+### Path W — CodeMirror 6 / Lezer alignment
+Once V.2 ships, the wikirule patterns map cleanly onto CM6 + Lezer grammar. `tobibeer/codemirror-6-tw5` is the closest active community effort. Aligning gives operators rich-text editing of memetic-wikitext in the live UI (browser peers + TW5 standalone). Plugin tiddler grows a `module-type: editor` wrapping the Lezer parser; same drag-and-drop install. Operators in the broader TW5 community get visual editing without lararium dependencies. linonetwo's `Modern.TiddlyDev` Vite harness is the natural development surface.
 
 ## Smoke-test recipe (verify branch state)
 

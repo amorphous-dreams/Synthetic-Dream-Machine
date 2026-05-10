@@ -1,8 +1,47 @@
 # Session State — Lararium Web3 Refactor
 
-> Updated: 2026-05-09 (E.10.1 → E.10.4 hardened canon-promote AND landed ahu render rewrite)
+> Updated: 2026-05-09 (E.10.5 → E.10.12 yin-mode collapse + Path V.1 plugin artifact)
 > Branch: feature/lararium-node-3
 > Purpose: Resume artifact — enough state to continue without prior chat context
+
+---
+
+## What Just Happened (2026-05-09 night — yin-mode collapse + Path V.1)
+
+Two layers of work landed: (a) yin-mode architectural collapse driven by web-research synthesis (Roslyn / recast / TW5 internals), (b) Vite plugin packaging that produces a drag-and-drop TW5 plugin tiddler.
+
+| sha | What |
+|---|---|
+| `2d6da6f4` E.10.4-WIP | Begin template-cascade rewrite — drop mode-dispatch, scaffold templates. |
+| `a9ff64c9` E.10.4 | Wikirule + cascade + templates — `<<~` first-class TW5 grammar. |
+| `5d5fc3f7` (docs) | E.10.4 closure SESSION + ROADMAP + HANDOFF. |
+| `c08a0a42` E.10.5 | Radical simplification — wikirule covers ALL sigils, 18 dead files purged (300+ lines deleted). MemeticParser nodeToTw5 collapses ~150 lines → ~15 lines. |
+| `aa315259` E.10.7 | Cascade-by-shape + disk-projection gate + nested-ahu regex. |
+| `6ba194e1` E.10.6 | MemeticParser → 30-line pragma-prepending wrapper; `prologue` field captures pre-SOH content (DOCTYPE comment). |
+| `a6a5b50e` E.10.8 | Tag-driven file roots, full-depth split, `<$lar-meme-split>` action widget — closes the four-call-sites law. |
+| `10bc4c2a` E.10.9 | Yin-cleanup — drop tag-driven cascade; consolidate ahu scanner; WikiParser subclass; lar-generated marker + content-equality guards. |
+| `c734b030` E.10.10 | `tw5-typed` dev dep added (linonetwo / tiddly-gittly). |
+| `b55d6f1a` E.10.11 | tw5-typed activated alongside hand-rolled types — coexistence, per-site migration path. |
+| `99530399` E.10.12 (Path V.1) | Vite plugin config + build script ship `dist-plugin/lares-memetic-wikitext.tid` (71.3 KiB drag-and-drop artifact). |
+
+**Architecture invariant established (operator-confirmed):**
+  - **Always-split, always-kahea.** Deserializer + `<$lar-meme-split>` widget split every ahu sigil into its own tiddler at sync/save time. Parent text always carries `<<~ kahea ahu #slot >>` references for slot children. Disk emission canonical: parent file + N child files.
+  - **Single source of truth.** ahu scanner + control-slot set + slot-path composer live in `@lararium/core/meme-ast/ahu-scan.ts`. Three callers (deserializer, action widget, wikirule) import from there. Drift = bug.
+  - **Roslyn / recast / XInclude consensus**: serialization is a function of the tree, never of external metadata. Tag-driven discrimination (the `$:/tags/Lar/MemeRoot`-gated cascade) was the named anti-pattern; eliminated in E.10.9.
+  - **Drag-and-drop ecosystem play.** `dist-plugin/lares-memetic-wikitext.tid` (V.1) installs in any TW5 5.4+ wiki; gives memetic-wikitext authoring + export without lararium-node infrastructure. Bidirectional: operators can author in vanilla TW5, export to .md, ingest into lararium. Same plugin code in both.
+
+**Web-research dividends cited inline:**
+  - Roslyn / red-green CST: serialization is a tree function, never metadata.
+  - recast / magic-string: mutations re-print, untouched bytes verbatim.
+  - XInclude / Org-mode / AsciiDoc: source-resident reference token IS the round-trip marker.
+  - TW5 wiki.js: `nextTick` coalescing IS the transaction primitive.
+  - TW5 GH discussion #6712: `\rules except` pragma scope ≠ transclude (Jermolene).
+  - tobibeer/codemirror-6-tw5 + Lezer aligned territory for Path W.
+
+**Outstanding (V.2 next push):**
+  - Boot path conversion: `tw5-vm.ts` still runs imperative widget/parser registration mutations. V.2 replaces with plugin-tiddler load via TW5's `$tw.modules` flow.
+  - **Single-backtick parser regression resolves as side effect** — TW5's plugin loader instantiates parsers via the proper construction path; eliminates our hand-rolled `stdParser.call(this, ...)` prototype-chain workaround.
+  - Engine corpus integration: load the plugin artifact at lararium daemon boot.
 
 ---
 
