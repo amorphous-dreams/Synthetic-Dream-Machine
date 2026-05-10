@@ -1,10 +1,10 @@
 # Hand-off Crystal — Lares Lararium Node Branch
 
 > Forged: 2026-05-07
-> Last update: 2026-05-09 (late+2) — Sigil family arc complete: G.1→G.5 (six sigils on cascade) + J.1+J.2a/b/c (slot-as-full-meme-MD-projection round-trip with default-elision)
+> Last update: 2026-05-10 — Daemon smoke ✅: `lares wiki sync` + `lares promote` ceremony verified end-to-end (room bag → canonical bag, audit tiddler written). `requestKeyhivePromotion` stub export added to causal-island.ts (test suite was broken). 84+52+12 tests green.
 > Branch: `feature/lararium-node-3`
 > Working tree: clean
-> Last pulse: six sigils ride the template-cascade architecture (ahu, aka, kahea, loulou, pranala-header, pranala); five share the makeCascadeSigilWidget factory; slot bodies round-trip bytes-faithfully with iam default-elision against parent's effective iam
+> Last pulse: end-to-end promote ceremony confirmed. infrastructure-correct = feature-correct on happy path. Next: choose from open paths (F-arc, remaining G sigils, S7.4, dreamdeck, <$lar-promote> widget).
 
 ---
 
@@ -159,8 +159,10 @@ TW5Engine boots by pushing one envelope tiddler into `preloadTiddlers`; TW5's st
 ### Sigil family ✅ (G.1→G.5 + J.1+J.2a/b/c)
 Six sigils ride the template-cascade architecture. Five share `widgets/_cascade-sigil-base.ts::makeCascadeSigilWidget(config)` — declarative widget definition (cascadeTag + fallbackTemplate + buildBindings + setCurrentTiddler? + refreshUri? + placeholder?). ahu stays bespoke. Slot-as-full-meme-MD-projection invariant: each slot has preamble (with `<<~ iam >>` position sentinel), iam-source (raw bytes), preamble-rendered (with sentinel substituted via regenerated toml), text (body proper with kahea refs), postamble (trailing prose). regenerateIamToml default-elides against parent's effective iam (inherited + own merged through splitRecursive recursion).
 
-### Smoke (immediate next) — End-to-end daemon round-trip
-In-process smoke covers deserialize + render + plugin boot. Outstanding: `lares serve` daemon boot, CLI promote ceremony with a real meme to verify the plugin/cascade/elision composes with bag/sync/Keyhive. Until that runs once, infrastructure-correct ≠ feature-correct.
+### Smoke ✅ — End-to-end daemon round-trip (2026-05-10)
+In-process smoke: deserialize + render + plugin boot — clean (27 shadow tiddlers, all 6 sigils render, slot round-trip verified).
+Daemon smoke: `lares serve` + `lares wiki sync altar-fire` + `lares promote` ceremony — **verified**. Room bag (altar-fire) → canonical bag (@lares), audit tiddler at `lar:///ha.ka.ba/@lararium/@admin/log/…`. infrastructure-correct = feature-correct confirmed.
+Key lesson: `lares wiki sync <room>` is the prerequisite for promote — disk file must be ingested into room bag first. Tiddler already in canonical bag returns "already lives here" (not an error — correct idempotency guard).
 
 ### Path G — Other sigils via wikirule + cascade + templates
 Port the sigil set (`aka`, `kahea`, `kau`, `lele`, `papalohe`, `pranala`, `pae`) to the same architecture ahu now uses. Each sigil:
