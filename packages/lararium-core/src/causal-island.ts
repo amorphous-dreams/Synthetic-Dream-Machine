@@ -400,3 +400,33 @@ export interface PromotionReceipt {
    */
   readonly invalidatesProjections: readonly string[];
 }
+
+// ---------------------------------------------------------------------------
+// requestKeyhivePromotion — stub (Keyhive WASM promotion graph not yet wired)
+// ---------------------------------------------------------------------------
+
+export interface KeyhivePromotionRequest {
+  readonly fromUri:      string;
+  readonly targetUri:    string;
+  readonly roomId:       string;
+  readonly proposedText: string;
+  readonly reason?:      string;
+}
+
+export type KeyhivePromotionResult =
+  | { readonly ok: true;  readonly receiptUri: string }
+  | { readonly ok: false; readonly status: "not-implemented"; readonly reason: string };
+
+/**
+ * Stub: returns not-implemented until the Keyhive promotion graph is wired.
+ * Sentinel test in causal-island.test.ts guards this boundary.
+ */
+export async function requestKeyhivePromotion(
+  _req: KeyhivePromotionRequest,
+): Promise<KeyhivePromotionResult> {
+  return {
+    ok: false,
+    status: "not-implemented",
+    reason: "keyhive-promotion-graph-not-wired",
+  };
+}
