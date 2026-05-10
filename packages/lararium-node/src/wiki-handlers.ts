@@ -13,13 +13,14 @@ import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 import type { Repo, DocHandle, AutomergeUrl } from "@automerge/automerge-repo";
 import {
-  type CompositeStore, type LarTiddlerRecord, type ChangeOrigin, type MemeStoreDoc,
-  type CatalogDoc, type MutableLarRecord, type BagResidencyManager,
+  type CompositeStore, type LarTiddlerStore, type LarTiddlerRecord, type ChangeOrigin, type MemeStoreDoc,
+  type CatalogDoc, type MutableLarRecord, type BagResidencyManager, type LarariumDoc,
   emptyMemeStoreDoc, ADMIN_BAG_ID, BAG_IDS, wikiLarUri, wikiDraftLarUri, recipeUri,
   CATALOG_DOC_URI, LARARIUM_DOC_URI, LARES_DOC_URI,
   parseBagStack, AutomergeDocStore,
-  findTopLevelAhuBlocks, composeSlotPath, CONTROL_SLOTS,
 } from "@lararium/core";
+import { buildDirectRecord, MemeSyncAdaptor, TW5Engine } from "@lararium/tw5";
+import type { TiddlerFields } from "@lararium/tw5";
 import { repoRoot } from "@lares/lares";
 import type { CommandHandler } from "./command-dispatcher.js";
 
@@ -36,6 +37,7 @@ export interface WikiMintHandlerOptions {
   readonly composite:     CompositeStore;
   readonly repo:          Repo;
   readonly catalogHandle: DocHandle<CatalogDoc>;
+  readonly islandHandle:  DocHandle<LarariumDoc>;
   readonly operatorDid:   () => Promise<string> | string;
 }
 
@@ -155,22 +157,24 @@ export function createInitWikiHandler(opts: WikiMintHandlerOptions): CommandHand
       };
     });
 
-    // Write recipe tiddler — lives in the lararium island doc.
-    const origin: ChangeOrigin = { kind: "lares-command", requestId: ctx_request_id_safe() };
-    const recipe: LarTiddlerRecord = {
-      title: recipeTitle,
-      bag:   LARARIUM_DOC_URI,
-      authority: "lares-cli:wiki-init",
-      fields: {
-        label:      slug,
-        // Default bag stack: lowest priority → highest. Per-wiki draft sits
-        // at top so it overlays canonical for the operator's working surface.
-        "bag-stack":   `${CATALOG_DOC_URI} ${LARARIUM_DOC_URI} ${LARES_DOC_URI} ${wikiKey} ${draftBagId}`,
-        "writable-bag": draftBagId,
-        "updated-at":   new Date().toISOString(),
-      },
-    };
-    await opts.composite.put(recipe, origin);
+    // Write recipe tiddler directly into the lararium island doc.
+    // LarariumDocStore.put() is intentionally read-only (authority-authored
+    // only), so we bypass composite.put() and use islandHandle.change()
+    // directly — the same pattern as catalogHandle.change() for oracle tiddlers.
+    const updatedAt = new Date().toISOString();
+    opts.islandHandle.change((doc) => {
+      const tiddlers = doc.tiddlers as Record<string, MutableLarRecord>;
+      tiddlers[recipeTitle] = {
+        title: recipeTitle,
+        authority: "lares-cli:wiki-init",
+        fields: {
+          label:          slug,
+          "bag-stack":    `${CATALOG_DOC_URI} ${LARARIUM_DOC_URI} ${LARES_DOC_URI} ${wikiKey} ${draftBagId}`,
+          "writable-bag": draftBagId,
+          "updated-at":   updatedAt,
+        },
+      };
+    });
 
     return {
       slug,
@@ -246,15 +250,18 @@ export function createOpenWikiHandler(opts: WikiHandlerOptions): CommandHandler 
  *
  * Walks `wikis/<slug>/memes/**` for `.md` files. For each file, derives a
  * tiddler title from the iam `uri-path` field (or falls back to a path-
- * based URI). Writes the file's full text as the tiddler's `text` field
- * directly into the wiki's canonical bag's Automerge doc — bypasses the
- * composite-overlay routing because the target wiki may not be the
- * daemon's currently-mounted active wiki.
+ * based URI), then hands the full carrier text to a booted TW5 VM via
+ * `deserializeCarrier()`. The VM returns the parent + any `#fragment`
+ * children. This handler then calls the TW5 sync adaptor (`saveTiddler` /
+ * `deleteTiddler`) so every bag mutation travels through the same VM-owned
+ * save path as UI edits. The Automerge handle only gets wrapped as a store
+ * capability for the adaptor; this handler does not call handle.change().
  *
- * Idempotent: tiddlers whose existing record matches the file's text get
+ * Idempotent: files whose VM-produced tiddler package matches bag state get
  * skipped (no-op write). Tiddlers whose URI lacks a record get created.
  *
- * Returns { slug, scanned, ingested, skipped, errors[] }.
+ * Returns { slug, scanned, ingested, skipped, recordsIngested,
+ * recordsSkipped, errors[] }.
  */
 export function createSyncWikiHandler(opts: WikiMintHandlerOptions): CommandHandler {
   return async (args) => {
@@ -276,54 +283,93 @@ export function createSyncWikiHandler(opts: WikiMintHandlerOptions): CommandHand
     const files: string[] = [];
     walkMemes(memesRoot, files);
 
-    // Open the wiki's canonical Automerge doc directly. This sidesteps the
-    // composite-overlay routing — the target wiki may not be the daemon's
-    // currently-mounted active wiki, so composite.put would fall through
-    // to the default writable layer (today's altar-fire/draft) instead of
-    // landing in the right bag. Direct doc writes go where intended.
-    const handle = await opts.repo.find<MemeStoreDoc>(wikiDocUrl as AutomergeUrl);
-    await handle.whenReady();
-
-    const errors: string[] = [];
-    let ingested = 0;
-    let skipped  = 0;
-
-    for (const file of files) {
-      try {
-        const text = readFileSync(file, "utf8");
-        const uri  = extractIamUri(text) ?? deriveUriFromPath(slug, memesRoot, file);
-        const sourceFile = file.startsWith(repoRoot) ? file.slice(repoRoot.length + 1) : file;
-        const syncedAt   = new Date().toISOString();
-
-        // Read current state from the doc directly.
-        const docState = handle.doc();
-        const existing = (docState?.tiddlers as Record<string, MutableLarRecord> | undefined)?.[uri];
-        if (existing && existing.text === text && !existing.deleted) {
-          skipped++;
-          continue;
-        }
-
-        handle.change((doc) => {
-          const tiddlers = doc.tiddlers as Record<string, MutableLarRecord>;
-          tiddlers[uri] = {
-            title: uri,
-            text,
-            fields: {
-              "source-file": sourceFile,
-              "synced-at":   syncedAt,
-            },
-            bag:       wikiKey,
-            authority: "lares-cli:wiki-sync",
-          };
-        });
-        ingested++;
-      } catch (err) {
-        const msg = err instanceof Error ? err.message : String(err);
-        errors.push(`${file}: ${msg}`);
-      }
+    // Prefer the live composite when this wiki already mounts in the daemon:
+    // projections subscribed to that composite then see the VM-routed writes.
+    // If an operator syncs a registered but unmounted wiki, wrap its doc as a
+    // store capability for the adaptor without calling handle.change() here.
+    let store: LarTiddlerStore;
+    if (opts.composite.hasWritableBag(wikiKey)) {
+      store = targetCompositeBagStore(opts.composite, wikiKey);
+    } else {
+      const handle = await opts.repo.find<MemeStoreDoc>(wikiDocUrl as AutomergeUrl);
+      await handle.whenReady();
+      store = new AutomergeDocStore(handle, wikiKey);
     }
 
-    return { slug, scanned: files.length, ingested, skipped, errors };
+    const vm = new TW5Engine();
+    await vm.boot();
+    const adaptor = new MemeSyncAdaptor(vm, store, `wiki-sync:${slug}`, wikiKey);
+    adaptor.start();
+    adaptor.onSyncComplete("automerge");
+
+    const errors: string[] = [];
+    let ingested       = 0;
+    let skipped        = 0;
+    let recordsIngested = 0;
+    let recordsSkipped  = 0;
+
+    try {
+      for (const file of files) {
+        try {
+          const text = readFileSync(file, "utf8");
+          const uri  = extractIamUri(text) ?? deriveUriFromPath(slug, memesRoot, file);
+          const sourceFile = file.startsWith(repoRoot) ? file.slice(repoRoot.length + 1) : file;
+          const syncedAt   = new Date().toISOString();
+
+          const vmTiddlers = vm.deserializeCarrier(uri, text, {
+            "source-file": sourceFile,
+            "synced-at":   syncedAt,
+          });
+          const syncFields = vmTiddlers
+            .map(flattenVmTiddlerFields)
+            .filter((fields): fields is Record<string, string> => fields !== null);
+          if (syncFields.length === 0) {
+            skipped++;
+            continue;
+          }
+
+          const recordTitles = new Set(syncFields.map((fields) => fields["title"]!));
+          const staleTitles  = (await store.listVisible())
+            .filter((title) => title.startsWith(`${uri}#`))
+            .filter((title) => !recordTitles.has(title));
+
+          let fileChanged = false;
+          let fileRecordWrites = 0;
+          let fileRecordSkips  = 0;
+
+          for (const fields of syncFields) {
+            const expected = buildDirectRecord(fields["title"]!, fields, wikiKey);
+            const existing = await store.get(expected.title);
+            if (recordMatches(existing, expected)) {
+              fileRecordSkips++;
+              continue;
+            }
+            await saveViaTw5Adaptor(adaptor, fields);
+            fileRecordWrites++;
+            fileChanged = true;
+          }
+
+          for (const title of staleTitles) {
+            await deleteViaTw5Adaptor(adaptor, title);
+            fileRecordWrites++;
+            fileChanged = true;
+          }
+
+          recordsIngested += fileRecordWrites;
+          recordsSkipped  += fileRecordSkips;
+          if (fileChanged) ingested++;
+          else skipped++;
+        } catch (err) {
+          const msg = err instanceof Error ? err.message : String(err);
+          errors.push(`${file}: ${msg}`);
+        }
+      }
+    } finally {
+      adaptor.stop();
+      vm.dispose();
+    }
+
+    return { slug, scanned: files.length, ingested, skipped, recordsIngested, recordsSkipped, errors };
   };
 }
 
@@ -750,6 +796,90 @@ function walkMemes(dir: string, out: string[]): void {
   }
 }
 
+function targetCompositeBagStore(
+  composite: CompositeStore,
+  bagId:     string,
+): LarTiddlerStore {
+  return {
+    listVisible: () => composite.listVisible(),
+    get:         (title) => composite.getLive(title),
+    put:         (record, origin) => composite.put({ ...record, bag: bagId }, origin),
+    tombstone:   (title, origin) => composite.tombstoneInBag(bagId, title, origin),
+    subscribe:   (fn) => composite.subscribe(fn),
+    addProjection: (p) => composite.addProjection(p),
+  };
+}
+
+function flattenVmTiddlerFields(fields: TiddlerFields): Record<string, string> | null {
+  const title = stringField(fields["title"]);
+  if (!title || title.startsWith("$:/")) return null;
+
+  const out: Record<string, string> = { title };
+  for (const [key, value] of Object.entries(fields)) {
+    if (key === "title" || key === "bag") continue;
+    const scalar = stringField(value);
+    if (scalar !== undefined) out[key] = scalar;
+  }
+  return out;
+}
+
+function stringField(value: string | string[] | undefined): string | undefined {
+  if (value === undefined) return undefined;
+  return Array.isArray(value) ? value.join(" ") : String(value);
+}
+
+function saveViaTw5Adaptor(
+  adaptor: MemeSyncAdaptor,
+  fields:  Record<string, string>,
+): Promise<void> {
+  return new Promise((resolve, reject) => {
+    adaptor.saveTiddler({ fields }, (err) => {
+      if (err) reject(err);
+      else resolve();
+    });
+  });
+}
+
+function deleteViaTw5Adaptor(
+  adaptor: MemeSyncAdaptor,
+  title:   string,
+): Promise<void> {
+  return new Promise((resolve, reject) => {
+    adaptor.deleteTiddler(title, (err) => {
+      if (err) reject(err);
+      else resolve();
+    });
+  });
+}
+
+function recordMatches(
+  existing: LarTiddlerRecord | null,
+  next:     LarTiddlerRecord,
+): boolean {
+  if (!existing || existing.deleted) return false;
+  if (existing.title !== next.title) return false;
+  if ((existing.text ?? undefined) !== (next.text ?? undefined)) return false;
+  if ((existing.bag ?? undefined) !== (next.bag ?? undefined)) return false;
+  if ((existing.authority ?? undefined) !== (next.authority ?? undefined)) return false;
+  return shallowStringRecordEqual(existing.fields ?? {}, next.fields ?? {}, new Set(["synced-at"]));
+}
+
+function shallowStringRecordEqual(
+  a:       Record<string, string>,
+  b:       Record<string, string>,
+  ignored: ReadonlySet<string> = new Set(),
+): boolean {
+  const aKeys = Object.keys(a).filter((key) => !ignored.has(key)).sort();
+  const bKeys = Object.keys(b).filter((key) => !ignored.has(key)).sort();
+  if (aKeys.length !== bKeys.length) return false;
+  for (let i = 0; i < aKeys.length; i++) {
+    const key = aKeys[i]!;
+    if (key !== bKeys[i]) return false;
+    if (a[key] !== b[key]) return false;
+  }
+  return true;
+}
+
 /**
  * Extract the `uri-path` value from a memetic-wikitext iam toml block.
  * Cheap regex; we don't need full TOML parsing for this single field.
@@ -761,7 +891,8 @@ function extractIamUri(text: string): string | null {
   const block = iamMatch[1] ?? "";
   const uriPathMatch = block.match(/^uri-path\s*=\s*["']([^"']+)["']/m);
   if (!uriPathMatch) return null;
-  return `lar:///${uriPathMatch[1]}`;
+  const raw = uriPathMatch[1]!;
+  return raw.startsWith("lar:///") ? raw : `lar:///${raw}`;
 }
 
 /**

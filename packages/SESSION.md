@@ -1,8 +1,53 @@
 # Session State — Lararium Web3 Refactor
 
-> Updated: 2026-05-09 (rooms→wikis full terminology rename — filesystem + URI namespace + all symbols)
+> Updated: 2026-05-10 (disk projection five-layer child meme structure verified end-to-end)
 > Branch: feature/lararium-node-3
 > Purpose: Resume artifact — enough state to continue without prior chat context
+
+---
+
+## What Just Happened (2026-05-10 — disk projection five-layer child memes)
+
+Full end-to-end verification: `wikis/scratch/memes/docs/lares/the-lares-protocols/` now receives nine files (parent + 8 slot children), each with the canonical five-layer meme structure.
+
+**Architecture hardening landed:**
+
+| Component | Change |
+|---|---|
+| `disk-projector.ts` | Rewritten to subscribe to `wiki.addEventListener("change")` — TW5 VM primacy enforced. No Automerge subscription. Reads `bag` field from TW5 tiddler for mirror routing. |
+| `projection-kinds.ts` | `DiskKindDeps` gains `tw5: TW5Engine`; `projector.start(deps.tw5)` replaces the old `peer.store` subscription path. |
+| `meme-sync-adaptor.ts` | `_applyLiveRecord` and `onChangeset` bulk path both stamp `bag` field on TW5 tiddlers — disk projector reads bag provenance without touching Automerge. |
+| `bag-mirror.ts` | `wikiShadowPathStrategy` extended with bare `lar:///ha.ka.ba/{rest}` URI fallback (no @-scope) → `memes/{rest}.md`. Fragment URIs → `memes/{path}/{fragment}.md`. Fixes the zero-projection bug for wiki-bag tiddlers. |
+| `deserializer.ts` + plugin bundle | `splitRecursive` extended: `parentSourceFile` param threads to child `file-path` generation. Children receive full effective iam via `regenerateIamToml(effectiveIam, {})` with child-specific `uri-path` + `file-path` override. Child `file-path` strips the leading `#` from `block.slot`. **Build law: changes to `deserializer.ts` require `tsx scripts/build-plugin-tiddler.ts` — `tsc` alone is NOT sufficient (deserializer runs inside TW5 plugin bundle).** |
+| `tw5-widgets.ts` | `LARARIUM_MEME_TEMPLATE_MARKDOWN_MEME` updated for five-layer child structure: conditional SOH (for tiddlers with `fragment-parent`), iam block (from `iam-source`), STX (`<<~&#x0002;>>`), `{{!!text}}`, ETX (`<<~&#x0003;>>`), EOT (`<<~&#x0004; -> ? >>`). Prologue emitted only when explicitly present (not inherited from parent). |
+
+**Five-layer child file structure confirmed:**
+```
+<<~&#x0001; ? -> lar:///ha.ka.ba/docs/lares/the-lares-protocols#thesis >>
+```toml iam
+uri-path = "ha.ka.ba/docs/lares/the-lares-protocols#thesis"
+file-path = "wikis/scratch/memes/docs/lares/the-lares-protocols/thesis.md"
+tagspace = "draft"
+…
+```
+
+<<~&#x0002;>>
+
+body text…
+
+<<~&#x0003;>>
+<<~&#x0004; -> ? >>
+```
+
+**OODA-HA code review findings (non-blocking smells):**
+
+1. `meme-sync-adaptor.ts:129` — `targetBag` default is `"room"` (stale string from rooms→wikis rename). Cosmetic; the actual bag ID comes from each adaptor instance's constructor call in production.
+2. `file-path` absent in child iam when authored directly in TW5 UX (not via disk sync) — `source-file` field not set → `parentSourceFile` empty → `childFilePath` undefined. Acceptable by design: tiddlers not yet on disk have no disk path. Behaviour is consistent.
+3. `iam-source` mutex: explicit operator-authored block takes priority over generated iam. Correct.
+4. `TimeoutNegativeWarning` — pre-existing Automerge repo noise. Non-blocking.
+5. Heleuma drift `ha.ka.ba/@lararium/tw5/widgets/toml` — pre-existing, needs `--sync-modules --commit` to resolve.
+
+**J.3 still open.** Parent + child tiddlers both land in wiki bag after `lares wiki sync`. `lares promote` moves only the parent URI; children stay in wiki bag; canonical disk projector writes only what's in the canonical bag → child slot files never land in `packages/`. J.3 fix: promote handler must walk `#fragment` children and co-promote them atomically.
 
 ---
 

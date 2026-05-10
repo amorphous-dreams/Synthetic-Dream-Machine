@@ -1,10 +1,10 @@
 # Hand-off Crystal — Lares Lararium Node Branch
 
 > Forged: 2026-05-07
-> Last update: 2026-05-09 — rooms→wikis full rename (filesystem + URI namespace `@lararium/rooms/` → `@lararium/wikis/` + all TS symbols). Build clean, .lararium wiped. J.3 child co-promotion is the next smoke target.
+> Last update: 2026-05-10 — disk projection five-layer child meme structure verified end-to-end. Ten changed files; build clean. J.3 (child co-promotion) is the next smoke target.
 > Branch: `feature/lararium-node-3`
-> Working tree: modified (rename complete, not yet committed)
-> Last pulse: Global rooms→wikis terminology rename complete. J.3 (child co-promotion) remains open — smoke target is `wikis/altar-fire/memes/docs/lares/the-lares-protocols.md`.
+> Working tree: clean after commit (pending).
+> Last pulse: `wikis/scratch/memes/docs/lares/the-lares-protocols/` produces 9 correct files (parent + 8 children, each with SOH+iam+STX+body+ETX+EOT). Architecture law enforced: disk projector subscribes to TW5 wiki events only, never Automerge. J.3 open.
 
 ---
 
@@ -85,6 +85,15 @@ for slot children. Disk emission canonical: parent file + N child files.
 No tag discriminator. ONE parser, FOUR call sites — disk sync, CRDT
 inbound, TW5 UX save (via lar-meme-split widget), disk export — all
 consume splitRecursive identically.
+Disk projection five-layer child meme structure verified end-to-end
+(2026-05-10). Architecture hardening: disk projector now subscribes to
+TW5 wiki change events only (MemeSyncAdaptor stamps `bag` field;
+projector reads it without touching Automerge). `wikiShadowPathStrategy`
+extended with bare `lar:///ha.ka.ba/{rest}` URI fallback. `deserializer.ts`
+threads `parentSourceFile` → child `file-path`. `LARARIUM_MEME_TEMPLATE_MARKDOWN_MEME`
+emits SOH+iam+STX+body+ETX+EOT for slot children. Plugin bundle rebuilt
+(`tsx scripts/build-plugin-tiddler.ts`). Nine files verified in
+`wikis/scratch/memes/docs/lares/the-lares-protocols/`.
 Next paths: end-to-end daemon smoke with `lares serve` + CLI promote
 ceremony (verify plugin/cascade/elision compose with bag/sync layer);
 remaining G sigils (lele, papalohe, pae — operator-confirmed less
@@ -258,6 +267,9 @@ lares promote <uri> --to <target-bag>
 - Command-tiddler tombstone happens client-side (CLI), so an ephemeral CLI crash leaves the cmd/ namespace dirty. Mitigation: dispatcher could auto-tombstone after audit-event write (decision deferred — operator may want command-tiddlers to remain visible as in-flight signals).
 - `lares heleuma` flags 2 missing memes for `@lares/cli` source files (lares.ts, parse-args.ts) — lands in Path C.
 - Some legacy daemon log noise: `TimeoutNegativeWarning` from Automerge repo on attach. Cosmetic.
+- `meme-sync-adaptor.ts:129` — `targetBag` default string is `"room"` (stale from rooms→wikis rename). Cosmetic; production callers always pass an explicit bag ID.
+- Heleuma drift: `ha.ka.ba/@lararium/tw5/widgets/toml` needs `tsx scripts/sync-heleuma.ts --sync-modules --commit` to resolve.
+- `file-path` absent in child iam when tiddler is authored directly in TW5 UX (not synced from disk) — `source-file` field not set → `parentSourceFile` empty. Correct by design (no disk path exists yet); J.3 promote ceremony will set it once children land in canonical bag.
 
 ## Active memory pointers (claude memory system)
 

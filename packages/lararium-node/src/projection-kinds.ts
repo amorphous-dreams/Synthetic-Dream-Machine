@@ -11,6 +11,7 @@
 import type {
   LarProjectionKind, ReadinessMap, BagMirrorConfig,
 } from "@lararium/core";
+import type { TW5Engine } from "@lararium/tw5";
 import { LarDiskProjector } from "./disk-projector.js";
 
 export interface DiskKindDeps {
@@ -18,6 +19,12 @@ export interface DiskKindDeps {
   mirrors: readonly BagMirrorConfig[];
   /** Render a parent URI to its carrier text. Closes over the TW5 engine. */
   renderFn: (parentUri: string) => Promise<string | null>;
+  /**
+   * The TW5 engine whose wiki change events drive disk projection.
+   * Architecture law: only MemeSyncAdaptor subscribes to Automerge stores;
+   * the disk projector subscribes to TW5 wiki events here.
+   */
+  tw5: TW5Engine;
   /** Optional readiness map — first flush lights `disk-projector`. */
   readinessMap?: ReadinessMap;
   /** Optional debounce override (ms). */
@@ -32,14 +39,14 @@ export interface DiskKindDeps {
  * write to disk; they live solely in `.lararium/` Automerge storage.
  */
 export function makeDiskProjectionKind(deps: DiskKindDeps): LarProjectionKind {
-  return async (_config, peer) => {
+  return async (_config, _peer) => {
     const projector = new LarDiskProjector(
       deps.mirrors,
       deps.renderFn,
       deps.debounceMs ?? 1000,
       deps.readinessMap,
     );
-    const stop = projector.start(peer.store);
+    const stop = projector.start(deps.tw5);
     return { stop };
   };
 }

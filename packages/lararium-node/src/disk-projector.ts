@@ -27,9 +27,8 @@
 
 import { writeFileSync, mkdirSync, unlinkSync, existsSync } from "fs";
 import { join, resolve as resolvePath, dirname } from "path";
-import type {
-  LarTiddlerStore, LarTiddlerChange, ReadinessMap, BagMirrorConfig,
-} from "@lararium/core";
+import type { ReadinessMap, BagMirrorConfig } from "@lararium/core";
+import type { TW5Engine } from "@lararium/tw5";
 
 export class LarDiskProjector {
   /**
@@ -56,12 +55,45 @@ export class LarDiskProjector {
     private readonly readinessMap?: ReadinessMap,
   ) {}
 
-  /** Subscribe to store changes and begin projecting. Returns unsubscribe fn. */
-  start(store: LarTiddlerStore): () => void {
-    const unsubscribe = store.subscribe((change: LarTiddlerChange) => {
-      this.schedule(change);
-    });
-    return () => { unsubscribe(); this.stop(); };
+  /**
+   * Subscribe to TW5 wiki change events and begin projecting.
+   *
+   * Architecture law (TW5 VM Primacy): only the MemeSyncAdaptor subscribes
+   * to Automerge stores. The disk projector subscribes to TW5 wiki change
+   * events — the same surface that drives in-browser render. Bag provenance
+   * reaches TW5 via the `bag` field that MemeSyncAdaptor stamps on each
+   * tiddler it loads; the projector reads it from the TW5 tiddler directly.
+   *
+   * Returns an unsubscribe fn.
+   */
+  start(tw5: TW5Engine): () => void {
+    const wiki = tw5.wiki;
+    const handler = (changes: Record<string, unknown>) => {
+      for (const title of Object.keys(changes)) {
+        if (!title.startsWith("lar:")) continue;
+        const tiddler = wiki.getTiddler?.(title);
+        if (!tiddler) {
+          // Deleted — try all mirrors for unlink.
+          this._scheduleUnlinkByTitle(title);
+          continue;
+        }
+        const fields = tiddler.fields as Record<string, string | string[] | undefined>;
+        if (fields["disk-projection"] === "no") continue;
+        const bagId = typeof fields["bag"] === "string" ? fields["bag"] : undefined;
+        if (!bagId) continue;
+        if (!this.mirrors.some((m) => m.bagId === bagId)) continue;
+
+        const key = `${bagId}\0${title}`;
+        const existing = this.timers.get(key);
+        if (existing) clearTimeout(existing);
+        this.timers.set(key, setTimeout(() => {
+          this.timers.delete(key);
+          void this.flush(bagId, title);
+        }, this.debounceMs));
+      }
+    };
+    wiki.addEventListener?.("change", handler);
+    return () => { wiki.removeEventListener?.("change", handler); this.stop(); };
   }
 
   stop(): void {
@@ -70,80 +102,21 @@ export class LarDiskProjector {
     this.writing.clear();
   }
 
-  private schedule(change: LarTiddlerChange): void {
-    const { title, record, origin } = change;
-    if (!title.startsWith("lar:")) return;
-    // Skip canon-hydrate replays at boot — the file already exists with that
-    // content; rewriting churns the file watcher and git for no reason.
-    if (origin.kind === "canon-hydrate") return;
-
-    // Tombstone path: a delete in a mirrored bag MUST unlink the file.
-    // Canon-promotion's contract — the source-bag's tombstone is what makes
-    // "git diff IS the operator's signature" work. A tombstone with no
-    // surviving record.bag still has to know which mirror to unlink against;
-    // for tombstones we trust title alone and try every mirror whose strategy
-    // resolves the URI (typically only one).
-    if (!record || record.deleted) {
-      this._scheduleUnlink(title, change);
-      return;
+  /** Unlink by trying all mirrors whose path strategy resolves the URI. */
+  private _scheduleUnlinkByTitle(title: string): void {
+    for (const mirror of this.mirrors) {
+      const relPath = mirror.toRelPath(title);
+      if (!relPath) continue;
+      const root      = resolvePath(mirror.mirrorRoot);
+      const candidate = resolvePath(join(root, relPath));
+      if (!candidate.startsWith(root + "/") && candidate !== root) continue;
+      try {
+        if (existsSync(candidate)) {
+          this.writing.add(title);
+          try { unlinkSync(candidate); } finally { this.writing.delete(title); }
+        }
+      } catch { /* best-effort — operator can clean up manually */ }
     }
-
-    const bagId = record.bag;
-    if (!bagId) return;
-    if (!this.mirrors.some((m) => m.bagId === bagId)) return;
-
-    const fields    = record.fields as Record<string, string | string[] | undefined> ?? {};
-
-    // Always-split architectural law (operator-confirmed): every tiddler
-    // with a writable URI projects to its own file. The deserializer +
-    // action widget split every ahu sigil into its own tiddler at sync/
-    // save time; each slot child IS a file root. Disk projection becomes
-    // a function of (bag, URI) — no tag discriminator, no transitive
-    // climbs. Roslyn / recast / XInclude consensus: serialization is a
-    // function of the tree, never of external metadata.
-    //
-    // Two opt-out surfaces remain for operator authoring:
-    //   - `disk-projection: "no"` field — keep in bag, skip disk.
-    //   - `lar-generated: "yes"` field is informational only; widget-
-    //     emitted children DO project. Only operator-toggled opt-out
-    //     stops projection.
-    if (fields["disk-projection"] === "no") return;
-
-    // The render unit is THIS tiddler; URI fragment-path projects via
-    // `resolveLarUri.appendFragment` to a unique disk path. The path-
-    // strategy returns null for URIs that have no disk home (virtual
-    // caps, etc.); the projector silently skips those.
-    const parentUri = title;
-
-    const key = `${bagId}\0${parentUri}`;
-    const existing = this.timers.get(key);
-    if (existing) clearTimeout(existing);
-    this.timers.set(key, setTimeout(() => {
-      this.timers.delete(key);
-      void this.flush(bagId, parentUri);
-    }, this.debounceMs));
-  }
-
-  private _scheduleUnlink(title: string, change: LarTiddlerChange): void {
-    // Per-bag unlink: each AutomergeDocStore tombstone fires with
-    // change.record.bag set to the source bag. Unlink ONLY that bag's mirror
-    // file. Other layers' mirrors stay intact — that's the canon-promotion
-    // contract: room file disappears, canonical file appears.
-    const candidateBag = change.record?.bag ?? null;
-    if (!candidateBag) return;
-    const mirror = this.mirrors.find((m) => m.bagId === candidateBag);
-    if (!mirror) return;
-    const relPath = mirror.toRelPath(title);
-    if (!relPath) return;
-    const root      = resolvePath(mirror.mirrorRoot);
-    const candidate = resolvePath(join(root, relPath));
-    if (!candidate.startsWith(root + "/") && candidate !== root) return;
-    try {
-      if (existsSync(candidate)) {
-        this.writing.add(title);
-        try { unlinkSync(candidate); } finally { this.writing.delete(title); }
-      }
-    } catch { /* best-effort — operator can clean up manually */ }
   }
 
   private async flush(bagId: string, parentUri: string): Promise<void> {

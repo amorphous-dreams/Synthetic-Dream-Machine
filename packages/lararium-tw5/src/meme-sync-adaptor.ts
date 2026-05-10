@@ -180,6 +180,7 @@ export class MemeSyncAdaptor implements MemeProjection {
         }
         const fields: Record<string, string | string[]> = { title: rec.title, ...rec.fields };
         if (rec.text !== undefined) fields["text"] = rec.text;
+        if (rec.bag) fields["bag"] = rec.bag;
         toAdd.push(fields);
       }));
 
@@ -273,6 +274,9 @@ export class MemeSyncAdaptor implements MemeProjection {
   private _applyLiveRecord(title: string, rec: LarTiddlerRecord): void {
     const fields: Record<string, string | string[]> = { title: rec.title, ...rec.fields };
     if (rec.text !== undefined) fields["text"] = rec.text;
+    // Include bag ID so the TW5 wiki carries provenance — disk projector reads
+    // this field to find the right mirror without subscribing to Automerge.
+    if (rec.bag) fields["bag"] = rec.bag;
     this.tw5.setTiddler(fields);
     this._pendingModifications.add(title);
   }

@@ -141,7 +141,8 @@ function splitMemeToTiddlers(
   const rootToml   = extractRootToml(text);
   const rootFields = rootToml ? fieldifyToml(rootToml, warnings, uri) : {};
   // Top-level slots elide against the meme-root's iam.
-  const { children, rewrittenText } = splitRecursive(uri, "", text, warnings, rootFields);
+  const sourceFile = typeof baseFields["source-file"] === "string" ? baseFields["source-file"] : "";
+  const { children, rewrittenText } = splitRecursive(uri, "", text, warnings, rootFields, sourceFile);
   const parent: TiddlerFields = {
     ...baseFields,
     ...rootFields,
@@ -185,6 +186,7 @@ function splitRecursive(
   text:            string,
   warnings:        string[],
   parentIam:       Readonly<TiddlerFields> = {}, // ancestor iam for default-elision
+  parentSourceFile: string = "",                  // source-file of the carrier; drives child file-path
 ): { children: TiddlerFields[]; rewrittenText: string } {
   const allChildren: TiddlerFields[] = [];
   const enclosingUri = rootUri + fragmentPrefix;
@@ -213,7 +215,7 @@ function splitRecursive(
     // (inherited + own) iam to grandchildren for their default-elision.
     const childPeek = extractSlotStructure(bodyText, warnings, childUri);
     const effectiveIam: TiddlerFields = { ...parentIam, ...childPeek.fields };
-    const inner = splitRecursive(rootUri, childSlotPath, bodyText, warnings, effectiveIam);
+    const inner = splitRecursive(rootUri, childSlotPath, bodyText, warnings, effectiveIam, parentSourceFile);
     // Extract iam toml + flanking preamble/postamble from the rewritten body.
     // preamble = text before iam toml (operator prose at slot head, separate
     // from the field bag);
@@ -223,12 +225,26 @@ function splitRecursive(
     // (inclusive of inline kahea refs for sub-slot reconstruction).
     const childStructure = extractSlotStructure(inner.rewrittenText, warnings, childUri);
 
-    // J.2b — regenerate iam-source from native fields with default-elision
-    // against parent's effective iam. Operator edits to iam-class fields
-    // (in TW5) flow back to disk; values matching parent inheritance get
-    // elided. The original authored bytes still appear via iam-source if
-    // the operator wants to inspect/edit them; on next deserialize they
-    // re-normalize through the formatter.
+    // J.2b — full effective iam for disk projection (no elision against parent).
+    // Slot children project as standalone "full published meme MD files"; the
+    // iam block must be self-contained so the file round-trips correctly even
+    // when read in isolation. Override uri-path with the child's own URI path;
+    // derive file-path from the carrier's source-file + slot path so the child
+    // file is self-describing (wikis/scratch/.../parent/slot.md).
+    const childUriPath  = childUri.startsWith("lar:///") ? childUri.slice(7) : childUri;
+    const childFilePath = parentSourceFile
+      ? parentSourceFile.replace(/\.md$/, "") + "/" + block.slot.replace(/^#/, "") + ".md"
+      : undefined;
+    const fullChildIam = regenerateIamToml(
+      {
+        ...effectiveIam,
+        "uri-path": childUriPath,
+        ...(childFilePath ? { "file-path": childFilePath } : {}),
+      },
+      {}, // no parent defaults to elide — emit all fields
+    );
+    // elidedIam kept for preamble-rendered substitution (operator-authored
+    // slot bodies that carry an explicit <<~ iam >> sentinel get the delta).
     const elidedIam = regenerateIamToml(childStructure.fields, parentIam);
     const effectiveIamSource = elidedIam || childStructure.iamSource;
 
@@ -251,7 +267,12 @@ function splitRecursive(
       ...(preambleRendered && preambleRendered !== childStructure.preamble
         ? { "preamble-rendered": preambleRendered }
         : {}),
-      ...(childStructure.iamSource ? { "iam-source": childStructure.iamSource } : {}),
+      // Full effective iam stored on all children for standalone readability.
+      // Operator-authored iam-source (from explicit toml block in slot body)
+      // overrides the generated one when present.
+      ...(childStructure.iamSource
+        ? { "iam-source": childStructure.iamSource }
+        : fullChildIam ? { "iam-source": fullChildIam } : {}),
       ...(childStructure.postamble ? { postamble:   childStructure.postamble } : {}),
       slot:              block.slot,
       "fragment-parent": enclosingUri,

@@ -57,22 +57,38 @@ export const enginePathStrategy: MirrorPathFn = (uri) => {
 };
 
 /**
- * Strategy: wiki-shadow — preserves the canonical disk structure of whichever
- * bag the URI would canonically belong to, so promotion is a file move.
+ * Strategy: wiki-shadow — preserves canonical disk structure so promotion is
+ * a file move from `wikis/{slug}/…` → `packages/…`.
  *
  * Examples:
  *   `lar:///ha.ka.ba/@lares/foo`              → `lares/memes/foo.md`
  *   `lar:///ha.ka.ba/@lararium/core/v0.1/ast` → `lararium-core/memes/ast.md`
+ *   `lar:///ha.ka.ba/docs/lares/foo`          → `memes/docs/lares/foo.md`
+ *   `lar:///ha.ka.ba/docs/lares/foo#section`  → `memes/docs/lares/foo/section.md`
  *
- * Apply under `wikis/{slug}/` mirrorRoot; the resulting path mirrors the
- * canonical workspace location, making "promote to canon" a literal file move
- * from `wikis/{slug}/lares/memes/foo.md` → `packages/lares/memes/foo.md`.
+ * Apply under `wikis/{slug}/` mirrorRoot.
  */
 export const wikiShadowPathStrategy: MirrorPathFn = (uri) => {
   try {
     const r = resolveLarUri(uri);
     if (r.laresRelPath)  return `lares/memes/${r.laresRelPath}`;
-    if (r.engineRelPath) return r.engineRelPath; // already pkg-prefixed
+    if (r.engineRelPath) return r.engineRelPath;
+
+    // Bare ha.ka.ba/{rest} URIs — project under memes/.
+    // lar:///ha.ka.ba/docs/lares/foo#section → memes/docs/lares/foo/section.md
+    const TUPLE_PREFIX = "lar:///ha.ka.ba/";
+    if (uri.startsWith(TUPLE_PREFIX)) {
+      const withoutScheme = uri.slice(TUPLE_PREFIX.length);
+      // @-prefixed first segment = doc-identity (virtual) — skip
+      if (withoutScheme.startsWith("@")) return null;
+      const [pathPart, fragmentPart] = withoutScheme.split("#") as [string, string | undefined];
+      if (!pathPart) return null;
+      const basePath = pathPart.replace(/\.md$/, "");
+      if (fragmentPart) {
+        return `memes/${basePath}/${fragmentPart}.md`;
+      }
+      return `memes/${basePath}.md`;
+    }
     return null;
   } catch { return null; }
 };

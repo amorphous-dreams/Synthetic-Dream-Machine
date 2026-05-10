@@ -367,6 +367,7 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
     composite,
     repo,
     catalogHandle,
+    islandHandle,
     operatorDid: async () => {
       // Keyhive's whoami is the canonical source post-boot; until then
       // the operator's verifyingKey hex (loaded earlier) is sufficient.

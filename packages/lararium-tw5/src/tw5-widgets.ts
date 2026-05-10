@@ -415,11 +415,29 @@ export const LARARIUM_MEME_TEMPLATE_MARKDOWN_MEME = {
     // rules, where codeblock eats backticks and macrocall claims `<<...>>`.
     // <$text text={{!!field}}/> emits the field bytes verbatim with no
     // re-parse — bytes survive round-trip exactly.
+    //
+    // Prologue (DOCTYPE comment + leading prose) emits for all memes that
+    // carry it. Parents have it from the original source; slot children
+    // inherit it from their parent during deserialization.
     "<$list filter=\"[<currentTiddler>has[prologue]]\" variable=\"_\"><$text text={{!!prologue}}/></$list>",
-    "<$list filter=\"[<currentTiddler>has[preamble-rendered]]\" variable=\"_\" emptyMessage=\"<$list filter='[<currentTiddler>has[preamble]]' variable='_'><$text text={{!!preamble}}/></$list>\"><$text text={{!!preamble-rendered}}/></$list>",
+    // Slot children: SOH/ETX are NOT in {{!!text}} (text = body proper only).
+    // Emit SOH here; ETX follows postamble below.
+    "<$list filter=\"[<currentTiddler>has[fragment-parent]]\" variable=\"_\"><$text text=\"<<~&#x0001; ? -> \"/><$text text=<<currentTiddler>>/><$text text=\" >>\n\"/></$list>",
+    // IAM block for slot children: use preamble-rendered (operator-authored
+    // slot bodies with <<~ iam >>) when present; fall back to iam-source
+    // (full effective iam, generated at deserialize time) wrapped in toml
+    // fences; finally plain preamble if no iam. Parents carry iam inside
+    // {{!!text}} so no emission needed here for them.
+    "<$list filter=\"[<currentTiddler>has[fragment-parent]has[preamble-rendered]]\" variable=\"_\"><$text text={{!!preamble-rendered}}/></$list>",
+    "<$list filter=\"[<currentTiddler>has[fragment-parent]!has[preamble-rendered]has[preamble]]\" variable=\"_\"><$text text={{!!preamble}}/></$list>",
+    "<$list filter=\"[<currentTiddler>has[fragment-parent]!has[preamble-rendered]!has[preamble]has[iam-source]]\" variable=\"_\"><$text text=\"`\`\`toml iam\n\"/><$text text={{!!iam-source}}/><$text text=\"`\`\`\n\n\"/></$list>",
+    // STX (&#x0002;) opens the body stream after the iam block.
+    "<$list filter=\"[<currentTiddler>has[fragment-parent]]\" variable=\"_\"><$text text=\"<<~&#x0002;>>\n\n\"/></$list>",
     // text field continues to wikitext-parse so kahea refs and other
     // sigils route through the wikirule + cascade.
     "{{!!text}}",
     "<$list filter=\"[<currentTiddler>has[postamble]]\" variable=\"_\"><$text text={{!!postamble}}/></$list>",
+    // ETX (&#x0003;) closes the body; EOT (&#x0004;) closes transmission.
+    "<$list filter=\"[<currentTiddler>has[fragment-parent]]\" variable=\"_\"><$text text=\"\n<<~&#x0003;>>\n<<~&#x0004; -> ? >>\n\"/></$list>",
   ].join(""),
 } as const;

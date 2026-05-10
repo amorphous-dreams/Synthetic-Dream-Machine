@@ -207,6 +207,7 @@ async function main(): Promise<void> {
 
   projections.registerKind("disk", makeDiskProjectionKind({
     mirrors,
+    tw5,
     renderFn: async (uri) => { try { return exportMemeText(tw5, uri); } catch { return null; } },
   }));
 
