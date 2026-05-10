@@ -56,6 +56,36 @@ async function main(): Promise<void> {
   }
   if (!renderedHTML.trim()) failures.push("renderText returned empty");
 
+  // Probe deserializer prologue + postamble capture.
+  // Synthesize a single-meme carrier with DOCTYPE prologue and trailing
+  // commentary postamble; deserialize via $tw.wiki.deserializeTiddlers
+  // (the plugin's tiddlerdeserializer registration); verify both fields
+  // land on the parent.
+  const memeWithFraming = [
+    "<!-- <<~ !DOCTYPE = lar:///probe-meme >> -->",
+    "",
+    "<<~&#x0001; ? -> lar:///probe-meme >>",
+    "<<~ ahu #head >>",
+    "body",
+    "<<~/ahu >>",
+    "<<~&#x0003;>>",
+    "",
+    "trailing prose after etx",
+  ].join("\n");
+  type DeserializedFields = Record<string, string | string[]>;
+  const deserializeTiddlers = (tw as unknown as { wiki: { deserializeTiddlers(t: string, x: string, b: Record<string, string>): DeserializedFields[] } }).wiki.deserializeTiddlers;
+  const deserialized = deserializeTiddlers.call((tw as unknown as { wiki: unknown }).wiki, "text/x-memetic-wikitext", memeWithFraming, { title: "lar:///probe-meme" });
+  const parent = deserialized?.[0];
+  if (!parent) failures.push("deserializer returned no parent tiddler");
+  else {
+    if (typeof parent["prologue"] !== "string" || !(parent["prologue"] as string).includes("DOCTYPE")) {
+      failures.push(`prologue missing or wrong: ${JSON.stringify(parent["prologue"])}`);
+    }
+    if (typeof parent["postamble"] !== "string" || !(parent["postamble"] as string).includes("trailing prose")) {
+      failures.push(`postamble missing or wrong: ${JSON.stringify(parent["postamble"])}`);
+    }
+  }
+
   if (failures.length > 0) {
     console.error("✖ smoke FAILED");
     for (const f of failures) console.error("  -", f);
@@ -65,6 +95,7 @@ async function main(): Promise<void> {
   console.log(`  ${expectedTitles.length} shadow tiddlers present`);
   console.log(`  parser + widgets registered`);
   console.log(`  ahu render produced ${renderedHTML.length} bytes of HTML`);
+  console.log(`  deserializer captured prologue + postamble fields on parent`);
   process.exit(0);
 }
 

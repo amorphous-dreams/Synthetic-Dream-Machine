@@ -193,14 +193,15 @@ export const LARARIUM_AHU_TEMPLATE_HTML = {
  * survives byte-for-byte.
  */
 /**
- * The `prologue` field carries pre-SOH content (DOCTYPE comment + any
- * leading prose) captured by the deserializer at sync time. Emit it
- * verbatim ahead of the meme body so disk projection round-trips the
- * full operator-authored source — including the framing comment that
- * names the meme's grammar contract.
+ * The `prologue` and `postamble` fields carry pre-SOH and post-ETX content
+ * (DOCTYPE comment + leading prose, and trailing comments / closing prose)
+ * captured by the deserializer at sync time. Emit both verbatim around the
+ * meme body so disk projection round-trips the full operator-authored
+ * source — including the framing comment that names the meme's grammar
+ * contract and any trailing edge declarations or commentary.
  */
 export const LARARIUM_MEME_TEMPLATE_MARKDOWN_MEME = {
   title:    "lar:///ha.ka.ba/@lararium/templates/meme/markdown-meme",
   type:     "text/x-memetic-wikitext",
-  text:     "<$list filter=\"[<currentTiddler>has[prologue]]\" variable=\"_\">{{!!prologue}}</$list>{{!!text}}",
+  text:     "<$list filter=\"[<currentTiddler>has[prologue]]\" variable=\"_\">{{!!prologue}}</$list>{{!!text}}<$list filter=\"[<currentTiddler>has[postamble]]\" variable=\"_\">{{!!postamble}}</$list>",
 } as const;

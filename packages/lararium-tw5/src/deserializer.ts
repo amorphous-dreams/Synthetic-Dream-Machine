@@ -58,22 +58,35 @@ export function memeticWikitextDeserializer(
 
   // ◇ Route — each carrier-close → parseMemeText → split ahu slots → batch.
   // Pre-SOH content (DOCTYPE comment + leading prose) sits OUTSIDE
-  // ev.fullText because MemeStreamParser frames on SOH/ETX. For single-
-  // meme files, capture everything before the first SOH sentinel as a
-  // `prologue` field on the parent so the markdown-meme template can
-  // re-emit it verbatim. Round-trip law: anything in the operator's
-  // source survives. (Multi-meme prologue distribution lands when
-  // MemeStreamParser surfaces positional metadata on carrier events.)
+  // ev.fullText because MemeStreamParser frames on SOH/ETX. Capture
+  // everything before the first SOH as `prologue` on the first carrier's
+  // parent and everything after the last ETX/EOT as `postamble` on the
+  // last carrier's parent. The markdown-meme template re-emits both
+  // verbatim. Round-trip law: anything in the operator's source survives.
+  // (Multi-meme prologue/postamble distribution between intermediate
+  // carriers lands when MemeStreamParser surfaces positional metadata on
+  // carrier events.)
   const sohIdx = text.search(/<<~[^>]*&#x000[1-9a-fA-F]+;[^>]*>>/);
   const prologue = (closes.length > 0 && sohIdx > 0)
     ? text.slice(0, sohIdx)
+    : "";
+  const lastEtxRe = /<<~[^>]*&#x000[34];[^>]*>>/g;
+  let lastEtxEnd = -1;
+  let etxMatch: RegExpExecArray | null;
+  while ((etxMatch = lastEtxRe.exec(text)) !== null) {
+    lastEtxEnd = etxMatch.index + etxMatch[0].length;
+  }
+  const postamble = (closes.length > 0 && lastEtxEnd >= 0 && lastEtxEnd < text.length)
+    ? text.slice(lastEtxEnd)
     : "";
   for (const ev of closes) {
     const uri      = ev.uri || baseUri;
     const tiddlers = splitMemeToTiddlers(uri, ev.fullText, asStringFields(fields));
     if (prologue.length > 0 && tiddlers.length > 0 && ev === closes[0]) {
-      const parent = tiddlers[0]!;
-      parent["prologue"] = prologue;
+      tiddlers[0]!["prologue"] = prologue;
+    }
+    if (postamble.length > 0 && tiddlers.length > 0 && ev === closes[closes.length - 1]) {
+      tiddlers[0]!["postamble"] = postamble;
     }
     result.push(...tiddlers);
   }
@@ -259,3 +272,5 @@ function asStringFields(fields: Record<string, unknown>): TiddlerFields {
   }
   return out;
 }
+
+export { memeticWikitextDeserializer as "text/x-memetic-wikitext" };
