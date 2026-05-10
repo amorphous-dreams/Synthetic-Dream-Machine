@@ -1,10 +1,10 @@
 # Hand-off Crystal — Lares Lararium Node Branch
 
 > Forged: 2026-05-07
-> Last update: 2026-05-10 — Daemon smoke ✅: `lares wiki sync` + `lares promote` ceremony verified end-to-end (room bag → canonical bag, audit tiddler written). `requestKeyhivePromotion` stub export added to causal-island.ts (test suite was broken). 84+52+12 tests green.
+> Last update: 2026-05-10 — Daemon smoke ✅ (happy path confirmed) + J.3 gap named (child co-promotion missing from promote ceremony). `requestKeyhivePromotion` stub added (84+52+12 tests green). Server reset clean.
 > Branch: `feature/lararium-node-3`
 > Working tree: clean
-> Last pulse: end-to-end promote ceremony confirmed. infrastructure-correct = feature-correct on happy path. Next: choose from open paths (F-arc, remaining G sigils, S7.4, dreamdeck, <$lar-promote> widget).
+> Last pulse: promote ceremony confirmed end-to-end for parent tiddler; gap revealed: `#fragment` child tiddlers (ahu slots) stay in room bag after single-URI promote — child meme files never land in canonical packages/. Named J.3.
 
 ---
 
@@ -161,8 +161,17 @@ Six sigils ride the template-cascade architecture. Five share `widgets/_cascade-
 
 ### Smoke ✅ — End-to-end daemon round-trip (2026-05-10)
 In-process smoke: deserialize + render + plugin boot — clean (27 shadow tiddlers, all 6 sigils render, slot round-trip verified).
-Daemon smoke: `lares serve` + `lares wiki sync altar-fire` + `lares promote` ceremony — **verified**. Room bag (altar-fire) → canonical bag (@lares), audit tiddler at `lar:///ha.ka.ba/@lararium/@admin/log/…`. infrastructure-correct = feature-correct confirmed.
-Key lesson: `lares wiki sync <room>` is the prerequisite for promote — disk file must be ingested into room bag first. Tiddler already in canonical bag returns "already lives here" (not an error — correct idempotency guard).
+Daemon smoke: `lares serve` + `lares wiki sync altar-fire` + `lares promote` ceremony — **verified at protocol layer**. Room bag (altar-fire) → canonical bag (@lares), audit tiddler written. infrastructure-correct = feature-correct confirmed at the happy-path layer.
+
+**Gap revealed — J.3 child co-promotion missing:**
+`lares promote` is single-URI. `splitRecursive` during `wiki sync` creates `#fragment` child tiddlers (one per ahu slot) in the room bag alongside the parent, but the promote handler only moves the parent URI. Children stay in the room bag; canonical disk projector writes only what's in its bag. Result: parent emitted correctly (with `<<~ kahea ahu #slot >>` kahea refs per always-split law) but child slot files never land in `packages/`. Naming this J.3.
+
+**Key lessons:**
+- `lares wiki sync <room>` is the prerequisite for promote — disk file must be ingested into room bag first.
+- "Already lives here" = correct idempotency guard, not an error.
+- Always-split invariant is working; the gap is in the ceremony, not the serializer.
+
+Test artifact (`packages/lares/memes/docs/lares/the-lares-protocols.md`) deleted; server reset clean.
 
 ### Path G — Other sigils via wikirule + cascade + templates
 Port the sigil set (`aka`, `kahea`, `kau`, `lele`, `papalohe`, `pranala`, `pae`) to the same architecture ahu now uses. Each sigil:
@@ -178,8 +187,8 @@ The fourth call site of `parseMemeText`. `MemeSyncAdaptor.saveTiddler`'s `direct
 ### Path I — Wikifier DOCTYPE + dash + macrocall recovery
 Three small diff items in current round-trip output: HTML comment DOCTYPE dropped; TW5's `dash` rule converts `|---|` → `|—|`; MemeticParser's prologue handling (DOCTYPE, root iam toml extraction) survives but the wikifier swallows the comment in text/plain. Fix by either disabling rules at the parent meme rendering level (via a meme-level wrapper template that pragma-disables them), or by emitting these via `<$text>` widgets carrying the literal char sequences. Aesthetic, not load-bearing — defer until G+H ship.
 
-### Path J — Per-slot iam emission with default-elision
-Operator's idempotency rule from this session: emit only operator-authored fields; child slots elide values matching parent's iam defaults. The markdown-meme template needs an emit-iam macro that diffs child fields against parent and writes only divergent keys. Per-slot iam toml block lands ahead of the body inside the `<<~ ahu>>` wrapper. Streaming-text terminology approved earlier: `preamble` / `postamble` for non-sigil text around body sigils.
+### Path J — Per-slot iam emission with default-elision + recursive promote (J.3)
+J.1+J.2 complete (see SESSION). J.3 named (2026-05-10): `lares promote` must walk all `#fragment` children of the promoted parent tiddler and co-promote them in the same ceremony. Currently, `splitRecursive` creates child tiddlers in the room bag but the promote handler is single-URI — child slot files never land in canonical packages/. J.3 fix: promote handler enumerates children by URI pattern, co-promotes in one atomic audit event.
 
 ### Path K — F-arc deferred (TW5 routing rule + Yjs debounce + auto-truncate projection)
 Original F-arc charter — `$:/state/*` → projection layer; `Draft of *` → per-wiki draft bag; Yjs-style captureTimeout debounce 300-500ms; idle auto-truncate of projection layer. Lives in MemeSyncAdaptor. Important once browser peer surfaces let operators edit at sustained rates.

@@ -1,8 +1,31 @@
 # Session State — Lararium Web3 Refactor
 
-> Updated: 2026-05-09 (Sigil family arc complete — G.1→G.5 + J.1+J.2)
+> Updated: 2026-05-10 (Daemon smoke + promote ceremony reveal — J.3 gap named)
 > Branch: feature/lararium-node-3
 > Purpose: Resume artifact — enough state to continue without prior chat context
+
+---
+
+## What Just Happened (2026-05-10 — Daemon smoke + J.3 gap)
+
+Two commits:
+
+| sha | What |
+|---|---|
+| `f2f0fdf0` | `requestKeyhivePromotion` stub export added to `causal-island.ts` — test suite was broken (import missing); 84+52+12 tests now green |
+| `fd1691ae` | HANDOFF updated — daemon smoke campsite closed |
+
+**Smoke result — happy path confirmed, gap revealed:**
+
+1. `lares reset --force` → fresh genesis + new operator key
+2. `lares serve` → daemon up, Keyhive initialized
+3. `lares wiki sync altar-fire` → `ingested: 1` — disk file landed in room bag; `splitRecursive` created parent + N child tiddlers in bag
+4. `lares promote lar:///ha.ka.ba/@lares/docs/lares/the-lares-protocols --to lar:///ha.ka.ba/@lares --yes` → ceremony clean; audit tiddler written
+5. Promoted parent file appeared in `packages/lares/memes/docs/lares/the-lares-protocols.md` with correct `<<~ kahea ahu #slot >>` refs — **but no child slot files**
+
+**Gap named (J.3):** `lares promote` is single-URI. `splitRecursive` creates `#fragment` child tiddlers in the bag alongside the parent, but the promote handler moves only the parent URI. Children stay in the room bag; disk projector for the canonical bag writes only what's in that bag. The parent renders correctly (always-split, always-kahea); the child meme files never land in `packages/lares/memes/`. The fix: promote handler must walk `#fragment` children of the promoted parent and co-promote them in the same ceremony. Named J.3 — recursive promote / child co-promotion.
+
+Test artifact (`packages/lares/memes/docs/lares/the-lares-protocols.md`) deleted (untracked, no git rm needed). Server reset clean. `voices/` and `voices.md` in same dir are legitimate canonicals — untouched.
 
 ---
 
