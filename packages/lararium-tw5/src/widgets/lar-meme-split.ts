@@ -40,6 +40,9 @@
 import type { TW5WidgetInstance, TW5ParseTreeNode, TW5FakeElement } from "../types/tiddlywiki.js";
 import { CONTROL_SLOTS, findTopLevelAhuBlocks, composeSlotPath } from "@lararium/core/meme-ast";
 
+declare const require: (id: string) => { widget: { prototype: object } };
+const Widget = require("$:/core/modules/widgets/widget.js").widget;
+
 const MEMETIC_TYPE = "text/x-memetic-wikitext";
 const MAX_DEPTH    = 32;
 /** Field marker on widget-emitted children — listener skips changes whose
@@ -71,13 +74,15 @@ interface WikiLike {
 // uniquely identifies a save in flight.
 const _applying = new Set<string>();
 
-export function LarMemeSplitWidget(
+function LarMemeSplitWidget(
   this:          TW5WidgetInstance,
   parseTreeNode: TW5ParseTreeNode,
   options:       Record<string, unknown>,
 ) {
   this.initialise(parseTreeNode, options);
 }
+
+LarMemeSplitWidget.prototype = Object.create(Widget.prototype) as TW5WidgetInstance;
 
 LarMemeSplitWidget.prototype.render = function (
   this: TW5WidgetInstance,
@@ -258,3 +263,5 @@ function computeSplit(parentTitle: string, text: string, wiki: WikiLike): SplitO
   }
 }
 
+
+export { LarMemeSplitWidget as "lar-meme-split" };

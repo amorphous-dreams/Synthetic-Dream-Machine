@@ -35,18 +35,23 @@ import type {
   TW5WidgetInstance, TW5ParseTreeNode, TW5FakeElement, TW5ChangeRecord,
 } from "../types/tiddlywiki.js";
 
+declare const require: (id: string) => { widget: { prototype: object } };
+const Widget = require("$:/core/modules/widgets/widget.js").widget;
+
 const CASCADE_FILTER =
   "[all[shadows+tiddlers]tag[$:/tags/Lar/AhuTemplate]!is[draft]] :map:flat[subfilter{!!text}] +[first[]]";
 
 const FALLBACK_TEMPLATE = "lar:///ha.ka.ba/@lararium/templates/ahu/html";
 
-export function AhuWidget(
+function AhuWidget(
   this:          TW5WidgetInstance,
   parseTreeNode: TW5ParseTreeNode,
   options:       Record<string, unknown>,
 ) {
   this.initialise(parseTreeNode, options);
 }
+
+AhuWidget.prototype = Object.create(Widget.prototype) as TW5WidgetInstance;
 
 AhuWidget.prototype.render = function (
   this:        TW5WidgetInstance,
@@ -150,3 +155,5 @@ AhuWidget.prototype.refresh = function (
   }
   return changed;
 };
+
+export { AhuWidget as ahu };

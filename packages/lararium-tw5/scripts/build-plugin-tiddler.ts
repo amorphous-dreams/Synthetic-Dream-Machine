@@ -62,13 +62,28 @@ const MODULE_ENTRIES: Array<{
   moduleType:   string;
 }> = [
   {
-    bundleFile:   "memetic-wikitext-sigil.cjs.js",
-    tiddlerTitle: `${PLUGIN_TITLE_LAR}/wikirules/memetic-wikitext-sigil.js`,
+    bundleFile:   "lar-sigil-block.cjs.js",
+    tiddlerTitle: `${PLUGIN_TITLE_LAR}/wikirules/lar-sigil-block.js`,
+    moduleType:   "wikirule",
+  },
+  {
+    bundleFile:   "lar-sigil-inline.cjs.js",
+    tiddlerTitle: `${PLUGIN_TITLE_LAR}/wikirules/lar-sigil-inline.js`,
+    moduleType:   "wikirule",
+  },
+  {
+    bundleFile:   "lar-doctype-comment.cjs.js",
+    tiddlerTitle: `${PLUGIN_TITLE_LAR}/wikirules/lar-doctype-comment.js`,
     moduleType:   "wikirule",
   },
   {
     bundleFile:   "ahu.cjs.js",
     tiddlerTitle: `${PLUGIN_TITLE_LAR}/widgets/ahu.js`,
+    moduleType:   "widget",
+  },
+  {
+    bundleFile:   "kau.cjs.js",
+    tiddlerTitle: `${PLUGIN_TITLE_LAR}/widgets/kau.js`,
     moduleType:   "widget",
   },
   {

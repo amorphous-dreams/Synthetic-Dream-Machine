@@ -47,8 +47,11 @@ export const PLUGIN_ENTRIES: Array<{
   /** TW5 module-type for the resulting tiddler. */
   moduleType: "wikirule" | "widget" | "parser" | "tiddlerdeserializer";
 }> = [
-  { entry: "src/wikirules/memetic-wikitext-sigil.ts", name: "memetic-wikitext-sigil", moduleType: "wikirule" },
+  { entry: "src/wikirules/lar-sigil-block.ts",      name: "lar-sigil-block",      moduleType: "wikirule" },
+  { entry: "src/wikirules/lar-sigil-inline.ts",     name: "lar-sigil-inline",     moduleType: "wikirule" },
+  { entry: "src/wikirules/lar-doctype-comment.ts",  name: "lar-doctype-comment",  moduleType: "wikirule" },
   { entry: "src/widgets/ahu.ts",                       name: "ahu",                    moduleType: "widget"   },
+  { entry: "src/widgets/kau.ts",                       name: "kau",                    moduleType: "widget"   },
   { entry: "src/widgets/lar-meme-split.ts",            name: "lar-meme-split",         moduleType: "widget"   },
   { entry: "src/memetic-parser.ts",                    name: "memetic-parser",         moduleType: "parser"   },
   { entry: "src/deserializer.ts",                      name: "memetic-wikitext-deserializer", moduleType: "tiddlerdeserializer" },

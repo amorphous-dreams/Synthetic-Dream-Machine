@@ -1,6 +1,9 @@
 import type { TW5WidgetInstance, TW5ParseTreeNode, TW5FakeElement, TW5ChangeRecord } from "../types/tiddlywiki.js";
 import { dispatchSlotRenderMode } from "./render-modes.js";
 
+declare const require: (id: string) => { widget: { prototype: object } };
+const Widget = require("$:/core/modules/widgets/widget.js").widget;
+
 // Keyhive stub: when WASM lands, this hook accepts the instance URI as a UCAN
 // resource string and returns a capability envelope for the instance scope.
 // Document-scoped authority used until then.
@@ -19,9 +22,11 @@ export function registerKauWriteBackHook(hook: KauWriteBackHook): void {
   _kauWriteBackHook = hook;
 }
 
-export function KauWidget(this: TW5WidgetInstance, parseTreeNode: TW5ParseTreeNode, options: Record<string, unknown>) {
+function KauWidget(this: TW5WidgetInstance, parseTreeNode: TW5ParseTreeNode, options: Record<string, unknown>) {
   this.initialise(parseTreeNode, options);
 }
+
+KauWidget.prototype = Object.create(Widget.prototype) as TW5WidgetInstance;
 
 KauWidget.prototype.render = function (this: TW5WidgetInstance, parent: TW5FakeElement, _nextSibling: TW5FakeElement | null) {
   this.parentDomNode = parent;
@@ -195,3 +200,5 @@ KauWidget.prototype.refresh = function (this: TW5WidgetInstance, changedTiddlers
   }
   return changed;
 };
+
+export { KauWidget as kau };

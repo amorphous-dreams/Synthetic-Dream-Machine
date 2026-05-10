@@ -41,7 +41,9 @@ const DEFAULT_RULES_EXCEPT: ReadonlySet<string> = new Set([
 ]);
 
 interface ParserCtor {
-  new (type: string, text: string, options: unknown): unknown;
+  (this: object, type: string, text: string, options: unknown): void;
+  prototype: ParserPrototype;
+  call(thisArg: object, type: string, text: string, options: unknown): void;
 }
 
 interface RuleClass {
@@ -69,40 +71,42 @@ interface WikiLike {
 }
 
 /**
- * Build a parser class that subclasses the standard wikitext parser. After
- * the base constructor populates `pragmaRules` / `blockRules` / `inlineRules`,
- * filter out the offenders by `name`. The base lazy-instantiates rule
- * classes from the prototype's `*RuleClasses` maps; we drop instances after
- * the base constructor runs, leaving the maps untouched (other parsers see
- * full rule sets).
+ * MemeticParser — WikiParser subclass for `text/x-memetic-wikitext`.
+ *
+ * Module-type: parser. TW5's standard plugin loader registers parsers via
+ * `$tw.Wiki.parsers[contentType] = exports[contentType]`, iterating the
+ * exports object's keys. The arbitrary-module-namespace-identifier export
+ * (`export { MemeticParser as "text/x-memetic-wikitext" }`) compiles to
+ * `exports["text/x-memetic-wikitext"] = MemeticParser` in CJS — the shape
+ * TW5's loader expects.
+ *
+ * The standard wikitext parser is `require`d at module-load time. Vite
+ * externalizes `$:/` paths so the require survives the bundle — TW5's
+ * runtime resolves it.
  */
-export function makeMemeticParser(stdParser: ParserCtor): ParserCtor {
-  function MemeticParser(this: ParserInstance, type: string, text: string, options: unknown): void {
-    // Resolve the operator-override deny list from the wiki, falling back
-    // to the default deny set. Set lookup is O(1) for the per-rule filter.
-    const wiki = (options as { wiki?: WikiLike } | undefined)?.wiki;
-    const override = wiki?.getTiddlerText?.(RULES_CONFIG_TIDDLER, "")?.trim() ?? "";
-    const denyList = override.length > 0
-      ? new Set(override.split(/\s+/).filter(Boolean))
-      : DEFAULT_RULES_EXCEPT;
+declare const require: (id: string) => Record<string, ParserCtor>;
+const stdParserModule = require("$:/core/modules/parsers/wikiparser/wikiparser.js");
+const stdParser: ParserCtor = stdParserModule["text/vnd.tiddlywiki"]!;
 
-    // Run the base constructor — it instantiates all rule classes onto
-    // `this.{pragma,block,inline}Rules`.
-    stdParser.call(this, type, text, options);
+function MemeticParser(this: ParserInstance, type: string, text: string, options: unknown): void {
+  const wiki = (options as { wiki?: WikiLike } | undefined)?.wiki;
+  const override = wiki?.getTiddlerText?.(RULES_CONFIG_TIDDLER, "")?.trim() ?? "";
+  const denyList = override.length > 0
+    ? new Set(override.split(/\s+/).filter(Boolean))
+    : DEFAULT_RULES_EXCEPT;
 
-    // Filter offending rule instances out of each list. The base parser's
-    // findNextMatch loops over these arrays per parse pass; absent rules
-    // never fire. Rule classes stay registered globally.
-    if (Array.isArray(this.pragmaRules)) {
-      this.pragmaRules = this.pragmaRules.filter((r) => !r.name || !denyList.has(r.name));
-    }
-    if (Array.isArray(this.blockRules)) {
-      this.blockRules = this.blockRules.filter((r) => !r.name || !denyList.has(r.name));
-    }
-    if (Array.isArray(this.inlineRules)) {
-      this.inlineRules = this.inlineRules.filter((r) => !r.name || !denyList.has(r.name));
-    }
+  stdParser.call(this as object, type, text, options);
+
+  if (Array.isArray(this.pragmaRules)) {
+    this.pragmaRules = this.pragmaRules.filter((r) => !r.name || !denyList.has(r.name));
   }
-  MemeticParser.prototype = Object.create(stdParser.prototype as object) as ParserPrototype;
-  return MemeticParser as unknown as ParserCtor;
+  if (Array.isArray(this.blockRules)) {
+    this.blockRules = this.blockRules.filter((r) => !r.name || !denyList.has(r.name));
+  }
+  if (Array.isArray(this.inlineRules)) {
+    this.inlineRules = this.inlineRules.filter((r) => !r.name || !denyList.has(r.name));
+  }
 }
+MemeticParser.prototype = Object.create(stdParser.prototype as object) as ParserPrototype;
+
+export { MemeticParser as "text/x-memetic-wikitext" };

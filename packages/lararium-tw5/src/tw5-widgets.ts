@@ -24,26 +24,7 @@
 
 import type { TW5Instance } from "./types/tiddlywiki.js";
 
-type WidgetCtor = { prototype: unknown };
-type WidgetCtorWithProto = WidgetCtor & { prototype: unknown };
-
-export { AhuWidget }          from "./widgets/ahu.js";
-export { KauWidget }          from "./widgets/kau.js";
-export { LarMemeSplitWidget } from "./widgets/lar-meme-split.js";
-
-import { AhuWidget }          from "./widgets/ahu.js";
-import { KauWidget }          from "./widgets/kau.js";
-import { LarMemeSplitWidget } from "./widgets/lar-meme-split.js";
-
 import { registerLarariumFilters } from "./tw5-filter.js";
-
-export function createLarariumWidgets(_tw: TW5Instance): Record<string, WidgetCtorWithProto> {
-  return {
-    "ahu":             AhuWidget          as unknown as WidgetCtorWithProto,
-    "kau":             KauWidget          as unknown as WidgetCtorWithProto,
-    "lar-meme-split":  LarMemeSplitWidget as unknown as WidgetCtorWithProto,
-  };
-}
 
 export function registerImplementorsOperator(tw: TW5Instance): void {
   if (!tw?.filterOperators) return;
