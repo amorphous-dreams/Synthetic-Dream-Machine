@@ -138,10 +138,10 @@ function splitMemeToTiddlers(
   // The parent's text is rewritten to `<<~ kahea ahu #slot >>` references
   // (live-ref form per memetic-wikitext spec §5.3); slot children hold their
   // body bytes authoritatively.
-  const { children, rewrittenText } = splitRecursive(uri, "", text, warnings);
-
   const rootToml   = extractRootToml(text);
   const rootFields = rootToml ? fieldifyToml(rootToml, warnings, uri) : {};
+  // Top-level slots elide against the meme-root's iam.
+  const { children, rewrittenText } = splitRecursive(uri, "", text, warnings, rootFields);
   const parent: TiddlerFields = {
     ...baseFields,
     ...rootFields,
@@ -184,6 +184,7 @@ function splitRecursive(
   fragmentPrefix:  string,   // "" at meme root; "#a" → "#a/b" → "#a/b/c"
   text:            string,
   warnings:        string[],
+  parentIam:       Readonly<TiddlerFields> = {}, // ancestor iam for default-elision
 ): { children: TiddlerFields[]; rewrittenText: string } {
   const allChildren: TiddlerFields[] = [];
   const enclosingUri = rootUri + fragmentPrefix;
@@ -208,7 +209,11 @@ function splitRecursive(
     const childSlotPath = composeSlotPath(fragmentPrefix, block.slot);
     const childUri      = rootUri + childSlotPath;
     const bodyText      = text.slice(block.bodyStart, block.bodyEnd);
-    const inner         = splitRecursive(rootUri, childSlotPath, bodyText, warnings);
+    // Peek at child's iam (without recursion) so we can pass the effective
+    // (inherited + own) iam to grandchildren for their default-elision.
+    const childPeek = extractSlotStructure(bodyText, warnings, childUri);
+    const effectiveIam: TiddlerFields = { ...parentIam, ...childPeek.fields };
+    const inner = splitRecursive(rootUri, childSlotPath, bodyText, warnings, effectiveIam);
     // Extract iam toml + flanking preamble/postamble from the rewritten body.
     // preamble = text before iam toml (operator prose at slot head, separate
     // from the field bag);
@@ -217,18 +222,25 @@ function splitRecursive(
     // text = the body proper, between iam-toml end and last-kahea-ref end
     // (inclusive of inline kahea refs for sub-slot reconstruction).
     const childStructure = extractSlotStructure(inner.rewrittenText, warnings, childUri);
+
+    // J.2b — regenerate iam-source from native fields with default-elision
+    // against parent's effective iam. Operator edits to iam-class fields
+    // (in TW5) flow back to disk; values matching parent inheritance get
+    // elided. The original authored bytes still appear via iam-source if
+    // the operator wants to inspect/edit them; on next deserialize they
+    // re-normalize through the formatter.
+    const elidedIam = regenerateIamToml(childStructure.fields, parentIam);
+    const effectiveIamSource = elidedIam || childStructure.iamSource;
+
     // preamble-rendered substitutes the `<<~ iam >>` sentinel inside
     // preamble with the regenerated iam toml block. Pre-computed here at
     // deserialize so the meme-template can emit it directly without
     // needing macro/transclude expansion (the curated rule set in
-    // text/x-memetic-wikitext excludes macrocall). J.2b will regenerate
-    // iam-source from native fields with default-elision; for now this
-    // is bytes-faithful — operator edits to iam-source field round-trip,
-    // edits to native iam-class fields do not.
-    const preambleRendered = childStructure.preamble && childStructure.iamSource
+    // text/x-memetic-wikitext excludes macrocall).
+    const preambleRendered = childStructure.preamble && effectiveIamSource
       ? childStructure.preamble.replace(
           IAM_MARKER,
-          `\`\`\`toml iam\n${childStructure.iamSource}\`\`\``,
+          `\`\`\`toml iam\n${effectiveIamSource}\`\`\``,
         )
       : childStructure.preamble;
     allChildren.push({
@@ -298,6 +310,69 @@ function extractRootToml(text: string): string | null {
  * memetic-wikitext family rather than as a TW5 macro call.
  */
 export const IAM_MARKER = "<<~ iam >>";
+
+/**
+ * Fields excluded from iam-class — TW5 system fields, Lar control fields,
+ * and the round-trip helper fields. Everything else on a tiddler is
+ * operator-authored content that belongs in the iam toml block.
+ */
+const IAM_DENYLIST: ReadonlySet<string> = new Set([
+  // TW5 system
+  "title", "text", "type", "tags", "created", "modified", "revision", "bag",
+  // Lar control / slot-structure
+  "slot", "fragment-parent", "preamble", "preamble-rendered",
+  "postamble", "prologue", "iam-source",
+  "lar-generated", "disk-projection",
+  "ahu-parent", "ahu-slot", "realm-origin",
+]);
+
+/**
+ * Format a TOML value for emission. Strings get JSON-style double quotes
+ * with backslash escapes; numbers stay numeric; arrays emit as TOML arrays.
+ * Bare booleans (`true`/`false` strings) emit unquoted to round-trip cleanly.
+ */
+function formatTomlValue(v: string | string[]): string {
+  if (Array.isArray(v)) {
+    return "[" + v.map((s) => formatTomlValue(s)).join(", ") + "]";
+  }
+  if (v === "true" || v === "false") return v;
+  if (/^-?\d+(\.\d+)?$/.test(v)) return v;
+  return JSON.stringify(v);
+}
+
+/**
+ * Regenerate the iam toml block content (between fences) from a tiddler's
+ * iam-class fields, default-eliding values that match the parent's iam.
+ * Returns the multi-line toml body — caller wraps with the fence pair.
+ *
+ * Default-elision: a child key is omitted from emission when its value
+ * exactly matches the parent's value for the same key. Operators who
+ * want a child to retain the parent's default explicitly can author it
+ * (round-trips because it differs from "missing" semantics — but in
+ * practice differs from the parent only when the child changes intent).
+ *
+ * Key order: stable insertion order from the input record. Operators
+ * who care about ordering author toml directly via `iam-source` until
+ * a key-ordering convention lands.
+ */
+export function regenerateIamToml(
+  fields:       Readonly<Record<string, string | string[] | undefined>>,
+  parentFields: Readonly<Record<string, string | string[] | undefined>>,
+): string {
+  const lines: string[] = [];
+  for (const [k, v] of Object.entries(fields)) {
+    if (v === undefined) continue;
+    if (IAM_DENYLIST.has(k)) continue;
+    const parentVal = parentFields[k];
+    if (parentVal !== undefined) {
+      const a = Array.isArray(v) ? v.join("") : v;
+      const b = Array.isArray(parentVal) ? parentVal.join("") : parentVal;
+      if (a === b) continue; // elide — value matches parent default
+    }
+    lines.push(`${k} = ${formatTomlValue(v)}`);
+  }
+  return lines.length > 0 ? lines.join("\n") + "\n" : "";
+}
 
 interface SlotStructure {
   readonly preamble:  string;
