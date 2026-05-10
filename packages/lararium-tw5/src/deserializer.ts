@@ -66,22 +66,39 @@ export function memeticWikitextDeserializer(
   // (Multi-meme prologue/postamble distribution between intermediate
   // carriers lands when MemeStreamParser surfaces positional metadata on
   // carrier events.)
-  const sohIdx = text.search(/<<~[^>]*&#x000[1-9a-fA-F]+;[^>]*>>/);
+  // SOH carrier sentinels begin with `<<~` then an optional phase glyph
+  // (⊙) then `&#x000<digit>;` directly. Anchoring on the control-char
+  // reference avoids matching unrelated `<<~ !DOCTYPE … >>` comments or
+  // `<<~ ? -> uri >>` pranala-headers (whose `->` arrow contains a `>`).
+  const sohIdx = text.search(/<<~(?:\s*⊙)?\s*&#x000[1-9a-fA-F]+;/);
   const prologue = (closes.length > 0 && sohIdx > 0)
     ? text.slice(0, sohIdx)
     : "";
-  const lastEtxRe = /<<~[^>]*&#x000[34];[^>]*>>/g;
+  // ETX/EOT closer end: walk to find the last close-sentinel and use the
+  // position right after its `>>`. Rather than craft a finicky regex for
+  // the closing `>>` (which needs to skip past the embedded `;` and any
+  // whitespace), search for the SOH-shape match position then walk
+  // forward to the next `>>`.
+  const etxOpenRe = /<<~(?:\s*⊙)?\s*&#x000[34];/g;
   let lastEtxEnd = -1;
   let etxMatch: RegExpExecArray | null;
-  while ((etxMatch = lastEtxRe.exec(text)) !== null) {
-    lastEtxEnd = etxMatch.index + etxMatch[0].length;
+  while ((etxMatch = etxOpenRe.exec(text)) !== null) {
+    const closeIdx = text.indexOf(">>", etxMatch.index + etxMatch[0].length);
+    if (closeIdx >= 0) lastEtxEnd = closeIdx + 2;
   }
   const postamble = (closes.length > 0 && lastEtxEnd >= 0 && lastEtxEnd < text.length)
     ? text.slice(lastEtxEnd)
     : "";
   for (const ev of closes) {
     const uri      = ev.uri || baseUri;
-    const tiddlers = splitMemeToTiddlers(uri, ev.fullText, asStringFields(fields));
+    // MemeStreamParser's fullText extends past the ETX in single-meme
+    // files; trim that trailing content so the parent meme's text field
+    // doesn't duplicate the postamble already captured separately.
+    let memeText = ev.fullText;
+    if (postamble.length > 0 && ev === closes[closes.length - 1] && memeText.endsWith(postamble)) {
+      memeText = memeText.slice(0, memeText.length - postamble.length);
+    }
+    const tiddlers = splitMemeToTiddlers(uri, memeText, asStringFields(fields));
     if (prologue.length > 0 && tiddlers.length > 0 && ev === closes[0]) {
       tiddlers[0]!["prologue"] = prologue;
     }
@@ -204,9 +221,8 @@ function splitRecursive(
       ...childStructure.fields,
       title:             childUri,
       text:              childStructure.text,
-      ...(childStructure.preamble    ? { preamble:    childStructure.preamble    } : {}),
-      ...(childStructure.preambleIam ? { "preamble-iam": childStructure.preambleIam } : {}),
-      ...(childStructure.postamble   ? { postamble:   childStructure.postamble   } : {}),
+      ...(childStructure.preamble  ? { preamble:  childStructure.preamble  } : {}),
+      ...(childStructure.postamble ? { postamble: childStructure.postamble } : {}),
       slot:              block.slot,
       "fragment-parent": enclosingUri,
     });
@@ -241,31 +257,35 @@ function extractRootToml(text: string): string | null {
 //
 // Convention (operator-confirmed):
 //   - preamble = operator prose flanking the iam toml, before the first
-//     inner sigil. Typically lives AFTER iam toml; may also appear BEFORE
-//     iam toml; both fragments concatenate into the single preamble field
-//     (iam toml position is reconstructed at emission time by re-inserting
-//     the toml between any pre-iam and post-iam content).
+//     inner sigil. The iam toml's original position within the preamble
+//     is preserved as a `<<~ iam >>` sentinel marker — operators may
+//     write prose BEFORE iam, AFTER iam, or BOTH; the marker keeps the
+//     bytes recoverable. On emission, the slot template substitutes the
+//     marker with the regenerated iam toml block.
 //   - fields    = parsed from the iam toml block (operator-authored keys).
 //   - text      = body proper — from the first inner kahea ref to the last
 //     inner kahea ref end (inclusive of refs for sub-slot reconstruction).
 //   - postamble = text AFTER the last inner kahea ref (trailing prose).
 //
-// When no inner sigils exist, the body falls through as:
-//   - iam present: preamble = before-iam, text = after-iam, postamble = "".
-//   - no iam:      text = whole body, preamble = postamble = "".
-//
-// To preserve iam position relative to surrounding preamble prose, the
-// `preamble-iam-after` boolean field marks "true" when the iam appeared
-// AFTER any pre-iam prose (the dominant case). Default convention: iam
-// emits between pre-iam and post-iam fragments at re-emission.
+// When no inner sigils exist:
+//   - iam present: preamble holds pre-iam prose + iam marker + post-iam
+//     prose; text = "".
+//   - no iam:      text = whole body, preamble = "".
 // ---------------------------------------------------------------------------
 
+/**
+ * Sentinel marker placed inside `preamble` to record the iam toml's
+ * original position. Sigil-grammar-shaped (`<<~ ... >>`) so it survives
+ * literal-survival in the wikirule, and so it reads as part of the
+ * memetic-wikitext family rather than as a TW5 macro call.
+ */
+export const IAM_MARKER = "<<~ iam >>";
+
 interface SlotStructure {
-  readonly preamble:    string;
-  readonly preambleIam: "before" | "after" | null; // iam position vs preamble prose
-  readonly fields:      TiddlerFields;
-  readonly text:        string;
-  readonly postamble:   string;
+  readonly preamble:  string;
+  readonly fields:    TiddlerFields;
+  readonly text:      string;
+  readonly postamble: string;
 }
 
 function extractSlotStructure(
@@ -282,23 +302,19 @@ function extractSlotStructure(
   const preambleRegion = bodyText.slice(0, firstRefIdx);
   const contentRegion  = bodyText.slice(firstRefIdx);
 
-  // Extract iam toml from preamble region. Two prose fragments may flank
-  // it; concatenate both into the preamble field. Track iam's position
-  // (before vs after the bulk of prose) so emission can re-insert it.
+  // Extract iam toml from preamble region. Replace it in-place with the
+  // sentinel marker so position survives — operator may have written
+  // prose on either side, or both, or neither.
   const iamRe   = /```toml[ \t]+iam[ \t]*\n([\s\S]*?)```\n?/;
   const plainRe = /```toml[ \t]*\n([\s\S]*?)```\n?/;
   const iamM    = iamRe.exec(preambleRegion) ?? plainRe.exec(preambleRegion);
-  let preamble = "";
-  let preambleIam: "before" | "after" | null = null;
+  let preamble = preambleRegion;
   let fields:  TiddlerFields = {};
   if (iamM) {
     const beforeIam = preambleRegion.slice(0, iamM.index);
     const afterIam  = preambleRegion.slice(iamM.index + iamM[0].length);
     fields   = fieldifyToml(iamM[1] ?? "", warnings, context);
-    preamble = beforeIam + afterIam;
-    preambleIam = afterIam.trim().length > 0 ? "after" : (beforeIam.trim().length > 0 ? "before" : "after");
-  } else {
-    preamble = preambleRegion;
+    preamble = beforeIam + IAM_MARKER + afterIam;
   }
 
   // Find LAST inner kahea ref — trailing prose after it becomes postamble.
@@ -314,18 +330,19 @@ function extractSlotStructure(
     postamble = contentRegion.slice(lastEndAbsolute);
   }
 
-  // No inner refs + iam present: shift content into text via the
-  // pre-iam/post-iam split — text becomes the post-iam portion so emission
-  // round-trips cleanly. Without inner sigils there's no postamble boundary.
-  if (firstRefIdx === bodyText.length && iamM) {
-    const afterIam = preambleRegion.slice(iamM.index + iamM[0].length);
-    const beforeIam = preambleRegion.slice(0, iamM.index);
-    text = afterIam;
-    preamble = beforeIam;
-    preambleIam = beforeIam.trim().length > 0 ? "before" : null;
+  // No inner refs: body is pure preamble (with optional iam marker
+  // embedded). text + postamble both empty.
+  if (firstRefIdx === bodyText.length) {
+    if (!iamM) {
+      // Pure body, no iam, no inner sigils — everything goes to text.
+      text     = bodyText;
+      preamble = "";
+    } else {
+      text = "";
+    }
   }
 
-  return { preamble, preambleIam, fields, text, postamble };
+  return { preamble, fields, text, postamble };
 }
 
 // ---------------------------------------------------------------------------
