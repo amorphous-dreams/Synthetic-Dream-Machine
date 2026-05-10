@@ -35,6 +35,34 @@ export const ANY_OPEN_RE = /<<~[^\n]*?>>/g;
 export const AHU_CLOSE_TAG = "<<~/ahu";
 
 /**
+ * URI-form sigil matcher: `<<~ <sigil> <uri> >>` where the sigil keyword is
+ * one of aka/kahea/loulou and the next token is a URI (lar:/// scheme,
+ * fragment-only `#slot`, or path-shaped). Excludes child-slot summons
+ * (`<<~ aka ahu ...>>`, `<<~ kahea ahu ...>>`) which the ahu rule claims.
+ */
+export const URI_FORM_SIGIL_RE = /<<~\s+(aka|kahea|loulou)\s+(lar:\/\/[^\s>]+|#[^\s>]+|[^\s>(]+\/[^\s>]+|[^\s>(]+#[^\s>]+)\s*>>/g;
+
+export interface UriFormMatch {
+  readonly start: number;
+  readonly end:   number;
+  readonly sigil: "aka" | "kahea" | "loulou";
+  readonly uri:   string;
+}
+
+export function matchUriFormSigilAt(source: string, start: number): UriFormMatch | null {
+  URI_FORM_SIGIL_RE.lastIndex = start;
+  const m = URI_FORM_SIGIL_RE.exec(source);
+  if (!m || m.index !== start) return null;
+  const [, sigil, uri] = m;
+  return {
+    start: m.index,
+    end:   URI_FORM_SIGIL_RE.lastIndex,
+    sigil: sigil as "aka" | "kahea" | "loulou",
+    uri:   uri!,
+  };
+}
+
+/**
  * Block sigils whose closing tag we recognize for body capture. The body
  * text rides through the parse tree as literal source so the disk render
  * preserves it; it's not used for widget rendering of non-ahu sigils today.

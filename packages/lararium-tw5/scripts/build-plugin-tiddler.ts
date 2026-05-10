@@ -82,6 +82,11 @@ const MODULE_ENTRIES: Array<{
     moduleType:   "widget",
   },
   {
+    bundleFile:   "aka.cjs.js",
+    tiddlerTitle: `${PLUGIN_TITLE_LAR}/widgets/aka.js`,
+    moduleType:   "widget",
+  },
+  {
     bundleFile:   "kau.cjs.js",
     tiddlerTitle: `${PLUGIN_TITLE_LAR}/widgets/kau.js`,
     moduleType:   "widget",
@@ -139,6 +144,10 @@ async function dataTiddlers(): Promise<TiddlerFields[]> {
     "LARARIUM_AHU_CASCADE_MARKDOWN_MEME",
     "LARARIUM_AHU_TEMPLATE_HTML",
     "LARARIUM_AHU_TEMPLATE_MARKDOWN_MEME",
+    "LARARIUM_AKA_CASCADE_HTML",
+    "LARARIUM_AKA_CASCADE_MARKDOWN_MEME",
+    "LARARIUM_AKA_TEMPLATE_HTML",
+    "LARARIUM_AKA_TEMPLATE_MARKDOWN_MEME",
     "LARARIUM_MEME_TEMPLATE_MARKDOWN_MEME",
     "LARARIUM_MEME_SPLIT_MOUNT",
   ];

@@ -51,6 +51,7 @@ export const PLUGIN_ENTRIES: Array<{
   { entry: "src/wikirules/lar-sigil-inline.ts",     name: "lar-sigil-inline",     moduleType: "wikirule" },
   { entry: "src/wikirules/lar-doctype-comment.ts",  name: "lar-doctype-comment",  moduleType: "wikirule" },
   { entry: "src/widgets/ahu.ts",                       name: "ahu",                    moduleType: "widget"   },
+  { entry: "src/widgets/aka.ts",                       name: "aka",                    moduleType: "widget"   },
   { entry: "src/widgets/kau.ts",                       name: "kau",                    moduleType: "widget"   },
   { entry: "src/widgets/lar-meme-split.ts",            name: "lar-meme-split",         moduleType: "widget"   },
   { entry: "src/memetic-parser.ts",                    name: "memetic-parser",         moduleType: "parser"   },

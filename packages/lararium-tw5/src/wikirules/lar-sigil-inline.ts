@@ -17,6 +17,7 @@ import {
   RuleInstance,
   BLOCK_CLOSERS,
   matchAhuOpenAt,
+  matchUriFormSigilAt,
   findCloseEnd,
   findGenericOpenAt,
   attrsForAhu,
@@ -47,6 +48,17 @@ export function findNextMatch(this: RuleInstance, startPos: number): number | un
       pos = source.indexOf("<<~", pos + 3);
       continue;
     }
+    // URI-form sigil: <<~ aka|kahea|loulou <uri> >> — emit a sigil-typed
+    // widget node so the cascade can route to a render template. Matches
+    // BEFORE the generic-literal fallback so the wikirule produces real
+    // widget nodes for this family (instead of literal-survival text).
+    const uriForm = matchUriFormSigilAt(source, pos);
+    if (uriForm) {
+      this.matchPos = pos;
+      this.matchEnd = uriForm.end;
+      this.attrs    = { __sigil__: uriForm.sigil, uri: uriForm.uri };
+      return pos;
+    }
     const generic = findGenericOpenAt(source, pos);
     if (generic) {
       if (generic.sigil && BLOCK_CLOSERS[generic.sigil]) {
@@ -73,6 +85,16 @@ export function parse(this: RuleInstance): ParseTreeNode[] {
 
   if ("__literal__" in attrs) {
     return [{ type: "text", text: attrs["__literal__"]! }];
+  }
+
+  if ("__sigil__" in attrs) {
+    const sigilType = attrs["__sigil__"]!;
+    delete attrs["__sigil__"];
+    return [{
+      type:       sigilType,
+      attributes: attrToTree(attrs),
+      children:   [],
+    }];
   }
 
   return [{

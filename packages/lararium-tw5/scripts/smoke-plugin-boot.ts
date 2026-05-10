@@ -26,9 +26,13 @@ async function main(): Promise<void> {
     "lar:///plugins/lares/memetic-wikitext",
     "lar:///config/Lar/AhuTemplate/markdown-meme",
     "lar:///config/Lar/AhuTemplate/html",
+    "lar:///config/Lar/AkaTemplate/markdown-meme",
+    "lar:///config/Lar/AkaTemplate/html",
     "lar:///mounts/lar-meme-split",
     "lar:///ha.ka.ba/@lararium/templates/ahu/markdown-meme",
     "lar:///ha.ka.ba/@lararium/templates/ahu/html",
+    "lar:///ha.ka.ba/@lararium/templates/aka/markdown-meme",
+    "lar:///ha.ka.ba/@lararium/templates/aka/html",
     "lar:///ha.ka.ba/@lararium/templates/meme/markdown-meme",
   ];
   for (const title of expectedTitles) {
@@ -41,7 +45,7 @@ async function main(): Promise<void> {
   if (!parsers["text/x-memetic-wikitext"]) failures.push("parser not registered: text/x-memetic-wikitext");
 
   const widgetMods = tw?.modules?.types?.widget ?? {};
-  for (const expected of ["ahu", "kau", "lar-meme-split"]) {
+  for (const expected of ["ahu", "aka", "kau", "lar-meme-split"]) {
     const found = Object.keys(widgetMods).some((title) => title.includes(expected));
     if (!found) failures.push(`widget module not found in registry: ${expected}`);
   }
@@ -55,6 +59,22 @@ async function main(): Promise<void> {
     failures.push(`renderText threw: ${(e as Error).message}`);
   }
   if (!renderedHTML.trim()) failures.push("renderText returned empty");
+
+  // Probe aka URI sigil — wikirule should emit an aka widget node, not a
+  // text-literal. AkaWidget transcludes the cascade-resolved html template,
+  // which renders a span with the aka-uri data attribute. Inline rules
+  // require a block (paragraph) context to fire, so wrap the sigil in
+  // surrounding prose.
+  const akaSample = "before <<~ aka lar:///some/probe/uri >> after";
+  let akaHTML = "";
+  try {
+    akaHTML = engine.renderText(akaSample);
+  } catch (e) {
+    failures.push(`aka renderText threw: ${(e as Error).message}`);
+  }
+  if (!akaHTML.includes("lar-aka")) {
+    failures.push(`aka render did not produce widget HTML; got: ${akaHTML.slice(0, 200)}`);
+  }
 
   // Probe deserializer prologue + postamble capture.
   // Synthesize a single-meme carrier with DOCTYPE prologue and trailing
@@ -95,6 +115,7 @@ async function main(): Promise<void> {
   console.log(`  ${expectedTitles.length} shadow tiddlers present`);
   console.log(`  parser + widgets registered`);
   console.log(`  ahu render produced ${renderedHTML.length} bytes of HTML`);
+  console.log(`  aka URI sigil rendered as widget (${akaHTML.length} bytes, .lar-aka span present)`);
   console.log(`  deserializer captured prologue + postamble fields on parent`);
   process.exit(0);
 }

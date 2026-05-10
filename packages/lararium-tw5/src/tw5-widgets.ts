@@ -170,6 +170,47 @@ export const LARARIUM_AHU_TEMPLATE_HTML = {
 } as const;
 
 /**
+ * Aka cascade — selects the render template for `<<~ aka <uri> >>` URI
+ * sigil widgets. Same shape as the ahu cascade. The `aka-uri` variable
+ * (set by AkaWidget) lets the markdown-meme template re-emit the literal
+ * sigil source verbatim; `currentTiddler` resolves to the aka target so
+ * the html template transcludes its body.
+ */
+export const LARARIUM_AKA_CASCADE_MARKDOWN_MEME = {
+  title:         "lar:///config/Lar/AkaTemplate/markdown-meme",
+  tags:          ["$:/tags/Lar/AkaTemplate"],
+  "list-before": "lar:///config/Lar/AkaTemplate/html",
+  text:          "[<lar-export-scope>match[markdown-meme]then[lar:///ha.ka.ba/@lararium/templates/aka/markdown-meme]]",
+} as const;
+
+export const LARARIUM_AKA_CASCADE_HTML = {
+  title:       "lar:///config/Lar/AkaTemplate/html",
+  tags:        ["$:/tags/Lar/AkaTemplate"],
+  text:        "[[lar:///ha.ka.ba/@lararium/templates/aka/html]]",
+} as const;
+
+/**
+ * Aka templates. The markdown-meme template emits the canonical literal
+ * source `<<~ aka <uri> >>` so disk round-trip preserves it byte-for-byte;
+ * the html template transcludes the URI's body inside a clickable section.
+ *
+ * The `aka-uri` variable is bound by AkaWidget before transclusion so the
+ * markdown-meme template can read the source URI without depending on
+ * `currentTiddler` (which is set to the target tiddler for body access).
+ */
+export const LARARIUM_AKA_TEMPLATE_MARKDOWN_MEME = {
+  title:    "lar:///ha.ka.ba/@lararium/templates/aka/markdown-meme",
+  type:     "text/x-memetic-wikitext",
+  text:     "<<~ aka <<aka-uri>> >>",
+} as const;
+
+export const LARARIUM_AKA_TEMPLATE_HTML = {
+  title:    "lar:///ha.ka.ba/@lararium/templates/aka/html",
+  type:     "text/vnd.tiddlywiki",
+  text:     '<span class="lar-aka" data-aka-uri=<<aka-uri>>><$link to=<<aka-uri>>><<aka-uri>></$link><span class="lar-aka-shadow"><$transclude $tiddler=<<aka-uri>> mode="inline"/></span></span>',
+} as const;
+
+/**
  * Meme-level template — markdown-meme scope.
  *
  * Wraps a parent meme's text field with `\rules only` so the wikifier emits
