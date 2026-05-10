@@ -63,6 +63,32 @@ export function matchUriFormSigilAt(source: string, start: number): UriFormMatch
 }
 
 /**
+ * Pranala-header form: `<<~ ? -> uri >>` — the carrier-to-canonical edge
+ * declared at the top of a meme. Distinct from URI-form aka/kahea/loulou
+ * because the leading "?" is a special token (this carrier itself), not a
+ * sigil keyword.
+ */
+export const PRANALA_HEADER_RE = /<<~\s*\?\s*->\s*(\S+)\s*>>/g;
+
+export interface PranalaHeaderMatch {
+  readonly start: number;
+  readonly end:   number;
+  readonly uri:   string;
+}
+
+export function matchPranalaHeaderAt(source: string, start: number): PranalaHeaderMatch | null {
+  PRANALA_HEADER_RE.lastIndex = start;
+  const m = PRANALA_HEADER_RE.exec(source);
+  if (!m || m.index !== start) return null;
+  const [, uri] = m;
+  return {
+    start: m.index,
+    end:   PRANALA_HEADER_RE.lastIndex,
+    uri:   uri!,
+  };
+}
+
+/**
  * Block sigils whose closing tag we recognize for body capture. The body
  * text rides through the parse tree as literal source so the disk render
  * preserves it; it's not used for widget rendering of non-ahu sigils today.

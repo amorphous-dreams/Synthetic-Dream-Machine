@@ -28,11 +28,15 @@ async function main(): Promise<void> {
     "lar:///config/Lar/AhuTemplate/html",
     "lar:///config/Lar/AkaTemplate/markdown-meme",
     "lar:///config/Lar/AkaTemplate/html",
+    "lar:///config/Lar/PranalaHeaderTemplate/markdown-meme",
+    "lar:///config/Lar/PranalaHeaderTemplate/html",
     "lar:///mounts/lar-meme-split",
     "lar:///ha.ka.ba/@lararium/templates/ahu/markdown-meme",
     "lar:///ha.ka.ba/@lararium/templates/ahu/html",
     "lar:///ha.ka.ba/@lararium/templates/aka/markdown-meme",
     "lar:///ha.ka.ba/@lararium/templates/aka/html",
+    "lar:///ha.ka.ba/@lararium/templates/pranala-header/markdown-meme",
+    "lar:///ha.ka.ba/@lararium/templates/pranala-header/html",
     "lar:///ha.ka.ba/@lararium/templates/meme/markdown-meme",
   ];
   for (const title of expectedTitles) {
@@ -45,7 +49,7 @@ async function main(): Promise<void> {
   if (!parsers["text/x-memetic-wikitext"]) failures.push("parser not registered: text/x-memetic-wikitext");
 
   const widgetMods = tw?.modules?.types?.widget ?? {};
-  for (const expected of ["ahu", "aka", "kau", "lar-meme-split"]) {
+  for (const expected of ["ahu", "aka", "kau", "lar-meme-split", "pranala-header"]) {
     const found = Object.keys(widgetMods).some((title) => title.includes(expected));
     if (!found) failures.push(`widget module not found in registry: ${expected}`);
   }
@@ -74,6 +78,18 @@ async function main(): Promise<void> {
   }
   if (!akaHTML.includes("lar-aka")) {
     failures.push(`aka render did not produce widget HTML; got: ${akaHTML.slice(0, 200)}`);
+  }
+
+  // Probe pranala-header — same paragraph-context wrapping requirement.
+  const phSample = "before <<~ ? -> lar:///canonical/uri >> after";
+  let phHTML = "";
+  try {
+    phHTML = engine.renderText(phSample);
+  } catch (e) {
+    failures.push(`pranala-header renderText threw: ${(e as Error).message}`);
+  }
+  if (!phHTML.includes("lar-pranala-header")) {
+    failures.push(`pranala-header render did not produce widget HTML; got: ${phHTML.slice(0, 200)}`);
   }
 
   // Probe deserializer prologue + postamble capture.
@@ -116,6 +132,7 @@ async function main(): Promise<void> {
   console.log(`  parser + widgets registered`);
   console.log(`  ahu render produced ${renderedHTML.length} bytes of HTML`);
   console.log(`  aka URI sigil rendered as widget (${akaHTML.length} bytes, .lar-aka span present)`);
+  console.log(`  pranala-header sigil rendered as widget (${phHTML.length} bytes, .lar-pranala-header span present)`);
   console.log(`  deserializer captured prologue + postamble fields on parent`);
   process.exit(0);
 }

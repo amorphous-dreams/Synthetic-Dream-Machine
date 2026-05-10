@@ -211,6 +211,37 @@ export const LARARIUM_AKA_TEMPLATE_HTML = {
 } as const;
 
 /**
+ * Pranala-header cascade — `<<~ ? -> uri >>` carrier-to-canonical edge.
+ * Same shape as ahu/aka cascades. The `pranala-header-uri` variable carries
+ * the source URI; markdown-meme template re-emits the literal sigil; html
+ * template emits a small breadcrumb anchor.
+ */
+export const LARARIUM_PRANALA_HEADER_CASCADE_MARKDOWN_MEME = {
+  title:         "lar:///config/Lar/PranalaHeaderTemplate/markdown-meme",
+  tags:          ["$:/tags/Lar/PranalaHeaderTemplate"],
+  "list-before": "lar:///config/Lar/PranalaHeaderTemplate/html",
+  text:          "[<lar-export-scope>match[markdown-meme]then[lar:///ha.ka.ba/@lararium/templates/pranala-header/markdown-meme]]",
+} as const;
+
+export const LARARIUM_PRANALA_HEADER_CASCADE_HTML = {
+  title:       "lar:///config/Lar/PranalaHeaderTemplate/html",
+  tags:        ["$:/tags/Lar/PranalaHeaderTemplate"],
+  text:        "[[lar:///ha.ka.ba/@lararium/templates/pranala-header/html]]",
+} as const;
+
+export const LARARIUM_PRANALA_HEADER_TEMPLATE_MARKDOWN_MEME = {
+  title:    "lar:///ha.ka.ba/@lararium/templates/pranala-header/markdown-meme",
+  type:     "text/x-memetic-wikitext",
+  text:     "<<~ ? -> <<pranala-header-uri>> >>",
+} as const;
+
+export const LARARIUM_PRANALA_HEADER_TEMPLATE_HTML = {
+  title:    "lar:///ha.ka.ba/@lararium/templates/pranala-header/html",
+  type:     "text/vnd.tiddlywiki",
+  text:     '<span class="lar-pranala-header" data-canonical-uri=<<pranala-header-uri>>>? &rarr; <$link to=<<pranala-header-uri>>><<pranala-header-uri>></$link></span>',
+} as const;
+
+/**
  * Meme-level template — markdown-meme scope.
  *
  * Wraps a parent meme's text field with `\rules only` so the wikifier emits

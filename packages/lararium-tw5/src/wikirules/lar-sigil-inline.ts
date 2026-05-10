@@ -18,6 +18,7 @@ import {
   BLOCK_CLOSERS,
   matchAhuOpenAt,
   matchUriFormSigilAt,
+  matchPranalaHeaderAt,
   findCloseEnd,
   findGenericOpenAt,
   attrsForAhu,
@@ -57,6 +58,16 @@ export function findNextMatch(this: RuleInstance, startPos: number): number | un
       this.matchPos = pos;
       this.matchEnd = uriForm.end;
       this.attrs    = { __sigil__: uriForm.sigil, uri: uriForm.uri };
+      return pos;
+    }
+    // Pranala-header: <<~ ? -> <uri> >> — this carrier's canonical edge.
+    // Emits a `pranala-header` widget node; the widget's html template
+    // renders a small breadcrumb anchor.
+    const pranalaHeader = matchPranalaHeaderAt(source, pos);
+    if (pranalaHeader) {
+      this.matchPos = pos;
+      this.matchEnd = pranalaHeader.end;
+      this.attrs    = { __sigil__: "pranala-header", uri: pranalaHeader.uri };
       return pos;
     }
     const generic = findGenericOpenAt(source, pos);
