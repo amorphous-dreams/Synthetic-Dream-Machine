@@ -192,11 +192,21 @@ function splitRecursive(
     const childUri      = rootUri + childSlotPath;
     const bodyText      = text.slice(block.bodyStart, block.bodyEnd);
     const inner         = splitRecursive(rootUri, childSlotPath, bodyText, warnings);
-    const childIam      = extractAhuFields(bodyText, warnings, childUri);
+    // Extract iam toml + flanking preamble/postamble from the rewritten body.
+    // preamble = text before iam toml (operator prose at slot head, separate
+    // from the field bag);
+    // postamble = text after the last inner kahea ref (trailing prose at
+    // slot tail);
+    // text = the body proper, between iam-toml end and last-kahea-ref end
+    // (inclusive of inline kahea refs for sub-slot reconstruction).
+    const childStructure = extractSlotStructure(inner.rewrittenText, warnings, childUri);
     allChildren.push({
-      ...childIam,
+      ...childStructure.fields,
       title:             childUri,
-      text:              inner.rewrittenText,
+      text:              childStructure.text,
+      ...(childStructure.preamble    ? { preamble:    childStructure.preamble    } : {}),
+      ...(childStructure.preambleIam ? { "preamble-iam": childStructure.preambleIam } : {}),
+      ...(childStructure.postamble   ? { postamble:   childStructure.postamble   } : {}),
       slot:              block.slot,
       "fragment-parent": enclosingUri,
     });
@@ -224,19 +234,98 @@ function extractRootToml(text: string): string | null {
 }
 
 // ---------------------------------------------------------------------------
-// extractAhuFields — extract TOML fields from the start of an ahu body
+// extractSlotStructure — split a slot body into preamble + iam fields + text
+// + postamble. Same shape as the disk-version full-meme split, applied to
+// every ahu slot so each slot is itself a valid "full published meme MD
+// file" projection (operator clarification 2026-05-09).
+//
+// Convention (operator-confirmed):
+//   - preamble = operator prose flanking the iam toml, before the first
+//     inner sigil. Typically lives AFTER iam toml; may also appear BEFORE
+//     iam toml; both fragments concatenate into the single preamble field
+//     (iam toml position is reconstructed at emission time by re-inserting
+//     the toml between any pre-iam and post-iam content).
+//   - fields    = parsed from the iam toml block (operator-authored keys).
+//   - text      = body proper — from the first inner kahea ref to the last
+//     inner kahea ref end (inclusive of refs for sub-slot reconstruction).
+//   - postamble = text AFTER the last inner kahea ref (trailing prose).
+//
+// When no inner sigils exist, the body falls through as:
+//   - iam present: preamble = before-iam, text = after-iam, postamble = "".
+//   - no iam:      text = whole body, preamble = postamble = "".
+//
+// To preserve iam position relative to surrounding preamble prose, the
+// `preamble-iam-after` boolean field marks "true" when the iam appeared
+// AFTER any pre-iam prose (the dominant case). Default convention: iam
+// emits between pre-iam and post-iam fragments at re-emission.
 // ---------------------------------------------------------------------------
 
-function extractAhuFields(
+interface SlotStructure {
+  readonly preamble:    string;
+  readonly preambleIam: "before" | "after" | null; // iam position vs preamble prose
+  readonly fields:      TiddlerFields;
+  readonly text:        string;
+  readonly postamble:   string;
+}
+
+function extractSlotStructure(
   bodyText: string,
   warnings: string[],
   context:  string,
-): TiddlerFields {
-  const iamM   = /^[ \t\n]*```toml[ \t]+iam[ \t]*\n([\s\S]*?)```/.exec(bodyText);
-  const plainM = /^[ \t\n]*```toml[ \t]*\n([\s\S]*?)```/.exec(bodyText);
-  const toml   = iamM?.[1] ?? plainM?.[1] ?? null;
-  if (!toml) return {};
-  return fieldifyToml(toml, warnings, context);
+): SlotStructure {
+  // Find FIRST inner kahea ref — splits the body into preamble-region (with
+  // iam) and content (text + postamble). When absent, the whole body is
+  // preamble-region.
+  const refRe       = /<<~\s*kahea\s+ahu\s+#[\w-]+\s*>>/g;
+  const firstRefM   = refRe.exec(bodyText);
+  const firstRefIdx = firstRefM?.index ?? bodyText.length;
+  const preambleRegion = bodyText.slice(0, firstRefIdx);
+  const contentRegion  = bodyText.slice(firstRefIdx);
+
+  // Extract iam toml from preamble region. Two prose fragments may flank
+  // it; concatenate both into the preamble field. Track iam's position
+  // (before vs after the bulk of prose) so emission can re-insert it.
+  const iamRe   = /```toml[ \t]+iam[ \t]*\n([\s\S]*?)```\n?/;
+  const plainRe = /```toml[ \t]*\n([\s\S]*?)```\n?/;
+  const iamM    = iamRe.exec(preambleRegion) ?? plainRe.exec(preambleRegion);
+  let preamble = "";
+  let preambleIam: "before" | "after" | null = null;
+  let fields:  TiddlerFields = {};
+  if (iamM) {
+    const beforeIam = preambleRegion.slice(0, iamM.index);
+    const afterIam  = preambleRegion.slice(iamM.index + iamM[0].length);
+    fields   = fieldifyToml(iamM[1] ?? "", warnings, context);
+    preamble = beforeIam + afterIam;
+    preambleIam = afterIam.trim().length > 0 ? "after" : (beforeIam.trim().length > 0 ? "before" : "after");
+  } else {
+    preamble = preambleRegion;
+  }
+
+  // Find LAST inner kahea ref — trailing prose after it becomes postamble.
+  refRe.lastIndex = 0;
+  let lastEndAbsolute = -1;
+  while (refRe.exec(contentRegion) !== null) {
+    lastEndAbsolute = refRe.lastIndex;
+  }
+  let text      = contentRegion;
+  let postamble = "";
+  if (lastEndAbsolute >= 0 && lastEndAbsolute < contentRegion.length) {
+    text      = contentRegion.slice(0, lastEndAbsolute);
+    postamble = contentRegion.slice(lastEndAbsolute);
+  }
+
+  // No inner refs + iam present: shift content into text via the
+  // pre-iam/post-iam split — text becomes the post-iam portion so emission
+  // round-trips cleanly. Without inner sigils there's no postamble boundary.
+  if (firstRefIdx === bodyText.length && iamM) {
+    const afterIam = preambleRegion.slice(iamM.index + iamM[0].length);
+    const beforeIam = preambleRegion.slice(0, iamM.index);
+    text = afterIam;
+    preamble = beforeIam;
+    preambleIam = beforeIam.trim().length > 0 ? "before" : null;
+  }
+
+  return { preamble, preambleIam, fields, text, postamble };
 }
 
 // ---------------------------------------------------------------------------

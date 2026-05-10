@@ -165,6 +165,44 @@ async function main(): Promise<void> {
     }
   }
 
+  // Probe per-slot preamble/postamble capture (J.2a). Synthesize a meme
+  // whose slot body has prose before its iam toml and trailing prose
+  // after its inner kahea ref.
+  const slotMeme = [
+    "<<~&#x0001; ? -> lar:///probe-slot-meme >>",
+    "<<~ ahu #parent >>",
+    "leading slot prose",
+    "```toml iam",
+    "field = \"value\"",
+    "```",
+    "<<~ ahu #child >>",
+    "child body",
+    "<<~/ahu >>",
+    "trailing slot prose",
+    "<<~/ahu >>",
+    "<<~&#x0003;>>",
+  ].join("\n");
+  const slotResults = deserializeTiddlers.call(
+    (tw as unknown as { wiki: unknown }).wiki,
+    "text/x-memetic-wikitext",
+    slotMeme,
+    { title: "lar:///probe-slot-meme" },
+  );
+  const parentSlot = slotResults.find((t) => t["title"] === "lar:///probe-slot-meme#parent") as DeserializedFields | undefined;
+  if (!parentSlot) {
+    failures.push("slot-structure probe: parent slot child not found");
+  } else {
+    if (parentSlot["field"] !== "value") {
+      failures.push(`slot iam field not parsed: ${JSON.stringify(parentSlot["field"])}`);
+    }
+    if (typeof parentSlot["preamble"] !== "string" || !(parentSlot["preamble"] as string).includes("leading slot prose")) {
+      failures.push(`slot preamble missing or wrong: ${JSON.stringify(parentSlot["preamble"])}`);
+    }
+    if (typeof parentSlot["postamble"] !== "string" || !(parentSlot["postamble"] as string).includes("trailing slot prose")) {
+      failures.push(`slot postamble missing or wrong: ${JSON.stringify(parentSlot["postamble"])}`);
+    }
+  }
+
   if (failures.length > 0) {
     console.error("✖ smoke FAILED");
     for (const f of failures) console.error("  -", f);
@@ -181,6 +219,7 @@ async function main(): Promise<void> {
   console.log(`  pranala inline edge rendered (${pranalaInlineHTML.length} bytes, .lar-pranala span present)`);
   console.log(`  pranala block edge rendered with body (${pranalaBlockHTML.length} bytes, body inlined)`);
   console.log(`  deserializer captured prologue + postamble fields on parent`);
+  console.log(`  slot-structure split: preamble + iam fields + postamble on slot child`);
   process.exit(0);
 }
 
