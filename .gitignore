@@ -54,8 +54,8 @@ packages/lararium-node/.lararium/
 packages/lararium-tw5/public/tiddlywikicore-*.js
 
 # Room-bag disk scratch — operator's editable surface, never committed.
-# Promotion ceremony moves files from rooms/{slug}/ into packages/.
-rooms/
+# Promotion ceremony moves files from wikis/{slug}/ into packages/.
+wikis/
 
 # Per-deployment social bootstrap (operator AutomergeUrls) — written by
 # `lararium:init`, consumed at boot. Never committed.

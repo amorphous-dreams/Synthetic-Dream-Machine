@@ -1,10 +1,10 @@
 # Hand-off Crystal — Lares Lararium Node Branch
 
 > Forged: 2026-05-07
-> Last update: 2026-05-10 — Daemon smoke ✅ (happy path confirmed) + J.3 gap named (child co-promotion missing from promote ceremony). `requestKeyhivePromotion` stub added (84+52+12 tests green). Server reset clean.
+> Last update: 2026-05-09 — rooms→wikis full rename (filesystem + URI namespace `@lararium/rooms/` → `@lararium/wikis/` + all TS symbols). Build clean, .lararium wiped. J.3 child co-promotion is the next smoke target.
 > Branch: `feature/lararium-node-3`
-> Working tree: clean
-> Last pulse: promote ceremony confirmed end-to-end for parent tiddler; gap revealed: `#fragment` child tiddlers (ahu slots) stay in room bag after single-URI promote — child meme files never land in canonical packages/. Named J.3.
+> Working tree: modified (rename complete, not yet committed)
+> Last pulse: Global rooms→wikis terminology rename complete. J.3 (child co-promotion) remains open — smoke target is `wikis/altar-fire/memes/docs/lares/the-lares-protocols.md`.
 
 ---
 
@@ -138,7 +138,7 @@ category boundary.
 
 - **Bag = Automerge doc = sync boundary**. Each bag has its own URL, its own ingress trust gate (S7.4), independent federation surface.
 - **Admin doc federates only to operator's own devices** via `cap=infrastructure` device delegations. Never reaches room peers.
-- **Canon-promotion law**: room edits land in `rooms/{slug}/` (gitignored). Promotion ceremony moves a tiddler from room bag → canonical bag; disk side effect = file move from `rooms/{slug}/` → `packages/`. Git diff IS the operator's signature on canon.
+- **Canon-promotion law**: wiki edits land in `wikis/{slug}/` (gitignored). Promotion ceremony moves a tiddler from wiki bag → canonical bag; disk side effect = file move from `wikis/{slug}/` → `packages/`. Git diff IS the operator's signature on canon.
 - **TW5 VM primacy**: if it can happen in the VM, it MUST happen in the VM.
 - **Web3-only inter-process coordination**: NO HTTP/RPC dispatch surface. CLI ↔ daemon ride command-tiddlers in the admin doc, transported by the existing Automerge-repo WebSocket sync.
 - **Heleuma invariant**: every load-bearing source file (re-exported from `index.ts` or marked `@heleuma:required`) needs a self-describing meme at `lar:///ha.ka.ba/@{pkg-scope}/v{ver}/{slug}` whose `source-file` field anchors the off-bag artifact.
@@ -253,7 +253,7 @@ lares promote <uri> --to <target-bag>
 ## Known open items (small, non-blocking)
 
 - `ReactionEngine` import in main.ts is stubbed (lives in `lararium-core/maybe/kumu-device.ts`; awaits unparking). The "reaction" projection kind not registered.
-- `rooms/{slug}/` writeback writes hashes/IDs as filenames — not yet integrated with a file watcher inbound. Disk → CRDT direction not built yet (intentionally absent — only outbound writes for now).
+- `wikis/{slug}/` writeback writes hashes/IDs as filenames — not yet integrated with a file watcher inbound. Disk → CRDT direction not built yet (intentionally absent — only outbound writes for now).
 - `heleuma` script could usefully detect drift in `uri-path` field too (currently only checks `file-path`).
 - Command-tiddler tombstone happens client-side (CLI), so an ephemeral CLI crash leaves the cmd/ namespace dirty. Mitigation: dispatcher could auto-tombstone after audit-event write (decision deferred — operator may want command-tiddlers to remain visible as in-flight signals).
 - `lares heleuma` flags 2 missing memes for `@lares/cli` source files (lares.ts, parse-args.ts) — lands in Path C.
@@ -291,7 +291,7 @@ lares promote <uri> --to <target-bag>
 - Admin URI shape: room URI vs bag URI distinction is intentional
 - Bag-mirror configs live in admin room (operator-private, federates to operator devices only)
 - `MemeStoreDoc` reused for AdminDoc — semantic distinction in URI, not type
-- `rooms/{slug}/` gitignored — promotion ceremony writes git-visible canon
+- `wikis/{slug}/` gitignored — promotion ceremony writes git-visible canon
 
 ---
 

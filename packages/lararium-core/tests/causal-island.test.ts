@@ -100,7 +100,7 @@ describe("capabilityHasAbility — token gate", () => {
     return {
       issuer,
       audience,
-      resource: "lar:///rooms/altar-fire",
+      resource: "lar:///wikis/altar-fire",
       abilities,
       caveats: [],
     };
@@ -138,7 +138,7 @@ describe("requestKeyhivePromotion — Keyhive stub", () => {
     const result = await requestKeyhivePromotion({
       fromUri:      "lar:///draft/proposal",
       targetUri:    "lar:///ha.ka.ba/@lares/api/v0.1/mu",
-      roomId:       "altar-fire",
+      wikiId:       "altar-fire",
       proposedText: "draft text",
       reason:       "test: upgrading to canon",
     });

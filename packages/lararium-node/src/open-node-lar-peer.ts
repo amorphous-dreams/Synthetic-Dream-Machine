@@ -3,18 +3,18 @@
  *
  * Boot sequence — Automerge Tiga + leaves (authority-first-sync-order):
  *   1. Repo     — NodeFS storage + WebSocket server
- *   2. ka opens — CatalogDoc: URL registry (rooms, corpora, engine)
+ *   2. ka opens — CatalogDoc: URL registry (wikis, corpora, engine)
  *   3. ha opens — LarariumDoc: system bag                           [from catalog.larariumDoc]
  *   4. ba opens — LaresDoc: personality bag                         [from ha oracle tiddler]
  *   5. Corpus*  — per-corpus bags from catalog.corpora[*]           [async, non-blocking]
- *   6. Room     — situated content, writable                        [room bag]
+ *   6. Wiki     — situated content, writable                        [wiki bag]
  *   7. Drafts   — per-user draft sync                               [draft bag]
  *
- *   CompositeStore: system → lares → corpus:* → room(writable) → draft(writable)
- *   LarPeer: store = room AutomergeDocStore, composite = full CompositeStore
+ *   CompositeStore: system → lares → corpus:* → wiki(writable) → draft(writable)
+ *   LarPeer: store = wiki AutomergeDocStore, composite = full CompositeStore
  *
  * The server holds no privilege. It relays; it does not adjudicate content truth.
- * Multiple rooms → multiple openNodeLarPeer calls, one LarPeer per DocHandle.
+ * Multiple wikis → multiple openNodeLarPeer calls, one LarPeer per DocHandle.
  *
  * FPI-5 (trim tab): all Node-specific code lives here.
  *
@@ -39,7 +39,7 @@ import {
   emptyMemeStoreDoc,
   LARARIUM_DOC_URI, CATALOG_DOC_URI, LARES_DOC_URI,
   IDENTITIES_DOC_URI, CIRCLES_DOC_URI, SESSIONS_DOC_URI, ADMIN_BAG_ID,
-  corpusLarUri, roomLarUri, roomDraftLarUri, BAG_IDS, recipeUri,
+  corpusLarUri, wikiLarUri, wikiDraftLarUri, BAG_IDS, recipeUri,
   VmPool,
 }                                       from "@lararium/core";
 import type { MemeRecipeVm, LarOpenPhase } from "@lararium/core";
@@ -91,7 +91,7 @@ export type NodeOpenPhase = LarOpenPhase;
 
 export interface NodeLarPeerOptions {
   hostId:     string;
-  roomId:     string;
+  wikiId:     string;
   storageDir: string;
   wss:        WebSocketServer;
   catalogUrl?: string | null;
@@ -137,10 +137,10 @@ export interface NodeLarPeerResult {
 // waitHandleLocal moved to repo-helpers.ts — shared with openAdminVm.
 
 export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLarPeerResult> {
-  const { hostId, roomId, storageDir, wss, catalogUrl, recipeUri: recipeUriOpt, onPhase, vmFactory } = opts;
+  const { hostId, wikiId, storageDir, wss, catalogUrl, recipeUri: recipeUriOpt, onPhase, vmFactory } = opts;
   const emit = (p: NodeOpenPhase) => onPhase?.(p);
-  // Stable identity URI for this room — the map key in CatalogDoc.rooms.
-  const roomKey = roomLarUri(roomId);
+  // Stable identity URI for this wiki — the map key in CatalogDoc.wikis.
+  const wikiKey = wikiLarUri(wikiId);
 
   emit("boot");
 
@@ -170,7 +170,7 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
   }
 
   const blankCatalog = (): DocHandle<CatalogDoc> => {
-    const h = repo.create<CatalogDoc>({ schemaVersion: "0.1", corpora: {}, rooms: {}, recipes: {}, projections: {}, tiddlers: {} });
+    const h = repo.create<CatalogDoc>({ schemaVersion: "0.1", corpora: {}, wikis: {}, recipes: {}, projections: {}, tiddlers: {} });
     // Self-reference: catalog doc holds its own lar: URI and automerge: URL.
     // Follows the same pattern as LarariumDoc — any peer that syncs this doc self-discovers.
     h.change((doc) => {
@@ -197,7 +197,7 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
   emit("catalog-ready");
 
   // ── 3. CompositeStore — lowest→highest priority ──────────────────────────
-  // Recipe: LARARIUM_DOC_URI → CATALOG_DOC_URI → LARES_DOC_URI → corpusLarUri(*) → roomLarUri → draft
+  // Recipe: LARARIUM_DOC_URI → CATALOG_DOC_URI → LARES_DOC_URI → corpusLarUri(*) → wikiLarUri → draft
   const composite = new CompositeStore();
 
   // ── 3a. CatalogDoc (ka) — bag = CATALOG_DOC_URI ──────────────────────────
@@ -238,7 +238,7 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
   }
 
   // Writable for the canon-promotion ceremony (`lares promote --to <lararium>`).
-  // defaultWritable:false keeps unbagged TW5 saves routing to the room — only
+  // defaultWritable:false keeps unbagged TW5 saves routing to the wiki — only
   // explicit record.bag === BAG_IDS.lararium writes land here.
   composite.addLayer({
     bagId:           BAG_IDS.lararium,
@@ -264,8 +264,8 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
     } else {
       laresHandle = seedLaresDoc(repo);
     }
-    // Writable for the canon-promotion ceremony (room/draft → @lares canon).
-    // defaultWritable:false so unbagged TW5 saves continue routing to the room.
+    // Writable for the canon-promotion ceremony (wiki/draft → @lares canon).
+    // defaultWritable:false so unbagged TW5 saves continue routing to the wiki.
     composite.addLayer({
       bagId:           BAG_IDS.lares,
       store:           new AutomergeDocStore(laresHandle, BAG_IDS.lares),
@@ -338,8 +338,8 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
   composite.addLayer({ bagId: BAG_IDS.sessions,   store: new AutomergeDocStore(sessionsHandle,   BAG_IDS.sessions),   writable: true });
 
   // Admin VM — operator-private coordinator with its own TW5 engine and
-  // composite. Booted in parallel with the room VM; never shares state with
-  // room peer connections.
+  // composite. Booted in parallel with the wiki VM; never shares state with
+  // wiki peer connections.
   const adminVm = await openAdminVm({ repo, adminUrl });
 
   // Command dispatcher — subscribes to the admin store and runs commands
@@ -349,9 +349,9 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
   const commandRegistry  = new CommandHandlerRegistry();
   // Stub "echo" handler — useful for end-to-end smoke of the protocol.
   commandRegistry.register("echo", async (args) => ({ echoed: args }));
-  // S5.8 — canon promotion. The handler operates on the room composite
-  // (the bags eligible for promotion live there: lares, lararium, room/{slug}).
-  // Forward note: when federated promotion lands (UCAN-gated, any room VM),
+  // S5.8 — canon promotion. The handler operates on the wiki composite
+  // (the bags eligible for promotion live there: lares, lararium, wiki/{slug}).
+  // Forward note: when federated promotion lands (UCAN-gated, any wiki VM),
   // this single registration generalizes — the handler stays the same; the
   // composite reference becomes "the requesting peer's composite + cap chain".
   commandRegistry.register("promote", createPromoteHandler({ composite }));
@@ -359,7 +359,7 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
   // this command before writing the promote command itself.
   commandRegistry.register("where",   createWhereHandler({ composite }));
   // E.4 — read-only wiki commands. write commands (init/sync/pin/etc) land
-  // in E.5+. `list-wikis` walks the catalog for room oracle tiddlers.
+  // in E.5+. `list-wikis` walks the catalog for wiki oracle tiddlers.
   commandRegistry.register("list-wikis", createListWikisHandler({ composite }));
   // E.5 — wiki write commands. operatorDid resolves lazily so the registry
   // can register before the keyhive bridge finishes booting.
@@ -485,11 +485,11 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
   await keyhive.registerBag(BAG_IDS.identities);
   await keyhive.registerBag(BAG_IDS.groups);
   await keyhive.registerBag(BAG_IDS.sessions);
-  await keyhive.registerBag(BAG_IDS.catalog);            // catalog index of room oracles
+  await keyhive.registerBag(BAG_IDS.catalog);            // catalog index of wiki oracles
   await keyhive.registerBag(BAG_IDS.lararium);           // engine corpus (canon)
   await keyhive.registerBag(BAG_IDS.lares);              // @lares persona/doctrine (canon)
-  await keyhive.registerBag(roomLarUri(roomId));         // active room canonical
-  await keyhive.registerBag(roomDraftLarUri(roomId));    // active room draft
+  await keyhive.registerBag(wikiLarUri(wikiId));         // active wiki canonical
+  await keyhive.registerBag(wikiDraftLarUri(wikiId));    // active wiki draft
 
   // Sanity: confirm the operator can verify their own admin access. This
   // closes the D.3 bridge end-to-end — bytes-on-disk → seed → Keyhive
@@ -568,36 +568,36 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
     }
   }));
 
-  // ── 4. Room doc — oracle tiddler path (mirrors browser peer M25 Loop 1) ──
-  // Read from catalog.tiddlers[roomKey].text (oracle). Legacy catalog.rooms fallback retained.
-  const roomDocUrl =
-    catalog?.tiddlers?.[roomKey]?.text ??
-    catalog?.rooms?.[roomKey]?.contentDocUrl ??
+  // ── 4. Wiki doc — oracle tiddler path (mirrors browser peer M25 Loop 1) ──
+  // Read from catalog.tiddlers[wikiKey].text (oracle). Legacy catalog.wikis fallback retained.
+  const wikiDocUrl =
+    catalog?.tiddlers?.[wikiKey]?.text ??
+    catalog?.wikis?.[wikiKey]?.contentDocUrl ??
     null;
   const blankRoom  = (): DocHandle<MemeStoreDoc> => repo.create<MemeStoreDoc>(emptyMemeStoreDoc());
-  const roomHandle: DocHandle<MemeStoreDoc> = roomDocUrl
-    ? await waitHandleLocal<MemeStoreDoc>(repo, roomDocUrl as AutomergeUrl, blankRoom)
+  const wikiHandle: DocHandle<MemeStoreDoc> = wikiDocUrl
+    ? await waitHandleLocal<MemeStoreDoc>(repo, wikiDocUrl as AutomergeUrl, blankRoom)
     : blankRoom();
 
-  if (!roomDocUrl) {
+  if (!wikiDocUrl) {
     // Write as oracle tiddler — same schema as browser peer.
     catalogHandle.change((doc) => {
-      (doc.tiddlers as Record<string, MutableLarRecord>)[roomKey] = {
-        title: roomKey, text: roomHandle.url,
+      (doc.tiddlers as Record<string, MutableLarRecord>)[wikiKey] = {
+        title: wikiKey, text: wikiHandle.url,
         fields: { bag: BAG_IDS.catalog, authority: "lararium-boot" },
       };
     });
   }
-  const roomBagId = roomLarUri(roomId);
-  const roomStore = new AutomergeDocStore(roomHandle, roomBagId);
-  composite.addLayer({ bagId: roomBagId, store: roomStore, writable: true });
-  emit("room-ready");
+  const wikiBagId = wikiLarUri(wikiId);
+  const wikiStore = new AutomergeDocStore(wikiHandle, wikiBagId);
+  composite.addLayer({ bagId: wikiBagId, store: wikiStore, writable: true });
+  emit("wiki-ready");
 
-  // ── 5. Room-Drafts doc — per-user, stored in catalog oracle tiddler ───────
-  // Node peer uses hostId:roomId identity for its own drafts (operator drafts).
+  // ── 5. Wiki-Drafts doc — per-user, stored in catalog oracle tiddler ───────
+  // Node peer uses hostId:wikiId identity for its own drafts (operator drafts).
   // User drafts from browser peers are stored under each browser peer's DID key.
-  const identity = new OpenIdentitySlot(`${hostId}:${roomId}`);
-  const draftTiddlerKey = `${roomKey}/drafts/${encodeURIComponent(identity.did)}`;
+  const identity = new OpenIdentitySlot(`${hostId}:${wikiId}`);
+  const draftTiddlerKey = `${wikiKey}/drafts/${encodeURIComponent(identity.did)}`;
   const existingDraftUrl: string | null = catalog?.tiddlers?.[draftTiddlerKey]?.text ?? null;
   const blankDraft = (): DocHandle<MemeStoreDoc> => repo.create<MemeStoreDoc>(emptyMemeStoreDoc());
   const draftHandle: DocHandle<MemeStoreDoc> = existingDraftUrl
@@ -612,12 +612,12 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
       };
     });
   }
-  // E.3 — per-wiki draft bagId. Composite layer encodes which room owns
+  // E.3 — per-wiki draft bagId. Composite layer encodes which wiki owns
   // the drafts so multiple wikis can mount simultaneously without
   // intermingling. The Automerge doc URL still lives in the catalog under
-  // ${roomLarUri(slug)}/drafts/${peerDid} (unchanged); only the layer
+  // ${wikiLarUri(slug)}/drafts/${peerDid} (unchanged); only the layer
   // bagId namespace changed from the static "draft" constant.
-  const draftBagId = roomDraftLarUri(roomId);
+  const draftBagId = wikiDraftLarUri(wikiId);
   composite.addLayer({ bagId: draftBagId, store: new AutomergeDocStore(draftHandle, draftBagId), writable: true });
 
   // S6 E.2 — projection layer. In-memory MemoryTiddlerStore at top read
@@ -635,9 +635,9 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
   emit("draft-ready");
 
   // ── 6. LarPeer ────────────────────────────────────────────────────────────
-  roomStore.markSyncComplete();
+  wikiStore.markSyncComplete();
   const peer = new LarPeer<VmPool<MemeRecipeVm>>({
-    peerId:       `${hostId}:${roomId}`,
+    peerId:       `${hostId}:${wikiId}`,
     store:        composite,
     capabilities: PEER_CAPABILITIES_NODE,
     identity,
@@ -647,7 +647,7 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
   // ── 7. TW5Engine ──────────────────────────────────────────────────────────
   // Derive VM bag stack from the recipe tiddler seeded into ha island.
   // Falls back to composite.layerIds (full view) if recipe is not yet available.
-  // Default recipe: content Tiga — ha + ka + ba, no social plane, no room leaf.
+  // Default recipe: content Tiga — ha + ka + ba, no social plane, no wiki leaf.
   const resolvedRecipeUri = recipeUriOpt ?? recipeUri("@lararium", "default");
   const vmRecipe = await composite.getRecipe(resolvedRecipeUri);
   const vmBagStack: readonly string[] = vmRecipe?.bagStack ?? composite.layerIds;
@@ -698,8 +698,8 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
   await corpusReadyP;
   emit("corpus-ready");
 
-  // ── 9. MemeSyncAdaptor — reads full stack, writes to room bag via composite.put() ──
-  const adaptor = new MemeSyncAdaptor(tw5, peer.store, roomBagId);
+  // ── 9. MemeSyncAdaptor — reads full stack, writes to wiki bag via composite.put() ──
+  const adaptor = new MemeSyncAdaptor(tw5, peer.store, wikiBagId);
   peer.addProjection(adaptor);
 
   // ── 10. VmPool ────────────────────────────────────────────────────────────

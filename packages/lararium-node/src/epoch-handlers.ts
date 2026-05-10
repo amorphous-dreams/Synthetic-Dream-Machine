@@ -24,7 +24,7 @@ import {
   type CatalogDoc, type MemeStoreDoc, type MutableLarRecord,
   type BagResidencyManager,
   emptyMemeStoreDoc, AutomergeDocStore,
-  roomLarUri, recipeUri, parseBagStack, LARARIUM_DOC_URI,
+  wikiLarUri, recipeUri, parseBagStack, LARARIUM_DOC_URI,
 } from "@lararium/core";
 import type { CommandHandler } from "./command-dispatcher.js";
 
@@ -153,10 +153,10 @@ export interface RotateRecipeOptions extends EpochHandlerOptions {}
  *
  * Steps:
  *   1. Mint a NEW canonical Automerge doc (fresh, empty).
- *   2. Compute the previous-canon underlay URI: roomLarUri/canon/vN.
- *   3. Update catalog: room oracle's text → new doc URL; mint a
+ *   2. Compute the previous-canon underlay URI: wikiLarUri/canon/vN.
+ *   3. Update catalog: wiki oracle's text → new doc URL; mint a
  *      previous-canon oracle whose text → old doc URL.
- *   4. Mutate recipe: keep room URI in stack at the same position
+ *   4. Mutate recipe: keep wiki URI in stack at the same position
  *      (now points at new doc); insert previous-canon URI just BELOW
  *      it (lower priority). Old generations accumulate as deeper
  *      underlays.
@@ -171,21 +171,21 @@ export function createRotateRecipeHandler(opts: RotateRecipeOptions): CommandHan
     const slug = stringArg(args, "slug");
     if (!slug) throw new Error("args.slug is required");
 
-    const roomKey     = roomLarUri(slug);
+    const wikiKey     = wikiLarUri(slug);
     const recipeTitle = recipeUri("@lararium", slug);
 
     const recipeRec = await opts.composite.get(recipeTitle);
     if (!recipeRec) throw new Error(`recipe not found for "${slug}" — run \`lares wiki init ${slug}\` first`);
 
-    const roomOracle = await opts.composite.get(roomKey);
-    const oldDocUrl  = typeof roomOracle?.text === "string" ? roomOracle.text : null;
-    if (!oldDocUrl) throw new Error(`room oracle missing for "${slug}"`);
+    const wikiOracle = await opts.composite.get(wikiKey);
+    const oldDocUrl  = typeof wikiOracle?.text === "string" ? wikiOracle.text : null;
+    if (!oldDocUrl) throw new Error(`wiki oracle missing for "${slug}"`);
 
     // Compute the previous-canon URI. Walk existing stack to find the next
     // generation number; previous-canon URIs match canon/v\d+.
     const fields  = (recipeRec.fields ?? {}) as Record<string, string>;
     const stack   = parseBagStack(fields["bag-stack"]);
-    const canonRe = new RegExp(`^${escapeRegExp(roomKey)}/canon/v(\\d+)$`);
+    const canonRe = new RegExp(`^${escapeRegExp(wikiKey)}/canon/v(\\d+)$`);
     let nextGen = 1;
     for (const url of stack) {
       const m = url.match(canonRe);
@@ -194,27 +194,27 @@ export function createRotateRecipeHandler(opts: RotateRecipeOptions): CommandHan
         if (Number.isFinite(n) && n >= nextGen) nextGen = n + 1;
       }
     }
-    const previousCanonUri = `${roomKey}/canon/v${nextGen}`;
+    const previousCanonUri = `${wikiKey}/canon/v${nextGen}`;
 
     // Mint fresh canonical doc.
     const newHandle = opts.repo.create<MemeStoreDoc>(emptyMemeStoreDoc());
     await newHandle.whenReady();
 
-    // Update catalog: room oracle → new URL; previous-canon oracle → old URL.
+    // Update catalog: wiki oracle → new URL; previous-canon oracle → old URL.
     opts.catalogHandle.change((doc) => {
       const tiddlers = doc.tiddlers as Record<string, MutableLarRecord>;
-      const existingRoom = tiddlers[roomKey];
-      tiddlers[roomKey] = {
-        title: roomKey,
+      const existingWiki = tiddlers[wikiKey];
+      tiddlers[wikiKey] = {
+        title: wikiKey,
         text:  newHandle.url,
         fields: {
-          ...((existingRoom?.fields as Record<string, string> | undefined) ?? {}),
+          ...((existingWiki?.fields as Record<string, string> | undefined) ?? {}),
           "rotated-at":   new Date().toISOString(),
           "rotated-prev": oldDocUrl,
           "rotation-gen": String(nextGen),
         },
-        bag:       existingRoom?.bag       ?? "lar:///ha.ka.ba/@catalog",
-        authority: existingRoom?.authority ?? "lares-cli:rotate-recipe",
+        bag:       existingWiki?.bag       ?? "lar:///ha.ka.ba/@catalog",
+        authority: existingWiki?.authority ?? "lares-cli:rotate-recipe",
       };
       tiddlers[previousCanonUri] = {
         title: previousCanonUri,
@@ -229,11 +229,11 @@ export function createRotateRecipeHandler(opts: RotateRecipeOptions): CommandHan
       };
     });
 
-    // Mutate recipe: insert previous-canon just BELOW the room slot.
-    const roomIdx = stack.indexOf(roomKey);
-    const nextStack: string[] = roomIdx >= 0
-      ? [...stack.slice(0, roomIdx), previousCanonUri, ...stack.slice(roomIdx)]
-      : [...stack, previousCanonUri, roomKey];
+    // Mutate recipe: insert previous-canon just BELOW the wiki slot.
+    const wikiIdx = stack.indexOf(wikiKey);
+    const nextStack: string[] = wikiIdx >= 0
+      ? [...stack.slice(0, wikiIdx), previousCanonUri, ...stack.slice(wikiIdx)]
+      : [...stack, previousCanonUri, wikiKey];
 
     const origin: ChangeOrigin = { kind: "lares-command", requestId: ctx_request_id_safe() };
     const updatedRecipe: LarTiddlerRecord = {
@@ -252,17 +252,17 @@ export function createRotateRecipeHandler(opts: RotateRecipeOptions): CommandHan
 
     // Layer swap if mounted, residency re-pin.
     let layerSwapped = false;
-    if (opts.composite.hasBag(roomKey)) {
-      opts.composite.removeLayer(roomKey);
+    if (opts.composite.hasBag(wikiKey)) {
+      opts.composite.removeLayer(wikiKey);
       opts.composite.addLayer({
-        bagId:    roomKey,
-        store:    new AutomergeDocStore(newHandle, roomKey),
+        bagId:    wikiKey,
+        store:    new AutomergeDocStore(newHandle, wikiKey),
         writable: true,
       });
       layerSwapped = true;
     }
-    if (opts.residency.tier(roomKey) === "pinned") {
-      await opts.residency.pin(roomKey, `rotated-gen-${nextGen}`);
+    if (opts.residency.tier(wikiKey) === "pinned") {
+      await opts.residency.pin(wikiKey, `rotated-gen-${nextGen}`);
     }
     // Previous-canon ships cold; operator pin if they want it hot.
     opts.residency.registerCold(previousCanonUri);

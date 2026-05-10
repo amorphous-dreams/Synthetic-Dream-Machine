@@ -6,9 +6,9 @@
  *   - Outbound: no carrier split. In the meme model the tiddler text IS the
  *     canonical source; ahu slot children are independent lar:///parent#slot
  *     records that receive their own saveTiddler calls.
- *   - Inbound: unchanged contract — still calls tw5.deserializeCarrier for
- *     text/x-memetic-wikitext records so inline-body carriers (legacy or
- *     remote peers) hydrate correctly.
+ *   - Inbound: records land in TW5 verbatim as single tiddlers. The
+ *     lar-meme-split widget fires on the resulting wiki change event and
+ *     splits ahu slot children — both for disk imports and live edits.
  *   - Imports buildDirectRecord from meme-write.ts (not carrier-write.ts).
  *
  * Invariants preserved verbatim from web2:
@@ -48,13 +48,6 @@ const SAVE_CASCADE_URI = "lar:///ha.ka.ba/@lararium/tw5/sync/save-cascade";
 function isTemp(title: string): boolean      { return title.startsWith("$:/temp/"); }
 function isDraft(title: string): boolean     { return title.startsWith("Draft of "); }
 function isTW5System(title: string): boolean { return title.startsWith("$:/"); }
-
-function isMemeRecord(rec: LarTiddlerRecord, title: string): boolean {
-  return rec.text !== undefined &&
-    (rec.fields["type"] === "text/x-memetic-wikitext" ||
-      rec.fields["content-type"] === "text/x-memetic-wikitext" ||
-      (!(rec.fields["type"] || rec.fields["content-type"]) && title.startsWith("lar:")));
-}
 
 /**
  * Normalise a TW5 tiddler argument to a flat Record<string, string>.
@@ -183,21 +176,11 @@ export class MemeSyncAdaptor implements MemeProjection {
         const rec = await this.store.get(uri);
         if (!rec || rec.deleted) {
           toRemove.push(uri);
-          const childTitles = this.tw5.filterTiddlers(`[field:fragment-parent[${uri}]]`);
-          for (const t of childTitles) toRemove.push(t);
           return;
         }
-        const isMeme = isMemeRecord(rec, uri);
-        if (isMeme && rec.text) {
-          const staleChildren = this.tw5.filterTiddlers(`[field:fragment-parent[${uri}]]`);
-          for (const t of staleChildren) toRemove.push(t);
-          const tiddlers = this.tw5.deserializeCarrier(uri, rec.text, rec.fields as Record<string, string | string[]>);
-          for (const t of tiddlers) toAdd.push(t as Record<string, string | string[]>);
-        } else {
-          const fields: Record<string, string | string[]> = { title: rec.title, ...rec.fields };
-          if (rec.text !== undefined) fields["text"] = rec.text;
-          toAdd.push(fields);
-        }
+        const fields: Record<string, string | string[]> = { title: rec.title, ...rec.fields };
+        if (rec.text !== undefined) fields["text"] = rec.text;
+        toAdd.push(fields);
       }));
 
       for (const title of toRemove) this.tw5.removeTiddler(title);
@@ -236,21 +219,9 @@ export class MemeSyncAdaptor implements MemeProjection {
           this._pendingDeletions.add(change.title);
         } else {
           const rec = change.record;
-          const isMeme = isMemeRecord(rec, change.title);
-
-          if (isMeme && rec.text) {
-            const staleChildren: string[] = this.tw5.filterTiddlers(`[field:fragment-parent[${change.title}]]`);
-            for (const t of staleChildren) toRemove.push(t);
-            const tiddlers = this.tw5.deserializeCarrier(
-              change.title, rec.text, rec.fields as Record<string, string | string[]>,
-            );
-            for (const t of tiddlers) toAdd.push(t as Record<string, string | string[]>);
-          } else {
-            const fields: Record<string, string | string[]> = { title: rec.title, ...rec.fields };
-            if (rec.text !== undefined) fields["text"] = rec.text;
-            toAdd.push(fields);
-          }
-
+          const fields: Record<string, string | string[]> = { title: rec.title, ...rec.fields };
+          if (rec.text !== undefined) fields["text"] = rec.text;
+          toAdd.push(fields);
           this._pendingModifications.add(change.title);
         }
       }
@@ -300,17 +271,9 @@ export class MemeSyncAdaptor implements MemeProjection {
   }
 
   private _applyLiveRecord(title: string, rec: LarTiddlerRecord): void {
-    const isMeme = isMemeRecord(rec, title);
-    if (isMeme && rec.text) {
-      const staleChildren: string[] = this.tw5.filterTiddlers(`[field:fragment-parent[${title}]]`);
-      for (const t of staleChildren) this.tw5.removeTiddler(t);
-      const tiddlers = this.tw5.deserializeCarrier(title, rec.text, rec.fields as Record<string, string | string[]>);
-      for (const t of tiddlers) this.tw5.setTiddler(t as Record<string, string | string[]>);
-    } else {
-      const fields: Record<string, string | string[]> = { title: rec.title, ...rec.fields };
-      if (rec.text !== undefined) fields["text"] = rec.text;
-      this.tw5.setTiddler(fields);
-    }
+    const fields: Record<string, string | string[]> = { title: rec.title, ...rec.fields };
+    if (rec.text !== undefined) fields["text"] = rec.text;
+    this.tw5.setTiddler(fields);
     this._pendingModifications.add(title);
   }
 

@@ -5,7 +5,7 @@
  * alias it without maintaining identical string unions in two places.
  *
  * Phase order (monotonic — never goes backward):
- *   boot → repo-open → catalog-ready → island-ready → room-ready →
+ *   boot → repo-open → catalog-ready → island-ready → wiki-ready →
  *   draft-ready → peer-ready → tw5-booted → corpus-ready → live
  */
 export type LarOpenPhase =
@@ -13,8 +13,8 @@ export type LarOpenPhase =
   | "repo-open"      // Repo + adapters initialized
   | "catalog-ready"  // catalog DocHandle resolved
   | "island-ready"   // LarariumIsland (system bag) resolved — may arrive async
-  | "room-ready"     // room DocHandle resolved
-  | "draft-ready"    // room-drafts DocHandle resolved
+  | "wiki-ready"     // wiki DocHandle resolved
+  | "draft-ready"    // wiki-drafts DocHandle resolved
   | "peer-ready"     // LarPeer constructed, CompositeStore wired
   | "tw5-booted"     // TW5Engine.boot() resolved
   | "corpus-ready"   // corpus bags attached (fires once all initial corpora loaded)

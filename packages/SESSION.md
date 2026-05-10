@@ -1,8 +1,66 @@
 # Session State — Lararium Web3 Refactor
 
-> Updated: 2026-05-10 (Daemon smoke + promote ceremony reveal — J.3 gap named)
+> Updated: 2026-05-09 (rooms→wikis full terminology rename — filesystem + URI namespace + all symbols)
 > Branch: feature/lararium-node-3
 > Purpose: Resume artifact — enough state to continue without prior chat context
+
+---
+
+## What Just Happened (2026-05-09 — rooms→wikis full rename)
+
+Global terminology alignment: every occurrence of the concept "room" as a _wiki workspace_ renamed to "wiki" throughout the codebase, filesystem, and URI namespace.
+
+**Filesystem:**
+- `rooms/` directory moved to `wikis/` on disk
+- `.gitignore` entry updated
+
+**URI namespace (breaking change — stored Automerge docs will use new keys after re-init):**
+- `@lararium/rooms/{slug}` → `@lararium/wikis/{slug}`
+- `@catalog/rooms/{slug}` → `@catalog/wikis/{slug}`
+
+**Exported TypeScript symbols (auto-renamed via language-server, propagated across all import sites):**
+
+| Old | New |
+|---|---|
+| `roomLarUri` | `wikiLarUri` |
+| `roomDraftLarUri` | `wikiDraftLarUri` |
+| `roomBagId` (alias) | `wikiBagId` |
+| `roomShadowPathStrategy` | `wikiShadowPathStrategy` |
+| `ADMIN_ROOM_SLUG` | `ADMIN_WIKI_SLUG` |
+| `ADMIN_ROOM_URI` | `ADMIN_WIKI_URI` |
+
+**Local variables, CLI flags, phase literals (sed batch across all affected files):**
+- `roomId/Key/Handle/Store/BagId/Rec/Uri/DocUrl/Oracle/Idx` → `wikiId/Key/Handle/Store/BagId/Rec/Uri/DocUrl/Oracle/Idx`
+- `existingRoomRec` → `existingWikiRec`, `existingRoom` → `existingWiki`
+- `"room-ready"` (LarOpenPhase literal) → `"wiki-ready"`
+- `"room-shadow"` (strategy key in main.ts) → `"wiki-shadow"`
+- `--room` CLI flag → `--wiki`, `LAR_ROOM` env → `LAR_WIKI`
+- `ROOM_PREFIX` → `WIKI_PREFIX`
+
+**Schema field:** `CatalogDoc.rooms` → `CatalogDoc.wikis` (field renamed; legacy fallback paths updated)
+
+**Default bag tier string:** `buildDirectRecord` default `targetBag` → `"wiki"` (was `"room"`)
+
+**Affected files (14 total):**
+- `packages/lararium-core/src/lararium-doc.ts`
+- `packages/lararium-core/src/tiddler-store.ts`
+- `packages/lararium-core/src/composite-store.ts`
+- `packages/lararium-core/src/open-phase.ts`
+- `packages/lararium-core/src/bag-mirror.ts`
+- `packages/lararium-core/src/resolver.ts`
+- `packages/lararium-core/src/catalog.ts`
+- `packages/lararium-core/tests/composite-store.test.ts`
+- `packages/lararium-core/tests/causal-island.test.ts`
+- `packages/lararium-tw5/src/meme-write.ts`
+- `packages/lararium-node/src/main.ts`
+- `packages/lararium-node/src/open-node-lar-peer.ts`
+- `packages/lararium-node/src/wiki-handlers.ts`
+- `packages/lararium-node/src/epoch-handlers.ts`
+- `packages/lares-cli/src/commands/wiki.ts`
+
+**Build result:** `pnpm -r build` clean, zero TypeScript errors. `.lararium/` wiped for re-init.
+
+**OODA-HA orient — next task:** Smoke J.3 child co-promotion with the live test artifact at `wikis/altar-fire/memes/docs/lares/the-lares-protocols.md`. This file contains multiple `<<~ ahu #slot >>` blocks. `lares wiki sync altar-fire` → `lares promote ... --to lar:///ha.ka.ba/@lares --yes` should land _both_ the parent _and_ each `#fragment` child in `packages/lares/memes/docs/lares/the-lares-protocols/`. J.3 implement → smoke → verify.
 
 ---
 

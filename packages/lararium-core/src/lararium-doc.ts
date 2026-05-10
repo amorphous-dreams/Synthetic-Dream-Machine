@@ -98,7 +98,7 @@ export function blobDescriptorUri(blobId: string): string {
  *   pos 0  — what3words tagspace host, e.g. "ha.ka.ba"
  *   pos 1  — @-prefixed root doc identity (EXACTLY six reserved slots, see below)
  *   pos 2  — @-prefixed child doc identity   e.g. @catalog/@elyncia
- *            OR plain leaf path segment      e.g. @lararium/rooms/altar-fire
+ *            OR plain leaf path segment      e.g. @lararium/wikis/altar-fire
  *   pos 3+ — plain leaf path segments, never @-prefixed
  *
  * Rule: @ ONLY at pos 1 (root doc) or pos 2 (child doc under a root).
@@ -106,8 +106,8 @@ export function blobDescriptorUri(blobId: string): string {
  *       Any bare @name at pos 1 = exactly one Automerge doc identity.
  *
  * CONTENT PLANE (Content Tiga — engine / corpus / person):
- *   @lararium   LarariumDoc  — ha: engine, grammar, admin rooms, ha-recipes
- *   @catalog    CatalogDoc   — ka: corpus discovery, user rooms, ka-recipes
+ *   @lararium   LarariumDoc  — ha: engine, grammar, admin wikis, ha-recipes
+ *   @catalog    CatalogDoc   — ka: corpus discovery, user wikis, ka-recipes
  *   @lares      LaresDoc     — ba: persona/doctrine, ba-recipes
  *
  * SOCIAL PLANE (Social Tiga - identity / authority / session):
@@ -116,13 +116,13 @@ export function blobDescriptorUri(blobId: string): string {
  *   @sessions    SessionsDoc   — ba: live operator-agent session docs
  *
  * Child-docs live under parent docs (pos-2 @ slot):
- *   lar:///ha.ka.ba/@lararium/@admin   → admin room doc (distinct from room leaf doc at pos-3)
+ *   lar:///ha.ka.ba/@lararium/@admin   → admin wiki doc (distinct from wiki leaf doc at pos-3)
  *   lar:///ha.ka.ba/@catalog/@elyncia   → elyncia corpus doc
  *   lar:///ha.ka.ba/@catalog/@ftls      → ftls corpus doc
  *
- * Rooms remain leaf paths (no @ at pos 2):
- *   lar:///ha.ka.ba/@lararium/rooms/{slug}  → admin/operator room (ha branch)
- *   lar:///ha.ka.ba/@catalog/rooms/{slug}   → user room (ka branch, M22+)
+ * Wikis remain leaf paths (no @ at pos 2):
+ *   lar:///ha.ka.ba/@lararium/wikis/{slug}  → admin/operator wiki (ha branch)
+ *   lar:///ha.ka.ba/@catalog/wikis/{slug}   → user wiki (ka branch, M22+)
  *
  * Oracle chain:
  *   fragment → LarariumDoc → tiddlers[CATALOG_DOC_URI]     → CatalogDoc
@@ -131,17 +131,17 @@ export function blobDescriptorUri(blobId: string): string {
  *                          → tiddlers[CIRCLES_DOC_URI]     → CirclesDoc
  *                          → tiddlers[SESSIONS_DOC_URI]     → SessionsDoc
  *   CatalogDoc → tiddlers[corpusLarUri(slug)]  → corpus child-docs
- *              → tiddlers[roomLarUri(slug)]    → room leaf docs
+ *              → tiddlers[wikiLarUri(slug)]    → wiki leaf docs
  *
  * Meme: lar:///ha.ka.ba/@lararium/core/v0.1/automerge-tiga
  */
 
 // ── Content plane — engine / corpuses / personas ──────────────────────────────────────────
 
-/** ha vertex — engine / grammar / admin rooms / system-recipes. */
+/** ha vertex — engine / grammar / admin wikis / system-recipes. */
 export const LARARIUM_DOC_URI = "lar:///ha.ka.ba/@lararium";
 
-/** ka vertex — corpus discovery / user rooms / corpus-recipes. */
+/** ka vertex — corpus discovery / user wikis / corpus-recipes. */
 export const CATALOG_DOC_URI = "lar:///ha.ka.ba/@catalog";
 
 /** ba vertex — persona / doctrine / agent-recipes. */
@@ -168,50 +168,50 @@ export function corpusLarUri(slug: string): string {
 }
 
 /**
- * Derive the stable lar: URI identity for a room.
- * Rooms live in the @lararium sub-namespace — no collision with @-scope doc roots.
- * e.g. roomLarUri("altar-fire") → "lar:///ha.ka.ba/@lararium/rooms/altar-fire"
+ * Derive the stable lar: URI identity for a wiki.
+ * Wikis live in the @lararium sub-namespace — no collision with @-scope doc roots.
+ * e.g. wikiLarUri("altar-fire") → "lar:///ha.ka.ba/@lararium/wikis/altar-fire"
  *
- * This URI forms the map key in CatalogDoc.rooms.
+ * This URI forms the map key in CatalogDoc.wikis.
  * The CatalogRoomEntry.id field retains the short slug for readability.
  */
-export function roomLarUri(slug: string): string {
-  return `lar:///ha.ka.ba/@lararium/rooms/${slug}`;
+export function wikiLarUri(slug: string): string {
+  return `lar:///ha.ka.ba/@lararium/wikis/${slug}`;
 }
 
 /**
- * Derive the per-wiki draft bagId. Each room mints its own draft Automerge
- * doc; the composite-layer bagId encodes which room owns the drafts so
+ * Derive the per-wiki draft bagId. Each wiki mints its own draft Automerge
+ * doc; the composite-layer bagId encodes which wiki owns the drafts so
  * multiple wikis can mount simultaneously without intermingling.
  *
- * e.g. roomDraftLarUri("altar-fire") → "lar:///ha.ka.ba/@lararium/rooms/altar-fire/draft"
+ * e.g. wikiDraftLarUri("altar-fire") → "lar:///ha.ka.ba/@lararium/wikis/altar-fire/draft"
  *
  * Replaces the static `BAG_IDS.draft` constant in composite-layer bagId
  * usage. The Automerge doc URL itself still lives in the catalog under
- * `${roomLarUri(slug)}/drafts/${peerDid}`.
+ * `${wikiLarUri(slug)}/drafts/${peerDid}`.
  */
-export function roomDraftLarUri(slug: string): string {
-  return `${roomLarUri(slug)}/draft`;
+export function wikiDraftLarUri(slug: string): string {
+  return `${wikiLarUri(slug)}/draft`;
 }
 
 /**
- * Admin room — operator-private state for a single Lararium node.
+ * Admin wiki — operator-private state for a single Lararium node.
  *
  * Federation: scoped to the operator's own devices (via cap=infrastructure
- * device delegations, S7.1 / ingress gate S7.4). Never federates to room peers.
+ * device delegations, S7.1 / ingress gate S7.4). Never federates to wiki peers.
  *
  * Holds:
  *   - DeviceDelegationTiddlers (operator-private credential proofs)
  *   - ProjectionTiddlers tagged $:/tags/LarariumProjection (declarative manifest)
- *   - SessionTiddlers (operator → agent, not room → agent)
+ *   - SessionTiddlers (operator → agent, not wiki → agent)
  *   - Future: ceremony state (key rotation, invite acceptance)
  */
-export const ADMIN_ROOM_SLUG = "admin";
-export const ADMIN_ROOM_URI  = roomLarUri(ADMIN_ROOM_SLUG);
+export const ADMIN_WIKI_SLUG = "admin";
+export const ADMIN_WIKI_URI  = wikiLarUri(ADMIN_WIKI_SLUG);
 /**
  * Admin Automerge doc URI — direct child of @lararium, sibling to
  * @identities / @circles / @sessions in the @-scope namespace.
- * Distinct from ADMIN_ROOM_URI: the logical room lives at pos-3 under /rooms/;
+ * Distinct from ADMIN_ROOM_URI: the logical wiki lives at pos-3 under /wikis/;
  * the doc itself sits at pos-2 as its own namespaced child.
  */
 export const ADMIN_BAG_ID = "lar:///ha.ka.ba/@lararium/@admin";

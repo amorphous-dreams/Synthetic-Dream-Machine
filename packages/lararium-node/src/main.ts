@@ -1,24 +1,24 @@
 /**
  * Lararium Node Server — local-first relay + TW5 engine entrypoint.
  *
- * Boots one LarPeer per configured room, wires a WebSocket + HTTP server for
+ * Boots one LarPeer per configured wiki, wires a WebSocket + HTTP server for
  * browser peers to sync against, and attaches a LarDiskProjector so
  * the packages/lares/memes tree stays in sync with the Automerge store.
  *
  * HTTP surface:
- *   GET /api/health    → { ok: true, phase, roomId }  (infra probe only)
+ *   GET /api/health    → { ok: true, phase, wikiId }  (infra probe only)
  *
  * WS surface (sync):
  *   ws://localhost:8080/ws  → Automerge sync protocol
  *   (Vite dev proxy: /ws → ws://localhost:8080)
  *
  * Usage:
- *   node dist/main.js [--port 8080] [--storage .lararium] [--room altar-fire]
+ *   node dist/main.js [--port 8080] [--storage .lararium] [--wiki altar-fire]
  *
  * Environment:
  *   LAR_PORT     — HTTP+WS server port (default 8080)
  *   LAR_STORAGE  — storage directory (default .lararium)
- *   LAR_ROOM     — room id (default altar-fire)
+ *   LAR_WIKI     — wiki id (default altar-fire)
  *   LAR_CATALOG  — existing catalog automerge URL to join (optional)
  *
  * Bootstrap:
@@ -38,8 +38,8 @@ import { makeDiskProjectionKind }        from "./projection-kinds.js";
 import { LARES_MEMES_ROOT, REPO_ROOT }   from "./node-host.js";
 import {
   LarProjectionRegistry,
-  laresPathStrategy, enginePathStrategy, roomShadowPathStrategy,
-  BAG_IDS, roomBagId,
+  laresPathStrategy, enginePathStrategy, wikiShadowPathStrategy,
+  BAG_IDS, wikiBagId,
   LARARIUM_BAG_MIRROR_TAG,
 } from "@lararium/core";
 import type { BagMirrorConfig, MirrorPathFn } from "@lararium/core";
@@ -49,17 +49,17 @@ import type { TW5Engine }                from "@lararium/tw5";
 const STRATEGIES: Record<string, MirrorPathFn> = {
   lares: laresPathStrategy,
   engine: enginePathStrategy,
-  "room-shadow": roomShadowPathStrategy,
+  "wiki-shadow": wikiShadowPathStrategy,
 };
 
 /**
- * Read bag-mirror configs from admin-room tiddlers tagged
+ * Read bag-mirror configs from admin-wiki tiddlers tagged
  * `$:/tags/LarariumBagMirror`. Falls back to `defaults` when none found.
  *
  * Tiddler fields read:
  *   bag-id       — bag URI to mirror (required)
  *   mirror-root  — path relative to REPO_ROOT, or absolute (required)
- *   strategy     — one of lares | engine | room-shadow (required)
+ *   strategy     — one of lares | engine | wiki-shadow (required)
  *   enabled      — "no" disables the mirror; anything else (incl. absent) enables
  */
 function readBagMirrorsFromAdmin(adminTw5: TW5Engine, defaults: BagMirrorConfig[]): BagMirrorConfig[] {
@@ -83,7 +83,7 @@ function readBagMirrorsFromAdmin(adminTw5: TW5Engine, defaults: BagMirrorConfig[
     const root = mirrorRoot.startsWith("/") ? mirrorRoot : join(REPO_ROOT, mirrorRoot);
     result.push({ bagId, mirrorRoot: root, toRelPath });
   }
-  console.log(`[lararium] loaded ${result.length} bag-mirror config(s) from admin room`);
+  console.log(`[lararium] loaded ${result.length} bag-mirror config(s) from admin wiki`);
   return result;
 }
 
@@ -92,7 +92,7 @@ function readBagMirrorsFromAdmin(adminTw5: TW5Engine, defaults: BagMirrorConfig[
 // CLI / env config
 // ---------------------------------------------------------------------------
 
-function parseArgs(): { port: number; storageDir: string; roomId: string; catalogUrl: string | null } {
+function parseArgs(): { port: number; storageDir: string; wikiId: string; catalogUrl: string | null } {
   const args = process.argv.slice(2);
   const get  = (flag: string, env: string, fallback: string) => {
     const i = args.indexOf(flag);
@@ -101,7 +101,7 @@ function parseArgs(): { port: number; storageDir: string; roomId: string; catalo
   return {
     port:       Number(get("--port",    "LAR_PORT",    "8080")),
     storageDir: resolve(get("--storage","LAR_STORAGE", ".lararium")),
-    roomId:     get("--room",    "LAR_ROOM",    "altar-fire"),
+    wikiId:     get("--wiki",    "LAR_WIKI",    "altar-fire"),
     catalogUrl: process.env["LAR_CATALOG"] ?? null,
   };
 }
@@ -111,7 +111,7 @@ function parseArgs(): { port: number; storageDir: string; roomId: string; catalo
 // ---------------------------------------------------------------------------
 
 function makeHandler(
-  state: { phase: string; roomId: string },
+  state: { phase: string; wikiId: string },
 ) {
   return (req: import("http").IncomingMessage, res: import("http").ServerResponse) => {
     const url = new URL(req.url ?? "/", "http://localhost");
@@ -120,7 +120,7 @@ function makeHandler(
     if (url.pathname === "/api/health") {
       res.setHeader("Content-Type", "application/json");
       res.writeHead(200);
-      res.end(JSON.stringify({ ok: true, phase: state.phase, roomId: state.roomId }));
+      res.end(JSON.stringify({ ok: true, phase: state.phase, wikiId: state.wikiId }));
       return;
     }
 
@@ -135,12 +135,12 @@ function makeHandler(
 // ---------------------------------------------------------------------------
 
 async function main(): Promise<void> {
-  const { port, storageDir, roomId, catalogUrl } = parseArgs();
+  const { port, storageDir, wikiId, catalogUrl } = parseArgs();
 
   // Shared state — updated as boot phases fire.
-  const state: { phase: string; roomId: string } = {
+  const state: { phase: string; wikiId: string } = {
     phase:  "boot",
-    roomId,
+    wikiId,
   };
 
   // HTTP server — /api/health for infra probes only. Relay does not serve content.
@@ -170,7 +170,7 @@ async function main(): Promise<void> {
 
   const result = await openNodeLarPeer({
     hostId:     "lararium-node",
-    roomId,
+    wikiId,
     storageDir,
     wss,
     catalogUrl,
@@ -182,7 +182,7 @@ async function main(): Promise<void> {
   const { peer, tw5 } = result;
 
   // Projection registry — declarative wiring for system projections.
-  // Configs are programmatic here; migrate to admin-room tiddlers tagged
+  // Configs are programmatic here; migrate to admin-wiki tiddlers tagged
   // $:/tags/LarariumProjection once the admin VM lands (S5.6).
   const projections = new LarProjectionRegistry();
 
@@ -191,17 +191,17 @@ async function main(): Promise<void> {
   // no-op here.
 
   // Bag mirror configs — which bags reflect to disk, and where.
-  // First read attempt: admin-room tiddlers tagged $:/tags/LarariumBagMirror.
+  // First read attempt: admin-wiki tiddlers tagged $:/tags/LarariumBagMirror.
   // Fallback: programmatic defaults below. Operator-private bags
   // (identities/groups/sessions/admin) are absent — they never reach disk.
   const defaultMirrors: BagMirrorConfig[] = [
-    // Canonical lares — only written via promotion ceremony (room → lares).
+    // Canonical lares — only written via promotion ceremony (wiki → lares).
     { bagId: BAG_IDS.lares,    mirrorRoot: LARES_MEMES_ROOT,   toRelPath: laresPathStrategy },
     // Engine corpus — `lar:///ha.ka.ba/@lararium/{pkg}/v{ver}/{path}` →
     // `packages/{pkg-slug}/memes/{path}.md`. Workspace root is the mirror root.
     { bagId: BAG_IDS.lararium, mirrorRoot: join(REPO_ROOT, "packages"), toRelPath: enginePathStrategy },
-    // Room bag — gitignored scratch. Edits land here; promotion is the move.
-    { bagId: roomBagId(roomId), mirrorRoot: join(REPO_ROOT, "rooms", roomId), toRelPath: roomShadowPathStrategy },
+    // Wiki bag — gitignored scratch. Edits land here; promotion is the move.
+    { bagId: wikiBagId(wikiId), mirrorRoot: join(REPO_ROOT, "wikis", wikiId), toRelPath: wikiShadowPathStrategy },
   ];
   const mirrors = readBagMirrorsFromAdmin(result.admin.tw5, defaultMirrors);
 
@@ -212,7 +212,7 @@ async function main(): Promise<void> {
 
   await projections.enable({ id: "disk", kind: "disk", enabled: true, fields: {} }, peer);
 
-  console.log(`[lararium] live — room: ${roomId} | storage: ${storageDir}`);
+  console.log(`[lararium] live — wiki: ${wikiId} | storage: ${storageDir}`);
   console.log(`[lararium] catalog:  ${result.catalogHandleUrl ?? "(none)"}`);
   console.log(`[lararium] lararium: ${result.larariumDocUrl ?? "(none)"}`);
   console.log(`[lararium] admin:    ${result.admin.adminHandle.url}`);

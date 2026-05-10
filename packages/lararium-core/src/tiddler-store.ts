@@ -7,18 +7,18 @@
  * Bags/layers model:
  *   core   — TW5 core / plugin / shadow tiddlers
  *   canon  — hostless lares/ carriers (promoted, long-lived)
- *   room   — shared live room edits (CRDT-backed)
+ *   wiki   — shared live wiki edits (CRDT-backed)
  *   user   — operator private notes and personal overlays
  *   session — drafts, focus state, $:/temp/*, cursors (personal)
  *
- * Priority order: core < canon < room < user < session
+ * Priority order: core < canon < wiki < user < session
  *
  * Hard rules:
- *   - room layer may override canon for live view; must not mutate canon.
+ *   - wiki layer may override canon for live view; must not mutate canon.
  *   - session layer must not leak $:/temp/* or "Draft of ..." into shared state.
  *   - canon promotion is disabled until a Keyhive-backed proposal/receipt graph
  *     exists; store.put() never writes to lares/.
- *   - tombstone() marks deletion in live room state; no hard delete by default.
+ *   - tombstone() marks deletion in live wiki state; no hard delete by default.
  */
 
 import type { ClosureEntry, EdgeRecord } from "./compiler.js";
@@ -49,9 +49,9 @@ export interface LarTiddlerRecord {
   /**
    * Bag this record belongs to.
    *
-   * Well-known priority tiers: "core" < "canon" < "room" < "user" < "session"
+   * Well-known priority tiers: "core" < "canon" < "wiki" < "user" < "session"
    * Corpus islands use their own bag name (e.g. "lares", "elyncia", "ftls", "sdm", "wtf").
-   * Corpus bag names sort below "room" in recipe order; the recipe is authoritative.
+   * Corpus bag names sort below "wiki" in recipe order; the recipe is authoritative.
    * Open string so user corpora (e.g. a custom dir) can register any slug.
    */
   readonly bag?:         string;
@@ -97,7 +97,7 @@ export interface LarTiddlerChange {
 export interface LarTiddlerStore {
   /**
    * Returns titles of all non-deleted tiddlers visible under current authority.
-   * Applies room recipe + Orichalcum ability checks.
+   * Applies wiki recipe + Orichalcum ability checks.
    * Never returns $:/temp/* (session-local scratch).
    * "Draft of ..." titles get returned — drafts are identity-scoped, not session-scoped.
    */
@@ -110,7 +110,7 @@ export interface LarTiddlerStore {
   get(title: string): Promise<LarTiddlerRecord | null>;
 
   /**
-   * Write a record to live room state.
+   * Write a record to live wiki state.
    * Must NOT write to lares/ (canon path). Future canon promotion must use a
    * Keyhive-backed proposal/receipt graph outside this store.
    * origin carries the audit trail and echo-loop guard.
@@ -118,7 +118,7 @@ export interface LarTiddlerStore {
   put(record: LarTiddlerRecord, origin: ChangeOrigin): Promise<void>;
 
   /**
-   * Mark a title deleted in live room state.
+   * Mark a title deleted in live wiki state.
    * Does not hard-delete. Tombstoned titles disappear from listVisible() by default.
    * origin carries the audit trail.
    */

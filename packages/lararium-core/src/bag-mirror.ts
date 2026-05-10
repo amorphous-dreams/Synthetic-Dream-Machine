@@ -6,24 +6,24 @@
  * write to disk (correct for operator-private bags: identities, groups,
  * sessions, admin).
  *
- * Canon-promotion law: room-bag mirrors live under a gitignored scratch root
- * (e.g. `rooms/{slug}/`); canonical bag mirrors live under `packages/`. Edits
- * land in the room mirror; promotion is the deliberate ceremony that moves
- * a tiddler from the room bag → canonical bag, with the disk side effect of
- * a file move from `rooms/{slug}/` → `packages/`. The git diff IS the
+ * Canon-promotion law: wiki-bag mirrors live under a gitignored scratch root
+ * (e.g. `wikis/{slug}/`); canonical bag mirrors live under `packages/`. Edits
+ * land in the wiki mirror; promotion is the deliberate ceremony that moves
+ * a tiddler from the wiki bag → canonical bag, with the disk side effect of
+ * a file move from `wikis/{slug}/` → `packages/`. The git diff IS the
  * operator's signature on canon.
  *
- * Configuration source: programmatic for now; S5.6+ moves to admin-room
+ * Configuration source: programmatic for now; S5.6+ moves to admin-wiki
  * tiddlers tagged $:/tags/LarariumBagMirror.
  */
 
 import { resolveLarUri } from "./resolver.js";
 
-/** TW5 tag that identifies a bag-mirror-config tiddler in the admin room. */
+/** TW5 tag that identifies a bag-mirror-config tiddler in the admin wiki. */
 export const LARARIUM_BAG_MIRROR_TAG = "$:/tags/LarariumBagMirror";
 
-/** Strategy name as written in admin-room tiddlers. Maps to a MirrorPathFn. */
-export type MirrorStrategyName = "lares" | "engine" | "room-shadow";
+/** Strategy name as written in admin-wiki tiddlers. Maps to a MirrorPathFn. */
+export type MirrorStrategyName = "lares" | "engine" | "wiki-shadow";
 
 /**
  * Convert a lar: URI into a path relative to a mirror root.
@@ -57,18 +57,18 @@ export const enginePathStrategy: MirrorPathFn = (uri) => {
 };
 
 /**
- * Strategy: room-shadow — preserves the canonical disk structure of whichever
+ * Strategy: wiki-shadow — preserves the canonical disk structure of whichever
  * bag the URI would canonically belong to, so promotion is a file move.
  *
  * Examples:
  *   `lar:///ha.ka.ba/@lares/foo`              → `lares/memes/foo.md`
  *   `lar:///ha.ka.ba/@lararium/core/v0.1/ast` → `lararium-core/memes/ast.md`
  *
- * Apply under `rooms/{slug}/` mirrorRoot; the resulting path mirrors the
+ * Apply under `wikis/{slug}/` mirrorRoot; the resulting path mirrors the
  * canonical workspace location, making "promote to canon" a literal file move
- * from `rooms/{slug}/lares/memes/foo.md` → `packages/lares/memes/foo.md`.
+ * from `wikis/{slug}/lares/memes/foo.md` → `packages/lares/memes/foo.md`.
  */
-export const roomShadowPathStrategy: MirrorPathFn = (uri) => {
+export const wikiShadowPathStrategy: MirrorPathFn = (uri) => {
   try {
     const r = resolveLarUri(uri);
     if (r.laresRelPath)  return `lares/memes/${r.laresRelPath}`;

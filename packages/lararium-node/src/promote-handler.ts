@@ -104,7 +104,34 @@ export function createPromoteHandler(opts: PromoteHandlerOptions): CommandHandle
 
     const origin: ChangeOrigin = { kind: "lares-command", requestId: ctx.command.requestId };
 
-    // 3. Write the target copy. Composite routes by record.bag → target layer.
+    // 3. Enumerate fragment children (J.3 — recursive promote).
+    //
+    //    splitRecursive deposits one tiddler per ahu slot into the room bag
+    //    alongside the parent, giving them URIs of the form:
+    //      parentUri + '#' + slotName
+    //
+    //    A single-URI promote would leave those children behind in the room bag
+    //    so the canonical disk projector never writes their slot files.
+    //    Co-promotion is atomic under the same ChangeOrigin so the audit event
+    //    covers the whole ceremony.
+    //
+    //    We take only children whose live holder is the same source bag as the
+    //    parent — this avoids accidentally lifting children already promoted to
+    //    a different canonical bag by a prior ceremony.
+    const childPrefix = tiddler + "#";
+    const allTitles = await composite.listVisible();
+    const childTitles = allTitles.filter((t) => t.startsWith(childPrefix));
+
+    // For each candidate child, confirm it lives in actualFromBag.
+    const childrenToPromote: LarTiddlerRecord[] = [];
+    for (const childTitle of childTitles) {
+      const childBags = await composite.listBagsHolding(childTitle);
+      if (!childBags.includes(actualFromBag)) continue; // already promoted or in different bag
+      const childRecord = await composite.getLive(childTitle);
+      if (childRecord) childrenToPromote.push(childRecord);
+    }
+
+    // 4. Write the target copy of the parent. Composite routes by record.bag → target layer.
     const promoted: LarTiddlerRecord = {
       title:     record.title,
       bag:       toBag,
@@ -118,11 +145,25 @@ export function createPromoteHandler(opts: PromoteHandlerOptions): CommandHandle
     //    delete from the actual source layer, not the default writable.
     await composite.tombstoneInBag(actualFromBag, tiddler, origin);
 
+    // 5. Co-promote fragment children (J.3).
+    for (const child of childrenToPromote) {
+      const promotedChild: LarTiddlerRecord = {
+        title:     child.title,
+        bag:       toBag,
+        authority: child.authority ?? "lares-promote",
+        fields:    { ...child.fields },
+        ...(child.text !== undefined && { text: child.text }),
+      };
+      await composite.put(promotedChild, origin);
+      await composite.tombstoneInBag(actualFromBag, child.title, origin);
+    }
+
     return {
       tiddler,
-      promotedFrom: actualFromBag,
-      promotedTo:   toBag,
-      promotedAt:   new Date().toISOString(),
+      promotedFrom:     actualFromBag,
+      promotedTo:       toBag,
+      promotedAt:       new Date().toISOString(),
+      childrenPromoted: childrenToPromote.map((c) => c.title),
     };
   };
 }

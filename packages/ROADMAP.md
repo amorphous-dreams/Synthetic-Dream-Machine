@@ -1,6 +1,6 @@
 # Lararium — Web3 Genesis Artifact Roadmap
 
-> Updated: 2026-05-09 (Sigil family arc complete — G.1→G.5 + J.1+J.2)
+> Updated: 2026-05-09 (rooms→wikis full rename; J.3 next smoke target)
 > Branch: feature/lararium-node-3
 > Governing laws: see SESSION.md § Five Architecture Laws
 

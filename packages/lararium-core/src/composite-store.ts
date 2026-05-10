@@ -1,10 +1,10 @@
 /**
  * CompositeStore — recipe-ordered overlay of LarTiddlerStore layers.
  *
- * Layers ordered lowest → highest priority (room overrides corpus overrides core).
+ * Layers ordered lowest → highest priority (wiki overrides corpus overrides core).
  * Standard TW5 recipe law: same title in multiple bags → highest priority bag wins.
  *
- * Put/tombstone always route to the designated writable store (room bag by default).
+ * Put/tombstone always route to the designated writable store (wiki bag by default).
  * Read paths (get, listVisible) fan out across all layers; highest priority wins.
  * Subscribe fans out to all layers; callers must check origin to avoid echo loops.
  *
@@ -28,16 +28,16 @@ import {
   CIRCLES_DOC_URI,
   SESSIONS_DOC_URI,
   corpusLarUri,
-  roomLarUri,
+  wikiLarUri,
 } from "./lararium-doc.js";
 import type { RecipeTiddler } from "./recipe.js";
 import { parseBagStack, parsePlugins } from "./recipe.js";
 
 // Re-export so callers get bag IDs and URI helpers from a single import.
-export { corpusLarUri as corpusBagId, roomLarUri as roomBagId };
+export { corpusLarUri as corpusBagId, wikiLarUri as wikiBagId };
 
 // ---------------------------------------------------------------------------
-// Well-known bag slot IDs — six root docs (two planes) + corpus leaves + room
+// Well-known bag slot IDs — six root docs (two planes) + corpus leaves + wiki
 //
 // Bag ID = lar: URI of the owning Automerge doc. One doc = one bag = one URI.
 //
@@ -45,7 +45,7 @@ export { corpusLarUri as corpusBagId, roomLarUri as roomBagId };
 //
 //   CONTENT PLANE (Tiga)
 //   LARARIUM_DOC_URI   ha: engine, grammar, oracle tiddlers
-//   CATALOG_DOC_URI    ka: corpus discovery, room oracle tiddlers
+//   CATALOG_DOC_URI    ka: corpus discovery, wiki oracle tiddlers
 //   LARES_DOC_URI      ba: persona/doctrine system memes
 //
 //   SOCIAL PLANE
@@ -55,7 +55,7 @@ export { corpusLarUri as corpusBagId, roomLarUri as roomBagId };
 //
 //   LEAVES (added dynamically)
 //   corpusLarUri(slug) lar:///ha.ka.ba/@catalog/@{slug}  corpus child-docs
-//   roomLarUri(slug)   lar:///ha.ka.ba/@lararium/rooms/{slug}  room leaf
+//   wikiLarUri(slug)   lar:///ha.ka.ba/@lararium/wikis/{slug}  wiki leaf
 //   "draft"            high-churn drafts — stable lar: URI pending (M22)
 //   "projection"       derived tiddlers / search indexes — in-memory only
 //
@@ -83,7 +83,7 @@ export interface CompositeLayer {
    * that accept explicit `record.bag` routing but shouldn't override the
    * default. The projection layer (E.2) uses this: writable=true so explicit
    * writes targeting `bag: "projection"` route correctly, but the default
-   * writable stays draft/room.
+   * writable stays draft/wiki.
    */
   readonly defaultWritable?: boolean;
   /**
@@ -300,7 +300,7 @@ export class CompositeStore implements LarTiddlerStore {
    *
    * Causal-islands law: each island (doc) delivers changes through its own
    * MemeProvider so debounce and onSyncComplete remain per-island — a slow
-   * corpus island cannot gate a fast room island.
+   * corpus island cannot gate a fast wiki island.
    */
   addProjection(p: MemeProjection): () => void {
     const unsubs: Array<() => void> = this.layers.map((layer) =>

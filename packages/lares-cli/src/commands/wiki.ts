@@ -2,12 +2,12 @@
  * `lares wiki <verb> [args...]` — operator surface for whole-wiki operations.
  *
  * Subcommand-style dispatcher. Mirrors `lares bag` shape; operates at the
- * recipe / room granularity rather than individual bags. End-user UI may
- * still call these "wikis" while the architectural noun stays "room"
- * (Kowloon room=Group mapping).
+ * recipe / wiki granularity rather than individual bags. End-user UI may
+ * still call these "wikis" while the architectural noun stays "wiki"
+ * (Kowloon wiki=Group mapping).
  *
  * Verbs (E.4 ships read-only; E.5+ adds write/composition/GC):
- *   list                     — enumerate rooms registered in the catalog
+ *   list                     — enumerate wikis registered in the catalog
  *   which <uri>              — recipe-presence query for a tiddler
  *
  * Coming in E.5+: init, open, sync, pin, unpin, add-bag, remove-bag,
@@ -91,8 +91,8 @@ export async function cmdWikiInit(args: ParsedArgs): Promise<number> {
     console.log("");
     console.log(`wiki: ${slug}`);
     console.log(`  status:    ${result["status"]}`);
-    console.log(`  room URI:  ${result["roomUri"]}`);
-    console.log(`  room doc:  ${result["roomDocUrl"]}`);
+    console.log(`  wiki URI:  ${result["wikiUri"]}`);
+    console.log(`  wiki doc:  ${result["wikiDocUrl"]}`);
     console.log(`  draft URI: ${result["draftBagId"]}`);
     console.log(`  draft doc: ${result["draftDocUrl"]}`);
     console.log(`  recipe:    ${result["recipeUri"]}`);
@@ -425,9 +425,9 @@ export async function cmdWikiWhich(args: ParsedArgs): Promise<number> {
 }
 
 const SUBCOMMANDS: Readonly<Record<string, { handler: WikiSubcommand; summary: string }>> = {
-  "init":  { handler: cmdWikiInit,  summary: "Mint a fresh wiki: room canonical + per-wiki draft + recipe. Idempotent." },
+  "init":  { handler: cmdWikiInit,  summary: "Mint a fresh wiki: wiki canonical + per-wiki draft + recipe. Idempotent." },
   "open":  { handler: cmdWikiOpen,  summary: "Set the daemon's active wiki marker. Restart required to mount (E.7 = hot-reload)." },
-  "sync":  { handler: cmdWikiSync,  summary: "Walk rooms/<slug>/memes/** and ingest into the canonical bag. Idempotent." },
+  "sync":  { handler: cmdWikiSync,  summary: "Walk wikis/<slug>/memes/** and ingest into the canonical bag. Idempotent." },
   "pin":        { handler: cmdWikiPin,       summary: "Pin every bag in the wiki's recipe (whole-recipe residency)." },
   "unpin":      { handler: cmdWikiUnpin,     summary: "Unpin every bag in the wiki's recipe." },
   "add-bag":    { handler: cmdWikiAddBag,    summary: "Add a bag to the wiki's recipe at runtime. Hot-reload via composite.addLayer." },
@@ -435,7 +435,7 @@ const SUBCOMMANDS: Readonly<Record<string, { handler: WikiSubcommand; summary: s
   "epoch":         { handler: cmdWikiEpoch,         summary: "DXOS-style snapshot-restart on one of the wiki's bags. Bounds history." },
   "rotate-recipe": { handler: cmdWikiRotateRecipe,  summary: "Nix-generations: mint fresh canonical; retain old as previous-canon underlay." },
   "prune-stale":   { handler: cmdWikiPruneStale,    summary: "Surface stale draft tiddlers (no recent activity) for promote-or-prune." },
-  "list":       { handler: cmdWikiList,      summary: "Enumerate rooms registered in the catalog. Needs `lares serve`." },
+  "list":       { handler: cmdWikiList,      summary: "Enumerate wikis registered in the catalog. Needs `lares serve`." },
   "which":      { handler: cmdWikiWhich,     summary: "Recipe-presence query — list bags holding a tiddler. Needs `lares serve`." },
 };
 

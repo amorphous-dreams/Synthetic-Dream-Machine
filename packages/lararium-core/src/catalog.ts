@@ -5,12 +5,12 @@ import type { MutableLarRecord } from "./base-doc.js";
  * CatalogDoc — the tiny root Automerge document that names all islands.
  *
  * Doctrine (research packet §8 principle 8):
- *   The catalog serves as the hallway. Corpus docs function as libraries. Room docs function as shrines.
+ *   The catalog serves as the hallway. Corpus docs function as libraries. Wiki docs function as shrines.
  *   The catalog MUST stay small and warmable. It MUST NOT contain full corpus.
  *
  * Boot order:
- *   auth.ready → catalog doc opens → catalog.ready → room/corpus docs open
- *   per-island: corpus:<id>.ready, room-content.ready, room-presence.ready
+ *   auth.ready → catalog doc opens → catalog.ready → wiki/corpus docs open
+ *   per-island: corpus:<id>.ready, wiki-content.ready, wiki-presence.ready
  *
  * Authority-first-sync-order law:
  *   Catalog URL is injected by the server after auth, never guessed from localStorage.
@@ -39,7 +39,7 @@ export interface CatalogCorpusEntry {
 
 export interface CatalogRoomEntry {
   readonly id:              string;
-  /** Automerge URL for the room content doc (durable meaning: pins, notes). */
+  /** Automerge URL for the wiki content doc (durable meaning: pins, notes). */
   readonly contentDocUrl:   string;
   /** Automerge URL or ephemeral channel for presence (cursors, typing, attention). */
   readonly presenceDocUrl?: string;
@@ -84,7 +84,7 @@ export interface CatalogLarariumEntry {
 // CatalogDoc — Automerge document shape
 //
 // Extends LarDoc (M24): `tiddlers` required, not optional.
-// `corpora`, `rooms`, `recipes`, `projections` remain as legacy typed Records
+// `corpora`, `wikis`, `recipes`, `projections` remain as legacy typed Records
 // for backward-compat.  New code MUST use `tiddlers` as the authoritative
 // oracle — these Records exist as a read-optimisation cache only and will be
 // deprecated once all call sites migrate to tiddler-first lookups.
@@ -102,15 +102,15 @@ export interface CatalogDoc extends LarDoc {
    */
   readonly corpora:    Record<string, CatalogCorpusEntry>;
   /**
-   * @deprecated Use tiddlers keyed by roomLarUri(slug) instead.
-   * Legacy room index — mirrored as tiddlers at boot. Will be removed in M25+.
+   * @deprecated Use tiddlers keyed by wikiLarUri(slug) instead.
+   * Legacy wiki index — mirrored as tiddlers at boot. Will be removed in M25+.
    */
-  readonly rooms:      Record<string, CatalogRoomEntry>;
+  readonly wikis:      Record<string, CatalogRoomEntry>;
   readonly recipes:    Record<string, CatalogRecipeEntry>;
   readonly projections: Record<string, CatalogProjectionEntry>;
   /** LarariumDoc reference — separate island doc, binary blobs, Keyhive-signed. */
   readonly larariumDoc?:  CatalogLarariumEntry;
-  /** Capability hints for the connecting peer — read during derive-visible-rooms step. */
+  /** Capability hints for the connecting peer — read during derive-visible-wikis step. */
   readonly capabilityHints?: Record<string, string>;
 }
 
@@ -118,7 +118,7 @@ export function emptyCatalogDoc(): CatalogDoc {
   return {
     schemaVersion: "0.1",
     corpora:       {},
-    rooms:         {},
+    wikis:         {},
     recipes:       {},
     projections:   {},
     tiddlers:      {},

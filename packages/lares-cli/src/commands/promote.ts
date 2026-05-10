@@ -125,6 +125,11 @@ export async function cmdPromote(args: ParsedArgs): Promise<number> {
     console.log(`promoted: ${tiddler}`);
     console.log(`  ${promoteResult.result?.["promotedFrom"]} → ${promoteResult.result?.["promotedTo"]}`);
     console.log(`  at: ${promoteResult.result?.["promotedAt"]}`);
+    const children = (promoteResult.result?.["childrenPromoted"] ?? []) as string[];
+    if (children.length > 0) {
+      console.log(`  children: ${children.length} slot${children.length === 1 ? "" : "s"} co-promoted`);
+      for (const c of children) console.log(`    ${c}`);
+    }
     console.log(`  audit: lar:///ha.ka.ba/@lararium/@admin/log/${promoteResult.requestId}`);
     return 0;
   } finally {

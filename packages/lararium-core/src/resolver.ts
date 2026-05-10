@@ -191,7 +191,7 @@ export function resolveLarUri(uri: string): LarResolution {
     // URI grammar law (pos 0-indexed after lar:///):
     //   pos 1  @name  = root doc identity  (one of six reserved roots)
     //   pos 2  @name  = child doc under root  e.g. @catalog/@elyncia corpus
-    //   pos 2+ plain  = leaf path under root  e.g. @lararium/rooms/altar-fire
+    //   pos 2+ plain  = leaf path under root  e.g. @lararium/wikis/altar-fire
     //   pos 3+ always plain, never @-prefixed
     //
     // Any @-prefixed segment at pos 1 that is not @lares or @lararium resolves
@@ -208,7 +208,7 @@ export function resolveLarUri(uri: string): LarResolution {
 
   // Other three-segment tuple roots — virtual. Stabilize by promoting into
   // a recognized @-scope or by registering a custom bag mirror in the admin
-  // room (S5.6+).
+  // wiki (S5.6+).
   if (isTupleRoot(root)) {
     return { uri, root, childPath, resourcePath, laresRelPath: null, engineRelPath: null, kind: "caps-virtual", virtual: true };
   }
