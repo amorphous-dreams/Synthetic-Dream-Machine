@@ -3,7 +3,7 @@
   "compilerOptions": {
     "rootDir": "src",
     "outDir": "dist",
-    "types": ["vite/client"]
+    "types": ["vite/client", "tw5-typed"]
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist", "tests", "src/**/*.web2.ts"]

@@ -1,13 +1,39 @@
 /**
- * Ambient type shim for TiddlyWiki5 v5.4.x — full schema.
+ * Ambient type shim for TiddlyWiki5 v5.4.x — local-authoritative schema.
  *
- * Coverage: $tw root object, Tiddler, Wiki, Widget, filter engine,
- * module system, utils, syncer, parser pipeline, event model.
+ * **Coexistence with `tw5-typed`:**
  *
- * Authoring notes:
+ * As of E.10.10, `tw5-typed` (linonetwo / tiddly-gittly) ships as a dev
+ * dep and lives in `tsconfig.json::types`. It exports types under
+ * upstream-canonical names (`Widget`, `ITiddlyWiki`, `IParseTreeNode`,
+ * etc.) inside `declare module 'tiddlywiki'`. Our hand-rolled types
+ * here use a `TW5*` prefix and coexist without collision — different
+ * interface names, two parallel type graphs.
+ *
+ * **Why both:**
+ *   - tw5-typed is broader and stricter; tracking upstream changes
+ *     gives us future-friendliness AND surfaces canonical types for
+ *     NEW code (e.g. Path V plugin packaging imports directly from
+ *     `'tiddlywiki'`).
+ *   - The hand-rolled types here model exactly what our existing call
+ *     sites use, including domain-specific shapes (filter operator
+ *     `operand`/`suffix` access, `_larKukaliHook` extension slot) that
+ *     tw5-typed's stricter coverage doesn't expose. A cold migration
+ *     would force ~30 minutes of churn across 12 sites.
+ *
+ * **Migration path:**
+ *   - NEW code prefers tw5-typed names directly:
+ *       `import type { Widget } from 'tiddlywiki';`
+ *   - EXISTING code uses local `TW5*` aliases until the call site is
+ *     touched naturally; switch the import at that time.
+ *   - As file-by-file migrations land, the types in this file shrink.
+ *     Eventually only domain-specific extensions remain — and those
+ *     migrate to declaration-merging blocks per linonetwo's README:
+ *       `declare module 'tiddlywiki' { interface ITiddlyWiki { ... } }`
+ *
+ * **Authoring notes (local schema):**
  *   - TW5 is fully dynamic at runtime; types here are precise where TW5
  *     contracts are stable, permissive (unknown/Record) where they are not.
- *   - The `export =` form matches the CJS/ESM interop the npm package uses.
  *   - TW5WidgetInstance is an interface, not a class — widgets are wired via
  *     prototype chain, not ES6 class extends. Constructors are typed separately.
  *   - Filter `source` is the TW5 iterator protocol: a function that accepts a
