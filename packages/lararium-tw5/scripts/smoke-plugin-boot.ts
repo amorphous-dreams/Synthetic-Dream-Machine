@@ -34,6 +34,8 @@ async function main(): Promise<void> {
     "lar:///config/Lar/KaheaTemplate/html",
     "lar:///config/Lar/LoulouTemplate/markdown-meme",
     "lar:///config/Lar/LoulouTemplate/html",
+    "lar:///config/Lar/PranalaTemplate/markdown-meme",
+    "lar:///config/Lar/PranalaTemplate/html",
     "lar:///mounts/lar-meme-split",
     "lar:///ha.ka.ba/@lararium/templates/ahu/markdown-meme",
     "lar:///ha.ka.ba/@lararium/templates/ahu/html",
@@ -45,6 +47,8 @@ async function main(): Promise<void> {
     "lar:///ha.ka.ba/@lararium/templates/kahea/html",
     "lar:///ha.ka.ba/@lararium/templates/loulou/markdown-meme",
     "lar:///ha.ka.ba/@lararium/templates/loulou/html",
+    "lar:///ha.ka.ba/@lararium/templates/pranala/markdown-meme",
+    "lar:///ha.ka.ba/@lararium/templates/pranala/html",
     "lar:///ha.ka.ba/@lararium/templates/meme/markdown-meme",
   ];
   for (const title of expectedTitles) {
@@ -57,7 +61,7 @@ async function main(): Promise<void> {
   if (!parsers["text/x-memetic-wikitext"]) failures.push("parser not registered: text/x-memetic-wikitext");
 
   const widgetMods = tw?.modules?.types?.widget ?? {};
-  for (const expected of ["ahu", "aka", "kahea", "kau", "lar-meme-split", "loulou", "pranala-header"]) {
+  for (const expected of ["ahu", "aka", "kahea", "kau", "lar-meme-split", "loulou", "pranala", "pranala-header"]) {
     const found = Object.keys(widgetMods).some((title) => title.includes(expected));
     if (!found) failures.push(`widget module not found in registry: ${expected}`);
   }
@@ -115,6 +119,22 @@ async function main(): Promise<void> {
     failures.push(`loulou render did not produce widget HTML; got: ${loulouHTML.slice(0, 200)}`);
   }
 
+  // Probe pranala edge — inline form (no body, with family/role attrs).
+  const pranalaInlineSample = "before <<~ pranala lar:///x -> lar:///y family:dataflow role:implements >> after";
+  let pranalaInlineHTML = "";
+  try { pranalaInlineHTML = engine.renderText(pranalaInlineSample); } catch (e) { failures.push(`pranala inline renderText threw: ${(e as Error).message}`); }
+  if (!pranalaInlineHTML.includes("lar-pranala")) {
+    failures.push(`pranala inline render did not produce widget HTML; got: ${pranalaInlineHTML.slice(0, 200)}`);
+  }
+
+  // Probe pranala edge — block form (with body).
+  const pranalaBlockSample = "<<~ pranala lar:///a -> lar:///b >>annotation prose<<~/pranala >>";
+  let pranalaBlockHTML = "";
+  try { pranalaBlockHTML = engine.renderText(pranalaBlockSample); } catch (e) { failures.push(`pranala block renderText threw: ${(e as Error).message}`); }
+  if (!pranalaBlockHTML.includes("lar-pranala") || !pranalaBlockHTML.includes("annotation prose")) {
+    failures.push(`pranala block render did not include body; got: ${pranalaBlockHTML.slice(0, 300)}`);
+  }
+
   // Probe deserializer prologue + postamble capture.
   // Synthesize a single-meme carrier with DOCTYPE prologue and trailing
   // commentary postamble; deserialize via $tw.wiki.deserializeTiddlers
@@ -158,6 +178,8 @@ async function main(): Promise<void> {
   console.log(`  pranala-header sigil rendered as widget (${phHTML.length} bytes, .lar-pranala-header span present)`);
   console.log(`  kahea URI sigil rendered as widget (${kaheaHTML.length} bytes, .lar-kahea span present)`);
   console.log(`  loulou URI sigil rendered as widget (${loulouHTML.length} bytes, .lar-loulou span present)`);
+  console.log(`  pranala inline edge rendered (${pranalaInlineHTML.length} bytes, .lar-pranala span present)`);
+  console.log(`  pranala block edge rendered with body (${pranalaBlockHTML.length} bytes, body inlined)`);
   console.log(`  deserializer captured prologue + postamble fields on parent`);
   process.exit(0);
 }

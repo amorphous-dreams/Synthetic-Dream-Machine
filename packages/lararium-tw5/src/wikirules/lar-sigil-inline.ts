@@ -19,6 +19,7 @@ import {
   matchAhuOpenAt,
   matchUriFormSigilAt,
   matchPranalaHeaderAt,
+  matchPranalaOpenAt,
   findCloseEnd,
   findGenericOpenAt,
   attrsForAhu,
@@ -69,6 +70,28 @@ export function findNextMatch(this: RuleInstance, startPos: number): number | un
       this.matchEnd = pranalaHeader.end;
       this.attrs    = { __sigil__: "pranala-header", uri: pranalaHeader.uri };
       return pos;
+    }
+    // Pranala inline form: <<~ pranala #name? <from> -> <to> family:f? role:r? >>
+    // No closing tag — pure inline edge declaration. Block form (with body)
+    // is claimed by lar-sigil-block; here we match only when no closer follows.
+    const pranala = matchPranalaOpenAt(source, pos);
+    if (pranala) {
+      const closeEnd = findCloseEnd(source, "pranala", pranala.end);
+      if (closeEnd === null) {
+        this.matchPos = pos;
+        this.matchEnd = pranala.end;
+        this.attrs    = {
+          __sigil__: "pranala",
+          ...(pranala.slot ? { slot: pranala.slot } : {}),
+          from: pranala.from,
+          to:   pranala.to,
+          ...pranala.attrs,
+        };
+        return pos;
+      }
+      // Block form follows — leave to block rule.
+      pos = source.indexOf("<<~", pos + 3);
+      continue;
     }
     const generic = findGenericOpenAt(source, pos);
     if (generic) {

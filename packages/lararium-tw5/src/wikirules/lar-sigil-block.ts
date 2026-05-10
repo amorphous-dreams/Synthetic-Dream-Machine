@@ -18,6 +18,7 @@ import {
   AHU_CLOSE_TAG,
   BLOCK_CLOSERS,
   matchAhuOpenAt,
+  matchPranalaOpenAt,
   findCloseEnd,
   findGenericOpenAt,
   attrsForAhu,
@@ -47,8 +48,30 @@ export function findNextMatch(this: RuleInstance, startPos: number): number | un
         return pos;
       }
     }
+    // Pranala block form: `<<~ pranala #name? <from> -> <to> >>body<<~/pranala >>`
+    // Emit a `pranala` widget node with attributes + body as a text-node child.
+    // Templates reconstruct the canonical disk form from attributes + body.
+    const pranala = matchPranalaOpenAt(source, pos);
+    if (pranala) {
+      const closeEnd = findCloseEnd(source, "pranala", pranala.end);
+      if (closeEnd !== null) {
+        const closeTagStart = source.lastIndexOf("<<~/pranala", closeEnd);
+        const body = source.slice(pranala.end, closeTagStart);
+        this.matchPos = pos;
+        this.matchEnd = closeEnd;
+        this.attrs    = {
+          __pranala_block__: "true",
+          ...(pranala.slot ? { slot: pranala.slot } : {}),
+          from: pranala.from,
+          to:   pranala.to,
+          body,
+          ...pranala.attrs,
+        };
+        return pos;
+      }
+    }
     const generic = findGenericOpenAt(source, pos);
-    if (generic?.sigil && BLOCK_CLOSERS[generic.sigil] && generic.sigil !== "ahu") {
+    if (generic?.sigil && BLOCK_CLOSERS[generic.sigil] && generic.sigil !== "ahu" && generic.sigil !== "pranala") {
       const closeEnd = findCloseEnd(source, generic.sigil, generic.end);
       if (closeEnd !== null) {
         this.matchPos = pos;
@@ -69,6 +92,16 @@ export function parse(this: RuleInstance): ParseTreeNode[] {
 
   if ("__literal__" in attrs) {
     return [{ type: "text", text: attrs["__literal__"]! }];
+  }
+
+  if ("__pranala_block__" in attrs) {
+    delete attrs["__pranala_block__"];
+    const body = attrs["body"] ?? "";
+    return [{
+      type:       "pranala",
+      attributes: attrToTree(attrs),
+      children:   body ? [{ type: "text", text: body }] : [],
+    }];
   }
 
   const body = attrs["__body__"] ?? "";

@@ -89,6 +89,48 @@ export function matchPranalaHeaderAt(source: string, start: number): PranalaHead
 }
 
 /**
+ * Pranala edge sigil — explicit edge with from/to and optional slot/family/role.
+ *
+ * Inline form:  `<<~ pranala #name? <from> -> <to> [family:f] [role:r] >>`
+ * Block form:   `<<~ pranala #name? <from> -> <to> >>body<<~/pranala >>`
+ *
+ * The two forms share opener parsing; closer presence distinguishes them.
+ */
+export const PRANALA_OPEN_RE = /<<~\s*pranala\s+(?:(#[\w-]+)\s+)?(\S+)\s*->\s*(\S+)((?:\s+\w+:[^\s>]+)*)\s*>>/g;
+
+export interface PranalaOpenMatch {
+  readonly start:  number;
+  readonly end:    number;
+  readonly slot:   string | null;
+  readonly from:   string;
+  readonly to:     string;
+  readonly attrs:  Record<string, string>;
+}
+
+export function matchPranalaOpenAt(source: string, start: number): PranalaOpenMatch | null {
+  PRANALA_OPEN_RE.lastIndex = start;
+  const m = PRANALA_OPEN_RE.exec(source);
+  if (!m || m.index !== start) return null;
+  const [, slot, from, to, tail] = m;
+  const attrs: Record<string, string> = {};
+  if (tail) {
+    const attrRe = /(\w+):([^\s>]+)/g;
+    let am: RegExpExecArray | null;
+    while ((am = attrRe.exec(tail)) !== null) {
+      attrs[am[1]!] = am[2]!;
+    }
+  }
+  return {
+    start: m.index,
+    end:   PRANALA_OPEN_RE.lastIndex,
+    slot:  slot ?? null,
+    from:  from!,
+    to:    to!,
+    attrs,
+  };
+}
+
+/**
  * Block sigils whose closing tag we recognize for body capture. The body
  * text rides through the parse tree as literal source so the disk render
  * preserves it; it's not used for widget rendering of non-ahu sigils today.

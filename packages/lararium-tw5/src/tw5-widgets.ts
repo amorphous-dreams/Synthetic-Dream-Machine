@@ -304,6 +304,64 @@ export const LARARIUM_LOULOU_TEMPLATE_HTML = {
 } as const;
 
 /**
+ * Pranala cascade — `<<~ pranala #slot? from -> to family:f? role:r? >>` and
+ * its block form. Templates read pranala-slot / -from / -to / -body /
+ * -family / -role variables. Markdown-meme template reconstructs the
+ * canonical literal source from the variable bindings; html template emits
+ * an arrow-shaped edge widget (with optional `<details>` body for block
+ * form when `<<pranala-body>>` is non-empty).
+ */
+export const LARARIUM_PRANALA_CASCADE_MARKDOWN_MEME = {
+  title:         "lar:///config/Lar/PranalaTemplate/markdown-meme",
+  tags:          ["$:/tags/Lar/PranalaTemplate"],
+  "list-before": "lar:///config/Lar/PranalaTemplate/html",
+  text:          "[<lar-export-scope>match[markdown-meme]then[lar:///ha.ka.ba/@lararium/templates/pranala/markdown-meme]]",
+} as const;
+
+export const LARARIUM_PRANALA_CASCADE_HTML = {
+  title:       "lar:///config/Lar/PranalaTemplate/html",
+  tags:        ["$:/tags/Lar/PranalaTemplate"],
+  text:        "[[lar:///ha.ka.ba/@lararium/templates/pranala/html]]",
+} as const;
+
+/**
+ * Pranala templates. The markdown-meme template reconstructs the canonical
+ * disk form. Two surface shapes: inline (no body) and block (with body); the
+ * template branches on `<<pranala-body>>` non-emptiness.
+ *
+ * Inline emit:  `<<~ pranala [#slot ]from -> to[ family:f][ role:r] >>`
+ * Block emit:   `<<~ pranala [#slot ]from -> to >>body<<~/pranala >>`
+ *
+ * The `<$list>` filter pattern selects between block and inline based on
+ * pranala-body presence; trailing `family:` and `role:` bindings are
+ * conditionally appended only when non-empty so the round-trip emits no
+ * empty trailing whitespace.
+ */
+export const LARARIUM_PRANALA_TEMPLATE_MARKDOWN_MEME = {
+  title:    "lar:///ha.ka.ba/@lararium/templates/pranala/markdown-meme",
+  type:     "text/x-memetic-wikitext",
+  text: [
+    "<$list filter=\"[<pranala-body>!is[blank]]\" variable=\"_\" emptyMessage=\"<<~ pranala <$list filter='[<pranala-slot>!is[blank]]' variable='_'><<pranala-slot>> </$list><<pranala-from>> -> <<pranala-to>><$list filter='[<pranala-family>!is[blank]]' variable='_'> family:<<pranala-family>></$list><$list filter='[<pranala-role>!is[blank]]' variable='_'> role:<<pranala-role>></$list> >>\">",
+    "<<~ pranala <$list filter=\"[<pranala-slot>!is[blank]]\" variable=\"_\"><<pranala-slot>> </$list><<pranala-from>> -> <<pranala-to>> >><<pranala-body>><<~/pranala >>",
+    "</$list>",
+  ].join(""),
+} as const;
+
+export const LARARIUM_PRANALA_TEMPLATE_HTML = {
+  title:    "lar:///ha.ka.ba/@lararium/templates/pranala/html",
+  type:     "text/vnd.tiddlywiki",
+  text: [
+    "<span class=\"lar-pranala\" data-from=<<pranala-from>> data-to=<<pranala-to>>",
+    "<$list filter=\"[<pranala-family>!is[blank]]\" variable=\"_\"> data-family=<<pranala-family>></$list>",
+    "<$list filter=\"[<pranala-role>!is[blank]]\" variable=\"_\"> data-role=<<pranala-role>></$list>",
+    ">",
+    "<$link to=<<pranala-from>>><<pranala-from>></$link>&rarr;<$link to=<<pranala-to>>><<pranala-to>></$link>",
+    "<$list filter=\"[<pranala-body>!is[blank]]\" variable=\"_\"><details class=\"lar-pranala-body\"><summary>note</summary><<pranala-body>></details></$list>",
+    "</span>",
+  ].join(""),
+} as const;
+
+/**
  * Meme-level template — markdown-meme scope.
  *
  * Wraps a parent meme's text field with `\rules only` so the wikifier emits
