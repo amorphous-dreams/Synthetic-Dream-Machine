@@ -21,15 +21,16 @@
  *   pnpm --filter @lararium/tw5 build:plugin
  */
 
-import { readFileSync, writeFileSync, mkdirSync, mkdtempSync, rmSync, cpSync } from "fs";
+import { readFileSync, writeFileSync, mkdirSync, mkdtempSync, rmSync, cpSync, copyFileSync } from "fs";
 import { spawnSync } from "child_process";
 import { tmpdir } from "os";
 import path from "path";
 import { fileURLToPath } from "url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const ROOT    = path.resolve(__dirname, "..");
-const OUT_DIR = path.join(ROOT, "dist-plugin");
+const ROOT       = path.resolve(__dirname, "..");
+const OUT_DIR    = path.join(ROOT, "dist-plugin");
+const PLUGIN_DIR = path.join(ROOT, "plugins");
 
 const PLUGIN_TITLE_LAR = "lar:///plugins/lares/memetic-wikitext";
 const PLUGIN_TITLE_TW5 = "$:/plugins/lares/memetic-wikitext";
@@ -121,9 +122,15 @@ async function main(): Promise<void> {
   const tsSrcPath = path.join(ROOT, "src", "plugin-tiddler.generated.ts");
   writeFileSync(tsSrcPath, tsHeader + tsBody, "utf8");
 
+  // Copy canonical JSON to plugins/ so automerge-docs picks it up alongside
+  // sq-streams and lararium-boot-shadows.
+  const pluginJsonDest = path.join(PLUGIN_DIR, "lares-memetic-wikitext.json");
+  copyFileSync(path.join(OUT_DIR, "lares-memetic-wikitext.lar.json"), pluginJsonDest);
+
   console.log(`✓ wrote ${tidLar.path} (${(tidLar.bytes / 1024).toFixed(1)} KiB) — lararium VM canonical`);
   console.log(`✓ wrote ${tidTw5.path} (${(tidTw5.bytes / 1024).toFixed(1)} KiB) — vanilla TW5 drag-and-drop`);
   console.log(`✓ wrote ${tsSrcPath}`);
+  console.log(`✓ wrote ${pluginJsonDest} — automerge-docs pickup`);
   console.log(`  ${tiddlerCount} inner tiddlers packed`);
 }
 

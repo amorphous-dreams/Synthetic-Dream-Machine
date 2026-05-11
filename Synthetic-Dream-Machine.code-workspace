@@ -14,6 +14,12 @@
 				}
 			},
 			"inputs": []
+		},
+		"chat.tools.terminal.autoApprove": {
+			"/^cd /home/joshu/Synthetic-Dream-Machine && bash tests/lararium-tw5/sync/sync-decompose-promote\\.sh decompose 2>&1$/": {
+				"approve": true,
+				"matchCommandLine": true
+			}
 		}
 	}
 }

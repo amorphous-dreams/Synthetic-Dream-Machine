@@ -52,6 +52,8 @@ packages/lararium-node/.lararium/
 # Room-bag disk scratch — operator's editable surface, never committed.
 # Promotion ceremony moves files from wikis/{slug}/ into packages/.
 wikis/
+!tests/expected/wikis/
+!tests/runs/wikis/
 
 # Per-deployment social bootstrap (operator AutomergeUrls) — written by
 # `lararium:init`, consumed at boot. Never committed.

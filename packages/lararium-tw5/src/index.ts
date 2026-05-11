@@ -29,7 +29,7 @@ export { exportMemeText, buildDirectRecord, inferChildMemeTitle } from "./meme-w
 export { tw5ElementToVdom, tw5ElementToHtml } from "./fake-dom.js";
 export type { VDomNode, TW5FakeElement, TW5FakeTextNode, TW5FakeNode } from "./fake-dom.js";
 
-export { TW5_VERSION, TW5_CORE_SCRIPT_FILENAME } from "./generated-tw5-version.js";
+export { TW5_VERSION, TW5_CORE_SCRIPT_FILENAME, TW5_CORE_DIR } from "./generated-tw5-version.js";
 
 export { parseTaploFields, patchTomlKey, lintToml } from "./toml-ast.js";
 

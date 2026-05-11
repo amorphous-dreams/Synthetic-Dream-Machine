@@ -24,7 +24,7 @@ import { fileURLToPath }         from "url";
 
 import { TW5Engine }             from "@lararium/tw5";
 import { tw5PluginsRoot, tw5DistWidgetsRoot } from "@lararium/tw5/tw5-memes-root";
-import { TW5_VERSION, TW5_CORE_SCRIPT_FILENAME } from "@lararium/tw5";
+import { TW5_VERSION, TW5_CORE_SCRIPT_FILENAME, TW5_CORE_DIR } from "@lararium/tw5";
 
 import type { LarariumDoc, LarariumBlobEntry } from "@lararium/core";
 import {
@@ -41,8 +41,7 @@ import {
 // ---------------------------------------------------------------------------
 
 const __dir = dirname(fileURLToPath(import.meta.url));
-const GENESIS_DIR  = join(__dir, "../genesis");
-const TW5_PUBLIC   = join(__dir, "../../lararium-tw5/public");
+const GENESIS_DIR   = join(__dir, "../genesis");
 const PACKAGES_ROOT = join(__dir, "../../");
 
 /**
@@ -185,7 +184,7 @@ async function buildLaresPluginBlob(): Promise<Uint8Array> {
 async function main(): Promise<void> {
   console.log("[genesis] Sprint 2 — build-genesis-island starting");
 
-  const coreJsPath = join(TW5_PUBLIC, TW5_CORE_SCRIPT_FILENAME);
+  const coreJsPath = join(TW5_CORE_DIR, TW5_CORE_SCRIPT_FILENAME);
   if (!existsSync(coreJsPath)) {
     throw new Error(
       `[genesis] TW5 core not found: ${coreJsPath}\n  → run pnpm --filter @lararium/tw5 build:vendor first`,

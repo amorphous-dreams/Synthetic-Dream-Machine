@@ -1,14 +1,14 @@
 /**
- * build-tw5-vendor.ts — render TW5 core JS and store it in lararium-tw5/public/.
+ * build-tw5-vendor.ts — render TW5 core JS and store it in lararium-tw5/tw5-core/.
  *
  * The blob is seeded into the LarariumDoc at node boot; browser peers receive it
  * via Automerge sync (web3 path — no static HTTP serve of this file).
  *
  * Generates two artifacts:
- *   1. packages/lararium-tw5/public/tiddlywikicore-<version>.js
+ *   1. packages/lararium-tw5/tw5-core/tiddlywikicore-<version>.js
  *      TW5's prebuilt browser bundle — seeder source of truth.
  *   2. packages/lararium-tw5/src/generated-tw5-version.ts
- *      Exports TW5_VERSION, TW5_CORE_SCRIPT_FILENAME, TW5_PUBLIC_DIR.
+ *      Exports TW5_VERSION, TW5_CORE_SCRIPT_FILENAME, TW5_CORE_DIR.
  *
  * Usage:
  *   pnpm --filter @lararium/tw5 run build:tw5-vendor
@@ -29,9 +29,9 @@ const TW5_VERSION = "5.4.0";
 const TW5_SCRIPT_FILENAME = `tiddlywikicore-${TW5_VERSION}.js`;
 
 // laresRoot = .../packages/lares — two dirname() calls reach the repo root.
-const MONOREPO_ROOT  = dirname(dirname(laresRoot));
-const TW5_PUBLIC_DIR = join(MONOREPO_ROOT, "packages/lararium-tw5/public");
-const CORE_JS_TW5    = join(TW5_PUBLIC_DIR, TW5_SCRIPT_FILENAME);
+const MONOREPO_ROOT = dirname(dirname(laresRoot));
+const TW5_CORE_DIR  = join(MONOREPO_ROOT, "packages/lararium-tw5/tw5-core");
+const CORE_JS_TW5   = join(TW5_CORE_DIR, TW5_SCRIPT_FILENAME);
 const VERSION_TS_OUT = resolve(__dirname, "../src/generated-tw5-version.ts");
 
 // ---------------------------------------------------------------------------
@@ -65,7 +65,7 @@ await new Promise<void>((resolve_p, reject) => {
       reject(new Error(`TW5 render did not produce ${generated}`));
       return;
     }
-    mkdirSync(TW5_PUBLIC_DIR, { recursive: true });
+    mkdirSync(TW5_CORE_DIR, { recursive: true });
     fs.copyFileSync(generated, CORE_JS_TW5);
     // cleanup tmp
     fs.rmSync(tmpOut, { recursive: true, force: true });
@@ -86,8 +86,11 @@ const versionTs = `\
 
 export const TW5_VERSION = "${TW5_VERSION}";
 
-/** Filename of the vendored TW5 core blob in lararium-tw5/public/. */
+/** Filename of the vendored TW5 core blob in lararium-tw5/tw5-core/. */
 export const TW5_CORE_SCRIPT_FILENAME = "${TW5_SCRIPT_FILENAME}";
+
+/** Absolute path to the lararium-tw5/tw5-core/ directory (build artifact, gitignored). */
+export const TW5_CORE_DIR = new URL("../tw5-core", import.meta.url).pathname;
 `;
 
 writeFileSync(VERSION_TS_OUT, versionTs, "utf-8");

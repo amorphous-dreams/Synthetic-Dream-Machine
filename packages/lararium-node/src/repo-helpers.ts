@@ -8,7 +8,7 @@
 
 import type { AutomergeUrl, DocHandle, Repo } from "@automerge/automerge-repo";
 
-const LOCAL_READY_MS = 500;
+const LOCAL_READY_MS = 3000;
 
 export async function waitHandleLocal<T>(
   repo: Repo,

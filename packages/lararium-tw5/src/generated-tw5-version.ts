@@ -3,5 +3,8 @@
 
 export const TW5_VERSION = "5.4.0";
 
-/** Filename of the vendored TW5 core blob in lararium-tw5/public/. */
+/** Filename of the vendored TW5 core blob in lararium-tw5/tw5-core/. */
 export const TW5_CORE_SCRIPT_FILENAME = "tiddlywikicore-5.4.0.js";
+
+/** Absolute path to the lararium-tw5/tw5-core/ directory (build artifact, gitignored). */
+export const TW5_CORE_DIR = new URL("../tw5-core", import.meta.url).pathname;

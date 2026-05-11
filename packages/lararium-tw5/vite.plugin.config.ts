@@ -20,6 +20,9 @@
  *   Plugin modules `require("$:/core/...")` at runtime; we must NOT
  *   inline TW5 core into our bundle. The `external` predicate matches
  *   `^\$:/` paths so Vite leaves them as `require()` calls.
+ *   The `tiddlywiki` npm package is also externalized — tw5-vm.ts uses
+ *   a dynamic `import("tiddlywiki")` for Node-side VM; that must never
+ *   be bundled into the plugin tiddler.
  *
  * **No source maps:**
  *   TW5's `evalGlobal` swallows external `.map` files. Inline maps
@@ -95,7 +98,7 @@ async function main(): Promise<void> {
         sourcemap:   false,
         minify:      false,
         rollupOptions: {
-          external: (id) => id.startsWith("$:/"),
+          external: (id) => id.startsWith("$:/") || id === "tiddlywiki" || id.startsWith("tiddlywiki/"),
           output: {
             banner,
             esModule: false,
