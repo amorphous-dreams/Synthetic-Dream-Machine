@@ -13,13 +13,16 @@
  *   (Vite dev proxy: /ws → ws://localhost:8080)
  *
  * Usage:
- *   node dist/main.js [--port 8080] [--storage .lararium] [--wiki altar-fire]
+ *   node dist/main.js [--port 8080] [--storage .lararium] [--wiki altar-fire] [--root /alt/root]
  *
  * Environment:
  *   LAR_PORT     — HTTP+WS server port (default 8080)
- *   LAR_STORAGE  — storage directory (default .lararium)
+ *   LAR_STORAGE  — storage directory (default {root}/.lararium)
  *   LAR_WIKI     — wiki id (default altar-fire)
  *   LAR_CATALOG  — existing catalog automerge URL to join (optional)
+ *   LAR_ROOT     — alternate repo root for all mirror paths (default: monorepo root).
+ *                  Set to an isolated test dir so promote/sync writes never touch
+ *                  canonical packages/ or wikis/ paths.
  *
  * Bootstrap:
  *   The catalog Automerge URL is printed to stdout on boot.
@@ -32,7 +35,6 @@ import { createServer }                  from "http";
 import WebSocket                         from "isomorphic-ws";
 import { resolve }                       from "path";
 import { openNodeLarPeer }               from "./open-node-lar-peer.js";
-import { generateOrLoadOperatorKeypair } from "./operator-key.js";
 import { join } from "path";
 import { makeDiskProjectionKind }        from "./projection-kinds.js";
 import { LARES_MEMES_ROOT, REPO_ROOT }   from "./node-host.js";
@@ -63,14 +65,14 @@ const STRATEGIES: Record<string, MirrorPathFn> = {
  *   enabled      — "no" disables the mirror; anything else (incl. absent) enables
  */
 function readBagMirrorsFromAdmin(adminTw5: TW5Engine, defaults: BagMirrorConfig[]): BagMirrorConfig[] {
-  const titles = adminTw5.filterTiddlers(`[tag[${LARARIUM_BAG_MIRROR_TAG}]]`);
+  const titles = adminTw5.$tw.wiki.filterTiddlers(`[tag[${LARARIUM_BAG_MIRROR_TAG}]]`);
   if (titles.length === 0) {
     console.log(`[lararium] no admin bag-mirror tiddlers found — using ${defaults.length} programmatic defaults`);
     return defaults;
   }
   const result: BagMirrorConfig[] = [];
   for (const title of titles) {
-    const fields = (adminTw5.getTiddler(title)?.["fields"] ?? {}) as Record<string, string>;
+    const fields = (adminTw5.$tw.wiki.getTiddler(title)?.fields ?? {}) as Record<string, string>;
     if (fields["enabled"] === "no") continue;
     const bagId      = fields["bag-id"];
     const mirrorRoot = fields["mirror-root"];
@@ -92,16 +94,21 @@ function readBagMirrorsFromAdmin(adminTw5: TW5Engine, defaults: BagMirrorConfig[
 // CLI / env config
 // ---------------------------------------------------------------------------
 
-function parseArgs(): { port: number; storageDir: string; wikiId: string; catalogUrl: string | null; debugJson: boolean } {
+function parseArgs(): { port: number; storageDir: string; genesisDir: string; wikiId: string; rootDir: string; catalogUrl: string | null; debugJson: boolean } {
   const args = process.argv.slice(2);
   const get  = (flag: string, env: string, fallback: string) => {
     const i = args.indexOf(flag);
     return (i !== -1 ? args[i + 1] : undefined) ?? process.env[env] ?? fallback;
   };
+  const rootDir    = resolve(get("--root", "LAR_ROOT", REPO_ROOT));
+  const storageDir = resolve(get("--storage", "LAR_STORAGE", join(rootDir, ".lararium")));
+  const genesisDir = resolve(get("--genesis", "LAR_GENESIS", join(rootDir === REPO_ROOT ? join(REPO_ROOT, "packages", "lararium-node") : rootDir, "genesis")));
   return {
-    port:       Number(get("--port",    "LAR_PORT",    "8080")),
-    storageDir: resolve(get("--storage","LAR_STORAGE", ".lararium")),
-    wikiId:     get("--wiki",    "LAR_WIKI",    "altar-fire"),
+    port:       Number(get("--port", "LAR_PORT", "8080")),
+    storageDir,
+    genesisDir,
+    wikiId:     get("--wiki", "LAR_WIKI", "altar-fire"),
+    rootDir,
     catalogUrl: process.env["LAR_CATALOG"] ?? null,
     debugJson:  args.includes("--debug") || process.env["LAR_DEBUG_JSON"] === "1",
   };
@@ -136,7 +143,7 @@ function makeHandler(
 // ---------------------------------------------------------------------------
 
 async function main(): Promise<void> {
-  const { port, storageDir, wikiId, catalogUrl, debugJson } = parseArgs();
+  const { port, storageDir, genesisDir, wikiId, rootDir, catalogUrl, debugJson } = parseArgs();
 
   // Shared state — updated as boot phases fire.
   const state: { phase: string; wikiId: string } = {
@@ -165,14 +172,12 @@ async function main(): Promise<void> {
     console.log(`[lararium] HTTP+WS server on :${port}  (GET /api/health  WS /ws)`);
   });
 
-  // S7.1: device keypair generation moves to scripts/init-lararium.ts (lararium:init).
-  // Loaded here for future use by createNodeSession / capability layer.
-  const _operatorIdentity = await generateOrLoadOperatorKeypair(storageDir);
-
   const result = await openNodeLarPeer({
     hostId:     "lararium-node",
     wikiId,
     storageDir,
+    genesisDir,
+    rootDir,
     wss,
     catalogUrl,
     onPhase: (phase) => {
@@ -195,14 +200,17 @@ async function main(): Promise<void> {
   // First read attempt: admin-wiki tiddlers tagged $:/tags/LarariumBagMirror.
   // Fallback: programmatic defaults below. Operator-private bags
   // (identities/groups/sessions/admin) are absent — they never reach disk.
+  const laresMirrorRoot = (rootDir === REPO_ROOT)
+    ? LARES_MEMES_ROOT
+    : join(rootDir, "packages", "lares", "memes");
   const defaultMirrors: BagMirrorConfig[] = [
     // Canonical lares — only written via promotion ceremony (wiki → lares).
-    { bagId: BAG_IDS.lares,    mirrorRoot: LARES_MEMES_ROOT,   toRelPath: laresPathStrategy },
+    { bagId: BAG_IDS.lares,    mirrorRoot: laresMirrorRoot,              toRelPath: laresPathStrategy },
     // Engine corpus — `lar:///ha.ka.ba/@lararium/{pkg}/v{ver}/{path}` →
     // `packages/{pkg-slug}/memes/{path}.md`. Workspace root is the mirror root.
-    { bagId: BAG_IDS.lararium, mirrorRoot: join(REPO_ROOT, "packages"), toRelPath: enginePathStrategy },
+    { bagId: BAG_IDS.lararium, mirrorRoot: join(rootDir, "packages"),    toRelPath: enginePathStrategy },
     // Wiki bag — gitignored scratch. Edits land here; promotion is the move.
-    { bagId: wikiBagId(wikiId), mirrorRoot: join(REPO_ROOT, "wikis", wikiId), toRelPath: wikiShadowPathStrategy },
+    { bagId: wikiBagId(wikiId), mirrorRoot: join(rootDir, "wikis", wikiId), toRelPath: wikiShadowPathStrategy },
   ];
   const mirrors = readBagMirrorsFromAdmin(result.admin.tw5, defaultMirrors);
 
@@ -215,7 +223,7 @@ async function main(): Promise<void> {
 
   await projections.enable({ id: "disk", kind: "disk", enabled: true, fields: {} }, peer);
 
-  console.log(`[lararium] live — wiki: ${wikiId} | storage: ${storageDir}`);
+  console.log(`[lararium] live — wiki: ${wikiId} | storage: ${storageDir} | root: ${rootDir}`);
   console.log(`[lararium] catalog:  ${result.catalogHandleUrl ?? "(none)"}`);
   console.log(`[lararium] lararium: ${result.larariumDocUrl ?? "(none)"}`);
   console.log(`[lararium] admin:    ${result.admin.adminHandle.url}`);

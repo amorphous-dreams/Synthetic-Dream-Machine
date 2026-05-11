@@ -184,8 +184,8 @@ export class MemeSyncAdaptor implements MemeProjection {
         toAdd.push(fields);
       }));
 
-      for (const title of toRemove) this.tw5.removeTiddler(title);
-      if (toAdd.length > 0) this.tw5.bulkSetTiddlers(toAdd);
+      for (const title of toRemove) this.tw5.$tw.wiki.deleteTiddler(title);
+      if (toAdd.length > 0) _bulkAdd(this.tw5, toAdd);
     } finally {
       this._applying.delete(applyKey);
     }
@@ -215,7 +215,7 @@ export class MemeSyncAdaptor implements MemeProjection {
 
         if (change.record === null || change.record.deleted) {
           toRemove.push(change.title);
-          const childTitles: string[] = this.tw5.filterTiddlers(`[field:fragment-parent[${change.title}]]`);
+          const childTitles: string[] = this.tw5.$tw.wiki.filterTiddlers(`[field:fragment-parent[${change.title}]]`);
           for (const t of childTitles) toRemove.push(t);
           this._pendingDeletions.add(change.title);
         } else {
@@ -230,8 +230,8 @@ export class MemeSyncAdaptor implements MemeProjection {
       this._applying.delete(applyKey);
     }
 
-    for (const title of toRemove) this.tw5.removeTiddler(title);
-    if (toAdd.length > 0) this.tw5.bulkSetTiddlers(toAdd);
+    for (const title of toRemove) this.tw5.$tw.wiki.deleteTiddler(title);
+    if (toAdd.length > 0) _bulkAdd(this.tw5, toAdd);
   }
 
   /**
@@ -246,9 +246,11 @@ export class MemeSyncAdaptor implements MemeProjection {
       this._unsubscribe = this.store.subscribe((change) => this._applyChange(change));
     }
 
-    this._unwatchCascade = this.tw5.onWikiChange((changes) => {
+    const cascadeHandler = (changes: Record<string, unknown>) => {
       if (SAVE_CASCADE_URI in changes) this._cascadeCache = null;
-    });
+    };
+    this.tw5.$tw.wiki.addEventListener("change", cascadeHandler);
+    this._unwatchCascade = () => this.tw5.$tw.wiki.removeEventListener("change", cascadeHandler);
 
     return () => this.stop();
   }
@@ -265,9 +267,10 @@ export class MemeSyncAdaptor implements MemeProjection {
   // ---------------------------------------------------------------------------
 
   private _removeFromTw5(title: string): void {
-    this.tw5.removeTiddler(title);
-    const childTitles: string[] = this.tw5.filterTiddlers(`[field:fragment-parent[${title}]]`);
-    for (const t of childTitles) this.tw5.removeTiddler(t);
+    const wiki = this.tw5.$tw.wiki;
+    wiki.deleteTiddler(title);
+    const childTitles: string[] = wiki.filterTiddlers(`[field:fragment-parent[${title}]]`);
+    for (const t of childTitles) wiki.deleteTiddler(t);
     this._pendingDeletions.add(title);
   }
 
@@ -277,7 +280,7 @@ export class MemeSyncAdaptor implements MemeProjection {
     // Include bag ID so the TW5 wiki carries provenance — disk projector reads
     // this field to find the right mirror without subscribing to Automerge.
     if (rec.bag) fields["bag"] = rec.bag;
-    this.tw5.setTiddler(fields);
+    this.tw5.$tw.wiki.addTiddler(new this.tw5.$tw.Tiddler(fields));
     this._pendingModifications.add(title);
   }
 
@@ -381,11 +384,11 @@ export class MemeSyncAdaptor implements MemeProjection {
 
   private _readSaveCascade(): Array<{ filter: string; strategy: SaveStrategy }> {
     if (this._cascadeCache) return this._cascadeCache;
-    const ruleTitles: string[] = this.tw5.filterTiddlers(
+    const ruleTitles: string[] = this.tw5.$tw.wiki.filterTiddlers(
       `[tag[${SAVE_CASCADE_URI}]has[tw5-filter]sort[order]]`,
     );
     this._cascadeCache = ruleTitles.map((t) => {
-      const f: TW5TiddlerFields = this.tw5.wiki.getTiddler?.(t)?.fields ?? ({} as TW5TiddlerFields);
+      const f: TW5TiddlerFields = this.tw5.$tw.wiki.getTiddler?.(t)?.fields ?? ({} as TW5TiddlerFields);
       return {
         filter:   String(f["tw5-filter"]    ?? ""),
         strategy: String(f["save-strategy"] ?? "skip") as SaveStrategy,
@@ -400,7 +403,7 @@ export class MemeSyncAdaptor implements MemeProjection {
 
     if (title.startsWith("lar:")) return "direct";
 
-    const wiki = this.tw5.wiki;
+    const wiki = this.tw5.$tw.wiki;
     for (const { filter, strategy } of this._readSaveCascade()) {
       try {
         const result: string[] = wiki.filterTiddlers(`[[${title}]${filter}]`);
@@ -437,12 +440,12 @@ export class MemeSyncAdaptor implements MemeProjection {
    * remains active if called during an inbound replay.
    */
   private _removeLocalCarrierChildren(parentUri: string, origin: ChangeOrigin): void {
-    const childTitles: string[] = this.tw5.filterTiddlers(`[field:fragment-parent[${parentUri}]]`);
+    const childTitles: string[] = this.tw5.$tw.wiki.filterTiddlers(`[field:fragment-parent[${parentUri}]]`);
     if (childTitles.length === 0) return;
     const childKey = `${this.instanceId}:carrier-child`;
     this._applying.set(childKey, origin);
     try {
-      for (const title of childTitles) this.tw5.removeTiddler(title);
+      for (const title of childTitles) this.tw5.$tw.wiki.deleteTiddler(title);
     } finally {
       this._applying.delete(childKey);
     }
@@ -480,4 +483,15 @@ export class MemeSyncAdaptor implements MemeProjection {
     this._pendingDeletions.clear();
     callback(null, { modifications, deletions });
   }
+}
+
+// ---------------------------------------------------------------------------
+// helpers
+// ---------------------------------------------------------------------------
+
+function _bulkAdd(tw5: TW5Engine, batch: Array<Record<string, string | string[]>>): void {
+  const wiki    = tw5.$tw.wiki;
+  const Tiddler = tw5.$tw.Tiddler;
+  const apply   = () => { for (const f of batch) wiki.addTiddler(new Tiddler(f)); };
+  if (typeof wiki.transact === "function") wiki.transact(apply); else apply();
 }

@@ -21,7 +21,6 @@ import {
 } from "@lararium/core";
 import { buildDirectRecord, MemeSyncAdaptor, TW5Engine } from "@lararium/tw5";
 import type { TiddlerFields } from "@lararium/tw5";
-import { repoRoot } from "@lares/lares";
 import type { CommandHandler } from "./command-dispatcher.js";
 
 const WIKI_PREFIX = "lar:///ha.ka.ba/@lararium/wikis/";
@@ -32,13 +31,19 @@ export interface WikiHandlerOptions {
 
 /** Options for handlers that need raw repo access to mint new docs.
  *  operatorDid resolves lazily so the registry can register before the
- *  keyhive bridge has finished booting. */
+ *  keyhive bridge has finished booting.
+ *  getPrimaryEngine resolves lazily (thunk) so the handler closure can
+ *  capture it before TW5 finishes booting; safe because handlers only
+ *  execute at command-dispatch time, well after the daemon reaches live. */
 export interface WikiMintHandlerOptions {
-  readonly composite:     CompositeStore;
-  readonly repo:          Repo;
-  readonly catalogHandle: DocHandle<CatalogDoc>;
-  readonly islandHandle:  DocHandle<LarariumDoc>;
-  readonly operatorDid:   () => Promise<string> | string;
+  readonly composite:        CompositeStore;
+  readonly repo:             Repo;
+  readonly catalogHandle:    DocHandle<CatalogDoc>;
+  readonly islandHandle:     DocHandle<LarariumDoc>;
+  readonly operatorDid:      () => Promise<string> | string;
+  readonly rootDir:          string;
+  /** Returns the daemon's already-booted primary TW5Engine. */
+  readonly getPrimaryEngine: () => TW5Engine;
 }
 
 /** Options for whole-wiki residency operations (pin/unpin). */
@@ -275,7 +280,7 @@ export function createSyncWikiHandler(opts: WikiMintHandlerOptions): CommandHand
     }
     const wikiDocUrl = wikiRec.text;
 
-    const memesRoot = join(repoRoot, "wikis", slug, "memes");
+    const memesRoot = join(opts.rootDir, "wikis", slug, "memes");
     if (!existsSync(memesRoot)) {
       return { slug, scanned: 0, ingested: 0, skipped: 0, errors: [], note: "no wikis/<slug>/memes/ directory" };
     }
@@ -296,8 +301,10 @@ export function createSyncWikiHandler(opts: WikiMintHandlerOptions): CommandHand
       store = new AutomergeDocStore(handle, wikiKey);
     }
 
-    const vm = new TW5Engine();
-    await vm.boot();
+    // Deserialization is grammar-pure (any booted engine); all sync writes are
+    // lar: URIs so the cascade lookup in saveTiddler never fires. Always reuse
+    // the primary engine — no cold-boot per CLI invocation.
+    const vm = opts.getPrimaryEngine();
     const adaptor = new MemeSyncAdaptor(vm, store, `wiki-sync:${slug}`, wikiKey);
     adaptor.start();
     adaptor.onSyncComplete("automerge");
@@ -313,7 +320,7 @@ export function createSyncWikiHandler(opts: WikiMintHandlerOptions): CommandHand
         try {
           const text = readFileSync(file, "utf8");
           const uri  = extractIamUri(text) ?? deriveUriFromPath(slug, memesRoot, file);
-          const sourceFile = file.startsWith(repoRoot) ? file.slice(repoRoot.length + 1) : file;
+          const sourceFile = file.startsWith(opts.rootDir) ? file.slice(opts.rootDir.length + 1) : file;
           const syncedAt   = new Date().toISOString();
 
           const vmTiddlers = vm.deserializeCarrier(uri, text, {
@@ -366,7 +373,6 @@ export function createSyncWikiHandler(opts: WikiMintHandlerOptions): CommandHand
       }
     } finally {
       adaptor.stop();
-      vm.dispose();
     }
 
     return { slug, scanned: files.length, ingested, skipped, recordsIngested, recordsSkipped, errors };

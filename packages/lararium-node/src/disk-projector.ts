@@ -18,8 +18,7 @@
  *   tiddler records — the same pipeline used to bootstrap the browser client.
  *
  * Projection triggers:
- *   Slot child change  → debounce → flush parent (renderFn)
- *   Parent change      → debounce → flush parent (renderFn)
+ *   Any tiddler change → debounce → flush that tiddler (renderFn)
  *
  * The writing Set guards against ingest echo:
  *   file watcher MUST check writing.has(uri) before ingesting a change.
@@ -37,7 +36,7 @@ export class LarDiskProjector {
    */
   readonly writing = new Set<string>();
 
-  /** Timer key shape: `${bagId}\0${parentUri}` — debounce per (bag, parent). */
+  /** Timer key shape: `${bagId}\0${tiddlerUri}` — debounce per (bag, tiddler). */
   private readonly timers = new Map<string, ReturnType<typeof setTimeout>>();
   private _firstFlushDone = false;
 
@@ -50,7 +49,7 @@ export class LarDiskProjector {
      * Render a parent URI to its carrier text string.
      * Called after debounce. Returns null to skip writing.
      */
-    private readonly renderFn: (parentUri: string) => Promise<string | null>,
+    private readonly renderFn: (tiddlerUri: string) => Promise<string | null>,
     /** Debounce delay in ms. */
     private readonly debounceMs = 1000,
     /** Optional readiness map — lights `disk-projector` after first flush. */
@@ -72,7 +71,7 @@ export class LarDiskProjector {
    */
   start(tw5: TW5Engine): () => void {
     this._tw5 = tw5;
-    const wiki = tw5.wiki;
+    const wiki = tw5.$tw.wiki;
     const handler = (changes: Record<string, unknown>) => {
       for (const title of Object.keys(changes)) {
         if (!title.startsWith("lar:")) continue;
@@ -124,11 +123,11 @@ export class LarDiskProjector {
     }
   }
 
-  private async flush(bagId: string, parentUri: string): Promise<void> {
+  private async flush(bagId: string, tiddlerUri: string): Promise<void> {
     const mirror = this.mirrors.find((m) => m.bagId === bagId);
     if (!mirror) return;
 
-    const relPath = mirror.toRelPath(parentUri);
+    const relPath = mirror.toRelPath(tiddlerUri);
     if (!relPath) return;
 
     const root      = resolvePath(mirror.mirrorRoot);
@@ -136,16 +135,16 @@ export class LarDiskProjector {
     // Path-traversal guard.
     if (!candidate.startsWith(root + "/") && candidate !== root) return;
 
-    const output = await this.renderFn(parentUri);
+    const output = await this.renderFn(tiddlerUri);
     if (output === null) return;
 
-    this.writing.add(parentUri);
+    this.writing.add(tiddlerUri);
     try {
       mkdirSync(dirname(candidate), { recursive: true });
       writeFileSync(candidate, output, "utf-8");
       if (this.debugJson && this._tw5) {
-        const jsonStr = (this._tw5.wiki as { getTiddlerAsJson?: (t: string) => string })
-          .getTiddlerAsJson?.(parentUri);
+        const jsonStr = (this._tw5.$tw.wiki as { getTiddlerAsJson?: (t: string) => string })
+          .getTiddlerAsJson?.(tiddlerUri);
         if (jsonStr) {
           const jsonPath = candidate.replace(/\.md$/, "") + ".json";
           writeFileSync(jsonPath, jsonStr, "utf-8");
@@ -156,7 +155,7 @@ export class LarDiskProjector {
         this.readinessMap?.mark("disk-projector");
       }
     } finally {
-      this.writing.delete(parentUri);
+      this.writing.delete(tiddlerUri);
     }
 
     // After writing to the current mirror, unlink stale files from all OTHER
@@ -165,15 +164,15 @@ export class LarDiskProjector {
     // cleaned up on the first flush to the new mirror.
     for (const otherMirror of this.mirrors) {
       if (otherMirror.bagId === bagId) continue;
-      const staleRel = otherMirror.toRelPath(parentUri);
+      const staleRel = otherMirror.toRelPath(tiddlerUri);
       if (!staleRel) continue;
       const staleRoot = resolvePath(otherMirror.mirrorRoot);
       const stalePath = resolvePath(join(staleRoot, staleRel));
       if (!stalePath.startsWith(staleRoot + "/") && stalePath !== staleRoot) continue;
       try {
         if (existsSync(stalePath)) {
-          this.writing.add(parentUri);
-          try { unlinkSync(stalePath); } finally { this.writing.delete(parentUri); }
+          this.writing.add(tiddlerUri);
+          try { unlinkSync(stalePath); } finally { this.writing.delete(tiddlerUri); }
         }
       } catch { /* best-effort */ }
     }

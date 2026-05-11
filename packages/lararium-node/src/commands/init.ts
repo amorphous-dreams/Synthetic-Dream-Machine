@@ -59,10 +59,11 @@ export interface InitResult {
  * shifts whenever tsc adds/removes layout layers (e.g. dist/src/commands/...).
  */
 function defaultDirs(): { storageDir: string; genesisDir: string } {
+  const root    = process.env["LAR_ROOT"] ?? join(repoRoot, "packages", "lararium-node");
   const pkgRoot = join(repoRoot, "packages", "lararium-node");
   return {
-    storageDir: join(pkgRoot, process.env["LAR_STORAGE"] ?? ".lararium"),
-    genesisDir: join(pkgRoot, "genesis"),
+    storageDir: join(root, ".lararium"),
+    genesisDir: process.env["LAR_ROOT"] ? join(root, "genesis") : join(pkgRoot, "genesis"),
   };
 }
 

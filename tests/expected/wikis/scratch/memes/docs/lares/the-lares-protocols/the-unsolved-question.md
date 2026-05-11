@@ -1,13 +1,14 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/@lares/api/v0.1/pono/memetic-wikitext >> -->
 
 <<~⊙&#x0001; ? -> lar:///ha.ka.ba/docs/lares/the-lares-protocols#the-unsolved-question >>
-
 ```toml iam
 file-path = "wikis/scratch/memes/docs/lares/the-lares-protocols/the-unsolved-question.md"
 uri-path = "ha.ka.ba/docs/lares/the-lares-protocols#the-unsolved-question"
 ```
 
 <<~&#x0002;>>
+
+
 
 ## The Unsolved Question
 
@@ -29,5 +30,7 @@ After Frazee, the worth-measuring criterion shifts from *architectural property*
 
 These questions don't get answered by adding more architecture. They get answered by *running real federated sessions* and noting where the architecture serves vs where it goes quiet.
 
+
 <<~&#x0003;>>
 <<~&#x0004; -> ? >>
+

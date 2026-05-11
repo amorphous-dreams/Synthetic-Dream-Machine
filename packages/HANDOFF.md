@@ -1,7 +1,7 @@
 # Hand-off Crystal — Lares Lararium Node Branch
 
 > Forged: 2026-05-07
-> Last update: 2026-05-10 — disk projection five-layer child meme structure verified end-to-end. Ten changed files; build clean. J.3 (child co-promotion) is the next smoke target.
+> Last update: 2026-05-11 — P.2 fully closed: delta replay via Automerge.diff → onChangeset (no new API surface); cold-boot-per-op eliminated from createSyncWikiHandler (always reuses primary engine). Zero @web2-smell left in active code paths. Remaining deferred: P.3 piscina pool, per-slot projection bus teardown.
 > Branch: `feature/lararium-node-3`
 > Working tree: clean after commit (pending).
 > Last pulse: `wikis/scratch/memes/docs/lares/the-lares-protocols/` produces 9 correct files (parent + 8 children, each with SOH+iam+STX+body+ETX+EOT). Architecture law enforced: disk projector subscribes to TW5 wiki events only, never Automerge. J.3 open.
@@ -159,6 +159,92 @@ category boundary.
 - **Lifecycle:** CLI writes pending → dispatcher transitions running → done|error → CLI tombstones command-tiddler. Audit event survives.
 - **Handlers today:** `echo` (admin composite), `promote` (room composite), `where` (room composite, recipe-presence).
 - **Forward generalization:** when UEFN-Verse ReactionEngine lands, this dispatcher pattern federates across causal-island bounds; command-tiddlers become one shape of reaction trigger among many. Comments inline in command-dispatcher.ts and promote-handler.ts.
+
+## Path P — NodeVmManager / TW5 VM pool lift
+
+> Sprint opened 2026-05-11. Branch: `feature/lararium-node-3`.
+
+### Research verdicts baked in
+
+- **CRDT-snapshot boot**: valid optimization (Redis RDB+AOF / Agoric xsnap pattern).
+  Store `{ heads: Automerge.Heads; tiddlers: TiddlerFields[]; capturedAt: number }` at cold
+  eviction. On re-instantiation: `tw5.boot(coreBlob, snapshotTiddlers)` → attach adaptor →
+  `Automerge.getChangesSince(liveDoc, heads)` replays only deltas. CRDT remains sole truth;
+  snapshot is a disposable cache.
+- **Parse/render split**: `deserializeCarrier` routes to any hot VM (grammar-pure). `renderMeme`
+  routes to the owning wiki's VM (template-dependent). PrimaryWiki = operator-configured wiki
+  (`--wiki` flag), not a hardcoded "Slot 0".
+- **All VMs get lares plugin**: `LARES_MEMETIC_WIKITEXT_PLUGIN` already auto-pushes (tw5-vm.ts
+  L107). `lararium-lares` corpus blob preloads explicitly for content VMs. Admin VM gap (P.4).
+- **Per-slot event bus**: each VmPool slot owns its own `$tw.Wiki` instance + projection bus.
+  `registerProjectionBus(engine)` teardown pattern per slot at unmount.
+
+### `VmSnapshot` type (shared, lands in P.2)
+
+```typescript
+interface VmSnapshot {
+  heads:       Automerge.Heads;   // CRDT marker — authoritative
+  tiddlers:    TiddlerFields[];   // materialized TW5 view — cache only
+  capturedAt:  number;            // unix ms
+}
+```
+
+Atomic invariant: write heads + tiddlers together or not at all. Mismatch → full CRDT replay,
+snapshot discarded.
+
+### P.1 — Eliminate cold-boot-per-sync ✅ (2026-05-11)
+
+**web2 smell**: `createSyncWikiHandler` cold-boots a fresh `TW5Engine` per CLI invocation.
+Each `lares wiki sync` pays a full TW5 boot cost (plugin load + wiki init) even though the
+daemon already holds a booted engine for the active wiki.
+
+**Fix**: Add `getPrimaryEngine: () => TW5Engine` thunk to `WikiMintHandlerOptions`. Pass a
+closure over the daemon's `tw5` instance. Sync handler uses it when wiki matches the primary;
+falls back to cold-boot for unmounted wikis (marked `@web2-smell: cold-boot-per-op` for P.2
+to clean up once multi-wiki mount lands).
+
+Files: `packages/lararium-node/src/wiki-handlers.ts`,
+       `packages/lararium-node/src/open-node-lar-peer.ts`
+
+### P.2 — `NodeVmManager` three-tier pool (scaffolded 2026-05-11, hardening next)
+
+Extract `VmPool` + boot logic into a `NodeVmManager` class. Three residency tiers:
+
+| Tier    | Description | Count |
+|---------|-------------|-------|
+| Pinned  | PrimaryWiki + admin — never evict | 2 |
+| Hot     | LRU of recently active wikis, each with a live TW5Engine | max 4 |
+| Cold    | CRDT-only — no TW5 engine; `VmSnapshot` persists materialized tiddler view |
+
+API surface:
+- `mountWiki(wikiId, composite, docHandle)` → boots TW5Engine with snapshot if available
+- `unmountWiki(wikiId)` → captures `VmSnapshot`, tears down engine + projection bus
+- `getEngine(wikiId)` → returns hot engine or thaws cold slot
+- `parseMeme(text, uri)` → routes to any hot VM (grammar-pure path)
+- `renderMeme(uri, wikiId?)` → routes to owning wiki VM (template path)
+
+Slot 0 renamed from `VmPool.get(resolvedRecipeUri)` → `NodeVmManager.primaryWiki`.
+
+Files: `packages/lararium-node/src/node-vm-manager.ts` (new),
+       `packages/lararium-node/src/open-node-lar-peer.ts` (wire),
+       `packages/lararium-core/src/vm-pool.ts` (VmSnapshot type export)
+
+### P.3 — `TW5WorkerProxy` piscina pool (DEFERRED — after P.2 proven stable)
+
+Move hot-tier VMs into worker threads via piscina. Per-wiki worker channel.
+`TW5WorkerProxy` implements `MemeRecipeVm`; worker thread holds the real engine.
+Gate: P.2 three-tier pool must prove stable under the test suite before threading.
+
+### P.4 — Admin VM corpus plugin preload ✅ (2026-05-11)
+
+`openAdminVm` boots TW5 without the `lararium-lares` corpus blob. Admin bag-mirror
+configs (bag-id, mirror-root, strategy tiddlers) may reference lar: URIs that only
+resolve with the corpus plugin loaded. Preload `lararium-lares` in the admin VM
+at `open-admin-vm.ts` boot time — same pattern as the main peer.
+
+Files: `packages/lararium-node/src/open-admin-vm.ts`
+
+---
 
 ## Forward paths (post-E.10.13)
 

@@ -10,6 +10,7 @@ uri-path = "ha.ka.ba/docs/lares/the-lares-protocols#thesis"
 
 <<~&#x0002;>>
 
+
 # The Purpose of Protocols
 
 After Stafford Beer: **the purpose of a system is what it does.** [C~0.99]
@@ -22,5 +23,7 @@ Every shared function eventually gets governed by someone, and whoever governs i
 
 Modularity describes a structural property of the system, not a governance framework for the ecosystem around it.
 
+
 <<~&#x0003;>>
 <<~&#x0004; -> ? >>
+

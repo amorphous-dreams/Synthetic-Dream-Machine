@@ -1,13 +1,14 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/@lares/api/v0.1/pono/memetic-wikitext >> -->
 
 <<~⊙&#x0001; ? -> lar:///ha.ka.ba/docs/lares/the-lares-protocols#app-file-topology >>
-
 ```toml iam
 file-path = "wikis/scratch/memes/docs/lares/the-lares-protocols/app-file-topology.md"
 uri-path = "ha.ka.ba/docs/lares/the-lares-protocols#app-file-topology"
 ```
 
 <<~&#x0002;>>
+
+
 
 ## Topology as Political Site
 
@@ -31,5 +32,7 @@ Lares answers the diagnostic with a fourth arrangement:
 
 > **#Council** » 11:47 — "Lares answers the diagnostic" overstates what the branch ships. The architecture *prepares the ground* for the answer; operational-guarantee waits on federation transport, browser peer scaffold, and a real cross-device migration test. Mark this carefully when the meme reaches canon — the *intent-trust* the architecture earns differs from the *outcome-trust* a working federated system would earn.
 
+
 <<~&#x0003;>>
 <<~&#x0004; -> ? >>
+

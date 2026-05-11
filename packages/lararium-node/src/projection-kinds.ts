@@ -17,8 +17,8 @@ import { LarDiskProjector } from "./disk-projector.js";
 export interface DiskKindDeps {
   /** Bag mirrors — one entry per writable bag that should reflect to disk. */
   mirrors: readonly BagMirrorConfig[];
-  /** Render a parent URI to its carrier text. Closes over the TW5 engine. */
-  renderFn: (parentUri: string) => Promise<string | null>;
+  /** Render a tiddler URI to its disk text. Closes over the TW5 engine. */
+  renderFn: (tiddlerUri: string) => Promise<string | null>;
   /**
    * The TW5 engine whose wiki change events drive disk projection.
    * Architecture law: only MemeSyncAdaptor subscribes to Automerge stores;

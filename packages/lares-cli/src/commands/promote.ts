@@ -28,7 +28,8 @@ import type { ParsedArgs } from "../parse-args.js";
  *  command's requestedBy field. The daemon's dispatcher hands this DID
  *  to ctx.cap when verifying handler-level capability proofs. */
 async function operatorDid(): Promise<string> {
-  const dataDir = join(repoRoot, "packages", "lararium-node", ".lararium");
+  const root    = process.env["LAR_ROOT"] ?? join(repoRoot, "packages", "lararium-node");
+  const dataDir = join(root, ".lararium");
   return "0x" + (await loadOperatorVerifyingKey(dataDir));
 }
 
@@ -47,9 +48,11 @@ export async function cmdPromote(args: ParsedArgs): Promise<number> {
   }
 
   const portOpt = args.options["port"];
-  const connectOpts: Parameters<typeof connectAdminPeer>[0] = portOpt
-    ? { port: Number(portOpt) }
-    : {};
+  const root    = process.env["LAR_ROOT"];
+  const connectOpts: Parameters<typeof connectAdminPeer>[0] = {
+    ...(portOpt ? { port: Number(portOpt) } : {}),
+    ...(root    ? { bootstrapPath: join(root, "genesis", "social-bootstrap.json") } : {}),
+  };
 
   let did: string;
   try {

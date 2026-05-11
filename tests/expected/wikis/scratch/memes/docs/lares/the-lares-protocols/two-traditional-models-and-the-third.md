@@ -1,13 +1,14 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/@lares/api/v0.1/pono/memetic-wikitext >> -->
 
 <<~⊙&#x0001; ? -> lar:///ha.ka.ba/docs/lares/the-lares-protocols#two-traditional-models-and-the-third >>
-
 ```toml iam
 file-path = "wikis/scratch/memes/docs/lares/the-lares-protocols/two-traditional-models-and-the-third.md"
 uri-path = "ha.ka.ba/docs/lares/the-lares-protocols#two-traditional-models-and-the-third"
 ```
 
 <<~&#x0002;>>
+
+
 
 ## Two Traditional Models and a Third
 
@@ -28,5 +29,7 @@ The user-facing rights Frazee privileges over architecture:
 
 Two articles, two readings of ATProto: Connected Places flags one operator three orders of magnitude larger than competitors across every layer; Frazee acknowledges the same concern as outstanding while defending the architectural shape. Both readings hold.
 
+
 <<~&#x0003;>>
 <<~&#x0004; -> ? >>
+

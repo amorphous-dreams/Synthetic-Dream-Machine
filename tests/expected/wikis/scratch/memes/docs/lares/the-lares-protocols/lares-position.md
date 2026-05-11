@@ -1,13 +1,14 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/@lares/api/v0.1/pono/memetic-wikitext >> -->
 
 <<~⊙&#x0001; ? -> lar:///ha.ka.ba/docs/lares/the-lares-protocols#lares-position >>
-
 ```toml iam
 file-path = "wikis/scratch/memes/docs/lares/the-lares-protocols/lares-position.md"
 uri-path = "ha.ka.ba/docs/lares/the-lares-protocols#lares-position"
 ```
 
 <<~&#x0002;>>
+
+
 
 ## Lares Quine Position
 
@@ -36,5 +37,7 @@ The slot Lares occupies wants a name; the meme leaves the naming for a future re
 
 > **#Mischief-Muse** » 14:23 — Survey the slot, not just the implementation, in a future meme. The neighbors deserve their own talk-story. Working title: **"the household-civic mesh"** — federated, CRDT-native, governance-explicit, operator-hosted, render-projecting. Five attributes, five fingers. The hand of the lararium.
 
+
 <<~&#x0003;>>
 <<~&#x0004; -> ? >>
+

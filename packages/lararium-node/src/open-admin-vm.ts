@@ -30,6 +30,9 @@ export interface AdminVmOptions {
   repo: Repo;
   /** Admin doc AutomergeUrl from the social-bootstrap bundle (lararium:init). */
   adminUrl: string;
+  /** Tiddlers to preload into the admin VM at boot — e.g. the lararium-lares
+   *  corpus blob so bag-mirror config tiddlers can reference lar: URIs. */
+  preloadedTiddlers?: Array<Record<string, unknown>>;
 }
 
 export interface AdminVmResult {
@@ -61,7 +64,8 @@ export async function openAdminVm(opts: AdminVmOptions): Promise<AdminVmResult> 
   });
 
   const tw5 = new TW5Engine();
-  await tw5.boot();
+  const { preloadedTiddlers } = opts;
+  await tw5.boot(undefined, preloadedTiddlers && preloadedTiddlers.length > 0 ? preloadedTiddlers : undefined);
 
   const adaptor = new MemeSyncAdaptor(tw5, composite, ADMIN_BAG_ID);
 

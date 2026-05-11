@@ -10,7 +10,6 @@
 
 import type {
   TW5Instance,
-  TW5Wiki,
   TW5FakeElement,
   TW5ChangeRecord,
 } from "./types/tiddlywiki.js";
@@ -121,6 +120,8 @@ export class TW5Engine {
    * Mount the full TW5 story river into a container element.
    * Scopes styles to a shadow root. Returns a cleanup function.
    * Requires boot() to have resolved.
+   *
+   * @browser-only — moves to BrowserTW5Engine in the browser-layer extraction sprint.
    */
   mountPanel(container: HTMLElement): () => void {
     if (!this._tw) throw new Error("TW5Engine: call boot() before mountPanel()");
@@ -177,82 +178,19 @@ export class TW5Engine {
     };
   }
 
-  /** Switch the active TW5 palette. Triggers stylesheet recompile. */
+  /** Switch the active TW5 palette. Triggers stylesheet recompile. @browser-only */
   setPalette(paletteName: string): void {
     if (!this._tw) return;
     this._tw.wiki.addTiddler(new this._tw.Tiddler({ title: "$:/palette", text: paletteName, tags: [] }));
   }
 
-  /** Add or update a single tiddler. */
-  setTiddler(fields: Record<string, string | string[]>): void {
-    if (!this._tw) throw new Error("TW5Engine: call boot() before setTiddler()");
-    this._tw.wiki.addTiddler(new this._tw.Tiddler(fields));
-  }
-
-  /**
-   * Apply a batch of tiddler field maps in a single TW5 transaction.
-   * Uses wiki.transact() (TW5 5.3+) so hundreds of per-tiddler events coalesce
-   * into one widget refresh cycle.
-   */
-  bulkSetTiddlers(batch: Array<Record<string, string | string[]>>): void {
-    if (!this._tw) throw new Error("TW5Engine: call boot() before bulkSetTiddlers()");
-    const wiki    = this._tw.wiki;
-    const Tiddler = this._tw.Tiddler;
-    const apply = () => {
-      for (const fields of batch) wiki.addTiddler(new Tiddler(fields));
-    };
-    if (typeof wiki.transact === "function") {
-      wiki.transact(apply);
-    } else {
-      apply();
-    }
-  }
-
-  /** Remove a single tiddler by title. */
-  removeTiddler(title: string): void {
-    if (!this._tw) throw new Error("TW5Engine: call boot() before removeTiddler()");
-    this._tw.wiki.deleteTiddler(title);
-  }
-
-  /**
-   * Force TW5 to emit a change notification for a tiddler, triggering widget refresh.
-   * Used by the kukali suspension wire when a subscribeOnce trigger fires.
-   */
-  touchTiddler(uri: string): void {
-    if (!this._tw) return;
-    const existing = this._tw.wiki.getTiddler(uri);
-    if (!existing) return;
-    this._tw.wiki.addTiddler(new this._tw.Tiddler(existing.fields));
-  }
-
-  /** Set/clear the boot-splash signal tiddler ($:/lararium/boot-splash/active). */
+  /** Set/clear the boot-splash signal tiddler ($:/lararium/boot-splash/active). @browser-only */
   setBootSplash(active: boolean): void {
     if (!this._tw) return;
     if (active) {
-      this.setTiddler({ title: "$:/lararium/boot-splash/active", text: "yes" });
+      this._tw.wiki.addTiddler(new this._tw.Tiddler({ title: "$:/lararium/boot-splash/active", text: "yes" }));
     } else {
-      this.removeTiddler("$:/lararium/boot-splash/active");
-    }
-  }
-
-  /** Render raw TW5 wikitext to HTML. Returns "" before boot or on error. */
-  renderText(text: string): string {
-    if (!this._tw) return "";
-    try {
-      return this._tw.wiki.renderText("text/html", "text/vnd.tiddlywiki", text) ?? "";
-    } catch {
-      return "";
-    }
-  }
-
-  /** Render a loaded tiddler to HTML by title. Returns "" on miss or error. */
-  renderTiddler(title: string): string {
-    if (!this._tw) return "";
-    if (!this._tw.wiki.getTiddler(title)) return "";
-    try {
-      return this._tw.wiki.renderTiddler("text/html", title) ?? "";
-    } catch {
-      return "";
+      this._tw.wiki.deleteTiddler("$:/lararium/boot-splash/active");
     }
   }
 
@@ -309,52 +247,6 @@ export class TW5Engine {
   }
 
   /**
-   * Run a wikitext-filter expression against the loaded tiddler store.
-   * All sugar operators (memes, edge:, toml:, implementors[]) resolve natively
-   * via registerLarariumFilters() called at boot. No pre-processing needed.
-   */
-  filterTiddlers(expr: string): string[] {
-    if (!this._tw) throw new Error("TW5Engine: call boot() before filterTiddlers()");
-    return this._tw.wiki.filterTiddlers(expr);
-  }
-
-  /**
-   * Read a single named field from a tiddler in the wiki.
-   *
-   * Returns undefined if the tiddler does not exist or the engine is not booted.
-   * Used by DirectMemeRecipeVm to check the existing tiddler's `bag` field for
-   * priority-correct conflict resolution (TW5 Bags/Recipes: highest-priority bag wins).
-   */
-  getTiddlerField(title: string, field: string): string | undefined {
-    if (!this._tw) return undefined;
-    return this._tw.wiki.getTiddler(title)?.fields[field] as string | undefined;
-  }
-
-  /**
-   * Return all fields of a tiddler as a plain Record, or null if absent.
-   * Replaces `tw5.wiki as any` calls in consumer code.
-   */
-  getTiddler(title: string): Record<string, unknown> | null {
-    if (!this._tw) return null;
-    const t = this._tw.wiki.getTiddler(title);
-    return t ? { ...t.fields } : null;
-  }
-
-  getTiddlerText(title: string, defaultText?: string): string | undefined {
-    if (!this._tw) return defaultText;
-    return this._tw.wiki.getTiddlerText(title, defaultText);
-  }
-
-  /** Subscribe to TW5 wiki change events. Returns unsubscribe fn. */
-  onWikiChange(cb: (changes: Record<string, unknown>) => void): () => void {
-    if (!this._tw) throw new Error("TW5Engine: call boot() before onWikiChange()");
-    const wiki = this._tw.wiki;
-    const handler = (changes: Record<string, TW5ChangeRecord>) => cb(changes as Record<string, unknown>);
-    wiki.addEventListener("change", handler);
-    return () => wiki.removeEventListener("change", handler);
-  }
-
-  /**
    * Wire a ProjectionBusConsumer to this VM's wiki event bus.
    * KukaliWidget fires "tm-lararium-event"; the consumer handles it.
    * Returns a teardown function (Verse cancelable equivalent).
@@ -381,11 +273,14 @@ export class TW5Engine {
   get ready(): boolean { return this._tw !== null; }
 
   /**
-   * Exposes the raw TW5 $tw.wiki instance. Accessible after boot().
+   * Exposes the full TW5Instance ($tw) — wiki, modules, utils, Tiddler constructor,
+   * filterOperators, config, etc. Fully typed via TW5Instance from tiddlywiki.d.ts.
+   * Accessible after boot(). Prefer the typed facade methods above for common ops;
+   * use this when you need TW5 internals the facade doesn't expose.
    */
-  get wiki(): TW5Wiki {
-    if (!this._tw) throw new Error("TW5Engine: call boot() before accessing wiki");
-    return this._tw.wiki;
+  get $tw(): TW5Instance {
+    if (!this._tw) throw new Error("TW5Engine: call boot() before accessing $tw");
+    return this._tw;
   }
 
   /**

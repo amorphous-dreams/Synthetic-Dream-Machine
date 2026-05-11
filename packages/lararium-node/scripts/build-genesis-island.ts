@@ -254,7 +254,7 @@ async function main(): Promise<void> {
   console.log("[genesis] snapshotting system titles …");
   const snapshotVm = new TW5Engine();
   await snapshotVm.boot();
-  const systemTitles = snapshotVm.filterTiddlers("[prefix[$:/]]").sort();
+  const systemTitles = snapshotVm.$tw.wiki.filterTiddlers("[prefix[$:/]]").sort();
   snapshotVm.dispose();
   console.log(`[genesis] systemTitles count = ${systemTitles.length}`);
 

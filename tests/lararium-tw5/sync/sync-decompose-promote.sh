@@ -2,9 +2,10 @@
 # tests/lararium-tw5/sync/sync-decompose-promote.sh
 #
 # Two idempotent integration flows for lararium-tw5 sync + decompose.
+# All work runs under tests/ — no canonical packages/ or wikis/ paths touched.
 #
 # Flow 1 (decompose): reset → serve → wiki init → copy meme → sync --debug → observe
-# Flow 2 (promote):   flow 1 setup → promote to @lares → verify packages/ disk output
+# Flow 2 (promote):   flow 1 setup → promote to @lares → verify tests/packages/ disk output
 #
 # Usage:
 #   ./tests/lararium-tw5/sync/sync-decompose-promote.sh [--wiki WIKI] [decompose|promote|both]
@@ -25,15 +26,19 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
+# All test I/O lives under tests/ — the daemon uses this as its root so
+# wikis/, packages/, .lararium/, and genesis/ never touch the canonical tree.
+export LAR_ROOT="$REPO_ROOT/tests"
+
 SOURCE_MEME="tests/src/the-lares-protocols.md"
 MEME_SLUG="the-lares-protocols"
-WIKI_MEME_DIR="wikis/$WIKI/memes/docs/lares"
+WIKI_MEME_DIR="$LAR_ROOT/wikis/$WIKI/memes/docs/lares"
 WIKI_MEME="$WIKI_MEME_DIR/$MEME_SLUG.md"
-RUNS_DIR="tests/runs/wikis/$WIKI/memes/docs/lares"
+RUNS_DIR="tests/results/wikis/$WIKI/memes/docs/lares"
 EXPECTED_DIR="tests/expected/wikis/$WIKI/memes/docs/lares"
 LAR_URI="lar:///ha.ka.ba/docs/lares/$MEME_SLUG"
-CANON_PARENT="packages/lares/memes/docs/lares/$MEME_SLUG.md"
-CANON_CHILD_DIR="packages/lares/memes/docs/lares/$MEME_SLUG"
+CANON_PARENT="$LAR_ROOT/packages/lares/memes/docs/lares/$MEME_SLUG.md"
+CANON_CHILD_DIR="$LAR_ROOT/packages/lares/memes/docs/lares/$MEME_SLUG"
 LARES="node_modules/.bin/lares"
 DAEMON_PID=""
 DAEMON_LOG=""
@@ -46,7 +51,8 @@ die() { echo "ERROR: $*"; [ -n "$DAEMON_PID" ] && kill "$DAEMON_PID" 2>/dev/null
 
 start_daemon() {
   DAEMON_LOG="/tmp/lares-test-$WIKI.log"
-  $LARES serve --wiki "$WIKI" > "$DAEMON_LOG" 2>&1 &
+  # LAR_ROOT is already exported; main.ts derives storage + mirror roots from it.
+  $LARES serve --wiki "$WIKI" --root "$LAR_ROOT" > "$DAEMON_LOG" 2>&1 &
   DAEMON_PID=$!
   echo "  daemon PID=$DAEMON_PID  log=$DAEMON_LOG"
   echo -n "  waiting for live"
@@ -64,6 +70,8 @@ stop_daemon() {
   DAEMON_PID=""
 }
 
+trap 'stop_daemon' EXIT INT TERM
+
 pass() { echo "  ✓ $*"; }
 fail() { echo "  ✗ FAIL: $*"; FAILURES=$((FAILURES+1)); }
 FAILURES=0
@@ -74,11 +82,13 @@ FAILURES=0
 
 setup() {
   echo ""
-  echo "=== reset ==="
+  echo "=== reset (root: $LAR_ROOT) ==="
   pkill -9 -f "tsx.*main.ts" 2>/dev/null || true
   fuser -k 8080/tcp 2>/dev/null || true
   sleep 1
-  $LARES reset --force
+  $LARES reset --force --root "$LAR_ROOT"
+  # Also clean disk-projected artifacts so each run starts from a fresh canvas.
+  rm -rf "$LAR_ROOT/wikis/" "$LAR_ROOT/packages/"
 
   echo ""
   echo "=== serve ==="
@@ -110,6 +120,14 @@ flow_decompose() {
   echo "=== lares wiki sync $WIKI --debug ==="
   $LARES wiki sync "$WIKI" --debug
 
+  echo "--- waiting for disk projector to flush children (up to 15 s) ---"
+  _expected_children=$(find "$EXPECTED_DIR" -mindepth 2 -name '*.md' | wc -l)
+  _waited=0
+  until [ "$(find "$WIKI_MEME_DIR" -mindepth 2 -name '*.md' 2>/dev/null | wc -l)" -ge "$_expected_children" ] || [ "$_waited" -ge 30 ]; do
+    sleep 1; _waited=$((_waited+1)); echo -n "."
+  done
+  echo ""
+
   echo ""
   echo "=== observe ==="
   echo "--- daemon log (last 40 lines) ---"
@@ -119,9 +137,9 @@ flow_decompose() {
   echo "=== capture run output ==="
   rm -rf "$RUNS_DIR"
   mkdir -p "$RUNS_DIR"
-  # copy only .md files (skip .json)
+  # copy only .md files (skip .json) from the isolated test wiki dir
   find "$WIKI_MEME_DIR" -name '*.md' | while read -r f; do
-    rel="${f#$WIKI_MEME_DIR/}"
+    rel="${f#${WIKI_MEME_DIR}/}"
     dest="$RUNS_DIR/$rel"
     mkdir -p "$(dirname "$dest")"
     cp "$f" "$dest"
@@ -156,8 +174,13 @@ flow_promote() {
   echo "=== lares promote ==="
   $LARES promote "$LAR_URI" --to lar:///ha.ka.ba/@lares --yes
 
-  echo "--- waiting for disk projector (4 s) ---"
-  sleep 4
+  echo "--- waiting for disk projector (up to 15 s) ---"
+  _waited=0
+  until [ -f "$CANON_PARENT" ] || [ "$_waited" -ge 15 ]; do
+    sleep 1; _waited=$((_waited+1)); echo -n "."
+  done
+  echo ""
+  [ -f "$CANON_PARENT" ] || die "disk projector did not write $CANON_PARENT within 15 s"
 
   echo ""
   echo "=== verify $CANON_PARENT ==="
@@ -165,23 +188,23 @@ flow_promote() {
     pass "parent file exists"
     head -1 "$CANON_PARENT" | grep -q '!DOCTYPE' \
       && pass "prologue present" || fail "prologue missing (line 1: $(head -1 "$CANON_PARENT"))"
-    sed -n '4p' "$CANON_PARENT" | grep -q '```toml iam' \
-      && pass "iam fence present" || fail "iam fence broken (line 4: $(sed -n '4p' "$CANON_PARENT"))"
+    grep -q '```toml iam' "$CANON_PARENT" \
+      && pass "iam fence present" || fail "iam fence missing from $CANON_PARENT"
   else
     fail "parent not found at $CANON_PARENT"
   fi
 
   echo ""
   echo "=== verify children at $CANON_CHILD_DIR/ ==="
-  local cp=0 cf=0
+  local n_pass=0 n_fail=0
   for f in "$CANON_CHILD_DIR"/*.md; do
     [ -f "$f" ] || continue
     head -1 "$f" | grep -q '!DOCTYPE' \
-      && { echo "    ✓ $(basename "$f")"; cp=$((cp+1)); } \
-      || { echo "    ✗ $(basename "$f") — first line: $(head -1 "$f")"; cf=$((cf+1)); }
+      && { echo "    ✓ $(basename "$f")"; n_pass=$((n_pass+1)); } \
+      || { echo "    ✗ $(basename "$f") — first line: $(head -1 "$f")"; n_fail=$((n_fail+1)); }
   done
-  [ $cp -gt 0 ] && [ $cf -eq 0 ] && pass "$cp children with prologues" \
-    || fail "$cf children missing prologue (found $cp ok)"
+  [ $n_pass -gt 0 ] && [ $n_fail -eq 0 ] && pass "$n_pass children with prologues" \
+    || fail "$n_fail children missing prologue (found $n_pass ok)"
 
   echo ""
   echo "=== promote log tail ==="

@@ -174,13 +174,13 @@ async function main(): Promise<void> {
   // 7. Render the grammar meme tiddler via the vm
   // ------------------------------------------------------------------
   console.log(`[quine] rendering ${GRAMMAR_MEME_URI}…`);
-  const rendered     = vm.renderTiddler(GRAMMAR_MEME_URI);
+  const rendered     = vm.$tw.wiki.renderTiddler("text/html", GRAMMAR_MEME_URI) ?? "";
   const renderedHash = sha256hex(rendered);
   console.log(`[quine] rendered output  ${rendered.length} chars  sha256=${renderedHash.slice(0, 16)}…`);
 
   // Verify the vm tiddler store holds the source text unchanged — do this
   // before dispose() while the vm is still live.
-  const vmTiddlerText = vm.filterTiddlers(`[title[${GRAMMAR_MEME_URI}]get[text]]`)?.[0] ?? "";
+  const vmTiddlerText = vm.$tw.wiki.filterTiddlers(`[title[${GRAMMAR_MEME_URI}]get[text]]`)?.[0] ?? "";
 
   vm.dispose?.();
 

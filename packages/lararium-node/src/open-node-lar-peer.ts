@@ -50,7 +50,9 @@ import {
   seedLaresDoc,
   createSessionEventLog,
 } from "./genesis-island.js";
+import { repoRoot }                       from "@lares/lares";
 import { LarEventBusImpl, DEFAULT_RINGS } from "./lar-event-bus-impl.js";
+import { NodeVmManager }                  from "./node-vm-manager.js";
 import { waitHandleLocal }                from "./repo-helpers.js";
 import { openAdminVm }                    from "./open-admin-vm.js";
 import { CommandDispatcher, CommandHandlerRegistry } from "./command-dispatcher.js";
@@ -81,7 +83,8 @@ const __dir = dirname(fileURLToPath(import.meta.url));
 // plugin container: a single lar:/// tiddler with packed oracle tiddlers in its text.
 // Primary source for social doc AutomergeUrls on the init node; island oracle tiddlers
 // serve as the fallback for replica nodes that sync the island doc from a peer.
-const SOCIAL_BOOTSTRAP_PATH = join(__dir, "../genesis/social-bootstrap.json");
+const DEFAULT_GENESIS_DIR = join(__dir, "../genesis");
+const SOCIAL_BOOTSTRAP_PATH = join(DEFAULT_GENESIS_DIR, "social-bootstrap.json");
 
 // Title of the social bootstrap plugin tiddler baked by lararium:init.
 export const SOCIAL_BOOTSTRAP_PLUGIN_TITLE = "lar:///ha.ka.ba/@lararium/bootstrap/social";
@@ -112,6 +115,10 @@ export interface NodeLarPeerOptions {
    * @param bagStack  - Ordered bag stack for this recipe's tiddler view.
    */
   vmFactory?: (recipeUri: string, tw5: TW5Engine, bagStack: readonly string[]) => Promise<MemeRecipeVm>;
+  /** Directory containing social-bootstrap.json. Defaults to the package's own genesis/. */
+  genesisDir?: string;
+  /** Repo root for wiki memes scan and all mirror paths. Defaults to monorepo root. */
+  rootDir?: string;
 }
 
 export interface NodeLarPeerResult {
@@ -123,6 +130,8 @@ export interface NodeLarPeerResult {
   eventBus:         LarEventBusImpl;
   /** Composite store — pass to createNodeSession(); use store.put() for all tiddler writes. */
   store:            CompositeStore;
+  /** Three-tier VM lifecycle manager — PrimaryWiki pinned, hot LRU, cold snapshots. */
+  vmManager:        NodeVmManager;
   /** Admin VM — operator-private coordinator (S5.6). */
   admin:            AdminVmResult;
   /** Capability provider — Keyhive-backed cap layer (S7.1 D.3). */
@@ -137,7 +146,8 @@ export interface NodeLarPeerResult {
 // waitHandleLocal moved to repo-helpers.ts — shared with openAdminVm.
 
 export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLarPeerResult> {
-  const { hostId, wikiId, storageDir, wss, catalogUrl, recipeUri: recipeUriOpt, onPhase, vmFactory } = opts;
+  const { hostId, wikiId, storageDir, wss, catalogUrl, recipeUri: recipeUriOpt, onPhase, vmFactory, genesisDir, rootDir: rootDirOpt } = opts;
+  const bootstrapPath = join(genesisDir ?? DEFAULT_GENESIS_DIR, "social-bootstrap.json");
   const emit = (p: NodeOpenPhase) => onPhase?.(p);
   // Stable identity URI for this wiki — the map key in CatalogDoc.wikis.
   const wikiKey = wikiLarUri(wikiId);
@@ -289,9 +299,9 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
   //
   // Social bags are writable so composite.put(record) routes to them by bag field.
   let bootstrapPlugin: Record<string, unknown> | null = null;
-  if (existsSync(SOCIAL_BOOTSTRAP_PATH)) {
+  if (existsSync(bootstrapPath)) {
     try {
-      bootstrapPlugin = JSON.parse(readFileSync(SOCIAL_BOOTSTRAP_PATH, "utf8")) as Record<string, unknown>;
+      bootstrapPlugin = JSON.parse(readFileSync(bootstrapPath, "utf8")) as Record<string, unknown>;
     } catch { /* malformed — fall through to island oracle fallback */ }
   }
 
@@ -339,8 +349,18 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
 
   // Admin VM — operator-private coordinator with its own TW5 engine and
   // composite. Booted in parallel with the wiki VM; never shares state with
-  // wiki peer connections.
-  const adminVm = await openAdminVm({ repo, adminUrl });
+  // wiki peer connections. Preload the lararium-lares corpus blob so
+  // bag-mirror config tiddlers can reference lar: URIs (P.4).
+  const adminPreload: Array<Record<string, unknown>> = [];
+  const _adminLaresBlob = islandHandle?.doc()?.blobs?.["lararium-lares"]?.blob;
+  if (_adminLaresBlob) {
+    try {
+      adminPreload.push(
+        JSON.parse(new TextDecoder().decode(new Uint8Array(_adminLaresBlob))) as Record<string, unknown>,
+      );
+    } catch { /* malformed — skip */ }
+  }
+  const adminVm = await openAdminVm({ repo, adminUrl, preloadedTiddlers: adminPreload });
 
   // Command dispatcher — subscribes to the admin store and runs commands
   // delivered as command-tiddlers (CRDT-native CLI ↔ daemon coordination).
@@ -363,16 +383,22 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
   commandRegistry.register("list-wikis", createListWikisHandler({ composite }));
   // E.5 — wiki write commands. operatorDid resolves lazily so the registry
   // can register before the keyhive bridge finishes booting.
+  // tw5 is assigned after boot (below). The thunk is safe because
+  // command handlers only execute after the daemon emits "live".
+  let tw5: TW5Engine;
+  let vmManager: NodeVmManager;
   const wikiMintOpts = {
     composite,
     repo,
     catalogHandle,
     islandHandle,
+    rootDir: rootDirOpt ?? repoRoot,
     operatorDid: async () => {
       // Keyhive's whoami is the canonical source post-boot; until then
       // the operator's verifyingKey hex (loaded earlier) is sufficient.
       return "0x" + operatorIdentity.verifyingKey;
     },
+    getPrimaryEngine: () => tw5,
   };
   commandRegistry.register("init-wiki", createInitWikiHandler(wikiMintOpts));
   commandRegistry.register("open-wiki", createOpenWikiHandler({ composite }));
@@ -390,8 +416,11 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
     hotCap:          32,
     idleMs:          300_000,   // 5 min
     sweepIntervalMs:  30_000,   // 30 sec
-    onEvict: async (url) => {
-      console.log(`[bag-residency] evicted ${url} (compact-then-drop reserved for repo#358)`);
+    onEvict: async (bagId) => {
+      // vmManager.unmountWiki captures a VmSnapshot and tears down the TW5Engine.
+      // No-op if bagId is pinned or has no live VM.
+      await vmManager.unmountWiki(bagId);
+      console.log(`[bag-residency] evicted ${bagId} (vm unmounted, compact-then-drop reserved for repo#358)`);
     },
   });
   // C.4 — pin by bagId (lar: URI), NOT handle.url (automerge: URL).
@@ -657,7 +686,7 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
   // "lararium-lares" always preloads — it functions as the lares corpus plugin and remains non-optional.
   // Vendored community plugins ($:/plugins/*) are opt-in per Recipe via the plugins field.
   // When the resolved Recipe declares no plugins, no vendored plugins are preloaded.
-  const tw5 = new TW5Engine();
+  tw5 = new TW5Engine();
   const blobs = islandHandle?.doc()?.blobs ?? {};
   const preloadedTiddlers: Array<Record<string, unknown>> = [];
 
@@ -695,12 +724,19 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
   await tw5.boot(undefined, preloadedTiddlers.length > 0 ? preloadedTiddlers : undefined);
   emit("tw5-booted");
 
+  // P.2 — NodeVmManager. Mount PrimaryWiki as pinned slot.
+  // Adaptor wires after MemeSyncAdaptor construction below; updateAdaptor called there.
+  vmManager = new NodeVmManager();
+  vmManager.mountPrimary(wikiId, tw5, null);
+  if (islandHandle) vmManager.registerDocHandle(wikiId, islandHandle);
+
   // ── 8. Corpus bags — await after TW5 boots ────────────────────────────────
   await corpusReadyP;
   emit("corpus-ready");
 
   // ── 9. MemeSyncAdaptor — reads full stack, writes to wiki bag via composite.put() ──
   const adaptor = new MemeSyncAdaptor(tw5, peer.store, wikiBagId);
+  vmManager.updateAdaptor(wikiId, adaptor);
   peer.addProjection(adaptor);
 
   // ── 10. VmPool ────────────────────────────────────────────────────────────
@@ -721,6 +757,7 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
   return {
     peer, tw5, pool, repo, eventBus,
     store: composite,
+    vmManager,
     admin: adminVm,
     keyhive,
     catalogHandleUrl: catalogHandle.url,

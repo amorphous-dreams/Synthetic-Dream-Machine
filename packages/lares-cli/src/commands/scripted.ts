@@ -26,15 +26,14 @@ export async function cmdHeleuma(args: ParsedArgs): Promise<number> {
   return runTsxScript(join(REPO_ROOT, "scripts", "heleuma.ts"), scriptArgs);
 }
 
-/** `lares serve` — boot the lararium node only (no Vite).
- *  Runs from the lararium-node package directory because main.ts resolves
- *  .lararium / genesis paths relative to cwd. */
+/** `lares serve` — boot the lararium node only (no Vite). */
 export async function cmdServe(args: ParsedArgs): Promise<number> {
   const extraArgs: string[] = [];
   if (args.options["wiki"])    extraArgs.push("--wiki",    args.options["wiki"]);
   if (args.options["port"])    extraArgs.push("--port",    args.options["port"]);
   if (args.options["storage"]) extraArgs.push("--storage", args.options["storage"]);
-  if (args.flags["debug"]) extraArgs.push("--debug");
+  if (args.options["root"])    extraArgs.push("--root",    args.options["root"]);
+  if (args.flags["debug"])     extraArgs.push("--debug");
   return runCommand(TSX_BIN, [join(NODE_PKG, "src", "main.ts"), ...extraArgs], NODE_PKG);
 }
 
@@ -54,8 +53,10 @@ export async function cmdDev(_args: ParsedArgs): Promise<number> {
  */
 export async function cmdReset(args: ParsedArgs): Promise<number> {
   const { rmSync, existsSync } = await import("node:fs");
-  const storage   = join(NODE_PKG, ".lararium");
-  const bootstrap = join(NODE_PKG, "genesis", "social-bootstrap.json");
+  // Isolated root: --root flag > LAR_ROOT env > default package dir.
+  const root      = args.options["root"] ?? process.env["LAR_ROOT"] ?? NODE_PKG;
+  const storage   = join(root, ".lararium");
+  const bootstrap = join(root, "genesis", "social-bootstrap.json");
 
   console.log("[lares reset] will delete:");
   if (existsSync(storage))   console.log(`  ${storage}`);

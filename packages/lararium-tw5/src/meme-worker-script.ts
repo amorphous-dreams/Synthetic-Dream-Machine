@@ -87,13 +87,13 @@ async function dispatch(msg: WorkerMsg): Promise<void> {
     const change = msg.change;
     const e = engine();
     if (!change.record || change.record.deleted) {
-      e.removeTiddler(change.title);
+      e.$tw.wiki.deleteTiddler(change.title);
     } else {
-      e.setTiddler({
+      e.$tw.wiki.addTiddler(new e.$tw.Tiddler({
         title: change.record.title,
         ...change.record.fields,
         ...(change.record.text !== undefined ? { text: change.record.text } : {}),
-      });
+      }));
     }
     return; // fire-and-forget
   }
@@ -104,7 +104,7 @@ async function dispatch(msg: WorkerMsg): Promise<void> {
 
   if (type === "filterTiddlers") {
     try {
-      const result = engine().filterTiddlers(msg.expr ?? "");
+      const result = engine().$tw.wiki.filterTiddlers(msg.expr ?? "");
       reply(id, true, result);
     } catch (e) {
       reply(id, false, undefined, String(e));

@@ -38,7 +38,7 @@ export class DirectMemeRecipeVm implements MemeRecipeVm {
   onUriChanged(change: LarTiddlerChange): void {
     // Tombstones always pass through — honour deletions regardless of bag origin.
     if (!change.record || change.record.deleted) {
-      this.vm.removeTiddler(change.title);
+      this.vm.$tw.wiki.deleteTiddler(change.title);
       return;
     }
     // If a bagStack was configured, gate additions/updates to those bags only.
@@ -53,7 +53,7 @@ export class DirectMemeRecipeVm implements MemeRecipeVm {
       // the incoming lower-priority update MUST NOT overwrite it.
       // bagStack ordering: index 0 = lowest, length-1 = highest.
       if (bag) {
-        const existingBag = this.vm.getTiddlerField(change.title, "bag");
+        const existingBag = this.vm.$tw.wiki.getTiddler(change.title)?.fields["bag"] as string | undefined;
         if (existingBag && existingBag !== bag) {
           const incomingIdx = this.bagStack.indexOf(bag);
           const existingIdx = this.bagStack.indexOf(existingBag);
@@ -62,11 +62,11 @@ export class DirectMemeRecipeVm implements MemeRecipeVm {
         }
       }
     }
-    this.vm.setTiddler({
+    this.vm.$tw.wiki.addTiddler(new this.vm.$tw.Tiddler({
       title: change.record.title,
       ...change.record.fields,
       ...(change.record.text !== undefined ? { text: change.record.text } : {}),
-    });
+    }));
   }
 
   onSyncComplete(_islandId: string): void {
@@ -75,7 +75,7 @@ export class DirectMemeRecipeVm implements MemeRecipeVm {
   }
 
   async filterTiddlers(expr: string): Promise<string[]> {
-    return this.vm.filterTiddlers(expr);
+    return this.vm.$tw.wiki.filterTiddlers(expr);
   }
 
   async renderMeme(uri: string): Promise<string | null> {

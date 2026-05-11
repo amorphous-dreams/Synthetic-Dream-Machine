@@ -47,3 +47,6 @@ export {
   createRegisterColdHandler,
 } from "./residency-handlers.js";
 export type { ResidencyHandlerOptions } from "./residency-handlers.js";
+
+export { NodeVmManager } from "./node-vm-manager.js";
+export type { VmSnapshot, WikiBootContext } from "./node-vm-manager.js";

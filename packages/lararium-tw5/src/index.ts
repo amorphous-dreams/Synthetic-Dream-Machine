@@ -24,7 +24,7 @@ export { MemoryTiddlerStore } from "./memory-store.js";
 
 export { DirectMemeRecipeVm, bootMemeRecipeVm } from "./meme-recipe-vm.js";
 
-export { exportMemeText, buildDirectRecord, inferChildMemeTitle } from "./meme-write.js";
+export { exportMemeText, buildDirectRecord } from "./meme-write.js";
 
 export { tw5ElementToVdom, tw5ElementToHtml } from "./fake-dom.js";
 export type { VDomNode, TW5FakeElement, TW5FakeTextNode, TW5FakeNode } from "./fake-dom.js";

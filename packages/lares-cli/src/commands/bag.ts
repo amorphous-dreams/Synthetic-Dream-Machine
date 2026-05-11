@@ -24,13 +24,16 @@ import { connectAdminPeer, submitCommand } from "../admin-peer.js";
 import type { ParsedArgs } from "../parse-args.js";
 
 async function operatorDid(): Promise<string> {
-  const dataDir = join(repoRoot, "packages", "lararium-node", ".lararium");
+  const root    = process.env["LAR_ROOT"] ?? join(repoRoot, "packages", "lararium-node");
+  const dataDir = join(root, ".lararium");
   return "0x" + (await loadOperatorVerifyingKey(dataDir));
 }
 
 async function tryConnect() {
   try {
-    return await connectAdminPeer({});
+    const root = process.env["LAR_ROOT"];
+    const extra = root ? { bootstrapPath: join(root, "genesis", "social-bootstrap.json") } : {};
+    return await connectAdminPeer(extra);
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     console.error(`lares bag: ${msg}`);

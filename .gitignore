@@ -53,8 +53,17 @@ packages/lararium-node/.lararium/
 # Promotion ceremony moves files from wikis/{slug}/ into packages/.
 wikis/
 !tests/expected/wikis/
-!tests/runs/wikis/
 
 # Per-deployment social bootstrap (operator AutomergeUrls) — written by
 # `lararium:init`, consumed at boot. Never committed.
 packages/lararium-node/genesis/social-bootstrap.json
+
+# Integration test isolation root (LAR_ROOT=tests/).
+# The daemon writes wikis/, packages/lares/memes/, .lararium/, and genesis/
+# under tests/ during integration runs. None of it should be committed.
+tests/wikis/
+tests/packages/
+tests/.lararium/
+tests/genesis/
+tests/results/
+tests/runs/
