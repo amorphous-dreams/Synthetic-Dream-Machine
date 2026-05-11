@@ -143,4 +143,4 @@ WHERE (path) → HOW (query: stances, confidence, p, ffz) → SECTION (fragment)
 <<~/ahu >>
 
 <<~&#x0003;>>
-<<~⊙&#x0004; -> ? >>
+<<~&#x0004; -> ? >>

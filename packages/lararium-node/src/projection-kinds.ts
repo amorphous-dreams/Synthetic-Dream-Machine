@@ -29,6 +29,8 @@ export interface DiskKindDeps {
   readinessMap?: ReadinessMap;
   /** Optional debounce override (ms). */
   debounceMs?: number;
+  /** Write .json sidecar next to each .md for peek debugging. */
+  debugJson?: boolean;
 }
 
 /**
@@ -45,6 +47,7 @@ export function makeDiskProjectionKind(deps: DiskKindDeps): LarProjectionKind {
       deps.renderFn,
       deps.debounceMs ?? 1000,
       deps.readinessMap,
+      deps.debugJson ?? false,
     );
     const stop = projector.start(deps.tw5);
     return { stop };

@@ -168,4 +168,4 @@ Remaining coordinators — Gatekeeper, Lorekeeper, Scryer, Artificer, Advocate, 
 
 
 <<~&#x0003;>>
-<<~ॐ ँ&#x0004; -> ? >>
+<<~&#x0004; -> ? >>

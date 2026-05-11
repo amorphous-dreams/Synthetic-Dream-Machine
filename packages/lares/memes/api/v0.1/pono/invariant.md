@@ -109,4 +109,4 @@ Invariant-compliant memes MUST fill the OODA-HA phase line with their own pressu
 <<~/ahu >>
 
 <<~&#x0003;>>
-<<~⊙&#x0004; -> ? >>
+<<~&#x0004; -> ? >>

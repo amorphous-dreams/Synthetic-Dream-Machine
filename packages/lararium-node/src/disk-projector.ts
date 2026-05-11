@@ -41,6 +41,8 @@ export class LarDiskProjector {
   private readonly timers = new Map<string, ReturnType<typeof setTimeout>>();
   private _firstFlushDone = false;
 
+  private _tw5?: TW5Engine;
+
   constructor(
     /** Bag mirrors. Bags absent from this list never write to disk. */
     private readonly mirrors: readonly BagMirrorConfig[],
@@ -53,6 +55,8 @@ export class LarDiskProjector {
     private readonly debounceMs = 1000,
     /** Optional readiness map — lights `disk-projector` after first flush. */
     private readonly readinessMap?: ReadinessMap,
+    /** Write a .json sidecar next to each .md for peek debugging. */
+    private readonly debugJson = false,
   ) {}
 
   /**
@@ -67,6 +71,7 @@ export class LarDiskProjector {
    * Returns an unsubscribe fn.
    */
   start(tw5: TW5Engine): () => void {
+    this._tw5 = tw5;
     const wiki = tw5.wiki;
     const handler = (changes: Record<string, unknown>) => {
       for (const title of Object.keys(changes)) {
@@ -138,12 +143,39 @@ export class LarDiskProjector {
     try {
       mkdirSync(dirname(candidate), { recursive: true });
       writeFileSync(candidate, output, "utf-8");
+      if (this.debugJson && this._tw5) {
+        const jsonStr = (this._tw5.wiki as { getTiddlerAsJson?: (t: string) => string })
+          .getTiddlerAsJson?.(parentUri);
+        if (jsonStr) {
+          const jsonPath = candidate.replace(/\.md$/, "") + ".json";
+          writeFileSync(jsonPath, jsonStr, "utf-8");
+        }
+      }
       if (!this._firstFlushDone) {
         this._firstFlushDone = true;
         this.readinessMap?.mark("disk-projector");
       }
     } finally {
       this.writing.delete(parentUri);
+    }
+
+    // After writing to the current mirror, unlink stale files from all OTHER
+    // mirrors that would host this URI. This handles bag promotion: when a
+    // tiddler moves from wiki-bag → lares-bag, the old wiki mirror file is
+    // cleaned up on the first flush to the new mirror.
+    for (const otherMirror of this.mirrors) {
+      if (otherMirror.bagId === bagId) continue;
+      const staleRel = otherMirror.toRelPath(parentUri);
+      if (!staleRel) continue;
+      const staleRoot = resolvePath(otherMirror.mirrorRoot);
+      const stalePath = resolvePath(join(staleRoot, staleRel));
+      if (!stalePath.startsWith(staleRoot + "/") && stalePath !== staleRoot) continue;
+      try {
+        if (existsSync(stalePath)) {
+          this.writing.add(parentUri);
+          try { unlinkSync(stalePath); } finally { this.writing.delete(parentUri); }
+        }
+      } catch { /* best-effort */ }
     }
   }
 }

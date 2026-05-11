@@ -44,10 +44,31 @@ export interface BagMirrorConfig {
 // Standard path strategies — readers that pick one of resolveLarUri's outputs
 // ---------------------------------------------------------------------------
 
-/** Strategy: lares carriers — `lar:///ha.ka.ba/@lares/{path}` → `{path}.md`. */
+/**
+ * Strategy: lares carriers.
+ *   `lar:///ha.ka.ba/@lares/{path}`      → `{path}.md`
+ *   `lar:///ha.ka.ba/{rest}`             → `{rest}.md`  (bare URI, no @-scope)
+ *   `lar:///ha.ka.ba/{rest}#{frag}`      → `{rest}/{frag}.md`
+ *
+ * Apply under `packages/lares/memes/` mirrorRoot.
+ * Bare URIs land here when promoted from a wiki bag to the lares bag.
+ */
 export const laresPathStrategy: MirrorPathFn = (uri) => {
-  try { return resolveLarUri(uri).laresRelPath ?? null; }
-  catch { return null; }
+  try {
+    const r = resolveLarUri(uri);
+    if (r.laresRelPath) return r.laresRelPath;
+    // Bare ha.ka.ba/{rest} URIs promoted to the lares bag.
+    const TUPLE_PREFIX = "lar:///ha.ka.ba/";
+    if (uri.startsWith(TUPLE_PREFIX)) {
+      const withoutScheme = uri.slice(TUPLE_PREFIX.length);
+      if (withoutScheme.startsWith("@")) return null;
+      const [pathPart, fragmentPart] = withoutScheme.split("#") as [string, string | undefined];
+      if (!pathPart) return null;
+      const basePath = pathPart.replace(/\.md$/, "");
+      return fragmentPart ? `${basePath}/${fragmentPart}.md` : `${basePath}.md`;
+    }
+    return null;
+  } catch { return null; }
 };
 
 /** Strategy: engine corpus — `lar:///ha.ka.ba/@lararium/{pkg}/v{ver}/{path}` → `packages/{pkg-slug}/memes/{path}.md`. */

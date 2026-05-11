@@ -69,4 +69,4 @@ An implementing meme SHALL NOT declare `body-sha256` without also declaring `sou
 <<~/ahu >>
 
 <<~&#x0003;>>
-<<~⊙&#x0004; -> ? >>
+<<~&#x0004; -> ? >>

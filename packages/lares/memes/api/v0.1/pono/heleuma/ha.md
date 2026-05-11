@@ -66,4 +66,4 @@ An implementing meme SHALL NOT declare `body-sha256` — ha does not promote.
 <<~/ahu >>
 
 <<~&#x0003;>>
-<<~⊙&#x0004; -> ? >>
+<<~&#x0004; -> ? >>

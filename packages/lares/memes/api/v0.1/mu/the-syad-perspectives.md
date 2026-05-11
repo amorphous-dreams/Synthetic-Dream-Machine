@@ -253,4 +253,4 @@ satirist-operational = "nasti-avaktavya"
 
 
 <<~&#x0003;>>
-<<~ॐ ँ&#x0004; -> ? >>
+<<~&#x0004; -> ? >>

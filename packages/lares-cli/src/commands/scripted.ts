@@ -29,8 +29,13 @@ export async function cmdHeleuma(args: ParsedArgs): Promise<number> {
 /** `lares serve` — boot the lararium node only (no Vite).
  *  Runs from the lararium-node package directory because main.ts resolves
  *  .lararium / genesis paths relative to cwd. */
-export async function cmdServe(_args: ParsedArgs): Promise<number> {
-  return runCommand(TSX_BIN, [join(NODE_PKG, "src", "main.ts")], NODE_PKG);
+export async function cmdServe(args: ParsedArgs): Promise<number> {
+  const extraArgs: string[] = [];
+  if (args.options["wiki"])    extraArgs.push("--wiki",    args.options["wiki"]);
+  if (args.options["port"])    extraArgs.push("--port",    args.options["port"]);
+  if (args.options["storage"]) extraArgs.push("--storage", args.options["storage"]);
+  if (args.flags["debug"]) extraArgs.push("--debug");
+  return runCommand(TSX_BIN, [join(NODE_PKG, "src", "main.ts"), ...extraArgs], NODE_PKG);
 }
 
 /** `lares dev` — boot node + Vite app concurrently (full dev experience). */

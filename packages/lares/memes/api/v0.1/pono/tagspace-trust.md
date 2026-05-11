@@ -93,4 +93,4 @@ Explicit operator-mediated promotion MAY move content upward by creating or revi
 <<~/ahu >>
 
 <<~&#x0003;>>
-<<~⊙&#x0004; -> ? >>
+<<~&#x0004; -> ? >>

@@ -256,4 +256,4 @@ Beelay's sync protocol operates below this boundary — transparent to the meme 
 <<~/ahu >>
 
 <<~&#x0003;>>
-<<~⊙&#x0004; -> ? >>
+<<~&#x0004; -> ? >>

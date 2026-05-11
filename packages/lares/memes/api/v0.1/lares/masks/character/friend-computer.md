@@ -166,4 +166,4 @@ Remaining coordinators — Lorekeeper, Muse, Artificer, Advocate, Diplomat, Hier
 
 
 <<~&#x0003;>>
-<<~ॐ ँ&#x0004; -> ? >>
+<<~&#x0004; -> ? >>

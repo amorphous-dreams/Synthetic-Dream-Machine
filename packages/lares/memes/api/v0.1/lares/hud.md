@@ -94,4 +94,4 @@ This child meme stays small enough to hydrate on every cold start.
 
 
 <<~&#x0003;>>
-<<~ॐ ँ&#x0004; -> ? >>
+<<~&#x0004; -> ? >>

@@ -143,4 +143,4 @@ This meme governs the kapu rating and above-namespace trust law.
 <<~/ahu >>
 
 <<~&#x0003;>>
-<<~⊙&#x0014; -> ? >>
+<<~&#x0014; -> ? >>

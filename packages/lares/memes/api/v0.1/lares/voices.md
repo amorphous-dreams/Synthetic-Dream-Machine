@@ -378,4 +378,4 @@ payload = { priority = "support", retain = false }
 
 
 <<~&#x0003;>>
-<<~ॐ ँ&#x0004; -> ? >>
+<<~&#x0004; -> ? >>

@@ -1,0 +1,5 @@
+title: lar:///config/Lar/AhuTemplate/markdown-meme
+tags: $:/tags/Lar/AhuTemplate
+list-before: lar:///config/Lar/AhuTemplate/html
+
+[<lar-export-scope>match[markdown-meme]then[lar:///ha.ka.ba/@lararium/templates/ahu/markdown-meme]]

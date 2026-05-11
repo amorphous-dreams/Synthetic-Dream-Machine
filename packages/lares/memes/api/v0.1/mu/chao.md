@@ -164,4 +164,4 @@ A lar URI with all three slots aligned reads the address back at the Chao's rota
 <<~/ahu >>
 
 <<~&#x0003;>>
-<<~ॐ ँ&#x0004; -> ? >>
+<<~&#x0004; -> ? >>

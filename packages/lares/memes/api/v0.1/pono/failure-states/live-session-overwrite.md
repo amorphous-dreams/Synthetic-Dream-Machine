@@ -89,4 +89,4 @@ If the node records the claim and marks promotion pressure separately, boundary 
 <<~/ahu >>
 
 <<~&#x0003;>>
-<<~⊙&#x0004; -> ? >>
+<<~&#x0004; -> ? >>

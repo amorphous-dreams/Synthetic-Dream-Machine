@@ -100,7 +100,15 @@ export function memeticWikitextDeserializer(
     }
     const tiddlers = splitMemeToTiddlers(uri, memeText, asStringFields(fields));
     if (prologue.length > 0 && tiddlers.length > 0 && ev === closes[0]) {
-      tiddlers[0]!["prologue"] = prologue;
+      // Copy prologue to ALL tiddlers so the template needs only `has[prologue]`.
+      for (const t of tiddlers) t["prologue"] = prologue;
+    }
+    // Extract namespace prefix glyph(s) from SOH line (e.g. "ॐ ँ", "⊙").
+    // Stored only when non-empty; template emits it before the control char.
+    const nsM = /^<<~([^&\n]*)&#x(?:0001|0011)/.exec(ev.fullText);
+    const namespace = nsM?.[1]?.trim() ?? "";
+    if (namespace.length > 0 && tiddlers.length > 0) {
+      for (const t of tiddlers) t["namespace"] = namespace;
     }
     if (postamble.length > 0 && tiddlers.length > 0 && ev === closes[closes.length - 1]) {
       tiddlers[0]!["postamble"] = postamble;
@@ -117,12 +125,17 @@ export function memeticWikitextDeserializer(
 }
 
 // ---------------------------------------------------------------------------
-// splitMemeToTiddlers — parse one meme text into parent + ahu-slot children.
+// splitMemeToTiddlers — parse one meme (SOH→ETX span) into parent + children.
 //
-// Parent text = transformation of input where ahu definition blocks are
-//   replaced with <<~ kahea ahu #slot >> references. Children authoritative.
-// Child tiddlers = one per non-control ahu slot, text = slot body text.
+// `text` = ev.fullText from MemeStreamParser = SOH line → ETX inclusive.
+// On exit: parent.text = body proper only (SOH/iam/STX/ETX stripped).
+// Child tiddlers: one per non-control ahu slot; text = slot body proper.
 // ---------------------------------------------------------------------------
+
+// Structural marker patterns — strip these from parent text at ingest.
+const SOH_LINE_RE = /^<<~(?:[^>]|->)*&#x(?:0001|0011);(?:[^>]|->)*>>\n?/;
+const STX_LINE_RE = /<<~(?:[^>]|->)*&#x0002;(?:[^>]|->)*>>\n?/;
+const ETX_TAIL_RE = /\n?<<~(?:[^>]|->)*&#x0003;(?:[^>]|->)*>>[\s\S]*$/;
 
 function splitMemeToTiddlers(
   uri:        string,
@@ -130,28 +143,50 @@ function splitMemeToTiddlers(
   baseFields: TiddlerFields,
 ): TiddlerFields[] {
   const warnings: string[] = [];
-
-  // Recursive split — every ahu sigil at every depth becomes its own tiddler.
-  // The bag stays flat: addressing lives entirely in the URI fragment-path
-  // (`#parent/child/grandchild`); the fragment-parent field points one level
-  // up so disk-projector / templates can climb to the nearest tagged ancestor.
-  // The parent's text is rewritten to `<<~ kahea ahu #slot >>` references
-  // (live-ref form per memetic-wikitext spec §5.3); slot children hold their
-  // body bytes authoritatively.
-  const rootToml   = extractRootToml(text);
-  const rootFields = rootToml ? fieldifyToml(rootToml, warnings, uri) : {};
-  // Top-level slots elide against the meme-root's iam.
   const sourceFile = typeof baseFields["source-file"] === "string" ? baseFields["source-file"] : "";
-  const { children, rewrittenText } = splitRecursive(uri, "", text, warnings, rootFields, sourceFile);
+
+  // Strip structural markers to isolate header (SOH→STX) and body (STX→ETX).
+  const stripped = text
+    .replace(SOH_LINE_RE, "")   // remove SOH line
+    .replace(ETX_TAIL_RE, "");  // remove ETX and everything after
+
+  const stxM = STX_LINE_RE.exec(stripped);
+  const headerRegion = stxM ? stripped.slice(0, stxM.index) : stripped;
+  const bodyRegion   = stxM ? stripped.slice(stxM.index + stxM[0].length) : "";
+
+  // Parse iam fields from header region (before STX).
+  const iamPos     = extractRootTomlWithPos(headerRegion);
+  const rootToml   = iamPos?.content ?? null;
+  const rootFieldsRaw = rootToml ? fieldifyToml(rootToml, warnings, uri) : {};
+  const { __arrayKeys: _, ...rootFields } = rootFieldsRaw as TiddlerFields & { __arrayKeys?: string[] };
+
+  // Split header into pre-iam prose and post-iam-pre-STX content.
+  // pre-iam: operator prose between SOH and the iam block (e.g. a framing note).
+  // post-iam: aka refs, header ahu slots — structure that belongs before STX on disk.
+  const preIamContent  = iamPos ? headerRegion.slice(0, iamPos.start) : headerRegion;
+  const postIamContent = iamPos ? headerRegion.slice(iamPos.end)      : "";
+
+  // Recurse separately so the STX boundary is preserved in the parent's fields:
+  //   header-text = post-iam pre-STX content (with ahu blocks → kahea refs)
+  //   text        = post-STX body
+  const { children: headerChildren, rewrittenText: headerRewritten } =
+    splitRecursive(uri, "", postIamContent, warnings, sourceFile);
+  const { children: bodyChildren, rewrittenText: bodyRewritten } =
+    splitRecursive(uri, "", bodyRegion, warnings, sourceFile);
+
+  const allChildren = [...headerChildren, ...bodyChildren];
+
   const parent: TiddlerFields = {
     ...baseFields,
     ...rootFields,
     title: uri,
     type:  "text/x-memetic-wikitext",
-    text:  rewrittenText,
+    text:  bodyRewritten,
+    ...(preIamContent.trim()   ? { preamble:     preIamContent }   : {}),
+    ...(headerRewritten.trim() ? { "header-text": headerRewritten } : {}),
   };
 
-  const result: TiddlerFields[] = [parent, ...children];
+  const result: TiddlerFields[] = [parent, ...allChildren];
 
   if (warnings.length > 0) {
     const safeSlug = uri.replace(/[^a-zA-Z0-9._-]/g, "_");
@@ -181,29 +216,20 @@ function splitMemeToTiddlers(
 // ---------------------------------------------------------------------------
 
 function splitRecursive(
-  rootUri:         string,
-  fragmentPrefix:  string,   // "" at meme root; "#a" → "#a/b" → "#a/b/c"
-  text:            string,
-  warnings:        string[],
-  parentIam:       Readonly<TiddlerFields> = {}, // ancestor iam for default-elision
-  parentSourceFile: string = "",                  // source-file of the carrier; drives child file-path
+  rootUri:          string,
+  fragmentPrefix:   string,  // "" at meme root; "#a" → "#a/b" → "#a/b/c"
+  text:             string,
+  warnings:         string[],
+  parentSourceFile: string = "",
 ): { children: TiddlerFields[]; rewrittenText: string } {
   const allChildren: TiddlerFields[] = [];
   const enclosingUri = rootUri + fragmentPrefix;
-
-  // Match top-level ahu blocks via balanced-aware iteration. Regex with
-  // `[\s\S]*?` non-greedy handles single-level pairing; for nested blocks,
-  // we walk by tracking depth via successive open/close-tag positions.
-  // Cheaper than a full re-parse and adequate for the recursion-depth limit
-  // TW5 enforces in widget rendering.
   const blocks = findTopLevelAhuBlocks(text);
   let cursor = 0;
   let rewritten = "";
   for (const block of blocks) {
     rewritten += text.slice(cursor, block.openStart);
     if (CONTROL_SLOTS.has(block.slot)) {
-      // Control slots dissolve in the parent (iam, exit, stream-*, body-*).
-      // Keep them inline in parent text — they're not addressable children.
       rewritten += text.slice(block.openStart, block.closeEnd);
       cursor = block.closeEnd;
       continue;
@@ -211,71 +237,25 @@ function splitRecursive(
     const childSlotPath = composeSlotPath(fragmentPrefix, block.slot);
     const childUri      = rootUri + childSlotPath;
     const bodyText      = text.slice(block.bodyStart, block.bodyEnd);
-    // Peek at child's iam (without recursion) so we can pass the effective
-    // (inherited + own) iam to grandchildren for their default-elision.
-    const childPeek = extractSlotStructure(bodyText, warnings, childUri);
-    const effectiveIam: TiddlerFields = { ...parentIam, ...childPeek.fields };
-    const inner = splitRecursive(rootUri, childSlotPath, bodyText, warnings, effectiveIam, parentSourceFile);
-    // Extract iam toml + flanking preamble/postamble from the rewritten body.
-    // preamble = text before iam toml (operator prose at slot head, separate
-    // from the field bag);
-    // postamble = text after the last inner kahea ref (trailing prose at
-    // slot tail);
-    // text = the body proper, between iam-toml end and last-kahea-ref end
-    // (inclusive of inline kahea refs for sub-slot reconstruction).
+    const inner         = splitRecursive(rootUri, childSlotPath, bodyText, warnings, parentSourceFile);
     const childStructure = extractSlotStructure(inner.rewrittenText, warnings, childUri);
 
-    // J.2b — full effective iam for disk projection (no elision against parent).
-    // Slot children project as standalone "full published meme MD files"; the
-    // iam block must be self-contained so the file round-trips correctly even
-    // when read in isolation. Override uri-path with the child's own URI path;
-    // derive file-path from the carrier's source-file + slot path so the child
-    // file is self-describing (wikis/scratch/.../parent/slot.md).
     const childUriPath  = childUri.startsWith("lar:///") ? childUri.slice(7) : childUri;
     const childFilePath = parentSourceFile
       ? parentSourceFile.replace(/\.md$/, "") + "/" + block.slot.replace(/^#/, "") + ".md"
       : undefined;
-    const fullChildIam = regenerateIamToml(
-      {
-        ...effectiveIam,
-        "uri-path": childUriPath,
-        ...(childFilePath ? { "file-path": childFilePath } : {}),
-      },
-      {}, // no parent defaults to elide — emit all fields
-    );
-    // elidedIam kept for preamble-rendered substitution (operator-authored
-    // slot bodies that carry an explicit <<~ iam >> sentinel get the delta).
-    const elidedIam = regenerateIamToml(childStructure.fields, parentIam);
-    const effectiveIamSource = elidedIam || childStructure.iamSource;
 
-    // preamble-rendered substitutes the `<<~ iam >>` sentinel inside
-    // preamble with the regenerated iam toml block. Pre-computed here at
-    // deserialize so the meme-template can emit it directly without
-    // needing macro/transclude expansion (the curated rule set in
-    // text/x-memetic-wikitext excludes macrocall).
-    const preambleRendered = childStructure.preamble && effectiveIamSource
-      ? childStructure.preamble.replace(
-          IAM_MARKER,
-          `\`\`\`toml iam\n${effectiveIamSource}\`\`\``,
-        )
-      : childStructure.preamble;
     allChildren.push({
       ...childStructure.fields,
       title:             childUri,
+      type:              "text/x-memetic-wikitext",
       text:              childStructure.text,
-      ...(childStructure.preamble  ? { preamble:    childStructure.preamble  } : {}),
-      ...(preambleRendered && preambleRendered !== childStructure.preamble
-        ? { "preamble-rendered": preambleRendered }
-        : {}),
-      // Full effective iam stored on all children for standalone readability.
-      // Operator-authored iam-source (from explicit toml block in slot body)
-      // overrides the generated one when present.
-      ...(childStructure.iamSource
-        ? { "iam-source": childStructure.iamSource }
-        : fullChildIam ? { "iam-source": fullChildIam } : {}),
-      ...(childStructure.postamble ? { postamble:   childStructure.postamble } : {}),
-      slot:              block.slot,
+      "uri-path":        childUriPath,
       "fragment-parent": enclosingUri,
+      slot:              block.slot,
+      ...(childFilePath                ? { "file-path": childFilePath }         : {}),
+      ...(childStructure.preamble      ? { preamble:    childStructure.preamble }  : {}),
+      ...(childStructure.postamble     ? { postamble:   childStructure.postamble } : {}),
     });
     allChildren.push(...inner.children);
     rewritten += `<<~ kahea ahu ${block.slot} >>`;
@@ -286,18 +266,13 @@ function splitRecursive(
 }
 
 // ---------------------------------------------------------------------------
-// extractRootToml — find the ```toml iam``` block before first ahu/STX
+// extractRootToml — find the ```toml iam``` block in the header region.
 // ---------------------------------------------------------------------------
 
-function extractRootToml(text: string): string | null {
-  const firstAhu = text.search(/<<~[^>]*\bahu\s+#[\w-]+\s*>>/);
-  const firstStx = text.search(/<<~[^>]*&#x0002;/);
-  let limit       = text.length;
-  if (firstAhu >= 0) limit = Math.min(limit, firstAhu);
-  if (firstStx >= 0) limit = Math.min(limit, firstStx);
-
-  const m = /```toml[ \t]+iam[ \t]*\n([\s\S]*?)```/.exec(text.slice(0, limit));
-  return m ? (m[1] ?? null) : null;
+function extractRootTomlWithPos(text: string): { content: string; start: number; end: number } | null {
+  const m = /```toml[ \t]+iam[ \t]*\n([\s\S]*?)```\n?/.exec(text);
+  if (!m) return null;
+  return { content: m[1] ?? "", start: m.index, end: m.index + m[0].length };
 }
 
 // ---------------------------------------------------------------------------
@@ -324,81 +299,16 @@ function extractRootToml(text: string): string | null {
 //   - no iam:      text = whole body, preamble = "".
 // ---------------------------------------------------------------------------
 
-/**
- * Sentinel marker placed inside `preamble` to record the iam toml's
- * original position. Sigil-grammar-shaped (`<<~ ... >>`) so it survives
- * literal-survival in the wikirule, and so it reads as part of the
- * memetic-wikitext family rather than as a TW5 macro call.
- */
+// IAM_MARKER kept for reference only — no longer used in active code.
+// @web2-era sentinel; preamble no longer carries an iam position marker.
 export const IAM_MARKER = "<<~ iam >>";
 
-/**
- * Fields excluded from iam-class — TW5 system fields, Lar control fields,
- * and the round-trip helper fields. Everything else on a tiddler is
- * operator-authored content that belongs in the iam toml block.
- */
-const IAM_DENYLIST: ReadonlySet<string> = new Set([
-  // TW5 system
-  "title", "text", "type", "tags", "created", "modified", "revision", "bag",
-  // Lar control / slot-structure
-  "slot", "fragment-parent", "preamble", "preamble-rendered",
-  "postamble", "prologue", "iam-source",
-  "lar-generated", "disk-projection",
-  "ahu-parent", "ahu-slot", "realm-origin",
-]);
-
-/**
- * Format a TOML value for emission. Strings get JSON-style double quotes
- * with backslash escapes; numbers stay numeric; arrays emit as TOML arrays.
- * Bare booleans (`true`/`false` strings) emit unquoted to round-trip cleanly.
- */
-function formatTomlValue(v: string | string[]): string {
-  if (Array.isArray(v)) {
-    return "[" + v.map((s) => formatTomlValue(s)).join(", ") + "]";
-  }
-  if (v === "true" || v === "false") return v;
-  if (/^-?\d+(\.\d+)?$/.test(v)) return v;
-  return JSON.stringify(v);
-}
-
-/**
- * Regenerate the iam toml block content (between fences) from a tiddler's
- * iam-class fields, default-eliding values that match the parent's iam.
- * Returns the multi-line toml body — caller wraps with the fence pair.
- *
- * Default-elision: a child key is omitted from emission when its value
- * exactly matches the parent's value for the same key. Operators who
- * want a child to retain the parent's default explicitly can author it
- * (round-trips because it differs from "missing" semantics — but in
- * practice differs from the parent only when the child changes intent).
- *
- * Key order: stable insertion order from the input record. Operators
- * who care about ordering author toml directly via `iam-source` until
- * a key-ordering convention lands.
- */
-export function regenerateIamToml(
-  fields:       Readonly<Record<string, string | string[] | undefined>>,
-  parentFields: Readonly<Record<string, string | string[] | undefined>>,
-): string {
-  const lines: string[] = [];
-  for (const [k, v] of Object.entries(fields)) {
-    if (v === undefined) continue;
-    if (IAM_DENYLIST.has(k)) continue;
-    const parentVal = parentFields[k];
-    if (parentVal !== undefined) {
-      const a = Array.isArray(v) ? v.join("") : v;
-      const b = Array.isArray(parentVal) ? parentVal.join("") : parentVal;
-      if (a === b) continue; // elide — value matches parent default
-    }
-    lines.push(`${k} = ${formatTomlValue(v)}`);
-  }
-  return lines.length > 0 ? lines.join("\n") + "\n" : "";
-}
+// @web2-era — regenerateIamToml / formatTomlValue: replaced by lar-iam-block macro.
+// Kept as reference for Path H (save-side auto-split). Not used in emit path.
 
 interface SlotStructure {
   readonly preamble:  string;
   readonly fields:    TiddlerFields;
-  readonly iamSource: string;   // raw toml block bytes (between fences); empty when no iam
   readonly text:      string;
   readonly postamble: string;
 }
@@ -408,62 +318,45 @@ function extractSlotStructure(
   warnings: string[],
   context:  string,
 ): SlotStructure {
-  // Find FIRST inner kahea ref — splits the body into preamble-region (with
-  // iam) and content (text + postamble). When absent, the whole body is
-  // preamble-region.
-  const refRe       = /<<~\s*kahea\s+ahu\s+#[\w-]+\s*>>/g;
-  const firstRefM   = refRe.exec(bodyText);
-  const firstRefIdx = firstRefM?.index ?? bodyText.length;
-  const preambleRegion = bodyText.slice(0, firstRefIdx);
-  const contentRegion  = bodyText.slice(firstRefIdx);
+  // Find iam toml block — preamble is prose before it, text starts after.
+  const iamRe   = /```toml[ \t]+iam[ \t]*\n([\s\S]*?)```\n?/;
+  const plainRe = /```toml[ \t]*\n([\s\S]*?)```\n?/;
+  const iamM    = iamRe.exec(bodyText) ?? plainRe.exec(bodyText);
 
-  // Extract iam toml from preamble region. Replace it in-place with the
-  // sentinel marker so position survives — operator may have written
-  // prose on either side, or both, or neither.
-  // Don't consume a trailing newline after the closing fence — let it
-  // remain part of post-iam preamble prose so emission re-emits the
-  // line-break that the operator authored between the iam block and
-  // following text.
-  const iamRe   = /```toml[ \t]+iam[ \t]*\n([\s\S]*?)```/;
-  const plainRe = /```toml[ \t]*\n([\s\S]*?)```/;
-  const iamM    = iamRe.exec(preambleRegion) ?? plainRe.exec(preambleRegion);
-  let preamble  = preambleRegion;
-  let fields:   TiddlerFields = {};
-  let iamSource = "";
+  let preamble = "";
+  let fields: TiddlerFields = {};
+  let remainder = bodyText;
+
   if (iamM) {
-    const beforeIam = preambleRegion.slice(0, iamM.index);
-    const afterIam  = preambleRegion.slice(iamM.index + iamM[0].length);
-    iamSource = iamM[1] ?? "";
-    fields    = fieldifyToml(iamSource, warnings, context);
-    preamble  = beforeIam + IAM_MARKER + afterIam;
+    preamble  = bodyText.slice(0, iamM.index);
+    const raw = fieldifyToml(iamM[1] ?? "", warnings, context);
+    const { __arrayKeys: _, ...parsed } = raw as TiddlerFields & { __arrayKeys?: string[] };
+    fields    = parsed;
+    remainder = bodyText.slice(iamM.index + iamM[0].length);
   }
 
-  // Find LAST inner kahea ref — trailing prose after it becomes postamble.
-  refRe.lastIndex = 0;
-  let lastEndAbsolute = -1;
-  while (refRe.exec(contentRegion) !== null) {
-    lastEndAbsolute = refRe.lastIndex;
+  // Find LAST kahea ref — trailing prose becomes postamble.
+  const refRe = /<<~\s*kahea\s+ahu\s+#[\w-]+\s*>>/g;
+  let lastEnd = -1;
+  let m: RegExpExecArray | null;
+  while ((m = refRe.exec(remainder)) !== null) {
+    lastEnd = m.index + m[0].length;
   }
-  let text      = contentRegion;
+
+  let text      = remainder;
   let postamble = "";
-  if (lastEndAbsolute >= 0 && lastEndAbsolute < contentRegion.length) {
-    text      = contentRegion.slice(0, lastEndAbsolute);
-    postamble = contentRegion.slice(lastEndAbsolute);
+  if (lastEnd >= 0 && lastEnd < remainder.length) {
+    text      = remainder.slice(0, lastEnd);
+    postamble = remainder.slice(lastEnd);
   }
 
-  // No inner refs: body is pure preamble (with optional iam marker
-  // embedded). text + postamble both empty.
-  if (firstRefIdx === bodyText.length) {
-    if (!iamM) {
-      // Pure body, no iam, no inner sigils — everything goes to text.
-      text     = bodyText;
-      preamble = "";
-    } else {
-      text = "";
-    }
+  // No iam, no refs: the whole body is text.
+  if (!iamM && lastEnd < 0) {
+    text     = bodyText;
+    preamble = "";
   }
 
-  return { preamble, fields, iamSource, text, postamble };
+  return { preamble, fields, text, postamble };
 }
 
 // ---------------------------------------------------------------------------
@@ -474,15 +367,17 @@ function fieldifyToml(
   toml:     string,
   warnings: string[],
   context:  string,
-): TiddlerFields {
+): TiddlerFields & { __arrayKeys?: string[] } {
   const parsed = parseTaploFields(toml);
-  const out: TiddlerFields = {};
+  const out: TiddlerFields & { __arrayKeys?: string[] } = {};
+  const arrayKeys: string[] = [];
   for (const [k, v] of Object.entries(parsed)) {
     if (k === "title") { warnings.push(`${context}: "title" in TOML ignored (derived from URI)`); continue; }
     if (k === "text")  { warnings.push(`${context}: "text" in TOML ignored (derived from body)`); continue; }
-    if (Array.isArray(v)) { out[k] = (v as unknown[]).map(String); }
+    if (Array.isArray(v)) { out[k] = (v as unknown[]).map(String); arrayKeys.push(k); }
     else                  { out[k] = String(v); }
   }
+  if (arrayKeys.length > 0) out.__arrayKeys = arrayKeys;
   return out;
 }
 

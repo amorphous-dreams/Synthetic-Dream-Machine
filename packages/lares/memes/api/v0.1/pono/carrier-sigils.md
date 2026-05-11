@@ -33,7 +33,8 @@ Control characters in kernel-tier sigils carry **three simultaneous roles**:
 2. **Kapu-trust** — presence signals kernel tier; absence marks operator tier (lower trust)
 3. **Elevated resonance** — the kapu range (DC1–DC4: &#x0011;–&#x0014;) reaches admin-only space; standard operators cannot produce these characters; only admin-tier principals can author kapu-range carriers
 
-Namespace glyphs (e.g. `ॐ ँ` in mu.md) prefix the opener and EOT as a visible elevated-resonance mark.
+Namespace glyphs (e.g. `ॐ ँ` in mu.md, `⊙` in pono) prefix the **opener (SOH) only** as a visible elevated-resonance mark.
+EOT is always bare — `<<~&#x0004; -> ? >>` — regardless of trust tier.
 OODA-HA glyphs annotate the six-phase flow inside #ooda-ha slots.
 
 <<~/ahu >>
@@ -53,9 +54,10 @@ These roles MUST NOT be separated or overridden independently.
 - Standard kernel (&#x0001;–&#x000F;): control char present — kernel trust
 - Elevated resonance / kapu range (DC1–DC4: &#x0011;–&#x0014;): admin-only writable — highest trust
 
-**Namespace prefix**: a carrier prefixes its opener and EOT with namespace glyphs to signal
-elevated resonance visibly in plain text. The mu carrier uses `ॐ ँ`. Parser accepts the
+**Namespace prefix**: a carrier prefixes its **opener (SOH) only** with namespace glyphs to signal
+elevated resonance visibly in plain text. The mu carrier uses `ॐ ँ`; pono uses `⊙`. Parser accepts the
 namespace prefix as optional; its presence conveys elevated trust to human and AST readers.
+EOT is always bare (`<<~&#x0004; -> ? >>`) regardless of trust tier — the namespace signal belongs on the opener.
 
 STX (&#x0002;) and ETX (&#x0003;) mark the open/close of the meme body — bare pragmas, no ahu content.
 EOT (&#x0004;) / DC4 (&#x0014;) closes the carrier throat; the return-sigil follows.
@@ -90,7 +92,7 @@ kapu-elevated = { range = "&#x0011;–&#x0014;",      trust = "kapu",     resona
 
 # Namespace prefix — visible elevated-resonance mark in plain text
 # Example: mu.md uses "ॐ ँ" before its opener and EOT
-namespace-prefix-role = "signals elevated resonance; optional; carries trust intent to human and AST readers"
+namespace-prefix-role = "SOH-only; signals elevated resonance; optional; carries trust intent to human and AST readers. EOT is always bare."
 
 # Structural control character map
 [structural-chars]
@@ -106,7 +108,7 @@ opener  = "<<~[namespace-glyphs?][SOH|DC1] ? -> lar:///URI >>"
 iam     = "<<~ ahu #iam >> ... <<~/ahu >>"
 stx     = "<<~[prefix?]&#x0002;>>"                      # meme body open
 etx     = "<<~[prefix?]&#x0003;>>"                      # meme body close
-eot     = "<<~[namespace-glyphs?][EOT|DC4] -> ? >>"     # carrier throat close
+eot     = "<<~[EOT|DC4] -> ? >>"                         # carrier throat close — always bare
 
 # CarrierShape — parse result, always present after extraction
 [CarrierShape]
@@ -172,4 +174,4 @@ trigger = "end of stream"
 <<~/ahu >>
 
 <<~&#x0003;>>
-<<~⊙&#x0004; -> ? >>
+<<~&#x0004; -> ? >>

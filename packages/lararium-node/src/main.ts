@@ -92,7 +92,7 @@ function readBagMirrorsFromAdmin(adminTw5: TW5Engine, defaults: BagMirrorConfig[
 // CLI / env config
 // ---------------------------------------------------------------------------
 
-function parseArgs(): { port: number; storageDir: string; wikiId: string; catalogUrl: string | null } {
+function parseArgs(): { port: number; storageDir: string; wikiId: string; catalogUrl: string | null; debugJson: boolean } {
   const args = process.argv.slice(2);
   const get  = (flag: string, env: string, fallback: string) => {
     const i = args.indexOf(flag);
@@ -103,6 +103,7 @@ function parseArgs(): { port: number; storageDir: string; wikiId: string; catalo
     storageDir: resolve(get("--storage","LAR_STORAGE", ".lararium")),
     wikiId:     get("--wiki",    "LAR_WIKI",    "altar-fire"),
     catalogUrl: process.env["LAR_CATALOG"] ?? null,
+    debugJson:  args.includes("--debug") || process.env["LAR_DEBUG_JSON"] === "1",
   };
 }
 
@@ -135,7 +136,7 @@ function makeHandler(
 // ---------------------------------------------------------------------------
 
 async function main(): Promise<void> {
-  const { port, storageDir, wikiId, catalogUrl } = parseArgs();
+  const { port, storageDir, wikiId, catalogUrl, debugJson } = parseArgs();
 
   // Shared state — updated as boot phases fire.
   const state: { phase: string; wikiId: string } = {
@@ -209,6 +210,7 @@ async function main(): Promise<void> {
     mirrors,
     tw5,
     renderFn: async (uri) => { try { return exportMemeText(tw5, uri); } catch { return null; } },
+    debugJson,
   }));
 
   await projections.enable({ id: "disk", kind: "disk", enabled: true, fields: {} }, peer);

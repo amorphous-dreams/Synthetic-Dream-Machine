@@ -1,0 +1,4 @@
+title: lar:///ha.ka.ba/@lararium/templates/aka/html
+type: text/vnd.tiddlywiki
+
+<span class="lar-aka" data-aka-uri=<<aka-uri>>><$link to=<<aka-uri>>><<aka-uri>></$link><span class="lar-aka-shadow"><$transclude $tiddler=<<aka-uri>> mode="inline"/></span></span>

@@ -65,4 +65,4 @@ Naming a failure mode carries no condemnation. The name itself opens the ceremon
 <<~/ahu >>
 
 <<~&#x0003;>>
-<<~⊙&#x0004; -> ? >>
+<<~&#x0004; -> ? >>

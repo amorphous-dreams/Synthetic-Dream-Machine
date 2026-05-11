@@ -212,4 +212,4 @@ export const RATING_COLOR: Record<Rating5, string> = {
 <<~/ahu >>
 
 <<~&#x0003;>>
-<<~ॐ ँ&#x0004; -> ? >>
+<<~&#x0004; -> ? >>

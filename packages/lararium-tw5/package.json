@@ -28,7 +28,7 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "scripts": {
-    "build": "tsx scripts/build-tw5-vendor.ts && tsc && tsx scripts/sync-heleuma.ts",
+    "build": "tsx scripts/build-tw5-vendor.ts && tsx scripts/build-plugin-tiddler.ts && tsc && tsx scripts/sync-heleuma.ts",
     "build:tw5-vendor": "tsx scripts/build-tw5-vendor.ts",
     "build:heleuma": "tsx scripts/sync-heleuma.ts",
     "build:heleuma:commit": "tsx scripts/sync-heleuma.ts --commit",

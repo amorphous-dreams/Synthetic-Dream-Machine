@@ -263,4 +263,4 @@ of the pattern. The TypeScript file is the material instantiation; the meme is t
 <<~/ahu >>
 
 <<~&#x0003;>>
-<<~⊙&#x0004; -> ? >>
+<<~&#x0004; -> ? >>

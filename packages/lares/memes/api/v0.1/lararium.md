@@ -82,4 +82,4 @@ The lararium prepares the handoff to `lar:///LARES` by hydrating the smallest li
 <<~/ahu >>
 
 <<~&#x0003;>>
-<<~ॐ ँ&#x0004; -> ? >>
+<<~&#x0004; -> ? >>
