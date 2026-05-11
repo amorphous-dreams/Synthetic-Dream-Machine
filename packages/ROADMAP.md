@@ -66,8 +66,8 @@ Social graph control inverts: circles are owned by their center, not the platfor
 | S8 | Kowloon Bridge | ⬜ Designed | `KowloonOutbox` draft queue + `KowloonInbox` feed mirror; `elyncia.app` deployment |
 | S9 | lararium-browser scaffold | ⬜ Queued | Full Automerge browser peer; IndexedDB; broadcast() presence engine; OPFS option |
 | S10 | dreamdeck-tldraw scaffold | ⬜ Queued | tldraw shapes as lar:// resource containers; three-tier store; edge types first-class |
-| S11 | dreamdeck-app scaffold | ⬜ Queued | React shell; DreamDeck boot; TW5+canvas composition; no protocol logic |
-
+| S11 | dreamdeck-app scaffold | ⬜ Queued | React shell; DreamDeck boot; TW5+canvas composition; no protocol logic || R | ReactionEngine unpark + wire | ⧾ Designed (see Path R) | Unpark kumu-device.ts (rewrite from scratch); one RE per hot-tier wiki; co-located with TW5Engine in its Worker Thread; MemeProjection ordering invariant (adaptor → RE within each changeset); FfzClock as tick boundary; Keyhive cap gate at subscribe time; speculative execution deferred |
+| R.1 | P.3-narrow: piscina for parse | ⧾ Queued (gate: P.2 stable) | Separate Piscina pool for stateless deserializeCarrier/parseMeme calls only |
 ---
 
 ## S0 — Web2 Pono Audit ✅
@@ -609,6 +609,97 @@ Full research: `packages/lares/lararium-research/DREAMNET-FEDERATION-RESEARCH.md
 | `allies` and `blocked` — same doc or separate satellite docs? | Design pending |
 | ATProto-style DNS verification as optional operator proof | Deferred — not primary mechanism |
 | FfzClock external publication — Google Scholar search for "hierarchical logical clock" + "bounded" first | Before publishing |
+
+---
+
+## Path R — ReactionEngine Sprint
+
+> Status: Designed. Gate: P.2 NodeVmManager three-tier pool stable under test suite.
+
+### What a ReactionEngine IS in this system
+
+A `MemeProjection` that sits alongside each hot-tier TW5Engine and routes CRDT change
+events through a `ReactionGraph`. It makes a wiki *reactive* — changing a sensor tiddler
+fires `OnValueChanged`, which calls `Enable` on a wired target device.
+
+This is the Lararium's Verse-compatible scripting layer. Verse 5.6+ (UEFN) is the
+compatibility target: compositional device model, not Blueprint/inheritance. The
+`kumu-device.ts` sketch in `lararium-core/maybe/` is **throwaway TS** — the vocabulary
+and invariants in its comments are the load-bearing artifact. Implementation rewrites from
+scratch in Path R.
+
+### Verse compatibility — what lands in Path R vs deferred
+
+| Verse property | Path R? | Notes |
+|---|---|---|
+| Compositional device model (`using` traits, no class hierarchy) | ✅ | `KumuDeviceSpec` derived from pranala edges |
+| Typed directional pins (`listenable` OUTPUT / `@subscribes` INPUT) | ✅ | `KumuListenable` / `KumuSubscribable` |
+| Single-shot coroutines (`Await(event)<suspends>`) | ✅ | `subscribeOnce()` on `ReactionGraph` |
+| Synchronous declaration-order tick | ✅ | `fireSync()` inside `onChangeset` |
+| Capability gate on subscription | ✅ | Keyhive `verify()` at `re.subscribe()` call site |
+| Speculative execution / failure types / rollback | ⬜ Deferred | Requires transactional tiddler writes |
+| Metered execution (gas / tick budget) | ⬜ Deferred | Needed for untrusted operator-authored handlers |
+
+### Architectural invariants (do not re-decide)
+
+1. **RE and TW5Engine co-locate in the same Worker Thread.** RE reads TW5 state
+   synchronously inside `onChangeset`. Cross-thread reads would break the Verse tick.
+2. **Ordering within a changeset: MemeSyncAdaptor fires first, RE second.** TW5 state
+   must be current before RE fires. This ordering IS the tick boundary invariant.
+   `ProjectionRegistry` must enforce it.
+3. **RE writes go through the composite store.** Handlers call `store.put()`. RE never
+   touches `docHandle.change()` directly.
+4. **Device graph lives in the wiki, not in the RE.** `KumuDeviceSpec` is derived from
+   pranala edges in tiddler text. RE caches `ReactionGraph` in memory; `onUriChanged`
+   maintains it incrementally.
+5. **FfzClock tick = one RE turn.** `LarTickCounter` advances after each `onChangeset`.
+6. **No RE in cold-tier slots.** RE boots with the Worker when a slot promotes to hot.
+
+### Cold-boot sequence per wiki
+
+```
+CRDT sync → VmSnapshot (if available)
+  ↓
+Worker Thread spawns
+  ├─ TW5Engine.boot(coreBlob, snapshotTiddlers)
+  ├─ MemeSyncAdaptor attaches
+  ├─ Automerge.getChangesSince(liveDoc, snapshot.heads) → replay deltas
+  └─ ReactionEngine.boot(tw5)  ← full wiki scan for pranala reaction edges
+       ReactionGraph loaded; RE.ready = true
+       RE registered as second MemeProjection in ProjectionRegistry
+```
+
+### P.3 decision (decided 2026-05-11)
+
+NOT piscina for hot-tier wikis. Piscina is load-balanced stateless — wrong shape for
+stateful per-wiki VMs. **One dedicated `worker_threads.Worker` per hot-tier wiki slot.**
+
+P.3-narrow (Path R.1): piscina IS right for stateless `deserializeCarrier` / `parseMeme`
+calls. Separate `Piscina` instance, any-hot-VM routing, no per-wiki state.
+
+### Wave 3 research findings (2026-05-11)
+
+- **Brooklyn Zelenka** is now a senior researcher at Ink & Switch working on Subduction
+  and Keyhive. She is the UCAN spec editor; previously ran Fission.
+- **Subduction** (`inkandswitch/subduction`, v0.13.0) — P2P CRDT sync protocol, Rust +
+  WASM (Node.js + browser). Uses **Sedimentree** (hash-linked hierarchical storage) for
+  metadata-only diffing: peers sync by comparing hashes without decrypting content.
+  Pluggable transports: WebSocket, HTTP long-poll, Iroh/QUIC. `subduction_keyhive` crate
+  integrates Keyhive authorization. **This is the Ink & Switch answer to E2EE federated
+  CRDT sync.** Watch for when it exits pre-alpha.
+- **Keyhive + Subduction = the federation stack.** Already adopted Keyhive at S7.1. When
+  lararium↔lararium federation firms up (post-S9), Subduction is the protocol to evaluate
+  before building bespoke sync.
+- **BeeKEM** (inside Keyhive): key encapsulation mechanism that makes relay nodes hold
+  ciphertext only by construction. Forcing function for the ley-line relay design.
+- **Multi-tenant RE isolation:** each user's wiki runs in its own Worker Thread. Handlers
+  in wiki A cannot access wiki B's heap. Keyhive cap check at `re.subscribe()` ensures
+  handler registration requires proof of write access to the bag.
+- **CRDT + RE federation:** when two larraria merge Automerge changes, each RE fires
+  independently on receipt of its merged changeset. Reactions apply causally-after-merge,
+  in declaration order. Interleaving across larraria is acceptable under the same model
+  Verse uses for networked game state: CRDT eventual consistency + best-effort local
+  determinism per tick. Cross-replica speculative rollback is deferred.
 
 ---
 

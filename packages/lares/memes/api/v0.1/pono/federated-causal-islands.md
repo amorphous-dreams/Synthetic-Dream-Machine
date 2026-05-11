@@ -33,7 +33,7 @@ Named causal island tiers 0–3; authority-first sync order; edge-island identit
 <<~ ahu #ooda-ha >>
 
 ✶ locate the causal boundary — where can causality not be guaranteed simultaneously?
-⏿ orient the tier: Tier 0 kumu/active memes, Tier 1 room memes, Tier 2 Automerge Realms, Tier 3 Lares nodes
+⏿ orient the tier: Tier 0 kumu/active memes, Tier 1 wiki room memes, Tier 2 Automerge Realms, Tier 3 Lares nodes, Tier 4 Commons/Universe horizon
 ◇ MUST become island: federation edges, pranala connections, canon ceremonies, epoch changes, membership changes
 ▶ authority-first sync: authenticate → authority graph → visible rooms → manifest → capability ops → CRDT → deltas
 ⤴ edge island carries id, capability, offset, epoch, visibility-gate, receipt; offset belongs to the edge not the remote
@@ -205,11 +205,23 @@ Tier 2 — Automerge Realms (distinct Automerge docs)
   A separate Automerge doc reached from this one — no matter where first encountered.
   ALWAYS non-simultaneously apprehended by topology, not by policy.
   "automerge-realm" and "peer-sync-state" MAY be named causal islands for protocol tracking.
+  NOTE: the session event-bus bag IS a Tier 2 boundary — it is a distinct Automerge doc
+  shared across multiple wiki Worker Threads. The Session Wiki RE watching the event-bus bag
+  forms a Tier 2 crossing. This functions as the canonical cross-wiki coordination pattern (Scale-2 in
+  the HUD meme: the-lararium-hud.md).
 
 Tier 3 — Lares nodes (the federated layer)
-  A federation edge IS a causal island (this law).
+  A federation edge forms a causal island (this law).
   Cross-node sync begins with a boot artifact, then proceeds via offset-resumable deltas.
   Authority graph reconciles before manifest. Manifest reconciles before content.
+
+Tier 4 — Commons / Universe horizon [C~0.92 after law-of-5s]
+  The horizon beyond direct federation. The set of all possible lararium nodes including
+  those not yet reachable or known. No single node holds a snapshot of Tier 4 state.
+  Non-simultaneously apprehended by definition (Fuller-Zelenka principle extended to the
+  limit of apprehension). The NexusRegistryDoc maps Tier 3 neighbors; Tier 4 is Universe
+  beyond the edge of that map. Five tiers, bounded sense of Universe. Tier 4 names the
+  bound, not an implementation target.
 ```
 
 <<~/ahu >>

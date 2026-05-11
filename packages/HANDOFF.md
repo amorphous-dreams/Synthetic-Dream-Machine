@@ -1,7 +1,7 @@
 # Hand-off Crystal — Lares Lararium Node Branch
 
 > Forged: 2026-05-07
-> Last update: 2026-05-11 — P.2 fully closed: delta replay via Automerge.diff → onChangeset (no new API surface); cold-boot-per-op eliminated from createSyncWikiHandler (always reuses primary engine). Zero @web2-smell left in active code paths. Remaining deferred: P.3 piscina pool, per-slot projection bus teardown.
+> Last update: 2026-05-11 — P.2 fully closed: delta replay via Automerge.diff → onChangeset (no new API surface); cold-boot-per-op eliminated from createSyncWikiHandler (always reuses primary engine). Zero @web2-smell left in active code paths. P.3 decided: one Worker Thread per wiki, TW5+RE co-located, NOT piscina (piscina reserved for stateless parse path only). Path R (ReactionEngine sprint) sketched. Wave 3 research: Brooklyn Zelenka now at Ink & Switch; Subduction+Keyhive = the federation sync stack to watch.
 > Branch: `feature/lararium-node-3`
 > Working tree: clean after commit (pending).
 > Last pulse: `wikis/scratch/memes/docs/lares/the-lares-protocols/` produces 9 correct files (parent + 8 children, each with SOH+iam+STX+body+ETX+EOT). Architecture law enforced: disk projector subscribes to TW5 wiki events only, never Automerge. J.3 open.
@@ -229,11 +229,38 @@ Files: `packages/lararium-node/src/node-vm-manager.ts` (new),
        `packages/lararium-node/src/open-node-lar-peer.ts` (wire),
        `packages/lararium-core/src/vm-pool.ts` (VmSnapshot type export)
 
-### P.3 — `TW5WorkerProxy` piscina pool (DEFERRED — after P.2 proven stable)
+### P.3 — One Worker Thread per wiki, co-located TW5 + ReactionEngine (DECIDED 2026-05-11)
 
-Move hot-tier VMs into worker threads via piscina. Per-wiki worker channel.
-`TW5WorkerProxy` implements `MemeRecipeVm`; worker thread holds the real engine.
-Gate: P.2 three-tier pool must prove stable under the test suite before threading.
+**Decision: NOT piscina.** Piscina is a load-balanced stateless task pool — wrong shape for
+stateful per-wiki VMs that must hold warm TW5Engine + warm ReactionEngine and dispatch into
+both synchronously within a single Verse tick. Piscina is still the right tool for
+grammar-pure `deserializeCarrier` / `parseMeme` calls (stateless, any-hot-VM, P.3-narrow).
+
+**Decided shape:**
+- One dedicated `worker_threads.Worker` per **hot-tier** wiki slot
+- Each Worker hosts TW5Engine + ReactionEngine **co-located** (same thread, synchronous reads)
+- `MemeSyncAdaptor.onChangeset` fires first (updates TW5 state), then RE.onChangeset (fires
+  reactions against the now-current TW5 state) — this ordering IS the tick boundary invariant
+- Main thread ↔ Worker: StructuredClone messages for tiddler changes; Transferable for blobs
+- Cold-tier slots: no Worker (CRDT-only + VmSnapshot); Worker starts on promotion to hot
+- Pinned tier (PrimaryWiki + admin): may stay in-process until Worker isolation proves stable
+
+**Why co-location is required:**
+Verse's game-loop tick is synchronous within a turn. RE.onChangeset calls `fireSync()` which
+immediately reads TW5 tiddler state to evaluate reaction conditions. Cross-thread reads would
+require async IPC — breaking the synchronous-tick invariant. Co-location in one Worker gives
+both engines shared V8 heap + deterministic firing order at zero IPC cost.
+
+**kumu-device.ts sketch:** throwaway. The types (KumuListenable, KumuSubscribable,
+KumuDeviceSpec, ReactionEngine) will be rewritten from scratch in Path R. The vocabulary
+and invariants in the file comments are the load-bearing artifact; the TS is not.
+
+**P.3-narrow (stateless parse pool):** piscina IS the right tool here. `deserializeCarrier`
+and grammar-pure `parseMeme` route to any hot VM (confirmed in P.2 research). Wire a
+separate `Piscina` instance just for that path — no per-wiki state needed.
+
+Gate: P.2 NodeVmManager three-tier pool must reach test-suite stability before Worker
+threads are added to the hot-tier slots.
 
 ### P.4 — Admin VM corpus plugin preload ✅ (2026-05-11)
 

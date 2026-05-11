@@ -162,6 +162,31 @@ The MemeSyncAdaptor properly awaits it inside an async wrapper — this is corre
 
 <<~/ahu >>
 
+<<~ ahu #simulation-types >>
+
+## `agent` and `player` — Simulation Participant Types
+
+From `/Verse.org/Simulation` module. These function as **class-level types**, not interfaces.
+
+- **`agent`** — the universal participant supertype. Covers all live entities: session-connected participants (`player` subtype) AND non-player entities (generic wiki entities, NPCs, scripted actors). `game_action_instigator` gets implemented by "player or agents" — confirming agent as the general case.
+- **`player`** — the session-connected subtype. A `player` holds a live connection to the current session; a non-player `agent` does not. NOT limited to humans — anything with a live session link qualifies as a `player` in Verse type terms.
+- **`session`** — one instance per round. `GetSession()` returns the current round's session.
+- **`team`** — grouping of agents.
+
+**Why events use `listenable(agent)` rather than `listenable(player)`:** The entering entity may qualify as a non-player wiki entity, not a session-connected participant. `agent` serves as the correct general-case payload type; `listenable(player)` would exclude all non-player entities.
+
+**Lararium mapping:**
+- Verse `agent` → **`lar_agent`**: supertype for all addressable live entities on the wiki canvas. **Identity splits here:** player-class subtypes (Operator, Guest, `lares-daemon`) carry a Keyhive principal identity; Wiki Entities / NPCs (non-player `agent` subtypes) do not.
+- Verse `player` *(human)* → **Operator / Guest**: human session-connected participant with Keyhive identity. Operator = primary human principal (threshold relation). Guest = invited, limited cap.
+- Verse `player` *(system)* → **`lares-daemon`**: session-connected AI coordinator(s) with Keyhive identity. Verse class = `player`. Lares class = system principal with additional authority (admin doc, Session RE, Keyhive system keypair). May run multiple per session.
+- Verse `agent` *(non-player)* → **Wiki Entity / NPC**: not session-connected; no Keyhive identity. Reactive wiki entities — they carry a `lar_character` tiddler and respond to RE reactions, but hold no principal. Interactive characters, scripted actors, game NPCs. Population open-ended.
+- Verse `session` → **Lares Session Wiki**: the coordinator `lar_playspace` for the round; pinned-hot. A session hosts N `lar_playspace` wikis; the Session Wiki coordinates them (broadest recipe, owns the session event-bus bag).
+- Verse `fort_character` → **`lar_character`**: tiddler representing an Agent's embodied presence on the canvas. Position, state, event pins.
+
+The compound type `listenable(agent)` functions as the canonical event type for **any participant action** in both Verse and Lares. Device events parameterized on `agent` do NOT restrict to human players.
+
+<<~/ahu >>
+
 <<~ ahu #editable >>
 
 ## `@editable` — Design/Logic Boundary
