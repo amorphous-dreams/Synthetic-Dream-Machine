@@ -21,8 +21,9 @@
  *   pnpm --filter @lararium/tw5 build:plugin
  */
 
-import { readFileSync, writeFileSync, mkdirSync } from "fs";
+import { readFileSync, writeFileSync, mkdirSync, mkdtempSync, rmSync, cpSync } from "fs";
 import { spawnSync } from "child_process";
+import { tmpdir } from "os";
 import path from "path";
 import { fileURLToPath } from "url";
 
@@ -49,32 +50,40 @@ async function main(): Promise<void> {
   }
 
   // 2. Pack via TW5 CLI.
-  //    ++ loads src/tiddlers/ as a plugin (detects plugin.info automatically).
-  //    JsonFile exporter rendered as the title + exportFilter variable →
-  //    complete plugin tiddler JSON array including all plugin.info metadata fields.
+  //    Run TW5 from a temp dir so any side-effect writes (tiddlywikicore-*.js etc.)
+  //    go there, not into our source tree.
+  //    ++ with an absolute path loads src/tiddlers/ as a plugin.
+  //    JsonFile exporter + exportFilter variable → complete plugin tiddler JSON.
   console.log("[plugin-build] packing plugin via TW5 CLI…");
-  const renderResult = spawnSync(
-    TW5_BIN,
-    [
-      "++./src/tiddlers",
-      "--render",
-      "$:/core/templates/exporters/JsonFile",
-      "plugin.json",
-      "text/plain",
-      "",
-      "exportFilter",
-      `[[${PLUGIN_TITLE_LAR}]]`,
-    ],
-    { cwd: ROOT, stdio: "inherit" },
-  );
-  if (renderResult.status !== 0) {
-    console.error("[plugin-build] TW5 render failed");
-    process.exit(renderResult.status ?? 1);
+  // Copy plugin folder to a temp dir so TW5's side-effect writes
+  // (tiddlywikicore-*.js, etc.) never touch the source tree.
+  const tw5Tmp = mkdtempSync(path.join(tmpdir(), "tw5-pack-"));
+  const tw5PluginCopy = path.join(tw5Tmp, "plugin");
+  let outputJson: string;
+  try {
+    cpSync(path.join(ROOT, "src/tiddlers"), tw5PluginCopy, { recursive: true });
+    const renderResult = spawnSync(
+      TW5_BIN,
+      [
+        `++${tw5PluginCopy}`,
+        "--render",
+        "$:/core/templates/exporters/JsonFile",
+        "plugin.json",
+        "text/plain",
+        "",
+        "exportFilter",
+        `[[${PLUGIN_TITLE_LAR}]]`,
+      ],
+      { cwd: tw5Tmp, stdio: "inherit" },
+    );
+    if (renderResult.status !== 0) {
+      console.error("[plugin-build] TW5 render failed");
+      process.exit(renderResult.status ?? 1);
+    }
+    outputJson = readFileSync(path.join(tw5Tmp, "output", "plugin.json"), "utf8");
+  } finally {
+    rmSync(tw5Tmp, { recursive: true, force: true });
   }
-
-  // TW5 --render writes to <cwd>/output/ by default.
-  // JsonFile exporter outputs a JSON array; element [0] is the full plugin tiddler.
-  const outputJson = readFileSync(path.join(ROOT, "output", "plugin.json"), "utf8");
   const tiddlerArray = JSON.parse(outputJson) as Record<string, unknown>[];
   if (!tiddlerArray.length) {
     console.error("[plugin-build] TW5 exported 0 tiddlers — check plugin title in plugin.info");

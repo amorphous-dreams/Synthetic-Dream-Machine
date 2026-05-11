@@ -10,10 +10,10 @@
  *   `lar-export-scope` lets callers select disk-export vs live-UI rendering
  *   without the widget knowing which is which.
  *
- *   Default cascade entries ship in tw5-widgets.ts:
- *     - `$:/config/Lar/AhuTemplate/markdown-meme` — matches when
+ *   Default cascade entries ship as .tid files in src/tiddlers/:
+ *     - `ahu-cascade-markdown-meme.tid` — matches when
  *       `lar-export-scope=="markdown-meme"`, returns the disk-export template.
- *     - `$:/config/Lar/AhuTemplate/html` — fallback, always matches, returns
+ *     - `ahu-cascade-html.tid` — fallback, always matches, returns
  *       the live-UI template.
  *
  *   The widget is intentionally thin: ~30 lines of logic. All grammar lives
