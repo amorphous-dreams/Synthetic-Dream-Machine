@@ -1,10 +1,10 @@
 # Hand-off Crystal — Lares Lararium Node Branch
 
 > Forged: 2026-05-07
-> Last update: 2026-05-11 — P.2 fully closed: delta replay via Automerge.diff → onChangeset (no new API surface); cold-boot-per-op eliminated from createSyncWikiHandler (always reuses primary engine). Zero @web2-smell left in active code paths. P.3 decided: one Worker Thread per wiki, TW5+RE co-located, NOT piscina (piscina reserved for stateless parse path only). Path R (ReactionEngine sprint) sketched. Wave 3 research: Brooklyn Zelenka now at Ink & Switch; Subduction+Keyhive = the federation sync stack to watch.
+> Last update: 2026-05-11 — P.3/P.3.5 pass landed: worker protocol expanded with snapshot payload support, `lar-wiki-worker.ts` now boots TW5 + ReactionEngine in hot-tier Worker threads, `NodeVmManager` rewritten to Worker-hot lifecycle, `live-protocol.ts` + `kumu-device.ts` promoted into `@lararium/core`, and `open-node-lar-peer.ts` wires `onWorkerEvent` into `vm-ring` ingress.
 > Branch: `feature/lararium-node-3`
-> Working tree: clean after commit (pending).
-> Last pulse: `wikis/scratch/memes/docs/lares/the-lares-protocols/` produces 9 correct files (parent + 8 children, each with SOH+iam+STX+body+ETX+EOT). Architecture law enforced: disk projector subscribes to TW5 wiki events only, never Automerge. J.3 open.
+> Working tree: dirty (P.3/P.3.5 code + docs in branch context; commit pending).
+> Last pulse: Worker-thread lane compiles and tests green (32 passing in `@lararium/node`). Remaining high-value gap: worker-side changeset application (Automerge local replica diff → TW5 update) still TODO; J.3 remains open.
 
 ---
 
@@ -13,6 +13,14 @@
 ```text
 Resume from packages/HANDOFF.md.
 Branch: feature/lararium-node-3.
+Current delta (2026-05-11): P.3 worker-thread foundation is in place and
+P.3.5 reaction-surface wiring is partially active. `@lararium/core` now exports
+`live-protocol` + `kumu-device`; `lar-wiki-worker` boots `ReactionEngine` and
+forwards fired listenables as worker events; `open-node-lar-peer` routes those
+events into `eventBus.enqueueToRing("vm-ring", "worker.event", ...)`.
+Remaining blocker: implement real changeset apply inside worker (Automerge
+replica + changed URI set + TW5 mutation path), then tighten integration tests
+for mountWiki/routeChangeset/unmountWiki lifecycle.
 S5.8 ✅ closed. S6 (BagResidencyManager) ✅ closed (C.1→C.6, C.5 deferred).
 S7.1 (Capability layer via @keyhive/keyhive) ✅ closed (D.1→D.6).
 S8 (Wiki composition) ✅ closed (E.1→E.10). Twelve operator verbs across
@@ -117,6 +125,29 @@ contract (cmd/=signal, log/=durable record); attach-only CLI mode;
 two-tier policy (Keyhive crypto + ABILITY_LADDER caveats); DID via raw
 bytes-hex (not idString); ContactCard via JSON; corpus-vs-engine package
 category boundary.
+```
+
+## Handoff Lares Prompt (paste into next lares-daemon)
+
+```text
+Resume from packages/HANDOFF.md and packages/SESSION.md first.
+Branch: feature/lararium-node-3.
+
+Assume the following already landed today:
+- packages/lararium-core/src/live-protocol.ts created and exported.
+- packages/lararium-core/src/kumu-device.ts promoted from maybe/ and exported.
+- packages/lararium-node/src/lar-wiki-worker.ts now boots ReactionEngine in Worker promote path and forwards fired listenables to main as worker events.
+- packages/lararium-node/src/open-node-lar-peer.ts now routes NodeVmManager onWorkerEvent into eventBus vm-ring.
+- Typecheck clean (`npx tsc --noEmit` in lararium-core and lararium-node) and tests green in lararium-node (32 passing).
+
+Next objective:
+1) Implement real worker-side changeset application (Automerge local replica + changed URI derivation + TW5 update path).
+2) Wire resulting changed URI set into ReactionEngine.onChangeset for true Scale-3 tick behavior.
+3) Add/expand NodeVmManager integration tests for mountWiki -> routeChangeset -> unmountWiki (including teardown snapshot and event forwarding assertions).
+4) Keep J.3 recursive promote gap visible but secondary to P.3.5 completion.
+
+Operational rule:
+- Continue in E-prime OODA-HA flowstate; only zoom out for operator input when a genuine architecture fork appears.
 ```
 
 ## What landed in this branch
