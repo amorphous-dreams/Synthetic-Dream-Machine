@@ -1,57 +1,97 @@
 /**
- * NodeVmManager — three-tier TW5 VM lifecycle for the Node.js peer.
+ * NodeVmManager — three-tier TW5 VM lifecycle for the Node.js lararium peer.
  *
- * Tiers:
- *   Pinned  — PrimaryWiki + admin; never evicted.
- *   Hot     — LRU of recently-active wikis (max HOT_CAP live TW5Engines).
- *   Cold    — CRDT-only; VmSnapshot stores materialized tiddler view for fast re-boot.
+ * ## Tiers
  *
- * On cold eviction: capture VmSnapshot (tiddlers + Automerge heads). CRDT doc
- * stays in BagResidencyManager; the TW5Engine tears down.
+ *   Pinned  — PrimaryWiki + admin. Never evicted. TW5Engine runs in-process
+ *             (same thread as the main event loop). MemeSyncAdaptor wires it
+ *             to the CompositeStore. All synchronous engine reads are free.
  *
- * On warm-up from cold: boot with snapshot.tiddlers as preloadedTiddlers,
- * then replay getChangesSince(heads) so the engine reaches current CRDT state.
- * CRDT remains sole source of truth; snapshot is a disposable render cache.
+ *   Hot     — LRU of recently-active session wikis (max HOT_CAP slots).
+ *             Each slot owns one `worker_threads.Worker`. TW5Engine + (P.3.5)
+ *             ReactionEngine run co-located inside the Worker thread.
+ *             Main thread communicates via `lar-worker-protocol` envelope only.
  *
- * Parse/render split:
- *   deserializeCarrier — grammar-pure, routes to any hot VM (parseMeme).
- *   renderMeme         — template-dependent, routes to the owning wiki's VM.
+ *   Cold    — CRDT-only. VmSnapshot stores the materialized tiddler view from
+ *             the Worker's last teardown:ack. No thread, no engine.
  *
- * @web2-smell markers:
- *   - P.3: hot-tier VMs still run in-process (piscina worker isolation deferred).
- *   - per-slot projection bus teardown: stub pending vm-projection-bus.md full impl.
+ * ## Promote / demote flow
+ *
+ *   mountWiki   → spawn Worker → promote → promote:ack → slot = hot
+ *   unmountWiki → teardown → teardown:ack (+ snapshotTiddlers) → worker.terminate()
+ *                → slot = cold (cold slot carries the Worker's final TW5 state)
+ *
+ * ## Parse/render split (pinned engine)
+ *
+ *   parseMeme  — grammar-pure deserialization; always routes to the pinned engine.
+ *   renderMeme — template-dependent; pinned engine serves all render requests.
+ *                Worker-backed wikis are not directly renderable from main in P.3.
+ *                Cross-wiki render will route through the Worker event channel in P.4.
+ *
+ * ## ReactionEngine routing (P.3.5)
+ *
+ *   When a Worker emits WorkerMsg_Event (RE reaction), the manager forwards it
+ *   to the `onWorkerEvent` callback registered at construction. The callback
+ *   routes the event into the main-thread LarEventBus.
+ *
+ * Meme: lar:///ha.ka.ba/@lararium/node/v0.1/node-vm-manager
  */
 
 import * as Automerge from "@automerge/automerge";
+import { Worker }     from "worker_threads";
 import type { DocHandle } from "@automerge/automerge-repo";
-import type { MemeStoreDoc, LarTiddlerStore, ChangeOrigin } from "@lararium/core";
+import type { MemeStoreDoc } from "@lararium/core";
 import { TW5Engine, MemeSyncAdaptor } from "@lararium/tw5";
 import type { TiddlerFields } from "@lararium/tw5";
+import {
+  isWorkerToMainMsg,
+  mkPromote,
+  mkTeardown,
+} from "./lar-worker-protocol.js";
+import type {
+  WorkerMsg_Event,
+  WorkerMsg_PromoteAck,
+  WorkerMsg_TeardownAck,
+  WorkerToMainMsg,
+  MainToWorkerMsg,
+} from "./lar-worker-protocol.js";
 
 // ---------------------------------------------------------------------------
 // VmSnapshot — cold-tier materialized tiddler cache
 // ---------------------------------------------------------------------------
 
 export interface VmSnapshot {
-  /** Automerge heads at snapshot capture time — the CRDT authoritative marker. */
+  /** Automerge heads at snapshot capture time. CRDT remains authoritative. */
   heads:      Automerge.Heads;
-  /** Materialized TW5 tiddler view. Cache only — CRDT always authoritative. */
+  /** Materialized TW5 tiddler view from the Worker's last teardown:ack. */
   tiddlers:   Array<Record<string, unknown>>;
   /** Unix ms of capture — for diagnostics and staleness detection. */
   capturedAt: number;
 }
 
 // ---------------------------------------------------------------------------
-// SlotState — per-wiki slot in the manager
+// Slot types
 // ---------------------------------------------------------------------------
 
 type SlotTier = "pinned" | "hot" | "cold";
 
-interface HotSlot {
-  tier:       "pinned" | "hot";
+/** Pinned: PrimaryWiki or admin — TW5Engine lives in-process. */
+interface PinnedSlot {
+  tier:       "pinned";
   wikiId:     string;
   engine:     TW5Engine;
   adaptor:    MemeSyncAdaptor | null;
+  lastUsedAt: number;
+}
+
+/**
+ * Hot: session wiki — TW5Engine lives inside the Worker thread.
+ * Main thread never holds the engine reference; all interaction via postMessage.
+ */
+interface WorkerHotSlot {
+  tier:       "hot";
+  wikiId:     string;
+  worker:     Worker;
   lastUsedAt: number;
 }
 
@@ -61,21 +101,38 @@ interface ColdSlot {
   snapshot: VmSnapshot | null;
 }
 
-type Slot = HotSlot | ColdSlot;
+type Slot = PinnedSlot | WorkerHotSlot | ColdSlot;
 
 // ---------------------------------------------------------------------------
-// BootContext — what the manager needs to (re)boot a wiki VM
+// WikiBootContext
 // ---------------------------------------------------------------------------
 
 export interface WikiBootContext {
-  /** Mounted composite store — provides tiddlers to the VM via MemeSyncAdaptor. */
-  composite:   LarTiddlerStore;
-  /** Wiki's canonical bag ID — the MemeSyncAdaptor write target. */
-  wikiBagId:   string;
-  /** Automerge doc handle — used to extract getHeads() for snapshot capture. */
-  docHandle:   DocHandle<MemeStoreDoc>;
-  /** Plugin tiddlers to preload into every boot of this wiki VM. */
+  /** Automerge doc handle — used to materialize VmSnapshot for initial promote. */
+  docHandle: DocHandle<MemeStoreDoc>;
+  /**
+   * Plugin tiddlers to inject into the Worker's TW5 boot alongside the cold
+   * snapshot. Merged into snapshotTiddlers before sending promote.
+   */
   preloadedTiddlers?: Array<Record<string, unknown>>;
+}
+
+// ---------------------------------------------------------------------------
+// NodeVmManagerOptions
+// ---------------------------------------------------------------------------
+
+export interface NodeVmManagerOptions {
+  /**
+   * URL of the compiled Worker entry script.
+   * Defaults to `lar-wiki-worker.js` in the same directory as this module.
+   * Override in tests to use a fixture Worker.
+   */
+  workerScriptUrl?: URL;
+  /**
+   * Called when a Worker emits a WorkerMsg_Event (RE reaction).
+   * Route this into the main-thread LarEventBus.
+   */
+  onWorkerEvent?: (wikiId: string, msg: WorkerMsg_Event) => void;
 }
 
 // ---------------------------------------------------------------------------
@@ -84,17 +141,30 @@ export interface WikiBootContext {
 
 const HOT_CAP = 4;
 
+// Resolves relative to this module's compiled location (dist/node-vm-manager.js).
+const DEFAULT_WORKER_URL = new URL("./lar-wiki-worker.js", import.meta.url);
+
+// Timeout for GP-5 teardown and promote:ack handshakes.
+const HANDSHAKE_TIMEOUT_MS = 10_000;
+
 export class NodeVmManager {
-  private readonly _slots      = new Map<string, Slot>();
-  private readonly _docHandles = new Map<string, DocHandle<MemeStoreDoc>>();
+  private readonly _slots         = new Map<string, Slot>();
+  private readonly _docHandles    = new Map<string, DocHandle<MemeStoreDoc>>();
+  private readonly _workerUrl:    URL;
+  private readonly _onWorkerEvent: ((wikiId: string, msg: WorkerMsg_Event) => void) | null;
+
+  constructor(options: NodeVmManagerOptions = {}) {
+    this._workerUrl     = options.workerScriptUrl ?? DEFAULT_WORKER_URL;
+    this._onWorkerEvent = options.onWorkerEvent ?? null;
+  }
 
   // ---------------------------------------------------------------------------
   // Pinned tier — PrimaryWiki
   // ---------------------------------------------------------------------------
 
   /**
-   * Register the operator's primary wiki as a pinned (never-evicted) hot slot.
-   * Call once after `openNodeLarPeer` returns its booted `tw5` engine.
+   * Register the PrimaryWiki as a pinned (never-evicted) in-process slot.
+   * Call once after `openNodeLarPeer` returns the booted `tw5` engine.
    */
   mountPrimary(wikiId: string, engine: TW5Engine, adaptor: MemeSyncAdaptor | null): void {
     this._slots.set(wikiId, {
@@ -106,99 +176,170 @@ export class NodeVmManager {
     });
   }
 
-  /** Register or update the MemeSyncAdaptor for an already-mounted pinned slot. */
+  /** Wire or update the MemeSyncAdaptor on the pinned slot. */
   updateAdaptor(wikiId: string, adaptor: MemeSyncAdaptor): void {
     const slot = this._slots.get(wikiId);
-    if (slot && slot.tier !== "cold") (slot as HotSlot).adaptor = adaptor;
+    if (slot?.tier === "pinned") slot.adaptor = adaptor;
   }
 
-  /** Register a docHandle so eviction can capture a VmSnapshot. */
+  /** Register a docHandle for snapshot capture at eviction time. */
   registerDocHandle(wikiId: string, handle: DocHandle<MemeStoreDoc>): void {
     this._docHandles.set(wikiId, handle);
   }
 
   // ---------------------------------------------------------------------------
-  // Mount / unmount — hot tier
+  // Hot tier — Worker lifecycle
   // ---------------------------------------------------------------------------
 
   /**
-   * Mount a wiki VM into the hot tier. Boots TW5Engine; uses VmSnapshot as
-   * preloadedTiddlers if a cold snapshot exists, then replays CRDT deltas.
+   * Mount a session wiki into the hot tier.
    *
-   * Evicts the LRU hot slot (non-pinned) when hot tier is at capacity.
+   * Spawns a Worker, materializes a snapshot from the Automerge doc (or uses
+   * the cold-slot snapshot), sends a promote message, and awaits promote:ack.
+   * Evicts the LRU Worker slot (non-pinned) when at capacity.
+   *
+   * Returns void — the main thread holds no direct engine reference for Worker
+   * slots. Route messages via `routeChangeset()` and receive events via
+   * `onWorkerEvent`.
    */
-  async mountWiki(wikiId: string, ctx: WikiBootContext): Promise<TW5Engine> {
+  async mountWiki(wikiId: string, ctx: WikiBootContext): Promise<void> {
     const existing = this._slots.get(wikiId);
-    if (existing && existing.tier !== "cold") {
-      (existing as HotSlot).lastUsedAt = Date.now();
-      return (existing as HotSlot).engine;
+    if (existing?.tier === "hot") {
+      (existing as WorkerHotSlot).lastUsedAt = Date.now();
+      return;
+    }
+    if (existing?.tier === "pinned") {
+      (existing as PinnedSlot).lastUsedAt = Date.now();
+      return;
     }
 
-    // Evict LRU hot slot if at capacity.
-    this._evictLruIfNeeded();
+    await this._evictLruIfNeeded();
 
-    const coldSnapshot = existing?.tier === "cold" ? existing.snapshot : null;
+    // Build snapshotTiddlers: cold-slot tiddlers merged with plugin preloads.
+    const coldSlot    = this._slots.get(wikiId);
+    const coldTiddlers = coldSlot?.tier === "cold" ? (coldSlot.snapshot?.tiddlers ?? null) : null;
+    const pluginTiddlers = ctx.preloadedTiddlers ?? [];
 
-    const engine = new TW5Engine();
-    const bootTiddlers = coldSnapshot
-      ? [...(ctx.preloadedTiddlers ?? []), ...coldSnapshot.tiddlers]
-      : ctx.preloadedTiddlers;
-    await engine.boot(undefined, bootTiddlers && bootTiddlers.length > 0 ? bootTiddlers : undefined);
+    // Prefer cold-slot tiddlers as the base; plugins go in first so wiki
+    // content can shadow them — same precedence order as the main TW5 boot.
+    const snapshotTiddlers: Record<string, unknown>[] | null =
+      coldTiddlers || pluginTiddlers.length > 0
+        ? [...pluginTiddlers, ...(coldTiddlers ?? [])]
+        : null;
 
-    const adaptor = new MemeSyncAdaptor(engine, ctx.composite, `wiki-vm:${wikiId}`, ctx.wikiBagId);
-    adaptor.start();
+    // Register the handle so disposeAll can capture snapshots from the doc.
+    this._docHandles.set(wikiId, ctx.docHandle);
 
-    // Delta replay: apply only the tiddlers that changed between snapshot and now.
-    // For cold boots (no snapshot) fall through to onSyncComplete which triggers
-    // TW5's getSkinnyTiddlers→loadTiddler full-hydration path.
-    if (coldSnapshot) {
-      await _replayDelta(coldSnapshot, ctx.docHandle, adaptor, wikiId);
-    }
-    // Always register island "automerge" as sync-complete so future crdt-remote
-    // changes apply immediately rather than buffering.
-    adaptor.onSyncComplete("automerge");
+    const worker = new Worker(this._workerUrl);
+    this._wireWorkerListeners(wikiId, worker);
+
+    await _sendAndAwait<WorkerMsg_PromoteAck>(
+      worker,
+      mkPromote(wikiId, snapshotTiddlers),
+      "promote:ack",
+    );
 
     this._slots.set(wikiId, {
       tier: "hot",
       wikiId,
-      engine,
-      adaptor,
+      worker,
       lastUsedAt: Date.now(),
     });
 
-    console.log(`[vm-manager] ${wikiId}: mounted hot (snapshot: ${coldSnapshot ? "yes" : "no"})`);
-    return engine;
+    console.log(
+      `[vm-manager] ${wikiId}: promoted hot (snapshot: ${snapshotTiddlers ? `${snapshotTiddlers.length} tiddlers` : "empty"})`,
+    );
   }
 
   /**
-   * Unmount a wiki VM: capture VmSnapshot, tear down TW5Engine, move to cold tier.
-   * No-op if wiki is pinned or not mounted.
-   * docHandle is optional — falls back to the registered handle for this wikiId.
+   * Unmount a hot-tier Worker slot via GP-5 teardown handshake.
+   *
+   * 1. Sends teardown signal.
+   * 2. Awaits teardown:ack (which carries the Worker's final TW5 tiddler state).
+   * 3. Calls worker.terminate().
+   * 4. Moves slot to cold, using the ack's snapshotTiddlers to seed the snapshot.
+   *
+   * No-op for pinned slots and slots already in cold.
    */
-  async unmountWiki(wikiId: string, docHandle?: DocHandle<MemeStoreDoc>): Promise<void> {
+  async unmountWiki(wikiId: string): Promise<void> {
     const slot = this._slots.get(wikiId);
     if (!slot || slot.tier === "pinned" || slot.tier === "cold") return;
 
-    const handle = docHandle ?? this._docHandles.get(wikiId) ?? null;
-    const snapshot = handle ? this._captureSnapshot(slot.engine, handle) : null;
-    slot.adaptor?.stop();
-    slot.engine.dispose();
+    const { worker } = slot as WorkerHotSlot;
 
+    let snapshot: VmSnapshot | null = null;
+    try {
+      const ack = await _sendAndAwait<WorkerMsg_TeardownAck>(
+        worker,
+        mkTeardown(),
+        "teardown:ack",
+      );
+      const handle = this._docHandles.get(wikiId);
+      if (handle) {
+        const doc = handle.doc();
+        if (doc) {
+          snapshot = {
+            heads:      Automerge.getHeads(doc),
+            tiddlers:   ack.snapshotTiddlers ? [...ack.snapshotTiddlers] : [],
+            capturedAt: Date.now(),
+          };
+        }
+      }
+    } catch (err) {
+      console.warn(`[vm-manager] ${wikiId}: teardown handshake failed — ${err}; terminating anyway`);
+    }
+
+    await worker.terminate();
     this._slots.set(wikiId, { tier: "cold", wikiId, snapshot });
+
     console.log(
-      `[vm-manager] ${wikiId}: unmounted → cold (snapshot: ${snapshot ? `${snapshot.tiddlers.length} tiddlers` : "none — no handle"})`,
+      `[vm-manager] ${wikiId}: unmounted → cold (snapshot: ${snapshot ? `${snapshot.tiddlers.length} tiddlers` : "none"})`,
     );
   }
 
   // ---------------------------------------------------------------------------
-  // Engine access — touch LRU on every access
+  // Changeset routing — forward Automerge bytes to the owning Worker
   // ---------------------------------------------------------------------------
 
+  /**
+   * Forward an Automerge changeset to the wiki's hot-tier Worker.
+   *
+   * GP-3: the changeset buffer MUST be transferred (not cloned).
+   * After this call the sending-side `changeset.buffer` WILL be neutered.
+   *
+   * No-op if the wiki slot is not in the hot tier.
+   */
+  routeChangeset(wikiId: string, changeset: Uint8Array): void {
+    const slot = this._slots.get(wikiId);
+    if (slot?.tier !== "hot") return;
+
+    const msg = {
+      schema_version: 1 as const,
+      type: "changeset" as const,
+      wikiUri: wikiId,
+      changeset,
+    };
+    (slot as WorkerHotSlot).worker.postMessage(msg, [changeset.buffer as ArrayBuffer]);
+  }
+
+  // ---------------------------------------------------------------------------
+  // Engine access — pinned tier only
+  // ---------------------------------------------------------------------------
+
+  /**
+   * Returns the in-process TW5Engine for the given wikiId, or null.
+   *
+   * In P.3 this returns a non-null value ONLY for the pinned (PrimaryWiki)
+   * slot. Worker-backed hot slots do not expose an in-process engine — use
+   * `routeChangeset()` and `onWorkerEvent` instead.
+   */
   getEngine(wikiId: string): TW5Engine | null {
     const slot = this._slots.get(wikiId);
-    if (!slot || slot.tier === "cold") return null;
-    (slot as HotSlot).lastUsedAt = Date.now();
-    return (slot as HotSlot).engine;
+    if (slot?.tier === "pinned") {
+      (slot as PinnedSlot).lastUsedAt = Date.now();
+      return (slot as PinnedSlot).engine;
+    }
+    return null;
   }
 
   tier(wikiId: string): SlotTier | null {
@@ -210,37 +351,38 @@ export class NodeVmManager {
     return slot?.tier === "cold" ? slot.snapshot : null;
   }
 
-  /** Diagnostics: tier counts for lares status. */
+  /** Diagnostics: slot counts by tier. */
   stats(): { pinned: number; hot: number; cold: number } {
     let pinned = 0, hot = 0, cold = 0;
-    for (const slot of this._slots.values()) {
-      if (slot.tier === "pinned")  pinned++;
-      else if (slot.tier === "hot") hot++;
-      else cold++;
+    for (const s of this._slots.values()) {
+      if (s.tier === "pinned")      pinned++;
+      else if (s.tier === "hot")    hot++;
+      else                          cold++;
     }
     return { pinned, hot, cold };
   }
 
   // ---------------------------------------------------------------------------
-  // Parse/render split
+  // Parse/render split — pinned engine only
   // ---------------------------------------------------------------------------
 
   /**
-   * Deserialize a meme carrier using any available hot VM (grammar-pure).
-   * Returns null when no hot VM exists (daemon still booting).
+   * Deserialize a meme carrier (grammar-pure — any wiki's engine serves).
+   * Routes to the pinned PrimaryWiki engine. Returns null before the pinned
+   * wiki boots.
    */
   parseMeme(uri: string, text: string, extraFields?: Record<string, string>): TiddlerFields[] | null {
-    const engine = this._anyHotEngine();
+    const engine = this._pinnedEngine();
     if (!engine) return null;
     return engine.deserializeCarrier(uri, text, extraFields);
   }
 
   /**
-   * Render a meme URI using the owning wiki's VM (template-dependent).
-   * Falls back to any hot VM when the owning wiki isn't mounted.
+   * Render a meme URI using the pinned wiki's engine (template-dependent).
+   * Worker-backed wikis are not directly renderable from the main thread in P.3.
    */
-  async renderMeme(uri: string, wikiId?: string): Promise<string | null> {
-    const engine = (wikiId ? this.getEngine(wikiId) : null) ?? this._anyHotEngine();
+  async renderMeme(uri: string): Promise<string | null> {
+    const engine = this._pinnedEngine();
     if (!engine) return null;
     try {
       const { exportMemeText } = await import("@lararium/tw5");
@@ -254,13 +396,18 @@ export class NodeVmManager {
   // Dispose all
   // ---------------------------------------------------------------------------
 
-  disposeAll(): void {
+  /** Teardown all Worker slots (GP-5) and dispose the pinned engine. */
+  async disposeAll(): Promise<void> {
+    const teardowns: Promise<void>[] = [];
     for (const slot of this._slots.values()) {
-      if (slot.tier !== "cold") {
-        (slot as HotSlot).adaptor?.stop();
-        (slot as HotSlot).engine.dispose();
+      if (slot.tier === "hot")    teardowns.push(this.unmountWiki(slot.wikiId));
+      if (slot.tier === "pinned") {
+        const p = slot as PinnedSlot;
+        p.adaptor?.stop();
+        p.engine.dispose();
       }
     }
+    await Promise.allSettled(teardowns);
     this._slots.clear();
   }
 
@@ -268,89 +415,90 @@ export class NodeVmManager {
   // Private helpers
   // ---------------------------------------------------------------------------
 
-  private _anyHotEngine(): TW5Engine | null {
+  private _pinnedEngine(): TW5Engine | null {
     for (const slot of this._slots.values()) {
-      if (slot.tier !== "cold") return (slot as HotSlot).engine;
+      if (slot.tier === "pinned") return (slot as PinnedSlot).engine;
     }
     return null;
   }
 
-  private _evictLruIfNeeded(): void {
-    const hotSlots = [...this._slots.values()].filter((s): s is HotSlot => s.tier === "hot");
+  /**
+   * Evict the LRU Worker hot slot when at capacity.
+   * Uses the GP-5 teardown handshake — async.
+   */
+  private async _evictLruIfNeeded(): Promise<void> {
+    const hotSlots = [...this._slots.values()].filter(
+      (s): s is WorkerHotSlot => s.tier === "hot",
+    );
     if (hotSlots.length < HOT_CAP) return;
 
     const lru = hotSlots.sort((a, b) => a.lastUsedAt - b.lastUsedAt)[0]!;
-    const handle = this._docHandles.get(lru.wikiId) ?? null;
-    const snapshot = handle ? this._captureSnapshot(lru.engine, handle) : null;
-
-    lru.adaptor?.stop();
-    lru.engine.dispose();
-    this._slots.set(lru.wikiId, { tier: "cold", wikiId: lru.wikiId, snapshot });
-    console.log(
-      `[vm-manager] ${lru.wikiId}: LRU evicted → cold (snapshot: ${snapshot ? `${snapshot.tiddlers.length} tiddlers` : "none — no handle"})`,
-    );
+    console.log(`[vm-manager] ${lru.wikiId}: LRU evict — hot cap reached (${HOT_CAP})`);
+    await this.unmountWiki(lru.wikiId);
   }
 
-  private _captureSnapshot(engine: TW5Engine, docHandle: DocHandle<MemeStoreDoc>): VmSnapshot | null {
-    const doc = docHandle.doc();
-    if (!doc) return null;
-    try {
-      const heads = Automerge.getHeads(doc);
-      const wiki    = engine.$tw.wiki;
-      const titles  = wiki.filterTiddlers("[all[tiddlers]!prefix[$:/]]");
-      const tiddlers: Array<Record<string, unknown>> = [];
-      for (const title of titles) {
-        const t = wiki.getTiddler(title);
-        if (t) tiddlers.push({ ...t.fields });
+  /** Wire message / error listeners on a newly spawned Worker. */
+  private _wireWorkerListeners(wikiId: string, worker: Worker): void {
+    worker.on("message", (raw: unknown) => {
+      if (!isWorkerToMainMsg(raw)) return;
+      if (raw.type === "event" && this._onWorkerEvent) {
+        this._onWorkerEvent(wikiId, raw as WorkerMsg_Event);
       }
-      return { heads, tiddlers, capturedAt: Date.now() };
-    } catch {
-      return null;
-    }
+      if (raw.type === "fault") {
+        console.error(`[vm-manager] Worker fault for ${wikiId}: ${(raw as { error: string }).error}`);
+      }
+    });
+    worker.on("error", (err) => {
+      console.error(`[vm-manager] Worker error for ${wikiId}:`, err);
+    });
   }
 }
 
 // ---------------------------------------------------------------------------
-// _replayDelta — targeted CRDT delta replay for snapshot warm-up
+// _sendAndAwait — send a message to a Worker and await the first matching reply
 // ---------------------------------------------------------------------------
 
 /**
- * Apply only the tiddlers that changed between snapshot.heads and the current
- * doc heads, using Automerge.diff to compute the affected URIs.
+ * Post `msg` to `worker` and resolve when the Worker replies with a message
+ * whose `type` matches `expectedType`.
  *
- * Reuses MemeSyncAdaptor.onChangeset (store-aware, batched, echo-guarded) so
- * the delta lands in TW5 in a single wiki transaction.
- *
- * MemeSyncAdaptor.onChangeset is defined on MemeSyncAdaptor as a public async
- * method; no new API surface needed on either class.
+ * Rejects after `HANDSHAKE_TIMEOUT_MS` or on a Worker error event.
+ * The caller is responsible for calling `worker.terminate()` after this resolves.
  */
-async function _replayDelta(
-  snapshot:  VmSnapshot,
-  docHandle: DocHandle<MemeStoreDoc>,
-  adaptor:   MemeSyncAdaptor,
-  wikiId:    string,
-): Promise<void> {
-  const doc = docHandle.doc();
-  if (!doc) return;
+function _sendAndAwait<T extends WorkerToMainMsg>(
+  worker:       Worker,
+  msg:          MainToWorkerMsg,
+  expectedType: T["type"],
+  transferList: ArrayBuffer[] = [],
+): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const timer = setTimeout(
+      () => reject(new Error(`[vm-manager] handshake timeout waiting for ${expectedType}`)),
+      HANDSHAKE_TIMEOUT_MS,
+    );
 
-  const currentHeads = Automerge.getHeads(doc);
+    const onMessage = (raw: unknown) => {
+      if (!isWorkerToMainMsg(raw) || raw.type !== expectedType) return;
+      clearTimeout(timer);
+      worker.off("message", onMessage);
+      worker.off("error",   onError);
+      resolve(raw as T);
+    };
 
-  // Fast-path: no CRDT progress since snapshot.
-  // JSON comparison is safe for Heads (array of hex strings).
-  if (JSON.stringify(currentHeads) === JSON.stringify(snapshot.heads)) return;
+    const onError = (err: Error) => {
+      clearTimeout(timer);
+      worker.off("message", onMessage);
+      worker.off("error",   onError);
+      reject(err);
+    };
 
-  const patches = Automerge.diff(doc, snapshot.heads, currentHeads);
-  const changedUris = new Set<string>();
-  for (const patch of patches) {
-    // Patches at path ["tiddlers", uri, ...] → uri changed.
-    if (patch.path.length >= 2 && patch.path[0] === "tiddlers") {
-      changedUris.add(String(patch.path[1]));
+    worker.on("message", onMessage);
+    worker.on("error",   onError);
+
+    if (transferList.length > 0) {
+      worker.postMessage(msg, transferList);
+    } else {
+      worker.postMessage(msg);
     }
-  }
-
-  if (changedUris.size === 0) return;
-
-  const origin: ChangeOrigin = { kind: "crdt-remote", edgeIsland: "replay" };
-  await adaptor.onChangeset(changedUris, origin);
-  console.log(`[vm-manager] ${wikiId}: delta replay — ${changedUris.size} tiddlers patched`);
+  });
 }

@@ -33,11 +33,20 @@ export interface WorkerMsg_Changeset {
   changeset: Uint8Array;
 }
 
-/** Promote the wiki slot from cold to hot (boot TW5 + RE). */
+/**
+ * Promote the wiki slot from cold to hot (boot TW5 + RE).
+ *
+ * `snapshotTiddlers` carries the materialized TW5 tiddler view at the moment
+ * of promotion. Worker boots TW5 from these tiddlers; subsequent changesets
+ * apply incrementally. Null = boot TW5 empty (first-ever mount or no snapshot).
+ *
+ * GP-2: snapshotTiddlers MUST be a plain-object array — no class instances.
+ */
 export interface WorkerMsg_Promote {
   schema_version: ProtocolVersion;
   type: "promote";
   wikiUri: string;
+  snapshotTiddlers: readonly Record<string, unknown>[] | null;
 }
 
 /** Demote the wiki slot from hot to cold (teardown subscriptions, snapshot). */
@@ -85,10 +94,15 @@ export interface WorkerMsg_Event {
  * GP-5 handshake completion.
  * Sent after all in-flight reactions complete and all KumuCancelable handles cancelled.
  * Main thread calls worker.terminate() upon receipt.
+ *
+ * `snapshotTiddlers` captures the Worker's live TW5 tiddler state at teardown,
+ * allowing the main thread to update the cold-slot snapshot without re-reading
+ * the Automerge doc. Omitted from test fixtures and dev-mode stubs.
  */
 export interface WorkerMsg_TeardownAck {
   schema_version: ProtocolVersion;
   type: "teardown:ack";
+  snapshotTiddlers?: readonly Record<string, unknown>[];
 }
 
 /** Acknowledgement of successful hot-tier boot (TW5 + RE co-located and ready). */
@@ -148,14 +162,21 @@ export function mkTeardown(): WorkerMsg_Teardown {
   return { schema_version: WORKER_PROTOCOL_VERSION, type: "teardown" };
 }
 
-/** Build a teardown:ack. Use inside Worker on receipt of teardown. */
-export function mkTeardownAck(): WorkerMsg_TeardownAck {
-  return { schema_version: WORKER_PROTOCOL_VERSION, type: "teardown:ack" };
+/** Build a teardown:ack. Use inside Worker on receipt of teardown or demote. */
+export function mkTeardownAck(
+  snapshotTiddlers?: readonly Record<string, unknown>[],
+): WorkerMsg_TeardownAck {
+  const msg: WorkerMsg_TeardownAck = { schema_version: WORKER_PROTOCOL_VERSION, type: "teardown:ack" };
+  if (snapshotTiddlers !== undefined) msg.snapshotTiddlers = snapshotTiddlers;
+  return msg;
 }
 
-/** Build a promote signal. */
-export function mkPromote(wikiUri: string): WorkerMsg_Promote {
-  return { schema_version: WORKER_PROTOCOL_VERSION, type: "promote", wikiUri };
+/** Build a promote signal with optional cold-slot snapshot tiddlers. */
+export function mkPromote(
+  wikiUri: string,
+  snapshotTiddlers: readonly Record<string, unknown>[] | null = null,
+): WorkerMsg_Promote {
+  return { schema_version: WORKER_PROTOCOL_VERSION, type: "promote", wikiUri, snapshotTiddlers };
 }
 
 /** Build a promote:ack. */

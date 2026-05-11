@@ -724,9 +724,24 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
   await tw5.boot(undefined, preloadedTiddlers.length > 0 ? preloadedTiddlers : undefined);
   emit("tw5-booted");
 
+  // ── 7a. Event bus — ingress rings + tick loop ────────────────────────────
+  // Constructed before NodeVmManager so onWorkerEvent can enqueue to vm-ring.
+  const eventBus = new LarEventBusImpl(20);
+  for (const ring of DEFAULT_RINGS) eventBus.registerRing(ring);
+  eventBus.start();
+
   // P.2 — NodeVmManager. Mount PrimaryWiki as pinned slot.
   // Adaptor wires after MemeSyncAdaptor construction below; updateAdaptor called there.
-  vmManager = new NodeVmManager();
+  // onWorkerEvent routes RE reactions from hot-tier Workers into the vm-ring.
+  vmManager = new NodeVmManager({
+    onWorkerEvent: (wikiId, msg) => {
+      eventBus.enqueueToRing("vm-ring", "worker.event", {
+        wikiId,
+        eventId: msg.eventId,
+        payload: msg.payload,
+      });
+    },
+  });
   vmManager.mountPrimary(wikiId, tw5, null);
   if (islandHandle) vmManager.registerDocHandle(wikiId, islandHandle);
 
@@ -747,11 +762,6 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
   );
   await pool.get(resolvedRecipeUri, () => _vmFactory(resolvedRecipeUri, tw5, vmBagStack));
   peer.attachVmPool(pool);
-
-  // ── 11. Event bus — ingress rings + tick loop ─────────────────────────────
-  const eventBus = new LarEventBusImpl(20);
-  for (const ring of DEFAULT_RINGS) eventBus.registerRing(ring);
-  eventBus.start();
 
   emit("live");
   return {

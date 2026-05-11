@@ -1,5 +1,3 @@
-export { NodeVmManager } from "./node-vm-manager.js";
-export type { VmSnapshot, WikiBootContext } from "./node-vm-manager.js";
 export * from "./lar-worker-protocol.js";
 
 export type { CorpusSource } from "./node-host.js";
@@ -53,4 +51,4 @@ export {
 export type { ResidencyHandlerOptions } from "./residency-handlers.js";
 
 export { NodeVmManager } from "./node-vm-manager.js";
-export type { VmSnapshot, WikiBootContext } from "./node-vm-manager.js";
+export type { VmSnapshot, WikiBootContext, NodeVmManagerOptions } from "./node-vm-manager.js";
