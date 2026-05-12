@@ -5,7 +5,7 @@ vendor/
 
 # Generated site/build output
 _site/
-_becmi/
+_osr/source-pdfs/
 _todo/_page_renders/.cache/
 
 node_modules/
