@@ -13,6 +13,8 @@
  * Meme: lar:///ha.ka.ba/@lararium/node/v0.1/lar-worker-protocol
  */
 
+import type { TW5CoreBootBlob } from "@lararium/tw5";
+
 export const WORKER_PROTOCOL_VERSION = 1 as const;
 export type ProtocolVersion = typeof WORKER_PROTOCOL_VERSION;
 
@@ -49,6 +51,8 @@ export interface WorkerMsg_Promote {
   type: "promote";
   wikiUri: string;
   snapshotTiddlers: readonly Record<string, unknown>[] | null;
+  /** TW5 core bytes from the content-addressed LarariumDoc blob. */
+  coreBlob: TW5CoreBootBlob;
 }
 
 /** Demote the wiki slot from hot to cold (teardown subscriptions, snapshot). */
@@ -176,9 +180,10 @@ export function mkTeardownAck(
 /** Build a promote signal with optional cold-slot snapshot tiddlers. */
 export function mkPromote(
   wikiUri: string,
+  coreBlob: TW5CoreBootBlob,
   snapshotTiddlers: readonly Record<string, unknown>[] | null = null,
 ): WorkerMsg_Promote {
-  return { schema_version: WORKER_PROTOCOL_VERSION, type: "promote", wikiUri, snapshotTiddlers };
+  return { schema_version: WORKER_PROTOCOL_VERSION, type: "promote", wikiUri, coreBlob, snapshotTiddlers };
 }
 
 /** Build a promote:ack. */

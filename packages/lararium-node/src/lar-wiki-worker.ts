@@ -43,6 +43,7 @@ import {
   mkPromoteAck,
   mkTeardownAck,
   mkFault,
+  WORKER_PROTOCOL_VERSION,
 } from "./lar-worker-protocol.js";
 import type { WorkerToMainMsg, WorkerMsg_Event } from "./lar-worker-protocol.js";
 
@@ -127,7 +128,7 @@ parentPort.on("message", async (raw: unknown) => {
       tw5 = new TW5Engine();
       const tiddlers = raw.snapshotTiddlers;
       await tw5.boot(
-        undefined,
+        raw.coreBlob,
         tiddlers && tiddlers.length > 0
           ? (tiddlers as Record<string, unknown>[])
           : undefined,
@@ -148,7 +149,7 @@ parentPort.on("message", async (raw: unknown) => {
             }
           }
           post({
-            schema_version: 1,
+            schema_version: WORKER_PROTOCOL_VERSION,
             type: "event",
             wikiUri: wikiUri!,
             eventId: listenable,

@@ -1,9 +1,9 @@
 # Hand-off Crystal — Lares Lararium Node Branch
 
 > Forged: 2026-05-07
-> Last update: 2026-05-11 — Path H landed: `splitBodyTiddler` exported from `deserializer.ts`; `MemeSyncAdaptor` direct handler auto-splits ahu slot bodies on TW5 UX save — symmetric with disk-sync ingest (ONE parser, FOUR call sites). Plugin bundle rebuilt (46 tiddlers). Heleuma body-sha256 drift resolved (16 anchors). 35 tests passing. Next open: Path K (F-arc debounce), Path L (admin ingress trust gate), Path G remaining sigils.
+> Last update: 2026-05-12 — Peer boot parity closed: Node primary/admin/worker TW5 VMs now boot from the same content-addressed `tiddlywikicore` LarariumDoc blob path intended for browser peers. `TW5CoreBootBlob` carries bytes + sha256 + source; `TW5Engine` verifies the digest before eval/injection, denies filesystem boot ingress, disables TW5 Node folder scans, and keeps tiddler ingress on preloads/adaptors. Quine gate green. Next open: Path K (F-arc debounce), Path L (admin ingress trust gate), Path G remaining sigils.
 > Branch: `feature/lararium-node-3`
-> Working tree: dirty (commit pending).
+> Working tree: clean after peer-boot-parity commit.
 
 ---
 
@@ -12,14 +12,16 @@
 ```text
 Resume from packages/HANDOFF.md.
 Branch: feature/lararium-node-3.
-Current delta (2026-05-11): P.3 worker-thread foundation is in place and
-P.3.5 reaction-surface wiring is partially active. `@lararium/core` now exports
-`live-protocol` + `kumu-device`; `lar-wiki-worker` boots `ReactionEngine` and
-forwards fired listenables as worker events; `open-node-lar-peer` routes those
-events into `eventBus.enqueueToRing("vm-ring", "worker.event", ...)`.
-Remaining blocker: implement real changeset apply inside worker (Automerge
-replica + changed URI set + TW5 mutation path), then tighten integration tests
-for mountWiki/routeChangeset/unmountWiki lifecycle.
+Current delta (2026-05-12): peer boot parity closed. Node primary/admin/hot-worker
+TW5 VMs no longer boot from the installed `tiddlywiki` runtime as authority;
+they receive the `tiddlywikicore` bytes from `LarariumDoc.blobs[ENGINE_CORE_ID]`
+with sha256 provenance. `TW5Engine.boot()` now accepts `TW5CoreBootBlob`, verifies
+the digest before evaluation/injection, denies `fs`, narrows host builtins, runs
+Node blob boot in a neutral host profile (`node=null`, `browser=null`), disables
+TW5's normal wiki-folder scan, and keeps tiddler ingress on `preloadTiddlers` +
+`MemeSyncAdaptor`. Worker protocol remains version 1 for alpha. Verification:
+`pnpm --filter @lararium/tw5 build`, `pnpm --filter @lararium/node typecheck`,
+and `pnpm --filter @lararium/node exec tsx scripts/test-quine.ts` green.
 S5.8 ✅ closed. S6 (BagResidencyManager) ✅ closed (C.1→C.6, C.5 deferred).
 S7.1 (Capability layer via @keyhive/keyhive) ✅ closed (D.1→D.6).
 S8 (Wiki composition) ✅ closed (E.1→E.10). Twelve operator verbs across

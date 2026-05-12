@@ -5,7 +5,7 @@
 > Workspace: `_todo/ADMIN`
 > Scope: Security and governance options for defining and enforcing Lares `Admin`
 
-**Foundational reference:** [Infrastructure_as_Myth.md](/home/joshu/Synthetic-Dream-Machine/Infrastructure_as_Myth.md)
+**Foundational reference:** [infrastructure-as-myth.md](/home/joshu/Synthetic-Dream-Machine/infrastructure-as-myth.md)
 
 ---
 

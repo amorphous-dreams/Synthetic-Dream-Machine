@@ -218,7 +218,7 @@ Read [](file:///home/joshu/Synthetic-Dream-Machine/_todo/ADMIN)
 
 Read [](file:///home/joshu/Synthetic-Dream-Machine/Deterministic_IaM_Build.md#1-1), lines 1 to 100
 
-Read [](file:///home/joshu/Synthetic-Dream-Machine/Infrastructure_as_Myth.md#1-1), lines 1 to 100
+Read [](file:///home/joshu/Synthetic-Dream-Machine/infrastructure-as-myth.md#1-1), lines 1 to 100
 
 Read [](file:///home/joshu/Synthetic-Dream-Machine/Deterministic_IaM_Build.md#100-100), lines 100 to 150
 
@@ -296,7 +296,7 @@ The problem is precisely documented. PIPELINE.md provides exact byte counts for 
 
 More importantly, the Lares_VSCode_Operations-map.md now provides the most precise quantification yet: **~364 of 453 lines in `Lares_VSCode_Operations.md` (~80%) is B8 golden examples + B9 regression checklist that has zero value in deployed platform context** and should live in tests. Only ~89 lines (~20%) is genuinely deployable repo ops content. This is the sharpest "before" picture you have — it names exactly what to cut and where it goes.
 
-The thesis in Infrastructure_as_Myth.md is fully developed and unnecessary grounding for the Codex agent. It's already done.
+The thesis in infrastructure-as-myth.md is fully developed and unnecessary grounding for the Codex agent. It's already done.
 
 ---
 

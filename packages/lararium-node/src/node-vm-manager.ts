@@ -43,11 +43,13 @@ import { Worker }     from "worker_threads";
 import type { DocHandle, DocHandleChangePayload } from "@automerge/automerge-repo";
 import type { MemeStoreDoc } from "@lararium/core";
 import { TW5Engine, MemeSyncAdaptor } from "@lararium/tw5";
+import type { TW5CoreBootBlob } from "@lararium/tw5";
 import type { TiddlerFields } from "@lararium/tw5";
 import {
   isWorkerToMainMsg,
   mkPromote,
   mkTeardown,
+  WORKER_PROTOCOL_VERSION,
 } from "./lar-worker-protocol.js";
 import type {
   WorkerMsg_Changeset,
@@ -119,6 +121,8 @@ export interface WikiBootContext {
    * snapshot. Merged into snapshotTiddlers before sending promote.
    */
   preloadedTiddlers?: Array<Record<string, unknown>>;
+  /** TW5 core bytes from the content-addressed LarariumDoc blob. */
+  coreBlob: TW5CoreBootBlob;
 }
 
 // ---------------------------------------------------------------------------
@@ -239,7 +243,7 @@ export class NodeVmManager {
 
     await _sendAndAwait<WorkerMsg_PromoteAck>(
       worker,
-      mkPromote(wikiId, snapshotTiddlers),
+      mkPromote(wikiId, ctx.coreBlob, snapshotTiddlers),
       "promote:ack",
     );
 
@@ -327,7 +331,7 @@ export class NodeVmManager {
     if (slot?.tier !== "hot") return;
 
     const msg: WorkerMsg_Changeset = {
-      schema_version: 1 as const,
+      schema_version: WORKER_PROTOCOL_VERSION,
       type: "changeset" as const,
       wikiUri: wikiId,
       added,

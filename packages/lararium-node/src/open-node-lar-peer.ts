@@ -40,7 +40,7 @@ import {
   LARARIUM_DOC_URI, CATALOG_DOC_URI, LARES_DOC_URI,
   IDENTITIES_DOC_URI, CIRCLES_DOC_URI, SESSIONS_DOC_URI, ADMIN_BAG_ID,
   corpusLarUri, wikiLarUri, wikiDraftLarUri, BAG_IDS, recipeUri,
-  VmPool,
+  VmPool, ENGINE_CORE_ID,
 }                                       from "@lararium/core";
 import type { MemeRecipeVm, LarOpenPhase } from "@lararium/core";
 import { TW5Engine, MemeSyncAdaptor, DirectMemeRecipeVm, MemoryTiddlerStore } from "@lararium/tw5";
@@ -347,6 +347,17 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
   composite.addLayer({ bagId: BAG_IDS.groups,     store: new AutomergeDocStore(groupsHandle,     BAG_IDS.groups),     writable: true });
   composite.addLayer({ bagId: BAG_IDS.sessions,   store: new AutomergeDocStore(sessionsHandle,   BAG_IDS.sessions),   writable: true });
 
+  const blobs = islandHandle?.doc()?.blobs ?? {};
+  const coreBlobEntry = blobs[ENGINE_CORE_ID];
+  if (!coreBlobEntry?.blob) {
+    throw new Error(`[openNodeLarPeer] missing TW5 core blob (${ENGINE_CORE_ID}) in LarariumDoc; re-run build:genesis`);
+  }
+  const coreBlob = {
+    bytes:  new Uint8Array(coreBlobEntry.blob),
+    sha256: coreBlobEntry.sha256,
+    source: coreBlobEntry.source ?? ENGINE_CORE_ID,
+  };
+
   // Admin VM — operator-private coordinator with its own TW5 engine and
   // composite. Booted in parallel with the wiki VM; never shares state with
   // wiki peer connections. Preload the lararium-lares corpus blob so
@@ -360,7 +371,7 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
       );
     } catch { /* malformed — skip */ }
   }
-  const adminVm = await openAdminVm({ repo, adminUrl, preloadedTiddlers: adminPreload });
+  const adminVm = await openAdminVm({ repo, adminUrl, preloadedTiddlers: adminPreload, coreBlob });
 
   // Command dispatcher — subscribes to the admin store and runs commands
   // delivered as command-tiddlers (CRDT-native CLI ↔ daemon coordination).
@@ -687,7 +698,6 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
   // Vendored community plugins ($:/plugins/*) are opt-in per Recipe via the plugins field.
   // When the resolved Recipe declares no plugins, no vendored plugins are preloaded.
   tw5 = new TW5Engine();
-  const blobs = islandHandle?.doc()?.blobs ?? {};
   const preloadedTiddlers: Array<Record<string, unknown>> = [];
 
   const laresBlob = blobs["lararium-lares"]?.blob;
@@ -721,7 +731,7 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
   // the syncer to save it as one package to the CRDT store.
   if (bootstrapPlugin) preloadedTiddlers.push(bootstrapPlugin);
 
-  await tw5.boot(undefined, preloadedTiddlers.length > 0 ? preloadedTiddlers : undefined);
+  await tw5.boot(coreBlob, preloadedTiddlers.length > 0 ? preloadedTiddlers : undefined);
   emit("tw5-booted");
 
   // ── 7a. Event bus — ingress rings + tick loop ────────────────────────────

@@ -1,8 +1,32 @@
 # Session State — Lararium Web3 Refactor
 
-> Updated: 2026-05-11 (Path H save-side auto-split + P.3.5 worker changeset protocol + 35 tests)
+> Updated: 2026-05-12 (peer boot parity: digest-checked TW5 core blob boot for Node primary/admin/worker VMs)
 > Branch: feature/lararium-node-3
 > Purpose: Resume artifact — enough state to continue without prior chat context
+
+---
+
+
+## What Just Happened (2026-05-12 — peer boot parity / content-addressed TW5 core)
+
+Node peer drift closed before browser-peer work proceeds. Browser peers were already intended to boot TW5 from the core/plugin blobs carried in the main Automerge docs; Node still leaned on the installed `tiddlywiki` package path for TW5 runtime authority. That split is gone.
+
+| Component | Change |
+|---|---|
+| `tw5-vm.ts` | Added `TW5CoreBootBlob { bytes, sha256?, source? }`; `TW5Engine.boot()` verifies SHA-256 before evaluating/injecting core bytes. Node path evaluates the content-addressed TW5 core blob, not package runtime bytes. |
+| `tw5-vm.ts` | Node blob boot now uses a narrow host membrane: synthetic package metadata, denied `fs`, explicit builtin allowlist, temporary virtual `window`/`require`/`module` only during boot, then global restoration. TW5 runs in neutral host profile (`node=null`, `browser=null`) and `loadTiddlersNode` is disabled so wiki content ingress stays on preloads/adaptors. |
+| `open-node-lar-peer.ts` | Reads `LarariumDoc.blobs[ENGINE_CORE_ID]`, packages bytes + `sha256` + `source`, and passes that boot blob to primary and admin TW5 VMs. |
+| `open-admin-vm.ts` | Requires `TW5CoreBootBlob` for admin VM boot. |
+| `lar-worker-protocol.ts` / `node-vm-manager.ts` / `lar-wiki-worker.ts` | Hot worker promotion carries the same digest-checked `TW5CoreBootBlob`; worker protocol remains version `1` during alpha. |
+| `@lararium/tw5` exports | Re-exported `TW5CoreBootBlob` type from package index. |
+
+**Verification:**
+
+- `pnpm --filter @lararium/tw5 build` — passes; pre-existing heleuma drift/missing-symbol diagnostics still report in dry-run output.
+- `pnpm --filter @lararium/node typecheck` — passes.
+- `pnpm --filter @lararium/node exec tsx scripts/test-quine.ts` — passes; grammar tiddler raw text hash survives VM round-trip.
+
+**Boundary note:** this is an authority-narrowing boot membrane, not a malicious-code sandbox. Trust still roots in the genesis artifact/build chain and its content hashes.
 
 ---
 

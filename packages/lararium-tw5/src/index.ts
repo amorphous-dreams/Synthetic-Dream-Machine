@@ -15,7 +15,7 @@
  */
 
 export { TW5Engine } from "./tw5-vm.js";
-export type { ZoomLayout } from "./tw5-vm.js";
+export type { ZoomLayout, TW5CoreBootBlob } from "./tw5-vm.js";
 
 export { MemeSyncAdaptor } from "./meme-sync-adaptor.js";
 export { MemoryTiddlerStore } from "./memory-store.js";

@@ -6,7 +6,7 @@ mode=governance-shipped
 release=4.0.1
 
 roots:
-- conceptual=/home/joshu/Synthetic-Dream-Machine/Infrastructure_as_Myth.md
+- conceptual=/home/joshu/Synthetic-Dream-Machine/infrastructure-as-myth.md
 - buildspec=/home/joshu/Synthetic-Dream-Machine/Deterministic_IaM_Build.md
 - packaging=/home/joshu/Synthetic-Dream-Machine/_todo/ADMIN/PROMPTCRAFT.md
 - modular_draft=/home/joshu/Synthetic-Dream-Machine/_todo/core/Modular_Architecture-draft.md

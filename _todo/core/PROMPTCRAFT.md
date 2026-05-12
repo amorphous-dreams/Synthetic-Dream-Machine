@@ -3,7 +3,7 @@
 > Status: Active research doc | Updated: 2026-04-06
 > Scope: Best practices for building Lares as one canonical system that can deploy cleanly to browser chats, API/system-prompt contexts, and repo-native coding agents.
 
-**Foundational reference:** [Infrastructure_as_Myth.md](/home/joshu/Synthetic-Dream-Machine/Infrastructure_as_Myth.md)
+**Foundational reference:** [infrastructure-as-myth.md](/home/joshu/Synthetic-Dream-Machine/infrastructure-as-myth.md)
 **Build reference:** [Deterministic_IaM_Build.md](/home/joshu/Synthetic-Dream-Machine/Deterministic_IaM_Build.md)
 
 ---
@@ -29,7 +29,7 @@ It should ask:
 
 "How do we package executable myth so that the same governing infrastructure can run in browser chats, shareable custom agents, local CLI agents, and repository-native coding environments?"
 
-This document assumes the broader thesis in [Infrastructure_as_Myth.md](/home/joshu/Synthetic-Dream-Machine/Infrastructure_as_Myth.md) and focuses on prompt/module architecture as the packaging layer for that runtime.
+This document assumes the broader thesis in [infrastructure-as-myth.md](/home/joshu/Synthetic-Dream-Machine/infrastructure-as-myth.md) and focuses on prompt/module architecture as the packaging layer for that runtime.
 The deterministic rendering rules for that runtime now live in [Deterministic_IaM_Build.md](/home/joshu/Synthetic-Dream-Machine/Deterministic_IaM_Build.md).
 
 The correct target architecture looks like this:

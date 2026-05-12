@@ -110,7 +110,7 @@ This `README.md` is the scrum tracker. Research and longer-form design notes liv
 - C3. future prompt placement decisions
 
 **Primary docs:**
-- [Infrastructure_as_Myth.md](/home/joshu/Synthetic-Dream-Machine/Infrastructure_as_Myth.md)
+- [infrastructure-as-myth.md](/home/joshu/Synthetic-Dream-Machine/infrastructure-as-myth.md)
 - [Deterministic_IaM_Build.md](/home/joshu/Synthetic-Dream-Machine/Deterministic_IaM_Build.md)
 - [TODO_PARSE_DOC_SPEC.md](/home/joshu/Synthetic-Dream-Machine/_todo/ADMIN/TODO_PARSE_DOC_SPEC.md)
 - [PROMPTCRAFT.md](/home/joshu/Synthetic-Dream-Machine/_todo/ADMIN/PROMPTCRAFT.md)
@@ -140,7 +140,7 @@ This `README.md` is the scrum tracker. Research and longer-form design notes liv
 | B3 | Protected admin escalation semantics | B | Partial | Roster binding still missing |
 | C1 | `--parse doc` design | C | Drafted | Spec exists |
 | C2 | Prompt architecture research | C | Drafted | In `PROMPTCRAFT.md` |
-| C3 | Infrastructure-as-Myth thesis | C | Drafted | Rooted in `Infrastructure_as_Myth.md` |
+| C3 | Infrastructure-as-Myth thesis | C | Drafted | Rooted in `infrastructure-as-myth.md` |
 
 ---
 
@@ -152,7 +152,7 @@ This `README.md` is the scrum tracker. Research and longer-form design notes liv
   Draft feature spec for `--parse doc`.
 - [PROMPTCRAFT.md](/home/joshu/Synthetic-Dream-Machine/_todo/ADMIN/PROMPTCRAFT.md)
   Research on large prompt/instruction architecture and platform limits.
-- [Infrastructure_as_Myth.md](/home/joshu/Synthetic-Dream-Machine/Infrastructure_as_Myth.md)
+- [infrastructure-as-myth.md](/home/joshu/Synthetic-Dream-Machine/infrastructure-as-myth.md)
   Root design thesis for Lares as portable symbolic agent infrastructure.
 - [Deterministic_IaM_Build.md](/home/joshu/Synthetic-Dream-Machine/Deterministic_IaM_Build.md)
   Deterministic build spec for rendering Infrastructure-as-Myth artifacts across platforms.
@@ -190,7 +190,7 @@ This `README.md` is the scrum tracker. Research and longer-form design notes liv
 
 ## Immediate Next Actions
 
-1. Use [Infrastructure_as_Myth.md](/home/joshu/Synthetic-Dream-Machine/Infrastructure_as_Myth.md) as the conceptual root for all prompt architecture work in this workspace.
+1. Use [infrastructure-as-myth.md](/home/joshu/Synthetic-Dream-Machine/infrastructure-as-myth.md) as the conceptual root for all prompt architecture work in this workspace.
 2. Use [Deterministic_IaM_Build.md](/home/joshu/Synthetic-Dream-Machine/Deterministic_IaM_Build.md) as the build-spec root for package/render work.
 3. Treat `builds/manifests/` as the package source of truth and `builds/modules/` as the module sidecar layer already established.
 4. Preserve the new slim-root composition and do not re-open the solved `150000` compatibility-stopgap path.

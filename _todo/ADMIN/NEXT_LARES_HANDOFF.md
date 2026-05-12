@@ -13,7 +13,7 @@ Paste this into a fresh Lares session:
 
 ```text
 Resume from /home/joshu/Synthetic-Dream-Machine/_todo/ADMIN/NEXT_LARES_HANDOFF.md first.
-Treat /home/joshu/Synthetic-Dream-Machine/Infrastructure_as_Myth.md as the conceptual root.
+Treat /home/joshu/Synthetic-Dream-Machine/infrastructure-as-myth.md as the conceptual root.
 Treat /home/joshu/Synthetic-Dream-Machine/Deterministic_IaM_Build.md as the build-spec root.
 Treat /home/joshu/Synthetic-Dream-Machine/_todo/ADMIN/PROMPTCRAFT.md as the prompt/module packaging architecture doc.
 Do not re-decide the locked architecture choices listed in the handoff.
@@ -26,7 +26,7 @@ Prioritize the open work list in order unless the user explicitly redirects.
 ## Current Architectural Position
 
 - Lares is being reframed as a **portable Infrastructure-as-Myth runtime**, not merely a large prompt or persona bundle.
-- [Infrastructure_as_Myth.md](/home/joshu/Synthetic-Dream-Machine/Infrastructure_as_Myth.md) is the **conceptual root** for the current architecture work.
+- [infrastructure-as-myth.md](/home/joshu/Synthetic-Dream-Machine/infrastructure-as-myth.md) is the **conceptual root** for the current architecture work.
 - [Deterministic_IaM_Build.md](/home/joshu/Synthetic-Dream-Machine/Deterministic_IaM_Build.md) is the **build-spec root** for deterministic rendering across browser and repo-native targets.
 - [PROMPTCRAFT.md](/home/joshu/Synthetic-Dream-Machine/_todo/ADMIN/PROMPTCRAFT.md) now treats prompt/module architecture as the **packaging layer** for that IaM runtime.
 - `_todo/ADMIN` is currently the active lane for governance, packaging, trust-model, and hand-off continuity work.
@@ -119,7 +119,7 @@ Only these remain intentionally open at this layer:
 ## Working Guidance For The Next Session
 
 - Do not spend time re-proving the IaM thesis unless the user explicitly asks.
-- Use [Infrastructure_as_Myth.md](/home/joshu/Synthetic-Dream-Machine/Infrastructure_as_Myth.md) for conceptual alignment, then move quickly into implementation-facing work.
+- Use [infrastructure-as-myth.md](/home/joshu/Synthetic-Dream-Machine/infrastructure-as-myth.md) for conceptual alignment, then move quickly into implementation-facing work.
 - Treat [Deterministic_IaM_Build.md](/home/joshu/Synthetic-Dream-Machine/Deterministic_IaM_Build.md) as the next implementation bridge from theory to tooling.
 - Treat the manifest-driven build as implemented foundation, not as the next problem to solve again.
 - Treat reload-safe budgets as restored state, not as an active blocker.

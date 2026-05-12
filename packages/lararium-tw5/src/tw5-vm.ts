@@ -18,14 +18,130 @@ import type { TiddlerFields } from "./deserializer.js";
 import { registerImplementorsOperator } from "./tw5-widgets.js";
 import { getZoomLayout } from "./zoom-layout.js";
 import type { ZoomLayout } from "./zoom-layout.js";
+import { createHash } from "crypto";
 import { LARES_MEMETIC_WIKITEXT_PLUGIN } from "./plugin-tiddler.generated.js";
 export type { ZoomLayout };
 
 
-async function loadNodeTiddlyWiki(): Promise<{ TiddlyWiki: () => unknown }> {
-  // @ts-ignore — tiddlywiki has no local ESM declaration; Node path only.
-  const mod = await import(/* @vite-ignore */ "tiddlywiki");
-  return ((mod as { default?: unknown }).default ?? mod) as { TiddlyWiki: () => unknown };
+export interface TW5CoreBootBlob {
+  bytes: Uint8Array;
+  /** Hex-encoded SHA-256 expected for these exact bytes. */
+  sha256?: string;
+  /** Human/debug provenance only; never treated as authority. */
+  source?: string;
+}
+
+type TW5CoreBootInput = Uint8Array | TW5CoreBootBlob;
+
+function normalizeCoreBootBlob(input?: TW5CoreBootInput): TW5CoreBootBlob | undefined {
+  if (!input) return undefined;
+  return input instanceof Uint8Array ? { bytes: input } : input;
+}
+
+function verifyCoreBootBlob(core: TW5CoreBootBlob): void {
+  if (!core.sha256) return;
+  const actual = createHash("sha256").update(core.bytes).digest("hex");
+  if (actual.toLowerCase() !== core.sha256.toLowerCase()) {
+    throw new Error(
+      `TW5Engine: coreBlob sha256 mismatch` +
+      ` expected=${core.sha256}` +
+      ` actual=${actual}` +
+      (core.source ? ` source=${core.source}` : ""),
+    );
+  }
+}
+
+const TW5_NODE_BOOT_BUILTINS = new Set([
+  "crypto", "node:crypto",
+  "path",   "node:path",
+  "vm",     "node:vm",
+  "os",     "node:os",
+  "url",    "node:url",
+]);
+
+function makeDeniedFsShim(): Record<string, unknown> {
+  return new Proxy(Object.create(null) as Record<string, unknown>, {
+    get(_target, prop) {
+      if (prop === "promises") return makeDeniedFsShim();
+      if (typeof prop === "symbol") return undefined;
+      return () => {
+        throw new Error(`TW5Engine: filesystem access denied during content-addressed TW5 boot (fs.${prop})`);
+      };
+    },
+  });
+}
+
+async function loadNodeTiddlyWiki(coreBlob?: TW5CoreBootBlob): Promise<{ TiddlyWiki: () => unknown }> {
+  if (!coreBlob) {
+    throw new Error("TW5Engine: Node boot requires coreBlob from LarariumDoc; refusing node_modules tiddlywiki fallback.");
+  }
+
+  const { createRequire } = await import("module");
+  const nodeRequire = createRequire(import.meta.url);
+  const moduleShim: { exports: Record<string, unknown>; filename: string } = {
+    exports: {},
+    // TW5's node boot code derives bootPath/corePath from module.filename.
+    // Keep this virtual: the executable core arrives from coreBlob, not from an
+    // installed tiddlywiki package. Runtime disk reads stay disabled by our
+    // preloaded-tiddler boot path below.
+    filename: "/virtual/lararium/tiddlywiki/boot/boot.js",
+  };
+  const exportsShim = moduleShim.exports;
+  const requireShim = (id: string): unknown => {
+    if (id === "../package.json") {
+      return { engines: { node: ">=18.0.0" } };
+    }
+    if (id === "fs" || id === "node:fs") {
+      return makeDeniedFsShim();
+    }
+    if (TW5_NODE_BOOT_BUILTINS.has(id)) {
+      return nodeRequire(id);
+    }
+    throw new Error(`TW5Engine: coreBlob attempted non-builtin require(${JSON.stringify(id)}) during boot`);
+  };
+  const priorTw = (globalThis as Record<string, unknown>)["$tw"];
+  const priorLoad = (globalThis as Record<string, unknown>)["_load"];
+  const priorWindow = (globalThis as Record<string, unknown>)["window"];
+  const priorRequire = (globalThis as Record<string, unknown>)["require"];
+  let twFromBlob: unknown;
+  try {
+    // Some bundled TW5 modules use browser-style UMD wrappers that read a
+    // global `window` symbol during definition even on Node. Provide a temporary
+    // virtual window only while evaluating the content-addressed core blob.
+    (globalThis as Record<string, unknown>)["window"] = globalThis;
+    (globalThis as Record<string, unknown>)["require"] = requireShim;
+    (globalThis as Record<string, unknown>)["$tw"] = { boot: { suppressBoot: true } };
+    // The standalone TW5 core blob is the browser/server boot script emitted by
+    // TiddlyWiki. Evaluating it with CommonJS-shaped `exports` makes it expose
+    // `exports.TiddlyWiki`, while the bytes themselves come from the
+    // content-addressed LarariumDoc blob, not from an installed TW5 package.
+    const source = new TextDecoder().decode(new Uint8Array(coreBlob.bytes));
+    const evaluate = new Function("exports", "module", "require", "window", "process", source);
+    evaluate(exportsShim, moduleShim, requireShim, globalThis, process);
+    twFromBlob = (globalThis as Record<string, unknown>)["$tw"];
+    if (twFromBlob && typeof twFromBlob === "object") {
+      const tw = twFromBlob as Record<string, unknown>;
+      tw["__larariumRequireShim"] = requireShim;
+      tw["__larariumModuleShim"] = moduleShim;
+    }
+  } finally {
+    if (priorTw === undefined) delete (globalThis as Record<string, unknown>)["$tw"];
+    else (globalThis as Record<string, unknown>)["$tw"] = priorTw;
+    if (priorLoad === undefined) delete (globalThis as Record<string, unknown>)["_load"];
+    else (globalThis as Record<string, unknown>)["_load"] = priorLoad;
+    if (priorWindow === undefined) delete (globalThis as Record<string, unknown>)["window"];
+    else (globalThis as Record<string, unknown>)["window"] = priorWindow;
+    if (priorRequire === undefined) delete (globalThis as Record<string, unknown>)["require"];
+    else (globalThis as Record<string, unknown>)["require"] = priorRequire;
+  }
+
+  if (typeof exportsShim["TiddlyWiki"] === "function") {
+    return exportsShim as { TiddlyWiki: () => unknown };
+  }
+  if (twFromBlob && typeof twFromBlob === "object") {
+    return { TiddlyWiki: () => twFromBlob };
+  }
+  throw new Error("TW5Engine: coreBlob did not yield a TiddlyWiki instance.");
 }
 
 // ---------------------------------------------------------------------------
@@ -39,25 +155,27 @@ export class TW5Engine {
   /**
    * Boot the TW5 wiki. Idempotent — multiple calls return the same promise.
    *
-   * Browser: tiddlywikicore-<ver>.js already loaded as <script>; $tw exists
-   *          with suppressBoot set. We reuse the global instance.
-   * Node:    npm tiddlywiki loaded dynamically; no external script needed.
+   * Browser: injects the tiddlywikicore blob as a suppressed <script>; then boots.
+   * Node:    evaluates the same tiddlywikicore blob with a CommonJS-shaped
+   *          wrapper; no node_modules tiddlywiki runtime fallback is allowed.
    */
-  boot(coreBlob?: Uint8Array, preloadedTiddlers?: Array<Record<string, unknown>>): Promise<void> {
+  boot(coreBlob?: TW5CoreBootInput, preloadedTiddlers?: Array<Record<string, unknown>>): Promise<void> {
     if (this._bootPromise) return this._bootPromise;
     this._bootPromise = (async () => {
+      const core = normalizeCoreBootBlob(coreBlob);
+      if (core) verifyCoreBootBlob(core);
       const isBrowser = typeof window !== "undefined" && typeof document !== "undefined";
 
       // Browser web3 path: suppress auto-boot, inject blob, then boot once with preloads.
       if (isBrowser) {
-        if (coreBlob && !globalThis.$tw?.modules?.titles) {
+        if (core && !globalThis.$tw?.modules?.titles) {
           // Pre-set suppressBoot so the blob script does NOT auto-boot.
           globalThis.$tw ??= {} as TW5Instance;
           globalThis.$tw.boot ??= {} as TW5Instance["boot"];
           globalThis.$tw.boot.suppressBoot = true;
 
           await new Promise<void>((resolve, reject) => {
-            const blob    = new Blob([new Uint8Array(coreBlob)], { type: "application/javascript" });
+            const blob    = new Blob([new Uint8Array(core.bytes)], { type: "application/javascript" });
             const blobUrl = URL.createObjectURL(blob);
             const script  = document.createElement("script");
             script.src    = blobUrl;
@@ -80,8 +198,19 @@ export class TW5Engine {
         globalThis.$tw!.boot.argv = globalThis.$tw!.boot.argv ?? [];
         instance = globalThis.$tw as unknown as TW5Instance;
       } else {
-        instance = (await loadNodeTiddlyWiki()).TiddlyWiki() as unknown as TW5Instance;
+        instance = (await loadNodeTiddlyWiki(core)).TiddlyWiki() as unknown as TW5Instance;
         instance.boot.argv = [];
+        // The standalone blob already carries $:/core as preloaded tiddlers,
+        // but not the separate TW5 core-server package. Run the VM in a
+        // neutral host profile: Node supplies host JS execution, while TW5
+        // receives all wiki content through preloads/adaptors rather than
+        // Node's CLI/wiki-folder machinery.
+        (instance as unknown as { node: null; browser: null }).node = null;
+        (instance as unknown as { node: null; browser: null }).browser = null;
+        // Lares owns tiddler ingress through preloadedTiddlers + MemeSyncAdaptor.
+        // Disable TW5's normal Node wiki-folder scan so the VM cannot treat cwd
+        // or package files as a boot authority.
+        (instance as unknown as { loadTiddlersNode?: () => void }).loadTiddlersNode = () => {};
       }
 
       const allPreloads = preloadedTiddlers ?? [];
@@ -93,6 +222,16 @@ export class TW5Engine {
           const orig = proc.stdout.write.bind(proc.stdout);
           proc.stdout.write = () => true;
           restoreStdout = () => { proc.stdout.write = orig; };
+        }
+
+        const hostGlobal = globalThis as Record<string, unknown>;
+        const savedRequire = hostGlobal["require"];
+        const savedModule = hostGlobal["module"];
+        const nodeRequireShim = !isBrowser ? (instance as unknown as Record<string, unknown>)["__larariumRequireShim"] : undefined;
+        const nodeModuleShim = !isBrowser ? (instance as unknown as Record<string, unknown>)["__larariumModuleShim"] : undefined;
+        if (!isBrowser) {
+          if (nodeRequireShim) hostGlobal["require"] = nodeRequireShim;
+          if (nodeModuleShim) hostGlobal["module"] = nodeModuleShim;
         }
 
         instance.preloadTiddlers = instance.preloadTiddlers ?? [];
@@ -108,6 +247,12 @@ export class TW5Engine {
 
         instance.boot.boot(() => {
           restoreStdout?.();
+          if (!isBrowser) {
+            if (savedRequire === undefined) delete hostGlobal["require"];
+            else hostGlobal["require"] = savedRequire;
+            if (savedModule === undefined) delete hostGlobal["module"];
+            else hostGlobal["module"] = savedModule;
+          }
           this._tw = instance;
           this._bootModules().then(resolve).catch(() => resolve());
         });

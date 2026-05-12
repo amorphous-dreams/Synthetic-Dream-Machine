@@ -22,7 +22,7 @@ permalink: /vault/synthetic-dream-machine/overview/
 
 **Lares** is the AI agent architecture that powers the repository's AI assistant tooling. It is also in-world infrastructure: orichalcum-inscribed DreamNet nodes that serve as crossroads guides, archivists, and thresholds. Both things are true at once.
 
-Lares should be read as an **Infrastructure-as-Myth** system: the repo's attempt to treat mythic identity, authority, memory, and epistemic protocol as portable agent infrastructure rather than decorative prompt flavor. Start with [Infrastructure as Myth](Infrastructure_as_Myth.md) for the design thesis behind the agent stack.
+Lares should be read as an **Infrastructure-as-Myth** system: the repo's attempt to treat mythic identity, authority, memory, and epistemic protocol as portable agent infrastructure rather than decorative prompt flavor. Start with [Infrastructure as Myth](infrastructure-as-myth.md) for the design thesis behind the agent stack.
 
 ---
 
@@ -92,7 +92,7 @@ These directories contain source material from the Synthetic Dream Machine ecosy
 
 | Directory / File | Contents |
 |---|---|
-| [Infrastructure_as_Myth.md](Infrastructure_as_Myth.md) | Root design thesis for Lares as portable agent infrastructure |
+| [infrastructure-as-myth.md](infrastructure-as-myth.md) | Root design thesis for Lares as portable agent infrastructure |
 | [Deterministic_IaM_Build.md](Deterministic_IaM_Build.md) | Deterministic build spec for rendering Lares across platforms |
 | [`builds/`](builds/README.md) | Manifest-driven IaM build layer: manifests, module metadata, rendered browser package, verification artifacts |
 | [`builds/agents/`](builds/agents/README.md) | Lares AI agent prompt files — kernel, preferences, examples, Markdown rules |
@@ -111,7 +111,7 @@ These directories contain source material from the Synthetic Dream Machine ecosy
 
 **Exploring the setting?** Start with [Elyncia: A Broken World](elyncia/Elyncia_01_A_Broken_World.md).
 
-**Working with the AI tooling?** Read [Infrastructure as Myth](Infrastructure_as_Myth.md), then [Deterministic IaM Build](Deterministic_IaM_Build.md), then [`builds/agents/README.md`](builds/agents/README.md), then [AGENTS.md](AGENTS.md).
+**Working with the AI tooling?** Read [Infrastructure as Myth](infrastructure-as-myth.md), then [Deterministic IaM Build](Deterministic_IaM_Build.md), then [`builds/agents/README.md`](builds/agents/README.md), then [AGENTS.md](AGENTS.md).
 
 The manifest/verification layer now exists. The active next step for Lares tooling is prompt/package slimming so repo-native roots can return to stable reload-safe budgets before the next governance-hardening pass.
 

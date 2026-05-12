@@ -6,7 +6,7 @@
 > Epic: Lares CLI — `--parse` extension
 > Scope: Design only — prompt placement deferred pending operator research on prompt length, organization, and hierarchy best practices
 
-**Foundational reference:** [Infrastructure_as_Myth.md](/home/joshu/Synthetic-Dream-Machine/Infrastructure_as_Myth.md)
+**Foundational reference:** [infrastructure-as-myth.md](/home/joshu/Synthetic-Dream-Machine/infrastructure-as-myth.md)
 
 ---
 

@@ -1,6 +1,6 @@
 # Lararium — Web3 Genesis Artifact Roadmap
 
-> Updated: 2026-05-11 (Path H save-side auto-split + P.3.5 worker changeset protocol; J.3 closed; 35 tests)
+> Updated: 2026-05-12 (S5.9 peer boot parity: Node primary/admin/worker TW5 VMs boot from digest-checked content-addressed core blob)
 > Branch: feature/lararium-node-3
 > Governing laws: see SESSION.md § Five Architecture Laws
 
@@ -42,6 +42,7 @@ Social graph control inverts: circles are owned by their center, not the platfor
 | S5.6 | Admin VM Lift | ✅ Complete | Admin TW5 VM stood up; admin doc seeded; `openNodeLarPeer` boots both VMs; bag-mirror configs now readable from admin-room tiddlers tagged `$:/tags/LarariumBagMirror` |
 | S5.7 | Heleuma Coverage + Bag Mirror | ✅ Complete | Genesis discovery walks all packages' memes/; `LarDiskProjector` bag-aware (canon leak closed); `pnpm heleuma` audit/scaffold; `lares-chapel-perilous-opens` removed |
 | S5.8 | Promotion Ceremony | ✅ Complete | `@lares/cli` package + `lares promote` CLI; command-tiddler protocol (cmd/=signal, log/=durable record); TS dispatcher + promote handler in `@lararium/node`; CLI ↔ daemon coordination via admin-doc tiddlers (no HTTP/RPC) |
+| S5.9 | Peer boot parity | ✅ Complete | Node primary/admin/hot-worker TW5 VMs boot from `LarariumDoc.blobs[ENGINE_CORE_ID]` via `TW5CoreBootBlob` (bytes + sha256 + source), matching browser-peer content-addressed boot intent. `TW5Engine` verifies digest pre-eval, denies fs/wiki-folder ingress, narrows host affordances, and keeps tiddler ingress on preloads/adaptors. Quine gate green. |
 | S6 | BagResidencyManager | ✅ Complete | Three-tier residency (pinned/hot/cold) for Automerge bags. LRU + idle sweeper + sync-state guard. `lares pin/unpin/residency/register-cold`. composite-store hydrate-on-read. `lares status` residency line. C.5 same-machine peer consolidation deferred to the dreamdeck-app sprint where the consumer side firms up. Five-commit C-arc C.1→C.6 |
 | S6 (legacy) | SessionEventLog | ✅ Complete | Per-session append-only Automerge doc; `broadcast()` for presence (renumbered: BagResidencyManager took the S6 slot 2026-05-08) |
 | S7.1 | Capability Layer (Keyhive concap) | ✅ Complete | `@keyhive/keyhive` adopted pre-alpha (0.0.0-alpha.56c); operator-key bridge; `AdminEventStore` persists cap events across daemon restarts; `ctx.cap` wired through dispatcher; promote-handler enforces `verify({access:"admin", bagUrl})`. Two-tier policy stands: Keyhive crypto gate + future ABILITY_LADDER caveats above it. Six-commit D-arc D.1→D.6 |
