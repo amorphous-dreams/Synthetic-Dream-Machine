@@ -97,6 +97,7 @@ Hostless URIs never require network access to resolve. Hostful URIs may require
 a network hop for DID resolution but the content itself is local (CRDT store).
 
 <<~&#x0003;>>
+
 <<~&#x0004; -> ? >>
 
 <<~ ahu #edges >>

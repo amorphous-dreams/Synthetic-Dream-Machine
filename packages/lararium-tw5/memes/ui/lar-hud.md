@@ -118,6 +118,7 @@ as a flex sibling unaffected by tldraw's internal layout changes.
 - **Per-tiddler navigation**: HUD tab bar gains a breadcrumb trail for open tiddlers
 
 <<~&#x0003;>>
+
 <<~&#x0004; -> ? >>
 
 <<~ ahu #edges >>
