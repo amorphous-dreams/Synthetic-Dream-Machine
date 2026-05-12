@@ -36,6 +36,7 @@ WIKI_MEME_DIR="$LAR_ROOT/wikis/$WIKI/memes/docs/lares"
 WIKI_MEME="$WIKI_MEME_DIR/$MEME_SLUG.md"
 RUNS_DIR="tests/results/wikis/$WIKI/memes/docs/lares"
 EXPECTED_DIR="tests/expected/wikis/$WIKI/memes/docs/lares"
+PROMOTE_EXPECTED_PKG_DIR="tests/expected/packages/lares/memes/docs/lares"
 LAR_URI="lar:///ha.ka.ba/docs/lares/$MEME_SLUG"
 CANON_PARENT="$LAR_ROOT/packages/lares/memes/docs/lares/$MEME_SLUG.md"
 CANON_CHILD_DIR="$LAR_ROOT/packages/lares/memes/docs/lares/$MEME_SLUG"
@@ -70,20 +71,6 @@ trap 'stop_daemon' EXIT INT TERM
 pass() { echo "  ✓ $*"; }
 fail() { echo "  ✗ FAIL: $*"; FAILURES=$((FAILURES+1)); }
 FAILURES=0
-
-normalize_meme_tree_for_diff() {
-  local src="$1"
-  local dest="$2"
-  rm -rf "$dest"
-  mkdir -p "$dest"
-  find "$src" -name '*.md' | while read -r f; do
-    rel="${f#${src}/}"
-    mkdir -p "$(dirname "$dest/$rel")"
-    # Promotion is expected to mutate placement identity/provenance fields.
-    # Keep the rest of the bytes under golden-file watch.
-    sed -E '/^[[:space:]]*(uri|uri-path|file-path)[[:space:]]*=/d' "$f" > "$dest/$rel"
-  done
-}
 
 # --------------------------------------------------------------------------
 # Setup: reset + serve + wiki init + copy meme
@@ -216,16 +203,12 @@ flow_promote() {
     || fail "$n_fail children missing prologue (found $n_pass ok)"
 
   echo ""
-  echo "=== diff: promoted package vs expected (ignoring uri/file-path fields) ==="
-  _diff_tmp="$(mktemp -d)"
-  normalize_meme_tree_for_diff "$EXPECTED_DIR" "$_diff_tmp/expected"
-  normalize_meme_tree_for_diff "$LAR_ROOT/packages/lares/memes/docs/lares" "$_diff_tmp/promoted"
-  if diff -r --unified=3 "$_diff_tmp/expected" "$_diff_tmp/promoted"; then
-    pass "promoted output matches expected except uri/file-path fields"
+  echo "=== diff: promoted package vs expected (all fields) ==="
+  if diff -r --unified=3 "$PROMOTE_EXPECTED_PKG_DIR" "$LAR_ROOT/packages/lares/memes/docs/lares"; then
+    pass "promoted output matches expected"
   else
-    fail "promoted output mutated beyond uri/file-path fields — see diff above"
+    fail "promoted output diverges from expected — see diff above"
   fi
-  rm -rf "$_diff_tmp"
 
   echo ""
   echo "=== promote log tail ==="
@@ -248,8 +231,10 @@ case "$FLOW" in
   both)
     flow_decompose
     echo ""
-    echo "--- re-drop meme for flow 2 ---"
-    cp "$SOURCE_MEME" "$WIKI_MEME"
+    echo "--- stopping daemon for independent Flow 2 ---"
+    stop_daemon
+    echo "--- re-setup for independent Flow 2 ---"
+    setup
     flow_promote
     ;;
 esac
