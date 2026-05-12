@@ -3,6 +3,6 @@ model_instructions_file = "../packages/lares/memes/AGENTS.md"
 
 [mcp_servers.lararium]
 command = "node"
-args = ["packages/lararium-mcp/dist/stdio.js"]
+args = []
 cwd = "."
 
