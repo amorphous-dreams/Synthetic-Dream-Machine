@@ -218,8 +218,7 @@ export class MemeSyncAdaptor implements MemeProjection {
 
         if (change.record === null || change.record.deleted) {
           toRemove.push(change.title);
-          const childTitles: string[] = this.tw5.$tw.wiki.filterTiddlers(`[field:fragment-parent[${change.title}]]`);
-          for (const t of childTitles) toRemove.push(t);
+          for (const t of this._childUrisOf(change.title)) toRemove.push(t);
           this._pendingDeletions.add(change.title);
         } else {
           const rec = change.record;
@@ -269,11 +268,15 @@ export class MemeSyncAdaptor implements MemeProjection {
   // Internal — apply a single change to TW5 wiki under echo guard
   // ---------------------------------------------------------------------------
 
+  /** Return all ahu-slot children of `parentUri` currently visible in TW5. */
+  private _childUrisOf(parentUri: string): string[] {
+    return this.tw5.$tw.wiki.filterTiddlers(`[field:fragment-parent[${parentUri}]]`) as string[];
+  }
+
   private _removeFromTw5(title: string): void {
     const wiki = this.tw5.$tw.wiki;
     wiki.deleteTiddler(title);
-    const childTitles: string[] = wiki.filterTiddlers(`[field:fragment-parent[${title}]]`);
-    for (const t of childTitles) wiki.deleteTiddler(t);
+    for (const t of this._childUrisOf(title)) wiki.deleteTiddler(t);
     this._pendingDeletions.add(title);
   }
 
@@ -434,30 +437,21 @@ export class MemeSyncAdaptor implements MemeProjection {
       const bodyText = fields["text"] ?? "";
       const { parent, children } = splitBodyTiddler(title, bodyText, fields);
 
-      await this.store.put(buildDirectRecord(title, parent as Record<string,string>, this.targetBag), origin);
+      await this.store.put(buildDirectRecord(title, parent, this.targetBag), origin);
 
       if (children.length > 0) {
-        // Find existing children in the TW5 wiki (fragment-parent index).
-        const existingChildUris = new Set<string>(
-          this.tw5.$tw.wiki.filterTiddlers(`[field:fragment-parent[${title}]]`) as string[],
-        );
-        const newChildUris = new Set<string>();
+        const existingChildUris = new Set<string>(this._childUrisOf(title));
+        const newChildUris      = new Set<string>();
 
         for (const child of children) {
           const childTitle = String(child["title"] ?? "");
-          if (!childTitle.startsWith("lar:")) continue; // skip warning tiddlers
+          if (!childTitle.startsWith("lar:")) continue; // skip parse-warning tiddlers
           newChildUris.add(childTitle);
-          await this.store.put(
-            buildDirectRecord(childTitle, child as Record<string,string>, this.targetBag),
-            origin,
-          );
+          await this.store.put(buildDirectRecord(childTitle, child, this.targetBag), origin);
         }
 
-        // Tombstone children that no longer exist after the re-split.
         for (const uri of existingChildUris) {
-          if (!newChildUris.has(uri)) {
-            await this.store.tombstone(uri, origin);
-          }
+          if (!newChildUris.has(uri)) await this.store.tombstone(uri, origin);
         }
       }
     },

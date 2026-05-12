@@ -28,10 +28,16 @@ import type { LarTiddlerRecord } from "@lararium/core";
 // buildDirectRecord — sync-adaptor write path
 // ---------------------------------------------------------------------------
 
-/** Build a LarTiddlerRecord for the `direct` save strategy. */
+/**
+ * Build a LarTiddlerRecord for the `direct` save strategy.
+ *
+ * Accepts both flat-string fields (from TW5 saveTiddler) and string-array
+ * fields (from splitBodyTiddler / deserializer TiddlerFields). Array values
+ * serialize to space-joined strings — the canonical TW5 tag/list form.
+ */
 export function buildDirectRecord(
   title:     string,
-  fields:    Record<string, string>,
+  fields:    Record<string, string | string[]>,
   targetBag: NonNullable<LarTiddlerRecord["bag"]> = "wiki",
 ): LarTiddlerRecord {
   const textVal = fields["text"];
@@ -40,9 +46,9 @@ export function buildDirectRecord(
     fields: Object.fromEntries(
       Object.entries(fields)
         .filter(([k]) => k !== "text" && k !== "title")
-        .map(([k, v]) => [k, String(v)]),
+        .map(([k, v]) => [k, Array.isArray(v) ? v.join(" ") : String(v)]),
     ),
-    ...(textVal !== undefined ? { text: textVal } : {}),
+    ...(textVal !== undefined ? { text: Array.isArray(textVal) ? textVal.join(" ") : textVal } : {}),
     bag: targetBag,
   };
 }

@@ -39,7 +39,7 @@
 
 import * as Automerge from "@automerge/automerge";
 import { Worker }     from "worker_threads";
-import type { DocHandle } from "@automerge/automerge-repo";
+import type { DocHandle, DocHandleChangePayload } from "@automerge/automerge-repo";
 import type { MemeStoreDoc } from "@lararium/core";
 import { TW5Engine, MemeSyncAdaptor } from "@lararium/tw5";
 import type { TiddlerFields } from "@lararium/tw5";
@@ -536,12 +536,7 @@ function _subscribeDocChanges(
   handle:    DocHandle<MemeStoreDoc>,
   manager:   NodeVmManager,
 ): () => void {
-  type ChangePayload = {
-    doc:     MemeStoreDoc;
-    patches: Array<{ action: string; path: Array<string | number> }>;
-  };
-
-  const onChangeHandler = (payload: ChangePayload) => {
+  const onChangeHandler = (payload: DocHandleChangePayload<MemeStoreDoc>) => {
     const { doc, patches } = payload;
     const changedUris = new Set<string>();
     for (const patch of patches) {
@@ -570,8 +565,6 @@ function _subscribeDocChanges(
     manager.routeChangeset(wikiId, added, deleted);
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  (handle as any).on("change", onChangeHandler);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return () => (handle as any).off("change", onChangeHandler);
+  handle.on("change", onChangeHandler);
+  return () => handle.off("change", onChangeHandler);
 }
