@@ -33,8 +33,27 @@ class FakeTW5Engine {
 
   /** Fake wiki — returns no tiddlers, so cascade always empty. */
   readonly wiki = {
+    addTiddler: (tiddler: { fields: TW5FieldsMap } | TW5FieldsMap): void => {
+      const fields = "fields" in tiddler ? tiddler.fields : tiddler;
+      this.setTiddler(fields);
+    },
+    deleteTiddler: (title: string): void => this.removeTiddler(title),
     getTiddler: (_title: string): { fields: Record<string, unknown> } | undefined => undefined,
     filterTiddlers: (_filter: string): string[] => [],
+    addEventListener: (_event: string, cb: (changes: Record<string, unknown>) => void): void => {
+      this._changeListeners.push(cb);
+    },
+    removeEventListener: (_event: string, cb: (changes: Record<string, unknown>) => void): void => {
+      this._changeListeners = this._changeListeners.filter((l) => l !== cb);
+    },
+  };
+
+  readonly $tw = {
+    Tiddler: class {
+      fields: TW5FieldsMap;
+      constructor(fields: TW5FieldsMap) { this.fields = fields; }
+    },
+    wiki: this.wiki,
   };
 
   setTiddler(fields: TW5FieldsMap): void         { this.setTiddlerCalls.push(fields); }
@@ -169,11 +188,11 @@ describe("MemeSyncAdaptor — inbound (CRDT→TW5)", () => {
     expect(tw5.bulkSetTiddlersCalls).toHaveLength(0);
   });
 
-  test("onSyncComplete flushes buffer → bulkSetTiddlers called", () => {
+  test("onSyncComplete flushes buffer → tiddlers added", () => {
     adaptor.onUriChanged(liveChange(LAR_URI, "hello"));
     adaptor.onSyncComplete("automerge");
-    expect(tw5.bulkSetTiddlersCalls).toHaveLength(1);
-    expect(tw5.bulkSetTiddlersCalls[0]?.some((t) => t["bag"] === TARGET_BAG)).toBe(true);
+    expect(tw5.setTiddlerCalls).toHaveLength(1);
+    expect(tw5.setTiddlerCalls[0]?.["bag"]).toBe(TARGET_BAG);
   });
 
   test("onUriChanged after onSyncComplete → setTiddler called immediately", () => {
@@ -199,12 +218,12 @@ describe("MemeSyncAdaptor — inbound (CRDT→TW5)", () => {
 
     // Flush only island B first.
     adaptor.onSyncComplete(islandB);
-    const batchAfterB = tw5.bulkSetTiddlersCalls.length;
-    expect(batchAfterB).toBe(1); // only B flushed
+    const writesAfterB = tw5.setTiddlerCalls.length;
+    expect(writesAfterB).toBe(1); // only B flushed
 
     // Flush island A.
     adaptor.onSyncComplete(islandA);
-    expect(tw5.bulkSetTiddlersCalls.length).toBe(2); // now A flushed too
+    expect(tw5.setTiddlerCalls.length).toBe(2); // now A flushed too
   });
 
   test("tw-local origin in buffer is skipped on flush (own-write suppression)", () => {

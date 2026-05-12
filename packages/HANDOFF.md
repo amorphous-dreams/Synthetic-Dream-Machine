@@ -95,18 +95,31 @@ If all are already true, mark Path R stabilization closed in ROADMAP instead of 
 ## Useful Smokes
 
 ```sh
+# Fast package suites
+pnpm test:unit
+
+# Isolated integration flows under tests/
+pnpm test:flows
+pnpm test:tw5-flow
+
 # Quine / peer boot parity
 pnpm --filter @lararium/tw5 build
 pnpm --filter @lararium/node typecheck
 pnpm --filter @lararium/node exec tsx scripts/test-quine.ts
 
-# Daemon/CLI path
+# Manual daemon/CLI path
 lares reset --force
 lares serve
 lares status
 lares wiki list
 lares promote lar:///definitely-not-real --to lar:///ha.ka.ba/@lares --yes
 ```
+
+## Test Layout
+
+- Active package tests live beside packages: `packages/*/tests/`.
+- Active daemon/CLI flows live under `tests/lararium-tw5/` and run through `tests/bin/run-flow.sh`.
+- Old HUD / memes / chats behavioral plans moved to `tests/chats/`.
 
 ## Do Not Re-Decide
 

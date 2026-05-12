@@ -8,7 +8,10 @@
     "test": "pnpm -r test",
     "typecheck": "pnpm -r typecheck",
     "lint": "pnpm -r lint",
-    "dev": "concurrently -n node,vite -c magenta,cyan \"pnpm --filter @lararium/node dev\" \"pnpm --filter @lararium/app dev\""
+    "dev": "concurrently -n node,vite -c magenta,cyan \"pnpm --filter @lararium/node dev\" \"pnpm --filter @lararium/app dev\"",
+    "test:unit": "pnpm -r test",
+    "test:flows": "bash tests/bin/run-flow.sh all",
+    "test:tw5-flow": "bash tests/lararium-tw5/sync/sync-decompose-promote.sh both"
   },
   "devDependencies": {
     "@lares/cli": "workspace:*",

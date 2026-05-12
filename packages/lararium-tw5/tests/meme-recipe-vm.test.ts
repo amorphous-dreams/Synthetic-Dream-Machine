@@ -47,7 +47,25 @@ class FakeWiki {
 
 function makeEngine(): { engine: TW5Engine; wiki: FakeWiki } {
   const wiki = new FakeWiki();
+  class FakeTiddler {
+    fields: TiddlerRecord;
+    constructor(fields: TiddlerRecord) { this.fields = fields; }
+  }
   const engine = {
+    $tw: {
+      Tiddler: FakeTiddler,
+      wiki: {
+        addTiddler: (tiddler: { fields: TiddlerRecord } | TiddlerRecord) => {
+          wiki.set("fields" in tiddler ? tiddler.fields : tiddler);
+        },
+        deleteTiddler: (title: string) => wiki.remove(title),
+        getTiddler: (title: string) => {
+          const fields = wiki.get(title);
+          return fields ? { fields } : undefined;
+        },
+        filterTiddlers: () => [],
+      },
+    },
     setTiddler: (fields: TiddlerRecord) => wiki.set(fields),
     removeTiddler: (title: string) => wiki.remove(title),
     getTiddlerField: (title: string, field: string) => wiki.field(title, field),

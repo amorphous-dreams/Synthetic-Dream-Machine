@@ -6,6 +6,7 @@ module.exports = {
   moduleNameMapper: {
     "^(\\.{1,2}/.*)\\.js$": "$1",
     "^@lararium/core$": "<rootDir>/../lararium-core/src/index.ts",
+    "^@lararium/core/meme-ast$": "<rootDir>/../lararium-core/src/meme-ast/index.ts",
     "^@lararium/core/(.*)$": "<rootDir>/../lararium-core/src/$1.ts",
   },
   transform: {

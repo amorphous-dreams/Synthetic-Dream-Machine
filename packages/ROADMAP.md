@@ -23,6 +23,17 @@ Do not re-open those arcs unless a test proves drift.
 | 5 | **N** | ⬜ UI shim | `<$lar-promote>` action-widget writes the same command-tiddler as CLI promote. |
 | 6 | **O** | ⬜ Corpus hygiene | Author scaffolded heleuma stubs; keep `lares heleuma --write` aligned; design federated promotion ceremony. |
 
+
+## Test Flow Harness — Landed 2026-05-12
+
+The old Lares HUD / memes / chats behavioral plans moved to `tests/chats/`. Active code-flow tests now use:
+
+- `pnpm test:unit` — package-local Jest suites.
+- `pnpm test:flows` — top-level isolated integration flows.
+- `pnpm test:tw5-flow` — direct TW5 sync/decompose/promote flow.
+
+Shared helpers live in `tests/bin/`; deterministic flow goldens stay in `tests/expected/`; stochastic chat exemplars stay in `tests/chats/expected/`.
+
 ## Path K — TW5 Routing, Debounce, Projection Hygiene
 
 Goal: make live wiki authoring safe under sustained operator editing.

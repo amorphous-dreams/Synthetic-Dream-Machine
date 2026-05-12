@@ -37,8 +37,8 @@ WIKI_MEME="$WIKI_MEME_DIR/$MEME_SLUG.md"
 RUNS_DIR="tests/results/wikis/$WIKI/memes/docs/lares"
 EXPECTED_DIR="tests/expected/wikis/$WIKI/memes/docs/lares"
 LAR_URI="lar:///ha.ka.ba/docs/lares/$MEME_SLUG"
-CANON_PARENT="$LAR_ROOT/packages/lares-core/memes/docs/lares/$MEME_SLUG.md"
-CANON_CHILD_DIR="$LAR_ROOT/packages/lares-core/memes/docs/lares/$MEME_SLUG"
+CANON_PARENT="$LAR_ROOT/packages/lares/memes/docs/lares/$MEME_SLUG.md"
+CANON_CHILD_DIR="$LAR_ROOT/packages/lares/memes/docs/lares/$MEME_SLUG"
 LARES="node_modules/.bin/lares"
 DAEMON_PID=""
 DAEMON_LOG=""
@@ -55,14 +55,9 @@ start_daemon() {
   $LARES serve --wiki "$WIKI" --root "$LAR_ROOT" > "$DAEMON_LOG" 2>&1 &
   DAEMON_PID=$!
   echo "  daemon PID=$DAEMON_PID  log=$DAEMON_LOG"
-  echo -n "  waiting for live"
-  for i in $(seq 1 25); do
-    sleep 1
-    grep -qE "live — wiki: $WIKI" "$DAEMON_LOG" 2>/dev/null && { echo " ✓"; return 0; }
-    echo -n "."
-  done
-  echo ""
-  die "daemon did not reach live state — tail: $(tail -5 "$DAEMON_LOG")"
+  if ! bash tests/bin/wait-daemon.sh "$DAEMON_LOG" "$WIKI" 25; then
+    die "daemon did not reach live state"
+  fi
 }
 
 stop_daemon() {
@@ -102,7 +97,7 @@ setup() {
   sleep 1
   $LARES reset --force --root "$LAR_ROOT"
   # Also clean disk-projected artifacts so each run starts from a fresh canvas.
-  rm -rf "$LAR_ROOT/wikis/" "$LAR_ROOT/packages/"
+  rm -rf "$LAR_ROOT/wikis/" "$LAR_ROOT/packages/" "$LAR_ROOT/results/wikis/$WIKI"
 
   echo ""
   echo "=== serve ==="
@@ -224,7 +219,7 @@ flow_promote() {
   echo "=== diff: promoted package vs expected (ignoring uri/file-path fields) ==="
   _diff_tmp="$(mktemp -d)"
   normalize_meme_tree_for_diff "$EXPECTED_DIR" "$_diff_tmp/expected"
-  normalize_meme_tree_for_diff "$LAR_ROOT/packages/lares-core/memes/docs/lares" "$_diff_tmp/promoted"
+  normalize_meme_tree_for_diff "$LAR_ROOT/packages/lares/memes/docs/lares" "$_diff_tmp/promoted"
   if diff -r --unified=3 "$_diff_tmp/expected" "$_diff_tmp/promoted"; then
     pass "promoted output matches expected except uri/file-path fields"
   else
