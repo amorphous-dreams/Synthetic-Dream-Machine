@@ -76,6 +76,20 @@ pass() { echo "  ✓ $*"; }
 fail() { echo "  ✗ FAIL: $*"; FAILURES=$((FAILURES+1)); }
 FAILURES=0
 
+normalize_meme_tree_for_diff() {
+  local src="$1"
+  local dest="$2"
+  rm -rf "$dest"
+  mkdir -p "$dest"
+  find "$src" -name '*.md' | while read -r f; do
+    rel="${f#${src}/}"
+    mkdir -p "$(dirname "$dest/$rel")"
+    # Promotion is expected to mutate placement identity/provenance fields.
+    # Keep the rest of the bytes under golden-file watch.
+    sed -E '/^[[:space:]]*(uri|uri-path|file-path)[[:space:]]*=/d' "$f" > "$dest/$rel"
+  done
+}
+
 # --------------------------------------------------------------------------
 # Setup: reset + serve + wiki init + copy meme
 # --------------------------------------------------------------------------
@@ -205,6 +219,18 @@ flow_promote() {
   done
   [ $n_pass -gt 0 ] && [ $n_fail -eq 0 ] && pass "$n_pass children with prologues" \
     || fail "$n_fail children missing prologue (found $n_pass ok)"
+
+  echo ""
+  echo "=== diff: promoted package vs expected (ignoring uri/file-path fields) ==="
+  _diff_tmp="$(mktemp -d)"
+  normalize_meme_tree_for_diff "$EXPECTED_DIR" "$_diff_tmp/expected"
+  normalize_meme_tree_for_diff "$LAR_ROOT/packages/lares/memes/docs/lares" "$_diff_tmp/promoted"
+  if diff -r --unified=3 "$_diff_tmp/expected" "$_diff_tmp/promoted"; then
+    pass "promoted output matches expected except uri/file-path fields"
+  else
+    fail "promoted output mutated beyond uri/file-path fields — see diff above"
+  fi
+  rm -rf "$_diff_tmp"
 
   echo ""
   echo "=== promote log tail ==="
