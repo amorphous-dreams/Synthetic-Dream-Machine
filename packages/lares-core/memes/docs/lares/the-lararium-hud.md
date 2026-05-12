@@ -3,9 +3,9 @@
 <<~⊙&#x0001; ? -> lar:///ha.ka.ba/docs/lares/the-lararium-hud >>
 ```toml iam
 uri-path       = "ha.ka.ba/docs/lares/the-lararium-hud"
-file-path      = "the-lararium-hud.md"
+file-path      = "packages/lares-core/memes/docs/lares/the-lararium-hud.md"
 type           = "text/x-memetic-wikitext"
-tagspace       = "draft"
+tagspace       = "stable"
 register       = "CS"
 confidence     = 0.72
 manaoio        = 0.68

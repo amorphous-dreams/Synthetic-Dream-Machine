@@ -5,7 +5,7 @@
 uri-path = "ha.ka.ba/@lares/api/v0.1/pono/reaction-graph"
 file-path = "packages/lares-core/memes/api/v0.1/pono/reaction-graph.md"
 type = "text/x-memetic-wikitext"
-tagspace     = "invariant"
+tagspace     = "stable"
 confidence   = 0.84
 register     = "CS"
 manaoio      = 0.82

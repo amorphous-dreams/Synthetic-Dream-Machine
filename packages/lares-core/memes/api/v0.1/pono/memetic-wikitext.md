@@ -5,7 +5,7 @@
 uri-path  = "ha.ka.ba/@lares/api/v0.1/pono/memetic-wikitext"
 file-path = "packages/lares-core/memes/api/v0.1/pono/memetic-wikitext.md"
 type      = "text/x-memetic-wikitext"
-tagspace  = "grammar"
+tagspace  = "stable"
 confidence = 0.92
 register  = "CS"
 manaoio   = 0.70

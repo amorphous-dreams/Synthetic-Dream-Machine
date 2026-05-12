@@ -5,7 +5,7 @@
 uri-path = "ha.ka.ba/@lares/docs/lares/voices/witnesses/mischief-muse-coffee-oracle"
 file-path = "packages/lares-core/memes/docs/lares/voices/witnesses/mischief-muse-coffee-oracle.md"
 type = "text/x-memetic-wikitext"
-tagspace = "research"
+tagspace = "stable"
 confidence = 0.72
 register = "CS"
 manaoio = 0.70

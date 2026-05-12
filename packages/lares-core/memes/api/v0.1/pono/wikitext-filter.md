@@ -6,7 +6,7 @@
 uri-path     = "ha.ka.ba/@lares/api/v0.1/pono/wikitext-filter"
 file-path = "packages/lares-core/memes/api/v0.1/pono/wikitext-filter.md"
 type         = "text/x-memetic-wikitext"
-tagspace     = "grammar"
+tagspace     = "stable"
 confidence   = 0.88
 register     = "SC"
 mana         = 0.86

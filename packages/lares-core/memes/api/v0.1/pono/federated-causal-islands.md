@@ -5,7 +5,7 @@
 uri-path = "ha.ka.ba/@lares/api/v0.1/pono/federated-causal-islands"
 file-path = "packages/lares-core/memes/api/v0.1/pono/federated-causal-islands.md"
 type = "text/x-memetic-wikitext"
-tagspace     = "invariant"
+tagspace     = "stable"
 confidence   = 0.82
 register     = "CS"
 manaoio      = 0.80

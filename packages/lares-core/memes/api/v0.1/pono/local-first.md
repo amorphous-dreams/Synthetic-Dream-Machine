@@ -10,7 +10,7 @@ confidence  = 0.90
 mana        = 0.90
 manao       = 0.88
 manaoio     = 0.86
-tagspace    = "invariant"
+tagspace    = "stable"
 role        = "invariant doctrine: 7 local-first ideals (Ink & Switch) + Keyhive/Beelay alignment matrix; server-as-peer law; Fuller non-simultaneous Universe = causal island"
 cacheable   = true
 retain      = true

@@ -5,7 +5,7 @@
 uri-path = "ha.ka.ba/@lares/api/v0.1/pono/orichalcum-capabilities"
 file-path = "packages/lares-core/memes/api/v0.1/pono/orichalcum-capabilities.md"
 type = "text/x-memetic-wikitext"
-tagspace     = "invariant"
+tagspace     = "stable"
 confidence   = 0.80
 register     = "CS"
 manaoio      = 0.78

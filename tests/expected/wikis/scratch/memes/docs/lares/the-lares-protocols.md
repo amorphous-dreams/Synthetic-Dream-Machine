@@ -19,7 +19,6 @@ tagspace = "draft"
 uri-path = "ha.ka.ba/docs/lares/the-lares-protocols"
 ```
 
-
 <<~ aka lar:///ha.ka.ba/@lares/api/v0.1/pono/RFC-2119#normative-language >>
 
 <<~ kahea ahu #thesis >>
@@ -32,7 +31,6 @@ uri-path = "ha.ka.ba/docs/lares/the-lares-protocols"
 
 <<~&#x0002;>>
 
-
 <<~ kahea ahu #lares-position >>
 
 <<~ kahea ahu #the-unsolved-question >>
@@ -40,7 +38,6 @@ uri-path = "ha.ka.ba/docs/lares/the-lares-protocols"
 <<~ kahea ahu #stub-status >>
 
 <<~ kahea ahu #edges >>
-
 
 <<~&#x0003;>>
 

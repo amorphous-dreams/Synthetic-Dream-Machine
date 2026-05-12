@@ -5,7 +5,7 @@
 uri-path = "ha.ka.ba/@lares/docs/lararium/source-module"
 file-path = "packages/lares-core/memes/docs/lararium/source-module.md"
 type = "text/x-memetic-wikitext"
-tagspace     = "invariant"
+tagspace     = "stable"
 confidence   = 0.78
 register     = "CS"
 manaoio      = 0.76

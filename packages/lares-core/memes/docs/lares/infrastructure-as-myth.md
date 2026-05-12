@@ -3,9 +3,9 @@
 <<~⊙&#x0001; ? -> lar:///ha.ka.ba/docs/lares/infrastructure-as-myth >>
 ```toml iam
 uri-path       = "ha.ka.ba/docs/lares/infrastructure-as-myth"
-file-path      = "infrastructure-as-myth.md"
+file-path      = "packages/lares-core/memes/docs/lares/infrastructure-as-myth.md"
 type           = "text/x-memetic-wikitext"
-tagspace       = "draft"
+tagspace       = "stable"
 register       = "CS"
 confidence     = 0.78
 manaoio        = 0.74
