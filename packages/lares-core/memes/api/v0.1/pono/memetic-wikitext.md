@@ -1,0 +1,1303 @@
+<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/@lares/api/v0.1/pono/memetic-wikitext >> -->
+
+<<~⊙&#x0001; ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/memetic-wikitext >>
+```toml iam
+uri-path  = "ha.ka.ba/@lares/api/v0.1/pono/memetic-wikitext"
+file-path = "packages/lares-core/memes/api/v0.1/pono/memetic-wikitext.md"
+type      = "text/x-memetic-wikitext"
+tagspace  = "grammar"
+confidence = 0.92
+register  = "CS"
+manaoio   = 0.70
+mana      = 0.88
+manao     = 0.85
+role      = "memetic-wikitext constitutional root law + grammar kernel: authoring surface primitives, sigil registry, parse rules, family contracts, and boot grammar"
+cacheable = true
+retain    = true
+```
+
+
+
+<<~ aka lar:///ha.ka.ba/@lares/api/v0.1/pono/RFC-2119#normative-language >>
+
+<<~ ahu #head >>
+
+# Memetic Wikitext Law (Kānāwai)
+
+The root names what the surface means.
+It keeps the boot contract small.
+It leaves parse machinery, render machinery, and long teaching matter outward.
+
+<<~/ahu >>
+
+<<~&#x0002;>>
+
+<<~ ahu #ooda-ha >>
+
+✶ read the surface as authored meaning first; identify primitive, locality, and boundary posture.
+⏿ orient the text by root contract: semantic law stays here, parse and render detail travel outward.
+◇ decide the smallest lawful composition that keeps each primitive distinct and the boot surface teachable.
+▶ write compact memetic-wikitext that preserves identity, uncertainty, kapu, and compositional truth.
+⤴ verify the surface carries explicit thresholds, lawful primitives, and a boot-valid grammar handoff.
+↺ close with honest residue; unresolved routes stay named rather than laundered into false completion.
+
+<<~ loulou lar:///ha.ka.ba/@lares/api/v0.1/pono/memetic-wikitext/SKILL >>
+
+<<~/ahu >>
+
+
+<<~ ahu #constitutional-root >>
+
+## Constitutional Root
+
+This root governs:
+
+- authoring-surface meaning
+- primitive semantic distinction
+- composition law
+- uncertainty posture
+- kapu qualification posture
+- minimum boot grammar
+
+This root does not govern:
+
+- full parse legality tables
+- normalization procedure
+- AST or widget schema
+- target-specific rendering behavior
+- long examples, teaching ladders, or archive commentary
+
+When a detail defines primitive meaning or boot sufficiency, keep it here.
+When a detail mainly teaches procedure, legality, or projection, move it outward.
+
+<<~/ahu >>
+
+<<~ ahu #primitive-cluster >>
+
+## Primitive Cluster
+
+Boot-level memetic-wikitext carries these primitives:
+
+- `ahu` — local worksite, anchor, and nearby semantic context
+- `loulou` — named `pranala` edge for outward relation or path without inline pull
+- `aka` — named `pranala` edge for passive inclusion or shadow transclusion where that sugar fits
+- `kahea` — named `pranala` edge for active invocation or live transclusion pressure where that sugar fits
+- `kapu` — qualification, boundary, trust, disclosure, retention, and failure posture
+- `ui` — query surface
+- `hana` — bounded worksite for guest work or external processing
+- `?` — explicit unresolved pressure that stays bounded and truthful
+
+No primitive silently replaces another primitive's job.
+`loulou` serves as named `pranala` sugar, not as a separate edge law.
+Other quick chant terms may also serve as `pranala` sugar where their own invariant loci bind that usage.
+The root stays small by preserving distinction, not by fusing roles.
+
+<<~ loulou lar:///ha.ka.ba/@lares/api/v0.1/pono/pranala >>
+
+<<~/ahu >>
+
+<<~ ahu #composition-law >>
+
+## Composition Law
+
+Lawful composition adds pressure without erasing the primitives that compose.
+
+- `ahu` gives locality; other acts become legible against it
+- `loulou` opens a named `pranala` relation; it does not inline content
+- `aka` includes through named `pranala` sugar; it does not claim live process
+- `kahea` invokes through named `pranala` sugar; it does not pretend to stay passive
+- `kapu` qualifies an act already in play; it does not replace that act
+- `?` keeps unresolved space explicit; it does not count as closure
+
+Where several pressures appear at once, prefer explicit composition over overloaded shorthand.
+When uncertainty remains, route it honestly.
+When kapu remains unresolved, qualify the act rather than flattering permission.
+
+<<~/ahu >>
+
+<<~ ahu #boot-grammar >>
+
+## Boot Grammar
+
+The minimum boot surface carries enough structure to load identity, body, relation, invocation, query, and honest incompletion.
+
+Minimum atoms:
+
+- opener `<<~`
+- closer `>>`
+- named closer `<<~/SIGIL >>`
+- route arrow `->`
+- anchor token `#NAME`
+- unresolved token `?`
+- fenced `toml` payload inside `ahu #iam`
+- control sigils `&#x0001;` through `&#x0006;`
+
+Minimum constructions:
+
+- document open
+- body open and body close
+- anchored block
+- relation
+- passive inclusion
+- active invocation
+- qualified act
+- query and response
+- uncertainty-prefixed new sigil object
+- outward uncertainty discharge
+
+A boot-valid surface should let a human or agent answer:
+
+1. what entered here
+2. where identity lives
+3. where the active body begins
+4. which primitive family appears
+5. whether the current act stays passive, active, qualified, queried, or unresolved
+6. where uncertainty leaves if closure does not yet surface
+
+<<~/ahu >>
+
+<<~ ahu #ahu-control-slots >>
+
+## Ahu Control Slots
+
+Some `ahu` slot names carry structural roles in the projection codec.
+They dissolve into the parent tiddler or are discarded during carrier expansion.
+They do NOT become child tiddlers.
+
+```toml
+[[control-slot]]
+name  = "#iam"
+role  = "identity block; metadata TOML; dissolves into parent fields"
+
+[[control-slot]]
+name  = "#exit"
+role  = "outward uncertainty discharge; dissolves, not projected"
+
+[[control-slot]]
+name  = "#stream-open"
+role  = "stream boundary open marker; structural only"
+
+[[control-slot]]
+name  = "#stream-close"
+role  = "stream boundary close marker; structural only"
+
+[[control-slot]]
+name  = "#stream-exit"
+role  = "stream exit marker; structural only"
+
+[[control-slot]]
+name  = "#body-open"
+role  = "body region open marker; structural only"
+
+[[control-slot]]
+name  = "#body-close"
+role  = "body region close marker; structural only"
+
+[[control-slot]]
+name  = "#meme-body-open"
+role  = "meme body open marker; structural only"
+
+[[control-slot]]
+name  = "#meme-body-close"
+role  = "meme body close marker; structural only"
+```
+
+All other `ahu` slot names project as child tiddlers of the parent carrier.
+
+Source invariant: `packages/lararium-tw5/src/carrier-codec.ts` `CONTROL_SLOTS`.
+
+<<~/ahu >>
+
+<<~ ahu #handoff-boundary >>
+
+## Handoff Boundary
+
+Parser should deepen recognition, legality, normalization, and parse aftermath.
+Render-pipeline should deepen lowering, projection, and transaction-aware landing.
+This root should hand them a stable semantic contract, not duplicate their local machinery.
+
+Examples, profile guidance, and extended bridge notes belong in the sidecars.
+
+<<~ loulou lar:///ha.ka.ba/@lares/docs/pono/memetic-wikitext >>
+<<~ loulou lar:///ha.ka.ba/@lares/api/v0.1/pono/invariant >>
+
+<<~/ahu >>
+
+
+<<~ ahu #sigil-registry >>
+
+## Sigil Registry
+
+Each entry names a sigil, its surface form, and its semantic role.
+The TypeScript parser reads this registry in Phase 2; until then it serves as authoritative documentation.
+
+```toml
+# Sigil registry — used by pranala-parser.ts Phase 2 rule-interpreter
+# Each sigil maps name → surface-form patterns and semantic defaults
+
+[[sigils]]
+name              = "ahu"
+kind              = "child-slot"
+open_pattern      = '<<~[^>]*\bahu\s+(#[\w-]+)\s*>>'
+close_pattern     = '<<~\/ahu\s*>>'
+description       = "worksite scope boundary; creates an addressable, writable child-slot tiddler at parentUri+slot"
+three_forms       = true
+
+# Three surface forms — same semantic slot, different boundary positions:
+#   disk (definition):  <<~ ahu #slot >>body<<~/ahu >>        — body inline; authoritative at parse time
+#   wiki (live-ref):    <<~ kahea ahu #slot >>                 — child tiddler is authoritative; parent holds reference
+#   projection (frozen):<<~ aka ahu #slot >>                   — shadow transclusion; frozen read at projection time
+#
+# Causal island boundary:
+#   deserializer: definition form → wiki form (splitCarrierToTiddlers transforms parent text)
+#   disk export:  wiki form → definition form (renderTiddler carrier mode; each child-slot widget reads child body)
+#   projection:   wiki form → projection form (renderTiddler projection mode; aka sigil embedded at render time)
+
+[[sigils]]
+name         = "pranala"
+kind         = "edge"
+block_pattern  = '<<~\s*pranala\s+(#[\w-]+\s+)?(\S+)\s*->\s*(\S+)\s*>>([\s\S]*?)<<~\/pranala\s*>>'
+inline_pattern = '<<~\s*pranala\s+(#[\w-]+\s+)?(\S+)\s*->\s*(\S+)(?:\s+family:([\w-]+))?(?:\s+role:([\w-]+))?\s*>>'
+default_family = "relation"
+description    = "explicit edge sigil; declares a pranala with optional block body or inline attrs"
+
+[[sigils]]
+name          = "loulou"
+kind          = "edge-sugar"
+pattern       = '<<~\s*loulou\s+(\S+)\s*>>'
+default_family = "relation"
+description   = "sugar: bidirectional relation edge; equivalent to pranala with family=relation"
+
+[[sigils]]
+name          = "aka"
+kind          = "edge-sugar"
+pattern       = '<<~\s*aka\s+([\w-]+\s+)?(\S+)\s*>>'
+default_family = "observe"
+description   = "shadow transclusion (observe family); frozen read at projection time; equivalent to pranala family=observe"
+
+# Two usage forms:
+#   URI form:          <<~ aka lar:///some/uri >>              — embed a remote meme as a frozen copy
+#   child-slot form:   <<~ aka ahu #slot >>                    — projection form of a child-slot sigil
+#                      <<~ aka kau #device >>                  — projection form of a kau device slot
+#
+# 'aka' signals: this content was live (kahea) at authoring time; it is frozen here.
+# Projection renders resolve kahea refs to aka refs before emitting carrier wikitext.
+# The frozen read does not track edits to the child tiddler after projection time.
+
+[[sigils]]
+name          = "kahea-invoke"
+kind          = "child-slot-summons"
+layer         = "both"
+leaf_pattern  = '<<~\s*kahea\s+([a-z][\w-]*)\s+([^>\n]+?)\s*>>'
+open_pattern  = '<<~\s*kahea\s+([a-z][\w-]*)(?:\s+([^>]*?))?\s*>>'
+close_pattern = '<<~\/kahea\s*>>'
+description   = "generic child-slot summons — <<~ kahea <type> <slot> >>. Type word dispatches to the named child-slot sigil widget. Type must be a bare identifier (not URI); URI targets fall through to kahea URI form."
+
+# Dispatch principle — generic, not ahu-specific:
+#   <<~ kahea ahu #slot >>        → AhuWidget(invocation=true)  — live child-slot reference
+#   <<~ kahea kau #device >>      → KauWidget(invocation=true)  — live device-slot reference
+#   <<~ kahea <type> <args> >>    → <TypeWidget>(invocation=true) for any registered child-slot sigil
+#
+# Block form (template invocation):
+#   <<~ kahea ahu #slot >>template body<<~/kahea >>
+#   → child tiddler rendered through the inline template rather than its own body
+#
+# Relation to aka:
+#   kahea = live transclusion (tracks child edits at render time)
+#   aka   = shadow transclusion (frozen read at projection time)
+#   The kahea→aka substitution is the projection boundary transform.
+
+[[sigils]]
+name          = "kahea"
+kind          = "edge-sugar"
+layer         = "both"
+pattern       = '<<~\s*kahea\s+(lar:[^\s>]+|[^\s>(]+\/[^\s>]*|[^\s>(]+#[^\s>]*)\s*>>'
+default_family = "dataflow"
+default_propagation = "push-forward"
+description   = "URI form: live transclusion (dataflow family, compile+render); matches lar:/// prefix, path with /, or fragment with #; emits EdgeSugarNode → graph edge; [SC]"
+
+
+[[sigils]]
+name         = "toml"
+kind         = "data"
+pattern      = '```toml(?:[ \t]+([A-Za-z0-9_-]+))?[ \t]*\n([\s\S]*?)```'
+description  = "TOML data fence; optional profile name (group 1) qualifies the block. Profile 'iam' marks the carrier identity prelude — appears before the first ahu or STX and supplies parent tiddler fields. Profile absent means a general-purpose data block."
+
+[[sigils]]
+name         = "pranala-header"
+kind         = "header"
+pattern      = '<<~\s*\?\s*->\s*(\S+)\s*>>'
+description  = "carrier header edge — points from ? (this carrier) to its canonical URI"
+
+# --- English alias sigils (\ prefix marks English namespace; same semantics as Hawaiian canonical) ---
+# Parser maps alias → canonical before evaluation. No semantic difference.
+
+[[sigils]]
+name          = "\\procedure"
+kind          = "pragma-alias"
+layer         = "render"
+alias_for     = "wehe"
+open_pattern  = '<<~!\s*\\procedure\s+([\w-]+)(?:\(([^)]*)\))?\s*>>'
+close_pattern = '<<~\/\\procedure\s*>>'
+description   = "English alias for wehe; TW5 \\procedure equivalent; parser maps to wehe before evaluation"
+
+[[sigils]]
+name          = "\\function"
+kind          = "pragma-alias"
+layer         = "render"
+alias_for     = "helu"
+pattern       = '<<~!\s*\\function\s+([\w-]+)(?:\(([^)]*)\))?\s*=\s*([^\n>]+?)\s*>>'
+description   = "English alias for helu; TW5 \\function equivalent; parser maps to helu before evaluation"
+
+[[sigils]]
+name          = "\\define"
+kind          = "pragma-alias"
+layer         = "render"
+alias_for     = "wehe"
+open_pattern  = '<<~!\s*\\define\s+([\w-]+)(?:\(([^)]*)\))?\s*>>'
+close_pattern = '<<~\/\\define\s*>>'
+description   = "English alias for wehe; TW5 \\define legacy form; parser maps to wehe before evaluation"
+
+[[sigils]]
+name          = "\\link"
+kind          = "edge-alias"
+layer         = "both"
+alias_for     = "loulou"
+pattern       = '<<~\s*\\link\s+(\S+)\s*>>'
+description   = "English alias for loulou; HTML/TW5 anchor equivalent; parser maps to loulou before evaluation"
+
+[[sigils]]
+name          = "\\shadow"
+kind          = "edge-alias"
+layer         = "both"
+alias_for     = "aka"
+pattern       = '<<~\s*\\shadow\s+(\S+)\s*>>'
+description   = "English alias for aka; TW5 shadow tiddler equivalent; parser maps to aka before evaluation"
+
+[[sigils]]
+name          = "\\if"
+kind          = "conditional-alias"
+layer         = "render"
+alias_for     = "wai"
+open_pattern  = '<<~\s*\\if\s+([^\n>]+?)\s*>>'
+close_pattern = '<<~\/\\if\s*>>'
+description   = "English alias for wai; parser maps to wai before evaluation"
+
+[[sigils]]
+name          = "\\else"
+kind          = "conditional-alias"
+layer         = "render"
+alias_for     = "mukuwai"
+pattern       = '<<~\s*\\else\s*>>'
+description   = "English alias for mukuwai; parser maps to mukuwai before evaluation"
+
+[[sigils]]
+name          = "\\elif"
+kind          = "conditional-alias"
+layer         = "render"
+alias_for     = "kahawai"
+pattern       = '<<~\s*\\elif\s+([^\n>]+?)\s*>>'
+description   = "English alias for kahawai; parser maps to kahawai before evaluation"
+
+[[sigils]]
+name          = "\\for"
+kind          = "iteration-alias"
+layer         = "render"
+alias_for     = "huli"
+open_pattern  = '<<~\s*\\for\s+([^\n>]+?)\s+as\s+([\w-]+)\s*>>'
+close_pattern = '<<~\/\\for\s*>>'
+description   = "English alias for huli; for-each iteration; parser maps to huli before evaluation"
+
+[[sigils]]
+name          = "\\sync"
+kind          = "concurrency-alias"
+layer         = "render"
+alias_for     = "hui"
+open_pattern  = '<<~\s*\\sync\s*>>'
+close_pattern = '<<~\/\\sync\s*>>'
+description   = "English alias for hui; Verse sync keyword; parser maps to hui before evaluation"
+
+[[sigils]]
+name          = "\\race"
+kind          = "concurrency-alias"
+layer         = "render"
+alias_for     = "heihei"
+open_pattern  = '<<~\s*\\race\s*>>'
+close_pattern = '<<~\/\\race\s*>>'
+description   = "English alias for heihei; Verse race keyword; parser maps to heihei before evaluation"
+
+[[sigils]]
+name          = "\\rush"
+kind          = "concurrency-alias"
+layer         = "render"
+alias_for     = "puka"
+open_pattern  = '<<~\s*\\rush\s*>>'
+close_pattern = '<<~\/\\rush\s*>>'
+description   = "English alias for puka; Verse rush keyword; parser maps to puka before evaluation"
+
+[[sigils]]
+name          = "\\branch"
+kind          = "concurrency-alias"
+layer         = "both"
+alias_for     = "lele"
+pattern       = '<<~\s*\\branch\s+(\S+)\s*>>'
+description   = "English alias for lele; maps to fire-and-forget dispatch (not Verse branch speculative fiber); parser maps to lele before evaluation"
+
+[[sigils]]
+name          = "\\tiddler"
+kind          = "context-alias"
+layer         = "render"
+alias_for     = "meme"
+open_pattern  = '<<~\s*\\tiddler\s+(\S+)\s*>>'
+close_pattern = '<<~\/\\tiddler\s*>>'
+description   = "English alias for meme; TW5 <$tiddler> equivalent; parser maps to meme before evaluation"
+
+[[sigils]]
+name          = "\\transclude"
+kind          = "edge-alias"
+layer         = "both"
+alias_for     = "kahea"
+pattern       = '<<~\s*\\transclude\s+(\S+)(?:\s+key:([\w-]+))?\s*>>'
+description   = "English alias for kahea; TW5 transclusion equivalent; parser maps to kahea before evaluation"
+
+# --- Concurrency sigils ---
+
+[[sigils]]
+name          = "hui"
+kind          = "concurrency"
+layer         = "render"
+open_pattern  = '<<~\s*hui\s*>>'
+close_pattern = '<<~\/hui\s*>>'
+description   = "wait for all parallel flows; Verse sync equivalent; [SC]"
+
+[[sigils]]
+name          = "heihei"
+kind          = "concurrency"
+layer         = "render"
+open_pattern  = '<<~\s*heihei\s*>>'
+close_pattern = '<<~\/heihei\s*>>'
+description   = "first-to-finish wins, rest continue; Verse race equivalent; [SC]"
+
+[[sigils]]
+name          = "puka"
+kind          = "concurrency"
+layer         = "render"
+open_pattern  = '<<~\s*puka\s*>>'
+close_pattern = '<<~\/puka\s*>>'
+description   = "first-to-finish wins, rest cancelled; Verse rush equivalent; [SC]"
+
+[[sigils]]
+name           = "lele"
+kind           = "concurrency"
+layer          = "both"
+pattern        = '<<~\s*lele\s+(\S+)\s*>>'
+default_family = "message"
+description    = "fire and forget dispatch; emits a message edge and continues without waiting for response; Verse spawn equivalent (NOT Verse branch — branch is a cancellable speculative fiber; lele is unconditional send); compile: pranala family:message; [SC]"
+
+# --- Render-time edge sugar ---
+
+[[sigils]]
+name          = "\\guard"
+kind          = "edge-alias"
+layer         = "compile"
+alias_for     = "kapu"
+pattern       = '<<~\s*\\guard\s+([^\n>]*)\s*>>'
+description   = "English alias for kapu; provisional; parser maps to kapu before evaluation"
+
+[[sigils]]
+name          = "\\task"
+kind          = "guest-grammar-alias"
+layer         = "both"
+alias_for     = "hana"
+open_pattern  = '<<~\s*\\task\s+([^\n>]+?)\s*>>'
+close_pattern = '<<~\/\\task\s*>>'
+description   = "English alias for hana; bounded guest grammar / work block; parser maps to hana before evaluation"
+
+[[sigils]]
+name          = "\\query"
+kind          = "query-alias"
+layer         = "render"
+alias_for     = "ui"
+pattern       = '<<~\s*\\query\s+([^\n>]+?)\s*>>'
+description   = "English alias for ui; query surface / filter result render; parser maps to ui before evaluation"
+
+[[sigils]]
+name          = "kapu"
+kind          = "edge-sugar"
+layer         = "compile"
+pattern       = '<<~\s*kapu\s+([^\n>]*)\s*>>'
+open_pattern  = '<<~\s*kapu\s+([^\n>]*)\s*>>'
+close_pattern = '<<~\/kapu\s*>>'
+description   = "qualification and boundary posture; marks confidence, restriction, or unresolved threshold; inline (no body) or block (wraps a region); [SC]"
+
+[[sigils]]
+name          = "hana"
+kind          = "guest-grammar"
+layer         = "both"
+open_pattern  = '<<~\s*hana\s+([^\n>]+?)\s*>>'
+close_pattern = '<<~\/hana\s*>>'
+description   = "bounded guest grammar block; grammar-key selects the interpreter; [SC]"
+
+[[sigils]]
+name          = "ui"
+kind          = "query"
+layer         = "render"
+pattern       = '<<~\s*ui\s+([^\n>]+?)\s*>>'
+description   = "query surface; evaluates filter expression and renders result as meme list; [SC]"
+
+# --- Context sigil ---
+
+[[sigils]]
+name          = "meme"
+kind          = "context"
+layer         = "render"
+open_pattern  = '<<~\s*meme\s+(\S+)\s*>>'
+close_pattern = '<<~\/meme\s*>>'
+description   = "sets current meme as rendering context for block body; lexical scope; TW5 <$tiddler> equivalent; [SC]"
+
+# --- Conditional sigils ---
+
+[[sigils]]
+name          = "wai"
+kind          = "conditional"
+layer         = "render"
+open_pattern  = '<<~\s*wai\s+([^\n>]+?)\s*>>'
+close_pattern = '<<~\/wai\s*>>'
+description   = "conditional source; renders body when filter result non-empty; [C] operator-ratified"
+
+[[sigils]]
+name          = "mukuwai"
+kind          = "conditional-else"
+layer         = "render"
+pattern       = '<<~\s*mukuwai\s*>>'
+description   = "alternate outflow; fallback body in a wai block; [C] operator-ratified"
+
+[[sigils]]
+name          = "kahawai"
+kind          = "conditional-branch"
+layer         = "render"
+pattern       = '<<~\s*kahawai\s+([^\n>]+?)\s*>>'
+description   = "branch-channel; else-if form in a wai block; [C] operator-ratified"
+
+# --- Iteration ---
+
+[[sigils]]
+name          = "huli"
+kind          = "iteration"
+layer         = "render"
+open_pattern  = '<<~\s*huli\s+([^\n>]+?)\s+as\s+([\w-]+)\s*>>'
+close_pattern = '<<~\/huli\s*>>'
+description   = "iterative rendering over filter results; body renders once per yielded URI; [SC]"
+
+# --- Definition sigils (<<~! pragma mode) ---
+
+[[sigils]]
+name          = "wehe"
+kind          = "pragma"
+layer         = "render"
+open_pattern  = '<<~!\s*wehe\s+([\w-]+)(?:\(([^)]*)\))?\s*>>'
+close_pattern = '<<~\/wehe\s*>>'
+description   = "opens a named wikitext form with parameters; TW5 \\procedure equivalent; summoned via kahea; [SC]"
+
+[[sigils]]
+name          = "helu"
+kind          = "pragma"
+layer         = "render"
+pattern       = '<<~!\s*helu\s+([\w-]+)(?:\(([^)]*)\))?\s*=\s*([^\n>]+?)\s*>>'
+description   = "defines a named filter-expression function; yields URI list; TW5 \\function equivalent; summoned via kahea; [SC]"
+
+[[sigils]]
+name           = "pono"
+kind           = "edge-sugar"
+layer          = "compile"
+pattern        = '<<~\s*pono\s+(#[\w-]+\s+)?(\S+)\s*->\s*(\S+)(?:\s+role:([\w-]+))?\s*>>'
+default_family = "constraint"
+description    = "constraint family edge sugar; inline-pranala-style (#slot? FROM -> TO role:R?); declares structural rule or invariant; no execution pulse; [SC]"
+
+# --- Variable binding sigil ---
+
+[[sigils]]
+name          = "waiho"
+kind          = "pragma"
+layer         = "both"
+pragma_pattern = '<<~!\s*waiho\s+([\w-]+)\s*=\s*([^\n>]+?)\s*>>'
+open_pattern  = '<<~\s*waiho\s+([\w-]+)\s*=\s*([^\n>]+?)\s*>>'
+close_pattern = '<<~\/waiho\s*>>'
+description   = "ephemeral variable binding; waiho = 'to leave in place, deposit for later retrieval'; <<~! waiho name = val >> = carrier-scoped (hoisted pragma); <<~ waiho name = val >>...<<~/waiho >> = block-scoped; no graph identity, no persistent URI; [SC]"
+
+# English aliases for waiho
+[[sigils]]
+name          = "\\const"
+kind          = "pragma-alias"
+layer         = "both"
+alias_for     = "waiho"
+pattern       = '<<~!\s*\\const\s+([\w-]+)\s*=\s*([^\n>]+?)\s*>>'
+description   = "English alias for waiho pragma form (carrier-scoped immutable binding); parser maps to waiho before evaluation"
+
+[[sigils]]
+name          = "\\let"
+kind          = "pragma-alias"
+layer         = "both"
+alias_for     = "waiho"
+open_pattern  = '<<~\s*\\let\s+([\w-]+)\s*=\s*([^\n>]+?)\s*>>'
+close_pattern = '<<~\/\\let\s*>>'
+description   = "English alias for waiho block form (block-scoped binding); parser maps to waiho before evaluation"
+
+[[sigils]]
+name          = "\\var"
+kind          = "pragma-alias"
+layer         = "both"
+alias_for     = "waiho"
+open_pattern  = '<<~\s*\\var\s+([\w-]+)\s*=\s*([^\n>]+?)\s*>>'
+close_pattern = '<<~\/\\var\s*>>'
+description   = "English alias for waiho block form (mutable variant); parser maps to waiho before evaluation"
+
+# --- Device placement sigil ---
+
+[[sigils]]
+name          = "kau"
+kind          = "child-slot"
+layer         = "both"
+pattern       = '<<~\s*kau\s+(#[\w-]+\s+)?([\w][\w.-]*)(?:\s+([^>]*))?\s*>>'
+description   = "device placement/instantiation; child-slot sigil for device instances; kau = 'to place upon, set down with intention'; <<~ kau #fragment? DeviceName prop:val ... >>; creates a device instance with its own execution context, persistent URI (carrierUri + #fragment), and addressable mailbox; #fragment auto-generates UUID on first commit if absent (Keyhive stub: instance URI becomes UCAN resource); [SC]"
+three_forms   = true
+
+# Three surface forms (same as ahu — kau is a child-slot sigil):
+#   disk (definition):  <<~ kau #device DeviceName prop:val >>   — inline; authoritative at parse time
+#   wiki (live-ref):    <<~ kahea kau #device >>                  — child tiddler is authoritative
+#   projection (frozen):<<~ aka kau #device >>                    — frozen read at projection time
+
+# --- Element type definition sigil ---
+
+[[sigils]]
+name          = "kumu"
+kind          = "pragma"
+layer         = "both"
+open_pattern  = '<<~!\s*kumu\s+([\w-]+)(?:\(([^)]*)\))?\s*>>'
+close_pattern = '<<~\/kumu\s*>>'
+description   = "element type definition; declares a new grammar node type with a named body contract; self-hosting primitive; TW5 \\widget equivalent; UEFN: maps to creative_device class — body carries @editable property bindings as waiho children, event/function ports declared as papalohe edges; not a text template (that is wehe); placed/instantiated via kau; [SC]"
+
+# English aliases for kumu
+[[sigils]]
+name          = "\\widget"
+kind          = "pragma-alias"
+layer         = "both"
+alias_for     = "kumu"
+open_pattern  = '<<~!\s*\\widget\s+([\w-]+)(?:\(([^)]*)\))?\s*>>'
+close_pattern = '<<~\/\\widget\s*>>'
+description   = "English alias for kumu; TW5 \\widget equivalent; parser maps to kumu before evaluation"
+
+[[sigils]]
+name          = "\\type"
+kind          = "pragma-alias"
+layer         = "both"
+alias_for     = "kumu"
+open_pattern  = '<<~!\s*\\type\s+([\w-]+)(?:\(([^)]*)\))?\s*>>'
+close_pattern = '<<~\/\\type\s*>>'
+description   = "English alias for kumu (structural declaration emphasis); parser maps to kumu before evaluation"
+
+[[sigils]]
+name          = "\\typos"
+kind          = "pragma-alias"
+layer         = "both"
+alias_for     = "kumu"
+open_pattern  = '<<~!\s*\\typos\s+([\w-]+)(?:\(([^)]*)\))?\s*>>'
+close_pattern = '<<~\/\\typos\s*>>'
+description   = "English alias for kumu (Greek: typos = impression/type); parser maps to kumu before evaluation"
+
+# --- Additional edge/invocation aliases ---
+
+[[sigils]]
+name          = "\\import"
+kind          = "edge-alias"
+layer         = "both"
+alias_for     = "kahea"
+pattern       = '<<~\s*\\import\s+(\S+)(?:\s+key:([\w-]+))?\s*>>'
+description   = "English alias for kahea (import emphasis); parser maps to kahea before evaluation"
+
+[[sigils]]
+name          = "\\constraint"
+kind          = "edge-alias"
+layer         = "compile"
+alias_for     = "pono"
+pattern       = '<<~\s*\\constraint\s+(#[\w-]+\s+)?(\S+)\s*->\s*(\S+)(?:\s+role:([\w-]+))?\s*>>'
+description   = "English alias for pono; declarative structural constraint; parser maps to pono before evaluation"
+
+[[sigils]]
+name           = "papalohe"
+kind           = "edge-sugar"
+layer          = "both"
+pattern        = '<<~\s*papalohe\s+(#[\w-]+\s+)?(\S+)\s*->\s*(\S+)(?:\s+listenable:([\w.-]+))?(?:\s+subscribable:([\w.-]+))?\s*>>'
+default_family = "reaction"
+render_mode    = "papalohe"
+description    = "reaction family edge sugar; Lua: pāpālohe — warrior body-listening reflex; full UEFN wire: DeviceA -> DeviceB listenable:OnEliminated subscribable:ShowScore; listenable = source event name / UEFN OUTPUT pin (DeviceA.EventX); subscribable = target function name / UEFN INPUT pin (DeviceB.FunctionY); compile: pranala family:reaction renderMode:papalohe; render: arrow with listenable label at source, subscribable label at target; canonical roles: listenable | subscribable | observes | throttles | debounces; [SC]"
+
+[[sigils]]
+name          = "kukali"
+kind          = "leaf"
+layer         = "both"
+inline_pattern = '<<~\s*kukali(?:\s+trigger:([\w.-]+))?\s*>>'
+attrs         = ["trigger"]
+description   = "reactive wait posture inside a causal island; Verse `suspends` analogue; execution yields until the named papalohe trigger fires; trigger attr is optional papalohe slot name; OODA-HA: Act phase (paired with papalohe at Orient phase); emits SigilNode { sigilName:kukali, attrs:{trigger?} }; [SC]"
+
+[[sigils]]
+name          = "\\suspends"
+kind          = "leaf"
+layer         = "both"
+alias_for     = "kukali"
+inline_pattern = '<<~\s*\\suspends(?:\s+trigger:([\w.-]+))?\s*>>'
+description   = "English alias for kukali; Verse `suspends` keyword; parser maps to kukali before evaluation"
+```
+
+<<~/ahu >>
+
+<<~ ahu #family-contracts >>
+
+## Pranala Family Contracts
+
+Each family carries an invariant property schema.
+The TypeScript validator (`validatePranalaEdge`) enforces these contracts at compile time.
+In Phase 2 this table replaces the hard-coded `FAMILY_CONTRACTS` map in `pranala-parser.ts`.
+
+```toml
+# Family contract definitions — enforced by validatePranalaEdge()
+
+[[families]]
+name                = "control"
+dag_required        = true
+role_required       = false   # warning if absent, not error (sugar forms omit role)
+role_recommended    = true
+confidence_bounded  = false
+description         = "ownership/routing edges; must form a DAG across the lares/ tree; no transclusion semantics"
+
+[[families]]
+name                = "relation"
+dag_required        = false
+role_required       = false
+role_recommended    = false
+confidence_bounded  = false
+description         = "semantic relation between memes; directional or bidirectional"
+
+[[families]]
+name                = "observe"
+dag_required        = false
+role_required       = false
+role_recommended    = false
+confidence_bounded  = true    # confidence ∈ [0, 1] if set
+description         = "observational/evidential link; confidence weight optional"
+
+[[families]]
+name                = "dataflow"
+dag_required        = false
+role_required       = false
+role_recommended    = true    # warning if absent
+confidence_bounded  = false
+description         = "data-carrying edge; routes root-downward (push-forward to owned subtree); sugar: kahea (live transclusion + definition invocation)"
+
+[[families]]
+name                = "message"
+dag_required        = false
+role_required       = false
+role_recommended    = true
+confidence_bounded  = false
+description         = "event or signal dispatch; one-way, fire-and-forget; no structural ownership stake; direction is topological not hierarchical — may route to any reachable socket; sugar: lele"
+
+[[families]]
+name                = "constraint"
+dag_required        = false
+role_required       = false
+role_recommended    = false
+confidence_bounded  = false
+description         = "declarative rule without execution pulse; spatial, logical, or physical boundary; sugar: pono"
+
+[[families]]
+name                = "reaction"
+dag_required        = false
+role_required       = false
+role_recommended    = true
+confidence_bounded  = false
+canonical_roles     = ["listenable", "subscribable", "observes", "throttles", "debounces"]
+render_mode         = "papalohe"
+description         = "triggered response subscription; pāpālohe — body-listening reflex; fires only when source listenable activates; payload: listenable (source event name / UEFN OUTPUT pin), subscribable (target function name / UEFN INPUT pin); OODA-HA: wire declared at Orient phase, executes at Act phase, violations surface at Aftermath; sugar: papalohe; render: papalohe wire (listenable label at source, subscribable label at target)"
+
+[[families]]
+name                = "spatial"
+dag_required        = false
+role_required       = false
+role_recommended    = true    # role disambiguates spatial relationship type
+confidence_bounded  = false
+description         = "spatial containment and adjacency edges; navigable relationships between areas, levels, portals, and layers; UEFN Scene Graph hierarchy; roles: contains | portal | adjacent | layer; direction: area -> area or area -> portal -> area; load-bearing for infinite canvas portals and RPG multi-level maps; sugar: pending"
+```
+
+<<~/ahu >>
+
+<<~ ahu #lifecycle-values >>
+
+## Lifecycle Values
+
+Pranala edges carry a `lifecycle` field that scopes their validity.
+
+```toml
+[[lifecycle_values]]
+name        = "instance"
+description = "default; exists for the duration of the carrier's active session"
+
+[[lifecycle_values]]
+name        = "permanent"
+description = "persists across sessions and boot cycles"
+
+[[lifecycle_values]]
+name        = "ephemeral"
+description = "exists only for a single render pass or computation"
+
+[[lifecycle_values]]
+name        = "boot"
+description = "valid only during the boot compilation phase"
+
+[[lifecycle_values]]
+name        = "per-player"
+description = "Verse/UEFN: instantiated once per connected player agent; maps to scope:personal in Kowloon model; not shared across the room"
+```
+
+<<~/ahu >>
+
+<<~ ahu #law-of-5s >>
+
+## Law of Fives — Invariant Ladders
+
+Two orthogonal 5-point axes underlie all domain-specific scales in the system.
+Exported from `packages/lararium-core/src/ast.ts` as `LADDER_5`, `OODA_HA_5`, `SCOPE_5`.
+
+```toml
+# Scale ladder — finest to coarsest
+[[ladder_5]]
+index       = 1
+name        = "action"
+scope       = "ephemeral"
+chrono      = "⚡"
+zoom        = "glyph"
+kowloon     = "turn-local"
+ooda_ha     = "act"
+discordian  = "Bureaucracy"
+
+[[ladder_5]]
+index       = 2
+name        = "round"
+scope       = "personal"
+chrono      = "⚔️"
+zoom        = "token"
+kowloon     = "@domain"
+ooda_ha     = "decide"
+discordian  = "Confusion"
+
+[[ladder_5]]
+index       = 3
+name        = "turn"
+scope       = "consensual"
+chrono      = "🔍"
+zoom        = "meme"
+kowloon     = "circle:<id>"
+ooda_ha     = "orient"
+discordian  = "Discord"
+
+[[ladder_5]]
+index       = 4
+name        = "watch"
+scope       = "collective"
+chrono      = "⚙️"
+zoom        = "room"
+kowloon     = "group:<id>"
+ooda_ha     = "observe"
+discordian  = "Chaos"
+
+[[ladder_5]]
+index       = 5
+name        = "week"
+scope       = "universal"
+chrono      = "🗺️"
+zoom        = "network"
+kowloon     = "@public"
+ooda_ha     = "aftermath"
+discordian  = "Aftermath"
+
+# OODA-HA phases — active to reflective
+# Note: phase runs counter to scale. Act=action(finest); Aftermath=week(coarsest).
+[[ooda_ha_5]]
+index   = 1
+name    = "act"
+sigil   = "▶"
+patron  = "Zarathud"
+season  = "Bureaucracy"
+jaina   = "asti"
+type_state = "typed/committed"
+
+[[ooda_ha_5]]
+index   = 2
+name    = "decide"
+sigil   = "◇"
+patron  = "Sri Syadasti"
+season  = "Confusion"
+jaina   = "asti-nasti"
+type_state = "interpret"
+
+[[ooda_ha_5]]
+index   = 3
+name    = "orient"
+sigil   = "⏿"
+patron  = "Dr. Van Van Mojo"
+season  = "Discord"
+jaina   = "nasti"
+type_state = "named shapes"
+
+[[ooda_ha_5]]
+index   = 4
+name    = "observe"
+sigil   = "✶"
+patron  = "Hung Mung"
+season  = "Chaos"
+jaina   = "avaktavya"
+type_state = "? string"
+
+[[ooda_ha_5]]
+index   = 5
+name    = "aftermath"
+sigil   = "⤴↺"
+patron  = "Elder Malaclypse"
+season  = "Aftermath"
+jaina   = "asti-nasti-avaktavya"
+type_state = "blame/validate"
+```
+
+<<~/ahu >>
+
+<<~ ahu #stances-syad-tools >>
+
+## Stances, Syad, and Tools
+
+Three separate graphs. Stances encode epistemic register (Syad predicate). Tools encode aperture and feed direction. Syad encodes the 7 truth-value compounds. The graphs connect but do not collapse.
+
+Register measures confidence *within* the active stance — not universal truth weight.
+Source: `lar:///ha.ka.ba/@lares/api/v0.1/mu/the-syad-perspectives` and `lar:///ha.ka.ba/@lares/api/v0.1/mu/the-four-tools`
+
+```toml
+# Graph 1: Five stances → Syad predicate
+# tool_affinity records natural tool; does not lock stance to tool.
+# Poet and Private share jaina_predicate = "avaktavya" (P3);
+#   feed_direction differentiates them (external vs internal) — that edge lives in the Tool graph.
+# Satirist: stated predicate P2 (nasti); operational predicate P6 (nasti+avaktavya).
+#   The P2→P6 gradient marks maturity: brittle at P2, effective when holding P6.
+[[stances]]
+name              = "philosopher"
+sigil             = "🏛️"
+register_measures = "propositional support"
+jaina_predicate   = "asti"
+jaina_index       = 1
+phase_affinity    = "decide"
+tool_affinity     = "sword"
+description       = "propositional truth-confidence; commits to a claim; 0.0=no support, 1.0=full support"
+
+[[stances]]
+name              = "poet"
+sigil             = "🌊"
+register_measures = "analogical resonance"
+jaina_predicate   = "avaktavya"
+jaina_index       = 3
+phase_affinity    = "observe"
+tool_affinity     = "wand"
+description       = "analogical correspondence outward; T/F axis does not fit — measures resonance amplitude"
+
+[[stances]]
+name              = "satirist"
+sigil             = "🗡️"
+register_measures = "targeting confidence"
+jaina_predicate   = "nasti"
+jaina_index       = 2
+jaina_operational = "nasti+avaktavya"
+jaina_index_operational = 6
+phase_affinity    = "act"
+tool_affinity     = "wand+pentacle"
+description       = "targeting what does not hold; operational predicate P6 holds absence+inexpressible; 0.0=missed, 1.0=landed"
+
+[[stances]]
+name              = "humorist"
+sigil             = "🎭"
+register_measures = "relational fit"
+jaina_predicate   = "asti-nasti"
+jaina_index       = 4
+phase_affinity    = "orient"
+tool_affinity     = "cup"
+description       = "holds T and F simultaneously without resolving; 0.0=fell flat, 1.0=connected"
+
+[[stances]]
+name              = "private"
+sigil             = "🔮"
+register_measures = "inward presence"
+jaina_predicate   = "avaktavya"
+jaina_index       = 3
+phase_affinity    = "aftermath"
+tool_affinity     = "pentacle"
+description       = "avaktavya directed inward; T/F axis does not fit — measures interior presence amplitude"
+
+# Graph 2: Seven Syad predicates (Jaina Saptabhangi)
+# P5/P6 = threshold crossings (stance past its boundary, not stable standpoints).
+# P7 = Arcana only — no stance mediates it; reached for, not inhabited.
+[[predicates]]
+index       = 1
+compound    = "asti"
+primitives  = ["T"]
+covered_by  = "philosopher"
+description = "affirms; claim holds from this standpoint"
+
+[[predicates]]
+index       = 2
+compound    = "nasti"
+primitives  = ["F"]
+covered_by  = "satirist"
+description = "denies; claim does not hold from this standpoint"
+
+[[predicates]]
+index       = 3
+compound    = "avaktavya"
+primitives  = ["M"]
+covered_by  = "poet, private"
+description = "inexpressible; T/F axis does not fit the claim — two stances, opposite directions"
+
+[[predicates]]
+index       = 4
+compound    = "asti-nasti"
+primitives  = ["T", "F"]
+covered_by  = "humorist"
+description = "affirms and denies simultaneously; holds without resolving"
+
+[[predicates]]
+index       = 5
+compound    = "asti-avaktavya"
+primitives  = ["T", "M"]
+covered_by  = "threshold"
+description = "threshold crossing: philosopher past its boundary; claim holds AND resists propositional form"
+
+[[predicates]]
+index       = 6
+compound    = "nasti-avaktavya"
+primitives  = ["F", "M"]
+covered_by  = "threshold"
+description = "threshold crossing: satirist past its boundary; absence named AND void beneath resists description; also satirist operational predicate when stable"
+
+[[predicates]]
+index       = 7
+compound    = "asti-nasti-avaktavya"
+primitives  = ["T", "F", "M"]
+covered_by  = "arcana"
+description = "full compound; no stance mediates it; Arcana reaches for it to release the current reading"
+
+# Graph 3: Five tools — feed direction × aperture
+# feed: external | internal | release
+# aperture: wide | narrow | release
+# Arcana has no stance intermediary — maps directly to P7.
+[[tools]]
+name        = "wand"
+ascii       = "*"
+element     = "Fire/Spirit"
+feed        = "external"
+aperture    = "wide"
+phase       = "observe"
+description = "track external signal; wide scan; Observe phase emphasis"
+
+[[tools]]
+name        = "cup"
+ascii       = "?"
+element     = "Water/Emotion"
+feed        = "external"
+aperture    = "wide"
+phase       = "orient"
+description = "wide relational field; hold contested plausibility open; Orient phase emphasis"
+
+[[tools]]
+name        = "sword"
+ascii       = "!"
+element     = "Air/Mind"
+feed        = "external"
+aperture    = "narrow"
+phase       = "decide"
+description = "precision cut; commits to one side; Decide/Act phase emphasis"
+
+[[tools]]
+name        = "pentacle"
+ascii       = "~"
+element     = "Earth/Body"
+feed        = "internal"
+aperture    = "narrow"
+phase       = "aftermath"
+description = "ground internal feed; hidden/structural; Aftermath phase emphasis"
+
+[[tools]]
+name        = "arcana"
+ascii       = "-"
+element     = "Orichalcum"
+feed        = "release"
+aperture    = "release"
+phase       = "release"
+jaina_predicate = "asti-nasti-avaktavya"
+jaina_index = 7
+description = "no stance mediates it; releases current reading without replacing; model agnosticism"
+
+# Canonical posture pairs (Tool combinations — Graph 3 edges)
+[[postures]]
+ascii       = "*!"
+tools       = ["wand", "sword"]
+feed        = "external"
+aperture    = "narrow"
+description = "track external feed, zoom in for detail"
+
+[[postures]]
+ascii       = "*?"
+tools       = ["wand", "cup"]
+feed        = "external"
+aperture    = "wide"
+description = "track external feed, zoom out for relation"
+
+[[postures]]
+ascii       = "~!"
+tools       = ["pentacle", "sword"]
+feed        = "internal"
+aperture    = "narrow"
+description = "ground internal feed, zoom in for precision"
+
+[[postures]]
+ascii       = "~?"
+tools       = ["pentacle", "cup"]
+feed        = "internal"
+aperture    = "wide"
+description = "ground internal feed, zoom out for overview"
+
+[[postures]]
+ascii       = "--"
+tools       = ["arcana"]
+feed        = "release"
+aperture    = "release"
+description = "release current stance/tool reading; model agnosticism"
+
+# Conflict states — Tool graph conflicts only (not Syad conflicts)
+# *~ = Satirist natural posture; Signal Jam for all other stances.
+[[posture_conflicts]]
+ascii            = "*~"
+type             = "feed"
+name             = "Signal Jam"
+stance_pair      = "poet, private"
+satirist_posture = true
+description      = "external and internal feeds locked; Satirist owns this productively; all other stances: named pressure state"
+
+[[posture_conflicts]]
+ascii       = "?!"
+type        = "aperture"
+name        = "Dubious Move"
+stance_pair = "humorist, philosopher"
+description = "wide aperture and narrow aperture locked; wide field asserts precision it cannot support"
+```
+
+<<~/ahu >>
+
+<<~ ahu #guest-grammars >>
+
+## Registered Guest Grammars
+
+```toml
+[[guest_grammars]]
+key         = "x-tiddlywiki-filter"
+uri         = "lar:///ha.ka.ba/@lares/api/v0.1/pono/x-tiddlywiki-filter"
+status      = "legacy/import"
+description = "TW5 filter dialect; deprecated for new authoring; use wikitext-filter"
+
+[[guest_grammars]]
+key         = "wikitext-filter"
+uri         = "lar:///ha.ka.ba/@lares/api/v0.1/pono/wikitext-filter"
+status      = "active"
+description = "native lararium filter dialect; drops !!field/##index; uses toml:/edge:/self[] operators; [SC]"
+```
+
+<<~/ahu >>
+
+<<~ ahu #render-modes >>
+
+## Render Modes — Causal Island Boundary
+
+`lar-render-mode` is a TW5 variable threaded through the widget tree to select which surface form each child-slot widget emits. It drives both the deserializer edge (incoming) and the serializer/projection edge (outgoing).
+
+```toml
+[[render_modes]]
+name        = ""
+label       = "HTML (default)"
+description = "story river rendering; child-slot widgets transclude their child tiddler into DOM"
+example     = "<section data-lar-kind='ahu'> ... </section>"
+
+[[render_modes]]
+name        = "carrier"
+label       = "Disk export (definition form)"
+description = "each child-slot widget reads child body from wiki and emits inline definition sigil"
+example     = "<<~ ahu #slot >>\nchild body\n<<~/ahu >>"
+trigger     = "wiki.renderTiddler('text/plain', uri, { variables: { 'lar-render-mode': 'carrier' } })"
+
+[[render_modes]]
+name        = "projection"
+label       = "Projection (shadow/frozen form)"
+description = "each child-slot widget emits aka (shadow transclusion) sigil; content frozen at projection time"
+example     = "<<~ aka ahu #slot >>"
+trigger     = "wiki.renderTiddler('text/plain', uri, { variables: { 'lar-render-mode': 'projection' } })"
+```
+
+### Applies to all child-slot sigil kinds
+
+Any sigil with `kind = "child-slot"` participates in this three-mode dispatch:
+- `ahu` — worksite text slot
+- `kau` — device instance slot
+- Future child-slot sigils inherit the pattern via `dispatchSlotRenderMode()` in `render-modes.ts`
+
+### Causal island summary
+
+```
+disk → deserializer → wiki (kahea-live refs + authoritative children)
+                         ↓ carrier render
+                       disk (definition form, round-trip)
+                         ↓ projection render
+                       snapshot (aka-frozen refs, human-readable carrier wikitext)
+```
+
+The **projection snapshot** is the human-readable collection format: memetic-wikitext with SOH/STX/ETX carrier framing, multiple memes in flow. Not JSON — readable prose with sigil structure intact.
+
+<<~/ahu >>
+
+<<~ ahu #phase-2-wiring-note >>
+
+## Phase 2 Wiring Note
+
+The TypeScript parser at `packages/lararium-core/src/pranala-parser.ts` currently hard-codes all sigil patterns and family contracts. Phase 2 replaces this with a rule-interpreter pattern:
+
+1. `node-host.ts` reads this carrier via `readFileSync` before calling `buildControlClosure`
+2. Extracts `[[sigils]]` and `[[families]]` TOML arrays into a `GrammarRules` object
+3. Passes `GrammarRules` as an optional second argument to `parsePranalaEdges`
+4. Parser uses rule-provided patterns when present, falls back to built-ins for bootstrap safety
+
+The `GrammarRules` interface is defined in `ast.ts` and exported from `@lararium/core` (moved from `pranala-parser.ts` in Phase 3 to break a circular dependency).
+Adding a new sigil requires authoring a `[[sigils]]` entry here and promoting this carrier — no TypeScript rebuild.
+
+<<~/ahu >>
+
+<<~ ahu #edges >>
+
+## Edges
+
+<<~ loulou lar:///ha.ka.ba/@lares/api/v0.1/pono/memetic-wikitext/SKILL >>
+<<~ loulou lar:///ha.ka.ba/@lares/docs/pono/memetic-wikitext >>
+<<~ loulou lar:///ha.ka.ba/@lares/api/v0.1/pono/pranala >>
+<<~ loulou lar:///ha.ka.ba/@lares/api/v0.1/pono/invariant >>
+<<~ pranala #implements-meme ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/meme family:control role:implements >>
+<<~ pranala #implements-loci ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/loci family:control role:implements >>
+<<~ pranala #implements-invariant ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/invariant family:control role:implements >>
+<<~ pranala #to-pranala-parser ? -> lar:///ha.ka.ba/@lares/api/v0.1/mu family:control role:defines >>
+<<~ pranala #to-foundations ? -> lar:///lararium-node/MEME-STORE-FOUNDATIONS family:control role:implements >>
+
+<<~/ahu >>
+
+<<~&#x0003;>>
+
+<<~&#x0004; -> ? >>

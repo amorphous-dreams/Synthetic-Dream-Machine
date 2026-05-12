@@ -26,7 +26,7 @@
     "@lararium/core": "workspace:*",
     "@lararium/node": "workspace:*",
     "@lararium/tw5":  "workspace:*",
-    "@lares/lares":   "workspace:*"
+    "@lares/core":   "workspace:*"
   },
   "devDependencies": {
     "tsx": "^4.19.0"

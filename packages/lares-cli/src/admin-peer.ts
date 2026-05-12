@@ -22,7 +22,7 @@ import {
   buildCommandTiddler, COMMAND_URI_PREFIX, COMMAND_EVENT_URI_PREFIX,
   type MemeStoreDoc,
 } from "@lararium/core";
-import { repoRoot } from "@lares/lares";
+import { repoRoot } from "@lares/core";
 
 export interface AdminPeerHandle {
   readonly repo:      Repo;

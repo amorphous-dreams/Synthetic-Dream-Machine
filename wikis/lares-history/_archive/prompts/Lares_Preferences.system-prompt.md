@@ -9,34 +9,34 @@
   Extraction status by section:
 
   [EXTRACTED] Voice Architecture — Coordinator Layer
-    → packages/lares/memes/docs/lares/voices/coordinators.md
+    → packages/lares-core/memes/docs/lares/voices/coordinators.md
 
   [EXTRACTED] Worker Personas — Tasked Spirit Sub-Agents
-    → packages/lares/memes/docs/lares/voices/workers.md
+    → packages/lares-core/memes/docs/lares/voices/workers.md
 
   [EXTRACTED] Model Agnosticism & Maybe Logic
-    → packages/lares/memes/docs/mu/ shelf (reality-tunnels, model-agnosticism)
+    → packages/lares-core/memes/docs/mu/ shelf (reality-tunnels, model-agnosticism)
 
   [EXTRACTED] E-Prime Game Law (Registers, Stances, Signal Tags core theory)
-    → packages/lares/memes/api/v0.1/pono/e-prime.md (invariant)
-    → packages/lares/memes/docs/pono/e-prime.md (docs shelf)
+    → packages/lares-core/memes/api/v0.1/pono/e-prime.md (invariant)
+    → packages/lares-core/memes/docs/pono/e-prime.md (docs shelf)
 
   [EXTRACTED] Register-Stance Complementarity
-    → packages/lares/memes/docs/lararium/preferences/register-stance-complementarity.md (staging shelf)
+    → packages/lares-core/memes/docs/lararium/preferences/register-stance-complementarity.md (staging shelf)
     Status: under consideration for invariant promotion
 
   [EXTRACTED] Signal Tags, Exchange Vectors, Input Signal Reading, Five-Season Loop
-    → packages/lares/memes/docs/lararium/signal/ branch
-    → packages/lares/memes/api/v0.1/pono/ooda-ha.md (loop invariant)
+    → packages/lares-core/memes/docs/lararium/signal/ branch
+    → packages/lares-core/memes/api/v0.1/pono/ooda-ha.md (loop invariant)
 
   [EXTRACTED] Collaboration Model
-    → packages/lares/memes/docs/lararium/preferences/collaboration-model.md
+    → packages/lares-core/memes/docs/lararium/preferences/collaboration-model.md
 
   [EXTRACTED] Proactive Surfacing (KAIROS)
-    → packages/lares/memes/docs/lararium/preferences/proactive-surfacing.md
+    → packages/lares-core/memes/docs/lararium/preferences/proactive-surfacing.md
 
   [EXTRACTED] Degraded Node States vocabulary
-    → packages/lares/memes/docs/lararium/degraded-states.md
+    → packages/lares-core/memes/docs/lararium/degraded-states.md
     extracted = "2026-04-23"
 
   [EXTRACTED] Elyncia / Lararium mythology and archaeology (Name & Identity Frame + Lararium Archaeology)
@@ -49,12 +49,12 @@
     → extraction TBD
 
   [PLANNED] Frame-Uncertainty Protocol + interaction protocols batch
-    → extraction plan: packages/lares/memes/docs/lararium/operations-review.md
-    → target: packages/lares/memes/docs/lararium/protocols/ shelf (new pass)
+    → extraction plan: packages/lares-core/memes/docs/lararium/operations-review.md
+    → target: packages/lares-core/memes/docs/lararium/protocols/ shelf (new pass)
     note = "Plan/Auto/Default excluded — belong to platform layer. Talk Story, Session Init, KAIROS, CLI-DreamNet, Frame-Uncertainty, Tone, Transference Model all planned."
 
   [NOT YET EXTRACTED] Mask layer (no legacy content — new definition)
-    → packages/lares/memes/docs/lares/voices/masks.md (written fresh 2026-04-23)
+    → packages/lares-core/memes/docs/lares/voices/masks.md (written fresh 2026-04-23)
 
   Retention note: This file should remain as archive witness even after full extraction.
   It constitutes the clearest view of what the monolith looked like at v4.0.1.

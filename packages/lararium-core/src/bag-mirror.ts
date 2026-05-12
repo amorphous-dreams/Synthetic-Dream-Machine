@@ -50,7 +50,7 @@ export interface BagMirrorConfig {
  *   `lar:///ha.ka.ba/{rest}`             → `{rest}.md`  (bare URI, no @-scope)
  *   `lar:///ha.ka.ba/{rest}#{frag}`      → `{rest}/{frag}.md`
  *
- * Apply under `packages/lares/memes/` mirrorRoot.
+ * Apply under `packages/lares-core/memes/` mirrorRoot.
  * Bare URIs land here when promoted from a wiki bag to the lares bag.
  */
 export const laresPathStrategy: MirrorPathFn = (uri) => {

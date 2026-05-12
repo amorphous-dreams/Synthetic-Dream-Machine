@@ -13,8 +13,8 @@ mana = 0.74
 manao = 0.76
 role = "format and cast architecture locus for Lindwyrm DreamDeck feed narrative"
 source-consumed = [
-  "packages/lares/memes/docs/infrastructure-as-mythology/LINDWYRM_STORY_SHAPE.md",
-  "packages/lares/memes/docs/story/lindwyrm/LINDWYRM_STORY_SHAPE.md"
+  "packages/lares-core/memes/docs/infrastructure-as-mythology/LINDWYRM_STORY_SHAPE.md",
+  "packages/lares-core/memes/docs/story/lindwyrm/LINDWYRM_STORY_SHAPE.md"
 ]
 render-target = "chat-log:post-header"
 cacheable = false
@@ -41,8 +41,8 @@ Container, cast, format conventions, and tone laws for the Lindwyrm hoard story.
 
 Consumed duplicate story-shape files:
 
-- `packages/lares/memes/docs/infrastructure-as-mythology/LINDWYRM_STORY_SHAPE.md`
-- `packages/lares/memes/docs/story/lindwyrm/LINDWYRM_STORY_SHAPE.md`
+- `packages/lares-core/memes/docs/infrastructure-as-mythology/LINDWYRM_STORY_SHAPE.md`
+- `packages/lares-core/memes/docs/story/lindwyrm/LINDWYRM_STORY_SHAPE.md`
 
 The two files matched at consumption time. This locus becomes the canonical shape room.
 

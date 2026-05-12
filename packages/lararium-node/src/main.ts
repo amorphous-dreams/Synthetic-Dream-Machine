@@ -3,7 +3,7 @@
  *
  * Boots one LarPeer per configured wiki, wires a WebSocket + HTTP server for
  * browser peers to sync against, and attaches a LarDiskProjector so
- * the packages/lares/memes tree stays in sync with the Automerge store.
+ * the packages/lares-core/memes tree stays in sync with the Automerge store.
  *
  * HTTP surface:
  *   GET /api/health    → { ok: true, phase, wikiId }  (infra probe only)

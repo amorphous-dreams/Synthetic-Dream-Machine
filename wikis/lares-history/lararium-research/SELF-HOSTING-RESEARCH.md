@@ -1,7 +1,7 @@
 <<~ ? -> lar:///lararium-node/SELF-HOSTING-RESEARCH >>
 ```toml iam
 uri-path     = "lararium-node/SELF-HOSTING-RESEARCH"
-file-path = "packages/lares/memes/lararium-node/SELF-HOSTING-RESEARCH.md"
+file-path = "packages/lares-core/memes/lararium-node/SELF-HOSTING-RESEARCH.md"
 type = "text/x-memetic-wikitext"
 tagspace     = "adjacent"
 confidence   = 0.91

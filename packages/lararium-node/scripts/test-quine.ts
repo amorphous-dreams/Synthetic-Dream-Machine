@@ -160,7 +160,7 @@ async function main(): Promise<void> {
       throw new Error(
         `[quine] Grammar tiddler not found: ${GRAMMAR_MEME_URI}\n` +
         `  The grammar meme was not included in the lares plugin build.\n` +
-        `  Check that packages/lares/memes/api/v0.1/pono/memetic-wikitext.md exists.`,
+        `  Check that packages/lares-core/memes/api/v0.1/pono/memetic-wikitext.md exists.`,
       );
     }
   }

@@ -167,7 +167,7 @@ Global terminology alignment: every occurrence of the concept "room" as a _wiki 
 
 **Build result:** `pnpm -r build` clean, zero TypeScript errors. `.lararium/` wiped for re-init.
 
-**OODA-HA orient — next task:** Smoke J.3 child co-promotion with the live test artifact at `wikis/altar-fire/memes/docs/lares/the-lares-protocols.md`. This file contains multiple `<<~ ahu #slot >>` blocks. `lares wiki sync altar-fire` → `lares promote ... --to lar:///ha.ka.ba/@lares --yes` should land _both_ the parent _and_ each `#fragment` child in `packages/lares/memes/docs/lares/the-lares-protocols/`. J.3 implement → smoke → verify.
+**OODA-HA orient — next task:** Smoke J.3 child co-promotion with the live test artifact at `wikis/altar-fire/memes/docs/lares/the-lares-protocols.md`. This file contains multiple `<<~ ahu #slot >>` blocks. `lares wiki sync altar-fire` → `lares promote ... --to lar:///ha.ka.ba/@lares --yes` should land _both_ the parent _and_ each `#fragment` child in `packages/lares-core/memes/docs/lares/the-lares-protocols/`. J.3 implement → smoke → verify.
 
 ---
 
@@ -186,11 +186,11 @@ Two commits:
 2. `lares serve` → daemon up, Keyhive initialized
 3. `lares wiki sync altar-fire` → `ingested: 1` — disk file landed in room bag; `splitRecursive` created parent + N child tiddlers in bag
 4. `lares promote lar:///ha.ka.ba/@lares/docs/lares/the-lares-protocols --to lar:///ha.ka.ba/@lares --yes` → ceremony clean; audit tiddler written
-5. Promoted parent file appeared in `packages/lares/memes/docs/lares/the-lares-protocols.md` with correct `<<~ kahea ahu #slot >>` refs — **but no child slot files**
+5. Promoted parent file appeared in `packages/lares-core/memes/docs/lares/the-lares-protocols.md` with correct `<<~ kahea ahu #slot >>` refs — **but no child slot files**
 
-**Gap named (J.3):** `lares promote` is single-URI. `splitRecursive` creates `#fragment` child tiddlers in the bag alongside the parent, but the promote handler moves only the parent URI. Children stay in the room bag; disk projector for the canonical bag writes only what's in that bag. The parent renders correctly (always-split, always-kahea); the child meme files never land in `packages/lares/memes/`. The fix: promote handler must walk `#fragment` children of the promoted parent and co-promote them in the same ceremony. Named J.3 — recursive promote / child co-promotion.
+**Gap named (J.3):** `lares promote` is single-URI. `splitRecursive` creates `#fragment` child tiddlers in the bag alongside the parent, but the promote handler moves only the parent URI. Children stay in the room bag; disk projector for the canonical bag writes only what's in that bag. The parent renders correctly (always-split, always-kahea); the child meme files never land in `packages/lares-core/memes/`. The fix: promote handler must walk `#fragment` children of the promoted parent and co-promote them in the same ceremony. Named J.3 — recursive promote / child co-promotion.
 
-Test artifact (`packages/lares/memes/docs/lares/the-lares-protocols.md`) deleted (untracked, no git rm needed). Server reset clean. `voices/` and `voices.md` in same dir are legitimate canonicals — untouched.
+Test artifact (`packages/lares-core/memes/docs/lares/the-lares-protocols.md`) deleted (untracked, no git rm needed). Server reset clean. `voices/` and `voices.md` in same dir are legitimate canonicals — untouched.
 
 ---
 
@@ -233,14 +233,14 @@ Three commits retire architectural debts and canonicalize TW5 module shapes.
 | sha | What |
 |---|---|
 | `0adc3697` E.10.13 | TW5Engine boot path → plugin-tiddler load. `_registerWidgets` / `_registerDeserializer` / parser-wrapper-injection deleted. Boot pushes one envelope tiddler into `preloadTiddlers`; TW5's standard plugin loader unpacks. Namespace alignment: every Lares system title moved to `lar:///`. Tag VALUES stay TW5-conventional. Dual-distribution emits both canonical and drag-and-drop envelopes. |
-| `8a543b6e` (docs) | E.10.13 closure docs + namespace decision recorded in `packages/lares/memes/api/v0.1/pono/lar-uri.md`. |
+| `8a543b6e` (docs) | E.10.13 closure docs + namespace decision recorded in `packages/lares-core/memes/api/v0.1/pono/lar-uri.md`. |
 | `430f40f5` E.10.14 (Path A) | Canonical TW5 module export shapes. Wikirule split into three module-type:wikirule files. Parser exports as `{ MemeticParser as "text/x-memetic-wikitext" }`. Widgets self-`require`("$:/core/.../widget.js"), set prototype chain, export under tag name. Plugin loader unpacks via canonical `$tw.modules.applyMethods` flow. In-process smoke harness lands at `scripts/smoke-plugin-boot.ts`. |
 
 **Operator-flagged debts retired:**
   - Construction-path debt — parsers instantiate via canonical `$tw.modules` path. Single-backtick regression cured.
   - Sync-namespace debt — shadow-tiddler edits + in-VM plugin re-pack now sync to disk; promote ceremony no longer bugs out on `$:/`-prefixed system tiddlers.
 
-**Decision recorded** in `packages/lares/memes/api/v0.1/pono/lar-uri.md` under "TW5 System Boundary" subsection. Rule: lar:// for everything that crosses the sync filter; $:/ for browser-local UX state.
+**Decision recorded** in `packages/lares-core/memes/api/v0.1/pono/lar-uri.md` under "TW5 System Boundary" subsection. Rule: lar:// for everything that crosses the sync filter; $:/ for browser-local UX state.
 
 ---
 
@@ -256,7 +256,7 @@ One commit (`0adc3697` E.10.13) retired two architectural debts in a single swin
   - **Construction-path debt.** Parsers now instantiate via the canonical `$tw.modules` path. The single-backtick regression — produced by hand-rolled `stdParser.call(this, ...)` prototype-chain wrapping — is gone as a side effect.
   - **Sync-namespace debt.** Browser-side shadow-tiddler edits + in-VM plugin re-pack now sync to disk because every Lares system title sits in the `lar:`-only sync namespace. The promote ceremony no longer bugs out on `$:/`-prefixed system tiddlers. Drafts and per-operator UX state stay browser-local in `$:/` by design.
 
-**Decision recorded** in `packages/lares/memes/api/v0.1/pono/lar-uri.md` under a new "TW5 System Boundary" subsection of Path Taxonomy. Rule: lar:// for everything that crosses the sync filter; $:/ for browser-local UX state; tag values stay TW5-conventional in either case; `$:/`-titled plugin envelopes are a drag-and-drop packaging convention only.
+**Decision recorded** in `packages/lares-core/memes/api/v0.1/pono/lar-uri.md` under a new "TW5 System Boundary" subsection of Path Taxonomy. Rule: lar:// for everything that crosses the sync filter; $:/ for browser-local UX state; tag values stay TW5-conventional in either case; `$:/`-titled plugin envelopes are a drag-and-drop packaging convention only.
 
 **Build/test posture:** `pnpm build` clean, `pnpm test` 52/52 passing, plugin tiddler regenerates deterministically.
 
@@ -439,7 +439,7 @@ Captured tensions surfaced after B.6 closure; fixed in one pass:
 
 - **Tension 1 (cmd-tiddler tombstone hygiene).** Old shape: one tiddler at `cmd/<id>` carried both signal AND result; CLI tombstoned after read; CLI crash mid-flight = dirty namespace. New shape: split signal from record. `cmd/<id>` thin signal-only (status state machine). `log/<id>` durable record (full result+audit). Dispatcher tombstones cmd/<id> after writing log/<id>. CLI polls log/<id> and never tombstones. Crash-safe.
 - **Tension 2 (heleuma deficit).** 54 missing source-file memes. `parse-args.ts` marked `@heleuma:exempt`; remaining 54 scaffolded via `lares heleuma --write`; `bin/lares.ts` anchor authored beyond stub. `lares heleuma` now reports "all aligned."
-- **Tension 3 (corpus-vs-engine package asymmetry).** Documented as category boundary. Corpus packages hold tiddler-package projections; engine packages run `src/`+`dist/`+`tsc`. Inline note in `packages/lares/index.js` forbids TS migration.
+- **Tension 3 (corpus-vs-engine package asymmetry).** Documented as category boundary. Corpus packages hold tiddler-package projections; engine packages run `src/`+`dist/`+`tsc`. Inline note in `packages/lares-core/index.js` forbids TS migration.
 
 ### S6 BagResidencyManager — opened C.1, paused mid-arc
 
@@ -527,7 +527,7 @@ Cleanup spans:
 `build-genesis-island.ts` walks every `packages/*/memes/` directory, not just the two hardcoded roots. Lares plugin tiddler count rose to 259 from 429 walked files. `lararium-core/memes/ast.md` and any future per-package self-describing meme now reaches the engine corpus.
 
 **2. Bag-aware disk projector** ([e6152123](lararium-node/src/disk-projector.ts))
-Fixed the canon leak: prior projector wrote any URI-with-laresRelPath to `packages/lares/memes/` regardless of bag, so wiki edits violated canon-promotion law automatically. New `BagMirrorConfig` shape: each bag opts into a filesystem mirror via `{ bagId, mirrorRoot, toRelPath }`. Three standard strategies in `@lararium/core/bag-mirror.ts`:
+Fixed the canon leak: prior projector wrote any URI-with-laresRelPath to `packages/lares-core/memes/` regardless of bag, so wiki edits violated canon-promotion law automatically. New `BagMirrorConfig` shape: each bag opts into a filesystem mirror via `{ bagId, mirrorRoot, toRelPath }`. Three standard strategies in `@lararium/core/bag-mirror.ts`:
 - `laresPathStrategy` — lares carriers
 - `enginePathStrategy` — engine corpus, per-package
 - `roomShadowPathStrategy` — preserves canonical structure under `rooms/{slug}/`
@@ -546,7 +546,7 @@ Initial audit: 50 missing across core/tw5/node, 8 orphans in tw5 (memes pointing
 ### Architecture clarifications
 
 - **`packages/ha-ka-ba/` doesn't exist as a directory**, by design. `ha.ka.ba` names a URI namespace (engine = ha, catalog = ka, lares = ba); each package owns the memes describing itself, the engine corpus is their *virtual union* materialized in `genesis/island.bin`.
-- **Per-bag mirror, not per-package mirror**: disk layout reflects bag boundaries (lares → `packages/lares/memes/`, engine → per-package `memes/`, room → `rooms/{slug}/`); operator-private bags (identities/groups/sessions/admin) never reach disk.
+- **Per-bag mirror, not per-package mirror**: disk layout reflects bag boundaries (lares → `packages/lares-core/memes/`, engine → per-package `memes/`, room → `rooms/{slug}/`); operator-private bags (identities/groups/sessions/admin) never reach disk.
 
 ---
 
@@ -599,8 +599,8 @@ Grammar now lives at api/v0.1/pono/memetic-wikitext (not grammars/). grammars/ t
 Voice-house consolidated: lares/voices.md parents lares/masks/** (all masks moved from masks/).
 lararium-app + lararium-tldraw + lararium-web DELETED. Replaced with: lararium-browser, dreamdeck-tldraw, dreamdeck-app (see ROADMAP.md § Package Reboot).
 New package namespaces: @lararium/* = infra/protocol; @dreamdeck/* = first app stack on DreamNet.
-Research: packages/lares/lararium-research/DREAMNET-FEDERATION-RESEARCH.md (2026-05-06).
-Research docs: packages/lares/lararium-research/PROTOCOL-STACK-IDENTITY-CIRCLES-SESSIONS.md
+Research: packages/lares-core/lararium-research/DREAMNET-FEDERATION-RESEARCH.md (2026-05-06).
+Research docs: packages/lares-core/lararium-research/PROTOCOL-STACK-IDENTITY-CIRCLES-SESSIONS.md
 ```
 
 ---
@@ -677,7 +677,7 @@ Key findings confirming and extending our existing design credit:
 
 ### S7 Redesign: Five Identity Planes + Three-Tier Authority
 
-Full design doc: `packages/lares/lararium-research/S7-CIRCLES-IDENTITIES-REDESIGN.md`
+Full design doc: `packages/lares-core/lararium-research/S7-CIRCLES-IDENTITIES-REDESIGN.md`
 
 **Five identity planes (Plane 0: Device → Plane 4: DreamNet):**
 No central authority at Plane 4; trust emerges from Nexus treaty events only.
@@ -773,9 +773,9 @@ All work in `@lararium/core`. Type-check clean (`pnpm tsc --noEmit` zero errors)
 - `branch` task lifetimes scope to session — prevents Automerge change-listener accumulation on abandoned handles.
 
 **Research docs produced:**
-- `packages/lares/lararium-research/FFZ-WORLD-CLOCK.md` — Rhine rule, three-layer clock separation, WorldClockTiddler schema, ffzMerge concurrent advancement, bi-temporal events
-- `packages/lares/lararium-research/LARARIUM-TICK-CLOCK.md` — two time bases, three-layer architecture (ingress rings → unified tick loop → observers), LarTickCounter, owned vs observed clock table, Verse event interface analysis
-- `packages/lares/memes/api/v0.1/pono/attention-scale.md` — canonical attention-scale meme with Pulse/Beat/Measure/Arc/Theme registers, three clock profiles, World-Time aliases (Week/Month/Season/Year/Era), FTLS diegetic aliases
+- `packages/lares-core/lararium-research/FFZ-WORLD-CLOCK.md` — Rhine rule, three-layer clock separation, WorldClockTiddler schema, ffzMerge concurrent advancement, bi-temporal events
+- `packages/lares-core/lararium-research/LARARIUM-TICK-CLOCK.md` — two time bases, three-layer architecture (ingress rings → unified tick loop → observers), LarTickCounter, owned vs observed clock table, Verse event interface analysis
+- `packages/lares-core/memes/api/v0.1/pono/attention-scale.md` — canonical attention-scale meme with Pulse/Beat/Measure/Arc/Theme registers, three clock profiles, World-Time aliases (Week/Month/Season/Year/Era), FTLS diegetic aliases
 
 **Runtime implementations deferred to `@lararium/node`:**
 - `LarEventBusImpl` — concrete ingress ring + configurable tick loop
@@ -799,7 +799,7 @@ All work in `@lararium/core`. Type-check clean (`pnpm tsc --noEmit` zero errors)
 
 ### DreamNet Federation Research (four spirits)
 
-Full findings in `packages/lares/lararium-research/DREAMNET-FEDERATION-RESEARCH.md`. Highlights:
+Full findings in `packages/lares-core/lararium-research/DREAMNET-FEDERATION-RESEARCH.md`. Highlights:
 
 - **Nexus = a namespace, not a server.** A Nexus functions as a named group of peers sharing a keypair-rooted identity. `lar://<nexus-pubkey>/<doc-id>` serves as the URI form. No DNS dependency.
 - **Keyhive** (Ink & Switch, Brooklyn Zelenka) represents the exact auth substrate we need — convergent capabilities + Beelay E2EE sync co-designed with Automerge. Pre-alpha Rust, no TS yet. Design our capability surface to be Keyhive-compatible now via ucanto-style schemas.
@@ -912,7 +912,7 @@ We want `elyncia.app` to serve a Kowloon node (ActivityPub, Node.js + MongoDB) a
 - **B)** `SessionsDoc` stays ba; `KowloonDoc` acts as a 4th satellite doc outside the social tiga.
 - **C)** No Automerge doc for Kowloon — DreamDeck uses a lightweight HTTP adapter; Automerge stack stays pure.
 
-Research results expected in: `packages/lares/lararium-research/KOWLOON-BRIDGE.md` (to be created on research return).
+Research results expected in: `packages/lares-core/lararium-research/KOWLOON-BRIDGE.md` (to be created on research return).
 
 ---
 
@@ -1087,4 +1087,4 @@ Both questions surface before S9 (lararium-browser) and should inform the
 - `packages/lararium-node/src/open-node-lar-peer.ts` — remove `socialPlaneIsNew` branch + all `seedXxx` calls; read `social-bootstrap.json` instead (S5.5)
 - `packages/lararium-core/src/social-doc.ts` — add `cap` field + update signature payload on `DeviceDelegationTiddler`; add `"node"` to `IdentityTiddler.kind` (S5.5 / S7.1)
 - `packages/lararium-core/src/capability.ts` — NEW; `buildDeviceDelegation`, `verifyDeviceDelegation` (S7.1)
-- `packages/lares/memes/api/v0.1/lares/voices.md` — spec-shelf links need companion docs: `docs/lares/voices/coordinators`, `/workers`, `/masks`
+- `packages/lares-core/memes/api/v0.1/lares/voices.md` — spec-shelf links need companion docs: `docs/lares/voices/coordinators`, `/workers`, `/masks`

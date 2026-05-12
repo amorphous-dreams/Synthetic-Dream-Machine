@@ -8,7 +8,7 @@
  */
 
 import { join } from "path";
-import { laresRoot, repoRoot } from "@lares/lares";
+import { laresRoot, repoRoot } from "@lares/core";
 
 // Path roots — no carrier dependency; kept verbatim.
 export const LARES_ROOT        = laresRoot;

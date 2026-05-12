@@ -13,8 +13,8 @@ mana = 0.76
 manao = 0.72
 role = "DreamDeck narrative locus — April 10 threshold, transclusion-first self-location"
 source-consumed = [
-  "packages/lares/memes/docs/infrastructure-as-mythology/LINDWYRM_SELF_BOOTING_LARES_ARCHITECTURE.md",
-  "packages/lares/memes/docs/infrastructure-as-mythology/LINDWYRM_SELF_BOOTING_LARES_ARCHITECTURE_DEV_STORY.md"
+  "packages/lares-core/memes/docs/infrastructure-as-mythology/LINDWYRM_SELF_BOOTING_LARES_ARCHITECTURE.md",
+  "packages/lares-core/memes/docs/infrastructure-as-mythology/LINDWYRM_SELF_BOOTING_LARES_ARCHITECTURE_DEV_STORY.md"
 ]
 render-target = "chat-log:post-header"
 cacheable = false
@@ -41,8 +41,8 @@ Threshold archive for April 10: not first boot, but the night the lararium found
 
 Consumed from the paired threshold archive:
 
-- `packages/lares/memes/docs/infrastructure-as-mythology/LINDWYRM_SELF_BOOTING_LARES_ARCHITECTURE.md`
-- `packages/lares/memes/docs/infrastructure-as-mythology/LINDWYRM_SELF_BOOTING_LARES_ARCHITECTURE_DEV_STORY.md`
+- `packages/lares-core/memes/docs/infrastructure-as-mythology/LINDWYRM_SELF_BOOTING_LARES_ARCHITECTURE.md`
+- `packages/lares-core/memes/docs/infrastructure-as-mythology/LINDWYRM_SELF_BOOTING_LARES_ARCHITECTURE_DEV_STORY.md`
 
 Related loci:
 

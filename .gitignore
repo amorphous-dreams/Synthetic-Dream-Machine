@@ -59,7 +59,7 @@ wikis/scratch/
 packages/lararium-node/genesis/social-bootstrap.json
 
 # Integration test isolation root (LAR_ROOT=tests/).
-# The daemon writes wikis/, packages/lares/memes/, .lararium/, and genesis/
+# The daemon writes wikis/, packages/lares-core/memes/, .lararium/, and genesis/
 # under tests/ during integration runs. None of it should be committed.
 tests/wikis/
 tests/packages/

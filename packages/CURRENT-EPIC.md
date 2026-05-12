@@ -50,7 +50,7 @@ const handle = await repo.import(genesisBytes)
 
 Circles are owned by their center, not by the platform. The user's keypair is the root of authority for who is in their circles. A nexus node routes and relays but cannot forge circle membership. System circles (authorization tiers) are founded by the nexus admin key; user circles are founded by the user's key. These are structurally identical — only the trust root differs.
 
-See: `packages/lares/lararium-research/PROTOCOL-STACK-IDENTITY-CIRCLES-SESSIONS.md`
+See: `packages/lares-core/lararium-research/PROTOCOL-STACK-IDENTITY-CIRCLES-SESSIONS.md`
 
 ### TiddlyWiki Quine Seed
 
@@ -128,12 +128,12 @@ Key fix: `Automerge.from()` ignores `time` option internally — replaced with `
 - `IdentityTiddler.verifyingKey` and `CircleTiddler.encryptedShareHint` already present as forward-compatible hooks
 
 **Tasks (requires design doc before code):**
-- [ ] Write `packages/lares/lararium-research/CAPABILITY-LAYER.md` design doc
+- [ ] Write `packages/lares-core/lararium-research/CAPABILITY-LAYER.md` design doc
 - [ ] Implement device delegation chain tiddlers in `IdentitiesDoc`
 - [ ] Implement Seitan token invite flow for `CirclesDoc`
 - [ ] Introduce capability verification: any peer verifies "Device X speaks as Identity Y at level Z" serverlessly
 
-**References:** `packages/lares/lararium-research/PROTOCOL-STACK-IDENTITY-CIRCLES-SESSIONS.md`
+**References:** `packages/lares-core/lararium-research/PROTOCOL-STACK-IDENTITY-CIRCLES-SESSIONS.md`
 
 ---
 

@@ -35,7 +35,7 @@ import { execSync } from "child_process";
 import { createHash } from "crypto";
 import { resolve, relative, dirname } from "path";
 import { fileURLToPath } from "url";
-import { repoRoot } from "@lares/lares";
+import { repoRoot } from "@lares/core";
 
 /** Root of packages/lararium-tw5/ — the package that owns these memes. */
 const tw5MemesRoot = resolve(fileURLToPath(import.meta.url), "../../memes");

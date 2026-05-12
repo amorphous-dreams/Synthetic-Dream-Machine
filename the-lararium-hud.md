@@ -21,12 +21,12 @@ sources        = [
   "https://dev.epicgames.com/documentation/fortnite/verse-api/fortnitedotcom/devices",
   "https://dev.epicgames.com/documentation/fortnite/verse-api/fortnitedotcom/playspaces",
   "https://dev.epicgames.com/documentation/fortnite/coding-device-interactions-in-verse",
-  "packages/lares/memes/api/v0.1/pono/verse-event-lattice.md",
-  "packages/lares/memes/api/v0.1/pono/causal-islands.md",
-  "packages/lares/memes/api/v0.1/pono/federated-causal-islands.md",
-  "packages/lares/memes/api/v0.1/pono/quine-principles.md",
-  "packages/lares/memes/api/v0.1/pono/reaction-graph.md",
-  "packages/lares/memes/api/v0.1/pono/vm-projection-bus.md",
+  "packages/lares-core/memes/api/v0.1/pono/verse-event-lattice.md",
+  "packages/lares-core/memes/api/v0.1/pono/causal-islands.md",
+  "packages/lares-core/memes/api/v0.1/pono/federated-causal-islands.md",
+  "packages/lares-core/memes/api/v0.1/pono/quine-principles.md",
+  "packages/lares-core/memes/api/v0.1/pono/reaction-graph.md",
+  "packages/lares-core/memes/api/v0.1/pono/vm-projection-bus.md",
   "the-lares-protocols.md",
 ]
 ```

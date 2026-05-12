@@ -3,7 +3,7 @@
 <<~&#x0001; ? -> lar:///LARARIUM-NODE/MULTIPLAYER-INFINITE-CANVAS-WIKI >>
 ```toml iam
 uri-path    = "LARARIUM-NODE/MULTIPLAYER-INFINITE-CANVAS-WIKI"
-file-path = "packages/lares/memes/lararium-node/MULTIPLAYER-INFINITE-CANVAS-WIKI.md"
+file-path = "packages/lares-core/memes/lararium-node/MULTIPLAYER-INFINITE-CANVAS-WIKI.md"
 type = "text/x-memetic-wikitext"
 confidence  = 0.88
 register    = "S"
@@ -1026,7 +1026,7 @@ State lives in `localStorage` (`lararium.theme`). Applied on mount before first 
 - ✓ **Z-order / canvas mode chrome conflict:** All Lararium chrome moved into tldraw component slots (`MenuPanel`, `SharePanel`, `HelperButtons`). One stacking context, no z-index arithmetic. NavigationPanel (minimap+zoom) restored in both modes. See `#ux-shell`.
 - ✓ **Theme system (shipped 2026-04-27):** `src/lararium-theme.css` overrides tldraw CSS custom properties scoped to `html[data-theme]`. `useTheme()` hook, `localStorage` persistence, flash-prevention inline script in `index.html`. Cycle button (`◑/🌑/☀`) in `SharePanel`. tldraw `colorScheme` synced via `useEffect` in `LarariumCanvas`. Default: `gruvbox-dark`. See `#theme-system`.
 - ✓ **Meme list — CRDT-native (shipped 2026-04-27):** `editor.getCurrentPageShapes()` filtered to `meta.frameKind === "meme"` replaces `/api/memes` fetch. One-shot read on `synced-remote`. Reactive subscription (see open #2) still needed for live updates.
-- ✓ the-altar-fire invariant meme: authored at `packages/lares/memes/api/v0.1/pono/the-altar-fire.md`
+- ✓ the-altar-fire invariant meme: authored at `packages/lares-core/memes/api/v0.1/pono/the-altar-fire.md`
 - ✓ Double-click frame → ZOOM_IN dispatch: wired via `doubleClickShape` + `meta.uri`
 - ✓ **UX shell refactor:** `LarariumShell` + `LarariumCtx` provider pattern. Slot components are stable module-level refs; all state via context. `SidePanel` removed. Footer merged into `MenuPanel` badge.
 - ✓ **Command palette (`⌘K`):** Spaces + Memes sections, unified arrow-key nav, `` ` `` key toggles canvas mode.

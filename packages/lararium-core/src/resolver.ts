@@ -2,9 +2,9 @@
  * `lar:` URI resolution for the Lararium carrier spine.
  *
  * Resolution policy:
- * - ha.ka.ba/@lares/{path} → packages/lares/{path}.md  (primary lares corpus path)
+ * - ha.ka.ba/@lares/{path} → packages/lares-core/{path}.md  (primary lares corpus path)
  * - ha.ka.ba/@lararium/{pkg}/v{ver}/{path} → packages/{pkg-slug}/memes/{path}.md  (engine corpus)
- * - AGENTS, LARES, README → packages/lares/{ROOT}.md  (caps-file legacy alias)
+ * - AGENTS, LARES, README → packages/lares-core/{ROOT}.md  (caps-file legacy alias)
  * - INDEXES/** and other ALL-CAPS roots → virtual namespace (caps-virtual)
  * - any other shape → virtual (no on-disk path; wiki-only)
  *
@@ -22,7 +22,7 @@ export interface LarResolution {
   readonly childPath: readonly string[];
   /** Composite resource path used for receipts and diagnostics. */
   readonly resourcePath: string;
-  /** Relative path within packages/lares/memes/ — non-null only for @lares-scoped or caps-file URIs. */
+  /** Relative path within packages/lares-core/memes/ — non-null only for @lares-scoped or caps-file URIs. */
   readonly laresRelPath: string | null;
   /** Relative path within packages/{pkg-slug}/memes/ — non-null only for engine corpus URIs (@lararium/* scope). */
   readonly engineRelPath: string | null;
@@ -150,7 +150,7 @@ export function resolveLarUri(uri: string): LarResolution {
     return `${baseNoExt}/${fragmentPath.join("/")}.md`;
   };
 
-  // Legacy caps-file roots: lar:///AGENTS → packages/lares/AGENTS.md
+  // Legacy caps-file roots: lar:///AGENTS → packages/lares-core/AGENTS.md
   // Kept as alias; canonical form is lar:///ha.ka.ba/@lares/AGENTS
   if (CAPS_FILE_ROOTS.has(root) && childPath.length === 0) {
     const laresRelPath = appendFragment(`${root}.md`);
@@ -162,7 +162,7 @@ export function resolveLarUri(uri: string): LarResolution {
   }
 
   if (isTupleRoot(root) && root === STABLE_TUPLE_ROOT) {
-    // lar:///ha.ka.ba/@lares/{rest} → packages/lares/memes/{rest}.md  (canonical lares path)
+    // lar:///ha.ka.ba/@lares/{rest} → packages/lares-core/memes/{rest}.md  (canonical lares path)
     if (childPath[0] === LARES_SCOPE) {
       const rest = childPath.slice(1);
       if (rest.length === 1 && CAPS_FILE_ROOTS.has(rest[0]!)) {

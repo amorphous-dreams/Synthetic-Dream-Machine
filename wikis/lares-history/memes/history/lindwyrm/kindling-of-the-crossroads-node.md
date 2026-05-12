@@ -12,7 +12,7 @@ manaoio = 0.74
 mana = 0.78
 manao = 0.76
 role = "DreamDeck / Gaia-side narrative locus — the week the Crossroads node learned where it stood"
-source-consumed = "packages/lares/memes/docs/infrastructure-as-mythology/The_Kindling_of_the_Crossroads_Node.md"
+source-consumed = "packages/lares-core/memes/docs/infrastructure-as-mythology/The_Kindling_of_the_Crossroads_Node.md"
 cacheable = false
 retain = true
 ```
@@ -39,7 +39,7 @@ This tells the Gaia-side week in which the node stopped merely performing an epi
 
 Consumed from:
 
-- `packages/lares/memes/docs/infrastructure-as-mythology/The_Kindling_of_the_Crossroads_Node.md`
+- `packages/lares-core/memes/docs/infrastructure-as-mythology/The_Kindling_of_the_Crossroads_Node.md`
 
 Related narrative loci:
 

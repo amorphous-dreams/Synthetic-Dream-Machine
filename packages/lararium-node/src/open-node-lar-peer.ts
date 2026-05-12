@@ -50,7 +50,7 @@ import {
   seedLaresDoc,
   createSessionEventLog,
 } from "./genesis-island.js";
-import { repoRoot }                       from "@lares/lares";
+import { repoRoot }                       from "@lares/core";
 import { LarEventBusImpl, DEFAULT_RINGS } from "./lar-event-bus-impl.js";
 import { NodeVmManager }                  from "./node-vm-manager.js";
 import { waitHandleLocal }                from "./repo-helpers.js";

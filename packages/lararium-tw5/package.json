@@ -39,7 +39,7 @@
   },
   "dependencies": {
     "@lararium/core": "workspace:*",
-    "@lares/lares": "workspace:*",
+    "@lares/core": "workspace:*",
     "@taplo/lib": "^0.5.0",
     "smol-toml": "^1.6.1",
     "tiddlywiki": "^5.4.0"

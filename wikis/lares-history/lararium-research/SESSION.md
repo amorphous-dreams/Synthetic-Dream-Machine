@@ -4,7 +4,7 @@
 
 ```toml iam
 uri-path     = "SESSION"
-file-path = "packages/lares/memes/SESSION.md"
+file-path = "packages/lares-core/memes/SESSION.md"
 type         = "text/x-memetic-wikitext"
 tagspace     = "adjacent"
 confidence   = 0.88
@@ -317,7 +317,7 @@ Build clean across core + node + app.  67/67 tests pass.
 
 ✶ Priority TypeScript/TSX source files now seed into the Automerge store as navigable memes at boot. URI scheme: `lar:///source/<package-name>/src/<relative-path>`. Body = verbatim source text. Fields carry `package`, `src-path`, `lang`, `built-at`, `content-hash`.
 
-⏿ Implementation: `scripts/source-memes.ts` reads 7 priority files from packages/. `build-snapshot-lib.ts` calls `buildSourceMemes()` and merges results into `BuiltSnapshot.memes` with `laresRelPath: null`. `serve.ts` seeding loop passes `fields` through to the Automerge doc. Interface law: `packages/lares/memes/api/v0.1/pono/source-module.md`.
+⏿ Implementation: `scripts/source-memes.ts` reads 7 priority files from packages/. `build-snapshot-lib.ts` calls `buildSourceMemes()` and merges results into `BuiltSnapshot.memes` with `laresRelPath: null`. `serve.ts` seeding loop passes `fields` through to the Automerge doc. Interface law: `packages/lares-core/memes/api/v0.1/pono/source-module.md`.
 
 ◇ Priority modules: `parser.ts`, `ast.ts`, `causal-island.ts`, `live-protocol.ts` (lararium-core); `lararium-tw5.ts` (lararium-tw5); `LarariumPanel.tsx`, `LarariumShell.tsx` (lararium-app). All readable through the meme graph as `lar:///source/...` URIs.
 
@@ -666,8 +666,8 @@ Four file changes:
 | `@lararium/core` `pranala-parser.ts` | `FAMILY_ROLES.reaction` — `"subscription"` removed |
 | `@lararium/core` `meme-ast/edges.ts` | `"reaction-wire"` literal → `"papalohe"` |
 | `@lararium/core` `kumu-device.ts` | Doc comment: Hawaiian/Verse/English mapping table added |
-| `packages/lares/lararium-node/ROADMAP.md` | Shift 5/6/7 section; m14 session receipt |
-| `packages/lares/memes/SESSION.md` | This section |
+| `packages/lares-core/lararium-node/ROADMAP.md` | Shift 5/6/7 section; m14 session receipt |
+| `packages/lares-core/memes/SESSION.md` | This section |
 
 ⤴ **Ho'oko:**
 
@@ -727,9 +727,9 @@ Systematic 8-file rename; tsc verify after batch. `pranala.md` role array also u
 | `@lararium/core` `kumu-device.ts` | `KumuListenable/KumuSubscribable`; `.listenables/.subscribables`; role checks; `_fireForUri` |
 | `@lararium/tw5` `parser.web2.ts` | Payload key assignments |
 | `@lararium/tw5` `memetic-parser.web2.ts` | papalohe widget attribute keys |
-| `packages/lares/memes/api/v0.1/pono/pranala.md` | `reaction` roles array |
-| `packages/lares/lararium-node/ROADMAP.md` | Shifts 5–7 text; new ahu section |
-| `packages/lares/memes/SESSION.md` | This section |
+| `packages/lares-core/memes/api/v0.1/pono/pranala.md` | `reaction` roles array |
+| `packages/lares-core/lararium-node/ROADMAP.md` | Shifts 5–7 text; new ahu section |
+| `packages/lares-core/memes/SESSION.md` | This section |
 
 ⤤ **Ho'oko:**
 

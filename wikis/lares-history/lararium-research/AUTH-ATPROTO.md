@@ -2,7 +2,7 @@
 
 ```toml iam
 uri-path     = "LARARIUM-NODE/AUTH-ATPROTO"
-file-path = "packages/lares/memes/lararium-node/AUTH-ATPROTO.md"
+file-path = "packages/lares-core/memes/lararium-node/AUTH-ATPROTO.md"
 type         = "text/x-memetic-wikitext"
 tagspace     = "adjacent"
 confidence   = 0.91

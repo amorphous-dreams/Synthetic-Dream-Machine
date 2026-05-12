@@ -53,7 +53,7 @@ Social graph control inverts: circles are owned by their center, not the platfor
 | S8.2 | Yin-mode collapse (E.10.5→E.10.9) | ✅ Complete | 18 dead files purged. MemeticParser collapses ~330 → ~30 lines (proper WikiParser subclass replacing pragma injection). Drop tag-driven cascade discriminator (Roslyn / recast / XInclude consensus). Consolidate ahu scanner into `@lararium/core/meme-ast/ahu-scan.ts` (single source of truth). `<$lar-meme-split>` widget closes the four-call-sites law: `lar-generated` field marker + content-equality guards (TW5 editor-widget pattern). Always-split, always-kahea invariant established. |
 | S8.3 | tw5-typed coexistence (E.10.10→E.10.11) | ✅ Complete | linonetwo's `tw5-typed@^1.1.5` dev dep added + activated in tsconfig types array. Hand-rolled types coexist (parallel type graphs, no collision). Per-site migration as call sites are touched. |
 | V.1 | Vite plugin packaging — first artifact (E.10.12) | ✅ Complete | `vite.plugin.config.ts` + `scripts/build-plugin-tiddler.ts`. Output: `dist-plugin/lares-memetic-wikitext.tid` (71.3 KiB), drag-and-drop installable in any TW5 5.4+ wiki. Five JS module tiddlers (wikirule + 2 widgets + parser + deserializer) + seven data tiddlers (cascades + templates + mount + readme). |
-| V.2 | Boot-path conversion + lar:// namespace alignment (E.10.13) | ✅ Complete | TW5Engine pushes one envelope tiddler (`lar:///plugins/lares/memetic-wikitext`) into `preloadTiddlers`; TW5's standard plugin loader registers wikirule/parser/deserializer/widget modules and materializes cascade + template + mount shadow tiddlers. `_registerWidgets` / `_registerDeserializer` / parser-wrapper-injection block deleted. Single-backtick parser regression cured as a side effect (canonical `$tw.modules` construction path). Folded with namespace alignment: every Lares system title moved to `lar:///` (cascades, mount, templates, plugin envelope) so shadow-tiddler edits and in-VM plugin re-packs sync to disk through the existing `lar:`-only filter; canon-promote ceremony no longer bugs out on `$:/`-prefixed system tiddlers. Tag VALUES stay TW5-conventional. Dual-distribution emits both `lar:///` (canonical, 72.2 KiB) and `$:/` (drag-and-drop) envelopes from one Vite library bundle. Decision recorded in `packages/lares/memes/api/v0.1/pono/lar-uri.md` (TW5 System Boundary). |
+| V.2 | Boot-path conversion + lar:// namespace alignment (E.10.13) | ✅ Complete | TW5Engine pushes one envelope tiddler (`lar:///plugins/lares/memetic-wikitext`) into `preloadTiddlers`; TW5's standard plugin loader registers wikirule/parser/deserializer/widget modules and materializes cascade + template + mount shadow tiddlers. `_registerWidgets` / `_registerDeserializer` / parser-wrapper-injection block deleted. Single-backtick parser regression cured as a side effect (canonical `$tw.modules` construction path). Folded with namespace alignment: every Lares system title moved to `lar:///` (cascades, mount, templates, plugin envelope) so shadow-tiddler edits and in-VM plugin re-packs sync to disk through the existing `lar:`-only filter; canon-promote ceremony no longer bugs out on `$:/`-prefixed system tiddlers. Tag VALUES stay TW5-conventional. Dual-distribution emits both `lar:///` (canonical, 72.2 KiB) and `$:/` (drag-and-drop) envelopes from one Vite library bundle. Decision recorded in `packages/lares-core/memes/api/v0.1/pono/lar-uri.md` (TW5 System Boundary). |
 | A | Canonical TW5 module export shapes (E.10.14) | ✅ Complete | Wikirule split into 3 module-type:wikirule files (lar-sigil-block / lar-sigil-inline / lar-doctype-comment). Parser exports as `{MemeticParser as "text/x-memetic-wikitext"}`. Widgets self-`require`("$:/core/.../widget.js"), set prototype chain, export under tag name. Plugin loader unpacks via canonical `$tw.modules.applyMethods` flow. In-process smoke harness at `scripts/smoke-plugin-boot.ts`. |
 | W | CodeMirror 6 / Lezer alignment + Memetic Wikitext LSP server | ⬜ Designed (way downstream — gated on CLI wiki stability) | Two-stage: (1) wikirule patterns map onto CM6 + Lezer grammar; `tobibeer/codemirror-6-tw5` is the closest active community effort. (2) **Operator's TW5-Grammar textmate VSCode plugin evolves into a full Memetic Wikitext LSP server** — Lezer grammar definitions feed both CM6 (browser TW5 + standalone) and the LSP (VSCode + JetBrains + neovim + any LSP-aware editor). Operator-stated trigger: "once CLI wikis stabilize completely." |
 | G.1→G.5 | Sigil family ports + factory | ✅ Complete | aka URI sigil (G.1), pranala-header (G.2), kahea + loulou URI sigils (G.3), pranala edge inline+block (G.4), `widgets/_cascade-sigil-base.ts::makeCascadeSigilWidget` factory collapses 5 widgets (G.5). Six sigils now ride template-cascade architecture (ahu, aka, kahea, loulou, pranala-header, pranala); five share factory. ahu stays bespoke (slot/uri/parentUri logic). kau retired from G — its dispatch is logic-heavy, not cascade-shaped. |
@@ -244,7 +244,7 @@ Social graph control inverts: circles are owned by their center, not the platfor
 - L1 = operator perceptual grain; L1 tick fires on `"grounded"` ExchangeState transition (Clark-Brennan 1991)
 - `actorId` tie-breaker preserves Automerge ordering contract
 - Stub bounds `[64, 256, 1024, 365, Infinity]`; coprime-prime candidates noted: `[59, 251, 1021, 367, Infinity]`
-- Reference: `packages/lares/lararium-research/FFZ-CHRONOMETER.md`
+- Reference: `packages/lares-core/lararium-research/FFZ-CHRONOMETER.md`
 
 ---
 
@@ -344,7 +344,7 @@ hostile multi-Nexus mesh where not all peers are aligned or interoperable.
 - Values: `"@public"` | `"@nexus:{pubkey}"` | `"circle:{id}"` | `"group:{uri}"`
 - Replaces implicit follower-list visibility with explicit capability grants
 
-Full design: `packages/lares/lararium-research/S7-CIRCLES-IDENTITIES-REDESIGN.md`
+Full design: `packages/lares-core/lararium-research/S7-CIRCLES-IDENTITIES-REDESIGN.md`
 
 ### Sub-sprints
 
@@ -399,7 +399,7 @@ Full design: `packages/lares/lararium-research/S7-CIRCLES-IDENTITIES-REDESIGN.md
 
 ### References
 
-`packages/lares/lararium-research/KOWLOON-BRIDGE.md`
+`packages/lares-core/lararium-research/KOWLOON-BRIDGE.md`
 
 ---
 
@@ -580,7 +580,7 @@ S0 Cleanup ✅
 
 ## DreamNet Protocol Design (Research 2026-05-06)
 
-Full research: `packages/lares/lararium-research/DREAMNET-FEDERATION-RESEARCH.md`
+Full research: `packages/lares-core/lararium-research/DREAMNET-FEDERATION-RESEARCH.md`
 
 ### Settled Decisions
 

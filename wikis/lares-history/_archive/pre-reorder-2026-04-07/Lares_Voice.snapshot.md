@@ -6,7 +6,7 @@
 
   [REDUNDANT] All voice and worker content extracted from the core file, not this snapshot.
     Primary extraction source: prompts/core/Lares_Voice.core.md
-    Working shelf: packages/lares/memes/docs/lares/voices/
+    Working shelf: packages/lares-core/memes/docs/lares/voices/
 
   This snapshot may be archived or retired. It confirms the core file's content but adds nothing.
 -->

@@ -1,7 +1,7 @@
 <<~&#x0001; ? -> lar:///LARARIUM-NODE/CRYPTO >>
 ```toml iam
 uri-path     = "LARARIUM-NODE/CRYPTO"
-file-path = "packages/lares/memes/lararium-node/CRYPTO.md"
+file-path = "packages/lares-core/memes/lararium-node/CRYPTO.md"
 type = "text/x-memetic-wikitext"
 tagspace     = "adjacent"
 confidence   = 0.94

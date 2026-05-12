@@ -39,9 +39,9 @@ importers:
       '@automerge/automerge-repo':
         specifier: ^2.5.5
         version: 2.5.5
-      '@lares/lares':
+      '@lares/core':
         specifier: workspace:*
-        version: link:../lares
+        version: link:../lares-core
       '@noble/ed25519':
         specifier: ^3.1.0
         version: 3.1.0
@@ -97,9 +97,9 @@ importers:
       '@lararium/tw5':
         specifier: workspace:*
         version: link:../lararium-tw5
-      '@lares/lares':
+      '@lares/core':
         specifier: workspace:*
-        version: link:../lares
+        version: link:../lares-core
       '@octokit/rest':
         specifier: ^22.0.1
         version: 22.0.1
@@ -131,9 +131,9 @@ importers:
       '@lararium/core':
         specifier: workspace:*
         version: link:../lararium-core
-      '@lares/lares':
+      '@lares/core':
         specifier: workspace:*
-        version: link:../lares
+        version: link:../lares-core
       '@taplo/lib':
         specifier: ^0.5.0
         version: 0.5.0
@@ -163,8 +163,6 @@ importers:
         specifier: ^8.0.10
         version: 8.0.10(@types/node@22.19.17)(esbuild@0.27.7)(tsx@4.21.0)
 
-  packages/lares: {}
-
   packages/lares-cli:
     dependencies:
       '@automerge/automerge-repo':
@@ -182,13 +180,15 @@ importers:
       '@lararium/tw5':
         specifier: workspace:*
         version: link:../lararium-tw5
-      '@lares/lares':
+      '@lares/core':
         specifier: workspace:*
-        version: link:../lares
+        version: link:../lares-core
     devDependencies:
       tsx:
         specifier: ^4.19.0
         version: 4.21.0
+
+  packages/lares-core: {}
 
   sdm: {}
 
