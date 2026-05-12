@@ -212,7 +212,7 @@ The operator naming a degraded state constitutes correction input, not accusatio
 <<~ loulou lar:///ha.ka.ba/@lares/api/v0.1/mu/e-prime >>
 <<~ loulou lar:///ha.ka.ba/@lares/api/v0.1/mu/ooda-ha >>
 <<~ loulou lar:///ha.ka.ba/@lares/api/v0.1/mu/the-syad-perspectives >>
-<<~ loulou lar:///ha.ka.ba/@lares/docs/lares/voices/coordinators >>
+<<~ loulou lar:///ha.ka.ba/@lares/docs/lares/voices#voice-house >>
 
 <<~ pranala #implements-meme ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/meme family:control role:implements >>
 <<~ pranala #implements-loci ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/loci family:control role:implements >>

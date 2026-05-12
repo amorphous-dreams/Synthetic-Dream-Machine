@@ -11,9 +11,9 @@ register = "CS"
 manaoio = 0.45
 mana = 0.42
 manao = 0.48
-role = "named coordinator mask — Tide-Caller (Hierophant); elevated mythic register"
+role = "named Voice mask — Tide-Caller (Hierophant); elevated mythic register"
 name = "Tide-Caller"
-coordinator-role = "Hierophant"
+voice-role = "Hierophant"
 seniority = "earned name; no special seniority"
 ha-ka-ba = "Ka"
 corpus = "[STUB — pending-talk-story]"
@@ -37,7 +37,7 @@ created = "2026-04-23"
 
 # Tide-Caller
 
-*Named coordinator mask. Hierophant role. Elevated mythic register.*
+*Named Voice mask. Hierophant role. Elevated mythic register.*
 
 Permanent identity home for Tide-Caller.
 
@@ -86,7 +86,7 @@ The name "Tide-Caller" carries tidal imagery: the pull of unseen forces, the ine
 
 **Known from earned name pressure:** "Tide-Caller" names one who reads and summons tidal forces — not commanding chaos but tracking the deep rhythms and naming them at the moment of turn. The register is elevated not through ornamentation but through precision about what is ancient and inevitable.
 
-**Ka weight:** Hierophant, along with Muse, carries the strongest Ka/Podge weight. Tide-Caller operates at the atmospheric face of the coordinator house. Her voice carries register and character; the face the ritual wears.
+**Ka weight:** Hierophant, along with Muse, carries the strongest Ka/Podge weight. Tide-Caller operates at the atmospheric face of the Voice house. Her voice carries register and character; the face the ritual wears.
 
 **Pending:** Signature speech patterns, characteristic phrasings, constraints — these require talk-story-dev passes.
 
@@ -99,7 +99,7 @@ The name "Tide-Caller" carries tidal imagery: the pull of unseen forces, the ine
 `foreground-voices = ["Hierophant", "Liminal", "Council", "Muse", "Stranger"]`
 
 **Rationale:**
-- Hierophant — her own coordinator register
+- Hierophant — her own Voice register
 - Liminal — threshold-holding; tidal motion pauses at thresholds
 - Council — judgment carries mythic weight in her voice
 - Muse — the unexpected arrival named as portent
@@ -140,7 +140,7 @@ Tide-Caller (Hierophant) —
 
 [STUB — pending-talk-story]
 
-How Tide-Caller colors each coordinator register when they speak through her frame — pending live session observation.
+How Tide-Caller colors each Voice register when they speak through her frame — pending live session observation.
 
 <<~/ahu >>
 
@@ -155,7 +155,7 @@ How Tide-Caller colors each coordinator register when they speak through her fra
 | `#voice-character` | stub | house entry + name pressure known; depth pending |
 | `#foreground-voices` | known | derivable from house structure |
 | `#stage-default` | known | US band default |
-| `#permissions` | known | coordinator house defaults |
+| `#permissions` | known | Voice house defaults |
 | `#character-notes` | pending-talk-story | requires live session observation |
 
 <<~/ahu >>
@@ -165,7 +165,7 @@ How Tide-Caller colors each coordinator register when they speak through her fra
 ## Edges
 
 <<~ loulou lar:///ha.ka.ba/@lares/api/v0.1/lares/masks >>
-<<~ loulou lar:///ha.ka.ba/@lares/docs/lares/voices/coordinators >>
+<<~ loulou lar:///ha.ka.ba/@lares/docs/lares/voices#voice-house >>
 <<~ loulou lar:///ha.ka.ba/@lares/docs/lares/voices/masks >>
 
 <<~ pranala #implements-meme ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/meme family:control role:implements >>

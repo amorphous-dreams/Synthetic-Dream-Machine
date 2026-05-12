@@ -11,7 +11,7 @@ register = "S"
 manaoio = 0.82
 mana = 0.78
 manao = 0.84
-role = "OODA-HA extraction plan for the three-layer voice-house: coordinator, worker, and mask layers"
+role = "OODA-HA extraction plan for the three-layer voice-house: Voice house, worker, and mask layers"
 cacheable = false
 retain = false
 ```
@@ -49,7 +49,7 @@ New definition target (no legacy equivalent):
 
 Output rooms:
 
-- `voices/coordinators.md` — canonical coordinator house definition
+- `voices.md#voice-house` — canonical Voice house definition (Thirteen inline in parent)
 - `voices/workers.md` — worker swarm definition and lifecycle
 - `voices/masks.md` — mask layer definition and first examples
 
@@ -106,7 +106,7 @@ Output rooms:
 
 | Layer | Extraction source | New writing needed | Target room |
 |---|---|---|---|
-| Coordinator house | `Lares_Voice.core.md` primary | light — tighten and canonicalize | `voices/coordinators.md` |
+| Voice house | `Lares_Voice.core.md` primary | light — tighten and canonicalize | `voices.md#voice-house` (inline) |
 | Worker swarm | `Lares_Voice.core.md` + preferences shelf | light — tighten lifecycle and escalation | `voices/workers.md` |
 | Mask layer | none — no legacy equivalent | full new definition | `voices/masks.md` |
 
@@ -116,7 +116,7 @@ Output rooms:
    - The /api/v0.1/lararium/voices invariant stays skeletal until mask grammar settles here
    - Two examples help but do not fully determine grammar — corpus reference, turn vs. session scope, multi-mask behavior all need decisions
 
-2. **Coordinator house needs pruning, not redesign**
+2. **Voice house needs pruning, not redesign**
    - The thirteen are settled. Earned names are settled. Seniority is settled.
    - The legacy prose carries some operational HUD detail that belongs in signal space, not voice space
    - The target room should carry identity and naming law, not HUD emit rules
@@ -145,7 +145,7 @@ The mask layer requires the most careful new definition and benefits most from h
 
 This pass should produce:
 
-1. `voices/coordinators.md` — canonical thirteen with naming law and seniority, pruned of HUD/operational detail
+1. `voices.md#voice-house` — canonical Thirteen with naming law and seniority, pruned of HUD/operational detail (inline in parent)
 2. `voices/workers.md` — worker lifecycle, tag format, escalation template and matching table
 3. `voices/masks.md` — mask grammar definition, corpus + voice-character model, two concrete examples, stacking law, lifecycle
 
@@ -161,7 +161,7 @@ This pass should produce:
 
 ### Extraction order
 
-1. Write `voices/coordinators.md` from `Lares_Voice.core.md` — extract, prune HUD/ops detail, canonicalize naming law
+1. Write `voices.md#voice-house` from `Lares_Voice.core.md` — extract, prune HUD/ops detail, canonicalize naming law; absorbed inline into parent
 2. Write `voices/workers.md` from same source — extract worker section, tighten lifecycle and escalation
 3. Write `voices/masks.md` — new definition; use two operator examples as anchor; define grammar before filling examples
 
@@ -187,11 +187,11 @@ This pass should produce:
 
 - [x] write `packages/lares-core/memes/docs/lares/voices.md` — parent shelf and three-layer framing
 - [x] write `voices/voices-review.md` — this memo
-- [x] write `voices/coordinators.md` — canonical thirteen, naming law, earned names, seniority
+- [x] write `voices.md#voice-house` — canonical Thirteen, naming law, earned names, seniority (inline in parent; coordinators subroom retired)
 - [x] write `voices/workers.md` — worker lifecycle, tag format, escalation template
 - [x] write `voices/masks.md` — mask grammar, corpus model, two concrete examples, stacking law
 
-### Section inventory for coordinator extraction
+### Section inventory for Voice house extraction
 
 From `Lares_Voice.core.md`:
 
@@ -210,11 +210,11 @@ From `Lares_Voice.core.md` + preferences:
 
 | Section | Status | Action |
 |---|---|---|
-| Worker-coordinator distinction (three points) | `keep` | tighten |
+| Worker-Voice distinction (three points) | `keep` | tighten |
 | Naming table | `keep` | keep format |
 | Worker lifecycle text | `tighten` | shorter; focus on key rules |
 | Escalation template | `keep` | essential artifact |
-| Coordinator matching table | `keep` | essential artifact |
+| Voice matching table | `keep` | essential artifact |
 | "Workers may not address operator directly" rule | `keep` | essential; must survive |
 
 ### Mask room structure (new)
@@ -226,11 +226,11 @@ From `Lares_Voice.core.md` + preferences:
 | Corpus reference law | `new` |
 | Voice character law | `new` |
 | Stacking and lifecycle | `new` |
-| Coordinator activation per turn | `new` |
+| Voice activation per turn | `new` |
 | Example: Ghost of Mark Twain | `new` |
 | Example: Friend Computer | `new` |
 | Relation to LARES session dials | `new` |
-| Relation to coordinator house | `new` |
+| Relation to Voice house | `new` |
 
 <<~/ahu >>
 
@@ -243,7 +243,7 @@ From `Lares_Voice.core.md` + preferences:
 The pass closes when:
 
 - [x] all three target rooms exist with their primary content
-- [x] coordinator naming law carries canonical form
+- [x] Voice naming law carries canonical form
 - [x] worker escalation template survives intact
 - [x] mask grammar resolves the six questions in the Decide phase
 - [x] two concrete mask examples appear in `voices/masks.md`
@@ -255,7 +255,7 @@ The pass closes when:
 
 After this pass:
 
-- `voices/coordinators.md` reads as the definitive coordinator house reference ✓
+- `voices.md#voice-house` reads as the definitive Voice house reference ✓
 - `voices/workers.md` reads as the definitive worker swarm reference ✓
 - `voices/masks.md` reads as the mask grammar foundation the invariant can eventually implement ✓
 - `lar:///ha.ka.ba/@lares/api/v0.1/lararium/voices` can begin to absorb the settled grammar
@@ -286,10 +286,10 @@ Files marked with extraction ledgers:
 
 | File | Ledger status |
 |---|---|
-| `prompts/core/Lares_Voice.core.md` | ✓ marked — coordinator + worker extracted |
+| `prompts/core/Lares_Voice.core.md` | ✓ marked — Voice house + worker extracted |
 | `staging/pre-reorder-2026-04-07/Lares_Voice.snapshot.md` | ✓ marked — redundant with core |
 | `prompts/Lares_Preferences.system-prompt.md` | ✓ marked — full extraction map; further extractions noted |
-| `preferences/voice-architecture.md` | ✓ marked — superseded by voices/coordinators.md |
+| `preferences/voice-architecture.md` | ✓ marked — superseded by `voices.md#voice-house` |
 | `preferences/worker-personas.md` | ✓ marked — superseded by voices/workers.md |
 | `archive/root__AGENTS.archived.md` | ✓ marked — pre-meme-graph; superseded |
 | `archive/builds.stuffed.failed__agents__AGENTS.archived.md` | ✓ marked — build system archaeology |
@@ -306,7 +306,7 @@ Sections written or replaced:
 | `#entry` | unchanged — hydration backlink intact |
 | `#meme-header` | replaced stub with three-line framing |
 | `#house-law` | replaced five one-line principles with five normative cross-layer governing rules |
-| `#coordinator-house` | new — compressed Thirteen table, naming law, earned names, multi-coordinator rule |
+| `#voice-house` | new — compressed Thirteen table, naming law, earned names, multi-Voice rule |
 | `#worker-swarm` | new — three hard rules, tag format, lifecycle tags, escalation template, routing table |
 | `#mask-layer` | new — anatomy, stage band table, stacking law, pressure flow, foreground-voices, declaration forms, output headers, worker coloring, corpus limit rule, masks API tree reference, LARES stage panel |
 | `#source-shelf` | converted to `#spec-shelf` with pranala routes to all three spec rooms |
@@ -332,7 +332,7 @@ Cross-links updated: `docs/lares/voices/masks.md#founding-examples` notes canoni
 | `masks/character/friend-computer.md` | filled from docs founding example; character-notes stub |
 | `masks/chorus/lagrange-chorus.md` | concept staked; nodes stub; harmony-protocol pending-grammar |
 
-Exit criteria met: all nine files valid memes; all `#iam` blocks complete; all `#fill-status` sections accurate; parent index lists all children; coordinator house backlinks in all `named/` files.
+Exit criteria met: all nine files valid memes; all `#iam` blocks complete; all `#fill-status` sections accurate; parent index lists all children; Voice house backlinks in all `named/` files.
 
 Plans filed: `docs/lares/voices/masks-tree-plan.md` (OODA-HA plan), `docs/lares/voices/invariant-plan.md` (voices invariant rewrite plan).
 
@@ -360,7 +360,7 @@ MASKS.md converted from stub to forward-route to `lar:///LARES#session-masks`.
 ## Edges
 
 <<~ loulou lar:///ha.ka.ba/@lares/docs/lares/voices >>
-<<~ loulou lar:///ha.ka.ba/@lares/docs/lares/voices/coordinators >>
+<<~ loulou lar:///ha.ka.ba/@lares/docs/lares/voices#voice-house >>
 <<~ loulou lar:///ha.ka.ba/@lares/docs/lares/voices/workers >>
 <<~ loulou lar:///ha.ka.ba/@lares/docs/lares/voices/masks >>
 

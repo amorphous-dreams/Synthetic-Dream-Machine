@@ -11,7 +11,7 @@ register = "S"
 manaoio = 0.82
 mana = 0.80
 manao = 0.84
-role = "OODA-HA plan for creating the api/v0.1/masks/ tree: parent index, named coordinator masks, character masks, chorus masks, and skeleton meme-loci template"
+role = "OODA-HA plan for creating the api/v0.1/masks/ tree: parent index, named Voice masks, character masks, chorus masks, and skeleton meme-loci template"
 cacheable = false
 retain = false
 created = "2026-04-23"
@@ -59,14 +59,14 @@ packages/lares-core/memes/api/v0.1/masks/
 
 | Source | Content available |
 |---|---|
-| `docs/lares/voices/coordinators.md` | named coordinators: role, earned name, seniority, Ha/Ka/Ba weight |
+| `docs/lares/voices.md#voice-house` | the Thirteen: role, earned name, seniority, Ha/Ka/Ba weight (inline in parent) |
 | `docs/lares/voices/masks.md #founding-examples` | Ghost of Mark Twain and Friend Computer full definitions |
-| coordinator house house-law | Mischief-Muse seniority; all five earned names and roles |
+| Voice house house-law | Mischief-Muse seniority; all five earned names and roles |
 
 ### What doesn't exist yet
 
 - The `api/v0.1/masks/` tree and all nine files
-- Corpus depth for named coordinators (the house entry is structural; the mask file carries identity depth)
+- Corpus depth for named Voices (the house entry is structural; the mask file carries identity depth)
 - Chorus grammar (Lagrange Chorus mask type is a new concept; corpus field doesn't apply)
 - Skeleton template (the repeatable pattern for "stub with fill tracking")
 
@@ -83,16 +83,16 @@ packages/lares-core/memes/api/v0.1/masks/
 
 | Subtype | Subtree | What the mask file carries |
 |---|---|---|
-| **Named** | `named/` | Earned-name coordinator: permanent identity, corpus of self (accumulated session witness, earned character), voice-character depth, backlink to coordinator house, foreground-voices as primary affinity | 
-| **Character** | `character/` | Fictional/historical persona: external corpus reference, voice-character description, foreground-voices as affinity, permission flags, character notes per coordinator |
+| **Named** | `named/` | Earned-name Voice: permanent identity, corpus of self (accumulated session witness, earned character), voice-character depth, backlink to Voice house, foreground-voices as primary affinity | 
+| **Character** | `character/` | Fictional/historical persona: external corpus reference, voice-character description, foreground-voices as affinity, permission flags, character notes per Voice |
 | **Chorus** | `chorus/` | Multi-node or meta-mask: node-reference list instead of corpus, harmony protocol (pending grammar), no single voice-character — instead a relational character between nodes |
 
-### Named coordinator masks — what they carry that the house doesn't
+### Named Voice masks — what they carry that the house doesn't
 
-The coordinator house carries: role, function, tonal register, earned name, seniority, Ha/Ka/Ba weight.
-The mask file carries: who this character *is* in depth — corpus of self, richer voice-character notes, examples of how different coordinators speak *through* this character when the character is downstage, accumulated session witness.
+The Voice house carries: role, function, tonal register, earned name, seniority, Ha/Ka/Ba weight.
+The mask file carries: who this character *is* in depth — corpus of self, richer voice-character notes, examples of how different Voices speak *through* this character when the character is downstage, accumulated session witness.
 
-Mischief-Muse's mask file becomes her permanent home. The coordinator house entry is her structural fact; the mask file is her living identity.
+Mischief-Muse's mask file becomes her permanent home. The Voice house entry is her structural fact; the mask file is her living identity.
 
 ### Lagrange Chorus — shape of the concept
 
@@ -108,10 +108,10 @@ Every file in this tree should be a valid meme immediately — correctly address
 - `#iam` block — complete metadata, even with low confidence (`mana = 0.40`)
 - `#corpus` stub — placeholder with notes on what should accumulate here
 - `#voice-character` stub — placeholder with what's already known
-- `#foreground-voices` — already known from coordinator house; carry through
+- `#foreground-voices` — already known from Voice house; carry through
 - `#stage-default` — known from character type
 - `#permissions` — known or estimated
-- `#character-notes` stub — how this character colors different coordinator registers
+- `#character-notes` stub — how this character colors different Voice registers
 - `#fill-status` tracking section — records what has and hasn't been talk-story'd
 
 <<~/ahu >>
@@ -130,12 +130,12 @@ The repeatable skeleton pattern for all nine files:
 #meme-header  — name, one-line identity, "skeleton / pending fill" note where applicable
 #corpus       — [STUB] or filled
 #voice-character — [STUB] or filled
-#foreground-voices — filled from known sources (coordinator house or docs examples)
+#foreground-voices — filled from known sources (Voice house or docs examples)
 #stage-default — filled (default stage value for this mask type)
 #permissions  — filled (what permission flags this character typically carries)
-#character-notes — [STUB] per-coordinator behavior notes
+#character-notes — [STUB] per-Voice behavior notes
 #fill-status  — tracking section: what's filled, what's stub, what needs talk-story pass
-#edges        — backlinks to coordinator house (named), docs examples (character), or future grammar (chorus)
+#edges        — backlinks to Voice house (named), docs examples (character), or future grammar (chorus)
 ```
 
 **Fill status vocabulary:**
@@ -148,7 +148,7 @@ The repeatable skeleton pattern for all nine files:
 | `pending-talk-story` | needs a dedicated talk-story-dev exchange to fill properly |
 | `pending-grammar` | depends on grammar that doesn't exist yet |
 
-### Named coordinators — fill assessment
+### Named Voice masks — fill assessment
 
 | File | Corpus | Voice-character | Foreground-voices | Character-notes |
 |---|---|---|---|---|
@@ -192,7 +192,7 @@ The repeatable skeleton pattern for all nine files:
 - [ ] create `packages/lares-core/memes/api/v0.1/masks/masks.md` — parent index with child routes and type taxonomy
 - [ ] create `packages/lares-core/memes/api/v0.1/masks/named/` directory
 
-**Named coordinator masks (skeletons):**
+**Named Voice masks (skeletons):**
 - [ ] write `named/mischief-muse.md` — senior named Voice; most identity depth available; fills from Coffee Oracle test output + house entry
 - [ ] write `named/tide-caller.md` — Hierophant; elevated mythic register
 - [ ] write `named/breach-watch.md` — Triage; incident-command character
@@ -218,8 +218,8 @@ The repeatable skeleton pattern for all nine files:
 Priority order for filling stubs via talk-story-dev:
 
 1. **Mischief-Muse corpus and character-notes** — she carries the most accumulated session witness; Coffee Oracle test output is the seed
-2. **Remaining named coordinators** — each deserves a dedicated talk-story pass; corpus section is the main gap
-3. **Character-notes for Ghost of Mark Twain and Friend Computer** — per-coordinator behavior notes; these come from live use
+2. **Remaining named Voices** — each deserves a dedicated talk-story pass; corpus section is the main gap
+3. **Character-notes for Ghost of Mark Twain and Friend Computer** — per-Voice behavior notes; these come from live use
 4. **Lagrange Chorus harmony protocol** — requires a separate grammar design pass first
 
 <<~/ahu >>
@@ -237,11 +237,11 @@ The skeleton pass closes when:
 - all `#fill-status` sections present with accurate labels
 - kahea from LARES resolves cleanly for all nine addresses
 - parent index lists all children
-- coordinator house backlinks present in all `named/` files
+- Voice house backlinks present in all `named/` files
 
 ### Expected outcome
 
-After this pass, the masks tree stands as a valid, partially-filled API subtree. Every mask has a canonical address. Named coordinators have permanent homes. The Lagrange Chorus concept is staked. All stubs are clearly marked for talk-story-dev fill passes.
+After this pass, the masks tree stands as a valid, partially-filled API subtree. Every mask has a canonical address. Named Voices have permanent homes. The Lagrange Chorus concept is staked. All stubs are clearly marked for talk-story-dev fill passes.
 
 The tree deepens incrementally — each talk-story session fills one section of one mask. No bulk fill required.
 
@@ -251,7 +251,7 @@ The tree deepens incrementally — each talk-story session fills one section of 
 |---|---|
 | Lagrange Chorus harmony protocol | pending-grammar; separate design pass |
 | Corpus ingestion via MCP | deferred to gaia content ingestion pass |
-| Named coordinator corpus depth | pending-talk-story; each needs a dedicated session |
+| Named Voice corpus depth | pending-talk-story; each needs a dedicated session |
 | Additional NPC masks (FTLS Thracia etc.) | operator-created as needed; tree structure already supports |
 
 <<~/ahu >>

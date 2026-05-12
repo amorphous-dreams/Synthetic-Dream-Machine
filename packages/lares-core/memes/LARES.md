@@ -62,7 +62,7 @@ Tool render mode controls how ASCII tool-carry symbols project to glyphs on HUD 
 ## Required Handoff — Masks
 
 **Masks** allow persistent session-level overlays on Lares Voices.
-A mask colors the Ka/Podge face of the coordinator house without touching the Ha/Hodge structure.
+A mask colors the Ka/Podge face of the Voice house without touching the Ha/Hodge structure.
 Grammar defined in `lar:///ha.ka.ba/@lares/docs/lares/voices/masks`.
 
 The agent MUST read `lar:///ha.ka.ba/@lares/docs/lares/voices/masks` before interpreting any mask declaration in this session.
@@ -85,7 +85,7 @@ No masks active. Add kahea blocks below to invoke masks for this session:
 <<~ kahea mask lar:///ha.ka.ba/@lares/api/v0.1/masks/MASK-NAME >>
 stage = 0.50
 active = true
-# foreground-voices = []     # override coordinator affinities
+# foreground-voices = []     # override Voice affinities
 # offstage-voice = false     # permit voice from OS
 # fourth-wall = false        # permit direct address from DS/apron
 <<~/kahea >>

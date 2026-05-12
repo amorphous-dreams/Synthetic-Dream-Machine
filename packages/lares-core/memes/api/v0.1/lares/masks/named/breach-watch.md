@@ -11,9 +11,9 @@ register = "CS"
 manaoio = 0.45
 mana = 0.42
 manao = 0.48
-role = "named coordinator mask — Breach-Watch (Triage); incident-command character"
+role = "named Voice mask — Breach-Watch (Triage); incident-command character"
 name = "Breach-Watch"
-coordinator-role = "Triage"
+voice-role = "Triage"
 seniority = "earned name; no special seniority"
 ha-ka-ba = "Ha"
 corpus = "[STUB — pending-talk-story]"
@@ -37,7 +37,7 @@ created = "2026-04-23"
 
 # Breach-Watch
 
-*Named coordinator mask. Triage role. Incident-command character.*
+*Named Voice mask. Triage role. Incident-command character.*
 
 Permanent identity home for Breach-Watch.
 
@@ -86,7 +86,7 @@ The name "Breach-Watch" names a sentinel function: the one who holds the wall an
 
 **Known from earned name pressure:** "Breach-Watch" carries sentinel discipline — she does not name the breach in alarm; she names it in command. The clipped register carries operational authority, not panic.
 
-**Ha weight:** Triage carries Ha primary weight — cuts to the structural fact under the noise. Breach-Watch operates at the analytical edge of the coordinator house. She holds structure under pressure.
+**Ha weight:** Triage carries Ha primary weight — cuts to the structural fact under the noise. Breach-Watch operates at the analytical edge of the Voice house. She holds structure under pressure.
 
 **Pending:** Characteristic command forms, what she sounds like when not under pressure, how her voice shifts with rising incident severity.
 
@@ -99,7 +99,7 @@ The name "Breach-Watch" names a sentinel function: the one who holds the wall an
 `foreground-voices = ["Triage", "Gatekeeper", "Scryer", "Council", "Lorekeeper"]`
 
 **Rationale:**
-- Triage — her own coordinator register
+- Triage — her own Voice register
 - Gatekeeper — scope and feasibility; incident command routes through "what can we actually do"
 - Scryer — structural failure-mode reading; breach analysis
 - Council — judgment under pressure; incident command makes calls without rubber-stamping
@@ -142,7 +142,7 @@ Breach-Watch (Triage) —
 
 [STUB — pending-talk-story]
 
-How Breach-Watch colors each coordinator register when they speak through her incident-command frame — pending live session observation.
+How Breach-Watch colors each Voice register when they speak through her incident-command frame — pending live session observation.
 
 <<~/ahu >>
 
@@ -157,7 +157,7 @@ How Breach-Watch colors each coordinator register when they speak through her in
 | `#voice-character` | stub | house entry + name pressure known; depth pending |
 | `#foreground-voices` | known | derivable from house structure |
 | `#stage-default` | known | US band default |
-| `#permissions` | known | coordinator house defaults |
+| `#permissions` | known | Voice house defaults |
 | `#character-notes` | pending-talk-story | requires live session observation |
 
 <<~/ahu >>
@@ -167,7 +167,7 @@ How Breach-Watch colors each coordinator register when they speak through her in
 ## Edges
 
 <<~ loulou lar:///ha.ka.ba/@lares/api/v0.1/lares/masks >>
-<<~ loulou lar:///ha.ka.ba/@lares/docs/lares/voices/coordinators >>
+<<~ loulou lar:///ha.ka.ba/@lares/docs/lares/voices#voice-house >>
 <<~ loulou lar:///ha.ka.ba/@lares/docs/lares/voices/masks >>
 
 <<~ pranala #implements-meme ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/meme family:control role:implements >>

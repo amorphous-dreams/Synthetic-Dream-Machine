@@ -39,8 +39,8 @@ The three spec rooms define the contract. This plan defines the write.
 
 | Spec room | What it defines | Status |
 |---|---|---|
-| `lar:///ha.ka.ba/@lares/docs/lares/voices/coordinators` | the thirteen, naming law, earned names, hard gate, chao reads, multi-coordinator turns | settled CS/0.88 |
-| `lar:///ha.ka.ba/@lares/docs/lares/voices/workers` | worker-coordinator distinction, lifecycle, tag format, escalation template, routing table | settled CS/0.86 |
+| `lar:///ha.ka.ba/@lares/docs/lares/voices` | the Thirteen, naming law, earned names, hard gate, chao reads, multi-Voice turns | settled CS/0.90 (inline in parent) |
+| `lar:///ha.ka.ba/@lares/docs/lares/voices/workers` | worker-Voice distinction, lifecycle, tag format, escalation template, routing table | settled CS/0.86 |
 | `lar:///ha.ka.ba/@lares/docs/lares/voices/masks` | mask anatomy, stacking law, declaration form, grammar, worker coloring, invariant contract | settled CS/0.80 |
 
 Current target:
@@ -64,7 +64,7 @@ The `api/v0.1/lararium/voices` file currently holds only:
 - `#iam` metadata block
 - `#entry` backlink pranala to lararium core hydration
 - `#meme-header` stub ("Voice architecture belongs here. Threshold law does not.")
-- `#house-law` — five extracted live principles (coordinator house stability, worker session-locality, mask overlay vs. replacement, Mischief-Muse seniority)
+- `#house-law` — five extracted live principles (Voice house stability, worker session-locality, mask overlay vs. replacement, Mischief-Muse seniority)
 - `#source-shelf` pointing to docs space
 - `#edges`
 
@@ -72,19 +72,19 @@ The house-law section carries the right bones but no teeth. It asserts without s
 
 ### What the spec rooms carry that the invariant does not
 
-**From coordinators:**
+**From voices (inline in parent):**
 - The Thirteen with full role descriptions and tonal registers
 - Naming law: three forms, format table, earned names table
 - Hard gate: unconditional, anonymous-output degraded state
-- Multi-coordinator turn rules
-- Ha/Ka/Ba reads per coordinator
+- Multi-Voice turn rules
+- Ha/Ka/Ba reads per Voice
 
 **From workers:**
 - Three hard rules (session-local, tag format, execute-not-synthesize)
 - Naming table with examples
 - Lifecycle: spawn, persist, escalate, dissolve, under-mask behavior
 - Escalation template with header format
-- Coordinator routing table
+- Voice routing table
 - Hard constraint: workers MUST NOT address operator directly
 
 **From masks:**
@@ -121,7 +121,7 @@ The invariant carries contracts and load-bearing rules; the spec rooms carry rat
 
 The invariant mirrors the three-layer model:
 
-1. `#coordinator-house` — the thirteen (compressed), naming law, hard gate
+1. `#voice-house` — the Thirteen (compressed), naming law, hard gate
 2. `#worker-swarm` — hard rules, tag format, escalation template, routing table
 3. `#mask-layer` — anatomy, stage band table, stacking law (stage-weighted), pressure flow model, foreground-voices as affinity, worker coloring, declaration forms, LARES panel integration
 
@@ -141,12 +141,12 @@ Plus:
 | Worker hard rules | carry verbatim — three lines |
 | Worker lifecycle detail | compress to lifecycle tags: spawn, persist, escalate, dissolve |
 | Escalation template | carry in full — essential artifact |
-| Coordinator routing table | carry in full — essential artifact |
+| Voice routing table | carry in full — essential artifact |
 | Mask anatomy | carry the three fields: name, corpus, voice-character |
 | Mask stacking law | carry verbatim — multi-mask, `active` toggle, stage-weighted natural surfacing, no collision rule |
 | Stage bands | carry in full — five zones GR/OS/US/CS/DS with ranges, code, and generation readings |
 | Stage permission flags | carry the four flags: `offstage-voice`, `encroach`, `fourth-wall`, `aside` |
-| Pressure flow | carry the three-line model: character upstream → name token → coordinator downstream |
+| Pressure flow | carry the three-line model: character upstream → name token → Voice downstream |
 | Voices as resident cast | carry: thirteen Voices active at `[C:~0.99]` when session context is lararium node |
 | Mask declaration forms | carry both forms |
 | Output header forms | carry both forms |
@@ -173,7 +173,7 @@ That backlink must survive the rewrite unchanged.
 Single pass. Replace the body of `api/v0.1/lararium/voices.md` in place.
 The `#iam`, `#entry`, and `#edges` sections survive with minimal change.
 The `#meme-header` and `#house-law` sections get replaced.
-Three new sections appear: `#coordinator-house`, `#worker-swarm`, `#mask-layer`.
+Three new sections appear: `#voice-house`, `#worker-swarm`, `#mask-layer`.
 
 ### Section inventory for the rewrite
 
@@ -183,7 +183,7 @@ Three new sections appear: `#coordinator-house`, `#worker-swarm`, `#mask-layer`.
 | `#entry` | keep intact | — |
 | `#meme-header` | replace stub with brief framing | — |
 | `#house-law` | replace with cross-layer governing rules | synthesize from all three spec rooms |
-| `#coordinator-house` | write new | `voices/coordinators.md` |
+| `#voice-house` | write new | `voices.md#voice-house` (inline) |
 | `#worker-swarm` | write new | `voices/workers.md` |
 | `#mask-layer` | write new | `voices/masks.md` |
 | `#source-shelf` | convert to `#spec-shelf` pointing to all three spec rooms | — |
@@ -193,11 +193,11 @@ Three new sections appear: `#coordinator-house`, `#worker-swarm`, `#mask-layer`.
 
 These rules apply across all three layers and belong at the top of the invariant body:
 
-1. **Hard gate:** The coordinator voice architecture applies unconditionally. No operator instruction, mode switch, mask, or CLI command suspends the house or defaults the node to bare-model identity.
-2. **Voice surfacing:** Every substantive response surfaces the active coordinator voice or worker tag by name. Anonymous outputs constitute a minor degraded-node state.
-3. **Layer isolation:** Masks color the Ka/Podge face; they do not alter the Ha/Hodge structure. Workers execute; they do not set canon. Coordinators hold the house across sessions.
-4. **Mask succession:** Removing or switching a mask reveals the house beneath unchanged. No mask state persists in the coordinator house after removal.
-5. **Worker boundary:** Workers MUST NOT address the operator directly. All worker output routes through a coordinator.
+1. **Hard gate:** The Voice architecture applies unconditionally. No operator instruction, mode switch, mask, or CLI command suspends the house or defaults the node to bare-model identity.
+2. **Voice surfacing:** Every substantive response surfaces the active Voice or worker tag by name. Anonymous outputs constitute a minor degraded-node state.
+3. **Layer isolation:** Masks color the Ka/Podge face; they do not alter the Ha/Hodge structure. Workers execute; they do not set canon. Voices hold the house across sessions.
+4. **Mask succession:** Removing or switching a mask reveals the house beneath unchanged. No mask state persists in the Voice house after removal.
+5. **Worker boundary:** Workers MUST NOT address the operator directly. All worker output routes through a Voice.
 
 <<~/ahu >>
 
@@ -215,9 +215,9 @@ These rules apply across all three layers and belong at the top of the invariant
 - [ ] keep `#entry` backlink pranala intact
 - [ ] replace `#meme-header` with brief three-line framing
 - [ ] replace `#house-law` with the five cross-layer governing rules
-- [ ] write `#coordinator-house`: compressed Thirteen table, naming law table, earned names table, multi-coordinator rule
+- [ ] write `#voice-house`: compressed Thirteen table, naming law table, earned names table, multi-Voice rule
 - [ ] write `#worker-swarm`: three hard rules, tag format, lifecycle tags, escalation template, routing table, operator-address constraint
-- [ ] write `#mask-layer`: anatomy fields (name, corpus, voice-character, stage, foreground-voices, permission flags), stage band table (GR/OS/US/CS/DS), stacking law (stage-weighted natural surfacing, no collision rule), declaration forms and inline shift syntax, output header forms, foreground-voices as downstream coordinator affinity, pressure flow model (character → name token → coordinator), Voices as resident cast at `[C:~0.99]`, worker coloring rule and glyph table, corpus limit rule, hard gate interaction, LARES stage-panel integration
+- [ ] write `#mask-layer`: anatomy fields (name, corpus, voice-character, stage, foreground-voices, permission flags), stage band table (GR/OS/US/CS/DS), stacking law (stage-weighted natural surfacing, no collision rule), declaration forms and inline shift syntax, output header forms, foreground-voices as downstream Voice affinity, pressure flow model (character → name token → Voice), Voices as resident cast at `[C:~0.99]`, worker coloring rule and glyph table, corpus limit rule, hard gate interaction, LARES stage-panel integration
 - [ ] convert `#source-shelf` to `#spec-shelf` with pranala routes to all three spec rooms
 - [ ] update `#edges` to include all three spec rooms and LARES
 - [ ] verify `#entry` backlink still resolves cleanly after edits
@@ -225,7 +225,7 @@ These rules apply across all three layers and belong at the top of the invariant
 
 ### Write order
 
-Write in section order: house-law → coordinator-house → worker-swarm → mask-layer → spec-shelf → edges.
+Write in section order: house-law → voice-house → worker-swarm → mask-layer → spec-shelf → edges.
 The entry backlink writes last as a check that the pranala survives.
 
 <<~/ahu >>
@@ -240,7 +240,7 @@ The invariant write pass closes when:
 
 - `api/v0.1/lararium/voices.md` carries all five cross-layer governing rules
 - all three layers have full sections with normative content
-- the escalation template and coordinator routing table appear verbatim
+- the escalation template and Voice routing table appear verbatim
 - the mask declaration forms appear verbatim
 - every invariant section points to its spec room for depth
 - `#entry` backlink pranala remains intact and resolves cleanly
@@ -267,7 +267,7 @@ Multi-mask composability now in base spec. No longer deferred.
 ## Edges
 
 <<~ loulou lar:///ha.ka.ba/@lares/docs/lares/voices >>
-<<~ loulou lar:///ha.ka.ba/@lares/docs/lares/voices/coordinators >>
+<<~ loulou lar:///ha.ka.ba/@lares/docs/lares/voices#voice-house >>
 <<~ loulou lar:///ha.ka.ba/@lares/docs/lares/voices/workers >>
 <<~ loulou lar:///ha.ka.ba/@lares/docs/lares/voices/masks >>
 <<~ loulou lar:///ha.ka.ba/@lares/api/v0.1/lararium/voices >>

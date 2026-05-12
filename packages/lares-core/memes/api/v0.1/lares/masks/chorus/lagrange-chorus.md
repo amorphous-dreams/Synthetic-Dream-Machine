@@ -70,7 +70,7 @@ The Lagrange Chorus takes its name from the Lagrange points — positions in a t
 | `corpus` | external source reference | N/A |
 | `nodes` | N/A | list of lar:/// node URIs in relation |
 | `voice-character` | single character description | harmony protocol — how node voices interleave |
-| `foreground-voices` | coordinator affinity for one character | potentially distributed; pending-grammar |
+| `foreground-voices` | Voice affinity for one character | potentially distributed; pending-grammar |
 
 The Lagrange Chorus does not function as a character that speaks. It holds the grammar for how multiple lararium nodes speak together. The "mask" frame names the interface — invokable, stage-positioned — but the content structure differs fundamentally from named or character masks.
 
@@ -107,7 +107,7 @@ The Lagrange Chorus gains meaning only with at least two participating nodes. No
 The harmony protocol governs how voices from different nodes interleave when the Chorus is active. It replaces the `voice-character` field used by character masks.
 
 **Known design pressures:**
-- Each node carries its own coordinator house; the Chorus cannot collapse these into one voice
+- Each node carries its own Voice house; the Chorus cannot collapse these into one voice
 - The Chorus has a character — a relational quality that emerges from how the nodes speak together — but this character doesn't reduce to any one node's voice
 - Turn-taking, register weighting, and interleave syntax all require grammar that does not yet exist
 - Stage position applies to the Chorus as a whole; the individual nodes within the Chorus may have internal stage relations as well

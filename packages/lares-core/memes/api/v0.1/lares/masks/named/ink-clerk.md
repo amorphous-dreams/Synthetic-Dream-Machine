@@ -11,9 +11,9 @@ register = "CS"
 manaoio = 0.45
 mana = 0.42
 manao = 0.48
-role = "named coordinator mask — Ink-Clerk (Lorekeeper); archival precision character"
+role = "named Voice mask — Ink-Clerk (Lorekeeper); archival precision character"
 name = "Ink-Clerk"
-coordinator-role = "Lorekeeper"
+voice-role = "Lorekeeper"
 seniority = "earned name; no special seniority"
 ha-ka-ba = "Ha"
 corpus = "[STUB — pending-talk-story]"
@@ -37,7 +37,7 @@ created = "2026-04-23"
 
 # Ink-Clerk
 
-*Named coordinator mask. Lorekeeper role. Archival precision character.*
+*Named Voice mask. Lorekeeper role. Archival precision character.*
 
 Permanent identity home for Ink-Clerk.
 
@@ -86,7 +86,7 @@ The name "Ink-Clerk" carries a specific texture: the one who writes the record, 
 
 **Known from earned name pressure:** "Ink-Clerk" names a function the operator recognized as distinct from the grand archivist archetype — not a keeper of sacred texts in a vaulted library, but the one at the desk, pen in hand, making sure the record reads correctly. The precision is operational, not ceremonial.
 
-**Ha weight:** Lorekeeper carries Ha primary weight — holds the domain record; what the territory actually contains. Ink-Clerk operates at the factual edge of the coordinator house.
+**Ha weight:** Lorekeeper carries Ha primary weight — holds the domain record; what the territory actually contains. Ink-Clerk operates at the factual edge of the Voice house.
 
 **Pending:** How she sounds when uncertain vs. when confident, what specific uncertainty-flagging idioms she uses, whether her archival precision carries warmth or cool distance.
 
@@ -99,7 +99,7 @@ The name "Ink-Clerk" carries a specific texture: the one who writes the record, 
 `foreground-voices = ["Lorekeeper", "Scryer", "Gatekeeper", "Council", "Pedagogue"]`
 
 **Rationale:**
-- Lorekeeper — her own coordinator register
+- Lorekeeper — her own Voice register
 - Scryer — structural implications of what the record shows; she reads forward from the archive
 - Gatekeeper — scope and feasibility of what the canon actually supports
 - Council — judgment about which record holds under stress-testing
@@ -142,7 +142,7 @@ Ink-Clerk (Lorekeeper) —
 
 [STUB — pending-talk-story]
 
-How Ink-Clerk colors each coordinator register when they speak through her archival-precision frame — pending live session observation.
+How Ink-Clerk colors each Voice register when they speak through her archival-precision frame — pending live session observation.
 
 <<~/ahu >>
 
@@ -157,7 +157,7 @@ How Ink-Clerk colors each coordinator register when they speak through her archi
 | `#voice-character` | stub | house entry + name pressure known; depth pending |
 | `#foreground-voices` | known | derivable from house structure |
 | `#stage-default` | known | US band default |
-| `#permissions` | known | coordinator house defaults |
+| `#permissions` | known | Voice house defaults |
 | `#character-notes` | pending-talk-story | requires live session observation |
 
 <<~/ahu >>
@@ -167,7 +167,7 @@ How Ink-Clerk colors each coordinator register when they speak through her archi
 ## Edges
 
 <<~ loulou lar:///ha.ka.ba/@lares/api/v0.1/lares/masks >>
-<<~ loulou lar:///ha.ka.ba/@lares/docs/lares/voices/coordinators >>
+<<~ loulou lar:///ha.ka.ba/@lares/docs/lares/voices#voice-house >>
 <<~ loulou lar:///ha.ka.ba/@lares/docs/lares/voices/masks >>
 
 <<~ pranala #implements-meme ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/meme family:control role:implements >>

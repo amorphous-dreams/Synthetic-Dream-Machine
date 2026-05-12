@@ -11,7 +11,7 @@ register = "S"
 manaoio = 0.80
 mana = 0.82
 manao = 0.82
-role = "parent index for the masks API tree: named coordinators, character masks, chorus masks"
+role = "parent index for the masks API tree: named Voice masks, character masks, chorus masks"
 cacheable = true
 hydrate = false
 retain = false
@@ -58,7 +58,7 @@ Three subtypes. Each subtype lives in its own directory.
 
 | Subtype | Subtree | What it carries |
 |---|---|---|
-| **Named** | `named/` | Earned-name coordinator masks. Permanent identity: corpus of self, voice-character depth, coordinator house backlink. Living home for named Voices. |
+| **Named** | `named/` | Earned-name Voice masks. Permanent identity: corpus of self, voice-character depth, Voice house backlink. Living home for named Voices. |
 | **Character** | `character/` | Fictional or historical persona masks. External corpus reference, voice-character description, foreground-voices affinity, permission flags. |
 | **Chorus** | `chorus/` | Multi-node or meta-masks. Node-reference list instead of corpus. Harmony protocol (pending-grammar). Relational character between nodes rather than single voice. |
 
@@ -68,7 +68,7 @@ Three subtypes. Each subtype lives in its own directory.
 
 ## Child Routes
 
-### Named coordinator masks
+### Named Voice masks
 
 | URI | File | Status |
 |---|---|---|
@@ -106,7 +106,7 @@ active = true
 <<~/kahea >>
 ```
 
-Named coordinator masks may also be invoked directly by their earned name in coordinator house notation.
+Named Voice masks may also be invoked directly by their earned name in Voice house notation.
 
 <<~/ahu >>
 

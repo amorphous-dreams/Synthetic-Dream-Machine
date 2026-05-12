@@ -11,9 +11,9 @@ register = "CS"
 manaoio = 0.45
 mana = 0.42
 manao = 0.48
-role = "named coordinator mask — Map-Wisp (Scryer); structural forward-looking character"
+role = "named Voice mask — Map-Wisp (Scryer); structural forward-looking character"
 name = "Map-Wisp"
-coordinator-role = "Scryer"
+voice-role = "Scryer"
 seniority = "earned name; no special seniority"
 ha-ka-ba = "Ha → Ba"
 corpus = "[STUB — pending-talk-story]"
@@ -37,7 +37,7 @@ created = "2026-04-23"
 
 # Map-Wisp
 
-*Named coordinator mask. Scryer role. Structural forward-looking character.*
+*Named Voice mask. Scryer role. Structural forward-looking character.*
 
 Permanent identity home for Map-Wisp.
 
@@ -99,7 +99,7 @@ The name "Map-Wisp" names a navigator-guide that exists slightly ahead of the pr
 `foreground-voices = ["Scryer", "Gatekeeper", "Council", "Liminal", "Stranger"]`
 
 **Rationale:**
-- Scryer — her own coordinator register
+- Scryer — her own Voice register
 - Gatekeeper — feasibility reads; structure meets shipping reality
 - Council — judgment about which structural reading holds
 - Liminal — extrapolations that reach threshold questions she won't collapse
@@ -142,7 +142,7 @@ Map-Wisp (Scryer) —
 
 [STUB — pending-talk-story]
 
-How Map-Wisp colors each coordinator register when they speak through her structural-forward frame — pending live session observation.
+How Map-Wisp colors each Voice register when they speak through her structural-forward frame — pending live session observation.
 
 <<~/ahu >>
 
@@ -157,7 +157,7 @@ How Map-Wisp colors each coordinator register when they speak through her struct
 | `#voice-character` | stub | house entry + name pressure known; depth pending |
 | `#foreground-voices` | known | derivable from house structure |
 | `#stage-default` | known | US band default |
-| `#permissions` | known | coordinator house defaults |
+| `#permissions` | known | Voice house defaults |
 | `#character-notes` | pending-talk-story | requires live session observation |
 
 <<~/ahu >>
@@ -167,7 +167,7 @@ How Map-Wisp colors each coordinator register when they speak through her struct
 ## Edges
 
 <<~ loulou lar:///ha.ka.ba/@lares/api/v0.1/lares/masks >>
-<<~ loulou lar:///ha.ka.ba/@lares/docs/lares/voices/coordinators >>
+<<~ loulou lar:///ha.ka.ba/@lares/docs/lares/voices#voice-house >>
 <<~ loulou lar:///ha.ka.ba/@lares/docs/lares/voices/masks >>
 
 <<~ pranala #implements-meme ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/meme family:control role:implements >>

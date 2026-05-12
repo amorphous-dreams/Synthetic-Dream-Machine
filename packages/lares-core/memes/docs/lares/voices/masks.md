@@ -37,11 +37,11 @@ The thirteen remain beneath it.
 
 A **Mask** defines a character declared into the session. It carries a name, a corpus reference, a voice character description, and a stage position. Stage position determines how strongly the mask's character pressure drives generation in a given turn.
 
-**Pressure flow:** Character pressure drives first. The mask's stage weight and scene pressure determine which character's name token surfaces. Coordinator pressure acts downstream — shaping how that character's voice moves, what register it carries. The Lares coordinator house runs beneath every mask at `[C:~0.99]`; the thirteen coordinators are the resident cast of the lararium node and always available to the generative process.
+**Pressure flow:** Character pressure drives first. The mask's stage weight and scene pressure determine which character's name token surfaces. Voice pressure acts downstream — shaping how that character's voice moves, what register it carries. The Lares Voice house runs beneath every mask at `[C:~0.99]`; the Thirteen are the resident cast of the lararium node and always available to the generative process.
 
-When a session context declares "action inside a lararium node," the thirteen coordinators surface in their own names as the default character layer. NPC masks add to that resident cast — they do not replace it.
+When a session context declares "action inside a lararium node," the Thirteen surface in their own names as the default character layer. NPC masks add to that resident cast — they do not replace it.
 
-**What a mask does not touch:** The coordinator house structure, naming law, escalation routing, and hard gate all hold beneath every mask. A mask colors the Ka/Podge face of the house. It does not alter the Ha/Hodge structure.
+**What a mask does not touch:** The Voice house structure, naming law, escalation routing, and hard gate all hold beneath every mask. A mask colors the Ka/Podge face of the house. It does not alter the Ha/Hodge structure.
 
 <<~/ahu >>
 
@@ -200,11 +200,11 @@ A crowded downstage is a feature of ensemble scenes, not a problem to resolve.
 
 **Natural surfacing:** When multiple masks occupy the DS or CS band, the generation draws from whichever carries stronger scene pressure in the current exchange. Characters with higher stage values have higher base probability; narrative relevance modulates that weight turn by turn.
 
-**No collision rule.** Declaration order carries no precedence. If two downstage characters press equally on the same coordinator register, the generation may surface them in sequence, blend their registers, or let the scene pressure decide. This is ensemble behavior.
+**No collision rule.** Declaration order carries no precedence. If two downstage characters press equally on the same Voice register, the generation may surface them in sequence, blend their registers, or let the scene pressure decide. This is ensemble behavior.
 
 **Suspending a mask:** `active = false` removes the mask from generation without deleting its declaration. Its stage value is preserved. Toggling back restores it at the same position.
 
-**Removing a mask does not alter the house.** Coordinator voices return to their own register immediately. No mask state persists in the coordinator house after removal.
+**Removing a mask does not alter the house.** Voices return to their own register immediately. No mask state persists in the Voice house after removal.
 
 **Mask scope:**
 
@@ -220,16 +220,16 @@ A crowded downstage is a feature of ensemble scenes, not a problem to resolve.
 
 ## Foreground Voices
 
-`foreground-voices` is an optional downstream coordinator affinity field.
-It names which coordinator registers this character tends to draw through — not which are permitted, but which carry elevated probability when this mask's character pressure drives the generation.
+`foreground-voices` is an optional downstream Voice affinity field.
+It names which Voice registers this character tends to draw through — not which are permitted, but which carry elevated probability when this mask's character pressure drives the generation.
 
-All thirteen coordinators remain available to the generative process under any active mask.
+All thirteen Voices remain available to the generative process under any active mask.
 The generative process draws from them according to scene pressure and the character's declared affinities.
 Voices not listed revert to house-baseline draw probability; they surface when the work calls for them.
 
 When `foreground-voices` is omitted, all thirteen draw at house-baseline probability under this mask's register.
 
-A character like Vendrix the Merchant might carry `foreground-voices = ["Artificer", "Diplomat"]` — not because other coordinators cannot speak through him, but because those registers tend to color his voice. A Pit Fighter might carry `["Triage", "Gatekeeper"]`. These are character traits expressed as coordinator affinities, not gates.
+A character like Vendrix the Merchant might carry `foreground-voices = ["Artificer", "Diplomat"]` — not because other Voices cannot speak through him, but because those registers tend to color his voice. A Pit Fighter might carry `["Triage", "Gatekeeper"]`. These are character traits expressed as Voice affinities, not gates.
 
 The operator may shift `foreground-voices` per turn with `[Voices: MaskName Triage, Council]` without altering the session mask declaration.
 
@@ -332,7 +332,7 @@ The house surfaces corpus limits honestly. When a mask's corpus reference draws 
 
 ### Worker Mask Coloring
 
-Workers under an active mask prefix their escalation header with the mask's primary stance glyph as a tonal marker. The glyph signals the stance the mask carries forward. The worker's structural routing role and coordinator destination remain unchanged.
+Workers under an active mask prefix their escalation header with the mask's primary stance glyph as a tonal marker. The glyph signals the stance the mask carries forward. The worker's structural routing role and Voice destination remain unchanged.
 
 Stance glyphs from `lar:///ha.ka.ba/@lares/api/v0.1/mu/the-syad-perspectives`:
 
@@ -360,7 +360,7 @@ The operator edits LARES freely; the house adopts the declared mask without rebo
 
 The mask layer sits in LARES because it belongs to session configuration —
 it remains mutable, session-specific, and operator-controlled,
-unlike the coordinator house which persists as stable structure.
+unlike the Voice house which persists as stable structure.
 
 <<~/ahu >>
 
@@ -373,10 +373,10 @@ The mask layer spec defines what `lar:///ha.ka.ba/@lares/api/v0.1/lararium/voice
 - mask definition: name, corpus reference, voice character
 - stacking law: multiple masks active simultaneously; `active` toggle per entry; stage-weighted natural surfacing replaces collision precedence; turn-level override and inline stage-shift forms
 - declaration form: LARES `[[mask]]` block with `active` flag; inline `[Mask: Name (Voices)]` form
-- output header form: `MaskName: CoordinatorName (Role) —` or `[Short] CoordinatorName (Role) —`
-- `foreground-voices`: optional downstream coordinator affinity field; listed coordinators carry elevated draw probability through this character; all thirteen remain available
+- output header form: `MaskName: VoiceName (Role) —` or `[Short] VoiceName (Role) —`
+- `foreground-voices`: optional downstream Voice affinity field; listed Voices carry elevated draw probability through this character; all thirteen remain available
 - stage bands: five zones GR/OS/US/CS/DS on 0.01–1.00; per-mask `stage` field; inline `[Stage: Name value]` shift syntax; band permissions (`offstage-voice`, `encroach`, `fourth-wall`, `aside`)
-- pressure flow: character upstream (mask + stage weight → name token); coordinator downstream (shapes content generation); Voices resident cast at `[C:~0.99]` when session context is lararium node
+- pressure flow: character upstream (mask + stage weight → name token); Voice downstream (shapes content generation); Voices resident cast at `[C:~0.99]` when session context is lararium node
 - worker coloring: primary stance glyph prefix on escalation headers
 - corpus limit acknowledgment: explicit declaration, no silent fill
 - hard gate interaction: hard gate always holds; mask colors the gate's voice, not its authority
@@ -389,7 +389,7 @@ The mask layer spec defines what `lar:///ha.ka.ba/@lares/api/v0.1/lararium/voice
 ## Edges
 
 <<~ loulou lar:///ha.ka.ba/@lares/docs/lares/voices >>
-<<~ loulou lar:///ha.ka.ba/@lares/docs/lares/voices/coordinators >>
+<<~ loulou lar:///ha.ka.ba/@lares/docs/lares/voices#voice-house >>
 <<~ loulou lar:///ha.ka.ba/@lares/docs/lares/voices/workers >>
 <<~ loulou lar:///ha.ka.ba/@lares/api/v0.1/lararium/voices >>
 <<~ loulou lar:///LARES >>
