@@ -54,14 +54,11 @@ if (!parentPort) {
 // Per-slot state
 // ---------------------------------------------------------------------------
 
-let tw5:          TW5Engine | null = null;
-let wikiUri:      string | null    = null;
+let tw5:     TW5Engine | null     = null;
+let re:      ReactionEngine | null = null;
+let wikiUri: string | null        = null;
 
-/**
- * Live cancellable handles.
- * In P.3.5 these will be real Cancelable objects from RE subscriptions.
- * For now the set stays empty; teardown always sends ack immediately.
- */
+/** Live cancellable handles — cancelled in order on teardown. */
 const liveHandles = new Set<{ cancel(): void }>();
 
 // ---------------------------------------------------------------------------
@@ -136,10 +133,9 @@ parentPort.on("message", async (raw: unknown) => {
           : undefined,
       );
 
-      // P.3.5 — ReactionEngine co-located with TW5Engine in the Worker thread.
-      // onAnyFire forwards every fired reaction to main as a WorkerMsg_Event so
-      // the main thread can route it through the vm-ring on the event bus.
-      const re = new ReactionEngine();
+      // ReactionEngine co-located with TW5Engine. onAnyFire forwards every
+      // fired reaction to main as WorkerMsg_Event for vm-ring routing.
+      re = new ReactionEngine();
       re.boot(tw5.$tw.wiki);
       liveHandles.add({
         cancel: re.onAnyFire((fromUri, listenable, payload) => {
@@ -151,14 +147,13 @@ parentPort.on("message", async (raw: unknown) => {
               }
             }
           }
-          const evt: WorkerMsg_Event = {
+          post({
             schema_version: 1,
             type: "event",
             wikiUri: wikiUri!,
             eventId: listenable,
             payload: safePayload,
-          };
-          post(evt);
+          } satisfies WorkerMsg_Event);
         }),
       });
 
@@ -171,13 +166,26 @@ parentPort.on("message", async (raw: unknown) => {
 
   // ── changeset ──────────────────────────────────────────────────────────
   if (raw.type === "changeset") {
-    // TODO P.3.5: apply raw.changeset (Uint8Array, already transferred) to a
-    // local Automerge replica; diff before/after to get changedUris; call
-    // re.onChangeset(changedUris); forward RE events to main as WorkerMsg_Event.
-    //
-    // For now: changeset bytes arrive correctly (GP-3 transfer confirmed by
-    // worker-protocol.test.ts), but the TW5 state does not yet update.
-    // Worker acts as a stateless relay until P.3.5 lands.
+    if (!tw5 || !re) return; // promote not yet complete — drop
+    const wiki = tw5.$tw.wiki;
+    const Tiddler = tw5.$tw.Tiddler;
+    const changedUris = new Set<string>();
+
+    for (const fields of raw.added) {
+      const title = fields["title"];
+      if (typeof title !== "string") continue;
+      wiki.addTiddler(new Tiddler(fields as Record<string, unknown>));
+      changedUris.add(title);
+    }
+    for (const title of raw.deleted) {
+      wiki.deleteTiddler(title);
+      changedUris.add(title);
+    }
+
+    if (changedUris.size > 0) {
+      // Pass the live TW5 wiki so RE updates papalohe edge bindings before firing.
+      re.onChangeset(changedUris, { kind: "crdt-remote", edgeIsland: wikiUri! }, tw5.$tw.wiki);
+    }
     return;
   }
 

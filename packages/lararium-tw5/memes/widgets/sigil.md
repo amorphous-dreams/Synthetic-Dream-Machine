@@ -11,7 +11,7 @@ heleuma       = "ka"
 source-file   = "packages/lararium-tw5/src/widgets/sigil.ts"
 source-symbol = "SigilWidget"
 module-ref    = "lar:///ha.ka.ba/@lararium/tw5/widgets/sigil-tw5"
-body-sha256 = "1b825842beea8a3e00d8c4feee19fbbfeb56f2575ab8a36dcb7a0a41467f887f"
+body-sha256 = "0029549fee4895f26b1cfa25cdf26d39eb5773eea7817944406b2ca4c0b0985a"
 cacheable     = true
 retain        = true
 ```

@@ -1,10 +1,9 @@
 # Hand-off Crystal — Lares Lararium Node Branch
 
 > Forged: 2026-05-07
-> Last update: 2026-05-11 — P.3/P.3.5 pass landed: worker protocol expanded with snapshot payload support, `lar-wiki-worker.ts` now boots TW5 + ReactionEngine in hot-tier Worker threads, `NodeVmManager` rewritten to Worker-hot lifecycle, `live-protocol.ts` + `kumu-device.ts` promoted into `@lararium/core`, and `open-node-lar-peer.ts` wires `onWorkerEvent` into `vm-ring` ingress.
+> Last update: 2026-05-11 — Path H landed: `splitBodyTiddler` exported from `deserializer.ts`; `MemeSyncAdaptor` direct handler auto-splits ahu slot bodies on TW5 UX save — symmetric with disk-sync ingest (ONE parser, FOUR call sites). Plugin bundle rebuilt (46 tiddlers). Heleuma body-sha256 drift resolved (16 anchors). 35 tests passing. Next open: Path K (F-arc debounce), Path L (admin ingress trust gate), Path G remaining sigils.
 > Branch: `feature/lararium-node-3`
-> Working tree: dirty (P.3/P.3.5 code + docs in branch context; commit pending).
-> Last pulse: Worker-thread lane compiles and tests green (32 passing in `@lararium/node`). Remaining high-value gap: worker-side changeset application (Automerge local replica diff → TW5 update) still TODO; J.3 remains open.
+> Working tree: dirty (commit pending).
 
 ---
 
@@ -340,8 +339,8 @@ The fourth call site of `parseMemeText`. `MemeSyncAdaptor.saveTiddler`'s `direct
 ### Path I — Wikifier DOCTYPE + dash + macrocall recovery
 Three small diff items in current round-trip output: HTML comment DOCTYPE dropped; TW5's `dash` rule converts `|---|` → `|—|`; MemeticParser's prologue handling (DOCTYPE, root iam toml extraction) survives but the wikifier swallows the comment in text/plain. Fix by either disabling rules at the parent meme rendering level (via a meme-level wrapper template that pragma-disables them), or by emitting these via `<$text>` widgets carrying the literal char sequences. Aesthetic, not load-bearing — defer until G+H ship.
 
-### Path J — Per-slot iam emission with default-elision + recursive promote (J.3)
-J.1+J.2 complete (see SESSION). J.3 named (2026-05-10): `lares promote` must walk all `#fragment` children of the promoted parent tiddler and co-promote them in the same ceremony. Currently, `splitRecursive` creates child tiddlers in the room bag but the promote handler is single-URI — child slot files never land in canonical packages/. J.3 fix: promote handler enumerates children by URI pattern, co-promotes in one atomic audit event.
+### Path J — Per-slot iam emission with default-elision + recursive promote ✅ CLOSED
+J.1+J.2+J.3 all complete (2026-05-11). `promote-handler.ts` enumerates `#fragment` children by URI prefix, confirms each still lives in the source bag, and co-promotes in one atomic ChangeOrigin. Returns `childrenPromoted: string[]` in the ceremony result.
 
 ### Path K — F-arc deferred (TW5 routing rule + Yjs debounce + auto-truncate projection)
 Original F-arc charter — `$:/state/*` → projection layer; `Draft of *` → per-wiki draft bag; Yjs-style captureTimeout debounce 300-500ms; idle auto-truncate of projection layer. Lives in MemeSyncAdaptor. Important once browser peer surfaces let operators edit at sustained rates.

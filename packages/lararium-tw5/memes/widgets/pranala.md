@@ -11,7 +11,7 @@ heleuma       = "ka"
 source-file   = "packages/lararium-tw5/src/widgets/pranala.ts"
 source-symbol = "PranalaWidget"
 module-ref    = "lar:///ha.ka.ba/@lararium/tw5/widgets/pranala-tw5"
-body-sha256 = "b00d58b877b14c494b15d219cb456e8c55dd2e00703347d763a26d73753de1c4"
+body-sha256 = "a63ee2d1f282e023463cfe4149e1b17a7a297aa5ecf5a63c5a0f5288a9a94388"
 cacheable     = true
 retain        = true
 ```

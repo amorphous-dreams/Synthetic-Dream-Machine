@@ -291,10 +291,28 @@ export class ReactionEngine implements MemeProjection {
   }
 
   /**
-   * Scale-3: maintain + fire all triggers for every URI in the changeset.
+   * Scale-3: maintain graph bindings + fire all triggers for every URI in the changeset.
    * All handlers run in declaration order — UEFN game-loop fidelity.
+   *
+   * `wiki` — optional live wiki surface (pass TW5 wiki in Worker context) so the
+   * graph updates its papalohe edge bindings for changed URIs before firing.
+   * When omitted, only reactions fire (bindings remain as-is — correct for the
+   * main-thread MemeSyncAdaptor path where onUriChanged already maintains them).
    */
-  onChangeset(uris: ReadonlySet<string>, origin: ChangeOrigin): void {
+  onChangeset(uris: ReadonlySet<string>, origin: ChangeOrigin, wiki?: BootScanSurface): void {
+    if (wiki) {
+      for (const uri of uris) {
+        if (!uri.startsWith("lar:")) continue;
+        const text = wiki.getTiddlerText(uri);
+        if (text !== undefined) {
+          const bindings = _bindingsFromText(uri, text);
+          if (bindings.length > 0) this._graph.updateUri(uri, bindings);
+          else this._graph.removeUri(uri);
+        } else {
+          this._graph.removeUri(uri);
+        }
+      }
+    }
     for (const uri of uris) {
       this._fireForUri(uri, { origin });
     }

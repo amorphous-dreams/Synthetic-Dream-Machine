@@ -49,6 +49,7 @@ import {
   mkTeardown,
 } from "./lar-worker-protocol.js";
 import type {
+  WorkerMsg_Changeset,
   WorkerMsg_Event,
   WorkerMsg_PromoteAck,
   WorkerMsg_TeardownAck,
@@ -89,10 +90,12 @@ interface PinnedSlot {
  * Main thread never holds the engine reference; all interaction via postMessage.
  */
 interface WorkerHotSlot {
-  tier:       "hot";
-  wikiId:     string;
-  worker:     Worker;
-  lastUsedAt: number;
+  tier:           "hot";
+  wikiId:         string;
+  worker:         Worker;
+  lastUsedAt:     number;
+  /** Unsubscribe function — removes the docHandle "change" listener. */
+  unsubChange:    () => void;
 }
 
 interface ColdSlot {
@@ -239,11 +242,16 @@ export class NodeVmManager {
       "promote:ack",
     );
 
+    // Wire live changeset delivery: on every doc change, derive the tiddler-level
+    // delta from Automerge patches and forward to the Worker (GP-3).
+    const unsubChange = _subscribeDocChanges(wikiId, ctx.docHandle, this);
+
     this._slots.set(wikiId, {
       tier: "hot",
       wikiId,
       worker,
       lastUsedAt: Date.now(),
+      unsubChange,
     });
 
     console.log(
@@ -265,7 +273,8 @@ export class NodeVmManager {
     const slot = this._slots.get(wikiId);
     if (!slot || slot.tier === "pinned" || slot.tier === "cold") return;
 
-    const { worker } = slot as WorkerHotSlot;
+    const { worker, unsubChange } = slot as WorkerHotSlot;
+    unsubChange(); // stop forwarding doc changes before teardown
 
     let snapshot: VmSnapshot | null = null;
     try {
@@ -274,17 +283,13 @@ export class NodeVmManager {
         mkTeardown(),
         "teardown:ack",
       );
-      const handle = this._docHandles.get(wikiId);
-      if (handle) {
-        const doc = handle.doc();
-        if (doc) {
-          snapshot = {
-            heads:      Automerge.getHeads(doc),
-            tiddlers:   ack.snapshotTiddlers ? [...ack.snapshotTiddlers] : [],
-            capturedAt: Date.now(),
-          };
-        }
-      }
+      const tiddlers = ack.snapshotTiddlers ? [...ack.snapshotTiddlers] : [];
+      let heads: Automerge.Heads = [];
+      try {
+        const doc = this._docHandles.get(wikiId)?.doc();
+        if (doc) heads = Automerge.getHeads(doc);
+      } catch { /* not a real Automerge doc (e.g. test stub) — use empty heads */ }
+      snapshot = { heads, tiddlers, capturedAt: Date.now() };
     } catch (err) {
       console.warn(`[vm-manager] ${wikiId}: teardown handshake failed — ${err}; terminating anyway`);
     }
@@ -302,24 +307,32 @@ export class NodeVmManager {
   // ---------------------------------------------------------------------------
 
   /**
-   * Forward an Automerge changeset to the wiki's hot-tier Worker.
+   * Route a tiddler-level delta to the wiki's hot-tier Worker (GP-3).
    *
-   * GP-3: the changeset buffer MUST be transferred (not cloned).
-   * After this call the sending-side `changeset.buffer` WILL be neutered.
+   * `added`   — plain tiddler field objects to upsert into the Worker's TW5 wiki.
+   * `deleted` — titles to remove.
+   *
+   * The main thread derives these from Automerge `change` event patches, so the
+   * Worker never loads the WASM runtime.
    *
    * No-op if the wiki slot is not in the hot tier.
    */
-  routeChangeset(wikiId: string, changeset: Uint8Array): void {
+  routeChangeset(
+    wikiId:  string,
+    added:   readonly Record<string, unknown>[],
+    deleted: readonly string[],
+  ): void {
     const slot = this._slots.get(wikiId);
     if (slot?.tier !== "hot") return;
 
-    const msg = {
+    const msg: WorkerMsg_Changeset = {
       schema_version: 1 as const,
       type: "changeset" as const,
       wikiUri: wikiId,
-      changeset,
+      added,
+      deleted,
     };
-    (slot as WorkerHotSlot).worker.postMessage(msg, [changeset.buffer as ArrayBuffer]);
+    (slot as WorkerHotSlot).worker.postMessage(msg);
   }
 
   // ---------------------------------------------------------------------------
@@ -501,4 +514,64 @@ function _sendAndAwait<T extends WorkerToMainMsg>(
       worker.postMessage(msg);
     }
   });
+}
+
+// ---------------------------------------------------------------------------
+// _subscribeDocChanges — live tiddler-delta forwarding to a Worker slot
+// ---------------------------------------------------------------------------
+
+/**
+ * Subscribe to `docHandle` change events and forward tiddler-level deltas to
+ * the Worker via `manager.routeChangeset()`.
+ *
+ * Automerge-repo emits `change` with `{ doc, patches }` after every local or
+ * remote mutation. Patches identify affected paths; we extract unique tiddler
+ * URIs and read current field state from the updated doc — no Automerge WASM
+ * in the Worker thread needed.
+ *
+ * Returns an unsubscribe function the caller MUST invoke before teardown.
+ */
+function _subscribeDocChanges(
+  wikiId:    string,
+  handle:    DocHandle<MemeStoreDoc>,
+  manager:   NodeVmManager,
+): () => void {
+  type ChangePayload = {
+    doc:     MemeStoreDoc;
+    patches: Array<{ action: string; path: Array<string | number> }>;
+  };
+
+  const onChangeHandler = (payload: ChangePayload) => {
+    const { doc, patches } = payload;
+    const changedUris = new Set<string>();
+    for (const patch of patches) {
+      if (patch.path.length >= 2 && patch.path[0] === "tiddlers") {
+        changedUris.add(String(patch.path[1]));
+      }
+    }
+    if (changedUris.size === 0) return;
+
+    const added:   Record<string, unknown>[] = [];
+    const deleted: string[]                  = [];
+
+    for (const uri of changedUris) {
+      const rec = (doc.tiddlers ?? {})[uri] as (Record<string, unknown> & { deleted?: boolean }) | undefined;
+      if (!rec || rec["deleted"]) {
+        deleted.push(uri);
+      } else {
+        const fields: Record<string, unknown> = { title: uri };
+        for (const [k, v] of Object.entries(rec)) {
+          if (k !== "deleted") fields[k] = v;
+        }
+        added.push(fields);
+      }
+    }
+
+    manager.routeChangeset(wikiId, added, deleted);
+  };
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (handle as any).on("change", onChangeHandler);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return () => (handle as any).off("change", onChangeHandler);
 }

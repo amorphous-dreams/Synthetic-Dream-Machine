@@ -11,7 +11,7 @@ heleuma       = "ka"
 source-file   = "packages/lararium-tw5/src/widgets/pae.ts"
 source-symbol = "PaeWidget"
 module-ref    = "lar:///ha.ka.ba/@lararium/tw5/widgets/pae-tw5"
-body-sha256 = "132e271839e2574b1d00a9b68bd9c638bddb8de441b29ac5c575f2bc16dccd8a"
+body-sha256 = "8d8dc9c0897efaf1bc6d1cb6c4805bef0fed830bd016040b93c66edb09c2743a"
 cacheable     = true
 retain        = true
 ```

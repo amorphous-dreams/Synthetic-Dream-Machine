@@ -11,7 +11,7 @@ heleuma       = "ka"
 source-file   = "packages/lararium-tw5/src/widgets/kukali.ts"
 source-symbol = "KukaliWidget"
 module-ref    = "lar:///ha.ka.ba/@lararium/tw5/widgets/kukali-tw5"
-body-sha256 = "7184dc25ea1de71f37a3f3556380159e36ac70daa7263b89fe989730908539a6"
+body-sha256 = "7144a493f6c3e8594654dd1242579032226ddf0d6a34cff37f23d4992a67d033"
 cacheable     = true
 retain        = true
 ```

@@ -11,7 +11,7 @@ heleuma       = "ka"
 source-file   = "packages/lararium-tw5/src/filters/implementors.ts"
 source-symbol = "registerImplementors"
 module-ref    = "lar:///ha.ka.ba/@lararium/tw5/filters/implementors-tw5"
-body-sha256 = "3d7ca785723817e6ec16315e9b0812ba1134d742c654ff7acbe7a6740de389cf"
+body-sha256 = "c82164bd84a76ffa89e956e10e9476374934ae5118a0de5d3e1349123fc534c1"
 cacheable     = true
 retain        = true
 ```

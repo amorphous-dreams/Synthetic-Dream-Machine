@@ -6,8 +6,8 @@
  *
  * GP-1: schema_version field on every message. Lock at 1; increment on breaking changes.
  * GP-2: all payloads = plain objects; no class instances, no functions, no DOM.
- * GP-3: Changeset carries a Uint8Array — caller MUST transfer the underlying buffer,
- *        not clone it: postMessage(msg, [msg.changeset.buffer]).
+ * GP-3: Tiddler-level delta (added / deleted arrays). Main thread derives the delta
+ *        from Automerge patches — Worker never loads the WASM runtime.
  * GP-4: CryptoKey — NOT in this protocol surface; key material stays in-thread.
  *
  * Meme: lar:///ha.ka.ba/@lararium/node/v0.1/lar-worker-protocol
@@ -19,18 +19,20 @@ export type ProtocolVersion = typeof WORKER_PROTOCOL_VERSION;
 // ── Main → Worker ──────────────────────────────────────────────────────────
 
 /**
- * Deliver an Automerge changeset to the wiki Worker.
+ * Deliver a tiddler-level delta to the wiki Worker.
  *
- * GP-3: the caller MUST transfer `changeset.buffer`, not clone it:
- *   worker.postMessage(msg, [msg.changeset.buffer])
+ * GP-3: main thread computes this from Automerge `change` event patches —
+ * the Worker never needs to load the Automerge WASM runtime.
  *
- * The sending side's ArrayBuffer gets neutered after transfer.
+ * `added`   — tiddler field objects to upsert into TW5 (plain objects, GP-2).
+ * `deleted` — tiddler titles to remove from TW5.
  */
 export interface WorkerMsg_Changeset {
   schema_version: ProtocolVersion;
   type: "changeset";
   wikiUri: string;
-  changeset: Uint8Array;
+  added:   readonly Record<string, unknown>[];
+  deleted: readonly string[];
 }
 
 /**

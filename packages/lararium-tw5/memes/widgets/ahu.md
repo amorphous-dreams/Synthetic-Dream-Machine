@@ -11,7 +11,7 @@ heleuma       = "ka"
 source-file   = "packages/lararium-tw5/src/widgets/ahu.ts"
 source-symbol = "AhuWidget"
 module-ref    = "lar:///ha.ka.ba/@lararium/tw5/widgets/ahu-tw5"
-body-sha256 = "dba3608885c290f05f161eea9e449d3ee82e7240f0f126f069a9e155eab0a3b0"
+body-sha256 = "495e5d34b8f62da33e82b940591d7deb05f9f59f22e16e44909c581c4651ea8a"
 cacheable     = true
 retain        = true
 ```

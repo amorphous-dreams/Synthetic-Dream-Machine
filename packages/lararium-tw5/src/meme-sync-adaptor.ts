@@ -3,9 +3,11 @@
  *
  * Replaces LarariumCrdtSyncAdaptor (sync-adaptor.web2.ts).
  * Key shifts from web2:
- *   - Outbound: no carrier split. In the meme model the tiddler text IS the
- *     canonical source; ahu slot children are independent lar:///parent#slot
- *     records that receive their own saveTiddler calls.
+ *   - Outbound (Path H): direct handler auto-splits ahu slot bodies into
+ *     independent lar:///parent#slot records via splitBodyTiddler; tombstones
+ *     any children that disappeared in the re-split. Steady-state edits to
+ *     already-split children issue their own saveTiddler calls and fast-path
+ *     (no ahu blocks found).
  *   - Inbound: records land in TW5 verbatim as single tiddlers. The
  *     lar-meme-split widget fires on the resulting wiki change event and
  *     splits ahu slot children — both for disk imports and live edits.
@@ -26,6 +28,7 @@ import type { LarTiddlerStore, LarTiddlerRecord, LarTiddlerChange, ChangeOrigin,
 import type { TW5Engine } from "./tw5-vm.js";
 import type { TW5TiddlerFields } from "./types/tiddlywiki.js";
 import { buildDirectRecord } from "./meme-write.js";
+import { splitBodyTiddler } from "./deserializer.js";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -417,15 +420,46 @@ export class MemeSyncAdaptor implements MemeProjection {
     skip: async () => { /* no-op */ },
 
     /**
-     * Meme model direct save.
+     * Meme model direct save — Path H auto-split.
      *
-     * In the meme model, ahu slot children live as independent lar:///parent#slot
-     * records and receive their own saveTiddler calls — no carrier split needed.
-     * Fragment saves (title contains "#") and plain meme saves both go through
-     * buildDirectRecord.
+     * If the tiddler body contains `<<~ ahu` blocks, runs splitBodyTiddler so
+     * child slot tiddlers materialize in the bag automatically — symmetric with
+     * the disk-sync ingest path (ONE parser, FOUR call sites law).
+     *
+     * Fragment saves (title contains "#") have no embedded ahu blocks by
+     * definition — splitBodyTiddler fast-paths them. All paths go through
+     * buildDirectRecord for the actual bag record shape.
      */
     direct: async (title, fields, origin) => {
-      await this.store.put(buildDirectRecord(title, fields, this.targetBag), origin);
+      const bodyText = fields["text"] ?? "";
+      const { parent, children } = splitBodyTiddler(title, bodyText, fields);
+
+      await this.store.put(buildDirectRecord(title, parent as Record<string,string>, this.targetBag), origin);
+
+      if (children.length > 0) {
+        // Find existing children in the TW5 wiki (fragment-parent index).
+        const existingChildUris = new Set<string>(
+          this.tw5.$tw.wiki.filterTiddlers(`[field:fragment-parent[${title}]]`) as string[],
+        );
+        const newChildUris = new Set<string>();
+
+        for (const child of children) {
+          const childTitle = String(child["title"] ?? "");
+          if (!childTitle.startsWith("lar:")) continue; // skip warning tiddlers
+          newChildUris.add(childTitle);
+          await this.store.put(
+            buildDirectRecord(childTitle, child as Record<string,string>, this.targetBag),
+            origin,
+          );
+        }
+
+        // Tombstone children that no longer exist after the re-split.
+        for (const uri of existingChildUris) {
+          if (!newChildUris.has(uri)) {
+            await this.store.tombstone(uri, origin);
+          }
+        }
+      }
     },
   };
 

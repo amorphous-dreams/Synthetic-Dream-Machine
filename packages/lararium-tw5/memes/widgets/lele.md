@@ -11,7 +11,7 @@ heleuma       = "ka"
 source-file   = "packages/lararium-tw5/src/widgets/lele.ts"
 source-symbol = "LeleWidget"
 module-ref    = "lar:///ha.ka.ba/@lararium/tw5/widgets/lele-tw5"
-body-sha256 = "7baf12b8660c497b5fd14eeb6a0de967c2282d342755ce6a7cc64379ca7a51d8"
+body-sha256 = "8899582a8999aa95120eff4ee43a1b2a272288cdcb98d0fa54256389c9449210"
 cacheable     = true
 retain        = true
 ```

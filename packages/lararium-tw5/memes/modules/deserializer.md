@@ -15,7 +15,7 @@ source-file  = "packages/lararium-tw5/src/deserializer.ts"
 source-symbol = "*"
 module-ref   = "lar:///ha.ka.ba/@lararium/tw5/modules/deserializer-tw5"
 implements   = ["lar:///ha.ka.ba/@lares/api/v0.1/pono/heleuma/ka"]
-body-sha256 = "52c37096ef884b077cb610c98d9d34b0a9fc7f9457ddcbb66f42556b6efc58a5"
+body-sha256 = "f3f8b32d69725842a517ffb7b69982a1661c27536d1807a0f739081594fee9da"
 ```
 
 

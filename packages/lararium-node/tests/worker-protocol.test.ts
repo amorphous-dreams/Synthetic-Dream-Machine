@@ -6,7 +6,7 @@
  *
  * GP-1: schema_version enforcement (unit)
  * GP-2: plain-object payload shape (unit + structural)
- * GP-3: Uint8Array transfer (integration — confirms buffer is transferable)
+ * GP-3: Tiddler-level delta (integration — confirms added/deleted arrays cross the boundary)
  * GP-5: teardown handshake ordering (integration — cancel:confirmed before teardown:ack)
  *
  * Meme: lar:///ha.ka.ba/@lararium/node/v0.1/lar-worker-protocol
@@ -103,7 +103,8 @@ describe("GP-1 — schema_version enforcement", () => {
       schema_version: 1,
       type: "changeset",
       wikiUri: "lar:///test",
-      changeset: new Uint8Array([1, 2, 3]),
+      added:   [{ title: "lar:///test/tiddler", text: "hello" }],
+      deleted: [],
     };
     expect(isMainToWorkerMsg(changeset)).toBe(true);
     expect(isMainToWorkerMsg(mkPromote("lar:///test"))).toBe(true);
@@ -126,23 +127,29 @@ describe("GP-1 — schema_version enforcement", () => {
   });
 });
 
-// ── GP-3: Uint8Array transfer (unit — structural) ──────────────────────────
+// ── GP-3: tiddler-level delta shape (unit) ────────────────────────────────
 
-describe("GP-3 — Uint8Array transferable shape", () => {
-  test("Uint8Array.buffer qualifies as an ArrayBuffer (transferable)", () => {
-    const bytes = new Uint8Array([0x01, 0x02, 0x03, 0x04]);
-    expect(bytes.buffer).toBeInstanceOf(ArrayBuffer);
-    // Confirm postMessage transfer list format — [bytes.buffer] must be ArrayBuffer[]
-    const transferList: ArrayBuffer[] = [bytes.buffer];
-    expect(transferList[0]).toBeInstanceOf(ArrayBuffer);
+describe("GP-3 — tiddler-level delta shape", () => {
+  test("WorkerMsg_Changeset with added/deleted arrays passes isMainToWorkerMsg", () => {
+    const msg: WorkerMsg_Changeset = {
+      schema_version: 1,
+      type: "changeset",
+      wikiUri: "lar:///ha.ka.ba/wiki",
+      added:   [{ title: "lar:///ha.ka.ba/wiki/page", text: "hello" }],
+      deleted: ["lar:///ha.ka.ba/wiki/stale"],
+    };
+    expect(isMainToWorkerMsg(msg)).toBe(true);
   });
 
-  test("after structuredClone a Uint8Array the buffer is cloned (not neutered)", () => {
-    const bytes = new Uint8Array([0xaa, 0xbb]);
-    const cloned = structuredClone(bytes);
-    // Original buffer still readable (clone did not neuter it).
-    expect(bytes.byteLength).toBe(2);
-    expect(cloned.byteLength).toBe(2);
+  test("changeset with empty added/deleted arrays is valid", () => {
+    const msg: WorkerMsg_Changeset = {
+      schema_version: 1,
+      type: "changeset",
+      wikiUri: "lar:///ha.ka.ba/wiki",
+      added:   [],
+      deleted: [],
+    };
+    expect(isMainToWorkerMsg(msg)).toBe(true);
   });
 });
 
@@ -212,9 +219,8 @@ describe("GP-5 — teardown handshake (integration)", () => {
     expect(isWorkerToMainMsg(ack)).toBe(true);
   });
 
-  test("GP-3 transfer: changeset Uint8Array crosses boundary; fixture echoes receivedBytes", async () => {
+  test("GP-3: tiddler-level changeset crosses boundary; fixture echoes addedCount/deletedCount", async () => {
     worker = spawnFixture();
-    const bytes = new Uint8Array([0x01, 0x02, 0x03]);
 
     const msgsPromise = collectUntil(
       worker,
@@ -225,22 +231,18 @@ describe("GP-5 — teardown handshake (integration)", () => {
       schema_version: 1,
       type: "changeset",
       wikiUri: "lar:///ha.ka.ba/test-wiki",
-      changeset: bytes,
+      added:   [{ title: "lar:///ha.ka.ba/test-wiki/a" }, { title: "lar:///ha.ka.ba/test-wiki/b" }],
+      deleted: ["lar:///ha.ka.ba/test-wiki/old"],
     };
-    // GP-3: transfer the buffer — do NOT clone.
-    worker.postMessage(msg, [bytes.buffer]);
+    worker.postMessage(msg);
 
     const msgs = await msgsPromise;
     const echo = msgs.find((m) => (m as { type: string }).type === "event") as WorkerMsg_Event | undefined;
 
     expect(echo).toBeDefined();
     expect(echo?.eventId).toBe("echo");
-    // The fixture received the full bytes via transfer.
-    expect(echo?.payload.receivedBytes).toBe(3);
-
-    // After transfer: the sending-side buffer MUST be neutered (byteLength = 0).
-    // GP-3 contract: the sending side loses ownership.
-    expect(bytes.byteLength).toBe(0);
+    expect(echo?.payload.addedCount).toBe(2);
+    expect(echo?.payload.deletedCount).toBe(1);
   });
 
   test("message without schema_version is not routed by the guard", () => {

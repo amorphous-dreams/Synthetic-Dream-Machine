@@ -407,3 +407,51 @@ function asStringFields(fields: Record<string, unknown>): TiddlerFields {
 }
 
 export { memeticWikitextDeserializer as "text/x-memetic-wikitext" };
+
+// ---------------------------------------------------------------------------
+// splitBodyTiddler — Path H save-side auto-split
+//
+// Splits a tiddler's body text at ahu block boundaries without the full
+// SOH/STX/ETX envelope processing (which is for disk ingest only).
+//
+// Used by MemeSyncAdaptor.saveTiddler's "direct" handler when a user saves
+// a tiddler whose body contains `<<~ ahu` blocks — symmetric with the disk
+// sync path (ONE parser, FOUR call sites law).
+//
+// Returns:
+//   parent   — same tiddler with `text` rewritten (ahu blocks → kahea refs)
+//   children — one TiddlerFields per ahu slot, deep-recursed
+//
+// If no ahu blocks exist in bodyText the function returns { parent: fields,
+// children: [] } with no allocation — callers can skip the tombstone scan.
+// ---------------------------------------------------------------------------
+
+export function splitBodyTiddler(
+  uri:       string,
+  bodyText:  string,
+  baseFields: TiddlerFields,
+): { parent: TiddlerFields; children: TiddlerFields[] } {
+  const hasAhu = bodyText.includes("<<~ ahu");
+  if (!hasAhu) {
+    return { parent: { ...baseFields, title: uri, text: bodyText }, children: [] };
+  }
+
+  const warnings: string[] = [];
+  const sourceFile = typeof baseFields["source-file"] === "string" ? baseFields["source-file"] : "";
+  const { children, rewrittenText } = splitRecursive(uri, "", bodyText, warnings, sourceFile);
+
+  const parent: TiddlerFields = { ...baseFields, title: uri, text: rewrittenText };
+
+  if (warnings.length > 0) {
+    const safeSlug = uri.replace(/[^a-zA-Z0-9._-]/g, "_");
+    children.push({
+      title:          `$:/lararium/parse-warning/${safeSlug}`,
+      tags:           "$:/lararium/parse-warnings",
+      "meme-uri":     uri,
+      "warning-count": String(warnings.length),
+      text:           warnings.join("\n"),
+    });
+  }
+
+  return { parent, children };
+}

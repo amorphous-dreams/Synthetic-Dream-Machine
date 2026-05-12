@@ -66,15 +66,16 @@ parentPort.on("message", (msg) => {
   }
 
   if (msg.type === "changeset") {
-    // Verify buffer transfer: if changeset.byteLength is 0, the buffer was transferred
-    // (neutered on send side) — that's correct. If non-zero, it was cloned — wrong.
-    // Echo back a no-op event so the test can assert the changeset was received.
+    // Echo back counts so the test can assert the delta crossed the boundary.
     parentPort.postMessage({
       schema_version: 1,
       type: "event",
       wikiUri: msg.wikiUri,
       eventId: "echo",
-      payload: { receivedBytes: msg.changeset.byteLength },
+      payload: {
+        addedCount:   (msg.added   ?? []).length,
+        deletedCount: (msg.deleted ?? []).length,
+      },
     });
     return;
   }

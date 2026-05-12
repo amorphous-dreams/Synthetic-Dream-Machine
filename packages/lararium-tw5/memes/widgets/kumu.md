@@ -11,7 +11,7 @@ heleuma       = "ka"
 source-file   = "packages/lararium-tw5/src/widgets/kumu.ts"
 source-symbol = "KumuWidget"
 module-ref    = "lar:///ha.ka.ba/@lararium/tw5/widgets/kumu-tw5"
-body-sha256 = "7e310613b17e9b72e5553d4f4bc0ee90d909fdf2e3a6da751950ee68a7cc8aa3"
+body-sha256 = "c1e80bba7199d50b4b3fdcf34a6faa61961960f1c8661de6287d9d9cf7281001"
 cacheable     = true
 retain        = true
 ```
