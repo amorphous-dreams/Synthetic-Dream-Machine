@@ -35,6 +35,7 @@
  *   routes the event into the main-thread LarEventBus.
  *
  * Meme: lar:///ha.ka.ba/@lararium/node/v0.1/node-vm-manager
+ * Meme doc: packages/lararium-node/memes/node-vm-manager.md
  */
 
 import * as Automerge from "@automerge/automerge";
@@ -454,8 +455,12 @@ export class NodeVmManager {
   private _wireWorkerListeners(wikiId: string, worker: Worker): void {
     worker.on("message", (raw: unknown) => {
       if (!isWorkerToMainMsg(raw)) return;
-      if (raw.type === "event" && this._onWorkerEvent) {
-        this._onWorkerEvent(wikiId, raw as WorkerMsg_Event);
+      if (raw.type === "event") {
+        if (this._onWorkerEvent) {
+          this._onWorkerEvent(wikiId, raw as WorkerMsg_Event);
+        } else {
+          console.warn(`[vm-manager] WorkerMsg_Event dropped for ${wikiId} — no onWorkerEvent callback registered`);
+        }
       }
       if (raw.type === "fault") {
         console.error(`[vm-manager] Worker fault for ${wikiId}: ${(raw as { error: string }).error}`);
