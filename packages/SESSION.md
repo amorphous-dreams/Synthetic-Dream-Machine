@@ -1,8 +1,45 @@
 # Session State — Lararium Web3 Refactor
 
-> Updated: 2026-05-10 (disk projection five-layer child meme structure verified end-to-end)
+> Updated: 2026-05-11 (Path H save-side auto-split + P.3.5 worker changeset protocol + 35 tests)
 > Branch: feature/lararium-node-3
 > Purpose: Resume artifact — enough state to continue without prior chat context
+
+---
+
+## What Just Happened (2026-05-11 — Path H + P.3.5 + NodeVmManager tests)
+
+Two sessions landed in one commit (`4d25401d`):
+
+**P.3.5 — Worker-thread changeset application:**
+
+| Component | Change |
+|---|---|
+| `lar-worker-protocol.ts` | `WorkerMsg_Changeset` reprotocolled: `added: Record<string,unknown>[]` + `deleted: string[]` arrays (no Automerge WASM in Worker) |
+| `lar-wiki-worker.ts` | Changeset handler implemented: `wiki.addTiddler`/`deleteTiddler` per field, then `re.onChangeset(uris, origin, tw5.$tw.wiki)` for Scale-3 tick |
+| `kumu-device.ts` | `ReactionEngine.onChangeset` gains optional `wiki?: BootScanSurface` — updates papalohe edge bindings before firing (correctness gap closed) |
+| `node-vm-manager.ts` | `_subscribeDocChanges` derives tiddler delta from `DocHandleChangePayload.patches`; `unsubChange` wired at mount + teardown; snapshot `Automerge.getHeads` wrapped in try/catch (test stub safety) |
+
+**Path H — Save-side auto-split (MemeSyncAdaptor):**
+
+| Component | Change |
+|---|---|
+| `deserializer.ts` | `splitBodyTiddler(uri, bodyText, baseFields)` exported — fourth call site of `splitRecursive`; handles plain body text (no SOH/STX/ETX envelope needed) |
+| `meme-sync-adaptor.ts` | `direct` save handler: detects `<<~ ahu` blocks, calls `splitBodyTiddler`, writes parent + children to bag, tombstones removed children. ONE parser, FOUR call sites law complete. |
+
+**Tests:**
+
+- `vm-manager-echo.mjs` fixture (lightweight Worker, no TW5/RE)
+- `node-vm-manager.test.ts` — 7 lifecycle integration tests
+- 35 tests passing, 4 skipped (3 suites)
+
+**Heleuma:** 16 body-sha256 anchors updated; plugin bundle rebuilt (46 inner tiddlers, 120.4 KiB).
+
+**J.3 closed:** `promote-handler.ts` already enumerates `#fragment` children by URI prefix and co-promotes atomically under the same `ChangeOrigin`. HANDOFF was stale — marked ✅.
+
+**Next open paths:**
+- Path K — F-arc debounce (`$:/state/*` → projection, draft bag, 300-500ms captureTimeout in MemeSyncAdaptor). Important once browser peers come online.
+- Path L — S7.4 admin doc ingress trust gate (`cap=infrastructure` proof on admin WebSocket federation)
+- Path G.rest — remaining sigils (lele, papalohe, pae) — less urgent per operator
 
 ---
 
