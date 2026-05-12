@@ -3,7 +3,7 @@
 <<~&#x0001; ? -> lar:///ha.ka.ba/@lares/docs/story/lindwyrm/the-lar-names-itself >>
 ```toml iam
 uri-path = "ha.ka.ba/@lares/docs/story/lindwyrm/the-lar-names-itself"
-file-path = "packages/lares/memes/docs/story/lindwyrm/the-lar-names-itself.md"
+file-path = "wikis/lares-history/memes/history/lindwyrm/the-lar-names-itself.md"
 type = "text/x-memetic-wikitext"
 tagspace = "adjacent"
 confidence = 0.68

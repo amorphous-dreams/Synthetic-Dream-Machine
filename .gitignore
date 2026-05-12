@@ -49,9 +49,9 @@ packages/lararium-node/playwright-report
 .lararium
 packages/lararium-node/.lararium/
 
-# Room-bag disk scratch — operator's editable surface, never committed.
-# Promotion ceremony moves files from wikis/{slug}/ into packages/.
-wikis/
+# scratch wiki — operator's live editable surface, never committed.
+# Named wikis (e.g. wikis/lares-history/) are checked in.
+wikis/scratch/
 !tests/expected/wikis/
 
 # Per-deployment social bootstrap (operator AutomergeUrls) — written by

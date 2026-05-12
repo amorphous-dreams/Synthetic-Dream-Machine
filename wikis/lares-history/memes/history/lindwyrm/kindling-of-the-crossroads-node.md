@@ -3,7 +3,7 @@
 <<~&#x0001; ? -> lar:///ha.ka.ba/@lares/docs/story/lindwyrm/kindling-of-the-crossroads-node >>
 ```toml iam
 uri-path = "ha.ka.ba/@lares/docs/story/lindwyrm/kindling-of-the-crossroads-node"
-file-path = "packages/lares/memes/docs/story/lindwyrm/kindling-of-the-crossroads-node.md"
+file-path = "wikis/lares-history/memes/history/lindwyrm/kindling-of-the-crossroads-node.md"
 type = "text/x-memetic-wikitext"
 tagspace = "adjacent"
 confidence = 0.76

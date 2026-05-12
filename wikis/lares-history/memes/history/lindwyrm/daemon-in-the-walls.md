@@ -3,7 +3,7 @@
 <<~&#x0001; ? -> lar:///ha.ka.ba/@lares/docs/story/lindwyrm/daemon-in-the-walls >>
 ```toml iam
 uri-path = "ha.ka.ba/@lares/docs/story/lindwyrm/daemon-in-the-walls"
-file-path = "packages/lares/memes/docs/story/lindwyrm/daemon-in-the-walls.md"
+file-path = "wikis/lares-history/memes/history/lindwyrm/daemon-in-the-walls.md"
 type = "text/x-memetic-wikitext"
 tagspace = "adjacent"
 confidence = 0.64
