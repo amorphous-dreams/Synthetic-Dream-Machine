@@ -37,56 +37,51 @@ import { resolve }                       from "path";
 import { openNodeLarPeer }               from "./open-node-lar-peer.js";
 import { join } from "path";
 import { makeDiskProjectionKind }        from "./projection-kinds.js";
-import { LARES_MEMES_ROOT, REPO_ROOT }   from "./node-host.js";
+import { REPO_ROOT }   from "./node-host.js";
 import {
   LarProjectionRegistry,
-  laresPathStrategy, enginePathStrategy, wikiShadowPathStrategy,
-  BAG_IDS, wikiBagId,
-  LARARIUM_BAG_MIRROR_TAG,
+  LARES_DOC_URI, LARARIUM_DOC_URI,
 } from "@lararium/core";
-import type { BagMirrorConfig, MirrorPathFn } from "@lararium/core";
-import { exportMemeText }                from "@lararium/tw5";
-import type { TW5Engine }                from "@lararium/tw5";
+import type { CompositeStore }               from "@lararium/core";
+import { exportMemeText }                    from "@lararium/tw5";
+import { namedBagPath, wikiBagPath } from "./bag-paths.js";
+import type { BagMirrorConfig } from "./bag-paths.js";
 
-const STRATEGIES: Record<string, MirrorPathFn> = {
-  lares: laresPathStrategy,
-  engine: enginePathStrategy,
-  "wiki-shadow": wikiShadowPathStrategy,
-};
+const WIKI_ORACLE_PREFIX = "lar:///ha.ka.ba/@lararium/wikis/";
 
 /**
- * Read bag-mirror configs from admin-wiki tiddlers tagged
- * `$:/tags/LarariumBagMirror`. Falls back to `defaults` when none found.
+ * Build bag-mirror configs from the named-bag layout.
  *
- * Tiddler fields read:
- *   bag-id       — bag URI to mirror (required)
- *   mirror-root  — path relative to REPO_ROOT, or absolute (required)
- *   strategy     — one of lares | engine | wiki-shadow (required)
- *   enabled      — "no" disables the mirror; anything else (incl. absent) enables
+ * Static bags (lares, lararium) derive their mirror paths from scope alone —
+ * no oracle fields needed. Wiki bags are discovered by scanning visible
+ * tiddlers for the wiki oracle prefix; each wiki name determines its mirror.
  */
-function readBagMirrorsFromAdmin(adminTw5: TW5Engine, defaults: BagMirrorConfig[]): BagMirrorConfig[] {
-  const titles = adminTw5.$tw.wiki.filterTiddlers(`[tag[${LARARIUM_BAG_MIRROR_TAG}]]`);
-  if (titles.length === 0) {
-    console.log(`[lararium] no admin bag-mirror tiddlers found — using ${defaults.length} programmatic defaults`);
-    return defaults;
+async function buildBagMirrors(
+  composite: CompositeStore,
+  rootDir: string,
+): Promise<BagMirrorConfig[]> {
+  const mirrors: BagMirrorConfig[] = [
+    { bagId: LARES_DOC_URI,    mirrorRoot: join(rootDir, "bags/@lares"),    toRelPath: namedBagPath("@lares") },
+    { bagId: LARARIUM_DOC_URI, mirrorRoot: join(rootDir, "bags/@lararium"), toRelPath: namedBagPath("@lararium") },
+  ];
+
+  // Wiki bags — discovered from well-known oracle URI prefix.
+  const allTitles = await composite.listVisible();
+  const wikiPath  = wikiBagPath();
+  for (const title of allTitles) {
+    if (!title.startsWith(WIKI_ORACLE_PREFIX)) continue;
+    if (title.includes("/drafts/"))           continue;
+    const wikiName = title.slice(WIKI_ORACLE_PREFIX.length);
+    if (!wikiName || wikiName.includes("/"))  continue;
+    mirrors.push({
+      bagId:      title,
+      mirrorRoot: join(rootDir, "wikis", wikiName),
+      toRelPath:  wikiPath,
+    });
   }
-  const result: BagMirrorConfig[] = [];
-  for (const title of titles) {
-    const fields = (adminTw5.$tw.wiki.getTiddler(title)?.fields ?? {}) as Record<string, string>;
-    if (fields["enabled"] === "no") continue;
-    const bagId      = fields["bag-id"];
-    const mirrorRoot = fields["mirror-root"];
-    const strategy   = fields["strategy"];
-    const toRelPath  = strategy ? STRATEGIES[strategy] : undefined;
-    if (!bagId || !mirrorRoot || !toRelPath) {
-      console.warn(`[lararium] admin bag-mirror tiddler ${title} missing required fields — skipping`);
-      continue;
-    }
-    const root = mirrorRoot.startsWith("/") ? mirrorRoot : join(REPO_ROOT, mirrorRoot);
-    result.push({ bagId, mirrorRoot: root, toRelPath });
-  }
-  console.log(`[lararium] loaded ${result.length} bag-mirror config(s) from admin wiki`);
-  return result;
+
+  console.log(`[lararium] ${mirrors.length} bag-mirror config(s)`);
+  return mirrors;
 }
 
 
@@ -196,23 +191,7 @@ async function main(): Promise<void> {
   // the "reaction" kind once it lands; current ReactionGraph maintenance is a
   // no-op here.
 
-  // Bag mirror configs — which bags reflect to disk, and where.
-  // First read attempt: admin-wiki tiddlers tagged $:/tags/LarariumBagMirror.
-  // Fallback: programmatic defaults below. Operator-private bags
-  // (identities/groups/sessions/admin) are absent — they never reach disk.
-  const laresMirrorRoot = (rootDir === REPO_ROOT)
-    ? LARES_MEMES_ROOT
-    : join(rootDir, "packages", "lares", "memes");
-  const defaultMirrors: BagMirrorConfig[] = [
-    // Canonical lares — only written via promotion ceremony (wiki → lares).
-    { bagId: BAG_IDS.lares,    mirrorRoot: laresMirrorRoot,              toRelPath: laresPathStrategy },
-    // Engine corpus — `lar:///ha.ka.ba/@lararium/{pkg}/v{ver}/{path}` →
-    // `packages/{pkg-slug}/memes/{path}.md`. Workspace root is the mirror root.
-    { bagId: BAG_IDS.lararium, mirrorRoot: join(rootDir, "packages"),    toRelPath: enginePathStrategy },
-    // Wiki bag — gitignored scratch. Edits land here; promotion is the move.
-    { bagId: wikiBagId(wikiId), mirrorRoot: join(rootDir, "wikis", wikiId), toRelPath: wikiShadowPathStrategy },
-  ];
-  const mirrors = readBagMirrorsFromAdmin(result.admin.tw5, defaultMirrors);
+  const mirrors = await buildBagMirrors(result.store, rootDir);
 
   projections.registerKind("disk", makeDiskProjectionKind({
     mirrors,

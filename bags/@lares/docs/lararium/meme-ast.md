@@ -39,8 +39,8 @@ Composable source files in `packages/lararium-core/src/meme-ast/`:
 Public API sub-export: `@lararium/core/meme-ast`
 
 Vite CJS entry: `packages/lararium-tw5/src/meme-ast-entry.ts`
-Compiled artifact: `packages/lararium-tw5/dist-tiddlers/meme-ast.js`
-Build: `pnpm --filter @lararium/tw5 build:modules`
+Compiled artifact: `packages/lararium-tw5/tiddlers/src/meme-ast.js`
+Build: `pnpm --filter @lararium/tw5 build:plugin`
 
 <<~/ahu >>
 

@@ -10,6 +10,8 @@
  * tiddler — Vite inlines the imports).
  */
 
+import type { GrammarRules } from "@lararium/core";
+
 export interface ParseTreeNode {
   readonly type:        string;
   readonly attributes?: Record<string, { type: "string"; value: string }>;
@@ -178,8 +180,13 @@ export function matchAhuOpenAt(source: string, start: number): AhuMatch | null {
   };
 }
 
-export function findCloseEnd(source: string, sigil: string, fromPos: number): number | null {
-  const tag = BLOCK_CLOSERS[sigil];
+export function findCloseEnd(
+  source: string,
+  sigil: string,
+  fromPos: number,
+  closers: Record<string, string> = BLOCK_CLOSERS,
+): number | null {
+  const tag = closers[sigil];
   if (!tag) return null;
   const idx = source.indexOf(tag, fromPos);
   if (idx === -1) return null;
@@ -213,5 +220,44 @@ export function attrsForAhu(open: AhuMatch): Record<string, string> {
 export function attrToTree(attrs: Record<string, string>): Record<string, { type: "string"; value: string }> {
   const out: Record<string, { type: "string"; value: string }> = {};
   for (const [k, v] of Object.entries(attrs)) out[k] = { type: "string", value: v };
+  return out;
+}
+
+/**
+ * Merge BLOCK_CLOSERS with any grammar-registered block sigils that have a
+ * `closePattern`. Callers call this at the top of findNextMatch (memoized
+ * grammar — zero cost after first call) and use the result instead of the
+ * static BLOCK_CLOSERS map.
+ */
+export function buildClosers(grammar: GrammarRules | null): Record<string, string> {
+  if (!grammar) return BLOCK_CLOSERS;
+  const extra: Record<string, string> = {};
+  for (const sigil of grammar.sigils) {
+    if (sigil.closePattern && !(sigil.name in BLOCK_CLOSERS)) {
+      extra[sigil.name] = sigil.closePattern;
+    }
+  }
+  return Object.keys(extra).length === 0 ? BLOCK_CLOSERS : { ...BLOCK_CLOSERS, ...extra };
+}
+
+/**
+ * Returns the set of inline/edge sigil names registered in the grammar that
+ * are NOT already handled by the hardcoded URI_FORM_SIGIL_RE (aka/kahea/loulou).
+ * Used by lar-sigil-inline to emit proper widget nodes for operator-added sigils.
+ */
+const URI_FORM_HARDCODED = new Set(["aka", "kahea", "loulou"]);
+
+export function grammarInlineSigils(grammar: GrammarRules | null): Set<string> {
+  if (!grammar) return new Set();
+  const out = new Set<string>();
+  for (const sigil of grammar.sigils) {
+    if (
+      (sigil.kind === "edge" || sigil.kind === "edge-sugar" || sigil.kind === "edge-alias") &&
+      sigil.inlinePattern &&
+      !URI_FORM_HARDCODED.has(sigil.name)
+    ) {
+      out.add(sigil.name);
+    }
+  }
   return out;
 }

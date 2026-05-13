@@ -15,7 +15,7 @@ source-file  = "packages/lararium-tw5/src/deserializer.ts"
 source-symbol = "*"
 module-ref   = "lar:///ha.ka.ba/@lararium/tw5/modules/deserializer"
 implements   = ["lar:///ha.ka.ba/@lares/api/v0.1/pono/heleuma/ka"]
-body-sha256 = "210fdd4a07ed56f29d023833bc38ccccd34979985489d1026cfe55cd9a097ef3"
+body-sha256 = "cfb66d00206ede01f31af7ba79bcb62e6e84ed6cc2d19a54e8bf39813ced6cc0"
 ```
 
 
@@ -42,8 +42,8 @@ Parent tiddler: `text = original carrier text`, `type = "text/x-memetic-wikitext
 Child tiddlers (ahu slots): `text = ahu body text`, also `type = "text/x-memetic-wikitext"`.
 No AST→string reconstruction. MemeticParser owns all rendering for both levels.
 
-Compiled artifact: `packages/lararium-tw5/dist-tiddlers/deserializer.js`
-Build: `pnpm --filter @lararium/tw5 build:modules`
+Compiled artifact: `packages/lararium-tw5/tiddlers/src/memetic-wikitext-deserializer.js`
+Build: `pnpm --filter @lararium/tw5 build:plugin`
 
 <<~/ahu >>
 

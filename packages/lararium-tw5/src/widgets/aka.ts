@@ -2,7 +2,7 @@
  * AkaWidget — `<<~ aka <uri> >>` shadow transclusion (observe family).
  * Frozen-at-projection-time read of a remote meme. The cascade
  * `$:/tags/Lar/AkaTemplate` selects the active template; defaults
- * defaults ship as .tid files in src/tiddlers/.
+ * defaults ship as .tid files in tiddlers/.
  */
 
 import { makeCascadeSigilWidget } from "./_cascade-sigil-base.js";

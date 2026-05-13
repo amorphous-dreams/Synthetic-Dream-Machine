@@ -1,46 +1,83 @@
 /**
- * build-plugin-tiddler.ts — three-step pipeline:
+ * build-plugin-tiddler.ts — single TW5 plugin build pipeline:
  *
- *   1. Vite compiles TS plugin sources → src/tiddlers/*.js  (with embedded TW5 header)
+ *   1. Vite compiles plugin-owned TS sources → tiddlers/src/*.js
+ *      (native TW5 header comments embedded)
+ *      Anchor memes in bags/@lararium/tw5 get body-sha256 patched from those
+ *      generated JS tiddlers, without duplicating JS bodies into bags/.
  *   2. TW5 CLI packs src/tiddlers/ into a complete plugin tiddler JSON:
  *        tiddlywiki ++./src/tiddlers \
  *          --render "$:/core/templates/exporters/JsonFile" \
  *          "plugin.json" "text/plain" "" \
  *          "exportFilter" "[[<plugin-title>]]"
  *      Output: JSON array [{all fields including plugin.info metadata + packed text}]
- *   3. Emit dist-plugin/ artifacts + plugin-tiddler.generated.ts
+ *   3. Emit dist-plugin/ artifacts + plugin-tiddler.generated.ts.
  *
- * src/tiddlers/ is the single source of truth:
+ * tiddlers/ is the plugin source island:
  *   - plugin.info   — plugin envelope metadata (committed)
- *   - *.tid         — wikitext tiddlers (committed, human-readable)
- *   - *.js          — compiled module tiddlers (gitignored, built by Vite)
- *                     each carries a /*\ ... \*\/ header so TW5 reads
- *                     title + module-type without any .meta sidecar
- *
- * Run:
- *   pnpm --filter @lararium/tw5 build:plugin
+ *   - *.tid         — hand-authored tiddlers (committed)
+ *   - src/*.js      — generated CJS module tiddlers (built by Vite)
  */
 
-import { readFileSync, writeFileSync, mkdirSync, mkdtempSync, rmSync, cpSync, copyFileSync } from "fs";
+import { readFileSync, writeFileSync, mkdirSync, mkdtempSync, rmSync, cpSync, copyFileSync, existsSync } from "fs";
 import { spawnSync } from "child_process";
+import { createHash } from "crypto";
 import { tmpdir } from "os";
 import path from "path";
 import { fileURLToPath } from "url";
+import { PLUGIN_ENTRIES, TIDDLERS_DIR, TIDDLER_SRC_DIR } from "../vite.plugin.config.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT       = path.resolve(__dirname, "..");
+const REPO_ROOT  = path.resolve(ROOT, "../..");
 const OUT_DIR    = path.join(ROOT, "dist-plugin");
 const PLUGIN_DIR = path.join(ROOT, "plugins");
+const BAG_ROOT   = path.join(REPO_ROOT, "bags", "@lararium", "tw5");
 
 const PLUGIN_TITLE_LAR = "lar:///plugins/lares/memetic-wikitext";
 const PLUGIN_TITLE_TW5 = "$:/plugins/lares/memetic-wikitext";
 
 const TW5_BIN = path.join(ROOT, "../../node_modules/.pnpm/node_modules/.bin/tiddlywiki");
 
+const SHA_FIELD_RE  = /^body-sha256\s*=\s*"[^"]*"/m;
+const TOML_BLOCK_RE = /(```toml[\s\S]*?```)/;
+
+function sha256(text: string): string {
+  return createHash("sha256").update(text, "utf8").digest("hex");
+}
+
+function patchSha256(meme: string, digest: string): string {
+  const tomlM = TOML_BLOCK_RE.exec(meme);
+  if (!tomlM) throw new Error("root toml iam block not found");
+  const tomlOrig = tomlM[1]!;
+  const patched  = SHA_FIELD_RE.test(tomlOrig)
+    ? tomlOrig.replace(SHA_FIELD_RE, `body-sha256 = "${digest}"`)
+    : tomlOrig.replace(/(\n```)$/, `\nbody-sha256 = "${digest}"$1`);
+  return meme.replace(tomlOrig, patched);
+}
+
+function patchAnchorHashes(): void {
+  console.log("[plugin-build] patching anchor body-sha256 fields…");
+  let patched = 0;
+  for (const entry of PLUGIN_ENTRIES) {
+    if (!entry.anchor) continue;
+    const jsPath = path.join(ROOT, TIDDLER_SRC_DIR, `${entry.name}.js`);
+    const anchorPath = path.join(BAG_ROOT, entry.anchor);
+    if (!existsSync(jsPath) || !existsSync(anchorPath)) continue;
+    const cjs = readFileSync(jsPath, "utf8").trimEnd();
+    const digest = sha256(cjs);
+    const next = patchSha256(readFileSync(anchorPath, "utf8"), digest);
+    writeFileSync(anchorPath, next, "utf8");
+    patched++;
+    console.log(`  ${entry.anchor}  body-sha256=${digest.slice(0, 16)}…`);
+  }
+  console.log(`[plugin-build] patched ${patched} anchor hashes`);
+}
+
 async function main(): Promise<void> {
   mkdirSync(OUT_DIR, { recursive: true });
 
-  // 1. Compile TS sources → src/tiddlers/*.js (with embedded TW5 header comments).
+  // 1. Compile TS sources → tiddlers/src/*.js (with embedded TW5 header comments).
   console.log("[plugin-build] running Vite build…");
   const viteResult = spawnSync("npx", ["tsx", "vite.plugin.config.ts"], {
     cwd: ROOT, stdio: "inherit",
@@ -50,19 +87,18 @@ async function main(): Promise<void> {
     process.exit(viteResult.status ?? 1);
   }
 
-  // 2. Pack via TW5 CLI.
-  //    Run TW5 from a temp dir so any side-effect writes (tiddlywikicore-*.js etc.)
-  //    go there, not into our source tree.
-  //    ++ with an absolute path loads src/tiddlers/ as a plugin.
-  //    JsonFile exporter + exportFilter variable → complete plugin tiddler JSON.
+  // 2. Patch anchor hashes from generated JS bodies.
+  patchAnchorHashes();
+
+  // 3. Pack via TW5 CLI.
+  //    Run TW5 from a temp dir so any side-effect writes go there, not into our
+  //    source tree. ++ with an absolute path loads tiddlers/ as a plugin folder.
   console.log("[plugin-build] packing plugin via TW5 CLI…");
-  // Copy plugin folder to a temp dir so TW5's side-effect writes
-  // (tiddlywikicore-*.js, etc.) never touch the source tree.
   const tw5Tmp = mkdtempSync(path.join(tmpdir(), "tw5-pack-"));
   const tw5PluginCopy = path.join(tw5Tmp, "plugin");
   let outputJson: string;
   try {
-    cpSync(path.join(ROOT, "src/tiddlers"), tw5PluginCopy, { recursive: true });
+    cpSync(path.join(ROOT, TIDDLERS_DIR), tw5PluginCopy, { recursive: true });
     const renderResult = spawnSync(
       TW5_BIN,
       [
@@ -94,7 +130,7 @@ async function main(): Promise<void> {
   const innerParsed = JSON.parse(pluginTiddlerLar["text"] as string) as { tiddlers?: Record<string, unknown> };
   const tiddlerCount = Object.keys(innerParsed.tiddlers ?? {}).length;
 
-  // 3. Emit two title variants (lar:// canonical + $:// drag-and-drop).
+  // 4. Emit two title variants (lar:// canonical + $:// drag-and-drop).
   const pluginTiddlerTw5 = { ...pluginTiddlerLar, title: PLUGIN_TITLE_TW5 };
 
   function emitTid(tiddler: Record<string, unknown>, fileName: string): { path: string; bytes: number } {

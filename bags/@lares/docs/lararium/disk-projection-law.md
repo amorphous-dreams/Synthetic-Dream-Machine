@@ -129,7 +129,7 @@ This preserves human-authored placement without forcing the template to parse pr
 
 Favor readable template helpers over one dense line of TW5. Keep helpers in `text/vnd.tiddlywiki`, not memetic-wikitext, so the template system does not recursively parse itself as source meme syntax.
 
-Helpers live in `src/tiddlers/lib-emit-*.tid`:
+Helpers live in `tiddlers/lib-emit-*.tid`:
 
 ```text
 lar:///ha.ka.ba/@lararium/templates/lib/emit-section

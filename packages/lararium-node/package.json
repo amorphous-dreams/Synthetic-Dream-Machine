@@ -12,11 +12,12 @@
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
   "scripts": {
-    "build":          "tsc",
-    "typecheck":      "tsc --noEmit",
-    "test":           "NODE_OPTIONS=--experimental-vm-modules pnpm exec jest --config jest.config.cjs",
-    "dev":            "tsx src/main.ts",
-    "start":          "node dist/src/main.js"
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "test": "NODE_OPTIONS=--experimental-vm-modules pnpm exec jest --config jest.config.cjs",
+    "dev": "tsx src/main.ts",
+    "start": "node dist/src/main.js",
+    "build:genesis": "pnpm --filter @lararium/tw5 build:tw5-vendor && pnpm --filter @lararium/tw5 build:plugin && tsx scripts/build-genesis-island.ts"
   },
   "dependencies": {
     "@automerge/automerge": "^3.2.6",

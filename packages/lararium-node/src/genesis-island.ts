@@ -132,12 +132,12 @@ export async function loadGenesisIsland(repo: Repo): Promise<DocHandle<LarariumD
 
   const blobCount    = Object.keys(doc.blobs ?? {}).length;
   const tiddlerCount = Object.keys(doc.tiddlers ?? {}).length;
-  const widgetCount  = Object.keys(doc.blobs ?? {}).filter(id => id.startsWith("lararium-widget-")).length;
-  if (widgetCount === 0) {
-    throw new Error("[genesis-island] genesis artifact contains no widget blobs (lararium-widget-*) — re-run build:genesis after widget build.");
+  const pluginOk     = Boolean(doc.blobs?.["lar:///plugins/lares/memetic-wikitext"]);
+  if (!pluginOk) {
+    throw new Error("[genesis-island] genesis artifact missing packed Lares TW5 plugin — run build:genesis after build:plugin.");
   }
   console.log(
-    `[genesis-island] loaded  url=${handle.url}  blobs=${blobCount}  widgets=${widgetCount}  tiddlers=${tiddlerCount}  systemTitles=${doc.systemTitles?.length ?? 0}`,
+    `[genesis-island] loaded  url=${handle.url}  blobs=${blobCount}  plugin=lares-memetic-wikitext  tiddlers=${tiddlerCount}  systemTitles=${doc.systemTitles?.length ?? 0}`,
   );
 
   return handle;
@@ -219,12 +219,12 @@ export async function reconcileIslandFromGenesis(
  * genesis artifact. They are written (or patched) on every boot after
  * loadGenesisIsland() returns. Writes are no-ops when values already match.
  *
- *   ha self-ref     : LARARIUM_DOC_URI   → handle.url
- *   ha → ka edge    : CATALOG_DOC_URI    → catalogUrl
- *   ha → ba edge    : LARES_DOC_URI      → laresUrl       (omitted when absent)
- *   ha → identities : IDENTITIES_DOC_URI → identitiesUrl  (omitted when absent)
- *   ha → groups     : CIRCLES_DOC_URI     → groupsUrl      (omitted when absent)
- *   ha → sessions   : SESSIONS_DOC_URI   → sessionsUrl    (omitted when absent)
+ *   lararium ha self-ref         : LARARIUM_DOC_URI   → handle.url
+ *   lararium ha → ka catalog     : CATALOG_DOC_URI    → catalogUrl
+ *   lararium ha → ba lares       : LARES_DOC_URI      → laresUrl
+ *   lararium ha → ha identities  : IDENTITIES_DOC_URI → identitiesUrl
+ *   lararium ha → ka groups      : CIRCLES_DOC_URI     → groupsUrl
+ *   lararium ha → ba sessions    : SESSIONS_DOC_URI   → sessionsUrl
  */
 export function reconcileWellKnownTiddlers(
   handle:         DocHandle<LarariumDoc>,
@@ -239,7 +239,7 @@ export function reconcileWellKnownTiddlers(
   const tiddlers = doc?.tiddlers ?? {};
   const selfOk = tiddlers[LARARIUM_DOC_URI]?.text === handle.url;
   const catOk  = tiddlers[CATALOG_DOC_URI]?.text  === catalogUrl;
-  const baOk   = laresUrl       ? tiddlers[LARES_DOC_URI]?.text       === laresUrl       : true;
+  const baOk   = laresUrl ? tiddlers[LARES_DOC_URI]?.text === laresUrl : true;
   const idOk   = identitiesUrl  ? tiddlers[IDENTITIES_DOC_URI]?.text  === identitiesUrl  : true;
   const grOk   = groupsUrl      ? tiddlers[CIRCLES_DOC_URI]?.text      === groupsUrl      : true;
   const seOk   = sessionsUrl    ? tiddlers[SESSIONS_DOC_URI]?.text    === sessionsUrl    : true;
@@ -247,9 +247,9 @@ export function reconcileWellKnownTiddlers(
   if (selfOk && catOk && baOk && idOk && grOk && seOk && adOk) return;
 
   handle.change((d) => {
-    if (!selfOk) d.tiddlers[LARARIUM_DOC_URI] = { title: LARARIUM_DOC_URI, text: handle.url, fields: {}, bag: LARARIUM_DOC_URI, authority: "lararium-seed" };
-    if (!catOk)  d.tiddlers[CATALOG_DOC_URI]  = { title: CATALOG_DOC_URI,  text: catalogUrl,  fields: {}, bag: LARARIUM_DOC_URI, authority: "lararium-seed" };
-    if (!baOk  && laresUrl)       d.tiddlers[LARES_DOC_URI]       = { title: LARES_DOC_URI,       text: laresUrl,       fields: {}, bag: LARARIUM_DOC_URI, authority: "lararium-seed" };
+    if (!selfOk) d.tiddlers[LARARIUM_DOC_URI] = { title: LARARIUM_DOC_URI, text: handle.url, fields: { kind: "oracle" }, bag: LARARIUM_DOC_URI, authority: "lararium-seed" };
+    if (!catOk)  d.tiddlers[CATALOG_DOC_URI]  = { title: CATALOG_DOC_URI,  text: catalogUrl,  fields: { kind: "oracle" }, bag: LARARIUM_DOC_URI, authority: "lararium-seed" };
+    if (!baOk  && laresUrl)       d.tiddlers[LARES_DOC_URI]       = { title: LARES_DOC_URI,       text: laresUrl,       fields: { kind: "oracle" }, bag: LARARIUM_DOC_URI, authority: "lararium-seed" };
     if (!idOk  && identitiesUrl)  d.tiddlers[IDENTITIES_DOC_URI]  = { title: IDENTITIES_DOC_URI,  text: identitiesUrl,  fields: {}, bag: LARARIUM_DOC_URI, authority: "lararium-seed" };
     if (!grOk  && groupsUrl)      d.tiddlers[CIRCLES_DOC_URI]      = { title: CIRCLES_DOC_URI,      text: groupsUrl,      fields: {}, bag: LARARIUM_DOC_URI, authority: "lararium-seed" };
     if (!seOk  && sessionsUrl)    d.tiddlers[SESSIONS_DOC_URI]    = { title: SESSIONS_DOC_URI,    text: sessionsUrl,    fields: {}, bag: LARARIUM_DOC_URI, authority: "lararium-seed" };
@@ -335,11 +335,15 @@ export function seedSessionsDoc(repo: Repo): DocHandle<SessionsDoc> {
 /**
  * Seed the AdminDoc — operator-private infrastructure bag.
  *
- * Holds device delegations (cap=infrastructure), bag-mirror configs tagged
- * $:/tags/LarariumBagMirror, projection configs tagged $:/tags/LarariumProjection,
- * session tiddlers (operator → agent), and ceremony state. Federation scopes
- * to the operator's own devices via cap=infrastructure delegations gated at
- * the ingress trust check (S7.4); never reaches room peers.
+ * Holds device delegations (cap=infrastructure), projection configs tagged
+ * $:/tags/LarariumProjection, session tiddlers (operator → agent), and
+ * ceremony state. Federation scopes to the operator's own devices via
+ * cap=infrastructure delegations gated at the ingress trust check (S7.4);
+ * never reaches room peers.
+ *
+ * Bag-mirror config now lives as oracle tiddler fields (path-filter,
+ * mirror-root) on the canonical bag oracle in the @lararium island doc —
+ * written by reconcileWellKnownTiddlers.
  *
  * Reuses the generic MemeStoreDoc shape — semantic distinction lives in URI
  * and bag identity, not in document type.
@@ -347,7 +351,8 @@ export function seedSessionsDoc(repo: Repo): DocHandle<SessionsDoc> {
 export function seedAdminDoc(repo: Repo): DocHandle<MemeStoreDoc> {
   const handle = repo.create<MemeStoreDoc>(emptyMemeStoreDoc());
   handle.change((doc) => {
-    doc.tiddlers[ADMIN_BAG_ID] = { title: ADMIN_BAG_ID, text: handle.url, fields: {}, bag: ADMIN_BAG_ID, authority: "lararium-seed" };
+    // Self-ref oracle.
+    doc.tiddlers[ADMIN_BAG_ID] = { title: ADMIN_BAG_ID, text: handle.url, fields: { kind: "oracle" }, bag: ADMIN_BAG_ID, authority: "lararium-seed" };
   });
   console.log(`[genesis-island] AdminDoc seeded  url=${handle.url}`);
   return handle;

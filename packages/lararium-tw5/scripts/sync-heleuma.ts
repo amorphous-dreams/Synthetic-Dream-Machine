@@ -726,12 +726,11 @@ if (SYNC_MODULES) {
 }
 
 if (COMMIT) {
-  // build:heleuma owns all TS → CJS packaging.
-  // Run write-tiddler-memes.ts first so headered CJS tiddlers are regenerated.
-  // before the #source + body-sha256 drift check runs.
+  // build:plugin owns TS → CJS plugin tiddler packaging and anchor hashes.
+  // Run it before the #source drift check so generated bodies stay fresh.
   const scriptsDir = dirname(fileURLToPath(import.meta.url));
-  console.log("[heleuma] --commit: building IIFEs and splicing into module tiddlers…\n");
-  execSync(`tsx ${resolve(scriptsDir, "write-tiddler-memes.ts")}`, { stdio: "inherit" });
+  console.log("[heleuma] --commit: building plugin CJS tiddlers and patching anchor hashes…\n");
+  execSync(`tsx ${resolve(scriptsDir, "build-plugin-tiddler.ts")}`, { stdio: "inherit" });
   console.log("\n[heleuma] --commit: patching #source slots to match live TS source\n");
 } else {
   console.log("[heleuma] dry-run (pass --commit to patch, --scan to find candidates, --scan-promote to find corpus candidates)\n");

@@ -10,7 +10,7 @@
  *   `lar-export-scope` lets callers select disk-export vs live-UI rendering
  *   without the widget knowing which is which.
  *
- *   Default cascade entries ship as .tid files in src/tiddlers/:
+ *   Default cascade entries ship as .tid files in tiddlers/:
  *     - `ahu-cascade-markdown-meme.tid` — matches when
  *       `lar-export-scope=="markdown-meme"`, returns the disk-export template.
  *     - `ahu-cascade-html.tid` — fallback, always matches, returns

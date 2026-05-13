@@ -11,16 +11,17 @@
  * `WikiParser.createClassesFromModules`, classifying by `types: { block: true }`.
  */
 
+import { getGrammar } from "../deserializer.js";
 import {
   ParseTreeNode,
   WikiParser,
   RuleInstance,
   AHU_CLOSE_TAG,
-  BLOCK_CLOSERS,
   matchAhuOpenAt,
   matchPranalaOpenAt,
   findCloseEnd,
   findGenericOpenAt,
+  buildClosers,
   attrsForAhu,
   attrToTree,
 } from "./lar-sigil-shared.js";
@@ -33,7 +34,8 @@ export function init(this: RuleInstance, parser: WikiParser): void {
 }
 
 export function findNextMatch(this: RuleInstance, startPos: number): number | undefined {
-  const source = this.parser!.source;
+  const source  = this.parser!.source;
+  const closers = buildClosers(getGrammar());
   let pos = source.indexOf("<<~", startPos);
   while (pos >= 0) {
     const ahu = matchAhuOpenAt(source, pos);
@@ -71,8 +73,8 @@ export function findNextMatch(this: RuleInstance, startPos: number): number | un
       }
     }
     const generic = findGenericOpenAt(source, pos);
-    if (generic?.sigil && BLOCK_CLOSERS[generic.sigil] && generic.sigil !== "ahu" && generic.sigil !== "pranala") {
-      const closeEnd = findCloseEnd(source, generic.sigil, generic.end);
+    if (generic?.sigil && closers[generic.sigil] && generic.sigil !== "ahu" && generic.sigil !== "pranala") {
+      const closeEnd = findCloseEnd(source, generic.sigil, generic.end, closers);
       if (closeEnd !== null) {
         this.matchPos = pos;
         this.matchEnd = closeEnd;

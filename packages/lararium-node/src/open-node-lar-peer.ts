@@ -358,19 +358,8 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
   };
 
   // Admin VM — operator-private coordinator with its own TW5 engine and
-  // composite. Booted in parallel with the wiki VM; never shares state with
-  // wiki peer connections. Preload the lararium-lares corpus blob so
-  // bag-mirror config tiddlers can reference lar: URIs (P.4).
-  const adminPreload: Array<Record<string, unknown>> = [];
-  const _adminLaresBlob = islandHandle?.doc()?.blobs?.["lararium-lares"]?.blob;
-  if (_adminLaresBlob) {
-    try {
-      adminPreload.push(
-        JSON.parse(new TextDecoder().decode(new Uint8Array(_adminLaresBlob))) as Record<string, unknown>,
-      );
-    } catch { /* malformed — skip */ }
-  }
-  const adminVm = await openAdminVm({ repo, adminUrl, preloadedTiddlers: adminPreload, coreBlob });
+  // composite. Corpus tiddlers arrive via the bag recipe stack; no plugin preload needed.
+  const adminVm = await openAdminVm({ repo, adminUrl, preloadedTiddlers: [], coreBlob });
 
   // Command dispatcher — subscribes to the admin store and runs commands
   // delivered as command-tiddlers (CRDT-native CLI ↔ daemon coordination).
@@ -694,21 +683,10 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
   const vmRecipe = await composite.getRecipe(resolvedRecipeUri);
   const vmBagStack: readonly string[] = vmRecipe?.bagStack ?? composite.layerIds;
 
-  // Decode lares plugin + vendor plugin blobs from the island doc.
-  // "lararium-lares" always preloads — it functions as the lares corpus plugin and remains non-optional.
-  // Vendored community plugins ($:/plugins/*) are opt-in per Recipe via the plugins field.
-  // When the resolved Recipe declares no plugins, no vendored plugins are preloaded.
+  // Corpus tiddlers (bags/@lares, bags/@lararium) arrive via the bag recipe stack.
+  // Only preload vendored plugins declared in the resolved Recipe's plugins list.
   tw5 = new TW5Engine();
   const preloadedTiddlers: Array<Record<string, unknown>> = [];
-
-  const laresBlob = blobs["lararium-lares"]?.blob;
-  if (laresBlob) {
-    try {
-      preloadedTiddlers.push(
-        JSON.parse(new TextDecoder().decode(new Uint8Array(laresBlob))) as Record<string, unknown>,
-      );
-    } catch { /* malformed — skip */ }
-  }
 
   // Only preload vendored plugins declared in the resolved Recipe's plugins list.
   const recipePlugins = new Set(vmRecipe?.plugins ?? []);

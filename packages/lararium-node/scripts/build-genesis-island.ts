@@ -1,8 +1,11 @@
 /**
- * build-genesis-island — Sprint 2 build-time genesis artifact builder.
+ * build-genesis-island — build-time genesis artifact builder.
  *
  * Produces packages/lararium-node/genesis/island.bin:
- *   a deterministic Automerge binary carrying all engine blobs + lares tiddlers.
+ *   a deterministic Automerge binary carrying engine blobs (TW5 core + vendored plugins).
+ *
+ * Corpus memes (bags/@lares, bags/@lararium) are NOT packed here.
+ * They load at runtime via the LaresDoc / LarariumDoc bag stores in the recipe stack.
  *
  * Determinism invariant:
  *   actorId = sha256hex(sorted content hashes of all walked inputs).
@@ -10,7 +13,7 @@
  *
  * Oracle tiddlers (LARARIUM_DOC_URI → handle.url, etc.) are NOT written here.
  * They embed the runtime DocUrl which is assigned by repo.import() at boot time.
- * reconcileWellKnownTiddlers() writes them after loading (S3/S4 scope).
+ * reconcileWellKnownTiddlers() writes them after loading.
  *
  * Run via:  tsx scripts/build-genesis-island.ts
  * Or via:   pnpm --filter @lararium/node build:genesis
@@ -23,7 +26,7 @@ import { join, dirname, basename } from "path";
 import { fileURLToPath }         from "url";
 
 import { TW5Engine }             from "@lararium/tw5";
-import { tw5PluginsRoot, tw5DistWidgetsRoot } from "@lararium/tw5/tw5-memes-root";
+import { tw5PluginsRoot } from "@lararium/tw5/tw5-memes-root";
 import { TW5_VERSION, TW5_CORE_SCRIPT_FILENAME, TW5_CORE_DIR } from "@lararium/tw5";
 
 import type { LarariumDoc, LarariumBlobEntry } from "@lararium/core";
@@ -41,29 +44,19 @@ import {
 // ---------------------------------------------------------------------------
 
 const __dir = dirname(fileURLToPath(import.meta.url));
-const GENESIS_DIR   = join(__dir, "../genesis");
-const PACKAGES_ROOT = join(__dir, "../../");
+const GENESIS_DIR = join(__dir, "../genesis");
+const REPO_ROOT   = join(__dir, "../../..");
+const BAGS_ROOT   = join(REPO_ROOT, "bags");
+const LARES_TW5_PLUGIN_TITLE = "lar:///plugins/lares/memetic-wikitext";
 
 /**
- * Enumerate every `packages/*\/memes` directory in the workspace.
- * Each package owns the memes that describe its load-bearing files; the engine
- * corpus is the union of all of them. URIs already encode the package via the
- * @{pkg-scope}/v{ver}/{path} convention, so directory order doesn't matter.
+ * The memetic corpus lives under repo-root bags/. Each `.md` carrier is already
+ * stored at its canonical bag path; package-local `memes/` trees were the old
+ * pre-bag layout and are intentionally ignored by genesis.
  */
-function findPackageMemeRoots(): string[] {
-  const roots: string[] = [];
-  try {
-    for (const entry of readdirSync(PACKAGES_ROOT, { withFileTypes: true })) {
-      if (!entry.isDirectory()) continue;
-      const memesDir = join(PACKAGES_ROOT, entry.name, "memes");
-      if (existsSync(memesDir)) roots.push(memesDir);
-    }
-  } catch { /* workspace shape unexpected — skip */ }
-  return roots.sort();
+function findBagMemeRoots(): string[] {
+  return existsSync(BAGS_ROOT) ? [BAGS_ROOT] : [];
 }
-
-/** Capture the SOH ? -> uri line from a memetic-wikitext carrier. */
-const SOH_URI_RE = /<<~[^>]*&#x0001;[^>]*\?\s*->\s*([^\s>]+)\s*>>/;
 
 function sha256hex(bytes: Uint8Array | Buffer): string {
   return createHash("sha256").update(bytes).digest("hex");
@@ -109,8 +102,8 @@ function deriveActorId(tw5CorePath: string): string {
     h.update(readFileSync(tw5CorePath));
   }
 
-  // Every package's memes/ directory (sorted for determinism)
-  for (const memeRoot of findPackageMemeRoots()) {
+  // Canonical bag corpus (sorted for determinism)
+  for (const memeRoot of findBagMemeRoots()) {
     for (const f of walkMdFiles(memeRoot)) {
       h.update(`md:${f}:`);
       h.update(readFileSync(f));
@@ -123,58 +116,7 @@ function deriveActorId(tw5CorePath: string): string {
     h.update(readFileSync(f));
   }
 
-  // Headered TW5 CJS tiddler blobs (sorted)
-  for (const f of walkFiles(tw5DistWidgetsRoot, ".js")) {
-    h.update(`tw5-tiddler:${f}:`);
-    h.update(readFileSync(f));
-  }
-
   return h.digest("hex");
-}
-
-// ---------------------------------------------------------------------------
-// Lares plugin blob — same logic as buildLaresPluginBlob() in lararium-island.ts
-// but without the SPRINT-2 runtime-call constraint.
-// ---------------------------------------------------------------------------
-
-async function buildLaresPluginBlob(): Promise<Uint8Array> {
-  // Every package's memes/ directory — engine corpus is their union
-  const allFiles: string[] = [];
-  for (const memeRoot of findPackageMemeRoots()) {
-    allFiles.push(...walkMdFiles(memeRoot));
-  }
-
-  const seedVm = new TW5Engine();
-  await seedVm.boot();
-
-  const tiddlerMap: Record<string, Record<string, unknown>> = {};
-  let count = 0;
-
-  for (const filePath of allFiles) {
-    const content  = readFileSync(filePath, "utf8");
-    const uriMatch = SOH_URI_RE.exec(content);
-    if (!uriMatch) continue;
-    const rawUri = uriMatch[1]!;
-    const uri    = rawUri.startsWith("lar:///") ? rawUri : `lar:///${rawUri}`;
-    try {
-      const fields = seedVm.deserializeCarrier(uri, content);
-      for (const f of fields) {
-        if (f["title"]) { tiddlerMap[f["title"] as string] = f; count++; }
-      }
-    } catch { /* malformed meme — skip */ }
-  }
-
-  seedVm.dispose();
-  console.log(`[genesis] lares plugin  ${count} tiddlers from ${allFiles.length} files`);
-
-  const pluginTiddler = {
-    title:          "$:/plugins/lararium/lares",
-    type:           "application/json",
-    "plugin-type": "plugin",
-    version:        TW5_VERSION,
-    text:           JSON.stringify({ tiddlers: tiddlerMap }),
-  };
-  return new TextEncoder().encode(JSON.stringify(pluginTiddler));
 }
 
 // ---------------------------------------------------------------------------
@@ -196,17 +138,12 @@ async function main(): Promise<void> {
   const actorId = deriveActorId(coreJsPath);
   console.log(`[genesis] actorId = ${actorId.slice(0, 16)}…`);
 
-  // 2. Build lares plugin blob.
-  console.log("[genesis] building lares plugin blob …");
-  const laresPluginBlob = await buildLaresPluginBlob();
-  const laresPluginSha  = sha256hex(laresPluginBlob);
-
-  // 3. Read TW5 core blob.
+  // 2. Read TW5 core blob.
   const coreBlob  = new Uint8Array(readFileSync(coreJsPath));
   const coreSha   = sha256hex(coreBlob);
   console.log(`[genesis] TW5 core  v${TW5_VERSION}  sha=${coreSha.slice(0, 12)}…`);
 
-  // 4. Collect vendored plugin blobs.
+  // 3. Collect vendored plugin blobs.
   const vendoredPlugins: LarariumBlobEntry[] = [];
   if (existsSync(tw5PluginsRoot)) {
     for (const file of readdirSync(tw5PluginsRoot).filter(f => f.endsWith(".json")).sort()) {
@@ -236,21 +173,14 @@ async function main(): Promise<void> {
     }
   }
 
-  // 5. Collect headered TW5 CJS tiddlers from dist-tiddlers/*.js.
-  const widgetBlobs: LarariumBlobEntry[] = [];
-  if (existsSync(tw5DistWidgetsRoot)) {
-    for (const file of readdirSync(tw5DistWidgetsRoot).filter(f => f.endsWith(".js")).sort()) {
-      const filePath = join(tw5DistWidgetsRoot, file);
-      const blob     = new Uint8Array(readFileSync(filePath));
-      const sha      = sha256hex(blob);
-      const name     = basename(file, ".js");
-      const id       = `lararium-widget-${name}`;
-      widgetBlobs.push({ id, version: TW5_VERSION, sha256: sha, mimeType: "application/javascript", blob });
-      console.log(`[genesis] widget blob  ${id}  sha=${sha.slice(0, 12)}…`);
-    }
+  if (!vendoredPlugins.some((p) => p.id === LARES_TW5_PLUGIN_TITLE)) {
+    throw new Error(
+      `[genesis] packed Lares TW5 plugin missing from ${tw5PluginsRoot}\n` +
+      `  → run: pnpm --filter @lararium/tw5 build:plugin`,
+    );
   }
 
-  // 6. Snapshot systemTitles from a bare VM boot.
+  // 4. Snapshot systemTitles from a bare VM boot.
   console.log("[genesis] snapshotting system titles …");
   const snapshotVm = new TW5Engine();
   await snapshotVm.boot();
@@ -258,7 +188,7 @@ async function main(): Promise<void> {
   snapshotVm.dispose();
   console.log(`[genesis] systemTitles count = ${systemTitles.length}`);
 
-  // 6. Create Automerge doc with pinned actor.
+  // 5. Create Automerge doc with pinned actor.
   //    Automerge.from() passes {} to its internal _change, ignoring the time option.
   //    Use init() + an explicit first change so every change gets time: 0.
   let doc = Automerge.init<LarariumDoc>({ actor: actorId });
@@ -270,7 +200,7 @@ async function main(): Promise<void> {
     r["systemTitles"]  = [];
   });
 
-  // 7. Write TW5 core blob.
+  // 6. Write TW5 core blob.
   const coreEntry: LarariumBlobEntry = {
     id:       ENGINE_CORE_ID,
     version:  TW5_VERSION,
@@ -285,38 +215,21 @@ async function main(): Promise<void> {
     (d.blobs as Record<string, LarariumBlobEntry>)[ENGINE_CORE_ID] = coreEntry;
   });
 
-  // 8. Write vendored plugin blobs.
+  // 7. Write vendored plugin blobs.
   for (const entry of vendoredPlugins) {
     doc = Automerge.change(doc, { time: 0 }, d => {
       (d.blobs as Record<string, LarariumBlobEntry>)[entry.id] = entry;
     });
   }
 
-  // 9. Write widget CJS blobs.
-  for (const entry of widgetBlobs) {
-    doc = Automerge.change(doc, { time: 0 }, d => {
-      (d.blobs as Record<string, LarariumBlobEntry>)[entry.id] = entry;
-    });
-  }
 
-  // 10. Write lares plugin blob.
-  doc = Automerge.change(doc, { time: 0 }, d => {
-    (d.blobs as Record<string, LarariumBlobEntry>)["lararium-lares"] = {
-      id:       "lararium-lares",
-      version:  TW5_VERSION,
-      sha256:   laresPluginSha,
-      mimeType: "application/json",
-      blob:     laresPluginBlob,
-    };
-  });
-
-  // 10. Write systemTitles.
+  // 8. Write systemTitles.
   doc = Automerge.change(doc, { time: 0 }, d => {
     if (d.systemTitles)
       (d.systemTitles as string[]).splice(0, d.systemTitles.length, ...systemTitles);
   });
 
-  // 11. Write default recipe tiddlers.
+  // 9. Write default recipe tiddlers.
   //     No `updatedAt` timestamps — genesis tiddlers carry no mutable state.
   doc = Automerge.change(doc, { time: 0 }, d => {
     const tiddlers = d.tiddlers as Record<string, unknown>;
@@ -364,7 +277,7 @@ async function main(): Promise<void> {
     };
   });
 
-  // 12. Write bag descriptor tiddlers.
+  // 10. Write bag descriptor tiddlers.
   const ROOT_BAGS = [
     { bagId: LARARIUM_DOC_URI,   label: "ha — engine & grammar (Lararium)",   readPolicy: "public",  writePolicy: "private" },
     { bagId: CATALOG_DOC_URI,    label: "ka — corpus discovery (Catalog)",     readPolicy: "public",  writePolicy: "private" },
@@ -386,7 +299,7 @@ async function main(): Promise<void> {
     }
   });
 
-  // 13. Write blob descriptor tiddlers.
+  // 11. Write blob descriptor tiddlers.
   doc = Automerge.change(doc, { time: 0 }, d => {
     const tiddlers = d.tiddlers as Record<string, unknown>;
     const blobs    = (d.blobs ?? {}) as Record<string, LarariumBlobEntry>;
@@ -412,7 +325,7 @@ async function main(): Promise<void> {
     }
   });
 
-  // 14. Two-pass CID injection.
+  // 12. Two-pass CID injection.
   //
   //   Pass 1: serialize the doc without the self-ref tiddler → compute sha256-pre.
   //   Pass 2: inject $:/lararium/genesis-cid tiddler carrying sha256-pre → re-serialize.
@@ -443,7 +356,7 @@ async function main(): Promise<void> {
   writeFileSync(join(GENESIS_DIR, "island.sha256"),      genesisSha + "\n",  "utf8");
   writeFileSync(join(GENESIS_DIR, "island.sha256-pre"),  preSha + "\n",      "utf8");
 
-  // 15. Smoke-test: reload and verify core blob + genesis-cid tiddler present.
+  // 13. Smoke-test: reload and verify core blob + genesis-cid tiddler present.
   const reloaded = Automerge.load<LarariumDoc>(genesisBytes);
   const blobCount    = Object.keys(reloaded.blobs ?? {}).length;
   const tiddlerCount = Object.keys(reloaded.tiddlers ?? {}).length;
@@ -454,17 +367,11 @@ async function main(): Promise<void> {
   if (storedCid !== preSha) {
     throw new Error(`[genesis] smoke-test FAILED: genesis-cid tiddler sha256 mismatch — stored=${storedCid} expected=${preSha}`);
   }
-  const widgetBlobIds = widgetBlobs.map(b => b.id);
-  for (const id of widgetBlobIds) {
-    if (!reloaded.blobs?.[id]) {
-      throw new Error(`[genesis] smoke-test FAILED: widget blob missing after reload: ${id}`);
-    }
-  }
 
   console.log(`[genesis] ✓ island.bin  ${(genesisBytes.byteLength / 1024).toFixed(0)} KB`);
   console.log(`[genesis] ✓ blobs=${blobCount}  tiddlers=${tiddlerCount}  systemTitles=${reloaded.systemTitles?.length ?? 0}`);
   console.log(`[genesis] ✓ sha256=${genesisSha}  sha256-pre=${preSha}`);
-  console.log("[genesis] S5 gate A satisfied — widget blobs wired + genesis-cid tiddler injected.");
+  console.log("[genesis] S5 gate A satisfied — plugin blobs wired + genesis-cid tiddler injected.");
 }
 
 main().catch(err => {

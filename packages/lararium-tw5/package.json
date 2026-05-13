@@ -32,7 +32,6 @@
     "build:tw5-vendor": "tsx scripts/build-tw5-vendor.ts",
     "build:heleuma": "tsx scripts/sync-heleuma.ts",
     "build:heleuma:commit": "tsx scripts/sync-heleuma.ts --commit",
-    "build:modules": "tsx scripts/write-tiddler-memes.ts",
     "build:plugin": "tsx scripts/build-plugin-tiddler.ts",
     "typecheck": "tsc --noEmit",
     "test": "NODE_OPTIONS=--experimental-vm-modules pnpm exec jest --config jest.config.cjs"

@@ -154,11 +154,17 @@ export function createInitWikiHandler(opts: WikiMintHandlerOptions): CommandHand
       const tiddlers = doc.tiddlers as Record<string, MutableLarRecord>;
       tiddlers[wikiKey] = {
         title: wikiKey, text: wikiHandle.url,
-        fields: { bag: BAG_IDS.catalog, authority: "lares-cli:wiki-init" },
+        fields: {
+          kind: "oracle",
+          bag: BAG_IDS.catalog,
+          authority: "lares-cli:wiki-init",
+          "path-filter": "lar-bag-path[wiki-shadow]",
+          "mirror-root": `wikis/@${slug}`,
+        },
       };
       tiddlers[draftKey] = {
         title: draftKey, text: draftHandle.url,
-        fields: { bag: BAG_IDS.catalog, authority: "lares-cli:wiki-init" },
+        fields: { kind: "oracle", bag: BAG_IDS.catalog, authority: "lares-cli:wiki-init" },
       };
     });
 

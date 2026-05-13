@@ -11,17 +11,19 @@
  * Module-type: wikirule. Classified by `types: { inline: true }`.
  */
 
+import { getGrammar } from "../deserializer.js";
 import {
   ParseTreeNode,
   WikiParser,
   RuleInstance,
-  BLOCK_CLOSERS,
   matchAhuOpenAt,
   matchUriFormSigilAt,
   matchPranalaHeaderAt,
   matchPranalaOpenAt,
   findCloseEnd,
   findGenericOpenAt,
+  buildClosers,
+  grammarInlineSigils,
   attrsForAhu,
   attrToTree,
 } from "./lar-sigil-shared.js";
@@ -34,7 +36,10 @@ export function init(this: RuleInstance, parser: WikiParser): void {
 }
 
 export function findNextMatch(this: RuleInstance, startPos: number): number | undefined {
-  const source = this.parser!.source;
+  const source      = this.parser!.source;
+  const grammar     = getGrammar();
+  const closers     = buildClosers(grammar);
+  const inlineSigils = grammarInlineSigils(grammar);
   let pos = source.indexOf("<<~", startPos);
   while (pos >= 0) {
     const ahu = matchAhuOpenAt(source, pos);
@@ -95,12 +100,19 @@ export function findNextMatch(this: RuleInstance, startPos: number): number | un
     }
     const generic = findGenericOpenAt(source, pos);
     if (generic) {
-      if (generic.sigil && BLOCK_CLOSERS[generic.sigil]) {
-        const blockClose = findCloseEnd(source, generic.sigil, generic.end);
+      if (generic.sigil && closers[generic.sigil]) {
+        const blockClose = findCloseEnd(source, generic.sigil, generic.end, closers);
         if (blockClose !== null) {
           pos = source.indexOf("<<~", pos + 3);
           continue;
         }
+      }
+      // Grammar-registered inline edge sigil — emit a widget node instead of literal.
+      if (generic.sigil && inlineSigils.has(generic.sigil)) {
+        this.matchPos = pos;
+        this.matchEnd = generic.end;
+        this.attrs    = { __sigil__: generic.sigil };
+        return pos;
       }
       this.matchPos = pos;
       this.matchEnd = generic.end;

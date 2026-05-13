@@ -9,10 +9,11 @@
  */
 
 import type {
-  LarProjectionKind, ReadinessMap, BagMirrorConfig,
+  LarProjectionKind, ReadinessMap,
 } from "@lararium/core";
 import type { TW5Engine } from "@lararium/tw5";
 import { LarDiskProjector } from "./disk-projector.js";
+import type { BagMirrorConfig } from "./bag-paths.js";
 
 export interface DiskKindDeps {
   /** Bag mirrors — one entry per writable bag that should reflect to disk. */

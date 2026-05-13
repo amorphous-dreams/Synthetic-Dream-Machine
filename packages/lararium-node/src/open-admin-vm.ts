@@ -60,9 +60,10 @@ export async function openAdminVm(opts: AdminVmOptions): Promise<AdminVmResult> 
   );
 
   const composite = new CompositeStore();
+  const adminStore = new AutomergeDocStore(adminHandle, ADMIN_BAG_ID);
   composite.addLayer({
     bagId:    ADMIN_BAG_ID,
-    store:    new AutomergeDocStore(adminHandle, ADMIN_BAG_ID),
+    store:    adminStore,
     writable: true,
   });
 
@@ -76,6 +77,12 @@ export async function openAdminVm(opts: AdminVmOptions): Promise<AdminVmResult> 
   // the wiki. The adaptor's onUriChanged handles the inbound direction;
   // saveTiddler handles outbound.
   composite.addProjection(adaptor);
+
+  // The admin doc is purely local — no remote Automerge sync peer to wait for.
+  // Mark sync complete immediately so the MemeSyncAdaptor flushes its buffer
+  // and the seeded bag-mirror config tiddlers are visible in the admin TW5 wiki
+  // before the first command handler runs.
+  adminStore.markSyncComplete();
 
   return {
     tw5,

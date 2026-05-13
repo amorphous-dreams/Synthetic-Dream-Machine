@@ -1,89 +1,100 @@
 /**
- * vite.plugin.config.ts — Vite library config that compiles each
- * plugin-eligible TS source to an independent CJS bundle.
+ * vite.plugin.config.ts — compile all plugin-owned TS entries to TW5 CJS tiddlers.
  *
- * Output JS files land in `src/tiddlers/` alongside the committed
- * `.tid` template files and `plugin.info`. TW5's `--packplugins`
- * assembles the final plugin artifact from that folder.
+ * Output JS files land in `tiddlers/src/`, while hand-authored `.tid` files and
+ * `plugin.info` live in `tiddlers/`. The TW5 pack step loads `tiddlers/` as a
+ * plugin folder and packs both static tiddlers and generated CJS module tiddlers.
  *
- * Each compiled JS file gets a `/*\ ... \*\/` header comment so TW5
- * can read the tiddler title and module-type directly from the file —
- * no `.meta` sidecar required (native TW5 pattern).
- *
- * **Format is CJS, not ESM:**
- *   TW5 wraps each module source as `(function(exports, require,
- *   module, $tw){...})`. Pure ESM `export default` does not run inside
- *   that wrapper. Vite's `output.format: "cjs"` + `exports: "named"`
- *   produces compatible output.
- *
- * **Externalize TW5 core:**
- *   Plugin modules `require("$:/core/...")` at runtime; we must NOT
- *   inline TW5 core into our bundle. The `external` predicate matches
- *   `^\$:/` paths so Vite leaves them as `require()` calls.
- *   The `tiddlywiki` npm package is also externalized — tw5-vm.ts uses
- *   a dynamic `import("tiddlywiki")` for Node-side VM; that must never
- *   be bundled into the plugin tiddler.
- *
- * **No source maps:**
- *   TW5's `evalGlobal` swallows external `.map` files. Inline maps
- *   bloat the plugin tiddler's text field. V.1 ships without maps;
- *   future enhancement: inline-data-URI maps if DX warrants.
- *
- * Run:
- *   pnpm --filter @lararium/tw5 build:plugin
+ * Each compiled JS file gets a native TW5 `/*\ ... \*\/` header comment so TW5
+ * can read the tiddler title and module-type directly from the file.
  */
 
 import { build } from "vite";
 import path from "path";
-import { fileURLToPath } from "url";
+import { fileURLToPath, pathToFileURL } from "url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-const PLUGIN_TITLE_LAR = "lar:///plugins/lares/memetic-wikitext";
+export type PluginModuleType =
+  | "wikirule"
+  | "widget"
+  | "parser"
+  | "tiddlerdeserializer"
+  | "macro"
+  | "library";
 
-function moduleTypeToSubpath(moduleType: string): string {
-  switch (moduleType) {
-    case "wikirule":           return "wikirules";
-    case "widget":             return "widgets";
-    case "parser":             return "parsers";
-    case "tiddlerdeserializer": return "deserializers";
-    case "macro":              return "macros";
-    default:                   return moduleType + "s";
-  }
+export interface PluginBuildEntry {
+  entry:      string;
+  name:       string;
+  moduleType: PluginModuleType;
+  title:      string;
+  anchor?:    string;
+  footer?:    string;
+}
+
+export const TIDDLERS_DIR = "tiddlers";
+export const TIDDLER_SRC_DIR = "tiddlers/src";
+
+const LAR_TW5 = "lar:///ha.ka.ba/@lararium/tw5";
+
+function tw5Title(subpath: string, name: string): string {
+  return `${LAR_TW5}/${subpath}/${name}`;
+}
+
+function anchor(subpath: string, name: string): string {
+  return `${subpath}/${name}.md`;
 }
 
 /**
- * Plugin source entries. Each TS file gets compiled to its own CJS
- * bundle and lands in src/tiddlers/ with an embedded TW5 header comment.
+ * All generated CJS tiddlers that belong in the packed plugin.
+ *
+ * Early-alpha rule: one build path owns executable TW5 JavaScript. Bag memes may
+ * point at these bodies by hash/module-ref, but the executable tiddlers get
+ * packed from `tiddlers/src/`, not duplicated into `bags/`.
  */
-export const PLUGIN_ENTRIES: Array<{
-  entry:      string;
-  name:       string;
-  moduleType: "wikirule" | "widget" | "parser" | "tiddlerdeserializer" | "macro";
-}> = [
-  { entry: "src/wikirules/lar-sigil-block.ts",           name: "lar-sigil-block",                moduleType: "wikirule"           },
-  { entry: "src/wikirules/lar-sigil-inline.ts",          name: "lar-sigil-inline",               moduleType: "wikirule"           },
-  { entry: "src/wikirules/lar-doctype-comment.ts",       name: "lar-doctype-comment",            moduleType: "wikirule"           },
-  { entry: "src/widgets/ahu.ts",                         name: "ahu",                            moduleType: "widget"             },
-  { entry: "src/widgets/aka.ts",                         name: "aka",                            moduleType: "widget"             },
-  { entry: "src/widgets/kahea.ts",                       name: "kahea",                          moduleType: "widget"             },
-  { entry: "src/widgets/loulou.ts",                      name: "loulou",                         moduleType: "widget"             },
-  { entry: "src/widgets/pranala.ts",                     name: "pranala",                        moduleType: "widget"             },
-  { entry: "src/widgets/pranala-header.ts",              name: "pranala-header",                 moduleType: "widget"             },
-  { entry: "src/widgets/kau.ts",                         name: "kau",                            moduleType: "widget"             },
-  { entry: "src/widgets/lar-meme-split.ts",              name: "lar-meme-split",                 moduleType: "widget"             },
-  { entry: "src/memetic-parser.ts",                      name: "memetic-parser",                 moduleType: "parser"             },
-  { entry: "src/deserializer.ts",                        name: "memetic-wikitext-deserializer",  moduleType: "tiddlerdeserializer" },
-  { entry: "src/macros/lar-iam-block.ts",                name: "lar-iam-block",                  moduleType: "macro"              },
+export const PLUGIN_ENTRIES: PluginBuildEntry[] = [
+  // Wikirules.
+  { entry: "src/wikirules/lar-sigil-block.ts",     name: "lar-sigil-block",     moduleType: "wikirule", title: tw5Title("wikirules", "lar-sigil-block") },
+  { entry: "src/wikirules/lar-sigil-inline.ts",    name: "lar-sigil-inline",    moduleType: "wikirule", title: tw5Title("wikirules", "lar-sigil-inline") },
+  { entry: "src/wikirules/lar-doctype-comment.ts", name: "lar-doctype-comment", moduleType: "wikirule", title: tw5Title("wikirules", "lar-doctype-comment") },
+
+  // Widgets.
+  { entry: "src/widgets/ahu.ts",            name: "ahu",            moduleType: "widget", title: tw5Title("widgets", "ahu"),            anchor: anchor("widgets", "ahu") },
+  { entry: "src/widgets/aka.ts",            name: "aka",            moduleType: "widget", title: tw5Title("widgets", "aka") },
+  { entry: "src/widgets/kahea.ts",          name: "kahea",          moduleType: "widget", title: tw5Title("widgets", "kahea") },
+  { entry: "src/widgets/loulou.ts",         name: "loulou",         moduleType: "widget", title: tw5Title("widgets", "loulou") },
+  { entry: "src/widgets/pranala.ts",        name: "pranala",        moduleType: "widget", title: tw5Title("widgets", "pranala"),        anchor: anchor("widgets", "pranala") },
+  { entry: "src/widgets/pranala-header.ts", name: "pranala-header", moduleType: "widget", title: tw5Title("widgets", "pranala-header") },
+  { entry: "src/widgets/kau.ts",            name: "kau",            moduleType: "widget", title: tw5Title("widgets", "kau"),            anchor: anchor("widgets", "kau") },
+  { entry: "src/widgets/lar-meme-split.ts", name: "lar-meme-split", moduleType: "widget", title: tw5Title("widgets", "lar-meme-split") },
+
+  // Parser/deserializer/macros.
+  { entry: "src/memetic-parser.ts",       name: "memetic-parser",               moduleType: "parser",             title: tw5Title("parsers", "memetic-parser") },
+  {
+    entry:      "src/deserializer.ts",
+    name:       "memetic-wikitext-deserializer",
+    moduleType: "tiddlerdeserializer",
+    title:      tw5Title("modules", "deserializer"),
+    anchor:     anchor("modules", "deserializer"),
+    footer:     `\nexports["text/x-memetic-wikitext"] = exports.memeticWikitextDeserializer;`,
+  },
+  { entry: "src/macros/lar-iam-block.ts", name: "lar-iam-block", moduleType: "macro", title: tw5Title("macros", "lar-iam-block") },
+
+  // Library modules + filter helpers that the Lararium VM can require/register.
+  { entry: "src/modules/lar-promote.ts",  name: "lar-promote",        moduleType: "library", title: tw5Title("modules", "lar-promote"),        anchor: anchor("modules", "lar-promote") },
+  { entry: "src/meme-ast-entry.ts",       name: "meme-ast",           moduleType: "library", title: tw5Title("modules", "meme-ast") },
+  { entry: "src/cold-boot-ceremony.ts",   name: "cold-boot-ceremony", moduleType: "library", title: tw5Title("modules", "cold-boot-ceremony"), anchor: anchor("modules", "cold-boot-ceremony") },
+  { entry: "src/filters/implementors.ts", name: "implementors",       moduleType: "library", title: tw5Title("filters", "implementors"),       anchor: anchor("filters", "implementors") },
+  { entry: "src/filters/edge.ts",         name: "edge",               moduleType: "library", title: tw5Title("filters", "edge"),               anchor: anchor("filters", "edge") },
+  { entry: "src/filters/toml-field.ts",   name: "toml-field",         moduleType: "library", title: tw5Title("filters", "toml-field"),         anchor: anchor("filters", "toml-field") },
 ];
 
-const OUT_DIR = "src/tiddlers";
+export function tiddlerHeader(entry: PluginBuildEntry): string {
+  return `/*\\\ntitle: ${entry.title}\ntype: application/javascript\nmodule-type: ${entry.moduleType}\n\\*/\n`;
+}
 
-async function main(): Promise<void> {
+export async function buildPluginCjsTiddlers(outDir = TIDDLER_SRC_DIR): Promise<void> {
   for (const entry of PLUGIN_ENTRIES) {
-    const tiddlerTitle = `${PLUGIN_TITLE_LAR}/${moduleTypeToSubpath(entry.moduleType)}/${entry.name}.js`;
-    const banner = `/*\\\ntitle: ${tiddlerTitle}\ntype: application/javascript\nmodule-type: ${entry.moduleType}\n\\*/\n`;
-
     await build({
       configFile: false,
       logLevel:   "warn",
@@ -93,16 +104,17 @@ async function main(): Promise<void> {
           formats:  ["cjs"],
           fileName: () => `${entry.name}.js`,
         },
-        outDir:      OUT_DIR,
+        outDir,
         emptyOutDir: false,
         sourcemap:   false,
         minify:      false,
         rollupOptions: {
           external: (id) => id.startsWith("$:/") || id === "tiddlywiki" || id.startsWith("tiddlywiki/"),
           output: {
-            banner,
+            banner:   tiddlerHeader(entry),
             esModule: false,
             exports:  "named",
+            ...(entry.footer ? { footer: entry.footer } : {}),
           },
         },
       },
@@ -113,12 +125,18 @@ async function main(): Promise<void> {
         },
       },
     });
+    console.log(`[plugin-build] ${outDir}/${entry.name}.js`);
   }
-
-  console.log(`✓ Vite emitted ${PLUGIN_ENTRIES.length} plugin module bundles to ${OUT_DIR}/`);
 }
 
-main().catch((err) => {
-  console.error(err);
-  process.exit(1);
-});
+async function main(): Promise<void> {
+  await buildPluginCjsTiddlers();
+  console.log(`✓ Vite emitted ${PLUGIN_ENTRIES.length} plugin module bundles to ${TIDDLER_SRC_DIR}/`);
+}
+
+if (import.meta.url === pathToFileURL(process.argv[1] ?? "").href) {
+  main().catch((err) => {
+    console.error(err);
+    process.exit(1);
+  });
+}

@@ -1,9 +1,12 @@
+title: lar:///ha.ka.ba/@lares/api/v0.1/pono/memetic-wikitext
+type: text/x-memetic-wikitext
+
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/@lares/api/v0.1/pono/memetic-wikitext >> -->
 
 <<~⊙&#x0001; ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/memetic-wikitext >>
 ```toml iam
 uri-path  = "ha.ka.ba/@lares/api/v0.1/pono/memetic-wikitext"
-file-path = "bags/@lares/api/v0.1/pono/memetic-wikitext.md"
+file-path = "packages/lararium-tw5/tiddlers/memetic-wikitext.tid"
 type      = "text/x-memetic-wikitext"
 tagspace  = "stable"
 confidence = 0.92

@@ -43,5 +43,5 @@ export const LARARIUM_WIDGETS_TIDDLER = {
 } as const;
 
 // All cascade configs, templates, macros, and the meme-split mount have
-// moved to src/tiddlers/*.tid and src/macros/*.ts.
-// Build pipeline: Vite → src/tiddlers/*.js → tiddlywiki --packplugins → dist-plugin/
+// moved to tiddlers/*.tid and src/macros/*.ts.
+// Build pipeline: Vite → tiddlers/src/*.js → TW5 plugin pack → dist-plugin/

@@ -12,7 +12,8 @@ import { laresRoot, repoRoot } from "@lares/core";
 
 // Path roots — no carrier dependency; kept verbatim.
 export const LARES_ROOT        = laresRoot;
-export const LARES_MEMES_ROOT  = join(laresRoot, "memes");
+export const BAGS_ROOT         = join(repoRoot, "bags");
+export const LARES_MEMES_ROOT  = join(BAGS_ROOT, "@lares");  // legacy alias
 export const REPO_ROOT         = repoRoot;
 
 // CorpusSource — structural contract used by serve.ts; no carrier dependency.

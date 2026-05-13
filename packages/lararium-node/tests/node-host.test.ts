@@ -1,12 +1,10 @@
 /**
  * lararium-node — causal island URI resolver + grammar runtime tests.
  *
- * Node-host duties: filesystem hydration, carrier index compilation, grammar
- * seeding (disk → CRDT once; runtime reads CRDT — never disk again).
- *
- * Tests exercise pure, I/O-free functions from @lararium/core plus the one
- * grammar round-trip that reads the canonical lares/api/v0.1/pono/memetic-wikitext.md
- * carrier from disk (present in the monorepo; stable contract).
+ * All tests are pure and I/O-free. Grammar tests use inline TOML fixtures
+ * to prove grammarRulesFromText() parses correctly — no disk reads.
+ * The grammar content round-trip (shadow tiddler in built plugin) lives in
+ * scripts/test-quine.ts.
  *
  * No HTTP, no OAuth routes, no web2 auth ceremony.
  *
@@ -20,10 +18,52 @@ import {
   isHostfulLarUri,
   abilityImplies,
   grammarRulesFromText,
+  GRAMMAR_MEME_URI,
 } from "@lararium/core";
-import { readFileSync, existsSync } from "fs";
-import { join } from "path";
-import { LARES_ROOT } from "../src/node-host.js";
+
+// Minimal inline grammar fixture — exercises [[sigils]] and [[families]] TOML
+// parsing without touching the filesystem. Proves the extractor works; the
+// full canonical grammar content is verified by test-quine.ts at build time.
+const GRAMMAR_FIXTURE = `\
+<<~ ? -> ${GRAMMAR_MEME_URI} >>
+\`\`\`toml iam
+uri-path = "ha.ka.ba/@lares/api/v0.1/pono/memetic-wikitext"
+\`\`\`
+<<~>>
+\`\`\`toml
+[[sigils]]
+name = "ahu"
+kind = "block"
+open_pattern = "<<~ ahu"
+close_pattern = "<<~/ahu >>"
+
+[[sigils]]
+name = "pranala"
+kind = "edge"
+inline_pattern = "<<~ pranala"
+
+[[sigils]]
+name = "loulou"
+kind = "edge"
+inline_pattern = "<<~ loulou"
+
+[[sigils]]
+name = "aka"
+kind = "edge"
+inline_pattern = "<<~ aka"
+
+[[sigils]]
+name = "kahea"
+kind = "edge"
+inline_pattern = "<<~ kahea"
+
+[[families]]
+name = "reaction"
+dag_required = "true"
+role_recommended = "true"
+confidence_bounded = "false"
+\`\`\`
+<<~>>`;
 
 // ---------------------------------------------------------------------------
 // lar:/// URI resolver — isomorphic, pure (no I/O)
@@ -93,25 +133,17 @@ describe("parseHostfulLarUri", () => {
 });
 
 // ---------------------------------------------------------------------------
-// grammarRulesFromText — reads real grammar carrier from lares/
+// grammarRulesFromText — pure inline fixture, no I/O
 // ---------------------------------------------------------------------------
 
-describe("grammarRulesFromText — real lares/api/v0.1/pono/memetic-wikitext.md", () => {
-  const grammarPath = join(LARES_ROOT, "api", "v0.1", "pono", "memetic-wikitext.md");
-  const grammarExists = existsSync(grammarPath);
-
-  // Skip gracefully if the carrier is not present (CI without full repo).
-  const maybeTest = grammarExists ? test : test.skip;
-
-  maybeTest("loads grammar carrier from disk", () => {
-    const text = readFileSync(grammarPath, "utf8");
-    const rules = grammarRulesFromText("lar:///ha.ka.ba/@lares/api/v0.1/pono/memetic-wikitext", text);
+describe("grammarRulesFromText — inline fixture", () => {
+  test("parses sigils and families from TOML", () => {
+    const rules = grammarRulesFromText(GRAMMAR_MEME_URI, GRAMMAR_FIXTURE);
     expect(rules).not.toBeNull();
   });
 
-  maybeTest("extracts expected sigil names", () => {
-    const text  = readFileSync(grammarPath, "utf8");
-    const rules = grammarRulesFromText("lar:///ha.ka.ba/@lares/api/v0.1/pono/memetic-wikitext", text);
+  test("extracts expected sigil names", () => {
+    const rules = grammarRulesFromText(GRAMMAR_MEME_URI, GRAMMAR_FIXTURE);
     const names = rules!.sigils.map((s) => s.name);
     expect(names).toContain("ahu");
     expect(names).toContain("pranala");
@@ -120,19 +152,16 @@ describe("grammarRulesFromText — real lares/api/v0.1/pono/memetic-wikitext.md"
     expect(names).toContain("kahea");
   });
 
-  maybeTest("ahu sigil has open and close patterns", () => {
-    const text = readFileSync(grammarPath, "utf8");
-    const rules = grammarRulesFromText("lar:///ha.ka.ba/@lares/api/v0.1/pono/memetic-wikitext", text);
+  test("ahu sigil has open and close patterns", () => {
+    const rules = grammarRulesFromText(GRAMMAR_MEME_URI, GRAMMAR_FIXTURE);
     const ahu = rules!.sigils.find((s) => s.name === "ahu");
     expect(ahu?.openPattern).toBeTruthy();
     expect(ahu?.closePattern).toBeTruthy();
   });
 
-  maybeTest("papalohe/reaction family registered (Phase 2x)", () => {
-    const text = readFileSync(grammarPath, "utf8");
-    const rules = grammarRulesFromText("lar:///ha.ka.ba/@lares/api/v0.1/pono/memetic-wikitext", text);
+  test("reaction family registered", () => {
+    const rules = grammarRulesFromText(GRAMMAR_MEME_URI, GRAMMAR_FIXTURE);
     const families = rules!.families.map((f) => f.name);
-    // reaction family powers kumu device event wiring
     expect(families).toContain("reaction");
   });
 });

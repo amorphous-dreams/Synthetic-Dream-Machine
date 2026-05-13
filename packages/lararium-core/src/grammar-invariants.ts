@@ -29,25 +29,20 @@
  *   circle. Path β (fragment tiddler storage) was evaluated and rejected: moving
  *   deserialization earlier in boot tightens, not relaxes, the dependency.
  *
- * Invariant 3 — Grammar travels in the genesis artifact:  (@phase: S2 — declared now; implemented Sprint 2)
- *   The grammar meme travels as an ordinary tiddler inside genesis/island.bin —
- *   an Automerge.save() binary embedded in the bundle at build time. No peer
- *   reads grammar from any filesystem path at runtime. At boot, repo.import(genesisBytes)
- *   hydrates the full engine doc; the grammar tiddler is present with its sealed
- *   content-hash. A peer whose genesis binary is absent or whose grammar tiddler
- *   hash diverges from the sealed root MUST halt rather than fall back to any
- *   local filesystem source.
+ * Invariant 3 — Grammar travels inside the compiled plugin blob in genesis:
+ *   The grammar meme lives as a shadow tiddler inside the compiled plugin
+ *   (`lar:///plugins/lares/memetic-wikitext`), which travels in genesis/island.bin
+ *   as a blob entry. No peer reads grammar from any filesystem path at runtime.
+ *   At boot, TW5 loads the plugin; the grammar tiddler is available immediately
+ *   as a shadow tiddler via `$tw.wiki.getTiddlerText(GRAMMAR_MEME_URI)`.
  *
- *   Grammar version bump = new genesis binary with a new artifact root. No in-place
- *   upgrade path exists until Keyhive provides signed migration receipts
- *   (Invariant 6). Code that assumes the current grammar hash is permanent will
- *   break on version bump; plan for this before S2 ships.
+ *   Invariant 4 (operator shadow-override) is satisfied automatically by TW5's
+ *   shadow tiddler resolution: any tiddler at GRAMMAR_MEME_URI in a higher-
+ *   priority bag shadows the plugin shadow, extending the grammar vocabulary
+ *   without modifying the plugin artifact.
  *
- *   Transitional state (pre-S2): the node peer reads lares/pono/memetic-wikitext.md
- *   at cold-boot with BOOTSTRAP_SCANS, seeds the engine doc, then treats CRDT as
- *   authoritative. Named exception: CODEC_EX_PRE_S2_COLD_BOOT in
- *   system-invariants.ts. It disappears when build-genesis-island.ts ships.
- *   See GRAMMAR_GENESIS_REL_PATH — marked @remove: S2.
+ *   Grammar version bump = plugin rebuild + genesis rebuild. No in-place upgrade
+ *   path exists until Keyhive provides signed migration receipts (Invariant 6).
  *
  * Invariant 4 — Operator shadow-override via bag priority:
  *   Operators may extend or override grammar rules by creating a tiddler at the
@@ -87,12 +82,6 @@ export const GRAMMAR_MEME_URI =
  * Must equal LARARIUM_DOC_URI (lowest-priority bag) so room tiddlers can shadow it (Invariant 4).
  */
 export { LARARIUM_DOC_URI as GRAMMAR_BAG } from "./lararium-doc.js";
-
-/**
- * Relative path of the grammar genesis artifact within the lares/ directory.
- * Used only during cold-boot seeding (Invariant 3). Not read at runtime.
- */
-export const GRAMMAR_GENESIS_REL_PATH = "api/v0.1/pono/memetic-wikitext.md" as const;
 
 // ---------------------------------------------------------------------------
 // Version gate stub — Keyhive (Invariant 6)
