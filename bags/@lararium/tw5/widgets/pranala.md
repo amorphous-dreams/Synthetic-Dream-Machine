@@ -10,8 +10,8 @@ role          = "anchor: PranalaWidget — heleuma ka"
 heleuma       = "ka"
 source-file   = "packages/lararium-tw5/src/widgets/pranala.ts"
 source-symbol = "PranalaWidget"
-module-ref    = "lar:///ha.ka.ba/@lararium/tw5/widgets/pranala-tw5"
-body-sha256 = "a63ee2d1f282e023463cfe4149e1b17a7a297aa5ecf5a63c5a0f5288a9a94388"
+module-ref    = "lar:///ha.ka.ba/@lararium/tw5/widgets/pranala"
+body-sha256 = "d267465aae34d12c365d545f6f1986f180160bc853717cd8183b151946093e70"
 cacheable     = true
 retain        = true
 ```
@@ -42,7 +42,7 @@ export function PranalaWidget(this: TW5WidgetInstance, parseTreeNode: TW5ParseTr
 
 <<~ pranala #to-pono ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/pranala family:control role:implements >>
 <<~ pranala #to-tw5-widgets ? -> lar:///ha.ka.ba/@lararium/tw5/modules/tw5-widgets family:control role:implements >>
-<<~ pranala #to-module ? -> lar:///ha.ka.ba/@lararium/tw5/widgets/pranala-tw5 family:control role:module >>
+<<~ pranala #to-module ? -> lar:///ha.ka.ba/@lararium/tw5/widgets/pranala family:control role:module >>
 
 <<~/ahu >>
 

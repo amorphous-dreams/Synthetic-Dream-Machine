@@ -10,8 +10,8 @@ role          = "anchor: registerTomlFieldOperator — heleuma ka"
 heleuma       = "ka"
 source-file   = "packages/lararium-tw5/src/filters/toml-field.ts"
 source-symbol = "registerTomlFieldOperator"
-module-ref    = "lar:///ha.ka.ba/@lararium/tw5/filters/toml-field-tw5"
-body-sha256 = "1062e83173e8d690cb0f5807e47022ca2cd27aef93dbafec5bb2b9096baae950"
+module-ref    = "lar:///ha.ka.ba/@lararium/tw5/filters/toml-field"
+body-sha256 = "d0a10207ac1214920941fc0f1fe77cf8854ab90a8e84900f47901a86ac9889e5"
 cacheable     = true
 retain        = true
 ```
@@ -49,7 +49,7 @@ tw.filterOperators["toml"] = function (source: TW5FilterSource, operator: TW5Fil
 <<~ ahu #edges >>
 
 <<~ pranala #to-tw5-widgets ? -> lar:///ha.ka.ba/@lararium/tw5/modules/tw5-widgets family:control role:implements >>
-<<~ pranala #to-module ? -> lar:///ha.ka.ba/@lararium/tw5/filters/toml-field-tw5 family:control role:module >>
+<<~ pranala #to-module ? -> lar:///ha.ka.ba/@lararium/tw5/filters/toml-field family:control role:module >>
 
 <<~/ahu >>
 

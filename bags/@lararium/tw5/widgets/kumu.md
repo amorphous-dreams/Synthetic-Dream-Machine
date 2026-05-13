@@ -10,7 +10,7 @@ role          = "anchor: KumuWidget — heleuma ka"
 heleuma       = "ka"
 source-file   = "packages/lararium-tw5/src/widgets/kumu.ts"
 source-symbol = "KumuWidget"
-module-ref    = "lar:///ha.ka.ba/@lararium/tw5/widgets/kumu-tw5"
+module-ref    = "lar:///ha.ka.ba/@lararium/tw5/widgets/kumu"
 body-sha256 = "c1e80bba7199d50b4b3fdcf34a6faa61961960f1c8661de6287d9d9cf7281001"
 cacheable     = true
 retain        = true
@@ -42,7 +42,7 @@ export function KumuWidget(this: TW5WidgetInstance, parseTreeNode: TW5ParseTreeN
 
 <<~ pranala #to-pono ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/kumu family:control role:implements >>
 <<~ pranala #to-tw5-widgets ? -> lar:///ha.ka.ba/@lararium/tw5/modules/tw5-widgets family:control role:implements >>
-<<~ pranala #to-module ? -> lar:///ha.ka.ba/@lararium/tw5/widgets/kumu-tw5 family:control role:module >>
+<<~ pranala #to-module ? -> lar:///ha.ka.ba/@lararium/tw5/widgets/kumu family:control role:module >>
 
 <<~/ahu >>
 

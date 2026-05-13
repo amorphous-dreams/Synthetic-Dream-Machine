@@ -37,11 +37,10 @@ import { resolve, relative, dirname } from "path";
 import { fileURLToPath } from "url";
 import { repoRoot } from "@lares/core";
 
-/** Root of packages/lararium-tw5/ — the package that owns these memes. */
-const tw5MemesRoot = resolve(fileURLToPath(import.meta.url), "../../memes");
-
 const root     = repoRoot;
 const pkgsRoot = resolve(root, "packages");
+/** Canonical bag mirror for @lararium/tw5 memes. */
+const tw5MemesRoot = resolve(root, "bags", "@lararium", "tw5");
 
 const args             = process.argv.slice(2);
 const COMMIT           = args.includes("--commit");
@@ -75,12 +74,14 @@ function parseToml(block: string): Record<string, string> {
 
 function walkExt(dir: string, ext: string): string[] {
   const results: string[] = [];
-  for (const entry of readdirSync(dir)) {
-    const full = resolve(dir, entry);
-    const stat = statSync(full);
-    if (stat.isDirectory()) results.push(...walkExt(full, ext));
-    else if (entry.endsWith(ext)) results.push(full);
-  }
+  try {
+    for (const entry of readdirSync(dir)) {
+      const full = resolve(dir, entry);
+      const stat = statSync(full);
+      if (stat.isDirectory()) results.push(...walkExt(full, ext));
+      else if (entry.endsWith(ext)) results.push(full);
+    }
+  } catch { /* missing dir — return empty */ }
   return results;
 }
 
@@ -593,7 +594,7 @@ function scaffoldDecoratorMeme(d: DecoratorFile): void {
   if (existsSync(memePath)) return; // already exists — drift check handles it
 
   const uriPath   = `${d.uriPrefix}/${d.slug}`;
-  const filePath  = `packages/lararium-tw5/memes/${d.uriPrefix.replace("ha.ka.ba/@lararium/tw5/", "")}/${d.slug}.md`;
+  const filePath  = relative(root, resolve(d.memeDir, `${d.slug}.md`));
   const srcSym    = d.symbols.join(" ");
   const bodies    = d.symbols.map(s => extractSymbol(d.relPath, s) ?? "").filter(Boolean);
   const joined    = bodies.join("\n\n");
@@ -726,7 +727,7 @@ if (SYNC_MODULES) {
 
 if (COMMIT) {
   // build:heleuma owns all TS → CJS packaging.
-  // Run write-tiddler-memes.ts first so CJS bodies are spliced into *-tw5.md tiddlers
+  // Run write-tiddler-memes.ts first so headered CJS tiddlers are regenerated.
   // before the #source + body-sha256 drift check runs.
   const scriptsDir = dirname(fileURLToPath(import.meta.url));
   console.log("[heleuma] --commit: building IIFEs and splicing into module tiddlers…\n");

@@ -13,7 +13,7 @@ status-date  = "2026-05-01"
 heleuma      = "ka"
 source-file  = "packages/lararium-tw5/src/meme-ast-entry.ts"
 source-symbol = "parseMemeText"
-module-ref   = "lar:///ha.ka.ba/@lares/docs/lararium/meme-ast-tw5"
+module-ref   = "lar:///ha.ka.ba/@lares/docs/lararium/meme-ast"
 implements   = ["lar:///ha.ka.ba/@lares/api/v0.1/pono/heleuma/ka"]
 body-sha256 = "a31316c2e25c7209328b72006b8cfa76a65365403452a630b397508083e9a2ad"
 ```
@@ -39,7 +39,7 @@ Composable source files in `packages/lararium-core/src/meme-ast/`:
 Public API sub-export: `@lararium/core/meme-ast`
 
 Vite CJS entry: `packages/lararium-tw5/src/meme-ast-entry.ts`
-Compiled artifact: `packages/lararium-tw5/memes/modules/meme-ast-tw5.md`
+Compiled artifact: `packages/lararium-tw5/dist-tiddlers/meme-ast.js`
 Build: `pnpm --filter @lararium/tw5 build:modules`
 
 <<~/ahu >>
@@ -51,7 +51,7 @@ Build: `pnpm --filter @lararium/tw5 build:modules`
 <<~ pranala #builder ? -> lar:///ha.ka.ba/@lararium/tw5/core/meme-ast/builder family:data role:defines >>
 <<~ pranala #edges ? -> lar:///ha.ka.ba/@lararium/tw5/core/meme-ast/edges family:data role:defines >>
 <<~ pranala #parse ? -> lar:///ha.ka.ba/@lararium/tw5/core/meme-ast/parse family:data role:defines >>
-<<~ pranala #module ? -> lar:///ha.ka.ba/@lares/docs/lararium/meme-ast-tw5 family:control role:compiles-to >>
+<<~ pranala #module ? -> lar:///ha.ka.ba/@lares/docs/lararium/meme-ast family:control role:compiles-to >>
 <<~ pranala #deserializer ? -> lar:///ha.ka.ba/@lararium/tw5/modules/deserializer family:control role:consumed-by >>
 
 <<~/ahu >>

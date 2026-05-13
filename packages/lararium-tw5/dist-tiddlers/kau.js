@@ -1,15 +1,17 @@
+/*\
+title: lar:///ha.ka.ba/@lararium/tw5/widgets/kau
+type: application/javascript
+module-type: widget
+\*/
 Object.defineProperty(exports, Symbol.toStringTag, { value: "Module" });
 //#region src/widgets/render-modes.ts
 /**
-* Dispatch text-output render modes for a child-slot sigil widget.
-* Returns the raw text string to emit, or null if HTML mode should proceed.
+* Dispatch projection-mode emission for a child-slot sigil widget.
+* Returns the raw text string for projection mode, or null otherwise
+* (caller must handle HTML / markdown-meme via cascades).
 */
 function dispatchSlotRenderMode(mode, ctx) {
-	const { sigil, slot, childUri, wiki } = ctx;
-	if (mode === "carrier") return {
-		kind: "text",
-		raw: `<<~ ${sigil} ${slot} >>\n${wiki.getTiddlerText?.(childUri, "") ?? ""}\n<<~/${sigil} >>`
-	};
+	const { sigil, slot } = ctx;
 	if (mode === "projection") return {
 		kind: "text",
 		raw: `<<~ aka ${sigil} ${slot} >>`
@@ -18,6 +20,7 @@ function dispatchSlotRenderMode(mode, ctx) {
 }
 //#endregion
 //#region src/widgets/kau.ts
+var Widget = require("$:/core/modules/widgets/widget.js").widget;
 var _kauCapabilityHook = null;
 function registerKauCapabilityHook(hook) {
 	_kauCapabilityHook = hook;
@@ -29,6 +32,7 @@ function registerKauWriteBackHook(hook) {
 function KauWidget(parseTreeNode, options) {
 	this.initialise(parseTreeNode, options);
 }
+KauWidget.prototype = Object.create(Widget.prototype);
 KauWidget.prototype.render = function(parent, _nextSibling) {
 	this.parentDomNode = parent;
 	this.computeAttributes();
@@ -49,7 +53,7 @@ KauWidget.prototype.render = function(parent, _nextSibling) {
 			document: this.document
 		});
 		if (modeResult !== null) {
-			if (renderMode === "carrier") {
+			if (renderMode === "markdown-meme") {
 				const parts = [
 					`<<~ kau #${fragment}`,
 					name,
@@ -138,6 +142,6 @@ KauWidget.prototype.refresh = function(changedTiddlers) {
 	return changed;
 };
 //#endregion
-exports.KauWidget = KauWidget;
+exports.kau = KauWidget;
 exports.registerKauCapabilityHook = registerKauCapabilityHook;
 exports.registerKauWriteBackHook = registerKauWriteBackHook;

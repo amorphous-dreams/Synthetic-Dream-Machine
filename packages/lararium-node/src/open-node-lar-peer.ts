@@ -56,7 +56,6 @@ import { NodeVmManager }                  from "./node-vm-manager.js";
 import { waitHandleLocal }                from "./repo-helpers.js";
 import { openAdminVm }                    from "./open-admin-vm.js";
 import { CommandDispatcher, CommandHandlerRegistry } from "./command-dispatcher.js";
-import { createPromoteHandler }                     from "./promote-handler.js";
 import { createWhereHandler }                       from "./where-handler.js";
 import {
   createListWikisHandler, createInitWikiHandler,
@@ -385,9 +384,11 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
   // Forward note: when federated promotion lands (UCAN-gated, any wiki VM),
   // this single registration generalizes — the handler stays the same; the
   // composite reference becomes "the requesting peer's composite + cap chain".
-  commandRegistry.register("promote", createPromoteHandler({ composite }));
-  // Read-only recipe-presence query — `lares promote` previews source bag via
-  // this command before writing the promote command itself.
+  // Promotion now happens inside the client TW5 wiki via the lar-promote
+  // library module (module-type: library, bags/@lararium/tw5/v0.1/modules/lar-promote.md).
+  // The node peer is a pure disk syncer — it receives CRDT changes with the
+  // correct bag + file-path already set by the wiki VM.
+  // Read-only recipe-presence query — `lares where` previews source bag.
   commandRegistry.register("where",   createWhereHandler({ composite }));
   // E.4 — read-only wiki commands. write commands (init/sync/pin/etc) land
   // in E.5+. `list-wikis` walks the catalog for wiki oracle tiddlers.

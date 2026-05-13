@@ -89,5 +89,5 @@ Prefer adding reusable helpers to `tests/bin/` instead of copying daemon setup c
 - fixture meme copy;
 - `lares wiki sync`;
 - decomposition into parent + child meme files;
-- optional `lares promote` into isolated `tests/packages/**`;
+- optional `lares promote` into isolated `tests/bags/**`;
 - normalized diff against `tests/expected/wikis/**`.

@@ -51,7 +51,7 @@ This flow:
 4. copies `tests/src/the-lares-protocols.md` into the wiki;
 5. runs `lares wiki sync`;
 6. verifies child meme decomposition against `tests/expected/wikis/**`;
-7. optionally promotes to the isolated canonical `tests/packages/**` tree and diffs again.
+7. optionally promotes to the isolated canonical `tests/bags/**` tree and diffs again.
 
 ## Adding new flows
 

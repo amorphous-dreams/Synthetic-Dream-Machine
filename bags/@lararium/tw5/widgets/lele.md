@@ -10,7 +10,7 @@ role          = "anchor: LeleWidget — heleuma ka"
 heleuma       = "ka"
 source-file   = "packages/lararium-tw5/src/widgets/lele.ts"
 source-symbol = "LeleWidget"
-module-ref    = "lar:///ha.ka.ba/@lararium/tw5/widgets/lele-tw5"
+module-ref    = "lar:///ha.ka.ba/@lararium/tw5/widgets/lele"
 body-sha256 = "8899582a8999aa95120eff4ee43a1b2a272288cdcb98d0fa54256389c9449210"
 cacheable     = true
 retain        = true
@@ -42,7 +42,7 @@ export function LeleWidget(this: TW5WidgetInstance, parseTreeNode: TW5ParseTreeN
 
 <<~ pranala #to-pono ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/lele family:control role:implements >>
 <<~ pranala #to-tw5-widgets ? -> lar:///ha.ka.ba/@lararium/tw5/modules/tw5-widgets family:control role:implements >>
-<<~ pranala #to-module ? -> lar:///ha.ka.ba/@lararium/tw5/widgets/lele-tw5 family:control role:module >>
+<<~ pranala #to-module ? -> lar:///ha.ka.ba/@lararium/tw5/widgets/lele family:control role:module >>
 
 <<~/ahu >>
 

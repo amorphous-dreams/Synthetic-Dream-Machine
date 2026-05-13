@@ -1,3 +1,8 @@
+/*\
+title: lar:///ha.ka.ba/@lararium/tw5/filters/toml-field
+type: application/javascript
+module-type: library
+\*/
 Object.defineProperty(exports, Symbol.toStringTag, { value: "Module" });
 //#region src/filters/toml-field.ts
 /** toml:key[val] — field filter using TOML field names directly.

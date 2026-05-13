@@ -1,3 +1,8 @@
+/*\
+title: lar:///ha.ka.ba/@lararium/tw5/modules/deserializer
+type: application/javascript
+module-type: tiddlerdeserializer
+\*/
 Object.defineProperty(exports, Symbol.toStringTag, { value: "Module" });
 //#region ../lararium-core/dist/meme-stream.js
 /**
@@ -27,8 +32,8 @@ var SOH_RE = /<<~(?:[^>]|->)*&#x(?:0001|0011);(?:[^>]|->)*\?\s*->\s*([^\s>]+)\s*
 var STX_RE = /<<~(?:[^>]|->)*&#x0002;(?:[^>]|->)*>>/;
 var ETX_RE = /<<~(?:[^>]|->)*&#x0003;(?:[^>]|->)*>>/;
 var EOT_RE = /<<~(?:(?:[^>]|->)*&#x(?:0004|0014);(?:[^>]|->)*|\s*->\s*\?)\s*>>/;
-var AHU_OPEN_RE = /<<~(?:[^>]|->)*\bahu\s+(#[\w-]+)\s*>>/;
-var AHU_CLOSE_RE = /<<~\/ahu\s*>>/;
+var AHU_OPEN_RE$1 = /<<~(?:[^>]|->)*\bahu\s+(#[\w-]+)\s*>>/;
+var AHU_CLOSE_RE$1 = /<<~\/ahu\s*>>/;
 function find(text, re) {
 	const m = re.exec(text);
 	if (!m) return null;
@@ -135,7 +140,7 @@ var MemeStreamParser = class {
 				if (!this._inAhu) {
 					const hit = earliest({
 						tag: "ahu",
-						h: find(remaining, AHU_OPEN_RE)
+						h: find(remaining, AHU_OPEN_RE$1)
 					}, {
 						tag: "etx",
 						h: find(remaining, ETX_RE)
@@ -164,8 +169,8 @@ var MemeStreamParser = class {
 					this._gc();
 					continue;
 				}
-				const closeH = find(remaining, AHU_CLOSE_RE);
-				const openH = find(remaining, AHU_OPEN_RE);
+				const closeH = find(remaining, AHU_CLOSE_RE$1);
+				const openH = find(remaining, AHU_OPEN_RE$1);
 				if (openH && (!closeH || openH.index < closeH.index)) {
 					this._ahuDepth++;
 					this._pos += openH.end;
@@ -202,979 +207,131 @@ var MemeStreamParser = class {
 	}
 };
 //#endregion
-//#region ../lararium-core/dist/meme-ast/scanner.js
+//#region ../lararium-core/dist/meme-ast/ahu-scan.js
 /**
-* meme-ast/scanner.ts — regex scan patterns + collectEvents().
+* ahu-scan — single source of truth for ahu sigil block recognition.
 *
-* Local-first, isomorphic: no fs/path/DOM imports.
-* Runs in Node, Deno, browser, and TW5-era JS environments.
+* Three callers consume this module identically:
+*   - `@lararium/tw5/src/deserializer.ts` (CLI / sync ingest)
+*   - `@lararium/tw5/src/widgets/lar-meme-split.ts` (TW5 UX save)
+*   - `@lararium/tw5/src/wikirules/memetic-wikitext-sigil.ts` (render-time
+*      parse via TW5 wikifier)
 *
-* A SigilScan is one regex pass over the source text. collectEvents() runs all
-* scans, deduplicates by position, and returns a position-sorted ParseEvent[].
-* The caller (builder.ts) feeds these into the push/pop scope stack.
+* One regex pair, one balanced-bracket scanner, one slot-path composer —
+* any drift between callers is a bug, so they share this module.
 *
-* Heleuma ka: sync-heleuma tracks this file.
-* Bundle entry: packages/lararium-tw5/src/meme-ast-entry.ts
+* Schema: lar:///ha.ka.ba/@lares/api/v0.1/lararium/schema/ahu-scan
 */
-var BOOTSTRAP_SCANS = [
-	{
-		sigilName: "control-soh",
-		regex: /<<~(?:[^>]|->)*&#x0001;(?:[^>]|->)*\?\s*->\s*([^\s>]+)\s*>>/g,
-		eventType: "pragma"
-	},
-	{
-		sigilName: "control-stx",
-		regex: /<<~(?:[^>]|->)*&#x0002;(?:[^>]|->)*>>/g,
-		eventType: "pragma"
-	},
-	{
-		sigilName: "control-etx",
-		regex: /<<~(?:[^>]|->)*&#x0003;(?:[^>]|->)*>>/g,
-		eventType: "pragma"
-	},
-	{
-		sigilName: "control-eot",
-		regex: /<<~(?:[^>]|->)*&#x0004;(?:[^>]|->)*>>/g,
-		eventType: "pragma"
-	},
-	{
-		sigilName: "control-soh",
-		regex: /<<~(?:[^>]|->)*&#x0011;(?:[^>]|->)*\?\s*->\s*([^\s>]+)\s*>>/g,
-		eventType: "pragma"
-	},
-	{
-		sigilName: "control-eot",
-		regex: /<<~(?:[^>]|->)*&#x0014;(?:[^>]|->)*>>/g,
-		eventType: "pragma"
-	},
-	{
-		sigilName: "ahu",
-		regex: /<<~(?:[^>]|->)*\bahu\s+(#[\w-]+)(?:\s+->\s+(\S+))?\s*>>/g,
-		eventType: "open"
-	},
-	{
-		sigilName: "ahu",
-		regex: /<<~\/ahu\s*>>/g,
-		eventType: "close"
-	},
-	{
-		sigilName: "pranala",
-		regex: /<<~\s*pranala\s+(#[\w-]+\s+)?(\S+)\s*->\s*(\S+)(?:\s+family:([\w-]+))?(?:\s+role:([\w-]+))?\s*>>([\s\S]*?)<<~\/pranala\s*>>/gs,
-		eventType: "leaf"
-	},
-	{
-		sigilName: "pranala",
-		regex: /<<~\s*pranala\s+(#[\w-]+\s+)?(\S+)\s*->\s*(\S+)(?:\s+family:([\w-]+))?(?:\s+role:([\w-]+))?\s*>>/g,
-		eventType: "leaf"
-	},
-	{
-		sigilName: "loulou",
-		regex: /<<~\s*loulou\s+(\S+)\s*>>/g,
-		eventType: "leaf"
-	},
-	{
-		sigilName: "aka",
-		regex: /<<~\s*aka\s+([a-z][\w-]*)\s+(#[\w-]+)\s*>>/g,
-		eventType: "leaf"
-	},
-	{
-		sigilName: "aka",
-		regex: /<<~\s*aka\s+(\S+)\s*>>/g,
-		eventType: "leaf"
-	},
-	{
-		sigilName: "kahea-invoke",
-		regex: /<<~\s*kahea\s+([a-z][\w-]*)\s+([^>\n]+?)\s*>>/g,
-		eventType: "leaf"
-	},
-	{
-		sigilName: "kahea-invoke",
-		regex: /<<~\s*kahea\s+([a-z][\w-]*)(?:\s+([^>]*?))?\s*>>/g,
-		eventType: "open"
-	},
-	{
-		sigilName: "kahea-invoke",
-		regex: /<<~\/kahea\s*>>/g,
-		eventType: "close"
-	},
-	{
-		sigilName: "kahea",
-		regex: /<<~\s*kahea\s+(lar:[^\s>]+|[^\s>(]+\/[^\s>]*|[^\s>(]+#[^\s>]*)\s*>>/g,
-		eventType: "leaf"
-	},
-	{
-		sigilName: "pono",
-		regex: /<<~\s*pono\s+(#[\w-]+\s+)?(\S+)\s*->\s*(\S+)(?:\s+role:([\w-]+))?\s*>>/g,
-		eventType: "leaf"
-	},
-	{
-		sigilName: "\\constraint",
-		canonicalName: "pono",
-		regex: /<<~\s*\\constraint\s+(#[\w-]+\s+)?(\S+)\s*->\s*(\S+)(?:\s+role:([\w-]+))?\s*>>/g,
-		eventType: "leaf"
-	},
-	{
-		sigilName: "lele",
-		regex: /<<~\s*lele\s+(\S+)\s*>>/g,
-		eventType: "leaf"
-	},
-	{
-		sigilName: "papalohe",
-		regex: /<<~\s*papalohe\s+(#[\w-]+\s+)?(\S+)\s*->\s*(\S+)(?:\s+listenable:([\w.-]+))?(?:\s+subscribable:([\w.-]+))?\s*>>/g,
-		eventType: "leaf"
-	},
-	{
-		sigilName: "toml",
-		regex: /```toml(?:[ \t]+([A-Za-z0-9_-]+))?[ \t]*\n([\s\S]*?)```/g,
-		eventType: "leaf"
-	},
-	{
-		sigilName: "toml",
-		regex: /<<~\s*toml\s*>>([\s\S]*?)<<~\/toml\s*>>/g,
-		eventType: "leaf"
-	},
-	{
-		sigilName: "waiho",
-		regex: /<<~!\s*waiho\s+([\w-]+)\s*=\s*([^\n>]+?)\s*>>/g,
-		eventType: "pragma"
-	},
-	{
-		sigilName: "waiho",
-		regex: /<<~\s*waiho\s+([\w-]+)\s*=\s*([^\n>]+?)\s*>>/g,
-		eventType: "open"
-	},
-	{
-		sigilName: "waiho",
-		regex: /<<~\/waiho\s*>>/g,
-		eventType: "close"
-	},
-	{
-		sigilName: "kau",
-		regex: /<<~\s*kau\s+([\w][\w.-]*)\(([^)]*)\)\s*>>/g,
-		eventType: "leaf"
-	},
-	{
-		sigilName: "kau",
-		regex: /<<~\s*kau\s+(#[\w-]+\s+)?([\w][\w.-]*)(?:\s+([^>]*))?\s*>>/g,
-		eventType: "leaf"
-	},
-	{
-		sigilName: "wai",
-		regex: /<<~\s*wai\s+([^\n>]+?)\s*>>/g,
-		eventType: "open"
-	},
-	{
-		sigilName: "wai",
-		regex: /<<~\/wai\s*>>/g,
-		eventType: "close"
-	},
-	{
-		sigilName: "mukuwai",
-		regex: /<<~\s*mukuwai\s*>>/g,
-		eventType: "leaf"
-	},
-	{
-		sigilName: "kahawai",
-		regex: /<<~\s*kahawai\s+([^\n>]+?)\s*>>/g,
-		eventType: "leaf"
-	},
-	{
-		sigilName: "huli",
-		regex: /<<~\s*huli\s+([^\n>]+?)\s+as\s+([\w-]+)\s*>>/g,
-		eventType: "open"
-	},
-	{
-		sigilName: "huli",
-		regex: /<<~\/huli\s*>>/g,
-		eventType: "close"
-	},
-	{
-		sigilName: "\\if",
-		canonicalName: "wai",
-		regex: /<<~\s*\\if\s+([^\n>]+?)\s*>>/g,
-		eventType: "open"
-	},
-	{
-		sigilName: "\\if",
-		canonicalName: "wai",
-		regex: /<<~\/\\if\s*>>/g,
-		eventType: "close"
-	},
-	{
-		sigilName: "\\else",
-		canonicalName: "mukuwai",
-		regex: /<<~\s*\\else\s*>>/g,
-		eventType: "leaf"
-	},
-	{
-		sigilName: "\\elif",
-		canonicalName: "kahawai",
-		regex: /<<~\s*\\elif\s+([^\n>]+?)\s*>>/g,
-		eventType: "leaf"
-	},
-	{
-		sigilName: "\\const",
-		canonicalName: "waiho",
-		regex: /<<~!\s*\\const\s+([\w-]+)\s*=\s*([^\n>]+?)\s*>>/g,
-		eventType: "pragma"
-	},
-	{
-		sigilName: "\\let",
-		canonicalName: "waiho",
-		regex: /<<~\s*\\let\s+([\w-]+)\s*=\s*([^\n>]+?)\s*>>/g,
-		eventType: "open"
-	},
-	{
-		sigilName: "\\let",
-		canonicalName: "waiho",
-		regex: /<<~\/\\let\s*>>/g,
-		eventType: "close"
-	},
-	{
-		sigilName: "\\var",
-		canonicalName: "waiho",
-		regex: /<<~\s*\\var\s+([\w-]+)\s*=\s*([^\n>]+?)\s*>>/g,
-		eventType: "open"
-	},
-	{
-		sigilName: "\\var",
-		canonicalName: "waiho",
-		regex: /<<~\/\\var\s*>>/g,
-		eventType: "close"
-	},
-	{
-		sigilName: "kumu",
-		regex: /<<~\s*kumu\s+([\w-]+)(?:\(([^)]*)\))?\s*>>/g,
-		eventType: "open"
-	},
-	{
-		sigilName: "kumu",
-		regex: /<<~\/kumu\s*>>/g,
-		eventType: "close"
-	},
-	{
-		sigilName: "\\widget",
-		canonicalName: "kumu",
-		regex: /<<~!\s*\\widget\s+([\w-]+)(?:\(([^)]*)\))?\s*>>/g,
-		eventType: "open"
-	},
-	{
-		sigilName: "\\widget",
-		canonicalName: "kumu",
-		regex: /<<~\/\\widget\s*>>/g,
-		eventType: "close"
-	},
-	{
-		sigilName: "\\task",
-		canonicalName: "hana",
-		regex: /<<~\s*\\task\s+([^\n>]+?)\s*>>/g,
-		eventType: "open"
-	},
-	{
-		sigilName: "\\task",
-		canonicalName: "hana",
-		regex: /<<~\/\\task\s*>>/g,
-		eventType: "close"
-	},
-	{
-		sigilName: "kukali",
-		regex: /<<~\s*kukali(?:\s+trigger:([\w.-]+))?\s*>>/g,
-		eventType: "leaf"
-	},
-	{
-		sigilName: "\\suspends",
-		canonicalName: "kukali",
-		regex: /<<~\s*\\suspends(?:\s+trigger:([\w.-]+))?\s*>>/g,
-		eventType: "leaf"
-	}
-];
-function safeRegex(src, flags) {
-	try {
-		return new RegExp(src, flags);
-	} catch {
-		return null;
-	}
-}
-function buildScansFromGrammar(sigils) {
-	const scans = [];
-	for (const s of sigils) {
-		const extra = s.aliasFor ? { canonicalName: s.aliasFor } : {};
-		if (s.openPattern) {
-			const rx = safeRegex(s.openPattern, "g");
-			if (rx) scans.push({
-				sigilName: s.name,
-				...extra,
-				regex: rx,
-				eventType: "open"
-			});
-		}
-		if (s.closePattern) {
-			const rx = safeRegex(s.closePattern, "g");
-			if (rx) scans.push({
-				sigilName: s.name,
-				...extra,
-				regex: rx,
-				eventType: "close"
-			});
-		}
-		if (s.pragmaPattern) {
-			const rx = safeRegex(s.pragmaPattern, "g");
-			if (rx) scans.push({
-				sigilName: s.name,
-				...extra,
-				regex: rx,
-				eventType: "pragma"
-			});
-		}
-		if (s.blockPattern) {
-			const rx = safeRegex(s.blockPattern, "gs");
-			if (rx) scans.push({
-				sigilName: s.name,
-				...extra,
-				regex: rx,
-				eventType: "leaf"
-			});
-		}
-		if (s.inlinePattern) {
-			const rx = safeRegex(s.inlinePattern, "g");
-			if (rx) scans.push({
-				sigilName: s.name,
-				...extra,
-				regex: rx,
-				eventType: "leaf"
-			});
-		}
-		if (s.pattern && !s.openPattern && !s.blockPattern && !s.inlinePattern) {
-			const flags = s.name === "pranala" ? "gs" : "g";
-			const rx = safeRegex(s.pattern, flags);
-			if (rx) scans.push({
-				sigilName: s.name,
-				...extra,
-				regex: rx,
-				eventType: "leaf"
-			});
-		}
-	}
-	return scans.sort((a, b) => (a.sigilName.startsWith("control-") ? 0 : 1) - (b.sigilName.startsWith("control-") ? 0 : 1));
-}
-function collectEvents(text, grammar) {
-	const scans = grammar ? buildScansFromGrammar(grammar.sigils) : BOOTSTRAP_SCANS;
-	const blockSpans = [];
-	for (const m of text.matchAll(/<<~\s*pranala\s+(#[\w-]+\s+)?(\S+)\s*->\s*(\S+)\s*>>([\s\S]*?)<<~\/pranala\s*>>/gs)) blockSpans.push([m.index, m.index + m[0].length]);
-	const inBlock = (pos) => blockSpans.some(([s, e]) => pos >= s && pos < e);
-	const seen = /* @__PURE__ */ new Set();
-	const events = [];
-	for (const scan of scans) {
-		const rx = new RegExp(scan.regex.source, scan.regex.flags.includes("s") ? "gs" : "g");
-		const emitName = scan.canonicalName ?? scan.sigilName;
-		for (const m of text.matchAll(rx)) {
-			const pos = m.index;
-			if (seen.has(pos)) continue;
-			if (scan.eventType !== "open" && scan.eventType !== "close" && inBlock(pos)) continue;
-			seen.add(pos);
-			events.push({
-				pos,
-				end: pos + m[0].length,
-				raw: m[0],
-				sigilName: emitName,
-				eventType: scan.eventType,
-				groups: [...m]
-			});
-		}
-	}
-	return events.sort((a, b) => a.pos - b.pos || a.end - b.end);
-}
-//#endregion
-//#region ../lararium-core/dist/meme-ast/builder.js
 /**
-* meme-ast/builder.ts — buildMemeAst(): ParseEvent[] → MemeAstNode[].
+* Slot identifier — supports nested fragment paths via `/`-separated
+* segments per memetic-wikitext spec §nested-ahu and lar-uri.md §5.6.
 *
-* Local-first, isomorphic: no fs/path/DOM imports.
-* Runs in Node, Deno, browser, and TW5-era JS environments.
-*
-* The push/pop scope stack converts the flat sorted ParseEvent stream into a
-* properly nested MemeAstNode tree. This is the structural heart of the parser.
-*
-* Heleuma ka: sync-heleuma tracks this file.
-* Bundle entry: packages/lararium-tw5/src/meme-ast-entry.ts
+* `<<~ ahu #parent/child/grandchild >>` opens a slot whose URI is
+* `parentURI#parent/child/grandchild` — single-hash invariant; the
+* fragment-path is the addressable hierarchy.
 */
-var CANONICAL_SIGILS = new Set([
-	"ahu",
-	"kahea-invoke",
-	"pranala",
-	"loulou",
-	"aka",
-	"kahea",
-	"pono",
-	"lele",
-	"papalohe",
-	"wai",
-	"mukuwai",
-	"kahawai",
-	"huli",
-	"kumu",
-	"kau",
-	"waiho",
-	"kukali",
-	"toml",
-	"control-soh",
-	"control-stx",
-	"control-etx",
-	"control-eot",
-	"hana",
-	"meme",
-	"wehe",
-	"helu",
-	"kapu",
-	"hui",
-	"heihei",
-	"puka",
-	"ui"
+var AHU_OPEN_RE = /<<~[^>]*\bahu\s+(#[\w-]+(?:\/[\w-]+)*)(?:\s+->\s+\S+)?\s*>>/g;
+var AHU_CLOSE_RE = /<<~\/ahu\s*>>/g;
+/**
+* Ahu slot names that carry structural metadata, not addressable content.
+* They dissolve into the parent or are structural-only — not split into
+* child tiddlers. Per memetic-wikitext.md §161 (Ahu Control Slots).
+*/
+var CONTROL_SLOTS = new Set([
+	"#iam",
+	"#exit",
+	"#stream-open",
+	"#stream-close",
+	"#stream-exit",
+	"#body-open",
+	"#body-close",
+	"#meme-body-open",
+	"#meme-body-close"
 ]);
-function attrsFromGroups(name, groups, scope = "block") {
-	const g = (i) => (groups[i] ?? "").trim();
-	switch (name) {
-		case "wai": return { filter: g(1) };
-		case "kahawai": return { filter: g(1) };
-		case "huli": return {
-			filter: g(1),
-			binding: g(2)
-		};
-		case "hana": return { grammarKey: g(1) };
-		case "meme": return { targetUri: g(1) };
-		case "wehe":
-		case "kumu": return {
-			name: g(1),
-			params: g(2)
-		};
-		case "helu": return {
-			name: g(1),
-			params: g(2),
-			expression: g(3)
-		};
-		case "waiho": return {
-			name: g(1),
-			value: g(2),
-			scope
-		};
-		case "kau": return {
-			name: g(1),
-			value: g(2),
-			scope
-		};
-		case "kapu": return {
-			qualifier: g(1),
-			inline: scope === "carrier" ? "true" : "false"
-		};
-		case "ui": return { filter: g(1) };
-		case "kukali": return g(1) ? { trigger: g(1) } : {};
-		case "toml": return {
-			profile: g(1),
-			content: g(2)
-		};
-		default: return {};
-	}
-}
-function kaheaInvokeNode(type, args, base, memeUri, children) {
-	if (type === "ahu") {
-		const slot = args.trim();
-		return {
-			kind: "Ahu",
-			...base,
-			slot,
-			uri: memeUri + slot,
-			delegate: null,
-			body: children,
-			invocation: true
-		};
-	}
-	return {
-		kind: "Sigil",
-		...base,
-		sigilName: type,
-		attrs: {
-			summon: "true",
-			args
-		},
-		body: children
-	};
-}
-function closeFrame(frame, memeUri, grammar) {
-	const { sigilName, pos, raw, groups, children } = frame;
-	const base = {
-		pos,
-		raw
-	};
-	const g = (i) => (groups[i] ?? "").trim();
-	if (sigilName === "ahu") return {
-		kind: "Ahu",
-		...base,
-		slot: g(1),
-		uri: memeUri + g(1),
-		delegate: g(2) || null,
-		body: children
-	};
-	if (sigilName === "kahea-invoke") return kaheaInvokeNode(g(1), g(2), base, memeUri, children);
-	if (sigilName === "pranala") {
-		const body = groups[4] ?? "";
-		const family = body.match(/\bfamily\s*=\s*"([\w-]+)"/)?.[1] ?? "relation";
-		const role = body.match(/\brole\s*=\s*"([\w-]+)"/)?.[1] ?? null;
-		return {
-			kind: "Pranala",
-			...base,
-			slot: g(1) || null,
-			fromRaw: g(2),
-			toRaw: g(3),
-			family,
-			role,
-			body: children
-		};
-	}
-	if (CANONICAL_SIGILS.has(sigilName)) return {
-		kind: "Sigil",
-		...base,
-		sigilName,
-		attrs: attrsFromGroups(sigilName, groups, "block"),
-		body: children
-	};
-	const sigilKind = grammar?.sigils.find((s) => s.name === sigilName)?.kind ?? "unknown";
-	return {
-		kind: "Dynamic",
-		...base,
-		sigilName,
-		sigilKind,
-		eventType: "open-close",
-		body: children
-	};
-}
-function makeLeaf(sigilName, eventType, pos, raw, groups, memeUri, ahuStack, grammar) {
-	const base = {
-		pos,
-		raw
-	};
-	const g = (i) => (groups[i] ?? "").trim();
-	switch (sigilName) {
-		case "pranala": return {
-			kind: "Pranala",
-			...base,
-			slot: g(1) || null,
-			fromRaw: g(2),
-			toRaw: g(3),
-			family: g(4) || "relation",
-			role: g(5) || null,
-			body: []
-		};
-		case "loulou": return {
-			kind: "PranalaSugar",
-			...base,
-			sigil: "loulou",
-			slot: null,
-			fromRaw: null,
-			toRaw: g(1),
-			family: "relation",
-			role: null,
-			listenable: null,
-			subscribable: null
-		};
-		case "aka": {
-			const akaSlot = g(2);
-			if (akaSlot) return {
-				kind: "Ahu",
-				...base,
-				slot: akaSlot,
-				uri: memeUri + akaSlot,
-				delegate: null,
-				body: [],
-				projection: true
-			};
-			return {
-				kind: "PranalaSugar",
-				...base,
-				sigil: "aka",
-				slot: null,
-				fromRaw: null,
-				toRaw: g(1),
-				family: "observe",
-				role: null,
-				listenable: null,
-				subscribable: null
-			};
-		}
-		case "kahea-invoke": return kaheaInvokeNode(g(1), g(2), base, memeUri, []);
-		case "kahea": return {
-			kind: "PranalaSugar",
-			...base,
-			sigil: "kahea",
-			slot: null,
-			fromRaw: null,
-			toRaw: g(1),
-			family: "dataflow",
-			role: null,
-			listenable: null,
-			subscribable: null
-		};
-		case "kau": {
-			const scope = eventType === "pragma" ? "carrier" : "block";
-			if (raw.match(/<<~!?\s*kau\s+[\w-]+\s*=/)) return {
-				kind: "Sigil",
-				...base,
-				sigilName: "kau",
-				attrs: {
-					name: g(1),
-					value: g(2),
-					scope
-				},
-				body: []
-			};
-			if (g(3) === "" && g(1) !== "" && !g(1).startsWith("#") && raw.includes("(")) return {
-				kind: "Sigil",
-				...base,
-				sigilName: "kau",
-				attrs: {
-					name: g(1),
-					args: g(2)
-				},
-				body: []
-			};
-			if (!g(1) && g(2) && g(3) === "") return {
-				kind: "Sigil",
-				...base,
-				sigilName: "kau",
-				attrs: {
-					name: g(2),
-					args: ""
-				},
-				body: []
-			};
-			const fragment = g(1).replace(/^#/, "").trim() || null;
-			return {
-				kind: "Sigil",
-				...base,
-				sigilName: "kau",
-				attrs: {
-					fragment: fragment ?? "",
-					name: g(2),
-					propsRaw: g(3)
-				},
-				body: []
-			};
-		}
-		case "pono": return {
-			kind: "PranalaSugar",
-			...base,
-			sigil: "pono",
-			slot: g(1) || null,
-			fromRaw: g(2),
-			toRaw: g(3),
-			family: "constraint",
-			role: g(4) || null,
-			listenable: null,
-			subscribable: null
-		};
-		case "papalohe": return {
-			kind: "PranalaSugar",
-			...base,
-			sigil: "papalohe",
-			slot: g(1) || null,
-			fromRaw: g(2),
-			toRaw: g(3),
-			family: "reaction",
-			role: null,
-			listenable: g(4) || null,
-			subscribable: g(5) || null
-		};
-		case "lele": return {
-			kind: "Lele",
-			...base,
-			targetRaw: g(1),
-			family: "message"
-		};
-		case "toml": return {
-			kind: "Sigil",
-			...base,
-			sigilName: "toml",
-			attrs: {
-				profile: groups[2] !== void 0 ? groups[1] ?? "" : "",
-				content: groups[2] ?? groups[1] ?? ""
-			},
-			body: []
-		};
-		case "control-soh": return {
-			kind: "Pae",
-			...base,
-			phase: "soh",
-			toUri: g(1) || void 0
-		};
-		case "control-stx": return {
-			kind: "Pae",
-			...base,
-			phase: "stx"
-		};
-		case "control-etx": return {
-			kind: "Pae",
-			...base,
-			phase: "etx"
-		};
-		case "control-eot": return {
-			kind: "Pae",
-			...base,
-			phase: "eot"
-		};
-		default: {
-			if (CANONICAL_SIGILS.has(sigilName)) {
-				const scope = eventType === "pragma" ? "carrier" : "block";
-				return {
-					kind: "Sigil",
-					...base,
-					sigilName,
-					attrs: attrsFromGroups(sigilName, groups, scope),
-					body: []
-				};
-			}
-			const sigilKind = grammar?.sigils.find((s) => s.name === sigilName)?.kind ?? "unknown";
-			return {
-				kind: "Dynamic",
-				...base,
-				sigilName,
-				sigilKind,
-				eventType: eventType === "pragma" ? "pragma" : "leaf",
-				body: []
-			};
-		}
-	}
-}
-function buildMemeAst(events, memeUri, grammar, sourceText) {
-	const root = [];
+/**
+* Scan top-level ahu blocks. Nested ahu blocks remain inside their parent's
+* `[bodyStart, bodyEnd)` span; callers walk recursively when they need
+* full-depth flattening.
+*
+* Balanced-bracket pairing: openers/closers go onto a stack; an unmatched
+* closer is dropped silently (caller's error to recover). Ties on position
+* resolve by event order — opener emits before closer.
+*/
+function findTopLevelAhuBlocks(text) {
+	AHU_OPEN_RE.lastIndex = 0;
+	AHU_CLOSE_RE.lastIndex = 0;
+	const events = [];
+	let m;
+	while ((m = AHU_OPEN_RE.exec(text)) !== null) events.push({
+		kind: "open",
+		pos: m.index,
+		end: AHU_OPEN_RE.lastIndex,
+		slot: m[1] ?? "#"
+	});
+	while ((m = AHU_CLOSE_RE.exec(text)) !== null) events.push({
+		kind: "close",
+		pos: m.index,
+		end: AHU_CLOSE_RE.lastIndex,
+		slot: ""
+	});
+	events.sort((a, b) => a.pos - b.pos);
+	const blocks = [];
 	const stack = [];
-	const ahuStack = [];
-	let cursor = 0;
-	const top = () => stack.length > 0 ? stack[stack.length - 1].children : root;
-	const emitTextGap = (upTo) => {
-		if (!sourceText || upTo <= cursor) return;
-		const span = sourceText.slice(cursor, upTo);
-		if (span.trim()) top().push({
-			kind: "Text",
-			pos: cursor,
-			raw: span,
-			content: span
-		});
-	};
-	for (const evt of events) {
-		const { sigilName, eventType, pos, end, raw, groups } = evt;
-		emitTextGap(pos);
-		if (eventType === "open") {
-			stack.push({
-				sigilName,
-				pos,
-				raw,
-				groups,
-				children: []
-			});
-			if (sigilName === "ahu") ahuStack.push(memeUri + (groups[1] ?? "").trim());
-			cursor = end;
-			continue;
-		}
-		if (eventType === "close") {
-			let i = stack.length - 1;
-			while (i >= 0 && stack[i].sigilName !== sigilName) i--;
-			if (i < 0) {
-				cursor = end;
-				continue;
-			}
-			while (stack.length - 1 > i) top().push(closeFrame(stack.pop(), memeUri, grammar));
-			const frame = stack.pop();
-			if (sigilName === "ahu") ahuStack.pop();
-			top().push(closeFrame(frame, memeUri, grammar));
-			cursor = end;
-			continue;
-		}
-		top().push(makeLeaf(sigilName, eventType, pos, raw, groups, memeUri, ahuStack, grammar));
-		cursor = end;
-	}
-	if (sourceText && cursor < sourceText.length) {
-		const span = sourceText.slice(cursor);
-		if (span.trim()) top().push({
-			kind: "Text",
-			pos: cursor,
-			raw: span,
-			content: span
+	for (const ev of events) if (ev.kind === "open") stack.push({
+		openStart: ev.pos,
+		bodyStart: ev.end,
+		slot: ev.slot
+	});
+	else {
+		const opener = stack.pop();
+		if (!opener) continue;
+		if (stack.length === 0) blocks.push({
+			openStart: opener.openStart,
+			bodyStart: opener.bodyStart,
+			bodyEnd: ev.pos,
+			closeEnd: ev.end,
+			slot: opener.slot
 		});
 	}
-	while (stack.length > 0) {
-		const frame = stack.pop();
-		if (frame.sigilName === "ahu") ahuStack.pop();
-		root.push(closeFrame(frame, memeUri, grammar));
-	}
-	return root;
+	return blocks;
+}
+/**
+* Compose a fragment-path slot identifier under an enclosing prefix.
+*
+*   composeSlotPath("",          "#thesis")   → "#thesis"          (root child)
+*   composeSlotPath("#parent",   "#child")    → "#parent/child"    (one nested)
+*   composeSlotPath("#a/b",      "#c")        → "#a/b/c"           (two nested)
+*
+* Slot identifiers carrying their own `/`-paths (operator-authored
+* pre-flattened) get appended verbatim under the prefix.
+*/
+function composeSlotPath(prefix, slot) {
+	if (!prefix) return slot;
+	return `${prefix}/${slot.startsWith("#") ? slot.slice(1) : slot}`;
 }
 //#endregion
-//#region ../lararium-core/dist/meme-ast/edges.js
+//#region ../lararium-core/dist/lararium-doc.js
 /**
-* meme-ast/edges.ts — edgesFromMemeAst(): MemeAstNode[] → PranalaEdge[].
+* Derive the stable lar: URI identity for a wiki.
+* Wikis live in the @lararium sub-namespace — no collision with @-scope doc roots.
+* e.g. wikiLarUri("altar-fire") → "lar:///ha.ka.ba/@lararium/wikis/altar-fire"
 *
-* Local-first, isomorphic: no fs/path/DOM imports.
-* Runs in Node, Deno, browser, and TW5-era JS environments.
-*
-* Projects edge declarations (Pranala, PranalaSugar, Lele, Pae/soh) out of
-* a parsed meme AST into the flat PranalaEdge record format consumed by the
-* meme graph, MCP export, and TW5 edge-field codec.
-*
-* Heleuma ka: sync-heleuma tracks this file.
-* Bundle entry: packages/lararium-tw5/src/meme-ast-entry.ts
+* This URI forms the map key in CatalogDoc.wikis.
+* The CatalogRoomEntry.id field retains the short slug for readability.
 */
-function edgesFromMemeAst(ast, memeUri) {
-	const edges = [];
-	walkForEdges(ast, memeUri, [memeUri], edges);
-	return edges;
+function wikiLarUri(slug) {
+	return `lar:///ha.ka.ba/@lararium/wikis/${slug}`;
 }
-function walkForEdges(nodes, memeUri, ahuStack, edges) {
-	for (const node of nodes) switch (node.kind) {
-		case "Ahu":
-			ahuStack.push(node.uri);
-			walkForEdges(node.body, memeUri, ahuStack, edges);
-			ahuStack.pop();
-			break;
-		case "Pranala":
-			edges.push(projectEdge(node, memeUri, ahuStack));
-			if (node.body.length) walkForEdges(node.body, memeUri, ahuStack, edges);
-			break;
-		case "PranalaSugar":
-			edges.push(projectSugar(node, memeUri, ahuStack));
-			break;
-		case "Lele":
-			edges.push(projectDispatch(node, memeUri, ahuStack));
-			break;
-		case "Pae":
-			if (node.phase === "soh" && node.toUri) edges.push(mk(memeUri, memeUri, null, node.toUri, node.toUri, "control", "soh"));
-			break;
-		case "Text": break;
-		case "Sigil":
-		case "Dynamic":
-			if (node.body.length) walkForEdges(node.body, memeUri, ahuStack, edges);
-			break;
-	}
-}
-function tok(token, memeUri, ahuStack) {
-	if (token === "?") return [memeUri, ahuStack[ahuStack.length - 1] ?? memeUri];
-	if (token.startsWith("#")) return [memeUri, memeUri + token];
-	if (token.startsWith("lar:///") && token.includes("#")) {
-		const idx = token.indexOf("#");
-		const uri = token.slice(0, idx);
-		return [uri, uri + token.slice(idx)];
-	}
-	if (token.startsWith("lar:///")) return [token, token];
-	return [memeUri, memeUri];
-}
-function mk(fromUri, fromSocket, fromSlot, toUri, toSocket, family, role, payload = {}) {
-	return {
-		fromUri,
-		fromSocket,
-		fromSlot,
-		toUri,
-		toSocket,
-		family,
-		role,
-		lifecycle: "instance",
-		traversal: "source-to-target",
-		propagation: "none",
-		label: "",
-		cardinality: null,
-		polarity: null,
-		status: "declared",
-		confidence: null,
-		renderMode: null,
-		payload
-	};
-}
-function projectEdge(node, mu, ahuStack) {
-	const fromSlot = node.slot ? mu + node.slot : null;
-	const [fromUri, fromSocket] = tok(node.fromRaw, mu, ahuStack);
-	const [toUri, toSocket] = tok(node.toRaw, mu, ahuStack);
-	return mk(fromUri, fromSocket, fromSlot, toUri, toSocket, node.family, node.role);
-}
-function projectSugar(node, mu, ahuStack) {
-	const fromSlot = node.slot ? mu + node.slot : null;
-	const fromSocket = ahuStack[ahuStack.length - 1] ?? mu;
-	if (node.fromRaw !== null) {
-		const [fromUri, fSock] = tok(node.fromRaw, mu, ahuStack);
-		const [toUri, toSocket] = tok(node.toRaw, mu, ahuStack);
-		const payload = {};
-		if (node.listenable) payload["listenable"] = node.listenable;
-		if (node.subscribable) payload["subscribable"] = node.subscribable;
-		const renderMode = node.sigil === "papalohe" ? "papalohe" : null;
-		const edge = mk(fromUri, fSock, fromSlot, toUri, toSocket, node.family, node.role, payload);
-		return renderMode ? {
-			...edge,
-			renderMode
-		} : edge;
-	}
-	const toRaw = node.toRaw;
-	let toUri, toSocket;
-	if (toRaw.startsWith("#")) {
-		toUri = mu;
-		toSocket = mu + toRaw;
-	} else if (toRaw.startsWith("lar:///") && toRaw.includes("#")) {
-		const idx = toRaw.indexOf("#");
-		toUri = toRaw.slice(0, idx);
-		toSocket = toUri + toRaw.slice(idx);
-	} else {
-		toUri = toRaw;
-		toSocket = "";
-	}
-	const propagation = node.sigil === "kahea" ? "push-forward" : "none";
-	return mk(mu, fromSocket, null, toUri, toSocket, node.family, node.role, { propagation });
-}
-function projectDispatch(node, mu, ahuStack) {
-	const fromSocket = ahuStack[ahuStack.length - 1] ?? mu;
-	const toRaw = node.targetRaw;
-	let toUri, toSocket;
-	if (toRaw.startsWith("#")) {
-		toUri = mu;
-		toSocket = mu + toRaw;
-	} else if (toRaw.startsWith("lar:///") && toRaw.includes("#")) {
-		const idx = toRaw.indexOf("#");
-		toUri = toRaw.slice(0, idx);
-		toSocket = toUri + toRaw.slice(idx);
-	} else {
-		toUri = toRaw;
-		toSocket = "";
-	}
-	return mk(mu, fromSocket, null, toUri, toSocket, "message", null);
-}
-//#endregion
-//#region ../lararium-core/dist/meme-ast/parse.js
+wikiLarUri("admin");
 /**
-* meme-ast/parse.ts — parseMemeText(): top-level public entry point.
-*
-* Local-first, isomorphic: no fs/path/DOM imports.
-* Runs in Node, Deno, browser, and TW5-era JS environments.
-*
-* Three tiers of result:
-*   nodes  — MemeAstNode[] (full parse tree)
-*   edges  — PranalaEdge[]   (projected edge records for the meme graph)
-*   meme   — MemeNode      (rooted document with uri + body)
-*
-* In a live client, parsing MUST happen inside the TW5 VM so that the grammar
-* meme (sigil vocabulary) is available and the deserializer can split ahu slots.
-* This module enables the same parsing in Node, Deno, VS Code grammar plugins,
-* syntax highlighters, and other tooling without a TW5 runtime.
-*
-* Heleuma ka: sync-heleuma tracks this file.
-* Bundle entry: packages/lararium-tw5/src/meme-ast-entry.ts
+* Admin Automerge doc URI — direct child of @lararium, sibling to
+* @identities / @circles / @sessions in the @-scope namespace.
+* Distinct from ADMIN_ROOM_URI: the logical wiki lives at pos-3 under /wikis/;
+* the doc itself sits at pos-2 as its own namespaced child.
 */
-function parseMemeText(uri, text, grammar) {
-	const nodes = buildMemeAst(collectEvents(text, grammar), uri, grammar, text);
-	const edges = edgesFromMemeAst(nodes, uri);
-	return {
-		meme: {
-			kind: "Meme",
-			uri,
-			body: nodes
-		},
-		nodes,
-		edges
-	};
-}
+var ADMIN_BAG_ID = "lar:///ha.ka.ba/@lararium/@admin";
+`${ADMIN_BAG_ID}`;
+`${ADMIN_BAG_ID}`;
 //#endregion
 //#region ../../node_modules/.pnpm/smol-toml@1.6.1/node_modules/smol-toml/dist/error.js
 /*!
@@ -1982,7 +1139,7 @@ function parseTaploFields(toml, warnings = [], context = "#iam") {
 /**
 * deserializer — TW5 causal-island boundary module for text/x-memetic-wikitext.
 *
-* Heleuma ba: this TS source compiles to an IIFE plugin tiddler at
+* Heleuma ba: this TS source compiles to an CJS plugin tiddler at
 * lar:///ha.ka.ba/@lares/api/v0.1/lararium/modules/deserializer
 * (module-type: tiddlerdeserializer, key: text/x-memetic-wikitext).
 *
@@ -2002,55 +1159,61 @@ function parseTaploFields(toml, warnings = [], context = "#iam") {
 *   expandMemeRefs — registered on $tw.lararium; called by sync-adaptor.
 *   Inverts the incoming transform: reads child bodies, reconstructs definition form.
 */
-var CONTROL_SLOTS = new Set([
-	"#iam",
-	"#exit",
-	"#stream-open",
-	"#stream-close",
-	"#stream-exit",
-	"#body-open",
-	"#body-close",
-	"#meme-body-open",
-	"#meme-body-close"
-]);
 function memeticWikitextDeserializer(text, fields) {
 	const baseUri = String(fields?.["title"] ?? "");
 	const result = [];
 	const parser = new MemeStreamParser();
 	const closes = [...parser.push(text), ...parser.flush()].filter((e) => e.kind === "carrier-close");
+	const sohIdx = text.search(/<<~(?:\s*⊙)?\s*&#x000[1-9a-fA-F]+;/);
+	const prologue = closes.length > 0 && sohIdx > 0 ? text.slice(0, sohIdx) : "";
+	const etxOpenRe = /<<~(?:\s*⊙)?\s*&#x000[34];/g;
+	let lastEtxEnd = -1;
+	let etxMatch;
+	while ((etxMatch = etxOpenRe.exec(text)) !== null) {
+		const closeIdx = text.indexOf(">>", etxMatch.index + etxMatch[0].length);
+		if (closeIdx >= 0) lastEtxEnd = closeIdx + 2;
+	}
+	const postamble = closes.length > 0 && lastEtxEnd >= 0 && lastEtxEnd < text.length ? text.slice(lastEtxEnd) : "";
 	for (const ev of closes) {
-		const tiddlers = splitMemeToTiddlers(ev.uri || baseUri, ev.fullText, asStringFields(fields));
+		const uri = ev.uri || baseUri;
+		let memeText = ev.fullText;
+		if (postamble.length > 0 && ev === closes[closes.length - 1] && memeText.endsWith(postamble)) memeText = memeText.slice(0, memeText.length - postamble.length);
+		const tiddlers = splitMemeToTiddlers(uri, memeText, asStringFields(fields));
+		if (prologue.length > 0 && tiddlers.length > 0 && ev === closes[0]) for (const t of tiddlers) t["prologue"] = prologue;
+		const namespace = /^<<~([^&\n]*)&#x(?:0001|0011)/.exec(ev.fullText)?.[1]?.trim() ?? "";
+		if (namespace.length > 0 && tiddlers.length > 0) for (const t of tiddlers) t["namespace"] = namespace;
+		if (postamble.trim().length > 0 && tiddlers.length > 0 && ev === closes[closes.length - 1]) tiddlers[0]["postamble"] = postamble;
 		result.push(...tiddlers);
 	}
 	if (result.length === 0 && text.trim()) result.push(...splitMemeToTiddlers(baseUri, text, asStringFields(fields)));
 	return result;
 }
+var SOH_LINE_RE = /^<<~(?:[^>]|->)*&#x(?:0001|0011);(?:[^>]|->)*>>\n?/;
+var STX_LINE_RE = /<<~(?:[^>]|->)*&#x0002;(?:[^>]|->)*>>\n?/;
+var ETX_TAIL_RE = /\n?<<~(?:[^>]|->)*&#x0003;(?:[^>]|->)*>>[\s\S]*$/;
 function splitMemeToTiddlers(uri, text, baseFields) {
-	const { nodes } = parseMemeText(uri, text);
 	const warnings = [];
-	const children = [];
-	for (const node of nodes) {
-		if (node.kind !== "Ahu" || !node.slot || CONTROL_SLOTS.has(node.slot)) continue;
-		const ahuNode = node;
-		const childTitle = uri + ahuNode.slot;
-		const bodyText = rawBodyText(text, ahuNode);
-		const childFields = extractAhuFields(bodyText, warnings, `${uri}${ahuNode.slot}`);
-		children.push({
-			...childFields,
-			title: childTitle,
-			text: bodyText
-		});
-	}
-	const rootToml = extractRootToml(text);
-	const rootFields = rootToml ? fieldifyToml(rootToml, warnings, uri) : {};
-	const parentText = transformParentText(text);
+	const sourceFile = typeof baseFields["source-file"] === "string" ? baseFields["source-file"] : "";
+	const stripped = text.replace(SOH_LINE_RE, "").replace(ETX_TAIL_RE, "");
+	const stxM = STX_LINE_RE.exec(stripped);
+	const headerRegion = stxM ? stripped.slice(0, stxM.index) : stripped;
+	const bodyRegion = (stxM ? stripped.slice(stxM.index + stxM[0].length) : "").replace(/^\n/, "");
+	const iamPos = extractRootTomlWithPos(headerRegion);
+	const rootToml = iamPos?.content ?? null;
+	const { __arrayKeys: _, ...rootFields } = rootToml ? fieldifyToml(rootToml, warnings, uri) : {};
+	const preIamContent = iamPos ? headerRegion.slice(0, iamPos.start) : headerRegion;
+	const { children: headerChildren, rewrittenText: headerRewritten } = splitRecursive(uri, "", iamPos ? headerRegion.slice(iamPos.end).replace(/^\n/, "") : "", warnings, sourceFile);
+	const { children: bodyChildren, rewrittenText: bodyRewritten } = splitRecursive(uri, "", bodyRegion, warnings, sourceFile);
+	const allChildren = [...headerChildren, ...bodyChildren];
 	const result = [{
 		...baseFields,
 		...rootFields,
 		title: uri,
 		type: "text/x-memetic-wikitext",
-		text: parentText
-	}, ...children];
+		text: bodyRewritten,
+		...preIamContent.trim() ? { preamble: preIamContent } : {},
+		...headerRewritten.trim() ? { "header-text": headerRewritten } : {}
+	}, ...allChildren];
 	if (warnings.length > 0) {
 		const safeSlug = uri.replace(/[^a-zA-Z0-9._-]/g, "_");
 		result.push({
@@ -2063,31 +1226,93 @@ function splitMemeToTiddlers(uri, text, baseFields) {
 	}
 	return result;
 }
-function rawBodyText(fullText, node) {
-	if (!node.body.length) return "";
-	const first = node.body[0];
-	const last = node.body[node.body.length - 1];
-	return fullText.slice(first.pos, last.pos + last.raw.length);
+function splitRecursive(rootUri, fragmentPrefix, text, warnings, parentSourceFile = "") {
+	const allChildren = [];
+	const enclosingUri = rootUri + fragmentPrefix;
+	const blocks = findTopLevelAhuBlocks(text);
+	let cursor = 0;
+	let rewritten = "";
+	for (const block of blocks) {
+		rewritten += text.slice(cursor, block.openStart);
+		if (CONTROL_SLOTS.has(block.slot)) {
+			rewritten += text.slice(block.openStart, block.closeEnd);
+			cursor = block.closeEnd;
+			continue;
+		}
+		const childSlotPath = composeSlotPath(fragmentPrefix, block.slot);
+		const childUri = rootUri + childSlotPath;
+		const inner = splitRecursive(rootUri, childSlotPath, text.slice(block.bodyStart, block.bodyEnd), warnings, parentSourceFile);
+		const childStructure = extractSlotStructure(inner.rewrittenText, warnings, childUri);
+		const childUriPath = childUri.startsWith("lar:///") ? childUri.slice(7) : childUri;
+		const childFilePath = parentSourceFile ? parentSourceFile.replace(/\.md$/, "") + "/" + block.slot.replace(/^#/, "") + ".md" : void 0;
+		allChildren.push({
+			...childStructure.fields,
+			title: childUri,
+			type: "text/x-memetic-wikitext",
+			text: childStructure.text,
+			"uri-path": childUriPath,
+			"fragment-parent": enclosingUri,
+			slot: block.slot,
+			...childFilePath ? { "file-path": childFilePath } : {},
+			...childStructure.preamble ? { preamble: childStructure.preamble } : {},
+			...childStructure.postamble ? { postamble: childStructure.postamble } : {}
+		});
+		allChildren.push(...inner.children);
+		rewritten += `<<~ kahea ahu ${block.slot} >>`;
+		cursor = block.closeEnd;
+	}
+	rewritten += text.slice(cursor);
+	return {
+		children: allChildren,
+		rewrittenText: rewritten
+	};
 }
-function extractRootToml(text) {
-	const firstAhu = text.search(/<<~[^>]*\bahu\s+#[\w-]+\s*>>/);
-	const firstStx = text.search(/<<~[^>]*&#x0002;/);
-	let limit = text.length;
-	if (firstAhu >= 0) limit = Math.min(limit, firstAhu);
-	if (firstStx >= 0) limit = Math.min(limit, firstStx);
-	const m = /```toml[ \t]+iam[ \t]*\n([\s\S]*?)```/.exec(text.slice(0, limit));
-	return m ? m[1] ?? null : null;
+function extractRootTomlWithPos(text) {
+	const m = /```toml[ \t]+iam[ \t]*\n([\s\S]*?)```\n?/.exec(text);
+	if (!m) return null;
+	return {
+		content: m[1] ?? "",
+		start: m.index,
+		end: m.index + m[0].length
+	};
 }
-function extractAhuFields(bodyText, warnings, context) {
-	const iamM = /^[ \t\n]*```toml[ \t]+iam[ \t]*\n([\s\S]*?)```/.exec(bodyText);
-	const plainM = /^[ \t\n]*```toml[ \t]*\n([\s\S]*?)```/.exec(bodyText);
-	const toml = iamM?.[1] ?? plainM?.[1] ?? null;
-	if (!toml) return {};
-	return fieldifyToml(toml, warnings, context);
+var IAM_MARKER = "<<~ iam >>";
+function extractSlotStructure(bodyText, warnings, context) {
+	const iamM = /```toml[ \t]+iam[ \t]*\n([\s\S]*?)```\n?/.exec(bodyText) ?? /```toml[ \t]*\n([\s\S]*?)```\n?/.exec(bodyText);
+	let preamble = "";
+	let fields = {};
+	let remainder = bodyText;
+	if (iamM) {
+		preamble = bodyText.slice(0, iamM.index);
+		const { __arrayKeys: _, ...parsed } = fieldifyToml(iamM[1] ?? "", warnings, context);
+		fields = parsed;
+		remainder = bodyText.slice(iamM.index + iamM[0].length);
+	}
+	const refRe = /<<~\s*kahea\s+ahu\s+#[\w-]+\s*>>/g;
+	let lastEnd = -1;
+	let m;
+	while ((m = refRe.exec(remainder)) !== null) lastEnd = m.index + m[0].length;
+	let text = remainder;
+	let postamble = "";
+	if (lastEnd >= 0 && lastEnd < remainder.length) {
+		text = remainder.slice(0, lastEnd);
+		postamble = remainder.slice(lastEnd);
+	}
+	if (!iamM && lastEnd < 0) {
+		text = bodyText;
+		preamble = "";
+	}
+	return {
+		preamble,
+		fields,
+		text,
+		postamble
+	};
 }
 function fieldifyToml(toml, warnings, context) {
 	const parsed = parseTaploFields(toml);
 	const out = {};
+	const arrayKeys = [];
 	for (const [k, v] of Object.entries(parsed)) {
 		if (k === "title") {
 			warnings.push(`${context}: "title" in TOML ignored (derived from URI)`);
@@ -2097,13 +1322,13 @@ function fieldifyToml(toml, warnings, context) {
 			warnings.push(`${context}: "text" in TOML ignored (derived from body)`);
 			continue;
 		}
-		if (Array.isArray(v)) out[k] = v.map(String);
-		else out[k] = String(v);
+		if (Array.isArray(v)) {
+			out[k] = v.map(String);
+			arrayKeys.push(k);
+		} else out[k] = String(v);
 	}
+	if (arrayKeys.length > 0) out.__arrayKeys = arrayKeys;
 	return out;
-}
-function transformParentText(text) {
-	return text.replace(/<<~[^>]*\bahu\s+(#[\w-]+)\s*>>[\s\S]*?<<~\/ahu\s*>>/g, (_, slot) => `<<~ kahea ahu ${slot} >>`);
 }
 function asStringFields(fields) {
 	const out = {};
@@ -2114,6 +1339,40 @@ function asStringFields(fields) {
 	}
 	return out;
 }
+function splitBodyTiddler(uri, bodyText, baseFields) {
+	if (!bodyText.includes("<<~ ahu")) return {
+		parent: {
+			...baseFields,
+			title: uri,
+			text: bodyText
+		},
+		children: []
+	};
+	const warnings = [];
+	const { children, rewrittenText } = splitRecursive(uri, "", bodyText, warnings, typeof baseFields["source-file"] === "string" ? baseFields["source-file"] : "");
+	const parent = {
+		...baseFields,
+		title: uri,
+		text: rewrittenText
+	};
+	if (warnings.length > 0) {
+		const safeSlug = uri.replace(/[^a-zA-Z0-9._-]/g, "_");
+		children.push({
+			title: `$:/lararium/parse-warning/${safeSlug}`,
+			tags: "$:/lararium/parse-warnings",
+			"meme-uri": uri,
+			"warning-count": String(warnings.length),
+			text: warnings.join("\n")
+		});
+	}
+	return {
+		parent,
+		children
+	};
+}
 //#endregion
+exports.IAM_MARKER = IAM_MARKER;
 exports.memeticWikitextDeserializer = memeticWikitextDeserializer;
+exports["text/x-memetic-wikitext"] = memeticWikitextDeserializer;
+exports.splitBodyTiddler = splitBodyTiddler;
 exports["text/x-memetic-wikitext"] = exports.memeticWikitextDeserializer;

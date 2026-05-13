@@ -26,6 +26,7 @@ import { join, dirname, basename, relative, resolve } from "path";
 
 const WORKSPACE = resolve(dirname(new URL(import.meta.url).pathname), "..");
 const PACKAGES  = join(WORKSPACE, "packages");
+const BAGS      = join(WORKSPACE, "bags");
 
 // ---------------------------------------------------------------------------
 // File walking
@@ -97,19 +98,27 @@ function setIamField(body: string, key: string, value: string): string {
 // Filter — does this source file need a heleuma?
 // ---------------------------------------------------------------------------
 
+/** `"0.1.0"` → `"v0.1"`, `"1.2.3"` → `"v1.2"` */
+function toUriVer(semver: string): string {
+  const [major, minor] = semver.split(".").map(Number);
+  return `v${major ?? 0}.${minor ?? 0}`;
+}
+
 interface PackageInfo {
-  pkgDir:    string;       // absolute path to packages/{dir}
-  pkgName:   string;       // package.json#name, e.g. "@lararium/core"
-  uriScope:  string;       // URI segment, e.g. "@lararium/core"
+  pkgDir:      string;       // absolute path to packages/{dir}
+  pkgName:     string;       // package.json#name, e.g. "@lararium/core"
+  uriScope:    string;       // URI segment, e.g. "@lararium/core"
+  uriVersion:  string;       // version segment, e.g. "v0.1"
 }
 
 function readPackageInfo(pkgDir: string): PackageInfo | null {
   const pkgJson = join(pkgDir, "package.json");
   if (!existsSync(pkgJson)) return null;
   try {
-    const data = JSON.parse(readFileSync(pkgJson, "utf8")) as { name?: string };
+    const data = JSON.parse(readFileSync(pkgJson, "utf8")) as { name?: string; version?: string };
     if (!data.name) return null;
-    return { pkgDir, pkgName: data.name, uriScope: data.name };
+    const uriVersion = data.version ? toUriVer(data.version) : "v0.1";
+    return { pkgDir, pkgName: data.name, uriScope: data.name, uriVersion };
   } catch { return null; }
 }
 
@@ -133,23 +142,23 @@ function fileHasMarker(text: string, marker: string): boolean {
 // Heleuma scaffolding
 // ---------------------------------------------------------------------------
 
-function uriFor(uriScope: string, slug: string): string {
-  return `lar:///ha.ka.ba/${uriScope}/v0.1/${slug}`;
+function uriFor(uriScope: string, uriVersion: string, slug: string): string {
+  return `lar:///ha.ka.ba/${uriScope}/${uriVersion}/${slug}`;
 }
 
-function memePathFor(pkgDir: string, slug: string): string {
-  return join(pkgDir, "memes", `${slug}.md`);
+function memePathFor(uriScope: string, uriVersion: string, slug: string): string {
+  return join(BAGS, uriScope, uriVersion, `${slug}.md`);
 }
 
 function template(opts: {
-  uriScope: string;
-  slug:     string;
-  pkgDir:   string;
+  uriScope:   string;
+  uriVersion: string;
+  slug:       string;
   sourceFile: string;
   sourceBaseName: string;
 }): string {
-  const uriPath  = `ha.ka.ba/${opts.uriScope}/v0.1/${opts.slug}`;
-  const memeRel  = relative(WORKSPACE, memePathFor(opts.pkgDir, opts.slug));
+  const uriPath  = `ha.ka.ba/${opts.uriScope}/${opts.uriVersion}/${opts.slug}`;
+  const memeRel  = relative(WORKSPACE, memePathFor(opts.uriScope, opts.uriVersion, opts.slug));
   const sourceRel = relative(WORKSPACE, opts.sourceFile);
   return `<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/@lares/api/v0.1/pono/memetic-wikitext >> -->
 
@@ -222,7 +231,7 @@ function main(): number {
     // meme may describe a coherent surface implemented across files. Each
     // path is indexed independently, but the meme is reported orphan only
     // when ALL its source-files are missing.
-    const memesDir = join(pkgDir, "memes");
+    const memesDir = join(BAGS, info.uriScope);
     const memeBySource = new Map<string, { path: string; iam: IamBlock; raw: string; sources: string[] }>();
     if (existsSync(memesDir)) {
       for (const memePath of walkMd(memesDir)) {
@@ -244,12 +253,12 @@ function main(): number {
       if (!existing) {
         issues.push({ kind: "missing", pkg: info.pkgName, detail: sourceRel });
         if (write) {
-          const target = memePathFor(pkgDir, slug);
+          const target = memePathFor(info.uriScope, info.uriVersion, slug);
           mkdirSync(dirname(target), { recursive: true });
           writeFileSync(target, template({
             uriScope:       info.uriScope,
+            uriVersion:     info.uriVersion,
             slug,
-            pkgDir,
             sourceFile:     srcAbs,
             sourceBaseName: basename(srcAbs),
           }), "utf8");

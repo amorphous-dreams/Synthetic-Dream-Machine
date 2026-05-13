@@ -10,7 +10,7 @@ role          = "anchor: TomlWidget — heleuma ka"
 heleuma       = "ka"
 source-file   = "packages/lararium-tw5/src/widgets/toml.ts"
 source-symbol = "TomlWidget"
-module-ref    = "lar:///ha.ka.ba/@lararium/tw5/widgets/toml-tw5"
+module-ref    = "lar:///ha.ka.ba/@lararium/tw5/widgets/toml"
 body-sha256 = "a849f6d978bdcef8de8677fa484bac0c1c70a3192b065e04d501fce4223c339d"
 cacheable     = true
 retain        = true
@@ -42,7 +42,7 @@ export function TomlWidget(this: TW5WidgetInstance, parseTreeNode: TW5ParseTreeN
 
 <<~ pranala #to-pono ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/toml family:control role:implements >>
 <<~ pranala #to-tw5-widgets ? -> lar:///ha.ka.ba/@lararium/tw5/modules/tw5-widgets family:control role:implements >>
-<<~ pranala #to-module ? -> lar:///ha.ka.ba/@lararium/tw5/widgets/toml-tw5 family:control role:module >>
+<<~ pranala #to-module ? -> lar:///ha.ka.ba/@lararium/tw5/widgets/toml family:control role:module >>
 
 <<~/ahu >>
 

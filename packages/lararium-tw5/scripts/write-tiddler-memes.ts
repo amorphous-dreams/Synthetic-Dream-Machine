@@ -1,39 +1,26 @@
 /**
- * write-tiddler-memes.ts — postbuild: splice compiled CJS modules into lares/ module tiddlers.
+ * write-tiddler-memes.ts — build native TW5 CJS tiddlers from TS sources.
  *
- * For each widget/filter/deserializer CJS module in dist-widgets/:
- *   1. Read dist-widgets/{name}.tw5.js
- *   2. Compute SHA-256
- *   3. Splice into lares/.../{subdir}/{name}-tw5.md between STX/ETX
- *   4. Patch body-sha256 in the anchor meme lares/.../{subdir}/{name}.md
- *
- * Run via: tsx scripts/write-tiddler-memes.ts
- * Run after: vite.widgets.config.ts buildAll()
+ * Each emitted `dist-tiddlers/{name}.js` file carries a TW5 comment-block
+ * header (`title`, `type`, `module-type`) and can be loaded by TW5 directly.
+ * This replaces the old anti-pattern of keeping both raw `.tw5.js` files and
+ * separate memetic wrapper files for the same executable body.
  */
 
-import { readFileSync, writeFileSync, existsSync } from "fs";
+import { readFileSync, writeFileSync, existsSync, mkdirSync } from "fs";
 import { createHash } from "crypto";
 import { resolve, dirname } from "path";
 import { fileURLToPath } from "url";
-import { WIDGET_ENTRIES, FILTER_ENTRIES, DESERIALIZER_ENTRIES, MODULE_ENTRIES, buildAll } from "../vite.tiddlers.config.js";
-const __dirname  = dirname(fileURLToPath(import.meta.url));
-const tw5Memes   = resolve(__dirname, "../memes");
-const distDir    = resolve(__dirname, "../dist-widgets");
+import { TIDDLER_BUILD_ENTRIES, buildAll } from "../vite.tiddlers.config.js";
+import type { TiddlerBuildEntry } from "../vite.tiddlers.config.js";
 
-const STX_RE       = /<<~[^>]*&#x0002;[^>]*>>/;
-const ETX_RE       = /<<~[^>]*&#x0003;[^>]*>>/;
-const SHA_FIELD_RE = /^body-sha256\s*=\s*"[^"]*"/m;
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const repoRoot  = resolve(__dirname, "../../..");
+const tw5Memes  = resolve(repoRoot, "bags", "@lararium", "tw5");
+const distDir   = resolve(__dirname, "../dist-tiddlers");
+
+const SHA_FIELD_RE  = /^body-sha256\s*=\s*"[^"]*"/m;
 const TOML_BLOCK_RE = /(```toml[\s\S]*?```)/;
-
-function spliceBody(meme: string, newBody: string): string {
-  const stxM = STX_RE.exec(meme);
-  const etxM = ETX_RE.exec(meme);
-  if (!stxM || !etxM) throw new Error("STX/ETX markers not found");
-  const stxEnd   = stxM.index + stxM[0].length;
-  const etxStart = etxM.index;
-  if (etxStart <= stxEnd) throw new Error("ETX appears before STX");
-  return meme.slice(0, stxEnd) + "\n\n" + newBody + "\n\n" + meme.slice(etxStart);
-}
 
 function patchSha256(meme: string, sha256: string): string {
   const tomlM = TOML_BLOCK_RE.exec(meme);
@@ -45,45 +32,40 @@ function patchSha256(meme: string, sha256: string): string {
   return meme.replace(tomlOrig, patched);
 }
 
-function processEntry(name: string, kind: "widget" | "filter" | "module"): void {
-  const iifeFile = resolve(distDir, `${name}.tw5.js`);
-  if (!existsSync(iifeFile)) {
-    console.warn(`[write-tiddler-memes] MISSING dist: ${name}.tw5.js`);
+function subdirFor(entry: TiddlerBuildEntry): string {
+  if (entry.kind === "widget") return "widgets";
+  if (entry.kind === "filter") return "filters";
+  return "modules";
+}
+
+function processEntry(entry: TiddlerBuildEntry): void {
+  const builtPath = resolve(distDir, `${entry.name}.js`);
+  if (!existsSync(builtPath)) {
+    console.warn(`[write-tiddler-memes] MISSING dist: ${entry.name}.js`);
     return;
   }
 
-  const cjs   = readFileSync(iifeFile, "utf8").trimEnd();
+  const cjs    = readFileSync(builtPath, "utf8").trimEnd();
   const sha256 = createHash("sha256").update(cjs, "utf8").digest("hex");
+  const subdir = subdirFor(entry);
 
-  const subdir     = kind === "widget" ? "widgets" : kind === "filter" ? "filters" : "modules";
-  const modulePath = resolve(tw5Memes, `${subdir}/${name}-tw5.md`);
-  const anchorPath = resolve(tw5Memes, `${subdir}/${name}.md`);
+  const modulePath = resolve(tw5Memes, `${subdir}/${entry.name}-tw5.js`);
+  mkdirSync(dirname(modulePath), { recursive: true });
+  writeFileSync(modulePath, cjs + "\n", "utf8");
+  console.log(`[write-tiddler-memes] ${subdir}/${entry.name}-tw5.js  sha256=${sha256.slice(0, 16)}…`);
 
-  if (!existsSync(modulePath)) {
-    console.warn(`[write-tiddler-memes] MISSING module tiddler: ${modulePath}`);
-    return;
-  }
-
-  let moduleMeme = readFileSync(modulePath, "utf8");
-  moduleMeme = spliceBody(moduleMeme, cjs);
-  writeFileSync(modulePath, moduleMeme, "utf8");
-  console.log(`[write-tiddler-memes] ${subdir}/${name}-tw5.md  sha256=${sha256.slice(0, 16)}…`);
-
+  const anchorPath = resolve(tw5Memes, `${subdir}/${entry.name}.md`);
   if (existsSync(anchorPath)) {
-    let anchorMeme = readFileSync(anchorPath, "utf8");
-    anchorMeme = patchSha256(anchorMeme, sha256);
+    const anchorMeme = patchSha256(readFileSync(anchorPath, "utf8"), sha256);
     writeFileSync(anchorPath, anchorMeme, "utf8");
-    console.log(`[write-tiddler-memes] ${subdir}/${name}.md  body-sha256 updated`);
+    console.log(`[write-tiddler-memes] ${subdir}/${entry.name}.md  body-sha256 updated`);
   }
 }
 
-console.log("[write-tiddler-memes] building IIFEs via vite…\n");
-await buildAll();
-console.log("\n[write-tiddler-memes] injecting into lares/ module tiddlers…\n");
+console.log("[write-tiddler-memes] building headered CJS tiddlers via vite…\n");
+await buildAll(distDir);
+console.log("\n[write-tiddler-memes] writing native TW5 tiddlers…\n");
 
-for (const { name } of WIDGET_ENTRIES)       processEntry(name, "widget");
-for (const { name } of FILTER_ENTRIES)       processEntry(name, "filter");
-for (const { name } of DESERIALIZER_ENTRIES) processEntry(name, "module");
-for (const { name } of MODULE_ENTRIES)       processEntry(name, "module");
+for (const entry of TIDDLER_BUILD_ENTRIES) processEntry(entry);
 
 console.log("\n[write-tiddler-memes] done.");

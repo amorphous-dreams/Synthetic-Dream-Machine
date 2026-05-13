@@ -10,7 +10,7 @@ role          = "anchor: PaeWidget — heleuma ka"
 heleuma       = "ka"
 source-file   = "packages/lararium-tw5/src/widgets/pae.ts"
 source-symbol = "PaeWidget"
-module-ref    = "lar:///ha.ka.ba/@lararium/tw5/widgets/pae-tw5"
+module-ref    = "lar:///ha.ka.ba/@lararium/tw5/widgets/pae"
 body-sha256 = "8d8dc9c0897efaf1bc6d1cb6c4805bef0fed830bd016040b93c66edb09c2743a"
 cacheable     = true
 retain        = true
@@ -42,7 +42,7 @@ export function PaeWidget(this: TW5WidgetInstance, parseTreeNode: TW5ParseTreeNo
 
 <<~ pranala #to-pono ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/pae family:control role:implements >>
 <<~ pranala #to-tw5-widgets ? -> lar:///ha.ka.ba/@lararium/tw5/modules/tw5-widgets family:control role:implements >>
-<<~ pranala #to-module ? -> lar:///ha.ka.ba/@lararium/tw5/widgets/pae-tw5 family:control role:module >>
+<<~ pranala #to-module ? -> lar:///ha.ka.ba/@lararium/tw5/widgets/pae family:control role:module >>
 
 <<~/ahu >>
 

@@ -123,9 +123,9 @@ function deriveActorId(tw5CorePath: string): string {
     h.update(readFileSync(f));
   }
 
-  // Widget CJS blobs (sorted)
-  for (const f of walkFiles(tw5DistWidgetsRoot, ".tw5.js")) {
-    h.update(`widget:${f}:`);
+  // Headered TW5 CJS tiddler blobs (sorted)
+  for (const f of walkFiles(tw5DistWidgetsRoot, ".js")) {
+    h.update(`tw5-tiddler:${f}:`);
     h.update(readFileSync(f));
   }
 
@@ -236,14 +236,14 @@ async function main(): Promise<void> {
     }
   }
 
-  // 5. Collect widget CJS blobs from dist-widgets/*.tw5.js.
+  // 5. Collect headered TW5 CJS tiddlers from dist-tiddlers/*.js.
   const widgetBlobs: LarariumBlobEntry[] = [];
   if (existsSync(tw5DistWidgetsRoot)) {
-    for (const file of readdirSync(tw5DistWidgetsRoot).filter(f => f.endsWith(".tw5.js")).sort()) {
+    for (const file of readdirSync(tw5DistWidgetsRoot).filter(f => f.endsWith(".js")).sort()) {
       const filePath = join(tw5DistWidgetsRoot, file);
       const blob     = new Uint8Array(readFileSync(filePath));
       const sha      = sha256hex(blob);
-      const name     = basename(file, ".tw5.js");
+      const name     = basename(file, ".js");
       const id       = `lararium-widget-${name}`;
       widgetBlobs.push({ id, version: TW5_VERSION, sha256: sha, mimeType: "application/javascript", blob });
       console.log(`[genesis] widget blob  ${id}  sha=${sha.slice(0, 12)}…`);

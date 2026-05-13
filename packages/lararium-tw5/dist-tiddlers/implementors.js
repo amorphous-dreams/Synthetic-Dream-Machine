@@ -1,3 +1,8 @@
+/*\
+title: lar:///ha.ka.ba/@lararium/tw5/filters/implementors
+type: application/javascript
+module-type: library
+\*/
 Object.defineProperty(exports, Symbol.toStringTag, { value: "Module" });
 //#region src/filters/implementors.ts
 /** Exact-token match on space-separated `implements` field.

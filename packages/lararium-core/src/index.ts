@@ -14,7 +14,6 @@ export * from "./compiler.js";
 export * from "./crypto.js";
 export * from "./meme-provider.js";
 export * from "./projection-registry.js";
-export * from "./bag-mirror.js";
 export * from "./readiness.js";
 export * from "./catalog.js";
 export * from "./meme-store-doc.js";

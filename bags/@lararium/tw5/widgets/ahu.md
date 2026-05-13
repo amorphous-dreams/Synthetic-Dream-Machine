@@ -10,8 +10,8 @@ role          = "anchor: AhuWidget — heleuma ka"
 heleuma       = "ka"
 source-file   = "packages/lararium-tw5/src/widgets/ahu.ts"
 source-symbol = "AhuWidget"
-module-ref    = "lar:///ha.ka.ba/@lararium/tw5/widgets/ahu-tw5"
-body-sha256 = "495e5d34b8f62da33e82b940591d7deb05f9f59f22e16e44909c581c4651ea8a"
+module-ref    = "lar:///ha.ka.ba/@lararium/tw5/widgets/ahu"
+body-sha256 = "cadd4eea9155630ad978cc1df23b5c75d6c30df6bdb05846dd70896ec19ac692"
 cacheable     = true
 retain        = true
 ```
@@ -82,7 +82,7 @@ AhuWidget.prototype.refresh = function (this: TW5WidgetInstance, changedTiddlers
 
 <<~ pranala #to-pono ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/ahu family:control role:implements >>
 <<~ pranala #to-tw5-widgets ? -> lar:///ha.ka.ba/@lararium/tw5/modules/tw5-widgets family:control role:implements >>
-<<~ pranala #to-module ? -> lar:///ha.ka.ba/@lararium/tw5/widgets/ahu-tw5 family:control role:module >>
+<<~ pranala #to-module ? -> lar:///ha.ka.ba/@lararium/tw5/widgets/ahu family:control role:module >>
 
 <<~/ahu >>
 

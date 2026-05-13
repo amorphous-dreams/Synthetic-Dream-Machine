@@ -10,8 +10,8 @@ role          = "anchor: registerImplementorsOperator — heleuma ka"
 heleuma       = "ka"
 source-file   = "packages/lararium-tw5/src/filters/implementors.ts"
 source-symbol = "registerImplementors"
-module-ref    = "lar:///ha.ka.ba/@lararium/tw5/filters/implementors-tw5"
-body-sha256 = "c82164bd84a76ffa89e956e10e9476374934ae5118a0de5d3e1349123fc534c1"
+module-ref    = "lar:///ha.ka.ba/@lararium/tw5/filters/implementors"
+body-sha256 = "2199222a78ff98b202c0761dc7f29bebae401023175bcd162a60ed3150243912"
 cacheable     = true
 retain        = true
 ```
@@ -51,7 +51,7 @@ export function registerImplementors(tw: TW5Instance): void {
 <<~ ahu #edges >>
 
 <<~ pranala #to-tw5-widgets ? -> lar:///ha.ka.ba/@lararium/tw5/modules/tw5-widgets family:control role:implements >>
-<<~ pranala #to-module ? -> lar:///ha.ka.ba/@lararium/tw5/filters/implementors-tw5 family:control role:module >>
+<<~ pranala #to-module ? -> lar:///ha.ka.ba/@lararium/tw5/filters/implementors family:control role:module >>
 
 <<~/ahu >>
 

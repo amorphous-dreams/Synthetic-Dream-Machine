@@ -1,22 +1,8 @@
-<<~&#x0001; ? -> lar:///ha.ka.ba/@lararium/tw5/modules/meme-ast-tw5 >>
-```toml iam
-uri-path = "ha.ka.ba/@lararium/tw5/modules/meme-ast-tw5"
-file-path = "bags/@lararium/tw5/modules/meme-ast-tw5.md"
-type          = "application/javascript"
-module-type   = "library"
-register      = "CS"
-confidence    = 0.90
-mana          = 0.90
-role          = "compiled TW5 meme-ast library module — generated from packages/lararium-tw5/src/meme-ast-entry.ts"
-cacheable     = true
-retain        = true
-source-symbol = "parseMemeText"
-source-file   = "packages/lararium-tw5/src/meme-ast-entry.ts"
-body-sha256   = ""
-```
-
-<<~&#x0002;>>
-
+/*\
+title: lar:///ha.ka.ba/@lararium/tw5/modules/meme-ast
+type: application/javascript
+module-type: library
+\*/
 Object.defineProperty(exports, Symbol.toStringTag, { value: "Module" });
 //#region ../lararium-core/dist/meme-ast/scanner.js
 /**
@@ -65,7 +51,7 @@ var BOOTSTRAP_SCANS = [
 	},
 	{
 		sigilName: "ahu",
-		regex: /<<~(?:[^>]|->)*\bahu\s+(#[\w-]+)(?:\s+->\s+(\S+))?\s*>>/g,
+		regex: /<<~(?:[^>]|->)*\bahu\s+(#[\w-]+(?:\/[\w-]+)*)(?:\s+->\s+(\S+))?\s*>>/g,
 		eventType: "open"
 	},
 	{
@@ -409,7 +395,7 @@ function collectEvents(text, grammar) {
 * Runs in Node, Deno, browser, and TW5-era JS environments.
 *
 * The push/pop scope stack converts the flat sorted ParseEvent stream into a
-* properly nested MemeAstNode tree. This is the structural heart of the parser.
+* properly nested MemeAstNode tree. This forms the structural heart of the parser.
 *
 * Heleuma ka: sync-heleuma tracks this file.
 * Bundle entry: packages/lararium-tw5/src/meme-ast-entry.ts
@@ -594,7 +580,7 @@ function makeLeaf(sigilName, eventType, pos, raw, groups, memeUri, ahuStack, gra
 		};
 		case "aka": {
 			const akaSlot = g(2);
-			if (akaSlot) return {
+			if (akaSlot.startsWith("#")) return {
 				kind: "Ahu",
 				...base,
 				slot: akaSlot,
@@ -1005,18 +991,3 @@ exports.edgesFromMemeAst = edgesFromMemeAst;
 exports.parseMemeEdges = parseMemeEdges;
 exports.parseMemeNodes = parseMemeNodes;
 exports.parseMemeText = parseMemeText;
-
-<<~&#x0003;>>
-
-<<~ ahu #source >>
-
-## Source
-
-Compiled CJS artifact. Canonical TS source: `packages/lararium-tw5/src/meme-ast-entry.ts` (`source-symbol = "parseMemeText"`).
-Anchor meme: `lar:///ha.ka.ba/@lararium/tw5/modules/meme-ast`.
-
-Run `pnpm --filter @lararium/tw5 build:tiddlers` to regenerate.
-
-<<~/ahu >>
-
-<<~&#x0004; -> ? >>

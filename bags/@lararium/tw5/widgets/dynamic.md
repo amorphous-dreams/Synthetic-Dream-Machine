@@ -10,7 +10,7 @@ role          = "anchor: DynamicWidget — heleuma ka"
 heleuma       = "ka"
 source-file   = "packages/lararium-tw5/src/widgets/dynamic.ts"
 source-symbol = "DynamicWidget"
-module-ref    = "lar:///ha.ka.ba/@lararium/tw5/widgets/dynamic-tw5"
+module-ref    = "lar:///ha.ka.ba/@lararium/tw5/widgets/dynamic"
 body-sha256 = "1641d19ab01d020de00031679ef084378b21bf99ef5be73bf056884c27a0a84d"
 cacheable     = true
 retain        = true
@@ -42,7 +42,7 @@ export function DynamicWidget(this: TW5WidgetInstance, parseTreeNode: TW5ParseTr
 
 <<~ pranala #to-pono ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/dynamic family:control role:implements >>
 <<~ pranala #to-tw5-widgets ? -> lar:///ha.ka.ba/@lararium/tw5/modules/tw5-widgets family:control role:implements >>
-<<~ pranala #to-module ? -> lar:///ha.ka.ba/@lararium/tw5/widgets/dynamic-tw5 family:control role:module >>
+<<~ pranala #to-module ? -> lar:///ha.ka.ba/@lararium/tw5/widgets/dynamic family:control role:module >>
 
 <<~/ahu >>
 

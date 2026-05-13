@@ -9,5 +9,5 @@ export const tw5MemesRoot = resolve(__dirname, "memes");
 /** Absolute path to packages/lararium-tw5/plugins/ — vendored TW5 plugin JSON files. */
 export const tw5PluginsRoot = resolve(__dirname, "plugins");
 
-/** Absolute path to packages/lararium-tw5/dist-widgets/ — compiled .tw5.js CJS widget blobs. */
-export const tw5DistWidgetsRoot = resolve(__dirname, "dist-widgets");
+/** Absolute path to packages/lararium-tw5/dist-tiddlers/ — headered TW5 CJS tiddlers. */
+export const tw5DistWidgetsRoot = resolve(__dirname, "dist-tiddlers");

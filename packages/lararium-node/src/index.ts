@@ -23,9 +23,6 @@ export { loadOperatorVerifyingKey, loadOperatorSigningSeed } from "./operator-ke
 export { CommandDispatcher, CommandHandlerRegistry } from "./command-dispatcher.js";
 export type { CommandHandler, CommandContext, CommandDispatcherOptions } from "./command-dispatcher.js";
 
-export { createPromoteHandler } from "./promote-handler.js";
-export type { PromoteHandlerOptions } from "./promote-handler.js";
-
 export { createWhereHandler } from "./where-handler.js";
 export type { WhereHandlerOptions } from "./where-handler.js";
 

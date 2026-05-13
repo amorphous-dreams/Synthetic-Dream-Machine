@@ -10,8 +10,8 @@ role          = "anchor: KauWidget — heleuma ka"
 heleuma       = "ka"
 source-file   = "packages/lararium-tw5/src/widgets/kau.ts"
 source-symbol = "KauWidget"
-module-ref    = "lar:///ha.ka.ba/@lararium/tw5/widgets/kau-tw5"
-body-sha256 = "1b167b876862c1f82eb9c58465fe6992a045f4849ece327932af17afb08f15af"
+module-ref    = "lar:///ha.ka.ba/@lararium/tw5/widgets/kau"
+body-sha256 = "626100905b24fd53d7b54fff2a01f594d744e7a97d77ea79a6d681581fd6a6a5"
 cacheable     = true
 retain        = true
 ```
@@ -55,7 +55,7 @@ See [packages/lararium-tw5/src/widgets/kau.ts](packages/lararium-tw5/src/widgets
 
 <<~ pranala #to-pono ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/kau family:control role:implements >>
 <<~ pranala #to-tw5-widgets ? -> lar:///ha.ka.ba/@lararium/tw5/modules/tw5-widgets family:control role:implements >>
-<<~ pranala #to-module ? -> lar:///ha.ka.ba/@lararium/tw5/widgets/kau-tw5 family:control role:module >>
+<<~ pranala #to-module ? -> lar:///ha.ka.ba/@lararium/tw5/widgets/kau family:control role:module >>
 <<~ pranala #to-kumu ? -> lar:///ha.ka.ba/@lararium/tw5/widgets/kumu family:control role:depends >>
 
 <<~/ahu >>

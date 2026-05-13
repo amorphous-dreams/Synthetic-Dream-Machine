@@ -5,7 +5,7 @@
 # All work runs under tests/ — no canonical packages/ or wikis/ paths touched.
 #
 # Flow 1 (decompose): reset → serve → wiki init → copy meme → sync --debug → observe
-# Flow 2 (promote):   flow 1 setup → promote to @lares → verify tests/packages/ disk output
+# Flow 2 (promote):   flow 1 setup → promote to @lares → verify tests/bags/ disk output
 #
 # Usage:
 #   ./tests/lararium-tw5/sync/sync-decompose-promote.sh [--wiki WIKI] [decompose|promote|both]
@@ -153,7 +153,7 @@ flow_decompose() {
 
 # --------------------------------------------------------------------------
 # Flow 2 — promote
-# After flow_decompose setup, promote and verify packages/ disk output
+# After flow_decompose setup, promote and verify bags/ disk output
 # --------------------------------------------------------------------------
 
 flow_promote() {
@@ -203,7 +203,7 @@ flow_promote() {
     || fail "$n_fail children missing prologue (found $n_pass ok)"
 
   echo ""
-  echo "=== diff: promoted package vs expected (all fields) ==="
+  echo "=== diff: promoted bag vs expected (all fields) ==="
   if diff -r --unified=3 "$PROMOTE_EXPECTED_PKG_DIR" "$LAR_ROOT/bags/@lares/docs/lares"; then
     pass "promoted output matches expected"
   else

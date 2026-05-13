@@ -13,9 +13,9 @@ status-date  = "2026-05-01"
 heleuma      = "ka"
 source-file  = "packages/lararium-tw5/src/deserializer.ts"
 source-symbol = "*"
-module-ref   = "lar:///ha.ka.ba/@lararium/tw5/modules/deserializer-tw5"
+module-ref   = "lar:///ha.ka.ba/@lararium/tw5/modules/deserializer"
 implements   = ["lar:///ha.ka.ba/@lares/api/v0.1/pono/heleuma/ka"]
-body-sha256 = "f3f8b32d69725842a517ffb7b69982a1661c27536d1807a0f739081594fee9da"
+body-sha256 = "210fdd4a07ed56f29d023833bc38ccccd34979985489d1026cfe55cd9a097ef3"
 ```
 
 
@@ -42,7 +42,7 @@ Parent tiddler: `text = original carrier text`, `type = "text/x-memetic-wikitext
 Child tiddlers (ahu slots): `text = ahu body text`, also `type = "text/x-memetic-wikitext"`.
 No AST→string reconstruction. MemeticParser owns all rendering for both levels.
 
-Compiled artifact: `packages/lararium-tw5/memes/modules/deserializer-tw5.md`
+Compiled artifact: `packages/lararium-tw5/dist-tiddlers/deserializer.js`
 Build: `pnpm --filter @lararium/tw5 build:modules`
 
 <<~/ahu >>
@@ -231,7 +231,7 @@ function asStringFields(fields: Record<string, unknown>): TiddlerFields {
 
 <<~ pranala #splits ? -> lar:///ha.ka.ba/@lararium/tw5/carrier-split family:data role:uses >>
 <<~ pranala #streams ? -> lar:///ha.ka.ba/@lararium/tw5/meme-stream family:data role:uses >>
-<<~ pranala #module ? -> lar:///ha.ka.ba/@lararium/tw5/modules/deserializer-tw5 family:control role:compiles-to >>
+<<~ pranala #module ? -> lar:///ha.ka.ba/@lararium/tw5/modules/deserializer family:control role:compiles-to >>
 
 <<~/ahu >>
 

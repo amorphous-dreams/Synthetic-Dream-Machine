@@ -1,3 +1,8 @@
+/*\
+title: lar:///ha.ka.ba/@lararium/tw5/filters/edge
+type: application/javascript
+module-type: library
+\*/
 Object.defineProperty(exports, Symbol.toStringTag, { value: "Module" });
 //#region src/filters/edge.ts
 /** edge:family[role] — filter tiddlers that have an edge-out field for family+role.

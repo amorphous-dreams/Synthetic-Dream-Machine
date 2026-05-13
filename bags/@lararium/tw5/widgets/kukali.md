@@ -10,7 +10,7 @@ role          = "anchor: KukaliWidget — heleuma ka"
 heleuma       = "ka"
 source-file   = "packages/lararium-tw5/src/widgets/kukali.ts"
 source-symbol = "KukaliWidget"
-module-ref    = "lar:///ha.ka.ba/@lararium/tw5/widgets/kukali-tw5"
+module-ref    = "lar:///ha.ka.ba/@lararium/tw5/widgets/kukali"
 body-sha256 = "7144a493f6c3e8594654dd1242579032226ddf0d6a34cff37f23d4992a67d033"
 cacheable     = true
 retain        = true
@@ -42,7 +42,7 @@ export function KukaliWidget(this: TW5WidgetInstance, parseTreeNode: TW5ParseTre
 
 <<~ pranala #to-pono ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/kukali family:control role:implements >>
 <<~ pranala #to-tw5-widgets ? -> lar:///ha.ka.ba/@lararium/tw5/modules/tw5-widgets family:control role:implements >>
-<<~ pranala #to-module ? -> lar:///ha.ka.ba/@lararium/tw5/widgets/kukali-tw5 family:control role:module >>
+<<~ pranala #to-module ? -> lar:///ha.ka.ba/@lararium/tw5/widgets/kukali family:control role:module >>
 
 <<~/ahu >>
 

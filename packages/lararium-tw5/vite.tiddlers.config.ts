@@ -1,19 +1,9 @@
 /**
- * vite.tiddlers.config.ts — per-tiddler CJS builds for lares/ module tiddler injection.
+ * vite.tiddlers.config.ts — per-tiddler CJS builds for TW5 VM modules.
  *
- * Builds each widget class and filter operator as an independent CJS module with no
- * external dependencies beyond the TW5 widget API (which is provided at runtime).
- * Outputs go to dist-widgets/{name}.tw5.js — CJS format.
- *
- * Format is CJS (not IIFE) so that TW5's CommonJS module wrapper provides the real
- * `exports` object — IIFE format would shadow TW5's exports with a fresh {}, making
- * every module invisible to `require()` and widget/deserializer registration.
- *
- * postbuild: scripts/write-tiddler-memes.ts reads each file and splices it into
- * the corresponding lares/.../widgets/{name}-tw5.md and .../filters/{name}-tw5.md.
- *
- * run:
- *   pnpm --filter @lararium/tw5 build:widgets
+ * Builds each TS entry as an independent CommonJS tiddler file with a native
+ * TiddlyWiki header comment. The emitted `.js` file itself is the TW5 tiddler:
+ * no parallel raw-js artifact and no memetic wrapper splice.
  */
 
 import { build } from "vite";
@@ -22,80 +12,91 @@ import { fileURLToPath } from "url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-// Widget entry points: [entryFile, exportKey, outputName]
-export const WIDGET_ENTRIES: Array<{ entry: string; exportKey: string; name: string }> = [
-  { entry: "src/widgets/pranala.ts",   exportKey: "pranala",  name: "pranala"  },
-  { entry: "src/widgets/pae.ts",       exportKey: "pae",      name: "pae"      },
-  { entry: "src/widgets/lele.ts",      exportKey: "lele",     name: "lele"     },
-  { entry: "src/widgets/papalohe.ts",  exportKey: "papalohe", name: "papalohe" },
-  { entry: "src/widgets/kukali.ts",    exportKey: "kukali",   name: "kukali"   },
-  { entry: "src/widgets/toml.ts",      exportKey: "toml",     name: "toml"     },
-  { entry: "src/widgets/sigil.ts",     exportKey: "sigil",    name: "sigil"    },
-  { entry: "src/widgets/dynamic.ts",   exportKey: "dynamic",  name: "dynamic"  },
-  { entry: "src/widgets/ahu.ts",       exportKey: "ahu",      name: "ahu"      },
-  { entry: "src/widgets/kumu.ts",      exportKey: "kumu",     name: "kumu"     },
-  { entry: "src/widgets/kau.ts",       exportKey: "kau",      name: "kau"      },
+export type TiddlerEntryKind = "widget" | "filter" | "deserializer" | "library";
+
+export interface TiddlerBuildEntry {
+  entry:      string;
+  exportKey:  string;
+  name:       string;
+  kind:       TiddlerEntryKind;
+  title:      string;
+  moduleType: string;
+  footer?:    string;
+}
+
+// Widget entry points.
+export const WIDGET_ENTRIES: TiddlerBuildEntry[] = [
+  { entry: "src/widgets/pranala.ts", exportKey: "pranala", name: "pranala", kind: "widget", title: "lar:///ha.ka.ba/@lararium/tw5/widgets/pranala-tw5", moduleType: "widget" },
+  { entry: "src/widgets/ahu.ts",     exportKey: "ahu",     name: "ahu",     kind: "widget", title: "lar:///ha.ka.ba/@lararium/tw5/widgets/ahu-tw5",     moduleType: "widget" },
+  { entry: "src/widgets/kau.ts",     exportKey: "kau",     name: "kau",     kind: "widget", title: "lar:///ha.ka.ba/@lararium/tw5/widgets/kau-tw5",     moduleType: "widget" },
 ];
 
-// Filter operator entry points
-export const FILTER_ENTRIES: Array<{ entry: string; exportKey: string; name: string }> = [
-  { entry: "src/filters/implementors.ts", exportKey: "implementors", name: "implementors" },
-  { entry: "src/filters/edge.ts",         exportKey: "edge",         name: "edge"         },
-  { entry: "src/filters/toml-field.ts",   exportKey: "toml",         name: "toml-field"   },
+// Filter helpers currently register imperatively through tw5-vm boot. Keeping
+// this list lets us emit headered tiddlers for corpus/module review without
+// claiming module-type=filteroperator support in the packed plugin.
+export const FILTER_ENTRIES: TiddlerBuildEntry[] = [
+  { entry: "src/filters/implementors.ts", exportKey: "implementors", name: "implementors", kind: "filter", title: "lar:///ha.ka.ba/@lararium/tw5/filters/implementors-tw5", moduleType: "library" },
+  { entry: "src/filters/edge.ts",         exportKey: "edge",         name: "edge",         kind: "filter", title: "lar:///ha.ka.ba/@lararium/tw5/filters/edge-tw5",         moduleType: "library" },
+  { entry: "src/filters/toml-field.ts",   exportKey: "toml",         name: "toml-field",   kind: "filter", title: "lar:///ha.ka.ba/@lararium/tw5/filters/toml-field-tw5",   moduleType: "library" },
 ];
 
-// Deserializer entry points — CJS module, exported as exports["content/type"]
-// module-type: tiddlerdeserializer in the corresponding lares/ module tiddler.
-export const DESERIALIZER_ENTRIES: Array<{ entry: string; exportKey: string; name: string }> = [
-  { entry: "src/deserializer.ts", exportKey: "memeticWikitextDeserializer", name: "deserializer" },
+// Deserializer entry points.
+export const DESERIALIZER_ENTRIES: TiddlerBuildEntry[] = [
+  {
+    entry:      "src/deserializer.ts",
+    exportKey:  "memeticWikitextDeserializer",
+    name:       "deserializer",
+    kind:       "deserializer",
+    title:      "lar:///ha.ka.ba/@lararium/tw5/modules/deserializer-tw5",
+    moduleType: "tiddlerdeserializer",
+    footer:     `\nexports["text/x-memetic-wikitext"] = exports.memeticWikitextDeserializer;`,
+  },
 ];
 
 // Module bundle entry points — CJS modules loaded as TW5 library modules.
-// module-type: library in the corresponding memes/modules/*-tw5.md tiddler.
-export const MODULE_ENTRIES: Array<{ entry: string; exportKey: string; name: string }> = [
-  { entry: "src/meme-ast-entry.ts",        exportKey: "memeAst",     name: "meme-ast"           },
-  { entry: "src/cold-boot-ceremony.ts",   exportKey: "coldBoot",    name: "cold-boot-ceremony" },
+export const MODULE_ENTRIES: TiddlerBuildEntry[] = [
+  { entry: "src/meme-ast-entry.ts",       exportKey: "memeAst",    name: "meme-ast",           kind: "library", title: "lar:///ha.ka.ba/@lararium/tw5/modules/meme-ast-tw5",           moduleType: "library" },
+  { entry: "src/cold-boot-ceremony.ts",   exportKey: "coldBoot",   name: "cold-boot-ceremony", kind: "library", title: "lar:///ha.ka.ba/@lararium/tw5/modules/cold-boot-ceremony-tw5", moduleType: "library" },
+  { entry: "src/modules/lar-promote.ts",  exportKey: "larPromote", name: "lar-promote",        kind: "library", title: "lar:///ha.ka.ba/@lararium/tw5/modules/lar-promote-tw5",        moduleType: "library" },
 ];
 
-export async function buildAll(): Promise<void> {
-  const all = [
-    ...WIDGET_ENTRIES.map((e) => ({ ...e, kind: "widget" as const })),
-    ...FILTER_ENTRIES.map((e) => ({ ...e, kind: "filter" as const })),
-    ...DESERIALIZER_ENTRIES.map((e) => ({ ...e, kind: "module" as const })),
-    ...MODULE_ENTRIES.map((e) => ({ ...e, kind: "module" as const })),
-  ];
+export const TIDDLER_BUILD_ENTRIES: TiddlerBuildEntry[] = [
+  ...WIDGET_ENTRIES,
+  ...FILTER_ENTRIES,
+  ...DESERIALIZER_ENTRIES,
+  ...MODULE_ENTRIES,
+];
 
-  const isDeserializer = new Set(DESERIALIZER_ENTRIES.map((e) => e.name));
+export function tiddlerHeader(entry: TiddlerBuildEntry): string {
+  return `/*\\\ntitle: ${entry.title}\ntype: application/javascript\nmodule-type: ${entry.moduleType}\n\\*/\n`;
+}
 
-  for (const { entry, name } of all) {
-    // Deserializer: TW5 tiddlerdeserializer module type expects exports keyed by MIME type.
-    // Append the MIME key alias after the named function export.
-    const footer = isDeserializer.has(name)
-      ? `\nexports["text/x-memetic-wikitext"] = exports.memeticWikitextDeserializer;`
-      : undefined;
-
+export async function buildAll(outDir = "dist-tiddlers"): Promise<void> {
+  for (const entry of TIDDLER_BUILD_ENTRIES) {
     await build({
       configFile: false,
       logLevel: "warn",
       build: {
         lib: {
-          entry:    path.resolve(__dirname, entry),
+          entry:    path.resolve(__dirname, entry.entry),
           formats:  ["cjs"],
-          fileName: () => `${name}.tw5.js`,
+          fileName: () => `${entry.name}.js`,
         },
-        outDir:    "dist-widgets",
+        outDir,
         emptyOutDir: false,
         sourcemap: false,
         minify:    false,
         rollupOptions: {
+          external: (id: string) => id.startsWith("$:/"),
           output: {
-            esModule:  false,
-            exports:   "named",
-            ...(footer ? { footer } : {}),
+            banner:   tiddlerHeader(entry),
+            esModule: false,
+            exports:  "named",
+            ...(entry.footer ? { footer: entry.footer } : {}),
           },
         },
       },
     });
-    console.log(`[build:widgets] ${name}.tw5.js`);
+    console.log(`[build:tiddlers] ${entry.name}.js`);
   }
 }

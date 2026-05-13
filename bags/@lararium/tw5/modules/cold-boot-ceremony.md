@@ -13,9 +13,9 @@ status-date  = "2026-05-04"
 heleuma      = "ka"
 source-file  = "packages/lararium-tw5/src/cold-boot-ceremony.ts"
 source-symbol = "*"
-module-ref   = "lar:///ha.ka.ba/@lararium/tw5/modules/cold-boot-ceremony-tw5"
+module-ref   = "lar:///ha.ka.ba/@lararium/tw5/modules/cold-boot-ceremony"
 implements   = ["lar:///ha.ka.ba/@lares/api/v0.1/pono/heleuma/ka"]
-body-sha256 = "46c2bd9dcd958228fb156878e5081c9f6dfc3762d43c89f1d2106501b885b6a2"
+body-sha256 = "922aeddf089e89ede98d1b9219fe8dc236e760c19cee84362d6c8d6992fccdcb"
 cacheable    = true
 retain       = true
 ```
@@ -197,7 +197,7 @@ export function buildCeremonyTiddlers(
 
 <<~ pranala #to-social-doc ? -> lar:///ha.ka.ba/@lararium/core/v0.1/social-doc family:control role:writes >>
 <<~ pranala #to-did-key ? -> lar:///ha.ka.ba/@lares/api/v0.1/mu/the-four-tools family:alignment role:aligns >>
-<<~ pranala #to-module ? -> lar:///ha.ka.ba/@lararium/tw5/modules/cold-boot-ceremony-tw5 family:control role:module >>
+<<~ pranala #to-module ? -> lar:///ha.ka.ba/@lararium/tw5/modules/cold-boot-ceremony family:control role:module >>
 
 <<~/ahu >>
 
