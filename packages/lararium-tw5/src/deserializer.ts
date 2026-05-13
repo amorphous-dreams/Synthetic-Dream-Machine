@@ -29,40 +29,12 @@ import {
   findTopLevelAhuBlocks,
   composeSlotPath,
 } from "@lararium/core/meme-ast";
-import { grammarRulesFromText, GRAMMAR_MEME_URI } from "@lararium/core";
-import type { GrammarRules } from "@lararium/core";
 import { parseTaploFields } from "./toml-ast.js";
+import { getGrammar, resetGrammar } from "./grammar-cache.js";
+export type { GrammarRules } from "@lararium/core";
+export { getGrammar, resetGrammar };
 
 export type TiddlerFields = Record<string, string | string[]>;
-
-// ---------------------------------------------------------------------------
-// Grammar — lazy load from shadow tiddler, memoized for session lifetime.
-//
-// The grammar meme travels as a shadow tiddler inside the compiled plugin.
-// It arrives before any tiddlerdeserializer call because TW5 loads plugin
-// tiddlers at boot, before any file import or sync event fires.
-// Operators may shadow GRAMMAR_MEME_URI in a higher-priority bag to extend
-// the sigil vocabulary; call resetGrammar() to pick up the new text.
-// ---------------------------------------------------------------------------
-
-let _grammarCache: { loaded: true; rules: GrammarRules | null } | undefined = undefined;
-
-export function getGrammar(): GrammarRules | null {
-  if (_grammarCache) return _grammarCache.rules;
-  let rules: GrammarRules | null = null;
-  try {
-    const tw = (globalThis as { $tw?: { wiki?: { getTiddlerText(t: string): string | undefined } } }).$tw;
-    const text = tw?.wiki?.getTiddlerText(GRAMMAR_MEME_URI) ?? "";
-    rules = text ? grammarRulesFromText(GRAMMAR_MEME_URI, text) : null;
-  } catch { /* grammar unavailable — BOOTSTRAP_SCANS remain active */ }
-  _grammarCache = { loaded: true, rules };
-  return rules;
-}
-
-/** Call after an operator promotes an extended grammar tiddler. */
-export function resetGrammar(): void {
-  _grammarCache = undefined;
-}
 
 // ---------------------------------------------------------------------------
 // memeticWikitextDeserializer — the TW5 module export
@@ -76,7 +48,6 @@ export function memeticWikitextDeserializer(
   fields: Record<string, unknown>,
 ): TiddlerFields[] {
   const baseUri = String(fields?.["title"] ?? "");
-  const grammar = getGrammar();
   const result: TiddlerFields[] = [];
 
   // ✶ Scan — stream parse: handles single-meme, multi-meme, and partials.
@@ -130,7 +101,7 @@ export function memeticWikitextDeserializer(
     if (postamble.length > 0 && ev === closes[closes.length - 1] && memeText.endsWith(postamble)) {
       memeText = memeText.slice(0, memeText.length - postamble.length);
     }
-    const tiddlers = splitMemeToTiddlers(uri, memeText, asStringFields(fields), grammar);
+    const tiddlers = splitMemeToTiddlers(uri, memeText, asStringFields(fields));
     if (prologue.length > 0 && tiddlers.length > 0 && ev === closes[0]) {
       // Copy prologue to ALL tiddlers so the template needs only `has[prologue]`.
       for (const t of tiddlers) t["prologue"] = prologue;
@@ -153,7 +124,7 @@ export function memeticWikitextDeserializer(
 
   // ⤴ Fallback — no SOH framing: treat entire text as bare meme body.
   if (result.length === 0 && text.trim()) {
-    result.push(...splitMemeToTiddlers(baseUri, text, asStringFields(fields), grammar));
+    result.push(...splitMemeToTiddlers(baseUri, text, asStringFields(fields)));
   }
 
   return result;
@@ -176,7 +147,6 @@ function splitMemeToTiddlers(
   uri:        string,
   text:       string,
   baseFields: TiddlerFields,
-  grammar?:   GrammarRules | null,
 ): TiddlerFields[] {
   const warnings: string[] = [];
   const sourceFile = typeof baseFields["source-file"] === "string" ? baseFields["source-file"] : "";
@@ -214,9 +184,9 @@ function splitMemeToTiddlers(
   //   header-text = post-iam pre-STX content (with ahu blocks → kahea refs)
   //   text        = post-STX body
   const { children: headerChildren, rewrittenText: headerRewritten } =
-    splitRecursive(uri, "", postIamContent, warnings, sourceFile, grammar);
+    splitRecursive(uri, "", postIamContent, warnings, sourceFile);
   const { children: bodyChildren, rewrittenText: bodyRewritten } =
-    splitRecursive(uri, "", bodyRegion, warnings, sourceFile, grammar);
+    splitRecursive(uri, "", bodyRegion, warnings, sourceFile);
 
   const allChildren = [...headerChildren, ...bodyChildren];
 
@@ -265,7 +235,6 @@ function splitRecursive(
   text:             string,
   warnings:         string[],
   parentSourceFile: string = "",
-  _grammar?:        GrammarRules | null,  // forward: grammar-aware sigil detection (Phase 2)
 ): { children: TiddlerFields[]; rewrittenText: string } {
   const allChildren: TiddlerFields[] = [];
   const enclosingUri = rootUri + fragmentPrefix;
@@ -282,7 +251,7 @@ function splitRecursive(
     const childSlotPath = composeSlotPath(fragmentPrefix, block.slot);
     const childUri      = rootUri + childSlotPath;
     const bodyText      = text.slice(block.bodyStart, block.bodyEnd);
-    const inner         = splitRecursive(rootUri, childSlotPath, bodyText, warnings, parentSourceFile, _grammar);
+    const inner         = splitRecursive(rootUri, childSlotPath, bodyText, warnings, parentSourceFile);
     const childStructure = extractSlotStructure(inner.rewrittenText, warnings, childUri);
 
     const childUriPath  = childUri.startsWith("lar:///") ? childUri.slice(7) : childUri;
@@ -311,14 +280,20 @@ function splitRecursive(
 }
 
 // ---------------------------------------------------------------------------
-// extractRootToml — find the ```toml iam``` block in the header region.
+// findIamFence — locate a ```toml iam``` (or plain ```toml```) fence block.
+// Used by both header-region and slot-body TOML extraction.
 // ---------------------------------------------------------------------------
 
-function extractRootTomlWithPos(text: string): { content: string; start: number; end: number } | null {
-  const m = /```toml[ \t]+iam[ \t]*\n([\s\S]*?)```\n?/.exec(text);
+const IAM_FENCE_RE   = /```toml[ \t]+iam[ \t]*\n([\s\S]*?)```\n?/;
+const PLAIN_FENCE_RE = /```toml[ \t]*\n([\s\S]*?)```\n?/;
+
+function findIamFence(text: string, allowPlain = false): { content: string; start: number; end: number } | null {
+  const m = IAM_FENCE_RE.exec(text) ?? (allowPlain ? PLAIN_FENCE_RE.exec(text) : null);
   if (!m) return null;
   return { content: m[1] ?? "", start: m.index, end: m.index + m[0].length };
 }
+
+function extractRootTomlWithPos(text: string) { return findIamFence(text); }
 
 // ---------------------------------------------------------------------------
 // extractSlotStructure — split a slot body into preamble + iam fields + text
@@ -344,13 +319,6 @@ function extractRootTomlWithPos(text: string): { content: string; start: number;
 //   - no iam:      text = whole body, preamble = "".
 // ---------------------------------------------------------------------------
 
-// IAM_MARKER kept for reference only — no longer used in active code.
-// @web2-era sentinel; preamble no longer carries an iam position marker.
-export const IAM_MARKER = "<<~ iam >>";
-
-// @web2-era — regenerateIamToml / formatTomlValue: replaced by lar-iam-block macro.
-// Kept as reference for Path H (save-side auto-split). Not used in emit path.
-
 interface SlotStructure {
   readonly preamble:  string;
   readonly fields:    TiddlerFields;
@@ -363,21 +331,18 @@ function extractSlotStructure(
   warnings: string[],
   context:  string,
 ): SlotStructure {
-  // Find iam toml block — preamble is prose before it, text starts after.
-  const iamRe   = /```toml[ \t]+iam[ \t]*\n([\s\S]*?)```\n?/;
-  const plainRe = /```toml[ \t]*\n([\s\S]*?)```\n?/;
-  const iamM    = iamRe.exec(bodyText) ?? plainRe.exec(bodyText);
+  const iamM = findIamFence(bodyText, true);
 
   let preamble = "";
   let fields: TiddlerFields = {};
   let remainder = bodyText;
 
   if (iamM) {
-    preamble  = bodyText.slice(0, iamM.index);
-    const raw = fieldifyToml(iamM[1] ?? "", warnings, context);
+    preamble  = bodyText.slice(0, iamM.start);
+    const raw = fieldifyToml(iamM.content, warnings, context);
     const { __arrayKeys: _, ...parsed } = raw as TiddlerFields & { __arrayKeys?: string[] };
     fields    = parsed;
-    remainder = bodyText.slice(iamM.index + iamM[0].length);
+    remainder = bodyText.slice(iamM.end);
   }
 
   // Find LAST kahea ref — trailing prose becomes postamble.
@@ -472,7 +437,7 @@ export function splitBodyTiddler(
 
   const warnings: string[] = [];
   const sourceFile = typeof baseFields["source-file"] === "string" ? baseFields["source-file"] : "";
-  const { children, rewrittenText } = splitRecursive(uri, "", bodyText, warnings, sourceFile, getGrammar());
+  const { children, rewrittenText } = splitRecursive(uri, "", bodyText, warnings, sourceFile);
 
   const parent: TiddlerFields = { ...baseFields, title: uri, text: rewrittenText };
 

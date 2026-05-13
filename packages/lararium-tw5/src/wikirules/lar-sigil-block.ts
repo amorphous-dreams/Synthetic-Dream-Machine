@@ -11,7 +11,7 @@
  * `WikiParser.createClassesFromModules`, classifying by `types: { block: true }`.
  */
 
-import { getGrammar } from "../deserializer.js";
+import { getGrammar } from "../grammar-cache.js";
 import {
   ParseTreeNode,
   WikiParser,

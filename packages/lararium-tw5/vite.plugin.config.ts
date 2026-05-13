@@ -21,6 +21,7 @@ export type PluginModuleType =
   | "parser"
   | "tiddlerdeserializer"
   | "macro"
+  | "startup"
   | "library";
 
 export interface PluginBuildEntry {
@@ -79,6 +80,9 @@ export const PLUGIN_ENTRIES: PluginBuildEntry[] = [
     footer:     `\nexports["text/x-memetic-wikitext"] = exports.memeticWikitextDeserializer;`,
   },
   { entry: "src/macros/lar-iam-block.ts", name: "lar-iam-block", moduleType: "macro", title: tw5Title("macros", "lar-iam-block") },
+
+  // Startup modules — register listeners and services at TW5 boot.
+  { entry: "src/grammar-cache.ts", name: "grammar-cache", moduleType: "startup", title: tw5Title("modules", "grammar-cache") },
 
   // Library modules + filter helpers that the Lararium VM can require/register.
   { entry: "src/modules/lar-promote.ts",  name: "lar-promote",        moduleType: "library", title: tw5Title("modules", "lar-promote"),        anchor: anchor("modules", "lar-promote") },

@@ -11,7 +11,7 @@
  * Module-type: wikirule. Classified by `types: { inline: true }`.
  */
 
-import { getGrammar } from "../deserializer.js";
+import { getGrammar } from "../grammar-cache.js";
 import {
   ParseTreeNode,
   WikiParser,
