@@ -32,14 +32,14 @@ export LAR_ROOT="$REPO_ROOT/tests"
 
 SOURCE_MEME="tests/src/the-lares-protocols.md"
 MEME_SLUG="the-lares-protocols"
-WIKI_MEME_DIR="$LAR_ROOT/wikis/$WIKI/memes/docs/lares"
+WIKI_MEME_DIR="$LAR_ROOT/wikis/@$WIKI/lares/docs/lares"
 WIKI_MEME="$WIKI_MEME_DIR/$MEME_SLUG.md"
-RUNS_DIR="tests/results/wikis/$WIKI/memes/docs/lares"
-EXPECTED_DIR="tests/expected/wikis/$WIKI/memes/docs/lares"
-PROMOTE_EXPECTED_PKG_DIR="tests/expected/packages/lares/memes/docs/lares"
+RUNS_DIR="tests/results/wikis/@$WIKI/lares/docs/lares"
+EXPECTED_DIR="tests/expected/wikis/@$WIKI/lares/docs/lares"
+PROMOTE_EXPECTED_PKG_DIR="tests/expected/bags/@lares/docs/lares"
 LAR_URI="lar:///ha.ka.ba/docs/lares/$MEME_SLUG"
-CANON_PARENT="$LAR_ROOT/packages/lares/memes/docs/lares/$MEME_SLUG.md"
-CANON_CHILD_DIR="$LAR_ROOT/packages/lares/memes/docs/lares/$MEME_SLUG"
+CANON_PARENT="$LAR_ROOT/bags/@lares/docs/lares/$MEME_SLUG.md"
+CANON_CHILD_DIR="$LAR_ROOT/bags/@lares/docs/lares/$MEME_SLUG"
 LARES="node_modules/.bin/lares"
 DAEMON_PID=""
 DAEMON_LOG=""
@@ -84,7 +84,7 @@ setup() {
   sleep 1
   $LARES reset --force --root "$LAR_ROOT"
   # Also clean disk-projected artifacts so each run starts from a fresh canvas.
-  rm -rf "$LAR_ROOT/wikis/" "$LAR_ROOT/packages/" "$LAR_ROOT/results/wikis/$WIKI"
+  rm -rf "$LAR_ROOT/wikis/" "$LAR_ROOT/bags/" "$LAR_ROOT/results/wikis/@$WIKI"
 
   echo ""
   echo "=== serve ==="
@@ -204,7 +204,7 @@ flow_promote() {
 
   echo ""
   echo "=== diff: promoted package vs expected (all fields) ==="
-  if diff -r --unified=3 "$PROMOTE_EXPECTED_PKG_DIR" "$LAR_ROOT/packages/lares/memes/docs/lares"; then
+  if diff -r --unified=3 "$PROMOTE_EXPECTED_PKG_DIR" "$LAR_ROOT/bags/@lares/docs/lares"; then
     pass "promoted output matches expected"
   else
     fail "promoted output diverges from expected — see diff above"
