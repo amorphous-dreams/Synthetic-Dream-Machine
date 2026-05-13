@@ -50,7 +50,8 @@ packages/lararium-node/playwright-report
 packages/lararium-node/.lararium/
 
 # scratch wiki — operator's live editable surface, never committed.
-# Named wikis (e.g. wikis/lares-history/) are checked in.
+# Named wikis (e.g. wikis/@lares-history/) are checked in.
+wikis/@scratch/
 wikis/scratch/
 !tests/expected/wikis/
 
