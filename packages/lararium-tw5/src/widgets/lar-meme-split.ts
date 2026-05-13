@@ -1,3 +1,8 @@
+/*\
+title: lar:///ha.ka.ba/@lararium/tw5/widgets/lar-meme-split
+type: application/javascript
+module-type: widget
+\*/
 /**
  * `<$lar-meme-split>` — TW5-side meme-split action.
  *

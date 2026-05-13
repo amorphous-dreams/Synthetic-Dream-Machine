@@ -1,3 +1,8 @@
+/*\
+title: lar:///ha.ka.ba/@lararium/tw5/widgets/ahu
+type: application/javascript
+module-type: widget
+\*/
 /**
  * AhuWidget — TW5 widget for the `ahu` sigil (slot reference / definition).
  *

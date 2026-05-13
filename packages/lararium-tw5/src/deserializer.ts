@@ -1,3 +1,8 @@
+/*\
+title: lar:///ha.ka.ba/@lararium/tw5/modules/deserializer
+type: application/javascript
+module-type: tiddlerdeserializer
+\*/
 /**
  * deserializer — TW5 causal-island boundary module for text/x-memetic-wikitext.
  *

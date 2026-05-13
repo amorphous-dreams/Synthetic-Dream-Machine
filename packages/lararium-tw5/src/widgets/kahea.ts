@@ -1,3 +1,8 @@
+/*\
+title: lar:///ha.ka.ba/@lararium/tw5/widgets/kahea
+type: application/javascript
+module-type: widget
+\*/
 /**
  * KaheaWidget — `<<~ kahea <uri> >>` live transclusion (dataflow family).
  * Tracks edits to the target at render time. Distinct from aka by

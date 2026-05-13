@@ -1,3 +1,8 @@
+/*\
+title: lar:///ha.ka.ba/@lararium/tw5/widgets/pranala
+type: application/javascript
+module-type: widget
+\*/
 /**
  * PranalaWidget — explicit edge sigil. Two surface forms share the widget:
  *   Inline:  `<<~ pranala #name? <from> -> <to> [family:f] [role:r] >>`

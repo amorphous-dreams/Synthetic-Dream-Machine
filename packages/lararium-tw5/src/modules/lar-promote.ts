@@ -1,3 +1,8 @@
+/*\
+title: lar:///ha.ka.ba/@lararium/tw5/modules/lar-promote
+type: application/javascript
+module-type: library
+\*/
 // @heleuma:required
 /**
  * lar-promote — wiki-internal bag promotion library.

@@ -1,3 +1,8 @@
+/*\
+title: lar:///ha.ka.ba/@lararium/tw5/parsers/memetic-parser
+type: application/javascript
+module-type: parser
+\*/
 /**
  * memetic-parser — WikiParser subclass for `text/x-memetic-wikitext`.
  *

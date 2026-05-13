@@ -1,3 +1,8 @@
+/*\
+title: lar:///ha.ka.ba/@lararium/tw5/filters/implementors
+type: application/javascript
+module-type: library
+\*/
 import type { TW5Instance, TW5FilterSource, TW5FilterOperator } from "../types/tiddlywiki.js";
 
 /** Exact-token match on space-separated `implements` field.

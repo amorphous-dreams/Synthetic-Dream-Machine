@@ -1,3 +1,8 @@
+/*\
+title: lar:///ha.ka.ba/@lararium/tw5/wikirules/lar-sigil-inline
+type: application/javascript
+module-type: wikirule
+\*/
 /**
  * lar-sigil-inline — TW5 wikirule (inline-mode) for inline `<<~ ... >>`
  * sigil shapes: ahu invocation form, kahea/aka/loulou/pranala/carrier

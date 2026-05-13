@@ -1,3 +1,8 @@
+/*\
+title: lar:///ha.ka.ba/@lararium/tw5/widgets/pranala-header
+type: application/javascript
+module-type: widget
+\*/
 /**
  * PranalaHeaderWidget — `<<~ ? -> uri >>` carrier-to-canonical edge.
  * The leading `?` token names this carrier itself; the URI names the

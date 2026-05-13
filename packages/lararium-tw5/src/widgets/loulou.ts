@@ -1,3 +1,8 @@
+/*\
+title: lar:///ha.ka.ba/@lararium/tw5/widgets/loulou
+type: application/javascript
+module-type: widget
+\*/
 /**
  * LoulouWidget — `<<~ loulou <uri> >>` bidirectional relation edge sugar
  * (relation family). No body transclusion — relation declaration only.

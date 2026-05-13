@@ -1,3 +1,8 @@
+/*\
+title: lar:///ha.ka.ba/@lararium/tw5/filters/edge
+type: application/javascript
+module-type: library
+\*/
 import type { TW5Instance, TW5FilterSource, TW5FilterOperator } from "../types/tiddlywiki.js";
 
 /** edge:family[role] — filter tiddlers that have an edge-out field for family+role.

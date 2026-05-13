@@ -1,5 +1,5 @@
 /*\
-title: lar:///plugins/lares/memetic-wikitext/macros/lar-iam-block.js
+title: lar:///ha.ka.ba/@lararium/tw5/macros/lar-iam-block
 type: application/javascript
 module-type: macro
 \*/

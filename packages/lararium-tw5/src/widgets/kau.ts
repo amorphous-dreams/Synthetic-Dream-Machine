@@ -1,3 +1,8 @@
+/*\
+title: lar:///ha.ka.ba/@lararium/tw5/widgets/kau
+type: application/javascript
+module-type: widget
+\*/
 import type { TW5WidgetInstance, TW5ParseTreeNode, TW5FakeElement, TW5ChangeRecord } from "../types/tiddlywiki.js";
 import { dispatchSlotRenderMode } from "./render-modes.js";
 

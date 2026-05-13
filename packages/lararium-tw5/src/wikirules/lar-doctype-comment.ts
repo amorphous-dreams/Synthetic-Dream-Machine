@@ -1,3 +1,8 @@
+/*\
+title: lar:///ha.ka.ba/@lararium/tw5/wikirules/lar-doctype-comment
+type: application/javascript
+module-type: wikirule
+\*/
 /**
  * lar-doctype-comment — TW5 wikirule (block-mode) for HTML-comment-wrapped
  * DOCTYPE sigils: `<!-- <<~ !DOCTYPE = uri >> -->`.

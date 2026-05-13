@@ -1,3 +1,8 @@
+/*\
+title: lar:///ha.ka.ba/@lararium/tw5/filters/toml-field
+type: application/javascript
+module-type: library
+\*/
 import type { TW5Instance, TW5FilterSource, TW5FilterOperator } from "../types/tiddlywiki.js";
 
 /** toml:key[val] — field filter using TOML field names directly.

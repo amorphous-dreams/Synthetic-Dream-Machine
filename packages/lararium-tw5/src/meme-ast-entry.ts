@@ -1,3 +1,8 @@
+/*\
+title: lar:///ha.ka.ba/@lararium/tw5/modules/meme-ast
+type: application/javascript
+module-type: library
+\*/
 /**
  * meme-ast-entry.ts — CJS entry point for the meme-ast TW5 library module.
  *

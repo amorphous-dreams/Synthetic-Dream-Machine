@@ -1,3 +1,8 @@
+/*\
+title: lar:///ha.ka.ba/@lararium/tw5/modules/cold-boot-ceremony
+type: application/javascript
+module-type: library
+\*/
 /**
  * cold-boot-ceremony — void-start operator identity tiddler builder.
  *

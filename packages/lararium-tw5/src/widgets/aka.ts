@@ -1,3 +1,8 @@
+/*\
+title: lar:///ha.ka.ba/@lararium/tw5/widgets/aka
+type: application/javascript
+module-type: widget
+\*/
 /**
  * AkaWidget — `<<~ aka <uri> >>` shadow transclusion (observe family).
  * Frozen-at-projection-time read of a remote meme. The cascade

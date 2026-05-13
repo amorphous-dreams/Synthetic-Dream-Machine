@@ -1,3 +1,8 @@
+/*\
+title: lar:///ha.ka.ba/@lararium/tw5/wikirules/lar-sigil-block
+type: application/javascript
+module-type: wikirule
+\*/
 /**
  * lar-sigil-block — TW5 wikirule (block-mode) for `<<~ ahu ... >>` blocks
  * and any other `<<~ sigil ... >>...<<~/sigil >>` block-form sigil.
