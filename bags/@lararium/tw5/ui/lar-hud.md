@@ -1,0 +1,133 @@
+<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/@lares/api/v0.1/pono/memetic-wikitext >> -->
+
+<<~&#x0001; ? -> lar:///ha.ka.ba/@lararium/tw5/ui/lar-hud >>
+```toml iam
+uri-path     = "ha.ka.ba/@lararium/tw5/ui/lar-hud"
+file-path    = "bags/@lararium/tw5/ui/lar-hud.md"
+type         = "text/vnd.tiddlywiki"
+register     = "CS"
+confidence   = 0.92
+mana         = 0.92
+manao        = 0.90
+manaoio      = 0.88
+role         = "LarHUD doctrine — VSCode-style right-docked TW5 wiki panel; flex-sibling push model; 3-state machine"
+cacheable    = true
+retain       = true
+```
+
+<<~&#x0002;>>
+
+# LarHUD — Dockable TW5 Wiki Frame
+
+## Doctrine
+
+LarHUD positions TW5 as a **flex sibling** of the TLDraw canvas, not a portal overlay.
+The canvas container gets `flex:1` and shrinks when the HUD opens.
+No z-index management. No pointer-event routing. TLDraw's own toolbar chrome
+never overlaps the HUD because both live in the same flex row.
+
+This implements the Excalidraw/Figma/VSCode canonical push model:
+panel opens → canvas shrinks → panel closes → canvas expands.
+
+## Three-State Machine
+
+```
+collapsed (44px icon strip)
+    ⌘K ↓         ↑ Escape
+sidebar (340px push panel)
+    ⌘K ↓         ↑ ◂ button
+expanded (640px push panel)
+```
+
+**Collapsed**: Full-height 44px icon strip on the right edge.
+Shows ⬡ icon + vertical phase label. Click or ⌘K opens to sidebar.
+
+**Sidebar**: Default working width. Tab bar (⬡ wiki | phase | expand | ✕).
+TW5 shadow root fills remaining height.
+
+**Expanded**: Full wiki chrome at 640px. Shrink button (◂) returns to sidebar.
+
+## TW5 Mount Contract
+
+`tw5.mountPanel(hostDiv)` attaches a shadow root to the host element,
+injects TW5 styles via a `<style id="lar-tw5-styles">` element,
+and renders `$:/core/ui/RootTemplate` into a `.tc-page-container-wrapper` div.
+
+The shadow root is **never destroyed** across state transitions —
+it stays live even when the HUD is collapsed (display:none equivalent via
+`visibility:hidden; width:0; height:0`). This mirrors VSCode's webview model
+where panels stay alive in the background.
+
+**Why not iframe**: TW5 writes styles and DOM into the shadow root via `fakeDocument`
+injection pre-boot. The `mountPanel()` approach extracts stylesheet content explicitly
+and injects it into the shadow root as a real `<style>` element. TW5's raw
+`addEventListener` calls inside the shadow root bypass React's synthetic event
+retargeting problem entirely.
+
+## CSS Isolation
+
+TLDraw CSS custom properties (`--tl-color-*`, `--tl-font-*`) **do** cross the
+shadow root boundary by inheritance. This is intentional — TW5 inside the HUD
+inherits the current tldraw theme (gruvbox-dark/light). To override, declare
+`:host { --tl-color-background: <value>; }` inside the shadow stylesheet.
+
+## Z-Index Map (flex sibling model)
+
+| Layer | Z-Index | Who owns it |
+|---|---|---|
+| TLDraw canvas | 100–500 | `.tl-canvas` stacking context |
+| TLDraw UI panels | 300 | `.tlui-layout` |
+| LarHUD | n/a (flex) | flex row sibling |
+| BootSplash | 9999 | `document.body` portal |
+
+The flex sibling model means LarHUD has **no z-index requirement** —
+it sits in the document flow, not above the canvas.
+
+## Keyboard Shortcuts
+
+| Key | Effect |
+|---|---|
+| ⌘K / Ctrl+K | Cycle: collapsed → sidebar → expanded → collapsed |
+| Escape | Collapse from any open state |
+| ◂ button | Shrink expanded → sidebar |
+| ▸ button | Expand sidebar → expanded |
+
+⌘K uses `capture: true` with `stopImmediatePropagation` to override
+LarariumShell's own ⌘K toggle handler.
+
+## TLDraw HUD Compatibility
+
+All existing tldraw slot components render **inside the canvas container** (`canvasWrap`):
+
+- `LarariumMenuPanel` → `components.MenuPanel` — top-left of canvas, never touches LarHUD
+- `LarariumSharePanel` → `components.SharePanel` — top-right of canvas, inside canvasWrap
+- `LarariumHelperButtons` → `components.HelperButtons` — top-left of canvas, inside canvasWrap
+
+When LarHUD is open at 340px, tldraw's SharePanel anchors to the right edge of
+`canvasWrap` (width = viewport − 340px), not to the screen edge. No overlap.
+
+Drawing mode (`drawingMode = true`) shows full tldraw chrome — LarHUD coexists
+as a flex sibling unaffected by tldraw's internal layout changes.
+
+## Future: Bottom Dock + Overlay Mode
+
+- **Bottom dock**: swap flex-direction to column; LarHUD height-based transitions
+- **Mobile overlay**: below `PUSH_BREAKPOINT_PX` (≈640px container width),
+  LarHUD switches to `position:fixed; right:0` and does not shrink the canvas
+- **Resize handle**: drag the left edge of sidebar to adjust width between MIN_W and MAX_W
+- **Per-tiddler navigation**: HUD tab bar gains a breadcrumb trail for open tiddlers
+
+<<~&#x0003;>>
+
+<<~&#x0004; -> ? >>
+
+<<~ ahu #edges >>
+
+## Edges
+
+<<~ pranala #implements-meme ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/meme family:control role:implements >>
+<<~ pranala #implements-ui ? -> lar:///ha.ka.ba/@lararium/tw5/ui family:control role:implements >>
+<<~ pranala #requires-tw5-engine ? -> lar:///ha.ka.ba/@lararium/tw5/tw5-module family:control role:requires >>
+<<~ pranala #sibling-of-canvas ? -> lar:///ha.ka.ba/@lararium/tw5/canvas family:relation role:companion >>
+
+<<~/ahu >>

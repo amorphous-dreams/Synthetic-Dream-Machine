@@ -1,0 +1,145 @@
+<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/@lares/api/v0.1/pono/memetic-wikitext >> -->
+
+<<~⊙&#x0001; ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/automerge-tiga >>
+```toml iam
+uri-path     = "ha.ka.ba/@lares/api/v0.1/pono/automerge-tiga"
+file-path    = "bags/@lares/api/v0.1/pono/automerge-tiga.md"
+type         = "text/x-memetic-wikitext"
+register     = "CS"
+confidence   = 0.95
+mana         = 0.94
+manao        = 0.93
+manaoio      = 0.91
+role         = "invariant: six base docs in two tigas — content plane (ha/ka/ba) + social plane (identities/groups/sessions)"
+tagspace     = "stable"
+cacheable    = true
+retain       = true
+invariant    = true
+```
+<<~&#x0002;>>
+
+<<~ ahu #ooda-ha >>
+✶ observe that the doc stack has grown to six root Automerge docs in two parallel planes: the content Tiga (ha/ka/ba) and the social Tiga (identities/groups/sessions). Six roots. Two triangles. One oracle chain through ha.
+⏿ orient around Bucky Fuller's structural law: the triangle forms the minimal stable geometry. Two triangles sharing a common root (ha) form a stable double-plane. Content plane carries SDM forces (structure/fire/personality). Social plane = identity primitives (who/collective/live-session).
+◇ decide that both tigas are canonical and load-bearing: the content Tiga names are ha/ka/ba; the social plane docs carry no SDM force names — function names them (identities, groups, sessions). Ha holds oracle tiddlers for all five non-ha docs.
+▶ lock the six-root model as invariant: any peer that opens ha can discover all five siblings by walking LarariumDoc oracle tiddlers. No vertex carries upward pointers. Reachability flows downward from ha.
+⤴ assess: the model holds when every deploy has exactly six root docs and LarariumDoc.tiddlers confirms all five are reachable (CATALOG, LARES, IDENTITIES, GROUPS, SESSIONS).
+↺ residue: room docs and corpus docs function as non-root docs — they hang from ka as leaves. Corpus child-docs now sit at pos-2 under @catalog (M22 remapping). Keyhive will eventually treat the six-root set as the root group boundary.
+<<~/ahu >>
+
+<<~ ahu #tiga-law >>
+
+## Six Root Docs, Two Planes
+
+**Tiga** (Indonesian: triangle) — the minimal stable geometry (Buckminster Fuller).
+Six root Automerge docs. Two parallel triangles. One oracle root (ha).
+
+### Content Plane — Automerge Tiga (ha / ka / ba)
+
+```
+         ha
+        /  \
+      ka .. ba
+```
+
+| Vertex | Doc | URI | SDM force | Oracle role |
+|---|---|---|---|---|
+| **ha** | `LarariumDoc` | `@lararium` | structure / stability | root oracle — holds all five non-ha tiddlers |
+| **ka** | `CatalogDoc` | `@catalog` | fire / motion | motion oracle — holds corpus and room tiddlers |
+| **ba** | `LaresDoc` | `@lares` | personality / flow | personality oracle — holds `@lares` system tiddlers |
+
+### Social Plane — Social Tiga (identities / groups / sessions)
+
+```
+    identities
+       /  \
+  groups .. sessions
+```
+
+| Doc | URI | Role |
+|---|---|---|
+| `IdentitiesDoc` | `@identities` | stable principal records — operators, agents, services, devices |
+| `CirclesDoc` | `@circles` | collective authority + durable membership (Keyhive group CRDT) |
+| `SessionsDoc` | `@sessions` | live operator-agent session docs; hostful overlays project into these |
+
+The social plane docs carry no SDM force names — function names them.
+Ha holds oracle tiddlers for all five non-ha docs (both planes).
+
+### Structural Laws
+
+**Content plane:**
+
+1. Ha holds ka. `LarariumDoc.tiddlers[CATALOG_DOC_URI].text` = CatalogDoc automerge URL.
+2. Ha holds ba. `LarariumDoc.tiddlers[LARES_DOC_URI].text` = LaresDoc automerge URL.
+3. Ka holds corpus child-docs. `CatalogDoc.tiddlers[corpusLarUri(slug)].text` = corpus doc automerge URL (pos-2: `@catalog/@{slug}`).
+4. Ka holds room leaves. `CatalogDoc.tiddlers[roomLarUri(slug)].text` = room leaf doc automerge URL.
+
+**Social plane (oracle tiddlers stored in ha):**
+
+5. Ha holds identities. `LarariumDoc.tiddlers[IDENTITIES_DOC_URI].text` = IdentitiesDoc automerge URL.
+6. Ha holds groups. `LarariumDoc.tiddlers[CIRCLES_DOC_URI].text` = CirclesDoc automerge URL.
+7. Ha holds sessions. `LarariumDoc.tiddlers[SESSIONS_DOC_URI].text` = SessionsDoc automerge URL.
+
+**Invariants across both planes:**
+
+8. No leaf carries upward pointers. Leaves self-describe only (own lar: URI → own automerge URL).
+9. Reachability flows ha → {ka, ba, identities, groups, sessions} → leaves. No back-edges.
+10. `@` appears ONLY at pos-1 (root doc) or pos-2 (corpus child-doc under @catalog). Never at pos-3+.
+
+**Self-description rule (all six root docs):**
+
+Each root doc carries `tiddlers[its own lar: URI].text = its own automerge URL`.
+
+```
+ha:          tiddlers["lar:///ha.ka.ba/@lararium"].text    = automerge://…
+ka:          tiddlers["lar:///ha.ka.ba/@catalog"].text     = automerge://…
+ba:          tiddlers["lar:///ha.ka.ba/@lares"].text       = automerge://…
+identities:  tiddlers["lar:///ha.ka.ba/@identities"].text  = automerge://…
+groups:      tiddlers["lar:///ha.ka.ba/@circles"].text      = automerge://…
+sessions:    tiddlers["lar:///ha.ka.ba/@sessions"].text    = automerge://…
+```
+
+<<~/ahu >>
+
+<<~ ahu #zelenka-alignment >>
+
+## Zelenka Alignment
+
+Brooklyn Zelenka's Beelay/Keyhive design: documents link **downward only**.
+A reachability index is computed from the root forward — not declared by leaves.
+Both tigas enact this: ha serves as the sole oracle root; ka, ba, identities, groups, and sessions function as arms; corpus child-docs and rooms hang from ka as leaves.
+
+In Keyhive terms: the six-root set will eventually map to a **root group** (ha) containing five **sub-groups** — one per non-ha doc.
+Membership flows inward from ha, not upward from leaves.
+The oracle-tiddler chain serves as the pre-Keyhive reachability index.
+
+**Upward pointers are prohibited** in corpus docs, room docs, and all social-plane tiddler payloads.
+Both tigas' stability depends on this constraint holding at every deploy.
+
+<<~/ahu >>
+
+<<~ ahu #boot-sequence-mapping >>
+
+## Boot Sequence → Six-Root Mapping
+
+```
+Step 1 — repo open              : storage layer, no doc identity yet
+Step 2 — ha opens               : LarariumDoc syncs; grammar + widgets available
+          ha reads ka URI       : tiddlers[CATALOG_DOC_URI].text      → CatalogDoc URL
+          ha reads ba URI       : tiddlers[LARES_DOC_URI].text        → LaresDoc URL
+          ha reads social URIs  : tiddlers[IDENTITIES_DOC_URI].text   → IdentitiesDoc URL
+                                  tiddlers[CIRCLES_DOC_URI].text       → CirclesDoc URL
+                                  tiddlers[SESSIONS_DOC_URI].text     → SessionsDoc URL
+Step 3 — ka opens               : CatalogDoc syncs; corpus + room URLs known
+Step 4 — corpus child-docs      : each carries own self-ref tiddler; pos-2 under @catalog
+Step 5 — room leaf              : situates session content
+Step 6 — ba opens               : LaresDoc syncs; personality layer active
+Step 7 — social plane opens     : IdentitiesDoc, CirclesDoc, SessionsDoc sync;
+                                  principal records and session state available
+```
+
+Ba (LaresDoc) opens before the social plane — personality flows after structure and motion, before identity layer activates.
+Social plane opens last — authority structures sit downstream of content plane stability.
+This ordering carries structural correctness for the SDM metaphysics — not incidental.
+
+<<~/ahu >>
