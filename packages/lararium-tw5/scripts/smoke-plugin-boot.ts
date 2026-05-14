@@ -12,12 +12,17 @@
  *
  * Exit nonzero if any check fails.
  */
+import { readFileSync } from "fs";
+import path from "path";
 import { TW5Engine } from "../src/tw5-vm.js";
 import { exportMemeText } from "../src/meme-write.js";
+import { TW5_CORE_SCRIPT_FILENAME, TW5_CORE_DIR } from "../src/generated-tw5-version.js";
 
 async function main(): Promise<void> {
+  const corePath = path.join(TW5_CORE_DIR, TW5_CORE_SCRIPT_FILENAME);
+  const coreBlob = new Uint8Array(readFileSync(corePath));
   const engine = new TW5Engine();
-  await engine.boot();
+  await engine.boot(coreBlob);
 
   const failures: string[] = [];
   const wiki = engine.wiki;

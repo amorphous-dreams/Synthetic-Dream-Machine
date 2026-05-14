@@ -170,7 +170,15 @@ function splitMemeToTiddlers(
   const bodyRegion   = (stxM ? stripped.slice(stxM.index + stxM[0].length) : "").replace(/^\n/, "");
 
   // Parse iam fields from header region (before STX).
-  const iamPos     = extractRootTomlWithPos(headerRegion);
+  // Guard: only look for iam in the part of headerRegion before the first
+  // top-level ahu block. If the iam fence sits inside a slot body it is a
+  // slot-level iam, not a root-level one — extractSlotStructure picks it up
+  // when splitRecursive descends into that slot.
+  const _rootIamTopBlocks = findTopLevelAhuBlocks(headerRegion);
+  const _rootIamCutoff = _rootIamTopBlocks.length > 0
+    ? _rootIamTopBlocks[0]!.openStart
+    : headerRegion.length;
+  const iamPos     = extractRootTomlWithPos(headerRegion.slice(0, _rootIamCutoff));
   const rootToml   = iamPos?.content ?? null;
   const rootFieldsRaw = rootToml ? fieldifyToml(rootToml, warnings, uri) : {};
   const { __arrayKeys: _, ...rootFields } = rootFieldsRaw as TiddlerFields & { __arrayKeys?: string[] };
@@ -178,12 +186,20 @@ function splitMemeToTiddlers(
   // Split header into pre-iam prose and post-iam-pre-STX content.
   // pre-iam: operator prose between SOH and the iam block (e.g. a framing note).
   // post-iam: aka refs, header ahu slots — structure that belongs before STX on disk.
-  const preIamContent  = iamPos ? headerRegion.slice(0, iamPos.start) : headerRegion;
+  // When a root iam exists: preIam = prose before iam; postIam = content after iam.
+  // When no root iam but top-level ahu blocks exist: route full headerRegion through
+  // postIamContent so splitRecursive can find the blocks; preIamContent stays empty.
+  // When no root iam and no blocks: preIamContent holds the prose verbatim.
+  const preIamContent  = iamPos
+    ? headerRegion.slice(0, iamPos.start)
+    : (_rootIamTopBlocks.length > 0 ? "" : headerRegion);
   // Strip one leading \n from post-iam content: extractRootTomlWithPos's regex
   // consumes the closing ``` and its \n, but the source's blank line between the
   // iam fence and the next header content (aka/ahu refs) lives here. The template
   // emits \n\n after the closing ```, so the stored field must not also start with \n.
-  const postIamContent = iamPos ? headerRegion.slice(iamPos.end).replace(/^\n/, "") : "";
+  const postIamContent = iamPos
+    ? headerRegion.slice(iamPos.end).replace(/^\n/, "")
+    : (_rootIamTopBlocks.length > 0 ? headerRegion : "");
 
   // Recurse separately so the STX boundary is preserved in the parent's fields:
   //   header-text = post-iam pre-STX content (with ahu blocks → kahea refs)

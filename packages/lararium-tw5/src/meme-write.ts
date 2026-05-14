@@ -77,7 +77,7 @@ export function exportMemeText(tw5: TW5Engine, memeUri: string): string {
   if (!wiki?.renderTiddler) return "";
   try {
     // Render through the meme-level template, which carries `\rules only
-    // transcludeinline lar-sigil-block lar-sigil-inline lar-doctype-comment`.
+    // transcludeinline lar-sigil lar-doctype-comment`.
     // The pragma curates the wikitext rule set so backticks, dashes, html
     // entities, html comments, and macrocall stay literal — only sigil and
     // transclusion rules fire. AhuWidget transcludes slot children through

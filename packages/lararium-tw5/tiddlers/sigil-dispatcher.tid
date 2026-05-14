@@ -3,5 +3,5 @@ tags: $:/tags/Global $:/tags/LarariumGrammar
 type: text/vnd.tiddlywiki
 
 \widget ~(name p1:"" p2:"" p3:"" p4:"" p5:"")
-<$genesis $type={{{ [<name>addprefix[$~]] }}} $remappable="no" p1=<<p1>> p2=<<p2>> p3=<<p3>> p4=<<p4>> p5=<<p5>>><$slot $name="body"/></$genesis>
+<$transclude $variable={{{ [<name>addprefix[~]] }}} p1=<<p1>> p2=<<p2>> p3=<<p3>> p4=<<p4>> p5=<<p5>>/>
 \end

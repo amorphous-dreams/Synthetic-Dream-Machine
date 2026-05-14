@@ -25,6 +25,9 @@ const SRC_DIR   = path.resolve(__dirname, "src");
 export const TIDDLERS_DIR    = "tiddlers";
 export const TIDDLER_SRC_DIR = "tiddlers/src";
 
+/** Kept for build-plugin-tiddler.ts compatibility; anchor patching now driven by bags/ scan. */
+export const PLUGIN_ENTRIES: Array<{ name: string; anchor?: string }> = [];
+
 // ---------------------------------------------------------------------------
 // Discovery — walk src/, collect TS files that open with /*\
 // ---------------------------------------------------------------------------

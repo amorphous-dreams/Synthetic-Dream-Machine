@@ -21,11 +21,8 @@ module-type: parser
  * propagates because every memetic-typed tiddler instantiates THIS
  * parser, transclude or not.
  *
- * What gets filtered (deny list):
- *   - macrocallinline / macrocallblock — claim `<<...>>` before the
- *     lar-sigil rules can match. Removed once T-1 lands: lar-sigil-inline
- *     collapses into lar-sigil (block-only) and leaf forms fall through to
- *     TW5's standard macro dispatch → `\widget ~(name)` dispatcher tiddler.
+ * Deny list is now empty — T-1 landed. lar-sigil (block+inline) claims all
+ * <<~ … >> forms; standard TW5 macro rules fire normally for <<macroname>>.
  *
  * Operator override: writing a space-separated rule-name list to
  * `$:/config/Lar/MemeticRulesExcept` replaces the default deny list.
@@ -35,9 +32,7 @@ module-type: parser
 
 const RULES_CONFIG_TIDDLER = "$:/config/Lar/MemeticRulesExcept";
 
-const DEFAULT_RULES_EXCEPT: ReadonlySet<string> = new Set([
-  "macrocallinline", "macrocallblock",
-]);
+const DEFAULT_RULES_EXCEPT: ReadonlySet<string> = new Set<string>();
 
 interface ParserCtor {
   (this: object, type: string, text: string, options: unknown): void;
