@@ -28,7 +28,7 @@ Do not re-open those arcs unless a test proves drift.
 | Priority | Path | Status | Outcome |
 |---|---|---|---|
 | — | **T-1** | ✅ Done | `lar-sigil.ts` single rule; deny list cleared; stale build artifacts purged. |
-| 1 | **~ahu** | ⬜ Talk-story needed | Retire `ahu.ts` to `\widget ~ahu` wikitext; child URI as filter expression; body encoding design. |
+| — | **~ahu** | ✅ Done | `ahu.ts` retired to `sigil-ahu.tid`; only `kau` remains as JS widget. |
 | 2 | **K / F-arc** | ⬜ Next | TW5 save routing, debounce, projection hygiene for sustained editing. |
 | 3 | **L / S7.4** | ⬜ Next | Admin-doc ingress trust gate: operator devices with `cap=infrastructure` only. |
 | 4 | **G.rest** | ⬜ Small | `lele`, `papalohe`, `pae` → `macrocall` emission + `\widget ~name` tiddlers. Talk-story per sigil. |
@@ -42,30 +42,11 @@ Do not re-open those arcs unless a test proves drift.
 - `pnpm test:flows` — top-level isolated integration flows.
 - `pnpm test:tw5-flow` — direct TW5 sync/decompose/promote flow.
 - `pnpm --filter @lararium/tw5 exec tsx scripts/smoke-plugin-boot.ts` — plugin
-  boot smoke (shadow tiddlers + widget registry + render probes).
+  boot smoke (shadow tiddlers + JS widget registry + deserializer probes).
 
-## Path ~ahu — Retire Last Non-kau JS Widget
+## Path ~ahu — Done
 
-Goal: `ahu.ts` → `\widget ~ahu` wikitext tiddler.
-
-Child URI resolution as a TW5 filter:
-```
-{{{ [<uri>!match[]!regexp[^lar:///unknown]] ~[<slot>regexp[^lar:]] ~[<currentTiddler>addsuffix<slot>] }}}
-```
-
-Open design question: body encoding for the block form. Options:
-- Named string param `body=""` (same as pranala). Block rule emits
-  `macrocall $variable="~ahu" slot=… uri=… body=<body-text>`. Wikitext
-  template renders `<<body>>` directly. Simplest path.
-- `$slot`/`$fill` in the macrocall children. Richer (allows wikitext in body),
-  but TW5 `MacroCallWidget` fill support needs verification for `\widget`.
-
-- [ ] Talk-story: confirm body-as-named-param vs body-as-fill.
-- [ ] Create `tiddlers/sigil-ahu.tid` with `\widget ~ahu(slot uri body template)`.
-- [ ] Update `lar-sigil-block.ts` (or `lar-sigil.ts` after T-1): ahu block form
-      emits `macrocall $variable="~ahu"`.
-- [ ] Delete `ahu.ts`.
-- [ ] Update smoke: `ahu` moves from JS widget list to shadow tiddler list.
+`ahu.ts` retired to `tiddlers/sigil-ahu.tid`. `lar-sigil.ts` emits the wikitext child-slot summons path; smoke now checks the sigil tiddler and keeps render probes in integration flow tests.
 
 ## Path K — TW5 Routing, Debounce, Projection Hygiene
 

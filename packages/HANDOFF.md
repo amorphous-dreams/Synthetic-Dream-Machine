@@ -14,15 +14,14 @@ command-tiddler CLI, Keyhive concap, bag residency, wiki composition,
 plugin-tiddler boot, sigil cascade architecture, save-side split, recursive
 child co-promotion, Node VM / worker-thread lift, full sigils-as-wikitext
 sprint including T-1 wikirule collapse, URI fragment resolution on all 5 sigil
-tiddlers, and deserializer root-iam fix + build pipeline clear-before-rebuild
+tiddlers, `ahu.ts` retirement to `sigil-ahu.tid`, and deserializer root-iam fix + build pipeline clear-before-rebuild
 (see "What Changed This Turn") are treated as landed unless tests prove drift.
 
 Next work, in order:
-1. Path ~ahu: retire ahu.ts to \widget ~ahu wikitext (child URI filter,
-   body encoding via named string param — talk-story needed).
-2. Path K / F-arc: TW5 routing rules + 300–500ms debounce + projection
+1. Path K / F-arc: TW5 routing rules + 300–500ms debounce + projection
    auto-truncate.
-3. Path L / S7.4: admin-doc ingress trust gate via Keyhive cap=infrastructure.
+2. Path L / S7.4: admin-doc ingress trust gate via Keyhive cap=infrastructure.
+3. Path G.rest: finish remaining sigil vocabulary via wikitext dispatcher pattern.
 
 Rules: preserve TW5 VM primacy, bag=Automerge-doc=sync-boundary, no HTTP/RPC
 coordination surface, and explicit operator promotion for canon.
@@ -84,30 +83,11 @@ Ship the next alpha stability layer for live wiki authoring and operator-device
 federation. The sigils-as-wikitext sprint clears JS surface area and hardens
 the TW5 wikitext dispatch chain for the remaining sigil vocabulary.
 
-### Path T-1 — Wikirule Collapse (unblocked)
+### Path T-1 / ~ahu — Done
 
-The `<<~ ? -> uri >>` pranala-header form appears only post-SOH in the
-carrier stream — the deserializer consumes it, the wikiparser never sees it.
-This removes the last T-1 blocker.
-
-- Merge `lar-sigil-inline.ts` into `lar-sigil-block.ts` → single `lar-sigil.ts`
-  with `{ block: true }` only.
-- Remove `macrocallinline` and `macrocallblock` from `DEFAULT_RULES_EXCEPT` in
-  `memetic-parser.ts`.
-- Leaf forms (`<<~ aka uri >>` in inline context) fall through to
-  `macrocallinline` → `MacroCallWidget` → `\widget ~` dispatcher.
-- Block forms (`<<~ ahu #slot >>…<<~/ahu >>`) still claimed by the block rule.
-
-### Path ~ahu — Retire Last Non-kau JS Widget
-
-Child URI filter expression (wikitext equivalent of `ahu.ts` resolution):
-```
-{{{ [<uri>!match[]!regexp[^lar:///unknown]] ~[<slot>regexp[^lar:]] ~[<currentTiddler>addsuffix<slot>] }}}
-```
-
-Remaining design question: how `\widget ~ahu` receives the block form's body
-content. Options: named string param `body` (same as pranala), or `$slot`
-fill from a `macrocall` node with child `$fill` elements. Needs talk-story.
+`lar-sigil.ts` now owns the collapsed block+inline wikirule. `ahu.ts` has been
+retired to `sigil-ahu.tid`; the boot smoke checks the wikitext sigil tiddler
+and leaves rendered sigil behavior to integration flow tests.
 
 ### Path K / F-arc — Save Path Hygiene
 
@@ -164,7 +144,7 @@ pnpm --filter @lararium/tw5 build
 pnpm --filter @lararium/node typecheck
 pnpm --filter @lararium/node exec tsx scripts/test-quine.ts
 
-# Plugin boot smoke (checks shadow tiddlers + widget registry + render probes)
+# Plugin boot smoke (checks shadow tiddlers + JS widget registry + deserializer probes)
 pnpm --filter @lararium/tw5 exec tsx scripts/smoke-plugin-boot.ts
 
 # Manual daemon/CLI path

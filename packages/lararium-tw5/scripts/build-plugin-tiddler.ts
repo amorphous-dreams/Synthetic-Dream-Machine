@@ -26,6 +26,7 @@ import { tmpdir } from "os";
 import path from "path";
 import { fileURLToPath } from "url";
 import { MODULE_MANIFEST, PLUGIN_ENTRIES, TIDDLERS_DIR, TIDDLER_SRC_DIR } from "../vite.plugin.config.js";
+import { readModuleManifest, type ModuleManifest } from "../plugin-build/module-manifest.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT       = path.resolve(__dirname, "..");
@@ -42,32 +43,8 @@ const TW5_BIN = path.join(ROOT, "../../node_modules/.pnpm/node_modules/.bin/tidd
 const SHA_FIELD_RE  = /^body-sha256\s*=\s*"[^"]*"/m;
 const TOML_BLOCK_RE = /(```toml[\s\S]*?```)/;
 
-interface ModuleManifestEntry {
-  title:      string;
-  moduleType: string;
-  sourcePath: string;
-  outputPath: string;
-  sha256:     string;
-}
-
-interface ModuleManifest {
-  generatedBy: string;
-  outDir:      string;
-  modules:     ModuleManifestEntry[];
-}
-
 function sha256(text: string): string {
   return createHash("sha256").update(text, "utf8").digest("hex");
-}
-
-function readModuleManifest(): { manifest: ModuleManifest; text: string; sha256: string } {
-  const manifestPath = path.join(ROOT, MODULE_MANIFEST);
-  const text = readFileSync(manifestPath, "utf8");
-  const parsed = JSON.parse(text) as ModuleManifest;
-  if (!Array.isArray(parsed.modules)) {
-    throw new Error(`[plugin-build] invalid module manifest: ${manifestPath}`);
-  }
-  return { manifest: parsed, text, sha256: sha256(text) };
 }
 
 function patchSha256(meme: string, digest: string): string {
@@ -150,7 +127,7 @@ async function main(): Promise<void> {
     console.error("[plugin-build] Vite build failed");
     process.exit(viteResult.status ?? 1);
   }
-  const moduleManifest = readModuleManifest();
+  const moduleManifest = readModuleManifest(path.join(ROOT, MODULE_MANIFEST));
 
   // 2. Patch anchor hashes from generated JS bodies.
   patchAnchorHashes();
