@@ -104,11 +104,18 @@ export function parse(this: RuleInstance): ParseTreeNode[] {
   if ("__pranala_block__" in attrs) {
     delete attrs["__pranala_block__"];
     const body = attrs["body"] ?? "";
-    return [{
-      type:       "pranala",
-      attributes: attrToTree(attrs),
-      children:   body ? [{ type: "text", text: body }] : [],
-    }];
+    // Block-form pranala: named params bypass the ~ dispatcher directly,
+    // same as the inline form. body passes as a named param string.
+    const macroAttrs: Record<string, { type: "string"; value: string }> = {
+      "$variable": { type: "string", value: "~pranala" },
+      "from":      { type: "string", value: attrs["from"] ?? "" },
+      "to":        { type: "string", value: attrs["to"]   ?? "" },
+      "body":      { type: "string", value: body },
+    };
+    if (attrs["slot"])   macroAttrs["slot"]   = { type: "string", value: attrs["slot"] };
+    if (attrs["family"]) macroAttrs["family"] = { type: "string", value: attrs["family"] };
+    if (attrs["role"])   macroAttrs["role"]   = { type: "string", value: attrs["role"] };
+    return [{ type: "macrocall", attributes: macroAttrs, children: [] }];
   }
 
   const body = attrs["__body__"] ?? "";

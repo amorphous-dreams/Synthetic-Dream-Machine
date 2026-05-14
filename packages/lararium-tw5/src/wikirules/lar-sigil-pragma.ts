@@ -58,7 +58,7 @@ export function findNextMatch(this: RuleInstance, startPos: number): number | un
   if (!m || m.index !== startPos) return undefined;
   this.matchPos    = m.index;
   this.matchEnd    = m.index + m[0].length;
-  this.matchName   = m[1];
+  this.matchName   = m[1] ?? "";
   this.matchSource = m[0];
   return m.index;
 }

@@ -52,6 +52,9 @@ async function main(): Promise<void> {
     "lar:///ha.ka.ba/@lararium/tw5/tiddlers/sigil-dispatcher",
     "lar:///ha.ka.ba/@lararium/tw5/tiddlers/sigil-aka",
     "lar:///ha.ka.ba/@lararium/tw5/tiddlers/sigil-kahea",
+    "lar:///ha.ka.ba/@lararium/tw5/tiddlers/sigil-loulou",
+    "lar:///ha.ka.ba/@lararium/tw5/tiddlers/sigil-pranala-header",
+    "lar:///ha.ka.ba/@lararium/tw5/tiddlers/sigil-pranala",
   ];
   for (const title of expectedTitles) {
     if (!wiki.getTiddler(title)) failures.push(`missing tiddler: ${title}`);
@@ -63,7 +66,9 @@ async function main(): Promise<void> {
   if (!parsers["text/x-memetic-wikitext"]) failures.push("parser not registered: text/x-memetic-wikitext");
 
   const widgetMods = tw?.modules?.types?.widget ?? {};
-  for (const expected of ["ahu", "aka", "kahea", "kau", "loulou", "pranala", "pranala-header"]) {
+  // aka, kahea, loulou, pranala, pranala-header retired to wikitext \widget tiddlers.
+  // kau and ahu remain as JS widgets (capability hooks / child-URI resolution).
+  for (const expected of ["ahu", "kau"]) {
     const found = Object.keys(widgetMods).some((title) => title.includes(expected));
     if (!found) failures.push(`widget module not found in registry: ${expected}`);
   }

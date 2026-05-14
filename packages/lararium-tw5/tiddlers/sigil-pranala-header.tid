@@ -1,0 +1,10 @@
+title: lar:///ha.ka.ba/@lararium/tw5/tiddlers/sigil-pranala-header
+tags: $:/tags/Global $:/tags/LarariumGrammar
+type: text/vnd.tiddlywiki
+
+\widget ~pranala-header(p1:"" p2:"")
+<$let pranala-header-uri=<<p1>>
+      _ph-template={{{ [<p2>!match[]] ~[all[shadows+tiddlers]tag[$:/tags/Lar/PranalaHeaderTemplate]!is[draft]!has[draft.of]] :map:flat[subfilter{!!text}] +[first[]else[lar:///ha.ka.ba/@lararium/templates/pranala-header/html]] }}}>
+  <$transclude $tiddler=<<_ph-template>>/>
+</$let>
+\end

@@ -141,6 +141,37 @@ export function parse(this: RuleInstance): ParseTreeNode[] {
   if ("__sigil__" in attrs) {
     const sigilType = attrs["__sigil__"]!;
     delete attrs["__sigil__"];
+
+    // URI-form sigils (aka, kahea, loulou) and pranala-header route through
+    // the ~ dispatcher → \widget ~name tiddler. macrocall nodes dispatch via
+    // TW5's built-in MacroCallWidget; no JS widget class needed.
+    if (sigilType === "aka" || sigilType === "kahea" || sigilType === "loulou") {
+      return [{ type: "macrocall", attributes: {
+        "$variable": { type: "string" as const, value: "~" },
+        "name":      { type: "string" as const, value: sigilType },
+        "p1":        { type: "string" as const, value: attrs["uri"] ?? "" },
+      }, children: [] }];
+    }
+    if (sigilType === "pranala-header") {
+      return [{ type: "macrocall", attributes: {
+        "$variable": { type: "string" as const, value: "~" },
+        "name":      { type: "string" as const, value: "pranala-header" },
+        "p1":        { type: "string" as const, value: attrs["uri"] ?? "" },
+      }, children: [] }];
+    }
+    // Pranala inline form: named params bypass the ~ dispatcher directly.
+    if (sigilType === "pranala") {
+      const macroAttrs: Record<string, { type: "string"; value: string }> = {
+        "$variable": { type: "string", value: "~pranala" },
+        "from":      { type: "string", value: attrs["from"] ?? "" },
+        "to":        { type: "string", value: attrs["to"]   ?? "" },
+      };
+      if (attrs["slot"])   macroAttrs["slot"]   = { type: "string", value: attrs["slot"] };
+      if (attrs["family"]) macroAttrs["family"] = { type: "string", value: attrs["family"] };
+      if (attrs["role"])   macroAttrs["role"]   = { type: "string", value: attrs["role"] };
+      return [{ type: "macrocall", attributes: macroAttrs, children: [] }];
+    }
+
     return [{
       type:       sigilType,
       attributes: attrToTree(attrs),
