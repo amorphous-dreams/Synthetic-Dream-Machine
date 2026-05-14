@@ -52,7 +52,7 @@ export interface CompoundSigilMatch {
   readonly end:      number;
   readonly name:     string;        // dispatch name: "kahea~ahu" | "kahea" | "ahu" | "loulou" | …
   readonly p1:       string;        // first positional arg (slot, uri, or raw args)
-  readonly slotType: string | null; // child-slot type when compound/bare-slot, else null
+  readonly closeKey: string | null; // BLOCK_CLOSERS key for body capture: word1 for compound+bare-slot, null for leaf
 }
 
 // Matches <<~ WORD [WORD2] ARGS >> for any simple sigil invocation.
@@ -90,17 +90,18 @@ export function matchCompoundSigilAt(
 
   if (childSlotNames.has(word1)) {
     // bare child-slot: <<~ ahu #slot >> or <<~ kau #device … >>
-    return { start: m.index, end: COMPOUND_OPEN_RE.lastIndex, name: word1, p1: rest, slotType: word1 };
+    return { start: m.index, end: COMPOUND_OPEN_RE.lastIndex, name: word1, p1: rest, closeKey: word1 };
   }
   // peek at the first token of rest to detect a compound: <<~ kahea ahu #slot >>
   const spaceIdx  = rest.search(/\s/);
   const word2     = spaceIdx >= 0 ? rest.slice(0, spaceIdx) : rest;
   const remainder = spaceIdx >= 0 ? rest.slice(spaceIdx).trim() : "";
   if (word2 && childSlotNames.has(word2)) {
-    return { start: m.index, end: COMPOUND_OPEN_RE.lastIndex, name: `${word1}~${word2}`, p1: remainder, slotType: word2 };
+    // closeKey = word1 (e.g. "kahea") — the compound block closes with <<~/kahea >>, not <<~/ahu >>
+    return { start: m.index, end: COMPOUND_OPEN_RE.lastIndex, name: `${word1}~${word2}`, p1: remainder, closeKey: word1 };
   }
   // simple leaf: <<~ kahea lar:///uri >> or <<~ loulou … >>
-  return { start: m.index, end: COMPOUND_OPEN_RE.lastIndex, name: word1, p1: rest, slotType: null };
+  return { start: m.index, end: COMPOUND_OPEN_RE.lastIndex, name: word1, p1: rest, closeKey: null };
 }
 
 /**
@@ -176,27 +177,24 @@ export function matchPranalaOpenAt(source: string, start: number): PranalaOpenMa
  * text rides through the parse tree as literal source so the disk render
  * preserves it; it's not used for widget rendering of non-ahu sigils today.
  */
+/**
+ * Boot-minimum static closers. Only sigils that must be recognised BEFORE the
+ * grammar tiddlers finish loading belong here. Everything else loads dynamically
+ * via buildClosers() + closePatternToTag() from the TOML registry.
+ *
+ * Boot-critical:
+ *   ahu      — deserializer emits <<~ ahu … >>…<<~/ahu >> blocks at cold boot
+ *   pranala  — permanent JS exception; no TOML entry; always static
+ *   kahea    — kahea-invoke block form needed before grammar tiddlers load
+ *
+ * helu + \\function are leaf-only pragmas (no TOML close_pattern); they do not
+ * appear here. If a future grammar version adds a block form, TOML gains
+ * close_pattern and buildClosers() picks it up automatically.
+ */
 export const BLOCK_CLOSERS: Record<string, string> = {
-  ahu:        "<<~/ahu",
-  pranala:    "<<~/pranala",
-  kahea:      "<<~/kahea",
-  wehe:       "<<~/wehe",
-  helu:       "<<~/helu",
-  wai:        "<<~/wai",
-  huli:       "<<~/huli",
-  hui:        "<<~/hui",
-  heihei:     "<<~/heihei",
-  puka:       "<<~/puka",
-  meme:       "<<~/meme",
-  procedure:  "<<~/\\procedure",
-  function:   "<<~/\\function",
-  "define":   "<<~/\\define",
-  if:         "<<~/\\if",
-  for:        "<<~/\\for",
-  sync:       "<<~/\\sync",
-  race:       "<<~/\\race",
-  rush:       "<<~/\\rush",
-  tiddler:    "<<~/\\tiddler",
+  ahu:     "<<~/ahu",
+  pranala: "<<~/pranala",
+  kahea:   "<<~/kahea",
 };
 
 export function findCloseEnd(
@@ -233,27 +231,54 @@ export function attrToTree(attrs: Record<string, string>): Record<string, { type
 }
 
 /**
+ * Convert a TOML close_pattern regex string to a literal indexOf tag.
+ * TOML stores e.g. `'<<~\/ahu\s*>>'`; findCloseEnd needs `"<<~/ahu"`.
+ * Strategy: strip regex escapes and trim trailing whitespace/>> quantifiers.
+ *
+ * Pattern: remove `\/` → `/`, remove `\s*>>` → `` (we search for the opener
+ * tag only — findCloseEnd does its own indexOf(">>", …) scan for the close).
+ * If the result does not start with `<<~/`, derivation failed; return null.
+ */
+export function closePatternToTag(pattern: string): string | null {
+  // strip surrounding quotes if present (defensive)
+  const raw = pattern.replace(/^['"]|['"]$/g, "");
+  // unescape regex special chars we expect: \/ → /
+  const unescaped = raw.replace(/\\\//g, "/");
+  // strip trailing `\s*>>` or `\s+>>` or `>>` — we only need the prefix tag
+  const tag = unescaped.replace(/\\s[*+]?>?>?$/, "").replace(/>>$/, "").trimEnd();
+  if (!tag.startsWith("<<~/")) return null;
+  return tag;
+}
+
+/**
  * Merge BLOCK_CLOSERS with grammar-registered block sigils.
  *
- * Phase 3b blocker: TOML close_pattern values are regex strings
- * (e.g. '<<~\/ahu\s*>>') but findCloseEnd uses source.indexOf() on literal
- * strings (e.g. "<<~/ahu"). The two forms are incompatible. buildClosers()
- * currently skips all 20 BLOCK_CLOSERS names via the `!(name in BLOCK_CLOSERS)`
- * guard, so grammar-loaded closers never fire for existing entries.
+ * closePatternToTag() converts TOML regex close_pattern strings to the literal
+ * indexOf tags that findCloseEnd requires. Grammar entries whose names match
+ * BLOCK_CLOSERS keys are skipped — the static list remains authoritative for
+ * boot-critical sigils (ahu, pranala, kahea). Grammar entries for
+ * operator-added sigils extend the map at runtime.
  *
- * To shrink the static list to {ahu, kau, pranala}:
- *   1. Add close_tag (literal string) fields alongside close_pattern in TOML, OR
- *   2. Derive the literal from the regex (strip \/ → /, \s*>> → "").
- * Until then the static list stays authoritative and grammar closers cover
- * only operator-added sigils not already in BLOCK_CLOSERS.
+ * Name normalisation:
+ *   \\name      → name  (pragma-form sigils, e.g. "\\procedure" → "procedure")
+ *   kahea-invoke → kahea (TOML splits block+URI kahea into two entries; block
+ *                          closer belongs under the "kahea" key that BLOCK_CLOSERS
+ *                          and compound closeKey both use)
  */
+const GRAMMAR_NAME_MAP: Record<string, string> = {
+  "kahea-invoke": "kahea",
+};
+
 export function buildClosers(grammar: GrammarRules | null): Record<string, string> {
   if (!grammar) return BLOCK_CLOSERS;
   const extra: Record<string, string> = {};
   for (const sigil of grammar.sigils) {
-    if (sigil.closePattern && !(sigil.name in BLOCK_CLOSERS)) {
-      extra[sigil.name] = sigil.closePattern;
-    }
+    if (!sigil.closePattern) continue;
+    const rawName = sigil.name.replace(/^\\/, "");
+    const name    = GRAMMAR_NAME_MAP[rawName] ?? rawName;
+    if (name in BLOCK_CLOSERS) continue;
+    const tag = closePatternToTag(sigil.closePattern);
+    if (tag) extra[name] = tag;
   }
   return Object.keys(extra).length === 0 ? BLOCK_CLOSERS : { ...BLOCK_CLOSERS, ...extra };
 }

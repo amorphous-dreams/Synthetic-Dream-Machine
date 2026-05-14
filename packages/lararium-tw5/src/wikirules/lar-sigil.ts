@@ -101,10 +101,10 @@ export function findNextMatch(this: RuleInstance, startPos: number): number | un
     //          <<~ kahea lar:///uri >>, <<~ loulou lar:///uri >>, <<~ kau … >>
     const compound = matchCompoundSigilAt(source, pos, childSlotNames);
     if (compound) {
-      if (compound.slotType) {
-        const closeEnd = findCloseEnd(source, compound.slotType, compound.end, closers);
+      if (compound.closeKey) {
+        const closeEnd = findCloseEnd(source, compound.closeKey, compound.end, closers);
         if (closeEnd !== null) {
-          const closeTagStart = source.lastIndexOf(`<<~/${compound.slotType}`, closeEnd);
+          const closeTagStart = source.lastIndexOf(`<<~/${compound.closeKey}`, closeEnd);
           const body = source.slice(compound.end, closeTagStart);
           this.matchPos = pos;
           this.matchEnd = closeEnd;
