@@ -32,36 +32,73 @@ export interface RuleInstance {
   attrs?:    Record<string, string>;
 }
 
-export const AHU_OPEN_RE = /<<~\s+(?:(kahea|aka)\s+)?ahu\s+([^>]+?)\s*>>/g;
 export const ANY_OPEN_RE = /<<~[^\n]*?>>/g;
-export const AHU_CLOSE_TAG = "<<~/ahu";
 
-/**
- * URI-form sigil matcher: `<<~ <sigil> <uri> >>` where the sigil keyword is
- * one of aka/kahea/loulou and the next token is a URI (lar:/// scheme,
- * fragment-only `#slot`, or path-shaped). Excludes child-slot summons
- * (`<<~ aka ahu ...>>`, `<<~ kahea ahu ...>>`) which the ahu rule claims.
- */
-export const URI_FORM_SIGIL_RE = /<<~\s+(aka|kahea|loulou)\s+(lar:\/\/[^\s>]+|#[^\s>]+|[^\s>(]+\/[^\s>]+|[^\s>(]+#[^\s>]+)\s*>>/g;
+// Child-slot sigil names present at bootstrap (before grammar loads from tiddlers).
+const BUILTIN_CHILD_SLOTS = new Set<string>(["ahu", "kau"]);
 
-export interface UriFormMatch {
-  readonly start: number;
-  readonly end:   number;
-  readonly sigil: "aka" | "kahea" | "loulou";
-  readonly uri:   string;
+/** Returns the set of child-slot sigil names from the grammar registry. */
+export function grammarChildSlotNames(grammar: GrammarRules | null): Set<string> {
+  if (!grammar) return BUILTIN_CHILD_SLOTS;
+  const out = new Set<string>(BUILTIN_CHILD_SLOTS);
+  for (const sigil of grammar.sigils) {
+    if ((sigil as { kind?: string }).kind === "child-slot") out.add(sigil.name);
+  }
+  return out;
 }
 
-export function matchUriFormSigilAt(source: string, start: number): UriFormMatch | null {
-  URI_FORM_SIGIL_RE.lastIndex = start;
-  const m = URI_FORM_SIGIL_RE.exec(source);
+export interface CompoundSigilMatch {
+  readonly start:    number;
+  readonly end:      number;
+  readonly name:     string;        // dispatch name: "kahea~ahu" | "kahea" | "ahu" | "loulou" | …
+  readonly p1:       string;        // first positional arg (slot, uri, or raw args)
+  readonly slotType: string | null; // child-slot type when compound/bare-slot, else null
+}
+
+// Matches <<~ WORD [WORD2] ARGS >> for any simple sigil invocation.
+// Does not match pranala (arrow syntax, handled by matchPranalaOpenAt).
+// Does not match control chars or <<~! pragma forms (no leading \s+ match).
+const COMPOUND_OPEN_RE = /<<~\s+(\\?[\w-]+)(?:\s+([^\n]*?))?\s*>>/g;
+
+/**
+ * Generic compound-sigil opener. Replaces the former matchAhuOpenAt +
+ * matchUriFormSigilAt pair. Child-slot detection uses the grammar registry
+ * rather than hardcoded names, so new slot types (kau, future) require
+ * only a TOML [[sigils]] entry with kind="child-slot".
+ *
+ *   <<~ ahu #slot >>           → name="ahu",       p1="#slot",  slotType="ahu"
+ *   <<~ kahea ahu #slot >>     → name="kahea~ahu", p1="#slot",  slotType="ahu"
+ *   <<~ aka   ahu #slot >>     → name="aka~ahu",   p1="#slot",  slotType="ahu"
+ *   <<~ kahea lar:///uri >>    → name="kahea",     p1=uri,      slotType=null
+ *   <<~ loulou lar:///uri >>   → name="loulou",    p1=uri,      slotType=null
+ *   <<~ kau #dev DeviceName >> → name="kau",       p1=rest,     slotType="kau"
+ *   <<~ kahea kau #dev >>      → name="kahea~kau", p1="#dev",   slotType="kau"
+ */
+export function matchCompoundSigilAt(
+  source:         string,
+  start:          number,
+  childSlotNames: Set<string>,
+): CompoundSigilMatch | null {
+  COMPOUND_OPEN_RE.lastIndex = start;
+  const m = COMPOUND_OPEN_RE.exec(source);
   if (!m || m.index !== start) return null;
-  const [, sigil, uri] = m;
-  return {
-    start: m.index,
-    end:   URI_FORM_SIGIL_RE.lastIndex,
-    sigil: sigil as "aka" | "kahea" | "loulou",
-    uri:   uri!,
-  };
+  const word1 = m[1]!.replace(/^\\/, "");
+  if (word1 === "pranala") return null; // arrow syntax — handled by matchPranalaOpenAt
+  const rest = (m[2] ?? "").trim();
+
+  if (childSlotNames.has(word1)) {
+    // bare child-slot: <<~ ahu #slot >> or <<~ kau #device … >>
+    return { start: m.index, end: COMPOUND_OPEN_RE.lastIndex, name: word1, p1: rest, slotType: word1 };
+  }
+  // peek at the first token of rest to detect a compound: <<~ kahea ahu #slot >>
+  const spaceIdx  = rest.search(/\s/);
+  const word2     = spaceIdx >= 0 ? rest.slice(0, spaceIdx) : rest;
+  const remainder = spaceIdx >= 0 ? rest.slice(spaceIdx).trim() : "";
+  if (word2 && childSlotNames.has(word2)) {
+    return { start: m.index, end: COMPOUND_OPEN_RE.lastIndex, name: `${word1}~${word2}`, p1: remainder, slotType: word2 };
+  }
+  // simple leaf: <<~ kahea lar:///uri >> or <<~ loulou … >>
+  return { start: m.index, end: COMPOUND_OPEN_RE.lastIndex, name: word1, p1: rest, slotType: null };
 }
 
 /**
@@ -160,26 +197,6 @@ export const BLOCK_CLOSERS: Record<string, string> = {
   tiddler:    "<<~/\\tiddler",
 };
 
-export interface AhuMatch {
-  readonly start:    number;
-  readonly end:      number;
-  readonly modifier: "kahea" | "aka" | null;
-  readonly arg:      string;
-}
-
-export function matchAhuOpenAt(source: string, start: number): AhuMatch | null {
-  AHU_OPEN_RE.lastIndex = start;
-  const m = AHU_OPEN_RE.exec(source);
-  if (!m || m.index !== start) return null;
-  const [, modifier, arg] = m;
-  return {
-    start:    m.index,
-    end:      AHU_OPEN_RE.lastIndex,
-    modifier: (modifier as "kahea" | "aka" | undefined) ?? null,
-    arg:      arg!.trim(),
-  };
-}
-
 export function findCloseEnd(
   source: string,
   sigil: string,
@@ -206,16 +223,6 @@ export function findGenericOpenAt(source: string, start: number): { end: number;
   return { end: m.index + m[0].length, sigil };
 }
 
-export function attrsForAhu(open: AhuMatch): Record<string, string> {
-  const attrs: Record<string, string> = {};
-  const arg = open.arg;
-  if (arg.startsWith("#"))           attrs["slot"] = arg;
-  else if (arg.startsWith("lar:"))   attrs["uri"]  = arg;
-  else                               attrs["raw"]  = arg;
-  if (open.modifier === "kahea")     attrs["invocation"] = "true";
-  if (open.modifier === "aka")       attrs["projection"] = "true";
-  return attrs;
-}
 
 export function attrToTree(attrs: Record<string, string>): Record<string, { type: "string"; value: string }> {
   const out: Record<string, { type: "string"; value: string }> = {};

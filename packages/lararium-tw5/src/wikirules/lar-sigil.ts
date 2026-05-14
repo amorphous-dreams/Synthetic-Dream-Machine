@@ -7,9 +7,16 @@ module-type: wikirule
  * lar-sigil — unified TW5 wikirule (block + inline) for all `<<~ … >>` sigil
  * forms. Block forms (container ahu, container pranala, generic-with-closer)
  * are claimed at block parse phase. Leaf inline forms (aka, kahea, loulou,
- * pranala-header, pranala-inline, ahu invocation) are claimed at inline phase.
+ * pranala-header, pranala-inline, ahu/kau invocation) are claimed at inline phase.
  *
- * Replaces lar-sigil-block.ts + lar-sigil-inline.ts.
+ * Dispatch model:
+ *   All compound + simple sigils → ~ dispatcher (name=SIGIL, p1=ARGS)
+ *   pranala block/inline         → ~pranala directly (keyword args: from/to/slot/…)
+ *   pranala-header               → ~ dispatcher (name="pranala-header", p1=uri)
+ *   generic block-with-closer    → text literal pass-through
+ *
+ * Child-slot detection (ahu, kau, future) uses grammarChildSlotNames() —
+ * no sigil names hardcoded here beyond what the grammar registry supplies.
  */
 
 import { getGrammar } from "../grammar-cache.js";
@@ -17,16 +24,14 @@ import {
   ParseTreeNode,
   WikiParser,
   RuleInstance,
-  AHU_CLOSE_TAG,
-  matchAhuOpenAt,
-  matchUriFormSigilAt,
+  matchCompoundSigilAt,
+  grammarChildSlotNames,
   matchPranalaHeaderAt,
   matchPranalaOpenAt,
   findCloseEnd,
   findGenericOpenAt,
   buildClosers,
   grammarInlineSigils,
-  attrsForAhu,
   attrToTree,
 } from "./lar-sigil-shared.js";
 
@@ -38,42 +43,14 @@ export function init(this: RuleInstance, parser: WikiParser): void {
 }
 
 export function findNextMatch(this: RuleInstance, startPos: number): number | undefined {
-  const source      = this.parser!.source;
-  const grammar     = getGrammar();
-  const closers     = buildClosers(grammar);
-  const inlineSigils = grammarInlineSigils(grammar);
+  const source         = this.parser!.source;
+  const grammar        = getGrammar();
+  const closers        = buildClosers(grammar);
+  const inlineSigils   = grammarInlineSigils(grammar);
+  const childSlotNames = grammarChildSlotNames(grammar);
   let pos = source.indexOf("<<~", startPos);
   while (pos >= 0) {
-    // ahu: block form if closer follows; invocation form (inline) otherwise.
-    const ahu = matchAhuOpenAt(source, pos);
-    if (ahu) {
-      const closeEnd = findCloseEnd(source, "ahu", ahu.end);
-      if (closeEnd !== null) {
-        // Block: container ahu with body.
-        const closeTagStart = source.lastIndexOf(AHU_CLOSE_TAG, closeEnd);
-        const body = source.slice(ahu.end, closeTagStart);
-        this.matchPos = pos;
-        this.matchEnd = closeEnd;
-        this.attrs    = { ...attrsForAhu(ahu), __body__: body };
-        return pos;
-      }
-      // Inline: invocation (no closer) — emit ahu widget node.
-      this.matchPos = pos;
-      this.matchEnd = ahu.end;
-      this.attrs    = { ...attrsForAhu(ahu), invocation: "true" };
-      return pos;
-    }
-
-    // URI-form sigils: aka, kahea, loulou — emit macrocall via ~ dispatcher.
-    const uriForm = matchUriFormSigilAt(source, pos);
-    if (uriForm) {
-      this.matchPos = pos;
-      this.matchEnd = uriForm.end;
-      this.attrs    = { __sigil__: uriForm.sigil, uri: uriForm.uri };
-      return pos;
-    }
-
-    // pranala-header: <<~ ? -> uri >>
+    // pranala-header: <<~ ? -> uri >> — unique ? self-token, must precede compound.
     const pranalaHeader = matchPranalaHeaderAt(source, pos);
     if (pranalaHeader) {
       this.matchPos = pos;
@@ -82,12 +59,11 @@ export function findNextMatch(this: RuleInstance, startPos: number): number | un
       return pos;
     }
 
-    // pranala: block if closer follows; inline edge otherwise.
+    // pranala: arrow syntax — block if closer follows, inline edge otherwise.
     const pranala = matchPranalaOpenAt(source, pos);
     if (pranala) {
       const closeEnd = findCloseEnd(source, "pranala", pranala.end);
       if (closeEnd !== null) {
-        // Block: container pranala with body.
         const closeTagStart = source.lastIndexOf("<<~/pranala", closeEnd);
         const body = source.slice(pranala.end, closeTagStart);
         this.matchPos = pos;
@@ -102,7 +78,6 @@ export function findNextMatch(this: RuleInstance, startPos: number): number | un
         };
         return pos;
       }
-      // Inline edge (no closer).
       this.matchPos = pos;
       this.matchEnd = pranala.end;
       this.attrs    = {
@@ -115,10 +90,32 @@ export function findNextMatch(this: RuleInstance, startPos: number): number | un
       return pos;
     }
 
-    // Generic: block if a registered closer follows; inline-sigil or literal otherwise.
+    // Compound sigil: <<~ WORD1 [child-slot WORD2] ARGS >>
+    // Handles: <<~ kahea ahu #slot >>, <<~ ahu #slot >>…<<~/ahu >>,
+    //          <<~ kahea lar:///uri >>, <<~ loulou lar:///uri >>, <<~ kau … >>
+    const compound = matchCompoundSigilAt(source, pos, childSlotNames);
+    if (compound) {
+      if (compound.slotType) {
+        const closeEnd = findCloseEnd(source, compound.slotType, compound.end, closers);
+        if (closeEnd !== null) {
+          const closeTagStart = source.lastIndexOf(`<<~/${compound.slotType}`, closeEnd);
+          const body = source.slice(compound.end, closeTagStart);
+          this.matchPos = pos;
+          this.matchEnd = closeEnd;
+          this.attrs    = { __compound__: compound.name, __body__: body, p1: compound.p1 };
+          return pos;
+        }
+      }
+      this.matchPos = pos;
+      this.matchEnd = compound.end;
+      this.attrs    = { __compound__: compound.name, p1: compound.p1 };
+      return pos;
+    }
+
+    // Generic fallback: block if a registered closer follows; else literal.
     const generic = findGenericOpenAt(source, pos);
     if (generic) {
-      if (generic.sigil && closers[generic.sigil] && generic.sigil !== "ahu" && generic.sigil !== "pranala") {
+      if (generic.sigil && closers[generic.sigil] && generic.sigil !== "pranala") {
         const closeEnd = findCloseEnd(source, generic.sigil, generic.end, closers);
         if (closeEnd !== null) {
           this.matchPos = pos;
@@ -152,6 +149,21 @@ export function parse(this: RuleInstance): ParseTreeNode[] {
     return [{ type: "text", text: attrs["__literal__"]! }];
   }
 
+  // Compound sigil: <<~ WORD1 [child-slot WORD2] ARGS >>
+  // Live wiki parent tiddlers hold <<~ kahea ahu #slot >> (space form, HUD-readable).
+  // Deserializer splits block bodies into child tiddlers before TW5 parses carrier
+  // text — block body drops here without data loss.
+  if ("__compound__" in attrs) {
+    const dispatchName = attrs["__compound__"]!;
+    delete attrs["__compound__"];
+    delete attrs["__body__"];
+    return [{ type: "macrocall", attributes: {
+      "$variable": { type: "string", value: "~" },
+      "name":      { type: "string", value: dispatchName },
+      "p1":        { type: "string", value: attrs["p1"] ?? "" },
+    }, children: [] }];
+  }
+
   if ("__pranala_block__" in attrs) {
     delete attrs["__pranala_block__"];
     const body = attrs["body"] ?? "";
@@ -161,9 +173,9 @@ export function parse(this: RuleInstance): ParseTreeNode[] {
       "to":        { type: "string", value: attrs["to"]   ?? "" },
       "body":      { type: "string", value: body },
     };
-    if (attrs["slot"])   macroAttrs["slot"]   = { type: "string", value: attrs["slot"] };
-    if (attrs["family"]) macroAttrs["family"] = { type: "string", value: attrs["family"] };
-    if (attrs["role"])   macroAttrs["role"]   = { type: "string", value: attrs["role"] };
+    if (attrs["slot"])   macroAttrs["slot"]   = { type: "string", value: attrs["slot"]! };
+    if (attrs["family"]) macroAttrs["family"] = { type: "string", value: attrs["family"]! };
+    if (attrs["role"])   macroAttrs["role"]   = { type: "string", value: attrs["role"]! };
     return [{ type: "macrocall", attributes: macroAttrs, children: [] }];
   }
 
@@ -171,18 +183,11 @@ export function parse(this: RuleInstance): ParseTreeNode[] {
     const sigilType = attrs["__sigil__"]!;
     delete attrs["__sigil__"];
 
-    if (sigilType === "aka" || sigilType === "kahea" || sigilType === "loulou") {
-      return [{ type: "macrocall", attributes: {
-        "$variable": { type: "string" as const, value: "~" },
-        "name":      { type: "string" as const, value: sigilType },
-        "p1":        { type: "string" as const, value: attrs["uri"] ?? "" },
-      }, children: [] }];
-    }
     if (sigilType === "pranala-header") {
       return [{ type: "macrocall", attributes: {
-        "$variable": { type: "string" as const, value: "~" },
-        "name":      { type: "string" as const, value: "pranala-header" },
-        "p1":        { type: "string" as const, value: attrs["uri"] ?? "" },
+        "$variable": { type: "string", value: "~" },
+        "name":      { type: "string", value: "pranala-header" },
+        "p1":        { type: "string", value: attrs["uri"] ?? "" },
       }, children: [] }];
     }
     if (sigilType === "pranala") {
@@ -191,11 +196,12 @@ export function parse(this: RuleInstance): ParseTreeNode[] {
         "from":      { type: "string", value: attrs["from"] ?? "" },
         "to":        { type: "string", value: attrs["to"]   ?? "" },
       };
-      if (attrs["slot"])   macroAttrs["slot"]   = { type: "string", value: attrs["slot"] };
-      if (attrs["family"]) macroAttrs["family"] = { type: "string", value: attrs["family"] };
-      if (attrs["role"])   macroAttrs["role"]   = { type: "string", value: attrs["role"] };
+      if (attrs["slot"])   macroAttrs["slot"]   = { type: "string", value: attrs["slot"]! };
+      if (attrs["family"]) macroAttrs["family"] = { type: "string", value: attrs["family"]! };
+      if (attrs["role"])   macroAttrs["role"]   = { type: "string", value: attrs["role"]! };
       return [{ type: "macrocall", attributes: macroAttrs, children: [] }];
     }
+    // Grammar-registered inline sigil (edge/edge-sugar from operator tiddlers).
     return [{
       type:       sigilType,
       attributes: attrToTree(attrs),
@@ -203,22 +209,5 @@ export function parse(this: RuleInstance): ParseTreeNode[] {
     }];
   }
 
-  // ahu — route through ~ dispatcher (same path as all other sigils).
-  // Live wiki parent tiddlers hold <<~ kahea ahu #slot >> (space form, HUD-readable).
-  // The deserializer splits block bodies into child tiddlers before TW5 ever parses
-  // carrier text, so block bodies drop here without data loss.
-  // modifier: kahea = live transclusion (canonical live wiki form)
-  //           aka   = frozen/projection form
-  //           null  = bare ahu (should not appear in live wiki; trap for resilience)
-  delete attrs["__body__"];
-  const slot    = attrs["slot"]       ?? "";
-  const uri     = attrs["uri"]        ?? "";
-  const isKahea = attrs["invocation"] === "true";
-  const isAka   = attrs["projection"] === "true";
-  const name    = isKahea ? "kahea~ahu" : isAka ? "aka~ahu" : "ahu";
-  return [{ type: "macrocall", attributes: {
-    "$variable": { type: "string", value: "~" },
-    "name":      { type: "string", value: name },
-    "p1":        { type: "string", value: slot || uri },
-  }, children: [] }];
+  return [{ type: "text", text: "" }];
 }
