@@ -25,7 +25,7 @@ import { createHash } from "crypto";
 import { tmpdir } from "os";
 import path from "path";
 import { fileURLToPath } from "url";
-import { PLUGIN_ENTRIES, TIDDLERS_DIR, TIDDLER_SRC_DIR } from "../vite.plugin.config.js";
+import { MODULE_MANIFEST, PLUGIN_ENTRIES, TIDDLERS_DIR, TIDDLER_SRC_DIR } from "../vite.plugin.config.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT       = path.resolve(__dirname, "..");
@@ -42,8 +42,32 @@ const TW5_BIN = path.join(ROOT, "../../node_modules/.pnpm/node_modules/.bin/tidd
 const SHA_FIELD_RE  = /^body-sha256\s*=\s*"[^"]*"/m;
 const TOML_BLOCK_RE = /(```toml[\s\S]*?```)/;
 
+interface ModuleManifestEntry {
+  title:      string;
+  moduleType: string;
+  sourcePath: string;
+  outputPath: string;
+  sha256:     string;
+}
+
+interface ModuleManifest {
+  generatedBy: string;
+  outDir:      string;
+  modules:     ModuleManifestEntry[];
+}
+
 function sha256(text: string): string {
   return createHash("sha256").update(text, "utf8").digest("hex");
+}
+
+function readModuleManifest(): { manifest: ModuleManifest; text: string; sha256: string } {
+  const manifestPath = path.join(ROOT, MODULE_MANIFEST);
+  const text = readFileSync(manifestPath, "utf8");
+  const parsed = JSON.parse(text) as ModuleManifest;
+  if (!Array.isArray(parsed.modules)) {
+    throw new Error(`[plugin-build] invalid module manifest: ${manifestPath}`);
+  }
+  return { manifest: parsed, text, sha256: sha256(text) };
 }
 
 function patchSha256(meme: string, digest: string): string {
@@ -74,6 +98,46 @@ function patchAnchorHashes(): void {
   console.log(`[plugin-build] patched ${patched} anchor hashes`);
 }
 
+function verifyPackedPluginAgainstManifest(
+  pluginTiddler: Record<string, unknown>,
+  manifest: ModuleManifest,
+): void {
+  if (pluginTiddler["title"] !== PLUGIN_TITLE_LAR) {
+    throw new Error(
+      `[plugin-build] packed plugin title mismatch: expected ${PLUGIN_TITLE_LAR}, got ${String(pluginTiddler["title"])}`,
+    );
+  }
+  const innerParsed = JSON.parse(pluginTiddler["text"] as string) as {
+    tiddlers?: Record<string, Record<string, unknown>>;
+  };
+  const tiddlers = innerParsed.tiddlers ?? {};
+  const failures: string[] = [];
+
+  for (const mod of manifest.modules) {
+    const packed = tiddlers[mod.title];
+    if (!packed) {
+      failures.push(`missing module tiddler ${mod.title} (${mod.sourcePath})`);
+      continue;
+    }
+    if (packed["type"] !== "application/javascript") {
+      failures.push(`${mod.title}: type=${String(packed["type"])} expected application/javascript`);
+    }
+    if (packed["module-type"] !== mod.moduleType) {
+      failures.push(`${mod.title}: module-type=${String(packed["module-type"])} expected ${mod.moduleType}`);
+    }
+    const packedText = String(packed["text"] ?? "");
+    const packedSha = sha256(packedText);
+    if (packedSha !== mod.sha256) {
+      failures.push(`${mod.title}: sha256=${packedSha} expected ${mod.sha256}`);
+    }
+  }
+
+  if (failures.length > 0) {
+    throw new Error(`[plugin-build] packed plugin failed module-manifest verification:\n  ${failures.join("\n  ")}`);
+  }
+  console.log(`[plugin-build] verified ${manifest.modules.length} packed module tiddlers against manifest`);
+}
+
 async function main(): Promise<void> {
   mkdirSync(OUT_DIR, { recursive: true });
 
@@ -86,6 +150,7 @@ async function main(): Promise<void> {
     console.error("[plugin-build] Vite build failed");
     process.exit(viteResult.status ?? 1);
   }
+  const moduleManifest = readModuleManifest();
 
   // 2. Patch anchor hashes from generated JS bodies.
   patchAnchorHashes();
@@ -127,6 +192,13 @@ async function main(): Promise<void> {
     process.exit(1);
   }
   const pluginTiddlerLar = tiddlerArray[0]!;
+  verifyPackedPluginAgainstManifest(pluginTiddlerLar, moduleManifest.manifest);
+  Object.assign(pluginTiddlerLar, {
+    "lares-canonical-title":          PLUGIN_TITLE_LAR,
+    "lares-module-count":             String(moduleManifest.manifest.modules.length),
+    "lares-module-manifest-sha256":   moduleManifest.sha256,
+    "lares-build-attestation-format": "lararium-tw5-plugin-build/v1",
+  });
   const innerParsed = JSON.parse(pluginTiddlerLar["text"] as string) as { tiddlers?: Record<string, unknown> };
   const tiddlerCount = Object.keys(innerParsed.tiddlers ?? {}).length;
 
@@ -150,8 +222,25 @@ async function main(): Promise<void> {
   const tidLar = emitTid(pluginTiddlerLar, "lares-memetic-wikitext.lar.tid");
   const tidTw5 = emitTid(pluginTiddlerTw5, "lares-memetic-wikitext.tid");
 
-  writeFileSync(path.join(OUT_DIR, "lares-memetic-wikitext.lar.json"), JSON.stringify(pluginTiddlerLar, null, 2), "utf8");
-  writeFileSync(path.join(OUT_DIR, "lares-memetic-wikitext.json"),     JSON.stringify(pluginTiddlerTw5, null, 2), "utf8");
+  const pluginLarJson = JSON.stringify(pluginTiddlerLar, null, 2);
+  const pluginTw5Json = JSON.stringify(pluginTiddlerTw5, null, 2);
+  writeFileSync(path.join(OUT_DIR, "lares-memetic-wikitext.lar.json"), pluginLarJson, "utf8");
+  writeFileSync(path.join(OUT_DIR, "lares-memetic-wikitext.json"),     pluginTw5Json, "utf8");
+  const pluginJsonSha = sha256(pluginLarJson);
+  writeFileSync(
+    path.join(OUT_DIR, "lares-memetic-wikitext.attestation.json"),
+    JSON.stringify({
+      format: "lararium-tw5-plugin-build/v1",
+      canonicalTitle: PLUGIN_TITLE_LAR,
+      compatibilityTitle: PLUGIN_TITLE_TW5,
+      moduleManifestPath: MODULE_MANIFEST,
+      moduleManifestSha256: moduleManifest.sha256,
+      moduleCount: moduleManifest.manifest.modules.length,
+      packedTiddlerCount: tiddlerCount,
+      pluginJsonSha256: pluginJsonSha,
+    }, null, 2) + "\n",
+    "utf8",
+  );
 
   const tsHeader  = `/* eslint-disable */\n// AUTO-GENERATED by scripts/build-plugin-tiddler.ts — do not edit.\n// Regenerate via: pnpm --filter @lararium/tw5 build:plugin\n\n`;
   const tsBody    = `export const LARES_MEMETIC_WIKITEXT_PLUGIN = ${JSON.stringify(pluginTiddlerLar, null, 2)} as const;\n`;
@@ -167,6 +256,7 @@ async function main(): Promise<void> {
   console.log(`✓ wrote ${tidTw5.path} (${(tidTw5.bytes / 1024).toFixed(1)} KiB) — vanilla TW5 drag-and-drop`);
   console.log(`✓ wrote ${tsSrcPath}`);
   console.log(`✓ wrote ${pluginJsonDest} — automerge-docs pickup`);
+  console.log(`✓ attested modules=${moduleManifest.manifest.modules.length} manifest=${moduleManifest.sha256.slice(0, 16)}… plugin=${pluginJsonSha.slice(0, 16)}…`);
   console.log(`  ${tiddlerCount} inner tiddlers packed`);
 }
 

@@ -185,3 +185,56 @@ lares promote lar:///definitely-not-real --to lar:///ha.ka.ba/@lares --yes
 - Canonical Lares system tiddlers use `lar:///` titles.
 - `<<~/sigil >>` closing tag convention (not `<<\~sigil>>`); the `/end` HTML convention holds.
 - Remaining docs/history belong under `wikis/lares-history/`, not active handoff files.
+
+## Downstream Parking Lot — Lararium TW5 `$:/` Namespace Retirement
+
+> Added: 2026-05-14
+> Status: parked downstream; do not block current Vite/plugin build tightening.
+
+Policy direction: **our owned tiddlers SHALL live in `lar:///` space** (hosted or
+hostless). `$:/` remains acceptable only when addressing TW5 core/system
+contracts that TW5 itself owns.
+
+### Actual owned `$:/` title found
+
+Generated compatibility artifact only:
+
+- `packages/lararium-tw5/dist-plugin/lares-memetic-wikitext.tid`
+  - `title: $:/plugins/lares/memetic-wikitext`
+  - Canonical artifact remains `lar:///plugins/lares/memetic-wikitext`.
+  - Decision needed: keep as explicitly non-canonical vanilla TW5 drag/drop
+    export, or remove the `$:/plugins/...` variant entirely.
+
+### Owned `$:/` tag/config/state references to migrate
+
+These are not source tiddler titles today, but they are Lararium-owned namespace
+surface and should move to `lar:///...` contracts in a later pass:
+
+- `$:/tags/LarariumGrammar`
+- `$:/tags/LarariumKumu`
+- `$:/tags/Lar/AhuTemplate`
+- `$:/tags/Lar/AkaTemplate`
+- `$:/tags/Lar/KaheaTemplate`
+- `$:/tags/Lar/LoulouTemplate`
+- `$:/tags/Lar/PranalaTemplate`
+- `$:/tags/Lar/PranalaHeaderTemplate`
+- `$:/config/Lar/MemeticRulesExcept`
+- `$:/config/Lar/AhuTemplate/...`
+- `$:/lararium/parse-warning/...`
+- `$:/lararium/parse-warnings`
+- `$:/lararium/boot-splash/active`
+
+### TW5-owned `$:/` references that may remain
+
+- `$:/core/...`
+- `$:/tags/Global`
+- `$:/palette`
+- `$:/temp/*`
+- `$:/StoryList`
+- `$:/HistoryList`
+- `$:/state/*`
+- `$:/core/templates/exporters/JsonFile`
+
+Migration warning: changing tags/config names affects filters, cascade lookup,
+grammar invalidation, parser config, parse-warning routing, and boot-splash UI.
+Treat this as a coordinated namespace migration with smokes, not a search/replace.
