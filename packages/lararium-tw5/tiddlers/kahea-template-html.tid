@@ -1,4 +1,4 @@
 title: lar:///ha.ka.ba/@lararium/templates/kahea/html
 type: text/vnd.tiddlywiki
 
-<span class="lar-kahea" data-kahea-uri=<<kahea-uri>>><$link to=<<kahea-uri>>><<kahea-uri>></$link><span class="lar-kahea-live"><$transclude $tiddler=<<kahea-uri>> mode="inline"/></span></span>
+<div class="lar-kahea" data-kahea-uri=<<currentTiddler>>><$transclude $tiddler=<<currentTiddler>> mode="block"><$fill $name="ts-missing"><span class="lar-kahea-missing"><$link to=<<currentTiddler>>><$text text=<<currentTiddler>>/></$link></span></$fill></$transclude></div>
