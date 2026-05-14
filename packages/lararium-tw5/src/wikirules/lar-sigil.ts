@@ -203,17 +203,22 @@ export function parse(this: RuleInstance): ParseTreeNode[] {
     }];
   }
 
-  // ahu — both block (definition, pre-decompose) and invocation (<<~ kahea ahu #slot >>)
-  // forms emit ~kahea~ahu. The deserializer (splitRecursive) consumes block bodies
-  // before TW5 parses carrier text, so block body drops here without data loss.
+  // ahu — route through ~ dispatcher (same path as all other sigils).
+  // Live wiki parent tiddlers hold <<~ kahea ahu #slot >> (space form, HUD-readable).
+  // The deserializer splits block bodies into child tiddlers before TW5 ever parses
+  // carrier text, so block bodies drop here without data loss.
+  // modifier: kahea = live transclusion (canonical live wiki form)
+  //           aka   = frozen/projection form
+  //           null  = bare ahu (should not appear in live wiki; trap for resilience)
   delete attrs["__body__"];
-  const slot = attrs["slot"] ?? "";
-  const uri  = attrs["uri"]  ?? "";
-  const macroAttrs: Record<string, { type: "string"; value: string }> = {
-    "$variable": { type: "string", value: "~kahea~ahu" },
-    "slot":      { type: "string", value: slot },
-    "p1":        { type: "string", value: slot },
-  };
-  if (uri) macroAttrs["uri"] = { type: "string", value: uri };
-  return [{ type: "macrocall", attributes: macroAttrs, children: [] }];
+  const slot    = attrs["slot"]       ?? "";
+  const uri     = attrs["uri"]        ?? "";
+  const isKahea = attrs["invocation"] === "true";
+  const isAka   = attrs["projection"] === "true";
+  const name    = isKahea ? "kahea~ahu" : isAka ? "aka~ahu" : "ahu";
+  return [{ type: "macrocall", attributes: {
+    "$variable": { type: "string", value: "~" },
+    "name":      { type: "string", value: name },
+    "p1":        { type: "string", value: slot || uri },
+  }, children: [] }];
 }

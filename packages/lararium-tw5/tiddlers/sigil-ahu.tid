@@ -17,12 +17,16 @@ type: text/vnd.tiddlywiki
 <$transclude $variable="~ahu" slot=<<slot>> uri=<<uri>> p1=<<p1>>/>
 \end
 
-<!-- ~kahea~ahu is the canonical live-invocation form for ahu child-slot summons.
-     lar-sigil.ts emits <<~kahea~ahu slot="…">> for every <<~ kahea ahu #slot >> it parses.
+\procedure ~aka~ahu(slot:"" uri:"" p1:"")
+<$transclude $variable="~ahu" slot=<<slot>> uri=<<uri>> p1=<<p1>>/>
+\end
+
+<!-- Live wiki parent tiddlers hold <<~ kahea ahu #slot >> (space form).
+     lar-sigil.ts routes this through the ~ dispatcher: name="kahea~ahu", p1=slot.
+     ~aka~ahu = frozen/projection form; renders identically for now (freeze semantics pending).
 
      Dev pattern — extend child-slot dispatch by defining ~kahea~<sigilName>:
-       ~kahea~ahu  (this file)   — text slot, authored prose
+       ~kahea~ahu  (this file)   — text slot, live transclusion
+       ~aka~ahu    (this file)   — text slot, frozen/projection form
        ~kahea~kau  (future)      — device slot, capability envelope
-     Each procedure accepts (slot:"" uri:"" p1:"") and delegates to ~<sigilName>.
-     The ~kahea prefix marks live invocation; the suffix names the slot type.
-     The split keeps the dispatch boundary visible at wikitext source level. -->
+     The ~kahea / ~aka prefix marks the causal posture; suffix names the slot type. -->
