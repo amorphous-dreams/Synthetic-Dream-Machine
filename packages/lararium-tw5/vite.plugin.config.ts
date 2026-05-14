@@ -1,94 +1,96 @@
 /**
- * vite.plugin.config.ts — compile all plugin-owned TS entries to TW5 CJS tiddlers.
+ * vite.plugin.config.ts — discover and compile TW5 plugin modules from `src/`.
  *
- * Output JS files land in `tiddlers/src/`. The TW5 pack step loads `tiddlers/`
- * as a plugin folder and packs both static tiddlers and generated CJS modules.
+ * Any TS source file whose first line is `/*\` is a TW5 module tiddler.
+ * The build script discovers them automatically — no manual registry.
  *
- * Each TS source file carries a native TW5 `/*\ ... \*\/` header block declaring
- * its tiddler title and module-type. `readTiddlerHeader()` extracts that block and
- * uses it as the Rollup banner — the compiled JS is self-describing, matching the
- * convention used by TW5 core and official plugins.
+ * Module identity lives in the source file's `/*\ ... \*\/` header block:
+ *   title:       lar:/// URI — becomes the tiddler title in the plugin
+ *   type:        application/javascript
+ *   module-type: widget | wikirule | parser | tiddlerdeserializer | startup | macro | library
  *
- * Adding a new module: put the `/*\ ... \*\/` block at the top of the TS file, then
- * add a `{ entry, name }` line to PLUGIN_ENTRIES. No type enum or title helper needed.
+ * Output filename = last segment of the tiddler title URI.
+ * The TW5 pack step bundles `tiddlers/src/*.js` + static `tiddlers/*.tid` into
+ * the compiled plugin blob carried in genesis.
  */
 
-import { build }                     from "vite";
-import { readFileSync }              from "fs";
-import path                          from "path";
+import { build }                        from "vite";
+import { readdirSync, readFileSync }    from "fs";
+import path                             from "path";
 import { fileURLToPath, pathToFileURL } from "url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const SRC_DIR   = path.resolve(__dirname, "src");
 
-export interface PluginBuildEntry {
-  entry:   string;
-  name:    string;
-  /** Extra JS appended after the bundle — for module key re-exports. */
-  footer?: string;
+export const TIDDLERS_DIR    = "tiddlers";
+export const TIDDLER_SRC_DIR = "tiddlers/src";
+
+// ---------------------------------------------------------------------------
+// Discovery — walk src/, collect TS files that open with /*\
+// ---------------------------------------------------------------------------
+
+function* walkTs(dir: string): Generator<string> {
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    const full = path.join(dir, entry.name);
+    if (entry.isDirectory()) { yield* walkTs(full); continue; }
+    if (entry.name.endsWith(".ts") && !entry.name.endsWith(".d.ts")) yield full;
+  }
 }
 
-export const TIDDLERS_DIR     = "tiddlers";
-export const TIDDLER_SRC_DIR  = "tiddlers/src";
-
-/**
- * Read the `/*\ ... \*\/` tiddler field block from a TS source file and
- * return it as the Rollup banner string. Throws at build time if the block
- * is missing — enforcing the header contract on every new module.
- */
-export function readTiddlerHeader(entryPath: string): string {
-  const src = readFileSync(path.resolve(__dirname, entryPath), "utf8");
-  const m   = /^\/\*\\\n([\s\S]*?)\n\\\*\//m.exec(src);
-  if (!m) throw new Error(`[plugin-build] missing /*\\ ... \\*/ header in ${entryPath}`);
-  return `/*\\\n${m[1]}\n\\*/\n`;
+interface TiddlerModule {
+  /** Absolute path to the TS source file. */
+  absPath:    string;
+  /** Path relative to the project root — used as Vite entry. */
+  entry:      string;
+  /** Output JS filename (no extension) — last segment of the tiddler title URI. */
+  name:       string;
+  /** Full TW5 header banner string prepended to the compiled output. */
+  banner:     string;
 }
 
-export const PLUGIN_ENTRIES: PluginBuildEntry[] = [
-  // Wikirules.
-  { entry: "src/wikirules/lar-sigil-block.ts",     name: "lar-sigil-block"     },
-  { entry: "src/wikirules/lar-sigil-inline.ts",    name: "lar-sigil-inline"    },
-  { entry: "src/wikirules/lar-doctype-comment.ts", name: "lar-doctype-comment" },
+// TW5 header sentinel: files whose first line is exactly /*\  (4 chars: / * \ newline)
+const HEADER_START = "/*\\\n";
+// Extracts the body between /*\ ... \*/  (uses RegExp ctor to avoid literal-escaping issues)
+const HEADER_RE = new RegExp(String.raw`^/\*\\\n([\s\S]*?)\n\\\*/`, "m");
 
-  // Widgets.
-  { entry: "src/widgets/ahu.ts",            name: "ahu"            },
-  { entry: "src/widgets/aka.ts",            name: "aka"            },
-  { entry: "src/widgets/kahea.ts",          name: "kahea"          },
-  { entry: "src/widgets/loulou.ts",         name: "loulou"         },
-  { entry: "src/widgets/pranala.ts",        name: "pranala"        },
-  { entry: "src/widgets/pranala-header.ts", name: "pranala-header" },
-  { entry: "src/widgets/kau.ts",            name: "kau"            },
-  { entry: "src/widgets/lar-meme-split.ts", name: "lar-meme-split" },
+function discoverModules(): TiddlerModule[] {
+  const results: TiddlerModule[] = [];
+  for (const absPath of walkTs(SRC_DIR)) {
+    const src = readFileSync(absPath, "utf8");
+    if (!src.startsWith(HEADER_START)) continue;
 
-  // Parser / deserializer / macro.
-  { entry: "src/memetic-parser.ts",       name: "memetic-parser"               },
-  { entry: "src/macros/lar-iam-block.ts", name: "lar-iam-block"                },
-  {
-    entry:  "src/deserializer.ts",
-    name:   "memetic-wikitext-deserializer",
-    footer: `\nexports["text/x-memetic-wikitext"] = exports.memeticWikitextDeserializer;`,
-  },
+    const headerMatch = HEADER_RE.exec(src);
+    if (!headerMatch) continue;
+    const headerBody = headerMatch[1]!;
 
-  // Startup modules.
-  { entry: "src/grammar-cache.ts", name: "grammar-cache" },
+    const titleMatch = /^title:\s*(.+)$/m.exec(headerBody);
+    if (!titleMatch) throw new Error(`[plugin-build] /*\\ block missing title: in ${absPath}`);
+    const title = titleMatch[1]!.trim();
 
-  // Library modules + filter helpers.
-  { entry: "src/modules/lar-promote.ts",  name: "lar-promote"        },
-  { entry: "src/meme-ast-entry.ts",       name: "meme-ast"           },
-  { entry: "src/cold-boot-ceremony.ts",   name: "cold-boot-ceremony" },
-  { entry: "src/filters/implementors.ts", name: "implementors"       },
-  { entry: "src/filters/edge.ts",         name: "edge"               },
-  { entry: "src/filters/toml-field.ts",   name: "toml-field"         },
-];
+    const name  = title.split("/").at(-1)!;
+    const entry = path.relative(__dirname, absPath);
+
+    const banner = HEADER_START + headerBody + "\n\\*/\n";
+    results.push({ absPath, entry, name, banner });
+  }
+  return results;
+}
+
+// ---------------------------------------------------------------------------
+// Build
+// ---------------------------------------------------------------------------
 
 export async function buildPluginCjsTiddlers(outDir = TIDDLER_SRC_DIR): Promise<void> {
-  for (const entry of PLUGIN_ENTRIES) {
+  const modules = discoverModules();
+  for (const mod of modules) {
     await build({
       configFile: false,
       logLevel:   "warn",
       build: {
         lib: {
-          entry:    path.resolve(__dirname, entry.entry),
+          entry:    mod.absPath,
           formats:  ["cjs"],
-          fileName: () => `${entry.name}.js`,
+          fileName: () => `${mod.name}.js`,
         },
         outDir,
         emptyOutDir: false,
@@ -97,10 +99,9 @@ export async function buildPluginCjsTiddlers(outDir = TIDDLER_SRC_DIR): Promise<
         rollupOptions: {
           external: (id) => id.startsWith("$:/") || id === "tiddlywiki" || id.startsWith("tiddlywiki/"),
           output: {
-            banner:   readTiddlerHeader(entry.entry),
+            banner:   mod.banner,
             esModule: false,
             exports:  "named",
-            ...(entry.footer ? { footer: entry.footer } : {}),
           },
         },
       },
@@ -111,18 +112,11 @@ export async function buildPluginCjsTiddlers(outDir = TIDDLER_SRC_DIR): Promise<
         },
       },
     });
-    console.log(`[plugin-build] ${outDir}/${entry.name}.js`);
+    console.log(`[plugin-build] ${outDir}/${mod.name}.js`);
   }
-}
-
-async function main(): Promise<void> {
-  await buildPluginCjsTiddlers();
-  console.log(`✓ Vite emitted ${PLUGIN_ENTRIES.length} plugin module bundles to ${TIDDLER_SRC_DIR}/`);
+  console.log(`✓ Vite emitted ${modules.length} plugin module bundles to ${outDir}/`);
 }
 
 if (import.meta.url === pathToFileURL(process.argv[1] ?? "").href) {
-  main().catch((err) => {
-    console.error(err);
-    process.exit(1);
-  });
+  buildPluginCjsTiddlers().catch((err) => { console.error(err); process.exit(1); });
 }

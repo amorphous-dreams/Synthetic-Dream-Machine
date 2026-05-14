@@ -7,9 +7,8 @@
  * are present in the running wiki:
  *   - cascade config tiddlers at lar:///config/Lar/AhuTemplate/...
  *   - template tiddlers at lar:///ha.ka.ba/@lararium/templates/...
- *   - global mount at lar:///mounts/lar-meme-split
  *   - parser registered for text/x-memetic-wikitext
- *   - widget classes registered for $ahu, $kau, $lar-meme-split
+ *   - widget classes registered for $ahu, $kau, $aka, $kahea, $loulou, $pranala
  *
  * Exit nonzero if any check fails.
  */
@@ -37,7 +36,6 @@ async function main(): Promise<void> {
     "lar:///config/Lar/LoulouTemplate/html",
     "lar:///config/Lar/PranalaTemplate/markdown-meme",
     "lar:///config/Lar/PranalaTemplate/html",
-    "lar:///mounts/lar-meme-split",
     "lar:///ha.ka.ba/@lararium/templates/ahu/markdown-meme",
     "lar:///ha.ka.ba/@lararium/templates/ahu/html",
     "lar:///ha.ka.ba/@lararium/templates/aka/markdown-meme",
@@ -62,7 +60,7 @@ async function main(): Promise<void> {
   if (!parsers["text/x-memetic-wikitext"]) failures.push("parser not registered: text/x-memetic-wikitext");
 
   const widgetMods = tw?.modules?.types?.widget ?? {};
-  for (const expected of ["ahu", "aka", "kahea", "kau", "lar-meme-split", "loulou", "pranala", "pranala-header"]) {
+  for (const expected of ["ahu", "aka", "kahea", "kau", "loulou", "pranala", "pranala-header"]) {
     const found = Object.keys(widgetMods).some((title) => title.includes(expected));
     if (!found) failures.push(`widget module not found in registry: ${expected}`);
   }

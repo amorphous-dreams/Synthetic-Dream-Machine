@@ -15,7 +15,7 @@
  */
 
 export { TW5Engine } from "./tw5-vm.js";
-export type { ZoomLayout, TW5CoreBootBlob } from "./tw5-vm.js";
+export type { TW5CoreBootBlob } from "./tw5-vm.js";
 
 export { MemeSyncAdaptor } from "./meme-sync-adaptor.js";
 export { MemoryTiddlerStore } from "./memory-store.js";
@@ -33,7 +33,6 @@ export { TW5_VERSION, TW5_CORE_SCRIPT_FILENAME, TW5_CORE_DIR } from "./generated
 
 export { parseTaploFields, patchTomlKey, lintToml } from "./toml-ast.js";
 
-export { parseZoomLayoutTOML, getZoomLayout } from "./zoom-layout.js";
 
 
 export { TW5WorkerProxy } from "./tw5-worker-proxy.js";

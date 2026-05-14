@@ -15,12 +15,9 @@ import type {
 } from "./types/tiddlywiki.js";
 import { MemeStreamParser } from "@lararium/core";
 import type { TiddlerFields } from "./deserializer.js";
-import { registerImplementorsOperator } from "./tw5-widgets.js";
-import { getZoomLayout } from "./zoom-layout.js";
-import type { ZoomLayout } from "./zoom-layout.js";
+
 import { createHash } from "crypto";
 import { LARES_MEMETIC_WIKITEXT_PLUGIN } from "./plugin-tiddler.generated.js";
-export type { ZoomLayout };
 
 
 export interface TW5CoreBootBlob {
@@ -408,11 +405,6 @@ export class TW5Engine {
     return () => this._tw?.wiki.removeEventListener("tm-lararium-event", handler);
   }
 
-  /** Read zoom-level layout props from the kumu def meme for this zoom level. */
-  getZoomLayout(level: string): ZoomLayout | null {
-    if (!this._tw) return null;
-    return getZoomLayout(this._tw.wiki, level);
-  }
 
   /** Returns true after boot() resolves. */
   get ready(): boolean { return this._tw !== null; }
@@ -452,8 +444,6 @@ export class TW5Engine {
     if (!this._tw) return;
     const tw   = this._tw;
     const wiki = tw.wiki;
-
-    registerImplementorsOperator(tw);
 
     let injected = 0;
     try {

@@ -8,9 +8,8 @@
  *     any children that disappeared in the re-split. Steady-state edits to
  *     already-split children issue their own saveTiddler calls and fast-path
  *     (no ahu blocks found).
- *   - Inbound: records land in TW5 verbatim as single tiddlers. The
- *     lar-meme-split widget fires on the resulting wiki change event and
- *     splits ahu slot children — both for disk imports and live edits.
+ *   - Inbound: records land in TW5 verbatim as single tiddlers; the
+ *     deserializer pre-splits on disk import so inbound children arrive flat.
  *   - Imports buildDirectRecord from meme-write.ts (not carrier-write.ts).
  *
  * Invariants preserved verbatim from web2:
