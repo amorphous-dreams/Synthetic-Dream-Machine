@@ -57,6 +57,8 @@ interface PluginBuildAttestation {
   readonly compatibilityTitle?: string;
   readonly moduleManifestPath: string;
   readonly moduleManifestSha256: string;
+  readonly sourceManifestPath?: string;
+  readonly sourceManifestSha256?: string;
   readonly moduleCount: number;
   readonly packedTiddlerCount: number;
   readonly pluginJsonSha256: string;
@@ -370,6 +372,8 @@ async function main(): Promise<void> {
             ...(att.compatibilityTitle && { compatibilityTitle: att.compatibilityTitle }),
             moduleManifestPath: att.moduleManifestPath,
             moduleManifestSha256: att.moduleManifestSha256,
+            ...(att.sourceManifestPath && { sourceManifestPath: att.sourceManifestPath }),
+            ...(att.sourceManifestSha256 && { sourceManifestSha256: att.sourceManifestSha256 }),
             moduleCount: String(att.moduleCount),
             packedTiddlerCount: String(att.packedTiddlerCount),
             pluginJsonSha256: att.pluginJsonSha256,

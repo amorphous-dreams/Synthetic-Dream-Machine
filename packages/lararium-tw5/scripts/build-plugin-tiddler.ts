@@ -25,8 +25,14 @@ import { createHash } from "crypto";
 import { tmpdir } from "os";
 import path from "path";
 import { fileURLToPath } from "url";
-import { MODULE_MANIFEST, PLUGIN_ENTRIES, TIDDLERS_DIR, TIDDLER_SRC_DIR } from "../vite.plugin.config.js";
+import { MODULE_MANIFEST, PLUGIN_ENTRIES, SOURCE_MANIFEST, TIDDLERS_DIR, TIDDLER_SRC_DIR } from "../vite.plugin.config.js";
 import { readModuleManifest, type ModuleManifest } from "../plugin-build/module-manifest.js";
+import {
+  buildPluginSourceManifest,
+  readPluginSourceManifest,
+  writePluginSourceManifest,
+  type PluginSourceManifest,
+} from "../plugin-build/source-manifest.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT       = path.resolve(__dirname, "..");
@@ -75,6 +81,35 @@ function patchAnchorHashes(): void {
   console.log(`[plugin-build] patched ${patched} anchor hashes`);
 }
 
+function parsePackedTiddlers(pluginTiddler: Record<string, unknown>): Record<string, Record<string, unknown>> {
+  const innerParsed = JSON.parse(pluginTiddler["text"] as string) as {
+    tiddlers?: Record<string, Record<string, unknown>>;
+  };
+  return innerParsed.tiddlers ?? {};
+}
+
+function verifyPackedPluginAgainstSourceManifest(
+  pluginTiddler: Record<string, unknown>,
+  sourceManifest: PluginSourceManifest,
+): void {
+  if (sourceManifest.pluginInfo.title !== PLUGIN_TITLE_LAR) {
+    throw new Error(
+      `[plugin-build] plugin.info title mismatch: expected ${PLUGIN_TITLE_LAR}, got ${sourceManifest.pluginInfo.title}`,
+    );
+  }
+  const tiddlers = parsePackedTiddlers(pluginTiddler);
+  const failures: string[] = [];
+
+  for (const t of sourceManifest.staticTiddlers) {
+    if (!tiddlers[t.title]) failures.push(`missing static tiddler ${t.title} (${t.path})`);
+  }
+
+  if (failures.length > 0) {
+    throw new Error(`[plugin-build] packed plugin failed source-manifest verification:\n  ${failures.join("\n  ")}`);
+  }
+  console.log(`[plugin-build] verified ${sourceManifest.staticTiddlers.length} packed static tiddlers against source manifest`);
+}
+
 function verifyPackedPluginAgainstManifest(
   pluginTiddler: Record<string, unknown>,
   manifest: ModuleManifest,
@@ -84,10 +119,7 @@ function verifyPackedPluginAgainstManifest(
       `[plugin-build] packed plugin title mismatch: expected ${PLUGIN_TITLE_LAR}, got ${String(pluginTiddler["title"])}`,
     );
   }
-  const innerParsed = JSON.parse(pluginTiddler["text"] as string) as {
-    tiddlers?: Record<string, Record<string, unknown>>;
-  };
-  const tiddlers = innerParsed.tiddlers ?? {};
+  const tiddlers = parsePackedTiddlers(pluginTiddler);
   const failures: string[] = [];
 
   for (const mod of manifest.modules) {
@@ -128,6 +160,12 @@ async function main(): Promise<void> {
     process.exit(viteResult.status ?? 1);
   }
   const moduleManifest = readModuleManifest(path.join(ROOT, MODULE_MANIFEST));
+  const sourceManifestPath = path.join(ROOT, SOURCE_MANIFEST);
+  writePluginSourceManifest(
+    sourceManifestPath,
+    buildPluginSourceManifest(moduleManifest.manifest, moduleManifest.sha256),
+  );
+  const sourceManifest = readPluginSourceManifest(sourceManifestPath);
 
   // 2. Patch anchor hashes from generated JS bodies.
   patchAnchorHashes();
@@ -169,18 +207,24 @@ async function main(): Promise<void> {
     process.exit(1);
   }
   const pluginTiddlerLar = tiddlerArray[0]!;
+  verifyPackedPluginAgainstSourceManifest(pluginTiddlerLar, sourceManifest.manifest);
   verifyPackedPluginAgainstManifest(pluginTiddlerLar, moduleManifest.manifest);
   Object.assign(pluginTiddlerLar, {
     "lares-canonical-title":          PLUGIN_TITLE_LAR,
     "lares-module-count":             String(moduleManifest.manifest.modules.length),
     "lares-module-manifest-sha256":   moduleManifest.sha256,
+    "lares-source-manifest-sha256":   sourceManifest.sha256,
     "lares-build-attestation-format": "lararium-tw5-plugin-build/v1",
   });
   const innerParsed = JSON.parse(pluginTiddlerLar["text"] as string) as { tiddlers?: Record<string, unknown> };
   const tiddlerCount = Object.keys(innerParsed.tiddlers ?? {}).length;
 
   // 4. Emit two title variants (lar:// canonical + $:// drag-and-drop).
-  const pluginTiddlerTw5 = { ...pluginTiddlerLar, title: PLUGIN_TITLE_TW5 };
+  const pluginTiddlerTw5 = {
+    ...pluginTiddlerLar,
+    title: PLUGIN_TITLE_TW5,
+    "lares-compatibility-only": "true",
+  };
 
   function emitTid(tiddler: Record<string, unknown>, fileName: string): { path: string; bytes: number } {
     const lines: string[] = [];
@@ -212,6 +256,8 @@ async function main(): Promise<void> {
       compatibilityTitle: PLUGIN_TITLE_TW5,
       moduleManifestPath: MODULE_MANIFEST,
       moduleManifestSha256: moduleManifest.sha256,
+      sourceManifestPath: SOURCE_MANIFEST,
+      sourceManifestSha256: sourceManifest.sha256,
       moduleCount: moduleManifest.manifest.modules.length,
       packedTiddlerCount: tiddlerCount,
       pluginJsonSha256: pluginJsonSha,
@@ -233,7 +279,7 @@ async function main(): Promise<void> {
   console.log(`✓ wrote ${tidTw5.path} (${(tidTw5.bytes / 1024).toFixed(1)} KiB) — vanilla TW5 drag-and-drop`);
   console.log(`✓ wrote ${tsSrcPath}`);
   console.log(`✓ wrote ${pluginJsonDest} — automerge-docs pickup`);
-  console.log(`✓ attested modules=${moduleManifest.manifest.modules.length} manifest=${moduleManifest.sha256.slice(0, 16)}… plugin=${pluginJsonSha.slice(0, 16)}…`);
+  console.log(`✓ attested modules=${moduleManifest.manifest.modules.length} module-manifest=${moduleManifest.sha256.slice(0, 16)}… source-manifest=${sourceManifest.sha256.slice(0, 16)}… plugin=${pluginJsonSha.slice(0, 16)}…`);
   console.log(`  ${tiddlerCount} inner tiddlers packed`);
 }
 

@@ -17,5 +17,6 @@ export const LARES_MEMETIC_WIKITEXT_PLUGIN = {
   "lares-canonical-title": "lar:///plugins/lares/memetic-wikitext",
   "lares-module-count": "17",
   "lares-module-manifest-sha256": "d04c6ab225405113620a021b6e61299fb04be1395528ecfb9765c0e68859c5e2",
+  "lares-source-manifest-sha256": "06e899e675e9d76fe31624644d269461cab736ef0e9d6a40a87d129c992e739e",
   "lares-build-attestation-format": "lararium-tw5-plugin-build/v1"
 } as const;

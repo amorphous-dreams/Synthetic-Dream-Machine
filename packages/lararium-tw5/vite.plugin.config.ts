@@ -9,7 +9,7 @@
 import { pathToFileURL } from "url";
 import { buildPluginCjsTiddlers } from "./plugin-build/vite-plugin-build.js";
 export { buildPluginCjsTiddlers };
-export { MODULE_MANIFEST, TIDDLERS_DIR, TIDDLER_SRC_DIR } from "./plugin-build/paths.js";
+export { MODULE_MANIFEST, SOURCE_MANIFEST, TIDDLERS_DIR, TIDDLER_SRC_DIR } from "./plugin-build/paths.js";
 
 /** Kept for build-plugin-tiddler.ts compatibility; anchor patching now driven by bags/ scan. */
 export const PLUGIN_ENTRIES: Array<{ name: string; anchor?: string }> = [];

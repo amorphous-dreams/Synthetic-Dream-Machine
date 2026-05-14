@@ -10,6 +10,7 @@ export const SRC_DIR = path.join(ROOT, "src");
 export const TIDDLERS_DIR = "tiddlers";
 export const TIDDLER_SRC_DIR = "tiddlers/src";
 export const MODULE_MANIFEST = "dist-plugin/module-manifest.json";
+export const SOURCE_MANIFEST = "dist-plugin/plugin-source-manifest.json";
 
 export function packagePath(...parts: string[]): string {
   return path.join(ROOT, ...parts);
