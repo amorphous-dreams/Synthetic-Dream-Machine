@@ -35,7 +35,9 @@ export interface RuleInstance {
 export const ANY_OPEN_RE = /<<~[^\n]*?>>/g;
 
 // Child-slot sigil names present at bootstrap (before grammar loads from tiddlers).
-const BUILTIN_CHILD_SLOTS = new Set<string>(["ahu", "kau"]);
+// ahu: deserializer emits <<~ ahu … >>…<<~/ahu >> blocks; must be recognised at cold boot.
+// kau: JS widget, only appears in live wiki (post-grammar-load); grammar supplies it via kind="child-slot".
+const BUILTIN_CHILD_SLOTS = new Set<string>(["ahu"]);
 
 /** Returns the set of child-slot sigil names from the grammar registry. */
 export function grammarChildSlotNames(grammar: GrammarRules | null): Set<string> {
@@ -71,8 +73,8 @@ const COMPOUND_OPEN_RE = /<<~\s+(\\?[\w-]+)(?:\s+([^\n]*?))?\s*>>/g;
  *   <<~ aka   ahu #slot >>     → name="aka~ahu",   p1="#slot",  slotType="ahu"
  *   <<~ kahea lar:///uri >>    → name="kahea",     p1=uri,      slotType=null
  *   <<~ loulou lar:///uri >>   → name="loulou",    p1=uri,      slotType=null
- *   <<~ kau #dev DeviceName >> → name="kau",       p1=rest,     slotType="kau"
- *   <<~ kahea kau #dev >>      → name="kahea~kau", p1="#dev",   slotType="kau"
+ *   <<~ kau #dev DeviceName >> → name="kau",       p1=rest,     closeKey="kau"
+ *   <<~ kahea kau #dev >>      → name="kahea~kau", p1="#dev",   closeKey="kahea"
  */
 export function matchCompoundSigilAt(
   source:         string,
@@ -266,7 +268,7 @@ export function closePatternToTag(pattern: string): string | null {
  *                          and compound closeKey both use)
  */
 const GRAMMAR_NAME_MAP: Record<string, string> = {
-  "kahea-invoke": "kahea",
+  "kahea-block": "kahea",
 };
 
 export function buildClosers(grammar: GrammarRules | null): Record<string, string> {

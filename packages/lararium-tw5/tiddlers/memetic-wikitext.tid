@@ -289,7 +289,7 @@ description   = "shadow transclusion (observe family); frozen read at projection
 # The frozen read does not track edits to the child tiddler after projection time.
 
 [[sigils]]
-name          = "kahea-invoke"
+name          = "kahea-block"
 kind          = "child-slot-summons"
 layer         = "both"
 leaf_pattern  = '<<~\s*kahea\s+([a-z][\w-]*)\s+([^>\n]+?)\s*>>'
