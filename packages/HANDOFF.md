@@ -69,10 +69,14 @@ wikitext tiddlers, 5 JS widgets retired.
   56 inner tiddlers; 3/3 active Jest suites pass (42/42 tests).
 
 **Surviving JS widgets** (not yet retireable):
-- `ahu.ts` — child URI resolution + body-slot encoding. Talk-story needed for
-  `\widget ~ahu` filter expression + named-string body param.
-- `kau.ts` — capability hooks require JS.
+- `kau.ts` — capability hooks + UUID write-back require JS.
 - `render-modes.ts` — dissolves when kau markdown-meme path folds into cascade.
+
+**Retired this turn (2026-05-14):**
+- `ahu.ts` → `sigil-ahu.tid` (`\widget ~ahu` + `\procedure ~kahea~ahu`).
+  `lar-sigil.ts` now emits `~kahea~ahu` macrocall for all ahu forms.
+  Decompose path (`splitRecursive`) confirmed already correct.
+  Pattern for future child-slot sigils: `~kahea~<sigilName>(slot:"" uri:"" p1:"")` → delegates to `~<sigilName>`.
 
 ## Active Objective
 
