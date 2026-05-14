@@ -71,15 +71,16 @@ async function main(): Promise<void> {
   if (!parsers["text/x-memetic-wikitext"]) failures.push("parser not registered: text/x-memetic-wikitext");
 
   const widgetMods = tw?.modules?.types?.widget ?? {};
-  // aka, kahea, loulou, pranala, pranala-header retired to wikitext \widget tiddlers.
-  // kau and ahu remain as JS widgets (capability hooks / child-URI resolution).
-  for (const expected of ["ahu", "kau"]) {
+  // aka, kahea, loulou, pranala, pranala-header, ahu retired to wikitext \widget tiddlers.
+  // kau remains as a JS widget (capability hooks + UUID write-back).
+  for (const expected of ["kau"]) {
     const found = Object.keys(widgetMods).some((title) => title.includes(expected));
     if (!found) failures.push(`widget module not found in registry: ${expected}`);
   }
 
-  // Probe ahu cascade — render a tiny meme and confirm output is non-empty.
-  const sample = "<<~ ahu #probe >>\nhello\n<<~/ahu >>";
+  // Probe ~ahu wikitext widget — render a kahea-ahu invocation and confirm non-empty.
+  // (Definition form <<~ ahu #slot >>body<<~/ahu >> handled by deserializer before render.)
+  const sample = "<<~ kahea ahu #probe >>";
   let renderedHTML = "";
   try {
     renderedHTML = engine.renderText(sample);

@@ -47,7 +47,20 @@ const __dir = dirname(fileURLToPath(import.meta.url));
 const GENESIS_DIR = join(__dir, "../genesis");
 const REPO_ROOT   = join(__dir, "../../..");
 const BAGS_ROOT   = join(REPO_ROOT, "bags");
+const LARARIUM_TW5_DIST_PLUGIN = join(REPO_ROOT, "packages", "lararium-tw5", "dist-plugin");
 const LARES_TW5_PLUGIN_TITLE = "lar:///plugins/lares/memetic-wikitext";
+const LARES_TW5_PLUGIN_ATTESTATION = join(LARARIUM_TW5_DIST_PLUGIN, "lares-memetic-wikitext.attestation.json");
+
+interface PluginBuildAttestation {
+  readonly format: string;
+  readonly canonicalTitle: string;
+  readonly compatibilityTitle?: string;
+  readonly moduleManifestPath: string;
+  readonly moduleManifestSha256: string;
+  readonly moduleCount: number;
+  readonly packedTiddlerCount: number;
+  readonly pluginJsonSha256: string;
+}
 
 /**
  * The memetic corpus lives under repo-root bags/. Each `.md` carrier is already
@@ -86,6 +99,20 @@ function walkFiles(dir: string, ext: string): string[] {
   return results.sort();
 }
 
+function readPluginAttestations(): Map<string, PluginBuildAttestation> {
+  const out = new Map<string, PluginBuildAttestation>();
+  if (!existsSync(LARES_TW5_PLUGIN_ATTESTATION)) return out;
+  const att = JSON.parse(readFileSync(LARES_TW5_PLUGIN_ATTESTATION, "utf8")) as PluginBuildAttestation;
+  if (att.format !== "lararium-tw5-plugin-build/v1") {
+    throw new Error(`[genesis] unsupported plugin attestation format: ${att.format}`);
+  }
+  if (!att.canonicalTitle) {
+    throw new Error(`[genesis] plugin attestation missing canonicalTitle: ${LARES_TW5_PLUGIN_ATTESTATION}`);
+  }
+  out.set(att.canonicalTitle, att);
+  return out;
+}
+
 // ---------------------------------------------------------------------------
 // Deterministic actor ID
 //
@@ -113,6 +140,14 @@ function deriveActorId(tw5CorePath: string): string {
   // Vendored plugin JSON files (sorted)
   for (const f of walkFiles(tw5PluginsRoot, ".json")) {
     h.update(`plugin:${f}:`);
+    h.update(readFileSync(f));
+  }
+
+  // Build attestations are descriptor inputs: they do not change blob bytes,
+  // but they do change genesis tiddler metadata and therefore must join the
+  // deterministic actor seed.
+  for (const f of walkFiles(LARARIUM_TW5_DIST_PLUGIN, ".attestation.json")) {
+    h.update(`attestation:${f}:`);
     h.update(readFileSync(f));
   }
 
@@ -145,6 +180,7 @@ async function main(): Promise<void> {
 
   // 3. Collect vendored plugin blobs.
   const vendoredPlugins: LarariumBlobEntry[] = [];
+  const pluginAttestations = readPluginAttestations();
   if (existsSync(tw5PluginsRoot)) {
     for (const file of readdirSync(tw5PluginsRoot).filter(f => f.endsWith(".json")).sort()) {
       const filePath = join(tw5PluginsRoot, file);
@@ -169,6 +205,16 @@ async function main(): Promise<void> {
         ...(source && { source }),
         license: "MIT",
       });
+      const att = pluginAttestations.get(id);
+      if (att) {
+        if (att.pluginJsonSha256 !== sha) {
+          throw new Error(
+            `[genesis] plugin attestation sha mismatch for ${id}: ` +
+            `attestation=${att.pluginJsonSha256} blob=${sha}`,
+          );
+        }
+        console.log(`[genesis] plugin attestation  ${id}  modules=${att.moduleCount}  manifest=${att.moduleManifestSha256.slice(0, 12)}…`);
+      }
       console.log(`[genesis] vendored plugin  ${id}  v${version}  sha=${sha.slice(0, 12)}…`);
     }
   }
@@ -183,7 +229,7 @@ async function main(): Promise<void> {
   // 4. Snapshot systemTitles from a bare VM boot.
   console.log("[genesis] snapshotting system titles …");
   const snapshotVm = new TW5Engine();
-  await snapshotVm.boot();
+  await snapshotVm.boot({ bytes: coreBlob, sha256: coreSha });
   const systemTitles = snapshotVm.$tw.wiki.filterTiddlers("[prefix[$:/]]").sort();
   snapshotVm.dispose();
   console.log(`[genesis] systemTitles count = ${systemTitles.length}`);
@@ -305,7 +351,8 @@ async function main(): Promise<void> {
     const blobs    = (d.blobs ?? {}) as Record<string, LarariumBlobEntry>;
     for (const [blobId, entry] of Object.entries(blobs)) {
       const uri               = blobDescriptorUri(blobId);
-      const isVendoredPlugin  = blobId.startsWith("$:/plugins/");
+      const isVendoredPlugin  = blobId.startsWith("$:/plugins/") || blobId.startsWith("lar:///plugins/");
+      const att               = pluginAttestations.get(blobId);
       tiddlers[uri] = {
         title:     uri,
         text:      blobId,
@@ -317,6 +364,16 @@ async function main(): Promise<void> {
           ...(entry.source  && { source:  entry.source }),
           ...(entry.license && { license: entry.license }),
           ...(isVendoredPlugin && { pluginInstallable: "true", pluginTitle: blobId }),
+          ...(att && {
+            buildAttestationFormat: att.format,
+            canonicalTitle: att.canonicalTitle,
+            ...(att.compatibilityTitle && { compatibilityTitle: att.compatibilityTitle }),
+            moduleManifestPath: att.moduleManifestPath,
+            moduleManifestSha256: att.moduleManifestSha256,
+            moduleCount: String(att.moduleCount),
+            packedTiddlerCount: String(att.packedTiddlerCount),
+            pluginJsonSha256: att.pluginJsonSha256,
+          }),
           tags:      isVendoredPlugin ? "blob-descriptor plugin-descriptor" : "blob-descriptor",
         },
         bag:       LARARIUM_DOC_URI,

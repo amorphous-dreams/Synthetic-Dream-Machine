@@ -203,12 +203,17 @@ export function parse(this: RuleInstance): ParseTreeNode[] {
     }];
   }
 
-  // ahu — block or invocation form.
-  const body = attrs["__body__"] ?? "";
+  // ahu — both block (definition, pre-decompose) and invocation (<<~ kahea ahu #slot >>)
+  // forms emit ~kahea~ahu. The deserializer (splitRecursive) consumes block bodies
+  // before TW5 parses carrier text, so block body drops here without data loss.
   delete attrs["__body__"];
-  return [{
-    type:       "ahu",
-    attributes: attrToTree(attrs),
-    children:   body ? [{ type: "text", text: body }] : [],
-  }];
+  const slot = attrs["slot"] ?? "";
+  const uri  = attrs["uri"]  ?? "";
+  const macroAttrs: Record<string, { type: "string"; value: string }> = {
+    "$variable": { type: "string", value: "~kahea~ahu" },
+    "slot":      { type: "string", value: slot },
+    "p1":        { type: "string", value: slot },
+  };
+  if (uri) macroAttrs["uri"] = { type: "string", value: uri };
+  return [{ type: "macrocall", attributes: macroAttrs, children: [] }];
 }

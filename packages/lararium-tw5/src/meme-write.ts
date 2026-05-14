@@ -63,7 +63,7 @@ export function buildDirectRecord(
  * Routes through TW5's renderTiddler pipeline — the same path the wiki
  * shell and HTML export use — with the `lar-export-scope` variable set
  * to "markdown-meme". The wikifier walks the parent's parse tree;
- * AhuWidget instances resolve the ahu cascade and transclude their slot
+ * ~ahu (wikitext widget) resolves the ahu cascade and transcludes slot
  * children through the disk-export template. Non-sigil text renders as-is.
  *
  * @param tw5     - Live TW5Engine VM instance
@@ -80,8 +80,8 @@ export function exportMemeText(tw5: TW5Engine, memeUri: string): string {
     // transcludeinline lar-sigil lar-doctype-comment`.
     // The pragma curates the wikitext rule set so backticks, dashes, html
     // entities, html comments, and macrocall stay literal — only sigil and
-    // transclusion rules fire. AhuWidget transcludes slot children through
-    // the cascade-resolved slot template; everything else passes verbatim.
+    // transclusion rules fire. ~ahu (wikitext widget) transcludes slot children
+    // through the cascade-resolved slot template; everything else passes verbatim.
     return wiki.renderTiddler("text/plain", MEME_MARKDOWN_TEMPLATE, {
       variables: {
         currentTiddler:    memeUri,
