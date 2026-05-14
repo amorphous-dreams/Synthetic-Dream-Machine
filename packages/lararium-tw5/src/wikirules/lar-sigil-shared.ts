@@ -83,7 +83,9 @@ export function matchCompoundSigilAt(
   const m = COMPOUND_OPEN_RE.exec(source);
   if (!m || m.index !== start) return null;
   const word1 = m[1]!.replace(/^\\/, "");
-  if (word1 === "pranala") return null; // arrow syntax — handled by matchPranalaOpenAt
+  // pranala is a permanent JS exception: its <<~ pranala FROM -> TO >> arrow syntax
+  // is structurally distinct from <<~ WORD ARGS >> and cannot collapse into compound.
+  if (word1 === "pranala") return null;
   const rest = (m[2] ?? "").trim();
 
   if (childSlotNames.has(word1)) {
@@ -231,10 +233,19 @@ export function attrToTree(attrs: Record<string, string>): Record<string, { type
 }
 
 /**
- * Merge BLOCK_CLOSERS with any grammar-registered block sigils that have a
- * `closePattern`. Callers call this at the top of findNextMatch (memoized
- * grammar — zero cost after first call) and use the result instead of the
- * static BLOCK_CLOSERS map.
+ * Merge BLOCK_CLOSERS with grammar-registered block sigils.
+ *
+ * Phase 3b blocker: TOML close_pattern values are regex strings
+ * (e.g. '<<~\/ahu\s*>>') but findCloseEnd uses source.indexOf() on literal
+ * strings (e.g. "<<~/ahu"). The two forms are incompatible. buildClosers()
+ * currently skips all 20 BLOCK_CLOSERS names via the `!(name in BLOCK_CLOSERS)`
+ * guard, so grammar-loaded closers never fire for existing entries.
+ *
+ * To shrink the static list to {ahu, kau, pranala}:
+ *   1. Add close_tag (literal string) fields alongside close_pattern in TOML, OR
+ *   2. Derive the literal from the regex (strip \/ → /, \s*>> → "").
+ * Until then the static list stays authoritative and grammar closers cover
+ * only operator-added sigils not already in BLOCK_CLOSERS.
  */
 export function buildClosers(grammar: GrammarRules | null): Record<string, string> {
   if (!grammar) return BLOCK_CLOSERS;
@@ -248,20 +259,19 @@ export function buildClosers(grammar: GrammarRules | null): Record<string, strin
 }
 
 /**
- * Returns the set of inline/edge sigil names registered in the grammar that
- * are NOT already handled by the hardcoded URI_FORM_SIGIL_RE (aka/kahea/loulou).
- * Used by lar-sigil-inline to emit proper widget nodes for operator-added sigils.
+ * Returns the set of inline/edge sigil names registered in the grammar.
+ * Used by the generic fallback in lar-sigil findNextMatch as a safety net for
+ * <<~WORD>> forms (no space) that compound does not claim. Well-formed HUD
+ * sigils use <<~ WORD … >> (space) and are consumed by matchCompoundSigilAt
+ * before the generic path fires.
  */
-const URI_FORM_HARDCODED = new Set(["aka", "kahea", "loulou"]);
-
 export function grammarInlineSigils(grammar: GrammarRules | null): Set<string> {
   if (!grammar) return new Set();
   const out = new Set<string>();
   for (const sigil of grammar.sigils) {
     if (
       (sigil.kind === "edge" || sigil.kind === "edge-sugar" || sigil.kind === "edge-alias") &&
-      sigil.inlinePattern &&
-      !URI_FORM_HARDCODED.has(sigil.name)
+      sigil.inlinePattern
     ) {
       out.add(sigil.name);
     }

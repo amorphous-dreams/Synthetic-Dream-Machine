@@ -50,7 +50,10 @@ export function findNextMatch(this: RuleInstance, startPos: number): number | un
   const childSlotNames = grammarChildSlotNames(grammar);
   let pos = source.indexOf("<<~", startPos);
   while (pos >= 0) {
-    // pranala-header: <<~ ? -> uri >> — unique ? self-token, must precede compound.
+    // pranala-header: permanent JS exception — <<~ ? -> uri >> uses a unique
+    // self-reference token (?) that is not a sigil word. Cannot generalise into
+    // compound without losing the ? semantic. Must precede compound to prevent
+    // compound from misreading any stray <<~ ? ... >> as a sigil named "?".
     const pranalaHeader = matchPranalaHeaderAt(source, pos);
     if (pranalaHeader) {
       this.matchPos = pos;
@@ -59,7 +62,10 @@ export function findNextMatch(this: RuleInstance, startPos: number): number | un
       return pos;
     }
 
-    // pranala: arrow syntax — block if closer follows, inline edge otherwise.
+    // pranala: permanent JS exception — <<~ pranala FROM -> TO >> arrow syntax with
+    // keyword attrs (from/to/slot/family/role/body) is structurally distinct from
+    // <<~ WORD ARGS >>. The ~ dispatcher's p1–p5 positional interface cannot carry
+    // named keyword pairs without losing the readable HUD form.
     const pranala = matchPranalaOpenAt(source, pos);
     if (pranala) {
       const closeEnd = findCloseEnd(source, "pranala", pranala.end);
@@ -112,7 +118,10 @@ export function findNextMatch(this: RuleInstance, startPos: number): number | un
       return pos;
     }
 
-    // Generic fallback: block if a registered closer follows; else literal.
+    // Generic fallback: covers <<~WORD>> (no-space), control chars (<<~&#x0001;>>),
+    // and any form compound did not claim. Well-formed HUD sigils never reach here.
+    // pranala guard: matchPranalaOpenAt already claimed pranala forms above; guard
+    // prevents a bare <<~ pranala >> (no arrow) from silently becoming a literal block.
     const generic = findGenericOpenAt(source, pos);
     if (generic) {
       if (generic.sigil && closers[generic.sigil] && generic.sigil !== "pranala") {
