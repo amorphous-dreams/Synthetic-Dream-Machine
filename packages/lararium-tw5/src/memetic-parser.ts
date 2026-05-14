@@ -22,12 +22,10 @@ module-type: parser
  * parser, transclude or not.
  *
  * What gets filtered (deny list):
- *   - codeblock / codeinline    — strip backtick fences (turn ``` into `).
- *   - commentblock / commentinline — strip `<!-- ... -->` (DOCTYPE, etc).
- *   - entity                    — expand `&#x0001;` carrier sentinels.
- *   - dash                      — convert `---` to em-dash.
  *   - macrocallinline / macrocallblock — claim `<<...>>` before the
- *     lar-sigil rules can match.
+ *     lar-sigil rules can match. Removed once T-1 lands: lar-sigil-inline
+ *     collapses into lar-sigil (block-only) and leaf forms fall through to
+ *     TW5's standard macro dispatch → `\widget ~(name)` dispatcher tiddler.
  *
  * Operator override: writing a space-separated rule-name list to
  * `$:/config/Lar/MemeticRulesExcept` replaces the default deny list.
@@ -38,10 +36,6 @@ module-type: parser
 const RULES_CONFIG_TIDDLER = "$:/config/Lar/MemeticRulesExcept";
 
 const DEFAULT_RULES_EXCEPT: ReadonlySet<string> = new Set([
-  "codeblock", "codeinline",
-  "commentblock", "commentinline",
-  "entity",
-  "dash",
   "macrocallinline", "macrocallblock",
 ]);
 
