@@ -1,6 +1,6 @@
 # Lares Active Roadmap — Outstanding Work Only
 
-> Updated: 2026-05-14
+> Updated: 2026-05-14 (turn 2)
 > Branch: `feature/lararium-node-3`
 > Archive source: `wikis/lares-history/last-sprint/{HANDOFF,SESSION,ROADMAP}.md`
 
@@ -13,10 +13,13 @@ The branch holds: quine/core, content-addressed genesis + TW5 core boot, admin
 VM, command-tiddler CLI, Keyhive concap gate, bag residency, wiki composition,
 plugin-tiddler boot, sigil cascade architecture for load-bearing sigils,
 save-side splitting, recursive child co-promotion, Node VM / worker-thread lift,
-**and** the sigils-as-wikitext sprint (filter self-registration, md-file-router,
+the sigils-as-wikitext sprint (filter self-registration, md-file-router,
 memetic-parser deny-list trim, `\sigil` pragma stub, `\widget ~` dispatcher,
 `~aka`/`~kahea`/`~loulou`/`~pranala-header`/`~pranala` wikitext tiddlers,
-5 JS widgets retired, wikirules emit macrocall nodes).
+5 JS widgets retired, wikirules emit macrocall nodes), **and** T-1 wikirule
+collapse (`lar-sigil.ts` single rule, deny list cleared), URI fragment
+resolution on all 5 sigil tiddlers, deserializer root-iam fix, and
+build pipeline clear-before-rebuild.
 
 Do not re-open those arcs unless a test proves drift.
 
@@ -24,14 +27,14 @@ Do not re-open those arcs unless a test proves drift.
 
 | Priority | Path | Status | Outcome |
 |---|---|---|---|
-| 1 | **T-1** | ⬜ Unblocked | Collapse `lar-sigil-inline` into `lar-sigil` (block-only); remove `macrocallinline`/`macrocallblock` from deny list. |
-| 2 | **~ahu** | ⬜ Talk-story needed | Retire `ahu.ts` to `\widget ~ahu` wikitext; child URI as filter expression; body encoding design. |
-| 3 | **K / F-arc** | ⬜ Next | TW5 save routing, debounce, projection hygiene for sustained editing. |
-| 4 | **L / S7.4** | ⬜ Next | Admin-doc ingress trust gate: operator devices with `cap=infrastructure` only. |
-| 5 | **G.rest** | ⬜ Small | `lele`, `papalohe`, `pae` → `macrocall` emission + `\widget ~name` tiddlers. Talk-story per sigil. |
-| 6 | **R** | ⧾ Verify first | ReactionEngine wiring: changeset application, changed-URI derivation, `RE.onChangeset`, integration tests. |
-| 7 | **N** | ⬜ UI shim | `<$lar-promote>` action-widget writes the same command-tiddler as CLI promote. |
-| 8 | **O** | ⬜ Corpus hygiene | Author scaffolded heleuma stubs; keep `lares heleuma --write` aligned. |
+| — | **T-1** | ✅ Done | `lar-sigil.ts` single rule; deny list cleared; stale build artifacts purged. |
+| 1 | **~ahu** | ⬜ Talk-story needed | Retire `ahu.ts` to `\widget ~ahu` wikitext; child URI as filter expression; body encoding design. |
+| 2 | **K / F-arc** | ⬜ Next | TW5 save routing, debounce, projection hygiene for sustained editing. |
+| 3 | **L / S7.4** | ⬜ Next | Admin-doc ingress trust gate: operator devices with `cap=infrastructure` only. |
+| 4 | **G.rest** | ⬜ Small | `lele`, `papalohe`, `pae` → `macrocall` emission + `\widget ~name` tiddlers. Talk-story per sigil. |
+| 5 | **R** | ⧾ Verify first | ReactionEngine wiring: changeset application, changed-URI derivation, `RE.onChangeset`, integration tests. |
+| 6 | **N** | ⬜ UI shim | `<$lar-promote>` action-widget writes the same command-tiddler as CLI promote. |
+| 7 | **O** | ⬜ Corpus hygiene | Author scaffolded heleuma stubs; keep `lares heleuma --write` aligned. |
 
 ## Test Flow Harness
 
@@ -40,23 +43,6 @@ Do not re-open those arcs unless a test proves drift.
 - `pnpm test:tw5-flow` — direct TW5 sync/decompose/promote flow.
 - `pnpm --filter @lararium/tw5 exec tsx scripts/smoke-plugin-boot.ts` — plugin
   boot smoke (shadow tiddlers + widget registry + render probes).
-
-## Path T-1 — Wikirule Collapse
-
-Goal: single `lar-sigil.ts` rule (`{ block: true }` only); leaf forms fall
-through to `macrocallinline` → `\widget ~` dispatcher.
-
-Blocker removed: `<<~ ? -> uri >>` appears only post-SOH in the carrier stream;
-the deserializer strips it before wikiparser sees it. No special-case needed.
-
-- [ ] Merge `lar-sigil-inline.ts` + `lar-sigil-block.ts` → `lar-sigil.ts`.
-      Block rule claims container forms (ahu-block, pranala-block, generic-block).
-      Leaf forms (`<<~ aka uri >>`, `<<~ kahea uri >>`, etc.) return `undefined`
-      from `findNextMatch` → fall to paragraph → inline phase → `macrocallinline`.
-- [ ] Remove `macrocallinline` and `macrocallblock` from `DEFAULT_RULES_EXCEPT`.
-- [ ] Delete `lar-sigil-inline.ts`, `lar-sigil-shared.ts` (or keep shared as
-      internal bundle if `lar-sigil.ts` still imports helpers).
-- [ ] Update smoke: `lar-sigil-block` and `lar-sigil-inline` become `lar-sigil`.
 
 ## Path ~ahu — Retire Last Non-kau JS Widget
 

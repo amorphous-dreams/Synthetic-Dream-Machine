@@ -15,7 +15,7 @@
  */
 
 import { build }                        from "vite";
-import { readdirSync, readFileSync }    from "fs";
+import { readdirSync, readFileSync, rmSync, mkdirSync } from "fs";
 import path                             from "path";
 import { fileURLToPath, pathToFileURL } from "url";
 
@@ -84,6 +84,8 @@ function discoverModules(): TiddlerModule[] {
 // ---------------------------------------------------------------------------
 
 export async function buildPluginCjsTiddlers(outDir = TIDDLER_SRC_DIR): Promise<void> {
+  rmSync(path.resolve(__dirname, outDir), { recursive: true, force: true });
+  mkdirSync(path.resolve(__dirname, outDir), { recursive: true });
   const modules = discoverModules();
   for (const mod of modules) {
     await build({

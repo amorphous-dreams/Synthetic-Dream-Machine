@@ -11,91 +11,68 @@ Resume from packages/HANDOFF.md and packages/ROADMAP.md.
 
 Current baseline: quine/genesis, TW5 content-addressed core boot, admin VM,
 command-tiddler CLI, Keyhive concap, bag residency, wiki composition,
-plugin-tiddler boot, load-bearing sigil cascade path, save-side split,
-recursive child co-promotion, Node VM / worker-thread lift, and the
-sigils-as-wikitext sprint (see "What Changed This Turn") are treated as
-landed unless tests prove drift.
+plugin-tiddler boot, sigil cascade architecture, save-side split, recursive
+child co-promotion, Node VM / worker-thread lift, full sigils-as-wikitext
+sprint including T-1 wikirule collapse, URI fragment resolution on all 5 sigil
+tiddlers, and deserializer root-iam fix + build pipeline clear-before-rebuild
+(see "What Changed This Turn") are treated as landed unless tests prove drift.
 
 Next work, in order:
-1. Path T-1: collapse lar-sigil-inline into lar-sigil (block-only rule),
-   remove macrocallinline/macrocallblock from memetic-parser deny list.
-2. Path ~ahu: retire ahu.ts to \widget ~ahu wikitext (child URI filter,
-   body encoding via named string param).
-3. Path K / F-arc: TW5 routing rules + 300–500ms debounce + projection
+1. Path ~ahu: retire ahu.ts to \widget ~ahu wikitext (child URI filter,
+   body encoding via named string param — talk-story needed).
+2. Path K / F-arc: TW5 routing rules + 300–500ms debounce + projection
    auto-truncate.
-4. Path L / S7.4: admin-doc ingress trust gate via Keyhive cap=infrastructure.
+3. Path L / S7.4: admin-doc ingress trust gate via Keyhive cap=infrastructure.
 
 Rules: preserve TW5 VM primacy, bag=Automerge-doc=sync-boundary, no HTTP/RPC
 coordination surface, and explicit operator promotion for canon.
 ```
 
-## What Changed This Turn (2026-05-13 → 2026-05-14)
+## What Changed This Turn (2026-05-14)
 
-### Sigils-as-Wikitext Sprint — `lararium-tw5`
+### Sigils-as-Wikitext Sprint + Hardening — `lararium-tw5`
 
-**Cleanup** (committed separately):
-- Converted `implementors`, `edge`, `toml-field`, `memes` filters from
-  `library`+barrel to `filteroperator` module-type (self-register via TW5).
-- Added `all-memes.ts` `allfilteroperator` for `[all[memes]]` syntax.
-- Added `src/modules/md-file-router.ts`: startup overrides `.md` →
-  `text/x-md-auto`; deserializer peeks SOH DOCTYPE sigil on line 1,
-  delegates to memetic or markdown.
-- Deleted `tw5-filter.ts`, `tw5-widgets.ts` (barrel chain eliminated),
-  `zoom-layout.ts`, `filters/bag.ts`, `filters/bag-path.ts`,
-  `widgets/lar-meme-split.ts`.
-- Fixed `vite.plugin.config.ts` regex escaping.
+**Previously landed (prior turn):** filter self-registration, md-file-router,
+memetic-parser deny-list trim (T-0), `\sigil` pragma stub (T-2), `\widget ~`
+dispatcher (T-3), `~aka`/`~kahea`/`~loulou`/`~pranala-header`/`~pranala`
+wikitext tiddlers, 5 JS widgets retired.
 
-**T-0** — Trimmed `memetic-parser.ts` deny list to `macrocallinline`/
-`macrocallblock` only. Removed `codeblock`, `codeinline`, `commentblock`,
-`commentinline`, `entity`, `dash` (all proven vestigial — deserializer strips
-carrier sentinels upstream).
+**T-1 — Wikirule Collapse (landed this turn):**
+- Merged `lar-sigil-inline.ts` + `lar-sigil-block.ts` → `lar-sigil.ts`.
+  Single rule, `types = { block: true, inline: true }`. `findNextMatch` claims
+  block container forms (ahu, pranala-block, generic-block) when a closer
+  follows; leaf forms return `undefined` and fall through to `macrocallinline`.
+- `DEFAULT_RULES_EXCEPT` cleared to `new Set<string>()` — no macrocall rules
+  blocked; leaf sigils route through `MacroCallWidget` → `\widget ~` naturally.
+- Deleted `lar-sigil-block.ts`, `lar-sigil-inline.ts`.
 
-**T-2** — Added `src/wikirules/lar-sigil-pragma.ts` (`module-type: wikirule`,
-pragma type). Matches `\sigil NAME(params)` lines; emits
-`isSigilDefinition: true` parse-tree node. Hook open for complex sigil
-behaviors without JS widget rewrite.
+**URI fragment resolution (landed this turn):**
+- All 5 sigil tiddlers (`sigil-aka`, `sigil-kahea`, `sigil-loulou`,
+  `sigil-pranala-header`, `sigil-pranala`) now apply
+  `[<p1>regexp[^#]] → [<p1>addprefix<currentTiddler>]` before using the URI
+  in `<$tiddler>` or `<$let>`. Absolute URIs pass through unchanged.
 
-**T-3** — Added `tiddlers/sigil-dispatcher.tid`: `\widget ~(name p1…p5)`,
-tagged `$:/tags/Global`. Uses `$genesis $type=$~{name} $remappable="no"` to
-dispatch to per-sigil `\widget ~name` tiddlers.
+**Deserializer root-iam fix (landed this turn):**
+- `memeticWikitextDeserializer` was treating iam blocks nested inside top-level
+  ahu slots as root-level iam, corrupting `preIamContent` / `postIamContent`.
+- Fix: limit `extractRootTomlWithPos` search to the region before the first
+  top-level ahu block (`findTopLevelAhuBlocks()[0].openStart`).
+- Verified: direct TS source test returns 3 tiddlers (root, `#parent`,
+  `#parent/child`) with correct fields.
 
-**`aka`/`kahea` design** (research + prior art):
-- Both sigils use `<$tiddler tiddler=<<target>>><$transclude $tiddler=<<template>>/></$tiddler>`.
-  Template selection: `p2` explicit > cascade (`$:/tags/Lar/{Aka,Kahea}Template`) > fallback.
-  Cascade evaluates in the calling context (before `$tiddler` shifts it).
-- `aka` default template: collapsible `<details>` quoteblock. Two CSS states:
-  `.lar-aka-local` (target exists) / `.lar-aka-shadow` (off-wiki). Preview
-  image: `thumbnail` field when present; DuckDuckGo favicon fallback for
-  HTTP/HTTPS URIs (`onerror` hides offline). `lar:///` URIs skip favicon path.
-- `kahea` default template: full inline block. `.lar-kahea-missing` link when
-  target not local.
-- Semantics locked: `aka` = `rdfs:seeAlso`/`skos:closeMatch` (read-only
-  projection, canonical at source). `kahea` = live summoning (entity present,
-  late-binding render).
-- `TW5Engine.wiki` getter, `.renderText()`, `.setTiddler()` added (smoke
-  script required these).
-- Design record: `bags/@lararium/tw5/sigil-aka.md` (Tier 2 OG metadata fetch
-  deferred to `lararium-node` disk-projector sprint).
-
-**Widget retirement** (5 JS widget files → wikitext tiddlers):
-- Wikirules now emit `{ type: "macrocall" }` parse-tree nodes for five sigils
-  instead of `{ type: "sigil-name" }`. TW5's `MacroCallWidget` routes them
-  through `\widget` tiddler definitions — no JS widget class needed.
-- New tiddlers: `sigil-aka`, `sigil-kahea`, `sigil-loulou`,
-  `sigil-pranala-header`, `sigil-pranala` (all `$:/tags/Global` +
-  `$:/tags/LarariumGrammar`).
-- `pranala` uses named params directly (bypasses `~` dispatcher — 6 named
-  bindings exceed the dispatcher's `p1…p5` positional signature).
-- Deleted: `aka.ts`, `kahea.ts`, `loulou.ts`, `pranala-header.ts`,
-  `pranala.ts`, `_cascade-sigil-base.ts`. Net: −296 lines JS.
+**Build pipeline fix (landed this turn):**
+- `vite.plugin.config.ts`: `buildPluginCjsTiddlers()` now calls
+  `rmSync(outDir)` + `mkdirSync(outDir)` before the Vite build loop.
+  Stale `.js` artifacts (e.g. deleted `lar-sigil-block.js`,
+  `lar-sigil-inline.js`) no longer survive into the TW5 CLI pack step.
+- `plugin-tiddler.generated.ts` now contains the root-iam fix. Build produces
+  56 inner tiddlers; 3/3 active Jest suites pass (42/42 tests).
 
 **Surviving JS widgets** (not yet retireable):
-- `ahu.ts` — child URI resolution logic + body-slot encoding. Talk-story
-  needed for `\widget ~ahu` filter expression + named-string body param.
-- `kau.ts` — `registerKauCapabilityHook`, `registerKauWriteBackHook`, kumu
-  instance lookup. Capability hooks require JS.
-- `render-modes.ts` — kau projection-mode dispatch; dissolves when kau's
-  markdown-meme path folds into a cascade entry.
+- `ahu.ts` — child URI resolution + body-slot encoding. Talk-story needed for
+  `\widget ~ahu` filter expression + named-string body param.
+- `kau.ts` — capability hooks require JS.
+- `render-modes.ts` — dissolves when kau markdown-meme path folds into cascade.
 
 ## Active Objective
 
