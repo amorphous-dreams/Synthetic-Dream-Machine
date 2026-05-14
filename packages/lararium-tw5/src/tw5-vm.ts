@@ -420,6 +420,27 @@ export class TW5Engine {
     return this._tw;
   }
 
+  /** Direct access to $tw.wiki after boot. */
+  get wiki(): TW5Instance["wiki"] {
+    if (!this._tw) throw new Error("TW5Engine: call boot() before accessing wiki");
+    return this._tw.wiki;
+  }
+
+  /**
+   * Render a wikitext string to HTML using TW5's server-side renderer.
+   * The text parses as `text/vnd.tiddlywiki` in an anonymous tiddler context.
+   */
+  renderText(text: string, type = "text/vnd.tiddlywiki"): string {
+    if (!this._tw) throw new Error("TW5Engine: call boot() before renderText()");
+    return this._tw.wiki.renderText("text/html", type, text);
+  }
+
+  /** Add or replace a tiddler by field map. */
+  setTiddler(fields: Record<string, string | string[]>): void {
+    if (!this._tw) throw new Error("TW5Engine: call boot() before setTiddler()");
+    this._tw.wiki.addTiddler(new this._tw.Tiddler(fields as Record<string, unknown>));
+  }
+
   /**
    * Dispose this VM — clear internal refs so GC can collect.
    * Caller must invoke any mountPanel cleanup fn first.

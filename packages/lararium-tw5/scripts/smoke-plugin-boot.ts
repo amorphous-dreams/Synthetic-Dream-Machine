@@ -50,6 +50,7 @@ async function main(): Promise<void> {
     "lar:///ha.ka.ba/@lararium/templates/pranala/html",
     "lar:///ha.ka.ba/@lararium/templates/meme/markdown-meme",
     "lar:///ha.ka.ba/@lararium/tw5/tiddlers/sigil-dispatcher",
+    "lar:///ha.ka.ba/@lararium/tw5/tiddlers/sigil-aka",
   ];
   for (const title of expectedTitles) {
     if (!wiki.getTiddler(title)) failures.push(`missing tiddler: ${title}`);

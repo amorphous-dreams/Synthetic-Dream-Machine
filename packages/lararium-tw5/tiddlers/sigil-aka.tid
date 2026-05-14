@@ -1,0 +1,7 @@
+title: lar:///ha.ka.ba/@lararium/tw5/tiddlers/sigil-aka
+tags: $:/tags/Global $:/tags/LarariumGrammar
+type: text/vnd.tiddlywiki
+
+\widget ~aka(p1:"")
+<$aka uri=<<p1>>/>
+\end
