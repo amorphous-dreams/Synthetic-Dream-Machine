@@ -1,14 +1,22 @@
 # Lares Active Roadmap — Outstanding Work Only
 
-> Created: 2026-05-12
+> Updated: 2026-05-14
 > Branch: `feature/lararium-node-3`
 > Archive source: `wikis/lares-history/last-sprint/{HANDOFF,SESSION,ROADMAP}.md`
 
-This roadmap intentionally drops sprint archaeology. The last-sprint documents remain in history; this file carries only open work and ordering pressure.
+This roadmap drops sprint archaeology. Last-sprint documents remain in history;
+this file carries only open work and ordering pressure.
 
 ## Current Baseline
 
-The branch already holds the quine/core work: content-addressed genesis + TW5 core boot, admin VM, command-tiddler CLI, Keyhive concap gate, bag residency, wiki composition, plugin-tiddler boot, sigil cascade architecture for the load-bearing sigils, save-side splitting, recursive child co-promotion, and the first Node VM / worker-thread lift.
+The branch holds: quine/core, content-addressed genesis + TW5 core boot, admin
+VM, command-tiddler CLI, Keyhive concap gate, bag residency, wiki composition,
+plugin-tiddler boot, sigil cascade architecture for load-bearing sigils,
+save-side splitting, recursive child co-promotion, Node VM / worker-thread lift,
+**and** the sigils-as-wikitext sprint (filter self-registration, md-file-router,
+memetic-parser deny-list trim, `\sigil` pragma stub, `\widget ~` dispatcher,
+`~aka`/`~kahea`/`~loulou`/`~pranala-header`/`~pranala` wikitext tiddlers,
+5 JS widgets retired, wikirules emit macrocall nodes).
 
 Do not re-open those arcs unless a test proves drift.
 
@@ -16,81 +24,122 @@ Do not re-open those arcs unless a test proves drift.
 
 | Priority | Path | Status | Outcome |
 |---|---|---|---|
-| 1 | **K / F-arc** | ⬜ Next | TW5 save routing, debounce, and projection hygiene for sustained editing. |
-| 2 | **L / S7.4** | ⬜ Next | Admin-doc ingress trust gate: only operator-owned devices with `cap=infrastructure` may federate the admin doc. |
-| 3 | **G.rest** | ⬜ Small | Port remaining sigils (`lele`, `papalohe`, `pae`) to the wikirule + cascade + template pattern. Keep `kau` separate unless its logic shape changes. |
-| 4 | **R** | ⧾ Designed / verify current code | Finish ReactionEngine wiring where worker-side changeset application, changed-URI derivation, and `RE.onChangeset` still lack real integration or tests. |
-| 5 | **N** | ⬜ UI shim | `<$lar-promote>` action-widget writes the same command-tiddler as CLI promote. |
-| 6 | **O** | ⬜ Corpus hygiene | Author scaffolded heleuma stubs; keep `lares heleuma --write` aligned; design federated promotion ceremony. |
+| 1 | **T-1** | ⬜ Unblocked | Collapse `lar-sigil-inline` into `lar-sigil` (block-only); remove `macrocallinline`/`macrocallblock` from deny list. |
+| 2 | **~ahu** | ⬜ Talk-story needed | Retire `ahu.ts` to `\widget ~ahu` wikitext; child URI as filter expression; body encoding design. |
+| 3 | **K / F-arc** | ⬜ Next | TW5 save routing, debounce, projection hygiene for sustained editing. |
+| 4 | **L / S7.4** | ⬜ Next | Admin-doc ingress trust gate: operator devices with `cap=infrastructure` only. |
+| 5 | **G.rest** | ⬜ Small | `lele`, `papalohe`, `pae` → `macrocall` emission + `\widget ~name` tiddlers. Talk-story per sigil. |
+| 6 | **R** | ⧾ Verify first | ReactionEngine wiring: changeset application, changed-URI derivation, `RE.onChangeset`, integration tests. |
+| 7 | **N** | ⬜ UI shim | `<$lar-promote>` action-widget writes the same command-tiddler as CLI promote. |
+| 8 | **O** | ⬜ Corpus hygiene | Author scaffolded heleuma stubs; keep `lares heleuma --write` aligned. |
 
-
-## Test Flow Harness — Landed 2026-05-12
-
-The old Lares HUD / memes / chats behavioral plans moved to `tests/chats/`. Active code-flow tests now use:
+## Test Flow Harness
 
 - `pnpm test:unit` — package-local Jest suites.
 - `pnpm test:flows` — top-level isolated integration flows.
 - `pnpm test:tw5-flow` — direct TW5 sync/decompose/promote flow.
+- `pnpm --filter @lararium/tw5 exec tsx scripts/smoke-plugin-boot.ts` — plugin
+  boot smoke (shadow tiddlers + widget registry + render probes).
 
-Shared helpers live in `tests/bin/`; deterministic flow goldens stay in `tests/expected/`; stochastic chat exemplars stay in `tests/chats/expected/`.
+## Path T-1 — Wikirule Collapse
+
+Goal: single `lar-sigil.ts` rule (`{ block: true }` only); leaf forms fall
+through to `macrocallinline` → `\widget ~` dispatcher.
+
+Blocker removed: `<<~ ? -> uri >>` appears only post-SOH in the carrier stream;
+the deserializer strips it before wikiparser sees it. No special-case needed.
+
+- [ ] Merge `lar-sigil-inline.ts` + `lar-sigil-block.ts` → `lar-sigil.ts`.
+      Block rule claims container forms (ahu-block, pranala-block, generic-block).
+      Leaf forms (`<<~ aka uri >>`, `<<~ kahea uri >>`, etc.) return `undefined`
+      from `findNextMatch` → fall to paragraph → inline phase → `macrocallinline`.
+- [ ] Remove `macrocallinline` and `macrocallblock` from `DEFAULT_RULES_EXCEPT`.
+- [ ] Delete `lar-sigil-inline.ts`, `lar-sigil-shared.ts` (or keep shared as
+      internal bundle if `lar-sigil.ts` still imports helpers).
+- [ ] Update smoke: `lar-sigil-block` and `lar-sigil-inline` become `lar-sigil`.
+
+## Path ~ahu — Retire Last Non-kau JS Widget
+
+Goal: `ahu.ts` → `\widget ~ahu` wikitext tiddler.
+
+Child URI resolution as a TW5 filter:
+```
+{{{ [<uri>!match[]!regexp[^lar:///unknown]] ~[<slot>regexp[^lar:]] ~[<currentTiddler>addsuffix<slot>] }}}
+```
+
+Open design question: body encoding for the block form. Options:
+- Named string param `body=""` (same as pranala). Block rule emits
+  `macrocall $variable="~ahu" slot=… uri=… body=<body-text>`. Wikitext
+  template renders `<<body>>` directly. Simplest path.
+- `$slot`/`$fill` in the macrocall children. Richer (allows wikitext in body),
+  but TW5 `MacroCallWidget` fill support needs verification for `\widget`.
+
+- [ ] Talk-story: confirm body-as-named-param vs body-as-fill.
+- [ ] Create `tiddlers/sigil-ahu.tid` with `\widget ~ahu(slot uri body template)`.
+- [ ] Update `lar-sigil-block.ts` (or `lar-sigil.ts` after T-1): ahu block form
+      emits `macrocall $variable="~ahu"`.
+- [ ] Delete `ahu.ts`.
+- [ ] Update smoke: `ahu` moves from JS widget list to shadow tiddler list.
 
 ## Path K — TW5 Routing, Debounce, Projection Hygiene
 
-Goal: make live wiki authoring safe under sustained operator editing.
+Goal: live wiki authoring safe under sustained operator editing.
 
-- [ ] Route `$:/state/*` writes to the projection layer, not durable canon/draft layers.
+- [ ] Route `$:/state/*` writes to the projection layer, not durable canon/draft.
 - [ ] Route `Draft of *` tiddlers to the per-wiki draft bag.
-- [ ] Add Yjs-style 300–500ms capture debounce in `MemeSyncAdaptor` / save path.
+- [ ] Add 300–500ms capture debounce in `MemeSyncAdaptor` / save path.
 - [ ] Add idle auto-truncate for noisy projection state.
-- [ ] Keep disk sync, CRDT inbound, TW5 UX save, and disk export on the same parser/split law.
+- [ ] Keep disk sync, CRDT inbound, TW5 UX save, and disk export on the same
+      parser/split law.
 
 ## Path L — Admin Doc Ingress Trust Gate
 
-Goal: let the operator's own devices federate infrastructure state without exposing the admin doc to room peers.
+Goal: operator devices federate infrastructure state; room peers cannot.
 
 - [ ] Gate admin-doc WebSocket ingress on Keyhive `cap=infrastructure` proof.
-- [ ] Keep admin doc federation restricted to operator devices.
-- [ ] Preserve command-tiddler flow: CLI/daemon coordination still rides the admin doc, not HTTP/RPC.
-- [ ] Add negative smoke: non-infrastructure peer cannot sync admin state.
+- [ ] Operator devices only; room peers rejected.
+- [ ] Preserve command-tiddler coordination surface.
+- [ ] Negative smoke: non-infrastructure peer cannot sync admin state.
 
-## Path G.rest — Remaining Sigils
+## Path G.rest — Remaining Sigil Vocabulary
 
-Goal: complete the non-load-bearing sigil surface without growing bespoke parser logic.
+Goal: complete the public sigil surface without growing bespoke parser logic.
+All three follow the established pattern: wikirule emits `macrocall`, `\widget ~name`
+tiddler handles rendering, cascade tag controls template selection.
 
-- [ ] `lele` — flow/movement sigil; choose fragment-render vs child ownership.
-- [ ] `papalohe` — listening/perception sigil; choose template contract.
-- [ ] `pae` — phase/OODA-HA/LADDER sigil; choose template contract.
-- [ ] Leave `kau` out of the factory path unless its Keyhive/writeback behavior becomes declarative enough.
+- [ ] `lele` — flow/movement sigil. Talk-story: fragment-render vs child ownership.
+- [ ] `papalohe` — listening/perception sigil. Talk-story: template contract.
+- [ ] `pae` — phase/OODA-HA/LADDER sigil. Talk-story: template contract.
+- [ ] `kau` invocation path (no fragment, no UUID) — talk-story: may be
+      wikitext-eligible; placement path (capability gate) stays JS.
 
 ## Path R — ReactionEngine Completion
 
-Goal: one reactive wiki tick per hot-tier wiki, Verse-compatible enough for alpha.
+Goal: one reactive wiki tick per hot-tier wiki, Verse-compatible for alpha.
 
 Invariants:
-
 1. TW5Engine and ReactionEngine co-locate in the same hot-tier Worker.
-2. MemeSyncAdaptor applies a changeset first; RE runs second against current TW5 state.
-3. RE writes through the composite store, never directly through `docHandle.change()`.
+2. MemeSyncAdaptor applies changeset first; RE runs second.
+3. RE writes through composite store, never directly through `docHandle.change()`.
 4. Device graph derives from wiki tiddlers/pranala edges.
 5. Cold-tier slots have no RE.
 
-Outstanding verification / work:
-
-- [ ] Confirm whether worker-side changeset application now runs against a local Automerge replica or still only sends placeholder URI sets.
-- [ ] Derive changed URI sets from real changesets and feed them into `ReactionEngine.onChangeset`.
-- [ ] Expand NodeVmManager integration tests: `mountWiki → routeChangeset → event forwarding → unmountWiki`.
+- [ ] Confirm worker-side changeset application (local Automerge replica vs placeholder URIs).
+- [ ] Derive changed URI sets from real changesets → `ReactionEngine.onChangeset`.
+- [ ] Expand NodeVmManager integration tests: mount → route → event-forward → unmount.
 - [ ] Verify teardown snapshot captures heads + tiddlers atomically.
-- [ ] Keep piscina only for stateless parse work (`deserializeCarrier` / grammar-pure `parseMeme`), not stateful hot wikis.
+- [ ] Keep piscina only for stateless parse work; stateful hot wikis stay in dedicated Workers.
 
 ## Near-Future Product / UX Paths
 
 | Path | Status | Trigger |
 |---|---|---|
-| **M / Dreamdeck-app sprint** | ⬜ Queued | After admin ingress gate; picks up same-machine peer consolidation deferred from S6.C.5. |
+| **Tier 2 aka preview** | ⬜ Deferred | Node-side OG metadata fetch → `thumbnail`/`og-title`/`og-description` fields. Home: `disk-projector.ts` or `og-metadata-fetcher.ts`. Design record at `bags/@lararium/tw5/sigil-aka.md`. |
+| **M / Dreamdeck-app** | ⬜ Queued | After admin ingress gate; picks up same-machine peer consolidation deferred from S6.C.5. |
 | **S9 / lararium-browser** | ⬜ Queued | Full browser peer: Automerge, IndexedDB, presence, optional OPFS. |
 | **S10 / dreamdeck-tldraw** | ⬜ Queued | tldraw shapes as `lar://` resource containers; edge types first-class. |
 | **S11 / dreamdeck-app** | ⬜ Queued | React shell; TW5 + canvas composition; no protocol logic in app layer. |
-| **W / CodeMirror 6 + Lezer + LSP** | ⬜ Downstream | Only after CLI/live wiki authoring stabilizes. |
+| **W / CodeMirror 6 + Lezer + LSP** | ⬜ Downstream | After CLI/live wiki authoring stabilizes. |
 
 ## Deferred / Research Shelf
 
@@ -98,12 +147,15 @@ Outstanding verification / work:
 - Seitan token circle invites.
 - Federated promotion conflict handling between lararia.
 - Subduction evaluation for lararium↔lararium federation once browser peer exists.
-- Speculative RE execution, rollback, and metered/gas execution.
+- Speculative RE execution, rollback, metered/gas execution.
 - Wikifier polish: DOCTYPE comment and dash-table round-trip diffs.
+- `\sigil` pragma full implementation (parameter schema, pattern, close-pattern, handler field).
+- `\widget ~kau` placement path design (Keyhive UCAN resource + UUID write-back boundary).
 
 ## Small Open Items
 
 - `heleuma` drift detection should include `uri-path`, not only `file-path`.
-- Command-tiddler tombstone currently happens client-side; decide whether dispatcher should auto-tombstone after audit write.
-- Cosmetic legacy names remain in a few logs/strings (`room` vs `wiki`).
+- Command-tiddler tombstone happens client-side; decide whether dispatcher should auto-tombstone after audit write.
+- Cosmetic legacy names in a few logs/strings (`room` vs `wiki`).
 - Some generated/source-file memes still need human-authored content beyond scaffolds.
+- `aka`/`kahea` markdown-meme cascade entries: ship `aka-cascade-markdown-meme.tid` and `kahea-cascade-markdown-meme.tid` with appropriate disk-export templates.
