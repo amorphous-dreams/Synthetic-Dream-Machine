@@ -7,6 +7,6 @@ lar-open-pattern: <<~\s*puka\s*>>
 lar-close-pattern: <<~\/puka\s*>>
 type: text/vnd.tiddlywiki
 
-<!-- puka — race-until-first; first branch to complete wins, all others cancel.
-     Concurrency runtime pending (async-first sprint). Grammar registration only. -->
+<!-- puka — first-through-the-opening (Verse rush); first branch wins, losers continue in background without cancellation.
+     Distinct from holo (\race): holo cancels losers. Concurrency runtime pending. Grammar registration only. -->
 

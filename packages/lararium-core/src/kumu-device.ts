@@ -3,30 +3,40 @@
  *
  * ## Verse 5.6+ device model (NOT Blueprint)
  *
- * UEFN Verse 5.6+ uses pure composition — no class inheritance for behavior.
- * A `creative_device` class gains behavior by:
- *   - Declaring `listenable` event values as OUTPUT pins (others subscribe to them)
- *   - Declaring callable `@subscribes` functions as INPUT function pins (others call them)
- *   - Using `using` to compose traits (Lararium: `control:implements` pranala edges)
+ * UEFN Verse 5.6+ uses single-inheritance class composition. A `creative_device` subclass
+ * gains behavior by:
+ *   - Declaring `listenable(payload)` fields as OUTPUT event pins (built-in devices only;
+ *     custom device listenable fields not yet DEB-bindable in UEFN editor as of 2025)
+ *   - Declaring public methods matching the payload signature as INPUT function pins
+ *   - `using { /Path }` is a MODULE IMPORT directive (namespace scope), NOT trait composition
+ *   - Class hierarchy: `my_device := class(creative_device)` — single inheritance only
  *
- * Wiring is type-safe and directional:
- *   sourceDevice.OutputEvent → targetDevice.InputHandler
+ * Verse event type hierarchy:
+ *   `event(T)`      — implements signalable + awaitable; NOT subscribable
+ *   `listenable(T)` — implements awaitable + subscribable; built-in device events use this
+ *   `Subscribe()`   → returns `cancelable` (our `() => void` unsubscribe)
+ *   `Await()<suspends>` → single-shot coroutine (our `subscribeOnce()`)
  *
- * Verse async: `Await(event)<suspends>` = single-shot coroutine (our `subscribeOnce()`).
- * Verse sync tick: game-loop actors fire in declaration order — our `fireSync()` + `onChangeset`.
+ * Verse concurrency (all require `<suspends>` context):
+ *   `spawn`  → lele / \branch: detached fiber, not scope-bound (fire-and-forget)
+ *   `branch` → scope-bound fiber, auto-canceled when enclosing function returns
+ *   `sync`   → hui / \sync: await-all
+ *   `race`   → holo / \race: first wins, losers CANCEL
+ *   `rush`   → puka / \rush: first wins, losers CONTINUE in background
  *
  * ## Lararium vocabulary mapping
  *
- *   Verse `listenable` event   → `KumuListenable`     (OUTPUT pin; `reaction:listenable` role)
- *   Verse `@subscribes` fn     → `KumuSubscribable`   (INPUT fn pin; `reaction:subscribable` role)
- *   Verse `using` / trait      → `control:implements` pranala edge → `KumuDeviceSpec.traits`
- *   UEFN editor event→fn wire  → `papalohe` pranala edge (instance-level binding)
- *   `Await(event)<suspends>`   → `ReactionGraph.subscribeOnce()`
- *   UEFN game-loop actor tick  → `ReactionEngine.onChangeset()` — Scale-3 synchronous tick
+ *   Verse `listenable(T)` field  → `KumuListenable`     (OUTPUT pin; `reaction:listenable` role)
+ *   Verse `event(T)` field       → `KumuListenable`     (verseKind: "event"; Await-only, not Subscribe)
+ *   Verse public input method    → `KumuSubscribable`   (INPUT fn pin; `reaction:subscribable` role)
+ *   Verse class inheritance      → `control:implements` pranala edge → `KumuDeviceSpec.traits`
+ *   UEFN editor DEB wire         → `papalohe` pranala edge (instance-level binding)
+ *   `Await(event)<suspends>`     → `ReactionGraph.subscribeOnce()`
+ *   UEFN game-loop actor tick    → `ReactionEngine.onChangeset()` — Scale-3 synchronous tick
  *
  * ## KumuDeviceSpec
  *   Isomorphic type describing a kumu device type. Derived from the type meme's
- *   pranala edge list (not from class hierarchy — there is none).
+ *   pranala edge list — class hierarchy expressed as `control:implements` edges.
  *
  *   Two identity layers per instance (both tiddlers in the room doc):
  *     lar:///type-path#name-fragment  — user-selected friendly name (human label)
@@ -54,27 +64,46 @@ import { parseMemeEdges } from "./meme-ast/index.js";
 // ---------------------------------------------------------------------------
 
 /**
- * A named `listenable` event this kumu device EMITS (Verse OUTPUT pin).
- * In Verse: `OnActivated : listenable([]void) = event[]void{}`
- * Others subscribe to this event; declared via `reaction:listenable` pranala edges.
+ * A named output event this kumu device EMITS (Verse OUTPUT pin).
+ *
+ * `verseKind` distinguishes the two Verse event types:
+ *   "listenable" — implements awaitable + subscribable; DEB-wireable in UEFN editor
+ *   "event"      — implements signalable + awaitable only; NOT subscribable via Subscribe();
+ *                  custom user-declared events (`MyEvent : event() = event(){}`) land here
+ *
+ * When absent, treat as "listenable" (built-in device events, the common case).
+ *
+ * Declared via `reaction:listenable` pranala edges on the kumu type meme.
  * e.g. "OnActivated", "OnDamaged", "OnExploded"
  */
 export interface KumuListenable {
   /** Event name — e.g. "OnActivated", "OnDamaged", "OnReset". */
   readonly name: string;
   readonly description?: string;
+  /** Verse event type: "listenable" supports Subscribe(); "event" supports Await()/Signal() only. */
+  readonly verseKind?: "listenable" | "event";
+  /** Verse payload type string (e.g. "agent", "int", "[]void"). Absent = void payload. */
+  readonly payloadType?: string;
 }
 
 /**
- * A named subscribable function this kumu device EXPOSES (Verse INPUT function pin).
- * In Verse: `Enable()<suspends>` decorated with `@subscribes`.
- * Others call this function by wiring their listenable to it; declared via `reaction:subscribable` pranala edges.
+ * A named input function this kumu device EXPOSES (Verse INPUT function pin).
+ *
+ * In Verse: a public method on the device class whose signature matches the wired listenable's
+ * payload type. `@subscribes` decorator appears in older docs but current UEFN uses public
+ * method matching by signature — any public method of matching arity serves as an input pin.
+ *
+ * Declared via `reaction:subscribable` pranala edges on the kumu type meme.
  * e.g. "Enable", "Disable", "SetDamage"
  */
 export interface KumuSubscribable {
   /** Handler name — e.g. "Enable", "Disable", "SetDamage". */
   readonly name: string;
   readonly description?: string;
+  /** Verse parameter type string matching the connected listenable's payload. Absent = void. */
+  readonly payloadType?: string;
+  /** Verse effect specifiers on this function (e.g. ["suspends"], ["decides", "transacts"]). */
+  readonly effects?: readonly string[];
 }
 
 // ---------------------------------------------------------------------------
@@ -87,11 +116,13 @@ export interface KumuSubscribable {
  * Derived from the type meme's pranala edge list — not from a class hierarchy.
  *
  *   listenables   ← `reaction:listenable` edges where `fromUri === typeUri`
- *                  payload.listenable = event name (Verse `listenable` OUTPUT pin)
+ *                  payload.listenable = event name; payload.verseKind = "listenable"|"event";
+ *                  payload.payloadType = Verse type string
  *   subscribables ← `reaction:subscribable` edges where `fromUri === typeUri`
- *                  payload.subscribable = handler name (Verse `@subscribes` INPUT pin)
- *   slots        ← ahu socket URIs declared within the type meme (Verse `@editable`)
- *   traits       ← `control:implements` edges out of the type meme (Verse `using` trait)
+ *                  payload.subscribable = handler name; payload.payloadType = Verse type string;
+ *                  payload.effects = space-separated Verse effect specifiers
+ *   slots        ← ahu socket URIs declared within the type meme (Verse `@editable` fields)
+ *   traits       ← `control:implements` edges out of the type meme (Verse class inheritance chain)
  */
 export interface KumuDeviceSpec {
   /** Canonical type URI (no fragment). e.g. `lar:///sdm/devices/button` */
@@ -173,16 +204,31 @@ export function kumuDeviceSpecFromEdges(
     if (e.fromUri !== typeUri) continue;
 
     if (e.family === "reaction") {
-      const desc = e.payload["description"] as string | undefined;
+      const s = (k: string) => (typeof e.payload[k] === "string" ? e.payload[k] as string : undefined);
 
       if (e.role === "listenable") {
-        // OUTPUT pin — listenable event this device emits (Verse `listenable`)
-        const name = e.payload["listenable"] as string | undefined;
-        if (name) listenables.push(desc ? { name, description: desc } : { name });
+        const name = s("listenable");
+        if (name) {
+          const vk = s("verseKind");
+          const desc = s("description"); const pt = s("payloadType");
+          const entry: KumuListenable = { name };
+          if (desc) (entry as { description?: string }).description = desc;
+          if (vk === "event" || vk === "listenable") (entry as { verseKind?: "listenable" | "event" }).verseKind = vk;
+          if (pt)   (entry as { payloadType?: string }).payloadType = pt;
+          listenables.push(entry);
+        }
       } else if (e.role === "subscribable") {
-        // INPUT pin — subscribable function this device exposes (Verse `@subscribes`)
-        const name = e.payload["subscribable"] as string | undefined;
-        if (name) subscribables.push(desc ? { name, description: desc } : { name });
+        const name = s("subscribable");
+        if (name) {
+          const efxRaw = s("effects");
+          const effects = efxRaw ? efxRaw.split(/\s+/).filter(Boolean) : undefined;
+          const desc = s("description"); const pt = s("payloadType");
+          const entry: KumuSubscribable = { name };
+          if (desc)           (entry as { description?: string }).description = desc;
+          if (pt)             (entry as { payloadType?: string }).payloadType = pt;
+          if (effects?.length)(entry as unknown as { effects?: string[] }).effects = effects;
+          subscribables.push(entry);
+        }
       }
       // roles: observes, throttles, debounces — not reflected in spec
     }

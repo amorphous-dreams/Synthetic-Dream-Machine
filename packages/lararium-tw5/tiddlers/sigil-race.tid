@@ -1,13 +1,13 @@
 title: lar:///ha.ka.ba/@lararium/tw5/tiddlers/sigil-race
 tags: $:/tags/Global lar:///ha.ka.ba/tags/SharktoothSigil
 lar-kind: concurrency-alias
-lar-pono-uri: lar:///ha.ka.ba/@lares/api/v0.1/pono/puka
-lar-alias-for: puka
-lar-see-also: puka
+lar-pono-uri: lar:///ha.ka.ba/@lares/api/v0.1/pono/holo
+lar-alias-for: holo
+lar-see-also: holo
 lar-open-pattern: <<~\s*\\race\s*>>
 lar-close-pattern: <<~\/\\race\s*>>
 type: text/vnd.tiddlywiki
 
-<!-- \race — English alias for puka (race-until-first); corrects prior TOML error that mapped \race to heihei.
-     heihei = conditional evaluation; puka = concurrency racing. Parser maps to puka. -->
+<!-- \race — English alias for holo (cancelling race; Verse `race`); first wins, all losers cancel.
+     Distinct from \rush (puka): losers in puka continue in background. Parser maps to holo. -->
 

@@ -74,6 +74,13 @@ export const BOOTSTRAP_SCANS: SigilScan[] = [
   { sigilName: "pono",    regex: /<<~\s*pono\s+(#[\w-]+\s+)?(\S+)\s*->\s*(\S+)(?:\s+role:([\w-]+))?\s*>>/g, eventType: "leaf" },
   { sigilName: "\\constraint", canonicalName: "pono", regex: /<<~\s*\\constraint\s+(#[\w-]+\s+)?(\S+)\s*->\s*(\S+)(?:\s+role:([\w-]+))?\s*>>/g, eventType: "leaf" },
   { sigilName: "lele",    regex: /<<~\s*lele\s+(\S+)\s*>>/g,               eventType: "leaf" },
+  // Concurrency (runtime pending — grammar registration)
+  { sigilName: "hui",   regex: /<<~\s*hui\s*>>/g,                          eventType: "open"  },
+  { sigilName: "hui",   regex: /<<~\/hui\s*>>/g,                           eventType: "close" },
+  { sigilName: "holo",  regex: /<<~\s*holo\s*>>/g,                        eventType: "open"  },
+  { sigilName: "holo",  regex: /<<~\/holo\s*>>/g,                         eventType: "close" },
+  { sigilName: "puka",  regex: /<<~\s*puka\s*>>/g,                        eventType: "open"  },
+  { sigilName: "puka",  regex: /<<~\/puka\s*>>/g,                         eventType: "close" },
   { sigilName: "papalohe", regex: /<<~\s*papalohe\s+(#[\w-]+\s+)?(\S+)\s*->\s*(\S+)(?:\s+listenable:([\w.-]+))?(?:\s+subscribable:([\w.-]+))?\s*>>/g, eventType: "leaf" },
   // TOML data block
   { sigilName: "toml", regex: /```toml(?:[ \t]+([A-Za-z0-9_-]+))?[ \t]*\n([\s\S]*?)```/g,  eventType: "leaf" },

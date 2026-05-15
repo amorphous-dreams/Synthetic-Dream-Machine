@@ -1,0 +1,13 @@
+title: lar:///ha.ka.ba/@lararium/tw5/tiddlers/sigil-holo
+tags: $:/tags/Global lar:///ha.ka.ba/tags/SharktoothSigil
+lar-kind: concurrency
+lar-pono-uri: lar:///ha.ka.ba/@lares/api/v0.1/pono/holo
+lar-see-also: \race
+lar-open-pattern: <<~\s*holo\s*>>
+lar-close-pattern: <<~\/holo\s*>>
+type: text/vnd.tiddlywiki
+
+<!-- holo — cancelling race; first branch to complete wins, all others cancel immediately.
+     Verse equivalent: race. Distinct from puka (rush), where losers continue in background.
+     Concurrency runtime pending (async-first sprint). Grammar registration only. -->
+

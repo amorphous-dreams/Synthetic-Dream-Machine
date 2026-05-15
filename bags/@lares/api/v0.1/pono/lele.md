@@ -22,8 +22,12 @@ diving). The motion is unconditional — the body commits to the arc without wai
 A fire-and-forget dispatch sigil. Emits a message-family edge and continues without waiting for
 the target's response. English alias: `\branch`.
 
-Distinct from Verse `branch` (cancellable speculative fiber). `lele` sends unconditionally —
-the message travels whether or not the receiver acknowledges.
+Verse equivalent: `spawn` — unstructured detached fiber, not scope-bound. Distinct from Verse
+`branch`, which scopes to the enclosing function and cancels automatically when that function
+returns. `lele` matches `spawn` semantics: the message flies free of the sender's lifetime.
+The English alias `\branch` remains for operator familiarity, but the precise Verse analogue
+is `spawn`. When Verse adds `branch`-style scoped spawn to the grammar surface, a distinct
+`\scope-branch` alias will follow.
 
 Concurrency runtime pending (async-first sprint). Current tiddler registers grammar only.
 

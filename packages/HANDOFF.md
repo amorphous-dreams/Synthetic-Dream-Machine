@@ -1,6 +1,6 @@
 # Lares Handoff — Active Work Only
 
-> Updated: 2026-05-14 (turn 4)
+> Updated: 2026-05-15 (turn 5)
 > Branch: `feature/lararium-node-4`
 > Last sprint archive: `wikis/lares-history/last-sprint/`
 
@@ -15,20 +15,80 @@ plugin-tiddler boot, sigil cascade architecture, save-side split, recursive
 child co-promotion, Node VM / worker-thread lift, full sigils-as-wikitext
 sprint (T-1 wikirule collapse, URI fragment resolution, ahu.ts retirement,
 deserializer root-iam fix, build pipeline clear-before-rebuild),
-SharktoothSigil grammar inversion + aka/kahea mode= collapse sprint, AND the
-lar:-URI namespace + mode= retirement + English alias sigil sprint
-(see "What Changed This Turn (turn 4)") are treated as landed unless tests prove drift.
+SharktoothSigil grammar inversion + aka/kahea mode= collapse sprint,
+lar:-URI namespace + mode= retirement + English alias sigil sprint, AND the
+concurrency sigil cluster + grammar self-hosting + kumu-device UEFN alignment
+sprint (see "What Changed This Turn (turn 5)") are treated as landed unless
+tests prove drift.
 
 Next work, in order:
-1. Path K / F-arc: TW5 routing rules + 300–500ms debounce + projection
+1. UEFN scene importer — .verse class defs + .umap instance placements + DEB
+   wires → Automerge bag of tiddlers + pranala edges. Spec: bags/@lares/api/v0.1/pono/uefn-scene.md.
+2. Path K / F-arc: TW5 routing rules + 300–500ms debounce + projection
    auto-truncate.
-2. Path L / S7.4: admin-doc ingress trust gate via Keyhive cap=infrastructure.
-3. Path G.SharktoothSigil: migrate remaining 48 TOML sigil blocks to native
-   SharktoothSigil wikitext tiddlers; talk-story per sigil category.
+3. Path L / S7.4: admin-doc ingress trust gate via Keyhive cap=infrastructure.
 
 Rules: preserve TW5 VM primacy, bag=Automerge-doc=sync-boundary, no HTTP/RPC
-coordination surface, and explicit operator promotion for canon.
+coordination surface, and explicit operator promotion for canon. Web3 only —
+no web2 models/code/flows in Lares stack.
 ```
+
+## What Changed This Turn (2026-05-15 turn 5)
+
+### Concurrency Sigil Cluster + Grammar Self-Hosting + kumu-device UEFN Alignment
+
+**New pono specs (bags/@lares/api/v0.1/pono/):**
+- `hui.md` — await-all sync (`sync`); MUST spawn all, MUST NOT resume until all complete.
+- `holo.md` — cancelling race (`race`); first wins, all losers cancel immediately.
+  English alias: `\race`. Distinct from `puka/\rush` (no-cancel).
+- `uefn-scene.md` — architecture spec: 3 tiddler kinds (type meme, instance meme, scene meme)
+  + edge vocabulary + TW5 filter views + Verse effect specifier → sigil mapping.
+  Import pipeline declared unresolved (pending sprint).
+
+**New/updated SharktoothSigil tiddlers (packages/lararium-tw5/tiddlers/):**
+- `sigil-lele.tid` — detached spawn; `lar-kind: concurrency`; Verse `spawn`.
+- `sigil-hui.tid` — await-all; `lar-kind: concurrency`; Verse `sync`.
+- `sigil-puka.tid` — first-wins no-cancel; `lar-kind: concurrency`; Verse `rush`. Comment corrected.
+- `sigil-holo.tid` — NEW; cancelling race; `lar-kind: concurrency`; Verse `race`.
+- `sigil-race.tid` — NEW; `lar-kind: concurrency-alias`; `lar-alias-for: holo` (corrected from puka).
+- `sigil-rush.tid` — `lar-kind: concurrency-alias`; `lar-alias-for: puka`.
+- `sigil-sync.tid` — `lar-kind: concurrency-alias`; `lar-alias-for: hui`.
+- 8 `sigil-family-*.tid` — `lar-kind: family`; tiddlerizes all 8 edge-family contracts.
+
+**Grammar self-hosting complete (memetic-wikitext.tid):**
+- Removed 6 concurrency `[[sigils]]` TOML blocks (lele, hui, puka, \sync, \race, \rush).
+- Removed entire `[[families]]` TOML fence (8 family definitions).
+- Final state: 1 `[[sigils]]` block (the permanent `toml` data fence). 0 `[[families]]` blocks.
+- Wild-magic property holds: grammar = SharktoothSigil tiddlers only.
+
+**`grammar-cache.ts` — `FamilyRule` tiddlerization:**
+- `familyFromFields()` derives `FamilyRule` from `lar-kind: family` tiddlers.
+- `sigilFromFields()` short-circuits on `lar-kind === "family"`.
+- `buildGrammarFromWiki()` partitions tiddlers into sigils and families; merges with TOML fallback.
+
+**`kumu-device.ts` — UEFN 5.6+ alignment:**
+- `KumuListenable.verseKind?: "listenable" | "event"` — `event(T)` vs `listenable(T)` distinction.
+- `KumuListenable.payloadType?: string` — Verse type string for the event payload.
+- `KumuSubscribable.payloadType?: string` — payload type for DEB wiring.
+- `KumuSubscribable.effects?: readonly string[]` — Verse effect specifiers (`<suspends>`, `<decides>`, etc.).
+- Doc comment corrected: `using { /Path }` = module import, not trait composition.
+
+**`scanner.ts` yin pass + concurrency additions:**
+- `wai` BOOTSTRAP_SCANS removed (retired sigil). `\if → heihei` canonicalName corrected.
+- `hui`, `holo`, `puka` open/close scans added to BOOTSTRAP_SCANS.
+
+**`builder.ts` yin pass:**
+- `case "wai"` removed; `case "heihei"` and `case "kahawai"` handle conditional filter extraction.
+
+**`pranala-families.md` — back-edges added:**
+- 8 `<<~ pranala #tiddler-sigil-family-{name} >>` edges to all family tiddlers.
+
+**Build:** All tests pass. Grammar fully self-hosted in SharktoothSigil tiddlers.
+
+**Verse doc URI (from internal research):**
+- `dev.epicgames.com/documentation/en-us/fortnite` — UEFN/Verse official docs root.
+
+---
 
 ## What Changed This Turn (2026-05-14 turn 4)
 

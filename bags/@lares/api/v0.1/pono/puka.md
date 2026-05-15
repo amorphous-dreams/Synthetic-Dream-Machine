@@ -7,7 +7,7 @@ file-path = "bags/@lares/api/v0.1/pono/puka.md"
 type      = "text/x-memetic-wikitext"
 confidence = 0.75
 register  = "S"
-role      = "race-until-first sigil — puka as the gap, the opening; English alias: \\rush; async-first concurrency sprint pending"
+role      = "first-through-the-opening sigil — puka as the gap; Verse rush: first wins, losers continue in background; English alias: \\rush; async-first concurrency sprint pending"
 cacheable = true
 retain    = true
 ```
@@ -17,16 +17,19 @@ retain    = true
 # Puka
 
 *puka* — Hawaiian: hole, opening, gap; doorway, exit. A puka marks where passage happens — the
-first thing through the opening wins. Everything still in motion behind it stops.
+first thing through the opening wins. The others keep moving; they simply no longer determine
+the outcome.
 
-A race-until-first sigil. The body of a puka block spawns parallel flows; the first flow to
-complete cancels all remaining flows and its result propagates outward. English alias: `\rush`.
+A first-through-the-opening sigil. The body of a puka block spawns parallel flows; the first
+flow to complete yields the result and the block continues — but the remaining flows run on in
+the background without cancellation. English alias: `\rush`.
 
-Verse equivalent: `rush` — parallel branches race; first settler wins; others cancel.
+Verse equivalent: `rush` — parallel branches race; first settler wins; losers continue running
+in background. Distinct from `race` (which cancels losers immediately). See `holo` for the
+cancelling-race form.
 
-Note: the English alias `\race` previously appeared in the TOML registry mapping to heihei
-(conditional). That mapping carried a semantic error. `\race` now maps correctly to `puka`.
-Heihei names conditional evaluation; puka names concurrency racing.
+The puka metaphor holds: when a fish finds the gap in the net, it passes through. The net
+remains open — the others may pass through later or not. The outcome already settled.
 
 Concurrency runtime pending (async-first sprint). Current tiddler registers grammar only.
 
@@ -38,10 +41,11 @@ Concurrency runtime pending (async-first sprint). Current tiddler registers gram
 
 ## Law (Kānāwai)
 
-A puka block MUST spawn all child flows before any race begins.
-A puka block MUST cancel all remaining child flows when the first one completes.
-A puka block MUST propagate the winning result as the block's output.
+A puka block MUST spawn all child flows before any result lands.
+A puka block MUST propagate the first completing flow's result as the block's output.
+A puka block MUST NOT cancel remaining flows — they continue running in background.
 A puka block MUST NOT resume the containing flow until one child flow completes.
+A puka block MUST NOT appear directly inside a `huli` (`\for`) iteration body.
 
 <<~/ahu >>
 
@@ -69,7 +73,7 @@ A puka block MUST NOT resume the containing flow until one child flow completes.
 
 <<~ pranala #tiddler-sigil-puka ? -> lar:///ha.ka.ba/@lararium/tw5/tiddlers/sigil-puka family:control role:implements >>
 <<~ pranala #tiddler-sigil-rush ? -> lar:///ha.ka.ba/@lararium/tw5/tiddlers/sigil-rush family:control role:alias >>
-<<~ pranala #tiddler-sigil-race ? -> lar:///ha.ka.ba/@lararium/tw5/tiddlers/sigil-race family:control role:alias >>
+<<~ pranala #to-holo ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/holo family:relation role:contrast >>
 
 <<~/ahu >>
 

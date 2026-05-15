@@ -1,6 +1,6 @@
 # Lares Active Roadmap — Outstanding Work Only
 
-> Updated: 2026-05-14 (turn 4)
+> Updated: 2026-05-15 (turn 5)
 > Branch: `feature/lararium-node-4`
 > Archive source: `wikis/lares-history/last-sprint/{HANDOFF,SESSION,ROADMAP}.md`
 
@@ -23,11 +23,15 @@ build pipeline clear-before-rebuild, the SharktoothSigil grammar
 inversion sprint (grammar-cache.ts reads `lar:///ha.ka.ba/tags/SharktoothSigil`
 tiddlers, `BLOCK_CLOSERS` shrunk to 3, `GRAMMAR_NAME_MAP` retired,
 `closePatternToTag()` added, 7 sigil TOML blocks removed, `sigil-kau.tid`
-created), **and** the lar:-URI namespace + mode= retirement + English alias
+created), the lar:-URI namespace + mode= retirement + English alias
 sprint (`mode=` retired from all sigil procedures; `$:/tags/Lar/*` →
 `lar:///ha.ka.ba/tags/*`; `sigil-procedure/define/widget/function/if/for.tid`
 created with `lar-see-also` cross-refs to Hawaiian equivalents; pono defs
-for `ahu`, `wehe`, `heihei`, `huli`, `procedure`, `if`, `for` authored).
+for `ahu`, `wehe`, `heihei`, `huli`, `procedure`, `if`, `for` authored),
+**and** the concurrency cluster + grammar self-hosting + kumu-device UEFN
+alignment sprint (hui/holo/puka/lele sigils + 8 family tiddlers; TOML monolith
+shrunk to 1 block; `FamilyRule` tiddlerization in grammar-cache.ts; `KumuListenable.verseKind`
++ `KumuSubscribable.effects`; `uefn-scene.md` architecture spec authored).
 
 Do not re-open those arcs unless a test proves drift.
 
@@ -39,6 +43,8 @@ Do not re-open those arcs unless a test proves drift.
 | — | **~ahu** | ✅ Done | `ahu.ts` retired to `sigil-ahu.tid`; only `kau` remains as JS widget. |
 | — | **SharktoothSigil inversion** | ✅ Done | `grammar-cache.ts` reads `lar:///ha.ka.ba/tags/SharktoothSigil` tiddler fields; 7 TOML blocks removed. |
 | — | **lar: URI + mode= retirement** | ✅ Done | `$:/tags/Lar/*` → `lar:///ha.ka.ba/tags/*`; `mode=` retired from all sigil procedures; English alias sigils + pono defs authored. |
+| — | **Concurrency cluster + grammar self-hosting** | ✅ Done | hui/holo/puka/lele + 8 family tiddlers; TOML monolith = 1 block; wild-magic property holds. |
+| 1 | **UEFN scene importer** | ⬜ Next | .verse class defs + .umap placements + DEB wires → bag of tiddlers + edges. Spec: `bags/@lares/api/v0.1/pono/uefn-scene.md`. |
 | 2 | **K / F-arc** | ⬜ Next | TW5 save routing, debounce, projection hygiene for sustained editing. |
 | 3 | **L / S7.4** | ⬜ Next | Admin-doc ingress trust gate: operator devices with `cap=infrastructure` only. |
 | 4 | **G.SharktoothSigil** | ⬜ Next | Migrate remaining 48 TOML sigil blocks → SharktoothSigil tiddlers. Talk-story per category. |
