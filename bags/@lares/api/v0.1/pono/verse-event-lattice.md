@@ -11,11 +11,11 @@ mana        = 0.90
 manao       = 0.88
 manaoio     = 0.86
 tagspace    = "stable"
-role        = "invariant doctrine: UEFN Verse 5.6 event type lattice — event/listenable asymmetry, suspends effect specifier, @editable boundary, using module import; standard for Lararium device model"
+role        = "invariant doctrine: UEFN Verse 5.6 event type lattice — event/listenable asymmetry, suspends effect specifier, @editable boundary, using module import; unreleased: sticky_event + subscribable_event; standard for Lararium device model"
 cacheable   = true
 retain      = true
 invariant   = true
-status-date = "2026-05-02"
+status-date = "2026-05-15"
 ```
 
 <<~&#x0002;>>
@@ -302,6 +302,59 @@ The engine-vended boundary: `listenable(t)` carries `control:implements` edges t
 `awaitable(t)` and `subscribable(t)` in the type graph. User code may declare
 `control:implements → listenable(t)` edges on custom type memes to signal DEB-wiring
 intent, but built-in device events own `listenable(t)` fields by engine contract.
+
+<<~/ahu >>
+
+<<~ ahu #unreleased-event-types >>
+
+## Unreleased Event Types (Confirmed, Not Yet Shipped)
+
+Two additional event types appear in the Book of Verse but have not shipped in UEFN:
+
+### sticky_event(t)
+
+```verse
+sticky_event(t:type) := class<final>:
+    Signal(Payload:t):void = ...
+    Await()<suspends>:t = ...
+```
+
+Extends `event(t)` semantics with **retained last signal**: after the first Signal,
+all subsequent Await() calls receive the cached last value immediately without
+suspending. A subscriber who arrives after the event has fired still gets the result.
+
+Compare to `event(t)` which consumes each signal exactly once — if no awaiter is
+present when Signal() fires, the signal is dropped.
+
+**Lararium implication:** `sticky_event` maps to "remember last value" semantics —
+useful for device state that late-joining agents need to catch up to.
+
+### subscribable_event(t)
+
+Observer pattern — one signal invokes ALL subscribed handlers:
+
+```verse
+subscribable_event(t:type) := class<final>:
+    Signal(Payload:t):void = ...
+    Await()<suspends>:t = ...
+    Subscribe(Callback:(t):void):cancelable = ...
+```
+
+Combines signalable + awaitable + subscribable. Subscribe() returns a `cancelable`
+(unsubscribe handle). Multiple subscribers receive every signal.
+
+**Critical:** The `cancelable` returned by Subscribe() is an **unsubscribe handle**,
+NOT a `task(t)`. Same `cancelable` interface, different semantic role.
+
+**Lararium implication:** `subscribable_event` maps to the TW5
+`wiki.addEventListener("change", handler)` pattern exactly. The teardown function
+returned by `registerProjectionBus()` is the cancelable equivalent.
+
+### Status guidance
+
+Until these types ship, model them as `event(t)` + manual subscription patterns.
+The ReactionEngine fiber model already implements subscribable_event semantics
+via TW5's own event bus.
 
 <<~/ahu >>
 

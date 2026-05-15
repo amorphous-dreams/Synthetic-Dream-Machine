@@ -135,10 +135,12 @@ They fall into eight families:
 - `hana` / `\task` — bounded guest-grammar block; grammar-key selects the interpreter
 
 **Concurrency sigils** (async cluster; sprint pending):
-- `lele` / `\branch` — structured fire-and-continue dispatch; Verse branch without waiting
-- `hui` / `\sync` — await-all synchronization; every branch must complete
-- `puka` / `\rush` — race-until-first; first completion cancels the rest
+- `lele` / `\branch` — structured fire-and-continue dispatch; Verse branch; bounded by enclosing scope
+- `hui` / `\sync` — await-all join; every child flow must complete before continuing
+- `holo` / `\race` — cancelling race; first wins, all losers and their subtrees cancelled recursively
+- `puka` / `\rush` — selecting race; first wins, losers continue until enclosing scope exits
 - `kukali` / `\suspends` — wait-until-trigger; parks the causal island
+- `hoolele` / `\spawn` — unstructured escape hatch; new independent task root (stub, sprint pending)
 
 **Infrastructure**:
 - `sigil-dispatcher` — the `~` root dispatch widget; routes `<<~ name >>` to `\widget ~name`
@@ -215,7 +217,7 @@ The SharktoothSigil grammar draws vocabulary from five distinct language familie
 
 **English (computing + TW5 pragmas)** — 24 alias forms carry the English computing vocabulary that TW5 authors and general programmers already know: `\procedure`, `\function`, `\widget`, `\define`, `\if`, `\elif`, `\else`, `\for`, `\task`, `\type`, `\const`, `\let`, `\var`, `\link`, `\shadow`, `\transclude`, `\import`, `\tiddler`, `\query`, `\branch`, `\sync`, `\race`, `\rush`, `\guard`, `\constraint`, `\suspends`. These aliases lower the entry barrier for operators who author in English and let TW5-native macro patterns migrate naturally into the sigil grammar.
 
-**Verse / Unreal Engine** — the concurrency cluster (*lele*, *hui*, *puka*) and their English aliases (`\branch`, `\sync`, `\rush`) map directly to Verse's async primitives: fire-and-forget spawn, await-all synchronization, and race-until-first cancellation. This alignment makes Lares concurrency legible to Verse developers and positions the grammar for cross-VM execution on Unreal Engine.
+**Verse / Unreal Engine** — the concurrency cluster (*lele*, *hui*, *holo*, *puka*, *hoolele*) and their English aliases (`\branch`, `\sync`, `\race`, `\rush`, `\spawn`) map directly to Verse's five async primitives: structured fire-and-continue (branch), await-all join (sync), cancelling race (race), selecting race (rush), and unstructured escape hatch (spawn). The execution model forms a **task tree** — cancellation cascades downward; `spawn` / `\spawn` is the only way to exit the tree. This alignment makes Lares concurrency legible to Verse developers and positions the grammar for cross-VM execution on Unreal Engine. See `verse-task-tree` for the canonical topology spec.
 
 The grammar accepts all five families equally. The parse result for a Hawaiian sigil and its English alias produces identical AST nodes. The pono spec for each canonical form carries `lar-see-also` cross-references into every alias. Language choice in authoring carries cultural signal; parse result carries none.
 

@@ -5,9 +5,9 @@
 uri-path  = "ha.ka.ba/@lares/api/v0.1/pono/puka"
 file-path = "bags/@lares/api/v0.1/pono/puka.md"
 type      = "text/x-memetic-wikitext"
-confidence = 0.75
+confidence = 0.82
 register  = "S"
-role      = "first-through-the-opening sigil — puka as the gap; Verse rush: first wins, losers continue in background; English alias: \\rush; async-first concurrency sprint pending"
+role      = "first-through-the-opening sigil — puka as the gap; Verse rush: first wins, losers continue until enclosing scope exits (NOT cancelled by winner); English alias: \\rush; async-first concurrency sprint pending"
 cacheable = true
 retain    = true
 ```
@@ -43,7 +43,8 @@ Concurrency runtime pending (async-first sprint). Current tiddler registers gram
 
 A puka block MUST spawn all child flows before any result lands.
 A puka block MUST propagate the first completing flow's result as the block's output.
-A puka block MUST NOT cancel remaining flows — they continue running in background.
+A puka block MUST NOT cancel remaining flows when the winner lands — they continue in background.
+A puka block MUST cancel remaining flows when the enclosing async context (function scope) exits.
 A puka block MUST NOT resume the containing flow until one child flow completes.
 A puka block MUST NOT appear directly inside a `huli` (`\for`) iteration body.
 
@@ -74,6 +75,7 @@ A puka block MUST NOT appear directly inside a `huli` (`\for`) iteration body.
 <<~ pranala #tiddler-sigil-puka ? -> lar:///ha.ka.ba/@lararium/tw5/tiddlers/sigil-puka family:control role:implements >>
 <<~ pranala #tiddler-sigil-rush ? -> lar:///ha.ka.ba/@lararium/tw5/tiddlers/sigil-rush family:control role:alias >>
 <<~ pranala #to-holo ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/holo family:relation role:contrast >>
+<<~ pranala #to-verse-task-tree ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/verse-task-tree family:relation role:governed-by >>
 
 <<~/ahu >>
 

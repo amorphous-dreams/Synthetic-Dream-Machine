@@ -7,7 +7,8 @@ lar-open-pattern: <<~\s*holo\s*>>
 lar-close-pattern: <<~\/holo\s*>>
 type: text/vnd.tiddlywiki
 
-<!-- holo — cancelling race; first branch to complete wins, all others cancel immediately.
-     Verse equivalent: race. Distinct from puka (rush), where losers continue in background.
+<!-- holo — cancelling race; first branch to complete wins.
+     Cancellation cascades recursively: each losing arm AND all tasks those arms created are cancelled.
+     Verse equivalent: race. Distinct from puka (rush), where losers continue until enclosing scope exits.
      Concurrency runtime pending (async-first sprint). Grammar registration only. -->
 

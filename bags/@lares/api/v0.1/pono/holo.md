@@ -5,9 +5,9 @@
 uri-path  = "ha.ka.ba/@lares/api/v0.1/pono/holo"
 file-path = "bags/@lares/api/v0.1/pono/holo.md"
 type      = "text/x-memetic-wikitext"
-confidence = 0.75
+confidence = 0.82
 register  = "S"
-role      = "cancelling-race sigil — holo as full sprint; Verse race: first wins, losers cancelled; English alias: \\race; async-first concurrency sprint pending"
+role      = "cancelling-race sigil — holo as full sprint; Verse race: first wins, losers and their entire subtrees cancelled recursively; English alias: \\race; async-first concurrency sprint pending"
 cacheable = true
 retain    = true
 ```
@@ -41,6 +41,7 @@ Concurrency runtime pending (async-first sprint). Current tiddler registers gram
 
 A holo block MUST spawn all child flows before any result lands.
 A holo block MUST cancel all remaining child flows when the first one completes.
+A holo block MUST cancel the entire subtree of each losing arm — not just direct children — recursively.
 A holo block MUST propagate the winning result as the block's output.
 A holo block MUST NOT resume the containing flow until one child flow completes.
 
@@ -71,6 +72,7 @@ A holo block MUST NOT resume the containing flow until one child flow completes.
 <<~ pranala #tiddler-sigil-holo ? -> lar:///ha.ka.ba/@lararium/tw5/tiddlers/sigil-holo family:control role:implements >>
 <<~ pranala #tiddler-sigil-race ? -> lar:///ha.ka.ba/@lararium/tw5/tiddlers/sigil-race family:control role:alias >>
 <<~ pranala #to-puka ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/puka family:relation role:contrast >>
+<<~ pranala #to-verse-task-tree ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/verse-task-tree family:relation role:governed-by >>
 
 <<~/ahu >>
 

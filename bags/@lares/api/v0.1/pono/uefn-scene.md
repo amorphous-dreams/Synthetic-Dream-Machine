@@ -159,15 +159,28 @@ works in any Lararium peer: browser, Node server, TW5 wiki.
 
 ## Verse Effect Specifiers in the Graph
 
-Verse effect specifiers on device functions carry semantic meaning in the graph:
+Verse effects are a **bit-vector** (6 families) propagated upward through call chains.
+Effect specifiers on device functions carry semantic meaning in the Lararium graph:
 
-| Specifier | Lararium role | Sigil analogue |
-|---|---|---|
-| `<suspends>` | INPUT handler suspends (async) | `kukali` wait posture on subscribable |
-| `<decides>` | handler failable (returns option) | `heihei` conditional filter |
-| `<transacts>` | handler participates in rollback | `pono` correctness assertion edge |
-| `<computes>` | pure function; no side effects | `aka` observe-family (frozen read) |
-| `<no_rollback>` | side effects survive failure | kapu-layer marker |
+| Family | Specifier | Lararium role | Sigil analogue |
+|---|---|---|---|
+| Suspension | `<suspends>` | INPUT handler is async; may yield | `kukali` wait posture on subscribable |
+| Cardinality | `<decides>` | handler is failable (zero or one result) | `heihei` conditional filter |
+| Heap | `<transacts>` | handler reads/writes/allocates; rollback-eligible | `pono` correctness assertion edge |
+| Purity | `<computes>` | pure function; no side effects; safe to parallelize | `aka` observe-family (frozen read) |
+| Divergence | `<converges>` | handler guaranteed to terminate | (future annotation) |
+| Prediction | `<predicts>` | deterministic prediction context | (future annotation) |
+
+**`<no_rollback>` (deprecated):** side effects survive failure; kapu-layer marker.
+
+**`spawn` hides `<suspends>`:** A `spawn` expression absorbs the `<suspends>` effect
+of the spawned function. The calling context does NOT need `<suspends>`. This is the
+formal mechanism that makes `spawn` an unstructured escape from the task tree. See
+`verse-task-tree` for the tree-topology consequence.
+
+**Safe parallelism rule:** Functions without `<writes>` can execute in parallel
+without locks. Use `<computes>` or `<reads>` specifiers on subscribable handlers
+to signal parallelism-safety in the graph.
 
 These specifiers appear in `KumuSubscribable.effects` and in `reaction:subscribable`
 pranala edge payloads. They feed future Verse code generation from the graph.
