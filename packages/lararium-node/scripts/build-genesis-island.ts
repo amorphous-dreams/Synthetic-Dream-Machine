@@ -20,11 +20,11 @@
  */
 
 import * as Automerge            from "@automerge/automerge";
-import { createHash }            from "crypto";
 import { readFileSync, writeFileSync, mkdirSync, readdirSync, existsSync } from "fs";
 import { join, dirname, basename } from "path";
 import { fileURLToPath }         from "url";
 
+import { cidV1Sha256, sha256HexBytesSync, utf8Bytes } from "@lararium/core";
 import { TW5Engine }             from "@lararium/tw5";
 import { tw5PluginsRoot } from "@lararium/tw5/tw5-memes-root";
 import { TW5_VERSION, TW5_CORE_SCRIPT_FILENAME, TW5_CORE_DIR } from "@lararium/tw5";
@@ -73,9 +73,6 @@ function findBagMemeRoots(): string[] {
   return existsSync(BAGS_ROOT) ? [BAGS_ROOT] : [];
 }
 
-function sha256hex(bytes: Uint8Array | Buffer): string {
-  return createHash("sha256").update(bytes).digest("hex");
-}
 
 function walkMdFiles(dir: string): string[] {
   const results: string[] = [];
@@ -122,38 +119,49 @@ function readPluginAttestations(): Map<string, PluginBuildAttestation> {
 // in any input propagates to a new actor ID, hence new genesis bytes and CID.
 // ---------------------------------------------------------------------------
 
+function concatBytes(chunks: Uint8Array[]): Uint8Array {
+  const total = chunks.reduce((sum, chunk) => sum + chunk.length, 0);
+  const result = new Uint8Array(total);
+  let offset = 0;
+  for (const chunk of chunks) {
+    result.set(chunk, offset);
+    offset += chunk.length;
+  }
+  return result;
+}
+
 function deriveActorId(tw5CorePath: string): string {
-  const h = createHash("sha256");
+  const chunks: Uint8Array[] = [];
 
   // TW5 core blob
   if (existsSync(tw5CorePath)) {
-    h.update("tw5-core:");
-    h.update(readFileSync(tw5CorePath));
+    chunks.push(utf8Bytes("tw5-core:"));
+    chunks.push(new Uint8Array(readFileSync(tw5CorePath)));
   }
 
   // Canonical bag corpus (sorted for determinism)
   for (const memeRoot of findBagMemeRoots()) {
     for (const f of walkMdFiles(memeRoot)) {
-      h.update(`md:${f}:`);
-      h.update(readFileSync(f));
+      chunks.push(utf8Bytes(`md:${f}:`));
+      chunks.push(new Uint8Array(readFileSync(f)));
     }
   }
 
   // Vendored plugin JSON files (sorted)
   for (const f of walkFiles(tw5PluginsRoot, ".json")) {
-    h.update(`plugin:${f}:`);
-    h.update(readFileSync(f));
+    chunks.push(utf8Bytes(`plugin:${f}:`));
+    chunks.push(new Uint8Array(readFileSync(f)));
   }
 
   // Build attestations are descriptor inputs: they do not change blob bytes,
   // but they do change genesis tiddler metadata and therefore must join the
   // deterministic actor seed.
   for (const f of walkFiles(LARARIUM_TW5_DIST_PLUGIN, ".attestation.json")) {
-    h.update(`attestation:${f}:`);
-    h.update(readFileSync(f));
+    chunks.push(utf8Bytes(`attestation:${f}:`));
+    chunks.push(new Uint8Array(readFileSync(f)));
   }
 
-  return h.digest("hex");
+  return sha256HexBytesSync(concatBytes(chunks));
 }
 
 // ---------------------------------------------------------------------------
@@ -177,7 +185,7 @@ async function main(): Promise<void> {
 
   // 2. Read TW5 core blob.
   const coreBlob  = new Uint8Array(readFileSync(coreJsPath));
-  const coreSha   = sha256hex(coreBlob);
+  const coreSha   = sha256HexBytesSync(coreBlob);
   console.log(`[genesis] TW5 core  v${TW5_VERSION}  sha=${coreSha.slice(0, 12)}…`);
 
   // 3. Collect vendored plugin blobs.
@@ -187,7 +195,7 @@ async function main(): Promise<void> {
     for (const file of readdirSync(tw5PluginsRoot).filter(f => f.endsWith(".json")).sort()) {
       const filePath = join(tw5PluginsRoot, file);
       const blob     = new Uint8Array(readFileSync(filePath));
-      const sha      = sha256hex(blob);
+      const sha      = sha256HexBytesSync(blob);
       let id      = basename(file, ".json");
       let version = "unknown";
       let author: string | undefined;
@@ -389,14 +397,14 @@ async function main(): Promise<void> {
   // 12. Two-pass CID injection.
   //
   //   Pass 1: serialize the doc without the self-ref tiddler → compute sha256-pre.
-  //   Pass 2: inject $:/lararium/genesis-cid tiddler carrying sha256-pre → re-serialize.
+  //   Pass 2: inject $:/lararium/genesis-cid tiddler carrying the final CID → re-serialize.
   //
   //   The invariant: strip the genesis-cid tiddler and hash the result → sha256-pre.
   //   This is verifiable without a true fixpoint and honest about what it proves.
   mkdirSync(GENESIS_DIR, { recursive: true });
 
   const preBytes  = Automerge.save(doc);
-  const preSha    = sha256hex(preBytes);
+  const preSha    = sha256HexBytesSync(preBytes);
   console.log(`[genesis] sha256-pre = ${preSha}`);
 
   const GENESIS_CID_TIDDLER = `${LARARIUM_DOC_URI}/genesis-cid`;
@@ -404,34 +412,50 @@ async function main(): Promise<void> {
     (d.tiddlers as Record<string, unknown>)[GENESIS_CID_TIDDLER] = {
       title:     GENESIS_CID_TIDDLER,
       text:      "",
-      fields:    { sha256: preSha, note: "sha256 of island.bin before this tiddler was added" },
+      fields:    { cid: "", note: "genesis CID placeholder until island.bin is finalized" },
       bag:       LARARIUM_DOC_URI,
       authority: "genesis",
     };
   });
 
   const genesisBytes = Automerge.save(doc);
-  const genesisSha   = sha256hex(genesisBytes);
+  const genesisSha   = sha256HexBytesSync(genesisBytes);
+  const genesisCid   = cidV1Sha256(genesisBytes);
 
-  writeFileSync(join(GENESIS_DIR, "island.bin"),         genesisBytes);
-  writeFileSync(join(GENESIS_DIR, "island.sha256"),      genesisSha + "\n",  "utf8");
+  doc = Automerge.change(doc, { time: 0 }, d => {
+    (d.tiddlers as Record<string, unknown>)[GENESIS_CID_TIDDLER] = {
+      ...(d.tiddlers as Record<string, unknown>)[GENESIS_CID_TIDDLER] as Record<string, unknown>,
+      fields: {
+        cid: genesisCid,
+        note: "CIDv1 raw SHA-256 of island.bin after self-ref tiddler injection",
+      },
+    };
+  });
+
+  const finalGenesisBytes = Automerge.save(doc);
+  const finalGenesisSha   = sha256HexBytesSync(finalGenesisBytes);
+  const finalGenesisCid   = cidV1Sha256(finalGenesisBytes);
+
+  writeFileSync(join(GENESIS_DIR, "island.bin"),         finalGenesisBytes);
+  writeFileSync(join(GENESIS_DIR, "island.sha256"),      finalGenesisSha + "\n",  "utf8");
   writeFileSync(join(GENESIS_DIR, "island.sha256-pre"),  preSha + "\n",      "utf8");
+  writeFileSync(join(GENESIS_DIR, "island.cid"),         finalGenesisCid + "\n",  "utf8");
 
   // 13. Smoke-test: reload and verify core blob + genesis-cid tiddler present.
-  const reloaded = Automerge.load<LarariumDoc>(genesisBytes);
+  const reloaded = Automerge.load<LarariumDoc>(finalGenesisBytes);
   const blobCount    = Object.keys(reloaded.blobs ?? {}).length;
   const tiddlerCount = Object.keys(reloaded.tiddlers ?? {}).length;
   if (!reloaded.blobs?.[ENGINE_CORE_ID]) {
     throw new Error("[genesis] smoke-test FAILED: TW5 core blob not found after reload");
   }
-  const storedCid = (reloaded.tiddlers?.[GENESIS_CID_TIDDLER] as { fields?: { sha256?: string } } | undefined)?.fields?.sha256;
-  if (storedCid !== preSha) {
-    throw new Error(`[genesis] smoke-test FAILED: genesis-cid tiddler sha256 mismatch — stored=${storedCid} expected=${preSha}`);
+  const storedCid = (reloaded.tiddlers?.[GENESIS_CID_TIDDLER] as { fields?: { cid?: string } } | undefined)?.fields?.cid;
+  if (storedCid !== finalGenesisCid) {
+    throw new Error(`[genesis] smoke-test FAILED: genesis-cid tiddler cid mismatch — stored=${storedCid} expected=${finalGenesisCid}`);
   }
 
-  console.log(`[genesis] ✓ island.bin  ${(genesisBytes.byteLength / 1024).toFixed(0)} KB`);
+  console.log(`[genesis] ✓ island.bin  ${(finalGenesisBytes.byteLength / 1024).toFixed(0)} KB`);
   console.log(`[genesis] ✓ blobs=${blobCount}  tiddlers=${tiddlerCount}  systemTitles=${reloaded.systemTitles?.length ?? 0}`);
-  console.log(`[genesis] ✓ sha256=${genesisSha}  sha256-pre=${preSha}`);
+  console.log(`[genesis] ✓ sha256=${finalGenesisSha}  cid=${finalGenesisCid}  sha256-pre=${preSha}`);
   console.log("[genesis] S5 gate A satisfied — plugin blobs wired + genesis-cid tiddler injected.");
 }
 

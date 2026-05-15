@@ -35,6 +35,7 @@ import {
   ADMIN_BAG_ID,
   emptyMemeStoreDoc, emptyIdentitiesDoc, emptyCirclesDoc, emptySessionsDoc,
   sessionEventLogUri,
+  cidV1Sha256FromHex,
 } from "@lararium/core";
 
 // ---------------------------------------------------------------------------
@@ -46,6 +47,7 @@ const __dir        = dirname(fileURLToPath(import.meta.url));
 // genesis/ lives one level up from src/ (packages/lararium-node/genesis/).
 const GENESIS_BIN  = join(__dir, "../genesis/island.bin");
 const GENESIS_SHA  = join(__dir, "../genesis/island.sha256");
+const GENESIS_CID_FILE = join(__dir, "../genesis/island.cid");
 
 /**
  * Reads genesis/island.bin and returns its bytes.
@@ -74,20 +76,36 @@ export function readGenesisSha256(): string | undefined {
   }
 }
 
+export function readGenesisCid(): string | undefined {
+  try {
+    const cid = readFileSync(GENESIS_CID_FILE, "utf8").trim();
+    if (cid) return cid;
+  } catch {
+    // fall back to converting the advisory sha256 if the CID file is absent
+  }
+  const sha = readGenesisSha256();
+  if (!sha) return undefined;
+  try {
+    return cidV1Sha256FromHex(sha);
+  } catch {
+    return undefined;
+  }
+}
+
 // ---------------------------------------------------------------------------
 // GENESIS_CID — package-level constant derived at module load time.
 // Used by reconcileIslandFromGenesis to detect stale live docs.
 // ---------------------------------------------------------------------------
 
-let _genesisSha256: string | undefined;
+let _genesisCid: string | undefined;
 
 /**
- * Returns the sha256 of the genesis artifact bundled with this package.
+ * Returns the CIDv1 raw SHA-256 of the genesis artifact bundled with this package.
  * Cached after first read.
  */
 export function GENESIS_CID(): string | undefined {
-  if (_genesisSha256 === undefined) _genesisSha256 = readGenesisSha256();
-  return _genesisSha256;
+  if (_genesisCid === undefined) _genesisCid = readGenesisCid();
+  return _genesisCid;
 }
 
 // ---------------------------------------------------------------------------
@@ -151,7 +169,7 @@ export async function loadGenesisIsland(repo: Repo): Promise<DocHandle<LarariumD
  * Reconcile a live LarariumDoc against the current genesis artifact.
  *
  * Reads the genesis CID stored in the live doc's well-known tiddler
- * (lar:///ha.ka.ba/@lararium/system/genesis-cid, field: sha256).
+ * (lar:///ha.ka.ba/@lararium/system/genesis-cid, field: cid).
  * If it matches GENESIS_CID(), the live doc is already current — returns early.
  * If it diverges, merges the genesis handle into the live doc so net-new
  * blobs and tiddlers flow in without overwriting any live-doc changes.
@@ -173,7 +191,7 @@ export async function reconcileIslandFromGenesis(
 
   // Read stored genesis CID from the live doc.
   const GENESIS_CID_TIDDLER = `${LARARIUM_DOC_URI}/genesis-cid`;
-  const liveCid = handle.doc()?.tiddlers?.[GENESIS_CID_TIDDLER]?.fields?.["sha256"] as string | undefined;
+  const liveCid = handle.doc()?.tiddlers?.[GENESIS_CID_TIDDLER]?.fields?.["cid"] as string | undefined;
 
   if (liveCid === expectedCid) {
     console.log("[genesis-island] reconcile: live doc current — no merge needed");
@@ -199,7 +217,7 @@ export async function reconcileIslandFromGenesis(
   handle.change((doc) => {
     doc.tiddlers[GENESIS_CID_TIDDLER] = {
       title:     GENESIS_CID_TIDDLER,
-      fields:    { sha256: expectedCid },
+      fields:    { cid: expectedCid },
       bag:       LARARIUM_DOC_URI,
       authority: "genesis",
     };

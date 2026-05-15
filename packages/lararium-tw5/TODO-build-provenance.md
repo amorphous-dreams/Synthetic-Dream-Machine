@@ -230,20 +230,19 @@ separate schemas later.
 
 **Spike tasks:**
 
-- [ ] Read `packages/lararium-core/src/causal-island.ts` and the genesis scripts
+- [x] Read `packages/lararium-core/src/causal-island.ts` and the genesis scripts
       in `packages/lararium-node/`. Note the content-address model they use.
-- [ ] Determine whether `@noble/hashes` + a minimal CID prefix function (no full
-      `multiformats` dep required — just `\x12\x20` + sha256 bytes → base58btc
-      or base32 encode) satisfies both build provenance and genesis provenance.
-- [ ] Write a short ADR (Architecture Decision Record) as a comment block in
-      `packages/lararium-core/src/crypto.ts` or as an inline note here:
-  - Does build provenance adopt CIDs in a future P4, or stay with hex for build
-    tooling and reserve CIDs for runtime?
-  - Which encoding (base32, base58btc, hex) works across shell output, JSON, and
-    TW5 tiddler fields?
-- [ ] Outcome: either a `cidV1Sha256(content: Uint8Array): string` export added
-      to `@lararium/core/src/crypto.ts` as a forward-declaration stub, or a
-      written decision to defer CIDs to a separate sprint with a link here.
+- [x] Determine whether `@noble/hashes` + a minimal CID prefix function (no full
+      `multiformats` dep required — just `\x12\x20` + sha256 bytes → base32
+      encode) satisfies both build provenance and genesis provenance.
+- [x] Write a short ADR (Architecture Decision Record) as a comment block in
+      `packages/lararium-core/src/crypto.ts` or as an inline note here.
+  - Build provenance and runtime genesis both adopt CIDv1 raw SHA-256 as the
+    canonical address format where practical.
+  - Base32 lowercase (`b...`) works best for JSON, shell output, and TW5
+    compatibility; it avoids uppercase and padding issues.
+- [x] Outcome: a real `cidV1Sha256(content: Uint8Array): string` export added
+      to `@lararium/core/src/crypto.ts`, plus runtime support for `packages/lararium-node/`.
 
 ---
 

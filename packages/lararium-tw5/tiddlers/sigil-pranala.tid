@@ -1,13 +1,22 @@
 title: lar:///ha.ka.ba/@lararium/tw5/tiddlers/sigil-pranala
-tags: $:/tags/Global $:/tags/LarariumGrammar
+tags: $:/tags/Global lar:///ha.ka.ba/tags/SharktoothSigil
+lar-kind: edge
+lar-inline-pattern: <<~\s*pranala\s+(#[\w-]+\s+)?(\S+)\s*->\s*(\S+)(?:\s+family:([\w-]+))?(?:\s+role:([\w-]+))?\s*>>
+lar-block-pattern: <<~\s*pranala\s+(#[\w-]+\s+)?(\S+)\s*->\s*(\S+)\s*>>([\s\S]*?)<<~\/pranala\s*>>
+lar-close-pattern: <<~\/pranala\s*>>
+lar-default-family: relation
 type: text/vnd.tiddlywiki
+
+<!-- pranala — permanent JS exception: arrow syntax FROM -> TO + keyword attrs
+     (from/to/slot/family/role/body) structurally distinct from <<~ WORD ARGS >>.
+     Parsed directly in lar-sigil.ts findNextMatch before compound dispatch fires. -->
 
 \widget ~pranala(from:"" to:"" slot:"" family:"" role:"" body:"" template:"")
 <$set name="_pranala-from" filter="[<from>regexp[^#]]" value={{{ [<from>addprefix<currentTiddler>] }}} emptyValue=<<from>>>
 <$set name="_pranala-to" filter="[<to>regexp[^#]]" value={{{ [<to>addprefix<currentTiddler>] }}} emptyValue=<<to>>>
 <$let pranala-from=<<_pranala-from>> pranala-to=<<_pranala-to>> pranala-slot=<<slot>> pranala-body=<<body>> pranala-family=<<family>> pranala-role=<<role>>
       _pranala-template={{{ [<template>!match[]] ~[all[shadows+tiddlers]tag[$:/tags/Lar/PranalaTemplate]!is[draft]!has[draft.of]] :map:flat[subfilter{!!text}] +[first[]else[lar:///ha.ka.ba/@lararium/templates/pranala/html]] }}}>
-  <$transclude $tiddler=<<_pranala-template>>/>
+<$transclude $tiddler=<<_pranala-template>>/>
 </$let>
 </$set>
 </$set>

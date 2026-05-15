@@ -240,101 +240,10 @@ The TypeScript parser reads this registry in Phase 2; until then it serves as au
 # Each sigil maps name → surface-form patterns and semantic defaults
 
 [[sigils]]
-name              = "ahu"
-kind              = "child-slot"
-open_pattern      = '<<~[^>]*\bahu\s+(#[\w-]+)\s*>>'
-close_pattern     = '<<~\/ahu\s*>>'
-description       = "worksite scope boundary; creates an addressable, writable child-slot tiddler at parentUri+slot"
-three_forms       = true
-
-# Three surface forms — same semantic slot, different boundary positions:
-#   disk (definition):  <<~ ahu #slot >>body<<~/ahu >>        — body inline; authoritative at parse time
-#   wiki (live-ref):    <<~ kahea ahu #slot >>                 — child tiddler is authoritative; parent holds reference
-#   projection (frozen):<<~ aka ahu #slot >>                   — shadow transclusion; frozen read at projection time
-#
-# Causal island boundary:
-#   deserializer: definition form → wiki form (splitCarrierToTiddlers transforms parent text)
-#   disk export:  wiki form → definition form (renderTiddler carrier mode; each child-slot widget reads child body)
-#   projection:   wiki form → projection form (renderTiddler projection mode; aka sigil embedded at render time)
-
-[[sigils]]
-name         = "pranala"
-kind         = "edge"
-block_pattern  = '<<~\s*pranala\s+(#[\w-]+\s+)?(\S+)\s*->\s*(\S+)\s*>>([\s\S]*?)<<~\/pranala\s*>>'
-inline_pattern = '<<~\s*pranala\s+(#[\w-]+\s+)?(\S+)\s*->\s*(\S+)(?:\s+family:([\w-]+))?(?:\s+role:([\w-]+))?\s*>>'
-default_family = "relation"
-description    = "explicit edge sigil; declares a pranala with optional block body or inline attrs"
-
-[[sigils]]
-name          = "loulou"
-kind          = "edge-sugar"
-pattern       = '<<~\s*loulou\s+(\S+)\s*>>'
-default_family = "relation"
-description   = "sugar: bidirectional relation edge; equivalent to pranala with family=relation"
-
-[[sigils]]
-name          = "aka"
-kind          = "edge-sugar"
-pattern       = '<<~\s*aka\s+([\w-]+\s+)?(\S+)\s*>>'
-default_family = "observe"
-description   = "shadow transclusion (observe family); frozen read at projection time; equivalent to pranala family=observe"
-
-# Two usage forms:
-#   URI form:          <<~ aka lar:///some/uri >>              — embed a remote meme as a frozen copy
-#   child-slot form:   <<~ aka ahu #slot >>                    — projection form of a child-slot sigil
-#                      <<~ aka kau #device >>                  — projection form of a kau device slot
-#
-# 'aka' signals: this content was live (kahea) at authoring time; it is frozen here.
-# Projection renders resolve kahea refs to aka refs before emitting carrier wikitext.
-# The frozen read does not track edits to the child tiddler after projection time.
-
-[[sigils]]
-name          = "kahea-block"
-kind          = "child-slot-summons"
-layer         = "both"
-leaf_pattern  = '<<~\s*kahea\s+([a-z][\w-]*)\s+([^>\n]+?)\s*>>'
-open_pattern  = '<<~\s*kahea\s+([a-z][\w-]*)(?:\s+([^>]*?))?\s*>>'
-close_pattern = '<<~\/kahea\s*>>'
-description   = "generic child-slot summons — <<~ kahea <type> <slot> >>. Type word dispatches to the named child-slot sigil widget. Type must be a bare identifier (not URI); URI targets fall through to kahea URI form."
-
-# Dispatch principle — generic, not ahu-specific:
-#   <<~ kahea ahu #slot >>        → AhuWidget(invocation=true)  — live child-slot reference
-#   <<~ kahea kau #device >>      → KauWidget(invocation=true)  — live device-slot reference
-#   <<~ kahea <type> <args> >>    → <TypeWidget>(invocation=true) for any registered child-slot sigil
-#
-# Block form (template invocation):
-#   <<~ kahea ahu #slot >>template body<<~/kahea >>
-#   → child tiddler rendered through the inline template rather than its own body
-#
-# Relation to aka:
-#   kahea = live transclusion (tracks child edits at render time)
-#   aka   = shadow transclusion (frozen read at projection time)
-#   The kahea→aka substitution is the projection boundary transform.
-
-[[sigils]]
-name          = "kahea"
-kind          = "edge-sugar"
-layer         = "both"
-pattern       = '<<~\s*kahea\s+(lar:[^\s>]+|[^\s>(]+\/[^\s>]*|[^\s>(]+#[^\s>]*)\s*>>'
-default_family = "dataflow"
-default_propagation = "push-forward"
-description   = "URI form: live transclusion (dataflow family, compile+render); matches lar:/// prefix, path with /, or fragment with #; emits EdgeSugarNode → graph edge; [SC]"
-
-
-[[sigils]]
 name         = "toml"
 kind         = "data"
 pattern      = '```toml(?:[ \t]+([A-Za-z0-9_-]+))?[ \t]*\n([\s\S]*?)```'
 description  = "TOML data fence; optional profile name (group 1) qualifies the block. Profile 'iam' marks the carrier identity prelude — appears before the first ahu or STX and supplies parent tiddler fields. Profile absent means a general-purpose data block."
-
-[[sigils]]
-name         = "pranala-header"
-kind         = "header"
-pattern      = '<<~\s*\?\s*->\s*(\S+)\s*>>'
-description  = "carrier header edge — points from ? (this carrier) to its canonical URI"
-
-# --- English alias sigils (\ prefix marks English namespace; same semantics as Hawaiian canonical) ---
-# Parser maps alias → canonical before evaluation. No semantic difference.
 
 [[sigils]]
 name          = "\\procedure"

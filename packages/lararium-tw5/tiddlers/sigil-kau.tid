@@ -1,0 +1,13 @@
+title: lar:///ha.ka.ba/@lararium/tw5/tiddlers/sigil-kau
+tags: $:/tags/Global lar:///ha.ka.ba/tags/SharktoothSigil
+lar-kind: child-slot
+lar-pattern: <<~\s*kau\s+(#[\w-]+\s+)?([\w][\w.-]*)(?:\s+([^>]*))?\s*>>
+type: text/vnd.tiddlywiki
+
+<!-- kau — device-slot child-slot sigil. JS widget (kau.ts) handles render;
+     this SharktoothSigil tiddler registers kau as a child-slot so
+     grammarChildSlotNames() recognises <<~ kau … >> and <<~ kahea kau … >>
+     compound forms after grammar loads from tiddlers.
+
+     kau.ts is the permanent JS widget: capability hooks + UUID write-back
+     require DOM-level side effects unavailable to wikitext \widget. -->

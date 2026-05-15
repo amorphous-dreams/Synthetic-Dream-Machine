@@ -262,22 +262,18 @@ export function closePatternToTag(pattern: string): string | null {
  * operator-added sigils extend the map at runtime.
  *
  * Name normalisation:
- *   \\name      → name  (pragma-form sigils, e.g. "\\procedure" → "procedure")
- *   kahea-invoke → kahea (TOML splits block+URI kahea into two entries; block
- *                          closer belongs under the "kahea" key that BLOCK_CLOSERS
- *                          and compound closeKey both use)
+ *   \\name → name  (pragma-form sigils, e.g. "\\procedure" → "procedure")
+ *
+ * SharktoothSigil tiddlers carry canonical names directly (e.g. "kahea"), so the
+ * former GRAMMAR_NAME_MAP (kahea-block → kahea) is no longer needed. The sigil-kahea
+ * tiddler merges both leaf and block forms under one name.
  */
-const GRAMMAR_NAME_MAP: Record<string, string> = {
-  "kahea-block": "kahea",
-};
-
 export function buildClosers(grammar: GrammarRules | null): Record<string, string> {
   if (!grammar) return BLOCK_CLOSERS;
   const extra: Record<string, string> = {};
   for (const sigil of grammar.sigils) {
     if (!sigil.closePattern) continue;
-    const rawName = sigil.name.replace(/^\\/, "");
-    const name    = GRAMMAR_NAME_MAP[rawName] ?? rawName;
+    const name = sigil.name.replace(/^\\/, "");
     if (name in BLOCK_CLOSERS) continue;
     const tag = closePatternToTag(sigil.closePattern);
     if (tag) extra[name] = tag;

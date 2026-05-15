@@ -116,6 +116,27 @@ export async function sha256Hex(bytes: Uint8Array, provider: DigestProvider): Pr
 }
 
 /**
+ * Synchronous SHA-256 of bytes.
+ *
+ * SCOPE: build-time tooling ONLY — Vite plugin, pack scripts, manifest generators.
+ * Runtime code MUST use sha256Hex(bytes, provider) which routes through CryptoProvider.
+ * Do NOT import this into browser bundles or any file that ships to a browser runtime.
+ *
+ * Uses @noble/hashes/sha2 (synchronous), not SubtleCrypto.
+ */
+export function sha256BytesSync(bytes: Uint8Array): Uint8Array {
+  return nobleSha256(bytes);
+}
+
+/**
+ * Synchronous SHA-256 of bytes, returned as lowercase hex.
+ * Build-time tooling only.
+ */
+export function sha256HexBytesSync(bytes: Uint8Array): string {
+  return hex(sha256BytesSync(bytes));
+}
+
+/**
  * Synchronous SHA-256 of a UTF-8 string, returned as lowercase hex.
  *
  * SCOPE: build-time tooling ONLY — Vite plugin, pack scripts, manifest generators.
@@ -125,5 +146,63 @@ export async function sha256Hex(bytes: Uint8Array, provider: DigestProvider): Pr
  * Uses @noble/hashes/sha2 (synchronous), not SubtleCrypto.
  */
 export function sha256HexSync(text: string): string {
-  return hex(nobleSha256(utf8Bytes(text)));
+  return sha256HexBytesSync(utf8Bytes(text));
+}
+
+/**
+ * CID design note:
+ * - Use CIDv1 raw SHA-256 for content identity where a stable address is needed.
+ * - Avoid the full multiformats dependency by emitting only the raw SHA-256
+ *   multicodec prefix + content digest, encoded as lowercase base32.
+ * - Early alpha intent: canonize CIDs now and avoid preserving hex-only SHA-256
+ *   as a long-lived legacy surface.
+ */
+const BASE32_ALPHABET = "abcdefghijklmnopqrstuvwxyz234567";
+
+function base32Encode(bytes: Uint8Array): string {
+  let bits = 0;
+  let value = 0;
+  let output = "";
+  for (const byte of bytes) {
+    value = (value << 8) | byte;
+    bits += 8;
+    while (bits >= 5) {
+      output += BASE32_ALPHABET[(value >>> (bits - 5)) & 31];
+      bits -= 5;
+    }
+  }
+  if (bits > 0) {
+    output += BASE32_ALPHABET[(value << (5 - bits)) & 31];
+  }
+  return output;
+}
+
+function parseHexDigest(hexDigest: string): Uint8Array {
+  if (hexDigest.length !== 64) {
+    throw new TypeError(`parseHexDigest: expected 64-char lowercase hex, got ${hexDigest.length}`);
+  }
+  const result = new Uint8Array(32);
+  for (let i = 0; i < 32; i++) {
+    result[i] = Number.parseInt(hexDigest.slice(i * 2, i * 2 + 2), 16);
+  }
+  return result;
+}
+
+/**
+ * Encode a 64-byte SHA-256 hex digest as CIDv1 raw SHA-256.
+ */
+export function cidV1Sha256FromHex(hexDigest: string): string {
+  const digest = parseHexDigest(hexDigest);
+  const prefix = new Uint8Array([0x01, 0x55, 0x12, 0x20]);
+  const cidBytes = new Uint8Array(prefix.length + digest.length);
+  cidBytes.set(prefix, 0);
+  cidBytes.set(digest, prefix.length);
+  return `b${base32Encode(cidBytes)}`;
+}
+
+/**
+ * CIDv1 raw SHA-256 of content bytes.
+ */
+export function cidV1Sha256(content: Uint8Array): string {
+  return cidV1Sha256FromHex(sha256HexBytesSync(content));
 }

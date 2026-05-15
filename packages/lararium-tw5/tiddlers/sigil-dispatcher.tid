@@ -1,7 +1,8 @@
 title: lar:///ha.ka.ba/@lararium/tw5/tiddlers/sigil-dispatcher
-tags: $:/tags/Global $:/tags/LarariumGrammar
+tags: $:/tags/Global lar:///ha.ka.ba/tags/SharktoothSigil
+lar-kind: edge-sugar
 type: text/vnd.tiddlywiki
 
-\widget ~(name p1:"" p2:"" p3:"" p4:"" p5:"")
-<$transclude $variable={{{ [<name>addprefix[~]] }}} p1=<<p1>> p2=<<p2>> p3=<<p3>> p4=<<p4>> p5=<<p5>>/>
+\widget ~(name p1:"" p2:"" p3:"" p4:"" p5:"" mode:"live")
+<$transclude $variable={{{ [<name>addprefix[~]] }}} p1=<<p1>> p2=<<p2>> p3=<<p3>> p4=<<p4>> p5=<<p5>> mode=<<mode>>/>
 \end
