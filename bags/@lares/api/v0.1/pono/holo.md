@@ -23,7 +23,7 @@ no quarter for the others.
 A cancelling-race sigil. The body of a holo block spawns parallel flows; the first flow to
 complete yields its result and all remaining flows cancel immediately. English alias: `\race`.
 
-Verse equivalent: `race` — parallel branches race; first settler wins; all losers cancel.
+Verse equivalent: `race` — parallel child flows race; first settler wins; all losers cancel.
 Distinct from `puka` (`\rush`), where losers continue running in background.
 
 The holo metaphor holds: in a canoe race, when the lead boat crosses the finish line, the

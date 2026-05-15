@@ -17,12 +17,12 @@
  *   `Subscribe()`   → returns `cancelable` (our `() => void` unsubscribe)
  *   `Await()<suspends>` → single-shot coroutine (our `subscribeOnce()`)
  *
- * Verse concurrency (all require `<suspends>` context):
- *   `spawn`  → lele / \branch: detached fiber, not scope-bound (fire-and-forget)
- *   `branch` → scope-bound fiber, auto-canceled when enclosing function returns
+ * Verse concurrency:
+ *   `branch` → lele / \branch: structured fire-and-continue, bounded by enclosing async context
  *   `sync`   → hui / \sync: await-all
  *   `race`   → holo / \race: first wins, losers CANCEL
- *   `rush`   → puka / \rush: first wins, losers CONTINUE in background
+ *   `rush`   → puka / \rush: first wins, losers CONTINUE until the enclosing async context completes
+ *   `spawn`  → unstructured escape hatch; no pono sigil until the runtime needs it
  *
  * ## Lararium vocabulary mapping
  *

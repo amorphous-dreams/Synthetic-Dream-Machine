@@ -24,7 +24,7 @@ A first-through-the-opening sigil. The body of a puka block spawns parallel flow
 flow to complete yields the result and the block continues — but the remaining flows run on in
 the background without cancellation. English alias: `\rush`.
 
-Verse equivalent: `rush` — parallel branches race; first settler wins; losers continue running
+Verse equivalent: `rush` — parallel child flows race; first settler wins; losers continue running
 in background. Distinct from `race` (which cancels losers immediately). See `holo` for the
 cancelling-race form.
 

@@ -1,11 +1,10 @@
 title: lar:///ha.ka.ba/@lararium/tw5/tiddlers/sigil-branch
 tags: $:/tags/Global lar:///ha.ka.ba/tags/SharktoothSigil
-lar-kind: concurrency-alias
+lar-kind: concurrency
 lar-pono-uri: lar:///ha.ka.ba/@lares/api/v0.1/pono/lele
-lar-alias-for: \branch
+lar-alias-for: lele
 lar-see-also: lele
 lar-pattern: <<~\s*\\branch\s+(\S+)\s*>>
 type: text/vnd.tiddlywiki
 
-<!-- \branch — fire-and-forget dispatch; English alias for lele.
-     Deferred pending async-first concurrency sprint. -->
+<!-- \branch — English alias for lele; Verse branch keyword; parser maps to lele before evaluation. -->

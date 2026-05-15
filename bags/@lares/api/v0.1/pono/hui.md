@@ -21,7 +21,7 @@ brings separate parties into one meeting and holds them until the gathering comp
 leaves while others still travel.
 
 An await-all synchronization sigil. The body of a hui block spawns parallel flows; the sigil
-holds execution until every branch completes. English alias: `\sync`.
+holds execution until every child flow completes. English alias: `\sync`.
 
 Verse equivalent: `sync` — all branches inside the block run concurrently and the containing
 flow resumes only after every branch settles.

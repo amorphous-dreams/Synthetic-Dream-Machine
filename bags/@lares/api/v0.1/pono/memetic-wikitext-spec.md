@@ -386,7 +386,7 @@ Distinguished from `kapu`: `kapu` marks a boundary *at the surface* (render-laye
 
 ### `message` sugar (deferred)
 
-`message` family has no dedicated sugar form yet. `lele` (branch/fire-and-forget) covers runtime
+`message` family has no dedicated sugar form yet. `lele` (structured branch/fire-and-continue) covers runtime
 message dispatch; explicit `<<~ pranala family:message >>` covers structural graph edges.
 `hau` (gift/reciprocal signal) remains a candidate if inline message-routing sugar proves necessary.
 

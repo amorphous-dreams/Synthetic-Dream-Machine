@@ -1,0 +1,4 @@
+title: lar:///ha.ka.ba/@lararium/templates/kau/markdown-meme
+type: text/x-memetic-wikitext
+
+<<~ kahea kau {{!!slot}} >>

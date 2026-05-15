@@ -74,6 +74,7 @@ export const BOOTSTRAP_SCANS: SigilScan[] = [
   { sigilName: "pono",    regex: /<<~\s*pono\s+(#[\w-]+\s+)?(\S+)\s*->\s*(\S+)(?:\s+role:([\w-]+))?\s*>>/g, eventType: "leaf" },
   { sigilName: "\\constraint", canonicalName: "pono", regex: /<<~\s*\\constraint\s+(#[\w-]+\s+)?(\S+)\s*->\s*(\S+)(?:\s+role:([\w-]+))?\s*>>/g, eventType: "leaf" },
   { sigilName: "lele",    regex: /<<~\s*lele\s+(\S+)\s*>>/g,               eventType: "leaf" },
+  { sigilName: "\\branch", canonicalName: "lele", regex: /<<~\s*\\branch\s+(\S+)\s*>>/g, eventType: "leaf" },
   // Concurrency (runtime pending — grammar registration)
   { sigilName: "hui",   regex: /<<~\s*hui\s*>>/g,                          eventType: "open"  },
   { sigilName: "hui",   regex: /<<~\/hui\s*>>/g,                           eventType: "close" },

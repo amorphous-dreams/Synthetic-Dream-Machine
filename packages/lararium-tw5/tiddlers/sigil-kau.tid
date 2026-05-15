@@ -5,10 +5,53 @@ lar-pono-uri: lar:///ha.ka.ba/@lares/api/v0.1/pono/kau
 lar-pattern: <<~\s*kau\s+(#[\w-]+\s+)?([\w][\w.-]*)(?:\s+([^>]*))?\s*>>
 type: text/vnd.tiddlywiki
 
-<!-- kau — device-slot child-slot sigil. JS widget (kau.ts) handles render;
-     this SharktoothSigil tiddler registers kau as a child-slot so
-     grammarChildSlotNames() recognises <<~ kau … >> and <<~ kahea kau … >>
-     compound forms after grammar loads from tiddlers.
+<!-- kau — device-slot child-slot sigil. TW5-native \widget handles all render;
+     ~kahea~kau and ~aka~kau follow the ahu template-cascade pattern.
 
-     kau.ts is the permanent JS widget: capability hooks + UUID write-back
-     require DOM-level side effects unavailable to wikitext \widget. -->
+     Dispatch shapes:
+       <<~ kau #frag Name props >>    → ~kau(p1="#frag Name props") — placement
+       <<~ kau Name >>                → ~kau(p1="Name")              — invocation
+       <<~ kahea kau #slot >>         → ~kahea~kau(p1="#slot")
+       <<~ aka   kau #slot >>         → ~aka~kau(p1="#slot")
+
+     p1 parse: first token starting with # = fragment; remainder = name + props.
+     Template cascade tag: lar:///ha.ka.ba/tags/kau-template
+     Keyhive capability and UUID write-back: deferred; handled by explicit action
+     tiddlers when Keyhive WASM lands. -->
+
+\widget ~kau(p1:"" p2:"" p3:"")
+<$set name="_kau-fst" filter="[<p1>split[ ]first[]]" emptyValue="">
+<$set name="_kau-frag" filter="[<_kau-fst>regexp[^#]]" emptyValue="">
+<$set name="_kau-after" filter="[<_kau-fst>regexp[^#]]" value={{{ [<p1>removeprefix<_kau-fst>trim[]] }}} emptyValue=<<p1>>>
+<$set name="_kau-name" filter="[<_kau-after>split[ ]first[]]" emptyValue="">
+<$set name="_kau-props" filter="[<_kau-after>removeprefix<_kau-name>trim[]]" emptyValue="">
+<$let _kau-def={{{ [all[tiddlers+shadows]tag[lar:///ha.ka.ba/tags/kumu]field:kumu-name<_kau-name>first[]else[]] }}}
+      _kau-template={{{ [all[shadows+tiddlers]tag[lar:///ha.ka.ba/tags/kau-template]!is[draft]] :map:flat[subfilter{!!text}] +[first[]else[lar:///ha.ka.ba/@lararium/templates/kau/html]] }}}>
+<$set name="kau-name" value=<<_kau-name>>><$set name="kau-def" value=<<_kau-def>>><$set name="kau-props" value=<<_kau-props>>><$set name="kau-frag" value=<<_kau-frag>>>
+<$list filter="[<_kau-frag>!match[]]" variable=ignore>
+<$set name="_kau-instance" filter="[<_kau-frag>!match[]]" value={{{ [<currentTiddler>addsuffix<_kau-frag>] }}} emptyValue=<<currentTiddler>>>
+<$tiddler tiddler=<<_kau-instance>>><$transclude $tiddler=<<_kau-template>>/></$tiddler>
+</$set>
+</$list>
+<$list filter="[<_kau-frag>match[]]" variable=ignore>
+<$transclude $tiddler=<<_kau-template>>/>
+</$list>
+</$set></$set></$set></$set>
+</$let>
+</$set></$set></$set></$set></$set>
+\end
+
+\procedure ~kahea~kau(p1:"" p2:"" p3:"")
+<$transclude $variable="~kau" p1=<<p1>> p2=<<p2>> p3=<<p3>>/>
+\end
+
+\procedure ~aka~kau(slot:"" uri:"" p1:"")
+<$let _ak-slot={{{ [<slot>!match[]] ~[<p1>] }}}>
+<$let _ak-uri={{{ [<uri>!match[]!regexp[^lar:///unknown]] ~[<_ak-slot>regexp[^lar:]] ~[<currentTiddler>addsuffix<_ak-slot>] }}}
+      _ak-template={{{ [all[shadows+tiddlers]tag[lar:///ha.ka.ba/tags/aka-template]!is[draft]!has[draft.of]] :map:flat[subfilter{!!text}] +[first[]else[lar:///ha.ka.ba/@lararium/templates/aka/html]] }}}>
+<$tiddler tiddler=<<_ak-uri>>>
+<$transclude $tiddler=<<_ak-template>>/>
+</$tiddler>
+</$let>
+</$let>
+\end

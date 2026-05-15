@@ -7,7 +7,7 @@ file-path = "bags/@lares/api/v0.1/pono/lele.md"
 type      = "text/x-memetic-wikitext"
 confidence = 0.75
 register  = "S"
-role      = "fire-and-forget dispatch sigil — lele as unconditional send; English alias: \\branch; async-first concurrency sprint pending"
+role      = "structured fire-and-continue sigil — lele as Verse branch; English alias: \\branch; async-first concurrency sprint pending"
 cacheable = true
 retain    = true
 ```
@@ -17,17 +17,14 @@ retain    = true
 # Lele
 
 *lele* — Hawaiian: to fly, jump, leap; to move quickly; to pass over. Used in *lele kawa* (cliff
-diving). The motion is unconditional — the body commits to the arc without waiting for a response.
+diving). The motion commits to the leap, starts a side flow, and continues forward without waiting.
 
-A fire-and-forget dispatch sigil. Emits a message-family edge and continues without waiting for
-the target's response. English alias: `\branch`.
+A structured fire-and-continue sigil. Emits a message-family edge, starts the target flow, and
+continues immediately. English alias: `\branch`.
 
-Verse equivalent: `spawn` — unstructured detached fiber, not scope-bound. Distinct from Verse
-`branch`, which scopes to the enclosing function and cancels automatically when that function
-returns. `lele` matches `spawn` semantics: the message flies free of the sender's lifetime.
-The English alias `\branch` remains for operator familiarity, but the precise Verse analogue
-is `spawn`. When Verse adds `branch`-style scoped spawn to the grammar surface, a distinct
-`\scope-branch` alias will follow.
+Verse equivalent: `branch` — one or more async expressions start immediately and the enclosing
+flow continues immediately. The side flow remains bounded by the enclosing async context and
+cancels when that context completes.
 
 Concurrency runtime pending (async-first sprint). Current tiddler registers grammar only.
 
@@ -41,6 +38,8 @@ Concurrency runtime pending (async-first sprint). Current tiddler registers gram
 
 A lele edge MUST carry a target URI as its first argument.
 A lele edge MUST emit a message-family pranala and continue without blocking.
+A lele edge MUST stay bounded by the enclosing async context.
+A lele edge MUST cancel remaining side-flow work when the enclosing async context completes.
 A lele edge MUST NOT wait for a response from the target.
 
 <<~/ahu >>

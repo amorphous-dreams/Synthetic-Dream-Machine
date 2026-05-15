@@ -135,7 +135,7 @@ They fall into eight families:
 - `hana` / `\task` — bounded guest-grammar block; grammar-key selects the interpreter
 
 **Concurrency sigils** (async cluster; sprint pending):
-- `lele` / `\branch` — fire-and-forget dispatch; spawn without waiting
+- `lele` / `\branch` — structured fire-and-continue dispatch; Verse branch without waiting
 - `hui` / `\sync` — await-all synchronization; every branch must complete
 - `puka` / `\rush` — race-until-first; first completion cancels the rest
 - `kukali` / `\suspends` — wait-until-trigger; parks the causal island

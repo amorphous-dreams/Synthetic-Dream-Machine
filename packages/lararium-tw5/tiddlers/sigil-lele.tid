@@ -6,6 +6,6 @@ lar-see-also: \branch
 lar-pattern: <<~\s*lele\s+(\S+)\s*>>
 type: text/vnd.tiddlywiki
 
-<!-- lele — fire-and-forget dispatch; emits message-family pranala and continues without waiting.
-     Concurrency runtime pending (async-first sprint). Grammar registration only. -->
+<!-- lele — structured fire-and-continue dispatch; emits message-family pranala and continues without waiting.
+     Bounded by enclosing async context. Concurrency runtime pending (async-first sprint). Grammar registration only. -->
 

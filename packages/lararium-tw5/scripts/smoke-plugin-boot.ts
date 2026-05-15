@@ -8,7 +8,7 @@
  *   - cascade config tiddlers at lar:///config/Lar/AhuTemplate/...
  *   - template tiddlers at lar:///ha.ka.ba/@lararium/templates/...
  *   - parser registered for text/x-memetic-wikitext
- *   - widget classes registered for $ahu, $kau, $aka, $kahea, $loulou, $pranala
+ *   - sigil widget tiddlers present (kau, ahu, aka, kahea, loulou, pranala — all TW5 \\widget)
  *
  * Exit nonzero if any check fails.
  */
@@ -61,6 +61,11 @@ async function main(): Promise<void> {
     "lar:///ha.ka.ba/@lararium/tw5/tiddlers/sigil-loulou",
     "lar:///ha.ka.ba/@lararium/tw5/tiddlers/sigil-pranala-header",
     "lar:///ha.ka.ba/@lararium/tw5/tiddlers/sigil-pranala",
+    "lar:///config/Lar/KauTemplate/html",
+    "lar:///config/Lar/KauTemplate/markdown-meme",
+    "lar:///ha.ka.ba/@lararium/templates/kau/html",
+    "lar:///ha.ka.ba/@lararium/templates/kau/markdown-meme",
+    "lar:///ha.ka.ba/@lararium/tw5/tiddlers/sigil-kau",
   ];
   for (const title of expectedTitles) {
     if (!wiki.getTiddler(title)) failures.push(`missing tiddler: ${title}`);
@@ -71,13 +76,10 @@ async function main(): Promise<void> {
   const parsers = tw?.Wiki?.parsers ?? {};
   if (!parsers["text/x-memetic-wikitext"]) failures.push("parser not registered: text/x-memetic-wikitext");
 
-  const widgetMods = tw?.modules?.types?.widget ?? {};
-  // aka, kahea, loulou, pranala, pranala-header, ahu retired to wikitext \widget tiddlers.
-  // kau remains as a JS widget (capability hooks + UUID write-back).
-  for (const expected of ["kau"]) {
-    const found = Object.keys(widgetMods).some((title) => title.includes(expected));
-    if (!found) failures.push(`widget module not found in registry: ${expected}`);
-  }
+  // All sigil widgets (ahu, aka, kahea, kau, loulou, pranala, pranala-header)
+  // now live as TW5 \widget definitions in tiddler text — no JS module-type:widget.
+  // The only JS widgets are internal infra (not checked here).
+  // Tiddler-presence checks above verify kau, ahu, etc. loaded from the plugin.
 
   // Probe ahu cascade tiddler presence — sigil-ahu.tid carries ~ahu + ~kahea~ahu.
   // Full render probe deferred: engine.renderText does not load $:/tags/Global
@@ -190,7 +192,7 @@ async function main(): Promise<void> {
   }
   console.log("✓ plugin boot smoke clean");
   console.log(`  ${expectedTitles.length} shadow tiddlers present`);
-  console.log(`  parser + widgets registered`);
+  console.log(`  parser registered; sigil widgets live as TW5 \\widget tiddlers`);
   console.log(`  sigil-ahu wikitext tiddler present (~ahu + ~kahea~ahu defined)`);
   console.log(`  wikitext sigil tiddlers present; render probes live in integration flow tests`);
   console.log(`  deserializer captured prologue + postamble fields on parent`);

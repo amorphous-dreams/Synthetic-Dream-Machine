@@ -1,0 +1,9 @@
+title: lar:///ha.ka.ba/@lararium/templates/kau/html
+type: text/vnd.tiddlywiki
+
+<$list filter="[<kau-frag>!match[]]" variable=ignore>
+<div class="lar-kau lar-kau-place" data-uri=<<currentTiddler>> data-kau-name=<<kau-name>><$list filter="[<kau-props>!match[]]" variable=ignore> data-kau-props=<<kau-props>></$list>><$list filter="[<kau-def>!match[]]" variable=ignore><$transclude $tiddler=<<kau-def>>/></$list><$list filter="[<kau-def>match[]]" variable=ignore><span class="lar-kau-hole">? kau <$text text=<<kau-name>>/></span></$list></div>
+</$list>
+<$list filter="[<kau-frag>match[]]" variable=ignore>
+<div class="lar-kau lar-kau-invoke" data-kau-name=<<kau-name>>><$list filter="[<kau-def>!match[]]" variable=ignore><$transclude $tiddler=<<kau-def>>/></$list><$list filter="[<kau-def>match[]]" variable=ignore><span class="lar-kau-hole">? kau <$text text=<<kau-name>>/></span></$list></div>
+</$list>
