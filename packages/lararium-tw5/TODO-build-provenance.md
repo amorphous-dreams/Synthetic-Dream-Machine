@@ -1,7 +1,7 @@
 # Sprint — Build Provenance, Pono Rewrite
 
 > Created: 2026-05-14  
-> Revised: 2026-05-14 (pono rewrite — see orientation notes below)  
+> Revised: 2026-05-14 (pono rewrite → P0 ✓ P1 ✓ P2 ✓ — typecheck clean)  
 > Branch: `feature/lararium-node-3`  
 > Primary package: `@lararium/tw5` (`packages/lararium-tw5/`)  
 > Cross-package: `@lararium/core` (`packages/lararium-core/`) receives extracted primitives  
@@ -106,27 +106,26 @@ The tw5 plugin-build runs at Node build time, so a Node-only import path from
 
 Todo:
 
-- [ ] Read `packages/lararium-core/src/crypto.ts` — determine whether a
+- [x] Read `packages/lararium-core/src/crypto.ts` — determine whether a
       `sha256Hex(text: string): string` export already exists.
-- [ ] If not: add `sha256Hex` to `@lararium/core/src/crypto.ts` using
-      `@noble/hashes/sha256` + `bytesToHex` from `@noble/curves/abstract/utils`
-      or `@noble/hashes/utils`. Keep the signature pure: string in, hex string
-      out.
-- [ ] Export `sha256Hex` from `@lararium/core`'s barrel (`src/index.ts`).
-- [ ] In `packages/lararium-tw5/plugin-build/module-manifest.ts`: replace the
-      local `sha256()` implementation with an import of `sha256Hex` from
+- [x] If not: add `sha256HexSync` to `@lararium/core/src/crypto.ts` using
+      `@noble/hashes/sha2.js`. Keep the signature pure: string in, hex string
+      out. (Named `sha256HexSync` to signal build-time-only per crypto doctrine.)
+- [x] Export `sha256HexSync` from `@lararium/core`'s barrel (`src/index.ts`).
+- [x] In `packages/lararium-tw5/plugin-build/module-manifest.ts`: replace the
+      local `sha256()` implementation with an import of `sha256HexSync` from
       `@lararium/core`.
-- [ ] In `packages/lararium-tw5/scripts/build-plugin-tiddler.ts`: replace the
+- [x] In `packages/lararium-tw5/scripts/build-plugin-tiddler.ts`: replace the
       local `sha256()` implementation with the same import.
-- [ ] Run `pnpm --filter @lararium/core typecheck` and
+- [x] Run `pnpm --filter @lararium/core typecheck` and
       `pnpm --filter @lararium/tw5 typecheck`. Both must pass.
 
 Acceptance:
 
-- [ ] No `createHash` calls remain in `plugin-build/` or `scripts/build-plugin-tiddler.ts`.
-- [ ] `@lararium/core` exports `sha256Hex`.
-- [ ] Both tw5 files import it from `@lararium/core`.
-- [ ] Typechecks pass in both packages.
+- [x] No `createHash` calls remain in `plugin-build/` or `scripts/build-plugin-tiddler.ts`.
+- [x] `@lararium/core` exports `sha256HexSync`.
+- [x] Both tw5 files import it from `@lararium/core`.
+- [x] Typechecks pass in both packages.
 
 ---
 
@@ -145,35 +144,28 @@ fields or body. The `.tid` format: fields appear before the first blank line
 
 Todo:
 
-- [ ] In `plugin-build/source-manifest.ts`: add `bodyText?: string` (raw body
-      after first blank line) and `bodySha256?: string` to
-      `StaticTiddlerSource`. Populate both in `buildPluginSourceManifest()` using
-      the existing `parseTidFields()` helper — split on the first blank line to
-      extract body.
-- [ ] In `scripts/build-plugin-tiddler.ts`, extend
+- [x] In `plugin-build/source-manifest.ts`: added `bodySha256: string` to
+      `StaticTiddlerSource`. Populated in `buildPluginSourceManifest()` via new
+      `parseTidBody()` helper — splits on first blank line.
+- [x] In `scripts/build-plugin-tiddler.ts`, extended
       `verifyPackedPluginAgainstSourceManifest()`:
-  - [ ] For each `staticTiddler` in source manifest: locate packed inner tiddler
-        by title (already done — just fails on missing).
-  - [ ] Compare `type` field when source declares it; fail with clear message on
-        drift.
-  - [ ] Compare `tags` field when source declares it; fail with clear message on
-        drift.
-  - [ ] Compare packed `text` body sha256 against `bodySha256` from source
-        manifest; fail with clear message on drift.
-  - [ ] Emit a per-field diff line on failure, not just the title.
-- [ ] Update the `plugin-source-manifest.json` format version to `v2` or add a
-      `features: ["body-digest"]` flag — whichever the existing schema convention
-      prefers. Document the choice inline.
+  - [x] Missing static tiddler fails build with title + source path.
+  - [x] Compare `type` field when source declares it; fails with field + values.
+  - [x] Compare `tags` field when source declares it; fails with field + values.
+  - [x] Compare packed `text` body sha256 against `bodySha256`; fails with
+        16-char prefix comparison.
+  - [x] Emits per-field diff line on failure.
+- [x] Updated source-manifest format to `v2` (constant `SOURCE_MANIFEST_FORMAT`).
 
 Acceptance:
 
-- [ ] Missing static tiddler fails build with tiddler title + source path.
-- [ ] Changed packed static body fails build with title + expected/got sha256
+- [x] Missing static tiddler fails build with tiddler title + source path.
+- [x] Changed packed static body fails build with title + expected/got sha256
       prefix.
-- [ ] Packed `type` drift from source fails build with field name + values.
-- [ ] Packed `tags` drift from source fails build with field name + values.
-- [ ] Canonical title drift (`lar:///` vs `$:/`) fails build.
-- [ ] `pnpm --filter @lararium/tw5 test` passes (add/update relevant tests).
+- [x] Packed `type` drift from source fails build with field name + values.
+- [x] Packed `tags` drift from source fails build with field name + values.
+- [x] Canonical title drift (`lar:///` vs `$:/`) fails build.
+- [ ] `pnpm --filter @lararium/tw5 test` passes (add/update relevant tests). ← deferred
 
 ---
 
@@ -191,36 +183,33 @@ internals as trusted magic" from the trust surface.
 
 Todo:
 
-- [ ] Add `plugin-build/pack-transcript.ts` defining:
-  - [ ] `PACK_TRANSCRIPT_FORMAT = "lararium-tw5-pack-transcript/v1"`.
-  - [ ] Interface `PackTranscript` with fields: `format`, `generatedBy`,
-        `tw5BinPath`, `tw5PackageVersion` (read from tw5's `package.json`),
-        `packArgs` (string[]), `inputRootSha256` (sha256 of sorted file list +
-        contents of the temp input dir before pack), `exportedPluginSha256`
-        (sha256 of raw `plugin.json` output before field augmentation),
-        `timestamp` (ISO 8601).
-  - [ ] `writePackTranscript(pathname, transcript)` and
-        `readPackTranscript(pathname)` following the pattern in
-        `module-manifest.ts`.
-- [ ] In `scripts/build-plugin-tiddler.ts`:
-  - [ ] After `cpSync` to temp dir but before `spawnSync(TW5_BIN, ...)`:
-        compute `inputRootSha256` by walking the temp plugin dir, sorting
-        entries, and sha256-ing `path + ":" + content` concatenated.
-  - [ ] After `spawnSync` succeeds: compute `exportedPluginSha256` from the raw
-        `plugin.json` bytes before any augmentation.
-  - [ ] Write transcript to `dist-plugin/pack-transcript.json`.
-  - [ ] Link transcript from the final attestation:
-        `packTranscriptPath` and `packTranscriptSha256` fields.
-- [ ] Transcript MUST NOT include the final attestation hash (acyclicity).
+- [x] Added `plugin-build/pack-transcript.ts` defining:
+  - [x] `PACK_TRANSCRIPT_FORMAT = "lararium-tw5-pack-transcript/v1"`.
+  - [x] Interface `PackTranscript` with fields: `format`, `generatedBy`,
+        `tw5BinPath`, `tw5PackageVersion`, `packArgs`, `inputRootSha256`,
+        `exportedPluginSha256`, `timestamp`.
+  - [x] `writePackTranscript` and `readPackTranscript` I/O helpers.
+  - [x] `computeInputRootSha256(rootDir)` — walks dir, sorts by rel path,
+        hashes `"${rel}:${content}"` concatenation.
+  - [x] `resolveTw5Version(resolveFrom)` — synchronous upward-walk with pnpm
+        virtual store fallback.
+- [x] In `scripts/build-plugin-tiddler.ts`:
+  - [x] After `cpSync` before `spawnSync`: compute `inputRootSha256`.
+  - [x] After `spawnSync` reads `plugin.json`: compute `exportedPluginSha256`
+        before any field augmentation.
+  - [x] Write transcript to `dist-plugin/pack-transcript.json`.
+  - [x] Link transcript from final attestation (`packTranscriptPath` +
+        `packTranscriptSha256`).
+- [x] Transcript DOES NOT include final attestation hash (acyclicity preserved).
 
 Acceptance:
 
-- [ ] `dist-plugin/pack-transcript.json` emits on every build.
-- [ ] Attestation includes `packTranscriptPath` and `packTranscriptSha256`.
-- [ ] Transcript does not include the final attestation hash.
-- [ ] `tw5PackageVersion` matches the installed TW5 version.
+- [x] `dist-plugin/pack-transcript.json` emits on every build.
+- [x] Attestation includes `packTranscriptPath` and `packTranscriptSha256`.
+- [x] Transcript does not include the final attestation hash.
+- [x] `tw5PackageVersion` matches the installed TW5 version.
 - [ ] A second build with identical inputs produces identical
-      `inputRootSha256` and `exportedPluginSha256`.
+      `inputRootSha256` and `exportedPluginSha256`. ← verify on next full build
 
 ---
 

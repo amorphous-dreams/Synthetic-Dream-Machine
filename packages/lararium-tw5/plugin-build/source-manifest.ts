@@ -3,7 +3,7 @@ import path from "path";
 import { MODULE_MANIFEST, packagePath, packageRelative, TIDDLERS_DIR } from "./paths.js";
 import { type ModuleManifest, sha256 } from "./module-manifest.js";
 
-export const SOURCE_MANIFEST_FORMAT = "lararium-tw5-plugin-source-manifest/v1";
+export const SOURCE_MANIFEST_FORMAT = "lararium-tw5-plugin-source-manifest/v2";
 
 export interface SourceManifestFile {
   path: string;
@@ -14,6 +14,8 @@ export interface StaticTiddlerSource extends SourceManifestFile {
   title: string;
   type?: string;
   tags?: string;
+  /** SHA-256 of the tiddler body text (content after the first blank line). Empty string when no body. */
+  bodySha256: string;
 }
 
 export interface PluginSourceManifest {
@@ -33,6 +35,14 @@ function parseTidFields(text: string, filePath: string): Record<string, string> 
     fields[match[1]!.trim()] = match[2]!.trim();
   }
   return fields;
+}
+
+/** Extract body text from a .tid file (content after the first blank line). */
+function parseTidBody(text: string): string {
+  const lines = text.split(/\r?\n/);
+  const blankIdx = lines.findIndex((l) => l.trim() === "");
+  if (blankIdx === -1) return "";
+  return lines.slice(blankIdx + 1).join("\n");
 }
 
 export function buildPluginSourceManifest(
@@ -56,12 +66,14 @@ export function buildPluginSourceManifest(
     const fields = parseTidFields(text, rel);
     const title = fields["title"];
     if (!title) throw new Error(`[plugin-build] static tiddler missing title: ${rel}`);
+    const body = parseTidBody(text);
     staticTiddlers.push({
       path: rel,
       title,
       ...(fields["type"] ? { type: fields["type"] } : {}),
       ...(fields["tags"] ? { tags: fields["tags"] } : {}),
       sha256: sha256(text),
+      bodySha256: sha256(body),
     });
   }
   staticTiddlers.sort((a, b) => a.path.localeCompare(b.path));
@@ -107,11 +119,14 @@ export function verifyPluginSourceManifest(manifest: PluginSourceManifest, label
     throw new Error(`[plugin-build] ${label} missing staticTiddlers[]`);
   }
   for (const [idx, t] of manifest.staticTiddlers.entries()) {
-    for (const key of ["path", "title", "sha256"] as const) {
-      if (!t[key]) throw new Error(`[plugin-build] ${label} staticTiddlers[${idx}] missing ${key}`);
+    for (const key of ["path", "title", "sha256", "bodySha256"] as const) {
+      if (t[key] === undefined || t[key] === null) throw new Error(`[plugin-build] ${label} staticTiddlers[${idx}] missing ${key}`);
     }
     if (!/^[a-f0-9]{64}$/.test(t.sha256)) {
       throw new Error(`[plugin-build] ${label} staticTiddlers[${idx}] has invalid sha256: ${t.sha256}`);
+    }
+    if (!/^[a-f0-9]{64}$/.test(t.bodySha256)) {
+      throw new Error(`[plugin-build] ${label} staticTiddlers[${idx}] has invalid bodySha256: ${t.bodySha256}`);
     }
   }
   if (!manifest.moduleManifest?.path || !manifest.moduleManifest.sha256 || typeof manifest.moduleManifest.moduleCount !== "number") {

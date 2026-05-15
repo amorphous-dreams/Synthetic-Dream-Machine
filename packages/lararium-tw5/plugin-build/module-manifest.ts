@@ -1,4 +1,4 @@
-import { createHash } from "crypto";
+import { sha256HexSync } from "@lararium/core";
 import { mkdirSync, readFileSync, writeFileSync } from "fs";
 import path from "path";
 
@@ -19,9 +19,7 @@ export interface ModuleManifest {
   modules: ModuleManifestEntry[];
 }
 
-export function sha256(text: string): string {
-  return createHash("sha256").update(text, "utf8").digest("hex");
-}
+export { sha256HexSync as sha256 } from "@lararium/core";
 
 export function writeModuleManifest(pathname: string, manifest: ModuleManifest): void {
   verifyModuleManifest(manifest, pathname);
@@ -33,7 +31,7 @@ export function readModuleManifest(pathname: string): { manifest: ModuleManifest
   const text = readFileSync(pathname, "utf8");
   const manifest = JSON.parse(text) as ModuleManifest;
   verifyModuleManifest(manifest, pathname);
-  return { manifest, text, sha256: sha256(text) };
+  return { manifest, text, sha256: sha256HexSync(text) };
 }
 
 export function verifyModuleManifest(manifest: ModuleManifest, label = "module manifest"): void {

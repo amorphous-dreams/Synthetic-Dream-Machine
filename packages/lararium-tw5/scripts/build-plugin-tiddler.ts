@@ -19,9 +19,9 @@
  *   - src/*.js      — generated CJS module tiddlers (built by Vite)
  */
 
+import { sha256HexSync } from "@lararium/core";
 import { readFileSync, writeFileSync, mkdirSync, mkdtempSync, rmSync, cpSync, copyFileSync, existsSync } from "fs";
 import { spawnSync } from "child_process";
-import { createHash } from "crypto";
 import { tmpdir } from "os";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -33,6 +33,12 @@ import {
   writePluginSourceManifest,
   type PluginSourceManifest,
 } from "../plugin-build/source-manifest.js";
+import {
+  computeInputRootSha256,
+  PACK_TRANSCRIPT_FORMAT,
+  resolveTw5Version,
+  writePackTranscript,
+} from "../plugin-build/pack-transcript.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT       = path.resolve(__dirname, "..");
@@ -49,9 +55,8 @@ const TW5_BIN = path.join(ROOT, "../../node_modules/.pnpm/node_modules/.bin/tidd
 const SHA_FIELD_RE  = /^body-sha256\s*=\s*"[^"]*"/m;
 const TOML_BLOCK_RE = /(```toml[\s\S]*?```)/;
 
-function sha256(text: string): string {
-  return createHash("sha256").update(text, "utf8").digest("hex");
-}
+/** sha256 — local alias to sha256HexSync from @lararium/core (build-time only). */
+const sha256 = sha256HexSync;
 
 function patchSha256(meme: string, digest: string): string {
   const tomlM = TOML_BLOCK_RE.exec(meme);
@@ -101,13 +106,44 @@ function verifyPackedPluginAgainstSourceManifest(
   const failures: string[] = [];
 
   for (const t of sourceManifest.staticTiddlers) {
-    if (!tiddlers[t.title]) failures.push(`missing static tiddler ${t.title} (${t.path})`);
+    const packed = tiddlers[t.title];
+    if (!packed) {
+      failures.push(`missing static tiddler "${t.title}" (source: ${t.path})`);
+      continue;
+    }
+
+    // type field
+    if (t.type !== undefined) {
+      const packedType = String(packed["type"] ?? "");
+      if (packedType !== t.type) {
+        failures.push(`"${t.title}": type field drift — source: "${t.type}", packed: "${packedType}"`);
+      }
+    }
+
+    // tags field
+    if (t.tags !== undefined) {
+      const packedTags = String(packed["tags"] ?? "");
+      if (packedTags !== t.tags) {
+        failures.push(`"${t.title}": tags field drift — source: "${t.tags}", packed: "${packedTags}"`);
+      }
+    }
+
+    // body digest
+    const packedText = String(packed["text"] ?? "");
+    const packedBodySha = sha256(packedText);
+    if (packedBodySha !== t.bodySha256) {
+      failures.push(
+        `"${t.title}": body digest mismatch\n` +
+        `    source bodySha256: ${t.bodySha256.slice(0, 16)}…\n` +
+        `    packed bodySha256: ${packedBodySha.slice(0, 16)}…`,
+      );
+    }
   }
 
   if (failures.length > 0) {
     throw new Error(`[plugin-build] packed plugin failed source-manifest verification:\n  ${failures.join("\n  ")}`);
   }
-  console.log(`[plugin-build] verified ${sourceManifest.staticTiddlers.length} packed static tiddlers against source manifest`);
+  console.log(`[plugin-build] verified ${sourceManifest.staticTiddlers.length} packed static tiddlers (title + fields + body) against source manifest`);
 }
 
 function verifyPackedPluginAgainstManifest(
@@ -176,31 +212,54 @@ async function main(): Promise<void> {
   console.log("[plugin-build] packing plugin via TW5 CLI…");
   const tw5Tmp = mkdtempSync(path.join(tmpdir(), "tw5-pack-"));
   const tw5PluginCopy = path.join(tw5Tmp, "plugin");
+  const packArgs = [
+    `++${tw5PluginCopy}`,
+    "--render",
+    "$:/core/templates/exporters/JsonFile",
+    "plugin.json",
+    "text/plain",
+    "",
+    "exportFilter",
+    `[[${PLUGIN_TITLE_LAR}]]`,
+  ];
   let outputJson: string;
+  let inputRootSha256: string;
+  let exportedPluginSha256: string;
   try {
     cpSync(path.join(ROOT, TIDDLERS_DIR), tw5PluginCopy, { recursive: true });
-    const renderResult = spawnSync(
-      TW5_BIN,
-      [
-        `++${tw5PluginCopy}`,
-        "--render",
-        "$:/core/templates/exporters/JsonFile",
-        "plugin.json",
-        "text/plain",
-        "",
-        "exportFilter",
-        `[[${PLUGIN_TITLE_LAR}]]`,
-      ],
-      { cwd: tw5Tmp, stdio: "inherit" },
-    );
+    // Capture input tree digest before TW5 transforms anything.
+    inputRootSha256 = computeInputRootSha256(tw5PluginCopy);
+    const renderResult = spawnSync(TW5_BIN, packArgs, { cwd: tw5Tmp, stdio: "inherit" });
     if (renderResult.status !== 0) {
       console.error("[plugin-build] TW5 render failed");
       process.exit(renderResult.status ?? 1);
     }
     outputJson = readFileSync(path.join(tw5Tmp, "output", "plugin.json"), "utf8");
+    // Capture exported JSON digest before field augmentation — proves TW5 output.
+    exportedPluginSha256 = sha256(outputJson);
   } finally {
     rmSync(tw5Tmp, { recursive: true, force: true });
   }
+
+  // 3a. Write pack transcript before verification so failures are still auditable.
+  const TRANSCRIPT_PATH = "dist-plugin/pack-transcript.json";
+  const transcriptAbsPath = path.join(ROOT, TRANSCRIPT_PATH);
+  const tw5Version = resolveTw5Version(ROOT);
+  writePackTranscript(transcriptAbsPath, {
+    format: PACK_TRANSCRIPT_FORMAT,
+    generatedBy: "packages/lararium-tw5/scripts/build-plugin-tiddler.ts",
+    timestamp: new Date().toISOString(),
+    tw5BinPath: TW5_BIN,
+    tw5PackageVersion: tw5Version,
+    // Replace ephemeral temp path with stable placeholder — content proved by inputRootSha256.
+    packArgs: packArgs.map((a) => a.startsWith("++") ? "++{tmpInput}" : a),
+    inputRootSha256,
+    exportedPluginSha256,
+  });
+  const transcriptText = readFileSync(transcriptAbsPath, "utf8");
+  const transcriptSha256 = sha256(transcriptText);
+  console.log(`[plugin-build] pack transcript: ${TRANSCRIPT_PATH} (sha256=${transcriptSha256.slice(0, 16)}…)`);
+
   const tiddlerArray = JSON.parse(outputJson) as Record<string, unknown>[];
   if (!tiddlerArray.length) {
     console.error("[plugin-build] TW5 exported 0 tiddlers — check plugin title in plugin.info");
@@ -258,6 +317,8 @@ async function main(): Promise<void> {
       moduleManifestSha256: moduleManifest.sha256,
       sourceManifestPath: SOURCE_MANIFEST,
       sourceManifestSha256: sourceManifest.sha256,
+      packTranscriptPath: TRANSCRIPT_PATH,
+      packTranscriptSha256: transcriptSha256,
       moduleCount: moduleManifest.manifest.modules.length,
       packedTiddlerCount: tiddlerCount,
       pluginJsonSha256: pluginJsonSha,

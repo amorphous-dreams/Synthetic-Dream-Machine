@@ -6,7 +6,14 @@
  *   - Portable code depends on CryptoProvider, never on Node crypto or hand-rolled code.
  *   - All digest operations are async (SubtleCrypto.digest is async).
  *   - Callers must supply canonical bytes, not raw objects.
+ *
+ * Exception: sha256HexSync — synchronous build-tool path.
+ *   Build scripts (Vite plugin, pack transcript, manifest generators) need a sync
+ *   sha256. They run only in Node at build time; SubtleCrypto async is not ergonomic
+ *   there. sha256HexSync uses @noble/hashes/sha2 directly. Do NOT import it into
+ *   browser bundles or runtime code. All runtime callers MUST use sha256Hex().
  */
+import { sha256 as nobleSha256 } from "@noble/hashes/sha2.js";
 
 // ---------------------------------------------------------------------------
 // Provider interfaces
@@ -106,4 +113,17 @@ export function hex(bytes: Uint8Array): string {
  */
 export async function sha256Hex(bytes: Uint8Array, provider: DigestProvider): Promise<string> {
   return hex(await provider.digest("SHA-256", bytes));
+}
+
+/**
+ * Synchronous SHA-256 of a UTF-8 string, returned as lowercase hex.
+ *
+ * SCOPE: build-time tooling ONLY — Vite plugin, pack scripts, manifest generators.
+ * Runtime code MUST use sha256Hex(bytes, provider) which routes through CryptoProvider.
+ * Do NOT import this into browser bundles or any file that ships to a browser runtime.
+ *
+ * Uses @noble/hashes/sha2 (synchronous), not SubtleCrypto.
+ */
+export function sha256HexSync(text: string): string {
+  return hex(nobleSha256(utf8Bytes(text)));
 }
