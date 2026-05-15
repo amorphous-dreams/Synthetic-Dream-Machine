@@ -138,9 +138,9 @@ function familyFromFields(title: string, fields: TwFields): FamilyRule | null {
  *      - lar-kind == "family" → FamilyRule
  *   2. GRAMMAR_MEME_URI TOML monolith (fallback for unmigrated sigils + unmigrated families)
  *
- * Tiddler entries take precedence over TOML entries by name. When all sigils and
- * families carry SharktoothSigil tiddlers, the TOML monolith shrinks to the single
- * permanent `toml` data-fence sigil block and the grammar runs fully self-hosted.
+ * Tiddler entries take precedence over TOML entries by name. All sigils and families
+ * now carry SharktoothSigil tiddlers. The TOML monolith contains only the single
+ * permanent `toml` data-fence sigil block — the grammar runs fully self-hosted.
  */
 function buildGrammarFromWiki(wiki: TwWiki): GrammarRules | null {
   // Primary: SharktoothSigil-tagged tiddlers — split into sigils and families

@@ -85,17 +85,17 @@ export const BOOTSTRAP_SCANS: SigilScan[] = [
   // kau — invocation before placement
   { sigilName: "kau", regex: /<<~\s*kau\s+([\w][\w.-]*)\(([^)]*)\)\s*>>/g,                   eventType: "leaf" },
   { sigilName: "kau", regex: /<<~\s*kau\s+(#[\w-]+\s+)?([\w][\w.-]*)(?:\s+([^>]*))?\s*>>/g, eventType: "leaf" },
-  // Conditional
-  { sigilName: "wai",     regex: /<<~\s*wai\s+([^\n>]+?)\s*>>/g,       eventType: "open"  },
-  { sigilName: "wai",     regex: /<<~\/wai\s*>>/g,                      eventType: "close" },
+  // Conditional (heihei = canonical; wai retired)
+  { sigilName: "heihei",  regex: /<<~\s*heihei\s+([^\n>]+?)\s*>>/g,    eventType: "open"  },
+  { sigilName: "heihei",  regex: /<<~\/heihei\s*>>/g,                   eventType: "close" },
   { sigilName: "mukuwai", regex: /<<~\s*mukuwai\s*>>/g,                 eventType: "leaf"  },
   { sigilName: "kahawai", regex: /<<~\s*kahawai\s+([^\n>]+?)\s*>>/g,   eventType: "leaf"  },
   // Iteration
   { sigilName: "huli", regex: /<<~\s*huli\s+([^\n>]+?)\s+as\s+([\w-]+)\s*>>/g, eventType: "open"  },
   { sigilName: "huli", regex: /<<~\/huli\s*>>/g,                                eventType: "close" },
   // English aliases — emit canonical name directly (inline erasure)
-  { sigilName: "\\if",   canonicalName: "wai",     regex: /<<~\s*\\if\s+([^\n>]+?)\s*>>/g,     eventType: "open"  },
-  { sigilName: "\\if",   canonicalName: "wai",     regex: /<<~\/\\if\s*>>/g,                    eventType: "close" },
+  { sigilName: "\\if",   canonicalName: "heihei",  regex: /<<~\s*\\if\s+([^\n>]+?)\s*>>/g,     eventType: "open"  },
+  { sigilName: "\\if",   canonicalName: "heihei",  regex: /<<~\/\\if\s*>>/g,                    eventType: "close" },
   { sigilName: "\\else", canonicalName: "mukuwai", regex: /<<~\s*\\else\s*>>/g,                 eventType: "leaf"  },
   { sigilName: "\\elif", canonicalName: "kahawai", regex: /<<~\s*\\elif\s+([^\n>]+?)\s*>>/g,   eventType: "leaf"  },
   { sigilName: "\\const", canonicalName: "waiho",  regex: /<<~!\s*\\const\s+([\w-]+)\s*=\s*([^\n>]+?)\s*>>/g, eventType: "pragma" },

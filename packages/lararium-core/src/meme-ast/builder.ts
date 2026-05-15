@@ -60,7 +60,7 @@ function attrsFromGroups(
 ): Record<string, string> {
   const g = (i: number) => (groups[i] ?? "").trim();
   switch (name) {
-    case "wai":     return { filter: g(1) };
+    case "heihei":
     case "kahawai": return { filter: g(1) };
     case "huli":    return { filter: g(1), binding: g(2) };
     case "hana":    return { grammarKey: g(1) };

@@ -3,8 +3,9 @@
  *
  * The grammar meme qualifies as a meme: its text follows the memetic-wikitext carrier
  * protocol and is parsed by BOOTSTRAP_SCANS (Invariant 1 of grammar-invariants.ts).
- * GrammarRules are extracted from `[[sigils]]` and `[[families]]` TOML
- * array-of-tables inside toml-fenced blocks in the grammar meme body.
+ * GrammarRules are extracted from `[[sigils]]` TOML array-of-tables inside toml-fenced
+ * blocks in the grammar meme body. `[[families]]` blocks — if present — are also parsed
+ * but families now carry primarily from SharktoothSigil tiddlers (lar-kind: family).
  *
  * This module lives in lararium-core (isomorphic) because:
  *   - lararium-node needs it to seed the engine doc at server start (Sprint 2)
@@ -64,8 +65,9 @@ function collectTomlNodes(nodes: readonly MemeAstNode[]): SigilNode[] {
  * Parse a grammar meme text into `GrammarRules`.
  *
  * Uses `parseMemeText()` with no pre-existing GrammarRules (bootstrap mode —
- * Invariant 1 of grammar-invariants.ts). Reads `[[sigils]]` and `[[families]]`
- * TOML array-of-tables from the combined content of all `toml` Sigil nodes.
+ * Invariant 1 of grammar-invariants.ts). Reads `[[sigils]]` TOML array-of-tables
+ * from the combined content of all `toml` Sigil nodes. `[[families]]` blocks
+ * parsed if present (legacy path; families now carry primarily from tiddlers).
  *
  * Returns `null` when the text yields no sigils or families (e.g. empty file,
  * grammar meme not yet seeded). Callers should fall back to `BOOTSTRAP_SCANS`
