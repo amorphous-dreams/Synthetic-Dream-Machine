@@ -123,6 +123,7 @@ confidence-bounded = false
 <<~ pranala #to-papalohe ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/papalohe family:relation >>
 
 <<~ pranala #tiddler ? -> lar:///ha.ka.ba/@lararium/tw5/tiddlers/sigil-loulou family:control role:implements >>
+<<~ pranala #tiddler-sigil-link ? -> lar:///ha.ka.ba/@lararium/tw5/tiddlers/sigil-link family:control role:alias >>
 <<~/ahu >>
 
 <<~&#x0003;>>

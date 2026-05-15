@@ -246,82 +246,6 @@ pattern      = '```toml(?:[ \t]+([A-Za-z0-9_-]+))?[ \t]*\n([\s\S]*?)```'
 description  = "TOML data fence; optional profile name (group 1) qualifies the block. Profile 'iam' marks the carrier identity prelude — appears before the first ahu or STX and supplies parent tiddler fields. Profile absent means a general-purpose data block."
 
 [[sigils]]
-name          = "\\procedure"
-kind          = "pragma-alias"
-layer         = "render"
-alias_for     = "wehe"
-open_pattern  = '<<~!\s*\\procedure\s+([\w-]+)(?:\(([^)]*)\))?\s*>>'
-close_pattern = '<<~\/\\procedure\s*>>'
-description   = "English alias for wehe; TW5 \\procedure equivalent; parser maps to wehe before evaluation"
-
-[[sigils]]
-name          = "\\function"
-kind          = "pragma-alias"
-layer         = "render"
-alias_for     = "helu"
-pattern       = '<<~!\s*\\function\s+([\w-]+)(?:\(([^)]*)\))?\s*=\s*([^\n>]+?)\s*>>'
-description   = "English alias for helu; TW5 \\function equivalent; parser maps to helu before evaluation"
-
-[[sigils]]
-name          = "\\define"
-kind          = "pragma-alias"
-layer         = "render"
-alias_for     = "wehe"
-open_pattern  = '<<~!\s*\\define\s+([\w-]+)(?:\(([^)]*)\))?\s*>>'
-close_pattern = '<<~\/\\define\s*>>'
-description   = "English alias for wehe; TW5 \\define legacy form; parser maps to wehe before evaluation"
-
-[[sigils]]
-name          = "\\link"
-kind          = "edge-alias"
-layer         = "both"
-alias_for     = "loulou"
-pattern       = '<<~\s*\\link\s+(\S+)\s*>>'
-description   = "English alias for loulou; HTML/TW5 anchor equivalent; parser maps to loulou before evaluation"
-
-[[sigils]]
-name          = "\\shadow"
-kind          = "edge-alias"
-layer         = "both"
-alias_for     = "aka"
-pattern       = '<<~\s*\\shadow\s+(\S+)\s*>>'
-description   = "English alias for aka; TW5 shadow tiddler equivalent; parser maps to aka before evaluation"
-
-[[sigils]]
-name          = "\\if"
-kind          = "conditional-alias"
-layer         = "render"
-alias_for     = "wai"
-open_pattern  = '<<~\s*\\if\s+([^\n>]+?)\s*>>'
-close_pattern = '<<~\/\\if\s*>>'
-description   = "English alias for wai; parser maps to wai before evaluation"
-
-[[sigils]]
-name          = "\\else"
-kind          = "conditional-alias"
-layer         = "render"
-alias_for     = "mukuwai"
-pattern       = '<<~\s*\\else\s*>>'
-description   = "English alias for mukuwai; parser maps to mukuwai before evaluation"
-
-[[sigils]]
-name          = "\\elif"
-kind          = "conditional-alias"
-layer         = "render"
-alias_for     = "kahawai"
-pattern       = '<<~\s*\\elif\s+([^\n>]+?)\s*>>'
-description   = "English alias for kahawai; parser maps to kahawai before evaluation"
-
-[[sigils]]
-name          = "\\for"
-kind          = "iteration-alias"
-layer         = "render"
-alias_for     = "huli"
-open_pattern  = '<<~\s*\\for\s+([^\n>]+?)\s+as\s+([\w-]+)\s*>>'
-close_pattern = '<<~\/\\for\s*>>'
-description   = "English alias for huli; for-each iteration; parser maps to huli before evaluation"
-
-[[sigils]]
 name          = "\\sync"
 kind          = "concurrency-alias"
 layer         = "render"
@@ -348,31 +272,6 @@ open_pattern  = '<<~\s*\\rush\s*>>'
 close_pattern = '<<~\/\\rush\s*>>'
 description   = "English alias for puka; Verse rush keyword; parser maps to puka before evaluation"
 
-[[sigils]]
-name          = "\\branch"
-kind          = "concurrency-alias"
-layer         = "both"
-alias_for     = "lele"
-pattern       = '<<~\s*\\branch\s+(\S+)\s*>>'
-description   = "English alias for lele; maps to fire-and-forget dispatch (not Verse branch speculative fiber); parser maps to lele before evaluation"
-
-[[sigils]]
-name          = "\\tiddler"
-kind          = "context-alias"
-layer         = "render"
-alias_for     = "meme"
-open_pattern  = '<<~\s*\\tiddler\s+(\S+)\s*>>'
-close_pattern = '<<~\/\\tiddler\s*>>'
-description   = "English alias for meme; TW5 <$tiddler> equivalent; parser maps to meme before evaluation"
-
-[[sigils]]
-name          = "\\transclude"
-kind          = "edge-alias"
-layer         = "both"
-alias_for     = "kahea"
-pattern       = '<<~\s*\\transclude\s+(\S+)(?:\s+key:([\w-]+))?\s*>>'
-description   = "English alias for kahea; TW5 transclusion equivalent; parser maps to kahea before evaluation"
-
 # --- Concurrency sigils ---
 
 [[sigils]]
@@ -382,14 +281,6 @@ layer         = "render"
 open_pattern  = '<<~\s*hui\s*>>'
 close_pattern = '<<~\/hui\s*>>'
 description   = "wait for all parallel flows; Verse sync equivalent; [SC]"
-
-[[sigils]]
-name          = "heihei"
-kind          = "concurrency"
-layer         = "render"
-open_pattern  = '<<~\s*heihei\s*>>'
-close_pattern = '<<~\/heihei\s*>>'
-description   = "first-to-finish wins, rest continue; Verse race equivalent; [SC]"
 
 [[sigils]]
 name          = "puka"
@@ -410,14 +301,6 @@ description    = "fire and forget dispatch; emits a message edge and continues w
 # --- Render-time edge sugar ---
 
 [[sigils]]
-name          = "\\guard"
-kind          = "edge-alias"
-layer         = "compile"
-alias_for     = "kapu"
-pattern       = '<<~\s*\\guard\s+([^\n>]*)\s*>>'
-description   = "English alias for kapu; provisional; parser maps to kapu before evaluation"
-
-[[sigils]]
 name          = "\\task"
 kind          = "guest-grammar-alias"
 layer         = "both"
@@ -425,14 +308,6 @@ alias_for     = "hana"
 open_pattern  = '<<~\s*\\task\s+([^\n>]+?)\s*>>'
 close_pattern = '<<~\/\\task\s*>>'
 description   = "English alias for hana; bounded guest grammar / work block; parser maps to hana before evaluation"
-
-[[sigils]]
-name          = "\\query"
-kind          = "query-alias"
-layer         = "render"
-alias_for     = "ui"
-pattern       = '<<~\s*\\query\s+([^\n>]+?)\s*>>'
-description   = "English alias for ui; query surface / filter result render; parser maps to ui before evaluation"
 
 [[sigils]]
 name          = "kapu"
@@ -494,23 +369,7 @@ description   = "branch-channel; else-if form in a wai block; [C] operator-ratif
 
 # --- Iteration ---
 
-[[sigils]]
-name          = "huli"
-kind          = "iteration"
-layer         = "render"
-open_pattern  = '<<~\s*huli\s+([^\n>]+?)\s+as\s+([\w-]+)\s*>>'
-close_pattern = '<<~\/huli\s*>>'
-description   = "iterative rendering over filter results; body renders once per yielded URI; [SC]"
-
 # --- Definition sigils (<<~! pragma mode) ---
-
-[[sigils]]
-name          = "wehe"
-kind          = "pragma"
-layer         = "render"
-open_pattern  = '<<~!\s*wehe\s+([\w-]+)(?:\(([^)]*)\))?\s*>>'
-close_pattern = '<<~\/wehe\s*>>'
-description   = "opens a named wikitext form with parameters; TW5 \\procedure equivalent; summoned via kahea; [SC]"
 
 [[sigils]]
 name          = "helu"
@@ -592,15 +451,6 @@ description   = "element type definition; declares a new grammar node type with 
 
 # English aliases for kumu
 [[sigils]]
-name          = "\\widget"
-kind          = "pragma-alias"
-layer         = "both"
-alias_for     = "kumu"
-open_pattern  = '<<~!\s*\\widget\s+([\w-]+)(?:\(([^)]*)\))?\s*>>'
-close_pattern = '<<~\/\\widget\s*>>'
-description   = "English alias for kumu; TW5 \\widget equivalent; parser maps to kumu before evaluation"
-
-[[sigils]]
 name          = "\\type"
 kind          = "pragma-alias"
 layer         = "both"
@@ -619,14 +469,6 @@ close_pattern = '<<~\/\\typos\s*>>'
 description   = "English alias for kumu (Greek: typos = impression/type); parser maps to kumu before evaluation"
 
 # --- Additional edge/invocation aliases ---
-
-[[sigils]]
-name          = "\\import"
-kind          = "edge-alias"
-layer         = "both"
-alias_for     = "kahea"
-pattern       = '<<~\s*\\import\s+(\S+)(?:\s+key:([\w-]+))?\s*>>'
-description   = "English alias for kahea (import emphasis); parser maps to kahea before evaluation"
 
 [[sigils]]
 name          = "\\constraint"

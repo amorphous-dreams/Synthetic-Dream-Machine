@@ -1,0 +1,11 @@
+title: lar:///ha.ka.ba/@lararium/tw5/tiddlers/sigil-query
+tags: $:/tags/Global lar:///ha.ka.ba/tags/SharktoothSigil
+lar-kind: query-alias
+lar-pono-uri: lar:///ha.ka.ba/@lares/api/v0.1/pono/ui
+lar-alias-for: \query
+lar-see-also: ui
+lar-pattern: <<~\s*\\query\s+([^\n>]+?)\s*>>
+type: text/vnd.tiddlywiki
+
+\procedure ~\query(p1:"")
+<$list filter=<<p1>>><$view field="title"/></$list>

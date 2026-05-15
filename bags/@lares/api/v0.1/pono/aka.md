@@ -128,6 +128,7 @@ confidence-bounded = true
 <<~ pranala #to-kahea ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/kahea family:relation >>
 
 <<~ pranala #tiddler ? -> lar:///ha.ka.ba/@lararium/tw5/tiddlers/sigil-aka family:control role:implements >>
+<<~ pranala #tiddler-sigil-shadow ? -> lar:///ha.ka.ba/@lararium/tw5/tiddlers/sigil-shadow family:control role:alias >>
 <<~/ahu >>
 
 <<~&#x0003;>>

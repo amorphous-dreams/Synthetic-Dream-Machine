@@ -8,7 +8,5 @@ lar-open-pattern: <<~\s*huli\s+([^>]+?)\s*>>
 lar-close-pattern: <<~\/huli\s*>>
 type: text/vnd.tiddlywiki
 
-<!-- huli — Hawaiian iteration block; alias for \for.
-     Iterates a TW5 filter; renders body-template once per result.
-     STUB: wikitext \procedure body is G.SharktoothSigil work (Category 5).
-     When the body ships, it will wrap <$list filter=...>. -->
+\procedure ~huli(p1:"" p2:"")
+<$list filter=<<p1>>><$transclude $variable="~" name=<<p2>>/></$list>

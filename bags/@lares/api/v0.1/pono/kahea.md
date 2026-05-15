@@ -150,6 +150,8 @@ canonical-roles = ["reads", "writes", "streams", "buffers", "pipes"]
 <<~ pranala #to-papalohe ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/papalohe family:relation >>
 
 <<~ pranala #tiddler ? -> lar:///ha.ka.ba/@lararium/tw5/tiddlers/sigil-kahea family:control role:implements >>
+<<~ pranala #tiddler-sigil-transclude ? -> lar:///ha.ka.ba/@lararium/tw5/tiddlers/sigil-transclude family:control role:alias >>
+<<~ pranala #tiddler-sigil-import ? -> lar:///ha.ka.ba/@lararium/tw5/tiddlers/sigil-import family:control role:alias >>
 <<~/ahu >>
 
 <<~&#x0003;>>

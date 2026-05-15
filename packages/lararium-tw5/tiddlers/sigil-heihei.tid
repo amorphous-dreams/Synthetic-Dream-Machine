@@ -8,7 +8,5 @@ lar-open-pattern: <<~\s*heihei\s+([^>]+?)\s*>>
 lar-close-pattern: <<~\/heihei\s*>>
 type: text/vnd.tiddlywiki
 
-<!-- heihei — Hawaiian conditional block; alias for \if.
-     First candidate whose filter passes wins.
-     STUB: wikitext \procedure body is G.SharktoothSigil work (Category 5).
-     When the body ships, it will use <%if filter%>...<%endif%> (TW5 5.3+). -->
+\procedure ~heihei(p1:"" p2:"")
+<%if [<p1>]%><$transclude $variable="~" name=<<p2>>/><%endif%>

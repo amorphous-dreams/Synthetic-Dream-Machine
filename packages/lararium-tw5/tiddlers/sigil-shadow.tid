@@ -1,0 +1,11 @@
+title: lar:///ha.ka.ba/@lararium/tw5/tiddlers/sigil-shadow
+tags: $:/tags/Global lar:///ha.ka.ba/tags/SharktoothSigil
+lar-kind: edge-alias
+lar-pono-uri: lar:///ha.ka.ba/@lares/api/v0.1/pono/aka
+lar-alias-for: \shadow
+lar-see-also: aka
+lar-pattern: <<~\s*\\shadow\s+(\S+)\s*>>
+type: text/vnd.tiddlywiki
+
+\procedure ~\shadow(p1:"")
+<$transclude $variable="~aka" p1=<<p1>>/>

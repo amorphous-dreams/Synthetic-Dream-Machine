@@ -147,6 +147,7 @@ Procedure, skeleton blocks, conformance checklists, and research backlog move ou
 <<~ pranala #implements-meme ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/meme family:control role:implements >>
 <<~ pranala #implements-loci ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/loci family:control role:implements >>
 <<~ pranala #implements-invariant ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/invariant family:control role:implements >>
+<<~ pranala #tiddler-sigil-tiddler ? -> lar:///ha.ka.ba/@lararium/tw5/tiddlers/sigil-tiddler family:control role:alias >>
 <<~/ahu >>
 
 <<~&#x0003;>>

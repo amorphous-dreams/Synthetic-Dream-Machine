@@ -140,6 +140,7 @@ This meme governs the kapu rating and above-namespace trust law.
 <<~ pranala #implements-invariant ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/invariant family:control role:implements >>
 <<~ pranala #implements-kapu ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/kapu family:control role:implements >>
 
+<<~ pranala #tiddler-sigil-guard ? -> lar:///ha.ka.ba/@lararium/tw5/tiddlers/sigil-guard family:control role:alias >>
 <<~/ahu >>
 
 <<~&#x0003;>>
