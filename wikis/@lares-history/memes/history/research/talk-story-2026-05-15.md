@@ -1,9 +1,9 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/@lares/api/v0.1/pono/memetic-wikitext >> -->
 
-<<~⊙&#x0001; ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/talk-story-2026-05-15 >>
+<<~⊙&#x0001; ? -> lar:///ha.ka.ba/@lares-history/history/research/talk-story-2026-05-15 >>
 ```toml iam
-uri-path    = "ha.ka.ba/@lares/api/v0.1/pono/talk-story-2026-05-15"
-file-path   = "bags/@lares/api/v0.1/pono/talk-story-2026-05-15.md"
+uri-path    = "ha.ka.ba/@lares-history/history/research/talk-story-2026-05-15"
+file-path   = "wikis/@lares-history/history/research/talk-story-2026-05-15.md"
 type        = "text/x-memetic-wikitext"
 register    = "CS"
 confidence  = 0.90
