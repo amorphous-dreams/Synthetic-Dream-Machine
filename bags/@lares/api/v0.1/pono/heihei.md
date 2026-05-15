@@ -25,7 +25,7 @@ retain       = true
 
 *heihei* — Hawaiian: race, competition (foot race, canoe race); to race, to compete.
 General competitive racing — a structured contest where candidates run and the outcome depends
-on who resolves the condition. Does not primarily mean "confusion"; the competition is
+on who resolves the condition. Until resolved, uncertainty holds. The competition's outcome reads
 purposeful and ordered.
 
 A block-container sigil with competitive conditional semantics. Multiple candidate bodies
@@ -118,6 +118,10 @@ close-pattern = '<<~\/heihei\s*>>'
 
 <<~ pranala #to-wehe ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/wehe family:relation >>
 <<~ pranala #to-huli ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/huli family:relation >>
+<<~ pranala #to-kahawai ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/kahawai family:relation >>
+<<~ pranala #to-mukuwai ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/mukuwai family:relation >>
+<<~ loulou lar:///ha.ka.ba/@lares/api/v0.1/pono/wai-retired >>
+<!-- wai (TOML: conditional alias) retired; heihei carries the conditional-filter semantics -->
 
 <<~ pranala #tiddler ? -> lar:///ha.ka.ba/@lararium/tw5/tiddlers/sigil-heihei family:control role:implements >>
 <<~ pranala #tiddler-sigil-if ? -> lar:///ha.ka.ba/@lararium/tw5/tiddlers/sigil-if family:control role:alias >>

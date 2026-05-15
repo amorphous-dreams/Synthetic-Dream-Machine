@@ -1,0 +1,10 @@
+title: lar:///ha.ka.ba/@lararium/tw5/tiddlers/sigil-pono
+tags: $:/tags/Global lar:///ha.ka.ba/tags/SharktoothSigil
+lar-kind: edge-sugar
+lar-pono-uri: lar:///ha.ka.ba/@lares/api/v0.1/pono/pono-sigil
+lar-see-also: \constraint
+lar-pattern: <<~\s*pono\s+(#[\w-]+\s+)?(\S+)\s*->\s*(\S+)(?:\s+role:([\w-]+))?\s*>>
+type: text/vnd.tiddlywiki
+
+<!-- pono — correctness-asserting edge; asserts FROM holds constraint satisfied by TO.
+     Render: edge metadata annotation, no visual output by default. -->

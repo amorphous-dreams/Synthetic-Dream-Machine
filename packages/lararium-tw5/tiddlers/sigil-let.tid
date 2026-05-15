@@ -1,0 +1,12 @@
+title: lar:///ha.ka.ba/@lararium/tw5/tiddlers/sigil-let
+tags: $:/tags/Global lar:///ha.ka.ba/tags/SharktoothSigil
+lar-kind: pragma-alias
+lar-pono-uri: lar:///ha.ka.ba/@lares/api/v0.1/pono/waiho
+lar-alias-for: \let
+lar-see-also: waiho
+lar-open-pattern: <<~\s*\\let\s+([\w-]+)\s+([^\n>]+?)\s*>>
+lar-close-pattern: <<~\/\\let\s*>>
+type: text/vnd.tiddlywiki
+
+\procedure ~\let(p1:"" p2:"" p3:"")
+<$transclude $variable="~waiho" p1=<<p1>> p2=<<p2>> p3=<<p3>>/>

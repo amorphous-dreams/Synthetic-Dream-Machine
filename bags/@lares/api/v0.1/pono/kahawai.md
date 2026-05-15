@@ -71,6 +71,7 @@ English alias forms:
 <<~ pranala #to-mukuwai ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/mukuwai family:relation >>
 <<~ pranala #tiddler ? -> lar:///ha.ka.ba/@lararium/tw5/tiddlers/sigil-elif family:control role:alias >>
 
+<<~ pranala #tiddler-sigil-kahawai ? -> lar:///ha.ka.ba/@lararium/tw5/tiddlers/sigil-kahawai family:control role:implements >>
 <<~/ahu >>
 
 <<~&#x0003;>>

@@ -1,0 +1,11 @@
+title: lar:///ha.ka.ba/@lararium/tw5/tiddlers/sigil-hana
+tags: $:/tags/Global lar:///ha.ka.ba/tags/SharktoothSigil
+lar-kind: guest-grammar
+lar-pono-uri: lar:///ha.ka.ba/@lares/api/v0.1/pono/hana
+lar-see-also: \task
+lar-open-pattern: <<~\s*hana\s+([^\n>]+?)\s*>>
+lar-close-pattern: <<~\/hana\s*>>
+type: text/vnd.tiddlywiki
+
+<!-- hana — bounded guest-grammar block; grammar-key selects the interpreter.
+     Body is foreign grammar (not TW5 wikitext). Render: delegated to guest interpreter. -->

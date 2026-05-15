@@ -300,139 +300,18 @@ description    = "fire and forget dispatch; emits a message edge and continues w
 
 # --- Render-time edge sugar ---
 
-[[sigils]]
-name          = "\\task"
-kind          = "guest-grammar-alias"
-layer         = "both"
-alias_for     = "hana"
-open_pattern  = '<<~\s*\\task\s+([^\n>]+?)\s*>>'
-close_pattern = '<<~\/\\task\s*>>'
-description   = "English alias for hana; bounded guest grammar / work block; parser maps to hana before evaluation"
-
-[[sigils]]
-name          = "kapu"
-kind          = "edge-sugar"
-layer         = "compile"
-pattern       = '<<~\s*kapu\s+([^\n>]*)\s*>>'
-open_pattern  = '<<~\s*kapu\s+([^\n>]*)\s*>>'
-close_pattern = '<<~\/kapu\s*>>'
-description   = "qualification and boundary posture; marks confidence, restriction, or unresolved threshold; inline (no body) or block (wraps a region); [SC]"
-
-[[sigils]]
-name          = "hana"
-kind          = "guest-grammar"
-layer         = "both"
-open_pattern  = '<<~\s*hana\s+([^\n>]+?)\s*>>'
-close_pattern = '<<~\/hana\s*>>'
-description   = "bounded guest grammar block; grammar-key selects the interpreter; [SC]"
-
-[[sigils]]
-name          = "ui"
-kind          = "query"
-layer         = "render"
-pattern       = '<<~\s*ui\s+([^\n>]+?)\s*>>'
-description   = "query surface; evaluates filter expression and renders result as meme list; [SC]"
-
 # --- Context sigil ---
 
-[[sigils]]
-name          = "meme"
-kind          = "context"
-layer         = "render"
-open_pattern  = '<<~\s*meme\s+(\S+)\s*>>'
-close_pattern = '<<~\/meme\s*>>'
-description   = "sets current meme as rendering context for block body; lexical scope; TW5 <$tiddler> equivalent; [SC]"
-
 # --- Conditional sigils ---
-
-[[sigils]]
-name          = "wai"
-kind          = "conditional"
-layer         = "render"
-open_pattern  = '<<~\s*wai\s+([^\n>]+?)\s*>>'
-close_pattern = '<<~\/wai\s*>>'
-description   = "conditional source; renders body when filter result non-empty; [C] operator-ratified"
-
-[[sigils]]
-name          = "mukuwai"
-kind          = "conditional-else"
-layer         = "render"
-pattern       = '<<~\s*mukuwai\s*>>'
-description   = "alternate outflow; fallback body in a wai block; [C] operator-ratified"
-
-[[sigils]]
-name          = "kahawai"
-kind          = "conditional-branch"
-layer         = "render"
-pattern       = '<<~\s*kahawai\s+([^\n>]+?)\s*>>'
-description   = "branch-channel; else-if form in a wai block; [C] operator-ratified"
 
 # --- Iteration ---
 
 # --- Definition sigils (<<~! pragma mode) ---
 
-[[sigils]]
-name          = "helu"
-kind          = "pragma"
-layer         = "render"
-pattern       = '<<~!\s*helu\s+([\w-]+)(?:\(([^)]*)\))?\s*=\s*([^\n>]+?)\s*>>'
-description   = "defines a named filter-expression function; yields URI list; TW5 \\function equivalent; summoned via kahea; [SC]"
-
-[[sigils]]
-name           = "pono"
-kind           = "edge-sugar"
-layer          = "compile"
-pattern        = '<<~\s*pono\s+(#[\w-]+\s+)?(\S+)\s*->\s*(\S+)(?:\s+role:([\w-]+))?\s*>>'
-default_family = "constraint"
-description    = "constraint family edge sugar; inline-pranala-style (#slot? FROM -> TO role:R?); declares structural rule or invariant; no execution pulse; [SC]"
-
 # --- Variable binding sigil ---
 
-[[sigils]]
-name          = "waiho"
-kind          = "pragma"
-layer         = "both"
-pragma_pattern = '<<~!\s*waiho\s+([\w-]+)\s*=\s*([^\n>]+?)\s*>>'
-open_pattern  = '<<~\s*waiho\s+([\w-]+)\s*=\s*([^\n>]+?)\s*>>'
-close_pattern = '<<~\/waiho\s*>>'
-description   = "ephemeral variable binding; waiho = 'to leave in place, deposit for later retrieval'; <<~! waiho name = val >> = carrier-scoped (hoisted pragma); <<~ waiho name = val >>...<<~/waiho >> = block-scoped; no graph identity, no persistent URI; [SC]"
-
 # English aliases for waiho
-[[sigils]]
-name          = "\\const"
-kind          = "pragma-alias"
-layer         = "both"
-alias_for     = "waiho"
-pattern       = '<<~!\s*\\const\s+([\w-]+)\s*=\s*([^\n>]+?)\s*>>'
-description   = "English alias for waiho pragma form (carrier-scoped immutable binding); parser maps to waiho before evaluation"
-
-[[sigils]]
-name          = "\\let"
-kind          = "pragma-alias"
-layer         = "both"
-alias_for     = "waiho"
-open_pattern  = '<<~\s*\\let\s+([\w-]+)\s*=\s*([^\n>]+?)\s*>>'
-close_pattern = '<<~\/\\let\s*>>'
-description   = "English alias for waiho block form (block-scoped binding); parser maps to waiho before evaluation"
-
-[[sigils]]
-name          = "\\var"
-kind          = "pragma-alias"
-layer         = "both"
-alias_for     = "waiho"
-open_pattern  = '<<~\s*\\var\s+([\w-]+)\s*=\s*([^\n>]+?)\s*>>'
-close_pattern = '<<~\/\\var\s*>>'
-description   = "English alias for waiho block form (mutable variant); parser maps to waiho before evaluation"
-
 # --- Device placement sigil ---
-
-[[sigils]]
-name          = "kau"
-kind          = "child-slot"
-layer         = "both"
-pattern       = '<<~\s*kau\s+(#[\w-]+\s+)?([\w][\w.-]*)(?:\s+([^>]*))?\s*>>'
-description   = "device placement/instantiation; child-slot sigil for device instances; kau = 'to place upon, set down with intention'; <<~ kau #fragment? DeviceName prop:val ... >>; creates a device instance with its own execution context, persistent URI (carrierUri + #fragment), and addressable mailbox; #fragment auto-generates UUID on first commit if absent (Keyhive stub: instance URI becomes UCAN resource); [SC]"
-three_forms   = true
 
 # Three surface forms (same as ahu — kau is a child-slot sigil):
 #   disk (definition):  <<~ kau #device DeviceName prop:val >>   — inline; authoritative at parse time
@@ -441,68 +320,9 @@ three_forms   = true
 
 # --- Element type definition sigil ---
 
-[[sigils]]
-name          = "kumu"
-kind          = "pragma"
-layer         = "both"
-open_pattern  = '<<~!\s*kumu\s+([\w-]+)(?:\(([^)]*)\))?\s*>>'
-close_pattern = '<<~\/kumu\s*>>'
-description   = "element type definition; declares a new grammar node type with a named body contract; self-hosting primitive; TW5 \\widget equivalent; UEFN: maps to creative_device class — body carries @editable property bindings as waiho children, event/function ports declared as papalohe edges; not a text template (that is wehe); placed/instantiated via kau; [SC]"
-
 # English aliases for kumu
-[[sigils]]
-name          = "\\type"
-kind          = "pragma-alias"
-layer         = "both"
-alias_for     = "kumu"
-open_pattern  = '<<~!\s*\\type\s+([\w-]+)(?:\(([^)]*)\))?\s*>>'
-close_pattern = '<<~\/\\type\s*>>'
-description   = "English alias for kumu (structural declaration emphasis); parser maps to kumu before evaluation"
-
-[[sigils]]
-name          = "\\typos"
-kind          = "pragma-alias"
-layer         = "both"
-alias_for     = "kumu"
-open_pattern  = '<<~!\s*\\typos\s+([\w-]+)(?:\(([^)]*)\))?\s*>>'
-close_pattern = '<<~\/\\typos\s*>>'
-description   = "English alias for kumu (Greek: typos = impression/type); parser maps to kumu before evaluation"
-
 # --- Additional edge/invocation aliases ---
 
-[[sigils]]
-name          = "\\constraint"
-kind          = "edge-alias"
-layer         = "compile"
-alias_for     = "pono"
-pattern       = '<<~\s*\\constraint\s+(#[\w-]+\s+)?(\S+)\s*->\s*(\S+)(?:\s+role:([\w-]+))?\s*>>'
-description   = "English alias for pono; declarative structural constraint; parser maps to pono before evaluation"
-
-[[sigils]]
-name           = "papalohe"
-kind           = "edge-sugar"
-layer          = "both"
-pattern        = '<<~\s*papalohe\s+(#[\w-]+\s+)?(\S+)\s*->\s*(\S+)(?:\s+listenable:([\w.-]+))?(?:\s+subscribable:([\w.-]+))?\s*>>'
-default_family = "reaction"
-render_mode    = "papalohe"
-description    = "reaction family edge sugar; Lua: pāpālohe — warrior body-listening reflex; full UEFN wire: DeviceA -> DeviceB listenable:OnEliminated subscribable:ShowScore; listenable = source event name / UEFN OUTPUT pin (DeviceA.EventX); subscribable = target function name / UEFN INPUT pin (DeviceB.FunctionY); compile: pranala family:reaction renderMode:papalohe; render: arrow with listenable label at source, subscribable label at target; canonical roles: listenable | subscribable | observes | throttles | debounces; [SC]"
-
-[[sigils]]
-name          = "kukali"
-kind          = "leaf"
-layer         = "both"
-inline_pattern = '<<~\s*kukali(?:\s+trigger:([\w.-]+))?\s*>>'
-attrs         = ["trigger"]
-description   = "reactive wait posture inside a causal island; Verse `suspends` analogue; execution yields until the named papalohe trigger fires; trigger attr is optional papalohe slot name; OODA-HA: Act phase (paired with papalohe at Orient phase); emits SigilNode { sigilName:kukali, attrs:{trigger?} }; [SC]"
-
-[[sigils]]
-name          = "\\suspends"
-kind          = "leaf"
-layer         = "both"
-alias_for     = "kukali"
-inline_pattern = '<<~\s*\\suspends(?:\s+trigger:([\w.-]+))?\s*>>'
-description   = "English alias for kukali; Verse `suspends` keyword; parser maps to kukali before evaluation"
-```
 
 <<~/ahu >>
 

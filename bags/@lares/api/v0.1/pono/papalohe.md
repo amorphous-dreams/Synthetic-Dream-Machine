@@ -119,6 +119,7 @@ canonical-roles = ["listenable", "subscribable", "observes", "throttles", "debou
 <<~ pranala #to-reaction-graph ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/reaction-graph family:control role:implements >>
 <<~ pranala #to-kukali ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/kukali family:relation >>
 
+<<~ pranala #tiddler ? -> lar:///ha.ka.ba/@lararium/tw5/tiddlers/sigil-papalohe family:control role:implements >>
 <<~/ahu >>
 
 <<~&#x0003;>>

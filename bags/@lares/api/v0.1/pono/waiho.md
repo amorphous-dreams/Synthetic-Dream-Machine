@@ -87,6 +87,10 @@ In the Kumulipo creation chant, *waiho* appears in the context of primal materia
 <<~ pranala #to-kau ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/kau family:control role:contrasts >>
 <<~ pranala #to-aka ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/aka family:control role:contrasts >>
 
+<<~ pranala #tiddler ? -> lar:///ha.ka.ba/@lararium/tw5/tiddlers/sigil-waiho family:control role:implements >>
+<<~ pranala #tiddler-sigil-const ? -> lar:///ha.ka.ba/@lararium/tw5/tiddlers/sigil-const family:control role:alias >>
+<<~ pranala #tiddler-sigil-let ? -> lar:///ha.ka.ba/@lararium/tw5/tiddlers/sigil-let family:control role:alias >>
+<<~ pranala #tiddler-sigil-var ? -> lar:///ha.ka.ba/@lararium/tw5/tiddlers/sigil-var family:control role:alias >>
 <<~/ahu >>
 
 <<~&#x0003;>>

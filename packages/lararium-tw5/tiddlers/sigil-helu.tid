@@ -1,0 +1,11 @@
+title: lar:///ha.ka.ba/@lararium/tw5/tiddlers/sigil-helu
+tags: $:/tags/Global lar:///ha.ka.ba/tags/SharktoothSigil
+lar-kind: pragma
+lar-pono-uri: lar:///ha.ka.ba/@lares/api/v0.1/pono/helu
+lar-see-also: \function
+lar-open-pattern: <<~\s*helu\s+([\w-]+)(?:\s+([^>]*?))?\s*>>
+lar-close-pattern: <<~\/helu\s*>>
+type: text/vnd.tiddlywiki
+
+<!-- helu — filter-function declaration pragma; Hawaiian canonical for \function.
+     Body is a TW5 filter expression. No render output — registers a named filter function. -->
