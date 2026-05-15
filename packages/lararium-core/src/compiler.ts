@@ -5,7 +5,7 @@
  * These functions operate on a populated MemeGraph and return serialisable artifacts.
  */
 
-import { type MemeGraph, memeImplements } from "./meme-graph.js";
+import { type MemeGraph, memeImplements, memeExtends } from "./meme-graph.js";
 import { type DigestProvider, defaultCryptoProvider, sha256Hex, canonicalJsonBytes } from "./crypto.js";
 import { type PranalaEdge, validatePranalaEdge, type PranalaEdgeViolation } from "./pranala-parser.js";
 
@@ -23,7 +23,10 @@ export interface ClosureEntry {
   exists: boolean;
   role: string;
   hydrationSocket: string;
+  /** Interface URIs this meme conforms to (control:implements edges). */
   implements: string[];
+  /** Single parent class URI (control:extends edge). Absent = no explicit class parent. */
+  extendsType?: string;
   /** TW5 UI tags (e.g. $:/tags/Palette) — stored as native TW5 tags, not meme relations. */
   tags: string[];
   contentHash: string;
@@ -67,6 +70,8 @@ export interface BootArtifact {
   locusCount: number;
   interfaceIndex: Record<string, number | string[]>;
   invariantIndex: Record<string, number | string[]>;
+  /** parent class URI → count of direct subclasses (control:extends reverse index). */
+  parentIndex: Record<string, number | string[]>;
   validation: ValidationResult;
   edgeCount?: number;
   pranalaEdges?: EdgeRecord[];
@@ -123,7 +128,7 @@ function closureEntry(graph: MemeGraph, uri: string, depth: number, hydrationSoc
   const tags: string[] = Array.isArray(rawTags)
     ? (rawTags as unknown[]).map(String)
     : typeof rawTags === "string" ? (rawTags as string).split(/\s+/).filter(Boolean) : [];
-  return Object.freeze({
+  const entry: ClosureEntry = {
     uri,
     laresRelPath: meme.laresRelPath,
     kind: meme.virtual ? "caps-virtual" : meme.laresRelPath?.includes("-") ? "tuple-file" : "caps-file",
@@ -140,15 +145,19 @@ function closureEntry(graph: MemeGraph, uri: string, depth: number, hydrationSoc
     manaoio:    num("manaoio"),
     mana:       num("mana"),
     manao:      num("manao"),
-  });
+  };
+  const parent = memeExtends(meme);
+  if (parent) (entry as { extendsType?: string }).extendsType = parent;
+  return Object.freeze(entry);
 }
 
 function buildInterfaceIndexes(
   graph: MemeGraph,
   allUris: string[],
-): { interfaceIndex: Map<string, string[]>; invariantIndex: Map<string, string[]> } {
+): { interfaceIndex: Map<string, string[]>; invariantIndex: Map<string, string[]>; parentIndex: Map<string, string[]> } {
   const interfaceIndex = new Map<string, string[]>();
   const invariantIndex = new Map<string, string[]>();
+  const parentIndex    = new Map<string, string[]>();
   for (const uri of allUris) {
     const meme = graph.memes.get(uri);
     if (!meme) continue;
@@ -162,10 +171,17 @@ function buildInterfaceIndexes(
         ilist.push(uri);
       }
     }
+    const parentUri = memeExtends(meme);
+    if (parentUri) {
+      let plist = parentIndex.get(parentUri);
+      if (!plist) { plist = []; parentIndex.set(parentUri, plist); }
+      plist.push(uri);
+    }
   }
   for (const list of interfaceIndex.values()) list.sort();
   for (const list of invariantIndex.values()) list.sort();
-  return { interfaceIndex, invariantIndex };
+  for (const list of parentIndex.values())    list.sort();
+  return { interfaceIndex, invariantIndex, parentIndex };
 }
 
 function validateClosure(
@@ -238,7 +254,7 @@ export function compileBoot(
   const allEdges: PranalaEdge[] = [];
   for (const meme of graph.memes.values()) allEdges.push(...meme.edgesOut);
 
-  const { interfaceIndex, invariantIndex } = buildInterfaceIndexes(graph, topoUris);
+  const { interfaceIndex, invariantIndex, parentIndex } = buildInterfaceIndexes(graph, topoUris);
 
   return {
     artifact: "boot",
@@ -251,6 +267,7 @@ export function compileBoot(
     pranalaEdges: allEdges.map((e) => ({ fromUri: e.fromUri, fromSocket: e.fromSocket, toUri: e.toUri, family: e.family, role: e.role })),
     interfaceIndex: Object.fromEntries([...interfaceIndex.entries()].map(([k, v]) => [k, v.length])),
     invariantIndex: Object.fromEntries([...invariantIndex.entries()].map(([k, v]) => [k, v.length])),
+    parentIndex:    Object.fromEntries([...parentIndex.entries()].map(([k, v]) => [k, v.length])),
     validation: validateClosure(closure, violations, graph),
   };
 }
@@ -269,6 +286,7 @@ export async function compileBootReceipt(
     pranalaEdges: artifact.pranalaEdges ?? [],
     interfaceIndex: artifact.interfaceIndex,
     invariantIndex: artifact.invariantIndex,
+    parentIndex:    artifact.parentIndex,
   };
   const sha = await sha256Hex(canonicalJsonBytes(stablePayload), provider);
   const v = artifact.validation;

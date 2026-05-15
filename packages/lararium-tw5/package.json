@@ -35,7 +35,9 @@
     "build:plugin": "tsx scripts/build-plugin-tiddler.ts",
     "typecheck": "tsc --noEmit",
     "test": "NODE_OPTIONS=--experimental-vm-modules pnpm exec jest --config jest.config.cjs",
-    "test:sigil-alignment": "tsx scripts/check-sigil-alignment.ts"
+    "test:sigil-alignment": "tsx scripts/check-sigil-alignment.ts",
+    "smoke:plugin-boot": "tsx scripts/smoke-plugin-boot.ts",
+    "smoke:plugin-provenance": "tsx scripts/smoke-plugin-provenance.ts"
   },
   "dependencies": {
     "@lararium/core": "workspace:*",

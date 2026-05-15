@@ -30,6 +30,8 @@ import { readModuleManifest, type ModuleManifest } from "../plugin-build/module-
 import {
   buildPluginSourceManifest,
   readPluginSourceManifest,
+  verifyPackedStaticTiddlers,
+  verifyPluginInfoTitle,
   writePluginSourceManifest,
   type PluginSourceManifest,
 } from "../plugin-build/source-manifest.js";
@@ -97,52 +99,8 @@ function verifyPackedPluginAgainstSourceManifest(
   pluginTiddler: Record<string, unknown>,
   sourceManifest: PluginSourceManifest,
 ): void {
-  if (sourceManifest.pluginInfo.title !== PLUGIN_TITLE_LAR) {
-    throw new Error(
-      `[plugin-build] plugin.info title mismatch: expected ${PLUGIN_TITLE_LAR}, got ${sourceManifest.pluginInfo.title}`,
-    );
-  }
-  const tiddlers = parsePackedTiddlers(pluginTiddler);
-  const failures: string[] = [];
-
-  for (const t of sourceManifest.staticTiddlers) {
-    const packed = tiddlers[t.title];
-    if (!packed) {
-      failures.push(`missing static tiddler "${t.title}" (source: ${t.path})`);
-      continue;
-    }
-
-    // type field
-    if (t.type !== undefined) {
-      const packedType = String(packed["type"] ?? "");
-      if (packedType !== t.type) {
-        failures.push(`"${t.title}": type field drift — source: "${t.type}", packed: "${packedType}"`);
-      }
-    }
-
-    // tags field
-    if (t.tags !== undefined) {
-      const packedTags = String(packed["tags"] ?? "");
-      if (packedTags !== t.tags) {
-        failures.push(`"${t.title}": tags field drift — source: "${t.tags}", packed: "${packedTags}"`);
-      }
-    }
-
-    // body digest
-    const packedText = String(packed["text"] ?? "");
-    const packedBodySha = sha256(packedText);
-    if (packedBodySha !== t.bodySha256) {
-      failures.push(
-        `"${t.title}": body digest mismatch\n` +
-        `    source bodySha256: ${t.bodySha256.slice(0, 16)}…\n` +
-        `    packed bodySha256: ${packedBodySha.slice(0, 16)}…`,
-      );
-    }
-  }
-
-  if (failures.length > 0) {
-    throw new Error(`[plugin-build] packed plugin failed source-manifest verification:\n  ${failures.join("\n  ")}`);
-  }
+  verifyPluginInfoTitle(sourceManifest, PLUGIN_TITLE_LAR);
+  verifyPackedStaticTiddlers(sourceManifest, parsePackedTiddlers(pluginTiddler));
   console.log(`[plugin-build] verified ${sourceManifest.staticTiddlers.length} packed static tiddlers (title + fields + body) against source manifest`);
 }
 
@@ -248,8 +206,7 @@ async function main(): Promise<void> {
   writePackTranscript(transcriptAbsPath, {
     format: PACK_TRANSCRIPT_FORMAT,
     generatedBy: "packages/lararium-tw5/scripts/build-plugin-tiddler.ts",
-    timestamp: new Date().toISOString(),
-    tw5BinPath: TW5_BIN,
+    tw5BinPath: path.relative(REPO_ROOT, TW5_BIN),
     tw5PackageVersion: tw5Version,
     // Replace ephemeral temp path with stable placeholder — content proved by inputRootSha256.
     packArgs: packArgs.map((a) => a.startsWith("++") ? "++{tmpInput}" : a),

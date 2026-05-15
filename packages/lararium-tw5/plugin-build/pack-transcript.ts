@@ -21,13 +21,12 @@ import { sha256HexSync } from "@lararium/core";
 import { mkdirSync, readdirSync, readFileSync, writeFileSync } from "fs";
 import path from "path";
 
-export const PACK_TRANSCRIPT_FORMAT = "lararium-tw5-pack-transcript/v1";
+export const PACK_TRANSCRIPT_FORMAT = "lararium-tw5-pack-transcript/v2";
 
 export interface PackTranscript {
   format: typeof PACK_TRANSCRIPT_FORMAT;
   generatedBy: string;
-  timestamp: string;
-  /** Absolute path to the TW5 binary used. */
+  /** Stable repo-relative path to the TW5 binary used. */
   tw5BinPath: string;
   /** Version string from tiddlywiki's package.json. */
   tw5PackageVersion: string;

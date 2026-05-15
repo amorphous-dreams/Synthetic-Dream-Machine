@@ -279,6 +279,32 @@ The asymmetry is the point.
 
 <<~/ahu >>
 
+<<~ ahu #composition-edges >>
+
+## Composition Edge Semantics for the Four Types
+
+The four types in this lattice express Verse `interface` and `class` composition.
+In Lararium graph terms, this maps as follows:
+
+| Verse declaration | Edge family | Role | Count |
+|---|---|---|---|
+| `signalable(t) := interface:` | `control` | `implements` (conforms to this interface) | N per conforming type |
+| `awaitable(t) := interface:` | `control` | `implements` | N per conforming type |
+| `subscribable(t) := interface:` | `control` | `implements` | N per conforming type |
+| `listenable(t) := interface:` | `control` | `implements` | N per conforming type |
+| `event(t) := class<final>:` (extends signalable + awaitable) | `control` | `extends` | 1 (no named parent in Verse; implicit structural conformance) |
+
+**Key rule:** `control:implements` = "this type satisfies interface X" (N edges allowed).
+`control:extends` = "this type has exactly one parent class" (one edge).
+Ahu-slot children (`fragment-parent` field) = document structure — not a pranala edge.
+
+The engine-vended boundary: `listenable(t)` carries `control:implements` edges to
+`awaitable(t)` and `subscribable(t)` in the type graph. User code may declare
+`control:implements → listenable(t)` edges on custom type memes to signal DEB-wiring
+intent, but built-in device events own `listenable(t)` fields by engine contract.
+
+<<~/ahu >>
+
 <<~ ahu #edges >>
 
 ## Edges
@@ -287,6 +313,7 @@ The asymmetry is the point.
 <<~ pranala #to-vm-projection-bus ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/vm-projection-bus family:relation >>
 <<~ pranala #to-causal-islands ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/causal-islands family:relation >>
 <<~ pranala #to-local-first ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/local-first family:relation >>
+<<~ pranala #to-uefn-scene ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/uefn-scene family:relation >>
 
 <<~/ahu >>
 

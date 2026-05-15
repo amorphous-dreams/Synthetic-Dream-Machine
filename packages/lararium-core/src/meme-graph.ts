@@ -85,11 +85,18 @@ export function declaredUnresolvedFromEdge(edge: PranalaEdge): DeclaredUnresolve
 // Helpers
 // ---------------------------------------------------------------------------
 
-/** Returns the list of URIs this meme declares as its implemented interfaces. */
+/** Returns the interface URIs this meme composes (control:implements edges). */
 export function memeImplements(meme: Meme): string[] {
   return meme.edgesOut
     .filter((e) => e.role === "implements" && e.family === "control")
     .map((e) => e.toUri);
+}
+
+/** Returns the single parent class URI (control:extends edge), or undefined if absent. */
+export function memeExtends(meme: Meme): string | undefined {
+  return meme.edgesOut
+    .find((e) => e.role === "extends" && e.family === "control")
+    ?.toUri;
 }
 
 /**
@@ -113,8 +120,10 @@ export class MemeGraph {
   // adjacency.get(family)?.get(fromUri) → PranalaEdge[]
   private readonly adjacency = new Map<string, Map<string, PranalaEdge[]>>();
 
-  // Reverse index: interfaceUri → Set<memeUri> (for memesByInterface)
+  // Reverse index: interfaceUri → Set<memeUri> (for memesByInterface — control:implements)
   private readonly _byInterface = new Map<string, Set<string>>();
+  // Reverse index: parentUri → Set<memeUri> (for memesByParent — control:extends)
+  private readonly _byParent = new Map<string, Set<string>>();
 
   addMeme(meme: Meme): void {
     this.memes.set(meme.uri, meme);
@@ -126,10 +135,16 @@ export class MemeGraph {
       if (!list) { list = []; familyMap.set(edge.fromUri, list); }
       list.push(edge);
 
-      // Reverse implements index
+      // Reverse implements index (control:implements → interface conformance)
       if (edge.family === "control" && edge.role === "implements") {
         let set = this._byInterface.get(edge.toUri);
         if (!set) { set = new Set(); this._byInterface.set(edge.toUri, set); }
+        set.add(meme.uri);
+      }
+      // Reverse extends index (control:extends → single class parent)
+      if (edge.family === "control" && edge.role === "extends") {
+        let set = this._byParent.get(edge.toUri);
+        if (!set) { set = new Set(); this._byParent.set(edge.toUri, set); }
         set.add(meme.uri);
       }
     }
@@ -174,6 +189,14 @@ export class MemeGraph {
    */
   memesByInterface(interfaceUri: string): ReadonlySet<string> {
     return this._byInterface.get(interfaceUri) ?? new Set();
+  }
+
+  /**
+   * All memes whose `control:extends` edge targets the given parent URI.
+   * Returns direct children only — use `allTransitiveDeps` for full inheritance chains.
+   */
+  memesByParent(parentUri: string): ReadonlySet<string> {
+    return this._byParent.get(parentUri) ?? new Set();
   }
 
   /**

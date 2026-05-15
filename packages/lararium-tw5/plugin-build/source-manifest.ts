@@ -2,6 +2,7 @@ import { mkdirSync, readdirSync, readFileSync, writeFileSync } from "fs";
 import path from "path";
 import { MODULE_MANIFEST, packagePath, packageRelative, TIDDLERS_DIR } from "./paths.js";
 import { type ModuleManifest, sha256 } from "./module-manifest.js";
+import { parseTidFile } from "./tid-file.js";
 
 export const SOURCE_MANIFEST_FORMAT = "lararium-tw5-plugin-source-manifest/v2";
 
@@ -26,25 +27,6 @@ export interface PluginSourceManifest {
   moduleManifest: SourceManifestFile & { moduleCount: number };
 }
 
-function parseTidFields(text: string, filePath: string): Record<string, string> {
-  const fields: Record<string, string> = {};
-  for (const [idx, line] of text.split(/\r?\n/).entries()) {
-    if (line.trim() === "") break;
-    const match = /^([^:\s][^:]*):\s*(.*)$/.exec(line);
-    if (!match) throw new Error(`[plugin-build] invalid .tid field line ${idx + 1} in ${filePath}: ${line}`);
-    fields[match[1]!.trim()] = match[2]!.trim();
-  }
-  return fields;
-}
-
-/** Extract body text from a .tid file (content after the first blank line). */
-function parseTidBody(text: string): string {
-  const lines = text.split(/\r?\n/);
-  const blankIdx = lines.findIndex((l) => l.trim() === "");
-  if (blankIdx === -1) return "";
-  return lines.slice(blankIdx + 1).join("\n");
-}
-
 export function buildPluginSourceManifest(
   moduleManifest: ModuleManifest,
   moduleManifestSha256: string,
@@ -63,10 +45,9 @@ export function buildPluginSourceManifest(
     const abs = path.join(tiddlersAbs, entry.name);
     const rel = packageRelative(abs);
     const text = readFileSync(abs, "utf8");
-    const fields = parseTidFields(text, rel);
+    const { fields, body } = parseTidFile(text, rel);
     const title = fields["title"];
     if (!title) throw new Error(`[plugin-build] static tiddler missing title: ${rel}`);
-    const body = parseTidBody(text);
     staticTiddlers.push({
       path: rel,
       title,
@@ -133,3 +114,55 @@ export function verifyPluginSourceManifest(manifest: PluginSourceManifest, label
     throw new Error(`[plugin-build] ${label} missing moduleManifest claim`);
   }
 }
+
+export function verifyPluginInfoTitle(manifest: PluginSourceManifest, expectedTitle: string): void {
+  if (manifest.pluginInfo.title !== expectedTitle) {
+    throw new Error(
+      `[plugin-build] plugin.info title mismatch: expected ${expectedTitle}, got ${manifest.pluginInfo.title}`,
+    );
+  }
+}
+
+export function verifyPackedStaticTiddlers(
+  manifest: PluginSourceManifest,
+  packedTiddlers: Record<string, Record<string, unknown>>,
+): void {
+  const failures: string[] = [];
+
+  for (const t of manifest.staticTiddlers) {
+    const packed = packedTiddlers[t.title];
+    if (!packed) {
+      failures.push(`missing static tiddler "${t.title}" (source: ${t.path})`);
+      continue;
+    }
+
+    if (t.type !== undefined) {
+      const packedType = String(packed["type"] ?? "");
+      if (packedType !== t.type) {
+        failures.push(`"${t.title}": type field drift — source: "${t.type}", packed: "${packedType}"`);
+      }
+    }
+
+    if (t.tags !== undefined) {
+      const packedTags = String(packed["tags"] ?? "");
+      if (packedTags !== t.tags) {
+        failures.push(`"${t.title}": tags field drift — source: "${t.tags}", packed: "${packedTags}"`);
+      }
+    }
+
+    const packedText = String(packed["text"] ?? "");
+    const packedBodySha = sha256(packedText);
+    if (packedBodySha !== t.bodySha256) {
+      failures.push(
+        `"${t.title}": body digest mismatch\n` +
+        `    source bodySha256: ${t.bodySha256.slice(0, 16)}…\n` +
+        `    packed bodySha256: ${packedBodySha.slice(0, 16)}…`,
+      );
+    }
+  }
+
+  if (failures.length > 0) {
+    throw new Error(`[plugin-build] packed plugin failed source-manifest verification:\n  ${failures.join("\n  ")}`);
+  }
+}
+

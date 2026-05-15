@@ -279,17 +279,17 @@ by inspection.
 
 Todo:
 
-- [ ] Add a script-level test fixture for source-manifest verification.
-- [ ] Simulate missing static tiddler claim.
+- [x] Add a script-level test fixture for source-manifest verification.
+- [x] Simulate missing static tiddler claim.
 - [ ] Simulate missing module claim.
-- [ ] Simulate hash drift.
-- [ ] Simulate `plugin.info` title drift.
+- [x] Simulate hash drift.
+- [x] Simulate `plugin.info` title drift.
 
 Acceptance:
 
-- [ ] `pnpm --filter @lararium/tw5 typecheck` passes.
-- [ ] negative tests fail for the expected reason.
-- [ ] existing plugin boot smoke still passes.
+- [x] `pnpm --filter @lararium/tw5 typecheck` passes.
+- [x] negative tests fail for the expected reason.
+- [x] existing plugin boot smoke still passes.
 
 ### P4 — Release surface cleanup
 
@@ -299,17 +299,17 @@ confusion.
 Todo:
 
 - [ ] Document tracked release artifacts:
-  - [ ] `plugins/lares-memetic-wikitext.json`
-  - [ ] `src/plugin-tiddler.generated.ts`
+  - [x] `plugins/lares-memetic-wikitext.json`
+  - [x] `src/plugin-tiddler.generated.ts`
 - [ ] Document local build artifacts:
-  - [ ] `dist-plugin/*`
-- [ ] Add a note near `$:/` compatibility output explaining drag/drop purpose.
-- [ ] Leave `$:/` namespace retirement parked outside this sprint.
+  - [x] `dist-plugin/*`
+- [x] Add a note near `$:/` compatibility output explaining drag/drop purpose.
+- [x] Leave `$:/` namespace retirement parked outside this sprint.
 
 Acceptance:
 
-- [ ] a new operator can identify which outputs need commit review.
-- [ ] compatibility artifact carries `lares-compatibility-only: true`.
+- [x] a new operator can identify which outputs need commit review.
+- [x] compatibility artifact carries `lares-compatibility-only: true`.
 
 ## ▶ Act — Suggested Order
 
@@ -345,3 +345,10 @@ The build can answer four web3 questions without trust in memory:
 3. Which static tiddlers entered the plugin without drift?
 4. Which final plugin blob did genesis carry forward?
 
+
+## Sprint Result
+
+- Static source verification now checks title, declared `type`, declared `tags`, and body digest.
+- `dist-plugin/pack-transcript.json` records the TW5 CLI pack boundary without linking backward to final attestation; it avoids wall-clock timestamps and absolute checkout paths for stable replay.
+- `scripts/smoke-plugin-provenance.ts` exercises positive and negative provenance checks.
+- One remaining optional negative test remains open: synthetic missing module claim coverage. The build itself already verifies real module inclusion/hash drift against `module-manifest.json`.

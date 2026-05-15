@@ -112,6 +112,14 @@ confidence-bounded  = false
 **control** — structural authority edges (owns, implements, extends).
 The primary composition grammar. Most meme graphs lead with control edges.
 
+Role semantics (do not conflate):
+- `extends`    — single parent class (Verse single inheritance; one edge per type meme)
+- `implements` — interface composition (Verse `interface` keyword; N edges allowed per type meme)
+- `owns`       — structural ownership / containment at the type level (not spatial instance placement)
+
+These are all distinct from the ahu-slot tree (`fragment-parent` tiddler field),
+which expresses document-level parent/child containment and is not a pranala edge.
+
 **relation** — semantic association without directional authority.
 Free-form roles; used when the relationship resists categorization.
 
