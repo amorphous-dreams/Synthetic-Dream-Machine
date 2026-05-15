@@ -1,0 +1,23 @@
+{
+  "name": "@lararium/keyhive",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Keyhive (Ink & Switch concap) integration for the Lares stack — capability layer + probes against pre-alpha @keyhive/keyhive WASM bindings.",
+  "type": "module",
+  "exports": {
+    ".": {
+      "import": "./dist/src/index.js",
+      "types": "./dist/src/index.d.ts"
+    }
+  },
+  "main": "./dist/src/index.js",
+  "types": "./dist/src/index.d.ts",
+  "scripts": {
+    "build":     "tsc",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@keyhive/keyhive": "0.0.0-alpha.56c",
+    "@lararium/core":  "workspace:*"
+  }
+}

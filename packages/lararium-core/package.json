@@ -8,9 +8,13 @@
       "import": "./dist/index.js",
       "types": "./dist/index.d.ts"
     },
-    "./tw-filter": {
-      "import": "./dist/tw-filter.js",
-      "types": "./dist/tw-filter.d.ts"
+    "./meme-ast": {
+      "import": "./dist/meme-ast/index.js",
+      "types": "./dist/meme-ast/index.d.ts"
+    },
+    "./cascade": {
+      "import": "./dist/cascade.js",
+      "types": "./dist/cascade.d.ts"
     }
   },
   "main": "./dist/index.js",
@@ -19,8 +23,7 @@
     "build": "tsc",
     "typecheck": "tsc --noEmit",
     "test": "NODE_OPTIONS=--experimental-vm-modules pnpm exec jest --config jest.config.cjs",
-    "dev": "tsx src/index.ts",
-    "tw:build-browser": "node ../../scripts/build-tw-browser-filter.mjs"
+    "dev": "tsx src/index.ts"
   },
   "devDependencies": {
     "@jest/globals": "^29.7.0",
@@ -28,5 +31,11 @@
     "tiddlywiki": "^5.4.0",
     "ts-jest": "^29.2.0",
     "tsx": "^4.19.0"
+  },
+  "dependencies": {
+    "@automerge/automerge-repo": "^2.5.5",
+    "@lares/core": "workspace:*",
+    "@noble/ed25519": "^3.1.0",
+    "@noble/hashes": "^2.2.0"
   }
 }

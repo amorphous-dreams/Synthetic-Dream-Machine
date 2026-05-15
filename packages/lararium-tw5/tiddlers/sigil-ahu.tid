@@ -1,0 +1,32 @@
+title: lar:///ha.ka.ba/@lararium/tw5/tiddlers/sigil-ahu
+tags: $:/tags/Global $:/tags/LarariumGrammar
+type: text/vnd.tiddlywiki
+
+\widget ~ahu(slot:"" uri:"" p1:"")
+<$let _ahu-slot={{{ [<slot>!match[]] ~[<p1>] }}}>
+<$let _ahu-uri={{{ [<uri>!match[]!regexp[^lar:///unknown]] ~[<_ahu-slot>regexp[^lar:]] ~[<currentTiddler>addsuffix<_ahu-slot>] }}}
+      _ahu-template={{{ [all[shadows+tiddlers]tag[$:/tags/Lar/AhuTemplate]!is[draft]] :map:flat[subfilter{!!text}] +[first[]else[lar:///ha.ka.ba/@lararium/templates/ahu/html]] }}}>
+<$tiddler tiddler=<<_ahu-uri>>>
+<$transclude $tiddler=<<_ahu-template>>/>
+</$tiddler>
+</$let>
+</$let>
+\end
+
+\procedure ~kahea~ahu(slot:"" uri:"" p1:"")
+<$transclude $variable="~ahu" slot=<<slot>> uri=<<uri>> p1=<<p1>>/>
+\end
+
+\procedure ~aka~ahu(slot:"" uri:"" p1:"")
+<$transclude $variable="~ahu" slot=<<slot>> uri=<<uri>> p1=<<p1>>/>
+\end
+
+<!-- Live wiki parent tiddlers hold <<~ kahea ahu #slot >> (space form).
+     lar-sigil.ts routes this through the ~ dispatcher: name="kahea~ahu", p1=slot.
+     ~aka~ahu = frozen/projection form; renders identically for now (freeze semantics pending).
+
+     Dev pattern — extend child-slot dispatch by defining ~kahea~<sigilName>:
+       ~kahea~ahu  (this file)   — text slot, live transclusion
+       ~aka~ahu    (this file)   — text slot, frozen/projection form
+       ~kahea~kau  (future)      — device slot, capability envelope
+     The ~kahea / ~aka prefix marks the causal posture; suffix names the slot type. -->

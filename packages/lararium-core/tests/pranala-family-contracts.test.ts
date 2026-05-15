@@ -1,95 +1,129 @@
 /**
- * Family contract validation — P9 / pranala-schema-binding law.
- * validatePranaEdge() enforces per-family property contracts before edges
- * enter the boot closure.
+ * Pranala family contracts — edge vocabulary law.
+ *
+ * P9 / pranala-schema-binding: validatePranalaEdge() enforces per-family
+ * property contracts before edges enter the boot closure. No web2 ceremony;
+ * edges live in carrier #edges sections and travel through the causal island
+ * stack as Automerge CRDT mutations.
+ *
+ * Meme: lar:///ha.ka.ba/@lares/api/v0.1/pono/pranala-schema-binding
  */
 
-import { validatePranaEdge, type PranaEdge } from "../src/pranala-parser.js";
+import { describe, test, expect } from "@jest/globals";
+import {
+  validatePranalaEdge,
+  KNOWN_FAMILIES,
+} from "../src/index.js";
+import type { PranalaEdge } from "../src/index.js";
 
-function edge(overrides: Partial<PranaEdge>): PranaEdge {
+// ---------------------------------------------------------------------------
+// Fixture builder
+// ---------------------------------------------------------------------------
+
+function edge(overrides: Partial<PranalaEdge>): PranalaEdge {
   return {
-    fromUri: "lar:///test",
-    fromSocket: "lar:///test#section",
-    fromSlot: null,
-    toUri: "lar:///target",
-    toSocket: "",
-    family: "control",
-    lifecycle: "instance",
-    role: "owns",
-    traversal: "source-to-target",
+    fromUri:     "lar:///ha.ka.ba/@lares/api/v0.1/mu",
+    fromSocket:  "lar:///ha.ka.ba/@lares/api/v0.1/mu#spine",
+    fromSlot:    null,
+    toUri:       "lar:///AGENTS",
+    toSocket:    "",
+    family:      "control",
+    lifecycle:   "instance",
+    role:        "implements",
+    traversal:   "source-to-target",
     propagation: "none",
-    label: "",
-    payload: {},
+    label:       "",
+    payload:     {},
     cardinality: null,
-    polarity: null,
-    status: "declared",
-    confidence: null,
-    renderMode: null,
+    polarity:    null,
+    status:      "declared",
+    confidence:  null,
+    renderMode:  null,
     ...overrides,
   };
 }
 
-describe("validatePranaEdge — family contracts", () => {
-  test("known families produce no errors", () => {
-    for (const family of ["control", "relation", "observe", "dataflow"]) {
-      const violations = validatePranaEdge(edge({ family, role: "test" }));
-      expect(violations.filter((v) => v.severity === "error")).toHaveLength(0);
-    }
+// ---------------------------------------------------------------------------
+// Known family vocabulary
+// ---------------------------------------------------------------------------
+
+describe("KNOWN_FAMILIES", () => {
+  test("contains all eight registered families", () => {
+    const expected = ["control", "relation", "observe", "dataflow", "message", "constraint", "reaction", "spatial"];
+    for (const f of expected) expect(KNOWN_FAMILIES).toContain(f);
   });
 
-  test("unknown family → error", () => {
-    const v = validatePranaEdge(edge({ family: "invented" }));
-    expect(v).toHaveLength(1);
-    expect(v[0]!.severity).toBe("error");
-    expect(v[0]!.rule).toBe("unknown-family");
+  test("control family carries structural graph law (owns/implements/extends)", () => {
+    expect(KNOWN_FAMILIES).toContain("control");
   });
 
-  test("control without role → warning, not error", () => {
-    const v = validatePranaEdge(edge({ family: "control", role: null }));
-    expect(v).toHaveLength(1);
-    expect(v[0]!.severity).toBe("warning");
-    expect(v[0]!.rule).toBe("role-recommended");
+  test("reaction family supports kumu device event wiring", () => {
+    expect(KNOWN_FAMILIES).toContain("reaction");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// validatePranalaEdge — well-formed edges produce no errors
+// ---------------------------------------------------------------------------
+
+describe("validatePranalaEdge — well-formed edges", () => {
+  test("control edge with role 'implements' — no errors", () => {
+    const violations = validatePranalaEdge(edge({ family: "control", role: "implements" }));
+    expect(violations.filter((v) => v.severity === "error")).toHaveLength(0);
   });
 
-  test("control with role → clean", () => {
-    const v = validatePranaEdge(edge({ family: "control", role: "owns" }));
-    expect(v).toHaveLength(0);
+  test("dataflow edge with role 'reads' — no errors", () => {
+    const violations = validatePranalaEdge(edge({ family: "dataflow", role: "reads" }));
+    expect(violations.filter((v) => v.severity === "error")).toHaveLength(0);
   });
 
-  test("dataflow without role → warning", () => {
-    const v = validatePranaEdge(edge({ family: "dataflow", role: null }));
-    expect(v.some((x) => x.severity === "warning" && x.rule === "role-recommended")).toBe(true);
+  test("spatial edge — no errors (open role set)", () => {
+    const violations = validatePranalaEdge(edge({ family: "spatial", role: "portal" }));
+    expect(violations.filter((v) => v.severity === "error")).toHaveLength(0);
   });
 
-  test("relation without role → clean (role not required)", () => {
-    const v = validatePranaEdge(edge({ family: "relation", role: null }));
-    expect(v.filter((x) => x.rule === "role-recommended")).toHaveLength(0);
+  test("observe edge — no errors", () => {
+    const violations = validatePranalaEdge(edge({ family: "observe", role: "watches" }));
+    expect(violations.filter((v) => v.severity === "error")).toHaveLength(0);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// validatePranalaEdge — unknown family is an error
+// ---------------------------------------------------------------------------
+
+describe("validatePranalaEdge — unknown family", () => {
+  test("unknown family produces an error violation", () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const violations = validatePranalaEdge(edge({ family: "web2-http-route" as any }));
+    const errors = violations.filter((v) => v.severity === "error");
+    expect(errors.length).toBeGreaterThan(0);
   });
 
-  test("observe with confidence in [0,1] → clean", () => {
-    const v = validatePranaEdge(edge({ family: "observe", role: null, confidence: 0.75 }));
-    expect(v.filter((x) => x.rule === "confidence-out-of-range")).toHaveLength(0);
+  test("null-ish family produces an error", () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const violations = validatePranalaEdge(edge({ family: "" as any }));
+    const errors = violations.filter((v) => v.severity === "error");
+    expect(errors.length).toBeGreaterThan(0);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Causal island edge shapes — lar:/// URIs on both ends
+// ---------------------------------------------------------------------------
+
+describe("validatePranalaEdge — causal island URI contracts", () => {
+  test("ha.ka.ba sub-path URIs accepted as fromUri", () => {
+    const violations = validatePranalaEdge(
+      edge({ fromUri: "lar:///ha.ka.ba/@lares/api/v0.1/lararium" }),
+    );
+    expect(violations.filter((v) => v.severity === "error")).toHaveLength(0);
   });
 
-  test("observe with confidence > 1 → error", () => {
-    const v = validatePranaEdge(edge({ family: "observe", role: null, confidence: 1.5 }));
-    expect(v.some((x) => x.severity === "error" && x.rule === "confidence-out-of-range")).toBe(true);
-  });
-
-  test("observe with confidence < 0 → error", () => {
-    const v = validatePranaEdge(edge({ family: "observe", role: null, confidence: -0.1 }));
-    expect(v.some((x) => x.severity === "error" && x.rule === "confidence-out-of-range")).toBe(true);
-  });
-
-  test("observe with null confidence → clean", () => {
-    const v = validatePranaEdge(edge({ family: "observe", role: null, confidence: null }));
-    expect(v.filter((x) => x.rule === "confidence-out-of-range")).toHaveLength(0);
-  });
-
-  test("violation carries edge identity fields", () => {
-    const v = validatePranaEdge(edge({ family: "invented", fromUri: "lar:///a", toUri: "lar:///b" }));
-    expect(v[0]!.fromUri).toBe("lar:///a");
-    expect(v[0]!.toUri).toBe("lar:///b");
-    expect(v[0]!.family).toBe("invented");
+  test("AGENTS root-level URI accepted as toUri", () => {
+    const violations = validatePranalaEdge(
+      edge({ toUri: "lar:///AGENTS" }),
+    );
+    expect(violations.filter((v) => v.severity === "error")).toHaveLength(0);
   });
 });

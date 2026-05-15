@@ -1,2 +1,7 @@
 packages:
   - 'packages/*'
+  # Corpus bag targets — each maps to one Automerge doc
+  - 'elyncia'
+  - 'ftls'
+  - 'sdm'
+  - 'wtf'

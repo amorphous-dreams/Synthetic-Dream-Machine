@@ -1,0 +1,13 @@
+title: lar:///ha.ka.ba/@lararium/tw5/tiddlers/sigil-kahea
+tags: $:/tags/Global $:/tags/LarariumGrammar
+type: text/vnd.tiddlywiki
+
+\widget ~kahea(p1:"" p2:"")
+<$set name="_kahea-uri" filter="[<p1>regexp[^#]]" value={{{ [<p1>addprefix<currentTiddler>] }}} emptyValue=<<p1>>>
+<$let _kahea-template={{{ [<p2>!match[]] ~[all[shadows+tiddlers]tag[$:/tags/Lar/KaheaTemplate]!is[draft]!has[draft.of]] :map:flat[subfilter{!!text}] +[first[]else[lar:///ha.ka.ba/@lararium/templates/kahea/html]] }}}>
+  <$tiddler tiddler=<<_kahea-uri>>>
+    <$transclude $tiddler=<<_kahea-template>>/>
+  </$tiddler>
+</$let>
+</$set>
+\end

@@ -1,15 +1,15 @@
 /**
  * Hydration closure compiler — pure graph operations.
  *
- * The host (lararium-node) is responsible for loading memes into the graph.
+ * The host (lararium-node) carries responsibility for loading memes into the graph.
  * These functions operate on a populated MemeGraph and return serialisable artifacts.
  */
 
 import { type MemeGraph, memeImplements } from "./meme-graph.js";
 import { type DigestProvider, defaultCryptoProvider, sha256Hex, canonicalJsonBytes } from "./crypto.js";
-import { type PranaEdge, validatePranaEdge, type PranaEdgeViolation } from "./pranala-parser.js";
+import { type PranalaEdge, validatePranalaEdge, type PranalaEdgeViolation } from "./pranala-parser.js";
 
-export const ENTRY_URI = "lar:///AGENTS";
+export const ENTRY_URI = "lar:///ha.ka.ba/@lares/AGENTS";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -24,8 +24,20 @@ export interface ClosureEntry {
   role: string;
   hydrationSocket: string;
   implements: string[];
+  /** TW5 UI tags (e.g. $:/tags/Palette) — stored as native TW5 tags, not meme relations. */
+  tags: string[];
   contentHash: string;
   depth: number;
+  /** Operator-set confidence scalar from carrier TOML #iam block. 0 if absent. */
+  confidence: number;
+  /** Operator-assigned confidence register code (e.g. "CS", "GR", "OS", "US", "DS", "S"). */
+  register: string;
+  /** Operator-set observability/interoperability score. 0 if absent. */
+  manaoio: number;
+  /** Operator-set mana (epistemic authority weight). 0 if absent. */
+  mana: number;
+  /** Operator-set manao (relational trust weight). 0 if absent. */
+  manao: number;
 }
 
 export interface ValidationResult {
@@ -34,7 +46,16 @@ export interface ValidationResult {
   missing: string[];
   dagViolations: string[][];
   declaredUnresolved: { uri: string; severity: string; family: string }[];
-  edgeViolations: PranaEdgeViolation[];
+  edgeViolations: PranalaEdgeViolation[];
+}
+
+/** Serialised edge record — subset of PranalaEdge safe for JSON transport. */
+export interface EdgeRecord {
+  readonly fromUri:    string;
+  readonly fromSocket: string;
+  readonly toUri:      string;
+  readonly family:     string;
+  readonly role:       string | null;
 }
 
 export interface BootArtifact {
@@ -48,9 +69,8 @@ export interface BootArtifact {
   invariantIndex: Record<string, number | string[]>;
   validation: ValidationResult;
   edgeCount?: number;
-  pranalaEdges?: { fromUri: string; fromSocket: string; toUri: string; family: string; role: string | null }[];
+  pranalaEdges?: EdgeRecord[];
   /** kumu type definitions collected from the boot closure — Phase 3 widget tree. */
-  kumuDefs?: import("./ast.js").KumuDef[];
 }
 
 export interface BootReceipt {
@@ -95,20 +115,31 @@ function buildSocketMap(graph: MemeGraph, topoUris: string[]): Map<string, strin
 
 function closureEntry(graph: MemeGraph, uri: string, depth: number, hydrationSocket: string): ClosureEntry {
   const meme = graph.memes.get(uri);
+  const num = (key: string) => typeof meme?.metadata[key] === "number" ? (meme.metadata[key] as number) : 0;
   if (!meme) {
-    return Object.freeze({ uri, laresRelPath: null, kind: "unknown", virtual: false, exists: false, role: "", hydrationSocket, implements: [], contentHash: "", depth });
+    return Object.freeze({ uri, laresRelPath: null, kind: "unknown", virtual: false, exists: false, role: "", hydrationSocket, implements: [], tags: [], contentHash: "", depth, confidence: 0, register: "", manaoio: 0, mana: 0, manao: 0 });
   }
+  const rawTags = meme.metadata["tags"];
+  const tags: string[] = Array.isArray(rawTags)
+    ? (rawTags as unknown[]).map(String)
+    : typeof rawTags === "string" ? (rawTags as string).split(/\s+/).filter(Boolean) : [];
   return Object.freeze({
     uri,
     laresRelPath: meme.laresRelPath,
     kind: meme.virtual ? "caps-virtual" : meme.laresRelPath?.includes("-") ? "tuple-file" : "caps-file",
     virtual: meme.virtual,
     exists: meme.exists,
-    role: (meme.metadata["role"] as string | undefined) ?? "",
+    role:     (meme.metadata["role"]     as string | undefined) ?? "",
+    register: (meme.metadata["register"] as string | undefined) ?? "",
     hydrationSocket,
     implements: memeImplements(meme),
+    tags,
     contentHash: meme.contentHash,
     depth,
+    confidence: num("confidence"),
+    manaoio:    num("manaoio"),
+    mana:       num("mana"),
+    manao:      num("manao"),
   });
 }
 
@@ -144,14 +175,14 @@ function validateClosure(
 ): ValidationResult {
   const missing = closure.filter((e) => !e.exists && !e.virtual).map((e) => e.uri);
   const du = graph.declaredUnresolved()
-    .filter((d) => d.severity === "error" || d.severity === "warning")
-    .map((d) => ({ uri: d.uri, severity: d.severity, family: d.edge.family }));
+    .filter((d: { severity: string }) => d.severity === "error" || d.severity === "warning")
+    .map((d: { uri: string; severity: string; edge: { family: string } }) => ({ uri: d.uri, severity: d.severity, family: d.edge.family }));
 
   // Family contract validation — runs against all edges in the graph
-  const edgeViolations: PranaEdgeViolation[] = [];
+  const edgeViolations: PranalaEdgeViolation[] = [];
   for (const meme of graph.memes.values()) {
     for (const edge of meme.edgesOut) {
-      edgeViolations.push(...validatePranaEdge(edge));
+      edgeViolations.push(...validatePranalaEdge(edge));
     }
   }
 
@@ -196,7 +227,6 @@ export function compileBoot(
   graph: MemeGraph,
   topoUris: string[],
   violations: string[][],
-  kumuDefs?: import("./ast.js").KumuDef[],
 ): BootArtifact {
   const socketMap = buildSocketMap(graph, topoUris);
   const depthMap = buildDepthMap(graph, topoUris);
@@ -205,7 +235,7 @@ export function compileBoot(
     closureEntry(graph, uri, depthMap.get(uri) ?? 0, socketMap.get(uri) ?? "")
   );
 
-  const allEdges: PranaEdge[] = [];
+  const allEdges: PranalaEdge[] = [];
   for (const meme of graph.memes.values()) allEdges.push(...meme.edgesOut);
 
   const { interfaceIndex, invariantIndex } = buildInterfaceIndexes(graph, topoUris);
@@ -222,7 +252,6 @@ export function compileBoot(
     interfaceIndex: Object.fromEntries([...interfaceIndex.entries()].map(([k, v]) => [k, v.length])),
     invariantIndex: Object.fromEntries([...invariantIndex.entries()].map(([k, v]) => [k, v.length])),
     validation: validateClosure(closure, violations, graph),
-    ...(kumuDefs !== undefined && { kumuDefs }),
   };
 }
 

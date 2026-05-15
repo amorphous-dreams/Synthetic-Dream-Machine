@@ -5,30 +5,32 @@
   "type": "module",
   "exports": {
     ".": {
-      "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
+      "import": "./dist/src/index.js",
+      "types": "./dist/src/index.d.ts"
     }
   },
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "bin": {
-    "lararium": "./dist/cli.js"
-  },
+  "main": "./dist/src/index.js",
+  "types": "./dist/src/index.d.ts",
   "scripts": {
     "build": "tsc",
     "typecheck": "tsc --noEmit",
     "test": "NODE_OPTIONS=--experimental-vm-modules pnpm exec jest --config jest.config.cjs",
-    "dev": "tsx src/index.ts",
-    "build-snapshot": "tsx scripts/build-snapshot.ts",
-    "serve": "tsx scripts/serve.ts"
+    "dev": "tsx src/main.ts",
+    "start": "node dist/src/main.js",
+    "build:genesis": "pnpm --filter @lararium/tw5 build:tw5-vendor && pnpm --filter @lararium/tw5 build:plugin && tsx scripts/build-genesis-island.ts"
   },
   "dependencies": {
+    "@automerge/automerge": "^3.2.6",
+    "@automerge/automerge-repo": "^2.5.5",
+    "@automerge/automerge-repo-network-websocket": "^2.5.5",
+    "@automerge/automerge-repo-storage-nodefs": "^2.5.5",
     "@lararium/core": "workspace:*",
-    "@lararium/tldraw": "workspace:*",
-    "@tldraw/sync-core": "^4.5.10",
-    "@types/better-sqlite3": "^7.6.13",
+    "@lararium/keyhive": "workspace:*",
+    "@lares/core": "workspace:*",
+    "@lararium/tw5": "workspace:*",
+    "@octokit/rest": "^22.0.1",
     "@types/ws": "^8.18.1",
-    "better-sqlite3": "^12.9.0",
+    "isomorphic-ws": "^5.0.0",
     "ws": "^8.20.0"
   },
   "devDependencies": {

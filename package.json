@@ -7,12 +7,19 @@
     "build": "pnpm -r build",
     "test": "pnpm -r test",
     "typecheck": "pnpm -r typecheck",
-    "lint": "pnpm -r lint"
+    "lint": "pnpm -r lint",
+    "dev": "concurrently -n node,vite -c magenta,cyan \"pnpm --filter @lararium/node dev\" \"pnpm --filter @lararium/app dev\"",
+    "test:unit": "pnpm -r test",
+    "test:flows": "bash tests/bin/run-flow.sh all",
+    "test:tw5-flow": "bash tests/lararium-tw5/sync/sync-decompose-promote.sh both"
   },
   "devDependencies": {
+    "@lares/cli": "workspace:*",
     "@types/node": "^22.0.0",
+    "concurrently": "^9.0.0",
     "playwright": "^1.59.1",
     "playwright-mcp-wsl": "^1.0.0",
+    "tsx": "^4.19.0",
     "typescript": "^5.7.0"
   },
   "engines": {

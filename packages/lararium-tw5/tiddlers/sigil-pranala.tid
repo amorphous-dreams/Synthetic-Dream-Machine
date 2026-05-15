@@ -1,0 +1,14 @@
+title: lar:///ha.ka.ba/@lararium/tw5/tiddlers/sigil-pranala
+tags: $:/tags/Global $:/tags/LarariumGrammar
+type: text/vnd.tiddlywiki
+
+\widget ~pranala(from:"" to:"" slot:"" family:"" role:"" body:"" template:"")
+<$set name="_pranala-from" filter="[<from>regexp[^#]]" value={{{ [<from>addprefix<currentTiddler>] }}} emptyValue=<<from>>>
+<$set name="_pranala-to" filter="[<to>regexp[^#]]" value={{{ [<to>addprefix<currentTiddler>] }}} emptyValue=<<to>>>
+<$let pranala-from=<<_pranala-from>> pranala-to=<<_pranala-to>> pranala-slot=<<slot>> pranala-body=<<body>> pranala-family=<<family>> pranala-role=<<role>>
+      _pranala-template={{{ [<template>!match[]] ~[all[shadows+tiddlers]tag[$:/tags/Lar/PranalaTemplate]!is[draft]!has[draft.of]] :map:flat[subfilter{!!text}] +[first[]else[lar:///ha.ka.ba/@lararium/templates/pranala/html]] }}}>
+  <$transclude $tiddler=<<_pranala-template>>/>
+</$let>
+</$set>
+</$set>
+\end

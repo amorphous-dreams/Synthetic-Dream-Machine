@@ -1,0 +1,54 @@
+{
+  "name": "@lararium/tw5",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./node": {
+      "import": "./dist/node.js",
+      "types": "./dist/node.d.ts"
+    },
+    "./tw5-worker-script": {
+      "import": "./dist/tw5-worker-script.js",
+      "types": "./dist/tw5-worker-script.d.ts"
+    },
+    "./meme-worker-script.js": {
+      "import": "./dist/meme-worker-script.js",
+      "types": "./dist/meme-worker-script.d.ts"
+    },
+    "./tw5-memes-root": {
+      "import": "./tw5-memes-root.js",
+      "types": "./tw5-memes-root.d.ts"
+    }
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsx scripts/build-tw5-vendor.ts && tsx scripts/build-plugin-tiddler.ts && tsc && tsx scripts/sync-heleuma.ts",
+    "build:tw5-vendor": "tsx scripts/build-tw5-vendor.ts",
+    "build:heleuma": "tsx scripts/sync-heleuma.ts",
+    "build:heleuma:commit": "tsx scripts/sync-heleuma.ts --commit",
+    "build:plugin": "tsx scripts/build-plugin-tiddler.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "NODE_OPTIONS=--experimental-vm-modules pnpm exec jest --config jest.config.cjs"
+  },
+  "dependencies": {
+    "@lararium/core": "workspace:*",
+    "@lares/core": "workspace:*",
+    "@taplo/lib": "^0.5.0",
+    "smol-toml": "^1.6.1",
+    "tiddlywiki": "^5.4.0"
+  },
+  "devDependencies": {
+    "@jest/globals": "^29.7.0",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.2.0",
+    "tsx": "^4.19.0",
+    "tw5-typed": "^1.1.5",
+    "vite": "^8.0.10"
+  }
+}

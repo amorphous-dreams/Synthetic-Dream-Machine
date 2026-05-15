@@ -1,0 +1,13 @@
+title: lar:///ha.ka.ba/@lararium/tw5/tiddlers/sigil-aka
+tags: $:/tags/Global $:/tags/LarariumGrammar
+type: text/vnd.tiddlywiki
+
+\widget ~aka(p1:"" p2:"")
+<$set name="_aka-uri" filter="[<p1>regexp[^#]]" value={{{ [<p1>addprefix<currentTiddler>] }}} emptyValue=<<p1>>>
+<$let _aka-template={{{ [<p2>!match[]] ~[all[shadows+tiddlers]tag[$:/tags/Lar/AkaTemplate]!is[draft]!has[draft.of]] :map:flat[subfilter{!!text}] +[first[]else[lar:///ha.ka.ba/@lararium/templates/aka/html]] }}}>
+  <$tiddler tiddler=<<_aka-uri>>>
+    <$transclude $tiddler=<<_aka-template>>/>
+  </$tiddler>
+</$let>
+</$set>
+\end

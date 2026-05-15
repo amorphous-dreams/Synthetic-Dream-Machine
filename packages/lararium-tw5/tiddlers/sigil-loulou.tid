@@ -1,0 +1,13 @@
+title: lar:///ha.ka.ba/@lararium/tw5/tiddlers/sigil-loulou
+tags: $:/tags/Global $:/tags/LarariumGrammar
+type: text/vnd.tiddlywiki
+
+\widget ~loulou(p1:"" p2:"")
+<$set name="_loulou-uri" filter="[<p1>regexp[^#]]" value={{{ [<p1>addprefix<currentTiddler>] }}} emptyValue=<<p1>>>
+<$let _loulou-template={{{ [<p2>!match[]] ~[all[shadows+tiddlers]tag[$:/tags/Lar/LoulouTemplate]!is[draft]!has[draft.of]] :map:flat[subfilter{!!text}] +[first[]else[lar:///ha.ka.ba/@lararium/templates/loulou/html]] }}}>
+  <$set name="loulou-uri" value=<<_loulou-uri>>>
+    <$transclude $tiddler=<<_loulou-template>>/>
+  </$set>
+</$let>
+</$set>
+\end

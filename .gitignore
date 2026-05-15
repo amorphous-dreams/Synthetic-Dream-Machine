@@ -5,7 +5,7 @@ vendor/
 
 # Generated site/build output
 _site/
-_becmi/
+_osr/source-pdfs/
 _todo/_page_renders/.cache/
 
 node_modules/
@@ -33,8 +33,38 @@ lares/lararium-node/fixtures.current.json
 # pnpm/Node
 node_modules/
 packages/*/dist/
+packages/*/dist-bundle/
 packages/*/node_modules/
 .lararium-data/
 
-# Playwright CLI
+# Playwright CLI + test artifacts
 .playwright-cli/
+packages/lararium-app/test-results
+packages/lararium-node/test-results
+packages/lararium-node/playwright-report
+**/playwright-report/
+**/test-results/**/tests/.playwright-userdata/
+
+# Lararium node storage — per-deployment, never committed
+.lararium
+packages/lararium-node/.lararium/
+
+# scratch wiki — operator's live editable surface, never committed.
+# Named wikis (e.g. wikis/@lares-history/) are checked in.
+wikis/@scratch/
+wikis/scratch/
+!tests/expected/wikis/
+
+# Per-deployment social bootstrap (operator AutomergeUrls) — written by
+# `lararium:init`, consumed at boot. Never committed.
+packages/lararium-node/genesis/social-bootstrap.json
+
+# Integration test isolation root (LAR_ROOT=tests/).
+# The daemon writes wikis/, packages/lares-core/memes/, .lararium/, and genesis/
+# under tests/ during integration runs. None of it should be committed.
+tests/wikis/
+tests/packages/
+tests/.lararium/
+tests/genesis/
+tests/results/
+tests/runs/
