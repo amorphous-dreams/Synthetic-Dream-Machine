@@ -8,25 +8,20 @@ lar-default-family: dataflow
 lar-layer: both
 type: text/vnd.tiddlywiki
 
-<!-- kahea — live transclusion; mode="shadow" renders in frozen/aka form.
-     Merges former kahea (URI leaf) + kahea-block (child-slot summons) TOML entries.
+<!-- kahea — live transclusion; picks KaheaTemplate cascade.
+     aka carries the projection/frozen posture via its own AkaTemplate cascade.
 
      Dispatch shapes:
-       <<~ kahea lar:///uri >>          → ~kahea(p1=uri, mode="live")    — URI leaf
-       <<~ kahea ahu #slot >>           → ~kahea~ahu(p1="#slot", mode="live")  — child-slot summons
-       <<~ aka ahu #slot >>             → ~aka~ahu → ~kahea~ahu(mode="shadow") — projection form
+       <<~ kahea lar:///uri >>      → ~kahea(p1=uri)       — URI leaf
+       <<~ kahea ahu #slot >>       → ~kahea~ahu(p1="#slot") — child-slot summons
+       <<~ aka ahu #slot >>         → ~aka~ahu               — projection child-slot -->
 
-     mode="shadow" picks the AkaTemplate cascade instead of KaheaTemplate. -->
-
-\widget ~kahea(p1:"" p2:"" mode:"live")
+\widget ~kahea(p1:"" p2:"")
 <$set name="_k-uri" filter="[<p1>regexp[^#]]" value={{{ [<p1>addprefix<currentTiddler>] }}} emptyValue=<<p1>>>
-<$let _k-tag={{{ [<mode>match[shadow]then[$:/tags/Lar/AkaTemplate]else[$:/tags/Lar/KaheaTemplate]] }}}
-      _k-fallback={{{ [<mode>match[shadow]then[lar:///ha.ka.ba/@lararium/templates/aka/html]else[lar:///ha.ka.ba/@lararium/templates/kahea/html]] }}}>
-<$let _k-template={{{ [<p2>!match[]] ~[all[shadows+tiddlers]tag<_k-tag>!is[draft]!has[draft.of]] :map:flat[subfilter{!!text}] +[first[]else<_k-fallback>] }}}>
+<$let _k-template={{{ [<p2>!match[]] ~[all[shadows+tiddlers]tag[lar:///ha.ka.ba/tags/kahea-template]!is[draft]!has[draft.of]] :map:flat[subfilter{!!text}] +[first[]else[lar:///ha.ka.ba/@lararium/templates/kahea/html]] }}}>
 <$tiddler tiddler=<<_k-uri>>>
 <$transclude $tiddler=<<_k-template>>/>
 </$tiddler>
-</$let>
 </$let>
 </$set>
 \end

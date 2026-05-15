@@ -1,7 +1,7 @@
 # Lares Handoff — Active Work Only
 
-> Updated: 2026-05-14 (turn 3)
-> Branch: `feature/lararium-node-3`
+> Updated: 2026-05-14 (turn 4)
+> Branch: `feature/lararium-node-4`
 > Last sprint archive: `wikis/lares-history/last-sprint/`
 
 ## Bootstrap Paste
@@ -14,9 +14,10 @@ command-tiddler CLI, Keyhive concap, bag residency, wiki composition,
 plugin-tiddler boot, sigil cascade architecture, save-side split, recursive
 child co-promotion, Node VM / worker-thread lift, full sigils-as-wikitext
 sprint (T-1 wikirule collapse, URI fragment resolution, ahu.ts retirement,
-deserializer root-iam fix, build pipeline clear-before-rebuild), AND the
-SharktoothSigil grammar inversion + aka/kahea mode= collapse sprint
-(see "What Changed This Turn") are treated as landed unless tests prove drift.
+deserializer root-iam fix, build pipeline clear-before-rebuild),
+SharktoothSigil grammar inversion + aka/kahea mode= collapse sprint, AND the
+lar:-URI namespace + mode= retirement + English alias sigil sprint
+(see "What Changed This Turn (turn 4)") are treated as landed unless tests prove drift.
 
 Next work, in order:
 1. Path K / F-arc: TW5 routing rules + 300–500ms debounce + projection
@@ -28,6 +29,44 @@ Next work, in order:
 Rules: preserve TW5 VM primacy, bag=Automerge-doc=sync-boundary, no HTTP/RPC
 coordination surface, and explicit operator promotion for canon.
 ```
+
+## What Changed This Turn (2026-05-14 turn 4)
+
+### lar: URI Namespace Migration + mode= Retirement + English Alias Sigils — `lararium-tw5`
+
+**mode= retired from all sigil procedures:**
+- `~kahea(p1 p2)` — KaheaTemplate cascade only; no mode param.
+- `~aka(p1 p2)` — own AkaTemplate cascade; no delegation to ~kahea with mode="shadow".
+  ~aka's render posture difference lives in the template cascade, not in sigil dispatch.
+- `~ahu(slot uri p1)` — AhuTemplate cascade only; no mode param.
+- `~aka~ahu(slot uri p1)` — own AkaTemplate cascade for child-slot projection; own implementation.
+- `~(name p1 p2 p3 p4 p5)` dispatcher — mode param removed; threads only p1-p5.
+- `~kahea~ahu(slot uri p1)` — passes through to ~ahu without mode.
+
+**lar: URI tag migration (owned namespace, not TW5 core contracts):**
+- `$:/tags/Lar/AhuTemplate` → `lar:///ha.ka.ba/tags/ahu-template`
+- `$:/tags/Lar/AkaTemplate` → `lar:///ha.ka.ba/tags/aka-template`
+- `$:/tags/Lar/KaheaTemplate` → `lar:///ha.ka.ba/tags/kahea-template`
+- `$:/tags/Lar/LoulouTemplate` → `lar:///ha.ka.ba/tags/loulou-template`
+- `$:/tags/Lar/PranalaTemplate` → `lar:///ha.ka.ba/tags/pranala-template`
+- `$:/tags/Lar/PranalaHeaderTemplate` → `lar:///ha.ka.ba/tags/pranala-header-template`
+- `$:/tags/LarariumGrammar` removed from `memetic-wikitext.tid` tags (superseded by SharktoothSigil)
+- `$:/tags/LarariumKumu` → `lar:///ha.ka.ba/tags/kumu` (kau.ts)
+- `$:/config/Lar/MemeticRulesExcept` → `lar:///ha.ka.ba/config/memetic-rules-except` (memetic-parser.ts)
+- All cascade tiddlers (`*-cascade-*.tid`) tags fields updated.
+
+**English alias sigil tiddlers (new; SharktoothSigil-tagged):**
+- `sigil-procedure.tid` — `lar-kind: pragma-alias`, `lar-alias-for: \procedure`; with cross-ref to `wehe`
+- `sigil-define.tid` — `lar-kind: pragma-alias`, `lar-alias-for: \define`; deprecated in favour of \procedure
+- `sigil-widget.tid` — `lar-kind: pragma-alias`, `lar-alias-for: \widget`
+- `sigil-function.tid` — `lar-kind: pragma-alias`, `lar-alias-for: \function`
+- `sigil-if.tid` — `lar-kind: control`; `\procedure ~\if` body uses TW5 `<%if filter%>...<%endif%>`
+- `sigil-for.tid` — `lar-kind: control`; `\procedure ~\for` body wraps `<$list filter=...>`
+- All carry `lar-alias-for` cross-refs to the Hawaiian equivalents (wehe, huli, etc.) where applicable.
+
+**Build:** 42/42 + 39/39 tests pass. Smoke clean. 33 shadow tiddlers.
+
+---
 
 ## What Changed This Turn (2026-05-14 turn 3)
 

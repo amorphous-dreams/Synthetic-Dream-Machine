@@ -116,7 +116,7 @@ function renderInvocation(
   args: string,
 ) {
   const results: string[] = widget.wiki?.filterTiddlers?.(
-    `[all[tiddlers]tag[$:/tags/LarariumKumu]field:kumu-name[${name}]]`
+    `[all[tiddlers]tag[lar:///ha.ka.ba/tags/kumu]field:kumu-name[${name}]]`
   ) ?? [];
   const defUri = results[0] ?? "";
 
@@ -158,7 +158,7 @@ function renderPlacement(
   instanceUri: string,
 ) {
   const results: string[] = widget.wiki?.filterTiddlers?.(
-    `[all[tiddlers]tag[$:/tags/LarariumKumu]field:kumu-name[${name}]]`
+    `[all[tiddlers]tag[lar:///ha.ka.ba/tags/kumu]field:kumu-name[${name}]]`
   ) ?? [];
   const defUri = results[0] ?? "";
 

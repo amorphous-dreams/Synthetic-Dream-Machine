@@ -6,12 +6,16 @@ lar-alias-for: kahea
 lar-default-family: observe
 type: text/vnd.tiddlywiki
 
-<!-- aka — shadow/projection mode of kahea. Delegates entirely to ~kahea with mode="shadow".
-     Any meme that defines a shadow transclusion template gets aka behavior automatically.
-
-     The projection boundary transform: kahea refs in a live wiki become aka refs when
-     the carrier emits a frozen projection. ~aka at render time = the frozen read. -->
+<!-- aka — projection/frozen read posture. Own AkaTemplate cascade; not a delegation
+     to kahea. The semantic: aka = kahea family:observe (frozen carrier read).
+     Render posture difference lives in the template cascade, not in sigil dispatch. -->
 
 \widget ~aka(p1:"" p2:"")
-<$transclude $variable="~kahea" p1=<<p1>> p2=<<p2>> mode="shadow"/>
+<$set name="_a-uri" filter="[<p1>regexp[^#]]" value={{{ [<p1>addprefix<currentTiddler>] }}} emptyValue=<<p1>>>
+<$let _a-template={{{ [<p2>!match[]] ~[all[shadows+tiddlers]tag[lar:///ha.ka.ba/tags/aka-template]!is[draft]!has[draft.of]] :map:flat[subfilter{!!text}] +[first[]else[lar:///ha.ka.ba/@lararium/templates/aka/html]] }}}>
+<$tiddler tiddler=<<_a-uri>>>
+<$transclude $tiddler=<<_a-template>>/>
+</$tiddler>
+</$let>
+</$set>
 \end

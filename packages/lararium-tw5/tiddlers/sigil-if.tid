@@ -1,0 +1,25 @@
+title: lar:///ha.ka.ba/@lararium/tw5/tiddlers/sigil-if
+tags: $:/tags/Global lar:///ha.ka.ba/tags/SharktoothSigil
+lar-kind: control
+lar-alias-for: \if
+lar-see-also: heihei
+lar-open-pattern: <<~\s*\\if\s+([^>]+?)\s*>>
+lar-close-pattern: <<~\/\\if\s*>>
+type: text/vnd.tiddlywiki
+
+<!-- \if — conditional block using TW5 <%if filter%>...<%endif%> shortcut (TW5 5.3+).
+     Hawaiian equivalent: heihei (race/compete — multiple candidate bodies, first wins).
+     lar-see-also: heihei
+
+     <<~ \if filter >>body<<~/ \if >> renders body only when filter yields a non-empty result.
+     Operator talk-story: TW5 filter semantics differ from imperative conditionals.
+     The filter runs in the current tiddler context; true = at least one result.
+     Use `[<variable>match[value]]` for equality, `[condition]` for existence tests.
+
+     No mode= param — control flow has no projection posture. -->
+
+\procedure ~\if(p1:"" p2:"")
+<%if [<p1>]%>
+<$transclude $variable="~" name=<<p2>>/>
+<%endif%>
+\end

@@ -4,7 +4,7 @@
  * Architecture note (post-rewrite):
  *   The `markdown-meme` and HTML render scopes for ahu now live entirely
  *   in TW5 templates + cascades (see widgets/ahu.ts and the tag
- *   `$:/tags/Lar/AhuTemplate`). This module retained only the
+ *   `lar:///ha.ka.ba/tags/ahu-template`). This module retained only the
  *   `projection` mode for legacy callers (kau widget). When kau follows
  *   the same template-cascade rewrite, this module disappears.
  *

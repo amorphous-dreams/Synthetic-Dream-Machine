@@ -7,33 +7,35 @@ type: text/vnd.tiddlywiki
 
 <!-- ahu — worksite scope boundary; addressable child-slot tiddler at parentUri+slot.
 
-     mode param threads through from kahea:
-       mode="live"   → AhuTemplate cascade (live child-slot transclusion)
-       mode="shadow" → AkaTemplate cascade (frozen/projection read of child slot)
-
-     ~aka~ahu delegates to ~kahea~ahu(mode="shadow") — no duplicate implementation.
+     ~kahea~ahu → AhuTemplate cascade (live child-slot transclusion).
+     ~aka~ahu   → AkaTemplate cascade (frozen/projection read of child slot).
+     Render posture lives in the template cascade, not in the sigil procedure.
 
      Live wiki parent tiddlers hold <<~ kahea ahu #slot >> (space form, HUD-readable).
      lar-sigil.ts routes compound forms: name="kahea~ahu", p1=slot. -->
 
-\widget ~ahu(slot:"" uri:"" p1:"" mode:"live")
+\widget ~ahu(slot:"" uri:"" p1:"")
 <$let _ahu-slot={{{ [<slot>!match[]] ~[<p1>] }}}>
 <$let _ahu-uri={{{ [<uri>!match[]!regexp[^lar:///unknown]] ~[<_ahu-slot>regexp[^lar:]] ~[<currentTiddler>addsuffix<_ahu-slot>] }}}
-      _ahu-tag={{{ [<mode>match[shadow]then[$:/tags/Lar/AkaTemplate]else[$:/tags/Lar/AhuTemplate]] }}}
-      _ahu-fallback={{{ [<mode>match[shadow]then[lar:///ha.ka.ba/@lararium/templates/aka/html]else[lar:///ha.ka.ba/@lararium/templates/ahu/html]] }}}>
-<$let _ahu-template={{{ [all[shadows+tiddlers]tag<_ahu-tag>!is[draft]] :map:flat[subfilter{!!text}] +[first[]else<_ahu-fallback>] }}}>
+      _ahu-template={{{ [all[shadows+tiddlers]tag[lar:///ha.ka.ba/tags/ahu-template]!is[draft]] :map:flat[subfilter{!!text}] +[first[]else[lar:///ha.ka.ba/@lararium/templates/ahu/html]] }}}>
 <$tiddler tiddler=<<_ahu-uri>>>
 <$transclude $tiddler=<<_ahu-template>>/>
 </$tiddler>
 </$let>
 </$let>
-</$let>
 \end
 
-\procedure ~kahea~ahu(slot:"" uri:"" p1:"" mode:"live")
-<$transclude $variable="~ahu" slot=<<slot>> uri=<<uri>> p1=<<p1>> mode=<<mode>>/>
+\procedure ~kahea~ahu(slot:"" uri:"" p1:"")
+<$transclude $variable="~ahu" slot=<<slot>> uri=<<uri>> p1=<<p1>>/>
 \end
 
 \procedure ~aka~ahu(slot:"" uri:"" p1:"")
-<$transclude $variable="~kahea~ahu" slot=<<slot>> uri=<<uri>> p1=<<p1>> mode="shadow"/>
+<$let _a-slot={{{ [<slot>!match[]] ~[<p1>] }}}>
+<$let _a-uri={{{ [<uri>!match[]!regexp[^lar:///unknown]] ~[<_a-slot>regexp[^lar:]] ~[<currentTiddler>addsuffix<_a-slot>] }}}
+      _a-template={{{ [all[shadows+tiddlers]tag[lar:///ha.ka.ba/tags/aka-template]!is[draft]] :map:flat[subfilter{!!text}] +[first[]else[lar:///ha.ka.ba/@lararium/templates/aka/html]] }}}>
+<$tiddler tiddler=<<_a-uri>>>
+<$transclude $tiddler=<<_a-template>>/>
+</$tiddler>
+</$let>
+</$let>
 \end

@@ -1,0 +1,17 @@
+title: lar:///ha.ka.ba/@lararium/tw5/tiddlers/sigil-widget
+tags: $:/tags/Global lar:///ha.ka.ba/tags/SharktoothSigil
+lar-kind: pragma-alias
+lar-alias-for: \widget
+lar-open-pattern: <<~\s*\\widget\s+([\w~-]+)(?:\s+([^>]*?))?\s*>>
+lar-close-pattern: <<~\/\\widget\s*>>
+type: text/vnd.tiddlywiki
+
+<!-- \widget — English alias for the TW5 \widget pragma.
+     No direct Hawaiian equivalent; the ~ prefix is the Lares convention.
+
+     <<~ \widget ~name(params) >>body<<~/ \widget >> declares a named widget
+     callable as <<~name ...>> via the ~ dispatcher.
+     lar-kind: pragma-alias — produces no render output; the sigil IS the declaration.
+
+     The ~ prefix convention: <<~ \widget ~mana(uri:"") >>...<<~/ \widget >>
+     registers a new mana sigil callable as <<~ mana lar:///uri >>. -->

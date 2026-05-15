@@ -1,0 +1,25 @@
+title: lar:///ha.ka.ba/@lararium/tw5/tiddlers/sigil-for
+tags: $:/tags/Global lar:///ha.ka.ba/tags/SharktoothSigil
+lar-kind: control
+lar-alias-for: \for
+lar-see-also: huli
+lar-open-pattern: <<~\s*\\for\s+([^>]+?)\s*>>
+lar-close-pattern: <<~\/\\for\s*>>
+type: text/vnd.tiddlywiki
+
+<!-- \for — iteration block; maps a filter over a body template.
+     Hawaiian equivalent: huli (search/turn — query or exploration scope).
+     lar-see-also: huli
+
+     <<~ \for filter >>body-template<<~/ \for >> renders body-template once per result.
+     Operator talk-story: body-template receives the current tiddler title as
+     `currentTiddler`. Use `[all[tiddlers]tag[MyTag]]` for tag iteration,
+     `[range[1,10]]` for numeric, `[{!!items}splitTiddlerList[]]` for stored lists.
+
+     No mode= param — control flow has no projection posture. -->
+
+\procedure ~\for(p1:"" p2:"")
+<$list filter=<<p1>>>
+<$transclude $variable="~" name=<<p2>>/>
+</$list>
+\end

@@ -1,0 +1,119 @@
+<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/@lares/api/v0.1/pono/memetic-wikitext >> -->
+
+<<~⊙&#x0001; ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/ahu >>
+```toml iam
+uri-path = "ha.ka.ba/@lares/api/v0.1/pono/ahu"
+file-path = "bags/@lares/api/v0.1/pono/ahu.md"
+type = "text/x-memetic-wikitext"
+confidence   = 0.90
+register     = "CS"
+manaoio      = 0.88
+mana         = 0.90
+manao        = 0.88
+role         = "child-slot sigil — addressable worksite scope boundary; named ahu slots form the meme's tiddler structure"
+cacheable    = true
+retain       = true
+```
+
+
+
+<<~ aka lar:///ha.ka.ba/@lares/api/v0.1/pono/RFC-2119#normative-language >>
+
+<<~ ahu #head >>
+
+# Ahu
+
+*ahu* — Hawaiian: heap, pile, mound; altar; to pile up, to accumulate.
+
+A child-slot sigil. Each `ahu` block declares a named scope boundary within a meme — an
+addressable child tiddler at `parentUri + slot`. The slot name becomes the tiddler title suffix.
+Slots compose the structural skeleton of a meme's content; each holds its own TOML iam header
+and wikitext body.
+
+<<~/ahu >>
+
+<<~&#x0002;>>
+
+<<~ ahu #ooda-ha >>
+
+✶ sense the slot name — a `#name` anchor; the boundary scope of this content unit
+⏿ orient: child-slot, parent-relative addressing; slot name becomes tiddler title suffix
+◇ parent at `lar:///uri`; this slot creates child at `lar:///uri#name`; content stays inside boundary
+▶ emit child-slot block node; deserializer produces a separate tiddler for each slot
+⤴ parent tiddler references child via `<<~ kahea ahu #name >>`; child is independently addressable
+↺ confirm round-trip: parent body contains kahea~ahu summons; child has iam fields + content
+
+<<~/ahu >>
+
+<<~ ahu #law >>
+
+## Law (Kānāwai)
+
+An ahu block MUST declare a slot name beginning with `#`.
+An ahu block MUST close with `<<~/ahu >>`.
+An ahu block MUST be a top-level scope — ahu blocks MUST NOT nest.
+An ahu slot MUST produce an independently addressable tiddler at `parentUri + slot`.
+A parent tiddler MUST reference each child slot via `<<~ kahea ahu #slot >>` in its body.
+Child slot tiddlers MUST NOT duplicate the parent's iam TOML — they carry their own.
+
+The slot name `#head` is conventional for the meme's primary content body.
+The slot name `#source-shelf` is conventional for pranala edge declarations.
+
+<<~/ahu >>
+
+<<~ ahu #syntax >>
+
+## Syntax
+
+```text
+<<~ ahu #slot-name >>
+content body
+<<~/ahu >>
+```
+
+Compound kahea-ahu summons form (in parent tiddler body):
+```text
+<<~ kahea ahu #slot-name >>
+```
+
+Regex (open, canonical):
+```
+/<<~[^>]*\bahu\s+(#[\w-]+)\s*>>/
+```
+
+Close tag: `<<~/ahu >>`
+
+<<~/ahu >>
+
+<<~ ahu #schema >>
+
+## Schema (machine-readable)
+
+```toml
+sigil          = "ahu"
+kind           = "child-slot"
+layer          = "block"
+default-family = null
+
+open-pattern  = '<<~[^>]*\bahu\s+(#[\w-]+)\s*>>'
+close-pattern = '<<~\/ahu\s*>>'
+
+[captures]
+slot = 1
+```
+
+<<~/ahu >>
+
+<<~ ahu #edges >>
+
+## Edges
+
+<<~ pranala #implements-invariant ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/invariant family:control role:implements >>
+<<~ pranala #to-kahea ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/kahea family:relation >>
+<<~ pranala #to-meme ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/meme family:relation >>
+
+<<~/ahu >>
+
+<<~&#x0003;>>
+
+<<~&#x0004; -> ? >>

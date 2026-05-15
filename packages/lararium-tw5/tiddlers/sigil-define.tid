@@ -1,0 +1,16 @@
+title: lar:///ha.ka.ba/@lararium/tw5/tiddlers/sigil-define
+tags: $:/tags/Global lar:///ha.ka.ba/tags/SharktoothSigil
+lar-kind: pragma-alias
+lar-alias-for: \define
+lar-see-also: wehe
+lar-open-pattern: <<~\s*\\define\s+([\w-]+)(?:\s+([^>]*?))?\s*>>
+lar-close-pattern: <<~\/\\define\s*>>
+type: text/vnd.tiddlywiki
+
+<!-- \define — English alias for the TW5 \define macro pragma.
+     Hawaiian equivalent: wehe (same executor scope as \procedure).
+     lar-see-also: wehe
+
+     lar-kind: pragma-alias — produces no render output; the sigil IS the declaration.
+     Prefer \procedure for new code (TW5 5.3+); \define retained for compatibility
+     with legacy TW5 macro forms. -->

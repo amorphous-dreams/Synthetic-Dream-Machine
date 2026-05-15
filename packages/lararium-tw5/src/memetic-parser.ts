@@ -25,12 +25,12 @@ module-type: parser
  * <<~ … >> forms; standard TW5 macro rules fire normally for <<macroname>>.
  *
  * Operator override: writing a space-separated rule-name list to
- * `$:/config/Lar/MemeticRulesExcept` replaces the default deny list.
+ * `lar:///ha.ka.ba/config/memetic-rules-except` replaces the default deny list.
  *
  * Schema: lar:///ha.ka.ba/@lares/api/v0.1/lararium/schema/memetic-parser
  */
 
-const RULES_CONFIG_TIDDLER = "$:/config/Lar/MemeticRulesExcept";
+const RULES_CONFIG_TIDDLER = "lar:///ha.ka.ba/config/memetic-rules-except";
 
 const DEFAULT_RULES_EXCEPT: ReadonlySet<string> = new Set<string>();
 

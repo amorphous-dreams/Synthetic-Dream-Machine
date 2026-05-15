@@ -43,7 +43,7 @@ Two states:
 
 The summary header always shows the target URI as a link, so the projection always points home.
 
-Cascade tag: `$:/tags/Lar/AkaTemplate` — operator can override the render template per scope.
+Cascade tag: `lar:///ha.ka.ba/tags/aka-template` — operator can override the render template per scope.
 
 Call-site template override: `<<~ aka lar:///target lar:///my-template >>` (p2 bypasses cascade).
 
