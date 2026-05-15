@@ -156,48 +156,41 @@ reaction-roles = ["listenable", "subscribable", "observes", "throttles", "deboun
 The current ReactionGraph TS implementation is a **provisional bridge**, not the
 target architecture. The target collapses the routing layer into the TW5 wiki.
 
-### Current (provisional, web2-adjacent)
+### Landed (2026-05-15) — reaction-router.ts TW5 startup module
+
+`ReactionEngine` (TS, inline dispatch) removed. Replaced by:
 
 ```
-TS ReactionGraph (in-memory routing table)
-  ← loaded from reaction tiddlers via load(bindings)
-  ← fireSync() fires handlers synchronously but INLINE (not tick-driven)
-TW5Engine.registerProjectionBus() ← TS wrapper over wiki.addEventListener
+packages/lararium-tw5/src/modules/reaction-router.ts
+  module-type: startup, platforms: ["browser", "node"]
+
+  Boot: scan all lar: tiddlers → build ReactionGraph from papalohe bindings.
+
+  wiki.addEventListener("change", handler):           ← nalu arrives
+    → update ReactionGraph bindings for changed URIs
+    → wiki.dispatchEvent("tm-lararium-event", {uri, listenable})
+
+  Worker path: registerProjectionBus consumer receives tm-lararium-event
+    → posts WorkerMsg_Event to main thread (vm-ring routing)
+
+  Browser path: widget tree handles tm-lararium-event directly.
 ```
 
-### Target (yin-collapse, TW5-native)
+`ReactionGraph` and `extractReactionBindings` remain in `live-protocol.ts`
+(imported by reaction-router.ts). `ReactionEngine` class removed from
+kumu-device.ts. `lar-wiki-worker.ts` now wires `registerProjectionBus`
+and drops the inline `re.onChangeset()` call.
 
-```
-TW5 startup module (synchronous = true):
-  wiki.addEventListener("tm-lararium-event", (event) => {
-    // Read reaction bindings DIRECTLY from wiki tiddlers
-    const bindings = wiki.filterTiddlers(
-      `[field:pranala-from[${event.uri}]][field:listenable[${event.listenable}]]`
-    );
-    for (const b of bindings) invokeSubscribable(b.pranala-to, b.subscribable);
-  });
-```
-
-The reaction tiddlers (family:reaction pranala edges) already exist.
-The startup module replaces: ReactionGraph + TW5Engine + ProjectionBusConsumer.
 What remains in TS: MemeSyncAdaptor + LarTiddlerStore + VmPool + Keyhive.
 
-### `fireSync` semantic note
+### `fireSync` gap — CLOSED (2026-05-15)
 
-`fireSync` is labeled "UEFN fidelity: synchronous tick dispatch." This is the
-**intent** — atomic delivery, subscription order. But the current implementation
-fires INLINE within the calling JavaScript execution context. It is NOT yet
-tick-driven (it does not participate in TW5's enqueueTiddlerEvent + nextTick cycle).
+The gap (inline dispatch before nalu) no longer exists. `reaction-router.ts`
+fires reactions inside `wiki.addEventListener("change")` — after TW5 coalesces
+the batch. Dispatch now happens within the nalu, not before it.
 
-A truly nalu-driven dispatch would:
-1. Call `wiki.enqueueTiddlerEvent()` to signal a change
-2. Let TW5's batch window coalesce concurrent events
-3. Receive the batch in a `wiki.addEventListener("change", handler)` callback
-4. Dispatch reactions from within that callback (truly after the nalu)
-
-The gap: current fireSync runs before the nalu; target runs within the nalu.
-See `pono/nalu.md` for the nalu architecture and the batch-window tuning note
-(TW5 browser refresh throttle: default ~400ms, tunable to ~16ms for real-time).
+`fireSync` on `ReactionGraph` remains available for direct test use, but the
+production dispatch path runs exclusively through the nalu hook.
 
 ### Prior art validating the collapse
 

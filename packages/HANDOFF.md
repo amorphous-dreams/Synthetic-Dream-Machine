@@ -1,6 +1,6 @@
 # Lares Handoff — Active Work Only
 
-> Updated: 2026-05-15 (turn 7)
+> Updated: 2026-05-15 (turn 8)
 > Branch: `feature/lararium-node-4`
 > Last sprint archive: `wikis/lares-history/last-sprint/`
 
@@ -37,6 +37,38 @@ Rules: preserve TW5 VM primacy, bag=Automerge-doc=sync-boundary, no HTTP/RPC
 coordination surface, and explicit operator promotion for canon. Web3 only —
 no web2 models/code/flows in Lares stack.
 ```
+
+## What Changed This Turn (2026-05-15 turn 8)
+
+### Yin-Collapse Cut 1 — reaction-router.ts + fireSync Gap Closed
+
+**Architectural ruling enacted.** `ReactionEngine` (TS inline dispatch) removed.
+Replaced by nalu-driven TW5 startup module.
+
+**New:**
+- `packages/lararium-tw5/src/modules/reaction-router.ts` — TW5 startup module,
+  platforms browser + node. Boots by scanning all `lar:` tiddlers for papalohe
+  bindings; maintains `ReactionGraph` incrementally via `wiki.addEventListener("change")`;
+  dispatches `wiki.dispatchEvent("tm-lararium-event", {uri, listenable})` from inside
+  the nalu hook. Reactions now fire AFTER the full changeset lands, not inline before it.
+
+**Removed:**
+- `ReactionEngine` class from `packages/lararium-core/src/kumu-device.ts` — replaced
+  by reaction-router.ts. `ReactionGraph` + `extractReactionBindings` remain in
+  live-protocol.ts (imported by the startup module).
+
+**Updated:**
+- `packages/lararium-node/src/lar-wiki-worker.ts` — removed `ReactionEngine` import
+  and instance; wired `tw5.registerProjectionBus({handleLarariumEvent})` after boot;
+  removed inline `re.onChangeset()` from changeset handler. Worker now forwards
+  `tm-lararium-event` wiki events → `WorkerMsg_Event` to main thread.
+- `bags/@lares/api/v0.1/pono/reaction-graph.md` — yin-collapse target section updated
+  to "Landed"; fireSync gap section updated to "CLOSED".
+
+**Metrics:** typecheck clean; 126/126 tests pass; 17 Vite plugin modules (was 16);
+smoke boot clean. All probes pass.
+
+---
 
 ## What Changed This Turn (2026-05-15 turn 7)
 

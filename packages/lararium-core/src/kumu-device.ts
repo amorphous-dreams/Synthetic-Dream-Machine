@@ -59,21 +59,13 @@
  *     lar:///type-path#uuid-fragment  — crypto.randomUUID() stable wiring address
  *   Declared in the type meme body via <<~ kahea kau #fragment >> sigils.
  *
- * ## ReactionEngine
- *   MemeProjection that routes CRDT change events through a ReactionGraph.
- *   Scale-1/2 (onUriChanged): fires all unique listenables for the changed URI.
- *   Scale-3 (onChangeset):    one synchronous tick across all changed URIs.
+ * Reaction routing collapsed into reaction-router.ts (TW5 startup module, nalu-driven).
  *
  * Isomorphic: no Node/browser APIs. Works in Node, browser, and TW5-era environments.
  *
  * Meme: lar:///ha.ka.ba/@lararium/core/v0.1/kumu-device
  */
 
-import type { LarTiddlerChange, ChangeOrigin } from "./tiddler-store.js";
-import type { MemeProjection } from "./meme-provider.js";
-import type { ReactionBinding, ReactionHandler } from "./live-protocol.js";
-import { extractReactionBindings, ReactionGraph } from "./live-protocol.js";
-import { parseMemeEdges } from "./meme-ast/index.js";
 
 // ---------------------------------------------------------------------------
 // KumuListenable / KumuSubscribable — UEFN Verse 5.6+ pin vocabulary
@@ -268,160 +260,6 @@ export function kumuDeviceSpecFromEdges(
   return spec;
 }
 
-// ---------------------------------------------------------------------------
-// ReactionEngine — MemeProjection that routes change events through ReactionGraph
-// ---------------------------------------------------------------------------
-
-// Minimal wiki surface needed for boot scan — avoids @lararium/tw5 import.
-interface BootScanSurface {
-  filterTiddlers(filter: string): string[];
-  getTiddlerText(uri: string): string | undefined;
-}
-
-function _bindingsFromText(uri: string, text: string): ReactionBinding[] {
-  try {
-    const edges = parseMemeEdges(uri, text);
-    return extractReactionBindings(
-      edges.map((e) => ({
-        fromUri: e.fromUri, toUri: e.toUri,
-        family:  e.family,  role:  e.role,
-        payload: e.payload,
-      }))
-    );
-  } catch { return []; }
-}
-
-/**
- * Routes CRDT change events through a ReactionGraph, and owns the graph.
- *
- * Replaces the web2 buildReactionGraph / bindingsForUri wiki-scan pattern.
- * Call boot() once after TW5Engine.boot() for the initial full scan;
- * onUriChanged() maintains the graph incrementally thereafter.
- *
- * Usage:
- *   const engine = new ReactionEngine();
- *   engine.boot(tw5.$tw.wiki);
- *   peer.store.addProjection(engine);
- *   engine.subscribeByFn("navigate", handler);
- *
- * Worker forwarding (P.3.5):
- *   const cancel = engine.onAnyFire((fromUri, listenable, payload) => {
- *     post({ schema_version: 1, type: "event", wikiUri, eventId: listenable,
- *            payload: sanitize(payload) });
- *   });
- *   liveHandles.add({ cancel });
- */
-export class ReactionEngine implements MemeProjection {
-  private readonly _graph: ReactionGraph;
-  private _ready = false;
-
-  constructor(graph?: ReactionGraph) {
-    this._graph = graph ?? new ReactionGraph();
-  }
-
-  /** Full wiki scan — call once after TW5Engine.boot(). */
-  boot(wiki: BootScanSurface): void {
-    const uris = wiki.filterTiddlers("[all[tiddlers]!prefix[$:/]]");
-    const allEdges: {
-      fromUri: string; toUri: string;
-      family:  string; role:  string | null;
-      payload: Record<string, unknown>;
-    }[] = [];
-    for (const uri of uris) {
-      const text = wiki.getTiddlerText(uri);
-      if (!text) continue;
-      try {
-        for (const e of parseMemeEdges(uri, text)) {
-          allEdges.push({
-            fromUri: e.fromUri, toUri: e.toUri,
-            family:  e.family,  role:  e.role,
-            payload: e.payload,
-          });
-        }
-      } catch { /* malformed — skip */ }
-    }
-    this._graph.load(extractReactionBindings(allEdges));
-    this._ready = true;
-  }
-
-  get ready(): boolean { return this._ready; }
-
-  // ── MemeProjection ──────────────────────────────────────────────────────
-
-  /** Scale-1/2: maintain graph + fire all reaction triggers for changed URI. */
-  onUriChanged(change: LarTiddlerChange): void {
-    const { title, record } = change;
-    if (!title.startsWith("lar:")) return;
-    if (!record || record.deleted) {
-      this._graph.removeUri(title);
-    } else {
-      const bindings = _bindingsFromText(title, record.text ?? "");
-      if (bindings.length > 0) this._graph.updateUri(title, bindings);
-      else this._graph.removeUri(title);
-    }
-    this._fireForUri(title, { uri: title });
-  }
-
-  /**
-   * Scale-3: maintain graph bindings + fire all triggers for every URI in the changeset.
-   * All handlers run in declaration order — UEFN game-loop fidelity.
-   *
-   * `wiki` — optional live wiki surface (pass TW5 wiki in Worker context) so the
-   * graph updates its papalohe edge bindings for changed URIs before firing.
-   * When omitted, only reactions fire (bindings remain as-is — correct for the
-   * main-thread MemeSyncAdaptor path where onUriChanged already maintains them).
-   */
-  onChangeset(uris: ReadonlySet<string>, origin: ChangeOrigin, wiki?: BootScanSurface): void {
-    if (wiki) {
-      for (const uri of uris) {
-        if (!uri.startsWith("lar:")) continue;
-        const text = wiki.getTiddlerText(uri);
-        if (text !== undefined) {
-          const bindings = _bindingsFromText(uri, text);
-          if (bindings.length > 0) this._graph.updateUri(uri, bindings);
-          else this._graph.removeUri(uri);
-        } else {
-          this._graph.removeUri(uri);
-        }
-      }
-    }
-    for (const uri of uris) {
-      this._fireForUri(uri, { origin });
-    }
-  }
-
-  // ── ReactionGraph delegation ───────────────────────────────────────────
-
-  subscribeByFn(fnName: string, handler: ReactionHandler): () => void {
-    return this._graph.subscribeByFn(fnName, handler);
-  }
-
-  subscribe(fromUri: string, listenable: string, handler: ReactionHandler): () => void {
-    return this._graph.subscribe(fromUri, listenable, handler);
-  }
-
-  fireSync(fromUri: string, listenable: string, payload: unknown = {}): void {
-    this._graph.fireSync(fromUri, listenable, payload);
-  }
-
-  /**
-   * Register a monitoring observer that receives EVERY fireSync call with full context.
-   * Designed for cross-boundary forwarding — e.g. Worker → main thread event bridge.
-   * Returns a cancellation function. Add the return to `liveHandles`.
-   */
-  onAnyFire(
-    observer: (fromUri: string, listenable: string, payload: unknown) => void,
-  ): () => void {
-    return this._graph.onFireSync(observer);
-  }
-
-  private _fireForUri(uri: string, payload: Record<string, unknown>): void {
-    const listenables = new Set<string>();
-    for (const b of this._graph.bindings) {
-      if (b.fromUri === uri && b.listenable) listenables.add(b.listenable);
-    }
-    for (const listenable of listenables) {
-      this._graph.fireSync(uri, listenable, payload);
-    }
-  }
-}
+// ReactionEngine removed — collapsed into reaction-router.ts TW5 startup module.
+// Nalu-driven dispatch now: wiki.addEventListener("change") → tm-lararium-event.
+// See packages/lararium-tw5/src/modules/reaction-router.ts.
