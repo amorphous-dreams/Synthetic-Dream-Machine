@@ -27,6 +27,9 @@ gap documented; sigil-tick.tid stub registered) are treated as landed unless
 tests prove drift.
 
 Next work, in order:
+0. Test infra — migrate Jest → Vitest (all three packages). Jest needs
+   --experimental-vm-modules for ESM; Vitest drops that flag, native ESM,
+   same API, faster, Vite-backed. Low migration cost: config swap only.
 1. UEFN scene importer — .verse class defs + .umap instance placements + DEB
    wires → Automerge bag of tiddlers + pranala edges. Spec: bags/@lares/api/v0.1/pono/uefn-scene.md.
 2. Path K / F-arc: TW5 routing rules + 300–500ms debounce + projection

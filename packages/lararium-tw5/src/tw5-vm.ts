@@ -4,8 +4,8 @@
  * JKD principle: absorb what is useful (boot, render, tiddler mutation,
  * deserialize, wiki events), discard the carrier/closure/store/syncer web2 cruft.
  *
- * TW5Engine owns the raw VM lifecycle. Store sync lives in MemeSyncAdaptor.
- * Reaction indexing lives in ReactionEngine. No globals.
+ * TW5Engine owns the raw VM lifecycle. Store sync: MemeSyncAdaptor.
+ * Reaction routing: reaction-router.ts TW5 startup module. No globals.
  */
 
 import type {
