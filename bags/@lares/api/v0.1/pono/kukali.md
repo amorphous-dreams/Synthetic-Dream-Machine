@@ -23,10 +23,10 @@ retain       = true
 
 # Kukali
 
-*kūkali* — Hawaiian: to wait, to be patient, to remain in suspense.
+*kūkali* — Hawaiian: to wait, patient, remaining in suspense.
 
 A wait posture inside a causal island. Execution parks until the named papalohe trigger fires.
-Verse `suspends` analogue: the island does not block; it parks and resumes exactly once.
+Verse `suspends` analogue: the island parks without blocking; it resumes exactly once.
 Paired with papalohe — papalohe declares the wire; kukali declares the wait at the receiving end.
 
 <<~/ahu >>

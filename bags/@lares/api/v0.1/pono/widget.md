@@ -28,8 +28,8 @@ The `~` prefix convention: all operator-defined callable sigils use `~name`. The
 makes this declaration first-class in memetic-wikitext — no separate tiddler or JS registration
 needed for a new named sigil body.
 
-No direct Hawaiian equivalent. The `~` prefix is the Lares convention for callable wikitext bodies.
-`lar-kind: pragma-alias` — the sigil IS the declaration; no render output.
+No direct Hawaiian equivalent. The `~` prefix carries the Lares convention for callable wikitext bodies.
+`lar-kind: pragma-alias` — the sigil serves as the declaration; no render output.
 
 <<~/ahu >>
 
@@ -41,7 +41,7 @@ No direct Hawaiian equivalent. The `~` prefix is the Lares convention for callab
 
 A `\widget` declaration MUST use the `~` prefix on the widget name.
 A `\widget` declaration MUST close with `<<~/ \widget >>`.
-A `\widget` declaration MUST NOT produce render output — it is a declaration only.
+A `\widget` declaration MUST NOT produce render output — it functions as a declaration only.
 The declared name MUST be unique in the current tiddler scope.
 `\widget` and `\procedure` MAY be used interchangeably for render-only bodies; use `\widget` when
 the body uses TW5 widget syntax (`<$...>`) and `\procedure` when the body is pure wikitext.

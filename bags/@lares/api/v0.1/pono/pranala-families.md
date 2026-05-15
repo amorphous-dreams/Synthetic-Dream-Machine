@@ -160,6 +160,14 @@ spatial    = "light-blue"
 
 <<~ pranala #implements-invariant ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/invariant family:control role:implements >>
 <<~ pranala #to-pranala ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/pranala family:control role:extends >>
+<<~ pranala #tiddler-sigil-family-control ? -> lar:///ha.ka.ba/@lararium/tw5/tiddlers/sigil-family-control family:control role:implements >>
+<<~ pranala #tiddler-sigil-family-relation ? -> lar:///ha.ka.ba/@lararium/tw5/tiddlers/sigil-family-relation family:control role:implements >>
+<<~ pranala #tiddler-sigil-family-observe ? -> lar:///ha.ka.ba/@lararium/tw5/tiddlers/sigil-family-observe family:control role:implements >>
+<<~ pranala #tiddler-sigil-family-dataflow ? -> lar:///ha.ka.ba/@lararium/tw5/tiddlers/sigil-family-dataflow family:control role:implements >>
+<<~ pranala #tiddler-sigil-family-message ? -> lar:///ha.ka.ba/@lararium/tw5/tiddlers/sigil-family-message family:control role:implements >>
+<<~ pranala #tiddler-sigil-family-constraint ? -> lar:///ha.ka.ba/@lararium/tw5/tiddlers/sigil-family-constraint family:control role:implements >>
+<<~ pranala #tiddler-sigil-family-reaction ? -> lar:///ha.ka.ba/@lararium/tw5/tiddlers/sigil-family-reaction family:control role:implements >>
+<<~ pranala #tiddler-sigil-family-spatial ? -> lar:///ha.ka.ba/@lararium/tw5/tiddlers/sigil-family-spatial family:control role:implements >>
 
 <<~/ahu >>
 

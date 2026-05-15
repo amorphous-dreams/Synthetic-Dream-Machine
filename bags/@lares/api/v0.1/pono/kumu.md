@@ -18,7 +18,7 @@ retain    = true
 
 *kumu* — Hawaiian: teacher, origin, source, trunk; the base from which things grow. In botany,
 the trunk of a tree; in cultural life, the teacher who holds the root knowledge and passes it
-forward. A kumu is not merely a fact-holder but the structural origin of a lineage of forms.
+forward. A kumu functions as more than a fact-holder — it grounds the structural origin of a lineage of forms.
 
 An element-type declaration pragma. Declares a new grammar node type — a named structural
 container with a body template. English aliases: `\type` (structural emphasis), `\typos`

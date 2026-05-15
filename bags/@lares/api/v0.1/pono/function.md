@@ -26,7 +26,7 @@ English-form filter-function declaration pragma (TW5 5.3+).
 callable in TW5 filter expressions as `[function[name]]` or `[name[args]]`.
 
 No direct Hawaiian equivalent. TW5 filter-function semantics have no natural Hawaiian sigil form in
-the current vocabulary. `lar-kind: pragma-alias` — the sigil IS the declaration; no render output.
+the current vocabulary. `lar-kind: pragma-alias` — the sigil serves as the declaration; no render output.
 
 <<~/ahu >>
 
@@ -39,7 +39,7 @@ the current vocabulary. `lar-kind: pragma-alias` — the sigil IS the declaratio
 A `\function` declaration MUST carry a valid TW5 filter expression as its body.
 A `\function` declaration is leaf-only in practice — filter bodies are inline expressions.
 A `\function` name MUST be unique in current tiddler scope.
-A `\function` MUST NOT produce render output — it is a declaration only.
+A `\function` MUST NOT produce render output — it functions as a declaration only.
 
 Note: TW5 `\function` is distinct from `\procedure` — functions return filter results, procedures
 return wikitext. Do not use interchangeably.

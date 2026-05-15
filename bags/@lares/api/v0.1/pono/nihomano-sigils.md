@@ -95,9 +95,9 @@ operator-visible data layer as the content itself.
 
 ## The First Discovered Sigil Set
 
-The nihomano discovery yielded the first coherent set of SharktoothSigil-registered sigils —
-17 tiddlers, each with a pono law spec, each passing the alignment check. They fall into four
-families:
+The nihomano discovery yielded the first coherent set of SharktoothSigil-registered sigils.
+The set now counts 47 tiddlers, each with a pono law spec, each passing the alignment check.
+They fall into eight families:
 
 **Structural sigils** (addressable scope boundaries):
 - `ahu` — child-slot worksite; the named scope boundary; skeleton of meme structure
@@ -105,20 +105,40 @@ families:
 
 **Edge-sugar sigils** (pranala family shortcuts):
 - `pranala` — full edge with FROM → TO arrow + keyword attrs (permanent JS exception)
-- `kahea` — dataflow-family sugar; live transclusion; push-forward value transport
-- `aka` — observe-family sugar; frozen read; shadow transclusion
-- `loulou` — relation-family sugar; outgoing semantic link; no execution pulse
+- `kahea` / `\transclude` / `\import` — dataflow-family sugar; live transclusion; push-forward value transport
+- `aka` / `\shadow` — observe-family sugar; frozen read; shadow transclusion
+- `loulou` / `\link` — relation-family sugar; outgoing semantic link; no execution pulse
 - `kau` — device-slot child-slot; capability hooks require JS (permanent JS exception)
+- `kapu` / `\guard` — compile-layer boundary annotation; access-control edge
+- `pono` / `\constraint` — correctness-asserting alignment edge
+- `papalohe` — reaction-wire edge; observer subscription
 
-**Pragma-alias sigils** (declaration forms; first-class in memetic-wikitext):
+**Pragma sigils** (declaration forms; first-class in memetic-wikitext):
 - `wehe` / `\procedure` — procedure executor; named callable body declaration
 - `\define` — legacy macro alias (prefer `\procedure`)
 - `\widget` — widget declaration; `~` prefix convention
-- `\function` — TW5 5.3+ filter-function declaration
+- `helu` / `\function` — TW5 5.3+ filter-function declaration
+- `kumu` / `\type` / `\typos` — element-type declaration; mold precedes the cast
+- `waiho` / `\const` / `\let` / `\var` — variable binding; name → value in scope
 
 **Control sigils** (TW5 native flow wrapped in sigil grammar):
 - `heihei` / `\if` — conditional block; first filter-match wins
+- `kahawai` / `\elif` — conditional continuation; stream flows until it hits a match
+- `mukuwai` / `\else` — conditional fallback; the cut-off water; terminal form
 - `huli` / `\for` — iteration block; filter → body-per-result
+
+**Context sigils** (scope manipulation):
+- `\tiddler` / `meme` — tiddler context wrapper; sets the reference tiddler for inner scope
+- `ui` / `\query` — query surface; filter → title list
+
+**Guest-grammar sigils** (foreign-body delegation):
+- `hana` / `\task` — bounded guest-grammar block; grammar-key selects the interpreter
+
+**Concurrency sigils** (async cluster; sprint pending):
+- `lele` / `\branch` — fire-and-forget dispatch; spawn without waiting
+- `hui` / `\sync` — await-all synchronization; every branch must complete
+- `puka` / `\rush` — race-until-first; first completion cancels the rest
+- `kukali` / `\suspends` — wait-until-trigger; parks the causal island
 
 **Infrastructure**:
 - `sigil-dispatcher` — the `~` root dispatch widget; routes `<<~ name >>` to `\widget ~name`
@@ -133,25 +153,26 @@ the operator may author in either tongue and the parse result is identical.
 
 ## Cultural Contract
 
-The Hawaiian sigil names are not decoration. Each name encodes a semantic that the Hawaiian
-language articulates precisely and English does not.
+The Hawaiian sigil names carry meaning far beyond decoration. Each name compresses a semantic
+that Hawaiian articulates precisely where English lacks a single-word equivalent.
 
-*Ahu* — heap, mound, cairn, altar. A sacred stone structure made sacred through human
-intention and accumulated offering. The ahu sigil accumulates addressable child scopes
+*Ahu* — heap, mound, cairn, altar. A sacred stone structure that accumulates sacredness through
+human intention and accumulated offering. The ahu sigil accumulates addressable child scopes
 the same way a stone cairn accumulates placement until it becomes a landmark.
 
 *Kahea* — to call out, to summon, to invoke; a cry. Dataflow-family sugar: the live
 transclusion summons value forward, as a call summons a response.
 
-*Aka* — shadow, reflection; to be like, to resemble. The shadow of a thing is not the thing;
-it moves with it without owning it. The observe-family edge renders the shadow of a target.
+*Aka* — shadow, reflection; likeness without identity; resemblance. The shadow of a thing
+differs from the thing — it moves with it without owning it. The observe-family edge renders
+the shadow of a target.
 
 *Loulou* — to tie, bind, fasten; to link together. A relation edge names what kind of
 connection holds without pulling either end toward the other.
 
 *Wehe* — to open, untie, uncover, solve, cleanse. *Wehewehe* (reduplication): to explain,
-expound, reveal what is mysterious. The procedure executor opens the passage from
-declaration-space into execution-space — and in doing so, makes visible what was hidden.
+expound, reveal what had remained mysterious. The procedure executor opens the passage from
+declaration-space into execution-space — and in doing so, makes visible what had hidden there.
 
 *Heihei* — race, competition; canoe race, foot race. A conditional block runs candidates
 in competition; the one whose filter passes first shapes the output. Not first-wins in an
@@ -166,14 +187,37 @@ name the TW5 pragma they mirror — not to replace the Hawaiian forms. In long-f
 authoring, Hawaiian names carry more meaning per glyph. In operator extensions targeting
 TW5-familiar authors, English names lower the entry barrier.
 
-Neither form is canonical over the other. The grammar accepts both, the pono spec records both,
-the alignment check verifies both. The `lar-see-also` field in each tiddler is the living
-cross-reference.
+Neither form holds canonical status over the other. The grammar accepts both, the pono spec
+records both, the alignment check verifies both. The `lar-see-also` field in each tiddler
+acts as the living cross-reference.
 
-The `mano` in nihomano is also *aumakua* — guardian spirit in Hawaiian cosmology. Shark
-aumakua protect those at sea, warn of danger from below the surface, and carry the dead safely
-across deep water. The grammar plays this role in the Lares system: it watches beneath the text,
-surfaces only when needed to parse, and protects the operator from the structure they cannot see.
+The `mano` in nihomano also functions as *aumakua* — guardian spirit in Hawaiian cosmology.
+Shark aumakua protect those at sea, warn of danger from below the surface, and carry the dead
+safely across deep water. The grammar plays this role in the Lares system: it watches beneath
+the text, surfaces only when needed to parse, and protects the operator from structure they
+cannot yet see.
+
+<<~/ahu >>
+
+<<~ ahu #language-families >>
+
+## Language Families in the Grammar
+
+The SharktoothSigil grammar draws vocabulary from five distinct language families. Each contributes precisely the concept that the other languages lack a single-word equivalent for.
+
+**ʻŌlelo Hawaiʻi (Hawaiian)** — the canonical grammar vocabulary. 25 sigil names come from Hawaiian: *ahu*, *kahea*, *aka*, *loulou*, *pranala-header* (hybrid), *wehe*, *heihei*, *huli*, *hana*, *helu*, *kumu*, *kahawai*, *mukuwai*, *waiho*, *kapu*, *lele*, *hui*, *puka*, *pono*, *papalohe*, *kukali*, *meme* (via Greek re-entry), *ui*, *kau*, *nihomano*. Hawaiian compresses semantic fields — kinship, cosmology, motion, topology — into single syllable roots that carry more meaning per glyph than any available English word. The nihomano grammar inherits this compression.
+
+**Bahasa Indonesia** — one canonical sigil: *pranala*. The standard Bahasa Indonesia / Wikipedia Bahasa Indonesia term for hyperlink: *prana* (life-force, Sanskrit loan) + *lala* (thread, passage). Indonesian Wikipedia chose this word deliberately over the Dutch-derived borrowings that dominate Indonesian computing vocabulary. The pranala sigil inherits that choice: a living thread, not a pointer.
+
+**Ancient Greek (τύπος / mimeme)** — two entry paths:
+- *typos* — τύπος: impression, mold, stamp, type. The `\typos` alias for *kumu* names the element-type declaration sigil by the Greek root that gave English "type", "archetype", "prototype". The mold precedes the cast; the declaration precedes the instance.
+- *meme* — coined 1976 by Richard Dawkins in *The Selfish Gene* from Greek *mimeme* (that which gets imitated), shortened to rhyme with "gene". Edward Wilson and Wes Unruh extended the operational framework in *The Art of Memetics* (2009), treating memes as propagating agents with measurable virality and selection pressure from host minds and transmission media. The Lares system uses the word at full weight: a unit of cultural information that replicates across minds and networks. Each tiddler that carries the memetic-wikitext type header *acts as* a meme — a replicable cultural unit in a content-addressed store, subject to the same fitness landscape described by Wilson and Unruh.
+
+**English (computing + TW5 pragmas)** — 24 alias forms carry the English computing vocabulary that TW5 authors and general programmers already know: `\procedure`, `\function`, `\widget`, `\define`, `\if`, `\elif`, `\else`, `\for`, `\task`, `\type`, `\const`, `\let`, `\var`, `\link`, `\shadow`, `\transclude`, `\import`, `\tiddler`, `\query`, `\branch`, `\sync`, `\race`, `\rush`, `\guard`, `\constraint`, `\suspends`. These aliases lower the entry barrier for operators who author in English and let TW5-native macro patterns migrate naturally into the sigil grammar.
+
+**Verse / Unreal Engine** — the concurrency cluster (*lele*, *hui*, *puka*) and their English aliases (`\branch`, `\sync`, `\rush`) map directly to Verse's async primitives: fire-and-forget spawn, await-all synchronization, and race-until-first cancellation. This alignment makes Lares concurrency legible to Verse developers and positions the grammar for cross-VM execution on Unreal Engine.
+
+The grammar accepts all five families equally. The parse result for a Hawaiian sigil and its English alias produces identical AST nodes. The pono spec for each canonical form carries `lar-see-also` cross-references into every alias. Language choice in authoring carries cultural signal; parse result carries none.
 
 <<~/ahu >>
 
@@ -194,9 +238,10 @@ The tag replaces the old `$:/tags/LarariumGrammar` — a `$:/` system-namespace 
 code-side knowledge to register. The migration from `$:/` to `lar:///` namespaces across all
 owned tags is the companion sprint to this one.
 
-When the TOML monolith (`memetic-wikitext.tid`) reaches families-only state — when all 48 remaining
-`[[sigils]]` blocks have migrated to SharktoothSigil tiddlers — the grammar becomes fully
-self-hosted. The parser reads nothing from hardcoded tables. Every rule is a tiddler.
+When the TOML monolith (`memetic-wikitext.tid`) reaches families-only state — when the 7 remaining
+`[[sigils]]` blocks (concurrency cluster + toml data fence) have migrated to SharktoothSigil tiddlers
+— the grammar becomes fully self-hosted. The parser reads nothing from hardcoded tables. Every rule
+lives in a tiddler.
 
 <<~/ahu >>
 

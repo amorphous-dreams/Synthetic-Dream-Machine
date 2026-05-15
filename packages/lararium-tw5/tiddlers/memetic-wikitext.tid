@@ -245,58 +245,7 @@ kind         = "data"
 pattern      = '```toml(?:[ \t]+([A-Za-z0-9_-]+))?[ \t]*\n([\s\S]*?)```'
 description  = "TOML data fence; optional profile name (group 1) qualifies the block. Profile 'iam' marks the carrier identity prelude — appears before the first ahu or STX and supplies parent tiddler fields. Profile absent means a general-purpose data block."
 
-[[sigils]]
-name          = "\\sync"
-kind          = "concurrency-alias"
-layer         = "render"
-alias_for     = "hui"
-open_pattern  = '<<~\s*\\sync\s*>>'
-close_pattern = '<<~\/\\sync\s*>>'
-description   = "English alias for hui; Verse sync keyword; parser maps to hui before evaluation"
-
-[[sigils]]
-name          = "\\race"
-kind          = "concurrency-alias"
-layer         = "render"
-alias_for     = "heihei"
-open_pattern  = '<<~\s*\\race\s*>>'
-close_pattern = '<<~\/\\race\s*>>'
-description   = "English alias for heihei; Verse race keyword; parser maps to heihei before evaluation"
-
-[[sigils]]
-name          = "\\rush"
-kind          = "concurrency-alias"
-layer         = "render"
-alias_for     = "puka"
-open_pattern  = '<<~\s*\\rush\s*>>'
-close_pattern = '<<~\/\\rush\s*>>'
-description   = "English alias for puka; Verse rush keyword; parser maps to puka before evaluation"
-
 # --- Concurrency sigils ---
-
-[[sigils]]
-name          = "hui"
-kind          = "concurrency"
-layer         = "render"
-open_pattern  = '<<~\s*hui\s*>>'
-close_pattern = '<<~\/hui\s*>>'
-description   = "wait for all parallel flows; Verse sync equivalent; [SC]"
-
-[[sigils]]
-name          = "puka"
-kind          = "concurrency"
-layer         = "render"
-open_pattern  = '<<~\s*puka\s*>>'
-close_pattern = '<<~\/puka\s*>>'
-description   = "first-to-finish wins, rest cancelled; Verse rush equivalent; [SC]"
-
-[[sigils]]
-name           = "lele"
-kind           = "concurrency"
-layer          = "both"
-pattern        = '<<~\s*lele\s+(\S+)\s*>>'
-default_family = "message"
-description    = "fire and forget dispatch; emits a message edge and continues without waiting for response; Verse spawn equivalent (NOT Verse branch — branch is a cancellable speculative fiber; lele is unconditional send); compile: pranala family:message; [SC]"
 
 # --- Render-time edge sugar ---
 
@@ -334,75 +283,7 @@ Each family carries an invariant property schema.
 The TypeScript validator (`validatePranalaEdge`) enforces these contracts at compile time.
 In Phase 2 this table replaces the hard-coded `FAMILY_CONTRACTS` map in `pranala-parser.ts`.
 
-```toml
-# Family contract definitions — enforced by validatePranalaEdge()
 
-[[families]]
-name                = "control"
-dag_required        = true
-role_required       = false   # warning if absent, not error (sugar forms omit role)
-role_recommended    = true
-confidence_bounded  = false
-description         = "ownership/routing edges; must form a DAG across the lares/ tree; no transclusion semantics"
-
-[[families]]
-name                = "relation"
-dag_required        = false
-role_required       = false
-role_recommended    = false
-confidence_bounded  = false
-description         = "semantic relation between memes; directional or bidirectional"
-
-[[families]]
-name                = "observe"
-dag_required        = false
-role_required       = false
-role_recommended    = false
-confidence_bounded  = true    # confidence ∈ [0, 1] if set
-description         = "observational/evidential link; confidence weight optional"
-
-[[families]]
-name                = "dataflow"
-dag_required        = false
-role_required       = false
-role_recommended    = true    # warning if absent
-confidence_bounded  = false
-description         = "data-carrying edge; routes root-downward (push-forward to owned subtree); sugar: kahea (live transclusion + definition invocation)"
-
-[[families]]
-name                = "message"
-dag_required        = false
-role_required       = false
-role_recommended    = true
-confidence_bounded  = false
-description         = "event or signal dispatch; one-way, fire-and-forget; no structural ownership stake; direction is topological not hierarchical — may route to any reachable socket; sugar: lele"
-
-[[families]]
-name                = "constraint"
-dag_required        = false
-role_required       = false
-role_recommended    = false
-confidence_bounded  = false
-description         = "declarative rule without execution pulse; spatial, logical, or physical boundary; sugar: pono"
-
-[[families]]
-name                = "reaction"
-dag_required        = false
-role_required       = false
-role_recommended    = true
-confidence_bounded  = false
-canonical_roles     = ["listenable", "subscribable", "observes", "throttles", "debounces"]
-render_mode         = "papalohe"
-description         = "triggered response subscription; pāpālohe — body-listening reflex; fires only when source listenable activates; payload: listenable (source event name / UEFN OUTPUT pin), subscribable (target function name / UEFN INPUT pin); OODA-HA: wire declared at Orient phase, executes at Act phase, violations surface at Aftermath; sugar: papalohe; render: papalohe wire (listenable label at source, subscribable label at target)"
-
-[[families]]
-name                = "spatial"
-dag_required        = false
-role_required       = false
-role_recommended    = true    # role disambiguates spatial relationship type
-confidence_bounded  = false
-description         = "spatial containment and adjacency edges; navigable relationships between areas, levels, portals, and layers; UEFN Scene Graph hierarchy; roles: contains | portal | adjacent | layer; direction: area -> area or area -> portal -> area; load-bearing for infinite canvas portals and RPG multi-level maps; sugar: pending"
-```
 
 <<~/ahu >>
 

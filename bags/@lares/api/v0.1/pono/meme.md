@@ -29,6 +29,15 @@ A meme carries the minimum lawful surface for identity, body, phase pressure, an
 This root governs that copy-shape.
 It leaves long procedure, skeleton examples, research, and rating tables outward.
 
+The word *meme* entered English in 1976 via Richard Dawkins (*The Selfish Gene*), derived from
+Greek *mimeme* (that which gets imitated), shortened to rhyme with "gene". Edward Wilson and
+Wes Unruh extended the operational framework in *The Art of Memetics* (2009): memes propagate
+through social channels with measurable virality, carry fitness landscapes, and undergo selection
+pressure from host minds and transmission media. The Lares system uses the term at full weight —
+a tiddler tagged as a meme competes for replication, carries fitness signals in its rating fields,
+and propagates through the content-addressed bag network the same way a biological meme propagates
+through a social network.
+
 <<~/ahu >>
 
 <<~&#x0002;>>

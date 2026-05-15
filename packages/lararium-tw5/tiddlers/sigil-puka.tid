@@ -1,0 +1,12 @@
+title: lar:///ha.ka.ba/@lararium/tw5/tiddlers/sigil-puka
+tags: $:/tags/Global lar:///ha.ka.ba/tags/SharktoothSigil
+lar-kind: concurrency
+lar-pono-uri: lar:///ha.ka.ba/@lares/api/v0.1/pono/puka
+lar-see-also: \rush
+lar-open-pattern: <<~\s*puka\s*>>
+lar-close-pattern: <<~\/puka\s*>>
+type: text/vnd.tiddlywiki
+
+<!-- puka — race-until-first; first branch to complete wins, all others cancel.
+     Concurrency runtime pending (async-first sprint). Grammar registration only. -->
+

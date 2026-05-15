@@ -26,7 +26,7 @@ filter expression that accepts parameters and yields a result list. TW5 5.3+ equ
 `\function`. English alias: `\function`.
 
 Where `wehe` / `\procedure` declares a body that renders, `helu` declares a body that
-*computes* — the function's value is a filter result set, not rendered wikitext.
+*computes* — the function yields a filter result set, not rendered wikitext.
 
 <<~/ahu >>
 

@@ -25,11 +25,11 @@ retain       = true
 
 *wehe* — Hawaiian: to open, to untie, to uncover, to unfasten; to solve, to cleanse.
 *Wehewehe* (reduplication): to explain, expound, reveal what is mysterious — to make
-visible what was hidden. The opening action carries with it an act of revelation.
+visible what had remained hidden. The opening action carries with it an act of revelation.
 
 A block-container sigil declaring a named procedure body. `wehe` crosses the boundary from
 declaration-space into execution-space: the content inside the block becomes callable by name,
-making visible what was previously only declared. English alias: `\procedure` (TW5 pragma form).
+surfacing what had previously stayed undeclared. English alias: `\procedure` (TW5 pragma form).
 Both forms produce the same parse result.
 
 Sugar for the TW5 `\procedure` pragma, first-class in memetic-wikitext as a block sigil.
@@ -41,7 +41,7 @@ Sugar for the TW5 `\procedure` pragma, first-class in memetic-wikitext as a bloc
 <<~ ahu #ooda-ha >>
 
 ✶ sense the name and param signature — this block defines a callable; note the crossing boundary
-⏿ orient: pragma-alias; the declaration IS the sigil; no render output; body becomes callable body
+⏿ orient: pragma-alias; the declaration serves as the sigil; no render output; body becomes callable body
 ◇ name MUST be unique in current tiddler scope; params declare positional/named argument surface
 ▶ emit pragma declaration node; TW5 parser registers the procedure at parse-time
 ⤴ `<<~ kahea name(args) >>` (name-call form) invokes the procedure at render time in any tiddler that transcludes this one

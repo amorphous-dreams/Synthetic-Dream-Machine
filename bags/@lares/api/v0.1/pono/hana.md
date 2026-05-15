@@ -21,8 +21,8 @@ Hana names not just the product but the doing — the active, bounded effort tha
 from potential to actual. *Hana hou* (do again, encore) carries the sense of repeatable work.
 
 A bounded guest-grammar block. A `hana` block carries a grammar-key that selects the
-interpreter for its body — the body content is not TW5 wikitext but a foreign grammar
-(JSON, YAML, code, formula) parsed by a registered guest interpreter. English alias: `\task`.
+interpreter for its body — the body content carries a foreign grammar
+(JSON, YAML, code, formula), not TW5 wikitext, parsed by a registered guest interpreter. English alias: `\task`.
 
 Where `meme` sets tiddler context and `wehe` declares a procedure, `hana` declares work
 that runs through a non-TW5 grammar engine. The block is bounded: it opens, the foreign

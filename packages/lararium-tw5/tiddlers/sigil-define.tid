@@ -12,6 +12,6 @@ type: text/vnd.tiddlywiki
      Hawaiian equivalent: wehe (same executor scope as \procedure).
      lar-see-also: wehe
 
-     lar-kind: pragma-alias — produces no render output; the sigil IS the declaration.
+     lar-kind: pragma-alias — produces no render output; the sigil serves as the declaration.
      Prefer \procedure for new code (TW5 5.3+); \define retained for compatibility
      with legacy TW5 macro forms. -->

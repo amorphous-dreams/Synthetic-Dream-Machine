@@ -30,7 +30,7 @@ The `~` widget receives `name` and `p1`–`p5` positional arguments and transclu
 `$variable=[name prefixed with ~]`. This makes every operator-defined `\widget ~sigil`
 callable as `<<~ sigil args >>` without any JS registration.
 
-The `~` dispatcher is itself a SharktoothSigil-tagged tiddler, making it first-class in the
+The `~` dispatcher carries the SharktoothSigil tag, making it first-class in the
 grammar: new sigils need only a tiddler — no code change required.
 
 <<~/ahu >>

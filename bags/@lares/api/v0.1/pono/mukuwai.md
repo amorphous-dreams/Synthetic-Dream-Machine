@@ -23,8 +23,8 @@ have closed.
 A conditional fallback sigil. Renders its body when no preceding condition in the chain
 matched. English alias: `\else`.
 
-Mukuwai is the terminal form — it carries no filter expression because it runs when the
-question itself has been exhausted. The stream reaches the cut-off; this path remains.
+Mukuwai serves as the terminal form — it carries no filter expression because it runs when the
+question itself has exhausted all candidates. The stream reaches the cut-off; this path remains.
 
 <<~/ahu >>
 

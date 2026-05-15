@@ -23,7 +23,7 @@ module-type: startup
  */
 
 import { grammarRulesFromText, GRAMMAR_MEME_URI } from "@lararium/core";
-import type { GrammarRules, SigilRule } from "@lararium/core";
+import type { GrammarRules, SigilRule, FamilyRule } from "@lararium/core";
 
 /** Canonical tag URI for SharktoothSigil tiddlers. Each tagged tiddler = one sigil entry. */
 export const GRAMMAR_TAG = "lar:///ha.ka.ba/tags/SharktoothSigil";
@@ -99,10 +99,11 @@ function nameFromTitle(title: string, fields: TwFields): string {
   return last.startsWith("sigil-") ? last.slice(6) : last;
 }
 
-/** Build SigilRule from a SharktoothSigil tiddler's fields. */
+/** Build SigilRule from a SharktoothSigil tiddler's fields. Returns null for family tiddlers. */
 function sigilFromFields(title: string, fields: TwFields): SigilRule | null {
-  const kind = str(fields["lar-kind"]) as SigilRule["kind"];
-  if (!kind) return null;
+  const kindRaw = str(fields["lar-kind"]);
+  if (!kindRaw || kindRaw === "family") return null;
+  const kind = kindRaw as SigilRule["kind"];
   const rule: SigilRule = { name: nameFromTitle(title, fields), kind };
   if (fields["lar-pattern"])         rule.pattern        = str(fields["lar-pattern"]);
   if (fields["lar-open-pattern"])    rule.openPattern    = str(fields["lar-open-pattern"]);
@@ -116,33 +117,54 @@ function sigilFromFields(title: string, fields: TwFields): SigilRule | null {
   return rule;
 }
 
+/** Build FamilyRule from a SharktoothSigil tiddler with lar-kind: family. */
+function familyFromFields(title: string, fields: TwFields): FamilyRule | null {
+  if (str(fields["lar-kind"]) !== "family") return null;
+  const name = nameFromTitle(title, fields);
+  // Strip "family-" prefix from names like "family-control" → "control"
+  const familyName = name.startsWith("family-") ? name.slice(7) : name;
+  return {
+    name:               familyName,
+    dagRequired:        str(fields["lar-dag-required"])        === "true",
+    roleRecommended:    str(fields["lar-role-recommended"])    === "true",
+    confidenceBounded:  str(fields["lar-confidence-bounded"])  === "true",
+  };
+}
+
 /**
  * Assemble GrammarRules from:
- *   1. All `[tag[lar:///ha.ka.ba/tags/SharktoothSigil]]` tiddlers (primary sigil source)
- *   2. GRAMMAR_MEME_URI TOML monolith (fallback sigils + all families)
+ *   1. All `[tag[lar:///ha.ka.ba/tags/SharktoothSigil]]` tiddlers (primary source)
+ *      - lar-kind != "family" → SigilRule
+ *      - lar-kind == "family" → FamilyRule
+ *   2. GRAMMAR_MEME_URI TOML monolith (fallback for unmigrated sigils + unmigrated families)
  *
- * Tiddler sigils take precedence over TOML sigils by name. As sigils migrate
- * to SharktoothSigil tiddlers, their TOML `[[sigils]]` blocks become dead code
- * and can be removed. When all sigils migrate, the TOML shrinks to families only.
+ * Tiddler entries take precedence over TOML entries by name. When all sigils and
+ * families carry SharktoothSigil tiddlers, the TOML monolith shrinks to the single
+ * permanent `toml` data-fence sigil block and the grammar runs fully self-hosted.
  */
 function buildGrammarFromWiki(wiki: TwWiki): GrammarRules | null {
-  // Primary: SharktoothSigil-tagged tiddlers
+  // Primary: SharktoothSigil-tagged tiddlers — split into sigils and families
   const titles = wiki.filterTiddlers(`[tag[${GRAMMAR_TAG}]]`);
-  const tiddlerSigils: SigilRule[] = [];
+  const tiddlerSigils: SigilRule[]   = [];
+  const tiddlerFamilies: FamilyRule[] = [];
   for (const title of titles) {
     const fields = wiki.getTiddler(title)?.fields ?? {};
+    const family = familyFromFields(title, fields);
+    if (family) { tiddlerFamilies.push(family); continue; }
     const rule = sigilFromFields(title, fields);
     if (rule) tiddlerSigils.push(rule);
   }
-  const tiddlerNames = new Set(tiddlerSigils.map((s) => s.name));
+  const tiddlerSigilNames  = new Set(tiddlerSigils.map((s) => s.name));
+  const tiddlerFamilyNames = new Set(tiddlerFamilies.map((f) => f.name));
 
-  // Fallback: TOML monolith (families always; sigils for unmigrated entries)
+  // Fallback: TOML monolith — unmigrated sigils and unmigrated families only
   const monoText  = wiki.getTiddlerText(GRAMMAR_MEME_URI) ?? "";
   const monoRules = monoText ? grammarRulesFromText(GRAMMAR_MEME_URI, monoText) : null;
-  const monoSigils = (monoRules?.sigils ?? []).filter((s) => !tiddlerNames.has(s.name));
+  const monoSigils   = (monoRules?.sigils   ?? []).filter((s) => !tiddlerSigilNames.has(s.name));
+  const monoFamilies = (monoRules?.families ?? []).filter((f) => !tiddlerFamilyNames.has(f.name));
 
-  const sigils   = [...tiddlerSigils, ...monoSigils];
-  const families = monoRules?.families ?? [];
+  const sigils   = [...tiddlerSigils,   ...monoSigils];
+  const families = [...tiddlerFamilies, ...monoFamilies];
 
   if (sigils.length === 0 && families.length === 0) return null;
   return { sigils, families };

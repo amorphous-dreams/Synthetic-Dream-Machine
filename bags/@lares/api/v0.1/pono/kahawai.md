@@ -23,7 +23,7 @@ A conditional continuation sigil. Evaluates a filter expression when no precedin
 matched. English alias: `\elif`.
 
 Paired with `heihei` (`\if`) — heihei opens the first conditional race; kahawai enters when
-heihei's filter failed and a new filter offers the next candidate. The semantic is serial
+heihei's filter failed and a new filter offers the next candidate. The semantic carries serial
 evaluation with a new condition, not parallel — a branching stream, not a race.
 
 <<~/ahu >>

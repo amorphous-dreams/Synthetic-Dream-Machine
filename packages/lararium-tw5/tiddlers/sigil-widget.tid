@@ -12,7 +12,7 @@ type: text/vnd.tiddlywiki
 
      <<~ \widget ~name(params) >>body<<~/ \widget >> declares a named widget
      callable as <<~name ...>> via the ~ dispatcher.
-     lar-kind: pragma-alias — produces no render output; the sigil IS the declaration.
+     lar-kind: pragma-alias — produces no render output; the sigil serves as the declaration.
 
      The ~ prefix convention: <<~ \widget ~mana(uri:"") >>...<<~/ \widget >>
      registers a new mana sigil callable as <<~ mana lar:///uri >>. -->

@@ -56,7 +56,8 @@ A lele edge MUST NOT wait for a response from the target.
 
 ## Edges
 
-<<~ pranala #tiddler ? -> lar:///ha.ka.ba/@lararium/tw5/tiddlers/sigil-branch family:control role:alias >>
+<<~ pranala #tiddler-sigil-lele ? -> lar:///ha.ka.ba/@lararium/tw5/tiddlers/sigil-lele family:control role:implements >>
+<<~ pranala #tiddler-sigil-branch ? -> lar:///ha.ka.ba/@lararium/tw5/tiddlers/sigil-branch family:control role:alias >>
 
 <<~/ahu >>
 

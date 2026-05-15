@@ -26,7 +26,7 @@ Where `pranala` names any semantic edge and `loulou` ties two nodes with a relat
 witness, not just a link. The edge says "FROM holds the constraint THAT TO satisfies."
 
 Distinct from the system concept `pono` (rightness as a design principle). This sigil carries
-the same word because a `pono` edge IS a claim of alignment — the naming is intentional.
+the same word because a `pono` edge carries a claim of alignment — the naming is intentional.
 
 <<~/ahu >>
 
