@@ -123,7 +123,7 @@ not the target architecture itself.
 
 **What collapses from TS into TW5:**
 - `ReactionGraph` routing table → `family:reaction` pranala tiddlers (already exist)
-- `ReactionGraph.fireSync()` → TW5 startup module `addEventListener` on `tm-lararium-event`
+- `ReactionGraph.fireSync()` → TW5 startup module `addEventListener` on `tm-verse-event`
 - `TW5Engine.registerProjectionBus()` → startup module `addEventListener` + teardown
 - `ProjectionBusConsumer` interface → startup module closure
 

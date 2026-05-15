@@ -21,8 +21,8 @@
  * ## What runs in this thread
  *
  *   TW5Engine — full TiddlyWiki kernel, in-memory, booted from snapshotTiddlers.
- *   ReactionEngine — boots after TW5Engine in the promote handler; onAnyFire
- *     forwards fired reactions to main as WorkerMsg_Event for vm-ring routing.
+ *   reaction-router.ts — TW5 startup module; fires tm-verse-event after each nalu.
+ *   registerProjectionBus — bridges tm-verse-event → WorkerMsg_Event to main thread.
  *   Automerge local replica — TODO P.3.5: apply changeset bytes, diff → TW5 sync.
  *
  * ## What does NOT run in this thread
@@ -133,7 +133,7 @@ parentPort.on("message", async (raw: unknown) => {
       );
 
       // reaction-router.ts (TW5 startup module) handles nalu-driven binding
-      // maintenance and tm-lararium-event dispatch. Wire registerProjectionBus
+      // maintenance and tm-verse-event dispatch. Wire registerProjectionBus
       // to forward those events to main as WorkerMsg_Event for vm-ring routing.
       liveHandles.add({
         cancel: tw5.registerProjectionBus({
@@ -170,7 +170,7 @@ parentPort.on("message", async (raw: unknown) => {
     for (const title of raw.deleted) {
       wiki.deleteTiddler(title);
     }
-    // reaction-router.ts fires tm-lararium-event after TW5 processes the nalu.
+    // reaction-router.ts fires tm-verse-event after TW5 processes the nalu.
     return;
   }
 

@@ -49,7 +49,7 @@ Replaced by nalu-driven TW5 startup module.
 - `packages/lararium-tw5/src/modules/reaction-router.ts` — TW5 startup module,
   platforms browser + node. Boots by scanning all `lar:` tiddlers for papalohe
   bindings; maintains `ReactionGraph` incrementally via `wiki.addEventListener("change")`;
-  dispatches `wiki.dispatchEvent("tm-lararium-event", {uri, listenable})` from inside
+  dispatches `wiki.dispatchEvent("tm-verse-event", {uri, listenable})` from inside
   the nalu hook. Reactions now fire AFTER the full changeset lands, not inline before it.
 
 **Removed:**
@@ -61,7 +61,7 @@ Replaced by nalu-driven TW5 startup module.
 - `packages/lararium-node/src/lar-wiki-worker.ts` — removed `ReactionEngine` import
   and instance; wired `tw5.registerProjectionBus({handleLarariumEvent})` after boot;
   removed inline `re.onChangeset()` from changeset handler. Worker now forwards
-  `tm-lararium-event` wiki events → `WorkerMsg_Event` to main thread.
+  `tm-verse-event` wiki events → `WorkerMsg_Event` to main thread.
 - `bags/@lares/api/v0.1/pono/reaction-graph.md` — yin-collapse target section updated
   to "Landed"; fireSync gap section updated to "CLOSED".
 

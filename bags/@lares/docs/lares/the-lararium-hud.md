@@ -186,7 +186,7 @@ A HUD (Heads-Up Display) renders the state of a complex environment in a form th
 The Lares HUD renders at four scales simultaneously:
 
 **Scale-0 HUD — Device widgets (kumu-widgets within a wiki view)**
-The TW5 widget tree. Each kumu-widget renders one or more tiddler fields as a UI element. The widget fires `tm-lararium-event` into the TW5 event bus on interaction (the signalable side). The RE subscribes via `registerProjectionBus` (the subscribable side, returning a teardown function = `cancelable`). The operator sees the wiki rendered by TW5; they interact with kumu-widgets; the RE reacts.
+The TW5 widget tree. Each kumu-widget renders one or more tiddler fields as a UI element. The widget fires `tm-verse-event` into the TW5 event bus on interaction (the signalable side). The RE subscribes via `registerProjectionBus` (the subscribable side, returning a teardown function = `cancelable`). The operator sees the wiki rendered by TW5; they interact with kumu-widgets; the RE reacts.
 
 **Scale-1 HUD — Wiki state panel (one wiki, one TW5 instance)**
 The full TW5 wiki view — sidebar, navigation, tiddler list, active tiddler. The wiki functions as the HUD for the content domain it covers. A game-session wiki renders the active encounter. A character wiki renders the character sheet. The ReactionEngine fires on tiddler changesets; the HUD updates.

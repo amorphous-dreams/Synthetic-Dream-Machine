@@ -14,7 +14,7 @@ module-type: startup
  *   wiki.nextTick()              ← TW5 batch coalesces
  *   wiki.addEventListener("change") fires  ← nalu arrives on shore
  *   → update ReactionGraph bindings for changed lar: URIs
- *   → wiki.dispatchEvent("tm-lararium-event", {uri, listenable})
+ *   → wiki.dispatchEvent("tm-verse-event", {uri, listenable})
  *   → registerProjectionBus consumer forwards to main thread (Worker)
  *      or wiki widget tree handles directly (browser)
  *
@@ -82,14 +82,14 @@ function bindingsFromUri(wiki: TwWiki, uri: string): ReactionBinding[] {
   }
 }
 
-/** Fire tm-lararium-event on the wiki for every unique listenable in fromUri's bindings. */
+/** Fire tm-verse-event on the wiki for every unique listenable in fromUri's bindings. */
 function fireReactionsForUri(wiki: TwWiki, graph: ReactionGraph, uri: string): void {
   const listenables = new Set<string>();
   for (const b of graph.bindings) {
     if (b.fromUri === uri) listenables.add(b.listenable);
   }
   for (const listenable of listenables) {
-    wiki.dispatchEvent("tm-lararium-event", { uri, listenable });
+    wiki.dispatchEvent("tm-verse-event", { uri, listenable });
   }
 }
 
@@ -125,7 +125,7 @@ export function startup(): void {
         else graph.removeUri(uri);
       }
 
-      // Fire reactions — dispatches wiki-level tm-lararium-event.
+      // Fire reactions — dispatches wiki-level tm-verse-event.
       fireReactionsForUri(wiki, graph, uri);
     }
   });

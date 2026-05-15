@@ -412,7 +412,7 @@ export interface TW5Wiki {
   getSizeOfTiddlerEventQueue(): number;
 
   // ── Lararium projection bus ───────────────────────────────────────────────
-  // KukaliWidget fires "tm-lararium-event"; consumers wire via registerProjectionBus().
+  // KukaliWidget fires "tm-verse-event"; consumers wire via registerProjectionBus().
 }
 
 // ---------------------------------------------------------------------------

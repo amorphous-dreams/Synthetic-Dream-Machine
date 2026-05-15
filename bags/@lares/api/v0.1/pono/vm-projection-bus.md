@@ -44,7 +44,7 @@ itself onto TW5Engine at runtime. The direction of dependency is:
 ```typescript
 // KukaliWidget.ts — inside the TW5 widget's invokeAction or handleEvent
 this.wiki.dispatchEvent({
-  type: "tm-lararium-event",
+  type: "tm-verse-event",
   uri: this.getAttribute("uri"),
   listenable: this.getAttribute("listenable"),
 });
@@ -64,8 +64,8 @@ registerProjectionBus(engine: ProjectionBusConsumer): () => void {
   const handler = (event: LarariumWikiEvent) => {
     engine.handleLarariumEvent(event.uri, event.listenable);
   };
-  this.wiki.addEventListener("tm-lararium-event", handler);
-  return () => this.wiki.removeEventListener("tm-lararium-event", handler);
+  this.wiki.addEventListener("tm-verse-event", handler);
+  return () => this.wiki.removeEventListener("tm-verse-event", handler);
 }
 ```
 
@@ -156,10 +156,10 @@ Any file referencing `_larKukaliHook` outside a `*.web2.*` path FAILS FPI-1.
 
 | Verse pattern | Lararium equivalent |
 |---|---|
-| `event(t){}` instance on device | `{type: "tm-lararium-event", uri, listenable}` object |
+| `event(t){}` instance on device | `{type: "tm-verse-event", uri, listenable}` object |
 | `device.MyEvent.Signal(payload)` | `wiki.dispatchEvent(event)` |
 | `device.MyEvent.Await()` in fiber | `handleLarariumEvent()` in reaction handler |
-| `device.ListenableEvent.Subscribe(cb)` | `wiki.addEventListener("tm-lararium-event", handler)` |
+| `device.ListenableEvent.Subscribe(cb)` | `wiki.addEventListener("tm-verse-event", handler)` |
 | `cancelable` from `Subscribe()` | `() => void` teardown from `registerProjectionBus()` |
 | `@editable OnSomeEvent:listenable` | Widget `listenable` attribute (prop-configured) |
 

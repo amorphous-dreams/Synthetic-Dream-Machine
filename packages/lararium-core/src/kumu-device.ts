@@ -261,5 +261,5 @@ export function kumuDeviceSpecFromEdges(
 }
 
 // ReactionEngine removed — collapsed into reaction-router.ts TW5 startup module.
-// Nalu-driven dispatch now: wiki.addEventListener("change") → tm-lararium-event.
+// Nalu-driven dispatch now: wiki.addEventListener("change") → tm-verse-event.
 // See packages/lararium-tw5/src/modules/reaction-router.ts.

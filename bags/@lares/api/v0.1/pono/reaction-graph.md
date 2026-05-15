@@ -168,12 +168,12 @@ packages/lararium-tw5/src/modules/reaction-router.ts
 
   wiki.addEventListener("change", handler):           ← nalu arrives
     → update ReactionGraph bindings for changed URIs
-    → wiki.dispatchEvent("tm-lararium-event", {uri, listenable})
+    → wiki.dispatchEvent("tm-verse-event", {uri, listenable})
 
-  Worker path: registerProjectionBus consumer receives tm-lararium-event
+  Worker path: registerProjectionBus consumer receives tm-verse-event
     → posts WorkerMsg_Event to main thread (vm-ring routing)
 
-  Browser path: widget tree handles tm-lararium-event directly.
+  Browser path: widget tree handles tm-verse-event directly.
 ```
 
 `ReactionGraph` and `extractReactionBindings` remain in `live-protocol.ts`

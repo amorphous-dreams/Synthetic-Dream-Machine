@@ -390,7 +390,7 @@ export class TW5Engine {
 
   /**
    * Wire a ProjectionBusConsumer to this VM's wiki event bus.
-   * KukaliWidget fires "tm-lararium-event"; the consumer handles it.
+   * KukaliWidget fires "tm-verse-event"; the consumer handles it.
    * Returns a teardown function (Verse cancelable equivalent).
    */
   registerProjectionBus(consumer: { handleLarariumEvent(uri: string, listenable: string): void }): () => void {
@@ -401,8 +401,8 @@ export class TW5Engine {
         consumer.handleLarariumEvent(event.uri, event.listenable);
       }
     };
-    this._tw.wiki.addEventListener("tm-lararium-event", handler);
-    return () => this._tw?.wiki.removeEventListener("tm-lararium-event", handler);
+    this._tw.wiki.addEventListener("tm-verse-event", handler);
+    return () => this._tw?.wiki.removeEventListener("tm-verse-event", handler);
   }
 
 

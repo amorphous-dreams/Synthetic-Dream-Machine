@@ -48,7 +48,7 @@ signalable(t:type) := interface:
 A handle with a single capability: fire. No subscription, no await.
 Used when one system triggers another without coupling to the response.
 
-**Lararium mapping:** `dispatchEvent({type: "tm-lararium-event", uri, listenable})` from
+**Lararium mapping:** `dispatchEvent({type: "tm-verse-event", uri, listenable})` from
 `KukaliWidget` is a signalable call — fires into the TW5 wiki event bus and returns.
 
 ---
@@ -253,7 +253,7 @@ A `KukaliWidget` is a Verse creative_prop equivalent:
 |---|---|
 | `creative_prop` | `KukaliWidget` (TW5 widget subclass) |
 | `@editable` property | React prop / TW5 widget attribute |
-| `event(t){}` instantiation | `dispatchEvent({type: "tm-lararium-event", ...})` |
+| `event(t){}` instantiation | `dispatchEvent({type: "tm-verse-event", ...})` |
 | `listenable` (engine-vended) | `tw5.wiki.addEventListener("change", ...)` |
 | `spawn { device.OnEvent.Await() }` | ReactionEngine fiber registered via `registerProjectionBus()` |
 | `cancelable` from `Subscribe()` | teardown function returned by `registerProjectionBus()` |
