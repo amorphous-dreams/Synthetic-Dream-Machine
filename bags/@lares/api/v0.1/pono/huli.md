@@ -23,13 +23,16 @@ retain       = true
 
 # Huli
 
-*huli* — Hawaiian: to turn, to search, to look for; to change direction; to overturn.
+*huli* — Hawaiian: to turn, to reverse, to curl over. Primarily a directional motion —
+the body turns to face something. *Huli-huli* (the chicken dish) means repeatedly turned.
+The search meaning is secondary: one turns to face each item in the set in succession.
 
 A block-container sigil with iteration semantics. Runs a TW5 filter to produce a result set;
 renders the body template once per result, with `currentTiddler` bound to each result title.
 English alias: `\for`. Implements TW5's `<$list filter=...>` widget at the sigil grammar level.
 
-Scope: query or exploration — the operator "turns" through a set of results.
+Scope: the searcher's gaze turns to face each result in order — not mechanical looping but
+directed attention moving through the set.
 
 <<~/ahu >>
 
@@ -116,6 +119,8 @@ close-pattern = '<<~\/huli\s*>>'
 <<~ pranala #to-wehe ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/wehe family:relation >>
 <<~ pranala #to-heihei ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/heihei family:relation >>
 
+<<~ pranala #tiddler ? -> lar:///ha.ka.ba/@lararium/tw5/tiddlers/sigil-huli family:control role:implements >>
+<<~ pranala #tiddler-sigil-for ? -> lar:///ha.ka.ba/@lararium/tw5/tiddlers/sigil-for family:control role:alias >>
 <<~/ahu >>
 
 <<~&#x0003;>>

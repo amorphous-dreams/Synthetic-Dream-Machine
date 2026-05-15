@@ -259,6 +259,7 @@ reaction-roles = ["subscription", "handler", "callback"]
 
 <<~ loulou lar:///ha.ka.ba/@lares/docs/pono/pranala >>
 
+<<~ pranala #tiddler ? -> lar:///ha.ka.ba/@lararium/tw5/tiddlers/sigil-pranala family:control role:implements >>
 <<~/ahu >>
 
 

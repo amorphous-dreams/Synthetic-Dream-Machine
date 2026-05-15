@@ -1,0 +1,14 @@
+title: lar:///ha.ka.ba/@lararium/tw5/tiddlers/sigil-wehe
+tags: $:/tags/Global lar:///ha.ka.ba/tags/SharktoothSigil
+lar-kind: pragma-alias
+lar-pono-uri: lar:///ha.ka.ba/@lares/api/v0.1/pono/wehe
+lar-alias-for: \procedure
+lar-see-also: \procedure
+lar-open-pattern: <<~\s*wehe\s+([\w-]+)(?:\s+([^>]*?))?\s*>>
+lar-close-pattern: <<~\/wehe\s*>>
+type: text/vnd.tiddlywiki
+
+<!-- wehe — Hawaiian procedure executor; alias for \procedure.
+     Shares grammar schema with sigil-procedure.tid; both declare a named callable body.
+     STUB: wikitext \widget body is G.SharktoothSigil work (Category 1 / Category 6).
+     When the body ships, it will emit TW5 \procedure declarations from the sigil block. -->

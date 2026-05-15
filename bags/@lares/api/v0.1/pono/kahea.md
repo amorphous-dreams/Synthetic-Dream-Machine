@@ -149,6 +149,7 @@ canonical-roles = ["reads", "writes", "streams", "buffers", "pipes"]
 <<~ pranala #to-aka ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/aka family:relation >>
 <<~ pranala #to-papalohe ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/papalohe family:relation >>
 
+<<~ pranala #tiddler ? -> lar:///ha.ka.ba/@lararium/tw5/tiddlers/sigil-kahea family:control role:implements >>
 <<~/ahu >>
 
 <<~&#x0003;>>

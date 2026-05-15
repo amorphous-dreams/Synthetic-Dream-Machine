@@ -120,6 +120,7 @@ This maps directly to the Ink & Switch island model: each automerge object is a 
 <<~ pranala #to-papalohe ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/papalohe family:control role:wires-via >>
 <<~ pranala #to-widget ? -> lar:///ha.ka.ba/@lares/api/v0.1/lararium/widgets/kau family:control role:implements >>
 
+<<~ pranala #tiddler ? -> lar:///ha.ka.ba/@lararium/tw5/tiddlers/sigil-kau family:control role:implements >>
 <<~/ahu >>
 
 <<~&#x0003;>>

@@ -23,14 +23,18 @@ retain       = true
 
 # Heihei
 
-*heihei* — Hawaiian: race, competition, contest; to race; strife, confusion.
+*heihei* — Hawaiian: race, competition (foot race, canoe race); to race, to compete.
+General competitive racing — a structured contest where candidates run and the outcome depends
+on who resolves the condition. Does not primarily mean "confusion"; the competition is
+purposeful and ordered.
 
-A block-container sigil with conditional / race semantics. Multiple candidate bodies compete;
-the first body whose filter condition satisfies wins. English alias: `\if` (TW5 filter-conditional form).
+A block-container sigil with competitive conditional semantics. Multiple candidate bodies
+enter the race; the first body whose filter condition resolves non-empty shapes the output.
+English alias: `\if` (TW5 filter-conditional form).
 
 Implements TW5's `<%if filter%>...<%endif%>` shortcut (TW5 5.3+) at the sigil grammar level.
 The `\race` concurrency sigil carries the parallel execution posture; `heihei` carries the
-first-match selection posture (serial evaluation, first win).
+competitive-filter selection posture (serial evaluation, first non-empty result wins).
 
 <<~/ahu >>
 
@@ -115,6 +119,8 @@ close-pattern = '<<~\/heihei\s*>>'
 <<~ pranala #to-wehe ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/wehe family:relation >>
 <<~ pranala #to-huli ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/huli family:relation >>
 
+<<~ pranala #tiddler ? -> lar:///ha.ka.ba/@lararium/tw5/tiddlers/sigil-heihei family:control role:implements >>
+<<~ pranala #tiddler-sigil-if ? -> lar:///ha.ka.ba/@lararium/tw5/tiddlers/sigil-if family:control role:alias >>
 <<~/ahu >>
 
 <<~&#x0003;>>

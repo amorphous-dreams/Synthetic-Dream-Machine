@@ -23,11 +23,14 @@ retain       = true
 
 # Ahu
 
-*ahu* — Hawaiian: heap, pile, mound; altar; to pile up, to accumulate.
+*ahu* — Hawaiian: heap, pile, mound, cairn; altar, shrine; a sacred stone structure.
+Used in spiritual and ceremonial contexts — the *ahu* becomes sacred through human intention
+and accumulated offering placed upon it. A landmark made from accumulation; addressable because
+it has been named and tended.
 
 A child-slot sigil. Each `ahu` block declares a named scope boundary within a meme — an
 addressable child tiddler at `parentUri + slot`. The slot name becomes the tiddler title suffix.
-Slots compose the structural skeleton of a meme's content; each holds its own TOML iam header
+Slots compose the structural skeleton of a meme's content; each MAY hold its own TOML iam header (set of tiddler fields)
 and wikitext body.
 
 <<~/ahu >>
@@ -65,13 +68,15 @@ The slot name `#source-shelf` is conventional for pranala edge declarations.
 
 ## Syntax
 
+Decomposed at the wiki's causal island boudnaries:
+
 ```text
 <<~ ahu #slot-name >>
 content body
 <<~/ahu >>
 ```
 
-Compound kahea-ahu summons form (in parent tiddler body):
+Compound kahea-ahu summons form (in parent tiddler body after decomposition):
 ```text
 <<~ kahea ahu #slot-name >>
 ```
@@ -112,6 +117,7 @@ slot = 1
 <<~ pranala #to-kahea ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/kahea family:relation >>
 <<~ pranala #to-meme ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/meme family:relation >>
 
+<<~ pranala #tiddler ? -> lar:///ha.ka.ba/@lararium/tw5/tiddlers/sigil-ahu family:control role:implements >>
 <<~/ahu >>
 
 <<~&#x0003;>>

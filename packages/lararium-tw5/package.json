@@ -34,7 +34,8 @@
     "build:heleuma:commit": "tsx scripts/sync-heleuma.ts --commit",
     "build:plugin": "tsx scripts/build-plugin-tiddler.ts",
     "typecheck": "tsc --noEmit",
-    "test": "NODE_OPTIONS=--experimental-vm-modules pnpm exec jest --config jest.config.cjs"
+    "test": "NODE_OPTIONS=--experimental-vm-modules pnpm exec jest --config jest.config.cjs",
+    "test:sigil-alignment": "tsx scripts/check-sigil-alignment.ts"
   },
   "dependencies": {
     "@lararium/core": "workspace:*",
