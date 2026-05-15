@@ -1,6 +1,6 @@
 # Lares Handoff — Active Work Only
 
-> Updated: 2026-05-14
+> Updated: 2026-05-14 (turn 3)
 > Branch: `feature/lararium-node-3`
 > Last sprint archive: `wikis/lares-history/last-sprint/`
 
@@ -13,19 +13,81 @@ Current baseline: quine/genesis, TW5 content-addressed core boot, admin VM,
 command-tiddler CLI, Keyhive concap, bag residency, wiki composition,
 plugin-tiddler boot, sigil cascade architecture, save-side split, recursive
 child co-promotion, Node VM / worker-thread lift, full sigils-as-wikitext
-sprint including T-1 wikirule collapse, URI fragment resolution on all 5 sigil
-tiddlers, `ahu.ts` retirement to `sigil-ahu.tid`, and deserializer root-iam fix + build pipeline clear-before-rebuild
+sprint (T-1 wikirule collapse, URI fragment resolution, ahu.ts retirement,
+deserializer root-iam fix, build pipeline clear-before-rebuild), AND the
+SharktoothSigil grammar inversion + aka/kahea mode= collapse sprint
 (see "What Changed This Turn") are treated as landed unless tests prove drift.
 
 Next work, in order:
 1. Path K / F-arc: TW5 routing rules + 300–500ms debounce + projection
    auto-truncate.
 2. Path L / S7.4: admin-doc ingress trust gate via Keyhive cap=infrastructure.
-3. Path G.rest: finish remaining sigil vocabulary via wikitext dispatcher pattern.
+3. Path G.SharktoothSigil: migrate remaining 48 TOML sigil blocks to native
+   SharktoothSigil wikitext tiddlers; talk-story per sigil category.
 
 Rules: preserve TW5 VM primacy, bag=Automerge-doc=sync-boundary, no HTTP/RPC
 coordination surface, and explicit operator promotion for canon.
 ```
+
+## What Changed This Turn (2026-05-14 turn 3)
+
+### SharktoothSigil Grammar Inversion + aka/kahea Collapse — `lararium-tw5`
+
+**Grammar inversion — `grammar-cache.ts` radical rewrite:**
+- Canonical grammar tag: `lar:///ha.ka.ba/tags/SharktoothSigil` (replaces
+  `$:/tags/LarariumGrammar` as grammar registration signal).
+- `getGrammar()` now reads sigils from all `[tag[lar:///ha.ka.ba/tags/SharktoothSigil]]`
+  tiddlers via their `lar-*` fields (`lar-kind`, `lar-pattern`, `lar-open-pattern`,
+  `lar-close-pattern`, `lar-alias-for`, `lar-default-family`, `lar-layer`, etc.).
+- TOML monolith (`memetic-wikitext.tid`) supplies families + unmigrated sigil fallback.
+  Tiddler sigils take precedence by name. Each migrated sigil's TOML block becomes dead
+  code removable in the next pass.
+- Change listener watches `SharktoothSigil`-tagged tiddler changes AND `GRAMMAR_MEME_URI`.
+- New pattern: adding a sigil to the wiki = tagging a tiddler. No code change required.
+
+**`aka`/`kahea` semantic collapse via `mode=`:**
+- `~kahea(p1 p2 mode:"live")` — unified transclusion widget; `mode="shadow"` picks
+  `AkaTemplate` cascade instead of `KaheaTemplate`. One widget, two rendering postures.
+- `~aka(p1 p2)` — collapsed to pure delegate: `<$transclude $variable="~kahea" mode="shadow"/>`.
+  No duplicate implementation. Projection boundary = `mode` param, not parallel procedures.
+- `~ahu(slot uri p1 mode:"live")` — `mode` threads to template tag:
+  `mode="live"` → `AhuTemplate`, `mode="shadow"` → `AkaTemplate`.
+- `~kahea~ahu(slot uri p1 mode:"live")` — passes `mode` to `~ahu`.
+- `~aka~ahu(slot uri p1)` — delegates to `~kahea~ahu(mode="shadow")`. Freeze semantics
+  now live in the template cascade, not in duplicate procedure stubs.
+- `~` dispatcher gains `mode:"live"` param — threads through to all compound sigil procedures.
+- **`mode=` aligns with pranala sugar:** `~aka` ≡ `pranala family:observe` (frozen read);
+  `~kahea` ≡ `pranala family:dataflow` (live push). The `mode` param is the short-form
+  for pranala `family:` in transclusion space.
+
+**`BLOCK_CLOSERS` + `GRAMMAR_NAME_MAP` cleanup:**
+- `BLOCK_CLOSERS` shrunk from 20 → 3 entries: `{ahu, pranala, kahea}` (boot-critical only).
+  All other block sigil closers load from grammar via `buildClosers()` + `closePatternToTag()`.
+- `GRAMMAR_NAME_MAP` retired. `sigil-kahea.tid` merges both leaf and block forms under one
+  canonical name `"kahea"` — no TOML naming seam needed.
+- `CompoundSigilMatch.slotType` renamed → `closeKey`; compound forms carry `word1` (e.g.
+  `"kahea"`) as the closer lookup key — fixes `<<~ kahea ahu #slot >>body<<~/kahea >>` block detection.
+- `closePatternToTag()` added: converts TOML regex `close_pattern` strings to literal
+  `indexOf` tags for `findCloseEnd`.
+
+**SharktoothSigil tiddler migrations (7 sigils):**
+- `sigil-ahu.tid` — `lar-kind: child-slot` + `lar-open/close-pattern`; `mode` param added.
+- `sigil-kahea.tid` — `lar-kind: edge-sugar` + merged block pattern fields; `mode` param.
+- `sigil-aka.tid` — `lar-kind: edge-sugar` + `lar-alias-for: kahea`; collapsed to delegate.
+- `sigil-loulou.tid` — `lar-kind: edge-sugar` + `lar-pattern`.
+- `sigil-pranala.tid` — `lar-kind: edge` + `lar-inline/block-pattern`.
+- `sigil-pranala-header.tid` — `lar-kind: header` + `lar-pattern`.
+- `sigil-kau.tid` — NEW; `lar-kind: child-slot` + `lar-pattern`; no wikitext body
+  (kau.ts remains JS widget); restores `kau` child-slot detection after grammar loads.
+
+**`memetic-wikitext.tid` shrink:**
+- 7 `[[sigils]]` blocks removed (ahu, pranala, loulou, aka, kahea-block, kahea URI form,
+  pranala-header). 46665 → 42091 chars. 48 TOML sigil blocks remain; each migrates to a
+  SharktoothSigil tiddler in Path G.SharktoothSigil.
+
+**Build:** 42/42 tests pass. Smoke clean. 33 shadow tiddlers. No regressions.
+
+---
 
 ## What Changed This Turn (2026-05-14)
 
@@ -104,11 +166,23 @@ and leaves rendered sigil behavior to integration flow tests.
 - Preserve command-tiddler coordination surface.
 - Add positive + negative smokes.
 
-### Path G.rest — Remaining Sigil Vocabulary
+### Path G.SharktoothSigil — Remaining Sigil Vocabulary
 
-`lele`, `papalohe`, `pae` — no JS widget needed; each follows the same
-wikirule `macrocall` emission + `\widget ~name` tiddler pattern now established
-for the five retired sigils. Talk-story per sigil to fix template contracts.
+48 TOML `[[sigils]]` blocks remain in `memetic-wikitext.tid`. Each migrates
+to a SharktoothSigil tiddler (`lar-*` fields + `\widget` wikitext body). When
+all migrate, the TOML shrinks to families-only and the grammar monolith dissolves.
+
+Migration order by operator impact (see ROADMAP for talk-story per category):
+1. Block-container sigils with `close_pattern` (wehe, meme, hui, heihei, wai, huli, puka)
+2. Scope/binding sigils (\let, \var, \const, waiho)
+3. Concurrency sigils (\sync, \race, \rush)
+4. OODA-HA narrative sigils (lele, papalohe, pae) — Path G.rest renamed into this arc
+5. Control/conditional sigils (\if, \else, \elif, \for) — wikitext \procedure bodies
+6. Pragma/declaration sigils (\procedure, \define, \widget, \type) — TW5 shadow forms
+7. Remaining edge/data/device sigils (kumu, \widget, toml, etc.)
+
+`mode=` aligns across all: live = current rendering posture, shadow = frozen/projection.
+Any sigil with a shadow template variant gets `aka`-style behavior automatically.
 
 ### Path R — Verify Before Extending
 
@@ -194,7 +268,7 @@ Generated compatibility artifact only:
 These are not source tiddler titles today, but they are Lararium-owned namespace
 surface and should move to `lar:///...` contracts in a later pass:
 
-- `$:/tags/LarariumGrammar`
+- `$:/tags/LarariumGrammar` ← **superceded by `lar:///ha.ka.ba/tags/SharktoothSigil`** (grammar-cache.ts rewritten); retire from all remaining tiddlers in the namespace migration pass
 - `$:/tags/LarariumKumu`
 - `$:/tags/Lar/AhuTemplate`
 - `$:/tags/Lar/AkaTemplate`

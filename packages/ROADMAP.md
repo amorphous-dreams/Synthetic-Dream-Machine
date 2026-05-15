@@ -1,6 +1,6 @@
 # Lares Active Roadmap — Outstanding Work Only
 
-> Updated: 2026-05-14 (turn 2)
+> Updated: 2026-05-14 (turn 3)
 > Branch: `feature/lararium-node-3`
 > Archive source: `wikis/lares-history/last-sprint/{HANDOFF,SESSION,ROADMAP}.md`
 
@@ -16,10 +16,14 @@ save-side splitting, recursive child co-promotion, Node VM / worker-thread lift,
 the sigils-as-wikitext sprint (filter self-registration, md-file-router,
 memetic-parser deny-list trim, `\sigil` pragma stub, `\widget ~` dispatcher,
 `~aka`/`~kahea`/`~loulou`/`~pranala-header`/`~pranala` wikitext tiddlers,
-5 JS widgets retired, wikirules emit macrocall nodes), **and** T-1 wikirule
+5 JS widgets retired, wikirules emit macrocall nodes), T-1 wikirule
 collapse (`lar-sigil.ts` single rule, deny list cleared), URI fragment
-resolution on all 5 sigil tiddlers, deserializer root-iam fix, and
-build pipeline clear-before-rebuild.
+resolution on all 5 sigil tiddlers, deserializer root-iam fix,
+build pipeline clear-before-rebuild, **and** the SharktoothSigil grammar
+inversion sprint (grammar-cache.ts reads `lar:///ha.ka.ba/tags/SharktoothSigil`
+tiddlers, `aka`/`kahea` collapsed via `mode=`, `BLOCK_CLOSERS` shrunk to 3,
+`GRAMMAR_NAME_MAP` retired, `closePatternToTag()` added, 7 sigil TOML blocks
+removed, `sigil-kau.tid` created).
 
 Do not re-open those arcs unless a test proves drift.
 
@@ -29,9 +33,10 @@ Do not re-open those arcs unless a test proves drift.
 |---|---|---|---|
 | — | **T-1** | ✅ Done | `lar-sigil.ts` single rule; deny list cleared; stale build artifacts purged. |
 | — | **~ahu** | ✅ Done | `ahu.ts` retired to `sigil-ahu.tid`; only `kau` remains as JS widget. |
+| — | **SharktoothSigil inversion** | ✅ Done | `grammar-cache.ts` reads `lar:///ha.ka.ba/tags/SharktoothSigil` tiddler fields; `aka`/`kahea` collapsed via `mode=`; 7 TOML blocks removed. |
 | 2 | **K / F-arc** | ⬜ Next | TW5 save routing, debounce, projection hygiene for sustained editing. |
 | 3 | **L / S7.4** | ⬜ Next | Admin-doc ingress trust gate: operator devices with `cap=infrastructure` only. |
-| 4 | **G.rest** | ⬜ Small | `lele`, `papalohe`, `pae` → `macrocall` emission + `\widget ~name` tiddlers. Talk-story per sigil. |
+| 4 | **G.SharktoothSigil** | ⬜ Next | Migrate remaining 48 TOML sigil blocks → SharktoothSigil tiddlers. Talk-story per category. |
 | 5 | **R** | ⧾ Verify first | ReactionEngine wiring: changeset application, changed-URI derivation, `RE.onChangeset`, integration tests. |
 | 6 | **N** | ⬜ UI shim | `<$lar-promote>` action-widget writes the same command-tiddler as CLI promote. |
 | 7 | **O** | ⬜ Corpus hygiene | Author scaffolded heleuma stubs; keep `lares heleuma --write` aligned. |
@@ -68,17 +73,91 @@ Goal: operator devices federate infrastructure state; room peers cannot.
 - [ ] Preserve command-tiddler coordination surface.
 - [ ] Negative smoke: non-infrastructure peer cannot sync admin state.
 
-## Path G.rest — Remaining Sigil Vocabulary
+## Path G.SharktoothSigil — Remaining Sigil Vocabulary
 
-Goal: complete the public sigil surface without growing bespoke parser logic.
-All three follow the established pattern: wikirule emits `macrocall`, `\widget ~name`
-tiddler handles rendering, cascade tag controls template selection.
+Goal: dissolve `memetic-wikitext.tid` into operator-extensible SharktoothSigil
+tiddlers. Each tiddler = `lar-*` fields (grammar) + `\widget` wikitext (render).
+When all 48 remaining TOML blocks migrate, the monolith holds families only.
 
-- [ ] `lele` — flow/movement sigil. Talk-story: fragment-render vs child ownership.
-- [ ] `papalohe` — listening/perception sigil. Talk-story: template contract.
-- [ ] `pae` — phase/OODA-HA/LADDER sigil. Talk-story: template contract.
-- [ ] `kau` invocation path (no fragment, no UUID) — talk-story: may be
-      wikitext-eligible; placement path (capability gate) stays JS.
+**Governing principle — `mode=` unification:**
+`mode="live"` = current rendering posture (default).
+`mode="shadow"` = frozen/projection read. Every block-container sigil gets both.
+`~aka` ≡ `kahea mode="shadow"` ≡ `pranala family:observe` — the three forms are
+the same semantic at different layers of sugar. All future `\widget ~sigilname`
+bodies accept `mode` and thread it to their template cascade tag.
+
+**Category 1 — Block container sigils (close_pattern in TOML; highest operator impact):**
+Each gets a tiddler with `lar-kind`, `lar-open-pattern`, `lar-close-pattern`, and a
+`\widget ~name(p1:"" mode:"live")` body that resolves URI + picks template by mode.
+
+| Sigil | Semantic | Template tag |
+|---|---|---|
+| `wehe` | outside/exit boundary — content that crosses the scope edge | `$:/tags/Lar/WeheTemplate` |
+| `meme` | meme boundary — wraps a complete meme definition inline | `$:/tags/Lar/MemeTemplate` |
+| `hui` | group/meeting — collaborative scope boundary | `$:/tags/Lar/HuiTemplate` |
+| `heihei` | race/compete — multiple candidate bodies, first wins | `$:/tags/Lar/HeiheiTemplate` |
+| `wai` | water/flow — streaming data or time-series scope | `$:/tags/Lar/WaiTemplate` |
+| `huli` | search/turn — query or exploration scope | `$:/tags/Lar/HuliTemplate` |
+| `puka` | hole/gap — placeholder pending content | `$:/tags/Lar/PukaTemplate` |
+
+`mode="shadow"` on any of these renders the frozen/archived form (aka posture).
+No new JS needed. Cascade + `mode` param handles live vs. projection.
+
+**Category 2 — Scope/binding sigils:**
+`\let`, `\var`, `\const`, `waiho` — TW5 has native `$let` / `$set`. These sigils are
+pragma-aliases mapping `<<~ \let name=val >>` → TW5 `\define` / `$let`. Tiddlers carry
+`lar-alias-for` + a `\procedure` body that emits the native TW5 form.
+`waiho` (leave/store) = persistent named slot; no direct TW5 equiv; talk-story needed.
+
+**Category 3 — Concurrency sigils:**
+`\sync`, `\race`, `\rush` — OODA-HA execution postures. Block containers.
+`\sync` = all children must resolve before proceeding (join).
+`\race` = first child to resolve wins (select).
+`\rush` = priority-ordered fan-out; no join required.
+No TW5-native equivalent; template bodies define scheduling intent as metadata.
+Actual concurrency execution stays in ReactionEngine (Path R), not in the wikirule.
+Tiddler body = declarative metadata emission; RE reads the intent at runtime.
+
+**Category 4 — OODA-HA narrative sigils (former Path G.rest):**
+`lele`, `papalohe`, `pae` — HUD-visible phase markers for operator and AI agent flow.
+These do NOT render content bodies; they emit a phase-tag node consumed by the
+stage panel / LARES HUD.
+
+| Sigil | OODA-HA phase | Semantic |
+|---|---|---|
+| `lele` | Observe → Orient flow | motion; the reading-across phase |
+| `papalohe` | Orient (listen) | perception; the orienting stillness |
+| `pae` | Act → Aftermath landing | phase landing; LADDER rung marker |
+
+Template bodies: emit a `data-lar-phase` attribute + phase name. No block body.
+`mode="shadow"` = archived phase marker (for projection/history rendering).
+
+**Category 5 — Control/conditional sigils:**
+`\if`, `\elif`, `\else`, `\for` — pragma-aliases for TW5 `$list`/`$reveal`/filter forms.
+`<<~ \if filter >>body<<~/ \if >>` → `\procedure` that wraps `<$list filter=...>`.
+These need careful talk-story: TW5's filter semantics differ from imperative conditionals.
+`mode=` irrelevant here (these are control flow, not transclusion posture).
+
+**Category 6 — Pragma/declaration sigils:**
+`\procedure`, `\define`, `\widget`, `\function`, `\type`, `\typos` —
+TW5 shadow forms for the operator's own sigil/procedure definitions.
+`<<~ \procedure name(params) >>body<<~/ \procedure >>` is how an operator declares
+a new named procedure in memetic-wikitext. These sigils make the declaration form
+first-class in the grammar. Tiddlers carry `lar-kind: pragma-alias`; no `\widget` body
+(the sigil IS the declaration mechanism — it produces no render output of its own).
+
+**Category 7 — Edge/data/device/remaining:**
+`toml` (data fence), `kumu` (device/canvas widget), `papalohe`, `kukali`, `\suspends`,
+`\import`, `\constraint`, `pono` (right-intent marker), `lele`, `ui` (UI boundary),
+`hana` (action), `kapu` (gate/cap), `helu` (enumerate), `mukuwai`, `kahawai`, `waiho`,
+`\query`, `\guard`, `\task` — each talk-story needed before authoring tiddler bodies.
+Priority: surface area used by `sigil-ahu`, `sigil-kahea` cascades first; exotic forms last.
+
+**Migration exit criteria:**
+- All 48 TOML `[[sigils]]` blocks removed from `memetic-wikitext.tid`
+- `memetic-wikitext.tid` contains only `[[families]]` TOML tables + structural preamble
+- `grammarRulesFromText()` call in `grammar-cache.ts` reads families only; sigil path commented out
+- 42/42 tests pass; smoke clean
 
 ## Path R — ReactionEngine Completion
 
@@ -116,7 +195,7 @@ Invariants:
 - Subduction evaluation for lararium↔lararium federation once browser peer exists.
 - Speculative RE execution, rollback, metered/gas execution.
 - Wikifier polish: DOCTYPE comment and dash-table round-trip diffs.
-- `\sigil` pragma full implementation (parameter schema, pattern, close-pattern, handler field).
+- `\sigil` pragma full implementation (parameter schema, pattern, close-pattern, handler field) — may fold into SharktoothSigil tiddler authoring flow directly.
 - `\widget ~kau` placement path design (Keyhive UCAN resource + UUID write-back boundary).
 
 ## Small Open Items
