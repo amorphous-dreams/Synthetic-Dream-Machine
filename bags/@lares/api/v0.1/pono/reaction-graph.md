@@ -170,7 +170,7 @@ packages/lararium-tw5/src/modules/reaction-router.ts
     → update ReactionGraph bindings for changed URIs
     → wiki.dispatchEvent("tm-verse-event", {uri, listenable})
 
-  Worker path: registerProjectionBus consumer receives tm-verse-event
+  Worker path: onVerseEvent consumer receives tm-verse-event
     → posts WorkerMsg_Event to main thread (vm-ring routing)
 
   Browser path: widget tree handles tm-verse-event directly.
@@ -178,7 +178,7 @@ packages/lararium-tw5/src/modules/reaction-router.ts
 
 `ReactionGraph` and `extractReactionBindings` remain in `live-protocol.ts`
 (imported by reaction-router.ts). `ReactionEngine` class removed from
-kumu-device.ts. `lar-wiki-worker.ts` now wires `registerProjectionBus`
+kumu-device.ts. `lar-wiki-worker.ts` now wires `onVerseEvent`
 and drops the inline `re.onChangeset()` call.
 
 What remains in TS: MemeSyncAdaptor + LarTiddlerStore + VmPool + Keyhive.

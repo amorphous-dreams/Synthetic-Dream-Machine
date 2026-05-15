@@ -55,7 +55,7 @@ function makeDocHandleStub(
 
 const WIKI_ID = "lar:///ha.ka.ba/@test/wiki";
 
-/** Collect Worker events (type === eventId) forwarded via onWorkerEvent. */
+/** Collect Worker events (type === listenable) forwarded via onWorkerEvent. */
 function eventCollector(): {
   events: WorkerMsg_Event[];
   callback: (wikiId: string, msg: WorkerMsg_Event) => void;
@@ -110,7 +110,7 @@ describe("NodeVmManager — Worker lifecycle", () => {
       const orig = collector.callback;
       collector.callback = (wikiId, msg) => {
         orig(wikiId, msg);
-        if (msg.eventId === "changeset:applied") resolve(msg);
+        if (msg.listenable === "changeset:applied") resolve(msg);
       };
       // Patch the manager's callback — access via reassignment since it's a closure.
       // Simpler: just resolve from the collector events array after routeChangeset.
@@ -125,7 +125,7 @@ describe("NodeVmManager — Worker lifecycle", () => {
     // Wait briefly for the async postMessage round-trip.
     await new Promise<void>((r) => setTimeout(r, 200));
 
-    const echos = collector.events.filter((e) => e.eventId === "changeset:applied");
+    const echos = collector.events.filter((e) => e.listenable === "changeset:applied");
     expect(echos.length).toBeGreaterThanOrEqual(1);
     expect(echos[0]!.payload.addedCount).toBe(1);
     expect(echos[0]!.payload.deletedCount).toBe(1);
@@ -167,7 +167,7 @@ describe("NodeVmManager — Worker lifecycle", () => {
     manager.routeChangeset(WIKI_ID, [{ title: "lar:///ha.ka.ba/@test/wiki/x" }], []);
     await new Promise<void>((r) => setTimeout(r, 200));
 
-    expect(collector.events.some((e) => e.eventId === "changeset:applied")).toBe(true);
+    expect(collector.events.some((e) => e.listenable === "changeset:applied")).toBe(true);
     expect(collector.events.every((e) => e.wikiUri === WIKI_ID)).toBe(true);
   });
 
@@ -207,7 +207,7 @@ describe("NodeVmManager — Worker lifecycle", () => {
     manager.routeChangeset(WIKI_ID, [], []);
     await new Promise<void>((r) => setTimeout(r, 150));
 
-    const echos = collector.events.filter((e) => e.eventId === "changeset:applied");
+    const echos = collector.events.filter((e) => e.listenable === "changeset:applied");
     expect(echos.length).toBeGreaterThanOrEqual(1);
     // The fixture starts with snapshotTiddlers seeded, so totalTiddlers > 0 after empty delta.
     expect(echos.at(-1)!.payload.totalTiddlers).toBeGreaterThanOrEqual(1);

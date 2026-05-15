@@ -726,7 +726,7 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
     onWorkerEvent: (wikiId, msg) => {
       eventBus.enqueueToRing("vm-ring", "worker.event", {
         wikiId,
-        eventId: msg.eventId,
+        listenable: msg.listenable,
         payload: msg.payload,
       });
     },

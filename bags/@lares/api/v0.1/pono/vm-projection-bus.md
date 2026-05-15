@@ -11,7 +11,7 @@ mana        = 0.90
 manao       = 0.88
 manaoio     = 0.86
 tagspace    = "stable"
-role        = "invariant doctrine: VmPool→Projection Messaging Standard; dispatchEvent/addEventListener pattern; TW5Engine.registerProjectionBus design; replaces _larKukaliHook"
+role        = "invariant doctrine: VmPool→Projection Messaging Standard; dispatchEvent/addEventListener pattern; TW5Engine.onVerseEvent design; replaces _larKukaliHook"
 cacheable   = true
 retain      = true
 invariant   = true
@@ -60,9 +60,9 @@ The shape of the event object is the contract. All fields are strings.
 
 ```typescript
 // TW5Engine.ts
-registerProjectionBus(engine: ProjectionBusConsumer): () => void {
+onVerseEvent(engine: VerseEventConsumer): () => void {
   const handler = (event: LarariumWikiEvent) => {
-    engine.handleLarariumEvent(event.uri, event.listenable);
+    engine.handleVerseEvent(event.uri, event.listenable);
   };
   this.wiki.addEventListener("tm-verse-event", handler);
   return () => this.wiki.removeEventListener("tm-verse-event", handler);
@@ -72,11 +72,11 @@ registerProjectionBus(engine: ProjectionBusConsumer): () => void {
 Returns a teardown function — the `cancelable` equivalent from Verse's `Subscribe()`.
 The caller (VmPool or LarariumShell) holds the teardown and calls it on dispose.
 
-### ProjectionBusConsumer interface
+### VerseEventConsumer interface
 
 ```typescript
-interface ProjectionBusConsumer {
-  handleLarariumEvent(uri: string, listenable: string): void;
+interface VerseEventConsumer {
+  handleVerseEvent(uri: string, listenable: string): void;
 }
 ```
 
@@ -97,8 +97,8 @@ projection bus when a slot is activated:
 class VmPool {
   private teardowns: Map<number, () => void> = new Map();
 
-  activateSlot(slot: number, engine: TW5Engine, projBus: ProjectionBusConsumer): void {
-    const teardown = engine.registerProjectionBus(projBus);
+  activateSlot(slot: number, engine: TW5Engine, projBus: VerseEventConsumer): void {
+    const teardown = engine.onVerseEvent(projBus);
     this.teardowns.set(slot, teardown);
   }
 
@@ -140,7 +140,7 @@ The replacement:
 
 ```typescript
 // ✓ web3 pattern — per-VM registration, correct dependency direction
-const teardown = vm.registerProjectionBus(reactionEngine);
+const teardown = vm.onVerseEvent(reactionEngine);
 // ... later, on pool slot deactivation:
 teardown();
 ```
@@ -158,9 +158,9 @@ Any file referencing `_larKukaliHook` outside a `*.web2.*` path FAILS FPI-1.
 |---|---|
 | `event(t){}` instance on device | `{type: "tm-verse-event", uri, listenable}` object |
 | `device.MyEvent.Signal(payload)` | `wiki.dispatchEvent(event)` |
-| `device.MyEvent.Await()` in fiber | `handleLarariumEvent()` in reaction handler |
+| `device.MyEvent.Await()` in fiber | `handleVerseEvent()` in reaction handler |
 | `device.ListenableEvent.Subscribe(cb)` | `wiki.addEventListener("tm-verse-event", handler)` |
-| `cancelable` from `Subscribe()` | `() => void` teardown from `registerProjectionBus()` |
+| `cancelable` from `Subscribe()` | `() => void` teardown from `onVerseEvent()` |
 | `@editable OnSomeEvent:listenable` | Widget `listenable` attribute (prop-configured) |
 
 The asymmetry is preserved:

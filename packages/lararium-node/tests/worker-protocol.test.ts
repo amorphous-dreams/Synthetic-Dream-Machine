@@ -117,7 +117,7 @@ describe("GP-1 — schema_version enforcement", () => {
       schema_version: 1,
       type: "event",
       wikiUri: "lar:///test",
-      eventId: "ev-1",
+      listenable: "ev-1",
       payload: { x: 1 },
     };
     expect(isWorkerToMainMsg(event)).toBe(true);
@@ -240,7 +240,7 @@ describe("GP-5 — teardown handshake (integration)", () => {
     const echo = msgs.find((m) => (m as { type: string }).type === "event") as WorkerMsg_Event | undefined;
 
     expect(echo).toBeDefined();
-    expect(echo?.eventId).toBe("echo");
+    expect(echo?.listenable).toBe("echo");
     expect(echo?.payload.addedCount).toBe(2);
     expect(echo?.payload.deletedCount).toBe(1);
   });

@@ -124,8 +124,8 @@ not the target architecture itself.
 **What collapses from TS into TW5:**
 - `ReactionGraph` routing table → `family:reaction` pranala tiddlers (already exist)
 - `ReactionGraph.fireSync()` → TW5 startup module `addEventListener` on `tm-verse-event`
-- `TW5Engine.registerProjectionBus()` → startup module `addEventListener` + teardown
-- `ProjectionBusConsumer` interface → startup module closure
+- `TW5Engine.onVerseEvent()` → startup module `addEventListener` + teardown
+- `VerseEventConsumer` interface → startup module closure
 
 **What does NOT collapse (irreducible TS):**
 - `LarTiddlerStore` — TW5 has no CRDT; Automerge is irreducible

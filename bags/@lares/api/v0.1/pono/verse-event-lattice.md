@@ -83,7 +83,7 @@ A handle with a single capability: register a persistent callback.
 Returns a `cancelable` so the subscriber can unsubscribe.
 
 **Lararium mapping:** `tw5.wiki.addEventListener("change", handler)` follows this
-pattern exactly. `ReactionEngine.registerProjectionBus(engine)` returns a teardown
+pattern exactly. `ReactionEngine.onVerseEvent(engine)` returns a teardown
 function — the cancelable equivalent.
 
 ---
@@ -255,8 +255,8 @@ A `KukaliWidget` is a Verse creative_prop equivalent:
 | `@editable` property | React prop / TW5 widget attribute |
 | `event(t){}` instantiation | `dispatchEvent({type: "tm-verse-event", ...})` |
 | `listenable` (engine-vended) | `tw5.wiki.addEventListener("change", ...)` |
-| `spawn { device.OnEvent.Await() }` | ReactionEngine fiber registered via `registerProjectionBus()` |
-| `cancelable` from `Subscribe()` | teardown function returned by `registerProjectionBus()` |
+| `spawn { device.OnEvent.Await() }` | ReactionEngine fiber registered via `onVerseEvent()` |
+| `cancelable` from `Subscribe()` | teardown function returned by `onVerseEvent()` |
 
 **The KukaliWidget loop:**
 
@@ -270,11 +270,11 @@ A `KukaliWidget` is a Verse creative_prop equivalent:
 7. MemeSyncAdaptor pushes tiddlers into TW5       (closes the loop)
 ```
 
-Step 4 exists only because `registerProjectionBus()` wired the subscribable side.
+Step 4 exists only because `onVerseEvent()` wired the subscribable side.
 Without it, the event fires and nobody hears it — the fiber is never spawned.
 
 **Law:** `KukaliWidget` MUST use `dispatchEvent` (signalable). `ReactionEngine` MUST
-subscribe via `registerProjectionBus` (subscribable). These are never the same call.
+subscribe via `onVerseEvent` (subscribable). These are never the same call.
 The asymmetry is the point.
 
 <<~/ahu >>
@@ -348,7 +348,7 @@ NOT a `task(t)`. Same `cancelable` interface, different semantic role.
 
 **Lararium implication:** `subscribable_event` maps to the TW5
 `wiki.addEventListener("change", handler)` pattern exactly. The teardown function
-returned by `registerProjectionBus()` is the cancelable equivalent.
+returned by `onVerseEvent()` is the cancelable equivalent.
 
 ### Status guidance
 

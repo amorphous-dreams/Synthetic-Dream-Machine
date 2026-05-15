@@ -92,7 +92,7 @@ export interface WorkerMsg_Event {
   schema_version: ProtocolVersion;
   type: "event";
   wikiUri: string;
-  eventId: string;
+  listenable: string;
   payload: Record<string, string | number | boolean>;
 }
 

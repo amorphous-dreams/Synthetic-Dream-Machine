@@ -71,7 +71,7 @@ parentPort.on("message", (msg) => {
       schema_version: 1,
       type: "event",
       wikiUri: msg.wikiUri,
-      eventId: "echo",
+      listenable: "echo",
       payload: {
         addedCount:   (msg.added   ?? []).length,
         deletedCount: (msg.deleted ?? []).length,

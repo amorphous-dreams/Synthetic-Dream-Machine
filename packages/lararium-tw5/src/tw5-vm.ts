@@ -389,16 +389,16 @@ export class TW5Engine {
   }
 
   /**
-   * Wire a ProjectionBusConsumer to this VM's wiki event bus.
+   * Wire a VerseEventConsumer to this VM's wiki event bus.
    * KukaliWidget fires "tm-verse-event"; the consumer handles it.
    * Returns a teardown function (Verse cancelable equivalent).
    */
-  registerProjectionBus(consumer: { handleLarariumEvent(uri: string, listenable: string): void }): () => void {
+  onVerseEvent(consumer: { handleVerseEvent(uri: string, listenable: string): void }): () => void {
     if (!this._tw) return () => {};
     const handler = (...args: unknown[]) => {
       const event = args[0] as { uri?: string; listenable?: string } | undefined;
       if (event?.uri && event.listenable) {
-        consumer.handleLarariumEvent(event.uri, event.listenable);
+        consumer.handleVerseEvent(event.uri, event.listenable);
       }
     };
     this._tw.wiki.addEventListener("tm-verse-event", handler);

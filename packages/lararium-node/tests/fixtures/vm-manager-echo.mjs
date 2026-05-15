@@ -46,7 +46,7 @@ parentPort.on("message", (msg) => {
       schema_version: 1,
       type: "event",
       wikiUri: msg.wikiUri,
-      eventId: "changeset:applied",
+      listenable: "changeset:applied",
       payload: {
         addedCount:   (msg.added   ?? []).length,
         deletedCount: (msg.deleted ?? []).length,

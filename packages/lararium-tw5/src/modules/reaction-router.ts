@@ -15,7 +15,7 @@ module-type: startup
  *   wiki.addEventListener("change") fires  ← nalu arrives on shore
  *   → update ReactionGraph bindings for changed lar: URIs
  *   → wiki.dispatchEvent("tm-verse-event", {uri, listenable})
- *   → registerProjectionBus consumer forwards to main thread (Worker)
+ *   → onVerseEvent consumer forwards to main thread (Worker)
  *      or wiki widget tree handles directly (browser)
  *
  * Runs on both platforms so the Worker's TW5 instance and the browser's
