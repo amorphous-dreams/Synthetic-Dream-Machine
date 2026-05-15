@@ -3,10 +3,12 @@ import path from "path";
 import { fileURLToPath } from "url";
 import {
   readPluginSourceManifest,
-  verifyPackedStaticTiddlers,
-  verifyPluginInfoTitle,
   type PluginSourceManifest,
 } from "../plugin-build/source-manifest.js";
+import {
+  verifyPackedStaticTiddlers,
+  verifyPluginInfoTitle,
+} from "../plugin-build/verify-packed-plugin.js";
 import { parseTidFile } from "../plugin-build/tid-file.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));

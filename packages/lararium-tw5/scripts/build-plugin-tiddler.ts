@@ -30,11 +30,13 @@ import { readModuleManifest, type ModuleManifest } from "../plugin-build/module-
 import {
   buildPluginSourceManifest,
   readPluginSourceManifest,
-  verifyPackedStaticTiddlers,
-  verifyPluginInfoTitle,
   writePluginSourceManifest,
   type PluginSourceManifest,
 } from "../plugin-build/source-manifest.js";
+import {
+  verifyPackedStaticTiddlers,
+  verifyPluginInfoTitle,
+} from "../plugin-build/verify-packed-plugin.js";
 import {
   computeInputRootSha256,
   PACK_TRANSCRIPT_FORMAT,
