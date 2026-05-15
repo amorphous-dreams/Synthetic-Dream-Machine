@@ -149,6 +149,65 @@ reaction-roles = ["listenable", "subscribable", "observes", "throttles", "deboun
 
 <<~/ahu >>
 
+<<~ ahu #yin-collapse-target >>
+
+## Yin-Collapse Target Architecture
+
+The current ReactionGraph TS implementation is a **provisional bridge**, not the
+target architecture. The target collapses the routing layer into the TW5 wiki.
+
+### Current (provisional, web2-adjacent)
+
+```
+TS ReactionGraph (in-memory routing table)
+  ← loaded from reaction tiddlers via load(bindings)
+  ← fireSync() fires handlers synchronously but INLINE (not tick-driven)
+TW5Engine.registerProjectionBus() ← TS wrapper over wiki.addEventListener
+```
+
+### Target (yin-collapse, TW5-native)
+
+```
+TW5 startup module (synchronous = true):
+  wiki.addEventListener("tm-lararium-event", (event) => {
+    // Read reaction bindings DIRECTLY from wiki tiddlers
+    const bindings = wiki.filterTiddlers(
+      `[field:pranala-from[${event.uri}]][field:listenable[${event.listenable}]]`
+    );
+    for (const b of bindings) invokeSubscribable(b.pranala-to, b.subscribable);
+  });
+```
+
+The reaction tiddlers (family:reaction pranala edges) already exist.
+The startup module replaces: ReactionGraph + TW5Engine + ProjectionBusConsumer.
+What remains in TS: MemeSyncAdaptor + LarTiddlerStore + VmPool + Keyhive.
+
+### `fireSync` semantic note
+
+`fireSync` is labeled "UEFN fidelity: synchronous tick dispatch." This is the
+**intent** — atomic delivery, subscription order. But the current implementation
+fires INLINE within the calling JavaScript execution context. It is NOT yet
+tick-driven (it does not participate in TW5's enqueueTiddlerEvent + nextTick cycle).
+
+A truly nalu-driven dispatch would:
+1. Call `wiki.enqueueTiddlerEvent()` to signal a change
+2. Let TW5's batch window coalesce concurrent events
+3. Receive the batch in a `wiki.addEventListener("change", handler)` callback
+4. Dispatch reactions from within that callback (truly after the nalu)
+
+The gap: current fireSync runs before the nalu; target runs within the nalu.
+See `pono/nalu.md` for the nalu architecture and the batch-window tuning note
+(TW5 browser refresh throttle: default ~400ms, tunable to ~16ms for real-time).
+
+### Prior art validating the collapse
+
+- **Elm Architecture** — one update function IS the engine; Cmd/Sub = side effects outside
+- **Solid.js fine-grained** — synchronous reactive graph, no separate routing layer
+- **MobX transaction** — transaction() IS the batch boundary; reactions defer until close
+- **Synchronous instantaneous reaction** (Esterel/Lustre lineage) — academic name for this pattern
+
+<<~/ahu >>
+
 <<~ ahu #edges >>
 
 <<~ pranala #implements-invariant ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/invariant family:control role:implements >>

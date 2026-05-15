@@ -1,6 +1,6 @@
 # Lares Handoff — Active Work Only
 
-> Updated: 2026-05-15 (turn 6)
+> Updated: 2026-05-15 (turn 7)
 > Branch: `feature/lararium-node-4`
 > Last sprint archive: `wikis/lares-history/last-sprint/`
 
@@ -20,7 +20,11 @@ lar:-URI namespace + mode= retirement + English alias sigil sprint,
 concurrency sigil cluster + grammar self-hosting + kumu-device UEFN alignment
 sprint, AND the kau.ts → TW5-native wikitext migration (kau.ts + render-modes.ts
 deleted; \widget ~kau + template cascade in sigil-kau.tid; zero JS sigil widgets
-remain) are treated as landed unless tests prove drift.
+remain), AND the Verse ontology + yin-collapse architecture sprint (nalu.md,
+hoolele.md, verse-task-tree.md, verse-type-lattice.md; six-operator ontology
+complete; TW5 wiki declared primary reactive engine; one graph not two; fireSync
+gap documented; sigil-tick.tid stub registered) are treated as landed unless
+tests prove drift.
 
 Next work, in order:
 1. UEFN scene importer — .verse class defs + .umap instance placements + DEB
@@ -33,6 +37,36 @@ Rules: preserve TW5 VM primacy, bag=Automerge-doc=sync-boundary, no HTTP/RPC
 coordination surface, and explicit operator promotion for canon. Web3 only —
 no web2 models/code/flows in Lares stack.
 ```
+
+## What Changed This Turn (2026-05-15 turn 7)
+
+### Verse Ontology + Yin-Collapse Architecture Research Sprint
+
+**New pono specs (bags/@lares/api/v0.1/pono/):**
+- `nalu.md` — architectural invariant: nalu as changeset delivery wave; TW5 `refresh(changedTiddlers)` ↔ Verse `OnSimulate(StagedUpdates)` ↔ MemeSyncAdaptor flush; yin-collapse law; one-graph-not-two law; scale note. Infrastructure concept below grammar layer.
+- `hoolele.md` — full pono spec: unstructured escape-hatch sigil; Verse `spawn` analogue; English alias `\spawn`; six-operator concurrency table; when-to-use law; Lararium-specific use cases (CRDT flush, VmPool, Keyhive). Completes six-operator ontology.
+
+**Updated pono specs:**
+- `reaction-graph.md` — yin-collapse target architecture section added: current provisional bridge vs. target TW5-native startup module; `fireSync` gap documented (fires inline, not tick-driven); prior art (Elm, Solid.js, MobX, Esterel/Lustre).
+- `nihomano-sigils.md` — concurrency cluster updated: `hoolele/\spawn` (six-operator completion) + `\tick/\simulate` (device lifecycle hook stub; Hawaiian name deferred) added to family list and language families section.
+
+**New SharktoothSigil tiddler:**
+- `sigil-tick.tid` — `\tick` / `\simulate` grammar stub; device lifecycle hook, once-per-nalu; Verse `OnSimulate` analogue; Hawaiian proper name deferred pending Visual Verse tick node confirmation (UE6 ~2027).
+
+**Architectural rulings from Talk Story 2026-05-15:**
+- TW5 wiki (`$tw.wiki`) IS the primary synchronous reactive engine (Elm/Solid.js/MobX pattern).
+- ReactionGraph TS layer = provisional bridge; target: collapse into TW5 startup module + reaction tiddlers.
+- Irreducible TS: LarTiddlerStore (CRDT), VmPool, Keyhive, network.
+- MemeSyncAdaptor = minimal bridge (sea → shore); gets thinner, not eliminated.
+- One graph, not two: bags = CRDT federation units; recipe stack = logical unification; TW5 wiki IS the unified logical graph; MemeSyncAdaptor per bag generates the nalu.
+- nalu = changeset delivery wave (infrastructure, below grammar, not a sigil).
+- `\tick` = grammar sigil stub; Hawaiian proper name deferred pending Visual Verse tick node shape.
+- `fireSync` gap documented: fires inline (before nalu), not truly tick-driven.
+- hoolele/`\spawn` = 6th Verse operator; completes the concurrency ontology.
+- Visual Verse: vaporware; node-graph prototype under evaluation; no release date.
+- Verse concurrency: 5 + 1 (hoolele) confirmed stable.
+
+---
 
 ## What Changed This Turn (2026-05-15 turn 6)
 

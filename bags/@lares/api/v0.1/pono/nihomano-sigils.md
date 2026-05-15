@@ -140,7 +140,8 @@ They fall into eight families:
 - `holo` / `\race` — cancelling race; first wins, all losers and their subtrees cancelled recursively
 - `puka` / `\rush` — selecting race; first wins, losers continue until enclosing scope exits
 - `kukali` / `\suspends` — wait-until-trigger; parks the causal island
-- `hoolele` / `\spawn` — unstructured escape hatch; new independent task root (stub, sprint pending)
+- `hoolele` / `\spawn` — unstructured escape hatch; new independent task root; completes the six-operator ontology
+- `\tick` / `\simulate` — device lifecycle hook: run once per nalu (simulation tick); Hawaiian proper name deferred pending Visual Verse tick node shape (UE6 ~2027)
 
 **Infrastructure**:
 - `sigil-dispatcher` — the `~` root dispatch widget; routes `<<~ name >>` to `\widget ~name`
