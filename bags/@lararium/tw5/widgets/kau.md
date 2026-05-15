@@ -1,17 +1,16 @@
 <<~&#x0001; ? -> lar:///ha.ka.ba/@lararium/tw5/widgets/kau >>
 ```toml iam
-uri-path = "ha.ka.ba/@lararium/tw5/widgets/kau"
-file-path = "bags/@lararium/tw5/widgets/kau.md"
+uri-path      = "ha.ka.ba/@lararium/tw5/widgets/kau"
+file-path     = "bags/@lararium/tw5/widgets/kau.md"
 type          = "text/x-memetic-wikitext"
 register      = "CS"
 confidence    = 0.88
 mana          = 0.88
-role          = "anchor: KauWidget — heleuma ka"
+role          = "anchor: ~kau TW5 wikitext widget — heleuma ka"
 heleuma       = "ka"
-source-file   = "packages/lararium-tw5/src/widgets/kau.ts"
-source-symbol = "KauWidget"
+source-file   = "packages/lararium-tw5/tiddlers/sigil-kau.tid"
+source-symbol = "~kau"
 module-ref    = "lar:///ha.ka.ba/@lararium/tw5/widgets/kau"
-body-sha256 = "626100905b24fd53d7b54fff2a01f594d744e7a97d77ea79a6d681581fd6a6a5"
 cacheable     = true
 retain        = true
 ```
@@ -22,32 +21,33 @@ retain        = true
 
 ## Contract
 
-`<$kau>` places a device instance into the carrier. kau = "to place upon, set down with intention" (Hawaiian).
+`<<~ kau #frag Name props >>` places a device instance into the carrier. kau = "to place upon, set down with intention" (Hawaiian).
 
-Each `<$kau>` creates a device instance with:
-- **Instance URI**: `carrierUri#fragment` (auto-generated UUID if `fragment` absent — write-back stub fires on first commit)
+Each kau placement creates a device instance with:
+- **Instance URI**: `carrierUri#fragment` (explicit `#frag` required; auto-UUID deferred to action tiddler when Keyhive WASM lands)
 - **Own execution context**: `currentTiddler` set to instance URI before transcluding the kumu def
-- **Persistent addressability**: instance URI becomes UCAN resource for per-instance capability grants (Keyhive stub)
+- **Persistent addressability**: instance URI becomes UCAN resource for per-instance capability grants (Keyhive deferred)
 
-Attributes: `fragment` (optional #id), `name` (kumu definition name), `propsRaw` (key:value pairs).
+`p1` parse: first token starting with `#` = fragment; remainder = name + props.
 
-Resolves kumu definition via `[all[tiddlers]tag[$:/tags/LarariumKumu]field:kumu-name[name]]`.
-Renders `<div data-lar-kind="kau" data-lar-instance="uri">`. Unresolved devices show `<span data-lar-kind="hole">`.
+Invocation form: `<<~ kau Name >>` — no fragment; transcludes kumu def in caller's context.
 
-### Keyhive stubs
+Resolves kumu definition via `[all[tiddlers+shadows]tag[lar:///ha.ka.ba/tags/kumu]field:kumu-name<name>first[]]`.
+Placement renders `<div class="lar-kau lar-kau-place" data-uri="...">`.
+Invocation renders `<div class="lar-kau lar-kau-invoke">`.
+Unresolved devices show `<span class="lar-kau-hole">`.
 
-Two integration boundaries stubbed for future WASM:
+### Render surface
 
-1. `registerKauCapabilityHook(hook)` — fires with instance URI; returns authority envelope for instance scope
-2. `registerKauWriteBackHook(hook)` — fires on first render when fragment auto-generated; writes UUID back into carrier text
+`\widget ~kau(p1:"")` lives in `tiddlers/sigil-kau.tid`. Template cascade:
+- HTML: `lar:///ha.ka.ba/@lararium/templates/kau/html` (via `lar:///ha.ka.ba/tags/kau-template`)
+- markdown-meme: `lar:///ha.ka.ba/@lararium/templates/kau/markdown-meme`
 
-<<~/ahu >>
+Companion procedures: `~kahea~kau` (live transclusion of kau child-slot), `~aka~kau` (frozen projection via aka template cascade).
 
-<<~ ahu #source >>
+### Keyhive stubs — deferred
 
-## Source
-
-See [packages/lararium-tw5/src/widgets/kau.ts](packages/lararium-tw5/src/widgets/kau.ts)
+Per-instance capability hooks and UUID write-back surface as explicit TW5 action tiddlers when Keyhive WASM lands. The widget itself holds no JS module hooks.
 
 <<~/ahu >>
 
@@ -55,7 +55,7 @@ See [packages/lararium-tw5/src/widgets/kau.ts](packages/lararium-tw5/src/widgets
 
 <<~ pranala #to-pono ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/kau family:control role:implements >>
 <<~ pranala #to-tw5-widgets ? -> lar:///ha.ka.ba/@lararium/tw5/modules/tw5-widgets family:control role:implements >>
-<<~ pranala #to-module ? -> lar:///ha.ka.ba/@lararium/tw5/widgets/kau family:control role:module >>
+<<~ pranala #to-sigil-tiddler ? -> lar:///ha.ka.ba/@lararium/tw5/tiddlers/sigil-kau family:control role:module >>
 <<~ pranala #to-kumu ? -> lar:///ha.ka.ba/@lararium/tw5/widgets/kumu family:control role:depends >>
 
 <<~/ahu >>

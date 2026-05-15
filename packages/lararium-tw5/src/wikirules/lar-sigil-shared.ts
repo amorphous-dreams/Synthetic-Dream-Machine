@@ -36,7 +36,7 @@ export const ANY_OPEN_RE = /<<~[^\n]*?>>/g;
 
 // Child-slot sigil names present at bootstrap (before grammar loads from tiddlers).
 // ahu: deserializer emits <<~ ahu … >>…<<~/ahu >> blocks; must be recognised at cold boot.
-// kau: JS widget, only appears in live wiki (post-grammar-load); grammar supplies it via kind="child-slot".
+// kau: TW5 \widget tiddler (sigil-kau.tid), only appears in live wiki (post-grammar-load); grammar supplies it via kind="child-slot".
 const BUILTIN_CHILD_SLOTS = new Set<string>(["ahu"]);
 
 /** Returns the set of child-slot sigil names from the grammar registry. */

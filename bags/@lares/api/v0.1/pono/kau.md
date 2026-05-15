@@ -82,7 +82,7 @@ registerKauCapabilityHook(hook: (instanceUri: string) => unknown)
 registerKauWriteBackHook(hook: (carrierUri: string, fragment: string) => void)
 ```
 
-Both stubs sit in `packages/lararium-tw5/src/widgets/kau.ts`. The capability hook receives the instance URI as the UCAN resource string. The write-back hook receives the carrier URI and generated fragment for write-back into carrier text. Neither activates until registered.
+Both stubs are deferred pending Keyhive WASM. When they land, they surface as explicit TW5 action tiddlers (not JS module hooks), consistent with TW5 VM primacy. The kau widget itself is now a TW5-native `\widget ~kau(p1:"")` defined in `sigil-kau.tid` — no JS module.
 
 <<~/ahu >>
 

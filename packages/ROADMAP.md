@@ -40,7 +40,8 @@ Do not re-open those arcs unless a test proves drift.
 | Priority | Path | Status | Outcome |
 |---|---|---|---|
 | — | **T-1** | ✅ Done | `lar-sigil.ts` single rule; deny list cleared; stale build artifacts purged. |
-| — | **~ahu** | ✅ Done | `ahu.ts` retired to `sigil-ahu.tid`; only `kau` remains as JS widget. |
+| — | **~ahu** | ✅ Done | `ahu.ts` retired to `sigil-ahu.tid`. |
+| — | **~kau** | ✅ Done | `kau.ts` + `render-modes.ts` deleted; `\widget ~kau` + template cascade in `sigil-kau.tid`. Zero JS sigil widgets remain. |
 | — | **SharktoothSigil inversion** | ✅ Done | `grammar-cache.ts` reads `lar:///ha.ka.ba/tags/SharktoothSigil` tiddler fields; 7 TOML blocks removed. |
 | — | **lar: URI + mode= retirement** | ✅ Done | `$:/tags/Lar/*` → `lar:///ha.ka.ba/tags/*`; `mode=` retired from all sigil procedures; English alias sigils + pono defs authored. |
 | — | **Concurrency cluster + grammar self-hosting** | ✅ Done | hui/holo/puka/lele + 8 family tiddlers; TOML monolith = 1 block; wild-magic property holds. |
@@ -58,7 +59,7 @@ Do not re-open those arcs unless a test proves drift.
 - `pnpm test:flows` — top-level isolated integration flows.
 - `pnpm test:tw5-flow` — direct TW5 sync/decompose/promote flow.
 - `pnpm --filter @lararium/tw5 exec tsx scripts/smoke-plugin-boot.ts` — plugin
-  boot smoke (shadow tiddlers + JS widget registry + deserializer probes).
+  boot smoke (shadow tiddlers + deserializer probes; all sigil widgets are TW5-native).
 
 ## Path ~ahu — Done
 
@@ -207,7 +208,7 @@ Invariants:
 - Speculative RE execution, rollback, metered/gas execution.
 - Wikifier polish: DOCTYPE comment and dash-table round-trip diffs.
 - `\sigil` pragma full implementation (parameter schema, pattern, close-pattern, handler field) — may fold into SharktoothSigil tiddler authoring flow directly.
-- `\widget ~kau` placement path design (Keyhive UCAN resource + UUID write-back boundary).
+- `~kau` Keyhive UCAN resource + UUID write-back — deferred to action tiddlers when Keyhive WASM lands; widget render path complete.
 
 ## Small Open Items
 

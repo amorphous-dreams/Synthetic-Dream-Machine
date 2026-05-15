@@ -1,6 +1,6 @@
 # Lares Handoff — Active Work Only
 
-> Updated: 2026-05-15 (turn 5)
+> Updated: 2026-05-15 (turn 6)
 > Branch: `feature/lararium-node-4`
 > Last sprint archive: `wikis/lares-history/last-sprint/`
 
@@ -16,10 +16,11 @@ child co-promotion, Node VM / worker-thread lift, full sigils-as-wikitext
 sprint (T-1 wikirule collapse, URI fragment resolution, ahu.ts retirement,
 deserializer root-iam fix, build pipeline clear-before-rebuild),
 SharktoothSigil grammar inversion + aka/kahea mode= collapse sprint,
-lar:-URI namespace + mode= retirement + English alias sigil sprint, AND the
+lar:-URI namespace + mode= retirement + English alias sigil sprint,
 concurrency sigil cluster + grammar self-hosting + kumu-device UEFN alignment
-sprint (see "What Changed This Turn (turn 5)") are treated as landed unless
-tests prove drift.
+sprint, AND the kau.ts → TW5-native wikitext migration (kau.ts + render-modes.ts
+deleted; \widget ~kau + template cascade in sigil-kau.tid; zero JS sigil widgets
+remain) are treated as landed unless tests prove drift.
 
 Next work, in order:
 1. UEFN scene importer — .verse class defs + .umap instance placements + DEB
@@ -32,6 +33,32 @@ Rules: preserve TW5 VM primacy, bag=Automerge-doc=sync-boundary, no HTTP/RPC
 coordination surface, and explicit operator promotion for canon. Web3 only —
 no web2 models/code/flows in Lares stack.
 ```
+
+## What Changed This Turn (2026-05-15 turn 6)
+
+### kau.ts → TW5-Native Wikitext Migration
+
+**No JS sigil widgets remain in the plugin.**
+
+- `packages/lararium-tw5/src/widgets/kau.ts` — deleted. Was 150-line JS widget class (placement/invocation render, render-mode dispatch, Keyhive stubs).
+- `packages/lararium-tw5/src/widgets/render-modes.ts` — deleted. Was `dispatchSlotRenderMode()` helper; comment on it said "dissolves when kau markdown-meme path folds into cascade." Dissolved.
+
+**New TW5-native tiddlers (`packages/lararium-tw5/tiddlers/`):**
+- `sigil-kau.tid` — rewritten: `\widget ~kau(p1:"")` with `p1` parse (fragment/name/props via `<$set>` conditionals), template cascade dispatch, placement vs invocation branching. Plus `\procedure ~kahea~kau` and `\procedure ~aka~kau` mirroring sigil-ahu.tid exactly.
+- `kau-template-html.tid` — HTML render: placement gets `<div class="lar-kau lar-kau-place">`, invocation gets `<div class="lar-kau lar-kau-invoke">`. Hole slot when def missing.
+- `kau-cascade-html.tid` — cascade config tagged `lar:///ha.ka.ba/tags/kau-template`.
+- `kau-template-markdown-meme.tid` — `<<~ kahea kau {{!!slot}} >>` (same pattern as ahu).
+- `kau-cascade-markdown-meme.tid` — `list-before` ordered, `lar-export-scope` conditioned.
+
+**Keyhive stubs** (`registerKauCapabilityHook`, `registerKauWriteBackHook`) dissolved with no replacement. When Keyhive WASM lands, these surface as TW5 action tiddlers consistent with TW5 VM primacy — not JS module hooks.
+
+**Architecture law now fully holds:** "Sigil dispatch via wikitext. JS widgets only for JS-level semantics (capability hooks, async device I/O)." No sigil has JS-level semantics today, so the plugin carries zero JS sigil widgets.
+
+**Updated docs:** `bags/@lares/api/v0.1/pono/kau.md`, `bags/@lararium/tw5/widgets/kau.md`, `memetic-wikitext.tid` render-modes note, `lar-sigil-shared.ts` comment, ROADMAP.
+
+**Build:** typecheck clean; 16 Vite modules (was 17); 114 inner tiddlers; 38 shadow tiddlers in smoke; all probes pass.
+
+---
 
 ## What Changed This Turn (2026-05-15 turn 5)
 
@@ -176,8 +203,8 @@ no web2 models/code/flows in Lares stack.
 - `sigil-loulou.tid` — `lar-kind: edge-sugar` + `lar-pattern`.
 - `sigil-pranala.tid` — `lar-kind: edge` + `lar-inline/block-pattern`.
 - `sigil-pranala-header.tid` — `lar-kind: header` + `lar-pattern`.
-- `sigil-kau.tid` — NEW; `lar-kind: child-slot` + `lar-pattern`; no wikitext body
-  (kau.ts remains JS widget); restores `kau` child-slot detection after grammar loads.
+- `sigil-kau.tid` — NEW; `lar-kind: child-slot` + `lar-pattern`; no wikitext body yet
+  (kau.ts still JS widget at this turn); restores `kau` child-slot detection after grammar loads. (Fully migrated in turn 6.)
 
 **`memetic-wikitext.tid` shrink:**
 - 7 `[[sigils]]` blocks removed (ahu, pranala, loulou, aka, kahea-block, kahea URI form,
@@ -227,10 +254,6 @@ wikitext tiddlers, 5 JS widgets retired.
   `lar-sigil-inline.js`) no longer survive into the TW5 CLI pack step.
 - `plugin-tiddler.generated.ts` now contains the root-iam fix. Build produces
   56 inner tiddlers; 3/3 active Jest suites pass (42/42 tests).
-
-**Surviving JS widgets** (not yet retireable):
-- `kau.ts` — capability hooks + UUID write-back require JS.
-- `render-modes.ts` — dissolves when kau markdown-meme path folds into cascade.
 
 **Retired this turn (2026-05-14):**
 - `ahu.ts` → `sigil-ahu.tid` (`\widget ~ahu` + `\procedure ~kahea~ahu`).
@@ -300,7 +323,7 @@ Inspect `node-vm-manager.ts`, `lar-wiki-worker.ts`, and tests before coding:
 - **Admin doc stays infrastructure-only.** Federates to operator devices, not room peers.
 - **Hot wiki = TW5 + RE together.** Synchronous tick semantics require co-location.
 - **Memetic wikitext = TW5 superset.** No deny-list items without a carrier-stream justification.
-- **Sigil dispatch via wikitext.** JS widgets only for JS-level semantics (capability hooks, async device I/O).
+- **Sigil dispatch via wikitext.** All sigil widgets live as TW5 `\widget` tiddlers. JS widgets only for JS-level semantics (async device I/O, future Keyhive WASM hooks).
 
 ## Useful Smokes
 

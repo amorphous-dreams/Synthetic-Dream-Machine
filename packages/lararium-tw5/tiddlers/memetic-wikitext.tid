@@ -706,7 +706,7 @@ trigger     = "wiki.renderTiddler('text/plain', uri, { variables: { 'lar-render-
 Any sigil with `kind = "child-slot"` participates in this three-mode dispatch:
 - `ahu` — worksite text slot
 - `kau` — device instance slot
-- Future child-slot sigils inherit the pattern via `dispatchSlotRenderMode()` in `render-modes.ts`
+- Future child-slot sigils inherit the pattern via the template cascade: tag a tiddler `lar:///ha.ka.ba/tags/<sigil>-template`, define `\widget ~<sigil>(p1:"")` in the SharktoothSigil tiddler. No JS needed.
 
 ### Causal island summary
 
