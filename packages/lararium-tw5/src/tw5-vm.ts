@@ -17,6 +17,41 @@ import { MemeStreamParser } from "@lararium/core";
 import type { IslandAccumulator } from "@lararium/core";
 import type { TiddlerFields } from "./deserializer.js";
 
+// ---------------------------------------------------------------------------
+// CameraRegistration — multi-view projection surface
+// ---------------------------------------------------------------------------
+
+/**
+ * One camera = one view frustum over the wiki world-state.
+ *
+ * Each camera holds its own IslandAccumulator and drives its own drain cycle
+ * at its own tick rate.  All cameras share one TW5 wiki (world graph).
+ *
+ * Inverted control: the accumulator drains into the wiki via wiki.transact().
+ * The wiki fires a "change" event.  Each widget tree registered via
+ * wiki.addEventListener("change", tree.refresh) reacts independently —
+ * trees with no dependency on the changed tiddlers return immediately.
+ *
+ * The view frustum lives in the widget tree's root filter, not in the
+ * accumulator.  The accumulator carries no camera identity.
+ *
+ * Input + output: cameras that accept user input register outbound handlers
+ * (saveTiddler / dispatchEvent) on their widget tree.  Rendering priority
+ * flows naturally from tickMs — lower tickMs = higher render priority.
+ */
+export interface CameraRegistration {
+  /** The accumulator this camera drains each tick. */
+  accumulator: IslandAccumulator;
+  /**
+   * Tick interval in milliseconds.
+   *   0 (default) = requestAnimationFrame (~60fps, browser-only)
+   *   N > 0        = setInterval(N) — use for background or non-browser cameras
+   */
+  tickMs?: number;
+  /** Maximum patches to drain per tick. Default: 200. */
+  budget?: number;
+}
+
 import { createHash } from "crypto";
 import { LARES_MEMETIC_WIKITEXT_PLUGIN } from "./plugin-tiddler.generated.js";
 
@@ -408,46 +443,62 @@ export class TW5Engine {
 
 
   /**
-   * Browser-only rAF render loop.
+   * Multi-camera render loop.
    *
-   * Each frame:
-   *   1. Writes $:/temp/volatile/lararium/tick — arms TW5's volatile-refresh
-   *      path so the wiki rerenders at up to ~60fps.
-   *   2. Calls adaptor.flushAll(accumulators, budget) — drains all bag
-   *      accumulators in recipe priority order, in one wiki.transact() each,
-   *      stopping when budget patches consumed.
+   * Each CameraRegistration drives its own drain cycle:
+   *   - tickMs = 0 (default): requestAnimationFrame at ~60fps (browser-only)
+   *   - tickMs > 0: setInterval at that interval (browser + node)
    *
-   * `accumulators` — ordered by recipe bag priority (index 0 = lowest).
-   * `budget`       — total patches across all accumulators per frame.
+   * On each camera tick:
+   *   1. rAF cameras write $:/temp/volatile/lararium/tick — arms TW5's
+   *      volatile-refresh throttle for 60fps repaint.
+   *   2. adaptor.flushAll([camera.accumulator], camera.budget) drains the
+   *      accumulator and applies the batch via wiki.transact().
+   *   3. wiki fires "change" event. Every widget tree registered via
+   *      wiki.addEventListener("change", tree.refresh) reacts — trees with
+   *      no dependency on the changed tiddlers return immediately (O(1)).
    *
-   * Returns a teardown fn; call it to cancel the loop (e.g. on unmount).
+   * Inverted control: the view frustum lives in each widget tree's root
+   * filter, not in the accumulator.  Cameras at different tick rates drain
+   * independently; the single wiki is the synchronization point.
+   *
+   * Returns a teardown fn that cancels all timers.
    */
   startRenderLoop(
-    adaptor:      { flushAll(accs: IslandAccumulator[], budget?: number): void },
-    accumulators: IslandAccumulator[],
-    budget = 200,
+    cameras: CameraRegistration[],
+    adaptor: { flushAll(accs: IslandAccumulator[], budget?: number): void },
   ): () => void {
     if (!this._tw) throw new Error("TW5Engine: call boot() before startRenderLoop()");
-    let rafId = 0;
-    let running = true;
+    const teardowns: Array<() => void> = [];
 
-    const tick = (timestamp: number) => {
-      if (!running) return;
-      this._tw!.wiki.addTiddler(
-        new this._tw!.Tiddler({
-          title: "$:/temp/volatile/lararium/tick",
-          text:  String(Math.floor(timestamp)),
-        }),
-      );
-      adaptor.flushAll(accumulators, budget);
-      rafId = requestAnimationFrame(tick);
-    };
+    for (const cam of cameras) {
+      const budget = cam.budget ?? 200;
+      const acc    = cam.accumulator;
+      const tickMs = cam.tickMs ?? 0;
 
-    rafId = requestAnimationFrame(tick);
-    return () => {
-      running = false;
-      cancelAnimationFrame(rafId);
-    };
+      if (tickMs === 0) {
+        let rafId  = 0;
+        let running = true;
+        const tick = (timestamp: number) => {
+          if (!running) return;
+          this._tw!.wiki.addTiddler(
+            new this._tw!.Tiddler({
+              title: "$:/temp/volatile/lararium/tick",
+              text:  String(Math.floor(timestamp)),
+            }),
+          );
+          adaptor.flushAll([acc], budget);
+          rafId = requestAnimationFrame(tick);
+        };
+        rafId = requestAnimationFrame(tick);
+        teardowns.push(() => { running = false; cancelAnimationFrame(rafId); });
+      } else {
+        const id = setInterval(() => adaptor.flushAll([acc], budget), tickMs);
+        teardowns.push(() => clearInterval(id));
+      }
+    }
+
+    return () => teardowns.forEach((fn) => fn());
   }
 
   /** Returns true after boot() resolves. */

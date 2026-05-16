@@ -89,16 +89,21 @@ a tombstone in one bag must not wipe TW5 if another recipe layer still holds a l
 `deleteTiddler` removes ahu fragment-parent slot children from TW5 under the echo guard
 using a dedicated `${instanceId}:child` apply-key slot.
 
-## flushAll — N-Accumulator Frame Drain
+## flushAll — Per-Camera Drain
 
 ```typescript
 flushAll(accs: IslandAccumulator[], budget = 200): void
 ```
 
-Drains accumulators in recipe priority order (core → canon → wiki → user → session).
-Stops when `budget` total patches drain.
-Carries remainder to the next frame tick.
-Each accumulator drains into one `wiki.transact()` block.
+Drains each accumulator in the array, up to `budget` patches total.
+Carries remainder to the next tick.
+Each non-empty accumulator drains into one `wiki.transact()` block.
+The wiki fires `change` after each transact — all registered widget trees react.
+
+In multi-camera wiring, `startRenderLoop` calls `flushAll([cam.accumulator], cam.budget)`
+per camera at each camera's own tick rate.  The adaptor applies the batch to the shared wiki.
+Each widget tree's `refresh(changedTiddlers)` selects the relevant subset — view frustum
+lives in the tree's root filter, not in the adaptor or accumulator.
 
 <<~&#x0002;>>
 

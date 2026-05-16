@@ -30,8 +30,19 @@
  *   const accumulator = new IslandAccumulator();
  *   store.addProjection(adaptor);       // handles pre-sync buffer + non-CRDT
  *   store.addProjection(accumulator);   // handles post-sync crdt-remote
- *   // browser: tw5.startRenderLoop(adaptor, accumulator)
- *   // node:    setInterval(() => adaptor.flushAccumulator(accumulator), 16)
+ *
+ *   // Per camera: wiki.addEventListener("change", tree.refresh) for widget tree refresh.
+ *   // Each camera drives its own drain cycle via CameraRegistration.
+ *
+ *   // browser (multi-camera):
+ *   tw5.startRenderLoop(
+ *     [{ accumulator: storyAcc, tickMs: 0, budget: 200 },     // Story River — rAF 60fps
+ *      { accumulator: canvasAcc, tickMs: 16, budget: 200 },   // TLDraw canvas — 60fps setInterval
+ *      { accumulator: minimapAcc, tickMs: 200, budget: 50 }], // mini-map — 5fps
+ *     adaptor,
+ *   );
+ *   // node:
+ *   setInterval(() => adaptor.flushAll([accumulator], 200), 16);
  *
  * Schema: lar:///ha.ka.ba/@lares/api/v0.1/lararium/schema/island-adaptor
  */

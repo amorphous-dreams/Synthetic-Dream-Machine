@@ -75,7 +75,24 @@ capturing the render output, then returning to warm.
 
 ## Camera Model — Story River Is the First Camera
 
-The TW5 Story River serves as the **first camera** — the primary rendered view
+A **camera** = one view frustum over the TW5 wiki world-state.
+
+Each camera holds:
+- its own `IslandAccumulator` — drains at its own tick rate
+- its own **widget tree** — a TW5 widget graph rooted at a filter tiddler
+- its own **fake DOM** — the render target (`window.document`, `$tw.fakeDocument`, or `OffscreenCanvas`)
+- its own input/output surface — user events in, wiki writes out
+
+All cameras in one VM slot **share one TW5 wiki** (world graph).
+The wiki fires a `change` event after each `wiki.transact()`.
+Each widget tree registered via `wiki.addEventListener("change", tree.refresh)`
+reacts independently — widget trees with no dependency on the changed tiddlers
+return `refresh()` in O(1) without repaint.
+
+The **view frustum** lives in the widget tree's root filter, not in the accumulator.
+The accumulator carries no camera identity — **inverted control**.
+
+The TW5 Story River is the **first camera** — the primary rendered view
 into the Verse graph for browser peers.
 It does not occupy the only camera slot.
 
@@ -85,13 +102,45 @@ spatial, relational, or visual-graph views of the same Automerge documents.
 
 Further camera slots remain open for:
 - Mobile native views (React Native / Capacitor)
+- Background warm portal-spaces, comms links, nexus leyline feeds, remote signal feeds
 - Household / community / civil / interplanetary lararium implementations
 - Headless render targets (PDF export, MCP tool surface, LLM context projection)
 - Spectator/witness views with different read authority
 
-Each camera registers its own projection against the IslandAccumulator chain.
-Each runs at its own tick rate.
-Each sees the same causal-ordered CRDT state, rendered through its own lens.
+**Causal islands, fractal:** causal islands exist inside the lararium (bag boundaries),
+outside the lararium (peer-to-peer CRDT sync), inside the TW5 VM (per-camera tick
+domains), and outside the TW5 VM (warm slots accumulating but not painting).
+As above, so below.
+
+### Multi-Camera Example
+
+```
+VM Slot (one TW5 wiki)
+├── Story River camera
+│   ├── fake DOM: window.document
+│   ├── root filter: $:/StoryList contents
+│   ├── IslandAccumulator (tickMs=0, rAF ~60fps)
+│   └── wiki.addEventListener("change", storyWidget.refresh)
+│
+├── TLDraw Canvas camera
+│   ├── fake DOM: OffscreenCanvas / custom doc
+│   ├── root filter: [tag[lar:///ha.ka.ba/tags/kumu-device]]
+│   ├── IslandAccumulator (tickMs=16, ~60fps setInterval)
+│   └── wiki.addEventListener("change", canvasWidget.refresh)
+│
+└── Mini-map camera
+    ├── fake DOM: own fake doc → rendered to <canvas>
+    ├── root filter: [all[tiddlers]tag[lar:///ha.ka.ba/tags/spatial]]
+    ├── IslandAccumulator (tickMs=200, 5fps — background priority)
+    └── wiki.addEventListener("change", minimapWidget.refresh)
+```
+
+**Configurable refresh rates + input priority:**
+Lower `tickMs` = higher render priority.
+Cameras that accept user input (typing, drawing) register outbound handlers
+(`saveTiddler`, `dispatchEvent`) on their widget tree.
+Input from any camera writes back through `IslandAdaptor.saveTiddler` →
+`store.put()` — the same outbound path used by the Story River today.
 
 ## Visibility Gate — The Scale Boundary
 
@@ -106,22 +155,34 @@ and flush on the next explicit navigation event.
 This gate does not apply in early alpha.
 It names the correct scale boundary before the project reaches it.
 
-## Wiring Law — One IslandAccumulator per Bag per VM Slot
+## Wiring Law — One IslandAccumulator per Camera per VM Slot
 
-```
+```typescript
 store.addProjection(adaptor);        // IslandAdaptor: pre-sync buffer + non-CRDT
 store.addProjection(accumulator);    // IslandAccumulator: post-sync crdt-remote
 
-// browser:
-tw5.startRenderLoop(adaptor, accumulators, budget)
+// Each camera registers its widget tree's refresh handler:
+wiki.addEventListener("change", storyRiverWidget.refresh.bind(storyRiverWidget));
+wiki.addEventListener("change", tlDrawWidget.refresh.bind(tlDrawWidget));
 
-// node:
-setInterval(() => adaptor.flushAll(accumulators, budget), 16)
+// browser — multi-camera:
+tw5.startRenderLoop(
+  [
+    { accumulator: storyAcc,  tickMs: 0,   budget: 200 },  // rAF ~60fps
+    { accumulator: canvasAcc, tickMs: 16,  budget: 200 },  // setInterval ~60fps
+    { accumulator: mapAcc,    tickMs: 200, budget: 50  },  // 5fps background
+  ],
+  adaptor,
+)
+
+// node — single interval driver:
+setInterval(() => adaptor.flushAll([accumulator], 200), 16)
 ```
 
-`accumulators` is ordered by recipe bag priority (core → canon → wiki → user → session).
-`flushAll` drains in priority order, stops when `budget` patches consumed,
-carries remainder to the next tick.
+Each camera's `IslandAccumulator.drain()` fires into `wiki.transact()`.
+The wiki fires `change` once per transact.
+All registered widget trees see the event; only those with dependencies on changed
+tiddlers repaint. Others return from `refresh()` in O(1).
 
 ## Tick Sources by Platform
 

@@ -89,10 +89,24 @@ class IslandAccumulator implements MemeProjection {
 ## Camera Projection
 
 Each camera (Story River, TLDraw canvas, mobile view, etc.) that renders from the
-same bag stack MAY hold its own `IslandAccumulator` instance.
-Each accumulator drains independently at its own camera's tick rate.
+same bag stack SHOULD hold its own `IslandAccumulator` instance.
+Each accumulator drains at its own camera's tick rate via `drain(budget)`.
 All accumulators receive the same CRDT patches from `MemeProvider`.
 Cameras see the same causal-ordered state; their frame rates differ.
+
+**Inverted control:** the accumulator does not know about cameras.
+It drains into the wiki via `wiki.transact()`.
+The wiki fires `change`.
+Each camera's widget tree (registered via `wiki.addEventListener`) reacts.
+Widget trees with no dependency on the changed tiddlers return in O(1) — no repaint.
+
+**The view frustum** lives in the widget tree's root filter tiddler, not in the accumulator.
+
+**Input + output:** cameras that accept user input wire outbound handlers
+(`saveTiddler`, `dispatchEvent`) on their widget tree back through `IslandAdaptor`.
+The accumulator carries no identity for this path.
+
+See: `lar:///ha.ka.ba/@lares/docs/lararium/verse-mesh` — Multi-Camera Example.
 
 <<~&#x0002;>>
 
