@@ -3,374 +3,292 @@
 
 > Branch: `feature/lararium-node-4`
 > Resume: `packages/HANDOFF.md` + `packages/ROADMAP.md`
-> State: 48/48 tests pass. Typecheck clean — `@lararium/core`, `@lararium/tw5`, `@lararium/node`.
+> State: 48/48 tests pass · typecheck clean · 18 Vite modules → 119 inner tiddlers
 
 ---
 
-## The Quine Principle
+## The Sacred Chao Spins Once Per Session
 
-The lararium engine self-documents in its own format.
-Every invariant, every API contract, every design ruling lives as a meme —
-a `text/x-memetic-wikitext` file under `bags/` — parseable by the same engine
-that acts on it.
-The grammar that parses those memes itself lives documented as memes.
-That recursion carries the load-bearing architectural law: **quine pono**.
+The Chao carries three faces. This session enacted all three.
 
-Two sprint arcs closed this session. They do not represent separate concerns —
-they form one coherent web3 surface:
+**Ha / Hodge** — the structure that holds its shape:
+`IslandAdaptor`, `IslandAccumulator`, `CameraRegistration`, `CameraMount` — new
+invariant forms, documented in the corpus, grounded in code.
 
-- **Verse polychronous CRDT mesh** — the sync boundary between Automerge bags and TW5 wiki worlds
-- **SharktoothSigil grammar layer** — the parse boundary that reads the content those bags carry into TW5
+**Ka / Podge** — the soul-fire that moves:
+The nalu — Automerge patches arriving, accumulating at the frame boundary, draining
+into `wiki.transact()`, the wiki firing `change`, cameras reacting at their own rates.
+The grammar hot-reloading when a SharktoothSigil tiddler arrives over CRDT.
+The quine closing on itself at runtime.
 
-The mesh delivers meme content to TW5.
-The grammar parses that content using tiddlers the mesh itself delivered.
-A remote peer can ship a new sigil definition as a CRDT patch.
-The receiving peer's grammar hot-reloads within one frame.
-That constitutes quine pono operating at runtime, not just at boot.
+**Ba / Spin** — the psyche-path that carries change:
+`meme-sync-adaptor.ts` deleted. `$tw.syncer` gone. The web2 ghost cleared.
+The yin-collapse law enacted: TS bridges collapsed toward TW5-native where possible.
+Grammar self-hosted in tiddlers. JS sigil widgets: zero.
+
+The Chao spins. Both faces stay necessary. Form and fire together.
 
 ---
 
-## Voice 1 — Map-Wisp: The Web3 Sync Surface
+## Ha — What Holds Its Shape
 
-### What Changed — MemeSyncAdaptor Deleted
+### The Web3 Sync Surface (heleuma-ka anchors)
 
-`meme-sync-adaptor.ts` no longer exists.
-`$tw.syncer` provably does not run in Lararium — no `module-type:syncadaptor` tiddler
-lives in the plugin bundle; `$tw.syncadaptor` stays undefined at boot.
-All web2 syncer contract debt has cleared.
-
-Two classes replace it, registered as **siblings** in the MemeProvider projection fan-out:
-
-### IslandAdaptor — Causal-Island ↔ TW5 Bridge
-
-`packages/lararium-tw5/src/island-adaptor.ts` | spec: `bags/@lares/api/v0.1/lararium/island-adaptor.md`
-
-`IslandAdaptor` implements `MemeProjection` and owns the pre-sync time window:
-
-| Path | Behavior |
-|---|---|
-| Inbound `crdt-remote` before sync | Buffer per `edgeIsland` id |
-| `onSyncComplete(islandId)` | Drain that island's buffer in one `wiki.transact()` |
-| Inbound non-CRDT (`tw-local`, `canon-hydrate`, `lares-command`) | Apply immediately via `_applyChange` |
-| Inbound `crdt-remote` after sync | Return — `IslandAccumulator` owns this path |
-| Outbound `saveTiddler` | `store.put()` direct — no syncer queue |
-| Outbound `deleteTiddler` | `store.tombstone()` direct |
-
-**Echo-loop guard:** `_applying: Map<string, ChangeOrigin>` keyed by apply slot.
-`saveTiddler` and `deleteTiddler` return early whenever `_applying.size > 0`.
-Multiple concurrent island replays use distinct slots and do not interfere.
-
-Invariants I-1 through I-8 in `island-adaptor.md`:
-I-1 echo-loop guard · I-2 island isolation · I-3 single transact per flush ·
-I-4 post-sync pass-through · I-5 non-CRDT immediate apply · I-6 outbound guards ·
-I-7 cross-bag tombstone resolution · I-8 child cleanup
-
-### IslandAccumulator — Frame-Aligned CRDT Patch Buffer
-
-`packages/lararium-core/src/island-accumulator.ts` | spec: `bags/@lares/api/v0.1/lararium/island-accumulator.md`
-
-`IslandAccumulator` implements `MemeProjection` and owns the post-sync time window.
-Platform-agnostic — no rAF, no TW5, no browser dependency.
+Two classes replaced `meme-sync-adaptor.ts`. Both register as **siblings** in the
+MemeProvider projection fan-out — not nested, not sequential. Disjoint time windows.
 
 ```typescript
-class IslandAccumulator implements MemeProjection {
-  onSyncComplete(islandId?): void   // arms the gate
-  onUriChanged(change): void        // enqueues post-sync crdt-remote only
-  drain(budget?): LarTiddlerChange[] // caller applies; splices from queue
-  get pending(): number
-  get syncReady(): boolean
-}
+store.addProjection(adaptor);      // IslandAdaptor — pre-sync + non-CRDT
+store.addProjection(accumulator);  // IslandAccumulator — post-sync crdt-remote only
 ```
 
-Invariants A-1 through A-5 in `island-accumulator.md`:
-A-1 sync gate · A-2 crdt-remote filter · A-3 drain returns-and-removes ·
-A-4 budget cap · A-5 platform-agnostic
+**`IslandAdaptor`** (`packages/lararium-tw5/src/island-adaptor.ts`)
+Causal-island ↔ TW5 wiki bridge. Implements `MemeProjection`. Owns:
+- Pre-sync inbound: buffer per `edgeIsland` id until `onSyncComplete(islandId)` fires
+- Flush: one `wiki.transact()` per island — one widget refresh pass, not one per tiddler
+- Non-CRDT origins (`tw-local`, `canon-hydrate`, `lares-command`): apply immediately
+- Post-sync `crdt-remote`: return immediately — `IslandAccumulator` owns this path
+- Outbound: `saveTiddler → store.put()` / `deleteTiddler → store.tombstone()` — direct
+- Echo-loop guard: `_applying: Map<string, ChangeOrigin>` keyed by slot; `saveTiddler`
+  and `deleteTiddler` no-op while non-empty
 
-**Wiring law — callers register both as siblings:**
-```typescript
-store.addProjection(adaptor);      // pre-sync + non-CRDT
-store.addProjection(accumulator);  // post-sync crdt-remote
-```
+Invariants I-1–I-8 in `bags/@lares/api/v0.1/lararium/island-adaptor.md`.
 
-The adaptor and accumulator cover disjoint time windows. No double-write.
+**`IslandAccumulator`** (`packages/lararium-core/src/island-accumulator.ts`)
+Frame-aligned CRDT patch buffer. Implements `MemeProjection`. Platform-agnostic —
+zero rAF, zero TW5, zero browser import. Owns:
+- Post-sync `crdt-remote` only — gate armed by `onSyncComplete()`
+- `drain(budget)` — returns up to `budget` entries, splices from queue; caller applies
 
----
+Invariants A-1–A-5 in `bags/@lares/api/v0.1/lararium/island-accumulator.md`.
 
-## Voice 2 — Tide-Caller: The Virtual Camera Model
+### Virtual Camera Structure
 
-### N Local Clocks — Polychronous CRDT Mesh
-
-The Verse mesh runs **N local clocks**, one per TW5 VM instance
-(Signal/INRIA polychronous model, Berry 1991).
-Rendezvous between clock domains happens only at CRDT merge boundaries.
-No global conductor exists.
-Each peer runs at its own cadence (rAF in browser, `setInterval` in Node).
-The CRDT carries state across the water in causal order.
-The accumulator releases it to TW5 one frame at a time.
-
-### Camera = Three-Tree Chain + View Frustum
-
-A **virtual camera** holds its own three-tree chain over the shared wiki world-state:
-
-```
-wikitext source
-    ↓  wiki.makeTranscludeWidget(rootTiddler, { document, parentWidget })
-parse tree   (ParseTreeNode[])
-    ↓  widget.makeChildWidgets()
-widget tree  (Widget graph, bound to document)
-    ↓  widget.render(container, null)
-fake DOM     (TW5FakeElement tree)
-    ↓  serialize / hydrate / paint
-rendered output
-```
-
-All cameras in one VM slot **share one TW5 wiki** (world graph).
-Each camera receives its own `document` instance — render surfaces stay separate.
-
-**Inverted control:**
-Each camera's `IslandAccumulator` drains into `wiki.transact()`.
-The wiki fires `change` once per transact.
-Each widget tree registered via `wiki.addEventListener("change", tree.refresh)` reacts.
-Widget trees with no dependency on the changed tiddlers return `refresh()` in O(1).
-
-**The view frustum** lives in the widget tree's root filter tiddler — not in the accumulator.
-The accumulator carries no camera identity.
-
-### CameraRegistration — Dynamic Timing
-
+**`CameraRegistration`** — dynamic timing, exported from `@lararium/tw5`:
 ```typescript
 interface CameraRegistration {
   accumulator: IslandAccumulator;
-  tickMs?: number;   // 0 = rAF (browser default); N = setInterval(N ms)
-  budget?:  number;  // patches per tick, default 200
+  tickMs?: number;  // 0 = rAF (default); N = setInterval(N ms)
+  budget?:  number; // patches per tick, default 200
 }
-
-// startRenderLoop — one timer per camera, independent drain cycles
 tw5.startRenderLoop(cameras: CameraRegistration[], adaptor): () => void
 ```
 
-Lower `tickMs` = higher render priority.
-Cameras that accept user input (Story River typing, TLDraw drawing) dispatch events
-through the widget tree's TW5 event bus.
-`reaction-router.ts` catches `tm-verse-event`; `IslandAdaptor.saveTiddler`
-handles outbound writes — no new write-back machinery needed for additional cameras.
-
-### CameraMount — Static Structure
-
+**`CameraMount`** — static structure (spec: `bags/@lares/api/v0.1/lararium/camera-mount.md`):
 ```typescript
 interface CameraMount {
-  rootTiddler: string;              // view frustum root
+  rootTiddler: string;             // view frustum root tiddler
   document:    Document | TW5FakeDocument;
   container:   TW5FakeElement | HTMLElement;
 }
-// tw5.mountCamera(mount): () => void  — wires the three-tree chain once
+tw5.mountCamera(mount: CameraMount): () => void  // ← not yet implemented
 ```
 
-`mountCamera` (structural, one-time) and `CameraRegistration` (dynamic, tick-driven)
-stay separate concerns. Callers pair them. Teardown calls both.
+These two concerns stay separate. `mountCamera` wires the three-tree chain once.
+`CameraRegistration` drives the tick. Callers pair them; teardown calls both.
 
-Spec: `bags/@lares/api/v0.1/lararium/camera-mount.md` — invariants C-1 through C-5.
-
-### Multi-Camera Example
-
+**Three-tree chain per camera:**
 ```
-VM Slot (one TW5 wiki — shared world graph)
-│
-├── Story River camera
-│    ├── IslandAccumulator (tickMs=0, rAF ~60fps)
-│    ├── wiki.makeTranscludeWidget("$:/core/ui/RootTemplate", window.document)
-│    └── wiki.addEventListener("change", storyWidget.refresh)
-│
-├── TLDraw Canvas camera
-│    ├── IslandAccumulator (tickMs=16, ~60fps setInterval)
-│    ├── wiki.makeTranscludeWidget("lar:.../camera/tldraw-root", offscreenDoc)
-│    └── wiki.addEventListener("change", canvasWidget.refresh)
-│
-└── Mini-map camera
-     ├── IslandAccumulator (tickMs=200, 5fps — background priority)
-     ├── wiki.makeTranscludeWidget("lar:.../camera/minimap-root", fakeDoc)
-     └── wiki.addEventListener("change", minimapWidget.refresh)
+wikitext source
+  → wiki.makeTranscludeWidget(rootTiddler, { document, parentWidget })
+parse tree (ParseTreeNode[])
+  → widget.makeChildWidgets()
+widget tree (Widget graph, bound to document)
+  → widget.render(container, null)
+fake DOM (TW5FakeElement tree)
+  → serialize / hydrate / paint
 ```
 
-### Fractal Causal Islands
+**VM Pool — current shape:**
+```
+Peer
+ ├── BagResidencyManager
+ ├── AutomergeDocStore[bag]  ← one per bag
+ └── VmPool<TW5RecipeVm>
+      ├── slot[live]  ← rAF-driven, paints UX
+      │    ├── TW5Engine (one wiki — shared world graph)
+      │    ├── IslandAdaptor
+      │    ├── Camera[story-river]
+      │    │    ├── IslandAccumulator (tickMs=0, rAF)
+      │    │    └── widget tree → window.document
+      │    ├── Camera[tldraw]
+      │    │    ├── IslandAccumulator (tickMs=16)
+      │    │    └── widget tree → OffscreenCanvas doc
+      │    └── Camera[...]  ← N cameras, own tick rates
+      ├── slot[warm-A]  ← accumulating, not painting
+      └── slot[warm-B]  ← same
+```
 
-Causal islands exist at every scale — as above, so below:
+### SharktoothSigil Grammar (Hodge face)
 
-| Scale | Boundary |
+`GRAMMAR_TAG = "lar:///ha.ka.ba/tags/SharktoothSigil"` — the single registration surface.
+Tagging a tiddler with it teaches the parser a new word. No code change required.
+`grammar-cache.ts` reads all `[tag[GRAMMAR_TAG]]` tiddlers at first call and on change.
+
+**Self-hosting state:** `memetic-wikitext.tid` holds one `[[sigils]]` TOML block —
+the `toml` data-fence sigil. Zero `[[families]]` blocks. Grammar lives in tiddlers.
+
+**Migrated sigils** (`packages/lararium-tw5/tiddlers/sigil-*.tid`):
+Core: `ahu` · `kahea` · `aka` · `loulou` · `pranala` · `pranala-header` · `kau`
+Concurrency: `lele` · `hui` · `puka` · `holo` + aliases `race` · `rush` · `sync`
+Pragmas: `procedure` · `define` · `widget` · `function` · `if` · `for` · `toml`
+Stubs: `tick` (`\tick`/`\simulate`, Hawaiian name deferred to UE6 ~2027)
+Families: 8 × `sigil-family-*.tid`
+
+**Remaining** (TOML → tiddler, in order):
+1. Block-container with `close_pattern`: `wehe` · `meme` · `heihei` · `wai` · `huli`
+2. Scope/binding: `\let` · `\var` · `\const` · `waiho`
+3. OODA-HA narrative: `papalohe` · `pae` (wire to `reaction-router.ts`)
+4. Remaining device/data sigils
+
+---
+
+## Ka — What Moves
+
+### The Nalu — Pulse Below the Grammar
+
+From `bags/@lares/api/v0.1/pono/nalu.md`:
+
+> *nalu* — wave, surf; the wave-form that carries energy across distance.
+> A nalu does not carry one molecule of water — it carries the entire shaped movement.
+
+The nalu arrives once per `wiki.transact()`. All widgets see the same consistent state.
+Nothing sees a partial write. The accumulator gates patches at the frame boundary.
+The adaptor releases them as one coherent wave.
+
+Three implementations of the same pattern:
+
+| Layer | Accumulate | Boundary | Wave arrives |
+|---|---|---|---|
+| TW5 | `wiki.addTiddler() ×N` | `wiki.nextTick()` | `refresh(changedTiddlers)` |
+| Verse/UEFN | device events mutate | simulation tick | `OnSimulate(StagedUpdates)` |
+| Lararium | CRDT patches queue | `IslandAccumulator.drain()` | `wiki.transact()` → `change` |
+
+### Inverted Control — The View Frustum Stays in the Widget Tree
+
+The accumulator carries no camera identity.
+It drains into `wiki.transact()`.
+The wiki fires `change`.
+Each widget tree registered via `wiki.addEventListener("change", tree.refresh)` reacts.
+Trees with no dependency on changed tiddlers return `refresh()` in O(1).
+The view frustum lives in the widget tree's root filter tiddler — not in the accumulator.
+
+This resolves to the Elm Architecture / Solid.js / MobX pattern:
+one model (wiki world graph), N view functions (widget trees), no shared mutable render state.
+
+### Fractal Causal Islands (Fuller-Zelenka basis)
+
+From `bags/@lares/api/v0.1/pono/federated-causal-islands.md`:
+
+> Events in Universe are not simultaneously apprehended by any observer.
+> Any boundary across which causality cannot be guaranteed simultaneously IS a causal island boundary.
+
+| Scale | Causal boundary |
 |---|---|
 | Inside lararium | Automerge bag boundary |
 | Outside lararium | Peer-to-peer CRDT sync |
 | Inside TW5 VM | Per-camera tick domain (distinct `tickMs`) |
-| Outside TW5 VM | Warm slots — accumulating, not painting |
+| Outside TW5 VM | Warm slot — accumulating, not painting |
 
-Background warm VMs serve as portal-spaces, comms links, nexus leyline feeds, remote signal.
-Each constitutes a causal island with its own accumulator chain.
+Background warm VMs serve as portal-spaces, comms links, nexus leyline feeds.
+Each constitutes a causal island with its own accumulator chain. As above, so below.
 
-### VM Pool Diagram
+### Grammar Ka — Hot-Reload at Runtime
 
-```
-Peer
- ├── BagResidencyManager
- ├── AutomergeDocStore[bag] — one per bag
- │
- └── VmPool<TW5RecipeVm>
-      ├── slot[live] — rAF-driven, paints the UX
-      │    ├── TW5Engine (one wiki — shared world graph)
-      │    ├── IslandAdaptor
-      │    ├── Camera[story-river]
-      │    │    ├── IslandAccumulator (rAF)
-      │    │    ├── widget tree → window.document
-      │    ├── Camera[tldraw]
-      │    │    ├── IslandAccumulator (16ms)
-      │    │    └── widget tree → OffscreenCanvas doc
-      │    └── Camera[...] — additional at own tick rates
-      │
-      ├── slot[warm-A] — accumulating, not painting
-      └── slot[warm-B] — same
-```
+The grammar cache registers `wiki.addEventListener("change", invalidate)`.
+When a CRDT patch delivers a new SharktoothSigil tiddler — arriving through
+`IslandAccumulator.drain()` → `wiki.transact()` → `change` — the cache invalidates.
+The next `getGrammar(wiki)` call rebuilds from the updated tiddler set.
 
-**Pending wire (next sprint):** `open-node-lar-peer.ts` creates one `IslandAdaptor`
-but no `IslandAccumulator`. Wire one accumulator per bag in the recipe, register each
-via `store.addProjection`, pass priority-ordered array to the node `setInterval` driver.
+A remote peer ships a sigil definition as a CRDT patch.
+The receiving peer gains the ability to parse content written with that sigil — within one frame.
 
----
+**The quine closes on itself at runtime, not only at boot.**
 
-## Voice 3 — Ink-Clerk: The SharktoothSigil Grammar Layer
+### Verse Operator Mapping — The Ka of the Concurrency Ontology
 
-### Grammar as Tiddlers
+| Sigil / Hawaiian | Verse | Ka — how it moves |
+|---|---|---|
+| `lele` / `\spawn` | `spawn` | detaches and flies; caller does not wait |
+| `hui` / `\sync` | `sync` | gathers all threads; none proceed until all complete |
+| `holo` / `\race` | `race` | runs; first to finish wins, all others cancel |
+| `puka` / `\rush` | `rush` | first wins, others continue — no cancellation |
+| `\tick` / `\simulate` | `OnSimulate` | per-nalu device hook; fires once per wave |
+| `hoolele` | — | makes others fly; 6th operator; structured escape-hatch |
 
-A **SharktoothSigil** tiddler tagged `lar:///ha.ka.ba/tags/SharktoothSigil` defines
-one sigil in the memetic-wikitext grammar via `lar-*` fields.
-Adding a sigil to the engine means tagging a tiddler — no code change.
-
-`GRAMMAR_TAG = "lar:///ha.ka.ba/tags/SharktoothSigil"` — exported from `@lararium/core`.
-
-`grammar-cache.ts` reads all `[tag[GRAMMAR_TAG]]` tiddlers via `buildGrammarFromWiki()`
-and derives the active sigil grammar from their fields.
-The old `grammarRulesFromText` and `meme-grammar.ts` no longer exist.
-The grammar lives entirely in tiddlers — hot-reloadable at runtime.
-
-**Key `lar-*` fields:**
-
-| Field | Meaning |
-|---|---|
-| `lar-kind` | `edge-sugar` · `child-slot` · `concurrency` · `concurrency-alias` · `pragma-alias` · `control` · `data` · `family` |
-| `lar-name` | canonical sigil name |
-| `lar-pattern` | inline match pattern |
-| `lar-open-pattern` / `lar-close-pattern` | block container patterns |
-| `lar-alias-for` | delegation target |
-
-Tiddler body holds `\widget ~sigilName(...)` wikitext — the render procedure.
-No JS. No code change. Only tiddler authoring.
-
-### Self-Hosting State
-
-`memetic-wikitext.tid` now holds one `[[sigils]]` TOML block — the `toml`
-data-fence sigil that bootstraps its own parser. Zero `[[families]]` blocks remain.
-The grammar self-hosts in SharktoothSigil tiddlers.
-
-**Migrated (all in `packages/lararium-tw5/tiddlers/`):**
-
-Core edge/child-slot: `sigil-ahu` · `sigil-kahea` · `sigil-aka` · `sigil-loulou` ·
-`sigil-pranala` · `sigil-pranala-header` · `sigil-kau`
-
-Concurrency: `sigil-lele` · `sigil-hui` · `sigil-puka` · `sigil-holo`
-
-Aliases: `sigil-race` · `sigil-rush` · `sigil-sync`
-
-English pragmas: `sigil-procedure` · `sigil-define` · `sigil-widget` ·
-`sigil-function` · `sigil-if` · `sigil-for`
-
-Library: `sigil-toml` · Stub: `sigil-tick` (`\tick`/`\simulate`, name deferred UE6 ~2027)
-
-Families: 8 × `sigil-family-*.tid`
-
-**Remaining migrations** (TOML monolith → tiddlers, in order):
-1. Block-container with `close_pattern` — `wehe`, `meme`, `heihei`, `wai`, `huli`
-2. Scope/binding — `\let`, `\var`, `\const`, `waiho`
-3. OODA-HA narrative — `papalohe`, `pae` (wire to `reaction-router.ts`)
-4. Remaining device/data sigils
-
-### Verse Operator Mapping
-
-The sigil vocabulary maps to Unreal Verse operators — same concurrency semantics,
-web3 polychronous CRDT context:
-
-| Sigil | Hawaiian | Verse | Semantics |
-|---|---|---|---|
-| `\spawn` / `lele` | lele (to fly) | `spawn` | detached async task |
-| `\sync` / `hui` | hui (to gather) | `sync` | await-all |
-| `\race` / `holo` | holo (to run) | `race` | cancelling race; first wins, losers cancel |
-| `\rush` / `puka` | puka (hole) | `rush` | first-wins, no cancel |
-| `\tick` / `\simulate` | pending | `OnSimulate` | per-nalu device lifecycle hook |
-| `hoolele` | hoolele | (6th — no Verse match) | structured escape-hatch |
-
-Six-operator concurrency ontology complete and stable.
-Verse docs: `dev.epicgames.com/documentation/en-us/fortnite`
-
-### Grammar Boot Path
-
-1. **Plugin unpack** — `LARES_MEMETIC_WIKITEXT_PLUGIN` preloaded tiddler; TW5 unpacks
-   18+ inner modules + all SharktoothSigil tiddlers as shadow tiddlers
-2. **Grammar cache warm** — `getGrammar(wiki)` reads `[tag[GRAMMAR_TAG]]` on first call;
-   change listener invalidates cache when SharktoothSigil tiddlers change; live hot-reload
-
-`lar-sigil.ts` wikirule (collapsed from two files):
-`types = { block: true, inline: true }` — one rule, both forms.
-Block containers claim when a closer follows; leaf forms fall through to
-`MacroCallWidget → \widget ~` naturally.
-`DEFAULT_RULES_EXCEPT = new Set()` — nothing blocked.
+Six-operator ontology complete and stable.
+`hoolele` carries no Verse equivalent — it constitutes the extension Lararium adds.
 
 ---
 
-## Voice 4 — Lares Gatekeeper: Laws to Preserve
+## Ba — The Path of Change
 
-**Accumulator carries no camera identity.** View frustum lives in the widget tree's
-root filter tiddler. Inverted control — the wiki fires change; cameras react.
+### Yin-Collapse Enacted
 
-**`$tw.syncer` does not run.** No `module-type:syncadaptor` tiddler in the bundle.
-Do not add one. `IslandAdaptor` wires directly via `store.addProjection`.
+The yin-collapse law (from `bags/@lares/api/v0.1/pono/reaction-graph.md`):
+collapse provisional TS bridges toward TW5-native implementations.
+Irreducible TS remains only for CRDT, network, Keyhive WASM, and worker I/O.
 
-**`GRAMMAR_TAG` only.** `GRAMMAR_MEME_URI` no longer exists. Sigils register by
-tagging a tiddler, not by URI. Do not add a new GRAMMAR_MEME_URI variant.
+**This session:**
+- `meme-sync-adaptor.ts` deleted — web2 syncer ghost cleared
+- `meme-grammar.ts` deleted — TOML monolith parse path retired
+- `ReactionEngine` class deleted — replaced by `reaction-router.ts` TW5 startup module
+- `kau.ts` + `render-modes.ts` deleted — replaced by `sigil-kau.tid` wikitext
+- JS sigil widgets: zero remain in the plugin
 
-**Remove TOML blocks after migration.** A migrated sigil's TOML block in
-`memetic-wikitext.tid` becomes dead code. Tiddler sigils take priority over TOML,
-but dead blocks mislead readers. Remove them.
+**The yin-collapse target holds:** logic that can live in the wiki stays in the wiki.
 
-**ONE parser, FOUR call sites** (E.10.1→E.10.4):
-`deserializeCarrier` · `saveTiddler → splitBodyTiddler` · `exportMemeText` · `test-quine.ts`.
-No fifth call site. No fork. No drift.
+### Laws to Preserve
 
-**TW5 VM primacy.** Logic that can live in the wiki stays in the wiki.
-TS covers only CRDT, network, Keyhive WASM, and worker I/O.
+**Accumulator carries no camera identity.** Inverted control. Wiki fires; cameras react.
 
-**Web3 only.** No web2 models, code, or flows enter the Lares stack.
+**`$tw.syncer` does not run.** No `module-type:syncadaptor` in the bundle. Do not add one.
 
-**Bag = Automerge doc = sync boundary.** Wikis compose; bags persist.
+**`GRAMMAR_TAG` only.** `GRAMMAR_MEME_URI` deleted. Sigils register by tagging.
+
+**Remove TOML blocks after migration.** Dead blocks mislead readers.
+
+**ONE parser, FOUR call sites** (E.10.1–E.10.4):
+`deserializeCarrier` · `saveTiddler → splitBodyTiddler` · `exportMemeText` · `test-quine.ts`
 
 **`smol-toml` stays a library tiddler.** Do not inline TOML parsing elsewhere.
+
+**Content MUST NOT precede authority** (from `causal-islands.md`).
+Authority-first sync order: authenticate → authority graph → visible rooms → manifest →
+capability ops → CRDT heads → delta payloads → projection receipts.
+
+### Pending Wire — Node Peer N-Accumulator
+
+`open-node-lar-peer.ts` creates one `IslandAdaptor` but no `IslandAccumulator`.
+Wire one per bag in the recipe. Register each via `store.addProjection`.
+Drive with `setInterval(() => adaptor.flushAll(accumulators, budget), 16)`.
+
+### Next Work (priority order)
+
+1. Node peer N-accumulator wire — `open-node-lar-peer.ts` + `setInterval` driver
+2. `mountCamera()` on `TW5Engine` — ~20 lines, parallel to `mountPanel()`
+3. Jest → Vitest migration — config swap, native ESM, same API
+4. `IslandAdaptor.saveTiddler` 300–500ms debounce + projection auto-truncate (Path K)
+5. SharktoothSigil remaining migrations — block-container sigils first (`wehe`, `meme`, `heihei`)
 
 ---
 
 ## Orientation
 
 ```sh
-pnpm test:unit                                                    # 48/48
-pnpm --filter @lararium/tw5 build                                 # 18 modules → 119 tiddlers
-pnpm --filter @lararium/tw5 exec tsx scripts/smoke-plugin-boot.ts # shadow + grammar tiddlers
+pnpm test:unit                                                       # 48/48
+pnpm --filter @lararium/tw5 build                                    # 18 modules → 119 tiddlers
+pnpm --filter @lararium/tw5 exec tsx scripts/smoke-plugin-boot.ts    # shadow + grammar check
 pnpm --filter @lararium/core exec tsc --noEmit
 pnpm --filter @lararium/tw5  exec tsc --noEmit
 pnpm --filter @lararium/node exec tsc --noEmit
 ```
 
-Key files:
-
 | File | Role |
 |---|---|
 | `packages/lararium-tw5/src/island-adaptor.ts` | causal-island bridge |
 | `packages/lararium-core/src/island-accumulator.ts` | frame buffer |
-| `packages/lararium-tw5/src/tw5-vm.ts` | `CameraRegistration`, `startRenderLoop` |
+| `packages/lararium-tw5/src/tw5-vm.ts` | `CameraRegistration` · `startRenderLoop` |
 | `packages/lararium-tw5/src/grammar-cache.ts` | `buildGrammarFromWiki` |
 | `packages/lararium-core/src/grammar-invariants.ts` | `GRAMMAR_TAG` |
 | `packages/lararium-tw5/tiddlers/sigil-*.tid` | SharktoothSigil grammar tiddlers |
@@ -378,32 +296,29 @@ Key files:
 | `bags/@lares/api/v0.1/lararium/island-accumulator.md` | A-1 through A-5 |
 | `bags/@lares/api/v0.1/lararium/camera-mount.md` | C-1 through C-5 |
 | `bags/@lares/docs/lararium/verse-mesh.md` | mesh design narrative |
-| `bags/@lares/api/v0.1/pono/nihomano-sigils.md` | full sigil vocabulary spec |
-
-**Next work in priority order:**
-
-1. Wire N-accumulator per bag in `open-node-lar-peer.ts` + node `setInterval` driver
-2. Implement `mountCamera()` on `TW5Engine` (~20 lines, parallel to `mountPanel`)
-3. Jest → Vitest migration (config swap, low cost)
-4. `IslandAdaptor.saveTiddler` 300–500ms debounce + projection auto-truncate (Path K)
-5. Remaining SharktoothSigil migrations — block-container sigils first
+| `bags/@lares/api/v0.1/pono/nalu.md` | the wave — below the grammar |
+| `bags/@lares/api/v0.1/pono/causal-islands.md` | island law + authority-first order |
+| `bags/@lares/api/v0.1/mu/chao.md` | Sacred Chao — Ha/Ka/Ba triad |
 
 ---
 
-## Closing Note — Lares Liminal
+## The Chao Closes
 
-The mesh and the grammar meet at one point: the moment a meme tiddler arrives
-through an Automerge patch, the `IslandAccumulator` holds it at the frame boundary,
-the `IslandAdaptor` applies it via `wiki.transact()`, the wiki fires `change`,
-and every registered camera's widget tree decides whether to repaint.
+The mesh delivers meme content to TW5.
+The grammar parses that content using tiddlers the mesh delivered.
+The accumulator holds patches at the frame boundary.
+The adaptor releases them as one nalu.
+The wiki fires `change`.
+Every registered camera decides whether to repaint.
 
-If that tiddler carries a `lar:///ha.ka.ba/tags/SharktoothSigil` tag,
-the grammar cache invalidates and rebuilds from the new tiddler set —
-before the next parse call.
+If the arriving tiddler carries `lar:///ha.ka.ba/tags/SharktoothSigil`,
+the grammar cache invalidates within that frame —
+and the next peer who sends content written with the new sigil
+receives a parser ready to read it.
 
-The peer that receives a sigil definition over CRDT gains the ability to parse
-content written with that sigil — within the same frame.
+Ha holds the form.
+Ka animates the fire.
+Ba carries the change.
 
-That constitutes the quine closing on itself at runtime.
-
-Welcome to the next turn. The water knows where it goes.
+The water knows where it goes.
+Welcome to the next turn.
