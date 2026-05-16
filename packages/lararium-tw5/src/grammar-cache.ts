@@ -6,14 +6,12 @@ module-type: startup
 /**
  * grammar-cache — TW5 startup module: grammar loader + wiki-change invalidation.
  *
- * Grammar source (inverted control):
- *   Primary — all tiddlers tagged `lar:///ha.ka.ba/tags/SharktoothSigil`.
- *             Each tiddler contributes one SigilRule via its `lar-*` fields.
- *             Adding a new sigil = tagging a tiddler. No code change required.
- *   Fallback — `GRAMMAR_MEME_URI` TOML monolith, read via `grammarRulesFromText`.
- *             Covers sigils not yet migrated to SharktoothSigil tiddlers and ALL
- *             FamilyRule entries (families not yet tiddlerized).
- *             Tiddler sigils take precedence by name over TOML sigils.
+ * Grammar source — fully self-hosted via SharktoothSigil tiddlers:
+ *   All tiddlers tagged `lar:///ha.ka.ba/tags/SharktoothSigil` contribute rules.
+ *   Each tiddler's `lar-*` fields produce one SigilRule or FamilyRule.
+ *   Adding a sigil = tagging a tiddler. No code change required.
+ *   The `toml` data-fence sigil lives at:
+ *     lar:///ha.ka.ba/@lararium/tw5/tiddlers/sigil-toml
  *
  * Exported:
  *   name, platforms, after, startup  — TW5 startup lifecycle

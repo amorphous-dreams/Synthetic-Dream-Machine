@@ -1,6 +1,6 @@
 # Lares Handoff — Active Work Only
 
-> Updated: 2026-05-15 (turn 8)
+> Updated: 2026-05-15 (turn 9)
 > Branch: `feature/lararium-node-4`
 > Last sprint archive: `wikis/lares-history/last-sprint/`
 
@@ -23,8 +23,10 @@ deleted; \widget ~kau + template cascade in sigil-kau.tid; zero JS sigil widgets
 remain), AND the Verse ontology + yin-collapse architecture sprint (nalu.md,
 hoolele.md, verse-task-tree.md, verse-type-lattice.md; six-operator ontology
 complete; TW5 wiki declared primary reactive engine; one graph not two; fireSync
-gap documented; sigil-tick.tid stub registered) are treated as landed unless
-tests prove drift.
+gap documented; sigil-tick.tid stub registered), AND the grammar self-hosting
+completion sprint (smol-toml as TW5 library tiddler; sigil-toml SharktoothSigil
+tiddler; meme-grammar.ts deleted; GRAMMAR_TAG exported from @lararium/core;
+grammarRulesFromText fully retired) are treated as landed unless tests prove drift.
 
 Next work, in order:
 0. Test infra — migrate Jest → Vitest (all three packages). Jest needs
@@ -40,6 +42,48 @@ Rules: preserve TW5 VM primacy, bag=Automerge-doc=sync-boundary, no HTTP/RPC
 coordination surface, and explicit operator promotion for canon. Web3 only —
 no web2 models/code/flows in Lares stack.
 ```
+
+## What Changed This Turn (2026-05-15 turn 9)
+
+### Grammar Self-Hosting Completion — Cut 4 + smol-toml Library Tiddler + YIN Cleanup
+
+**Grammar self-hosting now fully complete.** `grammarRulesFromText` and the TOML
+monolith parse path retired in full. `GRAMMAR_TAG` as the single registration surface.
+
+**New:**
+- `packages/lararium-tw5/src/lib-smol-toml.ts` — smol-toml bundled once as a
+  TW5 `module-type: library` tiddler at `lar:///ha.ka.ba/@lararium/tw5/lib/smol-toml`.
+  All other plugin modules externalize it via `require()` — zero per-module duplication.
+- `packages/lararium-tw5/tiddlers/sigil-toml.tid` — `toml` data-fence sigil as a
+  SharktoothSigil tiddler (`lar-kind: data`, `lar-name: toml`). The `[[sigils]]`
+  TOML block in `memetic-wikitext.tid` removed; sigil-toml.tid replaces it.
+- `bags/@lararium/tw5/lib-smol-toml.md` — bag anchor meme at the library tiddler URI.
+
+**Modified:**
+- `packages/lararium-tw5/plugin-build/vite-plugin-build.ts` — smol-toml
+  externalized for all modules except `lib-smol-toml` itself; `output.paths` maps
+  `smol-toml` → `lar:///ha.ka.ba/@lararium/tw5/lib/smol-toml`.
+- `packages/lararium-tw5/tiddlers/memetic-wikitext.tid` — `[[sigils]]` toml block
+  removed; ahu #sigil-registry description updated to note SharktoothSigil migration.
+- `packages/lararium-tw5/src/grammar-cache.ts` — docstring rewritten; TOML fallback
+  merge block removed entirely; `buildGrammarFromWiki` tiddler-only path is the only path.
+- `packages/lararium-core/src/grammar-invariants.ts` — full rewrite; `GRAMMAR_MEME_URI`
+  and `GrammarVersionGate` removed; `GRAMMAR_TAG` exported; 6 SharktoothSigil invariants.
+- `packages/lararium-core/src/index.ts` — `meme-grammar.js` re-export removed.
+- `packages/lararium-node/scripts/test-quine.ts` — steps 5+6 rewritten to assert
+  `[tag[GRAMMAR_TAG]]` tiddlers present + required sigil names via `lar-name` field.
+- `packages/lararium-node/tests/node-host.test.ts` — `grammarRulesFromText` tests
+  and `GRAMMAR_FIXTURE` const deleted; import cleaned.
+- `packages/lararium-node/src/node-host.ts` — stale deprecated comment removed.
+
+**Deleted:**
+- `packages/lararium-core/src/meme-grammar.ts` — 111 lines; `parseArrayOfTables`
+  and `grammarRulesFromText` gone; no live consumer remained.
+
+**Metrics:** build:plugin 18 modules (was 17); 119 inner tiddlers; 35/35 tests pass;
+typecheck clean across all three packages.
+
+---
 
 ## What Changed This Turn (2026-05-15 turn 8)
 

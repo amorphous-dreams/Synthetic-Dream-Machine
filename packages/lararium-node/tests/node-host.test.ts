@@ -1,10 +1,9 @@
 /**
- * lararium-node — causal island URI resolver + grammar runtime tests.
+ * lararium-node — causal island URI resolver + capability invariant tests.
  *
- * All tests are pure and I/O-free. Grammar tests use inline TOML fixtures
- * to prove grammarRulesFromText() parses correctly — no disk reads.
- * The grammar content round-trip (shadow tiddler in built plugin) lives in
- * scripts/test-quine.ts.
+ * All tests are pure and I/O-free.
+ * Grammar self-hosting (SharktoothSigil tiddlers in built plugin) verifies
+ * in scripts/test-quine.ts.
  *
  * No HTTP, no OAuth routes, no web2 auth ceremony.
  *
@@ -17,54 +16,9 @@ import {
   parseHostfulLarUri,
   isHostfulLarUri,
   abilityImplies,
-  grammarRulesFromText,
-  GRAMMAR_MEME_URI,
 } from "@lararium/core";
 
 // Minimal inline grammar fixture — exercises [[sigils]] and [[families]] TOML
-// parsing without touching the filesystem. Proves the extractor works; the
-// full canonical grammar content is verified by test-quine.ts at build time.
-const GRAMMAR_FIXTURE = `\
-<<~ ? -> ${GRAMMAR_MEME_URI} >>
-\`\`\`toml iam
-uri-path = "ha.ka.ba/@lares/api/v0.1/pono/memetic-wikitext"
-\`\`\`
-<<~>>
-\`\`\`toml
-[[sigils]]
-name = "ahu"
-kind = "block"
-open_pattern = "<<~ ahu"
-close_pattern = "<<~/ahu >>"
-
-[[sigils]]
-name = "pranala"
-kind = "edge"
-inline_pattern = "<<~ pranala"
-
-[[sigils]]
-name = "loulou"
-kind = "edge"
-inline_pattern = "<<~ loulou"
-
-[[sigils]]
-name = "aka"
-kind = "edge"
-inline_pattern = "<<~ aka"
-
-[[sigils]]
-name = "kahea"
-kind = "edge"
-inline_pattern = "<<~ kahea"
-
-[[families]]
-name = "reaction"
-dag_required = "true"
-role_recommended = "true"
-confidence_bounded = "false"
-\`\`\`
-<<~>>`;
-
 // ---------------------------------------------------------------------------
 // lar:/// URI resolver — isomorphic, pure (no I/O)
 // ---------------------------------------------------------------------------
@@ -132,42 +86,6 @@ describe("parseHostfulLarUri", () => {
   });
 });
 
-// ---------------------------------------------------------------------------
-// grammarRulesFromText — pure inline fixture, no I/O
-// ---------------------------------------------------------------------------
-
-describe("grammarRulesFromText — inline fixture", () => {
-  test("parses sigils and families from TOML", () => {
-    const rules = grammarRulesFromText(GRAMMAR_MEME_URI, GRAMMAR_FIXTURE);
-    expect(rules).not.toBeNull();
-  });
-
-  test("extracts expected sigil names", () => {
-    const rules = grammarRulesFromText(GRAMMAR_MEME_URI, GRAMMAR_FIXTURE);
-    const names = rules!.sigils.map((s) => s.name);
-    expect(names).toContain("ahu");
-    expect(names).toContain("pranala");
-    expect(names).toContain("loulou");
-    expect(names).toContain("aka");
-    expect(names).toContain("kahea");
-  });
-
-  test("ahu sigil has open and close patterns", () => {
-    const rules = grammarRulesFromText(GRAMMAR_MEME_URI, GRAMMAR_FIXTURE);
-    const ahu = rules!.sigils.find((s) => s.name === "ahu");
-    expect(ahu?.openPattern).toBeTruthy();
-    expect(ahu?.closePattern).toBeTruthy();
-  });
-
-  test("reaction family registered", () => {
-    const rules = grammarRulesFromText(GRAMMAR_MEME_URI, GRAMMAR_FIXTURE);
-    const families = rules!.families.map((f) => f.name);
-    expect(families).toContain("reaction");
-  });
-});
-
-// ---------------------------------------------------------------------------
-// Node-peer capability invariants (pure, no Automerge required)
 // ---------------------------------------------------------------------------
 
 describe("Node-peer causal island capabilities", () => {

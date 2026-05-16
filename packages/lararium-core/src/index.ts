@@ -9,7 +9,6 @@ export * from "./causal-island.js";
 export * from "./pranala-parser.js";
 export * from "./meme-graph.js";
 export * from "./grammar-invariants.js";
-export * from "./meme-grammar.js";
 export * from "./compiler.js";
 export * from "./crypto.js";
 export * from "./meme-provider.js";

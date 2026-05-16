@@ -2,15 +2,15 @@
  * test-quine — genesis boot smoke.
  *
  * Proves: the genesis artifact contains a bootable TW5 core + compiled plugin,
- * and the compiled plugin carries the grammar meme as a shadow tiddler.
+ * and the compiled plugin carries the full SharktoothSigil grammar tiddler set.
  *
  * Steps:
  *   1. Load genesis/island.bin
  *   2. Verify genesis-cid self-ref tiddler
  *   3. Extract TW5 core blob + compiled plugin blob from the artifact
  *   4. Boot TW5Engine with compiled plugin preloaded
- *   5. Assert grammar shadow tiddler is accessible via $tw.wiki.getTiddlerText
- *   6. Assert grammarRulesFromText() produces valid rules from the shadow tiddler
+ *   5. Assert SharktoothSigil tiddlers present via wiki.filterTiddlers
+ *   6. Assert required sigils present: ahu, pranala, aka, loulou, toml
  *
  * Run via:  tsx scripts/test-quine.ts
  * Or via:   pnpm --filter @lararium/node test:quine
@@ -24,7 +24,7 @@ import { fileURLToPath }   from "url";
 
 import { TW5Engine }       from "@lararium/tw5";
 import type { LarariumDoc } from "@lararium/core";
-import { ENGINE_CORE_ID, GRAMMAR_MEME_URI, grammarRulesFromText } from "@lararium/core";
+import { ENGINE_CORE_ID, GRAMMAR_TAG } from "@lararium/core";
 
 const LARES_TW5_PLUGIN_TITLE = "lar:///plugins/lares/memetic-wikitext";
 
@@ -110,44 +110,44 @@ async function main(): Promise<void> {
   console.log("[quine] TW5Engine ready");
 
   // ------------------------------------------------------------------
-  // 5. Assert grammar shadow tiddler accessible
+  // 5. Assert SharktoothSigil grammar tiddlers present
   // ------------------------------------------------------------------
-  const grammarText = vm.$tw.wiki.getTiddlerText(GRAMMAR_MEME_URI) ?? "";
-  if (!grammarText) {
+  const sigilTitles = vm.$tw.wiki.filterTiddlers(`[tag[${GRAMMAR_TAG}]]`);
+  if (!sigilTitles.length) {
     throw new Error(
-      `[quine] FAIL — grammar shadow tiddler not found: ${GRAMMAR_MEME_URI}\n` +
-      `  The grammar meme was not packed into the compiled plugin.\n` +
+      `[quine] FAIL — no SharktoothSigil tiddlers found (tag: ${GRAMMAR_TAG})\n` +
+      `  Grammar tiddlers were not packed into the compiled plugin.\n` +
       `  → run: pnpm --filter @lararium/tw5 build:plugin`,
     );
   }
-  console.log(`[quine] ✓ grammar shadow tiddler present  ${grammarText.length} chars`);
+  console.log(`[quine] ✓ SharktoothSigil tiddlers present  count=${sigilTitles.length}`);
 
   // ------------------------------------------------------------------
-  // 6. Assert grammarRulesFromText produces valid rules
+  // 6. Assert required sigils present by lar-name field
   // ------------------------------------------------------------------
-  const rules = grammarRulesFromText(GRAMMAR_MEME_URI, grammarText);
-  if (!rules || rules.sigils.length === 0) {
-    throw new Error("[quine] FAIL — grammarRulesFromText returned no sigils from shadow tiddler");
-  }
-  const sigilNames = rules.sigils.map(s => s.name);
-  for (const required of ["ahu", "pranala", "aka", "loulou"]) {
+  const sigilNames = sigilTitles.map((t: string) => {
+    const fields = vm.$tw.wiki.getTiddler(t)?.fields ?? {};
+    const larName = fields["lar-name"];
+    if (larName) return String(larName);
+    const last = t.split("/").at(-1) ?? t;
+    return last.startsWith("sigil-") ? last.slice(6) : last;
+  });
+  for (const required of ["ahu", "pranala", "aka", "loulou", "toml"]) {
     if (!sigilNames.includes(required)) {
-      throw new Error(`[quine] FAIL — grammar missing expected sigil: "${required}"`);
+      throw new Error(`[quine] FAIL — grammar missing required sigil: "${required}"`);
     }
   }
-  const sha = sha256hex(grammarText);
-  console.log(`[quine] ✓ grammar rules valid  sigils=${rules.sigils.length}  families=${rules.families.length}  sha=${sha.slice(0, 16)}…`);
+  console.log(`[quine] ✓ required sigils present  ${["ahu", "pranala", "aka", "loulou", "toml"].join(", ")}`);
 
   vm.dispose?.();
 
   console.log("");
   console.log("=== Genesis Boot Smoke: PASS ===");
-  console.log(`  blobs in artifact   : ${blobCount}`);
-  console.log(`  tiddlers in artifact: ${tiddlerCount}`);
-  console.log(`  grammar sigils      : ${rules.sigils.length}`);
-  console.log(`  grammar families    : ${rules.families.length}`);
+  console.log(`  blobs in artifact        : ${blobCount}`);
+  console.log(`  tiddlers in artifact     : ${tiddlerCount}`);
+  console.log(`  SharktoothSigil tiddlers : ${sigilTitles.length}`);
   console.log("");
-  console.log("[quine] ✓ genesis carries bootable engine + compiled plugin + grammar shadow tiddler");
+  console.log("[quine] ✓ genesis carries bootable engine + compiled plugin + self-hosted grammar");
 }
 
 main().catch(err => {

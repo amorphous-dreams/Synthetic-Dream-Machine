@@ -1,6 +1,6 @@
 # Lares Active Roadmap — Outstanding Work Only
 
-> Updated: 2026-05-15 (turn 5)
+> Updated: 2026-05-15 (turn 9)
 > Branch: `feature/lararium-node-4`
 > Archive source: `wikis/lares-history/last-sprint/{HANDOFF,SESSION,ROADMAP}.md`
 
@@ -31,7 +31,10 @@ for `ahu`, `wehe`, `heihei`, `huli`, `procedure`, `if`, `for` authored),
 **and** the concurrency cluster + grammar self-hosting + kumu-device UEFN
 alignment sprint (hui/holo/puka/lele sigils + 8 family tiddlers; TOML monolith
 shrunk to 1 block; `FamilyRule` tiddlerization in grammar-cache.ts; `KumuListenable.verseKind`
-+ `KumuSubscribable.effects`; `uefn-scene.md` architecture spec authored).
++ `KumuSubscribable.effects`; `uefn-scene.md` architecture spec authored),
+**and** the grammar self-hosting completion sprint (`meme-grammar.ts` deleted;
+`grammarRulesFromText` retired; `GRAMMAR_TAG` exported from `@lararium/core`;
+smol-toml as single TW5 library tiddler; `sigil-toml` SharktoothSigil tiddler).
 
 Do not re-open those arcs unless a test proves drift.
 
@@ -45,10 +48,11 @@ Do not re-open those arcs unless a test proves drift.
 | — | **SharktoothSigil inversion** | ✅ Done | `grammar-cache.ts` reads `lar:///ha.ka.ba/tags/SharktoothSigil` tiddler fields; 7 TOML blocks removed. |
 | — | **lar: URI + mode= retirement** | ✅ Done | `$:/tags/Lar/*` → `lar:///ha.ka.ba/tags/*`; `mode=` retired from all sigil procedures; English alias sigils + pono defs authored. |
 | — | **Concurrency cluster + grammar self-hosting** | ✅ Done | hui/holo/puka/lele + 8 family tiddlers; TOML monolith = 1 block; wild-magic property holds. |
+| — | **Grammar self-hosting completion** | ✅ Done | `meme-grammar.ts` deleted; `grammarRulesFromText` retired; `GRAMMAR_TAG` in `@lararium/core`; smol-toml library tiddler; `sigil-toml` SharktoothSigil tiddler; TOML fallback parse path gone. |
 | 1 | **UEFN scene importer** | ⬜ Next | .verse class defs + .umap placements + DEB wires → bag of tiddlers + edges. Spec: `bags/@lares/api/v0.1/pono/uefn-scene.md`. |
 | 2 | **K / F-arc** | ⬜ Next | TW5 save routing, debounce, projection hygiene for sustained editing. |
 | 3 | **L / S7.4** | ⬜ Next | Admin-doc ingress trust gate: operator devices with `cap=infrastructure` only. |
-| 4 | **G.SharktoothSigil** | ⬜ Next | Migrate remaining 48 TOML sigil blocks → SharktoothSigil tiddlers. Talk-story per category. |
+| 4 | **G.SharktoothSigil** | ⬜ Next | Migrate remaining TOML sigil blocks in `memetic-wikitext.tid` → SharktoothSigil tiddlers. `grammarRulesFromText` fully retired; `GRAMMAR_TAG` as only registration surface. Talk-story per category. |
 | 5 | **R** | ⧾ Verify first | ReactionEngine wiring: changeset application, changed-URI derivation, `RE.onChangeset`, integration tests. |
 | 6 | **N** | ⬜ UI shim | `<$lar-promote>` action-widget writes the same command-tiddler as CLI promote. |
 | 7 | **O** | ⬜ Corpus hygiene | Author scaffolded heleuma stubs; keep `lares heleuma --write` aligned. |
