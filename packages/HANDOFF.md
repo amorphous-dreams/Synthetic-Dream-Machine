@@ -1,6 +1,6 @@
 # Lares Handoff — Active Work Only
 
-> Updated: 2026-05-15 (turn 9)
+> Updated: 2026-05-16 (turn 10)
 > Branch: `feature/lararium-node-4`
 > Last sprint archive: `wikis/lares-history/last-sprint/`
 
@@ -26,22 +26,99 @@ complete; TW5 wiki declared primary reactive engine; one graph not two; fireSync
 gap documented; sigil-tick.tid stub registered), AND the grammar self-hosting
 completion sprint (smol-toml as TW5 library tiddler; sigil-toml SharktoothSigil
 tiddler; meme-grammar.ts deleted; GRAMMAR_TAG exported from @lararium/core;
-grammarRulesFromText fully retired) are treated as landed unless tests prove drift.
+grammarRulesFromText fully retired), AND the Verse polychronous CRDT mesh sprint
+(meme-sync-adaptor.ts deleted; IslandAdaptor + IslandAccumulator replace it;
+$tw.syncer provably dead; N-accumulator flushAll + startRenderLoop wired;
+verse-mesh.md + island-adaptor.md + island-accumulator.md memes captured;
+48/48 tests pass) are treated as landed unless tests prove drift.
 
 Next work, in order:
 0. Test infra — migrate Jest → Vitest (all three packages). Jest needs
    --experimental-vm-modules for ESM; Vitest drops that flag, native ESM,
    same API, faster, Vite-backed. Low migration cost: config swap only.
-1. UEFN scene importer — .verse class defs + .umap instance placements + DEB
+1. Wire N-accumulator per bag in node peer — open-node-lar-peer.ts creates one
+   IslandAdaptor but no IslandAccumulator. Create one IslandAccumulator per bag
+   in the recipe, register each via store.addProjection(), pass ordered array to
+   setInterval(() => adaptor.flushAll(accumulators, budget), 16) node driver.
+2. UEFN scene importer — .verse class defs + .umap instance placements + DEB
    wires → Automerge bag of tiddlers + pranala edges. Spec: bags/@lares/api/v0.1/pono/uefn-scene.md.
-2. Path K / F-arc: TW5 routing rules + 300–500ms debounce + projection
-   auto-truncate.
-3. Path L / S7.4: admin-doc ingress trust gate via Keyhive cap=infrastructure.
+3. Path K / F-arc: TW5 routing rules + 300–500ms debounce + projection
+   auto-truncate. (MemeSyncAdaptor refs in HANDOFF are now IslandAdaptor.)
+4. Path L / S7.4: admin-doc ingress trust gate via Keyhive cap=infrastructure.
 
 Rules: preserve TW5 VM primacy, bag=Automerge-doc=sync-boundary, no HTTP/RPC
 coordination surface, and explicit operator promotion for canon. Web3 only —
 no web2 models/code/flows in Lares stack.
 ```
+
+## What Changed This Turn (2026-05-16 turn 10)
+
+### Verse Polychronous CRDT Mesh — IslandAdaptor + IslandAccumulator Sprint
+
+**Architectural ruling:** `$tw.syncer` provably does not run in Lararium —
+no `module-type:syncadaptor` tiddler in the plugin bundle. `meme-sync-adaptor.ts`
+deleted entirely. Replaced with a clean web3-native responsibility split.
+
+**Deleted:**
+- `packages/lararium-tw5/src/meme-sync-adaptor.ts` — the web2 syncer-contract ghost; 
+  all dead syncer methods (`getUpdatedTiddlers`, `getSkinnyTiddlers`, etc.) gone.
+- `packages/lararium-tw5/tests/meme-sync-adaptor.test.ts` — replaced by island-adaptor.test.ts.
+
+**New:**
+- `packages/lararium-tw5/src/island-adaptor.ts` — `IslandAdaptor` class.
+  Causal-island ↔ TW5 wiki bridge. Implements `MemeProjection`.
+  Owns: pre-sync buffer per island, `onSyncComplete()` batch flush (one `wiki.transact()`
+  per island), non-CRDT immediate apply (`tw-local`, `canon-hydrate`, `lares-command`),
+  outbound `saveTiddler` → `store.put()`, `deleteTiddler` → `store.tombstone()`.
+  Echo-loop guard: `_applying: Map<string, ChangeOrigin>` keyed by slot.
+  `flushAll(accs[], budget)` drains N accumulators in recipe priority order.
+  Does NOT implement TW5 `syncadaptor` contract. `$tw.syncer` does not run.
+- `packages/lararium-core/src/island-accumulator.ts` — `IslandAccumulator` class
+  (renamed from `sync-accumulator.ts`). Frame-aligned CRDT patch buffer per bag.
+  Implements `MemeProjection`. Platform-agnostic (no rAF, no TW5).
+  Post-sync crdt-remote buffering only. `drain(budget)` returns + splices from queue.
+  Invariants A-1 through A-5 documented.
+- `packages/lararium-tw5/tests/island-adaptor.test.ts` — 48 tests covering lifecycle,
+  inbound buffering, post-sync deferral, `flushAll` multi-accumulator (shared budget,
+  priority order), outbound guards, echo guard.
+
+**Meme corpus (bags/):**
+- `bags/@lares/docs/lararium/verse-mesh.md` — Verse polychronous CRDT mesh design:
+  peer-owns-bags law, N local clocks (Signal/INRIA Berry 1991 model), VM pool (live/warm
+  slots), camera model (Story River first, TLDraw.js second, many more), visibility gate
+  (future), tick sources by platform, wiring law (`store.addProjection` for both siblings).
+- `bags/@lares/api/v0.1/lararium/island-adaptor.md` — invariant spec I-1 through I-8:
+  echo-loop guard, island isolation, single transact per flush, post-sync pass-through,
+  non-CRDT immediate apply, outbound guards, cross-bag tombstone resolution, child cleanup.
+- `bags/@lares/api/v0.1/lararium/island-accumulator.md` — invariant spec A-1 through A-5:
+  sync gate, crdt-remote filter, drain returns-and-removes, budget cap, platform-agnostic.
+  Camera projection section: each camera MAY hold its own accumulator.
+
+**Modified:**
+- `packages/lararium-tw5/src/tw5-vm.ts` — `startRenderLoop` signature updated to accept
+  `IslandAccumulator[]` (plural); delegates to `adaptor.flushAll(accumulators, budget)`.
+- `packages/lararium-core/src/index.ts` — exports `island-accumulator.js` (was `sync-accumulator.js`).
+- `packages/lararium-tw5/src/index.ts` — exports `IslandAdaptor`; deprecated re-export
+  `MemeSyncAdaptor` alias kept for one turn.
+- `packages/lararium-node/src/` — `MemeSyncAdaptor` → `IslandAdaptor` across all node files
+  (wiki-handlers, open-node-lar-peer, open-admin-vm, node-vm-manager).
+
+**Architecture law enacted:**
+- Adaptor and accumulator are **siblings** in the MemeProvider projection fan-out — not nested.
+  Caller registers both: `store.addProjection(adaptor)` + `store.addProjection(accumulator)`.
+- Adaptor covers pre-sync time window; accumulator covers post-sync crdt-remote.
+  They never double-write.
+- Browser tick: `startRenderLoop(adaptor, accumulators)` → `requestAnimationFrame`.
+- Node tick: `setInterval(() => adaptor.flushAll(accumulators, budget), 16)` (not yet wired).
+
+**Pending wire:** `open-node-lar-peer.ts` creates one `IslandAdaptor` without a corresponding
+`IslandAccumulator`. Next sprint: one accumulator per bag in recipe, priority-ordered array,
+node `setInterval` driver (see Next Work item 1 in Bootstrap Paste).
+
+**Metrics:** 48/48 tests pass; typecheck clean across all three packages
+(`@lararium/core`, `@lararium/tw5`, `@lararium/node`).
+
+---
 
 ## What Changed This Turn (2026-05-15 turn 9)
 
@@ -390,7 +467,7 @@ and leaves rendered sigil behavior to integration flow tests.
 
 - `$:/state/*` → projection layer, not durable canon/draft.
 - `Draft of *` → per-wiki draft bag.
-- 300–500ms debounce in `MemeSyncAdaptor`.
+- 300–500ms debounce in `IslandAdaptor.saveTiddler` (was MemeSyncAdaptor — renamed).
 - Idle auto-truncate for noisy projection state.
 - Single parser/split law across disk sync, CRDT inbound, TW5 UX save, disk export.
 

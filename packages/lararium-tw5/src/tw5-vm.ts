@@ -411,16 +411,20 @@ export class TW5Engine {
    * Browser-only rAF render loop.
    *
    * Each frame:
-   *   1. Writes $:/temp/volatile/lararium/tick (timestamp) — arms the TW5
-   *      volatile-refresh path so the wiki rerenders at up to ~60fps.
-   *   2. Drains `accumulator` via `adaptor.flushAccumulator()` — applies
-   *      buffered crdt-remote changes in one wiki.transact() per frame.
+   *   1. Writes $:/temp/volatile/lararium/tick — arms TW5's volatile-refresh
+   *      path so the wiki rerenders at up to ~60fps.
+   *   2. Calls adaptor.flushAll(accumulators, budget) — drains all bag
+   *      accumulators in recipe priority order, in one wiki.transact() each,
+   *      stopping when budget patches consumed.
+   *
+   * `accumulators` — ordered by recipe bag priority (index 0 = lowest).
+   * `budget`       — total patches across all accumulators per frame.
    *
    * Returns a teardown fn; call it to cancel the loop (e.g. on unmount).
    */
   startRenderLoop(
-    adaptor: { flushAccumulator(acc: IslandAccumulator, budget?: number): void },
-    accumulator: IslandAccumulator,
+    adaptor:      { flushAll(accs: IslandAccumulator[], budget?: number): void },
+    accumulators: IslandAccumulator[],
     budget = 200,
   ): () => void {
     if (!this._tw) throw new Error("TW5Engine: call boot() before startRenderLoop()");
@@ -435,7 +439,7 @@ export class TW5Engine {
           text:  String(Math.floor(timestamp)),
         }),
       );
-      adaptor.flushAccumulator(accumulator, budget);
+      adaptor.flushAll(accumulators, budget);
       rafId = requestAnimationFrame(tick);
     };
 

@@ -39,7 +39,7 @@ class FakeTW5Engine {
         : tiddler as TW5FieldsMap;
       this.addTiddlerCalls.push(fields);
     },
-    deleteTiddler:   (title: string): void => this.deleteTiddlerCalls.push(title),
+    deleteTiddler:   (title: string): void => { this.deleteTiddlerCalls.push(title); },
     getTiddler:      (_title: string) => undefined,
     filterTiddlers:  (_filter: string): string[] => [],
     transact:        (fn: () => void): void => fn(),
@@ -93,7 +93,7 @@ describe("IslandAdaptor — lifecycle", () => {
     const tw5   = new FakeTW5Engine();
     const store = new MemoryTiddlerStore();
     const projections: unknown[] = [];
-    (store as Record<string, unknown>)["addProjection"] = (p: unknown) => {
+    (store as unknown as Record<string, unknown>)["addProjection"] = (p: unknown) => {
       projections.push(p);
       return () => {};
     };
@@ -107,7 +107,7 @@ describe("IslandAdaptor — lifecycle", () => {
   test("start() falls back to subscribe() when addProjection absent", async () => {
     const tw5   = new FakeTW5Engine();
     const store = new MemoryTiddlerStore();
-    delete (store as Record<string, unknown>)["addProjection"];
+    delete (store as unknown as Record<string, unknown>)["addProjection"];
 
     const adaptor = new IslandAdaptor(tw5 as never, store, INSTANCE_ID, TARGET_BAG);
     adaptor.start();
@@ -121,7 +121,7 @@ describe("IslandAdaptor — lifecycle", () => {
   test("stop() disconnects — further store changes do not reach TW5", async () => {
     const tw5   = new FakeTW5Engine();
     const store = new MemoryTiddlerStore();
-    delete (store as Record<string, unknown>)["addProjection"];
+    delete (store as unknown as Record<string, unknown>)["addProjection"];
 
     const adaptor = new IslandAdaptor(tw5 as never, store, INSTANCE_ID, TARGET_BAG);
     adaptor.start();
@@ -214,7 +214,7 @@ describe("IslandAdaptor — inbound post-sync crdt-remote deferred to accumulato
     const canonChange: LarTiddlerChange = {
       title:  LAR_URI,
       record: { title: LAR_URI, fields: { bag: TARGET_BAG }, text: "canon" },
-      origin: { kind: "canon-hydrate" },
+      origin: { kind: "canon-hydrate", receipt: "test" },
     };
     adaptor.onUriChanged(canonChange);
     expect(tw5.addTiddlerCalls.length).toBeGreaterThan(0);
@@ -224,6 +224,45 @@ describe("IslandAdaptor — inbound post-sync crdt-remote deferred to accumulato
 // ---------------------------------------------------------------------------
 // Accumulator drain
 // ---------------------------------------------------------------------------
+
+describe("IslandAdaptor — flushAll (N accumulators, recipe-ordered)", () => {
+  test("drains multiple accumulators in order, shared budget", () => {
+    const tw5     = new FakeTW5Engine();
+    const store   = new MemoryTiddlerStore();
+    const adaptor = new IslandAdaptor(tw5 as never, store, INSTANCE_ID, TARGET_BAG);
+    const accA    = new IslandAccumulator(); // lower priority bag
+    const accB    = new IslandAccumulator(); // higher priority bag
+
+    accA.onSyncComplete(); accB.onSyncComplete();
+    accA.onUriChanged(liveChange("lar:///bag-a/1", "a1"));
+    accA.onUriChanged(liveChange("lar:///bag-a/2", "a2"));
+    accB.onUriChanged(liveChange("lar:///bag-b/1", "b1"));
+    accB.onUriChanged(liveChange("lar:///bag-b/2", "b2"));
+
+    adaptor.start();
+    adaptor.flushAll([accA, accB], 3); // budget 3: drains 2 from A, 1 from B
+
+    expect(tw5.addTiddlerCalls).toHaveLength(3);
+    expect(accA.pending).toBe(0);
+    expect(accB.pending).toBe(1); // one B left
+  });
+
+  test("stops at budget — remainder carries to next tick", () => {
+    const tw5     = new FakeTW5Engine();
+    const store   = new MemoryTiddlerStore();
+    const adaptor = new IslandAdaptor(tw5 as never, store, INSTANCE_ID, TARGET_BAG);
+    const acc     = new IslandAccumulator();
+    acc.onSyncComplete();
+
+    for (let i = 0; i < 10; i++) acc.onUriChanged(liveChange(`lar:///t/${i}`, `v${i}`));
+
+    adaptor.start();
+    adaptor.flushAll([acc], 4);
+
+    expect(tw5.addTiddlerCalls).toHaveLength(4);
+    expect(acc.pending).toBe(6);
+  });
+});
 
 describe("IslandAdaptor — flushAccumulator", () => {
   test("drains accumulator changes into wiki.transact()", () => {

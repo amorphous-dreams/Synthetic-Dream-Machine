@@ -223,14 +223,31 @@ export class IslandAdaptor implements MemeProjection {
   // ---------------------------------------------------------------------------
 
   /**
-   * Drain `acc` and apply up to `budget` crdt-remote changes to TW5 in one
-   * wiki.transact().  Called per rAF frame by TW5Engine.startRenderLoop()
-   * (browser) or a setInterval driver (Node).
+   * Drain N accumulators in recipe priority order (index 0 = lowest bag priority,
+   * last index = highest).  Shares `budget` total patches across all accumulators —
+   * stops when the frame budget exhausts, carries remainder to the next tick.
+   * Each non-empty accumulator drains into one wiki.transact() block.
+   *
+   * Called per rAF frame by TW5Engine.startRenderLoop() (browser) or a
+   * setInterval driver (Node).
    */
-  flushAccumulator(acc: IslandAccumulator, budget = 200): void {
-    const batch = acc.drain(budget);
-    if (batch.length === 0) return;
+  flushAll(accs: IslandAccumulator[], budget = 200): void {
+    let remaining = budget;
+    for (const acc of accs) {
+      if (remaining <= 0) break;
+      const batch = acc.drain(remaining);
+      if (batch.length === 0) continue;
+      remaining -= batch.length;
+      this._applyBatch(batch);
+    }
+  }
 
+  /** Single-accumulator convenience — delegates to flushAll. */
+  flushAccumulator(acc: IslandAccumulator, budget = 200): void {
+    this.flushAll([acc], budget);
+  }
+
+  private _applyBatch(batch: LarTiddlerChange[]): void {
     const applyKey = `${this.instanceId}:acc`;
     const origin: ChangeOrigin = { kind: "crdt-remote", edgeIsland: "automerge" };
     this._applying.set(applyKey, origin);
