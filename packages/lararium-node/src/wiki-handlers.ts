@@ -19,7 +19,7 @@ import {
   CATALOG_DOC_URI, LARARIUM_DOC_URI, LARES_DOC_URI,
   parseBagStack, AutomergeDocStore,
 } from "@lararium/core";
-import { buildDirectRecord, MemeSyncAdaptor, TW5Engine } from "@lararium/tw5";
+import { buildDirectRecord, IslandAdaptor, TW5Engine } from "@lararium/tw5";
 import type { TiddlerFields } from "@lararium/tw5";
 import type { CommandHandler } from "./command-dispatcher.js";
 
@@ -311,7 +311,7 @@ export function createSyncWikiHandler(opts: WikiMintHandlerOptions): CommandHand
     // lar: URIs so the cascade lookup in saveTiddler never fires. Always reuse
     // the primary engine — no cold-boot per CLI invocation.
     const vm = opts.getPrimaryEngine();
-    const adaptor = new MemeSyncAdaptor(vm, store, `wiki-sync:${slug}`, wikiKey);
+    const adaptor = new IslandAdaptor(vm, store, `wiki-sync:${slug}`, wikiKey);
     adaptor.start();
     adaptor.onSyncComplete("automerge");
 
@@ -841,7 +841,7 @@ function stringField(value: string | string[] | undefined): string | undefined {
 }
 
 function saveViaTw5Adaptor(
-  adaptor: MemeSyncAdaptor,
+  adaptor: IslandAdaptor,
   fields:  Record<string, string>,
 ): Promise<void> {
   return new Promise((resolve, reject) => {
@@ -853,7 +853,7 @@ function saveViaTw5Adaptor(
 }
 
 function deleteViaTw5Adaptor(
-  adaptor: MemeSyncAdaptor,
+  adaptor: IslandAdaptor,
   title:   string,
 ): Promise<void> {
   return new Promise((resolve, reject) => {

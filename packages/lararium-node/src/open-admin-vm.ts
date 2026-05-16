@@ -11,7 +11,7 @@
  * peers — the admin doc has its own AutomergeUrl and its own sync boundary.
  *
  * Architecture: the admin VM has its own TW5Engine, its own CompositeStore,
- * and its own MemeSyncAdaptor. Sharing the room VM's composite would risk
+ * and its own IslandAdaptor. Sharing the room VM's composite would risk
  * leaking operator-private content (delegation proofs, session secrets) to
  * room peer connections.
  *
@@ -22,7 +22,7 @@
 import type { AutomergeUrl, DocHandle, Repo } from "@automerge/automerge-repo";
 import type { MemeStoreDoc } from "@lararium/core";
 import { ADMIN_BAG_ID, CompositeStore, AutomergeDocStore, emptyMemeStoreDoc } from "@lararium/core";
-import { TW5Engine, MemeSyncAdaptor } from "@lararium/tw5";
+import { TW5Engine, IslandAdaptor } from "@lararium/tw5";
 import type { TW5CoreBootBlob } from "@lararium/tw5";
 import { waitHandleLocal } from "./repo-helpers.js";
 
@@ -46,7 +46,7 @@ export interface AdminVmResult {
   /** Live admin doc handle. */
   adminHandle: DocHandle<MemeStoreDoc>;
   /** Sync adaptor wired between TW5 and the composite, targeting admin bag. */
-  adaptor: MemeSyncAdaptor;
+  adaptor: IslandAdaptor;
   /** Tear down the engine. */
   dispose: () => void;
 }
@@ -71,7 +71,7 @@ export async function openAdminVm(opts: AdminVmOptions): Promise<AdminVmResult> 
   const { preloadedTiddlers } = opts;
   await tw5.boot(opts.coreBlob, preloadedTiddlers && preloadedTiddlers.length > 0 ? preloadedTiddlers : undefined);
 
-  const adaptor = new MemeSyncAdaptor(tw5, composite, ADMIN_BAG_ID);
+  const adaptor = new IslandAdaptor(tw5, composite, ADMIN_BAG_ID);
 
   // Subscribe the adaptor to composite changes so admin tiddlers stream into
   // the wiki. The adaptor's onUriChanged handles the inbound direction;
@@ -79,7 +79,7 @@ export async function openAdminVm(opts: AdminVmOptions): Promise<AdminVmResult> 
   composite.addProjection(adaptor);
 
   // The admin doc is purely local — no remote Automerge sync peer to wait for.
-  // Mark sync complete immediately so the MemeSyncAdaptor flushes its buffer
+  // Mark sync complete immediately so the IslandAdaptor flushes its buffer
   // and the seeded bag-mirror config tiddlers are visible in the admin TW5 wiki
   // before the first command handler runs.
   adminStore.markSyncComplete();

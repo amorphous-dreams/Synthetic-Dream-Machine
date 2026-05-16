@@ -62,10 +62,10 @@ export class LarDiskProjector {
   /**
    * Subscribe to TW5 wiki change events and begin projecting.
    *
-   * Architecture law (TW5 VM Primacy): only the MemeSyncAdaptor subscribes
+   * Architecture law (TW5 VM Primacy): only the IslandAdaptor subscribes
    * to Automerge stores. The disk projector subscribes to TW5 wiki change
    * events — the same surface that drives in-browser render. Bag provenance
-   * reaches TW5 via the `bag` field that MemeSyncAdaptor stamps on each
+   * reaches TW5 via the `bag` field that IslandAdaptor stamps on each
    * tiddler it loads; the projector reads it from the TW5 tiddler directly.
    *
    * Returns an unsubscribe fn.

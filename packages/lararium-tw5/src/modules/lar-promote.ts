@@ -22,7 +22,7 @@ module-type: library
  *   - `mirror-root` field = repo-relative path (e.g. "bags/@lares").
  *   - file-path = mirror-root + "/" + relPath  (pure string concat, no path.join).
  *   - Promote = write target bag copy first, tombstone wiki-bag copy second.
- *   - Tombstone routes to the default writable bag (wiki bag) via MemeSyncAdaptor.
+ *   - Tombstone routes to the default writable bag (wiki bag) via IslandAdaptor.
  *   - The @lares copy surfaces through the recipe stack once the wiki-bag copy
  *     is removed (wiki bag has HIGHER priority than @lares in recipe order).
  *
@@ -93,7 +93,7 @@ export function promoteUris(
 
     const filePath = mirrorRoot + "/" + relPaths[0];
 
-    // Write to target bag — MemeSyncAdaptor routes by bag field.
+    // Write to target bag — IslandAdaptor routes by bag field.
     wiki.addTiddler(new tw.Tiddler(existing, { bag: targetBagId, "file-path": filePath }));
 
     // Tombstone wiki-bag copy — routes to default writable bag (wiki bag).

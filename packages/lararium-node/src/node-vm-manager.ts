@@ -4,7 +4,7 @@
  * ## Tiers
  *
  *   Pinned  — PrimaryWiki + admin. Never evicted. TW5Engine runs in-process
- *             (same thread as the main event loop). MemeSyncAdaptor wires it
+ *             (same thread as the main event loop). IslandAdaptor wires it
  *             to the CompositeStore. All synchronous engine reads are free.
  *
  *   Hot     — LRU of recently-active session wikis (max HOT_CAP slots).
@@ -42,7 +42,7 @@ import * as Automerge from "@automerge/automerge";
 import { Worker }     from "worker_threads";
 import type { DocHandle, DocHandleChangePayload } from "@automerge/automerge-repo";
 import type { MemeStoreDoc } from "@lararium/core";
-import { TW5Engine, MemeSyncAdaptor } from "@lararium/tw5";
+import { TW5Engine, IslandAdaptor } from "@lararium/tw5";
 import type { TW5CoreBootBlob } from "@lararium/tw5";
 import type { TiddlerFields } from "@lararium/tw5";
 import {
@@ -84,7 +84,7 @@ interface PinnedSlot {
   tier:       "pinned";
   wikiId:     string;
   engine:     TW5Engine;
-  adaptor:    MemeSyncAdaptor | null;
+  adaptor:    IslandAdaptor | null;
   lastUsedAt: number;
 }
 
@@ -174,7 +174,7 @@ export class NodeVmManager {
    * Register the PrimaryWiki as a pinned (never-evicted) in-process slot.
    * Call once after `openNodeLarPeer` returns the booted `tw5` engine.
    */
-  mountPrimary(wikiId: string, engine: TW5Engine, adaptor: MemeSyncAdaptor | null): void {
+  mountPrimary(wikiId: string, engine: TW5Engine, adaptor: IslandAdaptor | null): void {
     this._slots.set(wikiId, {
       tier: "pinned",
       wikiId,
@@ -184,8 +184,8 @@ export class NodeVmManager {
     });
   }
 
-  /** Wire or update the MemeSyncAdaptor on the pinned slot. */
-  updateAdaptor(wikiId: string, adaptor: MemeSyncAdaptor): void {
+  /** Wire or update the IslandAdaptor on the pinned slot. */
+  updateAdaptor(wikiId: string, adaptor: IslandAdaptor): void {
     const slot = this._slots.get(wikiId);
     if (slot?.tier === "pinned") slot.adaptor = adaptor;
   }

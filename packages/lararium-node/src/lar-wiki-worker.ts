@@ -27,7 +27,7 @@
  *
  * ## What does NOT run in this thread
  *
- *   MemeSyncAdaptor — no CompositeStore access; main thread feeds changesets.
+ *   IslandAdaptor — no CompositeStore access; main thread feeds changesets.
  *   Automerge-repo / DocHandle — Worker holds a local replica, not a live handle.
  *   WebSocket / network — main thread owns all I/O.
  *   CryptoKey material — stays in main thread (GP-4).

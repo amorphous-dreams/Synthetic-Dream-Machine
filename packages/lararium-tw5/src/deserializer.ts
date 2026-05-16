@@ -434,7 +434,7 @@ export { memeticWikitextDeserializer as "text/x-memetic-wikitext" };
 // Splits a tiddler's body text at ahu block boundaries without the full
 // SOH/STX/ETX envelope processing (which is for disk ingest only).
 //
-// Used by MemeSyncAdaptor.saveTiddler's "direct" handler when a user saves
+// Used by IslandAdaptor.saveTiddler's "direct" handler when a user saves
 // a tiddler whose body contains `<<~ ahu` blocks — symmetric with the disk
 // sync path (ONE parser, FOUR call sites law).
 //

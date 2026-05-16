@@ -34,6 +34,7 @@ export * from "./command-tiddler.js";
 export * from "./bag-residency.js";
 export * from "./live-protocol.js";
 export * from "./kumu-device.js";
+export * from "./island-accumulator.js";
 // LarariumTW5 and filter helpers live in @lararium/tw5 — import from there:
 //   import { filterMemesWikitext, LarariumTW5 } from "@lararium/tw5";
 // Kept out of @lararium/core to prevent tiddlywiki from entering bundles that don't need it.

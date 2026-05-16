@@ -4,7 +4,7 @@
  * JKD principle: absorb what is useful (boot, render, tiddler mutation,
  * deserialize, wiki events), discard the carrier/closure/store/syncer web2 cruft.
  *
- * TW5Engine owns the raw VM lifecycle. Store sync: MemeSyncAdaptor.
+ * TW5Engine owns the raw VM lifecycle. Store sync: IslandAdaptor.
  * Reaction routing: reaction-router.ts TW5 startup module. No globals.
  */
 
@@ -14,6 +14,7 @@ import type {
   TW5ChangeRecord,
 } from "./types/tiddlywiki.js";
 import { MemeStreamParser } from "@lararium/core";
+import type { IslandAccumulator } from "@lararium/core";
 import type { TiddlerFields } from "./deserializer.js";
 
 import { createHash } from "crypto";
@@ -204,7 +205,7 @@ export class TW5Engine {
         // Node's CLI/wiki-folder machinery.
         (instance as unknown as { node: null; browser: null }).node = null;
         (instance as unknown as { node: null; browser: null }).browser = null;
-        // Lares owns tiddler ingress through preloadedTiddlers + MemeSyncAdaptor.
+        // Lares owns tiddler ingress through preloadedTiddlers + IslandAdaptor.
         // Disable TW5's normal Node wiki-folder scan so the VM cannot treat cwd
         // or package files as a boot authority.
         (instance as unknown as { loadTiddlersNode?: () => void }).loadTiddlersNode = () => {};
@@ -405,6 +406,45 @@ export class TW5Engine {
     return () => this._tw?.wiki.removeEventListener("tm-verse-event", handler);
   }
 
+
+  /**
+   * Browser-only rAF render loop.
+   *
+   * Each frame:
+   *   1. Writes $:/temp/volatile/lararium/tick (timestamp) — arms the TW5
+   *      volatile-refresh path so the wiki rerenders at up to ~60fps.
+   *   2. Drains `accumulator` via `adaptor.flushAccumulator()` — applies
+   *      buffered crdt-remote changes in one wiki.transact() per frame.
+   *
+   * Returns a teardown fn; call it to cancel the loop (e.g. on unmount).
+   */
+  startRenderLoop(
+    adaptor: { flushAccumulator(acc: IslandAccumulator, budget?: number): void },
+    accumulator: IslandAccumulator,
+    budget = 200,
+  ): () => void {
+    if (!this._tw) throw new Error("TW5Engine: call boot() before startRenderLoop()");
+    let rafId = 0;
+    let running = true;
+
+    const tick = (timestamp: number) => {
+      if (!running) return;
+      this._tw!.wiki.addTiddler(
+        new this._tw!.Tiddler({
+          title: "$:/temp/volatile/lararium/tick",
+          text:  String(Math.floor(timestamp)),
+        }),
+      );
+      adaptor.flushAccumulator(accumulator, budget);
+      rafId = requestAnimationFrame(tick);
+    };
+
+    rafId = requestAnimationFrame(tick);
+    return () => {
+      running = false;
+      cancelAnimationFrame(rafId);
+    };
+  }
 
   /** Returns true after boot() resolves. */
   get ready(): boolean { return this._tw !== null; }

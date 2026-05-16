@@ -1,8 +1,8 @@
 // pranala-parser — edge vocabulary and validation.
 //
-// grammarRulesFromText and parsePranalaEdges live in @lararium/tw5 (they call
-// parseMemeCarrier). Only the vocabulary constants and validatePranalaEdge stay
-// here so compiler.ts and meme-graph.ts can use them without a circular dep.
+// parsePranalaEdges lives in @lararium/tw5 (it calls parseMemeCarrier).
+// Only the vocabulary constants and validatePranalaEdge stay here so
+// compiler.ts and meme-graph.ts can use them without a circular dep.
 
 import type {
   PranalaEdge,

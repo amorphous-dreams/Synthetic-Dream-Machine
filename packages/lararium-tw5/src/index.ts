@@ -3,7 +3,8 @@
  *
  * Primary exports:
  *   TW5Engine               — clean isomorphic TW5 VM (boot/render/tiddler mutation)
- *   MemeSyncAdaptor         — TW5 SyncAdaptor backed by LarTiddlerStore (Automerge)
+ *   IslandAdaptor           — causal-island↔TW5 wiki bridge; inbound buffer/flush + outbound writes
+ *   IslandAccumulator         — live crdt-remote patch queue; drained by startRenderLoop()
  *   MemoryTiddlerStore      — in-memory LarTiddlerStore (tests / fixtures)
  *   VmPool                  — generic isomorphic VM lifecycle manager
  *   DirectMemeRecipeVm      — in-process TW5Engine wrapper; bootMemeRecipeVm boot helper
@@ -17,7 +18,9 @@
 export { TW5Engine } from "./tw5-vm.js";
 export type { TW5CoreBootBlob } from "./tw5-vm.js";
 
-export { MemeSyncAdaptor } from "./meme-sync-adaptor.js";
+export { IslandAdaptor } from "./island-adaptor.js";
+/** @deprecated use IslandAdaptor */
+export { IslandAdaptor as MemeSyncAdaptor } from "./island-adaptor.js";
 export { MemoryTiddlerStore } from "./memory-store.js";
 // VmPool and MemeRecipeVm are isomorphic contracts — they live in @lararium/core.
 // Import them from there: import { VmPool, MemeRecipeVm } from "@lararium/core".

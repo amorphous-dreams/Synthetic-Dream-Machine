@@ -43,7 +43,7 @@ import {
   VmPool, ENGINE_CORE_ID,
 }                                       from "@lararium/core";
 import type { MemeRecipeVm, LarOpenPhase } from "@lararium/core";
-import { TW5Engine, MemeSyncAdaptor, DirectMemeRecipeVm, MemoryTiddlerStore } from "@lararium/tw5";
+import { TW5Engine, IslandAdaptor, DirectMemeRecipeVm, MemoryTiddlerStore } from "@lararium/tw5";
 import {
   loadGenesisIsland, reconcileIslandFromGenesis,
   reconcileWellKnownTiddlers,
@@ -720,7 +720,7 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
   eventBus.start();
 
   // P.2 — NodeVmManager. Mount PrimaryWiki as pinned slot.
-  // Adaptor wires after MemeSyncAdaptor construction below; updateAdaptor called there.
+  // Adaptor wires after IslandAdaptor construction below; updateAdaptor called there.
   // onWorkerEvent routes RE reactions from hot-tier Workers into the vm-ring.
   vmManager = new NodeVmManager({
     onWorkerEvent: (wikiId, msg) => {
@@ -738,8 +738,8 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
   await corpusReadyP;
   emit("corpus-ready");
 
-  // ── 9. MemeSyncAdaptor — reads full stack, writes to wiki bag via composite.put() ──
-  const adaptor = new MemeSyncAdaptor(tw5, peer.store, wikiBagId);
+  // ── 9. IslandAdaptor — reads full stack, writes to wiki bag via composite.put() ──
+  const adaptor = new IslandAdaptor(tw5, peer.store, wikiBagId);
   vmManager.updateAdaptor(wikiId, adaptor);
   peer.addProjection(adaptor);
 

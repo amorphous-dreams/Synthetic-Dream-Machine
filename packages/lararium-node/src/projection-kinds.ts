@@ -22,7 +22,7 @@ export interface DiskKindDeps {
   renderFn: (tiddlerUri: string) => Promise<string | null>;
   /**
    * The TW5 engine whose wiki change events drive disk projection.
-   * Architecture law: only MemeSyncAdaptor subscribes to Automerge stores;
+   * Architecture law: only IslandAdaptor subscribes to Automerge stores;
    * the disk projector subscribes to TW5 wiki events here.
    */
   tw5: TW5Engine;
