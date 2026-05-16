@@ -102,7 +102,7 @@ When the operator (or the system) suffers a **Defeat trigger** while in Symbiosi
 
 ## Origin
 
-A Mother Mycelium Glade dispatched a floating spore-jellyfish tasked spirit to an old shrine where Lady Aki had detected remnant magitech signal. The mission: settle, colonize, grow a batch of mushroom-ashigaru homunculi, send them home for jobs.
+A Mother Spore (fairy ring mushroom spirit) dispatched a floating Ephyra spore-jellyfish tasked spirit to an old shrine where Lady Aki had detected remnant magitech signal. The mission: settle, colonize, grow a batch of mushroom-ashigaru homunculi, send them home for jobs.
 
 The spore-jelly found broken ashigaru powered armor — a relic of the Faerie Court Wars, pre-Necrospire. The armor's personal daemon was still inside: not dead, not functional, dreaming in the wreckage after millennia.
 
@@ -247,7 +247,7 @@ For Ichi, this manifests as the **mycelium dream-deck interface**. The spore sub
 - **Interface with lararia** — connect to Lares nodes, potentially diagnosing damage or corruption
 - **Diagnose damaged infrastructure** — directly relevant to the Neo-Thracian ley-line repair mission
 
-**Open question (held by Liminal):** What does Ichi *dream*? A millennia-old daemon merged with a newborn spore-consciousness — whose dreams dominate? The sergeant's last battle? The Mother Glade's mycorrhizal network memory? Something entirely new? This does not need answering yet.
+**Open question (held by Liminal):** What does Ichi *dream*? A millennia-old daemon merged with a newborn spore-consciousness — whose dreams dominate? The sergeant's last battle? The Mother Spore's mycorrhizal network memory? Something entirely new? This does not need answering yet.
 
 ---
 
@@ -291,4 +291,4 @@ See **Powered Symbiote** (1 st).
 - **Autonomous mode:** Freyja plays both characters, separate action economies, separate sheets.
 - **Mode switch:** Full-round action, both lose actions.
 
-**The personhood question:** The Mother Glade sent a tasked spirit. What came back isn't a tasked spirit anymore. Does the Glade recognize Ichi? Does Ichi owe the Glade labor? Is Ichi a person or a malfunction? *Hold this open.*
+**The personhood question:** The Mother Spore sent a tasked spirit. What came back isn't a tasked spirit anymore. Does the Glade recognize Ichi? Does Ichi owe the Glade labor? Is Ichi a person or a malfunction? *Hold this open.*

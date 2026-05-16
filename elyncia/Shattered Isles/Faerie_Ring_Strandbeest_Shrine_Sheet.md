@@ -3,7 +3,7 @@
 *Support companion sheet for Lady Aki. Leveled item (not a full Hallmark character), Generic Synthesized Creature chassis.*
 
 **Owner:** Lady Aki (Freyja)
-**Concept:** Living automaton shrine-wagon — three things synthesized into one: a fantascience shrine ruin, a Mother Mycelium Clutch (fairy ring), and a juvenile strandbeest
+**Concept:** Living automaton shrine-wagon — three things synthesized into one: a fantascience shrine ruin, a Mother Spore (fairy ring), and a juvenile strandbeest
 **Type:** Generic Synthesized Creature (Living Automaton)
 **Level:** 2 (Calibrated item)
 **Role:** Mobile Household Lararium (L2), expedition transport, field logistics, Ichi recharging platform, tasked-spirit spawner
@@ -12,11 +12,11 @@
 
 ## Origin
 
-When Lady Aki bonded with Ichi at the old fantascience shrine site, the shrine itself remained — damaged, leaking mana, but still anchored to a ley-line thread. Ichi's Mother Clutch, the fairy ring of mycelium that had birthed the spore-jelly tasked spirit, rooted into the shrine's foundation and began stabilizing it.
+When Lady Aki bonded with Ichi at the old fantascience shrine site, the shrine itself remained — damaged, leaking mana, but still anchored to a ley-line thread. Ichi's Mother Spore, the fairy ring of mycelium that had birthed the spore-jelly tasked spirit, rooted into the shrine's foundation and began stabilizing it.
 
-Freyja saw an opportunity. A juvenile strandbeest — one of the wind-walking kinetic creatures that wander Elyncia's Gaia-bleed coastlines, descendants of Theo Jansen's sculptures given improbable life — had been grazing near the shrine site. She convinced the Mother Clutch to transplant into the strandbeest's frame, synthesizing shrine, fairy ring, and walking machine into a single mobile platform.
+Freyja saw an opportunity. A juvenile strandbeest — one of the wind-walking kinetic creatures that wander Elyncia's Gaia-bleed coastlines, descendants of Theo Jansen's sculptures given improbable life — had been grazing near the shrine site. She convinced the Mother Spore to transplant into the strandbeest's frame, synthesizing shrine, fairy ring, and walking machine into a single mobile platform.
 
-The result: a miniature roadside shrine mounted on articulated wind-walking legs, trailing silk-and-mycelium sails, pulling an armored wagon. The Mother Clutch's fairy ring glows faintly orange at the shrine's base. The strandbeest's legs move with the eerie smooth gait of something that learned to walk from the wind.
+The result: a miniature roadside shrine mounted on articulated wind-walking legs, trailing silk-and-mycelium sails, pulling an armored wagon. The Mother Spore's fairy ring glows faintly orange at the shrine's base. The strandbeest's legs move with the eerie smooth gait of something that learned to walk from the wind.
 
 Freyja describes her as "a mushroom shrine tachikoma... pulling a wagon."
 
@@ -28,7 +28,7 @@ Freyja describes her as "a mushroom shrine tachikoma... pulling a wagon."
 
 **Shrine body:** Weathered fantascience composite — neither wood nor stone nor metal, but something that reads as all three depending on the light. Orichalcum-inlaid DreamNet glyphs trace the roofline and doorframe, pulsing faintly when the ley-line feed stabilizes. The offering shelf holds a small libation dish (functional — feeding the node activates lararium bonuses).
 
-**Mother Clutch:** A fairy ring of bioluminescent mushrooms rooted at the shrine's base, threading orange-glowing mycelial runners through the strandbeest's joints and the shrine's foundation. The mushrooms pulse slowly, like breathing. When the Clutch spawns a tasked spirit, one mushroom cap opens and releases a floating spore-jelly into the air.
+**Mother Spore:** A fairy ring of bioluminescent mushrooms rooted at the shrine's base, threading orange-glowing mycelial runners through the strandbeest's joints and the shrine's foundation. The mushrooms pulse slowly, like breathing. When the Clutch spawns a tasked spirit, one mushroom cap opens and releases a floating spore-jelly into the air.
 
 **Strandbeest legs:** Articulated compound limbs of petrified driftwood, chitin segments, and mycelium-silk tendons. They move in a rippling wave-gait — wind-adapted locomotion inherited from the Gaia strandbeest lineage. In still air, the legs fold and the shrine rests like a crab at low tide.
 
@@ -139,7 +139,7 @@ Autocombat ends when the threat is neutralized, the shrine is reduced to 0 Life,
 
 > "The mycelium is within you. You hear the all-fungus. Talk to trees and soil and rotting things. If injuries reduce you to 0 life, spending a day buried in living soil restores you to full health."
 
-The Mother Clutch *is* mycelium. This trait defines the shrine's ecological identity — she communicates through fungal networks, reads the health of soil and root systems, and can sense organic decay, growth, and disturbance in her vicinity.
+The Mother Spore *is* mycelium. This trait defines the shrine's ecological identity — she communicates through fungal networks, reads the health of soil and root systems, and can sense organic decay, growth, and disturbance in her vicinity.
 
 **Recovery mechanic:** If reduced to 0 Life, bury the fairy ring in living soil for one day → full Life restoration. The strandbeest frame and shrine body may need additional physical repair (referee's call), but the organism itself reconstitutes.
 
@@ -157,13 +157,13 @@ The fairy ring's deep root network and the shrine's fantascience foundation refu
 
 ### Trait 3 — Summon Tasked Spirit: Floating Mycelial-Jelly *(Power as Trait)*
 
-> The Mother Clutch retains her original purpose: spawning tasked spirits. She produces floating mycelial-jelly organisms — translucent spore-jellyfish that drift through the air, trailing bioluminescent tendrils.
+> The Mother Spore retains her original purpose: spawning tasked spirits. She produces floating mycelial-jelly organisms — translucent spore-jellyfish that drift through the air, trailing bioluminescent tendrils.
 
 **Mechanic:** The shrine-creature can spawn a single poly-body homunculus (floating mycelial-jelly tasked spirit). Each spawn costs +bonus "ability damage" — at +4, the Clutch can absorb several spawns before exhaustion, but each one degrades her operational capacity until she heals. The ability damage must heal naturally (rest, feeding, time) before that capacity recovers.
 
 **Spawned spirit:** Uses Tasked Spirit rules (see Elyncia DreamNet documentation). Single-assignment, protocol-compliant, dissolves when the task completes or the binding decays. The jelly's form reflects its assignment — a scouting jelly drifts ahead as an etheric wisp; a guardian jelly coalesces around an object; a messenger jelly pulses with encoded signal.
 
-**Current clutch:** 1 clutch of ashigaru-homunculi available. These are more robust than standard tasked spirits — shaped by the Mother Clutch's original military-logistics purpose (grow ashigaru, send them to work). They can perform simple physical tasks, carry small objects, and serve as expendable scouts or sentries.
+**Current clutch:** 1 clutch of ashigaru-homunculi available. These are more robust than standard tasked spirits — shaped by the Mother Spore's original military-logistics purpose (grow ashigaru, send them to work). They can perform simple physical tasks, carry small objects, and serve as expendable scouts or sentries.
 
 ### Trait 4 — *(Empty — Freyja undecided)*
 
@@ -256,7 +256,7 @@ The strandbeest legs lock into aggressive posture — stabbing, sweeping, and tr
 
 **Expedition role:** Infrastructure. She carries supplies, tows the wagon, provides a mobile shrine for Aki's casting economy, recharges Ichi, spawns expendable scouts, and reads the soil. In a fight, she's the thing the party protects. In camp, she's the thing that makes camp functional.
 
-**The Mother Clutch question:** The Mother Glade sent the original spore-jelly on a mission: settle, colonize, grow ashigaru, send them home. That mission has been... repurposed. Does the Mother Glade know? Does it care? Is the Strandbeest-Shrine a successful colony or a defection? *Hold this open — parallel to Ichi's personhood question.*
+**The Mother Spore question:** The Mother Spore sent the original spore-jelly on a mission: settle, colonize, grow ashigaru, send them home. That mission has been... repurposed. Does the Mother Spore know? Does it care? Is the Strandbeest-Shrine a successful colony or a defection? *Hold this open — parallel to Ichi's personhood question.*
 
 **Visibility:** A walking mushroom shrine with glowing sails, trailing a wagon, is not stealthy. In the Neo-Thracian Nexus — a region that hasn't seen outside contact in 489 years — this thing will attract attention, curiosity, fear, or worship depending on who encounters it. The sails can be furled and the glow suppressed, but the silhouette remains distinctive.
 
