@@ -19,9 +19,8 @@ export { TW5Engine } from "./tw5-vm.js";
 export type { TW5CoreBootBlob, CameraRegistration, CameraMount } from "./tw5-vm.js";
 
 export { IslandAdaptor } from "./island-adaptor.js";
-/** @deprecated use IslandAdaptor */
-export { IslandAdaptor as MemeSyncAdaptor } from "./island-adaptor.js";
 export { MemoryTiddlerStore } from "./memory-store.js";
+export type { ProjectionStore } from "./memory-store.js";
 // VmPool and MemeRecipeVm are isomorphic contracts — they live in @lararium/mesh.
 // Import them from there: import { VmPool, MemeRecipeVm } from "@lararium/mesh".
 

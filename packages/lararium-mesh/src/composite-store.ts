@@ -330,7 +330,7 @@ export class CompositeStore implements LarTiddlerStore {
    * parseable bagStack field.  Reads from the highest-priority layer that
    * holds the tiddler (standard CompositeStore read semantics).
    *
-   * Recipe tiddlers arrive via MemeSyncAdaptor from the ha island.  Call this
+   * Recipe tiddlers arrive via IslandAdaptor from the ha island.  Call this
    * method after the peer boot sequence completes so ha is already in the store.
    *
    * Meme: lar:///ha.ka.ba/@lararium/mesh/v0.1/recipe

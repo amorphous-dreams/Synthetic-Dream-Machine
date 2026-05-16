@@ -109,7 +109,7 @@ export class AutomergeDocStore implements LarTiddlerStore {
     });
     // Carry a deleted record (rather than null) so listeners can reason about
     // which bag emitted the tombstone — needed by disk-projector unlink
-    // routing and by MemeSyncAdaptor's "remove only when no live copy" logic.
+    // routing and by IslandAdaptor's "remove only when no live copy" logic.
     const tombstone: LarTiddlerRecord = Object.freeze({
       title,
       fields:  Object.freeze({}),

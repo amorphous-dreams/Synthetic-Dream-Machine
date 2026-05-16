@@ -5,7 +5,7 @@
  *   Lifecycle     — start() wires addProjection or falls back to subscribe; stop() unsubscribes
  *   Inbound       — onUriChanged buffers pre-sync; onSyncComplete batch flush; post-sync deferred
  *   Outbound      — saveTiddler → store.put(); deleteTiddler → store.tombstone(); skip guards
- *   Accumulator   — flushAccumulator drains IslandAccumulator into wiki.transact()
+ *   Accumulator   — flushAll drains IslandAccumulator into wiki.transact()
  *   Echo guard    — _applying map prevents outbound round-trips during inbound apply
  *
  * All tests use FakeTW5Engine (no actual TW5 boot) and MemoryTiddlerStore
@@ -264,58 +264,6 @@ describe("IslandAdaptor — flushAll (N accumulators, recipe-ordered)", () => {
   });
 });
 
-describe("IslandAdaptor — flushAccumulator", () => {
-  test("drains accumulator changes into wiki.transact()", () => {
-    const tw5     = new FakeTW5Engine();
-    const store   = new MemoryTiddlerStore();
-    const adaptor = new IslandAdaptor(tw5 as never, store, INSTANCE_ID, TARGET_BAG);
-    const acc     = new IslandAccumulator();
-
-    acc.onSyncComplete("automerge"); // mark ready so accumulator accepts changes
-
-    // Enqueue two changes directly via the accumulator's MemeProjection interface.
-    acc.onUriChanged(liveChange("lar:///test/a", "a-text"));
-    acc.onUriChanged(liveChange("lar:///test/b", "b-text"));
-    expect(acc.pending).toBe(2);
-
-    adaptor.start();
-    adaptor.flushAccumulator(acc, 200);
-
-    expect(tw5.addTiddlerCalls).toHaveLength(2);
-    expect(acc.pending).toBe(0);
-  });
-
-  test("tombstone in accumulator → deleteTiddler called", () => {
-    const tw5     = new FakeTW5Engine();
-    const store   = new MemoryTiddlerStore();
-    const adaptor = new IslandAdaptor(tw5 as never, store, INSTANCE_ID, TARGET_BAG);
-    const acc     = new IslandAccumulator();
-
-    acc.onSyncComplete("automerge");
-    acc.onUriChanged(tombstone(LAR_URI));
-
-    adaptor.start();
-    adaptor.flushAccumulator(acc);
-
-    expect(tw5.deleteTiddlerCalls).toContain(LAR_URI);
-  });
-
-  test("budget cap — only drains up to budget entries per call", () => {
-    const tw5     = new FakeTW5Engine();
-    const store   = new MemoryTiddlerStore();
-    const adaptor = new IslandAdaptor(tw5 as never, store, INSTANCE_ID, TARGET_BAG);
-    const acc     = new IslandAccumulator();
-    acc.onSyncComplete("automerge");
-
-    for (let i = 0; i < 10; i++) acc.onUriChanged(liveChange(`lar:///test/${i}`, `v${i}`));
-
-    adaptor.start();
-    adaptor.flushAccumulator(acc, 4);
-
-    expect(tw5.addTiddlerCalls).toHaveLength(4);
-    expect(acc.pending).toBe(6);
-  });
-});
 
 // ---------------------------------------------------------------------------
 // Outbound — TW5 → CRDT

@@ -11,7 +11,7 @@
  *               deleteTiddler() → store.tombstone() (direct)
  *
  *   IslandAccumulator (registered separately via addProjection)
- *     post-sync crdt-remote buffering → drained per rAF frame via flushAccumulator()
+ *     post-sync crdt-remote buffering → drained per rAF frame via flushAll()
  *
  * $tw.syncer does NOT run.  No tiddler in the plugin bundle carries
  * module-type:syncadaptor — $tw.syncadaptor stays undefined at boot.
@@ -19,6 +19,8 @@
  *
  * Preserved invariants:
  *   Echo-loop guard   — _applying Map<key, ChangeOrigin> suppresses outbound during inbound
+ *                       key shapes: instanceId · islandId · `${instanceId}:cross-bag`
+ *                                   `${instanceId}:acc` · `${instanceId}:child` · `changeset:${kind}`
  *   Canon guard       — lar:///ha.ka.ba/ namespace is read-only (saveTiddler rejects)
  *   Temp guard        — $:/temp/* and $:/ never reach the store
  *   Draft suppression — "Draft of …" suppressed until M-E island
@@ -97,6 +99,14 @@ function bulkApply(tw5: TW5Engine, batch: Array<Record<string, string | string[]
   if (typeof wiki.transact === "function") wiki.transact(apply); else apply();
 }
 
+/** Assemble TW5 tiddler fields from a LarTiddlerRecord. */
+function recordToFields(rec: { title: string; text?: string; bag?: string; fields?: Record<string, string | string[]> }): Record<string, string | string[]> {
+  const out: Record<string, string | string[]> = { title: rec.title, ...rec.fields };
+  if (rec.text !== undefined) out["text"] = rec.text;
+  if (rec.bag)                out["bag"]  = rec.bag;
+  return out;
+}
+
 // ---------------------------------------------------------------------------
 // IslandAdaptor
 // ---------------------------------------------------------------------------
@@ -112,9 +122,11 @@ export class IslandAdaptor implements MemeProjection {
    * (M-bags) and carrier-child removes don't interfere.
    *
    *   instanceId              — standard inbound apply
-   *   edgeIslandId            — onSyncComplete batch flush
-   *   `${instanceId}:acc`     — flushAccumulator frame drain
+   *   islandId                — onSyncComplete batch flush
+   *   `${instanceId}:cross-bag` — async tombstone resolution
+   *   `${instanceId}:acc`     — flushAll frame drain
    *   `${instanceId}:child`   — carrier-child cleanup during deleteTiddler
+   *   `changeset:${kind}`     — onChangeset bulk path
    */
   private readonly _applying = new Map<string, ChangeOrigin>();
   private _isApplying(): boolean { return this._applying.size > 0; }
@@ -124,8 +136,7 @@ export class IslandAdaptor implements MemeProjection {
   /** Pre-sync inbound buffer, drained on onSyncComplete(). */
   private readonly _buffer = new Map<string, LarTiddlerChange[]>();
 
-  private _unsubscribe:    (() => void) | null = null;
-  private _unwatchCascade: (() => void) | null = null;
+  private _unsubscribe: (() => void) | null = null;
 
   constructor(
     private readonly tw5:   TW5Engine,
@@ -175,10 +186,7 @@ export class IslandAdaptor implements MemeProjection {
       await Promise.all(Array.from(uris).map(async (uri) => {
         const rec = await this.store.get(uri);
         if (!rec || rec.deleted) { toRemove.push(uri); return; }
-        const fields: Record<string, string | string[]> = { title: rec.title, ...rec.fields };
-        if (rec.text !== undefined) fields["text"] = rec.text;
-        if (rec.bag)  fields["bag"]  = rec.bag;
-        toAdd.push(fields);
+        toAdd.push(recordToFields(rec));
       }));
 
       const wiki = this.tw5.$tw.wiki;
@@ -210,11 +218,7 @@ export class IslandAdaptor implements MemeProjection {
         toRemove.push(change.title);
         for (const t of this._childUrisOf(change.title)) toRemove.push(t);
       } else {
-        const rec = change.record;
-        const fields: Record<string, string | string[]> = { title: rec.title, ...rec.fields };
-        if (rec.text !== undefined) fields["text"] = rec.text;
-        if (rec.bag) fields["bag"] = rec.bag;
-        toAdd.push(fields);
+        toAdd.push(recordToFields(change.record));
       }
     }
 
@@ -253,11 +257,6 @@ export class IslandAdaptor implements MemeProjection {
     }
   }
 
-  /** Single-accumulator convenience — delegates to flushAll. */
-  flushAccumulator(acc: IslandAccumulator, budget = 200): void {
-    this.flushAll([acc], budget);
-  }
-
   private _applyBatch(batch: LarTiddlerChange[]): void {
     const applyKey = `${this.instanceId}:acc`;
     const origin: ChangeOrigin = { kind: "crdt-remote", edgeIsland: "automerge" };
@@ -272,11 +271,7 @@ export class IslandAdaptor implements MemeProjection {
             wiki.deleteTiddler(change.title);
             for (const t of this._childUrisOf(change.title)) wiki.deleteTiddler(t);
           } else {
-            const rec = change.record;
-            const fields: Record<string, string | string[]> = { title: rec.title, ...rec.fields };
-            if (rec.text !== undefined) fields["text"] = rec.text;
-            if (rec.bag) fields["bag"] = rec.bag;
-            wiki.addTiddler(new Tiddler(fields));
+            wiki.addTiddler(new Tiddler(recordToFields(change.record)));
           }
         }
       };
@@ -296,20 +291,12 @@ export class IslandAdaptor implements MemeProjection {
     } else {
       this._unsubscribe = this.store.subscribe((change) => this._applyChange(change));
     }
-
-    // Invalidate the wiki-change listener for cascade-cache (outbound routing).
-    const cascadeHandler = () => { /* no cascade cache in this implementation */ };
-    this.tw5.$tw.wiki.addEventListener("change", cascadeHandler);
-    this._unwatchCascade = () => this.tw5.$tw.wiki.removeEventListener("change", cascadeHandler);
-
     return () => this.stop();
   }
 
   stop(): void {
     this._unsubscribe?.();
     this._unsubscribe = null;
-    this._unwatchCascade?.();
-    this._unwatchCascade = null;
   }
 
   // ---------------------------------------------------------------------------
@@ -383,13 +370,6 @@ export class IslandAdaptor implements MemeProjection {
     for (const t of this._childUrisOf(title)) wiki.deleteTiddler(t);
   }
 
-  private _applyLiveRecord(rec: LarTiddlerRecord): void {
-    const fields: Record<string, string | string[]> = { title: rec.title, ...rec.fields };
-    if (rec.text !== undefined) fields["text"] = rec.text;
-    if (rec.bag)  fields["bag"]  = rec.bag;
-    this.tw5.$tw.wiki.addTiddler(new this.tw5.$tw.Tiddler(fields));
-  }
-
   private _applyChange(change: LarTiddlerChange): void {
     if (change.origin.kind === "tw-local" && change.origin.instanceId === this.instanceId) return;
 
@@ -400,20 +380,41 @@ export class IslandAdaptor implements MemeProjection {
         // Cross-bag tombstone: only wipe TW5 when no live copy remains anywhere in the recipe.
         const store = this.store as { getLive?: (t: string) => Promise<LarTiddlerRecord | null> };
         if (typeof store.getLive === "function") {
-          void store.getLive(change.title).then((live) => {
-            const key = this.instanceId;
-            this._applying.set(key, change.origin);
-            try { live ? this._applyLiveRecord(live) : this._removeFromTw5(change.title); }
-            finally { this._applying.delete(key); }
-          });
+          // Guard held for the full async lifetime — key re-set inside the closure
+          // so the echo guard stays active through the microtask gap.
+          void this._applyCrossBagTombstone(change.title, change.origin, store.getLive.bind(store));
         } else {
           this._removeFromTw5(change.title);
         }
       } else {
-        this._applyLiveRecord(change.record);
+        this.tw5.$tw.wiki.addTiddler(new this.tw5.$tw.Tiddler(recordToFields(change.record)));
       }
     } finally {
       this._applying.delete(applyKey);
+    }
+  }
+
+  /**
+   * Cross-bag tombstone resolution — async path with explicit guard lifetime.
+   * The _applying key persists through the await so the echo guard never drops
+   * between the synchronous delete and the async getLive resolution.
+   */
+  private async _applyCrossBagTombstone(
+    title:   string,
+    origin:  ChangeOrigin,
+    getLive: (t: string) => Promise<LarTiddlerRecord | null>,
+  ): Promise<void> {
+    const key = `${this.instanceId}:cross-bag`;
+    this._applying.set(key, origin);
+    try {
+      const live = await getLive(title);
+      if (live) {
+        this.tw5.$tw.wiki.addTiddler(new this.tw5.$tw.Tiddler(recordToFields(live)));
+      } else {
+        this._removeFromTw5(title);
+      }
+    } finally {
+      this._applying.delete(key);
     }
   }
 

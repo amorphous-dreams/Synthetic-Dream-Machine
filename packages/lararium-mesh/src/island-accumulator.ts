@@ -13,7 +13,7 @@
  *
  * Platform-agnostic: no requestAnimationFrame import. The render loop in
  * TW5Engine.startRenderLoop() (browser) or a setInterval caller (Node)
- * drives flushAccumulator() on IslandAdaptor.
+ * drives flushAll() on IslandAdaptor.
  *
  * Spec: lar:///ha.ka.ba/@lares/api/v0.1/lararium/island-accumulator
  */

@@ -77,3 +77,10 @@ export class MemoryTiddlerStore implements LarTiddlerStore {
     return new Map(this._records);
   }
 }
+
+/**
+ * ProjectionStore — alias for MemoryTiddlerStore used as the BAG_IDS.projection
+ * composite layer.  Holds TW5 runtime state ($:/state/*, $:/StoryList, etc.)
+ * that never syncs or persists.  Comes up empty on every daemon restart.
+ */
+export type ProjectionStore = MemoryTiddlerStore;

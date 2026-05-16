@@ -352,7 +352,11 @@ export class TW5Engine {
    * The stylesheet camera (fakeDocument) and the story-river camera (window.document)
    * stay separate by design: CSS side-effects are not a view frustum.
    *
-   * @browser-only — moves to BrowserTW5Engine in the browser-layer extraction sprint.
+   * @browser-only
+   * ╔══════════════════════════════════════════════════════════════════════════╗
+   * ║  Browser HUD overlay — extract to BrowserTW5Engine when dreamdeck-app  ║
+   * ║  arrives and needs to import TW5Engine without pulling browser APIs.    ║
+   * ╚══════════════════════════════════════════════════════════════════════════╝
    */
   mountPanel(container: HTMLElement): () => void {
     if (!this._tw) throw new Error("TW5Engine: call boot() before mountPanel()");

@@ -18,4 +18,4 @@ export type LarOpenPhase =
   | "peer-ready"     // LarPeer constructed, CompositeStore wired
   | "tw5-booted"     // TW5Engine.boot() resolved
   | "corpus-ready"   // corpus bags attached (fires once all initial corpora loaded)
-  | "live";          // MemeSyncAdaptor wired, VmPool attached
+  | "live";          // IslandAdaptor wired, VmPool attached
