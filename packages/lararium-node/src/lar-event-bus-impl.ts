@@ -27,7 +27,7 @@ import type {
   LarEventStream,
   IngressRingDescriptor,
   LarEventBus,
-} from "@lararium/core";
+} from "@lararium/mesh";
 
 // ---------------------------------------------------------------------------
 // Internal types

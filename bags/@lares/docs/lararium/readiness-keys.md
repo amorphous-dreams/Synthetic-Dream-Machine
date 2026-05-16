@@ -15,7 +15,7 @@ role          = "lararium progressive readiness vocabulary — named shrine-ligh
 cacheable     = true
 retain        = true
 status-date   = "2026-05-01"
-source-file   = "packages/lararium-core/src/readiness.ts"
+source-file   = "packages/lararium-mesh/src/readiness.ts"
 source-symbol = "READINESS_KEYS"
 ```
 

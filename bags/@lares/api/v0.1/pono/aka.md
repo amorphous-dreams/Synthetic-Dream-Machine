@@ -96,7 +96,7 @@ Full pranala expansion:
 ## Schema (machine-readable)
 
 Canonical TOML form. Source of truth for `BUILTIN_AKA_RE` and `akaDefaultFamily`
-in `packages/lararium-core/src/pranala-parser.ts`.
+in `packages/lararium-mesh/src/pranala-parser.ts`.
 
 ```toml
 sigil          = "aka"

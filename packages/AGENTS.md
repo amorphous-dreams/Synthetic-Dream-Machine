@@ -47,7 +47,7 @@ Within-Nexus sync = Automerge CRDT (reliable). Cross-Nexus = explicit treaty, wi
 
 ## Package Map
 
-`@lararium/core` carries contracts and graph law. Keep this package TW5-neutral, browser-neutral, and Node-neutral. Put shared types, parsers, authority, lar:// URI resolution, Nexus identity primitives, FfzClock, presence slot types, capability schemas, stores, graph indexes, compiler, and crypto here.
+`@lararium/mesh` carries contracts and graph law. Keep this package TW5-neutral, browser-neutral, and Node-neutral. Put shared types, parsers, authority, lar:// URI resolution, Nexus identity primitives, FfzClock, presence slot types, capability schemas, stores, graph indexes, compiler, and crypto here.
 
 `@lararium/tw5` carries TiddlyWiki runtime integration. Put widget/render/filter work, carrier splitting, TOML AST helpers, generated TW5 core metadata, memory store, CRDT sync adaptor, and session-tier tiddler representation here. Treat disk projection as Node-shaped even when the barrel export exposes it.
 
@@ -73,7 +73,7 @@ Primary flow:
 
 ```text
 lares/ carriers
-  -> @lararium/core parser/compiler/indexes
+  -> @lararium/mesh parser/compiler/indexes
   -> LarTiddlerStore records
   -> MemeProvider projections
   -> @lararium/tw5 wiki + carrier children
@@ -143,7 +143,7 @@ pnpm -r --filter './packages/**' typecheck
 Focused package tests:
 
 ```sh
-pnpm --filter @lararium/core test
+pnpm --filter @lararium/mesh test
 pnpm --filter @lararium/tw5 test
 pnpm --filter @lararium/node test
 pnpm --filter @dreamdeck/tldraw test

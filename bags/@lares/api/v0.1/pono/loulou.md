@@ -90,7 +90,7 @@ Full pranala expansion:
 ## Schema (machine-readable)
 
 Canonical TOML form. Source of truth for `BUILTIN_LOULOU_RE` and `loulouDefaultFamily`
-in `packages/lararium-core/src/pranala-parser.ts`.
+in `packages/lararium-mesh/src/pranala-parser.ts`.
 
 ```toml
 sigil          = "loulou"

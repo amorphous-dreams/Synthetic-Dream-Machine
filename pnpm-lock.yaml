@@ -34,7 +34,16 @@ importers:
 
   ftls: {}
 
-  packages/lararium-core:
+  packages/lararium-keyhive:
+    dependencies:
+      '@keyhive/keyhive':
+        specifier: 0.0.0-alpha.56c
+        version: 0.0.0-alpha.56c
+      '@lararium/mesh':
+        specifier: workspace:*
+        version: link:../lararium-mesh
+
+  packages/lararium-mesh:
     dependencies:
       '@automerge/automerge-repo':
         specifier: ^2.5.5
@@ -59,15 +68,6 @@ importers:
         specifier: ^3.2.0
         version: 3.2.4(@types/node@24.12.3)(lightningcss@1.32.0)(tsx@4.21.0)
 
-  packages/lararium-keyhive:
-    dependencies:
-      '@keyhive/keyhive':
-        specifier: 0.0.0-alpha.56c
-        version: 0.0.0-alpha.56c
-      '@lararium/core':
-        specifier: workspace:*
-        version: link:../lararium-core
-
   packages/lararium-node:
     dependencies:
       '@automerge/automerge':
@@ -82,12 +82,12 @@ importers:
       '@automerge/automerge-repo-storage-nodefs':
         specifier: ^2.5.5
         version: 2.5.5
-      '@lararium/core':
-        specifier: workspace:*
-        version: link:../lararium-core
       '@lararium/keyhive':
         specifier: workspace:*
         version: link:../lararium-keyhive
+      '@lararium/mesh':
+        specifier: workspace:*
+        version: link:../lararium-mesh
       '@lararium/tw5':
         specifier: workspace:*
         version: link:../lararium-tw5
@@ -116,9 +116,9 @@ importers:
 
   packages/lararium-tw5:
     dependencies:
-      '@lararium/core':
+      '@lararium/mesh':
         specifier: workspace:*
-        version: link:../lararium-core
+        version: link:../lararium-mesh
       '@lares/core':
         specifier: workspace:*
         version: link:../lares-core
@@ -153,9 +153,9 @@ importers:
       '@automerge/automerge-repo-network-websocket':
         specifier: ^2.5.5
         version: 2.5.5
-      '@lararium/core':
+      '@lararium/mesh':
         specifier: workspace:*
-        version: link:../lararium-core
+        version: link:../lararium-mesh
       '@lararium/node':
         specifier: workspace:*
         version: link:../lararium-node

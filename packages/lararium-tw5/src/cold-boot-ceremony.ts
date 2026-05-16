@@ -77,7 +77,7 @@ export function didKeyFromVerifyingKey(verifyingKeyHex: string): string {
 }
 
 // ---------------------------------------------------------------------------
-// Tiddler URI helpers — inlined to avoid @lararium/core import in CJS
+// Tiddler URI helpers — inlined to avoid @lararium/mesh import in CJS
 // ---------------------------------------------------------------------------
 
 const SOCIAL_HOST        = "ha.ka.ba";

@@ -23,8 +23,8 @@ import { join, dirname }   from "path";
 import { fileURLToPath }   from "url";
 
 import { TW5Engine }       from "@lararium/tw5";
-import type { LarariumDoc } from "@lararium/core";
-import { ENGINE_CORE_ID, GRAMMAR_TAG } from "@lararium/core";
+import type { LarariumDoc } from "@lararium/mesh";
+import { ENGINE_CORE_ID, GRAMMAR_TAG } from "@lararium/mesh";
 
 const LARES_TW5_PLUGIN_TITLE = "lar:///plugins/lares/memetic-wikitext";
 

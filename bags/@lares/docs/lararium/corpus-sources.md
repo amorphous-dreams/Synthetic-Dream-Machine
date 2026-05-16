@@ -98,11 +98,11 @@ bag   = "wtf"
 note  = "Wizard.Thief.Fighter rules corpus"
 
 [[corpus]]
-name     = "@lararium/core"
-path     = "packages/lararium-core/memes"
+name     = "@lararium/mesh"
+path     = "packages/lararium-mesh/memes"
 bag      = "lararium"
-uri-rule = "lar:///ha.ka.ba/@lararium/core/v{version}/**"
-note     = "engine self-doc memes for @lararium/core TypeScript symbols"
+uri-rule = "lar:///ha.ka.ba/@lararium/mesh/v{version}/**"
+note     = "engine self-doc memes for @lararium/mesh TypeScript symbols"
 
 [[corpus]]
 name     = "@lararium/tw5"

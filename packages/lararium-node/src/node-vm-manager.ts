@@ -41,7 +41,7 @@
 import * as Automerge from "@automerge/automerge";
 import { Worker }     from "worker_threads";
 import type { DocHandle, DocHandleChangePayload } from "@automerge/automerge-repo";
-import type { MemeStoreDoc } from "@lararium/core";
+import type { MemeStoreDoc } from "@lararium/mesh";
 import { TW5Engine, IslandAdaptor } from "@lararium/tw5";
 import type { TW5CoreBootBlob } from "@lararium/tw5";
 import type { TiddlerFields } from "@lararium/tw5";

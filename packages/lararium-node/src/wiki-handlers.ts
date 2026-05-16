@@ -18,7 +18,7 @@ import {
   emptyMemeStoreDoc, ADMIN_BAG_ID, BAG_IDS, wikiLarUri, wikiDraftLarUri, recipeUri,
   CATALOG_DOC_URI, LARARIUM_DOC_URI, LARES_DOC_URI,
   parseBagStack, AutomergeDocStore,
-} from "@lararium/core";
+} from "@lararium/mesh";
 import { buildDirectRecord, IslandAdaptor, TW5Engine } from "@lararium/tw5";
 import type { TiddlerFields } from "@lararium/tw5";
 import type { CommandHandler } from "./command-dispatcher.js";

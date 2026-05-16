@@ -63,7 +63,7 @@ Build: `pnpm --filter @lararium/tw5 build:plugin`
  * This file is the causal-island boundary: text/x-memetic-wikitext enters,
  * TiddlerFields[] (parent + ahu-slot children) leave.
  *
- * Uses parseMemeText() from @lararium/core/meme-ast — isomorphic, no TW5 dep.
+ * Uses parseMemeText() from @lararium/mesh/meme-ast — isomorphic, no TW5 dep.
  * Does NOT depend on carrier-split.ts (deprecated web2-era code).
  *
  * Incoming (disk → wiki):
@@ -76,10 +76,10 @@ Build: `pnpm --filter @lararium/tw5 build:plugin`
  *   Inverts the incoming transform: reads child bodies, reconstructs definition form.
  */
 
-import { MemeStreamParser } from "@lararium/core";
-import type { MemeStreamEvent } from "@lararium/core";
-import { parseMemeText } from "@lararium/core/meme-ast";
-import type { MemeAstNode, AhuNode } from "@lararium/core/meme-ast";
+import { MemeStreamParser } from "@lararium/mesh";
+import type { MemeStreamEvent } from "@lararium/mesh";
+import { parseMemeText } from "@lararium/mesh/meme-ast";
+import type { MemeAstNode, AhuNode } from "@lararium/mesh/meme-ast";
 import { parseTaploFields } from "./toml-ast.js";
 
 export type TiddlerFields = Record<string, string | string[]>;

@@ -18,6 +18,6 @@
   },
   "dependencies": {
     "@keyhive/keyhive": "0.0.0-alpha.56c",
-    "@lararium/core":  "workspace:*"
+    "@lararium/mesh":  "workspace:*"
   }
 }

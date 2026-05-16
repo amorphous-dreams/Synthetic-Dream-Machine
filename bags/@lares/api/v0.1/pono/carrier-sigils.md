@@ -16,7 +16,7 @@ cacheable     = true
 retain        = true
 invariant     = true
 status-date   = "2026-04-30"
-source-file   = "packages/lararium-core/src/carrier.ts packages/lararium-core/src/pranala-parser.ts packages/lararium-core/src/meme-stream.ts"
+source-file   = "packages/lararium-mesh/src/carrier.ts packages/lararium-mesh/src/pranala-parser.ts packages/lararium-mesh/src/meme-stream.ts"
 source-symbol = "OODA_GLYPHS CarrierRating CarrierShape CarrierRecord BUILTIN_AHU_OPEN BUILTIN_BLOCK_RE BUILTIN_INLINE_RE BUILTIN_PAPALOHE_RE MemeStreamEvent"
 ```
 
@@ -138,7 +138,7 @@ papalohe   = "<<~ papalohe #id from -> to trigger:T fn:F >>" # reaction wire
 
 ```toml
 # MemeStreamEvent — streaming parse event taxonomy
-# Source: packages/lararium-core/src/meme-stream.ts
+# Source: packages/lararium-mesh/src/meme-stream.ts
 # SOH carries standard &#x0001; or Kapu DC1 &#x0011;
 # EOT carries &#x0004;/&#x0014; or return-throat <<~ -> ? >>
 [[stream-events]]

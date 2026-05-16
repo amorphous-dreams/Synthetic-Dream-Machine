@@ -15,7 +15,7 @@ role          = "catalog island doc schema — hallway doc naming all rooms, cor
 cacheable     = true
 retain        = true
 status-date   = "2026-05-01"
-source-file   = "packages/lararium-core/src/catalog.ts"
+source-file   = "packages/lararium-mesh/src/catalog.ts"
 source-symbol = "CatalogDoc"
 ```
 

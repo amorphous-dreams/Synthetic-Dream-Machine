@@ -13,7 +13,7 @@
 import { describe, test, expect } from "vitest";
 import { DirectMemeRecipeVm } from "../src/meme-recipe-vm.js";
 import type { TW5Engine } from "../src/tw5-vm.js";
-import type { LarTiddlerChange, ChangeOrigin } from "@lararium/core";
+import type { LarTiddlerChange, ChangeOrigin } from "@lararium/mesh";
 
 // ---------------------------------------------------------------------------
 // Minimal TW5Engine stub — only the surface used by DirectMemeRecipeVm

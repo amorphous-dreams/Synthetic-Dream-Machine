@@ -16,7 +16,7 @@ role          = "invariant pressure surface for Chapel Perilous weapon-carry and
 cacheable     = true
 hydrate       = true
 retain        = true
-source-file   = "packages/lararium-core/src/ast.ts"
+source-file   = "packages/lararium-mesh/src/ast.ts"
 source-symbol = "TOOLS TOOL_ASCII TOOL_FEED TOOL_APERTURE"
 ```
 
@@ -240,7 +240,7 @@ The agent MUST treat totalized pattern-lock as confidence register collapse.
 ## Schema (machine-readable)
 
 Canonical TOML form. Source of truth for `TOOLS`, `TOOL_ASCII`, `TOOL_FEED`, `TOOL_APERTURE`
-in `packages/lararium-core/src/ast.ts`.
+in `packages/lararium-mesh/src/ast.ts`.
 
 ```toml
 # Five orientation postures — Minor Arcana + Major Arcana (Arcana = Stone / empty hand)

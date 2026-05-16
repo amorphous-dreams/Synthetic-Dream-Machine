@@ -18,7 +18,7 @@
  *
  * FPI-5 (trim tab): all Node-specific code lives here.
  *
- * Boot phases: 10 LarOpenPhase transitions emitted; see LarOpenPhase in @lararium/core.
+ * Boot phases: 10 LarOpenPhase transitions emitted; see LarOpenPhase in @lararium/mesh.
  * waitHandleLocal: uses DocHandle.merge() (present in @automerge/automerge-repo@2.5.5).
  */
 
@@ -30,8 +30,8 @@ import { Repo }                         from "@automerge/automerge-repo";
 import { NodeFSStorageAdapter }         from "@automerge/automerge-repo-storage-nodefs";
 import { NodeWSServerAdapter }          from "@automerge/automerge-repo-network-websocket";
 import type { WebSocketServer }         from "isomorphic-ws";
-import type { CatalogDoc, MemeStoreDoc, LarariumDoc, IdentitiesDoc, CirclesDoc, SessionsDoc } from "@lararium/core";
-import type { MutableLarRecord }        from "@lararium/core";
+import type { CatalogDoc, MemeStoreDoc, LarariumDoc, IdentitiesDoc, CirclesDoc, SessionsDoc } from "@lararium/mesh";
+import type { MutableLarRecord }        from "@lararium/mesh";
 import {
   LarPeer, PEER_CAPABILITIES_NODE, OpenIdentitySlot,
   AutomergeDocStore, LarariumDocStore,
@@ -41,10 +41,10 @@ import {
   IDENTITIES_DOC_URI, CIRCLES_DOC_URI, SESSIONS_DOC_URI, ADMIN_BAG_ID,
   corpusLarUri, wikiLarUri, wikiDraftLarUri, BAG_IDS, recipeUri,
   VmPool, ENGINE_CORE_ID,
-}                                       from "@lararium/core";
-import type { MemeRecipeVm, LarOpenPhase } from "@lararium/core";
+}                                       from "@lararium/mesh";
+import type { MemeRecipeVm, LarOpenPhase } from "@lararium/mesh";
 import { TW5Engine, IslandAdaptor, DirectMemeRecipeVm, MemoryTiddlerStore } from "@lararium/tw5";
-import { IslandAccumulator } from "@lararium/core";
+import { IslandAccumulator } from "@lararium/mesh";
 import {
   loadGenesisIsland, reconcileIslandFromGenesis,
   reconcileWellKnownTiddlers,
@@ -70,11 +70,11 @@ import {
   createPinHandler, createUnpinHandler, createResidencyStatsHandler,
   createRegisterColdHandler,
 } from "./residency-handlers.js";
-import { BagResidencyManager }                      from "@lararium/core";
+import { BagResidencyManager }                      from "@lararium/mesh";
 import { KeyhiveProvider, AdminEventStore }         from "@lararium/keyhive";
 import { generateOrLoadOperatorKeypair, loadOperatorSigningSeed } from "./operator-key.js";
 import type { AdminVmResult }             from "./open-admin-vm.js";
-import { LAR_EVENT } from "@lararium/core";
+import { LAR_EVENT } from "@lararium/mesh";
 
 const __dir = dirname(fileURLToPath(import.meta.url));
 
@@ -89,7 +89,7 @@ const SOCIAL_BOOTSTRAP_PATH = join(DEFAULT_GENESIS_DIR, "social-bootstrap.json")
 // Title of the social bootstrap plugin tiddler baked by lararium:init.
 export const SOCIAL_BOOTSTRAP_PLUGIN_TITLE = "lar:///ha.ka.ba/@lararium/bootstrap/social";
 
-/** @see LarOpenPhase in @lararium/core */
+/** @see LarOpenPhase in @lararium/mesh */
 export type NodeOpenPhase = LarOpenPhase;
 
 export interface NodeLarPeerOptions {

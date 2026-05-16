@@ -116,7 +116,7 @@ Kukali maps this into memetic-wikitext:
 ## Schema (machine-readable)
 
 Canonical TOML form. Source of truth for the kukali case in
-`packages/lararium-core/src/parser.ts` and `packages/lararium-tw5/src/tw5-widgets.ts`.
+`packages/lararium-mesh/src/parser.ts` and `packages/lararium-tw5/src/tw5-widgets.ts`.
 
 ```toml
 sigil           = "kukali"

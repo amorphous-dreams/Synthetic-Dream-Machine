@@ -13,11 +13,11 @@
  * acyclic: source → pack-transcript → attestation, never the reverse.
  *
  * Agent/dev note: this module stays tw5-specific. The hash primitive (sha256HexSync)
- * lives in @lararium/core. The schema versioning string and the TW5-specific
+ * lives in @lararium/mesh. The schema versioning string and the TW5-specific
  * pack-step shape live here.
  */
 
-import { sha256HexSync } from "@lararium/core";
+import { sha256HexSync } from "@lararium/mesh";
 import { mkdirSync, readdirSync, readFileSync, writeFileSync } from "fs";
 import path from "path";
 

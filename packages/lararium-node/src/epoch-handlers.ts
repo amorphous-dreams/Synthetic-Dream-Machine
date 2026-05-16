@@ -25,7 +25,7 @@ import {
   type BagResidencyManager,
   emptyMemeStoreDoc, AutomergeDocStore,
   wikiLarUri, recipeUri, parseBagStack, LARARIUM_DOC_URI,
-} from "@lararium/core";
+} from "@lararium/mesh";
 import type { CommandHandler } from "./command-dispatcher.js";
 
 export interface EpochHandlerOptions {

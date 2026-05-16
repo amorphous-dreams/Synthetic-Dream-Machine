@@ -24,12 +24,12 @@ import { readFileSync, writeFileSync, mkdirSync, readdirSync, existsSync } from 
 import { join, dirname, basename } from "path";
 import { fileURLToPath }         from "url";
 
-import { cidV1Sha256, sha256HexBytesSync, utf8Bytes } from "@lararium/core";
+import { cidV1Sha256, sha256HexBytesSync, utf8Bytes } from "@lararium/mesh";
 import { TW5Engine }             from "@lararium/tw5";
 import { tw5PluginsRoot } from "@lararium/tw5/tw5-memes-root";
 import { TW5_VERSION, TW5_CORE_SCRIPT_FILENAME, TW5_CORE_DIR } from "@lararium/tw5";
 
-import type { LarariumDoc, LarariumBlobEntry } from "@lararium/core";
+import type { LarariumDoc, LarariumBlobEntry } from "@lararium/mesh";
 import {
   ENGINE_CORE_ID,
   LARARIUM_DOC_URI, CATALOG_DOC_URI, LARES_DOC_URI,
@@ -37,7 +37,7 @@ import {
   recipeUri,
   bagDescriptorUri,
   blobDescriptorUri,
-} from "@lararium/core";
+} from "@lararium/mesh";
 
 // ---------------------------------------------------------------------------
 // Helpers

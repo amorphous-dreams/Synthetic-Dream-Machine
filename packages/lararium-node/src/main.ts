@@ -41,8 +41,8 @@ import { REPO_ROOT }   from "./node-host.js";
 import {
   LarProjectionRegistry,
   LARES_DOC_URI, LARARIUM_DOC_URI,
-} from "@lararium/core";
-import type { CompositeStore }               from "@lararium/core";
+} from "@lararium/mesh";
+import type { CompositeStore }               from "@lararium/mesh";
 import { exportMemeText }                    from "@lararium/tw5";
 import { namedBagPath, wikiBagPath } from "./bag-paths.js";
 import type { BagMirrorConfig } from "./bag-paths.js";
@@ -187,7 +187,7 @@ async function main(): Promise<void> {
   // $:/tags/LarariumProjection once the admin VM lands (S5.6).
   const projections = new LarProjectionRegistry();
 
-  // TODO: ReactionEngine not yet implemented in @lararium/core. Re-register
+  // TODO: ReactionEngine not yet implemented in @lararium/mesh. Re-register
   // the "reaction" kind once it lands; current ReactionGraph maintenance is a
   // no-op here.
 

@@ -1,0 +1,39 @@
+{
+  "name": "@lararium/mesh",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./meme-ast": {
+      "import": "./dist/meme-ast/index.js",
+      "types": "./dist/meme-ast/index.d.ts"
+    },
+    "./cascade": {
+      "import": "./dist/cascade.js",
+      "types": "./dist/cascade.d.ts"
+    }
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "dev": "tsx src/index.ts"
+  },
+  "devDependencies": {
+    "tiddlywiki": "^5.4.0",
+    "vitest": "^3.2.0",
+    "tsx": "^4.19.0"
+  },
+  "dependencies": {
+    "@automerge/automerge-repo": "^2.5.5",
+    "@lares/core": "workspace:*",
+    "@noble/ed25519": "^3.1.0",
+    "@noble/hashes": "^2.2.0"
+  }
+}

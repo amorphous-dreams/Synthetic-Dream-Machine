@@ -16,7 +16,7 @@ cacheable     = true
 retain        = true
 invariant     = true
 status-date   = "2026-04-30"
-source-file   = "packages/lararium-core/src/resolver.ts"
+source-file   = "packages/lararium-mesh/src/resolver.ts"
 source-symbol = "CAPS_FILE_ROOTS VIRTUAL_CAPS_ROOTS STABLE_TUPLE_ROOT"
 ```
 
@@ -60,7 +60,7 @@ invariant memes. Hostful records never resolve to lares/ files.
 ## Schema (machine-readable)
 
 Canonical TOML form. Source of truth for `CAPS_FILE_ROOTS`, `VIRTUAL_CAPS_ROOTS`,
-`STABLE_TUPLE_ROOT` in `packages/lararium-core/src/resolver.ts`.
+`STABLE_TUPLE_ROOT` in `packages/lararium-mesh/src/resolver.ts`.
 
 ```toml
 # Root segments that resolve to lares/ directory trees on disk

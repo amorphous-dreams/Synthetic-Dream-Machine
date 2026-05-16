@@ -15,7 +15,7 @@ role          = "invariant interface: in-memory reaction graph — subscribe, fi
 cacheable     = true
 retain        = true
 invariant     = true
-source-file   = "packages/lararium-core/src/reaction-graph.ts"
+source-file   = "packages/lararium-mesh/src/reaction-graph.ts"
 source-symbol = "ReactionGraph RENDER_MODES REACTION_ROLES"
 ```
 
@@ -138,12 +138,12 @@ This preserves in-flight kukali suspensions across TW5 wiki-change events.
 
 ```toml
 # Render modes — canonical values for PranalaEdge.renderMode
-# Source: RENDER_MODES in packages/lararium-core/src/ast.ts
+# Source: RENDER_MODES in packages/lararium-mesh/src/ast.ts
 render-modes = ["papalohe"]
 # papalohe: listenable label at source (OUTPUT pin), subscribable label at target (INPUT pin)
 
 # Canonical roles for reaction family edges
-# Source: REACTION_ROLES in packages/lararium-core/src/ast.ts
+# Source: REACTION_ROLES in packages/lararium-mesh/src/ast.ts
 reaction-roles = ["listenable", "subscribable", "observes", "throttles", "debounces"]
 ```
 

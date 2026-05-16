@@ -86,7 +86,7 @@ Groups: `[full, #slot?, FROM, TO, listenable?, subscribable?]`
 ## Schema (machine-readable)
 
 Canonical TOML form. Source of truth for `BUILTIN_PAPALOHE_RE` and the papalohe parse case in
-`packages/lararium-core/src/pranala-parser.ts` and `packages/lararium-core/src/parser.ts`.
+`packages/lararium-mesh/src/pranala-parser.ts` and `packages/lararium-mesh/src/parser.ts`.
 
 ```toml
 sigil          = "papalohe"

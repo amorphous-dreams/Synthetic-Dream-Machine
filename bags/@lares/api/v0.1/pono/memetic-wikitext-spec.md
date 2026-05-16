@@ -146,7 +146,7 @@ When a renderer encounters `<<~ kahea lar:///uri >>`, it SHOULD embed that meme'
 
 ## AST Node Types
 
-The parse-time AST (`MemeAstNode` union, `packages/lararium-core/src/ast.ts`) uses 8 node kinds.
+The parse-time AST (`MemeAstNode` union, `packages/lararium-mesh/src/ast.ts`) uses 8 node kinds.
 Everything that is not an edge or scope boundary collapses into `SigilNode { sigilName, attrs, body }`.
 
 | Node kind | Covers | Notes |
@@ -915,7 +915,7 @@ LADDER_5  (scale, finest → coarsest):  action → round → turn → watch →
 OODA_HA_5 (phase, active → reflective): act   → decide → orient → observe → aftermath
 ```
 
-Exported from `packages/lararium-core/src/ast.ts` as `LADDER_5`, `OODA_HA_5`, `SCOPE_5`.
+Exported from `packages/lararium-mesh/src/ast.ts` as `LADDER_5`, `OODA_HA_5`, `SCOPE_5`.
 
 ### Alignment Table
 

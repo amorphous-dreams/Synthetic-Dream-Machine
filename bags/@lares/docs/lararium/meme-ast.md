@@ -29,14 +29,14 @@ Isomorphic memetic-wikitext AST parsing library.
 Runs in Node, Deno, browser, and TW5-era JS environments.
 No `fs`, `path`, or DOM imports.
 
-Composable source files in `packages/lararium-core/src/meme-ast/`:
+Composable source files in `packages/lararium-mesh/src/meme-ast/`:
 - `types.ts`   — `MemeAstNode` union types + `MemeNode` root
 - `scanner.ts` — `SigilScan` patterns + `collectEvents()`
 - `builder.ts` — `buildMemeAst()`: `ParseEvent[]` → `MemeAstNode[]`
 - `edges.ts`   — `edgesFromMemeAst()`: `MemeAstNode[]` → `PranalaEdge[]`
 - `parse.ts`   — `parseMemeText()` top-level entry (all three tiers)
 
-Public API sub-export: `@lararium/core/meme-ast`
+Public API sub-export: `@lararium/mesh/meme-ast`
 
 Vite CJS entry: `packages/lararium-tw5/src/meme-ast-entry.ts`
 Compiled artifact: `packages/lararium-tw5/tiddlers/src/meme-ast.js`

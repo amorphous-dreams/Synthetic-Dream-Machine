@@ -16,7 +16,7 @@ import {
   parseHostfulLarUri,
   isHostfulLarUri,
   abilityImplies,
-} from "@lararium/core";
+} from "@lararium/mesh";
 
 // Minimal inline grammar fixture — exercises [[sigils]] and [[families]] TOML
 // ---------------------------------------------------------------------------

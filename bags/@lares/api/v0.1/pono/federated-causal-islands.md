@@ -257,7 +257,7 @@ Cross-node causality errors become federation corruption.
 ## Schema (machine-readable)
 
 Canonical TOML form. Source of truth for `AUTHORITY_FIRST_ORDER`, `CAUSAL_ISLAND_MUST`, `CAUSAL_ISLAND_MAY`
-in `packages/lararium-core/src/causal-island.ts`.
+in `packages/lararium-mesh/src/causal-island.ts`.
 
 ```toml
 # Authority-first sync step order — gate failures at steps 1–3 close the connection

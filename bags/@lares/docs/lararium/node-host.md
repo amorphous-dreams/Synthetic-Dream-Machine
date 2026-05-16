@@ -61,7 +61,7 @@ interface-uris = [
 ]
 
 # Compiler entry point — first meme loaded by the graph compiler
-# Source: ENTRY_URI in packages/lararium-core/src/compiler.ts
+# Source: ENTRY_URI in packages/lararium-mesh/src/compiler.ts
 entry-uri = "lar:///AGENTS"
 
 # Lares root path — relative from compiled dist/, resolves to monorepo lares/
@@ -105,10 +105,10 @@ write-mode-value-required = "enabled"
 /**
  * @deprecated web2-era — all functions dead. See node-host.web2.ts for the original.
  * Rebuild target: meme-node-host.ts
- *   readCarrier        → readMeme (parseMemeText from @lararium/core/meme-ast)
+ *   readCarrier        → readMeme (parseMemeText from @lararium/mesh/meme-ast)
  *   compileCarrierIndex → compileMemeIndex (MemeRecord not CarrierRecord)
  *   compileBootArtifact → compileBootArtifact (same shape; new parser)
- *   loadGrammarRules   → grammarRulesFromText (@lararium/core/meme-grammar)
+ *   loadGrammarRules   → grammarRulesFromText (@lararium/mesh/meme-grammar)
  */
 
 import { join } from "path";

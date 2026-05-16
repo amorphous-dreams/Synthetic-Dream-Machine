@@ -40,7 +40,7 @@
     "smoke:plugin-provenance": "tsx scripts/smoke-plugin-provenance.ts"
   },
   "dependencies": {
-    "@lararium/core": "workspace:*",
+    "@lararium/mesh": "workspace:*",
     "@lares/core": "workspace:*",
     "@taplo/lib": "^0.5.0",
     "smol-toml": "^1.6.1",

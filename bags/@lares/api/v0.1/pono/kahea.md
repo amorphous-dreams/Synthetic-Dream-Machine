@@ -106,7 +106,7 @@ Full pranala expansion (URI form):
 ## Schema (machine-readable)
 
 Canonical TOML form. Source of truth for `BUILTIN_KAHEA_RE`, `kaheaDefaultFamily`,
-`kaheaDefaultPropagation` in `packages/lararium-core/src/pranala-parser.ts`.
+`kaheaDefaultPropagation` in `packages/lararium-mesh/src/pranala-parser.ts`.
 
 ```toml
 sigil          = "kahea"

@@ -132,7 +132,7 @@ A session that runs without any slider statement MUST default to `[HA^0.50]`.
 
 ## Schema (machine-readable)
 
-Canonical TOML form. Source of truth for `OODA_HA_5` in `packages/lararium-core/src/ast.ts`.
+Canonical TOML form. Source of truth for `OODA_HA_5` in `packages/lararium-mesh/src/ast.ts`.
 
 ```toml
 # OODA-HA phase cycle — active (act) → reflective (aftermath)

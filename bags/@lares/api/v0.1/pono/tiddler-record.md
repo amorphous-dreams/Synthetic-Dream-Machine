@@ -16,7 +16,7 @@ cacheable    = true
 retain       = true
 invariant    = true
 status-date   = "2026-04-30"
-source-file   = "packages/lararium-core/src/tiddler-store.ts"
+source-file   = "packages/lararium-mesh/src/tiddler-store.ts"
 source-symbol = "LarTiddlerRecord LarTiddlerStore ChangeOrigin LarTiddlerChange"
 ```
 

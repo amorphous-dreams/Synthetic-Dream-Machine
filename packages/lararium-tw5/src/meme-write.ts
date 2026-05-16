@@ -22,7 +22,7 @@
  */
 
 import type { TW5Engine } from "./tw5-vm.js";
-import type { LarTiddlerRecord } from "@lararium/core";
+import type { LarTiddlerRecord } from "@lararium/mesh";
 
 // ---------------------------------------------------------------------------
 // buildDirectRecord — sync-adaptor write path

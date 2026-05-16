@@ -10,7 +10,7 @@
 
 import type {
   LarProjectionKind, ReadinessMap,
-} from "@lararium/core";
+} from "@lararium/mesh";
 import type { TW5Engine } from "@lararium/tw5";
 import { LarDiskProjector } from "./disk-projector.js";
 import type { BagMirrorConfig } from "./bag-paths.js";

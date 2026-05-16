@@ -22,8 +22,8 @@ export { IslandAdaptor } from "./island-adaptor.js";
 /** @deprecated use IslandAdaptor */
 export { IslandAdaptor as MemeSyncAdaptor } from "./island-adaptor.js";
 export { MemoryTiddlerStore } from "./memory-store.js";
-// VmPool and MemeRecipeVm are isomorphic contracts — they live in @lararium/core.
-// Import them from there: import { VmPool, MemeRecipeVm } from "@lararium/core".
+// VmPool and MemeRecipeVm are isomorphic contracts — they live in @lararium/mesh.
+// Import them from there: import { VmPool, MemeRecipeVm } from "@lararium/mesh".
 
 export { DirectMemeRecipeVm, bootMemeRecipeVm } from "./meme-recipe-vm.js";
 
@@ -49,4 +49,4 @@ export type { WorkerFactory, AnyWorker } from "./tw5-worker-proxy.js";
 // ---------------------------------------------------------------------------
 
 export type { TiddlerFields } from "./deserializer.js";
-export type { FilterEngineFn } from "@lararium/core";
+export type { FilterEngineFn } from "@lararium/mesh";

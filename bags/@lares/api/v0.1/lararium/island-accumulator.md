@@ -13,7 +13,7 @@ manaoio     = 0.87
 role        = "frame-aligned CRDT patch buffer per bag — post-sync crdt-remote queue; drained by IslandAdaptor.flushAll()"
 cacheable   = true
 retain      = true
-source-file = "packages/lararium-core/src/island-accumulator.ts"
+source-file = "packages/lararium-mesh/src/island-accumulator.ts"
 docs        = "lar:///ha.ka.ba/@lares/docs/lararium/verse-mesh"
 ```
 
@@ -24,7 +24,7 @@ docs        = "lar:///ha.ka.ba/@lares/docs/lararium/verse-mesh"
 `IslandAccumulator` is the frame-aligned CRDT patch buffer for one bag
 in the Verse polychronous mesh.
 It implements `MemeProjection`.
-It lives in `@lararium/core` — platform-agnostic, zero TW5 dependency.
+It lives in `@lararium/mesh` — platform-agnostic, zero TW5 dependency.
 
 One `IslandAccumulator` instance exists per **bag per booted VM slot**.
 A recipe of N bags in a live VM slot holds N accumulators.

@@ -47,8 +47,8 @@ export async function buildPluginCjsTiddlers(outDir = TIDDLER_SRC_DIR): Promise<
       },
       resolve: {
         alias: {
-          "@lararium/core/meme-ast": path.resolve(ROOT, "../lararium-core/src/meme-ast/index.ts"),
-          "@lararium/core": path.resolve(ROOT, "../lararium-core/src/index.ts"),
+          "@lararium/mesh/meme-ast": path.resolve(ROOT, "../lararium-mesh/src/meme-ast/index.ts"),
+          "@lararium/mesh": path.resolve(ROOT, "../lararium-mesh/src/index.ts"),
         },
       },
     });

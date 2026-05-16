@@ -328,7 +328,7 @@ Envelope: <<~ँ₃ ...>>   Arc-scale
 <<~ pranala #implements-invariant ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/invariant family:control role:implements >>
 <<~ pranala #to-system-invariants ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/system-invariants family:relation role:grounds >>
 <<~ pranala #to-local-first ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/local-first family:relation >>
-<<~ pranala #to-ffz-clock ? -> lar:///ha.ka.ba/@lararium/core/v0.1/ffz-clock family:relation role:maps-onto >>
+<<~ pranala #to-ffz-clock ? -> lar:///ha.ka.ba/@lararium/mesh/v0.1/ffz-clock family:relation role:maps-onto >>
 <<~ pranala #to-meme ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/meme family:relation >>
 
 <<~/ahu >>

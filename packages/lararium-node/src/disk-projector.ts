@@ -26,7 +26,7 @@
 
 import { writeFileSync, mkdirSync, unlinkSync, existsSync } from "fs";
 import { join, resolve as resolvePath, dirname } from "path";
-import type { ReadinessMap } from "@lararium/core";
+import type { ReadinessMap } from "@lararium/mesh";
 import type { TW5Engine } from "@lararium/tw5";
 import type { BagMirrorConfig } from "./bag-paths.js";
 

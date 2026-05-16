@@ -17,8 +17,8 @@
 import { describe, test, expect, beforeEach } from "vitest";
 import { IslandAdaptor }      from "../src/island-adaptor.js";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
-import { IslandAccumulator }    from "@lararium/core";
-import type { LarTiddlerChange, ChangeOrigin } from "@lararium/core";
+import { IslandAccumulator }    from "@lararium/mesh";
+import type { LarTiddlerChange, ChangeOrigin } from "@lararium/mesh";
 
 // ---------------------------------------------------------------------------
 // FakeTW5Engine — minimal TW5Engine surface used by IslandAdaptor

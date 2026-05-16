@@ -118,7 +118,7 @@ export function didKeyFromVerifyingKey(verifyingKeyHex: string): string {
 }
 
 // ---------------------------------------------------------------------------
-// Tiddler URI helpers — inlined to avoid @lararium/core import in CJS
+// Tiddler URI helpers — inlined to avoid @lararium/mesh import in CJS
 // ---------------------------------------------------------------------------
 
 const SOCIAL_HOST        = "ha.ka.ba";
@@ -195,7 +195,7 @@ export function buildCeremonyTiddlers(
 
 <<~ ahu #edges >>
 
-<<~ pranala #to-social-doc ? -> lar:///ha.ka.ba/@lararium/core/v0.1/social-doc family:control role:writes >>
+<<~ pranala #to-social-doc ? -> lar:///ha.ka.ba/@lararium/mesh/v0.1/social-doc family:control role:writes >>
 <<~ pranala #to-did-key ? -> lar:///ha.ka.ba/@lares/api/v0.1/mu/the-four-tools family:alignment role:aligns >>
 <<~ pranala #to-module ? -> lar:///ha.ka.ba/@lararium/tw5/modules/cold-boot-ceremony family:control role:module >>
 

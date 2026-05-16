@@ -81,7 +81,7 @@ interface VerseEventConsumer {
 ```
 
 `ReactionEngine` implements this. `TW5Engine` depends only on this interface — never
-on `ReactionEngine` directly. The interface is defined in `@lararium/core`.
+on `ReactionEngine` directly. The interface is defined in `@lararium/mesh`.
 
 <<~/ahu >>
 

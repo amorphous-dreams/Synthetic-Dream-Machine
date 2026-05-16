@@ -205,7 +205,7 @@ The manager MUST NOT receive further operations after `disposeAll()` completes. 
 <<~ pranala #to-wiki-worker ? -> lar:///ha.ka.ba/@lararium/node/v0.1/lar-wiki-worker family:control role:depends >>
 <<~ pranala #to-open-node-lar-peer ? -> lar:///ha.ka.ba/@lararium/node/v0.1/open-node-lar-peer family:control role:used-by >>
 <<~ pranala #to-tw5 ? -> lar:///ha.ka.ba/@lararium/tw5/v0.1/tw5-engine family:runtime role:depends >>
-<<~ pranala #to-core-vmpool ? -> lar:///ha.ka.ba/@lararium/core/v0.1/vm-pool family:runtime role:depends >>
+<<~ pranala #to-core-vmpool ? -> lar:///ha.ka.ba/@lararium/mesh/v0.1/vm-pool family:runtime role:depends >>
 
 <<~/ahu >>
 

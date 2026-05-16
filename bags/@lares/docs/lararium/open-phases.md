@@ -15,7 +15,7 @@ role          = "lararium boot open-phase sequence, authority envelope modes, ke
 cacheable     = true
 retain        = true
 status-date   = "2026-04-30"
-source-file   = "packages/lararium-core/src/live-protocol.ts"
+source-file   = "packages/lararium-mesh/src/live-protocol.ts"
 source-symbol = "LarariumOpenPhase LarariumAuthorityEnvelope"
 ```
 

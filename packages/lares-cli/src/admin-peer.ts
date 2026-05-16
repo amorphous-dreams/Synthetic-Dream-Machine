@@ -21,7 +21,7 @@ import {
   ADMIN_BAG_ID, AutomergeDocStore, CompositeStore,
   buildCommandTiddler, COMMAND_URI_PREFIX, COMMAND_EVENT_URI_PREFIX,
   type MemeStoreDoc,
-} from "@lararium/core";
+} from "@lararium/mesh";
 import { repoRoot } from "@lares/core";
 
 export interface AdminPeerHandle {

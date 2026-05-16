@@ -20,8 +20,8 @@
  */
 
 import type { AutomergeUrl, DocHandle, Repo } from "@automerge/automerge-repo";
-import type { MemeStoreDoc } from "@lararium/core";
-import { ADMIN_BAG_ID, CompositeStore, AutomergeDocStore, emptyMemeStoreDoc } from "@lararium/core";
+import type { MemeStoreDoc } from "@lararium/mesh";
+import { ADMIN_BAG_ID, CompositeStore, AutomergeDocStore, emptyMemeStoreDoc } from "@lararium/mesh";
 import { TW5Engine, IslandAdaptor } from "@lararium/tw5";
 import type { TW5CoreBootBlob } from "@lararium/tw5";
 import { waitHandleLocal } from "./repo-helpers.js";

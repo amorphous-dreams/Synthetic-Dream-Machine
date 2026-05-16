@@ -19,7 +19,7 @@
  *   - src/*.js      — generated CJS module tiddlers (built by Vite)
  */
 
-import { sha256HexSync } from "@lararium/core";
+import { sha256HexSync } from "@lararium/mesh";
 import { readFileSync, writeFileSync, mkdirSync, mkdtempSync, rmSync, cpSync, copyFileSync, existsSync } from "fs";
 import { spawnSync } from "child_process";
 import { tmpdir } from "os";
@@ -59,7 +59,7 @@ const TW5_BIN = path.join(ROOT, "../../node_modules/.pnpm/node_modules/.bin/tidd
 const SHA_FIELD_RE  = /^body-sha256\s*=\s*"[^"]*"/m;
 const TOML_BLOCK_RE = /(```toml[\s\S]*?```)/;
 
-/** sha256 — local alias to sha256HexSync from @lararium/core (build-time only). */
+/** sha256 — local alias to sha256HexSync from @lararium/mesh (build-time only). */
 const sha256 = sha256HexSync;
 
 function patchSha256(meme: string, digest: string): string {

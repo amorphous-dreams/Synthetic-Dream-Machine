@@ -16,7 +16,7 @@ cacheable     = true
 retain        = true
 invariant     = true
 status-date   = "2026-04-30"
-source-file   = "packages/lararium-core/src/pranala-parser.ts"
+source-file   = "packages/lararium-mesh/src/pranala-parser.ts"
 source-symbol = "KNOWN_FAMILIES FAMILY_ROLES FAMILY_CONTRACTS"
 ```
 
@@ -54,7 +54,7 @@ the edge confidence must not exceed the source node's confidence.
 ## Schema (machine-readable)
 
 Canonical TOML form. Source of truth for `KNOWN_FAMILIES`, `FAMILY_ROLES`, `FAMILY_CONTRACTS`
-in `packages/lararium-core/src/pranala-parser.ts`.
+in `packages/lararium-mesh/src/pranala-parser.ts`.
 
 ```toml
 # Eight canonical pranala families — order is declaration order, not priority

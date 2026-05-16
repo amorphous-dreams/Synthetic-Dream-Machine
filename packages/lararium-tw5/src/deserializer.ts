@@ -14,7 +14,7 @@ module-type: tiddlerdeserializer
  * This file is the causal-island boundary: text/x-memetic-wikitext enters,
  * TiddlerFields[] (parent + ahu-slot children) leave.
  *
- * Uses parseMemeText() from @lararium/core/meme-ast — isomorphic, no TW5 dep.
+ * Uses parseMemeText() from @lararium/mesh/meme-ast — isomorphic, no TW5 dep.
  * Does NOT depend on carrier-split.ts (deprecated web2-era code).
  *
  * Incoming (disk → wiki):
@@ -27,16 +27,16 @@ module-type: tiddlerdeserializer
  *   Inverts the incoming transform: reads child bodies, reconstructs definition form.
  */
 
-import { MemeStreamParser } from "@lararium/core";
-import type { MemeStreamEvent } from "@lararium/core";
+import { MemeStreamParser } from "@lararium/mesh";
+import type { MemeStreamEvent } from "@lararium/mesh";
 import {
   CONTROL_SLOTS,
   findTopLevelAhuBlocks,
   composeSlotPath,
-} from "@lararium/core/meme-ast";
+} from "@lararium/mesh/meme-ast";
 import { parseTaploFields } from "./toml-ast.js";
 import { getGrammar, resetGrammar } from "./grammar-cache.js";
-export type { GrammarRules } from "@lararium/core";
+export type { GrammarRules } from "@lararium/mesh";
 export { getGrammar, resetGrammar };
 
 export type TiddlerFields = Record<string, string | string[]>;

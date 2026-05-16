@@ -4,7 +4,7 @@
 > Revised: 2026-05-14 (pono rewrite → P0 ✓ P1 ✓ P2 ✓ — typecheck clean)  
 > Branch: `feature/lararium-node-3`  
 > Primary package: `@lararium/tw5` (`packages/lararium-tw5/`)  
-> Cross-package: `@lararium/core` (`packages/lararium-core/`) receives extracted primitives  
+> Cross-package: `@lararium/mesh` (`packages/lararium-mesh/`) receives extracted primitives  
 > Frame: e-prime OODA-HA, web3/local-first provenance, CID-unified
 
 ---
@@ -19,17 +19,17 @@
 
 | Package | npm name | Purpose |
 |---|---|---|
-| `packages/lararium-core/` | `@lararium/core` | Runtime infra: parsers, authority, automerge, crypto, meme-provider, resolver |
+| `packages/lararium-mesh/` | `@lararium/mesh` | Runtime infra: parsers, authority, automerge, crypto, meme-provider, resolver |
 | `packages/lares-core/` | `@lares/core` | Quine-corpus: grammar, schema, memes, operator constitution, carrier content |
 
-`@lararium/core` already depends on `@noble/hashes` and carries `src/crypto.ts`.
+`@lararium/mesh` already depends on `@noble/hashes` and carries `src/crypto.ts`.
 The build provenance hash primitives belong there, not duplicated in tw5's
 `plugin-build/`.
 
 **The CID alignment intent:**  
 The genesis blob descriptor model and the build attestation model solve the same
 problem with different shapes — content-addressed provenance. This sprint begins
-converging them. The hash primitive moves to `@lararium/core`. Future work
+converging them. The hash primitive moves to `@lararium/mesh`. Future work
 (P4/separate sprint) raises those hex digests to proper CIDs once the primitive
 stabilizes in core and the genesis flow adopts it.
 
@@ -64,7 +64,7 @@ plugin.info + static .tid + TS module sources
 
 1. `sha256()` appears as a duplicate in both `plugin-build/module-manifest.ts`
    and `scripts/build-plugin-tiddler.ts`. Neither imports the other. This
-   diverges the primitive from `@lararium/core`'s `src/crypto.ts`.
+   diverges the primitive from `@lararium/mesh`'s `src/crypto.ts`.
 2. Static `.tid` verification checks title presence only — field drift (`type`,
    `tags`) and body drift go undetected.
 3. The TW5 CLI pack step runs as trusted magic; no transcript proves the input
@@ -83,7 +83,7 @@ plugin.info + static .tid + TS module sources
   manifests.
 - Keep `lar:///plugins/lares/memetic-wikitext` canonical.
 - Keep `$:/plugins/lares/memetic-wikitext` as compatibility-only output.
-- `@lararium/core` MUST NOT import TW5, React, filesystem APIs, or DOM APIs.
+- `@lararium/mesh` MUST NOT import TW5, React, filesystem APIs, or DOM APIs.
   The hash primitive extracted there stays pure: no fs, no path, no TW5.
 - `@lares/core` owns no build tooling. Do not move build primitives there.
 
@@ -91,40 +91,40 @@ plugin.info + static .tid + TS module sources
 
 ## ◇ Decide — Work Packages
 
-### P0 — Extract hash primitive to `@lararium/core`
+### P0 — Extract hash primitive to `@lararium/mesh`
 
-> **Owner package:** `@lararium/core` (`packages/lararium-core/src/`)  
+> **Owner package:** `@lararium/mesh` (`packages/lararium-mesh/src/`)  
 > **Why first:** P1 and P2 both depend on this primitive. Doing P1/P2 against
 > the duplicated tw5-local sha256 re-embeds the debt.
 
 **Context for arriving agents:**  
-`src/crypto.ts` in `@lararium/core` already exists. Check whether it already
+`src/crypto.ts` in `@lararium/mesh` already exists. Check whether it already
 exports a utf8 sha256 hex function before adding one. `@noble/hashes` provides
 `sha256` from `@noble/hashes/sha256` — use that, not Node's `createHash`.
 The tw5 plugin-build runs at Node build time, so a Node-only import path from
-`@lararium/core` works fine here (no browser bundle risk for build scripts).
+`@lararium/mesh` works fine here (no browser bundle risk for build scripts).
 
 Todo:
 
-- [x] Read `packages/lararium-core/src/crypto.ts` — determine whether a
+- [x] Read `packages/lararium-mesh/src/crypto.ts` — determine whether a
       `sha256Hex(text: string): string` export already exists.
-- [x] If not: add `sha256HexSync` to `@lararium/core/src/crypto.ts` using
+- [x] If not: add `sha256HexSync` to `@lararium/mesh/src/crypto.ts` using
       `@noble/hashes/sha2.js`. Keep the signature pure: string in, hex string
       out. (Named `sha256HexSync` to signal build-time-only per crypto doctrine.)
-- [x] Export `sha256HexSync` from `@lararium/core`'s barrel (`src/index.ts`).
+- [x] Export `sha256HexSync` from `@lararium/mesh`'s barrel (`src/index.ts`).
 - [x] In `packages/lararium-tw5/plugin-build/module-manifest.ts`: replace the
       local `sha256()` implementation with an import of `sha256HexSync` from
-      `@lararium/core`.
+      `@lararium/mesh`.
 - [x] In `packages/lararium-tw5/scripts/build-plugin-tiddler.ts`: replace the
       local `sha256()` implementation with the same import.
-- [x] Run `pnpm --filter @lararium/core typecheck` and
+- [x] Run `pnpm --filter @lararium/mesh typecheck` and
       `pnpm --filter @lararium/tw5 typecheck`. Both must pass.
 
 Acceptance:
 
 - [x] No `createHash` calls remain in `plugin-build/` or `scripts/build-plugin-tiddler.ts`.
-- [x] `@lararium/core` exports `sha256HexSync`.
-- [x] Both tw5 files import it from `@lararium/core`.
+- [x] `@lararium/mesh` exports `sha256HexSync`.
+- [x] Both tw5 files import it from `@lararium/mesh`.
 - [x] Typechecks pass in both packages.
 
 ---
@@ -220,7 +220,7 @@ Acceptance:
 
 **Orientation:**  
 The genesis blob descriptor model (`packages/lararium-node/` — see `scripts/`
-and `src/causal-island.ts` in `@lararium/core`) and the build attestation model
+and `src/causal-island.ts` in `@lararium/mesh`) and the build attestation model
 in this sprint both express "content identity" as sha256 hex strings. The
 Elyncian design intent points toward CID-style addresses (multihash + codec
 prefix), which the Automerge doc addressing model parallels.
@@ -230,19 +230,19 @@ separate schemas later.
 
 **Spike tasks:**
 
-- [x] Read `packages/lararium-core/src/causal-island.ts` and the genesis scripts
+- [x] Read `packages/lararium-mesh/src/causal-island.ts` and the genesis scripts
       in `packages/lararium-node/`. Note the content-address model they use.
 - [x] Determine whether `@noble/hashes` + a minimal CID prefix function (no full
       `multiformats` dep required — just `\x12\x20` + sha256 bytes → base32
       encode) satisfies both build provenance and genesis provenance.
 - [x] Write a short ADR (Architecture Decision Record) as a comment block in
-      `packages/lararium-core/src/crypto.ts` or as an inline note here.
+      `packages/lararium-mesh/src/crypto.ts` or as an inline note here.
   - Build provenance and runtime genesis both adopt CIDv1 raw SHA-256 as the
     canonical address format where practical.
   - Base32 lowercase (`b...`) works best for JSON, shell output, and TW5
     compatibility; it avoids uppercase and padding issues.
 - [x] Outcome: a real `cidV1Sha256(content: Uint8Array): string` export added
-      to `@lararium/core/src/crypto.ts`, plus runtime support for `packages/lararium-node/`.
+      to `@lararium/mesh/src/crypto.ts`, plus runtime support for `packages/lararium-node/`.
 
 ---
 
@@ -265,7 +265,7 @@ Do not create a separate changelog file — update this sprint doc in place.
   the temp dir, or should it hash everything including generated modules? The
   answer affects whether two identical source builds produce identical
   transcripts.
-- When `@lararium/core` exports `sha256Hex`, should it also export a
+- When `@lararium/mesh` exports `sha256Hex`, should it also export a
   `sha256HexAsync` for future streaming use, or keep the primitive synchronous
   only? (Probably synchronous — don't over-engineer for build tooling.)
 - The `@lares/core` description says "persona/api/etc." — does any build

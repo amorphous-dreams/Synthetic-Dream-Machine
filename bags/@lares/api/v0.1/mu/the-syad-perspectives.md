@@ -16,7 +16,7 @@ role          = "syad reading invariant, register metaphysics anchor, stance-con
 cacheable     = true
 hydrate       = true
 retain        = true
-source-file   = "packages/lararium-core/src/ast.ts"
+source-file   = "packages/lararium-mesh/src/ast.ts"
 source-symbol = "STANCES SYAD_7 STANCE_SYAD SATIRIST_OPERATIONAL"
 ```
 
@@ -202,7 +202,7 @@ Discordian witness texts can also rest in library space.
 ## Schema (machine-readable)
 
 Canonical TOML form. Source of truth for `STANCES`, `SYAD_7`, `STANCE_SYAD`, `SATIRIST_OPERATIONAL`
-in `packages/lararium-core/src/ast.ts`.
+in `packages/lararium-mesh/src/ast.ts`.
 
 ```toml
 # Five epistemic standpoints — order is fixed: Philosopher · Poet · Satirist · Humorist · Private

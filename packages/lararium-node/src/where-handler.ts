@@ -13,7 +13,7 @@
  *   primaryBag  — record.bag for the read result; null when not found
  */
 
-import type { CompositeStore } from "@lararium/core";
+import type { CompositeStore } from "@lararium/mesh";
 import type { CommandHandler } from "./command-dispatcher.js";
 
 export interface WhereHandlerOptions {

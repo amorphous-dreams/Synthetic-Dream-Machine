@@ -8,7 +8,7 @@
  */
 
 import type { CommandHandler } from "./command-dispatcher.js";
-import type { BagResidencyManager } from "@lararium/core";
+import type { BagResidencyManager } from "@lararium/mesh";
 
 export interface ResidencyHandlerOptions {
   readonly residency: BagResidencyManager;

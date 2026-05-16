@@ -22,7 +22,7 @@ import type {
   LarTiddlerChange,
   LarTiddlerStore,
   ChangeOrigin,
-} from "@lararium/core";
+} from "@lararium/mesh";
 
 export class MemoryTiddlerStore implements LarTiddlerStore {
   private _records = new Map<string, LarTiddlerRecord>();

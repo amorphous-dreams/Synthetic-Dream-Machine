@@ -41,7 +41,7 @@ import {
   parseCommandTiddler, buildRunningPatch,
   buildCommandEventTiddler,
   ADMIN_BAG_ID,
-} from "@lararium/core";
+} from "@lararium/mesh";
 
 /** Result shape for ctx.cap(...) calls — same shape as KeyhiveProvider.verify. */
 export interface CapVerifyResult {

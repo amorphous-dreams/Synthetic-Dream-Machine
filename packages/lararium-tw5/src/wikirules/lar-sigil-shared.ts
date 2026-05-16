@@ -10,7 +10,7 @@
  * tiddler — Vite inlines the imports).
  */
 
-import type { GrammarRules } from "@lararium/core";
+import type { GrammarRules } from "@lararium/mesh";
 
 export interface ParseTreeNode {
   readonly type:        string;

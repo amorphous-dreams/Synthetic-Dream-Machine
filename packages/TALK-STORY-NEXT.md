@@ -54,7 +54,7 @@ Causal-island ↔ TW5 wiki bridge. Implements `MemeProjection`. Owns:
 
 Invariants I-1–I-8 in `bags/@lares/api/v0.1/lararium/island-adaptor.md`.
 
-**`IslandAccumulator`** (`packages/lararium-core/src/island-accumulator.ts`)
+**`IslandAccumulator`** (`packages/lararium-mesh/src/island-accumulator.ts`)
 Frame-aligned CRDT patch buffer. Implements `MemeProjection`. Platform-agnostic —
 zero rAF, zero TW5, zero browser import. Owns:
 - Post-sync `crdt-remote` only — gate armed by `onSyncComplete()`
@@ -292,7 +292,7 @@ Drive with `setInterval(() => adaptor.flushAll(accumulators, budget), 16)`.
 pnpm test:unit                                                       # 48/48
 pnpm --filter @lararium/tw5 build                                    # 18 modules → 119 tiddlers
 pnpm --filter @lararium/tw5 exec tsx scripts/smoke-plugin-boot.ts    # shadow + grammar check
-pnpm --filter @lararium/core exec tsc --noEmit
+pnpm --filter @lararium/mesh exec tsc --noEmit
 pnpm --filter @lararium/tw5  exec tsc --noEmit
 pnpm --filter @lararium/node exec tsc --noEmit
 ```
@@ -300,10 +300,10 @@ pnpm --filter @lararium/node exec tsc --noEmit
 | File | Role |
 |---|---|
 | `packages/lararium-tw5/src/island-adaptor.ts` | causal-island bridge |
-| `packages/lararium-core/src/island-accumulator.ts` | frame buffer |
+| `packages/lararium-mesh/src/island-accumulator.ts` | frame buffer |
 | `packages/lararium-tw5/src/tw5-vm.ts` | `CameraRegistration` · `startRenderLoop` |
 | `packages/lararium-tw5/src/grammar-cache.ts` | `buildGrammarFromWiki` |
-| `packages/lararium-core/src/grammar-invariants.ts` | `GRAMMAR_TAG` |
+| `packages/lararium-mesh/src/grammar-invariants.ts` | `GRAMMAR_TAG` |
 | `packages/lararium-tw5/tiddlers/sigil-*.tid` | SharktoothSigil grammar tiddlers |
 | `bags/@lares/api/v0.1/lararium/island-adaptor.md` | I-1 through I-8 |
 | `bags/@lares/api/v0.1/lararium/island-accumulator.md` | A-1 through A-5 |

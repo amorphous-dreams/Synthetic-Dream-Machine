@@ -25,7 +25,7 @@ import { Repo } from "@automerge/automerge-repo";
 import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
 import {
   IDENTITIES_DOC_URI, CIRCLES_DOC_URI, SESSIONS_DOC_URI, ADMIN_BAG_ID,
-} from "@lararium/core";
+} from "@lararium/mesh";
 import { buildCeremonyTiddlers } from "@lararium/tw5";
 import { repoRoot } from "@lares/core";
 import {

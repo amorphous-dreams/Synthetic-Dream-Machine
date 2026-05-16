@@ -15,7 +15,7 @@
 
 import { describe, test, expect, afterEach } from "vitest";
 import type { DocHandle } from "@automerge/automerge-repo";
-import type { MemeStoreDoc } from "@lararium/core";
+import type { MemeStoreDoc } from "@lararium/mesh";
 import { NodeVmManager } from "../src/node-vm-manager.js";
 import type { WorkerMsg_Event } from "../src/lar-worker-protocol.js";
 

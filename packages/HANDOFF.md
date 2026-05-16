@@ -1,6 +1,6 @@
 # Lares Handoff — Active Work Only
 
-> Updated: 2026-05-16 (turn 12)
+> Updated: 2026-05-16 (turn 13)
 > Branch: `feature/lararium-node-4`
 > Last sprint archive: `wikis/lares-history/last-sprint/`
 
@@ -25,7 +25,7 @@ hoolele.md, verse-task-tree.md, verse-type-lattice.md; six-operator ontology
 complete; TW5 wiki declared primary reactive engine; one graph not two; fireSync
 gap documented; sigil-tick.tid stub registered), AND the grammar self-hosting
 completion sprint (smol-toml as TW5 library tiddler; sigil-toml SharktoothSigil
-tiddler; meme-grammar.ts deleted; GRAMMAR_TAG exported from @lararium/core;
+tiddler; meme-grammar.ts deleted; GRAMMAR_TAG exported from @lararium/mesh;
 grammarRulesFromText fully retired), AND the Verse polychronous CRDT mesh sprint
 (meme-sync-adaptor.ts deleted; IslandAdaptor + IslandAccumulator replace it;
 $tw.syncer provably dead; N-accumulator flushAll + startRenderLoop wired;
@@ -45,6 +45,14 @@ Rules: preserve TW5 VM primacy, bag=Automerge-doc=sync-boundary, no HTTP/RPC
 coordination surface, and explicit operator promotion for canon. Web3 only —
 no web2 models/code/flows in Lares stack.
 ```
+
+## What Changed This Turn (2026-05-16 turn 13)
+
+### lararium-core → lararium-mesh rename
+
+`packages/lararium-core` → `packages/lararium-mesh`; `bags/@lararium/core` → `bags/@lararium/mesh`; `@lararium/core` → `@lararium/mesh` everywhere (imports, package.json, vitest configs, meme corpus, docs). Mechanical sed sweep + pnpm reinstall. 167/167 tests pass; typecheck clean.
+
+---
 
 ## What Changed This Turn (2026-05-16 turn 12)
 
@@ -80,10 +88,10 @@ Vitest v3.2 runs native ESM; same `describe`/`test`/`expect` API; no API changes
 any test file beyond the import line swap.
 
 **Changed:**
-- `packages/lararium-core/jest.config.cjs` → deleted
+- `packages/lararium-mesh/jest.config.cjs` → deleted
 - `packages/lararium-tw5/jest.config.cjs` → deleted
 - `packages/lararium-node/jest.config.cjs` → deleted
-- `packages/lararium-core/vitest.config.ts` + `packages/lararium-tw5/vitest.config.ts`
+- `packages/lararium-mesh/vitest.config.ts` + `packages/lararium-tw5/vitest.config.ts`
   + `packages/lararium-node/vitest.config.ts` — new; `resolve.alias` array with
   explicit sub-path aliases (sub-path first, parent second — order-safe).
 - All 11 test files: `from "@jest/globals"` → `from "vitest"`.
@@ -97,7 +105,7 @@ any test file beyond the import line swap.
   - Registers each accumulator via `peer.addProjection(acc)` (sibling to adaptor)
   - `setInterval(() => adaptor.flushAll(accumulators, 200), 16)` drives the node tick
   - `stopTick: () => clearInterval(handle)` added to `NodeLarPeerResult` for graceful teardown
-- Import: `IslandAccumulator` added from `@lararium/core`.
+- Import: `IslandAccumulator` added from `@lararium/mesh`.
 
 **Metrics:** 167/167 tests pass (84 core + 48 tw5 + 35 node); typecheck clean.
 
@@ -125,7 +133,7 @@ deleted entirely. Replaced with a clean web3-native responsibility split.
   Echo-loop guard: `_applying: Map<string, ChangeOrigin>` keyed by slot.
   `flushAll(accs[], budget)` drains N accumulators in recipe priority order.
   Does NOT implement TW5 `syncadaptor` contract. `$tw.syncer` does not run.
-- `packages/lararium-core/src/island-accumulator.ts` — `IslandAccumulator` class
+- `packages/lararium-mesh/src/island-accumulator.ts` — `IslandAccumulator` class
   (renamed from `sync-accumulator.ts`). Frame-aligned CRDT patch buffer per bag.
   Implements `MemeProjection`. Platform-agnostic (no rAF, no TW5).
   Post-sync crdt-remote buffering only. `drain(budget)` returns + splices from queue.
@@ -149,7 +157,7 @@ deleted entirely. Replaced with a clean web3-native responsibility split.
 **Modified:**
 - `packages/lararium-tw5/src/tw5-vm.ts` — `startRenderLoop` signature updated to accept
   `IslandAccumulator[]` (plural); delegates to `adaptor.flushAll(accumulators, budget)`.
-- `packages/lararium-core/src/index.ts` — exports `island-accumulator.js` (was `sync-accumulator.js`).
+- `packages/lararium-mesh/src/index.ts` — exports `island-accumulator.js` (was `sync-accumulator.js`).
 - `packages/lararium-tw5/src/index.ts` — exports `IslandAdaptor`; deprecated re-export
   `MemeSyncAdaptor` alias kept for one turn.
 - `packages/lararium-node/src/` — `MemeSyncAdaptor` → `IslandAdaptor` across all node files
@@ -168,7 +176,7 @@ deleted entirely. Replaced with a clean web3-native responsibility split.
 node `setInterval` driver (see Next Work item 1 in Bootstrap Paste).
 
 **Metrics:** 48/48 tests pass; typecheck clean across all three packages
-(`@lararium/core`, `@lararium/tw5`, `@lararium/node`).
+(`@lararium/mesh`, `@lararium/tw5`, `@lararium/node`).
 
 ---
 
@@ -196,9 +204,9 @@ monolith parse path retired in full. `GRAMMAR_TAG` as the single registration su
   removed; ahu #sigil-registry description updated to note SharktoothSigil migration.
 - `packages/lararium-tw5/src/grammar-cache.ts` — docstring rewritten; TOML fallback
   merge block removed entirely; `buildGrammarFromWiki` tiddler-only path is the only path.
-- `packages/lararium-core/src/grammar-invariants.ts` — full rewrite; `GRAMMAR_MEME_URI`
+- `packages/lararium-mesh/src/grammar-invariants.ts` — full rewrite; `GRAMMAR_MEME_URI`
   and `GrammarVersionGate` removed; `GRAMMAR_TAG` exported; 6 SharktoothSigil invariants.
-- `packages/lararium-core/src/index.ts` — `meme-grammar.js` re-export removed.
+- `packages/lararium-mesh/src/index.ts` — `meme-grammar.js` re-export removed.
 - `packages/lararium-node/scripts/test-quine.ts` — steps 5+6 rewritten to assert
   `[tag[GRAMMAR_TAG]]` tiddlers present + required sigil names via `lar-name` field.
 - `packages/lararium-node/tests/node-host.test.ts` — `grammarRulesFromText` tests
@@ -206,7 +214,7 @@ monolith parse path retired in full. `GRAMMAR_TAG` as the single registration su
 - `packages/lararium-node/src/node-host.ts` — stale deprecated comment removed.
 
 **Deleted:**
-- `packages/lararium-core/src/meme-grammar.ts` — 111 lines; `parseArrayOfTables`
+- `packages/lararium-mesh/src/meme-grammar.ts` — 111 lines; `parseArrayOfTables`
   and `grammarRulesFromText` gone; no live consumer remained.
 
 **Metrics:** build:plugin 18 modules (was 17); 119 inner tiddlers; 35/35 tests pass;
@@ -229,7 +237,7 @@ Replaced by nalu-driven TW5 startup module.
   the nalu hook. Reactions now fire AFTER the full changeset lands, not inline before it.
 
 **Removed:**
-- `ReactionEngine` class from `packages/lararium-core/src/kumu-device.ts` — replaced
+- `ReactionEngine` class from `packages/lararium-mesh/src/kumu-device.ts` — replaced
   by reaction-router.ts. `ReactionGraph` + `extractReactionBindings` remain in
   live-protocol.ts (imported by the startup module).
 

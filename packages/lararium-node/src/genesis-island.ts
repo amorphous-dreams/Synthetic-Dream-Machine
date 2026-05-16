@@ -27,7 +27,7 @@ import { join, dirname }             from "path";
 import { fileURLToPath }             from "url";
 import * as Automerge                from "@automerge/automerge";
 import type { Repo, DocHandle }      from "@automerge/automerge-repo";
-import type { LarariumDoc, MemeStoreDoc, IdentitiesDoc, CirclesDoc, SessionsDoc, SessionEventLog } from "@lararium/core";
+import type { LarariumDoc, MemeStoreDoc, IdentitiesDoc, CirclesDoc, SessionsDoc, SessionEventLog } from "@lararium/mesh";
 import {
   ENGINE_CORE_ID, LARARIUM_DOC_URI,
   CATALOG_DOC_URI, LARES_DOC_URI,
@@ -36,7 +36,7 @@ import {
   emptyMemeStoreDoc, emptyIdentitiesDoc, emptyCirclesDoc, emptySessionsDoc,
   sessionEventLogUri,
   cidV1Sha256FromHex,
-} from "@lararium/core";
+} from "@lararium/mesh";
 
 // ---------------------------------------------------------------------------
 // Genesis bytes source

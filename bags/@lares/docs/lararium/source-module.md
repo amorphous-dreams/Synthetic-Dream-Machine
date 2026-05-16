@@ -63,10 +63,10 @@ agents can read, query, and react to source changes as memes.
 
 ```toml
 uri            = "lar:///source/<package-name>/<relative-src-path>"
-               # e.g. lar:///source/lararium-core/src/live-protocol.ts
+               # e.g. lar:///source/lararium-mesh/src/live-protocol.ts
 
 [fields]
-package        = "@lararium/core"         # pnpm package name
+package        = "@lararium/mesh"         # pnpm package name
 src-path       = "src/live-protocol.ts"   # path relative to package root
 lang           = "typescript"             # typescript | tsx | javascript
 built-at       = "ISO 8601 timestamp"
@@ -85,10 +85,10 @@ The body (`text`) is the verbatim source content.
 These files are the highest-value source-module memes:
 
 ```
-@lararium/core    src/parser.ts           — memetic-wikitext parser
-@lararium/core    src/ast.ts              — AST node types + LADDER_5/OODA_HA_5
-@lararium/core    src/causal-island.ts    — causal island doctrine + AuthorityFirstGuard
-@lararium/core    src/live-protocol.ts    — wire protocol types + ReactionGraph
+@lararium/mesh    src/parser.ts           — memetic-wikitext parser
+@lararium/mesh    src/ast.ts              — AST node types + LADDER_5/OODA_HA_5
+@lararium/mesh    src/causal-island.ts    — causal island doctrine + AuthorityFirstGuard
+@lararium/mesh    src/live-protocol.ts    — wire protocol types + ReactionGraph
 @lararium/tw5     src/lararium-tw5.ts     — TW5 integration facade
 @lararium/app     src/LarariumPanel.tsx   — HUD + TW5 panel component
 @lararium/app     src/LarariumShell.tsx   — shell root

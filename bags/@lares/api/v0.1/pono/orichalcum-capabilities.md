@@ -106,7 +106,7 @@ Each ability implies all abilities below it in this ladder, EXCEPT:
 
 ```toml
 # Ordered least → most privileged. Source of truth for ABILITY_LADDER in
-# packages/lararium-core/src/causal-island.ts
+# packages/lararium-mesh/src/causal-island.ts
 ability-ladder = [
   "pull",     # retrieve encrypted bytes; relay without reading
   "read",     # decrypt and render semantic content
@@ -124,7 +124,7 @@ pull-implies-read = false
 implication-rule = "ordered-except-pull"
 
 # Ratings eligible to federate (structural gate — stage band is NOT a gate)
-# Source: FEDERABLE_RATINGS in packages/lararium-core/src/causal-island.ts
+# Source: FEDERABLE_RATINGS in packages/lararium-mesh/src/causal-island.ts
 federable-ratings = ["meme", "ano", "kapu"]
 ```
 

@@ -37,13 +37,13 @@ Parse-time AST produced by `parseMemeCarrier`. Lives in `@lararium/tw5` so it co
 
 ## Compile target
 
-`ast.ts` imports `PranalaEdge`, `GrammarRules`, `SigilRule` from `@lararium/core` (no circular dep). All AST node types compile into the `memetic-parser` CJS module.
+`ast.ts` imports `PranalaEdge`, `GrammarRules`, `SigilRule` from `@lararium/mesh` (no circular dep). All AST node types compile into the `memetic-parser` CJS module.
 
 <<~/ahu >>
 
 <<~&#x0003;>>
 
-<<~ pranala ? -> lar:///ha.ka.ba/@lararium/core/v0.1/ast family:dataflow role:receives >>
+<<~ pranala ? -> lar:///ha.ka.ba/@lararium/mesh/v0.1/ast family:dataflow role:receives >>
 <<~ pranala ? -> lar:///ha.ka.ba/@lararium/tw5/v0.1/parser family:dataflow role:produces >>
 
 <<~&#x0004; -> ? >>

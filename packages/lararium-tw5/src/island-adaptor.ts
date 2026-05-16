@@ -53,8 +53,8 @@ import type {
   LarTiddlerChange,
   ChangeOrigin,
   MemeProjection,
-} from "@lararium/core";
-import { IslandAccumulator } from "@lararium/core";
+} from "@lararium/mesh";
+import { IslandAccumulator } from "@lararium/mesh";
 import type { TW5Engine } from "./tw5-vm.js";
 import { buildDirectRecord } from "./meme-write.js";
 import { splitBodyTiddler } from "./deserializer.js";

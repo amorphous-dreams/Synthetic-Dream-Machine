@@ -187,7 +187,7 @@ label = "parent owns child"
 ## Schema (machine-readable)
 
 Canonical TOML form. Source of truth for `KNOWN_FAMILIES`, `FAMILY_ROLES`, `FAMILY_CONTRACTS`,
-`RENDER_MODES`, and `REACTION_ROLES` in `packages/lararium-core/src/pranala-parser.ts` and `ast.ts`.
+`RENDER_MODES`, and `REACTION_ROLES` in `packages/lararium-mesh/src/pranala-parser.ts` and `ast.ts`.
 
 ```toml
 # Edge family names — parser rejects any family not in this list
