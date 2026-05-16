@@ -9,7 +9,7 @@
  * Meme: lar:///ha.ka.ba/@lares/api/v0.1/pono/pranala-schema-binding
  */
 
-import { describe, test, expect } from "@jest/globals";
+import { describe, test, expect } from "vitest";
 import {
   validatePranalaEdge,
   KNOWN_FAMILIES,

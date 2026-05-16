@@ -11,7 +11,7 @@
  * Meme: lar:///ha.ka.ba/@lares/api/v0.1/lararium/schema/change-origin
  */
 
-import { describe, test, expect } from "@jest/globals";
+import { describe, test, expect } from "vitest";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
 import type { ChangeOrigin } from "@lararium/core";
 

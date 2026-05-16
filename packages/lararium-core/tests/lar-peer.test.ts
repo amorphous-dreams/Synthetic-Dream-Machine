@@ -9,7 +9,7 @@
  * Meme: lar:///ha.ka.ba/@lares/api/v0.1/lararium/lar-peer
  */
 
-import { describe, test, expect } from "@jest/globals";
+import { describe, test, expect } from "vitest";
 import {
   LarPeer,
   PEER_CAPABILITIES_NODE,

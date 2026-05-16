@@ -10,7 +10,7 @@
  * so the priority gate can query the current wiki state.
  */
 
-import { describe, test, expect } from "@jest/globals";
+import { describe, test, expect } from "vitest";
 import { DirectMemeRecipeVm } from "../src/meme-recipe-vm.js";
 import type { TW5Engine } from "../src/tw5-vm.js";
 import type { LarTiddlerChange, ChangeOrigin } from "@lararium/core";

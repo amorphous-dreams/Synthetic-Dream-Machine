@@ -3,7 +3,7 @@
 
 > Branch: `feature/lararium-node-4`
 > Resume: `packages/HANDOFF.md` + `packages/ROADMAP.md`
-> State: 48/48 tests pass · typecheck clean · 18 Vite modules → 119 inner tiddlers
+> State: 167/167 tests pass · typecheck clean · 18 Vite modules → 119 inner tiddlers · Jest deleted · N-accumulator node tick wired
 
 ---
 
@@ -265,11 +265,18 @@ Drive with `setInterval(() => adaptor.flushAll(accumulators, budget), 16)`.
 
 ### Next Work (priority order)
 
-1. Node peer N-accumulator wire — `open-node-lar-peer.ts` + `setInterval` driver
-2. `mountCamera()` on `TW5Engine` — ~20 lines, parallel to `mountPanel()`
-3. Jest → Vitest migration — config swap, native ESM, same API
-4. `IslandAdaptor.saveTiddler` 300–500ms debounce + projection auto-truncate (Path K)
-5. SharktoothSigil remaining migrations — block-container sigils first (`wehe`, `meme`, `heihei`)
+1. `mountCamera()` on `TW5Engine` — ~20 lines, parallel to `mountPanel()` · spec C-1 through C-5
+2. UEFN scene importer — `.verse` + `.umap` → Automerge bag of tiddlers + pranala edges
+3. `IslandAdaptor.saveTiddler` 300–500ms debounce + projection auto-truncate (Path K)
+4. SharktoothSigil remaining migrations — block-container sigils first (`wehe`, `meme`, `heihei`)
+
+### Landed This Turn (turn 11)
+
+- **Jest → Vitest** — `jest.config.cjs` deleted in all three packages; `vitest.config.ts` replaces it;
+  `--experimental-vm-modules` flag gone; 167/167 tests pass on native ESM
+- **N-accumulator node wire** — `open-node-lar-peer.ts` step 9: one `IslandAccumulator` per bag in
+  `vmBagStack`; each registered via `peer.addProjection`; `setInterval(16ms)` drives `adaptor.flushAll`;
+  `stopTick` added to `NodeLarPeerResult` for graceful teardown
 
 ---
 

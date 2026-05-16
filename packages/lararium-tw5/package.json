@@ -34,7 +34,7 @@
     "build:heleuma:commit": "tsx scripts/sync-heleuma.ts --commit",
     "build:plugin": "tsx scripts/build-plugin-tiddler.ts",
     "typecheck": "tsc --noEmit",
-    "test": "NODE_OPTIONS=--experimental-vm-modules pnpm exec jest --config jest.config.cjs",
+    "test": "vitest run",
     "test:sigil-alignment": "tsx scripts/check-sigil-alignment.ts",
     "smoke:plugin-boot": "tsx scripts/smoke-plugin-boot.ts",
     "smoke:plugin-provenance": "tsx scripts/smoke-plugin-provenance.ts"
@@ -47,9 +47,7 @@
     "tiddlywiki": "^5.4.0"
   },
   "devDependencies": {
-    "@jest/globals": "^29.7.0",
-    "jest": "^29.7.0",
-    "ts-jest": "^29.2.0",
+    "vitest": "^3.2.0",
     "tsx": "^4.19.0",
     "tw5-typed": "^1.1.5",
     "vite": "^8.0.10"

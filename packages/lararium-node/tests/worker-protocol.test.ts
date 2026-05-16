@@ -12,7 +12,7 @@
  * Meme: lar:///ha.ka.ba/@lararium/node/v0.1/lar-worker-protocol
  */
 
-import { describe, test, expect, afterEach } from "@jest/globals";
+import { describe, test, expect, afterEach } from "vitest";
 import { Worker } from "worker_threads";
 import {
   isMainToWorkerMsg,

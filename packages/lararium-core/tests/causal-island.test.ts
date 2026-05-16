@@ -8,7 +8,7 @@
  * Meme: lar:///ha.ka.ba/@lares/api/v0.1/pono/causal-islands
  */
 
-import { describe, test, expect } from "@jest/globals";
+import { describe, test, expect } from "vitest";
 import {
   abilityImplies,
   capabilityHasAbility,

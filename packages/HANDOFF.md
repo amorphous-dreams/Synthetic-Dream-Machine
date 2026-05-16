@@ -1,6 +1,6 @@
 # Lares Handoff — Active Work Only
 
-> Updated: 2026-05-16 (turn 10)
+> Updated: 2026-05-16 (turn 11)
 > Branch: `feature/lararium-node-4`
 > Last sprint archive: `wikis/lares-history/last-sprint/`
 
@@ -33,23 +33,52 @@ verse-mesh.md + island-adaptor.md + island-accumulator.md memes captured;
 48/48 tests pass) are treated as landed unless tests prove drift.
 
 Next work, in order:
-0. Test infra — migrate Jest → Vitest (all three packages). Jest needs
-   --experimental-vm-modules for ESM; Vitest drops that flag, native ESM,
-   same API, faster, Vite-backed. Low migration cost: config swap only.
-1. Wire N-accumulator per bag in node peer — open-node-lar-peer.ts creates one
-   IslandAdaptor but no IslandAccumulator. Create one IslandAccumulator per bag
-   in the recipe, register each via store.addProjection(), pass ordered array to
-   setInterval(() => adaptor.flushAll(accumulators, budget), 16) node driver.
+1. mountCamera() on TW5Engine — ~20 lines, parallel to mountPanel(). Spec:
+   bags/@lares/api/v0.1/lararium/camera-mount.md (C-1 through C-5).
 2. UEFN scene importer — .verse class defs + .umap instance placements + DEB
    wires → Automerge bag of tiddlers + pranala edges. Spec: bags/@lares/api/v0.1/pono/uefn-scene.md.
 3. Path K / F-arc: TW5 routing rules + 300–500ms debounce + projection
    auto-truncate. (MemeSyncAdaptor refs in HANDOFF are now IslandAdaptor.)
 4. Path L / S7.4: admin-doc ingress trust gate via Keyhive cap=infrastructure.
+5. SharktoothSigil remaining migrations — block-container sigils first
+   (wehe, meme, heihei, wai, huli) — carry close_pattern complexity.
 
 Rules: preserve TW5 VM primacy, bag=Automerge-doc=sync-boundary, no HTTP/RPC
 coordination surface, and explicit operator promotion for canon. Web3 only —
 no web2 models/code/flows in Lares stack.
 ```
+
+## What Changed This Turn (2026-05-16 turn 11)
+
+### Jest → Vitest Migration + N-Accumulator Node Wire
+
+**Jest removed across all three packages.** `--experimental-vm-modules` flag gone.
+Vitest v3.2 runs native ESM; same `describe`/`test`/`expect` API; no API changes in
+any test file beyond the import line swap.
+
+**Changed:**
+- `packages/lararium-core/jest.config.cjs` → deleted
+- `packages/lararium-tw5/jest.config.cjs` → deleted
+- `packages/lararium-node/jest.config.cjs` → deleted
+- `packages/lararium-core/vitest.config.ts` + `packages/lararium-tw5/vitest.config.ts`
+  + `packages/lararium-node/vitest.config.ts` — new; `resolve.alias` array with
+  explicit sub-path aliases (sub-path first, parent second — order-safe).
+- All 11 test files: `from "@jest/globals"` → `from "vitest"`.
+- All three `package.json` devDeps: `jest` + `ts-jest` + `@jest/globals` removed;
+  `vitest: ^3.2.0` added. Test script: `NODE_OPTIONS=--experimental-vm-modules pnpm exec jest ...`
+  → `vitest run`.
+
+**N-accumulator wire in node peer:**
+- `packages/lararium-node/src/open-node-lar-peer.ts` step 9 extended:
+  - Creates `IslandAccumulator[]` — one per bag in `vmBagStack`
+  - Registers each accumulator via `peer.addProjection(acc)` (sibling to adaptor)
+  - `setInterval(() => adaptor.flushAll(accumulators, 200), 16)` drives the node tick
+  - `stopTick: () => clearInterval(handle)` added to `NodeLarPeerResult` for graceful teardown
+- Import: `IslandAccumulator` added from `@lararium/core`.
+
+**Metrics:** 167/167 tests pass (84 core + 48 tw5 + 35 node); typecheck clean.
+
+---
 
 ## What Changed This Turn (2026-05-16 turn 10)
 

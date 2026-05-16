@@ -44,6 +44,7 @@ import {
 }                                       from "@lararium/core";
 import type { MemeRecipeVm, LarOpenPhase } from "@lararium/core";
 import { TW5Engine, IslandAdaptor, DirectMemeRecipeVm, MemoryTiddlerStore } from "@lararium/tw5";
+import { IslandAccumulator } from "@lararium/core";
 import {
   loadGenesisIsland, reconcileIslandFromGenesis,
   reconcileWellKnownTiddlers,
@@ -140,6 +141,8 @@ export interface NodeLarPeerResult {
   /** Automerge URL of the LarariumDoc — share this as the connect invite URL. */
   larariumDocUrl:   string | null;
   phase:            NodeOpenPhase;
+  /** Stop the N-accumulator tick loop (call on graceful shutdown). */
+  stopTick:         () => void;
 }
 
 // waitHandleLocal moved to repo-helpers.ts — shared with openAdminVm.
@@ -738,10 +741,24 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
   await corpusReadyP;
   emit("corpus-ready");
 
-  // ── 9. IslandAdaptor — reads full stack, writes to wiki bag via composite.put() ──
+  // ── 9. IslandAdaptor + N-accumulators — causal-island ↔ TW5 wiki bridge ────
+  // Adaptor: pre-sync buffer + non-CRDT immediate apply + outbound saveTiddler.
+  // Accumulators: one per bag in recipe — sibling projections; buffer crdt-remote
+  // patches post-sync and drain them as one nalu per setInterval tick.
+  // Priority order matches vmBagStack (lowest index = lowest priority read layer).
   const adaptor = new IslandAdaptor(tw5, peer.store, wikiBagId);
   vmManager.updateAdaptor(wikiId, adaptor);
   peer.addProjection(adaptor);
+
+  const accumulators: IslandAccumulator[] = vmBagStack.map(() => {
+    const acc = new IslandAccumulator();
+    peer.addProjection(acc);
+    return acc;
+  });
+
+  const _nodeTickHandle = setInterval(() => {
+    adaptor.flushAll(accumulators, 200);
+  }, 16);
 
   // ── 10. VmPool ────────────────────────────────────────────────────────────
   const pool = new VmPool<MemeRecipeVm>();
@@ -762,6 +779,7 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
     catalogHandleUrl: catalogHandle.url,
     larariumDocUrl: islandHandle?.url ?? null,
     phase: "live",
+    stopTick: () => clearInterval(_nodeTickHandle),
   };
 }
 

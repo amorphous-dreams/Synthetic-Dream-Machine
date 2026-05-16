@@ -14,7 +14,7 @@
  * Meme: lar:///ha.ka.ba/@lararium/core/v0.1/automerge-tiga
  */
 
-import { describe, test, expect, beforeEach } from "@jest/globals";
+import { describe, test, expect, beforeEach } from "vitest";
 import { CompositeStore, BAG_IDS, corpusBagId } from "../src/composite-store.js";
 import { wikiLarUri, LARARIUM_DOC_URI, CATALOG_DOC_URI, LARES_DOC_URI } from "../src/lararium-doc.js";
 import { MemoryTiddlerStore } from "../../lararium-tw5/src/memory-store.js";

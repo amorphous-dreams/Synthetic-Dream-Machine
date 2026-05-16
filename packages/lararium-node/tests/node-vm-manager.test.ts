@@ -13,7 +13,7 @@
  * Meme: lar:///ha.ka.ba/@lararium/node/v0.1/node-vm-manager
  */
 
-import { describe, test, expect, afterEach } from "@jest/globals";
+import { describe, test, expect, afterEach } from "vitest";
 import type { DocHandle } from "@automerge/automerge-repo";
 import type { MemeStoreDoc } from "@lararium/core";
 import { NodeVmManager } from "../src/node-vm-manager.js";

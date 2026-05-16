@@ -14,7 +14,7 @@
  * Meme: lar:///ha.ka.ba/@lares/api/v0.1/pono/carrier-sigils
  */
 
-import { describe, test, expect } from "@jest/globals";
+import { describe, test, expect } from "vitest";
 import { MemeStreamParser } from "../src/meme-stream.js";
 
 // ---------------------------------------------------------------------------

@@ -14,7 +14,7 @@
  * Schema: lar:///ha.ka.ba/@lares/api/v0.1/lararium/schema/island-adaptor
  */
 
-import { describe, test, expect, beforeEach } from "@jest/globals";
+import { describe, test, expect, beforeEach } from "vitest";
 import { IslandAdaptor }      from "../src/island-adaptor.js";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
 import { IslandAccumulator }    from "@lararium/core";
