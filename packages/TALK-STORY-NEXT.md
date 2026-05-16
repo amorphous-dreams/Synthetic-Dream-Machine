@@ -3,7 +3,7 @@
 
 > Branch: `feature/lararium-node-4`
 > Resume: `packages/HANDOFF.md` + `packages/ROADMAP.md`
-> State: 167/167 tests pass · typecheck clean · 18 Vite modules → 119 inner tiddlers · Jest deleted · N-accumulator node tick wired
+> State: 167/167 tests pass · typecheck clean · 18 Vite modules → 119 inner tiddlers · mountCamera() wired · mountPanel() delegates to it
 
 ---
 
@@ -269,6 +269,12 @@ Drive with `setInterval(() => adaptor.flushAll(accumulators, budget), 16)`.
 2. UEFN scene importer — `.verse` + `.umap` → Automerge bag of tiddlers + pranala edges
 3. `IslandAdaptor.saveTiddler` 300–500ms debounce + projection auto-truncate (Path K)
 4. SharktoothSigil remaining migrations — block-container sigils first (`wehe`, `meme`, `heihei`)
+
+### Landed This Turn (turn 12)
+
+- **`mountCamera()`** — `CameraMount` interface + isomorphic three-tree chain on `TW5Engine`.
+  `mountPanel()` collapsed to delegate — story river becomes a camera view on `"$:/core/ui/RootTemplate"`.
+  `rootWidget.children` singleton wiring deleted. `CameraMount` exported from `@lararium/tw5`.
 
 ### Landed This Turn (turn 11)
 

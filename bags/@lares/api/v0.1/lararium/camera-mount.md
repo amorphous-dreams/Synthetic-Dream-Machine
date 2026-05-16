@@ -127,16 +127,17 @@ const unmount = () => { teardownLoop(); teardownMount(); };
 
 ## Platform Fake DOM Targets
 
-| Camera surface | `document` type |
-|---|---|
-| Story River (browser) | `window.document` |
-| TLDraw canvas (browser) | `OffscreenCanvas`-backed custom doc |
-| Node SSR | `$tw.fakeDocument` |
-| Mobile native | platform fake doc (React Native bridge) |
-| Headless / MCP | `$tw.fakeDocument` or null render |
+| Camera surface | `document` type | Role |
+|---|---|---|
+| Story River (browser) | `window.document` | HUD layer floating over the infinite canvas; shadow root isolates TW5 stylesheet |
+| TLDraw canvas (browser) | `OffscreenCanvas`-backed custom doc | Canvas camera below the HUD |
+| Node SSR | `$tw.fakeDocument` | Headless render |
+| Mobile native | platform fake doc (React Native bridge) | Native surface |
+| Headless / MCP | `$tw.fakeDocument` or null render | Tool-side projection |
 
-The `mountCamera` interface stays identical across platforms.
-The `document` type changes; the widget tree and fake DOM chain do not.
+`window.document` for the Story River camera is intentional — the HUD renders real HTML into
+the shadow pane. Canvas cameras behind it each hold their own fake-DOM document.
+The `mountCamera` interface stays identical. The `document` type changes; the chain does not.
 
 <<~&#x0002;>>
 

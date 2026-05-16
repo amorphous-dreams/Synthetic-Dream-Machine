@@ -11,6 +11,7 @@
 import type {
   TW5Instance,
   TW5FakeElement,
+  TW5FakeDocument,
   TW5ChangeRecord,
 } from "./types/tiddlywiki.js";
 import { MemeStreamParser } from "@lararium/core";
@@ -39,6 +40,20 @@ import type { TiddlerFields } from "./deserializer.js";
  * (saveTiddler / dispatchEvent) on their widget tree.  Rendering priority
  * flows naturally from tickMs — lower tickMs = higher render priority.
  */
+/**
+ * Static structure of one camera: the parse→widget→fakeDOM chain.
+ * Pairs with CameraRegistration for the full camera contract.
+ * Spec: lar:///ha.ka.ba/@lares/api/v0.1/lararium/camera-mount (C-1 through C-5)
+ */
+export interface CameraMount {
+  /** Root tiddler whose wikitext body defines the view frustum. */
+  rootTiddler: string;
+  /** The document this camera renders into. */
+  document: TW5FakeDocument | Document;
+  /** The container element this camera renders into. */
+  container: TW5FakeElement | HTMLElement;
+}
+
 export interface CameraRegistration {
   /** The accumulator this camera drains each tick. */
   accumulator: IslandAccumulator;
@@ -295,9 +310,47 @@ export class TW5Engine {
   }
 
   /**
-   * Mount the full TW5 story river into a container element.
-   * Scopes styles to a shadow root. Returns a cleanup function.
-   * Requires boot() to have resolved.
+   * Mount a single camera: constructs the parse→widget→fakeDOM chain once,
+   * registers a wiki "change" listener that refreshes the widget tree, and
+   * returns a teardown function that removes the listener and detaches DOM nodes.
+   *
+   * Isomorphic — works with window.document (browser), $tw.fakeDocument (Node/SSR),
+   * or any fake-DOM implementation.  The caller pairs this with startRenderLoop()
+   * to drive the drain→transact→change→refresh cycle.
+   *
+   * Spec: lar:///ha.ka.ba/@lares/api/v0.1/lararium/camera-mount (C-1 through C-5)
+   */
+  mountCamera(mount: CameraMount): () => void {
+    if (!this._tw) throw new Error("TW5Engine: call boot() before mountCamera()");
+    const tw = this._tw;
+
+    const widget = tw.wiki.makeTranscludeWidget(mount.rootTiddler, {
+      document:     mount.document as TW5FakeDocument,
+      parentWidget: tw.rootWidget,
+    });
+    widget.render(mount.container as TW5FakeElement, null);
+
+    const handler = (changes: Record<string, TW5ChangeRecord>) => {
+      widget.refresh(changes);
+    };
+    tw.wiki.addEventListener("change", handler);
+
+    return () => {
+      tw.wiki.removeEventListener("change", handler);
+      widget.domNodes?.forEach((n) =>
+        (n as unknown as Node).parentNode?.removeChild(n as unknown as Node)
+      );
+    };
+  }
+
+  /**
+   * Mount the TW5 Story River as a floating HUD layer over the infinite canvas.
+   *
+   * The shadow root isolates TW5 stylesheet from the canvas surface behind it.
+   * Uses window.document intentionally — the story river renders real HTML into
+   * the shadow pane; canvas cameras below it use their own fake-DOM documents.
+   * The stylesheet camera (fakeDocument) and the story-river camera (window.document)
+   * stay separate by design: CSS side-effects are not a view frustum.
    *
    * @browser-only — moves to BrowserTW5Engine in the browser-layer extraction sprint.
    */
@@ -307,6 +360,7 @@ export class TW5Engine {
 
     const shadow = container.shadowRoot ?? container.attachShadow({ mode: "open" });
 
+    // Stylesheet camera — renders into fakeDocument, syncs CSS text to shadow DOM.
     const styleWidget = tw.wiki.makeTranscludeWidget("$:/core/ui/PageStylesheet", {
       document:     tw.fakeDocument,
       parentWidget: tw.rootWidget,
@@ -323,6 +377,13 @@ export class TW5Engine {
       })();
     styleEl.textContent = styleContainer.textContent ?? "";
 
+    const styleHandler = (changes: Record<string, TW5ChangeRecord>) => {
+      if (styleWidget.refresh(changes, styleContainer, null)) {
+        styleEl.textContent = styleContainer.textContent ?? "";
+      }
+    };
+    tw.wiki.addEventListener("change", styleHandler);
+
     const inner = shadow.querySelector(".tc-page-container-wrapper") as HTMLElement | null
       ?? (() => {
         const el = document.createElement("div");
@@ -331,28 +392,19 @@ export class TW5Engine {
         return el;
       })();
 
-    const pageWidget = tw.wiki.makeTranscludeWidget("$:/core/ui/RootTemplate", {
-      document:         document,
-      parentWidget:     tw.rootWidget,
-      recursionMarker:  "no",
+    // Story river camera — the default TW5 view frustum.
+    const teardownCamera = this.mountCamera({
+      rootTiddler: "$:/core/ui/RootTemplate",
+      document:    document as unknown as TW5FakeDocument,
+      container:   inner as unknown as TW5FakeElement,
     });
-    pageWidget.render(inner as unknown as TW5FakeElement, null);
-    tw.rootWidget.domNodes = [inner as unknown as TW5FakeElement];
-    tw.rootWidget.children = [pageWidget];
 
-    const handler = (changes: Record<string, TW5ChangeRecord>) => {
-      if (styleWidget.refresh(changes, styleContainer, null)) {
-        styleEl.textContent = styleContainer.textContent ?? "";
-      }
-      pageWidget.refresh(changes);
-    };
-    tw.wiki.addEventListener("change", handler);
+    // Wire rootWidget domNodes so TW5's internal event dispatch traverses the tree.
+    tw.rootWidget.domNodes = [inner as unknown as TW5FakeElement];
 
     return () => {
-      tw.wiki.removeEventListener("change", handler);
-      pageWidget.domNodes?.forEach((n) =>
-        (n as unknown as Node).parentNode?.removeChild(n as unknown as Node)
-      );
+      tw.wiki.removeEventListener("change", styleHandler);
+      teardownCamera();
     };
   }
 

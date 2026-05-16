@@ -1,6 +1,6 @@
 # Lares Handoff — Active Work Only
 
-> Updated: 2026-05-16 (turn 11)
+> Updated: 2026-05-16 (turn 12)
 > Branch: `feature/lararium-node-4`
 > Last sprint archive: `wikis/lares-history/last-sprint/`
 
@@ -33,20 +33,43 @@ verse-mesh.md + island-adaptor.md + island-accumulator.md memes captured;
 48/48 tests pass) are treated as landed unless tests prove drift.
 
 Next work, in order:
-1. mountCamera() on TW5Engine — ~20 lines, parallel to mountPanel(). Spec:
-   bags/@lares/api/v0.1/lararium/camera-mount.md (C-1 through C-5).
+1. Path K / F-arc: IslandAdaptor.saveTiddler 300–500ms debounce + projection
+   auto-truncate. Design spec first (meme doc), then code.
 2. UEFN scene importer — .verse class defs + .umap instance placements + DEB
    wires → Automerge bag of tiddlers + pranala edges. Spec: bags/@lares/api/v0.1/pono/uefn-scene.md.
-3. Path K / F-arc: TW5 routing rules + 300–500ms debounce + projection
-   auto-truncate. (MemeSyncAdaptor refs in HANDOFF are now IslandAdaptor.)
-4. Path L / S7.4: admin-doc ingress trust gate via Keyhive cap=infrastructure.
-5. SharktoothSigil remaining migrations — block-container sigils first
+3. Path L / S7.4: admin-doc ingress trust gate via Keyhive cap=infrastructure.
+4. SharktoothSigil remaining migrations — block-container sigils first
    (wehe, meme, heihei, wai, huli) — carry close_pattern complexity.
 
 Rules: preserve TW5 VM primacy, bag=Automerge-doc=sync-boundary, no HTTP/RPC
 coordination surface, and explicit operator promotion for canon. Web3 only —
 no web2 models/code/flows in Lares stack.
 ```
+
+## What Changed This Turn (2026-05-16 turn 12)
+
+### mountCamera() — three-tree chain + mountPanel() collapse
+
+**New method on `TW5Engine`:**
+- `mountCamera(mount: CameraMount): () => void` — isomorphic parse→widget→fakeDOM chain.
+  Constructs widget tree via `makeTranscludeWidget(rootTiddler, { document, parentWidget })`,
+  renders into `container`, registers `wiki.addEventListener("change", refresh)`, returns
+  teardown that removes listener and detaches DOM nodes.
+- `CameraMount` interface exported from `@lararium/tw5` (alongside `CameraRegistration`).
+
+**`mountPanel()` collapsed to delegate:**
+- Shadow root + stylesheet camera wiring stays (browser-specific).
+- Story river construction removed — replaced by `this.mountCamera({ rootTiddler: "$:/core/ui/RootTemplate", ... })`.
+- `rootWidget.children = [pageWidget]` deleted — camera manages its own refresh via the change listener; no singleton child wiring needed.
+- `rootWidget.domNodes = [inner]` retained — TW5 internal event dispatch requires it.
+
+**Files changed:**
+- `packages/lararium-tw5/src/tw5-vm.ts` — `CameraMount` interface + `mountCamera()` + refactored `mountPanel()`
+- `packages/lararium-tw5/src/index.ts` — exports `CameraMount`
+
+**Metrics:** 167/167 tests pass; typecheck clean.
+
+---
 
 ## What Changed This Turn (2026-05-16 turn 11)
 

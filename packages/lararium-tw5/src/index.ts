@@ -16,7 +16,7 @@
  */
 
 export { TW5Engine } from "./tw5-vm.js";
-export type { TW5CoreBootBlob, CameraRegistration } from "./tw5-vm.js";
+export type { TW5CoreBootBlob, CameraRegistration, CameraMount } from "./tw5-vm.js";
 
 export { IslandAdaptor } from "./island-adaptor.js";
 /** @deprecated use IslandAdaptor */
