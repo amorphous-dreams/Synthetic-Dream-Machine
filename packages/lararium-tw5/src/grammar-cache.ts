@@ -22,7 +22,6 @@ module-type: startup
  *   resetGrammar()                    — explicit cache invalidation (tests / emergency)
  */
 
-import { grammarRulesFromText, GRAMMAR_MEME_URI } from "@lararium/core";
 import type { GrammarRules, SigilRule, FamilyRule } from "@lararium/core";
 
 /** Canonical tag URI for SharktoothSigil tiddlers. Each tagged tiddler = one sigil entry. */
@@ -54,7 +53,6 @@ export function startup(): void {
   if (!wiki) return;
   wiki.addEventListener("change", (changes) => {
     for (const title of Object.keys(changes)) {
-      if (title === GRAMMAR_MEME_URI) { _cache = undefined; return; }
       const tags = wiki.getTiddler(title)?.fields?.["tags"];
       const tagList = Array.isArray(tags) ? tags
         : typeof tags === "string" ? tags.split(" ") : [];
@@ -132,40 +130,24 @@ function familyFromFields(title: string, fields: TwFields): FamilyRule | null {
 }
 
 /**
- * Assemble GrammarRules from:
- *   1. All `[tag[lar:///ha.ka.ba/tags/SharktoothSigil]]` tiddlers (primary source)
- *      - lar-kind != "family" → SigilRule
- *      - lar-kind == "family" → FamilyRule
- *   2. GRAMMAR_MEME_URI TOML monolith (fallback for unmigrated sigils + unmigrated families)
+ * Assemble GrammarRules from all `[tag[lar:///ha.ka.ba/tags/SharktoothSigil]]` tiddlers.
+ *   - lar-kind != "family" → SigilRule
+ *   - lar-kind == "family" → FamilyRule
  *
- * Tiddler entries take precedence over TOML entries by name. All sigils and families
- * now carry SharktoothSigil tiddlers. The TOML monolith contains only the single
- * permanent `toml` data-fence sigil block — the grammar runs fully self-hosted.
+ * Grammar fully self-hosted: every sigil and family rule carries as a tiddler.
+ * The `toml` data-fence sigil lives at lar:///ha.ka.ba/@lararium/tw5/tiddlers/sigil-toml.
  */
 function buildGrammarFromWiki(wiki: TwWiki): GrammarRules | null {
-  // Primary: SharktoothSigil-tagged tiddlers — split into sigils and families
   const titles = wiki.filterTiddlers(`[tag[${GRAMMAR_TAG}]]`);
-  const tiddlerSigils: SigilRule[]   = [];
-  const tiddlerFamilies: FamilyRule[] = [];
+  const sigils:   SigilRule[]   = [];
+  const families: FamilyRule[]  = [];
   for (const title of titles) {
     const fields = wiki.getTiddler(title)?.fields ?? {};
     const family = familyFromFields(title, fields);
-    if (family) { tiddlerFamilies.push(family); continue; }
+    if (family) { families.push(family); continue; }
     const rule = sigilFromFields(title, fields);
-    if (rule) tiddlerSigils.push(rule);
+    if (rule) sigils.push(rule);
   }
-  const tiddlerSigilNames  = new Set(tiddlerSigils.map((s) => s.name));
-  const tiddlerFamilyNames = new Set(tiddlerFamilies.map((f) => f.name));
-
-  // Fallback: TOML monolith — unmigrated sigils and unmigrated families only
-  const monoText  = wiki.getTiddlerText(GRAMMAR_MEME_URI) ?? "";
-  const monoRules = monoText ? grammarRulesFromText(GRAMMAR_MEME_URI, monoText) : null;
-  const monoSigils   = (monoRules?.sigils   ?? []).filter((s) => !tiddlerSigilNames.has(s.name));
-  const monoFamilies = (monoRules?.families ?? []).filter((f) => !tiddlerFamilyNames.has(f.name));
-
-  const sigils   = [...tiddlerSigils,   ...monoSigils];
-  const families = [...tiddlerFamilies, ...monoFamilies];
-
   if (sigils.length === 0 && families.length === 0) return null;
   return { sigils, families };
 }

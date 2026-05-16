@@ -233,17 +233,12 @@ Examples, profile guidance, and extended bridge notes belong in the sidecars.
 ## Sigil Registry
 
 Each entry names a sigil, its surface form, and its semantic role.
-The TypeScript parser reads this registry in Phase 2; until then it serves as authoritative documentation.
+All sigil rules now carry as SharktoothSigil tiddlers (tag: `lar:///ha.ka.ba/tags/SharktoothSigil`).
+The `toml` data-fence sigil lives at `lar:///ha.ka.ba/@lararium/tw5/tiddlers/sigil-toml`.
 
 ```toml
-# Sigil registry — used by pranala-parser.ts Phase 2 rule-interpreter
-# Each sigil maps name → surface-form patterns and semantic defaults
-
-[[sigils]]
-name         = "toml"
-kind         = "data"
-pattern      = '```toml(?:[ \t]+([A-Za-z0-9_-]+))?[ \t]*\n([\s\S]*?)```'
-description  = "TOML data fence; optional profile name (group 1) qualifies the block. Profile 'iam' marks the carrier identity prelude — appears before the first ahu or STX and supplies parent tiddler fields. Profile absent means a general-purpose data block."
+# Sigil registry — sigil rules have migrated to SharktoothSigil tiddlers.
+# Grammar self-hosted: grammar-cache.ts reads only SharktoothSigil-tagged tiddlers.
 
 # --- Concurrency sigils ---
 

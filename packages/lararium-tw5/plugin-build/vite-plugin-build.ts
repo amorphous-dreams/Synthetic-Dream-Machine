@@ -28,11 +28,20 @@ export async function buildPluginCjsTiddlers(outDir = TIDDLER_SRC_DIR): Promise<
         sourcemap: false,
         minify: false,
         rollupOptions: {
-          external: (id) => id.startsWith("$:/") || id === "tiddlywiki" || id.startsWith("tiddlywiki/"),
+          external: (id) => {
+            if (id.startsWith("$:/") || id === "tiddlywiki" || id.startsWith("tiddlywiki/")) return true;
+            // smol-toml ships as its own library tiddler; externalize in all modules except
+            // the lib-smol-toml bundle itself (which must inline it).
+            if (id === "smol-toml" && mod.name !== "smol-toml") return true;
+            return false;
+          },
           output: {
             banner: mod.banner,
             esModule: false,
             exports: "named",
+            paths: {
+              "smol-toml": "lar:///ha.ka.ba/@lararium/tw5/lib/smol-toml",
+            },
           },
         },
       },
