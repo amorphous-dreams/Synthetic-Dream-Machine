@@ -54,9 +54,17 @@ Peer
  │
  └── VmPool<TW5RecipeVm>
       ├── slot[live]              ← one active VM; rAF-driven; paints the UX
-      │    ├── TW5Engine
+      │    ├── TW5Engine (one TW5 wiki — shared world graph)
       │    ├── IslandAdaptor      ← inbound buffer + outbound writes
-      │    └── IslandAccumulator  ← one per bag in recipe, draining on rAF tick
+      │    ├── Camera[story-river]
+      │    │    ├── IslandAccumulator  (rAF, 60fps)
+      │    │    ├── widget tree  ← wiki.makeTranscludeWidget("$:/core/ui/RootTemplate", ...)
+      │    │    └── fake DOM     ← window.document
+      │    ├── Camera[tldraw]
+      │    │    ├── IslandAccumulator  (setInterval 16ms)
+      │    │    ├── widget tree  ← wiki.makeTranscludeWidget("lar:.../camera/tldraw-root", ...)
+      │    │    └── fake DOM     ← OffscreenCanvas doc
+      │    └── Camera[...]        ← additional cameras at their own tick rates
       │
       ├── slot[warm-A]            ← booted, accumulating, not painting
       └── slot[warm-B]            ← same
@@ -77,11 +85,43 @@ capturing the render output, then returning to warm.
 
 A **camera** = one view frustum over the TW5 wiki world-state.
 
+### Three-Tree Chain — Per Camera
+
+Each camera runs its own three-tree chain, the same chain TW5 already runs for
+the Story River:
+
+```
+wikitext source (tiddler body)
+    ↓  wiki.parseTiddler() / wiki.parseText()
+parse tree  (ParseTreeNode[])
+    ↓  widget.makeChildWidgets()
+widget tree (Widget graph)
+    ↓  widget.render(container, null)
+fake DOM    (TW5FakeElement tree)
+    ↓  serialize / hydrate / paint
+rendered output
+```
+
+`wiki.makeTranscludeWidget(rootTiddler, { document, parentWidget })` creates the
+widget tree and binds it to a `document` (fake DOM target).
+Each camera receives its own `document` instance — the render surfaces stay separate.
+
+A `mountCamera({ rootTiddler, document, container })` call wires the parse→widget→fakeDOM
+chain for one camera.  A paired `CameraRegistration` in `startRenderLoop` drives its
+drain→transact→change→refresh cycle.
+These two concerns stay separate:
+- `mountCamera` — static structure (parse + widget + fake DOM)
+- `CameraRegistration` / `startRenderLoop` — dynamic drain timing
+
+### Camera Surface Contract
+
 Each camera holds:
 - its own `IslandAccumulator` — drains at its own tick rate
-- its own **widget tree** — a TW5 widget graph rooted at a filter tiddler
-- its own **fake DOM** — the render target (`window.document`, `$tw.fakeDocument`, or `OffscreenCanvas`)
+- its own **widget tree** — TW5 widget graph rooted at a filter or transclusion tiddler
+- its own **fake DOM** — render target (`window.document`, `$tw.fakeDocument`, `OffscreenCanvas`, etc.)
 - its own input/output surface — user events in, wiki writes out
+
+### Shared World Graph — Inverted Control
 
 All cameras in one VM slot **share one TW5 wiki** (world graph).
 The wiki fires a `change` event after each `wiki.transact()`.
@@ -89,8 +129,18 @@ Each widget tree registered via `wiki.addEventListener("change", tree.refresh)`
 reacts independently — widget trees with no dependency on the changed tiddlers
 return `refresh()` in O(1) without repaint.
 
-The **view frustum** lives in the widget tree's root filter, not in the accumulator.
+The **view frustum** lives in the widget tree's root filter tiddler, not in the accumulator.
 The accumulator carries no camera identity — **inverted control**.
+
+### Input Path — No New Machinery
+
+Cameras that accept user input (typing in the Story River, drawing on a TLDraw canvas)
+dispatch events through the widget tree's standard TW5 event bus.
+A `dispatchEvent({ type: "tm-verse-event", uri, listenable })` call travels up the
+widget tree to the root widget, where `reaction-router.ts` catches it.
+Outbound writes — when a user saves a tiddler from any camera — go through
+`IslandAdaptor.saveTiddler → store.put()`, the same path the Story River uses today.
+No new write-back machinery is necessary for additional cameras.
 
 The TW5 Story River is the **first camera** — the primary rendered view
 into the Verse graph for browser peers.
@@ -200,5 +250,6 @@ The tick source changes; the drain contract does not.
 
 <<~&#x0004; -> lar:///ha.ka.ba/@lares/api/v0.1/lararium/island-adaptor >>
 <<~&#x0004; -> lar:///ha.ka.ba/@lares/api/v0.1/lararium/island-accumulator >>
+<<~&#x0004; -> lar:///ha.ka.ba/@lares/api/v0.1/lararium/camera-mount >>
 <<~&#x0004; -> lar:///ha.ka.ba/@lares/docs/lararium/meme-provider >>
 <<~&#x0004; -> lar:///ha.ka.ba/@lares/docs/lararium/signal >>

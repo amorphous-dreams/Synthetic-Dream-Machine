@@ -111,4 +111,5 @@ See: `lar:///ha.ka.ba/@lares/docs/lararium/verse-mesh` — Multi-Camera Example.
 <<~&#x0002;>>
 
 <<~&#x0004; -> lar:///ha.ka.ba/@lares/api/v0.1/lararium/island-adaptor >>
+<<~&#x0004; -> lar:///ha.ka.ba/@lares/api/v0.1/lararium/camera-mount >>
 <<~&#x0004; -> lar:///ha.ka.ba/@lares/docs/lararium/verse-mesh >>
