@@ -1,5 +1,5 @@
 /**
- * meme-ast/index.ts — barrel for @lararium/mesh meme-ast sub-module.
+ * meme-ast/index.ts — barrel for @lararium/tw5 meme-ast sub-module.
  *
  * Public API for isomorphic memetic-wikitext parsing.
  * Import via: import { parseMemeText } from "@lararium/mesh/meme-ast"
@@ -30,7 +30,7 @@ export type {
 } from "./types.js";
 
 // Re-export PranalaEdge from the shared edge-vocabulary module for convenience.
-export type { PranalaEdge, PranalaEdgeViolation, GrammarRules, SigilRule } from "../ast.js";
+export type { PranalaEdge, PranalaEdgeViolation, GrammarRules, SigilRule } from "@lararium/mesh";
 
 export type { SigilScan, ParseEvent } from "./scanner.js";
 export { BOOTSTRAP_SCANS, buildScansFromGrammar, collectEvents } from "./scanner.js";

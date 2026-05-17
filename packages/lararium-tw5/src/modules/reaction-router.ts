@@ -24,8 +24,8 @@ module-type: startup
  * Meme: lar:///ha.ka.ba/@lararium/tw5/modules/reaction-router
  */
 
+import { parseMemeEdges } from "../meme-ast/index.js";
 import {
-  parseMemeEdges,
   extractReactionBindings,
   ReactionGraph,
 } from "@lararium/mesh";

@@ -33,7 +33,7 @@ import {
   CONTROL_SLOTS,
   findTopLevelAhuBlocks,
   composeSlotPath,
-} from "@lararium/mesh/meme-ast";
+} from "./meme-ast/ahu-scan.js";
 import { parseTaploFields } from "./toml-ast.js";
 import { getGrammar, resetGrammar } from "./grammar-cache.js";
 export type { GrammarRules } from "@lararium/mesh";

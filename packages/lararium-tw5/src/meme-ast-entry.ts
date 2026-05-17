@@ -21,11 +21,11 @@ export {
   buildMemeAst,
   edgesFromMemeAst,
   BOOTSTRAP_SCANS,
-} from "@lararium/mesh/meme-ast";
+} from "./meme-ast/index.js";
 
 export type {
   MemeAstNode,
   MemeNode,
   PranalaEdge,
   ParseMemeResult,
-} from "@lararium/mesh/meme-ast";
+} from "./meme-ast/index.js";
