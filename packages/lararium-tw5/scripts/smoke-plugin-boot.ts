@@ -185,6 +185,15 @@ async function main(): Promise<void> {
     }
   }
 
+  // J.2d — pranala block render should also wrap its body with blank lines.
+  const pranalaTemplateText = engine.wiki.getTiddlerText(
+    "lar:///ha.ka.ba/@lararium/templates/pranala/markdown-meme",
+    "",
+  );
+  if (!pranalaTemplateText.includes(">>\n\n<<pranala-body>>\n\n<<~/pranala >>")) {
+    failures.push(`pranala markdown template missing wrapped blank lines; got: ${JSON.stringify(pranalaTemplateText)}`);
+  }
+
   if (failures.length > 0) {
     console.error("✖ smoke FAILED");
     for (const f of failures) console.error("  -", f);
@@ -198,6 +207,7 @@ async function main(): Promise<void> {
   console.log(`  deserializer captured prologue + postamble fields on parent`);
   console.log(`  slot-structure split: preamble + iam fields + postamble on slot child`);
   console.log(`  slot round-trip emission: preamble + iam toml + postamble reconstructed via meme-template`);
+  console.log(`  pranala block emission: body wrapped with blank lines before and after content`);
   process.exit(0);
 }
 

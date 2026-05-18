@@ -21,8 +21,13 @@ export function parseTidFile(text: string, filePath: string): ParsedTidFile {
     fields[match[1]!.trim()] = match[2]!.trim();
   }
 
+  const explicitBody = blankIdx === -1 ? null : lines.slice(blankIdx + 1).join("\n");
+  const body = explicitBody && explicitBody.length > 0
+    ? explicitBody
+    : (fields["text"] ?? "");
+
   return {
     fields,
-    body: blankIdx === -1 ? "" : lines.slice(blankIdx + 1).join("\n"),
+    body,
   };
 }

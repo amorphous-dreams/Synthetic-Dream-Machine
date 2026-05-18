@@ -4,7 +4,7 @@
 Test preamble text...
 ```toml iam
 uri-path     = "ha.ka.ba/docs/lares/the-lares-protocols"
-file-path    = "rooms/TestWiki/memes/docs/lares/the-lares-protocols.md"
+file-path    = "wikis/@scratch/memes/docs/lares/the-lares-protocols.md"
 type         = "text/x-memetic-wikitext"
 tagspace     = "draft"
 register     = "CS"

@@ -254,13 +254,13 @@ export function createOpenWikiHandler(opts: WikiHandlerOptions): CommandHandler 
 }
 
 // ---------------------------------------------------------------------------
-// sync — ingest wikis/<slug>/memes/** files into the canonical bag
+// sync — ingest wikis/@<slug>/memes/** files into the canonical bag
 // ---------------------------------------------------------------------------
 
 /**
  * `lares wiki sync <slug>` — disk → CRDT ingest.
  *
- * Walks `wikis/<slug>/memes/**` for `.md` files. For each file, derives a
+ * Walks `wikis/@<slug>/memes/**` for `.md` files. For each file, derives a
  * tiddler title from the iam `uri-path` field (or falls back to a path-
  * based URI), then hands the full carrier text to a booted TW5 VM via
  * `deserializeCarrier()`. The VM returns the parent + any `#fragment`
@@ -287,9 +287,9 @@ export function createSyncWikiHandler(opts: WikiMintHandlerOptions): CommandHand
     }
     const wikiDocUrl = wikiRec.text;
 
-    const memesRoot = join(opts.rootDir, "wikis", slug, "memes");
+    const memesRoot = join(opts.rootDir, "wikis", `@${slug}`, "memes");
     if (!existsSync(memesRoot)) {
-      return { slug, scanned: 0, ingested: 0, skipped: 0, errors: [], note: "no wikis/<slug>/memes/ directory" };
+      return { slug, scanned: 0, ingested: 0, skipped: 0, errors: [], note: "no wikis/@<slug>/memes/ directory" };
     }
 
     const files: string[] = [];
@@ -910,7 +910,7 @@ function extractIamUri(text: string): string | null {
 
 /**
  * Fallback URI derivation when no iam block declares uri-path. Uses the
- * file's path under wikis/<slug>/memes/ as the URI suffix.
+ * file's path under wikis/@<slug>/memes/ as the URI suffix.
  */
 function deriveUriFromPath(slug: string, memesRoot: string, file: string): string {
   const rel = file.slice(memesRoot.length + 1).replace(/\.md$/, "").replace(/\\/g, "/");

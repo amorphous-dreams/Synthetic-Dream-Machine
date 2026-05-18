@@ -148,6 +148,14 @@ const SOH_LINE_RE = /^<<~(?:[^>]|->)*&#x(?:0001|0011);(?:[^>]|->)*>>\n?/;
 const STX_LINE_RE = /<<~(?:[^>]|->)*&#x0002;(?:[^>]|->)*>>\n?/;
 const ETX_TAIL_RE = /\n?<<~(?:[^>]|->)*&#x0003;(?:[^>]|->)*>>[\s\S]*$/;
 
+function stripLeadingNewlines(text: string): string {
+  return text.replace(/^\n+/, "");
+}
+
+function stripEdgeNewlines(text: string): string {
+  return text.replace(/^\n+|\n+$/g, "");
+}
+
 function splitMemeToTiddlers(
   uri:        string,
   text:       string,
@@ -163,11 +171,11 @@ function splitMemeToTiddlers(
 
   const stxM = STX_LINE_RE.exec(stripped);
   const headerRegion = stxM ? stripped.slice(0, stxM.index) : stripped;
-  // Strip one leading \n from body: STX_LINE_RE consumes the \n after STX but the
-  // source's blank line between STX and first content is stored in bodyRegion.
-  // The template (meme-markdown-meme) explicitly emits \n\n after STX, so letting
-  // the stored field also start with \n produces a double blank line.
-  const bodyRegion   = (stxM ? stripped.slice(stxM.index + stxM[0].length) : "").replace(/^\n/, "");
+  // Trim body edges at ingest. The export template owns the visual padding:
+  // one blank line after STX and one blank line before ETX. Keeping the stored
+  // field edge-trimmed prevents authored leading/trailing newlines from stacking
+  // with those template-emitted margins.
+  const bodyRegion   = stripLeadingNewlines(stxM ? stripped.slice(stxM.index + stxM[0].length) : "");
 
   // Parse iam fields from header region (before STX).
   // Guard: only look for iam in the part of headerRegion before the first
@@ -198,7 +206,7 @@ function splitMemeToTiddlers(
   // iam fence and the next header content (aka/ahu refs) lives here. The template
   // emits \n\n after the closing ```, so the stored field must not also start with \n.
   const postIamContent = iamPos
-    ? headerRegion.slice(iamPos.end).replace(/^\n/, "")
+    ? stripLeadingNewlines(headerRegion.slice(iamPos.end))
     : (_rootIamTopBlocks.length > 0 ? headerRegion : "");
 
   // Recurse separately so the STX boundary is preserved in the parent's fields:
@@ -209,6 +217,8 @@ function splitMemeToTiddlers(
   const { children: bodyChildren, rewrittenText: bodyRewritten } =
     splitRecursive(uri, "", bodyRegion, warnings, sourceFile);
 
+  const normalizedBodyRewritten = stripEdgeNewlines(bodyRewritten);
+
   const allChildren = [...headerChildren, ...bodyChildren];
 
   const parent: TiddlerFields = {
@@ -216,7 +226,7 @@ function splitMemeToTiddlers(
     ...rootFields,
     title: uri,
     type:  "text/x-memetic-wikitext",
-    text:  bodyRewritten,
+    text:  normalizedBodyRewritten,
     ...(preIamContent.trim()   ? { preamble:     preIamContent }   : {}),
     ...(headerRewritten.trim() ? { "header-text": headerRewritten } : {}),
   };
@@ -387,7 +397,12 @@ function extractSlotStructure(
     preamble = "";
   }
 
-  return { preamble, fields, text, postamble };
+  return {
+    preamble,
+    fields,
+    text: stripEdgeNewlines(text),
+    postamble,
+  };
 }
 
 // ---------------------------------------------------------------------------

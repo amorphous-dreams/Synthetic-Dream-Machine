@@ -2,13 +2,11 @@
 
 <<~⊙&#x0001; ? -> lar:///ha.ka.ba/docs/lares/the-lares-protocols#the-unsolved-question >>
 ```toml iam
-file-path = "wikis/@scratch/lares/docs/lares/the-lares-protocols/the-unsolved-question.md"
+file-path = "wikis/@scratch/memes/docs/lares/the-lares-protocols/the-unsolved-question.md"
 uri-path = "ha.ka.ba/docs/lares/the-lares-protocols#the-unsolved-question"
 ```
 
 <<~&#x0002;>>
-
-
 
 ## The Unsolved Question
 
@@ -29,7 +27,6 @@ After Frazee, the worth-measuring criterion shifts from *architectural property*
 > **#Liminal** » 19:08 — Holding open: does Lares carry the shape of a protocol, or the shape of a household tool? The current scale answers neither cleanly. Connected Places treats protocols as governance-shaping artifacts visible at million-user scale; Frazee treats protocols as engineering-shaped commitments evaluated against user populations; Reed treats topology as the political site where ownership lives. Lares at one-operator-and-family carries the shape of all three without yet meeting any of their stress conditions. *Resolving the question prematurely closes design optionality.* Stay liminal.
 
 These questions don't get answered by adding more architecture. They get answered by *running real federated sessions* and noting where the architecture serves vs where it goes quiet.
-
 
 <<~&#x0003;>>
 

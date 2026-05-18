@@ -32,10 +32,12 @@ export LAR_ROOT="$REPO_ROOT/tests"
 
 SOURCE_MEME="tests/src/the-lares-protocols.md"
 MEME_SLUG="the-lares-protocols"
+SYNC_INPUT_DIR="$LAR_ROOT/wikis/@$WIKI/memes/docs/lares"
+SYNC_INPUT_MEME="$SYNC_INPUT_DIR/$MEME_SLUG.md"
 WIKI_MEME_DIR="$LAR_ROOT/wikis/@$WIKI/lares/docs/lares"
-WIKI_MEME="$WIKI_MEME_DIR/$MEME_SLUG.md"
-RUNS_DIR="tests/results/wikis/@$WIKI/lares/docs/lares"
-EXPECTED_DIR="tests/expected/wikis/@$WIKI/lares/docs/lares"
+DECOMPOSE_RUNS_DIR="tests/results/wikis/@$WIKI/lares/docs/lares"
+DECOMPOSE_EXPECTED_DIR="tests/expected/wikis/@$WIKI/lares/docs/lares"
+PROMOTE_RUNS_DIR="tests/results/bags/@$WIKI/docs/lares"
 PROMOTE_EXPECTED_PKG_DIR="tests/expected/bags/@lares/docs/lares"
 LAR_URI="lar:///ha.ka.ba/docs/lares/$MEME_SLUG"
 CANON_PARENT="$LAR_ROOT/bags/@lares/docs/lares/$MEME_SLUG.md"
@@ -84,7 +86,7 @@ setup() {
   sleep 1
   $LARES reset --force --root "$LAR_ROOT"
   # Also clean disk-projected artifacts so each run starts from a fresh canvas.
-  rm -rf "$LAR_ROOT/wikis/" "$LAR_ROOT/bags/" "$LAR_ROOT/results/wikis/@$WIKI"
+  rm -rf "$LAR_ROOT/wikis/" "$LAR_ROOT/bags/" "$LAR_ROOT/results/wikis/@$WIKI" "$LAR_ROOT/results/bags/@$WIKI"
 
   echo ""
   echo "=== serve ==="
@@ -96,9 +98,9 @@ setup() {
 
   echo ""
   echo "=== copy test meme ==="
-  mkdir -p "$WIKI_MEME_DIR"
-  cp "$SOURCE_MEME" "$WIKI_MEME"
-  echo "  $SOURCE_MEME → $WIKI_MEME"
+  mkdir -p "$SYNC_INPUT_DIR"
+  cp "$SOURCE_MEME" "$SYNC_INPUT_MEME"
+  echo "  $SOURCE_MEME → $SYNC_INPUT_MEME"
 }
 
 # --------------------------------------------------------------------------
@@ -117,7 +119,7 @@ flow_decompose() {
   $LARES wiki sync "$WIKI" --debug
 
   echo "--- waiting for disk projector to flush children (up to 15 s) ---"
-  _expected_children=$(find "$EXPECTED_DIR" -mindepth 2 -name '*.md' | wc -l)
+  _expected_children=$(find "$DECOMPOSE_EXPECTED_DIR" -mindepth 2 -name '*.md' | wc -l)
   _waited=0
   until [ "$(find "$WIKI_MEME_DIR" -mindepth 2 -name '*.md' 2>/dev/null | wc -l)" -ge "$_expected_children" ] || [ "$_waited" -ge 30 ]; do
     sleep 1; _waited=$((_waited+1)); echo -n "."
@@ -131,20 +133,20 @@ flow_decompose() {
 
   echo ""
   echo "=== capture run output ==="
-  rm -rf "$RUNS_DIR"
-  mkdir -p "$RUNS_DIR"
+  rm -rf "$DECOMPOSE_RUNS_DIR"
+  mkdir -p "$DECOMPOSE_RUNS_DIR"
   # copy only .md files (skip .json) from the isolated test wiki dir
   find "$WIKI_MEME_DIR" -name '*.md' | while read -r f; do
     rel="${f#${WIKI_MEME_DIR}/}"
-    dest="$RUNS_DIR/$rel"
+    dest="$DECOMPOSE_RUNS_DIR/$rel"
     mkdir -p "$(dirname "$dest")"
     cp "$f" "$dest"
   done
-  pass "copied output to $RUNS_DIR"
+  pass "copied output to $DECOMPOSE_RUNS_DIR"
 
   echo ""
   echo "=== diff: runs vs expected ==="
-  if diff -r --unified=3 "$EXPECTED_DIR" "$RUNS_DIR"; then
+  if diff -r --unified=3 "$DECOMPOSE_EXPECTED_DIR" "$DECOMPOSE_RUNS_DIR"; then
     pass "output matches expected"
   else
     fail "diff detected — see above"
@@ -204,7 +206,16 @@ flow_promote() {
 
   echo ""
   echo "=== diff: promoted bag vs expected (all fields) ==="
-  if diff -r --unified=3 "$PROMOTE_EXPECTED_PKG_DIR" "$LAR_ROOT/bags/@lares/docs/lares"; then
+  rm -rf "$PROMOTE_RUNS_DIR"
+  mkdir -p "$PROMOTE_RUNS_DIR"
+  find "$LAR_ROOT/bags/@lares/docs/lares" -name '*.md' | while read -r f; do
+    rel="${f#${LAR_ROOT}/bags/@lares/docs/lares/}"
+    dest="$PROMOTE_RUNS_DIR/$rel"
+    mkdir -p "$(dirname "$dest")"
+    cp "$f" "$dest"
+  done
+  pass "copied promoted output to $PROMOTE_RUNS_DIR"
+  if diff -r --unified=3 "$PROMOTE_EXPECTED_PKG_DIR" "$PROMOTE_RUNS_DIR"; then
     pass "promoted output matches expected"
   else
     fail "promoted output diverges from expected — see diff above"

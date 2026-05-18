@@ -54,7 +54,7 @@ const WIKI_ORACLE_PREFIX = "lar:///ha.ka.ba/@lararium/wikis/";
  *
  * Static bags (lares, lararium) derive their mirror paths from scope alone —
  * no oracle fields needed. Wiki bags are discovered by scanning visible
- * tiddlers for the wiki oracle prefix; each wiki name determines its mirror.
+ * tiddlers for the wiki oracle prefix; each wiki name mirrors under `wikis/@<slug>`.
  */
 async function buildBagMirrors(
   composite: CompositeStore,
@@ -75,7 +75,7 @@ async function buildBagMirrors(
     if (!wikiName || wikiName.includes("/"))  continue;
     mirrors.push({
       bagId:      title,
-      mirrorRoot: join(rootDir, "wikis", wikiName),
+      mirrorRoot: join(rootDir, "wikis", `@${wikiName}`),
       toRelPath:  wikiPath,
     });
   }

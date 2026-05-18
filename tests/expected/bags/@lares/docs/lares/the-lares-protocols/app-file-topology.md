@@ -8,8 +8,6 @@ uri-path = "ha.ka.ba/docs/lares/the-lares-protocols#app-file-topology"
 
 <<~&#x0002;>>
 
-
-
 ## Topology as Political Site
 
 Reed sharpens the question further. *Topology* — the structure of boundaries between apps and the data they manipulate — describes "where power attaches: not to code or devices, but to the relationships structuring access to work itself." Three successive arrangements degraded user agency:
@@ -31,7 +29,6 @@ Lares answers the diagnostic with a fourth arrangement:
 - The operator hosts the bag; nothing migrates beyond their reach. Capability gains (versioning, collaboration, cross-device sync) arrive without the topological restructuring that bundled them with cloud enclosure.
 
 > **#Council** » 11:47 — "Lares answers the diagnostic" overstates what the branch ships. The architecture *prepares the ground* for the answer; operational-guarantee waits on federation transport, browser peer scaffold, and a real cross-device migration test. Mark this carefully when the meme reaches canon — the *intent-trust* the architecture earns differs from the *outcome-trust* a working federated system would earn.
-
 
 <<~&#x0003;>>
 

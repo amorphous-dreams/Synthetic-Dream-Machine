@@ -8,8 +8,6 @@ uri-path = "ha.ka.ba/docs/lares/the-lares-protocols#lares-position"
 
 <<~&#x0002;>>
 
-
-
 ## Lares Quine Position
 
 The Lares stack takes the article's challenge seriously. Five architecture laws encode protocol-shaping quine commitments rather than leaving them silent:
@@ -36,7 +34,6 @@ The Lares stack occupies the magical-federated-mesh zone alongside ATProto: each
 The slot Lares occupies wants a name; the meme leaves the naming for a future review. Three neighbors map onto similar problem-space: **Matrix** (federated DAG with conventional commons custodianship), **DXOS** (distributed echo with team-shaped governance), **Beehive** (capability-first CRDT). Each makes different tradeoffs against the same bundle Lares carries — federated CRDT bags + explicit governance commitments + render-projection topology against cloud enclosure. The naming question itself stays open. Lares may yet turn out to occupy a slot that already has a name in someone else's vocabulary.
 
 > **#Mischief-Muse** » 14:23 — Survey the slot, not just the implementation, in a future meme. The neighbors deserve their own talk-story. Working title: **"the household-civic mesh"** — federated, CRDT-native, governance-explicit, operator-hosted, render-projecting. Five attributes, five fingers. The hand of the lararium.
-
 
 <<~&#x0003;>>
 

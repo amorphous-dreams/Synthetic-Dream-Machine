@@ -5,7 +5,7 @@ Test preamble text...
 ```toml iam
 cacheable = false
 confidence = "0.55"
-file-path = "wikis/@scratch/lares/docs/lares/the-lares-protocols.md"
+file-path = "wikis/@scratch/memes/docs/lares/the-lares-protocols.md"
 last-reviewed = "2026-05-09"
 mana = "0.65"
 manao = "0.6"

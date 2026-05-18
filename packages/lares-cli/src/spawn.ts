@@ -24,12 +24,13 @@ export const REPO_ROOT = resolve(
 );
 
 /** Run a tsx script and resolve to its exit code. Inherits stdio. */
-export function runTsxScript(scriptPath: string, args: readonly string[] = []): Promise<number> {
+export function runTsxScript(scriptPath: string, args: readonly string[] = [], env?: NodeJS.ProcessEnv): Promise<number> {
   const tsx = join(REPO_ROOT, "node_modules", ".bin", "tsx");
   return new Promise((resolveP) => {
     const child = spawn(tsx, [scriptPath, ...args], {
       stdio: "inherit",
       cwd:   REPO_ROOT,
+      ...(env ? { env } : {}),
     });
     child.on("exit", (code) => resolveP(code ?? 1));
     child.on("error", (err) => { console.error(err); resolveP(1); });
@@ -37,9 +38,9 @@ export function runTsxScript(scriptPath: string, args: readonly string[] = []): 
 }
 
 /** Run an arbitrary command (pnpm, node, etc.) and resolve to its exit code. */
-export function runCommand(cmd: string, args: readonly string[] = [], cwd = REPO_ROOT): Promise<number> {
+export function runCommand(cmd: string, args: readonly string[] = [], cwd = REPO_ROOT, env?: NodeJS.ProcessEnv): Promise<number> {
   return new Promise((resolveP) => {
-    const child = spawn(cmd, [...args], { stdio: "inherit", cwd });
+    const child = spawn(cmd, [...args], { stdio: "inherit", cwd, ...(env ? { env } : {}) });
     child.on("exit",  (code) => resolveP(code ?? 1));
     child.on("error", (err)  => { console.error(err); resolveP(1); });
   });

@@ -2,13 +2,11 @@
 
 <<~⊙&#x0001; ? -> lar:///ha.ka.ba/docs/lares/the-lares-protocols#edges >>
 ```toml iam
-file-path = "wikis/@scratch/lares/docs/lares/the-lares-protocols/edges.md"
+file-path = "wikis/@scratch/memes/docs/lares/the-lares-protocols/edges.md"
 uri-path = "ha.ka.ba/docs/lares/the-lares-protocols#edges"
 ```
 
 <<~&#x0002;>>
-
-
 
 ## Edges
 
@@ -23,7 +21,6 @@ uri-path = "ha.ka.ba/docs/lares/the-lares-protocols#edges"
 <<~ pranala ? -> https://connectedplaces.online/the-purpose-of-protocols/ family:relation role:cites >>
 <<~ pranala ? -> https://www.pfrazee.com/blog/practical-decentralization family:relation role:cites >>
 <<~ pranala ? -> https://www.orionreed.com/posts/app-file-topology/ family:relation role:cites >>
-
 
 <<~&#x0003;>>
 

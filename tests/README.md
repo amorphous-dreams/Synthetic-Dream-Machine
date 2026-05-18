@@ -48,7 +48,7 @@ This flow:
 1. resets an isolated test lararium root;
 2. boots `lares serve --wiki scratch --root tests`;
 3. initializes a test wiki;
-4. copies `tests/src/the-lares-protocols.md` into the wiki;
+4. copies `tests/src/the-lares-protocols.md` into `tests/wikis/@<slug>/memes/**` for ingest;
 5. runs `lares wiki sync`;
 6. verifies child meme decomposition against `tests/expected/wikis/**`;
 7. optionally promotes to the isolated canonical `tests/bags/**` tree and diffs again.

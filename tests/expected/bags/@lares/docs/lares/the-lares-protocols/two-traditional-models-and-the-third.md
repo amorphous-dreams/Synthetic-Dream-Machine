@@ -8,8 +8,6 @@ uri-path = "ha.ka.ba/docs/lares/the-lares-protocols#two-traditional-models-and-t
 
 <<~&#x0002;>>
 
-
-
 ## Two Traditional Models and a Third
 
 Frazee maps the protocol-design landscape onto two traditional shapes plus a deliberate third:
@@ -28,7 +26,6 @@ The user-facing rights Frazee privileges over architecture:
 - **Layer separation in the failure mode** — Bluesky's 2024 moderation bug incorrectly unhosted users from the PDS layer when it should have filtered them at the app layer. *Users on other PDS hosts stayed unaffected. Their right to hosting got protected.* The architecture failed in the right shape.
 
 Two articles, two readings of ATProto: Connected Places flags one operator three orders of magnitude larger than competitors across every layer; Frazee acknowledges the same concern as outstanding while defending the architectural shape. Both readings hold.
-
 
 <<~&#x0003;>>
 

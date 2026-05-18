@@ -12,8 +12,10 @@ import type { ParsedArgs } from "../parse-args.js";
 const NODE_PKG = join(REPO_ROOT, "packages", "lararium-node");
 const TSX_BIN  = join(REPO_ROOT, "node_modules", ".bin", "tsx");
 
-export async function cmdBuildGenesis(_args: ParsedArgs): Promise<number> {
-  return runTsxScript(join(NODE_PKG, "scripts", "build-genesis-island.ts"));
+export async function cmdBuildGenesis(args: ParsedArgs): Promise<number> {
+  const genesisDir = args.options["genesis"] ?? (args.options["root"] ? join(args.options["root"], "genesis") : process.env["LAR_GENESIS"]);
+  const env = genesisDir ? { ...process.env, LAR_GENESIS: genesisDir } : process.env;
+  return runCommand("pnpm", ["--filter", "@lararium/node", "build:genesis"], REPO_ROOT, env);
 }
 
 export async function cmdTestQuine(_args: ParsedArgs): Promise<number> {
@@ -57,19 +59,34 @@ export async function cmdReset(args: ParsedArgs): Promise<number> {
   const root      = args.options["root"] ?? process.env["LAR_ROOT"] ?? NODE_PKG;
   const storage   = join(root, ".lararium");
   const bootstrap = join(root, "genesis", "social-bootstrap.json");
+  const islandBin = join(root, "genesis", "island.bin");
+  const islandSha = join(root, "genesis", "island.sha256");
+  const islandShaPre = join(root, "genesis", "island.sha256-pre");
+  const islandCid = join(root, "genesis", "island.cid");
 
   console.log("[lares reset] will delete:");
   if (existsSync(storage))   console.log(`  ${storage}`);
   if (existsSync(bootstrap)) console.log(`  ${bootstrap}`);
+  if (existsSync(islandBin)) console.log(`  ${islandBin}`);
+  if (existsSync(islandSha)) console.log(`  ${islandSha}`);
+  if (existsSync(islandShaPre)) console.log(`  ${islandShaPre}`);
+  if (existsSync(islandCid)) console.log(`  ${islandCid}`);
   if (!args.flags["force"]) {
     console.log("Pass --force to proceed.");
     return 1;
   }
   rmSync(storage,   { recursive: true, force: true });
   rmSync(bootstrap, { force: true });
+  rmSync(islandBin, { force: true });
+  rmSync(islandSha, { force: true });
+  rmSync(islandShaPre, { force: true });
+  rmSync(islandCid, { force: true });
   console.log("[lares reset] cleared. Running lares init…");
   const { cmdInit } = await import("./init.js");
-  return cmdInit(args);
+  const initCode = await cmdInit(args);
+  if (initCode !== 0) return initCode;
+  console.log("[lares reset] rebuilding genesis artifact…");
+  return cmdBuildGenesis(args);
 }
 
 /** `lares fresh` — reset (--force implied) then serve. */

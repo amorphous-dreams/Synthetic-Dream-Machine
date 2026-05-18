@@ -43,24 +43,30 @@ import {
 // ---------------------------------------------------------------------------
 
 const __dir        = dirname(fileURLToPath(import.meta.url));
-// Resolved at module load time — fast path; no async IO during import.
-// genesis/ lives one level up from src/ (packages/lararium-node/genesis/).
-const GENESIS_BIN  = join(__dir, "../genesis/island.bin");
-const GENESIS_SHA  = join(__dir, "../genesis/island.sha256");
-const GENESIS_CID_FILE = join(__dir, "../genesis/island.cid");
+const DEFAULT_GENESIS_DIR = join(__dir, "../genesis");
+
+function genesisArtifactPaths(genesisDir?: string): { bin: string; sha: string; cid: string } {
+  const root = genesisDir ?? DEFAULT_GENESIS_DIR;
+  return {
+    bin: join(root, "island.bin"),
+    sha: join(root, "island.sha256"),
+    cid: join(root, "island.cid"),
+  };
+}
 
 /**
  * Reads genesis/island.bin and returns its bytes.
  * Throws clearly if the artifact is absent — indicates a missing build step.
  */
-function readGenesisBin(): Uint8Array {
-  if (!existsSync(GENESIS_BIN)) {
+function readGenesisBin(genesisDir?: string): Uint8Array {
+  const { bin } = genesisArtifactPaths(genesisDir);
+  if (!existsSync(bin)) {
     throw new Error(
-      `[genesis-island] genesis/island.bin not found at ${GENESIS_BIN}\n` +
+      `[genesis-island] genesis/island.bin not found at ${bin}\n` +
       `  → run: pnpm --filter @lararium/node build:genesis`,
     );
   }
-  return new Uint8Array(readFileSync(GENESIS_BIN));
+  return new Uint8Array(readFileSync(bin));
 }
 
 /**
@@ -68,22 +74,24 @@ function readGenesisBin(): Uint8Array {
  * if the file is absent (tolerated — sha256 file is advisory, not enforced
  * at runtime until Keyhive signing layer is in place).
  */
-export function readGenesisSha256(): string | undefined {
+export function readGenesisSha256(genesisDir?: string): string | undefined {
+  const { sha } = genesisArtifactPaths(genesisDir);
   try {
-    return readFileSync(GENESIS_SHA, "utf8").trim();
+    return readFileSync(sha, "utf8").trim();
   } catch {
     return undefined;
   }
 }
 
-export function readGenesisCid(): string | undefined {
+export function readGenesisCid(genesisDir?: string): string | undefined {
+  const { cid } = genesisArtifactPaths(genesisDir);
   try {
-    const cid = readFileSync(GENESIS_CID_FILE, "utf8").trim();
-    if (cid) return cid;
+    const cidText = readFileSync(cid, "utf8").trim();
+    if (cidText) return cidText;
   } catch {
     // fall back to converting the advisory sha256 if the CID file is absent
   }
-  const sha = readGenesisSha256();
+  const sha = readGenesisSha256(genesisDir);
   if (!sha) return undefined;
   try {
     return cidV1Sha256FromHex(sha);
@@ -97,15 +105,16 @@ export function readGenesisCid(): string | undefined {
 // Used by reconcileIslandFromGenesis to detect stale live docs.
 // ---------------------------------------------------------------------------
 
-let _genesisCid: string | undefined;
+const _genesisCid = new Map<string, string | undefined>();
 
 /**
  * Returns the CIDv1 raw SHA-256 of the genesis artifact bundled with this package.
  * Cached after first read.
  */
-export function GENESIS_CID(): string | undefined {
-  if (_genesisCid === undefined) _genesisCid = readGenesisCid();
-  return _genesisCid;
+export function GENESIS_CID(genesisDir?: string): string | undefined {
+  const key = genesisDir ?? DEFAULT_GENESIS_DIR;
+  if (!_genesisCid.has(key)) _genesisCid.set(key, readGenesisCid(genesisDir));
+  return _genesisCid.get(key);
 }
 
 // ---------------------------------------------------------------------------
@@ -122,8 +131,8 @@ export function GENESIS_CID(): string | undefined {
  * The returned handle's url is content-addressed: the same genesis bytes
  * always produce the same DocUrl via automerge-repo's import path.
  */
-export async function loadGenesisIsland(repo: Repo): Promise<DocHandle<LarariumDoc>> {
-  const bytes = readGenesisBin();
+export async function loadGenesisIsland(repo: Repo, genesisDir?: string): Promise<DocHandle<LarariumDoc>> {
+  const bytes = readGenesisBin(genesisDir);
 
   // Smoke-verify bytes before importing: Automerge.load() checks format.
   // This surfaces corruption early with a clear error rather than a silent bad state.
@@ -182,8 +191,9 @@ export async function loadGenesisIsland(repo: Repo): Promise<DocHandle<LarariumD
 export async function reconcileIslandFromGenesis(
   handle:        DocHandle<LarariumDoc>,
   genesisHandle: DocHandle<LarariumDoc>,
+  genesisDir?: string,
 ): Promise<void> {
-  const expectedCid = GENESIS_CID();
+  const expectedCid = GENESIS_CID(genesisDir);
   if (!expectedCid) {
     console.warn("[genesis-island] reconcile: genesis CID unavailable — skipping reconcile");
     return;

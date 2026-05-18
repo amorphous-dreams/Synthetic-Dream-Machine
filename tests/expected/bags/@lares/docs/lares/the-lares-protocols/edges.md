@@ -8,8 +8,6 @@ uri-path = "ha.ka.ba/docs/lares/the-lares-protocols#edges"
 
 <<~&#x0002;>>
 
-
-
 ## Edges
 
 <<~ loulou https://connectedplaces.online/the-purpose-of-protocols/ >>
@@ -23,7 +21,6 @@ uri-path = "ha.ka.ba/docs/lares/the-lares-protocols#edges"
 <<~ pranala ? -> https://connectedplaces.online/the-purpose-of-protocols/ family:relation role:cites >>
 <<~ pranala ? -> https://www.pfrazee.com/blog/practical-decentralization family:relation role:cites >>
 <<~ pranala ? -> https://www.orionreed.com/posts/app-file-topology/ family:relation role:cites >>
-
 
 <<~&#x0003;>>
 

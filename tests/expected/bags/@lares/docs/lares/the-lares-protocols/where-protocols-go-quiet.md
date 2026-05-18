@@ -8,8 +8,6 @@ uri-path = "ha.ka.ba/docs/lares/the-lares-protocols#where-protocols-go-quiet"
 
 <<~&#x0002;>>
 
-
-
 ## Where Protocols Go Quiet
 
 Three patterns recur, each visible in the article's source material:
@@ -24,7 +22,6 @@ Three patterns recur, each visible in the article's source material:
 Theoretical openness offers little practical leverage against convergence in ungoverned shared spaces. Individual rights protections (migration, encryption, choice) do not automatically produce viable alternatives without institutional sustainability.
 
 > **#Diplomat** » 09:02 — Connected Places critiques ATProto's host concentration; Frazee defends its layer-separation. Two readings tell different true things. Hold both. The disagreement names a real evaluation choice — aggregate-state vs failure-mode — that future Lares federation will face on its own terms.
-
 
 <<~&#x0003;>>
 

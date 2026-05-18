@@ -122,6 +122,9 @@ importers:
 
   packages/lararium-tw5:
     dependencies:
+      '@lararium/mesh':
+        specifier: workspace:*
+        version: link:../lararium-mesh
       '@lararium/types':
         specifier: workspace:*
         version: link:../lararium-types

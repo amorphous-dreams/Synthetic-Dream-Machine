@@ -220,7 +220,7 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
   // Genesis-first boot: load the build-time artifact, then reconcile with any
   // existing live doc. Both cold and resume boot call loadGenesisIsland so the
   // peer always holds the full engine content, even before any network sync.
-  const genesisHandle = await loadGenesisIsland(repo);
+  const genesisHandle = await loadGenesisIsland(repo, genesisDir);
 
   const islandDocUrl = catalog?.tiddlers?.[LARARIUM_DOC_URI]?.text ?? catalog?.larariumDoc?.docUrl ?? null;
   let islandHandle: DocHandle<LarariumDoc>;
@@ -231,7 +231,7 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
       repo, islandDocUrl as AutomergeUrl,
       () => genesisHandle,
     );
-    await reconcileIslandFromGenesis(islandHandle, genesisHandle);
+    await reconcileIslandFromGenesis(islandHandle, genesisHandle, genesisDir);
   } else {
     // Cold boot — genesis IS the island doc; register URL in catalog.
     islandHandle = genesisHandle;

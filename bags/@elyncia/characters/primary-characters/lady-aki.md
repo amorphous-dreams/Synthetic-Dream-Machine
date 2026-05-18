@@ -36,7 +36,7 @@ speed       = 0
 [sdm.character.ability-scores]
 strength    = 0
 agility     = 1
-endurance   = 0
+endurance   = 1
 thought     = 3
 charisma    = 2
 aura        = 2
@@ -103,7 +103,7 @@ The veil lifts. Extra arms appear. Chitin catches moonlight. Silk lines, ward pa
 
 | STR | AGI | END | THT | CHA | AUR |
 |---:|---:|---:|---:|---:|---:|
-| 0 | 1 | 1 | 3 | 2 | 3 |
+| 0 | 1 | 1 | 3 | 2 | 2 |
 
 **Reading:** Thought and Aura drive DreamNet contact, wizardry, ritual analysis, glamour, and shrine work. Agility and Endurance keep Aki mobile enough for field pressure. Strength does not carry the build.
 
