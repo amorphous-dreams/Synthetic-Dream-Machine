@@ -21,8 +21,20 @@
  *   - tombstone() marks deletion in live wiki state; no hard delete by default.
  */
 
-import type { ClosureEntry, EdgeRecord } from "./compiler.js";
 import type { MemeProjection } from "./meme-provider.js";
+
+export interface ClosureEntry {
+  uri: string; laresRelPath: string | null; kind: string; virtual: boolean;
+  exists: boolean; role: string; hydrationSocket: string;
+  implements: string[]; extendsType?: string; tags: string[];
+  contentHash: string; depth: number; confidence: number; register: string;
+  manaoio: number; mana: number; manao: number;
+}
+
+export interface EdgeRecord {
+  readonly fromUri: string; readonly fromSocket: string;
+  readonly toUri: string; readonly family: string; readonly role: string | null;
+}
 
 // ---------------------------------------------------------------------------
 // LarTiddlerRecord — materialized tiddler in Lararium's store model

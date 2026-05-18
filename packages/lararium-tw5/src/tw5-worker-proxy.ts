@@ -23,8 +23,8 @@
  * Schema: lar:///ha.ka.ba/@lares/api/v0.1/lararium/schema/tw5-worker-proxy
  */
 
-import type { LarTiddlerChange } from "@lararium/mesh";
-import type { MemeRecipeVm } from "@lararium/mesh";
+import type { LarTiddlerChange } from "@lararium/types";
+import type { MemeRecipeVm } from "@lararium/types";
 
 // ---------------------------------------------------------------------------
 // Platform-agnostic worker handle — Node Worker Thread or browser Web Worker

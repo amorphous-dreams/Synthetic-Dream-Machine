@@ -35,8 +35,8 @@
  *     refactor when S7 lands.
  */
 
+import type { LarTiddlerRecord, LarTiddlerChange, ChangeOrigin } from "@lararium/types";
 import {
-  type LarTiddlerRecord, type LarTiddlerChange, type ChangeOrigin,
   type CommandTiddler, type CompositeStore,
   parseCommandTiddler, buildRunningPatch,
   buildCommandEventTiddler,

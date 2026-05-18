@@ -42,9 +42,10 @@ import {
   corpusLarUri, wikiLarUri, wikiDraftLarUri, BAG_IDS, recipeUri,
   VmPool, ENGINE_CORE_ID,
 }                                       from "@lararium/mesh";
-import type { MemeRecipeVm, LarOpenPhase } from "@lararium/mesh";
+import type { MemeRecipeVm } from "@lararium/types";
+import { IslandAccumulator } from "@lararium/types";
+import type { LarOpenPhase } from "@lararium/mesh";
 import { TW5Engine, IslandAdaptor, DirectMemeRecipeVm, MemoryTiddlerStore } from "@lararium/tw5";
-import { IslandAccumulator } from "@lararium/mesh";
 import {
   loadGenesisIsland, reconcileIslandFromGenesis,
   reconcileWellKnownTiddlers,

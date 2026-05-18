@@ -1,5 +1,4 @@
-import type { MemeProjection } from "./meme-provider.js";
-import type { LarTiddlerStore } from "./tiddler-store.js";
+import type { MemeProjection, LarTiddlerStore } from "@lararium/types";
 import type { IdentitySlot } from "./identity-slot.js";
 import { OpenIdentitySlot } from "./identity-slot.js";
 

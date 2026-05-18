@@ -18,8 +18,8 @@ import type {
   LarTiddlerRecord,
   LarTiddlerChange,
   ChangeOrigin,
-} from "./tiddler-store.js";
-import type { MemeProjection } from "./meme-provider.js";
+  MemeProjection,
+} from "@lararium/types";
 import {
   LARARIUM_DOC_URI,
   CATALOG_DOC_URI,

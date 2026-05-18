@@ -10,7 +10,7 @@
  */
 
 import type { DocHandle }              from "@automerge/automerge-repo";
-import type { LarTiddlerRecord, LarTiddlerStore, LarTiddlerChange, ChangeOrigin } from "./tiddler-store.js";
+import type { LarTiddlerRecord, LarTiddlerStore, LarTiddlerChange, ChangeOrigin } from "@lararium/types";
 import type { MutableLarRecord }       from "./base-doc.js";
 import { LARARIUM_DOC_URI }            from "./lararium-doc.js";
 

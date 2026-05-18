@@ -6,6 +6,7 @@ uri-path = "ha.ka.ba/@ftls/api/v0.1/powers/read-magic"
 file-path = "bags/@ftls/api/v0.1/powers/read-magic.md"
 type = "text/x-memetic-wikitext"
 
+role = "Power interface meme: teaches FTLS power interfaces and that the playable card acts as a projection"
 tagspace = "ftls"
 register = "CS"
 confidence = 0.82
@@ -65,7 +66,7 @@ If the resistance matters, resolve it as an ECM scan contest. On a sacrifice res
 <<~ ahu #power-card >>
 ```toml iam
 canonical-name = "Read Magic"
-role = "Power meme: magical-writing literacy, archive handshake, scroll/spellbook decode pattern, and OSR spell-pattern archaeology"
+role = "Power: magical-writing literacy, ley archive handshake, scroll/spellbook decode pattern, and OSR spell-pattern archaeology"
 
 p = 2
 range = "self"

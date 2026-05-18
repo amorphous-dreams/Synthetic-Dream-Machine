@@ -1,6 +1,6 @@
 # Lares Active Roadmap — Outstanding Work Only
 
-> Updated: 2026-05-15 (turn 9)
+> Updated: 2026-05-17 (turn 14)
 > Branch: `feature/lararium-node-4`
 > Archive source: `wikis/lares-history/last-sprint/{HANDOFF,SESSION,ROADMAP}.md`
 
@@ -34,7 +34,10 @@ shrunk to 1 block; `FamilyRule` tiddlerization in grammar-cache.ts; `KumuListena
 + `KumuSubscribable.effects`; `uefn-scene.md` architecture spec authored),
 **and** the grammar self-hosting completion sprint (`meme-grammar.ts` deleted;
 `grammarRulesFromText` retired; `GRAMMAR_TAG` exported from `@lararium/mesh`;
-smol-toml as single TW5 library tiddler; `sigil-toml` SharktoothSigil tiddler).
+smol-toml as single TW5 library tiddler; `sigil-toml` SharktoothSigil tiddler),
+**and** the `@lararium/types` extraction (zero-dep shared package; `mesh → tw5`
+dep chain broken; pure types + isomorphic utils live in types; both mesh and tw5
+depend on types independently; no re-exporting; 164/164 tests pass).
 
 Do not re-open those arcs unless a test proves drift.
 
@@ -49,6 +52,7 @@ Do not re-open those arcs unless a test proves drift.
 | — | **lar: URI + mode= retirement** | ✅ Done | `$:/tags/Lar/*` → `lar:///ha.ka.ba/tags/*`; `mode=` retired from all sigil procedures; English alias sigils + pono defs authored. |
 | — | **Concurrency cluster + grammar self-hosting** | ✅ Done | hui/holo/puka/lele + 8 family tiddlers; TOML monolith = 1 block; wild-magic property holds. |
 | — | **Grammar self-hosting completion** | ✅ Done | `meme-grammar.ts` deleted; `grammarRulesFromText` retired; `GRAMMAR_TAG` in `@lararium/mesh`; smol-toml library tiddler; `sigil-toml` SharktoothSigil tiddler; TOML fallback parse path gone. |
+| — | **@lararium/types extraction** | ✅ Done | Zero-dep shared package; `mesh → tw5` dep chain broken; pure types + isomorphic utils co-located; no re-exporting; 164/164 tests pass. |
 | 1 | **UEFN scene importer** | ⬜ Next | .verse class defs + .umap placements + DEB wires → bag of tiddlers + edges. Spec: `bags/@lares/api/v0.1/pono/uefn-scene.md`. |
 | 2 | **K / F-arc** | ⬜ Next | TW5 save routing, debounce, projection hygiene for sustained editing. |
 | 3 | **L / S7.4** | ⬜ Next | Admin-doc ingress trust gate: operator devices with `cap=infrastructure` only. |

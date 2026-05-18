@@ -40,7 +40,7 @@
  */
 
 import { ADMIN_BAG_ID } from "./lararium-doc.js";
-import type { LarTiddlerRecord } from "./tiddler-store.js";
+import type { LarTiddlerRecord } from "@lararium/types";
 
 /** Tag every command tiddler carries. Tags are vm-side metadata and do not
  *  leak across the sync boundary; the title is the load-bearing identifier. */

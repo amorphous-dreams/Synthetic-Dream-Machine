@@ -27,7 +27,7 @@
 
 import { TW5Engine } from "./tw5-vm.js";
 import { exportMemeText } from "./meme-write.js";
-import type { LarTiddlerChange } from "@lararium/mesh";
+import type { LarTiddlerChange } from "@lararium/types";
 
 // ---------------------------------------------------------------------------
 // Worker globals — isomorphic postMessage surface

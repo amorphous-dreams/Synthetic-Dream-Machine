@@ -11,7 +11,7 @@ import type {
   GrammarRules,
   SigilRule,
   FamilyRule,
-} from "./ast.js";
+} from "@lararium/types";
 
 export type { PranalaEdge, PranalaEdgeViolation as PranalaEdgeViolation, PranalaViolationSeverity as PranalaViolationSeverity, GrammarRules, SigilRule, FamilyRule };
 

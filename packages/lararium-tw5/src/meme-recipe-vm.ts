@@ -1,15 +1,15 @@
 /**
- * meme-recipe-vm — DirectMemeRecipeVm and bootMemeRecipeVm.
- *
- * MemeRecipeVm interface lives in @lararium/mesh (meme-recipe-vm.ts) so both
- * @lararium/node and @dreamdeck/app can type against it without pulling in TW5.
+ * meme-recipe-vm — MemeRecipeVm interface + DirectMemeRecipeVm implementation.
  *
  * DirectMemeRecipeVm — in-process TW5Engine wrapper (no Worker overhead).
  * TW5WorkerProxy     — Worker-backed implementation; lives in tw5-worker-proxy.ts.
  *                      Platform supplies the workerFactory at construction time.
+ *
+ * Schema: lar:///ha.ka.ba/@lares/api/v0.1/lararium/schema/meme-recipe-vm
  */
 
-import type { LarTiddlerChange, MemeProvider, MemeRecipeVm } from "@lararium/mesh";
+import type { LarTiddlerChange, MemeRecipeVm, MemeProvider } from "@lararium/types";
+export type { MemeRecipeVm } from "@lararium/types";
 import type { TW5Engine } from "./tw5-vm.js";
 import { exportMemeText } from "./meme-write.js";
 

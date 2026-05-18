@@ -11,7 +11,7 @@
  * Bundle entry: packages/lararium-tw5/src/meme-ast-entry.ts
  */
 
-import type { PranalaEdge, GrammarRules, SigilRule } from "@lararium/mesh";
+import type { PranalaEdge, GrammarRules, SigilRule } from "@lararium/types";
 export type { PranalaEdge as PranalaEdge, GrammarRules, SigilRule };
 
 // ---------------------------------------------------------------------------

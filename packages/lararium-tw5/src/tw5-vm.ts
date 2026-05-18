@@ -14,8 +14,8 @@ import type {
   TW5FakeDocument,
   TW5ChangeRecord,
 } from "./types/tiddlywiki.js";
-import { MemeStreamParser } from "@lararium/mesh";
-import type { IslandAccumulator } from "@lararium/mesh";
+import { MemeStreamParser } from "@lararium/types";
+import type { IslandAccumulator } from "@lararium/types";
 import type { TiddlerFields } from "./deserializer.js";
 
 // ---------------------------------------------------------------------------

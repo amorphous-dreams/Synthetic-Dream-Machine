@@ -6,8 +6,7 @@ const root = new URL(".", import.meta.url).pathname;
 export default defineConfig({
   resolve: {
     alias: [
-      { find: "@lararium/mesh/meme-ast", replacement: path.resolve(root, "../lararium-mesh/src/meme-ast/index.ts") },
-      { find: "@lararium/mesh", replacement: path.resolve(root, "../lararium-mesh/src/index.ts") },
+      { find: "@lararium/types", replacement: path.resolve(root, "../lararium-types/src/index.ts") },
     ],
   },
   test: {

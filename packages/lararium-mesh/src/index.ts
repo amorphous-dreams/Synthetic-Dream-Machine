@@ -1,16 +1,13 @@
+
 export * from "./base-doc.js";
-export * from "./tiddler-store.js";
-export * from "./meme-stream.js";
 export * from "./authority.js";
 export * from "./resolver.js";
-export * from "./ast.js";
 export * from "./causal-island.js";
 export * from "./pranala-parser.js";
 export * from "./meme-graph.js";
 export * from "./grammar-invariants.js";
 export * from "./compiler.js";
 export * from "./crypto.js";
-export * from "./meme-provider.js";
 export * from "./projection-registry.js";
 export * from "./readiness.js";
 export * from "./catalog.js";
@@ -27,14 +24,7 @@ export * from "./lar-peer.js";
 export type { IdentitySlot, CapabilityToken, ActorId } from "./identity-slot.js";
 export { OpenIdentitySlot } from "./identity-slot.js";
 export * from "./vm-pool.js";
-export * from "./meme-recipe-vm.js";
 export * from "./open-phase.js";
 export * from "./command-tiddler.js";
 export * from "./bag-residency.js";
-export * from "./live-protocol.js";
 export * from "./kumu-device.js";
-export * from "./island-accumulator.js";
-// LarariumTW5 and filter helpers live in @lararium/tw5 — import from there:
-//   import { filterMemesWikitext, LarariumTW5 } from "@lararium/tw5";
-// Kept out of @lararium/mesh to prevent tiddlywiki from entering bundles that don't need it.
-// FilterEngineFn and LarTiddlerStore interfaces live in core (tiddler-store.ts) — TW5-neutral.

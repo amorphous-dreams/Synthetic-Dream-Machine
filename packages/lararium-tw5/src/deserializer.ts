@@ -27,8 +27,8 @@ module-type: tiddlerdeserializer
  *   Inverts the incoming transform: reads child bodies, reconstructs definition form.
  */
 
-import { MemeStreamParser } from "@lararium/mesh";
-import type { MemeStreamEvent } from "@lararium/mesh";
+import { MemeStreamParser } from "@lararium/types";
+import type { MemeStreamEvent } from "@lararium/types";
 import {
   CONTROL_SLOTS,
   findTopLevelAhuBlocks,
@@ -36,7 +36,7 @@ import {
 } from "./meme-ast/ahu-scan.js";
 import { parseTaploFields } from "./toml-ast.js";
 import { getGrammar, resetGrammar } from "./grammar-cache.js";
-export type { GrammarRules } from "@lararium/mesh";
+export type { GrammarRules } from "@lararium/types";
 export { getGrammar, resetGrammar };
 
 export type TiddlerFields = Record<string, string | string[]>;

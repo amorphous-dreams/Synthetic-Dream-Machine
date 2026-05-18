@@ -20,7 +20,7 @@ module-type: startup
  *   resetGrammar()                    — explicit cache invalidation (tests / emergency)
  */
 
-import type { GrammarRules, SigilRule, FamilyRule } from "@lararium/mesh";
+import type { GrammarRules, SigilRule, FamilyRule } from "@lararium/types";
 
 /** Canonical tag URI for SharktoothSigil tiddlers. Each tagged tiddler = one sigil entry. */
 export const GRAMMAR_TAG = "lar:///ha.ka.ba/tags/SharktoothSigil";

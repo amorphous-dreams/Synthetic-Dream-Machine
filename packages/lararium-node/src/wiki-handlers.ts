@@ -12,8 +12,9 @@
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 import type { Repo, DocHandle, AutomergeUrl } from "@automerge/automerge-repo";
+import type { LarTiddlerStore, LarTiddlerRecord, ChangeOrigin } from "@lararium/types";
 import {
-  type CompositeStore, type LarTiddlerStore, type LarTiddlerRecord, type ChangeOrigin, type MemeStoreDoc,
+  type CompositeStore, type MemeStoreDoc,
   type CatalogDoc, type MutableLarRecord, type BagResidencyManager, type LarariumDoc,
   emptyMemeStoreDoc, ADMIN_BAG_ID, BAG_IDS, wikiLarUri, wikiDraftLarUri, recipeUri,
   CATALOG_DOC_URI, LARARIUM_DOC_URI, LARES_DOC_URI,

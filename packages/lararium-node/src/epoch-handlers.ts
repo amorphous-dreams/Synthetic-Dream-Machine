@@ -19,8 +19,9 @@
  */
 
 import type { Repo, AutomergeUrl } from "@automerge/automerge-repo";
+import type { ChangeOrigin, LarTiddlerRecord } from "@lararium/types";
 import {
-  type CompositeStore, type ChangeOrigin, type LarTiddlerRecord,
+  type CompositeStore,
   type CatalogDoc, type MemeStoreDoc, type MutableLarRecord,
   type BagResidencyManager,
   emptyMemeStoreDoc, AutomergeDocStore,

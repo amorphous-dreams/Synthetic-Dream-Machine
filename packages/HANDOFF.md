@@ -1,6 +1,6 @@
 # Lares Handoff — Active Work Only
 
-> Updated: 2026-05-16 (turn 13)
+> Updated: 2026-05-17 (turn 14)
 > Branch: `feature/lararium-node-4`
 > Last sprint archive: `wikis/lares-history/last-sprint/`
 
@@ -41,10 +41,54 @@ Next work, in order:
 4. SharktoothSigil remaining migrations — block-container sigils first
    (wehe, meme, heihei, wai, huli) — carry close_pattern complexity.
 
+Completed this turn (2026-05-17 turn 14):
+- @lararium/types extracted (zero-dep shared package); mesh ↔ tw5 dep chain broken;
+  mesh no longer depends on tw5; both depend on @lararium/types independently.
+- 164/164 tests pass; all four packages typecheck clean.
+
 Rules: preserve TW5 VM primacy, bag=Automerge-doc=sync-boundary, no HTTP/RPC
 coordination surface, and explicit operator promotion for canon. Web3 only —
 no web2 models/code/flows in Lares stack.
 ```
+
+## What Changed This Turn (2026-05-17 turn 14)
+
+### @lararium/types — Zero-Dep Shared Package (mesh ↔ tw5 untangle)
+
+**Problem:** Phase 2 moved all pure shared types into `@lararium/tw5`, causing `@lararium/mesh → @lararium/tw5` dep — a TW5 wiki VM package in mesh's dep graph. Mesh and tw5 should be independent and composable.
+
+**Solution:** New `packages/lararium-types/` package (zero deps) holds all pure shared types and isomorphic utilities:
+
+**Files moved from tw5 → @lararium/types:**
+- `ast.ts` — PranalaEdge, GrammarRules, SigilRule, FamilyRule, Law of Fives constants (LADDER_5, OODA_HA_5, SCOPE_5, RATING_5, STAGE_5, Stance, Syad7, Tool vocabulary)
+- `tiddler-store.ts` — LarTiddlerStore, LarTiddlerRecord, LarTiddlerChange, ChangeOrigin, ClosureEntry, EdgeRecord, FilterEngineFn
+- `meme-provider.ts` — MemeProjection interface + MemeProvider class (zero-dep coalescer; uses only setTimeout)
+- `meme-stream.ts` — MemeStreamEvent types + MemeStreamParser class (isomorphic streaming parser)
+- `live-protocol.ts` — ReactionBinding, ReactionHandler, EdgeLike, ReactionGraph class, extractReactionBindings
+- `island-accumulator.ts` — IslandAccumulator class (frame-aligned CRDT patch buffer; implements MemeProjection)
+- `meme-recipe-vm.ts` — MemeRecipeVm interface + bootMemeRecipeVm helper (DirectMemeRecipeVm stays in tw5)
+
+**Dependency graph after:**
+```
+@lares/core         (no deps)
+@lararium/types     (no deps)
+@lararium/tw5       → @lararium/types, @lares/core
+@lararium/mesh      → @lararium/types, @lares/core, @automerge/automerge-repo
+@lararium/node      → @lararium/types, @lararium/tw5, @lararium/mesh
+@lares/cli          → @lararium/mesh
+```
+
+**Updated:**
+- All `@lararium/tw5/src/` files that imported local moved files → now `from "@lararium/types"`
+- All `@lararium/mesh/src/` files → removed `@lararium/tw5` dep entirely, import from `@lararium/types`
+- `mesh/src/index.ts` — removed re-export block (no re-exporting); consumers import directly from `@lararium/types`
+- `@lararium/node` — `command-dispatcher.ts`, `epoch-handlers.ts`, `wiki-handlers.ts`, `open-node-lar-peer.ts` split imports: `@lararium/types` symbols split out from `@lararium/mesh` import blocks
+- All four vitest configs updated with `@lararium/types` source alias
+- tw5 `dist/` regenerated (declarations) to resolve type identity
+
+**Metrics:** 164/164 tests pass; all four packages (`@lararium/types`, `@lararium/tw5`, `@lararium/mesh`, `@lararium/node`) typecheck clean.
+
+---
 
 ## What Changed This Turn (2026-05-16 turn 13)
 

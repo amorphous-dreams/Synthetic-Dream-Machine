@@ -21,8 +21,19 @@ export type { TW5CoreBootBlob, CameraRegistration, CameraMount } from "./tw5-vm.
 export { IslandAdaptor } from "./island-adaptor.js";
 export { MemoryTiddlerStore } from "./memory-store.js";
 export type { ProjectionStore } from "./memory-store.js";
-// VmPool and MemeRecipeVm are isomorphic contracts — they live in @lararium/mesh.
-// Import them from there: import { VmPool, MemeRecipeVm } from "@lararium/mesh".
+export type { MemeRecipeVm } from "@lararium/types";
+export { MemeProvider } from "@lararium/types";
+export type { MemeProjection } from "@lararium/types";
+export type {
+  LarTiddlerStore, LarTiddlerRecord, LarTiddlerChange, ChangeOrigin,
+  ClosureEntry, EdgeRecord,
+} from "@lararium/types";
+export type { PranalaEdge, PranalaEdgeViolation, PranalaViolationSeverity, GrammarRules, SigilRule, FamilyRule } from "@lararium/types";
+export { IslandAccumulator } from "@lararium/types";
+export { MemeStreamParser } from "@lararium/types";
+export type { MemeStreamEvent } from "@lararium/types";
+export { ReactionGraph, extractReactionBindings } from "@lararium/types";
+export type { ReactionBinding } from "@lararium/types";
 
 export { DirectMemeRecipeVm, bootMemeRecipeVm } from "./meme-recipe-vm.js";
 
@@ -48,4 +59,4 @@ export type { WorkerFactory, AnyWorker } from "./tw5-worker-proxy.js";
 // ---------------------------------------------------------------------------
 
 export type { TiddlerFields } from "./deserializer.js";
-export type { FilterEngineFn } from "@lararium/mesh";
+export type { FilterEngineFn } from "@lararium/types";

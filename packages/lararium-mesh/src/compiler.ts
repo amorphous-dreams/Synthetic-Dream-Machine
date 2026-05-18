@@ -8,40 +8,13 @@
 import { type MemeGraph, memeImplements, memeExtends } from "./meme-graph.js";
 import { type DigestProvider, defaultCryptoProvider, sha256Hex, canonicalJsonBytes } from "./crypto.js";
 import { type PranalaEdge, validatePranalaEdge, type PranalaEdgeViolation } from "./pranala-parser.js";
+import type { ClosureEntry, EdgeRecord } from "@lararium/types";
 
 export const ENTRY_URI = "lar:///ha.ka.ba/@lares/AGENTS";
 
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
-
-export interface ClosureEntry {
-  uri: string;
-  laresRelPath: string | null;
-  kind: string;
-  virtual: boolean;
-  exists: boolean;
-  role: string;
-  hydrationSocket: string;
-  /** Interface URIs this meme conforms to (control:implements edges). */
-  implements: string[];
-  /** Single parent class URI (control:extends edge). Absent = no explicit class parent. */
-  extendsType?: string;
-  /** TW5 UI tags (e.g. $:/tags/Palette) — stored as native TW5 tags, not meme relations. */
-  tags: string[];
-  contentHash: string;
-  depth: number;
-  /** Operator-set confidence scalar from carrier TOML #iam block. 0 if absent. */
-  confidence: number;
-  /** Operator-assigned confidence register code (e.g. "CS", "GR", "OS", "US", "DS", "S"). */
-  register: string;
-  /** Operator-set observability/interoperability score. 0 if absent. */
-  manaoio: number;
-  /** Operator-set mana (epistemic authority weight). 0 if absent. */
-  mana: number;
-  /** Operator-set manao (relational trust weight). 0 if absent. */
-  manao: number;
-}
 
 export interface ValidationResult {
   allResolved: boolean;
@@ -50,15 +23,6 @@ export interface ValidationResult {
   dagViolations: string[][];
   declaredUnresolved: { uri: string; severity: string; family: string }[];
   edgeViolations: PranalaEdgeViolation[];
-}
-
-/** Serialised edge record — subset of PranalaEdge safe for JSON transport. */
-export interface EdgeRecord {
-  readonly fromUri:    string;
-  readonly fromSocket: string;
-  readonly toUri:      string;
-  readonly family:     string;
-  readonly role:       string | null;
 }
 
 export interface BootArtifact {
