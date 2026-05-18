@@ -85,7 +85,7 @@ export function webRandomUUID(): string {
 ```
 
 Node.js: use `globalThis.crypto` (available since Node 19) or `node:crypto.webcrypto`.
-Do not use `node:crypto.createHash()` in portable (`lararium-core`) code.
+Do not use `node:crypto.createHash()` in portable (`lararium-mesh`) code.
 Browser: standard `window.crypto.subtle`.
 
 <<~/ahu >>
@@ -181,7 +181,7 @@ Do not use Lararium code to implement:
 - Homegrown object hashing without canonical bytes
 - Custom hash functions (djb2, FNV, murmur, etc.) for security purposes
 - `Math.random()` anywhere security matters
-- `node:crypto.createHash()` in `lararium-core` or `lararium-web`
+- `node:crypto.createHash()` in `lararium-mesh` or `lararium-web`
 
 The `packages/lararium-web/src/crypto-shim.ts` djb2 implementation is
 **deprecated** and must be replaced with `webDigest()` calls once
@@ -195,11 +195,11 @@ The `packages/lararium-web/src/crypto-shim.ts` djb2 implementation is
 
 Current state (Milestone 3):
 - `packages/lararium-web/src/crypto-shim.ts` uses djb2 mixing, not SHA-256
-- `lararium-core/compiler.ts` uses `import { createHash } from 'crypto'` (Node-only)
+- `lararium-mesh/compiler.ts` uses `import { createHash } from 'crypto'` (Node-only)
 - `vite.config.ts` aliases `crypto → crypto-shim.ts` as a workaround
 
 Target state (Milestone 4):
-1. Add `CryptoProvider` interface + `webDigest()` to `lararium-core/src/crypto.ts`
+1. Add `CryptoProvider` interface + `webDigest()` to `lararium-mesh/src/crypto.ts`
 2. Make `compileBootReceipt(artifact, provider)` accept a `DigestProvider`
 3. Update Node callers: pass `{ digest: (alg, data) => require('node:crypto').webcrypto.subtle.digest(alg, data) }`
 4. Update browser callers: pass `{ digest: webDigest }` (uses `globalThis.crypto.subtle`)

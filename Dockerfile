@@ -25,7 +25,7 @@ WORKDIR /app
 RUN npm install -g pnpm
 
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml* tsconfig.base.json ./
-COPY packages/lararium-core/package.json    packages/lararium-core/
+COPY packages/lararium-mesh/package.json    packages/lararium-mesh/
 COPY packages/lararium-tw5/package.json     packages/lararium-tw5/
 COPY packages/lararium-tldraw/package.json  packages/lararium-tldraw/
 COPY packages/lararium-node/package.json    packages/lararium-node/
@@ -59,8 +59,8 @@ WORKDIR /app
 COPY --from=build /app/node_modules                         ./node_modules
 COPY --from=build /app/package.json                         ./package.json
 COPY --from=build /app/pnpm-workspace.yaml                  ./pnpm-workspace.yaml
-COPY --from=build /app/packages/lararium-core/dist          ./packages/lararium-core/dist
-COPY --from=build /app/packages/lararium-core/package.json  ./packages/lararium-core/package.json
+COPY --from=build /app/packages/lararium-mesh/dist          ./packages/lararium-mesh/dist
+COPY --from=build /app/packages/lararium-mesh/package.json  ./packages/lararium-mesh/package.json
 COPY --from=build /app/packages/lararium-tw5/dist           ./packages/lararium-tw5/dist
 COPY --from=build /app/packages/lararium-tw5/package.json   ./packages/lararium-tw5/package.json
 COPY --from=build /app/packages/lararium-tldraw/dist        ./packages/lararium-tldraw/dist
@@ -96,8 +96,8 @@ FROM node:${NODE_VERSION}-slim AS mcp-runtime
 WORKDIR /app
 
 COPY --from=build /app/node_modules                        ./node_modules
-COPY --from=build /app/packages/lararium-core/dist         ./packages/lararium-core/dist
-COPY --from=build /app/packages/lararium-core/package.json ./packages/lararium-core/package.json
+COPY --from=build /app/packages/lararium-mesh/dist         ./packages/lararium-mesh/dist
+COPY --from=build /app/packages/lararium-mesh/package.json ./packages/lararium-mesh/package.json
 COPY --from=build /app/packages/lararium-node/dist         ./packages/lararium-node/dist
 COPY --from=build /app/packages/lararium-node/package.json ./packages/lararium-node/package.json
 COPY --from=build /app/packages/lararium-mcp/dist          ./packages/lararium-mcp/dist

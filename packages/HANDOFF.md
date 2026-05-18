@@ -92,9 +92,9 @@ no web2 models/code/flows in Lares stack.
 
 ## What Changed This Turn (2026-05-16 turn 13)
 
-### lararium-core → lararium-mesh rename
+### lararium-mesh → lararium-mesh rename
 
-`packages/lararium-core` → `packages/lararium-mesh`; `bags/@lararium/core` → `bags/@lararium/mesh`; `@lararium/core` → `@lararium/mesh` everywhere (imports, package.json, vitest configs, meme corpus, docs). Mechanical sed sweep + pnpm reinstall. 167/167 tests pass; typecheck clean.
+`packages/lararium-mesh` → `packages/lararium-mesh`; `bags/@lararium/mesh` → `bags/@lararium/mesh`; `@lararium/mesh` → `@lararium/mesh` everywhere (imports, package.json, vitest configs, meme corpus, docs). Mechanical sed sweep + pnpm reinstall. 167/167 tests pass; typecheck clean.
 
 ---
 

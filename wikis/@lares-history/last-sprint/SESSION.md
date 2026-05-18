@@ -149,15 +149,15 @@ Global terminology alignment: every occurrence of the concept "room" as a _wiki 
 **Default bag tier string:** `buildDirectRecord` default `targetBag` → `"wiki"` (was `"room"`)
 
 **Affected files (14 total):**
-- `packages/lararium-core/src/lararium-doc.ts`
-- `packages/lararium-core/src/tiddler-store.ts`
-- `packages/lararium-core/src/composite-store.ts`
-- `packages/lararium-core/src/open-phase.ts`
-- `packages/lararium-core/src/bag-mirror.ts`
-- `packages/lararium-core/src/resolver.ts`
-- `packages/lararium-core/src/catalog.ts`
-- `packages/lararium-core/tests/composite-store.test.ts`
-- `packages/lararium-core/tests/causal-island.test.ts`
+- `packages/lararium-mesh/src/lararium-doc.ts`
+- `packages/lararium-mesh/src/tiddler-store.ts`
+- `packages/lararium-mesh/src/composite-store.ts`
+- `packages/lararium-mesh/src/open-phase.ts`
+- `packages/lararium-mesh/src/bag-mirror.ts`
+- `packages/lararium-mesh/src/resolver.ts`
+- `packages/lararium-mesh/src/catalog.ts`
+- `packages/lararium-mesh/tests/composite-store.test.ts`
+- `packages/lararium-mesh/tests/causal-island.test.ts`
 - `packages/lararium-tw5/src/meme-write.ts`
 - `packages/lararium-node/src/main.ts`
 - `packages/lararium-node/src/open-node-lar-peer.ts`
@@ -284,7 +284,7 @@ Two layers of work landed: (a) yin-mode architectural collapse driven by web-res
 
 **Architecture invariant established (operator-confirmed):**
   - **Always-split, always-kahea.** Deserializer + `<$lar-meme-split>` widget split every ahu sigil into its own tiddler at sync/save time. Parent text always carries `<<~ kahea ahu #slot >>` references for slot children. Disk emission canonical: parent file + N child files.
-  - **Single source of truth.** ahu scanner + control-slot set + slot-path composer live in `@lararium/core/meme-ast/ahu-scan.ts`. Three callers (deserializer, action widget, wikirule) import from there. Drift = bug.
+  - **Single source of truth.** ahu scanner + control-slot set + slot-path composer live in `@lararium/mesh/meme-ast/ahu-scan.ts`. Three callers (deserializer, action widget, wikirule) import from there. Drift = bug.
   - **Roslyn / recast / XInclude consensus**: serialization is a function of the tree, never of external metadata. Tag-driven discrimination (the `$:/tags/Lar/MemeRoot`-gated cascade) was the named anti-pattern; eliminated in E.10.9.
   - **Drag-and-drop ecosystem play.** `dist-plugin/lares-memetic-wikitext.tid` (V.1) installs in any TW5 5.4+ wiki; gives memetic-wikitext authoring + export without lararium-node infrastructure. Bidirectional: operators can author in vanilla TW5, export to .md, ingest into lararium. Same plugin code in both.
 
@@ -445,7 +445,7 @@ Captured tensions surfaced after B.6 closure; fixed in one pass:
 
 Triggered by an explicit operator scale concern. Two background research agents returned with a cluster of golden principles (working set << total store; tier hot-warm-cold; sync the index before content; compress history into strata; one authoritative writer per bag).
 
-C.1 commit landed `BagResidencyManager` skeleton in `@lararium/core/bag-residency.ts` — pinned/hot/cold tiers, `pin/unpin/touch/registerCold/evict/setSyncActive` surface, stats reporting. **No eviction logic yet** — instrumentation only by design (research warning: don't theorize eviction policy, watch numbers grow under real use). Three CLI commands wired: `lares pin <url> [--reason]`, `lares unpin <url>`, `lares residency`. Daemon pre-pins all infrastructure docs at boot.
+C.1 commit landed `BagResidencyManager` skeleton in `@lararium/mesh/bag-residency.ts` — pinned/hot/cold tiers, `pin/unpin/touch/registerCold/evict/setSyncActive` surface, stats reporting. **No eviction logic yet** — instrumentation only by design (research warning: don't theorize eviction policy, watch numbers grow under real use). Three CLI commands wired: `lares pin <url> [--reason]`, `lares unpin <url>`, `lares residency`. Daemon pre-pins all infrastructure docs at boot.
 
 Sprint paused after C.1 to scope S7 — the cap layer is what S7 needs and changes shape downstream of decisions made there.
 
@@ -524,10 +524,10 @@ Cleanup spans:
 ### Three commits closing the canon-promotion arc
 
 **1. Genesis discovery generalized** ([60bbc9ca](lararium-node/scripts/build-genesis-island.ts))
-`build-genesis-island.ts` walks every `packages/*/memes/` directory, not just the two hardcoded roots. Lares plugin tiddler count rose to 259 from 429 walked files. `lararium-core/memes/ast.md` and any future per-package self-describing meme now reaches the engine corpus.
+`build-genesis-island.ts` walks every `packages/*/memes/` directory, not just the two hardcoded roots. Lares plugin tiddler count rose to 259 from 429 walked files. `lararium-mesh/memes/ast.md` and any future per-package self-describing meme now reaches the engine corpus.
 
 **2. Bag-aware disk projector** ([e6152123](lararium-node/src/disk-projector.ts))
-Fixed the canon leak: prior projector wrote any URI-with-laresRelPath to `packages/lares-core/memes/` regardless of bag, so wiki edits violated canon-promotion law automatically. New `BagMirrorConfig` shape: each bag opts into a filesystem mirror via `{ bagId, mirrorRoot, toRelPath }`. Three standard strategies in `@lararium/core/bag-mirror.ts`:
+Fixed the canon leak: prior projector wrote any URI-with-laresRelPath to `packages/lares-core/memes/` regardless of bag, so wiki edits violated canon-promotion law automatically. New `BagMirrorConfig` shape: each bag opts into a filesystem mirror via `{ bagId, mirrorRoot, toRelPath }`. Three standard strategies in `@lararium/mesh/bag-mirror.ts`:
 - `laresPathStrategy` — lares carriers
 - `enginePathStrategy` — engine corpus, per-package
 - `roomShadowPathStrategy` — preserves canonical structure under `rooms/{slug}/`
@@ -558,7 +558,7 @@ Refactored hard-coded `LarDiskProjector.start()` in `main.ts` into a `LarProject
 
 Browser peers reuse the same registry shape; only the registered kinds differ.
 
-**New in `@lararium/core`:**
+**New in `@lararium/mesh`:**
 - `LarProjectionConfig`, `LarProjectionKind`, `LarProjectionRegistry`
 - `LARARIUM_PROJECTION_TAG = "$:/tags/LarariumProjection"` (TW5 camelCase)
 - `ADMIN_ROOM_SLUG`, `ADMIN_ROOM_URI`, `ADMIN_BAG_ID` constants
@@ -572,7 +572,7 @@ The two-URI split mirrors the bag-as-doc invariant: each Automerge doc gets its 
 **New in `@lararium/node`:**
 - `makeDiskProjectionKind({ defaultLaresRoot, renderFn, ... })` — TW5-engine-bound disk kind builder
 
-**Deferred:** Reaction kind registration (pre-existing missing `ReactionEngine` export from `@lararium/core` — implementation task, not a refactor concern).
+**Deferred:** Reaction kind registration (pre-existing missing `ReactionEngine` export from `@lararium/mesh` — implementation task, not a refactor concern).
 
 ### Content-equality guard + revision retirement
 
@@ -741,7 +741,7 @@ S7.4 (hostile mesh circuit breakers)
 
 ### FfzClock Expansion: Multi-Temporal Type System
 
-All work in `@lararium/core`. Type-check clean (`pnpm tsc --noEmit` zero errors).
+All work in `@lararium/mesh`. Type-check clean (`pnpm tsc --noEmit` zero errors).
 
 **`ffz-clock.ts` additions:**
 - `FFZ_REGISTER_NAMES`: canonical 5-tuple `["Pulse","Beat","Measure","Arc","Theme"]` (L0→L4)
@@ -815,9 +815,9 @@ Full findings in `packages/lares-core/lararium-research/DREAMNET-FEDERATION-RESE
 - NEW: `lar:///ha.ka.ba/@nexus/<nexus-pubkey>` = Nexus identity + registry doc. New `@nexus` scope in resolver. New kind: `"nexus-doc"`. No URI grammar change.
 
 **Presence routing — three-layer:**
-`@lararium/core` (PresenceSlot + FfzClock types) → `@lararium/tw5` (`$:/temp/presence/{peerId}` tiddlers, already blocked from sync) → `@lararium/browser` or `@lararium/node` (`DocHandle.broadcast()` wiring) → UX layer. `meme-sync-adaptor.ts:49` already guards `$:/temp/*`.
+`@lararium/mesh` (PresenceSlot + FfzClock types) → `@lararium/tw5` (`$:/temp/presence/{peerId}` tiddlers, already blocked from sync) → `@lararium/browser` or `@lararium/node` (`DocHandle.broadcast()` wiring) → UX layer. `meme-sync-adaptor.ts:49` already guards `$:/temp/*`.
 
-**FFZ Chronometer — `FfzClock` type to land in `@lararium/core` before S6 closes:**
+**FFZ Chronometer — `FfzClock` type to land in `@lararium/mesh` before S6 closes:**
 5-level bounded hierarchical logical clock. L0–L3 bounded (looping/musical time); L4 epoch unbounded (anti-aliasing). `SessionEvent.clock` and `PresenceSlot.clock` both use `FfzClock`, not `number`.
 Attention-scale register names now canonical: **Pulse** (L0) / **Beat** (L1) / **Measure** (L2, default band) / **Arc** (L3) / **Theme** (L4). These sit above domain aliases (sub-action/action/session/day/epoch for Lares; Action/Round/Turn/Watch/Week for FTLS/TTRPG). Canonical meme: `lar:///ha.ka.ba/@lares/api/v0.1/pono/attention-scale`.
 
@@ -1085,6 +1085,6 @@ Both questions surface before S9 (lararium-browser) and should inform the
 
 - `packages/lararium-node/scripts/init-lararium.ts` — NEW; seeds social Tiga, runs ceremony, writes `genesis/social-bootstrap.json` (S5.5)
 - `packages/lararium-node/src/open-node-lar-peer.ts` — remove `socialPlaneIsNew` branch + all `seedXxx` calls; read `social-bootstrap.json` instead (S5.5)
-- `packages/lararium-core/src/social-doc.ts` — add `cap` field + update signature payload on `DeviceDelegationTiddler`; add `"node"` to `IdentityTiddler.kind` (S5.5 / S7.1)
-- `packages/lararium-core/src/capability.ts` — NEW; `buildDeviceDelegation`, `verifyDeviceDelegation` (S7.1)
+- `packages/lararium-mesh/src/social-doc.ts` — add `cap` field + update signature payload on `DeviceDelegationTiddler`; add `"node"` to `IdentityTiddler.kind` (S5.5 / S7.1)
+- `packages/lararium-mesh/src/capability.ts` — NEW; `buildDeviceDelegation`, `verifyDeviceDelegation` (S7.1)
 - `packages/lares-core/memes/api/v0.1/lares/voices.md` — spec-shelf links need companion docs: `docs/lares/voices/coordinators`, `/workers`, `/masks`

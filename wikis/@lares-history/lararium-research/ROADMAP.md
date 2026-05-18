@@ -72,30 +72,30 @@ Three sprints enacted:
 
   **Sprint 0:**
   - `reaction-query.ts`: `parsePranalaEdges` → `parseMemeEdges` (dead import cleared)
-  - `grammar-invariants.ts`: created in `lararium-core/src/` — 7 invariants, 3 constants, `GrammarVersionGate` Keyhive stub
+  - `grammar-invariants.ts`: created in `lararium-mesh/src/` — 7 invariants, 3 constants, `GrammarVersionGate` Keyhive stub
   - `meme-provider.ts`: `onChangeset?` added to `MemeProjection`, `CHANGESET_THRESHOLD=10`, `handleChange()` rewritten for Scale-3 dispatch
 
   **Sprint 1:**
   - `meme-graph.ts`: full rebuild — `MemeRating`, `MemeRecord`, `Meme` (no shape), `DeclaredUnresolved`; `MemeGraph` class with `addMeme`, `successors`, `edgesOut`, `oneHopRelation`, `memesByInterface`, `allTransitiveDeps`, `resolvedClosure`, `topologicalSort` (Kahn), `declaredUnresolved`, `detectCycles` (DFS); `memeImplements()`, `makeMemeHash()`, `declaredUnresolvedFromEdge()`
   - `compiler.ts`: implicit-`any` params fixed; `declaredUnresolved()` added to `MemeGraph` surface
-  - `lararium-core tsc`: **ZERO ERRORS** — node boot chain (compiler → serve.ts → `compileBootArtifact()`) unblocked
+  - `lararium-mesh tsc`: **ZERO ERRORS** — node boot chain (compiler → serve.ts → `compileBootArtifact()`) unblocked
 
 ▶ **Act (files touched):**
 
 | File | Change |
 |---|---|
-| `@lararium/tw5` `reaction-query.ts` | Dead `parsePranalaEdges` import swapped to `parseMemeEdges` from `@lararium/core` |
-| `@lararium/core` `grammar-invariants.ts` | **New** — 7 invariants, `GRAMMAR_MEME_URI`, `GRAMMAR_BAG`, `GRAMMAR_LARES_REL_PATH`, `GrammarVersionGate` stub |
-| `@lararium/core` `meme-provider.ts` | `MemeProjection.onChangeset?`, `CHANGESET_THRESHOLD=10`, Scale-3 dispatch in `handleChange()` |
-| `@lararium/core` `meme-graph.ts` | **Full rebuild** — `MemeRating`, `MemeRecord`, `Meme`, `MemeGraph` class, all traversal/query/sort/cycle methods |
-| `@lararium/core` `compiler.ts` | Implicit-`any` params typed; now compiles clean |
+| `@lararium/tw5` `reaction-query.ts` | Dead `parsePranalaEdges` import swapped to `parseMemeEdges` from `@lararium/mesh` |
+| `@lararium/mesh` `grammar-invariants.ts` | **New** — 7 invariants, `GRAMMAR_MEME_URI`, `GRAMMAR_BAG`, `GRAMMAR_LARES_REL_PATH`, `GrammarVersionGate` stub |
+| `@lararium/mesh` `meme-provider.ts` | `MemeProjection.onChangeset?`, `CHANGESET_THRESHOLD=10`, Scale-3 dispatch in `handleChange()` |
+| `@lararium/mesh` `meme-graph.ts` | **Full rebuild** — `MemeRating`, `MemeRecord`, `Meme`, `MemeGraph` class, all traversal/query/sort/cycle methods |
+| `@lararium/mesh` `compiler.ts` | Implicit-`any` params typed; now compiles clean |
 | `packages/lares-core/memes/SESSION.md` | Updated — iam block bumped; 3 new OODA-HA ahu sections |
 | `packages/lares-core/lararium-node/ROADMAP.md` | This section |
 
 ⤴ **Ho'oko:**
 
 ```sh
-cd packages/lararium-core && npx tsc --noEmit  # ✓ ZERO errors
+cd packages/lararium-mesh && npx tsc --noEmit  # ✓ ZERO errors
 cd packages/lararium-tw5  && npx tsc --noEmit  # ✓ one rebuild-target (MemeticParser only)
 ```
 
@@ -170,22 +170,22 @@ Session continued from M13. The `PranalaEdge` → `PranalaEdge` family rename wa
 
 | File | Change |
 |---|---|
-| `packages/lararium-core/src/ast.ts` | `PranalaEdge` → `PranalaEdge`, `PranalaEdgeViolation` → `PranalaEdgeViolation`, `PranaViolationSeverity` → `PranalaViolationSeverity` |
-| `packages/lararium-core/src/pranala-parser.ts` | `validatePranalaEdge` → `validatePranalaEdge`; backward-compat alias stripped |
-| `packages/lararium-core/src/meme-ast/edges.ts` | All `PranalaEdge` → `PranalaEdge` |
-| `packages/lararium-core/src/meme-ast/types.ts` | Import renamed |
-| `packages/lararium-core/src/meme-ast/index.ts` | Re-exports renamed; self-aliases removed |
-| `packages/lararium-core/src/compiler.ts` | `PranalaEdgeViolation` import + usages renamed |
+| `packages/lararium-mesh/src/ast.ts` | `PranalaEdge` → `PranalaEdge`, `PranalaEdgeViolation` → `PranalaEdgeViolation`, `PranaViolationSeverity` → `PranalaViolationSeverity` |
+| `packages/lararium-mesh/src/pranala-parser.ts` | `validatePranalaEdge` → `validatePranalaEdge`; backward-compat alias stripped |
+| `packages/lararium-mesh/src/meme-ast/edges.ts` | All `PranalaEdge` → `PranalaEdge` |
+| `packages/lararium-mesh/src/meme-ast/types.ts` | Import renamed |
+| `packages/lararium-mesh/src/meme-ast/index.ts` | Re-exports renamed; self-aliases removed |
+| `packages/lararium-mesh/src/compiler.ts` | `PranalaEdgeViolation` import + usages renamed |
 | Tests (3 files) | All `validatePranalaEdge` / `PranalaEdge` → new names |
-| `@lararium/core` `kumu-device.ts` | **New** — `KumuDeviceEvent`, `KumuDeviceHandler`, `KumuDeviceSpec`, `KumuInstanceRef`, `kumuInstanceUris`, `kumuDeviceSpecFromEdges`, `ReactionEngine implements MemeProjection` |
-| `@lararium/core` `index.ts` | `export * from "./kumu-device.js"` added |
+| `@lararium/mesh` `kumu-device.ts` | **New** — `KumuDeviceEvent`, `KumuDeviceHandler`, `KumuDeviceSpec`, `KumuInstanceRef`, `kumuInstanceUris`, `kumuDeviceSpecFromEdges`, `ReactionEngine implements MemeProjection` |
+| `@lararium/mesh` `index.ts` | `export * from "./kumu-device.js"` added |
 | `packages/lares-core/lararium-node/ROADMAP.md` | This section |
 | `packages/lares-core/memes/SESSION.md` | Updated — new OODA-HA ahu section |
 
 ⤴ **Ho'oko:**
 
 ```sh
-cd packages/lararium-core && npx tsc --noEmit  # ✓ ZERO errors
+cd packages/lararium-mesh && npx tsc --noEmit  # ✓ ZERO errors
 cd packages/lararium-tw5  && npx tsc --noEmit  # ✓ ZERO errors
 # lararium-node: 14 pre-existing web2 rebuild targets only (unchanged)
 ```
@@ -236,13 +236,13 @@ After Sprint 4b landed `KumuDeviceSpec` with Verse-aligned types, a second vocab
 
 | File | Change |
 |---|---|
-| `@lararium/core` `ast.ts` | `REACTION_ROLES`: `"triggers"`→`"listenable"`, `"handles"`→`"subscribable"`; concept map table updated |
-| `@lararium/core` `pranala-parser.ts` | `FAMILY_ROLES.reaction` roles updated |
-| `@lararium/core` `meme-ast/types.ts` | `PranalaSugarNode.trigger/.fn` → `.listenable/.subscribable` |
-| `@lararium/core` `meme-ast/builder.ts` | All 5 `PranalaSugarNode` literal constructors updated |
-| `@lararium/core` `meme-ast/edges.ts` | Payload key assignments updated |
-| `@lararium/core` `live-protocol.ts` | `ReactionBinding.listenable/.subscribable`; all `ReactionGraph` method params `trigger`→`listenable` |
-| `@lararium/core` `kumu-device.ts` | `KumuListenable/KumuSubscribable`; `.listenables/.subscribables`; role checks; `_fireForUri` dedup |
+| `@lararium/mesh` `ast.ts` | `REACTION_ROLES`: `"triggers"`→`"listenable"`, `"handles"`→`"subscribable"`; concept map table updated |
+| `@lararium/mesh` `pranala-parser.ts` | `FAMILY_ROLES.reaction` roles updated |
+| `@lararium/mesh` `meme-ast/types.ts` | `PranalaSugarNode.trigger/.fn` → `.listenable/.subscribable` |
+| `@lararium/mesh` `meme-ast/builder.ts` | All 5 `PranalaSugarNode` literal constructors updated |
+| `@lararium/mesh` `meme-ast/edges.ts` | Payload key assignments updated |
+| `@lararium/mesh` `live-protocol.ts` | `ReactionBinding.listenable/.subscribable`; all `ReactionGraph` method params `trigger`→`listenable` |
+| `@lararium/mesh` `kumu-device.ts` | `KumuListenable/KumuSubscribable`; `.listenables/.subscribables`; role checks; `_fireForUri` dedup |
 | `@lararium/tw5` `parser.web2.ts` | Payload key assignments updated |
 | `@lararium/tw5` `memetic-parser.web2.ts` | papalohe widget attribute keys updated |
 | `packages/lares-core/memes/api/v0.1/pono/pranala.md` | `reaction` roles array updated |
@@ -252,7 +252,7 @@ After Sprint 4b landed `KumuDeviceSpec` with Verse-aligned types, a second vocab
 ⤴ **Ho'oko:**
 
 ```sh
-cd packages/lararium-core && npx tsc --noEmit  # ✓ ZERO errors
+cd packages/lararium-mesh && npx tsc --noEmit  # ✓ ZERO errors
 cd packages/lararium-tw5  && npx tsc --noEmit  # ✓ ZERO errors
 ```
 
@@ -324,9 +324,9 @@ Ten architecture directives locked:
 2. Browser gets same isomorphic VmPool as server — server is a peer, not an authority
 3. Delete dead web2 code; mark remaining clearly as `*.web2.*`
 4. Implement `onChangeset()` in `MemeSyncAdaptor` (Scale-3 gap closure)
-5. Multidoc store needs isomorphic composable class base in `@lararium/core`
+5. Multidoc store needs isomorphic composable class base in `@lararium/mesh`
 6. Delete `setActiveTW5`/`getActiveTW5` global entirely
-7. Core isomorphic in `@lararium/core`; composable variants in each `lararium-*`
+7. Core isomorphic in `@lararium/mesh`; composable variants in each `lararium-*`
 8. Causal islands all the way down
 9. Remove all "carrier"-tagged code; wire deserializer through new grammar
 10. Research-before-act for items 5, 9, 10 before Sprint 6+
@@ -354,7 +354,7 @@ Enacted immediately (no research needed):
 - All packages typecheck clean
 
 Deferred to Sprint 6 research phase (items 5, 9, 10):
-- Isomorphic `AutomergeStoreBase` in `@lararium/core`
+- Isomorphic `AutomergeStoreBase` in `@lararium/mesh`
 - Grammar-wired deserializer (`splitCarrierToTiddlers` → `parseMemeText`)
 - Multi-doc boot order analysis for browser host
 
@@ -394,8 +394,8 @@ cd packages/lararium-app  && npx tsc --noEmit  # ✓ ZERO errors (tldraw/sw.ts p
 
 - `toCanonicalWikitext` shim: remove from `TW5Engine.filterTiddlers()` once `all[memes]` source registration lands (TW5 `allfilteroperator` module type vs `filterOperators` dispatch gap)
 - `buildReactionGraph`/`bindingsForUri` re-exports from `reaction-query.web2.ts`: replace with `ReactionEngine implements MemeProjection` (Sprint 6+ target)
-- Isomorphic `AutomergeStoreBase` in `@lararium/core`: extract from duplicated browser/node store code (Sprint 6 research item)
-- Grammar-wired deserializer: `splitCarrierToTiddlers` → `parseMemeText` from `@lararium/core` (Sprint 6 research item)
+- Isomorphic `AutomergeStoreBase` in `@lararium/mesh`: extract from duplicated browser/node store code (Sprint 6 research item)
+- Grammar-wired deserializer: `splitCarrierToTiddlers` → `parseMemeText` from `@lararium/mesh` (Sprint 6 research item)
 - Multi-doc boot order analysis for browser host (Sprint 6 research item)
 - Heleuma `body-sha256` anchors for filter operator meme files: each `filters/*.ts` becomes a self-describing code-snippet meme
 - `LarDiskProjector` still in `@lararium/tw5` — move to `@lararium/node` (deferred, needs package split)
@@ -442,7 +442,7 @@ pnpm -r --filter "@lararium/app"  typecheck  # ✓ (tldraw/sw.ts pre-existing on
 
 ↺ **Aftermath / open work:**
 
-- `AutomergeDocStore` isomorphic base not yet written (`@lararium/core`)
+- `AutomergeDocStore` isomorphic base not yet written (`@lararium/mesh`)
 - `LarPeer` / `NodeLarPeer` / `BrowserLarPeer` interfaces not yet written
 - Heleuma body-sha256 anchors for `filters/*.ts` (Stage 1 candidates)
 - `LarHUD` floating dockable React frame not yet scaffolded
@@ -457,7 +457,7 @@ pnpm -r --filter "@lararium/app"  typecheck  # ✓ (tldraw/sw.ts pre-existing on
 ### OODA-HA receipt
 
 ✶ **Observe:**
-`LarPeer` + `AutomergeDocStore` in `@lararium/core` written but not wired.
+`LarPeer` + `AutomergeDocStore` in `@lararium/mesh` written but not wired.
 `LarariumShell` still used dead `useLarariumHostOpen` stub (throws at runtime).
 29 web2 archive files still on disk. `ReactionGraph` still required `buildReactionGraph`/`bindingsForUri` web2 scan on every wiki change.
 `LarariumPanel` was a portal overlay conflicting with tldraw's z-index hierarchy.
@@ -492,7 +492,7 @@ Two research agents returned:
 | `@lararium/app` `LarariumCanvas.tsx` | `tiddlerStore` → `peer?.store` |
 | `@lararium/app` `LarariumPanel.tsx` | → `LarariumPanel.web2.tsx` |
 | `@lararium/app` `LarHUD.tsx` | **New** — flex-sibling VSCode-style TW5 dock (3-state, shadow mount, ⌘K cycle, Escape collapse) |
-| `@lararium/core` `kumu-device.ts` | `ReactionEngine` promoted: owns graph, `boot(wiki)`, `onUriChanged` graph maintenance, `subscribeByFn`/`fireSync` delegation |
+| `@lararium/mesh` `kumu-device.ts` | `ReactionEngine` promoted: owns graph, `boot(wiki)`, `onUriChanged` graph maintenance, `subscribeByFn`/`fireSync` delegation |
 | `@lararium/tw5` `tw5-vm.ts` | `getTiddlerText()` added to satisfy `BootScanSurface` |
 | 29 `*.web2.*` files | Deleted (carrier, indexes, node-host, disk-watcher, recipe-vm, sync-adaptor, server-api, parser, ast, memetic-parser, bundle-entry, active-tw5, lararium-tw5.web2, carrier-write/split/codec, pranala-parser, filter-compat, closure-fields, tw5-worker-script, project.web2, browser-host, automerge-store, serve, void-boot, node-meme-store, cli, meme-graph.web2) |
 | `packages/lares-core/memes/api/v0.1/lararium/ui/lar-hud.md` | **New** — doctrine meme |
@@ -500,7 +500,7 @@ Two research agents returned:
 ⤴ **Ho'oko:**
 
 ```sh
-pnpm -r --filter "@lararium/core" typecheck  # ✓ ZERO errors
+pnpm -r --filter "@lararium/mesh" typecheck  # ✓ ZERO errors
 pnpm -r --filter "@lararium/tw5"  typecheck  # ✓ ZERO errors
 pnpm -r --filter "@lararium/app"  typecheck  # ✓ (tldraw/sw.ts pre-existing only)
 git log --oneline -5
@@ -544,9 +544,9 @@ Five loops enacted in sequence: readiness light (disk-projector), engine blob re
 | `@lararium/tw5` `disk-sync-adaptor.ts` | `ReadinessMap` injection → lights `disk-projector` on first flush |
 | `@lararium/node` `lararium-island.ts` | `reconcileEngineBlobIfChanged` — re-ingests engine blob if disk sha differs |
 | `@lararium/node` `serve.ts` | resume path calls `reconcileEngineBlobIfChanged` |
-| `@lararium/core` `composite-store.ts` | `BAG_IDS`, `corpusBagId()`, `hasBag()`, duplicate-registration guard |
-| `@lararium/core` `causal-island.ts` | `PromotionReceipt` interface |
-| `@lararium/core` `readiness.ts` | `snapshot` → `sw-shell`; `tw-vm` promoted to early gate; full doctrine rewrite |
+| `@lararium/mesh` `composite-store.ts` | `BAG_IDS`, `corpusBagId()`, `hasBag()`, duplicate-registration guard |
+| `@lararium/mesh` `causal-island.ts` | `PromotionReceipt` interface |
+| `@lararium/mesh` `readiness.ts` | `snapshot` → `sw-shell`; `tw-vm` promoted to early gate; full doctrine rewrite |
 | `@lararium/app` `lararium-browser-host.ts` | `sw-shell` lights on SW `controllerchange`; `tw-vm` marks right after `t.boot()` |
 | `@lararium/app` `BootSplash.tsx` | `snapshot` → `sw-shell` in secondary lights |
 | `@lararium/node` `node-meme-store.ts` | `promoteDraft` stub with ability-ladder guard |
@@ -556,7 +556,7 @@ Five loops enacted in sequence: readiness light (disk-projector), engine blob re
 ⤴ **Ho'oko:**
 
 ```sh
-pnpm --filter @lararium/core build     # ✓ clean
+pnpm --filter @lararium/mesh build     # ✓ clean
 pnpm --filter @lararium/tw5 typecheck  # ✓ clean
 pnpm --filter @lararium/node typecheck # ✓ clean
 pnpm --filter @lararium/node test      # ✓ 48/48 pass
@@ -582,13 +582,13 @@ pnpm --filter @lararium/node test      # ✓ 48/48 pass
 
 The repository currently contains a working, read-only Python MCP server under `lares/lararium_mcp` with a local stdio JSON-RPC transport, explicit MCP resources/tools/prompts, and deliberately light runtime dependencies. The entrypoint is `python -m lares.lararium_mcp`, and local client configs in `.mcp.json`, `.vscode/mcp.json`, and `.codex/config.toml` all launch it that way. The package metadata still targets Python `>=3.8`, with `setuptools` as the build backend and only `pytest` / `pytest-cov` as declared dev extras; there are no declared third-party runtime dependencies for the core package itself.     
 
-The most important migration conclusion is architectural rather than translational: do **not** replace `lararium_mcp` with a monolithic TypeScript MCP server. Build `lararium-node` as the Node host/runtime around an isomorphic `lararium-core`, then keep MCP as an adapter package. That matches your stated constraints better, isolates the MCP SDK’s version churn, and cleanly supports both file-backed server mode and single-bundle browser mode without letting Node/browser APIs leak into core. The repository’s own design docs already point in that direction: the current MCP server is framed as a bootstrap spine, TiddlyWiki Filter Language is explicitly bounded as a guest grammar rather than the constitutional runtime, render projection is defined as a layer *after* execution, and Kowloon / tldraw are adapter targets rather than core semantics.    
+The most important migration conclusion is architectural rather than translational: do **not** replace `lararium_mcp` with a monolithic TypeScript MCP server. Build `lararium-node` as the Node host/runtime around an isomorphic `lararium-mesh`, then keep MCP as an adapter package. That matches your stated constraints better, isolates the MCP SDK’s version churn, and cleanly supports both file-backed server mode and single-bundle browser mode without letting Node/browser APIs leak into core. The repository’s own design docs already point in that direction: the current MCP server is framed as a bootstrap spine, TiddlyWiki Filter Language is explicitly bounded as a guest grammar rather than the constitutional runtime, render projection is defined as a layer *after* execution, and Kowloon / tldraw are adapter targets rather than core semantics.    
 
 There is also an important repo-state nuance: the Python package on the branch you highlighted already contains a more mature graph/compiler direction than a simple “resolver port.” It adds `pranala_parser.py`, `meme_graph.py`, revised `compiler.py`, and dedicated tests for parser/graph invariants. That means the real parity target is **not only** the default-branch stdio server; it is the union of the user-visible MCP surface plus the branch’s newer graph-parsing semantics. If you migrate only what is on the current default branch, you will institutionalize stale compiler behavior and immediately create design debt.      
 
-For the MCP adapter specifically, the safest near-term choice is to treat the official TypeScript SDK as a moving boundary and pin to the stable generation that fits your delivery horizon. The official SDK docs still show the current production package shape around `@modelcontextprotocol/sdk` with `McpServer`, stdio transport, resources/tools/prompts, and Streamable HTTP support, while the official SDK repository also states that its `main` branch is a v2 line still labeled pre-alpha and that v1.x remains the recommended production line until v2 fully settles. That is exactly why the MCP-facing code should live in `packages/lararium-mcp`, not in `lararium-core` or even `lararium-node`. 
+For the MCP adapter specifically, the safest near-term choice is to treat the official TypeScript SDK as a moving boundary and pin to the stable generation that fits your delivery horizon. The official SDK docs still show the current production package shape around `@modelcontextprotocol/sdk` with `McpServer`, stdio transport, resources/tools/prompts, and Streamable HTTP support, while the official SDK repository also states that its `main` branch is a v2 line still labeled pre-alpha and that v1.x remains the recommended production line until v2 fully settles. That is exactly why the MCP-facing code should live in `packages/lararium-mcp`, not in `lararium-mesh` or even `lararium-node`. 
 
-Status correction (2026-04-29): the original migration recommendation has been overtaken by implementation. Resolver/carrier/index/compiler logic is in TypeScript packages; TW5 runtime embedding is active as the isomorphic filter/render/sync layer; `PUT /admin/promote` and disk↔Automerge sync are live. The remaining caution still stands: keep canon promotion explicit, keep `lararium-core` isomorphic, and do not let tldraw/Kowloon adapter records become Lararium ontology.
+Status correction (2026-04-29): the original migration recommendation has been overtaken by implementation. Resolver/carrier/index/compiler logic is in TypeScript packages; TW5 runtime embedding is active as the isomorphic filter/render/sync layer; `PUT /admin/promote` and disk↔Automerge sync are live. The remaining caution still stands: keep canon promotion explicit, keep `lararium-mesh` isomorphic, and do not let tldraw/Kowloon adapter records become Lararium ontology.
 
 ### Lararium Context Integration
 
@@ -624,7 +624,7 @@ The existing signal/render layer already suggests projection architecture:
 - render targets
 - shared-situation-awareness framing
 
-This implies `lararium-core` should produce canonical records and projection-ready data, while adapter packages render those into HUD exchange pairs, chat-log post headers, tiddler headers, print margins, trace views, tldraw records, or Kowloon/DreamDeck feed payloads.
+This implies `lararium-mesh` should produce canonical records and projection-ready data, while adapter packages render those into HUD exchange pairs, chat-log post headers, tiddler headers, print margins, trace views, tldraw records, or Kowloon/DreamDeck feed payloads.
 
 ### TiddlyWiki as VerseGraph Core — Isomorphic Helper
 
@@ -632,13 +632,13 @@ TW5 is a **first-class binding layer**, not an optional guest. It is summoned wh
 
 - **Filter engine** — wikitext-filter expressions over the tiddler corpus; `filterClosure()` evaluates room recipes, template cascades, and palette search
 - **Virtual server** — `LarariumCrdtSyncAdaptor` binds `AutomergeMemeStore` / `LarTiddlerStore` to TW5’s wiki; CRDT deltas propagate into TW5 tiddlers; TW5 tiddler saves propagate back to the store (echo-loop guarded). `MemoryTiddlerStore` is now tests/fixtures only.
-- **Parse bridge** — a registered `text/x-memetic-wikitext` TW5 parser module delegates to `parseMemeCarrier()` in `@lararium/core`; TW5’s render pipeline can then produce HTML from carrier tiddlers without being the canonical parser
+- **Parse bridge** — a registered `text/x-memetic-wikitext` TW5 parser module delegates to `parseMemeCarrier()` in `@lararium/mesh`; TW5’s render pipeline can then produce HTML from carrier tiddlers without being the canonical parser
 - **Draft surface** — target flow is canvas/TW5 edit → `AutomergeMemeStore.put(origin: "canvas-draft" | "tw-local")` → live room state → `PUT /admin/promote` ceremony → `lares/` file (canon). The tldraw body-node draft listener exists, but body nodes are not emitted yet.
 
 The three-tree pipeline remains:
 
 ```
-parseMemeCarrier() → MemeAstNode[]        (parse tree — @lararium/core, canonical)
+parseMemeCarrier() → MemeAstNode[]        (parse tree — @lararium/mesh, canonical)
 resolveWidgetTree() → WidgetNode[]        (widget tree — @lararium/tldraw + kumu)
 renderCarrier() → React.ReactNode         (render tree — @lararium/app, view-only)
 ```
@@ -674,7 +674,7 @@ presence scope  = future cursors, observer overlays, collaborative selections
 
 ### Projection Interfaces
 
-`lararium-core` should expose generic projection interfaces before target-specific packages harden.
+`lararium-mesh` should expose generic projection interfaces before target-specific packages harden.
 
 Minimum projection targets:
 
@@ -745,7 +745,7 @@ False Parity = TypeScript MCP server works, but carrier semantics drift.
 
 ### Host Leakage Risk
 
-Host Leakage = fs/window/process/document enters lararium-core.
+Host Leakage = fs/window/process/document enters lararium-mesh.
 
 ### Projection Overreach Risk
 
@@ -770,7 +770,7 @@ Do not:
 
 This report prioritizes the GitHub connector evidence from `amorphous-dreams/Synthetic-Dream-Machine` and then uses primary/official web documentation for MCP, TiddlyWiki, and tldraw. I also treated the graph/compiler branch you identified as materially relevant because it contains concrete code and tests that expand the migration target.   
 
-The following assumptions are explicit, because several of them materially affect the recommendation. You have full repo access. The target runtime and deployment environment are unspecified. The target host may remain local-only initially. Lararium names and URI contracts should be preserved unless there is a formal breaking-change memo. `lararium-core` must stay isomorphic and therefore must not import `fs`, `path`, `process`, `window`, or `document`. TiddlyWiki is now an intentional runtime dependency of `@lararium/tw5` and the browser host; it remains outside `@lararium/core`. Write-back is no longer fully blocked: `/admin/promote` and disk↔Automerge sync are live, while general canvas body-node write-back still waits on projection and UX tests. These assumptions are consistent with your prompt and with the repository’s own TW boundary and projection documents.  
+The following assumptions are explicit, because several of them materially affect the recommendation. You have full repo access. The target runtime and deployment environment are unspecified. The target host may remain local-only initially. Lararium names and URI contracts should be preserved unless there is a formal breaking-change memo. `lararium-mesh` must stay isomorphic and therefore must not import `fs`, `path`, `process`, `window`, or `document`. TiddlyWiki is now an intentional runtime dependency of `@lararium/tw5` and the browser host; it remains outside `@lararium/mesh`. Write-back is no longer fully blocked: `/admin/promote` and disk↔Automerge sync are live, while general canvas body-node write-back still waits on projection and UX tests. These assumptions are consistent with your prompt and with the repository’s own TW boundary and projection documents.  
 
 One major limitation is that I did **not** find public, official documentation for a finished `lares/lararium-node` package. In this report, “lararium-node” therefore means a proposed Node-based target derived from your migration brief, the repo’s own architectural documents, and official MCP/TiddlyWiki/tldraw sources. Where a `lararium-node` behavior is not directly documented, I mark it as recommended or inferred rather than existing fact.  
 
@@ -837,14 +837,14 @@ More specifically, the contract that should survive the migration is this:
 
 | Python surface | Current contract that must survive | Proposed TypeScript equivalent |
 |---|---|---|
-| `resolve_lar_uri(uri)` | Accepts `lar:///...` URIs; maps `AGENTS` / `LARES` to all-caps files, `INDEXES/**` to virtual roots, `ha.ka.ba` to `packages/lares-core/memes`, other tuple roots to `lares/chapel-perilous-opens/<root>`; rejects unsupported roots | `resolveLarUri(uri, rootMap): LarResolution` in `lararium-core`, with path I/O delegated to `lararium-node`  |
+| `resolve_lar_uri(uri)` | Accepts `lar:///...` URIs; maps `AGENTS` / `LARES` to all-caps files, `INDEXES/**` to virtual roots, `ha.ka.ba` to `packages/lares-core/memes`, other tuple roots to `lares/chapel-perilous-opens/<root>`; rejects unsupported roots | `resolveLarUri(uri, rootMap): LarResolution` in `lararium-mesh`, with path I/O delegated to `lararium-node`  |
 | `read_lar_resource(uri)` | Reads file-backed resources only; raises on virtual or missing paths | `readLarTextResource(uri, host)` in `lararium-node` with identical error taxonomy exposed upward  |
-| `read_carrier(uri)` / `validate_carrier_shape()` | Extracts IAM metadata, validates carrier markers, computes kapu/ano/meme/data/noise rating, returns implements bundle and diagnostics | `readCarrier(uri, text)` / `validateCarrierShape()` in `lararium-core` with deterministic diagnostics ordering   |
-| `compile_carrier_index()` / interface / invariant indexes | Builds resource material for carrier/interface/invariant discovery | `buildCarrierIndex()`, `buildInterfaceIndex()`, `buildInvariantIndex()` in `lararium-core` with node-host file enumeration in `lararium-node`  |
-| `parse_pranala_edges()` | Parses inline, block, and sugar forms; resolves `? ->` against enclosing `ahu`; normalizes TOML edge fields | `parsePranalaEdges()` in `lararium-core` returning immutable `PranalaEdge` records   |
-| `MemeGraph` and compiler helpers | Maintains adjacency, sort, cycle detection, unresolved severity, closure hash, interface derivation | `MemeGraph` / `compileMinimalBoot()` / `compileFullBoot()` / `compileBootReceipt()` in `lararium-core`   |
+| `read_carrier(uri)` / `validate_carrier_shape()` | Extracts IAM metadata, validates carrier markers, computes kapu/ano/meme/data/noise rating, returns implements bundle and diagnostics | `readCarrier(uri, text)` / `validateCarrierShape()` in `lararium-mesh` with deterministic diagnostics ordering   |
+| `compile_carrier_index()` / interface / invariant indexes | Builds resource material for carrier/interface/invariant discovery | `buildCarrierIndex()`, `buildInterfaceIndex()`, `buildInvariantIndex()` in `lararium-mesh` with node-host file enumeration in `lararium-node`  |
+| `parse_pranala_edges()` | Parses inline, block, and sugar forms; resolves `? ->` against enclosing `ahu`; normalizes TOML edge fields | `parsePranalaEdges()` in `lararium-mesh` returning immutable `PranalaEdge` records   |
+| `MemeGraph` and compiler helpers | Maintains adjacency, sort, cycle detection, unresolved severity, closure hash, interface derivation | `MemeGraph` / `compileMinimalBoot()` / `compileFullBoot()` / `compileBootReceipt()` in `lararium-mesh`   |
 | `list_lar_resources()` / `read_lar_resource_or_index()` | Exposes carrier URIs, indexes, and boot artifacts as read-only resources; boot resources include `lar:///boot/minimal`, `.../full`, `.../receipt` | `registerLarariumResources(server, runtime)` in `lararium-mcp` backed by `lararium-node` runtime APIs    |
-| `define_tools()` / `call_tool()` | Defines and dispatches namespaced tools such as resolver/carrier/boot compilation; returns MCP tool result shape with `content[]` and `isError` | `server.registerTool(...)` in `lararium-mcp`; each tool delegates to `lararium-node` / `lararium-core` services   |
+| `define_tools()` / `call_tool()` | Defines and dispatches namespaced tools such as resolver/carrier/boot compilation; returns MCP tool result shape with `content[]` and `isError` | `server.registerTool(...)` in `lararium-mcp`; each tool delegates to `lararium-node` / `lararium-mesh` services   |
 | `list_prompts()` / `get_prompt()` | Provides prompt catalog and `messages` payloads; missing args raise; unknown prompt names error | `server.registerPrompt(...)` in `lararium-mcp`; prompt rendering stays read-only and data-backed   |
 | `handle_jsonrpc_message()` / stdio main loop | Newline-delimited JSON-RPC over stdio; `initialize`, `resources/list`, `resources/read`, `tools/list`, `tools/call`, `prompts/list`, `prompts/get`; notifications should not emit responses; stdout must stay clean | `McpServer` + `StdioServerTransport` in `lararium-mcp`; no handwritten JSON-RPC multiplexer unless parity tests prove it is needed     |
 
@@ -885,7 +885,7 @@ That translates into the following Lararium posture:
 
 | TiddlyWiki pattern | Lararium decision | Why |
 |---|---|---|
-| Small boot kernel that loads higher layers | **Copy** | `lararium-core` should be small, deterministic, and bootable in Node or browser without transport/framework assumptions.  |
+| Small boot kernel that loads higher layers | **Copy** | `lararium-mesh` should be small, deterministic, and bootable in Node or browser without transport/framework assumptions.  |
 | Tiddlers as universal data/code unit | **Inspire** | Carriers/memes can fill the same “universal unit” role, but Lararium should keep its own file/AST/graph semantics.  |
 | JavaScript modules as tiddlers | **Inspire, not literal-copy** | Useful as precedent for self-describing modules, but embedding executable JS inside carriers would blur code/data boundaries too early.  |
 | Plugins as bundled tiddlers | **Inspire** | Good model for Lararium package bundles and fixture corpora; not necessary as the exact package runtime.  |
@@ -942,7 +942,7 @@ The right package layout is a pnpm monorepo with strict dependency direction fro
 ```mermaid
 flowchart LR
     A[carrier files and snapshots] --> B[lararium-node]
-    B --> C[lararium-core]
+    B --> C[lararium-mesh]
     D[lararium-web] --> C
     E[lararium-mcp] --> B
     F[lararium-tiddly] --> C
@@ -954,13 +954,13 @@ flowchart LR
 
 | Package | Responsibility | Public API surface | Forbidden imports | Dependency rules |
 |---|---|---|---|---|
-| `packages/lararium-core` | Pure URI parsing, carrier parsing/validation, indexes, graph, compiler, AST envelope, projection contracts | `resolveLarUri`, `readCarrierText`-free parsers, `parsePranalaEdges`, `MemeGraph`, `compileMinimalBoot`, `compileFullBoot`, `compileBootReceipt`, domain types | `fs`, `path`, `process`, `window`, `document`, MCP SDK, tldraw, React | No package in monorepo may reverse-import from adapters into core |
-| `packages/lararium-node` | File-backed host, CLI, config loading, directory walking, caching, optional watch mode, deterministic serialization | `createLarariumRuntime`, `NodeCarrierStore`, CLI/bin entrypoints | Browser APIs, React, MCP transport registration | May depend on `lararium-core`; adapter packages depend on it |
+| `packages/lararium-mesh` | Pure URI parsing, carrier parsing/validation, indexes, graph, compiler, AST envelope, projection contracts | `resolveLarUri`, `readCarrierText`-free parsers, `parsePranalaEdges`, `MemeGraph`, `compileMinimalBoot`, `compileFullBoot`, `compileBootReceipt`, domain types | `fs`, `path`, `process`, `window`, `document`, MCP SDK, tldraw, React | No package in monorepo may reverse-import from adapters into core |
+| `packages/lararium-node` | File-backed host, CLI, config loading, directory walking, caching, optional watch mode, deterministic serialization | `createLarariumRuntime`, `NodeCarrierStore`, CLI/bin entrypoints | Browser APIs, React, MCP transport registration | May depend on `lararium-mesh`; adapter packages depend on it |
 | `packages/lararium-mcp` | MCP transport adapter only | stdio server bin, optional Streamable HTTP server, resource/tool/prompt registration helpers | File-system logic except via `lararium-node`; tldraw/Kowloon internals | Depends on `lararium-node` and official MCP SDK only |
-| `packages/lararium-web` | Browser bundle, in-memory/snapshot host, future viewer UX | `createBrowserRuntime`, web bootstrap, hydration APIs | Node APIs, MCP SDK | Depends on `lararium-core`; may consume projected outputs |
-| `packages/lararium-tiddly` | Guest grammar and TW comparison fixtures; bounded filter/transclusion adapters | `parseTwFilterGuestGrammar`, fixture import/export helpers | Full TW runtime as hard dependency of core | Depends on `lararium-core`; optional peer/runtime deps only |
-| `packages/lararium-tldraw` | Projection from Lararium records/exec graph to tldraw shapes/bindings/snapshots | `projectToTldraw`, migration/schema helpers | Core ontology changes, file-system logic | Depends on `lararium-core`; never imported by core |
-| `packages/lararium-kowloon` | Read-only feed/event projection and optional publisher | `projectToKowloonEvent`, later publisher client | Core ontology changes, transport logic unrelated to Kowloon | Depends on `lararium-core`; publication client optional |
+| `packages/lararium-web` | Browser bundle, in-memory/snapshot host, future viewer UX | `createBrowserRuntime`, web bootstrap, hydration APIs | Node APIs, MCP SDK | Depends on `lararium-mesh`; may consume projected outputs |
+| `packages/lararium-tiddly` | Guest grammar and TW comparison fixtures; bounded filter/transclusion adapters | `parseTwFilterGuestGrammar`, fixture import/export helpers | Full TW runtime as hard dependency of core | Depends on `lararium-mesh`; optional peer/runtime deps only |
+| `packages/lararium-tldraw` | Projection from Lararium records/exec graph to tldraw shapes/bindings/snapshots | `projectToTldraw`, migration/schema helpers | Core ontology changes, file-system logic | Depends on `lararium-mesh`; never imported by core |
+| `packages/lararium-kowloon` | Read-only feed/event projection and optional publisher | `projectToKowloonEvent`, later publisher client | Core ontology changes, transport logic unrelated to Kowloon | Depends on `lararium-mesh`; publication client optional |
 
 The proposed Lararium record model should mirror the repository’s branch graph semantics while staying projection-friendly for tldraw. I recommend three canonical layers: `LarCarrierRecord` for source carriers and validation metadata; `LarGraphNode` / `LarGraphEdge` for parsed graph semantics; and `LarProjectionRecord` for target-specific outputs. Each record should carry `id`, `type`, `scope`, `sourceUri`, `sourceSpan?`, `contentHash?`, and `meta`. Use `scope: "document" | "session" | "presence"` specifically so projection packages can map naturally into tldraw’s documented record scopes without forcing tldraw into core. That gives you a stable internal ontology and a loss-minimizing path into tldraw snapshots, session state, and future presence overlays.    
 
@@ -1221,12 +1221,12 @@ Three Docker environments. Each has a distinct purpose and a distinct level of l
 
 Browser clients (`lararium-web`, tldraw surfaces, future DreamNet room views) follow a two-step boot pattern:
 
-1. Boot `lararium-core` from an embedded snapshot or a pre-built JSON bundle (the same carrier graph the Node compiler produces).
+1. Boot `lararium-mesh` from an embedded snapshot or a pre-built JSON bundle (the same carrier graph the Node compiler produces).
 2. Sync from a locally pulled repo clone if available, or from a cloud-served bundle endpoint if not.
 
 Session-scoped "rooms" gate what subset of the carrier graph a given view sees. Room filtering is deferred — the carrier graph itself stays complete; projection packages and the session layer determine what surfaces in a given room. This is the same pattern as the record scope model (document / session / presence) already in the architecture.
 
-The browser bundle must not import `lararium-node` or MCP packages. `lararium-web` depends only on `lararium-core` and its own host adapters.
+The browser bundle must not import `lararium-node` or MCP packages. `lararium-web` depends only on `lararium-mesh` and its own host adapters.
 
 ### DreamNet Cloud Surface
 
@@ -1289,7 +1289,7 @@ All target outcomes delivered:
 - ✓ `ci.yml` GitHub Actions: typecheck → build → parity tests → MCP stdio smoke (fragile pnpm store path replaced with `pnpm exec jest`)
 - ✓ `parity-drift.yml` scheduled fixture drift check (weekly, Node-only, no Python)
 - ✓ MCP stdio smoke child-process harness in `packages/lararium-mcp/tests/` — 7 tests passing
-- ✓ `lararium-web` skeleton: `createBrowserRuntime(snapshot)` + `bootFromUrl(url)`, depends only on `lararium-core`, zero Node APIs
+- ✓ `lararium-web` skeleton: `createBrowserRuntime(snapshot)` + `bootFromUrl(url)`, depends only on `lararium-mesh`, zero Node APIs
 - ✓ No-write gate tests in `packages/lararium-node/tests/no-write-gate.test.ts` — 8 tests; `ClosureEntry` objects now `Object.freeze`d at compiler boundary
 - ✓ `_archive/lararium_mcp/` Python MCP moved out of active tree
 - ✓ DAG prose updated: AGENTS.md, mu.md, lararium.md reflect rewired topology
@@ -1301,8 +1301,8 @@ All target outcomes delivered:
 
 - ✓ Boot receipt determinism: hash covers stable content only (excludes `compiledAt`)
 - ✓ `ClosureEntry` frozen at compiler boundary (no external mutation)
-- ✓ Hostful `lar://alias:tier@host/path` URI parsing: `parseHostfulLarUri()`, `isHostfulLarUri()` in `lararium-core`; hostful records always virtual, never resolve to lares/ files; `resolveLarUri()` explicitly rejects hostful form
-- ✓ 22 property tests for nested `ahu` `? ->` resolution in `lararium-core`
+- ✓ Hostful `lar://alias:tier@host/path` URI parsing: `parseHostfulLarUri()`, `isHostfulLarUri()` in `lararium-mesh`; hostful records always virtual, never resolve to lares/ files; `resolveLarUri()` explicitly rejects hostful form
+- ✓ 22 property tests for nested `ahu` `? ->` resolution in `lararium-mesh`
 - ✓ **Grammar fix: `fromSlot` separated from `fromSocket`** — the critical invariant:
   - `fromSocket` = the enclosing ahu worksite (always set from the ahu stack)
   - `fromSlot` = the named outgoing slot on that ahu (set only when pranala carries an explicit `#fragment`)
@@ -1321,14 +1321,14 @@ All target outcomes delivered:
 
 - ✓ `lararium-web` Vite bundle: `dist/lararium-web.es.js` + `dist/lararium-web.umd.js` (22.67 kB / 18.10 kB), zero build warnings
 - ✓ `crypto-shim.ts`: deterministic djb2-inspired 32-byte mixing shim satisfies `createHash('sha256')` in browser build; vite.config.ts aliases `crypto → src/crypto-shim.ts`
-- ⚠ **Async crypto shim debt** — `crypto-shim.ts` is NOT a real SHA-256. It uses djb2-inspired mixing: deterministic and collision-resistant for carrier content hashing, but not cryptographically secure. When browser callers become `async`-capable, replace `hashBuf()` in `crypto-shim.ts` with `await crypto.subtle.digest('SHA-256', buf)` and update `BrowserHash.digest()` to return `Promise<string>`. Callers in `lararium-core` (boot receipt, carrier hash) will need to be awaited. Track: `packages/lararium-web/src/crypto-shim.ts` TODO comment.
+- ⚠ **Async crypto shim debt** — `crypto-shim.ts` is NOT a real SHA-256. It uses djb2-inspired mixing: deterministic and collision-resistant for carrier content hashing, but not cryptographically secure. When browser callers become `async`-capable, replace `hashBuf()` in `crypto-shim.ts` with `await crypto.subtle.digest('SHA-256', buf)` and update `BrowserHash.digest()` to return `Promise<string>`. Callers in `lararium-mesh` (boot receipt, carrier hash) will need to be awaited. Track: `packages/lararium-web/src/crypto-shim.ts` TODO comment.
 - ✓ **TW5 Filter Language — single canonical engine** (hand-rolled evaluator removed):
   - `tw-filter.ts` (Node): `filterMemesTW(entries, twExpr)` + `precomputeRooms()` via `tiddlywiki` devDep + `createRequire`. ClosureEntry → tiddler fields (`title=uri`, `tags=implements`, `depth/rating/role`). `[all[memes]]` aliases `[all[tiddlers]]`.
   - `tw-filter-browser.ts`: same API in browser, backed by pre-built `src/generated/tw-filter-engine.browser.js` (154 modules, 106 operators, 410 KB). Vite aliases swap Node path for browser path at bundle time.
   - `scripts/build-tw-browser-filter.mjs`: deterministic extraction script — boots TW5, serializes filter+wiki+utils modules to ESM. Upgrade process: `pnpm update tiddlywiki` → re-run script → run tests.
   - `LarSnapshot.rooms`: pre-computed room filter results embedded in snapshot for instant browser load.
   - Deterministic process: bump `tiddlywiki` dep → all 86+ TW operators available automatically. No vendoring, no code extraction.
-  - `buildBootClosure(graph, entryUri)` extracted to `lararium-core/compiler.ts` — pure BFS+topoSort on a pre-loaded MemeGraph (enables browser boot without file system).
+  - `buildBootClosure(graph, entryUri)` extracted to `lararium-mesh/compiler.ts` — pure BFS+topoSort on a pre-loaded MemeGraph (enables browser boot without file system).
 - ✓ **Infinite canvas app bootstrap** (`lararium-web/src/app.ts`):
   - `bootApp(snapshotUrl)`, `bootFromSnapshot(snapshot)`, `bootFromRuntime(runtime)`, `bootFromEmbedded(scriptId)` — four boot modes
   - `renderAppViews(app)` — dynamic-imports `@lararium/tldraw`, calls `renderAllViews()`, attaches emission to app
@@ -1440,7 +1440,7 @@ Do not ship the snapshot-injection server as the primary path. Offline mode only
 ### Completed
 
 **Crypto provider boundary (replaces djb2 crypto-shim)**
-- ✓ `CryptoProvider` / `DigestProvider` / `RandomProvider` interfaces in `lararium-core/src/crypto.ts`
+- ✓ `CryptoProvider` / `DigestProvider` / `RandomProvider` interfaces in `lararium-mesh/src/crypto.ts`
 - ✓ `webDigest()`, `webGetRandomValues()`, `webRandomUUID()`, `defaultCryptoProvider`
 - ✓ Canonical bytes helpers: `utf8Bytes()`, `canonicalJson()`, `canonicalJsonBytes()`, `hex()`, `sha256Hex()`
 - ✓ `compileBootReceipt()` async, uses `canonicalJsonBytes` + `sha256Hex`; `import { createHash } from 'crypto'` removed
@@ -1605,7 +1605,7 @@ Option (b) is the architecturally correct path. Option (a) is simpler if `serve.
 - ✓ `wikitext-filter` tool: TW5 filter expression evaluated against boot closure — `[all[memes]tag[...invariant]]`, `[field:depth[0]]`, etc.
 - ✓ `lararium-room_list` tool: DEFAULT_ROOMS with page IDs and filter expressions
 - ✓ `lararium-edge_list` tool: all pranala arrows from projection, optional family filter
-- ✓ `filterMemesTW` + `precomputeRooms` exported from `@lararium/node` via new `@lararium/core/tw-filter` subpath export (keeps browser bundle clean)
+- ✓ `filterMemesTW` + `precomputeRooms` exported from `@lararium/node` via new `@lararium/mesh/tw-filter` subpath export (keeps browser bundle clean)
 
 **Remaining**
 - ⚠ MCP ↔ canvas bridge: `stdio.ts` compiles fresh from `lares/` on each tool call — it cannot see live room state (active connections, shape positions, session camera). Bridge requires either: (a) `stdio.ts` queries `serve.ts` HTTP API for live state, or (b) both run in the same process. Env var `LARARIUM_HTTP_URL` would let `stdio.ts` query the canvas server.
@@ -1716,7 +1716,7 @@ Future: extract `FAMILY_CONTRACTS` to `lares/grammars/pranala-families.md` carri
 **Implemented (Phase 2 scaffold — wiring deferred to Phase 2.5).**
 
 - `lares/grammars/memetic-wikitext.md` — grammar carrier meme with `[[sigils]]` and `[[families]]` TOML arrays; full sigil registry (ahu, pranala, loulou, aka, kahea, iam, header) and family contracts table
-- `GrammarRules`, `SigilRule`, `FamilyRule` interfaces exported from `@lararium/core` (`pranala-parser.ts`)
+- `GrammarRules`, `SigilRule`, `FamilyRule` interfaces exported from `@lararium/mesh` (`pranala-parser.ts`)
 - `loadGrammarRules()` function in `node-host.ts` — reads grammar carrier from `lares/grammars/memetic-wikitext.md`, extracts `[[sigils]]` + `[[families]]` into a `GrammarRules` object, returns `null` on missing file (bootstrap safety net)
 - 85/85 tests pass
 
@@ -1809,7 +1809,7 @@ After the Phase 2 session documented above, a further grammar extension session 
 
 **AST type layer (Phase 3 — compressed):**
 
-`packages/lararium-core/src/ast.ts` — `MemeAstNode` union compressed to **8 node kinds**. 15 typed interfaces collapsed into `SigilNode { sigilName, attrs, body }`. `MetadataNode` removed — `toml`/`iam` are now `SigilNode`. `DynamicNode` added as grammar-meme escape hatch. `#ast-node-types` spec section updated to reflect compressed model.
+`packages/lararium-mesh/src/ast.ts` — `MemeAstNode` union compressed to **8 node kinds**. 15 typed interfaces collapsed into `SigilNode { sigilName, attrs, body }`. `MetadataNode` removed — `toml`/`iam` are now `SigilNode`. `DynamicNode` added as grammar-meme escape hatch. `#ast-node-types` spec section updated to reflect compressed model.
 
 **Phase 3 parser (`parseMemeCarrier`):**
 
@@ -2062,11 +2062,11 @@ Required context now present in-document:
 
 **ReactionGraph + live protocol:**
 
-- ✓ `packages/lararium-core/src/live-protocol.ts` (new) — isomorphic WebSocket protocol types + `ReactionGraph` class
+- ✓ `packages/lararium-mesh/src/live-protocol.ts` (new) — isomorphic WebSocket protocol types + `ReactionGraph` class
   - `LiveMsgSnapshot`, `LiveMsgDelta`, `LiveMsgEvent`, `LiveMsgFire`, `LiveClientMsg`, `LiveServerMsg`
   - `ReactionGraph`: `load(bindings)`, `subscribe(fromUri, trigger, handler)`, `fire(fromUri, trigger, payload)`
   - `extractReactionBindings(edges)` — filters `family:"reaction"` edges to `ReactionBinding[]`
-- ✓ Exported from `@lararium/core` via `index.ts`
+- ✓ Exported from `@lararium/mesh` via `index.ts`
 
 **UEFN file-watcher operational model (serve.ts):**
 
@@ -2112,7 +2112,7 @@ Required context now present in-document:
   - URI-form kahea (`EdgeSugarNode`) ignored — not a widget call
 - ✓ `collectKumuDefs(carrierUri, ast): KumuDef[]` — extracts kumu sigil nodes from parsed carrier
 - ✓ `BootArtifact.kumuDefs?: KumuDef[]` — field added; population deferred to Phase 3 compiler pass
-- ✓ Exported from `@lararium/core` index
+- ✓ Exported from `@lararium/mesh` index
 - ✓ 117/117 tests pass (23 new widget-tree tests + 9 async ReactionGraph tests)
 - ✓ All packages typecheck clean
 
@@ -2193,7 +2193,7 @@ All M5/M6/M7/M8/M9 tactile behaviors unverified by automated browser. Manual smo
 
 ### Priority 4: Canon-promotion surface ✓ guard + endpoint shipped (ceremony deferred to M10)
 
-`canPromoteToCanon(input)` policy function shipped in `@lararium/core/live-protocol.ts`. Enforces the target invariant: projection-cache may render/inform/propose but may NOT canon-promote. 9 tests in `packages/lararium-node/tests/canon-promotion-guard.test.ts`. `LarariumAuthorityEnvelope` discriminated union: local-operator/ucan-delegated/keyhive arms; only local-operator executes today.
+`canPromoteToCanon(input)` policy function shipped in `@lararium/mesh/live-protocol.ts`. Enforces the target invariant: projection-cache may render/inform/propose but may NOT canon-promote. 9 tests in `packages/lararium-node/tests/canon-promotion-guard.test.ts`. `LarariumAuthorityEnvelope` discriminated union: local-operator/ucan-delegated/keyhive arms; only local-operator executes today.
 
 `PUT /admin/promote` endpoint shipped in `serve.ts` (M10): localhost-only, reads `{ uri, carrierText, shapeId? }`, calls `canPromoteToCanon` as gate, resolves via `resolveLarUri`, path-traversal guard, writes to `lares/`, lares/ watcher triggers reseed. 7 integration tests in `promote-guard.test.ts`.
 
@@ -2502,9 +2502,9 @@ Boot flow was LarariumDoc-first but the catalog oracle tiddler was keyed `CATALO
 
 | File | Change |
 |---|---|
-| `@lararium/core` `lararium-doc.ts` | `CATALOG_DOC_URI_SLOT` → `CATALOG_DOC_URI`; full docblock; `corpusLarUri()` helper |
-| `@lararium/core` `catalog.ts` | `tiddlers?` field added; `emptyCatalogDoc()` includes `tiddlers: {}`; import `MutableLarRecord` |
-| `@lararium/core` `resolver.ts` | `@`-prefixed scope → `kind: "caps-virtual"` virtual route (after `@lares` + `@lararium` guards) |
+| `@lararium/mesh` `lararium-doc.ts` | `CATALOG_DOC_URI_SLOT` → `CATALOG_DOC_URI`; full docblock; `corpusLarUri()` helper |
+| `@lararium/mesh` `catalog.ts` | `tiddlers?` field added; `emptyCatalogDoc()` includes `tiddlers: {}`; import `MutableLarRecord` |
+| `@lararium/mesh` `resolver.ts` | `@`-prefixed scope → `kind: "caps-virtual"` virtual route (after `@lares` + `@lararium` guards) |
 | `@lararium/node` `lararium-island.ts` | `CATALOG_DOC_URI_SLOT` → `CATALOG_DOC_URI` throughout (import + seed + reconcile) |
 | `@lararium/node` `open-node-lar-peer.ts` | Import `CATALOG_DOC_URI, corpusLarUri`; `blankCatalog()` writes self-ref tiddler; corpus loop reconciles `corpusLarUri(entry.id)` tiddler; `tiddlers: {}` in inline blank |
 | `@lararium/app` `open-browser-lar-peer.ts` | `CATALOG_DOC_URI_SLOT` → `CATALOG_DOC_URI`; `blankCatalog` inline gets `tiddlers: {}` |
@@ -2512,7 +2512,7 @@ Boot flow was LarariumDoc-first but the catalog oracle tiddler was keyed `CATALO
 ⤴ **Ho'oko:**
 
 ```sh
-pnpm --filter @lararium/core build     # ✓ clean
+pnpm --filter @lararium/mesh build     # ✓ clean
 pnpm --filter @lararium/node build     # ✓ clean
 pnpm --filter @lararium/app  build     # ✓ clean
 ```
@@ -2526,7 +2526,7 @@ pnpm --filter @lararium/app  build     # ✓ clean
 - `readCatalogUrl()` → `readBootstrap()`; fragment treated as LarariumDoc URL; `CATALOG_DOC_URI` tiddler read from LarariumDoc to locate CatalogDoc; legacy CatalogDoc-URL fragment kept as backward-compat path; `bootstrap-wanted/bootstrap-here` BC gossip.
 
 **Sprint 4 — Room keys as `lar:` URIs: ✓ COMPLETE**
-- `roomLarUri(slug)` helper added to `lararium-doc.ts` and exported from `@lararium/core` barrel
+- `roomLarUri(slug)` helper added to `lararium-doc.ts` and exported from `@lararium/mesh` barrel
 - `CatalogDoc.rooms` docblock updated: key IS the full `lar:` URI, `id` field retains the slug
 - `lararium-island.ts` seed loop uses `roomKey = roomLarUri(roomId)`
 - Both node peer and browser peer use `roomLarUri(roomId)` for room key construction and lookup
@@ -2579,7 +2579,7 @@ After M17 landed `CatalogDoc.tiddlers` and the `@`-prefix named-doc oracle patte
 ⤴ **Ho'oko:**
 
 ```sh
-pnpm --filter @lararium/core build     # ✓ clean
+pnpm --filter @lararium/mesh build     # ✓ clean
 pnpm --filter @lararium/node build     # ✓ clean
 pnpm --filter @lararium/app  build     # ✓ clean
 ```
@@ -2608,22 +2608,22 @@ Three OODA loops across four files:
 - Loop 1 — `lararium-island.ts`: add `LARES_DOC_URI` import + `MemeStoreDoc` type import; add `seedLaresDoc(repo)` export; update `reconcileWellKnownTiddlers` signature to accept optional `laresUrl` and write the ba tiddler.
 - Loop 2 — `open-node-lar-peer.ts`: import `seedLaresDoc` + `LARES_DOC_URI`; add Step 3b (LaresDoc open/seed after island); pass `laresHandle.url` to `reconcileWellKnownTiddlers`; update docblock boot sequence.
 - Loop 3 — `open-browser-lar-peer.ts`: import `LARES_DOC_URI`; add Step 4 (read ha oracle, open LaresDoc, add `lares` bag); exclude `LARES_DOC_URI` from corpus tiddler scan; update docblock.
-- Meme — `packages/lararium-core/memes/automerge-tiga.md` at `lar:///ha.ka.ba/@lararium/core/v0.1/automerge-tiga`: invariant doc locking the Tiga law, Zelenka alignment, boot sequence mapping, structural law table.
+- Meme — `packages/lararium-mesh/memes/automerge-tiga.md` at `lar:///ha.ka.ba/@lararium/mesh/v0.1/automerge-tiga`: invariant doc locking the Tiga law, Zelenka alignment, boot sequence mapping, structural law table.
 
 ▶ **Act (files touched):**
 
 | File | Change |
 |---|---|
-| `@lararium/core` `lararium-doc.ts` | `LARES_DOC_URI` constant + Tiga docblock |
+| `@lararium/mesh` `lararium-doc.ts` | `LARES_DOC_URI` constant + Tiga docblock |
 | `@lararium/node` `lararium-island.ts` | `seedLaresDoc()` export; `reconcileWellKnownTiddlers` threaded with `laresUrl` |
 | `@lararium/node` `open-node-lar-peer.ts` | Step 3b LaresDoc open/seed; `lares` bag added; boot sequence docblock updated |
 | `@lararium/app` `open-browser-lar-peer.ts` | Step 4 LaresDoc open from ha oracle; `lares` bag added; corpus scan excludes ba; docblock updated |
-| `packages/lararium-core/memes/automerge-tiga.md` | Invariant Tiga meme created |
+| `packages/lararium-mesh/memes/automerge-tiga.md` | Invariant Tiga meme created |
 
 ⤴ **Ho'oko:**
 
 ```sh
-pnpm --filter @lararium/core build     # ✓ clean
+pnpm --filter @lararium/mesh build     # ✓ clean
 pnpm --filter @lararium/node build     # ✓ clean
 pnpm --filter @lararium/app  build     # ✓ clean
 ```
@@ -2678,7 +2678,7 @@ One sweep across 8 files:
 ⤴ **Ho'oko:**
 
 ```sh
-pnpm --filter @lararium/core build     # ✓ clean
+pnpm --filter @lararium/mesh build     # ✓ clean
 pnpm --filter @lararium/node build     # ✓ clean
 pnpm --filter @lararium/app  build     # ✓ clean
 ```
@@ -2734,10 +2734,10 @@ Four OODA loops in sequence, each with a build gate:
 ⤴ **Ho'oko:**
 
 ```sh
-pnpm --filter @lararium/core build     # ✓ clean
+pnpm --filter @lararium/mesh build     # ✓ clean
 pnpm --filter @lararium/node build     # ✓ clean
 pnpm --filter @lararium/app  build     # ✓ clean (4.74 s)
-pnpm --filter @lararium/core test      # ✓ 5/5 suites, 67 tests
+pnpm --filter @lararium/mesh test      # ✓ 5/5 suites, 67 tests
 ```
 
 Architecture now live:
@@ -2815,7 +2815,7 @@ M21–M22 = Phase 4 open (TW5 recipe from topology + connect screen).
 | Browser peer recipe option | `open-browser-lar-peer.ts` | Same pattern as node peer; `pool.get("slot-0")` passes `vmBagStack` to `DirectMemeRecipeVm` |
 | 4 new tests | `composite-store.test.ts` | `getRecipe` null (absent), parse string bagStack, `buildLayersFromRecipe` ordering + skip, tombstone null |
 
-**Test gate:** 71/71 tests pass (`@lararium/core`). Full workspace: 138 tests pass. `@lararium/mcp` 2 failures pre-existing (not introduced by M22).
+**Test gate:** 71/71 tests pass (`@lararium/mesh`). Full workspace: 138 tests pass. `@lararium/mcp` 2 failures pre-existing (not introduced by M22).
 
 **Build gate:** `pnpm -r build` clean — `exactOptionalPropertyTypes` fix applied to `getRecipe` return (`writableBag` spread conditionally).
 
@@ -2866,7 +2866,7 @@ M21–M22 = Phase 4 open (TW5 recipe from topology + connect screen).
 | `seedBagDescriptors` called in node peer | `open-node-lar-peer.ts` | Called after `seedDefaultRecipes` in the island-ready block |
 | 12 new tests | `composite-store.test.ts`, `meme-recipe-vm.test.ts` | `putViaRecipe` routing + error, access policy field acceptance; VM priority gate (6 cases: high wins, low blocked, high overwrites low, out-of-stack rejected, tombstone pass-through, no-bagStack full-pass) |
 
-**Test gate:** 75/75 `@lararium/core`, 37/37 `@lararium/tw5` (7 new VM tests), 153 total workspace passes. `@lararium/mcp` 2 failures pre-existing.
+**Test gate:** 75/75 `@lararium/mesh`, 37/37 `@lararium/tw5` (7 new VM tests), 153 total workspace passes. `@lararium/mcp` 2 failures pre-existing.
 
 **Build gate:** `pnpm -r build` clean.
 
@@ -2914,7 +2914,7 @@ descriptor tiddler in `tiddlers` — queryable from TW5 without TS interop.
 
 | Change | File | Detail |
 |--------|------|--------|
-| `base-doc.ts` (new) | `packages/lararium-core/src/base-doc.ts` | Single canonical `MutableLarRecord` + `LarDoc` interface; sole source of truth |
+| `base-doc.ts` (new) | `packages/lararium-mesh/src/base-doc.ts` | Single canonical `MutableLarRecord` + `LarDoc` interface; sole source of truth |
 | `index.ts` exports base-doc first | `index.ts` | `export * from "./base-doc.js"` as first line; prevents TS2308 from fan-out re-exports |
 | `meme-store-doc.ts` — TS2308 fix | `meme-store-doc.ts` | Removed duplicate `MutableLarRecord` declaration; now `import type { LarDoc, MutableLarRecord } from "./base-doc.js"` + `export type { MutableLarRecord }` re-export for backward compat |
 | `lararium-doc.ts` | `lararium-doc.ts` | `extends LarDoc`; imports `MutableLarRecord` from `base-doc`; `tiddlers` required (not optional) |
@@ -3063,15 +3063,15 @@ descriptor tiddler in `tiddlers` — queryable from TW5 without TS interop.
 
 ## M26 — Isomorphic VmPool + WorkerFactory Injection (2026-05-04)
 
-**Scope:** Moved isomorphic contracts to `@lararium/core`; injected `WorkerFactory` into `TW5WorkerProxy`; fixed sha256 gate error propagation; fixed node peer pool key.
+**Scope:** Moved isomorphic contracts to `@lararium/mesh`; injected `WorkerFactory` into `TW5WorkerProxy`; fixed sha256 gate error propagation; fixed node peer pool key.
 
 **Changes delivered:**
 
 | File | Change |
 |---|---|
-| `lararium-core/src/vm-pool.ts` (NEW) | `VmPool<T>` generic lifecycle manager |
-| `lararium-core/src/meme-recipe-vm.ts` (NEW) | `MemeRecipeVm` interface (imports `MemeProjection`) |
-| `lararium-core/src/index.ts` | `export * from "./vm-pool.js"` + `export * from "./meme-recipe-vm.js"` |
+| `lararium-mesh/src/vm-pool.ts` (NEW) | `VmPool<T>` generic lifecycle manager |
+| `lararium-mesh/src/meme-recipe-vm.ts` (NEW) | `MemeRecipeVm` interface (imports `MemeProjection`) |
+| `lararium-mesh/src/index.ts` | `export * from "./vm-pool.js"` + `export * from "./meme-recipe-vm.js"` |
 | `lararium-tw5/src/vm-pool.ts` | DELETED — superseded by core |
 | `lararium-tw5/src/meme-recipe-vm.ts` | Interface removed; imports `MemeRecipeVm` from core |
 | `lararium-tw5/src/tw5-worker-proxy.ts` | `spawnWorker()` removed; `WorkerFactory = () => AnyWorker` exported; constructor takes factory; doc updated |
@@ -3111,7 +3111,7 @@ descriptor tiddler in `tiddlers` — queryable from TW5 without TS interop.
 
 ↺ **M27 candidates:**
 - `TW5WorkerProxy` wired to VmPool in `@lararium/app` (Sprint 6 browser Worker isolation)
-- Canonical `LarOpenPhase` shared type in `@lararium/core` (or document intentional divergence)
+- Canonical `LarOpenPhase` shared type in `@lararium/mesh` (or document intentional divergence)
 - Draft bag → stable lar: URI
 - tldraw `(ed.store as any).put()` × 3 wiki-first migration
 - Connect screen cold-boot path
@@ -3121,14 +3121,14 @@ descriptor tiddler in `tiddlers` — queryable from TW5 without TS interop.
 
 ## M27 — tldraw Wiki-First Migration + LarOpenPhase + vmFactory Injection (2026-05-04)
 
-**Scope:** Full delete + rebuild of `@lararium/tldraw`; eliminated all `(store as any).put()` casts; introduced `LarOpenPhase` canonical type in `@lararium/core`; landed `vmFactory` injectable option on both platform peers.
+**Scope:** Full delete + rebuild of `@lararium/tldraw`; eliminated all `(store as any).put()` casts; introduced `LarOpenPhase` canonical type in `@lararium/mesh`; landed `vmFactory` injectable option on both platform peers.
 
 **Changes delivered:**
 
 | File | Change |
 |---|---|
-| `lararium-core/src/open-phase.ts` (NEW) | `LarOpenPhase` canonical union — single source for all platform peers |
-| `lararium-core/src/index.ts` | `export * from "./open-phase.js"` |
+| `lararium-mesh/src/open-phase.ts` (NEW) | `LarOpenPhase` canonical union — single source for all platform peers |
+| `lararium-mesh/src/index.ts` | `export * from "./open-phase.js"` |
 | `lararium-app/src/open-browser-lar-peer.ts` | `BrowserOpenPhase = LarOpenPhase`; `vmFactory?` option; default `DirectMemeRecipeVm` |
 | `lararium-node/src/open-node-lar-peer.ts` | `NodeOpenPhase = LarOpenPhase`; `vmFactory?` option; default `DirectMemeRecipeVm` |
 | `lararium-tldraw` — 9 files DELETED | `cascade.ts`, `layout.ts`, `multi-view.ts`, `project.ts`, `records.ts`, `render.ts`, `room.ts` (old), `tldraw-shapes.ts`, `tw5-projection.ts` |

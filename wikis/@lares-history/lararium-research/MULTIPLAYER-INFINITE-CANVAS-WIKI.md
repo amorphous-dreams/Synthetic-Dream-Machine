@@ -748,9 +748,9 @@ These fields are projected into shape metadata or read from TW5 tiddler fields. 
 
 **FilterEngineFn — isomorphic injection (shipped 2026-04-28):**
 
-`FilterEngineFn` is the canonical async filter engine type, defined in `@lararium/core/tw-filter` and re-exported from `@lararium/core/cascade`. Signature: `(expr: string, closure: readonly ClosureEntry[], edges?: readonly EdgeRecord[]) => Promise<ClosureEntry[]>`. Package.json `browser` conditional + Vite alias ensure bundlers resolve to the correct runtime.
+`FilterEngineFn` is the canonical async filter engine type, defined in `@lararium/mesh/tw-filter` and re-exported from `@lararium/mesh/cascade`. Signature: `(expr: string, closure: readonly ClosureEntry[], edges?: readonly EdgeRecord[]) => Promise<ClosureEntry[]>`. Package.json `browser` conditional + Vite alias ensure bundlers resolve to the correct runtime.
 
-**`@lararium/core/cascade` — generic cascade engine (shipped 2026-04-28):**
+**`@lararium/mesh/cascade` — generic cascade engine (shipped 2026-04-28):**
 
 `CascadeEntry<TOverride>`, `TemplateCascade<TOverride>`, `compileCascade`, `matchesEntry` are now core primitives — no tldraw coupling. Render-target adapters specialise `TOverride`:
 - tldraw: `CascadeEntry extends CoreCascadeEntry<MemeTemplateProps>` (adds `levels?`)
@@ -779,7 +779,7 @@ const compiled = await compileCascade(cascade, closure, filterEngine, artifact.p
 
 ```
 carrier text
-  ↓ parseMemeCarrier()                      @lararium/core
+  ↓ parseMemeCarrier()                      @lararium/mesh
 MemeAstNode[]                               parse tree — canonical
   ↓ TW5 parser/widget bridge                @lararium/tw5
 TW5 fakeDOM / VDOM                          render/detail path

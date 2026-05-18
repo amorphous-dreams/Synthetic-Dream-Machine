@@ -47,7 +47,7 @@ The TW5 engine (`tiddlywikicore-*.js`) lives in its own `LarariumDoc` corpus isl
 
 | Milestone | Status |
 |---|---|
-| A — Readiness Map | `ReadinessMap` in `@lararium/core`. `snapshot` key renamed `sw-shell` (FFZ-correct: lights when SW controls page, not server-rendered HTML). Browser marks: `auth`, `sw-shell`, `catalog`, `room-content`, `corpus:*`, `tw-vm`. `room-presence`, `tldraw-doc`, `mcp-index`, `disk-projector`, `kowloon-feed` declared but not yet lit. `disk-projector` now lights on first `LarDiskProjector` flush. ~70% |
+| A — Readiness Map | `ReadinessMap` in `@lararium/mesh`. `snapshot` key renamed `sw-shell` (FFZ-correct: lights when SW controls page, not server-rendered HTML). Browser marks: `auth`, `sw-shell`, `catalog`, `room-content`, `corpus:*`, `tw-vm`. `room-presence`, `tldraw-doc`, `mcp-index`, `disk-projector`, `kowloon-feed` declared but not yet lit. `disk-projector` now lights on first `LarDiskProjector` flush. ~70% |
 | B — Catalog Island | `CatalogDoc` fully wired. `engine`, `corpora`, `rooms` entries. ~100% |
 | B.1 — Engine Island | `LarariumDoc` blob + sha256. SW verification + mesh-native delivery. Resume boot now calls `reconcileEngineBlobIfChanged` — re-ingests updated TW5 core if disk sha differs from stored sha. ~100% |
 | C — First-paint (FFZ) | No server-rendered snapshot — rejected as web2 SPA pattern. `sw-shell` readiness key lights when SW controls page (warm: immediate; cold: `controllerchange`). App shell serves from SW cache. Automerge islands hydrate in background. ~60% |

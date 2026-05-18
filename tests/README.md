@@ -19,7 +19,7 @@ tests/
 Package-local Jest tests remain beside the package under test:
 
 ```text
-packages/lararium-core/tests/
+packages/lararium-mesh/tests/
 packages/lararium-tw5/tests/
 packages/lararium-node/tests/
 ```

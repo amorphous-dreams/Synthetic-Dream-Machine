@@ -18,12 +18,12 @@
  *
  * OUTPUT
  * ──────
- * packages/lararium-core/src/generated/tw-filter-engine.browser.js
+ * packages/lararium-mesh/src/generated/tw-filter-engine.browser.js
  *
  * DETERMINISTIC SYNC PROCESS
  * ───────────────────────────
  * When TW5 ships updates:
- *   1. pnpm update tiddlywiki --filter @lararium/core
+ *   1. pnpm update tiddlywiki --filter @lararium/mesh
  *   2. node scripts/build-tw-browser-filter.mjs
  *   3. Run tests — any operator behavior changes surface as failures
  *   4. Commit the regenerated bundle + updated devDependency
@@ -46,7 +46,7 @@ const require = createRequire(import.meta.url);
 // Boot TW5
 // ---------------------------------------------------------------------------
 
-const corePkgPath = join(__dirname, '..', 'packages', 'lararium-core');
+const corePkgPath = join(__dirname, '..', 'packages', 'lararium-mesh');
 const coreRequire  = createRequire(join(corePkgPath, 'package.json'));
 
 const tw = coreRequire('tiddlywiki');

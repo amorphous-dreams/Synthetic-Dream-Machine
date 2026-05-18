@@ -317,7 +317,7 @@ description = "Verse/UEFN: instantiated once per connected player agent; maps to
 ## Law of Fives — Invariant Ladders
 
 Two orthogonal 5-point axes underlie all domain-specific scales in the system.
-Exported from `packages/lararium-core/src/ast.ts` as `LADDER_5`, `OODA_HA_5`, `SCOPE_5`.
+Exported from `packages/lararium-mesh/src/ast.ts` as `LADDER_5`, `OODA_HA_5`, `SCOPE_5`.
 
 ```toml
 # Scale ladder — finest to coarsest
@@ -721,14 +721,14 @@ The **projection snapshot** is the human-readable collection format: memetic-wik
 
 ## Phase 2 Wiring Note
 
-The TypeScript parser at `packages/lararium-core/src/pranala-parser.ts` currently hard-codes all sigil patterns and family contracts. Phase 2 replaces this with a rule-interpreter pattern:
+The TypeScript parser at `packages/lararium-mesh/src/pranala-parser.ts` currently hard-codes all sigil patterns and family contracts. Phase 2 replaces this with a rule-interpreter pattern:
 
 1. `node-host.ts` reads this carrier via `readFileSync` before calling `buildControlClosure`
 2. Extracts `[[sigils]]` and `[[families]]` TOML arrays into a `GrammarRules` object
 3. Passes `GrammarRules` as an optional second argument to `parsePranalaEdges`
 4. Parser uses rule-provided patterns when present, falls back to built-ins for bootstrap safety
 
-The `GrammarRules` interface is defined in `ast.ts` and exported from `@lararium/core` (moved from `pranala-parser.ts` in Phase 3 to break a circular dependency).
+The `GrammarRules` interface is defined in `ast.ts` and exported from `@lararium/mesh` (moved from `pranala-parser.ts` in Phase 3 to break a circular dependency).
 Adding a new sigil requires authoring a `[[sigils]]` entry here and promoting this carrier — no TypeScript rebuild.
 
 <<~/ahu >>

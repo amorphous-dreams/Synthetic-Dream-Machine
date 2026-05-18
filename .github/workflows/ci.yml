@@ -57,7 +57,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
 
       - name: Build TW5 browser filter bundle
-        run: pnpm --filter @lararium/core tw:build-browser
+        run: pnpm --filter @lararium/mesh tw:build-browser
 
       - name: Build all packages
         run: pnpm -r build
@@ -70,7 +70,7 @@ jobs:
         with:
           name: dist
           path: |
-            packages/lararium-core/dist
+            packages/lararium-mesh/dist
             packages/lararium-node/dist
             packages/lararium-mcp/dist
             packages/lararium-tldraw/dist

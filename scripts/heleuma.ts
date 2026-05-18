@@ -106,8 +106,8 @@ function toUriVer(semver: string): string {
 
 interface PackageInfo {
   pkgDir:      string;       // absolute path to packages/{dir}
-  pkgName:     string;       // package.json#name, e.g. "@lararium/core"
-  uriScope:    string;       // URI segment, e.g. "@lararium/core"
+  pkgName:     string;       // package.json#name, e.g. "@lararium/mesh"
+  uriScope:    string;       // URI segment, e.g. "@lararium/mesh"
   uriVersion:  string;       // version segment, e.g. "v0.1"
 }
 

@@ -944,7 +944,7 @@ The "consume principles, defer wire compatibility" stance from the earlier draft
 **What is shipped:**
 - Ed25519 keypair generation via `@noble/ed25519` v3 — `generateOperatorIdentity()`
 - `did:key:z...` encoding — multicodec `0xed01` + base58btc multibase, inline (no multiformats dep)
-- UCAN v0.10 JWT issuance + verification — `issueUcan()` / `verifyUcan()` in `@lararium/core/authority`
+- UCAN v0.10 JWT issuance + verification — `issueUcan()` / `verifyUcan()` in `@lararium/mesh/authority`
 - `UcanPeerRegistry` — maps Automerge peerId → verified issuer DID + expiry
 - `/auth/ucan` POST endpoint — browser presents UCAN, server validates + registers peer
 - `sharePolicy` hook — `isAuthorized(peerId) || true` (local-operator permissive mode)

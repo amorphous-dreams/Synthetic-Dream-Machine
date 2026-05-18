@@ -18,7 +18,7 @@ The capability layer sits above all. It answers "is this peer allowed to do this
 
 ## Current 6-Doc Model (as implemented, S4 complete)
 
-Two tigas (ha-ka-ba) each with three root Automerge docs. All six live in `lararium-core/src/`.
+Two tigas (ha-ka-ba) each with three root Automerge docs. All six live in `lararium-mesh/src/`.
 
 ### Content Tiga
 

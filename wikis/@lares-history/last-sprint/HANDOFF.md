@@ -31,7 +31,7 @@ wikirule + cascade + templates. E.10.5→E.10.9: yin-mode collapse —
 delete MemeticParser typed-widget emitter (~330 lines), purge dead web2-
 era stubs (-18 files), drop tag-driven cascade discriminator (Roslyn /
 recast / XInclude consensus), consolidate ahu scanner into one shared
-@lararium/core/meme-ast/ahu-scan.ts module, replace `\rules except`
+@lararium/mesh/meme-ast/ahu-scan.ts module, replace `\rules except`
 pragma injection with WikiParser subclass. E.10.10→E.10.11: tw5-typed
 adopted as dev dep + activated in tsconfig types array; coexistence
 with hand-rolled types (per-site migration as call sites are touched).
@@ -135,11 +135,11 @@ Resume from packages/HANDOFF.md and packages/SESSION.md first.
 Branch: feature/lararium-node-3.
 
 Assume the following already landed today:
-- packages/lararium-core/src/live-protocol.ts created and exported.
-- packages/lararium-core/src/kumu-device.ts promoted from maybe/ and exported.
+- packages/lararium-mesh/src/live-protocol.ts created and exported.
+- packages/lararium-mesh/src/kumu-device.ts promoted from maybe/ and exported.
 - packages/lararium-node/src/lar-wiki-worker.ts now boots ReactionEngine in Worker promote path and forwards fired listenables to main as worker events.
 - packages/lararium-node/src/open-node-lar-peer.ts now routes NodeVmManager onWorkerEvent into eventBus vm-ring.
-- Typecheck clean (`npx tsc --noEmit` in lararium-core and lararium-node) and tests green in lararium-node (32 passing).
+- Typecheck clean (`npx tsc --noEmit` in lararium-mesh and lararium-node) and tests green in lararium-node (32 passing).
 
 Next objective:
 1) Implement real worker-side changeset application (Automerge local replica + changed URI derivation + TW5 update path).
@@ -259,7 +259,7 @@ Slot 0 renamed from `VmPool.get(resolvedRecipeUri)` → `NodeVmManager.primaryWi
 
 Files: `packages/lararium-node/src/node-vm-manager.ts` (new),
        `packages/lararium-node/src/open-node-lar-peer.ts` (wire),
-       `packages/lararium-core/src/vm-pool.ts` (VmSnapshot type export)
+       `packages/lararium-mesh/src/vm-pool.ts` (VmSnapshot type export)
 
 ### P.3 — One Worker Thread per wiki, co-located TW5 + ReactionEngine (DECIDED 2026-05-11)
 
@@ -406,7 +406,7 @@ lares promote <uri> --to <target-bag>
 
 ## Known open items (small, non-blocking)
 
-- `ReactionEngine` import in main.ts is stubbed (lives in `lararium-core/maybe/kumu-device.ts`; awaits unparking). The "reaction" projection kind not registered.
+- `ReactionEngine` import in main.ts is stubbed (lives in `lararium-mesh/maybe/kumu-device.ts`; awaits unparking). The "reaction" projection kind not registered.
 - `wikis/{slug}/` writeback writes hashes/IDs as filenames — not yet integrated with a file watcher inbound. Disk → CRDT direction not built yet (intentionally absent — only outbound writes for now).
 - `heleuma` script could usefully detect drift in `uri-path` field too (currently only checks `file-path`).
 - Command-tiddler tombstone happens client-side (CLI), so an ephemeral CLI crash leaves the cmd/ namespace dirty. Mitigation: dispatcher could auto-tombstone after audit-event write (decision deferred — operator may want command-tiddlers to remain visible as in-flight signals).

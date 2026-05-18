@@ -159,7 +159,7 @@ Do NOT adopt:
 
 ## Open Questions (Code Design)
 
-- `LarEventBus` as a class in `@lararium/core` or `@lararium/node`? (Node-specific; probably `@lararium/node`)
+- `LarEventBus` as a class in `@lararium/mesh` or `@lararium/node`? (Node-specific; probably `@lararium/node`)
 - Does `lararium-browser` get a lighter `BrowserEventBus` with reduced tick rate (RAF-driven rather than fixed interval)?
 - `WorldClockTickService` in lararium-node: which tick rate drives `tickPolicy: "autonomous"` world clocks?
 - Does the TW5 VM recipe queue drain synchronously within a tick, or does each recipe run as a `branch` task?

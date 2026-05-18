@@ -36,7 +36,7 @@ Social graph control inverts: circles are owned by their center, not the platfor
 | S5 | Quine Round-Trip Verification | ✅ Complete | Wire `.tw5.js` CJS into genesis; verify self-hosting round-trip |
 | S5.1 | Meme Namespace Consolidation | ✅ Complete | grammar→pono merge; misfile audit (5 moves); voice-house under lares/ |
 | S5.2 | Package Reboot | ✅ Complete | Delete lararium-app/tldraw/web; stub lararium-browser, dreamdeck-tldraw, dreamdeck-app |
-| S5.3 | FfzClock Type | ✅ Complete | `FfzClock` + clock ops in `@lararium/core`; `ExchangeState` FSM; `ffzSerialize` |
+| S5.3 | FfzClock Type | ✅ Complete | `FfzClock` + clock ops in `@lararium/mesh`; `ExchangeState` FSM; `ffzSerialize` |
 | S5.4 | Multi-Clock Architecture | ✅ Complete | `PresenceSlot` multi-clock; `WorldClockTiddler`; `ObservedClockTiddler`; `LarEventBus` interface; `LarTickCounter` |
 | S5.5 | Genesis Bootstrap Causal Correction | ✅ Complete | Init script extracted; projection registry landed; admin URI constants added; AGENTS.md updated |
 | S5.6 | Admin VM Lift | ✅ Complete | Admin TW5 VM stood up; admin doc seeded; `openNodeLarPeer` boots both VMs; bag-mirror configs now readable from admin-room tiddlers tagged `$:/tags/LarariumBagMirror` |
@@ -50,7 +50,7 @@ Social graph control inverts: circles are owned by their center, not the platfor
 | S7 (legacy) | Circles + Identities Capability Layer | partly absorbed | Keyhive direction confirmed via S7.1; UCAN direction rejected (Keyhive does NOT use UCAN — uses concap); Seitan token circle invites still pending |
 | S8 | Wiki composition (E-arc) | ✅ Complete | `lares bag` + `lares wiki` subcommand surfaces; per-wiki draft bagId; explicit `BAG_IDS.projection` layer; disk → CRDT sync; whole-recipe pin/unpin; recipe composition via add-bag/remove-bag (hot-reload); DXOS-style bag epoch; Nix-generations recipe-rotation; prune-stale draft inspection. Ten-commit E-arc E.1→E.10. |
 | S8.1 | Canon-promote hardening + ahu render rewrite (E.10.1→E.10.4) | ✅ Complete | Six interlocking bugs in cross-bag promote ceremony fixed; `lares draft` ceremony lands; canonical bags open as writable+defaultWritable:false; AhuWidget rewritten as TW5-native cascade-resolve + transclude shim with template tiddlers; new wikirule `wikirules/memetic-wikitext-sigil.ts` makes `<<~` first-class TW5 grammar. Round-trip verified end-to-end. |
-| S8.2 | Yin-mode collapse (E.10.5→E.10.9) | ✅ Complete | 18 dead files purged. MemeticParser collapses ~330 → ~30 lines (proper WikiParser subclass replacing pragma injection). Drop tag-driven cascade discriminator (Roslyn / recast / XInclude consensus). Consolidate ahu scanner into `@lararium/core/meme-ast/ahu-scan.ts` (single source of truth). `<$lar-meme-split>` widget closes the four-call-sites law: `lar-generated` field marker + content-equality guards (TW5 editor-widget pattern). Always-split, always-kahea invariant established. |
+| S8.2 | Yin-mode collapse (E.10.5→E.10.9) | ✅ Complete | 18 dead files purged. MemeticParser collapses ~330 → ~30 lines (proper WikiParser subclass replacing pragma injection). Drop tag-driven cascade discriminator (Roslyn / recast / XInclude consensus). Consolidate ahu scanner into `@lararium/mesh/meme-ast/ahu-scan.ts` (single source of truth). `<$lar-meme-split>` widget closes the four-call-sites law: `lar-generated` field marker + content-equality guards (TW5 editor-widget pattern). Always-split, always-kahea invariant established. |
 | S8.3 | tw5-typed coexistence (E.10.10→E.10.11) | ✅ Complete | linonetwo's `tw5-typed@^1.1.5` dev dep added + activated in tsconfig types array. Hand-rolled types coexist (parallel type graphs, no collision). Per-site migration as call sites are touched. |
 | V.1 | Vite plugin packaging — first artifact (E.10.12) | ✅ Complete | `vite.plugin.config.ts` + `scripts/build-plugin-tiddler.ts`. Output: `dist-plugin/lares-memetic-wikitext.tid` (71.3 KiB), drag-and-drop installable in any TW5 5.4+ wiki. Five JS module tiddlers (wikirule + 2 widgets + parser + deserializer) + seven data tiddlers (cascades + templates + mount + readme). |
 | V.2 | Boot-path conversion + lar:// namespace alignment (E.10.13) | ✅ Complete | TW5Engine pushes one envelope tiddler (`lar:///plugins/lares/memetic-wikitext`) into `preloadTiddlers`; TW5's standard plugin loader registers wikirule/parser/deserializer/widget modules and materializes cascade + template + mount shadow tiddlers. `_registerWidgets` / `_registerDeserializer` / parser-wrapper-injection block deleted. Single-backtick parser regression cured as a side effect (canonical `$tw.modules` construction path). Folded with namespace alignment: every Lares system title moved to `lar:///` (cascades, mount, templates, plugin envelope) so shadow-tiddler edits and in-VM plugin re-packs sync to disk through the existing `lar:`-only filter; canon-promote ceremony no longer bugs out on `$:/`-prefixed system tiddlers. Tag VALUES stay TW5-conventional. Dual-distribution emits both `lar:///` (canonical, 72.2 KiB) and `$:/` (drag-and-drop) envelopes from one Vite library bundle. Decision recorded in `packages/lares-core/memes/api/v0.1/pono/lar-uri.md` (TW5 System Boundary). |
@@ -99,7 +99,7 @@ Social graph control inverts: circles are owned by their center, not the platfor
 ### Tasks
 
 - [x] Update `grammar-invariants.ts` Invariant 3: grammar travels in the genesis artifact; no runtime disk read on resume
-- [x] Create `packages/lararium-core/src/system-invariants.ts`:
+- [x] Create `packages/lararium-mesh/src/system-invariants.ts`:
   - `SYSTEM_LAWS` — five architecture laws as typed witnessing constants
   - `GENESIS_INVARIANTS` — causal origin, content-addressed identity, immutability, quine stub (`@phase: S5`)
   - `PEER_INVARIANTS` — boot symmetry, operational divergence not authority, capability-from-receipt
@@ -227,7 +227,7 @@ Social graph control inverts: circles are owned by their center, not the platfor
 
 ## S5.3 — FfzClock Type ✅ Complete
 
-**Goal:** Define `FfzClock` in `@lararium/core` before S6 closes so `SessionEvent` and `PresenceSlot` use the right clock type from the start.
+**Goal:** Define `FfzClock` in `@lararium/mesh` before S6 closes so `SessionEvent` and `PresenceSlot` use the right clock type from the start.
 
 ### Completed
 
@@ -236,7 +236,7 @@ Social graph control inverts: circles are owned by their center, not the platfor
 - [x] `ExchangeState` FSM type (`idle → operator-sent → agent-working → agent-responded → grounded → blocked`)
 - [x] `FfzClockProfile` interface + `FFZ_PROFILES` map (session / diegetic / world-time)
 - [x] `LarTickCounter` branded number type
-- [x] Exported from `@lararium/core` index
+- [x] Exported from `@lararium/mesh` index
 
 ### Key decisions
 
@@ -250,7 +250,7 @@ Social graph control inverts: circles are owned by their center, not the platfor
 
 ## S5.4 — Multi-Clock Architecture ✅ Complete
 
-**Goal:** Extend `@lararium/core` type contracts to support multiple concurrent clocks, world/observed clocks, and the Verse-shaped event bus interface.
+**Goal:** Extend `@lararium/mesh` type contracts to support multiple concurrent clocks, world/observed clocks, and the Verse-shaped event bus interface.
 
 ### Completed
 
@@ -358,7 +358,7 @@ Full design: `packages/lares-core/lararium-research/S7-CIRCLES-IDENTITIES-REDESI
 #### S7.1 — Device delegation chain (Tier 1)
 - [ ] `DeviceDelegationTiddler` — UCAN-compatible chain proving device→operator
 - [ ] Wire into `buildCeremonyTiddlers` in `@lararium/tw5`
-- [ ] `verifyDeviceDelegation(deviceDid, operatorDid, tiddlers)` in `@lararium/core`
+- [ ] `verifyDeviceDelegation(deviceDid, operatorDid, tiddlers)` in `@lararium/mesh`
 
 #### S7.2 — Circle invites + Seitan token (Tier 1/2)
 - [ ] Invite token: `sign({ iss: nexusDid, circleId, cap: "join", exp, nonce })`
@@ -366,7 +366,7 @@ Full design: `packages/lares-core/lararium-research/S7-CIRCLES-IDENTITIES-REDESI
 - [ ] Nonce burn: write to `CircleTiddler.nonceBurnSet` on accept
 
 #### S7.3 — Capability check surface (TW5-queryable)
-- [ ] `canRead`, `canReply`, `canReact` helpers in `@lararium/core`
+- [ ] `canRead`, `canReply`, `canReact` helpers in `@lararium/mesh`
 - [ ] Expose as TW5 filter operators: `[can-read[{currentUser}]]`
 
 #### S7.4 — Hostile mesh circuit breakers
@@ -460,7 +460,7 @@ S7.1 targets the init script callsite, not `openNodeLarPeer`.
 - [x] `lararium-bootstrap-sync` startup module promotes the bootstrap plugin container after the syncer
 - [x] Content-equality guard in `AutomergeDocStore.put()` — kills file-watcher echo + Automerge churn
 - [x] Retire `_revisions` map in `MemeSyncAdaptor` (web2 revision concept; CRDT handles conflict resolution)
-- [x] Projection registry in `@lararium/core` — declarative, kind-based, factory-owned attachment
+- [x] Projection registry in `@lararium/mesh` — declarative, kind-based, factory-owned attachment
 - [x] `ADMIN_ROOM_URI` (`lar:///ha.ka.ba/@lararium/rooms/admin`) and `ADMIN_BAG_ID` (`lar:///ha.ka.ba/@lararium/@admin`) constants
 - [x] Update `AGENTS.md` package map and boot sequence description
 - [x] Remove dead playwright config (empty `tests/e2e/`, missing `scripts/serve.ts`, web2 HTTP-test smell)
@@ -562,13 +562,13 @@ S0 Cleanup ✅
 - [x] `lararium-node/package.json` — `@lararium/tldraw` dep removed
 - [x] `lararium-node/scripts/source-memes.ts` — `lararium-app` source entries removed
 - [x] `lararium-tw5/memes/canvas/*.md` — `source-file` paths updated to `dreamdeck-tldraw`
-- [x] All `@lararium/app`, `@lararium/tldraw`, `@lararium/web` comment refs updated across `lararium-core` and `lararium-tw5` src
+- [x] All `@lararium/app`, `@lararium/tldraw`, `@lararium/web` comment refs updated across `lararium-mesh` and `lararium-tw5` src
 
 ### New Package Map
 
 | Package | Namespace | Role |
 |---|---|---|
-| `lararium-core` | `@lararium/core` | Contracts, parser, AST, lar:// URIs, Nexus identity primitives, capability schemas |
+| `lararium-mesh` | `@lararium/mesh` | Contracts, parser, AST, lar:// URIs, Nexus identity primitives, capability schemas |
 | `lararium-tw5` | `@lararium/tw5` | TW5 runtime, widget/render, CRDT sync adaptor, carrier children |
 | `lararium-node` | `@lararium/node` | Local host peer: filesystem, operator key, canon promotion, serve/CLI |
 | `lararium-browser` | `@lararium/browser` | Browser/OPFS peer: Automerge repo, IndexedDB, broadcast() presence, WebSocket sync |
@@ -594,8 +594,8 @@ Full research: `packages/lares-core/lararium-research/DREAMNET-FEDERATION-RESEAR
 ### Settled Protocol Decisions (2026-05-06)
 
 - **lar:// URI** — three families, no grammar change. Nexus identity uses new `@nexus` scope: `lar:///ha.ka.ba/@nexus/<pubkey>`. Resolver gets `"nexus-doc"` kind. Triple-slash hostless form retained for all system/content memes.
-- **Presence routing** — `@lararium/core` types → `@lararium/tw5` tiddler representation → peer packages wire broadcast → UX layer consumes.
-- **FFZ Chronometer** — `FfzClock` type lands in `@lararium/core` before S6 closes. `PresenceSlot.clock` and `SessionEvent.clock` are `FfzClock`, not `number`. L4 (epoch) unbounded; L0–L3 bounded + looping.
+- **Presence routing** — `@lararium/mesh` types → `@lararium/tw5` tiddler representation → peer packages wire broadcast → UX layer consumes.
+- **FFZ Chronometer** — `FfzClock` type lands in `@lararium/mesh` before S6 closes. `PresenceSlot.clock` and `SessionEvent.clock` are `FfzClock`, not `number`. L4 (epoch) unbounded; L0–L3 bounded + looping.
 - **`capabilityFlags` forms a monotonic set** — never negotiate down. Protocol downgrade attack is mitigated structurally.
 - **`keyHistory` designed in from day one** — key rotation proofs required; cannot be retrofitted.
 
@@ -625,7 +625,7 @@ fires `OnValueChanged`, which calls `Enable` on a wired target device.
 
 This is the Lararium's Verse-compatible scripting layer. Verse 5.6+ (UEFN) is the
 compatibility target: compositional device model, not Blueprint/inheritance. The
-`kumu-device.ts` sketch in `lararium-core/maybe/` is **throwaway TS** — the vocabulary
+`kumu-device.ts` sketch in `lararium-mesh/maybe/` is **throwaway TS** — the vocabulary
 and invariants in its comments are the load-bearing artifact. Implementation rewrites from
 scratch in Path R.
 

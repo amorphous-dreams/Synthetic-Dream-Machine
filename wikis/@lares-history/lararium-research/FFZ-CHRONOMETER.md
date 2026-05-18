@@ -201,7 +201,7 @@ function ffzTick(clock: FfzClock, level = 0): FfzClock {
 
 ## Integration Points in Lares
 
-### PresenceSlot (lararium-core)
+### PresenceSlot (lararium-mesh)
 ```typescript
 // Before (stub):  clock: number
 // After:          clock: FfzClock
@@ -215,7 +215,7 @@ type PresenceSlot = {
 }
 ```
 
-### SessionEvent (lararium-core, S6)
+### SessionEvent (lararium-mesh, S6)
 ```typescript
 type SessionEvent = {
   id:      string

@@ -25,7 +25,7 @@ Package-specific commands remain valid, for example:
 ```sh
 pnpm --filter @lararium/tw5 test
 pnpm --filter @lararium/node test
-pnpm --filter @lararium/core test
+pnpm --filter @lararium/mesh test
 ```
 
 ## Directory roles

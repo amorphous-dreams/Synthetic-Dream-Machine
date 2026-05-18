@@ -79,7 +79,7 @@ This locus locks basic law for a self-describing, self-editing, self-projecting 
 ## Package Boundaries
 
 ```text
-@lararium/core      no fs, no DOM, no TW5, no tldraw
+@lararium/mesh      no fs, no DOM, no TW5, no tldraw
 @lararium/tw5       tiddler VM + filters + sync adaptor
 @lararium/app       browser HUD/projection
 @lararium/node      file, server, authority, receipt, promotion

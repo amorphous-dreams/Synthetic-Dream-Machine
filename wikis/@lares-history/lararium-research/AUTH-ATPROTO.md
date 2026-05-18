@@ -137,7 +137,7 @@ If direct DPoP handling ever becomes necessary (formal reviewed exception requir
 - Prefer non-extractable private keys where the runtime and SDK allow
 - Track nonce separately for authorization server and PDS/resource server
 - Retry only according to SDK/spec behavior when nonce rotation requires it
-- Never hand-roll DPoP inside `lararium-core` or `lararium-web`
+- Never hand-roll DPoP inside `lararium-mesh` or `lararium-web`
 - Any direct DPoP code belongs in a dedicated auth-boundary package, not core
 
 <<~/ahu >>
@@ -179,7 +179,7 @@ ATProto supports both p256 and k256 generally, but:
 
 If repo signing or ATProto data-auth work later requires k256:
 - Use official ATProto libraries or a reviewed dependency
-- Do not implement k256 operations in `lararium-core`
+- Do not implement k256 operations in `lararium-mesh`
 
 <<~/ahu >>
 

@@ -3,7 +3,7 @@
 > Date: 2026-05-06
 > Branch: feature/lararium-node-3
 > Status: S7.0 type stubs complete; S7.1–S7.4 implementation targets
-> Source of truth for: S7 sub-sprint work, `@lararium/core` type contracts
+> Source of truth for: S7 sub-sprint work, `@lararium/mesh` type contracts
 
 ---
 
@@ -104,7 +104,7 @@ Lives at `deviceDelegationUri(operatorDid, deviceDid)` inside `IdentitiesDoc.tid
 Signed by the operator's root Ed25519 key. Verifiable against `IdentityTiddler.verifyingKey`
 from the same `IdentitiesDoc` — arrives via CRDT sync alongside the delegation tiddler.
 
-### Functions to implement (`@lararium/core`)
+### Functions to implement (`@lararium/mesh`)
 
 ```typescript
 // Sign a device delegation (call with operator's private key material)
@@ -190,7 +190,7 @@ async function acceptCircleInvite(
 
 **Goal:** `canRead`, `canReply`, `canReact` available as helper functions AND TW5 filters.
 
-### Functions to implement (`@lararium/core`)
+### Functions to implement (`@lararium/mesh`)
 
 ```typescript
 type CapabilityResult = { granted: boolean; tier: 1 | 2 | 3; reason: string }
@@ -288,7 +288,7 @@ function setNexusTrust(
 
 ## Type Export Checklist (S7.0 — complete)
 
-All the following are now exported from `@lararium/core`:
+All the following are now exported from `@lararium/mesh`:
 
 - [x] `ContentAddressing` interface
 - [x] `DeviceDelegationTiddler` interface
@@ -302,8 +302,8 @@ All the following are now exported from `@lararium/core`:
 ## Implementation Checklist
 
 ### S7.1
-- [ ] `buildDeviceDelegation()` in `@lararium/core/src/capability.ts`
-- [ ] `verifyDeviceDelegation()` in `@lararium/core/src/capability.ts`
+- [ ] `buildDeviceDelegation()` in `@lararium/mesh/src/capability.ts`
+- [ ] `verifyDeviceDelegation()` in `@lararium/mesh/src/capability.ts`
 - [ ] Wire into `buildCeremonyTiddlers` in `@lararium/tw5`
 
 ### S7.2
@@ -311,7 +311,7 @@ All the following are now exported from `@lararium/core`:
 - [ ] `acceptCircleInvite()` in `@lararium/node/src/circle-invite.ts`
 
 ### S7.3
-- [ ] `canRead / canReply / canReact` in `@lararium/core/src/capability.ts`
+- [ ] `canRead / canReply / canReact` in `@lararium/mesh/src/capability.ts`
 - [ ] TW5 filter operators in `@lararium/tw5`
 
 ### S7.4

@@ -262,7 +262,7 @@ interface NexusTrustTiddler {
 
 - [ ] Implement `DeviceDelegationTiddler` — UCAN-compatible chain proving device→operator
 - [ ] Wire into `buildCeremonyTiddlers` in `@lararium/tw5`
-- [ ] `verifyDeviceDelegation(deviceDid, operatorDid, tiddlers)` helper in `@lararium/core`
+- [ ] `verifyDeviceDelegation(deviceDid, operatorDid, tiddlers)` helper in `@lararium/mesh`
 
 ### S7.2 — Seitan-style circle invites (Tier 2, within Nexus)
 
