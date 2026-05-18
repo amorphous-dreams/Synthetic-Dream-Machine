@@ -296,6 +296,21 @@ describe("IslandAdaptor — outbound saveTiddler", () => {
     expect(puts).toContain(LAR_URI);
   });
 
+  test("explicit bag field overrides adaptor target bag", async () => {
+    const bags: string[] = [];
+    const orig = store.put.bind(store);
+    store.put = async (rec, origin) => { bags.push(rec.bag ?? ""); return orig(rec, origin); };
+
+    await new Promise<void>((resolve) => {
+      adaptor.saveTiddler(
+        { fields: { title: LAR_URI, text: "saved", bag: "lar:///ha.ka.ba/@lares" } },
+        (err) => { if (err) throw err; resolve(); },
+      );
+    });
+
+    expect(bags).toContain("lar:///ha.ka.ba/@lares");
+  });
+
   test("$:/temp/ title → skipped", async () => {
     const puts: string[] = [];
     const orig = store.put.bind(store);

@@ -39,9 +39,10 @@ import {
   emptyMemeStoreDoc,
   LARARIUM_DOC_URI, CATALOG_DOC_URI, LARES_DOC_URI,
   IDENTITIES_DOC_URI, CIRCLES_DOC_URI, SESSIONS_DOC_URI, ADMIN_BAG_ID,
-  corpusLarUri, wikiLarUri, wikiDraftLarUri, BAG_IDS, recipeUri,
+  corpusLarUri, wikiLarUri, wikiDraftLarUri, BAG_IDS,
   VmPool, ENGINE_CORE_ID,
 }                                       from "@lararium/mesh";
+import { recipeUri } from "@lararium/tw5";
 import type { MemeRecipeVm } from "@lararium/types";
 import { IslandAccumulator } from "@lararium/types";
 import type { LarOpenPhase } from "@lararium/mesh";
@@ -58,6 +59,7 @@ import { NodeVmManager }                  from "./node-vm-manager.js";
 import { waitHandleLocal }                from "./repo-helpers.js";
 import { openAdminVm }                    from "./open-admin-vm.js";
 import { CommandDispatcher, CommandHandlerRegistry } from "./command-dispatcher.js";
+import { createPromoteHandler }                    from "./promote-handler.js";
 import { createWhereHandler }                       from "./where-handler.js";
 import {
   createListWikisHandler, createInitWikiHandler,
@@ -372,15 +374,6 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
   const commandRegistry  = new CommandHandlerRegistry();
   // Stub "echo" handler — useful for end-to-end smoke of the protocol.
   commandRegistry.register("echo", async (args) => ({ echoed: args }));
-  // S5.8 — canon promotion. The handler operates on the wiki composite
-  // (the bags eligible for promotion live there: lares, lararium, wiki/{slug}).
-  // Forward note: when federated promotion lands (UCAN-gated, any wiki VM),
-  // this single registration generalizes — the handler stays the same; the
-  // composite reference becomes "the requesting peer's composite + cap chain".
-  // Promotion now happens inside the client TW5 wiki via the lar-promote
-  // library module (module-type: library, bags/@lararium/tw5/v0.1/modules/lar-promote.md).
-  // The node peer is a pure disk syncer — it receives CRDT changes with the
-  // correct bag + file-path already set by the wiki VM.
   // Read-only recipe-presence query — `lares where` previews source bag.
   commandRegistry.register("where",   createWhereHandler({ composite }));
   // E.4 — read-only wiki commands. write commands (init/sync/pin/etc) land
@@ -392,6 +385,11 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
   // command handlers only execute after the daemon emits "live".
   let tw5: TW5Engine;
   let vmManager: NodeVmManager;
+  commandRegistry.register("promote", createPromoteHandler({
+    composite,
+    getPrimaryEngine: () => tw5,
+    getMirrorLookupWiki: () => adminVm.tw5.wiki,
+  }));
   const wikiMintOpts = {
     composite,
     repo,

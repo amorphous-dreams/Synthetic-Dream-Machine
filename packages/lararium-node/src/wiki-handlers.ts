@@ -16,10 +16,11 @@ import type { LarTiddlerStore, LarTiddlerRecord, ChangeOrigin } from "@lararium/
 import {
   type CompositeStore, type MemeStoreDoc,
   type CatalogDoc, type MutableLarRecord, type BagResidencyManager, type LarariumDoc,
-  emptyMemeStoreDoc, ADMIN_BAG_ID, BAG_IDS, wikiLarUri, wikiDraftLarUri, recipeUri,
+  emptyMemeStoreDoc, ADMIN_BAG_ID, BAG_IDS, wikiLarUri, wikiDraftLarUri,
   CATALOG_DOC_URI, LARARIUM_DOC_URI, LARES_DOC_URI,
-  parseBagStack, AutomergeDocStore,
+  AutomergeDocStore,
 } from "@lararium/mesh";
+import { recipeUri, parseBagStack } from "@lararium/tw5";
 import { buildDirectRecord, IslandAdaptor, TW5Engine } from "@lararium/tw5";
 import type { TiddlerFields } from "@lararium/tw5";
 import type { CommandHandler } from "./command-dispatcher.js";

@@ -38,6 +38,8 @@ export type { ReactionBinding } from "@lararium/types";
 export { DirectMemeRecipeVm, bootMemeRecipeVm } from "./meme-recipe-vm.js";
 
 export { exportMemeText, buildDirectRecord } from "./meme-write.js";
+export { promoteUris, planPromoteUris } from "./modules/lar-promote.js";
+export type { PromoteWiki, PromoteResult, PromotePlan, PromotePlannedRecord } from "./modules/lar-promote.js";
 
 export { tw5ElementToVdom, tw5ElementToHtml } from "./fake-dom.js";
 export type { VDomNode, TW5FakeElement, TW5FakeTextNode, TW5FakeNode } from "./fake-dom.js";
@@ -45,6 +47,9 @@ export type { VDomNode, TW5FakeElement, TW5FakeTextNode, TW5FakeNode } from "./f
 export { TW5_VERSION, TW5_CORE_SCRIPT_FILENAME, TW5_CORE_DIR } from "./generated-tw5-version.js";
 
 export { parseTaploFields, patchTomlKey, lintToml } from "./toml-ast.js";
+
+export type { BagTiddler, RecipeTiddler } from "./recipe.js";
+export { bagDescriptorUri, recipeUri, parseBagStack, parsePlugins } from "./recipe.js";
 
 
 

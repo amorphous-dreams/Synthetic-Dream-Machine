@@ -439,8 +439,9 @@ export class IslandAdaptor implements MemeProjection {
   ): Promise<void> {
     const bodyText = fields["text"] ?? "";
     const { parent, children } = splitBodyTiddler(title, bodyText, fields);
+    const targetBag = fields["bag"] || this.targetBag;
 
-    await this.store.put(buildDirectRecord(title, parent, this.targetBag), origin);
+    await this.store.put(buildDirectRecord(title, parent, targetBag), origin);
 
     if (children.length > 0) {
       const existingChildren = new Set<string>(this._childUrisOf(title));
@@ -450,7 +451,7 @@ export class IslandAdaptor implements MemeProjection {
         const childTitle = String(child["title"] ?? "");
         if (!childTitle.startsWith("lar:")) continue;
         newChildren.add(childTitle);
-        await this.store.put(buildDirectRecord(childTitle, child, this.targetBag), origin);
+        await this.store.put(buildDirectRecord(childTitle, child, targetBag), origin);
       }
 
       for (const uri of existingChildren) {

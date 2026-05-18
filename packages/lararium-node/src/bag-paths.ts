@@ -29,6 +29,31 @@ function toRelMd(pathPart: string, frag: string | null): string {
   return frag ? `${base}/${frag}.md` : `${base}.md`;
 }
 
+function canonicalNamedBagRelPath(scope: string, uri: string): string | null {
+  if (!uri.startsWith(HA_KA_BA_PREFIX)) return null;
+
+  const bare = uri.slice(HA_KA_BA_PREFIX.length);
+  if (!bare) return null;
+
+  if (scope === "@lares") {
+    let rest = bare;
+    if (rest.startsWith("@lararium/")) return null;
+    if (rest.startsWith("@lares/")) rest = rest.slice("@lares/".length);
+    else if (rest.startsWith("@")) return null;
+
+    const [pathPart, frag] = splitHash(rest);
+    return pathPart ? toRelMd(pathPart, frag) : null;
+  }
+
+  if (scope === "@lararium") {
+    if (!bare.startsWith("@lararium/")) return null;
+    const [pathPart, frag] = splitHash(bare.slice("@lararium/".length));
+    return pathPart ? toRelMd(pathPart, frag) : null;
+  }
+
+  return null;
+}
+
 /**
  * Factory for single-scope named bags (e.g. "@lares", "@lararium").
  *
@@ -38,6 +63,8 @@ function toRelMd(pathPart: string, frag: string | null): string {
 export function namedBagPath(scope: string): MirrorPathFn {
   const prefix = HA_KA_BA_PREFIX + scope + "/";
   return (uri) => {
+    const canonical = canonicalNamedBagRelPath(scope, uri);
+    if (canonical) return canonical;
     if (!uri.startsWith(prefix)) return null;
     const rest = uri.slice(prefix.length);
     if (!rest) return null;

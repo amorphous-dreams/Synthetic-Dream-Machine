@@ -1,6 +1,9 @@
 /**
  * recipe — RecipeTiddler schema + URI helpers for Lares recipe tiddlers.
  *
+ * Canonical home: @lararium/types (no external deps; shared by mesh and tw5).
+ * Public face: @lararium/tw5 re-exports this module as the operator-facing surface.
+ *
  * A recipe tiddler functions as a first-class tiddler stored inside a root doc (typically
  * LarariumDoc or CatalogDoc) that describes an ordered bag stack for a TW5 VM.
  * Recipes bridge the static Automerge doc topology and the dynamic

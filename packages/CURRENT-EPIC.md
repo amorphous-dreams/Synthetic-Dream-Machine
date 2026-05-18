@@ -1,10 +1,10 @@
 # Current Epic — Lararium Genesis Artifact + Protocol Stack
 
-> Updated: 2026-05-05
-> Branch: feature/lararium-node-3
+> Updated: 2026-05-18
+> Branch: feature/lararium-node-4
 > Sprints 0–4: ✅ Complete
 > Active sprint: S5 — Quine Round-Trip Verification
-> Designed sprints: S6 (SessionEventLog), S7 (Circles + Identities capability layer)
+> Designed sprints: S6 (SessionEventLog), S7 (Circles + Identities capability layer), S8 (Lares command surface + local intent bridge)
 
 ---
 
@@ -128,12 +128,39 @@ Key fix: `Automerge.from()` ignores `time` option internally — replaced with `
 - `IdentityTiddler.verifyingKey` and `CircleTiddler.encryptedShareHint` already present as forward-compatible hooks
 
 **Tasks (requires design doc before code):**
-- [ ] Write `packages/lares-core/lararium-research/CAPABILITY-LAYER.md` design doc
+- [ ] Tighten `wikis/@lares-history/lararium-research/CAPABILITY-LAYER.md` as the live design doc
 - [ ] Implement device delegation chain tiddlers in `IdentitiesDoc`
 - [ ] Implement Seitan token invite flow for `CirclesDoc`
 - [ ] Introduce capability verification: any peer verifies "Device X speaks as Identity Y at level Z" serverlessly
 
-**References:** `packages/lares-core/lararium-research/PROTOCOL-STACK-IDENTITY-CIRCLES-SESSIONS.md`
+**References:** `wikis/@lares-history/lararium-research/PROTOCOL-STACK-IDENTITY-CIRCLES-SESSIONS.md`
+
+### S8 — Lares Command Surface + Local Intent Bridge ⬜ Designed
+
+**Goal:** move CLI and daemon coordination onto command tiddler records and receipt tiddler records, while keeping execution inside the TW5 VM pool wherever the VM can carry the work.
+
+**Design decisions (approved):**
+- Every first-class record `id` uses a `lar:` URI.
+- Hostful `lar:` URIs name live session artifacts; hostless `lar:` URIs name storage artifacts.
+- `lar:///ha.ka.ba/*` names stable tagspace; `lar:///haWord.kaWord.baWord/*` names unstable tagspace.
+- `stdio` carries the default local CLI-to-daemon bridge.
+- Unix socket support can follow behind the same bridge contract for resident-daemon ergonomics.
+- WebSocket stays on operator-device or peer-facing ingress, not the default local CLI path.
+
+**Tasks:**
+- [ ] Write shared command/receipt tiddler contracts for the TW5 plugin and CLI
+- [ ] Route `lares promote` and adjacent ceremonies through command records rather than direct node handler assumptions
+- [ ] Write durable receipt tiddlers for accept/reject/apply outcomes
+- [ ] Wrap local bridge transport so `stdio` and Unix socket share one envelope
+- [ ] Add operator-device ingress rules that preserve the admin surface as operator-only
+- [ ] Update integration tests to assert on command and receipt artifacts
+
+**Exit criteria:**
+- The promote flow no longer depends on a node-side `promote` handler registration.
+- At least one end-to-end ceremony writes both a command tiddler and a receipt tiddler.
+- The local CLI path works over `stdio` with no WebSocket requirement.
+
+**Reference:** `wikis/@lares-history/lararium-research/LARES-CLI-DAEMON-SPRINT-PLAN.md`
 
 ---
 
@@ -190,4 +217,5 @@ S0 Cleanup ✅
 - [Kowloon by jzellis](https://github.com/jzellis/kowloon/)
 - [Local-First Software essay — Ink & Switch](https://www.inkandswitch.com/essay/local-first/)
 - [Automerge storage compaction](https://patternist.xyz/posts/concurrent-compaction-in-automerge-repo/)
-- [Protocol Stack design doc](./lares/lararium-research/PROTOCOL-STACK-IDENTITY-CIRCLES-SESSIONS.md)
+- [Protocol Stack design doc](../wikis/@lares-history/lararium-research/PROTOCOL-STACK-IDENTITY-CIRCLES-SESSIONS.md)
+- [Lares CLI-daemon sprint plan](../wikis/@lares-history/lararium-research/LARES-CLI-DAEMON-SPRINT-PLAN.md)

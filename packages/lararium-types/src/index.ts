@@ -91,3 +91,6 @@ export type { MemeRecipeVm } from "./meme-recipe-vm.js";
 export { bootMemeRecipeVm } from "./meme-recipe-vm.js";
 
 export { IslandAccumulator } from "./island-accumulator.js";
+
+export type { BagTiddler, RecipeTiddler } from "./recipe.js";
+export { bagDescriptorUri, recipeUri, parseBagStack, parsePlugins } from "./recipe.js";

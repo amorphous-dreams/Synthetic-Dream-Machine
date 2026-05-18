@@ -31,16 +31,118 @@ module-type: library
 
 /** Minimal TW5 wiki surface this module requires. */
 export interface PromoteWiki {
-  getTiddler(title: string): { fields: Record<string, string> } | undefined | null;
+  getTiddler(title: string): { fields: Record<string, string | string[]> } | undefined | null;
   filterTiddlers(filter: string): string[];
   addTiddler(tiddler: unknown): void;
   deleteTiddler(title: string): void;
 }
 
+export interface PromotePlannedRecord {
+  title: string;
+  fields: Record<string, string | string[]>;
+}
+
 export interface PromoteResult {
   promoted: string[];
   skipped:  string[];
+  childrenPromoted: string[];
+  promotedTo: string;
+  promotedAt: string;
   error?:   string;
+}
+
+export interface PromotePlan extends PromoteResult {
+  copies: PromotePlannedRecord[];
+  tombstones: string[];
+}
+
+const BAG_MIRROR_TAG = "$:/tags/LarariumBagMirror";
+const LARES_BAG_ID = "lar:///ha.ka.ba/@lares";
+const LARARIUM_BAG_ID = "lar:///ha.ka.ba/@lararium";
+const URI_PREFIX = "lar:///ha.ka.ba/";
+
+function uniquePush(seen: Set<string>, target: string[], value: string): void {
+  if (seen.has(value)) return;
+  seen.add(value);
+  target.push(value);
+}
+
+function expandPromotionUris(wiki: PromoteWiki, uris: readonly string[]): {
+  ordered: string[];
+  children: string[];
+} {
+  const ordered: string[] = [];
+  const children: string[] = [];
+  const seen = new Set<string>();
+
+  for (const uri of uris) {
+    uniquePush(seen, ordered, uri);
+    const childPrefix = `${uri}#`;
+    for (const child of wiki.filterTiddlers(`[prefix[${childPrefix}]]`)) {
+      if (seen.has(child)) continue;
+      seen.add(child);
+      ordered.push(child);
+      children.push(child);
+    }
+  }
+
+  return { ordered, children };
+}
+
+function resolveOracle(lookupWiki: PromoteWiki, targetBagId: string): { fields: Record<string, string | string[]> } | undefined | null {
+  if (targetBagId === LARES_BAG_ID) {
+    return { fields: { title: targetBagId, "path-filter": "lar-bag-path[lares]", "mirror-root": "bags/@lares" } };
+  }
+  if (targetBagId === LARARIUM_BAG_ID) {
+    return { fields: { title: targetBagId, "path-filter": "lar-bag-path[engine]", "mirror-root": "bags/@lararium" } };
+  }
+
+  const direct = lookupWiki.getTiddler(targetBagId);
+  if (direct) return direct;
+
+  const mirrorConfigTitle = lookupWiki.filterTiddlers(
+    `[tag[${BAG_MIRROR_TAG}]field:bag-id[${targetBagId}]]`,
+  )[0];
+  return mirrorConfigTitle ? lookupWiki.getTiddler(mirrorConfigTitle) : undefined;
+}
+
+function splitHash(uri: string): [string, string | null] {
+  const index = uri.indexOf("#");
+  return index >= 0 ? [uri.slice(0, index), uri.slice(index + 1)] : [uri, null];
+}
+
+function stripMd(value: string): string {
+  return value.endsWith(".md") ? value.slice(0, -3) : value;
+}
+
+function canonicalRelPath(uri: string, targetBagId: string): string | null {
+  if (!uri.startsWith(URI_PREFIX)) return null;
+
+  const [baseUri, fragment] = splitHash(uri.slice(URI_PREFIX.length));
+  let base = stripMd(baseUri);
+  if (!base) return null;
+
+  if (targetBagId === LARES_BAG_ID) {
+    if (base.startsWith("@lararium/")) return null;
+    if (base.startsWith("@lares/")) base = base.slice("@lares/".length);
+    else if (base.startsWith("@")) return null;
+  } else if (targetBagId === LARARIUM_BAG_ID) {
+    if (!base.startsWith("@lararium/")) return null;
+    base = base.slice("@lararium/".length);
+  } else {
+    return null;
+  }
+
+  return fragment ? `${base}/${fragment}.md` : `${base}.md`;
+}
+
+function resolveRelPath(wiki: PromoteWiki, uri: string, targetBagId: string, pathFilter: string): string | null {
+  const canonical = canonicalRelPath(uri, targetBagId);
+  if (canonical) return canonical;
+
+  const filterExpr = "[title[" + uri + "]" + pathFilter + "]";
+  const relPaths = wiki.filterTiddlers(filterExpr);
+  return relPaths && relPaths.length > 0 ? relPaths[0] ?? null : null;
 }
 
 /**
@@ -62,46 +164,101 @@ export function promoteUris(
   wiki:        PromoteWiki,
   uris:        string[],
   targetBagId: string,
+  lookupWiki:  PromoteWiki = wiki,
 ): PromoteResult {
-  const oracle = wiki.getTiddler(targetBagId);
-  if (!oracle) {
-    return { promoted: [], skipped: uris.slice(), error: "no oracle tiddler: " + targetBagId };
+  const plan = planPromoteUris(wiki, uris, targetBagId, lookupWiki);
+  if (plan.error) {
+    return plan;
   }
 
-  const pathFilter = oracle.fields["path-filter"];
-  const mirrorRoot = oracle.fields["mirror-root"];
+  for (const copy of plan.copies) {
+    wiki.addTiddler(new tw.Tiddler(copy.fields));
+  }
+  for (const title of plan.tombstones) {
+    wiki.deleteTiddler(title);
+  }
+
+  return {
+    promoted: plan.promoted,
+    skipped: plan.skipped,
+    childrenPromoted: plan.childrenPromoted,
+    promotedTo: plan.promotedTo,
+    promotedAt: plan.promotedAt,
+  };
+}
+
+export function planPromoteUris(
+  wiki:        PromoteWiki,
+  uris:        string[],
+  targetBagId: string,
+  lookupWiki:  PromoteWiki = wiki,
+): PromotePlan {
+  const promotedAt = new Date().toISOString();
+  const oracle = resolveOracle(lookupWiki, targetBagId);
+  if (!oracle) {
+    return {
+      promoted: [],
+      skipped: uris.slice(),
+      childrenPromoted: [],
+      promotedTo: targetBagId,
+      promotedAt,
+      copies: [],
+      tombstones: [],
+      error: "no oracle tiddler: " + targetBagId,
+    };
+  }
+
+  const pathFilter = typeof oracle.fields["path-filter"] === "string" ? oracle.fields["path-filter"] : "";
+  const mirrorRoot = typeof oracle.fields["mirror-root"] === "string" ? oracle.fields["mirror-root"] : "";
   if (!pathFilter || !mirrorRoot) {
     return {
       promoted: [],
       skipped:  uris.slice(),
+      childrenPromoted: [],
+      promotedTo: targetBagId,
+      promotedAt,
+      copies: [],
+      tombstones: [],
       error:    "oracle missing path-filter/mirror-root: " + targetBagId,
     };
   }
 
+  const expanded = expandPromotionUris(wiki, uris);
   const promoted: string[] = [];
   const skipped:  string[] = [];
+  const copies: PromotePlannedRecord[] = [];
+  const tombstones: string[] = [];
 
-  for (const uri of uris) {
+  for (const uri of expanded.ordered) {
     const existing = wiki.getTiddler(uri);
     if (!existing) { skipped.push(uri); continue; }
 
-    // Compose filter: put uri into the source set, then map through path-filter.
-    // pathFilter = "lar-bag-path[lares]"  →  full filter = "[title[<uri>]lar-bag-path[lares]]"
-    const filterExpr = "[title[" + uri + "]" + pathFilter + "]";
-    const relPaths = wiki.filterTiddlers(filterExpr);
-    if (!relPaths || relPaths.length === 0) { skipped.push(uri); continue; }
+    const relPath = resolveRelPath(wiki, uri, targetBagId, pathFilter);
+    if (!relPath) { skipped.push(uri); continue; }
 
-    const filePath = mirrorRoot + "/" + relPaths[0];
+    const filePath = mirrorRoot + "/" + relPath;
 
-    // Write to target bag — IslandAdaptor routes by bag field.
-    wiki.addTiddler(new tw.Tiddler(existing, { bag: targetBagId, "file-path": filePath }));
-
-    // Tombstone wiki-bag copy — routes to default writable bag (wiki bag).
-    // The @lares copy then surfaces through the recipe stack.
-    wiki.deleteTiddler(uri);
+    copies.push({
+      title: uri,
+      fields: {
+        ...existing.fields,
+        title: uri,
+        bag: targetBagId,
+        "file-path": filePath,
+      },
+    });
+    tombstones.push(uri);
 
     promoted.push(uri);
   }
 
-  return { promoted, skipped };
+  return {
+    promoted,
+    skipped,
+    childrenPromoted: expanded.children.filter((uri) => promoted.includes(uri)),
+    promotedTo: targetBagId,
+    promotedAt,
+    copies,
+    tombstones,
+  };
 }

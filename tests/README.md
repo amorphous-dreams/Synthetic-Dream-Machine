@@ -33,7 +33,8 @@ pnpm test:tw5-flow   # direct TW5 integration flow
 ```
 
 The flow scripts set `LAR_ROOT=tests` by default. That keeps `.lararium/`, `wikis/`,
-and projected `packages/` artifacts inside `tests/` rather than the canonical repo tree.
+isolated canonical `bags/`, and disposable run captures under `tests/results/` instead
+of touching the canonical repo tree.
 
 ## Flow: lararium-tw5 sync/decompose/promote
 
@@ -51,7 +52,8 @@ This flow:
 4. copies `tests/src/the-lares-protocols.md` into `tests/wikis/@<slug>/memes/**` for ingest;
 5. runs `lares wiki sync`;
 6. verifies child meme decomposition against `tests/expected/wikis/**`;
-7. optionally promotes to the isolated canonical `tests/bags/**` tree and diffs again.
+7. captures decompose and promote outputs under `tests/results/**`;
+8. optionally promotes to the isolated canonical `tests/bags/**` tree and diffs again.
 
 ## Adding new flows
 

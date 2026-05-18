@@ -26,6 +26,9 @@ export type { CommandHandler, CommandContext, CommandDispatcherOptions } from ".
 export { createWhereHandler } from "./where-handler.js";
 export type { WhereHandlerOptions } from "./where-handler.js";
 
+export { createPromoteHandler } from "./promote-handler.js";
+export type { PromoteHandlerOptions } from "./promote-handler.js";
+
 export {
   createListWikisHandler, createInitWikiHandler,
   createOpenWikiHandler, createSyncWikiHandler,

@@ -613,11 +613,24 @@ Inspect `node-vm-manager.ts`, `lar-wiki-worker.ts`, and tests before coding:
 - **Bag = Automerge doc = sync boundary.**
 - **TW5 VM primacy.** If logic can live in the VM, keep it there.
 - **Command-tiddlers, not HTTP/RPC.** CLI and daemon coordinate through the admin doc.
+- **Receipt-tiddlers complete the loop.** Accept, reject, apply, and defer outcomes land as records, not only terminal return values.
 - **Canon requires operator promotion.** Git diff remains the visible signature.
 - **Admin doc stays infrastructure-only.** Federates to operator devices, not room peers.
 - **Hot wiki = TW5 + RE together.** Synchronous tick semantics require co-location.
 - **Memetic wikitext = TW5 superset.** No deny-list items without a carrier-stream justification.
 - **Sigil dispatch via wikitext.** All sigil widgets live as TW5 `\widget` tiddlers. JS widgets only for JS-level semantics (async device I/O, future Keyhive WASM hooks).
+- **Every first-class record id uses `lar:`.** Hostful ids name live session artifacts; hostless ids name stored artifacts.
+- **`lar:///ha.ka.ba/*` names stable tagspace.** `lar:///haWord.kaWord.baWord/*` names unstable tagspace.
+
+## Path M / Lares Local Intent Bridge
+
+- Default local CLI/daemon bridge: `stdio`.
+- Unix socket support can follow under the same bridge envelope for resident-daemon ergonomics.
+- WebSocket belongs on operator-device ingress or future peer-facing sync, not on the default local CLI path.
+- Command tiddlers and receipt tiddlers stay the coordination artifacts.
+- The TW5 VM pool should author, route, and write records whenever the work can stay inside that pool.
+
+Reference: `wikis/@lares-history/lararium-research/LARES-CLI-DAEMON-SPRINT-PLAN.md`
 
 ## Useful Smokes
 

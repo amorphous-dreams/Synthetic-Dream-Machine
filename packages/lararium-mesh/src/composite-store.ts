@@ -30,8 +30,8 @@ import {
   corpusLarUri,
   wikiLarUri,
 } from "./lararium-doc.js";
-import type { RecipeTiddler } from "./recipe.js";
-import { parseBagStack, parsePlugins } from "./recipe.js";
+import type { RecipeTiddler } from "@lararium/types";
+import { parseBagStack, parsePlugins } from "@lararium/types";
 
 // Re-export so callers get bag IDs and URI helpers from a single import.
 export { corpusLarUri as corpusBagId, wikiLarUri as wikiBagId };

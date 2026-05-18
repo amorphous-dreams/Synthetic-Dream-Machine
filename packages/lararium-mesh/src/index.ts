@@ -17,7 +17,6 @@ export * from "./lararium-doc.js";
 export * from "./ffz-clock.js";
 export * from "./lar-event-bus.js";
 export * from "./social-doc.js";
-export * from "./recipe.js";
 export * from "./automerge-doc-store.js";
 export * from "./lararium-doc-store.js";
 export * from "./lar-peer.js";
