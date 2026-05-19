@@ -11,7 +11,7 @@ heleuma       = "ka"
 source-file   = "packages/lararium-tw5/src/widgets/dynamic.ts"
 source-symbol = "DynamicWidget"
 module-ref    = "lar:///ha.ka.ba/@lararium/tw5/widgets/dynamic"
-body-sha256 = "1641d19ab01d020de00031679ef084378b21bf99ef5be73bf056884c27a0a84d"
+body-sha256 = "f215c3518f1c876508cedb636c7dd2f34acd16a538248a7a28c03ed894f3e4ee"
 cacheable     = true
 retain        = true
 ```

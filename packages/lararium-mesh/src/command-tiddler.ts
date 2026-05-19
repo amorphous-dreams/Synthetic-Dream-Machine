@@ -7,7 +7,7 @@
  * Automerge doc:
  *
  *   title:  lar:///ha.ka.ba/@lararium/@admin/cmd/<requestId>
- *   tag:    $:/tags/LaresCommand
+ *   tag:    lar:///ha.ka.ba/tags/lares-command
  *   fields: { command, args, request-id, status, result, requested-by, requested-at }
  *
  * Two-tiddler contract (clarified post-S5.8):
@@ -36,7 +36,7 @@
  * Architecture laws preserved:
  *   - Tiddler-format law: command lives as a normal tiddler, lar: URI title.
  *   - Web2 smell test: no HTTP/RPC; coordination flows through the CRDT.
- *   - $:/ namespace confined to the tag; the title syncs across peers.
+ *   - Tag carries a lar: URI; the title syncs across peers.
  */
 
 import { ADMIN_BAG_ID } from "./lararium-doc.js";
@@ -44,16 +44,16 @@ import type { LarTiddlerRecord } from "@lararium/types";
 
 /** Tag every command tiddler carries. Tags are vm-side metadata and do not
  *  leak across the sync boundary; the title is the load-bearing identifier. */
-export const LARES_COMMAND_TAG = "$:/tags/LaresCommand";
+export const LARES_COMMAND_TAG = "lar:///ha.ka.ba/tags/lares-command";
 
 /** All command tiddler titles share this prefix. */
 export const COMMAND_URI_PREFIX = `${ADMIN_BAG_ID}/cmd/`;
 
 /** Durable audit-event tiddlers live under this prefix in the admin doc.
  *  Every successful command produces one; operators inspect them as the
- *  forensic trail. Tagged $:/tags/LaresCommandEvent for vm-side filters. */
+ *  forensic trail. Tagged lar:///ha.ka.ba/tags/lares-command-event for vm-side filters. */
 export const COMMAND_EVENT_URI_PREFIX = `${ADMIN_BAG_ID}/log/`;
-export const LARES_COMMAND_EVENT_TAG  = "$:/tags/LaresCommandEvent";
+export const LARES_COMMAND_EVENT_TAG  = "lar:///ha.ka.ba/tags/lares-command-event";
 
 /** Build a durable audit-event record for a completed command. */
 export function buildCommandEventTiddler(opts: {

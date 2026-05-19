@@ -1265,6 +1265,7 @@ All eight families are wired in `pranala-parser.ts` (`KNOWN_FAMILIES`, `FAMILY_C
 <<~ pranala #tw5-filter ? -> lar:///ha.ka.ba/@lares/api/v0.1/pono/x-tiddlywiki-filter family:observe role:references >>
 <<~ pranala #to-foundations ? -> lar:///lararium-node/MEME-STORE-FOUNDATIONS family:observe role:informs >>
 <<~ pranala #to-roadmap ? -> lar:///lararium-node/ROADMAP family:observe role:informs >>
+<<~ pranala #tiddler ? -> lar:///ha.ka.ba/@lararium/tw5/tiddlers/sigil-toml family:control role:implements >>
 <<~ loulou lar:///ha.ka.ba/@lares/docs/pono/memetic-wikitext >>
 <<~ loulou lar:///ha.ka.ba/@lares/api/v0.1/pono/guest-grammar >>
 

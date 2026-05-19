@@ -136,13 +136,22 @@ export class IslandAdaptor implements MemeProjection {
   /** Pre-sync inbound buffer, drained on onSyncComplete(). */
   private readonly _buffer = new Map<string, LarTiddlerChange[]>();
 
+  // SP-1 — 400 ms capture debounce (save-path invariant).
+  static readonly DEBOUNCE_MS = 400;
+  private readonly _debounce = new Map<string, ReturnType<typeof setTimeout>>();
+  private readonly _pending  = new Map<string, {
+    fields:   Record<string, string>;
+    callback: (err: Error | null, adaptorInfo: unknown, revision: string) => void;
+    origin:   ChangeOrigin;
+  }>();
+
   private _unsubscribe: (() => void) | null = null;
 
   constructor(
     private readonly tw5:   TW5Engine,
     private readonly store: LarTiddlerStore,
     readonly instanceId:    string,
-    targetBag: NonNullable<LarTiddlerRecord["bag"]> = "room",
+    targetBag: NonNullable<LarTiddlerRecord["bag"]> = "wiki",
   ) {
     this.targetBag = targetBag;
   }
@@ -295,6 +304,9 @@ export class IslandAdaptor implements MemeProjection {
   }
 
   stop(): void {
+    for (const t of this._debounce.values()) clearTimeout(t);
+    this._debounce.clear();
+    this._pending.clear();
     this._unsubscribe?.();
     this._unsubscribe = null;
   }
@@ -311,8 +323,10 @@ export class IslandAdaptor implements MemeProjection {
    *   - Temp guard: $:/temp/* → skip
    *   - System guard: $:/ → skip
    *   - Draft suppression: "Draft of …" → skip (M-E island not yet wired)
-   *   - Canon guard: lar:///ha.ka.ba/ → skip (corpus is read-only)
    *   - Meme URI gate: only lar: URIs reach the store
+   *
+   * Routing law: explicit bag field → ceremony write (promote uses this to reach canonical bags).
+   * No explicit bag field → live TW5 edit; routes to this.targetBag (top wiki draft bag).
    *
    * Path H auto-split: if the body contains <<~ ahu blocks, splitBodyTiddler()
    * materialises child slot tiddlers in the bag (ONE parser, FOUR call sites law).
@@ -332,9 +346,24 @@ export class IslandAdaptor implements MemeProjection {
 
     const origin: ChangeOrigin = { kind: "tw-local", instanceId: this.instanceId };
 
-    this._writeMeme(title, fields, origin)
-      .then(() => callback(null, {}, "0"))
-      .catch((err: Error) => callback(err, {}, "0"));
+    const existing = this._debounce.get(title);
+    if (existing !== undefined) {
+      clearTimeout(existing);
+      // Displaced write — fire its callback immediately so the caller is not left hanging.
+      this._pending.get(title)?.callback(null, {}, "0");
+    }
+    this._pending.set(title, { fields, callback, origin });
+    this._debounce.set(title, setTimeout(() => this._flushPending(title), IslandAdaptor.DEBOUNCE_MS));
+  }
+
+  private _flushPending(title: string): void {
+    this._debounce.delete(title);
+    const p = this._pending.get(title);
+    this._pending.delete(title);
+    if (!p) return;
+    this._writeMeme(title, p.fields, p.origin)
+      .then(() => p.callback(null, {}, "0"))
+      .catch((err: Error) => p.callback(err, {}, "0"));
   }
 
   deleteTiddler(
@@ -439,6 +468,8 @@ export class IslandAdaptor implements MemeProjection {
   ): Promise<void> {
     const bodyText = fields["text"] ?? "";
     const { parent, children } = splitBodyTiddler(title, bodyText, fields);
+    // Ceremony writes (promote) pass an explicit bag field to route to the canonical target.
+    // Live TW5 edits without an explicit bag field fall back to this.targetBag (top wiki draft bag).
     const targetBag = fields["bag"] || this.targetBag;
 
     await this.store.put(buildDirectRecord(title, parent, targetBag), origin);

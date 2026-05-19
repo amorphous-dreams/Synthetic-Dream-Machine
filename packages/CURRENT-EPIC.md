@@ -1,10 +1,11 @@
 # Current Epic — Lararium Genesis Artifact + Protocol Stack
 
-> Updated: 2026-05-18
+> Updated: 2026-05-19
 > Branch: feature/lararium-node-4
 > Sprints 0–4: ✅ Complete
 > Active sprint: S5 — Quine Round-Trip Verification
 > Designed sprints: S6 (SessionEventLog), S7 (Circles + Identities capability layer), S8 (Lares command surface + local intent bridge)
+> Addendum: shared operator-peer VM-pool plan attached below
 
 ---
 
@@ -164,6 +165,178 @@ Key fix: `Automerge.from()` ignores `time` option internally — replaced with `
 
 ---
 
+## Addendum — Shared Operator Peer VM Pool Plan
+
+This addendum keeps the genesis and protocol-stack material intact while naming the next architecture move more explicitly.
+
+### North Star
+
+Lararium gives every operator peer the same base architecture.
+The browser peer and the node peer both carry an admin VM lane plus active wiki VM lanes.
+The CLI and browser UX invoke the same ceremonies.
+Capability checks happen on the invoking peer first.
+Resource-local adaptors may re-check before side effects.
+The mesh carries commands, receipts, and document deltas without a privileged server posture.
+
+### Observe
+
+Recent code work clarified several facts:
+
+- promote planning now runs in `@lararium/tw5`
+- the successful promote path already routes bag changes through the island adaptor seam
+- node still performs load-bearing edge work such as disk projection
+- browser and node runtime stories still diverge more than pono intent allows
+- some docs still frame node as the default authority center instead of one peer among peers
+
+That shape works well enough for end-to-end promote. That shape still leaves the base peer model under-specified.
+
+### Orient
+
+The next architecture move needs to preserve these laws:
+
+1. Browser peers and node peers share one base VM-pool contract.
+2. No transitional server-first model enters the design.
+3. The admin VM stays operator-private.
+4. Active wiki VMs carry corpus-facing authoring and reading.
+5. Command tiddlers and receipt tiddlers stay the ceremony spine.
+6. Edge code handles resource-local side effects only.
+
+Research and local code both point the same way:
+
+- Automerge wants local writes first, then mesh sync.
+- UCAN and Keyhive want local proof verification, attenuation, and replay control.
+- TW5 already gives Lararium a document-native VM that can author, render, and plan ceremonies.
+- The current node boot path already hints at the right shape with an always-loaded admin VM and a separately tracked active wiki.
+
+### Decide
+
+This epic adopts the following addendum decisions:
+
+1. Every operator peer carries one admin VM lane and zero or more active wiki VM lanes.
+2. CLI and browser UX author the same command records and consume the same receipt records.
+3. Ceremony meaning lives in the TW5 VM pool whenever the VM can carry it.
+4. Node, browser host code, and other adaptors handle only resource-local edge work.
+5. Capability checks run on the invoking peer first and run again at the resource edge when needed.
+6. Sprint sequencing will optimize for shared contracts before browser polish or transport sprawl.
+
+### Act
+
+#### Sprint 1 — Operator Peer Contract
+
+Goal: land one explicit contract for the shared browser/node operator peer.
+
+Tasks:
+
+- write the operator-peer mesh meme and link it to `lar-peer`, `vm-pool`, `authority`, and `command-tiddler`
+- define admin-lane versus active-wiki-lane responsibilities in the TW5 package docs
+- mark any node-only assumptions in current docs as edge-only behavior, not authority law
+- add one architecture diagram or equivalent memetic narrative that shows the two-lane peer shape
+
+Exit criteria:
+
+- docs describe one shared peer model for browser and node
+- no active plan text frames node as the default authority center
+
+#### Sprint 2 — Ceremony Contract Unification
+
+Goal: make CLI and browser UX converge on one ceremony contract.
+
+Tasks:
+
+- define shared command and receipt tiddler fields for operator ceremonies
+- move `promote` and the next adjacent ceremony onto command/receipt records end to end
+- keep command authoring and receipt writing in the admin VM lane
+- keep planning and document mutation in the relevant VM lane
+
+Exit criteria:
+
+- one end-to-end ceremony works from the shared command contract
+- receipts persist as mesh artifacts rather than transport-only responses
+
+#### Sprint 3 — Capability Gate at the Peer
+
+Goal: let each operator peer validate intent locally before it asks for edge work.
+
+Tasks:
+
+- define the proof bundle that command records carry or reference
+- wire local proof verification into command intake on the admin VM lane
+- write rejection receipts for failed proofs, expired proofs, and replay attempts
+- define the resource-edge re-check contract for disk, process, and network side effects
+
+Exit criteria:
+
+- the invoking peer can reject an invalid command without a server round-trip
+- edge adaptors can re-check the same proof chain before side effects
+
+#### Sprint 4 — Shared VM Pool Runtime
+
+Goal: make browser and node peers boot the same lane model with runtime-specific budgets only.
+
+Tasks:
+
+- define one VM-pool bootstrap contract for admin lane plus active wiki lanes
+- align node boot and browser boot around the same lane vocabulary
+- define residency rules for cold, warm, and pinned wiki VMs without changing base semantics
+- keep bridge and transport code outside the ceremony contract
+
+Exit criteria:
+
+- browser and node boot docs show the same base topology
+- runtime differences read as budget choices, not architectural forks
+
+#### Sprint 5 — Edge Adaptors and Projection Law
+
+Goal: narrow host code to resource-local work.
+
+Tasks:
+
+- enumerate every non-VM side effect in node and browser host code
+- move any remaining ceremony semantics from host code into VM-visible contracts
+- tighten disk projection, process launch, and transport adaptors around receipt-driven execution
+- update integration tests so they assert on command, receipt, and projection artifacts together
+
+Exit criteria:
+
+- host code no longer owns ceremony meaning
+- integration tests cover VM intent plus edge realization
+
+### Harmonize
+
+Each sprint should leave the system more peer-shaped and less server-shaped.
+Each new ceremony should answer four checks:
+
+1. Did the operator peer author one shared command record?
+2. Did a VM lane own the ceremony meaning?
+3. Did edge code stay inside resource-local work?
+4. Did the mesh carry a durable receipt plus resulting document change?
+
+If any sprint fails those checks, the design has drifted.
+
+### Aftermath
+
+After Sprint 5, Lararium should support this story without special pleading:
+
+- an operator may invoke a ceremony from CLI or browser UX
+- the local peer validates capability context before execution
+- the relevant VM lane plans and applies document-native changes
+- an edge adaptor performs only the side effects that the VM cannot carry
+- the admin lane writes the durable receipt
+- peer sync carries the same artifacts to every other peer
+
+### Immediate Slice
+
+The first implementation slice should stay narrow:
+
+1. finish the shared command and receipt tiddler contract for `promote`
+2. wire local capability intake on the admin lane
+3. keep promote planning and apply inside the TW5 path
+4. write durable receipts and assert on them in the existing sandboxed sync tests
+
+That slice gives the architecture a concrete proof point without waiting for the full browser shell.
+
+---
+
 ## Current 6-Doc Model
 
 ### Content Tiga (ha-ka-ba)
@@ -195,13 +368,13 @@ Ephemeral channel (not a doc):
 ```
 S0 Cleanup ✅
   └── S1 Invariants ✅
-        └── S2 Build-Time Genesis ✅
-              ├── S3 Runtime Loader ✅
-              │     └── S4 Peer Factories ✅
-              │           └── S5 Quine Closure 🔴 ← HERE
-              │                 └── S6 SessionEventLog ⬜
-              │                       └── S7 Capability Layer ⬜
-              └── (S3 and S4 unlocked together after S2)
+	  └── S2 Build-Time Genesis ✅
+		  ├── S3 Runtime Loader ✅
+		  │     └── S4 Peer Factories ✅
+		  │           └── S5 Quine Closure 🔴 ← HERE
+		  │                 └── S6 SessionEventLog ⬜
+		  │                       └── S7 Capability Layer ⬜
+		  └── (S3 and S4 unlocked together after S2)
 ```
 
 ---
@@ -219,3 +392,5 @@ S0 Cleanup ✅
 - [Automerge storage compaction](https://patternist.xyz/posts/concurrent-compaction-in-automerge-repo/)
 - [Protocol Stack design doc](../wikis/@lares-history/lararium-research/PROTOCOL-STACK-IDENTITY-CIRCLES-SESSIONS.md)
 - [Lares CLI-daemon sprint plan](../wikis/@lares-history/lararium-research/LARES-CLI-DAEMON-SPRINT-PLAN.md)
+- `bags/@lararium/mesh/v0.1/operator-peer.md`
+- `bags/@lares/api/v0.1/lararium/save-path.md`

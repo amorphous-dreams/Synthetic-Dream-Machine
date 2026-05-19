@@ -236,8 +236,8 @@ function splitMemeToTiddlers(
   if (warnings.length > 0) {
     const safeSlug = uri.replace(/[^a-zA-Z0-9._-]/g, "_");
     result.push({
-      title:         `$:/lararium/parse-warning/${safeSlug}`,
-      tags:          "$:/lararium/parse-warnings",
+      title:         `lar:///ha.ka.ba/lararium/parse-warning/${safeSlug}`,
+      tags:          "lar:///ha.ka.ba/tags/lararium-parse-warnings",
       "meme-uri":    uri,
       "warning-count": String(warnings.length),
       text:          warnings.join("\n"),
@@ -480,8 +480,8 @@ export function splitBodyTiddler(
   if (warnings.length > 0) {
     const safeSlug = uri.replace(/[^a-zA-Z0-9._-]/g, "_");
     children.push({
-      title:          `$:/lararium/parse-warning/${safeSlug}`,
-      tags:           "$:/lararium/parse-warnings",
+      title:          `lar:///ha.ka.ba/lararium/parse-warning/${safeSlug}`,
+      tags:           "lar:///ha.ka.ba/tags/lararium-parse-warnings",
       "meme-uri":     uri,
       "warning-count": String(warnings.length),
       text:           warnings.join("\n"),

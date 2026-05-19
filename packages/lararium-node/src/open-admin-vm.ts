@@ -3,7 +3,7 @@
  *
  * The admin VM coordinates operator infrastructure for one Lararium node:
  * device delegations (cap=infrastructure), bag-mirror configs tagged
- * $:/tags/LarariumBagMirror, projection configs tagged $:/tags/LarariumProjection,
+ * lar:///ha.ka.ba/tags/lararium-bag-mirror, projection configs tagged lar:///ha.ka.ba/tags/lararium-projection,
  * sessions (operator → agent), and ceremony state.
  *
  * Federation: scoped to the operator's own devices via cap=infrastructure

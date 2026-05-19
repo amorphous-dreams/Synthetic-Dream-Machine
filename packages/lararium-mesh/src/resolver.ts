@@ -142,7 +142,7 @@ export function resolveLarUri(uri: string): LarResolution {
   // on disk: `lar:///foo#a/b` → `foo/a/b.md`. Files materialize as
   // `<dir>/index.md` for the root + `<dir>/<segs>.md` for each tagged-on-
   // disk descendant. The disk-projector decides which fragment URIs become
-  // file roots via `$:/tags/Lar/MemeRoot`; the path strategy here just
+  // file roots via `lar:///ha.ka.ba/tags/meme-root`; the path strategy here just
   // names where each URI WOULD project if it earns a file.
   const appendFragment = (basePath: string): string => {
     if (fragmentPath.length === 0) return basePath;

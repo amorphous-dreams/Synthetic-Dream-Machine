@@ -42,8 +42,8 @@ export type LarAuthProvider = "bluesky-oauth" | "github-vscode" | "local-dev";
 export type LarAuthAbility =
   | "auth/session"
   | "catalog/read"
-  | "room/read"
-  | "room/write"
+  | "wiki/read"
+  | "wiki/write"
   | "corpus/read"
   | "corpus/write"
   | "canon/promote"

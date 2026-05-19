@@ -184,7 +184,7 @@ async function main(): Promise<void> {
 
   // Projection registry — declarative wiring for system projections.
   // Configs are programmatic here; migrate to admin-wiki tiddlers tagged
-  // $:/tags/LarariumProjection once the admin VM lands (S5.6).
+  // lar:///ha.ka.ba/tags/lararium-projection once the admin VM lands (S5.6).
   const projections = new LarProjectionRegistry();
 
   // TODO: ReactionEngine not yet implemented in @lararium/mesh. Re-register

@@ -126,7 +126,7 @@ export async function runInit(opts: InitOptions = {}): Promise<InitResult> {
     title:         SOCIAL_BOOTSTRAP_PLUGIN_TITLE,
     "plugin-type": "plugin",
     type:          "application/json",
-    tags:          "$:/tags/LarariumBootstrap",
+    tags:          "lar:///ha.ka.ba/tags/lararium-bootstrap",
     text:          JSON.stringify({ tiddlers: packedTiddlers }),
   };
 

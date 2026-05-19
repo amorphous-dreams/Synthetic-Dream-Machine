@@ -202,7 +202,7 @@ export function wikiDraftLarUri(slug: string): string {
  *
  * Holds:
  *   - DeviceDelegationTiddlers (operator-private credential proofs)
- *   - ProjectionTiddlers tagged $:/tags/LarariumProjection (declarative manifest)
+ *   - ProjectionTiddlers tagged lar:///ha.ka.ba/tags/lararium-projection (declarative manifest)
  *   - SessionTiddlers (operator → agent, not wiki → agent)
  *   - Future: ceremony state (key rotation, invite acceptance)
  */

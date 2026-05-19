@@ -88,7 +88,7 @@ export function abilityImplies(have: OrichalcumAbility, need: OrichalcumAbility)
 
 export interface CaveatRatingAtLeast { readonly kind: "rating-at-least";  readonly rating: string; }
 export interface CaveatManaoioAtLeast { readonly kind: "manaoio-at-least"; readonly threshold: number; }
-export interface CaveatRoomRecipe    { readonly kind: "room-recipe";       readonly recipeUri: string; }
+export interface CaveatWikiRecipe    { readonly kind: "wiki-recipe";       readonly recipeUri: string; }
 export interface CaveatKapuScope     { readonly kind: "kapu-scope";        readonly scope: "personal" | "consensual" | "collective" | "universal"; }
 export interface CaveatHostBoundary  { readonly kind: "host-boundary";     readonly value: "hostless-only" | "hostful-ok"; }
 export interface CaveatEdgeIsland    { readonly kind: "edge-island";       readonly edgeId: string; }
@@ -97,7 +97,7 @@ export interface CaveatEpoch         { readonly kind: "epoch";             reado
 export type OrichalcumCaveat =
   | CaveatRatingAtLeast
   | CaveatManaoioAtLeast
-  | CaveatRoomRecipe
+  | CaveatWikiRecipe
   | CaveatKapuScope
   | CaveatHostBoundary
   | CaveatEdgeIsland
@@ -353,12 +353,12 @@ export type CausalIslandMust = typeof CAUSAL_ISLAND_MUST[number];
  */
 // Schema: lar:///ha.ka.ba/@lares/api/v0.1/pono/causal-islands
 export const CAUSAL_ISLAND_MAY = [
-  "room",
+  "wiki",
   "meme",
   "sigil",
   "kumu-instance",
   "kahea-invocation",
-  "local-room-projection",
+  "local-wiki-projection",
   "long-lived-runtime-actor",
   "automerge-realm",
   "peer-sync-state",
@@ -384,7 +384,7 @@ export interface PromotionReceipt {
   readonly sourceDraftId: string;
   /** Target tiddler title in the destination island (may differ from draft id). */
   readonly targetId: string;
-  /** Bag ID of the destination island ("room", "corpus:<slug>", etc.). */
+  /** Bag ID of the destination island (e.g. wikiDraftLarUri(slug), or a corpus bag URI). */
   readonly targetBag: string;
   /** Automerge doc head(s) of the destination island before the promotion write. */
   readonly beforeHeads: readonly string[];

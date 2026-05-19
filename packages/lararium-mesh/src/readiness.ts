@@ -9,16 +9,16 @@
  *   auth         — identity/receipt confirmed
  *   sw-shell     — Service Worker controls page; app shell from SW cache
  *   catalog      — CatalogDoc synced; room + corpus URLs known
- *   tw-vm        — primary room TW5 rendering VM kernel booted (C≈1 core rendering pool)
+ *   tw-vm        — primary wiki TW5 rendering VM kernel booted (C≈1 core rendering pool)
  *                  lights right after t.boot() — before room tiddlers hydrate
  *                  nothing renders before this; all render-dependent keys branch here
  *                  isomorphic: server peer and browser peer boot the same way
  *                  additional realm/portal VMs register as projection:<id> keys
  *                  (e.g. a canvas portal to a different room gets its own VM + projection key)
- *   room-content — room Automerge doc ready (starts empty → fast; parallel with tw-vm)
+ *   wiki-content — wiki Automerge doc ready (starts empty → fast; parallel with tw-vm)
  *   tldraw-doc   — tldraw canvas doc ready
  *   corpus:<id>  — per-corpus island ready (arrive async, non-blocking)
- *   room-presence  — presence channel (never blocks content or render)
+ *   wiki-presence  — presence channel (never blocks content or render)
  *   mcp-index    — MCP resource index built
  *   disk-projector — disk write-back projection active
  *   kowloon-feed — Kowloon federation feed ready
@@ -26,11 +26,11 @@
  *
  * Primary flow:
  *   auth → sw-shell → catalog → tw-vm (VM kernel, early gate)
- *                             → room-content (parallel)
+ *                             → wiki-content (parallel)
  *                             ↘ corpus:<id> (async, non-blocking)
  *   tw-vm → tldraw-doc
  *         ↘ mcp-index → disk-projector → kowloon-feed
- *   room-presence lights independently — never blocks render.
+ *   wiki-presence lights independently — never blocks render.
  *
  * Presence does not share fate with content. Each vector lights independently.
  */
@@ -45,15 +45,15 @@ export const READINESS_KEYS = [
   "auth",
   "sw-shell",
   "catalog",
-  "tw-vm",          // VM kernel for primary room — C≈1; boots before room hydration
-  "room-content",   // room Automerge doc ready; parallel with tw-vm
+  "tw-vm",          // VM kernel for primary wiki — C≈1; boots before wiki hydration
+  "wiki-content",   // wiki Automerge doc ready; parallel with tw-vm
   // Branches off tw-vm (all require a running VM to render)
   "tldraw-doc",
   "mcp-index",
   "disk-projector",
   "kowloon-feed",
   // Independent — never blocks content or render
-  "room-presence",
+  "wiki-presence",
 ] as const;
 
 export type WellKnownReadinessKey = typeof READINESS_KEYS[number];

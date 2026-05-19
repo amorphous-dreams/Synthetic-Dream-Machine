@@ -10,5 +10,5 @@ type: text/vnd.tiddlywiki
 
 <!-- wehe — Hawaiian procedure executor; alias for \procedure.
      Shares grammar schema with sigil-procedure.tid; both declare a named callable body.
-     STUB: wikitext \widget body is G.SharktoothSigil work (Category 1 / Category 6).
-     When the body ships, it will emit TW5 \procedure declarations from the sigil block. -->
+     lar-kind: pragma-alias — no render output. The memetic parser transpiles
+     <<~ wehe name(params) >>body<<~/ wehe >> → \procedure name(params) body \end at parse time. -->

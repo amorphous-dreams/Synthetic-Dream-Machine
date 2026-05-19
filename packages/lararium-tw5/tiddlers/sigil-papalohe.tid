@@ -6,4 +6,8 @@ lar-pattern: <<~\s*papalohe\s+(#[\w-]+\s+)?(\S+)\s*->\s*(\S+)(?:\s+listenable:([
 type: text/vnd.tiddlywiki
 
 <!-- papalohe — reaction-family edge; event wire from source event to target function.
-     Render: edge metadata annotation. No visual output by default. -->
+     Render: hidden data annotation; compile-layer wires the reaction graph edge.
+     p1 carries full args string: #slot FROM -> TO listenable:EventName. -->
+
+\widget ~papalohe(p1:"" p2:"")
+<span class="lar-papalohe" data-papalohe-args=<<p1>> hidden="true"/>\end

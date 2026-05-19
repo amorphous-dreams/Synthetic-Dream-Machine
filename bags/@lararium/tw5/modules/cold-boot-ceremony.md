@@ -15,7 +15,7 @@ source-file  = "packages/lararium-tw5/src/cold-boot-ceremony.ts"
 source-symbol = "*"
 module-ref   = "lar:///ha.ka.ba/@lararium/tw5/modules/cold-boot-ceremony"
 implements   = ["lar:///ha.ka.ba/@lares/api/v0.1/pono/heleuma/ka"]
-body-sha256 = "922aeddf089e89ede98d1b9219fe8dc236e760c19cee84362d6c8d6992fccdcb"
+body-sha256 = "09e7f52ebcb8617e2f675e8a4f09f043474488b34b93ff3c857615a923153300"
 cacheable    = true
 retain       = true
 ```

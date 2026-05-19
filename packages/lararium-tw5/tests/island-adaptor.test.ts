@@ -14,7 +14,7 @@
  * Schema: lar:///ha.ka.ba/@lares/api/v0.1/lararium/schema/island-adaptor
  */
 
-import { describe, test, expect, beforeEach } from "vitest";
+import { describe, test, expect, beforeEach, afterEach, vi } from "vitest";
 import { IslandAdaptor }      from "../src/island-adaptor.js";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
 import { IslandAccumulator }    from "@lararium/types";
@@ -65,7 +65,7 @@ class FakeTW5Engine {
 // ---------------------------------------------------------------------------
 
 const INSTANCE_ID = "test-adaptor";
-const TARGET_BAG  = "lar:///ha.ka.ba/@rooms/test-room";
+const TARGET_BAG  = "lar:///ha.ka.ba/@lararium/wikis/test-wiki/draft";
 const LAR_URI     = "lar:///ha.ka.ba/@lares/memes/SESSION";
 
 function crdtRemote(islandId = "automerge"): ChangeOrigin {
@@ -275,43 +275,75 @@ describe("IslandAdaptor — outbound saveTiddler", () => {
   let adaptor: IslandAdaptor;
 
   beforeEach(() => {
+    vi.useFakeTimers();
     tw5     = new FakeTW5Engine();
     store   = new MemoryTiddlerStore();
     adaptor = new IslandAdaptor(tw5 as never, store, INSTANCE_ID, TARGET_BAG);
     adaptor.start();
   });
 
+  afterEach(() => {
+    adaptor.stop();
+    vi.useRealTimers();
+  });
+
+  /** Advance fake timers past the debounce window and flush all microtasks. */
+  const flush = () => vi.advanceTimersByTimeAsync(IslandAdaptor.DEBOUNCE_MS + 1);
+
   test("lar: URI → store.put() called", async () => {
     const puts: string[] = [];
     const orig = store.put.bind(store);
     store.put = async (rec, origin) => { puts.push(rec.title); return orig(rec, origin); };
 
-    await new Promise<void>((resolve) => {
+    const done = new Promise<void>((resolve) => {
       adaptor.saveTiddler(
         { fields: { title: LAR_URI, text: "saved", bag: TARGET_BAG } },
         (err) => { if (err) throw err; resolve(); },
       );
     });
+    await flush();
+    await done;
 
     expect(puts).toContain(LAR_URI);
   });
 
-  test("explicit bag field overrides adaptor target bag", async () => {
+  test("rapid saves to the same URI coalesce — only the last write reaches the store", async () => {
+    const texts: string[] = [];
+    const orig = store.put.bind(store);
+    store.put = async (rec, o) => { texts.push(rec.text ?? ""); return orig(rec, o); };
+
+    const callbacks: Array<Promise<void>> = [];
+    for (const text of ["v1", "v2", "v3"]) {
+      callbacks.push(new Promise<void>((r) => {
+        adaptor.saveTiddler({ fields: { title: LAR_URI, text, bag: TARGET_BAG } }, (err) => { if (err) throw err; r(); });
+      }));
+    }
+    await flush();
+    await Promise.all(callbacks);
+
+    // Only the last value reaches the store — v1 and v2 were cancelled by the debounce
+    expect(texts).toEqual(["v3"]);
+  });
+
+  test("explicit bag field routes ceremony write to canonical bag (promote path)", async () => {
     const bags: string[] = [];
     const orig = store.put.bind(store);
     store.put = async (rec, origin) => { bags.push(rec.bag ?? ""); return orig(rec, origin); };
 
-    await new Promise<void>((resolve) => {
+    const done = new Promise<void>((resolve) => {
       adaptor.saveTiddler(
         { fields: { title: LAR_URI, text: "saved", bag: "lar:///ha.ka.ba/@lares" } },
         (err) => { if (err) throw err; resolve(); },
       );
     });
+    await flush();
+    await done;
 
+    // promote ceremony passes explicit bag → adaptor routes to that canonical bag, not targetBag
     expect(bags).toContain("lar:///ha.ka.ba/@lares");
   });
 
-  test("$:/temp/ title → skipped", async () => {
+  test("$:/temp/ title → skipped synchronously (no debounce timer)", async () => {
     const puts: string[] = [];
     const orig = store.put.bind(store);
     store.put = async (rec, o) => { puts.push(rec.title); return orig(rec, o); };
@@ -322,7 +354,7 @@ describe("IslandAdaptor — outbound saveTiddler", () => {
     expect(puts).toHaveLength(0);
   });
 
-  test("$:/ system title → skipped", async () => {
+  test("$:/ system title → skipped synchronously", async () => {
     const puts: string[] = [];
     const orig = store.put.bind(store);
     store.put = async (rec, o) => { puts.push(rec.title); return orig(rec, o); };
@@ -333,7 +365,7 @@ describe("IslandAdaptor — outbound saveTiddler", () => {
     expect(puts).toHaveLength(0);
   });
 
-  test("plain text title (no lar: prefix) → skipped", async () => {
+  test("plain text title (no lar: prefix) → skipped synchronously", async () => {
     const puts: string[] = [];
     const orig = store.put.bind(store);
     store.put = async (rec, o) => { puts.push(rec.title); return orig(rec, o); };

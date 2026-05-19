@@ -8,4 +8,10 @@ lar-close-pattern: <<~\/hana\s*>>
 type: text/vnd.tiddlywiki
 
 <!-- hana — bounded guest-grammar block; grammar-key selects the interpreter.
-     Body is foreign grammar (not TW5 wikitext). Render: delegated to guest interpreter. -->
+     p1 = grammar-key; p2 = body. Looks up hana-interpreter-<key> tiddler;
+     fallback renders body as labelled code block. -->
+
+\widget ~hana(p1:"" p2:"")
+<$set name="_h-interp" filter="[<p1>addprefix[lar:///ha.ka.ba/@lararium/hana-interpreter/]] [all[shadows+tiddlers+system]tag<_h-interp>!is[draft]first[]]">
+<%if [<_h-interp>!match[]]%><$transclude $tiddler=<<_h-interp>> hana-key=<<p1>> hana-body=<<p2>>/><%else%><pre class="lar-hana" data-hana-key=<<p1>>><code><<p2>></code></pre><%endif%>
+</$set>\end

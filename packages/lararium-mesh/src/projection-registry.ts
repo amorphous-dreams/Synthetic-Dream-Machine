@@ -7,7 +7,7 @@
  *   - git mirror, S3 export, search index — future kinds
  *
  * The registry keeps a kind→factory table and an id→stop table for running
- * instances. Configs live as tiddlers tagged $:/tags/LarariumProjection in
+ * instances. Configs live as tiddlers tagged lar:///ha.ka.ba/tags/lararium-projection in
  * the admin room (S5.5+); until that lands, callers pass configs directly.
  *
  * Platform scoping: factories close over platform-specific deps (filesystem
@@ -19,7 +19,7 @@
 import type { LarPeer } from "./lar-peer.js";
 
 /** TW5 tag that identifies a projection-config tiddler in the admin room. */
-export const LARARIUM_PROJECTION_TAG = "$:/tags/LarariumProjection";
+export const LARARIUM_PROJECTION_TAG = "lar:///ha.ka.ba/tags/lararium-projection";
 
 /**
  * Declarative config for one projection instance.

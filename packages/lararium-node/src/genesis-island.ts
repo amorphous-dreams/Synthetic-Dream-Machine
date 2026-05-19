@@ -183,7 +183,7 @@ export async function loadGenesisIsland(repo: Repo, genesisDir?: string): Promis
  * If it diverges, merges the genesis handle into the live doc so net-new
  * blobs and tiddlers flow in without overwriting any live-doc changes.
  *
- * Called from openNodeLarPeer (S4) to replace the three SPRINT-2 markers.
+ * Called from openNodeLarPeer during peer boot.
  *
  * @param handle        - The live LarariumDoc handle (from FS storage or peer sync).
  * @param genesisHandle - A handle loaded via loadGenesisIsland().
@@ -364,7 +364,7 @@ export function seedSessionsDoc(repo: Repo): DocHandle<SessionsDoc> {
  * Seed the AdminDoc — operator-private infrastructure bag.
  *
  * Holds device delegations (cap=infrastructure), projection configs tagged
- * $:/tags/LarariumProjection, session tiddlers (operator → agent), and
+ * lar:///ha.ka.ba/tags/lararium-projection, session tiddlers (operator → agent), and
  * ceremony state. Federation scopes to the operator's own devices via
  * cap=infrastructure delegations gated at the ingress trust check (S7.4);
  * never reaches room peers.

@@ -7,4 +7,8 @@ lar-pattern: <<~\s*pono\s+(#[\w-]+\s+)?(\S+)\s*->\s*(\S+)(?:\s+role:([\w-]+))?\s
 type: text/vnd.tiddlywiki
 
 <!-- pono — correctness-asserting edge; asserts FROM holds constraint satisfied by TO.
-     Render: edge metadata annotation, no visual output by default. -->
+     Render: hidden data annotation; compile-layer graph extraction handles semantics.
+     sigil-constraint delegates here via ~\constraint → ~pono. -->
+
+\widget ~pono(p1:"" p2:"")
+<span class="lar-pono" data-pono-args=<<p1>> hidden="true"/>\end

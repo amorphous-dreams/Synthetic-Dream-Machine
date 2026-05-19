@@ -11,7 +11,7 @@ heleuma       = "ka"
 source-file   = "packages/lararium-tw5/src/widgets/papalohe.ts"
 source-symbol = "PapaloheWidget"
 module-ref    = "lar:///ha.ka.ba/@lararium/tw5/widgets/papalohe"
-body-sha256 = "1f564d852f8e8fc9333bfb92159a94313d40ecb29b95e8c2c2a7f7d506e6bd37"
+body-sha256 = "2519de34cc3e6cfbf78423bda0389369f1e4d504f194a4c04934f87dda56f6a1"
 cacheable     = true
 retain        = true
 ```

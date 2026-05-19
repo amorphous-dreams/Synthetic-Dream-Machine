@@ -11,7 +11,7 @@ heleuma       = "ka"
 source-file   = "packages/lararium-tw5/src/widgets/toml.ts"
 source-symbol = "TomlWidget"
 module-ref    = "lar:///ha.ka.ba/@lararium/tw5/widgets/toml"
-body-sha256 = "a849f6d978bdcef8de8677fa484bac0c1c70a3192b065e04d501fce4223c339d"
+body-sha256 = "d4f13f77f33d37dc2115243f6271a959c1021f2ee5226a8e4c8d733232adeb50"
 cacheable     = true
 retain        = true
 ```

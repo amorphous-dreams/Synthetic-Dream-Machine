@@ -56,7 +56,7 @@ export interface PromotePlan extends PromoteResult {
   tombstones: string[];
 }
 
-const BAG_MIRROR_TAG = "$:/tags/LarariumBagMirror";
+const BAG_MIRROR_TAG = "lar:///ha.ka.ba/tags/lararium-bag-mirror";
 const LARES_BAG_ID = "lar:///ha.ka.ba/@lares";
 const LARARIUM_BAG_ID = "lar:///ha.ka.ba/@lararium";
 const URI_PREFIX = "lar:///ha.ka.ba/";

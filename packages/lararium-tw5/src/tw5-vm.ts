@@ -418,13 +418,13 @@ export class TW5Engine {
     this._tw.wiki.addTiddler(new this._tw.Tiddler({ title: "$:/palette", text: paletteName, tags: [] }));
   }
 
-  /** Set/clear the boot-splash signal tiddler ($:/lararium/boot-splash/active). @browser-only */
+  /** Set/clear the boot-splash signal tiddler (lar:///ha.ka.ba/state/boot-splash/active). @browser-only */
   setBootSplash(active: boolean): void {
     if (!this._tw) return;
     if (active) {
-      this._tw.wiki.addTiddler(new this._tw.Tiddler({ title: "$:/lararium/boot-splash/active", text: "yes" }));
+      this._tw.wiki.addTiddler(new this._tw.Tiddler({ title: "lar:///ha.ka.ba/state/boot-splash/active", text: "yes" }));
     } else {
-      this._tw.wiki.deleteTiddler("$:/lararium/boot-splash/active");
+      this._tw.wiki.deleteTiddler("lar:///ha.ka.ba/state/boot-splash/active");
     }
   }
 

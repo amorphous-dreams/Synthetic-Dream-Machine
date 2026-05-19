@@ -15,7 +15,7 @@ source-file   = "packages/lararium-tw5/src/modules/lar-promote.ts"
 source-symbol = "*"
 module-ref    = "lar:///ha.ka.ba/@lararium/tw5/modules/lar-promote"
 implements    = ["lar:///ha.ka.ba/@lares/api/v0.1/pono/heleuma/ka"]
-body-sha256 = "f1ef98475dc5c12bcf3630941b58587b998bd6817a3bf43890d65140cd9c7ccc"
+body-sha256 = "8ad33a2a1e4af6793fd140d81a4ef2e088a0ce0e873e0a00f8b2df5e19af7ec0"
 cacheable     = true
 retain        = true
 ```

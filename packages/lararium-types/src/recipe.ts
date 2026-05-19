@@ -18,7 +18,7 @@
  *
  * Seed recipes written at boot:
  *   lararium/recipes/default — full content + social plane, no writable leaves
- *   lararium/recipes/room    — full stack + specific room bag (writable)
+ *   lararium/recipes/wiki    — full stack + specific wiki draft bag (writable)
  *   catalog/recipes/default  — catalog + lares + corpus leaves only (no social plane)
  *
  * Meme: lar:///ha.ka.ba/@lararium/mesh/v0.1/recipe
@@ -37,7 +37,7 @@
 //   "group:{uri}"     — members of the group at lar: uri
 //
 // Self-describing: each root-doc bag carries its own descriptor tiddler inside
-// the ha island.  Corpus / room bags seed their own descriptor inside their doc.
+// the ha island.  Corpus / wiki bags seed their own descriptor inside their doc.
 //
 // Meme: lar:///ha.ka.ba/@lararium/mesh/v0.1/bag
 // ---------------------------------------------------------------------------
@@ -49,7 +49,7 @@ export interface BagTiddler {
   readonly label:       string;
   /** Read-access policy expression. Default: "public". */
   readonly readPolicy:  string;
-  /** Write-access policy expression. Default: "private" for root docs; "public" for room bags. */
+  /** Write-access policy expression. Default: "private" for root docs; "public" for wiki draft bags. */
   readonly writePolicy: string;
   /** ISO 8601 creation / last-update timestamp. */
   readonly updatedAt:   string;
@@ -115,7 +115,7 @@ export interface RecipeTiddler {
  * Stable lar: URI for a named recipe tiddler.
  *
  * @param root  - The @-prefixed root doc slot, e.g. "@lararium" or "@catalog".
- * @param name  - Short recipe name, e.g. "default", "room", "elyncia".
+ * @param name  - Short recipe name, e.g. "default", "wiki", "elyncia".
  *
  * e.g. recipeUri("@lararium", "default") → "lar:///ha.ka.ba/@lararium/recipes/default"
  */

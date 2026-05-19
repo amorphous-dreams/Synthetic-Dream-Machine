@@ -11,7 +11,7 @@ heleuma       = "ka"
 source-file   = "packages/lararium-tw5/src/filters/edge.ts"
 source-symbol = "registerEdgeOperator"
 module-ref    = "lar:///ha.ka.ba/@lararium/tw5/filters/edge"
-body-sha256 = "3e8fb17dae74e81f3c9b860dd26ff79b356c858838f9a45c21cec7e8d9223ea0"
+body-sha256 = "345931be1ee68fb47617f6db9f999e6fffee4a8ead521139f67ed127a557fbc4"
 cacheable     = true
 retain        = true
 ```

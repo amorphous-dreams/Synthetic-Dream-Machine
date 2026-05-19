@@ -13,6 +13,7 @@ source-symbol = "~kau"
 module-ref    = "lar:///ha.ka.ba/@lararium/tw5/widgets/kau"
 cacheable     = true
 retain        = true
+body-sha256 = "6cc6ce1e6d1dc43e399f3c00735763a804c36fdf3b646670588cc2505b9f5af2"
 ```
 
 <<~&#x0002;>>

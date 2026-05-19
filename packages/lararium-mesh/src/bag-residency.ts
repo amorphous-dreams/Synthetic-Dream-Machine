@@ -314,7 +314,7 @@ export class BagResidencyManager {
 // ---------------------------------------------------------------------------
 
 /** Tag every operator-pin tiddler carries. */
-export const LARES_PIN_TAG = "$:/tags/LaresPin";
+export const LARES_PIN_TAG = "lar:///ha.ka.ba/tags/lares-pin";
 
 /** Build the URI for a pin tiddler under the admin doc. */
 export function pinTiddlerUri(bagUrl: BagUrl): string {

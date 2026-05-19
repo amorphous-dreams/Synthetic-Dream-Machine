@@ -5,9 +5,9 @@
  * as every other Lararium Automerge document.  `tiddlers` remains a writable
  * Record (not Readonly) so AutomergeDocStore can mutate it inside change().
  *
- * Key = tiddler title (lar:/// URI for corpus; short title for room).
+ * Key = tiddler title (lar:/// URI for corpus; short title for wiki draft).
  * The bag field stamps the recipe priority slot: corpus slug for corpus islands,
- * "room" for the room island.
+ * wikiDraftLarUri(slug) for the wiki's top draft island.
  *
  * MutableLarRecord now lives in base-doc.ts (single canonical definition).
  * Re-exported here for backward-compat with existing importers.

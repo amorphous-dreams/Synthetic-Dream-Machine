@@ -33,13 +33,17 @@ verse-mesh.md + island-adaptor.md + island-accumulator.md memes captured;
 48/48 tests pass) are treated as landed unless tests prove drift.
 
 Next work, in order:
-1. Path K / F-arc: IslandAdaptor.saveTiddler 300–500ms debounce + projection
+1. $:/ title retirement — all Lararium-owned tiddlers (including OUR system tags,
+   config, and state) move to lar: URIs. Only direct TW5 core/system overrides
+   keep $:/ titles. Coordinated migration with smokes; not a search/replace.
+2. Path K / F-arc: IslandAdaptor.saveTiddler 300–500ms debounce + projection
    auto-truncate. Design spec first (meme doc), then code.
-2. UEFN scene importer — .verse class defs + .umap instance placements + DEB
-   wires → Automerge bag of tiddlers + pranala edges. Spec: bags/@lares/api/v0.1/pono/uefn-scene.md.
-3. Path L / S7.4: admin-doc ingress trust gate via Keyhive cap=infrastructure.
-4. SharktoothSigil remaining migrations — block-container sigils first
-   (wehe, meme, heihei, wai, huli) — carry close_pattern complexity.
+3. Path G.SharktoothSigil: block-container sigils first (wehe, meme, heihei,
+   wai, huli) — carry close_pattern complexity.
+4. Path L / S7.4: admin-doc ingress trust gate via Keyhive cap=infrastructure.
+5. UEFN scene importer — DEFERRED until after successful browser peer tests.
+   Spec exists at bags/@lares/api/v0.1/pono/uefn-scene.md; do not begin import
+   pipeline until browser peer e2e passes.
 
 Completed this turn (2026-05-17 turn 14):
 - @lararium/types extracted (zero-dep shared package); mesh ↔ tw5 dep chain broken;
@@ -50,6 +54,68 @@ Rules: preserve TW5 VM primacy, bag=Automerge-doc=sync-boundary, no HTTP/RPC
 coordination surface, and explicit operator promotion for canon. Web3 only —
 no web2 models/code/flows in Lares stack.
 ```
+
+## What Changed This Turn (2026-05-18 turn 16)
+
+### Path K / F-arc — IslandAdaptor Save-Path Debounce
+
+**Spec meme:** `bags/@lares/api/v0.1/lararium/save-path.md`
+Invariants SP-1 through SP-5 documented. SP-3 (draft routing) deferred pending
+wiki-init flow; SP-1 (debounce) and SP-4 (ceremony routing) landed.
+
+**SP-1 — 400 ms capture debounce in `IslandAdaptor.saveTiddler`:**
+- `_debounce: Map<string, TimerHandle>` + `_pending: Map<string, PendingWrite>` added.
+- Rapid saves to the same URI cancel the prior timer; only the last fields reach `_writeMeme`.
+- Displaced callbacks fire immediately (`null, {}, "0"`) so callers are never left hanging.
+- `stop()` cancels all pending timers; no callbacks fire after stop.
+- `DEBOUNCE_MS = 400` exposed as a static constant for tests.
+
+**New test:** `"rapid saves to the same URI coalesce — only the last write reaches the store"`
+uses `vi.useFakeTimers()` + `vi.advanceTimersByTimeAsync()` across the outbound describe block.
+
+**Metrics:** 171/171 tests pass; all packages typecheck clean.
+
+---
+
+## What Changed This Turn (2026-05-18 turn 15)
+
+### $:/ Title Retirement — All Lararium-Owned Tags + Titles Move to lar: URIs
+
+**Rule enacted:** `$:/` titles remain only for direct TW5 core/system overrides.
+All Lararium-owned tags, config, and state now carry `lar:///ha.ka.ba/` URIs.
+
+**Constant migrations (source code):**
+
+| Old | New | File |
+|---|---|---|
+| `$:/tags/LaresPin` | `lar:///ha.ka.ba/tags/lares-pin` | bag-residency.ts |
+| `$:/tags/LaresCommand` | `lar:///ha.ka.ba/tags/lares-command` | command-tiddler.ts |
+| `$:/tags/LaresCommandEvent` | `lar:///ha.ka.ba/tags/lares-command-event` | command-tiddler.ts |
+| `$:/tags/LarariumProjection` | `lar:///ha.ka.ba/tags/lararium-projection` | projection-registry.ts |
+| `$:/tags/LarariumBootstrap` | `lar:///ha.ka.ba/tags/lararium-bootstrap` | init.ts |
+| `$:/tags/LarariumBagMirror` | `lar:///ha.ka.ba/tags/lararium-bag-mirror` | lar-promote.ts |
+| `$:/lararium/parse-warning/${slug}` | `lar:///ha.ka.ba/lararium/parse-warning/${slug}` | deserializer.ts |
+| `$:/lararium/parse-warnings` | `lar:///ha.ka.ba/tags/lararium-parse-warnings` | deserializer.ts |
+| `$:/lararium/boot-splash/active` | `lar:///ha.ka.ba/state/boot-splash/active` | tw5-vm.ts |
+
+**Ontology fix:** `"room"` → `"wiki"` in `CAUSAL_ISLAND_MAY` (causal-island.ts);
+`"local-room-projection"` → `"local-wiki-projection"`. Test fixture
+`@rooms/test-room` → `@lararium/wikis/test-wiki/draft`. Default `targetBag`
+in IslandAdaptor changed from `"room"` to `"wiki"`.
+
+**IslandAdaptor routing law landed:**
+- Ceremony writes (promote) pass explicit `bag` field → adaptor routes to that canonical bag.
+- Live TW5 edits without explicit `bag` field → route to `this.targetBag` (top wiki draft bag).
+
+**Operator migration caveat:** Any live admin-doc tiddlers carrying the old
+`$:/tags/LarariumBagMirror` tag will go invisible to `lar-promote.ts` until
+their tag field updates to `lar:///ha.ka.ba/tags/lararium-bag-mirror`.
+Run `lares reset --force` on dev nodes; prod nodes require a one-time admin-doc
+tiddler patch before the next promote ceremony.
+
+**Metrics:** 170/170 tests pass; all packages typecheck clean.
+
+---
 
 ## What Changed This Turn (2026-05-17 turn 14)
 
