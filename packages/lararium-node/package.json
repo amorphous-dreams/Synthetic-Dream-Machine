@@ -13,7 +13,7 @@
   "types": "./dist/src/index.d.ts",
   "scripts": {
     "build": "tsc",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc --noEmit -p tsconfig.typecheck.json",
     "test": "vitest run",
     "dev": "tsx src/main.ts",
     "start": "node dist/src/main.js",

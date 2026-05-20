@@ -41,6 +41,17 @@ depend on types independently; no re-exporting; 164/164 tests pass).
 
 Do not re-open those arcs unless a test proves drift.
 
+## Planning Law
+
+These planning docs follow one architectural law:
+
+- Browser peers and node peers share one operator-peer contract.
+- Every peer writes local intent first, then syncs over the mesh.
+- Capability proof checks happen on the invoking peer before edge work.
+- Command tiddlers and receipt tiddlers remain the durable ceremony spine.
+- Node-only behavior counts as edge adaptation, not authority.
+- Roadmap order favors peer-law closure before product-side expansion.
+
 ## Active Priority Order
 
 | Priority | Path | Status | Outcome |
@@ -53,13 +64,16 @@ Do not re-open those arcs unless a test proves drift.
 | — | **Concurrency cluster + grammar self-hosting** | ✅ Done | hui/holo/puka/lele + 8 family tiddlers; TOML monolith = 1 block; wild-magic property holds. |
 | — | **Grammar self-hosting completion** | ✅ Done | `meme-grammar.ts` deleted; `grammarRulesFromText` retired; `GRAMMAR_TAG` in `@lararium/mesh`; smol-toml library tiddler; `sigil-toml` SharktoothSigil tiddler; TOML fallback parse path gone. |
 | — | **@lararium/types extraction** | ✅ Done | Zero-dep shared package; `mesh → tw5` dep chain broken; pure types + isomorphic utils co-located; no re-exporting; 164/164 tests pass. |
-| 1 | **UEFN scene importer** | ⬜ Next | .verse class defs + .umap placements + DEB wires → bag of tiddlers + edges. Spec: `bags/@lares/api/v0.1/pono/uefn-scene.md`. |
-| 2 | **K / F-arc** | ⬜ Next | TW5 save routing, debounce, projection hygiene for sustained editing. |
-| 3 | **L / S7.4** | ⬜ Next | Admin-doc ingress trust gate: operator devices with `cap=infrastructure` only. |
-| 4 | **G.SharktoothSigil** | ⬜ Next | Migrate remaining TOML sigil blocks in `memetic-wikitext.tid` → SharktoothSigil tiddlers. `grammarRulesFromText` fully retired; `GRAMMAR_TAG` as only registration surface. Talk-story per category. |
-| 5 | **R** | ⧾ Verify first | ReactionEngine wiring: changeset application, changed-URI derivation, `RE.onChangeset`, integration tests. |
-| 6 | **N** | ⬜ UI shim | `<$lar-promote>` action-widget writes the same command-tiddler as CLI promote. |
-| 7 | **O** | ⬜ Corpus hygiene | Author scaffolded heleuma stubs; keep `lares heleuma --write` aligned. |
+| 1 | **P / Operator-peer contract** | ⬜ Next | Make browser and node peers read as one base architecture: admin lane, active wiki lanes, local proof-first, edge-only adaptors. |
+| 2 | **M / Local intent bridge** | ⬜ Next | Finish shared command/receipt contracts; keep ceremony meaning in the TW5 VM pool; keep `stdio` default and transport secondary. |
+| 3 | **L / S7.4** | ⬜ Next | Admin-doc ingress trust gate: operator devices with `cap=infrastructure` only; prove local capability rejection before edge work. |
+| 4 | **S9 / lararium-browser parity** | ⬜ Next | Full browser peer on the same operator-peer contract: Automerge, IndexedDB, presence, optional OPFS. |
+| 5 | **K / F-arc** | ⬜ Next | TW5 save routing, debounce, projection hygiene for sustained editing across shared peer surfaces. |
+| 6 | **R** | ⧾ Verify first | ReactionEngine wiring: changeset application, changed-URI derivation, `RE.onChangeset`, integration tests. |
+| 7 | **G.SharktoothSigil** | ⬜ Next | Migrate remaining TOML sigil blocks in `memetic-wikitext.tid` → SharktoothSigil tiddlers. `grammarRulesFromText` fully retired; `GRAMMAR_TAG` as only registration surface. Talk-story per category. |
+| 8 | **N** | ⬜ UI shim | `<$lar-promote>` action-widget writes the same command-tiddler as CLI promote. |
+| 9 | **O** | ⬜ Corpus hygiene | Author scaffolded heleuma stubs; keep `lares heleuma --write` aligned. |
+| 10 | **UEFN scene importer** | ⬜ Queued | .verse class defs + .umap placements + DEB wires → bag of tiddlers + edges. Spec: `bags/@lares/api/v0.1/pono/uefn-scene.md`. |
 
 ## Test Flow Harness
 
@@ -75,7 +89,7 @@ Do not re-open those arcs unless a test proves drift.
 
 ## Path K — TW5 Routing, Debounce, Projection Hygiene
 
-Goal: live wiki authoring safe under sustained operator editing.
+Goal: live wiki authoring safe under sustained operator editing on any operator peer.
 
 - [ ] Route `$:/state/*` writes to the projection layer, not durable canon/draft.
 - [ ] Route `Draft of *` tiddlers to the per-wiki draft bag.
@@ -86,12 +100,27 @@ Goal: live wiki authoring safe under sustained operator editing.
 
 ## Path L — Admin Doc Ingress Trust Gate
 
-Goal: operator devices federate infrastructure state; room peers cannot.
+Goal: operator devices federate infrastructure state; room peers cannot; invalid intent gets rejected before edge work.
 
 - [ ] Gate admin-doc WebSocket ingress on Keyhive `cap=infrastructure` proof.
 - [ ] Operator devices only; room peers rejected.
 - [ ] Preserve command-tiddler coordination surface.
 - [ ] Negative smoke: non-infrastructure peer cannot sync admin state.
+
+## Path P — Shared Operator-Peer Contract
+
+Goal: make all active plan text, boot surfaces, and ceremony docs describe one peer-shaped architecture instead of a node-centered topology.
+
+- [ ] Write one canonical operator-peer contract spanning browser peer and node peer.
+- [ ] Define admin-lane versus active-wiki-lane responsibilities in the package docs.
+- [ ] Mark node-only behavior as edge adaptation, not authority law.
+- [ ] Add one architecture narrative or diagram that shows the shared lane topology.
+- [ ] Remove active planning text that treats node as the default authority center.
+
+Exit criteria:
+
+- browser and node docs read as budget variants of the same peer
+- no active planning doc treats server or node as privileged truth holder
 
 ## Path G.SharktoothSigil — Remaining Sigil Vocabulary
 
@@ -202,7 +231,7 @@ Invariants:
 |---|---|---|
 | **Tier 2 aka preview** | ⬜ Deferred | Node-side OG metadata fetch → `thumbnail`/`og-title`/`og-description` fields. Home: `disk-projector.ts` or `og-metadata-fetcher.ts`. Design record at `bags/@lararium/tw5/sigil-aka.md`. |
 | **M / Dreamdeck-app** | ⬜ Queued | After admin ingress gate; picks up same-machine peer consolidation deferred from S6.C.5. |
-| **S9 / lararium-browser** | ⬜ Queued | Full browser peer: Automerge, IndexedDB, presence, optional OPFS. |
+| **S9 / lararium-browser parity** | ⬜ Queued | Full browser peer on the same operator-peer contract: Automerge, IndexedDB, presence, optional OPFS. |
 | **S10 / dreamdeck-tldraw** | ⬜ Queued | tldraw shapes as `lar://` resource containers; edge types first-class. |
 | **S11 / dreamdeck-app** | ⬜ Queued | React shell; TW5 + canvas composition; no protocol logic in app layer. |
 | **W / CodeMirror 6 + Lezer + LSP** | ⬜ Downstream | After CLI/live wiki authoring stabilizes. |
@@ -212,7 +241,7 @@ Invariants:
 - Kowloon Bridge: `KowloonOutbox` draft queue + `KowloonInbox` feed mirror; `elyncia.app` deployment.
 - Seitan token circle invites.
 - Federated promotion conflict handling between lararia.
-- Subduction evaluation for lararium↔lararium federation once browser peer exists.
+- Subduction evaluation for lararium↔lararium federation once shared operator-peer parity exists.
 - Speculative RE execution, rollback, metered/gas execution.
 - Wikifier polish: DOCTYPE comment and dash-table round-trip diffs.
 - `\sigil` pragma full implementation (parameter schema, pattern, close-pattern, handler field) — may fold into SharktoothSigil tiddler authoring flow directly.

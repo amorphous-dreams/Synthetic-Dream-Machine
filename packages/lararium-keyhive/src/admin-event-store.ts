@@ -23,8 +23,9 @@
  */
 
 import {
-  ADMIN_BAG_ID, type CompositeStore, type ChangeOrigin, type LarTiddlerRecord,
+  ADMIN_BAG_ID, type CompositeStore,
 } from "@lararium/mesh";
+import type { ChangeOrigin, LarTiddlerRecord } from "@lararium/types";
 import type { EventStore, EventRecord } from "./event-store.js";
 
 const CAP_EVENT_TAG_BASE = "$:/tags/CapEvent";

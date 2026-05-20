@@ -13,7 +13,9 @@
 
 > The genesis artifact functions as the quine seed. Any peer (node, browser, worker) clones from it. No disk reads at runtime. The build step forms the only seam between disk projections and the CRDT mind.
 >
-> Every peer establishes WHO it is (IdentitiesDoc), WHAT CIRCLES it belongs to (CirclesDoc), and WHAT IT IS DOING NOW (SessionsDoc) — all without a central server. Social graph control inverts: circles are owned by their center, not by the platform.
+> Every operator peer establishes WHO it is (IdentitiesDoc), WHAT CIRCLES it belongs to (CirclesDoc), and WHAT IT IS DOING NOW (SessionsDoc) — all without a central server. Social graph control inverts: circles are owned by their center, not by the platform.
+>
+> Browser peers and node peers share one authority shape: local intent first, local proof first, VM-carried ceremony meaning, and edge-only host adaptation.
 
 ---
 
@@ -96,6 +98,8 @@ Key fix: `Automerge.from()` ignores `time` option internally — replaced with `
 
 **Goal:** The engine that boots the system lives inside the system it boots.
 
+**Pono guardrail:** Quine closure counts only if the resulting boot story keeps browser and node on the same peer law. Runtime affordances may differ; seeding authority may not.
+
 **Tasks:**
 - [ ] Ensure all `@lararium/tw5` vite outputs write `.tw5.cjs` format
 - [ ] Wire every `.tw5.cjs` plugin blob into `build-genesis-island.ts`
@@ -177,6 +181,7 @@ The CLI and browser UX invoke the same ceremonies.
 Capability checks happen on the invoking peer first.
 Resource-local adaptors may re-check before side effects.
 The mesh carries commands, receipts, and document deltas without a privileged server posture.
+Node-only runtime advantages stay downstream of authority, never upstream of it.
 
 ### Observe
 
@@ -301,6 +306,22 @@ Exit criteria:
 - host code no longer owns ceremony meaning
 - integration tests cover VM intent plus edge realization
 
+#### Sprint 6 — Planning and Doc Convergence
+
+Goal: make active planning surfaces speak one pono web3 local-first language.
+
+Tasks:
+
+- align `packages/ROADMAP.md`, `packages/HANDOFF.md`, and related active plan text to the operator-peer contract
+- remove node-first sequencing from active priorities unless a path is explicitly edge-only
+- tighten wording so browser parity reads as contract completion, not optional polish
+- keep research-history docs as history; move live intent into the active plan set
+
+Exit criteria:
+
+- active planning docs agree on the shared operator-peer law
+- no active planning doc implies a privileged node authority model
+
 ### Harmonize
 
 Each sprint should leave the system more peer-shaped and less server-shaped.
@@ -332,6 +353,7 @@ The first implementation slice should stay narrow:
 2. wire local capability intake on the admin lane
 3. keep promote planning and apply inside the TW5 path
 4. write durable receipts and assert on them in the existing sandboxed sync tests
+5. keep active planning docs aligned with those same laws so implementation pressure does not drift back toward node-first shortcuts
 
 That slice gives the architecture a concrete proof point without waiting for the full browser shell.
 

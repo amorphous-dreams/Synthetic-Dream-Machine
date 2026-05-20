@@ -10,7 +10,11 @@ export LAR_ROOT="${LAR_ROOT:-$REPO_ROOT/tests}"
 
 case "$FLOW" in
   all|tw5|tw5-sync)
+    pnpm test:tw5-fixture
     bash tests/lararium-tw5/sync/sync-decompose-promote.sh both
+    ;;
+  tw5-fixture)
+    pnpm test:tw5-fixture
     ;;
   tw5-decompose)
     bash tests/lararium-tw5/sync/sync-decompose-promote.sh decompose
@@ -27,6 +31,7 @@ Unknown flow: $FLOW
 
 Usage:
   tests/bin/run-flow.sh all
+  tests/bin/run-flow.sh tw5-fixture
   tests/bin/run-flow.sh tw5-decompose
   tests/bin/run-flow.sh tw5-promote
   tests/bin/run-flow.sh clean

@@ -22,10 +22,21 @@ import {
 } from "@lararium/mesh";
 import { recipeUri, parseBagStack } from "@lararium/tw5";
 import { buildDirectRecord, IslandAdaptor, TW5Engine } from "@lararium/tw5";
-import type { TiddlerFields } from "@lararium/tw5";
+import type { TW5TiddlerInputFields } from "@lararium/tw5";
 import type { CommandHandler } from "./command-dispatcher.js";
 
 const WIKI_PREFIX = "lar:///ha.ka.ba/@lararium/wikis/";
+
+function mutableRecord(title: string, fields: Record<string, string>, authority: string): MutableLarRecord {
+  return {
+    fields: { title, ...fields },
+    meta: { authority },
+  };
+}
+
+function recordText(record: LarTiddlerRecord | null | undefined): string | null {
+  return typeof record?.fields.text === "string" ? record.fields.text : null;
+}
 
 export interface WikiHandlerOptions {
   readonly composite: CompositeStore;
@@ -82,7 +93,7 @@ export function createListWikisHandler(opts: WikiHandlerOptions): CommandHandler
       wikis.push({
         slug:         tail,
         uri:          title,
-        automergeUrl: typeof rec?.text === "string" ? rec.text : null,
+        automergeUrl: recordText(rec),
       });
     }
     return { wikis };
@@ -131,19 +142,21 @@ export function createInitWikiHandler(opts: WikiMintHandlerOptions): CommandHand
         slug,
         status: "already-exists",
         wikiUri:     wikiKey,
-        wikiDocUrl:  existingWikiRec.text ?? null,
+        wikiDocUrl:  recordText(existingWikiRec),
         draftBagId,
-        draftDocUrl: existingDraftRec.text ?? null,
+        draftDocUrl: recordText(existingDraftRec),
         recipeUri:   recipeTitle,
       };
     }
 
     // Mint the docs we need.
-    const wikiHandle  = existingWikiRec?.text
-      ? await opts.repo.find<MemeStoreDoc>(existingWikiRec.text as AutomergeUrl)
+    const wikiDocUrl = recordText(existingWikiRec);
+    const draftDocUrl = recordText(existingDraftRec);
+    const wikiHandle  = wikiDocUrl
+      ? await opts.repo.find<MemeStoreDoc>(wikiDocUrl as AutomergeUrl)
       : opts.repo.create<MemeStoreDoc>(emptyMemeStoreDoc());
-    const draftHandle = existingDraftRec?.text
-      ? await opts.repo.find<MemeStoreDoc>(existingDraftRec.text as AutomergeUrl)
+    const draftHandle = draftDocUrl
+      ? await opts.repo.find<MemeStoreDoc>(draftDocUrl as AutomergeUrl)
       : opts.repo.create<MemeStoreDoc>(emptyMemeStoreDoc());
 
     // Wait for handle readiness before writing oracles (avoids URL race).
@@ -154,20 +167,16 @@ export function createInitWikiHandler(opts: WikiMintHandlerOptions): CommandHand
     // the doc already existed.
     opts.catalogHandle.change((doc) => {
       const tiddlers = doc.tiddlers as Record<string, MutableLarRecord>;
-      tiddlers[wikiKey] = {
-        title: wikiKey, text: wikiHandle.url,
-        fields: {
-          kind: "oracle",
-          bag: BAG_IDS.catalog,
-          authority: "lares-cli:wiki-init",
-          "path-filter": "lar-bag-path[wiki-shadow]",
-          "mirror-root": `wikis/@${slug}`,
-        },
-      };
-      tiddlers[draftKey] = {
-        title: draftKey, text: draftHandle.url,
-        fields: { kind: "oracle", bag: BAG_IDS.catalog, authority: "lares-cli:wiki-init" },
-      };
+      tiddlers[wikiKey] = mutableRecord(wikiKey, {
+        text: wikiHandle.url,
+        kind: "oracle",
+        "path-filter": "lar-bag-path[wiki-shadow]",
+        "mirror-root": `wikis/@${slug}`,
+      }, "lares-cli:wiki-init");
+      tiddlers[draftKey] = mutableRecord(draftKey, {
+        text: draftHandle.url,
+        kind: "oracle",
+      }, "lares-cli:wiki-init");
     });
 
     // Write recipe tiddler directly into the lararium island doc.
@@ -177,16 +186,12 @@ export function createInitWikiHandler(opts: WikiMintHandlerOptions): CommandHand
     const updatedAt = new Date().toISOString();
     opts.islandHandle.change((doc) => {
       const tiddlers = doc.tiddlers as Record<string, MutableLarRecord>;
-      tiddlers[recipeTitle] = {
-        title: recipeTitle,
-        authority: "lares-cli:wiki-init",
-        fields: {
-          label:          slug,
-          "bag-stack":    `${CATALOG_DOC_URI} ${LARARIUM_DOC_URI} ${LARES_DOC_URI} ${wikiKey} ${draftBagId}`,
-          "writable-bag": draftBagId,
-          "updated-at":   updatedAt,
-        },
-      };
+      tiddlers[recipeTitle] = mutableRecord(recipeTitle, {
+        label: slug,
+        "bag-stack": `${CATALOG_DOC_URI} ${LARARIUM_DOC_URI} ${LARES_DOC_URI} ${wikiKey} ${draftBagId}`,
+        "writable-bag": draftBagId,
+        "updated-at": updatedAt,
+      }, "lares-cli:wiki-init");
     });
 
     return {
@@ -229,21 +234,20 @@ export function createOpenWikiHandler(opts: WikiHandlerOptions): CommandHandler 
     }
 
     const marker = await opts.composite.get(ACTIVE_WIKI_URI);
-    if (marker?.text === slug) {
+    if (recordText(marker) === slug) {
       return { slug, status: "already-active", restartRequired: false };
     }
 
     const origin: ChangeOrigin = { kind: "lares-command", requestId: ctx_request_id_safe() };
     const record: LarTiddlerRecord = {
-      title: ACTIVE_WIKI_URI,
-      bag:   ADMIN_BAG_ID,
-      authority: "lares-cli:wiki-open",
-      text:  slug,
       fields: {
+        title: ACTIVE_WIKI_URI,
+        text: slug,
         "updated-at": new Date().toISOString(),
       },
+      meta: { authority: "lares-cli:wiki-open" },
     };
-    await opts.composite.put(record, origin);
+    await opts.composite.put(record, origin, { bag: ADMIN_BAG_ID });
 
     return {
       slug,
@@ -283,10 +287,10 @@ export function createSyncWikiHandler(opts: WikiMintHandlerOptions): CommandHand
 
     const wikiKey = wikiLarUri(slug);
     const wikiRec = await opts.composite.get(wikiKey);
-    if (!wikiRec || typeof wikiRec.text !== "string") {
+    if (!wikiRec || typeof wikiRec.fields.text !== "string") {
       throw new Error(`wiki "${slug}" not registered — run \`lares wiki init ${slug}\` first`);
     }
-    const wikiDocUrl = wikiRec.text;
+    const wikiDocUrl = wikiRec.fields.text;
 
     const memesRoot = join(opts.rootDir, "wikis", `@${slug}`, "memes");
     if (!existsSync(memesRoot)) {
@@ -354,7 +358,7 @@ export function createSyncWikiHandler(opts: WikiMintHandlerOptions): CommandHand
 
           for (const fields of syncFields) {
             const expected = buildDirectRecord(fields["title"]!, fields, wikiKey);
-            const existing = await store.get(expected.title);
+            const existing = await store.get(expected.fields.title);
             if (recordMatches(existing, expected)) {
               fileRecordSkips++;
               continue;
@@ -411,8 +415,7 @@ export function createPinWikiHandler(opts: WikiResidencyOptions): CommandHandler
       throw new Error(`recipe not found for "${slug}" — run \`lares wiki init ${slug}\` first`);
     }
 
-    const fields  = (recipeRec.fields ?? {}) as Record<string, string>;
-    const bagStack = parseBagStack(fields["bag-stack"]);
+    const bagStack = parseBagStack(typeof recipeRec.fields["bag-stack"] === "string" ? recipeRec.fields["bag-stack"] : undefined);
     if (bagStack.length === 0) {
       return { slug, recipeUri: recipeTitle, pinned: [], note: "recipe has no bag-stack" };
     }
@@ -447,8 +450,7 @@ export function createUnpinWikiHandler(opts: WikiResidencyOptions): CommandHandl
       throw new Error(`recipe not found for "${slug}"`);
     }
 
-    const fields   = (recipeRec.fields ?? {}) as Record<string, string>;
-    const bagStack = parseBagStack(fields["bag-stack"]);
+    const bagStack = parseBagStack(typeof recipeRec.fields["bag-stack"] === "string" ? recipeRec.fields["bag-stack"] : undefined);
     const unpinned: string[] = [];
     for (const bagUrl of bagStack) {
       opts.residency.unpin(bagUrl);
@@ -501,8 +503,7 @@ export function createAddBagHandler(opts: WikiComposeOptions): CommandHandler {
       throw new Error(`recipe not found for "${slug}" — run \`lares wiki init ${slug}\` first`);
     }
 
-    const fields  = (recipeRec.fields ?? {}) as Record<string, string>;
-    const stack   = parseBagStack(fields["bag-stack"]);
+    const stack   = parseBagStack(typeof recipeRec.fields["bag-stack"] === "string" ? recipeRec.fields["bag-stack"] : undefined);
     if (stack.includes(bagUrl)) {
       return { slug, recipeUri: recipeTitle, status: "already-in-stack", bagUrl };
     }
@@ -513,17 +514,18 @@ export function createAddBagHandler(opts: WikiComposeOptions): CommandHandler {
     // Mutate the recipe tiddler.
     const origin: ChangeOrigin = { kind: "lares-command", requestId: ctx_request_id_safe() };
     const updated: LarTiddlerRecord = {
-      title:     recipeRec.title,
-      bag:       recipeRec.bag ?? LARARIUM_DOC_URI,
-      authority: recipeRec.authority ?? "lares-cli:wiki-add-bag",
-      ...(recipeRec.text !== undefined && { text: recipeRec.text }),
       fields: {
-        ...fields,
-        "bag-stack":   nextStack.join(" "),
-        "updated-at":  new Date().toISOString(),
+        ...recipeRec.fields,
+        title: recipeRec.fields.title,
+        "bag-stack": nextStack.join(" "),
+        "updated-at": new Date().toISOString(),
+      },
+      meta: {
+        ...(recipeRec.meta ?? {}),
+        authority: recipeRec.meta?.authority ?? "lares-cli:wiki-add-bag",
       },
     };
-    await opts.composite.put(updated, origin);
+    await opts.composite.put(updated, origin, { bag: LARARIUM_DOC_URI });
 
     // Add the layer to the live composite if not already present.
     let layerAdded = false;
@@ -533,7 +535,7 @@ export function createAddBagHandler(opts: WikiComposeOptions): CommandHandler {
         // The bag URL must already exist as a doc; try discovering its
         // automerge URL via a catalog oracle tiddler at the same URI.
         const oracleRec = await opts.composite.get(bagUrl);
-        const docUrl = typeof oracleRec?.text === "string" ? oracleRec.text : null;
+        const docUrl = typeof oracleRec?.fields.text === "string" ? oracleRec.fields.text : null;
         if (docUrl) {
           const handle = await opts.repo.find<MemeStoreDoc>(docUrl as AutomergeUrl);
           await handle.whenReady();
@@ -596,8 +598,7 @@ export function createRemoveBagHandler(opts: WikiComposeOptions): CommandHandler
       throw new Error(`recipe not found for "${slug}"`);
     }
 
-    const fields = (recipeRec.fields ?? {}) as Record<string, string>;
-    const stack  = parseBagStack(fields["bag-stack"]);
+    const stack  = parseBagStack(typeof recipeRec.fields["bag-stack"] === "string" ? recipeRec.fields["bag-stack"] : undefined);
     if (!stack.includes(bagUrl)) {
       return { slug, recipeUri: recipeTitle, status: "not-in-stack", bagUrl };
     }
@@ -607,17 +608,18 @@ export function createRemoveBagHandler(opts: WikiComposeOptions): CommandHandler
     // Mutate the recipe.
     const origin: ChangeOrigin = { kind: "lares-command", requestId: ctx_request_id_safe() };
     const updated: LarTiddlerRecord = {
-      title:     recipeRec.title,
-      bag:       recipeRec.bag ?? LARARIUM_DOC_URI,
-      authority: recipeRec.authority ?? "lares-cli:wiki-remove-bag",
-      ...(recipeRec.text !== undefined && { text: recipeRec.text }),
       fields: {
-        ...fields,
-        "bag-stack":   nextStack.join(" "),
-        "updated-at":  new Date().toISOString(),
+        ...recipeRec.fields,
+        title: recipeRec.fields.title,
+        "bag-stack": nextStack.join(" "),
+        "updated-at": new Date().toISOString(),
+      },
+      meta: {
+        ...(recipeRec.meta ?? {}),
+        authority: recipeRec.meta?.authority ?? "lares-cli:wiki-remove-bag",
       },
     };
-    await opts.composite.put(updated, origin);
+    await opts.composite.put(updated, origin, { bag: LARARIUM_DOC_URI });
 
     // Soft remove: composite.removeLayer + residency.unpin. The Automerge
     // doc handle stays in the repo; future re-add reuses it.
@@ -685,7 +687,7 @@ export function createDraftHandler(opts: DraftHandlerOptions): CommandHandler {
     const record = await opts.composite.get(tiddler);
     if (!record) throw new Error(`tiddler not found: ${tiddler}`);
 
-    const fromBag = record.bag ?? null;
+    const fromBag = (await opts.composite.listBagsHolding(tiddler))[0] ?? null;
     if (fromBag === toBag) {
       return { tiddler, toBag, fromBag, status: "already-in-target" };
     }
@@ -696,13 +698,18 @@ export function createDraftHandler(opts: DraftHandlerOptions): CommandHandler {
 
     const origin: ChangeOrigin = { kind: "lares-command", requestId: ctx.command.requestId };
     const drafted: LarTiddlerRecord = {
-      title:     record.title,
-      bag:       toBag,
-      authority: "lares-draft",
-      fields:    { ...(record.fields ?? {}), "drafted-from": fromBag ?? "(none)", "drafted-at": new Date().toISOString() },
-      ...(record.text !== undefined && { text: record.text }),
+      fields: {
+        ...record.fields,
+        title: record.fields.title,
+        "drafted-from": fromBag ?? "(none)",
+        "drafted-at": new Date().toISOString(),
+      },
+      meta: {
+        ...(record.meta ?? {}),
+        authority: "lares-draft",
+      },
     };
-    await opts.composite.put(drafted, origin);
+    await opts.composite.put(drafted, origin, { bag: toBag });
 
     return {
       tiddler,
@@ -737,11 +744,11 @@ export function createPruneStaleHandler(opts: WikiMintHandlerOptions): CommandHa
     const did        = await opts.operatorDid();
     const draftKey   = `${wikiLarUri(slug)}/drafts/${encodeURIComponent(did)}`;
     const draftOracle = await opts.composite.get(draftKey);
-    if (!draftOracle || typeof draftOracle.text !== "string") {
+    if (!draftOracle || typeof draftOracle.fields.text !== "string") {
       throw new Error(`draft bag oracle missing for "${slug}" — run \`lares wiki init ${slug}\` first`);
     }
 
-    const handle = await opts.repo.find<MemeStoreDoc>(draftOracle.text as AutomergeUrl);
+    const handle = await opts.repo.find<MemeStoreDoc>(draftOracle.fields.text as AutomergeUrl);
     await handle.whenReady();
     const docState = handle.doc();
     const tiddlers = (docState?.tiddlers ?? {}) as Record<string, MutableLarRecord>;
@@ -750,10 +757,11 @@ export function createPruneStaleHandler(opts: WikiMintHandlerOptions): CommandHa
     const stale: Array<{ title: string; lastUpdate: string | null; daysIdle: number }> = [];
     let scanned = 0;
     for (const [title, rec] of Object.entries(tiddlers)) {
-      if (rec.deleted) continue;
+      if (rec.meta?.deleted) continue;
       scanned++;
-      const fields = (rec.fields ?? {}) as Record<string, string>;
-      const lastUpdate = fields["synced-at"] ?? fields["updated-at"] ?? null;
+      const lastUpdate = (typeof rec.fields["synced-at"] === "string" ? rec.fields["synced-at"] : undefined)
+        ?? (typeof rec.fields["updated-at"] === "string" ? rec.fields["updated-at"] : undefined)
+        ?? null;
       if (!lastUpdate) {
         // No timestamp at all — definitely stale-candidate.
         stale.push({ title, lastUpdate: null, daysIdle: -1 });
@@ -817,14 +825,14 @@ function targetCompositeBagStore(
   return {
     listVisible: () => composite.listVisible(),
     get:         (title) => composite.getLive(title),
-    put:         (record, origin) => composite.put({ ...record, bag: bagId }, origin),
+    put:         (record, origin, options) => composite.put(record, origin, { bag: options?.bag ?? bagId }),
     tombstone:   (title, origin) => composite.tombstoneInBag(bagId, title, origin),
     subscribe:   (fn) => composite.subscribe(fn),
     addProjection: (p) => composite.addProjection(p),
   };
 }
 
-function flattenVmTiddlerFields(fields: TiddlerFields): Record<string, string> | null {
+function flattenVmTiddlerFields(fields: TW5TiddlerInputFields): Record<string, string> | null {
   const title = stringField(fields["title"]);
   if (!title || title.startsWith("$:/")) return null;
 
@@ -837,7 +845,7 @@ function flattenVmTiddlerFields(fields: TiddlerFields): Record<string, string> |
   return out;
 }
 
-function stringField(value: string | string[] | undefined): string | undefined {
+function stringField(value: unknown): string | undefined {
   if (value === undefined) return undefined;
   return Array.isArray(value) ? value.join(" ") : String(value);
 }
@@ -870,12 +878,20 @@ function recordMatches(
   existing: LarTiddlerRecord | null,
   next:     LarTiddlerRecord,
 ): boolean {
-  if (!existing || existing.deleted) return false;
-  if (existing.title !== next.title) return false;
-  if ((existing.text ?? undefined) !== (next.text ?? undefined)) return false;
-  if ((existing.bag ?? undefined) !== (next.bag ?? undefined)) return false;
-  if ((existing.authority ?? undefined) !== (next.authority ?? undefined)) return false;
-  return shallowStringRecordEqual(existing.fields ?? {}, next.fields ?? {}, new Set(["synced-at"]));
+  if (!existing || existing.meta?.deleted) return false;
+  if (existing.fields.title !== next.fields.title) return false;
+  if ((existing.fields.text ?? undefined) !== (next.fields.text ?? undefined)) return false;
+  if ((existing.meta?.authority ?? undefined) !== (next.meta?.authority ?? undefined)) return false;
+  return shallowStringRecordEqual(recordStringFields(existing), recordStringFields(next), new Set(["synced-at"]));
+}
+
+function recordStringFields(record: LarTiddlerRecord): Record<string, string> {
+  const out: Record<string, string> = {};
+  for (const [key, value] of Object.entries(record.fields)) {
+    if (["title", "text"].includes(key)) continue;
+    if (typeof value === "string") out[key] = value;
+  }
+  return out;
 }
 
 function shallowStringRecordEqual(

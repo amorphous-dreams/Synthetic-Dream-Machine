@@ -23,6 +23,8 @@
 
 import type { TW5Engine } from "./tw5-vm.js";
 import type { LarTiddlerRecord } from "@lararium/types";
+import { toLarTiddlerRecord } from "@lararium/types";
+import type { TiddlerFields } from "./deserializer.js";
 
 // ---------------------------------------------------------------------------
 // buildDirectRecord — sync-adaptor write path
@@ -37,20 +39,10 @@ import type { LarTiddlerRecord } from "@lararium/types";
  */
 export function buildDirectRecord(
   title:     string,
-  fields:    Record<string, string | string[]>,
-  targetBag: NonNullable<LarTiddlerRecord["bag"]> = "wiki",
+  fields:    TiddlerFields,
+  _targetBag = "wiki",
 ): LarTiddlerRecord {
-  const textVal = fields["text"];
-  return {
-    title,
-    fields: Object.fromEntries(
-      Object.entries(fields)
-        .filter(([k]) => k !== "text" && k !== "title")
-        .map(([k, v]) => [k, Array.isArray(v) ? v.join(" ") : String(v)]),
-    ),
-    ...(textVal !== undefined ? { text: Array.isArray(textVal) ? textVal.join(" ") : textVal } : {}),
-    bag: targetBag,
-  };
+  return toLarTiddlerRecord({ ...fields, title });
 }
 
 // ---------------------------------------------------------------------------

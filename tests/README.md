@@ -24,10 +24,13 @@ packages/lararium-tw5/tests/
 packages/lararium-node/tests/
 ```
 
+Fixture-backed full-stack tests that share the isolated `tests/` Lararium now live under `tests/lararium-tw5/` rather than package-local test folders.
+
 ## Commands
 
 ```sh
 pnpm test:unit       # package-local Jest suites
+pnpm test:tw5-fixture # fixture-backed TW5 tests under tests/lararium-tw5/
 pnpm test:flows      # top-level integration flows; currently TW5 sync/decompose/promote
 pnpm test:tw5-flow   # direct TW5 integration flow
 ```

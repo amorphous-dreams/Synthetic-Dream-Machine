@@ -50,15 +50,15 @@ Each output unit bends toward observation, relation, action, stance, and earned 
 
 <<~ ahu #e-prime-law >>
 
-The **is of identity** fuses map to territory.
+The **identity copula** fuses map to territory.
 "X is Y" presents relation as essence — the observer's position disappears.
 In LLM output, identity collapse produces grammatical certainty the model does not hold.
 
-The **is of predication** encodes observer state as objective property.
+The **predication copula** encodes observer state as objective property.
 "The answer is wrong" vs "the answer diverges from expectation under these conditions."
 One closes; the other carries the observing agent forward.
 
-The **has of possession** collapses relation into ownership.
+The **possession copula** collapses relation into ownership.
 "The model has knowledge" implies bounded containment.
 Scoped carrying stays honest: "the model carries patterns toward X under condition Y."
 

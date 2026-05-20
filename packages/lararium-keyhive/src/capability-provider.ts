@@ -1,3 +1,11 @@
+import type {
+  CapabilityAccess,
+  CapabilityPresenter,
+  CapabilityVerifyArgs,
+  CapabilityVerifyResult,
+  CapabilityVerifier,
+} from "@lararium/mesh";
+
 /**
  * CapabilityProvider — narrow interface over Keyhive's pre-alpha API.
  *
@@ -15,10 +23,10 @@
  */
 
 /** Keyhive's binary access enum. Mirrors what `Access.tryFromString` accepts. */
-export type KeyhiveAccess = "read" | "admin";
+export type KeyhiveAccess = CapabilityAccess;
 
 /** Opaque identifier for a peer — typically the hex-encoded Identifier bytes. */
-export type PeerDID = string;
+export type PeerDID = CapabilityPresenter;
 
 export interface CapabilityProviderInitOpts {
   /** 32-byte ed25519 seed. Matches operator-key.ts shape so the operator's
@@ -41,11 +49,7 @@ export interface DelegateArgs {
   readonly access:    KeyhiveAccess;
 }
 
-export interface VerifyArgs {
-  readonly presenter: PeerDID;
-  readonly bagUrl:    string;
-  readonly access:    KeyhiveAccess;
-}
+export type VerifyArgs = CapabilityVerifyArgs;
 
 export interface DelegateResult {
   /** Stable id we use to refer to this delegation later (e.g. for revocation). */
@@ -55,12 +59,9 @@ export interface DelegateResult {
   readonly bytes:        Uint8Array;
 }
 
-export interface VerifyResult {
-  readonly ok:      boolean;
-  readonly reason?: string;
-}
+export type VerifyResult = CapabilityVerifyResult;
 
-export interface CapabilityProvider {
+export interface CapabilityProvider extends CapabilityVerifier {
   init(opts: CapabilityProviderInitOpts): Promise<void>;
   whoami(): Promise<PeerDID>;
 

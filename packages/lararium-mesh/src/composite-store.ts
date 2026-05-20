@@ -211,15 +211,14 @@ export class CompositeStore implements LarTiddlerStore {
     return null;
   }
 
-  async put(record: LarTiddlerRecord, origin: ChangeOrigin): Promise<void> {
-    // Route to the layer whose bagId matches record.bag (if that layer is writable).
-    // Falls back to writableStore (last registered writable) for unbagged records.
-    if (record.bag) {
-      const bagLayer = this.layers.find((l) => l.bagId === record.bag && l.writable);
-      if (bagLayer) return bagLayer.store.put(record, origin);
+  async put(record: LarTiddlerRecord, origin: ChangeOrigin, options?: { bag?: string }): Promise<void> {
+    // Route to the explicitly named writable bag when provided.
+    if (options?.bag) {
+      const bagLayer = this.layers.find((l) => l.bagId === options.bag && l.writable);
+      if (bagLayer) return bagLayer.store.put(record, origin, options);
     }
     if (!this.writableStore) throw new Error("CompositeStore: no writable layer registered");
-    return this.writableStore.put(record, origin);
+    return this.writableStore.put(record, origin, options);
   }
 
   async tombstone(title: string, origin: ChangeOrigin): Promise<void> {
@@ -263,7 +262,7 @@ export class CompositeStore implements LarTiddlerStore {
   async getLive(title: string): Promise<LarTiddlerRecord | null> {
     for (let i = this.layers.length - 1; i >= 0; i--) {
       const rec = await this.layers[i]!.store.get(title);
-      if (rec && !rec.deleted) {
+      if (rec && !rec.meta?.deleted) {
         if (this.residency) void Promise.resolve(this.residency.touch(this.layers[i]!.bagId));
         return rec;
       }
@@ -279,7 +278,7 @@ export class CompositeStore implements LarTiddlerStore {
     for (let i = this.layers.length - 1; i >= 0; i--) {
       const layer = this.layers[i]!;
       const rec = await layer.store.get(title);
-      if (rec && !rec.deleted) out.push(layer.bagId);
+      if (rec && !rec.meta?.deleted) out.push(layer.bagId);
     }
     return out;
   }
@@ -337,20 +336,22 @@ export class CompositeStore implements LarTiddlerStore {
    */
   async getRecipe(uri: string): Promise<RecipeTiddler | null> {
     const rec = await this.get(uri);
-    if (!rec || rec.deleted) return null;
-    const bagStack = parseBagStack(rec.fields["bagStack"]);
+    if (!rec || rec.meta?.deleted) return null;
+    const fields = rec.fields as Record<string, unknown>;
+    const bagStack = parseBagStack(fields["bagStack"]);
     if (bagStack.length === 0) return null;
-    const writableBag = rec.fields["writableBag"] as string | undefined;
-    const plugins = parsePlugins(rec.fields["plugins"]);
+    const writableBag = fields["writableBag"] as string | undefined;
+    const plugins = parsePlugins(fields["plugins"]);
+    const bags = await this.listBagsHolding(uri);
     return {
-      title:     rec.title,
-      label:     (rec.fields["label"] as string) ?? rec.title,
+      title:     rec.fields.title,
+      label:     (fields["label"] as string) ?? rec.fields.title,
       bagStack,
       ...(writableBag !== undefined ? { writableBag } : {}),
       ...(plugins.length > 0 ? { plugins } : {}),
-      updatedAt: (rec.fields["updatedAt"] as string) ?? new Date().toISOString(),
-      authority: (rec.fields["authority"] as string) ?? "unknown",
-      bag:       (rec.fields["bag"] as string) ?? "",
+      updatedAt: (fields["updatedAt"] as string) ?? new Date().toISOString(),
+      authority: (rec.meta?.authority as string | undefined) ?? "unknown",
+      bag:       bags[0] ?? "",
     };
   }
 
@@ -396,6 +397,6 @@ export class CompositeStore implements LarTiddlerStore {
         `CompositeStore: recipe writableBag "${recipe.writableBag}" not registered or not writable`,
       );
     }
-    return layer.store.put(record, origin);
+    return layer.store.put(record, origin, { bag: recipe.writableBag });
   }
 }

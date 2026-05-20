@@ -55,6 +55,36 @@ coordination surface, and explicit operator promotion for canon. Web3 only —
 no web2 models/code/flows in Lares stack.
 ```
 
+## What Changed This Turn (2026-05-20 turn 17)
+
+### LarTiddlerRecord Host-Model Rewrite — explicit `fields` + `meta`
+
+**Rule enacted:** stored Lararium records are now explicitly two-lane.
+
+- `record.fields` carries the TW5 input-field bag that projects into TW5 VMs.
+- `record.meta` carries host-envelope state such as `deleted`, `authority`, `sourceUri`, `contentHash`, and `recipe`.
+- `revision` deleted.
+- `bag` no longer persists on each record; it now travels as write context (`put(..., { bag })`) and change/query context (`LarTiddlerChange.bag`, `listBagsHolding()`), because bag identity belongs to recipe/topology, not content.
+
+**Why:** the old flat record shape let TW5 content fields and host metadata share one namespace, which kept web2/TW5 server residue alive (`bag`, `revision`) and left collision risk at the store boundary.
+
+**Enacted in code:**
+
+- `@lararium/types`: `LarTiddlerRecord`, `LarTiddlerMeta`, `LarWriteOptions`, `LarTiddlerChange.bag`
+- `@lararium/mesh`: nested `MutableLarRecord`, `AutomergeDocStore`, `CompositeStore`, command-tiddler helpers, social-doc readers
+- `@lararium/tw5`: IslandAdaptor, worker/direct VM projection, memory store, direct-record builder
+- `@lararium/node`: command dispatcher, wiki handlers, epoch handlers, genesis/open-node authority seeding
+
+**Admin/query follow-up now explicit:**
+
+- ordinary TW5 wiki projection should keep showing `record.fields`
+- admin VM capabilities can project metadata and bag/topology views intentionally
+- cross-wiki and pinned/live queries should use topology APIs (`listBagsHolding`, recipe stack, change bag context), not stored per-record `bag`
+
+**Metrics:** `pnpm --filter @lararium/types typecheck`, `pnpm --filter @lararium/mesh typecheck`, `pnpm --filter @lararium/tw5 typecheck`, and `pnpm --filter @lararium/node typecheck` all pass.
+
+---
+
 ## What Changed This Turn (2026-05-18 turn 16)
 
 ### Path K / F-arc — IslandAdaptor Save-Path Debounce
@@ -677,11 +707,15 @@ Inspect `node-vm-manager.ts`, `lar-wiki-worker.ts`, and tests before coding:
 ## Architecture Laws To Preserve
 
 - **Bag = Automerge doc = sync boundary.**
+- **Shared operator-peer law.** Browser peers and node peers share one base contract. Runtime affordances differ; authority shape does not.
+- **Local intent first.** The invoking peer writes command intent locally before any bridge, relay, or edge adaptor participates.
+- **Capability checks start local.** Proof verification happens on the invoking peer first; resource edges may re-check before side effects.
 - **TW5 VM primacy.** If logic can live in the VM, keep it there.
 - **Command-tiddlers, not HTTP/RPC.** CLI and daemon coordinate through the admin doc.
 - **Receipt-tiddlers complete the loop.** Accept, reject, apply, and defer outcomes land as records, not only terminal return values.
 - **Canon requires operator promotion.** Git diff remains the visible signature.
 - **Admin doc stays infrastructure-only.** Federates to operator devices, not room peers.
+- **Node is edge, not throne.** Disk projection, persistent relay, process control, and transport residency remain node strengths; none grant authority over truth.
 - **Hot wiki = TW5 + RE together.** Synchronous tick semantics require co-location.
 - **Memetic wikitext = TW5 superset.** No deny-list items without a carrier-stream justification.
 - **Sigil dispatch via wikitext.** All sigil widgets live as TW5 `\widget` tiddlers. JS widgets only for JS-level semantics (async device I/O, future Keyhive WASM hooks).
@@ -690,11 +724,13 @@ Inspect `node-vm-manager.ts`, `lar-wiki-worker.ts`, and tests before coding:
 
 ## Path M / Lares Local Intent Bridge
 
+- Shared aim: CLI, browser UX, and any future operator surface all author the same durable command records through the operator peer.
 - Default local CLI/daemon bridge: `stdio`.
 - Unix socket support can follow under the same bridge envelope for resident-daemon ergonomics.
 - WebSocket belongs on operator-device ingress or future peer-facing sync, not on the default local CLI path.
 - Command tiddlers and receipt tiddlers stay the coordination artifacts.
 - The TW5 VM pool should author, route, and write records whenever the work can stay inside that pool.
+- Bridge code transports envelopes; it does not own ceremony meaning.
 
 Reference: `wikis/@lares-history/lararium-research/LARES-CLI-DAEMON-SPRINT-PLAN.md`
 

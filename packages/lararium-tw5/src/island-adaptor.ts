@@ -57,9 +57,10 @@ import type {
 } from "@lararium/types";
 import type { MemeProjection } from "@lararium/types";
 import { IslandAccumulator } from "@lararium/types";
+import { toTW5TiddlerInputFields, toLarTiddlerRecord } from "@lararium/types";
 import type { TW5Engine } from "./tw5-vm.js";
-import { buildDirectRecord } from "./meme-write.js";
 import { splitBodyTiddler } from "./deserializer.js";
+import type { TW5TiddlerFields, TW5TiddlerInputFields } from "./types/tiddlywiki.d.ts";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -92,19 +93,11 @@ function extractFields(tiddler: unknown): Record<string, string> {
   return out;
 }
 
-function bulkApply(tw5: TW5Engine, batch: Array<Record<string, string | string[]>>): void {
+function bulkApply(tw5: TW5Engine, batch: TW5TiddlerInputFields[]): void {
   const wiki    = tw5.$tw.wiki;
   const Tiddler = tw5.$tw.Tiddler;
   const apply   = () => { for (const f of batch) wiki.addTiddler(new Tiddler(f)); };
   if (typeof wiki.transact === "function") wiki.transact(apply); else apply();
-}
-
-/** Assemble TW5 tiddler fields from a LarTiddlerRecord. */
-function recordToFields(rec: { title: string; text?: string; bag?: string; fields?: Record<string, string | string[]> }): Record<string, string | string[]> {
-  const out: Record<string, string | string[]> = { title: rec.title, ...rec.fields };
-  if (rec.text !== undefined) out["text"] = rec.text;
-  if (rec.bag)                out["bag"]  = rec.bag;
-  return out;
 }
 
 // ---------------------------------------------------------------------------
@@ -115,7 +108,7 @@ export class IslandAdaptor implements MemeProjection {
   readonly name = "lararium-island";
 
   /** Bag this adaptor targets for outbound writes. */
-  readonly targetBag: NonNullable<LarTiddlerRecord["bag"]>;
+  readonly targetBag: string;
 
   /**
    * Echo-loop guard.  Keyed by apply slot so concurrent island replays
@@ -151,7 +144,7 @@ export class IslandAdaptor implements MemeProjection {
     private readonly tw5:   TW5Engine,
     private readonly store: LarTiddlerStore,
     readonly instanceId:    string,
-    targetBag: NonNullable<LarTiddlerRecord["bag"]> = "wiki",
+    targetBag = "wiki",
   ) {
     this.targetBag = targetBag;
   }
@@ -190,12 +183,12 @@ export class IslandAdaptor implements MemeProjection {
     this._applying.set(applyKey, origin);
     try {
       const toRemove: string[] = [];
-      const toAdd: Array<Record<string, string | string[]>> = [];
+      const toAdd: TW5TiddlerInputFields[] = [];
 
       await Promise.all(Array.from(uris).map(async (uri) => {
         const rec = await this.store.get(uri);
-        if (!rec || rec.deleted) { toRemove.push(uri); return; }
-        toAdd.push(recordToFields(rec));
+        if (!rec || rec.meta?.deleted) { toRemove.push(uri); return; }
+        toAdd.push(toTW5TiddlerInputFields(rec));
       }));
 
       const wiki = this.tw5.$tw.wiki;
@@ -217,17 +210,17 @@ export class IslandAdaptor implements MemeProjection {
     if (buf.length === 0) return;
 
     const toRemove: string[] = [];
-    const toAdd: Array<Record<string, string | string[]>> = [];
+    const toAdd: TW5TiddlerInputFields[] = [];
 
     for (const change of buf) {
       // Suppress own tw-local echoes that arrived before sync settled.
       if (change.origin.kind === "tw-local" && change.origin.instanceId === this.instanceId) continue;
 
-      if (change.record === null || change.record.deleted) {
+      if (change.record === null || change.record.meta?.deleted) {
         toRemove.push(change.title);
         for (const t of this._childUrisOf(change.title)) toRemove.push(t);
       } else {
-        toAdd.push(recordToFields(change.record));
+        toAdd.push(toTW5TiddlerInputFields(change.record));
       }
     }
 
@@ -276,11 +269,11 @@ export class IslandAdaptor implements MemeProjection {
       const apply = () => {
         for (const change of batch) {
           if (change.origin.kind === "tw-local" && change.origin.instanceId === this.instanceId) continue;
-          if (change.record === null || change.record.deleted) {
+          if (change.record === null || change.record.meta?.deleted) {
             wiki.deleteTiddler(change.title);
             for (const t of this._childUrisOf(change.title)) wiki.deleteTiddler(t);
           } else {
-            wiki.addTiddler(new Tiddler(recordToFields(change.record)));
+            wiki.addTiddler(new Tiddler(toTW5TiddlerInputFields(change.record)));
           }
         }
       };
@@ -405,7 +398,7 @@ export class IslandAdaptor implements MemeProjection {
     const applyKey = this.instanceId;
     this._applying.set(applyKey, change.origin);
     try {
-      if (change.record === null || change.record.deleted) {
+      if (change.record === null || change.record.meta?.deleted) {
         // Cross-bag tombstone: only wipe TW5 when no live copy remains anywhere in the recipe.
         const store = this.store as { getLive?: (t: string) => Promise<LarTiddlerRecord | null> };
         if (typeof store.getLive === "function") {
@@ -416,7 +409,7 @@ export class IslandAdaptor implements MemeProjection {
           this._removeFromTw5(change.title);
         }
       } else {
-        this.tw5.$tw.wiki.addTiddler(new this.tw5.$tw.Tiddler(recordToFields(change.record)));
+        this.tw5.$tw.wiki.addTiddler(new this.tw5.$tw.Tiddler(toTW5TiddlerInputFields(change.record)));
       }
     } finally {
       this._applying.delete(applyKey);
@@ -438,7 +431,7 @@ export class IslandAdaptor implements MemeProjection {
     try {
       const live = await getLive(title);
       if (live) {
-        this.tw5.$tw.wiki.addTiddler(new this.tw5.$tw.Tiddler(recordToFields(live)));
+        this.tw5.$tw.wiki.addTiddler(new this.tw5.$tw.Tiddler(toTW5TiddlerInputFields(live)));
       } else {
         this._removeFromTw5(title);
       }
@@ -471,8 +464,9 @@ export class IslandAdaptor implements MemeProjection {
     // Ceremony writes (promote) pass an explicit bag field to route to the canonical target.
     // Live TW5 edits without an explicit bag field fall back to this.targetBag (top wiki draft bag).
     const targetBag = fields["bag"] || this.targetBag;
+    const { bag: _bag, ...persistedParent } = parent;
 
-    await this.store.put(buildDirectRecord(title, parent, targetBag), origin);
+    await this.store.put(toLarTiddlerRecord({ ...persistedParent, title }), origin, { bag: targetBag });
 
     if (children.length > 0) {
       const existingChildren = new Set<string>(this._childUrisOf(title));
@@ -482,7 +476,8 @@ export class IslandAdaptor implements MemeProjection {
         const childTitle = String(child["title"] ?? "");
         if (!childTitle.startsWith("lar:")) continue;
         newChildren.add(childTitle);
-        await this.store.put(buildDirectRecord(childTitle, child, targetBag), origin);
+        const { bag: _childBag, ...persistedChild } = child;
+        await this.store.put(toLarTiddlerRecord({ ...persistedChild, title: childTitle }), origin, { bag: targetBag });
       }
 
       for (const uri of existingChildren) {

@@ -15,9 +15,10 @@
  */
 
 import { parse as smolParse } from "smol-toml";
+import type { TiddlerFields } from "./deserializer.js";
 
 // ---------------------------------------------------------------------------
-// Internal: flatten nested TOML object → flat Record<string, string | string[]>
+// Internal: flatten nested TOML object → flat TiddlerFields
 //
 // TOML tables become prefix-keyed scalars:
 //   { uncertainty: { foo: "bar" } } → { "uncertainty-foo": "bar" }
@@ -27,8 +28,8 @@ import { parse as smolParse } from "smol-toml";
 function flattenTomlValue(
   obj: Record<string, unknown>,
   prefix = "",
-  out: Record<string, string | string[]> = {},
-): Record<string, string | string[]> {
+  out: TiddlerFields = {},
+): TiddlerFields {
   for (const [k, v] of Object.entries(obj)) {
     const key = prefix ? `${prefix}-${k}` : k;
     if (Array.isArray(v)) {
@@ -55,7 +56,7 @@ export function parseTaploFields(
   toml:     string,
   warnings: string[] = [],
   context = "#iam",
-): Record<string, string | string[]> {
+): TiddlerFields {
   try {
     const decoded = smolParse(toml) as Record<string, unknown>;
     return flattenTomlValue(decoded);

@@ -7,6 +7,7 @@ This tree contains repository-level integration test flows and shared fixtures. 
 | Test kind | Location | Runner | Purpose |
 |---|---|---|---|
 | Unit / package contract tests | `packages/<package>/tests/` | package Jest config via `pnpm --filter <pkg> test` | Fast tests for code owned by one package. Keep these close to implementation. |
+| Fixture-backed isolated-Lararium tests | `tests/<surface>/**/*.test.ts` | top-level Vitest command scoped to the owning surface | Tests that need the shared `tests/` Lararium root, support fixtures, or cross-package source imports without booting the full daemon flow. |
 | Integration / daemon flows | `tests/<surface>/...` | shell flow scripts via `tests/bin/run-flow.sh` | Cross-package ceremonies involving CLI, daemon, disk projection, Automerge state, and golden outputs. |
 | Historical chat / HUD behavioral plans | `tests/chats/` | not part of active code CI | Archived Lares prompt-contract plans and exemplar chat outputs. Do not mix these with deterministic code-flow goldens. |
 
@@ -16,6 +17,7 @@ From the repository root:
 
 ```sh
 pnpm test:unit       # package-local Jest suites
+pnpm test:tw5-fixture # fixture-backed isolated-Lararium TW5 tests
 pnpm test:flows      # top-level integration flows; currently TW5 sync/decompose/promote
 pnpm test:tw5-flow   # direct TW5 integration flow
 ```

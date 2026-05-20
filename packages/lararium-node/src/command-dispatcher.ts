@@ -35,22 +35,19 @@
  *     refactor when S7 lands.
  */
 
-import type { LarTiddlerRecord, LarTiddlerChange, ChangeOrigin } from "@lararium/types";
+import type {
+  LarTiddlerRecord, LarTiddlerChange, ChangeOrigin,
+} from "@lararium/types";
 import {
   type CommandTiddler, type CompositeStore,
+  type CapabilityVerifier, type CapabilityVerifyResult, type CapabilityAccess,
   parseCommandTiddler, buildRunningPatch,
   buildCommandEventTiddler,
   ADMIN_BAG_ID,
 } from "@lararium/mesh";
 
-/** Result shape for ctx.cap(...) calls — same shape as KeyhiveProvider.verify. */
-export interface CapVerifyResult {
-  readonly ok:      boolean;
-  readonly reason?: string;
-}
-
 /** Curried verify closure — pre-bound to the requesting peer's DID. */
-export type CapVerify = (access: "read" | "admin", bagUrl: string) => Promise<CapVerifyResult>;
+export type CapVerify = (access: CapabilityAccess, bagUrl: string) => Promise<CapabilityVerifyResult>;
 
 /** Context passed to every handler. */
 export interface CommandContext {
@@ -101,17 +98,6 @@ export class CommandHandlerRegistry {
   list(): readonly string[] {
     return [...this.handlers.keys()].sort();
   }
-}
-
-/** Minimal capability-verifier shape the dispatcher binds to ctx.cap.
- *  Matches KeyhiveProvider.verify but kept structural so tests can stub
- *  without dragging in @lararium/keyhive. */
-export interface CapabilityVerifier {
-  verify(args: {
-    presenter: string;
-    bagUrl:    string;
-    access:    "read" | "admin";
-  }): Promise<CapVerifyResult>;
 }
 
 export interface CommandDispatcherOptions {
@@ -178,7 +164,7 @@ export class CommandDispatcher {
         errorMessage: `no handler registered for "${command.command}"`,
         origin,
       });
-      await this.opts.admin.tombstone(record.title, origin);
+      await this.opts.admin.tombstone(record.fields.title, origin);
       return;
     }
 
@@ -208,7 +194,7 @@ export class CommandDispatcher {
     }
     // In both done and error paths, the signal-tiddler has served its job.
     // The audit event under log/<id> is the durable record.
-    await this.opts.admin.tombstone(record.title, origin);
+    await this.opts.admin.tombstone(record.fields.title, origin);
   }
 
   /** Write a durable audit-event tiddler under @admin/log/<requestId>. The
@@ -230,7 +216,7 @@ export class CommandDispatcher {
       ...(opts.result       !== undefined && { result:       opts.result }),
       ...(opts.errorMessage !== undefined && { errorMessage: opts.errorMessage }),
     });
-    await this.opts.admin.put(event, opts.origin);
+    await this.opts.admin.put(event, opts.origin, { bag: ADMIN_BAG_ID });
   }
 
   /** Merge a partial field patch onto the existing command record. */
@@ -240,13 +226,15 @@ export class CommandDispatcher {
     origin:  ChangeOrigin,
   ): Promise<void> {
     const merged: LarTiddlerRecord = {
-      title:     record.title,
-      bag:       record.bag ?? ADMIN_BAG_ID,
-      authority: record.authority ?? "lares-dispatcher",
-      fields:    { ...record.fields, ...patch },
-      ...(record.text     !== undefined && { text:     record.text }),
-      ...(record.deleted  !== undefined && { deleted:  record.deleted }),
+      fields: {
+        ...record.fields,
+        ...patch,
+      },
+      meta: {
+        ...(record.meta ?? {}),
+        authority: record.meta?.authority ?? "lares-dispatcher",
+      },
     };
-    await this.opts.admin.put(merged, origin);
+    await this.opts.admin.put(merged, origin, { bag: ADMIN_BAG_ID });
   }
 }

@@ -25,13 +25,15 @@ import type {
 } from "@lararium/types";
 
 export class MemoryTiddlerStore implements LarTiddlerStore {
+  constructor(private readonly bagId?: string) {}
+
   private _records = new Map<string, LarTiddlerRecord>();
   private _subscribers: ((change: LarTiddlerChange) => void)[] = [];
 
   async listVisible(): Promise<string[]> {
     const out: string[] = [];
     for (const [title, rec] of this._records) {
-      if (!rec.deleted) out.push(title);
+      if (!rec.meta?.deleted) out.push(title);
     }
     return out;
   }
@@ -41,18 +43,18 @@ export class MemoryTiddlerStore implements LarTiddlerStore {
   }
 
   async put(record: LarTiddlerRecord, origin: ChangeOrigin): Promise<void> {
-    this._records.set(record.title, record);
-    this._emit({ title: record.title, record, origin });
+    this._records.set(record.fields.title, record);
+    this._emit({ title: record.fields.title, record, origin, ...(this.bagId !== undefined ? { bag: this.bagId } : {}) });
   }
 
   async tombstone(title: string, origin: ChangeOrigin): Promise<void> {
     const existing = this._records.get(title);
     const dead: LarTiddlerRecord = {
-      ...(existing ?? { title, fields: {} }),
-      deleted: true,
+      ...(existing ?? { fields: { title } }),
+      meta: { ...(existing?.meta ?? {}), deleted: true },
     };
     this._records.set(title, dead);
-    this._emit({ title, record: null, origin });
+    this._emit({ title, record: null, origin, ...(this.bagId !== undefined ? { bag: this.bagId } : {}) });
   }
 
   subscribe(fn: (change: LarTiddlerChange) => void): () => void {
@@ -69,7 +71,7 @@ export class MemoryTiddlerStore implements LarTiddlerStore {
 
   /** Test helper — direct record injection without triggering subscribers. */
   _seed(record: LarTiddlerRecord): void {
-    this._records.set(record.title, record);
+    this._records.set(record.fields.title, record);
   }
 
   /** Test helper — full record map snapshot. */

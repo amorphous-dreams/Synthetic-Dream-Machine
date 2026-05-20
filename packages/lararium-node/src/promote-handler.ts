@@ -8,13 +8,13 @@
 
 import type { CompositeStore } from "@lararium/mesh";
 import type { LarTiddlerStore } from "@lararium/types";
-import { IslandAdaptor, planPromoteUris, type PromoteWiki, type TW5Engine } from "@lararium/tw5";
+import { IslandAdaptor, planPromoteUris, type TW5Engine, type TW5Wiki, type TW5TiddlerFields } from "@lararium/tw5";
 import type { CommandHandler } from "./command-dispatcher.js";
 
 export interface PromoteHandlerOptions {
   readonly composite: CompositeStore;
   readonly getPrimaryEngine: () => TW5Engine;
-  readonly getMirrorLookupWiki: () => PromoteWiki;
+  readonly getMirrorLookupWiki: () => TW5Wiki;
 }
 
 export function createPromoteHandler(opts: PromoteHandlerOptions): CommandHandler {
@@ -122,17 +122,22 @@ function targetCompositeBagStore(
   return {
     listVisible: () => composite.listVisible(),
     get:         (title) => composite.getLive(title),
-    put:         (record, origin) => composite.put({ ...record, bag: bagId }, origin),
+    put:         (record, origin, options) => composite.put(record, origin, { bag: options?.bag ?? bagId }),
     tombstone:   (title, origin) => composite.tombstoneInBag(bagId, title, origin),
     subscribe:   (fn) => composite.subscribe(fn),
     addProjection: (p) => composite.addProjection(p),
   };
 }
 
-function flattenPromoteFields(fields: Record<string, string | string[]>): Record<string, string> {
+function flattenPromoteFields(fields: Readonly<TW5TiddlerFields>): Record<string, string> {
   const out: Record<string, string> = {};
   for (const [key, value] of Object.entries(fields)) {
-    out[key] = Array.isArray(value) ? value.join(" ") : String(value);
+    if (value == null) continue;
+    if (Array.isArray(value)) {
+      out[key] = value.map((entry) => String(entry)).join(" ");
+      continue;
+    }
+    out[key] = String(value);
   }
   return out;
 }

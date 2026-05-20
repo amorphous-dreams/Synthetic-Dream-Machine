@@ -17,6 +17,14 @@
 
 export { TW5Engine } from "./tw5-vm.js";
 export type { TW5CoreBootBlob, CameraRegistration, CameraMount } from "./tw5-vm.js";
+export type {
+  TW5Wiki,
+  TW5Tiddler,
+  ITW5TiddlerFields,
+  TW5TiddlerFields,
+  ITW5TiddlerInputFields,
+  TW5TiddlerInputFields,
+} from "./types/tiddlywiki.d.ts";
 
 export { IslandAdaptor } from "./island-adaptor.js";
 export { MemoryTiddlerStore } from "./memory-store.js";
@@ -28,6 +36,7 @@ export type {
   LarTiddlerStore, LarTiddlerRecord, LarTiddlerChange, ChangeOrigin,
   ClosureEntry, EdgeRecord,
 } from "@lararium/types";
+export { toTW5TiddlerInputFields, toLarTiddlerRecord } from "@lararium/types";
 export type { PranalaEdge, PranalaEdgeViolation, PranalaViolationSeverity, GrammarRules, SigilRule, FamilyRule } from "@lararium/types";
 export { IslandAccumulator } from "@lararium/types";
 export { MemeStreamParser } from "@lararium/types";

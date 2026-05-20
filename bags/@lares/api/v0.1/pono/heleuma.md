@@ -23,12 +23,12 @@ role         = "invariant: heleuma anchor pattern — compiled-side artifacts he
 
 *Heleuma*: a stone or iron anchor used to secure a ship.
 
-A **heleuma** is any artifact that MUST exist outside the `lar:///` URI space — compiled TypeScript, runtime imperative registrations, build-generated assets — but that ALSO exists inside the meme graph as a self-documenting pair:
+A **heleuma** names any artifact that MUST exist outside the `lar:///` URI space — compiled TypeScript, runtime imperative registrations, build-generated assets — but that ALSO exists inside the meme graph as a self-documenting pair:
 
-- An **API meme** (`/api/...`) carrying the canonical source copy, contract, and thresholds. This is the graph's claim on the artifact: it names it, holds its invariants, and marks the precise boundary of what cannot move.
-- A **doc meme** (`/docs/...`) carrying the design rationale, the "why it is stuck here," and the path toward eventual promotion.
+- An **API meme** (`/api/...`) carrying the canonical source copy, contract, and thresholds. This names the graph's claim on the artifact: it names it, holds its invariants, and marks the precise boundary of what cannot move.
+- A **doc meme** (`/docs/...`) carrying the design rationale, the "why it stays stuck here," and the path toward eventual promotion.
 
-A heleuma is not a failure. It is a **named threshold crossing** — the meme graph asserting sovereignty over something that must, for now, be born outside.
+A heleuma does not mark failure. It marks a **named threshold crossing** — the meme graph asserting sovereignty over something that must, for now, be born outside.
 
 <<~/ahu >>
 
@@ -52,10 +52,10 @@ A heleuma is not a failure. It is a **named threshold crossing** — the meme gr
 1. Every compiled-in artifact that cannot be a first-class `lar:` meme SHALL have a heleuma pair.
 2. The API meme SHALL carry the actual source in a `#source` slot and SHALL declare `heleuma = "ha"`, `"ka"`, or `"ba"` in `#iam`.
 3. **ha** — body/structure: permanent territory. SHALL declare `source-file`. SHALL NOT declare `body-sha256`.
-4. **ka** — soul/fire: promotion-eligible. SHALL declare `source-file` and `source-symbol`. MAY declare `body-sha256` (gate layer 2 — content integrity). Keyhive capability proof is gate layer 3 (planned; not yet implemented).
+4. **ka** — soul/fire: promotion-eligible. SHALL declare `source-file` and `source-symbol`. MAY declare `body-sha256` (gate layer 2 — content integrity). Keyhive capability proof marks gate layer 3 (planned; not yet implemented).
 5. **ba** — psyche/path: quine-only path marker. `#source` slot sufficient for reconstruction. MAY declare `source-symbol` when a clear symbol boundary exists. When `source-symbol` is declared, MAY declare `body-sha256` for build-time drift detection. SHALL NOT declare `body-sha256` without `source-symbol`.
 6. The doc meme SHALL explain why the artifact cannot be promoted and what preconditions would allow promotion (ka) or why promotion is not applicable (ha, ba).
-7. The build script `sync-heleuma.ts` SHALL detect drift between `#source` slot and the live TS source for ha/ka modes. Drift MUST surface as a build warning. Staleness does not block the build but MUST be visible.
+7. The build script `sync-heleuma.ts` SHALL detect drift between `#source` slot and the live TS source for ha/ka modes. Drift MUST surface as a build warning. Staleness does not block the build but MUST stay visible.
 
 <<~/ahu >>
 
@@ -63,9 +63,9 @@ A heleuma is not a failure. It is a **named threshold crossing** — the meme gr
 
 ## Freyja Alignment
 
-Freyja's "Reality Anchor" principle: in a local-first, island-topology system, an anchor is the mechanism that ensures local changes can be trusted and referenced across the distributed sea. The heleuma serves the same role in the meme graph — it holds a fixed, named reference point for code that lives in the compiled world, so the graph is never surprised by what exists outside it.
+Freyja's "Reality Anchor" principle: in a local-first, island-topology system, an anchor functions as the mechanism that lets local changes earn trust and reference across the distributed sea. The heleuma carries the same role in the meme graph — it holds a fixed, named reference point for code that lives in the compiled world, so the graph never encounters surprise from what exists outside it.
 
-The heleuma is not trying to absorb the anchor into the graph. It is holding the rope.
+The heleuma does not try to absorb the anchor into the graph. It holds the rope.
 
 <<~/ahu >>
 
@@ -79,7 +79,7 @@ A heleuma API meme that acquires:
 - A verified `body-sha256` hash (gate layer 2 — content integrity; written by `sync-heleuma --commit`)
 - A keyhive capability proof (gate layer 3 — operator authorization; planned; replaces the pre-keyhive `promoted-at` timestamp sketch)
 
-...MAY be loaded by `_bootModules()` via the corpus gate and replace its compiled-in counterpart. At that point the heleuma pair becomes a standard meme pair and `heleuma = true` MAY be removed.
+...MAY load through `_bootModules()` via the corpus gate and replace its compiled-in counterpart. At that point the heleuma pair functions as a standard meme pair and `heleuma = true` MAY be removed.
 
 <<~/ahu >>
 

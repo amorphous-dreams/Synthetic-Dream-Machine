@@ -36,16 +36,24 @@
 // ---------------------------------------------------------------------------
 
 export interface MutableLarRecord {
-  title:        string;
-  fields:       Record<string, string>;
-  text?:        string;
-  deleted?:     boolean;
-  sourceUri?:   string;
-  contentHash?: string;
-  revision?:    string;
-  authority?:   string;
-  /** Bag ID (lar: URI of owning doc) — stamped at write time. */
-  bag?:         string;
+  fields: {
+    title:        string;
+    text?:        string;
+    tags?:        string | string[];
+    type?:        string;
+    created?:     string;
+    modified?:    string;
+    creator?:     string;
+    modifier?:    string;
+    [field: string]: string | string[] | undefined;
+  };
+  meta?: {
+    deleted?:     boolean;
+    sourceUri?:   string;
+    contentHash?: string;
+    authority?:   string;
+    recipe?:      string;
+  };
 }
 
 // ---------------------------------------------------------------------------

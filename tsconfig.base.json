@@ -3,6 +3,24 @@
     "target": "ES2022",
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
+    "baseUrl": ".",
+    "paths": {
+      "@lararium/mesh": ["packages/lararium-mesh/src/index.ts"],
+      "@lararium/mesh/*": [
+        "packages/lararium-mesh/*",
+        "packages/lararium-mesh/src/*"
+      ],
+      "@lararium/types": ["packages/lararium-types/src/index.ts"],
+      "@lararium/types/*": [
+        "packages/lararium-types/*",
+        "packages/lararium-types/src/*"
+      ],
+      "@lararium/tw5": ["packages/lararium-tw5/src/index.ts"],
+      "@lararium/tw5/*": [
+        "packages/lararium-tw5/*",
+        "packages/lararium-tw5/src/*"
+      ]
+    },
     "strict": true,
     "exactOptionalPropertyTypes": true,
     "noUncheckedIndexedAccess": true,

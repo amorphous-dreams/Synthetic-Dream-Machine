@@ -27,7 +27,7 @@ import { join, dirname }             from "path";
 import { fileURLToPath }             from "url";
 import * as Automerge                from "@automerge/automerge";
 import type { Repo, DocHandle }      from "@automerge/automerge-repo";
-import type { LarariumDoc, MemeStoreDoc, IdentitiesDoc, CirclesDoc, SessionsDoc, SessionEventLog } from "@lararium/mesh";
+import type { LarariumDoc, MemeStoreDoc, IdentitiesDoc, CirclesDoc, SessionsDoc, SessionEventLog, MutableLarRecord } from "@lararium/mesh";
 import {
   ENGINE_CORE_ID, LARARIUM_DOC_URI,
   CATALOG_DOC_URI, LARES_DOC_URI,
@@ -37,6 +37,17 @@ import {
   sessionEventLogUri,
   cidV1Sha256FromHex,
 } from "@lararium/mesh";
+
+function mutableRecord(
+  title: string,
+  fields: Record<string, string>,
+  authority: string,
+): MutableLarRecord {
+  return {
+    fields: { title, ...fields },
+    meta: { authority },
+  };
+}
 
 // ---------------------------------------------------------------------------
 // Genesis bytes source
@@ -201,7 +212,7 @@ export async function reconcileIslandFromGenesis(
 
   // Read stored genesis CID from the live doc.
   const GENESIS_CID_TIDDLER = `${LARARIUM_DOC_URI}/genesis-cid`;
-  const liveCid = handle.doc()?.tiddlers?.[GENESIS_CID_TIDDLER]?.fields?.["cid"] as string | undefined;
+  const liveCid = handle.doc()?.tiddlers?.[GENESIS_CID_TIDDLER]?.fields["cid"] as string | undefined;
 
   if (liveCid === expectedCid) {
     console.log("[genesis-island] reconcile: live doc current — no merge needed");
@@ -225,12 +236,9 @@ export async function reconcileIslandFromGenesis(
 
   // Write the new genesis CID into the live doc so subsequent boots skip reconcile.
   handle.change((doc) => {
-    doc.tiddlers[GENESIS_CID_TIDDLER] = {
-      title:     GENESIS_CID_TIDDLER,
-      fields:    { cid: expectedCid },
-      bag:       LARARIUM_DOC_URI,
-      authority: "genesis",
-    };
+    doc.tiddlers[GENESIS_CID_TIDDLER] = mutableRecord(GENESIS_CID_TIDDLER, {
+      cid: expectedCid,
+    }, "genesis");
   });
 
   console.log("[genesis-island] reconcile: merge complete — genesis CID updated in live doc");
@@ -265,23 +273,23 @@ export function reconcileWellKnownTiddlers(
 ): void {
   const doc      = handle.doc();
   const tiddlers = doc?.tiddlers ?? {};
-  const selfOk = tiddlers[LARARIUM_DOC_URI]?.text === handle.url;
-  const catOk  = tiddlers[CATALOG_DOC_URI]?.text  === catalogUrl;
-  const baOk   = laresUrl ? tiddlers[LARES_DOC_URI]?.text === laresUrl : true;
-  const idOk   = identitiesUrl  ? tiddlers[IDENTITIES_DOC_URI]?.text  === identitiesUrl  : true;
-  const grOk   = groupsUrl      ? tiddlers[CIRCLES_DOC_URI]?.text      === groupsUrl      : true;
-  const seOk   = sessionsUrl    ? tiddlers[SESSIONS_DOC_URI]?.text    === sessionsUrl    : true;
-  const adOk   = adminUrl       ? tiddlers[ADMIN_BAG_ID]?.text         === adminUrl       : true;
+  const selfOk = tiddlers[LARARIUM_DOC_URI]?.fields.text === handle.url;
+  const catOk  = tiddlers[CATALOG_DOC_URI]?.fields.text  === catalogUrl;
+  const baOk   = laresUrl ? tiddlers[LARES_DOC_URI]?.fields.text === laresUrl : true;
+  const idOk   = identitiesUrl  ? tiddlers[IDENTITIES_DOC_URI]?.fields.text  === identitiesUrl  : true;
+  const grOk   = groupsUrl      ? tiddlers[CIRCLES_DOC_URI]?.fields.text      === groupsUrl      : true;
+  const seOk   = sessionsUrl    ? tiddlers[SESSIONS_DOC_URI]?.fields.text    === sessionsUrl    : true;
+  const adOk   = adminUrl       ? tiddlers[ADMIN_BAG_ID]?.fields.text         === adminUrl       : true;
   if (selfOk && catOk && baOk && idOk && grOk && seOk && adOk) return;
 
   handle.change((d) => {
-    if (!selfOk) d.tiddlers[LARARIUM_DOC_URI] = { title: LARARIUM_DOC_URI, text: handle.url, fields: { kind: "oracle" }, bag: LARARIUM_DOC_URI, authority: "lararium-seed" };
-    if (!catOk)  d.tiddlers[CATALOG_DOC_URI]  = { title: CATALOG_DOC_URI,  text: catalogUrl,  fields: { kind: "oracle" }, bag: LARARIUM_DOC_URI, authority: "lararium-seed" };
-    if (!baOk  && laresUrl)       d.tiddlers[LARES_DOC_URI]       = { title: LARES_DOC_URI,       text: laresUrl,       fields: { kind: "oracle" }, bag: LARARIUM_DOC_URI, authority: "lararium-seed" };
-    if (!idOk  && identitiesUrl)  d.tiddlers[IDENTITIES_DOC_URI]  = { title: IDENTITIES_DOC_URI,  text: identitiesUrl,  fields: {}, bag: LARARIUM_DOC_URI, authority: "lararium-seed" };
-    if (!grOk  && groupsUrl)      d.tiddlers[CIRCLES_DOC_URI]      = { title: CIRCLES_DOC_URI,      text: groupsUrl,      fields: {}, bag: LARARIUM_DOC_URI, authority: "lararium-seed" };
-    if (!seOk  && sessionsUrl)    d.tiddlers[SESSIONS_DOC_URI]    = { title: SESSIONS_DOC_URI,    text: sessionsUrl,    fields: {}, bag: LARARIUM_DOC_URI, authority: "lararium-seed" };
-    if (!adOk  && adminUrl)       d.tiddlers[ADMIN_BAG_ID]         = { title: ADMIN_BAG_ID,        text: adminUrl,       fields: {}, bag: LARARIUM_DOC_URI, authority: "lararium-seed" };
+    if (!selfOk) d.tiddlers[LARARIUM_DOC_URI] = mutableRecord(LARARIUM_DOC_URI, { text: handle.url, kind: "oracle" }, "lararium-seed");
+    if (!catOk)  d.tiddlers[CATALOG_DOC_URI]  = mutableRecord(CATALOG_DOC_URI, { text: catalogUrl, kind: "oracle" }, "lararium-seed");
+    if (!baOk  && laresUrl)      d.tiddlers[LARES_DOC_URI]      = mutableRecord(LARES_DOC_URI, { text: laresUrl, kind: "oracle" }, "lararium-seed");
+    if (!idOk  && identitiesUrl) d.tiddlers[IDENTITIES_DOC_URI] = mutableRecord(IDENTITIES_DOC_URI, { text: identitiesUrl }, "lararium-seed");
+    if (!grOk  && groupsUrl)     d.tiddlers[CIRCLES_DOC_URI]    = mutableRecord(CIRCLES_DOC_URI, { text: groupsUrl }, "lararium-seed");
+    if (!seOk  && sessionsUrl)   d.tiddlers[SESSIONS_DOC_URI]   = mutableRecord(SESSIONS_DOC_URI, { text: sessionsUrl }, "lararium-seed");
+    if (!adOk  && adminUrl)      d.tiddlers[ADMIN_BAG_ID]       = mutableRecord(ADMIN_BAG_ID, { text: adminUrl }, "lararium-seed");
   });
 
   const flags = [
@@ -304,7 +312,7 @@ export function reconcileWellKnownTiddlers(
 export function seedLaresDoc(repo: Repo): DocHandle<MemeStoreDoc> {
   const handle = repo.create<MemeStoreDoc>(emptyMemeStoreDoc());
   handle.change((doc) => {
-    doc.tiddlers[LARES_DOC_URI] = { title: LARES_DOC_URI, text: handle.url, fields: {}, bag: LARES_DOC_URI, authority: "lararium-seed" };
+    doc.tiddlers[LARES_DOC_URI] = mutableRecord(LARES_DOC_URI, { text: handle.url }, "lararium-seed");
   });
   console.log(`[genesis-island] LaresDoc seeded  url=${handle.url}`);
   return handle;
@@ -314,7 +322,7 @@ export function seedLaresDoc(repo: Repo): DocHandle<MemeStoreDoc> {
 export function seedIdentitiesDoc(repo: Repo): DocHandle<IdentitiesDoc> {
   const handle = repo.create<IdentitiesDoc>(emptyIdentitiesDoc());
   handle.change((doc) => {
-    doc.tiddlers[IDENTITIES_DOC_URI] = { title: IDENTITIES_DOC_URI, text: handle.url, fields: {}, bag: IDENTITIES_DOC_URI, authority: "lararium-seed" };
+    doc.tiddlers[IDENTITIES_DOC_URI] = mutableRecord(IDENTITIES_DOC_URI, { text: handle.url }, "lararium-seed");
   });
   console.log(`[genesis-island] IdentitiesDoc seeded  url=${handle.url}`);
   return handle;
@@ -334,16 +342,17 @@ const SYSTEM_CIRCLES: Array<{ id: string; displayName: string }> = [
 export function seedCirclesDoc(repo: Repo): DocHandle<CirclesDoc> {
   const handle = repo.create<CirclesDoc>(emptyCirclesDoc());
   handle.change((doc) => {
-    doc.tiddlers[CIRCLES_DOC_URI] = { title: CIRCLES_DOC_URI, text: handle.url, fields: {}, bag: CIRCLES_DOC_URI, authority: "lararium-seed" };
+    doc.tiddlers[CIRCLES_DOC_URI] = mutableRecord(CIRCLES_DOC_URI, { text: handle.url }, "lararium-seed");
     for (const { id, displayName } of SYSTEM_CIRCLES) {
       const uri = `${CIRCLES_DOC_URI}/${id}`;
-      doc.tiddlers[uri] = {
-        title:     uri,
-        text:      "",
-        fields:    { id, displayName, kind: "System", memberDids: "", createdAt: "" },
-        bag:       CIRCLES_DOC_URI,
-        authority: "lararium-seed",
-      };
+      doc.tiddlers[uri] = mutableRecord(uri, {
+        text: "",
+        id,
+        displayName,
+        kind: "System",
+        memberDids: "",
+        createdAt: "",
+      }, "lararium-seed");
     }
   });
   console.log(`[genesis-island] CirclesDoc seeded  url=${handle.url}  systemCircles=${SYSTEM_CIRCLES.length}`);
@@ -354,7 +363,7 @@ export function seedCirclesDoc(repo: Repo): DocHandle<CirclesDoc> {
 export function seedSessionsDoc(repo: Repo): DocHandle<SessionsDoc> {
   const handle = repo.create<SessionsDoc>(emptySessionsDoc());
   handle.change((doc) => {
-    doc.tiddlers[SESSIONS_DOC_URI] = { title: SESSIONS_DOC_URI, text: handle.url, fields: {}, bag: SESSIONS_DOC_URI, authority: "lararium-seed" };
+    doc.tiddlers[SESSIONS_DOC_URI] = mutableRecord(SESSIONS_DOC_URI, { text: handle.url }, "lararium-seed");
   });
   console.log(`[genesis-island] SessionsDoc seeded  url=${handle.url}`);
   return handle;
@@ -380,7 +389,7 @@ export function seedAdminDoc(repo: Repo): DocHandle<MemeStoreDoc> {
   const handle = repo.create<MemeStoreDoc>(emptyMemeStoreDoc());
   handle.change((doc) => {
     // Self-ref oracle.
-    doc.tiddlers[ADMIN_BAG_ID] = { title: ADMIN_BAG_ID, text: handle.url, fields: { kind: "oracle" }, bag: ADMIN_BAG_ID, authority: "lararium-seed" };
+    doc.tiddlers[ADMIN_BAG_ID] = mutableRecord(ADMIN_BAG_ID, { text: handle.url, kind: "oracle" }, "lararium-seed");
   });
   console.log(`[genesis-island] AdminDoc seeded  url=${handle.url}`);
   return handle;
@@ -404,13 +413,11 @@ export function createSessionEventLog(
 
   // Self-ref oracle tiddler: new doc not yet in composite — direct write is correct here.
   logHandle.change((doc) => {
-    doc.tiddlers[logUri] = {
-      title:     logUri,
-      text:      logHandle.url,
-      fields:    { sessionId, kind: "session-event-log" },
-      bag:       SESSIONS_DOC_URI,
-      authority: "lararium-session",
-    };
+    doc.tiddlers[logUri] = mutableRecord(logUri, {
+      text: logHandle.url,
+      sessionId,
+      kind: "session-event-log",
+    }, "lararium-session");
   });
 
   console.log(`[genesis-island] SessionEventLog created  sessionId=${sessionId}  url=${logHandle.url}`);

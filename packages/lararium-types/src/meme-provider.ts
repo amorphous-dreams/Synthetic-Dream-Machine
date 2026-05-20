@@ -107,6 +107,8 @@ export class MemeProvider {
   constructor(
     /** Returns the current full document state. Called at debounce-fire time, not patch time. */
     private readonly _getDoc: () => Record<string, unknown>,
+    /** Optional bag context for projections that need source-bag awareness. */
+    private readonly _getBag?: () => string | undefined,
   ) {}
 
   // ---------------------------------------------------------------------------
@@ -261,28 +263,10 @@ export class MemeProvider {
 
   private _fire(uri: string, origin: ChangeOrigin): void {
     const doc = this._getDoc();
-    const raw = doc[uri] as {
-      title?:   string;
-      fields?:  Record<string, string>;
-      text?:    string;
-      deleted?: boolean;
-    } | undefined;
-
-    const inferredBag = uri.startsWith("Draft of ")
-      ? "session" as const   // drafts: identity-scoped but not yet in dedicated draft bag
-      : "room"    as const;  // lar: URIs: live room content
-
-    const record: LarTiddlerRecord | null = raw
-      ? Object.freeze({
-          title:   raw.title ?? uri,
-          fields:  Object.freeze({ ...(raw.fields ?? {}) }),
-          ...(raw.text    !== undefined && { text:    raw.text    }),
-          ...(raw.deleted !== undefined && { deleted: raw.deleted }),
-          bag: inferredBag,
-        })
-      : null;
-
-    const change: LarTiddlerChange = { title: uri, record, origin };
+    const raw = doc[uri] as LarTiddlerRecord | undefined;
+    const record: LarTiddlerRecord | null = raw ? Object.freeze(raw) : null;
+    const bag = this._getBag?.();
+    const change: LarTiddlerChange = { title: uri, record, origin, ...(bag !== undefined && { bag }) };
     for (const p of this._projections) {
       try { p.onUriChanged(change); }
       catch (e) { console.error("[MemeProvider] projection error in onUriChanged:", e); }

@@ -23,6 +23,7 @@ import { join, dirname }   from "path";
 import { fileURLToPath }   from "url";
 
 import { TW5Engine }       from "@lararium/tw5";
+import type { TW5TiddlerFields } from "@lararium/tw5";
 import type { LarariumDoc } from "@lararium/mesh";
 import { ENGINE_CORE_ID, GRAMMAR_TAG } from "@lararium/mesh";
 
@@ -126,7 +127,7 @@ async function main(): Promise<void> {
   // 6. Assert required sigils present by lar-name field
   // ------------------------------------------------------------------
   const sigilNames = sigilTitles.map((t: string) => {
-    const fields = vm.$tw.wiki.getTiddler(t)?.fields ?? {};
+    const fields: Readonly<TW5TiddlerFields> = vm.$tw.wiki.getTiddler(t)?.fields ?? { title: t };
     const larName = fields["lar-name"];
     if (larName) return String(larName);
     const last = t.split("/").at(-1) ?? t;

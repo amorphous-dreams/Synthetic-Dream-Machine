@@ -59,13 +59,27 @@ export {
 } from "./ast.js";
 
 export type {
+  ITW5TiddlerInputFields,
+  TW5TiddlerInputFields,
+  TW5TiddlerInputFieldsWithTitle,
+  ITW5TiddlerFields,
+  TW5TiddlerFields,
+} from "./tw5-fields.js";
+
+export type {
   ClosureEntry,
   EdgeRecord,
+  LarTiddlerMeta,
+  LarWriteOptions,
   LarTiddlerRecord,
   ChangeOrigin,
   LarTiddlerChange,
   LarTiddlerStore,
   FilterEngineFn,
+} from "./tiddler-store.js";
+export {
+  toTW5TiddlerInputFields,
+  toLarTiddlerRecord,
 } from "./tiddler-store.js";
 
 export type { MemeProjection, RawPatch } from "./meme-provider.js";

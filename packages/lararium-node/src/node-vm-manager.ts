@@ -43,8 +43,7 @@ import { Worker }     from "worker_threads";
 import type { DocHandle, DocHandleChangePayload } from "@automerge/automerge-repo";
 import type { MemeStoreDoc } from "@lararium/mesh";
 import { TW5Engine, IslandAdaptor } from "@lararium/tw5";
-import type { TW5CoreBootBlob } from "@lararium/tw5";
-import type { TiddlerFields } from "@lararium/tw5";
+import type { TW5CoreBootBlob, TW5TiddlerInputFields } from "@lararium/tw5";
 import {
   isWorkerToMainMsg,
   mkPromote,
@@ -389,7 +388,7 @@ export class NodeVmManager {
    * Routes to the pinned PrimaryWiki engine. Returns null before the pinned
    * wiki boots.
    */
-  parseMeme(uri: string, text: string, extraFields?: Record<string, string>): TiddlerFields[] | null {
+  parseMeme(uri: string, text: string, extraFields?: Record<string, string>): TW5TiddlerInputFields[] | null {
     const engine = this._pinnedEngine();
     if (!engine) return null;
     return engine.deserializeCarrier(uri, text, extraFields);

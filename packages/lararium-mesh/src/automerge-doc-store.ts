@@ -21,19 +21,88 @@ import type { LarDoc, MutableLarRecord } from "./base-doc.js";
  * Local-first Ideal 1 (fast): get/listVisible read from the in-memory doc.
  */
 function _contentEquals(cur: MutableLarRecord, rec: LarTiddlerRecord): boolean {
-  if (cur.text      !== rec.text)      return false;
-  if (cur.deleted   !== rec.deleted)   return false;
-  if (cur.sourceUri !== rec.sourceUri) return false;
-  if (cur.contentHash !== rec.contentHash) return false;
-  if (cur.authority !== rec.authority) return false;
-  if (cur.bag       !== rec.bag)       return false;
-  const cf = cur.fields as Record<string, unknown>;
-  const rf = rec.fields as Record<string, unknown>;
-  const ck = Object.keys(cf);
-  const rk = Object.keys(rf);
-  if (ck.length !== rk.length) return false;
-  for (const k of rk) { if (cf[k] !== rf[k]) return false; }
-  return true;
+  return JSON.stringify(cur) === JSON.stringify(rec);
+}
+
+function _mergeRecord(target: MutableLarRecord, record: LarTiddlerRecord): void {
+  for (const key of Object.keys(target.fields)) {
+    if (!(key in record.fields)) delete target.fields[key];
+  }
+  for (const [key, value] of Object.entries(record.fields)) {
+    if (typeof value === "string" || Array.isArray(value) || value === undefined) {
+      target.fields[key] = value;
+    }
+  }
+
+  const nextMeta = record.meta ?? {};
+  if (!target.meta) target.meta = {};
+  for (const key of Object.keys(target.meta)) {
+    if (!(key in nextMeta)) delete target.meta[key as keyof NonNullable<MutableLarRecord["meta"]>];
+  }
+  for (const [key, value] of Object.entries(nextMeta)) {
+    switch (key) {
+      case "deleted":
+        target.meta.deleted = value === true;
+        break;
+      case "sourceUri":
+        if (typeof value === "string") target.meta.sourceUri = value;
+        else delete target.meta.sourceUri;
+        break;
+      case "contentHash":
+        if (typeof value === "string") target.meta.contentHash = value;
+        else delete target.meta.contentHash;
+        break;
+      case "authority":
+        if (typeof value === "string") target.meta.authority = value;
+        else delete target.meta.authority;
+        break;
+      case "recipe":
+        if (typeof value === "string") target.meta.recipe = value;
+        else delete target.meta.recipe;
+        break;
+    }
+  }
+  if (Object.keys(target.meta).length === 0) delete target.meta;
+}
+
+function _normalizeFields(fields: LarTiddlerRecord["fields"]): MutableLarRecord["fields"] {
+  const { created: rawCreated, modified: rawModified, ...rest } = fields;
+  const created = rawCreated instanceof Date ? rawCreated.toISOString() : rawCreated;
+  const modified = rawModified instanceof Date ? rawModified.toISOString() : rawModified;
+  return {
+    ...rest,
+    ...(created !== undefined ? { created } : {}),
+    ...(modified !== undefined ? { modified } : {}),
+  };
+}
+
+function _cloneRecord(record: LarTiddlerRecord): MutableLarRecord {
+  return {
+    fields: _normalizeFields(record.fields),
+    ...(record.meta !== undefined ? { meta: { ...record.meta } } : {}),
+  };
+}
+
+function _isDeleted(record: MutableLarRecord | LarTiddlerRecord): boolean {
+  return record.meta?.deleted === true;
+}
+
+function _titleOf(record: MutableLarRecord | LarTiddlerRecord): string {
+  return record.fields.title;
+}
+
+function _freezeRecord(raw: MutableLarRecord): LarTiddlerRecord {
+  return Object.freeze({
+    fields: Object.freeze({ ...raw.fields }),
+    ...(raw.meta !== undefined ? { meta: Object.freeze({ ...raw.meta }) } : {}),
+  });
+}
+
+function _tombstoneRecord(title: string): LarTiddlerRecord {
+  return Object.freeze({
+    fields: { title },
+    meta: { deleted: true },
+  });
 }
 
 export class AutomergeDocStore implements LarTiddlerStore {
@@ -45,7 +114,10 @@ export class AutomergeDocStore implements LarTiddlerStore {
     this.handle  = handle;
     this.bagId   = bagId;
     // MemeProvider gets the tiddlers submap — keeps MemeProvider path-agnostic.
-    this.provider = new MemeProvider(() => (handle.doc()?.tiddlers ?? {}) as Record<string, unknown>);
+    this.provider = new MemeProvider(
+      () => (handle.doc()?.tiddlers ?? {}) as Record<string, unknown>,
+      () => this.bagId,
+    );
 
     const remoteOrigin: ChangeOrigin = { kind: "crdt-remote", edgeIsland: "automerge" };
     handle.on("change", ({ patches }) => {
@@ -71,70 +143,48 @@ export class AutomergeDocStore implements LarTiddlerStore {
     const tiddlers = this.handle.doc()?.tiddlers;
     if (!tiddlers) return [];
     return (Object.values(tiddlers) as MutableLarRecord[])
-      .filter((r) => r && !r.deleted && r.title && !r.title.startsWith("$:/temp/"))
-      .map((r) => r.title);
+      .filter((r) => r && !_isDeleted(r) && _titleOf(r) && !_titleOf(r).startsWith("$:/temp/"))
+      .map((r) => _titleOf(r));
   }
 
   async get(title: string): Promise<LarTiddlerRecord | null> {
     const raw = this.handle.doc()?.tiddlers?.[title];
-    return raw ? this._freeze(raw) : null;
+    return raw ? _freezeRecord(raw) : null;
   }
 
   async put(record: LarTiddlerRecord, origin: ChangeOrigin): Promise<void> {
-    const existing = this.handle.doc()?.tiddlers?.[record.title];
+    const title = record.fields.title;
+    const existing = this.handle.doc()?.tiddlers?.[title];
     if (existing && _contentEquals(existing, record)) return;
 
     this.handle.change((doc) => {
-      (doc.tiddlers as Record<string, MutableLarRecord>)[record.title] = {
-        title:  record.title,
-        fields: { ...record.fields },
-        ...(record.text        !== undefined && { text:        record.text }),
-        ...(record.deleted                  && { deleted:     record.deleted }),
-        ...(record.sourceUri   !== undefined && { sourceUri:  record.sourceUri }),
-        ...(record.contentHash !== undefined && { contentHash: record.contentHash }),
-        ...(record.authority   !== undefined && { authority:  record.authority }),
-        ...(record.bag         !== undefined && { bag:        record.bag }),
-      };
+      const tiddlers = doc.tiddlers as Record<string, MutableLarRecord>;
+      const current = tiddlers[title];
+      if (current) {
+        _mergeRecord(current, record);
+        return;
+      }
+      tiddlers[title] = _cloneRecord(record);
     });
-    this.provider.fireImmediate({ title: record.title, record, origin });
+    this.provider.fireImmediate({ title, record, origin, ...(this.bagId !== undefined ? { bag: this.bagId } : {}) });
   }
 
   async tombstone(title: string, origin: ChangeOrigin): Promise<void> {
     this.handle.change((doc) => {
       const tiddlers = doc.tiddlers as Record<string, MutableLarRecord>;
       const existing = tiddlers[title];
-      if (existing) { existing.deleted = true; }
-      else { tiddlers[title] = { title, fields: {}, deleted: true }; }
+      if (existing) {
+        if (!existing.meta) existing.meta = {};
+        existing.meta.deleted = true;
+      } else {
+        tiddlers[title] = { fields: { title }, meta: { deleted: true } };
+      }
     });
-    // Carry a deleted record (rather than null) so listeners can reason about
-    // which bag emitted the tombstone — needed by disk-projector unlink
-    // routing and by IslandAdaptor's "remove only when no live copy" logic.
-    const tombstone: LarTiddlerRecord = Object.freeze({
-      title,
-      fields:  Object.freeze({}),
-      deleted: true,
-      ...(this.bagId !== undefined && { bag: this.bagId }),
-    });
-    this.provider.fireImmediate({ title, record: tombstone, origin });
+    this.provider.fireImmediate({ title, record: _tombstoneRecord(title), origin, ...(this.bagId !== undefined ? { bag: this.bagId } : {}) });
   }
 
   subscribe(fn: (change: LarTiddlerChange) => void): () => void {
     return this.provider.addProjection({ onUriChanged: fn });
   }
 
-  protected _freeze(raw: MutableLarRecord): LarTiddlerRecord {
-    const effectiveBag: string | undefined =
-      (raw.bag as string | undefined) ?? this.bagId ?? undefined;
-    return Object.freeze({
-      title:  raw.title,
-      fields: Object.freeze({ ...raw.fields }),
-      ...(raw.text        !== undefined && { text:        raw.text }),
-      ...(raw.deleted     !== undefined && { deleted:     raw.deleted }),
-      ...(raw.sourceUri   !== undefined && { sourceUri:   raw.sourceUri }),
-      ...(raw.contentHash !== undefined && { contentHash: raw.contentHash }),
-      ...(raw.revision    !== undefined && { revision:    raw.revision }),
-      ...(raw.authority   !== undefined && { authority:   raw.authority }),
-      ...(effectiveBag    !== undefined && { bag: effectiveBag }),
-    }) as LarTiddlerRecord;
-  }
 }

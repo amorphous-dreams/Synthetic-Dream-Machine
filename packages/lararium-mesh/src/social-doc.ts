@@ -333,16 +333,19 @@ export function emptySessionsDoc(): SessionsDoc {
  * Returns null if the tiddler lacks a `did` field.
  */
 export function readIdentityTiddler(raw: MutableLarRecord): IdentityTiddler | null {
-  const did = raw.fields["did"] ?? (raw.title.startsWith("lar:///") ? undefined : raw.title);
-  const didValue = raw.fields["did"] ?? undefined;
+  const fields = raw.fields as Record<string, unknown>;
+  const did = typeof fields["did"] === "string"
+    ? fields["did"]
+    : (raw.fields.title.startsWith("lar:///") ? undefined : raw.fields.title);
+  const didValue = typeof fields["did"] === "string" ? fields["did"] : undefined;
   if (!didValue) return null;
   return {
     did:            didValue,
-    displayName:    raw.fields["displayName"] ?? didValue,
-    createdAt:      raw.fields["createdAt"]   ?? raw.fields["created"]  ?? "",
-    kind:           (raw.fields["kind"] as IdentityTiddler["kind"]) ?? "operator",
-    ...(raw.fields["verifyingKey"]  && { verifyingKey:  raw.fields["verifyingKey"] }),
-    ...(raw.fields["readPolicy"]    && { readPolicy:    raw.fields["readPolicy"] }),
+    displayName:    typeof fields["displayName"] === "string" ? fields["displayName"] : didValue,
+    createdAt:      (fields["createdAt"] as string | undefined) ?? (fields["created"] as string | undefined) ?? "",
+    kind:           (fields["kind"] as IdentityTiddler["kind"] | undefined) ?? "operator",
+    ...(typeof fields["verifyingKey"] === "string" ? { verifyingKey: fields["verifyingKey"] } : {}),
+    ...(typeof fields["readPolicy"] === "string" ? { readPolicy: fields["readPolicy"] } : {}),
   };
 }
 
@@ -351,18 +354,19 @@ export function readIdentityTiddler(raw: MutableLarRecord): IdentityTiddler | nu
  * Returns null if the tiddler lacks an `id` field.
  */
 export function readCircleTiddler(raw: MutableLarRecord): CircleTiddler | null {
-  const id = raw.fields["id"];
+  const fields = raw.fields as Record<string, unknown>;
+  const id = typeof fields["id"] === "string" ? fields["id"] : undefined;
   if (!id) return null;
   return {
     id,
-    displayName:          raw.fields["displayName"]        ?? id,
-    createdAt:            raw.fields["createdAt"]          ?? raw.fields["created"] ?? "",
-    kind:                 (raw.fields["kind"] as CircleTiddler["kind"]) ?? "Circle",
-    memberDids:           raw.fields["memberDids"]         ?? "",
-    ...(raw.fields["addressingScope"]    && { addressingScope:    raw.fields["addressingScope"] }),
-    ...(raw.fields["encryptedShareHint"] && { encryptedShareHint: raw.fields["encryptedShareHint"] }),
-    ...(raw.fields["capabilityPolicy"]   && { capabilityPolicy:   raw.fields["capabilityPolicy"] }),
-    ...(raw.fields["readPolicy"]         && { readPolicy:         raw.fields["readPolicy"] }),
+    displayName:          (fields["displayName"] as string | undefined) ?? id,
+    createdAt:            (fields["createdAt"] as string | undefined) ?? (fields["created"] as string | undefined) ?? "",
+    kind:                 (fields["kind"] as CircleTiddler["kind"] | undefined) ?? "Circle",
+    memberDids:           (fields["memberDids"] as string | undefined) ?? "",
+    ...(typeof fields["addressingScope"] === "string" ? { addressingScope: fields["addressingScope"] } : {}),
+    ...(typeof fields["encryptedShareHint"] === "string" ? { encryptedShareHint: fields["encryptedShareHint"] } : {}),
+    ...(typeof fields["capabilityPolicy"] === "string" ? { capabilityPolicy: fields["capabilityPolicy"] } : {}),
+    ...(typeof fields["readPolicy"] === "string" ? { readPolicy: fields["readPolicy"] } : {}),
   };
 }
 
@@ -371,16 +375,17 @@ export function readCircleTiddler(raw: MutableLarRecord): CircleTiddler | null {
  * Returns null if the tiddler lacks an `id` field.
  */
 export function readSessionTiddler(raw: MutableLarRecord): SessionTiddler | null {
-  const id = raw.fields["id"];
+  const fields = raw.fields as Record<string, unknown>;
+  const id = typeof fields["id"] === "string" ? fields["id"] : undefined;
   if (!id) return null;
   return {
     id,
-    operatorDid:        raw.fields["operatorDid"]   ?? "",
-    agentId:            raw.fields["agentId"]       ?? "",
-    startedAt:          raw.fields["startedAt"]     ?? raw.fields["created"] ?? "",
-    state:              (raw.fields["state"] as SessionTiddler["state"]) ?? "active",
-    ...(raw.fields["capabilityToken"] && { capabilityToken: raw.fields["capabilityToken"] }),
-    ...(raw.fields["readPolicy"]      && { readPolicy:      raw.fields["readPolicy"] }),
+    operatorDid:        (fields["operatorDid"] as string | undefined) ?? "",
+    agentId:            (fields["agentId"] as string | undefined) ?? "",
+    startedAt:          (fields["startedAt"] as string | undefined) ?? (fields["created"] as string | undefined) ?? "",
+    state:              (fields["state"] as SessionTiddler["state"] | undefined) ?? "active",
+    ...(typeof fields["capabilityToken"] === "string" ? { capabilityToken: fields["capabilityToken"] } : {}),
+    ...(typeof fields["readPolicy"] === "string" ? { readPolicy: fields["readPolicy"] } : {}),
   };
 }
 // ---------------------------------------------------------------------------

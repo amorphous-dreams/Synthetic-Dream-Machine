@@ -22,6 +22,7 @@
  */
 
 import type { MemeProjection } from "./meme-provider.js";
+import type { TW5TiddlerInputFieldsWithTitle } from "./tw5-fields.js";
 
 export interface ClosureEntry {
   uri: string; laresRelPath: string | null; kind: string; virtual: boolean;
@@ -37,38 +38,52 @@ export interface EdgeRecord {
 }
 
 // ---------------------------------------------------------------------------
-// LarTiddlerRecord — materialized tiddler in Lararium's store model
+// LarTiddlerRecord — host-envelope entry in a bag doc
 // Schema: lar:///ha.ka.ba/@lares/api/v0.1/lararium/schema/tiddler-record
 // ---------------------------------------------------------------------------
 
-export interface LarTiddlerRecord {
-  /** TW5 title — same as the meme's lar:/// URI for corpus tiddlers. */
-  readonly title:        string;
-  /** All non-text fields as string values. */
-  readonly fields:       Readonly<Record<string, string>>;
-  /** Body wikitext (may be absent for skinny/index records). */
-  readonly text?:        string;
-  /** True when this record carries a tombstone marker. */
+export interface LarTiddlerMeta {
   readonly deleted?:     boolean;
-  /** Originating lar:/// URI — absent for session/draft tiddlers. */
   readonly sourceUri?:   string;
-  /** SHA-256 of carrier text at time of materialization. */
   readonly contentHash?: string;
-  /** Monotonic or content-addressed revision string (CRDT head, receipt SHA, etc.). */
-  readonly revision?:    string;
-  /** Orichalcum authority context that authorized this record. */
   readonly authority?:   string;
-  /**
-   * Bag this record belongs to.
-   *
-   * Well-known priority tiers: "core" < "canon" < "wiki" < "user" < "session"
-   * Corpus islands use their own bag name (e.g. "lares", "elyncia", "ftls", "sdm", "wtf").
-   * Corpus bag names sort below "wiki" in recipe order; the recipe is authoritative.
-   * Open string so user corpora (e.g. a custom dir) can register any slug.
-   */
-  readonly bag?:         string;
-  /** Recipe URI that resolved this record. */
   readonly recipe?:      string;
+}
+
+export interface LarTiddlerRecord {
+  readonly fields: TW5TiddlerInputFieldsWithTitle;
+  readonly meta?:  LarTiddlerMeta;
+}
+
+export interface LarWriteOptions {
+  readonly bag?: string;
+}
+
+// ---------------------------------------------------------------------------
+// Canonical record ↔ TW5 input seam
+// ---------------------------------------------------------------------------
+
+export function toTW5TiddlerInputFields(
+  record: LarTiddlerRecord,
+): TW5TiddlerInputFieldsWithTitle {
+  return record.fields;
+}
+
+export function toLarTiddlerRecord(
+  fields: TW5TiddlerInputFieldsWithTitle,
+  meta?: LarTiddlerMeta,
+): LarTiddlerRecord {
+  const { created: rawCreated, modified: rawModified, ...rest } = fields;
+  const created = rawCreated instanceof Date ? rawCreated.toISOString() : rawCreated;
+  const modified = rawModified instanceof Date ? rawModified.toISOString() : rawModified;
+  return {
+    fields: {
+      ...rest,
+      ...(created !== undefined && { created }),
+      ...(modified !== undefined && { modified }),
+    },
+    ...(meta !== undefined && { meta }),
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -99,7 +114,7 @@ export interface LarTiddlerChange {
   /** null indicates a tombstone (deletion marker). */
   readonly record:    LarTiddlerRecord | null;
   readonly origin:    ChangeOrigin;
-  readonly revision?: string;
+  readonly bag?:      string;
 }
 
 // ---------------------------------------------------------------------------
@@ -127,7 +142,7 @@ export interface LarTiddlerStore {
    * Keyhive-backed proposal/receipt graph outside this store.
    * origin carries the audit trail and echo-loop guard.
    */
-  put(record: LarTiddlerRecord, origin: ChangeOrigin): Promise<void>;
+  put(record: LarTiddlerRecord, origin: ChangeOrigin, options?: LarWriteOptions): Promise<void>;
 
   /**
    * Mark a title deleted in live wiki state.

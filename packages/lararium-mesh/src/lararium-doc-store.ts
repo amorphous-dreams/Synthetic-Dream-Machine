@@ -28,7 +28,7 @@ export class LarariumDocStore<T extends DocWithTiddlers = DocWithTiddlers> imple
       this.listeners.forEach((fn) => {
         for (const raw of Object.values(tiddlers)) {
           const record = this._freeze(raw as MutableLarRecord);
-          if (record) fn({ title: record.title, record, origin });
+          if (record) fn({ title: record.fields.title, record, origin, bag: this.bagId });
         }
       });
     });
@@ -37,8 +37,8 @@ export class LarariumDocStore<T extends DocWithTiddlers = DocWithTiddlers> imple
   async listVisible(): Promise<string[]> {
     const tiddlers = this.handle.doc()?.tiddlers ?? {};
     return Object.values(tiddlers)
-      .filter((r) => r && !(r as MutableLarRecord).deleted)
-      .map((r) => (r as MutableLarRecord).title)
+      .filter((r) => r && !(r as MutableLarRecord).meta?.deleted)
+      .map((r) => (r as MutableLarRecord).fields.title)
       .filter(Boolean);
   }
 
@@ -62,15 +62,8 @@ export class LarariumDocStore<T extends DocWithTiddlers = DocWithTiddlers> imple
 
   private _freeze(raw: MutableLarRecord): LarTiddlerRecord {
     return Object.freeze({
-      title:  raw.title,
       fields: Object.freeze({ ...raw.fields }),
-      bag:    this.bagId,
-      ...(raw.text        !== undefined && { text:        raw.text }),
-      ...(raw.deleted     !== undefined && { deleted:     raw.deleted }),
-      ...(raw.sourceUri   !== undefined && { sourceUri:   raw.sourceUri }),
-      ...(raw.contentHash !== undefined && { contentHash: raw.contentHash }),
-      ...(raw.revision    !== undefined && { revision:    raw.revision }),
-      ...(raw.authority   !== undefined && { authority:   raw.authority }),
+      ...(raw.meta !== undefined ? { meta: Object.freeze({ ...raw.meta }) } : {}),
     }) as LarTiddlerRecord;
   }
 }

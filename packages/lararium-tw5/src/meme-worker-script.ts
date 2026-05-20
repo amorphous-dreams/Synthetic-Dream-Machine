@@ -86,14 +86,10 @@ async function dispatch(msg: WorkerMsg): Promise<void> {
     if (!msg.change) return;
     const change = msg.change;
     const e = engine();
-    if (!change.record || change.record.deleted) {
+    if (!change.record || change.record.meta?.deleted) {
       e.$tw.wiki.deleteTiddler(change.title);
     } else {
-      e.$tw.wiki.addTiddler(new e.$tw.Tiddler({
-        title: change.record.title,
-        ...change.record.fields,
-        ...(change.record.text !== undefined ? { text: change.record.text } : {}),
-      }));
+      e.$tw.wiki.addTiddler(new e.$tw.Tiddler(change.record.fields));
     }
     return; // fire-and-forget
   }

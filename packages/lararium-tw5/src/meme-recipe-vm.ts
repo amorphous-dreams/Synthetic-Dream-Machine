@@ -18,6 +18,8 @@ import { exportMemeText } from "./meme-write.js";
 // ---------------------------------------------------------------------------
 
 export class DirectMemeRecipeVm implements MemeRecipeVm {
+  private readonly bagByTitle = new Map<string, string>();
+
   /**
    * @param vm       - The TW5Engine instance this VM slot wraps.
    * @param bagStack - Optional ordered bag IDs (lowest → highest priority).
@@ -37,15 +39,16 @@ export class DirectMemeRecipeVm implements MemeRecipeVm {
 
   onUriChanged(change: LarTiddlerChange): void {
     // Tombstones always pass through — honour deletions regardless of bag origin.
-    if (!change.record || change.record.deleted) {
+    if (!change.record || change.record.meta?.deleted) {
+      this.bagByTitle.delete(change.title);
       this.vm.$tw.wiki.deleteTiddler(change.title);
       return;
     }
     // If a bagStack was configured, gate additions/updates to those bags only.
     if (this.bagStack && this.bagStack.length > 0) {
-      const bag = change.record.fields?.["bag"] as string | undefined;
-      // Skip if tiddler has a bag field that falls outside the configured stack.
-      // Tiddlers without a bag field pass through (defensive — should not occur post-M20).
+      const bag = change.bag;
+      // Skip if the originating bag falls outside the configured stack.
+      // Changes without bag context pass through defensively.
       if (bag && !this.bagStack.includes(bag)) return;
 
       // Priority-correct conflict resolution (TW5 Bags/Recipes law: highest-priority wins).
@@ -53,7 +56,7 @@ export class DirectMemeRecipeVm implements MemeRecipeVm {
       // the incoming lower-priority update MUST NOT overwrite it.
       // bagStack ordering: index 0 = lowest, length-1 = highest.
       if (bag) {
-        const existingBag = this.vm.$tw.wiki.getTiddler(change.title)?.fields["bag"] as string | undefined;
+        const existingBag = this.bagByTitle.get(change.title);
         if (existingBag && existingBag !== bag) {
           const incomingIdx = this.bagStack.indexOf(bag);
           const existingIdx = this.bagStack.indexOf(existingBag);
@@ -62,11 +65,8 @@ export class DirectMemeRecipeVm implements MemeRecipeVm {
         }
       }
     }
-    this.vm.$tw.wiki.addTiddler(new this.vm.$tw.Tiddler({
-      title: change.record.title,
-      ...change.record.fields,
-      ...(change.record.text !== undefined ? { text: change.record.text } : {}),
-    }));
+    if (change.bag) this.bagByTitle.set(change.title, change.bag);
+    this.vm.$tw.wiki.addTiddler(new this.vm.$tw.Tiddler(change.record.fields));
   }
 
   onSyncComplete(_islandId: string): void {

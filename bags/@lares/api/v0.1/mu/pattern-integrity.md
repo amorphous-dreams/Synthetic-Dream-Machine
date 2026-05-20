@@ -25,12 +25,12 @@ status-date = "2026-05-02"
 # Pattern Integrity
 
 Buckminster Fuller's *Synergetics* supplies five structural principles that map directly
-onto Lararium's architecture. These are not metaphors — they are operational invariants.
+onto Lararium's architecture. These function as operational invariants, not metaphors.
 Violating them produces identifiable failure modes in the codebase.
 
 A **pattern** maintains coherent organizational identity independent of its material
 instances. The wave moves across water; the water molecules do not travel with it.
-The lararium-island is the pattern. A specific peer, session, or filesystem path is the water.
+The lararium-island names the pattern. A specific peer, session, or filesystem path names the water.
 
 <<~/ahu >>
 
@@ -39,7 +39,7 @@ The lararium-island is the pattern. A specific peer, session, or filesystem path
 ## FPI-1 — Tensegrity: Continuous Tension, Discontinuous Compression
 
 Structural stability lives in the **tension network**, not in any single compression member.
-Compression members are isolated islands; tension is the continuous system-spanning structure.
+Compression members remain isolated islands; tension provides the continuous system-spanning structure.
 
 **Tension network:** the `lar:` URI scheme and the three-tree (parseTree → widgetTree →
 renderTree) architecture. These span every peer, every VM, every projection.
@@ -68,7 +68,7 @@ through the URI resolver, not by direct construction.
 
 ## FPI-2 — Pattern Integrity: Wave, Not Water
 
-The pattern is the invariant; the instantiation is transient and replaceable.
+The pattern holds invariant; the instantiation remains transient and replaceable.
 
 **Pattern (invariant):** lar: URI namespace, AST/parseTree definitions, OODA-HA/LADDER_5
 doctrine arrays, Heleuma body-sha256 anchors, CRDT schema.
@@ -78,7 +78,7 @@ session, a specific filesystem layout.
 
 **Violation pattern — material contamination:**
 Behavior that depends on a specific filesystem layout or peer address imports material
-properties into the pattern level. The pattern is now different on every machine.
+properties into the pattern level. The pattern then varies on every machine.
 
 ```typescript
 // ✗ material contamination — pattern depends on machine layout
@@ -88,11 +88,11 @@ export const laresRoot = new URL('../../..', import.meta.url).pathname;
 "lar:///ha.ka.ba/@lares/api/v0.1/lararium/schema/tiddler-record"
 ```
 
-**CID-addressed tiddlers are the ideal:** a content hash is fully independent of where
+**CID-addressed tiddlers function ideally:** a content hash stays fully independent of where
 the content is stored. CIDs make the wave/water separation mechanical.
 
 **MUST:** System behavior MUST NOT depend on physical file layout. The lar: URI resolver
-MUST be the only reference mechanism for content.
+MUST serve as the only reference mechanism for content.
 
 <<~/ahu >>
 
@@ -102,11 +102,11 @@ MUST be the only reference mechanism for content.
 
 "Behavior of whole systems unpredicted by the behavior of their parts taken separately."
 
-Synergetic features are properties that emerge from the system composition — absent from
+Synergetic features emerge from system composition — absent from
 any single node in isolation.
 
 **Synergetic moves (correct):**
-- `VmDebugSurface` on every peer: cross-peer debugging exists because the surface is
+- `VmDebugSurface` on every peer: cross-peer debugging appears because the surface is
   composed at the mesh level, not inside any single node.
 - VmPool per realm: cross-realm sync behaviors (reading one room from a foreign realm
   as another VM in the pool) only exist when VMs compose across realm boundaries.
@@ -117,8 +117,8 @@ any single node in isolation.
 Building features that only work in isolation — a node that can debug itself but cannot
 expose that surface to other nodes — optimizes a part at the cost of whole-system behavior.
 
-**MUST:** Isomorphic surfaces (same API on browser peer, node peer, worker peer) MUST be
-designed before platform-specific variants. The whole-system property comes first.
+**MUST:** Isomorphic surfaces (same API on browser peer, node peer, worker peer) MUST
+arrive before platform-specific variants. The whole-system property comes first.
 
 <<~/ahu >>
 
@@ -140,14 +140,14 @@ Stage 0: logic in external TypeScript only (no meme representation)
 Stage 1: TypeScript file has a Heleuma anchor; meme exists with body-sha256
 Stage 2: meme body contains the compiled CJS; imperative fallback still present
 Stage 3: boot-time gate checks mana/confidence/body-sha256; corpus path preferred
-Stage 4: external TypeScript is the fallback only; meme is authoritative
+Stage 4: external TypeScript serves as fallback only; meme carries authority
 ```
 
 **Current target:** `packages/lararium-tw5/src/filters/*.ts` — each filter operator
 file has a small, stable body that qualifies as a Stage 1 candidate.
 
 **MUST:** Any TypeScript module that can be expressed as a self-contained tiddler MUST
-have a Heleuma anchor and a corresponding meme. The anchor is the ephemeralization
+have a Heleuma anchor and a corresponding meme. The anchor tracks the ephemeralization
 tracking commitment.
 
 <<~/ahu >>
@@ -156,14 +156,14 @@ tracking commitment.
 
 ## FPI-5 — Trim Tab: Minimum Intervention, Maximum Redirect
 
-A trim tab is a tiny rudder on the main rudder. Moving it redirects the ship with
+A trim tab functions as a tiny rudder on the main rudder. Moving it redirects the ship with
 negligible force. Fuller's operating principle: find the control surface that redirects
 the whole system with minimal force.
 
-**The trim tab is the lar: URI resolver.**
+**The lar: URI resolver functions as the trim tab.**
 
 Every design decision that routes content through `lar:` URIs instead of filesystem
-paths or HTTP URLs means the whole content graph is redirectable by changing what
+paths or HTTP URLs makes the whole content graph redirectable by changing what
 `lar:` resolves to:
 
 - Today: local filesystem under `packages/lares-core/`
@@ -171,11 +171,11 @@ paths or HTTP URLs means the whole content graph is redirectable by changing wha
 - Sprint N: Beelay content-addressed store
 - Sprint N+k: IPLD CID-addressed tiddlers
 
-No call sites change. The trim tab (resolver) is turned; the ship follows.
+No call sites change. Turn the trim tab (resolver); the ship follows.
 
 **Violation pattern — pushing on the hull:**
 Any code that bypasses the resolver and reaches content directly (hardcoded URLs,
-`fs.readFileSync` outside the resolver) is pushing on the hull instead of the trim tab.
+`fs.readFileSync` outside the resolver) pushes on the hull instead of the trim tab.
 Maximum force, minimum redirect.
 
 ```typescript
@@ -186,7 +186,7 @@ fs.readFileSync(path.join(laresRoot, 'api/v0.1/lararium/schema/tiddler-record.md
 await resolvelar("lar:///ha.ka.ba/@lares/api/v0.1/lararium/schema/tiddler-record")
 ```
 
-**MUST:** Content access MUST go through the lar: URI resolver. The resolver MUST be
+**MUST:** Content access MUST go through the lar: URI resolver. The resolver MUST serve as
 the single control surface for all content routing decisions.
 
 <<~/ahu >>

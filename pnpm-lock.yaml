@@ -42,6 +42,9 @@ importers:
       '@lararium/mesh':
         specifier: workspace:*
         version: link:../lararium-mesh
+      '@lararium/types':
+        specifier: workspace:*
+        version: link:../lararium-types
 
   packages/lararium-mesh:
     dependencies:

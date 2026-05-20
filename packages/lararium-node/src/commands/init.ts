@@ -101,13 +101,19 @@ export async function runInit(opts: InitOptions = {}): Promise<InitResult> {
     if (t.bag === IDENTITIES_DOC_URI) {
       identitiesHandle.change((doc) => {
         if (!doc.tiddlers[t.title]) {
-          doc.tiddlers[t.title] = { title: t.title, bag: t.bag, authority: t.authority, fields: { ...t.fields } };
+          doc.tiddlers[t.title] = {
+            fields: { title: t.title, ...t.fields },
+            meta: { authority: t.authority },
+          };
         }
       });
     } else {
       circlesHandle.change((doc) => {
         if (!doc.tiddlers[t.title]) {
-          doc.tiddlers[t.title] = { title: t.title, bag: t.bag, authority: t.authority, fields: { ...t.fields } };
+          doc.tiddlers[t.title] = {
+            fields: { title: t.title, ...t.fields },
+            meta: { authority: t.authority },
+          };
         }
       });
     }
@@ -116,10 +122,10 @@ export async function runInit(opts: InitOptions = {}): Promise<InitResult> {
   console.log("[lares init] ceremony complete — operator identity written");
 
   const packedTiddlers: Record<string, Record<string, unknown>> = {
-    [IDENTITIES_DOC_URI]: { title: IDENTITIES_DOC_URI, text: identitiesHandle.url, fields: { kind: "oracle" } },
-    [CIRCLES_DOC_URI]:    { title: CIRCLES_DOC_URI,    text: circlesHandle.url,    fields: { kind: "oracle" } },
-    [SESSIONS_DOC_URI]:   { title: SESSIONS_DOC_URI,   text: sessionsHandle.url,   fields: { kind: "oracle" } },
-    [ADMIN_BAG_ID]:       { title: ADMIN_BAG_ID,       text: adminHandle.url,      fields: { kind: "oracle" } },
+    [IDENTITIES_DOC_URI]: { title: IDENTITIES_DOC_URI, text: identitiesHandle.url, kind: "oracle" },
+    [CIRCLES_DOC_URI]:    { title: CIRCLES_DOC_URI,    text: circlesHandle.url,    kind: "oracle" },
+    [SESSIONS_DOC_URI]:   { title: SESSIONS_DOC_URI,   text: sessionsHandle.url,   kind: "oracle" },
+    [ADMIN_BAG_ID]:       { title: ADMIN_BAG_ID,       text: adminHandle.url,      kind: "oracle" },
   };
 
   const bootstrapPlugin = {

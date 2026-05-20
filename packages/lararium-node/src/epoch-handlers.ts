@@ -30,6 +30,17 @@ import {
 import { recipeUri, parseBagStack } from "@lararium/tw5";
 import type { CommandHandler } from "./command-dispatcher.js";
 
+function mutableRecord(
+  title: string,
+  fields: Record<string, string>,
+  authority: string,
+): MutableLarRecord {
+  return {
+    fields: { title, ...fields },
+    meta: { authority },
+  };
+}
+
 export interface EpochHandlerOptions {
   readonly composite: CompositeStore;
   readonly repo:      Repo;
@@ -60,7 +71,7 @@ export function createEpochBagHandler(opts: EpochHandlerOptions): CommandHandler
     // Find the oracle for the bag — looks for a tiddler whose title equals
     // the bag URL with `text` carrying the Automerge URL.
     const oracleRec = await opts.composite.get(bagUrl);
-    const oldDocUrl = typeof oracleRec?.text === "string" ? oracleRec.text : null;
+    const oldDocUrl = typeof oracleRec?.fields.text === "string" ? oracleRec.fields.text : null;
     if (!oldDocUrl) {
       throw new Error(`bag has no oracle: ${bagUrl}`);
     }
@@ -83,7 +94,7 @@ export function createEpochBagHandler(opts: EpochHandlerOptions): CommandHandler
         // Honor the Cassandra rule: tombstones survive Epochs as first-class
         // state. Carry deleted flag forward unchanged.
         target[title] = { ...rec };
-        if (rec.deleted) tombstoneCount++;
+        if (rec.meta?.deleted) tombstoneCount++;
         else             tiddlerCount++;
       }
     });
@@ -94,15 +105,17 @@ export function createEpochBagHandler(opts: EpochHandlerOptions): CommandHandler
       const tiddlers = doc.tiddlers as Record<string, MutableLarRecord>;
       const existing = tiddlers[bagUrl];
       tiddlers[bagUrl] = {
-        title: bagUrl,
-        text:  newHandle.url,
         fields: {
-          ...((existing?.fields as Record<string, string> | undefined) ?? {}),
-          "epoch-at":      new Date().toISOString(),
-          "epoch-prev":    oldDocUrl,
+          ...(existing?.fields ?? { title: bagUrl }),
+          title: bagUrl,
+          text: newHandle.url,
+          "epoch-at": new Date().toISOString(),
+          "epoch-prev": oldDocUrl,
         },
-        bag:       existing?.bag       ?? "lar:///ha.ka.ba/@catalog",
-        authority: existing?.authority ?? "lares-cli:bag-epoch",
+        meta: {
+          ...(existing?.meta ?? {}),
+          authority: existing?.meta?.authority ?? "lares-cli:bag-epoch",
+        },
       };
     });
 
@@ -180,13 +193,12 @@ export function createRotateRecipeHandler(opts: RotateRecipeOptions): CommandHan
     if (!recipeRec) throw new Error(`recipe not found for "${slug}" — run \`lares wiki init ${slug}\` first`);
 
     const wikiOracle = await opts.composite.get(wikiKey);
-    const oldDocUrl  = typeof wikiOracle?.text === "string" ? wikiOracle.text : null;
+    const oldDocUrl  = typeof wikiOracle?.fields.text === "string" ? wikiOracle.fields.text : null;
     if (!oldDocUrl) throw new Error(`wiki oracle missing for "${slug}"`);
 
     // Compute the previous-canon URI. Walk existing stack to find the next
     // generation number; previous-canon URIs match canon/v\d+.
-    const fields  = (recipeRec.fields ?? {}) as Record<string, string>;
-    const stack   = parseBagStack(fields["bag-stack"]);
+    const stack   = parseBagStack(typeof recipeRec.fields["bag-stack"] === "string" ? recipeRec.fields["bag-stack"] : undefined);
     const canonRe = new RegExp(`^${escapeRegExp(wikiKey)}/canon/v(\\d+)$`);
     let nextGen = 1;
     for (const url of stack) {
@@ -207,28 +219,25 @@ export function createRotateRecipeHandler(opts: RotateRecipeOptions): CommandHan
       const tiddlers = doc.tiddlers as Record<string, MutableLarRecord>;
       const existingWiki = tiddlers[wikiKey];
       tiddlers[wikiKey] = {
-        title: wikiKey,
-        text:  newHandle.url,
         fields: {
-          ...((existingWiki?.fields as Record<string, string> | undefined) ?? {}),
-          "rotated-at":   new Date().toISOString(),
+          ...(existingWiki?.fields ?? { title: wikiKey }),
+          title: wikiKey,
+          text: newHandle.url,
+          "rotated-at": new Date().toISOString(),
           "rotated-prev": oldDocUrl,
           "rotation-gen": String(nextGen),
         },
-        bag:       existingWiki?.bag       ?? "lar:///ha.ka.ba/@catalog",
-        authority: existingWiki?.authority ?? "lares-cli:rotate-recipe",
-      };
-      tiddlers[previousCanonUri] = {
-        title: previousCanonUri,
-        text:  oldDocUrl,
-        fields: {
-          "kind":      "previous-canon",
-          "rotation":  String(nextGen),
-          "frozen-at": new Date().toISOString(),
+        meta: {
+          ...(existingWiki?.meta ?? {}),
+          authority: existingWiki?.meta?.authority ?? "lares-cli:rotate-recipe",
         },
-        bag:       "lar:///ha.ka.ba/@catalog",
-        authority: "lares-cli:rotate-recipe",
       };
+      tiddlers[previousCanonUri] = mutableRecord(previousCanonUri, {
+        text: oldDocUrl,
+        kind: "previous-canon",
+        rotation: String(nextGen),
+        "frozen-at": new Date().toISOString(),
+      }, "lares-cli:rotate-recipe");
     });
 
     // Mutate recipe: insert previous-canon just BELOW the wiki slot.
@@ -239,18 +248,19 @@ export function createRotateRecipeHandler(opts: RotateRecipeOptions): CommandHan
 
     const origin: ChangeOrigin = { kind: "lares-command", requestId: ctx_request_id_safe() };
     const updatedRecipe: LarTiddlerRecord = {
-      title:     recipeRec.title,
-      bag:       recipeRec.bag ?? LARARIUM_DOC_URI,
-      authority: recipeRec.authority ?? "lares-cli:rotate-recipe",
-      ...(recipeRec.text !== undefined && { text: recipeRec.text }),
       fields: {
-        ...fields,
-        "bag-stack":   nextStack.join(" "),
-        "updated-at":  new Date().toISOString(),
+        ...recipeRec.fields,
+        title: recipeRec.fields.title,
+        "bag-stack": nextStack.join(" "),
+        "updated-at": new Date().toISOString(),
         "rotation-gen": String(nextGen),
       },
+      meta: {
+        ...(recipeRec.meta ?? {}),
+        authority: recipeRec.meta?.authority ?? "lares-cli:rotate-recipe",
+      },
     };
-    await opts.composite.put(updatedRecipe, origin);
+    await opts.composite.put(updatedRecipe, origin, { bag: LARARIUM_DOC_URI });
 
     // Layer swap if mounted, residency re-pin.
     let layerSwapped = false;

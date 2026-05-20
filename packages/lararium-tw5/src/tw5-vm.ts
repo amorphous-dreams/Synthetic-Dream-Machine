@@ -13,10 +13,11 @@ import type {
   TW5FakeElement,
   TW5FakeDocument,
   TW5ChangeRecord,
+  TW5TiddlerInputFields,
+  TW5TiddlerFields,
 } from "./types/tiddlywiki.js";
 import { MemeStreamParser } from "@lararium/types";
 import type { IslandAccumulator } from "@lararium/types";
-import type { TiddlerFields } from "./deserializer.js";
 
 // ---------------------------------------------------------------------------
 // CameraRegistration — multi-view projection surface
@@ -438,12 +439,12 @@ export class TW5Engine {
     text:        string,
     extraFields?: Record<string, string | string[]>,
     opts?:       { realmOrigin?: string },
-  ): TiddlerFields[] {
+  ): TW5TiddlerInputFields[] {
     if (!this._tw) throw new Error("TW5Engine: call boot() before deserializeCarrier()");
-    const base: TiddlerFields = { title: uri, ...extraFields };
+    const base: TW5TiddlerInputFields = { title: uri, ...extraFields };
     let tiddlers = (
       this._tw.wiki.deserializeTiddlers("text/x-memetic-wikitext", text, base) ?? []
-    ) as TiddlerFields[];
+    ) as TW5TiddlerInputFields[];
     if (opts?.realmOrigin) {
       const ro = opts.realmOrigin;
       tiddlers = tiddlers.map((t) => ({ ...t, "realm-origin": ro }));
@@ -458,15 +459,15 @@ export class TW5Engine {
   async *streamDeserializeCarrier(
     chunks: AsyncIterable<string>,
     opts?:  { realmOrigin?: string },
-  ): AsyncGenerator<TiddlerFields[]> {
+  ): AsyncGenerator<TW5TiddlerInputFields[]> {
     if (!this._tw) throw new Error("TW5Engine: call boot() before streamDeserializeCarrier()");
     const wiki = this._tw.wiki;
     const ro   = opts?.realmOrigin;
     const parser = new MemeStreamParser();
 
-    const yieldCarrier = (uri: string, fullText: string): TiddlerFields[] => {
-      const base: TiddlerFields = { title: uri, ...(ro ? { "realm-origin": ro } : {}) };
-      const tiddlers = (wiki.deserializeTiddlers("text/x-memetic-wikitext", fullText, base) ?? []) as TiddlerFields[];
+    const yieldCarrier = (uri: string, fullText: string): TW5TiddlerInputFields[] => {
+      const base: TW5TiddlerInputFields = { title: uri, ...(ro ? { "realm-origin": ro } : {}) };
+      const tiddlers = (wiki.deserializeTiddlers("text/x-memetic-wikitext", fullText, base) ?? []) as TW5TiddlerInputFields[];
       return ro ? tiddlers.map((t) => ({ ...t, "realm-origin": ro })) : tiddlers;
     };
 
@@ -659,7 +660,9 @@ export class TW5Engine {
         const moduleText = wiki.getTiddler(
           "lar:///ha.ka.ba/@lararium/tw5/modules/tw5-modules"
         )?.fields?.["text"] ?? "";
-        tw.modules.define(moduleText, "library", "lararium-tw5-modules");
+        if (typeof moduleText === "string") {
+          tw.modules.define(moduleText, "library", "lararium-tw5-modules");
+        }
       } catch { /* no-op */ }
       return;
     }

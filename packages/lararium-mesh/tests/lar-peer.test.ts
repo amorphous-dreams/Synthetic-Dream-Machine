@@ -15,6 +15,8 @@ import {
   PEER_CAPABILITIES_NODE,
   PEER_CAPABILITIES_BROWSER,
   PEER_CAPABILITIES_NONE,
+  type OperatorPeerOpenOptions,
+  type OperatorPeerOpenResult,
   OpenIdentitySlot,
   CompositeStore,
   BAG_IDS,
@@ -164,5 +166,40 @@ describe("LarPeer — addProjection", () => {
     unsub();
 
     expect(changes.some((c) => c.title === "lar:///test")).toBe(true);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Operator-peer contract — shared browser/node factory surface
+// ---------------------------------------------------------------------------
+
+describe("OperatorPeer contract — shared open surface", () => {
+  test("shared options carry host/wiki identity and optional VM factory", () => {
+    const options: OperatorPeerOpenOptions = {
+      hostId: "elyncia",
+      wikiId: "altar-fire",
+      recipeUri: "lar:///ha.ka.ba/@lararium/recipes/default",
+    };
+
+    expect(options.hostId).toBe("elyncia");
+    expect(options.wikiId).toBe("altar-fire");
+    expect(options.recipeUri).toContain("/recipes/default");
+  });
+
+  test("shared result surface exposes peer/repo/store/pool symmetry", () => {
+    const peer = new LarPeer({ peerId: "p", store: makeStore() });
+    const result: OperatorPeerOpenResult<LarPeer<"pool">, "pool", { kind: "repo" }, CompositeStore> = {
+      peer,
+      pool: "pool",
+      repo: { kind: "repo" },
+      store: peer.store as CompositeStore,
+      catalogHandleUrl: "automerge:catalog",
+      larariumDocUrl: "automerge:island",
+      phase: "live",
+    };
+
+    expect(result.peer).toBe(peer);
+    expect(result.store).toBe(peer.store);
+    expect(result.phase).toBe("live");
   });
 });

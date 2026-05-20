@@ -29,17 +29,16 @@ module-type: library
  * No external imports — self-contained, runs in browser + Node TW5 VM.
  */
 
-/** Minimal TW5 wiki surface this module requires. */
-export interface PromoteWiki {
-  getTiddler(title: string): { fields: Record<string, string | string[]> } | undefined | null;
-  filterTiddlers(filter: string): string[];
-  addTiddler(tiddler: unknown): void;
-  deleteTiddler(title: string): void;
-}
+import type { TW5Tiddler, TW5TiddlerConstructor, TW5TiddlerFields, TW5Wiki } from "../types/tiddlywiki.d.ts";
+
+/** Minimal promote contract over the real TW5 wiki surface. */
+export type PromoteWiki = Pick<TW5Wiki, "getTiddler" | "filterTiddlers" | "addTiddler" | "deleteTiddler">;
+type PromoteTiddler = Pick<TW5Tiddler, "fields">;
+type PromoteFields = Readonly<TW5TiddlerFields>;
 
 export interface PromotePlannedRecord {
   title: string;
-  fields: Record<string, string | string[]>;
+  fields: PromoteFields;
 }
 
 export interface PromoteResult {
@@ -89,7 +88,7 @@ function expandPromotionUris(wiki: PromoteWiki, uris: readonly string[]): {
   return { ordered, children };
 }
 
-function resolveOracle(lookupWiki: PromoteWiki, targetBagId: string): { fields: Record<string, string | string[]> } | undefined | null {
+function resolveOracle(lookupWiki: PromoteWiki, targetBagId: string): PromoteTiddler | undefined {
   if (targetBagId === LARES_BAG_ID) {
     return { fields: { title: targetBagId, "path-filter": "lar-bag-path[lares]", "mirror-root": "bags/@lares" } };
   }
@@ -160,7 +159,7 @@ function resolveRelPath(wiki: PromoteWiki, uri: string, targetBagId: string, pat
  * @param targetBagId — e.g. "lar:///ha.ka.ba/@lares"
  */
 export function promoteUris(
-  tw:          { Tiddler: new (...args: unknown[]) => unknown },
+  tw:          { Tiddler: TW5TiddlerConstructor },
   wiki:        PromoteWiki,
   uris:        string[],
   targetBagId: string,

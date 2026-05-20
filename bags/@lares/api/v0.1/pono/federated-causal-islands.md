@@ -45,10 +45,10 @@ Named causal island tiers 0–3; authority-first sync order; edge-island identit
 
 ## Ontological Basis (Fuller-Zelenka)
 
-Events in Universe are not simultaneously apprehended by any observer.
+No observer apprehends events in Universe simultaneously.
 A node never holds the full state of a distributed system "at once."
 It holds a snapshot of what it has synchronized so far.
-This is not a limitation. It IS the topology.
+This names no limitation. This names topology.
 
 Simultaneously apprehended: your local Automerge doc snapshot, right now.
 Non-simultaneously apprehended: everything else —
@@ -57,21 +57,21 @@ Non-simultaneously apprehended: everything else —
 - tiddlers not yet hydrated in the local TW5 instance
 - kumu/active-meme instances whose trigger surface is their own event horizon
 
-Any boundary across which causality cannot be guaranteed simultaneously IS a causal island boundary.
+Any boundary across which causality cannot be guaranteed simultaneously counts as a causal island boundary.
 The tier map below names these boundaries from innermost to outermost.
 
 ## Law
 
-A node-to-node pranala connection IS a causal island.
+A node-to-node pranala connection counts as a causal island.
 
-It is not a transport. It is not a socket. It is a named, capability-gated causal
+It does not function as transport. It does not function as socket. It names a capability-gated causal
 boundary between two Lares nodes carrying its own identity, durable offset, stream
 log, reconciliation state, visibility predicate, revocation epoch, and receipt history.
 
-A room WebSocket connection is NOT an edge island. A room connection is session-scoped
-and ephemeral. An edge island is persistent, named, and authority-bearing.
+A room WebSocket connection does NOT count as an edge island. A room connection remains session-scoped
+and ephemeral. An edge island remains persistent, named, and authority-bearing.
 
-An Automerge Realm (a distinct Automerge doc) is ALWAYS non-simultaneously apprehended,
+An Automerge Realm (a distinct Automerge doc) remains ALWAYS non-simultaneously apprehended,
 regardless of where it was first encountered on the network.
 
 <<~/ahu >>
@@ -105,10 +105,10 @@ hasAbility(subject, "sync", edge.id)
 !violatesKapu(meme, subject)
 ```
 
-`rating` is the structural quality gate: has the carrier achieved lawful meme shape?
+`rating` names the structural quality gate: has the carrier achieved lawful meme shape?
 Noise and Data are node-local only. They do not federate regardless of any other condition.
 
-Stage band (GR/OS/US/CS/DS) is a UX rendering annotation — it governs visual presentation
+Stage band (GR/OS/US/CS/DS) functions as a UX rendering annotation — it governs visual presentation
 in the masks/voices layer, not federation eligibility. Room recipes MAY filter by stage
 as an operator-configured predicate, but stage is not a hardcoded gate condition here.
 
@@ -151,14 +151,14 @@ stable sediment | current boot receipt | live delta tail
 ```
 
 - **Join:** receive boot receipt first — the shape of the visible world at join time.
-  This is not a full CRDT sync. It is a snapshot of what this peer is currently
+  This does not provide a full CRDT sync. It provides a snapshot of what this peer currently
   authorized to see.
 - **After join:** request missing deltas from the last known offset.
 - **Revocation:** epoch rolls. The revoked principal receives no future live tail.
   Past sediment encrypted at prior epoch keys remains readable by those who held
   those keys. Revocation is forward-only.
 - **Receipt:** emitted after join, after each epoch change, after each
-  canon-promotion ceremony. Receipts are hash-stable and usable as prompt cache keys.
+  canon-promotion ceremony. Receipts stay hash-stable and usable as prompt cache keys.
 - **Re-seeding:** boot receipt re-issued; sediment layers may compact;
   live tail resets from new offset zero.
 
@@ -178,7 +178,7 @@ read  — decrypt and render semantic content
 A relay MUST NOT be granted `read` unless it is also a trusted peer with
 an Orichalcum capability carrying the `read` ability.
 
-A shrine relay carries offerings it cannot understand. This is correct posture.
+A shrine relay carries offerings it cannot understand. This names correct posture.
 The altar does not require the relay to comprehend the offering to carry it.
 
 <<~/ahu >>
@@ -190,22 +190,22 @@ The altar does not require the relay to comprehend the offering to carry it.
 ```
 Tier 0 — active programming memes (kumu instances, UEFN device analogues, kahea invocations)
   MAY become causal islands. Each has its own trigger surface, params, and event horizon.
-  A kumu instance with declared papalohe ports is a natural island candidate.
-  Events cross only via papalohe edges. kukali is the yield point inside the island.
+  A kumu instance with declared papalohe ports forms a natural island candidate.
+  Events cross only via papalohe edges. kukali names the yield point inside the island.
   Instance identity provisioned on first papalohe edge declaration, not on kahea invocation.
   Promotion to island is optional; local causality errors correctable inside the node.
 
 Tier 1 — memes inside rooms (within your local Automerge doc window)
   Simultaneously apprehended within your local doc snapshot.
-  A room is a filter recipe over the meme graph — not a data partition.
-  Rating (≥Meme) gates which room recipes include a meme. Stage band is a rendering annotation only.
+  A room functions as a filter recipe over the meme graph — not a data partition.
+  Rating (≥Meme) gates which room recipes include a meme. Stage band functions as rendering annotation only.
   Peer state of the SAME doc is NOT simultaneously apprehended — you see their last sync.
 
 Tier 2 — Automerge Realms (distinct Automerge docs)
   A separate Automerge doc reached from this one — no matter where first encountered.
   ALWAYS non-simultaneously apprehended by topology, not by policy.
   "automerge-realm" and "peer-sync-state" MAY be named causal islands for protocol tracking.
-  NOTE: the session event-bus bag IS a Tier 2 boundary — it is a distinct Automerge doc
+  NOTE: the session event-bus bag counts as a Tier 2 boundary — it names a distinct Automerge doc
   shared across multiple wiki Worker Threads. The Session Wiki RE watching the event-bus bag
   forms a Tier 2 crossing. This functions as the canonical cross-wiki coordination pattern (Scale-2 in
   the HUD meme: the-lararium-hud.md).

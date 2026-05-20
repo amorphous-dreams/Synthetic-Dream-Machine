@@ -39,7 +39,19 @@ import { getGrammar, resetGrammar } from "./grammar-cache.js";
 export type { GrammarRules } from "@lararium/types";
 export { getGrammar, resetGrammar };
 
-export type TiddlerFields = Record<string, string | string[]>;
+export interface TiddlerFields {
+  title?: string;
+  text?: string;
+  tags?: string | string[];
+  type?: string;
+  created?: string;
+  modified?: string;
+  creator?: string;
+  modifier?: string;
+  revision?: string;
+  list?: string | string[];
+  [field: string]: string | string[] | undefined;
+}
 
 // ---------------------------------------------------------------------------
 // memeticWikitextDeserializer — the TW5 module export
