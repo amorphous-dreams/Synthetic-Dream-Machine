@@ -100,6 +100,11 @@ function bulkApply(tw5: TW5Engine, batch: TW5TiddlerInputFields[]): void {
   if (typeof wiki.transact === "function") wiki.transact(apply); else apply();
 }
 
+function toTW5ProjectionFields(record: LarTiddlerRecord, bag?: string): TW5TiddlerInputFields {
+  const fields = toTW5TiddlerInputFields(record);
+  return bag ? { ...fields, bag } : fields;
+}
+
 // ---------------------------------------------------------------------------
 // IslandAdaptor
 // ---------------------------------------------------------------------------
@@ -188,7 +193,7 @@ export class IslandAdaptor implements MemeProjection {
       await Promise.all(Array.from(uris).map(async (uri) => {
         const rec = await this.store.get(uri);
         if (!rec || rec.meta?.deleted) { toRemove.push(uri); return; }
-        toAdd.push(toTW5TiddlerInputFields(rec));
+        toAdd.push(toTW5ProjectionFields(rec));
       }));
 
       const wiki = this.tw5.$tw.wiki;
@@ -220,7 +225,7 @@ export class IslandAdaptor implements MemeProjection {
         toRemove.push(change.title);
         for (const t of this._childUrisOf(change.title)) toRemove.push(t);
       } else {
-        toAdd.push(toTW5TiddlerInputFields(change.record));
+        toAdd.push(toTW5ProjectionFields(change.record, change.bag));
       }
     }
 
@@ -273,7 +278,7 @@ export class IslandAdaptor implements MemeProjection {
             wiki.deleteTiddler(change.title);
             for (const t of this._childUrisOf(change.title)) wiki.deleteTiddler(t);
           } else {
-            wiki.addTiddler(new Tiddler(toTW5TiddlerInputFields(change.record)));
+            wiki.addTiddler(new Tiddler(toTW5ProjectionFields(change.record, change.bag)));
           }
         }
       };
@@ -349,6 +354,15 @@ export class IslandAdaptor implements MemeProjection {
     this._debounce.set(title, setTimeout(() => this._flushPending(title), IslandAdaptor.DEBOUNCE_MS));
   }
 
+  saveFields(fields: Record<string, string>): Promise<void> {
+    return new Promise((resolve, reject) => {
+      this.saveTiddler({ fields }, (err) => {
+        if (err) reject(err);
+        else resolve();
+      });
+    });
+  }
+
   private _flushPending(title: string): void {
     this._debounce.delete(title);
     const p = this._pending.get(title);
@@ -376,6 +390,15 @@ export class IslandAdaptor implements MemeProjection {
         callback(null);
       })
       .catch(callback);
+  }
+
+  deleteTitle(title: string): Promise<void> {
+    return new Promise((resolve, reject) => {
+      this.deleteTiddler(title, (err) => {
+        if (err) reject(err);
+        else resolve();
+      });
+    });
   }
 
   // ---------------------------------------------------------------------------
@@ -409,7 +432,7 @@ export class IslandAdaptor implements MemeProjection {
           this._removeFromTw5(change.title);
         }
       } else {
-        this.tw5.$tw.wiki.addTiddler(new this.tw5.$tw.Tiddler(toTW5TiddlerInputFields(change.record)));
+        this.tw5.$tw.wiki.addTiddler(new this.tw5.$tw.Tiddler(toTW5ProjectionFields(change.record, change.bag)));
       }
     } finally {
       this._applying.delete(applyKey);
@@ -431,7 +454,7 @@ export class IslandAdaptor implements MemeProjection {
     try {
       const live = await getLive(title);
       if (live) {
-        this.tw5.$tw.wiki.addTiddler(new this.tw5.$tw.Tiddler(toTW5TiddlerInputFields(live)));
+        this.tw5.$tw.wiki.addTiddler(new this.tw5.$tw.Tiddler(toTW5ProjectionFields(live)));
       } else {
         this._removeFromTw5(title);
       }

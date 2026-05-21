@@ -89,7 +89,7 @@ async function dispatch(msg: WorkerMsg): Promise<void> {
     if (!change.record || change.record.meta?.deleted) {
       e.$tw.wiki.deleteTiddler(change.title);
     } else {
-      e.$tw.wiki.addTiddler(new e.$tw.Tiddler(change.record.fields));
+      e.$tw.wiki.addTiddler(new e.$tw.Tiddler(change.record.tiddler));
     }
     return; // fire-and-forget
   }

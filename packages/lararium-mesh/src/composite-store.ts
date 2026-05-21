@@ -29,49 +29,13 @@ import {
   SESSIONS_DOC_URI,
   corpusLarUri,
   wikiLarUri,
-} from "./lararium-doc.js";
+} from "./lar-uris.js";
 import type { RecipeTiddler } from "@lararium/types";
 import { parseBagStack, parsePlugins } from "@lararium/types";
 
 // Re-export so callers get bag IDs and URI helpers from a single import.
 export { corpusLarUri as corpusBagId, wikiLarUri as wikiBagId };
-
-// ---------------------------------------------------------------------------
-// Well-known bag slot IDs — six root docs (two planes) + corpus leaves + wiki
-//
-// Bag ID = lar: URI of the owning Automerge doc. One doc = one bag = one URI.
-//
-// Recipe order (add lowest-priority first → highest-priority last):
-//
-//   CONTENT PLANE (Tiga)
-//   LARARIUM_DOC_URI   ha: engine, grammar, oracle tiddlers
-//   CATALOG_DOC_URI    ka: corpus discovery, wiki oracle tiddlers
-//   LARES_DOC_URI      ba: persona/doctrine system memes
-//
-//   SOCIAL PLANE
-//   IDENTITIES_DOC_URI principals: operators, agents, services
-//   CIRCLES_DOC_URI     collective authority + durable membership
-//   SESSIONS_DOC_URI   live operator-agent session docs
-//
-//   LEAVES (added dynamically)
-//   corpusLarUri(slug) lar:///ha.ka.ba/@catalog/@{slug}  corpus child-docs
-//   wikiLarUri(slug)   lar:///ha.ka.ba/@lararium/wikis/{slug}  wiki leaf
-//   "draft"            high-churn drafts — stable lar: URI pending (M22)
-//   "projection"       derived tiddlers / search indexes — in-memory only
-//
-// Meme: lar:///ha.ka.ba/@lararium/mesh/v0.1/automerge-tiga
-// ---------------------------------------------------------------------------
-
-export const BAG_IDS = {
-  lararium:   LARARIUM_DOC_URI,
-  catalog:    CATALOG_DOC_URI,
-  lares:      LARES_DOC_URI,
-  identities: IDENTITIES_DOC_URI,
-  groups:     CIRCLES_DOC_URI,
-  sessions:   SESSIONS_DOC_URI,
-  draft:      "draft",
-  projection: "projection",
-} as const;
+// BAG_IDS lives in lar-uris.ts; re-exported from the package index via `export * from "./lar-uris.js"`.
 
 export interface CompositeLayer {
   readonly bagId:        string;
@@ -337,15 +301,15 @@ export class CompositeStore implements LarTiddlerStore {
   async getRecipe(uri: string): Promise<RecipeTiddler | null> {
     const rec = await this.get(uri);
     if (!rec || rec.meta?.deleted) return null;
-    const fields = rec.fields as Record<string, unknown>;
+    const fields = rec.tiddler as Record<string, unknown>;
     const bagStack = parseBagStack(fields["bagStack"]);
     if (bagStack.length === 0) return null;
     const writableBag = fields["writableBag"] as string | undefined;
     const plugins = parsePlugins(fields["plugins"]);
     const bags = await this.listBagsHolding(uri);
     return {
-      title:     rec.fields.title,
-      label:     (fields["label"] as string) ?? rec.fields.title,
+      title:     rec.tiddler.title,
+      label:     (fields["label"] as string) ?? rec.tiddler.title,
       bagStack,
       ...(writableBag !== undefined ? { writableBag } : {}),
       ...(plugins.length > 0 ? { plugins } : {}),
@@ -399,4 +363,23 @@ export class CompositeStore implements LarTiddlerStore {
     }
     return layer.store.put(record, origin, { bag: recipe.writableBag });
   }
+}
+
+/**
+ * Returns a LarTiddlerStore view over `composite` that fans reads across all
+ * layers (standard composite priority) but pins writes to `bagId`.
+ *
+ * Use this when a ceremony (promote, wiki-sync) needs to issue `put`/`tombstone`
+ * to one specific bag while still resolving cross-bag reads through the full
+ * composite (e.g. cross-bag tombstone resolution, getLive checks).
+ */
+export function bagScopedStore(composite: CompositeStore, bagId: string): LarTiddlerStore {
+  return {
+    listVisible:   () => composite.listVisible(),
+    get:           (title) => composite.getLive(title),
+    put:           (record, origin, options) => composite.put(record, origin, { bag: options?.bag ?? bagId }),
+    tombstone:     (title, origin) => composite.tombstoneInBag(bagId, title, origin),
+    subscribe:     (fn) => composite.subscribe(fn),
+    addProjection: (p) => composite.addProjection(p),
+  };
 }

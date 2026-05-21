@@ -43,14 +43,14 @@ export class MemoryTiddlerStore implements LarTiddlerStore {
   }
 
   async put(record: LarTiddlerRecord, origin: ChangeOrigin): Promise<void> {
-    this._records.set(record.fields.title, record);
-    this._emit({ title: record.fields.title, record, origin, ...(this.bagId !== undefined ? { bag: this.bagId } : {}) });
+    this._records.set(record.tiddler.title, record);
+    this._emit({ title: record.tiddler.title, record, origin, ...(this.bagId !== undefined ? { bag: this.bagId } : {}) });
   }
 
   async tombstone(title: string, origin: ChangeOrigin): Promise<void> {
     const existing = this._records.get(title);
     const dead: LarTiddlerRecord = {
-      ...(existing ?? { fields: { title } }),
+      ...(existing ?? { tiddler: { title } }),
       meta: { ...(existing?.meta ?? {}), deleted: true },
     };
     this._records.set(title, dead);
@@ -71,7 +71,7 @@ export class MemoryTiddlerStore implements LarTiddlerStore {
 
   /** Test helper — direct record injection without triggering subscribers. */
   _seed(record: LarTiddlerRecord): void {
-    this._records.set(record.fields.title, record);
+    this._records.set(record.tiddler.title, record);
   }
 
   /** Test helper — full record map snapshot. */

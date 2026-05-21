@@ -164,7 +164,7 @@ export class CommandDispatcher {
         errorMessage: `no handler registered for "${command.command}"`,
         origin,
       });
-      await this.opts.admin.tombstone(record.fields.title, origin);
+      await this.opts.admin.tombstone(record.tiddler.title, origin);
       return;
     }
 
@@ -194,7 +194,7 @@ export class CommandDispatcher {
     }
     // In both done and error paths, the signal-tiddler has served its job.
     // The audit event under log/<id> is the durable record.
-    await this.opts.admin.tombstone(record.fields.title, origin);
+    await this.opts.admin.tombstone(record.tiddler.title, origin);
   }
 
   /** Write a durable audit-event tiddler under @admin/log/<requestId>. The
@@ -226,8 +226,8 @@ export class CommandDispatcher {
     origin:  ChangeOrigin,
   ): Promise<void> {
     const merged: LarTiddlerRecord = {
-      fields: {
-        ...record.fields,
+      tiddler: {
+        ...record.tiddler,
         ...patch,
       },
       meta: {

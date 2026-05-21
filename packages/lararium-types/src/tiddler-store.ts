@@ -51,7 +51,7 @@ export interface LarTiddlerMeta {
 }
 
 export interface LarTiddlerRecord {
-  readonly fields: TW5TiddlerInputFieldsWithTitle;
+  readonly tiddler: TW5TiddlerInputFieldsWithTitle;
   readonly meta?:  LarTiddlerMeta;
 }
 
@@ -66,7 +66,7 @@ export interface LarWriteOptions {
 export function toTW5TiddlerInputFields(
   record: LarTiddlerRecord,
 ): TW5TiddlerInputFieldsWithTitle {
-  return record.fields;
+  return record.tiddler;
 }
 
 export function toLarTiddlerRecord(
@@ -77,7 +77,7 @@ export function toLarTiddlerRecord(
   const created = rawCreated instanceof Date ? rawCreated.toISOString() : rawCreated;
   const modified = rawModified instanceof Date ? rawModified.toISOString() : rawModified;
   return {
-    fields: {
+    tiddler: {
       ...rest,
       ...(created !== undefined && { created }),
       ...(modified !== undefined && { modified }),

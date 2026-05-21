@@ -27,7 +27,7 @@ import {
   IDENTITIES_DOC_URI, CIRCLES_DOC_URI, SESSIONS_DOC_URI, ADMIN_BAG_ID,
 } from "@lararium/mesh";
 import { buildCeremonyTiddlers } from "@lararium/tw5";
-import { repoRoot } from "@lares/core";
+import { repoRoot } from "@lararium/mesh";
 import {
   seedIdentitiesDoc, seedCirclesDoc, seedSessionsDoc, seedAdminDoc,
 } from "../genesis-island.js";
@@ -55,8 +55,7 @@ export interface InitResult {
  * The defaults track the historical `lararium:init` shape so `lares init`
  * lands the same artifacts in the same places (under packages/lararium-node/).
  *
- * Anchor on @lares/core's repoRoot rather than `import.meta.url` — the latter
- * shifts whenever tsc adds/removes layout layers (e.g. dist/src/commands/...).
+ * Anchors on repoRoot (walks up to pnpm-workspace.yaml) rather than import.meta.url.
  */
 function defaultDirs(): { storageDir: string; genesisDir: string } {
   const root    = process.env["LAR_ROOT"] ?? join(repoRoot, "packages", "lararium-node");
@@ -102,7 +101,7 @@ export async function runInit(opts: InitOptions = {}): Promise<InitResult> {
       identitiesHandle.change((doc) => {
         if (!doc.tiddlers[t.title]) {
           doc.tiddlers[t.title] = {
-            fields: { title: t.title, ...t.fields },
+            tiddler: { title: t.title, ...t.fields },
             meta: { authority: t.authority },
           };
         }
@@ -111,7 +110,7 @@ export async function runInit(opts: InitOptions = {}): Promise<InitResult> {
       circlesHandle.change((doc) => {
         if (!doc.tiddlers[t.title]) {
           doc.tiddlers[t.title] = {
-            fields: { title: t.title, ...t.fields },
+            tiddler: { title: t.title, ...t.fields },
             meta: { authority: t.authority },
           };
         }

@@ -2,7 +2,7 @@
  * tw5-vm.ts — TW5Engine: clean isomorphic TW5 VM for web3 Lararium.
  *
  * JKD principle: absorb what is useful (boot, render, tiddler mutation,
- * deserialize, wiki events), discard the carrier/closure/store/syncer web2 cruft.
+ * VM-owned ingest, wiki events), discard the carrier/closure/store/syncer web2 cruft.
  *
  * TW5Engine owns the raw VM lifecycle. Store sync: IslandAdaptor.
  * Reaction routing: reaction-router.ts TW5 startup module. No globals.
@@ -16,7 +16,6 @@ import type {
   TW5TiddlerInputFields,
   TW5TiddlerFields,
 } from "./types/tiddlywiki.js";
-import { MemeStreamParser } from "@lararium/types";
 import type { IslandAccumulator } from "@lararium/types";
 
 // ---------------------------------------------------------------------------
@@ -429,18 +428,13 @@ export class TW5Engine {
     }
   }
 
-  /**
-   * Deserialize memetic-wikitext into an array of tiddler field objects.
-   * Delegates to $tw.wiki.deserializeTiddlers with the registered
-   * text/x-memetic-wikitext tiddlerdeserializer.
-   */
-  deserializeCarrier(
+  private runCarrierDeserializer(
     uri:         string,
     text:        string,
     extraFields?: Record<string, string | string[]>,
     opts?:       { realmOrigin?: string },
   ): TW5TiddlerInputFields[] {
-    if (!this._tw) throw new Error("TW5Engine: call boot() before deserializeCarrier()");
+    if (!this._tw) throw new Error("TW5Engine: call boot() before ingestCarrier()");
     const base: TW5TiddlerInputFields = { title: uri, ...extraFields };
     let tiddlers = (
       this._tw.wiki.deserializeTiddlers("text/x-memetic-wikitext", text, base) ?? []
@@ -453,32 +447,33 @@ export class TW5Engine {
   }
 
   /**
-   * Streaming variant — ingests a meme stream arriving as async string chunks.
-   * Yields tiddler-field batches as each carrier closes.
+   * Ingest a memetic-wikitext carrier through the target TW5 wiki's normal
+   * deserializer path, then materialize the resulting tiddlers in that same VM.
+   *
+   * This is the disk→VM half of the decompose from disk carrier codeflow: callers hand the meme
+   * text to the target wiki and let registered TW5 deserializers do the
+   * decomposition. Host code may route the returned tiddlers onward to an
+   * IslandAdaptor, but it does not decompose the carrier itself.
    */
-  async *streamDeserializeCarrier(
-    chunks: AsyncIterable<string>,
-    opts?:  { realmOrigin?: string },
-  ): AsyncGenerator<TW5TiddlerInputFields[]> {
-    if (!this._tw) throw new Error("TW5Engine: call boot() before streamDeserializeCarrier()");
+  ingestCarrier(
+    uri:         string,
+    text:        string,
+    extraFields?: Record<string, string | string[]>,
+    opts?:       { realmOrigin?: string },
+  ): TW5TiddlerFields[] {
+    if (!this._tw) throw new Error("TW5Engine: call boot() before ingestCarrier()");
+    const fields = this.runCarrierDeserializer(uri, text, extraFields, opts)
+      .filter((t) => typeof t.title === "string" && !t.title.startsWith("$:/"));
     const wiki = this._tw.wiki;
-    const ro   = opts?.realmOrigin;
-    const parser = new MemeStreamParser();
-
-    const yieldCarrier = (uri: string, fullText: string): TW5TiddlerInputFields[] => {
-      const base: TW5TiddlerInputFields = { title: uri, ...(ro ? { "realm-origin": ro } : {}) };
-      const tiddlers = (wiki.deserializeTiddlers("text/x-memetic-wikitext", fullText, base) ?? []) as TW5TiddlerInputFields[];
-      return ro ? tiddlers.map((t) => ({ ...t, "realm-origin": ro })) : tiddlers;
+    const Tiddler = this._tw.Tiddler;
+    const apply = () => {
+      for (const f of fields) wiki.addTiddler(new Tiddler(f as Record<string, unknown>));
     };
+    if (typeof wiki.transact === "function") wiki.transact(apply); else apply();
 
-    for await (const chunk of chunks) {
-      for (const ev of parser.push(chunk)) {
-        if (ev.kind === "carrier-close") yield yieldCarrier(ev.uri, ev.fullText);
-      }
-    }
-    for (const ev of parser.flush()) {
-      if (ev.kind === "carrier-close") yield yieldCarrier(ev.uri, ev.fullText);
-    }
+    return fields
+      .map((f) => wiki.getTiddler(String(f.title))?.fields)
+      .filter((f): f is TW5TiddlerFields => f !== undefined);
   }
 
   /**

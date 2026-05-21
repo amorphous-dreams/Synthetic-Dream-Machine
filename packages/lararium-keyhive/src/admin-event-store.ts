@@ -25,7 +25,7 @@
 import {
   ADMIN_BAG_ID, type CompositeStore,
 } from "@lararium/mesh";
-import type { ChangeOrigin, LarTiddlerRecord } from "@lararium/types";
+import { type ChangeOrigin, type LarTiddlerRecord, toLarTiddlerRecord } from "@lararium/types";
 import type { EventStore, EventRecord } from "./event-store.js";
 
 const CAP_EVENT_TAG_BASE = "$:/tags/CapEvent";
@@ -81,25 +81,24 @@ export class AdminEventStore implements EventStore {
     const title   = capEventTitle(hash);
     // Skip de-dup: composite.get is cheap; avoid re-writing identical events.
     const existing = await this.opts.admin.get(title);
-    if (existing && !existing.deleted) return;
+    if (existing && existing.meta?.deleted !== true) return;
 
     const subTag = subTagFor(rec.variant);
     const tags   = subTag ? `${CAP_EVENT_TAG_BASE} ${subTag}` : CAP_EVENT_TAG_BASE;
 
-    const record: LarTiddlerRecord = {
-      title,
-      bag:       ADMIN_BAG_ID,
-      authority: "lares-keyhive",
-      text:      bytesToBase64(rec.bytes),
-      fields: {
+    const record: LarTiddlerRecord = toLarTiddlerRecord(
+      {
+        title,
+        text: bytesToBase64(rec.bytes),
         tags,
         variant:    rec.variant,
         hash,
         "bytes-len": String(rec.bytes.length),
       },
-    };
+      { authority: "lares-keyhive" },
+    );
     const origin: ChangeOrigin = { kind: "lares-command", requestId: `cap-event-${hash.slice(0, 8)}` };
-    await this.opts.admin.put(record, origin);
+    await this.opts.admin.put(record, origin, { bag: ADMIN_BAG_ID });
   }
 
   async list(): Promise<readonly EventRecord[]> {
@@ -108,11 +107,11 @@ export class AdminEventStore implements EventStore {
     for (const title of titles) {
       if (!title.startsWith(`${ADMIN_BAG_ID}/cap/`)) continue;
       const rec = await this.opts.admin.get(title);
-      if (!rec || rec.deleted) continue;
-      const fields = rec.fields as Record<string, string>;
+      if (!rec || rec.meta?.deleted) continue;
+      const fields = rec.tiddler as Record<string, string>;
       const variant = fields["variant"];
       const hash    = fields["hash"];
-      const text    = rec.text;
+      const text    = rec.tiddler.text;
       if (!variant || !hash || !text) continue;
       try {
         out.push({ hash, variant, bytes: base64ToBytes(text) });

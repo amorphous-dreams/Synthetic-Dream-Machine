@@ -2,7 +2,7 @@
  * genesis-island — complete genesis-first boot surface for @lararium/node.
  *
  * Exports:
- *   loadGenesisIsland        — import genesis/island.bin into a repo; return DocHandle<LarariumDoc>
+ *   loadGenesisIsland        — import genesis/island.bin into a repo; return DocHandle<LarDoc>
  *   reconcileIslandFromGenesis — merge genesis into a live doc when CID diverges
  *   reconcileWellKnownTiddlers — write runtime oracle tiddlers (Tiga edges) into the island handle
  *   seedLaresDoc             — create the ba satellite doc on first boot
@@ -27,27 +27,17 @@ import { join, dirname }             from "path";
 import { fileURLToPath }             from "url";
 import * as Automerge                from "@automerge/automerge";
 import type { Repo, DocHandle }      from "@automerge/automerge-repo";
-import type { LarariumDoc, MemeStoreDoc, IdentitiesDoc, CirclesDoc, SessionsDoc, SessionEventLog, MutableLarRecord } from "@lararium/mesh";
+import type { LarDoc, SessionEventLog } from "@lararium/mesh";
 import {
   ENGINE_CORE_ID, LARARIUM_DOC_URI,
   CATALOG_DOC_URI, LARES_DOC_URI,
   IDENTITIES_DOC_URI, CIRCLES_DOC_URI, SESSIONS_DOC_URI,
   ADMIN_BAG_ID,
-  emptyMemeStoreDoc, emptyIdentitiesDoc, emptyCirclesDoc, emptySessionsDoc,
+  emptyLarDoc, emptyIdentitiesDoc, emptyCirclesDoc, emptySessionsDoc,
+  mutableLarRecord,
   sessionEventLogUri,
   cidV1Sha256FromHex,
 } from "@lararium/mesh";
-
-function mutableRecord(
-  title: string,
-  fields: Record<string, string>,
-  authority: string,
-): MutableLarRecord {
-  return {
-    fields: { title, ...fields },
-    meta: { authority },
-  };
-}
 
 // ---------------------------------------------------------------------------
 // Genesis bytes source
@@ -136,19 +126,19 @@ export function GENESIS_CID(genesisDir?: string): string | undefined {
  * Load the genesis artifact into a repo and return a live DocHandle.
  *
  * @param repo - An already-constructed Repo (with storage + network adapters).
- * @returns    - A DocHandle<LarariumDoc> in ready state containing all engine
+ * @returns    - A DocHandle<LarDoc> in ready state containing all engine
  *               blobs and base tiddlers from the genesis build.
  *
  * The returned handle's url is content-addressed: the same genesis bytes
  * always produce the same DocUrl via automerge-repo's import path.
  */
-export async function loadGenesisIsland(repo: Repo, genesisDir?: string): Promise<DocHandle<LarariumDoc>> {
+export async function loadGenesisIsland(repo: Repo, genesisDir?: string): Promise<DocHandle<LarDoc>> {
   const bytes = readGenesisBin(genesisDir);
 
   // Smoke-verify bytes before importing: Automerge.load() checks format.
   // This surfaces corruption early with a clear error rather than a silent bad state.
   try {
-    const preview = Automerge.load<LarariumDoc>(bytes);
+    const preview = Automerge.load<LarDoc>(bytes);
     if (!preview.blobs?.[ENGINE_CORE_ID]) {
       throw new Error(
         `[genesis-island] genesis artifact missing TW5 core blob (${ENGINE_CORE_ID}).\n` +
@@ -160,7 +150,7 @@ export async function loadGenesisIsland(repo: Repo, genesisDir?: string): Promis
     throw new Error(`[genesis-island] genesis/island.bin failed Automerge.load() validation: ${err}`);
   }
 
-  const handle = repo.import<LarariumDoc>(bytes);
+  const handle = repo.import<LarDoc>(bytes);
   await handle.whenReady();
 
   const doc = handle.doc();
@@ -186,7 +176,7 @@ export async function loadGenesisIsland(repo: Repo, genesisDir?: string): Promis
 // ---------------------------------------------------------------------------
 
 /**
- * Reconcile a live LarariumDoc against the current genesis artifact.
+ * Reconcile a live LarDoc against the current genesis artifact.
  *
  * Reads the genesis CID stored in the live doc's well-known tiddler
  * (lar:///ha.ka.ba/@lararium/system/genesis-cid, field: cid).
@@ -196,12 +186,12 @@ export async function loadGenesisIsland(repo: Repo, genesisDir?: string): Promis
  *
  * Called from openNodeLarPeer during peer boot.
  *
- * @param handle        - The live LarariumDoc handle (from FS storage or peer sync).
+ * @param handle        - The live LarDoc handle (from FS storage or peer sync).
  * @param genesisHandle - A handle loaded via loadGenesisIsland().
  */
 export async function reconcileIslandFromGenesis(
-  handle:        DocHandle<LarariumDoc>,
-  genesisHandle: DocHandle<LarariumDoc>,
+  handle:        DocHandle<LarDoc>,
+  genesisHandle: DocHandle<LarDoc>,
   genesisDir?: string,
 ): Promise<void> {
   const expectedCid = GENESIS_CID(genesisDir);
@@ -212,7 +202,7 @@ export async function reconcileIslandFromGenesis(
 
   // Read stored genesis CID from the live doc.
   const GENESIS_CID_TIDDLER = `${LARARIUM_DOC_URI}/genesis-cid`;
-  const liveCid = handle.doc()?.tiddlers?.[GENESIS_CID_TIDDLER]?.fields["cid"] as string | undefined;
+  const liveCid = handle.doc()?.tiddlers?.[GENESIS_CID_TIDDLER]?.tiddler["cid"] as string | undefined;
 
   if (liveCid === expectedCid) {
     console.log("[genesis-island] reconcile: live doc current — no merge needed");
@@ -236,7 +226,7 @@ export async function reconcileIslandFromGenesis(
 
   // Write the new genesis CID into the live doc so subsequent boots skip reconcile.
   handle.change((doc) => {
-    doc.tiddlers[GENESIS_CID_TIDDLER] = mutableRecord(GENESIS_CID_TIDDLER, {
+    doc.tiddlers[GENESIS_CID_TIDDLER] = mutableLarRecord(GENESIS_CID_TIDDLER, {
       cid: expectedCid,
     }, "genesis");
   });
@@ -263,7 +253,7 @@ export async function reconcileIslandFromGenesis(
  *   lararium ha → ba sessions    : SESSIONS_DOC_URI   → sessionsUrl
  */
 export function reconcileWellKnownTiddlers(
-  handle:         DocHandle<LarariumDoc>,
+  handle:         DocHandle<LarDoc>,
   catalogUrl:     string,
   laresUrl?:      string,
   identitiesUrl?: string,
@@ -273,23 +263,23 @@ export function reconcileWellKnownTiddlers(
 ): void {
   const doc      = handle.doc();
   const tiddlers = doc?.tiddlers ?? {};
-  const selfOk = tiddlers[LARARIUM_DOC_URI]?.fields.text === handle.url;
-  const catOk  = tiddlers[CATALOG_DOC_URI]?.fields.text  === catalogUrl;
-  const baOk   = laresUrl ? tiddlers[LARES_DOC_URI]?.fields.text === laresUrl : true;
-  const idOk   = identitiesUrl  ? tiddlers[IDENTITIES_DOC_URI]?.fields.text  === identitiesUrl  : true;
-  const grOk   = groupsUrl      ? tiddlers[CIRCLES_DOC_URI]?.fields.text      === groupsUrl      : true;
-  const seOk   = sessionsUrl    ? tiddlers[SESSIONS_DOC_URI]?.fields.text    === sessionsUrl    : true;
-  const adOk   = adminUrl       ? tiddlers[ADMIN_BAG_ID]?.fields.text         === adminUrl       : true;
+  const selfOk = tiddlers[LARARIUM_DOC_URI]?.tiddler.text === handle.url;
+  const catOk  = tiddlers[CATALOG_DOC_URI]?.tiddler.text  === catalogUrl;
+  const baOk   = laresUrl ? tiddlers[LARES_DOC_URI]?.tiddler.text === laresUrl : true;
+  const idOk   = identitiesUrl  ? tiddlers[IDENTITIES_DOC_URI]?.tiddler.text  === identitiesUrl  : true;
+  const grOk   = groupsUrl      ? tiddlers[CIRCLES_DOC_URI]?.tiddler.text      === groupsUrl      : true;
+  const seOk   = sessionsUrl    ? tiddlers[SESSIONS_DOC_URI]?.tiddler.text    === sessionsUrl    : true;
+  const adOk   = adminUrl       ? tiddlers[ADMIN_BAG_ID]?.tiddler.text         === adminUrl       : true;
   if (selfOk && catOk && baOk && idOk && grOk && seOk && adOk) return;
 
   handle.change((d) => {
-    if (!selfOk) d.tiddlers[LARARIUM_DOC_URI] = mutableRecord(LARARIUM_DOC_URI, { text: handle.url, kind: "oracle" }, "lararium-seed");
-    if (!catOk)  d.tiddlers[CATALOG_DOC_URI]  = mutableRecord(CATALOG_DOC_URI, { text: catalogUrl, kind: "oracle" }, "lararium-seed");
-    if (!baOk  && laresUrl)      d.tiddlers[LARES_DOC_URI]      = mutableRecord(LARES_DOC_URI, { text: laresUrl, kind: "oracle" }, "lararium-seed");
-    if (!idOk  && identitiesUrl) d.tiddlers[IDENTITIES_DOC_URI] = mutableRecord(IDENTITIES_DOC_URI, { text: identitiesUrl }, "lararium-seed");
-    if (!grOk  && groupsUrl)     d.tiddlers[CIRCLES_DOC_URI]    = mutableRecord(CIRCLES_DOC_URI, { text: groupsUrl }, "lararium-seed");
-    if (!seOk  && sessionsUrl)   d.tiddlers[SESSIONS_DOC_URI]   = mutableRecord(SESSIONS_DOC_URI, { text: sessionsUrl }, "lararium-seed");
-    if (!adOk  && adminUrl)      d.tiddlers[ADMIN_BAG_ID]       = mutableRecord(ADMIN_BAG_ID, { text: adminUrl }, "lararium-seed");
+    if (!selfOk) d.tiddlers[LARARIUM_DOC_URI] = mutableLarRecord(LARARIUM_DOC_URI, { text: handle.url, kind: "oracle" }, "lararium-seed");
+    if (!catOk)  d.tiddlers[CATALOG_DOC_URI]  = mutableLarRecord(CATALOG_DOC_URI, { text: catalogUrl, kind: "oracle" }, "lararium-seed");
+    if (!baOk  && laresUrl)      d.tiddlers[LARES_DOC_URI]      = mutableLarRecord(LARES_DOC_URI, { text: laresUrl, kind: "oracle" }, "lararium-seed");
+    if (!idOk  && identitiesUrl) d.tiddlers[IDENTITIES_DOC_URI] = mutableLarRecord(IDENTITIES_DOC_URI, { text: identitiesUrl }, "lararium-seed");
+    if (!grOk  && groupsUrl)     d.tiddlers[CIRCLES_DOC_URI]    = mutableLarRecord(CIRCLES_DOC_URI, { text: groupsUrl }, "lararium-seed");
+    if (!seOk  && sessionsUrl)   d.tiddlers[SESSIONS_DOC_URI]   = mutableLarRecord(SESSIONS_DOC_URI, { text: sessionsUrl }, "lararium-seed");
+    if (!adOk  && adminUrl)      d.tiddlers[ADMIN_BAG_ID]       = mutableLarRecord(ADMIN_BAG_ID, { text: adminUrl }, "lararium-seed");
   });
 
   const flags = [
@@ -309,20 +299,20 @@ export function reconcileWellKnownTiddlers(
 // ---------------------------------------------------------------------------
 
 /** Seed the LaresDoc (ba vertex). Writes self-ref tiddler; ha→ba oracle via reconcileWellKnownTiddlers. */
-export function seedLaresDoc(repo: Repo): DocHandle<MemeStoreDoc> {
-  const handle = repo.create<MemeStoreDoc>(emptyMemeStoreDoc());
+export function seedLaresDoc(repo: Repo): DocHandle<LarDoc> {
+  const handle = repo.create<LarDoc>(emptyLarDoc());
   handle.change((doc) => {
-    doc.tiddlers[LARES_DOC_URI] = mutableRecord(LARES_DOC_URI, { text: handle.url }, "lararium-seed");
+    doc.tiddlers[LARES_DOC_URI] = mutableLarRecord(LARES_DOC_URI, { text: handle.url }, "lararium-seed");
   });
   console.log(`[genesis-island] LaresDoc seeded  url=${handle.url}`);
   return handle;
 }
 
-/** Seed the IdentitiesDoc. Writes self-ref tiddler; ha oracle via reconcileWellKnownTiddlers. */
-export function seedIdentitiesDoc(repo: Repo): DocHandle<IdentitiesDoc> {
-  const handle = repo.create<IdentitiesDoc>(emptyIdentitiesDoc());
+/** Seed the identities bag. Writes self-ref tiddler; ha oracle via reconcileWellKnownTiddlers. */
+export function seedIdentitiesDoc(repo: Repo): DocHandle<LarDoc> {
+  const handle = repo.create<LarDoc>(emptyIdentitiesDoc());
   handle.change((doc) => {
-    doc.tiddlers[IDENTITIES_DOC_URI] = mutableRecord(IDENTITIES_DOC_URI, { text: handle.url }, "lararium-seed");
+    doc.tiddlers[IDENTITIES_DOC_URI] = mutableLarRecord(IDENTITIES_DOC_URI, { text: handle.url }, "lararium-seed");
   });
   console.log(`[genesis-island] IdentitiesDoc seeded  url=${handle.url}`);
   return handle;
@@ -338,14 +328,14 @@ const SYSTEM_CIRCLES: Array<{ id: string; displayName: string }> = [
   { id: "muted",         displayName: "Muted" },
 ];
 
-/** Seed the CirclesDoc. Writes self-ref tiddler + 5 system circles; ha oracle via reconcileWellKnownTiddlers. */
-export function seedCirclesDoc(repo: Repo): DocHandle<CirclesDoc> {
-  const handle = repo.create<CirclesDoc>(emptyCirclesDoc());
+/** Seed the circles bag. Writes self-ref tiddler + 5 system circles; ha oracle via reconcileWellKnownTiddlers. */
+export function seedCirclesDoc(repo: Repo): DocHandle<LarDoc> {
+  const handle = repo.create<LarDoc>(emptyCirclesDoc());
   handle.change((doc) => {
-    doc.tiddlers[CIRCLES_DOC_URI] = mutableRecord(CIRCLES_DOC_URI, { text: handle.url }, "lararium-seed");
+    doc.tiddlers[CIRCLES_DOC_URI] = mutableLarRecord(CIRCLES_DOC_URI, { text: handle.url }, "lararium-seed");
     for (const { id, displayName } of SYSTEM_CIRCLES) {
       const uri = `${CIRCLES_DOC_URI}/${id}`;
-      doc.tiddlers[uri] = mutableRecord(uri, {
+      doc.tiddlers[uri] = mutableLarRecord(uri, {
         text: "",
         id,
         displayName,
@@ -359,11 +349,11 @@ export function seedCirclesDoc(repo: Repo): DocHandle<CirclesDoc> {
   return handle;
 }
 
-/** Seed the SessionsDoc. Writes self-ref tiddler; ha oracle via reconcileWellKnownTiddlers. */
-export function seedSessionsDoc(repo: Repo): DocHandle<SessionsDoc> {
-  const handle = repo.create<SessionsDoc>(emptySessionsDoc());
+/** Seed the sessions bag. Writes self-ref tiddler; ha oracle via reconcileWellKnownTiddlers. */
+export function seedSessionsDoc(repo: Repo): DocHandle<LarDoc> {
+  const handle = repo.create<LarDoc>(emptySessionsDoc());
   handle.change((doc) => {
-    doc.tiddlers[SESSIONS_DOC_URI] = mutableRecord(SESSIONS_DOC_URI, { text: handle.url }, "lararium-seed");
+    doc.tiddlers[SESSIONS_DOC_URI] = mutableLarRecord(SESSIONS_DOC_URI, { text: handle.url }, "lararium-seed");
   });
   console.log(`[genesis-island] SessionsDoc seeded  url=${handle.url}`);
   return handle;
@@ -382,14 +372,14 @@ export function seedSessionsDoc(repo: Repo): DocHandle<SessionsDoc> {
  * mirror-root) on the canonical bag oracle in the @lararium island doc —
  * written by reconcileWellKnownTiddlers.
  *
- * Reuses the generic MemeStoreDoc shape — semantic distinction lives in URI
+ * Reuses the generic LarDoc shape — semantic distinction lives in URI
  * and bag identity, not in document type.
  */
-export function seedAdminDoc(repo: Repo): DocHandle<MemeStoreDoc> {
-  const handle = repo.create<MemeStoreDoc>(emptyMemeStoreDoc());
+export function seedAdminDoc(repo: Repo): DocHandle<LarDoc> {
+  const handle = repo.create<LarDoc>(emptyLarDoc());
   handle.change((doc) => {
     // Self-ref oracle.
-    doc.tiddlers[ADMIN_BAG_ID] = mutableRecord(ADMIN_BAG_ID, { text: handle.url, kind: "oracle" }, "lararium-seed");
+    doc.tiddlers[ADMIN_BAG_ID] = mutableLarRecord(ADMIN_BAG_ID, { text: handle.url, kind: "oracle" }, "lararium-seed");
   });
   console.log(`[genesis-island] AdminDoc seeded  url=${handle.url}`);
   return handle;
@@ -413,7 +403,7 @@ export function createSessionEventLog(
 
   // Self-ref oracle tiddler: new doc not yet in composite — direct write is correct here.
   logHandle.change((doc) => {
-    doc.tiddlers[logUri] = mutableRecord(logUri, {
+    doc.tiddlers[logUri] = mutableLarRecord(logUri, {
       text: logHandle.url,
       sessionId,
       kind: "session-event-log",

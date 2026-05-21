@@ -77,7 +77,7 @@ function localOrigin(): ChangeOrigin {
 }
 
 function liveChange(title: string, text: string, islandId = "automerge"): LarTiddlerChange {
-  return { title, record: { title, fields: { bag: TARGET_BAG }, text }, origin: crdtRemote(islandId) };
+  return { title, record: { tiddler: { title, bag: TARGET_BAG, text } }, origin: crdtRemote(islandId) };
 }
 
 function tombstone(title: string, islandId = "automerge"): LarTiddlerChange {
@@ -113,7 +113,7 @@ describe("IslandAdaptor — lifecycle", () => {
     adaptor.start();
 
     // subscribe fallback calls _applyChange() directly — changes reach TW5 without sync gate.
-    await store.put({ title: LAR_URI, fields: { bag: TARGET_BAG }, text: "hello" }, crdtRemote());
+    await store.put({ tiddler: { title: LAR_URI, bag: TARGET_BAG, text: "hello" } }, crdtRemote());
     expect(tw5.addTiddlerCalls.length).toBeGreaterThan(0);
     adaptor.stop();
   });
@@ -127,7 +127,7 @@ describe("IslandAdaptor — lifecycle", () => {
     adaptor.start();
     adaptor.stop();
 
-    await store.put({ title: LAR_URI, fields: { bag: TARGET_BAG }, text: "after-stop" }, crdtRemote());
+    await store.put({ tiddler: { title: LAR_URI, bag: TARGET_BAG, text: "after-stop" } }, crdtRemote());
     expect(tw5.addTiddlerCalls).toHaveLength(0);
   });
 });
@@ -182,7 +182,7 @@ describe("IslandAdaptor — inbound pre-sync buffering", () => {
   test("own tw-local echo in pre-sync buffer is suppressed on flush", () => {
     const ownChange: LarTiddlerChange = {
       title: LAR_URI,
-      record: { title: LAR_URI, fields: { bag: TARGET_BAG }, text: "own" },
+      record: { tiddler: { title: LAR_URI, bag: TARGET_BAG, text: "own" } },
       origin: localOrigin(),
     };
     adaptor.onUriChanged(ownChange);
@@ -213,7 +213,7 @@ describe("IslandAdaptor — inbound post-sync crdt-remote deferred to accumulato
 
     const canonChange: LarTiddlerChange = {
       title:  LAR_URI,
-      record: { title: LAR_URI, fields: { bag: TARGET_BAG }, text: "canon" },
+      record: { tiddler: { title: LAR_URI, bag: TARGET_BAG, text: "canon" } },
       origin: { kind: "canon-hydrate", receipt: "test" },
     };
     adaptor.onUriChanged(canonChange);
@@ -293,7 +293,7 @@ describe("IslandAdaptor — outbound saveTiddler", () => {
   test("lar: URI → store.put() called", async () => {
     const puts: string[] = [];
     const orig = store.put.bind(store);
-    store.put = async (rec, origin) => { puts.push(rec.title); return orig(rec, origin); };
+    store.put = async (rec, origin) => { puts.push(rec.tiddler.title); return orig(rec, origin); };
 
     const done = new Promise<void>((resolve) => {
       adaptor.saveTiddler(
@@ -310,7 +310,7 @@ describe("IslandAdaptor — outbound saveTiddler", () => {
   test("rapid saves to the same URI coalesce — only the last write reaches the store", async () => {
     const texts: string[] = [];
     const orig = store.put.bind(store);
-    store.put = async (rec, o) => { texts.push(rec.text ?? ""); return orig(rec, o); };
+    store.put = async (rec, o) => { texts.push(typeof rec.tiddler.text === "string" ? rec.tiddler.text : ""); return orig(rec, o); };
 
     const callbacks: Array<Promise<void>> = [];
     for (const text of ["v1", "v2", "v3"]) {
@@ -328,7 +328,7 @@ describe("IslandAdaptor — outbound saveTiddler", () => {
   test("explicit bag field routes ceremony write to canonical bag (promote path)", async () => {
     const bags: string[] = [];
     const orig = store.put.bind(store);
-    store.put = async (rec, origin) => { bags.push(rec.bag ?? ""); return orig(rec, origin); };
+    store.put = async (rec, origin, options) => { bags.push(options?.bag ?? ""); return orig(rec, origin, options); };
 
     const done = new Promise<void>((resolve) => {
       adaptor.saveTiddler(
@@ -346,7 +346,7 @@ describe("IslandAdaptor — outbound saveTiddler", () => {
   test("$:/temp/ title → skipped synchronously (no debounce timer)", async () => {
     const puts: string[] = [];
     const orig = store.put.bind(store);
-    store.put = async (rec, o) => { puts.push(rec.title); return orig(rec, o); };
+    store.put = async (rec, o) => { puts.push(rec.tiddler.title); return orig(rec, o); };
 
     await new Promise<void>((r) => {
       adaptor.saveTiddler({ fields: { title: "$:/temp/x" } }, (err) => { if (err) throw err; r(); });
@@ -357,7 +357,7 @@ describe("IslandAdaptor — outbound saveTiddler", () => {
   test("$:/ system title → skipped synchronously", async () => {
     const puts: string[] = [];
     const orig = store.put.bind(store);
-    store.put = async (rec, o) => { puts.push(rec.title); return orig(rec, o); };
+    store.put = async (rec, o) => { puts.push(rec.tiddler.title); return orig(rec, o); };
 
     await new Promise<void>((r) => {
       adaptor.saveTiddler({ fields: { title: "$:/StoryList" } }, (err) => { if (err) throw err; r(); });
@@ -368,7 +368,7 @@ describe("IslandAdaptor — outbound saveTiddler", () => {
   test("plain text title (no lar: prefix) → skipped synchronously", async () => {
     const puts: string[] = [];
     const orig = store.put.bind(store);
-    store.put = async (rec, o) => { puts.push(rec.title); return orig(rec, o); };
+    store.put = async (rec, o) => { puts.push(rec.tiddler.title); return orig(rec, o); };
 
     await new Promise<void>((r) => {
       adaptor.saveTiddler({ fields: { title: "Some Plain Tiddler" } }, (err) => { if (err) throw err; r(); });
@@ -384,7 +384,7 @@ describe("IslandAdaptor — outbound deleteTiddler", () => {
     const adaptor = new IslandAdaptor(tw5 as never, store, INSTANCE_ID, TARGET_BAG);
     adaptor.start();
 
-    await store.put({ title: LAR_URI, fields: { bag: TARGET_BAG }, text: "exist" }, crdtRemote());
+    await store.put({ tiddler: { title: LAR_URI, bag: TARGET_BAG, text: "exist" } }, crdtRemote());
 
     const tombstones: string[] = [];
     const orig = store.tombstone.bind(store);

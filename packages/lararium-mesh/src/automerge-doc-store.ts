@@ -25,12 +25,12 @@ function _contentEquals(cur: MutableLarRecord, rec: LarTiddlerRecord): boolean {
 }
 
 function _mergeRecord(target: MutableLarRecord, record: LarTiddlerRecord): void {
-  for (const key of Object.keys(target.fields)) {
-    if (!(key in record.fields)) delete target.fields[key];
+  for (const key of Object.keys(target.tiddler)) {
+    if (!(key in record.tiddler)) delete target.tiddler[key];
   }
-  for (const [key, value] of Object.entries(record.fields)) {
+  for (const [key, value] of Object.entries(record.tiddler)) {
     if (typeof value === "string" || Array.isArray(value) || value === undefined) {
-      target.fields[key] = value;
+      target.tiddler[key] = value;
     }
   }
 
@@ -65,7 +65,7 @@ function _mergeRecord(target: MutableLarRecord, record: LarTiddlerRecord): void 
   if (Object.keys(target.meta).length === 0) delete target.meta;
 }
 
-function _normalizeFields(fields: LarTiddlerRecord["fields"]): MutableLarRecord["fields"] {
+function _normalizeFields(fields: LarTiddlerRecord["tiddler"]): MutableLarRecord["tiddler"] {
   const { created: rawCreated, modified: rawModified, ...rest } = fields;
   const created = rawCreated instanceof Date ? rawCreated.toISOString() : rawCreated;
   const modified = rawModified instanceof Date ? rawModified.toISOString() : rawModified;
@@ -78,7 +78,7 @@ function _normalizeFields(fields: LarTiddlerRecord["fields"]): MutableLarRecord[
 
 function _cloneRecord(record: LarTiddlerRecord): MutableLarRecord {
   return {
-    fields: _normalizeFields(record.fields),
+    tiddler: _normalizeFields(record.tiddler),
     ...(record.meta !== undefined ? { meta: { ...record.meta } } : {}),
   };
 }
@@ -88,19 +88,19 @@ function _isDeleted(record: MutableLarRecord | LarTiddlerRecord): boolean {
 }
 
 function _titleOf(record: MutableLarRecord | LarTiddlerRecord): string {
-  return record.fields.title;
+  return record.tiddler.title;
 }
 
 function _freezeRecord(raw: MutableLarRecord): LarTiddlerRecord {
   return Object.freeze({
-    fields: Object.freeze({ ...raw.fields }),
+    tiddler: Object.freeze({ ...raw.tiddler }),
     ...(raw.meta !== undefined ? { meta: Object.freeze({ ...raw.meta }) } : {}),
   });
 }
 
 function _tombstoneRecord(title: string): LarTiddlerRecord {
   return Object.freeze({
-    fields: { title },
+    tiddler: { title },
     meta: { deleted: true },
   });
 }
@@ -153,7 +153,7 @@ export class AutomergeDocStore implements LarTiddlerStore {
   }
 
   async put(record: LarTiddlerRecord, origin: ChangeOrigin): Promise<void> {
-    const title = record.fields.title;
+    const title = record.tiddler.title;
     const existing = this.handle.doc()?.tiddlers?.[title];
     if (existing && _contentEquals(existing, record)) return;
 
@@ -177,7 +177,7 @@ export class AutomergeDocStore implements LarTiddlerStore {
         if (!existing.meta) existing.meta = {};
         existing.meta.deleted = true;
       } else {
-        tiddlers[title] = { fields: { title }, meta: { deleted: true } };
+        tiddlers[title] = { tiddler: { title }, meta: { deleted: true } };
       }
     });
     this.provider.fireImmediate({ title, record: _tombstoneRecord(title), origin, ...(this.bagId !== undefined ? { bag: this.bagId } : {}) });

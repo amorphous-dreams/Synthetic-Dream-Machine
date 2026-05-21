@@ -51,7 +51,7 @@ const OUT_DIR    = path.join(ROOT, "dist-plugin");
 const PLUGIN_DIR = path.join(ROOT, "plugins");
 const BAG_ROOT   = path.join(REPO_ROOT, "bags", "@lararium", "tw5");
 
-const PLUGIN_TITLE_LAR = "lar:///plugins/lares/memetic-wikitext";
+const PLUGIN_TITLE_LAR = "lar:///ha.ka.ba/@lararium/plugins/lares/memetic-wikitext";
 const PLUGIN_TITLE_TW5 = "$:/plugins/lares/memetic-wikitext";
 
 const TW5_BIN = path.join(ROOT, "../../node_modules/.pnpm/node_modules/.bin/tiddlywiki");

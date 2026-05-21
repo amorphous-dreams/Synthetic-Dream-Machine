@@ -39,7 +39,7 @@
  *   - Tag carries a lar: URI; the title syncs across peers.
  */
 
-import { ADMIN_BAG_ID } from "./lararium-doc.js";
+import { ADMIN_BAG_ID } from "./lar-uris.js";
 import type { LarTiddlerRecord } from "@lararium/types";
 
 /** Tag every command tiddler carries. Tags are vm-side metadata and do not
@@ -68,7 +68,7 @@ export function buildCommandEventTiddler(opts: {
 }): LarTiddlerRecord {
   const title = `${COMMAND_EVENT_URI_PREFIX}${opts.requestId}`;
   return {
-    fields: {
+    tiddler: {
       title,
       tags:           LARES_COMMAND_EVENT_TAG,
       "request-id":  opts.requestId,
@@ -129,7 +129,7 @@ export function buildCommandTiddler(opts: {
   const requestId = opts.requestId ?? newRequestId();
   const title     = `${COMMAND_URI_PREFIX}${requestId}`;
   return {
-    fields: {
+    tiddler: {
       title,
       tags:           LARES_COMMAND_TAG,
       command:        opts.command,
@@ -147,8 +147,8 @@ export function buildCommandTiddler(opts: {
  *  record does not match the command-tiddler shape — used by the dispatcher
  *  subscriber to filter incoming changes. */
 export function parseCommandTiddler(record: LarTiddlerRecord): CommandTiddler | null {
-  if (!isCommandTitle(record.fields.title)) return null;
-  const fields = record.fields as Record<string, string | string[] | undefined>;
+  if (!isCommandTitle(record.tiddler.title)) return null;
+  const fields = record.tiddler as Record<string, string | string[] | undefined>;
   const tag = fields["tags"];
   const tagsString = Array.isArray(tag) ? tag.join(" ") : (typeof tag === "string" ? tag : "");
   if (!tagsString.includes(LARES_COMMAND_TAG)) return null;
@@ -175,7 +175,7 @@ export function parseCommandTiddler(record: LarTiddlerRecord): CommandTiddler | 
   const errorMessage = typeof fields["error-message"] === "string" ? fields["error-message"] : undefined;
 
   return {
-    requestId, title: record.fields.title, command, args, status,
+    requestId, title: record.tiddler.title, command, args, status,
     requestedBy, requestedAt,
     ...(result       !== undefined && { result }),
     ...(errorMessage !== undefined && { errorMessage }),

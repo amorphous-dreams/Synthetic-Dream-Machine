@@ -80,8 +80,9 @@ function putChange(title: string, bag: string, text = "v1"): LarTiddlerChange {
   const origin: ChangeOrigin = { kind: "canon-hydrate", receipt: bag };
   return {
     title,
-    record: { title, fields: { bag }, text },
+    record: { tiddler: { title, text } },
     origin,
+    bag,
   };
 }
 
@@ -106,7 +107,7 @@ describe("DirectMemeRecipeVm — priority-correct conflict resolution", () => {
     const vm = new DirectMemeRecipeVm(engine, [LOW_BAG, HIGH_BAG]);
     vm.onUriChanged(putChange("foo", HIGH_BAG, "high-version"));
     expect(wiki.has("foo")).toBe(true);
-    expect(wiki.field("foo", "bag")).toBe(HIGH_BAG);
+    expect(wiki.field("foo", "text")).toBe("high-version");
   });
 
   test("lower-priority bag update does NOT overwrite an existing higher-priority version", () => {
@@ -114,11 +115,11 @@ describe("DirectMemeRecipeVm — priority-correct conflict resolution", () => {
     const vm = new DirectMemeRecipeVm(engine, [LOW_BAG, HIGH_BAG]);
     // High-priority version arrives first
     vm.onUriChanged(putChange("foo", HIGH_BAG, "high-version"));
-    expect(wiki.field("foo", "bag")).toBe(HIGH_BAG);
+    expect(wiki.field("foo", "text")).toBe("high-version");
     // Low-priority update arrives later (e.g. async CRDT delta)
     vm.onUriChanged(putChange("foo", LOW_BAG, "low-version"));
     // High-priority version must survive
-    expect(wiki.field("foo", "bag")).toBe(HIGH_BAG);
+    expect(wiki.field("foo", "text")).toBe("high-version");
   });
 
   test("higher-priority bag CAN overwrite an existing lower-priority version", () => {
@@ -126,10 +127,10 @@ describe("DirectMemeRecipeVm — priority-correct conflict resolution", () => {
     const vm = new DirectMemeRecipeVm(engine, [LOW_BAG, HIGH_BAG]);
     // Low-priority lands first
     vm.onUriChanged(putChange("bar", LOW_BAG, "low-first"));
-    expect(wiki.field("bar", "bag")).toBe(LOW_BAG);
+    expect(wiki.field("bar", "text")).toBe("low-first");
     // High-priority arrives — should overwrite
     vm.onUriChanged(putChange("bar", HIGH_BAG, "high-wins"));
-    expect(wiki.field("bar", "bag")).toBe(HIGH_BAG);
+    expect(wiki.field("bar", "text")).toBe("high-wins");
   });
 
   test("tiddler from bag outside the configured stack is rejected", () => {

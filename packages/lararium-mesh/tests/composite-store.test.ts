@@ -15,8 +15,8 @@
  */
 
 import { describe, test, expect, beforeEach } from "vitest";
-import { CompositeStore, BAG_IDS, corpusBagId } from "../src/composite-store.js";
-import { wikiLarUri, LARARIUM_DOC_URI, CATALOG_DOC_URI, LARES_DOC_URI } from "../src/lararium-doc.js";
+import { CompositeStore, corpusBagId } from "../src/composite-store.js";
+import { BAG_IDS, wikiLarUri, LARARIUM_DOC_URI, CATALOG_DOC_URI, LARES_DOC_URI } from "../src/lar-uris.js";
 import { MemoryTiddlerStore } from "../../lararium-tw5/src/memory-store.js";
 import type { LarTiddlerChange, ChangeOrigin } from "../src/tiddler-store.js";
 
@@ -32,7 +32,7 @@ function wikiOrigin():   ChangeOrigin { return { kind: "crdt-remote", edgeIsland
 function draftOrigin():  ChangeOrigin { return { kind: "tw-local", instanceId: "wiki:1" }; }
 
 function record(title: string, text: string, bag?: string) {
-  return { title, fields: bag ? { bag } : {}, text };
+  return { tiddler: { title, ...(bag ? { bag } : {}), text } };
 }
 
 // ---------------------------------------------------------------------------
@@ -105,27 +105,27 @@ describe("CompositeStore — read priority (ha < corpus < wiki)", () => {
   test("get() returns system record when only system has it", async () => {
     await system.put(record("lar:///AGENTS", "canon body"), systemOrigin());
     const rec = await store.get("lar:///AGENTS");
-    expect(rec?.text).toBe("canon body");
+    expect(rec?.tiddler.text).toBe("canon body");
   });
 
   test("wiki layer overrides system for same title", async () => {
     await system.put(record("lar:///AGENTS", "canon"), systemOrigin());
     await wiki.put(record("lar:///AGENTS", "override"), wikiOrigin());
     const rec = await store.get("lar:///AGENTS");
-    expect(rec?.text).toBe("override");
+    expect(rec?.tiddler.text).toBe("override");
   });
 
   test("corpus overrides system but wiki overrides corpus", async () => {
     await system.put(record("lar:///t", "sys"), systemOrigin());
     await corpus.put(record("lar:///t", "corp"), systemOrigin());
     await wiki.put(record("lar:///t", "wiki"), wikiOrigin());
-    expect((await store.get("lar:///t"))?.text).toBe("wiki");
+    expect((await store.get("lar:///t"))?.tiddler.text).toBe("wiki");
 
     // Remove wiki record — corpus should surface on get() (wiki tombstone wins over corpus)
     await wiki.tombstone("lar:///t", wikiOrigin());
     // get() returns the highest-priority record (the tombstone from wiki)
     const afterTombstone = await store.get("lar:///t");
-    expect(afterTombstone?.deleted).toBe(true);
+    expect(afterTombstone?.meta?.deleted).toBe(true);
     // listVisible() deduplicates from high→low; wiki's listVisible() omits the tombstoned title,
     // so corpus's copy surfaces. Composite does not retroactively suppress lower layers.
     const visible = await store.listVisible();
@@ -152,7 +152,7 @@ describe("CompositeStore — write routing", () => {
     const store = new CompositeStore();
     store.addLayer({ bagId: BAG_IDS.lararium, store: new MemoryTiddlerStore(), writable: false });
     await expect(
-      store.put({ title: "lar:///x", fields: {} }, systemOrigin()),
+      store.put({ tiddler: { title: "lar:///x" } }, systemOrigin()),
     ).rejects.toThrow(/no writable layer/);
   });
 
@@ -166,7 +166,7 @@ describe("CompositeStore — write routing", () => {
     await store.put(record("lar:///new", "data"), wikiOrigin());
 
     expect(await system.get("lar:///new")).toBeNull();
-    expect((await wiki.get("lar:///new"))?.text).toBe("data");
+    expect((await wiki.get("lar:///new"))?.tiddler.text).toBe("data");
   });
 
   test("when draft is writable, put() routes to draft (last registered wins)", async () => {
@@ -177,7 +177,7 @@ describe("CompositeStore — write routing", () => {
     store.addLayer({ bagId: BAG_IDS.draft, store: draft, writable: true });
 
     await store.put(record("lar:///edit", "draft"), draftOrigin());
-    expect((await draft.get("lar:///edit"))?.text).toBe("draft");
+    expect((await draft.get("lar:///edit"))?.tiddler.text).toBe("draft");
     expect(await wiki.get("lar:///edit")).toBeNull();
   });
 });
@@ -239,15 +239,14 @@ describe("CompositeStore — getRecipe + buildLayersFromRecipe", () => {
     const ha = new MemoryTiddlerStore();
     await ha.put(
       {
-        title:  RECIPE_URI,
-        fields: {
+        tiddler: {
+          title:    RECIPE_URI,
           bag:      BAG_IDS.lararium,
           label:    "Default",
           bagStack: `${LARARIUM_DOC_URI} ${CATALOG_DOC_URI} ${LARES_DOC_URI}`,
-          authority: "test",
           updatedAt: "2026-05-03T00:00:00Z",
         },
-        text: "",
+        meta: { authority: "test" },
       },
       systemOrigin(),
     );
@@ -284,7 +283,7 @@ describe("CompositeStore — getRecipe + buildLayersFromRecipe", () => {
     const ha = new MemoryTiddlerStore();
     const store = new CompositeStore();
     store.addLayer({ bagId: BAG_IDS.lararium, store: ha, writable: false });
-    await ha.put({ title: RECIPE_URI, fields: { bag: BAG_IDS.lararium, bagStack: "" }, text: "" }, systemOrigin());
+    await ha.put({ tiddler: { title: RECIPE_URI, bag: BAG_IDS.lararium, bagStack: "", text: "" } }, systemOrigin());
     await ha.tombstone(RECIPE_URI, systemOrigin());
 
     expect(await store.getRecipe(RECIPE_URI)).toBeNull();
@@ -313,11 +312,11 @@ describe("CompositeStore — putViaRecipe", () => {
       bag:         BAG_IDS.lararium,
     };
 
-    await store.putViaRecipe(recipe, { title: "test-tiddler", fields: { bag: TEST_WIKI_URI }, text: "hello" }, systemOrigin());
+    await store.putViaRecipe(recipe, { tiddler: { title: "test-tiddler", bag: TEST_WIKI_URI, text: "hello" } }, systemOrigin());
 
     const rec = await wiki.get("test-tiddler");
     expect(rec).not.toBeNull();
-    expect(rec!.text).toBe("hello");
+    expect(rec!.tiddler.text).toBe("hello");
 
     // Should NOT appear in ha
     expect(await ha.get("test-tiddler")).toBeNull();
@@ -337,7 +336,7 @@ describe("CompositeStore — putViaRecipe", () => {
       bag:       BAG_IDS.lararium,
     };
 
-    await store.putViaRecipe(recipe, { title: "t", fields: {}, text: "x" }, systemOrigin());
+    await store.putViaRecipe(recipe, { tiddler: { title: "t", text: "x" } }, systemOrigin());
     expect(await wiki.get("t")).not.toBeNull();
   });
 
@@ -357,7 +356,7 @@ describe("CompositeStore — putViaRecipe", () => {
     };
 
     await expect(
-      store.putViaRecipe(recipe, { title: "t", fields: {}, text: "x" }, systemOrigin()),
+      store.putViaRecipe(recipe, { tiddler: { title: "t", text: "x" } }, systemOrigin()),
     ).rejects.toThrow("writableBag");
   });
 });
@@ -428,7 +427,7 @@ describe("CompositeStore — addProjection fan-out", () => {
     const unsub = store.addProjection({ onUriChanged: (c) => received.push(c) });
 
     // Only writable layer accepts put() — but we can fire directly on layerA via _seed.
-    layerA._seed("lar:///from-a", { title: "lar:///from-a", fields: { bag: BAG_IDS.lararium } });
+    layerA._seed({ tiddler: { title: "lar:///from-a", bag: BAG_IDS.lararium } });
     await store.put(record("lar:///from-b", "b-body"), wikiOrigin());
 
     // layerB fires via store.put(); layerA was seeded (no subscriber fired).
@@ -460,14 +459,14 @@ describe("CompositeStore — addProjection fan-out", () => {
 // ---------------------------------------------------------------------------
 
 describe("CompositeStore — put() bag routing", () => {
-  test("put() with record.bag routes to the matching writable layer", async () => {
+  test("put() with explicit bag option routes to the matching writable layer", async () => {
     const roomMem  = new MemoryTiddlerStore();
     const draftMem = new MemoryTiddlerStore();
     const store    = new CompositeStore();
     store.addLayer({ bagId: TEST_WIKI_URI,  store: roomMem,  writable: true });
     store.addLayer({ bagId: TEST_DRAFT_URI, store: draftMem, writable: true });
 
-    await store.put({ title: "lar:///routed", fields: {}, text: "wiki-body", bag: TEST_WIKI_URI }, wikiOrigin());
+    await store.put({ tiddler: { title: "lar:///routed", text: "wiki-body" } }, wikiOrigin(), { bag: TEST_WIKI_URI });
 
     const inRoom  = await roomMem.get("lar:///routed");
     const inDraft = await draftMem.get("lar:///routed");
@@ -475,7 +474,7 @@ describe("CompositeStore — put() bag routing", () => {
     expect(inDraft).toBeNull();
   });
 
-  test("put() with no record.bag falls back to writableStore (last registered)", async () => {
+  test("put() with no explicit bag option falls back to writableStore (last registered)", async () => {
     const roomMem  = new MemoryTiddlerStore();
     const draftMem = new MemoryTiddlerStore();
     const store    = new CompositeStore();
@@ -489,14 +488,14 @@ describe("CompositeStore — put() bag routing", () => {
     expect(inDraft).not.toBeNull();
   });
 
-  test("put() with record.bag pointing to a non-writable layer falls back to writableStore", async () => {
+  test("put() with explicit bag option pointing to a non-writable layer falls back to writableStore", async () => {
     const readMem  = new MemoryTiddlerStore();
     const writeMem = new MemoryTiddlerStore();
     const store    = new CompositeStore();
     store.addLayer({ bagId: BAG_IDS.lararium, store: readMem,  writable: false });
     store.addLayer({ bagId: TEST_WIKI_URI,    store: writeMem, writable: true });
 
-    await store.put(record("lar:///fallback2", "v", BAG_IDS.lararium), systemOrigin());
+    await store.put(record("lar:///fallback2", "v"), systemOrigin(), { bag: BAG_IDS.lararium });
 
     const inWrite = await writeMem.get("lar:///fallback2");
     expect(inWrite).not.toBeNull();
@@ -521,7 +520,7 @@ describe("CompositeStore — dynamic addProjection fan-out to future layers", ()
     store.addLayer({ bagId: BAG_IDS.lararium, store: late, writable: false });
 
     // Trigger an event from the late layer's store so the subscriber fires.
-    await late.put({ title: "lar:///late-event", fields: {}, text: "late" }, systemOrigin());
+    await late.put({ tiddler: { title: "lar:///late-event", text: "late" } }, systemOrigin());
 
     expect(received.some((c) => c.title === "lar:///late-event")).toBe(true);
     unsub();
@@ -540,8 +539,8 @@ describe("CompositeStore — dynamic addProjection fan-out to future layers", ()
 
     unsub(); // stop before any events
 
-    await mem2.put({ title: "lar:///after-stop", fields: {} }, systemOrigin());
-    await mem1.put({ title: "lar:///also-after",  fields: {} }, wikiOrigin());
+    await mem2.put({ tiddler: { title: "lar:///after-stop" } }, systemOrigin());
+    await mem1.put({ tiddler: { title: "lar:///also-after" } }, wikiOrigin());
 
     expect(received).toHaveLength(0);
   });

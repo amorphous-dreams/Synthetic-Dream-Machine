@@ -24,7 +24,7 @@ import { fileURLToPath }   from "url";
 
 import { TW5Engine }       from "@lararium/tw5";
 import type { TW5TiddlerFields } from "@lararium/tw5";
-import type { LarariumDoc } from "@lararium/mesh";
+import type { LarDoc } from "@lararium/mesh";
 import { ENGINE_CORE_ID, GRAMMAR_TAG } from "@lararium/mesh";
 
 const LARES_TW5_PLUGIN_TITLE = "lar:///plugins/lares/memetic-wikitext";
@@ -49,7 +49,7 @@ async function main(): Promise<void> {
     );
   }
   const genesisBytes = new Uint8Array(readFileSync(GENESIS_BIN));
-  const doc          = Automerge.load<LarariumDoc>(genesisBytes);
+  const doc          = Automerge.load<LarDoc>(genesisBytes);
 
   const blobCount    = Object.keys(doc.blobs ?? {}).length;
   const tiddlerCount = Object.keys(doc.tiddlers ?? {}).length;
@@ -60,12 +60,12 @@ async function main(): Promise<void> {
   // ------------------------------------------------------------------
   const GENESIS_CID_TIDDLER = "lar:///ha.ka.ba/@lararium/genesis-cid";
   const cidTiddler = doc.tiddlers?.[GENESIS_CID_TIDDLER] as
-    { fields?: { sha256?: string } } | undefined;
+    { tiddler?: { sha256?: string } } | undefined;
 
-  if (!cidTiddler?.fields?.sha256) {
+  if (!cidTiddler?.tiddler?.sha256) {
     throw new Error("[quine] genesis-cid tiddler missing — re-run build:genesis.");
   }
-  const storedPreSha = cidTiddler.fields.sha256;
+  const storedPreSha = cidTiddler.tiddler.sha256;
   console.log(`[quine] stored sha256-pre = ${storedPreSha.slice(0, 16)}…`);
 
   if (existsSync(GENESIS_PRE)) {

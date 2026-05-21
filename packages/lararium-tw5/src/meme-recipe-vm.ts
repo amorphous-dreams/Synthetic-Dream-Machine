@@ -66,7 +66,7 @@ export class DirectMemeRecipeVm implements MemeRecipeVm {
       }
     }
     if (change.bag) this.bagByTitle.set(change.title, change.bag);
-    this.vm.$tw.wiki.addTiddler(new this.vm.$tw.Tiddler(change.record.fields));
+    this.vm.$tw.wiki.addTiddler(new this.vm.$tw.Tiddler(change.record.tiddler));
   }
 
   onSyncComplete(_islandId: string): void {

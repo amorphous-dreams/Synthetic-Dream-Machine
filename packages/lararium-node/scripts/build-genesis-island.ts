@@ -29,7 +29,7 @@ import { TW5Engine }             from "@lararium/tw5";
 import { tw5PluginsRoot } from "@lararium/tw5/tw5-memes-root";
 import { TW5_VERSION, TW5_CORE_SCRIPT_FILENAME, TW5_CORE_DIR } from "@lararium/tw5";
 
-import type { LarariumDoc, LarariumBlobEntry } from "@lararium/mesh";
+import type { LarDoc, LarBlobEntry } from "@lararium/mesh";
 import {
   ENGINE_CORE_ID,
   LARARIUM_DOC_URI, CATALOG_DOC_URI, LARES_DOC_URI,
@@ -198,7 +198,7 @@ async function main(): Promise<void> {
   console.log(`[genesis] TW5 core  v${TW5_VERSION}  sha=${coreSha.slice(0, 12)}…`);
 
   // 3. Collect vendored plugin blobs.
-  const vendoredPlugins: LarariumBlobEntry[] = [];
+  const vendoredPlugins: LarBlobEntry[] = [];
   const pluginAttestations = readPluginAttestations();
   if (existsSync(tw5PluginsRoot)) {
     for (const file of readdirSync(tw5PluginsRoot).filter(f => f.endsWith(".json")).sort()) {
@@ -256,7 +256,7 @@ async function main(): Promise<void> {
   // 5. Create Automerge doc with pinned actor.
   //    Automerge.from() passes {} to its internal _change, ignoring the time option.
   //    Use init() + an explicit first change so every change gets time: 0.
-  let doc = Automerge.init<LarariumDoc>({ actor: actorId });
+  let doc = Automerge.init<LarDoc>({ actor: actorId });
   doc = Automerge.change(doc, { time: 0 }, d => {
     const r = d as unknown as Record<string, unknown>;
     r["schemaVersion"] = "0.1";
@@ -266,7 +266,7 @@ async function main(): Promise<void> {
   });
 
   // 6. Write TW5 core blob.
-  const coreEntry: LarariumBlobEntry = {
+  const coreEntry: LarBlobEntry = {
     id:       ENGINE_CORE_ID,
     version:  TW5_VERSION,
     sha256:   coreSha,
@@ -277,13 +277,13 @@ async function main(): Promise<void> {
     source:   "https://tiddlywiki.com",
   };
   doc = Automerge.change(doc, { time: 0 }, d => {
-    (d.blobs as Record<string, LarariumBlobEntry>)[ENGINE_CORE_ID] = coreEntry;
+    (d.blobs as Record<string, LarBlobEntry>)[ENGINE_CORE_ID] = coreEntry;
   });
 
   // 7. Write vendored plugin blobs.
   for (const entry of vendoredPlugins) {
     doc = Automerge.change(doc, { time: 0 }, d => {
-      (d.blobs as Record<string, LarariumBlobEntry>)[entry.id] = entry;
+      (d.blobs as Record<string, LarBlobEntry>)[entry.id] = entry;
     });
   }
 
@@ -367,7 +367,7 @@ async function main(): Promise<void> {
   // 11. Write blob descriptor tiddlers.
   doc = Automerge.change(doc, { time: 0 }, d => {
     const tiddlers = d.tiddlers as Record<string, unknown>;
-    const blobs    = (d.blobs ?? {}) as Record<string, LarariumBlobEntry>;
+    const blobs    = (d.blobs ?? {}) as Record<string, LarBlobEntry>;
     for (const [blobId, entry] of Object.entries(blobs)) {
       const uri               = blobDescriptorUri(blobId);
       const isVendoredPlugin  = blobId.startsWith("$:/plugins/") || blobId.startsWith("lar:///plugins/");
@@ -454,13 +454,13 @@ async function main(): Promise<void> {
   writeFileSync(join(genesisDir, "island.cid"),         finalGenesisCid + "\n",  "utf8");
 
   // 13. Smoke-test: reload and verify core blob + genesis-cid tiddler present.
-  const reloaded = Automerge.load<LarariumDoc>(finalGenesisBytes);
+  const reloaded = Automerge.load<LarDoc>(finalGenesisBytes);
   const blobCount    = Object.keys(reloaded.blobs ?? {}).length;
   const tiddlerCount = Object.keys(reloaded.tiddlers ?? {}).length;
   if (!reloaded.blobs?.[ENGINE_CORE_ID]) {
     throw new Error("[genesis] smoke-test FAILED: TW5 core blob not found after reload");
   }
-  const storedCid = (reloaded.tiddlers?.[GENESIS_CID_TIDDLER] as { fields?: { cid?: string } } | undefined)?.fields?.cid;
+  const storedCid = (reloaded.tiddlers?.[GENESIS_CID_TIDDLER] as { tiddler?: { cid?: string } } | undefined)?.tiddler?.cid;
   if (storedCid !== genesisCid) {
     throw new Error(`[genesis] smoke-test FAILED: genesis-cid tiddler cid mismatch — stored=${storedCid} expected=${genesisCid}`);
   }

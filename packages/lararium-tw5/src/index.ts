@@ -4,9 +4,7 @@
  * Primary exports:
  *   TW5Engine               — clean isomorphic TW5 VM (boot/render/tiddler mutation)
  *   IslandAdaptor           — causal-island↔TW5 wiki bridge; inbound buffer/flush + outbound writes
- *   IslandAccumulator         — live crdt-remote patch queue; drained by startRenderLoop()
  *   MemoryTiddlerStore      — in-memory LarTiddlerStore (tests / fixtures)
- *   VmPool                  — generic isomorphic VM lifecycle manager
  *   DirectMemeRecipeVm      — in-process TW5Engine wrapper; bootMemeRecipeVm boot helper
  *
  * Widget tree ownership:
@@ -20,33 +18,17 @@ export type { TW5CoreBootBlob, CameraRegistration, CameraMount } from "./tw5-vm.
 export type {
   TW5Wiki,
   TW5Tiddler,
-  ITW5TiddlerFields,
   TW5TiddlerFields,
-  ITW5TiddlerInputFields,
-  TW5TiddlerInputFields,
 } from "./types/tiddlywiki.d.ts";
 
 export { IslandAdaptor } from "./island-adaptor.js";
 export { MemoryTiddlerStore } from "./memory-store.js";
 export type { ProjectionStore } from "./memory-store.js";
 export type { MemeRecipeVm } from "@lararium/types";
-export { MemeProvider } from "@lararium/types";
-export type { MemeProjection } from "@lararium/types";
-export type {
-  LarTiddlerStore, LarTiddlerRecord, LarTiddlerChange, ChangeOrigin,
-  ClosureEntry, EdgeRecord,
-} from "@lararium/types";
-export { toTW5TiddlerInputFields, toLarTiddlerRecord } from "@lararium/types";
-export type { PranalaEdge, PranalaEdgeViolation, PranalaViolationSeverity, GrammarRules, SigilRule, FamilyRule } from "@lararium/types";
-export { IslandAccumulator } from "@lararium/types";
-export { MemeStreamParser } from "@lararium/types";
-export type { MemeStreamEvent } from "@lararium/types";
-export { ReactionGraph, extractReactionBindings } from "@lararium/types";
-export type { ReactionBinding } from "@lararium/types";
 
 export { DirectMemeRecipeVm, bootMemeRecipeVm } from "./meme-recipe-vm.js";
 
-export { exportMemeText, buildDirectRecord } from "./meme-write.js";
+export { exportMemeText } from "./meme-write.js";
 export { promoteUris, planPromoteUris } from "./modules/lar-promote.js";
 export type { PromoteWiki, PromoteResult, PromotePlan, PromotePlannedRecord } from "./modules/lar-promote.js";
 
@@ -60,17 +42,9 @@ export { parseTaploFields, patchTomlKey, lintToml } from "./toml-ast.js";
 export type { BagTiddler, RecipeTiddler } from "./recipe.js";
 export { bagDescriptorUri, recipeUri, parseBagStack, parsePlugins } from "./recipe.js";
 
-
-
 export { TW5WorkerProxy } from "./tw5-worker-proxy.js";
 
 export { buildCeremonyTiddlers, didKeyFromVerifyingKey } from "./cold-boot-ceremony.js";
 export type { CeremonyTiddler } from "./cold-boot-ceremony.js";
 export type { WorkerFactory, AnyWorker } from "./tw5-worker-proxy.js";
-
-// ---------------------------------------------------------------------------
-// Active type re-exports
-// ---------------------------------------------------------------------------
-
-export type { TiddlerFields } from "./deserializer.js";
-export type { FilterEngineFn } from "@lararium/types";
+export { tw5FieldsToRecord } from "./tw5-fields-flat.js";

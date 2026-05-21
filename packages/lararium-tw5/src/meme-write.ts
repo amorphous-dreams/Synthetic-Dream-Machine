@@ -22,28 +22,6 @@
  */
 
 import type { TW5Engine } from "./tw5-vm.js";
-import type { LarTiddlerRecord } from "@lararium/types";
-import { toLarTiddlerRecord } from "@lararium/types";
-import type { TiddlerFields } from "./deserializer.js";
-
-// ---------------------------------------------------------------------------
-// buildDirectRecord — sync-adaptor write path
-// ---------------------------------------------------------------------------
-
-/**
- * Build a LarTiddlerRecord for the `direct` save strategy.
- *
- * Accepts both flat-string fields (from TW5 saveTiddler) and string-array
- * fields (from splitBodyTiddler / deserializer TiddlerFields). Array values
- * serialize to space-joined strings — the canonical TW5 tag/list form.
- */
-export function buildDirectRecord(
-  title:     string,
-  fields:    TiddlerFields,
-  _targetBag = "wiki",
-): LarTiddlerRecord {
-  return toLarTiddlerRecord({ ...fields, title });
-}
 
 // ---------------------------------------------------------------------------
 // exportMemeText — disk export via TW5 templates + cascades

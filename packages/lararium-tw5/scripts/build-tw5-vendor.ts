@@ -20,16 +20,14 @@ import { writeFileSync, mkdirSync } from "fs";
 import { join, resolve, relative, dirname } from "path";
 import { fileURLToPath } from "url";
 import { createRequire } from "module";
-import { laresRoot } from "@lares/core";
-
 const __dirname = fileURLToPath(new URL(".", import.meta.url));
 const _require = createRequire(import.meta.url);
 
 const TW5_VERSION = "5.4.0";
 const TW5_SCRIPT_FILENAME = `tiddlywikicore-${TW5_VERSION}.js`;
 
-// laresRoot = .../packages/lares-core — two dirname() calls reach the repo root.
-const MONOREPO_ROOT = dirname(dirname(laresRoot));
+// scripts/ → lararium-tw5/ → packages/ → monorepo root
+const MONOREPO_ROOT = dirname(dirname(dirname(__dirname)));
 const TW5_CORE_DIR  = join(MONOREPO_ROOT, "packages/lararium-tw5/tw5-core");
 const CORE_JS_TW5   = join(TW5_CORE_DIR, TW5_SCRIPT_FILENAME);
 const VERSION_TS_OUT = resolve(__dirname, "../src/generated-tw5-version.ts");

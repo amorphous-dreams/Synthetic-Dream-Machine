@@ -20,8 +20,8 @@
  */
 
 import type { AutomergeUrl, DocHandle, Repo } from "@automerge/automerge-repo";
-import type { MemeStoreDoc } from "@lararium/mesh";
-import { ADMIN_BAG_ID, CompositeStore, AutomergeDocStore, emptyMemeStoreDoc } from "@lararium/mesh";
+import type { LarDoc } from "@lararium/mesh";
+import { ADMIN_BAG_ID, CompositeStore, AutomergeDocStore, emptyLarDoc } from "@lararium/mesh";
 import { TW5Engine, IslandAdaptor } from "@lararium/tw5";
 import type { TW5CoreBootBlob } from "@lararium/tw5";
 import { waitHandleLocal } from "./repo-helpers.js";
@@ -34,7 +34,7 @@ export interface AdminVmOptions {
   /** Tiddlers to preload into the admin VM at boot — e.g. the lararium-lares
    *  corpus blob so bag-mirror config tiddlers can reference lar: URIs. */
   preloadedTiddlers?: Array<Record<string, unknown>>;
-  /** TW5 core bytes from the content-addressed LarariumDoc blob. */
+  /** TW5 core bytes from the content-addressed LarDoc blob. */
   coreBlob: TW5CoreBootBlob;
 }
 
@@ -44,7 +44,7 @@ export interface AdminVmResult {
   /** Composite store with the admin doc as the writable layer. */
   composite: CompositeStore;
   /** Live admin doc handle. */
-  adminHandle: DocHandle<MemeStoreDoc>;
+  adminHandle: DocHandle<LarDoc>;
   /** Sync adaptor wired between TW5 and the composite, targeting admin bag. */
   adaptor: IslandAdaptor;
   /** Tear down the engine. */
@@ -54,9 +54,9 @@ export interface AdminVmResult {
 export async function openAdminVm(opts: AdminVmOptions): Promise<AdminVmResult> {
   const { repo, adminUrl } = opts;
 
-  const adminHandle = await waitHandleLocal<MemeStoreDoc>(
+  const adminHandle = await waitHandleLocal<LarDoc>(
     repo, adminUrl as AutomergeUrl,
-    () => repo.create<MemeStoreDoc>(emptyMemeStoreDoc()),
+    () => repo.create<LarDoc>(emptyLarDoc()),
   );
 
   const composite = new CompositeStore();

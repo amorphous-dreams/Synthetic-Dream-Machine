@@ -162,7 +162,7 @@ describe("LarPeer — addProjection", () => {
     const changes: LarTiddlerChange[] = [];
     const unsub = peer.addProjection({ onUriChanged: (c) => changes.push(c) });
 
-    await room.put({ title: "lar:///test", fields: {} }, { kind: "crdt-remote", edgeIsland: "room" });
+    await room.put({ tiddler: { title: "lar:///test" } }, { kind: "crdt-remote", edgeIsland: "room" });
     unsub();
 
     expect(changes.some((c) => c.title === "lar:///test")).toBe(true);

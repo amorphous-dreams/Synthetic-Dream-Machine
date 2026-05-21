@@ -108,3 +108,4 @@ export { IslandAccumulator } from "./island-accumulator.js";
 
 export type { BagTiddler, RecipeTiddler } from "./recipe.js";
 export { bagDescriptorUri, recipeUri, parseBagStack, parsePlugins } from "./recipe.js";
+export { bagStackFromRec } from "./bag-stack-from-rec.js";

@@ -35,7 +35,7 @@ import { execSync } from "child_process";
 import { createHash } from "crypto";
 import { resolve, relative, dirname } from "path";
 import { fileURLToPath } from "url";
-import { repoRoot } from "@lares/core";
+import { repoRoot } from "@lararium/mesh";
 
 const root     = repoRoot;
 const pkgsRoot = resolve(root, "packages");

@@ -6,10 +6,10 @@
  * local to the wiki VM.
  */
 
-import type { CompositeStore } from "@lararium/mesh";
-import type { LarTiddlerStore } from "@lararium/types";
-import { IslandAdaptor, planPromoteUris, type TW5Engine, type TW5Wiki, type TW5TiddlerFields } from "@lararium/tw5";
+import { type CompositeStore, bagScopedStore } from "@lararium/mesh";
+import { IslandAdaptor, planPromoteUris, tw5FieldsToRecord, type TW5Engine, type TW5Wiki } from "@lararium/tw5";
 import type { CommandHandler } from "./command-dispatcher.js";
+import { stringArg, optionalStringArg } from "./handler-args.js";
 
 export interface PromoteHandlerOptions {
   readonly composite: CompositeStore;
@@ -76,22 +76,22 @@ export function createPromoteHandler(opts: PromoteHandlerOptions): CommandHandle
 
     const sourceAdaptor = new IslandAdaptor(
       vm,
-      targetCompositeBagStore(opts.composite, actualFromBag),
+      bagScopedStore(opts.composite, actualFromBag),
       `promote-source:${ctx.command.requestId}`,
       actualFromBag,
     );
     const targetAdaptor = new IslandAdaptor(
       vm,
-      targetCompositeBagStore(opts.composite, toBag),
+      bagScopedStore(opts.composite, toBag),
       `promote-target:${ctx.command.requestId}`,
       toBag,
     );
 
     for (const copy of result.copies) {
-      await saveViaTw5Adaptor(targetAdaptor, flattenPromoteFields(copy.fields));
+      await targetAdaptor.saveFields(tw5FieldsToRecord(copy.fields));
     }
     for (const title of result.tombstones) {
-      await deleteViaTw5Adaptor(sourceAdaptor, title);
+      await sourceAdaptor.deleteTitle(title);
     }
 
     return {
@@ -105,63 +105,3 @@ export function createPromoteHandler(opts: PromoteHandlerOptions): CommandHandle
   };
 }
 
-function stringArg(args: Readonly<Record<string, unknown>>, key: string): string {
-  const value = args[key];
-  return typeof value === "string" ? value : "";
-}
-
-function optionalStringArg(args: Readonly<Record<string, unknown>>, key: string): string | null {
-  const value = args[key];
-  return typeof value === "string" && value.length > 0 ? value : null;
-}
-
-function targetCompositeBagStore(
-  composite: CompositeStore,
-  bagId:     string,
-): LarTiddlerStore {
-  return {
-    listVisible: () => composite.listVisible(),
-    get:         (title) => composite.getLive(title),
-    put:         (record, origin, options) => composite.put(record, origin, { bag: options?.bag ?? bagId }),
-    tombstone:   (title, origin) => composite.tombstoneInBag(bagId, title, origin),
-    subscribe:   (fn) => composite.subscribe(fn),
-    addProjection: (p) => composite.addProjection(p),
-  };
-}
-
-function flattenPromoteFields(fields: Readonly<TW5TiddlerFields>): Record<string, string> {
-  const out: Record<string, string> = {};
-  for (const [key, value] of Object.entries(fields)) {
-    if (value == null) continue;
-    if (Array.isArray(value)) {
-      out[key] = value.map((entry) => String(entry)).join(" ");
-      continue;
-    }
-    out[key] = String(value);
-  }
-  return out;
-}
-
-function saveViaTw5Adaptor(
-  adaptor: IslandAdaptor,
-  fields:  Record<string, string>,
-): Promise<void> {
-  return new Promise((resolve, reject) => {
-    adaptor.saveTiddler({ fields }, (err) => {
-      if (err) reject(err);
-      else resolve();
-    });
-  });
-}
-
-function deleteViaTw5Adaptor(
-  adaptor: IslandAdaptor,
-  title:   string,
-): Promise<void> {
-  return new Promise((resolve, reject) => {
-    adaptor.deleteTiddler(title, (err) => {
-      if (err) reject(err);
-      else resolve();
-    });
-  });
-}

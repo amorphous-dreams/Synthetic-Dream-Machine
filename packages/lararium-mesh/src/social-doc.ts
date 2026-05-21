@@ -41,6 +41,7 @@
  */
 
 import type { LarDoc, MutableLarRecord } from "./base-doc.js";
+import { emptyLarDoc } from "./base-doc.js";
 import type { FfzClock, ExchangeState, LarTickCounter } from "./ffz-clock.js";
 
 // ---------------------------------------------------------------------------
@@ -81,9 +82,9 @@ export function sessionTiddlerUri(id: string): string {
 }
 
 // ---------------------------------------------------------------------------
-// Tiddler field shapes — typed views over the MutableLarRecord.fields map.
+// Tiddler field shapes — typed views over the MutableLarRecord.tiddler map.
 //
-// These are DESCRIPTIVE only.  The actual fields live inside `tiddler.fields`
+// These are DESCRIPTIVE only. The actual TW5 fields live inside `.tiddler`
 // (plus `tiddler.text` for extended content like doc-level notes).
 // Helper readers below extract typed values from a raw MutableLarRecord.
 // ---------------------------------------------------------------------------
@@ -275,54 +276,25 @@ export interface SessionTiddler {
 }
 
 // ---------------------------------------------------------------------------
-// Doc interfaces — extend LarDoc; no typed Records outside tiddlers
+// Doc types — all collapse to LarDoc; semantic label via type alias only.
 // ---------------------------------------------------------------------------
 
-/**
- * IdentitiesDoc — stable principal records, tiddler-first.
- *
- * Each principal = one tiddler at identityTiddlerUri(did).
- * Self-reference tiddler at IDENTITIES_DOC_URI.
- */
-export interface IdentitiesDoc extends LarDoc {
-  readonly tiddlers: Record<string, MutableLarRecord>;
-}
+/** IdentitiesDoc — each principal = one tiddler at identityTiddlerUri(did). */
+export type IdentitiesDoc = LarDoc;
 
-/**
- * CirclesDoc — collective authority + durable membership, tiddler-first.
- *
- * Each group = one tiddler at circleTiddlerUri(id).
- * Self-reference tiddler at CIRCLES_DOC_URI.
- */
-export interface CirclesDoc extends LarDoc {
-  readonly tiddlers: Record<string, MutableLarRecord>;
-}
+/** CirclesDoc — each group = one tiddler at circleTiddlerUri(id). */
+export type CirclesDoc = LarDoc;
 
-/**
- * SessionsDoc — live operator-agent session docs, tiddler-first.
- *
- * Each session = one tiddler at sessionTiddlerUri(id).
- * Self-reference tiddler at SESSIONS_DOC_URI.
- */
-export interface SessionsDoc extends LarDoc {
-  readonly tiddlers: Record<string, MutableLarRecord>;
-}
+/** SessionsDoc — each session = one tiddler at sessionTiddlerUri(id). */
+export type SessionsDoc = LarDoc;
 
 // ---------------------------------------------------------------------------
 // Empty constructors — safe initial state for repo.create()
 // ---------------------------------------------------------------------------
 
-export function emptyIdentitiesDoc(): IdentitiesDoc {
-  return { schemaVersion: "0.1", tiddlers: {} };
-}
-
-export function emptyCirclesDoc(): CirclesDoc {
-  return { schemaVersion: "0.1", tiddlers: {} };
-}
-
-export function emptySessionsDoc(): SessionsDoc {
-  return { schemaVersion: "0.1", tiddlers: {} };
-}
+export function emptyIdentitiesDoc(): IdentitiesDoc { return emptyLarDoc(); }
+export function emptyCirclesDoc(): CirclesDoc       { return emptyLarDoc(); }
+export function emptySessionsDoc(): SessionsDoc     { return emptyLarDoc(); }
 
 // ---------------------------------------------------------------------------
 // Typed read helpers — extract typed views from raw MutableLarRecord
@@ -333,10 +305,10 @@ export function emptySessionsDoc(): SessionsDoc {
  * Returns null if the tiddler lacks a `did` field.
  */
 export function readIdentityTiddler(raw: MutableLarRecord): IdentityTiddler | null {
-  const fields = raw.fields as Record<string, unknown>;
+  const fields = raw.tiddler as Record<string, unknown>;
   const did = typeof fields["did"] === "string"
     ? fields["did"]
-    : (raw.fields.title.startsWith("lar:///") ? undefined : raw.fields.title);
+    : (raw.tiddler.title.startsWith("lar:///") ? undefined : raw.tiddler.title);
   const didValue = typeof fields["did"] === "string" ? fields["did"] : undefined;
   if (!didValue) return null;
   return {
@@ -354,7 +326,7 @@ export function readIdentityTiddler(raw: MutableLarRecord): IdentityTiddler | nu
  * Returns null if the tiddler lacks an `id` field.
  */
 export function readCircleTiddler(raw: MutableLarRecord): CircleTiddler | null {
-  const fields = raw.fields as Record<string, unknown>;
+  const fields = raw.tiddler as Record<string, unknown>;
   const id = typeof fields["id"] === "string" ? fields["id"] : undefined;
   if (!id) return null;
   return {
@@ -375,7 +347,7 @@ export function readCircleTiddler(raw: MutableLarRecord): CircleTiddler | null {
  * Returns null if the tiddler lacks an `id` field.
  */
 export function readSessionTiddler(raw: MutableLarRecord): SessionTiddler | null {
-  const fields = raw.fields as Record<string, unknown>;
+  const fields = raw.tiddler as Record<string, unknown>;
   const id = typeof fields["id"] === "string" ? fields["id"] : undefined;
   if (!id) return null;
   return {

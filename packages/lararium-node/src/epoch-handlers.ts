@@ -22,24 +22,15 @@ import type { Repo, AutomergeUrl } from "@automerge/automerge-repo";
 import type { ChangeOrigin, LarTiddlerRecord } from "@lararium/types";
 import {
   type CompositeStore,
-  type CatalogDoc, type MemeStoreDoc, type MutableLarRecord,
+  type LarDoc, type MutableLarRecord,
   type BagResidencyManager,
-  emptyMemeStoreDoc, AutomergeDocStore,
+  emptyLarDoc, AutomergeDocStore, mutableLarRecord,
   wikiLarUri, LARARIUM_DOC_URI,
 } from "@lararium/mesh";
-import { recipeUri, parseBagStack } from "@lararium/tw5";
+import { recipeUri } from "@lararium/tw5";
+import { bagStackFromRec } from "@lararium/types";
 import type { CommandHandler } from "./command-dispatcher.js";
-
-function mutableRecord(
-  title: string,
-  fields: Record<string, string>,
-  authority: string,
-): MutableLarRecord {
-  return {
-    fields: { title, ...fields },
-    meta: { authority },
-  };
-}
+import { stringArg, makeRequestId } from "./handler-args.js";
 
 export interface EpochHandlerOptions {
   readonly composite: CompositeStore;
@@ -47,7 +38,7 @@ export interface EpochHandlerOptions {
   readonly residency: BagResidencyManager;
   /** Catalog handle — needed to update the oracle tiddler that points at
    *  the bag's Automerge doc URL. */
-  readonly catalogHandle: import("@automerge/automerge-repo").DocHandle<CatalogDoc>;
+  readonly catalogHandle: import("@automerge/automerge-repo").DocHandle<LarDoc>;
 }
 
 /**
@@ -56,7 +47,7 @@ export interface EpochHandlerOptions {
  * Steps:
  *   1. Resolve old Automerge URL via composite read of the bag oracle.
  *   2. Open old doc; read all tiddlers (including tombstones).
- *   3. Mint new MemeStoreDoc with the materialized tiddler set.
+ *   3. Mint new LarDoc with the materialized tiddler set.
  *   4. Update the catalog oracle tiddler's text to the new doc URL.
  *   5. Swap composite layer: removeLayer(old) + addLayer(new).
  *   6. Re-pin residency if the old bag was pinned.
@@ -71,13 +62,13 @@ export function createEpochBagHandler(opts: EpochHandlerOptions): CommandHandler
     // Find the oracle for the bag — looks for a tiddler whose title equals
     // the bag URL with `text` carrying the Automerge URL.
     const oracleRec = await opts.composite.get(bagUrl);
-    const oldDocUrl = typeof oracleRec?.fields.text === "string" ? oracleRec.fields.text : null;
+    const oldDocUrl = typeof oracleRec?.tiddler.text === "string" ? oracleRec.tiddler.text : null;
     if (!oldDocUrl) {
       throw new Error(`bag has no oracle: ${bagUrl}`);
     }
 
     // Open the old doc; enumerate every tiddler, tombstones included.
-    const oldHandle = await opts.repo.find<MemeStoreDoc>(oldDocUrl as AutomergeUrl);
+    const oldHandle = await opts.repo.find<LarDoc>(oldDocUrl as AutomergeUrl);
     await oldHandle.whenReady();
     const oldDoc   = oldHandle.doc();
     const oldEntry = (oldDoc?.tiddlers ?? {}) as Record<string, MutableLarRecord>;
@@ -86,7 +77,7 @@ export function createEpochBagHandler(opts: EpochHandlerOptions): CommandHandler
     let tombstoneCount = 0;
 
     // Mint a fresh doc and populate it with the materialized state.
-    const newHandle = opts.repo.create<MemeStoreDoc>(emptyMemeStoreDoc());
+    const newHandle = opts.repo.create<LarDoc>(emptyLarDoc());
     await newHandle.whenReady();
     newHandle.change((doc) => {
       const target = doc.tiddlers as Record<string, MutableLarRecord>;
@@ -105,8 +96,8 @@ export function createEpochBagHandler(opts: EpochHandlerOptions): CommandHandler
       const tiddlers = doc.tiddlers as Record<string, MutableLarRecord>;
       const existing = tiddlers[bagUrl];
       tiddlers[bagUrl] = {
-        fields: {
-          ...(existing?.fields ?? { title: bagUrl }),
+        tiddler: {
+          ...(existing?.tiddler ?? { title: bagUrl }),
           title: bagUrl,
           text: newHandle.url,
           "epoch-at": new Date().toISOString(),
@@ -193,12 +184,12 @@ export function createRotateRecipeHandler(opts: RotateRecipeOptions): CommandHan
     if (!recipeRec) throw new Error(`recipe not found for "${slug}" — run \`lares wiki init ${slug}\` first`);
 
     const wikiOracle = await opts.composite.get(wikiKey);
-    const oldDocUrl  = typeof wikiOracle?.fields.text === "string" ? wikiOracle.fields.text : null;
+    const oldDocUrl  = typeof wikiOracle?.tiddler.text === "string" ? wikiOracle.tiddler.text : null;
     if (!oldDocUrl) throw new Error(`wiki oracle missing for "${slug}"`);
 
     // Compute the previous-canon URI. Walk existing stack to find the next
     // generation number; previous-canon URIs match canon/v\d+.
-    const stack   = parseBagStack(typeof recipeRec.fields["bag-stack"] === "string" ? recipeRec.fields["bag-stack"] : undefined);
+    const stack   = bagStackFromRec(recipeRec);
     const canonRe = new RegExp(`^${escapeRegExp(wikiKey)}/canon/v(\\d+)$`);
     let nextGen = 1;
     for (const url of stack) {
@@ -211,7 +202,7 @@ export function createRotateRecipeHandler(opts: RotateRecipeOptions): CommandHan
     const previousCanonUri = `${wikiKey}/canon/v${nextGen}`;
 
     // Mint fresh canonical doc.
-    const newHandle = opts.repo.create<MemeStoreDoc>(emptyMemeStoreDoc());
+    const newHandle = opts.repo.create<LarDoc>(emptyLarDoc());
     await newHandle.whenReady();
 
     // Update catalog: wiki oracle → new URL; previous-canon oracle → old URL.
@@ -219,8 +210,8 @@ export function createRotateRecipeHandler(opts: RotateRecipeOptions): CommandHan
       const tiddlers = doc.tiddlers as Record<string, MutableLarRecord>;
       const existingWiki = tiddlers[wikiKey];
       tiddlers[wikiKey] = {
-        fields: {
-          ...(existingWiki?.fields ?? { title: wikiKey }),
+        tiddler: {
+          ...(existingWiki?.tiddler ?? { title: wikiKey }),
           title: wikiKey,
           text: newHandle.url,
           "rotated-at": new Date().toISOString(),
@@ -232,7 +223,7 @@ export function createRotateRecipeHandler(opts: RotateRecipeOptions): CommandHan
           authority: existingWiki?.meta?.authority ?? "lares-cli:rotate-recipe",
         },
       };
-      tiddlers[previousCanonUri] = mutableRecord(previousCanonUri, {
+      tiddlers[previousCanonUri] = mutableLarRecord(previousCanonUri, {
         text: oldDocUrl,
         kind: "previous-canon",
         rotation: String(nextGen),
@@ -246,11 +237,11 @@ export function createRotateRecipeHandler(opts: RotateRecipeOptions): CommandHan
       ? [...stack.slice(0, wikiIdx), previousCanonUri, ...stack.slice(wikiIdx)]
       : [...stack, previousCanonUri, wikiKey];
 
-    const origin: ChangeOrigin = { kind: "lares-command", requestId: ctx_request_id_safe() };
+    const origin: ChangeOrigin = { kind: "lares-command", requestId: makeRequestId("rotate") };
     const updatedRecipe: LarTiddlerRecord = {
-      fields: {
-        ...recipeRec.fields,
-        title: recipeRec.fields.title,
+      tiddler: {
+        ...recipeRec.tiddler,
+        title: recipeRec.tiddler.title,
         "bag-stack": nextStack.join(" "),
         "updated-at": new Date().toISOString(),
         "rotation-gen": String(nextGen),
@@ -296,14 +287,6 @@ function escapeRegExp(s: string): string {
   return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
-function ctx_request_id_safe(): string {
-  return `rotate-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-}
-
-function stringArg(args: Readonly<Record<string, unknown>>, key: string): string {
-  const v = args[key];
-  return typeof v === "string" ? v : "";
-}
 
 // Origin tag used by Epoch — reserved for future audit-log integration.
 export const EPOCH_ORIGIN: ChangeOrigin = { kind: "lares-command", requestId: "epoch" };

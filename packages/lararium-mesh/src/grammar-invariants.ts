@@ -46,4 +46,4 @@ export const GRAMMAR_TAG =
  * The bag in which system-level SharktoothSigil tiddlers live (plugin shadow bag).
  * Higher-priority bags (wiki, corpus) extend the grammar without touching this.
  */
-export { LARARIUM_DOC_URI as GRAMMAR_BAG } from "./lararium-doc.js";
+export { LARARIUM_DOC_URI as GRAMMAR_BAG } from "./lar-uris.js";

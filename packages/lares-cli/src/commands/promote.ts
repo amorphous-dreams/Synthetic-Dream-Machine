@@ -20,7 +20,7 @@ import { createInterface } from "node:readline/promises";
 import { stdin, stdout } from "node:process";
 import { join } from "node:path";
 import { loadOperatorVerifyingKey } from "@lararium/node";
-import { repoRoot } from "@lares/core";
+import { repoRoot } from "@lararium/mesh";
 import { connectAdminPeer, submitCommand } from "../admin-peer.js";
 import type { ParsedArgs } from "../parse-args.js";
 

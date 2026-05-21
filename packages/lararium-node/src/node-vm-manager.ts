@@ -21,9 +21,8 @@
  *   unmountWiki → teardown → teardown:ack (+ snapshotTiddlers) → worker.terminate()
  *                → slot = cold (cold slot carries the Worker's final TW5 state)
  *
- * ## Parse/render split (pinned engine)
+ * ## Render surface (pinned engine)
  *
- *   parseMeme  — grammar-pure deserialization; always routes to the pinned engine.
  *   renderMeme — template-dependent; pinned engine serves all render requests.
  *                Worker-backed wikis are not directly renderable from main in P.3.
  *                Cross-wiki render will route through the Worker event channel in P.4.
@@ -41,9 +40,9 @@
 import * as Automerge from "@automerge/automerge";
 import { Worker }     from "worker_threads";
 import type { DocHandle, DocHandleChangePayload } from "@automerge/automerge-repo";
-import type { MemeStoreDoc } from "@lararium/mesh";
+import type { LarDoc } from "@lararium/mesh";
 import { TW5Engine, IslandAdaptor } from "@lararium/tw5";
-import type { TW5CoreBootBlob, TW5TiddlerInputFields } from "@lararium/tw5";
+import type { TW5CoreBootBlob } from "@lararium/tw5";
 import {
   isWorkerToMainMsg,
   mkPromote,
@@ -114,13 +113,13 @@ type Slot = PinnedSlot | WorkerHotSlot | ColdSlot;
 
 export interface WikiBootContext {
   /** Automerge doc handle — used to materialize VmSnapshot for initial promote. */
-  docHandle: DocHandle<MemeStoreDoc>;
+  docHandle: DocHandle<LarDoc>;
   /**
    * Plugin tiddlers to inject into the Worker's TW5 boot alongside the cold
    * snapshot. Merged into snapshotTiddlers before sending promote.
    */
   preloadedTiddlers?: Array<Record<string, unknown>>;
-  /** TW5 core bytes from the content-addressed LarariumDoc blob. */
+  /** TW5 core bytes from the content-addressed LarDoc blob. */
   coreBlob: TW5CoreBootBlob;
 }
 
@@ -156,7 +155,7 @@ const HANDSHAKE_TIMEOUT_MS = 10_000;
 
 export class NodeVmManager {
   private readonly _slots         = new Map<string, Slot>();
-  private readonly _docHandles    = new Map<string, DocHandle<MemeStoreDoc>>();
+  private readonly _docHandles    = new Map<string, DocHandle<LarDoc>>();
   private readonly _workerUrl:    URL;
   private readonly _onWorkerEvent: ((wikiId: string, msg: WorkerMsg_Event) => void) | null;
 
@@ -190,7 +189,7 @@ export class NodeVmManager {
   }
 
   /** Register a docHandle for snapshot capture at eviction time. */
-  registerDocHandle(wikiId: string, handle: DocHandle<MemeStoreDoc>): void {
+  registerDocHandle(wikiId: string, handle: DocHandle<LarDoc>): void {
     this._docHandles.set(wikiId, handle);
   }
 
@@ -379,21 +378,6 @@ export class NodeVmManager {
     return { pinned, hot, cold };
   }
 
-  // ---------------------------------------------------------------------------
-  // Parse/render split — pinned engine only
-  // ---------------------------------------------------------------------------
-
-  /**
-   * Deserialize a meme carrier (grammar-pure — any wiki's engine serves).
-   * Routes to the pinned PrimaryWiki engine. Returns null before the pinned
-   * wiki boots.
-   */
-  parseMeme(uri: string, text: string, extraFields?: Record<string, string>): TW5TiddlerInputFields[] | null {
-    const engine = this._pinnedEngine();
-    if (!engine) return null;
-    return engine.deserializeCarrier(uri, text, extraFields);
-  }
-
   /**
    * Render a meme URI using the pinned wiki's engine (template-dependent).
    * Worker-backed wikis are not directly renderable from the main thread in P.3.
@@ -541,10 +525,10 @@ function _sendAndAwait<T extends WorkerToMainMsg>(
  */
 function _subscribeDocChanges(
   wikiId:    string,
-  handle:    DocHandle<MemeStoreDoc>,
+  handle:    DocHandle<LarDoc>,
   manager:   NodeVmManager,
 ): () => void {
-  const onChangeHandler = (payload: DocHandleChangePayload<MemeStoreDoc>) => {
+  const onChangeHandler = (payload: DocHandleChangePayload<LarDoc>) => {
     const { doc, patches } = payload;
     const changedUris = new Set<string>();
     for (const patch of patches) {

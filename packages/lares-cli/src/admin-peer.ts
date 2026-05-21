@@ -20,14 +20,14 @@ import { WebSocketClientAdapter } from "@automerge/automerge-repo-network-websoc
 import {
   ADMIN_BAG_ID, AutomergeDocStore, CompositeStore,
   buildCommandTiddler, COMMAND_URI_PREFIX, COMMAND_EVENT_URI_PREFIX,
-  type MemeStoreDoc,
+  type LarDoc,
 } from "@lararium/mesh";
-import { repoRoot } from "@lares/core";
+import { repoRoot } from "@lararium/mesh";
 
 export interface AdminPeerHandle {
   readonly repo:      Repo;
   readonly composite: CompositeStore;
-  readonly admin:     DocHandle<MemeStoreDoc>;
+  readonly admin:     DocHandle<LarDoc>;
   readonly disconnect: () => Promise<void>;
 }
 
@@ -78,7 +78,7 @@ export async function connectAdminPeer(opts: ConnectOptions = {}): Promise<Admin
     )),
   ]);
 
-  const admin = await repo.find<MemeStoreDoc>(adminUrl as AutomergeUrl);
+  const admin = await repo.find<LarDoc>(adminUrl as AutomergeUrl);
   await admin.whenReady();
 
   const composite = new CompositeStore();
@@ -129,7 +129,7 @@ export async function submitCommand(
   const timeoutMs = opts.timeoutMs ?? 10000;
 
   const cmdRecord = buildCommandTiddler({ command, args, requestedBy });
-  const requestId = (cmdRecord.fields as Record<string, string>)["request-id"]!;
+  const requestId = (cmdRecord.tiddler as Record<string, string>)['request-id']!;
   const logTitle  = `${COMMAND_EVENT_URI_PREFIX}${requestId}`;
 
   await peer.composite.put(cmdRecord, { kind: "operator-import", sessionId: `lares-cli-${requestId}` });
@@ -138,8 +138,8 @@ export async function submitCommand(
   while (Date.now() - start < timeoutMs) {
     await new Promise((r) => setTimeout(r, pollMs));
     const event = await peer.composite.get(logTitle);
-    if (!event || event.deleted) continue;
-    const fields = event.fields as Record<string, string>;
+    if (!event || event.meta?.deleted) continue;
+    const fields = event.tiddler as Record<string, string>;
     const status = fields["status"];
     if (status !== "done" && status !== "error") continue;
 

@@ -3,8 +3,8 @@
  *
  * Boot sequence — Automerge Tiga + leaves (authority-first-sync-order):
  *   1. Repo     — NodeFS storage + WebSocket server
- *   2. ka opens — CatalogDoc: URL registry (wikis, corpora, engine)
- *   3. ha opens — LarariumDoc: system bag                           [from catalog.larariumDoc]
+ *   2. ka opens — LarDoc: URL registry (wikis, corpora, engine)
+ *   3. ha opens — LarDoc: system bag                           [from catalog.larariumDoc]
  *   4. ba opens — LaresDoc: personality bag                         [from ha oracle tiddler]
  *   5. Corpus*  — per-corpus bags from catalog.corpora[*]           [async, non-blocking]
  *   6. Wiki     — situated content, writable                        [wiki bag]
@@ -31,14 +31,14 @@ import { NodeFSStorageAdapter }         from "@automerge/automerge-repo-storage-
 import { NodeWSServerAdapter }          from "@automerge/automerge-repo-network-websocket";
 import type { WebSocketServer }         from "isomorphic-ws";
 import type {
-  CatalogDoc, MemeStoreDoc, LarariumDoc, IdentitiesDoc, CirclesDoc, SessionsDoc,
+  LarDoc,
   MutableLarRecord, OperatorPeerOpenOptions, OperatorPeerOpenResult, LarOpenPhase,
 } from "@lararium/mesh";
 import {
   LarPeer, PEER_CAPABILITIES_NODE, OpenIdentitySlot,
-  AutomergeDocStore, LarariumDocStore,
+  AutomergeDocStore,
   CompositeStore, corpusBagId,
-  emptyMemeStoreDoc,
+  emptyLarDoc, mutableLarRecord, tiddlerText,
   LARARIUM_DOC_URI, CATALOG_DOC_URI, LARES_DOC_URI,
   IDENTITIES_DOC_URI, CIRCLES_DOC_URI, SESSIONS_DOC_URI, ADMIN_BAG_ID,
   corpusLarUri, wikiLarUri, wikiDraftLarUri, BAG_IDS,
@@ -54,7 +54,7 @@ import {
   seedLaresDoc,
   createSessionEventLog,
 } from "./genesis-island.js";
-import { repoRoot }                       from "@lares/core";
+import { repoRoot }                       from "@lararium/mesh";
 import { LarEventBusImpl, DEFAULT_RINGS } from "./lar-event-bus-impl.js";
 import { NodeVmManager }                  from "./node-vm-manager.js";
 import { waitHandleLocal }                from "./repo-helpers.js";
@@ -79,16 +79,6 @@ import { KeyhiveProvider, AdminEventStore }         from "@lararium/keyhive";
 import { generateOrLoadOperatorKeypair, loadOperatorSigningSeed } from "./operator-key.js";
 import type { AdminVmResult }             from "./open-admin-vm.js";
 
-function mutableRecord(title: string, fields: Record<string, string>, authority: string): MutableLarRecord {
-  return {
-    fields: { title, ...fields },
-    meta: { authority },
-  };
-}
-
-function recordText(record: Readonly<MutableLarRecord> | null | undefined): string | null {
-  return typeof record?.fields.text === "string" ? record.fields.text : null;
-}
 import { LAR_EVENT } from "@lararium/mesh";
 
 const __dir = dirname(fileURLToPath(import.meta.url));
@@ -146,11 +136,14 @@ export interface NodeLarPeerResult extends OperatorPeerOpenResult<
 
 // waitHandleLocal moved to repo-helpers.ts — shared with openAdminVm.
 
+const blankMemeStore = (repo: Repo): (() => DocHandle<LarDoc>) =>
+  () => repo.create<LarDoc>(emptyLarDoc());
+
 export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLarPeerResult> {
   const { hostId, wikiId, storageDir, wss, catalogUrl, recipeUri: recipeUriOpt, onPhase, vmFactory, genesisDir, rootDir: rootDirOpt } = opts;
   const bootstrapPath = join(genesisDir ?? DEFAULT_GENESIS_DIR, "social-bootstrap.json");
   const emit = (p: NodeOpenPhase) => onPhase?.(p);
-  // Stable identity URI for this wiki — the map key in CatalogDoc.wikis.
+  // Stable identity URI for this wiki — the map key in LarDoc.wikis.
   const wikiKey = wikiLarUri(wikiId);
 
   emit("boot");
@@ -180,19 +173,19 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
     try { resolvedCatalogUrl = readFileSync(catalogUrlFile, "utf8").trim() || null; } catch { /* first boot */ }
   }
 
-  const blankCatalog = (): DocHandle<CatalogDoc> => {
-    const h = repo.create<CatalogDoc>({ schemaVersion: "0.1", corpora: {}, wikis: {}, recipes: {}, projections: {}, tiddlers: {} });
+  const blankCatalog = (): DocHandle<LarDoc> => {
+    const h = repo.create<LarDoc>(emptyLarDoc());
     // Self-reference: catalog doc holds its own lar: URI and automerge: URL.
-    // Follows the same pattern as LarariumDoc — any peer that syncs this doc self-discovers.
+    // Follows the same pattern as LarDoc — any peer that syncs this doc self-discovers.
     h.change((doc) => {
-      doc.tiddlers[CATALOG_DOC_URI] = mutableRecord(CATALOG_DOC_URI, { text: h.url }, "lararium-seed");
+      doc.tiddlers[CATALOG_DOC_URI] = mutableLarRecord(CATALOG_DOC_URI, { text: h.url }, "lararium-seed");
     });
     // Persist URL synchronously before returning.
     try { mkdirSync(storageDir, { recursive: true }); writeFileSync(catalogUrlFile, h.url, "utf8"); } catch { /* quota */ }
     return h;
   };
 
-  const catalogHandle: DocHandle<CatalogDoc> = resolvedCatalogUrl
+  const catalogHandle: DocHandle<LarDoc> = resolvedCatalogUrl
     ? await waitHandleLocal(repo, resolvedCatalogUrl as AutomergeUrl, blankCatalog)
     : blankCatalog();
 
@@ -208,8 +201,8 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
   // Recipe: LARARIUM_DOC_URI → CATALOG_DOC_URI → LARES_DOC_URI → corpusLarUri(*) → wikiLarUri → draft
   const composite = new CompositeStore();
 
-  // ── 3a. CatalogDoc (ka) — bag = CATALOG_DOC_URI ──────────────────────────
-  composite.addLayer({ bagId: BAG_IDS.catalog, store: new LarariumDocStore(catalogHandle, BAG_IDS.catalog), writable: false });
+  // ── 3a. LarDoc (ka) — bag = CATALOG_DOC_URI ──────────────────────────
+  composite.addLayer({ bagId: BAG_IDS.catalog, store: new AutomergeDocStore(catalogHandle, BAG_IDS.catalog), writable: false });
 
   // ── 3b. LarariumIsland doc (ha) — lararium bag ───────────────────────────
   // Genesis-first boot: load the build-time artifact, then reconcile with any
@@ -217,12 +210,12 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
   // peer always holds the full engine content, even before any network sync.
   const genesisHandle = await loadGenesisIsland(repo, genesisDir);
 
-  const islandDocUrl = recordText(catalog?.tiddlers?.[LARARIUM_DOC_URI]) ?? catalog?.larariumDoc?.docUrl ?? null;
-  let islandHandle: DocHandle<LarariumDoc>;
+  const islandDocUrl = tiddlerText(catalog?.tiddlers?.[LARARIUM_DOC_URI]) ?? null;
+  let islandHandle: DocHandle<LarDoc>;
 
   if (islandDocUrl) {
     // Resume boot — load existing island doc; merge genesis if CID diverged.
-    islandHandle = await waitHandleLocal<LarariumDoc>(
+    islandHandle = await waitHandleLocal<LarDoc>(
       repo, islandDocUrl as AutomergeUrl,
       () => genesisHandle,
     );
@@ -232,7 +225,7 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
     islandHandle = genesisHandle;
     const blobEntry = islandHandle.doc()?.blobs?.["tiddlywikicore"];
     catalogHandle.change((doc) => {
-      doc.tiddlers[LARARIUM_DOC_URI] = mutableRecord(LARARIUM_DOC_URI, {
+      doc.tiddlers[LARARIUM_DOC_URI] = mutableLarRecord(LARARIUM_DOC_URI, {
         text: islandHandle.url,
         ...(blobEntry?.version ? { version: blobEntry.version } : {}),
         ...(blobEntry?.sha256 ? { sha256: blobEntry.sha256 } : {}),
@@ -245,24 +238,24 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
   // explicit record.bag === BAG_IDS.lararium writes land here.
   composite.addLayer({
     bagId:           BAG_IDS.lararium,
-    store:           new LarariumDocStore(islandHandle, BAG_IDS.lararium),
+    store:           new AutomergeDocStore(islandHandle, BAG_IDS.lararium),
     writable:        true,
     defaultWritable: false,
   });
   emit("island-ready");
 
   // ── 3b. LaresDoc (ba) — personality bag ──────────────────────────────────
-  // Ha → ba oracle: LarariumDoc.tiddlers[LARES_DOC_URI].text = LaresDoc automerge URL.
+  // Ha → ba oracle: LarDoc.tiddlers[LARES_DOC_URI].text = LaresDoc automerge URL.
   // On resume: read URL from oracle tiddler, open existing doc.
-  // On first boot: seed a new doc, then write the oracle tiddler into LarariumDoc.
+  // On first boot: seed a new doc, then write the oracle tiddler into LarDoc.
   // Zelenka: server is just another peer — no privilege over ba.
-  let laresHandle: DocHandle<MemeStoreDoc> | null = null;
+  let laresHandle: DocHandle<LarDoc> | null = null;
   {
-    const laresDocUrl = recordText(islandHandle.doc()?.tiddlers?.[LARES_DOC_URI]) ?? null;
+    const laresDocUrl = tiddlerText(islandHandle.doc()?.tiddlers?.[LARES_DOC_URI]) ?? null;
     if (laresDocUrl) {
-      laresHandle = await waitHandleLocal<MemeStoreDoc>(
+      laresHandle = await waitHandleLocal<LarDoc>(
         repo, laresDocUrl as AutomergeUrl,
-        () => repo.create<MemeStoreDoc>(emptyMemeStoreDoc()),
+        blankMemeStore(repo),
       );
     } else {
       laresHandle = seedLaresDoc(repo);
@@ -304,16 +297,16 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
 
   const identitiesUrl =
     bootstrapTiddlers[IDENTITIES_DOC_URI]?.text ??
-    recordText(islandHandle.doc()?.tiddlers?.[IDENTITIES_DOC_URI]) ?? null;
+    tiddlerText(islandHandle.doc()?.tiddlers?.[IDENTITIES_DOC_URI]) ?? null;
   const circlesUrl =
     bootstrapTiddlers[CIRCLES_DOC_URI]?.text ??
-    recordText(islandHandle.doc()?.tiddlers?.[CIRCLES_DOC_URI])    ?? null;
+    tiddlerText(islandHandle.doc()?.tiddlers?.[CIRCLES_DOC_URI])    ?? null;
   const sessionsUrl =
     bootstrapTiddlers[SESSIONS_DOC_URI]?.text ??
-    recordText(islandHandle.doc()?.tiddlers?.[SESSIONS_DOC_URI])   ?? null;
+    tiddlerText(islandHandle.doc()?.tiddlers?.[SESSIONS_DOC_URI])   ?? null;
   const adminUrl =
     bootstrapTiddlers[ADMIN_BAG_ID]?.text ??
-    recordText(islandHandle.doc()?.tiddlers?.[ADMIN_BAG_ID])       ?? null;
+    tiddlerText(islandHandle.doc()?.tiddlers?.[ADMIN_BAG_ID])       ?? null;
 
   if (!identitiesUrl || !circlesUrl || !sessionsUrl || !adminUrl) {
     throw new Error(
@@ -323,15 +316,15 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
     );
   }
 
-  const identitiesHandle = await waitHandleLocal<IdentitiesDoc>(
+  const identitiesHandle = await waitHandleLocal<LarDoc>(
     repo, identitiesUrl as AutomergeUrl,
     () => { throw new Error(`[lararium] @identities doc not found in local storage — sync may be incomplete`); },
   );
-  const groupsHandle = await waitHandleLocal<CirclesDoc>(
+  const groupsHandle = await waitHandleLocal<LarDoc>(
     repo, circlesUrl as AutomergeUrl,
     () => { throw new Error(`[lararium] @circles doc not found in local storage — sync may be incomplete`); },
   );
-  const sessionsHandle = await waitHandleLocal<SessionsDoc>(
+  const sessionsHandle = await waitHandleLocal<LarDoc>(
     repo, sessionsUrl as AutomergeUrl,
     () => { throw new Error(`[lararium] @sessions doc not found in local storage — sync may be incomplete`); },
   );
@@ -343,7 +336,7 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
   const blobs = islandHandle?.doc()?.blobs ?? {};
   const coreBlobEntry = blobs[ENGINE_CORE_ID];
   if (!coreBlobEntry?.blob) {
-    throw new Error(`[openNodeLarPeer] missing TW5 core blob (${ENGINE_CORE_ID}) in LarariumDoc; re-run build:genesis`);
+    throw new Error(`[openNodeLarPeer] missing TW5 core blob (${ENGINE_CORE_ID}) in LarDoc; re-run build:genesis`);
   }
   const coreBlob = {
     bytes:  new Uint8Array(coreBlobEntry.blob),
@@ -545,7 +538,7 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
   );
 
   // ── 3c. Corpus docs — one bag per corpus child-doc ───────────────────────
-  // Isomorphic oracle path: read from CatalogDoc.tiddlers keyed by corpusLarUri(slug).
+  // Isomorphic oracle path: read from LarDoc.tiddlers keyed by corpusLarUri(slug).
   // corpusLarUri(slug) = "lar:///ha.ka.ba/@catalog/@{slug}" (pos-2 child-doc slot).
   // catalog.corpora Record is a legacy optimization index only; tiddlers oracle authoritative.
   const CORPUS_PREFIX = "lar:///ha.ka.ba/@catalog/@";
@@ -553,13 +546,13 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
     .filter(([uri]) => uri.startsWith(CORPUS_PREFIX))
     .map(([uri, tiddler]) => ({
       id: uri.slice(CORPUS_PREFIX.length),
-      docUrl: recordText(tiddler),
+      docUrl: tiddlerText(tiddler),
     }))
     .filter((e): e is { id: string; docUrl: string } => Boolean(e.docUrl));
   const corpusReadyP = Promise.all(corpusEntries.map(async (entry) => {
-    const handle = await waitHandleLocal<MemeStoreDoc>(
+    const handle = await waitHandleLocal<LarDoc>(
       repo, entry.docUrl as AutomergeUrl,
-      () => repo.create<MemeStoreDoc>(emptyMemeStoreDoc()),
+      blankMemeStore(repo),
     );
     const bagId = corpusBagId(entry.id);
     composite.addLayer({ bagId, store: new AutomergeDocStore(handle, bagId), writable: false });
@@ -567,38 +560,34 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
     // Self-describing: corpus doc holds its own lar: URI + automerge URL as a tiddler.
     // Any peer that opens the doc can discover its canonical lar: address without a catalog lookup.
     const corpusUri = corpusLarUri(entry.id);
-    const existingCorpusSelfRef = recordText(handle.doc()?.tiddlers?.[corpusUri]);
+    const existingCorpusSelfRef = tiddlerText(handle.doc()?.tiddlers?.[corpusUri]);
     if (existingCorpusSelfRef !== handle.url) {
       handle.change((doc) => {
-        doc.tiddlers[corpusUri] = mutableRecord(corpusUri, { text: handle.url }, "lararium-seed");
+        doc.tiddlers[corpusUri] = mutableLarRecord(corpusUri, { text: handle.url }, "lararium-seed");
       });
     }
 
     // Zelenka: keep tiddler store current so any peer can enumerate corpora
-    // without walking the corpora Record — same pattern as LarariumDoc oracle.
-    const existingText = recordText(catalogHandle.doc()?.tiddlers?.[corpusUri]);
+    // without walking the corpora Record — same pattern as LarDoc oracle.
+    const existingText = tiddlerText(catalogHandle.doc()?.tiddlers?.[corpusUri]);
     if (existingText !== entry.docUrl) {
       catalogHandle.change((doc) => {
-        doc.tiddlers[corpusUri] = mutableRecord(corpusUri, { text: entry.docUrl }, "lararium-seed");
+        doc.tiddlers[corpusUri] = mutableLarRecord(corpusUri, { text: entry.docUrl }, "lararium-seed");
       });
     }
   }));
 
-  // ── 4. Wiki doc — oracle tiddler path (mirrors browser peer M25 Loop 1) ──
-  // Read from catalog.tiddlers[wikiKey].text (oracle). Legacy catalog.wikis fallback retained.
-  const wikiDocUrl =
-    recordText(catalog?.tiddlers?.[wikiKey]) ??
-    catalog?.wikis?.[wikiKey]?.contentDocUrl ??
-    null;
-  const blankRoom  = (): DocHandle<MemeStoreDoc> => repo.create<MemeStoreDoc>(emptyMemeStoreDoc());
-  const wikiHandle: DocHandle<MemeStoreDoc> = wikiDocUrl
-    ? await waitHandleLocal<MemeStoreDoc>(repo, wikiDocUrl as AutomergeUrl, blankRoom)
+  // ── 4. Wiki doc — oracle tiddler path ──────────────────────────────────
+  const wikiDocUrl = tiddlerText(catalog?.tiddlers?.[wikiKey]) ?? null;
+  const blankRoom  = blankMemeStore(repo);
+  const wikiHandle: DocHandle<LarDoc> = wikiDocUrl
+    ? await waitHandleLocal<LarDoc>(repo, wikiDocUrl as AutomergeUrl, blankRoom)
     : blankRoom();
 
   if (!wikiDocUrl) {
     // Write as oracle tiddler — same schema as browser peer.
     catalogHandle.change((doc) => {
-      (doc.tiddlers as Record<string, MutableLarRecord>)[wikiKey] = mutableRecord(wikiKey, { text: wikiHandle.url }, "lararium-boot");
+      (doc.tiddlers as Record<string, MutableLarRecord>)[wikiKey] = mutableLarRecord(wikiKey, { text: wikiHandle.url }, "lararium-boot");
     });
   }
   const wikiBagId = wikiLarUri(wikiId);
@@ -611,15 +600,15 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
   // User drafts from browser peers are stored under each browser peer's DID key.
   const identity = new OpenIdentitySlot(`${hostId}:${wikiId}`);
   const draftTiddlerKey = `${wikiKey}/drafts/${encodeURIComponent(identity.did)}`;
-  const existingDraftUrl: string | null = recordText(catalog?.tiddlers?.[draftTiddlerKey]) ?? null;
-  const blankDraft = (): DocHandle<MemeStoreDoc> => repo.create<MemeStoreDoc>(emptyMemeStoreDoc());
-  const draftHandle: DocHandle<MemeStoreDoc> = existingDraftUrl
-    ? await waitHandleLocal<MemeStoreDoc>(repo, existingDraftUrl as AutomergeUrl, blankDraft)
+  const existingDraftUrl: string | null = tiddlerText(catalog?.tiddlers?.[draftTiddlerKey]) ?? null;
+  const blankDraft = blankMemeStore(repo);
+  const draftHandle: DocHandle<LarDoc> = existingDraftUrl
+    ? await waitHandleLocal<LarDoc>(repo, existingDraftUrl as AutomergeUrl, blankDraft)
     : blankDraft();
 
   if (!existingDraftUrl) {
     catalogHandle.change((doc) => {
-      (doc.tiddlers as Record<string, MutableLarRecord>)[draftTiddlerKey] = mutableRecord(draftTiddlerKey, { text: draftHandle.url }, "lararium-boot");
+      (doc.tiddlers as Record<string, MutableLarRecord>)[draftTiddlerKey] = mutableLarRecord(draftTiddlerKey, { text: draftHandle.url }, "lararium-boot");
     });
   }
   // E.3 — per-wiki draft bagId. Composite layer encodes which wiki owns
