@@ -21,12 +21,6 @@ import type {
   MemeProjection,
 } from "@lararium/types";
 import {
-  LARARIUM_DOC_URI,
-  CATALOG_DOC_URI,
-  LARES_DOC_URI,
-  IDENTITIES_DOC_URI,
-  CIRCLES_DOC_URI,
-  SESSIONS_DOC_URI,
   corpusLarUri,
   wikiLarUri,
 } from "./lar-uris.js";

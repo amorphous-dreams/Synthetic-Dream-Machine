@@ -22,12 +22,11 @@ import type { Repo, AutomergeUrl } from "@automerge/automerge-repo";
 import type { ChangeOrigin, LarTiddlerRecord } from "@lararium/types";
 import {
   type CompositeStore,
-  type LarDoc, type MutableLarRecord,
+  type LarDoc,
   type BagResidencyManager,
   emptyLarDoc, AutomergeDocStore, mutableLarRecord,
-  wikiLarUri, LARARIUM_DOC_URI,
+  wikiLarUri, LARARIUM_DOC_URI, recipeUri,
 } from "@lararium/mesh";
-import { recipeUri } from "@lararium/tw5";
 import { bagStackFromRec } from "@lararium/types";
 import type { CommandHandler } from "./command-dispatcher.js";
 import { stringArg, makeRequestId } from "./handler-args.js";
@@ -71,7 +70,7 @@ export function createEpochBagHandler(opts: EpochHandlerOptions): CommandHandler
     const oldHandle = await opts.repo.find<LarDoc>(oldDocUrl as AutomergeUrl);
     await oldHandle.whenReady();
     const oldDoc   = oldHandle.doc();
-    const oldEntry = (oldDoc?.tiddlers ?? {}) as Record<string, MutableLarRecord>;
+    const oldEntry = (oldDoc?.tiddlers ?? {}) as Record<string, LarTiddlerRecord>;
 
     let tiddlerCount   = 0;
     let tombstoneCount = 0;
@@ -80,7 +79,7 @@ export function createEpochBagHandler(opts: EpochHandlerOptions): CommandHandler
     const newHandle = opts.repo.create<LarDoc>(emptyLarDoc());
     await newHandle.whenReady();
     newHandle.change((doc) => {
-      const target = doc.tiddlers as Record<string, MutableLarRecord>;
+      const target = doc.tiddlers as Record<string, LarTiddlerRecord>;
       for (const [title, rec] of Object.entries(oldEntry)) {
         // Honor the Cassandra rule: tombstones survive Epochs as first-class
         // state. Carry deleted flag forward unchanged.
@@ -93,7 +92,7 @@ export function createEpochBagHandler(opts: EpochHandlerOptions): CommandHandler
     // Update the catalog oracle tiddler. Direct catalog change — same
     // pattern as wiki-init's oracle write.
     opts.catalogHandle.change((doc) => {
-      const tiddlers = doc.tiddlers as Record<string, MutableLarRecord>;
+      const tiddlers = doc.tiddlers as Record<string, LarTiddlerRecord>;
       const existing = tiddlers[bagUrl];
       tiddlers[bagUrl] = {
         tiddler: {
@@ -207,7 +206,7 @@ export function createRotateRecipeHandler(opts: RotateRecipeOptions): CommandHan
 
     // Update catalog: wiki oracle → new URL; previous-canon oracle → old URL.
     opts.catalogHandle.change((doc) => {
-      const tiddlers = doc.tiddlers as Record<string, MutableLarRecord>;
+      const tiddlers = doc.tiddlers as Record<string, LarTiddlerRecord>;
       const existingWiki = tiddlers[wikiKey];
       tiddlers[wikiKey] = {
         tiddler: {

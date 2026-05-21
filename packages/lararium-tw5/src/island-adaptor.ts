@@ -57,10 +57,10 @@ import type {
 } from "@lararium/types";
 import type { MemeProjection } from "@lararium/types";
 import { IslandAccumulator } from "@lararium/types";
-import { toTW5TiddlerInputFields, toLarTiddlerRecord } from "@lararium/types";
+import { toLarTiddlerRecord } from "@lararium/types";
 import type { TW5Engine } from "./tw5-vm.js";
 import { splitBodyTiddler } from "./deserializer.js";
-import type { TW5TiddlerFields, TW5TiddlerInputFields } from "./types/tiddlywiki.d.ts";
+import type { TW5TiddlerInputFields } from "./types/tiddlywiki.d.ts";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -71,26 +71,29 @@ function isDraft(title: string): boolean     { return title.startsWith("Draft of
 function isTW5System(title: string): boolean { return title.startsWith("$:/"); }
 function isMemeUri(title: string): boolean   { return title.startsWith("lar:"); }
 
+function toTW5FieldStrings(
+  tw5: TW5Engine,
+  tiddler: unknown,
+): Record<string, string> {
+  const candidate = tiddler as { getFieldStrings?: (options?: { exclude?: string[] }) => Record<string, string>; fields?: Record<string, unknown> } | null;
+  if (candidate?.getFieldStrings) return candidate.getFieldStrings();
+
+  const Tiddler = tw5.$tw.Tiddler;
+  if (candidate?.fields && typeof candidate.fields === "object") {
+    return new Tiddler(candidate.fields).getFieldStrings();
+  }
+  if (tiddler && typeof tiddler === "object") {
+    return new Tiddler(tiddler as Record<string, unknown>).getFieldStrings();
+  }
+  return {};
+}
+
 /**
  * Normalise a TW5 saveTiddler argument to a flat Record<string, string>.
  * TW5 passes either a Tiddler instance (fields nested under .fields) or a plain object.
  */
-function extractFields(tiddler: unknown): Record<string, string> {
-  if (!tiddler || typeof tiddler !== "object") return {};
-  const t = tiddler as Record<string, unknown>;
-  const out: Record<string, string> = {};
-  const flatten = (k: string, v: unknown) => {
-    if (typeof v === "string") out[k] = v;
-    else if (Array.isArray(v)) out[k] = (v as unknown[]).map(String).join(" ");
-  };
-  for (const [k, v] of Object.entries(t)) {
-    if (k === "fields" && typeof v === "object" && v !== null) {
-      for (const [fk, fv] of Object.entries(v as Record<string, unknown>)) flatten(fk, fv);
-    } else {
-      flatten(k, v);
-    }
-  }
-  return out;
+function extractFields(tw5: TW5Engine, tiddler: unknown): Record<string, string> {
+  return toTW5FieldStrings(tw5, tiddler);
 }
 
 function bulkApply(tw5: TW5Engine, batch: TW5TiddlerInputFields[]): void {
@@ -101,8 +104,7 @@ function bulkApply(tw5: TW5Engine, batch: TW5TiddlerInputFields[]): void {
 }
 
 function toTW5ProjectionFields(record: LarTiddlerRecord, bag?: string): TW5TiddlerInputFields {
-  const fields = toTW5TiddlerInputFields(record);
-  return bag ? { ...fields, bag } : fields;
+  return bag ? { ...record.tiddler, bag } : record.tiddler;
 }
 
 // ---------------------------------------------------------------------------
@@ -335,7 +337,7 @@ export class IslandAdaptor implements MemeProjection {
   ): void {
     if (this._isApplying()) { callback(null, {}, "0"); return; }
 
-    const fields = extractFields(tiddler);
+    const fields = extractFields(this.tw5, tiddler);
     const title  = fields["title"] ?? "";
 
     if (isTemp(title) || isTW5System(title)) { callback(null, {}, "0"); return; }
@@ -354,7 +356,8 @@ export class IslandAdaptor implements MemeProjection {
     this._debounce.set(title, setTimeout(() => this._flushPending(title), IslandAdaptor.DEBOUNCE_MS));
   }
 
-  saveFields(fields: Record<string, string>): Promise<void> {
+  saveRecord(record: LarTiddlerRecord): Promise<void> {
+    const fields = toTW5FieldStrings(this.tw5, record.tiddler);
     return new Promise((resolve, reject) => {
       this.saveTiddler({ fields }, (err) => {
         if (err) reject(err);

@@ -4,18 +4,11 @@
   "private": true,
   "description": "Lares operator CLI — lares init, lares promote, lares heleuma, … One entry point for every operator-facing ceremony.",
   "type": "module",
-  "exports": {
-    ".": {
-      "import": "./dist/src/index.js",
-      "types": "./dist/src/index.d.ts"
-    }
-  },
-  "main": "./dist/src/index.js",
-  "types": "./dist/src/index.d.ts",
   "bin": {
     "lares": "./dist/src/bin/lares.js"
   },
   "scripts": {
+    "prebuild": "node ../../tools/clean-output.mjs dist",
     "build":     "tsc",
     "dev":       "tsx src/bin/lares.ts",
     "typecheck": "tsc --noEmit"
@@ -25,7 +18,7 @@
     "@automerge/automerge-repo-network-websocket": "^2.5.5",
     "@lararium/mesh": "workspace:*",
     "@lararium/node": "workspace:*",
-    "@lararium/tw5":  "workspace:*",
+    "@lararium/tw5":  "workspace:*"
   },
   "devDependencies": {
     "tsx": "^4.19.0"

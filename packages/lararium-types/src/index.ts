@@ -64,9 +64,6 @@ export type {
   TW5TiddlerInputFieldsWithTitle,
   ITW5TiddlerFields,
   TW5TiddlerFields,
-} from "./tw5-fields.js";
-
-export type {
   ClosureEntry,
   EdgeRecord,
   LarTiddlerMeta,
@@ -77,10 +74,7 @@ export type {
   LarTiddlerStore,
   FilterEngineFn,
 } from "./tiddler-store.js";
-export {
-  toTW5TiddlerInputFields,
-  toLarTiddlerRecord,
-} from "./tiddler-store.js";
+export { toLarTiddlerRecord } from "./tiddler-store.js";
 
 export type { MemeProjection, RawPatch } from "./meme-provider.js";
 export { MemeProvider } from "./meme-provider.js";

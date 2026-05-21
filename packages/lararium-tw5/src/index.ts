@@ -39,12 +39,11 @@ export { TW5_VERSION, TW5_CORE_SCRIPT_FILENAME, TW5_CORE_DIR } from "./generated
 
 export { parseTaploFields, patchTomlKey, lintToml } from "./toml-ast.js";
 
-export type { BagTiddler, RecipeTiddler } from "./recipe.js";
-export { bagDescriptorUri, recipeUri, parseBagStack, parsePlugins } from "./recipe.js";
+export type { BagTiddler, RecipeTiddler } from "@lararium/types";
+export { bagDescriptorUri, recipeUri, parseBagStack, parsePlugins } from "@lararium/types";
 
 export { TW5WorkerProxy } from "./tw5-worker-proxy.js";
 
 export { buildCeremonyTiddlers, didKeyFromVerifyingKey } from "./cold-boot-ceremony.js";
 export type { CeremonyTiddler } from "./cold-boot-ceremony.js";
 export type { WorkerFactory, AnyWorker } from "./tw5-worker-proxy.js";
-export { tw5FieldsToRecord } from "./tw5-fields-flat.js";

@@ -1,5 +1,20 @@
 import type { LarTiddlerStore } from "@lararium/types";
-import type { LarOpenPhase } from "./open-phase.js";
+
+/**
+ * LarOpenPhase — canonical peer boot sequence shared by all platform peers.
+ * Phase order is monotonic — never goes backward.
+ */
+export type LarOpenPhase =
+  | "boot"           // factory called; repo not yet open
+  | "repo-open"      // Repo + adapters initialized
+  | "catalog-ready"  // catalog DocHandle resolved
+  | "island-ready"   // island (system bag) resolved — may arrive async
+  | "wiki-ready"     // wiki DocHandle resolved
+  | "draft-ready"    // wiki-drafts DocHandle resolved
+  | "peer-ready"     // LarPeer constructed, CompositeStore wired
+  | "tw5-booted"     // TW5Engine.boot() resolved
+  | "corpus-ready"   // corpus bags attached (fires once all initial corpora loaded)
+  | "live";          // IslandAdaptor wired, VmPool attached
 
 /**
  * OperatorPeerVmFactory — caller-injected VM constructor shared by browser and node peers.

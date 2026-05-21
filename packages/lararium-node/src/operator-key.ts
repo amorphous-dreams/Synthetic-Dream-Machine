@@ -19,9 +19,52 @@
  */
 
 import { generateKeyPairSync } from "node:crypto";
+import { execFile } from "node:child_process";
+import { promisify } from "node:util";
 import { readFileSync, writeFileSync, existsSync, mkdirSync, chmodSync } from "node:fs";
 import { join } from "node:path";
-import { getGhCliOperatorReceipt } from "./github-cli-auth.js";
+import type { LarAuthReceipt } from "@lararium/mesh";
+
+// ── gh CLI operator receipt ───────────────────────────────────────────────
+// Local-first dev path: reads the active `gh auth login` session. Returns null
+// when gh is absent, unauthenticated, or the GitHub API call fails (offline).
+
+const exec = promisify(execFile);
+
+interface GitHubUser { login: string; id: number; name?: string; email?: string }
+
+async function readGhToken(): Promise<string | null> {
+  try {
+    const { stdout } = await exec("gh", ["auth", "token"], { timeout: 3000 });
+    return stdout.trim() || null;
+  } catch { return null; }
+}
+
+async function fetchGitHubUser(token: string): Promise<GitHubUser | null> {
+  try {
+    const res = await fetch("https://api.github.com/user", {
+      headers: { Authorization: `Bearer ${token}`, "User-Agent": "lararium-node/0.1" },
+    });
+    if (!res.ok) return null;
+    return await res.json() as GitHubUser;
+  } catch { return null; }
+}
+
+async function getGhCliOperatorReceipt(): Promise<LarAuthReceipt | null> {
+  const token = await readGhToken();
+  if (!token) return null;
+  const user = await fetchGitHubUser(token);
+  if (!user) return null;
+  const now = new Date();
+  const expires = new Date(now.getTime() + 8 * 60 * 60 * 1000);
+  return {
+    provider: "github-vscode", subject: `github:${user.login}`,
+    displayName: user.name ?? user.login,
+    issuedAt: now.toISOString(), expiresAt: expires.toISOString(),
+    scopes: [{ with: "lararium:*", can: "*" }],
+    principal: { provider: "github-vscode", login: user.login, githubId: String(user.id), editor: "vscode-insiders", localInstanceId: `gh-cli:${user.login}` },
+  };
+}
 
 interface PersistedKey {
   /** Hex-encoded 32-byte Ed25519 public key. Input to did:key derivation. */

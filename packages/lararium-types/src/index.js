@@ -14,7 +14,7 @@
  *   island-accumulator — IslandAccumulator (frame-aligned CRDT patch buffer)
  */
 export { LADDER_5, OODA_HA_5, SCOPE_5, SCOPE_TO_LADDER, RATING_5, STAGE_5, scalarToStageBand, STAGE_BAND_MID, RATING_COLOR, STANCES, STANCE_SYAD, SATIRIST_OPERATIONAL, SYAD_7, TOOLS, TOOL_ASCII, TOOL_FEED, TOOL_APERTURE, RENDER_MODES, RENDER_MODE_REACTION_WIRE, REACTION_ROLES, } from "./ast.js";
-export { toTW5TiddlerInputFields, toLarTiddlerRecord, } from "./tiddler-store.js";
+export { toLarTiddlerRecord } from "./tiddler-store.js";
 export { MemeProvider } from "./meme-provider.js";
 export { MemeStreamParser } from "./meme-stream.js";
 export { ReactionGraph, extractReactionBindings } from "./live-protocol.js";

@@ -34,9 +34,8 @@ import {
   ENGINE_CORE_ID,
   LARARIUM_DOC_URI, CATALOG_DOC_URI, LARES_DOC_URI,
   IDENTITIES_DOC_URI, CIRCLES_DOC_URI, SESSIONS_DOC_URI,
-  blobDescriptorUri,
+  blobDescriptorUri, recipeUri, bagDescriptorUri,
 } from "@lararium/mesh";
-import { recipeUri, bagDescriptorUri } from "@lararium/tw5";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -431,7 +430,6 @@ async function main(): Promise<void> {
   });
 
   const genesisBytes = Automerge.save(doc);
-  const genesisSha   = sha256HexBytesSync(genesisBytes);
   const genesisCid   = cidV1Sha256(genesisBytes);
 
   doc = Automerge.change(doc, { time: 0 }, d => {

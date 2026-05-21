@@ -7,7 +7,8 @@
  */
 
 import { type CompositeStore, bagScopedStore } from "@lararium/mesh";
-import { IslandAdaptor, planPromoteUris, tw5FieldsToRecord, type TW5Engine, type TW5Wiki } from "@lararium/tw5";
+import { IslandAdaptor, planPromoteUris, type TW5Engine, type TW5Wiki } from "@lararium/tw5";
+import { toLarTiddlerRecord } from "@lararium/types";
 import type { CommandHandler } from "./command-dispatcher.js";
 import { stringArg, optionalStringArg } from "./handler-args.js";
 
@@ -88,7 +89,13 @@ export function createPromoteHandler(opts: PromoteHandlerOptions): CommandHandle
     );
 
     for (const copy of result.copies) {
-      await targetAdaptor.saveFields(tw5FieldsToRecord(copy.fields));
+      const { title, tags, list, ...rest } = copy.fields;
+      await targetAdaptor.saveRecord(toLarTiddlerRecord({
+        ...rest,
+        title,
+        ...(tags !== undefined ? { tags: [...tags] } : {}),
+        ...(list !== undefined ? { list: [...list] } : {}),
+      }));
     }
     for (const title of result.tombstones) {
       await sourceAdaptor.deleteTitle(title);

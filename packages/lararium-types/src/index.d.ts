@@ -15,9 +15,8 @@
  */
 export type { PranalaEdge, PranalaEdgeViolation, PranalaViolationSeverity, GrammarRules, SigilRule, FamilyRule, Ladder5, OodaHa5, Scope5, Rating5, Stage5, Stance, Syad7, Tool, ToolFeed, ToolAperture, RenderMode, ReactionRole, } from "./ast.js";
 export { LADDER_5, OODA_HA_5, SCOPE_5, SCOPE_TO_LADDER, RATING_5, STAGE_5, scalarToStageBand, STAGE_BAND_MID, RATING_COLOR, STANCES, STANCE_SYAD, SATIRIST_OPERATIONAL, SYAD_7, TOOLS, TOOL_ASCII, TOOL_FEED, TOOL_APERTURE, RENDER_MODES, RENDER_MODE_REACTION_WIRE, REACTION_ROLES, } from "./ast.js";
-export type { ITW5TiddlerInputFields, TW5TiddlerInputFields, TW5TiddlerInputFieldsWithTitle, ITW5TiddlerFields, TW5TiddlerFields, } from "./tw5-fields.js";
-export type { ClosureEntry, EdgeRecord, LarTiddlerMeta, LarWriteOptions, LarTiddlerRecord, ChangeOrigin, LarTiddlerChange, LarTiddlerStore, FilterEngineFn, } from "./tiddler-store.js";
-export { toTW5TiddlerInputFields, toLarTiddlerRecord, } from "./tiddler-store.js";
+export type { ITW5TiddlerInputFields, TW5TiddlerInputFields, TW5TiddlerInputFieldsWithTitle, ITW5TiddlerFields, TW5TiddlerFields, ClosureEntry, EdgeRecord, LarTiddlerMeta, LarWriteOptions, LarTiddlerRecord, ChangeOrigin, LarTiddlerChange, LarTiddlerStore, FilterEngineFn, } from "./tiddler-store.js";
+export { toLarTiddlerRecord } from "./tiddler-store.js";
 export type { MemeProjection, RawPatch } from "./meme-provider.js";
 export { MemeProvider } from "./meme-provider.js";
 export type { StreamEventCarrierOpen, StreamEventAhuChild, StreamEventCarrierClose, StreamEventRealmDone, MemeStreamEvent, } from "./meme-stream.js";

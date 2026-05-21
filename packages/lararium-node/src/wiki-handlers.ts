@@ -15,13 +15,12 @@ import type { Repo, DocHandle, AutomergeUrl } from "@automerge/automerge-repo";
 import type { LarTiddlerRecord, ChangeOrigin } from "@lararium/types";
 import { bagStackFromRec } from "@lararium/types";
 import {
-  type CompositeStore, type LarDoc, type MutableLarRecord, type BagResidencyManager,
-  emptyLarDoc, ADMIN_BAG_ID, BAG_IDS, wikiLarUri, wikiDraftLarUri,
+  type CompositeStore, type LarDoc, type BagResidencyManager,
+  emptyLarDoc, ADMIN_BAG_ID, wikiLarUri, wikiDraftLarUri,
   CATALOG_DOC_URI, LARARIUM_DOC_URI, LARES_DOC_URI,
-  AutomergeDocStore, mutableLarRecord, bagScopedStore, tiddlerText,
+  AutomergeDocStore, mutableLarRecord, bagScopedStore, tiddlerText, recipeUri,
 } from "@lararium/mesh";
-import { recipeUri } from "@lararium/tw5";
-import { IslandAdaptor, TW5Engine, tw5FieldsToRecord } from "@lararium/tw5";
+import { IslandAdaptor, TW5Engine } from "@lararium/tw5";
 import type { CommandHandler } from "./command-dispatcher.js";
 import { stringArg, numberArg, makeRequestId } from "./handler-args.js";
 
@@ -156,7 +155,7 @@ export function createInitWikiHandler(opts: WikiMintHandlerOptions): CommandHand
     // Write catalog oracles. Idempotent — overwrites with same values when
     // the doc already existed.
     opts.catalogHandle.change((doc) => {
-      const tiddlers = doc.tiddlers as Record<string, MutableLarRecord>;
+      const tiddlers = doc.tiddlers as Record<string, LarTiddlerRecord>;
       tiddlers[wikiKey] = mutableLarRecord(wikiKey, {
         text: wikiHandle.url,
         kind: "oracle",
@@ -173,7 +172,7 @@ export function createInitWikiHandler(opts: WikiMintHandlerOptions): CommandHand
     // islandHandle.change() — same authority-write pattern as catalog oracles.
     const updatedAt = new Date().toISOString();
     opts.islandHandle.change((doc) => {
-      const tiddlers = doc.tiddlers as Record<string, MutableLarRecord>;
+      const tiddlers = doc.tiddlers as Record<string, LarTiddlerRecord>;
       tiddlers[recipeTitle] = mutableLarRecord(recipeTitle, {
         label: slug,
         "bag-stack": `${CATALOG_DOC_URI} ${LARARIUM_DOC_URI} ${LARES_DOC_URI} ${wikiKey} ${draftBagId}`,
@@ -313,13 +312,12 @@ export function createSyncWikiHandler(opts: WikiMintHandlerOptions): CommandHand
             "source-file": sourceFile,
             "synced-at":   syncedAt,
           });
-          const syncFields = vmTiddlers.map(tw5FieldsToRecord);
-          if (syncFields.length === 0) {
+          if (vmTiddlers.length === 0) {
             skipped++;
             continue;
           }
 
-          const recordTitles = new Set(syncFields.map((fields) => fields["title"]!));
+          const recordTitles = new Set(vmTiddlers.map((record) => record.tiddler.title));
           const staleTitles  = (await store.listVisible())
             .filter((title) => title.startsWith(`${uri}#`))
             .filter((title) => !recordTitles.has(title));
@@ -327,8 +325,8 @@ export function createSyncWikiHandler(opts: WikiMintHandlerOptions): CommandHand
           let fileChanged = false;
           let fileRecordWrites = 0;
 
-          for (const fields of syncFields) {
-            await adaptor.saveFields(fields);
+          for (const record of vmTiddlers) {
+            await adaptor.saveRecord(record);
             fileRecordWrites++;
             fileChanged = true;
           }
@@ -715,7 +713,7 @@ export function createPruneStaleHandler(opts: WikiMintHandlerOptions): CommandHa
     const handle = await opts.repo.find<LarDoc>(draftOracle.tiddler.text as AutomergeUrl);
     await handle.whenReady();
     const docState = handle.doc();
-    const tiddlers = (docState?.tiddlers ?? {}) as Record<string, MutableLarRecord>;
+    const tiddlers = (docState?.tiddlers ?? {}) as Record<string, LarTiddlerRecord>;
 
     const cutoffMs = Date.now() - daysThreshold * 86_400_000;
     const stale: Array<{ title: string; lastUpdate: string | null; daysIdle: number }> = [];

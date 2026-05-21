@@ -23,9 +23,6 @@
 // ---------------------------------------------------------------------------
 // Canonical record ↔ TW5 input seam
 // ---------------------------------------------------------------------------
-export function toTW5TiddlerInputFields(record) {
-    return record.tiddler;
-}
 export function toLarTiddlerRecord(fields, meta) {
     const { created: rawCreated, modified: rawModified, ...rest } = fields;
     const created = rawCreated instanceof Date ? rawCreated.toISOString() : rawCreated;

@@ -1,5 +1,5 @@
 /**
- * base-doc — MutableLarRecord + LarDoc: the one root type for ALL Lararium Automerge documents.
+ * base-doc — LarDoc: the one root type for ALL Lararium Automerge documents.
  *
  * Invariant: every Automerge doc in the Lararium system satisfies `LarDoc`:
  *
@@ -10,8 +10,7 @@
  * `blobs`; their metadata tiddlers live in `tiddlers` at blobDescriptorUri(id).
  *
  * All named doc shapes (LarariumDoc, MemeStoreDoc, IdentitiesDoc, CirclesDoc,
- * SessionsDoc) collapse to type aliases of LarDoc. CatalogDoc adds deprecated
- * legacy fields and will alias once the migration completes.
+ * SessionsDoc) collapse to LarDoc.
  *
  * Keyhive / Ink & Switch / Zelenka:
  *   Access-control policy ("public" | "private" | "keyhive:{groupUri}") lives
@@ -22,39 +21,13 @@
  * Meme: lar:///ha.ka.ba/@lararium/mesh/v0.1/base-doc
  */
 
-// ---------------------------------------------------------------------------
-// MutableLarRecord — canonical Automerge tiddler record.
-//
-// Lives here (not meme-store-doc.ts) to break the LarDoc ↔ MemeStoreDoc
-// circular dependency.  meme-store-doc.ts re-exports for backward-compat.
-// ---------------------------------------------------------------------------
-
-export interface MutableLarRecord {
-  tiddler: {
-    title:        string;
-    text?:        string;
-    tags?:        string | string[];
-    type?:        string;
-    created?:     string;
-    modified?:    string;
-    creator?:     string;
-    modifier?:    string;
-    [field: string]: string | string[] | undefined;
-  };
-  meta?: {
-    deleted?:     boolean;
-    sourceUri?:   string;
-    contentHash?: string;
-    authority?:   string;
-    recipe?:      string;
-  };
-}
+import type { LarTiddlerRecord } from "@lararium/types";
 
 export function mutableLarRecord(
   title: string,
   fields: Record<string, string>,
   authority: string,
-): MutableLarRecord {
+): LarTiddlerRecord {
   return {
     tiddler: { title, ...fields },
     meta: { authority },
@@ -86,18 +59,21 @@ export interface LarBlobEntry {
 /**
  * LarDoc — the one root type every Lararium Automerge document satisfies.
  *
- * `tiddlers` uses `MutableLarRecord` (not `Readonly<>`) so call sites can
- * choose: read-only bags narrow to `Readonly<MutableLarRecord>` at the usage
- * site; writable bags keep the mutable form.
- *
+ * `tiddlers` — mutable inside Automerge `handle.change()` callbacks; readonly elsewhere.
  * `blobs` — optional binary store; any bag may carry image/attachment blobs.
  * `systemTitles` — optional engine manifest; set once at genesis, read by VMs.
  */
 export interface LarDoc {
   readonly schemaVersion: string;
-  readonly tiddlers:      Record<string, MutableLarRecord>;
+  readonly tiddlers:      Record<string, LarTiddlerRecord>;
   readonly blobs?:        Record<string, LarBlobEntry>;
   readonly systemTitles?: readonly string[];
+}
+
+/** Read the `text` field from a LarTiddlerRecord. Returns null when absent. */
+export function tiddlerText(record: { tiddler: { text?: unknown } } | null | undefined): string | null {
+  const t = record?.tiddler.text;
+  return typeof t === "string" ? t : null;
 }
 
 /** Safe empty state for repo.create<LarDoc>(). */

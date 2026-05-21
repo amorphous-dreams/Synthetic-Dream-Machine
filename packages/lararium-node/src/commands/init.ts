@@ -6,7 +6,7 @@
  * them.
  *
  * Three docs + one bootstrap artifact get produced:
- *   1. IdentitiesDoc — operator IdentityTiddler + DeviceDelegationTiddler (S7.1)
+ *   1. IdentitiesDoc — operator IdentityTiddler (device delegation lands at S7.1)
  *   2. CirclesDoc    — 5 system circles (Following / All Following / Circles / Blocked / Muted)
  *   3. SessionsDoc   — empty, ready for runtime session writes
  *   4. AdminDoc      — operator-private bag (bag-mirror configs, etc.)
@@ -30,7 +30,7 @@ import { buildCeremonyTiddlers } from "@lararium/tw5";
 import { repoRoot } from "@lararium/mesh";
 import {
   seedIdentitiesDoc, seedCirclesDoc, seedSessionsDoc, seedAdminDoc,
-} from "../genesis-island.js";
+} from "../social-seed.js";
 import { generateOrLoadOperatorKeypair } from "../operator-key.js";
 import { SOCIAL_BOOTSTRAP_PLUGIN_TITLE } from "../open-node-lar-peer.js";
 

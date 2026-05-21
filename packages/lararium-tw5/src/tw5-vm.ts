@@ -16,7 +16,8 @@ import type {
   TW5TiddlerInputFields,
   TW5TiddlerFields,
 } from "./types/tiddlywiki.js";
-import type { IslandAccumulator } from "@lararium/types";
+import type { IslandAccumulator, LarTiddlerRecord } from "@lararium/types";
+import { toLarTiddlerRecord } from "@lararium/types";
 
 // ---------------------------------------------------------------------------
 // CameraRegistration — multi-view projection surface
@@ -460,7 +461,7 @@ export class TW5Engine {
     text:        string,
     extraFields?: Record<string, string | string[]>,
     opts?:       { realmOrigin?: string },
-  ): TW5TiddlerFields[] {
+  ): LarTiddlerRecord[] {
     if (!this._tw) throw new Error("TW5Engine: call boot() before ingestCarrier()");
     const fields = this.runCarrierDeserializer(uri, text, extraFields, opts)
       .filter((t) => typeof t.title === "string" && !t.title.startsWith("$:/"));
@@ -473,7 +474,16 @@ export class TW5Engine {
 
     return fields
       .map((f) => wiki.getTiddler(String(f.title))?.fields)
-      .filter((f): f is TW5TiddlerFields => f !== undefined);
+      .filter((f): f is TW5TiddlerFields => f !== undefined)
+      .map((f) => {
+        const { title, tags, list, ...rest } = f;
+        return toLarTiddlerRecord({
+          ...rest,
+          title,
+          ...(tags !== undefined ? { tags: [...tags] } : {}),
+          ...(list !== undefined ? { list: [...list] } : {}),
+        });
+      });
   }
 
   /**

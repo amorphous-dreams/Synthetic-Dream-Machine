@@ -11,7 +11,8 @@ export { openAdminVm } from "./open-admin-vm.js";
 export type { AdminVmOptions, AdminVmResult } from "./open-admin-vm.js";
 export type { NodeLarPeerOptions, NodeLarPeerResult, NodeOpenPhase, CreateNodeSessionOptions, NodeSessionResult } from "./open-node-lar-peer.js";
 
-export { loadGenesisIsland, reconcileIslandFromGenesis, readGenesisSha256, GENESIS_CID, createSessionEventLog, seedAdminDoc } from "./genesis-island.js";
+export { loadGenesisIsland, reconcileIslandFromGenesis, readGenesisSha256, GENESIS_CID } from "./genesis-artifact.js";
+export { createSessionEventLog, seedAdminDoc } from "./social-seed.js";
 export { SOCIAL_BOOTSTRAP_PLUGIN_TITLE } from "./open-node-lar-peer.js";
 export { LarEventBusImpl, DEFAULT_RINGS } from "./lar-event-bus-impl.js";
 

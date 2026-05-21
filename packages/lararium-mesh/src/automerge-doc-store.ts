@@ -1,7 +1,18 @@
 import type { DocHandle } from "@automerge/automerge-repo";
 import type { LarTiddlerRecord, LarTiddlerStore, LarTiddlerChange, ChangeOrigin, MemeProjection } from "@lararium/types";
 import { MemeProvider } from "@lararium/types";
-import type { LarDoc, MutableLarRecord } from "./base-doc.js";
+import type { LarDoc } from "./base-doc.js";
+
+type MutableLarTiddlerRecord = {
+  tiddler: Record<string, unknown> & { title: string };
+  meta?: {
+    deleted?: boolean;
+    sourceUri?: string;
+    contentHash?: string;
+    authority?: string;
+    recipe?: string;
+  };
+};
 
 /**
  * AutomergeDocStore — the one LarTiddlerStore for every peer.
@@ -11,7 +22,7 @@ import type { LarDoc, MutableLarRecord } from "./base-doc.js";
  * storage/network adapters — never in the store. Server-as-peer doctrine.
  *
  * LarDoc alignment (M24): the Automerge doc carries a `tiddlers` submap.
- *   doc.tiddlers[title] = MutableLarRecord
+ *   doc.tiddlers[title] = LarTiddlerRecord
  *
  * Automerge patches arrive with path = ["tiddlers", title, fieldName].
  * AutomergeDocStore strips the leading "tiddlers" segment before handing
@@ -20,78 +31,52 @@ import type { LarDoc, MutableLarRecord } from "./base-doc.js";
  * FPI-3 (synergy): same mutation/subscription API runs on every peer.
  * Local-first Ideal 1 (fast): get/listVisible read from the in-memory doc.
  */
-function _contentEquals(cur: MutableLarRecord, rec: LarTiddlerRecord): boolean {
+function _contentEquals(cur: LarTiddlerRecord, rec: LarTiddlerRecord): boolean {
   return JSON.stringify(cur) === JSON.stringify(rec);
 }
 
-function _mergeRecord(target: MutableLarRecord, record: LarTiddlerRecord): void {
-  for (const key of Object.keys(target.tiddler)) {
-    if (!(key in record.tiddler)) delete target.tiddler[key];
+function _mergeRecord(target: MutableLarTiddlerRecord, record: LarTiddlerRecord): void {
+  const t = target.tiddler;
+  for (const key of Object.keys(t)) {
+    if (!(key in record.tiddler)) delete t[key];
   }
   for (const [key, value] of Object.entries(record.tiddler)) {
-    if (typeof value === "string" || Array.isArray(value) || value === undefined) {
-      target.tiddler[key] = value;
-    }
+    t[key] = value instanceof Date ? value.toISOString() : value;
   }
 
   const nextMeta = record.meta ?? {};
   if (!target.meta) target.meta = {};
-  for (const key of Object.keys(target.meta)) {
-    if (!(key in nextMeta)) delete target.meta[key as keyof NonNullable<MutableLarRecord["meta"]>];
+  const m = target.meta;
+  for (const key of Object.keys(m) as (keyof typeof m)[]) {
+    if (!(key in nextMeta)) delete m[key];
   }
-  for (const [key, value] of Object.entries(nextMeta)) {
-    switch (key) {
-      case "deleted":
-        target.meta.deleted = value === true;
-        break;
-      case "sourceUri":
-        if (typeof value === "string") target.meta.sourceUri = value;
-        else delete target.meta.sourceUri;
-        break;
-      case "contentHash":
-        if (typeof value === "string") target.meta.contentHash = value;
-        else delete target.meta.contentHash;
-        break;
-      case "authority":
-        if (typeof value === "string") target.meta.authority = value;
-        else delete target.meta.authority;
-        break;
-      case "recipe":
-        if (typeof value === "string") target.meta.recipe = value;
-        else delete target.meta.recipe;
-        break;
-    }
-  }
-  if (Object.keys(target.meta).length === 0) delete target.meta;
+  Object.assign(m, nextMeta);
+  if (Object.keys(m).length === 0) delete target.meta;
 }
 
-function _normalizeFields(fields: LarTiddlerRecord["tiddler"]): MutableLarRecord["tiddler"] {
-  const { created: rawCreated, modified: rawModified, ...rest } = fields;
+function _cloneRecord(record: LarTiddlerRecord): LarTiddlerRecord {
+  const { created: rawCreated, modified: rawModified, ...rest } = record.tiddler;
   const created = rawCreated instanceof Date ? rawCreated.toISOString() : rawCreated;
   const modified = rawModified instanceof Date ? rawModified.toISOString() : rawModified;
   return {
-    ...rest,
-    ...(created !== undefined ? { created } : {}),
-    ...(modified !== undefined ? { modified } : {}),
-  };
-}
-
-function _cloneRecord(record: LarTiddlerRecord): MutableLarRecord {
-  return {
-    tiddler: _normalizeFields(record.tiddler),
+    tiddler: {
+      ...rest,
+      ...(created !== undefined ? { created } : {}),
+      ...(modified !== undefined ? { modified } : {}),
+    },
     ...(record.meta !== undefined ? { meta: { ...record.meta } } : {}),
   };
 }
 
-function _isDeleted(record: MutableLarRecord | LarTiddlerRecord): boolean {
+function _isDeleted(record: LarTiddlerRecord): boolean {
   return record.meta?.deleted === true;
 }
 
-function _titleOf(record: MutableLarRecord | LarTiddlerRecord): string {
+function _titleOf(record: LarTiddlerRecord): string {
   return record.tiddler.title;
 }
 
-function _freezeRecord(raw: MutableLarRecord): LarTiddlerRecord {
+function _freezeRecord(raw: LarTiddlerRecord): LarTiddlerRecord {
   return Object.freeze({
     tiddler: Object.freeze({ ...raw.tiddler }),
     ...(raw.meta !== undefined ? { meta: Object.freeze({ ...raw.meta }) } : {}),
@@ -99,10 +84,7 @@ function _freezeRecord(raw: MutableLarRecord): LarTiddlerRecord {
 }
 
 function _tombstoneRecord(title: string): LarTiddlerRecord {
-  return Object.freeze({
-    tiddler: { title },
-    meta: { deleted: true },
-  });
+  return Object.freeze({ tiddler: { title }, meta: { deleted: true } });
 }
 
 export class AutomergeDocStore implements LarTiddlerStore {
@@ -142,7 +124,7 @@ export class AutomergeDocStore implements LarTiddlerStore {
   async listVisible(): Promise<string[]> {
     const tiddlers = this.handle.doc()?.tiddlers;
     if (!tiddlers) return [];
-    return (Object.values(tiddlers) as MutableLarRecord[])
+    return (Object.values(tiddlers) as LarTiddlerRecord[])
       .filter((r) => r && !_isDeleted(r) && _titleOf(r) && !_titleOf(r).startsWith("$:/temp/"))
       .map((r) => _titleOf(r));
   }
@@ -158,20 +140,20 @@ export class AutomergeDocStore implements LarTiddlerStore {
     if (existing && _contentEquals(existing, record)) return;
 
     this.handle.change((doc) => {
-      const tiddlers = doc.tiddlers as Record<string, MutableLarRecord>;
+      const tiddlers = doc.tiddlers as Record<string, MutableLarTiddlerRecord>;
       const current = tiddlers[title];
       if (current) {
         _mergeRecord(current, record);
         return;
       }
-      tiddlers[title] = _cloneRecord(record);
+      tiddlers[title] = _cloneRecord(record) as MutableLarTiddlerRecord;
     });
     this.provider.fireImmediate({ title, record, origin, ...(this.bagId !== undefined ? { bag: this.bagId } : {}) });
   }
 
   async tombstone(title: string, origin: ChangeOrigin): Promise<void> {
     this.handle.change((doc) => {
-      const tiddlers = doc.tiddlers as Record<string, MutableLarRecord>;
+      const tiddlers = doc.tiddlers as Record<string, MutableLarTiddlerRecord>;
       const existing = tiddlers[title];
       if (existing) {
         if (!existing.meta) existing.meta = {};

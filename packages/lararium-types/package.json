@@ -12,6 +12,7 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "scripts": {
+    "prebuild": "node ../../tools/clean-output.mjs dist",
     "build": "tsc",
     "typecheck": "tsc --noEmit",
     "test": "echo \"No tests in @lararium/types\""

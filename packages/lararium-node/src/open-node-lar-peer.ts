@@ -32,7 +32,7 @@ import { NodeWSServerAdapter }          from "@automerge/automerge-repo-network-
 import type { WebSocketServer }         from "isomorphic-ws";
 import type {
   LarDoc,
-  MutableLarRecord, OperatorPeerOpenOptions, OperatorPeerOpenResult, LarOpenPhase,
+  OperatorPeerOpenOptions, OperatorPeerOpenResult, LarOpenPhase,
 } from "@lararium/mesh";
 import {
   LarPeer, PEER_CAPABILITIES_NODE, OpenIdentitySlot,
@@ -41,19 +41,17 @@ import {
   emptyLarDoc, mutableLarRecord, tiddlerText,
   LARARIUM_DOC_URI, CATALOG_DOC_URI, LARES_DOC_URI,
   IDENTITIES_DOC_URI, CIRCLES_DOC_URI, SESSIONS_DOC_URI, ADMIN_BAG_ID,
-  corpusLarUri, wikiLarUri, wikiDraftLarUri, BAG_IDS,
+  corpusLarUri, wikiLarUri, wikiDraftLarUri, BAG_IDS, recipeUri,
   VmPool, ENGINE_CORE_ID,
 }                                       from "@lararium/mesh";
-import { recipeUri } from "@lararium/tw5";
-import type { MemeRecipeVm } from "@lararium/types";
+import type { MemeRecipeVm, LarTiddlerRecord } from "@lararium/types";
 import { IslandAccumulator, toLarTiddlerRecord } from "@lararium/types";
 import { TW5Engine, IslandAdaptor, DirectMemeRecipeVm, MemoryTiddlerStore } from "@lararium/tw5";
 import {
   loadGenesisIsland, reconcileIslandFromGenesis,
   reconcileWellKnownTiddlers,
-  seedLaresDoc,
-  createSessionEventLog,
-} from "./genesis-island.js";
+} from "./genesis-artifact.js";
+import { seedLaresDoc, createSessionEventLog } from "./social-seed.js";
 import { repoRoot }                       from "@lararium/mesh";
 import { LarEventBusImpl, DEFAULT_RINGS } from "./lar-event-bus-impl.js";
 import { NodeVmManager }                  from "./node-vm-manager.js";
@@ -89,8 +87,6 @@ const __dir = dirname(fileURLToPath(import.meta.url));
 // Primary source for social doc AutomergeUrls on the init node; island oracle tiddlers
 // serve as the fallback for replica nodes that sync the island doc from a peer.
 const DEFAULT_GENESIS_DIR = join(__dir, "../genesis");
-const SOCIAL_BOOTSTRAP_PATH = join(DEFAULT_GENESIS_DIR, "social-bootstrap.json");
-
 // Title of the social bootstrap plugin tiddler baked by lararium:init.
 export const SOCIAL_BOOTSTRAP_PLUGIN_TITLE = "lar:///ha.ka.ba/@lararium/bootstrap/social";
 
@@ -587,7 +583,7 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
   if (!wikiDocUrl) {
     // Write as oracle tiddler — same schema as browser peer.
     catalogHandle.change((doc) => {
-      (doc.tiddlers as Record<string, MutableLarRecord>)[wikiKey] = mutableLarRecord(wikiKey, { text: wikiHandle.url }, "lararium-boot");
+      (doc.tiddlers as Record<string, LarTiddlerRecord>)[wikiKey] = mutableLarRecord(wikiKey, { text: wikiHandle.url }, "lararium-boot");
     });
   }
   const wikiBagId = wikiLarUri(wikiId);
@@ -608,7 +604,7 @@ export async function openNodeLarPeer(opts: NodeLarPeerOptions): Promise<NodeLar
 
   if (!existingDraftUrl) {
     catalogHandle.change((doc) => {
-      (doc.tiddlers as Record<string, MutableLarRecord>)[draftTiddlerKey] = mutableLarRecord(draftTiddlerKey, { text: draftHandle.url }, "lararium-boot");
+      (doc.tiddlers as Record<string, LarTiddlerRecord>)[draftTiddlerKey] = mutableLarRecord(draftTiddlerKey, { text: draftHandle.url }, "lararium-boot");
     });
   }
   // E.3 — per-wiki draft bagId. Composite layer encodes which wiki owns

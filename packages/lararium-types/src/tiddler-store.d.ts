@@ -21,7 +21,42 @@
  *   - tombstone() marks deletion in live wiki state; no hard delete by default.
  */
 import type { MemeProjection } from "./meme-provider.js";
-import type { TW5TiddlerInputFieldsWithTitle } from "./tw5-fields.js";
+/**
+ * Raw/open field bag accepted by `new $tw.Tiddler(...)`, deserializers, and
+ * `wiki.addTiddler(...)`.
+ */
+export interface ITW5TiddlerInputFields {
+    title?: string;
+    text?: string;
+    tags?: string | string[];
+    type?: string;
+    created?: Date | string;
+    modified?: Date | string;
+    creator?: string;
+    modifier?: string;
+    revision?: string;
+    list?: string | string[];
+    [field: string]: unknown;
+}
+export type TW5TiddlerInputFields = ITW5TiddlerInputFields;
+/** Helper for boundaries that require a TW5 input bag with a concrete title. */
+export type TW5TiddlerInputFieldsWithTitle = TW5TiddlerInputFields & {
+    title: string;
+};
+/**
+ * Materialized/frozen runtime field bag exposed on `tiddler.fields` after TW5
+ * field-module parsing.
+ */
+export interface ITW5TiddlerFields extends Omit<ITW5TiddlerInputFields, "title" | "tags" | "list" | "created" | "modified"> {
+    title: string;
+    tags?: readonly string[];
+    type?: string;
+    created?: Date;
+    modified?: Date;
+    list?: readonly string[];
+    [field: string]: unknown;
+}
+export type TW5TiddlerFields = ITW5TiddlerFields;
 export interface ClosureEntry {
     uri: string;
     laresRelPath: string | null;
@@ -62,7 +97,6 @@ export interface LarTiddlerRecord {
 export interface LarWriteOptions {
     readonly bag?: string;
 }
-export declare function toTW5TiddlerInputFields(record: LarTiddlerRecord): TW5TiddlerInputFieldsWithTitle;
 export declare function toLarTiddlerRecord(fields: TW5TiddlerInputFieldsWithTitle, meta?: LarTiddlerMeta): LarTiddlerRecord;
 /**
  * Carried by every store.put() and store.tombstone() call.
