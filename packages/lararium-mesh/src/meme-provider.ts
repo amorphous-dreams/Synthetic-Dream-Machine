@@ -22,55 +22,8 @@
  * all share one implementation without circular dependencies.
  */
 
-import type { LarTiddlerRecord, LarTiddlerChange, ChangeOrigin } from "./tiddler-store.js";
-
-// ---------------------------------------------------------------------------
-// MemeProjection — typed slot for a downstream integration
-// ---------------------------------------------------------------------------
-
-export interface MemeProjection {
-  /**
-   * Fired once per coalesced URI, after DEBOUNCE_MS has elapsed since the
-   * last patch touching that URI. record is null for tombstoned/deleted URIs.
-   *
-   * Covers FFZ Scale-1 (single tiddler) and Scale-2 (meme carrier family).
-   * Human-speed edit rates — debounce window filters duplicate patches.
-   */
-  onUriChanged(change: LarTiddlerChange): void;
-
-  /**
-   * Fired when a single Automerge change() transaction touches >= CHANGESET_THRESHOLD
-   * URIs simultaneously (FFZ Scale-3 — "all actors tick").
-   *
-   * Called INSTEAD OF N individual onUriChanged calls when the batch is large.
-   * The projection should call bulkSetTiddlers() (or equivalent) once, rather than
-   * N individual setTiddler() calls — critical for UEFN-scale actor tick rates.
-   *
-   * `uris` contains all URIs touched in the transaction. The projection is
-   * responsible for fetching current records from the store for those URIs.
-   *
-   * If absent on a projection, MemeProvider falls back to N individual onUriChanged
-   * calls regardless of batch size — i.e. Scale-3 awareness is opt-in.
-   */
-  onChangeset?(uris: ReadonlySet<string>, origin: ChangeOrigin): void;
-
-  /**
-   * Fired once per island when its initial Automerge sync replay has settled.
-   * islandId identifies which doc completed — projections buffer per-island and
-   * flush only that island's queue, so a slow corpus doc cannot gate a fast catalog.
-   *
-   * Single-doc default: islandId = "automerge" (matches AutomergeMemeStore origin).
-   * M-bags: each DocHandle passes its own edgeIslandId.
-   *
-   * Covers FFZ Scale-4 (realm/federation reconciliation).
-   */
-  onSyncComplete?(islandId: string): void;
-}
-
-// Minimal patch shape — only path[0] (the top-level doc key) is needed.
-export interface RawPatch {
-  path: unknown[];
-}
+import type { LarTiddlerRecord, LarTiddlerChange, ChangeOrigin, MemeProjection, RawPatch } from "./tiddler-store.js";
+export type { MemeProjection, RawPatch } from "./tiddler-store.js";
 
 // ---------------------------------------------------------------------------
 // MemeProvider

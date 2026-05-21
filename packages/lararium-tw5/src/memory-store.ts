@@ -22,7 +22,7 @@ import type {
   LarTiddlerChange,
   LarTiddlerStore,
   ChangeOrigin,
-} from "@lararium/types";
+} from "@lararium/mesh";
 
 export class MemoryTiddlerStore implements LarTiddlerStore {
   constructor(private readonly bagId?: string) {}

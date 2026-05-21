@@ -8,8 +8,9 @@
  * Schema: lar:///ha.ka.ba/@lares/api/v0.1/lararium/schema/meme-recipe-vm
  */
 
-import type { LarTiddlerChange, MemeRecipeVm, MemeProvider } from "@lararium/types";
-export type { MemeRecipeVm } from "@lararium/types";
+import type { LarTiddlerChange } from "@lararium/mesh";
+import type { MemeRecipeVm, MemeProvider } from "@lararium/mesh";
+export type { MemeRecipeVm } from "@lararium/mesh";
 import type { TW5Engine } from "./tw5-vm.js";
 import { exportMemeText } from "./meme-write.js";
 

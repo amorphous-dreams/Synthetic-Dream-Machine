@@ -11,8 +11,71 @@
  * Bundle entry: packages/lararium-tw5/src/meme-ast-entry.ts
  */
 
-import type { PranalaEdge, GrammarRules, SigilRule } from "@lararium/types";
-export type { PranalaEdge as PranalaEdge, GrammarRules, SigilRule };
+// ---------------------------------------------------------------------------
+// PranalaEdge — compiled edge record (output of edgesFromAst / parsePranalaEdges)
+// ---------------------------------------------------------------------------
+
+export interface PranalaEdge {
+  readonly fromUri: string;
+  readonly fromSocket: string;
+  readonly fromSlot: string | null;
+  readonly toUri: string;
+  readonly toSocket: string;
+  readonly family: string;
+  readonly lifecycle: string;
+  readonly role: string | null;
+  readonly traversal: string;
+  readonly propagation: string;
+  readonly label: string;
+  readonly payload: Record<string, unknown>;
+  readonly cardinality: string | null;
+  readonly polarity: string | null;
+  readonly status: string;
+  readonly confidence: number | null;
+  readonly renderMode: string | null;
+}
+
+export type PranalaViolationSeverity = "error" | "warning";
+
+export interface PranalaEdgeViolation {
+  readonly fromUri: string;
+  readonly toUri: string;
+  readonly family: string;
+  readonly severity: PranalaViolationSeverity;
+  readonly rule: string;
+  readonly message: string;
+}
+
+// ---------------------------------------------------------------------------
+// GrammarRules — external grammar interface
+// ---------------------------------------------------------------------------
+
+export interface SigilRule {
+  name: string;
+  kind: "worksite" | "edge" | "edge-sugar" | "metadata" | "header" | "concurrency" | "query" | "guest-grammar" | "guest-grammar-alias" | "query-alias" | "pragma" | "conditional" | "conditional-else" | "conditional-branch" | "iteration" | "context" | "concurrency-alias" | "edge-alias" | "pragma-alias" | "iteration-alias" | "conditional-alias";
+  layer?: "compile" | "render" | "both";
+  inlinePattern?: string;
+  blockPattern?: string;
+  openPattern?: string;
+  closePattern?: string;
+  pattern?: string;
+  pragmaPattern?: string;
+  aliasFor?: string;
+  defaultFamily?: string;
+  defaultPropagation?: string;
+}
+
+export interface FamilyRule {
+  name: string;
+  dagRequired: boolean;
+  roleRecommended: boolean;
+  confidenceBounded: boolean;
+}
+
+export interface GrammarRules {
+  sigils: SigilRule[];
+  families: FamilyRule[];
+}
 
 // ---------------------------------------------------------------------------
 // MemeAstKind — discriminator for every node in the parse tree

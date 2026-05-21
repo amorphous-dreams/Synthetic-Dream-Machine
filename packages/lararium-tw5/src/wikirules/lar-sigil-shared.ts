@@ -10,7 +10,7 @@
  * tiddler — Vite inlines the imports).
  */
 
-import type { GrammarRules } from "@lararium/types";
+import type { GrammarRules } from "../meme-ast/types.js";
 
 export interface ParseTreeNode {
   readonly type:        string;

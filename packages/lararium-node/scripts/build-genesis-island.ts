@@ -24,7 +24,7 @@ import { readFileSync, writeFileSync, mkdirSync, readdirSync, existsSync } from 
 import { join, dirname, basename, resolve } from "path";
 import { fileURLToPath }         from "url";
 
-import { cidV1Sha256, sha256HexBytesSync, utf8Bytes } from "@lararium/mesh";
+import { LARES_MEMETIC_WIKITEXT_PLUGIN_URI, cidV1Sha256, sha256HexBytesSync, utf8Bytes } from "@lararium/mesh";
 import { TW5Engine }             from "@lararium/tw5";
 import { tw5PluginsRoot } from "@lararium/tw5/tw5-memes-root";
 import { TW5_VERSION, TW5_CORE_SCRIPT_FILENAME, TW5_CORE_DIR } from "@lararium/tw5";
@@ -46,7 +46,7 @@ const DEFAULT_GENESIS_DIR = join(__dir, "../genesis");
 const REPO_ROOT   = join(__dir, "../../..");
 const BAGS_ROOT   = join(REPO_ROOT, "bags");
 const LARARIUM_TW5_DIST_PLUGIN = join(REPO_ROOT, "packages", "lararium-tw5", "dist-plugin");
-const LARES_TW5_PLUGIN_TITLE = "lar:///plugins/lares/memetic-wikitext";
+const LARES_TW5_PLUGIN_TITLE = LARES_MEMETIC_WIKITEXT_PLUGIN_URI;
 const LARES_TW5_PLUGIN_ATTESTATION = join(LARARIUM_TW5_DIST_PLUGIN, "lares-memetic-wikitext.attestation.json");
 
 function resolveGenesisDir(): string {

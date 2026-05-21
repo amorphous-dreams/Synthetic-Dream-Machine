@@ -54,10 +54,10 @@ import type {
   LarTiddlerRecord,
   LarTiddlerChange,
   ChangeOrigin,
-} from "@lararium/types";
-import type { MemeProjection } from "@lararium/types";
-import { IslandAccumulator } from "@lararium/types";
-import { toLarTiddlerRecord } from "@lararium/types";
+} from "@lararium/mesh";
+import { toLarTiddlerRecord } from "@lararium/mesh";
+import type { MemeProjection } from "@lararium/mesh";
+import { IslandAccumulator } from "@lararium/mesh";
 import type { TW5Engine } from "./tw5-vm.js";
 import { splitBodyTiddler } from "./deserializer.js";
 import type { TW5TiddlerInputFields } from "./types/tiddlywiki.d.ts";

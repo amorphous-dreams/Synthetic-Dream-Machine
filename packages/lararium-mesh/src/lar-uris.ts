@@ -8,29 +8,50 @@ import type { LarDoc } from "./base-doc.js";
 import { emptyLarDoc } from "./base-doc.js";
 
 export const STABLE_TAGSPACE = "ha.ka.ba";
+export const LAR_PREFIX = `lar:///${STABLE_TAGSPACE}/` as const;
+export const TAG_PREFIX = `${LAR_PREFIX}tags/` as const;
+
+export function stableLarUri(path: string): string {
+  return `${LAR_PREFIX}${path.replace(/^\/+/, "")}`;
+}
+
+export function stableTagUri(name: string): string {
+  return `${TAG_PREFIX}${name.replace(/^\/+/, "")}`;
+}
 
 // ── Content plane ─────────────────────────────────────────────────────────
 
-export const LARARIUM_DOC_URI  = "lar:///ha.ka.ba/@lararium";
-export const CATALOG_DOC_URI   = "lar:///ha.ka.ba/@catalog";
-export const LARES_DOC_URI     = "lar:///ha.ka.ba/@lares";
+export const LARARIUM_DOC_URI  = stableLarUri("@lararium");
+export const CATALOG_DOC_URI   = stableLarUri("@catalog");
+export const LARES_DOC_URI     = stableLarUri("@lares");
+export const LARES_MEMETIC_WIKITEXT_PLUGIN_URI = stableLarUri("@lararium/plugins/lares/memetic-wikitext");
+
+// Shared tag/state law — consumed by peer projections, not owned by any one runtime.
+export const GRAMMAR_TAG = stableTagUri("SharktoothSigil");
+export const PARSE_WARNING_TAG = stableTagUri("lararium-parse-warnings");
+export const LARARIUM_BAG_MIRROR_TAG = stableTagUri("lararium-bag-mirror");
+export const LARES_COMMAND_TAG = stableTagUri("lares-command");
+export const LARES_COMMAND_EVENT_TAG = stableTagUri("lares-command-event");
+export const LARES_PIN_TAG = stableTagUri("lares-pin");
+export const PROMOTION_RECEIPT_TAG = stableTagUri("lararium-promotion-receipt");
+export const BOOT_SPLASH_ACTIVE_URI = stableLarUri("state/boot-splash/active");
 
 // ── Social plane ──────────────────────────────────────────────────────────
 
-export const IDENTITIES_DOC_URI = "lar:///ha.ka.ba/@identities";
-export const CIRCLES_DOC_URI    = "lar:///ha.ka.ba/@circles";
-export const SESSIONS_DOC_URI   = "lar:///ha.ka.ba/@sessions";
+export const IDENTITIES_DOC_URI = stableLarUri("@identities");
+export const CIRCLES_DOC_URI    = stableLarUri("@circles");
+export const SESSIONS_DOC_URI   = stableLarUri("@sessions");
 
 // ── URI builders ──────────────────────────────────────────────────────────
 
 /** e.g. corpusLarUri("elyncia") → "lar:///ha.ka.ba/@catalog/@elyncia" */
 export function corpusLarUri(slug: string): string {
-  return `lar:///ha.ka.ba/@catalog/@${slug}`;
+  return stableLarUri(`@catalog/@${slug}`);
 }
 
 /** e.g. wikiLarUri("altar-fire") → "lar:///ha.ka.ba/@lararium/wikis/altar-fire" */
 export function wikiLarUri(slug: string): string {
-  return `lar:///ha.ka.ba/@lararium/wikis/${slug}`;
+  return stableLarUri(`@lararium/wikis/${slug}`);
 }
 
 /** e.g. wikiDraftLarUri("altar-fire") → "lar:///ha.ka.ba/@lararium/wikis/altar-fire/draft" */
@@ -43,14 +64,14 @@ export function wikiDraftLarUri(slug: string): string {
 export const ADMIN_WIKI_SLUG = "admin";
 export const ADMIN_WIKI_URI  = wikiLarUri(ADMIN_WIKI_SLUG);
 /** Admin doc sits at pos-2 under @lararium — distinct from the /wikis/admin leaf path. */
-export const ADMIN_BAG_ID    = "lar:///ha.ka.ba/@lararium/@admin";
+export const ADMIN_BAG_ID    = stableLarUri("@lararium/@admin");
 
 // ── Recipe + bag descriptor URI builders ──────────────────────────────────
 
 /** e.g. recipeUri("@lararium", "default") → "lar:///ha.ka.ba/@lararium/recipes/default" */
 export function recipeUri(root: string, name: string): string {
   const rootSlug = root.startsWith("@") ? root : `@${root}`;
-  return `lar:///ha.ka.ba/${rootSlug}/recipes/${name}`;
+  return stableLarUri(`${rootSlug}/recipes/${name}`);
 }
 
 /** e.g. bagDescriptorUri("lar:///ha.ka.ba/@lararium") → "lar:///ha.ka.ba/@lararium/descriptor" */
@@ -62,32 +83,32 @@ export function bagDescriptorUri(bagId: string): string {
 
 /** e.g. identityTiddlerUri("did:key:z…") → "lar:///ha.ka.ba/@identities/did:key:z…" */
 export function identityTiddlerUri(did: string): string {
-  return `lar:///${STABLE_TAGSPACE}/@identities/${did}`;
+  return stableLarUri(`@identities/${did}`);
 }
 
 /** e.g. circleTiddlerUri("admins") → "lar:///ha.ka.ba/@circles/admins" */
 export function circleTiddlerUri(id: string): string {
-  return `lar:///${STABLE_TAGSPACE}/@circles/${id}`;
+  return stableLarUri(`@circles/${id}`);
 }
 
 /** e.g. sessionTiddlerUri("sess-abc") → "lar:///ha.ka.ba/@sessions/sess-abc" */
 export function sessionTiddlerUri(id: string): string {
-  return `lar:///${STABLE_TAGSPACE}/@sessions/${id}`;
+  return stableLarUri(`@sessions/${id}`);
 }
 
 /** e.g. sessionEventLogUri("sess-abc") → "lar:///ha.ka.ba/@sessions/sess-abc/events" */
 export function sessionEventLogUri(sessionId: string): string {
-  return `lar:///${STABLE_TAGSPACE}/@sessions/${sessionId}/events`;
+  return stableLarUri(`@sessions/${sessionId}/events`);
 }
 
 /** e.g. deviceDelegationUri(opDid, devDid) → "lar:///ha.ka.ba/@identities/{opDid}/devices/{devDid}" */
 export function deviceDelegationUri(operatorDid: string, deviceDid: string): string {
-  return `lar:///${STABLE_TAGSPACE}/@identities/${encodeURIComponent(operatorDid)}/devices/${encodeURIComponent(deviceDid)}`;
+  return stableLarUri(`@identities/${encodeURIComponent(operatorDid)}/devices/${encodeURIComponent(deviceDid)}`);
 }
 
 /** e.g. nexusTrustUri("abcdef…") → "lar:///ha.ka.ba/@identities/trust/nexus/abcdef…" */
 export function nexusTrustUri(nexusPubkey: string): string {
-  return `lar:///${STABLE_TAGSPACE}/@identities/trust/nexus/${nexusPubkey}`;
+  return stableLarUri(`@identities/trust/nexus/${nexusPubkey}`);
 }
 
 // ── Social plane doc-type aliases + empty constructors ────────────────────

@@ -46,8 +46,7 @@ Next work, in order:
    pipeline until browser peer e2e passes.
 
 Completed this turn (2026-05-17 turn 14):
-- @lararium/types extracted (zero-dep shared package); mesh ↔ tw5 dep chain broken;
-  mesh no longer depends on tw5; both depend on @lararium/types independently.
+- shared-type extraction later decomposed back into @lararium/mesh; mesh ↔ tw5 dep chain remains broken without keeping a separate shared-types package.
 - 164/164 tests pass; all four packages typecheck clean.
 
 Rules: preserve TW5 VM primacy, bag=Automerge-doc=sync-boundary, no HTTP/RPC
@@ -70,8 +69,7 @@ no web2 models/code/flows in Lares stack.
 
 **Enacted in code:**
 
-- `@lararium/types`: `LarTiddlerRecord`, `LarTiddlerMeta`, `LarWriteOptions`, `LarTiddlerChange.bag`
-- `@lararium/mesh`: nested `MutableLarRecord`, `AutomergeDocStore`, `CompositeStore`, command-tiddler helpers, social-doc readers
+- `@lararium/mesh`: `LarTiddlerRecord`, `LarTiddlerMeta`, `LarWriteOptions`, `LarTiddlerChange.bag`, nested `MutableLarRecord`, `AutomergeDocStore`, `CompositeStore`, command-tiddler helpers, social-doc readers
 - `@lararium/tw5`: IslandAdaptor, worker/direct VM projection, memory store, direct-record builder
 - `@lararium/node`: command dispatcher, wiki handlers, epoch handlers, genesis/open-node authority seeding
 
@@ -81,7 +79,7 @@ no web2 models/code/flows in Lares stack.
 - admin VM capabilities can project metadata and bag/topology views intentionally
 - cross-wiki and pinned/live queries should use topology APIs (`listBagsHolding`, recipe stack, change bag context), not stored per-record `bag`
 
-**Metrics:** `pnpm --filter @lararium/types typecheck`, `pnpm --filter @lararium/mesh typecheck`, `pnpm --filter @lararium/tw5 typecheck`, and `pnpm --filter @lararium/node typecheck` all pass.
+**Metrics:** `pnpm --filter @lararium/mesh typecheck`, `pnpm --filter @lararium/tw5 typecheck`, and `pnpm --filter @lararium/node typecheck` all pass.
 
 ---
 
@@ -149,40 +147,35 @@ tiddler patch before the next promote ceremony.
 
 ## What Changed This Turn (2026-05-17 turn 14)
 
-### @lararium/types — Zero-Dep Shared Package (mesh ↔ tw5 untangle)
+### Shared Types Folded Back Into @lararium/mesh
 
-**Problem:** Phase 2 moved all pure shared types into `@lararium/tw5`, causing `@lararium/mesh → @lararium/tw5` dep — a TW5 wiki VM package in mesh's dep graph. Mesh and tw5 should be independent and composable.
+**Problem:** The temporary shared-types extraction added another package boundary without surviving as a stable workspace package. The live tree now keeps those shared contracts in `@lararium/mesh`, and stale comments/docs still pointed at the dissolved package.
 
-**Solution:** New `packages/lararium-types/` package (zero deps) holds all pure shared types and isomorphic utilities:
+**Resolution:** The shared type and isomorphic utility surfaces now live in `@lararium/mesh` again. `@lararium/tw5`, `@lararium/node`, and adjacent packages consume them from mesh's public surface.
 
-**Files moved from tw5 → @lararium/types:**
-- `ast.ts` — PranalaEdge, GrammarRules, SigilRule, FamilyRule, Law of Fives constants (LADDER_5, OODA_HA_5, SCOPE_5, RATING_5, STAGE_5, Stance, Syad7, Tool vocabulary)
+**Canonical homes in mesh:**
+- `ast.ts` — PranalaEdge, GrammarRules, SigilRule, FamilyRule, Law of Fives constants, stance/tool vocabulary
 - `tiddler-store.ts` — LarTiddlerStore, LarTiddlerRecord, LarTiddlerChange, ChangeOrigin, ClosureEntry, EdgeRecord, FilterEngineFn
-- `meme-provider.ts` — MemeProjection interface + MemeProvider class (zero-dep coalescer; uses only setTimeout)
-- `meme-stream.ts` — MemeStreamEvent types + MemeStreamParser class (isomorphic streaming parser)
+- `meme-provider.ts` — MemeProjection interface + MemeProvider class
 - `live-protocol.ts` — ReactionBinding, ReactionHandler, EdgeLike, ReactionGraph class, extractReactionBindings
-- `island-accumulator.ts` — IslandAccumulator class (frame-aligned CRDT patch buffer; implements MemeProjection)
-- `meme-recipe-vm.ts` — MemeRecipeVm interface + bootMemeRecipeVm helper (DirectMemeRecipeVm stays in tw5)
+- `island-accumulator.ts` — IslandAccumulator class
+- `meme-recipe-vm.ts` — MemeRecipeVm interface + bootMemeRecipeVm helper
 
-**Dependency graph after:**
+**Dependency graph now:**
 ```
 @lares/core         (no deps)
-@lararium/types     (no deps)
-@lararium/tw5       → @lararium/types, @lares/core
-@lararium/mesh      → @lararium/types, @lares/core, @automerge/automerge-repo
-@lararium/node      → @lararium/types, @lararium/tw5, @lararium/mesh
+@lararium/tw5       → @lares/core, @lararium/mesh
+@lararium/mesh      → @lares/core, @automerge/automerge-repo
+@lararium/node      → @lararium/tw5, @lararium/mesh
 @lares/cli          → @lararium/mesh
 ```
 
 **Updated:**
-- All `@lararium/tw5/src/` files that imported local moved files → now `from "@lararium/types"`
-- All `@lararium/mesh/src/` files → removed `@lararium/tw5` dep entirely, import from `@lararium/types`
-- `mesh/src/index.ts` — removed re-export block (no re-exporting); consumers import directly from `@lararium/types`
-- `@lararium/node` — `command-dispatcher.ts`, `epoch-handlers.ts`, `wiki-handlers.ts`, `open-node-lar-peer.ts` split imports: `@lararium/types` symbols split out from `@lararium/mesh` import blocks
-- All four vitest configs updated with `@lararium/types` source alias
-- tw5 `dist/` regenerated (declarations) to resolve type identity
+- stale shared-types references removed from live source comments and meme docs
+- mesh remains the public export surface for shared contracts
+- generated `dist/` artifacts rebuilt so they stop advertising the dissolved package
 
-**Metrics:** 164/164 tests pass; all four packages (`@lararium/types`, `@lararium/tw5`, `@lararium/mesh`, `@lararium/node`) typecheck clean.
+**Metrics:** rebuild/typecheck rerun after the cleanup pass.
 
 ---
 
@@ -790,7 +783,7 @@ Generated compatibility artifact only:
 
 - `packages/lararium-tw5/dist-plugin/lares-memetic-wikitext.tid`
   - `title: $:/plugins/lares/memetic-wikitext`
-  - Canonical artifact remains `lar:///plugins/lares/memetic-wikitext`.
+  - Canonical artifact remains `lar:///ha.ka.ba/@lararium/plugins/lares/memetic-wikitext`.
   - Decision needed: keep as explicitly non-canonical vanilla TW5 drag/drop
     export, or remove the `$:/plugins/...` variant entirely.
 

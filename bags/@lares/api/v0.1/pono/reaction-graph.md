@@ -15,7 +15,6 @@ role          = "invariant interface: in-memory reaction graph — subscribe, fi
 cacheable     = true
 retain        = true
 invariant     = true
-source-file   = "packages/lararium-mesh/src/reaction-graph.ts"
 source-symbol = "ReactionGraph RENDER_MODES REACTION_ROLES"
 ```
 

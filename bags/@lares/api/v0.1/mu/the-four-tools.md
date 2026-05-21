@@ -16,7 +16,6 @@ role          = "invariant pressure surface for Chapel Perilous weapon-carry and
 cacheable     = true
 hydrate       = true
 retain        = true
-source-file   = "packages/lararium-mesh/src/ast.ts"
 source-symbol = "TOOLS TOOL_ASCII TOOL_FEED TOOL_APERTURE"
 ```
 

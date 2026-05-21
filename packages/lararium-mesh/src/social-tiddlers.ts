@@ -8,7 +8,7 @@
  * (convergent capabilities + Group CRDT + BeeKEM). Queryable from TW5 field filters.
  */
 
-import type { LarTiddlerRecord } from "@lararium/types";
+import type { LarTiddlerRecord } from "./tiddler-store.js";
 import type { LarDoc } from "./base-doc.js";
 import type { FfzClock, ExchangeState, LarTickCounter } from "./ffz-clock.js";
 

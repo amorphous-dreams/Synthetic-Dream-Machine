@@ -19,7 +19,7 @@
  */
 
 import type { Repo, AutomergeUrl } from "@automerge/automerge-repo";
-import type { ChangeOrigin, LarTiddlerRecord } from "@lararium/types";
+import type { ChangeOrigin, LarTiddlerRecord } from "@lararium/mesh";
 import {
   type CompositeStore,
   type LarDoc,
@@ -27,7 +27,7 @@ import {
   emptyLarDoc, AutomergeDocStore, mutableLarRecord,
   wikiLarUri, LARARIUM_DOC_URI, recipeUri,
 } from "@lararium/mesh";
-import { bagStackFromRec } from "@lararium/types";
+import { bagStackFromRec } from "@lararium/mesh";
 import type { CommandHandler } from "./command-dispatcher.js";
 import { stringArg, makeRequestId } from "./handler-args.js";
 

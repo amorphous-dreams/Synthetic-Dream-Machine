@@ -27,8 +27,9 @@ module-type: tiddlerdeserializer
  *   Inverts the incoming transform: reads child bodies, reconstructs definition form.
  */
 
-import { MemeStreamParser } from "@lararium/types";
-import type { MemeStreamEvent } from "@lararium/types";
+import { PARSE_WARNING_TAG, stableLarUri } from "@lararium/mesh/lar-uris";
+import { MemeStreamParser } from "./meme-stream.js";
+import type { MemeStreamEvent } from "./meme-stream.js";
 import {
   CONTROL_SLOTS,
   findTopLevelAhuBlocks,
@@ -36,7 +37,7 @@ import {
 } from "./meme-ast/ahu-scan.js";
 import { parseTaploFields } from "./toml-ast.js";
 import { getGrammar, resetGrammar } from "./grammar-cache.js";
-export type { GrammarRules } from "@lararium/types";
+export type { GrammarRules } from "./meme-ast/types.js";
 export { getGrammar, resetGrammar };
 
 export interface TiddlerFields {
@@ -168,6 +169,11 @@ function stripEdgeNewlines(text: string): string {
   return text.replace(/^\n+|\n+$/g, "");
 }
 
+function parseWarningTitle(uri: string): string {
+  const safeSlug = uri.replace(/[^a-zA-Z0-9._-]/g, "_");
+  return stableLarUri(`lararium/parse-warning/${safeSlug}`);
+}
+
 function splitMemeToTiddlers(
   uri:        string,
   text:       string,
@@ -246,10 +252,9 @@ function splitMemeToTiddlers(
   const result: TiddlerFields[] = [parent, ...allChildren];
 
   if (warnings.length > 0) {
-    const safeSlug = uri.replace(/[^a-zA-Z0-9._-]/g, "_");
     result.push({
-      title:         `lar:///ha.ka.ba/lararium/parse-warning/${safeSlug}`,
-      tags:          "lar:///ha.ka.ba/tags/lararium-parse-warnings",
+      title:         parseWarningTitle(uri),
+      tags:          PARSE_WARNING_TAG,
       "meme-uri":    uri,
       "warning-count": String(warnings.length),
       text:          warnings.join("\n"),
@@ -490,10 +495,9 @@ export function splitBodyTiddler(
   const parent: TiddlerFields = { ...baseFields, title: uri, text: rewrittenText };
 
   if (warnings.length > 0) {
-    const safeSlug = uri.replace(/[^a-zA-Z0-9._-]/g, "_");
     children.push({
-      title:          `lar:///ha.ka.ba/lararium/parse-warning/${safeSlug}`,
-      tags:           "lar:///ha.ka.ba/tags/lararium-parse-warnings",
+      title:          parseWarningTitle(uri),
+      tags:           PARSE_WARNING_TAG,
       "meme-uri":     uri,
       "warning-count": String(warnings.length),
       text:           warnings.join("\n"),

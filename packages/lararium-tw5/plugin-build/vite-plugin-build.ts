@@ -1,5 +1,6 @@
 import { mkdirSync, readFileSync, rmSync } from "fs";
 import path from "path";
+
 import { build } from "vite";
 import { discoverModules } from "./discover-modules.js";
 import { MODULE_MANIFEST, packagePath, packageRelative, ROOT, TIDDLER_SRC_DIR } from "./paths.js";
@@ -46,10 +47,16 @@ export async function buildPluginCjsTiddlers(outDir = TIDDLER_SRC_DIR): Promise<
         },
       },
       resolve: {
-        alias: {
-          "@lararium/mesh/meme-ast": path.resolve(ROOT, "../lararium-mesh/src/meme-ast/index.ts"),
-          "@lararium/mesh": path.resolve(ROOT, "../lararium-mesh/src/index.ts"),
-        },
+        alias: [
+          {
+            find: /^@lararium\/mesh\/(.+)$/,
+            replacement: `${path.resolve(ROOT, "../lararium-mesh/src")}/$1`,
+          },
+          {
+            find: "@lararium/mesh",
+            replacement: path.resolve(ROOT, "../lararium-mesh/src/index.ts"),
+          },
+        ],
       },
     });
 

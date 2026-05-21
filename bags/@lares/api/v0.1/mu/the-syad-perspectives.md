@@ -16,7 +16,6 @@ role          = "syad reading invariant, register metaphysics anchor, stance-con
 cacheable     = true
 hydrate       = true
 retain        = true
-source-file   = "packages/lararium-mesh/src/ast.ts"
 source-symbol = "STANCES SYAD_7 STANCE_SYAD SATIRIST_OPERATIONAL"
 ```
 

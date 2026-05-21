@@ -11,6 +11,22 @@
     "./cascade": {
       "import": "./dist/cascade.js",
       "types": "./dist/cascade.d.ts"
+    },
+    "./lar-uris": {
+      "import": "./dist/lar-uris.js",
+      "types": "./dist/lar-uris.d.ts"
+    },
+    "./mirror-paths": {
+      "import": "./dist/mirror-paths.js",
+      "types": "./dist/mirror-paths.d.ts"
+    },
+    "./promotion-ceremony": {
+      "import": "./dist/promotion-ceremony.js",
+      "types": "./dist/promotion-ceremony.d.ts"
+    },
+    "./live-protocol": {
+      "import": "./dist/live-protocol.js",
+      "types": "./dist/live-protocol.d.ts"
     }
   },
   "main": "./dist/index.js",
@@ -29,7 +45,6 @@
   },
   "dependencies": {
     "@automerge/automerge-repo": "^2.5.5",
-    "@lararium/types": "workspace:*",
     "@noble/ed25519": "^3.1.0",
     "@noble/hashes": "^2.2.0"
   }

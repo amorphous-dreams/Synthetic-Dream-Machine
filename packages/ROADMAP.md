@@ -35,9 +35,9 @@ shrunk to 1 block; `FamilyRule` tiddlerization in grammar-cache.ts; `KumuListena
 **and** the grammar self-hosting completion sprint (`meme-grammar.ts` deleted;
 `grammarRulesFromText` retired; `GRAMMAR_TAG` exported from `@lararium/mesh`;
 smol-toml as single TW5 library tiddler; `sigil-toml` SharktoothSigil tiddler),
-**and** the `@lararium/types` extraction (zero-dep shared package; `mesh → tw5`
-dep chain broken; pure types + isomorphic utils live in types; both mesh and tw5
-depend on types independently; no re-exporting; 164/164 tests pass).
+**and** the shared-type extraction and decomposition pass (`mesh → tw5` dep chain
+broken without keeping a separate shared-types workspace package; pure types
+and isomorphic utils now live back in mesh; 164/164 tests pass).
 
 Do not re-open those arcs unless a test proves drift.
 
@@ -63,7 +63,7 @@ These planning docs follow one architectural law:
 | — | **lar: URI + mode= retirement** | ✅ Done | `$:/tags/Lar/*` → `lar:///ha.ka.ba/tags/*`; `mode=` retired from all sigil procedures; English alias sigils + pono defs authored. |
 | — | **Concurrency cluster + grammar self-hosting** | ✅ Done | hui/holo/puka/lele + 8 family tiddlers; TOML monolith = 1 block; wild-magic property holds. |
 | — | **Grammar self-hosting completion** | ✅ Done | `meme-grammar.ts` deleted; `grammarRulesFromText` retired; `GRAMMAR_TAG` in `@lararium/mesh`; smol-toml library tiddler; `sigil-toml` SharktoothSigil tiddler; TOML fallback parse path gone. |
-| — | **@lararium/types extraction** | ✅ Done | Zero-dep shared package; `mesh → tw5` dep chain broken; pure types + isomorphic utils co-located; no re-exporting; 164/164 tests pass. |
+| — | **Shared-type decomposition** | ✅ Done | `mesh → tw5` dep chain broken; dissolved temporary shared-types references; shared contracts live in `@lararium/mesh`; 164/164 tests pass. |
 | 1 | **P / Operator-peer contract** | ⬜ Next | Make browser and node peers read as one base architecture: admin lane, active wiki lanes, local proof-first, edge-only adaptors. |
 | 2 | **M / Local intent bridge** | ⬜ Next | Finish shared command/receipt contracts; keep ceremony meaning in the TW5 VM pool; keep `stdio` default and transport secondary. |
 | 3 | **L / S7.4** | ⬜ Next | Admin-doc ingress trust gate: operator devices with `cap=infrastructure` only; prove local capability rejection before edge work. |

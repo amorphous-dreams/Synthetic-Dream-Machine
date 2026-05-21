@@ -26,15 +26,18 @@ module-type: library
  *   - The @lares copy surfaces through the recipe stack once the wiki-bag copy
  *     is removed (wiki bag has HIGHER priority than @lares in recipe order).
  *
- * No external imports — self-contained, runs in browser + Node TW5 VM.
+ * Imports only peer-law constants; Vite inlines them into the plugin module body.
  */
 
-import type { TW5Tiddler, TW5TiddlerConstructor, TW5TiddlerFields, TW5Wiki } from "../types/tiddlywiki.d.ts";
+import { canonicalMirrorRelPathForBag } from "@lararium/mesh/mirror-paths";
+import { buildPromotionReceiptFields } from "@lararium/mesh/promotion-ceremony";
+import { LARARIUM_BAG_MIRROR_TAG, LARARIUM_DOC_URI, LARES_DOC_URI } from "@lararium/mesh/lar-uris";
+import type { TW5Tiddler, TW5TiddlerConstructor, TW5Wiki } from "../types/tiddlywiki.d.ts";
 
 /** Minimal promote contract over the real TW5 wiki surface. */
 export type PromoteWiki = Pick<TW5Wiki, "getTiddler" | "filterTiddlers" | "addTiddler" | "deleteTiddler">;
 type PromoteTiddler = Pick<TW5Tiddler, "fields">;
-type PromoteFields = Readonly<TW5TiddlerFields>;
+type PromoteFields = Readonly<Record<string, unknown> & { title: string }>;
 
 export interface PromotePlannedRecord {
   title: string;
@@ -47,18 +50,32 @@ export interface PromoteResult {
   childrenPromoted: string[];
   promotedTo: string;
   promotedAt: string;
+  receipt?: string;
   error?:   string;
 }
 
 export interface PromotePlan extends PromoteResult {
   copies: PromotePlannedRecord[];
   tombstones: string[];
+  receiptRecord?: PromotePlannedRecord;
 }
 
-const BAG_MIRROR_TAG = "lar:///ha.ka.ba/tags/lararium-bag-mirror";
-const LARES_BAG_ID = "lar:///ha.ka.ba/@lares";
-const LARARIUM_BAG_ID = "lar:///ha.ka.ba/@lararium";
-const URI_PREFIX = "lar:///ha.ka.ba/";
+export interface PromotePlanOptions {
+  /** Peer/operator identifier for the CRDT receipt. */
+  actor?: string;
+  /** Source bag, when the caller knows it. Browser/TW5 promotion may leave this implicit. */
+  sourceBag?: string;
+  /** Peer id / device id for audit. */
+  peerId?: string;
+  /** Deterministic receipt id supplied by command/ceremony dispatchers. */
+  receiptId?: string;
+  /** Set false only for dry-run planning. */
+  writeReceipt?: boolean;
+}
+
+const BAG_MIRROR_TAG = LARARIUM_BAG_MIRROR_TAG;
+const LARES_BAG_ID = LARES_DOC_URI;
+const LARARIUM_BAG_ID = LARARIUM_DOC_URI;
 
 function uniquePush(seen: Set<string>, target: string[], value: string): void {
   if (seen.has(value)) return;
@@ -105,38 +122,8 @@ function resolveOracle(lookupWiki: PromoteWiki, targetBagId: string): PromoteTid
   return mirrorConfigTitle ? lookupWiki.getTiddler(mirrorConfigTitle) : undefined;
 }
 
-function splitHash(uri: string): [string, string | null] {
-  const index = uri.indexOf("#");
-  return index >= 0 ? [uri.slice(0, index), uri.slice(index + 1)] : [uri, null];
-}
-
-function stripMd(value: string): string {
-  return value.endsWith(".md") ? value.slice(0, -3) : value;
-}
-
-function canonicalRelPath(uri: string, targetBagId: string): string | null {
-  if (!uri.startsWith(URI_PREFIX)) return null;
-
-  const [baseUri, fragment] = splitHash(uri.slice(URI_PREFIX.length));
-  let base = stripMd(baseUri);
-  if (!base) return null;
-
-  if (targetBagId === LARES_BAG_ID) {
-    if (base.startsWith("@lararium/")) return null;
-    if (base.startsWith("@lares/")) base = base.slice("@lares/".length);
-    else if (base.startsWith("@")) return null;
-  } else if (targetBagId === LARARIUM_BAG_ID) {
-    if (!base.startsWith("@lararium/")) return null;
-    base = base.slice("@lararium/".length);
-  } else {
-    return null;
-  }
-
-  return fragment ? `${base}/${fragment}.md` : `${base}.md`;
-}
-
 function resolveRelPath(wiki: PromoteWiki, uri: string, targetBagId: string, pathFilter: string): string | null {
-  const canonical = canonicalRelPath(uri, targetBagId);
+  const canonical = canonicalMirrorRelPathForBag(uri, targetBagId);
   if (canonical) return canonical;
 
   const filterExpr = "[title[" + uri + "]" + pathFilter + "]";
@@ -164,14 +151,18 @@ export function promoteUris(
   uris:        string[],
   targetBagId: string,
   lookupWiki:  PromoteWiki = wiki,
+  options:     PromotePlanOptions = {},
 ): PromoteResult {
-  const plan = planPromoteUris(wiki, uris, targetBagId, lookupWiki);
+  const plan = planPromoteUris(wiki, uris, targetBagId, lookupWiki, options);
   if (plan.error) {
     return plan;
   }
 
   for (const copy of plan.copies) {
     wiki.addTiddler(new tw.Tiddler(copy.fields));
+  }
+  if (plan.receiptRecord) {
+    wiki.addTiddler(new tw.Tiddler(plan.receiptRecord.fields));
   }
   for (const title of plan.tombstones) {
     wiki.deleteTiddler(title);
@@ -183,6 +174,7 @@ export function promoteUris(
     childrenPromoted: plan.childrenPromoted,
     promotedTo: plan.promotedTo,
     promotedAt: plan.promotedAt,
+    ...(plan.receipt !== undefined && { receipt: plan.receipt }),
   };
 }
 
@@ -191,6 +183,7 @@ export function planPromoteUris(
   uris:        string[],
   targetBagId: string,
   lookupWiki:  PromoteWiki = wiki,
+  options:     PromotePlanOptions = {},
 ): PromotePlan {
   const promotedAt = new Date().toISOString();
   const oracle = resolveOracle(lookupWiki, targetBagId);
@@ -251,13 +244,31 @@ export function planPromoteUris(
     promoted.push(uri);
   }
 
+  const childrenPromoted = expanded.children.filter((uri) => promoted.includes(uri));
+  const receiptFields = (options.writeReceipt !== false && promoted.length > 0)
+    ? buildPromotionReceiptFields({
+          ...(options.receiptId !== undefined && { receiptId: options.receiptId }),
+          actor: options.actor ?? "tw5-peer",
+          ...(options.sourceBag !== undefined && { sourceBag: options.sourceBag }),
+          targetBag: targetBagId,
+          promoted,
+          tombstoned: tombstones,
+          skipped,
+          childrenPromoted,
+          promotedAt,
+          ...(options.peerId !== undefined && { peerId: options.peerId }),
+        })
+    : undefined;
+  const receiptRecord = receiptFields ? { title: receiptFields.title, fields: receiptFields } : undefined;
+
   return {
     promoted,
     skipped,
-    childrenPromoted: expanded.children.filter((uri) => promoted.includes(uri)),
+    childrenPromoted,
     promotedTo: targetBagId,
     promotedAt,
     copies,
     tombstones,
+    ...(receiptRecord !== undefined && { receiptRecord, receipt: receiptRecord.fields.title }),
   };
 }

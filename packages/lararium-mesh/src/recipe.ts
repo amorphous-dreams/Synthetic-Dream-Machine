@@ -1,7 +1,7 @@
 /**
  * recipe — RecipeTiddler schema + URI helpers for Lares recipe tiddlers.
  *
- * Canonical home: @lararium/types (no external deps; shared by mesh and tw5).
+ * Canonical home: @lararium/mesh.
  * Public face: @lararium/tw5 re-exports this module as the operator-facing surface.
  *
  * A recipe tiddler functions as a first-class tiddler stored inside a root doc (typically
@@ -59,21 +59,7 @@ export interface BagTiddler {
   readonly bag:         string;
 }
 
-/**
- * Stable lar: URI for a bag descriptor tiddler.
- *
- * The descriptor tiddler title = `{bagId}/descriptor`.
- * This satisfies the URI grammar: no `@` at pos-3+, clean leaf path under the root doc.
- *
- * Examples:
- *   bagDescriptorUri("lar:///ha.ka.ba/@lararium")  → "lar:///ha.ka.ba/@lararium/descriptor"
- *   bagDescriptorUri("lar:///ha.ka.ba/@catalog")   → "lar:///ha.ka.ba/@catalog/descriptor"
- *
- * @param bagId  - The bag's lar: URI (= Automerge doc address).
- */
-export function bagDescriptorUri(bagId: string): string {
-  return `${bagId}/descriptor`;
-}
+export { bagDescriptorUri } from "./lar-uris.js";
 
 // ---------------------------------------------------------------------------
 // RecipeTiddler — stored shape
@@ -111,19 +97,7 @@ export interface RecipeTiddler {
 // URI helpers
 // ---------------------------------------------------------------------------
 
-/**
- * Stable lar: URI for a named recipe tiddler.
- *
- * @param root  - The @-prefixed root doc slot, e.g. "@lararium" or "@catalog".
- * @param name  - Short recipe name, e.g. "default", "wiki", "elyncia".
- *
- * e.g. recipeUri("@lararium", "default") → "lar:///ha.ka.ba/@lararium/recipes/default"
- */
-export function recipeUri(root: string, name: string): string {
-  // root is e.g. "@lararium" — strip leading @ for cosmetics if needed, but keep as-is for URI.
-  const rootSlug = root.startsWith("@") ? root : `@${root}`;
-  return `lar:///ha.ka.ba/${rootSlug}/recipes/${name}`;
-}
+export { recipeUri } from "./lar-uris.js";
 
 // ---------------------------------------------------------------------------
 // parseBagStack — isomorphic helper

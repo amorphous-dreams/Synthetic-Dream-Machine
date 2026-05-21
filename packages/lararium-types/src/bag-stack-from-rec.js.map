@@ -1,1 +1,0 @@
-{"version":3,"file":"bag-stack-from-rec.js","sourceRoot":"","sources":["bag-stack-from-rec.ts"],"names":[],"mappings":"AAAA;;;;;;;;GAQG;AAEH,OAAO,EAAE,aAAa,EAAE,MAAM,aAAa,CAAC;AAG5C,MAAM,UAAU,eAAe,CAAC,GAAqB;IACnD,MAAM,GAAG,GAAG,GAAG,CAAC,OAAO,CAAC,WAAW,CAAC,CAAC;IACrC,OAAO,aAAa,CAAC,OAAO,GAAG,KAAK,QAAQ,CAAC,CAAC,CAAC,GAAG,CAAC,CAAC,CAAC,SAAS,CAAC,CAAC;AAClE,CAAC"}

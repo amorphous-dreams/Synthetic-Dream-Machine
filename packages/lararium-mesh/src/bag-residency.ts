@@ -42,6 +42,8 @@
  *     never on slices within a doc.
  */
 
+
+import { ADMIN_BAG_ID, LARES_PIN_TAG } from "./lar-uris.js";
 /** A bag's URL — Automerge doc URL, e.g. "automerge:abc123…". */
 export type BagUrl = string;
 
@@ -313,10 +315,7 @@ export class BagResidencyManager {
 // manager reads pin tiddlers at boot and applies them.
 // ---------------------------------------------------------------------------
 
-/** Tag every operator-pin tiddler carries. */
-export const LARES_PIN_TAG = "lar:///ha.ka.ba/tags/lares-pin";
-
 /** Build the URI for a pin tiddler under the admin doc. */
 export function pinTiddlerUri(bagUrl: BagUrl): string {
-  return `lar:///ha.ka.ba/@lararium/@admin/pin/${encodeURIComponent(bagUrl)}`;
+  return `${ADMIN_BAG_ID}/pin/${encodeURIComponent(bagUrl)}`;
 }

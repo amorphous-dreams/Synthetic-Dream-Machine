@@ -15,7 +15,7 @@
  */
 
 import { describe, test, expect } from "vitest";
-import { MemeStreamParser } from "@lararium/types";
+import { MemeStreamParser } from "../src/meme-stream.js";
 
 // ---------------------------------------------------------------------------
 // Fixtures

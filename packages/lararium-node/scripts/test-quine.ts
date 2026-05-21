@@ -25,9 +25,9 @@ import { fileURLToPath }   from "url";
 import { TW5Engine }       from "@lararium/tw5";
 import type { TW5TiddlerFields } from "@lararium/tw5";
 import type { LarDoc } from "@lararium/mesh";
-import { ENGINE_CORE_ID, GRAMMAR_TAG } from "@lararium/mesh";
+import { ENGINE_CORE_ID, GRAMMAR_TAG, LARES_MEMETIC_WIKITEXT_PLUGIN_URI } from "@lararium/mesh";
 
-const LARES_TW5_PLUGIN_TITLE = "lar:///plugins/lares/memetic-wikitext";
+const LARES_TW5_PLUGIN_TITLE = LARES_MEMETIC_WIKITEXT_PLUGIN_URI;
 
 const __dir       = dirname(fileURLToPath(import.meta.url));
 const GENESIS_BIN = join(__dir, "../genesis/island.bin");

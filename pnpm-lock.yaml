@@ -42,18 +42,12 @@ importers:
       '@lararium/mesh':
         specifier: workspace:*
         version: link:../lararium-mesh
-      '@lararium/types':
-        specifier: workspace:*
-        version: link:../lararium-types
 
   packages/lararium-mesh:
     dependencies:
       '@automerge/automerge-repo':
         specifier: ^2.5.5
         version: 2.5.5
-      '@lararium/types':
-        specifier: workspace:*
-        version: link:../lararium-types
       '@noble/ed25519':
         specifier: ^3.1.0
         version: 3.1.0
@@ -94,9 +88,6 @@ importers:
       '@lararium/tw5':
         specifier: workspace:*
         version: link:../lararium-tw5
-      '@lararium/types':
-        specifier: workspace:*
-        version: link:../lararium-types
       '@octokit/rest':
         specifier: ^22.0.1
         version: 22.0.1
@@ -122,9 +113,6 @@ importers:
       '@lararium/mesh':
         specifier: workspace:*
         version: link:../lararium-mesh
-      '@lararium/types':
-        specifier: workspace:*
-        version: link:../lararium-types
       '@taplo/lib':
         specifier: ^0.5.0
         version: 0.5.0
@@ -144,12 +132,6 @@ importers:
       vite:
         specifier: ^8.0.10
         version: 8.0.10(@types/node@24.12.3)(esbuild@0.27.7)(tsx@4.21.0)
-      vitest:
-        specifier: ^3.2.0
-        version: 3.2.4(@types/node@24.12.3)(lightningcss@1.32.0)(tsx@4.21.0)
-
-  packages/lararium-types:
-    devDependencies:
       vitest:
         specifier: ^3.2.0
         version: 3.2.4(@types/node@24.12.3)(lightningcss@1.32.0)(tsx@4.21.0)

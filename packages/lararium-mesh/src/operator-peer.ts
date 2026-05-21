@@ -1,4 +1,4 @@
-import type { LarTiddlerStore } from "@lararium/types";
+import type { LarTiddlerStore } from "./tiddler-store.js";
 
 /**
  * LarOpenPhase — canonical peer boot sequence shared by all platform peers.

@@ -1,10 +1,10 @@
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/@lares/api/v0.1/pono/memetic-wikitext >> -->
 
-<<~&#x0001; ? -> lar:///ha.ka.ba/@lararium/types/bag-stack-from-rec >>
+<<~&#x0001; ? -> lar:///ha.ka.ba/@lararium/mesh/bag-stack-from-rec >>
 ```toml iam
-uri-path    = "ha.ka.ba/@lararium/types/bag-stack-from-rec"
-file-path   = "bags/@lararium/types/bag-stack-from-rec.md"
-source-file = "packages/lararium-types/src/bag-stack-from-rec.ts"
+uri-path    = "ha.ka.ba/@lararium/mesh/bag-stack-from-rec"
+file-path   = "bags/@lararium/mesh/bag-stack-from-rec.md"
+source-file = "packages/lararium-mesh/src/bag-stack-from-rec.ts"
 heleuma     = "ba"
 type        = "text/x-memetic-wikitext"
 register    = "CS"

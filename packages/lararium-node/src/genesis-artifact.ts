@@ -24,6 +24,7 @@ import {
   LARARIUM_DOC_URI,
   CATALOG_DOC_URI,
   LARES_DOC_URI,
+  LARES_MEMETIC_WIKITEXT_PLUGIN_URI,
   IDENTITIES_DOC_URI,
   CIRCLES_DOC_URI,
   SESSIONS_DOC_URI,
@@ -128,7 +129,7 @@ export async function loadGenesisIsland(repo: Repo, genesisDir?: string): Promis
 
   const blobCount    = Object.keys(doc.blobs ?? {}).length;
   const tiddlerCount = Object.keys(doc.tiddlers ?? {}).length;
-  const pluginOk     = Boolean(doc.blobs?.["lar:///plugins/lares/memetic-wikitext"]);
+  const pluginOk     = Boolean(doc.blobs?.[LARES_MEMETIC_WIKITEXT_PLUGIN_URI]);
   if (!pluginOk) {
     throw new Error("[genesis-artifact] genesis artifact missing packed Lares TW5 plugin — run build:genesis after build:plugin.");
   }

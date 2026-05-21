@@ -4,6 +4,7 @@ type: application/javascript
 module-type: allfilteroperator
 \*/
 import type { TW5Wiki } from "../types/tiddlywiki.js";
+import { allLarTitles } from "./lar-title.js";
 
 /**
  * [all[memes]] — all tiddlers whose title carries a lar: URI.
@@ -20,9 +21,5 @@ export function memes(
   _prefix:  string,
   options:  { wiki: TW5Wiki },
 ): string[] {
-  const results: string[] = [];
-  options.wiki.each(function (_tiddler, title: string) {
-    if (title.startsWith("lar:")) results.push(title);
-  });
-  return results;
+  return allLarTitles(options.wiki);
 }

@@ -21,7 +21,7 @@
  * Meme: lar:///ha.ka.ba/@lararium/mesh/v0.1/base-doc
  */
 
-import type { LarTiddlerRecord } from "@lararium/types";
+import type { LarTiddlerRecord } from "./tiddler-store.js";
 
 export function mutableLarRecord(
   title: string,

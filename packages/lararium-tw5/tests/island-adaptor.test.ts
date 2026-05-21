@@ -17,8 +17,8 @@
 import { describe, test, expect, beforeEach, afterEach, vi } from "vitest";
 import { IslandAdaptor }      from "../src/island-adaptor.js";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
-import { IslandAccumulator }    from "@lararium/types";
-import type { LarTiddlerChange, ChangeOrigin } from "@lararium/types";
+import { IslandAccumulator }    from "@lararium/mesh";
+import type { LarTiddlerChange, ChangeOrigin } from "@lararium/mesh";
 
 // ---------------------------------------------------------------------------
 // FakeTW5Engine — minimal TW5Engine surface used by IslandAdaptor
@@ -55,6 +55,13 @@ class FakeTW5Engine {
     Tiddler: class {
       fields: TW5FieldsMap;
       constructor(fields: TW5FieldsMap) { this.fields = fields; }
+      getFieldStrings(): Record<string, string> {
+        const out: Record<string, string> = {};
+        for (const [k, v] of Object.entries(this.fields)) {
+          if (v !== undefined) out[k] = String(v);
+        }
+        return out;
+      }
     },
     wiki: this.wiki,
   };

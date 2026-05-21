@@ -37,7 +37,7 @@
 
 import type {
   LarTiddlerRecord, LarTiddlerChange, ChangeOrigin,
-} from "@lararium/types";
+} from "@lararium/mesh";
 import {
   type CommandTiddler, type CompositeStore,
   type CapabilityVerifier, type CapabilityVerifyResult, type CapabilityAccess,

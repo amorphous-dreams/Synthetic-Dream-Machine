@@ -6,11 +6,16 @@
  * local to the wiki VM.
  */
 
-import { type CompositeStore, bagScopedStore } from "@lararium/mesh";
+import { type CompositeStore, bagScopedStore, type TW5TiddlerInputFieldsWithTitle } from "@lararium/mesh";
 import { IslandAdaptor, planPromoteUris, type TW5Engine, type TW5Wiki } from "@lararium/tw5";
-import { toLarTiddlerRecord } from "@lararium/types";
+import { toLarTiddlerRecord } from "@lararium/mesh";
 import type { CommandHandler } from "./command-dispatcher.js";
 import { stringArg, optionalStringArg } from "./handler-args.js";
+
+function stringListField(value: unknown): string | string[] | undefined {
+  if (Array.isArray(value)) return value.filter((v): v is string => typeof v === "string");
+  return typeof value === "string" ? value : undefined;
+}
 
 export interface PromoteHandlerOptions {
   readonly composite: CompositeStore;
@@ -66,7 +71,12 @@ export function createPromoteHandler(opts: PromoteHandlerOptions): CommandHandle
     }
 
     const vm = opts.getPrimaryEngine();
-    const result = planPromoteUris(vm.wiki, [tiddler], toBag, opts.getMirrorLookupWiki());
+    const result = planPromoteUris(vm.wiki, [tiddler], toBag, opts.getMirrorLookupWiki(), {
+      actor: ctx.command.requestedBy,
+      sourceBag: actualFromBag,
+      peerId: "node",
+      receiptId: ctx.command.requestId,
+    });
 
     if (result.error) {
       throw new Error(result.error);
@@ -90,12 +100,21 @@ export function createPromoteHandler(opts: PromoteHandlerOptions): CommandHandle
 
     for (const copy of result.copies) {
       const { title, tags, list, ...rest } = copy.fields;
-      await targetAdaptor.saveRecord(toLarTiddlerRecord({
-        ...rest,
-        title,
-        ...(tags !== undefined ? { tags: [...tags] } : {}),
-        ...(list !== undefined ? { list: [...list] } : {}),
-      }));
+      const nextRecord: TW5TiddlerInputFieldsWithTitle = { ...rest, title };
+      const nextTags = stringListField(tags);
+      const nextList = stringListField(list);
+      if (nextTags !== undefined) nextRecord.tags = nextTags;
+      if (nextList !== undefined) nextRecord.list = nextList;
+      await targetAdaptor.saveRecord(toLarTiddlerRecord(nextRecord));
+    }
+    if (result.receiptRecord) {
+      const { title, tags, list, ...rest } = result.receiptRecord.fields;
+      const nextRecord: TW5TiddlerInputFieldsWithTitle = { ...rest, title };
+      const nextTags = stringListField(tags);
+      const nextList = stringListField(list);
+      if (nextTags !== undefined) nextRecord.tags = nextTags;
+      if (nextList !== undefined) nextRecord.list = nextList;
+      await targetAdaptor.saveRecord(toLarTiddlerRecord(nextRecord));
     }
     for (const title of result.tombstones) {
       await sourceAdaptor.deleteTitle(title);
@@ -108,6 +127,7 @@ export function createPromoteHandler(opts: PromoteHandlerOptions): CommandHandle
       promotedAt: result.promotedAt,
       childrenPromoted: result.childrenPromoted,
       skipped: result.skipped,
+      receipt: result.receipt,
     };
   };
 }

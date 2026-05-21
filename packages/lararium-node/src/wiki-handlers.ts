@@ -12,8 +12,8 @@
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 import type { Repo, DocHandle, AutomergeUrl } from "@automerge/automerge-repo";
-import type { LarTiddlerRecord, ChangeOrigin } from "@lararium/types";
-import { bagStackFromRec } from "@lararium/types";
+import type { LarTiddlerRecord, ChangeOrigin } from "@lararium/mesh";
+import { bagStackFromRec } from "@lararium/mesh";
 import {
   type CompositeStore, type LarDoc, type BagResidencyManager,
   emptyLarDoc, ADMIN_BAG_ID, wikiLarUri, wikiDraftLarUri,

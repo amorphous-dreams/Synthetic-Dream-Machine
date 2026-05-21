@@ -11,9 +11,10 @@ register  = "CS"
 manaoio   = 0.80
 mana      = 0.86
 manao     = 0.84
-role      = "render pipeline law: three render modes, lar-render-mode dispatch, template cascade, causal island boundary, meme-ast in @lararium/tw5"
-cacheable = true
-retain    = true
+role          = "render pipeline law: three render modes, lar-render-mode dispatch, template cascade, causal island boundary, meme-ast in @lararium/tw5"
+cacheable     = true
+retain        = true
+source-symbol = "RenderMode RENDER_MODES RENDER_MODE_REACTION_WIRE"
 ```
 
 <<~ aka lar:///ha.ka.ba/@lares/api/v0.1/pono/RFC-2119#normative-language >>

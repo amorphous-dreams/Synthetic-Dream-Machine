@@ -1,6 +1,7 @@
 import { readFileSync } from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
+import { LARES_MEMETIC_WIKITEXT_PLUGIN_URI } from "@lararium/mesh";
 import {
   readPluginSourceManifest,
   type PluginSourceManifest,
@@ -14,7 +15,7 @@ import { parseTidFile } from "../plugin-build/tid-file.js";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "..");
 const SOURCE_MANIFEST = path.join(ROOT, "dist-plugin", "plugin-source-manifest.json");
-const CANONICAL_TITLE = "lar:///plugins/lares/memetic-wikitext";
+const CANONICAL_TITLE = LARES_MEMETIC_WIKITEXT_PLUGIN_URI;
 
 function assertThrows(label: string, fn: () => void, pattern: RegExp): void {
   try {

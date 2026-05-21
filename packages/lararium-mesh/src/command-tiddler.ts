@@ -39,12 +39,8 @@
  *   - Tag carries a lar: URI; the title syncs across peers.
  */
 
-import { ADMIN_BAG_ID } from "./lar-uris.js";
-import type { LarTiddlerRecord } from "@lararium/types";
-
-/** Tag every command tiddler carries. Tags are vm-side metadata and do not
- *  leak across the sync boundary; the title is the load-bearing identifier. */
-export const LARES_COMMAND_TAG = "lar:///ha.ka.ba/tags/lares-command";
+import { ADMIN_BAG_ID, LARES_COMMAND_EVENT_TAG, LARES_COMMAND_TAG } from "./lar-uris.js";
+import type { LarTiddlerRecord } from "./tiddler-store.js";
 
 /** All command tiddler titles share this prefix. */
 export const COMMAND_URI_PREFIX = `${ADMIN_BAG_ID}/cmd/`;
@@ -53,7 +49,6 @@ export const COMMAND_URI_PREFIX = `${ADMIN_BAG_ID}/cmd/`;
  *  Every successful command produces one; operators inspect them as the
  *  forensic trail. Tagged lar:///ha.ka.ba/tags/lares-command-event for vm-side filters. */
 export const COMMAND_EVENT_URI_PREFIX = `${ADMIN_BAG_ID}/log/`;
-export const LARES_COMMAND_EVENT_TAG  = "lar:///ha.ka.ba/tags/lares-command-event";
 
 /** Build a durable audit-event record for a completed command. */
 export function buildCommandEventTiddler(opts: {

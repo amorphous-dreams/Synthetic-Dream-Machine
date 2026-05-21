@@ -14,6 +14,7 @@
  */
 import { readFileSync } from "fs";
 import path from "path";
+import { LARES_MEMETIC_WIKITEXT_PLUGIN_URI } from "@lararium/mesh";
 import { TW5Engine } from "../src/tw5-vm.js";
 import { exportMemeText } from "../src/meme-write.js";
 import { TW5_CORE_SCRIPT_FILENAME, TW5_CORE_DIR } from "../src/generated-tw5-version.js";
@@ -28,7 +29,7 @@ async function main(): Promise<void> {
   const wiki = engine.wiki;
 
   const expectedTitles = [
-    "lar:///plugins/lares/memetic-wikitext",
+    LARES_MEMETIC_WIKITEXT_PLUGIN_URI,
     "lar:///config/Lar/AhuTemplate/markdown-meme",
     "lar:///config/Lar/AhuTemplate/html",
     "lar:///config/Lar/AkaTemplate/markdown-meme",

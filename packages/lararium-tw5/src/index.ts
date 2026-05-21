@@ -24,7 +24,7 @@ export type {
 export { IslandAdaptor } from "./island-adaptor.js";
 export { MemoryTiddlerStore } from "./memory-store.js";
 export type { ProjectionStore } from "./memory-store.js";
-export type { MemeRecipeVm } from "@lararium/types";
+export type { MemeRecipeVm } from "@lararium/mesh";
 
 export { DirectMemeRecipeVm, bootMemeRecipeVm } from "./meme-recipe-vm.js";
 
@@ -39,8 +39,9 @@ export { TW5_VERSION, TW5_CORE_SCRIPT_FILENAME, TW5_CORE_DIR } from "./generated
 
 export { parseTaploFields, patchTomlKey, lintToml } from "./toml-ast.js";
 
-export type { BagTiddler, RecipeTiddler } from "@lararium/types";
-export { bagDescriptorUri, recipeUri, parseBagStack, parsePlugins } from "@lararium/types";
+export type { BagTiddler, RecipeTiddler } from "@lararium/mesh";
+export { bagDescriptorUri, recipeUri } from "@lararium/mesh/lar-uris";
+export { parseBagStack, parsePlugins } from "@lararium/mesh";
 
 export { TW5WorkerProxy } from "./tw5-worker-proxy.js";
 

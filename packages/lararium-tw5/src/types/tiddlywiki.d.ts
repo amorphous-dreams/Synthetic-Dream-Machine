@@ -47,13 +47,13 @@ import type {
   TW5TiddlerInputFields,
   ITW5TiddlerFields,
   TW5TiddlerFields,
-} from "@lararium/types";
+} from "@lararium/mesh";
 export type {
   ITW5TiddlerInputFields,
   TW5TiddlerInputFields,
   ITW5TiddlerFields,
   TW5TiddlerFields,
-} from "@lararium/types";
+} from "@lararium/mesh";
 
 // ---------------------------------------------------------------------------
 // Parse tree nodes (produced by parsers, consumed by widget engine)

@@ -1,6 +1,7 @@
 import type { DocHandle } from "@automerge/automerge-repo";
-import type { LarTiddlerRecord, LarTiddlerStore, LarTiddlerChange, ChangeOrigin, MemeProjection } from "@lararium/types";
-import { MemeProvider } from "@lararium/types";
+import type { LarTiddlerRecord, LarTiddlerStore, LarTiddlerChange, ChangeOrigin } from "./tiddler-store.js";
+import type { MemeProjection } from "./meme-provider.js";
+import { MemeProvider } from "./meme-provider.js";
 import type { LarDoc } from "./base-doc.js";
 
 type MutableLarTiddlerRecord = {

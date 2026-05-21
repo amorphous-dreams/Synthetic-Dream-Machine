@@ -17,7 +17,6 @@ cacheable   = true
 hydrate     = true
 retain      = true
 heleuma     = "ba"
-source-file = "packages/lararium-mesh/src/ast.ts"
 source-symbol = "LADDER_5 OODA_HA_5 SCOPE_5 SCOPE_TO_LADDER RATING_5 STAGE_5 STAGE_BAND_MID RATING_COLOR"
 body-sha256 = "19f27816a8ab295a4bb00080242f0b0592d078c3d2b514cd946da1f396a5454e"
 ```

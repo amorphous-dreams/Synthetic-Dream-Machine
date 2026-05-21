@@ -19,7 +19,7 @@
  *   - src/*.js      — generated CJS module tiddlers (built by Vite)
  */
 
-import { sha256HexSync } from "@lararium/mesh";
+import { LARES_MEMETIC_WIKITEXT_PLUGIN_URI, sha256HexSync } from "@lararium/mesh";
 import { readFileSync, writeFileSync, mkdirSync, mkdtempSync, rmSync, cpSync, copyFileSync, existsSync } from "fs";
 import { spawnSync } from "child_process";
 import { tmpdir } from "os";
@@ -51,7 +51,7 @@ const OUT_DIR    = path.join(ROOT, "dist-plugin");
 const PLUGIN_DIR = path.join(ROOT, "plugins");
 const BAG_ROOT   = path.join(REPO_ROOT, "bags", "@lararium", "tw5");
 
-const PLUGIN_TITLE_LAR = "lar:///ha.ka.ba/@lararium/plugins/lares/memetic-wikitext";
+const PLUGIN_TITLE_LAR = LARES_MEMETIC_WIKITEXT_PLUGIN_URI;
 const PLUGIN_TITLE_TW5 = "$:/plugins/lares/memetic-wikitext";
 
 const TW5_BIN = path.join(ROOT, "../../node_modules/.pnpm/node_modules/.bin/tiddlywiki");

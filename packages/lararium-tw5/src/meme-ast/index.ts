@@ -30,7 +30,7 @@ export type {
 } from "./types.js";
 
 // Re-export PranalaEdge from the shared edge-vocabulary module for convenience.
-export type { PranalaEdge, PranalaEdgeViolation, GrammarRules, SigilRule } from "@lararium/types";
+export type { PranalaEdge, PranalaEdgeViolation, GrammarRules, SigilRule } from "./types.js";
 
 export type { SigilScan, ParseEvent } from "./scanner.js";
 export { BOOTSTRAP_SCANS, buildScansFromGrammar, collectEvents } from "./scanner.js";

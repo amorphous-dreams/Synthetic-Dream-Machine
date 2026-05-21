@@ -16,8 +16,10 @@ import type {
   TW5TiddlerInputFields,
   TW5TiddlerFields,
 } from "./types/tiddlywiki.js";
-import type { IslandAccumulator, LarTiddlerRecord } from "@lararium/types";
-import { toLarTiddlerRecord } from "@lararium/types";
+import { BOOT_SPLASH_ACTIVE_URI } from "@lararium/mesh/lar-uris";
+import type { IslandAccumulator } from "@lararium/mesh";
+import type { LarTiddlerRecord } from "@lararium/mesh";
+import { toLarTiddlerRecord } from "@lararium/mesh";
 
 // ---------------------------------------------------------------------------
 // CameraRegistration — multi-view projection surface
@@ -423,9 +425,9 @@ export class TW5Engine {
   setBootSplash(active: boolean): void {
     if (!this._tw) return;
     if (active) {
-      this._tw.wiki.addTiddler(new this._tw.Tiddler({ title: "lar:///ha.ka.ba/state/boot-splash/active", text: "yes" }));
+      this._tw.wiki.addTiddler(new this._tw.Tiddler({ title: BOOT_SPLASH_ACTIVE_URI, text: "yes" }));
     } else {
-      this._tw.wiki.deleteTiddler("lar:///ha.ka.ba/state/boot-splash/active");
+      this._tw.wiki.deleteTiddler(BOOT_SPLASH_ACTIVE_URI);
     }
   }
 

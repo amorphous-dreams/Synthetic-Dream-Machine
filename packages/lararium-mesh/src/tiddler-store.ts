@@ -21,7 +21,20 @@
  *   - tombstone() marks deletion in live wiki state; no hard delete by default.
  */
 
-import type { MemeProjection } from "./meme-provider.js";
+// ---------------------------------------------------------------------------
+// MemeProjection — typed slot for a downstream CRDT integration
+// ---------------------------------------------------------------------------
+
+export interface MemeProjection {
+  onUriChanged(change: LarTiddlerChange): void;
+  onChangeset?(uris: ReadonlySet<string>, origin: ChangeOrigin): void;
+  onSyncComplete?(islandId: string): void;
+}
+
+// Minimal Automerge patch shape — only path[0] (the top-level doc key) is needed.
+export interface RawPatch {
+  path: unknown[];
+}
 
 /**
  * Raw/open field bag accepted by `new $tw.Tiddler(...)`, deserializers, and

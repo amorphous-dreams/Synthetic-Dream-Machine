@@ -13,7 +13,7 @@
   "types": "./dist/src/index.d.ts",
   "scripts": {
     "prebuild": "node ../../tools/clean-output.mjs dist",
-    "build": "tsc",
+    "build": "tsc -p tsconfig.build.json",
     "typecheck": "tsc --noEmit -p tsconfig.typecheck.json",
     "test": "vitest run",
     "dev": "tsx src/main.ts",
@@ -25,7 +25,6 @@
     "@automerge/automerge-repo": "^2.5.5",
     "@automerge/automerge-repo-network-websocket": "^2.5.5",
     "@automerge/automerge-repo-storage-nodefs": "^2.5.5",
-    "@lararium/types": "workspace:*",
     "@lararium/mesh": "workspace:*",
     "@lararium/keyhive": "workspace:*",
     "@lararium/tw5": "workspace:*",
