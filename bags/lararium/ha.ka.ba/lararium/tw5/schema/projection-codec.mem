@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" from=? -> to=lar:///ha.ka.ba/lararium/tw5/schema/projection-codec>>
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/tw5/schema/projection-codec">>
 ```toml meta
 cacheable   = true
 file-path   = "bags/lararium/ha.ka.ba/lararium/tw5/schema/projection-codec.mem"
@@ -110,4 +110,4 @@ composeCarrierSlotBody(fields: Record<string, string>, text: string): string
 
 <<^ code="&#x0003;">>ni:///sha-256;RqDxaXZP-NCPWbCi61ky5EGWqMEFB7UqvcXcrJkO0DY
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

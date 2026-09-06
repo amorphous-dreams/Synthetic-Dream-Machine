@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" namespace="⊙" from=? -> to=lar:///ha.ka.ba/lares/docs/pono/swarm-harvest/topic-a-the-onboarding-cost-question-1c7848>>
+<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/swarm-harvest/topic-a-the-onboarding-cost-question-1c7848">>
 ```toml meta
 cacheable = false
 file-path = "bags/lares/ha.ka.ba/lares/docs/pono/swarm-harvest/topic-a-the-onboarding-cost-question-1c7848.mem"
@@ -417,4 +417,4 @@ Also not retrieved: **Notary** root rotation semantics. No findings.
 
 <<^ code="&#x0003;">>ni:///sha-256;z4NPWZZFfgamj2fU61o6wBDCrynfxO_9SU0kT7NhU2M
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" from=? -> to=lar:///ha.ka.ba/lararium/tw5/tw5-browser-surface>>
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/tw5/tw5-browser-surface">>
 ```toml meta
 cacheable   = true
 file-path   = "bags/lararium/ha.ka.ba/lararium/tw5/tw5-browser-surface.mem"
@@ -54,4 +54,4 @@ these types without an explicit entry in `deletion-map.md`.
 
 <<^ code="&#x0003;">>ni:///sha-256;-K5s_TY7l4yEEZRYhi8CDCUSXWmgL9lyJoD8uvAnK6U
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

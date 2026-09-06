@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" namespace="⊙" from=? -> to=lar:///ha.ka.ba/lares/docs/pono/canvas-field-scout>>
+<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/canvas-field-scout">>
 ```toml meta
 cacheable         = true
 file-path         = "bags/lares/ha.ka.ba/lares/docs/pono/canvas-field-scout.mem"
@@ -716,4 +716,4 @@ Wiggins: *"To this date it remains a mystery why we had solid growth for nearly 
 
 <<^ code="&#x0003;">>ni:///sha-256;qy-1Y0P5U_bltJd7rZUZZUQ1347wzAegQkJ3G6ae2Qc
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

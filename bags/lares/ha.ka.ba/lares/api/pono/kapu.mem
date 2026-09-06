@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0011;" namespace="⊙" from=? -> to=lar:///ha.ka.ba/lares/api/pono/kapu>>
+<<^ code="&#x0011;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/kapu">>
 ```toml meta
 cacheable = true
 file-path = "bags/lares/ha.ka.ba/lares/api/pono/kapu.mem"
@@ -93,7 +93,7 @@ Above-namespace carriers declare their register through:
 | signal | example | meaning |
 |---|---|---|
 | `namespace` IAM field | `namespace = "ॐ ँ"` | named glyph-space above base |
-| kernel control chars | `<<^ code="&#x0001;" namespace="⊙" from=? -> to=` | positions 1–4 reserved for kernel-tier structural sigils |
+| kernel control chars | `<<^ code="&#x0001;" namespace="⊙" from="?" -> to=` | positions 1–4 reserved for kernel-tier structural sigils |
 | role field | `role = "... kernel ..."` | explicit declaration of kernel authority |
 
 A carrier that uses kernel control characters without implementing kapu reads as `ano` or below.
@@ -131,7 +131,7 @@ This meme governs the kapu rating and above-namespace trust law.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;c3b2S0ABk4b7JyRF2FvtUnU4Tnz1rExMVlAtLqQ8Igw
+<<^ code="&#x0003;">>ni:///sha-256;Vb6_W0OT_fxx1AdgmGLZ7KIlLRQAuY6ttKWPYrS-wro
 
-<<^ code="&#x0004;" -> to=?>>
-<<^ code="&#x0014;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>
+<<^ code="&#x0014;" -> to="?">>

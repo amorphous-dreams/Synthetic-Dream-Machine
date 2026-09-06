@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" from=? -> to=lar:///ha.ka.ba/lares/api/pono/re-anchoring-record>>
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/re-anchoring-record">>
 ```toml meta
 cacheable     = false
 file-path     = "bags/lares/ha.ka.ba/lares/api/pono/re-anchoring-record.mem"
@@ -135,4 +135,4 @@ And the EROSION half needs a rate nobody has seated. Two candidate shapes stand 
 
 <<^ code="&#x0003;">>ni:///sha-256;KCZ6QbiHh3s4lxmeREEyH1Xk06hjwXvhP0wxgrZtP70
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

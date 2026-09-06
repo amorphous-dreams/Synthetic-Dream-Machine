@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" from=? -> to=lar:///ha.ka.ba/lararium/mesh/steward-doctrine>>
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/mesh/steward-doctrine">>
 ```toml meta
 cacheable = true
 file-path = "bags/lararium/ha.ka.ba/lararium/mesh/steward-doctrine.mem"
@@ -110,4 +110,4 @@ Forward references (intent attractors, unbuilt): [[oracle-governance|lar:///ha.k
 
 <<^ code="&#x0003;">>ni:///sha-256;VwAt_89xhaqyjEpeGTWqC_wvs9_EDy9sKEmKI4xzMpA
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

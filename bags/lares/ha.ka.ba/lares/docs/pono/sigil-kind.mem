@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" from=? -> to=lar:///ha.ka.ba/lares/docs/pono/sigil-kind>>
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/sigil-kind">>
 ```toml meta
 cacheable = true
 file-path = "bags/lares/ha.ka.ba/lares/docs/pono/sigil-kind.mem"
@@ -112,9 +112,9 @@ Both forms share opener parsing; closer presence distinguishes them.
 
 A carrier's head declares its own address, and it rides the ''control frame'' rather than a sharktooth sigil — so no `<<~` dispatch path stands for it, and the `<<^` scanner reads it instead.
 
-Form: `<<^ code="&#x0001;" [namespace="…"] from=? -> to=lar:///…>>`
+Form: `<<^ code="&#x0001;" [namespace="…"] from="?" -> to="lar:///…">>`
 
-Appears at the document top; `from=?` marks "this carrier itself", and `to=` names the address it stands at. The close mirrors it: `<<^ code="&#x0004;" -> to=?>>`, resolving to a bearing it cannot know.
+Appears at the document top; `from="?`" marks "this carrier itself", and `to=` names the address it stands at. The close mirrors it: `<<^ code="&#x0004;" -> to="?">>`, resolving to a bearing it cannot know.
 
 <<~/ahu>>
 
@@ -197,6 +197,6 @@ The TypeScript validator `validatePranalaEdge` (in `@lararium/mesh`) enforces th
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;d8fDckQHlAwElVcXjBAY7jBkwkfnrhF5mvzG8E3Css0
+<<^ code="&#x0003;">>ni:///sha-256;BWBxY4jdCZgavp_Yhnyyt4vOrVP4H5XfVl8zqdIXRRk
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

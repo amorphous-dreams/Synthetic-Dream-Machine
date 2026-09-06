@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" from=? -> to=lar:///ha.ka.ba/lararium/mesh/dreamnet-prior-art>>
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/mesh/dreamnet-prior-art">>
 ```toml meta
 cacheable     = true
 file-path     = "bags/lararium/ha.ka.ba/lararium/mesh/dreamnet-prior-art.mem"
@@ -672,4 +672,4 @@ The UCAN spec explicitly flags the confinement problem: certificate capabilities
 
 <<^ code="&#x0003;">>ni:///sha-256;D7L3Ma1nd_zn5DSMAi12AzcEyXWpBa992c-ykvCOdac
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

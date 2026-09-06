@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" namespace="⊙" from=? -> to=lar:///ha.ka.ba/lares/api/pono/two-integrities>>
+<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/two-integrities">>
 ```toml meta
 cacheable         = true
 file-path         = "bags/lares/ha.ka.ba/lares/api/pono/two-integrities.mem"
@@ -134,4 +134,4 @@ Against #the-face-planes — where relations travel with the face and a vessel-g
 
 <<^ code="&#x0003;">>ni:///sha-256;RAVNjs4uXRrWAaFN6OXykSHIGkwutKtJ8JX7p2qW9kE
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

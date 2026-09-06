@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" from=? -> to=lar:///ha.ka.ba/lararium/docs/carrier-parse>>
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/docs/carrier-parse">>
 ```toml meta
 file-path     = "bags/lararium/ha.ka.ba/lararium/docs/carrier-parse.mem"
 heleuma       = "ka"
@@ -71,4 +71,4 @@ export function deserializeCarrier(
 
 <<^ code="&#x0003;">>ni:///sha-256;3S3dppNSbr1kZFwuHONTyaogW0oXSNfQvKdwQmYoHZA
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

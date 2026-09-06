@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" from=? -> to=lar:///ha.ka.ba/lararium/docs/tw5-widget-module>>
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/docs/tw5-widget-module">>
 ```toml meta
 file-path   = "bags/lararium/ha.ka.ba/lararium/docs/tw5-widget-module.mem"
 mana        = 17
@@ -45,4 +45,4 @@ When the boot gate passes at least one corpus meme, `tw5-modules` is loaded as a
 
 <<^ code="&#x0003;">>ni:///sha-256;JEUrMvL7hnpF5yVeGDEAu1BOFrhsZRgrbR4amr6AD7k
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

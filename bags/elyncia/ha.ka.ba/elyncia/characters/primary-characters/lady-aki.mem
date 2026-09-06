@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" from=? -> to=lar:///ha.ka.ba/elyncia/characters/primary-characters/lady-aki>>
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/characters/primary-characters/lady-aki">>
 ```toml meta
 file-path                              = "bags/elyncia/ha.ka.ba/elyncia/characters/primary-characters/lady-aki.mem"
 l-space                                = "stable:@elyncia"
@@ -719,4 +719,4 @@ Do not collapse these roles.
 
 <<^ code="&#x0003;">>ni:///sha-256;Smo9x_BZ4cZCXTZ3s7vtXlI9uFdA_p-zbg8xsnOiB7c
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

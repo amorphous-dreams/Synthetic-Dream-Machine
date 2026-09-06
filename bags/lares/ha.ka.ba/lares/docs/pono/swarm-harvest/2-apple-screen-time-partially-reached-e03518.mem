@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" namespace="⊙" from=? -> to=lar:///ha.ka.ba/lares/docs/pono/swarm-harvest/2-apple-screen-time-partially-reached-e03518>>
+<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/swarm-harvest/2-apple-screen-time-partially-reached-e03518">>
 ```toml meta
 cacheable = false
 file-path = "bags/lares/ha.ka.ba/lares/docs/pono/swarm-harvest/2-apple-screen-time-partially-reached-e03518.mem"
@@ -115,4 +115,4 @@ The only enforceable, quotable rule that the supervised party be *shown* they ar
 
 <<^ code="&#x0003;">>ni:///sha-256;lg-XSqJXUxLr7Bb7SQngt98uprsorOOSqYBZkNVeiV8
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" from=? -> to=lar:///ha.ka.ba/elyncia/characters/npcs/the-lindwyrm-nagel-seed>>
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/characters/npcs/the-lindwyrm-nagel-seed">>
 ```toml meta
 cacheable  = true
 file-path  = "bags/elyncia/ha.ka.ba/elyncia/characters/npcs/the-lindwyrm-nagel-seed.mem"
@@ -125,4 +125,4 @@ column of small unreadable type down the left margin.
 
 <<^ code="&#x0003;">>ni:///sha-256;Qbj8FjyEWeeUQtJ7cOpUe4aAi8svFWTFb6vSMf3Ug2I
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

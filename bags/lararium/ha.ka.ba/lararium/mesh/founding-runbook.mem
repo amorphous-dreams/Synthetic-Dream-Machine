@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" namespace="⚕" from=? -> to=lar:///ha.ka.ba/lararium/mesh/founding-runbook>>
+<<^ code="&#x0001;" namespace="⚕" from="?" -> to="lar:///ha.ka.ba/lararium/mesh/founding-runbook">>
 ```toml meta
 cacheable  = true
 file-path  = "bags/lararium/ha.ka.ba/lararium/mesh/founding-runbook.mem"
@@ -1458,4 +1458,4 @@ teach a ceremony nobody has performed.
 
 <<^ code="&#x0003;">>ni:///sha-256;Xp_chsgN-CsHIb4BOGnksI3eWrV8V3a_4zjoE532eyQ
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

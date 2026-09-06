@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" namespace="⊙" from=? -> to=lar:///ha.ka.ba/lares/docs/pono/swarm-harvest/1-google-family-link-3162b2>>
+<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/swarm-harvest/1-google-family-link-3162b2">>
 ```toml meta
 cacheable = false
 file-path = "bags/lares/ha.ka.ba/lares/docs/pono/swarm-harvest/1-google-family-link-3162b2.mem"
@@ -343,4 +343,4 @@ The platforms wrote the persistent-notification rule for everyone but themselves
 
 <<^ code="&#x0003;">>ni:///sha-256;ALPv6N9GOE0j92af7hFJkqFvC8gH2uQLenghGd14t7A
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

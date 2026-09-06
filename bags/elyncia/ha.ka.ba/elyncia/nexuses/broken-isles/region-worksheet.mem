@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" from=? -> to=lar:///ha.ka.ba/elyncia/nexuses/broken-isles/region-worksheet>>
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/nexuses/broken-isles/region-worksheet">>
 ```toml meta
 cacheable  = true
 file-path  = "bags/elyncia/ha.ka.ba/elyncia/nexuses/broken-isles/region-worksheet.mem"
@@ -162,4 +162,4 @@ not to say about it.
 
 <<^ code="&#x0003;">>ni:///sha-256;zPsN_DvgpM92DRCgSjV3jKtygBL-e3DtQuefQBvcCUc
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

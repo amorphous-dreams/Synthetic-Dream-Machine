@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" from=? -> to=lar:///ha.ka.ba/lararium/mesh/attestation-plane>>
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/mesh/attestation-plane">>
 ```toml meta
 cacheable = true
 file-path = "bags/lararium/ha.ka.ba/lararium/mesh/attestation-plane.mem"
@@ -294,4 +294,4 @@ boundary (#/1) holds absolutely: ''lease the address, never the self.''
 
 <<^ code="&#x0003;">>ni:///sha-256;2OrXL-s9-55nPScZOuOqyQL5cOvDf9EiwnMpvzle_Dg
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

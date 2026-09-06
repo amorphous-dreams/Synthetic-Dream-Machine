@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" from=? -> to=lar:///ha.ka.ba/lares/docs/graph/meme>>
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/graph/meme">>
 ```toml meta
 file-path                    = "bags/lares/ha.ka.ba/lares/docs/graph/meme.mem"
 l-space                      = "stable"
@@ -253,4 +253,4 @@ This lets a client verify the complete minimal-boot prefix byte-for-byte without
 
 <<^ code="&#x0003;">>ni:///sha-256;6vGPr19InHkffK8r1N8k0MPMXkRG698JXJRzXwYeoUo
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" from=? -> to=lar:///ha.ka.ba/elyncia/concepts/the-faerie-court-wars>>
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/concepts/the-faerie-court-wars">>
 ```toml meta
 cacheable  = true
 file-path  = "bags/elyncia/ha.ka.ba/elyncia/concepts/the-faerie-court-wars.mem"
@@ -149,4 +149,4 @@ Court Wars carries no default register; it carries the register of the front it 
 
 <<^ code="&#x0003;">>ni:///sha-256;fY3x47hBAc--PuO58CsO5R1puNBX1hJUAPoPZeFniCM
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

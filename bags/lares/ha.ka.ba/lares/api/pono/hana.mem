@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" namespace="⊙" from=? -> to=lar:///ha.ka.ba/lares/api/pono/hana>>
+<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/hana">>
 ```toml meta
 cacheable = true
 file-path = "bags/lares/ha.ka.ba/lares/api/pono/hana.mem"
@@ -67,4 +67,4 @@ A hana block body MUST be valid input for the named grammar interpreter.
 
 <<^ code="&#x0003;">>ni:///sha-256;T8Uf8Vo86PRqgbhraJ6WbOiIjss5_kZWv61k62w3yIc
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

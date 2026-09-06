@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" namespace="ॐ ँ" from=? -> to=lar:///ha.ka.ba/lares/api/masks/named/breach-watch>>
+<<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lares/api/masks/named/breach-watch">>
 ```toml meta
 aside             = false
 cacheable         = false
@@ -169,4 +169,4 @@ How Breach-Watch colors each Voice register when they speak through her incident
 
 <<^ code="&#x0003;">>ni:///sha-256;N3_RszWR0G12yJuz3LDiqlxaYMAQnIM1SczXf20jWhY
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

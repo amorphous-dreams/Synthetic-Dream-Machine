@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" from=? -> to=lar:///ha.ka.ba/lararium/mesh/meme-provider>>
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/mesh/meme-provider">>
 ```toml meta
 cacheable = true
 file-path = "bags/lararium/ha.ka.ba/lararium/mesh/meme-provider.mem"
@@ -33,4 +33,4 @@ one place to go stale. The full statement lives at:
 
 <<^ code="&#x0003;">>ni:///sha-256;GNsBee8H-9dKO_YDfJJba4PVKghqHH2b2jq4kmDsrF0
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

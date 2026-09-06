@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" namespace="⊙" from=? -> to=lar:///ha.ka.ba/lares/api/pono/heleuma/ba>>
+<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/heleuma/ba">>
 ```toml meta
 cacheable = true
 file-path = "bags/lares/ha.ka.ba/lares/api/pono/heleuma/ba.mem"
@@ -61,4 +61,4 @@ It SHALL NOT declare `body-sha256` without `source-symbol`.
 
 <<^ code="&#x0003;">>ni:///sha-256;XawiyeJKrAB4EI6Xoc_NcA5Q7_4MYbAVb5qhtz2F8rw
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

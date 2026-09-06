@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" from=? -> to=lar:///ha.ka.ba/elyncia/nexuses/new-delos/places/spice-quarter-compitale>>
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/nexuses/new-delos/places/spice-quarter-compitale">>
 ```toml meta
 cacheable  = true
 file-path  = "bags/elyncia/ha.ka.ba/elyncia/nexuses/new-delos/places/spice-quarter-compitale.mem"
@@ -51,4 +51,4 @@ Undermarket behind the Cistern Wall, the East Gate warehouses.
 
 <<^ code="&#x0003;">>ni:///sha-256;9v7wE44Yv5BDShpbBqEk3-sIXJ8TAFrOEj9gXtlaYbc
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

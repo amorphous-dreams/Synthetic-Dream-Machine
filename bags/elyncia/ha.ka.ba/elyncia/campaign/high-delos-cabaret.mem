@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" from=? -> to=lar:///ha.ka.ba/elyncia/campaign/high-delos-cabaret>>
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/campaign/high-delos-cabaret">>
 ```toml meta
 cacheable  = false
 file-path  = "bags/elyncia/ha.ka.ba/elyncia/campaign/high-delos-cabaret.mem"
@@ -328,4 +328,4 @@ The played record lands in this locus using the shelf's witness pattern
 
 <<^ code="&#x0003;">>ni:///sha-256;BNyyG0mlCvCyqqLWQ5lJuxDDvAi8To1em5KpCGm3kYc
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

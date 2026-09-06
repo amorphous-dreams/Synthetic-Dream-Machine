@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" namespace="⊙" from=? -> to=lar:///ha.ka.ba/lares/docs/pono/swarm-harvest/research-findings-what-the-field-has-measure-cde3fc>>
+<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/swarm-harvest/research-findings-what-the-field-has-measure-cde3fc">>
 ```toml meta
 cacheable = false
 file-path = "bags/lares/ha.ka.ba/lares/docs/pono/swarm-harvest/research-findings-what-the-field-has-measure-cde3fc.mem"
@@ -193,4 +193,4 @@ This is consistent with — though not sufficient on its own to prove — your h
 
 <<^ code="&#x0003;">>ni:///sha-256;Kvo6XMmnils0RbfcvDxtcDrwdiTOtRl1L1yZwMWMnBY
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

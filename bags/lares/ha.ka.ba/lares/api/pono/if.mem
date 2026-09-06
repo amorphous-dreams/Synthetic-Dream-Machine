@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" namespace="⊙" from=? -> to=lar:///ha.ka.ba/lares/api/pono/if>>
+<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/if">>
 ```toml meta
 cacheable = true
 file-path = "bags/lares/ha.ka.ba/lares/api/pono/if.mem"
@@ -34,4 +34,4 @@ Verse `if`/`case` on the flow surface — lives at `heihei`.)
 
 <<^ code="&#x0003;">>ni:///sha-256;QzSrYg7ecbBQm9VNRYIlSJyWaaXIuhYztTK7_7LymL4
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

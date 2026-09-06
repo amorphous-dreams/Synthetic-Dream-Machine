@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" from=? -> to=lar:///ha.ka.ba/elyncia/factions/gorgonne-diaspora>>
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/factions/gorgonne-diaspora">>
 ```toml meta
 cacheable  = true
 file-path  = "bags/elyncia/ha.ka.ba/elyncia/factions/gorgonne-diaspora.mem"
@@ -57,4 +57,4 @@ rigged with cloth, and a crew's toasts run in rounds, in sequence, by rank.
 
 <<^ code="&#x0003;">>ni:///sha-256;0rM4rlJPJOwYWvgRSQAInfxKsTqExORADGW_fLkqA-g
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

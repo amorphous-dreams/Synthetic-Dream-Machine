@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" from=? -> to=lar:///ha.ka.ba/lares/docs/mu>>
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/mu">>
 ```toml meta
 cacheable = false
 file-path = "bags/lares/ha.ka.ba/lares/docs/mu.mem"
@@ -73,4 +73,4 @@ AST reader: read the sockets, then route.
 
 <<^ code="&#x0003;">>ni:///sha-256;LUE_vO-CQLStrIA05gbUBP_l6Apj3_8y92AcIGWYWmE
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

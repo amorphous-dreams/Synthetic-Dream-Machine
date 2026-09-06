@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" namespace="⊙" from=? -> to=lar:///ha.ka.ba/lares/docs/pono/swarm-harvest/who-paid-for-volunteer-run-relay-infrastruct-aa2e60>>
+<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/swarm-harvest/who-paid-for-volunteer-run-relay-infrastruct-aa2e60">>
 ```toml meta
 cacheable = false
 file-path = "bags/lares/ha.ka.ba/lares/docs/pono/swarm-harvest/who-paid-for-volunteer-run-relay-infrastruct-aa2e60.mem"
@@ -337,4 +337,4 @@ The server count is *shrinking* while account count grows — i.e. consolidation
 
 <<^ code="&#x0003;">>ni:///sha-256;k7pXdDx9YLOTVlDW_8ZriI0eGYeKRtAGH0te2NIFBZQ
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

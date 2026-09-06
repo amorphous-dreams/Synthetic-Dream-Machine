@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" namespace="⊙" from=? -> to=lar:///ha.ka.ba/lares/api/pono/parser>>
+<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/parser">>
 ```toml meta
 cacheable = true
 file-path = "bags/lares/ha.ka.ba/lares/api/pono/parser.mem"
@@ -64,7 +64,7 @@ Dispatch proceeds in this fixed order on every `<<~` encounter:
 # ''compound sigil'' — `<<~ WORD1 [WORD2] ARGS>>` covers all remaining named sigils. Child-slot detection (`ahu`, `kau`, future) uses `grammarChildSlotNames()` — dynamic, not hardcoded. Compound with `closeKey` scans for `<<~/SIGIL>>` body; compound without `closeKey` produces a leaf node.
 # ''generic fallback'' — covers `<<~WORD>>` (no-space), C0 control-char forms, and any `<<~` not claimed above. If the generic sigil has a registered closer and its name is not `pranala`, the fallback attempts block capture.
 
-''The carrier's own head rides the CONTROL frame, never a sharktooth.'' A carrier opens at `<<^ code="&#x0001;" … from=? -> to=lar:///…>>` and closes at `<<^ code="&#x0004;" -> to=?>>` — the `<<^` scanner reads those, so no `<<~` rule stands for a header and none is tried here.
+''The carrier's own head rides the CONTROL frame, never a sharktooth.'' A carrier opens at `<<^ code="&#x0001;" … from="?" -> to="lar:///…">>` and closes at `<<^ code="&#x0004;" -> to="?">>` — the `<<^` scanner reads those, so no `<<~` rule stands for a header and none is tried here.
 
 Dispatch output: `macrocall` nodes with `$variable = "~"` and `name = SIGIL` for compound forms; `$variable = "~pranala"` with `from`/`to`/`body` keyword attrs for pranala forms.
 
@@ -197,7 +197,7 @@ The ''toml meta slot'' (`#meta`) carries the canonical identity payload for a me
 
 Canonical form:
 ````text
-<<^ code="&#x0001;" namespace="⊙" from=? -> to=lar:///ha.ka.ba/path/to/meme>>
+<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/path/to/meme">>
 ```toml meta
 uri-path  = "..."
 file-path = "..."
@@ -285,6 +285,6 @@ trigger = "end of stream"
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;FjLLFpZg0ZYvAiq5SGzbeYe_Gnwiq5x9Dw1jLL_lqrs
+<<^ code="&#x0003;">>ni:///sha-256;JJN72fJJbehgi635bClvLUWrBRATjzrydz4_Ls-0E6U
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

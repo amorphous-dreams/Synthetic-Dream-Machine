@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" from=? -> to=lar:///ha.ka.ba/lararium/tw5/modules/sync-adaptor>>
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/tw5/modules/sync-adaptor">>
 ```toml meta
 file-path     = "bags/lararium/ha.ka.ba/lararium/tw5/modules/sync-adaptor.mem"
 heleuma       = "ha"
@@ -52,4 +52,4 @@ Echo-loop guard rule:
 
 <<^ code="&#x0003;">>ni:///sha-256;FW2VcFj0yu_nSKVuTFwmvhy7ARdTQBR_VouUzgyruk4
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

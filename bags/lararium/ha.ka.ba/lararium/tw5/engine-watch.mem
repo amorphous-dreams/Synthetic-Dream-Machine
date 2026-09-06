@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" from=? -> to=lar:///ha.ka.ba/lararium/tw5/engine-watch>>
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/tw5/engine-watch">>
 ```toml meta
 cacheable     = true
 file-path     = "bags/lararium/ha.ka.ba/lararium/tw5/engine-watch.mem"
@@ -118,4 +118,4 @@ only. The running engine still swaps only on reboot (EW-2).
 
 <<^ code="&#x0003;">>ni:///sha-256;zs2cAtgQZlGGId6X4tcgYbrVdYo5TIqpz6W5eI1kHNQ
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

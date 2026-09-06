@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" from=? -> to=lar:///lares_research/research-streams/lararium/ROADMAP>>
+<<^ code="&#x0001;" from="?" -> to="lar:///lares_research/research-streams/lararium/ROADMAP">>
 ```toml meta
 cacheable  = false
 file-path  = "bags/lares-history/lares_research/research-streams/lararium/ROADMAP.mem"

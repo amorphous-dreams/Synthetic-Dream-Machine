@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" namespace="⚕" from=? -> to=lar:///ha.ka.ba/lararium/mesh/nexus-topology>>
+<<^ code="&#x0001;" namespace="⚕" from="?" -> to="lar:///ha.ka.ba/lararium/mesh/nexus-topology">>
 ```toml meta
 cacheable = true
 file-path = "bags/lararium/ha.ka.ba/lararium/mesh/nexus-topology.mem"
@@ -218,4 +218,4 @@ Several memes carry these names inside ''worked examples'' — a doc-stack diagr
 
 <<^ code="&#x0003;">>ni:///sha-256;1H10hPg002k-pslRtgQjecaC-uiLEtghqiWhVmq16z0
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

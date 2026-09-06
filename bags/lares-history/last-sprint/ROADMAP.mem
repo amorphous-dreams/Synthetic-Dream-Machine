@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" from=? -> to=lar:///last-sprint/ROADMAP>>
+<<^ code="&#x0001;" from="?" -> to="lar:///last-sprint/ROADMAP">>
 ```toml meta
 file-path = "bags/lares-history/last-sprint/ROADMAP.mem"
 type      = "text/memetic-wikitext+tiddlywiki"

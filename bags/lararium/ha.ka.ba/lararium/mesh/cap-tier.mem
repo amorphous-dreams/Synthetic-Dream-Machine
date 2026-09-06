@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" namespace="⚕" from=? -> to=lar:///ha.ka.ba/lararium/mesh/cap-tier>>
+<<^ code="&#x0001;" namespace="⚕" from="?" -> to="lar:///ha.ka.ba/lararium/mesh/cap-tier">>
 ```toml meta
 cacheable = true
 file-path = "bags/lararium/ha.ka.ba/lararium/mesh/cap-tier.mem"
@@ -158,4 +158,4 @@ Deferred with clean shores (not built): the TW5 `$:/tags/CapTierFilter` ordered-
 
 <<^ code="&#x0003;">>ni:///sha-256;rk6cTyWNTF6KH8nVNxJBuUQARVoISswp1PUOoUXFhXA
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

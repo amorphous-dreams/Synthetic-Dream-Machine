@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" from=? -> to=lar:///ha.ka.ba/elyncia/nexuses/neo-thracia/region-worksheet>>
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/nexuses/neo-thracia/region-worksheet">>
 ```toml meta
 cacheable  = true
 file-path  = "bags/elyncia-referee/ha.ka.ba/elyncia/nexuses/neo-thracia/region-worksheet.mem"
@@ -265,4 +265,4 @@ Purpose: turn metaphysics into handles: rift types, necro-fog effects, iron-curs
 
 <<^ code="&#x0003;">>ni:///sha-256;XesNa8q9XIDH8IOmLUkmHOG4DU4lLAovNcsdmgZOwtM
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

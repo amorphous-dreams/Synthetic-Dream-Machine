@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" namespace="⊙" from=? -> to=lar:///ha.ka.ba/lares/docs/pono/swarm-harvest>>
+<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/swarm-harvest">>
 ```toml meta
 cacheable = true
 file-path = "bags/lares/ha.ka.ba/lares/docs/pono/swarm-harvest.mem"
@@ -108,4 +108,4 @@ Four research waves went out and ran three levels deep. ''55 spirits wrote somet
 
 <<^ code="&#x0003;">>ni:///sha-256;eFdPmjwO9i7VcWKs74-gLSSh8wdinMIyAm6R2Xzk3b4
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

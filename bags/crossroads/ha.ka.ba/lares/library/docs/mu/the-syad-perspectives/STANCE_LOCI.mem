@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" from=? -> to=lar:///ha.ka.ba/lares/library/docs/mu/the-syad-perspectives/STANCE_LOCI>>
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/library/docs/mu/the-syad-perspectives/STANCE_LOCI">>
 ```toml meta
 cacheable         = false
 dependencies      = ["confidence"]
@@ -165,4 +165,4 @@ If the reader still has to guess what `0.65` means here, stance has not yet done
 
 <<^ code="&#x0003;">>ni:///sha-256;5km83oVNXlY-Fb_5l_9Dtb7_u4InhR1ae1GHdZmEqxU
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

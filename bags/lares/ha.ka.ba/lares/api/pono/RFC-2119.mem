@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" namespace="⊙" from=? -> to=lar:///ha.ka.ba/lares/api/pono/RFC-2119>>
+<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/RFC-2119">>
 ```toml meta
 cacheable = true
 file-path = "bags/lares/ha.ka.ba/lares/api/pono/RFC-2119.mem"
@@ -63,4 +63,4 @@ Carrier laws may explain local usage, but MUST cite this meme rather than re-dec
 
 <<^ code="&#x0003;">>ni:///sha-256;N1b53VcVFsrJAD61JIDVYUvJLkkYFyJQr-B-U-FpR0o
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

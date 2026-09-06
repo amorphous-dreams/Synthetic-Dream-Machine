@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" from=? -> to=lar:///ha.ka.ba/lares/api/pono/tiddlywiki-wikitext>>
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/tiddlywiki-wikitext">>
 ```toml meta
 cacheable     = true
 file-path     = "bags/lares/ha.ka.ba/lares/api/pono/tiddlywiki-wikitext.mem"
@@ -375,4 +375,4 @@ rather than minting sibling types.
 
 <<^ code="&#x0003;">>ni:///sha-256;4l3-SqAlzX-AxULZdeblTth2zAsTfF2RR1tGBqBIkKQ
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" from=? -> to=lar:///ha.ka.ba/elyncia/characters/npcs/rask-varkesh>>
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/characters/npcs/rask-varkesh">>
 ```toml meta
 cacheable  = true
 file-path  = "bags/elyncia-referee/ha.ka.ba/elyncia/characters/npcs/rask-varkesh.mem"
@@ -176,4 +176,4 @@ Run these fast; they’re competent but not heroic.
 
 <<^ code="&#x0003;">>ni:///sha-256;AVQ76WjcPeAd0UtHThL-Zs-_WAESJEaxIy3D-P8Ln74
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" from=? -> to=lar:///ha.ka.ba/lares/api/pono/hookupu-the-flow>>
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/hookupu-the-flow">>
 ```toml meta
 cacheable     = false
 file-path     = "bags/lares/ha.ka.ba/lares/api/pono/hookupu-the-flow.mem"
@@ -118,4 +118,4 @@ Not coincidence: the Handle already reads as ''the only one that ever federates'
 
 <<^ code="&#x0003;">>ni:///sha-256;b8dk8A0R7q5PLb15dxgS7weX6mjGqmK39RLHYywdpyA
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

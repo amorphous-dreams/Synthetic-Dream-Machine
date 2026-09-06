@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" from=? -> to=lar:///ha.ka.ba/elyncia/concepts/lares-viales>>
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/concepts/lares-viales">>
 ```toml meta
 cacheable = true
 file-path = "bags/elyncia/ha.ka.ba/elyncia/concepts/lares-viales.mem"
@@ -64,4 +64,4 @@ The cap-model names this minimal stack exactly — the ''same keel as the temple
 
 <<^ code="&#x0003;">>ni:///sha-256;a7abZp6EaCOrg820CrhJ-Pw5CN9ImBaRVNqRu3Sf46Q
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

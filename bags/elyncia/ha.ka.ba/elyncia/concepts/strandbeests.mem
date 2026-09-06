@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" from=? -> to=lar:///ha.ka.ba/elyncia/concepts/strandbeests>>
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/concepts/strandbeests">>
 ```toml meta
 cacheable  = true
 file-path  = "bags/elyncia/ha.ka.ba/elyncia/concepts/strandbeests.mem"
@@ -101,4 +101,4 @@ Full event: [[strandbeest-shrine|lar:///ha.ka.ba/elyncia/characters/companions/s
 
 <<^ code="&#x0003;">>ni:///sha-256;VuG6FqC6u_lSgBvORjIjDHgpe2kJofdhZ2hwOzNMh1g
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

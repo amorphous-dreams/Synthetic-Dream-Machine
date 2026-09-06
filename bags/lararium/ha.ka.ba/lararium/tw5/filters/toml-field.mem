@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" from=? -> to=lar:///ha.ka.ba/lararium/tw5/filters/toml-field>>
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/tw5/filters/toml-field">>
 ```toml meta
 body-sha256   = "be6b13cb4d87d73e9447e498196e8ab7d28344a46a5dc322727e4cba7d201158"
 cacheable     = true
@@ -40,4 +40,4 @@ uri-path      = "ha.ka.ba/lararium/tw5/filters/toml-field"
 
 <<^ code="&#x0003;">>ni:///sha-256;z47EjbwuoXLKVapiW3z5Jg4LJ_x0Z_RpX8gN7IGrc6E
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" namespace="⊙" from=? -> to=lar:///ha.ka.ba/lares/api/pono/vm-projection-bus>>
+<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/vm-projection-bus">>
 ```toml meta
 cacheable   = true
 file-path   = "bags/lares/ha.ka.ba/lares/api/pono/vm-projection-bus.mem"
@@ -187,4 +187,4 @@ The projection bus serves as a ''Scope-1'' mesh surface under the two-scopes rul
 
 <<^ code="&#x0003;">>ni:///sha-256;u9nf8y3WFjq10CoIC79nl2atXBZzS607Vm7CEHAfdNU
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

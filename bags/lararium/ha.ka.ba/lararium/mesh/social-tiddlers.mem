@@ -5,9 +5,9 @@
 cacheable   = true
 file-path   = "bags/lararium/ha.ka.ba/lararium/mesh/social-tiddlers.mem"
 l-space     = "lararium"
-mana        = 3
+mana        = 12
 retain      = true
-role        = "self-documentation: TODO describe social-tiddlers.ts"
+role        = "invariant law: the social plane's tiddler shapes and typed readers — @identities, @circles, @sessions. TIDDLER-FIRST: every principal, circle, session and presence record lives IN tiddlers, so a TW5 field filter queries them directly. Names the three entities, what a reader refuses, the Keyhive-mirroring fields, and the audit trail that never decreases."
 source-file = "packages/lararium-mesh/src/social-tiddlers.ts"
 type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lararium/mesh/social-tiddlers"
@@ -15,12 +15,52 @@ uri-path    = "ha.ka.ba/lararium/mesh/social-tiddlers"
 
 <<^ code="&#x0002;">>
 
-<<~ ahu #/contract>>
+<<~ ahu #/head>>
 
-TODO: describe the load-bearing surface this file owns.
+! Social tiddlers ~ the plane speaks in tiddlers
+
+Three entities carry the social plane: a PRINCIPAL at `@identities`, a CIRCLE at `@circles`, a
+SESSION at `@sessions`. Each one lands as a tiddler at its own lar: URI.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ICvTNcyMIER_32YyCF4YWgNNCHx2sLeaEdjUKQ9y7Ns
+<<~ ahu #/law>>
+
+!! The invariants
+
+# ''TIDDLER-FIRST.'' Every principal, circle, session, presence and world-clock record lives inside
+`tiddlers`. Nothing typed sits outside it — anything that did would owe a self-describing meme in
+`tiddlers` anyway, and a TW5 field filter reaches none of it.
+# ''A reader REFUSES rather than invents.'' Each typed reader returns null when its identifying field
+goes missing — a principal with no `did`, a circle or session with no `id`. A record that cannot name
+itself gets no default name.
+# ''Defaulting stays WITHIN the record, never across it.'' A reader falls back only to another field
+of the same tiddler — `displayName` to the id it already holds, `createdAt` to TW5's own `created`,
+`kind` to `device`, a session `state` to `active`. An absent optional field stays absent rather than
+arriving as an empty string.
+# ''The capability fields MIRROR Keyhive, and gate nothing here.'' `verifyingKey` carries the Ed25519
+basis for delegation and actor-id derivation; `encryptedShareHint` carries the BeeKEM share hint that
+survives a membership change; `capabilityPolicy` and `capabilityToken` carry policy and proof. These
+shapes describe what a record HOLDS — the gate that reads them stands in the keyhive package.
+# ''Key history never decreases.'' `keyHistory` holds an append-only audit of `{ key, rotatedAt }`
+pairs, so a rotation adds and a reader can walk back.
+# ''A circle carries its own anti-replay.'' `nonceBurnSet` holds the burned nonces for inbound
+invites, and `memberSignature` signs the member set together with the circle's id, name and scope — so
+a membership claim travels with the thing that proves it.
+# ''Presence stays ephemeral and clock-bearing.'' A `PresenceSlot` carries cursor, viewport, selection
+and a map of FFZ clocks. It names live attention rather than durable membership.
+
+<<~/ahu>>
+
+<<~ ahu #/edges>>
+
+<<~ pranala #source from=? -> to=packages/lararium-mesh/src/social-tiddlers.ts family=code role=has>>
+
+<<~/ahu>>
+
+<<~ loulou lar:///ha.ka.ba/lares/api/pono/automerge-tiga>>
+<<~ loulou lar:///ha.ka.ba/lares/docs/pono/circles-kowloon>>
+
+<<^ code="&#x0003;">>ni:///sha-256;naDgxPNnhITKlSA6FKGCdRuemsijCAqVQYPbiw3-D_U
 
 <<^ code="&#x0004;" -> to=?>>

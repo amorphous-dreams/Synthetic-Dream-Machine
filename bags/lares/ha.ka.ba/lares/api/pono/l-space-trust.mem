@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" namespace="⊙" from=? -> to=lar:///ha.ka.ba/lares/api/pono/l-space-trust>>
+<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/l-space-trust">>
 ```toml meta
 cacheable = true
 file-path = "bags/lares/ha.ka.ba/lares/api/pono/l-space-trust.mem"
@@ -86,4 +86,4 @@ Explicit operator-mediated promotion MAY move content upward by creating or revi
 
 <<^ code="&#x0003;">>ni:///sha-256;Yp4R3Q9HusNzOgt1_9TJj7tmovlC3YqeAbvI5FLqucc
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

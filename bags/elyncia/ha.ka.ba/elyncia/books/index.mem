@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" from=? -> to=lar:///ha.ka.ba/elyncia/books/index>>
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/books/index">>
 ```toml meta
 cacheable  = true
 file-path  = "bags/elyncia/ha.ka.ba/elyncia/books/index.mem"
@@ -50,4 +50,4 @@ shelf reads plainly:)//
 
 <<^ code="&#x0003;">>ni:///sha-256;zf2GkqIW-4f5ByIms7dhNV57jh2yhMxJ_e5LJXwXgfk
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

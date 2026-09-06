@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" namespace="⊙" from=? -> to=lar:///ha.ka.ba/lares/docs/pono/swarm-harvest/the-managed-custodial-sub-identity-measured--d58191>>
+<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/swarm-harvest/the-managed-custodial-sub-identity-measured--d58191">>
 ```toml meta
 cacheable = false
 file-path = "bags/lares/ha.ka.ba/lares/docs/pono/swarm-harvest/the-managed-custodial-sub-identity-measured--d58191.mem"
@@ -249,4 +249,4 @@ Miller's *Robust Composition* is genuinely rootless **in the model**. §9.2.5: *
 
 <<^ code="&#x0003;">>ni:///sha-256;OEHdu7684nn3PR9VxK6FLGngXt8jl5ZXR4RNkUY0cLc
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

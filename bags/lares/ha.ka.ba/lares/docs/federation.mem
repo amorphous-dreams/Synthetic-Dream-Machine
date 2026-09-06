@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" from=? -> to=lar:///ha.ka.ba/lares/docs/federation>>
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/federation">>
 ```toml meta
 cacheable  = true
 file-path  = "bags/lares/ha.ka.ba/lares/docs/federation.mem"
@@ -167,4 +167,4 @@ A QA vessel on native Windows 11 (PowerShell, not WSL) stands up through the sam
 
 <<^ code="&#x0003;">>ni:///sha-256;0TG42pUOAP6AA6gZb_oVl2HTcO_0vhUdwpGOQ02WZMI
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

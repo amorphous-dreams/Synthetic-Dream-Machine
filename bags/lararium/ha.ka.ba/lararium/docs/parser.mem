@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" from=? -> to=lar:///ha.ka.ba/lararium/docs/parser>>
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/docs/parser">>
 ```toml meta
 cacheable = true
 file-path = "bags/lararium/ha.ka.ba/lararium/docs/parser.mem"
@@ -48,4 +48,4 @@ Walks the AST, collects all `PranalaNode` and `PranalaSugarNode` instances, retu
 
 <<^ code="&#x0003;">>ni:///sha-256;A-CU7liEhfnk7lNYcDRJJrai7Dx_Sh2QXpT1581h11E
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

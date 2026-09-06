@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" from=? -> to=lar:///ha.ka.ba/lararium/mesh/vessel-caps>>
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/mesh/vessel-caps">>
 ```toml meta
 cacheable = true
 file-path = "bags/lararium/ha.ka.ba/lararium/mesh/vessel-caps.mem"
@@ -198,4 +198,4 @@ What stays to ''write'' is narrow and named — the cap //vocabulary// itself (`
 
 <<^ code="&#x0003;">>ni:///sha-256;BbRtKoW05r1hDFidwyGC0k2p1TQrKmTcIjGYxWxBIKA
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

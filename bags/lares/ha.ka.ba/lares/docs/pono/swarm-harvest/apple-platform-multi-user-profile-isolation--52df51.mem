@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" namespace="⊙" from=? -> to=lar:///ha.ka.ba/lares/docs/pono/swarm-harvest/apple-platform-multi-user-profile-isolation--52df51>>
+<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/swarm-harvest/apple-platform-multi-user-profile-isolation--52df51">>
 ```toml meta
 cacheable = false
 file-path = "bags/lares/ha.ka.ba/lares/docs/pono/swarm-harvest/apple-platform-multi-user-profile-isolation--52df51.mem"
@@ -305,4 +305,4 @@ CVE-2005-2509 (Mac OS X ≤10.4.2, loginwindow, "allows attackers to log into ot
 
 <<^ code="&#x0003;">>ni:///sha-256;k8jJrS547H0tF1oq8yMVygRtXsLDwfBPvSQNikoIdSg
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

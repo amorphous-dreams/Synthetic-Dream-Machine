@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" from=? -> to=lar:///ha.ka.ba/lares/api/pono/wire>>
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/wire">>
 ```toml meta
 cacheable = true
 file-path = "bags/lares/ha.ka.ba/lares/api/pono/wire.mem"
@@ -89,4 +89,4 @@ Co-projection applied to wires: the operator's mind originates; the carrier body
 
 <<^ code="&#x0003;">>ni:///sha-256;FlUEoBu2AVdlkMvkgb2s-fOvrhuOkB4rrAnaN7TT3ro
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

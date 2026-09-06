@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" namespace="⊙" from=? -> to=lar:///ha.ka.ba/lares/api/pono/nihomano-sigils>>
+<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/nihomano-sigils">>
 ```toml meta
 cacheable = true
 file-path = "bags/lares/ha.ka.ba/lares/api/pono/nihomano-sigils.mem"
@@ -111,7 +111,7 @@ They fall into eight families:
 
 ''Structural sigils'' (addressable scope boundaries):
 * `ahu` — child-slot worksite; the named scope boundary; skeleton of meme structure
-* the carrier's own head — self-declaration, and it rides the CONTROL frame rather than a sharktooth: `<<^ code="&#x0001;" … from=? -> to=lar:///…>>` opens every meme
+* the carrier's own head — self-declaration, and it rides the CONTROL frame rather than a sharktooth: `<<^ code="&#x0001;" … from="?" -> to="lar:///…">>` opens every meme
 
 ''Edge-sugar sigils'' (pranala family shortcuts):
 * `pranala` — full edge with FROM → TO arrow + keyword attrs (permanent JS exception)
@@ -275,6 +275,6 @@ lives in a tiddler.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;P5jdfloLVUehgE2qg0mG6EyJXj98EDjbANZnyWLn0fU
+<<^ code="&#x0003;">>ni:///sha-256;YudVmJ9KGBMiGB8QgO6XVCyLzfmRo7A_Brbqi7MAFjE
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

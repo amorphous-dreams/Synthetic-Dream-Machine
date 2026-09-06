@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" from=? -> to=lar:///ha.ka.ba/lararium/tw5/ui/meta-startup-action>>
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/tw5/ui/meta-startup-action">>
 ```toml meta
 cacheable  = true
 file-path  = "bags/lararium/ha.ka.ba/lararium/tw5/ui/meta-startup-action.mem"
@@ -56,4 +56,4 @@ uri-path   = "ha.ka.ba/lararium/tw5/ui/meta-startup-action"
 
 <<^ code="&#x0003;">>ni:///sha-256;D2R5uRqsNh9dv7T1qT-0nRajLD2GesSLmb28UFkGLn4
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

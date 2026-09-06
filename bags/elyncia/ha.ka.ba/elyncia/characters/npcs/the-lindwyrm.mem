@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" from=? -> to=lar:///ha.ka.ba/elyncia/characters/npcs/the-lindwyrm>>
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/characters/npcs/the-lindwyrm">>
 ```toml meta
 cacheable  = true
 file-path  = "bags/elyncia/ha.ka.ba/elyncia/characters/npcs/the-lindwyrm.mem"
@@ -87,4 +87,4 @@ only as much as suits her.''
 
 <<^ code="&#x0003;">>ni:///sha-256;mEAX12HEtb_mvNjQABcLsG5gfDN8m2UdzKJXoPA7xkc
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

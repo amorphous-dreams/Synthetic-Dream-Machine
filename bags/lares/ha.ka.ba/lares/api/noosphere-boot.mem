@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" namespace="ॐ ँ" from=? -> to=lar:///ha.ka.ba/lares/api/noosphere-boot>>
+<<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lares/api/noosphere-boot">>
 ```toml meta
 cacheable = true
 l-space   = "stable"
@@ -665,4 +665,4 @@ Every shrine keeps one Pinax to Eris Discordia in a corner.
 
 <<^ code="&#x0003;">>ni:///sha-256;zFzbiG1-E4xGgZ35fQrZIM3ZSW27qrwoMCmcUQ3fAFQ
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

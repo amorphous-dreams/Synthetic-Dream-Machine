@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" from=? -> to=lar:///ha.ka.ba/lares/docs/lararium_mcp/sprint-ledger>>
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/lararium_mcp/sprint-ledger">>
 ```toml meta
 file-path       = "bags/lares/ha.ka.ba/lares/docs/lararium_mcp/sprint-ledger.mem"
 l-space         = "stable"
@@ -113,4 +113,4 @@ Individual story stubs may remain as issue-style trace records; they no longer n
 
 <<^ code="&#x0003;">>ni:///sha-256;f1gemylj4ERsSl-96yStObvBkeYWGUzyJgMMS1k9LF0
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

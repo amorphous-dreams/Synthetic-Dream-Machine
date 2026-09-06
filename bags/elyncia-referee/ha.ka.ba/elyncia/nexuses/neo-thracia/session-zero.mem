@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" from=? -> to=lar:///ha.ka.ba/elyncia/nexuses/neo-thracia/session-zero>>
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/nexuses/neo-thracia/session-zero">>
 ```toml meta
 cacheable  = true
 file-path  = "bags/elyncia-referee/ha.ka.ba/elyncia/nexuses/neo-thracia/session-zero.mem"
@@ -182,4 +182,4 @@ Bring three agreements to the first session:
 
 <<^ code="&#x0003;">>ni:///sha-256;1OKtVPdL90RrtrkuDSloqHtVK9bbEPvLNZw2hdKS3dA
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

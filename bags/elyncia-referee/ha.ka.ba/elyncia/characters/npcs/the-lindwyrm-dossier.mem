@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" from=? -> to=lar:///ha.ka.ba/elyncia/characters/npcs/the-lindwyrm-dossier>>
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/characters/npcs/the-lindwyrm-dossier">>
 ```toml meta
 cacheable  = true
 file-path  = "bags/elyncia-referee/ha.ka.ba/elyncia/characters/npcs/the-lindwyrm-dossier.mem"
@@ -102,4 +102,4 @@ dragon builds meshes. These live referee-side of even this bag — the operator'
 
 <<^ code="&#x0003;">>ni:///sha-256;-0BOWdu0f7uzinuZfHSPDh1fMUz2wPrBFAqVkhAmHTQ
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

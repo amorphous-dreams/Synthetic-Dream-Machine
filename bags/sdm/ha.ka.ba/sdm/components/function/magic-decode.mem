@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" from=? -> to=lar:///ha.ka.ba/sdm/components/function/magic-decode>>
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/sdm/components/function/magic-decode">>
 ```toml meta
 cacheable = true
 caption   = "magic-decode"
@@ -72,4 +72,4 @@ Depends on `domain/divination`; pairs with `function/archive` for the handshake 
 
 <<^ code="&#x0003;">>ni:///sha-256;Eod-7dxyWJGLNuN_I-jBU5DV-oNmukgcvh6erw-S8zA
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

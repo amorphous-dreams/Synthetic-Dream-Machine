@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" from=? -> to=lar:///ha.ka.ba/lares/api/pono/pattern-integrities-cultural>>
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/pattern-integrities-cultural">>
 ```toml meta
 cacheable = true
 hydrate   = true
@@ -251,4 +251,4 @@ Feed the node. Run the bench whole. Grade on the chain. Keep the cliff independe
 
 <<^ code="&#x0003;">>ni:///sha-256;kWgf4yi3Uu-S__LwSunbdJ7V1z0zfWnQJQL7OVSSQ2c
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" namespace="ॐ ँ" from=? -> to=lar:///ha.ka.ba/lares/api/masks/design/meta-perspective>>
+<<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lares/api/masks/design/meta-perspective">>
 ```toml meta
 cacheable  = true
 created    = "2026-08-18"
@@ -67,4 +67,4 @@ step-in licenses standpoints of ''place''; one discipline, two axes.
 
 <<^ code="&#x0003;">>ni:///sha-256;5Fo-QZjx8txXTb-Kpjm6c4cChX_8zK094me6NUYV2iE
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

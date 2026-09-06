@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" from=? -> to=lar:///ha.ka.ba/lararium/tw5/modules/widget-module>>
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/tw5/modules/widget-module">>
 ```toml meta
 file-path     = "bags/lararium/ha.ka.ba/lararium/tw5/modules/widget-module.mem"
 heleuma       = true
@@ -89,4 +89,4 @@ export const LARARIUM_WIDGETS_TIDDLER = {
 
 <<^ code="&#x0003;">>ni:///sha-256;H7Laz0q3idYn4S70jCtrT81w3ALo7W3PKh_xlwgB0Yk
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

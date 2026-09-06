@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" namespace="⊙" from=? -> to=lar:///ha.ka.ba/lares/docs/pono/swarm-harvest/key-recovery-custody-fork-outside-research-r-620622>>
+<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/swarm-harvest/key-recovery-custody-fork-outside-research-r-620622">>
 ```toml meta
 cacheable = false
 file-path = "bags/lares/ha.ka.ba/lares/docs/pono/swarm-harvest/key-recovery-custody-fork-outside-research-r-620622.mem"
@@ -657,4 +657,4 @@ Across five research streams, **not one documented failure in the entire public 
 
 <<^ code="&#x0003;">>ni:///sha-256;IiOqBeQy5RrLve_rft-EZtsactcXDY27EJweIk_vIBI
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

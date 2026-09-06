@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" from=? -> to=lar:///ha.ka.ba/lararium/docs/source-module>>
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/docs/source-module">>
 ```toml meta
 cacheable = true
 file-path = "bags/lararium/ha.ka.ba/lararium/docs/source-module.mem"
@@ -109,4 +109,4 @@ The `write-source-memes.ts` script MUST:
 
 <<^ code="&#x0003;">>ni:///sha-256;rkT27WdlcAZlRigPEkHnNh1eaNXi5s6_NJ7vq5jMDjg
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

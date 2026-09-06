@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" from=? -> to=lar:///ha.ka.ba/elyncia/factions/index>>
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/factions/index">>
 ```toml meta
 cacheable  = true
 file-path  = "bags/elyncia/ha.ka.ba/elyncia/factions/index.mem"
@@ -91,4 +91,4 @@ Derived from the court-dragon alignment canon, never invented whole:
 
 <<^ code="&#x0003;">>ni:///sha-256;J2aZTUOQJgW1HGmMhqOaAIp4LxeiBuh6qgx08OZNoI0
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

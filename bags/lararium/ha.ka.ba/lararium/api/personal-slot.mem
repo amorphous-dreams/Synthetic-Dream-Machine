@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" namespace="ॐ ँ" from=? -> to=lar:///ha.ka.ba/lararium/api/personal-slot>>
+<<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lararium/api/personal-slot">>
 ```toml meta
 approved-on = "2026-06-01"
 cacheable   = true
@@ -507,4 +507,4 @@ register's lived surface — the living grammar in use before curation lifts it 
 
 <<^ code="&#x0003;">>ni:///sha-256;jFC5vkf_VKOb9sQ1WnpOpeWY1_Q9ajXH5p4LAo2Vytw
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

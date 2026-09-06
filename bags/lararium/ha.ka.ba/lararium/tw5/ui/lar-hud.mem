@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" from=? -> to=lar:///ha.ka.ba/lararium/tw5/ui/lar-hud>>
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/tw5/ui/lar-hud">>
 ```toml meta
 cacheable = true
 file-path = "bags/lararium/ha.ka.ba/lararium/tw5/ui/lar-hud.mem"
@@ -127,4 +127,4 @@ as a flex sibling unaffected by tldraw's internal layout changes.
 
 <<^ code="&#x0003;">>ni:///sha-256;T31fhqmAZ3sHgiwI7Gp6-0XVRpjyqGpLYIdn8uB99m0
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

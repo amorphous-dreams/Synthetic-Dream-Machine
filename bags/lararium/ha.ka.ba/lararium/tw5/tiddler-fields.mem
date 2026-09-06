@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" from=? -> to=lar:///ha.ka.ba/lararium/tw5/tiddler-fields>>
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/tw5/tiddler-fields">>
 ```toml meta
 cacheable = true
 file-path = "bags/lararium/ha.ka.ba/lararium/tw5/tiddler-fields.mem"
@@ -96,4 +96,4 @@ This split removes the old flat-record ambiguity where TW5 content fields and ho
 
 <<^ code="&#x0003;">>ni:///sha-256;_uI5AohW-s0T1DLgqgte1DQP86m9zKuTZE-rN_Eq86E
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" namespace="⊙" from=? -> to=lar:///ha.ka.ba/lares/docs/pono/swarm-harvest/1-iroh-n0-number-zero-n0-inc-the-central-cas-7ffcf2>>
+<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/swarm-harvest/1-iroh-n0-number-zero-n0-inc-the-central-cas-7ffcf2">>
 ```toml meta
 cacheable = false
 file-path = "bags/lares/ha.ka.ba/lares/docs/pono/swarm-harvest/1-iroh-n0-number-zero-n0-inc-the-central-cas-7ffcf2.mem"
@@ -293,4 +293,4 @@ So the honest range: **$34/mo (non-archiving, 2-hour window) → ~$152/mo (archi
 
 <<^ code="&#x0003;">>ni:///sha-256;9whfOKIz_jNi9o3uQiNpXOh-FqC49qe25OPBpiewoeQ
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" from=? -> to=lar:///ha.ka.ba/elyncia/characters/npcs/melantha-vex>>
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/characters/npcs/melantha-vex">>
 ```toml meta
 cacheable  = true
 file-path  = "bags/elyncia-referee/ha.ka.ba/elyncia/characters/npcs/melantha-vex.mem"
@@ -295,4 +295,4 @@ Use Melantha when the table needs:
 
 <<^ code="&#x0003;">>ni:///sha-256;10sfrifCaW5C4k4Nm7wTPGuBrDFjMbDmKHIYMGZQWJY
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

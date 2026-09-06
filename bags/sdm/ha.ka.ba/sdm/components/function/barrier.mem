@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" from=? -> to=lar:///ha.ka.ba/sdm/components/function/barrier>>
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/sdm/components/function/barrier">>
 ```toml meta
 cacheable = true
 caption   = "barrier"
@@ -72,4 +72,4 @@ Pairs with `domain/abjuration` (defensive intent) and `domain/stuckforce` (a wal
 
 <<^ code="&#x0003;">>ni:///sha-256;9rIgCQssSbBbMj5Ia_PGtbzgsfA-LRZ0s22p-wTxXaY
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

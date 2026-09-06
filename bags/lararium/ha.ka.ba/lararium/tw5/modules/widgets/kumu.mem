@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" from=? -> to=lar:///ha.ka.ba/lararium/tw5/modules/widgets/kumu>>
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/tw5/modules/widgets/kumu">>
 ```toml meta
 body-sha256   = "e75d894319cc697fb1bc9b63e515327e683f5c57f1b783652e5b3c9880b9a452"
 cacheable     = true
@@ -46,4 +46,4 @@ Exported symbols: `KumuWidget`.
 
 <<^ code="&#x0003;">>ni:///sha-256;AAL8Z7yp79QPmFUp639qRNpbHQyaQMMHVoO6a-Cmf70
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

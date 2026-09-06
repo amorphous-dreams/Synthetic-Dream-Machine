@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" from=? -> to=lar:///ha.ka.ba/sdm/mount-points/structure>>
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/sdm/mount-points/structure">>
 ```toml meta
 cacheable = true
 caption   = "structure"
@@ -94,4 +94,4 @@ A Site does not overflow to Burden; it simply lacks capacity until upgraded. Buy
 
 <<^ code="&#x0003;">>ni:///sha-256;xWoUX6bvWxGK2uaexGlEhpbU6IuOnpj1ffD6N1MJjUk
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

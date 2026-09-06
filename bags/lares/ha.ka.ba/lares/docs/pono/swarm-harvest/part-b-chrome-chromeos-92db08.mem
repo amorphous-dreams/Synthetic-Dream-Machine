@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" namespace="⊙" from=? -> to=lar:///ha.ka.ba/lares/docs/pono/swarm-harvest/part-b-chrome-chromeos-92db08>>
+<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/swarm-harvest/part-b-chrome-chromeos-92db08">>
 ```toml meta
 cacheable = false
 file-path = "bags/lares/ha.ka.ba/lares/docs/pono/swarm-harvest/part-b-chrome-chromeos-92db08.mem"
@@ -275,4 +275,4 @@ The deep-link `.../ms-bkrp/044ea320-...` 404'd; the landing page above is the re
 
 <<^ code="&#x0003;">>ni:///sha-256;KVBhRCroh4em7REdSR8b_a8vuekWvnn-CgPTfiWcWsA
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

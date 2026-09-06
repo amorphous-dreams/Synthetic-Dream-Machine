@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" from=? -> to=lar:///ha.ka.ba/lararium/keyhive/keyhive-provider>>
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/keyhive/keyhive-provider">>
 ```toml meta
 cacheable   = true
 file-path   = "bags/lararium/ha.ka.ba/lararium/keyhive/keyhive-provider.mem"
@@ -125,4 +125,4 @@ enters the PersonaGroup doc. The private scalar never leaves the memory of the f
 
 <<^ code="&#x0003;">>ni:///sha-256;zjtUKbYR_0UUSxOOVoGerE49ZsTQlr5r8prSfBgZLb0
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

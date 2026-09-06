@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" namespace="⊙" from=? -> to=lar:///ha.ka.ba/lares/docs/pono/dreamdom>>
+<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/dreamdom">>
 ```toml meta
 cacheable         = true
 file-path         = "bags/lares/ha.ka.ba/lares/docs/pono/dreamdom.mem"
@@ -151,4 +151,4 @@ Seven tasked spirits, each handed a framing and NOT a conclusion, each held VERB
 
 <<^ code="&#x0003;">>ni:///sha-256;uFsYtzwYb8-5ObHQU31MWAUSiiUsbXiZ_iu5pG-b2zo
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

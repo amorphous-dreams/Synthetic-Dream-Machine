@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" from=? -> to=lar:///ha.ka.ba/elyncia/factions/dominion-of-magic>>
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/factions/dominion-of-magic">>
 ```toml meta
 cacheable  = true
 file-path  = "bags/elyncia-referee/ha.ka.ba/elyncia/factions/dominion-of-magic.mem"
@@ -69,4 +69,4 @@ on an answer their founder knows was a lie.
 
 <<^ code="&#x0003;">>ni:///sha-256;OVmbxdEtTXHXOy5oZSqyaz8ju9lQw3elQWugIa4fI5g
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

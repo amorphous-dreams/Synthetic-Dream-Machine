@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" from=? -> to=lar:///ha.ka.ba/lararium/mesh/tiddler-text>>
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/mesh/tiddler-text">>
 ```toml meta
 cacheable = true
 file-path = "bags/lararium/ha.ka.ba/lararium/mesh/tiddler-text.mem"
@@ -32,4 +32,4 @@ Oracle tiddlers (lararium, catalog, lares, wiki, corpus) carry their payload Aut
 
 <<^ code="&#x0003;">>ni:///sha-256;Qlfo8yoyjrk-NusUMNjXd-i4SJaWbi3CFRUrWg4CrdI
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

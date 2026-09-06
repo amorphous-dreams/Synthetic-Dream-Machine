@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" from=? -> to=lar:///ha.ka.ba/lararium/docs/signal/render-targets>>
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/docs/signal/render-targets">>
 ```toml meta
 cacheable = false
 file-path = "bags/lararium/ha.ka.ba/lararium/docs/signal/render-targets.mem"
@@ -416,4 +416,4 @@ Before emitting any stance block on any surface:
 
 <<^ code="&#x0003;">>ni:///sha-256;sL-FPO_BqmHdWcpndXpWsUJpM09eDv0Mu-f_FkiQ2co
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

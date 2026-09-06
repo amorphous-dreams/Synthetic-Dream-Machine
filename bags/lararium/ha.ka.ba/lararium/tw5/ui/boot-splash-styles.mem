@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" from=? -> to=lar:///ha.ka.ba/lararium/tw5/ui/boot-splash-styles>>
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/tw5/ui/boot-splash-styles">>
 ```toml meta
 cacheable = true
 file-path = "bags/lararium/ha.ka.ba/lararium/tw5/ui/boot-splash-styles.mem"
@@ -66,4 +66,4 @@ uri-path  = "ha.ka.ba/lararium/tw5/ui/boot-splash-styles"
 
 <<^ code="&#x0003;">>ni:///sha-256;WVgDsTZvMnJXJtSkPx27l_qInwrWJ99bp_NWwU42z-s
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" namespace="⊙" from=? -> to=lar:///ha.ka.ba/lares/api/pono/waking-floor>>
+<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/waking-floor">>
 ```toml meta
 cacheable = true
 file-path = "bags/lares/ha.ka.ba/lares/api/pono/waking-floor.mem"
@@ -331,4 +331,4 @@ keeps ''the place'' — which is precisely the floor. The myth was load-bearing 
 
 <<^ code="&#x0003;">>ni:///sha-256;9ViBUhbpkhWSwNlcAe1RVX6EH008abYOfMbGa93DnrE
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

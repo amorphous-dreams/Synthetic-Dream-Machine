@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" from=? -> to=lar:///ha.ka.ba/sdm/projections/abilities/ftls-card/neural-whip>>
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/sdm/projections/abilities/ftls-card/neural-whip">>
 ```toml meta
 cacheable = true
 file-path = "bags/sdm/ha.ka.ba/sdm/projections/abilities/ftls-card/neural-whip.mem"
@@ -59,4 +59,4 @@ A neural tentacle of stuckforce lashes out and strikes ''against Defense'' — n
 
 <<^ code="&#x0003;">>ni:///sha-256;qZJvUUR6z1YNS0B_pAz2SubROo7HlU7SSGwydAGIgWM
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

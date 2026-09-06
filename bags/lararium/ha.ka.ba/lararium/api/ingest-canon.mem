@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" namespace="⊙" from=? -> to=lar:///ha.ka.ba/lararium/api/ingest-canon>>
+<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lararium/api/ingest-canon">>
 ```toml meta
 cacheable = true
 file-path = "bags/lararium/ha.ka.ba/lararium/api/ingest-canon.mem"
@@ -190,4 +190,4 @@ linonetwo's tw-react + TidGi):
 
 <<^ code="&#x0003;">>ni:///sha-256;DpqvY6u-xrSx0zlPh0rwK8y1DhWUhw3rH_t_gkdKds0
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

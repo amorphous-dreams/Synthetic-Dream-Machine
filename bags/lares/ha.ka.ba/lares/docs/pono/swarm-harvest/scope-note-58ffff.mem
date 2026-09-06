@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" namespace="⊙" from=? -> to=lar:///ha.ka.ba/lares/docs/pono/swarm-harvest/scope-note-58ffff>>
+<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/swarm-harvest/scope-note-58ffff">>
 ```toml meta
 cacheable = false
 file-path = "bags/lares/ha.ka.ba/lares/docs/pono/swarm-harvest/scope-note-58ffff.mem"
@@ -369,4 +369,4 @@ Every "Dunbar ceiling online" number in this brief traces back through a small n
 
 <<^ code="&#x0003;">>ni:///sha-256;jSCa5k3cS6CreL8bdU4YOYe3hRSQgacxroqLEOI7RTs
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

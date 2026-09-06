@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" from=? -> to=lar:///ha.ka.ba/lararium/mesh/open-vessel>>
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/mesh/open-vessel">>
 ```toml meta
 cacheable   = true
 file-path   = "bags/lararium/ha.ka.ba/lararium/mesh/open-vessel.mem"
@@ -169,4 +169,4 @@ argument. What stays open sits one level out: a live-daemon exercise of the full
 
 <<^ code="&#x0003;">>ni:///sha-256;nHwsYA_FkhlpS5uYLpZGAzr7O7lyuAY06k2g-Zb6n8g
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

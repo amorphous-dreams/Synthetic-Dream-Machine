@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" from=? -> to=lar:///ha.ka.ba/lares/docs/lararium_mcp>>
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/lararium_mcp">>
 ```toml meta
 entry-point       = "python3 -m lares.lararium_mcp"
 file-path         = "bags/lares/ha.ka.ba/lares/docs/lararium_mcp.mem"
@@ -341,4 +341,4 @@ class MyAdapter:
 
 <<^ code="&#x0003;">>ni:///sha-256;772ouR39s5C-1Pt8ph2xtNj8AbbFLpT-4cCC96qV4Aw
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

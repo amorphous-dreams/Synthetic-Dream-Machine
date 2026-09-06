@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" namespace="⊙" from=? -> to=lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
+<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 ```toml meta
 cacheable     = true
 file-path     = "bags/lares/ha.ka.ba/lares/api/pono/memetic-wikitext.mem"
@@ -590,7 +590,7 @@ carrier states first ([FRAMING] #declaration-register):
 ````
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" from=? -> to=lar:///ha.ka.ba/lares/api/pono/example>>
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/example">>
 ```toml meta
 … bare toml-meta slot: identity payload (uri-path, type, role, register) …
 ```
@@ -605,7 +605,7 @@ Body text, with a live embed: <<~ kahea lar:///ha.ka.ba/lares/api/pono/meme>>.
 
 <<^ code="&#x0003;">>ni:///sha-256;…
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>
 ````
 
 A definition summoned by name:
@@ -697,6 +697,6 @@ A canvas reaction wire (flow surface):
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;WGJ1V0BbdrcWugmACJDT1-XgA3YMZ64neqh_1zPhcYM
+<<^ code="&#x0003;">>ni:///sha-256;3qYd0Bq3_lr-W-cFxKxFq8Tc-bXwYGRqXVTCdbs_7Z8
 
 <<^ code="&#x0004;" -> to=?>>

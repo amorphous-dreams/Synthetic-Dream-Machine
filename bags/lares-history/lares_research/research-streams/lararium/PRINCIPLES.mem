@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" from=? -> to=lar:///lares_research/research-streams/lararium/PRINCIPLES>>
+<<^ code="&#x0001;" from="?" -> to="lar:///lares_research/research-streams/lararium/PRINCIPLES">>
 ```toml meta
 cacheable  = true
 file-path  = "bags/lares-history/lares_research/research-streams/lararium/PRINCIPLES.mem"
@@ -127,4 +127,4 @@ carrier canon
 
 <<^ code="&#x0003;">>ni:///sha-256;cnXlnTPn3tCY5HWPV_XRLQ9DvjtxexC5YZwlBT2M13I
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

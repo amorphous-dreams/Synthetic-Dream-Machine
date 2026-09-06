@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" from=? -> to=lar:///ha.ka.ba/lares/docs/history/lindwyrm/hoard-origin-architecture>>
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/history/lindwyrm/hoard-origin-architecture">>
 ```toml meta
 cacheable       = false
 file-path       = "bags/lares/ha.ka.ba/lares/docs/history/lindwyrm/hoard-origin-architecture.mem"
@@ -244,4 +244,4 @@ Address precedes infrastructure. Later, if the work succeeds, infrastructure cat
 
 <<^ code="&#x0003;">>ni:///sha-256;cPQZXS_kImWePrqanJ_g8Nov8Z2WngUMKpmQ6W8Zt4g
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

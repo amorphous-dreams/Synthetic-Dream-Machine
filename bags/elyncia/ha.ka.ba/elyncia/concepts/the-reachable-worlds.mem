@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" from=? -> to=lar:///ha.ka.ba/elyncia/concepts/the-reachable-worlds>>
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/concepts/the-reachable-worlds">>
 ```toml meta
 cacheable  = true
 file-path  = "bags/elyncia/ha.ka.ba/elyncia/concepts/the-reachable-worlds.mem"
@@ -153,4 +153,4 @@ settled pet-name for the tideline of worlds yet.
 
 <<^ code="&#x0003;">>ni:///sha-256;J73c1yXqcay_ZeVE8n8YKXpNMfFb6hS3mb05xPQzyqQ
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" namespace="⊙" from=? -> to=lar:///ha.ka.ba/lares/docs/pono/swarm-harvest/2-dns-root-system-41-years-measured-resolver-c48256>>
+<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/swarm-harvest/2-dns-root-system-41-years-measured-resolver-c48256">>
 ```toml meta
 cacheable = false
 file-path = "bags/lares/ha.ka.ba/lares/docs/pono/swarm-harvest/2-dns-root-system-41-years-measured-resolver-c48256.mem"
@@ -223,4 +223,4 @@ Its conclusions: federation is **necessary but insufficient**; technical measure
 
 <<^ code="&#x0003;">>ni:///sha-256;-7VxZkKU5XERoZ0vnEtsRmcjsdKSVO0zd5S-SXTLfx4
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

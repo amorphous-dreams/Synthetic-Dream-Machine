@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" namespace="⊙" from=? -> to=lar:///ha.ka.ba/lares/docs/pono/swarm-harvest/what-actually-happened-dated-sourced-72ff52>>
+<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/swarm-harvest/what-actually-happened-dated-sourced-72ff52">>
 ```toml meta
 cacheable = false
 file-path = "bags/lares/ha.ka.ba/lares/docs/pono/swarm-harvest/what-actually-happened-dated-sourced-72ff52.mem"
@@ -185,4 +185,4 @@ https://www.iana.org/dnssec/procedures/ksk-operator/KSK_Key_Management_Procedure
 
 <<^ code="&#x0003;">>ni:///sha-256;TZ747jlS3mZIsxzYVr4dTMhT-2gShbphCjJY-VmMyuI
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

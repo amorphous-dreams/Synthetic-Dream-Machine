@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" namespace="⊙" from=? -> to=lar:///ha.ka.ba/lares/docs/pono/swarm-harvest/1-diaspora-aspects-9aa7ae>>
+<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/swarm-harvest/1-diaspora-aspects-9aa7ae">>
 ```toml meta
 cacheable = false
 file-path = "bags/lares/ha.ka.ba/lares/docs/pono/swarm-harvest/1-diaspora-aspects-9aa7ae.mem"
@@ -258,4 +258,4 @@ Across all four systems, **the same measurement gap recurs**: every one ships th
 
 <<^ code="&#x0003;">>ni:///sha-256;Sdt5Kw4mHzM68Bf52AHdI4WRakTjhmeBZZrWVNNccdM
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

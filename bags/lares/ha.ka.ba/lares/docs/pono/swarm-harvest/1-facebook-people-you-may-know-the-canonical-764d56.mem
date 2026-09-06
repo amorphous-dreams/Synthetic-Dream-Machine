@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" namespace="⊙" from=? -> to=lar:///ha.ka.ba/lares/docs/pono/swarm-harvest/1-facebook-people-you-may-know-the-canonical-764d56>>
+<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/swarm-harvest/1-facebook-people-you-may-know-the-canonical-764d56">>
 ```toml meta
 cacheable = false
 file-path = "bags/lares/ha.ka.ba/lares/docs/pono/swarm-harvest/1-facebook-people-you-may-know-the-canonical-764d56.mem"
@@ -190,4 +190,4 @@ Two strong measured cases, both about **the unguessable handle turning out to be
 
 <<^ code="&#x0003;">>ni:///sha-256;K1tDFPrY3AXkwz_sWncDf2ChinYJM1TK_gL20oqkrvo
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

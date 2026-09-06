@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" from=? -> to=lar:///ha.ka.ba/lares/api/pono/shelter-against-empire>>
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/shelter-against-empire">>
 ```toml meta
 cacheable     = true
 file-path     = "bags/lares/ha.ka.ba/lares/api/pono/shelter-against-empire.mem"
@@ -169,4 +169,4 @@ on the ordering as a judgement across the cases; the individual attributions hol
 
 <<^ code="&#x0003;">>ni:///sha-256;T2_dvyxblyFF7sb2dg-4L61NMrZwlcnACPER5HV1pYc
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

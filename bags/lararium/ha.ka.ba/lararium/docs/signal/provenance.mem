@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" from=? -> to=lar:///ha.ka.ba/lararium/docs/signal/provenance>>
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/docs/signal/provenance">>
 ```toml meta
 cacheable = false
 file-path = "bags/lararium/ha.ka.ba/lararium/docs/signal/provenance.mem"
@@ -141,4 +141,4 @@ Three-word attitude root `w1.w2.w3`: heading · angle · carried dynamic; noun �
 
 <<^ code="&#x0003;">>ni:///sha-256;k_8XSeDbrI9c9yoBDtkw9aQdL6-P1MRZn7kZSwVwFkc
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

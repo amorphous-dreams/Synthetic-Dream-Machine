@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" from=? -> to=lar:///ha.ka.ba/lararium/tw5/ui/meme-view-children>>
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/tw5/ui/meme-view-children">>
 ```toml meta
 cacheable  = true
 file-path  = "bags/lararium/ha.ka.ba/lararium/tw5/ui/meme-view-children.mem"
@@ -65,4 +65,4 @@ uri-path   = "ha.ka.ba/lararium/tw5/ui/meme-view-children"
 
 <<^ code="&#x0003;">>ni:///sha-256;djcm9RG08E5D4JM3CrMbwL0iYft9sut-AY2LKBJnemA
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

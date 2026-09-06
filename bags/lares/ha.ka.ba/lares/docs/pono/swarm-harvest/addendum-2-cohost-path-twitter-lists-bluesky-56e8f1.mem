@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" namespace="⊙" from=? -> to=lar:///ha.ka.ba/lares/docs/pono/swarm-harvest/addendum-2-cohost-path-twitter-lists-bluesky-56e8f1>>
+<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/swarm-harvest/addendum-2-cohost-path-twitter-lists-bluesky-56e8f1">>
 ```toml meta
 cacheable = false
 file-path = "bags/lares/ha.ka.ba/lares/docs/pono/swarm-harvest/addendum-2-cohost-path-twitter-lists-bluesky-56e8f1.mem"
@@ -499,4 +499,4 @@ I could not locate a primary source. Checked: TechCrunch 2011-09-08 Smart Lists 
 
 <<^ code="&#x0003;">>ni:///sha-256;sYmT4BLEdIWLJeaN3TPUexpKz525h_aR6yZltXr9JFs
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

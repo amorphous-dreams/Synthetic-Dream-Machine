@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" from=? -> to=lar:///ha.ka.ba/lares/api/infrastructure-as-myth>>
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/api/infrastructure-as-myth">>
 ```toml meta
 cacheable = true
 file-path = "bags/lares/ha.ka.ba/lares/api/infrastructure-as-myth.mem"
@@ -33,4 +33,4 @@ The working design surface — the doctrine-and-paper draft the submission conde
 
 <<^ code="&#x0003;">>ni:///sha-256;1Ekwc78wjevquLUoPeZVmYgNxTlXv1ENUOE_CcNMyKE
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

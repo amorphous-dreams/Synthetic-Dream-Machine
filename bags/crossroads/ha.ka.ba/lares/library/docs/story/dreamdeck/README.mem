@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" from=? -> to=lar:///ha.ka.ba/lares/library/docs/story/dreamdeck/README>>
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/library/docs/story/dreamdeck/README">>
 ```toml meta
 cacheable = false
 file-path = "bags/crossroads/ha.ka.ba/lares/library/docs/story/dreamdeck/README.mem"
@@ -60,4 +60,4 @@ Full backlog lives in `ELYNCIA_APP_SEEDS.md`. Short form:
 
 <<^ code="&#x0003;">>ni:///sha-256;WGWxgcwOJUH3xCHSUNO9RybjeU3RvoGtQuf-cxDotdI
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

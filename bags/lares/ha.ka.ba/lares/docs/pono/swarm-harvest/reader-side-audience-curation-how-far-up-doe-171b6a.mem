@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" namespace="⊙" from=? -> to=lar:///ha.ka.ba/lares/docs/pono/swarm-harvest/reader-side-audience-curation-how-far-up-doe-171b6a>>
+<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/swarm-harvest/reader-side-audience-curation-how-far-up-doe-171b6a">>
 ```toml meta
 cacheable = false
 file-path = "bags/lares/ha.ka.ba/lares/docs/pono/swarm-harvest/reader-side-audience-curation-how-far-up-doe-171b6a.mem"
@@ -453,4 +453,4 @@ Confidence overall on the addendum: **medium-high** — most quotes came from op
 
 <<^ code="&#x0003;">>ni:///sha-256;_TX2KpvPU51a5rQMIydIWWri4hygZ9YKbEiCtjFImoU
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

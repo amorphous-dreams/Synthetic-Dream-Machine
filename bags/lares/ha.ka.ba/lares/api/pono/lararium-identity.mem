@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" namespace="⚷" from=? -> to=lar:///ha.ka.ba/lares/api/pono/lararium-identity>>
+<<^ code="&#x0001;" namespace="⚷" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/lararium-identity">>
 ```toml meta
 cacheable  = true
 file-path  = "bags/lares/ha.ka.ba/lares/api/pono/lararium-identity.mem"
@@ -615,4 +615,4 @@ folded in; the FS-limit stated as posture). Standing dissent kept, with re-entry
 
 <<^ code="&#x0003;">>ni:///sha-256;3NmywR25tODCbRLfWEbwQkhXX4kXVgCmTVMxeo4z-oU
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" from=? -> to=lar:///ha.ka.ba/lares/docs/lararium>>
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/lararium">>
 ```toml meta
 cacheable = false
 file-path = "bags/lares/ha.ka.ba/lares/docs/lararium.mem"
@@ -73,4 +73,4 @@ The rooms may deepen later without moving the seat again.
 
 <<^ code="&#x0003;">>ni:///sha-256;t5I0ZfL9jpQeuPdN4KN7LGnobKG7VO_1bgh_EG2Q5Rw
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

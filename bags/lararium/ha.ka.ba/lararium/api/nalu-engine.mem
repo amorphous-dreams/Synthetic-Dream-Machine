@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" namespace="ॐ ँ" from=? -> to=lar:///ha.ka.ba/lararium/api/nalu-engine>>
+<<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lararium/api/nalu-engine">>
 ```toml meta
 cacheable      = true
 docs           = "lar:///ha.ka.ba/lares/api/pono/nalu"
@@ -158,4 +158,4 @@ transact per frame (crest). WITNESSED: the queue (`nalu-engine.ts`) + the shore 
 
 <<^ code="&#x0003;">>ni:///sha-256;qLiGFXjwD2e9R-l0mtE1PJG1loZRmfnFvJ6xiR1KR9U
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

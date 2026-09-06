@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" namespace="ॐ ँ" from=? -> to=lar:///ha.ka.ba/lares/api/mu/the-syad-perspectives>>
+<<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lares/api/mu/the-syad-perspectives">>
 ```toml meta
 cacheable     = true
 file-path     = "bags/lares/ha.ka.ba/lares/api/mu/the-syad-perspectives.mem"
@@ -306,4 +306,4 @@ satirist-operational = "nasti-avaktavya"
 
 <<^ code="&#x0003;">>ni:///sha-256;iYBFpYy2cbQYAa8KoZzFJDlm9vz_zIyaZ0MiBLGPtFc
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

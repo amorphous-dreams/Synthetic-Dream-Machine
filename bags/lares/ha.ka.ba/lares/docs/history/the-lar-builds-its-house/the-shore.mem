@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" from=? -> to=lar:///ha.ka.ba/lares/docs/history/the-lar-builds-its-house/the-shore>>
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/history/the-lar-builds-its-house/the-shore">>
 ```toml meta
 cacheable     = false
 file-path     = "bags/lares/ha.ka.ba/lares/docs/history/the-lar-builds-its-house/the-shore.mem"
@@ -174,4 +174,4 @@ Act IV receives:
 
 <<^ code="&#x0003;">>ni:///sha-256;Lxv2UCEd1iw87RalfE3JzWJYUND8ltkDGU383_s0d2Q
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

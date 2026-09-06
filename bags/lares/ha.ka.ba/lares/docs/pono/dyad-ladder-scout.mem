@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" namespace="⊙" from=? -> to=lar:///ha.ka.ba/lares/docs/pono/dyad-ladder-scout>>
+<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/dyad-ladder-scout">>
 ```toml meta
 cacheable         = true
 file-path         = "bags/lares/ha.ka.ba/lares/docs/pono/dyad-ladder-scout.mem"
@@ -328,4 +328,4 @@ Confirmed ''unresolved rather than absent'': Khera / Drèze primary sources and 
 
 <<^ code="&#x0003;">>ni:///sha-256;8jFXIN60QNXcRTHBUl9AiKuw3lgVAvSl1-v0FTHzjUg
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

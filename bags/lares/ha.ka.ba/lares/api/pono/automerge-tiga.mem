@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" namespace="⊙" from=? -> to=lar:///ha.ka.ba/lares/api/pono/automerge-tiga>>
+<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/automerge-tiga">>
 ```toml meta
 cacheable = true
 file-path = "bags/lares/ha.ka.ba/lares/api/pono/automerge-tiga.mem"
@@ -179,4 +179,4 @@ The two-plane Automerge geometry rides ''Scope 1'' of the two-scopes ruling — 
 
 <<^ code="&#x0003;">>ni:///sha-256;LVhxMkl-Mws0ex-cFIsFbSN6wEo-yutRM97e5S8A2dM
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" from=? -> to=lar:///ha.ka.ba/lares/api/pono/the-thing-event>>
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/the-thing-event">>
 ```toml meta
 cacheable     = false
 file-path     = "bags/lares/ha.ka.ba/lares/api/pono/the-thing-event.mem"
@@ -101,4 +101,4 @@ That reads as the same law as //the naming layer performs, so it must never cert
 
 <<^ code="&#x0003;">>ni:///sha-256;nmKYDpmZLiCcDwIeuSEqYCI9Q3yI_mWA1D6lyrVmwVk
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

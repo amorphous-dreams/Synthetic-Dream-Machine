@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" from=? -> to=lar:///ha.ka.ba/lararium/docs/meme-provider>>
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/docs/meme-provider">>
 ```toml meta
 cacheable   = true
 file-path   = "bags/lararium/ha.ka.ba/lararium/docs/meme-provider.mem"
@@ -85,4 +85,4 @@ the reference, and the law below it stays the part a reader needs anyway.
 
 <<^ code="&#x0003;">>ni:///sha-256;3mFeBhfPfapAT5yjqC4zzyyx0kz7eFrcYOnubHYOlPs
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

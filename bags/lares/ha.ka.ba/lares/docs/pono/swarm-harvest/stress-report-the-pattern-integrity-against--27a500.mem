@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" namespace="⊙" from=? -> to=lar:///ha.ka.ba/lares/docs/pono/swarm-harvest/stress-report-the-pattern-integrity-against--27a500>>
+<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/swarm-harvest/stress-report-the-pattern-integrity-against--27a500">>
 ```toml meta
 cacheable = false
 file-path = "bags/lares/ha.ka.ba/lares/docs/pono/swarm-harvest/stress-report-the-pattern-integrity-against--27a500.mem"
@@ -352,4 +352,4 @@ Specifically unretrieved, and **not** filled from memory: Karst et al.'s interna
 
 <<^ code="&#x0003;">>ni:///sha-256;5uS7F--q6IYkNRscQUbNuJtAZgap6KjQyUd3a09A-mc
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

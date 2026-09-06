@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" namespace="ॐ ँ" from=? -> to=lar:///ha.ka.ba/lares/api/masks/character/friend-computer>>
+<<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lares/api/masks/character/friend-computer">>
 ```toml meta
 aside             = false
 cacheable         = false
@@ -159,4 +159,4 @@ Remaining Voices — Lorekeeper, Muse, Artificer, Advocate, Diplomat, Hierophant
 
 <<^ code="&#x0003;">>ni:///sha-256;-3QQkpM9AVimLQIiAZTAP3hCCKGfuPDYVGISCN_18nc
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

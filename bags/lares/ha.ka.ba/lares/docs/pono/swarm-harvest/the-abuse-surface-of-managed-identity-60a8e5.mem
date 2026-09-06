@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" namespace="⊙" from=? -> to=lar:///ha.ka.ba/lares/docs/pono/swarm-harvest/the-abuse-surface-of-managed-identity-60a8e5>>
+<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/swarm-harvest/the-abuse-surface-of-managed-identity-60a8e5">>
 ```toml meta
 cacheable = false
 file-path = "bags/lares/ha.ka.ba/lares/docs/pono/swarm-harvest/the-abuse-surface-of-managed-identity-60a8e5.mem"
@@ -728,4 +728,4 @@ The supervised party can *discover* the relation in Google and Apple, and is tol
 
 <<^ code="&#x0003;">>ni:///sha-256;wzDxOKlpTtfy0xVnqJokxpD4howHJ7Db16fkkQ6-90c
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

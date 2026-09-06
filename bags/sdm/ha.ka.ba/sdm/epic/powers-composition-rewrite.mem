@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" from=? -> to=lar:///ha.ka.ba/sdm/epic/powers-composition-rewrite>>
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/sdm/epic/powers-composition-rewrite">>
 ```toml meta
 cacheable = true
 file-path = "bags/sdm/ha.ka.ba/sdm/epic/powers-composition-rewrite.mem"
@@ -778,4 +778,4 @@ history if ever needed.
 
 <<^ code="&#x0003;">>ni:///sha-256;F9LNbUfvDxr_DtsjRDVVoXmIx-KWHvAK8k0dycFB-_A
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

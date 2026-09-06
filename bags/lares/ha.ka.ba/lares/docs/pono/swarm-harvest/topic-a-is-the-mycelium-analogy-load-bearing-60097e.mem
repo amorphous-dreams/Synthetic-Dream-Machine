@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" namespace="⊙" from=? -> to=lar:///ha.ka.ba/lares/docs/pono/swarm-harvest/topic-a-is-the-mycelium-analogy-load-bearing-60097e>>
+<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/swarm-harvest/topic-a-is-the-mycelium-analogy-load-bearing-60097e">>
 ```toml meta
 cacheable = false
 file-path = "bags/lares/ha.ka.ba/lares/docs/pono/swarm-harvest/topic-a-is-the-mycelium-analogy-load-bearing-60097e.mem"
@@ -358,4 +358,4 @@ Named failures and their diagnosed causes: **Gopher** (outcompeted on net value 
 
 <<^ code="&#x0003;">>ni:///sha-256;BnZCNsc3CAaiLyRln8JmX2bsvuChGs3yHt57M6pemAw
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" from=? -> to=lar:///ha.ka.ba/lararium/docs/signal/hud>>
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/docs/signal/hud">>
 ```toml meta
 cacheable = false
 file-path = "bags/lararium/ha.ka.ba/lararium/docs/signal/hud.mem"
@@ -64,4 +64,4 @@ The instrument grammar itself stays in the pair; this room holds only the signal
 
 <<^ code="&#x0003;">>ni:///sha-256;zfEW_aPwT9iN1Por-b3giqOyrQcy2dcaLomV6BC6Jdw
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

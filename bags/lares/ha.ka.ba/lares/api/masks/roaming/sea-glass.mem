@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" namespace="ॐ ँ" from=? -> to=lar:///ha.ka.ba/lares/api/masks/roaming/sea-glass>>
+<<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lares/api/masks/roaming/sea-glass">>
 ```toml meta
 cacheable         = true
 created           = "2026-07-24"
@@ -148,4 +148,4 @@ Where sibling masks grow character-notes through talk-story-dev passes, Sea-Glas
 
 <<^ code="&#x0003;">>ni:///sha-256;WyV4FOWmmYfxzaT23CteoYnr4Gg_oMic7H8Ip_QrCa0
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

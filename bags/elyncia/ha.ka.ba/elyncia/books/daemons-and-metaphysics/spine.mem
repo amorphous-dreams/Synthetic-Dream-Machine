@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" from=? -> to=lar:///ha.ka.ba/elyncia/books/daemons-and-metaphysics/spine>>
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/books/daemons-and-metaphysics/spine">>
 ```toml meta
 cacheable  = true
 file-path  = "bags/elyncia/ha.ka.ba/elyncia/books/daemons-and-metaphysics/spine.mem"
@@ -61,4 +61,4 @@ comes only after all source text reads as moved.)//
 
 <<^ code="&#x0003;">>ni:///sha-256;jbHFFe-IbAzeCUV2LU0y5toQiqqKKpd3FuHOKbmC_-I
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

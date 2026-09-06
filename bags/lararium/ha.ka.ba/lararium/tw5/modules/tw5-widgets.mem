@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" from=? -> to=lar:///ha.ka.ba/lararium/tw5/modules/tw5-widgets>>
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/tw5/modules/tw5-widgets">>
 ```toml meta
 cacheable     = true
 file-path     = "bags/lararium/ha.ka.ba/lararium/tw5/modules/tw5-widgets.mem"
@@ -92,4 +92,4 @@ fields = [
 
 <<^ code="&#x0003;">>ni:///sha-256;t-VgE1JqbvBj-RfGLoGjyqbwA2SBYFm4CdWsha5z03o
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

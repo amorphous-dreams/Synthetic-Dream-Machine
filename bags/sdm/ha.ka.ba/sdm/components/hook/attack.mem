@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" from=? -> to=lar:///ha.ka.ba/sdm/components/hook/attack>>
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/sdm/components/hook/attack">>
 ```toml meta
 cacheable = true
 caption   = "attack"
@@ -72,4 +72,4 @@ Composes with offensive functions and any domain. Rarely sits on `domain/divinat
 
 <<^ code="&#x0003;">>ni:///sha-256;HOhhSRi50zCybpNjGMorbaHgXQBsVTqfh2ZGK2K3Tto
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

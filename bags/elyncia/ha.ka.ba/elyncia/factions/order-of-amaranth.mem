@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" from=? -> to=lar:///ha.ka.ba/elyncia/factions/order-of-amaranth>>
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/factions/order-of-amaranth">>
 ```toml meta
 cacheable  = true
 file-path  = "bags/elyncia/ha.ka.ba/elyncia/factions/order-of-amaranth.mem"
@@ -58,4 +58,4 @@ honey into sacred shapes, shared and eaten.)//
 
 <<^ code="&#x0003;">>ni:///sha-256;ealE6xTpDusWtWIyMd7f5bWKIFJUQahk_uMcBNfPtb0
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

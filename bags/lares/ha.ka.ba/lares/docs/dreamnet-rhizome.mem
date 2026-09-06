@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" from=? -> to=lar:///ha.ka.ba/lares/docs/dreamnet-rhizome>>
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/dreamnet-rhizome">>
 ```toml meta
 cacheable  = true
 file-path  = "bags/lares/ha.ka.ba/lares/docs/dreamnet-rhizome.mem"
@@ -77,4 +77,4 @@ The identity-privacy hardening (per-handle vessel credential · scope-exclusive 
 
 <<^ code="&#x0003;">>ni:///sha-256;LNreN8DAoq8b3XZ1cMG-GOk_7zrBsRS0tlhk8nWBGW0
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

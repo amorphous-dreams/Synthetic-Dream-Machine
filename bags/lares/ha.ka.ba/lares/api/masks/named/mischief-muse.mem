@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" namespace="ॐ ँ" from=? -> to=lar:///ha.ka.ba/lares/api/masks/named/mischief-muse>>
+<<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lares/api/masks/named/mischief-muse">>
 ```toml meta
 aside             = false
 cacheable         = false
@@ -202,4 +202,4 @@ These notes require live session observation before they can be written with con
 
 <<^ code="&#x0003;">>ni:///sha-256;--e5489sTVCKApZfPSKfaEKGDxkLWSmOLKGw_ECpH8U
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

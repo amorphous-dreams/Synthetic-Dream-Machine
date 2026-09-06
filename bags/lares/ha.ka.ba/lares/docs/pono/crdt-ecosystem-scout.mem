@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" namespace="⊙" from=? -> to=lar:///ha.ka.ba/lares/docs/pono/crdt-ecosystem-scout>>
+<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/crdt-ecosystem-scout">>
 ```toml meta
 cacheable         = true
 file-path         = "bags/lares/ha.ka.ba/lares/docs/pono/crdt-ecosystem-scout.mem"
@@ -184,4 +184,4 @@ Patchwork notebook has six 2026 entries, newest **"Progressions" 2026-05-12**. h
 
 <<^ code="&#x0003;">>ni:///sha-256;UNcVpt9aasdM_zLtgElWUxK7iCOM14E8JlB1-x2qd2o
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

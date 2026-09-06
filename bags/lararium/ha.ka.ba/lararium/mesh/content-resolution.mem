@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" from=? -> to=lar:///ha.ka.ba/lararium/mesh/content-resolution>>
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/mesh/content-resolution">>
 ```toml meta
 cacheable  = true
 file-path  = "bags/lararium/ha.ka.ba/lararium/mesh/content-resolution.mem"
@@ -297,4 +297,4 @@ priors decide them, and wave-3 may reopen any.
 
 <<^ code="&#x0003;">>ni:///sha-256;w3KnE37VxCFOqZ7a_DCJoAegfoh7MAJ0jJV8OB2OGq8
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

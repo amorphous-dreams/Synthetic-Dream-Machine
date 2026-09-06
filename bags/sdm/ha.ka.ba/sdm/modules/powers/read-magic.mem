@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" from=? -> to=lar:///ha.ka.ba/sdm/modules/powers/read-magic>>
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/sdm/modules/powers/read-magic">>
 ```toml meta
 cacheable = true
 caption   = "Read Magic"
@@ -94,4 +94,4 @@ A botched read mis-recognizes: the operator marks the wrong meaning as trusted, 
 
 <<^ code="&#x0003;">>ni:///sha-256;hJ7euiSeKOsMOp80TgynuuNGlWe-PtGv7mhNB4V6Qj4
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

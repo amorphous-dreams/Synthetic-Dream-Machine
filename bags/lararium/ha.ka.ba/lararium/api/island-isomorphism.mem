@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" from=? -> to=lar:///ha.ka.ba/lararium/api/island-isomorphism>>
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/api/island-isomorphism">>
 ```toml meta
 cacheable = true
 file-path = "bags/lararium/ha.ka.ba/lararium/api/island-isomorphism.mem"
@@ -99,4 +99,4 @@ re-entry: the kue key; or the migration's step 4 boundary, where the residue get
 
 <<^ code="&#x0003;">>ni:///sha-256;CYgRXFKCjW_DTpiOlTgYf-YLsqfRgR_Lf_xYR3kBZoI
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

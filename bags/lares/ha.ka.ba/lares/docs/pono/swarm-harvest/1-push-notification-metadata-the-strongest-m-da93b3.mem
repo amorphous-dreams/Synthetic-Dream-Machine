@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" namespace="⊙" from=? -> to=lar:///ha.ka.ba/lares/docs/pono/swarm-harvest/1-push-notification-metadata-the-strongest-m-da93b3>>
+<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/swarm-harvest/1-push-notification-metadata-the-strongest-m-da93b3">>
 ```toml meta
 cacheable = false
 file-path = "bags/lares/ha.ka.ba/lares/docs/pono/swarm-harvest/1-push-notification-metadata-the-strongest-m-da93b3.mem"
@@ -431,4 +431,4 @@ The requested figure, confirmed at source:
 
 <<^ code="&#x0003;">>ni:///sha-256;YLqE42u00j2JO_Hx-AGs3gusIQJ6rx1qCORMR5obEBw
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

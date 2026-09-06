@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" namespace="⊙" from=? -> to=lar:///ha.ka.ba/lares/docs/pono/swarm-harvest/the-convergent-claim-research-report-9c49fc>>
+<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/swarm-harvest/the-convergent-claim-research-report-9c49fc">>
 ```toml meta
 cacheable = false
 file-path = "bags/lares/ha.ka.ba/lares/docs/pono/swarm-harvest/the-convergent-claim-research-report-9c49fc.mem"
@@ -608,4 +608,4 @@ McDaniel & Rubin's rebuttal to Rivest (Springer auth wall; abstract publisher-el
 
 <<^ code="&#x0003;">>ni:///sha-256;qZbp_faC_BY-pyMAsI7e-sFF-fCXaoFGbrO6z6vUdEE
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

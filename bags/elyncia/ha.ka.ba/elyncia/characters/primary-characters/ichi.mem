@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" from=? -> to=lar:///ha.ka.ba/elyncia/characters/primary-characters/ichi>>
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/characters/primary-characters/ichi">>
 ```toml meta
 cacheable  = true
 file-path  = "bags/elyncia/ha.ka.ba/elyncia/characters/primary-characters/ichi.mem"
@@ -374,4 +374,4 @@ See ''Powered Symbiote'' (1 st).
 
 <<^ code="&#x0003;">>ni:///sha-256;-UM2R33rpy9JWfrHKaMtVv40RQE-EdGDSzXrubMDOUU
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

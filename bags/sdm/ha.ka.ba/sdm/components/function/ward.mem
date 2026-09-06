@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" from=? -> to=lar:///ha.ka.ba/sdm/components/function/ward>>
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/sdm/components/function/ward">>
 ```toml meta
 cacheable = true
 caption   = "ward"
@@ -72,4 +72,4 @@ Pairs with `domain/abjuration`. Often `hook/sustained` or `hook/imbued` to keep 
 
 <<^ code="&#x0003;">>ni:///sha-256;5u2bO7SIAhv_TIiXalV2xDLbEvNvr99h149dQtJGE5U
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

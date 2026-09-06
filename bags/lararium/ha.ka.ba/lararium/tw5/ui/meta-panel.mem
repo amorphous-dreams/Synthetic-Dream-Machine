@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" from=? -> to=lar:///ha.ka.ba/lararium/tw5/ui/meta-panel>>
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/tw5/ui/meta-panel">>
 ```toml meta
 cacheable = true
 file-path = "bags/lararium/ha.ka.ba/lararium/tw5/ui/meta-panel.mem"
@@ -120,4 +120,4 @@ exclude = ["title", "text", "tags", "bag", "revision", "created", "modified", "c
 
 <<^ code="&#x0003;">>ni:///sha-256;KcEXDkFuxiA0fHtIFYW0W_f8ivVoCrXRS3j5qXdztBo
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" from=? -> to=lar:///ha.ka.ba/lararium/tw5/canvas/rooms>>
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/tw5/canvas/rooms">>
 ```toml meta
 cacheable = true
 file-path = "bags/lararium/ha.ka.ba/lararium/tw5/canvas/rooms.mem"
@@ -136,4 +136,4 @@ label      = "← System"
 
 <<^ code="&#x0003;">>ni:///sha-256;RtapaABp1fIBvpbPgBDgxeVDO97kv5tdP-SYcn-7cCI
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

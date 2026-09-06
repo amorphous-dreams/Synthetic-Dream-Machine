@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" namespace="⊙" from=? -> to=lar:///ha.ka.ba/lares/docs/pono/swarm-harvest/0-method-instrument-notes-read-first-negativ-356569>>
+<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/swarm-harvest/0-method-instrument-notes-read-first-negativ-356569">>
 ```toml meta
 cacheable = false
 file-path = "bags/lares/ha.ka.ba/lares/docs/pono/swarm-harvest/0-method-instrument-notes-read-first-negativ-356569.mem"
@@ -407,4 +407,4 @@ And one asymmetry worth naming: **the age attribute is the only lever, and on ev
 
 <<^ code="&#x0003;">>ni:///sha-256;pwaMGUV83MCYwcdT5bN-Om-5mKRXAfNAcEJ9X0i6Eqg
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

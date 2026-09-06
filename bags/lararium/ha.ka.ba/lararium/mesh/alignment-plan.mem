@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" from=? -> to=lar:///ha.ka.ba/lararium/mesh/alignment-plan>>
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/mesh/alignment-plan">>
 ```toml meta
 cacheable = true
 file-path = "bags/lararium/ha.ka.ba/lararium/mesh/alignment-plan.mem"
@@ -129,4 +129,4 @@ These items name known inconsistencies in the current tree. Each carries a resol
 
 <<^ code="&#x0003;">>ni:///sha-256;bIIh2RiDozTT98z7wrgBPZSWn0TNc7qtfUAOsP15XRk
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

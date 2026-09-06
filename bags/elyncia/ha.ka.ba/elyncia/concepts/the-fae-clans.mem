@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" from=? -> to=lar:///ha.ka.ba/elyncia/concepts/the-fae-clans>>
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/concepts/the-fae-clans">>
 ```toml meta
 cacheable  = true
 file-path  = "bags/elyncia/ha.ka.ba/elyncia/concepts/the-fae-clans.mem"
@@ -126,4 +126,4 @@ and reads as an outrage to anyone who does not.
 
 <<^ code="&#x0003;">>ni:///sha-256;gnCnYy76aBlfYa0THxno3hRX79HXUk0RCHiQsdr5wyU
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" from=? -> to=lar:///ha.ka.ba/lares/docs/pono/tiddlywiki-filter>>
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/tiddlywiki-filter">>
 ```toml meta
 cacheable = false
 file-path = "bags/lares/ha.ka.ba/lares/docs/pono/tiddlywiki-filter.mem"
@@ -160,4 +160,4 @@ A future parser meme and render-pipeline meme should absorb these when they are 
 
 <<^ code="&#x0003;">>ni:///sha-256;pa3N6JHH5O7Edou_YcDEu0CtVSbaKTIZJUNgNCW9bfk
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

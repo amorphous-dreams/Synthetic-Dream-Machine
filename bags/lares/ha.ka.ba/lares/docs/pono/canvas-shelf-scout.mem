@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" namespace="⊙" from=? -> to=lar:///ha.ka.ba/lares/docs/pono/canvas-shelf-scout>>
+<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/canvas-shelf-scout">>
 ```toml meta
 cacheable         = true
 file-path         = "bags/lares/ha.ka.ba/lares/docs/pono/canvas-shelf-scout.mem"
@@ -331,4 +331,4 @@ I read the source. `FolkSpace` is a **plain Web Component** — `folk-space` —
 
 <<^ code="&#x0003;">>ni:///sha-256;xmLzGxq7XEtAkxtlVtEZuORyvxjoiTpD7YVyP5DMQ4g
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

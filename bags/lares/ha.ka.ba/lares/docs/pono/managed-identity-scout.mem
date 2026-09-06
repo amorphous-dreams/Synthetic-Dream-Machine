@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" namespace="⊙" from=? -> to=lar:///ha.ka.ba/lares/docs/pono/managed-identity-scout>>
+<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/managed-identity-scout">>
 ```toml meta
 cacheable         = true
 file-path         = "bags/lares/ha.ka.ba/lares/docs/pono/managed-identity-scout.mem"
@@ -170,4 +170,4 @@ A coercive-control statute names //"monitoring a person via online communication
 
 <<^ code="&#x0003;">>ni:///sha-256;qrUnUYA9uczUkI9_CWNDHvGj0unFWWPoRZMGpr52dSA
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

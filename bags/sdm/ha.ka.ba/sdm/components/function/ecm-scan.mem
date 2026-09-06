@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" from=? -> to=lar:///ha.ka.ba/sdm/components/function/ecm-scan>>
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/sdm/components/function/ecm-scan">>
 ```toml meta
 cacheable = true
 caption   = "ecm-scan"
@@ -72,4 +72,4 @@ Feeds `function/magic-decode` and `function/archive`. The `ecm` counter-set — 
 
 <<^ code="&#x0003;">>ni:///sha-256;opPs_NcfdjmmOV0lquCVQJREXAX_dn0GcKHqS8B1CCA
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

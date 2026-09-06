@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" namespace="⊙" from=? -> to=lar:///ha.ka.ba/lares/api/pono/prism>>
+<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/prism">>
 ```toml meta
 cacheable = true
 file-path = "bags/lares/ha.ka.ba/lares/api/pono/prism.mem"
@@ -115,4 +115,4 @@ Prism keeps the worthwhile half --- //reference a piece of content and read its 
 
 <<^ code="&#x0003;">>ni:///sha-256;Wdq81T7pmaXeY8J_x6uRafbsUf8YReQjWuV628CJnUs
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

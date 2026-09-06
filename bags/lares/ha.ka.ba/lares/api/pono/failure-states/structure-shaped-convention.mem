@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" namespace="⊙" from=? -> to=lar:///ha.ka.ba/lares/api/pono/failure-states/structure-shaped-convention>>
+<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/failure-states/structure-shaped-convention">>
 ```toml meta
 cacheable = true
 file-path = "bags/lares/ha.ka.ba/lares/api/pono/failure-states/structure-shaped-convention.mem"
@@ -79,4 +79,4 @@ That makes this a ''sibling of Confabulation-as-Canon'' rather than a variant: t
 
 <<^ code="&#x0003;">>ni:///sha-256;Bmi7XgbxE4eftFOW3jst3p8o2B4ZG_eE4Eztng8lfLs
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

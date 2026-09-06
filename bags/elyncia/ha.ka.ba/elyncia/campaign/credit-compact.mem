@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" from=? -> to=lar:///ha.ka.ba/elyncia/campaign/credit-compact>>
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/campaign/credit-compact">>
 ```toml meta
 cacheable  = true
 file-path  = "bags/elyncia/ha.ka.ba/elyncia/campaign/credit-compact.mem"
@@ -66,4 +66,4 @@ They may:
 
 <<^ code="&#x0003;">>ni:///sha-256;40g88l5e5IwNaQhfXKJmX-VOVhfL_iqVS5L8PWIrzVQ
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

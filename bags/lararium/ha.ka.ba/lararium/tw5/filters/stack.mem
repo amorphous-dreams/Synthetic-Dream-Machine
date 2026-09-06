@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" from=? -> to=lar:///ha.ka.ba/lararium/tw5/filters/stack>>
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/tw5/filters/stack">>
 ```toml meta
 cacheable  = true
 file-path  = "bags/lararium/ha.ka.ba/lararium/tw5/filters/stack.mem"
@@ -46,4 +46,4 @@ Pure core: `qualifyStackTag` / `stackOf` (`packages/lararium-tw5/src/has-stack.t
 
 <<^ code="&#x0003;">>ni:///sha-256;nfkT3HDOzmyLT4-O6BVEDPbIPLXstHOi3AilMbOyWSY
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

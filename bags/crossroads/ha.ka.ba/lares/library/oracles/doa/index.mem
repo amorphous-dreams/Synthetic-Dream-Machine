@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" from=? -> to=lar:///ha.ka.ba/lares/library/oracles/doa/index>>
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/library/oracles/doa/index">>
 ```toml meta
 cacheable  = true
 file-path  = "bags/crossroads/ha.ka.ba/lares/library/oracles/doa/index.mem"
@@ -74,4 +74,4 @@ opening the DOA.html blob in any browser, offline, forever.
 
 <<^ code="&#x0003;">>ni:///sha-256;m_NzY35b6w-36y4rSMBrWlbwcTRf3sOLtEZZC8olUR0
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

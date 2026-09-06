@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" from=? -> to=lar:///ha.ka.ba/sdm/components/domain/abjuration>>
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/sdm/components/domain/abjuration">>
 ```toml meta
 cacheable = true
 caption   = "abjuration"
@@ -72,4 +72,4 @@ Pairs with `function/barrier` and `function/ward`. Counters offensive crossings;
 
 <<^ code="&#x0003;">>ni:///sha-256;urzDc5EmFDe6qEKbURmR648_y0irpIpHXvZ6gWF1jdo
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

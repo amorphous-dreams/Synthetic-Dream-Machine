@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" from=? -> to=lar:///lares_research/research-streams/lararium/SESSION>>
+<<^ code="&#x0001;" from="?" -> to="lar:///lares_research/research-streams/lararium/SESSION">>
 ```toml meta
 file-path  = "bags/lares-history/lares_research/research-streams/lararium/SESSION.mem"
 implements = ["lar:///ha.ka.ba/lares/api/pono/meme"]
@@ -1193,4 +1193,4 @@ Brooklyn Zelenka / UCAN / Keyhive alignment: `did:key` = self-certifying, Ed2551
 
 <<^ code="&#x0003;">>ni:///sha-256;vYY8IZRnY2owYMC9DM5BNy-Kc9TpzWXBP9IuXPeu3JI
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

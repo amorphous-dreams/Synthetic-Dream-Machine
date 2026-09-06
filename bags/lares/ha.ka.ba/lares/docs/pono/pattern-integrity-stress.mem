@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" namespace="⊙" from=? -> to=lar:///ha.ka.ba/lares/docs/pono/pattern-integrity-stress>>
+<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/pattern-integrity-stress">>
 ```toml meta
 cacheable         = true
 file-path         = "bags/lares/ha.ka.ba/lares/docs/pono/pattern-integrity-stress.mem"
@@ -196,4 +196,4 @@ And the competitive complement: waist protocols become ''evolutionary kernels'' 
 
 <<^ code="&#x0003;">>ni:///sha-256;icZlrsTNkCagU9wxwxn0RUh9uJV6NYl9943dhOL2fTk
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

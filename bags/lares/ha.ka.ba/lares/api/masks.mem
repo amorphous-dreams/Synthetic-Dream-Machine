@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" namespace="ॐ ँ" from=? -> to=lar:///ha.ka.ba/lares/api/masks>>
+<<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lares/api/masks">>
 ```toml meta
 cacheable = true
 created   = "Invalid Date"
@@ -125,4 +125,4 @@ Named Voice masks may also be invoked directly by their earned name in Voice hou
 
 <<^ code="&#x0003;">>ni:///sha-256;KCYT6F-39SvLl3H-EFFmzgeszvtaI4CiZIost0K-eH8
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

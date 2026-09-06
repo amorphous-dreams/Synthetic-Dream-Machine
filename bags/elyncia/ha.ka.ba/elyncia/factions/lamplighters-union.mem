@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" from=? -> to=lar:///ha.ka.ba/elyncia/factions/lamplighters-union>>
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/factions/lamplighters-union">>
 ```toml meta
 cacheable  = true
 file-path  = "bags/elyncia/ha.ka.ba/elyncia/factions/lamplighters-union.mem"
@@ -59,4 +59,4 @@ company repairing a broken Nexus one herm at a time.
 
 <<^ code="&#x0003;">>ni:///sha-256;VzlKzuo627vp5dm7uJHFluhCnPwrX_4wbWxCXcOee4Y
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

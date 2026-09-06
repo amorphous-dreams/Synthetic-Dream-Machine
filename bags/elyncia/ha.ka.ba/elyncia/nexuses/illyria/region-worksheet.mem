@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" from=? -> to=lar:///ha.ka.ba/elyncia/nexuses/illyria/region-worksheet>>
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/nexuses/illyria/region-worksheet">>
 ```toml meta
 cacheable  = true
 file-path  = "bags/elyncia/ha.ka.ba/elyncia/nexuses/illyria/region-worksheet.mem"
@@ -87,4 +87,4 @@ lowest tide.
 
 <<^ code="&#x0003;">>ni:///sha-256;Xh2UnReByXzMfMByWaHOFBm4AnEpm0eb_io90MKXVpc
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

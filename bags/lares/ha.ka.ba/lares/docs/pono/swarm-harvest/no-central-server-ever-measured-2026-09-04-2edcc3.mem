@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" namespace="⊙" from=? -> to=lar:///ha.ka.ba/lares/docs/pono/swarm-harvest/no-central-server-ever-measured-2026-09-04-2edcc3>>
+<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/swarm-harvest/no-central-server-ever-measured-2026-09-04-2edcc3">>
 ```toml meta
 cacheable = false
 file-path = "bags/lares/ha.ka.ba/lares/docs/pono/swarm-harvest/no-central-server-ever-measured-2026-09-04-2edcc3.mem"
@@ -319,4 +319,4 @@ Individual instances: **Hachyderm took 30,000 users in 30 days** on four donated
 
 <<^ code="&#x0003;">>ni:///sha-256;gBu0kQD4-NYcvVec_KmfyE3fRo4C_PbcK6KcHvCbe7c
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

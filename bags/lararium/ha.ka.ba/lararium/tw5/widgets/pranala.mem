@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" from=? -> to=lar:///ha.ka.ba/lararium/tw5/widgets/pranala>>
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/tw5/widgets/pranala">>
 ```toml meta
 body-sha256   = "c024548a4d09384a9d5df111d3b73b712a2951f3287975efd6140790e2a3ab3d"
 cacheable     = true
@@ -40,4 +40,4 @@ uri-path      = "ha.ka.ba/lararium/tw5/widgets/pranala"
 
 <<^ code="&#x0003;">>ni:///sha-256;hTD4U4ogJDUXSaEzP1MTjQAveKNF5lCvluVu-deCA5Y
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

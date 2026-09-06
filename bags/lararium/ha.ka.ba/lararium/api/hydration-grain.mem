@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" namespace="ॐ ँ" from=? -> to=lar:///ha.ka.ba/lararium/api/hydration-grain>>
+<<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lararium/api/hydration-grain">>
 ```toml meta
 cacheable     = true
 drafted-on    = "2026-07-27"
@@ -122,4 +122,4 @@ Any snapshot design MUST satisfy these; none of them awaits research.
 
 <<^ code="&#x0003;">>ni:///sha-256;WjzyIXe9owye2PGgXyIDQY0KmSgWip1xmlluxwB_IPk
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

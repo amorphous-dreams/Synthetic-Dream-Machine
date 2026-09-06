@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" from=? -> to=lar:///ha.ka.ba/lares/docs/graph>>
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/graph">>
 ```toml meta
 file-path        = "bags/lares/ha.ka.ba/lares/docs/graph.mem"
 l-space          = "stable"
@@ -174,4 +174,4 @@ Phases 1, 3, and 4 may proceed independently.
 
 <<^ code="&#x0003;">>ni:///sha-256;bZRYF-wXjxCFYkIAfF_50nKgSlcAotXEmumUNOpG3dM
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

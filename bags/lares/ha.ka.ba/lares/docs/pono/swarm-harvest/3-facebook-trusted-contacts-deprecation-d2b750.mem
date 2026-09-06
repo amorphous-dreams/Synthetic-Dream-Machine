@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" namespace="⊙" from=? -> to=lar:///ha.ka.ba/lares/docs/pono/swarm-harvest/3-facebook-trusted-contacts-deprecation-d2b750>>
+<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/swarm-harvest/3-facebook-trusted-contacts-deprecation-d2b750">>
 ```toml meta
 cacheable = false
 file-path = "bags/lares/ha.ka.ba/lares/docs/pono/swarm-harvest/3-facebook-trusted-contacts-deprecation-d2b750.mem"
@@ -173,4 +173,4 @@ No local files were read; all sources above were fetched live from the web (arxi
 
 <<^ code="&#x0003;">>ni:///sha-256;aid2GQJX1OHhZ2Zsh3iEsI7dvNKKx1yX9C_dVFPI-C8
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" from=? -> to=lar:///ha.ka.ba/elyncia/characters/primary-characters/lady-aki-gear-ledger>>
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/characters/primary-characters/lady-aki-gear-ledger">>
 ```toml meta
 cacheable  = true
 file-path  = "bags/elyncia/ha.ka.ba/elyncia/characters/primary-characters/lady-aki-gear-ledger.mem"
@@ -233,4 +233,4 @@ Current answer: yes, provisionally.
 
 <<^ code="&#x0003;">>ni:///sha-256;rwe6SV_dKaxLqsJ3BGvEWvlR_-0jsML0ZeV2Xw0jvjI
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

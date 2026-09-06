@@ -6,7 +6,7 @@ allowed-tools: Read, Grep, Glob, Bash, Edit, Write
 
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" from=? -> to=lar:///ha.ka.ba/lares/api/mu/l-prime/SKILL>>
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/api/mu/l-prime/SKILL">>
 ```toml meta
 cacheable          = true
 constraints        = ["any copula left standing owns its warrant in the sentence", "smallest lawful intervention; never widen a local fix into a rewrite", "quotations, code, and literal examples never normalize silently", "has runs free --- never policed"]
@@ -96,4 +96,4 @@ A sentence turn beats a lecture. Output stays compact: location, bucket, reason,
 
 <<^ code="&#x0003;">>ni:///sha-256;ZPpLFmHIxo0trD8a_1sXLrxN54VVMcZ9WcqjRByeTIM
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

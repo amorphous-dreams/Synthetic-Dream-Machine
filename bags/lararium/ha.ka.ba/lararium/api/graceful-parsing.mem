@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" from=? -> to=lar:///ha.ka.ba/lararium/api/graceful-parsing>>
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/api/graceful-parsing">>
 ```toml meta
 cacheable = true
 hydrate   = false
@@ -432,4 +432,4 @@ behind that — correction by degree, never a binary gate — lives at [[living-
 
 <<^ code="&#x0003;">>ni:///sha-256;taKnAqoUgNzUWWk6RFD7ZQq16JZ4LkLdrzdnDl6qcRs
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>

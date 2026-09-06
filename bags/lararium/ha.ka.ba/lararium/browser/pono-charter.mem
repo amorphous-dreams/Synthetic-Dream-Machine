@@ -1,6 +1,6 @@
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" from=? -> to=lar:///ha.ka.ba/lararium/browser/pono-charter>>
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/browser/pono-charter">>
 ```toml meta
 cacheable = true
 file-path = "bags/lararium/ha.ka.ba/lararium/browser/pono-charter.mem"
@@ -141,4 +141,4 @@ These questions do not block charter adoption. They require measurement before r
 
 <<^ code="&#x0003;">>ni:///sha-256;tebCapifjrrvuWuBn82YVOyRuFodsNhzuoPJmClpo9s
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>
