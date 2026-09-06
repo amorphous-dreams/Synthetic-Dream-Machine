@@ -133,6 +133,14 @@ const VOICE_RE =
 // A bare `Name:` surfacing (degraded — no role parens). Accepted only when the
 // name reads as a known house Voice, so prose `Note:` / `Thread:` stay water.
 const BARE_VOICE_RE = /(?:^|\n)\s*(?:\*\*\s*)?([A-Z][\w'’-]*(?:[ -][A-Z][\w'’-]*)*)\s*:/g;
+/**
+ * Template placeholders, never surfacings. The seeds and the instruction carriers print `Voice (Role):`
+ * and `Voice:` to SHOW the shape a Voice header takes; a Voice takes its name at generation. Counting
+ * the template reads a doc's example as a turn's speech, which is how a corpus of instructions came to
+ * report a Voice called "Voice" holding a role called "Role".
+ */
+const TEMPLATE_NAMES = new Set(["voice", "role", "name", "persona", "mask"]);
+
 const KNOWN_VOICES = new Set([
   "lares",
   "ink-clerk",
@@ -282,6 +290,7 @@ export function harvestTurnGradient(text: string): TurnHarvest {
       KNOWN_VOICES.has(name.toLowerCase()) ||
       (role !== null && KNOWN_VOICES.has(role.toLowerCase()));
     if (!knownish && (words(name) > 3 || (role !== null && words(role) > 3))) continue;
+    if (TEMPLATE_NAMES.has(name.toLowerCase())) continue;   // a printed shape, not a speaker
     const isMask = prefix !== null && prefix.toLowerCase() === "mask";
     voices.push({
       raw: m[0].trim(),
@@ -295,7 +304,8 @@ export function harvestTurnGradient(text: string): TurnHarvest {
   const claimedVoiceOffsets = new Set(voices.map((v) => v.offset));
   for (const m of text.matchAll(BARE_VOICE_RE)) {
     const name = (m[1] ?? "").trim();
-    if (!KNOWN_VOICES.has(name.toLowerCase())) continue;
+    const low = name.toLowerCase();
+    if (!KNOWN_VOICES.has(low) || TEMPLATE_NAMES.has(low)) continue;
     const offset = m.index ?? 0;
     // Skip when the role-form already claimed this surfacing (overlapping span).
     if ([...claimedVoiceOffsets].some((o) => Math.abs(o - offset) <= 4)) continue;
