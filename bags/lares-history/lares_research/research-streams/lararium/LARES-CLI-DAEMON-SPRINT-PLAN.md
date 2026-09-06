@@ -1,8 +1,8 @@
 # Lares CLI-Daemon Sprint Plan
 
 > **Harvested 2026-09-06.** Two settled decisions moved to `lar:///ha.ka.ba/lares/cli/vessel-door`
-> `#/the-record-laws` — *Records, not RPC* and the `lar:` locality law. The sprint plan around them stands
-> as the record it was; its work has since landed.
+> `#/the-record-laws` — *Records, not RPC* and the `lar:` locality law. The sprint plan around them keeps
+> the record it holds; the door those decisions govern stands built.
 
 > Date: 2026-05-18
 > Branch: feature/lararium-node-4

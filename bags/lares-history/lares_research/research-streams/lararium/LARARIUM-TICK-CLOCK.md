@@ -2,7 +2,7 @@
 
 > **Harvested 2026-09-06.** *Two Time Bases That Must Not Conflate* and the always-commit constraint moved
 > to `lar:///ha.ka.ba/lararium/mesh/ffz-clock` `#/the-two-time-bases`, together with the distinction this
-> file names — a simulation tick clock is not an FfzClock. The rest stands as the research it was.
+> file names — a simulation tick clock never stands as an FfzClock. The rest keeps the research it records.
 
 > Date: 2026-05-06
 > Branch: feature/lararium-node-3

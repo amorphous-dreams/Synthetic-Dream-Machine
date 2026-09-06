@@ -47,9 +47,9 @@ session artifact ids, storage artifact ids, and any other first-class name.
 
 <<~ranks locality hostless ~ `lar:///ha.ka.ba/lares/commands/promote/…` — a hot, warm or cold STORAGE artifact, on-disk projections first -> hostful ~ `lar://node.alpha.local/ha.ka.ba/bags/sessions/live/…` — a LIVE session artifact, named at the node holding it>>
 
-''So one glance at a name says whether the thing it names outlives the session.'' A hostless name survives
-the node; a hostful one does not, and reading a hostful name as durable is the failure this law exists to
-make visible.
+''So one glance at a name says whether the thing it names outlives the session.'' A hostless name outlives
+the node; a hostful one does not, and reading a hostful name as durable NAMES the failure this law makes
+visible.
 
 ''Provenance:'' harvested verbatim from `lar:///lares_research/research-streams/lararium/LARES-CLI-DAEMON-SPRINT-PLAN`,
 where both laws stood settled with no live carrier holding either.
@@ -265,6 +265,6 @@ reached.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;x8Pj_1-f8eDlyE-hspbLyIVP4dKdi7xvbANiqIcoZMQ
+<<^ code="&#x0003;">>ni:///sha-256;SHmCGQI4J7TpNk0lK3ldvrdr5pLu6UzbK9XYflN3u_k
 
 <<^ code="&#x0004;" -> to=?>>
