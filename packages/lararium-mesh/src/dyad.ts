@@ -144,22 +144,6 @@ export function dyadSlotKey(id: string): string {
 }
 
 /**
- * Build the record for a relationship the edge already establishes. It DERIVES the ref from the edge rather
- * than accepting one alongside it, because two sources for one fact eventually disagree, and the signed one
- * must win. An edge names its operator (the veil that signed) and its device (the vessel that carries).
- */
-export function dyadFromEdge(edge: DeviceDelegationTiddler, binding: DelegationEdge | null = null): DyadRecord {
-  // THE FALLBACK READING, and it says so (Stage 0 ruling, 2026-09-05): the true veil derives off the
-  // VESSEL seed per group (`deriveDyadVeil`) and rides the dyad SLOT the ceremony writes. This function
-  // reads a bare EDGE — signed by the persona root — so the ref it derives names (device × root): the
-  // relationship presented, before any slot carries its derived face. A reader that unions both sources
-  // lets the slot WIN (`vesselDyads`), so this reading surfaces only where no slot stands, labelled by
-  // its own binding:null default rather than passing as the ruled shape.
-  const ref: DyadRef = { vesselDid: edge.deviceDid, veilDid: edge.personaRootDid };
-  return { kind: DYAD_ID_DOMAIN, dyadId: dyadId(ref), ref, edge, binding };
-}
-
-/**
  * Land a dyad onto a doc draft — one slot per relationship, so a vessel carrying three faces carries three
  * slots rather than overwriting one. Call INSIDE a `handle.change()` callback.
  */
@@ -187,23 +171,18 @@ function coerceDyad(parsed: unknown): DyadRecord | null {
     }
   }
   // THE SLOT'S REF IS AUTHORITATIVE FOR THE VEIL (Stage 0 ruling, 2026-09-05): the derived face never
-  // appears in the edge — the edge binds root→device — so rebuilding the ref from the edge would erase
-  // every minted veil and re-read the root in its place. The EDGE stays the authority for the
-  // relationship's establishment, so a stored ref must ride the edge's own device: a slot naming some
-  // other vessel reads torn and drops. A slot carrying no ref at all falls back to the edge reading.
+  // appears in the edge — the edge binds root→device — so the ref is REQUIRED, fenced to the edge's own
+  // device. A slot without one, or whose ref rides another vessel, reads torn and drops. No fallback
+  // reading exists: alpha carries no back-compass (2026-09-06), and a doc minted before the ruling
+  // re-founds rather than being re-read as (device × root).
   const refRaw = p["ref"];
-  let storedRef: DyadRef | null = null;
-  if (typeof refRaw === "object" && refRaw !== null) {
-    const r = refRaw as Record<string, unknown>;
-    if (typeof r["vesselDid"] === "string" && typeof r["veilDid"] === "string") {
-      storedRef = { vesselDid: r["vesselDid"], veilDid: r["veilDid"] };
-    }
-  }
+  if (typeof refRaw !== "object" || refRaw === null) return null;
+  const r = refRaw as Record<string, unknown>;
+  if (typeof r["vesselDid"] !== "string" || typeof r["veilDid"] !== "string") return null;
+  const storedRef: DyadRef = { vesselDid: r["vesselDid"], veilDid: r["veilDid"] };
   const et = edge as unknown as DeviceDelegationTiddler;
-  const record: DyadRecord =
-    storedRef && normalizeDid(storedRef.vesselDid) === normalizeDid(et.deviceDid)
-      ? { kind: DYAD_ID_DOMAIN, dyadId: dyadId(storedRef), ref: storedRef, edge: et, binding }
-      : dyadFromEdge(et, binding);
+  if (normalizeDid(storedRef.vesselDid) !== normalizeDid(et.deviceDid)) return null;
+  const record: DyadRecord = { kind: DYAD_ID_DOMAIN, dyadId: dyadId(storedRef), ref: storedRef, edge: et, binding };
   // A slot claiming an id its own ref does not produce reads as torn — drop it rather than trust the label
   // over the content. The id costs nothing to recompute, so nothing excuses trusting the stored one.
   if (typeof p["dyadId"] === "string" && p["dyadId"] !== record.dyadId) return null;

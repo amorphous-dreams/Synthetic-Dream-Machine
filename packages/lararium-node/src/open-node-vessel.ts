@@ -941,11 +941,11 @@ async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep> {
     const edgeRecord = daemonDoc?.tiddlers?.[DEVICE_DELEGATION_SELF_TIDDLER];
     const deviceEdge = edgeRecord?.tiddler as unknown as DeviceDelegationTiddler | undefined;
     // ── THE RELATIONSHIPS THIS VESSEL HOLDS — read live at boot (dyad read path) ──────────────
-    // `vesselDyads` unions the ceremony-minted slots with the edge-derived fallback; a slot WINS,
-    // so a post-ruling vessel reads its true derived veil here (Stage 0 ruling, 2026-09-05). The
-    // read only observes — but a FACE standing beside ZERO gathered dyads names a pre-ruling doc
-    // (edge written, slot never minted), and that drift gets SAID at boot rather than discovered
-    // the day a fleet tries to gather it. Warn, never throw: the edge fallback still carries boot.
+    // `vesselDyads` reads the ceremony-minted slots, the ONLY source (the alpha collapse,
+    // 2026-09-06 — no back-compass, no edge-derived fallback). The read only observes — but a FACE
+    // standing beside ZERO slots names a doc minted before the ruling, and that drift gets SAID at
+    // boot rather than discovered the day a fleet tries to gather it. Warn, never throw: the dyad
+    // read carries no caps, and the cure is a re-found, not a softened gate.
     const dyads = vesselDyads(daemonDoc);
     if (deviceEdge && dyads.length === 0) {
       console.log("[dyad] a face stands and no dyad slot is minted — a pre-ruling daemon doc; re-found or admit to mint the derived veil.");
