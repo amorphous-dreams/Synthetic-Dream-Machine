@@ -31,7 +31,7 @@ This ledger tracks source-talk-story material as it moves into coherent narrativ
 
 !! Intent Vector
 
-`confidence · 🏛️:! 🌊:? 🎭:? //narrative.consumes.sources/lindwyrm`
+`confidence · 🏛️/! 🌊/? 🎭/? //narrative.consumes.sources/lindwyrm`
 
 Narrate to self while consuming:
 
@@ -110,6 +110,6 @@ Likely next slices:
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;8h85BZc2SFrh6WT6iA9nPt4PA7q-xQkHON8mcc3gph4
+<<^ code="&#x0003;">>ni:///sha-256;r9IehIntyQkdx0bqvYe30LMvgeHZT7IlybLifgbm49c
 
 <<^ code="&#x0004;" -> to=?>>

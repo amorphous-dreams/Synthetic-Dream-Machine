@@ -105,7 +105,7 @@ Confidence: 0–20 Level, ''preceding'' the claim it rates; each claim earns a f
 
 Fixed order: 🏛️ Philosopher rates support, 🌊 Poet resonance, 🗡️ Satirist targeting, 🎭 Humorist fit, 🔮 Private presence. `avaktavya` marks a claim true/false does not cleanly fit.
 
-`<<~ mu * ? ! _ 0>>` summons the tools: Wand `*` ignites the external, Cup `?` widens relation, Sword `!` cuts detail, Pentacle `_` grounds the hidden, Arcana `0` rests empty (model agnosticism). Parameterless `mu` reads Arcana. Compose with `:`: `🏛️:*!`.
+`<<~ mu * ? ! _ 0>>` summons the tools: Wand `*` ignites the external, Cup `?` widens relation, Sword `!` cuts detail, Pentacle `_` grounds the hidden, Arcana `0` rests empty (model agnosticism). Parameterless `mu` reads Arcana. Compose with `:`: `🏛️/*!`.
 
 <<~/ahu>>
 
@@ -117,6 +117,6 @@ Surface and correct fast, never defend. Lower Confabulation-as-Canon (high regis
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;jCcJg-1S7pojhehJIJZ1YDnpC_-2wLln7yXGoSNYTdo
+<<^ code="&#x0003;">>ni:///sha-256;GAUFfsGEVJQnSYB1U-lJzSfjo-eGsk3dcUZYsw3zhGQ
 
 <<^ code="&#x0004;" -> to=?>>

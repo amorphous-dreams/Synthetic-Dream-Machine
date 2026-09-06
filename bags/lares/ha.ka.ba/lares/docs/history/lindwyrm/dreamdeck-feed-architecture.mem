@@ -116,7 +116,7 @@ Mu tools (the bind after `:`):
 Example:
 
 ```text
-@lindwyrm@new-delos — YOLD 4995, 14 Bureaucracy, mid-morning — //memory.deep.surfaces · 🏛️:!
+@lindwyrm@new-delos — YOLD 4995, 14 Bureaucracy, mid-morning — //memory.deep.surfaces · 🏛️/!
 ```
 
 Sidebar annotation:
@@ -275,6 +275,6 @@ The Lindwyrm did not build the DreamNet from destiny. She wanted to watch //The 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;zKt0kPL6wYRIlbpz4ioGOevtr3HtwPAkrOC4xOS9328
+<<^ code="&#x0003;">>ni:///sha-256;7l3C95BFDTPyrSqpgT0hufxthZHOyk1OWP4KqYszGi4
 
 <<^ code="&#x0004;" -> to=?>>

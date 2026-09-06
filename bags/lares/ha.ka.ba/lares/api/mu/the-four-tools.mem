@@ -144,8 +144,8 @@ A stance MAY carry exactly one tool while keeping the other axis present and cen
 In single-tool carry, the active tool appears first and empty hand second. Preferred forms are `*0` for a feed-axis amplitude with zoom centered, and `?0` for a zoom-axis amplitude with feed centered. `_0` and `!0` remain valid variants when the hidden or micro axis is the only active axis.
 
 Examples:
-* `🏛️:*0` signals Philosopher carrying Wand only: external feed runs active, zoom stays centered.
-* `🎭:?0` signals Humorist carrying Cup only: relational wide-field runs active, feed stays centered.
+* `🏛️/*0` signals Philosopher carrying Wand only: external feed runs active, zoom stays centered.
+* `🎭/?0` signals Humorist carrying Cup only: relational wide-field runs active, feed stays centered.
 
 Cassandra Aarssen maps the same Visual/Hidden × Micro/Macro axis to four organizational types with named configurations. Those named overlays live in docs space, not here.
 
@@ -195,7 +195,7 @@ Slot position carries axis semantics: left = feed (`*`/`_`/`0`), right = zoom (`
 
 For single-tool carry, the active tool goes first and empty hand goes second; this signals one-axis amplitude while the other axis remains centered and present.
 
-''Composed glyph form:'' a standpoint glyph followed immediately by its tool-carry, bound through the `:` — `🏛️:*!` — renders via the `syad` sigil's optional bind (the-syad-perspectives `#syad-sigil`). The carry joins a standpoint only when wanted; invoked alone, `mu` names the tools and makes no standpoint claim. Stances and tools live in the `syad` and `mu` sigils alone; the `lar:` URI names place only and carries no stance or tool query.
+''Composed glyph form:'' a standpoint glyph followed immediately by its tool-carry, bound through the `:` — `🏛️/*!` — renders via the `syad` sigil's optional bind (the-syad-perspectives `#syad-sigil`). The carry joins a standpoint only when wanted; invoked alone, `mu` names the tools and makes no standpoint claim. Stances and tools live in the `syad` and `mu` sigils alone; the `lar:` URI names place only and carries no stance or tool query.
 
 <<~/ahu>>
 
@@ -301,6 +301,6 @@ arcana   = "release"
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;JXz8Pc5BDqb13Y9EJ1NH4Ur241lLvY50_r4VD-BIsYk
+<<^ code="&#x0003;">>ni:///sha-256;6E8Yog2wOIDUg89KZFLRYJEFHhp-buxRY6Jv4ljg-go
 
 <<^ code="&#x0004;" -> to=?>>

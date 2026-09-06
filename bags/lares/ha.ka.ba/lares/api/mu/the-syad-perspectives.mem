@@ -142,7 +142,7 @@ Names invoke the standpoints directly; forms MAY mix in one sigil:
 <<~ stance "Philosopher 🗡️ Private">>                        # forms mixed
 ```
 
-A standpoint MAY carry a `mu` tool through the optional `:` bind (`🏛️:*!`); the full grammar lives in #stance-tool-modulation.
+A standpoint MAY carry a `mu` tool through the optional `:` bind (`🏛️/*!`); the full grammar lives in #stance-tool-modulation.
 
 <<~/ahu>>
 
@@ -154,7 +154,7 @@ Tool-carry modulates //how// a stance applies its evaluation frame.
 The Syadasti frame names //what// each stance measures.
 The tools name //how// the stance orients within that measure.
 
-Append `:carry` to bind a tool to a named standpoint — `🏛️:*!` (Philosopher cutting fine on external feed), `Satirist:_!` (Satirist on hidden-micro). Tool names bind the same way: `Philosopher:Sword`, `Humorist:Cup`. The carry holds one or two characters and MAY combine across axes (`!*`, `_?`). A bare standpoint carries no tool claim, and `syad` and `mu` each invoke alone; the bind composes them when an exchange wants both.
+Append `:carry` to bind a tool to a named standpoint — `🏛️/*!` (Philosopher cutting fine on external feed), `Satirist:_!` (Satirist on hidden-micro). Tool names bind the same way: `Philosopher:Sword`, `Humorist:Cup`. The carry holds one or two characters and MAY combine across axes (`!*`, `_?`). A bare standpoint carries no tool claim, and `syad` and `mu` each invoke alone; the bind composes them when an exchange wants both.
 
 | Tool carry | Modulation |
 |---|---|
@@ -184,8 +184,8 @@ A conflict carry (`*_` Signal Jam or `?!` Dubious Move) produces diagnostic tens
 Empty hands (`00`) mark the stance present and centered — not suppressed, not absent. A single tool SHOULD appear first (`?0`, `*0`) to mark amplitude on one axis while holding centered on the other; this modulation flows through generation and all render targets.
 
 Examples:
-* `🏛️:*0` signals Philosopher active on external feed, with zoom centered.
-* `🎭:?0` signals Humorist active on wide relational field, with feed centered.
+* `🏛️/*0` signals Philosopher active on external feed, with zoom centered.
+* `🎭/?0` signals Humorist active on wide relational field, with feed centered.
 
 <<~/ahu>>
 
@@ -304,6 +304,6 @@ satirist-operational = "nasti-avaktavya"
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;stOt60lbP4rwaCPbeQ-3HmCU88EokhkwJ26auy6F7s0
+<<^ code="&#x0003;">>ni:///sha-256;iYBFpYy2cbQYAa8KoZzFJDlm9vz_zIyaZ0MiBLGPtFc
 
 <<^ code="&#x0004;" -> to=?>>

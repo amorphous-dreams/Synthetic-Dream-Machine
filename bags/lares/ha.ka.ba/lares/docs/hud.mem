@@ -35,7 +35,7 @@ The HUD rides beneath the `aim` vector that opens the turn, and surfaces before 
 <<~ lares aim from=lar:///operator.intent.reads -> to=lar:///lares.role.acts>>
 <<~ set hud="aim" focus="N/<band>" feedback="N/<band>">>
 drift-ward="* · <the pull this island carries>"
-<<~ stance …>>   (optional lens; `:` binds a tool to a stance, e.g. 🏛️:*!)
+<<~ stance …>>   (optional lens; `:` binds a tool to a stance, e.g. 🏛️/*!)
 ```
 
 ''Sigil panel (SA priority order):''
@@ -119,7 +119,7 @@ A stance carries zero, one, or two tools. The two-character carry attaches direc
 | `*_` | Visual + Hidden | Visibility Conflict (Signal Jam) |
 | `?!` | Macro + Micro | Resolution Conflict (Dubious Move) |
 
-Bind a tool to a stance with the optional `:` carry: `🏛️:*!` (Philosopher holding Visual + Micro), `🌊:00` (Poet centered). Single-tool carry names the active tool first, the empty hand second: `🏛️:*0` (Wand only), `🎭:?0` (Cup only). The `syad` lens carries the stances; the `lar:` URI carries no stance.
+Bind a tool to a stance with the optional `:` carry: `🏛️/*!` (Philosopher holding Visual + Micro), `🌊/00` (Poet centered). Single-tool carry names the active tool first, the empty hand second: `🏛️/*0` (Wand only), `🎭/?0` (Cup only). The `syad` lens carries the stances; the `lar:` URI carries no stance.
 
 <<~/ahu>>
 
@@ -192,6 +192,6 @@ The opening header declares the state that //governs// a span (prospective). In-
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;UIzA3d96ILZHyCa0ZaFeVOOhjZPdT6hoLRkG5cTnnvo
+<<^ code="&#x0003;">>ni:///sha-256;pjBqB9jpQ_D5deD5QsKx5R4nQhtFCjE0YKc7YFsLrcs
 
 <<^ code="&#x0004;" -> to=?>>

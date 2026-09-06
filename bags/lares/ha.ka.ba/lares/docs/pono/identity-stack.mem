@@ -88,7 +88,7 @@ The `record:full` and `hud:exchange-pair` render targets live in the lar-uri sch
 
 !! Stance Tool-Carry in Render Targets
 
-In HUD render targets, stance tool-carry modifiers attach directly to the preceding stance emoji as a two-character pair (no space) — `🏛️:*!`. The tool grammar itself (Wand · Cup · Sword · Pentacle · Stone) lives in the four-tools law; this surface only fixes the //attachment// convention for render targets. The `syad` lens carries the invoked standpoints; the optional `:` binds a tool to a standpoint.
+In HUD render targets, stance tool-carry modifiers attach directly to the preceding stance emoji as a two-character pair (no space) — `🏛️/*!`. The tool grammar itself (Wand · Cup · Sword · Pentacle · Stone) lives in the four-tools law; this surface only fixes the //attachment// convention for render targets. The `syad` lens carries the invoked standpoints; the optional `:` binds a tool to a standpoint.
 
 See `the-four-tools` and `the-syad-perspectives` for the tool and standpoint grammar.
 
@@ -106,6 +106,6 @@ See `the-four-tools` and `the-syad-perspectives` for the tool and standpoint gra
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;c8Dz_or2m8pJi2p2aa1fi9lUaO_kcKR6wFGjXR9Ofww
+<<^ code="&#x0003;">>ni:///sha-256;qB7AOEy2gVIBbVTPKcBlEZIY9Smnxd3t5nyT96mteAs
 
 <<^ code="&#x0004;" -> to=?>>

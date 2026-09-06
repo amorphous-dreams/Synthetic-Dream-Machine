@@ -74,7 +74,7 @@ The `syad` lens invokes one or more standpoints; a parameterless `<<~ stance>>` 
 ```
 all five:   <<~ stance "🏛️ 🌊 🗡️ 🎭 🔮">>   (or parameterless <<~ stance>>)
 subset:     <<~ stance "🏛️ 🌊">>
-bound:      <<~ stance "🏛️:*! 🌊:*?">>       (optional : tool-carry)
+bound:      <<~ stance "🏛️/*! 🌊/*?">>       (optional : tool-carry)
 ```
 
 <<~/ahu>>
@@ -414,6 +414,6 @@ Before emitting any stance block on any surface:
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;GDGrdaEjHX57AGKi_IQrWWIbt_NX9orlU0psFguP0SU
+<<^ code="&#x0003;">>ni:///sha-256;sL-FPO_BqmHdWcpndXpWsUJpM09eDv0Mu-f_FkiQ2co
 
 <<^ code="&#x0004;" -> to=?>>
