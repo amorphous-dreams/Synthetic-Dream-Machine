@@ -49,7 +49,9 @@ export function reserveTransitionBytes(core: ReserveTransitionCore): Uint8Array 
   return canonicalJsonBytes({ domain: RESERVE_TRANSITION_DOMAIN, ...core });
 }
 
-function witnessBytes(core: ReserveTransitionCore, note: string): Uint8Array {
+/** The bytes a WITNESS signs — the transition image plus its own note, so a mark never floats free
+ *  of what it claims to have seen. Exported for the ceremony verb that gathers marks hand by hand. */
+export function witnessSignBytes(core: ReserveTransitionCore, note: string): Uint8Array {
   const base = reserveTransitionBytes(core);
   const noteBytes = new TextEncoder().encode(note);
   const out = new Uint8Array(base.length + noteBytes.length);
@@ -82,7 +84,7 @@ export async function mintReserveTransition(input: {
   };
   const witnesses: TransitionWitness[] = [];
   for (const w of input.witnesses) {
-    witnesses.push({ witness: w.signer, note: w.note, sig: await w.sign(witnessBytes(input.core, w.note)) });
+    witnesses.push({ witness: w.signer, note: w.note, sig: await w.sign(witnessSignBytes(input.core, w.note)) });
   }
   return {
     ...input.core,
@@ -90,6 +92,15 @@ export async function mintReserveTransition(input: {
     oldSigs: await sigsOf(input.oldSigners),
     newSigs: await sigsOf(input.newSigners),
     witnesses,
+  };
+}
+
+/** A signer hand built from a held seed — the CLI ceremony's one-liner; the seed never leaves the call. */
+export async function transitionSignerFromSeed(seed: Uint8Array): Promise<TransitionSigner> {
+  const pub = Array.from(await ed25519.getPublicKeyAsync(seed)).map((b) => b.toString(16).padStart(2, "0")).join("");
+  return {
+    signer: pub,
+    sign: async (bytes) => Array.from(await ed25519.signAsync(bytes, seed)).map((b) => b.toString(16).padStart(2, "0")).join(""),
   };
 }
 
@@ -145,7 +156,7 @@ export async function verifyReserveTransition(
   for (const w of rec.witnesses) {
     if (holders.has(w.witness.toLowerCase())) continue;   // a keyholder attests as a party, never a witness
     let ok = false;
-    try { ok = await ed25519.verifyAsync(hexToBytes(w.sig), witnessBytes(core, w.note), hexToBytes(w.witness)); }
+    try { ok = await ed25519.verifyAsync(hexToBytes(w.sig), witnessSignBytes(core, w.note), hexToBytes(w.witness)); }
     catch { ok = false; }
     if (ok) independent++;
   }

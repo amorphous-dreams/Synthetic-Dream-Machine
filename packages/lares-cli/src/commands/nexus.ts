@@ -67,6 +67,13 @@ import { runVerb } from "../verb-call.js";
 import { summaryOutput } from "../verb-result.js";
 import { makeFleetDeclarationStore, fleetPeerDid } from "../daemon-persona-store.js";
 import { rosterStanding, nexusPhase, sealImportVerdict, foreignSeats } from "@lararium/mesh";
+import {
+  reserveTransitionCidOf, verifyReserveTransition, witnessSignBytes,
+  reserveTransitionBytes, transitionSignerFromSeed,
+  type ReserveTransition, type ReserveTransitionCore, type TransitionWitness,
+} from "@lararium/mesh";
+import type { QuorumSignature } from "@lararium/mesh";
+import { loadPersonaGroupRootSeed } from "@lararium/node";
 import { emit, exitFor } from "../render.js";
 import type { ParsedArgs } from "../parse-args.js";
 
@@ -75,7 +82,7 @@ class UsageError extends Error {}
 function usage(): void {
   console.error("usage: lares nexus <seal | rite | kapae | un_kapae | contract | revoke | members | accept-carriage | posture>");
   console.error("");
-  console.error("  seal <seat | reserve | rotate | commit | show | export | import>  the founding-kahu roster + pre-rotated epoch chain");
+  console.error("  seal <seat | reserve | rotate | commit | show | export | import | grow>  the founding-kahu roster + pre-rotated epoch chain; grow = the crossing record ceremony");
   console.error("  kapae <nym> [--reason <text>]             raise a quorum-signed ban on a presenter nym");
   console.error("  kapae --list                              read the currently-Kapae'd set (the fold)");
   console.error("  un_kapae <nym>                            mint a quorum-signed lift at a higher version");
@@ -410,6 +417,7 @@ async function cmdSeal(args: ParsedArgs): Promise<number> {
       case "export":  return sealExport(args);
       case "import":  return sealImport(args);
       case "reserve": return await cmdCharterReserve(args);
+      case "grow":    return await sealGrow(args);
       default:
         if (sub) console.error(`lares nexus seal: unknown sub-verb "${sub}"`);
         sealUsage();
@@ -695,6 +703,151 @@ async function sealSeat(args: ParsedArgs): Promise<number> {
     },
   });
   return 0;
+}
+
+// ── THE GROWTH RITE — the crossing record ceremony (`seal grow open|bind|sign|witness|seal`) ──────
+//
+// The rite SPANS the rotate: `open` captures the standing hands before anything moves; the operator
+// pre-commits the successor and rotates (the succession door above); `bind` fixes the record's far
+// side to the new head, closing the byte-image; hands SIGN (a key seated in both sets counts in both
+// quorums); a WITNESS — a key seated in NEITHER — attests with a note; `seal` verifies the crossing
+// whole (`verifyReserveTransition`) and keeps the record beside the charter. The record is CARRIAGE:
+// it travels with the charter's own artifacts, self-announced by the charter — never a registry.
+
+const TRANSITION_PENDING_FILE = "transition-pending.json";
+const TRANSITIONS_FILE        = "transitions.json";
+const GROWTH_RITE_URI         = "lar:///ha.ka.ba/lararium/mesh/founding-runbook#the-growth-rite";
+
+interface PendingTransition {
+  fromEpochCid:  string;
+  oldKeys:       string[];
+  oldThreshold:  number;
+  toEpochCid?:   string;
+  newKeys?:      string[];
+  newThreshold?: number;
+  rite:          string;
+  oldSigs:       QuorumSignature[];
+  newSigs:       QuorumSignature[];
+  witnesses:     TransitionWitness[];
+}
+
+function pendingPath(): string { return join(larSealHome(), TRANSITION_PENDING_FILE); }
+function transitionsPath(): string { return join(larSealHome(), TRANSITIONS_FILE); }
+
+function readPending(): PendingTransition | null {
+  if (!existsSync(pendingPath())) return null;
+  try { return JSON.parse(readFileSync(pendingPath(), "utf8")) as PendingTransition; } catch { return null; }
+}
+function writePending(p: PendingTransition): void {
+  mkdirSync(larSealHome(), { recursive: true });
+  writeFileSync(pendingPath(), JSON.stringify(p, null, 2));
+}
+function boundCoreOf(p: PendingTransition): ReserveTransitionCore | null {
+  if (!p.toEpochCid || !p.newKeys || p.newThreshold === undefined) return null;
+  return {
+    fromEpochCid:  p.fromEpochCid,
+    toEpochCid:    p.toEpochCid,
+    oldKeySetHash: sealKeySetHash(p.oldKeys, p.oldThreshold),
+    newKeySetHash: sealKeySetHash(p.newKeys, p.newThreshold),
+    rite:          p.rite,
+  };
+}
+function seatedKeysOf(doc: { kahu: readonly { verifyingKey: string | null }[] }): string[] {
+  return doc.kahu.map((k) => k.verifyingKey).filter((k): k is string => k !== null);
+}
+
+async function sealGrow(args: ParsedArgs): Promise<number> {
+  const step = args.positional[2];
+  const sealHome = larSealHome();
+  const doc = readNexusDoc(sealHome);
+  const head = sealLineageHead(doc);
+
+  switch (step) {
+    case "open": {
+      if (!doc || !head) throw new UsageError("no charter chain stands — seat one before a crossing can open");
+      if (readPending()) throw new UsageError("a crossing already stands open — seal it or remove transition-pending.json deliberately");
+      writePending({
+        fromEpochCid: head.epochCid,
+        oldKeys: seatedKeysOf(doc), oldThreshold: doc.threshold,
+        rite: GROWTH_RITE_URI, oldSigs: [], newSigs: [], witnesses: [],
+      });
+      emit(args, { ok: true, data: { open: { fromEpochCid: head.epochCid, oldHands: seatedKeysOf(doc).length } },
+        human: () => console.log(`crossing OPEN from epoch ${head.epoch} — now pre-commit the successor, rotate, then \`grow bind\`.`) });
+      return 0;
+    }
+    case "bind": {
+      const p = readPending();
+      if (!p) throw new UsageError("no crossing stands open — `grow open` before the rotate");
+      if (!doc || !head) throw new UsageError("no charter chain stands");
+      if (head.epochCid === p.fromEpochCid) throw new UsageError("the chain has not moved — rotate the succession in before binding the far side");
+      if (p.toEpochCid) throw new UsageError("the crossing is already bound — sign, witness, and seal it");
+      writePending({ ...p, toEpochCid: head.epochCid, newKeys: seatedKeysOf(doc), newThreshold: doc.threshold });
+      emit(args, { ok: true, data: { bound: { toEpochCid: head.epochCid } },
+        human: () => console.log(`crossing BOUND to epoch ${head.epoch} — the byte-image is closed; gather signatures and a witness.`) });
+      return 0;
+    }
+    case "sign": {
+      const p = readPending();
+      const core = p && boundCoreOf(p);
+      if (!p || !core) throw new UsageError("no bound crossing stands — `grow open`, rotate, `grow bind` first");
+      const idx = Number(args.options["index"] ?? "0");
+      const hand = await transitionSignerFromSeed(await loadPersonaGroupRootSeed(larDataDir(), idx));
+      const inOld = p.oldKeys.some((k) => k.toLowerCase() === hand.signer.toLowerCase());
+      const inNew = (p.newKeys ?? []).some((k) => k.toLowerCase() === hand.signer.toLowerCase());
+      if (!inOld && !inNew) throw new UsageError("this hand sits in neither set — it may `grow witness`, never sign");
+      const sig: QuorumSignature = { signer: hand.signer, sig: await hand.sign(reserveTransitionBytes(core)) };
+      const dedupe = (list: QuorumSignature[]): QuorumSignature[] =>
+        [...list.filter((x) => x.signer.toLowerCase() !== sig.signer.toLowerCase()), sig];
+      writePending({ ...p, oldSigs: inOld ? dedupe(p.oldSigs) : p.oldSigs, newSigs: inNew ? dedupe(p.newSigs) : p.newSigs });
+      emit(args, { ok: true, data: { signed: { as: hand.signer, old: inOld, new: inNew } },
+        human: () => console.log(`signed${inOld ? " [handoff]" : ""}${inNew ? " [receipt]" : ""} as ${hand.signer.slice(0, 16)}…`) });
+      return 0;
+    }
+    case "witness": {
+      const p = readPending();
+      const core = p && boundCoreOf(p);
+      if (!p || !core) throw new UsageError("no bound crossing stands — a witness attests a closed byte-image");
+      const idx = Number(args.options["index"] ?? "0");
+      const note = args.options["note"];
+      if (!note) throw new UsageError("a witness mark carries a note — what stood observed (--note)");
+      const hand = await transitionSignerFromSeed(await loadPersonaGroupRootSeed(larDataDir(), idx));
+      const holders = new Set([...p.oldKeys, ...(p.newKeys ?? [])].map((k) => k.toLowerCase()));
+      if (holders.has(hand.signer.toLowerCase())) throw new UsageError("a keyholder attests as a party — `grow sign`, never witness");
+      const mark: TransitionWitness = { witness: hand.signer, note, sig: await hand.sign(witnessSignBytes(core, note)) };
+      writePending({ ...p, witnesses: [...p.witnesses.filter((w) => w.witness.toLowerCase() !== mark.witness.toLowerCase()), mark] });
+      emit(args, { ok: true, data: { witnessed: { by: hand.signer } }, human: () => console.log(`witnessed by ${hand.signer.slice(0, 16)}… — "${note}"`) });
+      return 0;
+    }
+    case "seal": {
+      const p = readPending();
+      const core = p && boundCoreOf(p);
+      if (!p || !core) throw new UsageError("no bound crossing stands — nothing to seal");
+      const rec: ReserveTransition = {
+        ...core, transitionCid: reserveTransitionCidOf(core),
+        oldSigs: p.oldSigs, newSigs: p.newSigs, witnesses: p.witnesses,
+      };
+      const v = await verifyReserveTransition(rec, {
+        oldKeys: p.oldKeys, oldThreshold: p.oldThreshold,
+        newKeys: p.newKeys!, newThreshold: p.newThreshold!,
+      });
+      if (!v.ok) {
+        emit(args, { ok: false, error: { code: "error", message: `crossing REFUSED (fail-closed): ${v.reason}` },
+          human: () => console.error(`seal grow REFUSED (fail-closed): ${v.reason} — the pending crossing stands; nothing written.`) });
+        return exitFor("error");
+      }
+      const kept: ReserveTransition[] = existsSync(transitionsPath())
+        ? (JSON.parse(readFileSync(transitionsPath(), "utf8")) as ReserveTransition[])
+        : [];
+      writeFileSync(transitionsPath(), JSON.stringify([...kept, rec], null, 2));
+      rmSync(pendingPath(), { force: true });
+      emit(args, { ok: true, data: { sealed: { transitionCid: rec.transitionCid, independentWitnesses: v.independentWitnesses } },
+        human: () => console.log(`crossing SEALED — ${rec.transitionCid.slice(0, 20)}… · independent witnesses: ${v.independentWitnesses}. The record rides with the charter.`) });
+      return 0;
+    }
+    default:
+      console.error("lares nexus seal grow <open | bind | sign --index N | witness --index N --note '…' | seal>");
+      return 2;
+  }
 }
 
 async function sealRotate(args: ParsedArgs): Promise<number> {
