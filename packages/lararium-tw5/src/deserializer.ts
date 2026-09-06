@@ -33,7 +33,6 @@ import { PARSE_WARNING_TAG, stableLarUri } from "@lararium/mesh/lar-uris";
 import { MemeStreamParser } from "./meme-stream.js";
 import type { MemeStreamEvent } from "./meme-stream.js";
 import {
-  CONTROL_SLOTS,
   findTopLevelAhuBlocks,
   composeSlotPath,
 } from "./meme-ast/ahu-scan.js";
@@ -550,11 +549,6 @@ function splitRecursive(
   let rewritten = "";
   for (const block of blocks) {
     rewritten += text.slice(cursor, block.openStart);
-    if (CONTROL_SLOTS.has(block.slot)) {
-      rewritten += text.slice(block.openStart, block.closeEnd);
-      cursor = block.closeEnd;
-      continue;
-    }
     const childSlotPath = composeSlotPath(fragmentPrefix, block.slot);
     const childUri      = rootUri + childSlotPath;
     const bodyText      = text.slice(block.bodyStart, block.bodyEnd);

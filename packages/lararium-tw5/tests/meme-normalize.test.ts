@@ -84,14 +84,55 @@ const CLOSE_HEAD = (close: string) =>
   "```toml meta\n" +
   `cacheable = true\n` +
   "```\n\n<<^ code=\"&#x0002;\">>\n\n" +
-  `<<~ ahu #head${close}>>\n\nbody\n\n<<~/ahu${close}>>\n\n` +
+  `<<~ ahu #/head${close}>>\n\nbody\n\n<<~/ahu${close}>>\n\n` +
   "<<^ code=\"&#x0003;\">>\n";
+
+const SLOT_HEAD = (body: string) =>
+  `<!-- <<~ !DOCTYPE = lar:///x>> -->\n\n<<^ code="&#x0001;" from=? -> to=lar:///x>>\n` +
+  "```toml meta\n" +
+  `cacheable = true\n` +
+  "```\n\n<<^ code=\"&#x0002;\">>\n\n" + body + "\n\n" +
+  "<<^ code=\"&#x0003;\">>\n";
+
+describe("normalizeMemeSource — child-slot roots", () => {
+  test("a bare slot roots at the carrier", () => {
+    const r = normalizeMemeSource(SLOT_HEAD("<<~ ahu #head>>\n\nbody\n\n<<~/ahu>>"));
+    expect(r.changed).toBe(true);
+    expect(r.text).toContain("<<~ ahu #/head>>");
+    expect(r.notes.join()).toMatch(/child slot: 1 open rooted/);
+  });
+
+  test("a nested slot carries its whole path, never just its leaf", () => {
+    const src = SLOT_HEAD("<<~ ahu #orient>>\n\n<<~ ahu #ha-fields>>\n\nb\n\n<<~/ahu>>\n\n<<~/ahu>>");
+    const r = normalizeMemeSource(src);
+    expect(r.text).toContain("<<~ ahu #/orient>>");
+    // leaf-only rooting would make the child a sibling of its own parent
+    expect(r.text).toContain("<<~ ahu #/orient/ha-fields>>");
+    expect(r.text).not.toContain("<<~ ahu #/ha-fields>>");
+  });
+
+  test("the plain dialect roots the same way", () => {
+    const r = normalizeMemeSource(SLOT_HEAD("<<fragment #head>>\n\nbody\n\n<</fragment>>"));
+    expect(r.text).toContain("<<fragment #/head>>");
+  });
+
+
+  test("a slot shown inside a fence stays as authored — the operator is showing the grammar", () => {
+    const r = normalizeMemeSource(SLOT_HEAD("```\n<<~ ahu #shown>>\n```"));
+    expect(r.text).toContain("<<~ ahu #shown>>");
+  });
+
+  test("idempotent — root then re-run leaves it put", () => {
+    const once = normalizeMemeSource(SLOT_HEAD("<<~ ahu #head>>\n\nbody\n\n<<~/ahu>>")).text;
+    expect(normalizeMemeSource(once).changed).toBe(false);
+  });
+});
 
 describe("normalizeMemeSource — sigil close spacing", () => {
   test("tightens a close carrying a space before the brackets", () => {
     const { text, changed, notes } = normalizeMemeSource(CLOSE_HEAD(" "));
     expect(changed).toBe(true);
-    expect(text).toContain("<<~ ahu #head>>");
+    expect(text).toContain("<<~ ahu #/head>>");
     expect(text).toContain("<<~/ahu>>");
     expect(notes.join()).toMatch(/sigil close spacing: 2 closes tightened/);
   });

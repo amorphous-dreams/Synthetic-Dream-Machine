@@ -149,7 +149,7 @@ describe.skipIf(wikiSkip)(
       `type     = "${CARRIER_TYPE}"`, "```"].join("\n");
     const META_NS = META.replace("type     =", 'namespace = "⊙"\ntype     =');
     const BODY = "! A New Thought\n\nThe operator writes a file and saves it.\n";
-    const SLOT = ["<<~ ahu #inner>>", "", "```toml meta", 'register = "Provisional"', "```", "",
+    const SLOT = ["<<~ ahu #/inner>>", "", "```toml meta", 'l-space = "adjacent"', "```", "",
       "! Inner", "", "slot prose.", "", "<<~/ahu>>"].join("\n");
     const SHAPES: Array<[string, string, string]> = [
       ["bare prose, no frame and no meta", BODY, ""],

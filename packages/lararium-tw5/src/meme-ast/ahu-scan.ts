@@ -32,17 +32,6 @@ import { fencedSpans, maskedExecAll } from "./fence-mask.js";
 export const AHU_OPEN_RE  = /<<(?:~[^>]*\bahu|fragment)\s+(#\/?[\w-]+(?:\/[\w-]+)*)(?:\s+->\s+\S+)?\s*>>/g;
 export const AHU_CLOSE_RE = /<<(?:~\/ahu|\/fragment)\s*>>/g;
 
-/**
- * Ahu slot names that carry structural metadata, not addressable content.
- * They dissolve into the parent or are structural-only — not split into
- * child tiddlers. Per memetic-wikitext.md §161 (Ahu Control Slots).
- */
-export const CONTROL_SLOTS: ReadonlySet<string> = new Set([
-  "#meta", "#exit",
-  "#stream-open", "#stream-close", "#stream-exit",
-  "#body-open", "#body-close", "#meme-body-open", "#meme-body-close",
-]);
-
 export interface AhuBlock {
   /** Source position of the opening `<<~` */
   readonly openStart: number;
@@ -102,9 +91,9 @@ export function findTopLevelAhuBlocks(text: string): AhuBlock[] {
 }
 
 /**
- * Collect every ahu slot name a carrier declares — top-level and nested,
- * across the whole text — skipping quoted (fenced/inline-code) sigils and the
- * structural CONTROL_SLOTS (which carry no addressable body). The gate reads
+ * Collect every ahu slot name a carrier declares — top-level and nested, across the whole text —
+ * skipping quoted (fenced/inline-code) sigils. EVERY SLOT OPENS A CHILD: the exempt-slot class retired,
+ * so a slot the disk declares is a slot the render must address. The gate reads
  * this to guard its canonical-equivalence NOOP: a slot the disk declares that
  * the round-trip render drops names a LOSSY shore, never a cosmetic edit —
  * so a dropped slot MUST NOT read as canonical-equivalent (the ahu-drop guard).
@@ -113,8 +102,7 @@ export function collectAhuSlots(text: string): Set<string> {
   const mask = fencedSpans(text);
   const slots = new Set<string>();
   for (const m of maskedExecAll(text, AHU_OPEN_RE, mask)) {
-    const slot = m[1] ?? "#";
-    if (!CONTROL_SLOTS.has(slot)) slots.add(slot);
+    slots.add(m[1] ?? "#");
   }
   return slots;
 }

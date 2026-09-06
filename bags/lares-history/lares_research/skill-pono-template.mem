@@ -216,12 +216,12 @@ def check-r1(lines: list[str]) -> InvariantResult:
     )
 
 def check-r3-rating-fields(content: str) -> InvariantResult:
-    """R3: structure ahu carries manaoio/confidence and detail ahu carries mana/manao in canonical order."""
-    required = ["manaoio", "confidence", "mana", "manao"]
-    # Extract #meta TOML block
-    m = re.search(r'<<~ ahu #meta>>.*?```toml(.*?)```', content, re.DOTALL)
+    """R3: the carrier's meta fence carries manaoio/mana/manao in canonical order."""
+    required = ["manaoio", "mana", "manao"]
+    # Extract the carrier's own meta fence
+    m = re.search(r'```toml meta(.*?)```', content, re.DOTALL)
     if not m:
-        return InvariantResult("R3-ratings", "skip", observed="no #meta TOML block found")
+        return InvariantResult("R3-ratings", "skip", observed="no toml meta fence found")
     toml-text = m.group(1)
     try:
         data = tomllib.loads(toml-text)
@@ -232,7 +232,7 @@ def check-r3-rating-fields(content: str) -> InvariantResult:
         return InvariantResult(
             "R3-ratings", "fail",
             observed=f"missing fields: {missing}",
-            repair=f"Add missing fields to the canonical #meta rating layout"
+            repair=f"Add missing fields to the meta fence"
         )
     # Check ordering
     keys = list(data.keys())
@@ -491,7 +491,7 @@ Post-MCP-ba governs the authoring motion across migration: keep the skill body c
 
 <<~/ahu>>
 
-<<~ ahu #body-close>>
+<<~ ahu #/body-close>>
 
 Skill template closes the verification authoring stream here.
 
@@ -506,6 +506,6 @@ Skill template closes the verification authoring stream here.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;wVAenSPCMiN7BiVNQGizAd34R3TSFgfBUbo3WlZjEdQ
+<<^ code="&#x0003;">>ni:///sha-256;72PSDAh2rD2nBlDmw8_IWWwrTdHRUTDqtxcE56_utS8
 
 <<^ code="&#x0004;" -> to=?>>

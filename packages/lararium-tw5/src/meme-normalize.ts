@@ -16,6 +16,8 @@
  *      siblings). The meta field is authoritative; the SOH is derived from it.
  *   2. **Sigil close spacing.** A close carrying whitespace before `>>` tightens.
  *      The reader takes both spellings; the writer emits one.
+ *   3. **Child-slot roots.** A slot opens at `#/name`, nested slots carrying the
+ *      whole path. Control slots take no root — they open no addressable child.
  *
  * Pure + idempotent (re-running changes nothing). The SOH grammar mirrors the deserializer's own
  * param-aware SOH scan (`deserializer.ts`).
@@ -198,7 +200,37 @@ export function normalizeMemeSource(src: string): NormalizeResult {
     notes.push(`named parameter separator: ${sep.moved} call site${sep.moved === 1 ? "" : "s"} took the equals sign`);
   }
 
-  // ── 4. Framing ends (positional → named) ─────────────────────────────────
+  // ── 4. Child-slot roots ──────────────────────────────────────────────────
+  //
+  // A CHILD SLOT NAMES THE STRING IT ADDRESSES. The carrier mints `parentUri#/name`, so an open that
+  // omits the slash says one thing and resolves another, and every reader pairing them by name carries
+  // a special case. A NESTED slot carries its whole path — rooting only the leaf makes a child the
+  // sibling of its own parent, which reads as structure and addresses as none. No slot is exempt from a
+  // root: every slot a carrier declares opens a child, and a child answers to an address.
+  {
+    const lines = text.split("\n");
+    const stack: Array<string | null> = [];
+    let fenced = false, rooted = 0;
+    const next = lines.map((line) => {
+      if (line.startsWith("```")) { fenced = !fenced; return line; }
+      if (fenced) return line;
+      if (/^<<(?:~\/ahu|\/fragment)\s*>>/.test(line)) { stack.pop(); return line; }
+      const m = /^<<(~ ?ahu|fragment) #\/?([a-z0-9/-]+)(.*)$/i.exec(line);
+      if (!m) return line;
+      const leaf = m[2]!.split("/").pop()!;
+      const path = [...stack.filter(Boolean), leaf].join("/");
+      stack.push(leaf);
+      const out = `<<${m[1]} #/${path}${m[3]}`;
+      if (out !== line) rooted += 1;
+      return out;
+    });
+    if (rooted > 0) {
+      text = next.join("\n");
+      notes.push(`child slot: ${rooted} open${rooted === 1 ? "" : "s"} rooted at the carrier`);
+    }
+  }
+
+  // ── 5. Framing ends (positional → named) ─────────────────────────────────
   let ends = 0;
   text = text.replace(FRAME_OPEN_ENDS, (_m, head: string, arrow: string, target: string, tail: string) => {
     ends += 1;

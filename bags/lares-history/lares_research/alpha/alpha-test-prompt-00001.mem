@@ -9,7 +9,8 @@ uri-path  = "lares_research/alpha/alpha-test-prompt-00001"
 
 <<^ code="&#x0002;">>
 
-<<~ ahu #meta>>
+<<~ ahu #/meta>>
+
 ```toml
 # <<~ ahu #/meta-ha "structure">>
 name = "test-prompt-00001"
@@ -211,6 +212,6 @@ De-emphasize archive-crystal language unless the operator specifically requests 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Wi_Wo7_fC7fEujYeDWMRx75AoBsaMI7TUmlnfMG3dTE
+<<^ code="&#x0003;">>ni:///sha-256;mba8O0bEcY6bSsxLvEnUNBz1bfxSIkRMhJa-IjsVIXU
 
 <<^ code="&#x0004;" -> to=?>>

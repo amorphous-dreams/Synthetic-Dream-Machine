@@ -30,7 +30,6 @@ export {
 export {
   AHU_OPEN_RE,
   AHU_CLOSE_RE,
-  CONTROL_SLOTS,
   findTopLevelAhuBlocks,
   composeSlotPath,
 } from "./meme-ast/index.js";
