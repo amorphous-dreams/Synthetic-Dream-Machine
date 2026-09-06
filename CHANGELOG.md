@@ -2,6 +2,31 @@
 
 ---
 
+## [Unreleased] — the identity watch (2026-09-05 → 06)
+
+The four founding-watch rulings closed (the veil · layered recovery · seat-adoption · the nym's chain), and the wiring census emptied. History between v4.1.1 and here lives in the git log and `bags/lares/ha.ka.ba/lares/docs/handoff.mem`.
+
+**Fixed**
+- The crossing gate prices transfers by DIRECTION: an outward copy/move (toward public) refuses without the kahu-cabal; inward stays cheap (`action-handler` + `vessel-bag-tier`, the hearth-manifest tier reader threaded through keyhive's fs-blind door).
+- `coerceDyad` no longer rebuilds a dyad slot from its edge — the slot's ref is authoritative for the veil, fenced to the edge's own device; the pre-ruling (device × root) fallback deleted whole.
+- The hoike witness law sheds the spirit-incapacity recital: a tasked spirit stands the full house; the handback saksi attests the crossing.
+- `board:members-registry` renamed `board:carriage-contracts` — the board holds self-announced operator contracts; the label now says so.
+
+**Added**
+- `deriveDyadVeil` — the dyad's veil derives per-PersonaGroup off the DEVICE-MINTED vessel seed (never the persona seed); both ceremony sites mint the dyad slot; `vesselDyads` (mesh, one platform-blind door) reads it at boot on node and browser alike.
+- The armed inception: every self-stood founding pre-commits the founder's 1-of-1 self-recovery digest (`deriveSelfRecoveryKey`) — no prefix incepts unarmed, and self-rotation works from day one.
+- The ROLLING RECOVERY COMMITMENT: every persona-KEL event carries `nextRecoverySetHash`; guardian sets graft log-wise while the prefix keeps binding the genesis set.
+- `recovery-registration` — Fork B's guardian registration split from the Fork A share card (own module, own confirm domain, typed provisioning: the wrong object is not selectable).
+- `reserve-transition` + `lares nexus seal grow` — the growth rite's crossing record and its CLI ceremony (open · bind · sign · witness · seal): old quorum signs the handoff, new countersigns, independent witnesses checkable as keys in neither set.
+- Six unbuilt-law reds declared (the Handle's chain-to-burn · the veto-rides-the-chain contest · the guardian-compartment check · two liveness fences); register stands 27 declared · 0 greened by accident.
+
+**Changed**
+- Persona-KEL event bytes gained the rolling-commitment field — every CID and prefix re-derives; rehearsal vessels re-found (early alpha carries no backward compatibility).
+- `vesselDyads` reads ceremony-minted slots only; a bare delegation edge presents no relationship, and the boot says the drift aloud.
+- `provisionThresholdRecoveryAtFounding` accepts typed guardian registrations, never bare hex.
+
+---
+
 ## [v4.1.1] — 2026-04-08
 
 Submodule registration: Kowloon stack, tldraw, and mempalace re-pointed to org forks.
