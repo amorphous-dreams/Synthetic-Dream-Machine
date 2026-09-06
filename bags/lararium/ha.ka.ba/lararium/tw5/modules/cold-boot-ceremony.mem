@@ -48,12 +48,12 @@ Caller MUST check the identity tiddler does not already exist before writing (id
 
 <<~ ahu #/edges>>
 
-<<~ loulou lar:///ha.ka.ba/lararium/mesh/social-doc>>
+<<~ loulou lar:///ha.ka.ba/lararium/mesh/social-tiddlers>>
 <<~ loulou lar:///ha.ka.ba/lares/api/mu/the-four-tools>>
 <<~ loulou lar:///ha.ka.ba/lararium/tw5/modules/cold-boot-ceremony>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ERyJ1H4CmZCeukoufOgHANPoTC63VjsPqBO6C4XsIJ8
+<<^ code="&#x0003;">>ni:///sha-256;PwnodBV-QkU8QgJeGWE7Q8fw6LOQr0ZFITGc4tkyjUI
 
 <<^ code="&#x0004;" -> to="?">>
