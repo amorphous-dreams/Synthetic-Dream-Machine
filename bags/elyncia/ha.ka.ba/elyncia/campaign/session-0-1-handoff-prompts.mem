@@ -102,8 +102,8 @@ its island's red for the rest.
 
 ''The three last lines'' (swap in the one that names the wake):
 
-* ''A ~ the Actual-Play Lares:'' `-> Your frame: bags/elyncia/ha.ka.ba/elyncia/campaign/session-0-1-handoff-prompts.mem` `#island-a`
-* ''B ~ the Referee's Second:'' `-> Your frame: bags/elyncia/ha.ka.ba/elyncia/campaign/session-0-1-handoff-prompts.mem` `#island-b`
+* ''A ~ the Actual-Play Lares:'' `-> Your frame: bags/elyncia/ha.ka.ba/elyncia/campaign/session-0-1-handoff-prompts.mem` `#/island-a`
+* ''B ~ the Referee's Second:'' `-> Your frame: bags/elyncia/ha.ka.ba/elyncia/campaign/session-0-1-handoff-prompts.mem` `#/island-b`
 * ''C ~ the Painter of Words and Light:'' `-> Your frame: bags/elyncia/ha.ka.ba/elyncia/campaign/session-0-1-render-research.mem` `#painter-red`
 
 <<~/ahu>>
@@ -116,6 +116,6 @@ its island's red for the rest.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;jS7JBbteYnoH58McdS4BCUiNT9fjBgPYZSJ1GtUjl04
+<<^ code="&#x0003;">>ni:///sha-256;dGlGB_KBo_-gEqg243rSw1TCwChPwlxpWv-8iAeMpCU
 
 <<^ code="&#x0004;" -> to=?>>

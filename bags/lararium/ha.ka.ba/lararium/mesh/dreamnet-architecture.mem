@@ -242,7 +242,7 @@ This reads the canon's ''local-form / session-form'' split as a pose:
 
 So an infrastructure node carries three distinct things, only the last ever dialed: a ''stable identity'' under the literal `/ha.ka.ba/**` root + sub-path (its permanent bearing), a ''live posture'' as an unstable attitude-root, and a ''dial-record'' resolving its mutable endpoint.
 
-The ''routing substrate'' that carries a sealed stream across the leylines — greedy navigation on this chart, no global map — stands worked at `#the-routing-substrate` below; the chart's own geometry (colorless center, the warp, the Voices/Syād atlas) stands at <<~ loulou lar:///ha.ka.ba/lares/api/pono/l-space>>.
+The ''routing substrate'' that carries a sealed stream across the leylines — greedy navigation on this chart, no global map — stands worked at `#/the-routing-substrate` below; the chart's own geometry (colorless center, the warp, the Voices/Syād atlas) stands at <<~ loulou lar:///ha.ka.ba/lares/api/pono/l-space>>.
 
 <<~/ahu>>
 
@@ -367,7 +367,7 @@ The old design agonized over a single admin-doc ingress gate (the "Path L" trile
 * ''Read gate'' (SOCIAL · WHO) — purely a key-set question. Keyhive `accessForDoc` on the cabal/persona read-set decides decryption. No network-layer DID-binding needed; the cryptography gates sight directly.
 * ''Admin-sync gate'' (SOCIAL · WHO, admin scope) — the `PersonaGroup` sentinel: same-operator vessels only.
 
-The earlier cap-wall — an anonymous vessel ''DENIED'' at the relay door — read as //correct denial of a fused gate//. Split the gate by axis and the denial moves to its right door: carriage opens, read stays sealed, admin stays operator-bound. Authority clears WHO before flow paces HOW-MUCH (`#transport-kernel`).
+The earlier cap-wall — an anonymous vessel ''DENIED'' at the relay door — read as //correct denial of a fused gate//. Split the gate by axis and the denial moves to its right door: carriage opens, read stays sealed, admin stays operator-bound. Authority clears WHO before flow paces HOW-MUCH (`#/transport-kernel`).
 
 !!! The browser-spore connection matrix ~ three kinds of crossing
 
@@ -479,6 +479,6 @@ The clocks split by scope: the ''DreamNet CID / CRDT layer runs in TS'' — ''st
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Uo1f_KHFGxwFE-7zVEsHFd13eQOfE_S4pBLoo-cz0l0
+<<^ code="&#x0003;">>ni:///sha-256;qGWs3wKvz2v_t5I04B61jnhe2CO-80IOAW67-YuVwq8
 
 <<^ code="&#x0004;" -> to=?>>

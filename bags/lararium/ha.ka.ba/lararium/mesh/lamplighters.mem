@@ -337,7 +337,7 @@ Physical access defeats confidentiality and forward integrity of a box outright 
 
 !! ★ OPEN — the voice-capture question, unruled ★
 
-''`tend.repair` scoped as admin over the herm's own island reaches that island's `@daemon` SIGNING KEY.'' A tender could then ''speak as the herm'' — and the innate layer could ''synthesize presentations that read as herm self-testimony'', which costs the mesh the independent sensor `#immune` just gained.
+''`tend.repair` scoped as admin over the herm's own island reaches that island's `@daemon` SIGNING KEY.'' A tender could then ''speak as the herm'' — and the innate layer could ''synthesize presentations that read as herm self-testimony'', which costs the mesh the independent sensor `#/immune` just gained.
 
 ''The Union would hold no read-cap over carried traffic and would hold the herm's VOICE.'' Two readings, and the operator has ruled neither:
 
@@ -370,6 +370,6 @@ Physical access defeats confidentiality and forward integrity of a box outright 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;G9zF6fZTLgUKWtMmJkf1fCEiZiZkGWNM3ntkD8SwGwU
+<<^ code="&#x0003;">>ni:///sha-256;r3zkRvyaoD_ZZPqTo6UjicvbJpZhXbE_9kYvSwq0ELc
 
 <<^ code="&#x0004;" -> to=?>>

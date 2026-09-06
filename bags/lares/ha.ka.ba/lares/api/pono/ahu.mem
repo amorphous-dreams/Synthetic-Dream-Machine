@@ -56,7 +56,7 @@ An ahu slot MUST produce an independently addressable tiddler at `parentUri + sl
 A parent tiddler MUST reference each child slot via `<<~ kahea ahu #/slot>>` in its body.
 Child slot tiddlers MUST NOT duplicate the parent's meta TOML — they carry their own.
 
-The slot name `#head` is conventional for the meme's primary content body.
+The slot name `#/head` is conventional for the meme's primary content body.
 The slot name `#source-shelf` is conventional for pranala edge declarations.
 
 <<~/ahu>>
@@ -116,6 +116,6 @@ slot = 1
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;_NCucaRITAG1I_uXGBbPWAjTwPiIRV80RoUPe5VdXhw
+<<^ code="&#x0003;">>ni:///sha-256;veMAl1bTmcs6b_Mp7f2OCVHTJ_u28JSHdwT14HYj67M
 
 <<^ code="&#x0004;" -> to=?>>

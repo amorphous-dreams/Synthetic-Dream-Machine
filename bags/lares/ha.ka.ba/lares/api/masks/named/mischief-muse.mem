@@ -178,12 +178,12 @@ These notes require live session observation before they can be written with con
 | Section | Status | Notes |
 |---|---|---|
 | `#meta` | known | complete metadata; confidence reflects stub state |
-| `#corpus` | seeded | Coffee Oracle witness extracted; more session witness pending |
-| `#voice-character` | seeded | house entry + earned-name pressure + Coffee Oracle witness known; depth still growing |
-| `#foreground-voices` | known | derivable from house structure; stable |
-| `#stage-default` | known | US band; derivable from Voice house position |
-| `#permissions` | known | Voice house defaults; stable |
-| `#character-notes` | pending-talk-story | requires live session observation |
+| `#/corpus` | seeded | Coffee Oracle witness extracted; more session witness pending |
+| `#/voice-character` | seeded | house entry + earned-name pressure + Coffee Oracle witness known; depth still growing |
+| `#/foreground-voices` | known | derivable from house structure; stable |
+| `#/stage-default` | known | US band; derivable from Voice house position |
+| `#/permissions` | known | Voice house defaults; stable |
+| `#/character-notes` | pending-talk-story | requires live session observation |
 
 ''Priority for talk-story-dev:'' Character-notes next; Coffee Oracle corpus seed now deposited.
 
@@ -200,6 +200,6 @@ These notes require live session observation before they can be written with con
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;cWkOszbJZxa9TEeEJwVEG6w42GuutxcAes8QuFuNgtY
+<<^ code="&#x0003;">>ni:///sha-256;--e5489sTVCKApZfPSKfaEKGDxkLWSmOLKGw_ECpH8U
 
 <<^ code="&#x0004;" -> to=?>>

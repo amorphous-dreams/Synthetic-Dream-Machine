@@ -146,12 +146,12 @@ How Tide-Caller colors each Voice register when they speak through her frame —
 | Section | Status | Notes |
 |---|---|---|
 | `#meta` | known | complete metadata; confidence reflects stub state |
-| `#corpus` | pending-talk-story | no seed yet available |
-| `#voice-character` | stub | house entry + name pressure known; depth pending |
-| `#foreground-voices` | known | derivable from house structure |
-| `#stage-default` | known | US band default |
-| `#permissions` | known | Voice house defaults |
-| `#character-notes` | pending-talk-story | requires live session observation |
+| `#/corpus` | pending-talk-story | no seed yet available |
+| `#/voice-character` | stub | house entry + name pressure known; depth pending |
+| `#/foreground-voices` | known | derivable from house structure |
+| `#/stage-default` | known | US band default |
+| `#/permissions` | known | Voice house defaults |
+| `#/character-notes` | pending-talk-story | requires live session observation |
 
 <<~/ahu>>
 
@@ -165,6 +165,6 @@ How Tide-Caller colors each Voice register when they speak through her frame —
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;oOUO4Y7Gy8KjgpOshS-K6iFeEeVlYHBF7RHpNR2nla8
+<<^ code="&#x0003;">>ni:///sha-256;EWDzywMxYe_-0rDElKTIEjDoz-V4cwf6QcwplqwgHS8
 
 <<^ code="&#x0004;" -> to=?>>

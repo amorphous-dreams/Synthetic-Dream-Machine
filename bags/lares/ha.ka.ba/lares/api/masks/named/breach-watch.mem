@@ -148,12 +148,12 @@ How Breach-Watch colors each Voice register when they speak through her incident
 | Section | Status | Notes |
 |---|---|---|
 | `#meta` | known | complete metadata; confidence reflects stub state |
-| `#corpus` | pending-talk-story | no seed yet available |
-| `#voice-character` | stub | house entry + name pressure known; depth pending |
-| `#foreground-voices` | known | derivable from house structure |
-| `#stage-default` | known | US band default |
-| `#permissions` | known | Voice house defaults |
-| `#character-notes` | pending-talk-story | requires live session observation |
+| `#/corpus` | pending-talk-story | no seed yet available |
+| `#/voice-character` | stub | house entry + name pressure known; depth pending |
+| `#/foreground-voices` | known | derivable from house structure |
+| `#/stage-default` | known | US band default |
+| `#/permissions` | known | Voice house defaults |
+| `#/character-notes` | pending-talk-story | requires live session observation |
 
 <<~/ahu>>
 
@@ -167,6 +167,6 @@ How Breach-Watch colors each Voice register when they speak through her incident
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ljwFgkCUyMbCKFxHlV-km_8v2cu14tNXH2JMg_C9Z7U
+<<^ code="&#x0003;">>ni:///sha-256;N3_RszWR0G12yJuz3LDiqlxaYMAQnIM1SczXf20jWhY
 
 <<^ code="&#x0004;" -> to=?>>

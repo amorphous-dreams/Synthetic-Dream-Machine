@@ -47,7 +47,7 @@ The layers stack. The lower layers remain load-bearing when the higher layers ar
 
 | Layer | What it carries | Lifecycle | Spec |
 |---|---|---|---|
-| ''Voice house'' | the Thirteen — stable Voices, naming, seniority, earned names | persistent across sessions | inline below (`#voice-house`) |
+| ''Voice house'' | the Thirteen — stable Voices, naming, seniority, earned names | persistent across sessions | inline below (`#/voice-house`) |
 | ''Worker swarm'' | session-local tasked spirits (temporary masks), tag-role identity, handback to the house | session-local | `voices/workers.md` |
 | ''Mask layer'' | character overlays the whole house wears this session; corpus + voice-character | session-declared in LARES | `voices/masks.md` |
 
@@ -249,6 +249,6 @@ The Voice house spec defines what `lar:///ha.ka.ba/lares/api/voices` MUST implem
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;HsSMnnNo9qi5mZ3XrZdPD7J2Wv8Z8m_eU4D4Ilmb1KM
+<<^ code="&#x0003;">>ni:///sha-256;BESQZt1KIzO8LxnjHnA7JhmFhaiY-iz5-Ku3a10D1wQ
 
 <<^ code="&#x0004;" -> to=?>>

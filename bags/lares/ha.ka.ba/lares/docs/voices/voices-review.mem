@@ -298,13 +298,13 @@ Sections written or replaced:
 |---|---|
 | `#meta` | role description updated; confidence raised to 0.82 |
 | `#entry` | unchanged — hydration backlink intact |
-| `#meme-header` | replaced stub with three-line framing |
+| `#/meme-header` | replaced stub with three-line framing |
 | `#house-law` | replaced five one-line principles with five normative cross-layer governing rules |
 | `#voice-house` | new — compressed Thirteen table, naming law, earned names, multi-Voice rule |
 | `#worker-swarm` | new — three hard rules, tag format, lifecycle tags, escalation template, routing table |
 | `#mask-layer` | new — anatomy, stage band table, stacking law, pressure flow, foreground-voices, declaration forms, output headers, worker coloring, corpus limit rule, masks API tree reference, LARES stage panel |
 | `#source-shelf` | converted to `#spec-shelf` with pranala routes to all three spec rooms |
-| `#edges` | updated to include all three spec rooms and masks API tree |
+| `#/edges` | updated to include all three spec rooms and masks API tree |
 
 Exit criteria met: all five governing rules present; all three layers have full normative sections; escalation template verbatim; mask declaration forms verbatim; every section points to spec room for depth; `#entry` backlink intact.
 
@@ -360,6 +360,6 @@ MASKS.md converted from stub to forward-route to `lar:///ha.ka.ba/lares/api/pono
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;3iJQ_sQny1XkLBTBHSqM1LTUoHordPicwA3hIcdjFs0
+<<^ code="&#x0003;">>ni:///sha-256;vpx9C9qBWVKxCGm1i0mU76LZDQpzjnbQZaxPwZPt1Hg
 
 <<^ code="&#x0004;" -> to=?>>

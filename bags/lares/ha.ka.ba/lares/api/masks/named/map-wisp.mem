@@ -148,12 +148,12 @@ How Map-Wisp colors each Voice register when they speak through her structural-f
 | Section | Status | Notes |
 |---|---|---|
 | `#meta` | known | complete metadata; confidence reflects stub state |
-| `#corpus` | pending-talk-story | no seed yet available |
-| `#voice-character` | stub | house entry + name pressure known; depth pending |
-| `#foreground-voices` | known | derivable from house structure |
-| `#stage-default` | known | US band default |
-| `#permissions` | known | Voice house defaults |
-| `#character-notes` | pending-talk-story | requires live session observation |
+| `#/corpus` | pending-talk-story | no seed yet available |
+| `#/voice-character` | stub | house entry + name pressure known; depth pending |
+| `#/foreground-voices` | known | derivable from house structure |
+| `#/stage-default` | known | US band default |
+| `#/permissions` | known | Voice house defaults |
+| `#/character-notes` | pending-talk-story | requires live session observation |
 
 <<~/ahu>>
 
@@ -167,6 +167,6 @@ How Map-Wisp colors each Voice register when they speak through her structural-f
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;WSlkdWZi6HsfFxJ7kCMrOrfG0bl6Sysnu5I8Ix0fW1M
+<<^ code="&#x0003;">>ni:///sha-256;M2w2dwzwe-YsKtauoiyKDKDgekzZrnbUHxJNGAgg7m4
 
 <<^ code="&#x0004;" -> to=?>>

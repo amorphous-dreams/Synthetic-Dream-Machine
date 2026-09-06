@@ -295,7 +295,7 @@ below.'' A table claiming a correspondence the files no longer hold would be the
 failure this law exists to prevent.
 
 |! # |! elder section |! the twin's section |
-|1 | `#entry` | `#entry` |
+|1 | `#/entry` | `#/entry` |
 |2 | `#write-under-way` | `#write-under-way` |
 |3 | `#house-law` | `#working-agreement` |
 |4 | `#mu-five-tools` | ⚠ ''no counterpart — ruled below'' |
@@ -702,6 +702,6 @@ into a preferred text and a companion, by habit rather than by ruling.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;lW7if9l57or-4MYsi-c8OchYfdr4uz7zVf1IBnBo_Rw
+<<^ code="&#x0003;">>ni:///sha-256;8ObK_SjtZkjDocgIP055hYVQ8isytbhPL6CsPhAiGDI
 
 <<^ code="&#x0004;" -> to=?>>

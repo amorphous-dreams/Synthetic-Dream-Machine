@@ -101,9 +101,9 @@ cd packages/lararium-tw5  && npx tsc --noEmit  # ✓ one rebuild-target (Memetic
 * `MemeticParser` (lararium-tw5): Sprint 3 complete ✓
 * Grammar multi-doc boot: Sprint 2 complete ✓
 * `MemeRecipeVm`: Sprint 3 complete ✓
-* `KumuDeviceSpec` + `ReactionEngine`: Sprint 4 complete ✓ — see `#m14-session-cont-2026-05-02` below
-* UEFN canonical English name pass: complete ✓ — see `#m14-uefn-name-pass-2026-05-02` below
-* `MemeSyncAdaptor`: Sprint 5 complete ✓ — see `#m14-sprint5-meme-sync-adaptor-2026-05-02`
+* `KumuDeviceSpec` + `ReactionEngine`: Sprint 4 complete ✓ — see `#/m14-session-cont-2026-05-02` below
+* UEFN canonical English name pass: complete ✓ — see `#/m14-uefn-name-pass-2026-05-02` below
+* `MemeSyncAdaptor`: Sprint 5 complete ✓ — see `#/m14-sprint5-meme-sync-adaptor-2026-05-02`
 * Browser host (`meme-browser-host.ts`): Sprint 6 — research-before-act (Automerge browser repo + Keyhive)
 * `sw.ts` tsconfig lib issues: pre-existing, separate fix
 * `system` + `projection` bag store impls: still pending (D stubs)
@@ -189,7 +189,7 @@ cd packages/lararium-tw5  && npx tsc --noEmit  # ✓ ZERO errors
 
 ↺ ''Aftermath / M14 open work:''
 
-* ''Sprint 5 complete ✓:'' `meme-sync-adaptor.ts` — see `#m14-sprint5-meme-sync-adaptor-2026-05-02`
+* ''Sprint 5 complete ✓:'' `meme-sync-adaptor.ts` — see `#/m14-sprint5-meme-sync-adaptor-2026-05-02`
 * ''Sprint 6 next:'' `meme-browser-host.ts` — Automerge browser repo + IndexedDB. Research-before-act.
 * `sw.ts` tsconfig lib issues: pre-existing, separate fix
 * `system` + `projection` bag store impls: still pending (D stubs)
@@ -255,7 +255,7 @@ cd packages/lararium-tw5  && npx tsc --noEmit  # ✓ ZERO errors
 
 ↺ ''Aftermath / open work:''
 
-* Sprint 5 complete ✓ — see `#m14-sprint5-meme-sync-adaptor-2026-05-02` below
+* Sprint 5 complete ✓ — see `#/m14-sprint5-meme-sync-adaptor-2026-05-02` below
 * Grammar alignment pass (future): `meme-grammar.ts` and grammar definition files may need a separate pass to ensure Hawaiian sigil names align with UEFN vocabulary throughout the full grammar spec
 
 <<~/ahu>>
@@ -300,7 +300,7 @@ cd packages/lararium-tw5 && npx tsc --noEmit  # ✓ ZERO errors
 * `system` + `projection` bag store impls: still pending (D stubs)
 * Milestone F (presence split): 0%, not started
 * Keyhive UUID derivation for `KumuInstanceRef.uuidFragment`: post-Sprint 6
-* ''Web3 rip-out Sprint (this session):'' see `#m15-web3-rip-sprint-2026-05-02` below
+* ''Web3 rip-out Sprint (this session):'' see `#/m15-web3-rip-sprint-2026-05-02` below
 
 <<~/ahu>>
 
@@ -1900,7 +1900,7 @@ Requires: client redirect logic when the expected room key changes. `GET /api/ro
 
 !!! Priority 4: Grammar Phase 3 scaffolding
 
-Phase 2 is substantially complete (40 sigils registered, `wikitext-filter` dialect, TW5+Verse parity, English aliases, `kapu`/`pono` constraint distinction). See `#milestone-7-grammar-extension` for full detail.
+Phase 2 is substantially complete (40 sigils registered, `wikitext-filter` dialect, TW5+Verse parity, English aliases, `kapu`/`pono` constraint distinction). See `#/milestone-7-grammar-extension` for full detail.
 
 Phase 3 targets — parser becomes a meme. Template cascade (tldraw projection) driven by grammar memes.
 
@@ -3281,6 +3281,6 @@ The CJS's `exports` parameter is a fresh `{}` — TW5's injected `exports` objec
 * MCP `hud`/`receipt` storage-dir fix
 * Widget export key normalization: PascalCase `KauWidget` → lowercase `kau` for TW5 tag registration
 
-<<^ code="&#x0003;">>ni:///sha-256;TJHsxzh_OiFlienOjKhsmUOSzMzKEMU5wNQnXbSxQx8
+<<^ code="&#x0003;">>ni:///sha-256;l_gsFeSqYuR2x3M79jkkx_19PQknWFKLbrxyYX6d_hU
 
 <<^ code="&#x0004;" -> to=?>>

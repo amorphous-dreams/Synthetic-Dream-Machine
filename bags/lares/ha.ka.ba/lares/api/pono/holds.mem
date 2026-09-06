@@ -92,7 +92,7 @@ fused anything — `holds` only hands the table's silent grammar a verb.
    `meme` serializes it one canonical way — NFC, deduped, sorted by family
    then member — so the same set lands the same bytes.
    A relation that //sequences//, //crosses//, or //grades// slips the dead water
-   past a holds-flattening; `#when-not-holds` routes each to its verb —
+   past a holds-flattening; `#/when-not-holds` routes each to its verb —
    `flows`/`loops`, `moves`, `ranks`.
 
 ''Two faces, one verb.'' `<<~holds f/m f/m …>>` authors a carrier's
@@ -271,6 +271,6 @@ order or lattice would later mint it, the floor unbuilt until a usage demands.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;nINaw-Tvt4IfhZzgqSEnHjQjveOIMkYA_GvasYaoYWw
+<<^ code="&#x0003;">>ni:///sha-256;4mKPVi2H0MQ_Kzccv9Lz304RlpwMglViKheVGGV0Pg0
 
 <<^ code="&#x0004;" -> to=?>>

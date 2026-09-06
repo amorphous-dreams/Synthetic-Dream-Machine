@@ -207,7 +207,7 @@ For single-tool carry, the active tool goes first and empty hand goes second; th
 
 `<<~ mu * !>>` — Wand and Sword active: external feed, fine cut.
 
-''Prefer input as text'' (the name) ''or the single-character abbreviation''; a render surface ''presents'' the glyph. No render widget exists yet --- the glyph column names the intended render (`tool-render` mode, `#tool-glyph-table`), and the input form stands as written until one arrives. All forms parse to the same tool:
+''Prefer input as text'' (the name) ''or the single-character abbreviation''; a render surface ''presents'' the glyph. No render widget exists yet --- the glyph column names the intended render (`tool-render` mode, `#/tool-glyph-table`), and the input form stands as written until one arrives. All forms parse to the same tool:
 
 | Tool | Name (input) | Char (input) | Renders as |
 |---|---|---|---|
@@ -225,7 +225,7 @@ Names and characters invoke the tools directly; forms MAY mix in one sigil:
 <<~ mu Wand !>>           # forms mixed
 ```
 
-`<<~ mu>>` parameterless reads as Arcana — `00`, centered, no tool active. Name one or more tools to invoke them; a combination MAY span both axes (`*!`, `_?`) or double an axis as a conflict carry (`*_` Signal Jam, `?!` Dubious Move). The conflict carries and single-tool readings hold from `#conflicting-tool-configs` and `#tool-carry-encoding` — `mu` carries them with no standpoint attached.
+`<<~ mu>>` parameterless reads as Arcana — `00`, centered, no tool active. Name one or more tools to invoke them; a combination MAY span both axes (`*!`, `_?`) or double an axis as a conflict carry (`*_` Signal Jam, `?!` Dubious Move). The conflict carries and single-tool readings hold from `#/conflicting-tool-configs` and `#/tool-carry-encoding` — `mu` carries them with no standpoint attached.
 
 ''Composition.'' A tool-carry binds to a standpoint only through the `syad` sigil's optional `:` — `Philosopher:*!`. `syad` and `mu` each invoke alone; the bind composes them when an exchange wants both.
 
@@ -301,6 +301,6 @@ arcana   = "release"
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;6E8Yog2wOIDUg89KZFLRYJEFHhp-buxRY6Jv4ljg-go
+<<^ code="&#x0003;">>ni:///sha-256;vxqeLfYiyS-fQXzqHVhVwJ9XNu_zbKa83scBonl_nUE
 
 <<^ code="&#x0004;" -> to=?>>

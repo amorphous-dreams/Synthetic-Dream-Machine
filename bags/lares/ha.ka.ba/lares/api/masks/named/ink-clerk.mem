@@ -148,12 +148,12 @@ How Ink-Clerk colors each Voice register when they speak through her archival-pr
 | Section | Status | Notes |
 |---|---|---|
 | `#meta` | known | complete metadata; confidence reflects stub state |
-| `#corpus` | pending-talk-story | no seed yet available |
-| `#voice-character` | stub | house entry + name pressure known; depth pending |
-| `#foreground-voices` | known | derivable from house structure |
-| `#stage-default` | known | US band default |
-| `#permissions` | known | Voice house defaults |
-| `#character-notes` | pending-talk-story | requires live session observation |
+| `#/corpus` | pending-talk-story | no seed yet available |
+| `#/voice-character` | stub | house entry + name pressure known; depth pending |
+| `#/foreground-voices` | known | derivable from house structure |
+| `#/stage-default` | known | US band default |
+| `#/permissions` | known | Voice house defaults |
+| `#/character-notes` | pending-talk-story | requires live session observation |
 
 <<~/ahu>>
 
@@ -167,6 +167,6 @@ How Ink-Clerk colors each Voice register when they speak through her archival-pr
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;qEFECj7st0qZbYqDFOwPXr_tMEspgSsYm0CtwN30LCE
+<<^ code="&#x0003;">>ni:///sha-256;-lXM9cEvYG6sUg6z-LUhyUm9bZ7S1axrYbUl5Ikoy5s
 
 <<^ code="&#x0004;" -> to=?>>

@@ -173,7 +173,7 @@ This base does not change. The epic addresses it, links it, makes it queryable.
 # ''Cards as mnemonic doorways.'' Tag pills on every card serve double duty:
    mnemonics on paper (players learn `[ecm-scan]` as a keyword over sessions),
    doorways on screen (click through to the full component tiddler). Printed
-   cards carry the mnemonic. Digital cards carry both. See `#progressive-display`.
+   cards carry the mnemonic. Digital cards carry both. See `#/progressive-display`.
 
 # ''Complexity changes address, not quantity.'' Decomposing a Power into
    components does not reduce complexity — it distributes it. If the
@@ -480,7 +480,7 @@ code honors pono tiddler-format law. A companion `lar:///ha.ka.ba/lararium/lists
 procedure renders every `@`-tag on a tiddler via `tag-pill`, so a card declares
 composition once as tags and calls one `<<~ kahea …>>`.
 
-''D5 — Naming canon: lar: URI titles + two-tiddler tags (2026-05-31, amends D4 & `#tw5-tags`).''
+''D5 — Naming canon: lar: URI titles + two-tiddler tags (2026-05-31, amends D4 & `#/tw5-tags`).''
 Every meme's TW5 title is its full `lar:///` URI (= `lar:///` + `uri-path`). A
 component/mount is addressed by ''two tiddlers'':
 * the ''full meme'' (`.md`, in recipe) — lar URI title, `caption`, all content;
@@ -489,7 +489,7 @@ component/mount is addressed by ''two tiddlers'':
   its own lar URI), carrying `caption` + a `meme` field that forwards to the full meme.
 
 Modules and cards tag with the ''short'' form; `#has` edges address the ''full meme''.
-This supersedes the earlier "version-free bag-scoped single title" wording in `#tw5-tags`.
+This supersedes the earlier "version-free bag-scoped single title" wording in `#/tw5-tags`.
 
 ''D6 — Module nesting: an entity `#has` a Power; `#composes` stays module→module (2026-06-01, Sprint 3).''
 When an item, artifact, site, or creature carries a Power, it is ''an entity with''
@@ -537,18 +537,18 @@ state. Include the design lineage table and the three-weathers section from
 this epic as grounding. Include instance-data YAML examples.
 
 ''S0.2 — Write `templates/modules/power.md`.''
-Module shape: `#has`, `#default` (P/R/T/D/Ox), `#variants`, `#edges`, `#aftermath`.
+Module shape: `#has`, `#default` (P/R/T/D/Ox), `#variants`, `#/edges`, `#/aftermath`.
 Writing law: table-action language. The canonical SDM Power template (P/R/T/D/Ox
 + tags) IS the `#default` block. The `#has` block addresses the tags. That's it.
 
 ''S0.3 — Write mount-point memes + template.''
 `mount-points/{trait,item,structure,burden}.md`. Extract the scattered prose
 from Vastlands Guidebook pp.28-29 and SDM Quickstart. Give each: `#contract`,
-`#activation`, `#cost`, `#failure`, `#removal`, `#overflow`, `#aftermath`.
+`#activation`, `#cost`, `#failure`, `#removal`, `#overflow`, `#/aftermath`.
 The Burden mount-point's `-1 per slot` rule, the Trait slot count (7+Thought),
 the Item slot count (7+Strength) — these are canonical facts that get addressed.
 
-''RESOLVED (see `#decisions-resolved`):''
+''RESOLVED (see `#/decisions-resolved`):''
 * `location` ''merges into'' `structure`. One Site mount-point. Fixed-vs-mobile
   is a flat `#has` component on the Site (propulsion/mobility), not a separate
   mount-point or a type fork.
@@ -574,7 +574,7 @@ modifies the Power), `#interaction` (how it plays with other components),
 ''Caution (Principle 6):'' if any component proves to carry no query value
 during Sprint 1, demote it back to a TOML header tag and delete the meme.
 
-''S0.6 — Write the `<<tag-pill>>` procedure.'' //(RESOLVED — see `#decisions-resolved`)//
+''S0.6 — Write the `<<tag-pill>>` procedure.'' //(RESOLVED — see `#/decisions-resolved`)//
 A TW5 ''`\procedure`'' (NOT a `\define` macro — macros are superseded since
 TW5 5.3.0 and pass params by brittle textual substitution that breaks on `@`/`/`
 titles). It reads the `caption` field from the target component tiddler via
@@ -737,15 +737,15 @@ relationship to the mounted pattern. This remains speculative.
 
 * ''Filter ergonomics.'' Test target-URI-prefix filtering in Sprint 1.
 * ''Module nesting.'' ✅ RESOLVED (Sprint 3) → entity `#has` a Power through its
-  mount-point; `#composes` reserved for module→module. See `#decisions-resolved` D6.
+  mount-point; `#composes` reserved for module→module. See `#/decisions-resolved` D6.
 * ''Counterpoint doctrine.'' Co-active module interaction rules. Sprint 4.
   Start from the existing FTLS ECM vocabulary (`[scan]` `[veil]` `[jam]`
   `[negate]` `[suppress]` `[redirect]` `[capture]` `[hijack]`) — these
   already name the layer-interaction modes the `#modifies` edge reaches for.
 * ''Location vs Structure.'' ✅ RESOLVED → merged into one Site mount-point;
-  mobility is a flat `#has` component. See `#decisions-resolved`.
+  mobility is a flat `#has` component. See `#/decisions-resolved`.
 * ''Power containers.'' ✅ RESOLVED → one Item mount-point + container sub-rule;
-  character Item capacity fixed at 7+Strength. See `#decisions-resolved`.
+  character Item capacity fixed at 7+Strength. See `#/decisions-resolved`.
 * ''Site capacity economy.'' Structure/Site slots scale by XP + resource spend
   (OGA "Golden Age Item Upgrading"), not a fixed count. Wire the Site
   `#cost`/`#overflow` blocks to that economy in Sprint 0.3 / test in Sprint 4.
@@ -776,6 +776,6 @@ history if ever needed.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;OeBhTpCC9uJLhiFYhkSxxJdEmJYwpGwoEeoC3LbgBuo
+<<^ code="&#x0003;">>ni:///sha-256;F9LNbUfvDxr_DtsjRDVVoXmIx-KWHvAK8k0dycFB-_A
 
 <<^ code="&#x0004;" -> to=?>>

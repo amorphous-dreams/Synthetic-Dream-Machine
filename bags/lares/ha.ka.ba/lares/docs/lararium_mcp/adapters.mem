@@ -94,7 +94,7 @@ All current submodules count as core pieces of the MCP program, though not all e
 
 !! MemPalace Sidecar Contract
 
-> ''RETIRED → `#contentpalace-inherits` (swarm ruling, 2026-07-03).'' The top-level `~/.mempalace` sidecar retires: the sovereign ''contentpalace'' — py-served, behind the causal-island — inherits mempalace's exact base schema and replaces the read-only sidecar reach. ''M1 stands sidecar-free.'' The stdio JSON-RPC contract below keeps its shape as consumed history; ingest now offloads via @daemon coordinator verbs to the py nalu-gates. Retired terms reserve, never reuse.
+> ''RETIRED → `#/contentpalace-inherits` (swarm ruling, 2026-07-03).'' The top-level `~/.mempalace` sidecar retires: the sovereign ''contentpalace'' — py-served, behind the causal-island — inherits mempalace's exact base schema and replaces the read-only sidecar reach. ''M1 stands sidecar-free.'' The stdio JSON-RPC contract below keeps its shape as consumed history; ingest now offloads via @daemon coordinator verbs to the py nalu-gates. Retired terms reserve, never reuse.
 
 Lares talks to MemPalace across the MCP protocol boundary rather than importing MemPalace Python modules.
 Canonical v1 transport: JSON-RPC over stdio.
@@ -221,6 +221,6 @@ The following remain blocked until explicit policy lands:
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;eEFHwckucRIRh5FFZacTY0z_aPNNEUy2EFWwQMNGdy0
+<<^ code="&#x0003;">>ni:///sha-256;2KY1S4RDPrm0Xi-GaYo92DhDBAM2mK8PXzPw1rXyBWU
 
 <<^ code="&#x0004;" -> to=?>>

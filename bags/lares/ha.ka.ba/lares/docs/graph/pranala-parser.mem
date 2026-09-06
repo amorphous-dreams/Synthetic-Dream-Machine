@@ -72,7 +72,7 @@ BLOCK_RE = re.compile(
 # Scan the body for a TOML fence (` ```toml ... ``` `).
 # Parse the TOML; extract `family`, `lifecycle`, `role`, `traversal`, `propagation`, `label`, `payload`, `dir`.
 # Resolve the TO expression to a full `lar:///` URI.
-# Resolve FROM via the `? ->` rule (see `#question-mark-resolution`).
+# Resolve FROM via the `? ->` rule (see `#/question-mark-resolution`).
 # Build `PranalaEdge` with normalized fields.
 
 ''TOML fence extraction:''
@@ -220,6 +220,6 @@ Unresolvable TO expressions produce a `DeclaredUnresolved` record rather than an
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;zmD68HKAhZ08xQYPqMWhklfzCaJ6DkO4qpVejHMCokk
+<<^ code="&#x0003;">>ni:///sha-256;_sa_L3IKH-loC7npkF4jBapI2e407BFivLs7g0Owb2o
 
 <<^ code="&#x0004;" -> to=?>>

@@ -483,7 +483,7 @@ Q9 (cross-fingerprint linkage) ✅ deferred 2026-06-01 — out of Sprint 7 scope
 Q10 (`@draft` scoping) ✅ confirmed — follows the same `(PersonaGroup × recipe-fingerprint)` keying as the personal slot. Per-wiki slot URI `lar:///ha.ka.ba/wikis/{slug}/draft`, resolver-bound.
 Q11 (`@draft` per-fingerprint vs boot draft) ✅ resolved 2026-06-03 — ''slice (a).'' Operator ruled `@personal` and `@draft` bind ''together'' per-fingerprint — the #data-model intent holds. The fingerprint-keyed `@draft` ''replaces'' the boot's ad-hoc draft: the boot draft-mint site (`open-node-vessel.ts:696`) rewires to `resolveOrMintBinding({ kind: "draft-binding", … })`, so both slots converge across the operator's devices. S7.5 binds the pair; neither retires independently. The pseudocode in #vessel-boot-flow reflects this. ''Subtlety for enactment:'' the boot's existing `registerBag(draftBagId)` (`:594`) must move to (or be subsumed by) the helper's per-fingerprint `@draft` URL — the boot can no longer pre-register a fixed draft bag id ahead of fingerprint resolution.
 
-''Layering (raised + resolved 2026-06-01):'' the original `#vessel-boot-flow` placed resolution inside `VesselIslandPool._mountWorker`. Three research spirits (codebase-grain, SE-pattern prior-art, ocap/local-first) converged unanimously on host-layer resolution with pass-through. Section rewritten accordingly; pool stays envelope-only.
+''Layering (raised + resolved 2026-06-01):'' the original `#/vessel-boot-flow` placed resolution inside `VesselIslandPool._mountWorker`. Three research spirits (codebase-grain, SE-pattern prior-art, ocap/local-first) converged unanimously on host-layer resolution with pass-through. Section rewritten accordingly; pool stays envelope-only.
 
 <<~/ahu>>
 
@@ -505,6 +505,6 @@ register's lived surface — the living grammar in use before curation lifts it 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;VM1LYKfGGFoaecp99OKr-GE9WzMbz1cQ4p_ebjUvgD0
+<<^ code="&#x0003;">>ni:///sha-256;jFC5vkf_VKOb9sQ1WnpOpeWY1_Q9ajXH5p4LAo2Vytw
 
 <<^ code="&#x0004;" -> to=?>>

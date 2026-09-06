@@ -61,7 +61,7 @@ The stage pipeline runs once per camera over the shared graph; only the DOM-tree
 
 !!! Mode axis — render posture (`lar-render-mode`)
 
-Orthogonal to surface: `""` (live), `carrier` (disk export), `projection` (frozen snapshot). A mode picks the output //form//, never the camera. Detailed at `#three-render-modes`.
+Orthogonal to surface: `""` (live), `carrier` (disk export), `projection` (frozen snapshot). A mode picks the output //form//, never the camera. Detailed at `#/three-render-modes`.
 
 ''Composition:'' a //stage// renders the shared graph onto a //surface// (camera) under a //mode//, driven by an //engine//. Four axes, freely combined — none collapses into another.
 
@@ -256,6 +256,6 @@ Trace continuity across the causal island boundary:
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;BfGf8EAnPk53HqALcxqf2T8hwiB2yGrNP5VuGuQsQ5g
+<<^ code="&#x0003;">>ni:///sha-256;6t8ySW1boUNwSDGRrWGqD4DFdP12aYB-1M-S22th-Mo
 
 <<^ code="&#x0004;" -> to=?>>

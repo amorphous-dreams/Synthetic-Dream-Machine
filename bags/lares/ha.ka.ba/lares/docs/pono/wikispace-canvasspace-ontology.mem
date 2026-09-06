@@ -147,7 +147,7 @@ A named place — a room, a board, a shelf — ''carries a capability-and-view s
 
 ''What partitioning would cost, stated as the failures it produces:'' a meme placed in two rooms becomes two memes that drift; an edge between memes in different rooms has nowhere to live; moving a meme between rooms becomes a copy, so its history forks at the move. Every one of those follows from the data model, and none of them shows while a single room stands open, so the choice falls due before the second room exists.
 
-''The scoping reading keeps all three'': one meme, one history, edges that cross freely, and a place that says only //which of them you are looking at, and by what right//. `#graph-primacy` states the same law from the other end — the graph holds the model and the arrangement renders a view, so a view cannot own what it shows.
+''The scoping reading keeps all three'': one meme, one history, edges that cross freely, and a place that says only //which of them you are looking at, and by what right//. `#/graph-primacy` states the same law from the other end — the graph holds the model and the arrangement renders a view, so a view cannot own what it shows.
 
 <<~/ahu>>
 
@@ -164,7 +164,7 @@ A meme owns its blocks, and a block owns its ports. ''The model carries that con
 * a template asks ''"what blocks does this meme own?"'' of the graph, and gets the same answer at every level of detail
 * it ''plays the widget tree's part on the model side'': the render pass walks OWNERSHIP to find its targets, ''never'' the surface's own hierarchy
 
-⚠ A surface that lets its render tree carry containment has fused the two halves of `#model-view-boundary` in the one place the fusion looks harmless — and the break only shows at the zoom where the rendering stops agreeing with the model.
+⚠ A surface that lets its render tree carry containment has fused the two halves of `#/model-view-boundary` in the one place the fusion looks harmless — and the break only shows at the zoom where the rendering stops agreeing with the model.
 
 <<~/ahu>>
 
@@ -246,6 +246,6 @@ When `nalu` / `\tick` lands, the tick wire reads `reaction:triggers` (the frame-
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;uM1tE8RSreSQ1PPEcEaEVEFWbDSWkQxnVgicIKx3nLw
+<<^ code="&#x0003;">>ni:///sha-256;J_tqbJPZptf1kdLTtt5bviVh5gQnkhsHs6Ut-XQFR6E
 
 <<^ code="&#x0004;" -> to=?>>

@@ -139,12 +139,12 @@ Remaining Voices — Lorekeeper, Muse, Artificer, Advocate, Diplomat, Hierophant
 | Section | Status | Notes |
 |---|---|---|
 | `#meta` | filled | extracted from docs founding example |
-| `#corpus` | filled | from founding example |
-| `#voice-character` | filled | from founding example |
-| `#foreground-voices` | filled | from founding example |
-| `#stage-default` | filled | from founding example |
-| `#permissions` | filled | from founding example |
-| `#character-notes` | stub | five Voices noted from founding example; remaining eight pending-talk-story |
+| `#/corpus` | filled | from founding example |
+| `#/voice-character` | filled | from founding example |
+| `#/foreground-voices` | filled | from founding example |
+| `#/stage-default` | filled | from founding example |
+| `#/permissions` | filled | from founding example |
+| `#/character-notes` | stub | five Voices noted from founding example; remaining eight pending-talk-story |
 
 <<~/ahu>>
 
@@ -157,6 +157,6 @@ Remaining Voices — Lorekeeper, Muse, Artificer, Advocate, Diplomat, Hierophant
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;FtwweYgyG6nilJgFRUmCpqdkABYOsEWL09QKKHw7Qk4
+<<^ code="&#x0003;">>ni:///sha-256;-3QQkpM9AVimLQIiAZTAP3hCCKGfuPDYVGISCN_18nc
 
 <<^ code="&#x0004;" -> to=?>>
