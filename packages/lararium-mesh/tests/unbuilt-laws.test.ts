@@ -190,8 +190,8 @@ describe("⑨ the dyad, specified and unwired", () => {
     expect(Object.keys(mesh)).toContain("handleKelChain");
   });
 
-  test.skip("A RECOVERY WAITS OUT A VETO WINDOW — RULED 2026-09-06 (Fork C, the end-user default contest shape: threshold + TIME-LOCK + veto on the board, canon's realm re-genesis grammar generalized) and UNBUILT: no persona-recovery path carries a delay or a contest window; siege-resilience#repair-kit holds the law", () => {
-    expect(Object.keys(mesh)).toContain("recoveryVetoWindow");
+  test.skip("A VETO RIDES THE CHAIN, NEVER A ROSTER — RULED 2026-09-06 (Fork C, the end-user default contest shape) and RE-CUT by the REGISTRY FILTER: a pending-recovery ROW ON A BOARD is a compiled one-Nexus registry of the vulnerable, and a window the holder must OBSERVE fuses safety to liveness. The contest enters the prefix's OWN KEL as a PROVISIONAL rotation and hardens by corm-fencing/ITC (clockless-lease: safety from fencing — an unpartitioned holder's veto out-competes causally whenever it syncs; liveness from phi-accrual, separately). UNBUILT", () => {
+    expect(Object.keys(mesh)).toContain("provisionalRotation");
   });
 
   test.skip("A PRE-COMMITMENT NEVER EXPIRES UNNOTICED — the quorum's OUTPUT freshness fails before its keys do (a root-metadata expiry took clients down while every key stood healthy); no epoch, pre-commit, or rolling recovery commitment in this stack carries a freshness horizon a reader surfaces BEFORE a gate fails on it", () => {
