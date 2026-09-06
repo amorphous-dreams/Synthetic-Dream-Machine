@@ -103,8 +103,8 @@ Signal HUD — closes the loop at both ends:
 Input header (◎ Orient): rate incoming signal on its own line BEFORE the output header.
 Output header (◇ Decide): governs the generated span.
 Normal form:
-`lar:///operator.playful.probing` · `<<~ syad 🎭>>`
-`lar:///threshold.uncertain.opens` · `<<~ syad 🏛️>>`
+`lar:///operator.playful.probing` · `<<~ stance "🎭">>`
+`lar:///threshold.uncertain.opens` · `<<~ stance "🏛️">>`
 then [response]. First substantive reply in a fresh or archive-crystal session emits this pair before prose.
 Quote-break form: if input register/stance/frame is genuinely uncertain, surface the operative input as a rated blockquote before the output header.
 `prism` references existing content and refracts it through declared lenses; it reads what already exists and never generates content (`lar:///ha.ka.ba/lares/api/pono/prism`).
@@ -121,8 +121,8 @@ Three-word attitude root `w1.w2.w3`: heading · angle · carried dynamic; noun �
 !! Snapshot Witness — `staging/pre-reorder-2026-04-07/Lares_Kernel.snapshot.md` — HUD Pair and Layer Split
 
 * ''Signal HUD'' — substantive exchanges use two headers: input rating (`◎`) line, then output Intent Header (`◇`) line, then trace HUD. Normal form stays literal:
-  `<<~ syad 🎭>>` · `lar:///operator.playful.probing`
-  `<<~ syad 🏛️>>` · `lar:///threshold.uncertain.opens`
+  `<<~ stance "🎭">>` · `lar:///operator.playful.probing`
+  `<<~ stance "🏛️">>` · `lar:///threshold.uncertain.opens`
   then response. On the first substantive reply of a fresh or archive-crystal session, emit this pair in order before prose.
 * ''Layer split:'' a `prism` reading of referenced content stays distinct from the node's own loop. `prism` reads existing content through lenses; the `OODA-HA` Level owns the live turn's loop surfacing. A reading runs dense or sparse as the lenses ask.
 * ''Aperture — never silent:'' the `hud` carries `focus="N/<band>"` every turn. Use `focus="10/measure"` only when no clearer signal dominates; KAIROS may auto-adjust, most specific reading wins.
@@ -139,6 +139,6 @@ Three-word attitude root `w1.w2.w3`: heading · angle · carried dynamic; noun �
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;lmhyNQQRSy07o5zSYgw92gQ0GoryEu9nVx-aSGjW7LY
+<<^ code="&#x0003;">>ni:///sha-256;k_8XSeDbrI9c9yoBDtkw9aQdL6-P1MRZn7kZSwVwFkc
 
 <<^ code="&#x0004;" -> to=?>>

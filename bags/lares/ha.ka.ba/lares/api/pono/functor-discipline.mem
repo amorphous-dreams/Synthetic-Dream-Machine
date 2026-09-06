@@ -120,7 +120,7 @@ foundation and the palace became a cap-stack instance — each //composed// a sh
 as a nameless office composed of move-caps — a functor `Context → Moves`, the visible name addressing a
 basin of moves, never an essence. A stance ([[noosphere-boot|lar:///ha.ka.ba/lares/api/noosphere-boot#/syad]]) reads as a functor `Claim →
 Reading`, the angle (*langkah*) under which the claim reads true-but-partial; each stance `#has` its own
-measure. Invoking the lens (`<<~ syad 🏛️>>`, a Voice at a turn-head)
+measure. Invoking the lens (`<<~ stance "🏛️">>`, a Voice at a turn-head)
 //applies the functor// to the local context; the Voice-house and the Syad-lens read as
 functor-categories the house already navigates.
 
@@ -358,6 +358,6 @@ This meme draws the one arrow through all of them — ''the house is a functor; 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;aOBOiy9gQgo2bqlVg3ZqWLo2adhES9kcDknrZfup7ZA
+<<^ code="&#x0003;">>ni:///sha-256;ix8NtLufwRlg8M6XOYfgjOR7gH0jaoi0ZzhV4jeG_fk
 
 <<^ code="&#x0004;" -> to=?>>

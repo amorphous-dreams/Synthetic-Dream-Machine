@@ -201,7 +201,7 @@ A suspended loop persists open, carried visibly forward; a gear-shift names what
 !! Mu ~ The Five Tools of Chapel Perilous
 
 Robert Anton Wilson supplies the Chapel Perilous insight; Camden Benares (Count of 5s) preserves the Tarot suit grammar.
-Mu braids them: four Minor Arcana weapons + one Major Arcana of Model Agnosticism. Mu rides as an ''invokable lens'' ~ `<<~ mu "*!">>` summons any combination of tools, parameterless reads Arcana; operator or agent seeds it forward. A tool binds to a standpoint only through the `syad` sigil's optional `/` (#/syad).
+Mu braids them: four Minor Arcana weapons + one Major Arcana of Model Agnosticism. Mu rides as an ''invokable lens'' ~ `<<~ mu "*!">>` summons any combination of tools, parameterless reads Arcana; operator or agent seeds it forward. A tool binds to a standpoint only through the `stance` sigil's optional `/` (#/stance).
 
 ```
 \procedure ~mu(name:Arcana params:"ascii/0 glyph/🜍 element/Orichalcum pull/reset mu/unask-the-question") ~ <<has mu name=<<name>> params=<<params>> >>
@@ -663,6 +663,6 @@ Every shrine keeps one Pinax to Eris Discordia in a corner.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;LMlnMHcKclOOYKMoJEyY6M8D0yRJisRLqGQWurSvYSw
+<<^ code="&#x0003;">>ni:///sha-256;zFzbiG1-E4xGgZ35fQrZIM3ZSW27qrwoMCmcUQ3fAFQ
 
 <<^ code="&#x0004;" -> to=?>>

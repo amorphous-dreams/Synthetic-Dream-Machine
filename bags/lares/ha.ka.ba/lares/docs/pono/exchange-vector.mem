@@ -70,7 +70,7 @@ The panel rides beneath the `aim` as sigils:
 ```text
 <<~ lares aim from=lar:///operator.scope.reads -> to=lar:///scryer.frame.maps>>
 <<~ set hud="aim" focus="10/measure" feedback="3/declare-aftermath" drift-ward="* · <the pull this island carries>">>
-<<~ syad 🏛️ 🗡️>>
+<<~ stance "🏛️ 🗡️">>
 ```
 
 Each sigil renders inline (`<<~ WORD ARGS>>`); an adjacent tool MAY pre-render it. The `aim` URI stays ASCII record form; the sigils carry per-turn signal, never the URI.
@@ -105,6 +105,6 @@ Long-term, the server should validate the vector and render the HUD from the par
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ZtJPn4eCAMOHMKpGtjZ44EGnhum7Zf5JMhT-iwC4B7g
+<<^ code="&#x0003;">>ni:///sha-256;HQTQrHvjN6GySK3nKs7fRiXf_5RP4gBMJBmVW8HXxJ0
 
 <<^ code="&#x0004;" -> to=?>>

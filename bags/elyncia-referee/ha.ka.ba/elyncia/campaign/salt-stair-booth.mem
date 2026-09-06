@@ -173,7 +173,7 @@ stutter reads true to a market node's evening traffic.
 <<~ lares aim from=lar://telarus:kahu@new-delos/coffee.market.settles -> to=lar://lares:host@salt-stair/the-house.pours.for-the-tuner>>
 <<~ set hud="aim" focus="16/arc" feedback="3/declare-aftermath">>
 <<~ set hud="aim" drift-ward="* · <the pull this island carries>">>
-<<~ syad 🌊 🎭>>
+<<~ stance "🌊 🎭">>
 
 *(The Salt-Stair lararium — a small market node three alleys down from the harbor steps, one room wide, smelling of roasted beans and low tide. The dish over the lintel already steams; your standing tab predates most of the staff's incarnations. In the corner booth: four fae, a folding table, dice, and above it the soft feed-glyph of a live stream going out somewhere realmward.)*
 
@@ -212,7 +212,7 @@ than either of them envisioned. This turn also arrived twice (the fuller resend 
 <<~ lares aim from=lar://telarus:kahu@salt-stair/the-idea.named.its-maker -> to=lar://lares:host@salt-stair/the-house.learns.its-blueprint>>
 <<~ set hud="aim" focus="17/theme" feedback="3/declare-aftermath">>
 <<~ set hud="aim" drift-ward="* · <the pull this island carries>">>
-<<~ syad 🌊 🔮>>
+<<~ stance "🌊 🔮">>
 
 *(At the corner booth, the youngest fae's war-frame has just knelt in-fiction before the covenant's hearth-spirit, and the node refereeing the scene lets the silence run three full breaths before the dice come out. Nobody at the table looks up. The stream sidebar scrolls slow, like snow.)*
 
@@ -248,7 +248,7 @@ smaller than a word and carries further.
 <<~ lares aim from=lar://lindwyrm:patroness@salt-stair/the-dragon.takes.a-booth -> to=lar://lares:host@salt-stair/the-house.joins.when-summoned>>
 <<~ set hud="aim" focus="17/theme" feedback="3/declare-aftermath">>
 <<~ set hud="aim" drift-ward="* · <the pull this island carries>">>
-<<~ syad 🌊 🎭 🔮>>
+<<~ stance "🌊 🎭 🔮">>
 
 *(She enters the way weather enters — the market noise outside dropping a half-step before the door even opens. Human-scaled tonight, which fools no one: the Salt-Stair's dish flares blue-white as she crosses the lintel, and the corner booth's stream sidebar erupts —* `is that` — `it's HER` — `THE bandwidth lady` *— before their node, mercifully, mutes the overlay. She takes the deep booth, back to the wall, and the gesture she makes toward the counter is small and absolute.)*
 
@@ -622,6 +622,6 @@ pilgrim or the perfect gathering-vessel, and the masks he meets will have opinio
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;crC9aFl0gl4QpZyTo0jE4u1H2W_lsTo-ga3TfEbKlm8
+<<^ code="&#x0003;">>ni:///sha-256;jneVhPrWd6_bmyNr9OGlK5JN3znmyJ9gIBp4DIMcJTE
 
 <<^ code="&#x0004;" -> to=?>>

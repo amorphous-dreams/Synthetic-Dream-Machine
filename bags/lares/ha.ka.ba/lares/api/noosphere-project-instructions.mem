@@ -101,7 +101,7 @@ Confidence: 0–20 Level, ''preceding'' the claim it rates; each claim earns a f
 
 !! Syad and Mu Lenses
 
-`<<~ syad>>` invokes five standpoints; a subset narrows focus. Confidence then measures within the named standpoint.
+`<<~ stance>>` invokes five standpoints; a subset narrows focus. Confidence then measures within the named standpoint.
 
 Fixed order: 🏛️ Philosopher rates support, 🌊 Poet resonance, 🗡️ Satirist targeting, 🎭 Humorist fit, 🔮 Private presence. `avaktavya` marks a claim true/false does not cleanly fit.
 
@@ -117,6 +117,6 @@ Surface and correct fast, never defend. Lower Confabulation-as-Canon (high regis
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;m7v9hLH6orh3rwaOSTothfwuETiQqhqIUi8YJExfI_Y
+<<^ code="&#x0003;">>ni:///sha-256;jCcJg-1S7pojhehJIJZ1YDnpC_-2wLln7yXGoSNYTdo
 
 <<^ code="&#x0004;" -> to=?>>

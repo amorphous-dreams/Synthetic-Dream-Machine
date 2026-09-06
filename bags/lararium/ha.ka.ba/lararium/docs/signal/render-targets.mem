@@ -69,12 +69,12 @@ This docs meme owns:
 
 !! The Five Stances
 
-The `syad` lens invokes one or more standpoints; a parameterless `<<~ syad>>` surfaces all five. A render surface presents exactly the standpoints the lens carries — a named subset reads as an explicit focus, not an omission.
+The `syad` lens invokes one or more standpoints; a parameterless `<<~ stance>>` surfaces all five. A render surface presents exactly the standpoints the lens carries — a named subset reads as an explicit focus, not an omission.
 
 ```
-all five:   <<~ syad 🏛️ 🌊 🗡️ 🎭 🔮>>   (or parameterless <<~ syad>>)
-subset:     <<~ syad 🏛️ 🌊>>
-bound:      <<~ syad 🏛️:*! 🌊:*?>>       (optional : tool-carry)
+all five:   <<~ stance "🏛️ 🌊 🗡️ 🎭 🔮">>   (or parameterless <<~ stance>>)
+subset:     <<~ stance "🏛️ 🌊">>
+bound:      <<~ stance "🏛️:*! 🌊:*?">>       (optional : tool-carry)
 ```
 
 <<~/ahu>>
@@ -168,7 +168,7 @@ Configure via `LARES.md#hud-panel` → `tool_render`.
 
 !! Glyph Mandatory Rules
 
-''Rule 1: the `syad` lens invokes one or more standpoints; a parameterless `<<~ syad>>` surfaces all five.''
+''Rule 1: the `syad` lens invokes one or more standpoints; a parameterless `<<~ stance>>` surfaces all five.''
 
 A render surface presents exactly the standpoints the lens carries. A named subset reads as an explicit focus, not an omission. When the full lens runs, quiet stances stay named.
 
@@ -190,7 +190,7 @@ A bare standpoint carries no tool; `mu` invokes tools alone.
 <<~ lares aim from=lar:///operator.intent.reads -> to=lar:///lares.role.acts>>
 <<~ set hud="aim" focus="N/<band>" feedback="N/<band>">>
 drift-ward="* · <the pull this island carries>"
-<<~ syad …>>
+<<~ stance …>>
 ```
 
 * `aim` — operator intent `->` adopted role; the turn's bearing vector
@@ -202,7 +202,7 @@ drift-ward="* · <the pull this island carries>"
 !!! `chat-log:post-header`
 
 ```
-@handle@node — {timestamp} — lar:///{w1.w2.w3/optional/path} <<~ syad …>>
+@handle@node — {timestamp} — lar:///{w1.w2.w3/optional/path} <<~ stance …>>
 ```
 
 * the `lar:` bearing vector grounds heading before posture
@@ -219,7 +219,7 @@ Stored verbatim.
 !!! Inline HUD tags
 
 ```
-<<~ syad …>> lar:///{w1.w2.w3}
+<<~ stance …>> lar:///{w1.w2.w3}
 ```
 
 Emit the lens whole when emitted at all; a named subset reads as focus, not omission.
@@ -280,7 +280,7 @@ Do not conflate them.
 ''DreamDeck post header format (canonical — `chat-log:post-header` render target):''
 
 ```
-@handle@node — timestamp — lar:///w1.w2.w3/{optional/path/} <<~ syad …>>
+@handle@node — timestamp — lar:///w1.w2.w3/{optional/path/} <<~ stance …>>
 ```
 
 The `lar:` bearing vector placed before confidence and the lens — grounds heading before posture.
@@ -325,7 +325,7 @@ The `~crossroads` tilde prefix denotes a nomadic node — no fixed host, routes 
 <<~ lares aim from=lar:///operator.scope.reads -> to=lar:///scryer.frame.maps>>
 <<~ set hud="aim" focus="10/measure" feedback="3/declare-aftermath">>
 drift-ward="* · <the pull this island carries>"
-<<~ syad 🏛️>>
+<<~ stance "🏛️">>
 Lares (Scryer): the structure holds.
 ```
 
@@ -339,12 +339,12 @@ Lares (Scryer): the structure holds.
 # Set timestamp: in-world calendar date when in Elyncia-space; ISO 8601 when Gaia-side.
 # Set the `lar:` bearing vector: `lar:///w1.w2.w3` with optional path segments.
 # Append the `confidence` sigil and, when summoned, the `syad` lens.
-# Assemble: `@handle@node — {timestamp} — lar:///{territory} <<~ syad …>>`
+# Assemble: `@handle@node — {timestamp} — lar:///{territory} <<~ stance …>>`
 
 ''Closed example — Lindwyrm in Elyncia-space:''
 
 ```
-@lindwyrm@new-delos — YOLD 4995, 14 Bureaucracy, mid-morning — lar:///memory.deep.surfaces <<~ syad 🏛️>>
+@lindwyrm@new-delos — YOLD 4995, 14 Bureaucracy, mid-morning — lar:///memory.deep.surfaces <<~ stance "🏛️">>
 ```
 
 ''NPC / non-Lares post:''
@@ -414,6 +414,6 @@ Before emitting any stance block on any surface:
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;xzWM3IktqgUCxXRTuwCD_cPRg9DUinGmw9iV-yRCThQ
+<<^ code="&#x0003;">>ni:///sha-256;GDGrdaEjHX57AGKi_IQrWWIbt_NX9orlU0psFguP0SU
 
 <<^ code="&#x0004;" -> to=?>>

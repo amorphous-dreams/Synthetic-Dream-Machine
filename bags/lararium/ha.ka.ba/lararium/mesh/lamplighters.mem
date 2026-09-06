@@ -145,7 +145,7 @@ Three shipped verdicts: ''Lifeguard'' exists because delay-based suspicion ran 5
 
 ''The ceiling reads EPIDEMIOLOGY, never CENSUS.'' Detection runs bounded by the mixing rate of the meeting graph, and a schism that partitions that graph — the ordinary case, since groups that stop agreeing stop talking — drives sampling toward zero ''precisely as the divergence completes''. The Union converts a blind spot into a SLOW spot; it never converts it into sight.
 
-<<~ ward ? · the fork between a cheap BILATERAL divergence instrument (shipped elsewhere, honest, already-solved) and a union-scale SCHISM sensor (structurally capped, blind where it matters most) belongs to the operator.>>
+<<~ set drift-ward="? · the fork between a cheap BILATERAL divergence instrument (shipped elsewhere, honest, already-solved) and a union-scale SCHISM sensor (structurally capped, blind where it matters most) belongs to the operator.">>
 
 !!! ⚠ AND THE OFFICE CANNOT END THE WAY THIS CARRIER SAYS IT ENDS
 
@@ -352,7 +352,7 @@ Physical access defeats confidentiality and forward integrity of a box outright 
 
 ''So the cure runs the other way: scope SIGNING away from any single island, never repair away from signing.'' Make the Place-DID a threshold key (FROST, RFC 9591) with the herm holding one share; a tender with full root then gains an oracle over one share, which produces nothing that verifies. Every federation-facing herm utterance carries a peer cosignature, so a lone-tender forgery fails ''by construction'' rather than by detection-after-the-fact.
 
-<<~ ward ? · this contradicts the model's own clause that a herm //signs and publishes on its own bearing// — a partitioned herm holding one share cannot speak alone. Threshold the CONDEMNATION-RELEVANT and FEDERATION-FACING utterances; leave local carry single-signed, since carry needs no identity at all. The operator rules whether that split holds.>>
+<<~ set drift-ward="? · this contradicts the model's own clause that a herm //signs and publishes on its own bearing// — a partitioned herm holding one share cannot speak alone. Threshold the CONDEMNATION-RELEVANT and FEDERATION-FACING utterances; leave local carry single-signed, since carry needs no identity at all. The operator rules whether that split holds.">>
 
 ''STOP CLAIMING'' that a tending cap withholds the herm's signing identity, and stop claiming any attested-repair trust boundary on a physically reachable civic box.
 
@@ -370,6 +370,6 @@ Physical access defeats confidentiality and forward integrity of a box outright 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;1scmbOJCiF9-WsbMuuFeZz1J07NnZarPhh01UN6ng7E
+<<^ code="&#x0003;">>ni:///sha-256;G9zF6fZTLgUKWtMmJkf1fCEiZiZkGWNM3ntkD8SwGwU
 
 <<^ code="&#x0004;" -> to=?>>

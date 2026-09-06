@@ -80,7 +80,7 @@ grammar SOURCE (the instrument `.tids`), one runtime (the @daemon VM).
 
 The `lar-sigil` wikirule carries `types {block, inline}`. A ''block'' sigil holds
 a `closePattern` and captures a body (`<<~ ahu #/slot>>…<<~/ahu>>`); a ''leaf''
-instrument (the chat sigils — `<<~ ward>>`, `<<~ oracle>>`) carries its reading inline
+instrument (the chat sigils — `<<~ oracle>>`, `<<~ stance>>`) carries its reading inline
 and emits no children. A compound `<<~ WORD ARGS>>` resolves to a `macrocall` on
 the `~` dispatcher (`name` + `p1`); the dispatcher routes `name` to the
 instrument's reading procedure.
@@ -226,6 +226,6 @@ readings AND the form-capture both drain the one emitted-marker stream, no disco
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;zhgK_MEu-wFV0D5V-GXBvP4bW9RW-iL3gLvCva0187c
+<<^ code="&#x0003;">>ni:///sha-256;TFN8H0LCfF7DoxBpkpNbd-N6mjqS5T410fgjLrOg-UM
 
 <<^ code="&#x0004;" -> to=?>>

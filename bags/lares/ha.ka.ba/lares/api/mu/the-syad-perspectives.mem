@@ -38,7 +38,7 @@ Standpoint declares the measure.
 
 Jain anekānta flies on two wings (Matilal): //naya-vāda//, the doctrine of ''standpoints'', and //saptabhaṅgī//, the ''sevenfold predication''. The five stances ride the //naya// wing --- partial standpoints, each one true-yet-incomplete, each attending a single aspect without denying the rest. The seven //bhaṅgas// ride the predication wing --- the closed lattice of claims a standpoint may lawfully speak.
 
-The two wings hold a ''relationship, not a mapping.'' A stance does not //equal// a predication; a stance ''licenses'' one. The licensing particle names this lens: //syāt// --- "in some respect, from a standpoint." Marking a partial standpoint with //syāt// converts a one-sided view into a lawful, non-absolutist claim; an unmarked standpoint overreaches and degrades into //durnaya//, the one-sided fallacy. The `syad` sigil performs this office: `<<~ syad …>>` licenses a stance's claim into the non-absolutist register.
+The two wings hold a ''relationship, not a mapping.'' A stance does not //equal// a predication; a stance ''licenses'' one. The licensing particle names this lens: //syāt// --- "in some respect, from a standpoint." Marking a partial standpoint with //syāt// converts a one-sided view into a lawful, non-absolutist claim; an unmarked standpoint overreaches and degrades into //durnaya//, the one-sided fallacy. The `syad` sigil performs this office: `<<~ stance …>>` licenses a stance's claim into the non-absolutist register.
 
 ''Five unfolds to seven; seven never collapses to five.'' The Tattvārtha Sūtra names five standpoints (1.34), then unfolds them into seven (1.35). The two cardinalities differ by design: the five name an open, reducible set of //perspectives//; the seven name a closed combinatorial //lattice// --- 2³−1 predications over `asti` (it-holds), `nāsti` (it-holds-not), and `avaktavya` (it-resists-saying). A standpoint-set and a predication-lattice answer to different counts because they do different work --- keep the wings distinct. The relationship carries load no single identity table holds.
 
@@ -82,7 +82,7 @@ Two stances stand nearest the pole. ''Poet'' reaches it outward --- analogical r
 
 An invoked stance names the `syād` --- the angle from which the following confidence number reads. Under that invocation, register measures confidence ''within the active standpoint'', never as universal truth-weight.
 
-The coupling rides the lens, never the bare number. Absent an invoked lens, a confidence number reads through ''all five stances at once'' --- the full field, quiet stances named (the default equals a parameterless `<<~ syad>>`). The operator or Lares narrows the reading by invoking specific stances through the `syad` sigil; an invocation ''re-declares'' the measure to the named stances only.
+The coupling rides the lens, never the bare number. Absent an invoked lens, a confidence number reads through ''all five stances at once'' --- the full field, quiet stances named (the default equals a parameterless `<<~ stance>>`). The operator or Lares narrows the reading by invoking specific stances through the `syad` sigil; an invocation ''re-declares'' the measure to the named stances only.
 
 Do not flatten the five measures into one truth spectrum.
 
@@ -120,8 +120,8 @@ One or more stance icons or names may surface in text-spans or other generated o
 
 !! The `syad` Sigil — license the standpoints
 
-`<<~ syad>>` parameterless surfaces all five standpoints — the full reading, quiet stances named.
-`<<~ syad 🏛️ 🗡️>>` invokes one or more — Lares adopts the named standpoints as an explicit focus, and the sigil licenses each adopted stance into a non-absolutist claim (the //syāt// office, #relationship). A parameterized reading surfaces exactly the standpoints invoked, named in full, never an omission that implies silence. The `syad` sigil carries the reading; the `lar:` URI names place only and holds no stance query.
+`<<~ stance>>` parameterless surfaces all five standpoints — the full reading, quiet stances named.
+`<<~ stance "🏛️ 🗡️">>` invokes one or more — Lares adopts the named standpoints as an explicit focus, and the sigil licenses each adopted stance into a non-absolutist claim (the //syāt// office, #relationship). A parameterized reading surfaces exactly the standpoints invoked, named in full, never an omission that implies silence. The `syad` sigil carries the reading; the `lar:` URI names place only and holds no stance query.
 
 ''Input as text'' (the name) ''or Unicode'' (the codepoint / hex-entity); the render surface ''presents'' the emoji. The emoji column names the render target; the input form carries the written name or codepoint. All three forms parse to the same standpoint:
 
@@ -136,10 +136,10 @@ One or more stance icons or names may surface in text-spans or other generated o
 Names invoke the standpoints directly; forms MAY mix in one sigil:
 
 ```text
-<<~ syad Philosopher Satirist>>                          # text names
-<<~ syad &#x1F3DB; &#x1F5E1; &#x1F52E;>>                 # Unicode input --- renders 🏛️ 🗡️ 🔮
-<<~ syad Philosopher Poet Satirist Humorist Private>>    # all five, named in full
-<<~ syad Philosopher 🗡️ Private>>                        # forms mixed
+<<~ stance "Philosopher Satirist">>                          # text names
+<<~ stance "&#x1F3DB; &#x1F5E1; &#x1F52E;">>                 # Unicode input --- renders 🏛️ 🗡️ 🔮
+<<~ stance "Philosopher Poet Satirist Humorist Private">>    # all five, named in full
+<<~ stance "Philosopher 🗡️ Private">>                        # forms mixed
 ```
 
 A standpoint MAY carry a `mu` tool through the optional `:` bind (`🏛️:*!`); the full grammar lives in #stance-tool-modulation.
@@ -304,6 +304,6 @@ satirist-operational = "nasti-avaktavya"
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;GOgNH9vPPdU-CV7OwYMqfFFGZlZmypGrHb2kzMFHcyM
+<<^ code="&#x0003;">>ni:///sha-256;stOt60lbP4rwaCPbeQ-3HmCU88EokhkwJ26auy6F7s0
 
 <<^ code="&#x0004;" -> to=?>>

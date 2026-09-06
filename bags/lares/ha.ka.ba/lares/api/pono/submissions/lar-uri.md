@@ -371,7 +371,7 @@ A complete exchange opening, annotated by scan order. The `aim` URI carries bear
 ```text
 <<~ lares aim from=lar:///operator.threshold.opens -> to=lar:///scryer.parse.models>>
 <<~ set hud="aim" focus="10/measure" feedback="7/declare-glyphs" drift-ward="* · <the pull this island carries>">>
-<<~ syad 🏛️:*!>>
+<<~ stance "🏛️:*!">>
 ```
 
 Quick read:
@@ -380,7 +380,7 @@ Quick read:
 > `focus="10/measure"` — paragraph grain; `feedback="7/declare-glyphs"` shows the node a phase ahead, orienting from the operator's observe.
 > `syad 🏛️:*!` — Philosopher in Visual-Micro.
 
-The standpoint reads within its own frame (Syadasti rule): a Philosopher weighs propositional support, a Poet weighs resonance — never one universal truth-scale. A bare `<<~ syad 🏛️ 🌊 🎭>>` names which frames a claim spans without flattening them.
+The standpoint reads within its own frame (Syadasti rule): a Philosopher weighs propositional support, a Poet weighs resonance — never one universal truth-scale. A bare `<<~ stance "🏛️ 🌊 🎭">>` names which frames a claim spans without flattening them.
 
 <a id="/lineage"></a>
 

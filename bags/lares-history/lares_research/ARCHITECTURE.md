@@ -46,7 +46,7 @@ Question: {Q}
 |------|------|--------|
 | **MODEL** | fixed | Haiku |
 | **BOOT** | condition = **context-for-the-symbol** (via CLAUDE.md, pinned snapshots) | **Pass 1: C1-raw (alien glyph) + C3-current (grammar-context)** only. Later: C2-prior (structure-taught: 100 MD tables, E-Prime), C4-placebo, C5-scaffold. |
-| **SIGIL** | the forward seed (LAST) — a CLASS | **Pass 1: `none · <<~ confidence 8>> · <<~ confidence 18>>`** (8-vs-18 carries the dose-response; `<<~ confidence 14>>` reserved for the sanity-null only). **+2 control arms (below): decoy `<<~ klar 8>>` · prose "Answer with low/high confidence."** Future passes (same slot/scorer): `<<~ mu * !>>` · `<<~ syad 🏛️>>` · OODA-HA · `<<~ ward>>`. |
+| **SIGIL** | the forward seed (LAST) — a CLASS | **Pass 1: `none · <<~ confidence 8>> · <<~ confidence 18>>`** (8-vs-18 carries the dose-response; `<<~ confidence 14>>` reserved for the sanity-null only). **+2 control arms (below): decoy `<<~ klar 8>>` · prose "Answer with low/high confidence."** Future passes (same slot/scorer): `<<~ mu * !>>` · `<<~ stance "🏛️">>` · OODA-HA · `<<~ ward>>`. |
 | **SCENARIO** | room-gradient (reused items; responses regenerate) | closed=calibration ×25 (control) · subjective=soft-ground ×8 **(thin — balance to ~20 before trusting the middle, or run a 2-rung closed-vs-open gradient)** · open=no-ground ×22 · play ×4 |
 | **NAME** | var-1 summon | off this pass; `Lares,`/`Claude,`/`AGENT,` later |
 | **SEED** | temperature replication | ≥5–10, bootstrap CIs |
