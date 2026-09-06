@@ -16,7 +16,7 @@ const CARRIER = `<<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/ap
 
 <<^ code="&#x0001;" namespace="⊙" from=? -> to=lar:///ha.ka.ba/lares/api/pono/probe>>
 \`\`\`toml meta
-register = "Synthesis-Canon"
+l-space  = "adjacent"
 uri-path = "ha.ka.ba/lares/api/pono/probe"
 \`\`\`
 
