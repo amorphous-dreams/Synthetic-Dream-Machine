@@ -5,9 +5,9 @@
 cacheable   = true
 file-path   = "bags/lararium/ha.ka.ba/lararium/node/disk-projector.mem"
 l-space     = "lararium"
-mana        = 3
+mana        = 8
 retain      = true
-role        = "self-documentation: TODO describe disk-projector.ts"
+role        = "self-documentation: LarDiskProjector — the node-side enactment of the disk-projection law. Carries what the FILE owns and the law carrier does not: the one render shore, the holding gate that fences a cross-mirror unlink, what the in-flight write set does and does not guarantee, and the coalesce servo's set-point semantics. Surface law, granularity and routing live at api/disk-projection."
 source-file = "packages/lararium-node/src/disk-projector.ts"
 type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lararium/node/disk-projector"
@@ -17,10 +17,65 @@ uri-path    = "ha.ka.ba/lararium/node/disk-projector"
 
 <<~ ahu #/contract>>
 
-TODO: describe the load-bearing surface this file owns.
+! LarDiskProjector ~ the node hand on the projection law
+
+''The law lives at'' `lar:///ha.ka.ba/lararium/api/disk-projection` — two surfaces, bag roles,
+carrier-whole granularity, routing, the write ward. This carrier names what the enacting file owns on
+top of that law, and nothing the law already states.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ICvTNcyMIER_32YyCF4YWgNNCHx2sLeaEdjUKQ9y7Ns
+<<~ ahu #/law>>
+
+!! What the projector itself binds
+
+# ''One render shore.'' `carrierFileFn` — the VM's `exportCarrierFile` — returns the carrier's own
+filetype as bytes plus extension, and the projector only sites the result at `<uri-path><ext>` (plus
+a `.meta` sidecar where the type calls for one). A null answer skips the write. The VM registry
+decides type and bytes; the projector decides nothing about either.
+# ''The reads compare, never source.'' The projector opens files to answer //do these bytes already
+match// and for no other purpose. A missing or unreadable file reads as UNEQUAL, so the caller writes
+rather than assuming.
+# ''An unlink needs a holding answer.'' A cross-mirror stale-unlink fires only where `bagsHolding`
+reports the carrier gone from that bag — a true MOVE or promotion. A carrier still held there, a
+working edit SHADOWING its canon copy, keeps its file. Without that answer the unlink clears every
+other mirror by path, so absence of the callback widens the sweep rather than narrowing it.
+# ''A stem match binds the WHOLE stem.'' `carrierDiskFiles` resolves a carrier's actual files by the
+full extension-less stem plus one extension segment, so a sibling carrier sharing only a prefix never
+gets swept. A missing directory reads as no files.
+# ''The in-flight set carries no correctness.'' The content-hash gates hold the echo law — ingest
+drops a disk-hash matching its synced-hash, projection skips a byte-identical write. The `writing`
+set survives beneath them as latency optimization alone: it spares a stat on our own in-flight write,
+and every guarantee stands without it.
+
+<<~/ahu>>
+
+<<~ ahu #/the-servo>>
+
+!! The coalesce servo ~ opt-in, inert until calibrated
+
+The disk reconcile runs variable-cost and bursty with no natural clock, which names the place a window
+servo pays — unlike a display gate, which stays frame-pinned. Given a `WindowServo` the gate
+self-clocks on each reconcile's completion and moves `debounceMs` toward `targetMs`.
+
+''`targetMs` names a reconcile COST set-point'' — the millisecond figure above which the window
+WIDENS — never the window's own length; `minMs` and `maxMs` bound the window itself. Absent a servo
+the debounce holds fixed at `debounceMs`, and the capability ships inert until an operator calibrates
+a real cost target against a measured reconcile.
+
+<<~/ahu>>
+
+<<~ ahu #/edges>>
+
+<<~ pranala #source from=? -> to=packages/lararium-node/src/disk-projector.ts family=code role=has>>
+<<~ pranala #siting from=? -> to=packages/lararium-node/src/bag-paths.ts family=code role=has>>
+<<~ pranala #law from=? -> to=lar:///ha.ka.ba/lararium/api/disk-projection family=relation role=has>>
+
+<<~/ahu>>
+
+<<~ loulou lar:///ha.ka.ba/lararium/api/disk-projection>>
+<<~ loulou lar:///ha.ka.ba/lararium/tw5/schema/projection-codec>>
+
+<<^ code="&#x0003;">>ni:///sha-256;BzmmoM0LDEOMRMrnTwck7eybixZJJpTjC9GAKr29FIU
 
 <<^ code="&#x0004;" -> to=?>>
