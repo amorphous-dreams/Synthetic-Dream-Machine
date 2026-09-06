@@ -38,7 +38,7 @@
  * Meme: lar:///ha.ka.ba/lararium/api/persona-identity
  */
 
-import { CIRCLE_SCOPE_INFO, NEXUS_SCOPE_INFO } from "./domains.js";
+import { CIRCLE_SCOPE_INFO, NEXUS_SCOPE_INFO, PERSONA_SELF_RECOVERY_INFO } from "./domains.js";
 import { hmac } from "@noble/hashes/hmac.js";
 import { sha256 } from "@noble/hashes/sha2.js";
 import { derivePersonaKeypair } from "./persona-hd.js";
@@ -161,4 +161,30 @@ export function nexusScopeIndex(nexusAid: string): number {
   const mac = hmac(sha256, NEXUS_SCOPE_HMAC_KEY, new TextEncoder().encode(nexusAid.trim().toLowerCase()));
   const u32 = new DataView(mac.buffer, mac.byteOffset, 4).getUint32(0, false);
   return u32 & 0x7fffffff;
+}
+
+// ── The founder's SELF-RECOVERY key (ruling 2, 2026-09-06 — no prefix incepts unarmed) ─────────
+
+const SELF_RECOVERY_HMAC_KEY = new TextEncoder().encode(PERSONA_SELF_RECOVERY_INFO);
+
+/** The fixed hardened index of the self-recovery leaf — domain-separated from every handle/context/
+ *  circle index, so the recovery key shares no readable ancestry with any presented persona key. */
+export function selfRecoveryIndex(): number {
+  const mac = hmac(sha256, SELF_RECOVERY_HMAC_KEY, new TextEncoder().encode("self-1of1"));
+  const u32 = new DataView(mac.buffer, mac.byteOffset, 4).getUint32(0, false);
+  return u32 & 0x7fffffff;
+}
+
+/**
+ * deriveSelfRecoveryKey — the 1-of-1 recovery keypair a self-stood founding pre-commits at inception.
+ *
+ * THE MULTITUDE-OF-ONE, NAMED: whoever holds the persona seed holds recovery — which was already the
+ * de-facto truth of an unarmed prefix, made explicit and ARMED so `mintPersonaRotation` works from day
+ * one (lose the device, hold the seed cards, rotate). A real multi-guardian set replaces this at a
+ * re-found while alpha owes no back-compass, or through the delegation axis once it is measured.
+ */
+export async function deriveSelfRecoveryKey(
+  personaSeed: Uint8Array,
+): Promise<{ signingKey: string; verifyingKey: string }> {
+  return derivePersonaKeypair(personaSeed, [selfRecoveryIndex()]);
 }

@@ -26,6 +26,7 @@ import {
 import { splitToGuardianCards, type GuardianCard, type GuardianCardSplit } from "./guardian-card.js";
 import { assertHandleIndex, loadPersonaRootSeed, type PersonaVault } from "./persona-vault.js";
 import { sealKeySetHash } from "./wax-stamp.js";
+import type { GuardianRecoveryRegistration } from "./recovery-registration.js";
 import type { QuorumSignature } from "./kapae-antigen.js";
 import {
   mintPersonaInception, mintPersonaRotation, personaRotationSigningBytes,
@@ -217,14 +218,16 @@ export interface ThresholdRecoveryAtFounding {
  */
 export function provisionThresholdRecoveryAtFounding(input: {
   readonly foundingOpKeyDid:  string;              // "0x"+hex — the founding operational key the inception seats
-  readonly guardianRecoveryKeys: readonly string[]; // the n guardian recovery PUBLIC keys (64-hex each)
+  /** TYPED registrations, never bare hex — the pre-commit derives from cards a ceremony rendered,
+   *  so a share code cannot arrive where a registration belongs (the IdenTrust wrong-object cure). */
+  readonly guardians:          readonly GuardianRecoveryRegistration[];
   readonly recoveryThreshold?: number;             // k (default 2-of-3)
 }): ThresholdRecoveryAtFounding {
   const recoveryThreshold = input.recoveryThreshold ?? THRESHOLD_RECOVERY_DEFAULT;
-  if (input.guardianRecoveryKeys.length < recoveryThreshold) {
-    throw new Error("[recovery-keel-core] fewer guardian recovery keys than the threshold — cannot pre-commit an unmeetable quorum");
+  if (input.guardians.length < recoveryThreshold) {
+    throw new Error("[recovery-keel-core] fewer guardian registrations than the threshold — cannot pre-commit an unmeetable quorum");
   }
-  const recoverySetHash = sealKeySetHash(input.guardianRecoveryKeys, recoveryThreshold);
+  const recoverySetHash = sealKeySetHash(input.guardians.map((g) => g.recoveryPubKey), recoveryThreshold);
   const inception       = mintPersonaInception(input.foundingOpKeyDid, recoverySetHash);
   return { inception, recoverySetHash, recoveryThreshold };
 }

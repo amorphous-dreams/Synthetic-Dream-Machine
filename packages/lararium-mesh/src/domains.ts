@@ -62,6 +62,13 @@ export const DYAD_BINDING_DOMAIN = d("dyad-binding");
 /** The per-handle dyad VEIL derivation off the DEVICE tree (Stage 0 ruling, 2026-09-05):
  *  the veil derives from the vessel's own seed, scoped by PersonaGroup — never from the persona seed. */
 export const DYAD_VEIL_INFO = d("dyad-veil");
+/** The founder's SELF-RECOVERY leaf off the PERSONA tree (ruling 2, 2026-09-06): a 1-of-1 recovery
+ *  key derived from the persona seed, pre-committed at inception so no prefix ever incepts unarmed —
+ *  the multitude-of-one, NAMED, until a real guardian set stands (the seal-reserve founding rhyme). */
+export const PERSONA_SELF_RECOVERY_INFO = d("persona-self-recovery");
+/** The Fork-B registration handshake — DELIBERATELY apart from GUARDIAN_CONFIRM_DOMAIN: a bearer
+ *  SHARE and a public REGISTRATION must never speak one phrase (the IdenTrust wrong-object cure). */
+export const GUARDIAN_REGISTRATION_DOMAIN = d("guardian-registration");
 
 // ── ADMISSION + ENROLMENT ───────────────────────────────────────────────────────────────────────
 export const PERSONA_ENROLL_DOMAIN = d("persona-enroll");
@@ -131,8 +138,8 @@ export const ALL_DOMAINS: readonly string[] = [
   PERSONA_ADMIT_SEAL_INFO, BOOT_INVITE_DOMAIN, CABAL_INVITE_DOMAIN,
   NEXUS_DOC_DOMAIN, KAPAE_ANTIGEN_DOMAIN, CARRIAGE_ENTRY_DOMAIN, CARRIAGE_CONTRACT_DOMAIN,
   MEMBERSHIP_RELAY_DOMAIN, EDGE_KAPAE_DOMAIN, VOUCH_EDGE_DOMAIN, RE_ANCHORING_DOMAIN,
-  GUARDIAN_CONFIRM_DOMAIN,
+  GUARDIAN_CONFIRM_DOMAIN, GUARDIAN_REGISTRATION_DOMAIN,
   KEYRING_ENVELOPE_DOMAIN, KEYRING_ENVELOPE_SEAL_INFO, CAD_KEYSTREAM_INFO, RELAY_GATE_INFO,
-  PERSONA_SCOPE_INFO, CIRCLE_SCOPE_INFO, NEXUS_SCOPE_INFO, DYAD_VEIL_INFO,
+  PERSONA_SCOPE_INFO, CIRCLE_SCOPE_INFO, NEXUS_SCOPE_INFO, DYAD_VEIL_INFO, PERSONA_SELF_RECOVERY_INFO,
   ORACLE_POINTER_DOMAIN, PLUGIN_ATTESTATION_DOMAIN, MU_VOID_DOMAIN, RAISE_CHALLENGE_DOMAIN,
 ];

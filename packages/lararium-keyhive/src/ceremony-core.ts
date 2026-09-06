@@ -50,10 +50,11 @@ import {
   seedIdentitiesDoc, seedCirclesDoc, seedSessionsDoc, seedDaemonDoc, seedPersonaDoc,
   personaBagIdFor, personaScopedBagIds,
   buildDeviceDelegation, type DeviceDelegationTiddler,
-  mintPersonaInception, personaKelBoardDocUrl, writePersonaKelEvent, materializeSharedLarDoc,
+  personaKelBoardDocUrl, writePersonaKelEvent, materializeSharedLarDoc,
   type PersonaKelEvent,
   deriveDyadVeil, dyadId, signDyadBindingWithSeed, writeDyad, didFromVerifyingKey,
   DYAD_ID_DOMAIN, type DyadRecord, type DyadRef,
+  deriveSelfRecoveryKey, provisionThresholdRecoveryAtFounding, guardianRecoveryRegistrationCard,
 } from "@lararium/mesh";
 
 // A device-delegation edge's expiry is a generous replay BACKSTOP only — the
@@ -370,8 +371,18 @@ export async function foundTheFace(input: FaceFoundingInput): Promise<FaceFoundi
   // unarmed inception still walks to a head, and at inception the head IS signerDid (zero behavior change today).
   // SELF-STOOD mints its own inception. CONTRACTED mints NONE — the contracting operator's identifier
   // already stands, and minting a second one here would fork the very continuity the pin exists to hold.
+  // NO PREFIX INCEPTS UNARMED (ruling 2, 2026-09-06). Self-stood, the inception pre-commits the
+  // founder's OWN 1-of-1 self-recovery digest — a key derived off the persona seed at its own
+  // domain-separated leaf. The multitude-of-one, NAMED: whoever holds the seed holds recovery,
+  // which an empty commit already meant in practice while forbidding the rotation that acts on it.
+  // Now `mintPersonaRotation` works from day one (lose the device, hold the seed, rotate); a real
+  // guardian set arrives by re-found while alpha owes no back-compass.
   const seatedEvents: readonly PersonaKelEvent[] = input.binding.mode === "self-stood"
-    ? [mintPersonaInception(signerDid, "")]
+    ? [provisionThresholdRecoveryAtFounding({
+        foundingOpKeyDid:  signerDid,
+        guardians:         [guardianRecoveryRegistrationCard("mine", (await deriveSelfRecoveryKey(input.binding.signerSeed)).verifyingKey, null)],
+        recoveryThreshold: 1,
+      }).inception]
     : input.binding.personaKelChain;
   const personaKelPrefix = input.binding.mode === "self-stood"
     ? seatedEvents[0]!.prefix

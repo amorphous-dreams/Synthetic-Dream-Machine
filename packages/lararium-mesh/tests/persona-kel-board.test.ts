@@ -20,6 +20,7 @@ import {
   writePersonaKelEvent, personaKelEventsFromBoard, personaKelChainsFromBoard, personaKelChainForPrefix,
 } from "../src/persona-kel-board.js";
 import { provisionThresholdRecoveryAtFounding, attestAndRotate } from "../src/recovery-keel-core.js";
+import { guardianRecoveryRegistrationCard } from "../src/recovery-registration.js";
 import { personaKelBoardDocUrl } from "../src/deterministic-doc.js";
 import { DeterministicFederationGate } from "../src/federation-gate.js";
 
@@ -35,7 +36,9 @@ const guardianSigner = async (s: Uint8Array) => ({ signer: await pubOf(s), sign:
 async function foundedInception(opSeed: Uint8Array, threshold = 2) {
   const foundingOpKeyDid = await didOf(opSeed);
   const guardianRecoveryKeys = await Promise.all([pubOf(SEEDS.g1), pubOf(SEEDS.g2), pubOf(SEEDS.g3)]);
-  const prov = provisionThresholdRecoveryAtFounding({ foundingOpKeyDid, guardianRecoveryKeys, recoveryThreshold: threshold });
+  const slots = ["mine", "guardian-a", "guardian-b"] as const;
+  const guardians = guardianRecoveryKeys.map((k, i) => guardianRecoveryRegistrationCard(slots[i]!, k, null));
+  const prov = provisionThresholdRecoveryAtFounding({ foundingOpKeyDid, guardians, recoveryThreshold: threshold });
   return { guardianRecoveryKeys, ...prov };
 }
 

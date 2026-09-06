@@ -35,6 +35,7 @@ export * from "./persona-selves.js";
 export * from "./persona-glamour.js";
 export * from "./recovery-keel-core.js";
 export * from "./guardian-card.js";
+export * from "./recovery-registration.js";
 export * from "./seal-reserve.js";
 export * from "./capability.js";
 export * from "./domains.js";

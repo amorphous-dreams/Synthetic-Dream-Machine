@@ -186,6 +186,22 @@ describe("⑨ the dyad, specified and unwired", () => {
     expect(Object.keys(mesh)).toContain("gatherFleetAtBoot");
   });
 
+  test.skip("A HANDLE CARRIES A CHAIN TO BURN — RULED 2026-09-06 (the nym gains a KEL-shaped chain; public Handles will sign publicly accountable things, e.g. domain-ownership attestations) and UNBUILT: handle-card `nym` rides a bare ed25519 key with no chain, so burn/abandon/adversary-recovery cannot be expressed at the layer the Shadowtalk myth lives at", () => {
+    expect(Object.keys(mesh)).toContain("handleKelChain");
+  });
+
+  test.skip("A RECOVERY WAITS OUT A VETO WINDOW — RULED 2026-09-06 (Fork C, the end-user default contest shape: threshold + TIME-LOCK + veto on the board, canon's realm re-genesis grammar generalized) and UNBUILT: no persona-recovery path carries a delay or a contest window; siege-resilience#repair-kit holds the law", () => {
+    expect(Object.keys(mesh)).toContain("recoveryVetoWindow");
+  });
+
+  test.skip("ONE GUARDIAN SET NEVER SPANS COMPARTMENTS — a guardian holding recovery material for TWO compartments of one human silently becomes the forbidden collector (persona-circle#the-vault's single-bit law read at the guardian grain); nothing checks it anywhere", () => {
+    expect(Object.keys(mesh)).toContain("guardianCompartmentCheck");
+  });
+
+  test.skip("A GUARDIAN CAN ROTATE — under Fork B the prefix folds the guardian set, so guardian rotation is structurally excluded by the same mechanism that makes B safe; end-user guardians churn devices yearly, so an unrotatable set decays to zero within a device generation. Awaits the delegation-axis measurement", () => {
+    expect(Object.keys(mesh)).toContain("guardianRotation");
+  });
+
   // KEPT 2026-09-05 — A DYAD IS MINTED WHEN A FACE MEETS A DEVICE greened under the Stage 0 ruling:
   // both ceremony sites write the slot (`foundTheFace` binding-signed at the genesis epoch;
   // `runApplyAdmitPayload` binding:null — no root stands on the joinee, the absence travels), the
