@@ -54,6 +54,7 @@ import type { CoherenceFrameWithRev } from "./wiki-coherence-sink.js";
 import { composeBrowser }                    from "./browser-caps.js";
 import type { VesselWikiSlot, VesselCoreResult, DaemonVmCore } from "@lararium/tw5";
 import { runFoundingCeremony, runApplyAdmitPayload } from "@lararium/keyhive";
+import { vesselDyads } from "@lararium/mesh";
 import type { DeviceAdmitPayload } from "@lararium/keyhive";
 import type { LarOpenPhase }                 from "@lararium/mesh";
 import {
@@ -446,6 +447,22 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
     bootKeyWrites.bootstrap = bootstrap;
   }
   const social = bootstrap;   // narrowed (defined past this point)
+
+  // ── THE RELATIONSHIPS THIS VESSEL HOLDS — read live at boot (dyad read path) ────────────────
+  // The SAME observation node's `openDaemon` makes, through the same platform-blind door
+  // (`vesselDyads`, mesh): the ceremony-minted slots are the only source, and a face standing
+  // beside zero slots is a doc minted before the ruling — said aloud here, warned never thrown.
+  // Every vessel class inherits this read verbatim; the pattern integrity is the ONE door.
+  try {
+    const dhandle = await repo.find<LarDoc>(social.daemonUrl as never);
+    const dyads = vesselDyads(dhandle.doc());
+    if (social.deviceEdge && dyads.length === 0) {
+      console.log("[dyad] a face stands and no dyad slot is minted — a pre-ruling daemon doc; re-found or admit to mint the derived veil.");
+    } else if (dyads.length > 0) {
+      const boundCount = dyads.filter((d) => d.binding !== null).length;
+      console.log(`[dyad] this vessel holds ${dyads.length} relationship(s), ${boundCount} bound.`);
+    }
+  } catch { /* the observation never blocks a boot — a torn read stays a torn read */ }
 
   // ── The TRACELESS boot-invite gate — spend-on-boot, WITHHOLD-NEVER-FORGE ──────────────────────
   // Decide whether this boot CROSSES into the Nexus. The vessel ALREADY founded its own group above

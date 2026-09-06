@@ -15,8 +15,7 @@ import { Repo } from "@automerge/automerge-repo";
 import type { AutomergeUrl } from "@automerge/automerge-repo";
 import { runFoundingCeremony, runDeviceAdmitEdge, runApplyAdmitPayload } from "@lararium/keyhive";
 import * as ed25519 from "@noble/ed25519";
-import { hex, deriveDyadVeil, DYAD_SLOT_PREFIX, type DyadRecord } from "@lararium/mesh";
-import { vesselDyads } from "../src/vessel-dyads.js";
+import { hex, deriveDyadVeil, vesselDyads, DYAD_SLOT_PREFIX, type DyadRecord } from "@lararium/mesh";
 import type { LarDoc } from "@lararium/mesh";
 
 const pubOf = async (seed: Uint8Array): Promise<string> => hex(await ed25519.getPublicKeyAsync(seed));

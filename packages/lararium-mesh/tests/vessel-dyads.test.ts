@@ -11,8 +11,8 @@
 import { describe, expect, test } from "vitest";
 import { emptyLarDoc, mutableLarRecord, DEVICE_DELEGATION_SELF_TIDDLER, writeDyad, dyadId,
          DYAD_ID_DOMAIN,
-         type LarDoc, type DeviceDelegationTiddler, type DyadRecord, type DelegationEdge } from "@lararium/mesh";
-import { vesselDyads } from "../src/vessel-dyads.js";
+         type LarDoc, type DeviceDelegationTiddler, type DyadRecord, type DelegationEdge } from "../src/index.js";
+import { vesselDyads } from "../src/dyad.js";
 
 const ROOT   = "0x" + "aa".repeat(32);
 const DEVICE = "0x" + "bb".repeat(32);

@@ -302,6 +302,20 @@ export async function fleetPetnameResolver(store: FleetPetnameStore): Promise<(p
   return (id: string) => map.get(id);
 }
 
+/**
+ * vesselDyads — every relationship a vessel holds: its ceremony-minted dyad slots, de-duplicated by
+ * `dyadId` (the content-address of the ordered pair — one relationship reached twice stays one record).
+ *
+ * PLATFORM-BLIND ON PURPOSE: node and browser vessels read their relationships through THIS one door,
+ * and every future vessel class (a phone, a Mudlet, an Unreal client) inherits the same observation —
+ * the slot is the only source, a bare delegation edge presents no dyad, and a face standing beside
+ * zero slots is a drift the boot says aloud (each vessel's own boot does the saying).
+ */
+export function vesselDyads(doc: LarDoc | undefined | null): DyadRecord[] {
+  const seen = new Map<string, DyadRecord>(dyadsFromDoc(doc).map((d) => [d.dyadId, d]));
+  return [...seen.values()];
+}
+
 // ── The dyad VEIL — derived off the DEVICE tree (Stage 0 ruling, 2026-09-05) ────────────────────
 //
 // "The deck stays one deck; the face it wears differs per handle" (persona-circle#the-vault). The

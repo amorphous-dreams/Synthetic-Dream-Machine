@@ -77,7 +77,7 @@ import type { SparseFormVector, WorldlineStubWire, AntigenRing, FederationGate, 
 import { selfSlotShareDecision } from "./self-slot-share.js";
 import { makeAntigenRingHolder } from "./antigen-ring.js";
 import { makePersonaKelRingHolder } from "./persona-kel-ring.js";
-import { vesselDyads } from "./vessel-dyads.js";
+import { vesselDyads } from "@lararium/mesh";
 import { makeNexusMembership } from "./nexus-carriage.js";
 import { runNexusRefresh } from "./nexus-refresh.js";
 import { rollLeaseEpochOnBoard } from "./lease-rekey.js";
