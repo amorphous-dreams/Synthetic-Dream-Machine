@@ -1,0 +1,213 @@
+<<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
+
+<<^ code="&#x0001;" namespace="⊙" from=? -> to=lar:///ha.ka.ba/lares/docs/pono/corpus-conformance>>
+```toml meta
+cacheable         = true
+file-path         = "bags/lares/ha.ka.ba/lares/docs/pono/corpus-conformance.mem"
+hydrate           = true
+l-space           = "stable"
+mana              = 14
+manao             = 15
+manaoio           = 13
+namespace         = "&#x2299;"
+pattern-integrity = true
+retain            = true
+role              = "corpus-conformance — the design for a run that answers whether a corpus obeys the grammar a NAMED seed-state declares. Ten shell witnesses and nine corpus-walking predicates already stand; nothing binds them to a seed-state, nothing emits one verdict, and nothing keeps a record. Names the five law classes, the drift reading the record makes possible, the failure discipline a run inherits from tonight's four instrument-lies, and what a conformance claim MUST NOT say."
+revised-on        = "2026-09-06"
+tags              = ["api/pono/meme"]
+type              = "text/memetic-wikitext+tiddlywiki"
+uri-path          = "ha.ka.ba/lares/docs/pono/corpus-conformance"
+```
+
+<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language>>
+
+<<^ code="&#x0002;">>
+
+<<~ ahu #/the-claim>>
+
+! Corpus Conformance ~ a run, not a claim
+
+A spec that says //the grammar is X// asks a reader to believe it. A spec that says //this corpus obeys
+X, and here is the command// hands the reader an instrument. The difference decides whether an outside
+reviewer can check the work without learning the house first.
+
+''The run answers ONE question:'' does this corpus obey the grammar THIS seed declares?
+
+''And it answers it about a NAMED state.'' A conformance verdict carries the seed's own block check
+(`ni:///sha-256;…`) as its first field. Without that the verdict names no grammar — //conforms// to
+what? Two runs that disagree may both read true against different seeds, and a reader with only the
+booleans cannot tell that from a regression.
+
+<<~/ahu>>
+
+<<~ ahu #/what-stands>>
+
+!! The ground this design starts from
+
+Nothing here proposes a new instrument. The surface exists and sits unbound.
+
+| ''standing'' | ''count'' | ''shape'' |
+|shell witnesses |10 |`bcc` · `doctype` · `frame-shape` · `ahu-sections` · `authoring` · `meme-coordinates` · `round-trip` · `submission-parity` · `type-parity` · `typecheck` |
+|corpus-walking predicates |9 |`carrier-shape` · `frames-per-carrier` · `grammar-in-a-wiki` · `ahu-sections-address` · `carrier-edges` · `child-name-blocks` · `bracket-law-one-spelling` · `vm-grammar-boundary` · `meme-corpus-roundtrip` |
+|a runner that binds them |''0'' |— |
+|a verdict tied to a seed-state |''0'' |— |
+|a record any of them append to |''0'' |— |
+
+''Three gaps, one shape:'' the house measures its corpus thoroughly and remembers nothing about the
+measuring. Each witness answers alone, to a console, once.
+
+<<~/ahu>>
+
+<<~ ahu #/the-five-classes>>
+
+!! The five law classes
+
+A conformance run groups its laws by ''what a failure means'', never by which tool happens to hold them.
+A reader who sees `frame` fail knows a carrier tore; a reader who sees `vocabulary` fail knows the
+corpus lags the seed. Those want different hands.
+
+!!! A ~ Frame laws — the carrier holds together
+
+# A carrier opens by naming the grammar that reads it, at the one address that does.
+# Every frame mark stands on the control head; every opened carrier closes.
+# A carrier holds exactly one frame.
+# A block check covers the bytes above it, or reports `unchecked` — never `pass`.
+
+!!! B ~ Address laws — every name resolves
+
+# Every child slot roots at its carrier (`#/name`, nested carrying its whole path).
+# Every open carries a close.
+# Every open resolves to a tiddler the render can address.
+# Every form a carrier names an address in reads.
+# Every meme coordinate resolves to a carrier that stands.
+
+!!! C ~ Round-trip laws — the reader and the writer agree
+
+# `render(parse(disk))` returns the body it was given.
+# A carrier normalizes to itself: `normalize --check` reads canonical.
+# One closer, idempotent, content-whole.
+
+!!! D ~ Projection laws — what leaves the house
+
+# Every pair on the submission shelf re-projects byte-identical from its source.
+
+!!! E ~ Vocabulary laws — the corpus speaks THIS seed's grammar
+
+''The missing class, and the one this design exists for.'' A and D pass over a corpus firing a sigil
+the seed retired six months ago: the bytes hold, the frame stands, the projection matches, and the
+grammar has drifted underneath all of it.
+
+# No carrier fires a form the seed retired, EXCEPT a carrier that declares itself a record.
+# Every sigil head the corpus fires is declared — by the seed, or by an `api/` carrier that stands.
+# Every panel key the corpus writes appears in the seed's `set` signature, or reports as novel.
+
+''The exempt set is DECLARED, never inferred.'' A record — a transcript, an experiment log, a campaign
+scroll — quotes a grammar rather than speaking it, and a run that silently skipped such carriers would
+report a clean corpus while hiding its own blind spot. The run NAMES what it exempted and why, in the
+record it writes.
+
+<<~/ahu>>
+
+<<~ ahu #/the-drift-reading>>
+
+!! The drift reading ~ why the record matters more than the verdict
+
+''Conformance reads as a boolean at an instant and as a SHAPE across time.'' The seed moves — four times
+in one session, on the day this was designed — and each move is a boundary, not a fault. Between two
+seed-states a run reports:
+
+* ''which laws changed'' — the grammar's own diff, stated as laws rather than bytes;
+* ''how many carriers moved'' to meet them, and over how long;
+* ''the LAG'' — carriers still speaking the prior state, per form.
+
+''The lag curve IS the region signal.'' A span where lag returns to zero and stays names a semi-stable
+region; a spike names a boundary. That shape — tooth in the scroll, a rhythm in what the house does to
+itself — reads as exactly the structure the sensorium exists to detect, and it arrives free once the run
+appends rather than prints.
+
+So the run MUST emit a record, not a verdict alone:
+
+```toml
+seed-check   = "ni:///sha-256;…"        # WHICH grammar
+corpus-size  = 699                      # carriers walked
+exempt       = ["records: 2"]           # named, never silent
+laws         = { frame = "pass", address = "pass", roundtrip = "pass",
+                 projection = "pass", vocabulary = "lag:58" }
+lag-by-form  = { "confidence-sigil" = 53, "standalone-ward" = 5 }
+```
+
+A file of those, one per run, IS the time series. Nothing else needs building for the sensorium to read
+the house's own grammar-history the way it reads a chant.
+
+<<~/ahu>>
+
+<<~ ahu #/failure-discipline>>
+
+!! Failure discipline ~ four rules the instruments earned
+
+Each rule below was paid for by a measured failure, not reasoned from principle.
+
+# ''A law that cannot run reports `unchecked`, never `pass`.'' Absence and conformance name different
+facts, and a run that collapsed them would read cleanest exactly where it saw least. The block check
+already holds this line; every law inherits it.
+# ''A law names the CARRIERS that failed, never a count alone.'' A count sends a reader back to the
+grep that produced it; a list sends them to the bytes.
+# ''A run over a corpus that moved mid-run reads VOID, never partial.'' Chaining a witness behind a
+writer measures the writer: three phantom failures appeared that way in one session, each vanishing on
+a quiet read. The run takes the corpus's digest at open and at close, and voids itself if they differ.
+# ''A probe narrower than the reader it guards is a FAILING gate, not a passing one.'' Measured four
+times in one night — a gate matching `#name` where the reader takes `#/name`; nine readers spelling a
+literal space the parser never required; a word-boundary matching inside `#meta-ha`; a file-list grep
+tighter than the matcher it fed, which hid every law carrier and showed only the records. So the run
+carries a cross-check: for each law, run the LAW's pattern and the READER's pattern over the same
+corpus, and report where the counts diverge. A silent agreement proves nothing; a divergence names a
+gate that has been reporting green about a question it never asked.
+
+<<~/ahu>>
+
+<<~ ahu #/what-it-must-not-say>>
+
+!! What a conformance run MUST NOT claim
+
+# ''Never that the grammar is correct.'' The run reads a corpus against a seed. A seed that states a
+bad law yields a clean run.
+# ''Never that the spec is settled.'' The seed-check names ONE state; a series of them names movement,
+and movement reads as structure rather than as failure.
+# ''Never that no retired form exists.'' It reports what it walked and what it exempted, and a reader
+who disagrees with the exempt set can re-run without it.
+# ''Never a verdict an outside reviewer cannot reproduce.'' The command, the seed-check and the corpus
+digest travel together, or the claim travels alone.
+
+<<~/ahu>>
+
+<<~ ahu #/the-door>>
+
+!! The door
+
+```
+lares corpus conform [--seed <carrier>] [--exempt <glob>…] [--emit <record>] [--cross-check]
+```
+
+''Staged, each stage standing alone:''
+
+# ''Bind what stands.'' One runner over the ten witnesses and nine predicates; one verdict; the record
+written. No new law, and the first record dated from a corpus already measured.
+# ''Add class E.'' Vocabulary conformance — the retired-form sweep this house has been running by hand
+becomes a law with an exempt set stated in the open.
+# ''Add the cross-check.'' Each law's probe measured against its reader's, divergence reported.
+# ''Read the series.'' The sensorium reads the emitted records as a rhythm; the lag curve names the
+regions, and the boundaries name the days the grammar turned.
+
+''Stage 1 pays for itself immediately'': the submissions track stops arguing by projection and starts
+citing a run. Stages 2–4 buy what no witness gives today — a house that remembers how its own grammar
+moved.
+
+<<~/ahu>>
+
+<<~ loulou lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
+<<~ loulou lar:///ha.ka.ba/lares/api/pono/graceful-parsing>>
+<<~ loulou lar:///ha.ka.ba/lares/api/noosphere-boot>>
+
+<<^ code="&#x0003;">>ni:///sha-256;Et2-_0uQQe_Q4aQEj6xPFDYF5w26wiqkLQnRHuwN_SY
+
+<<^ code="&#x0004;" -> to=?>>
