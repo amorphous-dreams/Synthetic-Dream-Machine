@@ -2,25 +2,35 @@
 
 <<^ code="&#x0001;" from=? -> to=lar:///ha.ka.ba/lararium/mesh/meme-provider>>
 ```toml meta
-cacheable   = true
-file-path   = "bags/lararium/ha.ka.ba/lararium/mesh/meme-provider.mem"
-l-space     = "lararium"
-mana        = 3
-retain      = true
-role        = "self-documentation: TODO describe meme-provider.ts"
-source-file = "packages/lararium-mesh/src/meme-provider.ts"
-type        = "text/memetic-wikitext+tiddlywiki"
-uri-path    = "ha.ka.ba/lararium/mesh/meme-provider"
+cacheable = true
+file-path = "bags/lararium/ha.ka.ba/lararium/mesh/meme-provider.mem"
+l-space   = "lararium"
+mana      = 5
+retain    = true
+role      = "pointer: the MemeProvider law lives at docs/meme-provider — one room owns the source"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lararium/mesh/meme-provider"
 ```
 
 <<^ code="&#x0002;">>
 
-<<~ ahu #/contract>>
+<<~ ahu #/pointer>>
 
-TODO: describe the load-bearing surface this file owns.
+!! MemeProvider — see docs/meme-provider
+
+MemeProvider coalesces the fan-out between an Automerge DocHandle and typed projections: a per-URI
+debounce at human-editing scale, one `onChangeset(union)` per bag above the threshold, and a keyed
+storm gate whose `maxWaitMs` keeps an unbroken flood from starving re-projection. Sync-complete binds
+per ISLAND, and bulk state lands before the completion fires.
+
+''One room owns the source pointer'' — two rooms naming one file give a reader two places to check and
+one place to go stale. The full statement lives at:
+
+<<~ loulou lar:///ha.ka.ba/lararium/docs/meme-provider#/law>>
+<<~ loulou lar:///ha.ka.ba/lararium/docs/meme-provider#/the-source>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ICvTNcyMIER_32YyCF4YWgNNCHx2sLeaEdjUKQ9y7Ns
+<<^ code="&#x0003;">>ni:///sha-256;GNsBee8H-9dKO_YDfJJba4PVKghqHH2b2jq4kmDsrF0
 
 <<^ code="&#x0004;" -> to=?>>

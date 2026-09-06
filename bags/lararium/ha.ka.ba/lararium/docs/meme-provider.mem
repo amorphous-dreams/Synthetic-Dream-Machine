@@ -2,205 +2,87 @@
 
 <<^ code="&#x0001;" from=? -> to=lar:///ha.ka.ba/lararium/docs/meme-provider>>
 ```toml meta
-body-sha256 = "0d482f4f018ba241ba5d582c02b282741306053d9a2fed9c8614bb7a0d6036b1"
 cacheable   = true
-docs        = "lar:///ha.ka.ba/lararium/docs/meme-provider"
 file-path   = "bags/lararium/ha.ka.ba/lararium/docs/meme-provider.mem"
-mana        = 18
-manao       = 17
-manaoio     = 16
+l-space     = "lararium"
+mana        = 15
 retain      = true
-role        = "coalescing fan-out layer between Automerge DocHandle and typed projections — isomorphic, zero Automerge dep"
+role        = "invariant law: MemeProvider — the coalescing fan-out between an Automerge DocHandle and typed projections. Names why coalescing exists at all, the three scales and the threshold between them, the storm gate that keeps a flood from starving re-projection, and the per-island sync-complete ordering. Isomorphic, zero Automerge import."
+source-file = "packages/lararium-mesh/src/meme-provider.ts"
 type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lararium/docs/meme-provider"
 ```
 
 <<^ code="&#x0002;">>
 
-```typescript
-/**
- * MemeProvider — coalescing fan-out layer between an Automerge DocHandle
- * and multiple typed projections (TW5 wiki, disk write-back, canvas, MCP).
- *
- * Motivation:
- *   Automerge replays all historical patches to new peers on connect. Without
- *   coalescing, each patch fires every subscriber: the same URI is deserialized
- *   8+ times, TW5 accumulates hundreds of addTiddler calls before its first
- *   refresh, and disk write-back hammers the filesystem redundantly.
- *
- * Contract:
- *   - Caller owns the DocHandle and feeds raw patches via handleChange().
- *   - Each projection is registered via addProjection(); receives one coalesced
- *     LarTiddlerChange per URI per debounce window (DEBOUNCE_MS).
- *   - After the initial Automerge replay settles, caller calls markSyncComplete().
- *     MemeProvider flushes all pending timers immediately and fires onSyncComplete
- *     on every registered projection — the TW5 projection uses this to trigger a
- *     single bulk-refresh instead of one refresh per tiddler.
- *
- * Isomorphic: zero Automerge import. Works identically in Node and browser.
- * Lives in @lararium/mesh so @lararium/app, @lararium/node, and future packages
- * all share one implementation without circular dependencies.
- */
+<<~ ahu #/head>>
 
-import type { LarTiddlerRecord, LarTiddlerChange, ChangeOrigin } from "./tiddler-store.js";
+! MemeProvider ~ one fan-out, three scales
 
-// ---------------------------------------------------------------------------
-// MemeProjection — typed slot for a downstream integration
-// ---------------------------------------------------------------------------
+Automerge replays every historical patch to a vessel that connects. Fanning those straight out
+deserializes one URI eight or more times, hands TW5 hundreds of `addTiddler` calls before its first
+refresh, and makes disk write-back hammer the filesystem for a state that has already moved on.
 
-export interface MemeProjection {
-  /**
-   * Fired once per coalesced URI, after DEBOUNCE_MS has elapsed since the
-   * last patch touching that URI. record is null for tombstoned/deleted URIs.
-   */
-  onUriChanged(change: LarTiddlerChange): void;
+''MemeProvider stands between the handle and the projections'' so each projection meets settled state
+rather than the replay.
 
-  /**
-   * Fired once when the initial Automerge sync replay has settled (after
-   * markSyncComplete() is called by the host). Use this to trigger a single
-   * bulk-refresh instead of per-tiddler refreshes during boot.
-   */
-  onSyncComplete?(): void;
-}
+<<~/ahu>>
 
-// Minimal patch shape — only path[0] (the top-level doc key) is needed.
-export interface RawPatch {
-  path: unknown[];
-}
+<<~ ahu #/law>>
 
-// ---------------------------------------------------------------------------
-// MemeProvider
-// ---------------------------------------------------------------------------
+!! What this file binds
 
-export class MemeProvider {
-  /**
-   * Debounce window in ms. Coalesces rapid same-URI patches from Automerge
-   * replay (8–50 patches per URI on a fresh peer connect). 40ms is tight
-   * enough to feel synchronous on a local connection; loose enough to absorb
-   * a full initial-sync burst before the first projection callback fires.
-   */
-  static readonly DEBOUNCE_MS = 40;
+''The nalu shore stands at'' `lar:///ha.ka.ba/lararium/api/projection-nalu#/enaction` — the
+threshold, the per-bag union, the storm gate's progress guarantee and the scale fork read as the
+PATTERN, shared with the disk, DOM and mempalace nalus. What follows names the invariants this file
+owns on top of it.
 
-  private readonly _projections = new Set<MemeProjection>();
-  private readonly _pending     = new Map<string, { origin: ChangeOrigin; timer: ReturnType<typeof setTimeout> }>();
-  private _syncComplete         = false;
+# ''The caller owns the handle.'' MemeProvider imports no Automerge and reads only `path[0]` off a raw
+patch, so the same implementation runs in Node and in a browser without a platform branch.
+# ''The document reads at FIRE time, never at patch time.'' A debounce that captured state on arrival
+would deliver a value the doc has already moved past; reading at the flush delivers the latest.
+# ''Eligibility binds to the save cascade.'' A key enters the fan-out on `lar:` or `Draft of ` and on
+nothing else — `$:/temp/` and `$:/` system tiddlers never enter the store, so fanning them out would
+announce changes to records that do not exist. Whatever the adaptor writes, the provider carries.
+# ''Sync-complete binds to an ISLAND, never to the provider.'' `markSyncComplete(islandId)` stays
+idempotent per island; a single-doc vessel uses the default id, and each handle in a multi-bag vessel
+calls with its own once ready.
+# ''A late projection enters live, never buffering.'' Registering after an island completed fires
+`onSyncComplete` for every already-complete island immediately — a projection built after the vessel
+opened would otherwise wait for a signal that already passed.
+# ''A projection that declares no changeset keeps its per-URI path.'' Opting out of the bulk path
+costs a projection nothing but the count of its calls.
+# ''A projection's throw stays its own.'' Every callback runs guarded, so one failing projection
+reports and the fan-out continues to the rest.
 
-  constructor(
-    /** Returns the current full document state. Called at debounce-fire time, not patch time. */
-    private readonly _getDoc: () => Record<string, unknown>,
-  ) {}
+<<~/ahu>>
 
-  // ---------------------------------------------------------------------------
-  // Registration
-  // ---------------------------------------------------------------------------
+<<~ ahu #/the-source>>
 
-  /** Register a projection. Returns an unsubscribe function. */
-  addProjection(p: MemeProjection): () => void {
-    this._projections.add(p);
-    return () => this._projections.delete(p);
-  }
+!! Where the bytes live
 
-  // ---------------------------------------------------------------------------
-  // Patch ingestion — call from handle.on("change", ...)
-  // ---------------------------------------------------------------------------
+The implementation stands at `packages/lararium-mesh/src/meme-provider.ts`, and this carrier names its
+law rather than holding its lines. ''A carrier that pastes a source file states nothing a reader could
+not read at the source, and it goes stale in silence'' — the paste that stood here had drifted a third
+of its substantial lines, still naming a boolean sync gate where the source carries a per-island set,
+and omitting the changeset path entirely.
 
-  /**
-   * Feed raw Automerge patches. Schedules a debounced fire for each touched
-   * lar: URI. Rapid patches for the same URI reset the timer — only the last
-   * known state is delivered to projections.
-   */
-  handleChange(patches: RawPatch[], origin: ChangeOrigin): void {
-    for (const p of patches) {
-      const uri = p.path[0];
-      if (typeof uri === "string" && uri.startsWith("lar:")) {
-        this._schedule(uri, origin);
-      }
-    }
-  }
+A live wiki transcludes the source into place at read time. Until it breathes, the pointer above IS
+the reference, and the law below it stays the part a reader needs anyway.
 
-  /**
-   * Fire a change immediately, bypassing the debounce. Use for local writes
-   * (put / tombstone) where the caller already holds the authoritative value
-   * and echo-loop guards depend on synchronous delivery.
-   */
-  fireImmediate(change: LarTiddlerChange): void {
-    for (const p of this._projections) {
-      try { p.onUriChanged(change); }
-      catch (e) { console.error("[MemeProvider] projection error in onUriChanged:", e); }
-    }
-  }
+<<~/ahu>>
 
-  // ---------------------------------------------------------------------------
-  // Sync-complete gate — call once after initial Automerge replay settles
-  // ---------------------------------------------------------------------------
+<<~ ahu #/edges>>
 
-  /**
-   * Signal that the initial Automerge sync replay has settled. Flushes all
-   * pending debounce timers immediately (so projections receive the full initial
-   * state before onSyncComplete fires), then fires onSyncComplete on every
-   * registered projection. Idempotent — safe to call more than once.
-   */
-  markSyncComplete(): void {
-    if (this._syncComplete) return;
-    this._syncComplete = true;
+<<~ pranala #source from=? -> to=packages/lararium-mesh/src/meme-provider.ts family=code role=has>>
+<<~ pranala #gate from=? -> to=packages/lararium-mesh/src/projection-nalu.ts family=code role=has>>
+<<~ pranala #contract from=? -> to=packages/lararium-mesh/src/tiddler-store.ts family=code role=has>>
 
-    // Flush all pending debounces — deliver final state now, don't wait.
-    for (const [uri, { origin, timer }] of this._pending) {
-      clearTimeout(timer);
-      this._pending.delete(uri);
-      this._fire(uri, origin);
-    }
+<<~/ahu>>
 
-    for (const p of this._projections) {
-      try { p.onSyncComplete?.(); }
-      catch (e) { console.error("[MemeProvider] projection error in onSyncComplete:", e); }
-    }
-  }
+<<~ loulou lar:///ha.ka.ba/lararium/mesh/tiddler-store>>
+<<~ loulou lar:///ha.ka.ba/lararium/api/projection-nalu#/enaction>>
 
-  // ---------------------------------------------------------------------------
-  // Internal
-  // ---------------------------------------------------------------------------
-
-  private _schedule(uri: string, origin: ChangeOrigin): void {
-    const existing = this._pending.get(uri);
-    if (existing) clearTimeout(existing.timer);
-
-    const timer = setTimeout(() => {
-      this._pending.delete(uri);
-      this._fire(uri, origin);
-    }, MemeProvider.DEBOUNCE_MS);
-
-    this._pending.set(uri, { origin, timer });
-  }
-
-  private _fire(uri: string, origin: ChangeOrigin): void {
-    const doc = this._getDoc();
-    const raw = doc[uri] as {
-      title?:   string;
-      fields?:  Record<string, string>;
-      text?:    string;
-      deleted?: boolean;
-    } | undefined;
-
-    const record: LarTiddlerRecord | null = raw
-      ? Object.freeze({
-          title:   raw.title ?? uri,
-          fields:  Object.freeze({ ...(raw.fields ?? {}) }),
-          ...(raw.text    !== undefined && { text:    raw.text    }),
-          ...(raw.deleted !== undefined && { deleted: raw.deleted }),
-          bag: "room" as const,
-        })
-      : null;
-
-    const change: LarTiddlerChange = { title: uri, record, origin };
-    for (const p of this._projections) {
-      try { p.onUriChanged(change); }
-      catch (e) { console.error("[MemeProvider] projection error in onUriChanged:", e); }
-    }
-  }
-}
-```
-
-<<^ code="&#x0003;">>ni:///sha-256;AkAgDKNt1zEfPhDbX9s3Govy-Kiprg-hHVxsqh5FO_Q
+<<^ code="&#x0003;">>ni:///sha-256;3mFeBhfPfapAT5yjqC4zzyyx0kz7eFrcYOnubHYOlPs
 
 <<^ code="&#x0004;" -> to=?>>
