@@ -77,8 +77,8 @@ Copilot format to its JSONL input.
 
 ## The `lar_*` schema (declared in `mempalace_source_lares`)
 
-`lar_hv` (version gate) · `lar_surface` (origin harness) · `lar_band` · `lar_bearing_conf`
-· `lar_sigils` · `lar_water` · `lar_aim` · `lar_yield` · `lar_voices` · `lar_confidence`
+`lar_hv` (version gate) · `lar_surface` (origin harness) · `lar_bearing_conf`
+· `lar_sigils` · `lar_water` · `lar_aim` · `lar_yield` · `lar_voices` · `lar_feedback`
 · `lar_drift` · `lar_hall`. All flat scalars (chroma's constraint); declared + validated +
 adapter-stamped on every write (RFC-002 contract — declared, not smuggled).
 

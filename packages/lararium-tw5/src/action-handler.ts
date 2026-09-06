@@ -46,6 +46,7 @@ import {
   ORIGINAL_TIDDLER_PATHS, parseProvenance, serializeProvenance, recordPack, membersOfPack,
   ORIGINAL_TIDDLER_HASHES, parseHashes, serializeHashes, recordPackHashes, hashOfMember,
   skinnyHandleTiddler, isOversizedBody,
+  crossingDirection, type CapTier,
 } from "@lararium/mesh";
 import type { VerbReactor, VerbTable } from "./verb-dispatcher.js";
 import type { TW5Instance } from "./types/tiddlywiki.js";
@@ -203,6 +204,14 @@ export interface ActionHandlerOptions {
    * The arg is the lar: BAG URL (the cap-gate's verify key), never the doc url.
    */
   readonly registerBag?: (bagUrl: string) => Promise<void>;
+  /**
+   * Resolve a bag URL to its cap-tier — the declared manifest tier already met against the
+   * structural floor (`bagManifestFromMeta` parses `cap-tier`; `resolveTier` does the meet) — or
+   * null where the bag declares nothing. Fail-closed at the gate: an absent reader and a null
+   * answer both read VEIL, and veil meets veil as LATERAL, so an unthreaded vessel prices every
+   * transfer at read on the source. The crossing gate is the only consumer.
+   */
+  readonly bagTier?: (bagUrl: string) => CapTier | null;
   /**
    * Resolve a carrier body by content-address (hex sha256) from the corpus CAS —
    * the fs-less worker's shore onto the process-shared byte plane. A verb NEVER
@@ -441,24 +450,28 @@ export function makeActionReactorFor(verb: ActionVerb, opts: ActionHandlerOption
     // never to whoever holds the destination. Robust declassification adds the second half: the
     // DECISION to relax must itself carry integrity, which the destination's own cap supplies.
     //
-    // AND THE PRICE FOLLOWS THE DIRECTION, which this gate cannot yet read. A copy INWARD — a public
-    // tiddler shadowed into a more private bag — raises confinement and reaches fewer readers than the
-    // original: the recipe stack runs on that shape and it stays cheap. A copy OUTWARD relaxes
-    // confinement with no return crossing, and belongs to the kahu-cabal signers.
+    // AND THE PRICE FOLLOWS THE DIRECTION. A copy INWARD — a public tiddler shadowed into a more
+    // private bag — raises confinement and reaches fewer readers than the original: the recipe stack
+    // runs on that shape and it stays cheap at read. A copy OUTWARD relaxes confinement with no
+    // return crossing, and belongs to the kahu-cabal signers — no cabal quorum surface stands yet,
+    // so an outward crossing refuses outright, fail-closed until the cabal can answer for it.
+    // MOVE keeps ADMIN whichever way the copy runs, because it tombstones the title where it stood,
+    // which mutates the source.
     //
-    // Grading both directions alike would refuse the shadow copy, so the source answers at READ here:
-    // strictly more than the nothing it answered before, and no cost on the path a user depends on.
-    // MOVE keeps ADMIN because it tombstones the title where it stood, which mutates the source
-    // whichever way the copy runs.
-    //
-    // `crossingDirection` carries the full rule and this gate cannot reach it: telling the directions
-    // apart wants each bag's publicity tier, and `VerbContext` carries no reader for it — it holds
-    // `daemon`, `invocation` and `cap`, nothing that answers a bag's tier. A reader now EXISTS one
-    // package over (`bagManifest` parses `cap-tier`, and `bag-declare` reads it), so what is missing is
-    // the injection rather than the source. Until it lands, an OUTWARD crossing passes on a read cap
-    // alone — the DESTINATION still demands admin, so canon is reached only by a holder of admin on it.
+    // The tiers ride `opts.bagTier`, threaded by the vessel over its declared bag manifests.
+    // Fail-closed: an absent reader (and a null answer) reads VEIL, and veil meets veil as LATERAL —
+    // a vessel that threads no reader keeps exactly the pricing it had before the reader existed.
     if (action.verb === "MOVE" || action.verb === "ADD" || action.verb === "COPY") {
-      const grade: "read" | "admin" = action.verb === "MOVE" ? "admin" : "read";
+      const tierOf = (bag: string): CapTier => opts.bagTier?.(bag) ?? "veil";
+      const cost = crossingDirection({ from: tierOf(action.fromBag), to: tierOf(destBag) });
+      if (cost.needsCabal) {
+        throw new Error(
+          `crossing-outward: ${action.verb} ${action.fromBag} -> ${destBag} carries ` +
+          `${tierOf(action.fromBag)} material into ${tierOf(destBag)} and relaxes confinement — ` +
+          `an outward crossing wants the kahu-cabal quorum, and no cabal signature rides this invocation`,
+        );
+      }
+      const grade: "read" | "admin" = action.verb === "MOVE" ? "admin" : cost.sourceGrade;
       const srcProof = await ctx.cap(grade, action.fromBag);
       if (!srcProof.ok) throw new Error(`cap-denied: ${grade} on ${action.fromBag} required (${srcProof.reason ?? "no reason"})`);
     }

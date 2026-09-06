@@ -60,12 +60,10 @@ interface HarvestRecord {
   /** In-transcript parent message uuid (the turn DAG), or null at a root. */
   readonly parentUuid: string | null;
   readonly standing: number;
-  readonly band: string;
   readonly recordRaw: boolean;
   readonly aim: string | null;
   readonly yieldUri: string | null;
   readonly voices: readonly string[];
-  readonly confidences: ReadonlyArray<{ register: string | null; value: number | null }>;
   readonly sigilCount: number;
   readonly waterCount: number;
   readonly driftFlags: readonly string[];
@@ -82,7 +80,8 @@ interface RunSummary {
   raw: number;
   /** Subagent (sidechain) turns harvested — separate records, linked by session. */
   sidechain: number;
-  bands: Record<string, number>;
+  /** Turns at or above the harvest floor, and those that fell below it. */
+  standings: Record<string, number>;
   indexPath: string;
 }
 
@@ -291,7 +290,7 @@ function runWriteback(args: ParsedArgs, wing: string): number {
       console.log(`lares sense pour --writeback → ${wing}`);
       console.log(`  drawers harvested: ${r.drawers}  (${r.framed} framed)`);
       console.log(`  metadata written:  ${r.applied}`);
-      console.log(`  bands:             canon ${r.bands["canon"]} · synthesis ${r.bands["synthesis"]} · provisional ${r.bands["provisional"]} · raw ${r.bands["raw"]}`);
+      console.log(`  standings:         framed ${r.standings["framed"]} · structured ${r.standings["structured"]} · raw ${r.standings["raw"]}`);
     },
   });
   return 0;
@@ -676,7 +675,7 @@ export async function cmdHarvest(args: ParsedArgs): Promise<number> {
   const summary: RunSummary = {
     wing, files: files.length, turns: 0, harvested: 0, skipped: 0,
     framed: 0, raw: 0, sidechain: 0,
-    bands: { canon: 0, synthesis: 0, provisional: 0, raw: 0 }, indexPath,
+    standings: { framed: 0, structured: 0, raw: 0 }, indexPath,
   };
 
   // The records this run saw, per scope (session + agentId), keyed for the CURRENT-BRANCH rewind
@@ -702,15 +701,15 @@ export async function cmdHarvest(args: ParsedArgs): Promise<number> {
       if (h.bearing) summary.framed += 1;
       if (h.recordRaw) summary.raw += 1;
       if (turn.sidechain) summary.sidechain += 1;
-      summary.bands[h.band] = (summary.bands[h.band] ?? 0) + 1;
+      const tier = h.recordRaw ? "raw" : h.bearing ? "framed" : "structured";
+      summary.standings[tier] = (summary.standings[tier] ?? 0) + 1;
 
       const rec: HarvestRecord = {
         ts: turn.ts, wing, session: turn.session, turn: key, role: turn.role,
         agentId: turn.agentId, sidechain: turn.sidechain, parentUuid: turn.parentUuid,
-        standing: h.standing, band: h.band, recordRaw: h.recordRaw,
+        standing: h.standing, recordRaw: h.recordRaw,
         aim: h.bearing?.aimUri ?? null, yieldUri: h.bearing?.yieldUri ?? null,
         voices: h.voices.map((v) => (v.role ? `${v.name} (${v.role})` : v.name)),
-        confidences: h.confidences.map((c) => ({ register: c.register, value: c.value })),
         sigilCount: h.sigilCount, waterCount: h.waterCount, driftFlags: [...h.driftFlags], hash,
       };
       if (!dryRun) { appendFileSync(indexPath, JSON.stringify(rec) + "\n"); indexHashes.set(key, hash); }
@@ -788,7 +787,7 @@ export async function cmdHarvest(args: ParsedArgs): Promise<number> {
       console.log(`  transcripts:  ${summary.files}${ephemeralSkips.length ? `  (+${ephemeralSkips.length} EPHEMERAL, skipped)` : ""}`);
       console.log(`  turns seen:   ${summary.turns}  (${summary.skipped} already harvested, skipped)`);
       console.log(`  harvested:    ${summary.harvested}  (${summary.framed} framed · ${summary.raw} raw · ${summary.sidechain} sidechain)`);
-      console.log(`  bands:        canon ${summary.bands["canon"]} · synthesis ${summary.bands["synthesis"]} · provisional ${summary.bands["provisional"]} · raw ${summary.bands["raw"]}`);
+      console.log(`  standings:    framed ${summary.standings["framed"]} · structured ${summary.standings["structured"]} · raw ${summary.standings["raw"]}`);
       if (!dryRun) console.log(`  index:        ${indexPath}`);
       if (kapae) console.log(`  rewind:       ${kapae.goneTurns} gone turn(s) → ${kapae.closed} worldline edge(s) + ${kapae.structurepalace} structurepalace tally(ies) set aside (kapae)`);
     },

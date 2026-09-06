@@ -304,7 +304,7 @@ export function voiceCoherenceDensity(voices: readonly VoiceAmplitude[], registe
 }
 
 /** The register MARGINAL (the diagonal `p`) of a density matrix — the classical register-point in Δ. */
-export function registerMarginal(rho: DensityMatrix): number[] {
+export function phaseMarginal(rho: DensityMatrix): number[] {
   return rho.map((_, i) => rho[i]![i]!);
 }
 

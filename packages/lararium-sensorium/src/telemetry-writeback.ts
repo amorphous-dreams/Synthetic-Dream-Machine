@@ -37,7 +37,7 @@ export interface WritebackResult {
   readonly drawers: number;
   readonly framed: number;
   readonly applied: number;
-  readonly bands: Record<string, number>;
+  readonly standings: Record<string, number>;
 }
 
 /** Locate `loci_io.py` — CODE, so it lives at the repo root (never LAR_ROOT). */
@@ -84,11 +84,12 @@ export function writebackWing(wing: string, opts: { limit?: number } = {}): Writ
   );
   const drawers = exportOut.split("\n").filter(Boolean).map((l) => JSON.parse(l) as { id: string; content: string; source_file?: string });
 
-  const bands: Record<string, number> = { canon: 0, synthesis: 0, provisional: 0, raw: 0 };
+  const standings: Record<string, number> = { framed: 0, structured: 0, raw: 0 };
   let framed = 0;
   const patches = drawers.map((d) => {
     const h = harvestTurnGradient(d.content);
-    bands[h.band] = (bands[h.band] ?? 0) + 1;
+    const tier = h.recordRaw ? "raw" : h.bearing ? "framed" : "structured";
+    standings[tier] = (standings[tier] ?? 0) + 1;
     if (h.bearing) framed += 1;
     // NO CaptureContext (4th arg) here, so this re-read sweep emits NO `lar_ffz`. This is the
     // RIGHT call, not a gap: the export (`loci_io.py export`) carries only {id, content,
@@ -116,7 +117,7 @@ export function writebackWing(wing: string, opts: { limit?: number } = {}): Writ
       rmSync(pf, { force: true });
     }
   }
-  return { drawers: drawers.length, framed, applied, bands };
+  return { drawers: drawers.length, framed, applied, standings };
 }
 
 /**

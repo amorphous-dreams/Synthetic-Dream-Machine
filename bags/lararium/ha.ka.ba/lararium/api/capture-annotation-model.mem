@@ -209,7 +209,7 @@ readings and projects them as `lar_*` onto the drawer. ''Telemetry, never verdic
 — every reading rides its 0–20 band, dressed by register, never a ✓/✗ (the ward
 renders as drift-marks, not FAIL). The instruments:
 
-<<~ranks lar-net lar_hv ~ enrich-version (Kappa gate; re-enrich on bump) -> lar_surface ~ originating harness -> lar_band · lar_bearing_conf ~ the 0–20 gradient -> lar_aim · lar_yield ~ the bearing -> lar_voices ~ who held it -> lar_confidence ~ the marks -> lar_drift ~ ward/parse drift -> lar_hall ~ function-hall -> lar_agent · lar_sidechain ~ the spirit actor (subagent drawers)>>
+<<~ranks lar-net lar_hv ~ enrich-version (Kappa gate; re-enrich on bump) -> lar_surface ~ originating harness -> lar_bearing_conf ~ the 0–20 gradient -> lar_aim · lar_yield ~ the bearing -> lar_voices ~ who held it -> lar_feedback ~ the closing tally -> lar_drift ~ ward/parse drift -> lar_hall ~ function-hall -> lar_agent · lar_sidechain ~ the spirit actor (subagent drawers)>>
 
 ''One parser, one runtime:'' the @daemon engine IS the decomposer (the regex
 `turn-harvest` retires into the engine grammar — `SharktoothSigil` .tids + a
@@ -349,6 +349,6 @@ this model annotates from ([[lar-telemetry|lar:///ha.ka.ba/lararium/api/lar-tele
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;CXlQVW6SBbZooBXfuV0XYclEwEl6dQB0gfISMwe89SY
+<<^ code="&#x0003;">>ni:///sha-256;btJGza8qz0ym0QNn9OTm7JLlR4DzOhWXn3L0qHQRpjE
 
 <<^ code="&#x0004;" -> to=?>>

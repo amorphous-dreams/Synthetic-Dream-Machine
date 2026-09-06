@@ -1,10 +1,13 @@
 /**
  * turn-harvest — the graceful-gradient harvester.
  *
- * The grammar manifests PROVISIONALLY: clean turns harvest with confidence,
- * degraded/partial/novel turns record gracefully down to the floor, and
- * all-prose turns abstain on structure while keeping their raw source. These
- * tests walk that gradient.
+ * The grammar manifests PROVISIONALLY: clean turns harvest whole, degraded/partial/novel turns
+ * record gracefully down to the floor, and all-prose turns abstain on structure while keeping their
+ * raw source. These tests walk that gradient.
+ *
+ * FOUR ISLANDS. A turn carries a bearing, Voices, panel firings, mid-turn phase markers, and every
+ * other sigil as itself. The gauges are NAMED KEYS inside one panel — so these tests read keys, never
+ * a field per gauge.
  *
  * Meme: lar:///ha.ka.ba/lararium/mesh/turn-harvest
  */
@@ -12,127 +15,109 @@
 import { describe, test, expect } from "vitest";
 import {
   harvestTurnGradient,
-  harvestBand,
+  aftermathClosed,
+  closingPanel,
   HARVEST_FLOOR,
 } from "../src/index.js";
 
-const CLEAN_TURN = `<<~ lares aim lar://mara:operator@crossroads/operator.weighs.deps -> lar://compita:agent@crossroads/council.options.cuts>>
-<<~ hud Focus(11) Feedback(9) Drift-Ward(* Confidence 15/20 · I hold a preferred answer already)>>
+const CLEAN_TURN = `<<~ lares aim from=lar://mara:operator@crossroads/operator.weighs.deps -> to=lar://compita:agent@crossroads/council.options.cuts>>
+<<~ set hud="aim" mode="draft" mu="_!" stance="🏛️🗡️" focus="11/measure" feedback="9/declare-attention" drift-ward="* · I hold a preferred answer already">>
 
-Lares (Council): two libraries, both viable. <<~ confidence Synthesis 11/20>> the fork holds.
+Lares (Council): ->⏿ two libraries, both viable. ->◇ the fork holds.
 
-<<~ oracle ↯11 ⁂ ⚃ (4) ✲⬡◈⟁>>
-<<~ hud Drift-Ward(! Confidence 12/20 · the velocity read rides on a README I never opened · ↻ L-Prime) Focus(11 -> 12) Feedback(1)>>
-<<~ lares yield lar://compita:agent@crossroads/council.fork.named -> ?>>`;
+<<~ oracle "↯11 ✲ ⚃(4) ⁂:⬡🌖◈⟁">>
+<<~ set hud="yield" drift-ward="! · the velocity read rides on a README I never opened · ↻ L-Prime" focus="11/measure -> 12/measure" feedback="closed 1↺">>
+<<~ lares yield from=lar://compita:agent@crossroads/council.fork.named -> to=?>>`;
 
-describe("harvestBand — band thresholds on the 0..20 ladder", () => {
-  test("canon / synthesis / provisional / raw", () => {
-    expect(harvestBand(18)).toBe("canon");
-    expect(harvestBand(13)).toBe("canon");
-    expect(harvestBand(12)).toBe("synthesis");
-    expect(harvestBand(9)).toBe("synthesis");
-    expect(harvestBand(8)).toBe("provisional");
-    expect(harvestBand(HARVEST_FLOOR)).toBe("provisional");
-    expect(harvestBand(HARVEST_FLOOR - 1)).toBe("raw");
-    expect(harvestBand(0)).toBe("raw");
-  });
-});
-
-describe("clean turn — harvests with confidence", () => {
+describe("clean turn — harvests whole", () => {
   const h = harvestTurnGradient(CLEAN_TURN);
 
   test("reads the aim/yield bearing", () => {
     expect(h.bearing).not.toBeNull();
-    expect(h.bearing?.aimUri).toContain("operator.weighs.deps");
-    expect(h.bearing?.yieldUri).toContain("council.fork.named");
   });
 
   test("surfaces the Voice with its role", () => {
-    expect(h.voices.length).toBeGreaterThanOrEqual(1);
-    const council = h.voices.find((v) => v.role === "Council");
-    expect(council?.name).toBe("Lares");
+    expect(h.voices.length).toBe(1);
+    expect(h.voices[0]!.name).toBe("Lares");
+    expect(h.voices[0]!.role).toBe("Council");
   });
 
-  test("captures the HUD panels (open + close)", () => {
-    expect(h.huds.length).toBe(2);
-    expect(h.huds[0]?.focus).toBe(11);
-    // close panel: Focus(11 -> 12) keeps the last (actual) number
-    expect(h.huds[1]?.focus).toBe(12);
-    expect(h.huds[0]?.feedback).toBe("9");
+  test("captures both panel firings and tells them apart by `hud`", () => {
+    expect(h.panels.length).toBe(2);
+    expect(h.panels.map((p) => p.hud)).toEqual(["aim", "yield"]);
   });
 
-  test("captures the confidence marker with register + value", () => {
-    expect(h.confidences.length).toBe(1);
-    expect(h.confidences[0]?.register).toBe("Synthesis");
-    expect(h.confidences[0]?.value).toBe(11);
-    expect(h.confidences[0]?.max).toBe(20);
+  test("reads every named key the panel carried, verbatim", () => {
+    const open = h.panels[0]!;
+    expect(open.keys["focus"]).toBe("11/measure");
+    expect(open.keys["feedback"]).toBe("9/declare-attention");
+    expect(open.keys["mode"]).toBe("draft");
+    expect(open.keys["mu"]).toBe("_!");
+    // the value is taken WHOLE and never re-parsed — the ward's mark rides inside it
+    expect(open.keys["drift-ward"]).toBe("* · I hold a preferred answer already");
   });
 
-  test("reads the Drift-Ward firing out of each panel, and the oracle", () => {
-    // THE WARD RIDES IN THE PANEL — a harvester scanning for a ward SIGIL finds none and reports a
-    // turn that warded as a turn that did not. Both firings come off the `hud` params.
-    expect(h.wards.length).toBe(2);
-    expect(h.huds[0]?.ward?.tool).toBe("*");
-    expect(h.huds[0]?.ward?.vow).toBe(15);
-    expect(h.huds[1]?.ward?.tool).toBe("!");
-    expect(h.huds[1]?.ward?.vow).toBe(12);
-    expect(h.oracles.length).toBe(1);
+  test("the closing panel is the one that reports", () => {
+    const close = closingPanel(h);
+    expect(close).not.toBeNull();
+    expect(close!.keys["feedback"]).toBe("closed 1↺");
+    expect(close!.keys["focus"]).toBe("11/measure -> 12/measure");
   });
 
-  test("lands in the canon band, no raw fallback", () => {
-    expect(h.standing).toBeGreaterThanOrEqual(13);
-    expect(h.band).toBe("canon");
+  test("a closed loop reads closed", () => {
+    expect(aftermathClosed(h)).toBe(true);
+  });
+
+  test("the mid-turn phase markers harvest, in reading order", () => {
+    expect(h.phases.map((p) => p.glyph)).toEqual(["⏿", "◇"]);
+    expect(h.phases[0]!.offset).toBeLessThan(h.phases[1]!.offset);
+  });
+
+  test("every other sigil lands under its own head", () => {
+    expect(h.sigils.map((s) => s.head)).toContain("oracle");
+  });
+
+  test("stands well clear of the floor, no raw fallback", () => {
+    expect(h.standing).toBeGreaterThan(HARVEST_FLOOR);
     expect(h.recordRaw).toBe(false);
-    expect(h.waterCount).toBe(0);
   });
 });
 
-describe("multiple confidence markers — never collapsed", () => {
-  const turn = `<<~ lares aim lar:///a.b.c/x -> lar:///d.e.f/y>>
-Some claim <<~ confidence Provisional 3/20>> and another <<~ confidence Canon 19/20>> and a third <<~ confidence Synthesis 11/20>>.
-<<~ lares yield lar:///d.e.f/y -> ?>>`;
+describe("a suspension does not read as a close", () => {
+  const turn = `<<~ lares aim from=lar:///a.b.c/x -> to=lar:///d.e.f/y>>
+Lares (Council): ->◇ the fork belongs to the operator.
+<<~ set hud="yield" drift-ward="! · take it to contact · ↻ L-Prime" feedback="closed 0↺ -> open 1φ @◇:fork.depends-on.operator-budget">>
+<<~ lares yield from=lar:///d.e.f/y -> to=?>>`;
   const h = harvestTurnGradient(turn);
 
-  test("keeps every rating as its own offset-anchored signal", () => {
-    expect(h.confidences.length).toBe(3);
-    expect(h.confidences.map((c) => c.value)).toEqual([3, 19, 11]);
-    expect(h.confidences.map((c) => c.register)).toEqual([
-      "Provisional",
-      "Canon",
-      "Synthesis",
-    ]);
-    // offsets ascend in reading order
-    expect(h.confidences[0]!.offset).toBeLessThan(h.confidences[1]!.offset);
-    expect(h.driftFlags).toContain("confidence-multi:3");
+  test("zero closed with one hanging reads OPEN, never closed", () => {
+    expect(aftermathClosed(h)).toBe(false);
+    expect(closingPanel(h)!.keys["feedback"]).toContain("open 1φ @◇");
+  });
+});
+
+describe("a panel key this reader never heard of still harvests", () => {
+  // The key map is carried verbatim, so a key the frame adds costs no parse and loses no signal.
+  const h = harvestTurnGradient(`<<~ set hud="aim" mood="wry" tempo="unhurried">>`);
+
+  test("an unknown key rides through untouched", () => {
+    expect(h.panels[0]!.keys["mood"]).toBe("wry");
+    expect(h.panels[0]!.keys["tempo"]).toBe("unhurried");
   });
 });
 
 describe("degraded grammar — partial frame records gracefully", () => {
-  const turn = `<<~ lares aim lar:///breach.watch.fires/now>>
-Triage: name the fire. (no closing yield this turn)`;
+  const turn = `<<~ lares aim from=lar:///a.b.c/x -> to=?>>
+Map-Wisp (Scryer): the shape holds but the close never landed.`;
   const h = harvestTurnGradient(turn);
 
-  test("a one-sided frame still yields a bearing, at a lower band", () => {
+  test("a one-sided frame still yields a bearing, at a lower standing", () => {
     expect(h.bearing).not.toBeNull();
-    expect(h.bearing?.driftFlags).toContain("frame:no-yield");
-    expect(h.band).not.toBe("canon");
-    expect(h.recordRaw).toBe(false); // still above the floor
+    expect(h.recordRaw).toBe(false);
   });
 
   test("the Voice surfaces even in a degraded turn", () => {
-    expect(h.voices.some((v) => v.name === "Triage")).toBe(true);
-  });
-});
-
-describe("novel grammar — a confidence form the chart never showed", () => {
-  // The operator's own form: `<<~ confidence( < 4)>>` — no register, no /M.
-  const turn = `Push the harvest until <<~ confidence( < 4)>> then stop.`;
-  const h = harvestTurnGradient(turn);
-
-  test("records the marker without choking on the unfamiliar shape", () => {
-    expect(h.confidences.length).toBe(1);
-    expect(h.confidences[0]?.value).toBe(4); // best-effort number pull
-    expect(h.confidences[0]?.register).toBeNull();
+    expect(h.voices.map((v) => v.name)).toContain("Map-Wisp");
   });
 });
 
@@ -141,35 +126,33 @@ describe("missing grammar — all prose, no sigils → record raw", () => {
 
   test("abstains on structure but never drops the source", () => {
     expect(h.bearing).toBeNull();
-    expect(h.sigilCount).toBe(0);
-    expect(h.standing).toBeLessThan(HARVEST_FLOOR);
-    expect(h.band).toBe("raw");
+    expect(h.panels).toEqual([]);
     expect(h.recordRaw).toBe(true);
     expect(h.driftFlags).toContain("frame:none");
   });
 });
 
 describe("water — unrecognized <<~ openers are counted, not dropped", () => {
-  const turn = `<<~ lares aim lar:///a.b.c/x -> lar:///d.e.f/y>>
-<<~ wibblefish nonsense token>>
-<<~ lares yield lar:///d.e.f/y -> ?>>`;
+  const turn = `<<~ lares aim from=lar:///a.b.c/x -> to=lar:///d.e.f/y>>
+<<~ vorpal-snicker something entirely new>>
+<<~ lares yield from=lar:///d.e.f/y -> to=?>>`;
   const h = harvestTurnGradient(turn);
 
   test("the novel sigil reads as water and drags the gauge", () => {
-    expect(h.waterCount).toBeGreaterThanOrEqual(1);
+    expect(h.waterCount).toBeGreaterThan(0);
     expect(h.driftFlags.some((f) => f.startsWith("water:"))).toBe(true);
   });
 });
 
 describe("Voice precision — a prose parenthetical is not a Voice", () => {
   test("a long verb-phrase in parens reads as water, never a Voice", () => {
-    const h = harvestTurnGradient("HANDBACK FORM (end your reply with): the finding.");
-    expect(h.voices.length).toBe(0);
+    const h = harvestTurnGradient("\nSomething Long (end your reply with the sigil): text");
+    expect(h.voices).toEqual([]);
   });
 
   test("a real header still surfaces, and an earned name with a short role too", () => {
-    const h = harvestTurnGradient("Ink-Clerk (Lorekeeper): cites the source.\nMara (Council): weighs it.");
-    expect(h.voices.map((v) => v.name).sort()).toEqual(["Ink-Clerk", "Mara"]);
+    const h = harvestTurnGradient("\nBreach-Watch (Triage): the fire\n\nTelarus (Scryer): the read");
+    expect(h.voices.map((v) => v.name)).toEqual(["Breach-Watch", "Telarus"]);
   });
 });
 
@@ -177,16 +160,16 @@ describe("empty input", () => {
   test("returns a raw record, never throws", () => {
     const h = harvestTurnGradient("");
     expect(h.recordRaw).toBe(true);
-    expect(h.band).toBe("raw");
+    expect(h.standing).toBe(0);
     expect(h.driftFlags).toContain("empty");
   });
 });
 
-describe("a turn from before the firing moved into the panel", () => {
+describe("a turn from before the gauges became panel keys", () => {
   // A CORPUS STATES ONE GRAMMAR; A READER TOLERATES EVERY GRAMMAR IT WILL MEET. Transcripts carry
-  // whatever shape was standing when they were written, and refusing one reads a warded turn as
-  // unwarded — a silence no downstream reader can tell from a turn that skipped the instrument.
-  const PRE_PANEL = `<<~ lares aim lar://mara:operator@crossroads/operator.weighs.deps -> lar://compita:agent@crossroads/council.options.cuts>>
+  // whatever shape was standing when they were written, and refusing one reads a gauged turn as
+  // ungauged — a silence no downstream reader can tell from a turn that skipped the instrument.
+  const PRE_PANEL = `<<~ lares aim from=lar://mara:operator@crossroads/operator.weighs.deps -> to=lar://compita:agent@crossroads/council.options.cuts>>
 <<~ hud Aperture(11) OODA-HA(9)>>
 <<~ ward * L-Prime>>
 
@@ -194,24 +177,20 @@ Lares (Council): two libraries, both viable. <<~ confidence Synthesis 11/20>> th
 
 <<~ oracle ↯11 ⁂ ⚃ (4) ✲⬡◈⟁>>
 <<~ ward ! · ↻ L-Prime>>
-<<~ hud Aperture(11 -> 12) OODA-HA(1)>>
-<<~ lares yield lar://compita:agent@crossroads/council.fork.named -> ?>>`;
+<<~ lares yield from=lar://compita:agent@crossroads/council.fork.named -> to=?>>`;
 
   const h = harvestTurnGradient(PRE_PANEL);
 
-  test("the true-names still read as the gauges they name", () => {
-    expect(h.huds[0]?.focus).toBe(11);
-    expect(h.huds[1]?.focus).toBe(12);
-    expect(h.huds[0]?.feedback).toBe("9");
+  test("the retired heads still classify as sigils, in turn order", () => {
+    expect(h.sigils.map((s) => s.head)).toEqual(["hud", "ward", "confidence", "oracle", "ward"]);
   });
 
-  test("wards standing as their own sigil still harvest, in turn order", () => {
-    expect(h.wards.length).toBe(2);
-    expect(h.wards.map((w) => w.tool)).toEqual(["*", "!"]);
+  test("none of it reads as water", () => {
+    expect(h.waterCount).toBe(0);
   });
 
-  test("the turn lands where a clean turn lands, never at the floor", () => {
-    expect(h.band).toBe("canon");
+  test("the turn stands clear of the floor, never at it", () => {
+    expect(h.standing).toBeGreaterThan(HARVEST_FLOOR);
     expect(h.recordRaw).toBe(false);
   });
 });

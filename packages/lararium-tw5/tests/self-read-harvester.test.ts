@@ -15,55 +15,47 @@ import { describe, test, expect, vi } from "vitest";
 import {
   harvestTurn,
   harvestVoiceReadings,
-  aftermathClosedFromHuds,
   firedStructuralWrite,
   turnDensity,
   buresDrift,
-  turnRegisterBand,
+  turnPhaseBand,
   probeTurnSequence,
-  registerBandForWord,
-  registerBandForValue,
-  REGISTER_COUNT,
+  phaseBandForGlyph,
+  PHASE_COUNT,
   type PersistedEffect,
 } from "../src/form-layer/index.js";
-import { harvestTurnGradient, buresDistance } from "@lararium/mesh";
+import { harvestTurnGradient, buresDistance, aftermathClosed, closingPanel } from "@lararium/mesh";
 
 // --- turn fixtures ---------------------------------------------------------
 
-/** A well-framed turn: one Voice, two Synthesis markers (one-hot), a closed loop. */
+/** A well-framed turn: one Voice marking ONE phase twice (one-hot), a closed loop. */
 const ONE_HOT_TURN = `<<~ lares aim lar://op:operator@x/a.b.c -> lar://ag:agent@x/council.d.e>>
-<<~ hud Aperture(10) OODA-HA(3)>>
-<<~ ward * L-Prime>>
+<<~ set hud="aim" focus="10/measure" feedback="3/declare-aftermath" drift-ward="* · L-Prime">>
 
-Lares (Council): the two options weigh out. <<~ confidence Synthesis 10/20>> the first holds; <<~ confidence Synthesis 12/20>> the second reads close.
+Lares (Council): ->◇ the two options weigh out. ->◇ the second reads close.
 
-<<~ oracle ↯11 ✲ ⚃(4) ⁂:⬡🌖◈⟁>>
-<<~ ward ! · ↻ L-Prime>>
-<<~ hud Aperture(10 -> 12) OODA-HA(2↺)>>
+<<~ oracle "↯11 ✲ ⚃(4) ⁂:⬡🌖◈⟁">>
+<<~ set hud="yield" drift-ward="! · take it to contact · ↻ L-Prime" focus="10/measure -> 12/measure" feedback="closed 2↺">>
 <<~ lares yield lar://ag:agent@x/council.f.g -> ?>>`;
 
-/** A turn where ONE Voice straddles two registers (Provisional + Synthesis). */
+/** A turn where ONE Voice straddles two phases (observe + decide). */
 const STRADDLE_TURN = `<<~ lares aim lar://op:operator@x/a.b.c -> lar://ag:agent@x/muse.d.e>>
-<<~ hud Aperture(8) OODA-HA(1)>>
-<<~ ward * L-Prime>>
+<<~ set hud="aim" focus="8/beat" feedback="1/declare-aftermath" drift-ward="* · L-Prime">>
 
-Mischief-Muse (Muse): a wild angle opens. <<~ confidence Provisional 3/20>> the seed reads raw; <<~ confidence Synthesis 10/20>> yet the frame firms.
+Mischief-Muse (Muse): ->✶ a wild angle opens. ->◇ yet the frame firms.
 
-<<~ oracle ↯8 ✲ ⚀(1) ⁂:🗡️>>
-<<~ ward ! · ↻ L-Prime>>
-<<~ hud Aperture(8 -> 9) OODA-HA(1↺)>>
+<<~ oracle "↯8 ✲ ⚀(1) ⁂:🗡️">>
+<<~ set hud="yield" drift-ward="! · collide it · ↻ L-Prime" focus="8/beat -> 9/measure" feedback="closed 1↺">>
 <<~ lares yield lar://ag:agent@x/muse.f.g -> ?>>`;
 
 /** A turn that NARRATES self-change in prose but persists NOTHING (the mirror). */
 const SELF_NARRATING_NOOP_TURN = `<<~ lares aim lar://op:operator@x/a.b.c -> lar://ag:agent@x/artificer.d.e>>
-<<~ hud Aperture(11) OODA-HA(2)>>
-<<~ ward * L-Prime>>
+<<~ set hud="aim" focus="11/measure" feedback="2/declare-aftermath" drift-ward="* · L-Prime">>
 
-Lares (Artificer): I have re-encoded the house — the meme is canonized, the drawer now holds the new pattern, the palace re-stands itself, a structural transition fires. <<~ confidence Canon 18/20>> the house re-writes its own form.
+Lares (Artificer): ->▶ I have re-encoded the house — the meme is canonized, the drawer now holds the new pattern, the palace re-stands itself, a structural transition fires. the house re-writes its own form.
 
 <<~ oracle ↯12 ✲ ⚂(3) ⁂:ᚠ⊗㐂>>
-<<~ ward ! · ↻ L-Prime>>
-<<~ hud Aperture(11 -> 11) OODA-HA(1↺)>>
+<<~ set hud="yield" drift-ward="! · ↻ L-Prime" focus="11/measure -> 11/measure" feedback="closed 1↺">>
 <<~ lares yield lar://ag:agent@x/artificer.f.g -> ?>>`;
 
 // --- (a) the teleodynamic triple ------------------------------------------
@@ -71,38 +63,29 @@ Lares (Artificer): I have re-encoded the house — the meme is canonized, the dr
 describe("harvestTurn — the teleodynamic SelfRead", () => {
   test("parses a synthetic turn into the triple + Voice amplitudes", () => {
     const { selfRead, voices, readings } = harvestTurn(ONE_HOT_TURN);
-    expect(selfRead.aftermathClosed).toBe(true); // OODA-HA(2↺), no φ
+    expect(selfRead.aftermathClosed).toBe(true); // closed 2↺, no suspension
     expect(selfRead.structuralChange).toBe(false); // no effects passed → noop
     expect(voices.length).toBe(1);
-    expect(voices[0]!.amplitudes.length).toBe(REGISTER_COUNT);
+    expect(voices[0]!.amplitudes.length).toBe(PHASE_COUNT);
     expect(readings[0]!.voice).toBe("council");
     expect(readings[0]!.markerCount).toBe(2);
   });
 
-  test("aftermathClosed is a LITERAL parse of the CLOSING HUD tally", () => {
-    // N↺, no suspension → closed.
-    expect(aftermathClosedFromHuds(harvestTurnGradient(`<<~ hud OODA-HA(3↺)>>`).huds)).toBe(true);
-    // 0φ:reason → suspended → open.
-    expect(
-      aftermathClosedFromHuds(harvestTurnGradient(`<<~ hud OODA-HA(0φ:blocked)>>`).huds),
-    ).toBe(false);
-    // a suspended phase glyph (0◇:fork) → open.
-    expect(
-      aftermathClosedFromHuds(harvestTurnGradient(`<<~ hud OODA-HA(0◇:fork.depends)>>`).huds),
-    ).toBe(false);
-    // N↺ + φ:reason → a loop suspended alongside a tally → open (φ: wins).
-    expect(
-      aftermathClosedFromHuds(harvestTurnGradient(`<<~ hud OODA-HA(1↺ + ▶:next)>>`).huds),
-    ).toBe(false);
-    // seed-only (no ↺) → not closed.
-    expect(aftermathClosedFromHuds(harvestTurnGradient(`<<~ hud OODA-HA(3)>>`).huds)).toBe(false);
-    // no HUD at all → not closed.
-    expect(aftermathClosedFromHuds([])).toBe(false);
+  test("aftermathClosed is a LITERAL parse of the closing panel tally", () => {
+    const closed = (t: string): boolean => aftermathClosed(harvestTurnGradient(t));
+    // `closed N↺` with N ≥ 1, no suspension → closed.
+    expect(closed(`<<~ set hud="yield" feedback="closed 3↺">>`)).toBe(true);
+    // zero closed with one hanging → open.
+    expect(closed(`<<~ set hud="yield" feedback="closed 0↺ -> open 1φ @◇:blocked">>`)).toBe(false);
+    // no closing panel at all → open.
+    expect(closed(`<<~ set hud="aim" feedback="9/declare-attention">>`)).toBe(false);
   });
 
-  test("uses the CLOSING (last) HUD, not the opening seed", () => {
-    // opening seed OODA-HA(3), closing OODA-HA(2↺) → the close wins → closed.
-    expect(harvestTurn(ONE_HOT_TURN).selfRead.aftermathClosed).toBe(true);
+  test("uses the CLOSING panel, not the opening seed", () => {
+    const t = `<<~ set hud="aim" feedback="9/declare-attention">>
+prose
+<<~ set hud="yield" feedback="closed 2↺">>`;
+    expect(closingPanel(harvestTurnGradient(t))!.keys["feedback"]).toBe("closed 2↺");
   });
 });
 
@@ -162,15 +145,15 @@ describe("structuralChange is bound to a PERSISTED write, NOT prose", () => {
 
 // --- (b) the Voice-amplitude covariance + the safety case -----------------
 
-describe("Voice register-amplitudes — the safety case", () => {
+describe("Voice phase-amplitudes — the safety case", () => {
   test("one-hot Voice (all markers one band) → DIAGONAL ρ", () => {
     const { voices, readings } = harvestTurn(ONE_HOT_TURN);
     // Council read Synthesis twice → bandMass one-hot at index 2.
     expect(readings[0]!.bandMass).toEqual([0, 0, 1, 0, 0]);
     const rho = turnDensity(voices);
     // off-diagonals ~ 0 (a diagonal density).
-    for (let i = 0; i < REGISTER_COUNT; i++) {
-      for (let j = 0; j < REGISTER_COUNT; j++) {
+    for (let i = 0; i < PHASE_COUNT; i++) {
+      for (let j = 0; j < PHASE_COUNT; j++) {
         if (i !== j) expect(Math.abs(rho[i]![j]!)).toBeLessThan(1e-9);
       }
     }
@@ -189,19 +172,18 @@ describe("Voice register-amplitudes — the safety case", () => {
     expect(rho[0]![2]!).toBeCloseTo(rho[2]![0]!, 9); // symmetric
   });
 
-  test("a register-silent Voice (no confidence marker) is OMITTED (honest source)", () => {
+  test("a phase-silent Voice (no marker in its span) is OMITTED (honest source)", () => {
     const turn = `Lares (Scryer): a map with no confidence markers at all.`;
     const { voices } = harvestTurn(turn);
     expect(voices.length).toBe(0);
   });
 
-  test("register band resolves by WORD, falling back to VALUE", () => {
-    expect(registerBandForWord("Synthesis")).toBe(2);
-    expect(registerBandForWord("Provisional-Synthesis")).toBe(1);
-    expect(registerBandForWord("nonsense")).toBeNull();
-    expect(registerBandForValue(3)).toBe(0); // provisional 1..4
-    expect(registerBandForValue(19)).toBe(4); // canon 17..20
-    expect(registerBandForValue(0)).toBeNull(); // void, no band
+  test("a phase band resolves by its loop glyph, and nothing else does", () => {
+    expect(phaseBandForGlyph("✶")).toBe(0);
+    expect(phaseBandForGlyph("◇")).toBe(2);
+    expect(phaseBandForGlyph("↺")).toBe(4);
+    expect(phaseBandForGlyph("🗡️")).toBeNull();
+    expect(phaseBandForGlyph(null)).toBeNull();
   });
 });
 
@@ -226,11 +208,12 @@ describe("North-Star (1) — buresDistance consumes the Voice amplitudes", () =>
 
 // --- North-Star wiring (2): the teleodynamic register-band + the probe ------
 
-describe("North-Star (2) — the teleodynamic register-band + probe", () => {
-  test("ρ's register marginal names the dominant band", () => {
-    const { band, name } = turnRegisterBand(harvestTurn(ONE_HOT_TURN).voices);
+describe("North-Star (2) — the teleodynamic phase-band + probe", () => {
+  test("ρ's phase marginal names the dominant band", () => {
+    // the Council marks `->◇` twice, so decide (index 2) carries all the mass
+    const { band, name } = turnPhaseBand(harvestTurn(ONE_HOT_TURN).voices);
     expect(band).toBe(2);
-    expect(name).toBe("synthesis");
+    expect(name).toBe("decide");
   });
 
   test("teleodynamicProbe consumes a harvested SelfRead sequence", () => {

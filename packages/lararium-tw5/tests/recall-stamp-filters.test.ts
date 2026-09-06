@@ -1,6 +1,6 @@
 /**
  * recall stamp-filters — the daemon recall verb learns the stamps the palace
- * already stores (voice · band · agent · surface · drift), composed with the
+ * already stores (voice · agent · surface · drift), composed with the
  * semantic query (overfetch + post-filter, honest counts) and the list (exact
  * lar_* metadata). Driven through the REAL recallVerbCap over a fake
  * RecallClient — the whole verb body runs, only the holder is stubbed.
@@ -35,9 +35,9 @@ const HITS = [
 ];
 
 const IMAGINES = [
-  { imago_id: "d1", metadata: { source_file: "codex__run-cdx-1.jsonl", lar_surface: "codex", lar_band: "raw" } },
-  { imago_id: "d2", metadata: { source_file: "claude__run-cl-1.jsonl", lar_surface: "claude", lar_band: "canon", lar_voices: "Council (Lares)" } },
-  { imago_id: "d3", metadata: { source_file: "codex__run-cdx-2.jsonl", lar_surface: "codex", lar_band: "synthesis", lar_drift: "arity:2" } },
+  { imago_id: "d1", metadata: { source_file: "codex__run-cdx-1.jsonl", lar_surface: "codex" } },
+  { imago_id: "d2", metadata: { source_file: "claude__run-cl-1.jsonl", lar_surface: "claude", lar_voices: "Council (Lares)" } },
+  { imago_id: "d3", metadata: { source_file: "codex__run-cdx-2.jsonl", lar_surface: "codex", lar_drift: "arity:2" } },
 ];
 
 function fakeClient(): RecallClient & { lastSearchLimit?: number } {
@@ -96,10 +96,6 @@ describe("recall verb — stamp filters over the search", () => {
     expect(empty["matched"]).toBe(0);
   });
 
-  test("an invalid --band fails loud", async () => {
-    const recall = await makeRecall(fakeClient());
-    await expect(recall({ query: "q", band: "mythic" })).rejects.toThrow(/--band must be one of/);
-  });
 
   test("filters + --multi refuse loud (the fuse has no filter law yet)", async () => {
     const recall = await makeRecall(fakeClient());
@@ -117,11 +113,11 @@ describe("recall verb — stamp filters over the list (exact lar_* metadata)", (
     expect(out["matched"]).toBe(2);
   });
 
-  test("--drift keeps only drift-stamped drawers; --band composes", async () => {
+  test("--drift keeps only drift-stamped drawers; a second clause composes", async () => {
     const recall = await makeRecall(fakeClient());
     const drifted = await recall({ drift: true });
     expect((drifted["imagines"] as Array<Record<string, unknown>>).map((d) => d["imago_id"])).toEqual(["d3"]);
-    const both = await recall({ drift: true, band: "canon" });
+    const both = await recall({ drift: true, surface: "claude" });
     expect((both["imagines"] as unknown[]).length).toBe(0); // composed clauses — honest empty
     expect(both["matched"]).toBe(0);
   });

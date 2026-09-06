@@ -62,7 +62,7 @@ The maintainer's anti-pattern names //undeclared// writes, not chroma writes. So
 
 The net (flat scalars — chroma's law):
 
-<<~ranks lar-net lar_hv ~ enrich-version gate -> lar_surface ~ originating harness -> lar_band ~ confidence band -> lar_bearing_conf ~ 0..20 gradient -> lar_aim · lar_yield ~ bearing -> lar_voices ~ who held it -> lar_confidence ~ the marks -> lar_drift ~ parse drift -> lar_hall ~ function-hall>>
+<<~ranks lar-net lar_hv ~ enrich-version gate -> lar_surface ~ originating harness -> -> lar_bearing_conf ~ 0..20 gradient -> lar_aim · lar_yield ~ bearing -> lar_voices ~ who held it -> lar_feedback ~ the closing tally -> lar_drift ~ parse drift -> lar_hall ~ function-hall>>
 
 `lar_hv` carries the Kappa upgrade gate: a logic change bumps it, and the next sweep re-enriches exactly the stale drawers.
 
@@ -129,13 +129,13 @@ lares harvest --all                                      # sweep every transcrip
 
 !! Forward ~ where the deepening pulls
 
-* ''Recall rises into the wake'' ~ the boot climbs already holding the relevant journey, filtered by `lar_surface` · `lar_voices` · `lar_confidence`.
+* ''Recall rises into the wake'' ~ the boot climbs already holding the relevant journey, filtered by `lar_surface` · `lar_voices` · `lar_feedback`.
 * ''The kupono seat'' ~ a local, sovereign embedder behind the island earns the tier-2 shore — its first vow rejoins the turns the tools tore apart, lifting fragmented frames toward canon. No cloud breath in the parse path.
 * ''The @daemon VM home'' ~ lift the orchestration from the CLI projection into verb-tiddlers + the TW5 plugin.
 * ''The source-adapter shore'' ~ when upstream wires `mempalace mine --source`, the declared `lares` schema slots in whole.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;m54kxOUmlQCO37gTXfa8ZhUyw0Uygq5ETG7ZiHL8ce4
+<<^ code="&#x0003;">>ni:///sha-256;llq3PuGXtKYAZXYapFwOoeaE9YOymLd-_LMNChB-5Gc
 
 <<^ code="&#x0004;" -> to=?>>

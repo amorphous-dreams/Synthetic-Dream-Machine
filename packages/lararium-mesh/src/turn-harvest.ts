@@ -6,20 +6,22 @@
  * manifests PROVISIONALLY in use — the juru in the fight rarely matches the
  * jurusan on the pancer; one never reads the Capital/lowercase chart aloud. So a
  * real turn carries degraded, partial, missing, or freshly-invented grammar:
- * frames that don't cleanly open/close, several confidence ratings in one
- * selection, Voices and Syad/Tools in varied glyphs and words.
+ * frames that don't cleanly open/close, Voices and lenses in varied glyphs and
+ * words, panels carrying whichever keys the turn needed.
  *
  * This harvester reads that gradient. It follows the ISLAND-GRAMMAR discipline
  * (Moonen): each sigil family forms an ISLAND, precisely matched; everything
  * between forms WATER, swallowed and COUNTED, never dropped. The `<<~` opener
- * serves as the panic-sync anchor. What reads clean harvests with confidence;
- * what reads degraded records gracefully at a lower band; below the floor a turn
+ * serves as the panic-sync anchor. What reads clean harvests whole; what reads
+ * degraded records gracefully at a lower standing; below the floor a turn
  * abstains on structure and keeps its RAW source (never-drop-the-source).
  *
- * It widens {@link harvest} (the aim/yield bearing) to the whole house HUD —
- * Voices, the HUD gauges (Focus, Feedback, the Drift-Ward firing), Syad stances, the confidence
- * markers, oracle —
- * and keeps MULTIPLE in-turn signals as an offset-anchored set, never collapsed.
+ * FOUR ISLANDS, NOT SEVEN. A turn carries a bearing (`lares aim` / `lares yield`),
+ * Voices surfacing in prose, ONE panel sigil whose named keys hold every gauge
+ * (`set hud="aim" … focus= feedback= drift-ward= mode= mood= mu= stance=`), and
+ * whatever other sigils it fires. The panel is why this reads as four families
+ * rather than one per gauge: a reader that scans for a gauge SIGIL finds none
+ * and reports a turn that gauged as a turn that did not.
  *
  * Pure + isomorphic: text in, a {@link TurnHarvest} out — no I/O, no store, no
  * holder, no LLM in the parse path. The expensive salvage tier (an LLM reading
@@ -47,78 +49,57 @@ export interface VoiceSignal extends OffsetSignal {
   readonly mask: string | null;
 }
 
-/** A `<<~ confidence <Register> N/M>>` marker — or a degraded/novel variant of one. */
-export interface ConfidenceSignal extends OffsetSignal {
-  /** The register word (`Synthesis`, `Canon`, …), or null when the form dropped it. */
-  readonly register: string | null;
-  /** The numerator, or null when unparseable (a novel form like `< 4`). */
-  readonly value: number | null;
-  /** The denominator (defaults to 20 when the `/M` was omitted). */
-  readonly max: number;
+/**
+ * A `<<~ set hud="aim" … >>` panel — the turn's instruments in one firing.
+ *
+ * Every gauge rides as a NAMED KEY, so this carries the key map verbatim rather than a field per
+ * gauge: a panel that fires a key this reader never heard of still harvests it, and a key that
+ * retires costs no parse. `hud` reads `aim` at open and `yield` at close; a mid-turn `set` carries
+ * none, which is the only thing distinguishing the three firings.
+ */
+export interface PanelSignal extends OffsetSignal {
+  /** `aim` · `yield` · null for a mid-turn set. */
+  readonly hud: string | null;
+  /** Every `key="value"` the firing carried, in the order written. */
+  readonly keys: Readonly<Record<string, string>>;
 }
 
-/** A `<<~ hud Focus(..) Feedback(..) Drift-Ward(..)>>` panel (open or close). */
-export interface HudSignal extends OffsetSignal {
-  /** Focus target/actual numerator (the last number when a `->` slide appeared), or null. */
-  readonly focus: number | null;
-  /** The Feedback payload verbatim (`3`, `0◇:fork.depends`, `1↺ + ▶:…`), or null. */
-  readonly feedback: string | null;
-  /**
-   * The Drift-Ward firing carried inside this panel, or null.
-   *
-   * THE WARD RIDES IN THE PANEL, so a harvester that scans for a ward SIGIL finds none and reports
-   * a turn that warded as a turn that did not. It reads the params instead — last position at open,
-   * first at close — and that positional difference is the only thing distinguishing the two
-   * firings, since they answer to each other not at all.
-   */
-  readonly ward: WardSignal | null;
+/**
+ * A mid-turn phase marker — `->✶`, `->⏿`, `->◇`, `->▶`, `->↺`.
+ *
+ * These ride the PROSE, not a sigil, and they lead the phase they open. They form their own island
+ * family because a reader that only walked `<<~ …>>` would see a turn's whole loop as water.
+ */
+export interface PhaseSignal extends OffsetSignal {
+  /** The loop glyph, verbatim. */
+  readonly glyph: string;
 }
 
-/** A Syad standpoint invocation — by name, emoji, or glyph. */
-export interface StanceSignal extends OffsetSignal {
-  /** The standpoint token(s) following `syad`, verbatim. */
-  readonly token: string;
-}
-
-/** A `Drift-Ward(..)` firing inside a HUD panel (Wand, lift, brace, appeal, or Sword close). */
-export interface WardSignal extends OffsetSignal {
-  /** The leading tool/office glyph inside the firing (`*`,`0`,`_`,`?`,`!`), or null. */
-  readonly tool: string | null;
-  /** The confidence level the firing vows (`Confidence 12/20` → 12), or null. */
-  readonly vow: number | null;
-}
-
-/** A recognized but non-specialized sigil (`kahea`, `mu`, `lares` non-aim/yield, …). */
-export interface OtherSigil extends OffsetSignal {
+/** Any other closed sigil island — `oracle`, `mu`, `stance`, `kahea`, `persona`, … */
+export interface SigilSignal extends OffsetSignal {
   /** The leading keyword that classified the island. */
-  readonly kind: string;
+  readonly head: string;
+  /** Everything after the head, verbatim and untrimmed of its own grammar. */
+  readonly body: string;
 }
-
-/** The band a turn's overall confidence lands in (the house register ladder). */
-export type HarvestBand = "canon" | "synthesis" | "provisional" | "raw";
 
 /** Everything one turn yielded, on the gradient. */
 export interface TurnHarvest {
   /** The aim/yield bearing (reuses {@link harvest}); null when no frame appeared. */
   readonly bearing: Bearing | null;
   readonly voices: readonly VoiceSignal[];
-  /** ALL confidence markers, never collapsed — a selection may carry several. */
-  readonly confidences: readonly ConfidenceSignal[];
-  /** HUD panels (an open and a close both count). */
-  readonly huds: readonly HudSignal[];
-  readonly stances: readonly StanceSignal[];
-  readonly wards: readonly WardSignal[];
-  readonly oracles: readonly OffsetSignal[];
-  /** Recognized-but-generic sigils (kahea, mu, …). */
-  readonly others: readonly OtherSigil[];
+  /** Panel firings — an open, a close and any mid-turn set all count. */
+  readonly panels: readonly PanelSignal[];
+  /** Every other recognized sigil island, in the order it sounded. */
+  readonly sigils: readonly SigilSignal[];
+  /** Mid-turn phase markers, in the order they sounded. */
+  readonly phases: readonly PhaseSignal[];
   /** Count of recognized sigil islands (every classified `<<~ …>>`). */
   readonly sigilCount: number;
   /** Count of `<<~` openers that did NOT classify — the water, panic-synced. */
   readonly waterCount: number;
   /** Overall 0..20 gradient standing — the parse earns it BACKWARD (low = drifted / sparse structure). */
   readonly standing: number;
-  /** The band {@link standing} lands in. */
-  readonly band: HarvestBand;
   readonly driftFlags: readonly string[];
   /** Below the floor: abstain on structure, but keep the raw source. */
   readonly recordRaw: boolean;
@@ -131,26 +112,18 @@ export interface TurnHarvest {
  */
 export const HARVEST_FLOOR = 4;
 
-/** Band thresholds on the 0..20 continuum (house register ladder). */
-export const HARVEST_BANDS = {
-  canon: 13, // synthesis-canon and up
-  synthesis: 9, // working synthesis
-  provisional: HARVEST_FLOOR, // the play register, down to the floor
-} as const;
-
-export function harvestBand(standing: number): HarvestBand {
-  if (standing >= HARVEST_BANDS.canon) return "canon";
-  if (standing >= HARVEST_BANDS.synthesis) return "synthesis";
-  if (standing >= HARVEST_BANDS.provisional) return "provisional";
-  return "raw";
-}
-
 // --- Island regexes -------------------------------------------------------
 // Each sigil opener `<<~` anchors an island; SIGIL_RE walks them in order. A
 // body that fails to close (`>>`) before the next `<<~` reads as water.
 
 const SIGIL_RE = /<<~\s*([\s\S]*?)>>/g;
 const SIGIL_OPENER_RE = /<<~/g;
+
+/** A panel's named keys: `key="value"`, the value taken whole and never re-parsed. */
+const PANEL_KEY_RE = /([a-z][\w-]*)\s*=\s*"([^"]*)"/gi;
+
+/** A mid-turn phase marker: the `->` arrow leading a loop glyph. */
+const PHASE_RE = /->\s*([✶⏿◇▶↺])/gu;
 
 // Voice headers ride the prose, not a sigil: `Name (Role):`, optionally bold,
 // optionally `Mask: Name (Role):`. Names allow hyphen/apostrophe compounds.
@@ -182,41 +155,26 @@ const KNOWN_VOICES = new Set([
   "gatekeeper",
 ]);
 
-const CONF_RE = /<<~\s*confidence\b([\s\S]*?)>>/gi;
-const CONF_NUM_RE = /(-?\d+)\s*\/\s*(\d+)/;
-
-const HUD_RE = /<<~\s*hud\b([\s\S]*?)>>/gi;
-// The announced faces lead; the true-names stay readable so a turn written either way harvests.
-const FOCUS_RE = /(?:Focus|Aperture)\s*\(\s*([^)]*?)\)/i;
-const FEEDBACK_RE = /(?:Feedback|OODA-?HA)\s*\(\s*([^)]*?)\)/i;
-// The firing closes where the next gauge begins or where the panel body ends — an open panel
-// carries the ward LAST, so end-of-body must terminate it or the open firing never matches.
-const WARD_RE = /Drift-(?:Ward|Watch)\s*\(\s*([\s\S]*?)\)\s*(?=Focus\b|Feedback\b|$)/i;
-const WARD_VOW_RE = /Confidence\s+(-?\d+)\s*\/\s*\d+/i;
-
 /**
- * A ward standing as its OWN sigil — the shape carried by every transcript written before the firing
- * moved inside the panel.
+ * Leading keywords a sigil island may carry.
  *
- * A CORPUS STATES ONE GRAMMAR; A READER TOLERATES EVERY GRAMMAR IT WILL MEET. `bags/` authors its own
- * contents and carries current pono alone. This harvester receives input it never authored, so
- * refusing the older shape here would read a month of real turns as turns that never warded — the
- * silence being indistinguishable from a turn that skipped the instrument.
+ * A CORPUS STATES ONE GRAMMAR; A READER TOLERATES EVERY GRAMMAR IT WILL MEET. `bags/` authors its
+ * own contents and carries current pono alone. This harvester receives input it never authored — a
+ * month of real turns, written under whatever the frame said that week — so a retired head stays
+ * readable here. Refusing one would read those turns as turns that fired nothing, and that silence
+ * is indistinguishable from a turn that skipped the instrument.
  */
-const STANDALONE_WARD_RE = /<<~\s*ward\b\s*([^\s>]*)?([\s\S]*?)>>/gi;
-const SYAD_RE = /<<~\s*syad\b([\s\S]*?)>>/gi;
-const ORACLE_RE = /<<~\s*oracle\b([\s\S]*?)>>/gi;
-
-/** Leading keyword of a sigil body → its island family (for water vs. recognized). */
 const KNOWN_KINDS = new Set([
   "lares",
-  "hud",
-  "ward",
-  "confidence",
-  "syad",
-  "mu",
+  "set",
   "oracle",
+  "stance",
+  "mu",
+  "persona",
   "kahea",
+  "ahu",
+  "aka",
+  "loulou",
   "aim",
   "yield",
   "ranks",
@@ -224,6 +182,10 @@ const KNOWN_KINDS = new Set([
   "flows",
   "moves",
   "holds",
+  // heads the frame has since retired, kept readable so an older turn still harvests
+  "hud",
+  "ward",
+  "syad",
   "confidence",
 ]);
 
@@ -232,38 +194,35 @@ function leadingWord(body: string): string {
   return m ? (m[1] ?? "").toLowerCase() : "";
 }
 
-function lastNumber(s: string): number | null {
-  const all = s.match(/-?\d+/g);
-  if (!all || all.length === 0) return null;
-  const n = Number(all[all.length - 1]);
-  return Number.isFinite(n) ? n : null;
-}
-
 function clamp(n: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, n));
 }
 
+/** Read a panel body's `key="value"` pairs. A key written twice keeps the last, as a reader would. */
+function panelKeys(body: string): Record<string, string> {
+  const keys: Record<string, string> = {};
+  PANEL_KEY_RE.lastIndex = 0;
+  for (const m of body.matchAll(PANEL_KEY_RE)) keys[(m[1] ?? "").toLowerCase()] = m[2] ?? "";
+  return keys;
+}
+
 /**
  * Harvest one verbatim turn on the gradient. Always returns a record for any
- * non-empty text — an unframed, all-prose turn comes back at a raw band with
+ * non-empty text — an unframed, all-prose turn comes back at a low standing with
  * `recordRaw` set, never null (the silence is recorded, never fabricated into a
- * bearing). The widening signals corroborate: a clean bearing flanked by a HUD
- * and named Voices reads canon; a lone drifted frame, or bare water, falls.
+ * bearing). The widening signals corroborate: a clean bearing flanked by a panel
+ * and named Voices reads high; a lone drifted frame, or bare water, falls.
  */
 export function harvestTurnGradient(text: string): TurnHarvest {
   const empty: TurnHarvest = {
     bearing: null,
     voices: [],
-    confidences: [],
-    huds: [],
-    stances: [],
-    wards: [],
-    oracles: [],
-    others: [],
+    panels: [],
+    sigils: [],
+    phases: [],
     sigilCount: 0,
     waterCount: 0,
     standing: 0,
-    band: "raw",
     driftFlags: ["empty"],
     recordRaw: true,
   };
@@ -271,70 +230,42 @@ export function harvestTurnGradient(text: string): TurnHarvest {
 
   const bearing = harvest(text);
 
-  // --- confidence markers (all of them) ---
-  const confidences: ConfidenceSignal[] = [];
-  for (const m of text.matchAll(CONF_RE)) {
+  // --- island census: every closed `<<~ …>>` classifies once, here ---
+  //
+  // ONE PASS, NOT ONE PER FAMILY. The specialized passes this replaces each walked the whole text
+  // for their own head, so a turn's islands were counted in two places and could disagree about
+  // which of them a body belonged to.
+  const panels: PanelSignal[] = [];
+  const sigils: SigilSignal[] = [];
+  let classifiedSigils = 0;
+  let bearingSigils = 0;
+
+  for (const m of text.matchAll(SIGIL_RE)) {
     const body = m[1] ?? "";
-    const num = CONF_NUM_RE.exec(body);
-    const register = (/^[\s~]*([A-Za-z][\w-]*)/.exec(body)?.[1] ?? null) || null;
-    confidences.push({
-      raw: m[0],
-      offset: m.index ?? 0,
-      register: register && !/^\d/.test(register) ? register : null,
-      value: num ? Number(num[1]) : lastNumber(body),
-      max: num ? Number(num[2]) : 20,
-    });
+    const head = leadingWord(body);
+    const offset = m.index ?? 0;
+    const rest = body.replace(/^[\s~]*[A-Za-z][\w-]*/, "");
+
+    if (head === "lares") {
+      const sub = /^[\s~]*lares\s+([A-Za-z]+)/i.exec(body)?.[1]?.toLowerCase() ?? "";
+      if (sub === "aim" || sub === "yield") bearingSigils += 1;
+      else sigils.push({ raw: m[0], offset, head, body: rest });
+      classifiedSigils += 1;
+    } else if (head === "set") {
+      const keys = panelKeys(rest);
+      panels.push({ raw: m[0], offset, hud: keys["hud"] ?? null, keys });
+      classifiedSigils += 1;
+    } else if (KNOWN_KINDS.has(head)) {
+      sigils.push({ raw: m[0], offset, head, body: rest });
+      classifiedSigils += 1;
+    }
+    // unknown leading word → not classified here; counted as water below.
   }
 
-  // --- HUD panels (each carrying its Drift-Ward firing) ---
-  const wards: WardSignal[] = [];
-  const huds: HudSignal[] = [];
-  for (const m of text.matchAll(HUD_RE)) {
-    const body = m[1] ?? "";
-    const ap = FOCUS_RE.exec(body);
-    const fb = FEEDBACK_RE.exec(body);
-    const wm = WARD_RE.exec(body);
-    const ward: WardSignal | null = wm
-      ? {
-          raw:    wm[0],
-          offset: (m.index ?? 0) + (wm.index ?? 0),
-          tool:   ((wm[1] ?? "").trim()[0]) ?? null,
-          vow:    (() => { const v = WARD_VOW_RE.exec(wm[1] ?? ""); return v ? Number(v[1]) : null; })(),
-        }
-      : null;
-    huds.push({
-      raw: m[0],
-      offset: m.index ?? 0,
-      focus: ap ? lastNumber(ap[1] ?? "") : null,
-      feedback: fb ? (fb[1] ?? "").trim() || null : null,
-      ward,
-    });
-    if (ward) wards.push(ward);
-  }
-
-  // Wards written as their own sigil, gathered after the panels so a turn carrying both reads both.
-  for (const m of text.matchAll(STANDALONE_WARD_RE)) {
-    const tool = (m[1] ?? "").trim();
-    const vow  = WARD_VOW_RE.exec(m[2] ?? "");
-    wards.push({
-      raw:    m[0],
-      offset: m.index ?? 0,
-      tool:   tool ? (tool[0] ?? null) : null,
-      vow:    vow ? Number(vow[1]) : null,
-    });
-  }
-  wards.sort((a, b) => a.offset - b.offset);
-
-  // --- syad stances ---
-  const stances: StanceSignal[] = [];
-  for (const m of text.matchAll(SYAD_RE)) {
-    stances.push({ raw: m[0], offset: m.index ?? 0, token: (m[1] ?? "").trim() });
-  }
-
-  // --- oracle ---
-  const oracles: OffsetSignal[] = [];
-  for (const m of text.matchAll(ORACLE_RE)) {
-    oracles.push({ raw: m[0], offset: m.index ?? 0 });
+  // --- mid-turn phase markers ---
+  const phases: PhaseSignal[] = [];
+  for (const m of text.matchAll(PHASE_RE)) {
+    phases.push({ raw: m[0], offset: m.index ?? 0, glyph: m[1] ?? "" });
   }
 
   // --- Voices ---
@@ -372,35 +303,9 @@ export function harvestTurnGradient(text: string): TurnHarvest {
   }
   voices.sort((a, b) => a.offset - b.offset);
 
-  // --- island census: classify every <<~ …>> body; the rest is water ---
-  const others: OtherSigil[] = [];
-  let classifiedSigils = 0;
-  const specialized =
-    confidences.length + huds.length + wards.length + stances.length + oracles.length;
-  // aim/yield sigils count toward recognized too (the bearing reads them).
-  let bearingSigils = 0;
-  for (const m of text.matchAll(SIGIL_RE)) {
-    const body = m[1] ?? "";
-    const kind = leadingWord(body);
-    if (kind === "lares") {
-      const sub = /^[\s~]*lares\s+([A-Za-z]+)/i.exec(body)?.[1]?.toLowerCase() ?? "";
-      if (sub === "aim" || sub === "yield") bearingSigils += 1;
-      else others.push({ raw: m[0], offset: m.index ?? 0, kind: "lares" });
-      classifiedSigils += 1;
-    } else if (["confidence", "hud", "ward", "syad", "oracle"].includes(kind)) {
-      // already captured by the specialized passes
-      classifiedSigils += 1;
-    } else if (KNOWN_KINDS.has(kind)) {
-      others.push({ raw: m[0], offset: m.index ?? 0, kind });
-      classifiedSigils += 1;
-    }
-    // unknown leading word → not classified here; counted as water below.
-  }
-
   // Water = `<<~` openers that no closed, recognized island claimed.
   const totalOpeners = (text.match(SIGIL_OPENER_RE) ?? []).length;
   const waterCount = Math.max(0, totalOpeners - classifiedSigils);
-
   const sigilCount = classifiedSigils;
 
   // --- overall standing on the gradient (the parse EARNS it backward) ---
@@ -408,14 +313,14 @@ export function harvestTurnGradient(text: string): TurnHarvest {
   let standing: number;
 
   if (bearing) {
-    // Start from the bearing's own drift standing, corroborate with the HUD body.
+    // Start from the bearing's own drift standing, corroborate with the panel and the Voices.
     standing = bearing.standing;
-    if (huds.length > 0) standing = clamp(standing + 1, 0, 18);
+    if (panels.length > 0) standing = clamp(standing + 1, 0, 18);
     if (voices.length > 0) standing = clamp(standing + 1, 0, 18);
-    if (confidences.length > 0) standing = clamp(standing + 1, 0, 20);
+    if (panels.length > 1) standing = clamp(standing + 1, 0, 20); // an open AND a close
   } else {
     driftFlags.push("frame:none");
-    if (specialized + bearingSigils > 0) {
+    if (panels.length + sigils.length + bearingSigils > 0) {
       // Structure without an aim/yield frame — degraded but real.
       standing = 8;
       if (voices.length > 0) standing = clamp(standing + 1, 0, 12);
@@ -435,23 +340,39 @@ export function harvestTurnGradient(text: string): TurnHarvest {
     else if (waterCount >= sigilCount) standing = clamp(standing - 2, 0, 20);
   }
   if (voices.length > 0) driftFlags.push(`voices:${voices.length}`);
-  if (confidences.length > 1) driftFlags.push(`confidence-multi:${confidences.length}`);
+  if (panels.length > 2) driftFlags.push(`panel-multi:${panels.length}`);
 
-  const band = harvestBand(standing);
   return {
     bearing,
     voices,
-    confidences,
-    huds,
-    stances,
-    wards,
-    oracles,
-    others,
+    panels,
+    sigils,
+    phases,
     sigilCount,
     waterCount,
     standing,
-    band,
     driftFlags,
     recordRaw: standing < HARVEST_FLOOR,
   };
+}
+
+/** The closing panel — `hud="yield"` — or null where the turn never closed one. */
+export function closingPanel(h: TurnHarvest): PanelSignal | null {
+  for (let i = h.panels.length - 1; i >= 0; i--) {
+    const p = h.panels[i]!;
+    if (p.hud === "yield") return p;
+  }
+  return null;
+}
+
+/**
+ * Whether the turn closed a loop — the closing panel's `feedback` tally reads `closed N↺` with N ≥ 1.
+ *
+ * A suspension alone does not close: `closed 0↺ -> open 1φ @◇:reason` reports a turn that ran the loop
+ * and hung it, which is the honest reading the tally exists to carry.
+ */
+export function aftermathClosed(h: TurnHarvest): boolean {
+  const tally = closingPanel(h)?.keys["feedback"] ?? "";
+  const m = /closed\s+(\d+)\s*[↺↻]/.exec(tally);
+  return m !== null && Number(m[1]) >= 1;
 }

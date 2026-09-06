@@ -45,14 +45,13 @@
 // plugin build can't bundle (this module rides the plugin bundle via form-layer).
 import {
   harvestTurnGradient,
+  aftermathClosed,
   type TurnHarvest,
-  type ConfidenceSignal,
-  type HudSignal,
 } from "@lararium/mesh/harvest";
 import {
   voiceCoherenceDensity,
   buresDistance,
-  registerMarginal,
+  phaseMarginal,
   type VoiceAmplitude,
   type DensityMatrix,
 } from "@lararium/mesh/bures-metric";
@@ -77,50 +76,27 @@ export interface RegisterBandDef {
  * register-vector indexes against (identical to the Bures-metric's five: Provisional
  * · Provisional-Synthesis · Synthesis · Synthesis-Canon · Canon).
  */
-export const REGISTER_BANDS: readonly RegisterBandDef[] = [
-  { name: "provisional", lo: 1, hi: 4 },
-  { name: "provisional-synthesis", lo: 5, hi: 8 },
-  { name: "synthesis", lo: 9, hi: 12 },
-  { name: "synthesis-canon", lo: 13, hi: 16 },
-  { name: "canon", lo: 17, hi: 20 },
-] as const;
+export const PHASE_BANDS: readonly string[] = ["observe", "orient", "decide", "act", "aftermath"] as const;
 
-/** The register-band count — the amplitude-vector / density-matrix dimension (5). */
-export const REGISTER_COUNT = REGISTER_BANDS.length;
+/** The phase glyph each band answers to, in the loop's own order. */
+export const PHASE_GLYPHS: readonly string[] = ["✶", "⏿", "◇", "▶", "↺"] as const;
 
-const BAND_BY_NAME = new Map(REGISTER_BANDS.map((b, i) => [b.name, i]));
+/** The phase count — the amplitude-vector / density-matrix dimension (5). */
+export const PHASE_COUNT = PHASE_BANDS.length;
 
 /**
- * The register band a register WORD names, or null when the word is not a band
- * name (`Synthesis` → 2; a novel word → null, so the caller falls back to value).
+ * The phase a mid-turn marker names, or null for anything else.
+ *
+ * THE LOOP REPLACES THE LADDER. This channel needs a five-valued signal per Voice span, and the
+ * register ladder that supplied one retired with its instrument. The OODA-HA phase markers carry the
+ * same cardinality, ride the same spans, and the turn actually writes them — so the amplitude vector
+ * reads a live signal rather than a remembered one. Nothing here is fabricated: a Voice that marks no
+ * phase contributes no mass, exactly as a Voice that vowed no register contributed none.
  */
-export function registerBandForWord(word: string | null): number | null {
-  if (!word) return null;
-  const key = word.trim().toLowerCase();
-  const idx = BAND_BY_NAME.get(key);
-  return idx === undefined ? null : idx;
-}
-
-/**
- * The register band a 0–20 VALUE seats in, or null when out of range. `0` seats in
- * no band (a void/off, not a register); ≥ 1 lands on the ladder.
- */
-export function registerBandForValue(value: number | null): number | null {
-  if (value === null || !Number.isFinite(value) || value < 1) return null;
-  for (let i = 0; i < REGISTER_BANDS.length; i++) {
-    const b = REGISTER_BANDS[i]!;
-    if (value >= b.lo && value <= b.hi) return i;
-  }
-  return value > 20 ? REGISTER_COUNT - 1 : null; // clamp an over-20 reading to Canon
-}
-
-/**
- * The band a confidence marker reads. The register WORD wins when it names a band
- * (the author's declared register); else the numerator's band; else null (a marker
- * carrying neither a band word nor a parseable value — no register signal).
- */
-export function bandForConfidence(c: ConfidenceSignal): number | null {
-  return registerBandForWord(c.register) ?? registerBandForValue(c.value);
+export function phaseBandForGlyph(glyph: string | null): number | null {
+  if (!glyph) return null;
+  const i = PHASE_GLYPHS.indexOf(glyph);
+  return i === -1 ? null : i;
 }
 
 // ---------------------------------------------------------------------------
@@ -238,27 +214,6 @@ const SUSPENSION_RE = /(?:φ|✶|⏿|◇|▶)\s*:/u;
 // The aftermath ratchet: `N↺` with N ≥ 1 — the tally of loops that closed.
 const RATCHET_RE = /(\d+)\s*↺/u;
 
-/** The CLOSING HUD panel — the last by offset (the chiasmus close slides it). */
-function closingHud(huds: readonly HudSignal[]): HudSignal | null {
-  if (huds.length === 0) return null;
-  let latest = huds[0]!;
-  for (const h of huds) if (h.offset >= latest.offset) latest = h;
-  return latest;
-}
-
-/**
- * A LITERAL parse (no inference) of aftermath closure from the closing HUD's
- * OODA-HA payload: TRUE iff the tally reads `N↺` (N ≥ 1) with NO `φ:` suspension;
- * FALSE on `0φ:reason`, a suspended phase glyph, a seed-only `(3)`, or no HUD.
- */
-export function aftermathClosedFromHuds(huds: readonly HudSignal[]): boolean {
-  const hud = closingHud(huds);
-  const payload = hud?.feedback ?? "";
-  if (SUSPENSION_RE.test(payload)) return false; // a suspended loop persists open
-  const ratchet = RATCHET_RE.exec(payload);
-  return ratchet !== null && Number(ratchet[1]) >= 1;
-}
-
 // ---------------------------------------------------------------------------
 // (b) VoiceAmplitude[] — segment by Voice, read each Voice's register amplitude
 // ---------------------------------------------------------------------------
@@ -271,7 +226,7 @@ export function aftermathClosedFromHuds(huds: readonly HudSignal[]): boolean {
  * reading is the functor's image). Kept for consumers / tests that need the provenance (which Voice,
  * how many markers, its band mass).
  */
-export interface VoiceRegisterReading {
+export interface VoicePhaseReading {
   /** Canonical Voice key — the resolved role, else the lowercased surfaced name. */
   readonly voice: string;
   /** The {@link resolveVoiceRole} result, or null (a novel name / bare `Lares`). */
@@ -319,7 +274,7 @@ interface VoiceAcc {
 export function harvestVoiceReadings(
   harvest: TurnHarvest,
   textLength: number,
-): VoiceRegisterReading[] {
+): VoicePhaseReading[] {
   const voices = [...harvest.voices].sort((a, b) => a.offset - b.offset);
   if (voices.length === 0) return [];
 
@@ -333,15 +288,16 @@ export function harvestVoiceReadings(
 
     let acc = accs.get(key);
     if (!acc) {
-      acc = { role, bandCounts: new Array<number>(REGISTER_COUNT).fill(0), markerCount: 0, spanChars: 0 };
+      acc = { role, bandCounts: new Array<number>(PHASE_COUNT).fill(0), markerCount: 0, spanChars: 0 };
       accs.set(key, acc);
     }
     acc.spanChars += Math.max(0, spanEnd - spanStart);
 
-    for (const c of harvest.confidences) {
-      if (c.offset < spanStart || c.offset >= spanEnd) continue;
-      const band = bandForConfidence(c);
-      if (band === null) continue; // no register signal — not counted
+    // Every phase marker sounding inside this Voice's span, counted where it sounded.
+    for (const ph of harvest.phases) {
+      if (ph.offset < spanStart || ph.offset >= spanEnd) continue;
+      const band = phaseBandForGlyph(ph.glyph);
+      if (band === null) continue; // not a loop phase — not counted
       acc.bandCounts[band]! += 1;
       acc.markerCount += 1;
     }
@@ -351,7 +307,7 @@ export function harvestVoiceReadings(
   let totalSpan = 0;
   for (const acc of accs.values()) if (acc.markerCount > 0) totalSpan += acc.spanChars;
 
-  const readings: VoiceRegisterReading[] = [];
+  const readings: VoicePhaseReading[] = [];
   for (const [voice, acc] of accs) {
     if (acc.markerCount === 0) continue; // omit register-silent Voices
     const bandMass = acc.bandCounts.map((n) => n / acc.markerCount);
@@ -380,7 +336,7 @@ export interface TurnSensorium {
   /** The bare Voice register-amplitudes (feeds {@link voiceCoherenceDensity}). */
   readonly voices: readonly VoiceAmplitude[];
   /** The richer per-Voice readings (provenance for consumers / tests). */
-  readonly readings: readonly VoiceRegisterReading[];
+  readonly readings: readonly VoicePhaseReading[];
   /** The underlying gradient harvest carried through (provenance). */
   readonly harvest: TurnHarvest;
 }
@@ -404,7 +360,7 @@ export function harvestTurn(
   const harvest = harvestTurnGradient(transcript);
   const readings = harvestVoiceReadings(harvest, transcript.length);
   const selfRead: SelfRead = {
-    aftermathClosed: aftermathClosedFromHuds(harvest.huds),
+    aftermathClosed: aftermathClosed(harvest),
     structuralChange: firedStructuralWrite(effects),
   };
   return {
@@ -426,7 +382,7 @@ export function harvestTurn(
  * assemble) — the same contract as {@link voiceCoherenceDensity}.
  */
 export function turnDensity(voices: readonly VoiceAmplitude[]): DensityMatrix {
-  return voiceCoherenceDensity(voices, REGISTER_COUNT);
+  return voiceCoherenceDensity(voices, PHASE_COUNT);
 }
 
 /**
@@ -446,7 +402,7 @@ export function buresDrift(
 // ---------------------------------------------------------------------------
 
 /** The dominant register band a turn's density sits in — the teleodynamic band. */
-export interface RegisterBandReading {
+export interface PhaseBandReading {
   /** The register marginal `p` (the diagonal of ρ) — a point on Δ⁴. */
   readonly marginal: readonly number[];
   /** The dominant band index (argmax of the marginal). */
@@ -461,12 +417,12 @@ export interface RegisterBandReading {
  * the teleodynamic sequence tracks over time (alongside the {@link SelfRead} triple
  * the {@link teleodynamicProbe} reads). Throws on an empty Voice set.
  */
-export function turnRegisterBand(voices: readonly VoiceAmplitude[]): RegisterBandReading {
+export function turnPhaseBand(voices: readonly VoiceAmplitude[]): PhaseBandReading {
   const rho = turnDensity(voices);
-  const marginal = registerMarginal(rho);
+  const marginal = phaseMarginal(rho);
   let band = 0;
   for (let i = 1; i < marginal.length; i++) if (marginal[i]! > marginal[band]!) band = i;
-  return { marginal, band, name: REGISTER_BANDS[band]?.name ?? "provisional" };
+  return { marginal, band, name: PHASE_BANDS[band] ?? "observe" };
 }
 
 // ---------------------------------------------------------------------------

@@ -205,7 +205,7 @@ export function deriveRootHandle(sourceFile?: string, frontier?: string | null):
 /** Deterministic function-hall routing from the authored instruments (no LLM). */
 function hallForHarvest(h: TurnHarvest): string {
   if (h.bearing && h.standing >= 13) return "hall_facts"; // a decision landed, high standing
-  if (h.huds.some((x) => (x.feedback ?? "").includes("↺"))) return "hall_events"; // a Feedback loop closed
+  if (h.panels.some((p) => (p.keys["feedback"] ?? "").includes("↺"))) return "hall_events"; // a loop closed
   if (h.sigilCount > 0 || h.voices.length > 0) return "hall_discoveries"; // structured exploration
   return ""; // leave the substrate's own hall untouched
 }
@@ -221,7 +221,6 @@ export function buildPatch(
   const patch: Record<string, string | number> = {
     lar_hv: LAR_HV,
     lar_surface: deriveSurface(sourceFile),
-    lar_band: h.band,
     lar_bearing_standing: h.standing,
     lar_sigils: h.sigilCount,
     lar_water: h.waterCount,
@@ -233,8 +232,9 @@ export function buildPatch(
   if (h.bearing?.yieldUri) patch["lar_yield"] = h.bearing.yieldUri.slice(0, 300);
   if (h.voices.length)
     patch["lar_voices"] = h.voices.map((v) => (v.role ? `${v.name} (${v.role})` : v.name)).join("|").slice(0, 400);
-  if (h.confidences.length)
-    patch["lar_confidence"] = h.confidences.map((c) => `${c.register ?? "?"}:${c.value ?? "?"}/${c.max}`).join("|").slice(0, 300);
+  // The closing tally, verbatim — `closed 2↺`, or `closed 0↺ -> open 1φ @◇:reason` when one hangs.
+  const tally = h.panels.find((p) => p.hud === "yield")?.keys["feedback"];
+  if (tally) patch["lar_feedback"] = tally.slice(0, 300);
   if (h.driftFlags.length) patch["lar_drift"] = h.driftFlags.join("|").slice(0, 200);
   const hall = hallForHarvest(h);
   if (hall) patch["lar_hall"] = hall;

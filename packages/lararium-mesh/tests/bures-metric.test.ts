@@ -17,7 +17,7 @@ import {
   projectPSDDensity,
   isDensityMatrix,
   voiceCoherenceDensity,
-  registerMarginal,
+  phaseMarginal,
   berryHolonomyImag,
   symmetricEigen,
   type DensityMatrix,
@@ -88,8 +88,8 @@ describe("bures-metric — superposition sits closer than the mixture", () => {
 
     expect(dSuper).toBeLessThan(dMix); // superposition-closer-than-mixture.
     // and the marginals are identical, so the CLASSICAL step cannot tell them apart:
-    const pSuper = registerMarginal(projectPSDDensity(superpos));
-    const pMix = registerMarginal(mix);
+    const pSuper = phaseMarginal(projectPSDDensity(superpos));
+    const pMix = phaseMarginal(mix);
     for (let i = 0; i < n; i++) expect(Math.abs(pSuper[i]! - pMix[i]!)).toBeLessThan(1e-6);
   });
 
@@ -102,7 +102,7 @@ describe("bures-metric — superposition sits closer than the mixture", () => {
       { amplitudes: [0.6, 0.55, 0.3, 0.2, 0.1] }, // shares the sign/structure of ref's coherence.
       { amplitudes: [0.2, 0.1, 0.25, 0.15, 0.1] },
     ]);
-    const p = registerMarginal(coh);
+    const p = phaseMarginal(coh);
     const dephased = diagonalDensity(p.map((v) => v / p.reduce((a, b) => a + b, 0))); // same marginal, no coherence.
     expect(fidelity(ref, coh)).toBeGreaterThan(fidelity(ref, dephased));
   });
@@ -165,11 +165,11 @@ describe("bures-metric — the Voice coherence channel (Plurality Pono, honest s
       if (i !== j) expect(Math.abs(rho[i]![j]!)).toBeLessThan(1e-12);
     }
     // the diagonal reproduces the weights (the register marginal), so Bures = Bhattacharyya here.
-    expect(registerMarginal(rho)).toEqual(
+    expect(phaseMarginal(rho)).toEqual(
       expect.arrayContaining([expect.closeTo(0.1, 9), expect.closeTo(0.4, 9)]),
     );
     const bAngle = buresAngle(rho, diagonalDensity(Q));
-    const cAngle = bhattacharyyaAngle(registerMarginal(rho), Q);
+    const cAngle = bhattacharyyaAngle(phaseMarginal(rho), Q);
     expect(Math.abs(bAngle - cAngle)).toBeLessThan(1e-9);
   });
 

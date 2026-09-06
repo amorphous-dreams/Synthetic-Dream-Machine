@@ -47,12 +47,12 @@ function sigilNode(name: string, attrs: Record<string, string>, pos = 0): MemeAs
 
 // The clean worked turn (mirrors turn-harvest.test.ts CLEAN_TURN).
 const CLEAN_TURN = `<<~ lares aim lar://mara:operator@crossroads/operator.weighs.deps -> lar://compita:agent@crossroads/council.options.cuts>>
-<<~ hud Focus(11) Feedback(9) Drift-Ward(* Confidence 15/20 · a preferred answer already held)>>
+<<~ set hud="aim" focus="11/measure" feedback="9/declare-attention" drift-ward="* · a preferred answer already held">>
 
-Lares (Council): two libraries, both viable. <<~ confidence Synthesis 11/20>> the fork holds.
+Lares (Council): ->◇ two libraries, both viable. the fork holds.
 
-<<~ oracle ↯11 ⁂ ⚃ (4) ✲⬡◈⟁>>
-<<~ hud Drift-Ward(! Confidence 12/20 · the read rides on a source I never opened · ↻ L-Prime) Focus(11 -> 12) Feedback(1↺)>>
+<<~ oracle "↯11 ✲ ⚃(4) ⁂:⬡🌖◈⟁">>
+<<~ set hud="yield" drift-ward="! · the read rides on a source I never opened · ↻ L-Prime" focus="11/measure -> 12/measure" feedback="closed 1↺">>
 <<~ lares yield lar://compita:agent@crossroads/council.fork.named -> ?>>`;
 
 function tokensOfKind(stream: readonly MoveToken[], kind: MoveToken["kind"]): MoveToken[] {
@@ -108,9 +108,9 @@ describe("emitMoveSkeleton — the clean turn", () => {
     expect(offsets).toEqual(sorted);
   });
 
-  test("the harvest band carries through", () => {
-    expect(sk.band).toBe(h.band);
-    expect(sk.band).toBe("canon");
+  test("the harvest standing carries through", () => {
+    expect(sk.standing).toBe(h.standing);
+    expect(sk.standing).toBeGreaterThan(0);
   });
 
   test("counts agree with the stream", () => {
@@ -121,17 +121,17 @@ describe("emitMoveSkeleton — the clean turn", () => {
   });
 });
 
-describe("emitMoveSkeleton — multiple confidence markers (never collapsed)", () => {
+describe("emitMoveSkeleton — every sigil rides the stream as its own token", () => {
   const turn = `<<~ lares aim lar:///a.b.c/x -> lar:///d.e.f/y>>
-Some claim <<~ confidence Provisional 3/20>> and another <<~ confidence Canon 19/20>> and a third <<~ confidence Synthesis 11/20>>.
+<<~ stance "poet">> some claim, then <<~ mu "*!">> and an <<~ oracle "↯8 ✲ ⚀(1) ⁂:🗡️">>.
 <<~ lares yield lar:///d.e.f/y -> ?>>`;
   const h = harvestTurnGradient(turn);
   const sk = emitMoveSkeleton(h);
 
-  test("every confidence marker rides the stream as its own token", () => {
-    const conf = tokensOfKind(sk.stream, "confidence");
-    expect(conf.length).toBe(3);
-    expect(conf.every((c) => c.axisId === "sigil:confidence")).toBe(true);
+  test("each head lands under its own axis, never collapsed into one", () => {
+    const sigils = tokensOfKind(sk.stream, "sigil");
+    expect(sigils.map((t) => t.token)).toEqual(["stance", "mu", "oracle"]);
+    expect(sigils.map((t) => t.axisId)).toEqual(["sigil:stance", "sigil:mu", "sigil:oracle"]);
   });
 });
 
@@ -171,8 +171,8 @@ describe("emitMoveSkeleton — all-prose turn (record raw)", () => {
   const h = harvestTurnGradient(turn);
   const sk = emitMoveSkeleton(h);
 
-  test("no markers → an empty-or-content stream, band raw, never throws", () => {
-    expect(sk.band).toBe("raw");
+  test("no markers → an empty-or-content stream, below the floor, never throws", () => {
+    expect(sk.standing).toBeLessThan(4);
     expect(tokensOfKind(sk.stream, "voice").length).toBe(0);
     expect(tokensOfKind(sk.stream, "bearing").length).toBe(0);
   });

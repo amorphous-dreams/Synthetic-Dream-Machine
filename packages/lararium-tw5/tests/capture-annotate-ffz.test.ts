@@ -37,7 +37,7 @@ describe("captureAnnotate — lar_ffz stamps the membership path (Arc free + Pul
     expect(String(patch["lar_ffz"])).toMatch(/^session\/_\.claude__run-abc\._\._\.[0-9a-f]{8}$/);
     // The rest of the reading patch is unchanged (the harvest still lands).
     expect(patch["lar_surface"]).toBe("claude");
-    expect(typeof patch["lar_band"]).toBe("string");
+    expect(typeof patch["lar_bearing_standing"]).toBe("number");
   });
 
   test("Pulse is deterministic from the turn content; distinct turns get distinct Pulse cells", () => {

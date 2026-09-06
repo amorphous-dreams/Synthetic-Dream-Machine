@@ -25,12 +25,9 @@
 import type {
   TurnHarvest,
   VoiceSignal,
-  WardSignal,
-  HudSignal,
-  ConfidenceSignal,
-  StanceSignal,
+  PanelSignal,
+  SigilSignal,
   OffsetSignal,
-  OtherSigil,
 } from "@lararium/mesh";
 import type { MemeAstNode, MemeAstKind } from "../meme-ast/types.js";
 import {
@@ -157,8 +154,8 @@ export interface MoveSkeleton {
   readonly graph: readonly PlaceholderNode[];
   /** Quick conformance read over the stream. */
   readonly counts: MoveSkeletonCounts;
-  /** The harvest band carried through (provenance for the encoder). */
-  readonly band: TurnHarvest["band"];
+  /** The harvest standing carried through (provenance for the encoder). */
+  readonly standing: TurnHarvest["standing"];
   /** The parsed aim/yield bearing + its queryable facets (the RED URI, descended). */
   readonly bearing: SkeletonBearing;
 }
@@ -191,52 +188,31 @@ function voiceTokens(v: VoiceSignal): MoveToken[] {
   ];
 }
 
-function wardTokens(w: WardSignal): MoveToken[] {
-  const state = wardStateForGlyph(w.tool);
-  return [
-    {
-      kind: "ward",
-      token: state ?? (w.tool ?? "ward"),
-      axisId: state ? `ward:${state}` : null,
-      offset: w.offset,
-    },
-  ];
-}
-
-/** A HUD signal: one `hud` token, plus a phase token per OODA-HA glyph in its payload. */
-function hudTokens(h: HudSignal): MoveToken[] {
+/**
+ * A panel: one `hud` token, the ward state its `drift-ward` value leads with, and a phase token per
+ * OODA-HA glyph in its `feedback` tally.
+ *
+ * ONE FIRING, THREE READINGS. The gauges stopped being sigils of their own and became named keys, so
+ * an emitter per gauge would now read one island three times and place it at one offset three times.
+ */
+function panelTokens(p: PanelSignal): MoveToken[] {
   const out: MoveToken[] = [
-    { kind: "hud", token: "hud", axisId: "sigil:hud", offset: h.offset },
+    { kind: "hud", token: p.hud ?? "set", axisId: "sigil:hud", offset: p.offset },
   ];
-  const payload = h.feedback ?? "";
+  const state = wardStateForGlyph((p.keys["drift-ward"] ?? "").trim()[0] ?? null);
+  if (state) out.push({ kind: "ward", token: state, axisId: `ward:${state}`, offset: p.offset });
+  const tally = p.keys["feedback"] ?? "";
   for (const phase of OODA_HA_PHASES) {
-    if (payload.includes(phase.glyph)) {
+    if (tally.includes(phase.glyph)) {
       const name = phaseForGlyph(phase.glyph);
-      out.push({
-        kind: "phase",
-        token: name ?? phase.name,
-        axisId: `phase:${phase.name}`,
-        offset: h.offset,
-      });
+      out.push({ kind: "phase", token: name ?? phase.name, axisId: `phase:${phase.name}`, offset: p.offset });
     }
   }
   return out;
 }
 
-function confidenceTokens(c: ConfidenceSignal): MoveToken[] {
-  return [{ kind: "confidence", token: "confidence", axisId: "sigil:confidence", offset: c.offset }];
-}
-
-function syadTokens(s: StanceSignal): MoveToken[] {
-  return [{ kind: "syad", token: "syad", axisId: "sigil:syad", offset: s.offset }];
-}
-
-function oracleTokens(o: OffsetSignal): MoveToken[] {
-  return [{ kind: "oracle", token: "oracle", axisId: "sigil:oracle", offset: o.offset }];
-}
-
-function otherTokens(o: OtherSigil): MoveToken[] {
-  return [{ kind: "sigil", token: o.kind, axisId: `sigil:${o.kind}`, offset: o.offset }];
+function sigilTokens(sig: SigilSignal): MoveToken[] {
+  return [{ kind: "sigil", token: sig.head, axisId: `sigil:${sig.head}`, offset: sig.offset }];
 }
 
 /**
@@ -252,12 +228,8 @@ function buildStream(h: TurnHarvest, bearing: SkeletonBearing): MoveToken[] {
   };
 
   for (const v of h.voices) add(v, voiceTokens(v));
-  for (const w of h.wards) add(w, wardTokens(w));
-  for (const hud of h.huds) add(hud, hudTokens(hud));
-  for (const c of h.confidences) add(c, confidenceTokens(c));
-  for (const s of h.stances) add(s, syadTokens(s));
-  for (const o of h.oracles) add(o, oracleTokens(o));
-  for (const o of h.others) add(o, otherTokens(o));
+  for (const p of h.panels) add(p, panelTokens(p));
+  for (const sig of h.sigils) add(sig, sigilTokens(sig));
 
   positioned.sort((a, b) => a.offset - b.offset || a.end - b.end);
 
@@ -428,5 +400,5 @@ export function emitMoveSkeleton(
     ).length,
   };
 
-  return { stream, graph, counts, band: harvest.band, bearing };
+  return { stream, graph, counts, standing: harvest.standing, bearing };
 }
