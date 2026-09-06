@@ -236,7 +236,7 @@ reported as failed. What follows carries the readings, not the session that took
 
 !!! The cliff at λ=1 ~ a first-order transition, not a slope
 
-''A slope was predicted and a discontinuity arrived.'' Struct-form disagreement was expected to slide
+''The design predicted a slope; a discontinuity arrived.'' Struct-form disagreement should have slid
 smoothly as the dial turned; the data shows a jump the instant λ leaves 1. The physics vocabulary fits: a
 smooth slide reads as a second-order transition, and this resembles ''symmetry breaking over a degenerate
 ground state''. The red metric holds three classes with zero within-class energy — every member of a class
@@ -270,14 +270,14 @@ that into a choice of instrument: λ=1 studies the determinatives, λ=0 studies 
 * ''λ=0'' — reproduces full extraction ''without extracting'' (structure ρ = 0.9982). Any nonzero weight on
 the bare channel breaks every tie at once.
 * ''Structure, wrapped'' — DECKARD centrality over router parse-trees reads ρ 1.000 in both modes: both
-corpora parse into the sigil grammar as identical envelopes, identical trees. The annotation IS the shape
-being measured, so a discovery made over wrapped ground can be a machine admiring its own folder.
+corpora parse into the sigil grammar as identical envelopes, identical trees. The measurement reads the
+annotation's own shape, so a discovery made over wrapped ground reads as a machine admiring its folder.
 
 !!! Sequenced meaning ~ Frege in the embedding space
 
 The shape-placebo moved content salience nearly as far as the meaning-placebo (0.70/0.64 against
 0.74/0.63): ''scrambling word order costs the content plane about as much as replacing the words with
-babble''. Three domains converge on why, and the decomposition they yield is the reusable part.
+babble''. Three domains converge on why, and the decomposition they yield carries the reuse.
 
 * ''Compositional semantics'' — Frege's principle: sentence meaning composes through structure, not through
 a bag of word-meanings. An embedder that drops about equally under shuffle and babble reads compositions
@@ -289,7 +289,7 @@ shuffle (0.70) and babble (0.74).
 * ''Distributional semantics' own creed'' — shuffling destroys the contexts and with them the meaning,
 though every word survives.
 
-''That the sliver runs small is itself the finding.'' At section grain the "semantic" plane functions
+''The sliver running small carries the finding itself.'' At section grain the "semantic" plane functions
 mostly as a syntax-sensitive lexicon reader. Any later claim about content carries a measured
 decomposition — ''lexicon / order / residual'' — and the placebo square regenerates that decomposition for
 every new corpus free.
@@ -297,8 +297,8 @@ every new corpus free.
 !!! The Parry-Lord signature ~ a rhythm that survives both nulls
 
 Milman Parry and Albert Lord's oral-formulaic theory established that orally composed epic rides
-''formulas'' — fixed phrase-units filling rhythmic slots — and that ''formulaic density is the measurable
-signature of oral composition'' (Homer's epithets; and, as Beckwith's own commentary on the Kumulipo
+''formulas'' — fixed phrase-units filling rhythmic slots — and that ''formulaic density MARKS oral composition,
+measurably'' (Homer's epithets; and, as Beckwith's own commentary on the Kumulipo
 details, Polynesian genealogical chant).
 
 ''The Kalākaua text — the 1889 printing closest to the oral Hawaiian original, least mediated by scholarly
@@ -315,15 +315,15 @@ sequence statistics alone.
 
 !!! What this changes for the corpus work
 
-''The wrapped corpus stays the right instrument for studying the notation itself'' — the finding is not a
-defect to fix but a ''dial to declare''. Corpus linguistics has long known markup contaminates corpus
+''The wrapped corpus stays the right instrument for studying the notation itself'' — the finding names a
+''dial to declare'', never a defect to fix. Corpus linguistics has long known markup contaminates corpus
 statistics; what stands added here reads as a quantified, plane-wise ablation of that contamination with
 the mechanism named. Statistical physics supplies the transition vocabulary: dominance on a measure-zero
 slice of parameter space, structurally unstable, collapsing under infinitesimal perturbation.
 
 ''Provenance:'' harvested verbatim from the campaign scroll at `lar:///lares_research/the-kumulipo-test-campaign`,
-whose bytes arrived torn from a terminal capture. Fused words were repaired; no dropped span was
-reconstructed. Three passages in the source carry gaps this harvest could not recover and did not invent.
+whose bytes arrived torn from a terminal capture. The harvest repaired fused words and reconstructed no dropped
+span. Three passages in the source carry gaps this harvest could not recover and did not invent.
 
 <<~/ahu>>
 
@@ -526,6 +526,6 @@ A 3-research-scout synthesis, grounded on:
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;U9NRwBz8GCQ9F8ZDRl7xwGoZclBceq19bo0SYrqzZoc
+<<^ code="&#x0003;">>ni:///sha-256;nVD-zCpE8BGJ5vsgR1RFaqEifM8N0NQFtX_i3GCjsNY
 
 <<^ code="&#x0004;" -> to=?>>
