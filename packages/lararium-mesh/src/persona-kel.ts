@@ -42,7 +42,8 @@ export interface PersonaKelEvent {
   readonly eventCid:          string;             // content-address of THIS event (its own hash)
   readonly prefix:            string;             // the STABLE identifier (AID) — fixed across every rotation
   readonly opKeyDid:          string;             // "0x"+hex — the operational key this event SEATS (head = authoritative)
-  readonly recoverySetHash:   string;             // sealKeySetHash(recoveryRoster, recoveryThreshold), pre-committed at inception
+  readonly recoverySetHash:   string;             // the GENESIS recovery digest — folded into the prefix, fixed for life (anti-swap)
+  readonly nextRecoverySetHash: string;           // the ROLLING commitment — the set that authorizes the NEXT rotation; grafts per event
   readonly recoveryRoster:    readonly string[];  // the n guardian recovery pubkeys — EMPTY at inception, REVEALED at a rotation
   readonly recoveryThreshold: number;             // k — REVEALED at a rotation (0 at inception; folded into recoverySetHash)
   readonly prevEventCid:      string | null;      // hash-link to the predecessor (null at inception)
@@ -54,7 +55,7 @@ export interface PersonaKelEvent {
  *  which IS bound here), so re-carrying an event never re-signs it (the kapae-antigen sig-outside pattern). */
 type PersonaEventCore = Pick<
   PersonaKelEvent,
-  "seq" | "prefix" | "opKeyDid" | "recoverySetHash" | "prevEventCid"
+  "seq" | "prefix" | "opKeyDid" | "recoverySetHash" | "nextRecoverySetHash" | "prevEventCid"
 >;
 
 /** The canonical bytes an event's cid commits AND each guardian rotation-signature signs over. Binding the
@@ -67,6 +68,7 @@ export function personaEventBytes(core: PersonaEventCore): Uint8Array {
     prefix:          core.prefix,
     opKeyDid:        core.opKeyDid,
     recoverySetHash: core.recoverySetHash,
+    nextRecoverySetHash: core.nextRecoverySetHash,
     prevEventCid:    core.prevEventCid,
   });
 }
@@ -80,6 +82,7 @@ export function personaEventCidOf(core: PersonaEventCore): string {
     prefix:          core.prefix,
     opKeyDid:        core.opKeyDid,
     recoverySetHash: core.recoverySetHash,
+    nextRecoverySetHash: core.nextRecoverySetHash,
     prevEventCid:    core.prevEventCid,
   }))}`;
 }
@@ -110,7 +113,8 @@ export function personaPrefixOf(inceptionOpKeyDid: string, recoverySetHash: stri
  */
 export function mintPersonaInception(opKeyDid: string, recoverySetHash: string): PersonaKelEvent {
   const prefix = personaPrefixOf(opKeyDid, recoverySetHash);
-  const core: PersonaEventCore = { seq: 0, prefix, opKeyDid, recoverySetHash, prevEventCid: null };
+  // The genesis set fills BOTH slots: it is the prefix's anti-swap wall AND the first rotation's authority.
+  const core: PersonaEventCore = { seq: 0, prefix, opKeyDid, recoverySetHash, nextRecoverySetHash: recoverySetHash, prevEventCid: null };
   return {
     ...core,
     eventCid:          personaEventCidOf(core),
@@ -126,12 +130,15 @@ export function mintPersonaInception(opKeyDid: string, recoverySetHash: string):
  * hands THESE bytes to each guardian; each signs with their OWN recovery key and returns a signature, and
  * NOTHING assembles (no seed, no share). `mintPersonaRotation` recomputes the identical bytes to verify.
  */
-export function personaRotationSigningBytes(head: PersonaKelEvent, freshOpKeyDid: string): Uint8Array {
+export function personaRotationSigningBytes(
+  head: PersonaKelEvent, freshOpKeyDid: string, nextRecoverySetHash: string = head.nextRecoverySetHash,
+): Uint8Array {
   return personaEventBytes({
     seq:             head.seq + 1,
     prefix:          head.prefix,
     opKeyDid:        freshOpKeyDid,
-    recoverySetHash: head.recoverySetHash,
+    recoverySetHash: head.recoverySetHash,          // the genesis wall, carried unchanged
+    nextRecoverySetHash,                            // the graft rides INSIDE the signed bytes
     prevEventCid:    head.eventCid,
   });
 }
@@ -157,24 +164,29 @@ export async function mintPersonaRotation(input: {
   readonly head:              PersonaKelEvent;
   readonly freshOpKeyDid:     string;               // the operational key the recovering vessel just minted
   readonly recoveryRoster:    readonly string[];    // the REVEALED n guardian recovery pubkeys
-  readonly recoveryThreshold: number;               // k — the reveal's threshold; folds into recoverySetHash
+  readonly recoveryThreshold: number;               // k — the reveal must hash to the HEAD's rolling commitment
   readonly rotationSigs:      readonly QuorumSignature[]; // the gathered guardian signatures over the event bytes
+  /** The NEXT recovery-set digest this rotation commits — the graft. Absent, the standing commitment
+   *  carries forward: a set change is always an explicit act, never a silent drop. */
+  readonly nextRecoverySetHash?: string;
 }): Promise<PersonaRotateResult> {
   const { head, freshOpKeyDid, recoveryRoster, recoveryThreshold, rotationSigs } = input;
-  if (head.recoverySetHash.length === 0) {
-    return { ok: false, reason: "rotation unarmed — the head event pre-committed no recovery-set digest" };
+  const nextRecoverySetHash = input.nextRecoverySetHash ?? head.nextRecoverySetHash;
+  if (head.nextRecoverySetHash.length === 0) {
+    return { ok: false, reason: "rotation unarmed — the head event carries no rolling recovery commitment" };
   }
-  if (sealKeySetHash(recoveryRoster, recoveryThreshold) !== head.recoverySetHash) {
-    return { ok: false, reason: "reveal mismatch — the revealed recovery roster does not match the pre-committed digest" };
+  if (sealKeySetHash(recoveryRoster, recoveryThreshold) !== head.nextRecoverySetHash) {
+    return { ok: false, reason: "reveal mismatch — the revealed recovery roster does not match the head's rolling commitment" };
   }
   const core: PersonaEventCore = {
     seq:             head.seq + 1,
     prefix:          head.prefix,          // the identifier stays FIXED
     opKeyDid:        freshOpKeyDid,
-    recoverySetHash: head.recoverySetHash, // the recovery commit carries forward unchanged
+    recoverySetHash: head.recoverySetHash, // the GENESIS wall carries forward unchanged
+    nextRecoverySetHash,                   // the graft: the set that authorizes the NEXT rotation
     prevEventCid:    head.eventCid,
   };
-  const quorum = await verifyRotationQuorum(core, recoveryRoster, recoveryThreshold, rotationSigs);
+  const quorum = await verifyRotationQuorum(core, recoveryRoster, recoveryThreshold, rotationSigs, head.nextRecoverySetHash);
   if (!quorum.ok) return { ok: false, reason: quorum.reason ?? "rotation quorum unsatisfied" };
   return {
     ok: true,
@@ -196,11 +208,14 @@ export async function verifyRotationQuorum(
   recoveryRoster:    readonly string[],
   recoveryThreshold: number,
   rotationSigs:      readonly QuorumSignature[],
+  /** The commitment this rotation reveals against — the PREDECESSOR's rolling commitment. Defaults to
+   *  the genesis wall for a caller verifying an inception-adjacent rotation in isolation. */
+  authorizingSetHash: string = core.recoverySetHash,
 ): Promise<{ ok: boolean; reason?: string }> {
   if (recoveryThreshold < 1) return { ok: false, reason: "recovery threshold below 1" };
   if (recoveryRoster.length < recoveryThreshold) return { ok: false, reason: "revealed roster shorter than the threshold" };
-  if (sealKeySetHash(recoveryRoster, recoveryThreshold) !== core.recoverySetHash) {
-    return { ok: false, reason: "revealed roster digest does not match the pre-committed recovery-set" };
+  if (sealKeySetHash(recoveryRoster, recoveryThreshold) !== authorizingSetHash) {
+    return { ok: false, reason: "revealed roster digest does not match the authorizing commitment" };
   }
   const rosterSet = new Set(recoveryRoster.map((k) => k.toLowerCase()));
   const bytes     = personaEventBytes(core);
@@ -230,13 +245,14 @@ export function verifyPersonaKel(chain: readonly PersonaKelEvent[]): boolean {
   const genesis = chain[0]!;
   if (genesis.seq !== 0 || genesis.prevEventCid !== null) return false;
   if (genesis.prefix !== personaPrefixOf(genesis.opKeyDid, genesis.recoverySetHash)) return false;
+  if (genesis.nextRecoverySetHash !== genesis.recoverySetHash) return false;   // inception seats ONE set in both slots
   if (genesis.eventCid !== personaEventCidOf(genesis)) return false;
   for (let i = 1; i < chain.length; i++) {
     const e = chain[i]!, prev = chain[i - 1]!;
     if (e.seq !== prev.seq + 1)                     return false;   // monotonic
     if (e.prevEventCid !== prev.eventCid)           return false;   // hash-linked
     if (e.prefix !== prev.prefix)                   return false;   // the identifier stays fixed
-    if (e.recoverySetHash !== prev.recoverySetHash) return false;   // the recovery commit stays fixed
+    if (e.recoverySetHash !== prev.recoverySetHash) return false;   // the GENESIS wall stays fixed; the rolling slot grafts freely
     if (e.eventCid !== personaEventCidOf(e))        return false;   // cid recomputes over the bound core
   }
   return true;
@@ -251,11 +267,12 @@ export function verifyPersonaKel(chain: readonly PersonaKelEvent[]): boolean {
 export async function verifyPersonaKelFull(chain: readonly PersonaKelEvent[]): Promise<{ ok: boolean; reason?: string }> {
   if (!verifyPersonaKel(chain)) return { ok: false, reason: "structural integrity failed (sequence / hash-link / prefix / recovery-commit / cid)" };
   for (let i = 1; i < chain.length; i++) {
-    const e = chain[i]!;
+    const e = chain[i]!, prev = chain[i - 1]!;
     const core: PersonaEventCore = {
-      seq: e.seq, prefix: e.prefix, opKeyDid: e.opKeyDid, recoverySetHash: e.recoverySetHash, prevEventCid: e.prevEventCid,
+      seq: e.seq, prefix: e.prefix, opKeyDid: e.opKeyDid, recoverySetHash: e.recoverySetHash,
+      nextRecoverySetHash: e.nextRecoverySetHash, prevEventCid: e.prevEventCid,
     };
-    const q = await verifyRotationQuorum(core, e.recoveryRoster, e.recoveryThreshold, e.rotationSigs);
+    const q = await verifyRotationQuorum(core, e.recoveryRoster, e.recoveryThreshold, e.rotationSigs, prev.nextRecoverySetHash);
     if (!q.ok) return { ok: false, reason: `rotation seq ${e.seq}: ${q.reason ?? "quorum unsatisfied"}` };
   }
   return { ok: true };

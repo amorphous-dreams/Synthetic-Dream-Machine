@@ -80,6 +80,7 @@ function coercePersonaKelEvent(parsed: unknown): PersonaKelEvent | null {
   if (typeof p["prefix"] !== "string" || p["prefix"].length === 0)            return null;
   if (typeof p["opKeyDid"] !== "string" || p["opKeyDid"].length === 0)         return null;
   if (typeof p["recoverySetHash"] !== "string")                               return null; // "" allowed (unarmed)
+  if (typeof p["nextRecoverySetHash"] !== "string")                           return null; // the rolling commitment
   const recoveryRoster = coerceStringArray(p["recoveryRoster"]);
   if (recoveryRoster === null)                                                return null;
   if (!Number.isFinite(p["recoveryThreshold"]))                              return null;
@@ -101,6 +102,7 @@ function coercePersonaKelEvent(parsed: unknown): PersonaKelEvent | null {
     prefix:            p["prefix"],
     opKeyDid:          p["opKeyDid"],
     recoverySetHash:   p["recoverySetHash"],
+    nextRecoverySetHash: p["nextRecoverySetHash"],
     recoveryRoster,
     recoveryThreshold: p["recoveryThreshold"] as number,
     prevEventCid:      prevRaw,

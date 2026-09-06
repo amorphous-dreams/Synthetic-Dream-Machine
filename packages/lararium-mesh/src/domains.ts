@@ -69,6 +69,9 @@ export const PERSONA_SELF_RECOVERY_INFO = d("persona-self-recovery");
 /** The Fork-B registration handshake — DELIBERATELY apart from GUARDIAN_CONFIRM_DOMAIN: a bearer
  *  SHARE and a public REGISTRATION must never speak one phrase (the IdenTrust wrong-object cure). */
 export const GUARDIAN_REGISTRATION_DOMAIN = d("guardian-registration");
+/** The growth rite's crossing record: old quorum signs the handoff, new quorum the receipt, witnesses
+ *  outside both sets attest the rite — the checkable form of the ceremony witness report. */
+export const RESERVE_TRANSITION_DOMAIN = d("reserve-transition");
 
 // ── ADMISSION + ENROLMENT ───────────────────────────────────────────────────────────────────────
 export const PERSONA_ENROLL_DOMAIN = d("persona-enroll");
@@ -138,7 +141,7 @@ export const ALL_DOMAINS: readonly string[] = [
   PERSONA_ADMIT_SEAL_INFO, BOOT_INVITE_DOMAIN, CABAL_INVITE_DOMAIN,
   NEXUS_DOC_DOMAIN, KAPAE_ANTIGEN_DOMAIN, CARRIAGE_ENTRY_DOMAIN, CARRIAGE_CONTRACT_DOMAIN,
   MEMBERSHIP_RELAY_DOMAIN, EDGE_KAPAE_DOMAIN, VOUCH_EDGE_DOMAIN, RE_ANCHORING_DOMAIN,
-  GUARDIAN_CONFIRM_DOMAIN, GUARDIAN_REGISTRATION_DOMAIN,
+  GUARDIAN_CONFIRM_DOMAIN, GUARDIAN_REGISTRATION_DOMAIN, RESERVE_TRANSITION_DOMAIN,
   KEYRING_ENVELOPE_DOMAIN, KEYRING_ENVELOPE_SEAL_INFO, CAD_KEYSTREAM_INFO, RELAY_GATE_INFO,
   PERSONA_SCOPE_INFO, CIRCLE_SCOPE_INFO, NEXUS_SCOPE_INFO, DYAD_VEIL_INFO, PERSONA_SELF_RECOVERY_INFO,
   ORACLE_POINTER_DOMAIN, PLUGIN_ATTESTATION_DOMAIN, MU_VOID_DOMAIN, RAISE_CHALLENGE_DOMAIN,

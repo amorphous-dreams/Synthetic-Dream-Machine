@@ -40,7 +40,7 @@ uri-path  = "ha.ka.ba/lares/api/pono/hoike/SKILL"
 # ''q'' — the fork, one line.
 # ''held'' — position · holding Voices · "good enough for now, safe enough to try" · review condition.
 # ''kue'' — per dissent: named Voice, reasons to the travel-floor (a stranger could reopen the argument from the block alone), own key — specific and external. Stand-asides: name, one line.
-# ''saksi'' — optional witness blocks; never reflexive (no party witnesses its own block — that reads as signature). A tasked spirit stands the full house and MAY carry saksi on external records it examined, inside its handback as anywhere; its own findings arrive as testimony, and the house's saksi at handback attests the CROSSING (receipt + examination at the hearth), never a spirit incapacity.
+# ''saksi'' — optional witness blocks; never reflexive (no party witnesses its own block — that reads as signature). A tasked spirit stands the full house and MAY carry saksi on external records it examined, inside its handback as anywhere; its own findings arrive as testimony, and the house's saksi at handback attests the CROSSING (receipt + examination at the hearth).
 # ''keep'' — co-locate the block inside the record it contests; emit the hoike sigil in-turn. On touch: glance the keys. On reopen: kue before held.
 
 Law lives at canon, not here: <<~ loulou lar:///ha.ka.ba/lares/api/pono/hoike>>
@@ -110,6 +110,6 @@ Read the three together and the grammar teaches itself: dissent gets a name and 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;mZwBTujSgDQ8D7bB-rWSVGECRQ8yIo6OrvWFjTW_41U
+<<^ code="&#x0003;">>ni:///sha-256;mancPiYc6JQ5WIuwBHStxRWi18cI1NtUpBnS5hrpSuo
 
 <<^ code="&#x0004;" -> to=?>>

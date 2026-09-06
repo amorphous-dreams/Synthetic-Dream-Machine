@@ -194,13 +194,23 @@ describe("⑨ the dyad, specified and unwired", () => {
     expect(Object.keys(mesh)).toContain("recoveryVetoWindow");
   });
 
+  test.skip("A PRE-COMMITMENT NEVER EXPIRES UNNOTICED — the quorum's OUTPUT freshness fails before its keys do (a root-metadata expiry took clients down while every key stood healthy); no epoch, pre-commit, or rolling recovery commitment in this stack carries a freshness horizon a reader surfaces BEFORE a gate fails on it", () => {
+    expect(Object.keys(mesh)).toContain("commitmentFreshness");
+  });
+
+  test.skip("THE RITE SURVIVES A JAMMED SAFE — the ceremony APPARATUS fails before the keys do (a jammed lock postponed the world's most audited signing ceremony); no rite in this stack names its rehearsed contingency path, so an apparatus failure at a real crossing improvises under pressure", () => {
+    expect(Object.keys(mesh)).toContain("riteContingency");
+  });
+
   test.skip("ONE GUARDIAN SET NEVER SPANS COMPARTMENTS — a guardian holding recovery material for TWO compartments of one human silently becomes the forbidden collector (persona-circle#the-vault's single-bit law read at the guardian grain); nothing checks it anywhere", () => {
     expect(Object.keys(mesh)).toContain("guardianCompartmentCheck");
   });
 
-  test.skip("A GUARDIAN CAN ROTATE — under Fork B the prefix folds the guardian set, so guardian rotation is structurally excluded by the same mechanism that makes B safe; end-user guardians churn devices yearly, so an unrotatable set decays to zero within a device generation. Awaits the delegation-axis measurement", () => {
-    expect(Object.keys(mesh)).toContain("guardianRotation");
-  });
+  // KEPT 2026-09-06 — A GUARDIAN CAN ROTATE greened by the ROLLING RECOVERY COMMITMENT (operator-
+  // approved, the KERI shape): the prefix binds the GENESIS set (anti-swap), while each rotation
+  // reveals against its predecessor's `nextRecoverySetHash` and grafts the next — guardian sets
+  // turn over log-wise, no delegation needed. Witnessed in tests/rolling-recovery.test.ts (the
+  // graft · the grafted set authorizes · the retired set refuses · the tampered graft breaks).
 
   // KEPT 2026-09-05 — A DYAD IS MINTED WHEN A FACE MEETS A DEVICE greened under the Stage 0 ruling:
   // both ceremony sites write the slot (`foundTheFace` binding-signed at the genesis epoch;
