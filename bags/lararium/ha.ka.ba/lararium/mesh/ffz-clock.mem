@@ -166,6 +166,42 @@ enters the address.
 
 <<~/ahu>>
 
+<<~ ahu #/the-two-time-bases>>
+
+!! Two time bases that MUST NOT conflate ~ and the clock this one is not
+
+''A node runs two clocks, and fusing them loses the property each one holds.''
+
+* ''Automerge runs on wall-clock async I/O time'' — network latency, disk flush, peer sync arrival.
+Irregular, event-driven, not rate-bounded. A sync patch MAY arrive 200 ms after the last one, or three
+hours later.
+* ''A simulation tick runs on a configurable fixed-rate clock'' — regular, predictable, the heartbeat of
+the node's computational loop. 20–60 Hz for an interactive session; slower for batch or background work.
+
+''These stand as TWO separate clocks with explicit bridging through ingress adapters, never one unified
+tick.'' A yield-to-next-tick primitive maps cleanly onto the simulation side and has no analogue at all
+for async CRDT merge arrival — there is nothing to yield to.
+
+!!! The always-commit constraint
+
+''CRDT merge events are ALWAYS-COMMIT.'' Transactional rollback — the pattern where a cancelled branch
+un-does the state it touched — does not apply to an Automerge document: ''a merged op cannot be
+un-merged''. So the tick clock treats a CRDT merge as a ''feed-in event crossing the ingress boundary'',
+never as a participant in transactional scope. A design that puts a merge inside a rollback region has
+written a scope it cannot honour.
+
+!!! And the clock this is not
+
+''A simulation tick clock is NOT an FfzClock.'' The FfzClock names rhythmic POSITION — where-in-the-cadence,
+a membership coordinate carrying a partial order by merge topology. A tick clock counts a fixed-rate
+heartbeat. One answers //where does this sit in the rhythm//, the other //how many beats have passed//;
+reading either as the other re-introduces the global now this clock exists to refuse (#/the-spine).
+
+''Provenance:'' harvested verbatim from `lar:///lares_research/research-streams/lararium/LARARIUM-TICK-CLOCK`,
+where the distinction stood with no live carrier holding it.
+
+<<~/ahu>>
+
 <<~ ahu #/non-interference>>
 
 !! φ ~ the non-interference law (scale-orthogonality, NOT entrainment) (2026-06-29)
@@ -434,6 +470,6 @@ targeted revocation MUST ride Keyhive's convergent removal, never the counter
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;WRQ86gyowe--fcROf6CvzuSPoy9ogXzAjPLNVIT1dGo
+<<^ code="&#x0003;">>ni:///sha-256;-xhqSRGfDPRPxKP5_j3L7wEKbtTbbbgqgAqTtBhcFRo
 
 <<^ code="&#x0004;" -> to=?>>

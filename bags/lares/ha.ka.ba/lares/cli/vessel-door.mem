@@ -22,6 +22,40 @@ uri-path  = "ha.ka.ba/lares/cli/vessel-door"
 
 <<^ code="&#x0002;">>
 
+<<~ ahu #/the-record-laws>>
+
+!! The record laws ~ what a command IS, and where a name lives
+
+Two laws the door has always obeyed and no carrier has stated.
+
+!!! Records, not RPC
+
+''A command rides as an intent RECORD; an outcome rides as a receipt RECORD.'' Neither reads as a remote
+call. Each record flows through the admin surface as a ''local-first artifact'' — authored, addressed,
+and readable after the fact by anything that can read a tiddler. A temporary record stays acceptable where
+the flow needs only a short life; a call that leaves no record does not.
+
+''What the law buys:'' an RPC leaves a trace only where someone logged one, and the log answers to a
+different grammar than the call. A record IS the trace, in the grammar everything else already reads.
+
+!!! The `lar:` locality law
+
+''Every system `id` uses the `lar:` URI scheme'' — command ids, receipt ids, audience ids, principal ids,
+session artifact ids, storage artifact ids, and any other first-class name.
+
+''The authority says where the named thing lives:''
+
+<<~ranks locality hostless ~ `lar:///ha.ka.ba/lares/commands/promote/…` — a hot, warm or cold STORAGE artifact, on-disk projections first -> hostful ~ `lar://node.alpha.local/ha.ka.ba/bags/sessions/live/…` — a LIVE session artifact, named at the node holding it>>
+
+''So one glance at a name says whether the thing it names outlives the session.'' A hostless name survives
+the node; a hostful one does not, and reading a hostful name as durable is the failure this law exists to
+make visible.
+
+''Provenance:'' harvested verbatim from `lar:///lares_research/research-streams/lararium/LARES-CLI-DAEMON-SPRINT-PLAN`,
+where both laws stood settled with no live carrier holding either.
+
+<<~/ahu>>
+
 <<~ ahu #/the-law>>
 
 ! The Vessel Door ~ a substrate collapse
@@ -231,6 +265,6 @@ reached.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;PgSldiOvSWxlvEcEL24ET_9pKNHJJJgPn8crNVqdX-g
+<<^ code="&#x0003;">>ni:///sha-256;x8Pj_1-f8eDlyE-hspbLyIVP4dKdi7xvbANiqIcoZMQ
 
 <<^ code="&#x0004;" -> to=?>>

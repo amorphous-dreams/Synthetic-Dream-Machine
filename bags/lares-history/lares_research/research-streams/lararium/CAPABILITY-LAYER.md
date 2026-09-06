@@ -1,5 +1,10 @@
 # Capability Layer — Code-Ready Spec
 
+> **Surveyed 2026-09-06, nothing harvested.** Every specific here already stands in a live carrier — the
+> identity planes and delegation chain at `lar:///ha.ka.ba/lararium/mesh/identity-classes`, the tiers at
+> `lar:///ha.ka.ba/lararium/mesh/cap-tier`, content addressing across seven carriers. Kept as the record of
+> where those came from.
+
 > Date: 2026-05-06
 > Branch: feature/lararium-node-3
 > Status: S7.0 type stubs complete; S7.1–S7.4 implementation targets
