@@ -5,9 +5,9 @@
 cacheable   = true
 file-path   = "bags/lararium/ha.ka.ba/lararium/mesh/lar-vessel.mem"
 l-space     = "lararium"
-mana        = 3
+mana        = 14
 retain      = true
-role        = "self-documentation: TODO describe lar-vessel.ts"
+role        = "invariant law: LarVessel — the ONE local runtime vessel class for browser, Node, worker and device. Capability declares a hostful SURFACE, never authority; receipt law rather than process role decides whether a local effect may write. Names the NONE default, the three presets, what the identity slot admits today, and where the vessel's reach stops."
 source-file = "packages/lararium-mesh/src/lar-vessel.ts"
 type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lararium/mesh/lar-vessel"
@@ -15,12 +15,76 @@ uri-path    = "ha.ka.ba/lararium/mesh/lar-vessel"
 
 <<^ code="&#x0002;">>
 
-<<~ ahu #/contract>>
+<<~ ahu #/head>>
 
-TODO: describe the load-bearing surface this file owns.
+! LarVessel ~ one class, four hosts, no subclass
+
+A browser tab, a Node process, a worker and a device all open the SAME vessel class. The Repo's
+storage and network adapters carry the environmental difference, and a `capabilities` preset names
+what the host can physically do. Nothing about a host earns it a different type.
+
+''Relay and browser vessels participate symmetrically.'' Neither one holds content truth.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ICvTNcyMIER_32YyCF4YWgNNCHx2sLeaEdjUKQ9y7Ns
+<<~ ahu #/law>>
+
+!! The invariants
+
+# ''Capability declares a SURFACE, never authority.'' `LarVesselCapabilities` answers //what can this
+host physically do// — reach a disk, hop CORS, hold a persistent relay, open a BroadcastChannel, write
+a non-idempotent local effect. It answers nothing about permission.
+# ''Receipt law decides a write, and process role never does.'' A vessel advertising
+`hostfulReactions` still owes an authority receipt and an idempotency key before any effect lands. A
+host that CAN write holds no standing to write.
+# ''The default grants nothing.'' Construction starts from `LAR_VESSEL_CAPABILITIES_NONE` and layers
+the caller's partial over it, so a capability arrives only where someone named it. The three presets
+— NONE, NODE, BROWSER — state a host's reach in one place rather than scattering host checks through
+the runtime.
+# ''A vessel carries a name or refuses to open.'' Absent `vesselId` the constructor throws; a vessel
+with no id could neither derive a stable actor nor answer for its own effects.
+# ''The factory owns the handles; the vessel receives an interface.'' `store` arrives as an assembled
+`LarTiddlerStore` over the full composite stack (system -> corpus:* -> wiki -> draft), with the
+factories having built the CompositeStore and marked sync complete on the writable layers. The vessel
+holds no Automerge DocHandle of its own.
+# ''Readiness binds to the VM pool alone.'' A vessel reads `ready` once a pool attaches and returns to
+unready on `dispose`. Nothing else moves that answer.
+# ''A projection subscribes to the WHOLE stack.'' `addProjection` returns the unsubscribe, and a
+projection sees composite changes rather than one layer's.
+
+<<~/ahu>>
+
+<<~ ahu #/the-identity-slot>>
+
+!! What the identity slot admits today
+
+The vessel takes an `IdentitySlot` and falls back to `OpenIdentitySlot`, which mints a placeholder
+`did:web:elyncia.app/vessels/<id>` and derives a stable actor id by SHA-256 over the vessel id. A real
+login replaces the DID with `did:web:` at the user's own handle.
+
+''The open slot names an alpha stub, and the admission gates stand elsewhere.'' The node `sharePolicy`
+gates inbound network peers at the daemon-auth gate; the browser admits only same-origin and
+in-process peers. That asymmetry holds by design rather than by omission — a browser vessel reaches no
+peer a node vessel would have had to authenticate.
+
+''Keyhive slots in without moving this interface.'' `KeyhiveSlot` stays typed to four calls —
+capability verification, member add and remove, application-secret derivation — so the three-layer
+stack (convergent capabilities, Group CRDT, BeeKEM) lands behind the same surface the vessel already
+names.
+
+<<~/ahu>>
+
+<<~ ahu #/edges>>
+
+<<~ pranala #source from=? -> to=packages/lararium-mesh/src/lar-vessel.ts family=code role=has>>
+<<~ pranala #identity from=? -> to=packages/lararium-mesh/src/identity-slot.ts family=code role=has>>
+
+<<~/ahu>>
+
+<<~ loulou lar:///ha.ka.ba/lararium/mesh/open-vessel>>
+<<~ loulou lar:///ha.ka.ba/lararium/mesh/vessel-caps>>
+<<~ loulou lar:///ha.ka.ba/lararium/mesh/island-protocol>>
+
+<<^ code="&#x0003;">>ni:///sha-256;zk3GgngZ9mVdkRoVzpj7ZO8tYjFR6xB9SFkGvvklm_c
 
 <<^ code="&#x0004;" -> to=?>>
