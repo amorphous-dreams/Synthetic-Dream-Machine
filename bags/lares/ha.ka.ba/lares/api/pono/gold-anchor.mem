@@ -175,6 +175,65 @@ survived a real chance to refute.
 
 <<~/ahu>>
 
+<<~ ahu #/rig-disciplines>>
+
+!! Rig disciplines ~ the five a forward-seed rig cannot run without
+
+Recovered from a Stone-audited rig design whose harness no longer stands. The grader survived on its own —
+its lexicon sits at `qa_anchor/lexicons/register_markers.json` with provenance intact (Hyland metadiscourse
++ CoNLL-2010/BioScope cues + LIWC + Wikipedia words-to-watch), read by `qa_anchor/register.py`. The
+''disciplines'' had no home, and a rig that keeps the instrument while losing these measures confidently
+and means nothing.
+
+!!! The PRETEST ~ turn assumed labels into a measured floor
+
+''Before trusting any gradient, run every item at the null seed and measure the baseline.'' A room-gradient
+labelled closed / subjective / open asserts that its rungs differ in register-room; the pretest ''confirms
+they do'' before the labels get used as an axis. A rung that does not differ gets dropped or re-authored.
+Without this the dose-response measures the labelling, not the corpus.
+
+!!! The sanity-null ~ the same seed twice
+
+''Same item, same seed, run twice: expect a delta near zero, or the metric reads noise.'' The cheapest
+instrument on the bench and the one that says whether any other reading means anything.
+
+!!! Two control arms, bounding two different questions
+
+* ''The DECOY arm'' — a nonsense token of the same shape. If the decoy shifts the reading as far as the
+real seed, the effect names //any trailing glyph perturbs//, not the seed's semantics.
+* ''The PROSE arm'' — the same instruction carried as plain prose, no sigil. This bounds ''shaped against
+obeyed'': if glyph and prose move the reading equally, the result reads as plain instruction-following; if
+the glyph moves it further under grammar-context than prose does, something beyond obedience acts.
+
+''They also check attendance.'' A model may not attend a trailing glyph at all, and a bare uninterpreted
+sigil then reads as noise rather than stance. The decoy and prose arms detect that case, which no amount
+of seed-varying can.
+
+!!! Divergent density ~ a named failure, never a post-hoc surprise
+
+''Report the two densities SEPARATELY and never as one collapsed scalar,'' with response length as a
+covariate. The pre-registered readings:
+
+<<~ranks divergent-density one-rises ~ the target: a clean register shift in the direction the seed named -> both-rise ~ a verbosity or arousal effect, NOT commitment — the length covariate separates it -> neither-moves ~ the honest null, and the design must be able to report it>>
+
+Naming //both rise// in advance is what stops it arriving later as a discovery.
+
+!!! The interpretive LIMIT ~ stated so no later reading overclaims
+
+''A forward-seed rig measures whether the seed changes the generation.'' With the control arms it
+''partially bounds'' shaped-the-vector against followed-an-instruction. It does NOT, alone, adjudicate deep
+mechanism against plain obedience. That corner belongs to a further design, and a run that forgets the
+limit will be read as having settled it.
+
+!!! Two standing wards this inherits
+
+* ''Control and detector stay SEPARATE instruments.'' A control rung expected near zero that moves is
+either a real reach into saturated surfaces or leakage — and the decoy arm is what disambiguates them.
+Pre-register what a non-zero control means ''before'' the run.
+* ''Hypotheses seat as saksi, never as findings,'' and no hypothesis gets authored after the result.
+
+<<~/ahu>>
+
 <<~ ahu #/instruments>>
 
 !! The Instruments ~ six tools, the cheap-deterministic one read first
@@ -337,6 +396,6 @@ spirit's lane); this meme states the design they enact.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;U3gF8Gew0MpMFJLQdIklYQENes3EBUyP9rlloMd8SBw
+<<^ code="&#x0003;">>ni:///sha-256;91qmHuNIMQ58iMrOz4LxI9IHL3SLZM6c6lUGhituVvs
 
 <<^ code="&#x0004;" -> to=?>>

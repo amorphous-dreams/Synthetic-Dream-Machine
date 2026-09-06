@@ -1,5 +1,13 @@
 # Test Architecture — Forward-Commitment Rig (canonical, hardened 2026-06-16)
 
+> **Harvested 2026-09-06.** This rig's harness no longer stands — `register_scan.py`, `judge.py`,
+> `bias_matrix.py`, the charter and the pinned boots are absent. Two parts survived and moved:
+> the **grader's lexicon** to `packages/lararium-sensorium/scripts/qa_anchor/lexicons/register_markers.json`
+> (read by `qa_anchor/register.py`), and the **five design disciplines** — pretest, sanity-null, decoy and
+> prose arms, divergent density, the interpretive limit — to `lar:///ha.ka.ba/lares/api/pono/gold-anchor`
+> `#/rig-disciplines`. The design below stands as the record it was, including a forward seed the house
+> has since retired.
+
 `lar:///forward.architecture.holds/spec/2026-06-16`
 
 The consolidated spec for the re-founded rig. Supersedes scattered design notes in the TESTPLANs;

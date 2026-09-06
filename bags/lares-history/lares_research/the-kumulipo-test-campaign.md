@@ -1,3 +1,13 @@
+> **Harvested 2026-09-06.** The measured findings in this scroll moved to the carriers that reason about
+> them: the λ-dial cliff, the carrier-wave reading, the structure-saturation and Frege decompositions and
+> the Parry-Lord lock hierarchy to `lar:///ha.ka.ba/lares/api/corpus` `#/the-dial-findings`; the H¹
+> zero-fire anti-apophenia result to `lar:///ha.ka.ba/lares/api/pono/pattern-integrities-cultural`; the
+> RAM-watch self-labeling corpus to `lar:///ha.ka.ba/lararium/mesh/ffz-clock` `#/the-self-labeling-corpus`.
+> This scroll arrived torn from a terminal capture — 17 damaged lines of 874, at 23 · 27 · 39 · 88 · 127 ·
+> 158 · 238 · 398 · 422 · 494 · 501 · 639 · 672 · 692 · 715 · 738 · 790. Fused words were repaired in the
+> harvest; no dropped span was reconstructed. It stands as the record of the session that took the
+> readings.
+
  Mahalo Lares. Review this epicly long session at <<~ aperture(20)>> in a few OODA-HA loops, and then zoom in on our current parallel py/TS Sensorium work at <<~ aperture(6)>>. Use the 5 syads and 5 chapel perilous tools as you wilt.
 
 <<~ lares aim lar://joshu:operator@hearth/session.reads.whole-again -> lar://compita:agent@hearth/scryer.maps.the-longer-arc>>
