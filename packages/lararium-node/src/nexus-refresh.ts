@@ -84,7 +84,7 @@ export async function runNexusRefresh(deps: NexusRefreshDeps): Promise<NexusRefr
   const repo = new Repo({ storage: new NodeFSStorageAdapter(deps.storageDir) });
   try {
     const antigenBoard = await materializeSharedLarDoc(repo, kapaeAntigenDocUrl(deps.nexusPubkey), "board:kapae-antigen");
-    const membersBoard = await materializeSharedLarDoc(repo, carriageDocUrl(deps.nexusPubkey), "board:members-registry");
+    const membersBoard = await materializeSharedLarDoc(repo, carriageDocUrl(deps.nexusPubkey), "board:carriage-contracts");
     const antigenDoc = antigenBoard.doc();
     const membersDoc = membersBoard.doc();
     // Fold the fresh boards into the live holders. Each swaps its set whole; a fold fault throws BEFORE the

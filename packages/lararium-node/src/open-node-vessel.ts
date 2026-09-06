@@ -521,7 +521,7 @@ async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep> {
 
   // Stand the nexus-doc membership consult now the operator's own verifying key is loaded — the carry-split's
   // member gate. It reads the SAME `bags/nexus` charter roster the antigen folds against (the seated-kahu
-  // keys as the conservative provable-member floor; see nexus-membership for the surfaced members-registry
+  // keys as the conservative provable-member floor; see nexus-membership for the surfaced carriage-contracts board
   // fork) and resolves a peerId → nym off the same proven `peerIdentifierMap`. FAILS CLOSED: an unseated
   // charter → empty member set → every cross-operator STRANGER (public-read only), never a false member.
   // Fold the members BOARD (repo + nexusPubkey) atop the kahu floor — this LIGHTS SELF-SLOT-B: a general
@@ -941,8 +941,8 @@ async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep> {
     const edgeRecord = daemonDoc?.tiddlers?.[DEVICE_DELEGATION_SELF_TIDDLER];
     const deviceEdge = edgeRecord?.tiddler as unknown as DeviceDelegationTiddler | undefined;
     // ── THE RELATIONSHIPS THIS VESSEL HOLDS — read live at boot (dyad read path) ──────────────
-    // `vesselDyads` reads the ceremony-minted slots, the ONLY source (the alpha collapse,
-    // 2026-09-06 — no back-compass, no edge-derived fallback). The read only observes — but a FACE
+    // `vesselDyads` reads the ceremony-minted slots, the ONLY source — a bare delegation edge
+    // presents no dyad. The read only observes — but a FACE
     // standing beside ZERO slots names a doc minted before the ruling, and that drift gets SAID at
     // boot rather than discovered the day a fleet tries to gather it. Warn, never throw: the dyad
     // read carries no caps, and the cure is a re-found, not a softened gate.

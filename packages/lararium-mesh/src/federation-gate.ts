@@ -83,7 +83,7 @@ export class DeterministicFederationGate implements FederationGate {
       crossroadsDocUrl(nexusPubkey),
       whoBoardDocUrl(nexusPubkey),
       kapaeAntigenDocUrl(nexusPubkey),   // the immune antigen (DENY-twin) rides the always-carried plane (MANDATORY tier)
-      carriageDocUrl(nexusPubkey),        // the operator members-registry (ALLOW-twin) — quorum-signed contracts, MANDATORY tier
+      carriageDocUrl(nexusPubkey),        // the operator carriage-contracts board (ALLOW-twin) — quorum-signed contracts, MANDATORY tier
       personaKelBoardDocUrl(nexusPubkey), // the persona-KEL board — PUBLIC identifier→head mapping (federates once)
       ...extraBoardUrls,
     ];

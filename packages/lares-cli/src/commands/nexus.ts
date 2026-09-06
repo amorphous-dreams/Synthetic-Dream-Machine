@@ -301,7 +301,7 @@ async function cmdMembers(args: ParsedArgs): Promise<number> {
         seatedKeys: r.seatedKeys, members: r.members, entries: r.entries,
       },
       human: () => {
-        console.log(`nexus members — the members-registry board fold:`);
+        console.log(`nexus members — the carriage-contracts board fold:`);
         console.log(`  epoch:      ${r.sealEpochCid || "(unseated — the registry stays inert)"}`);
         console.log(`  quorum:     ${r.threshold}-of-N · seated keys: ${r.seatedKeys}`);
         // "as of last sync" rides the label, never the reader's assumption. An EMPTY fold especially: a

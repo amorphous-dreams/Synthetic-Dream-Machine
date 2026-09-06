@@ -80,7 +80,7 @@ function seatedRosterOrRefuse(sealHome: string): KahuRoster {
   const roster = foundingRoster(readNexusDoc(sealHome));
   if (roster.sealEpochCid.length === 0 || roster.keys.length < roster.threshold) {
     throw new NexusContractError(
-      "no seated founding-kahu quorum to root an admit on — run `lares nexus seal seat` first (the members-registry stays inert until a quorum stands).",
+      "no seated founding-kahu quorum to root an admit on — run `lares nexus seal seat` first (the carriage-contracts board stays inert until a quorum stands).",
     );
   }
   return roster;
@@ -168,7 +168,7 @@ export async function runNexusContract(opts: NexusContractOptions): Promise<Nexu
   const boardUrl    = carriageDocUrl(nexusPubkey);
   const repo        = new Repo({ storage: new NodeFSStorageAdapter(storageDir) });
   try {
-    const handle = await materializeSharedLarDoc(repo, boardUrl, "board:members-registry");
+    const handle = await materializeSharedLarDoc(repo, boardUrl, "board:carriage-contracts");
 
     const priorVersion = maxVersionForNym(carriageEntriesFromBoard(handle.doc()), nym);
     const version      = (priorVersion ?? 0) + 1;
@@ -340,7 +340,7 @@ export async function runNexusMembersList(opts: { sealHome: string; storageDir?:
   const ownKey      = (await loadVesselVerifyingKey(storageDir)).toLowerCase();
   const repo        = new Repo({ storage: new NodeFSStorageAdapter(storageDir) });
   try {
-    const handle  = await materializeSharedLarDoc(repo, carriageDocUrl(ownKey), "board:members-registry");
+    const handle  = await materializeSharedLarDoc(repo, carriageDocUrl(ownKey), "board:carriage-contracts");
     const entries = carriageEntriesFromBoard(handle.doc());
     const folded  = await foldCarriageSet(entries, roster);
     return {

@@ -371,12 +371,12 @@ export async function foundTheFace(input: FaceFoundingInput): Promise<FaceFoundi
   // unarmed inception still walks to a head, and at inception the head IS signerDid (zero behavior change today).
   // SELF-STOOD mints its own inception. CONTRACTED mints NONE — the contracting operator's identifier
   // already stands, and minting a second one here would fork the very continuity the pin exists to hold.
-  // NO PREFIX INCEPTS UNARMED (ruling 2, 2026-09-06). Self-stood, the inception pre-commits the
+  // NO PREFIX INCEPTS UNARMED. Self-stood, the inception pre-commits the
   // founder's OWN 1-of-1 self-recovery digest — a key derived off the persona seed at its own
   // domain-separated leaf. The multitude-of-one, NAMED: whoever holds the seed holds recovery,
   // which an empty commit already meant in practice while forbidding the rotation that acts on it.
-  // Now `mintPersonaRotation` works from day one (lose the device, hold the seed, rotate); a real
-  // guardian set arrives by re-found while alpha owes no back-compass.
+  // `mintPersonaRotation` therefore works from day one (lose the device, hold the seed, rotate);
+  // a real guardian set grafts in by a later rotation's rolling commitment.
   const seatedEvents: readonly PersonaKelEvent[] = input.binding.mode === "self-stood"
     ? [provisionThresholdRecoveryAtFounding({
         foundingOpKeyDid:  signerDid,
@@ -396,7 +396,7 @@ export async function foundTheFace(input: FaceFoundingInput): Promise<FaceFoundi
   const kelBoard = await materializeSharedLarDoc(repo, personaKelBoardDocUrl(input.nexusPubkey), "board:persona-kel");
   kelBoard.change((draft) => { for (const e of seatedEvents) writePersonaKelEvent(draft, e); });
 
-  // ── The DYAD, minted where the face meets the device (Stage 0 ruling, 2026-09-05) ──
+  // ── The DYAD, minted where the face meets the device ──
   // The veil derives off THIS vessel's seed, scoped by the PersonaGroup — never the persona root,
   // which spans devices and names no veil. Self-stood, the group root stands in these same hands,
   // so the binding SIGNS at the genesis epoch; contracted, no root is present and the absence

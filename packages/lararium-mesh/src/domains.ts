@@ -59,12 +59,12 @@ export const FLEET_PROOF_DOMAIN = d("fleet-proof");
 /** The vessel×veil dyad, and the binding that names it. */
 export const DYAD_ID_DOMAIN = d("dyad-id");
 export const DYAD_BINDING_DOMAIN = d("dyad-binding");
-/** The per-handle dyad VEIL derivation off the DEVICE tree (Stage 0 ruling, 2026-09-05):
- *  the veil derives from the vessel's own seed, scoped by PersonaGroup — never from the persona seed. */
+/** The per-handle dyad VEIL derivation off the DEVICE tree: the veil derives from the vessel's
+ *  own seed, scoped by PersonaGroup — never from the persona seed (persona-circle#the-vault). */
 export const DYAD_VEIL_INFO = d("dyad-veil");
-/** The founder's SELF-RECOVERY leaf off the PERSONA tree (ruling 2, 2026-09-06): a 1-of-1 recovery
- *  key derived from the persona seed, pre-committed at inception so no prefix ever incepts unarmed —
- *  the multitude-of-one, NAMED, until a real guardian set stands (the seal-reserve founding rhyme). */
+/** The founder's SELF-RECOVERY leaf off the PERSONA tree: a 1-of-1 recovery key derived from the
+ *  persona seed, pre-committed at inception so no prefix ever incepts unarmed — the multitude-of-one,
+ *  NAMED, until a real guardian set grafts in (the seal-reserve founding rhyme). */
 export const PERSONA_SELF_RECOVERY_INFO = d("persona-self-recovery");
 /** The Fork-B registration handshake — DELIBERATELY apart from GUARDIAN_CONFIRM_DOMAIN: a bearer
  *  SHARE and a public REGISTRATION must never speak one phrase (the IdenTrust wrong-object cure). */

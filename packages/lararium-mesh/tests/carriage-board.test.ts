@@ -1,5 +1,5 @@
 /**
- * members-board.test.ts — the DOC face of the members-registry: write → read roundtrip, torn/foreign skip,
+ * members-board.test.ts — the DOC face of the carriage-contracts board: write → read roundtrip, torn/foreign skip,
  * absent → empty, and the FLOOR-ONLY coercion (a forged tiddler's extra fields are dropped, never carried).
  *
  * Proven:

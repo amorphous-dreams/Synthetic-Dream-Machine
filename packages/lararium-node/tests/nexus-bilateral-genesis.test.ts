@@ -17,7 +17,7 @@
  *   · hearth A's `nexus-membership` fold names B a MEMBER, AND hearth B's fold names A a MEMBER — BOTH sides
  *     fold the OTHER operator in, each off its own local replica (no-global-now), a stranger reads STRANGER,
  *   · NO CONSCRIPTION: `runNexusContract` REFUSES an admit for an operator that has not signed consent (no token,
- *     seed not held) — the members-registry is not the antigen; a Nexus never conscripts an operator,
+ *     seed not held) — the carriage-contracts board is not the antigen; a Nexus never conscripts an operator,
  *   · REVERT-VERIFY the no-conscription bite: a quorum-signed admit that LACKS the contract-in (the entry the
  *     command refuses to mint) folds to a NON-member under the real guard, but a fold with the contract-in
  *     check DROPPED conscripts the operator to MEMBER — the guard alone stands between quorum and conscription.
@@ -214,7 +214,7 @@ describe("LIVE-WIRE B4 — two hearths write each other into membership (the bil
     const A = await standHearth(rootA);
     await standHearth(rootB);   // a real peer exists, but its operator never signs carriage into A
 
-    // A nym A neither holds nor received a carriage token for — the members-registry is NOT the antigen.
+    // A nym A neither holds nor received a carriage token for — the carriage-contracts board is NOT the antigen.
     const unconsented = hex(await ed.getPublicKeyAsync(new Uint8Array(32).fill(200)));
     await asRoot(rootA, async () => {
       await expect(runNexusContract({ action: "admit", nym: unconsented, sealHome: A.bags }))

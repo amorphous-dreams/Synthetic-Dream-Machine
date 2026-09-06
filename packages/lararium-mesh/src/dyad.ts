@@ -170,11 +170,10 @@ function coerceDyad(parsed: unknown): DyadRecord | null {
       binding = { signer: x["signer"], epochCid: x["epochCid"], sig: x["sig"] };
     }
   }
-  // THE SLOT'S REF IS AUTHORITATIVE FOR THE VEIL (Stage 0 ruling, 2026-09-05): the derived face never
-  // appears in the edge — the edge binds root→device — so the ref is REQUIRED, fenced to the edge's own
-  // device. A slot without one, or whose ref rides another vessel, reads torn and drops. No fallback
-  // reading exists: alpha carries no back-compass (2026-09-06), and a doc minted before the ruling
-  // re-founds rather than being re-read as (device × root).
+  // THE SLOT'S REF IS AUTHORITATIVE FOR THE VEIL: the derived face never appears in the edge — the
+  // edge binds root→device — so the ref is REQUIRED, fenced to the edge's own device. A slot without
+  // one, or whose ref rides another vessel, reads torn and drops. No fallback reading exists: a doc
+  // holding a bare edge re-founds rather than being re-read as (device × root).
   const refRaw = p["ref"];
   if (typeof refRaw !== "object" || refRaw === null) return null;
   const r = refRaw as Record<string, unknown>;
@@ -316,7 +315,7 @@ export function vesselDyads(doc: LarDoc | undefined | null): DyadRecord[] {
   return [...seen.values()];
 }
 
-// ── The dyad VEIL — derived off the DEVICE tree (Stage 0 ruling, 2026-09-05) ────────────────────
+// ── The dyad VEIL — derived off the DEVICE tree ─────────────────────────────────────────────────
 //
 // "The deck stays one deck; the face it wears differs per handle" (persona-circle#the-vault). The
 // veil a dyad runs UNDER derives from the vessel's OWN seed — the device-minted root whose private
