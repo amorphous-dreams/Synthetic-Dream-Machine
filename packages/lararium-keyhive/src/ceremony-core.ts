@@ -52,6 +52,8 @@ import {
   buildDeviceDelegation, type DeviceDelegationTiddler,
   mintPersonaInception, personaKelBoardDocUrl, writePersonaKelEvent, materializeSharedLarDoc,
   type PersonaKelEvent,
+  deriveDyadVeil, dyadId, signDyadBindingWithSeed, writeDyad, didFromVerifyingKey,
+  DYAD_ID_DOMAIN, type DyadRecord, type DyadRef,
 } from "@lararium/mesh";
 
 // A device-delegation edge's expiry is a generous replay BACKSTOP only — the
@@ -383,7 +385,20 @@ export async function foundTheFace(input: FaceFoundingInput): Promise<FaceFoundi
   const kelBoard = await materializeSharedLarDoc(repo, personaKelBoardDocUrl(input.nexusPubkey), "board:persona-kel");
   kelBoard.change((draft) => { for (const e of seatedEvents) writePersonaKelEvent(draft, e); });
 
+  // ── The DYAD, minted where the face meets the device (Stage 0 ruling, 2026-09-05) ──
+  // The veil derives off THIS vessel's seed, scoped by the PersonaGroup — never the persona root,
+  // which spans devices and names no veil. Self-stood, the group root stands in these same hands,
+  // so the binding SIGNS at the genesis epoch; contracted, no root is present and the absence
+  // travels as binding:null rather than hiding behind a label.
+  const dyadVeil = await deriveDyadVeil(vesselSeed, personaGroup.docIdHex);
+  const dyadRef: DyadRef = { vesselDid: founderEdge.deviceDid, veilDid: didFromVerifyingKey(dyadVeil.verifyingKey) };
+  const dyadBinding = input.binding.mode === "self-stood"
+    ? await signDyadBindingWithSeed(dyadRef, signerDid, `epoch0-${personaGroup.docIdHex}`, input.binding.signerSeed)
+    : null;
+  const dyadRecord: DyadRecord = { kind: DYAD_ID_DOMAIN, dyadId: dyadId(dyadRef), ref: dyadRef, edge: founderEdge, binding: dyadBinding };
+
   daemonHandle.change((doc) => {
+    writeDyad(doc, dyadRecord);
     doc.tiddlers[SIGNER_DID_TIDDLER] = {
       tiddler: { title: SIGNER_DID_TIDDLER, text: signerDid, kind: "operator-root-did" },
       meta: { authority: "lares-init" },
@@ -658,10 +673,18 @@ export async function runApplyAdmitPayload(
     }
   }
 
+  // The joinee's DYAD: its veil derives off its OWN seed, scoped by the group it joins. No group
+  // root stands on this vessel, so the slot lands binding:null — presented, not yet gathered — and
+  // `fleetOfGroup` will not count it until a root signs the binding (the absence travels).
+  const joineeVeil = await deriveDyadVeil(vesselSeed, payload.personaGroupDocIdHex);
+  const joineeRef: DyadRef = { vesselDid: payload.deviceEdge.deviceDid, veilDid: didFromVerifyingKey(joineeVeil.verifyingKey) };
+  const joineeDyad: DyadRecord = { kind: DYAD_ID_DOMAIN, dyadId: dyadId(joineeRef), ref: joineeRef, edge: payload.deviceEdge, binding: null };
+
   // Write the joinee's BINDING into its own daemon doc — the pinned signer, the hearth true-name,
   // and the root→joinee edge (mirrors the founding write). The joinee boots through its Binding
   // Gate on these alone: verifyDeviceDelegation(edge, signerDid) — no cap events, no Beelay.
   daemonHandle.change((doc) => {
+    writeDyad(doc, joineeDyad);
     doc.tiddlers[SIGNER_DID_TIDDLER] = {
       tiddler: { title: SIGNER_DID_TIDDLER, text: payload.signerDid, kind: "operator-root-did" },
       meta: { authority: "lares-init-admit" },

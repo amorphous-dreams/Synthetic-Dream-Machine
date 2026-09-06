@@ -9,6 +9,7 @@ import { runSovereignWorker } from "./sovereign-island-model.js";
 import { makeOperatorDaemonBehavior } from "@lararium/keyhive/operator-daemon-behavior";
 import { persistIdentityArchive } from "./identity-anchors.js";
 import { runVaultVerb } from "./archive-passphrase.js";
+import { makeBagTierReader } from "./vessel-bag-tier.js";
 import { HULLS_FULL } from "@lararium/mesh";
 import { runReconcileCadence } from "./sensorium-lifecycle-verbs.js";
 
@@ -27,6 +28,9 @@ runSovereignWorker((manifest) => {
   const base = makeOperatorDaemonBehavior(manifest, {
     persistArchive: (bytes) => persistIdentityArchive(bytes),
     vault:          (verb, args) => runVaultVerb(verb, args),
+    // The crossing gate reads each bag's declared cap-tier off this vessel's hearth manifests,
+    // so an outward transfer (veil-ward -> public-ward) refuses without the kahu-cabal.
+    bagTier:        makeBagTierReader(),
     runnableHulls:  HULLS_FULL,
   });
   return {

@@ -59,6 +59,9 @@ export const FLEET_PROOF_DOMAIN = d("fleet-proof");
 /** The vessel×veil dyad, and the binding that names it. */
 export const DYAD_ID_DOMAIN = d("dyad-id");
 export const DYAD_BINDING_DOMAIN = d("dyad-binding");
+/** The per-handle dyad VEIL derivation off the DEVICE tree (Stage 0 ruling, 2026-09-05):
+ *  the veil derives from the vessel's own seed, scoped by PersonaGroup — never from the persona seed. */
+export const DYAD_VEIL_INFO = d("dyad-veil");
 
 // ── ADMISSION + ENROLMENT ───────────────────────────────────────────────────────────────────────
 export const PERSONA_ENROLL_DOMAIN = d("persona-enroll");
@@ -130,6 +133,6 @@ export const ALL_DOMAINS: readonly string[] = [
   MEMBERSHIP_RELAY_DOMAIN, EDGE_KAPAE_DOMAIN, VOUCH_EDGE_DOMAIN, RE_ANCHORING_DOMAIN,
   GUARDIAN_CONFIRM_DOMAIN,
   KEYRING_ENVELOPE_DOMAIN, KEYRING_ENVELOPE_SEAL_INFO, CAD_KEYSTREAM_INFO, RELAY_GATE_INFO,
-  PERSONA_SCOPE_INFO, CIRCLE_SCOPE_INFO, NEXUS_SCOPE_INFO,
+  PERSONA_SCOPE_INFO, CIRCLE_SCOPE_INFO, NEXUS_SCOPE_INFO, DYAD_VEIL_INFO,
   ORACLE_POINTER_DOMAIN, PLUGIN_ATTESTATION_DOMAIN, MU_VOID_DOMAIN, RAISE_CHALLENGE_DOMAIN,
 ];

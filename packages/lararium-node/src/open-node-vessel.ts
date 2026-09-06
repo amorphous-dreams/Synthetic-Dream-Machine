@@ -77,6 +77,7 @@ import type { SparseFormVector, WorldlineStubWire, AntigenRing, FederationGate, 
 import { selfSlotShareDecision } from "./self-slot-share.js";
 import { makeAntigenRingHolder } from "./antigen-ring.js";
 import { makePersonaKelRingHolder } from "./persona-kel-ring.js";
+import { vesselDyads } from "./vessel-dyads.js";
 import { makeNexusMembership } from "./nexus-carriage.js";
 import { runNexusRefresh } from "./nexus-refresh.js";
 import { rollLeaseEpochOnBoard } from "./lease-rekey.js";
@@ -939,6 +940,19 @@ async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep> {
     const signerDid  = tiddlerText(daemonDoc?.tiddlers?.[SIGNER_DID_TIDDLER]) ?? undefined;
     const edgeRecord = daemonDoc?.tiddlers?.[DEVICE_DELEGATION_SELF_TIDDLER];
     const deviceEdge = edgeRecord?.tiddler as unknown as DeviceDelegationTiddler | undefined;
+    // ── THE RELATIONSHIPS THIS VESSEL HOLDS — read live at boot (dyad read path) ──────────────
+    // `vesselDyads` unions the ceremony-minted slots with the edge-derived fallback; a slot WINS,
+    // so a post-ruling vessel reads its true derived veil here (Stage 0 ruling, 2026-09-05). The
+    // read only observes — but a FACE standing beside ZERO gathered dyads names a pre-ruling doc
+    // (edge written, slot never minted), and that drift gets SAID at boot rather than discovered
+    // the day a fleet tries to gather it. Warn, never throw: the edge fallback still carries boot.
+    const dyads = vesselDyads(daemonDoc);
+    if (deviceEdge && dyads.length === 0) {
+      console.log("[dyad] a face stands and no dyad slot is minted — a pre-ruling daemon doc; re-found or admit to mint the derived veil.");
+    } else if (dyads.length > 0) {
+      const bound = dyads.filter((d) => d.binding !== null).length;
+      console.log(`[dyad] this vessel holds ${dyads.length} relationship(s), ${bound} bound.`);
+    }
     // THE PERSONA-KEL PIN — the continuity anchor the Binding Gate walks. Read the pinned identifier PREFIX
     // from the daemon bag (the pin's root of trust), then read its seq-sorted key-event-log from the per-Nexus KEL
     // board — this node's OWN gate key IS its Nexus key. The read runs against the LOCAL replica "as of last

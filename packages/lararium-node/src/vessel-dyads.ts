@@ -15,10 +15,10 @@
  * fleet and cannot pass as a gathered member. Presenting the relationship and claiming its gathering
  * are different acts, and only the first one has happened.
  *
- * ⚠ AND THE VEIL STAYS UNRULED. `dyadFromEdge` reads the edge's persona ROOT where the model wants a
- * per-vessel VEIL, and says so in its own comment: a root SPANS devices while a veil never does. Until
- * that ruling lands, a dyad read here names (device × root) and the model's local-key property waits.
- * This module inherits the ambiguity rather than resolving it by assertion.
+ * THE VEIL STANDS RULED (Stage 0, 2026-09-05): it derives off the VESSEL seed per group
+ * (`deriveDyadVeil`) and rides the dyad slot the ceremony writes. A slot WINS the union below, so a
+ * ceremony-minted vessel reads its true derived face here; only a pre-ruling doc with no slot falls
+ * back to the edge's (device × root) reading, and that fallback carries `binding: null` visibly.
  *
  * ── THE TWO SOURCES, UNIONED ────────────────────────────────────────────────────────────────────
  * A vessel holds its edge at ONE key today — `DEVICE_DELEGATION_SELF_TIDDLER`, a single `self` —
@@ -51,8 +51,14 @@ export function vesselDyads(doc: LarDoc | undefined | null): DyadRecord[] {
   const record = doc?.tiddlers?.[DEVICE_DELEGATION_SELF_TIDDLER];
   const edge = record?.tiddler as unknown as DeviceDelegationTiddler | undefined;
   // A torn or absent edge yields nothing rather than a half-built dyad — the id derives from both
-  // ends, so an edge missing either names no relationship at all.
-  if (edge?.deviceDid && edge.personaRootDid && !seen.has(dyadFromEdge(edge).dyadId)) {
+  // ends, so an edge missing either names no relationship at all. And a slot already riding THIS
+  // edge's device is the RULED reading of the same relationship (the derived veil, Stage 0), so the
+  // (device × root) fallback surfaces only where no slot stands — one relationship, one record,
+  // never the same edge counted twice under two veils.
+  const deviceDid = edge?.deviceDid?.toLowerCase();
+  const slotRidesEdge = deviceDid !== undefined
+    && bySlot.some((d) => d.ref.vesselDid.toLowerCase() === deviceDid);
+  if (edge?.deviceDid && edge.personaRootDid && !slotRidesEdge && !seen.has(dyadFromEdge(edge).dyadId)) {
     const d = dyadFromEdge(edge);
     seen.set(d.dyadId, d);
   }

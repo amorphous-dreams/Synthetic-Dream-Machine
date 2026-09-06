@@ -46,13 +46,13 @@ twice, then found to lack the one relation that would let it cross:
 
 * ''Tree clean.'' `witness-all` reports every witness clean; four witnesses stand HELD OUT by declaration, never by failure — `browser-weld` · `civic` · `crossing` · `herm-mesh`. Each drives containers or a real browser and no scheduler invokes any of them.
 * ''Suites.'' mesh 2100 · node 822 · tw5 608 · lares-cli 222 · browser 82 · mempalace 80 · sensorium 50 · keyhive 41. One tw5 red appeared under a full-suite AFTER run and cleared standalone — treat a lone tw5 red as ''suspect shared state'' before treating it as a defect.
-* ''Unbuilt-laws register:'' 17 reds declared, 17 still red, 0 greened, 5 standing as floor. A red that GREENS here names a law the system started keeping by accident, which the register exists to catch.
+* ''Unbuilt-laws register:'' 23 reds declared, 23 still red, 0 greened, 10 standing as floor (re-measured 2026-09-05 by `tools/unbuilt-laws-witness.sh`; the prior line's 17 lagged the file). A red that GREENS here names a law the system started keeping by accident, which the register exists to catch.
 * ''The founding walk'' refuses forgery, refuses a contract-less foreign nym, and closes by supersession rather than deletion. The replay-across-epoch leg goes UNWALKED — the rotate refuses first, fail-closed, on a reveal mismatch.
 * ''Never walked anywhere:'' two machines carrying two clocks. The three-hop network carry stands proven under `herm-mesh-witness` inside one process-space host.
 
 !! The four rulings owed — triage order
 
-# ''Dyad Stage 0 — what stands behind the veil?'' BLOCKS Stage 2 (binding at the ceremony sites) and Stage 3 (the petname switcher). Three answers give three different systems: (A) mint a veil key · (B) find one — measurement says none exists · (C) collapse veil onto root and spend the privacy claim. Only the operator rules this. ''Measurement that settles it:'' none — the choice sits upstream of any measurement.
+# ✓ ''Dyad Stage 0 — RULED 2026-09-05 (operator):'' ''the veil in the dyad = the per-handle credential derived from the DEVICE-MINTED vessel-key'' — option A by device-side derivation, per canon `persona-circle#the-vault` ("a vessel joins each handle-group under a PER-HANDLE PSEUDONYMOUS CREDENTIAL, never its raw device key… the deck stays one deck; the face it wears differs per handle"). The seed derives layers ② and ③ (personas, circle-scopes, Faces); the vessel-key and everything the dyad holds derive from the device — local by construction, never resurrected. Iterable later at the operator's word. Stages 2 (ceremony binding) and 3 (petname switcher) UNBLOCK. The three-layer shape stands beside it: ① custody atom (never presents) · ② Circles (private always, fleet-synced pet-names) · ③ optional Public Face (the only outward door; every disclosure an explicit act from a Face).
 # ''Fork A or Fork B for citizen recovery.'' Fork A reconstructs then signs (Shamir, `shamir-gf256.ts` + `recovery-share.ts`); Fork B attests at threshold then rotates (`recovery-keel-core.ts`). BOTH stand built. NEITHER stands wired. The already-wired mechanism may have to MOVE, which the operator flagged before the research ran.
 # ''Does a joined node adopt its Nexus's key?'' The board grain already ruled ''one board per Nexus''. This asks the remaining half — whether joining carries key adoption or only seat adoption.
 # ''The two raw-key sites'' — antigen `nym` and handle-card `nym`. Smallest of the four; closing it needs a word, not a design.
@@ -61,8 +61,8 @@ twice, then found to lack the one relation that would let it cross:
 
 Three things pass their own tests and no production path calls them. Name them as ''specified'', never as "built":
 
-* `vesselDyads` — `packages/lararium-node/src/vessel-dyads.ts`, exported at `index.ts:188`, exercised only by its own test.
-* `crossingDirection` — `packages/lararium-mesh/src/crossing-direction.ts`. ⚠ A grep for callers hits `packages/lararium-tw5/src/action-handler.ts:454` and that hit reads as a COMMENT saying the gate cannot reach it. The instrument answers "the name appears here", never "something calls it".
+* ✓ `vesselDyads` — WIRED 2026-09-05 under the Stage 0 ruling, retired from this census in the same gesture. The boot read path (`openDaemon`) gathers the vessel's relationships live and says the drift aloud (a face beside zero slots names a pre-ruling doc); both ceremony sites MINT the dyad (`deriveDyadVeil` off the vessel seed; founder binding signed at the genesis epoch, joinee binding:null — the absence travels); the slot's ref is authoritative for the veil and the edge fallback yields to it. Vectors: `lararium-node/tests/dyad-mint-ceremony.test.ts` (mint + read-meets-mint) · `dyad-veil.test.ts` (derivation). Register ⑨'s minted-dyad red retired with it; the FLEET-GATHER red still stands — no live path calls `fleetOfGroup` yet (Stage 3).
+* ✓ `crossingDirection` — WIRED 2026-09-05, retired from this census in the same gesture. The gate prices transfers by direction (`action-handler` reads `opts.bagTier`; outward refuses fail-closed until a cabal quorum surface exists), node supplies the hearth-manifest reader (`vessel-bag-tier.ts`) through keyhive's fs-blind `DaemonExtra.bagTier` door. Vectors: `lararium-node/tests/action-handler-crossing.test.ts` + `tests/vessel-bag-tier.test.ts`; the register's two ⑤ reds retired with it. Remaining shore: the repository-homed manifest leg (hearth-only today, absent reads VEIL — tighter, never looser) and the cabal-SIGNED outward crossing.
 * The recovery keel, both forks, per ruling 2 above.
 
 !! Red-first test design — the procedure, not the slogan
@@ -590,6 +590,6 @@ re-entry: closed — the floor convened and the held review condition met; the c
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;1B0fnT7umJAu_rJk3qaACReKe1H8C9B2HlCS6Ylro98
+<<^ code="&#x0003;">>ni:///sha-256;pOYkVpsWmuCfC06zQZZyABgOs8URgJZdI8Iu27mlrH0
 
 <<^ code="&#x0004;" -> to=?>>

@@ -152,13 +152,16 @@ describe("⑤ the outward gate", () => {
     expect(crossingDirection({ from: "public", to: "veil" }).needsCabal).toBe(false);
   });
 
-  test.skip("A GATE CAN READ A BAG'S TIER — DEFERRED: VerbContext carries daemon, invocation and cap, and nothing that answers a bag's publicity tier, so action-handler cannot tell an outward crossing from an inward one and an OUTWARD copy passes on a read cap alone. The reader EXISTS one package over (bagManifest parses cap-tier; bag-declare reads it) — what is missing is the injection", () => {
-    expect(Object.keys(mesh)).toContain("bagTierReader");
-  });
-
-  test.skip("AN OUTWARD COPY WITHOUT A CABAL SIGNATURE REFUSES — DEFERRED: the consequence of the injection above, and the one act the kahu cabal exists to gate. Zero e2e walks it: grep for outward/declassify across crossing-witness and civic-witness returns nothing", () => {
-    expect(Object.keys(mesh)).toContain("bagTierReader");
-  });
+  // KEPT 2026-09-05 — both ⑤ reds greened by the wire, and their vectors live where the layers do:
+  //   · A GATE CAN READ A BAG'S TIER — the injection landed as `ActionHandlerOptions.bagTier`
+  //     (lararium-tw5/action-handler), supplied by node's hearth-manifest reader
+  //     (lararium-node/src/vessel-bag-tier.ts, witnessed in tests/vessel-bag-tier.test.ts) through
+  //     keyhive's fs-blind door (DaemonExtra.bagTier). Mesh stays pure — the reader could never live
+  //     here, which is why this file cannot assert it directly.
+  //   · AN OUTWARD COPY WITHOUT A CABAL SIGNATURE REFUSES — witnessed at the gate in
+  //     lararium-node/tests/action-handler-crossing.test.ts (outward COPY and MOVE refuse; inward
+  //     stays cheap; an unthreaded vessel prices lateral). The cabal-SIGNED outward crossing stays
+  //     future work: today every outward refuses, fail-closed, until a cabal quorum surface exists.
 });
 
 // ════════════════════════════════════════════════════════════════════════════════════════════════
@@ -183,9 +186,11 @@ describe("⑨ the dyad, specified and unwired", () => {
     expect(Object.keys(mesh)).toContain("gatherFleetAtBoot");
   });
 
-  test.skip("A DYAD IS MINTED WHEN A FACE MEETS A DEVICE — DEFERRED: nothing writes a dyad slot in a live ceremony. The persona-admission and device-admit paths mint delegation edges; whether either produces the DYAD record the model names, or whether the dyad layer is a parallel unbuilt spelling of the same fact, is unmeasured", () => {
-    expect(Object.keys(mesh)).toContain("gatherFleetAtBoot");
-  });
+  // KEPT 2026-09-05 — A DYAD IS MINTED WHEN A FACE MEETS A DEVICE greened under the Stage 0 ruling:
+  // both ceremony sites write the slot (`foundTheFace` binding-signed at the genesis epoch;
+  // `runApplyAdmitPayload` binding:null — no root stands on the joinee, the absence travels), the
+  // veil derived off the VESSEL seed per group (`deriveDyadVeil`, dyad-veil.test.ts). Witnessed in
+  // lararium-node/tests/dyad-mint-ceremony.test.ts. The fleet-gather red above stands unchanged.
 });
 
 // ════════════════════════════════════════════════════════════════════════════════════════════════

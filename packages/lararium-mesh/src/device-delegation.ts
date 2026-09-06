@@ -76,7 +76,8 @@ export interface DeviceDelegationTiddler {
   readonly signature:           string;
 }
 
-const didFromVerifyingKey = (vkHex: string): LarDid => `0x${vkHex}`;
+/** The one DID spelling: 0x + bare 32-byte hex. Exported so a mint never hand-builds the prefix. */
+export const didFromVerifyingKey = (vkHex: string): LarDid => `0x${vkHex}`;
 const verifyingKeyFromDid = (did: string): string => (did.startsWith("0x") ? did.slice(2) : did);
 
 type ProofFields = Pick<

@@ -48,6 +48,11 @@ type DaemonExtra = Pick<DaemonBehaviorOptions, "makeCaptureEngine" | "captureTic
    *  verbs below. Absent (a browser vessel with no fs) → the vault verbs simply never register. The
    *  passphrase rides the verb args over the owner-only 0600 UDS — the same trust boundary as a CLI arg. */
   vault?: (verb: string, args: Record<string, unknown>) => Promise<Record<string, unknown>>;
+  /** `bagTier` — the SAME inversion for the crossing gate's tier reader: keyhive stays fs-blind, so
+   *  NODE injects the reader over its hearth bag manifests. Threaded into the ACTION verb handlers,
+   *  where `crossingDirection` prices a transfer by direction. Absent (a browser vessel, tests) →
+   *  the gate fail-closes every bag to VEIL and prices every transfer lateral, as before. */
+  bagTier?: (bagUrl: string) => import("@lararium/mesh").CapTier | null;
 };
 import { PERSONAL_BINDINGS_PREFIX, DRAFT_BINDINGS_PREFIX, WORKING_BINDINGS_PREFIX, verifyAuthProof, verifyEdgeAgainstPersonaKel, classifyCrossOperatorAdmission } from "@lararium/mesh";
 import { bootDaemonKeyhive } from "./boot-daemon-keyhive.js";
@@ -63,7 +68,7 @@ import type { KeyhiveProvider } from "./keyhive-provider.js";
  */
 export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: DaemonExtra = {}): DaemonBehaviorOptions {
   // persistArchive + vault ride node-only; keep them OUT of the makeDaemonBehavior spread (not DaemonBehaviorOptions).
-  const { persistArchive, vault, ...daemonExtra } = extra;
+  const { persistArchive, vault, bagTier, ...daemonExtra } = extra;
   const daemonAuth = manifest.daemonAuth;
   if (!daemonAuth) return { ...daemonExtra };
 
@@ -134,6 +139,8 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         // Resolve a carrier body a LOAD/INGEST verb rode BY REFERENCE (never inline) —
         // the fs-less worker pulls it from the corpus CAS by content-address.
         ...(ctx.resolveByCid ? { resolveByCid: ctx.resolveByCid } : {}),
+        // The crossing gate's tier reader — node's disk, injected here so the gate can price direction.
+        ...(bagTier ? { bagTier } : {}),
       });
       // Residency mutators (pin/unpin/register-cold) — gated in-worker; they command the
       // main-resident BagStowage via daemon:residency-op (ctx.post). `residency`
