@@ -435,6 +435,44 @@ recovery root; Fork B's card carries a guardian's recovery public key + a signin
 picks the axis: ''maximal reuse + a shrunk single-secret window (A)'' vs ''zero single-secret + new
 multisig machinery and heavier guardian onboarding (B)''.
 
+!!! ✓ RULED (operator, 2026-09-06) — the fork resolves as a LAYERED shape, not a winner
+
+The forks answered different layers all along, and the ruling seats each where its shape fits:
+
+* ''The NAME (the KEL prefix): FORK B'' — attest-then-rotate under the fixed identifier. ENACTED: no
+  prefix incepts unarmed — every self-stood founding pre-commits the founder's 1-of-1 SELF-RECOVERY
+  digest (`deriveSelfRecoveryKey`, a domain-separated leaf off the persona seed: the multitude-of-one,
+  NAMED), and the self-rotation stands witnessed end-to-end (lose the device, hold the seed, rotate
+  under the same name — `inception-armed.test.ts`).
+* ''The MEMORY (the root seed / HD tree): FORK A as OPT-IN SELF-CUSTODY only'' — cards the human keeps
+  or knowingly hands out. Never a default, never custodial, never the Nexus; every provisioning SAYS
+  ALOUD that shares are keys. The silent-impersonation evil lives in DISTRIBUTING shares to other
+  hands; self-escrow holds a quorum of one — the field's own courierability property, kept where it
+  belongs.
+* ''The CONTEST: FORK C, ON THE CHAIN'' — a recovery rotation enters the prefix's OWN KEL as
+  PROVISIONAL and hardens causally (safety from corm-fencing/ITC: an unpartitioned holder's veto
+  out-competes whenever it syncs, no clock race; liveness from φ-accrual, separately). NEVER a
+  pending-row on any board — a board of pending recoveries is a compiled registry of the vulnerable
+  (the registry filter, `lar:///ha.ka.ba/lares/api/pono/registry-filter`). The private VENUE is a
+  guardian-cabal realm (the subject + their chosen guardians, ciphered): the realm coordinates, the
+  chain hardens. The hardening rule's φ-accrual half stands UNWALKED — the one design debt this
+  ruling still carries.
+* ''CIVIC stays as wired'' — pre-rotation-with-reveal at the charter, the reserve-seed Shamir one
+  layer beneath. The incumbent never generalizes upward.
+
+''THE ROLLING COMMITMENT (enacted with the ruling):'' every KEL event carries `nextRecoverySetHash`
+beside the genesis wall — the prefix keeps binding the GENESIS set (anti-swap survives), while each
+rotation reveals against its predecessor's rolling commitment and GRAFTS the next. Guardian sets turn
+over log-wise: 1-of-1-self → real hands → fresh hands when a guardian churns, each transition a
+signed, board-walkable event. This retires the guardian-rotation gap without spending delegation.
+
+''THE CROSSING RECORD (`reserve-transition` + `lares nexus seal grow`):'' when a multitude-of-one
+becomes real hands, the old quorum signs the handoff, the new quorum countersigns the receipt (one
+byte-image, the TUF cross-sign), and WITNESSES attest — where an independent witness is, checkably, a
+key seated in NEITHER set. The record is carriage with the charter's own artifacts. The guardian CARD
+split into TWO objects (a bearer SHARE vs a public REGISTRATION — own modules, own confirm domains,
+own label stems), so the wrong object is not selectable: the ceremony-confusion cure the field earned.
+
 <<~/ahu>>
 
 <<~ ahu #/the-delegation-axis>>
@@ -445,7 +483,18 @@ multisig machinery and heavier guardian onboarding (B)''.
 
 This is orthogonal to A-versus-B and larger in severity than either. The fork prices how briefly the recovery authority is exposed; ''delegation decides whether that exposure is survivable at all''. A recovery keel settled on the fork and silent on delegation has answered the smaller question.
 
-Surfaced by the outside sweep (`docs/pono/recovery-custody-scout#the-third-axis`) and ''not yet traced against our own KEL'' — whether our persona-KEL identifiers are delegated, and what delegating them would cost, stands unmeasured.
+Surfaced by the outside sweep (`docs/pono/recovery-custody-scout#the-third-axis`).
+
+!!! ✓ MEASURED (2026-09-06) — and NOT SPENT
+
+A research walk through KERI's own spec and kin systems priced delegation: a delegated inception
+carries the delegator's AID INSIDE the prefix, permanently, with no severance mechanic — recoverability
+purchased with a landlord in the identifier. The ROLLING COMMITMENT (#the-two-forks) answers the graft
+without it: guardian sets turn over log-wise under the un-delegated prefix. What delegation alone would
+have bought — superseding a compromise OF the current rolling set between grafts — narrows to the
+contest window's job (Fork C: a provisional rotation the true holder out-competes causally). Delegation
+stays REJECTED for the persona plane; a future entity that genuinely wants a standing superior (an
+office, never a person) may revisit it under its own name.
 
 <<~/ahu>>
 
@@ -496,6 +545,6 @@ Three walls hold this design, and each stays named:
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;nfUcSUtUCjjROap1gP_JjTtbcnl1gL4-tQbC2Zmsx3s
+<<^ code="&#x0003;">>ni:///sha-256;ZJcjo68ARpAL-0X4Z5gPJwREPGhacnkgpg3gypQj9eY
 
 <<^ code="&#x0004;" -> to="?">>

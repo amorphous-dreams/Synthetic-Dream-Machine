@@ -1,0 +1,94 @@
+<<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
+
+<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/registry-filter">>
+```toml meta
+cacheable         = true
+file-path         = "bags/lares/ha.ka.ba/lares/api/pono/registry-filter.mem"
+hydrate           = true
+l-space           = "stable"
+mana              = 16
+manao             = 16
+manaoio           = 16
+namespace         = "&#x2299;"
+pattern-integrity = true
+retain            = true
+role              = "registry-filter — the hard design law (operator, 2026-09-06): any fork whose downstream builds a compiled-about registry at ANY scope, even one Nexus, is REJECTED. The mechanical test (carriage passes: announced-by, causal, as-of-last-sync), the first audit's verdicts, the private-room refinement (a cabal realm venues what a board must not), and the shadow-case (correlation-by-signature-reuse is a registry built without a table)"
+tags              = ["api/pono/meme"]
+type              = "text/memetic-wikitext+tiddlywiki"
+uri-path          = "ha.ka.ba/lares/api/pono/registry-filter"
+```
+
+<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language>>
+
+<<^ code="&#x0002;">>
+
+<<~ ahu #/the-law>>
+
+! The Registry Filter ~ empire reads registries; it cannot read what was never compiled
+
+''No-global-now stands as a HARD design parameter'' (operator, 2026-09-06) — it informs the causal-island doctrine and most of the identity design — and it carries a rejection rule every open fork MUST pass before a line of it is built:
+
+> ''If a fork's downstream builds a "global registry" of even ONE-NEXUS scope, the fork is REJECTED.''
+
+The stance behind the rule runs adversarial: adversity-from-empire holds this stack in the pre-SIN posture. A registry is what empire subpoenas, scrapes, and correlates; a thing never compiled offers nothing to read. The law fires at DESIGN time — a rejected fork never reaches code, so no gate needs to catch it later.
+
+<<~/ahu>>
+
+<<~ ahu #/the-test>>
+
+!! The Test ~ carriage ⊥ registry, run mechanically
+
+One axis separates the lawful from the rejected, and every clause of it is checkable at design time:
+
+| | ''CARRIAGE (passes)'' | ''REGISTRY (rejected, at any scope)'' |
+|-|-|-|
+| authored | ''announced BY the subject'' | ''compiled ABOUT subjects'' |
+| replicated | causally — a CRDT log, per replica | authoritatively — a place that claims now |
+| read | as-of-my-last-sync | as-of-truth |
+| enumerable | no — you carry what reached you | yes — the compilation IS the product |
+
+''Worked distinctions the test keeps apart:''
+
+* A ''KEL board'' passes WHILE gates read the local replica fail-closed and never treat board-presence as truth-of-now — it diffuses chains their subjects author. The day any gate reads board-presence as now, it crosses the line.
+* The ''crossroads Handle-book'' passes as ''self-announced cards only''; a compiled index over the cards — however helpful its face — is the rejected registry.
+* A ''Handle's domain-attestation'' travels ON the card and verifies reader-locally against the empire's own registry (DNS); this stack MUST NOT compile a Handle→domain index, ever.
+* The ''carriage-contracts board'' passes by the membership doctrine's own construction: operator contracts, self-announced by contract-in signing; the Nexus tracks CONTRACTS, never user identities.
+
+''THE SHADOW-CASE — a registry built without a table.'' A key REUSED across contexts compiles a registry in the correlations it leaves: key-ADOPTION at a Nexus join would have correlated every joined node's artifacts by signature-reuse (why seat-adoption ruled, <<~ loulou lar:///ha.ka.ba/lararium/mesh/membership-doctrine>>), and the raw vessel Individual on every PersonaGroup roster stands as today's declared instance (persona-circle#the-vault). ''The test reads OUTPUT SHAPES, not tables:'' anything that lets a reader join records ABOUT a subject across contexts compiles, whether or not a table exists.
+
+<<~/ahu>>
+
+<<~ ahu #/the-private-room>>
+
+!! The Private Room ~ what a cabal realm may venue that a board must not
+
+The filter rejects a design's VENUE more often than its substance, and the cure is usually a change of room: a ''cabal realm'' — resources private to a group of Personas, ciphered, named only by its own doc id, enumerable by nobody outside — is ''compiled BY the parties ABOUT themselves'': carriage.
+
+* A ''guardian-cabal realm'' (the subject + their chosen guardians) lawfully carries the recovery conversation, the gathered signatures, the registration cards — where a pending-recovery ROW ON A BOARD would compile a one-Nexus registry of the vulnerable.
+* ''The split that keeps the room lawful: the realm COORDINATES, the chain HARDENS.'' Safety never moves into the room — a provisional rotation still out-competes on the prefix's own KEL by fencing; the room can gather every signature in the world and authority still turns only on the chain. Otherwise the room's liveness becomes the recovery's safety, the fusion the clockless law forbids.
+* ''The compartment-collector law reads realm membership too:'' one guardian realm MUST NOT span two compartments of one human — a room that does IS the forbidden collector wearing a friendly shape.
+
+<<~/ahu>>
+
+<<~ ahu #/first-audit>>
+
+!! The First Audit ~ what the law ate on the day it landed (2026-09-06)
+
+Kept as the worked example of the test in motion:
+
+* ''EATEN — the board-window contest.'' A pending-recovery record on a board, completing after a window unless vetoed, failed twice: safety rode on liveness (a partitioned holder loses a race against a clock), and the board compiled a registry of the vulnerable. Re-cut onto the chain (identity-classes#the-two-forks, Fork C).
+* ''WITHDRAWN — the guest-roster question.'' "May a non-member's prefix ride a host Nexus's board?" asked permission to roster guests; a roster IS a global now. The end-user's third venue is the CARRIAGE — their chain travels with their group's own replication; the host relays, never ledgers.
+* ''PASSED, fenced'' — the rolling recovery commitment, the crossing record, the armed inception, the QR admit, the veiled keyhive roster, the fleet gather, the domain-attestation-on-the-card, seat-adoption.
+
+''How to apply forward:'' run the test on every new design BEFORE building. When a design seems to need "somewhere everyone can look," the answer is a chain the subject authors plus carriage — never a place that compiles.
+
+<<~/ahu>>
+
+<<~ loulou lar:///ha.ka.ba/lares/api/pono/persona-circle>>
+<<~ loulou lar:///ha.ka.ba/lararium/mesh/identity-classes>>
+<<~ loulou lar:///ha.ka.ba/lararium/mesh/membership-doctrine>>
+<<~ loulou lar:///ha.ka.ba/lares/api/pono/cabal-realm>>
+
+<<^ code="&#x0003;">>ni:///sha-256;bzqYHBNUzuLqexxdJJ2XywmDWE8dQG8DLM54nOMGchs
+
+<<^ code="&#x0004;" -> to="?">>

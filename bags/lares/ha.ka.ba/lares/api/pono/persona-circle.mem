@@ -62,6 +62,8 @@ This adds a //new// cut beside the existing per-vessel Ed25519-sign ⊥ X25519-K
 
 ''One seed, persona-side only.'' The ''veiled-user / persona'' keys derive from ONE seed via ''ed25519 HD-derivation, all-hardened paths'' — recover the seed, re-derive the whole persona constellation; ed25519-HD is structurally immune to the xpub-linkage trap (SLIP-0010 = hardened-only). The ''vessel-key stays outside the seed'' (device-minted). So recovery is cheap on the persona side without fusing substrate sovereignty. <<~ loulou lar:///ha.ka.ba/lares/api/pono/lararium-identity>>
 
+''THE DYAD'S VEIL DERIVES OFF THE DEVICE TREE (ruled 2026-09-05) — the word "veil" splits by layer.'' Two keys wore one word: the ''veiled-user-key'' above (seed-derived, layer ② — spans a fleet BY DESIGN, that is what recovery re-derives) and the ''dyad's veil'' — the face a VESSEL wears into ONE handle-group. The dyad's veil derives off the ''vessel seed'', one hardened domain-separated leaf per PersonaGroup (`deriveDyadVeil`): local by construction (the vessel seed never leaves its device, so no derivation of it spans), one face per group (no roster carries a key that appears on another), and ''never resurrected'' — it dies with the device, and the cure is re-admission minting a fresh atom. Both ceremony sites MINT the dyad slot (self-stood signs its binding at the genesis epoch; a joinee lands `binding: null` — presented, not yet gathered — and the absence travels). ''The seed's ledger, closed:'' the persona seed derives layers ② and ③; the vessel seed derives layer ① entire. Neither tree reaches into the other.
+
 <<~/ahu>>
 
 <<~ ahu #/composition>>
@@ -138,7 +140,13 @@ only join between compartments, and it never rides any wire.
 vessel that joins by its ''immutable device key'' puts that one key on every handle-group's roster, so two
 handles on one device share a roster entry — and by the co-membership law (RFC 9420; Keyhive), anyone in
 either group ''links them''. The credential is DERIVED per handle: the deck stays one deck; the face it wears
-differs per handle, and no roster carries a key that appears on another.
+differs per handle, and no roster carries a key that appears on another. ''The credential now EXISTS'' — it
+IS the dyad's veil (#the-atom, `deriveDyadVeil`) — ''and the roster law stands DECLARED RED, not kept'': the
+live Keyhive roster still seats the raw vessel Individual, because the vessel-keyed provider CREATES the
+sentinel and a creator sits on the CGKA tree by construction. The measured cure: the group is BORN under a
+veil-keyed agent, and the vessel operates AS its derivable veil at runtime (the declared red + its wake
+condition ride in `packages/lararium-keyhive/tests/veil-on-the-roster.test.ts`). Until that arc lands, the
+raw key on every roster is the standing cross-group correlator this law exists to remove.
 
 ''THE UPGRADE — the nym must PROVE itself, not merely look unlinkable.'' SLIP-0010 `handle'/context'`
 derivation is right in //shape// and unverifiable in //fact//: a relying party cannot check the derivation, cannot
@@ -216,6 +224,6 @@ And the substrate itself, by canon, has ''no forward-secrecy and no retroactive 
 <<~ loulou lar:///ha.ka.ba/lares/api/pono/has-stack>>
 <<~ loulou lar:///ha.ka.ba/lararium/mesh/mookuauhau>>
 
-<<^ code="&#x0003;">>ni:///sha-256;9zjU3pinlMlPEKT7fc17IURqqNRHLEJE8NXMWIaYIcI
+<<^ code="&#x0003;">>ni:///sha-256;LMkEJ5zqHuoZrrS3W52hCC828G0L9zkpodjg25Rzc7g
 
 <<^ code="&#x0004;" -> to="?">>
