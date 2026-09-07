@@ -22,8 +22,10 @@ describe("the PersonaGroup roster under the veil", () => {
   // THE CURE'S MEASURED SHAPE: the group is BORN under a veil-keyed provider (seed derivable from the
   // vessel seed per group — deriveDyadVeil); the vessel holds no direct membership and operates AS the
   // veil at runtime — a per-group second identity at boot (ceremony + bootDaemonKeyhive + the daemon
-  // behavior all move together). Wake condition: the two-identity boot lands, this unskips, both
-  // assertions green. Until then the raw vesselIdentifierHex on every group roster is the standing
+  // behavior all move together). THE PROBE RAN (creator-self-eviction.probe.test.ts, 2026-09-07):
+  // self-eviction REFUSED ("Redelagation error", keyhive's own refusal — a creator cannot leave its
+  // roster), so the two-identity boot stands CONFIRMED as the arc's true size, not a worst case.
+  // Wake condition: the two-identity boot lands, this unskips, both assertions green. Until then the raw vesselIdentifierHex on every group roster is the standing
   // cross-group correlator the veil exists to remove.
   test.skip("★ THE ROSTER CARRIES THE VEIL, NEVER THE RAW DEVICE KEY ★", async () => {
     // The founding shape as the ceremony runs it today: the vessel-keyed provider creates the
