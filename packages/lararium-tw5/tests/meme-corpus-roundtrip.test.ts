@@ -50,7 +50,10 @@ function carriers(): Array<{ rel: string; src: string; uri: string }> {
   const out: Array<{ rel: string; src: string; uri: string }> = [];
   for (const f of files) {
     const src = readFileSync(f, "utf8");
-    const sohs = maskedExecAll(src, /<<\^[^&\n]*&#x(?:0001|0011);[^>\n]*?\? -> to=(\S+)>>/g);
+    // THE FLOOR BELOW IS WHAT MAKES THIS HONEST. A finder bound to one spelling of the bearing found
+    // ZERO carriers the day the corpus took quotes, and every per-carrier law below would have reported
+    // clean over an empty set. `toBeGreaterThan(150)` is the only reason that read as a failure.
+    const sohs = maskedExecAll(src, /<<\^[^&\n]*&#x(?:0001|0011);[^>\n]*?"?\?"? -> to="?([^"\s>]+)"?>>/g);
     if (sohs.length !== 1) continue;   // multi-meme carriers ride their own law
     out.push({ rel: f.slice(CORPUS.length + 1), src, uri: sohs[0]![1]! });
   }

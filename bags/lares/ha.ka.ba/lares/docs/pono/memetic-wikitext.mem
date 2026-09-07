@@ -68,14 +68,14 @@ Profiles tune posture, not primitive meaning.
 !!! Minimum document
 
 ````markdown
-<<^ code="&#x0001;" from=? -> to=lar:///ha.ka.ba/lares/api/pono/example>>
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/example">>
 
 
 
 
 <<^ code="&#x0003;">>:e4165dad924ed38d
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>
 ````
 
 !!! Minimum relation, inclusion, invocation
@@ -193,6 +193,6 @@ The submission-grade specification at `lar:///ha.ka.ba/lares/api/pono/memetic-wi
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;um07jb8P6dwT-ny73EjWkpvmMscbacjpgeH26Ux5wVc
+<<^ code="&#x0003;">>ni:///sha-256;REG9nZuH6JeEk3ur1c28EACAh5E-KMeu0-qMFD9FSX8
 
 <<^ code="&#x0004;" -> to="?">>

@@ -1047,10 +1047,14 @@ export function expandMemeRefs(reader: FieldsReader, memeUri: string): string | 
   const MARK = (name: string): string => frameMark(FRAME_BY_NAME[name]!)!.code;
   const sohCode = f["$carrier-soh"] === "0011" ? MARK("SOH2") : MARK("SOH");
   const dialect = typeof f["$carrier-dialect"] === "string" ? (f["$carrier-dialect"] as string) : "ahu";
-  // THE ENDS TAKE NAMES; THE ARROW KEEPS ITS SHAPE. `from=? -> to=uri` reads "this carrier resolves
-  // toward that address", the spelling `pranala` and `lares aim` already write. The arrow rides as an
-  // unnamed positional, which TiddlyWiki parses as one — folding the bearing into a quoted attribute
-  // would demote a relation to a field.
+  // THE ENDS TAKE NAMES; THE ARROW KEEPS ITS SHAPE. `from="?" -> to="uri"` reads "this carrier
+  // resolves toward that address", the spelling `pranala` and `lares aim` already write. The ARROW
+  // stays an unnamed positional — that is what carries the relation, and quoting reaches only the two
+  // values it stands between, so a bearing never demotes to a field.
+  //
+  // THE VALUES QUOTE, so TiddlyWiki's own parser types every control sigil without a special case and
+  // this tree consumes that parse tree rather than re-deriving it. A hand-rolled reader that binds the
+  // bare form alone stops matching every head the moment the corpus takes quotes.
   const ns = str("namespace").trim();
 
   let out = carriageText(reader, memeUri, "prologue");
@@ -1063,7 +1067,7 @@ export function expandMemeRefs(reader: FieldsReader, memeUri: string): string | 
   // nothing here has to check whether one stands — a suppression check and the field it guarded, gone
   // together. What the author wrote ABOVE the declaration still rides in `prologue` and emits first.
   out += `${DECLARATION}\n\n`;
-  out += `<<^ code="${sohCode}"${ns ? ` namespace="${ns}"` : ""} from=? -> to=${memeUri}>>\n`;
+  out += `<<^ code="${sohCode}"${ns ? ` namespace="${ns}"` : ""} from="?" -> to="${memeUri}">>\n`;
   out += carriageText(reader, memeUri, "preamble");
   if (meta) out += "```toml meta\n" + meta + "```\n\n";
   out += expandRefs(reader, memeUri, "", carriageText(reader, memeUri, "header-text"), f, dialect);
@@ -1089,7 +1093,7 @@ export function expandMemeRefs(reader: FieldsReader, memeUri: string): string | 
   out += bccOfSpan(out.slice(spanStart));
   out += "\n";
   if (sila) out += `\n${sila}\n<<^ code="${MARK("ETB")}">>\n`;
-  out += `\n<<^ code="${MARK("EOT")}" -> to=?>>\n`;
+  out += `\n<<^ code="${MARK("EOT")}" -> to="?">>\n`;
   // The EOT→postamble shore normalizes to a stable fixed point: the EOT line
   // already ends with one newline; a postamble's own leading newlines would
   // stack a fresh blank line every round trip (found on the Kapu &#x0014;

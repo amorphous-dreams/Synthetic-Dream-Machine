@@ -87,10 +87,10 @@ const COLON_PARAM = /\b([A-Za-z0-9_-]+):(?=["']|\[\[)/g;
  * it terminates take the names every other sigil already gives them.
  */
 const FRAME_OPEN_ENDS =
-  /(<<\^ code="&#x(?:0001|0011);"(?:[ \t]+namespace="[^"]*")?[ \t]+)\?([ \t]*->[ \t]*)(\S+)([ \t]*>>)/g;
+  /(<<\^ code="&#x(?:0001|0011);"(?:[ \t]+namespace="[^"]*")?[ \t]+)"?\?"?([ \t]*->[ \t]*)(\S+?)([ \t]*>>)/g;
 
 /** The closer states one end: the arrow reaches an unresolved address. */
-const FRAME_CLOSE_ENDS = /(<<\^ code="&#x(?:0004|0014);"[ \t]*->[ \t]*)\?([ \t]*>>)/g;
+const FRAME_CLOSE_ENDS = /(<<\^ code="&#x(?:0004|0014);"[ \t]*->[ \t]*)"?\?"?([ \t]*>>)/g;
 
 /**
  * Rewrite every CALL-site colon separator to `=`, leaving definitions and scheme colons untouched.
@@ -234,11 +234,14 @@ export function normalizeMemeSource(src: string): NormalizeResult {
   let ends = 0;
   text = text.replace(FRAME_OPEN_ENDS, (_m, head: string, arrow: string, target: string, tail: string) => {
     ends += 1;
-    return `${head}from=?${arrow}to=${target}${tail}`;
+    // QUOTED IS CANONICAL — TiddlyWiki's own parser reads every control sigil, and a quoted value is
+    // the form it types without a special case. A target arriving already quoted keeps its one pair.
+    const bare = target.replace(/^"(.*)"$/, "$1");
+    return `${head}from="?"${arrow}to="${bare}"${tail}`;
   });
   text = text.replace(FRAME_CLOSE_ENDS, (_m, head: string, tail: string) => {
     ends += 1;
-    return `${head}to=?${tail}`;
+    return `${head}to="?"${tail}`;
   });
   if (ends > 0) notes.push(`framing ends: ${ends} sigil${ends === 1 ? "" : "s"} named from= and to=`);
 

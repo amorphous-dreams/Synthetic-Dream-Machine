@@ -42,7 +42,7 @@ lar-kind        Rule type    Dispatch path                  Render
 child-slot      SigilRule    compound with closeKey          template cascade; produces child tiddler
 edge-sugar      SigilRule    compound leaf or compound block template cascade; no child tiddler
 edge            SigilRule    permanent JS exception          template cascade; FROM -> TO arrow syntax
-header          ControlFrame the `<<^` scanner, not a `<<~` rule  template cascade; <<^ code="&#x0001;" … from=? -> to=uri>>
+header          ControlFrame the `<<^` scanner, not a `<<~` rule  template cascade; <<^ code="&#x0001;" … from="?" -> to="uri">>
 guest-grammar   SigilRule    compound block                  delegates body to guest interpreter
 query           SigilRule    compound leaf                   TW5 filter eval; $list over p1
 query-alias     SigilRule    compound leaf                   same render as query; aliasFor points to target
@@ -197,6 +197,6 @@ The TypeScript validator `validatePranalaEdge` (in `@lararium/mesh`) enforces th
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;BWBxY4jdCZgavp_Yhnyyt4vOrVP4H5XfVl8zqdIXRRk
+<<^ code="&#x0003;">>ni:///sha-256;u6zmuuyYaH-OKxu_fVHkq0g3oog0UCl9kqaTeL1JYpA
 
 <<^ code="&#x0004;" -> to="?">>

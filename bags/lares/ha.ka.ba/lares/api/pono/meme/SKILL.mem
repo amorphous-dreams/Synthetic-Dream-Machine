@@ -191,7 +191,7 @@ When writing or revising:
 ````markdown
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" from=? -> to=lar:///ha.ka.ba/lares/api/[PATH]>>
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/api/[PATH]">>
 
 
 # [Title]
@@ -219,7 +219,7 @@ When writing or revising:
 
 <<^ code="&#x0003;">>:3474a83e5cb66844
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>
 ````
 
 <<~/ahu>>
@@ -259,6 +259,6 @@ Aftermath — close by naming:
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;H_NaXteAAOr0uNzVcO9VpaUK_UUyY7nzEBbNqBU-Xe4
+<<^ code="&#x0003;">>ni:///sha-256;AuTC6pH2Pim3hT32sprAt8FHBbl3_0vw78zqGMxiaXk
 
 <<^ code="&#x0004;" -> to="?">>

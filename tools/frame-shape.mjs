@@ -46,13 +46,17 @@ for (const f of files) {
   // Drop it and the capture returns nothing while every other check here still reads the frame as sound.
   const masked = (re) => [...maskedExecAll(t, re)];
   const soh = masked(/^<<\^[^>\n]*&#x(?:0001|0011);[^\n]*$/gm).length > 0;
-  if (soh && masked(/^<<\^[^>\n]*&#x(?:0001|0011);[^>\n]*?\?\s*->\s*\S+\s*>>/gm).length === 0) {
+  if (soh && masked(/^<<\^[^>\n]*&#x(?:0001|0011);[^>\n]*?"?\?"?\s*->\s*\S+\s*>>/gm).length === 0) {
     faults.push([f, "SOH carries no `? -> uri` — the heading states no bearing"]);
   }
   // THE CLOSE NAMES ITS SLOT. The frame's ends took `from=` and `to=`, so an EOT reads `-> to=?` —
   // and a check wanting a bare `?` after the arrow matches nothing, then reports the whole corpus.
+  //
+  // AND THE QUOTE IS NOT PART OF THE READING. TiddlyWiki assigns `to=?` and `to="?"` the same type and
+  // the same value, so both spell one bearing. A gate binding only the bare form reads a corpus-wide
+  // requote as 1395 torn frames — measured, the day the corpus took quotes.
   const eot = masked(/^<<\^[^>\n]*&#x(?:0004|0014);[^\n]*$/gm).length > 0;
-  if (eot && masked(/^<<\^[^>\n]*&#x(?:0004|0014);[^>\n]*?->\s*(?:to=)?\?\s*>>/gm).length === 0) {
+  if (eot && masked(/^<<\^[^>\n]*&#x(?:0004|0014);[^>\n]*?->\s*(?:to=)?"?\?"?\s*>>/gm).length === 0) {
     faults.push([f, "EOT carries no `-> to=?` — the close resolves a bearing it cannot know"]);
   }
 

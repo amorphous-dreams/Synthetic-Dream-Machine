@@ -539,7 +539,7 @@ carrier states first ([FRAMING] #declaration-register):
 ````
 <<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
-<<^ code="&#x0001;" from=? -> to=lar:///ha.ka.ba/lares/api/pono/example>>
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/example">>
 ```toml meta
 … bare toml-meta slot: identity payload (uri-path, type, role, register) …
 ```
@@ -554,7 +554,7 @@ Body text, with a live embed: <<~ kahea lar:///ha.ka.ba/lares/api/pono/meme>>.
 
 <<^ code="&#x0003;">>ni:///sha-256;…
 
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>
 ````
 
 A definition summoned by name:

@@ -50,7 +50,10 @@ export type MemeStreamEvent =
 // bracket closes a call only when a second one follows, so a bearing arrow and a resonance marker
 // (ॐ, ⊙) alike ride as content. A sigil NEVER crosses a line: the multi-line form let a quoted
 // `<<~` mention swallow text down to a distant real sigil (loci.md).
-const SOH_RE  = /<<\^(?:[^>\n]|>(?!>))*&#x(?:0001|0011);(?:[^>\n]|>(?!>))*\?\s*->\s*to=([^\s>]+)\s*>>/;
+// THE QUOTE RIDES OUTSIDE THE VALUE. `to=lar:///x` and `to="lar:///x"` name one bearing — TiddlyWiki
+// assigns both the same type and the same value — so the capture strips the quotes rather than keeping
+// them. A reader binding the bare form alone stops matching every head the day the corpus takes quotes.
+const SOH_RE  = /<<\^(?:[^>\n]|>(?!>))*&#x(?:0001|0011);(?:[^>\n]|>(?!>))*"?\?"?\s*->\s*to="?([^"\s>]+)"?\s*>>/;
 const STX_RE  = /<<\^(?:[^>\n]|>(?!>))*&#x0002;(?:[^>\n]|>(?!>))*>>/;
 const ETX_RE  = /<<\^(?:[^>\n]|>(?!>))*&#x0003;(?:[^>\n]|>(?!>))*>>/;
 // ETB: the attestation block terminator — stands between ETX and EOT, never framing text.

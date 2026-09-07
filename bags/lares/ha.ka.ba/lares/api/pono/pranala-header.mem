@@ -66,8 +66,8 @@ frame (`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext-framing#/frame-head-lock
 !! Syntax
 
 ```text
-<<^ code="&#x0001;" from=? -> to=lar:///ha.ka.ba/path/to/this-carrier>>
-<<^ code="&#x0001;" namespace="⊙" from=? -> to=lar:///ha.ka.ba/path/to/this-carrier>>
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/path/to/this-carrier">>
+<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/path/to/this-carrier">>
 ```
 
 The bearing reads off the SOH scan, which anchors on the control code and admits the namespace slot
@@ -108,6 +108,6 @@ agrees-with    = "uri-path"
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;5odvE7p-CAKR4z_G2BBsVPI5x-VduQ7in9nrx0YpZEU
+<<^ code="&#x0003;">>ni:///sha-256;nWFuVlA7LrKmr1eVry6RGQj5t3MIKMwPY4sCYA1hrIg
 
 <<^ code="&#x0004;" -> to="?">>

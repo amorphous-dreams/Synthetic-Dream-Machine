@@ -279,13 +279,13 @@ A carrier travels as one framed transmission. It opens on a heading that names t
 ''The frame — heading, then text.'' The protocol law pins the zones: SOH opens the ''heading'', STX opens the ''text''. The heading holds the toml meta slot and nothing else; the text holds the body.
 
 ```
-<<^ code="&#x0001;" namespace="⊙" from=? -> to=lar:///URI>>   SOH · open heading
+<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///URI">>   SOH · open heading
   ‹toml meta slot — the identity heading›
   <<~ aka lar:///…RFC-2119>>                          (optional carrier-level binding)
 <<^ code="&#x0002;">>                                 STX · open text (body)
   # title · ## sections · #edges                       the text (body)
 <<^ code="&#x0003;">>                                 ETX · close text
-<<^ code="&#x0004;" -> to=?>>                            EOT · release
+<<^ code="&#x0004;" -> to="?">>                            EOT · release
 ```
 
 ''The mark names the control byte.'' Each sigil states its C0 control character as a named `code:` param; the mnemonic (SOH/STX/ETX/EOT) carries the reading, the byte carries what the parser frames on. STX and ETX carry that one param and nothing else — each opens or closes the text and states no bearing.
@@ -480,9 +480,9 @@ Resonance glyphs do ''not'' join the spine. They ride the ''SOH opener only'', a
 ''The set stays open.'' These name the resonance characters known now; the registry admits more as layers and trust tiers emerge. A new glyph enters under the same two laws below — SOH-prefix only, EOT bare — and registers its layer in this table.
 
 ```
-<<^ code="&#x0001;" namespace="⊙" from=? -> to=lar:///ha.ka.ba/lares/api/pono/…>>   ← pono layer
-<<^ code="&#x0001;" namespace="ॐ ँ" from=? -> to=lar:///ha.ka.ba/lares/api/…>>      ← mu/lares/lararium layer
-<<^ code="&#x0001;" from=? -> to=lar:///ha.ka.ba/lares/docs/…>>                     ← docs/library, no namespace
+<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/…">>   ← pono layer
+<<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lares/api/…">>      ← mu/lares/lararium layer
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/…">>                     ← docs/library, no namespace
 ```
 
 Two laws govern the namespace:
@@ -1052,6 +1052,6 @@ The byte law lives at the BOUNDARY: every stratum inward (records, VM) sees norm
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;VNIgQfAPGSheuROaZtoxUHiguQ5I2INITx1OMYM4IIg
+<<^ code="&#x0003;">>ni:///sha-256;MRqu1jt8VlndeXRjFZnakbYzHtBHrchSdQENC-O9ezQ
 
 <<^ code="&#x0004;" -> to="?">>

@@ -88,7 +88,9 @@ export function readCarrierShape(text: string): CarrierShape {
     // Every carrier in the corpus writes `from=? -> to=lar:///…`, so an unnamed read returned
     // `to=lar:///…` on 639 of 639 files while the only vector for it built its fixture in the bare form
     // and stayed green. The name is optional in the grammar and stripped when present.
-    headUri: headM ? (/->\s*(?:to=)?(\S+)\s*>>/.exec(headM[0])?.[1] ?? null) : null,
+    // AND THE QUOTE IS NOT PART OF THE ADDRESS — the canonical head writes `to="lar:///…"`, so the
+    // capture drops the pair rather than carrying it into the value.
+    headUri: headM ? (/->\s*(?:to=)?"?([^"\s>]+)"?\s*>>/.exec(headM[0])?.[1] ?? null) : null,
     stx:     marked(text, /<<\^(?:[^>\n]|>(?!>))*&#x0002;(?:[^>\n]|>(?!>))*>>/g),
     etx:     marked(text, /<<\^(?:[^>\n]|>(?!>))*&#x0003;(?:[^>\n]|>(?!>))*>>/g),
     eot:     marked(text, /<<\^(?:[^>\n]|>(?!>))*&#x(?:0004|0014);(?:[^>\n]|>(?!>))*>>/g),

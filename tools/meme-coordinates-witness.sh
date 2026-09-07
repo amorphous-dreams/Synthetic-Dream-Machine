@@ -38,7 +38,10 @@ for f in sorted(pathlib.Path("bags").rglob("*.mem")):
     # THE HEAD NAMES ITS TARGET WITH `to=`. A reader that wants a bare `lar:///` after the arrow does
     # not match the head at all — and then matches the first TEACHING EXAMPLE further down instead,
     # reporting a carrier as standing at an address its own prose only quoted.
-    h = re.search(r'<<[\^~][^>]*?->\s*(?:to=)?lar:///(\S+?)\s*>>', head)
+    #
+    # AND THE QUOTE IS NOT PART OF THE ADDRESS. `to=lar:///x` and `to="lar:///x"` name one target;
+    # binding the bare form alone re-opens the exact miss above, silently, the day the corpus quotes.
+    h = re.search(r'<<[\^~][^>]*?->\s*(?:to=)?"?lar:///([^"\s>]+?)"?\s*>>', head)
     if u and h and u.group(1) != h.group(1):
         drift.append((str(f), "uri-path", u.group(1), h.group(1)))
 
